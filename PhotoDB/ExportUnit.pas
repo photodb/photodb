@@ -73,7 +73,7 @@ begin
     Exit;
   end;
   System.Close(F);
-  Button1.Enabled := False;
+  BtnSelectFile.Enabled := False;
   BtnStart.Enabled := False;
   Options.ExportPrivate := CbPrivate.Checked;
   Options.ExportRatingOnly := CbRating.Checked;

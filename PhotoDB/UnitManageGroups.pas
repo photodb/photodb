@@ -138,6 +138,7 @@ begin
   if ShowAll1.Checked then
     ShowAll1.ImageIndex := -1;
   LoadToolBarIcons;
+  ImagePopupMenu := nil;
 end;
 
 procedure TFormManageGroups.ImageContextPopup(Sender: TObject;
@@ -147,7 +148,8 @@ begin
     Exit;
   if (Sender as TListView).GetItemAt(MousePos.X, MousePos.Y) = nil then
     Exit;
-  ImagePopupMenu := TPopupMenu.Create(nil);
+  F(ImagePopupMenu);
+  ImagePopupMenu := TPopupMenu.Create(Self);
   ImagePopupMenu.Images := DBKernel.ImageList;
   ImagePopupMenu.Tag := (Sender as TListView).GetItemAt(MousePos.X, MousePos.Y).ImageIndex;
 
@@ -181,15 +183,14 @@ begin
   ImagePopupMenu.Items.Add(MenuQuickInfoGroup);
   ImagePopupMenu.Popup((Sender as TControl).ClientToScreen(MousePos).X,
     (Sender as TControl).ClientToScreen(MousePos).Y);
-  ImagePopupMenu.FreeOnRelease;
-  ImagePopupMenu := nil;
 end;
 
 procedure TFormManageGroups.FormDestroy(Sender: TObject);
 begin
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   FreeGroups(Groups);
-  FBitmapImageList.Free;
+  F(FBitmapImageList);
+  F(ImagePopupMenu);
 end;
 
 procedure TFormManageGroups.LoadGroups;

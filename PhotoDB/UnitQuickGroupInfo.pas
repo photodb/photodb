@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
   ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics, uDBForm, uMemory,
-  uShellIntegration, uConstants, uSearchTypes;
+  uShellIntegration, uConstants, uSearchTypes, WebLinkList, WebLink;
 
 type
   TFormQuickGroupInfo = class(TDBForm)
@@ -28,19 +28,16 @@ type
     CbAddKeywords: TCheckBox;
     KeyWordsLabel: TLabel;
     Label3: TLabel;
-    ComboBoxEx1: TComboBoxEx;
     CbInclude: TCheckBox;
     GroupsImageList: TImageList;
     PopupMenu2: TPopupMenu;
+    WllGroups: TWebLinkList;
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure EditGroup1Click(Sender: TObject);
     procedure Manager1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure SearchForGroup1Click(Sender: TObject);
-    procedure ComboBoxEx1KeyPress(Sender: TObject; var Key: Char);
-    procedure ComboBoxEx1Select(Sender: TObject);
-    procedure ComboBoxEx1DropDown(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
@@ -49,6 +46,8 @@ type
     FCloseOwner: Boolean;
     FOwner: TForm;
     FNewRelatedGroups: string;
+    procedure GroupClick(Sender: TObject);
+    procedure FillImageList;
   protected
     function GetFormID : string; override;
   public
@@ -133,8 +132,8 @@ begin
   CbAddKeywords.Checked := FPrGroup.AutoAddKeyWords;
 
   Label3.Top := CbAddKeywords.Top + CbAddKeywords.Height + Otstup;
-  ComboBoxEx1.Top := Label3.Top + Label3.Height + Otstup;
-  CbInclude.Top := ComboBoxEx1.Top + ComboBoxEx1.Height + Otstup;
+  WllGroups.Top := Label3.Top + Label3.Height + Otstup;
+  CbInclude.Top := WllGroups.Top + WllGroups.Height + Otstup;
 
   DateLabel.Top := CbInclude.Top + CbInclude.Height + Otstup;
   DateEdit.Top := DateLabel.Top + DateLabel.Height + Otstupa;
@@ -150,6 +149,7 @@ begin
     AccessEdit.Text := L('Public group');
   if FPrGroup.GroupAccess = GROUP_ACCESS_PRIVATE then
     AccessEdit.Text := L('Private group');
+
   ReloadGroups;
   ShowModal;
   FreeGroup(FGroup);
@@ -192,6 +192,11 @@ begin
   Result := 'GroupInfo';
 end;
 
+procedure TFormQuickGroupInfo.GroupClick(Sender: TObject);
+begin
+  ShowGroupInfo(TWebLink(Sender).Text, False, nil);
+end;
+
 procedure TFormQuickGroupInfo.LoadLanguage;
 begin
   BeginTranslate;
@@ -223,90 +228,70 @@ begin
     FOwner.Close;
 end;
 
-procedure TFormQuickGroupInfo.ComboBoxEx1KeyPress(Sender: TObject; var Key: Char);
-begin
-  Key := #0;
-end;
-
-procedure TFormQuickGroupInfo.ComboBoxEx1Select(Sender: TObject);
-begin
-  if ComboBoxEx1.ItemsEx.Count = 0 then
-    Exit;
-  ShowGroupInfo(ComboBoxEx1.Text, False, nil);
-  ComboBoxEx1.ItemIndex := -1;
-  ComboBoxEx1.Text := L('<Groups>');
-end;
-
 procedure TFormQuickGroupInfo.ReloadGroups;
 var
   I: Integer;
   FCurrentGroups: TGroups;
+  WL: TWebLink;
+  LblInfo: TStaticText;
 begin
   FCurrentGroups := EncodeGroups(FNewRelatedGroups);
-  ComboBoxEx1.Items.Clear;
+  FillImageList;
   for I := 0 to Length(FCurrentGroups) - 1 do
-    ComboBoxEx1.Items.Add(FCurrentGroups[I].GroupName);
-
-  ComboBoxEx1.Text := L('<Groups>');
+  begin
+    WL := WllGroups.AddLink;
+    WL.Text := FCurrentGroups[I].GroupName;
+    WL.ImageList := GroupsImageList;
+    WL.ImageIndex := I;
+    WL.ImageCanRegenerate := True;
+    WL.Tag := I;
+    WL.OnClick := GroupClick;
+  end;
+  if Length(FCurrentGroups) = 0 then
+  begin
+    LblInfo := TStaticText.Create(WllGroups);
+    LblInfo.Parent := WllGroups;
+    WllGroups.AddControl(LblInfo);
+    LblInfo.Caption := L('There are no related groups');
+  end;
+  WllGroups.ReallignList;
 end;
 
-procedure TFormQuickGroupInfo.ComboBoxEx1DropDown(Sender: TObject);
+procedure TFormQuickGroupInfo.FillImageList;
 var
   I: Integer;
   Group: TGroup;
   SmallB, B: TBitmap;
-  GroupImageValud: Boolean;
   FCurrentGroups: TGroups;
 begin
   GroupsImageList.Clear;
-  SmallB := TBitmap.Create;
-  try
-    SmallB.PixelFormat := pf24bit;
-    SmallB.Width := 16;
-    SmallB.Height := 16;
-    SmallB.Canvas.Pen.Color := ClBtnFace;
-    SmallB.Canvas.Brush.Color := clBtnFace;
-    SmallB.Canvas.Rectangle(0, 0, 16, 16);
-    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
-    GroupsImageList.Add(SmallB, nil);
-  finally
-    SmallB.Free;
-  end;
+
   FCurrentGroups := EncodeGroups(FNewRelatedGroups);
   for I := 0 to Length(FCurrentGroups) - 1 do
   begin
     SmallB := TBitmap.Create;
     try
-      SmallB.PixelFormat := Pf24bit;
+      SmallB.PixelFormat := pf24bit;
       SmallB.Canvas.Brush.Color := ClBtnFace;
       Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
-      GroupImageValud := False;
       if Group.GroupImage <> nil then
         if not Group.GroupImage.Empty then
         begin
           B := TBitmap.Create;
           try
             B.PixelFormat := pf24bit;
-            GroupImageValud := True;
             B.Assign(Group.GroupImage);
             FreeGroup(Group);
             DoResize(15, 15, B, SmallB);
             SmallB.Height := 16;
             SmallB.Width := 16;
           finally
-            B.Free;
+            F(B);
           end;
         end;
       GroupsImageList.Add(SmallB, nil);
     finally
-      SmallB.Free;
-    end;
-    with ComboBoxEx1.ItemsEx[I] do
-    begin
-      if GroupImageValud then
-        ImageIndex := I + 1
-      else
-        ImageIndex := 0;
+      F(SmallB);
     end;
   end;
 end;

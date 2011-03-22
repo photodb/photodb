@@ -190,17 +190,18 @@ object SearchForm: TSearchForm
     TabOrder = 0
     object PropertyPanel: TPanel
       Left = 1
-      Top = 396
+      Top = 385
       Width = 178
-      Height = 326
+      Height = 352
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 3
       Visible = False
+      ExplicitTop = 321
       DesignSize = (
         178
-        326)
+        352)
       object Label2: TLabel
         Left = 8
         Top = 0
@@ -230,7 +231,7 @@ object SearchForm: TSearchForm
       end
       object Label4: TLabel
         Left = 8
-        Top = 124
+        Top = 145
         Width = 20
         Height = 13
         Caption = 'Size'
@@ -244,7 +245,7 @@ object SearchForm: TSearchForm
       object Label6: TLabel
         Tag = 2
         Left = 8
-        Top = 139
+        Top = 160
         Width = 52
         Height = 13
         Caption = 'Comments:'
@@ -258,7 +259,7 @@ object SearchForm: TSearchForm
       object Label5: TLabel
         Tag = 2
         Left = 8
-        Top = 231
+        Top = 248
         Width = 54
         Height = 14
         Caption = 'KeyWords:'
@@ -288,7 +289,7 @@ object SearchForm: TSearchForm
       object Memo2: TMemo
         Tag = 1
         Left = 8
-        Top = 155
+        Top = 176
         Width = 167
         Height = 70
         Anchors = [akLeft, akTop, akRight]
@@ -307,7 +308,7 @@ object SearchForm: TSearchForm
       object Memo1: TMemo
         Tag = 1
         Left = 8
-        Top = 247
+        Top = 268
         Width = 167
         Height = 50
         Anchors = [akLeft, akTop, akRight]
@@ -324,9 +325,9 @@ object SearchForm: TSearchForm
       end
       object Save: TButton
         Left = 110
-        Top = 301
+        Top = 322
         Width = 65
-        Height = 17
+        Height = 24
         Anchors = [akTop, akRight]
         Caption = 'Save'
         TabOrder = 7
@@ -443,47 +444,42 @@ object SearchForm: TSearchForm
         Visible = False
         OnDblClick = PanelValueIsTimeSetsDblClick
       end
-      object ComboBoxSelGroups: TComboBoxExDB
+      object WllGroups: TWebLinkList
         Left = 8
-        Top = 100
-        Width = 167
-        Height = 22
-        ItemsEx = <>
+        Top = 102
+        Width = 165
+        Height = 42
+        HorzScrollBar.Visible = False
         Anchors = [akLeft, akTop, akRight]
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
-        PopupMenu = PopupMenu4
+        BevelEdges = []
+        BevelInner = bvNone
+        BevelOuter = bvNone
+        BorderStyle = bsNone
         TabOrder = 10
-        Text = 'Groups'
-        OnDblClick = ComboBox1_DblClick
-        OnDropDown = ComboBox1DropDown
-        OnSelect = ComboBox1_Select
-        Images = GroupsImageList
-        DropDownCount = 10
-        ShowDropDownMenu = True
-        LastItemIndex = 0
-        ShowEditIndex = -1
+        VerticalIncrement = 3
+        HorizontalIncrement = 5
+        LineHeight = 0
+        PaddingTop = 2
+        PaddingLeft = 2
       end
     end
     object ExplorerPanel: TPanel
       Left = 1
-      Top = 722
+      Top = 737
       Width = 178
-      Height = 15
+      Height = 8
       Align = alClient
       ParentColor = True
       TabOrder = 2
       Visible = False
+      ExplicitTop = 722
+      ExplicitHeight = 15
     end
     object pnDateRange: TPanel
       Left = 1
       Top = 177
       Width = 178
-      Height = 219
+      Height = 208
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
@@ -491,12 +487,12 @@ object SearchForm: TSearchForm
       Visible = False
       DesignSize = (
         178
-        219)
+        208)
       object elvDateRange: TEasyListview
         Left = 8
         Top = 0
         Width = 167
-        Height = 217
+        Height = 206
         Anchors = [akLeft, akTop, akRight, akBottom]
         Ctl3D = True
         EditManager.Font.Charset = DEFAULT_CHARSET
@@ -550,6 +546,7 @@ object SearchForm: TSearchForm
         OnItemSelectionChanged = elvDateRangeItemSelectionChanged
         OnMouseDown = elvDateRangeMouseDown
         OnResize = elvDateRangeResize
+        ExplicitHeight = 217
       end
       object dblDate: TDBLoading
         Left = 61
@@ -892,8 +889,8 @@ object SearchForm: TSearchForm
         Width = 127
         Height = 16
         Cursor = crHandPoint
-        ParentColor = False
         Color = clBtnFace
+        ParentColor = False
         Text = 'Search (1000+ Result)'
         ImageIndex = 0
         IconWidth = 16

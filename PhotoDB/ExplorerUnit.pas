@@ -3693,6 +3693,7 @@ begin
     begin
       TbCut.Enabled := False;
       MoveToLink.Top := CopyToLink.Top;
+      MoveToLink.Visible := False;
     end;
   end else
   begin

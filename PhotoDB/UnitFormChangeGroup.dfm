@@ -4,7 +4,7 @@ object FormChangeGroup: TFormChangeGroup
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Change Group'
-  ClientHeight = 338
+  ClientHeight = 364
   ClientWidth = 328
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,7 +17,7 @@ object FormChangeGroup: TFormChangeGroup
   OnCreate = FormCreate
   DesignSize = (
     328
-    338)
+    364)
   PixelsPerInch = 96
   TextHeight = 13
   object ImgMain: TImage
@@ -118,12 +118,11 @@ object FormChangeGroup: TFormChangeGroup
   object Label3: TLabel
     Tag = 2
     Left = 8
-    Top = 227
+    Top = 231
     Width = 77
     Height = 13
     Anchors = [akLeft, akBottom]
     Caption = 'Related Groups:'
-    ExplicitTop = 192
   end
   object MemComments: TWatermarkedMemo
     Left = 4
@@ -136,64 +135,50 @@ object FormChangeGroup: TFormChangeGroup
   end
   object BtnOk: TButton
     Left = 252
-    Top = 314
+    Top = 334
     Width = 75
-    Height = 17
+    Height = 23
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
     Left = 171
-    Top = 315
+    Top = 334
     Width = 75
-    Height = 17
+    Height = 24
     Anchors = [akRight, akBottom]
     Caption = 'Cancel'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = BtnCancelClick
   end
   object MemKeywords: TWatermarkedMemo
     Left = 3
     Top = 140
     Width = 317
-    Height = 64
+    Height = 65
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     WatermarkText = 'Write here keywords for this group'
   end
   object CbAddkeywords: TCheckBox
     Left = 8
-    Top = 208
+    Top = 212
     Width = 252
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'Auto Add keyWords'
     TabOrder = 3
   end
-  object ComboBoxEx1: TComboBoxEx
-    Left = 8
-    Top = 243
-    Width = 315
-    Height = 22
-    ItemsEx = <>
-    Anchors = [akLeft, akRight, akBottom]
-    TabOrder = 4
-    OnDblClick = ComboBoxEx1DblClick
-    OnDropDown = ComboBoxEx1DropDown
-    OnKeyPress = ComboBoxEx1KeyPress
-    OnSelect = ComboBoxEx1Select
-    Images = GroupsImageList
-  end
   object CbInclude: TCheckBox
     Left = 8
-    Top = 270
+    Top = 290
     Width = 313
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Include In Quick Lists'
-    TabOrder = 5
+    TabOrder = 4
   end
   object EdName: TWatermarkedEdit
     Left = 60
@@ -212,12 +197,30 @@ object FormChangeGroup: TFormChangeGroup
   end
   object CbPrivateGroup: TCheckBox
     Left = 8
-    Top = 291
+    Top = 311
     Width = 313
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Group is private'
-    TabOrder = 6
+    TabOrder = 5
+  end
+  object WllGroups: TWebLinkList
+    Left = 8
+    Top = 246
+    Width = 312
+    Height = 42
+    HorzScrollBar.Visible = False
+    BevelEdges = []
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    BorderStyle = bsNone
+    TabOrder = 8
+    OnDblClick = WllGroupsDblClick
+    VerticalIncrement = 5
+    HorizontalIncrement = 5
+    LineHeight = 0
+    PaddingTop = 2
+    PaddingLeft = 2
   end
   object PmLoadFromFile: TPopupMenu
     OnPopup = PmLoadFromFilePopup

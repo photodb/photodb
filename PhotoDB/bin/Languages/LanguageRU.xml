@@ -456,6 +456,8 @@
     <translate name="Size" value="Размер" />
     <translate name="Comment" value="Коментарий" />
     <translate name="Keywords" value="Ключевые слова" />
+    <translate name="Edit groups" value="Редактировать группы" />
+    <translate name="There are no groups" value="Нет групп" />
     <translate name="Save" value="Сохранить" />
     <translate name="Search" value="Поиск" />
     <translate name="Panels" value="Панели" />
@@ -500,7 +502,6 @@
     <translate name="Enter your query here" value="Введите текст для поиска" />
     <translate name="Stop" value="Остановить" />
     <translate name="Stopping" value="Остановка" />
-    <translate name="Search" value="Поиск" />
     <translate name="Done" value="Готово" />
     <translate name="Calculating" value="Подсчёт" />
     <translate name="Initialize" value="Инициализация" />
@@ -545,6 +546,8 @@
 	<translate name="Keywords for group" value="Ключевые слова к группе" />
 	<translate name="Include in quick group list" value="Включать в базовый список групп" />
 	<translate name="Related groups" value="Связанные группы" />
+	<translate name="Edit related groups" value="Редактировать связанные группы" />
+	<translate name="There are no related groups" value="Нет связанных групп" />	
   </scope>
   <scope name="DBMenu">
     <translate name="File" value="Файл" />
@@ -730,6 +733,7 @@
     <translate name="Edit groups" value="Редактировать группы" />
 	<translate name="Groups manager" value="Управление группами" />
 	<translate name="Create group" value="Создать группу" />
+	<translate name="Change group" value="Изменить группу" />	
 	<translate name="Avaliable groups" value="Доступные группы" />
 	<translate name="Selected groups" value="Выбранные группы" />
 	<translate name="Clear" value="Очистить" />
@@ -868,6 +872,7 @@
 	<translate name="Created %s" value="Создана %s" />
 	<translate name="Public group" value="Публичная группа" />
 	<translate name="Private group" value="Личная группа" />
+	<translate name="There are no related groups" value="Нет связанных групп" />	
   </scope> 
   <scope name="DBTreeView">
 	<translate name="File tree of current collection" value="дерево файлов текущей коллекции" />

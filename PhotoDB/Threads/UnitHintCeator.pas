@@ -210,7 +210,7 @@ procedure THintManager.CloseHint;
 var
   I : Integer;
 begin
-  for I := 0 to FHints.Count - 1 do
+  for I := FHints.Count - 1 downto 0 do
     TForm(FHints[I]).Close;
 end;
 

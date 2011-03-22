@@ -4,7 +4,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
   Caption = 'Quick Group Info'
-  ClientHeight = 318
+  ClientHeight = 327
   ClientWidth = 267
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -99,8 +99,8 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   end
   object DateLabel: TLabel
     Tag = 2
-    Left = 5
-    Top = 228
+    Left = 4
+    Top = 230
     Width = 65
     Height = 13
     Caption = 'Date created:'
@@ -116,8 +116,8 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   end
   object AccessLabel: TLabel
     Tag = 2
-    Left = 5
-    Top = 260
+    Left = 4
+    Top = 262
     Width = 47
     Height = 13
     Caption = 'Attributes:'
@@ -202,36 +202,36 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     TabOrder = 1
   end
   object BtnOk: TButton
-    Left = 190
-    Top = 297
+    Left = 187
+    Top = 301
     Width = 75
-    Height = 17
+    Height = 21
     Caption = 'Ok'
-    TabOrder = 2
+    TabOrder = 7
     OnClick = BtnOkClick
   end
   object DateEdit: TEdit
     Tag = 1
-    Left = 5
-    Top = 244
+    Left = 4
+    Top = 246
     Width = 257
     Height = 17
     BorderStyle = bsNone
     ParentColor = True
     ReadOnly = True
-    TabOrder = 3
+    TabOrder = 5
     Text = '<Data>'
   end
   object AccessEdit: TEdit
     Tag = 1
-    Left = 5
-    Top = 276
+    Left = 4
+    Top = 278
     Width = 257
     Height = 17
     BorderStyle = bsNone
     ParentColor = True
     ReadOnly = True
-    TabOrder = 4
+    TabOrder = 6
     Text = '<Data>'
   end
   object KeyWordsMemo: TMemo
@@ -245,7 +245,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
       '<Key Words>')
     ParentColor = True
     ReadOnly = True
-    TabOrder = 5
+    TabOrder = 2
   end
   object CbAddKeywords: TCheckBox
     Left = 4
@@ -254,30 +254,32 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Height = 17
     Caption = 'Auto Added'
     Enabled = False
-    TabOrder = 6
-  end
-  object ComboBoxEx1: TComboBoxEx
-    Left = 4
-    Top = 180
-    Width = 255
-    Height = 22
-    ItemsEx = <>
-    ParentColor = True
-    PopupMenu = PopupMenu2
-    TabOrder = 7
-    OnDropDown = ComboBoxEx1DropDown
-    OnKeyPress = ComboBoxEx1KeyPress
-    OnSelect = ComboBoxEx1Select
-    Images = GroupsImageList
+    TabOrder = 3
   end
   object CbInclude: TCheckBox
-    Left = 4
-    Top = 207
+    Left = 3
+    Top = 209
     Width = 253
     Height = 17
     Caption = 'Include In Quick Lists'
     Enabled = False
+    TabOrder = 4
+  end
+  object WllGroups: TWebLinkList
+    Left = 4
+    Top = 183
+    Width = 255
+    Height = 22
+    BevelEdges = []
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    BorderStyle = bsNone
     TabOrder = 8
+    VerticalIncrement = 5
+    HorizontalIncrement = 5
+    LineHeight = 0
+    PaddingTop = 2
+    PaddingLeft = 2
   end
   object PopupMenu1: TPopupMenu
     Left = 120

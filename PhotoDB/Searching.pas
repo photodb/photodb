@@ -21,7 +21,7 @@ uses
   uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate, uAssociations,
   uShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
   uDBUtils, uDBFileTypes, Dolphin_DB, uActivationUtils, uSettings,
-  uSearchTypes;
+  uSearchTypes, WebLinkList;
 
 type
   TSearchForm = class(TSearchCustomForm)
@@ -150,7 +150,6 @@ type
     TbStopOperation: TToolButton;
     ToolButton15: TToolButton;
     DisabledToolBarImageList: TImageList;
-    ComboBoxSelGroups: TComboBoxExDB;
     PopupMenuZoomDropDown: TPopupMenu;
     SortbyCompare1: TMenuItem;
     elvDateRange: TEasyListview;
@@ -162,6 +161,7 @@ type
     WlStartStop: TWebLink;
     LsSearchResults: TLoadingSign;
     TwlIncludeAllImages: TTwButton;
+    WllGroups: TWebLinkList;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
@@ -210,7 +210,7 @@ type
     procedure PanelValueIsDateSetsDblClick(Sender: TObject);
     procedure ComboBox1_KeyPress(Sender: TObject; var Key: Char);
     Procedure ReloadGroups;
-    procedure ComboBox1_Select(Sender: TObject);
+    procedure GroupClick(Sender: TObject);
     procedure ComboBox1_DblClick(Sender: TObject);
     procedure GroupsManager1Click(Sender: TObject);
     procedure DateExists1Click(Sender: TObject);
@@ -254,7 +254,7 @@ type
     procedure Image4_Click(Sender: TObject);
     procedure Decremect1Click(Sender: TObject);
     procedure Increment1Click(Sender: TObject);
-    procedure ComboBox1DropDown(Sender: TObject);
+    procedure FillImageList;
     procedure InsertSpesialQueryPopupMenuItemClick(Sender: TObject);
     procedure DeleteSelected;
     procedure HidePanelTimerTimer(Sender: TObject);
@@ -1468,7 +1468,7 @@ begin
 
       Memo1.Enabled := False;
       Memo2.Enabled := False;
-      ComboBoxSelGroups.Enabled := False;
+      WllGroups.Enabled := False;
       DateTimePicker1.Enabled := False;
       DateTimePicker4.Enabled := False;
       RatingEdit.Enabled := False;
@@ -1691,7 +1691,7 @@ begin
 
         Memo1.Enabled := True;
         Memo2.Enabled := True;
-        ComboBoxSelGroups.Enabled := True;
+        WllGroups.Enabled := True;
         DateTimePicker1.Enabled := True;
         DateTimePicker4.Enabled := True;
         RatingEdit.Enabled := True;
@@ -2158,45 +2158,60 @@ procedure TSearchForm.ReloadGroups;
 var
   I: Integer;
   FCurrentGroups: TGroups;
-  Item: TComboExItem;
+  WL: TWebLink;
+  LblInfo: TStaticText;
 begin
   FCurrentGroups := EncodeGroups(FPropertyGroups);
-  ComboBoxSelGroups.Items.Clear;
-  for I := 0 to Length(FCurrentGroups) - 1 do
+
+  FillImageList;
+  WllGroups.Clear;
+
+  if Length(FCurrentGroups) = 0 then
   begin
-    Item := ComboBoxSelGroups.ItemsEx.Add;
-    Item.Caption := FCurrentGroups[I].GroupName;
-    Item.Data := nil;
+    LblInfo := TStaticText.Create(WllGroups);
+    LblInfo.Parent := WllGroups;
+    WllGroups.AddControl(LblInfo, True);
+    LblInfo.Caption := L('There are no groups');
   end;
 
-  Item := ComboBoxSelGroups.ItemsEx.Add;
-  Item.Caption := L('Edit groups');
-  Item.Data := Pointer(1);
+  WL := WllGroups.AddLink(True);
+  WL.Text := L('Edit groups');
+  WL.ImageList := GroupsImageList;
+  WL.ImageIndex := 0;
+  WL.ImageCanRegenerate := True;
+  WL.Tag := -1;
+  WL.OnClick := GroupClick;
 
-  ComboBoxSelGroups.Text := '';
+  for I := 0 to Length(FCurrentGroups) - 1 do
+  begin
+    WL := WllGroups.AddLink;
+    WL.Text := FCurrentGroups[I].GroupName;
+    WL.ImageList := GroupsImageList;
+    WL.ImageIndex := I + 1;
+    WL.ImageCanRegenerate := True;
+    WL.Tag := I;
+    WL.OnClick := GroupClick;
+  end;
+  WllGroups.ReallignList;
 end;
 
-procedure TSearchForm.ComboBox1_Select(Sender: TObject);
+procedure TSearchForm.GroupClick(Sender: TObject);
 var
-  KeyWords: string;
+  KeyWords : string;
+  WL: TWebLink;
 begin
-  if ComboBoxSelGroups.ItemsEx.Count = 0 then
-    Exit;
-  if ComboBoxSelGroups.ItemIndex <> -1 then
-    if (ComboBoxSelGroups.Text = ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.Items.Count - 1].Caption) and
-      (ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.ItemIndex].ImageIndex = 0) then
-    begin
-      KeyWords := Memo1.Text;
-      DBChangeGroups(FPropertyGroups, KeyWords);
-      PostMessage(Handle, FReloadGroupsMessage, 0, 0);
-      Memo1.Text := KeyWords;
-      Memo1Change(Sender);
-    end else
-      ShowGroupInfo(ComboBoxSelGroups.Text, False, nil);
-
-  ComboBoxSelGroups.ItemIndex := 0;
-  ComboBoxSelGroups.LastItemIndex := 0;
-  ComboBoxSelGroups.Text := '';
+  WL := TWebLink(Sender);
+  if WL.Tag > -1 then
+  begin
+    ShowGroupInfo(WL.Text, False, nil);
+  end else
+  begin
+    KeyWords := Memo1.Text;
+    DBChangeGroups(FPropertyGroups, KeyWords);
+    PostMessage(Handle, FReloadGroupsMessage, 0, 0);
+    Memo1.Text := KeyWords;
+    Memo1Change(Sender);
+  end;
 end;
 
 procedure TSearchForm.ComboBox1_DblClick(Sender: TObject);
@@ -2317,7 +2332,6 @@ begin
     Label1.Caption := L('Search text');
     Label2.Caption := L('ID');
     Label8.Caption := L('Rating');
-    ComboBoxSelGroups.StartText := L('Groups');
     Label4.Caption := L('Size');
     Label6.Caption := L('Comment');
     Label5.Caption := L('Keywords');
@@ -2729,7 +2743,7 @@ begin
   SortingClick(Sender);
 end;
 
-procedure TSearchForm.ComboBox1DropDown(Sender: TObject);
+procedure TSearchForm.FillImageList;
 var
   I: Integer;
   Size: Integer;
@@ -2742,8 +2756,8 @@ var
   begin
     SmallB.Width := 16;
     SmallB.Height := 16;
-    SmallB.Canvas.Pen.Color := ClBtnFace;
-    SmallB.Canvas.Brush.Color := ClBtnFace;
+    SmallB.Canvas.Pen.Color := clBtnFace;
+    SmallB.Canvas.Brush.Color := clBtnFace;
     SmallB.Canvas.Rectangle(0, 0, 16, 16);
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
     GroupImageValid := True;
@@ -2752,6 +2766,16 @@ var
 begin
   GroupsImageList.Clear;
   FCurrentGroups := EncodeGroups(FPropertyGroups);
+
+  SmallB := TBitmap.Create;
+  try
+    SmallB.PixelFormat := pf24bit;
+    CreteDefaultGroupImage;
+    GroupsImageList.Add(SmallB, nil);
+  finally
+    F(SmallB);
+  end;
+
   for I := 0 to Length(FCurrentGroups) - 1 do
   begin
     SmallB := TBitmap.Create;
@@ -2769,8 +2793,8 @@ begin
             GroupImageValid := True;
 
             Size := Max(Group.GroupImage.Width, Group.GroupImage.Height);
-            B.Canvas.Brush.Color := ClBtnFace;
-            B.Canvas.Pen.Color := ClBtnFace;
+            B.Canvas.Brush.Color := clBtnFace;
+            B.Canvas.Pen.Color := clBtnFace;
             B.Width := Size;
             B.Height := Size;
             B.Canvas.Rectangle(0, 0, Size, Size);
@@ -2790,30 +2814,9 @@ begin
     finally
       F(SmallB);
     end;
-
-    with ComboBoxSelGroups.ItemsEx[I] do
-    begin
-      if GroupImageValid then
-        ImageIndex := I + 1
-      else
-        ImageIndex := 0;
-    end;
   end;
 
-  SmallB := TBitmap.Create;
-  try
-    SmallB.PixelFormat := pf24bit;
-    CreteDefaultGroupImage;
-    GroupsImageList.Add(SmallB, nil);
-  finally
-    F(SmallB);
-  end;
 
-  if ComboBoxSelGroups.ItemsEx.Count <> 0 then
-    with ComboBoxSelGroups.ItemsEx[ComboBoxSelGroups.ItemsEx.Count - 1] do
-      ImageIndex := 0;
-
-  ComboBoxSelGroups.ShowEditIndex := GroupsImageList.Count - 1;
 end;
 
 procedure TSearchForm.InsertSpesialQueryPopupMenuItemClick(
@@ -2950,87 +2953,93 @@ begin
         ArComments := TStringList.Create;
         KeyWordList := TStringList.Create;
         ArGroups := TStringList.Create;
-
-        for I := 0 to ElvMain.Items.Count - 1 do
-          if ElvMain.Items[I].Selected then
-          begin
-            SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
-            Size := Size + SearchRecord.FileSize;
-            KeyWordList.Add(SearchRecord.KeyWords);
-            SetLength(SelectedInfo.Ids, Length(SelectedInfo.Ids) + 1);
-            SelectedInfo.Ids[Length(SelectedInfo.Ids) - 1] := SearchRecord.ID;
-            SetLength(ArDates, Length(ArDates) + 1);
-            ArDates[Length(ArDates) - 1] := SearchRecord.Date;
-            SetLength(ArTimes, Length(ArTimes) + 1);
-            ArTimes[Length(ArTimes) - 1] := SearchRecord.Time;
-
-            SetLength(ArInt, Length(ArInt) + 1);
-            ArInt[Length(ArInt) - 1] := SearchRecord.Rating;
-            ArComments.Add(SearchRecord.Comment);
-
-            SetLength(ArIsDates, Length(ArIsDates) + 1);
-            ArIsDates[Length(ArIsDates) - 1] := SearchRecord.IsDate;
-            SetLength(ArIsTimes, Length(ArIsTimes) + 1);
-            ArIsTimes[Length(ArIsTimes) - 1] := SearchRecord.IsTime;
-
-            ArGroups.Add(SearchRecord.Groups);
-          end;
-        BeginScreenUpdate(PropertyPanel.Handle);
         try
-          SelectedInfo.CommonRating := MaxStatInt(ArInt);
-          RatingEdit.Rating := SelectedInfo.CommonRating;
-          RatingEdit.Islayered := True;
-          RatingEdit.Layered := 100;
 
-          CurrentItemInfo.Date := MaxStatDate(ArDates);
-          CurrentItemInfo.IsDate := MaxStatBool(ArIsDates);
-          SelectedInfo.Date := MaxStatDate(ArDates);
-          SelectedInfo.IsDate := MaxStatBool(ArIsDates);
-          PanelValueIsDateSets.Visible := IsVariousBool(ArIsDates) or IsVariousDate(ArDates);
-          DateTimePicker1.DateTime := SelectedInfo.Date;
-          IsDatePanel.Visible := not SelectedInfo.IsDate;
-          SelectedInfo.IsVariousDates := PanelValueIsDateSets.Visible;
+          for I := 0 to ElvMain.Items.Count - 1 do
+            if ElvMain.Items[I].Selected then
+            begin
+              SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
+              Size := Size + SearchRecord.FileSize;
+              KeyWordList.Add(SearchRecord.KeyWords);
+              SetLength(SelectedInfo.Ids, Length(SelectedInfo.Ids) + 1);
+              SelectedInfo.Ids[Length(SelectedInfo.Ids) - 1] := SearchRecord.ID;
+              SetLength(ArDates, Length(ArDates) + 1);
+              ArDates[Length(ArDates) - 1] := SearchRecord.Date;
+              SetLength(ArTimes, Length(ArTimes) + 1);
+              ArTimes[Length(ArTimes) - 1] := SearchRecord.Time;
 
-          CurrentItemInfo.Time := MaxStatDate(TArDateTime(ArTimes));
-          CurrentItemInfo.IsTime := MaxStatBool(ArIsTimes);
-          SelectedInfo.Time := MaxStatTime(ArTimes);
-          SelectedInfo.IsTime := MaxStatBool(ArIsTimes);
-          PanelValueIsTimeSets.Visible := IsVariousBool(ArIsTimes) or IsVariousDate(TArDateTime(ArTimes));
-          DateTimePicker4.DateTime := SelectedInfo.Time;
-          IsTimePanel.Visible := not SelectedInfo.IsTime;
-          SelectedInfo.IsVariousTimes := PanelValueIsTimeSets.Visible;
+              SetLength(ArInt, Length(ArInt) + 1);
+              ArInt[Length(ArInt) - 1] := SearchRecord.Rating;
+              ArComments.Add(SearchRecord.Comment);
 
-          CommonKeyWords := GetCommonWordsA(KeyWordList);
-          SelectedInfo.CommonKeyWords := CommonKeyWords;
-          Label4.Caption := Format(L('Size: %s'), [SizeInText(Size)]);
-          Label2.Caption := L('Items') + ' = ' + Inttostr(GetSelectionCount);
-          Memo1.Lines.Text := CommonKeyWords;
-          SelectedInfo.IsVariousComments := IsVariousArStrings(ArComments);
-          if SelectedInfo.IsVariousComments then
-          begin
-            SelectedInfo.CommonComment := L('<Different comments>');
-            CurrentItemInfo.Comment := SelectedInfo.CommonComment;
-            Memo2.PopupMenu := PopupMenu6;
-          end else
-          begin
-            SelectedInfo.CommonComment := ArComments[0];
-            CurrentItemInfo.Comment := SelectedInfo.CommonComment;
+              SetLength(ArIsDates, Length(ArIsDates) + 1);
+              ArIsDates[Length(ArIsDates) - 1] := SearchRecord.IsDate;
+              SetLength(ArIsTimes, Length(ArIsTimes) + 1);
+              ArIsTimes[Length(ArIsTimes) - 1] := SearchRecord.IsTime;
+
+              ArGroups.Add(SearchRecord.Groups);
+            end;
+          BeginScreenUpdate(PropertyPanel.Handle);
+          try
+            SelectedInfo.CommonRating := MaxStatInt(ArInt);
+            RatingEdit.Rating := SelectedInfo.CommonRating;
+            RatingEdit.Islayered := True;
+            RatingEdit.Layered := 100;
+
+            CurrentItemInfo.Date := MaxStatDate(ArDates);
+            CurrentItemInfo.IsDate := MaxStatBool(ArIsDates);
+            SelectedInfo.Date := MaxStatDate(ArDates);
+            SelectedInfo.IsDate := MaxStatBool(ArIsDates);
+            PanelValueIsDateSets.Visible := IsVariousBool(ArIsDates) or IsVariousDate(ArDates);
+            DateTimePicker1.DateTime := SelectedInfo.Date;
+            IsDatePanel.Visible := not SelectedInfo.IsDate;
+            SelectedInfo.IsVariousDates := PanelValueIsDateSets.Visible;
+
+            CurrentItemInfo.Time := MaxStatDate(TArDateTime(ArTimes));
+            CurrentItemInfo.IsTime := MaxStatBool(ArIsTimes);
+            SelectedInfo.Time := MaxStatTime(ArTimes);
+            SelectedInfo.IsTime := MaxStatBool(ArIsTimes);
+            PanelValueIsTimeSets.Visible := IsVariousBool(ArIsTimes) or IsVariousDate(TArDateTime(ArTimes));
+            DateTimePicker4.DateTime := SelectedInfo.Time;
+            IsTimePanel.Visible := not SelectedInfo.IsTime;
+            SelectedInfo.IsVariousTimes := PanelValueIsTimeSets.Visible;
+
+            CommonKeyWords := GetCommonWordsA(KeyWordList);
+            SelectedInfo.CommonKeyWords := CommonKeyWords;
+            Label4.Caption := Format(L('Size: %s'), [SizeInText(Size)]);
+            Label2.Caption := L('Items') + ' = ' + Inttostr(GetSelectionCount);
+            Memo1.Lines.Text := CommonKeyWords;
+            SelectedInfo.IsVariousComments := IsVariousArStrings(ArComments);
+            if SelectedInfo.IsVariousComments then
+            begin
+              SelectedInfo.CommonComment := L('<Different comments>');
+              CurrentItemInfo.Comment := SelectedInfo.CommonComment;
+              Memo2.PopupMenu := PopupMenu6;
+            end else
+            begin
+              SelectedInfo.CommonComment := ArComments[0];
+              CurrentItemInfo.Comment := SelectedInfo.CommonComment;
+            end;
+            if SelectedInfo.IsVariousComments then
+            begin
+              Memo2.readonly := True;
+              Memo2.Cursor := CrHandPoint;
+            end;
+            Memo2.Text := SelectedInfo.CommonComment;
+            CurrentItemInfo.Groups := GetCommonGroups(ArGroups);
+            SelectedInfo.Groups := CurrentItemInfo.Groups;
+            FPropertyGroups := CurrentItemInfo.Groups;
+            ReloadGroups;
+            Memo1Change(nil);
+          finally
+            EndScreenUpdate(PropertyPanel.Handle, True);
           end;
-          if SelectedInfo.IsVariousComments then
-          begin
-            Memo2.readonly := True;
-            Memo2.Cursor := CrHandPoint;
-          end;
-          Memo2.Text := SelectedInfo.CommonComment;
-          CurrentItemInfo.Groups := GetCommonGroups(ArGroups);
-          SelectedInfo.Groups := CurrentItemInfo.Groups;
-          FPropertyGroups := CurrentItemInfo.Groups;
-          ReloadGroups;
-          Memo1Change(nil);
+          FCurrentSelectedID := -1;
         finally
-          EndScreenUpdate(PropertyPanel.Handle, True);
+          F(ArComments);
+          F(KeyWordList);
+          F(ArGroups);
         end;
-        FCurrentSelectedID := -1;
       end else
       begin
         RatingEdit.Islayered := False;
