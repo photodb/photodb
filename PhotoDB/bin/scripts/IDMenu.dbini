@@ -358,7 +358,7 @@ initialization:
   CreateItem("Delete duplicates",DB_IC_DEL_DUBLICAT,"DeleteDublicatesItemPopUpMenu;",false,0);
 }
 
-<Delete info from DB>[DB_IC_DELETE_INFO]
+<Delete info from collection>[DB_IC_DELETE_INFO]
 {
 initialization:
   $Visible=true;

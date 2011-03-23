@@ -168,7 +168,7 @@ begin
         end;
 
       except
-        MessageBoxDB(Handle, Format(L('Error executing query on DB "%s"'), [Dbname]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        MessageBoxDB(Handle, Format(L('Error executing query on collection "%s"'), [Dbname]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         Exit;
       end;
       ProgressForm.MaxPosCurrentOperation := FTable.RecordCount;
@@ -256,7 +256,7 @@ begin
   BeginTranslate;
   try
     Caption := L('List of keywords');
-    LbInfo.Caption := L('This is a list of all keywords in DB. Double click to copy item to clipboard.');
+    LbInfo.Caption := L('This is a list of all keywords in collection. Double click to copy item to clipboard.');
     BtnOk.Caption := L('Ok');
     Copy1.Caption := L('Copy');
     Search1.Caption := L('Search');

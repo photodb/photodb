@@ -226,6 +226,7 @@ procedure TUpdateDBForm.LoadLanguage;
 begin
   BeginTranslate;
   try
+    Caption := L('Collection Updater');
     FilesLabel.Text := L('No files');
     ProgressBar.Text := '';
     ButtonBreak.Text := L('Stop');
@@ -242,7 +243,6 @@ begin
     ReplaceAll1.Caption := L('Replace all');
     AddAll1.Caption := L('Add all');
     SkipAll1.Caption := L('Skip all');
-    Caption := L('DB Updater');
     History1.Caption := L('History');
     UseScaningByFilename1.Caption := L('Detailed search if file name already exists');
 
@@ -330,7 +330,7 @@ begin
     begin
       Show;
       Delay(100);
-      DoHelpHint(L('Warning'), L( 'Unable to add to DB one or more files. Choose "History" in context menu for details.'), P, Self);
+      DoHelpHint(L('Warning'), L( 'Unable to add to collection one or more files. Choose "History" in context menu for details.'), P, Self);
     end;
   end;
 end;

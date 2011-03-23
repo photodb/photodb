@@ -1872,7 +1872,7 @@ begin
   Shell1.Caption := L('Execute');
   Show1.Caption := L('Show');
   Copy1.Caption := L('Copy');
-  DBItem1.Caption := L('DB Item');
+  DBItem1.Caption := L('Collection Item');
   Searchforit1.Caption := L('Find item');
 
   Ratingnotsets1.Caption := L('Rating not sets');
@@ -2353,7 +2353,7 @@ begin
       MenuInfo.IsPlusMenu := False;
       MenuInfo.IsListItem := False;
       MenuInfo.AttrExists := False;
-      IDMenu1.Caption := Format(L('DB Item [%d]'), [ID]);
+      IDMenu1.Caption := Format(L('Collection Item [%d]'), [ID]);
       TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
       DoExit;
       Exit;
@@ -2368,9 +2368,9 @@ begin
       MenuInfo.AttrExists := False;
 
       if MenuInfo.Count > 0 then
-        IDMenu1.Caption := Format(L('DB Item [%d]'), [MenuInfo[0].ID])
+        IDMenu1.Caption := Format(L('Collection Item [%d]'), [MenuInfo[0].ID])
       else
-        IDMenu1.Caption := Format(L('DB Item [%d]'), [0]);
+        IDMenu1.Caption := Format(L('Collection Item [%d]'), [0]);
 
       TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
       DoExit;

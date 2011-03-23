@@ -115,7 +115,7 @@ begin
   if Length(Groups) > 0 then
     ShowModal
   else begin
-    if ID_OK = MessageBoxDB(Handle, L('Groups in DB not found! Do you want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    if ID_OK = MessageBoxDB(Handle, L('Groups in collection aren''t found! Do you want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       CreateNewGroupDialog;
   end;
 end;
@@ -238,7 +238,7 @@ begin
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
     if UnitGroupsWork.DeleteGroup(Groups[index]) then
     begin
-      if ID_OK = MessageBoxDB(Handle, Format(L('Scan DB and remote all pointers to group "%s"?'), [Groups[index].GroupName]),
+      if ID_OK = MessageBoxDB(Handle, Format(L('Scan colection and remove all pointers to group "%s"?'), [Groups[index].GroupName]),
         L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       begin
         FSaving := True;

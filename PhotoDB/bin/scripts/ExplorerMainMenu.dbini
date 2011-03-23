@@ -126,7 +126,7 @@
   {
     GetListOfKeyWords;
   }
-  <Show DB Tree>[DB_IC_TREE]
+  <Show Collection Tree>[DB_IC_TREE]
   {
     MakeDBFileTree;
   }
@@ -134,7 +134,7 @@
   {
     ShowUpdateWindow;
   }
-  <DB Manager>[DB_IC_ADMINTOOLS]
+  <Collection Manager>[DB_IC_ADMINTOOLS]
   {
     DoManager;
   }
@@ -159,7 +159,7 @@
   {
     NewExplorer;
   }
-  <Split DB>[DB_IC_SPLIT]
+  <Split Collection>[DB_IC_SPLIT]
   {
     SplitDB;
   }

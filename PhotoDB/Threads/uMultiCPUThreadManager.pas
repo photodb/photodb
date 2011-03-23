@@ -240,7 +240,12 @@ var
   I, ThreadsCount: Integer;
   S: string;
 begin
-  AddNewThread(Thread);
+  FSync.Enter;
+  try
+    AddNewThread(Thread);
+  finally
+    FSync.Leave;
+  end;
   ThreadsCount := 0;
   while FAvaliableThreadList.Count = 0 do
   begin

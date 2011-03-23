@@ -111,7 +111,7 @@ begin
     ButtonOK.Caption := L('Ok');
     Explorer1.Caption := L('Explore removable drive');
     Dismount1.Caption := L('Unmount disk');
-    RefreshDBFilesOnCD1.Caption := L('Refresh files in DB for this CD');
+    RefreshDBFilesOnCD1.Caption := L('Refresh files in collection for this collection');
   finally
     EndTranslate;
   end;

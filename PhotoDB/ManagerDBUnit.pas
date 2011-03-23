@@ -575,14 +575,14 @@ procedure TManagerDB.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption:= L('DB Manager');
+    Caption:= L('Collection Manager');
     RbSQLSet.Caption:= L('Set');
     RbSQLDelete.Caption:=  L('Delete');
     Label10.Caption:= L('where');
     PackTabelLink.Text:= L('Pack table');
-    ExportTableLink.Text:= L('Export DB');
-    ImportTableLink.Text:= L('Import DB');
-    BackUpDBLink.Text:= L('Backup DB');
+    ExportTableLink.Text:= L('Export collection');
+    ImportTableLink.Text:= L('Import collection');
+    BackUpDBLink.Text:= L('Backup collection');
     CleaningLink.Text:= L('Cleaning');
     DublicatesLink.Text:= L('Optimize duplicates');
     BtnExecSQL.Caption:= L('Exec sql');
@@ -592,21 +592,21 @@ begin
     GroupsManager1.Caption:= L('Groups manager');
     Label7.Caption:= L('Go to record ID');
     Label11.Caption:= L('Backups');
-    Restore1.Caption:= L('Restore DB');
+    Restore1.Caption:= L('Restore collection');
     Delete1.Caption:= L('Delete');
     Refresh1.Caption:= L('Refresh');
     TimenotExists1.Caption:= L('No time');
     TimeExists1.Caption:= L('Set time');
     Rename1.Caption:= L('Rename');
-    RecreateIDExLink.Text:= L('Recreare DB cache');
+    RecreateIDExLink.Text:= L('Recreate cache');
     ScanforBadLinksLink.Text:= L('Scan for bad links');
-    BtnAddDB.Caption:= L('Add DB file');
+    BtnAddDB.Caption:= L('Add collection file');
     EditDB1.Caption:= L('Edit');
-    SelectDB1.Caption:= L('Select DB');
+    SelectDB1.Caption:= L('Select collection');
     DeleteDB1.Caption:= L('Delete');
     RenameDB1.Caption:= L('Rename');
-    ConvertLink.Text:= L('Convert DB');
-    ChangePathLink.Text:= L('Change path in DB');
+    ConvertLink.Text:= L('Convert collection');
+    ChangePathLink.Text:= L('Change path in collection');
 
     elvMain.Columns[0].Caption:= L('ID');
     elvMain.Columns[1].Caption:= L('File name');
@@ -1786,7 +1786,7 @@ var
   I: Integer;
 begin
   NewDBName := LbDatabases.Items[PmRestore.Tag];
-  if PromtString(L('New name'), L('Please, enter a new name for DB'), NewDBName) then
+  if PromtString(L('New name'), L('Please, enter a new name for collection'), NewDBName) then
   begin
     if Length(NewDBName) = 0 then
       Exit;

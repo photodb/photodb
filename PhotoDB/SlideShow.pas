@@ -1049,7 +1049,7 @@ begin
     begin
       AddToDB1.Visible := False;
       DBItem1.Visible := True;
-      DBItem1.Caption := Format(L('DB Item [%d]'), [Item.ID]);
+      DBItem1.Caption := Format(L('Collection Item [%d]'), [Item.ID]);
       InitializeInfo;
       TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Info);
     end else
@@ -1388,8 +1388,8 @@ begin
     Copy1.Caption := L('Copy');
     FullScreen1.Caption := L('Full screen');
     Tools1.Caption := L('Tools');
-    DBItem1.Caption := L('DB item');
-    AddToDB1.Caption := L('Add to DB');
+    DBItem1.Caption := L('Collection item');
+    AddToDB1.Caption := L('Add to collection');
     GoToSearchWindow1.Caption := L('Search photos');
     Explorer1.Caption := L('Explorer');
     Exit1.Caption := L('Exit');

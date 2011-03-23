@@ -73,13 +73,13 @@ procedure TFormChangeDBPath.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption := L('Change path for files in DB');
+    Caption := L('Change path for files in collection');
     LbOldPath.Caption := L('Change path from (old path)');
     LbNewPath.Caption := L('Change path to (new path)');
     BtnScanFolders.Caption := L('Show directory list');
     BtnChooseOldPath.Caption := L('Choose');
     BtnChooseNewPath.Caption := L('Choose');
-    Label1.Caption := L('Please, use this dialog if you want to update info in DB if many images was physically moved or drive name was changed.');
+    Label1.Caption := L('Please, use this dialog if you want to update info in collection if many images was physically moved or drive name was changed.');
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');
     CheckBox1.Caption := L('Change path only if new file exists');
@@ -369,11 +369,11 @@ begin
   end;
 
   Working := False;
-  MessageBoxDB(Handle, Format(L('DB Update successful! Total replaced% d paths. Update the data in the windows to apply changes!'), [Count]), L('Information'), TD_BUTTON_OK,
+  MessageBoxDB(Handle, Format(L('Collection is updated successfully! Total %d paths are replaced. Update the data in the windows to apply changes!'), [Count]), L('Information'), TD_BUTTON_OK,
     TD_ICON_INFORMATION);
 
   EnableControls;
-  if MessageBoxDB(Handle, L('Update data in open windows?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
+  if MessageBoxDB(Handle, L('Update data in opened windows?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
     DBKernel.DoIDEvent(Self, 0, [EventID_Param_Refresh_Window], EventInfo);
 
   Close;

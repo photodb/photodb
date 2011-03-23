@@ -4501,7 +4501,7 @@ begin
     MyDocumentsLink.Text := L('My documents');
     DesktopLink.Text := L('Desktop');
     MyComputerLink.Text := L('My Computer');
-    AddLink.Text := L('Add to DB');
+    AddLink.Text := L('Add to collection');
 
     Label1.Caption := L('Preview');
     TasksLabel.Caption := L('Tasks');
@@ -4510,7 +4510,7 @@ begin
     SlideShow1.Caption := L('Show');
     NewWindow1.Caption := L('New Window');
     Shell1.Caption := L('Execute');
-    DBitem1.Caption := L('DB Item');
+    DBitem1.Caption := L('Collection Item');
     Copy1.Caption := L('Copy');
     Cut2.Caption := L('Cut');
     Paste2.Caption := L('Paste');
@@ -4557,8 +4557,8 @@ begin
     Stretch1.Caption := L('Stretch');
     Center1.Caption := L('Center');
     Tile1.Caption := L('Tile');
-    RefreshID1.Caption := L('Refresh DB info');
-    DBInfoLabel.Caption := L('DB Info') + ':';
+    RefreshID1.Caption := L('Refresh info');
+    DBInfoLabel.Caption := L('Collection Info') + ':';
     ImageEditor2.Caption := L('Image editor');
 
     Othertasks1.Caption := L('Other tasks');
@@ -4588,8 +4588,8 @@ begin
     Number1.Caption := L('Number');
     SetFilter1.Caption := L('Set filter');
 
-    MakeFolderViewer1.Caption := L('Make DB viewer');
-    MakeFolderViewer2.Caption := L('Make DB viewer');
+    MakeFolderViewer1.Caption := L('Make portable viewer');
+    MakeFolderViewer2.Caption := L('Make portable viewer');
 
     Thumbnails1.Caption := L('Thumbnail');
     Tile2.Caption := L('Tile');
@@ -4601,7 +4601,7 @@ begin
     AddHiddenInfo1.Caption := L('Hide data in image');
     ExtractHiddenInfo1.Caption := L('Extract hidden data');
 
-    MapCD1.Caption := L('Map CD with DB');
+    MapCD1.Caption := L('Map CD with collection');
 
     TbCut.Caption := L('Cut');
     TbCopy.Caption := L('Copy');

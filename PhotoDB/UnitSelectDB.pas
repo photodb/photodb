@@ -177,7 +177,7 @@ procedure TFormSelectDB.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption := L('Choose\create\edit DB wizard');
+    Caption := L('Choose\create\edit collection wizard');
     LbStepInfo.Caption := L('Choose an action from the list and click "Next" button');
     ListBox1.Items[0] := L('JPEG quality');
     ListBox1.Items[1] := L('DB Image size');

@@ -148,7 +148,7 @@ begin
     ButtonCreateDirectory.Caption := L('Create directory');
     CDListView.Columns[0].Caption := L('File name');
     CDListView.Columns[1].Caption := L('File size');
-    CDListView.Columns[2].Caption := L('DB ID');
+    CDListView.Columns[2].Caption := L('Collection ID');
     ButtonExport.Caption := L('Start export');
     LabelExportDirectory.Caption := L('Directory for export') + ':';
     ButtonChooseDirectory.Caption := L('Choose directory');
