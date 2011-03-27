@@ -181,8 +181,7 @@ begin
     SetLength(Tscan2, S.Height);
     SetLength(Tscan3, S.Height);
     SetLength(Tscan4, S.Height);
-    Temp1.Width := S.Width;
-    Temp1.Height := S.Height;
+    Temp1.SetSize(S.Width, S.Height);
     for Y := 0 to S.Height - 1 do
     begin
       Tscan2[Y] := D.ScanLine[Y];

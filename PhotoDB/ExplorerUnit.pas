@@ -282,7 +282,7 @@ type
     procedure ShowUpdater1Click(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
      Procedure Select(Item : TEasyItem; GUID : TGUID);
-    procedure ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : boolean; Big : boolean = false);
+    function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : Boolean; Big : boolean = False): Boolean;
     procedure ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean);
     function AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
     procedure ListView1KeyPress(Sender: TObject; var Key: Char);
@@ -585,7 +585,7 @@ type
      procedure CreateBackgrounds;
      function GetFormID : string; override;
      function GetListView : TEasyListview; override;
-     function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; override;
+     function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
    public
      NoLockListView : boolean;
      Procedure LoadLanguage;
@@ -1053,7 +1053,7 @@ begin
   begin
   if SelCount> 1 then
     begin
-      Info := GetCurrentPopUpMenuInfo(nil);
+      Info := GetCurrentPopUpMenuInfo(ListView1Selected);
       try
         SetLength(ArInt, 0);
         WindowsProperty := True;
@@ -1871,7 +1871,7 @@ begin
       MenuRecord.Selected := ElvMain.Items[I].Selected;
       Result.Add(MenuRecord);
       if Item <> nil then
-        if ElvMain.Items[I].Selected then
+        if (Item.Selected) and (ElvMain.Items[I] = Item) then
         begin
           Result.Position := Result.Count - 1;
           Result.ListItem := ElvMain.Items[I];
@@ -2580,10 +2580,11 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: Boolean; Big: Boolean = False);
+function TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: Boolean; Big: Boolean = False): Boolean;
 var
   I, Index, C: Integer;
 begin
+  Result := False;
   for I := 0 to FFilesInfo.Count - 1 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
@@ -2621,6 +2622,7 @@ begin
 
       FBitmapImageList[C].Graphic := Bitmap;
       FBitmapImageList[C].SelfReleased := True;
+      Result := True;
 
       ElvMain.Items[index].Invalidate(False);
 
@@ -4424,7 +4426,7 @@ begin
 end;
 
 function TExplorerForm.InternalGetImage(FileName: string;
-  Bitmap: TBitmap): Boolean;
+  Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 var
   I, Index : Integer;
 begin
@@ -4439,6 +4441,8 @@ begin
       begin
         if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
         begin
+          Width := FFilesInfo[Index].Width;
+          Height := FFilesInfo[Index].Height;
           Bitmap.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Graphic);
           Result := True;
         end;
@@ -5123,7 +5127,7 @@ procedure TExplorerForm.Resize1Click(Sender: TObject);
 var
   List: TDBPopupMenuInfo;
 begin
-  List := GetCurrentPopUpMenuInfo(nil);
+  List := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
     ResizeImages(Self, List);
   finally
@@ -5135,7 +5139,7 @@ procedure TExplorerForm.Convert1Click(Sender: TObject);
 var
   List: TDBPopupMenuInfo;
 begin
-  List := GetCurrentPopUpMenuInfo(nil);
+  List := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
     ConvertImages(Self, List);
   finally
@@ -5171,7 +5175,7 @@ procedure TExplorerForm.AsEXIF1Click(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
     RotateImages(Self, Info, DB_IMAGE_ROTATE_EXIF, True);
   finally
@@ -5183,7 +5187,7 @@ procedure TExplorerForm.RotateCCW1Click(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
     RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
   finally
@@ -5195,7 +5199,7 @@ procedure TExplorerForm.RotateCW1Click(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
     RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
   finally
@@ -5207,7 +5211,7 @@ procedure TExplorerForm.Rotateon1801Click(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
     RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
   finally
@@ -5544,7 +5548,7 @@ procedure TExplorerForm.ExportImages1Click(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
     ExportImages(Self, Info);
   finally

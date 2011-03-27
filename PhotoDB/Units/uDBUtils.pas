@@ -449,7 +449,6 @@ begin
   end;
 end;
 
-
 function GetIdByFileName(FileName: string): Integer;
 var
   FQuery: TDataSet;
@@ -1072,8 +1071,7 @@ begin
       Result.Password := Password;
       if PassWord = '' then
       begin
-        if G <> nil then
-          G.Free;
+        F(G);
         Result.Count := 0;
         Result.ImTh := '';
         Exit;
@@ -1081,8 +1079,7 @@ begin
       try
         G := DeCryptGraphicFile(FileName, PassWord);
       except
-        if G <> nil then
-          G.Free;
+        F(G);
         Result.Count := 0;
         Exit;
       end;
@@ -1097,8 +1094,7 @@ begin
     begin
       Result.IsError := True;
       Result.ErrorText := E.message;
-      if G <> nil then
-        G.Free;
+      F(G);
       Result.Count := 0;
       Exit;
     end;
@@ -1109,28 +1105,22 @@ begin
     JpegScale(G, AThImageSize, AThImageSize);
     Result.Jpeg := TJpegImage.Create;
     Result.Jpeg.CompressionQuality := ADBJpegCompressionQuality;
-    Bmp := Tbitmap.Create;
+    Bmp := TBitmap.Create;
     Bmp.PixelFormat := Pf24bit;
     Thbmp := Tbitmap.Create;
     Thbmp.PixelFormat := Pf24bit;
     if Max(G.Width, G.Height) > AThImageSize then
     begin
       if G.Width > G.Height then
-      begin
-        Thbmp.Width := AThImageSize;
-        Thbmp.Height := Round(AThImageSize * (G.Height / G.Width));
-      end else
-      begin
-        Thbmp.Width := Round(AThImageSize * (G.Width / G.Height));
-        Thbmp.Height := AThImageSize;
-      end;
-    end else begin
-      Thbmp.Width := G.Width;
-      Thbmp.Height := G.Height;
-    end;
+        Thbmp.SetSize(AThImageSize, Round(AThImageSize * (G.Height / G.Width)))
+      else
+        Thbmp.SetSize(Round(AThImageSize * (G.Width / G.Height)), AThImageSize);
+
+    end else
+      Thbmp.SetSize(G.Width, G.Height);
+
     try
       LoadImageX(G, Bmp, $FFFFFF);
-      // bmp.assign(G); //+1
     except
       on E: Exception do
       begin
@@ -1138,13 +1128,11 @@ begin
         Result.IsError := True;
         Result.ErrorText := E.message;
 
-        Bmp.PixelFormat := Pf24bit;
-        Bmp.Width := AThImageSize;
-        Bmp.Height := AThImageSize;
+        Bmp.PixelFormat := pf24bit;
+        Bmp.SetSize(AThImageSize, AThImageSize);
         FillRectNoCanvas(Bmp, $FFFFFF);
         DrawIconEx(Bmp.Canvas.Handle, 70, 70, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 16, 16, 0, 0, DI_NORMAL);
-        Thbmp.Height := 100;
-        Thbmp.Width := 100;
+        Thbmp.SetSize(100, 100);
       end;
     end;
     F(G);
@@ -1169,18 +1157,16 @@ begin
         EventLog(':GetImageIDW() throw exception: ' + E.message);
         Result.IsError := True;
         Result.ErrorText := E.message;
-        Thbmp.Width := Result.Jpeg.Width;
-        Thbmp.Height := Result.Jpeg.Height;
+        Thbmp.SetSize(Result.Jpeg.Width, Result.Jpeg.Height);
         FillRectNoCanvas(Thbmp, $0);
       end;
     end;
     Imth := BitmapToString(Thbmp);
-    Thbmp.Free;
+    F(Thbmp);
     if OnlyImTh and not UseFileNameScanning then
     begin
       Result.ImTh := Imth;
-    end
-    else
+    end else
     begin
       Result := GetImageIDTh(Imth);
       if (Result.Count = 0) and UseFileNameScanning then

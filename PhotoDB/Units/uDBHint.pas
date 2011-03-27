@@ -80,8 +80,7 @@ begin
         Height := (Rect.Bottom - Rect.Top) + 6;
       end;
   end;
-  FBitmap.Width := Width;
-  FBitmap.Height := Height;
+  FBitmap.SetSize(Width, Height);
   Left := Rect.Left;
   Top := Rect.Top;
   FreeRegion;

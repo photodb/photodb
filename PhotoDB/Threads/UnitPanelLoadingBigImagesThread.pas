@@ -148,8 +148,7 @@ begin
               W := Fbit.Width;
               H := Fbit.Height;
               ProportionalSize(FPictureSize, FPictureSize, W, H);
-              TempBitmap.Width := W;
-              TempBitmap.Height := H;
+              TempBitmap.SetSize(W, H);
               DoResize(W, H, Fbit, TempBitmap);
               F(FBit);
 

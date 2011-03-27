@@ -102,8 +102,7 @@ begin
       FB1 := TBitmap.Create;
       try
         FB1.PixelFormat := pf24bit;
-        FB1.Width := ThSizePropertyPreview;
-        FB1.Height := ThSizePropertyPreview;
+        FB1.SetSize(ThSizePropertyPreview, ThSizePropertyPreview);
 
         if Graphic.Width > Graphic.Height then
         begin

@@ -503,6 +503,7 @@ begin
     CommentMemo.Cursor := CrDefault;
     CommentMemo.PopupMenu := nil;
     WorkQuery := GetQuery;
+    ReadOnlyQuery(WorkQuery);
     try
       SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE ID=' + Inttostr(ID));
       WorkQuery.Active := True;

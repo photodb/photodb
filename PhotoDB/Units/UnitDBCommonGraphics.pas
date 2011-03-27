@@ -15,6 +15,8 @@ type
     function InnerBitmap: TBitmap;
   end;
 
+  TDrawTextAsyncProcedure = procedure(Bitmap: TBitmap; Rct: TRect; Text: string) of object;
+
 const
   PSDTransparent = True;
   // Image processiong options
@@ -56,7 +58,7 @@ function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 procedure SetIconToPictureFromPath(Picture: TPicture; IconPath: string);
 procedure AddIconToListFromPath(ImageList: TImageList; IconPath: string);
 procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer; Text: string; AAngle: Integer; Color: TColor;
-  Transparent: Byte);
+  Transparent: Byte; FontName: string; SyncCallBack: TDrawTextAsyncProcedure);
 procedure DrawText32Bit(Bitmap32: TBitmap; Text: string; Font: TFont; ARect: TRect; DrawTextOptions: Cardinal);
 procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
 procedure DrawShadowToImage(Dest32, Src: TBitmap; Transparenty: Byte = 0);
@@ -127,8 +129,7 @@ begin
   BitRound := TBitmap.Create;
   try
     BitRound.PixelFormat := pf24Bit;
-    BitRound.Width := Dest32.Width;
-    BitRound.Height := Dest32.Height;
+    BitRound.SetSize(Dest32.Width, Dest32.Height);
     BitRound.Canvas.Brush.Color := clWhite;
     BitRound.Canvas.Pen.Color := clWhite;
     BitRound.Canvas.Rectangle(0, 0, Dest32.Width, Dest32.Height);
@@ -171,7 +172,7 @@ begin
     end;
 
   finally
-    BitRound.Free;
+    F(BitRound);
   end;
 end;
 
@@ -201,8 +202,7 @@ begin
   Dest32.PixelFormat := pf32Bit;
   SW := Src.Width;
   SH := Src.Height;
-  Dest32.Width := SW + 4;
-  Dest32.Height := SH + 4;
+  Dest32.SetSize(SW + 4, SH + 4);
   SetLength(PDA, Dest32.Height);
 
   AddrLineD := Integer(Dest32.ScanLine[0]);
@@ -351,7 +351,9 @@ begin
   end;
 end;
 
-procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer; Text : string; AAngle : Integer; Color : TColor; Transparent : Byte);
+procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer;
+  Text : string; AAngle : Integer; Color : TColor; Transparent : Byte; FontName: string;
+  SyncCallBack: TDrawTextAsyncProcedure);
 var
   lf: TLogFont;
   I, J : Integer;
@@ -361,14 +363,32 @@ var
   PS, PD : PARGB;
   R, G, B : Byte;
   L, L1 : Byte;
+  RealAngle: Double;
+  TextHeight, TextWidth: Integer;
+  Dioganal: Integer;
+  Rct: TRect;
+  DX, DY: Integer;
 begin
   if Text = '' then
     Exit;
   Bitmap.PixelFormat := pf24bit;
   Width := Round(Bitmap.Width / XBlocks);
   Height := Round(Bitmap.Height / YBlocks);
-  TextLength := Round(Sqrt(Width * Width + Height * Height));
-  Angle :=  Round(10 * 180 * ArcTan(Height / Width) / PI);
+  TextHeight := 0;
+
+  for I := 1 to 10 do
+  begin
+    Dioganal := Round(Sqrt(Width * Width + Height * Height));
+
+    TextLength := Round(Dioganal * 0.82) - Round(TextHeight * Cos(RealAngle) * Cos(PI / 2 - RealAngle));
+
+    TextWidth := Round(TextLength / (Length(Text) + 1));
+    TextHeight := Round(TextWidth * 1.5);
+  end;
+  RealAngle := PI / 2;
+  if (Width - TextHeight) <> 0 then
+    RealAngle := ArcTan((Height - TextHeight) / (Width - TextHeight));
+  Angle :=  Round(10 * 180 * RealAngle / PI);
 
   FillChar(lf, SizeOf(lf), 0);
   Color := ColorToRGB(Color);
@@ -376,53 +396,64 @@ begin
   G := GetGValue(Color);
   B := GetBValue(Color);
 
-  with lf do begin
-    // Ширина буквы
-    lfWidth := Round(TextLength * 0.9 / Length(Text));
-    // Высота буквы
-    lfHeight := Round(lfWidth * 1.5);
-    // Угол наклона в десятых градуса
-    if AAngle < 0 then
-      lfEscapement := Angle
-    else
-      lfEscapement := AAngle;
-     // Жирность 0..1000, 0 - по умолчанию
-    lfWeight := 1000;
-    // Курсив
-    lfItalic := 0;
-    // Подчеркнут
-    lfUnderline := 0;
-    // Зачеркнут
-    lfStrikeOut := 0;
-    // CharSet
-    lfCharSet := DEFAULT_CHARSET;
-    lfQuality := ANTIALIASED_QUALITY;
-    // Название шрифта
-    StrCopy(lfFaceName, 'Arial');
-  end;
-
   Mask := TBitmap.Create;
   try
-    Mask.PixelFormat := pf24bit;
-    Mask.Width := Bitmap.Width;
-    Mask.Height := Bitmap.Height;
 
+    Mask.PixelFormat := pf24bit;
+    Mask.SetSize(Bitmap.Width, Bitmap.Height);
+
+    GetObject(Mask.Canvas.Font.Handle, SizeOf(TLogFont), @lf);
+    with lf do begin
+      // Ширина буквы
+      lfWidth := TextWidth;
+      // Высота буквы
+      lfHeight := TextHeight;
+      // Угол наклона в десятых градуса
+      if AAngle < 0 then
+        lfEscapement := Angle
+      else
+        lfEscapement := AAngle;
+       // Жирность 0..1000, 0 - по умолчанию
+      lfWeight := 1000;
+      // Курсив
+      lfItalic := 0;
+      // Подчеркнут
+      lfUnderline := 0;
+      // Зачеркнут
+      lfStrikeOut := 0;
+      // CharSet
+      lfCharSet := DEFAULT_CHARSET;
+      lfQuality := ANTIALIASED_QUALITY;
+      // Название шрифта
+      StrCopy(lfFaceName, PChar(FontName));
+    end;
+
+    //white mask
     for I := 0 to Mask.Height - 1 do
     begin
       PS := Mask.ScanLine[I];
       FillChar(PS[0], Mask.Width * 3, $FF);
     end;
 
-    //TODO: thread-safe ?
+    DX := Round(Sin(RealAngle) * TextWidth);
+    DY := Round(Sin(RealAngle) * Sin(RealAngle) * (TextWidth));
+    DX := Round(DX - (TextWidth / 1.7) * Sin((RealAngle)));
+    DY := Round(DX + (TextWidth / 1.7) * Sin((RealAngle)));
+
     Mask.Canvas.Font.Handle := CreateFontIndirect(lf);
     Mask.Canvas.Font.Color := clBlack;
     H := Mask.Canvas.TextHeight(Text);
     for I := 1 to XBlocks do
       for J := 1 to YBlocks do
       begin
-        X := (I - 1) * Width + Round(Width * 0.05);
-        Y := (J - 1) * Height - Round(Height * 0.05);
-        Mask.Canvas.TextOut(X, Y + Height - H, Text);
+        X := (I - 1) * Width;
+        Y := (J - 1) * Height;
+        Rct := Rect(X - DX, Y, X + Width , Y + Height + DY);
+
+        if Assigned(SyncCallBack) then
+          SyncCallBack(Mask, Rct, Text)
+        else
+          Mask.Canvas.TextRect(Rct, Text, [tfBottom, tfSingleLine]);
       end;
 
     for I := 0 to Bitmap.Height - 1 do
@@ -440,7 +471,7 @@ begin
       end;
     end;
   finally
-    Mask.Free;
+    F(Mask);
   end;
 end;
 
@@ -1037,8 +1068,7 @@ begin
   B := GetBValue(BackGroundColor);
   if D.PixelFormat <> pf24bit then
     D.PixelFormat := pf24bit;
-  D.Width := S.Width;
-  D.Height := S.Height;
+  D.SetSize(S.Width, S.Height);
 
   for I := 0 to S.Height - 1 do
   begin
@@ -1132,8 +1162,7 @@ begin
   begin
     Src.PixelFormat := pf24bit;
     Dest.PixelFormat := pf24bit;
-    Dest.Width := Src.Width;
-    Dest.Height := Src.Height;
+    Dest.SetSize(Src.Width, Src.Height);
 
     for I := 0 to Src.Height - 1 do
     begin
@@ -1146,8 +1175,7 @@ begin
   begin
     Src.PixelFormat := pf32bit;
     Dest.PixelFormat := pf32bit;
-    Dest.Width := Src.Width;
-    Dest.Height := Src.Height;
+    Dest.SetSize(Src.Width, Src.Height);
 
     for I := 0 to Src.Height - 1 do
     begin
@@ -1313,8 +1341,7 @@ var
 begin
   S.PixelFormat := pf24bit;
   D.PixelFormat := pf24bit;
-  D.Width := Math.Max(D.Width, X + Width);
-  D.Height :=Math.Max(D.height, Y + Height);
+  D.SetSize(Math.Max(D.Width, X + Width), Math.Max(D.height, Y + Height));
   SW := S.Width;
   Dw := Math.Min(D.Width - X, X + Width);
   Dh := Math.Min(D.Height - y, Y + Height);
@@ -1424,8 +1451,7 @@ begin
     begin
       Image.PixelFormat := pf24bit;
       Image.Assign(Bitmap);
-      Bitmap.Width := Image.Height;
-      Bitmap.Height := Image.Width;
+      Bitmap.SetSize(Image.Height, Image.Width);
       SetLength(PA, Image.Width);
       for I := 0 to Bitmap.Height - 1 do
         PA[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
@@ -1438,8 +1464,7 @@ begin
     end else
     begin
       Image.Assign(Bitmap);
-      Bitmap.Width := Image.Height;
-      Bitmap.Height := Image.Width;
+      Bitmap.SetSize(Image.Height, Image.Width);
       SetLength(PA32, Image.Height);
       for I := 0 to Bitmap.Height - 1 do
         PA32[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
@@ -1470,8 +1495,7 @@ begin
     begin
       Bitmap.PixelFormat := pf24bit;
       Image.Assign(Bitmap);
-      Bitmap.Width := Image.Height;
-      Bitmap.Height := Image.Width;
+      Bitmap.SetSize(Image.Height, Image.Width);
       SetLength(PA, Image.Width);
       for I := 0 to Image.Width - 1 do
         PA[I] := Bitmap.ScanLine[I];
@@ -1484,8 +1508,7 @@ begin
     end else
     begin
       Image.Assign(Bitmap);
-      Bitmap.Width := Image.Height;
-      Bitmap.Height := Image.Width;
+      Bitmap.SetSize(Image.Height, Image.Width);
       SetLength(PA, Image.Width);
       for I := 0 to Image.Width - 1 do
         PA32[I] := Bitmap.ScanLine[I];
@@ -1503,22 +1526,21 @@ end;
 
 procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
 var
- x, y, xi1, yi1, xi2, yi2, xx, yy, lw1 : integer;
- bufw, bufh, outw, outh : integer;
- sumr, sumb, sumg, pixcnt : dword;
- adrIn, adrOut, adrLine0, deltaLine, deltaLine2 : Integer;
+  x, y, xi1, yi1, xi2, yi2, xx, yy, lw1 : integer;
+  bufw, bufh, outw, outh : integer;
+  sumr, sumb, sumg, Pixcnt: Dword;
+  AdrIn, AdrOut, AdrLine0, DeltaLine, DeltaLine2: Integer;
 begin
- {$R-}
- BmpIn.PixelFormat := pf24bit;
- BmpOut.PixelFormat := pf24bit;
- BmpOut.Width := NewWidth;
- BmpOut.Height := NewHeight;
- bufw := BmpIn.Width;
- bufh := BmpIn.Height;
- outw := BmpOut.Width;
- outh := BmpOut.Height;
- adrLine0 := Integer(bmpIn.ScanLine[0]);
- deltaLine := Integer(BmpIn.ScanLine[1]) - adrLine0;
+{$R-}
+  BmpIn.PixelFormat := pf24bit;
+  BmpOut.PixelFormat := pf24bit;
+  BmpOut.SetSize(NewWidth, NewHeight);
+  bufw := BmpIn.Width;
+  bufh := BmpIn.Height;
+  outw := BmpOut.Width;
+  outh := BmpOut.Height;
+  adrLine0 := Integer(bmpIn.ScanLine[0]);
+  deltaLine := Integer(BmpIn.ScanLine[1]) - adrLine0;
  yi2 := 0;
  for y := 0 to outh-1 do
  begin

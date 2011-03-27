@@ -20,8 +20,8 @@ var
 begin
   if Bitmap.PixelFormat <> pf32bit then
     Bitmap.PixelFormat := pf32bit;
-  Bitmap.Width := PNG.Width;
-  Bitmap.Height := PNG.Height;
+
+  Bitmap.SetSize(PNG.Width, PNG.Height);
 
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineSA := Integer(PNG.AlphaScanline[0]);
@@ -59,8 +59,8 @@ var
 begin
   if Bitmap.PixelFormat <> pf24bit then
     Bitmap.PixelFormat := pf24bit;
-  Bitmap.Width := PNG.Width;
-  Bitmap.Height := PNG.Height;
+
+  Bitmap.SetSize(PNG.Width, PNG.Height);
 
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
@@ -98,8 +98,8 @@ begin
   B := GetBValue(BackGroundColor);
   if Bitmap.PixelFormat <> pf24bit then
     Bitmap.PixelFormat := pf24bit;
-  Bitmap.Width := PNG.Width;
-  Bitmap.Height := PNG.Height;
+
+  Bitmap.SetSize(PNG.Width, PNG.Height);
 
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineSA := Integer(PNG.AlphaScanline[0]);

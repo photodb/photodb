@@ -349,9 +349,8 @@ begin
     Bit := TBitmap.Create;
     try
       Bit.PixelFormat := pf1bit;
-      Bit.Width := CurSize;
-      Bit.Height := CurSize;
-      Bit.PixelFormat := Pf4bit;
+      Bit.SetSize(CurSize, CurSize);
+      Bit.PixelFormat := pf4bit;
       AndMask := TBitmap.Create;
       try
         AndMask.Monochrome := True;

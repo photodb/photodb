@@ -6,7 +6,7 @@ uses
   uThreadForm, uImageSource, UnitDBDeclare;
 
 type
-  TViewerForm = class(TThreadForm, IImageSource)
+  TViewerForm = class(TThreadForm)
   private
     FFullScreenNow: Boolean;
     FSlideShowNow: Boolean;

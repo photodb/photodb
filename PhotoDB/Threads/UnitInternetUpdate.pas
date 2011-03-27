@@ -146,6 +146,4 @@ begin
   ShowAvaliableUpdating(NewVersion, Text, URL);
 end;
 
-initialization
-
 end.

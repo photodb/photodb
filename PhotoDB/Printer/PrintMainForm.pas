@@ -368,7 +368,6 @@ begin
   FStatusProgress := CreateProgressBar(StatusBar1, 0);
   FStatusProgress.Hide;
 
-  SaveWindowPos1.Key := RegRoot + 'PrintForm';
   Ico := TIcon.Create;
   try
     Ico.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
@@ -376,6 +375,7 @@ begin
   finally
     F(Ico);
   end;
+  SaveWindowPos1.Key := RegRoot + 'PrintForm';
   SaveWindowPos1.SetPosition;
 end;
 
@@ -870,4 +870,3 @@ PrintFormExists := False;
 Printing := False;
 
 end.
-

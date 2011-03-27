@@ -400,7 +400,7 @@ type
 
     function GetListView : TEasyListview; override;
     function GetFormID : string; override;
-    function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; override;
+    function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
     function GetSearchText: string; override;
     procedure SetSearchText(Value: string); override;
     procedure SetupListView;
@@ -542,7 +542,6 @@ begin
   TW.I.Start('S -> RegisterMainForm');
   FormManager.RegisterMainForm(Self);
 
-  TW.I.Start('S -> initialization_');
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   Caption := ProductName + ' - [' + DBkernel.GetDataBaseName + ']';
 
@@ -2926,6 +2925,7 @@ var
   SelectQuery : TDataSet;
 begin
   SelectQuery := GetQuery;
+  ReadOnlyQuery(SelectQuery);
   try
     if Active then
       Memo2.PopupMenu := nil;
@@ -3239,7 +3239,7 @@ begin
 end;
 
 function TSearchForm.InternalGetImage(FileName: string;
-  Bitmap: TBitmap): Boolean;
+  Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 var
   I : Integer;
   SearchRecord : TDBPopupMenuInfoRecord;
@@ -3254,6 +3254,8 @@ begin
       if ElvMain.Items[I].ImageIndex <> -1 then
         if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
         begin
+          Width := SearchRecord.Width;
+          Height := SearchRecord.Height;
           Bitmap.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Graphic);
           Result := True;
         end;

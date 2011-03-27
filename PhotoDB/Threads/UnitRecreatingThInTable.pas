@@ -222,9 +222,8 @@ begin
                 // fixing image -> deleting it
                 Bmp := TBitmap.Create;
                 try
-                  Bmp.PixelFormat := Pf24bit;
-                  Bmp.Width := ImageOptions.ThSize;
-                  Bmp.Height := ImageOptions.ThSize;
+                  Bmp.PixelFormat := pf24bit;
+                  Bmp.SetSize(ImageOptions.ThSize, ImageOptions.ThSize);
                   FillRectNoCanvas(Bmp, 0);
                   Jpeg := TJpegImage.Create;
                   try

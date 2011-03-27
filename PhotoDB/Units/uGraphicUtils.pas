@@ -124,8 +124,7 @@ var
   Y : Integer;
   XAr: array of Integer;
 begin
-  D.Width := 100;
-  D.Height := 100;
+  D.SetSize(100, 100);
   Sw := S.Width / Width;
   Sh := S.Height / Height;
   SetLength(Xp, S.Height);

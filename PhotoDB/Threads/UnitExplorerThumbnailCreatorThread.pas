@@ -57,8 +57,7 @@ begin
     TempBitmap := TBitmap.Create;
     try
       TempBitmap.PixelFormat := pf32Bit;
-      TempBitmap.Width := ThSizeExplorerPreview + 4;
-      TempBitmap.Height := ThSizeExplorerPreview + 4;
+      TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
       FillTransparentColor(TempBitmap, clBtnFace);
 
       Info.Image := TJPEGImage.Create;

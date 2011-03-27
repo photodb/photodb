@@ -316,6 +316,9 @@ begin
   Selected := Item.Selected;
   Tag := Item.Tag;
   PassTag := Item.PassTag;
+  Width := Item.Width;
+  Height := Item.Height;
+  IsCurrent := False;
   if MoveImage then
   begin
     F(Image);

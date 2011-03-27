@@ -204,6 +204,4 @@ begin
   Result := 'Activation';
 end;
 
-initialization
-
 end.

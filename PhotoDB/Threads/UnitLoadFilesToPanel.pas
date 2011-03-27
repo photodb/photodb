@@ -239,8 +239,7 @@ begin
           FBit.PixelFormat := pf24bit;
           FBit.Canvas.Brush.Color := clWindow;
           FBit.Canvas.Pen.Color := clWindow;
-          FBit.Width := FPictureSize;
-          FBit.Height := FPictureSize;
+          FBit.SetSize(FPictureSize, FPictureSize);
           if Fbyid then
             GetInfoByFileNameOrID(Ffiles[0], Fids[I], I, Graphic)
           else

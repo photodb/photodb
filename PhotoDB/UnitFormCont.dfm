@@ -59,6 +59,7 @@ object FormCont: TFormCont
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object GroupBox1: TGroupBox
         Left = 8
@@ -121,6 +122,7 @@ object FormCont: TFormCont
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ExCopyLink: TWebLink
         Left = 9
@@ -139,6 +141,7 @@ object FormCont: TFormCont
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object WlResize: TWebLink
         Left = 8
@@ -157,6 +160,7 @@ object FormCont: TFormCont
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
     end
     object TwWindowsPos: TTwButton

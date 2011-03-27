@@ -154,6 +154,7 @@ object PrintForm: TPrintForm
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
     end
     object LvMain: TEasyListview
@@ -326,6 +327,7 @@ object PrintForm: TPrintForm
         FFFF07FFFFFF01FFFFFF00FFFFFF008FFFFFC003FFFFE001FFFFF000FFFFF800
         FFFFF000FFFFF000FFFFF000FFFFF800FFFFF801FFFFFC03FFFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object ZoomOutLink: TWebLink
       Left = 8
@@ -382,6 +384,7 @@ object PrintForm: TPrintForm
         FFFF83FFFFFF81FFFFFF80FFFFFF804FFFFFC001FFFFE001FFFFF000FFFFF800
         FFFFF800FFFFF800FFFFF800FFFFF800FFFFFC01FFFFFE03FFFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object FullSizeLink: TWebLink
       Left = 8
@@ -438,6 +441,7 @@ object PrintForm: TPrintForm
         FFFF03FFFFFF01FFFFFF00FFFFFF8087FFFFC003FFFFE001FFFFF000FFFFF800
         FFFFF000FFFFF000FFFFF000FFFFF000FFFFF800FFFFFC01FFFFFE07FFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object FitToSizeLink: TWebLink
       Left = 6
@@ -494,6 +498,7 @@ object PrintForm: TPrintForm
         FFFF03FFFFFF01FFFFFF00FFFFFF8087FFFFC003FFFFE001FFFFF000FFFFF800
         FFFFF000FFFFF000FFFFF000FFFFF000FFFFF800FFFFFC01FFFFFE07FFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object CbPageNumber: TComboBox
       Left = 8

@@ -20,6 +20,7 @@ type
     procedure CheckThreadPriority; override;
   public
     constructor Create(AOwnerForm: TThreadForm; AState: TGUID);
+    destructor Destroy; override;
     procedure StartMultiThreadWork;
     property Mode: Integer read FMode write FMode;
     property SyncEvent: Integer read FSyncEvent write FSyncEvent;
@@ -106,17 +107,19 @@ begin;
         //remove all avaliable thread from pool
         FThreads.Assign(FAvaliableThreadList);
         FAvaliableThreadList.Clear;
+
+        for I := 0 to FThreads.Count - 1 do
+        begin
+          TMultiCPUThread(FThreads[I]).FMode := 0;
+          TMultiCPUThread(FThreads[I]).Priority := tpTimeCritical;
+        end;
       finally
         FSync.Leave;
       end;
 
       //call thread to terminate
       for I := 0 to FThreads.Count - 1 do
-      begin
-        TMultiCPUThread(FThreads[I]).FMode := 0;
-        TMultiCPUThread(FThreads[I]).Priority := tpTimeCritical;
         SetEvent(TMultiCPUThread(FThreads[I]).FSyncEvent);
-      end;
 
       //add thread to wait list
       for I := 0 to FThreads.Count - 1 do
@@ -151,21 +154,26 @@ end;
 function TThreadPoolCustom.GetAvaliableThread(Sender: TMultiCPUThread): TMultiCPUThread;
 begin
   Result := nil;
-  if FTerminating then
-    Exit;
 
-  ThreadsCheck(Sender);
+  while Result = nil do
+  begin
+    if FTerminating then
+      Exit;
 
-  FSync.Enter;
-  try
-    if FAvaliableThreadList.Count > 0 then
-    begin
-      Result := FAvaliableThreadList[0];
-      FAvaliableThreadList.Remove(Result);
-      FBusyThreadList.Add(Result);
+    ThreadsCheck(Sender);
+
+    FSync.Enter;
+    try
+      if FAvaliableThreadList.Count > 0 then
+      begin
+        Result := FAvaliableThreadList[0];
+        Result.WorkingInProgress := True;
+        FAvaliableThreadList.Remove(Result);
+        FBusyThreadList.Add(Result);
+      end;
+    finally
+      FSync.Leave;
     end;
-  finally
-    FSync.Leave;
   end;
 end;
 
@@ -269,7 +277,7 @@ begin
       FSync.Leave;
     end;
     if ThreadsCount > 0 then
-      WaitForMultipleObjects(ThreadsCount, @ThreadHandles[0], False, INFINITE);
+      WaitForMultipleObjects(ThreadsCount, @ThreadHandles[0], False, 1000);
 
     TW.I.Start('WaitForMultipleObjects END');
   end;
@@ -292,8 +300,14 @@ end;
 constructor TMultiCPUThread.Create(AOwnerForm: TThreadForm; AState: TGUID);
 begin
   inherited Create(AOwnerForm, AState);
+  FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
   FWorkingInProgress := False;
   FMode := 0;
+end;
+
+destructor TMultiCPUThread.Destroy;
+begin
+  inherited;
 end;
 
 procedure TMultiCPUThread.DoMultiProcessorWork;
@@ -311,7 +325,7 @@ begin
             Exit;
 
           TW.I.Start('UnRegisterSubThread: ' + IntToStr(FEvent));
-          if (GOM <> nil) and GOM.IsObj(ParentThread) then
+          if GOM.IsObj(ParentThread) then
             ParentThread.UnRegisterSubThread(Self);
         except
           on E: Exception do
@@ -337,7 +351,6 @@ procedure TMultiCPUThread.StartMultiThreadWork;
 begin
   Priority := tpIdle;
   FEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
-  FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
   TW.I.Start('CreateEvent: ' + IntToStr(FEvent));
   try
     DoMultiProcessorWork;
@@ -358,3 +371,4 @@ finalization
  F(MultiThreadManagers);
 
 end.
+

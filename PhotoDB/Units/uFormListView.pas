@@ -13,10 +13,10 @@ type
     function IsSelectedVisible : Boolean;
     procedure CreateParams(var Params: TCreateParams); override;
     { IImageSource }
-    function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
-    function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; virtual;
+    function GetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean;
+    function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; virtual;
   public
-    function GetFilePreviw(FileName : string; Bitmap : TBitmap) : Boolean; virtual;
+    function GetFilePreviw(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; virtual;
   end;
 
 implementation
@@ -24,9 +24,9 @@ implementation
 { TListViewForm }
 
 function TListViewForm.GetFilePreviw(FileName: string;
-  Bitmap: TBitmap): Boolean;
+  Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 begin
-  Result := GetImage(FileName, Bitmap);
+  Result := GetImage(FileName, Bitmap, Width, Height);
 end;
 
 function TListViewForm.GetListView: TEasyListview;
@@ -34,12 +34,12 @@ begin
   Result := nil;
 end;
 
-function TListViewForm.GetImage(FileName: string; Bitmap: TBitmap): Boolean;
+function TListViewForm.GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 begin
-  Result := InternalGetImage(FileName, Bitmap);
+  Result := InternalGetImage(FileName, Bitmap, Width, Height);
 end;
 
-function TListViewForm.InternalGetImage(FileName: string; Bitmap: TBitmap): Boolean;
+function TListViewForm.InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 begin
   Result := False;
 end;

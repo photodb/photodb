@@ -175,7 +175,7 @@ type
     { Protected declarations }
     function GetFormID : string; override;
     function GetListView : TEasyListview; override;
-    function InternalGetImage(FileName : string; Bitmap : TBitmap) : Boolean; override;
+    function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
   public
     { Public declarations }
     WindowID: TGUID;
@@ -1904,7 +1904,7 @@ begin
   end;
 end;
 
-function TFormCont.InternalGetImage(FileName: string; Bitmap: TBitmap): Boolean;
+function TFormCont.InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 var
   I: Integer;
 begin
@@ -1916,6 +1916,8 @@ begin
     begin
       if FBitmapImageList[I].IsBitmap then
       begin
+        Width := Data[I].Width;
+        Height := Data[I].Height;
         Bitmap.Assign(FBitmapImageList[I].Graphic);
         Result := True;
       end;

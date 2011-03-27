@@ -96,8 +96,7 @@ begin
     Exit;
   if BeginImage is TIcon then
   begin
-    ResultImage.Width := BeginImage.Width;
-    ResultImage.Height := BeginImage.Height;
+    ResultImage.SetSize(BeginImage.Width, BeginImage.Height);
     ResultImage.Canvas.Draw(0, 0, BeginImage);
   end else
     ResultImage.Assign(BeginImage);

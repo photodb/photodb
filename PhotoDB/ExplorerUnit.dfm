@@ -270,6 +270,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object ShellLink: TWebLink
           Left = 5
@@ -288,6 +289,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object RenameLink: TWebLink
           Left = 5
@@ -306,6 +308,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object RefreshLink: TWebLink
           Left = 5
@@ -324,6 +327,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object PropertiesLink: TWebLink
           Left = 5
@@ -342,6 +346,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object PrintLink: TWebLink
           Left = 5
@@ -360,6 +365,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object MyPicturesLink: TWebLink
           Left = 5
@@ -379,6 +385,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object MyDocumentsLink: TWebLink
           Left = 5
@@ -398,6 +405,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object MyComputerLink: TWebLink
           Left = 5
@@ -417,6 +425,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object MoveToLink: TWebLink
           Left = 5
@@ -435,6 +444,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object ImageEditorLink: TWebLink
           Left = 5
@@ -453,6 +463,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object DesktopLink: TWebLink
           Left = 5
@@ -472,6 +483,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object DeleteLink: TWebLink
           Left = 5
@@ -490,6 +502,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object CopyToLink: TWebLink
           Left = 5
@@ -508,6 +521,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
         object AddLink: TWebLink
           Left = 5
@@ -526,6 +540,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
       end
     end

@@ -186,8 +186,7 @@ begin
         W := FBit.Width;
         H := FBit.Height;
         ProportionalSize(PictureSize, PictureSize, W, H);
-        TempBitmap.Width := W;
-        TempBitmap.Height := H;
+        TempBitmap.SetSize(W, H);
         DoResize(W, H, FBit, TempBitmap);
         ApplyRotate(TempBitmap, Rotation);
         BitmapParam := TempBitmap;

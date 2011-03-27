@@ -119,6 +119,8 @@
     <translate name="Add filename suffix" value="Добавлять суффикс к имени файла" />
     <translate name="Error writing data on disk: %s." value="Ошибка записи данных на диск: %s." />
     <translate name="Watermark Options" value="Настнойки водяного знака" />
+	<translate name="Please, choose a valid directory!" value="Пожалуйста, выберите существующую директорию!" />
+    <translate name="processed" value="обработка" />
   </scope>
   <scope name="Password">
     <translate name="Password" value="Пароль" />
@@ -245,6 +247,14 @@
     <translate name="Zoom out" value="Уменьшить" />
     <translate name="Go to search window" value="Перейти в окно поиска" />
     <translate name="Stop" value="Прервать" />
+    <translate name="Query in collection..." value="Получение информации из БД..." />
+    <translate name="Reading directory" value="Чтение директории" />
+    <translate name="Loading thumbnails" value="Загрузка предпросмотров" />
+    <translate name="Loading files" value="Загрузка файлов" />
+    <translate name="Loading images" value="Загрузка изображений" />
+    <translate name="Loading directories" value="Загрузка директорий" />
+    <translate name="Loading info" value="Загрузка информации" />	
+    <translate name="Initialization" value="Инициализация" />	
     <translate name="New directory" value="Новая директория" />
     <translate name="Unable to create directory %s!" value="Невозможно создать директорию %s!" />
     <translate name="Directory &quot;%s&quot; not found!" value="Директория &quot;%s&quot; не найдена!" />	
@@ -1839,5 +1849,14 @@
   <scope name="Hint">
 	<translate name="Image size: %d x %d" value="Размер изображения: %d x %d"/>
 	<translate name="File size: %s" value="Размер файла: %s"/>
+  </scope>
+  <scope name="WatermarkOptions">
+	<translate name="Watermark options" value="Водяной знак"/>
+	<translate name="Watermark text" value="Текст"/>
+	<translate name="Sample text" value="Пример"/>
+	<translate name="Blocks horizontally" value="Блоки по горизонтали"/>
+	<translate name="Blocks vertically" value="Блоки по вертикали"/>
+	<translate name="Text color" value="Цвет текста"/>
+	<translate name="Transparency" value="Прозрачность"/>
   </scope>  
 </language>

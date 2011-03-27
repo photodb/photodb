@@ -3,11 +3,11 @@ object FormStringPromt: TFormStringPromt
   Top = 178
   BorderStyle = bsSizeToolWin
   Caption = 'FormStringPromt'
-  ClientHeight = 101
+  ClientHeight = 111
   ClientWidth = 255
   Color = clBtnFace
-  Constraints.MaxHeight = 135
-  Constraints.MinHeight = 135
+  Constraints.MaxHeight = 145
+  Constraints.MinHeight = 145
   Constraints.MinWidth = 200
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,23 +19,22 @@ object FormStringPromt: TFormStringPromt
   OnCreate = FormCreate
   DesignSize = (
     255
-    101)
+    111)
   PixelsPerInch = 96
   TextHeight = 13
   object LbInfo: TLabel
     Left = 8
     Top = 8
     Width = 238
-    Height = 25
+    Height = 37
     Anchors = [akLeft, akTop, akRight]
     AutoSize = False
     Caption = 'Info'
     WordWrap = True
-    ExplicitWidth = 209
   end
   object EdString: TWatermarkedEdit
     Left = 8
-    Top = 40
+    Top = 51
     Width = 238
     Height = 21
     Anchors = [akLeft, akTop, akRight]
@@ -45,7 +44,7 @@ object FormStringPromt: TFormStringPromt
   end
   object BtnOK: TButton
     Left = 172
-    Top = 68
+    Top = 78
     Width = 75
     Height = 25
     Anchors = [akTop, akRight]
@@ -54,8 +53,8 @@ object FormStringPromt: TFormStringPromt
     OnClick = BtnOKClick
   end
   object BtnCancel: TButton
-    Left = 92
-    Top = 68
+    Left = 91
+    Top = 78
     Width = 75
     Height = 25
     Anchors = [akTop, akRight]

@@ -340,8 +340,7 @@ begin
   DX := MaxW / (Width - FSelCount * (ImagePadding - 1));
   DY := MaxH / (Height  - FSelCount * (ImagePadding - 1));
 
-  ResultImage.Width := Width;
-  ResultImage.Height := Height;
+  ResultImage.SetSize(Width, Height);
   FillTransparentColor(ResultImage, ClBlack, 0);
 
   N := 0;
@@ -476,8 +475,7 @@ begin
     TempImage.Canvas.Font := Font;
     DrawText(TempImage.Canvas.Handle, PChar(Caption), Length(Caption), R, DrawTextOpt or DT_CALCRECT);
 
-    TempImage.Width := Max(MaxW, R.Right + 3);
-    TempImage.Height := Max(MaxH, R.Bottom) + 5 * 2;
+    TempImage.SetSize(Max(MaxW, R.Right + 3), Max(MaxH, R.Bottom) + 5 * 2);
     FillTransparentColor(TempImage, ClBlack, 1);
     SelectionRect := Rect(0, 0, TempImage.Width, TempImage.Height);
 
@@ -548,8 +546,7 @@ begin
 
     DImageList.Clear;
 
-    DImageList.Height := TempImage.Height;
-    DImageList.Width := TempImage.Width;
+    DImageList.SetSize(TempImage.Width, TempImage.Height);
     DImageList.Add(TempImage, nil);
   finally
     TempImage.Free;

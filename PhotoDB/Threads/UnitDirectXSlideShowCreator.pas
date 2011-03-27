@@ -215,8 +215,7 @@ begin
           try
             ScreenImage.Canvas.Pen.Color:=0;
             ScreenImage.Canvas.Brush.Color:=0;
-            ScreenImage.Width:=Screen.Width;
-            ScreenImage.Height:=Screen.Height;
+            ScreenImage.SetSize(Screen.Width, Screen.Height);
             if LoadingPicture then
             begin
               W := Image.Width;
@@ -238,8 +237,7 @@ begin
                     TempImage := TBitmap.Create;
                     try
                       TempImage.PixelFormat:=pf24bit;
-                      TempImage.Width := W;
-                      TempImage.Height := H;
+                      TempImage.SetSize(W, H);
                       SmoothResize(W, H, Image, TempImage);
                       ThreadDraw(TempImage, ScreenImage, Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2);
                     finally

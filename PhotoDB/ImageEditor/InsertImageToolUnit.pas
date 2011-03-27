@@ -305,14 +305,12 @@ begin
     RectBitmap := TBitmap.Create;
     try
       RectBitmap.PixelFormat := pf24bit;
-      RectBitmap.Width := AWidth;
-      RectBitmap.Height := AHeight;
+      RectBitmap.SetSize(AWidth, AHeight);
       RectBitmap.Canvas.CopyRect(Rect(0, 0, AWidth, AHeight), Bitmap.Canvas, DrawRect);
       TempBitmap := TBitmap.Create;
       try
         TempBitmap.PixelFormat := pf24bit;
-        TempBitmap.Width := AWidth;
-        TempBitmap.Height := AHeight;
+        TempBitmap.SetSize(AWidth, AHeight);
         TempBitmap.Canvas.StretchDraw(Rect(0, 0, AWidth, AHeight), Image);
         if RectBitmap.Width * RectBitmap.Height = 0 then
           Exit;

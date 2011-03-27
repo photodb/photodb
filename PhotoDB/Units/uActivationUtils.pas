@@ -55,7 +55,7 @@ begin
   Result := RegRoot + 'Activation';
 end;
 
-procedure GetPeripheralDiskIdentifiers(List: TStrings);
+(*procedure GetPeripheralDiskIdentifiers(List: TStrings);
 var
   Reg: TRegistry;
   DiskList,
@@ -111,7 +111,33 @@ begin
   finally
     F(Reg);
   end;
-end;
+end;*)
+
+function FindVolumeSerial(const Drive : string) : string;
+var
+   VolumeSerialNumber : DWORD;
+   MaximumComponentLength : DWORD;
+   FileSystemFlags : DWORD;
+   SerialNumber : string;
+begin
+   Result:='';
+
+   GetVolumeInformation(
+        PChar(Drive),
+        nil,
+        0,
+        @VolumeSerialNumber,
+        MaximumComponentLength,
+        FileSystemFlags,
+        nil,
+        0);
+
+   SerialNumber :=
+         IntToHex(HiWord(VolumeSerialNumber), 4) +
+         ' - ' +
+         IntToHex(LoWord(VolumeSerialNumber), 4) ;
+   Result := SerialNumber;
+end; (*FindVolumeSerial*)
 
 function GetProcStringID: string;
 var
@@ -122,21 +148,9 @@ begin
 end;
 
 function GetSystemHardwareString: string;
-var
-  DiskList: TStrings;
-  I: Integer;
 begin
-  Result := '';
-  DiskList := TStringList.Create;
-  try
-    GetPeripheralDiskIdentifiers(DiskList);
-    for I := 0 to DiskList.Count - 1 do
-      Result := Result + DiskList[I];
-
-    Result := Result + GetProcStringID;
-  finally
-    F(DiskList);
-  end;
+  Result := FindVolumeSerial(Copy(ParamStr(0), 1, Length('c:\')));
+  Result := Result + GetProcStringID;
 end;
 
 function GenerateActivationKey(ApplicationCode: string; FullVersion: Boolean): string;

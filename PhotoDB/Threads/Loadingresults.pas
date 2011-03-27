@@ -680,7 +680,6 @@ begin
     if not FSearchParams.IsEstimate then
       ForwardOnlyQuery(FWorkQuery);
 
-    TADOQuery(FWorkQuery).LockType := ltReadOnly;
     QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '''', ' ', [rfReplaceAll]);
     QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '\', ' ', [rfReplaceAll]);
     QueryParams.ApplyToDS(FWorkQuery);

@@ -260,8 +260,7 @@ begin
   // Create intermediate image to hold horizontal zoom
   Work := TBitmap.Create;
   try
-    Work.Height := SrcHeight;
-    Work.Width := DstWidth;
+    Work.SetSize(DstWidth, SrcHeight);
     // xscale := DstWidth / SrcWidth;
     // yscale := DstHeight / SrcHeight;
     // Improvement suggested by David Ullrich:

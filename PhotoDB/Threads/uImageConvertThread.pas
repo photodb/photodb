@@ -16,11 +16,14 @@ type
   private
     { Private declarations }
     FData: TDBPopupMenuInfoRecord;
-    FProcessingParams : TProcessingParams;
-    FDialogResult : Integer;
-    FEndProcessing : Boolean;
-    FErrorMessage : string;
-    BitmapParam : TBitmap;
+    FProcessingParams: TProcessingParams;
+    FDialogResult: Integer;
+    FEndProcessing: Boolean;
+    FErrorMessage: string;
+    BitmapParam: TBitmap;
+    FStringParam: string;
+    OriginalWidth, OriginalHeight : Integer;
+    FRect: TRect;
     procedure ShowWriteError;
     procedure OnEnd;
     procedure NotifyDB;
@@ -29,6 +32,8 @@ type
     procedure Execute; override;
   public
     constructor Create(AOwnerForm: TThreadForm; AState : TGUID; AData : TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
+    procedure AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect; Text: string);
+    procedure SyncDrawCallBack;
   end;
 
 implementation
@@ -36,6 +41,15 @@ implementation
 uses UnitSizeResizerForm;
 
 { TImageConvertThread }
+
+procedure TImageConvertThread.AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect;
+  Text: string);
+begin
+  BitmapParam := Bitmap;
+  FRect := Rct;
+  FStringParam := Text;
+  Synchronize(SyncDrawCallBack);
+end;
 
 constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState : TGUID; AData: TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
 begin
@@ -48,11 +62,11 @@ procedure TImageConvertThread.Execute;
 var
   Graphic, NewGraphic : TGraphic;
   GraphicClass, NewGraphicClass : TGraphicClass;
-  Password : string;
+  Password, Ext : string;
   FileName : string;
   Original : TBitmap;
   ExifData: TExifData;
-  W, H, Width, Height : Integer;
+  W, H, Width, Height: Integer;
   Crypted : Boolean;
   MS, MD : TMemoryStream;
   FS : TFileStream;
@@ -119,6 +133,13 @@ var
     end;
   end;
 
+  function TrimLeftString(S : string; Count: Integer) : string;
+  begin
+    Result := S;
+    if Length(S) > Count then
+      Result := Copy(S, 1, Count);
+  end;
+
 const
   MODE_GDI_PLUS_CRYPT = 0;
   MODE_GDI_PLUS       = 1;
@@ -127,13 +148,39 @@ const
 
   procedure SaveFile(Mode : Integer);
   var
-    Bitmap : TBitmap;
     W, H : Integer;
+    RetryCounter: Integer;
+
+    procedure UpdatePreviewWindow;
+    var
+      Bitmap : TBitmap;
+    begin
+      Bitmap := TBitmap.Create;
+      try
+        Bitmap.Assign(NewGraphic);
+        BitmapParam := TBitmap.Create;
+        try
+          W := Bitmap.Width;
+          H := Bitmap.Height;
+          ProportionalSize(FProcessingParams.PreviewOptions.PreviewWidth,
+            FProcessingParams.PreviewOptions.PreviewHeight, W, H);
+          DoResize(W, H, Bitmap, BitmapParam);
+          FStringParam := FData.FileName;
+          if SynchronizeEx(UpdatePreview) then
+            BitmapParam := nil;
+        finally
+          F(BitmapParam);
+        end;
+      finally
+        F(Bitmap);
+      end;
+    end;
+
   begin
     if AnsiLowerCase(FData.FileName) = AnsiLowerCase(FileName) then
       TLockFiles.Instance.AddLockedFile(FileName, 10000);
     try
-
+      RetryCounter := 0;
       repeat
         try
           SetLastError(0);
@@ -148,7 +195,7 @@ const
                   MD.Seek(0, soFromBeginning);
                   CryptStream(MD, FS, Password, CRYPT_OPTIONS_SAVE_CRC, FileName);
                 finally
-                  FS.Free;
+                  F(FS);
                 end;
               end;
 
@@ -171,30 +218,13 @@ const
 
                 if Password <> '' then
                   CryptGraphicFileV2(FileName, Password, CRYPT_OPTIONS_SAVE_CRC);
+
               end;
 
             MODE_PREVIEW:
-              begin
-                Bitmap := TBitmap.Create;
-                try
-                  Bitmap.Assign(NewGraphic);
-                  BitmapParam := TBitmap.Create;
-                  try
-                    W := Bitmap.Width;
-                    H := Bitmap.Height;
-                    ProportionalSize(FProcessingParams.PreviewOptions.PreviewWidth,
-                      FProcessingParams.PreviewOptions.PreviewHeight, W, H);
-                    DoResize(W, H, Bitmap, BitmapParam);
-                      if SynchronizeEx(UpdatePreview) then
-                        BitmapParam := nil;
-                  finally
-                    F(BitmapParam);
-                  end;
-                finally
-                  F(Bitmap);
-                end;
-              end;
+              //do nothing - preview is updated automatically
           end;
+          UpdatePreviewWindow;
 
           if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) and (GetLastError <> 87) then
             raise Exception.Create('Error code = ' + IntToStr(GetLastError));
@@ -202,9 +232,15 @@ const
         except
           on e : Exception do
           begin
-
             if not GOM.IsObj(ThreadForm) then
                Exit;
+
+            Inc(RetryCounter);
+            if RetryCounter < 5 then
+            begin
+              Sleep(100);
+              Continue;
+            end;
 
             FErrorMessage := e.Message;
             Synchronize(ShowWriteError);
@@ -255,13 +291,15 @@ begin
     else
       NewGraphicClass := FProcessingParams.GraphicClass;
 
-    FileName := IncludeTrailingPathDelimiter(FProcessingParams.WorkDirectory);
-    FileName := FileName + GetFileNameWithoutExt(FData.FileName) + FProcessingParams.Preffix;
-
     if (NewGraphicClass = GraphicClass) then
-      FileName := FileName + ExtractFileExt(FData.FileName)
+      Ext := ExtractFileExt(FData.FileName)
     else
-      FileName := FileName + '.' + GraphicExtension(NewGraphicClass);
+      Ext := '.' + GraphicExtension(NewGraphicClass);
+
+    FileName := IncludeTrailingPathDelimiter(FProcessingParams.WorkDirectory);
+    FileName := FileName + TrimLeftString(GetFileNameWithoutExt(FData.FileName) + FProcessingParams.Preffix, 255 - Length(Ext));
+
+    FileName := FileName + Ext;
 
     //if only rotate and JPEG image -> rotate only with GDI+
     InitGDIPlus;
@@ -325,6 +363,9 @@ begin
 
       Original := TBitmap.Create;
       try
+        OriginalWidth := Graphic.Width;
+        OriginalHeight := Graphic.Height;
+
         if FProcessingParams.PreviewOptions.GeneratePreview then
           JPEGScale(Graphic, FProcessingParams.PreviewOptions.PreviewWidth,
             FProcessingParams.PreviewOptions.PreviewHeight);
@@ -340,8 +381,8 @@ begin
             Height := FProcessingParams.Height;
           end else
           begin
-            Width := Round(FProcessingParams.PercentResize * Original.Width / 100);
-            Height := Round(FProcessingParams.PercentResize * Original.Height / 100);
+            Width := Round(FProcessingParams.PercentResize * OriginalWidth / 100);
+            Height := Round(FProcessingParams.PercentResize * OriginalHeight / 100);
           end;
 
           if FProcessingParams.SaveAspectRation then
@@ -381,10 +422,15 @@ begin
             FProcessingParams.WatermarkOptions.BlockCountY,
             FProcessingParams.WatermarkOptions.Text, -1,
             FProcessingParams.WatermarkOptions.Color,
-            FProcessingParams.WatermarkOptions.Transparenty);
+            FProcessingParams.WatermarkOptions.Transparenty,
+            FProcessingParams.WatermarkOptions.FontName,
+            AsyncDrawCallBack);
 
         if not CheckThread then
           Exit;
+
+        OriginalWidth := Original.Width;
+        OriginalHeight := Original.Height;
 
         //save
         NewGraphic := NewGraphicClass.Create;
@@ -437,9 +483,14 @@ begin
   FDialogResult := Application.MessageBox(PWideChar(Format(TA('Error writing data on disk: %s.'), [FErrorMessage])), PWideChar(PWideChar(TA('Error'))), MB_ICONERROR or MB_ABORTRETRYIGNORE);
 end;
 
+procedure TImageConvertThread.SyncDrawCallBack;
+begin
+  BitmapParam.Canvas.TextRect(FRect, FStringParam, [tfBottom, tfSingleLine]);
+end;
+
 procedure TImageConvertThread.UpdatePreview;
 begin
-  TFormSizeResizer(ThreadForm).UpdatePreview(BitmapParam);
+  TFormSizeResizer(ThreadForm).UpdatePreview(BitmapParam, FStringParam, OriginalWidth, OriginalHeight);
 end;
 
 end.

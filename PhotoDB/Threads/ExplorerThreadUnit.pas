@@ -207,7 +207,7 @@ var
   var
     I : Integer;
   begin
-    ShowInfo(L('DB Query...'), 1, 0);
+    ShowInfo(L('Query in collection...'), 1, 0);
     if (GetDBType = DB_TYPE_MDB) and not FolderView then
       SetSQL(FQuery, 'Select * FROM $DB$ WHERE FolderCRC = ' + Inttostr(Integer(Crc)) +
           ' AND (FFileName LIKE :FolderA) AND NOT (FFileName LIKE :FolderB)');
@@ -361,6 +361,7 @@ begin
 
         DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
         FQuery := GetQuery;
+        ReadOnlyQuery(FQuery);
         try
           TW.I.Start('IsPrivateDirectory');
           if IsPrivateDirectory then
@@ -855,9 +856,11 @@ begin
   if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam);
-    //if TempBitmap <> nil then
-    FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage)
-  end;
+
+    if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage) then
+      F(TempBitmap);
+  end else
+    F(TempBitmap);
 end;
 
 procedure TExplorerThread.ReplaceInfoInExplorer;
@@ -955,6 +958,7 @@ begin
           DBFolder := IncludeTrailingBackslash(DBFolder);
 
           Query := GetQuery(False);
+          ReadOnlyQuery(Query);
 
           if ExplorerInfo.ShowPrivate then
             SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
@@ -1339,18 +1343,16 @@ end;
 
 procedure TExplorerThread.MakeTempBitmap;
 begin
-  TempBitmap := Tbitmap.Create;
-  TempBitmap.PixelFormat := Pf24Bit;
-  TempBitmap.Width := ExplorerInfo.PictureSize;
-  TempBitmap.Height := ExplorerInfo.PictureSize;
+  TempBitmap := TBitmap.Create;
+  TempBitmap.PixelFormat := pf24Bit;
+  TempBitmap.SetSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
 end;
 
 procedure TExplorerThread.MakeTempBitmapSmall;
 begin
   TempBitmap := Tbitmap.Create;
-  TempBitmap.PixelFormat := Pf24Bit;
-  TempBitmap.Width := FIcoSize;
-  TempBitmap.Height := FIcoSize;
+  TempBitmap.PixelFormat := pf24Bit;
+  TempBitmap.SetSize(FIcoSize, FIcoSize);
   FillRectNocanvas(TempBitmap, ClWindow);
 end;
 
@@ -1690,6 +1692,7 @@ begin
     UpdateImageRecord(FSender, Info.FileName, Info.ID);
 
   FQuery := GetQuery;
+  ReadOnlyQuery(FQuery);
   UnProcessPath(FFolder);
   if FolderView then
     FFolder := ExtractFileName(FFolder);
@@ -1976,8 +1979,7 @@ begin
       W := FBit.Width;
       H := FBit.Height;
       ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
-      TempBitmap.Width := W;
-      TempBitmap.Height := H;
+      TempBitmap.SetSize(W, H);
       DoResize(W, H, FBit, TempBitmap);
     finally
       F(FBit);
@@ -2070,6 +2072,8 @@ begin
       end;
       if not ((Info.PassTag = 0) and Info.Crypted) then
       begin
+        Info.Width := Graphic.Width;
+        Info.Height := Graphic.Height;
         TempBit := TBitmap.create;
         try
           TempBit.PixelFormat := pf24bit;
@@ -2090,7 +2094,7 @@ begin
             DoResize(W, H, TempBit, TempBitmap);
           end;
         finally
-          TempBit.Free;
+          F(TempBit);
         end;
       end else
       begin

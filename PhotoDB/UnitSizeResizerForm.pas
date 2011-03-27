@@ -8,9 +8,13 @@ uses
   JPEG, GIFImage, GraphicEx, UnitDBkernel, GraphicCrypt, uAssociations,
   AcDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
   UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
-  DmProgress, uW7TaskBar, PngImage, uGOM, uWatermarkOptions, uImageSource,
-  UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView,
-  uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime;
+  DmProgress, uW7TaskBar, PngImage, uWatermarkOptions, uImageSource,
+  UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
+  uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime, ImButton, uLogger,
+  WebLink, SaveWindowPos;
+
+const
+  Settings_ConvertForm = 'Convert settings';
 
 type
   TFormSizeResizer = class(TThreadForm)
@@ -40,6 +44,10 @@ type
     BtChangeDirectory: TButton;
     BtWatermarkOptions: TButton;
     TmrPreview: TTimer;
+    WlBack: TWebLink;
+    WlNext: TWebLink;
+    PbImage: TPaintBox;
+    SwpMain: TSaveWindowPos;
     procedure BtCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtJPEGOptionsClick(Sender: TObject);
@@ -57,12 +65,20 @@ type
     procedure CbWatermarkClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtWatermarkOptionsClick(Sender: TObject);
-    procedure FormPaint(Sender: TObject);
     procedure DdRotateClick(Sender: TObject);
     procedure DdRotateChange(Sender: TObject);
     procedure CbAspectRatioClick(Sender: TObject);
     procedure TmrPreviewTimer(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure EdImageNameEnter(Sender: TObject);
+    procedure WlBackClick(Sender: TObject);
+    procedure WlNextClick(Sender: TObject);
+    procedure PbImagePaint(Sender: TObject);
+    procedure PbImageContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
   private
     { Private declarations }
     FData: TDBPopupMenuInfo;
@@ -73,20 +89,24 @@ type
     FOwner: IImageSource;
     FIgnoreInput: Boolean;
     FCreatingResize: Boolean;
+    FCurrentPreviewPosition: Integer;
+    FRealWidth: Integer;
+    FRealHeight: Integer;
     procedure LoadLanguage;
     procedure CheckValidForm;
   protected
     function GetFormID: string; override;
     procedure FillProcessingParams;
     procedure CreateParams(var Params: TCreateParams); override;
-    procedure CheckPreviewSize;
+    procedure ReadSettings;
+    procedure UpdateNavigation;
   public
     { Public declarations }
     destructor Destroy; override;
     procedure SetInfo(Owner: IImageSource; List: TDBPopupMenuInfo);
     procedure ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing: Boolean);
     procedure GeneratePreview;
-    procedure UpdatePreview(PreviewImage: TBitmap);
+    procedure UpdatePreview(PreviewImage: TBitmap; FileName: string; RealWidth, RealHeight: Integer);
     procedure DefaultResize;
     procedure DefaultConvert;
     procedure DefaultExport;
@@ -103,7 +123,8 @@ procedure RotateImages(Owner: IImageSource; List: TDBPopupMenuInfo; BeginRotate 
 
 implementation
 
-uses UnitJPEGOptions, UImageConvertThread;
+uses UnitJPEGOptions, UImageConvertThread, FormManegerUnit, DBCMenu;
+
 {$R *.dfm}
 
 procedure ResizeImages(Owner: IImageSource; List: TDBPopupMenuInfo);
@@ -161,9 +182,9 @@ const
   var
     S: string;
   begin
-    Result := '_';
+    Result := '_' + L('processed');
     if CbResize.Checked then
-      S := DdResizeAction.Text;
+      Result := '_' + AnsiLowerCase(StringReplace(DdResizeAction.Text, ' ', '_', [rfReplaceAll]));
   end;
 
 begin
@@ -210,8 +231,7 @@ begin
       FProcessingParams.Width := Min(Max(StrToIntDef(EdWidth.Text, 100), 5), 5000);
       FProcessingParams.Height := Min(Max(StrToIntDef(EdHeight.Text, 100), 5), 5000);
     end;
-  end
-  else
+  end else
   begin
     FProcessingParams.PercentResize := 100;
     case DdResizeAction.ItemIndex - 5 of
@@ -231,14 +251,14 @@ begin
   end;
 
   FProcessingParams.AddWatermark := CbWatermark.Checked;
-  // TODO:
   if CbWatermark.Checked then
   begin
-    FProcessingParams.WatermarkOptions.Text := L('Test copyright');
-    FProcessingParams.WatermarkOptions.Color := ClWhite;
-    FProcessingParams.WatermarkOptions.Transparenty := 25;
-    FProcessingParams.WatermarkOptions.BlockCountX := 3;
-    FProcessingParams.WatermarkOptions.BlockCountY := 3;
+    FProcessingParams.WatermarkOptions.Text := Settings.ReadString(Settings_Watermark, 'Text', L('Sample text'));
+    FProcessingParams.WatermarkOptions.Color := Settings.ReadInteger(Settings_Watermark, 'Color', clWhite);
+    FProcessingParams.WatermarkOptions.Transparenty := Settings.ReadInteger(Settings_Watermark, 'Transparency', 25);
+    FProcessingParams.WatermarkOptions.BlockCountX := Settings.ReadInteger(Settings_Watermark, 'BlocksX', 3);
+    FProcessingParams.WatermarkOptions.BlockCountY := Settings.ReadInteger(Settings_Watermark, 'BlocksY', 3);
+    FProcessingParams.WatermarkOptions.FontName := Settings.ReadString(Settings_Watermark, 'Font', 'Arial');
   end;
 
   FProcessingParams.SaveAspectRation := CbAspectRatio.Checked;
@@ -252,7 +272,6 @@ end;
 
 procedure TFormSizeResizer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  GOM.RemoveObj(Self);
   Release;
 end;
 
@@ -265,8 +284,11 @@ begin
   FCreatingResize := True;
   FIgnoreInput := False;
   FPreviewImage := nil;
+  DoubleBuffered := True;
+  FormManager.RegisterMainForm(Self);
   LoadLanguage;
   FData := TDBPopupMenuInfo.Create;
+  FCurrentPreviewPosition := 0;
 
   for I := 0 to TFileAssociations.Instance.Count - 1 do
   begin
@@ -282,58 +304,46 @@ begin
   DdConvert.ItemIndex := 0;
   DdRotate.ItemIndex := 0;
   DdResizeAction.ItemIndex := 0;
+  ReadSettings;
+  SetStretchBltMode(PbImage.Canvas.Handle, STRETCH_HALFTONE);
+  FRealWidth := 0;
+  FRealHeight := 0;
 
   FW7TaskBar := CreateTaskBarInstance;
-  GOM.AddObj(Self);
+
+  SwpMain.Key := RegRoot + 'ConvertForm';
+  SwpMain.SetPosition;
 end;
 
 procedure TFormSizeResizer.FormDestroy(Sender: TObject);
 begin
   F(FData);
+  F(FPreviewImage);
+  FormManager.UnRegisterMainForm(Self);
+  SwpMain.SavePosition;
 end;
 
-procedure TFormSizeResizer.FormPaint(Sender: TObject);
-var
-  R: TRect;
-  W, H : Integer;
+procedure TFormSizeResizer.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
 begin
-  if FPreviewImage <> nil then
-  begin
-    R := Rect(5, LbInfo.Top + LbInfo.Height + 5, ClientWidth - 5, PrbMain.Top - 5);
-    W := R.Right - R.Left;
-    H := R.Bottom - R.Top;
-    Canvas.Draw(R.Left + W div 2 - FPreviewImage.Width div 2, R.Top + H div 2 - FPreviewImage.Height div 2, FPreviewImage);
-  end;
+  if Key = VK_ESCAPE then
+    Close;
+  if Key = VK_RETURN then
+    BtOkClick(Sender);
 end;
 
-procedure TFormSizeResizer.CheckPreviewSize;
-var
-  R: TRect;
-  W, H, NewW, NewH: Integer;
-  Bitmap: TBitmap;
+procedure TFormSizeResizer.FormMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
-  R := Rect(5, LbInfo.Top + LbInfo.Height + 5, ClientWidth - 5, PrbMain.Top - 5);
-  if FPreviewImage <> nil then
+  if PrbMain.Visible then
+    Exit;
+  if PtInRect(PbImage.ClientRect, Self.ScreenToClient(Mouse.Cursorpos)) then
   begin
-    W := R.Right - R.Left;
-    H := R.Bottom - R.Top;
-
-    if (W < FPreviewImage.Width) or (H < FPreviewImage.Height) then
-    begin
-      Bitmap := TBitmap.Create;
-      try
-        NewW := FPreviewImage.Width;
-        NewH := FPreviewImage.Height;
-        ProportionalSizeA(W, H, NewW, NewH);
-        DoResize(NewW, NewH, FPreviewImage, Bitmap);
-        F(FPreviewImage);
-        FPreviewImage := Bitmap;
-        Bitmap := nil;
-        Exit;
-      finally
-        F(Bitmap);
-      end;
-    end;
+    if WheelDelta < 0 then
+      WlNextClick(Self)
+    else
+      WlBackClick(Self);
+    Handled := True;
   end;
 end;
 
@@ -344,8 +354,6 @@ begin
     FCreatingResize := False;
     Exit;
   end;
-  CheckPreviewSize;
-  Repaint;
   GeneratePreview;
 end;
 
@@ -354,6 +362,7 @@ begin
   if not FIgnoreInput then
   begin
     TmrPreview.Enabled := False;
+    TmrPreview.Interval := 200;
     TmrPreview.Enabled := True;
   end;
 end;
@@ -390,6 +399,13 @@ begin
     Exit;
   end;
 
+  CreateDirA(EdSavePath.Text);
+  if not DirectoryExistsSafe(EdSavePath.Text) then
+  begin
+    MessageBoxDB(Handle, L('Please, choose a valid directory!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
+
   for I := 0 to FData.Count - 1 do
     ProcessedFilesCollection.AddFile(FData[I].FileName);
 
@@ -400,6 +416,12 @@ begin
   PrbMain.Top := BtCancel.Top - BtCancel.Height - 5;
   PrbMain.Show;
   EdImageName.Top := PrbMain.Top - EdImageName.Height - 5;
+  WlNext.Enabled := False;
+  WlBack.Enabled := False;
+  WlNext.Top := EdImageName.Top - 2;
+  WlBack.Top := EdImageName.Top - 2;
+  PbImage.Height := EdImageName.Top - 5 - PbImage.Top;
+
   BtCancel.Left := PrbMain.Left + PrbMain.Width - BtCancel.Width;
   ClientHeight := ClientHeight - PnOptions.Height - 5;
 
@@ -420,21 +442,41 @@ begin
   FProcessingParams.PreviewOptions.GeneratePreview := False;
   for I := 1 to Min(FData.Count, ProcessorCount) do
     TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams);
-
 end;
 
 procedure TFormSizeResizer.SetInfo(Owner: IImageSource; List: TDBPopupMenuInfo);
 var
   I: Integer;
+  FWidth, FHeight: Integer;
 begin
   FOwner := Owner;
 
   for I := 0 to List.Count - 1 do
     if List[I].Selected then
+    begin
       FData.Add(List[I].Copy);
+      if List[I].IsCurrent then
+        FData.Position := FData.Count - 1;
+    end;
 
+  FCurrentPreviewPosition := FData.Position;
   if FData.Count > 0 then
-    EdSavePath.Text := ExtractFileDir(FData[0].FileName);
+    EdSavePath.Text := ExtractFileDir(FData[FCurrentPreviewPosition].FileName);
+
+  UpdateNavigation;
+  if FPreviewImage = nil then
+  begin
+    FPreviewImage := TBitmap.Create;
+    if FOwner.GetImage(FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then
+    begin
+      FRealWidth := FWidth;
+      FRealHeight := FHeight;
+      PbImage.Repaint;
+    end else
+      F(FPreviewImage);
+
+  end;
+  GeneratePreview;
 end;
 
 procedure TFormSizeResizer.ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing: Boolean);
@@ -443,6 +485,7 @@ begin
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);
 
+  FillProcessingParams;
   if (FData.Count > 0) and not EndProcessing then
     TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams)
   else
@@ -452,6 +495,7 @@ end;
 procedure TFormSizeResizer.TmrPreviewTimer(Sender: TObject);
 var
   R: TRect;
+  FWidth, FHeight: Integer;
 begin
   TmrPreview.Enabled := False;
   if PrbMain.Visible then
@@ -465,34 +509,88 @@ begin
   FProcessingParams.PreviewOptions.GeneratePreview := True;
   FProcessingParams.PreviewOptions.PreviewWidth := R.Right - R.Left;
   FProcessingParams.PreviewOptions.PreviewHeight := R.Bottom - R.Top;
-  TImageConvertThread.Create(Self, StateID, FData[0].Copy, FProcessingParams);
+  TImageConvertThread.Create(Self, StateID, FData[FCurrentPreviewPosition].Copy, FProcessingParams);
   LsMain.Show;
 
   if FPreviewImage = nil then
   begin
     FPreviewImage := TBitmap.Create;
-    if not FOwner.GetImage(FData[0].FileName, FPreviewImage) then
+    if FOwner.GetImage(FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then
+    begin
+      FRealWidth := FWidth;
+      FRealHeight := FHeight;
+      PbImage.Repaint;
+    end else
       F(FPreviewImage);
 
-    CheckPreviewSize;
   end;
 end;
 
-procedure TFormSizeResizer.UpdatePreview(PreviewImage: TBitmap);
+procedure TFormSizeResizer.UpdateNavigation;
+begin
+  WlBack.Enabled := FCurrentPreviewPosition > 0;
+  WlNext.Enabled := FCurrentPreviewPosition < FData.Count - 1;
+end;
+
+procedure TFormSizeResizer.UpdatePreview(PreviewImage: TBitmap; FileName: string; RealWidth, RealHeight: Integer);
 begin
   LsMain.Hide;
+  FRealWidth := RealWidth;
+  FRealHeight := RealHeight;
+  EdImageName.Text := ExtractFileName(FileName);
   F(FPreviewImage);
   FPreviewImage := PreviewImage;
-  Refresh;
+  PbImage.Refresh;
+end;
+
+procedure TFormSizeResizer.WlBackClick(Sender: TObject);
+begin
+  if not WlBack.Enabled then
+    Exit;
+  Dec(FCurrentPreviewPosition);
+  UpdateNavigation;
+  if Sender = WlBack then
+    TmrPreviewTimer(Sender)
+  else
+  begin
+    TmrPreview.Enabled := False;
+    TmrPreview.Interval := 100;
+    TmrPreview.Enabled := True;
+    LsMain.Show;
+  end;
+end;
+
+procedure TFormSizeResizer.WlNextClick(Sender: TObject);
+begin
+  if not WlNext.Enabled then
+    Exit;
+  Inc(FCurrentPreviewPosition);
+  UpdateNavigation;
+  if Sender = WlNext then
+    TmrPreviewTimer(Sender)
+  else
+  begin
+    TmrPreview.Enabled := False;
+    TmrPreview.Interval := 100;
+    TmrPreview.Enabled := True;
+    LsMain.Show;
+  end;
 end;
 
 procedure TFormSizeResizer.BtSaveAsDefaultClick(Sender: TObject);
 begin
-  // TODO: DBKernel.WriteInteger('Convert options','Width',StrToIntDef(Edit1.text,1024));
+  Settings.WriteInteger(Settings_ConvertForm, 'Convert', DdConvert.ItemIndex);
+  Settings.WriteInteger(Settings_ConvertForm, 'Rotate', DdRotate.ItemIndex);
+  Settings.WriteInteger(Settings_ConvertForm, 'Resize', DdResizeAction.ItemIndex);
+  Settings.WriteString(Settings_ConvertForm, 'ResizeW', EdWidth.Text);
+  Settings.WriteString(Settings_ConvertForm, 'ResizeH', Edheight.Text);
+  Settings.WriteBool(Settings_ConvertForm, 'SaveAspectRatio', CbAspectRatio.Checked);
+  Settings.WriteBool(Settings_ConvertForm, 'AddSuffix', CbAddSuffix.Checked);
 end;
 
 procedure TFormSizeResizer.BtWatermarkOptionsClick(Sender: TObject);
 begin
+  ShowWatermarkOptions;
   CheckValidForm;
 end;
 
@@ -504,6 +602,7 @@ end;
 procedure TFormSizeResizer.CbConvertClick(Sender: TObject);
 begin
   DdConvert.Enabled := CbConvert.Checked;
+  DdConvertChange(Sender);
   CheckValidForm;
 end;
 
@@ -643,11 +742,11 @@ begin
     CbConvert.Caption := L('Convert');
 
     CbResize.Caption := L('Resize');
-    DdResizeAction.Items.Add(L('Small (640x480)'));
-    DdResizeAction.Items.Add(L('Medium (800x600)'));
     DdResizeAction.Items.Add(L('Big (1024x768)'));
-    DdResizeAction.Items.Add(L('Thumbnails (128x124)'));
+    DdResizeAction.Items.Add(L('Medium (800x600)'));
+    DdResizeAction.Items.Add(L('Small (640x480)'));
     DdResizeAction.Items.Add(L('Pocket PC (240õ320)'));
+    DdResizeAction.Items.Add(L('Thumbnails (128x124)'));
     DdResizeAction.Items.Add(Format(L('Size: %d%%'), [25]));
     DdResizeAction.Items.Add(Format(L('Size: %d%%'), [50]));
     DdResizeAction.Items.Add(Format(L('Size: %d%%'), [75]));
@@ -676,10 +775,90 @@ begin
   end;
 end;
 
+procedure TFormSizeResizer.PbImageContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  Info: TDBPopupMenuInfo;
+  I: Integer;
+begin
+  if PrbMain.Visible then
+    Exit;
+  Info := TDBPopupMenuInfo.Create;
+  try
+    Info.Assign(FData);
+    Info.Position := FCurrentPreviewPosition;
+    for I := 0 to Info.Count - 1 do
+      Info[I].Selected := I = FCurrentPreviewPosition;
+
+    Info.AttrExists := False;
+    TDBPopupMenu.Instance.Execute(Self, PbImage.ClientToScreen(MousePos).X, PbImage.ClientToScreen(MousePos).Y, Info);
+  finally
+    F(Info);
+  end;
+end;
+
+procedure TFormSizeResizer.PbImagePaint(Sender: TObject);
+var
+  R: TRect;
+  DisplayImage, ShadowImage: TBitmap;
+  W, H, X, Y, Width, Height : Integer;
+begin
+  if (FPreviewImage <> nil) and (FRealWidth + FRealHeight > 0) then
+  begin
+    R := Rect(0, 0, PbImage.Width, PbImage.Height);
+    W := R.Right - R.Left - 3;
+    H := R.Bottom - R.Top - 3;
+    Width := FPreviewImage.Width;
+    Height := FPreviewImage.Height;
+    ProportionalSizeA(W, H, Width, Height);
+    ProportionalSize(FRealWidth, FRealHeight, Width, Height);
+    X := R.Left + W div 2 - Width div 2;
+    Y := R.Top + H div 2 - Height div 2;
+    R := Rect(X, Y, X + Width, Y + Height);
+
+    DisplayImage := TBitmap.Create;
+    ShadowImage := TBitmap.Create;
+    try
+      ShadowImage.PixelFormat := pf32Bit;
+      DisplayImage.PixelFormat := pf24Bit;
+      DrawShadowToImage(ShadowImage, FPreviewImage);
+      DisplayImage.SetSize(ShadowImage.Width, ShadowImage.Height);
+      LoadBMPImage32bit(ShadowImage, DisplayImage, clBtnFace);
+      PbImage.Canvas.StretchDraw(R, DisplayImage);
+    finally
+      F(DisplayImage);
+      F(ShadowImage);
+    end;
+  end;
+end;
+
+procedure TFormSizeResizer.ReadSettings;
+begin
+  try
+    DdConvert.ItemIndex := Settings.ReadInteger(Settings_ConvertForm, 'Convert', 0);
+    DdRotate.ItemIndex := Settings.ReadInteger(Settings_ConvertForm, 'Rotate', 0);
+
+    EdWidth.Text := IntToStr(Settings.ReadInteger(Settings_ConvertForm, 'ResizeW', 1024));
+    EdHeight.Text := IntToStr(Settings.ReadInteger(Settings_ConvertForm, 'ResizeH', 768));
+    DdResizeAction.ItemIndex := Settings.ReadInteger(Settings_ConvertForm, 'Resize', 0);
+
+    CbAspectRatio.Checked := Settings.ReadBool(Settings_ConvertForm, 'SaveAspectRatio', True);
+    CbAddSuffix.Checked := Settings.ReadBool(Settings_ConvertForm, 'AddSuffix', True);
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
+end;
+
 procedure TFormSizeResizer.EdHeightKeyPress(Sender: TObject; var Key: Char);
 begin
   if not CharInSet(Key, ['0' .. '9']) then
     Key := #0;
+end;
+
+procedure TFormSizeResizer.EdImageNameEnter(Sender: TObject);
+begin
+  DefocusControl(TWinControl(Sender), True);
 end;
 
 procedure TFormSizeResizer.BtChangeDirectoryClick(Sender: TObject);

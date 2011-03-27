@@ -188,8 +188,6 @@ end;
 
 initialization
 
-  SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
-  SetThreadPriority(MainThreadID, THREAD_PRIORITY_TIME_CRITICAL);
   if not GetParamStrDBBool('/NoLogo') then
   begin
     TW.I.Start('TSplashThread');

@@ -28,9 +28,21 @@ var
 { TExplorerThreadPool }
 
 procedure TExplorerThreadPool.AddNewThread(Thread: TMultiCPUThread);
+var
+  UpdaterInfo: TUpdaterInfo;
+  ExplorerViewInfo: TExplorerViewInfo;
 begin
+  UpdaterInfo := TExplorerThread(Thread).FUpdaterInfo;
+  UpdaterInfo.IsUpdater := False;
+  UpdaterInfo.UpdateDB := False;
+  UpdaterInfo.ProcHelpAfterUpdate := nil;
+  UpdaterInfo.NewFileItem := False;
+  UpdaterInfo.FileInfo := nil;
+  ExplorerViewInfo := TExplorerThread(Thread).ExplorerInfo;
+  ExplorerViewInfo.View := -1;
+  ExplorerViewInfo.PictureSize := 0;
   if (Thread <> nil) and (AvaliableThreadsCount + BusyThreadsCount < Min(MAX_THREADS_USE, ProcessorCount + 1)) then
-    AddAvaliableThread(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, TExplorerThread(Thread).ExplorerInfo, TExplorerForm(Thread.ThreadForm), TExplorerThread(Thread).FUpdaterInfo, Thread.StateID));
+    AddAvaliableThread(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, ExplorerViewInfo, nil, UpdaterInfo, Thread.StateID));
 end;
 
 procedure TExplorerThreadPool.ExtractImage(Sender : TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID : TGUID);

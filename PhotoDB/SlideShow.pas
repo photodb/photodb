@@ -25,7 +25,7 @@ type
   end;
 
 type
-  TViewer = class(TViewerForm)
+  TViewer = class(TViewerForm, IImageSource)
     PopupMenu1: TPopupMenu;
     Next1: TMenuItem;
     Previous1: TMenuItem;
@@ -267,7 +267,7 @@ type
     FBImage: TBitmap;
     Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
     constructor Create(AOwner: TComponent); override;
-    function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
+    function GetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean;
     procedure ExecuteDirectoryWithFileOnThread(FileName : String);
     function Execute(Sender: TObject; Info: TDBPopupMenuInfo) : boolean;
     function ExecuteW(Sender: TObject; Info : TDBPopupMenuInfo; LoadBaseFile : String) : boolean;
@@ -1331,6 +1331,7 @@ begin
 
   CurrentInfo.Clear;
   FQuery := GetQuery;
+  ReadOnlyQuery(FQuery);
   try
     for I := 0 to List.Count - 1 do
     begin
@@ -1462,6 +1463,7 @@ var
   FileName : string;
 begin
   DS := GetQuery;
+  ReadOnlyQuery(DS);
   try
     FileName := CurrentInfo[FileNo].FileName;
     SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
@@ -2716,12 +2718,14 @@ begin
   NextSlide;
 end;
 
-function TViewer.GetImage(FileName: string; Bitmap: TBitmap): Boolean;
+function TViewer.GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 begin
   Result := False;
   if AnsiLowerCase(FileName) = AnsiLowerCase(Item.FileName) then
   begin
     Result := True;
+    Width := Item.Width;
+    Height := Item.Height;
     Bitmap.Assign(DrawImage);
   end;
 end;
@@ -3406,6 +3410,6 @@ end;
 
 initialization
 
-Viewer := nil;
+  Viewer := nil;
 
 end.

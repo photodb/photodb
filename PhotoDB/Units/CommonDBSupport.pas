@@ -183,6 +183,7 @@ function NormalizeDBStringLike(S: string): string;
 function TryOpenCDS(DS: TDataSet): Boolean;
 function GetDBViewMode: Boolean;
 procedure ForwardOnlyQuery(DS: TDataSet);
+procedure ReadOnlyQuery(DS: TDataSet);
 
 implementation
 
@@ -192,6 +193,11 @@ procedure ForwardOnlyQuery(DS: TDataSet);
 begin
   TADOQuery(DS).CursorType := ctOpenForwardOnly;
   TADOQuery(DS).CursorLocation := clUseServer;
+  ReadOnlyQuery(DS);
+end;
+
+procedure ReadOnlyQuery(DS: TDataSet);
+begin
   TADOQuery(DS).LockType := ltReadOnly;
 end;
 

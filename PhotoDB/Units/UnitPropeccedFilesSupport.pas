@@ -2,7 +2,7 @@ unit UnitPropeccedFilesSupport;
 
 interface
 
-uses Windows, Classes, win32crc, SysUtils, SyncObjs;
+uses Windows, Classes, win32crc, SysUtils, SyncObjs, uMemory;
 
 type
   TCollectionItem = class
@@ -28,10 +28,20 @@ type
     destructor Destroy; override;
   end;
 
-  var
-    ProcessedFilesCollection : TProcessedFilesCollection;
+function ProcessedFilesCollection: TProcessedFilesCollection;
 
 implementation
+
+var
+  FProcessedFilesCollection : TProcessedFilesCollection = nil;
+
+function ProcessedFilesCollection: TProcessedFilesCollection;
+begin
+  if FProcessedFilesCollection = nil then
+    FProcessedFilesCollection := TProcessedFilesCollection.Create;
+
+  Result := FProcessedFilesCollection;
+end;
 
 { TProcessedFilesCollection }
 
@@ -60,13 +70,9 @@ begin
 end;
 
 destructor TProcessedFilesCollection.Destroy;
-var
-  I : Integer;
 begin
-  for I := 0 to FData.Count - 1 do
-    TCollectionItem(FData[I]).Free;
-  FData.Free;
-  FSync.Free;
+  FreeList(FData);
+  F(FSync);
 end;
 
 function TProcessedFilesCollection.ExistsFile(FileName: String): TCollectionItem;
@@ -106,7 +112,10 @@ begin
       if Item.RefCount > 1 then
         Item.RemoveRef
       else
+      begin
         FData.Remove(Item);
+        F(Item);
+      end;
     end;
   finally
     FSync.Leave;
@@ -131,9 +140,8 @@ begin
 end;
 
 initialization
-  ProcessedFilesCollection := TProcessedFilesCollection.Create;
 
 finalization
-  ProcessedFilesCollection.Free;
+  F(FProcessedFilesCollection);
 
 end.

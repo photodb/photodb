@@ -1896,44 +1896,48 @@ begin
   Delete(Desc,b,e-b+1);
 end;
 
-function MakeNewItem(MenuItem : TMenuItem; ImageList : TImageList; Caption, Icon : string; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer) : TMenuItemW;
+function MakeNewItem(Owner: TComponent; MenuItem : TMenuItem; ImageList : TImageList; Caption, Icon : string; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer) : TMenuItemW;
 var
-  Item : TMenuItemW;
-  Ico : TIcon;
-  Command : string;
+  Item: TMenuItemW;
+  Ico: TIcon;
+  Command: string;
 begin
- Item:=TMenuItemW.Create(nil);
- Item.Caption:=Caption;
- if (Icon<>'') then
- begin
-  if (Length(icon)>1) then
+  Item := TMenuItemW.Create(Owner);
+  Item.Caption := Caption;
+  if (Icon <> '') then
   begin
-   if (icon[2]=':') then
-   begin
-    inc(ImagesCount);
-    {$IFNDEF EXT}
-    Ico:=GetSmallIconByPath(Icon);
-    {$ENDIF EXT}
-    ImageList.AddIcon(Ico);
-    Ico.Free;
-    Item.ImageIndex:=ImageList.Count-1;
-   end else Item.ImageIndex:=StrToIntDef(Icon,-1);
-  end else Item.ImageIndex:=StrToIntDef(Icon,-1);
- end else Item.ImageIndex:=StrToIntDef(Icon,-1);
- Item.OnClick:=OnClick;
- Command:=Script;
- while ValidMenuDescription(Command) do
-   DeleteMenuDescription(Command);
+    if (Length(Icon) > 1) then
+    begin
+      if (Icon[2] = ':') then
+      begin
+        Inc(ImagesCount);
+        Ico := GetSmallIconByPath(Icon);
+        try
+          ImageList.AddIcon(Ico);
+        finally
+          F(Ico);
+        end;
+        Item.ImageIndex := ImageList.Count - 1;
+      end else
+        Item.ImageIndex := StrToIntDef(Icon, -1);
+    end else
+      Item.ImageIndex := StrToIntDef(Icon, -1);
+  end else
+    Item.ImageIndex := StrToIntDef(Icon, -1);
+  Item.OnClick := OnClick;
+  Command := Script;
+  while ValidMenuDescription(Command) do
+    DeleteMenuDescription(Command);
 
- Item.Tag:=GetNamedValueInt(aScript,'$Tag');
- Item.Visible:=GetNamedValueBool(aScript,'$Visible');
- Item.Default:=GetNamedValueBool(aScript,'$Default');
- Item.Enabled:=GetNamedValueBool(aScript,'$Enabled');
- Item.Checked:=GetNamedValueBool(aScript,'$Checked');
+  Item.Tag := GetNamedValueInt(AScript, '$Tag');
+  Item.Visible := GetNamedValueBool(AScript, '$Visible');
+  Item.default := GetNamedValueBool(AScript, '$Default');
+  Item.Enabled := GetNamedValueBool(AScript, '$Enabled');
+  Item.Checked := GetNamedValueBool(AScript, '$Checked');
 
- Item.Script:=Command;
- MenuItem.Add(Item);
- Result:=Item;
+  Item.Script := Command;
+  MenuItem.Add(Item);
+  Result := Item;
 end;
 
 procedure LoadItemVariables(aScript : TScript; Sender : TMenuItem);
@@ -2117,22 +2121,25 @@ begin
      SetNamedValue(aScript,'$Default','false');
      SetNamedValue(aScript,'$Enabled','true');
      SetNamedValue(aScript,'$Checked','false');
-     VirtualItem := TMenuItemW.Create(nil);
-     VirtualItem.TopItem:=MenuItem;
-     ExecuteScript(VirtualItem,aScript,InitScript,ImagesCount,ImageList,OnClick);
-     NewItem:=MakeNewItem(MenuItem,ImageList,Text,Icon,RunScript,aScript,OnClick,ImagesCount);
-     for i:=0 to VirtualItem.Count-1 do
-     begin
-      TempItem:=TMenuItemW.Create(NewItem);
-      TempItem.Caption:=VirtualItem.Items[i].Caption;
-      TempItem.Script:=(VirtualItem.Items[i] as TMenuItemW).Script;
-      TempItem.ImageIndex:=VirtualItem.Items[i].ImageIndex;
-      TempItem.Default:=VirtualItem.Items[i].Default;
-      TempItem.Tag:=VirtualItem.Items[i].Tag;
-      TempItem.OnClick:=VirtualItem.Items[i].OnClick;
-      NewItem.Add(TempItem);
+     VirtualItem := TMenuItemW.Create(MenuItem.Owner);
+     try
+       VirtualItem.TopItem:=MenuItem;
+       ExecuteScript(VirtualItem,aScript,InitScript,ImagesCount,ImageList,OnClick);
+       NewItem:=MakeNewItem(MenuItem.Owner, MenuItem,ImageList,Text,Icon,RunScript,aScript,OnClick,ImagesCount);
+       for i:=0 to VirtualItem.Count-1 do
+       begin
+        TempItem:=TMenuItemW.Create(NewItem);
+        TempItem.Caption:=VirtualItem.Items[i].Caption;
+        TempItem.Script:=(VirtualItem.Items[i] as TMenuItemW).Script;
+        TempItem.ImageIndex:=VirtualItem.Items[i].ImageIndex;
+        TempItem.Default:=VirtualItem.Items[i].Default;
+        TempItem.Tag:=VirtualItem.Items[i].Tag;
+        TempItem.OnClick:=VirtualItem.Items[i].OnClick;
+        NewItem.Add(TempItem);
+       end;
+     finally
+       F(VirtualItem);
      end;
-     VirtualItem.free;
     end;
    end else
    begin

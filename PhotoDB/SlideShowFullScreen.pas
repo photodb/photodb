@@ -242,7 +242,7 @@ end;
 
 initialization
 
-FullScreenView:=nil;
-FloatPanel:=nil;
+FullScreenView := nil;
+FloatPanel := nil;
 
 end.

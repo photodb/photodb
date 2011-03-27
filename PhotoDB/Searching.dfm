@@ -776,6 +776,7 @@ object SearchForm: TSearchForm
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object SortLink: TWebLink
         Left = 8
@@ -795,6 +796,7 @@ object SearchForm: TSearchForm
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ComboBoxSearchGroups: TComboBoxExDB
         Left = 8
@@ -899,6 +901,7 @@ object SearchForm: TSearchForm
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object LsSearchResults: TLoadingSign
         Left = 147

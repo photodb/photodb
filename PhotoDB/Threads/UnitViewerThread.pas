@@ -405,6 +405,7 @@ begin
   try
     FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
     Query := GetQuery;
+    ReadOnlyQuery(Query);
     try
       Query.Active := False;
       SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName))
