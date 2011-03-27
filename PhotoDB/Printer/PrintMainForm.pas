@@ -370,7 +370,7 @@ begin
 
   Ico := TIcon.Create;
   try
-    Ico.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
+    Ico.Handle := LoadIcon(HInstance, 'DOIT');
     WlGeneratePreview.Icon := Ico;
   finally
     F(Ico);

@@ -450,8 +450,8 @@ object UpdateDBForm: TUpdateDBForm
     Height = 16
     Cursor = crHandPoint
     Enabled = False
-    ParentColor = False
     Color = clWhite
+    ParentColor = False
     Text = 'Open Image'
     OnClick = WebLinkOpenImageClick
     ImageIndex = 0
@@ -463,6 +463,7 @@ object UpdateDBForm: TUpdateDBForm
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object WebLinkOpenFolder: TWebLink
     Tag = -1
@@ -472,8 +473,8 @@ object UpdateDBForm: TUpdateDBForm
     Height = 16
     Cursor = crHandPoint
     Enabled = False
-    ParentColor = False
     Color = clWhite
+    ParentColor = False
     Text = 'Open Folder'
     OnClick = WebLinkOpenFolderClick
     ImageIndex = 0
@@ -485,6 +486,7 @@ object UpdateDBForm: TUpdateDBForm
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object ButtonClose: TWebLink
     Tag = -1
@@ -493,8 +495,8 @@ object UpdateDBForm: TUpdateDBForm
     Width = 89
     Height = 16
     Cursor = crHandPoint
-    ParentColor = False
     Color = clWhite
+    ParentColor = False
     Text = 'Close Window'
     OnClick = ButtonCloseClick
     ImageIndex = 0
@@ -506,6 +508,7 @@ object UpdateDBForm: TUpdateDBForm
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object ButtonBreak: TWebLink
     Tag = -1
@@ -514,8 +517,8 @@ object UpdateDBForm: TUpdateDBForm
     Width = 123
     Height = 16
     Cursor = crHandPoint
-    ParentColor = False
     Color = clWhite
+    ParentColor = False
     Text = 'Break adding images!'
     OnClick = ButtonBreakClick
     ImageIndex = 0
@@ -564,6 +567,7 @@ object UpdateDBForm: TUpdateDBForm
       0000F00F0000E0070000C0030000808100008061000080210000801100008801
       0000840100008601000081010000C0030000E0070000F00F0000FFFF0000}
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object ButtonRunStop: TWebLink
     Tag = -1
@@ -572,8 +576,8 @@ object UpdateDBForm: TUpdateDBForm
     Width = 142
     Height = 16
     Cursor = crHandPoint
-    ParentColor = False
     Color = clWhite
+    ParentColor = False
     Text = 'Run\Stop adding prosess'
     OnClick = ButtonRunStopClick
     ImageIndex = 0
@@ -585,6 +589,7 @@ object UpdateDBForm: TUpdateDBForm
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object ShowHistoryLink: TWebLink
     Tag = -1
@@ -593,8 +598,8 @@ object UpdateDBForm: TUpdateDBForm
     Width = 125
     Height = 16
     Cursor = crHandPoint
-    ParentColor = False
     Color = clWhite
+    ParentColor = False
     Text = 'Show history windows'
     OnClick = History1Click
     ImageIndex = 0
@@ -606,6 +611,7 @@ object UpdateDBForm: TUpdateDBForm
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object WebLinkOptions: TWebLink
     Tag = -1
@@ -614,8 +620,8 @@ object UpdateDBForm: TUpdateDBForm
     Width = 57
     Height = 16
     Cursor = crHandPoint
-    ParentColor = False
     Color = clWhite
+    ParentColor = False
     Text = 'Options'
     OnClick = WebLinkOptionsClick
     ImageIndex = 0
@@ -627,6 +633,7 @@ object UpdateDBForm: TUpdateDBForm
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object TwWindowsPos: TTwButton
     Left = 374

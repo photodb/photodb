@@ -1768,14 +1768,14 @@ var
 
   procedure AddIcon(Name : String);
   begin
-    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Ico := LoadIcon(HInstance, PWideChar(Name));
     ImageList_AddIcon(ToolBarImageList.Handle, Ico);
     DestroyIcon(Ico);
   end;
 
   procedure AddDisabledIcon(Name : String);
   begin
-    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Ico := LoadIcon(HInstance, PWideChar(Name));
     ImageList_AddIcon(ToolBarDisabledImageList.Handle, Ico);
     DestroyIcon(Ico);
   end;

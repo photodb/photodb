@@ -38,7 +38,7 @@ cd ..
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe
-"%DCC32%" photodb -D"PHOTODB,LICENCE" -Ebin -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -RResources;"%DELPHI%\Lib" -$W -$D+ -$I+ -$O+ -$Z1 -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" photodb -D"PHOTODB,LICENCE" -Ebin -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$W -$D+ -$I+ -$O+ -$Z1 -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 move photodb.cfg.safe photodb.cfg 
 
 cd ..

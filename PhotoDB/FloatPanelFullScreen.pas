@@ -82,7 +82,7 @@ begin
     for J := 0 to 4 do
     begin
       Icons[I, J] := TIcon.Create;
-      Icons[I, J].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Names[I, J]));
+      Icons[I, J].Handle := LoadIcon(HInstance, PWideChar(Names[I, J]));
     end;
   Imlists[0] := NormalImageList;
   Imlists[1] := HotImageList;

@@ -53,6 +53,10 @@ object OptionsForm: TOptionsForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LblSkipExt: TLabel
         Left = 282
         Top = 121
@@ -163,11 +167,16 @@ object OptionsForm: TOptionsForm
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
     end
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LbDisplayPlacesIn: TLabel
         Left = 223
         Top = 136
@@ -361,6 +370,10 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label15: TLabel
         Left = 6
         Top = 4
@@ -481,11 +494,16 @@ object OptionsForm: TOptionsForm
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
     end
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label23: TLabel
         Left = 3
         Top = 278
@@ -730,6 +748,10 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GbBackup: TGroupBox
         Left = 8
         Top = 247
@@ -1148,12 +1170,17 @@ object OptionsForm: TOptionsForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
+          HightliteImage = False
         end
       end
     end
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LbAddHeight: TLabel
         Left = 173
         Top = 274

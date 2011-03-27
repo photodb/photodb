@@ -209,7 +209,6 @@ begin
   Files.Add(PhotoDBFile);
 
   Files.Add(TFileObject.Create('Kernel.dll',       '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('Icons.dll',        '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('UnInstall.exe',    '%PROGRAM%', ''));
 

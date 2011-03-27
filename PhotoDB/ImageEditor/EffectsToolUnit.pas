@@ -103,8 +103,8 @@ begin
   BaseImage.PixelFormat := pf24bit;
   IcoOK := TIcon.Create;
   IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
+  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
+  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
 
   EffectsChooser := TEasyListview.Create(Self);
   EffectsChooser.Parent := AOwner as TWinControl;

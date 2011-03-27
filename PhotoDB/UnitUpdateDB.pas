@@ -678,7 +678,7 @@ procedure TUpdateDBForm.SetIcon(Link : TWebLink; Name : String);
 var
   Ico : HIcon;
 begin
-  Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+  Ico := LoadIcon(HInstance, PWideChar(Name));
   try
     Link.LoadFromHIcon(Ico);
   finally

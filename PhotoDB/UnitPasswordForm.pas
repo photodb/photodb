@@ -177,7 +177,7 @@ begin
   LoadLanguage;
   Password := '';
   PassIcon := TIcon.Create;
-  PassIcon.Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar('PASSWORD'));
+  PassIcon.Handle := LoadIcon(HInstance, PWideChar('PASSWORD'));
 end;
 
 procedure TPassWordForm.LoadLanguage;

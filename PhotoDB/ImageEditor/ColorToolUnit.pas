@@ -78,8 +78,8 @@ begin
   Align := AlClient;
   IcoOK := TIcon.Create;
   IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
+  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
+  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
 
   ContrastLabel := TStaticText.Create(Self);
 

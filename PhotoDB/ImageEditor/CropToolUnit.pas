@@ -242,7 +242,7 @@ begin
   ComboBoxProp.ItemIndex := 0;
 
   IcoSave := TIcon.Create;
-  IcoSave.Handle := LoadIcon(DBKernel.IconDllInstance, 'SAVETOFILE');
+  IcoSave.Handle := LoadIcon(HInstance, 'SAVETOFILE');
 
   SaveSettingsLink := TWebLink.Create(nil);
   SaveSettingsLink.Parent := AOwner as TWinControl;
@@ -258,8 +258,8 @@ begin
 
   IcoOK := TIcon.Create;
   IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
+  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
+  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := Self;

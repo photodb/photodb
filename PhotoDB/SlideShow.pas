@@ -1504,13 +1504,13 @@ begin
     begin
       FButtons[0].iId := 40001;
       FButtons[0].dwFlags := THBF_ENABLED;
-      FButtons[0].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
+      FButtons[0].hIcon := LoadImage(HInstance, PChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
 	      StringToWideChar(L('Back'), FButtons[0].szTip, 260);
 	    FButtons[0].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
 
 	    FButtons[1].iId := 40002;
 	    FButtons[1].dwFlags := THBF_ENABLED;
-	    FButtons[1].hIcon := LoadImage(DBKernel.IconDllInstance, PChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
+	    FButtons[1].hIcon := LoadImage(HInstance, PChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
 	      StringToWideChar(L('Forward'), FButtons[1].szTip, 260);
 	    FButtons[1].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
       FW7TaskBar.ThumbBarAddButtons(Handle, 2, @FButtons);
@@ -2369,7 +2369,7 @@ begin
   TW.I.Start('LoadIcon');
   for I := 0 to 1 do
     for J := 0 to 22 do
-      Icons[I, J] := LoadImage(DBKernel.IconDllInstance, PWideChar(Names[I, J]), IMAGE_ICON, 16, 16, 0);
+      Icons[I, J] := LoadImage(HInstance, PWideChar(Names[I, J]), IMAGE_ICON, 16, 16, 0);
 
   Imlists[0] := ImageList1;
   Imlists[1] := ImageList2;

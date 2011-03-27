@@ -153,8 +153,8 @@ object FormDBOptions: TFormDBOptions
     Width = 246
     Height = 13
     Cursor = crHandPoint
-    ParentColor = False
     Color = clBtnFace
+    ParentColor = False
     Text = 'To change thumbnail size and quality press this link'
     OnClick = WlChangeImageQualityClick
     ImageIndex = 0
@@ -166,6 +166,7 @@ object FormDBOptions: TFormDBOptions
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object EdPath: TEdit
     Left = 8

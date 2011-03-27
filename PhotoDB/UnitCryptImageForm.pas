@@ -84,7 +84,7 @@ begin
   LoadLanguage;
   FillChiperList;
 
-  FPassIcon := LoadIcon(DBKernel.IconDllInstance, PChar('PASSWORD'));
+  FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
   WblMethod.LoadFromHIcon(FPassIcon);
   DestroyIcon(FPassIcon);
 end;

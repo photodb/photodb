@@ -442,7 +442,7 @@ begin
   WlViewerJPEGOptions.Color := clWindow;
   WblMethod.Color := clWindow;
 
-  FPassIcon := LoadIcon(DBKernel.IconDllInstance, PChar('PASSWORD'));
+  FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
   WblMethod.LoadFromHIcon(FPassIcon);
   DestroyIcon(FPassIcon);
 end;

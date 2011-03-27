@@ -143,9 +143,9 @@ begin
   IcoOK := TIcon.Create;
   IcoCancel := TIcon.Create;
   IcoSave := TIcon.Create;
-  IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
-  IcoSave.Handle := LoadIcon(DBKernel.IconDllInstance, 'SAVETOFILE');
+  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
+  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
+  IcoSave.Handle := LoadIcon(HInstance, 'SAVETOFILE');
 
   SaveSettingsLink := TWebLink.Create(Self);
   SaveSettingsLink.Parent := AOwner as TWinControl;

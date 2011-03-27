@@ -363,67 +363,67 @@ end;
 
 procedure TAIcons.Initialize;
 begin
-  SetLength(FAssociatedIcons,3*4);
+  SetLength(FAssociatedIcons, 3 * 4);
 
-  FAssociatedIcons[0].Ext:='';
-  FindIcon(DBKernel.IconDllInstance,'Directory',16,32,FAssociatedIcons[0].Icon);//GetShellImage(ProgramDir,16);
-  FAssociatedIcons[0].SelfIcon:=true;
-  FAssociatedIcons[0].Size:=16;
+  FAssociatedIcons[0].Ext := '';
+  FindIcon(HInstance, 'Directory', 16, 32, FAssociatedIcons[0].Icon); // GetShellImage(ProgramDir,16);
+  FAssociatedIcons[0].SelfIcon := True;
+  FAssociatedIcons[0].Size := 16;
 
-  FAssociatedIcons[1].Ext:='';
-  FindIcon(DBKernel.IconDllInstance,'DIRECTORY',32,32,FAssociatedIcons[1].Icon);
-  FAssociatedIcons[1].SelfIcon:=true;
-  FAssociatedIcons[1].Size:=32;
+  FAssociatedIcons[1].Ext := '';
+  FindIcon(HInstance, 'DIRECTORY', 32, 32, FAssociatedIcons[1].Icon);
+  FAssociatedIcons[1].SelfIcon := True;
+  FAssociatedIcons[1].Size := 32;
 
-  FAssociatedIcons[2].Ext:='';
-  FindIcon(DBKernel.IconDllInstance,'DIRECTORY',48,32,FAssociatedIcons[2].Icon);
-  FAssociatedIcons[2].SelfIcon:=true;
-  FAssociatedIcons[2].Size:=48;
+  FAssociatedIcons[2].Ext := '';
+  FindIcon(HInstance, 'DIRECTORY', 48, 32, FAssociatedIcons[2].Icon);
+  FAssociatedIcons[2].SelfIcon := True;
+  FAssociatedIcons[2].Size := 48;
 
-  FAssociatedIcons[3].Ext:='.exe';
-  FindIcon(DBKernel.IconDllInstance,'EXEFILE',16,4,FAssociatedIcons[3].Icon);
-  FAssociatedIcons[3].SelfIcon:=true;
-  FAssociatedIcons[3].Size:=16;
+  FAssociatedIcons[3].Ext := '.exe';
+  FindIcon(HInstance, 'EXEFILE', 16, 4, FAssociatedIcons[3].Icon);
+  FAssociatedIcons[3].SelfIcon := True;
+  FAssociatedIcons[3].Size := 16;
 
-  FAssociatedIcons[4].Ext:='.exe';
-  FindIcon(DBKernel.IconDllInstance,'EXEFILE',32,4,FAssociatedIcons[4].Icon);
-  FAssociatedIcons[4].SelfIcon:=true;
-  FAssociatedIcons[4].Size:=32;
+  FAssociatedIcons[4].Ext := '.exe';
+  FindIcon(HInstance, 'EXEFILE', 32, 4, FAssociatedIcons[4].Icon);
+  FAssociatedIcons[4].SelfIcon := True;
+  FAssociatedIcons[4].Size := 32;
 
-  FAssociatedIcons[5].Ext:='.exe';
-  FindIcon(DBKernel.IconDllInstance,'EXEFILE',48,4,FAssociatedIcons[5].Icon);
-  FAssociatedIcons[5].SelfIcon:=true;
-  FAssociatedIcons[5].Size:=48;
+  FAssociatedIcons[5].Ext := '.exe';
+  FindIcon(HInstance, 'EXEFILE', 48, 4, FAssociatedIcons[5].Icon);
+  FAssociatedIcons[5].SelfIcon := True;
+  FAssociatedIcons[5].Size := 48;
 
-  FAssociatedIcons[6].Ext:='.___';
-  FindIcon(DBKernel.IconDllInstance,'SIMPLEFILE',16,4,FAssociatedIcons[6].Icon);
-  FAssociatedIcons[6].SelfIcon:=true;
-  FAssociatedIcons[6].Size:=16;
+  FAssociatedIcons[6].Ext := '.___';
+  FindIcon(HInstance, 'SIMPLEFILE', 16, 4, FAssociatedIcons[6].Icon);
+  FAssociatedIcons[6].SelfIcon := True;
+  FAssociatedIcons[6].Size := 16;
 
-  FAssociatedIcons[7].Ext:='.___';
-  FindIcon(DBKernel.IconDllInstance,'SIMPLEFILE',32,4,FAssociatedIcons[7].Icon);
-  FAssociatedIcons[7].SelfIcon:=true;
-  FAssociatedIcons[7].Size:=32;
+  FAssociatedIcons[7].Ext := '.___';
+  FindIcon(HInstance, 'SIMPLEFILE', 32, 4, FAssociatedIcons[7].Icon);
+  FAssociatedIcons[7].SelfIcon := True;
+  FAssociatedIcons[7].Size := 32;
 
-  FAssociatedIcons[8].Ext:='.___';
-  FindIcon(DBKernel.IconDllInstance,'SIMPLEFILE',48,4,FAssociatedIcons[8].Icon);
-  FAssociatedIcons[8].SelfIcon:=true;
-  FAssociatedIcons[8].Size:=48;
+  FAssociatedIcons[8].Ext := '.___';
+  FindIcon(HInstance, 'SIMPLEFILE', 48, 4, FAssociatedIcons[8].Icon);
+  FAssociatedIcons[8].SelfIcon := True;
+  FAssociatedIcons[8].Size := 48;
 
-  FAssociatedIcons[9].Ext:='.lnk';
-  FindIcon(DBKernel.IconDllInstance,'SIMPLEFILE',16,4,FAssociatedIcons[9].Icon);
-  FAssociatedIcons[9].SelfIcon:=true;
-  FAssociatedIcons[9].Size:=48;
+  FAssociatedIcons[9].Ext := '.lnk';
+  FindIcon(HInstance, 'SIMPLEFILE', 16, 4, FAssociatedIcons[9].Icon);
+  FAssociatedIcons[9].SelfIcon := True;
+  FAssociatedIcons[9].Size := 48;
 
-  FAssociatedIcons[10].Ext:='.lnk';
-  FindIcon(DBKernel.IconDllInstance,'SIMPLEFILE',32,4,FAssociatedIcons[10].Icon);
-  FAssociatedIcons[10].SelfIcon:=true;
-  FAssociatedIcons[10].Size:=32;
+  FAssociatedIcons[10].Ext := '.lnk';
+  FindIcon(HInstance, 'SIMPLEFILE', 32, 4, FAssociatedIcons[10].Icon);
+  FAssociatedIcons[10].SelfIcon := True;
+  FAssociatedIcons[10].Size := 32;
 
-  FAssociatedIcons[11].Ext:='.lnk';
-  FindIcon(DBKernel.IconDllInstance,'SIMPLEFILE',48,4,FAssociatedIcons[11].Icon);;
-  FAssociatedIcons[11].SelfIcon:=true;
-  FAssociatedIcons[11].Size:=16;
+  FAssociatedIcons[11].Ext := '.lnk';
+  FindIcon(HInstance, 'SIMPLEFILE', 48, 4, FAssociatedIcons[11].Icon); ;
+  FAssociatedIcons[11].SelfIcon := True;
+  FAssociatedIcons[11].Size := 16;
 end;
 
 class function TAIcons.Instance: TAIcons;

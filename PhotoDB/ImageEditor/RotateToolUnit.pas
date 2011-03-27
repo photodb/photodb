@@ -108,8 +108,8 @@ begin
   ApplyOnDone := False;
   IcoOK := TIcon.Create;
   IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(DBKernel.IconDllInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(DBKernel.IconDllInstance, 'CANCELACTION');
+  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
+  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
 
   SelectChooseBox := TRadioGroup.Create(AOwner);
   SelectChooseBox.Top := 5;

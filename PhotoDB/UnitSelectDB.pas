@@ -403,8 +403,9 @@ end;
 
 procedure TFormSelectDB.SetDefaultIcon(path : string = '');
 begin
+  //TODO: Check
   if Path = '' then
-    Path := ExtractFilePath(Application.ExeName) + 'Icons.dll,121';
+    Path := Application.ExeName + ',1';
   FDBFile.Icon := Path;
   SetIconImage(Path);
 end;

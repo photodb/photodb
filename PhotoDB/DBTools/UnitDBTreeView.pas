@@ -332,7 +332,7 @@ begin
   TreeView1.Font.Color := clWindowText;
 
   ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(HInstance, 'MAINICON'));
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(DBKernel.IconDllInstance, 'PICTURE'));
+  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(HInstance, 'PICTURE'));
   ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
   ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_EXPLORER + 1]);
   ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_KEY + 1]);
@@ -399,7 +399,7 @@ begin
         begin
           Ico := TIcon.Create;
           try
-            Ico.Handle := LoadIcon(DBKernel.IconDllInstance, 'SLIDE_SHOW');
+            Ico.Handle := LoadIcon(HInstance, 'SLIDE_SHOW');
             B.Canvas.Draw(102 div 2 - Ico.Width div 2, 102 div 2 - Ico.Height div 2, Ico);
           finally
             F(Ico);

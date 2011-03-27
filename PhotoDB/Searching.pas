@@ -547,7 +547,7 @@ begin
 
   TW.I.Start('S -> DoShowSelectInfo');
   WlStartStop.OnClick := DoSearchNow;
-  SearchIcon := LoadImage(DBKernel.IconDllInstance, 'EXPLORER_SEARCH_SMALL', IMAGE_ICON, 16, 16, 0);
+  SearchIcon := LoadImage(HInstance, 'EXPLORER_SEARCH_SMALL', IMAGE_ICON, 16, 16, 0);
   try
     WlStartStop.LoadFromHIcon(SearchIcon);
   finally
@@ -3635,7 +3635,7 @@ var
     if UseSmallIcons then
       Name := Name+ '_SMALL';
 
-    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Ico := LoadIcon(HInstance, PWideChar(Name));
     ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, Ico);
     DestroyIcon(Ico);
   end;
@@ -3646,7 +3646,7 @@ var
   begin
     if UseSmallIcons then
       Name := Name + '_SMALL';
-    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Ico := LoadIcon(HInstance, PWideChar(Name));
     for I := 1 to 9 do
       ImageList_ReplaceIcon(DisabledToolBarImageList.Handle, -1, Ico);
 

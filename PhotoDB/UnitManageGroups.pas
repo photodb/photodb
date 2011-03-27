@@ -505,7 +505,7 @@ var
     if Settings.Readbool('Options', 'UseSmallToolBarButtons', False) then
       name := name + '_SMALL';
 
-    Ico := LoadIcon(DBKernel.IconDllInstance, PWideChar(name));
+    Ico := LoadIcon(HInstance, PWideChar(name));
     ImageList_ReplaceIcon(ToolBarImageList.Handle, -1, Ico);
     DestroyIcon(Ico);
   end;

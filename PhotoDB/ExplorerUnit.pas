@@ -6094,15 +6094,15 @@ begin
 
               case FSelectedInfo.FileType of
                 EXPLORER_ITEM_NETWORK:
-                  FindIcon(DBKernel.IconDllInstance, 'NETWORK', 48, 32, Ico);
+                  FindIcon(HInstance, 'NETWORK', 48, 32, Ico);
                 EXPLORER_ITEM_WORKGROUP:
-                  FindIcon(DBKernel.IconDllInstance, 'WORKGROUP', 48, 32, Ico);
+                  FindIcon(HInstance, 'WORKGROUP', 48, 32, Ico);
                 EXPLORER_ITEM_COMPUTER:
-                  FindIcon(DBKernel.IconDllInstance, 'COMPUTER', 48, 32, Ico);
+                  FindIcon(HInstance, 'COMPUTER', 48, 32, Ico);
                 EXPLORER_ITEM_SHARE:
-                  FindIcon(DBKernel.IconDllInstance, 'SHARE', 48, 32, Ico);
+                  FindIcon(HInstance, 'SHARE', 48, 32, Ico);
                 EXPLORER_ITEM_MYCOMPUTER:
-                  FindIcon(DBKernel.IconDllInstance, 'COMPUTER', 48, 32, Ico);
+                  FindIcon(HInstance, 'COMPUTER', 48, 32, Ico);
               end;
               Ico48 := TIcon48.Create;
               Ico48.Assign(Ico);
@@ -7480,7 +7480,7 @@ var
     if UseSmallIcons then
       Name:=Name + '_SMALL';
 
-    Icon :=  LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Icon :=  LoadIcon(HInstance, PWideChar(Name));
     ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, Icon);
     DestroyIcon(Icon);
   end;
@@ -7522,7 +7522,7 @@ var
     if UseSmallIcons then
       Name := Name + '_SMALL';
 
-    Icon :=  LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Icon :=  LoadIcon(HInstance, PWideChar(Name));
     ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, Icon);
     DestroyIcon(Icon);
   end;

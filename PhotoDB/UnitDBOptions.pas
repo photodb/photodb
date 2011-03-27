@@ -327,8 +327,9 @@ end;
 
 procedure TFormDBOptions.SetDefaultIcon(Path: string = '');
 begin
+  //TODO: check
   if Path = '' then
-    Path := ExtractFilePath(Application.ExeName) + 'Icons.dll,121';
+    Path := Application.ExeName + ',1';
   DBFile.Icon := Path;
   SetIconToPictureFromPath(ImageIconPreview.Picture, Path);
 end;

@@ -1521,7 +1521,7 @@ begin
       CurrentFile := FFiles[I].FileName;
 
       IconParam := nil;
-      FindIcon(DBKernel.IconDllInstance, 'NETWORK', FIcoSize, 32, IconParam);
+      FindIcon(HInstance, 'NETWORK', FIcoSize, 32, IconParam);
       FIcon := IconParam;
       MakeImageWithIcon;
     end;
@@ -1557,7 +1557,7 @@ begin
       CurrentFile := FFiles[I].FileName;
 
       IconParam := nil;
-      FindIcon(DBKernel.IconDllInstance, 'WORKGROUP', FIcoSize, 32, IconParam);
+      FindIcon(HInstance, 'WORKGROUP', FIcoSize, 32, IconParam);
 
       FIcon := IconParam;
       MakeImageWithIcon;
@@ -1610,7 +1610,7 @@ begin
         CurrentFile := FFiles[I].FileName;
 
         IconParam := nil;
-        FindIcon(DBKernel.IconDllInstance, 'COMPUTER', FIcoSize, 32, IconParam);
+        FindIcon(HInstance, 'COMPUTER', FIcoSize, 32, IconParam);
 
         FIcon := IconParam;
         SynchronizeEx(MakeImageWithIcon);
@@ -1659,7 +1659,7 @@ begin
         CurrentFile := FFiles[I].FileName;
 
         IconParam := nil;
-        FindIcon(DBKernel.IconDllInstance, 'SHARE', FIcoSize, 32, IconParam);
+        FindIcon(HInstance, 'SHARE', FIcoSize, 32, IconParam);
         FIcon := IconParam;
         SynchronizeEx(MakeImageWithIcon);
       end;

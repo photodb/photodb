@@ -14,8 +14,10 @@ function GetImagePanelImage : TPNGImage;
 function GetLoadingImage : TPNGImage;
 function GetActivationImage : TPNGImage;
 function GetPrinterPatternImage : TJpegImage;
-              
-{$R Logo.res}    
+
+{$R PhotoDB.res}
+
+{$R Logo.res}
 {$R Slideshow_Load.res}
 {$R Directory_Large.res}
 {$R ExplorerBackground.res}
@@ -26,6 +28,17 @@ function GetPrinterPatternImage : TJpegImage;
 {$R Loading.res}
 {$R Activation.res}
 {$R PrinterPattern.res}
+
+//Icons
+{$R icons.res}
+{$R db_icons.res}
+{$R ZoomRc.res}
+{$R editor.res}
+{$R explorer.res}
+{$R search.res}
+{$R panel.res}
+{$R cmd_icons.res}
+{$R updater.res}
 
 implementation
 

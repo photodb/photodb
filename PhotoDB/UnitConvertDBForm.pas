@@ -583,7 +583,7 @@ var
   procedure AddIcon(name: string);
   begin
     Icons[index] := TIcon.Create;
-    Icons[index].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(name));
+    Icons[index].Handle := LoadIcon(HInstance, PWideChar(name));
     Inc(index);
   end;
 

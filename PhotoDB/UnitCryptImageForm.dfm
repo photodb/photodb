@@ -43,7 +43,7 @@ object CryptImageForm: TCryptImageForm
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Cancel'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = BtCancelClick
   end
   object BtOk: TButton
@@ -146,6 +146,7 @@ object CryptImageForm: TCryptImageForm
     TopIconIncrement = 0
     ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
   object PmCryptMethod: TPopupMenu
     Left = 104

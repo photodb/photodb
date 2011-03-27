@@ -1902,6 +1902,7 @@ object FormSelectDB: TFormSelectDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object InternalNameEdit: TEdit
         Left = 8

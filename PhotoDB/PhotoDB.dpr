@@ -313,8 +313,6 @@ uses
   uSearchTypes in 'Units\uSearchTypes.pas',
   uCryptUtils in 'Units\uCryptUtils.pas';
 
-{$R *.res}
-
 var
   S1: string;
 

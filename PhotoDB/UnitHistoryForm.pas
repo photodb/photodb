@@ -244,7 +244,7 @@ var
   procedure AddIcon(Name : String);
   begin
     Icons[Index] := TIcon.Create;
-    Icons[Index].Handle := LoadIcon(DBKernel.IconDllInstance, PWideChar(Name));
+    Icons[Index].Handle := LoadIcon(HInstance, PWideChar(Name));
     Inc(Index);
   end;
 
