@@ -45,7 +45,7 @@ var
   Thread : TSearchBigImagesLoaderThread;
   AvaliableThread : TSearchBigImagesLoaderThread;
 begin
-  FSync.Enter;
+  Lock;
   try
     Thread := Sender as TSearchBigImagesLoaderThread;
     if Thread = nil then
@@ -66,7 +66,7 @@ begin
     end;
 
   finally
-    FSync.Leave;
+    Unlock;
   end;
 end;
 

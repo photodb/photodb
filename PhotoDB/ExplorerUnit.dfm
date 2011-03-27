@@ -1090,6 +1090,10 @@ object ExplorerForm: TExplorerForm
       Caption = 'Refresh'
       OnClick = Refresh1Click
     end
+    object RefreshID1: TMenuItem
+      Caption = 'Refresh ID'
+      OnClick = RefreshID1Click
+    end
     object N1: TMenuItem
       Caption = '-'
     end
@@ -1127,10 +1131,6 @@ object ExplorerForm: TExplorerForm
         OnClick = Rotateon1801Click
       end
     end
-    object Convert1: TMenuItem
-      Caption = 'Convert'
-      OnClick = Convert1Click
-    end
     object SetasDesktopWallpaper1: TMenuItem
       Caption = 'Set as Desktop Wallpaper'
       object Stretch1: TMenuItem
@@ -1146,12 +1146,12 @@ object ExplorerForm: TExplorerForm
         OnClick = Tile1Click
       end
     end
-    object RefreshID1: TMenuItem
-      Caption = 'Refresh ID'
-      OnClick = RefreshID1Click
-    end
     object Othertasks1: TMenuItem
       Caption = 'Other tasks'
+      object Convert1: TMenuItem
+        Caption = 'Convert'
+        OnClick = Convert1Click
+      end
       object ExportImages1: TMenuItem
         Caption = 'Export Images'
         OnClick = ExportImages1Click
@@ -1164,6 +1164,17 @@ object ExplorerForm: TExplorerForm
     object MakeFolderViewer2: TMenuItem
       Caption = 'Make FolderViewer'
       OnClick = MakeFolderViewer2Click
+    end
+    object StenoGraphia1: TMenuItem
+      Caption = 'StenoGraphia'
+      object AddHiddenInfo1: TMenuItem
+        Caption = 'Add Hidden Info'
+        OnClick = AddHiddenInfo1Click
+      end
+      object ExtractHiddenInfo1: TMenuItem
+        Caption = 'Extract Hidden Info'
+        OnClick = ExtractHiddenInfo1Click
+      end
     end
     object N12: TMenuItem
       Caption = '-'
@@ -1189,20 +1200,6 @@ object ExplorerForm: TExplorerForm
     object ResetPassword1: TMenuItem
       Caption = 'Reset Password'
       OnClick = ResetPassword1Click
-    end
-    object N21: TMenuItem
-      Caption = '-'
-    end
-    object StenoGraphia1: TMenuItem
-      Caption = 'StenoGraphia'
-      object AddHiddenInfo1: TMenuItem
-        Caption = 'Add Hidden Info'
-        OnClick = AddHiddenInfo1Click
-      end
-      object ExtractHiddenInfo1: TMenuItem
-        Caption = 'Extract Hidden Info'
-        OnClick = ExtractHiddenInfo1Click
-      end
     end
     object N10: TMenuItem
       Caption = '-'

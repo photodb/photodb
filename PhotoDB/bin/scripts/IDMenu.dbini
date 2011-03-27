@@ -95,6 +95,8 @@ initialization:
 {
 initialization:
  $Visible=true;
+ $skd=ShiftKeyDown;
+ if ($skd=false) {InVisible;};
  if ($FileExists=false) {InVisible;};
 run:
   ShellExecutePopUpMenu;
@@ -316,6 +318,16 @@ run:
   ImageEditorItemPopUpMenu;
 }
 
+<Convert image>[DB_IC_RESIZE]
+{
+initialization:
+  $Visible=true;
+  if ($IsCurrentFile=false) {InVisible;};
+run:
+  ConvertItemPopUpMenu;
+}
+ConvertItemPopUpMenu
+
 <>[]{scripts\UserMenu.dbini}
 
 <Update info>[DB_IC_REFRESH_ID]
@@ -358,26 +370,21 @@ initialization:
   CreateItem("Delete duplicates",DB_IC_DEL_DUBLICAT,"DeleteDublicatesItemPopUpMenu;",false,0);
 }
 
-<Delete info from collection>[DB_IC_DELETE_INFO]
+<Delete>[DB_IC_DELETE_FILE]
 {
 initialization:
   $Visible=true;
   if ($NoDBInfoNeeded=true) {InVisible;};
   if ($IsRecord=false) {InVisible;};
-run:
-  DeleteLItemPopUpMenu;
-}
+  
+  CreateItem("Delete info from collection",DB_IC_DELETE_FILE,"DeleteLItemPopUpMenu;",false,0);
 
-<Delete file>[DB_IC_DELETE_FILE]
-{
-initialization:
-  $Visible=true;
-  if ($NoDBInfoNeeded=true) {InVisible;};
-  if ($IsRecord=false) {InVisible;};
-  if ($IsFile=false) {InVisible;};
-  if ($FileExists=false) {InVisible;};
-run:
-  DeleteItemPopUpMenu;
+  if ($IsFile=true) {
+    if ($FileExists=true)
+	{
+	  CreateItem("Delete file",DB_IC_DELETE_FILE,"DeleteLItemPopUpMenu;",false,0);
+	};
+  };
 }
 
 <Copy>[DB_IC_COPY]

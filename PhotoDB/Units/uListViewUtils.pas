@@ -356,7 +356,7 @@ begin
     begin
       ImageW := Graphic.Width;
       ImageH := Graphic.Height;
-      ProportionalSizeA(Round(ImageW / DX), Round(ImageH / DY), ImageW, ImageH);
+      ProportionalSize(Round(ImageW / DX), Round(ImageH / DY), ImageW, ImageH);
       if TBitmap(Graphic).PixelFormat = pf24bit then
       begin
         SelectedImage := TBitmap.Create;

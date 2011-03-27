@@ -11,7 +11,7 @@ uses
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
-  uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate,
+  uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate, uImageSource,
   uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings;
 
 type TDBPopupMenu = class
@@ -60,6 +60,7 @@ type TDBPopupMenu = class
     procedure DeleteDublicatesItemPopUpMenu_(Sender: TObject);
     procedure UserMenuItemPopUpMenu_(Sender: TObject);
     procedure PrintItemPopUpMenu_(Sender: TObject);
+    procedure ConvertItemPopUpMenu_(Sender: TObject);
     procedure Execute(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
     procedure ExecutePlus(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
     procedure AddDBContMenu(Form: TDBForm; Item: Tmenuitem; Info: TDBPopupMenuInfo);
@@ -84,7 +85,7 @@ uses
   ExplorerUnit, PropertyForm, SlideShow, uSearchTypes, UnitFormCont,
   UnitLoadFilesToPanel, UnitEditGroupsForm, UnitMenuDateForm, CmpUnit,
   UnitQuickGroupInfo, UnitCrypting, UnitPasswordForm,
-  ImEditor, FormManegerUnit, CommonDBSupport,
+  ImEditor, FormManegerUnit, CommonDBSupport, UnitSizeResizerForm,
   UnitCDMappingSupport;
 
 var
@@ -300,10 +301,7 @@ begin
       if C > 0 then
       begin
         _user_group_menu := TMenuItem.Create(Item);
-        if Settings.ReadString('', 'UserMenuName') <> '' then
-          _user_group_menu.Caption := Settings.ReadString('', 'UserMenuName')
-        else
-          _user_group_menu.Caption := TA('Additional', DBMenuID);
+        _user_group_menu.Caption := Settings.ReadString('', 'UserMenuName', TA('User menu', DBMenuID));
         Icon := Settings.ReadString('', 'UserMenuIcon');
         if Icon = '' then
           Icon := '%SystemRoot%\system32\shell32.dll,126';
@@ -390,6 +388,7 @@ begin
   end;
 end;
 
+
 procedure TDBPopupMenu.CopyItemPopUpMenu_(Sender: TObject);
 var
   I: integer;
@@ -449,6 +448,7 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteDublicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteDublicatesItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'UserMenuItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,UserMenuItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'PrintItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrintItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ConvertItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ConvertItemPopUpMenu_);
 
   AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment,' LoadVariablesNo',Self.LoadVariablesNo);
@@ -1463,6 +1463,14 @@ begin
     Application.CreateForm(TViewer, Viewer);
   Viewer.Execute(Sender, FInfo);
   Viewer.Show;
+end;
+
+procedure TDBPopupMenu.ConvertItemPopUpMenu_(Sender: TObject);
+begin
+  if Supports(FOwner, IImageSource) then
+    ResizeImages(FOwner as IImageSource, FInfo)
+  else
+    ResizeImages(nil, FInfo);
 end;
 
 procedure TDBPopupMenu.UserMenuItemPopUpMenu_(Sender: TObject);

@@ -2515,6 +2515,7 @@ begin
   List := TDBPopupMenuInfo.Create;
   try
     List.Add(Item.Copy);
+    List[0].Selected := True;
     ResizeImages(Self, List);
   finally
     F(List);

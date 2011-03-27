@@ -96,10 +96,10 @@ begin
       for I := 0 to S.Count - 1 do
         Result[I] := S[I];
     finally
-      S.Free;
+      F(S);
     end;
   finally
-    Reg.Free;
+    F(Reg);
   end;
 end;
 

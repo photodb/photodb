@@ -3,7 +3,7 @@ unit uExplorerThreadPool;
 interface
 
 uses Windows, Math, Classes, SysUtils, SyncObjs,
-     dolphin_db, ExplorerTypes, UnitDBDeclare,
+     dolphin_db, ExplorerTypes, UnitDBDeclare, uGOM,
      uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory,
      uConstants, UnitDBCommon;
 
@@ -50,7 +50,7 @@ var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
 begin
-  FSync.Enter;
+  Lock;
   try
     Thread := Sender as TExplorerThread;
     if Thread = nil then
@@ -76,7 +76,7 @@ begin
       StartThread(Thread, Avaliablethread);
     end;
   finally
-    FSync.Leave;
+    Unlock;
   end;
 end;
 
@@ -86,7 +86,7 @@ var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
 begin
-  FSync.Enter;
+  Lock;
   try
     Thread := Sender as TExplorerThread;
     if Thread = nil then
@@ -113,7 +113,7 @@ begin
       StartThread(Thread, Avaliablethread);
     end;
   finally
-    FSync.Leave;
+    Unlock;
   end;
 end;
 
@@ -123,7 +123,7 @@ var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
 begin
-  FSync.Enter;
+  Lock;
   try
     Thread := Sender as TExplorerThread;
     if Thread = nil then
@@ -149,7 +149,7 @@ begin
       StartThread(Thread, Avaliablethread);
     end;
   finally
-    FSync.Leave;
+    Unlock;
   end;
 end;
 

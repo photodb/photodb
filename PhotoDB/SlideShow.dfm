@@ -311,29 +311,21 @@ object Viewer: TViewer
     object N5: TMenuItem
       Caption = '-'
     end
-    object Shell1: TMenuItem
-      Caption = 'Shell'
-      ImageIndex = 1
-      OnClick = Shell1Click
+    object GoToSearchWindow1: TMenuItem
+      Caption = 'Go To Search Window'
+      OnClick = GoToSearchWindow1Click
     end
-    object Copy1: TMenuItem
-      Caption = 'Copy'
-      OnClick = Copy1Click
+    object Explorer1: TMenuItem
+      Caption = 'Explorer'
+      OnClick = Explorer1Click
     end
-    object SetasDesktopWallpaper1: TMenuItem
-      Caption = 'Set as Desktop Wallpaper'
-      object Stretch1: TMenuItem
-        Caption = 'Stretch'
-        OnClick = Stretch1Click
-      end
-      object Center1: TMenuItem
-        Caption = 'Center'
-        OnClick = Center1Click
-      end
-      object Tile1: TMenuItem
-        Caption = 'Tile'
-        OnClick = Tile1Click
-      end
+    object ImageEditor1: TMenuItem
+      Caption = 'Image Editor'
+      OnClick = ImageEditor1Click
+    end
+    object Print1: TMenuItem
+      Caption = 'Print'
+      OnClick = Print1Click
     end
     object Rotate1: TMenuItem
       Caption = 'Rotate Image'
@@ -350,6 +342,21 @@ object Viewer: TViewer
         OnClick = Rotateon1801Click
       end
     end
+    object SetasDesktopWallpaper1: TMenuItem
+      Caption = 'Set as Desktop Wallpaper'
+      object Stretch1: TMenuItem
+        Caption = 'Stretch'
+        OnClick = Stretch1Click
+      end
+      object Center1: TMenuItem
+        Caption = 'Center'
+        OnClick = Center1Click
+      end
+      object Tile1: TMenuItem
+        Caption = 'Tile'
+        OnClick = Tile1Click
+      end
+    end
     object Tools1: TMenuItem
       Caption = 'Tools'
       object Resize1: TMenuItem
@@ -360,22 +367,6 @@ object Viewer: TViewer
         Caption = 'New Panel'
         OnClick = NewPanel1Click
       end
-    end
-    object Print1: TMenuItem
-      Caption = 'Print'
-      OnClick = Print1Click
-    end
-    object ImageEditor1: TMenuItem
-      Caption = 'Image Editor'
-      OnClick = ImageEditor1Click
-    end
-    object Explorer1: TMenuItem
-      Caption = 'Explorer'
-      OnClick = Explorer1Click
-    end
-    object GoToSearchWindow1: TMenuItem
-      Caption = 'Go To Search Window'
-      OnClick = GoToSearchWindow1Click
     end
     object N1: TMenuItem
       Caption = '-'
@@ -417,6 +408,15 @@ object Viewer: TViewer
     end
     object N7: TMenuItem
       Caption = '-'
+    end
+    object Shell1: TMenuItem
+      Caption = 'Shell'
+      ImageIndex = 1
+      OnClick = Shell1Click
+    end
+    object Copy1: TMenuItem
+      Caption = 'Copy'
+      OnClick = Copy1Click
     end
     object Properties1: TMenuItem
       Caption = 'Properties'

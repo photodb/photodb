@@ -5,7 +5,7 @@ object OptionsForm: TOptionsForm
   BorderStyle = bsSingle
   Caption = 'Options'
   ClientHeight = 488
-  ClientWidth = 467
+  ClientWidth = 466
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,13 +19,13 @@ object OptionsForm: TOptionsForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    467
+    466
     488)
   PixelsPerInch = 96
   TextHeight = 13
   object CancelButton: TButton
-    Left = 307
-    Top = 457
+    Left = 303
+    Top = 455
     Width = 75
     Height = 23
     Anchors = [akRight, akBottom]
@@ -34,7 +34,7 @@ object OptionsForm: TOptionsForm
     OnClick = CancelButtonClick
   end
   object OkButton: TButton
-    Left = 388
+    Left = 384
     Top = 455
     Width = 75
     Height = 23
@@ -49,14 +49,12 @@ object OptionsForm: TOptionsForm
     Width = 451
     Height = 441
     ActivePage = TsGeneral
+    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 445
       object LblSkipExt: TLabel
         Left = 282
         Top = 121
@@ -173,10 +171,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LbDisplayPlacesIn: TLabel
         Left = 223
         Top = 136
@@ -370,10 +364,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label15: TLabel
         Left = 6
         Top = 4
@@ -500,10 +490,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label23: TLabel
         Left = 3
         Top = 278
@@ -726,7 +712,7 @@ object OptionsForm: TOptionsForm
         OnKeyPress = EdUserMenuItemCaptionKeyPress
       end
       object BtnUserMenuChooseExecutable: TButton
-        Left = 409
+        Left = 411
         Top = 63
         Width = 15
         Height = 21
@@ -748,10 +734,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GbBackup: TGroupBox
         Left = 8
         Top = 247
@@ -1177,10 +1159,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LbAddHeight: TLabel
         Left = 173
         Top = 274

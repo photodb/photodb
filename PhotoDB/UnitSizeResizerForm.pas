@@ -464,7 +464,7 @@ begin
     EdSavePath.Text := ExtractFileDir(FData[FCurrentPreviewPosition].FileName);
 
   UpdateNavigation;
-  if FPreviewImage = nil then
+  if (FPreviewImage = nil) and (FOwner <> nil) then
   begin
     FPreviewImage := TBitmap.Create;
     if FOwner.GetImage(FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then
@@ -512,7 +512,7 @@ begin
   TImageConvertThread.Create(Self, StateID, FData[FCurrentPreviewPosition].Copy, FProcessingParams);
   LsMain.Show;
 
-  if FPreviewImage = nil then
+  if (FPreviewImage = nil) and (FOwner <> nil) then
   begin
     FPreviewImage := TBitmap.Create;
     if FOwner.GetImage(FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then

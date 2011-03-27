@@ -85,7 +85,7 @@ procedure TFrmWatermarkOptions.FormKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_RETURN then
     BtnOkClick(Sender);
-  if Key = VK_RETURN then
+  if Key = VK_ESCAPE then
     Close;
 end;
 

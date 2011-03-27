@@ -631,8 +631,10 @@
     <translate name="Scan image" value="Найти похожие изображения" />
     <translate name="Print" value="Печать" />
     <translate name="Duplicates" value="Дубликаты" />
+    <translate name="Delete" value="Удалить" />
     <translate name="Delete info from collection" value="Удалить информацию из базы" />
     <translate name="Delete file" value="Удалить файл" />
+    <translate name="Convert image" value="Преобразовать" />	
     <translate name="Copy" value="Копировать" />
     <translate name="Rename" value="Переименовать" />
     <translate name="Open in Explorer" value="Открыть в проводнике" />
@@ -649,7 +651,7 @@
     <translate name="Load results from file" value="Загрузить результаты из файла" />
     <translate name="Save results to file" value="Сохранить результаты в файл" />
     <translate name="Select collection" value="Выбрать базу" />
-    <translate name="User menu" value="Пользовательское меню" />
+    <translate name="User menu" value="Меню пользователя" />
     <translate name="Select" value="Выбрать" />	
     <translate name="Edit groups" value="Редактировать группы" />
     <translate name="Busy..." value="Занято..." />	

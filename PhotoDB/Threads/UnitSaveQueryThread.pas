@@ -172,7 +172,6 @@ var
 begin
   Directory := IncludeTrailingBackslash(Directory);
   CopyFile(PChar(Application.Exename), PChar(Directory + SaveToDBName + '.exe'), False);
-  CopyFile(PChar(ExtractFilePath(Application.Exename) + 'icons.dll'), PChar(Directory + 'icons.dll'), False);
 
   NewIcon := nil;
   try
@@ -380,8 +379,6 @@ begin
   begin
     FFileName := IncludeTrailingBackslash(FFileName);
     CopyFile(PChar(Application.Exename), PChar(ExtractFilePath(FFileName) + SaveToDBName + '.exe'), False);
-    CopyFile(PChar(ExtractFilePath(Application.Exename) + 'icons.dll'),
-      PChar(ExtractFilePath(FFileName) + 'icons.dll'), False);
     try
       Synchronize(ReplaceIconAction);
       if NewIcon <> nil then

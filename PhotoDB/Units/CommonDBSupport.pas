@@ -25,6 +25,7 @@ type
     FileName: string;
     RefCount: Integer;
     ThreadID: THandle;
+    Isolated: Boolean;
   end;
 
   TADOConnections = class(TObject)
@@ -817,7 +818,7 @@ end;
 
 procedure RemoveADORef(ADOConnection : TADOConnection);
 var
-  I: Integer;
+  I, J, Count: Integer;
 begin
   for I := 0 to ADOConnections.Count - 1 do
   begin
@@ -825,7 +826,13 @@ begin
     begin
       Dec(ADOConnections[I].RefCount);
       //and try to keep one opened connection
-      if (ADOConnections[I].RefCount = 0) and (ADOConnections.Count > 1) then
+
+      Count := 0;
+      for J := 0 to ADOConnections.Count - 1 do
+        if not ADOConnections[J].Isolated then
+          Inc(Count);
+
+      if (ADOConnections[I].RefCount = 0) and ((Count > 1) or ADOConnections[I].Isolated) then
       begin
         ADOConnections[I].ADOConnection.Free;
         ADOConnections[I].Free;
@@ -845,7 +852,7 @@ begin
   if not ForseNewConnection then
     for I := 0 to ADOConnections.Count - 1 do
     begin
-      if ADOConnections[I].FileName = dbname then
+      if (ADOConnections[I].FileName = dbname) and not ADOConnections[I].Isolated then
       begin
         Result := ADOConnections[I].ADOConnection;
         Inc(ADOConnections[I].RefCount);
@@ -855,6 +862,7 @@ begin
   DBConnection := ADOConnections.Add;
   DBConnection.FileName := AnsiLowerCase(dbname);
   DBConnection.RefCount := 1;
+  DBConnection.Isolated := ForseNewConnection;
   DBConnection.ADOConnection := TADOConnection.Create(nil);
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname);
   DBConnection.ADOConnection.LoginPrompt := False;

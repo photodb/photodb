@@ -34,13 +34,16 @@ type
     FAvaliableThreadList: TList;
     FBusyThreadList: TList;
     FTerminating : Boolean;
+    FSync: TCriticalSection;
     function GetAvaliableThreadsCount: Integer;
     function GetBusyThreadsCount: Integer;
   protected
-    FSync: TCriticalSection;
+    //
     procedure ThreadsCheck(Thread: TMultiCPUThread); virtual;
     procedure AddAvaliableThread(Thread: TMultiCPUThread);
     procedure CheckBusyThreads;
+    procedure Lock;
+    procedure Unlock;
   protected
     procedure AddNewThread(Thread: TMultiCPUThread); virtual; abstract;
     function GetAvaliableThread(Sender: TMultiCPUThread): TMultiCPUThread;
@@ -80,9 +83,9 @@ end;
 
 constructor TThreadPoolCustom.Create;
 begin
+  FSync := TCriticalSection.Create;
   FAvaliableThreadList := TList.Create;
   FBusyThreadList := TList.Create;
-  FSync := TCriticalSection.Create;
   FTerminating := False;
   MultiThreadManagers.Add(Self);
 end;
@@ -97,12 +100,15 @@ begin;
   FWaitThreads := TList.Create;
   try
     //wait for all threads
-    while FAvaliableThreadList.Count + FBusyThreadList.Count + FWaitThreads.Count > 0 do
+    while true do
     begin
       Sleep(10);
       Application.ProcessMessages;
       FSync.Enter;
       try
+        if FAvaliableThreadList.Count + FBusyThreadList.Count + FWaitThreads.Count = 0 then
+          Break;
+
         CheckBusyThreads;
         //remove all avaliable thread from pool
         FThreads.Assign(FAvaliableThreadList);
@@ -214,6 +220,11 @@ begin
   end;
 end;
 
+procedure TThreadPoolCustom.Lock;
+begin
+  FSync.Enter;
+end;
+
 procedure TThreadPoolCustom.StartThread(Sender, Thread: TMultiCPUThread);
 begin
   Thread.WorkingInProgress := True;
@@ -283,6 +294,11 @@ begin
   end;
 end;
 
+procedure TThreadPoolCustom.Unlock;
+begin
+  FSync.Leave;
+end;
+
 { TMultiCPUThread }
 
 procedure TMultiCPUThread.CheckThreadPriority;
@@ -302,7 +318,7 @@ begin
   inherited Create(AOwnerForm, AState);
   FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
   FWorkingInProgress := False;
-  FMode := 0;
+  FMode := -1;
 end;
 
 destructor TMultiCPUThread.Destroy;

@@ -74,7 +74,6 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames, cbCustomColors]
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 3
-    ExplicitWidth = 239
   end
   object SeBlocksX: TSpinEdit
     Left = 8
@@ -86,7 +85,6 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     MinValue = 1
     TabOrder = 1
     Value = 1
-    ExplicitWidth = 239
   end
   object SeBlocksY: TSpinEdit
     Left = 8
@@ -98,7 +96,6 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     MinValue = 1
     TabOrder = 2
     Value = 1
-    ExplicitWidth = 239
   end
   object SeTransparency: TSpinEdit
     Left = 8
@@ -120,8 +117,6 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     Caption = 'BtnOk'
     TabOrder = 7
     OnClick = BtnOkClick
-    ExplicitLeft = 173
-    ExplicitTop = 244
   end
   object BtnCancel: TButton
     Left = 143
@@ -132,8 +127,6 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     Caption = 'BtnCancel'
     TabOrder = 6
     OnClick = BtnCancelClick
-    ExplicitLeft = 92
-    ExplicitTop = 244
   end
   object EdWatermarkText: TWatermarkedEdit
     Left = 8

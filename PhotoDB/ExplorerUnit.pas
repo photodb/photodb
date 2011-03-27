@@ -186,7 +186,6 @@ type
     MakeFolderViewer2: TMenuItem;
     BigImagesTimer: TTimer;
     Nosorting1: TMenuItem;
-    N21: TMenuItem;
     StenoGraphia1: TMenuItem;
     AddHiddenInfo1: TMenuItem;
     ExtractHiddenInfo1: TMenuItem;
@@ -1207,7 +1206,7 @@ begin
     SetasDesktopWallpaper1.Visible := CryptFile1.Visible and IsWallpaper(FFilesInfo[PmItemPopup.Tag].FileName);
     Refresh1.Visible := True;
     Open1.Visible := False;
-    Shell1.Visible := True;
+    Shell1.Visible := False;
     Rename1.Visible := True;
     NewWindow1.Visible := False;
     Properties1.Visible := True;
@@ -5995,8 +5994,11 @@ begin
       end;
       ReallignInfo;
       TempBitmap := TBitmap.Create;
-      ImPreview.Picture.Graphic := TempBitmap;
-      TempBitmap.Free;
+      try
+        ImPreview.Picture.Graphic := TempBitmap;
+      finally
+        F(TempBitmap);
+      end;
       try
         with ImPreview.Picture.Bitmap do
         begin
@@ -6073,7 +6075,12 @@ begin
                   ProportionalSize(40, 40, W, H);
                   FolderImageRect := Rect(X + 40 div 2 - W div 2, Y + 40 div 2 - H div 2, X + 40 div 2 + W div 2,
                     Y + 40 div 2 + H div 2);
-                  Canvas.StretchDraw(FolderImageRect, Fbmp);
+
+                  if Fbmp.PixelFormat = pf32Bit then
+                    StretchCoolW32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap)
+                  else
+                    StretchCoolW24To32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap);
+
                 end;
             end;
 
