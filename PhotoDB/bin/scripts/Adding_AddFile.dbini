@@ -1,4 +1,4 @@
-$f=ExtractFileName($File);
+﻿$f=ExtractFileName($File);
 $int=Pos(" ",$f);
 $int=%$int-1;
 $f_path="D:\Dmitry\My Pictures\Favorite Pictures\photo\";

@@ -7,7 +7,7 @@ uses
   Classes, Forms, UnitCDMappingSupport, UnitDBKernel, uVistaFuncs, DB,
   UnitGroupsWork, UnitDBDeclare, CommonDBSupport, win32crc, SysUtils, uLogger,
   uFileUtils, uConstants, uShellIntegration, uDBTypes, uDBBaseTypes, uDBForm,
-  uDBThread;
+  uDBThread, uMobileUtils;
 
 type
   TCDExportOptions = record

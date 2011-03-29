@@ -379,24 +379,24 @@ var
   Info : TExplorerFileInfo;
 begin
   Info := TExplorerFileInfo.Create;
-  Info.FileName:=FileName;
-  Info.ID:=ID;
-  Info.FileType:=FileType;
-  Info.SID:=SID;
-  Info.Rotation:=Rotate;
-  Info.Rating:=Rating;
-  Info.Access:=Access;
-  Info.FileSize:=FileSize;
-  Info.Comment:=Comment;
-  Info.KeyWords:=KeyWords;
-  Info.ImageIndex:=ImageIndex;
-  Info.Date:=Date;
-  Info.IsDate:=IsDate;
-  Info.Groups:=Groups;
-  Info.Crypted:=Crypted;
-  Info.Loaded:=false;
-  Info.Include:=Include;
-  Info.isBigImage:=false;
+  Info.FileName := FileName;
+  Info.ID := ID;
+  Info.FileType := FileType;
+  Info.SID := SID;
+  Info.Rotation := Rotate;
+  Info.Rating := Rating;
+  Info.Access := Access;
+  Info.FileSize := FileSize;
+  Info.Comment := Comment;
+  Info.KeyWords := KeyWords;
+  Info.ImageIndex := ImageIndex;
+  Info.Date := Date;
+  Info.IsDate := IsDate;
+  Info.Groups := Groups;
+  Info.Crypted := Crypted;
+  Info.Loaded := False;
+  Info.Include := Include;
+  Info.IsBigImage := False;
   Infos.Add(Info);
 end;
 
@@ -406,7 +406,7 @@ procedure TStringsHistoryW.Add(Path: TExplorerPath);
 begin
   if FPosition = Length(FArray) - 1 then
   begin
-    SetLength(FArray,Length(FArray) + 1);
+    SetLength(FArray, Length(FArray) + 1);
     FArray[Length(FArray) - 1]:=Path;
     FPosition:= Length(FArray) - 1;
   end else

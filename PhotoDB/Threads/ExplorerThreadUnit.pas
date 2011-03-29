@@ -855,7 +855,7 @@ procedure TExplorerThread.ReplaceImageInExplorer;
 begin
   if not IsTerminated then
   begin
-    FSender.SetInfoToItem(FInfo, GUIDParam);
+    FSender.SetInfoToItem(FInfo, GUIDParam, True);
 
     if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage) then
       F(TempBitmap);
@@ -2160,6 +2160,7 @@ end;
 initialization
 
   UpdaterCount := 0;
+  AExplorerFolders := TExplorerFolders.Create;
   FFolderPictureLock := TCriticalSection.Create;
 
 finalization

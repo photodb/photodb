@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, uLogger, uMemory, MSXML, OmniXML_MSXML, uConstants,
-  SyncObjs, Registry;
+  SyncObjs, Registry, uRuntime;
 
 type
   TTranslate = class(TObject)
@@ -94,6 +94,9 @@ var
 
 implementation
 
+var
+  TranslateManager : TTranslateManager = nil;
+
 function ResolveLanguageString(s: string) : string;
 begin
   Result := StringReplace(s, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [rfReplaceAll, rfIgnoreCase]);
@@ -116,7 +119,7 @@ begin
     end;
   end;
 
-  LanguagePath := IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + Format('Languages\%s%s.xml', [LanguageFileMask, LanguageCode]);
+  LanguagePath := ExtractFilePath(ParamStr(0)) + Format('Languages\%s%s.xml', [LanguageFileMask, LanguageCode]);
   try
     Language := TLanguage.Create(LanguagePath);
   except
@@ -124,9 +127,6 @@ begin
       EventLog(e.Message);
   end;
 end;
-
-var
-  TranslateManager : TTranslateManager = nil;
 
 function TA(const StringToTranslate, Scope: string) : string; overload;
 begin

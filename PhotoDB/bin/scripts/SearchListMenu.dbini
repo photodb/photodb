@@ -1,4 +1,4 @@
-<Slide Show>[DB_IC_SLIDE_SHOW]
+﻿<Slide Show>[DB_IC_SLIDE_SHOW]
 {
 initialization:
   if ($OneFileExists=false) {InVisible;};

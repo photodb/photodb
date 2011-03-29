@@ -37,6 +37,7 @@
     <translate name="Browse with PhotoDB" value="Проводник с PhotoDB" />
     <translate name="After the 30 days has expired, you must activate your copy!" value="Время работы программы истекло! Вы должны активизировать данную копию!" />
     <translate name="Application is damaged! Possible it is infected by a virus!" value="Приложение повреждено! Возможно, что оно инфицировано каким-либо вирусом!" />
+	<translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
   </scope>
   <scope name="Setup">
     <translate name="Welcome to the Photo Database 2.3" value="Добро пожаловать в Photo Database 2.3" />
@@ -1845,8 +1846,7 @@
   <scope name="Mobile">
 	<translate name="Collection name" value="Имя БД"/>
 	<translate name="Please enter name for new collection" value="Введите имя новой БД"/>
-	<translate name="Do you want to change the icon for the ultimate database?" value="Вы хотите сменить иконку у конечной БД?"/>
-	<translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
+	<translate name="Do you want to change the icon for the final collection?" value="Вы хотите сменить иконку у конечной БД?"/>
   </scope>
   <scope name="Hint">
 	<translate name="Image size: %d x %d" value="Размер изображения: %d x %d"/>

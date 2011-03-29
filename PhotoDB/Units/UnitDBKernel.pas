@@ -61,7 +61,7 @@ type
     procedure DoIDEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
     function TestDB(DBName_: string; OpenInThread: Boolean = False): Boolean;
     procedure BackUpTable;
-    function LogIn(UserName, Password: string; AutoLogin: Boolean): Integer;
+    procedure DBInit;
     function CreateDBbyName(FileName: string): Integer;
     function GetDataBaseName: string;
     procedure SetDataBase(DatabaseFileName: string);
@@ -189,11 +189,10 @@ begin
   end;
 end;
 
-function TDBKernel.LogIn(UserName, Password: string; AutoLogin : boolean): integer;
+procedure TDBKernel.DBInit;
 begin
   DoSelectDB;
   LoadINIPasswords;
-  Result := 0;
 end;
 
 procedure TDBKernel.RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);

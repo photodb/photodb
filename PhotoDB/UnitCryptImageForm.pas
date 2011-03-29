@@ -31,8 +31,6 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
-    ChiperSelected: Boolean;
-    FSelectedChiper: Integer;
     procedure LoadLanguage;
   protected
     { Protected declarations }
@@ -144,7 +142,7 @@ begin
   try
     LbPassword.Caption := L('Enter password for selected objects') + ':';
     EdPassword.WatermarkText := L('Password');
-    LbPasswordConfirm.Caption := L('Confirm password');
+    LbPasswordConfirm.Caption := L('Confirm password') + ':';
     EdPasswordConfirm.WatermarkText := L('Confirm password');
     Caption := L('Crypt objects');
     BtCancel.Caption := L('Cancel');

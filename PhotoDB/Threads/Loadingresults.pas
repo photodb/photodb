@@ -867,6 +867,9 @@ begin
 
             CompareInfo := TCompareImageInfo.Create(SBitmap,  not ScanParams.ScanRotation, ScanParams.ScanRotation);
             try
+              if not FQuery.Eof then
+                FQuery.First;
+
               while not FQuery.Eof do
               begin
                 //TW.I.Start('COMPARE NEXT ITEM');

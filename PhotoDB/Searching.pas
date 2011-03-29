@@ -1117,6 +1117,7 @@ var
   Y : Integer;
   CustomInfo: string;
   Extension: TSearchDataExtension;
+  SimilarAmount: Integer;
 begin
   if FListUpdating or (Item.Data = nil) then
     Exit;
@@ -1129,8 +1130,13 @@ begin
 
   Extension := TSearchDataExtension(Data.Data);
   if (Extension.CompareResult.ByGistogramm > 0) or (Extension.CompareResult.ByPixels > 0) then
-    CustomInfo := Format('%d%%', [Round((Extension.CompareResult.ByPixels * 8 + Extension.CompareResult.ByGistogramm * 2) / 10)]);
-
+  begin
+    SimilarAmount := Round((Extension.CompareResult.ByPixels * 8 + Extension.CompareResult.ByGistogramm * 2) / 10);
+    if SimilarAmount > 0 then
+      CustomInfo := Format('%d%%', [SimilarAmount])
+    else
+      CustomInfo := '<1%';
+  end;
   DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
                      FBitmapImageList, Y,
                      True, Data.ID, Data.FileName, Data.Rating, Data.Rotation,

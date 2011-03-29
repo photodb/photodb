@@ -1,4 +1,4 @@
-<Get photos>[DB_IC_GET_USB]
+﻿<Get photos>[DB_IC_GET_USB]
 {
   $CDROM=GetCDROMDrives;
   $CD_ROM_ICONS=GetIntArray(0);

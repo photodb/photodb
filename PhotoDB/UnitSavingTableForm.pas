@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmProgress, DB, uDBBaseTypes, UnitDBDeclare,
-  uDBForm;
+  uThreadForm;
 
 type
-  TSavingTableForm = class(TDBForm)
+  TSavingTableForm = class(TThreadForm)
     DmProgress1: TDmProgress;
     Label1: TLabel;
     BtnAbort: TButton;
@@ -23,15 +23,15 @@ type
   public
     { Public declarations }
     FTerminating: Boolean;
-    procedure Execute(Query: TDataSet; FileName: String; SubFolders: Boolean;
-      FileList: TArStrings);
+    procedure Execute(DestinationPath: String; SubFolders: Boolean;
+      FileList: TStrings);
     procedure SetMaxValue(Value: Integer);
     procedure SetProgress(Value: Integer);
     procedure SetText(Value: String);
   end;
 
-procedure SaveQuery(Query: TDataSet; FileName: String; SubFolders: Boolean;
-  FileList: TArStrings);
+procedure SaveQuery(DestinationPath: String; SubFolders: Boolean;
+  FileList: TStrings);
 
 implementation
 
@@ -39,20 +39,23 @@ uses UnitSaveQueryThread;
 
 {$R *.dfm}
 
-procedure SaveQuery(Query: TDataSet; FileName: String; SubFolders: Boolean;
-  FileList: TArStrings);
+procedure SaveQuery(DestinationPath: String; SubFolders: Boolean;
+  FileList: TStrings);
 var
   SavingTableForm: TSavingTableForm;
 begin
   Application.CreateForm(TSavingTableForm, SavingTableForm);
-  SavingTableForm.Execute(Query, FileName, SubFolders, FileList);
-  SavingTableForm.Release;
+  try
+    SavingTableForm.Execute(DestinationPath, SubFolders, FileList);
+  finally
+    SavingTableForm.Release;
+  end;
 end;
 
-procedure TSavingTableForm.Execute(Query : TDataSet; FileName : String; SubFolders : boolean; FileList : TArStrings);
+procedure TSavingTableForm.Execute(DestinationPath: string; SubFolders: Boolean; FileList: TStrings);
 begin
- TSaveQueryThread.Create(False,Query,FileName,Self,SubFolders,FileList);
- ShowModal;
+  TSaveQueryThread.Create(DestinationPath, Self, SubFolders, FileList, StateID);
+  ShowModal;
 end;
 
 procedure TSavingTableForm.LoadLanguage;

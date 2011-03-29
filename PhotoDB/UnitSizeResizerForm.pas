@@ -92,6 +92,7 @@ type
     FCurrentPreviewPosition: Integer;
     FRealWidth: Integer;
     FRealHeight: Integer;
+    FProcessingList: TStrings;
     procedure LoadLanguage;
     procedure CheckValidForm;
   protected
@@ -204,8 +205,8 @@ begin
     case DdResizeAction.ItemIndex of
       0:
         begin
-          FProcessingParams.Width := 640;
-          FProcessingParams.Height := 480;
+          FProcessingParams.Width := 1024;
+          FProcessingParams.Height := 768;
         end;
       1:
         begin
@@ -214,18 +215,18 @@ begin
         end;
       2:
         begin
-          FProcessingParams.Width := 1024;
-          FProcessingParams.Height := 768;
+          FProcessingParams.Width := 640;
+          FProcessingParams.Height := 480;
         end;
       3:
         begin
-          FProcessingParams.Width := 128;
-          FProcessingParams.Height := 124;
+          FProcessingParams.Width := 320;
+          FProcessingParams.Height := 240;
         end;
       4:
         begin
-          FProcessingParams.Width := 320;
-          FProcessingParams.Height := 240;
+          FProcessingParams.Width := 128;
+          FProcessingParams.Height := 124;
         end;
     else
       FProcessingParams.Width := Min(Max(StrToIntDef(EdWidth.Text, 100), 5), 5000);
@@ -288,6 +289,7 @@ begin
   FormManager.RegisterMainForm(Self);
   LoadLanguage;
   FData := TDBPopupMenuInfo.Create;
+  FProcessingList := TStringList.Create;
   FCurrentPreviewPosition := 0;
 
   for I := 0 to TFileAssociations.Instance.Count - 1 do
@@ -316,7 +318,16 @@ begin
 end;
 
 procedure TFormSizeResizer.FormDestroy(Sender: TObject);
+var
+  I: Integer;
+  EventInfo: TEventValues;
 begin
+  if FProcessingList.Count > 0 then
+  begin
+    for I := 0 to FProcessingList.Count - 1 do
+      ProcessedFilesCollection.RemoveFile(FProcessingList[I]);
+    DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
+  end;
   F(FData);
   F(FPreviewImage);
   FormManager.UnRegisterMainForm(Self);
@@ -337,7 +348,7 @@ procedure TFormSizeResizer.FormMouseWheel(Sender: TObject; Shift: TShiftState;
 begin
   if PrbMain.Visible then
     Exit;
-  if PtInRect(PbImage.ClientRect, Self.ScreenToClient(Mouse.Cursorpos)) then
+  if PtInRect(PbImage.BoundsRect, Self.ScreenToClient(Mouse.Cursorpos)) then
   begin
     if WheelDelta < 0 then
       WlNextClick(Self)
@@ -407,7 +418,10 @@ begin
   end;
 
   for I := 0 to FData.Count - 1 do
+  begin
     ProcessedFilesCollection.AddFile(FData[I].FileName);
+    FProcessingList.Add(AnsiLOwerCase(FData[I].FileName));
+  end;
 
   // change form state
   PnOptions.Hide;
@@ -480,11 +494,16 @@ begin
 end;
 
 procedure TFormSizeResizer.ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing: Boolean);
+var
+  I: Integer;
 begin
   PrbMain.Position := FDataCount - FData.Count;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);
 
+  I := FProcessingList.IndexOf(AnsiLOwerCase(FData[I].FileName));
+  if I > -1 then
+    FProcessingList.Delete(I);
   FillProcessingParams;
   if (FData.Count > 0) and not EndProcessing then
     TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams)
@@ -717,6 +736,7 @@ end;
 destructor TFormSizeResizer.Destroy;
 begin
   F(FData);
+  F(FProcessingList);
   inherited;
 end;
 

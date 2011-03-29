@@ -1,4 +1,4 @@
-// <Execute>[DB_IC_SHELL]
+﻿// <Execute>[DB_IC_SHELL]
 // {
 //  $index=SelectedIndex;
 //  $file=GetOpenFileName("","Exe Files (*.exe)|*.exe");

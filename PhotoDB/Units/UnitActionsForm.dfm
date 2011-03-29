@@ -53,6 +53,7 @@ object ActionsForm: TActionsForm
       TopIconIncrement = 0
       ImageCanRegenerate = True
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object LoadFromFileLink: TWebLink
       Left = 8
@@ -71,6 +72,7 @@ object ActionsForm: TActionsForm
       TopIconIncrement = 0
       ImageCanRegenerate = True
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object CloseLink: TWebLink
       Left = 8
@@ -89,15 +91,11 @@ object ActionsForm: TActionsForm
       TopIconIncrement = 0
       ImageCanRegenerate = True
       UseSpecIconSize = True
+      HightliteImage = False
     end
   end
   object ActionsImageList: TImageList
     Left = 168
-    Top = 104
-  end
-  object OpenDialog1: TOpenDialog
-    Filter = 'PhotoDB Actions (*.dbact)|*.dbact'
-    Left = 80
     Top = 104
   end
 end

@@ -1,4 +1,4 @@
-<#>[]{scripts\dbe.dbini}
+п»ї<#>[]{scripts\dbe.dbini}
 <#>[]{scripts\Actions.dbini}
 
 <Find file manually>[DB_IC_SEARCH]
@@ -9,7 +9,7 @@ initialization:
   if ($IsFile=true) {InVisible;};
 run:
  $mask=GetImagesMask;
- $File=GetOpenImageFileName("Найдите самостоятельно данный файл",$mask);
+ $File=GetOpenImageFileName("РќР°Р№РґРёС‚Рµ СЃР°РјРѕСЃС‚РѕСЏС‚РµР»СЊРЅРѕ РґР°РЅРЅС‹Р№ С„Р°Р№Р»",$mask);
  if ($File<>"")
  {
   SetFileNameByID($ID,$File);
@@ -51,10 +51,10 @@ run:
  $s=IntToStr($cp);
  $user=GetCurrentUser;
  $nl=Char(13);
- $s="Дорогой "+$user+"!"+$nl+"Степень похожести этих двук картинок - "+$s+"%!";
- $s=$s+$nl+"Удачи!";
+ $s="Р”РѕСЂРѕРіРѕР№ "+$user+"!"+$nl+"РЎС‚РµРїРµРЅСЊ РїРѕС…РѕР¶РµСЃС‚Рё СЌС‚РёС… РґРІСѓРє РєР°СЂС‚РёРЅРѕРє - "+$s+"%!";
+ $s=$s+$nl+"РЈРґР°С‡Рё!";
  $p=%$MB_OK+$MB_ICONINFORMATION;
- MessageBox($s,"Анализатор",$p);
+ MessageBox($s,"РђРЅР°Р»РёР·Р°С‚РѕСЂ",$p);
 }
 
 <Apply actions>[DB_IC_APPLY_ACTION]
@@ -180,7 +180,7 @@ initialization:
   for ($i=0;$i<4;$i=SumInt($i,1)) {
       if ($i=0) {$s="No rotate";};
       if ($i=1) {$s="Rotate right";};
-      if ($i=2) {$s="Rotate 180°";};
+      if ($i=2) {$s="Rotate 180В°";};
       if ($i=3) {$s="Rotate left";};
       $n=SumInt($i,DB_IC_ROTETED_0);
       if ($Rotation=$i) {

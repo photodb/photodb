@@ -204,6 +204,7 @@ type
   protected
     function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
   public
+    FName: string;
     FileName: string;
     Comment: string;
     FileSize: Int64;
@@ -236,6 +237,7 @@ type
     constructor CreateFromFile(FileName: string);
     destructor Destroy; override;
     procedure ReadFromDS(DS: TDataSet);
+    procedure WriteToDS(DS: TDataSet);
     function Copy : TDBPopupMenuInfoRecord; virtual;
     procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
   end;
@@ -396,8 +398,9 @@ var
 begin
   F(Image);
   ID := DS.FieldByName('ID').AsInteger;
-  KeyWords := DS.FieldByName('KeyWords').AsString;
+  FName := DS.FieldByName('Name').AsString;
   FileName := DS.FieldByName('FFileName').AsString;
+  KeyWords := DS.FieldByName('KeyWords').AsString;
   FileSize := DS.FieldByName('FileSize').AsInteger;
   Rotation := DS.FieldByName('Rotated').AsInteger;
   Rating := DS.FieldByName('Rating').AsInteger;
@@ -423,6 +426,29 @@ begin
   Links := DS.FieldByName('Links').AsString;
 
   InfoLoaded := True;
+end;
+
+procedure TDBPopupMenuInfoRecord.WriteToDS(DS: TDataSet);
+begin
+  DS.FieldByName('Name').AsString := FName;
+  DS.FieldByName('FFileName').AsString := FileName;
+  DS.FieldByName('KeyWords').AsString := KeyWords;
+  DS.FieldByName('FileSize').AsInteger := FileSize;
+  DS.FieldByName('Rotated').AsInteger := Rotation;
+  DS.FieldByName('Rating').AsInteger := Rating;
+  DS.FieldByName('Access').AsInteger := Access;
+  DS.FieldByName('Attr').AsInteger := Attr;
+  DS.FieldByName('Comment').AsString := Comment;
+  DS.FieldByName('DateToAdd').AsDateTime := Date;
+  DS.FieldByName('aTime').AsDateTime := TimeOf(Time);
+  DS.FieldByName('IsDate').AsBoolean := IsDate;
+  DS.FieldByName('IsTime').AsBoolean := IsTime;
+  DS.FieldByName('Groups').AsString := Groups;
+  DS.FieldByName('StrTh').AsString := LongImageID;
+  DS.FieldByName('Width').AsInteger := Width;
+  DS.FieldByName('Height').AsInteger := Height;
+  DS.FieldByName('Include').AsBoolean := Include;
+  DS.FieldByName('Links').AsString := Links;
 end;
 
 { TExplorerFileInfo }

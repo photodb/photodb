@@ -1,4 +1,4 @@
-  @functions 
+﻿  @functions 
 
   .void ApplyActionsToSelected($ID,$FILE){
 

@@ -17,7 +17,7 @@ interface
 
 uses Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs,
      Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-     uMemory, uGOM, uTime, uTranslate;
+     uMemory, uGOM, uTime, uTranslate, uRuntime;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -309,12 +309,12 @@ const
      ScriptsManager : TScriptsManager = nil;
 
 function CoCreateGuid; external ole32 name 'CoCreateGuid';
-function ReadFile(FileName : string) : string;
+//function ReadFile(FileName : string) : string;
 function IsVariable(const s : string) : Boolean;
 
 implementation
 
- uses UnitScriptsMath, UnitScriptsFunctions, DBScriptFunctions
+ uses UnitScriptsMath, UnitScriptsFunctions, DBScriptFunctions, uMobileUtils
 
  {$IFDEF USEDEBUG}
    ,UnitDebugScriptForm
@@ -2143,11 +2143,8 @@ begin
     end;
    end else
    begin
-    if aFileExists(Command) then
-    begin
      IncludeFile:=Include(Command);
      Insert(IncludeFile,script,ce+1);
-    end;
    end;
   end;
   if RunScript<>'' then
@@ -2346,35 +2343,36 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-function aSetString(const S : String) : String;
+function ASetString(const S: string): string;
 begin
- Result:=S;
+  Result := S;
 end;
 
-function aSetInteger(int : integer) : integer;
+function ASetInteger(Int: Integer): Integer;
 begin
- Result:=int;
+  Result := Int;
 end;
 
-function aSetFloat(float : extended) : extended;
+function ASetFloat(Float: Extended): Extended;
 begin
- Result:=float;
+  Result := Float;
 end;
 
-function WriteCode(const str : string) : string;
+function WriteCode(const Str: string): string;
 begin
- Result:=str;
+  Result := Str;
 end;
 
 function Include(FileName : string) : string;
-var
+{var
   d, s : string;
   i, p : integer;
   F : TInitScriptFunction;
   FS : TStrings;
-  Script : TIncludeScript;
+  Script : TIncludeScript; }
 begin
-  if ScriptsManager <> nil then
+  Result := ReadScriptFile(FileName);
+{  if ScriptsManager <> nil then
   begin
     Script := ScriptsManager.GetIncludeScript(FileName);
     if Script <> nil then
@@ -2418,9 +2416,9 @@ begin
   Result:=Result;
  end;
   if ScriptsManager <> nil then
-    ScriptsManager.RegisterIncludeScript(FileName, Result);
+    ScriptsManager.RegisterIncludeScript(FileName, Result);  }
 end;
-
+    {
 function ReadFile(FileName : string) : string;
 var
   FS : TFileStream;
@@ -2462,15 +2460,15 @@ begin
  end;
   if ScriptsManager <> nil then
     ScriptsManager.RegisterIncludeScript(FileName, Result);
-end;
+end;    }
 
 function ReadScriptFile(FileName : string) : string;
 var
-  d, s : string;
-  i, p : integer;
-  F : TInitScriptFunction;
-  Script : TIncludeScript;
-  FS : TStrings;
+  D, S: string;
+  I, P: Integer;
+  F: TInitScriptFunction;
+  Script: TIncludeScript;
+  FS: TStrings;
 begin
   if ScriptsManager <> nil then
   begin
@@ -2481,51 +2479,60 @@ begin
       Exit;
     end;
   end;
- Result:='';
- if Length(FileName)<4 then exit;
- if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
- FileName:=Copy(FileName,2,Length(FileName)-2);
- if FileName[2]=':' then d:=FileName else
- d:=ExtractFileDir(paramstr(0))+'\'+FileName;
- if FileExists(d) then
- begin
-  FS:=TStringList.Create;
-  try
-    try
-     FS.LoadFromFile(d);
-    except
-     exit;
-    end;
-    for i:=0 to FS.Count-1 do
-    begin
-     s:=FS[i];
-     p:=PosExK('//',s);
-     if p>0 then
-     begin
-      FS[i]:=Copy(S,1,p-1);
-     end;
-    end;
-    Result:=FS.Text;
-  finally
-    FS.Free;
-  end;
+  Result := '';
+  if Length(FileName) < 4 then
+    Exit;
+  if (FileName[1] = '"') and (FileName[Length(FileName)] = '"') then
+    FileName := Copy(FileName, 2, Length(FileName) - 2);
+  if FileName[2] = ':' then
+    D := FileName
+  else if FolderView then
+    D := ExtractFileName(FileName)
+  else
+    D := ExtractFileDir(Paramstr(0)) + '\' + FileName;
 
-  Result := StringReplace(Result, #13#10 , '', [rfReplaceAll]);
-  if InitScriptFunction<>nil then
+  if FileExists(D) or FolderView then
   begin
-   @F:=InitScriptFunction;
-   Result:=F(Result);
+    FS := TStringList.Create;
+    try
+      try
+        if not FolderView then
+          FS.LoadFromFile(D)
+        else
+          FS.Text := ReadInternalFSContent(D)
+      except
+        Exit;
+      end;
+      for I := 0 to FS.Count - 1 do
+      begin
+        S := FS[I];
+        P := PosExK('//', S);
+        if P > 0 then
+        begin
+          FS[I] := Copy(S, 1, P - 1);
+        end;
+      end;
+      Result := FS.Text;
+    finally
+      FS.Free;
+    end;
+
+    Result := StringReplace(Result, #13#10, '', [RfReplaceAll]);
+    if InitScriptFunction <> nil then
+    begin
+      @F := InitScriptFunction;
+      Result := F(Result);
+    end;
+    Result := Result;
   end;
-  Result:=Result;
- end;
 
   if ScriptsManager <> nil then
     ScriptsManager.RegisterIncludeScript(FileName, Result);
- end;
+end;
 
-function Float(ext : Extended) : Extended;
+function Float(Ext: Extended): Extended;
 begin
- Result:=ext;
+  Result := Ext;
 end;
 
 function ArrayStringLength(aArray : TArrayOfString) : integer;
@@ -2541,12 +2548,12 @@ begin
     Result := '';
 end;
 
-function ArrayIntLength(aArray : TArrayOfInt) : integer;
+function ArrayIntLength(AArray: TArrayOfInt): Integer;
 begin
- Result:=Length(aArray);
+  Result := Length(AArray);
 end;
 
-function GetIntItem(aArray : TArrayOfInt; int : integer) : integer;
+function GetIntItem(AArray: TArrayOfInt; Int: Integer): Integer;
 begin
   if Int <= Length(AArray) - 1 then
     Result := AArray[Int]
@@ -2554,40 +2561,44 @@ begin
     Result := 0;
 end;
 
-procedure SetIntItem(aArray : TArrayOfInt; index, value : integer);
+procedure SetIntItem(AArray: TArrayOfInt; index, Value: Integer);
 begin
- if index<=Length(aArray)-1 then
- aArray[index]:=value;
+  if index <= Length(AArray) - 1 then
+    AArray[index] := Value;
 end;
 
-function GetIntArray(int : integer) : TArrayOfInt;
+function GetIntArray(Int: Integer): TArrayOfInt;
 begin
- if int<0 then
- SetLength(Result,0) else SetLength(Result,int);
+  if Int < 0 then
+    SetLength(Result, 0)
+  else
+    SetLength(Result, Int);
 end;
 
-function GetStringArray(int : integer) : TArrayOfInt;
+function GetStringArray(Int: Integer): TArrayOfInt;
 begin
- if int<0 then
- SetLength(Result,0) else SetLength(Result,int);
+  if Int < 0 then
+    SetLength(Result, 0)
+  else
+    SetLength(Result, Int);
 end;
 
-procedure AddIntItem(var aArray : TArrayOfInt; Value : integer);
+procedure AddIntItem(var AArray: TArrayOfInt; Value: Integer);
 var
-  l : integer;
+  L: Integer;
 begin
- l:=Length(aArray);
- SetLength(aArray,l+1);
- aArray[l]:=Value;
+  L := Length(AArray);
+  SetLength(AArray, L + 1);
+  AArray[L] := Value;
 end;
 
-procedure AddStringItem(var aArray : TArrayOfString; Value : String);
+procedure AddStringItem(var AArray: TArrayOfString; Value: string);
 var
-  l : integer;
+  L: Integer;
 begin
- l:=Length(aArray);
- SetLength(aArray,l+1);
- aArray[l]:=Value;
+  L := Length(AArray);
+  SetLength(AArray, L + 1);
+  AArray[L] := Value;
 end;
 
 function CreateItem(aOwner: TMenuItem; Caption, Icon, Script: string; Default : boolean; Tag : integer; ImageList : TImageList; var ImagesCount : integer; OnClick : TNotifyEvent) : TMenuItemW;
@@ -2710,52 +2721,49 @@ end;
 
 constructor TMenuItemW.Create(aOwner: TComponent);
 begin
- inherited;
- TopItem:=nil;
+  inherited;
+  TopItem := nil;
 end;
 
-procedure SetNamedValueInt(aScript : TScript; Name : string; Value : integer);
+procedure SetNamedValueInt(AScript: TScript; name: string; Value: Integer);
 begin
- SetNamedValue(aScript,Name,IntToStr(Value));
+  SetNamedValue(AScript, name, IntToStr(Value));
 end;
 
-procedure InitializeScript(aScript : TScript);
+procedure InitializeScript(AScript: TScript);
 begin
- aScript.ParentScript := nil;
+  AScript.ParentScript := nil;
 end;
 
-procedure SetBoolAttr(aScript : TScript; Name : String; Value : boolean);
+procedure SetBoolAttr(AScript: TScript; name: string; Value: Boolean);
 begin
- if Value then
- SetNamedValue(aScript,Name,'true') else SetNamedValue(aScript,  Name,'false');
+  if Value then
+    SetNamedValue(AScript, name, 'true')
+  else
+    SetNamedValue(AScript, name, 'false');
 end;
 
-procedure SetIntAttr(aScript : TScript; Name : String; Value :Integer);
+procedure SetIntAttr(AScript: TScript; name: string; Value: Integer);
 begin
- SetNamedValue(aScript,Name,IntToStr(Value));
+  SetNamedValue(AScript, name, IntToStr(Value));
 end;
 
-procedure Clear(Item : TMenuItem);
+procedure Clear(Item: TMenuItem);
 begin
- Item.Clear;
+  Item.Clear;
 end;
 
-procedure DeleteNoFirst(Item : TMenuItem);
+procedure DeleteNoFirst(Item: TMenuItem);
 var
-  i : integer;
+  I: Integer;
 begin
- for i:=1 to Item.Count-1 do
- Item.Delete(1);
+  for I := 1 to Item.Count - 1 do
+    Item.Delete(1);
 end;
 
-procedure aHalt;
+procedure ClearMemory(const AScript: TScript);
 begin
- Halt;
-end;
-
-procedure ClearMemory(const aScript : TScript);
-begin
- aScript.NamedValues.Clear;
+  AScript.NamedValues.Clear;
 end;
 
 function VarValue(aScript : TScript; const Variable : string; List : TListBox = nil) : string;
@@ -3008,7 +3016,6 @@ begin
   AddScriptFunction(Enviroment, 'CtrlKeyDown', F_TYPE_FUNCTION_IS_BOOLEAN, @CtrlKeyDown);
   AddScriptFunction(Enviroment, 'ShiftKeyDown', F_TYPE_FUNCTION_IS_BOOLEAN, @ShiftKeyDown);
   AddScriptFunction(Enviroment, 'NowString', F_TYPE_FUNCTION_IS_STRING, @NowString);
-  AddScriptFunction(Enviroment, 'Halt', F_TYPE_PROCEDURE_NO_PARAMS, @AHalt);
   AddScriptFunction(Enviroment, 'LoadFilesFromClipBoard', F_TYPE_FUNCTION_IS_ARRAYSTRING, @LoadFilesFromClipBoardA);
   AddScriptFunction(Enviroment, 'ClipboardCopyFile', F_TYPE_PROCEDURE_STRING, @CopyFile);
   AddScriptFunction(Enviroment, 'ClipboardCutFile', F_TYPE_PROCEDURE_STRING, @CutFile);

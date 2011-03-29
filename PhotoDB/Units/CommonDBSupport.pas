@@ -173,7 +173,7 @@ function GetTableNameByFileName(FileName : string) : string;
 Procedure AssingQuery(var QueryS, QueryD : TDataSet);
 
 function GetRecordsCount(Table : string) : integer;
-procedure InitializeDBLoadScript;
+//procedure InitializeDBLoadScript;
 function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : boolean;
 function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
 procedure PackTable(FileName : string);
@@ -182,7 +182,6 @@ function GetPathCRC(FileFullPath : string) : Integer;
 function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
 function TryOpenCDS(DS: TDataSet): Boolean;
-function GetDBViewMode: Boolean;
 procedure ForwardOnlyQuery(DS: TDataSet);
 procedure ReadOnlyQuery(DS: TDataSet);
 
@@ -474,17 +473,17 @@ var
 begin
   Result := 0;
   try
-  if (GetDBType(Table) = DB_TYPE_MDB) then
-  begin
-    FTable := GetQuery(Table); // ONLY MDB
-    try
-      SetSQL(FTable, 'SELECT COUNT(*) AS RecordsCount FROM ImageTable');
-      FTable.Open;
-      Result := FTable.FieldByName('RecordsCount').AsInteger;
-    finally
-      FreeDS(FTable);
+    if (GetDBType(Table) = DB_TYPE_MDB) then
+    begin
+      FTable := GetQuery(Table); // ONLY MDB
+      try
+        SetSQL(FTable, 'SELECT COUNT(*) AS RecordsCount FROM ImageTable');
+        FTable.Open;
+        Result := FTable.FieldByName('RecordsCount').AsInteger;
+      finally
+        FreeDS(FTable);
+      end;
     end;
-  end;
   except
     on e: Exception do
       TLogger.Instance.Message('GetRecordsCount throws an exception: ' + e.Message);
@@ -524,7 +523,7 @@ var
   FQuery: TDataSet;
 begin
   Result := True;
-  FQuery := GetQuery(TableName);
+  FQuery := GetQuery(TableName, True);
   try
     SQL := 'Update DBSettings Set Version=' + IntToStr(Settings.Version) + ', DBJpegCompressionQuality = ' + IntToStr
       (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = ' + IntToStr(Settings.ThSizePanelPreview)
@@ -874,10 +873,10 @@ procedure FreeDS(var DS : TDataSet);
 var
   Connection: TADOConnection;
 begin
+  if DS = nil then
+    Exit;
   FSync.Enter;
   try
-    if DS = nil then
-      Exit;
     if DS is TADOQuery then
     begin
       Connection := (DS as TADOQuery).Connection;
@@ -999,68 +998,7 @@ begin
     CompactDatabase_JRO(dbname, '', '')
   end;
 end;
-
-procedure InitializeDBLoadScript;
-{$IFNDEF DEBUG}
-var
-  LoadInteger: Integer;
-  aFS: TFileStream;
-  aScript: TScript;
-  LoadScript : string;
-{$ENDIF}
-begin
-  EventLog(':InitializeDBLoadScript()');
-  if DBLoadInitialized then
-    Exit;
-{$IFNDEF DEBUG}
-  begin
-    TW.I.Start('InitializeDB -> aScript');
-    AScript := TScript.Create('InitializeDBLoadScript');
-    try
-      AddScriptFunction(aScript.PrivateEnviroment,'ReadFile', F_TYPE_FUNCTION_STRING_IS_STRING, @UnitScripts.ReadFile);
-
-      SetNamedValue(AScript, '$PortableWork', 'False');
-      SetNamedValue(AScript, '$InitialString', DBFConnectionString);
-      SetNamedValue(AScript, '$Provider', MDBProvider);
-      LoadScript := '';
-      TW.I.Start('InitializeDB -> Load.dbini');
-      try
-        AFS := TFileStream.Create(ProgramDir + 'scripts\Load.dbini', FmOpenRead);
-        SetLength(LoadScript, AFS.Size);
-        AFS.Read(LoadScript[1], AFS.Size);
-        for LoadInteger := Length(LoadScript) downto 1 do
-        begin
-          if LoadScript[LoadInteger] = #10 then
-            LoadScript[LoadInteger] := ' ';
-          if LoadScript[LoadInteger] = #13 then
-            LoadScript[LoadInteger] := ' ';
-        end;
-        AFS.Free;
-      except
-        on E: Exception do
-          EventLog(':InitializeDBLoadScript() at Loading Script exception : ' + E.message);
-      end;
-      TW.I.Start('InitializeDB -> ExecuteScript');
-      try
-        ExecuteScript(nil, AScript, LoadScript, LoadInteger, nil);
-      except
-        on E: Exception do
-          EventLog(':InitializeDBLoadScript() at Executing Script exception : ' + E.message);
-      end;
-      TW.I.Start('InitializeDB -> Read vars');
-      PortableWork := AnsiUpperCase(GetNamedValueString(AScript, '$PortableWork')) = 'TRUE';
-      DBFConnectionString := GetNamedValueString(AScript, '$InitialString');
-      MDBProvider := GetNamedValueString(AScript, '$Provider');
-    finally
-      F(AScript);
-    end;
-  end;
-  TW.I.Start('InitializeDBLoadScript - end');
-  EventLog(':InitializeDBLoadScript() return true');
-  DBLoadInitialized := True;
-{$ENDIF}
-end;
-
+    
 { TADOConnections }
 
 function TADOConnections.Add: TADODBConnection;
@@ -1185,19 +1123,6 @@ begin
   FData := Value;
 end;
 
-function GetDBViewMode: Boolean;
-var
-  ProgramDir: string;
-begin
-  Result := False;
-  ProgramDir := IncludeTrailingBackSlash(ExtractFileDir(ParamStr(0)));
-  if not DBInDebug then
-    if FileExists(ProgramDir + 'FolderDB.photodb') or FileExists
-      (ProgramDir + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.photodb') or FileExists
-      (ProgramDir + AnsiLowerCase(GetFileNameWithoutExt(ParamStr(0))) + '.mdb') then
-      Result := True;
-end;
-
 function DBReadOnly: Boolean;
 var
   Attr: Integer;
@@ -1227,7 +1152,7 @@ initialization
   FSync := TCriticalSection.Create;
   ADOConnections := TADOConnections.Create;
 
-  if GetDBViewMode then
+  if FolderView then
   begin
     if DBReadOnly then
       DBFConnectionString:=DBViewConnectionString;

@@ -70,6 +70,7 @@ var
   Crypted : Boolean;
   MS, MD : TMemoryStream;
   FS : TFileStream;
+  IsPreviewAvalialbe: Boolean;
 
   procedure FixEXIFRotate;
   begin
@@ -155,6 +156,8 @@ const
     var
       Bitmap : TBitmap;
     begin
+      if NewGraphic = nil then
+        Exit;
       Bitmap := TBitmap.Create;
       try
         Bitmap.Assign(NewGraphic);
@@ -167,7 +170,11 @@ const
           DoResize(W, H, Bitmap, BitmapParam);
           FStringParam := FData.FileName;
           if SynchronizeEx(UpdatePreview) then
+          begin
             BitmapParam := nil;
+            IsPreviewAvalialbe := True;
+          end;
+
         finally
           F(BitmapParam);
         end;
@@ -271,6 +278,8 @@ const
 begin
   FreeOnTerminate := True;
   FEndProcessing := False;
+  NewGraphic := nil;
+  IsPreviewAvalialbe := False;
   CoInitialize(nil);
   try
 
@@ -457,7 +466,17 @@ begin
     end;
   finally
     ProcessedFilesCollection.RemoveFile(FData.FileName);
-    if not FProcessingParams.PreviewOptions.GeneratePreview then
+    if FProcessingParams.PreviewOptions.GeneratePreview then
+    begin
+      if not IsPreviewAvalialbe then
+      begin
+        BitmapParam := nil;
+        OriginalWidth := 0;
+        OriginalHeight := 0;
+        FStringParam := FData.FileName;
+        SynchronizeEx(UpdatePreview);
+      end;
+    end else
       SynchronizeEx(OnEnd);
     F(FData);
     CoUnInitialize;

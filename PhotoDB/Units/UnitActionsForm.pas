@@ -23,7 +23,6 @@ type
     LoadFromFileLink: TWebLink;
     CloseLink: TWebLink;
     ActionsImageList: TImageList;
-    OpenDialog1: TOpenDialog;
     procedure FormCreate(Sender: TObject);
     procedure CloseLinkClick(Sender: TObject);
     procedure ActionListDrawItem(Control: TWinControl; Index: Integer;
@@ -306,15 +305,10 @@ begin
 end;
 
 procedure TActionsForm.Reset;
-var
-  I : Integer;
 begin
   ActionList.Items.Clear;
   Cursor := 0;
-  for I := 0 to Actions.Count - 1 do
-    TObject(Actions[I]).Free;
-
-  Actions.Clear;
+  FreeList(Actions);
 end;
 
 function TActionsForm.GetFormID: string;

@@ -6,7 +6,7 @@ uses
    Classes, Windows, Messages, JPEG, Graphics, uTime,
    uConstants, uResources, UnitDBCommonGraphics, uMemory,
    uTranslate, ActiveX, uFileUtils, pngimage,
-   uFormUtils, uAppUtils;
+   uFormUtils, uAppUtils, uRuntime, uMobileUtils;
 
 type
   TSplashThread = class(TThread)
@@ -194,6 +194,9 @@ initialization
     SplashThread := TSplashThread.Create(False);
     TW.I.Start('TSplashThread - Created');
   end;
+  if FolderView then
+    LanguageInitCallBack := LoadLanguageFromMobileFS;
+
   TLanguageThread.Create(False);
 
 end.

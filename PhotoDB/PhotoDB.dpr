@@ -311,7 +311,9 @@ uses
   CCR.Exif.BaseUtils in 'External\CCR.Exif\CCR.Exif.BaseUtils.pas',
   CCR.Exif.TiffUtils in 'External\CCR.Exif\CCR.Exif.TiffUtils.pas',
   uSearchTypes in 'Units\uSearchTypes.pas',
-  uCryptUtils in 'Units\uCryptUtils.pas';
+  uCryptUtils in 'Units\uCryptUtils.pas',
+  uResourceUtils in 'Units\uResourceUtils.pas',
+  uMobileUtils in 'Units\uMobileUtils.pas';
 
 var
   S1: string;
@@ -439,10 +441,6 @@ begin
     if GetParamStrDBBool('/SLEEP') then
       Sleep(1000);
 
-    // INITIALIZAING APPLICATION
-    if GetDBViewMode then
-      FolderView := True;
-
     SetSplashProgress(15);
     TW.i.Start('Application.Initialize');
     Application.Initialize;
@@ -457,12 +455,10 @@ begin
     TW.i.Start('InitializeDBLoadScript');
     if not DBTerminating then
     begin
-      InitializeDBLoadScript;
-
       EventLog('TDBKernel.Create');
       DBKernel := TDBKernel.Create;
-      TW.I.Start('DBKernel.LogIn');
-      DBKernel.LogIn('', '', True);
+      TW.I.Start('DBKernel.DBInit');
+      DBKernel.DBInit;
 
       TW.I.Start('SetSplashProgress 35');
       SetSplashProgress(45);
@@ -480,9 +476,6 @@ begin
       TW.I.Start('SetSplashProgress 70');
       SetSplashProgress(70);
     end;
-
-    if DBInDebug or Emulation or GetDBViewMode then
-      AExplorerFolders := TExplorerFolders.Create;
 
     TW.I.Start('GetCIDA');
     SetSplashProgress(90);
@@ -684,10 +677,13 @@ begin
     if GetParamStrDBBool('/CPU1') then
       ProcessorCount := 1;
 
-    TW.i.Start('AllowDragAndDrop');
+    TW.I.Start('AllowDragAndDrop');
     AllowDragAndDrop;
 
-    TW.i.Start('Application.Run');
+    //test for mobile exe
+    //UpdateExeResources('c:\1.exe');
+
+    TW.I.Start('Application.Run');
 
     if not DBTerminating then
       Application.Run;

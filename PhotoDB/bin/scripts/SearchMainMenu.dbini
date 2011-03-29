@@ -1,4 +1,4 @@
-<#>[]{scripts\changedb_functions.dbini}
+﻿<#>[]{scripts\changedb_functions.dbini}
 <File>[0]
 {
   //all icons should be created before displaying menu (Choose Collection)

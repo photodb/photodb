@@ -238,7 +238,7 @@ type
     function hintrealA(Info: TDBPopupMenuInfoRecord): Boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    Procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID);
+    Procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
     procedure SpeedButton3Click(Sender: TObject);
     Procedure BeginUpdate();
     Procedure EndUpdate();
@@ -304,7 +304,6 @@ type
     procedure WaitForUnLock;
     Procedure SetOldPath(Path : String);
     procedure FormShow(Sender: TObject);
-//    procedure SetInfoToItemW(info : TOneRecordInfo; Number : Integer);
     procedure NewWindow1Click(Sender: TObject);
     procedure Cut1Click(Sender: TObject);
     procedure Paste1Click(Sender: TObject);
@@ -1767,7 +1766,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID);
+procedure TExplorerForm.SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
 var
   I : Integer;
   ExplorerInfo : TExplorerFileInfo;
@@ -1778,6 +1777,7 @@ begin
     if IsEqualGUID(ExplorerInfo.SID, FileGUID) then
     begin
       ExplorerInfo.Assign(Info);
+      ExplorerInfo.Loaded := Loaded;
       if Viewer <> nil then
         Viewer.UpdateInfoAboutFileName(Info.FileName, Info);
       Break;
@@ -6797,26 +6797,30 @@ end;
 procedure TExplorerForm.MakeFolderViewer1Click(Sender: TObject);
 var
   Query : TDataSet;
-  IncludeSub : boolean;
+  IncludeSub : Boolean;
   Folder: string;
-  FileList: TArStrings;
+  FileList: TStrings;
 begin
-  SetLength(FileList, 1);
-  FileList[0] := GetCurrentPath;
-  IncludeSub := False;
-  Query := GetQuery;
+  FileList := TStringList.Create;
   try
-    Folder := IncludeTrailingBackslash(GetCurrentPath);
-    SetSQL(Query, 'SELECT count(*) AS CountField FROM $DB$ WHERE (FFileName LIKE :FolderA)');
-    SetStrParam(Query, 0, '%' + Folder + NormalizeDBStringLike('%\%'));
-    Query.Open;
-    if Query.FieldByName('CountField').AsInteger > 0 then
-      IncludeSub := MessageBoxDB(Handle, L('Include subfolders?'), L('Question'), TD_BUTTON_OKCANCEL,
-        TD_ICON_QUESTION) = ID_OK;
+    FileList.Add(GetCurrentPath);
+    IncludeSub := False;
+    Query := GetQuery;
+    try
+      Folder := IncludeTrailingBackslash(GetCurrentPath);
+      SetSQL(Query, 'SELECT count(*) AS CountField FROM $DB$ WHERE (FFileName LIKE :FolderA)');
+      SetStrParam(Query, 0, '%' + Folder + NormalizeDBStringLike('%\%'));
+      Query.Open;
+      if Query.FieldByName('CountField').AsInteger > 0 then
+        IncludeSub := MessageBoxDB(Handle, L('Include subfolders?'), L('Question'), TD_BUTTON_OKCANCEL,
+          TD_ICON_QUESTION) = ID_OK;
+    finally
+      FreeDS(Query);
+    end;
+    SaveQuery(GetCurrentPath, IncludeSub, FileList);
   finally
-    FreeDS(Query);
+    F(FileList);
   end;
-  SaveQuery(nil, GetCurrentPath, IncludeSub, FileList);
 end;
 
 procedure TExplorerForm.AutoCompliteTimerTimer(Sender: TObject);
@@ -7309,30 +7313,34 @@ end;
 
 procedure TExplorerForm.MakeFolderViewer2Click(Sender: TObject);
 var
-  FileList : TArStrings;
-  i, index : integer;
+  FileList : TStrings;
+  I, Index : integer;
 begin
- if ListView1Selected<>nil then
- begin
-  SetLength(FileList,0);
-  for i:=0 to ElvMain.Items.Count-1 do
-  If ElvMain.Items[i].Selected then
+  if ListView1Selected <> nil then
   begin
-   index:=ItemIndexToMenuIndex(i);
-   if (fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER) or (fFilesInfo[index].FileType=EXPLORER_ITEM_IMAGE) then
-   begin
-    SetLength(FileList,Length(FileList)+1);
-    FileList[Length(FileList)-1]:=fFilesInfo[index].FileName;
-   end;
+    FileList := TStringList.Create;
+    try
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE)
+            then
+              FileList.Add(FFilesInfo[Index].FileName)
+
+        end;
+      SaveQuery(GetCurrentPath, False, FileList);
+    finally
+      F(FileList);
+    end;
   end;
-  SaveQuery(nil, GetCurrentPath, false, FileList);
- end;
 end;
 
 procedure TExplorerForm.ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
-  if not (ssCtrl in Shift) then exit;
+  if not (ssCtrl in Shift) then
+    Exit;
 
   if WheelDelta < 0 then
     ZoomOut

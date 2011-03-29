@@ -40,6 +40,7 @@ function SilentDeleteFiles(Handle: HWnd; Names: TStrings; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
 procedure DeleteDirectoryWithFiles(DirectoryName: string);
 procedure GetDirectoresOfPath(Dir: string; Listing : TStrings);
+procedure GetFilesOfPath(Dir: string; Listing : TStrings);
 procedure DelDir(Dir: string; Mask: string);
 procedure GetFileNamesFromDrive(Dir, Mask: string; Files: TStrings; var MaxFilesCount: Integer;
   MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
@@ -784,6 +785,28 @@ begin
       if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
         if (SearchRec.Attr and FaDirectory <> 0) then
           Listing.Add(SearchRec.name);
+
+      Found := Sysutils.FindNext(SearchRec);
+    end;
+  finally
+    FindClose(SearchRec);
+  end;
+end;
+
+procedure GetFilesOfPath(Dir: string; Listing : TStrings);
+var
+  Found: Integer;
+  SearchRec: TSearchRec;
+begin
+  Listing.Clear;
+  Dir := IncludeTrailingBackslash(Dir);
+  Found := FindFirst(Dir + '*.*', faAnyFile - FaDirectory, SearchRec);
+  try
+    while Found = 0 do
+    begin
+      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+        if (SearchRec.Attr and FaDirectory = 0) then
+          Listing.Add(Dir + SearchRec.name);
 
       Found := Sysutils.FindNext(SearchRec);
     end;

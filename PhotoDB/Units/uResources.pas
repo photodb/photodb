@@ -2,7 +2,7 @@ unit uResources;
 
 interface
 
-uses Windows, SysUtils, Classes, JPEG, pngImage, uMemory;
+uses Windows, SysUtils, Classes, JPEG, pngImage, uMemory, uResourceUtils;
 
 function GetFolderPicture : TPNGImage;
 function GetLogoPicture : TPNGImage;
@@ -40,33 +40,10 @@ function GetPrinterPatternImage : TJpegImage;
 {$R cmd_icons.res}
 {$R updater.res}
 
-implementation
+//for mobile test
+{$R MOBILE_FS.res}
 
-function GetRCDATAResourceStream(ResName : string) : TMemoryStream;
-var
-  MyRes  : Integer;
-  MyResP : Pointer;
-  MyResS : Integer;
-begin
-  Result := nil;
-  MyRes := FindResource(HInstance, PWideChar(ResName), RT_RCDATA);
-  if MyRes <> 0 then begin
-    MyResS := SizeOfResource(HInstance,MyRes);
-    MyRes := LoadResource(HInstance,MyRes);
-    if MyRes <> 0 then begin
-      MyResP := LockResource(MyRes);
-      if MyResP <> nil then begin
-        Result := TMemoryStream.Create;
-        with Result do begin
-          Write(MyResP^, MyResS);
-          Seek(0, soFromBeginning);
-        end;
-        UnLockResource(MyRes);
-      end;
-      FreeResource(MyRes);
-    end
-  end;
-end;
+implementation
 
 function LoadPNGFromRES(ResName : string) : TPNGImage;
 var

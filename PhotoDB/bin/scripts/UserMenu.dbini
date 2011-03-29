@@ -1,4 +1,4 @@
-<User menu>[DB_IC_MY_COMPUTER]
+﻿<User menu>[DB_IC_MY_COMPUTER]
 {
 initialization:
   $Visible=true;
