@@ -2392,8 +2392,7 @@ begin
     FileName := Copy(FileName, 2, Length(FileName) - 2);
   if FileName[2] = ':' then
     D := FileName
-    //TODO:!!!
-  else if False{FolderView} then
+  else if FolderView then
     D := ExtractFileName(FileName)
   else
     D := ExtractFileDir(Paramstr(0)) + '\' + FileName;
@@ -2403,8 +2402,7 @@ begin
     FS := TStringList.Create;
     try
       try
-        //TODO:!!!
-        if {not FolderView}True{FolderView} then
+        if not FolderView then
           FS.LoadFromFile(D)
         else
           FS.Text := ReadInternalFSContent(D)

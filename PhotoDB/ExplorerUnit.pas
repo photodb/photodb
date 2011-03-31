@@ -1933,7 +1933,7 @@ var
   I : Integer;
 begin
   for I := 0 to ElvMain.Items.Count - 1 do
-    TDataObject(ElvMain.Items[I].Data).Free;
+    TObject(ElvMain.Items[I].Data).Free;
   ElvMain.Items.Clear;
 end;
 
@@ -2941,13 +2941,14 @@ end;
 
 procedure TExplorerForm.DeleteItemWithIndex(Index: Integer);
 var
-  MenuIndex : integer;
+  MenuIndex : Integer;
 begin
   LockItems;
   try
-    MenuIndex:=ItemIndexToMenuIndex(Index);
+    MenuIndex := ItemIndexToMenuIndex(Index);
+    TObject(ElvMain.Items[Index].Data).Free;
     ElvMain.Items.Delete(Index);
-    fFilesInfo.Delete(MenuIndex);
+    FFilesInfo.Delete(MenuIndex);
   finally
     UnLockItems;
   end;

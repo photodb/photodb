@@ -679,9 +679,6 @@ begin
     TW.I.Start('AllowDragAndDrop');
     AllowDragAndDrop;
 
-    //test for mobile exe
-    UpdateExeResources('c:\1.exe');
-
     TW.I.Start('Application.Run');
 
     if not DBTerminating then

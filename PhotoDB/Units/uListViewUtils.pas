@@ -122,7 +122,7 @@ begin
 
   if (esosHotTracking in Item.State) then
   begin
-    if (Rating = 0) and not FolderView then
+    if (Rating = 0) and (not FolderView or (ID > 0)) then
       Rating := -1;
 
     if not Item.Selected then

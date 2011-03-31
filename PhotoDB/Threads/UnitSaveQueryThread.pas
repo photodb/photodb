@@ -7,7 +7,7 @@ uses
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
   acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants,
   uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate,
-  uDBThread, uResourceUtils, uThreadForm, uThreadEx;
+  uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils;
 
 type
   TSaveQueryThread = class(TThreadEx)
@@ -177,19 +177,23 @@ begin
 
         SetMaxValue(Length(FGroupsFounded));
         FRegGroups := GetRegisterGroupList(True);
-        CreateGroupsTableW(GroupsTableFileNameW(FDBFileName));
+        try
+          CreateGroupsTableW(GroupsTableFileNameW(FDBFileName));
 
-        for I := 0 to Length(FGroupsFounded) - 1 do
-        begin
-          if IsTerminated then
-            Break;
-          SetProgress(I);
-          for J := 0 to Length(FRegGroups) - 1 do
-            if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
-            begin
-              AddGroupW(FRegGroups[J], GroupsTableFileNameW(ExtractFilePath(FDBFileName) + SaveToDBName + '.photodb'));
+          for I := 0 to Length(FGroupsFounded) - 1 do
+          begin
+            if IsTerminated then
               Break;
-            end;
+            SetProgress(I);
+            for J := 0 to Length(FRegGroups) - 1 do
+              if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
+              begin
+                AddGroupW(FRegGroups[J], GroupsTableFileNameW(ExtractFilePath(FDBFileName) + SaveToDBName + '.photodb'));
+                Break;
+              end;
+          end;
+        finally
+          FreeGroups(FRegGroups);
         end;
       finally
         FreeDS(FTable);
@@ -198,6 +202,8 @@ begin
 
       FExeFileName := ExtractFilePath(FDBFileName) + SaveToDBName + '.exe';
       CopyFile(PChar(Application.Exename), PChar(FExeFileName), False);
+      UpdateExeResources(FExeFileName);
+
       NewIcon := TIcon.Create;
       try
         SynchronizeEx(ReplaceIconAction);

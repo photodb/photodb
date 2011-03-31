@@ -210,8 +210,7 @@ begin
   FNamedValues.GetValueByName('$LINK_TYPE_TXT').SetInteger(5);
   FNamedValues.GetValueByName('$InvalidQuery').SetString(#8);
 
-  //TODO:
-  FNamedValues.GetValueByName('$Mobile').SetBool(True);//FolderView;
+  FNamedValues.GetValueByName('$Mobile').SetBool(FolderView);
   GOM.AddObj(Self);
 end;
 
