@@ -45,7 +45,8 @@ uses
   uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
   uInstallProcess in 'uInstallProcess.pas',
   uSetupDatabaseActions in 'uSetupDatabaseActions.pas',
-  uStringUtils in '..\PhotoDB\Units\uStringUtils.pas';
+  uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
+  uLangUtils in 'uLangUtils.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

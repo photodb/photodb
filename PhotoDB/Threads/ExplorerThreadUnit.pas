@@ -419,7 +419,7 @@ begin
                       if FE and not EM and ExplorerInfo.ShowSimpleFiles then
                       begin
                         if FolderView then
-                          if AnsiLowerCase(SearchRec.name) = 'folderdb.ldb' then
+                          if AnsiLowerCase(ExtractFileExt(SearchRec.name)) = '.ldb' then
                             Continue;
 
                         AddOneExplorerFileInfo(FFiles, FFolder + SearchRec.name, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
@@ -641,7 +641,8 @@ begin
     begin
       Info := FPacketInfos[I];
       Icon := FPacketImages[I].Icon;
-      FSender.AddIcon(Icon, True, Info.SID);
+      if not FSender.AddIcon(Icon, True, Info.SID) then
+        FPacketImages[I].Graphic := nil;
 
       NewItem := FSender.AddItem(Info.SID);
       S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
@@ -1268,7 +1269,7 @@ begin
   FE := FileExistsSafe(Info.FileName);
 
   if FolderView then
-    if AnsiLowerCase(ExtractFileName(Info.FileName)) = 'folderdb.ldb' then
+    if AnsiLowerCase(ExtractFileExt(Info.FileName)) = '.ldb' then
       Exit;
 
   FFiles := TExplorerFileInfos.Create;
@@ -1693,14 +1694,14 @@ begin
 
   FQuery := GetQuery;
   ReadOnlyQuery(FQuery);
-  UnProcessPath(FFolder);
-  if FolderView then
-    FFolder := ExtractFileName(FFolder);
 
-  SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name LIKE :Name');
+  //TODO:!!!
+  UnProcessPath(FFolder);
+
+  SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
 
   SetIntParam(FQuery, 0, GetPathCRC(Info.FileName));
-  SetStrParam(FQuery, 1, NormalizeDBStringLike(AnsiLowercase(ExtractFileName(Info.FileName))));
+  SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(Info.FileName)));
   try
     FQuery.Active := True;
   except
@@ -1728,7 +1729,7 @@ begin
       CurrentFile := FFiles[0].FileName;
 
     if ExplorerInfo.ShowThumbNailsForImages then
-      ReplaceImageItemImage(FFiles[0].FileName, -1, GUIDParam); // todo: filesize is undefined
+      ReplaceImageItemImage(FFiles[0].FileName, FFiles[0].FileSize, GUIDParam); // todo: filesize is undefined
 
     IntParam := Info.ID;
     SynchronizeEx(EndUpdateID);
@@ -1759,27 +1760,26 @@ procedure TExplorerThread.ReplaceImageInExplorerB;
 begin
   if TempBitmap <> nil then
   begin
-    FSender.ReplaceBitmap(TempBitmap, GUIDParam, True, BooleanParam)
+    if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, True, BooleanParam) then
+      F(TempBitmap);
   end else
-    FSender.ReplaceIcon(FIcon, GUIDParam, true);
+    if not FSender.ReplaceIcon(FIcon, GUIDParam, true) then
+      F(FIcon);
 end;
 
 procedure TExplorerThread.MakeIconForFile;
 begin
   TempBitmap := nil;
   FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
-  SynchronizeEx(ReplaceImageInExplorerB);
+  if not SynchronizeEx(ReplaceImageInExplorerB) then
+    F(FIcon);
 end;
 
 procedure TExplorerThread.UpdateSimpleFile;
 begin
   StringParam := Fmask;
-// SynchronizeEx(FileNeeded);
-  // If BooleanResult then
-  begin
-    CurrentFile := FFolder;
-    MakeIconForFile;
-  end;
+  CurrentFile := FFolder;
+  MakeIconForFile;
 end;
 
 procedure TExplorerThread.ChangeIDImage;

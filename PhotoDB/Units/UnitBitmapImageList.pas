@@ -16,6 +16,7 @@ type
     SelfReleased : Boolean;
     Ext : string;
     constructor Create;
+    destructor Destroy; override;
     property Graphic : TGraphic read GetGraphic write SetGraphic;
  end;
 
@@ -145,6 +146,11 @@ begin
   Icon := nil;
   SelfReleased := False;
   IsBitmap := True;
+end;
+
+destructor TBitmapImageListImage.Destroy;
+begin
+  inherited;
 end;
 
 function TBitmapImageListImage.GetGraphic: TGraphic;

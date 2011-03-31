@@ -331,6 +331,7 @@ begin
   CheckActivationStatus;
   Result := (FIsDemoMode and CanUseFreeActivation)
             or (not IsFullMode and not CanUseFreeActivation);
+  Result := Result or FolderView;
 end;
 
 function TActivationManager.GetIsFullMode: Boolean;

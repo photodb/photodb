@@ -5,14 +5,15 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
-  StrUtils, uTranslate, uLogger, pngimage, uInstallZip, uSysUtils;
+  StrUtils, uTranslate, uLogger, pngimage, uInstallZip, uSysUtils, uLangUtils;
 
 type
   TLanguageItem = class(TObject)
   public
-    Name : string;
-    Code : string;
-    Image : TPngImage;
+    Name: string;
+    Code: string;
+    Image: TPngImage;
+    LangCode: Integer;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -207,14 +208,15 @@ end;
 
 procedure TFormLanguage.LoadLanguageList;
 var
-  MS : TMemoryStream;
-  FileList : TStrings;
-  Size : Int64;
-  I : Integer;
-  Language : TLanguage;
-  LangItem : TLanguageItem;
-  ImageStream : TMemoryStream;
-  PNG : TPNGImage;
+  MS: TMemoryStream;
+  FileList: TStrings;
+  Size: Int64;
+  I: Integer;
+  LangCode: DWord;
+  Language: TLanguage;
+  LangItem: TLanguageItem;
+  ImageStream: TMemoryStream;
+  PNG: TPNGImage;
 begin
   LbLanguages.Clear;
   MS := TMemoryStream.Create;
@@ -245,6 +247,7 @@ begin
               end;
               LangItem.Name := Language.Name;
               LangItem.Code := StringReplace(StringReplace(FileList[I], LanguageFileMask, '', []), ExtractFileExt(FileList[I]), '', []);
+              LangItem.LangCode := Language.LangCode;
               LbLanguages.Items.AddObject(Language.Name, LangItem);
             finally
               F(ImageStream);
@@ -261,6 +264,13 @@ begin
     F(MS);
   end;
   LbLanguages.Selected[0] := True;
+  LangCode := PrimaryLangID(GetUserDefaultUILanguage);
+  for I := 0 to LbLanguages.Items.Count - 1 do
+    if TLanguageItem(LbLanguages.Items.Objects[I]).LangCode = LangCode then
+    begin
+      LbLanguages.Selected[I] := True;
+      LbLanguagesClick(Self);
+    end;
   LoadLanguage;
 end;
 

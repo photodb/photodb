@@ -15,6 +15,8 @@
   <->[]{}
   <Select collection>[DB_IC_ADDTODB]
   {
+   initialization:
+     if ($Mobile=true) {InVisible;};
    run:  
    //Empty item to show arrow
    <->[]{}
@@ -54,11 +56,17 @@
   }
   <Show update window>[DB_IC_BOX]
   {
-    ShowUpdateWindow;
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      ShowUpdateWindow;
   }
   <Collection Manager>[DB_IC_ADMINTOOLS]
   {
-    DoManager;
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      DoManager;
   }
   <Image editor>[DB_IC_IMEDITOR]
   {  
@@ -88,7 +96,10 @@
   <->[]{}
   <Export images to CD>[DB_IC_CD_EXPORT]
   {
-    DoCDExport;
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      DoCDExport;
   }  
   <CD mapping>[DB_IC_CD_MAPPING]
   {

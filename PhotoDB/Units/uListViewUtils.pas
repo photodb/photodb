@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls, Math,
   UnitDBCommon, Dolphin_DB, UnitBitmapImageList, UnitDBCommonGraphics, uMemory,
-  MPCommonUtilities, uDBDrawing, TLayered_Bitmap, uGraphicUtils, uConstants;
+  MPCommonUtilities, uDBDrawing, TLayered_Bitmap, uGraphicUtils, uConstants, uRuntime;
 
 type
   TEasyCollectionItemX = class(TEasyCollectionItem)
@@ -61,8 +61,9 @@ procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : 
                              Crypted : Boolean; var Exists : Integer;
                              CustomInfo: string = '');
 
+procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string); overload;
 procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList; Caption : string;
-                          DragPoint : TPoint; var SpotX, SpotY : Integer);
+                          DragPoint : TPoint; var SpotX, SpotY : Integer); overload;
 procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string); overload;
 procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
@@ -121,7 +122,7 @@ begin
 
   if (esosHotTracking in Item.State) then
   begin
-    if (Rating = 0) then
+    if (Rating = 0) and not FolderView then
       Rating := -1;
 
     if not Item.Selected then
@@ -208,6 +209,27 @@ begin
 
   if ShowInfo then
     DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Rating, Rotate, Access, FileName, Crypted, Exists, ID);
+end;
+
+procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string);
+var
+  BitmapImageList: TBitmapImageList;
+  DragImage: TBitmap;
+begin
+  BitmapImageList := TBitmapImageList.Create;
+  try
+    DragImage := TBitmap.Create;
+    try
+      DragImage.Assign(Bitmap);
+      BitmapImageList.AddBitmap(DragImage, False);
+      CreateDragImageEx(nil, DragImageList, BitmapImageList, clGradientActiveCaption,
+        clGradientInactiveCaption, clHighlight, Font, ExtractFileName(FileName));
+    finally
+      F(DragImage);
+    end;
+  finally
+    F(BitmapImageList);
+  end;
 end;
 
 procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;

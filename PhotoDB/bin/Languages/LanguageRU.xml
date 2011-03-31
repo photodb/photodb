@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<language name="Русский язык" image="LanguageRU.png" autor="Команда PhotoDB" langCode="419">
+<language name="Русский язык" image="LanguageRU.png" autor="Команда PhotoDB" code="ru" langCode="25">
   <scope name="">
     <translate name="Ok" value="Да" />
     <translate name="Cancel" value="Отмена" />
@@ -646,7 +646,7 @@
     <translate name="Scripts" value="Сценарии" />
     <translate name="Functions list" value="Список функций" />
     <translate name="Variables" value="Переменные" />
-    <translate name="Open scripts directory" value="Открыть папку со сценарими" />
+    <translate name="Open scripts directory" value="Открыть папку со сценариями" />
     <translate name="Select all" value="Выделить всё" />
     <translate name="Show updater" value="Показать окно обновления" />
     <translate name="Load results from file" value="Загрузить результаты из файла" />
@@ -657,7 +657,11 @@
     <translate name="Edit groups" value="Редактировать группы" />
     <translate name="Busy..." value="Занято..." />	
     <translate name="Unable to show menu!" value="невозможно отобразить меню!" />
-    <translate name="Do you really want to delete this info from Collection?" value="Вы действительно хотите удалить эту информацию из БД?" />
+    <translate name="Do you really want to delete this info from collection?" value="Вы действительно хотите удалить эту информацию из БД?" />
+    <translate name="Thumbnail" value="Предпросмотры" />
+    <translate name="Icons" value="Иконки" />
+    <translate name="Table" value="Таблица" />
+    <translate name="List" value="Список" />
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />

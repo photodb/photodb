@@ -359,12 +359,11 @@ begin
     if (FCheckCount = 20) and not FolderView then //after 2 sec.
     begin
       EventLog('Loading Kernel.dll');
-      TW.i.Start('StartCRCCheckThread');
+      TW.I.Start('StartCRCCheckThread');
       TLoad.Instance.StartCRCCheckThread;
     end;
     if (FCheckCount = 50) and not FolderView then //after 5 sec.
     begin
-
       {$IFDEF LICENCE}
       EventLog('Verifyng....');
 

@@ -495,26 +495,25 @@ begin
 
     TW.I.Start('CHECKS');
 
-    if not FolderView then
-      if not DBTerminating then
-        if not GetParamStrDBBool('/NoFaultCheck') then
-          if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1')
-            and not DBInDebug then
+    if not FolderView and not DBTerminating then
+      if not GetParamStrDBBool('/NoFaultCheck') then
+        if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1')
+          and not DBInDebug then
+        begin
+          EventLog('Application terminated...');
+          if ID_OK = MessageBoxDB(FormManager.Handle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
           begin
-            EventLog('Application terminated...');
-            if ID_OK = MessageBoxDB(FormManager.Handle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
-            begin
-              CloseSplashWindow;
-              Settings.WriteBool('StartUp', 'Pack', False);
-              Application.CreateForm(TCMDForm, CMDForm);
-              CMDForm.PackPhotoTable;
-              R(CMDForm);
-            end;
+            CloseSplashWindow;
+            Settings.WriteBool('StartUp', 'Pack', False);
+            Application.CreateForm(TCMDForm, CMDForm);
+            CMDForm.PackPhotoTable;
+            R(CMDForm);
           end;
+        end;
 
     // SERVICES ----------------------------------------------------
 
-    if not DBTerminating then
+    if not FolderView and not DBTerminating then
       if GetParamStrDBBool('/CONVERT') or Settings.ReadBool('StartUp',
         'ConvertDB', False) then
       begin
@@ -524,7 +523,7 @@ begin
         ConvertDB(dbname);
       end;
 
-    if not DBTerminating then
+    if not FolderView and not DBTerminating then
       if GetParamStrDBBool('/PACKTABLE') or Settings.ReadBool('StartUp', 'Pack', False) then
       begin
         CloseSplashWindow;
@@ -535,7 +534,7 @@ begin
         R(CMDForm);
       end;
 
-    if not DBTerminating then
+    if not FolderView and not DBTerminating then
       if GetParamStrDBBool('/BACKUP') then
       begin
         CloseSplashWindow;
@@ -545,7 +544,7 @@ begin
         R(CMDForm);
       end;
 
-    if not DBTerminating then
+    if not FolderView and not DBTerminating then
       if GetParamStrDBBool('/RECREATETHTABLE') or Settings.ReadBool('StartUp', 'RecreateIDEx', False) then
       begin
         CloseSplashWindow;
@@ -556,7 +555,7 @@ begin
         R(CMDForm);
       end;
 
-    if not DBTerminating then
+    if not FolderView and not DBTerminating then
       if GetParamStrDBBool('/SHOWBADLINKS') or Settings.ReadBool('StartUp', 'ScanBadLinks', False) then
       begin
         CloseSplashWindow;
@@ -567,7 +566,7 @@ begin
         R(CMDForm);
       end;
 
-    if not DBTerminating then
+    if not FolderView and not DBTerminating then
       if GetParamStrDBBool('/OPTIMIZE_DUBLICTES') or Settings.ReadBool('StartUp', 'OptimizeDublicates', False) then
       begin
         CloseSplashWindow;
@@ -578,7 +577,7 @@ begin
         R(CMDForm);
       end;
 
-    if not DBTerminating then
+    if not FolderView and not DBTerminating then
       if Settings.ReadBool('StartUp', 'Restore', False) then
       begin
         CloseSplashWindow;
@@ -589,7 +588,7 @@ begin
         R(CMDForm);
       end;
 
-    if not DBTerminating and GetParamStrDBBool('/install') then
+    if not FolderView and not DBTerminating and GetParamStrDBBool('/install') then
     begin
       if not FileExistsSafe(dbname) then
       begin
@@ -622,10 +621,10 @@ begin
     If not DBTerminating then
     begin
       EventLog('Run manager...');
-      if not GetParamStrDBBool('/NoFullRun') then
+      if not GetParamStrDBBool('/NoFullRun') or FolderView then
         FormManager.Run;
 
-      if not DBTerminating then
+      if not DBTerminating and not FolderView then
       begin
         if AnsiUpperCase(ParamStr(1)) = '/GETPHOTOS' then
           if ParamStr(2) <> '' then
@@ -681,7 +680,7 @@ begin
     AllowDragAndDrop;
 
     //test for mobile exe
-    //UpdateExeResources('c:\1.exe');
+    UpdateExeResources('c:\1.exe');
 
     TW.I.Start('Application.Run');
 
@@ -694,6 +693,8 @@ begin
         TLoad.Instance.RequaredCRCCheck;
         TLoad.Instance.RequaredDBSettings;
       end;
+
+    TryRemoveConnection(DBName, True);
   except
     on e : Exception do
     begin

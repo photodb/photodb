@@ -282,7 +282,7 @@ type
     procedure FormDeactivate(Sender: TObject);
      Procedure Select(Item : TEasyItem; GUID : TGUID);
     function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : Boolean; Big : boolean = False): Boolean;
-    procedure ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean);
+    function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : Boolean) : Boolean;
     function AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
     procedure ListView1KeyPress(Sender: TObject; var Key: Char);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
@@ -298,10 +298,9 @@ type
     Procedure AddInfoAboutFile(Info : TExplorerFileInfos);
     function FileNeededW(FileSID : TGUID) : Boolean;  //для больших имаг
     procedure AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
-    procedure AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID);
+    function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
     Function ItemIndexToMenuIndex(Index : Integer) : Integer;
     Function MenuIndexToItemIndex(Index : Integer) : Integer;
-    procedure WaitForUnLock;
     Procedure SetOldPath(Path : String);
     procedure FormShow(Sender: TObject);
     procedure NewWindow1Click(Sender: TObject);
@@ -1117,7 +1116,7 @@ begin
     ResetPassword1.Visible := False;
     NewWindow1.Visible := True;
     AddFile1.Caption := L('Add disk');
-    AddFile1.Visible := True;
+    AddFile1.Visible := not FolderView;
     Properties1.Visible := True;
     Open1.Visible := True;
     SlideShow1.Visible := True;
@@ -1157,7 +1156,7 @@ begin
     Refresh1.Visible := True;
     NewWindow1.Visible := True;
     AddFile1.Caption := L('Add directory');
-    AddFile1.Visible := True;
+    AddFile1.Visible := not FolderView;
     Properties1.Visible := True;
     Paste2.Visible := True;
     Open1.Visible := True;
@@ -1213,7 +1212,7 @@ begin
     Delete1.Visible := True;
     AddFile1.Caption := L('Add file');
     if FFilesInfo[PmItemPopup.Tag].ID = 0 then
-      AddFile1.Visible := True
+      AddFile1.Visible := not FolderView
     else
       AddFile1.Visible := False;
     Cut2.Visible := True;
@@ -2633,10 +2632,11 @@ begin
     end;
 end;
 
-procedure TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean);
+function TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean): Boolean;
 var
   I, Index, C : Integer;
 begin
+  Result := False;
   for I := 0 to FFilesInfo.Count - 1 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
@@ -2654,6 +2654,7 @@ begin
       end;
       FBitmapImageList[C].Graphic := Icon;
       FBitmapImageList[C].SelfReleased := True;
+      Result := True;
 
       ElvMain.Items[index].Invalidate(False);
 
@@ -2678,15 +2679,17 @@ begin
     end;
 end;
 
-procedure TExplorerForm.AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID);
+function TExplorerForm.AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
 var
   I : Integer;
 begin
+  Result := False;
   for I := FFilesInfo.Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
       begin
         FBitmapImageList.AddIcon(Icon, SelfReleased);
         FFilesInfo[I].ImageIndex := FBitmapImageList.Count - 1;
+        Result := True;
         Break;
       end;
 end;
@@ -3171,13 +3174,6 @@ begin
   GlobalLock := False;
 end;
 
-procedure TExplorerForm.WaitForUnLock;
-begin
-  repeat
-    Application.ProcessMessages;
-  until not GlobalLock;
-end;
-
 procedure TExplorerForm.SetOldPath(Path: string);
 begin
   FOldPatch := Path;
@@ -3251,9 +3247,10 @@ begin
     LoadFIlesFromClipBoard(Effects, Files);
     Paste1.Enabled := Files.Count > 0;
   finally
-    Files.Free;
+    F(Files);
   end;
 
+  Addfolder1.Visible := not FolderView;
   MakeFolderViewer1.Visible := ((GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
 
   if GetCurrentPathW.PType=EXPLORER_ITEM_MYCOMPUTER then
@@ -3784,7 +3781,7 @@ begin
     B := ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and B);
   end;
 
-  if B then
+  if B and not FolderView then
   begin
     if SelCount = 1 then AddLink.Text := L('Add object');
     if SelCount > 1 then
@@ -4641,7 +4638,7 @@ begin
  begin
     TempFolderName := TreeView.SelectedFolder.PathName;
     OpeninExplorer1.Visible := DirectoryExists(TempFolderName);
-    AddFolder2.Visible := OpeninExplorer1.Visible;
+    AddFolder2.Visible := OpeninExplorer1.Visible and not FolderView;
     View2.Visible := OpeninExplorer1.Visible;
   end else
   begin
@@ -5244,71 +5241,75 @@ var
 begin
   Outdrag := False;
   DropInfo := TStringList.Create;
-  DropFileTarget1.Files.AssignTo(DropInfo);
+  try
+    DropFileTarget1.Files.AssignTo(DropInfo);
 
-  if SsRight in LastShift then
-  begin
-    Move1.Visible := not SelfDraging;
-    FDBCanDragW := False;
-    FDBCanDrag := False;
-    LastListViewSelCount := SelCount;
-    LastListViewSelected := ListView1Selected;
-    DragFilesPopup.Assign(DropInfo);
-    GetCursorPos(Pnt);
-    PmDragMode.Popup(Pnt.X, Pnt.Y);
-  end;
-
-  if not(SsRight in LastShift) then
-  begin
-    if not SelfDraging and (Selcount = 0) then
+    if SsRight in LastShift then
     begin
+      Move1.Visible := not SelfDraging;
       FDBCanDragW := False;
-
-      if CtrlKeyDown then
-        CopyFiles(Handle, DropInfo, GetCurrentPath, False, False)
-      else
-        CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, Self);
-
+      FDBCanDrag := False;
+      LastListViewSelCount := SelCount;
+      LastListViewSelected := ListView1Selected;
+      DragFilesPopup.Assign(DropInfo);
+      GetCursorPos(Pnt);
+      PmDragMode.Popup(Pnt.X, Pnt.Y);
     end;
-    if Selcount = 1 then
-      if ListView1Selected <> nil then
+
+    if not(SsRight in LastShift) then
+    begin
+      if not SelfDraging and (Selcount = 0) then
       begin
         FDBCanDragW := False;
-        Index := ItemIndexToMenuIndex(ListView1Selected.index);
-        if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) or
-          (FFilesInfo[index].FileType = EXPLORER_ITEM_SHARE) then
-        begin
-          Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
-          if CtrlKeyDown then
-            CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False)
-          else
-            CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, Self);
+        if CtrlKeyDown then
+          CopyFiles(Handle, DropInfo, GetCurrentPath, False, False)
+        else
+          CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, Self);
 
-        end;
       end;
-    if SelCount = 1 then
-      if ListView1Selected <> nil then
-      begin
-        index := ItemIndexToMenuIndex(ListView1Selected.index);
-        if (GetExt(FFilesInfo[index].FileName) = 'EXE') then
+      if Selcount = 1 then
+        if ListView1Selected <> nil then
         begin
           FDBCanDragW := False;
-          Str := ExtractFileDir(FFilesInfo[index].FileName);
-          FillChar(Si, SizeOf(Si), 0);
-          with Si do
+          Index := ItemIndexToMenuIndex(ListView1Selected.index);
+          if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) or
+            (FFilesInfo[index].FileType = EXPLORER_ITEM_SHARE) then
           begin
-            Cb := SizeOf(Si);
-            DwFlags := Startf_UseShowWindow;
-            WShowWindow := 4;
+            Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
+
+            if CtrlKeyDown then
+              CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False)
+            else
+              CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, Self);
+
           end;
-          Params := '';
-          for I := 0 to DropInfo.Count - 1 do
-            Params := ' "' + DropInfo[I] + '" ';
-          CreateProcess(nil, PWideChar('"' + FFilesInfo[index].FileName + '"' + Params), nil, nil, False,
-            CREATE_DEFAULT_ERROR_MODE, nil, PWideChar(Str), Si, P);
         end;
-      end;
+      if SelCount = 1 then
+        if ListView1Selected <> nil then
+        begin
+          index := ItemIndexToMenuIndex(ListView1Selected.index);
+          if (GetExt(FFilesInfo[index].FileName) = 'EXE') then
+          begin
+            FDBCanDragW := False;
+            Str := ExtractFileDir(FFilesInfo[index].FileName);
+            FillChar(Si, SizeOf(Si), 0);
+            with Si do
+            begin
+              Cb := SizeOf(Si);
+              DwFlags := Startf_UseShowWindow;
+              WShowWindow := 4;
+            end;
+            Params := '';
+            for I := 0 to DropInfo.Count - 1 do
+              Params := ' "' + DropInfo[I] + '" ';
+            CreateProcess(nil, PWideChar('"' + FFilesInfo[index].FileName + '"' + Params), nil, nil, False,
+              CREATE_DEFAULT_ERROR_MODE, nil, PWideChar(Str), Si, P);
+          end;
+        end;
+    end;
+  finally
+    F(DropInfo);
   end;
   SelfDraging := False;
 end;
@@ -5324,8 +5325,8 @@ end;
 
 procedure TExplorerForm.DropFileTarget1Leave(Sender: TObject);
 begin
-  FDBCanDrag:=false;
-  outdrag:=false;
+  FDBCanDrag := False;
+  OutDrag := False;
 end;
 
 procedure TExplorerForm.SetStringPath(Path: String; ChangeTreeView: Boolean);
@@ -6847,13 +6848,13 @@ var
     FileList.Clear;
     if Dir = '' then
       Exit;
-    if Dir[Length(Dir)] <> '\' then
-      Dir := Dir + '\';
+
+    Dir := IncludeTrailingBackSlash(Dir);
     Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
     while Found = 0 do
     begin
-      if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
-        FileList.Add(Dir + SearchRec.name);
+      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+        FileList.Add(Dir + SearchRec.Name);
 
       Found := SysUtils.FindNext(SearchRec);
     end;
@@ -7018,13 +7019,16 @@ begin
       if FFilesInfo[Index].ID > 0 then
         RatingPopupMenu1.Tag := FFilesInfo[Index].ID
       else
-        RatingPopupMenu1.Tag := - Index;
+        RatingPopupMenu1.Tag := -Index;
 
-      Application.HideHint;
-      THintManager.Instance.CloseHint;
-      LastMouseItem := nil;
-      RatingPopupMenu1.Popup(p1.X, p1.Y);
-      Exit;
+      if not ((RatingPopupMenu1.Tag < 0) and FolderView) then
+      begin
+        Application.HideHint;
+        THintManager.Instance.CloseHint;
+        LastMouseItem := nil;
+        RatingPopupMenu1.Popup(p1.X, p1.Y);
+        Exit;
+      end;
 
     end;
   end;

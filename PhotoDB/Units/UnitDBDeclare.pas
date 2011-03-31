@@ -4,7 +4,7 @@ interface
 
 uses DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
      GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
-     uDBForm, DateUtils;
+     uDBForm, DateUtils, SysUtils, uRuntime;
 
 const
   BufferSize = 100*3*4*4096;
@@ -400,6 +400,8 @@ begin
   ID := DS.FieldByName('ID').AsInteger;
   FName := DS.FieldByName('Name').AsString;
   FileName := DS.FieldByName('FFileName').AsString;
+  if FolderView then
+    FileName := ExtractFilePath(ParamStr(0)) + FileName;
   KeyWords := DS.FieldByName('KeyWords').AsString;
   FileSize := DS.FieldByName('FileSize').AsInteger;
   Rotation := DS.FieldByName('Rotated').AsInteger;

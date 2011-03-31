@@ -169,8 +169,8 @@ begin
         with (FOptions.Owner as TPropertiesForm) do
         begin
           ImageLoadingFile.Visible := False;
-          Image1.Picture.Graphic := BitmapParam;
-          Image1.Refresh;
+          ImMain.Picture.Graphic := BitmapParam;
+          ImMain.Refresh;
         end;
       end;
 end;

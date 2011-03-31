@@ -72,16 +72,16 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
       Height = 106
       BevelInner = bvLowered
       TabOrder = 1
-      object Image1: TImage
+      object ImMain: TImage
         Left = 2
         Top = 2
         Width = 102
         Height = 102
         Center = True
-        OnContextPopup = Image1ContextPopup
-        OnMouseDown = Image1MouseDown
-        OnMouseMove = Image1MouseMove
-        OnMouseUp = Image1MouseUp
+        OnContextPopup = ImMainContextPopup
+        OnMouseDown = ImMainMouseDown
+        OnMouseMove = ImMainMouseMove
+        OnMouseUp = ImMainMouseUp
       end
     end
   end

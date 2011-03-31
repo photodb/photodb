@@ -329,7 +329,7 @@ procedure TImHint.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   DragImage : TBitmap;
-  FImageList : TBitmapImageList;
+//  FImageList : TBitmapImageList;
   W, H : Integer;
 begin
   if not FDragDrop then
@@ -342,26 +342,19 @@ begin
     DropFileSourceMain.Files.Clear;
     DropFileSourceMain.Files.Add(CurrentInfo.FileName);
 
-    FImageList := TBitmapImageList.Create;
+    W := ImageBuffer.Width;
+    H := ImageBuffer.Height;
+    ProportionalSize(ThSize, ThSize, W, H);
+    DragImage:=TBitmap.Create;
     try
-      W := ImageBuffer.Width;
-      H := ImageBuffer.Height;
-      ProportionalSize(ThSize, ThSize, W, H);
-      DragImage:=TBitmap.Create;
-      try
-        DragImage.PixelFormat := pf24bit;
-        DoResize(W, H, ImageBuffer, DragImage);
+      DragImage.PixelFormat := pf24bit;
+      DoResize(W, H, ImageBuffer, DragImage);
 
-        FImageList.AddBitmap(DragImage, False);
-        CreateDragImageEx(nil, DragImageList, FImageList, clGradientActiveCaption,
-          clGradientInactiveCaption, clHighlight, Font, ExtractFileName(CurrentInfo.FileName));
-
-      finally
-        DragImage.Free;
-      end;
+      CreateDragImage(DragImage, DragImageList, Font, ExtractFileName(CurrentInfo.FileName));
     finally
-      FImageList.Free;
+      F(DragImage);
     end;
+
     DropFileSourceMain.ImageIndex := 0;
     DropFileSourceMain.Execute;
     CanClosed := True;

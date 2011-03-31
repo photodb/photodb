@@ -1,5 +1,8 @@
 ﻿<Get photos>[DB_IC_GET_USB]
 {
+initialization:
+  if ($Mobile=true) {InVisible;};
+run:
   $CDROM=GetCDROMDrives;
   $CD_ROM_ICONS=GetIntArray(0);
   $CD_ROMs=GetStringArray(0);

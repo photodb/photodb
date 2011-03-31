@@ -2364,103 +2364,9 @@ begin
 end;
 
 function Include(FileName : string) : string;
-{var
-  d, s : string;
-  i, p : integer;
-  F : TInitScriptFunction;
-  FS : TStrings;
-  Script : TIncludeScript; }
 begin
   Result := ReadScriptFile(FileName);
-{  if ScriptsManager <> nil then
-  begin
-    Script := ScriptsManager.GetIncludeScript(FileName);
-    if Script <> nil then
-    begin
-      Result := Script.ScriptContent;
-      Exit;
-    end;
-  end;
- Result:='';
- if Length(FileName)<4 then exit;
- if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
- FileName:=Copy(FileName,2,Length(FileName)-2);
- if FileName[2]=':' then d:=FileName else
- d:=ExtractFileDir(paramstr(0))+'\'+FileName;
- if FileExists(d) then
- begin
-  FS:=TStringList.Create;
-  try
-   FS.LoadFromFile(d);
-  except
-   exit;
-  end;
-  for i:=0 to FS.Count-1 do
-  begin
-   s:=FS[i];
-   p:=PosExK('//',s);
-   if p>0 then
-   begin
-    FS[i]:=Copy(S,1,p-1);
-   end;
-  end;
-  Result:=FS.Text;
-  FS.Free;
-
-  Result := StringReplace(Result, #13#10 , '', [rfReplaceAll]);
-  if InitScriptFunction<>nil then
-  begin
-   @F:=InitScriptFunction;
-   Result:=F(Result);
-  end;
-  Result:=Result;
- end;
-  if ScriptsManager <> nil then
-    ScriptsManager.RegisterIncludeScript(FileName, Result);  }
 end;
-    {
-function ReadFile(FileName : string) : string;
-var
-  FS : TFileStream;
-  d : string;
-  F : TInitScriptFunction;
-  Script : TIncludeScript;
-begin
-  if ScriptsManager <> nil then
-  begin
-    Script := ScriptsManager.GetIncludeScript(FileName);
-    if Script <> nil then
-    begin
-      Result := Script.ScriptContent;
-      Exit;
-    end;
-  end;
- Result:='';
- if Length(FileName)<4 then exit;
- if (FileName[1]='"') and (FileName[Length(FileName)]='"') then
- FileName:=Copy(FileName,2,Length(FileName)-2);
- if FileName[2]=':' then d:=FileName else
- d:=ExtractFileDir(paramstr(0))+'\'+FileName;
- if FileExists(d) then
- begin
-  try
-  FS := TFileStream.Create(d,fmOpenRead);
-  except
-   exit;
-  end;
-  SetLength(Result,FS.Size);
-  FS.Read(Result[1],FS.Size);
-  FS.Free;
-  if InitScriptFunction<>nil then
-  begin
-   @F:=InitScriptFunction;
-   Result:=F(Result);
-  end;
-  Result:=Result;
- end;
-  if ScriptsManager <> nil then
-    ScriptsManager.RegisterIncludeScript(FileName, Result);
-end;    }
 
 function ReadScriptFile(FileName : string) : string;
 var
@@ -2486,7 +2392,8 @@ begin
     FileName := Copy(FileName, 2, Length(FileName) - 2);
   if FileName[2] = ':' then
     D := FileName
-  else if FolderView then
+    //TODO:!!!
+  else if False{FolderView} then
     D := ExtractFileName(FileName)
   else
     D := ExtractFileDir(Paramstr(0)) + '\' + FileName;
@@ -2496,7 +2403,8 @@ begin
     FS := TStringList.Create;
     try
       try
-        if not FolderView then
+        //TODO:!!!
+        if {not FolderView}True{FolderView} then
           FS.LoadFromFile(D)
         else
           FS.Text := ReadInternalFSContent(D)

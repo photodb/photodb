@@ -4,7 +4,6 @@
 <Find file manually>[DB_IC_SEARCH]
 {
 initialization:
-  $Visible=true;
   if ($StaticImage=false) {InVisible;};
   if ($IsFile=true) {InVisible;};
 run:
@@ -60,9 +59,7 @@ run:
 <Apply actions>[DB_IC_APPLY_ACTION]
 {
 initialization:
-  $Visible=true;
-  if ($FileExists=false) {InVisible;};
-  
+  if ($FileExists=false) {InVisible;};  
   $sID=REGISTER_SCRIPT;
   $script="$file=GetOpenFileName(""Result.dbact"",""DB Action Files (*.dbact)|*.dbact"");ApplyActionsToSelected("""+$sID+""",$file);";
   CreateItem("Select",DB_IC_APPLY_ACTION,$script,false,0);
@@ -76,7 +73,6 @@ initialization:
   for($i=0;$i<$FilesLength;$i=%$i+1)
   { 
      $file=GetStringItem($files,$i);
-
 
      $file_name=ExtractFileName($file);
 
@@ -94,7 +90,6 @@ initialization:
 <Shell>[DB_IC_SHELL]
 {
 initialization:
- $Visible=true;
  $skd=ShiftKeyDown;
  if ($skd=false) {InVisible;};
  if ($FileExists=false) {InVisible;};
@@ -105,7 +100,6 @@ run:
 <Links>[DB_IC_NOTES]
 {
 initialization:
- $Visible=true;
  $AllLinks=SplitLinks($Links,"");
  $L=ArrayStringLength($AllLinks);
  if ($L=0) 
@@ -166,7 +160,6 @@ initialization:
 <Refresh>[DB_IC_REFRESH_THUM]
 {
 initialization:
-  $Visible=true;
   if ($NoDBInfoNeeded=true) {InVisible;};
 run:
   RefreshThumItemPopUpMenu;
@@ -193,7 +186,6 @@ initialization:
 
 <Rating>[DB_IC_RATING_STAR]{
 initialization:
-  $Visible=true;
   if ($IsRecord=false) {InVisible;};
   if ($NoDBInfoNeeded=true) {InVisible;};
    CreateItem("0",4,"SetRatingItemPopUpMenu;",false,0);
@@ -210,7 +202,6 @@ initialization:
 <Private>[DB_IC_PRIVATE]
 { 
  initialization:
-  $Visible=true;
   if ($IsRecord=false) {InVisible;};
   if ($NoDBInfoNeeded=true) {InVisible;};
   if ($Access=1) {InVisible;};
@@ -222,7 +213,6 @@ run:
 <Public>[DB_IC_COMMON]
 {
  initialization:
-  $Visible=true;
   if ($IsRecord=false) {InVisible;};
   if ($NoDBInfoNeeded=true) {InVisible;};
   if ($Access=0) {InVisible;};
@@ -234,7 +224,6 @@ run:
 <Date>[DB_IC_EDIT_DATE]
 {
  initialization:
-  $Visible=true;
   if ($IsRecord=false) {InVisible;};
   if ($NoDBInfoNeeded=true) {InVisible;};
   Tag(1);
@@ -245,7 +234,6 @@ run:
 <Groups>[DB_IC_GROUPS]
 { 
  initialization:
-  $Visible=true;
  if ($IsRecord=false) {InVisible;};
  if ($NoDBInfoNeeded=true) {InVisible;};
  $len=ArrayStringLength($GroupsCodes);
@@ -265,7 +253,6 @@ run:
 <Keywords>[DB_IC_NOTEPAD]
 { 
 initialization:
-  $Visible=true;
   $KeyWordsArray=SplitWords($KeyWords);
   $len=ArrayStringLength($KeyWordsArray);
   for ($i=0;$i<$len;$i=SumInt($i,1)) {
@@ -280,7 +267,6 @@ initialization:
 <Crypting>[DB_IC_KEY]
 {
 initialization:
-  $Visible=true;
   if ($Crypted=true) {
     CreateItem("Enter password",DB_IC_PASSWORD,"EnterPasswordItemPopUpMenu;",false,0);
     CreateItem("Decrypt",DB_IC_DECRYPTIMAGE,"DeCryptItemPopUpMenu;",false,0);
@@ -300,7 +286,6 @@ initialization:
 <Set as desktop wallpaper>[DB_IC_WALLPAPER]
 {
 initialization:
-  $Visible=true;
   if ($IsCurrentFile=false) {InVisible;};
   if ($WallPaper=false) {InVisible;};
   if ($Crypted=true) {InVisible;};
@@ -312,7 +297,6 @@ initialization:
 <Image editor>[DB_IC_IMEDITOR]
 {
 initialization:
-  $Visible=true;
   if ($IsCurrentFile=false) {InVisible;};
 run:
   ImageEditorItemPopUpMenu;
@@ -321,19 +305,16 @@ run:
 <Convert image>[DB_IC_RESIZE]
 {
 initialization:
-  $Visible=true;
   if ($IsCurrentFile=false) {InVisible;};
 run:
   ConvertItemPopUpMenu;
 }
-ConvertItemPopUpMenu
 
 <>[]{scripts\UserMenu.dbini}
 
 <Update info>[DB_IC_REFRESH_ID]
 {
 initialization:
-  $Visible=true;
   if ($NoDBInfoNeeded=true) {InVisible;};
   if ($IsCurrentFile=false) {InVisible;};
   if ($IsRecord=false) {InVisible;};
@@ -344,7 +325,6 @@ run:
 <Scan image>[DB_IC_SEARCH]
 {
 initialization:
-  $Visible=true;
   $shift=ShiftKeyDown;
   if ($shift=true) {InVisible;};
   if ($FileExists=false) {InVisible;};
@@ -355,7 +335,6 @@ run:
 <Print>[DB_IC_PRINTER]
 {
 initialization:
-  $Visible=true;
   if ($IsCurrentFile=false) {InVisible;};
 run: 
   PrintItemPopUpMenu;
@@ -364,7 +343,6 @@ run:
 <Duplicates>[DB_IC_DUBLICAT]
 {
 initialization:
-  $Visible=true;
   if ($Dublicat=false) {InVisible;};
   CreateItem("Show duplicates",DB_IC_DUBLICAT,"ShowDublicatesItemPopUpMenu;",false,0);
   CreateItem("Delete duplicates",DB_IC_DEL_DUBLICAT,"DeleteDublicatesItemPopUpMenu;",false,0);
@@ -373,7 +351,6 @@ initialization:
 <Delete>[DB_IC_DELETE_FILE]
 {
 initialization:
-  $Visible=true;
   if ($NoDBInfoNeeded=true) {InVisible;};
   if ($IsRecord=false) {InVisible;};
   
@@ -390,7 +367,6 @@ initialization:
 <Copy>[DB_IC_COPY]
 {
 initialization:
-  $Visible=true;
   if ($IsFile=false) {InVisible;};
   if ($FileExists=false) {InVisible;};
 run:
@@ -407,7 +383,6 @@ run:
 <Open in Explorer>[DB_IC_EXPLORER]
 {
 initialization:
- $Visible=true;
  if ($FileExists=false) {InVisible;};
 run:
   ExplorerPopUpMenu;
@@ -416,7 +391,6 @@ run:
 <Send to>[DB_IC_SENDTO]
 {
   initialization:
-  $Visible=true;
   $len=ArrayStringLength($Panels);
   for ($i=0;$i<$len;$i=SumInt($i,1)) {
       $s=GetStringItem($Panels,$i);
@@ -429,7 +403,6 @@ run:
 <Show folder>[DB_IC_SEARCH]
 {
 initialization:
-  $Visible=true;
   if ($IsRecord=false) {InVisible;};
   if ($NoDBInfoNeeded=true) {InVisible;};
 run:

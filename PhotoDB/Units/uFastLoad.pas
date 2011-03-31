@@ -73,12 +73,15 @@ end;
 
 procedure TLoad.Stop;
 begin
-  if not LoadDBKernelIconsThread.IsTerminated then
-    TerminateThread(LoadDBKernelIconsThread.Handle, 0);
-  if not LoadDBSettingsThread.IsTerminated then
-    TerminateThread(LoadDBSettingsThread.Handle, 0);
-  if not LoadCRCCheckThread.IsTerminated then
-    TerminateThread(LoadCRCCheckThread.Handle, 0);
+  if LoadDBKernelIconsThread <> nil then
+    if not LoadDBKernelIconsThread.IsTerminated then
+      TerminateThread(LoadDBKernelIconsThread.Handle, 0);
+  if LoadDBSettingsThread <> nil then
+    if not LoadDBSettingsThread.IsTerminated then
+      TerminateThread(LoadDBSettingsThread.Handle, 0);
+  if LoadCRCCheckThread <> nil then
+    if not LoadCRCCheckThread.IsTerminated then
+      TerminateThread(LoadCRCCheckThread.Handle, 0);
   F(LoadDBKernelIconsThread);
   F(LoadDBSettingsThread);
   F(LoadCRCCheckThread);

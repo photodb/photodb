@@ -8,7 +8,8 @@ uses
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
   UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
   uMemory, uTranslate, uRuntime, uActivationUtils, uDBForm,
-  UnitInternetUpdate, uInternetUtils, ShellApi, Dolphin_DB;
+  UnitInternetUpdate, uInternetUtils, ShellApi, Dolphin_DB,
+  uMobileUtils;
 
 type
   TAboutForm = class(TDBForm)
@@ -21,7 +22,6 @@ type
     LnkGoToWebSite: TWebLink;
     procedure ImbCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Grayscale(var Image : TBitmap);
     procedure Execute(Wait : boolean = false);
     procedure BtShowActivationFormClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -73,11 +73,6 @@ begin
   Result := 'About';
 end;
 
-procedure TAboutForm.GrayScale(var Image : TBitmap);
-begin
-  UnitDBCommonGraphics.GrayScale(Image);
-end;
-
 procedure TAboutForm.WMMouseDown(var s: TMessage);
 begin
   Perform(WM_NCLBUTTONDOWN, HTCaption, s.lparam);
@@ -112,10 +107,16 @@ begin
 
   BtShowActivationForm.Caption := L('Open activation form');
 
-  MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
+  if FolderView then
+    MemoInfo.Lines.Text := ReadInternalFSContent(FSLicenseFileName)
+  else
+    MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
 
+  LnkGoToWebSite.Visible := not FolderView;
+  LsUpdates.Visible := not FolderView;
   FUpdateInfo.InfoAvaliable := False;
-  TInternetUpdate.Create(Self, False, UpdateCkeckComplete);
+  if not FolderView then
+    TInternetUpdate.Create(Self, False, UpdateCkeckComplete);
 end;
 
 procedure TAboutForm.Execute;

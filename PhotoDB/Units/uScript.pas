@@ -2,7 +2,7 @@ unit uScript;
 
 interface
 
-uses Windows, SysUtils, Classes, uStringUtils, uMemory, uGOM;
+uses Windows, SysUtils, Classes, uStringUtils, uMemory, uGOM, uRuntime;
 
 const
   VALUE_TYPE_ERROR         = 0;
@@ -44,6 +44,9 @@ type
     constructor CreateAsError(AOwner : TScript; Name : string); overload;
     procedure Assign(Value : TValue);
     procedure FromString(Value : string);
+    procedure SetBool(Value: Boolean);
+    procedure SetInteger(Value: Integer);
+    procedure SetString(Value: string);
     function GetValueType(Value : string) : Integer;
   end;
 
@@ -191,21 +194,24 @@ begin
   FEnviroment := TScriptEnviroments.Instance.GetEnviroment(EnviromentName);
   FCombinedEnviromentFunctionList := TCombinedEnviromentFunctionList.Create(FEnviroment, FPrivateEnviroment);
 
-  FNamedValues.GetValueByName('$MB_OK').IntValue := MB_OK;
-  FNamedValues.GetValueByName('$MB_OKCANCEL').IntValue := MB_OKCANCEL;
-  FNamedValues.GetValueByName('$ID_OK').IntValue := ID_OK;
-  FNamedValues.GetValueByName('$ID_CANCEL').IntValue := ID_CANCEL;
-  FNamedValues.GetValueByName('$MB_ICONERROR').IntValue := MB_ICONERROR;
-  FNamedValues.GetValueByName('$MB_ICONWARNING').IntValue := MB_ICONWARNING;  
-  FNamedValues.GetValueByName('$MB_ICONINFORMATION').IntValue := MB_ICONINFORMATION;
+  FNamedValues.GetValueByName('$MB_OK').SetInteger(MB_OK);
+  FNamedValues.GetValueByName('$MB_OKCANCEL').SetInteger(MB_OKCANCEL);
+  FNamedValues.GetValueByName('$ID_OK').SetInteger(ID_OK);
+  FNamedValues.GetValueByName('$ID_CANCEL').SetInteger(ID_CANCEL);
+  FNamedValues.GetValueByName('$MB_ICONERROR').SetInteger(MB_ICONERROR);
+  FNamedValues.GetValueByName('$MB_ICONWARNING').SetInteger(MB_ICONWARNING);
+  FNamedValues.GetValueByName('$MB_ICONINFORMATION').SetInteger(MB_ICONINFORMATION);
 
-  FNamedValues.GetValueByName('$LINK_TYPE_ID').IntValue := 0;
-  FNamedValues.GetValueByName('$LINK_TYPE_ID_EXT').IntValue := 1;
-  FNamedValues.GetValueByName('$LINK_TYPE_IMAGE').IntValue := 2;
-  FNamedValues.GetValueByName('$LINK_TYPE_FILE').IntValue := 3;
-  FNamedValues.GetValueByName('$LINK_TYPE_FOLDER').IntValue := 4;
-  FNamedValues.GetValueByName('$LINK_TYPE_TXT').IntValue := 5;   
-  FNamedValues.GetValueByName('$InvalidQuery').StrValue := #8;
+  FNamedValues.GetValueByName('$LINK_TYPE_ID').SetInteger(0);
+  FNamedValues.GetValueByName('$LINK_TYPE_ID_EXT').SetInteger(1);
+  FNamedValues.GetValueByName('$LINK_TYPE_IMAGE').SetInteger(2);
+  FNamedValues.GetValueByName('$LINK_TYPE_FILE').SetInteger(3);
+  FNamedValues.GetValueByName('$LINK_TYPE_FOLDER').SetInteger(4);
+  FNamedValues.GetValueByName('$LINK_TYPE_TXT').SetInteger(5);
+  FNamedValues.GetValueByName('$InvalidQuery').SetString(#8);
+
+  //TODO:
+  FNamedValues.GetValueByName('$Mobile').SetBool(True);//FolderView;
   GOM.AddObj(Self);
 end;
 
@@ -396,6 +402,24 @@ begin
     Result := VALUE_TYPE_FLOAT
   else
     Result := VALUE_TYPE_STRING
+end;
+
+procedure TValue.SetBool(Value: Boolean);
+begin
+  BoolValue := Value;
+  AType := VALUE_TYPE_BOOLEAN;
+end;
+
+procedure TValue.SetInteger(Value: Integer);
+begin
+  IntValue := Value;
+  AType := VALUE_TYPE_INTEGER;
+end;
+
+procedure TValue.SetString(Value: string);
+begin
+  StrValue := Value;
+  AType := VALUE_TYPE_STRING;
 end;
 
 { TScriptEnviroments }

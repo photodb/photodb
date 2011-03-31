@@ -15,6 +15,9 @@ run:
 <->[]{}
 <Show updater>[DB_IC_BOX]
 {
+initialization:
+  if ($Mobile=true) {InVisible;};
+run:
   ShowUpdateWindow;
 }
 <->[]{}
@@ -22,6 +25,9 @@ run:
 <>[]{scripts\HelpScript.dbini}
 <Collection Manager>[DB_IC_ADMINTOOLS]
 {
+initialization:
+  if ($Mobile=true) {InVisible;};
+run:
   DoManager;
 }
 <Options>[DB_IC_OPTIONS]

@@ -6,7 +6,10 @@
   }
   <Activation>[DB_IC_NOTES]
   {
-    DoActivation;
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      DoActivation;
   }
   <About>[DB_IC_HELP]
   {
@@ -22,6 +25,9 @@
   }
   <Check for updates>[DB_IC_UPDATING]
   {
-    GetUpdates(true);
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      GetUpdates(true);
   }
 }

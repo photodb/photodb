@@ -23,7 +23,7 @@ type
 
 type
   TPropertiesForm = class(TDBForm)
-    Image1: TImage;
+    ImMain: TImage;
     CommentMemo: TMemo;
     LabelComment: TLabel;
     PmItem: TPopupMenu;
@@ -148,10 +148,10 @@ type
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+    procedure ImMainMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure CommentMemoChange(Sender: TObject);
-    procedure Image1DblClick(Sender: TObject);
+    procedure ImMainDblClick(Sender: TObject);
     procedure BtSaveClick(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
     procedure Shell1Click(Sender: TObject);
@@ -589,7 +589,7 @@ begin
               DrawAttributes(B1, 100, DataRecord.Rating, DataRecord.Rotation, DataRecord.Access, DataRecord.FileName,
                 ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')), Exists, DataRecord.ID);
 
-              Image1.Picture.Bitmap := B1;
+              ImMain.Picture.Bitmap := B1;
             finally
               F(JPEG);
             end;
@@ -642,7 +642,6 @@ begin
       FNowGroups := UnitGroupsWork.EncodeGroups(DataRecord.Groups);
       FOldGroups := CopyGroups(FNowGroups);
 
-      FFilesInfo := TDBPopupMenuInfo.Create;
       FMenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
       FFilesInfo.Clear;
       FFilesInfo.Add(FMenuRecord);
@@ -738,12 +737,10 @@ begin
   CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
 end;
 
-procedure TPropertiesForm.Image1MouseDown(Sender: TObject; Button: TMouseButton;
+procedure TPropertiesForm.ImMainMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  DragImage : TBitmap;
   I : Integer;
-  BitmapImageList : TBitmapImageList;
 begin
   if (Button = mbLeft) then
   begin
@@ -763,21 +760,7 @@ begin
     end;
     if DropFileSource1.Files.Count > 0 then
     begin
-
-      BitmapImageList := TBitmapImageList.Create;
-      try
-        DragImage := TBitmap.Create;
-        try
-          DragImage.Assign(Image1.Picture.Graphic);
-          BitmapImageList.AddBitmap(DragImage, False);
-          CreateDragImageEx(nil, DragImageList, BitmapImageList, clGradientActiveCaption,
-            clGradientInactiveCaption, clHighlight, Font, ExtractFileName(DropFileSource1.Files[0]));
-        finally
-          F(DragImage);
-        end;
-      finally
-        F(BitmapImageList);
-      end;
+      CreateDragImage(ImMain.Picture.Graphic, DragImageList, Font, DropFileSource1.Files[0]);
 
       DropFileSource1.ImageIndex := 0;
       DropFileSource1.Execute;
@@ -854,7 +837,7 @@ begin
   BtSave.Enabled := CHDate or CHTime or CHRating or CHComment or ChKeywords or CHGroups or CHInclude or CHLinks;
 end;
 
-procedure TPropertiesForm.Image1DblClick(Sender: TObject);
+procedure TPropertiesForm.ImMainDblClick(Sender: TObject);
 begin
   if No_file then
     Exit;
@@ -1407,7 +1390,7 @@ end;
 
 procedure TPropertiesForm.BeginAdding(Sender: TObject);
 begin
-  Image1DblClick(Sender);
+  ImMainDblClick(Sender);
   BtSave.Enabled := False;
   Adding_now := True;
 end;
@@ -1593,9 +1576,9 @@ begin
     finally
       Ico.Free;
     end;
-    Image1.Picture.Graphic := B;
+    ImMain.Picture.Graphic := B;
   finally
-    B.Free;
+    F(B);
   end;
 
   WorkQuery := GetQuery;

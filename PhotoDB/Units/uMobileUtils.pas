@@ -9,6 +9,7 @@ uses
 
 const
   FSLanguageFileName = 'Language.xml';
+  FSLicenseFileName = 'License.txt';
 
 type
   TInternalFSHeader = record
@@ -59,7 +60,7 @@ procedure UpdateExeResources(ExeFileName: string);
 var
   MS: TMemoryStream;
   ScriptsDirectory, FileName,
-  LanguageXMLFileName: string;
+  LanguageXMLFileName, LicenseTxtFileName: string;
   Header: TInternalFSHeader;
   Files: TStrings;
   Update: Integer;
@@ -72,6 +73,7 @@ var
       Name := ExtractFileName(FileName);
     FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
     try
+      FillChar(Header, SizeOf(Header), #0);
       Header.Name := AnsiString(Name);
       Header.Size := FS.Size;
       FS.Seek(0, soFromBeginning);
@@ -88,6 +90,9 @@ begin
   try
     LanguageXMLFileName := ExtractFilePath(ParamStr(0)) + Format('Languages\%s%s.xml', [LanguageFileMask, TTranslateManager.Instance.Language]);
     AddFileToStream(LanguageXMLFileName, FSLanguageFileName);
+
+    LicenseTxtFileName := ExtractFilePath(ParamStr(0)) + Format('Licenses\License%s.txt', [TTranslateManager.Instance.Language]);
+    AddFileToStream(LicenseTxtFileName, FSLicenseFileName);
 
     ScriptsDirectory := ExtractFilePath(ParamStr(0)) + ScriptsFolder;
     GetFilesOfPath(ScriptsDirectory, Files);
@@ -118,32 +123,36 @@ begin
   MS := GetRCDATAResourceStream('MOBILE_FS');
   if MS = nil then
     Exit;
-
-  MS.Seek(0, soFromBeginning);
-  while MS.Position <> MS.Size do
-  begin
-    MS.Read(Header, SizeOf(Header));
-    if AnsiLowerCase(Name) = AnsiLowerCase(string(Header.Name)) then
+  try
+    MS.Seek(0, soFromBeginning);
+    while MS.Position <> MS.Size do
     begin
-      SR := TStringStream.Create(Result, TEncoding.UTF8);
-      try
-        SR.CopyFrom(MS, Header.Size);
-        Result := SR.DataString;
-        //delete UTF8 marker
-        if Result <> '' then
-          Delete(Result, 1, 1);
-        Break;
-      finally
-        F(SR);
+      MS.Read(Header, SizeOf(Header));
+      if AnsiLowerCase(Name) = AnsiLowerCase(string(Header.Name)) then
+      begin
+        SR := TStringStream.Create(Result, TEncoding.UTF8);
+        try
+          SR.CopyFrom(MS, Header.Size);
+          Result := SR.DataString;
+          //Delete UTF8 marker
+          if Result <> '' then
+            Delete(Result, 1, 1);
+          Break;
+        finally
+          F(SR);
+        end;
       end;
+      MS.Seek(Header.Size, soFromCurrent);
     end;
-    MS.Seek(Header.Size, soFromCurrent);
+  finally
+    F(MS);
   end;
 end;
 
 procedure LoadLanguageFromMobileFS(var Language : TLanguage; var LanguageCode : string);
 begin
   Language := TLanguage.CreateFromXML(ReadInternalFSContent(FSLanguageFileName));
+  LanguageCode := Language.Code;
 end;
 
 end.

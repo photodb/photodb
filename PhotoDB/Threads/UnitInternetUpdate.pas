@@ -6,7 +6,7 @@ uses
   Classes, Registry, Windows, SysUtils, UnitDBKernel, Forms,
   uVistaFuncs, uLogger, uConstants, uShellIntegration, uGOM, DateUtils,
   uTranslate, uInternetUtils, MSXML, OmniXML_MSXML, uDBForm, ActiveX,
-  Dolphin_DB;
+  Dolphin_DB, uActivationUtils;
 
 type
   TInternetUpdate = class(TThread)
@@ -52,6 +52,7 @@ begin
   try
     try
       UpdateFullUrl := ResolveLanguageString(UpdateNotifyURL);
+      UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion;
       UpdateText := DownloadFile(UpdateFullUrl);
     except
       on E: Exception do

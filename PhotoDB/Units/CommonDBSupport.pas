@@ -173,7 +173,6 @@ function GetTableNameByFileName(FileName : string) : string;
 Procedure AssingQuery(var QueryS, QueryD : TDataSet);
 
 function GetRecordsCount(Table : string) : integer;
-//procedure InitializeDBLoadScript;
 function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : boolean;
 function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
 procedure PackTable(FileName : string);
@@ -1042,10 +1041,16 @@ end;
 
 function GetPathCRC(FileFullPath : string) : Integer;
 var
-  Folder : string;
+  Folder, ApplicationPath : string;
   CRC : Cardinal;
 begin
-  Folder:=SysUtils.ExtractFileDir(AnsiLowerCase(FileFullPath));
+  Folder := AnsiLowerCase(SysUtils.ExtractFileDir(FileFullPath));
+  if FolderView then
+  begin
+    ApplicationPath := AnsiLowerCase(ExtractFileDir(ParamStr(0)));
+    if (Length(ApplicationPath) <= Length(Folder)) and (Pos(ApplicationPath, Folder) = 1) then
+      Delete(Folder, 1, Length(ApplicationPath));
+  end;
   CalcStringCRC32(AnsiLowerCase(Folder), CRC);
   Result := Integer(CRC);
 end;

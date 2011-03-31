@@ -45,7 +45,7 @@ begin
   if FolderView then
   if not FE then
   begin
-    FileName:=ProgramDir + FileName;
+    FileName := ProgramDir + FileName;
     FE := FileExistsSafe(FileName);
   end;
 

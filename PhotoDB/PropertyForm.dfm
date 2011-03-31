@@ -22,15 +22,15 @@ object PropertiesForm: TPropertiesForm
     531)
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
+  object ImMain: TImage
     Left = 8
     Top = 8
     Width = 104
     Height = 104
     Center = True
     PopupMenu = PmItem
-    OnDblClick = Image1DblClick
-    OnMouseDown = Image1MouseDown
+    OnDblClick = ImMainDblClick
+    OnMouseDown = ImMainMouseDown
   end
   object LabelComment: TLabel
     Left = 120
@@ -260,10 +260,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)

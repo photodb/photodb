@@ -100,6 +100,7 @@
 			<DCCReference Include="uInstallProcess.pas"/>
 			<DCCReference Include="uSetupDatabaseActions.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uStringUtils.pas"/>
+			<DCCReference Include="uLangUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -180,8 +180,6 @@ const
     DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_180);
 
   function GeneratePreffix: string;
-  var
-    S: string;
   begin
     Result := '_' + L('processed');
     if CbResize.Checked then
@@ -501,7 +499,7 @@ begin
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);
 
-  I := FProcessingList.IndexOf(AnsiLOwerCase(FData[I].FileName));
+  I := FProcessingList.IndexOf(AnsiLowerCase(Data.FileName));
   if I > -1 then
     FProcessingList.Delete(I);
   FillProcessingParams;

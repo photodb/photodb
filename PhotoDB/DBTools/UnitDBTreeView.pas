@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ImgList, DB, ExtCtrls, JPEG, CommCtrl,
-  UnitDBKernel, GraphicCrypt, DBCMenu, Menus,
+  UnitDBKernel, GraphicCrypt, DBCMenu, Menus, uListViewUtils,
   AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
   UnitDBCommon, UnitDBCommonGraphics, uDBDrawing, uFileUtils,
   uDBPopupMenuInfo, uMemory, uDBForm, uGraphicUtils, uDBUtils,
@@ -13,7 +13,7 @@ uses
 
 type
   TItemData = record
-    ID : integer;
+    ID : Integer;
     Crypted : Boolean;
   end;
 
@@ -28,7 +28,7 @@ type
     Label1: TLabel;
     StatusBar1: TStatusBar;
     Panel2: TPanel;
-    Image1: TImage;
+    ImMain: TImage;
     PopupMenu1: TPopupMenu;
     OpeninExplorer1: TMenuItem;
     Label2: TLabel;
@@ -50,7 +50,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure TreeView1Click(Sender: TObject);
-    procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure ImMainContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure TreeView1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
@@ -58,11 +58,11 @@ type
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
     procedure SelectTimerTimer(Sender: TObject);
-    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+    procedure ImMainMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure ImMainMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
+    procedure ImMainMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormDestroy(Sender: TObject);
     procedure DBOpened(Sender : TObject; DS : TDataSet);
@@ -77,6 +77,7 @@ type
     DBCanDrag: Boolean;
     DBDragPoint: TPoint;
     WorkTable, TempTable: TDataSet;
+    FDataList: TList;
     procedure LoadLanguage;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
@@ -197,12 +198,12 @@ var
       Result := TreeView1.Items.AddChild(TTN, S);
       Result.Text := S;
       GetMem(P, SizeOf(TItemData));
+      FDataList.Add(P);
       P^.ID := ID;
       P^.Crypted := Crypted;
       Result.Data := P;
       Exit;
-    end
-    else
+    end else
     begin
       if FN.Text = S then
       begin
@@ -218,6 +219,7 @@ var
         Result := TreeView1.Items.AddChild(TTN, S);
         Result.Text := S;
         GetMem(P, SizeOf(TItemData));
+        FDataList.Add(P);
         P^.ID := ID;
         P^.Crypted := Crypted;
         Result.Data := P;
@@ -320,7 +322,21 @@ begin
 end;
 
 procedure TFormCreateDBFileTree.FormCreate(Sender: TObject);
+
+  procedure AddIcon(Name: string);
+  var
+    Ico: HIcon;
+  begin
+    Ico := LoadIcon(HInstance, PChar(Name));
+    try
+      ImageList_ReplaceIcon(ImageList1.Handle, -1, Ico);
+    finally
+      DestroyIcon(Ico);
+    end;
+  end;
 begin
+
+  FDataList := TList.Create;
   DBInOpening := True;
   DropFileTarget1.Register(Self);
   FTerminating := False;
@@ -331,8 +347,8 @@ begin
   TreeView1.Color := clWindow;
   TreeView1.Font.Color := clWindowText;
 
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(HInstance, 'MAINICON'));
-  ImageList_ReplaceIcon(ImageList1.Handle, -1, LoadIcon(HInstance, 'PICTURE'));
+  AddIcon('MAINICON');
+  AddIcon('PICTURE');
   ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
   ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_EXPLORER + 1]);
   ImageList_ReplaceIcon(ImageList1.Handle, -1, UnitDBKernel.Icons[DB_IC_KEY + 1]);
@@ -374,14 +390,17 @@ begin
     begin
       Label2.Caption := L('Unknown file');
       B := TBitmap.Create;
-      B.PixelFormat := Pf24bit;
-      B.Width := 102;
-      B.Height := 102;
-      FillColorEx(B, ClWindow);
-      Exists := 0;
-      DrawAttributes(B, 102, 0, 0, 0, '', False, Exists);
-      Image1.Picture.Graphic := B;
-      B.Free;
+      try
+        B.PixelFormat := pf24bit;
+        B.Width := 102;
+        B.Height := 102;
+        FillColorEx(B, ClWindow);
+        Exists := 0;
+        DrawAttributes(B, 102, 0, 0, 0, '', False, Exists);
+        ImMain.Picture.Graphic := B;
+      finally
+        F(B);
+      end;
       Exit;
     end;
     Label2.Caption := 'ID = ' + IntToStr(TempTable.FieldByName('ID').AsInteger);
@@ -406,8 +425,7 @@ begin
           end;
           Exists := 0;
           DrawAttributes(B, 102, 0, 0, 0, TempTable.FieldByName('FFileName').AsString, True, Exists);
-        end
-        else
+        end else
         begin
           J := TJpegImage.Create;
           try
@@ -421,49 +439,59 @@ begin
             TempTable.FieldByName('Access').AsInteger, TempTable.FieldByName('FFileName').AsString,
             ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')), Exists);
         end;
-        Image1.Picture.Graphic := B;
+        ImMain.Picture.Graphic := B;
       finally
         F(B);
       end;
-    end
-    else
+    end else
     begin
-      J := TJPEGImage.Create;
-      J.Assign(TempTable.FieldByName('Thum'));
       B := TBitmap.Create;
-      B.PixelFormat := Pf24bit;
-      B.Width := 102;
-      B.Height := 102;
-      FillColorEx(B, ClWindow);
+      try
+        B.PixelFormat := Pf24bit;
+        B.Width := 102;
+        B.Height := 102;
+        FillColorEx(B, ClWindow);
+        J := TJPEGImage.Create;
+        try
+          J.Assign(TempTable.FieldByName('Thum'));
 
-      if (J.Width > 100) or (J.Height > 100) then
-      begin
-        TempBitmap := TBitmap.Create;
-        TempBitmap.PixelFormat := Pf24bit;
-        TempBitmap.Assign(J);
-        W := J.Width;
-        H := J.Height;
-        ProportionalSize(100, 100, W, H);
-        Image := TBitmap.Create;
-        Image.PixelFormat := Pf24bit;
-        DoResize(W, H, TempBitmap, Image);
-        TempBitmap.Free;
-        B.Canvas.Draw(50 - Image.Width div 2, 50 - Image.Height div 2, Image);
-      end
-      else
-        B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
-      J.Free;
-      ApplyRotate(B, TempTable.FieldByName('Rotated').AsInteger);
+          if (J.Width > 100) or (J.Height > 100) then
+          begin
+            TempBitmap := TBitmap.Create;
+            try
+              TempBitmap.PixelFormat := Pf24bit;
+              TempBitmap.Assign(J);
+              W := J.Width;
+              H := J.Height;
+              ProportionalSize(100, 100, W, H);
+              Image := TBitmap.Create;
+              try
+                Image.PixelFormat := pf24bit;
+                DoResize(W, H, TempBitmap, Image);
+                B.Canvas.Draw(50 - Image.Width div 2, 50 - Image.Height div 2, Image);
+              finally
+                F(Image);
+              end;
+            finally
+              F(TempBitmap);
+            end;
+          end  else
+            B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
+        finally
+          F(J);
+        end;
+        ApplyRotate(B, TempTable.FieldByName('Rotated').AsInteger);
 
-      Exists := 0;
-      DrawAttributes(B, 102, TempTable.FieldByName('Rating').AsInteger, TempTable.FieldByName('Rotated').AsInteger,
-        TempTable.FieldByName('Access').AsInteger, TempTable.FieldByName('FFileName').AsString,
-        ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')), Exists, TempTable.FieldByName('ID').AsInteger);
-      Image1.Picture.Graphic := B;
-      B.Free;
+        Exists := 0;
+        DrawAttributes(B, 102, TempTable.FieldByName('Rating').AsInteger, TempTable.FieldByName('Rotated').AsInteger,
+          TempTable.FieldByName('Access').AsInteger, TempTable.FieldByName('FFileName').AsString,
+          ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')), Exists, TempTable.FieldByName('ID').AsInteger);
+        ImMain.Picture.Graphic := B;
+      finally
+        F(B);
+      end;
     end;
-  end
-  else
+  end else
   begin
     Label1.Hide;
     Panel2.Hide;
@@ -492,7 +520,7 @@ begin
     ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
-procedure TFormCreateDBFileTree.Image1ContextPopup(Sender: TObject;
+procedure TFormCreateDBFileTree.ImMainContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   Info: TDBPopupMenuInfo;
@@ -500,7 +528,7 @@ begin
   Info := GetMenuInfoByID(FID);
   try
     Info.AttrExists := False;
-    TDBPopupMenu.Instance.Execute(Self, Image1.ClientToScreen(MousePos).X, Image1.ClientToScreen(MousePos).Y, Info);
+    TDBPopupMenu.Instance.Execute(Self, ImMain.ClientToScreen(MousePos).X, ImMain.ClientToScreen(MousePos).Y, Info);
   finally
     F(Info);
   end;
@@ -592,7 +620,7 @@ begin
   SelectTimer.Enabled := False;
 end;
 
-procedure TFormCreateDBFileTree.Image1MouseDown(Sender: TObject;
+procedure TFormCreateDBFileTree.ImMainMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   if Button = MbLeft then
@@ -602,17 +630,16 @@ begin
   end;
 end;
 
-procedure TFormCreateDBFileTree.Image1MouseUp(Sender: TObject;
+procedure TFormCreateDBFileTree.ImMainMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   DBCanDrag := False;
 end;
 
-procedure TFormCreateDBFileTree.Image1MouseMove(Sender: TObject;
+procedure TFormCreateDBFileTree.ImMainMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
   P: TPoint;
-  DragImage: TBitmap;
   Node: TTreeNode;
   Path: string;
 begin
@@ -641,14 +668,9 @@ begin
       begin
         DropFileSource1.Files.Clear;
         DropFileSource1.Files.Add(Path);
-        DragImage := TBitmap.Create;
-        DragImage.PixelFormat := pf24bit;
-        DragImage.Assign(Image1.Picture.Graphic);
-        DragImageList.Clear;
-        DragImageList.Width := DragImage.Width;
-        DragImageList.Height := DragImage.Height;
-        DragImageList.Add(DragImage, nil);
-        DragImage.Free;
+
+        CreateDragImage(ImMain.Picture.Graphic, DragImageList, Font, DropFileSource1.Files[0]);
+
         DropFileSource1.ImageIndex := 0;
         DropFileSource1.Execute;
         DBCanDrag := False;
@@ -658,7 +680,13 @@ begin
 end;
 
 procedure TFormCreateDBFileTree.FormDestroy(Sender: TObject);
+var
+  I: Integer;
 begin
+  for I := 0 to FDataList.Count - 1 do
+    FreeMem(FDataList[I]);
+
+  F(FDataList);
   DropFileTarget1.Unregister;
   FreeDS(WorkTable);
   FreeDS(TempTable);

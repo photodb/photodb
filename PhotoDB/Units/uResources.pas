@@ -41,7 +41,9 @@ function GetPrinterPatternImage : TJpegImage;
 {$R updater.res}
 
 //for mobile test
+{$IFDEF MOBILE_TEST}
 {$R MOBILE_FS.res}
+{$ENDIF}
 
 implementation
 

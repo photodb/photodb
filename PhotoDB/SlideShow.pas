@@ -1062,13 +1062,13 @@ begin
           TDBPopupMenu.Instance.AddUserMenu(PopupMenu1.Items, True, N2.MenuIndex + 1);
         end;
 
-      AddToDB1.Visible := True;
+      AddToDB1.Visible := not FolderView;
       DBItem1.Visible := False;
     end;
     FullScreen1.Visible := not(FullScreenNow or SlideShowNow);
     SlideShow1.Visible := not(FullScreenNow or SlideShowNow);
     begin
-      AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Crypted;
+      AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Crypted and not FolderView;
       ZoomOut1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
       ZoomIn1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
       RealSize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
@@ -1146,7 +1146,6 @@ procedure TViewer.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
 var
   P : TPoint;
   DragImage : TBitmap;
-  BitmapImageList : TBitmapImageList;
   W, H : Integer;
   FileName : string;
 begin
@@ -1160,24 +1159,17 @@ begin
       begin
         FileName := Item.FileName;
         DropFileSource1.Files.Add(FileName);
+        DropFileSource1.ShowImage := FImageExists;
+        W := FbImage.Width;
+        H := FbImage.Height;
+        ProportionalSize(ThImageSize, ThImageSize, W, H);
 
-        BitmapImageList := TBitmapImageList.Create;
+        DragImage := TBitmap.Create;
         try
-          DropFileSource1.ShowImage := FImageExists;
-          W := FbImage.Width;
-          H := FbImage.Height;
-          ProportionalSize(ThImageSize, ThImageSize, W, H);
-          DragImage := TBitmap.Create;
-          try
-            DoResize(W, H, FbImage, DragImage);
-            BitmapImageList.AddBitmap(DragImage, False);
-            CreateDragImageEx(nil, DragImageList, BitmapImageList, clGradientActiveCaption,
-              clGradientInactiveCaption, clHighlight, Font, ExtractFileName(FileName));
-          finally
-            F(DragImage);
-          end;
+          DoResize(W, H, FbImage, DragImage);
+          CreateDragImage(DragImage, DragImageList, Font, ExtractFileName(FileName));
         finally
-          F(BitmapImageList);
+          F(DragImage);
         end;
 
         DropFileSource1.ImageIndex := 0;
@@ -3185,7 +3177,8 @@ begin
   for I := 0 to 5 do
     (FindComponent('N' + IntToStr(I) + '1') as TMenuItem).Default := False;
 
-  (FindComponent('N' + IntToStr(Item.Rating) + '1') as TMenuItem).default := True;
+  (FindComponent('N' + IntToStr(Item.Rating) + '1') as TMenuItem).Default := True;
+
   RatingPopupMenu.Popup(P.X, P.Y);
 end;
 
@@ -3342,10 +3335,10 @@ begin
     Exit;
   end;
 
-  if TbRating.ImageIndex=20 then
-    TbRating.ImageIndex:=21
+  if TbRating.ImageIndex = 20 then
+    TbRating.ImageIndex := 21
   else
-    TbRating.ImageIndex:=20;
+    TbRating.ImageIndex :=20;
 end;
 
 procedure TViewer.MakePagesLinks;
@@ -3391,8 +3384,8 @@ end;
 
 procedure TViewer.SetDisplayRating(const Value: Integer);
 begin
-   TbRating.Enabled := (Value >= 0);
-   TbRating.ImageIndex := 14 + Abs(Value);
+  TbRating.Enabled := not (FolderView and (Item.ID = 0));
+  TbRating.ImageIndex := 14 + Abs(Value);
 end;
 
 procedure TViewer.SetProgressPosition(Position, Max: Integer);

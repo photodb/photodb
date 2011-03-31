@@ -247,6 +247,8 @@ begin
   if NewTab = 0 then
   begin
     CbListViewShowPreview.Checked := Settings.Readbool('Options', 'AllowPreview', True);
+    CbExtensionList.Enabled := not FolderView;
+    BtnInstallExtensions.Enabled := not FolderView;
     CbExtensionList.Items.Clear;
     for I := 0 to TFileAssociations.Instance.Count - 1 do
       CbExtensionList.Items.AddObject(Format('%s   (%s)', [TFileAssociations.Instance[I].Extension, TFileAssociations.Instance[I].Description]), TFileAssociations.Instance[I]);

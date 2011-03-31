@@ -39,12 +39,14 @@ type
 type
   TLanguage = class(TObject)
   private
-    FTranslate : IXMLDOMDocument;
-    FTranslateList : TList;
-    FName : string;
-    FImageName : string;
-    FAutor : string;
-    FLastScope : TLanguageScope;
+    FTranslate: IXMLDOMDocument;
+    FTranslateList: TList;
+    FName: string;
+    FImageName: string;
+    FAutor: string;
+    FCode: string;
+    FLangCode: Integer;
+    FLastScope: TLanguageScope;
   public
     constructor Create(FileName : string);
     constructor CreateFromXML(XML : string);
@@ -52,9 +54,11 @@ type
     destructor Destroy; override;
     procedure LoadTranslationList;
     function LocateString(Original, Scope: string): string;
-    property Name : string read FName;
-    property ImageName : string read FImageName;
-    property Autor : string read FAutor;
+    property Name: string read FName;
+    property ImageName: string read FImageName;
+    property Autor: string read FAutor;
+    property Code: string read FCode;
+    property LangCode: Integer read FLangCode;
   end;
 
   TTranslateManager = class(TObject)
@@ -357,18 +361,23 @@ begin
   FLastScope := nil;
   FTranslateList := TList.Create;
   FTranslate := CreateXMLDoc;
+  FLangCode := 0;
+  FCode := '--';
+  FAutor := '';
 end;
 
 procedure TLanguage.LoadTranslationList;
 var
-  DocumentElement : IXMLDOMElement;
-  ScopeList : IXMLDOMNodeList;
-  ScopeNode : IXMLDOMNode;
+  DocumentElement: IXMLDOMElement;
+  ScopeList: IXMLDOMNodeList;
+  ScopeNode: IXMLDOMNode;
   AutorNameAttr,
   NameAttr,
-  ImageNameAttr : IXMLDOMNode;
-  I : Integer;
-  Scope : TLanguageScope;
+  CodeAttr,
+  LangCodeAttr,
+  ImageNameAttr: IXMLDOMNode;
+  I: Integer;
+  Scope: TLanguageScope;
 begin
   FTranslateList.Clear;
   DocumentElement := FTranslate.documentElement;
@@ -382,9 +391,17 @@ begin
     if ImageNameAttr <> nil then
       FImageName := ImageNameAttr.text;
 
-    AutorNameAttr := DocumentElement.attributes.getNamedItem('image');
+    AutorNameAttr := DocumentElement.attributes.getNamedItem('autor');
     if AutorNameAttr <> nil then
       FAutor := AutorNameAttr.text;
+
+    CodeAttr := DocumentElement.attributes.getNamedItem('code');
+    if CodeAttr <> nil then
+      FCode := CodeAttr.text;
+
+    LangCodeAttr := DocumentElement.attributes.getNamedItem('langCode');
+    if LangCodeAttr <> nil then
+      FLangCode := StrToIntDef(LangCodeAttr.text, 0);
 
     ScopeList := DocumentElement.childNodes;
     if ScopeList <> nil then
@@ -401,8 +418,8 @@ end;
 
 function TLanguage.LocateString(Original, Scope: string): string;
 var
-  I : Integer;
-  FScope : TLanguageScope;
+  I: Integer;
+  FScope: TLanguageScope;
 
 begin
   Original := StringReplace(Original, '$nl$', #13, [rfReplaceAll]);
