@@ -11,6 +11,6 @@
       <h1><umbraco:Item field="title" runat="server" /></h1>
       <div id="container">
         <asp:ContentPlaceHolder Id="RightContent" runat="server" />
-      </div>      
+      </div>
   </span><!--formContent-->
 </asp:content>

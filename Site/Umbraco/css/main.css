@@ -232,8 +232,8 @@ span .clearSpan10{
 }
 
 .donate {
-  height: 141px;
-    width: 238px;
+  min-height: 141px;
+  width: 238px;
 }
 
 .donateWmImg{
@@ -407,10 +407,23 @@ donate_pay_warning{
 .warning_image{
   display:block;
   float:left;
-  padding: 0 10px 10px 0;
+  padding: 4px 10px 10px 0;
 }
 .payment_name{  
   font-weight:bold;
+}
+.clearDiv{
+ clear:both; 
+}
+.donateImage{
+ float:left; 
+}
+.clearDiv:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
 }
 
 

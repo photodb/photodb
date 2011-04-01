@@ -27,7 +27,7 @@
 		 * @param {string} url Absolute URL to where the plugin is located.
 		 */
 		init : function(ed) {
-			var t = this, lastRng;
+			var t = this, lastRng, showMenu;
 
 			t.editor = ed;
 
@@ -40,13 +40,13 @@
 			 */
 			t.onContextMenu = new tinymce.util.Dispatcher(this);
 
-			ed.onContextMenu.add(function(ed, e) {
+			showMenu = ed.onContextMenu.add(function(ed, e) {
 				if (!e.ctrlKey) {
 					// Restore the last selection since it was removed
 					if (lastRng)
 						ed.selection.setRng(lastRng);
 
-					t._getMenu(ed).showMenu(e.clientX, e.clientY);
+					t._getMenu(ed).showMenu(e.clientX || e.pageX, e.clientY || e.pageX);
 					Event.add(ed.getDoc(), 'click', function(e) {
 						hide(ed, e);
 					});
@@ -78,6 +78,12 @@
 
 			ed.onMouseDown.add(hide);
 			ed.onKeyDown.add(hide);
+			ed.onKeyDown.add(function(ed, e) {
+				if (e.shiftKey && !e.ctrlKey && !e.altKey && e.keyCode === 121) {
+					Event.cancel(e);
+					showMenu(ed, e);
+				}
+			});
 		},
 
 		/**
@@ -111,16 +117,17 @@
 			m = ed.controlManager.createDropMenu('contextmenu', {
 				offset_x : p1.x + ed.getParam('contextmenu_offset_x', 0),
 				offset_y : p1.y + ed.getParam('contextmenu_offset_y', 0),
-				constrain : 1
+				constrain : 1,
+				keyboard_focus: true
 			});
 
-			t._menu = m;
-			
+            t._menu = m;
+
             var keys = UmbClientMgr.uiKeys();
 
             m.add({ title: keys['defaultdialogs_cut'], icon: 'cut', cmd: 'Cut' }).setDisabled(col);
-			m.add({ title: keys['general_copy'], icon: 'copy', cmd: 'Copy' }).setDisabled(col);
-			m.add({ title: keys['defaultdialogs_paste'], icon: 'paste', cmd: 'Paste' });
+            m.add({ title: keys['general_copy'], icon: 'copy', cmd: 'Copy' }).setDisabled(col);
+            m.add({ title: keys['defaultdialogs_paste'], icon: 'paste', cmd: 'Paste' });
 
 			if ((el.nodeName == 'A' && !ed.dom.getAttrib(el, 'name')) || !col) {
 				m.addSeparator();
@@ -129,7 +136,7 @@
 			}
 
 			m.addSeparator();
-			m.add({ title: keys['defaultdialogs_insertimage'], icon: 'image', cmd: 'mceUmbimage', ui: true });
+			m.add({ title: keys['defaultdialogs_insertimage'], icon: 'image', cmd: ed.plugins.advimage ? 'mceAdvImage' : 'mceImage', ui: true });
 
 			m.addSeparator();
 			am = m.addMenu({title : 'contextmenu.align'});

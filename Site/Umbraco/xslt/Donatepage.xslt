@@ -17,6 +17,11 @@
     
     <div class="donate">
       
+      <div class="donateImage">
+        <a href="{umbraco.library:NiceUrl($currentPage/@id)}">
+          <img id="donateImg" src="/img/donate.png"/>
+        </a>
+      </div>
       <div class="donateInfo">
         
         <h1><xsl:value-of select="$currentPage/donateCommonInfo" /></h1>
@@ -44,12 +49,14 @@
           </xsl:for-each>
         </div>
         
+        <div class="clearDiv"></div>
         <div class="donate_pay_warning">
           <div class="warning_image">
             <img src="/img/warning.gif" />
           </div>
           <xsl:value-of select="$currentPage/donateMoneyInfo" />
         </div>
+        <div class="clearDiv"></div>
         
         <h2><xsl:value-of select="$currentPage/donateInfoCaption" /></h2>
         
@@ -60,13 +67,8 @@
         <h3><xsl:value-of select="$currentPage/thankYouText" /></h3>
           
       </div><!--donateInfo-->
-      <a href="{umbraco.library:NiceUrl($currentPage/@id)}">
-        <img id="donateImg" src="/img/donate.png"/>
-      </a>             
-      
     </div><!--donate-->
   </div><!--donate_page-->
-  
     
 </xsl:template>
 

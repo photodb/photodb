@@ -6,8 +6,8 @@ object DBReplaceForm: TDBReplaceForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Replace'
-  ClientHeight = 380
-  ClientWidth = 537
+  ClientHeight = 393
+  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,111 +20,43 @@ object DBReplaceForm: TDBReplaceForm
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  DesignSize = (
+    524
+    393)
   PixelsPerInch = 96
   TextHeight = 13
-  object ListView1: TListView
+  object LvMain: TListView
     Left = 184
     Top = 8
-    Width = 169
-    Height = 263
+    Width = 156
+    Height = 282
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Columns = <>
     HideSelection = False
     HotTrack = True
     HotTrackStyles = [htHandPoint, htUnderlineHot]
     LargeImages = SizeImageList
     TabOrder = 0
-    OnContextPopup = ListView1ContextPopup
-    OnCustomDrawItem = ListView1CustomDrawItem
-    OnMouseDown = ListView1MouseDown
-    OnSelectItem = ListView1SelectItem
-  end
-  object Panel1: TPanel
-    Left = 192
-    Top = 272
-    Width = 345
-    Height = 105
-    BevelOuter = bvNone
-    TabOrder = 1
-    object Button1: TButton
-      Left = 8
-      Top = 40
-      Width = 105
-      Height = 25
-      Caption = 'Add'
-      TabOrder = 0
-      OnClick = Button1Click
-    end
-    object Button2: TButton
-      Left = 120
-      Top = 72
-      Width = 105
-      Height = 25
-      Caption = 'Replace for All'
-      TabOrder = 1
-      OnClick = Button2Click
-    end
-    object Button3: TButton
-      Left = 232
-      Top = 72
-      Width = 105
-      Height = 25
-      Caption = 'Skip for All'
-      TabOrder = 2
-      OnClick = Button3Click
-    end
-    object Button5: TButton
-      Left = 120
-      Top = 40
-      Width = 105
-      Height = 25
-      Caption = 'Replace'
-      TabOrder = 3
-      OnClick = Button5Click
-    end
-    object Button6: TButton
-      Left = 232
-      Top = 40
-      Width = 105
-      Height = 25
-      Caption = 'Skip'
-      TabOrder = 4
-      OnClick = Button6Click
-    end
-    object Button4: TButton
-      Left = 6
-      Top = 72
-      Width = 107
-      Height = 25
-      Caption = 'Add for All'
-      TabOrder = 5
-      OnClick = Button4Click
-    end
-    object Button7: TButton
-      Left = 8
-      Top = 8
-      Width = 209
-      Height = 25
-      Caption = 'Replace and Delete Dublicates'
-      TabOrder = 6
-      OnClick = Button7Click
-    end
-    object Button8: TButton
-      Left = 223
-      Top = 8
-      Width = 114
-      Height = 24
-      Caption = 'Delete File'
-      TabOrder = 7
-      OnClick = Button8Click
-    end
+    OnContextPopup = LvMainContextPopup
+    OnCustomDrawItem = LvMainCustomDrawItem
+    OnMouseDown = LvMainMouseDown
+    OnSelectItem = LvMainSelectItem
+    ExplicitWidth = 169
+    ExplicitHeight = 269
   end
   object Panel2: TPanel
-    Left = 360
+    Left = 347
     Top = 8
     Width = 169
-    Height = 265
+    Height = 281
+    Anchors = [akTop, akRight, akBottom]
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 1
+    ExplicitLeft = 360
+    ExplicitHeight = 269
+    DesignSize = (
+      169
+      281)
     object LabelDBRating: TLabel
       Left = 0
       Top = 160
@@ -200,8 +132,9 @@ object DBReplaceForm: TDBReplaceForm
       Tag = 1
       Left = 48
       Top = 128
-      Width = 97
+      Width = 120
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -213,8 +146,9 @@ object DBReplaceForm: TDBReplaceForm
       Tag = 1
       Left = 48
       Top = 144
-      Width = 97
+      Width = 120
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -226,8 +160,9 @@ object DBReplaceForm: TDBReplaceForm
       Tag = 1
       Left = 48
       Top = 160
-      Width = 97
+      Width = 120
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -239,8 +174,9 @@ object DBReplaceForm: TDBReplaceForm
       Tag = 1
       Left = 48
       Top = 176
-      Width = 97
+      Width = 120
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -252,8 +188,9 @@ object DBReplaceForm: TDBReplaceForm
       Tag = 1
       Left = 48
       Top = 192
-      Width = 97
+      Width = 120
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -265,8 +202,9 @@ object DBReplaceForm: TDBReplaceForm
       Tag = 1
       Left = 48
       Top = 208
-      Width = 97
+      Width = 120
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -278,23 +216,30 @@ object DBReplaceForm: TDBReplaceForm
       Tag = 1
       Left = 0
       Top = 240
-      Width = 145
-      Height = 17
+      Width = 169
+      Height = 41
+      Anchors = [akLeft, akTop, akRight, akBottom]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
       ReadOnly = True
       TabOrder = 6
       Text = '<data>'
+      ExplicitHeight = 29
     end
   end
   object Panel3: TPanel
     Left = 0
     Top = 0
     Width = 180
-    Height = 273
+    Height = 289
+    Anchors = [akLeft, akTop, akBottom]
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 2
+    ExplicitHeight = 277
+    DesignSize = (
+      180
+      289)
     object Image1: TImage
       Left = 10
       Top = 10
@@ -348,9 +293,9 @@ object DBReplaceForm: TDBReplaceForm
     object LabelFPath: TLabel
       Left = 8
       Top = 200
-      Width = 28
+      Width = 25
       Height = 13
-      Caption = 'Pach:'
+      Caption = 'Path:'
     end
     object F_NAME: TEdit
       Tag = 1
@@ -358,6 +303,7 @@ object DBReplaceForm: TDBReplaceForm
       Top = 136
       Width = 121
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -371,6 +317,7 @@ object DBReplaceForm: TDBReplaceForm
       Top = 152
       Width = 121
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -384,6 +331,7 @@ object DBReplaceForm: TDBReplaceForm
       Top = 168
       Width = 121
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -397,6 +345,7 @@ object DBReplaceForm: TDBReplaceForm
       Top = 184
       Width = 121
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
       ParentColor = True
@@ -404,12 +353,13 @@ object DBReplaceForm: TDBReplaceForm
       TabOrder = 3
       Text = '<data>'
     end
-    object F_PATCH: TMemo
+    object F_PATH: TMemo
       Tag = 1
       Left = 8
       Top = 216
       Width = 169
-      Height = 57
+      Height = 69
+      Anchors = [akLeft, akTop, akRight, akBottom]
       BorderStyle = bsNone
       Color = clBtnFace
       Lines.Strings = (
@@ -417,7 +367,104 @@ object DBReplaceForm: TDBReplaceForm
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 4
+      ExplicitHeight = 57
     end
+  end
+  object BtnReplaceAndDeleteDuplicates: TButton
+    Left = 185
+    Top = 295
+    Width = 209
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Replace and Delete Dubplicates'
+    TabOrder = 3
+    OnClick = BtnReplaceAndDeleteDuplicatesClick
+    ExplicitLeft = 198
+    ExplicitTop = 283
+  end
+  object BtnAdd: TButton
+    Left = 185
+    Top = 327
+    Width = 105
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Add'
+    TabOrder = 4
+    OnClick = BtnAddClick
+    ExplicitLeft = 198
+    ExplicitTop = 315
+  end
+  object BtnReplace: TButton
+    Left = 297
+    Top = 327
+    Width = 105
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Replace'
+    TabOrder = 5
+    OnClick = BtnReplaceClick
+    ExplicitLeft = 310
+    ExplicitTop = 315
+  end
+  object BtnSkip: TButton
+    Left = 409
+    Top = 327
+    Width = 105
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Skip'
+    TabOrder = 6
+    OnClick = BtnSkipClick
+    ExplicitLeft = 422
+    ExplicitTop = 315
+  end
+  object BtnDeleteFile: TButton
+    Left = 400
+    Top = 295
+    Width = 114
+    Height = 24
+    Anchors = [akRight, akBottom]
+    Caption = 'Delete File'
+    TabOrder = 7
+    OnClick = BtnDeleteFileClick
+    ExplicitLeft = 413
+    ExplicitTop = 283
+  end
+  object BtnSkipAll: TButton
+    Left = 409
+    Top = 359
+    Width = 105
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Skip for All'
+    TabOrder = 8
+    OnClick = BtnSkipAllClick
+    ExplicitLeft = 422
+    ExplicitTop = 347
+  end
+  object BtnReplaceAll: TButton
+    Left = 297
+    Top = 359
+    Width = 105
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Replace for All'
+    TabOrder = 9
+    OnClick = BtnReplaceAllClick
+    ExplicitLeft = 310
+    ExplicitTop = 347
+  end
+  object BtnAddAll: TButton
+    Left = 185
+    Top = 359
+    Width = 105
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Add for All'
+    TabOrder = 10
+    OnClick = BtnAddAllClick
+    ExplicitLeft = 198
+    ExplicitTop = 347
   end
   object SizeImageList: TImageList
     Height = 102
