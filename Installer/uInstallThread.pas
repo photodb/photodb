@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, uInstallTypes, uDBForm, uMemory, uConstants,
-  uInstallUtils, uInstallScope, uActions, ActiveX;
+  uInstallUtils, uInstallScope, uActions, ActiveX, SysUtils;
 
 type
   TInstallThread = class(TThread)
@@ -44,10 +44,12 @@ begin
   try
     try
       TInstallManager.Instance.ExecuteInstallActions(InstallCallBack);
-    finally
-      Synchronize(ExitSetup);
+    except
+      on e: Exception do
+        MessageBox(0, PChar('Error: ' + e.Message), 'Error', MB_OK);
     end;
   finally
+    Synchronize(ExitSetup);
     CoUninitialize;
   end;
 end;

@@ -5,7 +5,7 @@ interface
 uses
   Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmProgress, SaveWindowPos, uConstants, UnitDBKernel,
-  uDBForm, uSettings;
+  uDBForm, uSettings, uRuntime;
 
 type
   TDBCleaningForm = class(TDBForm)
@@ -127,7 +127,8 @@ end;
 procedure TDBCleaningForm.BtnStartClick(Sender: TObject);
 begin
   BtnSaveClick(Sender);
-  CleanUpThread.Create(False);
+  if not FolderView then
+    CleanUpThread.Create(False);
   BtnStart.Enabled := False;
   BtnStop.Enabled := True;
 end;

@@ -606,10 +606,6 @@ object PropertiesForm: TPropertiesForm
     object TsGroups: TTabSheet
       Caption = 'Groups'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -1274,10 +1270,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -1298,10 +1290,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -1310,6 +1298,7 @@ object PropertiesForm: TPropertiesForm
         Top = 327
         Width = 111
         Height = 13
+        Anchors = [akLeft, akBottom]
         Caption = 'Effective range - 0..255'
       end
       object DgGistogramm: TDmGradient
@@ -1339,7 +1328,7 @@ object PropertiesForm: TPropertiesForm
         Top = 183
         Width = 293
         Height = 138
-        Anchors = [akLeft, akTop, akRight]
+        Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Chanel'
         ItemIndex = 0
         Items.Strings = (
@@ -1354,10 +1343,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         299
         346)
@@ -1420,14 +1405,14 @@ object PropertiesForm: TPropertiesForm
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
     Left = 16
-    Top = 456
+    Top = 496
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = True
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
     Left = 48
-    Top = 456
+    Top = 496
   end
   object PmRatingNotAvaliable: TPopupMenu
     OnPopup = PmRatingNotAvaliablePopup
@@ -1498,7 +1483,7 @@ object PropertiesForm: TPropertiesForm
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
     Left = 144
-    Top = 456
+    Top = 496
   end
   object CopyEXIFPopupMenu: TPopupMenu
     Left = 168
@@ -1514,7 +1499,7 @@ object PropertiesForm: TPropertiesForm
   end
   object ImageList1: TImageList
     Left = 80
-    Top = 456
+    Top = 496
   end
   object PmLinks: TPopupMenu
     OnPopup = PmLinksPopup
@@ -1565,7 +1550,7 @@ object PropertiesForm: TPropertiesForm
   end
   object RegGroupsImageList: TImageList
     Left = 112
-    Top = 456
+    Top = 496
   end
   object PopupMenuGroups: TPopupMenu
     OnPopup = PopupMenuGroupsPopup

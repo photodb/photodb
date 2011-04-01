@@ -38,7 +38,8 @@ uses
   uGOM in '..\PhotoDB\Units\uGOM.pas',
   uUninstallProcess in 'uUninstallProcess.pas',
   uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
-  uActivationUtils in '..\PhotoDB\Units\uActivationUtils.pas';
+  uActivationUtils in '..\PhotoDB\Units\uActivationUtils.pas',
+  uImageSource in '..\PhotoDB\Units\uImageSource.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}

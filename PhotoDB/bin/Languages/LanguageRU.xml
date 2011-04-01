@@ -24,15 +24,14 @@
     <translate name="All formats (%s)" value="Все форматы (%s)" />
     <translate name="Unknown" value="Неизвестно" />
   </scope>
-  <scope name="System">
-    <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
-    <translate name="View with PhotoDB" value="Просмотрт с помощью PhotoDB" />
-  </scope>
   <scope name="InstallLanguage">
     <translate name="Select language" value="Выбор языка" />
     <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
   <scope name="System">
+    <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
+    <translate name="View with PhotoDB" value="Просмотр с помощью PhotoDB" />
+    <translate name="Photo Database {V} helps you to find, protect and organize your photos." value="Photo Database {V} поможет вам в поиске, защите и организации ваших фотографий." />
     <translate name="Get photos" value="Получить фотографии" />
     <translate name="Browse with PhotoDB" value="Проводник с PhotoDB" />
     <translate name="After the 30 days has expired, you must activate your copy!" value="Время работы программы истекло! Вы должны активизировать данную копию!" />

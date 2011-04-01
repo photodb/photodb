@@ -43,6 +43,7 @@ procedure UpdateImageThInLinks(OldImageTh, NewImageTh: string);
 function BitmapToString(Bit: TBitmap): string;
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm = nil);
+procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile: Boolean; BaseFolder: string; var Groups: TGroups);
 
 { DB Types }
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
@@ -1625,6 +1626,45 @@ begin
     FQuery.Close;
   finally
     FreeDS(FQuery);
+  end;
+end;
+
+procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile: Boolean; BaseFolder: string; var Groups: TGroups);
+var
+  FileName,
+  S, Folder: string;
+  Crc: Cardinal;
+  Rec: TDBPopupMenuInfoRecord;
+begin
+  Rec := TDBPopupMenuInfoRecord.Create;
+  try
+    Rec.ReadFromDS(OutTable);
+    Rec.WriteToDS(InTable);
+    AddGroupsToGroups(Groups, EnCodeGroups(Rec.Groups));
+
+    // subfolder crc neened
+    FileName := OutTable.FieldByName('FFileName').AsString;
+    S := FileName;
+    Delete(S, 1, Length(BaseFolder));
+    InTable.FieldByName('FFileName').AsString := S;
+
+    if Pos('\', S) > 0 then
+      Folder := ExtractFileDir(S)
+    else
+      Folder := '';
+
+    CalcStringCRC32(Folder, Crc);
+    InTable.FieldByName('FolderCRC').AsInteger := Crc;
+
+    InTable.FieldByName('Thum').AsVariant := OutTable.FieldByName('Thum').AsVariant;
+
+    if FileExistsSafe(FileName) then
+      InTable.FieldByName('Attr').AsInteger := Db_attr_norm
+    else
+      InTable.FieldByName('Attr').AsInteger := Db_attr_not_exists;
+
+  finally
+    F(Rec);
   end;
 end;
 

@@ -305,10 +305,14 @@ begin
 end;
 
 procedure TActionsForm.Reset;
+var
+  I: Integer;
 begin
   ActionList.Items.Clear;
   Cursor := 0;
-  FreeList(Actions);
+  for I := 0 to Actions.Count - 1 do
+    TObject(Actions[I]).Free;
+  Actions.Clear;
 end;
 
 function TActionsForm.GetFormID: string;

@@ -468,11 +468,6 @@ begin
             Show;
             SetFocus;
           end;
-        // TODO:
-        // WHAT IT??????
-        GetFileNameById(0);
-        Delay(1500);
-        /// ///////////////
 
         try
           CopyFilesSynch(0, Files, Folder, Options.Move, True);

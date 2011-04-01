@@ -4,7 +4,7 @@ interface
 
 uses
   Forms, Classes, uTranslate, Graphics, SyncObjs,
-  uVistaFuncs, uMemory, uGOM;
+  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils;
 
 type
   TDBForm = class(TForm)
@@ -31,6 +31,7 @@ type
     class function Instance : TFormCollection;
     procedure UnRegisterForm(Form: TDBForm);
     procedure RegisterForm(Form: TDBForm);
+    function GetImage(BaseForm: TDBForm; FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean;
   end;
 
 implementation
@@ -87,6 +88,28 @@ begin
   F(FSync);
   F(FForms);
   inherited;
+end;
+
+function TFormCollection.GetImage(BaseForm: TDBForm; FileName: string;
+  Bitmap: TBitmap; var Width, Height: Integer): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if GOM.IsObj(BaseForm) and Supports(BaseForm, IImageSource) then
+    Result := (BaseForm as IImageSource).GetImage(FileName, Bitmap, Width, Height);
+
+  if Result then
+    Exit;
+
+  for I := 0 to FForms.Count - 1 do
+  begin
+    if Supports(FForms[I], IImageSource) then
+      Result := (TDBForm(FForms[I]) as IImageSource).GetImage(FileName, Bitmap, Width, Height);
+    if Result then
+      Exit;
+
+  end;
 end;
 
 class function TFormCollection.Instance: TFormCollection;

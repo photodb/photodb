@@ -247,13 +247,13 @@ end;
 
 procedure TFormManager.UnRegisterMainForm(Value: TForm);
 var
-  i : integer;
+  I : integer;
 begin
   FMainForms.Remove(Value);
   try
-    for i:=FMainForms.Count - 1 downto 1 do
-      if not TForm(FMainForms[i]).Visible then
-        TForm(FMainForms[i]).Close;
+    for I := FMainForms.Count - 1 downto 0 do
+      if not TForm(FMainForms[I]).Visible then
+        TForm(FMainForms[I]).Close;
   except
     on e : Exception do EventLog(':TFormManager::UnRegisterMainForm() throw exception: ' + e.Message);
   end;

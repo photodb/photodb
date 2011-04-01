@@ -5,7 +5,7 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Classes, uMemory, uConstants;
+  Classes, uMemory, uConstants, uTranslate;
 
 type
   //OBJECTS
@@ -202,7 +202,7 @@ begin
   Files.Add(TDirectoryObject.Create('Languages',   '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Licenses',    '%PROGRAM%', ''));
 
-  PhotoDBFile := TFileObject.Create(PhotoDBFileName, '%PROGRAM%', 'Photo Database {V} helps you to find, protect and organize your photos.');
+  PhotoDBFile := TFileObject.Create(PhotoDBFileName, '%PROGRAM%', TA('Photo Database {V} helps you to find, protect and organize your photos.', 'Setup'));
   PhotoDBFile.FShortCuts.Add('%DESKTOP%\Photo Database {V}.lnk');
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + ProgramShortCutFile);
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + 'Home page.lnk', 'http://photodb.illusdolphin.net/{LNG}');

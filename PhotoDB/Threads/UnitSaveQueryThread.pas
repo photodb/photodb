@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, UnitGroupsWork, UnitExportThread, Classes, DB, Dolphin_DB,
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
-  acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants,
+  acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants, uDBUtils,
   uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate,
   uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils;
 
@@ -32,7 +32,6 @@ type
     procedure SetProgress(Value : integer);
     procedure SetProgressA;
     Procedure Done;
-    procedure CopyRecordsW(OutTable, InTable: TDataSet);
     procedure LoadCustomDBName;
     procedure ReplaceIconAction;  
     procedure SaveLocation(Src, Dest: TDataSet);
@@ -118,7 +117,7 @@ begin
       if IsTerminated then
         Break;
       Dest.Append;
-      CopyRecordsW(Src, Dest);
+      CopyRecordsW(Src, Dest, True, DBFolder, FGroupsFounded);
       Dest.Post;
       SetProgress(Src.RecNo);
       Src.Next;
@@ -255,45 +254,6 @@ end;
 procedure TSaveQueryThread.SetProgressA;
 begin
   TSavingTableForm(ThreadForm).DmProgress1.Position := FIntParam;
-end;
-
-procedure TSaveQueryThread.CopyRecordsW(OutTable, InTable: TDataSet);
-var
-  FileName,
-  S, Folder: string;
-  Crc: Cardinal;
-  Rec: TDBPopupMenuInfoRecord;
-begin
-  Rec := TDBPopupMenuInfoRecord.Create;
-  try
-    Rec.ReadFromDS(OutTable);
-    Rec.WriteToDS(InTable); 
-    AddGroupsToGroups(FGroupsFounded, EnCodeGroups(Rec.Groups));
-    
-    // subfolder crc neened
-    FileName := OutTable.FieldByName('FFileName').AsString;
-    S := FileName;
-    Delete(S, 1, Length(DBFolder));
-    InTable.FieldByName('FFileName').AsString := S;
-
-    if Pos('\', S) > 0 then
-      Folder := ExtractFileDir(S)
-    else
-      Folder := '';
-
-    CalcStringCRC32(Folder, Crc);
-    InTable.FieldByName('FolderCRC').AsInteger := Crc;
-
-    InTable.FieldByName('Thum').AsVariant := OutTable.FieldByName('Thum').AsVariant;
-
-    if FileExistsSafe(FileName) then
-      InTable.FieldByName('Attr').AsInteger := Db_attr_norm
-    else
-      InTable.FieldByName('Attr').AsInteger := Db_attr_not_exists;
-      
-  finally
-    F(Rec);
-  end;
 end;
 
 procedure TSaveQueryThread.LoadCustomDBName;

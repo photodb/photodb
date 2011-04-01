@@ -1,5 +1,4 @@
 unit UnitCleanUpThread;
-//TODO: review module
 
 interface
 
@@ -41,7 +40,8 @@ var
 
 implementation
 
-uses dolphin_db, UnitDBCleaning, FormManegerUnit;
+uses
+  dolphin_db, UnitDBCleaning, FormManegerUnit;
 
 { CleanUpThread }
 
@@ -57,8 +57,6 @@ var
   IsDate, IsTime: Boolean;
 begin
   FreeOnTerminate := True;
-  if FolderView then
-    Exit;
   Synchronize(RegisterThread);
 
   if Active then
@@ -67,8 +65,8 @@ begin
   Termitating := False;
   Active := True;
 
-  FTable := GetQuery;
-  FQuery := GetQuery;
+  FTable := GetQuery(True);
+  FQuery := GetQuery(True);
 
   FReg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
@@ -113,7 +111,6 @@ begin
     LastID := FTable.FieldByName('ID').AsInteger;
     Synchronize(UpdateText);
     Inc(Fposition);
-    // Fposition:=FTable.RecNo;
 
     Share_Position := FPosition;
     Synchronize(UpdateProgress);
@@ -125,7 +122,6 @@ begin
       Break;
 
     try
-
       if not StaticPath(FTable.FieldByName('FFileName').AsString) then
         Continue;
 
@@ -135,13 +131,15 @@ begin
       Int := Integer(Crc);
       if Int <> FTable.FieldByName('FolderCRC').AsInteger then
       begin
-        SetQuery := GetQuery;
-        SetSQL(SetQuery,
-          'Update $DB$ Set FolderCRC=:FolderCRC Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
-        SetIntParam(SetQuery, 0, Crc);
-        ExecSQL(SetQuery);
-
-        FreeDS(SetQuery);
+        SetQuery := GetQuery(True);
+        try
+          SetSQL(SetQuery,
+            'Update $DB$ Set FolderCRC=:FolderCRC Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
+          SetIntParam(SetQuery, 0, Crc);
+          ExecSQL(SetQuery);
+        finally
+          FreeDS(SetQuery);
+        end;
       end;
 
       if Settings.ReadBool('Options', 'DeleteNotValidRecords', True) then
@@ -155,7 +153,7 @@ begin
               (FTable.FieldByName('Comment').AsString = '') and (FTable.FieldByName('KeyWords').AsString = '') and
               (FTable.FieldByName('Groups').AsString = '') and (FTable.FieldByName('IsDate').AsBoolean = False) then
             begin
-              SetQuery := GetQuery;
+              SetQuery := GetQuery(True);
               try
                 SetSQL(SetQuery, 'Delete from $DB$ Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
                 ExecSQL(SetQuery);
@@ -188,12 +186,15 @@ begin
         S := FTable.FieldByName('FFileName').AsString;
         if S <> AnsiLowerCase(S) then
         begin
-          SetQuery := GetQuery;
+          SetQuery := GetQuery(True);
+          try
           SetSQL(SetQuery,
             'UPDATE $DB$ Set FFileName=:FFileName Where ID=' + IntToStr(FTable.FieldByName('ID').AsInteger));
           SetStrParam(SetQuery, 0, AnsiLowerCase(S));
           ExecSQL(SetQuery);
-          FreeDS(SetQuery);
+          finally
+            FreeDS(SetQuery);
+          end;
         end;
       except
         on E: Exception do
@@ -208,30 +209,36 @@ begin
         ExifData := TExifData.Create;
         try
           ExifData.LoadFromGraphic(FTable.FieldByName('FFileName').AsString);
-          if YearOf(ExifData.DateTimeOriginal) > 2000 then
-            if (FTable.FieldByName('DateToAdd').AsDateTime <> ExifData.DateTimeOriginal) or
-              (FTable.FieldByName('aTime').AsDateTime <> TimeOf(ExifData.DateTimeOriginal)) then
-            begin
+          if not ExifData.Empty then
+          begin
+            if YearOf(ExifData.DateTimeOriginal) > 2000 then
+              if (FTable.FieldByName('DateToAdd').AsDateTime <> ExifData.DateTimeOriginal) or
+                (FTable.FieldByName('aTime').AsDateTime <> TimeOf(ExifData.DateTimeOriginal)) then
+              begin
 
-              DateToAdd := ExifData.DateTimeOriginal;
-              ATime := TimeOf(ExifData.DateTimeOriginal);
-              IsDate := True;
-              IsTime := True;
-              _sqlexectext := '';
-              _sqlexectext := _sqlexectext + 'DateToAdd=:DateToAdd,';
-              _sqlexectext := _sqlexectext + 'aTime=:aTime,';
-              _sqlexectext := _sqlexectext + 'IsDate=:IsDate,';
-              _sqlexectext := _sqlexectext + 'IsTime=:IsTime';
-              SetQuery := GetQuery;
-              SetSQL(SetQuery, 'Update $DB$ Set ' + _sqlexectext + ' where ID = ' + IntToStr
-                  (FTable.FieldByName('ID').AsInteger));
-              SetDateParam(SetQuery, 'DateToAdd', DateToAdd);
-              SetDateParam(SetQuery, 'aTime', ATime);
-              SetBoolParam(SetQuery, 2, IsDate);
-              SetBoolParam(SetQuery, 3, IsTime);
-              ExecSQL(SetQuery);
-              FreeDS(SetQuery);
-            end;
+                DateToAdd := ExifData.DateTimeOriginal;
+                ATime := TimeOf(ExifData.DateTimeOriginal);
+                IsDate := True;
+                IsTime := True;
+                _sqlexectext := '';
+                _sqlexectext := _sqlexectext + 'DateToAdd=:DateToAdd,';
+                _sqlexectext := _sqlexectext + 'aTime=:aTime,';
+                _sqlexectext := _sqlexectext + 'IsDate=:IsDate,';
+                _sqlexectext := _sqlexectext + 'IsTime=:IsTime';
+                SetQuery := GetQuery(True);
+                try
+                  SetSQL(SetQuery, 'Update $DB$ Set ' + _sqlexectext + ' where ID = ' + IntToStr
+                      (FTable.FieldByName('ID').AsInteger));
+                  SetDateParam(SetQuery, 'DateToAdd', DateToAdd);
+                  SetDateParam(SetQuery, 'aTime', ATime);
+                  SetBoolParam(SetQuery, 2, IsDate);
+                  SetBoolParam(SetQuery, 3, IsTime);
+                  ExecSQL(SetQuery);
+                finally
+                  FreeDS(SetQuery);
+                end;
+              end;
+          end;
         except
           on E: Exception do
             EventLog(':CleanUpThread::Execute() throw exception: ' + E.message);
@@ -316,7 +323,7 @@ function CleanUpThread.GetDBRecordCount: Integer;
 var
   DS: TDataSet;
 begin
-  DS := GetQuery;
+  DS := GetQuery(True);
   try
     SetSQL(DS, 'SELECT count(*) as DB_Count from $DB$');
     try

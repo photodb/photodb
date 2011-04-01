@@ -87,6 +87,7 @@
 			<DCCReference Include="uUninstallProcess.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uStringUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uActivationUtils.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uImageSource.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

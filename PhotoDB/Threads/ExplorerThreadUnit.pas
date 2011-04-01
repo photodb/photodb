@@ -211,6 +211,7 @@ var
     if (GetDBType = DB_TYPE_MDB) and not FolderView then
       SetSQL(FQuery, 'Select * FROM $DB$ WHERE FolderCRC = ' + Inttostr(Integer(Crc)) +
           ' AND (FFileName LIKE :FolderA) AND NOT (FFileName LIKE :FolderB)');
+
     if FolderView then
     begin
       SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
@@ -350,19 +351,22 @@ begin
       try
 
         DBFolderToSearch := FFolder;
+
+        //TODO: review
         UnProcessPath(DBFolderToSearch);
         DBFolderToSearch:=ExcludeTrailingBackslash(AnsiLowerCase(DBFolderToSearch));
         CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
         DBFolderToSearch := IncludeTrailingBackslash(DBFolderToSearch);
         FFolder := IncludeTrailingBackslash(FFolder);
+
         FFiles := TExplorerFileInfos.Create;
 
         IsPrivateDirectory := TPrivateHelper.Instance.IsPrivateDirectory(DBFolderToSearch);
 
         DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
         FQuery := GetQuery;
-        ReadOnlyQuery(FQuery);
         try
+          ReadOnlyQuery(FQuery);
           TW.I.Start('IsPrivateDirectory');
           if IsPrivateDirectory then
             LoadDBContent;

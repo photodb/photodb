@@ -212,7 +212,7 @@ var
   FileList: TStrings;
   Size: Int64;
   I: Integer;
-  LangCode: DWord;
+  LangCode: Integer;
   Language: TLanguage;
   LangItem: TLanguageItem;
   ImageStream: TMemoryStream;

@@ -1467,10 +1467,7 @@ end;
 
 procedure TDBPopupMenu.ConvertItemPopUpMenu_(Sender: TObject);
 begin
-  if Supports(FOwner, IImageSource) then
-    ResizeImages(FOwner as IImageSource, FInfo)
-  else
-    ResizeImages(nil, FInfo);
+  ResizeImages(FOwner, FInfo);
 end;
 
 procedure TDBPopupMenu.UserMenuItemPopUpMenu_(Sender: TObject);

@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Forms, SyncObjs, Dolphin_DB, uDBForm, uImageSource,
-  Graphics, uSysUtils;
+  Graphics, uSysUtils, uMemory;
 
 type
   TThreadForm = class(TDBForm)
@@ -42,8 +42,8 @@ end;
 destructor TThreadForm.Destroy;
 begin
   TerminateAllThreads;
-  FThreadList.Free;
-  FSync.Free;
+  F(FThreadList);
+  F(FSync);
   inherited;
 end;
 
@@ -88,8 +88,8 @@ begin
   try
     for I := 0 to FThreadList.Count - 1 do
     begin
-      TThread(FThreadList[i]).OnTerminate := nil;
-      TThreadEx(FThreadList[i]).DoTerminate;
+      TThread(FThreadList[I]).OnTerminate := nil;
+      TThreadEx(FThreadList[I]).DoTerminate;
     end;
   finally
     FSync.Leave;

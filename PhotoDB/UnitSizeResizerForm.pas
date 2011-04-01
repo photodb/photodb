@@ -86,7 +86,7 @@ type
     FDataCount: Integer;
     FProcessingParams: TProcessingParams;
     FPreviewImage: TBitmap;
-    FOwner: IImageSource;
+    Fowner: TDBForm;
     FIgnoreInput: Boolean;
     FCreatingResize: Boolean;
     FCurrentPreviewPosition: Integer;
@@ -104,7 +104,7 @@ type
   public
     { Public declarations }
     destructor Destroy; override;
-    procedure SetInfo(Owner: IImageSource; List: TDBPopupMenuInfo);
+    procedure SetInfo(Owner: TDBForm; List: TDBPopupMenuInfo);
     procedure ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing: Boolean);
     procedure GeneratePreview;
     procedure UpdatePreview(PreviewImage: TBitmap; FileName: string; RealWidth, RealHeight: Integer);
@@ -117,10 +117,10 @@ type
 const
   ConvertImageID = 'ConvertImage';
 
-procedure ExportImages(Owner: IImageSource; List: TDBPopupMenuInfo);
-procedure ResizeImages(Owner: IImageSource; List: TDBPopupMenuInfo);
-procedure ConvertImages(Owner: IImageSource; List: TDBPopupMenuInfo);
-procedure RotateImages(Owner: IImageSource; List: TDBPopupMenuInfo; BeginRotate : Integer; StartImmediately : Boolean);
+procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; BeginRotate : Integer; StartImmediately : Boolean);
 
 implementation
 
@@ -128,7 +128,7 @@ uses UnitJPEGOptions, UImageConvertThread, FormManegerUnit, DBCMenu;
 
 {$R *.dfm}
 
-procedure ResizeImages(Owner: IImageSource; List: TDBPopupMenuInfo);
+procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
 var
   FormSizeResizer: TFormSizeResizer;
 begin
@@ -138,7 +138,7 @@ begin
   FormSizeResizer.Show;
 end;
 
-procedure ConvertImages(Owner: IImageSource; List: TDBPopupMenuInfo);
+procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
 var
   FormSizeResizer: TFormSizeResizer;
 begin
@@ -148,7 +148,7 @@ begin
   FormSizeResizer.Show;
 end;
 
-procedure ExportImages(Owner: IImageSource; List: TDBPopupMenuInfo);
+procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
 var
   FormSizeResizer: TFormSizeResizer;
 begin
@@ -158,7 +158,7 @@ begin
   FormSizeResizer.Show;
 end;
 
-procedure RotateImages(Owner: IImageSource; List: TDBPopupMenuInfo; BeginRotate : Integer; StartImmediately : Boolean);
+procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; BeginRotate : Integer; StartImmediately : Boolean);
 var
   FormSizeResizer: TFormSizeResizer;
 begin
@@ -456,7 +456,7 @@ begin
     TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams);
 end;
 
-procedure TFormSizeResizer.SetInfo(Owner: IImageSource; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.SetInfo(Owner: TDBForm; List: TDBPopupMenuInfo);
 var
   I: Integer;
   FWidth, FHeight: Integer;
@@ -476,10 +476,10 @@ begin
     EdSavePath.Text := ExtractFileDir(FData[FCurrentPreviewPosition].FileName);
 
   UpdateNavigation;
-  if (FPreviewImage = nil) and (FOwner <> nil) then
+  if (FPreviewImage = nil) then
   begin
     FPreviewImage := TBitmap.Create;
-    if FOwner.GetImage(FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then
+    if TFormCollection.Instance.GetImage(FOwner, FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then
     begin
       FRealWidth := FWidth;
       FRealHeight := FHeight;
@@ -529,10 +529,10 @@ begin
   TImageConvertThread.Create(Self, StateID, FData[FCurrentPreviewPosition].Copy, FProcessingParams);
   LsMain.Show;
 
-  if (FPreviewImage = nil) and (FOwner <> nil) then
+  if (FPreviewImage = nil) then
   begin
     FPreviewImage := TBitmap.Create;
-    if FOwner.GetImage(FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then
+    if TFormCollection.Instance.GetImage(FOwner, FData[FCurrentPreviewPosition].FileName, FPreviewImage, FWidth, FHeight) then
     begin
       FRealWidth := FWidth;
       FRealHeight := FHeight;
