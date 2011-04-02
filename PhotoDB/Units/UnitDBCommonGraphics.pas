@@ -1208,14 +1208,21 @@ begin
     Dest.Assign(TRAWImage(Src))
   else if Src is TBitmap then
     AssignBitmap(Dest, TBitmap(Src))
-  else if Src is TPngImage then
+  else if (Src is TPngImage) and (TPngImage(Src).Header.BitDepth = 8) then
   begin
-    if TPngImage(Src).TransparencyMode <> ptmNone then
-      LoadPNGImageTransparent(TPngImage(Src), Dest)
-    else
-      LoadPNGImageWOTransparent(TPngImage(Src), Dest);
-  end
-  else
+    case TPngImage(Src).Header.ColorType of
+      COLOR_GRAYSCALE:
+        LoadPNGImage8BitWOTransparent(TPngImage(Src), Dest);
+      COLOR_GRAYSCALEALPHA:
+        LoadPNGImage8BitTransparent(TPngImage(Src), Dest);
+      COLOR_PALETTE:
+        LoadPNGImagePalette(TPngImage(Src), Dest);
+      COLOR_RGB:
+        LoadPNGImageWOTransparent(TPngImage(Src), Dest);
+      COLOR_RGBALPHA:
+        LoadPNGImageTransparent(TPngImage(Src), Dest);
+    end;
+  end else
     Dest.Assign(Src);
 end;
 

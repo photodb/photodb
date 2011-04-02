@@ -359,7 +359,7 @@ initialization:
   if ($IsFile=true) {
     if ($FileExists=true)
 	{
-	  CreateItem("Delete file",DB_IC_DELETE_FILE,"DeleteLItemPopUpMenu;",false,0);
+	  CreateItem("Delete file",DB_IC_DELETE_FILE,"DeleteItemPopUpMenu;",false,0);
 	};
   };
 }

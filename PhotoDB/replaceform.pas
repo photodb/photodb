@@ -61,7 +61,7 @@ type
     BtnAddAll: TButton;
     procedure ExecuteToAdd(Filename : string; _ID : integer; thimg : string; addr_res, AddrSelID : pinteger; rec_ : TImageDBRecordA);
     procedure readDBInfoByID(id : integer);
-    procedure additem(caption_ : string; ID : integer; fbit_ : tbitmap);
+    procedure AddItem(Text : string; ID : integer; fbit_ : tbitmap);
     procedure LvMainSelectItem(Sender: TObject; Item: TListItem;Selected: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure BtnAddClick(Sender: TObject);
@@ -316,7 +316,7 @@ begin
         end;
         Bit.Canvas.Rectangle(0, 0, ListItemPreviewSize, ListItemPreviewSize);
 
-        if (JPEG > ListItemPreviewSize) or (JPEG > ListItemPreviewSize) then
+        if (JPEG.Width > ListItemPreviewSize) or (JPEG.Height > ListItemPreviewSize) then
         begin
           TempBitmap := TBitmap.Create;
           try

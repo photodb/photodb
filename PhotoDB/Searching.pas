@@ -388,6 +388,7 @@ type
     function GetSortMethod: Integer;
     function GetShowGroups: Boolean;
     function GetSortDecrement: Boolean;
+    procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
   protected
    { Protected declarations }
     function TreeView : TShellTreeView;
@@ -1394,7 +1395,7 @@ begin
         Exit;
       end;
     end;
-    RenameResult := RenameFileWithDB(Self, SearchRecord.FileName, ExtractFilePath(SearchRecord.FileName) + S, SearchRecord.ID, False);
+    RenameResult := RenameFileWithDB(KernelEventCallBack, SearchRecord.FileName, ExtractFilePath(SearchRecord.FileName) + S, SearchRecord.ID, False);
   end;
 end;
 
@@ -3226,6 +3227,12 @@ begin
   Result := item.Index;
   for I := 0 to item.OwnerGroup.Index - 1 do
     Result := Result + ElvMain.Groups[I].Items.Count;
+end;
+
+procedure TSearchForm.KernelEventCallBack(ID: Integer; Params: TEventFields;
+  Value: TEventValues);
+begin
+  DBKernel.DoIDEvent(Self, ID, Params, Value);
 end;
 
 procedure TSearchForm.ShowDateOptionsLinkClick(Sender: TObject);

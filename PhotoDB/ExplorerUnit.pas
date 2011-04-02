@@ -569,6 +569,7 @@ type
      procedure DoSelectItem;
      procedure SendToItemPopUpMenu_(Sender : TObject);
      procedure LoadIcons;
+     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
      function GetMyComputer: string;
      function GetSecondStepHelp: string;
      property SecondStepHelp : string read GetSecondStepHelp;
@@ -1595,13 +1596,13 @@ begin
             RenameResult := False;
           end;
         end else
-          RenameResult := RenamefileWithDB(Self, FFilesInfo[PmItemPopup.Tag].FileName,
+          RenameResult := RenamefileWithDB(KernelEventCallBack, FFilesInfo[PmItemPopup.Tag].FileName,
             ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
       finally
         FreeDS(DS);
       end;
     end else
-      RenameResult := RenamefileWithDB(Self, FFilesInfo[PmItemPopup.Tag].FileName,
+      RenameResult := RenamefileWithDB(KernelEventCallBack, FFilesInfo[PmItemPopup.Tag].FileName,
         ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
   end;
 end;
@@ -3080,7 +3081,7 @@ begin
                   ListView1SelectItem(ElvMain, ListView1Selected, ListView1Selected = nil);
               end
               else
-                RenamefileWithDB(Self, PInfo[K].FOldFileName, PInfo[K].FNewFileName, FFilesInfo[index].ID, True);
+                RenamefileWithDB(KernelEventCallBack, PInfo[K].FOldFileName, PInfo[K].FNewFileName, FFilesInfo[index].ID, True);
               Continue;
             end;
           end;
@@ -3230,7 +3231,7 @@ begin
       TbPaste.Enabled := False;
     end;
     if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
-      CopyFiles(Handle, Files, GetCurrentPath, False, False);
+      CopyFiles(Handle, Files, GetCurrentPath, False, False, Self);
 
   finally
     F(Files);
@@ -3944,7 +3945,7 @@ begin
     EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption, UseSimpleSelectFolderDialog);
 
     if EndDir <> '' then
-      CopyFiles(Handle, Files, EndDir, False, False);
+      CopyFiles(Handle, Files, EndDir, False, False, Self);
   finally
     F(Files);
   end;
@@ -4002,7 +4003,7 @@ begin
       TbPaste.Enabled := False;
     end;
     if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
-      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, False, False);
+      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, False, False, Self);
   finally
     F(Files);
   end;
@@ -4912,6 +4913,12 @@ begin
   SetNewPathW(FHistory[N], False);
 end;
 
+procedure TExplorerForm.KernelEventCallBack(ID: Integer; Params: TEventFields;
+  Value: TEventValues);
+begin
+  DBKernel.DoIDEvent(Self, ID, Params, Value);
+end;
+
 procedure TExplorerForm.DragTimerTimer(Sender: TObject);
 var
   ListItem: TEasyItem;
@@ -5264,7 +5271,7 @@ begin
         FDBCanDragW := False;
 
         if CtrlKeyDown then
-          CopyFiles(Handle, DropInfo, GetCurrentPath, False, False)
+          CopyFiles(Handle, DropInfo, GetCurrentPath, False, False, Self)
         else
           CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, Self);
 
@@ -5280,7 +5287,7 @@ begin
             Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
             if CtrlKeyDown then
-              CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False)
+              CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, Self)
             else
               CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, Self);
 
@@ -5744,7 +5751,7 @@ begin
         UpDir := Copy(Files[0], L2 + 1, L1 - L2);
         NewDir := IncludeTrailingBackslash(Dir + UpDir);
         CreateDirA(NewDir);
-        CopyFiles(Handle, Files, NewDir, False, False);
+        CopyFiles(Handle, Files, NewDir, False, False, Self);
       end;
     finally
       F(Files);
@@ -5866,7 +5873,7 @@ begin
     FDBCanDragW := False;
 
     if not(Sender = Move1) then
-      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False)
+      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self)
     else
       CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self);
 
@@ -5882,7 +5889,7 @@ begin
         Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
         if not(Sender = Move1) then
-          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False)
+          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False, Self)
         else
           CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False, Self);
 

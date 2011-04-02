@@ -46,9 +46,9 @@ begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
-    DS:=GetQuery(True);
+    DS := GetQuery(True);
     try
-      SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = '+IntToStr(GetPathCRC(FFileName))+' AND FFileName LIKE :FFileName');
+      SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName, True)) + ' AND FFileName LIKE :FFileName');
       SetStrParam(DS, 0, AnsiLowerCase(FFileName));
       try
         DS.Active := True;

@@ -271,6 +271,20 @@ object Viewer: TViewer
       end
     end
   end
+  object LsLoading: TLoadingSign
+    Left = 289
+    Top = 192
+    Width = 33
+    Height = 33
+    Visible = False
+    Active = True
+    FillPercent = 60
+    Color = clBtnFace
+    ParentColor = False
+    SignColor = clBlack
+    MaxTransparencity = 255
+    GetBackGround = LsLoadingGetBackGround
+  end
   object PopupMenu1: TPopupMenu
     OnPopup = PopupMenu1Popup
     Left = 392
@@ -441,13 +455,6 @@ object Viewer: TViewer
     OnMessage = ApplicationEvents1Message
     Left = 312
     Top = 16
-  end
-  object WaitImageTimer: TTimer
-    Enabled = False
-    Interval = 500
-    OnTimer = WaitImageTimerTimer
-    Left = 64
-    Top = 56
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False

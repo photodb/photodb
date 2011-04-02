@@ -1685,7 +1685,7 @@ begin
     begin
       Dir := TDestDype(DestWide[I]).Dest;
       CreateDirA(Dir);
-      CopyFiles(Handle, TDestDype(DestWide[I]).Files, Dir, False, True);
+      CopyFiles(Handle, TDestDype(DestWide[I]).Files, Dir, False, True, Self);
     end;
   finally
     FreeList(DestWide);

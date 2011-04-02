@@ -15,7 +15,7 @@ uses
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime,
-  uDBBaseTypes, uViewerTypes, uSettings, uAssociations;
+  uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign;
 
 type
   TRotatingImageInfo = record
@@ -40,7 +40,6 @@ type
     MouseTimer: TTimer;
     DBItem1: TMenuItem;
     ApplicationEvents1: TApplicationEvents;
-    WaitImageTimer: TTimer;
     AddToDB1: TMenuItem;
     Onlythisfile1: TMenuItem;
     AllFolder1: TMenuItem;
@@ -120,6 +119,7 @@ type
     TbSeparatorPageNumber: TToolButton;
     TbPageNumber: TToolButton;
     PopupMenuPageSelecter: TPopupMenu;
+    LsLoading: TLoadingSign;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FileName : String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -148,7 +148,6 @@ type
     Procedure UpdateRecord(FileNo: integer);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
-    procedure WaitImageTimerTimer(Sender: TObject);
     Procedure DoWaitToImage(Sender: TObject);
     Procedure EndWaitToImage(Sender: TObject);
     procedure Onlythisfile1Click(Sender: TObject);
@@ -201,6 +200,8 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
+    procedure LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
+      Bitmap: TBitmap);
   private
     { Private declarations }
     WindowsMenuTickCount : Cardinal;
@@ -224,6 +225,7 @@ type
     FRotatingImageInfo : TRotatingImageInfo;
     FW7TaskBar : ITaskbarList3;
     FProgressMessage : Cardinal;
+    FIsWaiting: Boolean;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
@@ -245,6 +247,9 @@ type
     procedure WndProc(var Message: TMessage); override;
     function GetFormID : string; override;
     function GetItem: TDBPopupMenuInfoRecord; override;
+  //  procedure WMPaint(var Message: TWMPaint); message WM_PAINT;
+  //  procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
+  //  procedure WMPrintClient(var Message: TWMPrintClient); message WM_PRINTCLIENT;
   public
     { Public declarations }
     CurrentInfo: TDBPopupMenuInfo;
@@ -258,7 +263,6 @@ type
     DBDragPoint: TPoint;
     FOldPoint: TPoint;
     WaitGrayScale: Integer;
-    WaitImage: TBitmap;
     FSID: TGUID;
     RealImageWidth: Integer;
     RealImageHeight: Integer;
@@ -356,13 +360,13 @@ begin
   AnimatedImage := nil;
   FLoading := True;
   FImageExists := False;
+  DoubleBuffered := True;
   DBCanDrag := False;
   DropFileTarget1.Register(Self);
   SlideTimer.Interval := Math.Min(Math.Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
   IncGrayScale := Math.Min(Math.Max(Settings.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
   FullScreenNow := False;
   SlideShowNow := False;
-  TbrActions.DoubleBuffered := True;
   Drawimage := Tbitmap.Create;
   FbImage := TBitmap.Create;
   FbImage.PixelFormat := pf24bit;
@@ -373,8 +377,7 @@ begin
   Fcsrbmp.Canvas.Brush.Color := 0;
   Fcsrbmp.Canvas.Pen.Color := 0;
   TW.I.Start('fnewcsrbmp');
-  WaitImage := TBitmap.Create;
-  WaitImage.PixelFormat := pf24bit;
+
   FNewCsrBmp := TBitmap.Create;
   FNewCsrBmp.PixelFormat := pf24bit;
   FNewCsrBmp.Canvas.Brush.Color := 0;
@@ -446,7 +449,6 @@ end;
 
 function TViewer.LoadImage_(Sender: TObject; FileName: String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
 var
-  Text: string;
   NeedsUpdating: Boolean;
 begin
   Result := False;
@@ -458,58 +460,42 @@ begin
     NeedsUpdating := False;
 
   Item.InfoLoaded := True;
-  DoWaitToImage(Sender);
   Rotate := Item.Rotation;
+  Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(FileName), CurrentFileNumber + 1,
+    CurrentInfo.Count]);
 
-  if CheckFileExistsWithSleep(FileName, False) then
-  begin
-    Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(FileName), CurrentFileNumber + 1,
-      CurrentInfo.Count]);
+  DisplayRating := Item.Rating;
+  TbRotateCCW.Enabled := True;
+  TbRotateCW.Enabled := True;
 
-    DisplayRating := Item.Rating;
-    TbRotateCCW.Enabled := True;
-    TbRotateCW.Enabled := True;
-
-    FSID := GetGUID;
+  FSID := GetGUID;
   if not ForwardThreadExists or (ForwardThreadFileName <> FileName) or (CurrentInfo.Count = 0)
-      or FullImage then
-    begin
-      if NeedsUpdating then
-      begin
-        DisplayRating := Item.Rating;
-        TimerDBWork.Enabled := True;
-        TbRotateCCW.Enabled := False;
-        TbRotateCW.Enabled := False;
-        TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
-        Rotate := 0;
-      end;
-
-      Result := True;
-      if not RealZoom then
-        TViewerThread.Create(Self, FileName, Rotate, FullImage, 1, FSID, False, False, FCurrentPage)
-      else
-        TViewerThread.Create(Self, FileName, Rotate, FullImage, BeginZoom, FSID, False, False, FCurrentPage);
-      ForwardThreadExists := False;
-    end else
-      ForwardThreadNeeds := True;
-  end else
+    or FullImage then
   begin
-    Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(FileName), CurrentFileNumber + 1,
-      CurrentInfo.Count]);
-    DisplayRating := Item.ID;
 
-    TbRotateCCW.Enabled := True;
-    TbRotateCW.Enabled := True;
+    Result := True;
+    if not RealZoom then
+      TViewerThread.Create(Self, FileName, Rotate, FullImage, 1, FSID, False, False, FCurrentPage)
+    else
+      TViewerThread.Create(Self, FileName, Rotate, FullImage, BeginZoom, FSID, False, False, FCurrentPage);
 
-    Text := Format(L('File %s not found!'), [Mince(FileName, 80)]);
-    FbImage.Canvas.Rectangle(0, 0, FbImage.Width, FbImage.Height);
-    FbImage.Width := FbImage.Canvas.TextWidth(Text);
-    FbImage.Height := FbImage.Canvas.TextHeight(Text);
-    FbImage.Canvas.TextOut(0, 0, Text);
-    RecreateDrawImage(Sender);
-    FormPaint(Sender);
-    Result := False;
-  end;
+    ForwardThreadExists := False;
+
+    if NeedsUpdating then
+    begin
+      DisplayRating := Item.Rating;
+      TimerDBWork.Enabled := True;
+      TbRotateCCW.Enabled := False;
+      TbRotateCW.Enabled := False;
+      TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
+      Rotate := 0;
+    end;
+
+  end else
+    ForwardThreadNeeds := True;
+
+  DoWaitToImage(Sender);
+
   TW.I.Start('LoadImage_ - end');
 end;
 
@@ -638,7 +624,7 @@ begin
   begin
     if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
     begin
-      if ZoomerOn and not WaitImageTimer.Enabled then
+      if ZoomerOn and not FIsWaiting then
       begin
         DrawRect(ImRect.Left, ImRect.Top, ImRect.Right, ImRect.Bottom);
         if Zoom <= 1 then
@@ -706,10 +692,9 @@ begin
           end;
         end;
       end;
-    end
-    else
+    end else
     begin
-      if ZoomerOn and not WaitImageTimer.Enabled then
+      if ZoomerOn and not FIsWaiting then
       begin
         ImRect := Rect(Round(ScrollBar1.Position / Zoom), Round((ScrollBar2.Position) / Zoom),
           Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom));
@@ -734,17 +719,8 @@ begin
       DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2 + DrawImage.Canvas.Textheight
         (FileName) + 4, FileName);
   end;
-  if WaitImageTimer.Enabled and FImageExists then
-  begin
-    TW.I.Start('WaitImageTimer');
-    WaitImage.Width := DrawImage.Width;
-    WaitImage.Height := DrawImage.Height;
-    GrayScaleImage(DrawImage, WaitImage, WaitGrayScale);
-    Canvas.Draw(0, 0, WaitImage);
-    TW.I.Start('WaitImageTimer - end');
-    Exit;
-  end;
-  if (not WaitImageTimer.Enabled) and (RealImageHeight * RealImageWidth <> 0) then
+
+  if (not FIsWaiting) and (RealImageHeight * RealImageWidth <> 0) then
   begin
     if ZoomerOn then
       Z := RealZoomInc * Zoom
@@ -766,7 +742,7 @@ begin
         CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
   end;
   LastZValue := Z;
-  FormPaint(Sender);
+  InvalidateRect(Handle, ClientRect, False);
 end;
 
 procedure TViewer.FormResize(Sender: TObject);
@@ -776,21 +752,17 @@ begin
     Exit;
   DrawImage.Width := ClientWidth;
   DrawImage.Height := HeightW;
-  if not WaitImageTimer.Enabled then
+  if not FIsWaiting then
     ReAllignScrolls(False, Point(0, 0));
   RecreateDrawImage(Sender);
   ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
   BottomImage.Top := ClientHeight - ToolsBar.Height;
   BottomImage.Width := ClientWidth;
   BottomImage.Height := ToolsBar.Height;
-  Canvas.Brush.Color := clBtnFace;
-  Canvas.Pen.Color := clBtnFace;
-  Canvas.Rectangle(0, HeightW, ClientWidth, ClientHeight);
-  if not StaticImage then
-  begin
-    Canvas.Rectangle(0, 0, Width, HeightW);
-    FormPaint(Sender);
-  end;
+
+  LsLoading.Left := ClientWidth div 2 - LsLoading.Width div 2;
+  LsLoading.Top := ClientHeight div 2 - LsLoading.Height div 2;
+  InvalidateRect(Handle, ClientRect, False);
   TbrActions.Refresh;
   TbrActions.Realign;
   TW.I.Start('TViewer.FormResize - end');
@@ -875,7 +847,6 @@ begin
   SaveWindowPos1.SavePosition;
   F(FbImage);
   F(DrawImage);
-  F(WaitImage);
   F(Fcsrbmp);
   F(FNewCsrBmp);
   F(Fnowcsrbmp);
@@ -896,7 +867,7 @@ begin
   FullScreenNow := True;
   SlideTimer.Enabled := True;
   Play := True;
-  WaitImageTimer.Enabled := False;
+  LsLoading.Hide;
   RecreateDrawImage(Sender);
   if FullScreenView = nil then
     Application.CreateForm(TFullScreenView, FullScreenView);
@@ -943,12 +914,8 @@ procedure TViewer.FormPaint(Sender: TObject);
 begin
   if SlideShowNow or FullScreenNow then
     Exit;
-  if WaitImageTimer.Enabled then
-  begin
-    if FImageExists then
-      Canvas.Draw(0, 0, WaitImage)
-  end else
-    Canvas.Draw(0, 0, DrawImage);
+
+  Canvas.Draw(0, 0, DrawImage);
 end;
 
 procedure TViewer.NewPicture(Sender: TObject);
@@ -1174,7 +1141,7 @@ begin
 
         DropFileSource1.ImageIndex := 0;
         DropFileSource1.Execute;
-        FormPaint(Self);
+        Invalidate;
       end;
       DBCanDrag := False;
     end;
@@ -1328,7 +1295,7 @@ begin
     for I := 0 to List.Count - 1 do
     begin
       FileName := List[I];
-      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
+      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
           + ' AND FFileName LIKE :FFileName');
       SetStrParam(FQuery, 0, NormalizeDBStringLike(AnsiLowerCase(FileName)));
       FQuery.Active := True;
@@ -1412,6 +1379,18 @@ begin
   end;
 end;
 
+procedure TViewer.LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
+  Bitmap: TBitmap);
+begin
+  if DrawImage.Empty then
+  begin
+    Bitmap.Canvas.Pen.Color := clBtnFace;
+    Bitmap.Canvas.Brush.Color := clBtnFace;
+    Bitmap.Canvas.Rectangle(0, 0, W, H);
+  end else
+    Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), DrawImage.Canvas, Rect(X, Y, X + W, Y + H));
+end;
+
 procedure TViewer.ShowFile(FileName: String);
 var
   Info: TDBPopupMenuInfo;
@@ -1458,7 +1437,7 @@ begin
   ReadOnlyQuery(DS);
   try
     FileName := CurrentInfo[FileNo].FileName;
-    SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
+    SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
         + ' AND FFileName LIKE :FFileName');
     SetStrParam(DS, 0, AnsiLowerCase(FileName));
     DS.Active := True;
@@ -1711,44 +1690,14 @@ begin
       if DirectShowForm <> nil then
         DirectShowForm.Close;
 
-  CurrentFileNumber := CurrentInfo.Position;
-  if not ((LoadBaseFile<>'') and (AnsiLowerCase(Item.FileName)=AnsiLowerCase(LoadBaseFile))) then
-  begin
+    CurrentFileNumber := CurrentInfo.Position;
+    if not ((LoadBaseFile<>'') and (AnsiLowerCase(Item.FileName)=AnsiLowerCase(LoadBaseFile))) then
+    begin
       Loading := True;
       TW.I.Start('LoadImage_');
-      if LoadImage_(Sender, Item.FIleName, Item.Rotation, False,
-        Zoom, False) then
-      begin
-        FbImage.Canvas.Brush.Color := clBtnFace;
-        FbImage.Canvas.Pen.Color := clBtnFace;
-        if FNewCsrBmp <> nil then
-          FNewCsrBmp.Canvas.Rectangle(0, 0, FNewCsrBmp.Width, FNewCsrBmp.Height);
-        FbImage.Width := 170;
-        FbImage.Height := 170;
-        FbImage.Canvas.Rectangle(0, 0, FbImage.Width, FbImage.Height);
 
-        LoadImage := GetSlideShowLoadPicture;
-        try
-          LoadImageBMP := TBitmap.Create;
-          try
-            LoadPNGImage32bit(LoadImage, LoadImageBMP, ClBtnFace);
-            FbImage.Canvas.Draw(0, 0, LoadImageBMP);
-          finally
-            F(LoadImageBMP);
-          end;
-        finally
-          F(LoadImage);
-        end;
-
-        Text_out := L('Processing') + '...';
-        FbImage.Canvas.TextOut(FbImage.Width div 2 - FbImage.Canvas.TextWidth(Text_out) div 2,
-          FbImage.Height - 4 * FbImage.Canvas.Textheight(Text_out) div 2, Text_out);
-
-        TW.I.Start('RecreateDrawImage_');
-        RecreateDrawImage(Sender);
-        TW.I.Start('FormPaint');
-        FormPaint(Sender);
-      end;
+      LoadImage_(Sender, Item.FIleName, Item.Rotation, False,
+        Zoom, False);
     end else
     begin
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
@@ -1785,6 +1734,7 @@ begin
   ZoomerOn := False;
   Zoom := 1;
   IncGrayScale := 20;
+  FIsWaiting := False;
   RealZoomInc := 1;
 end;
 
@@ -1802,32 +1752,17 @@ begin
   TW.I.Start('CreateParams - END');
 end;
 
-procedure TViewer.WaitImageTimerTimer(Sender: TObject);
-begin
-  WaitGrayScale := WaitGrayScale + IncGrayScale;
-  if WaitGrayScale > 100 then
-  begin
-    WaitGrayScale := 100;
-    Exit;
-  end;
-  WaitImage.Width := Drawimage.Width;
-  WaitImage.Height := Drawimage.Height;
-  GrayScaleImage(Drawimage, WaitImage, WaitGrayScale);
-  Canvas.Draw(0, 0, WaitImage);
-end;
-
 procedure TViewer.DoWaitToImage(Sender: TObject);
 begin
-  if WaitImageTimer.Enabled then
-    Exit;
-  WaitImageTimer.Enabled := True;
-  WaitGrayScale := 0;
+  FIsWaiting := True;
+  LsLoading.RecteateImage;
+  LsLoading.Show;
 end;
 
 procedure TViewer.EndWaitToImage(Sender: TObject);
 begin
-  WaitImageTimer.Enabled := False;
-  WaitGrayScale := 0;
+  FIsWaiting := False;
+  LsLoading.Hide;
 end;
 
 procedure TViewer.Onlythisfile1Click(Sender: TObject);
@@ -1911,7 +1846,7 @@ begin
     FileList.Add(Item.FileName);
     Copy_Move(True, FileList);
   finally
-     FileList.Free;
+     F(FileList);
   end;
 end;
 
@@ -3046,7 +2981,7 @@ begin
   SlideShowNow := True;
   SlideTimer.Enabled := False;
   Play := False;
-  WaitImageTimer.Enabled := False;
+  LsLoading.Hide;
   Application.CreateForm(TDirectShowForm, DirectShowForm);
   MTimer1.ImageIndex := DB_IC_PLAY;
   MTimer1Click(Sender);

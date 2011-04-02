@@ -235,11 +235,7 @@ begin
             SetLength(FFiles, 1);
           if FTermitated then
             Exit;
-          FBit := TBitmap.Create;
-          FBit.PixelFormat := pf24bit;
-          FBit.Canvas.Brush.Color := clWindow;
-          FBit.Canvas.Pen.Color := clWindow;
-          FBit.SetSize(FPictureSize, FPictureSize);
+
           if Fbyid then
             GetInfoByFileNameOrID(Ffiles[0], Fids[I], I, Graphic)
           else
@@ -306,7 +302,7 @@ begin
       SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = ' + Inttostr(Id))
     else
     begin
-      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
+      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
           + ' AND FFileName LIKE :FFileName');
       S := FileName;
       if FolderView then

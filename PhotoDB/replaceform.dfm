@@ -367,7 +367,6 @@ object DBReplaceForm: TDBReplaceForm
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 4
-      ExplicitHeight = 57
     end
   end
   object BtnReplaceAndDeleteDuplicates: TButton

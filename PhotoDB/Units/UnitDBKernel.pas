@@ -2,11 +2,9 @@ unit UnitDBKernel;
 
 interface
 
-uses Win32crc, CheckLst, TabNotBk, WebLink, ShellCtrls, Dialogs, TwButton,
-  Rating, ComCtrls, StdCtrls, ExtCtrls, Forms, Windows, Classes,
+uses Win32crc, Forms, Windows, Classes,
   Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
-  ValEdit, GraphicCrypt, ADODB, uLogger, uActivationUtils,
-  EasyListview, ScPanel, UnitDBCommon, DmProgress, UnitDBCommonGraphics,
+  GraphicCrypt, ADODB, uLogger, uActivationUtils,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
   uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,
   uRuntime, uDBBaseTypes, uStringUtils, uSettings, uSysUtils;

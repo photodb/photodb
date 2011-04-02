@@ -82,7 +82,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       OnChange = Edit1Change
-      ExplicitWidth = 149
     end
     object BtAdd: TButton
       Left = 9
@@ -127,6 +126,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       TopIconIncrement = 0
       ImageCanRegenerate = True
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object SedStartN: TSpinEdit
       Left = 278

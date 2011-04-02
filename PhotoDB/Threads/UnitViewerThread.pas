@@ -273,8 +273,7 @@ begin
   begin
     Synchronize(SetAnimatedImage);
     Exit;
-  end
-  else
+  end else
   begin
     repeat
       if Viewer = nil then
@@ -408,7 +407,7 @@ begin
     ReadOnlyQuery(Query);
     try
       Query.Active := False;
-      SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName))
+      SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName, True))
           + ' AND FFileName LIKE :FFileName');
       SetStrParam(Query, 0, AnsiLowerCase(FFileName));
       Query.Active := True;

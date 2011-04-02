@@ -177,7 +177,7 @@ function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : b
 function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
 procedure PackTable(FileName : string);
 function GetDefaultImageDBOptions : TImageDBOptions;
-function GetPathCRC(FileFullPath : string) : Integer;
+function GetPathCRC(FileFullPath : string; IsFile: Boolean) : Integer;
 function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
 function TryOpenCDS(DS: TDataSet): Boolean;
@@ -1039,17 +1039,32 @@ begin
     FConnections.Delete(Index);
 end;
 
-function GetPathCRC(FileFullPath : string) : Integer;
+function GetPathCRC(FileFullPath : string; IsFile: Boolean) : Integer;
 var
   Folder, ApplicationPath : string;
   CRC : Cardinal;
 begin
-  Folder := AnsiLowerCase(SysUtils.ExtractFileDir(FileFullPath));
+  if IsFile then
+    // c:\Folder\1.EXE => c:\Folder\
+    Folder := SysUtils.ExtractFileDir(FileFullPath)
+  else
+    Folder := FileFullPath;
+
+  // c:\Folder\ => c:\folder
+  Folder := AnsiLowerCase(ExcludeTrailingBackslash(Folder));
+
   if FolderView then
   begin
-    ApplicationPath := AnsiLowerCase(ExtractFileDir(ParamStr(0)));
+    //C:\photodb.exe => c:
+    ApplicationPath := ExcludeTrailingBackslash(AnsiLowerCase(ExtractFileDir(ParamStr(0))));
+
+    //c:\folder => \folder
     if (Length(ApplicationPath) <= Length(Folder)) and (Pos(ApplicationPath, Folder) = 1) then
       Delete(Folder, 1, Length(ApplicationPath));
+
+    // \folder => folder
+    if (Folder <> '') and (Folder[1] = '\') then
+      Delete(Folder, 1, 1);
   end;
   CalcStringCRC32(AnsiLowerCase(Folder), CRC);
   Result := Integer(CRC);

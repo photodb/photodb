@@ -453,7 +453,7 @@ begin
   AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment,' LoadVariablesNo',Self.LoadVariablesNo);
 
-  _popupmenu := Tpopupmenu.Create(nil);
+  _popupmenu := TPopupMenu.Create(nil);
 end;
 
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);

@@ -53,6 +53,7 @@ type
       Info : TDBPopupMenuInfo; OnDone : TNotifyEvent;
       AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
       Pause: PBoolean; NoLimit : boolean = false);
+    destructor Destroy; override;
   end;
 
 type
@@ -219,7 +220,7 @@ begin
     SetStrParam(FQuery, 21, Groups);
 
   {$R-}
-    SetIntParam(FQuery, 22, GetPathCRC(Path));
+    SetIntParam(FQuery, 22, GetPathCRC(Path, True));
 
     CalcStringCRC32(ImTh, StrThCrc);
     SetIntParam(FQuery, 23, StrThCrc);
@@ -286,6 +287,7 @@ begin
     FileNumber := 0;
     AutoAnswerSetted := False;
 
+    {$IFDEF LICENSE}
     if TActivationManager.Instance.IsDemoMode then
     begin
       if GetRecordsCount > LimitDemoRecords then
@@ -299,8 +301,9 @@ begin
         Exit;
       end;
     end;
+    {$ENDIF}
 
-    ResArray := GetimageIDWEx(FInfo, FUseFileNameScaning);
+    ResArray := GetImageIDWEx(FInfo, FUseFileNameScaning);
 
     for Counter := 1 to FInfo.Count do
     begin
@@ -561,6 +564,11 @@ end;
 procedure UpdateDBThread.AddAutoAnswer;
 begin
   FSender.AutoAnswer := FAutoAnswer;
+end;
+
+destructor UpdateDBThread.Destroy;
+begin
+  F(FInfo);
 end;
 
 procedure UpdateDBThread.DoEventReplace(ID: Integer; Name: String);

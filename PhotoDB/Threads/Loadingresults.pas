@@ -284,7 +284,7 @@ begin
         Folder := IncludeTrailingBackslash(Copy(Sysaction, 8, Length(Sysaction) - 8));
 
         Result.Query := Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
-        Result.AddIntParam('CRC', GetPathCRC(Folder));
+        Result.AddIntParam('CRC', GetPathCRC(Folder, False));
         if not FSearchParams.ShowPrivate then
           Result.Query := Result.Query + ' and (Access<>' + Inttostr(Db_access_private) + ')';
 

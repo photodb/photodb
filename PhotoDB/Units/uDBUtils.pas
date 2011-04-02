@@ -12,11 +12,14 @@ uses
   uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations,
   GraphicsBaseTypes;
 
+type
+  TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
+
 procedure CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
 procedure CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory : string);
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
-procedure RenameFolderWithDB(Caller : TDBForm; OldFileName, NewFileName: string; Ask: Boolean = True);
-function RenameFileWithDB(Caller : TDBForm; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
+procedure RenameFolderWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; Ask: Boolean = True);
+function RenameFileWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 function GetImageIDW(Image: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
 function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
@@ -42,7 +45,7 @@ function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; Info: TDBPopupM
 procedure UpdateImageThInLinks(OldImageTh, NewImageTh: string);
 function BitmapToString(Bit: TBitmap): string;
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
-procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm = nil);
+procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile: Boolean; BaseFolder: string; var Groups: TGroups);
 
 { DB Types }
@@ -200,7 +203,7 @@ begin
   FindClose(SearchRec);
 end;
 
-function RenameFileWithDB(Caller : TDBForm; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
+function RenameFileWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 var
   FQuery: TDataSet;
   EventInfo: TEventValues;
@@ -226,6 +229,7 @@ begin
     FQuery := GetQuery;
     try
 
+    //TODO: review
       NewFileName := ExcludeTrailingBackslash(NewFileName);
       if not FolderView then
       begin
@@ -252,20 +256,20 @@ begin
     end;
     FreeDS(FQuery);
   end;
-  RenameFolderWithDB(Caller, OldFileName, NewFileName);
+  RenameFolderWithDB(CallBack, OldFileName, NewFileName);
 
   if OnlyBD then
   begin
-    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Name], EventInfo);
+    CallBack(ID, [EventID_Param_Name], EventInfo);
     Exit;
   end;
 
   EventInfo.name := OldFileName;
   EventInfo.NewName := NewFileName;
-  DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Name], EventInfo);
+  CallBack(ID, [EventID_Param_Name], EventInfo);
 end;
 
-procedure RenameFolderWithDB(Caller : TDBForm; OldFileName, NewFileName: string; Ask: Boolean = True);
+procedure RenameFolderWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; Ask: Boolean = True);
 var
   ProgressWindow: TProgressActionForm;
   FQuery, SetQuery: TDataSet;
@@ -281,89 +285,91 @@ begin
     NewFileName := ExcludeTrailingBackslash(NewFileName);
 
     FQuery := GetQuery;
-    FFolder := IncludeTrailingBackslash(OldFileName);
+    try
+      FFolder := IncludeTrailingBackslash(OldFileName);
 
-    DBFolder := AnsiLowerCase(FFolder);
-    DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolder));
-    if FolderView then
-    begin
-      Delete(DBFolder, 1, Length(ProgramDir));
-    end;
-    SetSQL(FQuery, 'Select ID, FFileName From $DB$ where (FFileName Like :FolderA)');
-    SetStrParam(FQuery, 0, '%' + DBFolder + '%');
+      DBFolder := AnsiLowerCase(FFolder);
+      DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolder));
+      if FolderView then
+        Delete(DBFolder, 1, Length(ProgramDir));
 
-    FQuery.Active := True;
-    FQuery.First;
-    if FQuery.RecordCount > 0 then
-      if Ask or (ID_OK = MessageBoxDB(Caller.Handle, Format(TA('This folder (%s) contains %d photos in the database!. Adjust the information in the database?', 'Explorer'),
-            [OldFileName, FQuery.RecordCount]), TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
-      begin
-        ProgressWindow := GetProgressWindow;
-        ProgressWindow.OneOperation := True;
-        ProgressWindow.MaxPosCurrentOperation := FQuery.RecordCount;
-        SetQuery := GetQuery;
+      SetSQL(FQuery, 'Select ID, FFileName From $DB$ where (FFileName Like :FolderA)');
+      SetStrParam(FQuery, 0, '%' + DBFolder + '%');
 
-        if FQuery.RecordCount > 5 then
+      FQuery.Active := True;
+      FQuery.First;
+      if FQuery.RecordCount > 0 then
+        if Ask or (ID_OK = MessageBoxDB(GetActiveWindow, Format(TA('This folder (%s) contains %d photos in the database!. Adjust the information in the database?', 'Explorer'),
+              [OldFileName, FQuery.RecordCount]), TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
         begin
-          ProgressWindow.Show;
-          ProgressWindow.Repaint;
-          ProgressWindow.DoubleBuffered := True;
-        end;
-        try
-          for I := 1 to FQuery.RecordCount do
+          ProgressWindow := GetProgressWindow;
+          ProgressWindow.OneOperation := True;
+          ProgressWindow.MaxPosCurrentOperation := FQuery.RecordCount;
+          SetQuery := GetQuery;
+
+          if FQuery.RecordCount > 5 then
           begin
-
-            NewPath := FQuery.FieldByName('FFileName').AsString;
-            Delete(NewPath, 1, Length(OldFileName));
-            NewPath := NewFileName + NewPath;
-            OldPath := FQuery.FieldByName('FFileName').AsString;
-
-            if GetDBType = DB_TYPE_MDB then
+            ProgressWindow.Show;
+            ProgressWindow.Repaint;
+            ProgressWindow.DoubleBuffered := True;
+          end;
+          try
+            for I := 1 to FQuery.RecordCount do
             begin
-              if not FolderView then
-              begin
-                CalcStringCRC32(AnsiLowerCase(NewFileName), Crc);
-              end else
-              begin
-                S := ExcludeTrailingBackslash(NewFileName);
-                Delete(S, 1, Length(ProgramDir));
-                CalcStringCRC32(AnsiLowerCase(S), Crc);
-                NewPath := AnsiLowerCase(IncludeTrailingBackslash(S) + ExtractFileName(FQuery.FieldByName('FFileName').AsString));
-              end;
-              Int := Integer(Crc);
-              Sql := 'UPDATE $DB$ SET FFileName= ' + AnsiLowerCase(NormalizeDBString(NewPath))
-                + ' , FolderCRC = ' + IntToStr(Int) + ' where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger);
-              SetSQL(SetQuery, Sql);
-            end;
-            ExecSQL(SetQuery);
-            EventInfo.name := OldPath;
-            EventInfo.NewName := NewPath;
-            DBKernel.DoIDEvent(Caller, 0, [EventID_Param_Name], EventInfo);
-            try
 
-              if I < 10 then
+              NewPath := FQuery.FieldByName('FFileName').AsString;
+              Delete(NewPath, 1, Length(OldFileName));
+              NewPath := NewFileName + NewPath;
+              OldPath := FQuery.FieldByName('FFileName').AsString;
+
+              if GetDBType = DB_TYPE_MDB then
               begin
-                ProgressWindow.XPosition := I;
-                ProgressWindow.Repaint;
-              end else
-              begin
-                if I mod 10 = 0 then
+                if not FolderView then
+                begin
+                  CalcStringCRC32(AnsiLowerCase(NewFileName), Crc);
+                end else
+                begin
+                  S := ExcludeTrailingBackslash(NewFileName);
+                  Delete(S, 1, Length(ProgramDir));
+                  CalcStringCRC32(AnsiLowerCase(S), Crc);
+                  NewPath := AnsiLowerCase(IncludeTrailingBackslash(S) + ExtractFileName(FQuery.FieldByName('FFileName').AsString));
+                end;
+                Int := Integer(Crc);
+                Sql := 'UPDATE $DB$ SET FFileName= ' + AnsiLowerCase(NormalizeDBString(NewPath))
+                  + ' , FolderCRC = ' + IntToStr(Int) + ' where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger);
+                SetSQL(SetQuery, Sql);
+              end;
+              ExecSQL(SetQuery);
+              EventInfo.name := OldPath;
+              EventInfo.NewName := NewPath;
+              CallBack(0, [EventID_Param_Name], EventInfo);
+              try
+
+                if I < 10 then
                 begin
                   ProgressWindow.XPosition := I;
                   ProgressWindow.Repaint;
+                end else
+                begin
+                  if I mod 10 = 0 then
+                  begin
+                    ProgressWindow.XPosition := I;
+                    ProgressWindow.Repaint;
+                  end;
                 end;
+              except
               end;
-            except
+              FQuery.Next;
             end;
-            FQuery.Next;
+          except
           end;
-        except
-        end;
-        FreeDS(SetQuery);
-        ProgressWindow.Release;
+          FreeDS(SetQuery);
+          ProgressWindow.Release;
 
-      end;
-    FreeDS(FQuery);
+        end;
+    finally
+      FreeDS(FQuery);
+    end;
   end;
   Dir := '';
   OldFileName := ExcludeTrailingBackslash(OldFileName);
@@ -374,13 +380,13 @@ begin
     begin
       GetDirectoresOfPath(OldFileName, Dirs);
       for I := 0 to Dirs.Count - 1 do
-        RenameFolderWithDB(Caller, OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
+        RenameFolderWithDB(CallBack, OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
     end;
     if DirectoryExists(NewFileName) then
     begin
       GetDirectoresOfPath(NewFileName, Dirs);
       for I := 0 to Dirs.Count - 1 do
-        RenameFolderWithDB(Caller, OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
+        RenameFolderWithDB(CallBack, OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
     end;
   finally
     F(Dirs);
@@ -457,7 +463,7 @@ begin
   FQuery := GetQuery;
   try
     FQuery.Active := False;
-    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName))
+    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
         + ' AND FFileName LIKE :FFileName');
     if FolderView then
       Delete(FileName, 1, Length(ProgramDir));
@@ -1673,7 +1679,7 @@ end;
 ///
 
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
-  ExplorerForm: TDBForm = nil);
+  ExplorerForm: TDBForm);
 begin
   TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, ExplorerForm);
 end;

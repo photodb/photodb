@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus,
+  Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus, UnitDBKernel,
   DB, WebLink, uConstants, UnitDBDeclare, uFileUtils, Dolphin_DB,
   uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils, uSettings, Spin;
 
@@ -44,6 +44,7 @@ type
     procedure BtAddClick(Sender: TObject);
     procedure BtDeleteClick(Sender: TObject);
     procedure WebLinkWarningClick(Sender: TObject);
+    procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
   private
     { Private declarations }
   protected
@@ -194,10 +195,10 @@ begin
     try
       OldFile := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[0, I];
       NewFile := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[1, I];
-      RenamefileWithDB(Self, OldFile, NewFile, FIDS[I - 1], False);
+      RenamefileWithDB(KernelEventCallBack, OldFile, NewFile, FIDS[I - 1], False);
     except
       on E: Exception do
-        MessageBoxDB(Handle, Format(L('Error occurred while renaming file "%s" to "%s"! Error message: %s'), [OldFile, NewFile, E.message]),
+        MessageBoxDB(Handle, Format(L('An error occurred while renaming file "%s" to "%s"! Error message: %s'), [OldFile, NewFile, E.message]),
           L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
     end;
 end;
@@ -420,6 +421,12 @@ end;
 function TFormFastFileRenamer.GetFormID: string;
 begin
   Result := 'FileRenamer';
+end;
+
+procedure TFormFastFileRenamer.KernelEventCallBack(ID: Integer;
+  Params: TEventFields; Value: TEventValues);
+begin
+  DBKernel.DoIDEvent(Self, ID, Params, Value);
 end;
 
 function TFormFastFileRenamer.CheckConflictFileNames: boolean;

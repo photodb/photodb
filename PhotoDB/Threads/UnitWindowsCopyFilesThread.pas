@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Windows, DBCommon, SysUtils, Forms, Dolphin_DB, uFileUtils, uMemory,
-  uLogger, uDBUtils, uDBForm;
+  uLogger, uDBUtils, uDBForm, UnitDBDeclare, UnitDBKernel;
 
 type
   TWindowsCopyFilesThread = class(TThread)
@@ -15,6 +15,12 @@ type
     FDest: string;
     FMove, FAutoRename: Boolean;
     FOwnerExplorerForm: TDBForm;
+    FID: Integer;
+    FParams: TEventFields;
+    FValue: TEventValues;
+    procedure CorrectPath(Owner : TDBForm; Src: TStrings; Dest: string);
+    procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure KernelEventCallBackSync;
   protected
     procedure Execute; override;
   public
@@ -48,7 +54,7 @@ begin
   inherited;
 end;
 
-procedure CorrectPath(Owner : TDBForm; Src: TStrings; Dest: string);
+procedure TWindowsCopyFilesThread.CorrectPath(Owner : TDBForm; Src: TStrings; Dest: string);
 var
   I : Integer;
   FN, Adest : string;
@@ -60,12 +66,12 @@ begin
     if DirectoryExists(FN) then
     begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFolderWithDB(Owner, Src[I], Adest, False);
+      RenameFolderWithDB(KernelEventCallBack, Src[I], Adest, False);
     end;
     if FileExistsSafe(FN) then
     begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFileWithDB(Owner, Src[I], Adest, GetIDByFileName(Src[I]), True);
+      RenameFileWithDB(KernelEventCallBack, Src[I], Adest, GetIDByFileName(Src[I]), True);
     end;
   end;
 end;
@@ -84,6 +90,20 @@ begin
     on e : Exception do
       EventLog(e.Message);
   end;
+end;
+
+procedure TWindowsCopyFilesThread.KernelEventCallBack(ID: Integer;
+  Params: TEventFields; Value: TEventValues);
+begin
+  FID := ID;
+  FParams := Params;
+  FValue := Value;
+  Synchronize(KernelEventCallBackSync);
+end;
+
+procedure TWindowsCopyFilesThread.KernelEventCallBackSync;
+begin
+  DBKernel.DoIDEvent(FOwnerExplorerForm, FID, FParams, FValue);
 end;
 
 end.

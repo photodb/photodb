@@ -65,7 +65,6 @@ type
     procedure Execute; override;
     procedure InfoToExplorerForm;
     procedure MakeTempBitmap;
-    procedure MakeTempBitmapSmall;
     procedure BeginUpDate;
     procedure EndUpDate;
     Procedure MakeFolderImage(Folder : String);
@@ -208,22 +207,8 @@ var
     I : Integer;
   begin
     ShowInfo(L('Query in collection...'), 1, 0);
-    if (GetDBType = DB_TYPE_MDB) and not FolderView then
-      SetSQL(FQuery, 'Select * FROM $DB$ WHERE FolderCRC = ' + Inttostr(Integer(Crc)) +
-          ' AND (FFileName LIKE :FolderA) AND NOT (FFileName LIKE :FolderB)');
 
-    if FolderView then
-    begin
-      SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
-      S := ExcludeTrailingBackslash(FFolder);
-      Delete(S, 1, Length(ProgramDir));
-      CalcStringCRC32(AnsiLowerCase(S), Crc);
-      SetIntParam(FQuery, 0, Integer(Crc));
-    end else
-    begin
-      SetStrParam(FQuery, 0, '%' + DBFolderToSearch + '%');
-      SetStrParam(FQuery, 1, '%' + DBFolderToSearch + '%\%');
-    end;
+    SetSQL(FQuery, 'Select * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFolder, False)));
 
     for I := 1 to 20 do
     begin
@@ -292,13 +277,13 @@ begin
       Exit;
     end;
 
-    if (FThreadType=THREAD_TYPE_FILE) then
+    if (FThreadType = THREAD_TYPE_FILE) then
     begin
       UpdateSimpleFile;
       Exit;
     end;
 
-    if (FThreadType=THREAD_TYPE_FOLDER_UPDATE) then
+    if (FThreadType = THREAD_TYPE_FOLDER_UPDATE) then
     begin
       UpdateFolder;
       Exit;
@@ -354,7 +339,7 @@ begin
 
         //TODO: review
         UnProcessPath(DBFolderToSearch);
-        DBFolderToSearch:=ExcludeTrailingBackslash(AnsiLowerCase(DBFolderToSearch));
+        DBFolderToSearch := ExcludeTrailingBackslash(AnsiLowerCase(DBFolderToSearch));
         CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
         DBFolderToSearch := IncludeTrailingBackslash(DBFolderToSearch);
         FFolder := IncludeTrailingBackslash(FFolder);
@@ -1278,7 +1263,7 @@ begin
 
   FFiles := TExplorerFileInfos.Create;
   try
-    Ext_ := GetExt(Info.FileName);
+    Ext_ := ExtractFileExt(Info.FileName);
     IsExt_ := ExtInMask(SupportedExt, Ext_);
     if DirectoryExists(Info.FileName) then
       AddOneExplorerFileInfo(FFiles, Info.FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0, 0, 0,
@@ -1353,17 +1338,9 @@ begin
   TempBitmap.SetSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
 end;
 
-procedure TExplorerThread.MakeTempBitmapSmall;
-begin
-  TempBitmap := Tbitmap.Create;
-  TempBitmap.PixelFormat := pf24Bit;
-  TempBitmap.SetSize(FIcoSize, FIcoSize);
-  FillRectNocanvas(TempBitmap, ClWindow);
-end;
-
 function TExplorerThread.FindInQuery(FileName: String) : Boolean;
 var
-  I : integer;
+  I : Integer;
   AddPathStr : string;
 begin
   Result := False;
@@ -1378,9 +1355,9 @@ begin
     Fquery.First;
     for I := 1 to Fquery.RecordCount do
     begin
-      if AnsiLowerCase(AddPathStr+Fquery.FieldByName('FFileName').AsString) = FileName then
+      if AnsiLowerCase(AddPathStr + FQuery.FieldByName('FFileName').AsString) = FileName then
       begin
-        Result := true;
+        Result := True;
         Exit;
       end;
       FQuery.Next;
@@ -1390,10 +1367,10 @@ end;
 
 procedure TExplorerThread.ShowInfo(StatusText: String);
 begin
-  SetText:=True;
-  SetMax:=false;
-  SetPos:=false;
-  FInfoText:=StatusText;
+  SetText := True;
+  SetMax := False;
+  SetPos := False;
+  FInfoText := StatusText;
   SynchronizeEx(SetInfoToStatusBar);
 end;
 
@@ -1704,7 +1681,7 @@ begin
 
   SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
 
-  SetIntParam(FQuery, 0, GetPathCRC(Info.FileName));
+  SetIntParam(FQuery, 0, GetPathCRC(Info.FileName, True));
   SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(Info.FileName)));
   try
     FQuery.Active := True;

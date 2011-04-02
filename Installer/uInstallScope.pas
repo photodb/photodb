@@ -90,10 +90,20 @@ type
     constructor Create; override;
   end;
 
-  var
-    CurrentInstall : TInstall = nil;
+  function CurrentInstall : TInstall;
 
 implementation
+
+var
+  FCurrentInstall : TInstall = nil;
+
+function CurrentInstall : TInstall;
+begin
+  if FCurrentInstall = nil then
+    FCurrentInstall := TPhotoDBInstall_V23.Create;
+
+  Result := FCurrentInstall;
+end;
 
 { TShortCuts }
 
@@ -202,7 +212,7 @@ begin
   Files.Add(TDirectoryObject.Create('Languages',   '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Licenses',    '%PROGRAM%', ''));
 
-  PhotoDBFile := TFileObject.Create(PhotoDBFileName, '%PROGRAM%', TA('Photo Database {V} helps you to find, protect and organize your photos.', 'Setup'));
+  PhotoDBFile := TFileObject.Create(PhotoDBFileName, '%PROGRAM%', TA('Photo Database {V} helps you to find, protect and organize your photos.', 'System'));
   PhotoDBFile.FShortCuts.Add('%DESKTOP%\Photo Database {V}.lnk');
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + ProgramShortCutFile);
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + 'Home page.lnk', 'http://photodb.illusdolphin.net/{LNG}');
@@ -224,10 +234,8 @@ end;
 
 initialization
 
-  CurrentInstall := TPhotoDBInstall_V23.Create;
-
 finalization
 
-  F(CurrentInstall);
+  F(FCurrentInstall);
 
 end.

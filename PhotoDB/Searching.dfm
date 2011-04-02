@@ -567,6 +567,7 @@ object SearchForm: TSearchForm
         ParentColor = False
         Anchors = [akTop, akRight]
         SignColor = clBlack
+        MaxTransparencity = 255
       end
     end
     object SearchPanelA: TPanel
@@ -912,6 +913,7 @@ object SearchForm: TSearchForm
         Active = True
         FillPercent = 50
         SignColor = clBlack
+        MaxTransparencity = 255
       end
       object TwlIncludeAllImages: TTwButton
         Left = 123
@@ -1124,6 +1126,7 @@ object SearchForm: TSearchForm
     ParentColor = False
     Anchors = [akTop, akRight]
     SignColor = clBlack
+    MaxTransparencity = 255
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False
