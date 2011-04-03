@@ -400,17 +400,21 @@ end;
 procedure FillArray(Image: TBitmap; var AArray: TCompareArray);
 var
   I, J: Integer;
-  P: Pargb;
+  PC, P1, D: Integer;
 begin
+  P1 := Integer(Image.ScanLine[0]);
+  D := Integer(Image.ScanLine[1]) - P1;
   for I := 0 to 99 do
   begin
-    P := Image.ScanLine[I];
+    PC := P1;
     for J := 0 to 99 do
     begin
-      AArray[I, J, 0] := P[J].R;
-      AArray[I, J, 1] := P[J].G;
-      AArray[I, J, 2] := P[J].B;
+      AArray[I, J, 0] := PRGB(PC)^.R;
+      AArray[I, J, 1] := PRGB(PC)^.G;
+      AArray[I, J, 2] := PRGB(PC)^.B;
+      Inc(PC, 3);
     end;
+    Inc(P1, D);
   end;
 end;
 

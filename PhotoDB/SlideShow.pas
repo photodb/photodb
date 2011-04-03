@@ -335,6 +335,7 @@ uses
 procedure TViewer.FormCreate(Sender: TObject);
 begin
   TW.I.Start('TViewer.FormCreate');
+  LsLoading.Active := True;
   CurrentInfo := TDBPopupMenuInfo.Create;
   FCreating := True;
   FCurrentPage := 0;
@@ -453,7 +454,6 @@ var
 begin
   Result := False;
 
-  SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
   if (not Item.InfoLoaded) and (Item.ID = 0) then
     NeedsUpdating := True
   else
@@ -488,12 +488,13 @@ begin
       TbRotateCCW.Enabled := False;
       TbRotateCW.Enabled := False;
       TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
-      Rotate := 0;
     end;
 
   end else
     ForwardThreadNeeds := True;
 
+  SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
+  InvalidateRect(Handle, ClientRect, False);
   DoWaitToImage(Sender);
 
   TW.I.Start('LoadImage_ - end');
@@ -1382,7 +1383,7 @@ end;
 procedure TViewer.LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
   Bitmap: TBitmap);
 begin
-  if DrawImage.Empty then
+  if (DrawImage = nil) or DrawImage.Empty then
   begin
     Bitmap.Canvas.Pen.Color := clBtnFace;
     Bitmap.Canvas.Brush.Color := clBtnFace;
@@ -1623,9 +1624,7 @@ end;
 function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile : String) : boolean;
 var
   I: Integer;
-  TmpStr, Text_out: string;
-  LoadImage: TPNGImage;
-  LoadImageBMP: TBitmap;
+  TmpStr: string;
   FOldImageExists, NotifyUser: Boolean;
 
 begin

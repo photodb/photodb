@@ -929,10 +929,13 @@ begin
         end;
       end;
       EXIFSection := TExifData.Create;
-      EXIFSection.LoadFromGraphic(Pic.Graphic);
+      if not Pic.Graphic.Empty then
+        EXIFSection.LoadFromGraphic(Pic.Graphic);
+
       FilePassWord := PassWord;
       (ActionForm as TActionsForm).Reset;
-      LoadProgramImageFormat(pic);
+      if not Pic.Graphic.Empty then
+        LoadProgramImageFormat(pic);
     finally
       F(Pic);
     end;
@@ -1101,12 +1104,7 @@ var
   AFScript: TScript;
   C: Integer;
 begin
-  if FScript <> '' then
-    if ScriptsManager.ScriptExists(FScript) then
-    begin
-      AFScript := ScriptsManager.GetScriptByID(FScript);
-      ExecuteScript(nil, AFScript, FScriptProc + '("' + FScript + '");', C, nil);
-    end;
+  Hide;
   try
     if ToolClass <> nil then
       ToolClass.ClosePanel;
@@ -1115,6 +1113,12 @@ begin
       EventLog(':TImageEditor::FormClose() throw exception: ' + E.message);
   end;
   DestroyTimer.Enabled := True;
+  if FScript <> '' then
+    if ScriptsManager.ScriptExists(FScript) then
+    begin
+      AFScript := ScriptsManager.GetScriptByID(FScript);
+      ExecuteScript(nil, AFScript, FScriptProc + '("' + FScript + '");', C, nil);
+    end;
 end;
 
 procedure TImageEditor.FormMouseDown(Sender: TObject; Button: TMouseButton;
@@ -2816,7 +2820,7 @@ procedure TImageEditor.ReadActions(Actions: TStrings);
 begin
   SetLength(EState, 0);
   DisableControls(Self);
-  NewActions := Actions;
+  NewActions.Assign(Actions);
   NewActionsCounter := -1;
   ReadNextAction(nil);
 end;
@@ -2838,7 +2842,7 @@ var
   end;
 
 begin
-  ToolClass := nil;
+  F(ToolClass);
 
   Inc(NewActionsCounter);
   if NewActionsCounter > NewActions.Count - 1 then
@@ -2899,7 +2903,7 @@ begin
   else
     ReadNextAction(Self);
 
-  F(ToolClass);
+//  F(ToolClass);
 end;
 
 procedure TImageEditor.ReadActionsFile(FileName: string);

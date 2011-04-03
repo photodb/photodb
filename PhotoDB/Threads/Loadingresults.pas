@@ -271,9 +271,9 @@ begin
       begin
         SystemQuery := True;
         Stemp := Copy(Sysaction, 9, Length(Sysaction) - 9);
-        Stemp := NormalizeDBString(Stemp);
+        Stemp := NormalizeDBString('%' + Stemp + '%');
         Result.Query := Format('SELECT %s FROM $DB$', [FIELDS]);
-        Result.Query := Result.Query + ' where (KeyWords like "%' + Stemp + '%") ';
+        Result.Query := Result.Query + ' where (KeyWords like ' + Stemp + ') ';
         ApplyFilter(Result, Db_attr_norm);
       end;
 

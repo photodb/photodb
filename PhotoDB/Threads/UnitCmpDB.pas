@@ -474,7 +474,7 @@ begin
             if Res then
             begin
               _sqlexectext := 'Update $DB$';
-              _sqlexectext := _sqlexectext + ' Set Comment ="' + NormalizeDBString(R) + '"';
+              _sqlexectext := _sqlexectext + ' Set Comment =' + NormalizeDBString(R) + '';
               _sqlexectext := _sqlexectext + ' Where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
               Post(_sqlexectext);
               Updated := True;
@@ -501,7 +501,7 @@ begin
               if Res then
               begin
                 _sqlexectext := 'Update $DB$';
-                _sqlexectext := _sqlexectext + ' Set Links ="' + NormalizeDBString(CodeLinksInfo(DLinks)) + '"';
+                _sqlexectext := _sqlexectext + ' Set Links =' + NormalizeDBString(CodeLinksInfo(DLinks));
                 _sqlexectext := _sqlexectext + ' Where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
                 Post(_sqlexectext);
                 Updated := True;

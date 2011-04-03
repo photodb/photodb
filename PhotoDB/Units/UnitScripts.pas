@@ -172,6 +172,7 @@ type
    function GetNamedValueInt(const aScript : TScript; const ValueName : string; const Default : integer = 0) : integer;
    function GetNamedValueFloat(const aScript : TScript; const ValueName : string) : extended;
 
+   procedure SetNamedValueInt(AScript: TScript; name: string; Value: Integer);
    procedure SetBoolAttr(aScript : TScript; Name : String; Value : boolean);
    procedure SetIntAttr(aScript : TScript; Name : String; Value :Integer);
    function Include(FileName : string) : string;
@@ -181,7 +182,7 @@ type
    function ReadScriptFile(FileName : string) : string;
 
    procedure AddScriptTextFunction(Enviroment : TScriptEnviroment; AFunction : TScriptStringFunction);
-   procedure AddScriptFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
+   procedure AddScriptFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; FunctionPointer : Pointer; ReplaceExisted : Boolean = False);
    procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; aFunction : TNotifyEvent);
    procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIsIntegerObject);
    procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIsStringObject);
@@ -565,7 +566,7 @@ end;
 
 function GetNamedValueArrayString(const aScript : TScript; const ValueName : string) : TArrayOfString;
 begin
-  if aScript.NamedValues.Exists(ValueName) then
+  if aScript.NamedValues.Exists(ValueName, True) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_STRING_ARRAY).StrArray)
   else
     SetLength(Result, 0);
@@ -573,7 +574,7 @@ end;
 
 function GetNamedValueArrayInt(const aScript : TScript; const ValueName : string) : TArrayOfInt;
 begin
-  if aScript.NamedValues.Exists(ValueName) then
+  if aScript.NamedValues.Exists(ValueName, True) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_INT_ARRAY).IntArray)
   else
     SetLength(Result, 0);
@@ -581,7 +582,7 @@ end;
 
 function GetNamedValueArrayBool(const aScript : TScript; const ValueName : string) : TArrayOfBool;
 begin
-  if aScript.NamedValues.Exists(ValueName) then
+  if aScript.NamedValues.Exists(ValueName, True) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_BOOL_ARRAY).BoolArray)
   else
     SetLength(Result, 0);
@@ -589,7 +590,7 @@ end;
 
 function GetNamedValueArrayFloat(const aScript : TScript; const ValueName : string) : TArrayOfFloat;
 begin
-  if aScript.NamedValues.Exists(ValueName) then
+  if aScript.NamedValues.Exists(ValueName, True) then
     Result := Copy(aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_FLOAT_ARRAY).FloatArray)
   else
     SetLength(Result, 0);
@@ -599,7 +600,7 @@ function GetNamedValueString(const aScript : TScript; const ValueName : string) 
 var
   Value : TValue;
 begin
-  Result:='';
+  Result := '';
   if not IsVariable(ValueName) and (ValueName <> '') and (ValueName[1]='"') and (ValueName[Length(ValueName)]='"') then
     Result:=AnsiDequotedStr(ValueName, '"')
   else
@@ -1309,10 +1310,10 @@ begin
 
     F_TYPE_FUNCTION_LOAD_VARS :
     begin
-      s1:=GetNamedValueString(aScript,OneParam(Command));
-      pTempScript:=ScriptsManager.GetScriptByID(s1);
+      s1 := GetNamedValueString(aScript, OneParam(Command));
+      pTempScript := ScriptsManager.GetScriptByID(s1);
 
-      if pTempScript<>nil then
+      if pTempScript <> nil then
       begin
         aScript.ParentScript := pTempScript;
         aScript.Enviroment := pTempScript.Enviroment;
@@ -1323,6 +1324,12 @@ begin
           if not aScript.NamedValues.Exists(Value.AName) then
             aScript.NamedValues.GetValueByName(Value.AName).Assign(Value);
         end;
+
+        for J := 0 to pTempScript.Enviroment.Functions.Count - 1 do
+          aScript.Enviroment.Functions.Register(pTempScript.Enviroment.Functions[J].Copy, True);
+
+        for J := 0 to pTempScript.PrivateEnviroment.Functions.Count - 1 do
+          aScript.PrivateEnviroment.Functions.Register(pTempScript.PrivateEnviroment.Functions[J].Copy, True);
       end;
     end;
 
@@ -2224,7 +2231,7 @@ begin
   Enviroment.Functions.Register(FFunction, True);
 end;
 
-procedure AddScriptFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; FunctionPointer : Pointer);
+procedure AddScriptFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; FunctionPointer : Pointer; ReplaceExisted : Boolean = False);
 var
   FFunction: TScriptFunction;
 begin
@@ -2232,7 +2239,7 @@ begin
   FFunction.Name := FunctionName;
   FFunction.aType := FunctionType;
   FFunction.aFunction := FunctionPointer;
-  Enviroment.Functions.Register(FFunction);
+  Enviroment.Functions.Register(FFunction, ReplaceExisted);
 end;
 
 procedure AddScriptObjFunction(Enviroment : TScriptEnviroment; const FunctionName : String; FunctionType : integer; AFunction : TNotifyEvent);

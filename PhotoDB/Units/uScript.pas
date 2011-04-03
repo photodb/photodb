@@ -2,7 +2,8 @@ unit uScript;
 
 interface
 
-uses Windows, SysUtils, Classes, uStringUtils, uMemory, uGOM, uRuntime;
+uses Windows, SysUtils, Classes, uStringUtils, uMemory, uGOM, uRuntime,
+     uSysUtils;
 
 const
   VALUE_TYPE_ERROR         = 0;
@@ -81,6 +82,7 @@ type
     aObjFunctionIntegerIsString : TFunctionIntegerIsStringObject;
     aObjFunctionStringIsString : TFunctionStringIsStringObject;
     ScriptStringFunction : TScriptStringFunction;
+    function Copy: TScriptFunction;
   end;
 
   TNamedValues = class(TObject)
@@ -187,7 +189,7 @@ var
 
 constructor TScript.Create(EnviromentName : string);
 begin
-  FID := '';  
+  FID := GUIDToString(GetGUID);
   FParentScript := nil;
   FNamedValues := TNamedValues.Create(Self);
   FPrivateEnviroment := TScriptEnviroment.Create(''); //CREATE PRIVATE UNNAMED ENVIROMENT
@@ -558,6 +560,26 @@ begin
       Result := FEnviroment2.FFunctions[Index - FEnviroment1.FFunctions.Count]
   end else
     Exception.CreateFmt('Index out of range : %d', [Index]);
+end;
+
+{ TScriptFunction }
+
+function TScriptFunction.Copy: TScriptFunction;
+begin
+  Result := TScriptFunction.Create;
+  Result.Name := Name;
+  Result.aType := aType;
+  Result.aFunction := aFunction;
+  Result.aObjFunction := aObjFunction;
+  Result.aObjFunctinStringIsInteger := aObjFunctinStringIsInteger;
+  Result.aObjFunctionIntegerIsInteger := aObjFunctionIntegerIsInteger;
+  Result.aObjFunctionIsInteger := aObjFunctionIsInteger;
+  Result.aObjFunctionIsBool := aObjFunctionIsBool;
+  Result.aObjFunctionIsString := aObjFunctionIsString;
+  Result.aObjFunctionIsArrayStrings := aObjFunctionIsArrayStrings;
+  Result.aObjFunctionIntegerIsString := aObjFunctionIntegerIsString;
+  Result.aObjFunctionStringIsString := aObjFunctionStringIsString;
+  Result.ScriptStringFunction := ScriptStringFunction;
 end;
 
 initialization

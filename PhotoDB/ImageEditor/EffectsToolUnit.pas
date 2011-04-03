@@ -106,7 +106,7 @@ begin
   IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
   IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
 
-  EffectsChooser := TEasyListview.Create(Self);
+  EffectsChooser := TEasyListview.Create(nil);
   EffectsChooser.Parent := AOwner as TWinControl;
   EffectsChooser.Left := 5;
   EffectsChooser.Top := 5;
@@ -123,14 +123,14 @@ begin
   EffectsChooser.Selection.BlendIcon := False;
   EffectsChooser.Selection.FullRowSelect := True;
 
-  ImageList := TImageList.Create(Self);
+  ImageList := TImageList.Create(nil);
   ImageList.Width := 100;
   ImageList.Height := 100;
   ImageList.BkColor := ClWhite;
   EffectsChooser.ImagesLarge := ImageList;
   EffectsChooser.View := elsThumbnail;
 
-  MakeItLink := TWebLink.Create(Self);
+  MakeItLink := TWebLink.Create(nil);
   MakeItLink.Parent := AOwner as TWinControl;
   MakeItLink.Text := L('Apply');
   MakeItLink.Top := EffectsChooser.Top + EffectsChooser.Height + 8;
@@ -143,7 +143,7 @@ begin
   MakeItLink.Anchors := [akLeft, akBottom];
   IcoOK.Free;
 
-  CloseLink := TWebLink.Create(Self);
+  CloseLink := TWebLink.Create(nil);
   CloseLink.Parent := AOwner as TWinControl;
   CloseLink.Text := L('Close tool');
   CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;

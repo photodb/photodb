@@ -451,7 +451,7 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ConvertItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ConvertItemPopUpMenu_);
 
   AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
-  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment,' LoadVariablesNo',Self.LoadVariablesNo);
+  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesNo',Self.LoadVariablesNo);
 
   _popupmenu := TPopupMenu.Create(nil);
 end;
@@ -1110,19 +1110,23 @@ begin
 end;
 
 function TDBPopupMenu.LoadVariablesNo(int: integer): integer;
+var
+  Item: TDBPopupMenuInfoRecord;
 begin
   Result := 0;
   if Int < 0 then
     Exit;
   if Int > Finfo.Count - 1 then
     Exit;
-  SetBoolAttr(AScript, '$Crypted', Finfo[Int].Crypted);
-  SetBoolAttr(AScript, '$StaticImage', StaticPath(Finfo[Int].FileName));
-  SetBoolAttr(AScript, '$WallPaper', IsWallpaper(Finfo[Int].FileName));
-  SetBoolAttr(AScript, '$Selected', Finfo[Int].Selected);
-  if Finfo[Int].Crypted then
+  Item := Finfo[Int];
+
+  SetBoolAttr(AScript, '$Crypted', Item.Crypted);
+  SetBoolAttr(AScript, '$StaticImage', StaticPath(Item.FileName));
+  SetBoolAttr(AScript, '$WallPaper', IsWallpaper(Item.FileName));
+  SetBoolAttr(AScript, '$Selected', Item.Selected);
+  if Item.Crypted then
   begin
-    if DBkernel.FindPasswordForCryptImageFile(Finfo[Int].FileName[Int]) <> '' then
+    if DBkernel.FindPasswordForCryptImageFile(Item.FileName) <> '' then
       SetNamedValue(AScript, '$CanDecrypt', 'true')
     else
       SetNamedValue(AScript, '$CanDecrypt', 'false');
@@ -1130,8 +1134,8 @@ begin
   if Finfo.AttrExists then
   begin
     SetNamedValue(AScript, '$IsAttrExists', 'true');
-    SetNamedValue(AScript, '$Attr', IntToStr(Finfo[Int].Attr));
-    SetBoolAttr(AScript, '$Dublicat', Finfo[Int].Attr = Db_attr_dublicate);
+    SetBoolAttr(AScript, '$Dublicat', Item.Attr = Db_attr_dublicate);
+    SetNamedValue(AScript, '$Attr', IntToStr(Item.Attr));
   end else
   begin
     SetNamedValue(AScript, '$IsAttrExists', 'false');
@@ -1139,13 +1143,13 @@ begin
     SetNamedValue(AScript, '$Attr', '0');
   end;
 
-  SetNamedValue(AScript, '$Access', IntToStr(Finfo[Int].Access));
-  SetNamedValue(AScript, '$Rotation', IntToStr(Finfo[Int].Rotation));
-  SetNamedValue(AScript, '$Rating', IntToStr(Finfo[Int].Rating));
-  SetNamedValue(AScript, '$ID', IntToStr(Finfo[Int].ID));
-  SetNamedValue(AScript, '$FileName', '"' + ProcessPath(Finfo[Int].FileName) + '"');
-  SetNamedValue(AScript, '$KeyWords', '"' + Finfo[Int].KeyWords + '"');
-  SetNamedValue(AScript, '$Links', '"' + Finfo[Int].Links + '"');
+  SetNamedValueInt(AScript, '$Access', Item.Access);
+  SetNamedValueInt(AScript, '$Rotation', Item.Rotation);
+  SetNamedValueInt(AScript, '$Rating', Item.Rating);
+  SetNamedValueInt(AScript, '$ID', Item.ID);
+  SetNamedValueStr(AScript, '$FileName', ProcessPath(Item.FileName));
+  SetNamedValueStr(AScript, '$KeyWords', Item.KeyWords);
+  SetNamedValueStr(AScript, '$Links', Item.Links);
 end;
 
 procedure TDBPopupMenu.PrintItemPopUpMenu_(Sender: TObject);

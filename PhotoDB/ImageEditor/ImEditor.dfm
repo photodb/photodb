@@ -686,6 +686,7 @@ object ImageEditor: TImageEditor
           01FF000001FF000003FF000003FF000007FF000007FF00000FFF00000FFF0000
           0FFF00000FFF00001FFF00001FFF00001FFF00001FFF}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object CropLink: TWebLink
         Left = 8
@@ -824,6 +825,7 @@ object ImageEditor: TImageEditor
           07FFE00007FFE00007FFE00007FFC00007FFC00007FFC00007FFC00003FFC000
           01FFE07F81FFE07FC1FFFFFFE1FFFFFFFFFFFFFFFFFF}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object RotateLink: TWebLink
         Left = 8
@@ -962,6 +964,7 @@ object ImageEditor: TImageEditor
           C0FF8003C0FF800180FF800380FF800200FF800000FF800001FFC00003FFC000
           03FFE0000FFFE0001FFFE001FFFFF0FFFFFFFFFFFFFF}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ResizeLink: TWebLink
         Left = 8
@@ -1100,6 +1103,7 @@ object ImageEditor: TImageEditor
           00FF800000FF800000FFF80000FFF80000FFF80000FFF80000FFF80000FFF800
           00FFF00000FFF00000FFF00000FFFFFFFFFFFFFFFFFF}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object EffectsLink: TWebLink
         Left = 8
@@ -1238,6 +1242,7 @@ object ImageEditor: TImageEditor
           00FF000000FF000000FF000000FF800001FFC00001FFF00001FFFC0000FFFF80
           00FFFFFC00FFFFFC00FFFFFF00FFFFFFC1FFFFFFC1FF}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ColorsLink: TWebLink
         Left = 8
@@ -1376,6 +1381,7 @@ object ImageEditor: TImageEditor
           01FFC00001FFC00001FFC00001FFC00001FFC00001FFC00001FFC03E01FFC03E
           01FFC03E01FFC07E01FFFFFE01FFFFFE01FFFFFE01FF}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object RedEyeLink: TWebLink
         Left = 8
@@ -1514,6 +1520,7 @@ object ImageEditor: TImageEditor
           00FF000000FF000000FF800001FFC00003FFE0000FFFF8003FFFFFFFFFFFFFFF
           FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object TextLink: TWebLink
         Left = 8
@@ -1616,6 +1623,7 @@ object ImageEditor: TImageEditor
           0100800001008000010080000100800001008000010080000100800001008000
           010080000100800001008000010080000100800001008000010080000100}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object BrushLink: TWebLink
         Left = 8
@@ -1718,6 +1726,7 @@ object ImageEditor: TImageEditor
           FF00FC01FF00FC007F00FE007F00FE007F00FF003F00FF801F00FF801F00FFC0
           0F00FFE00700FFF00700FFF00700FFF80F00FFFC0F00FFFE1F00FFFFFF00}
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object InsertImageLink: TWebLink
         Left = 8
@@ -1856,6 +1865,7 @@ object ImageEditor: TImageEditor
           1F25FF003FD2FF003FFFFF003FFFFF003FFFFE007FFFFE007FFFFE007FFFFC00
           7FFFF0007FFFC000FFFFC000FFE2E001FF36FC03FF05}
         UseSpecIconSize = True
+        HightliteImage = False
       end
     end
   end
@@ -1997,6 +2007,7 @@ object ImageEditor: TImageEditor
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFF0000FFFF0000FFFF00
         00FFFF8001FFFFC003FFFFE007FFFFFFFFFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object ZoomOutLink: TWebLink
       Left = 104
@@ -2129,6 +2140,7 @@ object ImageEditor: TImageEditor
         00FFFF8000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF80
         00FFFF8001FFFFC003FFFFF007FFFFFFFFFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object UndoLink: TWebLink
       Left = 512
@@ -2262,6 +2274,7 @@ object ImageEditor: TImageEditor
         00FFC00000FFC00001FFC00001FFC00003FFE00007FFE0001FFFE0E07FFFE1FF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object RedoLink: TWebLink
       Left = 608
@@ -2395,6 +2408,7 @@ object ImageEditor: TImageEditor
         00FFC00000FFE00000FFE00000FFF00000FFF80001FFFC0001FFFF01C1FFFFFF
         E1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object FitToSizeLink: TWebLink
       Left = 392
@@ -2527,6 +2541,7 @@ object ImageEditor: TImageEditor
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFE0000FFFF0000FFFF00
         00FFFF0000FFFF8001FFFFC003FFFFF00FFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object SaveLink: TWebLink
       Left = 8
@@ -2660,6 +2675,7 @@ object ImageEditor: TImageEditor
         00FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC00000FFC000
         00FFC00000FFC00000FFC00000FFC00000FFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
     object FullSiseLink: TWebLink
       Left = 312
@@ -2792,6 +2808,7 @@ object ImageEditor: TImageEditor
         00FFFF0000FFFF0000FFFF0000FFFF0000FFFE0000FFFE0000FFFF0000FFFF00
         00FFFF0000FFFF8001FFFFC003FFFFF00FFFFFFFFFFF}
       UseSpecIconSize = True
+      HightliteImage = False
     end
   end
   object ScrollBarH: TScrollBar

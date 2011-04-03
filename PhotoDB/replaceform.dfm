@@ -41,8 +41,6 @@ object DBReplaceForm: TDBReplaceForm
     OnCustomDrawItem = LvMainCustomDrawItem
     OnMouseDown = LvMainMouseDown
     OnSelectItem = LvMainSelectItem
-    ExplicitWidth = 169
-    ExplicitHeight = 269
   end
   object Panel2: TPanel
     Left = 347
@@ -52,8 +50,6 @@ object DBReplaceForm: TDBReplaceForm
     Anchors = [akTop, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitLeft = 360
-    ExplicitHeight = 269
     DesignSize = (
       169
       281)
@@ -225,7 +221,6 @@ object DBReplaceForm: TDBReplaceForm
       ReadOnly = True
       TabOrder = 6
       Text = '<data>'
-      ExplicitHeight = 29
     end
   end
   object Panel3: TPanel
@@ -236,7 +231,6 @@ object DBReplaceForm: TDBReplaceForm
     Anchors = [akLeft, akTop, akBottom]
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitHeight = 277
     DesignSize = (
       180
       289)
@@ -378,8 +372,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Replace and Delete Dubplicates'
     TabOrder = 3
     OnClick = BtnReplaceAndDeleteDuplicatesClick
-    ExplicitLeft = 198
-    ExplicitTop = 283
   end
   object BtnAdd: TButton
     Left = 185
@@ -390,8 +382,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Add'
     TabOrder = 4
     OnClick = BtnAddClick
-    ExplicitLeft = 198
-    ExplicitTop = 315
   end
   object BtnReplace: TButton
     Left = 297
@@ -402,8 +392,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Replace'
     TabOrder = 5
     OnClick = BtnReplaceClick
-    ExplicitLeft = 310
-    ExplicitTop = 315
   end
   object BtnSkip: TButton
     Left = 409
@@ -414,8 +402,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Skip'
     TabOrder = 6
     OnClick = BtnSkipClick
-    ExplicitLeft = 422
-    ExplicitTop = 315
   end
   object BtnDeleteFile: TButton
     Left = 400
@@ -426,8 +412,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Delete File'
     TabOrder = 7
     OnClick = BtnDeleteFileClick
-    ExplicitLeft = 413
-    ExplicitTop = 283
   end
   object BtnSkipAll: TButton
     Left = 409
@@ -438,8 +422,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Skip for All'
     TabOrder = 8
     OnClick = BtnSkipAllClick
-    ExplicitLeft = 422
-    ExplicitTop = 347
   end
   object BtnReplaceAll: TButton
     Left = 297
@@ -450,8 +432,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Replace for All'
     TabOrder = 9
     OnClick = BtnReplaceAllClick
-    ExplicitLeft = 310
-    ExplicitTop = 347
   end
   object BtnAddAll: TButton
     Left = 185
@@ -462,8 +442,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Add for All'
     TabOrder = 10
     OnClick = BtnAddAllClick
-    ExplicitLeft = 198
-    ExplicitTop = 347
   end
   object SizeImageList: TImageList
     Height = 102

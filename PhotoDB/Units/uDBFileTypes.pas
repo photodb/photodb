@@ -29,7 +29,7 @@ begin
   if Length(IDs) + Length(Files) = 0 then
     Exit;
   try
-    Fs := TFileStream.Create(Filename, FmOpenWrite or FmCreate);
+    FS := TFileStream.Create(Filename, FmOpenWrite or FmCreate);
   except
     Exit;
   end;
@@ -49,24 +49,24 @@ begin
     X[11] := Ord('-');
     X[12] := Ord('V');
     X[13] := Ord('1');
-    Fs.write(Pointer(X)^, 14);
+    FS.Write(Pointer(X)^, 14);
     LenIDS := Length(IDs);
-    Fs.write(LenIDS, Sizeof(LenIDS));
+    FS.Write(LenIDS, Sizeof(LenIDS));
     LenFiles := Length(Files);
-    Fs.write(LenFiles, Sizeof(LenFiles));
+    FS.Write(LenFiles, Sizeof(LenFiles));
     for I := 0 to LenIDS - 1 do
-      Fs.write(IDs[I], Sizeof(IDs[I]));
+      FS.Write(IDs[I], Sizeof(IDs[I]));
     for I := 0 to LenFiles - 1 do
     begin
       L := Length(Files[I]);
-      Fs.write(L, Sizeof(L));
-      Fs.write(Files[I][1], L + 1);
+      FS.Write(L, Sizeof(L));
+      FS.Write(Files[I][1], L + 1);
     end;
   except
-    Fs.Free;
+    F(FS);
     Exit;
   end;
-  Fs.Free;
+  F(FS);
   Result := True;
 end;
 
@@ -88,34 +88,36 @@ begin
   except
     Exit;
   end;
-  SetLength(X, 14);
-  Fs.read(Pointer(X)^, 14);
-  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
-    (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('L')) and (X[9] = Ord('S')) and (X[10] = Ord('T')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+  try
+    SetLength(X, 14);
+    FS.Read(Pointer(X)^, 14);
+    V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+      (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('L')) and (X[9] = Ord('S')) and (X[10] = Ord('T')) and
+      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
 
-  if V1 then
-  begin
-    Fs.read(LenIDS, SizeOf(LenIDS));
-    Fs.read(LenFiles, SizeOf(LenFiles));
-    SetLength(IDs, LenIDS);
-    SetLength(Files, LenFiles);
-    for I := 1 to LenIDS do
+    if V1 then
     begin
-      Fs.read(Int, Sizeof(Integer));
-      IDs[I - 1] := Int;
+      FS.Read(LenIDS, SizeOf(LenIDS));
+      FS.Read(LenFiles, SizeOf(LenFiles));
+      SetLength(IDs, LenIDS);
+      SetLength(Files, LenFiles);
+      for I := 1 to LenIDS do
+      begin
+        FS.Read(Int, Sizeof(Integer));
+        IDs[I - 1] := Int;
+      end;
+      for I := 1 to LenFiles do
+      begin
+        FS.Read(L, Sizeof(L));
+        SetLength(Str, L);
+        FS.Read(Str[1], L + 1);
+        Files[I - 1] := Str;
+      end;
     end;
-    for I := 1 to LenFiles do
-    begin
-      Fs.read(L, Sizeof(L));
-      SetLength(Str, L);
-      Fs.read(Str[1], L + 1);
-      Files[I - 1] := Str;
-    end;
+  finally
+    F(FS);
   end;
-  Fs.Free;
 end;
-
 
 function SaveIDsTofile(FileName: string; IDs: TArInteger): Boolean;
 var
@@ -216,7 +218,7 @@ begin
   begin
     for I := 1 to (Fs.Size - 14) div SizeOf(Integer) do
     begin
-      Fs.read(Int, Sizeof(Integer));
+      Fs.Read(Int, Sizeof(Integer));
       SetLength(Result, Length(Result) + 1);
       Result[Length(Result) - 1] := Int;
     end;
@@ -229,6 +231,7 @@ var
   I: Integer;
   X: array of Byte;
   Fs: Tfilestream;
+  S: AnsiString;
 begin
   Result := False;
   if Length(ImThs) = 0 then
@@ -256,19 +259,22 @@ begin
     X[13] := Ord('1');
     Fs.write(Pointer(X)^, 14);
     for I := 0 to Length(ImThs) - 1 do
-      Fs.write(ImThs[I, 1], Length(ImThs[I]));
+    begin
+      S := AnsiString(ImThs[I]);
+      FS.Write(S[1], Length(S));
+    end;
   except
-    Fs.Free;
+    F(FS);
     Exit;
   end;
-  Fs.Free;
+  F(FS);
   Result := True;
 end;
 
 function LoadImThsFromfileA(FileName: string): TArStrings;
 var
   I: Integer;
-  S: string;
+  S: AnsiString;
   X: array of Byte;
   Fs: Tfilestream;
   V1: Boolean;
@@ -281,33 +287,34 @@ begin
   except
     Exit;
   end;
-  SetLength(X, 14);
-  Fs.read(Pointer(X)^, 14);
-  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
-    (X[6] = Ord('I')) and (X[7] = Ord('M')) and (X[8] = Ord('T')) and (X[9] = Ord('H')) and (X[10] = Ord('S')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+  try
+    SetLength(X, 14);
+    FS.Read(Pointer(X)^, 14);
+    V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+      (X[6] = Ord('I')) and (X[7] = Ord('M')) and (X[8] = Ord('T')) and (X[9] = Ord('H')) and (X[10] = Ord('S')) and
+      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
 
-  if V1 then
-  begin
-    for I := 1 to (Fs.Size - 14) div 200 do
+    if V1 then
     begin
-      SetLength(S, 200);
-      Fs.read(S[1], 200);
-      SetLength(Result, Length(Result) + 1);
-      Result[Length(Result) - 1] := S;
+      for I := 1 to (Fs.Size - 14) div 200 do
+      begin
+        SetLength(S, 200);
+        FS.read(S[1], 200);
+        SetLength(Result, Length(Result) + 1);
+        Result[Length(Result) - 1] := string(S);
+      end;
     end;
+  finally
+    F(FS);
   end;
-  Fs.Free;
 end;
-
-
 
 function SaveActionsTofile(FileName: string; Actions: TStrings): Boolean;
 var
   I, L: Integer;
   X: array of Byte;
   Fs: TFileStream;
-  Action : string;
+  Action : AnsiString;
 begin
   Result := False;
   if Actions.Count = 0 then
@@ -336,26 +343,26 @@ begin
     X[13] := Ord('1');
     Fs.write(Pointer(X)^, 14);
     L := Actions.Count;
-    Fs.write(L, SizeOf(L));
+    Fs.Write(L, SizeOf(L));
     for I := 0 to Actions.Count - 1 do
     begin
-      Action := Actions[I];
+      Action := AnsiString(Actions[I]);
       L := Length(Action);
-      Fs.write(L, SizeOf(L));
-      Fs.write(Action[1], Length(Action));
+      Fs.Write(L, SizeOf(L));
+      Fs.Write(Action[1], Length(Action));
     end;
   except
-    Fs.Free;
+    F(FS);
     Exit;
   end;
-  Fs.Free;
+  F(FS);
   Result := True;
 end;
 
 function LoadActionsFromfileA(FileName: string; Info : TStrings) : Boolean;
 var
   I, Length: Integer;
-  S: string;
+  S: AnsiString;
   X: array of Byte;
   FS: TFileStream;
 begin
@@ -379,10 +386,10 @@ begin
     FS.Read(Length, SizeOf(Length));
     for I := 1 to Length do
     begin
-      FS.read(Length, SizeOf(Length));
+      FS.Read(Length, SizeOf(Length));
       SetLength(S, Length);
-      FS.read(S[1], Length);
-      Info.Add(S);
+      FS.Read(S[1], Length);
+      Info.Add(string(S));
     end;
     Result := True;
   finally

@@ -33,7 +33,7 @@ object Viewer: TViewer
   TextHeight = 13
   object ScrollBar1: TScrollBar
     Left = 0
-    Top = 439
+    Top = 433
     Width = 622
     Height = 17
     PageSize = 0
@@ -276,8 +276,7 @@ object Viewer: TViewer
     Top = 192
     Width = 33
     Height = 33
-    Visible = False
-    Active = True
+    Active = False
     FillPercent = 60
     Color = clBtnFace
     ParentColor = False
