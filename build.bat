@@ -1,7 +1,6 @@
 d:
 cd "D:\Dmitry\Delphi exe\Photo Database"
 
-
 SET DELPHI=C:\Program Files\Embarcadero\RAD Studio\7.0
 SET PROGS=C:\Program Files
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
@@ -19,6 +18,7 @@ cd photodb/resources
 "%BRCC32%" Install.rc
 "%BRCC32%" Activation.rc
 "%BRCC32%" PrinterPattern.rc
+"%BRCC32%" BigPattern.rc
 
 cd ..
 cd ..

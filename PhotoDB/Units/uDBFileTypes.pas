@@ -8,8 +8,8 @@ uses
 function SaveIDsTofile(FileName: string; IDs: TArInteger): Boolean;
 function LoadIDsFromfile(FileName: string): string;
 function LoadIDsFromfileA(FileName: string): TArInteger;
-function LoadImThsFromfileA(FileName: string): TArStrings;
-function SaveImThsTofile(FileName: string; ImThs: TArstrings): Boolean;
+function LoadImThsFromfileA(FileName: string): TArAnsiStrings;
+function SaveImThsTofile(FileName: string; ImThs: TArAnsiStrings): Boolean;
 procedure LoadDblFromfile(FileName: string; var IDs: TArInteger; var Files: TArStrings);
 function SaveListTofile(FileName: string; IDs: TArInteger; Files: TArStrings): Boolean;
 function LoadActionsFromfileA(FileName: string; Info : TStrings) : Boolean;
@@ -149,14 +149,14 @@ begin
     X[11] := Ord('-');
     X[12] := Ord('V');
     X[13] := Ord('1');
-    Fs.write(Pointer(X)^, 14);
+    FS.write(Pointer(X)^, 14);
     for I := 0 to Length(IDs) - 1 do
-      Fs.write(IDs[I], Sizeof(IDs[I]));
+      FS.write(IDs[I], Sizeof(IDs[I]));
   except
-    Fs.Free;
+    FS.Free;
     Exit;
   end;
-  Fs.Free;
+  FS.Free;
   Result := True;
 end;
 
@@ -176,21 +176,24 @@ begin
   except
     Exit;
   end;
-  SetLength(X, 14);
-  Fs.read(Pointer(X)^, 14);
-  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
-    (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('I')) and (X[9] = Ord('D')) and (X[10] = Ord('S')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+  try
+    SetLength(X, 14);
+    FS.Read(Pointer(X)^, 14);
+    V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+      (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('I')) and (X[9] = Ord('D')) and (X[10] = Ord('S')) and
+      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
 
-  if V1 then
-  begin
-    for I := 1 to (Fs.Size - 14) div Sizeof(Integer) do
+    if V1 then
     begin
-      Fs.read(Int, Sizeof(Integer));
-      Result := Result + Inttostr(Int) + '$';
+      for I := 1 to (Fs.Size - 14) div Sizeof(Integer) do
+      begin
+        Fs.read(Int, Sizeof(Integer));
+        Result := Result + Inttostr(Int) + '$';
+      end;
     end;
+  finally
+    F(FS);
   end;
-  Fs.Free;
 end;
 
 function LoadIDsFromfileA(FileName: string): TArInteger;
@@ -208,25 +211,28 @@ begin
   except
     Exit;
   end;
-  SetLength(X, 14);
-  Fs.read(Pointer(X)^, 14);
-  V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
-    (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('I')) and (X[9] = Ord('D')) and (X[10] = Ord('S')) and
-    (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+  try
+    SetLength(X, 14);
+    Fs.Read(Pointer(X)^, 14);
+    V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+      (X[6] = Ord('D')) and (X[7] = Ord('B')) and (X[8] = Ord('I')) and (X[9] = Ord('D')) and (X[10] = Ord('S')) and
+      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
 
-  if V1 then
-  begin
-    for I := 1 to (Fs.Size - 14) div SizeOf(Integer) do
+    if V1 then
     begin
-      Fs.Read(Int, Sizeof(Integer));
-      SetLength(Result, Length(Result) + 1);
-      Result[Length(Result) - 1] := Int;
+      for I := 1 to (Fs.Size - 14) div SizeOf(Integer) do
+      begin
+        Fs.Read(Int, Sizeof(Integer));
+        SetLength(Result, Length(Result) + 1);
+        Result[Length(Result) - 1] := Int;
+      end;
     end;
+  finally
+    F(FS);
   end;
-  FS.Free;
 end;
 
-function SaveImThsTofile(FileName: string; ImThs: TArstrings): Boolean;
+function SaveImThsTofile(FileName: string; ImThs: TArAnsiStrings): Boolean;
 var
   I: Integer;
   X: array of Byte;
@@ -271,7 +277,7 @@ begin
   Result := True;
 end;
 
-function LoadImThsFromfileA(FileName: string): TArStrings;
+function LoadImThsFromfileA(FileName: string): TArAnsiStrings;
 var
   I: Integer;
   S: AnsiString;

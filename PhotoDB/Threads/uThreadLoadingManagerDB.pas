@@ -4,10 +4,10 @@ interface
 
 uses
   Classes, DB, Forms, CommonDBSupport, ADODB, dolphin_db,
-  UnitDBDeclare;
+  UnitDBDeclare, uThreadEx, uThreadForm, uMemory;
 
 type
-  TThreadLoadingManagerDB = class(TThread)
+  TThreadLoadingManagerDB = class(TThreadEx)
   private
     FOwner : TForm;
     FDataList : TList;
@@ -17,7 +17,7 @@ type
     procedure DoOnEnd;
     procedure Execute; override;
   public
-    constructor Create(AOwner : TForm);
+    constructor Create(AOwner : TThreadForm);
   end;
 
 implementation
@@ -26,9 +26,9 @@ uses ManagerDBUnit;
 
 { TThreadLoadingManagerDB }
 
-constructor TThreadLoadingManagerDB.Create(AOwner : TForm);
+constructor TThreadLoadingManagerDB.Create(AOwner : TThreadForm);
 begin
-  inherited Create(False);
+  inherited Create(AOwner, AOwner.StateID);
   FOwner := AOwner;
 end;
 
@@ -48,9 +48,7 @@ begin
   try              
     FQuery := GetQuery(True);
     try
-      TADOQuery(FQuery).CursorType := ctOpenForwardOnly;
-      TADOQuery(FQuery).CursorLocation := clUseClient;
-      TADOQuery(FQuery).LockType := ltReadOnly;
+      ForwardOnlyQuery(FQuery);
       SqlText:='SELECT ID FROM $DB$ ORDER BY ID';
       SetSQL(FQuery, SqlText);
       FQuery.Open;
@@ -58,7 +56,8 @@ begin
       FQuery.First;
       while not FQuery.Eof do
       begin
-        if Terminated then Break;
+        if Terminated then
+          Break;
         ItemData := TDBPopupMenuInfoRecord.Create;
         ItemData.ID := FQuery.Fields[0].AsInteger;
         ItemData.InfoLoaded := False;
@@ -66,7 +65,7 @@ begin
 
         if FDataList.Count = 500 then
         begin
-          Synchronize(FillDataPacket);
+          SynchronizeEx(FillDataPacket);
           FDataList.Clear;
         end;
 
@@ -76,10 +75,10 @@ begin
       Synchronize(FillDataPacket);  
       FDataList.Clear;
     finally
-      FQuery.Free;
+      FreeDS(FQuery);
     end;
   finally
-    FDataList.Free;
+    F(FDataList);
     Synchronize(DoOnEnd);
   end;
 end;

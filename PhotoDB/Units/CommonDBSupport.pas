@@ -148,9 +148,10 @@ function GetBoolParam(Query : TDataSet; index : integer) : boolean;
 
 procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; FT: TFieldType);
 procedure SetDateParam(Query: TDataSet; name: string; Date: TDateTime);
-procedure SetBoolParam(Query: TDataSet; index: Integer; Bool: Boolean);
-procedure SetStrParam(Query: TDataSet; index: Integer; Value: string);
-procedure SetIntParam(Query: TDataSet; index: Integer; Value: Integer);
+procedure SetBoolParam(Query: TDataSet; Index: Integer; Bool: Boolean);
+procedure SetStrParam(Query: TDataSet; Index: Integer; Value: string);
+procedure SetAnsiStrParam(Query: TDataSet; Index: Integer; Value: AnsiString);
+procedure SetIntParam(Query: TDataSet; Index: Integer; Value: Integer);
 function QueryParamsCount(Query: TDataSet): Integer;
 
 function GetQueryText(Query : TDataSet) : string;
@@ -166,7 +167,7 @@ function ADOCreateGroupsTable(TableName : string) : boolean;
 function ADOCreateSettingsTable(TableName : string) : boolean;
 
 procedure CreateMSAccessDatabase(FileName: string);
-procedure TryRemoveConnection(dbname : string; Delete : boolean = false);
+procedure TryRemoveConnection(dbname : string; Delete : Boolean = false);
 procedure RemoveADORef(ADOConnection : TADOConnection);
 
 function GetTableNameByFileName(FileName : string) : string;
@@ -301,6 +302,12 @@ begin
 end;
 
 procedure SetIntParam(Query : TDataSet; Index : integer; Value : integer);
+begin
+  if (Query is TADOQuery) then
+    (Query as TADOQuery).Parameters[Index].Value := Value;
+end;
+
+procedure SetAnsiStrParam(Query: TDataSet; Index: Integer; Value: AnsiString);
 begin
   if (Query is TADOQuery) then
     (Query as TADOQuery).Parameters[Index].Value := Value;
@@ -563,6 +570,7 @@ var
 }
 function GetDefaultImageDBOptions: TImageDBOptions;
 begin
+  Result := TImageDBOptions.Create;
   Result.DBJpegCompressionQuality := 75;
   Result.ThSize := 150;
   Result.ThSizePanelPreview := 75;
@@ -590,7 +598,7 @@ begin
         Result.ThSize := FQuery.FieldByName('ThImageSize').AsInteger;
         Result.ThSizePanelPreview := FQuery.FieldByName('ThSizePanelPreview').AsInteger;
         Result.ThHintSize := FQuery.FieldByName('ThHintSize').AsInteger;
-        Result.name := FQuery.FieldByName('DBName').AsString;
+        Result.Name := FQuery.FieldByName('DBName').AsString;
         Result.Description := FQuery.FieldByName('DBDescription').AsString;
       end;
     except
@@ -800,7 +808,7 @@ var
   I: Integer;
 begin
   Dbname := AnsiLowerCase(Dbname);
-  for I := 0 to ADOConnections.Count - 1 do
+  for I := ADOConnections.Count - 1 downto 0 do
   begin
     if ADOConnections[I].FileName = Dbname then
       if (ADOConnections[I].RefCount = 0) or Delete then

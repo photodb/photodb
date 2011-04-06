@@ -171,13 +171,30 @@ end;
 procedure TRAWImage.LoadFromStream(Stream: TStream);
 var
   RawBitmap : TFreeWinBitmap;
+  MemIO: TFreeMemoryIO;
+  Data: PByte;
 begin
   RawBitmap := TFreeWinBitmap.Create;
   try
-    if FLoadHalfSize then
-      RawBitmap.LoadFromStream(Stream, RAW_PREVIEW)
-    else
-      RawBitmap.LoadFromStream(Stream, RAW_DISPLAY);
+    if Stream is TMemoryStream then
+    begin
+      Data := TMemoryStream(Stream).Memory;
+      MemIO := TFreeMemoryIO.Create(Data, Stream.Size);
+      try
+        if FLoadHalfSize then
+          RawBitmap.LoadFromMemory(MemIO, RAW_PREVIEW)
+        else
+          RawBitmap.LoadFromMemory(MemIO, RAW_DISPLAY);
+      finally
+        MemIO.Free;
+      end;
+    end else
+    begin
+      if FLoadHalfSize then
+        RawBitmap.LoadFromStream(Stream, RAW_PREVIEW)
+      else
+        RawBitmap.LoadFromStream(Stream, RAW_DISPLAY);
+    end;
     RawBitmap.ConvertTo24Bits;
     fWidth := RawBitmap.GetWidth;
     fHeight := RawBitmap.GetHeight;

@@ -6,6 +6,9 @@ uses
   Jpeg, UnitDBDeclare, uDBBaseTypes;
 
 type
+  RString = type AnsiString(1251);
+
+type
   TSelectedInfo = record
     FileName: string;
     FileType: Integer;
@@ -43,7 +46,7 @@ type
   TImageDBRecordA = record
     IDs: array of Integer;
     FileNames: array of string;
-    ImTh: string;
+    ImTh: AnsiString;
     Count: Integer;
     Attr: array of Integer;
     Jpeg: TJpegImage;

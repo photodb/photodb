@@ -14,6 +14,7 @@ function GetImagePanelImage : TPNGImage;
 function GetLoadingImage : TPNGImage;
 function GetActivationImage : TPNGImage;
 function GetPrinterPatternImage : TJpegImage;
+function GetBigPatternImage : TJpegImage;
 
 {$R PhotoDB.res}
 
@@ -28,6 +29,7 @@ function GetPrinterPatternImage : TJpegImage;
 {$R Loading.res}
 {$R Activation.res}
 {$R PrinterPattern.res}
+{$R BigPattern.res}
 
 //Icons
 {$R icons.res}
@@ -123,6 +125,11 @@ end;
 function GetPrinterPatternImage : TJpegImage;
 begin
   Result := LoadJPEGFromRES('PRINTERPATTERN');
+end;
+
+function GetBigPatternImage : TJpegImage;
+begin
+  Result := LoadJPEGFromRES('BIGPATTERN');
 end;
 
 end.

@@ -345,7 +345,7 @@ function GetFileNameByIDEx(IDEx: string): string;
 var
   TIRA: TImageDBRecordA;
 begin
-  TIRA := GetimageIDTh(IDEx);
+  TIRA := GetimageIDTh(AnsiString(IDEx));
   if TIRA.Count > 0 then
     Result := TIRA.FileNames[0];
 end;
@@ -354,7 +354,7 @@ function GetIDByIDEx(IDEx: string): Integer;
 var
   TIRA: TImageDBRecordA;
 begin
-  TIRA := GetimageIDTh(IDEx);
+  TIRA := GetimageIDTh(AnsiString(IDEx));
   if TIRA.Count > 0 then
     Result := TIRA.IDs[0]
   else

@@ -47,6 +47,7 @@ type
     function GetPreviousImageNOX(NO: Integer): integer;
     procedure ImageFrameTimerTimer(Sender: TObject);
     function GetFirstImageNO: integer;
+    procedure FormDeactivate(Sender: TObject);
   private
     { Private declarations }
     AnimatedImage : TGraphic;
@@ -75,8 +76,6 @@ type
   end;
 
 implementation
-
-uses Searching;
 
 {$R *.dfm}
 
@@ -277,8 +276,8 @@ begin
     FAlphaBlend := 0;
     TimerShow.Enabled := True;
 
-    if Fowner <> nil then
-      if Fowner.FormStyle = Fsstayontop then
+    if GOM.IsObj(FOwner) then
+      if FOwner.FormStyle = FsStayOnTop then
         SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE);
     FClosed := False;
 
@@ -287,7 +286,10 @@ begin
 
     DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
     CreateFormImage;
-    ShowWindow(Handle, SW_SHOWNOACTIVATE);
+    if Info.InnerImage then
+      ShowWindow(Handle, SW_SHOW)
+    else
+      ShowWindow(Handle, SW_SHOWNOACTIVATE);
   finally
     F(Info);
   end;
@@ -463,6 +465,11 @@ procedure TImHint.LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
   GoIn := True;
+end;
+
+procedure TImHint.FormDeactivate(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TImHint.FormDestroy(Sender: TObject);
@@ -668,8 +675,10 @@ function TImHint.GetImageName: string;
 begin
   if CurrentInfo.Comment <> '' then
     Result := CurrentInfo.Comment
+  else if CurrentInfo.InnerImage then
+    Result := CurrentInfo.Name
   else
-    Result := ExtractFileName(CurrentInfo.FileName);
+    Result := ExtractFileName(CurrentInfo.Name);
 end;
 
 initialization

@@ -354,7 +354,7 @@
     <translate name="Please, enter a new name for collection" value="Пожалуйста, ведите новое имя для базы" />
 	<translate name="File not found!" value="Файл не найден!" />
 	<translate name="Do you really want to delete this database (%s)?" value="Вы действительно хотите удалить эту БД (%s)?" />
-	<translate name="Do you really want to convert your database? Conversion will take place after program restart." value="Вы действительно хотите преобразовать вашу базу данных? Преобразование начнётся после перезапуска программы." />
+	<translate name="Do you really want to convert your database? Conversion will start program restart." value="Вы действительно хотите преобразовать вашу базу данных? Преобразование начнётся после перезапуска программы." />
 	<translate name="Do you really want to optimize the duplicates in a table? Optimization starts at the next startup..." value="Вы действительно хотите оптимизировать дубликаты в таблице? Оптимизация начнётся при следующем запуске программы..." />
 	<translate name="This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?" value="Данная БД не может быть использована без конвертирования, т.е. она создана для работы со старыми версиями программы. Запустить мастер конвертации баз?" />
 	<translate name="Invalid or missing file $nl$&quot;%s&quot;! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version" value="Неверный или несуществующий файл $nl$&quot;%s&quot;! $nl$Проверьте наличие файла или попробуйте добавить его через менеджер БД - возможно, файл был создан в предыдущей версии программы и необходимо его сконвертировать в текущую версию"/>
@@ -1108,6 +1108,7 @@
 	<translate name="Transparency" value="Прозрачность" />
 	<translate name="Transparency [%d]" value="Прозрачность [%d]" />
 	<translate name="Apply" value="Применить" />
+	<translate name="Save settings" value="Сохранить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="RedEyeTool">
@@ -1451,14 +1452,11 @@
 	<translate name="Next" value="Далее"/>
 	<translate name="Finish" value="Финиш"/>
 	<translate name="Waiting" value="Ожидание"/>
-	<translate name="Panel preview size" value="Панель"/>
-	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
 	<translate name="Preview" value="Предпросмотр"/>
-	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>	
-	<translate name="Sets the compression quality of images stored in the database. Takes the value 1-100" value="Устанавливает качество сжатия изображения, хранимых в базе. Принимает значение 1-100"/>
-	<translate name="JPEG quality" value="JPEG качество"/>
-	<translate name="DB Image size" value="Изображения в БД"/>
 	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
+	<translate name="Compression quality of images stored in the database" value="Качество сжатия изображения, хранимых в базе"/>
+	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>	
+	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
 	<translate name="Start" value="Начать"/>	
 	<translate name="Break" value="Прервать"/>
 	<translate name="Do you really want to close this wizard?" value="Вы действительно  хотите закрыть этот диалог?"/>
@@ -1470,15 +1468,15 @@
 	<translate name="This wizard will help you convert your database from one format to another." value="Этот диалог поможет вам конвертировать Вашу базу данных из одного формата в другой."/>
 	<translate name="Current collection" value="Текущая БД"/>	
 	<translate name="Convert to *.photodb (PhotoDB)" value="Конвертировать в *.photodb (PhotoDB)"/>	
+	<translate name="Convert to *.db (Paradox)" value="Конвертировать в *.db (Paradox)"/>	
 	<translate name="Please wait until convertation is in progress. This can take some time to complete..." value="Подождите пока выполнится ппреобразование БД, это может потребовать несколько минут..."/>
 	<translate name="Current action" value="Текущее действие"/>	
 	<translate name="You can adjust the size and compression quality of images in the database and other sizes of images" value="Вы можете настроить размеры и качество сжатия изображений в БД и другие размеры изображений"/>
-	<translate name="Load other image" value="Загрузить другое изображение"/>	
+	
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
 	<translate name="Convertation of the collection is completed!" value="Конвертирование БД завершено!"/>
 	<translate name="Image size: %s" value="Размер изображения: %s"/>
 	<translate name="The size of new database (approximately): %s" value="Размер новой базы (ориентировочно): %s"/>
-	<translate name="JPEG Image File (*.jpg)|*.jpg|JPEG Image File (*.jpeg)|*.jpeg" value="JPEG изображения (*.jpg)|*.jpg|JPEG изображения (*.jpeg)|*.jpeg"/>
 	<translate name="Size" value="Размер"/>	
 	<translate name="Item #%d from %d" value="Запись #%d из %d" />
 	<translate name="Saving groups" value="Сохранение групп"/>
@@ -1824,12 +1822,7 @@
 	<translate name="Activate new copy of application" value="Активировать новую копию приложения" />
     <translate name="Install activation code" value="Установить в систему код активации" />
     <translate name="To manually activate the program you need to send a letter with the following information to" value="Для ручной активации программы Вам необходимо отослать письмо со следующими данными на адрес" />
-	<translate name="(*) - required fields" value="(*) - обязательные поля" />
-	
-	<translate name="Activation" value="Activation" />
-	<translate name="Activation" value="Activation" />
-	<translate name="Activation" value="Activation" />
-    
+	<translate name="(*) - required fields" value="(*) - обязательные поля" />    
     <translate name="Next..." value="Далее..." />
     <translate name="Program code" value="Код вашей копии программы"/>
     <translate name="Enter here activation key" value="Введите сюда ключ для активации"/>

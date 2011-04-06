@@ -29,6 +29,7 @@ type
       var Height: Integer);
     procedure InfoListBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
     PasswordKeeper: TPasswordKeeper;
@@ -39,6 +40,12 @@ type
     Icons: array of TIcon;
     TopRecords: Integer;
     CurrentWideIndex: Integer;
+    LineS: string;
+    LineN: Integer;
+    PointN: Integer;
+    Working: Boolean;
+    Recreating: Boolean;
+    FCreation: Boolean;
   protected
     function GetFormID: string; override;
   public
@@ -48,9 +55,9 @@ type
     procedure RecreateImThInPhotoTable;
     procedure OptimizeDublicates;
     procedure OnEnd(Sender: TObject);
-    Procedure LoadLanguage;
-    Procedure RestoreTable(FileName: String);
-    Procedure BackUpTable;
+    procedure LoadLanguage;
+    procedure RestoreTable(FileName: string);
+    procedure BackUpTable;
     procedure WriteLine(Sender: TObject; Line: string; Info: Integer);
     procedure WriteLnLine(Sender: TObject; Line: string; Info: Integer);
     procedure LoadToolBarIcons;
@@ -61,11 +68,6 @@ type
 
 var
   CMDForm: TCMDForm;
-  Working: Boolean = False;
-  Recreating: Boolean;
-  LineS: string;
-  LineN: Integer;
-  PointN: Integer = 0;
   CMD_Command_Break: Boolean = False;
 
 implementation
@@ -79,13 +81,15 @@ uses
 
 procedure TCMDForm.FormCreate(Sender: TObject);
 begin
+  FCreation := True;
   CurrentWideIndex := -1;
+  Working := False;
   FProgressEnabled := False;
   FInfo := '';
+  PointN := 0;
   DoubleBuffered := True;
   Infos := TStringList.Create;
   ItemsData := TList.Create;
-  InfoListBox.DoubleBuffered := True;
   InfoListBox.ItemHeight := InfoListBox.Canvas.TextHeight('Iy') * 3 + 5;
   InfoListBox.Clear;
   LoadToolBarIcons;
@@ -161,8 +165,13 @@ end;
 
 procedure TCMDForm.LoadLanguage;
 begin
-  Caption := L('Commands window');
-  Label1.Caption := L('Please wait until the program completes the operation...');
+  BeginTranslate;
+  try
+    Caption := L('Commands window');
+    Label1.Caption := L('Please wait until the program completes the operation...');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TCMDForm.RecreateImThInPhotoTable;
@@ -319,7 +328,7 @@ procedure TCMDForm.WriteLine(Sender: TObject; Line: string; Info: Integer);
 begin
   BeginScreenUpdate(Handle);
   try
-    PInteger(ItemsData[0])^ := Info;
+    ItemsData[0] := Pointer(Info);
     InfoListBox.Items[0] := Line;
   finally
     EndScreenUpdate(Handle, False);
@@ -327,26 +336,25 @@ begin
 end;
 
 procedure TCMDForm.WriteLnLine(Sender: TObject; Line: string; Info : integer);
-var
-  P: PInteger;
 begin
   if Info = LINE_INFO_INFO then
   begin
     FInfo := Line;
     Exit;
   end;
-  LockWindowUpdate(Handle);
+
+  if not FCreation then
+    BeginScreenUpdate(Handle);
   try
     Infos.Insert(0, FInfo);
 
-    GetMem(P, SizeOf(Integer));
-    P^ := Info;
-    ItemsData.Insert(TopRecords, P);
+    ItemsData.Insert(TopRecords, Pointer(Info));
     InfoListBox.Items.Insert(TopRecords, Line);
 
     FInfo := '';
   finally
-    LockWindowUpdate(0);
+    if not FCreation then
+      EndScreenUpdate(Handle, False);
   end;
 end;
 
@@ -363,16 +371,24 @@ begin
     PasswordTimer.Enabled := False;
     PasswordList := PasswordKeeper.GetPasswords;
     for I := 0 to Length(PasswordList) - 1 do
-    begin
       PasswordKeeper.TryGetPasswordFromUser(PasswordList[I]);
-    end;
+
     PasswordTimer.Enabled := True;
   end;
 end;
 
 procedure TCMDForm.FormDestroy(Sender: TObject);
+var
+  I: Integer;
 begin
+  for I := 0 to Length(Icons) - 1 do
+    Icons[I].Free;
   F(ItemsData);
+end;
+
+procedure TCMDForm.FormShow(Sender: TObject);
+begin
+  FCreation := False;
 end;
 
 function TCMDForm.GetFormID: string;

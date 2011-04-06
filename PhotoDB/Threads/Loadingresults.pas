@@ -162,7 +162,7 @@ var
   FSpecQuery: TDataSet;
   Sid: string;
   ScanParams: TScanFileParams;
-  ImThs : TArStrings;
+  ImThs : TArAnsiStrings;
   IthIds : TArInteger;       
   TempString : string;
 const
@@ -313,11 +313,11 @@ begin
       end;
     end;
 
-  if AnsiLowerCase(Copy(Sysaction, 1, 6)) = AnsiLowerCase('HashFile') then
+  if AnsiLowerCase(Copy(Sysaction, 1, 8)) = AnsiLowerCase('HashFile') then
   begin
     Result.QueryType := QT_TEXT;
     Systemquery := True;
-    TempString := Copy(Sysaction, 8, Length(Sysaction) - 8);
+    TempString := Copy(Sysaction, 10, Length(Sysaction) - 10);
     ImThs := LoadImThsFromfileA(TempString);
     FSpecQuery := GetQuery;
     try
@@ -347,7 +347,7 @@ begin
         end;
         SetSQL(FSpecQuery, SQLText);
         for I := 1 to M do
-          SetStrParam(FSpecQuery, I - 1, ImThs[I - 1 + AllocImThBy * (J - 1)]);
+          SetAnsiStrParam(FSpecQuery, I - 1, ImThs[I - 1 + AllocImThBy * (J - 1)]);
         FSpecQuery.Active := True;
         FSpecQuery.First;
         for I := 1 to FSpecQuery.RecordCount do

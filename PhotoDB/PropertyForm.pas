@@ -135,7 +135,6 @@ type
     CbRemoveKeywordsForGroups: TCheckBox;
     BtnNewGroup: TButton;
     BtnManageGroups: TButton;
-    Label5: TLabel;
     RgGistogrammChannel: TRadioGroup;
     DgGistogramm: TDmGradient;
     GistogrammImage: TImage;
@@ -144,6 +143,7 @@ type
     LbLinks: TLabel;
     LinksScrollBox: TScrollBox;
     VleExif: TValueListEditor;
+    LbEffectiveRange: TStaticText;
     procedure Execute(ID : integer);
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
@@ -1593,7 +1593,7 @@ begin
       M := Min(ALeft, Min(ALeft, AllocBy));
 
       FirstID := True;
-      SQL := 'Select ID, FFileName, Comment, Owner, Collection, Rotated, Access, Rating, DateToAdd, aTime, IsDate, IsTime, Groups, FileSize, KeyWords, Width, Height, Thum, Include, Links, Attr, StrTh FROM $DB$ Where ID in (';
+      SQL := 'Select ID, Name, FFileName, Comment, Owner, Collection, Rotated, Access, Rating, DateToAdd, aTime, IsDate, IsTime, Groups, FileSize, KeyWords, Width, Height, Thum, Include, Links, Attr, StrTh FROM $DB$ Where ID in (';
       for I := 1 to M do
       begin
         Dec(ALeft);
@@ -1603,8 +1603,7 @@ begin
         begin
           SQL := SQL + ' ' + Inttostr(IDs[Num]) + ' ';
           FirstID := False;
-        end
-        else
+        end else
           SQL := SQL + ' , ' + Inttostr(IDs[Num]) + ' ';
       end;
       SQL := SQL + ')';
@@ -1874,7 +1873,6 @@ begin
   PcMain.Pages[4].Caption := L('Additional');
 
   Label2.Caption := L('Gistogramm image') + ':';
-  Label5.Caption := Format(L('Effective range: %d..%d'), [0, 0]);
   RgGistogrammChannel.Caption := L('Channel');
   RgGistogrammChannel.Items[0] := L('Gray');
   RgGistogrammChannel.Items[1] := L('Red channel');
@@ -3147,7 +3145,9 @@ var
   MinC, MaxC: Integer;
 begin
   if Sender is TPropertyLoadGistogrammThread then
-    GistogrammData.Loaded := True;
+    GistogrammData.Loaded := True
+  else
+    FillChar(GistogrammData, SizeOf(GistogrammData), #0);
 
   Bitmap := TBitmap.Create;
   try
@@ -3162,10 +3162,10 @@ begin
         GetGistogrammBitmapW(130, GistogrammData.Blue, MinC, MaxC, Bitmap);
     end;
 
-    Label5.Caption := Format(L('Effective range: %d..%d'), [MinC, MaxC]);
+    LbEffectiveRange.Caption := Format(L('Effective range: %d..%d'), [MinC, MaxC]);
     GistogrammImage.Picture.Bitmap := Bitmap;
   finally
-    Bitmap.Free;
+    F(Bitmap);
   end;
 end;
 

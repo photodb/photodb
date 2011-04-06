@@ -16,12 +16,16 @@ type
     FOwner: TDBForm;
   protected
     function GetWizardDone: Boolean; virtual; abstract;
+    function GetOperationInProgress: Boolean; virtual; abstract;
   public
     constructor Create(Owner: TDBForm);  virtual;
     procedure NextStep;  virtual; abstract;
     function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; virtual; abstract;
     procedure AddStep(Step: TFrameWizardBaseClass); virtual; abstract;
     property WizardDone: Boolean read GetWizardDone;
+    property Owner: TDBForm read FOwner;
+    property OperationInProgress: Boolean read GetOperationInProgress;
+    procedure BreakOperation; virtual; abstract;
   end;
 
   TFrameWizardBase = class(TFrame)
@@ -38,6 +42,7 @@ type
     procedure LoadLanguage; virtual;
     procedure Changed;
     function GetCanGoNext: Boolean; virtual;
+    function GetOperationInProgress: Boolean; virtual;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -46,11 +51,13 @@ type
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); virtual;
     procedure Unload; virtual;
     function IsFinal: Boolean; virtual;
+    procedure BreakOperation; virtual;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property IsBusy: Boolean read FIsBusy write FIsBusy;
     property IsStepComplete: Boolean read FIsStepComplete write FIsStepComplete;
     property Manager: TWizardManagerBase read FManager;
     property CanGoNext: Boolean read GetCanGoNext;
+    property OperationInProgress: Boolean read GetOperationInProgress;
   end;
 
 implementation
@@ -58,6 +65,11 @@ implementation
 {$R *.dfm}
 
 { TFrameWizardBase }
+
+procedure TFrameWizardBase.BreakOperation;
+begin
+  //do nothing
+end;
 
 procedure TFrameWizardBase.Changed;
 begin
@@ -79,6 +91,11 @@ end;
 function TFrameWizardBase.GetCanGoNext: Boolean;
 begin
   Result := True;
+end;
+
+function TFrameWizardBase.GetOperationInProgress: Boolean;
+begin
+  Result := False;
 end;
 
 procedure TFrameWizardBase.Init(Manager: TWizardManagerBase; FirstInitialization: Boolean);

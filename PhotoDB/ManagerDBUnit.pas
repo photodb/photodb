@@ -14,10 +14,10 @@ uses
   UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
   DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo,
   uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
-  uSettings;
+  uSettings, uThreadForm;
 
 type
-  TManagerDB = class(TDBForm)
+  TManagerDB = class(TThreadForm)
     Panel2: TPanel;
     PnTop: TPanel;
     PopupMenu1: TPopupMenu;
@@ -799,6 +799,7 @@ begin
   ElvMain.ControlStyle := ElvMain.ControlStyle - [CsDoubleClicks];
 
   ReleaseLoadingThread;
+  NewFormState;
   FLoadingDataThread := TThreadLoadingManagerDB.Create(Self);
   DblData.Hide;
   DblData.Active := False;
@@ -1899,7 +1900,8 @@ end;
 
 procedure TManagerDB.ConvertLinkClick(Sender: TObject);
 begin
-  if ID_OK = MessageBoxDB(Handle, L('Do you really want to convert your database? Conversion will take place after program restart'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
+  TFormConvertingDB.Create(Self).Execute(dbname);
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to convert your database? Conversion will start program restart.'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
     Settings.WriteBool('StartUp', 'ConvertDB', True);
 end;
 

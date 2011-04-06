@@ -16,9 +16,9 @@ type
 type
   TPasswordRecord = class
   public
-   CRC : Cardinal;
-   FileName : String;
-   ID : integer;
+    CRC : Cardinal;
+    FileName : String;
+    ID : integer;
   end;
 
   TWriteLineProcedure = procedure(Sender : TObject; Line : string; aType : integer) of object;
@@ -37,14 +37,17 @@ type
     OnProgress : TCallBackProgressEvent;
   end;
 
-  TImageDBOptions = record
+  TImageDBOptions = class
+  public
     Version: Integer;
     DBJpegCompressionQuality: Byte;
     ThSize: Integer;
     ThSizePanelPreview: Integer;
     ThHintSize: Integer;
     Description: string;
-    name: string;
+    Name: string;
+    constructor Create;
+    function Copy: TImageDBOptions;
   end;
 
   TPackingTableThreadOptions = record
@@ -201,10 +204,13 @@ type
 
 type
   TDBPopupMenuInfoRecord = class(TObject)
+  private
+    function GetInnerImage: Boolean;
   protected
     function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
+  published
   public
-    FName: string;
+    Name: string;
     FileName: string;
     Comment: string;
     FileSize: Int64;
@@ -227,7 +233,7 @@ type
     Width, Height: Integer;
     Links: string;
     Exists: Integer; // for drawing in lists
-    LongImageID: string;
+    LongImageID: AnsiString;
     Data: TClonableObject;
     Image: TJpegImage;
     Tag: Integer;
@@ -239,7 +245,9 @@ type
     procedure ReadFromDS(DS: TDataSet);
     procedure WriteToDS(DS: TDataSet);
     function Copy : TDBPopupMenuInfoRecord; virtual;
+    function FileExists: Boolean;
     procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
+    property InnerImage: Boolean read GetInnerImage;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
@@ -299,6 +307,7 @@ end;
 procedure TDBPopupMenuInfoRecord.Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
 begin
   ID := Item.ID;
+  Name := Item.Name;
   FileName := Item.FileName;
   Comment := Item.Comment;
   Groups := Item.Groups;
@@ -387,6 +396,16 @@ begin
   inherited;
 end;
 
+function TDBPopupMenuInfoRecord.FileExists: Boolean;
+begin
+  Result := InnerImage or FileExistsSafe(FileName);
+end;
+
+function TDBPopupMenuInfoRecord.GetInnerImage: Boolean;
+begin
+  Result := FileName = '?.JPEG';
+end;
+
 function TDBPopupMenuInfoRecord.InitNewInstance: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfoRecord.Create;
@@ -398,7 +417,7 @@ var
 begin
   F(Image);
   ID := DS.FieldByName('ID').AsInteger;
-  FName := DS.FieldByName('Name').AsString;
+  Name := DS.FieldByName('Name').AsString;
   FileName := DS.FieldByName('FFileName').AsString;
   if FolderView then
     FileName := ExtractFilePath(ParamStr(0)) + FileName;
@@ -414,7 +433,7 @@ begin
   IsDate := DS.FieldByName('IsDate').AsBoolean;
   IsTime := DS.FieldByName('IsTime').AsBoolean;
   Groups := DS.FieldByName('Groups').AsString;
-  LongImageID := DS.FieldByName('StrTh').AsString;
+  LongImageID := DS.FieldByName('StrTh').AsAnsiString;
   Width := DS.FieldByName('Width').AsInteger;
   Height := DS.FieldByName('Height').AsInteger;
 
@@ -432,7 +451,7 @@ end;
 
 procedure TDBPopupMenuInfoRecord.WriteToDS(DS: TDataSet);
 begin
-  DS.FieldByName('Name').AsString := FName;
+  DS.FieldByName('Name').AsString := Name;
   DS.FieldByName('FFileName').AsString := FileName;
   DS.FieldByName('KeyWords').AsString := KeyWords;
   DS.FieldByName('FileSize').AsInteger := FileSize;
@@ -497,6 +516,25 @@ destructor TDataObject.Destroy;
 begin
   F(Data);
   inherited;
+end;
+
+{ TImageDBOptions }
+
+function TImageDBOptions.Copy: TImageDBOptions;
+begin
+  Result := TImageDBOptions.Create;
+  Result.Version := Version;
+  Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
+  Result.ThSize := ThSize;
+  Result.ThSizePanelPreview := ThSizePanelPreview;
+  Result.ThHintSize := ThHintSize;
+  Result.Description := Description;
+  Result.Name := Name;
+end;
+
+constructor TImageDBOptions.Create;
+begin
+  Version := 0;
 end;
 
 end.

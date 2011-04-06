@@ -70,7 +70,7 @@ Function CompareLinks(LinksA, LinksB : string; Simple : boolean = false) : Boole
 
 function LinkInLinksExists(Link : TLinkInfo; Links : TLinksInfo; UseValue : boolean = true) : boolean;
 
-function CodeExtID(ExtID : String) : String;
+function CodeExtID(ExtID : AnsiString) : String;
 function DeCodeExtID(S : String) : String;
 function CompareTwoLinks(Link1, Link2 : TLinkInfo; UseValue: boolean = false) : boolean;
 
@@ -394,7 +394,7 @@ begin
   end;
 end;
 
-function CodeExtID(ExtID: string): string;
+function CodeExtID(ExtID: AnsiString): string;
 var
   I: Integer;
 begin

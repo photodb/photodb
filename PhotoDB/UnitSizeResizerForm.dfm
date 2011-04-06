@@ -108,6 +108,7 @@ object FormSizeResizer: TFormSizeResizer
     FillPercent = 50
     Anchors = [akTop, akRight]
     SignColor = clHighlight
+    MaxTransparencity = 255
   end
   object PrbMain: TDmProgress
     Left = 8

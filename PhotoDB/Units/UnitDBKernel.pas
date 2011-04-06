@@ -105,6 +105,7 @@ constructor TDBKernel.Create;
 begin
   inherited;
   FDBs := nil;
+  FImageOptions := nil;
   FImageList := nil;
   FSych := TCriticalSection.Create;
   FForms := TList.Create;
@@ -150,6 +151,7 @@ begin
   F(FSych);
   F(FForms);
   F(FDBs);
+  F(FImageOptions);
   inherited;
 end;
 
@@ -726,7 +728,7 @@ begin
 
   List := TStringList.Create;
   try
-    Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
+    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
     try
       Reg.OpenKey(RegRoot + 'dbs', True);
       Reg.GetKeyNames(List);
@@ -760,24 +762,28 @@ begin
   try
     Reg.OpenKey(RegRoot + 'dbs', True);
     DBS := TStringList.Create;
-    Reg.GetKeyNames(DBS);
-    Reg.CloseKey;
-    for I := 0 to DBS.Count - 1 do
-    begin
-      Reg.OpenKey(RegRoot + 'dbs\' + DBS[I], True);
-      if AnsiLowerCase(Reg.ReadString('FileName')) = AnsiLowerCase(OldDBFile) then
-      begin
-        Reg.WriteString('FileName', NewDBFile);
-        Reg.CloseKey;
-        Break;
-      end;
+    try
+      Reg.GetKeyNames(DBS);
       Reg.CloseKey;
+      for I := 0 to DBS.Count - 1 do
+      begin
+        Reg.OpenKey(RegRoot + 'dbs\' + DBS[I], True);
+        if AnsiLowerCase(Reg.ReadString('FileName')) = AnsiLowerCase(OldDBFile) then
+        begin
+          Reg.WriteString('FileName', NewDBFile);
+          Reg.CloseKey;
+          Break;
+        end;
+        Reg.CloseKey;
+      end;
+    finally
+      F(DBS);
     end;
   except
     on E: Exception do
       EventLog(':TDBKernel::MoveDB() throw exception: ' + E.message);
   end;
-  Reg.Free;
+  F(Reg);
   LoadDBs;
 end;
 
@@ -792,18 +798,22 @@ begin
   try
     Reg.OpenKey(RegRoot + 'dbs', True);
     DBS := TStringList.Create;
-    Reg.GetKeyNames(DBS);
-    Reg.CloseKey;
-    for I := 0 to DBS.Count - 1 do
-    begin
-      Reg.OpenKey(RegRoot + 'dbs\' + DBS[I], True);
-      if AnsiLowerCase(Reg.ReadString('FileName')) = AnsiLowerCase(DBName) then
-      begin
-        Result := True;
-        Reg.CloseKey;
-        Break;
-      end;
+    try
+      Reg.GetKeyNames(DBS);
       Reg.CloseKey;
+      for I := 0 to DBS.Count - 1 do
+      begin
+        Reg.OpenKey(RegRoot + 'dbs\' + DBS[I], True);
+        if AnsiLowerCase(Reg.ReadString('FileName')) = AnsiLowerCase(DBName) then
+        begin
+          Result := True;
+          Reg.CloseKey;
+          Break;
+        end;
+        Reg.CloseKey;
+      end;
+    finally
+      F(DBS);
     end;
   except
     on E: Exception do
@@ -825,33 +835,35 @@ begin
   try
     Reg.OpenKey(RegRoot + 'dbs', True);
     DBS := TStringList.Create;
-    Reg.GetKeyNames(DBS);
-    Reg.CloseKey;
-    DBNameCurrent := DBNamePattern;
-    for J := 1 to 1000 do
-    begin
-      B := False;
-      for I := 0 to DBS.Count - 1 do
+    try
+      Reg.GetKeyNames(DBS);
+      Reg.CloseKey;
+      DBNameCurrent := DBNamePattern;
+      for J := 1 to 1000 do
       begin
-        if AnsiLowerCase(DBS[I]) = AnsiLowerCase(DBNameCurrent) then
+        B := False;
+        for I := 0 to DBS.Count - 1 do
         begin
-          B := True;
+          if AnsiLowerCase(DBS[I]) = AnsiLowerCase(DBNameCurrent) then
+          begin
+            B := True;
+          end;
+        end;
+        if B then
+          DBNameCurrent := DBNamePattern + '_' + IntToStr(J)
+        else begin
+          Result := DBNameCurrent;
+          Exit;
         end;
       end;
-      if B then
-      begin
-        DBNameCurrent := DBNamePattern + '_' + IntToStr(J);
-      end else
-      begin
-        Result := DBNameCurrent;
-        Exit;
-      end;
+    finally
+      F(DBS);
     end;
   except
     on E: Exception do
       EventLog(':TDBKernel::NewDBName() throw exception: ' + E.message);
   end;
-  Reg.Free;
+  F(Reg);
 end;
 
 procedure TDBKernel.AddDB(DBName, DBFile, DBIco: string; Force: Boolean = False);
@@ -899,7 +911,7 @@ begin
     on E: Exception do
       EventLog(':TDBKernel::RenameDB() throw exception: ' + E.message);
   end;
-  Reg.Free;
+  F(Reg);
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
     Reg.DeleteKey(RegRoot + 'dbs\' + OldDBName);
@@ -907,7 +919,7 @@ begin
     on E: Exception do
       EventLog(':TDBKernel::RenameDB() throw exception: ' + E.message);
   end;
-  Reg.Free;
+  F(Reg);
   LoadDBs;
 end;
 

@@ -5,15 +5,14 @@ interface
 uses
   Windows, Classes, SysUtils, ActiveX, CommonDBSupport, DB, Forms,
   UnitGroupsWork, uConstants, uShellIntegration, UnitDBDeclare, uFileUtils,
-  uMemory, uTranslate, uDBThread;
+  uMemory, uTranslate, uThreadEx, uFrameWizardBase, uDBUtils, uThreadForm;
 
 type
-  TConvertDBThread = class(TDBThread)
+  TConvertDBThread = class(TThreadEx)
   private
     { Private declarations }
     FFileName: string;
     FStringParam: string;
-    FToMDB: Boolean;
     TableIn: TDataSet;
     TableOut: TDataSet;
     FIntParam: Integer;
@@ -23,11 +22,11 @@ type
     FRegGroups: TGroups;
     FImageOptions: TImageDBOptions;
     NewFileName: string;
+    FOwner: TFrameWizardBase;
   protected
     function GetThreadID : string; override;
   public
     procedure Execute; override;
-    procedure DoExit;
     procedure SetMaxValue(Value: Integer);
     procedure SetMaxValueSynch;
     procedure SetTextSynch;
@@ -40,7 +39,8 @@ type
     procedure Log(Value: String);
     procedure ShowErrorMessage;
   public
-    constructor Create(Form: TForm; ADBName: string; ToMDB: Boolean; ImageOptions: TImageDBOptions);
+    constructor Create(Form: TThreadForm; Owner: TFrameWizardBase; ADBName: string; ImageOptions: TImageDBOptions);
+    destructor Destroy; override;
   end;
 
 var
@@ -49,17 +49,23 @@ var
 implementation
 
 uses
-  UnitDBkernel, UnitExportThread,
-  UnitConvertDBForm, UnitUpdateDB;
+  UnitDBkernel, //UnitExportThread, UnitUpdateDB,
+  uFrmConvertationProgress;
 
-constructor TConvertDBThread.Create(Form: TForm; ADBName: string; ToMDB: Boolean; ImageOptions: TImageDBOptions);
+constructor TConvertDBThread.Create(Form: TThreadForm; Owner: TFrameWizardBase; ADBName: string; ImageOptions: TImageDBOptions);
 begin
-  inherited Create(False);
+  inherited Create(Form, Form.StateID);
   BreakConverting := False;
   FFileName := ADBName;
-  FToMDB := ToMDB;
   FForm := Form;
+  FOwner := Owner;
   FImageOptions := ImageOptions;
+end;
+
+destructor TConvertDBThread.Destroy;
+begin
+  F(FImageOptions);
+  inherited;
 end;
 
 procedure TConvertDBThread.Execute;
@@ -71,147 +77,143 @@ var
 begin
   FreeOnTerminate := True;
   CoInitialize(nil);
-  ToFileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName) + '$';
-  if FToMDB then
-    ToFileName := ToFileName + '.photodb'
-  else
-    ToFileName := ToFileName + '.db';
-  Log(L('Creating collection'));
-  DBKernel.CreateDBbyName(ToFileName);
-  Log(L('Creating collection: success!'));
-  if FToMDB then
-  begin
+  try
+    ToFileName := IncludeTrailingBackslash(ExtractFileDir(FFileName)) + GetFileNameWithoutExt(FFileName) + '$';
+
+    ToFileName := ToFileName + '.photodb';
+
+    Log(L('Creating collection'));
+    DBKernel.CreateDBbyName(ToFileName);
+    Log(L('Creating collection: success!'));
+
     UpdateImageSettings(ToFileName, FImageOptions);
     Log(L('Update collection configuration is complete!'));
-  end;
-  TableIn := GetTable(ToFileName, DB_TABLE_IMAGES);
-  TableOut := GetTable(FFileName, DB_TABLE_IMAGES);
-  Log(L('Opening collection'));
-  try
-    TableOut.Open;
-    TableIn.Open;
-  except
-    on E: Exception do
-    begin
-      FParamStr := E.message;
-      Synchronize(ShowErrorMessage);
-      Synchronize(DoExit);
-      Exit;
-    end;
-  end;
-  try
-    Log(L('Converting the structure...'));
-    SetMaxValue(TableOut.RecordCount);
-    TableOut.First;
-    Pos := 0;
-    repeat
-      if BreakConverting then
-        Break;
-      Pos := Pos + 1;
-      if Pos mod 10 = 0 then
-      begin
-        SetText(Format(L('Item #%d from %d'), [TableOut.RecNo, TableOut.RecordCount]));
-        SetPosition(TableOut.RecNo);
-      end;
-      if Pos mod 100 = 0 then
-      begin
-        TableIn.Post;
-      end;
-      // TableIn.Last;
-      TableIn.Append;
-      CopyRecords(TableOut, TableIn, True, FGroupsFounded);
-      TableOut.Next;
-      if StopExport then
-        Break;
-    until TableOut.Eof;
 
-    FreeDS(TableOut);
-    FreeDS(TableIn);
-
-    SetText(L('Saving groups') + '...');
-
-    Log(L('Saving groups'));
-    SetMaxValue(Length(FGroupsFounded));
-    SetPosition(0);
-    FRegGroups := GetRegisterGroupListW(FFileName, True, DBKernel.SortGroupsByName);
-    CreateGroupsTableW(ToFileName);
-
-    AddGroupsToGroups(FGroupsFounded, FRegGroups);
-
-    for I := 0 to Length(FGroupsFounded) - 1 do
-    begin
-      if BreakConverting then
-        Break;
-      SetText(Format(L('Saving group: %s'), [FGroupsFounded[I].GroupName]));
-      SetPosition(I);
-      for J := 0 to Length(FRegGroups) - 1 do
-        if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
+    Log(L('Opening collection'));
+    TableIn := GetTable(ToFileName, DB_TABLE_IMAGES);
+    TableOut := GetTable(FFileName, DB_TABLE_IMAGES);
+    try
+      try
+        TableOut.Open;
+        TableIn.Open;
+      except
+        on E: Exception do
         begin
-          AddGroupW(FRegGroups[J], ToFileName);
-          Break;
+          FParamStr := E.message;
+          SynchronizeEx(ShowErrorMessage);
+          Exit;
         end;
+      end;
+      try
+        Log(L('Converting the structure...'));
+        SetMaxValue(TableOut.RecordCount);
+        TableOut.First;
+        Pos := 0;
+        repeat
+          if BreakConverting then
+            Break;
+          Pos := Pos + 1;
+          if Pos mod 10 = 0 then
+          begin
+            SetText(Format(L('Item #%d from %d'), [TableOut.RecNo, TableOut.RecordCount]));
+            SetPosition(TableOut.RecNo);
+          end;
+          if Pos mod 100 = 0 then
+            TableIn.Post;
+
+          TableIn.Append;
+          CopyRecordsW(TableOut, TableIn, True, '', FGroupsFounded);
+          TableOut.Next;
+          if Terminated then
+            Break;
+        until TableOut.Eof;
+      finally
+        FreeDS(TableOut);
+        FreeDS(TableIn);
+      end;
+
+      SetText(L('Saving groups') + '...');
+
+      Log(L('Saving groups'));
+      SetMaxValue(Length(FGroupsFounded));
+      SetPosition(0);
+      FRegGroups := GetRegisterGroupListW(FFileName, True, DBKernel.SortGroupsByName);
+      try
+        CreateGroupsTableW(ToFileName);
+        AddGroupsToGroups(FGroupsFounded, FRegGroups);
+
+        for I := 0 to Length(FGroupsFounded) - 1 do
+        begin
+          if BreakConverting then
+            Break;
+          SetText(Format(L('Saving group: %s'), [FGroupsFounded[I].GroupName]));
+          SetPosition(I);
+          for J := 0 to Length(FRegGroups) - 1 do
+            if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
+            begin
+              AddGroupW(FRegGroups[J], ToFileName);
+              Break;
+            end;
+        end;
+      finally
+        FreeGroups(FRegGroups);
+      end;
+      SetMaxValue(100);
+      SetPosition(100);
+    except
+      on e: Exception do
+      begin
+        FParamStr := E.message;
+        SynchronizeEx(ShowErrorMessage);
+      end;
     end;
-    SetMaxValue(100);
-    SetPosition(100);
-  except
-  end;
-  CommonDBSupport.TryRemoveConnection(FFileName, True);
-  CommonDBSupport.TryRemoveConnection(ToFileName, True);
-  try
-    SilentDeleteFile(0, FFileName, True);
-  except
-    FParamStr := Format(L('Can not delete file %s, maybe he''s busy with another program or process. Will use a different name (file_name_1)'), [FFileName]);
-    FIntParam := LINE_INFO_ERROR;
-    Synchronize(ShowErrorMessage);
-  end;
-
-  try
-    // deleting temp and system db files
-
-    FileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName) + '.ldb';
-    if FileExistsSafe(FileName) then
-      SilentDeleteFile(0, FileName, True);
-
-  except
-    on E: Exception do
+    CommonDBSupport.TryRemoveConnection(FFileName, True);
+    CommonDBSupport.TryRemoveConnection(ToFileName, True);
+    if not DeleteFile(FFileName) then
     begin
-      FParamStr := E.message;
+      FParamStr := Format(L('Can not delete file %s, maybe he''s busy with another program or process. Will use a different name (file_name_1)'), [FFileName]);
       FIntParam := LINE_INFO_ERROR;
-      Synchronize(ShowErrorMessage);
+      SynchronizeEx(ShowErrorMessage);
     end;
-  end;
 
-  FFileName := SysUtils.StringReplace(FFileName, '$', '', [RfReplaceAll]);
+    // deleting temp and system db files
+    FileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName) + '.ldb';
+    if not DeleteFile(FileName) then
+    begin
+      FParamStr := Format(L('Can not delete file %s, maybe he''s busy with another program or process. Will use a different name (file_name_1)'), [FileName]);
+      FIntParam := LINE_INFO_ERROR;
+      SynchronizeEx(ShowErrorMessage);
+    end;
 
-  NewFileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName);
-  if FToMDB then
-    NewFileName := NewFileName + '.photodb'
-  else
-    NewFileName := NewFileName + '.db';
+    FFileName := SysUtils.StringReplace(FFileName, '$', '', [RfReplaceAll]);
+    NewFileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName);
+    NewFileName := NewFileName + '.photodb';
+    RenameFile(ToFileName, NewFileName);
 
-  RenameFile(ToFileName, NewFileName);
+    if AnsiLowerCase(FFileName) = AnsiLowerCase(Dbname) then
+    begin
+      Dbname := NewFileName;
+      DBKernel.SetDataBase(NewFileName);
+    end;
+    DBKernel.MoveDB(FFileName, NewFileName);
 
-  if AnsiLowerCase(FFileName) = AnsiLowerCase(Dbname) then
-  begin
-    Dbname := NewFileName;
-    DBKernel.SetDataBase(NewFileName);
-  end;
-  DBKernel.MoveDB(FFileName, NewFileName);
-
-  FSpecQuery := GetQuery(NewFileName);
-  try
-    SetSQL(FSpecQuery, 'Update $DB$ Set Comment="" where Comment is null');
-    ExecSQL(FSpecQuery);
-    SetSQL(FSpecQuery, 'Update $DB$ Set KeyWords="" where KeyWords is null');
-    ExecSQL(FSpecQuery);
-    SetSQL(FSpecQuery, 'Update $DB$ Set Groups="" where Groups is null');
-    ExecSQL(FSpecQuery);
-    SetSQL(FSpecQuery, 'Update $DB$ Set Links="" where Links is null');
-    ExecSQL(FSpecQuery);
+    FSpecQuery := GetQuery(NewFileName);
+    try
+      SetSQL(FSpecQuery, 'Update $DB$ Set Comment="" where Comment is null');
+      ExecSQL(FSpecQuery);
+      SetSQL(FSpecQuery, 'Update $DB$ Set KeyWords="" where KeyWords is null');
+      ExecSQL(FSpecQuery);
+      SetSQL(FSpecQuery, 'Update $DB$ Set Groups="" where Groups is null');
+      ExecSQL(FSpecQuery);
+      SetSQL(FSpecQuery, 'Update $DB$ Set Links="" where Links is null');
+      ExecSQL(FSpecQuery);
+    finally
+      FreeDS(FSpecQuery);
+    end;
   finally
-    FreeDS(FSpecQuery);
+    CoUninitialize;
+    TFrmConvertationProgress(FOwner).OnConvertingStructureEnd(Self, NewFileName);
   end;
-  Synchronize(DoExit);
 end;
 
 function TConvertDBThread.GetThreadID: string;
@@ -219,69 +221,63 @@ begin
   Result := 'ConvertDB';
 end;
 
-procedure TConvertDBThread.DoExit;
-begin
-  CoUnInitialize;
-  TFormConvertingDB(FForm).OnConvertingStructureEnd(Self, NewFileName);
-end;
-
 procedure TConvertDBThread.SetMaxValue(Value: Integer);
 begin
   FIntParam := Value;
-  Synchronize(SetMaxValueSynch);
+  SynchronizeEx(SetMaxValueSynch);
 end;
 
 procedure TConvertDBThread.SetMaxValueSynch;
 begin
-  TFormConvertingDB(FForm).TempProgress.MaxValue := FIntParam;
-  TFormConvertingDB(FForm).Progress.MaxValue := FIntParam;
+  TFrmConvertationProgress(FOwner).TempProgress.MaxValue := FIntParam;
+  TFrmConvertationProgress(FOwner).Progress.MaxValue := FIntParam;
 end;
 
 procedure TConvertDBThread.SetText(Value: string);
 begin
   FStringParam := Value;
-  Synchronize(SetTextSynch);
+  SynchronizeEx(SetTextSynch);
 end;
 
 procedure TConvertDBThread.SetTextSynch;
 begin
-  TFormConvertingDB(FForm).Progress.Text := FStringParam;
+  TFrmConvertationProgress(FOwner).Progress.Text := FStringParam;
 end;
 
 procedure TConvertDBThread.SetProgressText(Value: string);
 begin
   FStringParam := Value;
-  Synchronize(SetProgressTextSynch);
+  SynchronizeEx(SetProgressTextSynch);
 end;
 
 procedure TConvertDBThread.SetProgressTextSynch;
 begin
-  TFormConvertingDB(FForm).Progress.Text := FStringParam;
+  TFrmConvertationProgress(FOwner).Progress.Text := FStringParam;
 end;
 
 procedure TConvertDBThread.SetPositionSynch;
 begin
-  TFormConvertingDB(FForm).Progress.Position := FIntParam;
-  TFormConvertingDB(FForm).TempProgress.Position := FIntParam;
-  TFormConvertingDB(FForm).InfoListBox.Repaint;
+  TFrmConvertationProgress(FOwner).Progress.Position := FIntParam;
+  TFrmConvertationProgress(FOwner).TempProgress.Position := FIntParam;
+  TFrmConvertationProgress(FOwner).InfoListBox.Repaint;
 end;
 
 procedure TConvertDBThread.SetPosition(Value: Integer);
 begin
   FIntParam := Value;
-  Synchronize(SetPositionSynch);
+  SynchronizeEx(SetPositionSynch);
 end;
 
 procedure TConvertDBThread.LogSynch;
 begin
-  TFormConvertingDB(FForm).WriteLnLine(Self, FStringParam, LINE_INFO_OK);
-  TFormConvertingDB(FForm).Label7.Caption := FStringParam;
+  TFrmConvertationProgress(FOwner).WriteLnLine(Self, FStringParam, LINE_INFO_OK);
+  TFrmConvertationProgress(FOwner).LbAction.Caption := FStringParam;
 end;
 
 procedure TConvertDBThread.Log(Value: string);
 begin
   FStringParam := Value;
-  Synchronize(LogSynch);
+  SynchronizeEx(LogSynch);
 end;
 
 procedure TConvertDBThread.ShowErrorMessage;

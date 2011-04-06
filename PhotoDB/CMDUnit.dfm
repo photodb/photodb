@@ -17,6 +17,7 @@ object CMDForm: TCMDForm
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -42,6 +43,7 @@ object CMDForm: TCMDForm
     Top = 48
     Width = 100
     Height = 18
+    Visible = False
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
@@ -53,7 +55,6 @@ object CMDForm: TCMDForm
     CoolColor = 38400
     Color = clBlack
     View = dm_pr_cool
-    Visible = False
     Inverse = False
   end
   object Timer1: TTimer
@@ -64,7 +65,7 @@ object CMDForm: TCMDForm
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
-    Left = 248
+    Left = 288
     Top = 8
   end
   object PasswordTimer: TTimer

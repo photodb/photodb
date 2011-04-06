@@ -4,7 +4,7 @@ interface
 
 uses
   UnitGroupsWork, Classes, DB, UnitDBKernel, SysUtils, GraphicCrypt, ActiveX,
-  win32crc, UnitDBDeclare, uFileUtils, uConstants,
+  UnitDBDeclare, uFileUtils, uConstants, uDBUtils,
   uTranslate, uDBThread;
 
 Type
@@ -27,7 +27,6 @@ type
     TableIn : TDataSet;
     FIntParam : Integer;
     FStringParam : String;
-    FRegGroups : TGroups;
     FGroupsFounded : TGroups;
   protected
     function GetThreadID : string; override;
@@ -45,8 +44,6 @@ type
   public
     constructor Create(Options : TExportOptions);
   end;
-
-procedure CopyRecords(OutTable, InTable: TDataSet; ExportGroups : boolean; var GroupsFounded : TGroups);
 
 var
   StopExport : boolean = false;
@@ -69,6 +66,7 @@ var
   I, J, Pos: Integer;
   FSpecQuery: TDataSet;
   ImageSettings: TImageDBOptions;
+  FRegGroups : TGroups;
 begin
   FreeOnTerminate := True;
   try
@@ -94,9 +92,8 @@ begin
         TableOut.First;
         Pos := 0;
         if FOptions.ExportGroups then
-        begin
           Setlength(FGroupsFounded, 0);
-        end;
+
         repeat
           Pos := Pos + 1;
           if Pos mod 10 = 0 then
@@ -139,7 +136,7 @@ begin
                 end;
           TableIn.Last;
           TableIn.Append;
-          CopyRecords(TableOut, TableIn, True, FGroupsFounded);
+          CopyRecordsW(TableOut, TableIn, True, '', FGroupsFounded);
           TableOut.Next;
           if StopExport then
             Break;
@@ -154,17 +151,21 @@ begin
           SetMaxValue(Length(FGroupsFounded));
           SetPosition(0);
           FRegGroups := GetRegisterGroupList(True);
-          CreateGroupsTableW(FOptions.FileName);
-          for I := 0 to Length(FGroupsFounded) - 1 do
-          begin
-            SetText(Format(L('Saving group: %s'), [FGroupsFounded[I].GroupName]));
-            SetPosition(I);
-            for J := 0 to Length(FRegGroups) - 1 do
-              if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
-              begin
-                AddGroupW(FRegGroups[J], FOptions.FileName);
-                Break;
-              end;
+          try
+            CreateGroupsTableW(FOptions.FileName);
+            for I := 0 to Length(FGroupsFounded) - 1 do
+            begin
+              SetText(Format(L('Saving group: %s'), [FGroupsFounded[I].GroupName]));
+              SetPosition(I);
+              for J := 0 to Length(FRegGroups) - 1 do
+                if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
+                begin
+                  AddGroupW(FRegGroups[J], FOptions.FileName);
+                  Break;
+                end;
+            end;
+          finally
+            FreeGroups(FRegGroups);
           end;
         end;
 
@@ -246,82 +247,6 @@ end;
 procedure ExportThread.DoExit;
 begin
   // TODO: send owner ExportForm.DoExit(Self);
-end;
-
-procedure CopyRecords(OutTable, InTable: TDataSet; ExportGroups: Boolean; var GroupsFounded: TGroups);
-var
-  S, Folder: string;
-  Crc: Cardinal;
-begin
-  try
-    InTable.FieldByName('Name').AsString := OutTable.FieldByName('Name').AsString;
-    InTable.FieldByName('FFileName').AsString := OutTable.FieldByName('FFileName').AsString;
-    InTable.FieldByName('Comment').AsString := OutTable.FieldByName('Comment').AsString;
-    InTable.FieldByName('DateToAdd').AsDateTime := OutTable.FieldByName('DateToAdd').AsDateTime;
-    InTable.FieldByName('Owner').AsString := OutTable.FieldByName('Owner').AsString;
-    InTable.FieldByName('Rating').AsInteger := OutTable.FieldByName('Rating').AsInteger;
-    InTable.FieldByName('Thum').AsVariant := OutTable.FieldByName('Thum').AsVariant;
-    InTable.FieldByName('FileSize').AsInteger := OutTable.FieldByName('FileSize').AsInteger;
-    InTable.FieldByName('KeyWords').AsString := OutTable.FieldByName('KeyWords').AsString;
-    InTable.FieldByName('StrTh').AsString := OutTable.FieldByName('StrTh').AsString;
-    if FileExistsSafe(InTable.FieldByName('FFileName').AsString) then
-      InTable.FieldByName('Attr').AsInteger := Db_attr_norm
-    else
-      InTable.FieldByName('Attr').AsInteger := Db_attr_not_exists;
-    InTable.FieldByName('Attr').AsInteger := OutTable.FieldByName('Attr').AsInteger;
-    InTable.FieldByName('Collection').AsString := OutTable.FieldByName('Collection').AsString;
-    if OutTable.FindField('Groups') <> nil then
-    begin
-      S := OutTable.FieldByName('Groups').AsString;
-      if ExportGroups then
-        AddGroupsToGroups(GroupsFounded, EnCodeGroups(S));
-      InTable.FieldByName('Groups').AsString := S;
-    end;
-    InTable.FieldByName('Groups').AsString := OutTable.FieldByName('Groups').AsString;
-    InTable.FieldByName('Access').AsInteger := OutTable.FieldByName('Access').AsInteger;
-    InTable.FieldByName('Width').AsInteger := OutTable.FieldByName('Width').AsInteger;
-    InTable.FieldByName('Height').AsInteger := OutTable.FieldByName('Height').AsInteger;
-    InTable.FieldByName('Colors').AsInteger := OutTable.FieldByName('Colors').AsInteger;
-    InTable.FieldByName('Rotated').AsInteger := OutTable.FieldByName('Rotated').AsInteger;
-    InTable.FieldByName('IsDate').AsBoolean := OutTable.FieldByName('IsDate').AsBoolean;
-    if OutTable.FindField('Include') <> nil then
-      InTable.FieldByName('Include').AsBoolean := OutTable.FieldByName('Include').AsBoolean;
-    if OutTable.FindField('Links') <> nil then
-      InTable.FieldByName('Links').AsString := OutTable.FieldByName('Links').AsString;
-    if OutTable.FindField('aTime') <> nil then
-      InTable.FieldByName('aTime').AsDateTime := OutTable.FieldByName('aTime').AsDateTime;
-    if OutTable.FindField('IsTime') <> nil then
-      InTable.FieldByName('IsTime').AsBoolean := OutTable.FieldByName('IsTime').AsBoolean;
-    if InTable.Fields.FindField('FolderCRC') <> nil then
-    begin
-
-      if OutTable.Fields.FindField('FolderCRC') <> nil then
-        InTable.FieldByName('FolderCRC').AsInteger := OutTable.FieldByName('FolderCRC').AsInteger
-      else
-      begin
-        Folder := AnsiLowerCase(ExtractFilePath(OutTable.FieldByName('FFileName').AsString));
-{$R-}
-        CalcStringCRC32(AnsiLowerCase(Folder), Crc);
-        InTable.FieldByName('FolderCRC').AsInteger := Crc;
-{$R+}
-      end;
-    end;
-
-    if InTable.Fields.FindField('StrThCRC') <> nil then
-    begin
-      if OutTable.Fields.FindField('StrThCRC') <> nil then
-        InTable.FieldByName('StrThCRC').AsInteger := OutTable.FieldByName('StrThCRC').AsInteger
-      else
-      begin
-{$R-}
-        CalcStringCRC32(OutTable.FieldByName('StrTh').AsString, Crc);
-        InTable.FieldByName('StrThCRC').AsInteger := Crc;
-{$R+}
-      end;
-    end;
-
-  except
-  end;
 end;
 
 end.

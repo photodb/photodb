@@ -25,6 +25,7 @@ type
     procedure AddStepInstance(StepType: TFrameWizardBaseClass);
   protected
     function GetWizardDone: Boolean; override;
+    function GetOperationInProgress: Boolean; override;
   public
     constructor Create(Owner: TDBForm); override;
     destructor Destroy; override;
@@ -35,6 +36,7 @@ type
     function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; override;
     procedure Execute;
     procedure Start(Owner: TWinControl; X, Y: Integer);
+    procedure BreakOperation; override;
     property OnChange : TNotifyEvent read FOnChange write FOnChange;
     property Steps[Index : Integer] : TFrameWizardBase read GetStepByIndex; default;
     property Count: Integer read GetCount;
@@ -103,6 +105,12 @@ begin
   FSteps.Add(Frame);
 end;
 
+procedure TWizardManager.BreakOperation;
+begin
+  inherited;
+  Steps[CurrentStep].BreakOperation;
+end;
+
 procedure TWizardManager.Changed;
 begin
   if Assigned(FOnChange) then
@@ -135,12 +143,12 @@ end;
 
 function TWizardManager.GetCanGoBack: Boolean;
 begin
-  Result := (CurrentStep > 0) and not IsBusy;
+  Result := (CurrentStep > 0) and not IsBusy and not OperationInProgress;
 end;
 
 function TWizardManager.GetCanGoNext: Boolean;
 begin
-  Result := Steps[CurrentStep].CanGoNext and not IsBusy;
+  Result := Steps[CurrentStep].CanGoNext and not IsBusy and not OperationInProgress;
 end;
 
 function TWizardManager.GetCount: Integer;
@@ -156,6 +164,11 @@ end;
 function TWizardManager.GetIsFinalStep: Boolean;
 begin
   Result := Steps[CurrentStep].IsFinal;
+end;
+
+function TWizardManager.GetOperationInProgress: Boolean;
+begin
+  Result := Steps[CurrentStep].OperationInProgress;
 end;
 
 function TWizardManager.GetStepByIndex(Index: Integer): TFrameWizardBase;

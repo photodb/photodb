@@ -6,7 +6,7 @@ uses
   GraphicCrypt, DB, UnitINI, UnitTerminationApplication,
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls,
-  Dialogs, UnitDBKernel, Crypt, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
+  Dialogs, UnitDBKernel, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
@@ -21,7 +21,6 @@ type
     { Private declarations }
     FMainForms : TList;
     FTemtinatedActions : TTemtinatedActions;
-    CanCheckViewerInMainForms : Boolean;
     FCheckCount : Integer;
     WasIde : Boolean;
     ExitAppl : Boolean;
@@ -226,7 +225,7 @@ begin
       end;
     end;
     FCheckCount := 0;
-    TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
+    TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 55, @TimerProc);
   finally
     ShowWindow(Application.MainForm.Handle, SW_HIDE);
     ShowWindow(Application.Handle, SW_HIDE);
@@ -240,8 +239,6 @@ end;
 
 procedure TFormManager.RegisterMainForm(Value: TForm);
 begin
-  if Value <> Viewer then
-    CanCheckViewerInMainForms := True;
   FMainForms.Add(Value);
 end;
 
@@ -390,20 +387,7 @@ begin
     end;
     if (FCheckCount = 600) then //after 1.min. backup database
       DBKernel.BackUpTable;
-    if CanCheckViewerInMainForms then
-    begin
-      if (FMainForms.Count = 1) and (FMainForms[0] = Viewer) and (Viewer <> nil) then
-      begin
-        CanCheckViewerInMainForms := False;
-        //to prevent many messageboxes
-        KillTimer(0, TimerCheckMainFormsHandle);
-        try
-          ActivateApplication(Viewer.Handle);
-        finally
-           TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 100, @TimerProc);
-        end;
-      end;
-    end;
+
     if FMainForms.Count = 0 then
       ExitApplication;
   end;
@@ -474,7 +458,7 @@ var
 begin
   TW.I.Start('FM -> Load');
   Caption := DBID;
-  CanCheckViewerInMainForms := False;
+
   LockCleaning := True;
   try
 

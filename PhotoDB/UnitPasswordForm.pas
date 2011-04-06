@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, UnitDBKernel, FormManegerUnit, GraphicCrypt, DB,
   uConstants, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
-  uDBForm, uTranslate, uFileUtils, uShellIntegration, uSettings;
+  uDBForm, uTranslate, uFileUtils, uShellIntegration, uSettings,
+  uSysUtils, uMemory;
 
 type
   PasswordType = Integer;
@@ -50,6 +51,7 @@ type
       var Height: Integer);
     procedure InfoListBoxDrawItem(Control: TWinControl; Index: Integer;
       aRect: TRect; State: TOwnerDrawState);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FFileName: string;
@@ -180,6 +182,11 @@ begin
   PassIcon.Handle := LoadIcon(HInstance, PWideChar('PASSWORD'));
 end;
 
+procedure TPassWordForm.FormDestroy(Sender: TObject);
+begin
+  F(PassIcon);
+end;
+
 procedure TPassWordForm.LoadLanguage;
 begin
   BeginTranslate;
@@ -207,13 +214,16 @@ procedure TPassWordForm.BtOkClick(Sender: TObject);
 
   function TEST: Boolean;
   var
-    Crc: Cardinal;
+    Crc, Crc2: Cardinal;
   begin
     Result := False;
     if (DialogType = PASS_TYPE_IMAGE_STENO) or (DialogType = PASS_TYPE_IMAGES_CRC) then
     begin
+      //unicode password
       CalcStringCRC32(EdPassword.Text, Crc);
-      Result := Crc = FCRC;
+      //old-style pasword
+      CalcAnsiStringCRC32(EdPassword.Text, Crc2);
+      Result := (Crc = FCRC) or (Crc2 = FCRC);
       Exit;
     end;
     if FFileName <> '' then
@@ -239,6 +249,11 @@ procedure TPassWordForm.EdPasswordKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = Char(VK_RETURN) then
   begin
+    if ShiftKeyDown then
+    begin
+      DBKernel.AddTemporaryPasswordInSession(EdPassword.Text);
+      Exit;
+    end;
     Key := #0;
     BtOkClick(Sender);
   end;

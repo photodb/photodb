@@ -276,6 +276,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ExportTableLink: TWebLink
         Left = 8
@@ -294,6 +295,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ImportTableLink: TWebLink
         Left = 8
@@ -312,6 +314,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object RecreateIDExLink: TWebLink
         Left = 8
@@ -330,6 +333,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ScanforBadLinksLink: TWebLink
         Left = 8
@@ -348,6 +352,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object BackUpDBLink: TWebLink
         Left = 8
@@ -366,6 +371,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object CleaningLink: TWebLink
         Left = 8
@@ -384,6 +390,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object LbDatabases: TListBox
         Left = 456
@@ -423,6 +430,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ConvertLink: TWebLink
         Left = 8
@@ -441,6 +449,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
       object ChangePathLink: TWebLink
         Left = 8
@@ -459,6 +468,7 @@ object ManagerDB: TManagerDB
         TopIconIncrement = 0
         ImageCanRegenerate = True
         UseSpecIconSize = True
+        HightliteImage = False
       end
     end
     object ElvMain: TListView
@@ -562,6 +572,7 @@ object ManagerDB: TManagerDB
       Color = clBtnFace
       ParentColor = False
       SignColor = clBlack
+      MaxTransparencity = 255
     end
   end
   object PopupMenu1: TPopupMenu

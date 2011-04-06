@@ -117,7 +117,7 @@ var
             MS.Seek(0, SoFromBeginning);
             BF.LoadFromStream(Ms);
           finally
-            MS.Free;
+            F(MS);
           end;
         end
         else
@@ -231,12 +231,9 @@ begin
                     F(Bmp);
                     Jpeg.CompressionQuality := ImageOptions.DBJpegCompressionQuality;
                     Jpeg.Compress;
-                    try
-                      Table.Edit;
-                      Table.FieldByName('thum').Assign(Jpeg);
-                      Table.Post;
-                    except
-                    end;
+                    Table.Edit;
+                    Table.FieldByName('thum').Assign(Jpeg);
+                    Table.Post;
                   finally
                     F(Jpeg);
                   end;

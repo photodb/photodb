@@ -473,7 +473,10 @@ begin
 
   FCurrentPreviewPosition := FData.Position;
   if FData.Count > 0 then
+  begin
     EdSavePath.Text := ExtractFileDir(FData[FCurrentPreviewPosition].FileName);
+    EdImageName.Text := ExtractFileName(FData[FCurrentPreviewPosition].FileName);
+  end;
 
   UpdateNavigation;
   if (FPreviewImage = nil) then

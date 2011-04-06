@@ -85,9 +85,8 @@ end;
 
 destructor TPasswordKeeper.Destroy;
 begin
-  PasswordList.Free;
-  FSync.Free;
-  inherited Destroy;
+  F(PasswordList);
+  F(FSync);
 end;
 
 function TPasswordKeeper.GetActiveFiles(Sender : TObject): TList;

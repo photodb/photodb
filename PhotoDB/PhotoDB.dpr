@@ -313,7 +313,10 @@ uses
   uSearchTypes in 'Units\uSearchTypes.pas',
   uCryptUtils in 'Units\uCryptUtils.pas',
   uResourceUtils in 'Units\uResourceUtils.pas',
-  uMobileUtils in 'Units\uMobileUtils.pas';
+  uMobileUtils in 'Units\uMobileUtils.pas',
+  uFrmConvertationLanding in 'Convertation\uFrmConvertationLanding.pas' {FrmConvertationLanding: TFrame},
+  uFrmConvertationSettings in 'Convertation\uFrmConvertationSettings.pas' {FrmConvertationSettings: TFrame},
+  uFrmConvertationProgress in 'Convertation\uFrmConvertationProgress.pas' {FrmConvertationProgress: TFrame};
 
 var
   S1: string;

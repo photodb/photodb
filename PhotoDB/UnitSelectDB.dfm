@@ -566,8 +566,8 @@ object FormSelectDB: TFormSelectDB
     WordWrap = True
   end
   object PanelStep10: TPanel
-    Left = 8
-    Top = 104
+    Left = 376
+    Top = 367
     Width = 601
     Height = 305
     BevelOuter = bvNone
@@ -1711,8 +1711,8 @@ object FormSelectDB: TFormSelectDB
     OnClick = CancelButtonClick
   end
   object PanelStep40: TPanel
-    Left = 0
-    Top = 112
+    Left = 88
+    Top = 367
     Width = 609
     Height = 305
     BevelOuter = bvNone
@@ -1732,8 +1732,8 @@ object FormSelectDB: TFormSelectDB
     end
   end
   object PanelStep21: TPanel
-    Left = 0
-    Top = 112
+    Left = 232
+    Top = 279
     Width = 609
     Height = 298
     BevelOuter = bvNone
@@ -1793,8 +1793,8 @@ object FormSelectDB: TFormSelectDB
     end
   end
   object PanelStep22: TPanel
-    Left = 0
-    Top = 112
+    Left = 431
+    Top = 95
     Width = 609
     Height = 298
     BevelOuter = bvNone
@@ -1802,7 +1802,7 @@ object FormSelectDB: TFormSelectDB
     Visible = False
     object GroupBox3: TGroupBox
       Left = 8
-      Top = 0
+      Top = 1
       Width = 601
       Height = 297
       Caption = 'Select file on hard disk'

@@ -1019,6 +1019,7 @@ object ExplorerForm: TExplorerForm
     FillPercent = 50
     Anchors = [akTop, akRight]
     SignColor = clBlack
+    MaxTransparencity = 255
   end
   object SizeImageList: TImageList
     Height = 102

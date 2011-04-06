@@ -376,6 +376,7 @@ begin
   Height := Round(Bitmap.Height / YBlocks);
   TextHeight := 0;
 
+  RealAngle := 0;
   for I := 1 to 10 do
   begin
     Dioganal := Round(Sqrt(Width * Width + Height * Height));
@@ -438,7 +439,7 @@ begin
     DX := Round(Sin(RealAngle) * TextWidth);
     DY := Round(Sin(RealAngle) * Sin(RealAngle) * (TextWidth));
     DX := Round(DX - (TextWidth / 1.7) * Sin((RealAngle)));
-    DY := Round(DX + (TextWidth / 1.7) * Sin((RealAngle)));
+    DY := Round(DY + (TextWidth / 1.7) * Sin((RealAngle)));
 
     Mask.Canvas.Font.Handle := CreateFontIndirect(lf);
     Mask.Canvas.Font.Color := clBlack;
@@ -621,7 +622,7 @@ const
   IndexDBRecord = 5;
 begin
     //
-  ItemData := PInteger(ItemsData[index])^;
+  ItemData := Integer(ItemsData[index]);
   if OdSelected in State then
     ListBox.Canvas.Brush.Color := $A0A0A0
   else
@@ -774,8 +775,7 @@ begin
 
     MS := TMemoryStream.Create;
     try
-      Jpeg.SaveToStream(ms);
-      F(Jpeg);
+      Jpeg.SaveToStream(MS);
       JpegImageResampled := TJpegImage.Create;
       MS.Seek(0, soFromBeginning);
       JpegImageResampled.LoadFromStream(MS);

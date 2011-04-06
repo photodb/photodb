@@ -21,6 +21,7 @@ object ImHint: TImHint
   OnContextPopup = Image1ContextPopup
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnDeactivate = FormDeactivate
   OnKeyPress = FormKeyPress
   OnMouseDown = Image1MouseDown
   OnMouseMove = LbSizeMouseMove

@@ -273,19 +273,19 @@ begin
 end;
 
 procedure TFormHistory.WriteLnLine(Sender: TObject; Line: string; Info: Integer);
-var
-  P: PInteger;
 const
   TopRecords = 0;
+
 begin
-  LockWindowUpdate(Handle);
-  Infos.Insert(0, Line);
+  BeginScreenUpdate(Handle);
+  try
+    Infos.Insert(0, Line);
 
-  GetMem(P, SizeOf(Integer));
-  P^ := Info;
-  ItemsData.Insert(TopRecords, P);
-  InfoListBox.Items.Insert(TopRecords, Line);
-
+    ItemsData.Insert(TopRecords, Pointer(Info));
+    InfoListBox.Items.Insert(TopRecords, Line);
+  finally
+    EndScreenUpdate(Handle, False);
+  end;
   LockWindowUpdate(0);
 end;
 
