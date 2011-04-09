@@ -593,7 +593,7 @@ object ManagerDB: TManagerDB
       Caption = 'Date not exists'
     end
   end
-  object PopupMenu3: TPopupMenu
+  object PmEdiGroups: TPopupMenu
     Left = 281
     Top = 232
     object EditGroups1: TMenuItem
@@ -660,14 +660,14 @@ object ManagerDB: TManagerDB
     end
   end
   object PopupMenu6: TPopupMenu
-    Left = 297
+    Left = 329
     Top = 288
     object Timenotexists1: TMenuItem
       Caption = 'Time not exists'
     end
   end
   object PopupMenu7: TPopupMenu
-    Left = 345
+    Left = 401
     Top = 288
     object TimeExists1: TMenuItem
       Caption = 'Time Exists'

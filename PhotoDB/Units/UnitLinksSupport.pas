@@ -71,7 +71,7 @@ Function CompareLinks(LinksA, LinksB : string; Simple : boolean = false) : Boole
 function LinkInLinksExists(Link : TLinkInfo; Links : TLinksInfo; UseValue : boolean = true) : boolean;
 
 function CodeExtID(ExtID : AnsiString) : String;
-function DeCodeExtID(S : String) : String;
+function DeCodeExtID(S : String) : AnsiString;
 function CompareTwoLinks(Link1, Link2 : TLinkInfo; UseValue: boolean = false) : boolean;
 
 function LinkType(LinkTypeN : integer) : String;
@@ -403,7 +403,7 @@ begin
     Result := Result + IntToHex(Byte(ExtID[I]), 2);
 end;
 
-function DeCodeExtID(S: string): string;
+function DeCodeExtID(S: string): AnsiString;
 var
   I: Integer;
   Str: string;
@@ -414,7 +414,7 @@ begin
     Str := Copy(S, 1 + 2 * (I - 1), 2);
     if FIXIDEX then
       if not((I = 200) and (Str = '20')) then
-        Result := Result + Char(HexToIntDef(Str, 32));
+        Result := Result + AnsiChar(HexToIntDef(Str, 32));
   end;
 end;
 

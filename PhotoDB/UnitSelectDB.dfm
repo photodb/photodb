@@ -588,7 +588,6 @@ object FormSelectDB: TFormSelectDB
     Caption = 'BtnNext'
     TabOrder = 0
     OnClick = BtnNextClick
-    ExplicitTop = 318
   end
   object BtnCancel: TButton
     Left = 369
@@ -599,7 +598,6 @@ object FormSelectDB: TFormSelectDB
     Caption = 'BtnCancel'
     TabOrder = 1
     OnClick = BtnCancelClick
-    ExplicitTop = 318
   end
   object BtnPrevious: TButton
     Left = 450
@@ -610,17 +608,15 @@ object FormSelectDB: TFormSelectDB
     Caption = 'Previous'
     TabOrder = 2
     OnClick = BtnPreviousClick
-    ExplicitTop = 318
   end
   object BtnFinish: TButton
     Left = 531
-    Top = 379
+    Top = 378
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnFinish'
     TabOrder = 3
     OnClick = BtnFinishClick
-    ExplicitTop = 319
   end
 end

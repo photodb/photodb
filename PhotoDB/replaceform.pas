@@ -10,7 +10,7 @@ uses
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
   UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
   uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm,
-  uSettings, uListViewUtils;
+  uSettings, uListViewUtils, uAssociations, uDBAdapter;
 
 type
   TDBReplaceForm = class(TDBForm)
@@ -32,7 +32,7 @@ type
     DB_WIDTH: TEdit;
     DB_HEIGHT: TEdit;
     DB_SIZE: TEdit;
-    DB_PATCH: TEdit;
+    DB_PATH: TEdit;
     Panel3: TPanel;
     Image1: TImage;
     LabelCurrentInfo: TLabel;
@@ -59,7 +59,7 @@ type
     BtnSkipAll: TButton;
     BtnReplaceAll: TButton;
     BtnAddAll: TButton;
-    procedure ExecuteToAdd(Filename : string; _ID : integer; thimg : string; addr_res, AddrSelID : pinteger; rec_ : TImageDBRecordA);
+    procedure ExecuteToAdd(Filename : string; LongImageID : AnsiString; var ResultAction: Integer; var SelectedID: Integer; rec_ : TImageDBRecordA);
     procedure readDBInfoByID(id : integer);
     procedure AddItem(Text : string; ID : integer; fbit_ : tbitmap);
     procedure LvMainSelectItem(Sender: TObject; Item: TListItem;Selected: Boolean);
@@ -95,25 +95,25 @@ type
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
     WorkQuery: TDataSet;
+    WDA: TDBAdapter;
+    FCurrentFileName: string;
+    FCurrentID: Integer;
+    FSelectedMode,
+    FSelectedID: Integer;
     procedure LoadLanguage;
   protected
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure ReallignControls;
   end;
-
-var
-  // TODO: review!
-  DBReplaceForm: TDBReplaceForm;
-  Res_Address, ResIDAddress: Pinteger;
-  Current_id_show: Integer;
-  CurrentFileName: string;
 
 implementation
 
 uses
-  Searching, ExplorerUnit, UnitPasswordForm, SlideShow;
+  Searching,
+  ExplorerUnit,
+  UnitPasswordForm,
+  SlideShow;
 
 {$R *.dfm}
 
@@ -137,27 +137,25 @@ begin
     Bit.PixelFormat := pf24bit;
     Bit.Width := ListItemPreviewSize;
     Bit.Height := ListItemPreviewSize;
-    if TBlobField(WorkQuery.FieldByName('thum')) = nil then
+    if WDA.Thumb = nil then
       Exit;
 
     J := TJpegImage.Create;
     try
-      if ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')) then
+      if ValidCryptBlobStreamJPG(WDA.Thumb) then
       begin
-        Password := DBkernel.FindPasswordForCryptBlobStream(WorkQuery.FieldByName('thum'));
+        Password := DBkernel.FindPasswordForCryptBlobStream(WDA.Thumb);
         if Password = '' then
-        begin
-          Password := GetImagePasswordFromUserBlob(WorkQuery.FieldByName('thum'),
-            WorkQuery.FieldByName('FFileName').AsString);
-        end;
+          Password := GetImagePasswordFromUserBlob(WDA.Thumb, WDA.FileName);
+
         if Password <> '' then
         begin
-          DeCryptBlobStreamJPG(WorkQuery.FieldByName('thum'), Password, J)
+          DeCryptBlobStreamJPG(WDA.Thumb, Password, J)
         end else
           Exit;
       end else
       begin
-        BS := GetBlobStream(WorkQuery.FieldByName('thum'), BmRead);
+        BS := GetBlobStream(WDA.Thumb, BmRead);
         try
           J.LoadFromStream(BS);
         finally
@@ -189,15 +187,15 @@ begin
       end else
         Bit.Canvas.Draw(ListItemPreviewSize div 2 - J.Width div 2, ListItemPreviewSize div 2 - J.Height div 2, J);
 
-      ApplyRotate(Bit, WorkQuery.FieldByName('Rotated').AsInteger);
+      ApplyRotate(Bit, WDA.Rotation);
       Exists := 0;
-      DrawAttributes(Bit, ListItemPreviewSize, WorkQuery.FieldByName('Rating').AsInteger,
-        WorkQuery.FieldByName('Rotated').AsInteger, WorkQuery.FieldByName('Access').AsInteger,
-        WorkQuery.FieldByName('FFileName').AsString, False, Exists, WorkQuery.FieldByName('ID').AsInteger);
+      DrawAttributes(Bit, ListItemPreviewSize, WDA.Rating,
+        WDA.Rotation, WDA.Access, WDA.FileName, False, Exists, WDA.ID);
     finally
       F(J);
     end;
     FBitmapImageList.AddBitmap(Bit);
+    Bit := nil;
   finally
     F(Bit);
   end;
@@ -205,35 +203,33 @@ begin
   LvMain.Refresh;
 end;
 
-procedure TDBReplaceForm.ExecuteToAdd(FileName: string; _ID: Integer; Thimg: string; Addr_Res, AddrSelID: PInteger;
+procedure TDBReplaceForm.ExecuteToAdd(FileName: string; LongImageID: AnsiString; var ResultAction: Integer; var SelectedID: Integer;
   Rec_: TImageDBRecordA);
 var
   I: Integer;
 begin
   FBitmapImageList.Clear;
-  if Thimg = '' then
+  if LongImageID = '' then
     Exit;
-  ResIDAddress := AddrSelID;
-  Res_address := Addr_res;
-  Res_address^ := Result_invalid;
-  AddrSelID^ := 0;
+  FSelectedMode := Result_invalid;
+  FSelectedID := 0;
+
   LvMain.Clear;
-  CurrentFileName := Filename;
+  FCurrentFileName := Filename;
   WorkQuery.Active := False;
   SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE StrTh = :str ');
-  SetStrParam(WorkQuery, 0, Thimg);
+  SetAnsiStrParam(WorkQuery, 0, LongImageID);
   WorkQuery.Active := True;
   if WorkQuery.RecordCount = 0 then
   begin
     EventLog(Format('TDBReplaceForm::ExecuteToAdd() not found any db record for file %s and strth "%s"',
-        [FileName, Thimg]));
+        [FileName, LongImageID]));
     Exit;
   end;
   if WorkQuery.RecordCount = 1 then
   begin
     LvMain.Visible := False;
-    Panel2.Left := LvMain.Left;
-    Width := Panel3.Width + Panel2.Width + (Width - ClientWidth);
+    Width := Panel3.Width + Panel2.Width + 10;
     BtnReplaceAll.Enabled := True;
     BtnReplaceAndDeleteDuplicates.Enabled := False;
     BtnReplace.Enabled := True;
@@ -248,14 +244,16 @@ begin
   ReadFileInfo(Filename);
   for I := 1 to WorkQuery.RecordCount do
   begin
-    AddItem(Trim(WorkQuery.FieldByName('Name').AsString), WorkQuery.FieldByName('ID').AsInteger, nil);
+    AddItem(WDA.Name, WDA.ID, nil);
     WorkQuery.Next;
   end;
-  ReadDBInfoByID(WorkQuery.FieldByName('ID').AsInteger);
+  ReadDBInfoByID(WDA.ID);
   ShowModal;
+  ResultAction := FSelectedMode;
+  SelectedID := FSelectedID;
 end;
 
-procedure TDBReplaceForm.ReadDBInfoByID(Id: Integer);
+procedure TDBReplaceForm.ReadDBInfoByID(ID: Integer);
 var
   Bit: TBitmap;
   Bs: TStream;
@@ -264,22 +262,24 @@ var
   Exists, W, H: Integer;
   TempBitmap, FBit: TBitmap;
   JPEG: TJpegImage;
+  DA: TDBAdapter;
 const
   ListItemPreviewSize = 100;
+
 begin
   FQuery := GetQuery;
+  DA := TDBAdapter.Create(FQuery);
   try
-    FQuery.Active := False;
     SetSQl(FQuery, 'SELECT * FROM $DB$ WHERE ID=' + IntToStr(ID));
     FQuery.Active := True;
-    Current_id_show := FQuery.FieldByName('ID').AsInteger;
+    FCurrentID := DA.ID;
     DB_ID.Text := IntToStr(ID);
-    DB_NAME.Text := Trim(FQuery.FieldByName('Name').AsString);
-    DB_RATING.Text := Inttostr(FQuery.FieldByName('Rating').AsInteger);
-    DB_WIDTH.Text := Format(L('%dpx.'), [FQuery.FieldByName('Width').AsInteger]);
-    DB_HEIGHT.Text := Format(L('%dpx.'), [FQuery.FieldByName('Height').AsInteger]);
-    DB_SIZE.Text := SizeInText(FQuery.FieldByName('FileSize').AsInteger);
-    DB_PATCH.Text := FQuery.FieldByName('FFileName').AsString;
+    DB_NAME.Text := DA.Name;
+    DB_RATING.Text := IntToStr(DA.Rating);
+    DB_WIDTH.Text := Format(L('%dpx.'), [DA.Width]);
+    DB_HEIGHT.Text := Format(L('%dpx.'), [DA.Height]);
+    DB_SIZE.Text := SizeInText(DA.FileSize);
+    DB_PATH.Text := DA.FileName;
 
     JPEG := TJpegImage.Create;
     try
@@ -289,25 +289,24 @@ begin
         Bit.SetSize(ListItemPreviewSize, ListItemPreviewSize);
         Bit.Canvas.Brush.Color := clBtnFace;
         Bit.Canvas.Pen.Color := clBtnFace;
-        if TBlobField(FQuery.FieldByName('thum')) = nil then
+        if DA.Thumb = nil then
           Exit;
 
-        if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
+        if ValidCryptBlobStreamJPG(DA.Thumb) then
         begin
-          Password := DBkernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum'));
+          Password := DBkernel.FindPasswordForCryptBlobStream(DA.Thumb);
           if Password = '' then
-          begin
-            Password := GetImagePasswordFromUserBlob(FQuery.FieldByName('thum'), FQuery.FieldByName('FFileName').AsString);
-          end;
+            Password := GetImagePasswordFromUserBlob(DA.Thumb, DA.FileName);
+
           if Password <> '' then
           begin
-            DeCryptBlobStreamJPG(FQuery.FieldByName('thum'), Password, JPEG);
+            DeCryptBlobStreamJPG(DA.Thumb, Password, JPEG);
           end else
             Exit;
 
         end else
         begin
-          BS := GetBlobStream(FQuery.FieldByName('thum'), BmRead);
+          BS := GetBlobStream(DA.Thumb, BmRead);
           try
             JPEG.LoadfromStream(BS)
           finally
@@ -342,11 +341,10 @@ begin
           Bit.Canvas.Draw(ListItemPreviewSize div 2 - JPEG.Width div 2,
             ListItemPreviewSize div 2 - JPEG.Height div 2, JPEG);
         end;
-        ApplyRotate(Bit, FQuery.FieldByName('Rotated').AsInteger);
+        ApplyRotate(Bit, DA.Rotation);
         Exists := 0;
-        DrawAttributes(Bit, ListItemPreviewSize, FQuery.FieldByName('Rating').AsInteger,
-          FQuery.FieldByName('Rotated').AsInteger, FQuery.FieldByName('Access').AsInteger,
-          FQuery.FieldByName('FFileName').AsString, False, Exists, FQuery.FieldByName('ID').AsInteger);
+        DrawAttributes(Bit, ListItemPreviewSize, DA.Rating,
+          DA.Rotation, DA.Access, DA.FileName, False, Exists, DA.ID);
 
         Image2.Picture.Graphic := Bit;
 
@@ -358,15 +356,15 @@ begin
     end;
   finally
     FreeDS(FQuery);
+    F(DA);
   end;
 end;
 
 procedure TDBReplaceForm.LvMainSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   if Item <> nil then
-  begin
     ReadDBInfoByID(Item.Indent);
-  end;
+
   BtnReplace.Enabled := Selected;
   BtnReplaceAndDeleteDuplicates.Enabled := Selected;
 end;
@@ -375,6 +373,7 @@ procedure TDBReplaceForm.FormCreate(Sender: TObject);
 begin
   DisableWindowCloseButton(Handle);
   WorkQuery := GetQuery;
+  WDA := TDBAdapter.Create(WorkQuery);
   DropFileTarget1.register(Self);
   FBitmapImageList := TBitmapImageList.Create;
   LvMain.HotTrack := Settings.Readbool('Options', 'UseHotSelect', True);
@@ -382,55 +381,55 @@ begin
   LvMainSelectItem(Sender, nil, False);
   DBKernel.RegisterChangesID(Self, Self.ChangedDBDataByID);
   LoadLanguage;
-  ReallignControls;
 end;
 
 procedure TDBReplaceForm.BtnAddClick(Sender: TObject);
 begin
-  Res_address^ := Result_add;
-  ResIDAddress^ := StrToInt(DB_ID.Text);
+  FSelectedMode := Result_add;
+  FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
 end;
 
 procedure TDBReplaceForm.BtnReplaceAllClick(Sender: TObject);
 begin
-  Res_address^ := Result_replace_all;
-  ResIDAddress^ := StrToInt(DB_ID.Text);
+  FSelectedMode := Result_replace_all;
+  FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
 end;
 
 procedure TDBReplaceForm.BtnReplaceClick(Sender: TObject);
 begin
-  Res_address^ := Result_replace;
-  ResIDAddress^ := StrToInt(DB_ID.Text);
+  FSelectedMode := Result_replace;
+  FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
 end;
 
 procedure TDBReplaceForm.BtnSkipAllClick(Sender: TObject);
 begin
-  Res_address^ := Result_skip_all;
-  ResIDAddress^ := StrToInt(DB_ID.Text);
+  FSelectedMode := Result_skip_all;
+  FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
 end;
 
 procedure TDBReplaceForm.BtnSkipClick(Sender: TObject);
 begin
-  Res_Address^ := Result_skip;
-  ResIDAddress^ := StrToInt(DB_ID.Text);
+  FSelectedMode := Result_skip;
+  FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
 end;
 
 procedure TDBReplaceForm.ReadFileInfo(FileName: string);
 var
-  Pic: TPicture;
-  Fb, Fb1: Graphics.Tbitmap;
+  G: TGraphic;
+  Fb, Fb1: TBitmap;
   Filesize_, I: Integer;
   Password: string;
+  GraphicClass : TGraphicClass;
 const
   FilePreviewSize = 100;
 begin
@@ -441,83 +440,83 @@ begin
   for I := Length(FileName) downto 1 do
     if FileName[I] = #0 then
       Delete(FileName, I, 1);
-  Pic := TPicture.Create;
-  if ValidCryptGraphicFile(FileName) then
-  begin
-    Password := DBkernel.FindPasswordForCryptImageFile(FileName);
-    if Password <> '' then
-      Pic.Graphic := DeCryptGraphicFile(FileName, Password)
-    else
+
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+  if GraphicClass = nil then
+    Exit;
+
+  G := nil;
+  try
+    if ValidCryptGraphicFile(FileName) then
     begin
-      MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Warning'), TD_BUTTON_OK,
-        TD_ICON_INFORMATION);
-      Exit;
+      Password := DBkernel.FindPasswordForCryptImageFile(FileName);
+      if Password <> '' then
+        G := DeCryptGraphicFile(FileName, Password)
+      else
+      begin
+        MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Warning'), TD_BUTTON_OK,
+          TD_ICON_INFORMATION);
+        Exit;
+      end;
+    end else
+    begin
+      try
+        G := GraphicClass.Create;
+        G.LoadFromFile(FileName);
+      except
+        MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Warning'), TD_BUTTON_OK,
+          TD_ICON_INFORMATION);
+        Exit;
+      end;
     end;
-  end else
-  begin
+    F_WIDTH.Text := Format(L('%dpx.'), [G.Width]);
+    F_HEIGHT.Text := Format(L('%dpx.'), [G.Height]);
+    JPEGScale(G, FilePreviewSize, FilePreviewSize);
+    Fb := TBitmap.Create;
     try
-      Pic.LoadFromFile(FileName);
-    except
-      MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Warning'), TD_BUTTON_OK,
-        TD_ICON_INFORMATION);
-      Pic.Free;
-      Exit;
+      Fb.PixelFormat := pf24bit;
+      Fb1 := Tbitmap.Create;
+      try
+        Fb1.PixelFormat := pf24bit;
+        Fb1.Width := FilePreviewSize;
+        Fb1.Height := FilePreviewSize;
+        Fb1.Canvas.Brush.Color := ClBtnFace;
+        Fb1.Canvas.Pen.Color := ClBtnFace;
+        Fb1.Canvas.Rectangle(0, 0, FilePreviewSize, FilePreviewSize);
+        if G.Width > G.Height then
+        begin
+          Fb.Width := FilePreviewSize;
+          Fb.Height := Round(FilePreviewSize * (G.Height / G.Width));
+        end else
+        begin
+          Fb.Width := Round(FilePreviewSize * (G.Width / G.Height));
+          Fb.Height := FilePreviewSize;
+        end;
+        Fb.Canvas.StretchDraw(Rect(0, 0, Fb.Width, Fb.Height), G);
+        Fb1.Canvas.Draw(FilePreviewSize div 2 - Fb.Width div 2, FilePreviewSize div 2 - Fb.Height div 2, Fb);
+        Image1.Picture.Graphic := Fb1;
+      finally
+        F(Fb1);
+      end;
+    finally
+      F(Fb);
     end;
+  finally
+    F(G);
   end;
-  F_WIDTH.Text := Format(L('%dpx.'), [Pic.Width]);
-  F_HEIGHT.Text := Format(L('%dpx.'), [Pic.Height]);
-  JPEGScale(Pic.Graphic, FilePreviewSize, FilePreviewSize);
-  Fb := Graphics.TBitmap.Create;
-  Fb.PixelFormat := Pf24bit;
-  Fb1 := Graphics.Tbitmap.Create;
-  Fb1.PixelFormat := Pf24bit;
-  Fb1.Width := FilePreviewSize;
-  Fb1.Height := FilePreviewSize;
-  Fb1.Canvas.Brush.Color := ClBtnFace;
-  Fb1.Canvas.Pen.Color := ClBtnFace;
-  Fb1.Canvas.Rectangle(0, 0, FilePreviewSize, FilePreviewSize);
-  if Pic.Width > Pic.Height then
-  begin
-    Fb.Width := FilePreviewSize;
-    Fb.Height := Round(FilePreviewSize * (Pic.Height / Pic.Width));
-  end else
-  begin
-    Fb.Width := Round(FilePreviewSize * (Pic.Width / Pic.Height));
-    Fb.Height := FilePreviewSize;
-  end;
-  Fb.Canvas.StretchDraw(Rect(0, 0, Fb.Width, Fb.Height), Pic.Graphic);
-  Fb1.Canvas.Draw(FilePreviewSize div 2 - Fb.Width div 2, FilePreviewSize div 2 - Fb.Height div 2, Fb);
-  if not(Image1.Picture.Graphic is Graphics.Tbitmap) then
-  begin
-    if Image1.Picture.Graphic <> nil then
-      Image1.Picture.Graphic.Free
-    else
-      Image1.Picture.Bitmap := Graphics.Tbitmap.Create;
-  end;
-  Image1.Picture.Bitmap.Assign(Fb1);
-  Image1.Refresh;
-  Fb1.Free;
-  Pic.Free;
-  Fb.Free;
 end;
 
 procedure TDBReplaceForm.Image2MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var
-  DragImage: TBitmap;
 begin
-  if (Button = MbLeft) and FileExistsSafe(DB_PATCH.Text) then
+  if (Button = MbLeft) and FileExistsSafe(DB_PATH.Text) then
   begin
     DragImageList.Clear;
     DropFileSource1.Files.Clear;
-    DropFileSource1.Files.Add(DB_PATCH.Text);
-    DragImage := TBitmap.Create;
-    DragImage.PixelFormat := Pf24bit;
-    DragImage.Assign(Image2.Picture.Bitmap);
-    DragImageList.Width := DragImage.Width;
-    DragImageList.Height := DragImage.Height;
-    DragImageList.Add(DragImage, nil);
-    DragImage.Free;
+    DropFileSource1.Files.Add(DB_PATH.Text);
+
+    CreateDragImage(Image2.Picture.Bitmap, DragImageList, Font, DB_PATH.Text);
+
     DropFileSource1.ImageIndex := 0;
     DropFileSource1.Execute;
   end;
@@ -527,12 +526,12 @@ procedure TDBReplaceForm.LvMainMouseDown(Sender: TObject; Button: TMouseButton; 
 var
   Item: TListItem;
 begin
-  if (Button = MbLeft) and (LvMain.GetItemAt(X, Y) <> nil) and FileExistsSafe(DB_PATCH.Text) then
+  if (Button = MbLeft) and (LvMain.GetItemAt(X, Y) <> nil) and FileExistsSafe(DB_PATH.Text) then
   begin
     Item := LvMain.GetItemAt(X, Y);
     DragImageList.Clear;
     DropFileSource1.Files.Clear;
-    DropFileSource1.Files.Add(DB_PATCH.Text);
+    DropFileSource1.Files.Add(DB_PATH.Text);
 
     CreateDragImage(FBitmapImageList[Item.ImageIndex].Bitmap, DragImageList, Font, DropFileSource1.Files[0]);
 
@@ -543,21 +542,15 @@ end;
 
 procedure TDBReplaceForm.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var
-  DragImage : TBitmap;
 begin
-  if (Button = mbLeft) and FileExistsSafe(CurrentFileName) then
+  if (Button = mbLeft) and FileExistsSafe(FCurrentFileName) then
   begin
    DragImageList.Clear;
    DropFileSource1.Files.Clear;
-   DropFileSource1.Files.Add(CurrentFileName);
-   DragImage:=TBitmap.Create;
-   DragImage.PixelFormat:=pf24bit;
-   DragImage.Assign(Image1.Picture.Bitmap);
-   DragImageList.Width:=DragImage.Width;
-   DragImageList.Height:=DragImage.Height;
-   DragImageList.Add(DragImage,nil);
-   DragImage.free;
+   DropFileSource1.Files.Add(FCurrentFileName);
+
+   CreateDragImage(Image1.Picture.Bitmap, DragImageList, Font, FCurrentFileName);
+
    DropFileSource1.ImageIndex := 0;
    DropFileSource1.Execute;
   end;
@@ -565,7 +558,7 @@ end;
 
 procedure TDBReplaceForm.ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
 begin
-  if ID = Current_id_show then
+  if ID = FCurrentID then
     ReadDBInfoByID(ID);
 end;
 
@@ -579,7 +572,7 @@ begin
   WorkQuery.First;
   for I := 1 to WorkQuery.RecordCount do
   begin
-    if WorkQuery.FieldByName('ID').AsInteger = StrToInt(DB_ID.Text) then
+    if WDA.ID = StrToInt(DB_ID.Text) then
       Break;
     WorkQuery.Next;
   end;
@@ -645,6 +638,7 @@ end;
 
 procedure TDBReplaceForm.FormDestroy(Sender: TObject);
 begin
+  F(WDA);
   FreeDS(WorkQuery);
   DropFileTarget1.Unregister;
   F(FBitmapImageList);
@@ -740,8 +734,8 @@ end;
 
 procedure TDBReplaceForm.BtnReplaceAndDeleteDuplicatesClick(Sender: TObject);
 begin
-  Res_Address^ := Result_Replace_And_Del_Dublicates;
-  ResIDAddress^ := StrToInt(DB_ID.Text);
+  FSelectedMode := Result_Replace_And_Del_Dublicates;
+  FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
 end;
@@ -750,15 +744,15 @@ procedure TDBReplaceForm.BtnDeleteFileClick(Sender: TObject);
 begin
   if ID_OK <> MessageBoxDB(Handle, L('Do you really want to delete this file?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
     Exit;
-  Res_Address^ := Result_Delete_File;
+  FSelectedMode := Result_Delete_File;
   OnCloseQuery := nil;
   Close;
 end;
 
 procedure TDBReplaceForm.BtnAddAllClick(Sender: TObject);
 begin
-  Res_address^ := Result_add_all;
-  ResIDAddress^ := StrToInt(DB_ID.Text);
+  FSelectedMode := Result_add_all;
+  FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
 end;
@@ -766,113 +760,14 @@ end;
 procedure TDBReplaceForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Release;
-  DBReplaceForm := nil;
-end;
-
-procedure TDBReplaceForm.ReallignControls;
-var
-  FontHeight: Integer;
-const
-  PixelsBeetwinControls = 2;
-  InfoLeft = 60;
-  InfoWidth = 110;
-begin
-  LabelCurrentInfo.Width := 169;
-
-  FontHeight := Abs(F_NAME.Font.Height) + 2;
-  LabelCurrentInfo.Height := FontHeight * 2;
-
-  LabelFName.Top := LabelCurrentInfo.Top + LabelCurrentInfo.Height + PixelsBeetwinControls;
-
-  F_NAME.Top := LabelFName.Top;
-  F_NAME.Height := FontHeight;
-  F_NAME.Width := InfoWidth;
-  F_NAME.Left := InfoLeft;
-
-  LabelFSize.Top := F_NAME.Top + F_NAME.Height + PixelsBeetwinControls;
-  F_SIZE.Height := FontHeight;
-  F_SIZE.Top := LabelFSize.Top;
-  F_SIZE.Width := InfoWidth;
-  F_SIZE.Left := InfoLeft;
-
-  LabelFWidth.Top := F_SIZE.Top + F_SIZE.Height + PixelsBeetwinControls;
-  F_WIDTH.Height := FontHeight;
-  F_WIDTH.Top := LabelFWidth.Top;
-  F_WIDTH.Width := InfoWidth;
-  F_WIDTH.Left := InfoLeft;
-
-  LabelFHeight.Top := F_WIDTH.Top + F_WIDTH.Height + PixelsBeetwinControls;
-  F_HEIGHT.Height := FontHeight;
-  F_HEIGHT.Top := LabelFHeight.Top;
-  F_HEIGHT.Width := InfoWidth;
-  F_HEIGHT.Left := InfoLeft;
-
-  LabelFPath.Top := F_HEIGHT.Top + F_HEIGHT.Height + PixelsBeetwinControls;
-
-  F_PATH.Top := LabelFPath.Top + LabelFPath.Height + PixelsBeetwinControls;
-  F_PATH.Width := Panel3.Width - F_PATH.Left;
-
-  Panel3.Height := F_PATH.Top + F_PATH.Height + 2;
-  // Right panel allinment
-
-  LabelDBInfo.Width := 169;
-  LabelDBInfo.Height := FontHeight;
-
-  DbLabel_id.Top := LabelDBInfo.Top + LabelDBInfo.Height + PixelsBeetwinControls;
-  DB_ID.Top := DbLabel_id.Top;
-  DB_ID.Height := FontHeight;
-  DB_ID.Width := InfoWidth;
-  DB_ID.Left := InfoLeft;
-
-  LabelDBName.Top := DB_ID.Top + DB_ID.Height + PixelsBeetwinControls;
-  DB_NAME.Top := LabelDBName.Top;
-  DB_NAME.Height := FontHeight;
-  DB_NAME.Width := InfoWidth;
-  DB_NAME.Left := InfoLeft;
-
-  LabelDBRating.Top := DB_NAME.Top + DB_NAME.Height + PixelsBeetwinControls;
-  DB_RATING.Top := LabelDBRating.Top;
-  DB_RATING.Height := FontHeight;
-  DB_RATING.Width := InfoWidth;
-  DB_RATING.Left := InfoLeft;
-
-  LabelDBWidth.Top := DB_RATING.Top + DB_RATING.Height + PixelsBeetwinControls;
-  DB_WIDTH.Top := LabelDBWidth.Top;
-  DB_WIDTH.Height := FontHeight;
-  DB_WIDTH.Width := InfoWidth;
-  DB_WIDTH.Left := InfoLeft;
-
-  LabelDBHeight.Top := DB_WIDTH.Top + DB_WIDTH.Height + PixelsBeetwinControls;
-  DB_HEIGHT.Top := LabelDBHeight.Top;
-  DB_HEIGHT.Height := FontHeight;
-  DB_HEIGHT.Width := InfoWidth;
-  DB_HEIGHT.Left := InfoLeft;
-
-  LabelDBSize.Top := DB_HEIGHT.Top + DB_HEIGHT.Height + PixelsBeetwinControls;
-  DB_SIZE.Top := LabelDBSize.Top;
-  DB_SIZE.Height := FontHeight;
-  DB_SIZE.Width := InfoWidth;
-  DB_SIZE.Left := InfoLeft;
-
-  LabelDBPath.Top := DB_SIZE.Top + DB_SIZE.Height + PixelsBeetwinControls;
-
-  DB_PATCH.Top := LabelDBPath.Top + LabelDBPath.Height + PixelsBeetwinControls;
-  DB_PATCH.Height := FontHeight;
-  DB_PATCH.Width := Panel2.Width - DB_PATCH.Left;
-  DB_PATCH.Left := 0;
-
-  Panel2.Height := DB_PATCH.Top + DB_PATCH.Height + 2;
-
-  LvMain.Height := Max(Panel2.Height, Panel3.Height);
-
-  ClientHeight := BtnSkipAll.Top + BtnSkipAll.Height + 3;
 end;
 
 procedure TDBReplaceForm.Image1DblClick(Sender: TObject);
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  Viewer.ShowFile(CurrentFileName);
+  Viewer.ShowFile(FCurrentFileName);
+  Viewer.Show;
 end;
 
 end.

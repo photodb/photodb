@@ -125,14 +125,14 @@ var
       end;
       if Info.ImTh <> '' then
       begin
-        if Table.FieldByName('StrTh').AsString <> Info.ImTh then
+        if Table.FieldByName('StrTh').AsAnsiString <> Info.ImTh then
         begin
           FStrParam := Format(L('Updated information about file "%s"'), [Trim(Table.FieldByname('Name').AsString)]);
           FIntParam := LINE_INFO_OK;
           if Crypted then
             FStrParam := FStrParam + ' *';
           Synchronize(TextOutEx);
-          Table.FieldByName('StrTh').AsString := Info.ImTh;
+          Table.FieldByName('StrTh').AsAnsiString := Info.ImTh;
           CRC := StringCRC(Info.ImTh);
           if Integer(CRC) <> Table.FieldByName('StrThCrc').AsInteger then
             Table.FieldByName('StrThCrc').AsInteger := Integer(CRC);

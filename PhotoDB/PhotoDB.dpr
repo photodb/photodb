@@ -104,7 +104,6 @@ uses
   Loadingresults in 'Threads\Loadingresults.pas',
   UnitCleanUpThread in 'Threads\UnitCleanUpThread.pas',
   UnitLoadFilesToPanel in 'Threads\UnitLoadFilesToPanel.pas',
-  EmptyDeletedThreadUnit in 'Threads\EmptyDeletedThreadUnit.pas',
   UnitHintCeator in 'Threads\UnitHintCeator.pas',
   UnitCmpDB in 'Threads\UnitCmpDB.pas',
   ExplorerThreadUnit in 'Threads\ExplorerThreadUnit.pas',
@@ -322,7 +321,8 @@ uses
   uFrmSelectDBFromList in 'SelectDB\uFrmSelectDBFromList.pas' {FrmSelectDBFromList: TFrame},
   uFrmSelectDBExistedFile in 'SelectDB\uFrmSelectDBExistedFile.pas' {FrmSelectDBExistedFile: TFrame},
   uFrmSelectDBCreationSummary in 'SelectDB\uFrmSelectDBCreationSummary.pas' {FrmSelectDBCreationSummary: TFrame},
-  uInterfaces in 'Units\uInterfaces.pas';
+  uInterfaces in 'Units\uInterfaces.pas',
+  uDBAdapter in 'Units\uDBAdapter.pas';
 
 var
   S1: string;

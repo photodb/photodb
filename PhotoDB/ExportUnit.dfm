@@ -48,7 +48,7 @@ object ExportForm: TExportForm
     OnClick = BtnSelectFileClick
   end
   object CbPrivate: TCheckBox
-    Left = 8
+    Left = 7
     Top = 32
     Width = 305
     Height = 17
@@ -56,7 +56,7 @@ object ExportForm: TExportForm
     TabOrder = 2
   end
   object CbRating: TCheckBox
-    Left = 8
+    Left = 7
     Top = 48
     Width = 305
     Height = 17
@@ -64,7 +64,7 @@ object ExportForm: TExportForm
     TabOrder = 3
   end
   object CbWithoutFiles: TCheckBox
-    Left = 8
+    Left = 7
     Top = 64
     Width = 305
     Height = 17
@@ -99,7 +99,7 @@ object ExportForm: TExportForm
     OnClick = BtnStartClick
   end
   object CbGroups: TCheckBox
-    Left = 8
+    Left = 7
     Top = 80
     Width = 305
     Height = 17

@@ -315,18 +315,25 @@ begin
   SwpMain.SetPosition;
 end;
 
+destructor TFormSizeResizer.Destroy;
+begin
+  F(FData);
+  F(FProcessingList);
+  inherited;
+end;
+
 procedure TFormSizeResizer.FormDestroy(Sender: TObject);
 var
   I: Integer;
   EventInfo: TEventValues;
 begin
+  TmrPreview.Enabled := False;
   if FProcessingList.Count > 0 then
   begin
     for I := 0 to FProcessingList.Count - 1 do
       ProcessedFilesCollection.RemoveFile(FProcessingList[I]);
     DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
   end;
-  F(FData);
   F(FPreviewImage);
   FormManager.UnRegisterMainForm(Self);
   SwpMain.SavePosition;
@@ -732,13 +739,6 @@ begin
     BtOkClick(Self)
   else
     TmrPreviewTimer(Self);
-end;
-
-destructor TFormSizeResizer.Destroy;
-begin
-  F(FData);
-  F(FProcessingList);
-  inherited;
 end;
 
 procedure TFormSizeResizer.EdWidthExit(Sender: TObject);

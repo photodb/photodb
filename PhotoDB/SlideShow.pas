@@ -1435,8 +1435,8 @@ var
   FileName : string;
 begin
   DS := GetQuery;
-  ReadOnlyQuery(DS);
   try
+    ReadOnlyQuery(DS);
     FileName := CurrentInfo[FileNo].FileName;
     SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
         + ' AND FFileName LIKE :FFileName');

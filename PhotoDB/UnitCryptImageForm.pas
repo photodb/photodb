@@ -41,7 +41,7 @@ type
     Password: string;
     SaveFileCRC: Boolean;
     CryptFileName: Boolean;
-    function GetPopupMenu: TPopupMenu; override;
+    function GetPasswordSettingsPopupMenu: TPopupMenu; override;
     function GetPaswordLink: TWebLink; override;
   end;
 
@@ -172,7 +172,7 @@ begin
   Result := WblMethod;
 end;
 
-function TCryptImageForm.GetPopupMenu: TPopupMenu;
+function TCryptImageForm.GetPasswordSettingsPopupMenu: TPopupMenu;
 begin
   Result := PmCryptMethod;
 end;

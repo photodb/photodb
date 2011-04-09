@@ -53,8 +53,8 @@ end;
 
 destructor TDBForm.Destroy;
 begin
-  TFormCollection.Instance.UnRegisterForm(Self);
   GOM.RemoveObj(Self);
+  TFormCollection.Instance.UnRegisterForm(Self);
   inherited;
 end;
 

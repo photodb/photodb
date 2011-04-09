@@ -42,7 +42,7 @@ end;
 function LoadFileResourceFromStream(Update: dword; Section, Name: PWideChar; MS: TMemoryStream) : Bool;
 begin
   MS.Seek(0, soFromBeginning);
-  UpdateResourceW(Update, Section, Name, 0, MS.Memory, MS.Size);
+  Result := UpdateResourceW(Update, Section, Name, 0, MS.Memory, MS.Size);
 end;
 
 function GetIconLanguage(Update:Integer; Index: Integer): DWORD;

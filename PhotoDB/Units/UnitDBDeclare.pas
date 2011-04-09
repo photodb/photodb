@@ -4,7 +4,7 @@ interface
 
 uses DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
      GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
-     uDBForm, DateUtils, SysUtils, uRuntime;
+     uDBForm, DateUtils, SysUtils, uRuntime, uDBAdapter;
 
 const
   BufferSize = 100*3*4*4096;
@@ -208,7 +208,6 @@ type
     function GetInnerImage: Boolean;
   protected
     function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
-  published
   public
     Name: string;
     FileName: string;
@@ -414,62 +413,75 @@ end;
 procedure TDBPopupMenuInfoRecord.ReadFromDS(DS: TDataSet);
 var
   ThumbField: TField;
+  DA: TDBAdapter;
 begin
   F(Image);
-  ID := DS.FieldByName('ID').AsInteger;
-  Name := DS.FieldByName('Name').AsString;
-  FileName := DS.FieldByName('FFileName').AsString;
-  if FolderView then
-    FileName := ExtractFilePath(ParamStr(0)) + FileName;
-  KeyWords := DS.FieldByName('KeyWords').AsString;
-  FileSize := DS.FieldByName('FileSize').AsInteger;
-  Rotation := DS.FieldByName('Rotated').AsInteger;
-  Rating := DS.FieldByName('Rating').AsInteger;
-  Access := DS.FieldByName('Access').AsInteger;
-  Attr := DS.FieldByName('Attr').AsInteger;
-  Comment := DS.FieldByName('Comment').AsString;
-  Date := DS.FieldByName('DateToAdd').AsDateTime;
-  Time := TimeOf(DS.FieldByName('aTime').AsDateTime);
-  IsDate := DS.FieldByName('IsDate').AsBoolean;
-  IsTime := DS.FieldByName('IsTime').AsBoolean;
-  Groups := DS.FieldByName('Groups').AsString;
-  LongImageID := DS.FieldByName('StrTh').AsAnsiString;
-  Width := DS.FieldByName('Width').AsInteger;
-  Height := DS.FieldByName('Height').AsInteger;
+  DA := TDBAdapter.Create(DS);
+  try
+    ID := DA.ID;
+    Name := DA.Name;
+    FileName := DA.FileName;
+    if FolderView then
+      FileName := ExtractFilePath(ParamStr(0)) + FileName;
+    KeyWords := DA.KeyWords;
+    FileSize := DA.FileSize;
+    Rotation := DA.Rotation;
+    Rating := DA.Rating;
+    Access := DA.Access;
+    Attr := DA.Attributes;
+    Comment := DA.Comment;
+    Date := DA.Date;
+    Time := DA.Time;
+    IsDate := DA.IsDate;
+    IsTime := DA.IsTime;
+    Groups := DA.Groups;
+    LongImageID := DA.LongImageID;
+    Width := DA.Width;
+    Height := DA.Height;
 
-  ThumbField := DS.FindField('thum');
-  if ThumbField <> nil then
-    Crypted := ValidCryptBlobStreamJPG(ThumbField)
-  else
-    Crypted := False;
+    ThumbField := DA.Thumb;
+    if ThumbField <> nil then
+      Crypted := ValidCryptBlobStreamJPG(ThumbField)
+    else
+      Crypted := False;
 
-  Include := DS.FieldByName('Include').AsBoolean;
-  Links := DS.FieldByName('Links').AsString;
+    Include := DA.Include;
+    Links := DA.Links;
 
+  finally
+    F(DA);
+  end;
   InfoLoaded := True;
 end;
 
 procedure TDBPopupMenuInfoRecord.WriteToDS(DS: TDataSet);
+var
+  DA: TDBAdapter;
 begin
-  DS.FieldByName('Name').AsString := Name;
-  DS.FieldByName('FFileName').AsString := FileName;
-  DS.FieldByName('KeyWords').AsString := KeyWords;
-  DS.FieldByName('FileSize').AsInteger := FileSize;
-  DS.FieldByName('Rotated').AsInteger := Rotation;
-  DS.FieldByName('Rating').AsInteger := Rating;
-  DS.FieldByName('Access').AsInteger := Access;
-  DS.FieldByName('Attr').AsInteger := Attr;
-  DS.FieldByName('Comment').AsString := Comment;
-  DS.FieldByName('DateToAdd').AsDateTime := Date;
-  DS.FieldByName('aTime').AsDateTime := TimeOf(Time);
-  DS.FieldByName('IsDate').AsBoolean := IsDate;
-  DS.FieldByName('IsTime').AsBoolean := IsTime;
-  DS.FieldByName('Groups').AsString := Groups;
-  DS.FieldByName('StrTh').AsString := LongImageID;
-  DS.FieldByName('Width').AsInteger := Width;
-  DS.FieldByName('Height').AsInteger := Height;
-  DS.FieldByName('Include').AsBoolean := Include;
-  DS.FieldByName('Links').AsString := Links;
+  DA := TDBAdapter.Create(DS);
+  try
+    DA.Name := Name;
+    DA.FileName := FileName;
+    DA.KeyWords := KeyWords;
+    DA.FileSize := FileSize;
+    DA.Rotation := Rotation;
+    DA.Rating := Rating;
+    DA.Access := Access;
+    DA.Attributes := Attr;
+    DA.Comment := Comment;
+    DA.Date := DateOf(Date);
+    DA.Time := TimeOf(Time);
+    DA.IsDate := IsDate;
+    DA.IsTime := IsTime;
+    DA.Groups := Groups;
+    DA.LongImageID := LongImageID;
+    DA.Width := Width;
+    DA.Height := Height;
+    DA.Include := Include;
+    DA.Links := Links;
+  finally
+    F(DS);
+  end;
 end;
 
 { TExplorerFileInfo }

@@ -217,7 +217,7 @@ type
   public
     { Public declarations }
     procedure LoadLanguage;
-    function GetPopupMenu: TPopupMenu; override;
+    function GetPasswordSettingsPopupMenu: TPopupMenu; override;
     function GetPaswordLink: TWebLink; override;
   end;
 
@@ -227,7 +227,7 @@ var
 implementation
 
 uses
-  CleaningForm, SlideShow, ExplorerThreadUnit,
+  SlideShow, ExplorerThreadUnit,
   ExplorerUnit, UnitJPEGOptions;
 
 {$R *.dfm}
@@ -405,7 +405,7 @@ begin
   Result := WblMethod;
 end;
 
-function TOptionsForm.GetPopupMenu: TPopupMenu;
+function TOptionsForm.GetPasswordSettingsPopupMenu: TPopupMenu;
 begin
   Result := PmCryptMethod;
 end;

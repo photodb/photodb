@@ -21,7 +21,7 @@ uses
   uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate, uAssociations,
   uShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
   uDBUtils, uDBFileTypes, Dolphin_DB, uActivationUtils, uSettings,
-  uSearchTypes, WebLinkList;
+  uSearchTypes, WebLinkList, uDBAdapter;
 
 type
   TSearchForm = class(TSearchCustomForm)
@@ -2423,7 +2423,7 @@ var
     end;
 
   begin
-    HelpHint := '     ' + L('To add photos to the collection, select "Explore" from the context menu, then find your pictures and select "Add items".' + '$nl$$nl$    Click "Help" for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$');
+    HelpHint := '     ' + L('To add photos to the collection, select "Explore" from the context menu, then find your pictures and select "Add items".' + '$nl$$nl$    Click "Help" for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$', 'Help');
 
     if Count < 50 then
       DoHelpHintCallBackOnCanClose(L('Help'), HelpHint, Point(0, 0), ElvMain, HelpNextClick,
@@ -2916,8 +2916,8 @@ end;
 
 procedure TSearchForm.DoShowSelectInfo;
 var
-  i, indent : integer;
-  size : int64;
+  I, Indent : integer;
+  Size : Int64;
   KeyWordList : TStringList;
   CommonKeyWords : String;
   ArComments : TStringList;
@@ -2930,10 +2930,12 @@ var
   WorkQuery : TDataSet;
   SearchRecord : TDBPopupMenuInfoRecord;
   SelectQuery : TDataSet;
+  DA: TDBAdapter;
 begin
   SelectQuery := GetQuery;
-  ReadOnlyQuery(SelectQuery);
+  DA := TDBAdapter.Create(SelectQuery);
   try
+    ReadOnlyQuery(SelectQuery);
     if Active then
       Memo2.PopupMenu := nil;
 
@@ -3066,37 +3068,37 @@ begin
         BeginScreenUpdate(PropertyPanel.Handle);
         try
           Label2.Caption := Format(L('ID = %d'), [Indent]);
-          Label4.Caption := Format(L('Size = %s'), [SizeInText(SelectQuery.FieldByName('FileSize').Asinteger)]);
-          Memo1.Lines.Text := SelectQuery.FieldByName('KeyWords').Asstring;
-          Memo2.Lines.Text := SelectQuery.FieldByName('Comment').Asstring;
-          RatingEdit.Rating := SelectQuery.FieldByName('Rating').Asinteger;
+          Label4.Caption := Format(L('Size = %s'), [SizeInText(DA.FileSize)]);
+          Memo1.Lines.Text := DA.KeyWords;
+          Memo2.Lines.Text := DA.Comment;
+          RatingEdit.Rating := DA.Rating;
           CurrentItemInfo.Rating := RatingEdit.Rating;
 
-          ElvMain.Hint := SelectQuery.FieldByName('Comment').Asstring;
-          FCurrentSelectedID := SelectQuery.FieldByName('ID').AsInteger;
-          CurrentItemInfo.KeyWords := SelectQuery.FieldByName('KeyWords').AsString;
-          CurrentItemInfo.Comment := SelectQuery.FieldByName('Comment').AsString;
+          ElvMain.Hint := DA.Comment;
+          FCurrentSelectedID := DA.ID;
+          CurrentItemInfo.KeyWords := DA.KeyWords;
+          CurrentItemInfo.Comment := DA.Comment;
 
-          DateTimePicker1.DateTime := SelectQuery.FieldByName('DateToAdd').AsDateTime;
-          CurrentItemInfo.Date := SelectQuery.FieldByName('DateToAdd').AsDateTime;
-          CurrentItemInfo.IsDate := SelectQuery.FieldByName('IsDate').AsBoolean;
+          DateTimePicker1.DateTime := DA.Date;
+          CurrentItemInfo.Date := DA.Date;
+          CurrentItemInfo.IsDate := DA.IsDate;
           SelectedInfo.IsDate := CurrentItemInfo.IsDate;
           IsDatePanel.Visible := not CurrentItemInfo.IsDate;
           PanelValueIsDateSets.Visible := False;
 
-          DateTimePicker4.DateTime := SelectQuery.FieldByName('aTime').AsDateTime;
-          CurrentItemInfo.Time := SelectQuery.FieldByName('aTime').AsDateTime;
-          CurrentItemInfo.IsTime := SelectQuery.FieldByName('IsTime').AsBoolean;
+          DateTimePicker4.DateTime := DA.Time;
+          CurrentItemInfo.Time := DA.Time;
+          CurrentItemInfo.IsTime := DA.IsTime;
           SelectedInfo.IsTime := CurrentItemInfo.IsTime;
           IsTimePanel.Visible := not CurrentItemInfo.IsTime;
           PanelValueIsTimeSets.Visible := False;
 
-          CurrentItemInfo.Groups := SelectQuery.FieldByName('Groups').AsString;
+          CurrentItemInfo.Groups := DA.Groups;
           FPropertyGroups := CurrentItemInfo.Groups;
           ReloadGroups;
           Save.Enabled := False;
           Memo2.Cursor := CrDefault;
-          Application.HintHidePause := 50 * Length(SelectQuery.FieldByName('Comment').AsString);
+          Application.HintHidePause := 50 * Length(DA.Comment);
           SelectQuery.Close;
           Memo1Change(nil);
         finally
@@ -3107,6 +3109,7 @@ begin
       FreeDS(WorkQuery);
     end;
   finally
+    F(DA);
     FreeDS(SelectQuery);
   end;
 end;
@@ -4255,50 +4258,56 @@ end;
 procedure TSearchForm.DBRangeOpened(Sender : TObject; DS : TDataSet);
 var
   Date : TDateTime;
-  CurrentYear : integer;
-  CurrentMonth : integer;
+  CurrentYear : Integer;
+  CurrentMonth : Integer;
+  DA: TDBAdapter;
 begin
-  dblDate.Hide;
+  DA := TDBAdapter.Create(DS);
+  try
+    dblDate.Hide;
 
-  Application.ProcessMessages;
-  lsDate.Color := elvDateRange.Color;
-  lsDate.Active := True;
-  lsDate.Visible := True;
-  CurrentYear := 0;
-  CurrentMonth := 0;
-  elvDateRange.Groups.Clear;
-  elvDateRange.Header.Columns.Clear;
-  elvDateRange.Header.Columns.Add.Width := 150;
-
-  DS.First;
-  while not DS.EOF do
-  begin
     Application.ProcessMessages;
-    Date := DS.FieldByName('DAteToAdd').AsDateTime;
-    if YearOf(Date) <> CurrentYear then
-    begin
-      CurrentYear := YearOf(Date);
-      with elvDateRange.Groups.Add do
-      begin
-        Caption := FormatDateTime('yyyy',Date);
-        Visible := True;
-        Tag := CurrentYear;
-      end;
-    end;
+    lsDate.Color := elvDateRange.Color;
+    lsDate.Active := True;
+    lsDate.Visible := True;
+    CurrentYear := 0;
+    CurrentMonth := 0;
+    elvDateRange.Groups.Clear;
+    elvDateRange.Header.Columns.Clear;
+    elvDateRange.Header.Columns.Add.Width := 150;
 
-    Date := DS.FieldByName('DateToAdd').AsDateTime;
-    if MonthOf(Date) <> CurrentMonth then
+    DS.First;
+    while not DS.EOF do
     begin
-      CurrentMonth := MonthOf(Date);
-      with elvDateRange.Items.Add do
+      Application.ProcessMessages;
+      Date := DA.Date;
+      if YearOf(Date) <> CurrentYear then
       begin
-        Caption := FormatDateTime('mmmm',Date);
-        Tag := CurrentMonth;
+        CurrentYear := YearOf(Date);
+        with elvDateRange.Groups.Add do
+        begin
+          Caption := FormatDateTime('yyyy',Date);
+          Visible := True;
+          Tag := CurrentYear;
+        end;
       end;
+
+      Date := DA.Date;
+      if MonthOf(Date) <> CurrentMonth then
+      begin
+        CurrentMonth := MonthOf(Date);
+        with elvDateRange.Items.Add do
+        begin
+          Caption := FormatDateTime('mmmm',Date);
+          Tag := CurrentMonth;
+        end;
+      end;
+      DS.Next;
     end;
-    DS.Next;
+  finally
+    F(DA);
+    FreeDS(DS);
   end;
-  FreeDS(DS);
   lsDate.Active := False;
   lsDate.Visible := False;
 end;

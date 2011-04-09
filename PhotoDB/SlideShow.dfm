@@ -276,7 +276,7 @@ object Viewer: TViewer
     Top = 192
     Width = 33
     Height = 33
-    Active = False
+    Active = True
     FillPercent = 60
     Color = clBtnFace
     ParentColor = False

@@ -5,7 +5,7 @@ interface
 uses
   dolphin_db, GraphicCrypt, DB, Windows, SysUtils,
   UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils,
-  uDBForm, uMemory;
+  uDBForm, uMemory, uDBAdapter;
 
 const
   CRYPT_RESULT_UNDEFINED         = 0;
@@ -34,17 +34,19 @@ var
   Query : TDataSet;
   JPEG : TJPEGImage;
   MS : TMemoryStream;
+  DA: TDBAdapter;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
   if GetDBType = DB_TYPE_MDB then
   begin
     Query := GetQuery;
+    DA := TDBAdapter.Create(Query);
     try
       SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
       Query.Open;
       JPEG := TJPEGImage.Create;
       try
-        JPEG.Assign(Query.FieldByName('thum'));
+        JPEG.Assign(DA.Thumb);
         MS := TMemoryStream.Create;
         try
           CryptGraphicImage(JPEG, Password, MS);
@@ -58,9 +60,10 @@ begin
       end;
       ExecSQL(Query);
     finally
+      F(DA);
       FreeDS(Query);
     end;
-    Result:=CRYPT_RESULT_OK;
+    Result := CRYPT_RESULT_OK;
   end;
 end;
 
@@ -68,18 +71,20 @@ function ResetPasswordDBRecordByID(ID : integer; Password : String) : integer;
 var
   Query : TDataSet;
   JPEG : TJPEGImage;
+  DA: TDBAdapter;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
 
   if GetDBType = DB_TYPE_MDB then
   begin
     Query := GetQuery;
+    DA := TDBAdapter.Create(Query);
     try
       SetSQL(Query, 'Select thum from $DB$ where ID = ' + IntToStr(ID));
       Query.Open;
       JPEG := TJpegImage.Create;
       try
-        if DeCryptBlobStreamJPG(Query.FieldByName('thum'), Password, JPEG) then
+        if DeCryptBlobStreamJPG(DA.Thumb, Password, JPEG) then
         begin
           SetSQL(Query,'Update $DB$ Set thum = :thum where ID = ' + IntToStr(ID));
           AssignParam(Query, 0, JPEG);
@@ -89,6 +94,7 @@ begin
         F(JPEG);
       end;
     finally
+      F(DA);
       FreeDS(Query);
     end;
     Result := CRYPT_RESULT_OK;
@@ -242,7 +248,7 @@ begin
 {$DEFINE CKRANGE}
 {$R-}
 {$ENDIF}
-  GraphicHeaderV1.Magic := Random( high(Cardinal));
+  GraphicHeaderV1.Magic := Random(High(Integer));
   for I := 0 to Length(X) - 1 do
     X[I] := X[I] xor (TMagicByte(GraphicHeaderV1.Magic)[I mod 4 + 1] xor Byte(Pass[I mod Lpass + 1]));
 {$IFDEF CKRANGE}

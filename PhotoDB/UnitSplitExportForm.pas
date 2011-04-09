@@ -8,7 +8,7 @@ uses
   acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
   DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger,
   UnitDBCommon, uConstants, uDBForm, uShellIntegration, uMemory, WatermarkedEdit,
-  uAssociations;
+  uAssociations, uDBUtils;
 
 type
   TSplitExportForm = class(TDBForm)
@@ -70,7 +70,6 @@ type
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure CopyRecordsW(OutTable, InTable: TDataSet);
   end;
 
 procedure SplitDB;
@@ -296,6 +295,7 @@ var
   ProgressWindow: TProgressActionForm;
   fn: string;
   ID_Delete: array of Integer;
+  Groups: TGroups;
 
   function RecordOk: Boolean;
   var
@@ -365,7 +365,7 @@ begin
       if RecordOk then
       begin
         D.Append;
-        CopyRecordsW(S, D);
+        CopyRecordsW(S, D, False, '', Groups);
         D.Post;
       end;
       S.Next;
@@ -452,93 +452,6 @@ begin
     end;
   finally
     F(SaveDialog);
-  end;
-end;
-
-procedure TSplitExportForm.CopyRecordsW(OutTable, InTable: TDataSet);
-var
-  S, folder: String;
-  crc: Cardinal;
-begin
-  try
-    InTable.FieldByName('Name').AsString := OutTable.FieldByName('Name')
-      .AsString;
-    InTable.FieldByName('FFileName').AsString := OutTable.FieldByName
-      ('FFileName').AsString;
-    InTable.FieldByName('Comment').AsString := OutTable.FieldByName('Comment')
-      .AsString;
-    InTable.FieldByName('DateToAdd').AsDateTime := OutTable.FieldByName
-      ('DateToAdd').AsDateTime;
-    InTable.FieldByName('Owner').AsString := OutTable.FieldByName('Owner')
-      .AsString;
-    InTable.FieldByName('Rating').AsInteger := OutTable.FieldByName('Rating')
-      .AsInteger;
-    InTable.FieldByName('Thum').AsVariant := OutTable.FieldByName('Thum')
-      .AsVariant;
-    InTable.FieldByName('FileSize').AsInteger := OutTable.FieldByName
-      ('FileSize').AsInteger;
-    InTable.FieldByName('KeyWords').AsString := OutTable.FieldByName('KeyWords')
-      .AsString;
-    InTable.FieldByName('StrTh').AsString := OutTable.FieldByName('StrTh')
-      .AsString;
-    If FileExistsSafe(InTable.FieldByName('FFileName').AsString) then
-      InTable.FieldByName('Attr').AsInteger := db_attr_norm
-    else
-      InTable.FieldByName('Attr').AsInteger := db_attr_not_exists;
-    InTable.FieldByName('Attr').AsInteger := OutTable.FieldByName('Attr')
-      .AsInteger;
-    InTable.FieldByName('Collection').AsString := OutTable.FieldByName
-      ('Collection').AsString;
-    if OutTable.FindField('Groups') <> nil then
-    begin
-      S := OutTable.FieldByName('Groups').AsString;
-      AddGroupsToGroups(FGroupsFounded, EnCodeGroups(S));
-      InTable.FieldByName('Groups').AsString := S;
-    end;
-    InTable.FieldByName('Groups').AsString := OutTable.FieldByName('Groups')
-      .AsString;
-    InTable.FieldByName('Access').AsInteger := OutTable.FieldByName('Access')
-      .AsInteger;
-    InTable.FieldByName('Width').AsInteger := OutTable.FieldByName('Width')
-      .AsInteger;
-    InTable.FieldByName('Height').AsInteger := OutTable.FieldByName('Height')
-      .AsInteger;
-    InTable.FieldByName('Colors').AsInteger := OutTable.FieldByName('Colors')
-      .AsInteger;
-    InTable.FieldByName('Rotated').AsInteger := OutTable.FieldByName('Rotated')
-      .AsInteger;
-    InTable.FieldByName('IsDate').AsBoolean := OutTable.FieldByName('IsDate')
-      .AsBoolean;
-    if OutTable.FindField('Include') <> nil then
-      InTable.FieldByName('Include').AsBoolean := OutTable.FieldByName
-        ('Include').AsBoolean;
-    if OutTable.FindField('Links') <> nil then
-      InTable.FieldByName('Links').AsString := OutTable.FieldByName('Links')
-        .AsString;
-    if OutTable.FindField('aTime') <> nil then
-      InTable.FieldByName('aTime').AsDateTime := OutTable.FieldByName('aTime')
-        .AsDateTime;
-    if OutTable.FindField('IsTime') <> nil then
-      InTable.FieldByName('IsTime').AsBoolean := OutTable.FieldByName('IsTime')
-        .AsBoolean;
-    if InTable.Fields.FindField('FolderCRC') <> nil then
-    begin
-
-      if OutTable.Fields.FindField('FolderCRC') <> nil then
-        InTable.FieldByName('FolderCRC').AsInteger := OutTable.FieldByName
-          ('FolderCRC').AsInteger
-      else
-      begin
-        folder := ExtractFilePath(OutTable.FieldByName('FFileName').AsString);
-        AnsiLowerCase(folder);
-        CalcStringCRC32(AnsiLowerCase(folder), crc);
-        InTable.FieldByName('FolderCRC').AsInteger := crc;
-      end;
-    end;
-
-  except
-    on E: Exception do
-      EventLog(':CopyRecordsW() throw exception: ' + E.message);
   end;
 end;
 

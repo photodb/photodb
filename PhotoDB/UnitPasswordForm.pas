@@ -222,7 +222,7 @@ procedure TPassWordForm.BtOkClick(Sender: TObject);
       //unicode password
       CalcStringCRC32(EdPassword.Text, Crc);
       //old-style pasword
-      CalcAnsiStringCRC32(EdPassword.Text, Crc2);
+      CalcAnsiStringCRC32(AnsiString(EdPassword.Text), Crc2);
       Result := (Crc = FCRC) or (Crc2 = FCRC);
       Exit;
     end;

@@ -12,7 +12,7 @@ uses
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
   uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate, uImageSource,
-  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings;
+  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings, uDBAdapter;
 
 type TDBPopupMenu = class
    private
@@ -669,6 +669,7 @@ var
   SQL_: string;
   Files, S: TArStrings;
   IDs: TArInteger;
+  DA: TDBAdapter;
 begin
   if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID),
     TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
@@ -678,44 +679,49 @@ begin
         if Finfo[I].Attr = Db_attr_dublicate then
         begin
           FQuery := GetQuery;
-          SQL_ := 'SELECT FFileName, ID FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
-            ') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Finfo[I].ID) + '))';
-          SetSQL(FQuery, SQL_);
-          FQuery.Open;
-          FQuery.First;
-          SetLength(Files, FQuery.RecordCount);
-          SetLength(IDs, FQuery.RecordCount);
-          for J := 1 to FQuery.RecordCount do
-          begin
-            Files[J - 1] := FQuery.FieldByName('FFileName').AsString;
-            IDs[J - 1] := FQuery.FieldByName('ID').AsInteger;
-            FQuery.Next;
-          end;
-          FQuery.Close;
-          SQL_ := 'DELETE FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
-            ') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Finfo[I].ID) + '))';
-          SetSQL(FQuery, SQL_);
-          ExecSQL(FQuery);
-          SQL_ := 'UPDATE $DB$ SET Attr = ' + IntToStr(Db_attr_norm) + ' WHERE (ID=' + IntToStr(Finfo[I].ID) + ')';
-          SetSQL(FQuery, SQL_);
-          ExecSQL(FQuery);
-          EventInfo.Attr := Db_attr_norm;
-          DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Attr], EventInfo);
-          SetLength(S, 1);
-          for J := 0 to Length(Files) - 1 do
-          begin
+          DA := TDBAdapter.Create(FQuery);
+          try
+            SQL_ := 'SELECT FFileName, ID FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
+              ') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Finfo[I].ID) + '))';
+            SetSQL(FQuery, SQL_);
+            FQuery.Open;
+            FQuery.First;
+            SetLength(Files, FQuery.RecordCount);
+            SetLength(IDs, FQuery.RecordCount);
+            for J := 1 to FQuery.RecordCount do
             begin
-              if FileExistsSafe(Files[J]) then
+              Files[J - 1] := DA.FileName;
+              IDs[J - 1] := DA.ID;
+              FQuery.Next;
+            end;
+            FQuery.Close;
+            SQL_ := 'DELETE FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
+              ') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Finfo[I].ID) + '))';
+            SetSQL(FQuery, SQL_);
+            ExecSQL(FQuery);
+            SQL_ := 'UPDATE $DB$ SET Attr = ' + IntToStr(Db_attr_norm) + ' WHERE (ID=' + IntToStr(Finfo[I].ID) + ')';
+            SetSQL(FQuery, SQL_);
+            ExecSQL(FQuery);
+            EventInfo.Attr := Db_attr_norm;
+            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Attr], EventInfo);
+            SetLength(S, 1);
+            for J := 0 to Length(Files) - 1 do
+            begin
               begin
-                try
-                  SilentDeleteFile(Application.Handle, Files[J], True);
-                except
+                if FileExistsSafe(Files[J]) then
+                begin
+                  try
+                    SilentDeleteFile(Application.Handle, Files[J], True);
+                  except
+                  end;
                 end;
               end;
+              DBKernel.DoIDEvent(FOwner, IDs[J], [EventID_Param_Delete], EventInfo);
             end;
-            DBKernel.DoIDEvent(FOwner, IDs[J], [EventID_Param_Delete], EventInfo);
+          finally
+            F(DA);
+            FreeDS(FQuery);
           end;
-          FreeDS(FQuery);
         end;
   end;
 end;
@@ -729,7 +735,7 @@ var
   S: TArStrings;
   FirstID: Boolean;
 begin
-  if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?'), TA('Confirm'),
+  if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want to delete this info from collection?'), TA('Confirm'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     FQuery := GetQuery;
@@ -817,24 +823,29 @@ var
   EventInfo: TEventValues;
   Query: TDataSet;
   ID: Integer;
+  DA: TDBAdapter;
 begin
   EventInfo.Image := nil;
   if FileExistsSafe(FInfo[FInfo.Position].FileName) then
   begin
     if GetImagePasswordFromUser(FInfo[FInfo.Position].FileName) <> '' then
       DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
-  end
-  else
+  end else
   begin
     Query := GetQuery;
-    ID := GetIdByFileName(FInfo[FInfo.Position].FileName);
-    if ID = 0 then
-      Exit;
-    SetSQL(Query, 'SELECT * from $DB$ where ID=' + IntToStr(ID));
-    Query.Open;
-    if GetImagePasswordFromUserBlob(Query.FieldByName('thum'), FInfo[FInfo.Position].FileName) <> '' then
-      DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
-    Query.Free;
+    DA := TDBAdapter.Create(Query);
+    try
+      ID := GetIdByFileName(FInfo[FInfo.Position].FileName);
+      if ID = 0 then
+        Exit;
+      SetSQL(Query, 'SELECT * from $DB$ where ID=' + IntToStr(ID));
+      Query.Open;
+      if GetImagePasswordFromUserBlob(DA.Thumb, FInfo[FInfo.Position].FileName) <> '' then
+        DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
+    finally
+      F(DA);
+      FreeDS(Query);
+    end;
   end;
 end;
 

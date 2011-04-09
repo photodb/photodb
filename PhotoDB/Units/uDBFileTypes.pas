@@ -305,9 +305,9 @@ begin
       for I := 1 to (Fs.Size - 14) div 200 do
       begin
         SetLength(S, 200);
-        FS.read(S[1], 200);
+        FS.Read(S[1], 200);
         SetLength(Result, Length(Result) + 1);
-        Result[Length(Result) - 1] := string(S);
+        Result[Length(Result) - 1] := S;
       end;
     end;
   finally

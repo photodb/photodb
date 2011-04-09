@@ -257,7 +257,7 @@ begin
         begin
           FromDB := '(Select * from $DB$ where StrThCrc=:StrThCrc)';
           SetSQL(FQuery, 'SELECT * FROM ' + FromDB + ' WHERE StrTh = :StrTh ORDER BY ID');
-          SetIntParam(FQuery, 0, StringCRC(FTable.FieldByName('StrTh').AsString));
+          SetIntParam(FQuery, 0, StringCRC(FTable.FieldByName('StrTh').AsAnsiString));
           SetStrParam(FQuery, 1, FTable.FieldByName('StrTh').AsString);
         end else
         begin

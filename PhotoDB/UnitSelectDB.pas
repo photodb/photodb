@@ -137,7 +137,7 @@ procedure TFormSelectDB.FormCreate(Sender: TObject);
 begin
   FDBFile := TPhotoDBFile.Create;
   FImageOptions := CommonDBSupport.GetDefaultImageDBOptions;
-  FImageOptions.Version := 0; // VERSION SETTED AFTER PROCESSING IMAGES
+  FImageOptions.Version := 0; // VERSION IS SETTED AFTER PROCESSING IMAGES
   LoadLanguage;
 end;
 

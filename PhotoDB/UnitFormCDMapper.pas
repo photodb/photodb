@@ -238,41 +238,44 @@ begin
       if CD <> nil then
       begin
         DS := GetQuery;
-        SetSQL(DS,
-          'Select ID,FFileName from $DB$ where FFileName Like "%::' + AnsiLowerCase
-            (TCDClass(CDMappingListView.Selected.Data).name) + '::%"');
-
         try
-          DS.Open;
-        except
-          on E: Exception do
-          begin
-            MessageBoxDB(Handle, Format(L('Unexpected error: %s'), [E.message]), L('Error'), TD_BUTTON_OK,
-              TD_ICON_ERROR);
-            EventLog(':TFormCDMapper::RefreshDBFilesOnCD1Click() throw exception ' + E.message);
-            Exit;
-          end;
-        end;
-        if DS.RecordCount > 0 then
-        begin
-          Info := TDBPopupMenuInfo.Create;
+          SetSQL(DS,
+            'Select ID,FFileName from $DB$ where FFileName Like "%::' + AnsiLowerCase
+              (TCDClass(CDMappingListView.Selected.Data).name) + '::%"');
+
           try
-            DS.First;
-            for I := 1 to DS.RecordCount do
+            DS.Open;
+          except
+            on E: Exception do
             begin
-              InfoRecord := TDBPopupMenuInfoRecord.Create;
-              InfoRecord.FileName := DS.FieldByName('FFileName').AsString;
-              InfoRecord.ID := DS.FieldByName('ID').AsInteger;
-              InfoRecord.Selected := True;
-              info.Add(InfoRecord);
-              DS.Next;
+              MessageBoxDB(Handle, Format(L('Unexpected error: %s'), [E.message]), L('Error'), TD_BUTTON_OK,
+                TD_ICON_ERROR);
+              EventLog(':TFormCDMapper::RefreshDBFilesOnCD1Click() throw exception ' + E.message);
+              Exit;
             end;
-            TRefreshDBRecordsThread.Create(Self, Options);
-          finally
-            F(Info);
           end;
+          if DS.RecordCount > 0 then
+          begin
+            Info := TDBPopupMenuInfo.Create;
+            try
+              DS.First;
+              for I := 1 to DS.RecordCount do
+              begin
+                InfoRecord := TDBPopupMenuInfoRecord.Create;
+                InfoRecord.FileName := DS.FieldByName('FFileName').AsString;
+                InfoRecord.ID := DS.FieldByName('ID').AsInteger;
+                InfoRecord.Selected := True;
+                info.Add(InfoRecord);
+                DS.Next;
+              end;
+              TRefreshDBRecordsThread.Create(Self, Options);
+            finally
+              F(Info);
+            end;
+          end;
+        finally
+          FreeDS(DS);
         end;
-        FreeDS(DS);
       end;
     end;
 end;

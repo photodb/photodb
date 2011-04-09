@@ -260,6 +260,10 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -608,8 +612,8 @@ object PropertiesForm: TPropertiesForm
       ImageIndex = 1
       ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitWidth = 299
-      ExplicitHeight = 346
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -1239,7 +1243,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Show All Groups'
         TabOrder = 4
         OnClick = CbShowAllGroupsClick
-        ExplicitTop = 275
       end
       object CbRemoveKeywordsForGroups: TCheckBox
         Left = 3
@@ -1250,7 +1253,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Remove KeyWords For Group'
         TabOrder = 5
         OnClick = CbRemoveKeywordsForGroupsClick
-        ExplicitTop = 293
       end
       object BtnNewGroup: TButton
         Left = 3
@@ -1261,7 +1263,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'New Group'
         TabOrder = 6
         OnClick = BtnNewGroupClick
-        ExplicitTop = 316
       end
       object BtnManageGroups: TButton
         Left = 99
@@ -1272,7 +1273,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Manager'
         TabOrder = 7
         OnClick = BtnManageGroupsClick
-        ExplicitTop = 316
       end
     end
     object TsEXIF: TTabSheet
@@ -1280,8 +1280,8 @@ object PropertiesForm: TPropertiesForm
       ImageIndex = 2
       ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitWidth = 299
-      ExplicitHeight = 346
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -1294,8 +1294,6 @@ object PropertiesForm: TPropertiesForm
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
         TabOrder = 0
         OnContextPopup = VleExifContextPopup
-        ExplicitWidth = 293
-        ExplicitHeight = 340
         ColWidths = (
           136
           151)
@@ -1306,8 +1304,8 @@ object PropertiesForm: TPropertiesForm
       ImageIndex = 3
       ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitWidth = 299
-      ExplicitHeight = 346
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -1348,8 +1346,6 @@ object PropertiesForm: TPropertiesForm
           'Blue chanel')
         TabOrder = 0
         OnClick = RgGistogrammChannelClick
-        ExplicitWidth = 293
-        ExplicitHeight = 138
       end
       object LbEffectiveRange: TStaticText
         Left = 3
@@ -1366,8 +1362,8 @@ object PropertiesForm: TPropertiesForm
       ImageIndex = 4
       ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitWidth = 299
-      ExplicitHeight = 346
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -1387,7 +1383,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Include in base search item'
         TabOrder = 0
         OnClick = CommentMemoChange
-        ExplicitWidth = 293
       end
       object LinksScrollBox: TScrollBox
         Left = 3
@@ -1397,8 +1392,6 @@ object PropertiesForm: TPropertiesForm
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PmAddLink
         TabOrder = 1
-        ExplicitWidth = 293
-        ExplicitHeight = 295
       end
     end
   end

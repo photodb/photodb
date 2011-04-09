@@ -14,7 +14,7 @@ uses
   UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
   DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo,
   uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
-  uSettings, uThreadForm;
+  uSettings, uThreadForm, uDBAdapter;
 
 type
   TManagerDB = class(TThreadForm)
@@ -40,7 +40,7 @@ type
     SaveWindowPos1: TSaveWindowPos;
     PopupMenu2: TPopupMenu;
     Dateexists1: TMenuItem;
-    PopupMenu3: TPopupMenu;
+    PmEdiGroups: TPopupMenu;
     EditGroups1: TMenuItem;
     GroupsManager1: TMenuItem;
     PopupMenu4: TPopupMenu;
@@ -218,7 +218,7 @@ implementation
 
 uses UnitQuickGroupInfo, ExplorerUnit,
      Searching, SlideShow, ExportUnit, UnitManageGroups,
-     CleaningForm, UnitDBCleaning, UnitCompareDataBases, UnitEditGroupsForm,
+     UnitDBCleaning, UnitCompareDataBases, UnitEditGroupsForm,
      UnitPasswordForm, UnitOpenQueryThread, ProgressActionUnit,
      UnitMenuDateForm, UnitChangeDBPath, UnitSelectDB, uThreadLoadingManagerDB,
      UnitDBOptions, uListViewUtils;
@@ -353,7 +353,7 @@ begin
     elvMain.Clear;
     FreeDS(WorkQuery);
     InitializeQueryList;
-    WorkQuery:=GetQuery;
+    WorkQuery := GetQuery;
     Exit;
   end;
 
@@ -1016,6 +1016,7 @@ procedure TManagerDB.GetData(Index: integer);
 var
   I, J, N, L : Integer;
   WorkQuery : TDataSet;
+  DA: TDBAdapter;
   _sqlexectext: string;
   B : Boolean;
   ItemData : TDBPopupMenuInfoRecord;
@@ -1043,6 +1044,7 @@ begin
     Exit;
 
   WorkQuery := GetQuery;
+  DA := TDBAdapter.Create(WorkQuery);
   try
     _sqlexectext := _sqlexectext+')';
     SetSQL(WorkQuery, _sqlexectext);
@@ -1051,7 +1053,7 @@ begin
     while not WorkQuery.Eof do
     begin
       try
-        L := WorkQuery.FieldByName('ID').AsInteger;
+        L := DA.ID;
         N := MaxInt;
         for J := -30 to 40 do
         if Index + J >= 0 then
@@ -1070,25 +1072,26 @@ begin
 
         ItemData := TDBPopupMenuInfoRecord(elvMain.Items[N].Data);
         ItemData.Exists     := 0;
-        ItemData.FileName   := Mince(WorkQuery.FieldByName('FFileName').AsString, 50);
-        ItemData.KeyWords   := WorkQuery.FieldByName('KeyWords').AsString;
-        ItemData.Comment    := WorkQuery.FieldByName('Comment').AsString;
-        ItemData.Rating     := WorkQuery.FieldByName('Rating').AsInteger;
-        ItemData.Rotation   := WorkQuery.FieldByName('Rotated').AsInteger;
-        ItemData.Access     := WorkQuery.FieldByName('Access').AsInteger;
-        ItemData.Time       := TimeOf(WorkQuery.FieldByName('aTime').AsDateTime);
-        ItemData.Date       := DateOf(WorkQuery.FieldByName('DateToAdd').AsDateTime);
-        ItemData.IsTime     := WorkQuery.FieldByName('IsTime').AsBoolean;
-        ItemData.IsDate     := WorkQuery.FieldByName('IsDate').AsBoolean;
-        ItemData.Include    := WorkQuery.FieldByName('Include').AsBoolean;
-        ItemData.Groups     := WorkQuery.FieldByName('Groups').AsString;
-        ItemData.FileSize   := WorkQuery.FieldByName('FileSize').AsInteger;
+        ItemData.FileName   := Mince(DA.FileName, 50);
+        ItemData.KeyWords   := DA.KeyWords;
+        ItemData.Comment    := DA.Comment;
+        ItemData.Rating     := DA.Rating;
+        ItemData.Rotation   := DA.Rotation;
+        ItemData.Access     := DA.Access;
+        ItemData.Time       := DA.Time;
+        ItemData.Date       := DA.Date;
+        ItemData.IsTime     := DA.IsTime;
+        ItemData.IsDate     := DA.IsDate;
+        ItemData.Include    := DA.Include;
+        ItemData.Groups     := DA.Groups;
+        ItemData.FileSize   := DA.FileSize;
         ItemData.InfoLoaded := True;
       finally
         WorkQuery.Next;
       end;
     end;
   finally
+    F(DA);
     FreeDS(WorkQuery);
   end;
 end;
@@ -1491,6 +1494,7 @@ var
   B : TBitmap;
   Pass : string;
   ItemData : TDBPopupMenuInfoRecord;
+  DA: TDBAdapter;
 begin
   if FormManagerHint = nil then
     Application.CreateForm(TFormManagerHint, FormManagerHint);
@@ -1519,7 +1523,8 @@ begin
     if ElvMain.Items.Count <= Item.Index then
       Exit;
 
-    DS:=GetQuery;
+    DS := GetQuery;
+    DA := TDBAdapter.Create(DS);
     try
       if not ItemData.InfoLoaded then
       begin
@@ -1547,17 +1552,17 @@ begin
       try
         JPG := TJpegImage.Create;
         try
-          if ValidCryptBlobStreamJPG(DS.FieldByName('Thum')) then
+          if ValidCryptBlobStreamJPG(DA.Thumb) then
           begin
-            pass := DBKernel.FindPasswordForCryptBlobStream(DS.FieldByName('Thum'));
+            pass := DBKernel.FindPasswordForCryptBlobStream(DA.Thumb);
             if pass = '' then
             begin
               ShowWindow(FormManagerHint.Handle, SW_HIDE);
               Exit;
             end else
-              DeCryptBlobStreamJPG(DS.FieldByName('Thum'), pass, JPG);
+              DeCryptBlobStreamJPG(DA.Thumb, pass, JPG);
           end else
-            JPG.Assign(DS.FieldByName('Thum'));
+            JPG.Assign(DA.Thumb);
 
           B.Width := ThSize;
           B.Height := ThSize;
@@ -1567,15 +1572,16 @@ begin
           B.Canvas.Pen.Color := clWindow;
           B.Canvas.Draw(ThSize div 2 - JPG.Width div 2, ThSize div 2 - JPG.Height div 2, JPG);
         finally
-          JPG.Free;
+          F(JPG);
         end;
         ApplyRotate(B, ItemData.Rotation);
-        DrawAttributes(B, ThSize, ItemData.Rating, ItemData.Rotation, ItemData.Access, DS.FieldByName('FFileName').AsString, ValidCryptBlobStreamJPG(DS.FieldByName('Thum')), ItemData.Exists, ItemData.ID);
+        DrawAttributes(B, ThSize, ItemData.Rating, ItemData.Rotation, ItemData.Access, DA.FileName, ValidCryptBlobStreamJPG(DA.Thumb), ItemData.Exists, ItemData.ID);
         FormManagerHint.Image1.Picture.Graphic := B;
       finally
         F(B);
       end;
     finally
+      F(DA);
       FreeDS(DS);
     end;
     if Active and (FormManagerHint <> nil) then
@@ -1900,7 +1906,6 @@ end;
 
 procedure TManagerDB.ConvertLinkClick(Sender: TObject);
 begin
-  TFormConvertingDB.Create(Self).Execute(dbname);
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to convert your database? Conversion will start program restart.'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
     Settings.WriteBool('StartUp', 'ConvertDB', True);
 end;

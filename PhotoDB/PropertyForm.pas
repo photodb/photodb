@@ -16,7 +16,7 @@ uses
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
   uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
-  uSettings, uAssociations;
+  uSettings, uAssociations, uDBAdapter;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -477,6 +477,7 @@ var
   Exists, W, H: Integer;
   DataRecord : TDBPopupMenuInfoRecord;
   WorkQuery : TDataSet;
+  DA: TDBAdapter;
 begin
   try
     if FSaving then
@@ -503,9 +504,10 @@ begin
     CommentMemo.Cursor := CrDefault;
     CommentMemo.PopupMenu := nil;
     WorkQuery := GetQuery;
-    ReadOnlyQuery(WorkQuery);
+    DA := TDBAdapter.Create(WorkQuery);
     try
-      SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE ID=' + Inttostr(ID));
+      ReadOnlyQuery(WorkQuery);
+      SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE ID=' + IntToStr(ID));
       WorkQuery.Active := True;
       if WorkQuery.RecordCount = 0 then
         No_file := True;
@@ -528,27 +530,26 @@ begin
             B1.Width := ThImageSize;
             B1.Height := ThImageSize;
             PassWord := '';
-            if TBlobField(WorkQuery.FieldByName('thum')) = nil then
+            if DA.Thumb = nil then
               Exit;
 
             JPEG := nil;
             try
-              if ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')) then
+              if ValidCryptBlobStreamJPG(DA.Thumb) then
               begin
                 PassWord := DBkernel.FindPasswordForCryptBlobStream(WorkQuery.FieldByName('thum'));
                 if PassWord = '' then
-                  PassWord := GetImagePasswordFromUserBlob(WorkQuery.FieldByName('thum'),
-                    WorkQuery.FieldByName('FFileName').AsString);
+                  PassWord := GetImagePasswordFromUserBlob(DA.Thumb, DA.FileName);
 
                 if PassWord = '' then
                   Exit;
 
                 JPEG := TJpegImage.Create;
-                DeCryptBlobStreamJPG(WorkQuery.FieldByName('thum'), PassWord, JPEG);
+                DeCryptBlobStreamJPG(DA.Thumb, PassWord, JPEG);
                 FCurrentPass := PassWord;
               end else
               begin
-                FBS := GetBlobStream(WorkQuery.FieldByName('thum'), BmRead);
+                FBS := GetBlobStream(DA.Thumb, BmRead);
                 try
                   JPEG := TJpegImage.Create;
                   JPEG.LoadFromStream(FBS);
@@ -587,7 +588,7 @@ begin
               ApplyRotate(B1, DataRecord.Rotation);
               Exists := 0;
               DrawAttributes(B1, 100, DataRecord.Rating, DataRecord.Rotation, DataRecord.Access, DataRecord.FileName,
-                ValidCryptBlobStreamJPG(WorkQuery.FieldByName('thum')), Exists, DataRecord.ID);
+                ValidCryptBlobStreamJPG(DA.Thumb), Exists, DataRecord.ID);
 
               ImMain.Picture.Bitmap := B1;
             finally
@@ -604,13 +605,13 @@ begin
       end;
 
       Idlabel.Text := Inttostr(Id);
-      Caption := L('Properties') + ' - ' + Trim(WorkQuery.FieldByName('Name').AsString);
+      Caption := L('Properties') + ' - ' + DA.Name;
       KeyWordsMemo.Text := DataRecord.KeyWords;
       LabelName.Text := ExtractFileName(DataRecord.FileName);
       LabelPath.Text := DataRecord.FileName;
       SizeLabel.Text := SizeInText(DataRecord.FileSize);
-      Widthmemo.Text := IntToStr(WorkQuery.FieldByName('Width').AsInteger) + L('px.');
-      Heightmemo.Text := IntToStr(WorkQuery.FieldByName('Height').AsInteger) + L('px.');
+      Widthmemo.Text := IntToStr(DA.Width) + L('px.');
+      Heightmemo.Text := IntToStr(DA.Height) + L('px.');
 
       RatingEdit.Rating := DataRecord.Rating;
       RatingEdit.Islayered := False;
@@ -659,6 +660,7 @@ begin
       ImageLoadingFile.Visible := False;
       Show;
     finally
+      F(DA);
       FreeDS(WorkQuery);
     end;
   except
@@ -2211,6 +2213,7 @@ var
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
     Viewer.ShowFile(FileName);
+    Viewer.Show;
   end;
 
 begin
@@ -2726,33 +2729,32 @@ end;
 
 procedure TPropertiesForm.Button7Click(Sender: TObject);
 var
-  i, j : integer;
-  KeyWords, AllGroupsKeyWords, GroupKeyWords : String;
+  I, J: Integer;
+  KeyWords, AllGroupsKeyWords, GroupKeyWords: string;
 begin
- for i:=lstCurrentGroups.Items.Count-1 downto 0 do
- if lstCurrentGroups.Selected[i] then
- begin
-  if CbRemoveKeywordsForGroups.Checked then
-  begin
-   AllGroupsKeyWords:='';
-   for j:=lstCurrentGroups.Items.Count-1 downto 0 do
-   if i<>j then
-   begin
-    AddWordsA(RegGroups[aGetGroupByCode(FNowGroups[j].GroupCode)].GroupKeyWords,AllGroupsKeyWords);
-   end;
-   KeyWords:=KeyWordsMemo.Text;
-   GroupKeyWords:=RegGroups[aGetGroupByCode(FNowGroups[i].GroupCode)].GroupKeyWords;
-   DeleteWords(GroupKeyWords,AllGroupsKeyWords);
-   DeleteWords(KeyWords,GroupKeyWords);
-   KeyWordsMemo.Text:=KeyWords;
-  end;
-  //удаляем группу изтекущих
-  RemoveGroupFromGroups(FNowGroups,FNowGroups[i]);
-  lstCurrentGroups.Items.Delete(i);
- end;
- lstCurrentGroups.Invalidate;
- LstAvaliableGroups.Invalidate;
- CommentMemoChange(Sender);
+  for I := LstCurrentGroups.Items.Count - 1 downto 0 do
+    if LstCurrentGroups.Selected[I] then
+    begin
+      if CbRemoveKeywordsForGroups.Checked then
+      begin
+        AllGroupsKeyWords := '';
+        for J := LstCurrentGroups.Items.Count - 1 downto 0 do
+          if I <> J then
+            AddWordsA(RegGroups[AGetGroupByCode(FNowGroups[J].GroupCode)].GroupKeyWords, AllGroupsKeyWords);
+
+        KeyWords := KeyWordsMemo.Text;
+        GroupKeyWords := RegGroups[AGetGroupByCode(FNowGroups[I].GroupCode)].GroupKeyWords;
+        DeleteWords(GroupKeyWords, AllGroupsKeyWords);
+        DeleteWords(KeyWords, GroupKeyWords);
+        KeyWordsMemo.Text := KeyWords;
+      end;
+      // удаляем группу изтекущих
+      RemoveGroupFromGroups(FNowGroups, FNowGroups[I]);
+      LstCurrentGroups.Items.Delete(I);
+    end;
+  LstCurrentGroups.Invalidate;
+  LstAvaliableGroups.Invalidate;
+  CommentMemoChange(Sender);
 end;
 
 procedure TPropertiesForm.lstCurrentGroupsContextPopup(Sender: TObject;

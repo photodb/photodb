@@ -227,7 +227,7 @@ implementation
 
 uses UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
      SlideShow, ExplorerUnit, UnitSizeResizerForm, CommonDBSupport,
-     UnitStringPromtForm, UnitBigImagesSize;
+     UnitStringPromtForm, UnitBigImagesSize, FormManegerUnit;
 
 {$R *.dfm}
 
@@ -346,7 +346,7 @@ begin
 
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
 
-  DropFileTarget2.register(Self);
+  DropFileTarget2.Register(Self);
   FBitmapImageList := TBitmapImageList.Create;
   ManagerPanels.AddPanel(Self);
   ElvMain.DoubleBuffered := True;
@@ -386,7 +386,7 @@ begin
   ExportLink.Top := WlConvert.Top + WlConvert.Height + 5;
   ExCopyLink.Top := ExportLink.Top + ExportLink.Height + 5;
   LoadToolBarIcons;
-  GOM.AddObj(Self);
+  FormManager.RegisterMainForm(Self);
 end;
 
 procedure TFormCont.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -995,8 +995,8 @@ end;
 
 procedure TFormCont.FormDestroy(Sender: TObject);
 begin
+  FormManager.UnRegisterMainForm(Self);
   ClearList;
-  GOM.RemoveObj(Self);
   DropFileTarget2.Unregister;
   F(Data);
   F(FBitmapImageList);

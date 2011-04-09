@@ -10,7 +10,7 @@ uses
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
   uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations,
-  GraphicsBaseTypes;
+  GraphicsBaseTypes, uDBAdapter;
 
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -50,7 +50,7 @@ procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile: Boolean; BaseFolde
 
 { DB Types }
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
-function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
+function GetMenuInfoByStrTh(StrTh: AnsiString): TDBPopupMenuInfo;
 { END DB Types }
 
 implementation
@@ -797,14 +797,14 @@ var
   FQuery: TDataSet;
   I: Integer;
   FromDB: string;
+  DA: TDBAdapter;
 begin
   FQuery := GetQuery;
+  DA := TDBAdapter.Create(FQuery);
   try
     FromDB := '(Select ID, FFileName, Attr from $DB$ where StrThCrc = ' + IntToStr(Integer(StringCRC(ImageTh))) + ')';
 
     SetSQL(FQuery, FromDB);
-    if GetDBType <> DB_TYPE_MDB then
-      SetAnsiStrParam(Fquery, 0, ImageTh);
     try
       FQuery.Active := True;
     except
@@ -821,14 +821,15 @@ begin
     FQuery.First;
     for I := 1 to FQuery.RecordCount do
     begin
-      Result.Ids[I - 1] := FQuery.FieldByName('ID').AsInteger;
-      Result.FileNames[I - 1] := FQuery.FieldByName('FFileName').AsString;
-      Result.Attr[I - 1] := FQuery.FieldByName('Attr').AsInteger;
+      Result.Ids[I - 1] := DA.ID;
+      Result.FileNames[I - 1] := DA.FileName;
+      Result.Attr[I - 1] := DA.Attributes;
       FQuery.Next;
     end;
     Result.Count := FQuery.RecordCount;
     Result.ImTh := ImageTh;
   finally
+    F(DA);
     FreeDS(FQuery);
   end;
 end;
@@ -1614,7 +1615,7 @@ begin
   end;
 end;
 
-function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
+function GetMenuInfoByStrTh(StrTh: AnsiString): TDBPopupMenuInfo;
 var
   FQuery: TDataSet;
   MenuRecord: TDBPopupMenuInfoRecord;
@@ -1624,7 +1625,7 @@ begin
   try
     SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrThCrc = :CRC AND StrTh = :StrTh');
     SetIntParam(FQuery, 0, StringCRC(StrTh));
-    SetStrParam(FQuery, 1, StrTh);
+    SetAnsiStrParam(FQuery, 1, StrTh);
     FQuery.Open;
     if FQuery.RecordCount <> 1 then
       Exit;
@@ -1637,7 +1638,6 @@ begin
     Result.IsListItem := False;
     Result.IsPlusMenu := False;
     Result.Position := 0;
-    FQuery.Close;
   finally
     FreeDS(FQuery);
   end;

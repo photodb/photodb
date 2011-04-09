@@ -12,7 +12,7 @@ type
     IsChiperSelected: Boolean;
     SelectedChiper: Integer;
   public
-    function GetPopupMenu: TPopupMenu; virtual; abstract;
+    function GetPasswordSettingsPopupMenu: TPopupMenu; virtual; abstract;
     function GetPaswordLink: TWebLink; virtual; abstract;
     procedure FillChiperList;
     procedure OnChiperSelected(Sender: TObject);
@@ -35,14 +35,13 @@ procedure TPasswordSettingsDBForm.FillChiperList;
   var
     MenuItem: TMenuItem;
     Chiper: TDECCipher;
-    FSelectedChiper,
     ChiperLength: Integer;
     ChiperAvaliable: Boolean;
     SettingsForm: TPasswordSettingsDBForm;
   begin
     Result := False;
     SettingsForm := TPasswordSettingsDBForm(Data);
-    MenuItem := TMenuItem.Create(SettingsForm.GetPopupMenu);
+    MenuItem := TMenuItem.Create(SettingsForm.GetPasswordSettingsPopupMenu);
     if ClassType.InheritsFrom(TDECCipher) then
     begin
       Chiper := CipherByIdentity(ClassType.Identity).Create;
@@ -71,7 +70,7 @@ procedure TPasswordSettingsDBForm.FillChiperList;
     end;
   end;
 begin
-  GetPaswordLink.PopupMenu := GetPopupMenu;
+  GetPaswordLink.PopupMenu := GetPasswordSettingsPopupMenu;
   GetPaswordLink.OnClick := WblMethodClick;
   IsChiperSelected := False;
   StrongCryptInit;
@@ -95,7 +94,7 @@ var
   P : TPoint;
 begin
   GetCursorPos(P);
-  GetPopupMenu.Popup(P.X, P.Y);
+  GetPasswordSettingsPopupMenu.Popup(P.X, P.Y);
 end;
 
 end.

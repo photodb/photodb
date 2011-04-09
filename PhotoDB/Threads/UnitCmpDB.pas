@@ -161,7 +161,7 @@ begin
         Result.Ids[Count] := FQuery.FieldByName('ID').AsInteger;
         Result.FileNames[Count] := FQuery.FieldByName('FFileName').AsString;
         Result.Attr[Count] := FQuery.FieldByName('Attr').AsInteger;
-        Result.ImTh := FQuery.FieldByName('StrTh').AsString;
+        Result.ImTh := FQuery.FieldByName('StrTh').AsAnsiString;
         FQuery.Next;
       end;
   finally
@@ -183,6 +183,7 @@ var
   Date, Time: TDateTime;
   IsTime: Boolean;
 
+  //TODO: review
   procedure DoExit;
   begin
     FreeDS(FSourceTable);
@@ -334,7 +335,7 @@ begin
 
             SQL_AddFileToDB(GetDBFileName(FSourceTable.FieldByName('FFileName').AsString, SourceTableName),
               ValidCryptBlobStreamJPG(FSourceTable.FieldByName('thum')), Jpeg,
-              FSourceTable.FieldByName('StrTh').AsString, FSourceTable.FieldByName('KeyWords').AsString,
+              FSourceTable.FieldByName('StrTh').AsAnsiString, FSourceTable.FieldByName('KeyWords').AsString,
               FSourceTable.FieldByName('Comment').AsString, Pass, FSourceTable.FieldByName('Width').AsInteger,
               FSourceTable.FieldByName('Height').AsInteger, Date, Time, IsTime,
               FSourceTable.FieldByName('Rating').AsInteger, FSourceTable.FieldByName('Rotated').AsInteger,

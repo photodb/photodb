@@ -120,9 +120,9 @@ object DBReplaceForm: TDBReplaceForm
     object LabelDBPath: TLabel
       Left = 0
       Top = 224
-      Width = 28
+      Width = 25
       Height = 13
-      Caption = 'Pach:'
+      Caption = 'Path:'
     end
     object DB_ID: TEdit
       Tag = 1
@@ -208,7 +208,7 @@ object DBReplaceForm: TDBReplaceForm
       TabOrder = 5
       Text = '<data>'
     end
-    object DB_PATCH: TEdit
+    object DB_PATH: TEdit
       Tag = 1
       Left = 0
       Top = 240
@@ -461,13 +461,13 @@ object DBReplaceForm: TDBReplaceForm
     DragTypes = [dtCopy]
     Images = DragImageList
     ShowImage = True
-    Left = 56
+    Left = 72
     Top = 320
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = []
     OptimizedMove = True
-    Left = 88
+    Left = 120
     Top = 320
   end
   object DragImageList: TImageList
