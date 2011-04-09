@@ -43,6 +43,7 @@ type
     procedure Changed;
     function GetCanGoNext: Boolean; virtual;
     function GetOperationInProgress: Boolean; virtual;
+    function LocalScope: string; virtual;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -51,6 +52,7 @@ type
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); virtual;
     procedure Unload; virtual;
     function IsFinal: Boolean; virtual;
+    function ValidateStep(Silent: Boolean): Boolean; virtual;
     procedure BreakOperation; virtual;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property IsBusy: Boolean read FIsBusy write FIsBusy;
@@ -123,7 +125,7 @@ end;
 
 function TFrameWizardBase.L(StringToTranslate: string): string;
 begin
-  Result := FManager.FOwner.L(StringToTranslate);
+  Result := FManager.FOwner.L(StringToTranslate, LocalScope);
 end;
 
 function TFrameWizardBase.L(StringToTranslate, Scope: string): string;
@@ -141,9 +143,19 @@ begin
   //create here logic to load language
 end;
 
+function TFrameWizardBase.LocalScope: string;
+begin
+  Result := Manager.Owner.FormID;
+end;
+
 procedure TFrameWizardBase.Unload;
 begin
    GOM.RemoveObj(Self);
+end;
+
+function TFrameWizardBase.ValidateStep(Silent: Boolean): Boolean;
+begin
+  Result := True;
 end;
 
 { TWizardManagerBase }

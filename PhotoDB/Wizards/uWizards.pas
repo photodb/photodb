@@ -53,7 +53,7 @@ implementation
 
 procedure TWizardManager.NextStep;
 begin
-  if CanGoNext then
+  if CanGoNext and Steps[CurrentStep].ValidateStep(False) then
   begin
     Steps[CurrentStep].InitNextStep;
     Inc(FCurrentStep);
@@ -148,7 +148,7 @@ end;
 
 function TWizardManager.GetCanGoNext: Boolean;
 begin
-  Result := Steps[CurrentStep].CanGoNext and not IsBusy and not OperationInProgress;
+  Result := Steps[CurrentStep].CanGoNext and Steps[CurrentStep].ValidateStep(True) and not IsBusy and not OperationInProgress;
 end;
 
 function TWizardManager.GetCount: Integer;

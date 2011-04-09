@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, uFrameWizardBase, AppEvnts, StdCtrls, DmProgress, uMemory,
   UnitDBCommonGraphics, UnitDBDeclare, uDBBaseTypes, UnitPasswordKeeper,
-  ExtCtrls, uConstants, uSHellIntegration;
+  ExtCtrls, uConstants, uSHellIntegration, uInterfaces;
 
 type
   TFrmConvertationProgress = class(TFrameWizardBase)
@@ -226,7 +226,7 @@ end;
 
 function TFrmConvertationProgress.GetImageOptions: TImageDBOptions;
 begin
-  Result := TFormConvertingDB(Manager.Owner).ImageOptions;
+  Result := (Manager.Owner as IDBImageSettings).GetImageOptions;
 end;
 
 function TFrmConvertationProgress.GetOperationInProgress: Boolean;

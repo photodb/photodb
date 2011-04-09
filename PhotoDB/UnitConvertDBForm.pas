@@ -9,10 +9,10 @@ uses
   ExtDlgs, Graphics, UnitDBDeclare, AppEvnts, uWizards,
   UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon,
   uSplashThread, uThreadForm, uMemory, uShellIntegration,
-  uDBBaseTypes, uDBTypes;
+  uDBBaseTypes, uDBTypes, uInterfaces;
 
 type
-  TFormConvertingDB = class(TThreadForm)
+  TFormConvertingDB = class(TThreadForm, IDBImageSettings)
     ImMain: TImage;
     Label1: TLabel;
     Bevel1: TBevel;
@@ -38,6 +38,7 @@ type
     CurrentWideIndex: Integer;
     FWizard: TWizardManager;
     procedure StepChanged(Sender: TObject);
+    function GetImageOptions : TImageDBOptions;
   protected
     function GetFormID : string; override;
   public
@@ -45,7 +46,6 @@ type
     procedure LoadLanguage;
     procedure Execute(FileName: string);
     property FileName: string read FFileName;
-    property ImageOptions: TImageDBOptions read FImageOptions;
     property RecordsCount: Integer read RecordCount;
   end;
 
@@ -202,6 +202,11 @@ end;
 function TFormConvertingDB.GetFormID: string;
 begin
   Result := 'ConvertDB';
+end;
+
+function TFormConvertingDB.GetImageOptions: TImageDBOptions;
+begin
+  Result := FImageOptions;
 end;
 
 end.

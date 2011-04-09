@@ -322,7 +322,7 @@
     <translate name="Edit" value="Редактировать" />
     <translate name="Select collection" value="Выбрать базу" />
     <translate name="Convert collection" value="Конвертировать базу" />
-    <translate name="Change path in collection" value="Изменить файл в базе" />
+    <translate name="Change path in collection" value="Изменить путь в базе" />
     <translate name="ID" value="ID" />
     <translate name="File name" value="Имя файла" />
     <translate name="Keywords" value="Ключевые слова" />
@@ -1418,12 +1418,15 @@
 	<translate name="Select name for new collection" value="Введите имя для новой базы"/>	
 	<translate name="Select collection" value="Выбрать базу"/>
 	<translate name="Options" value="Настройки"/>
+	<translate name="Choose an icon" value="Выбрать иконку"/>
 	<translate name="Choose file for new collection" value="Выберите файл для новой базы"/>
 	<translate name="File name and location" value="Название и месторасположение файлов"/>
 	<translate name="New collection" value="Новая база"/>	
 	<translate name="DB Type" value="Тип БД"/>
 	<translate name="Value" value="Значение"/>	
 	<translate name="Select an file" value="Выбрать файл"/>
+	<translate name="Select an action" value="Выберите действие"/>
+	<translate name="Short DB description" value="Описание базы"/>	
 	<translate name="Add standard groups" value="Добавить стандартные группы"/>
 	<translate name="Select collection from list" value="Выбрать БД из списка"/>
 	<translate name="No file" value="Файл не выбран"/>
@@ -1445,7 +1448,7 @@
 	<translate name="Quality of images: %dpx" value="Качество изображений: %dpx"/>
 	<translate name="Preview size: %dpx" value="Предпросмотр: %dpx"/>
 	<translate name="Small preview size: %dpx" value="Изображения в панели: %dpx"/>
-	<translate name="Press this link to change the size and quality of previews using convertation wizard" value="Для изменения размеров предпросмотров и качества запустите мастер конвертации базы"/>
+	<translate name="Change the size and quality of previews" value="Изменение размеров предпросмотров и качества"/>
   </scope>
   <scope name="ConvertDB">
 	<translate name="Previous" value="Назад"/>

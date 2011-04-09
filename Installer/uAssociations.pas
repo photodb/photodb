@@ -261,6 +261,9 @@ begin
               Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
               Reg.WriteString('', 'PhotoDB' + Ext);
               Reg.CloseKey;
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext, True);
+              Reg.WriteString('', TFileAssociations.Instance[I].Description);
+              Reg.CloseKey;
               Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
               Reg.WriteString('', Format('"%s" "%%1"', [FileName]));
               Reg.CloseKey;
@@ -273,6 +276,9 @@ begin
               S := Reg.ReadString('');
               Reg.WriteString('PhotoDB_PreviousAssociation', S);
               Reg.WriteString('', 'PhotoDB' + Ext);
+              Reg.CloseKey;
+              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext, True);
+              Reg.WriteString('', TFileAssociations.Instance[I].Description);
               Reg.CloseKey;
               Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
               Reg.WriteString('', Format('"%s" "%%1"', [Filename]));

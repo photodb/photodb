@@ -316,7 +316,13 @@ uses
   uMobileUtils in 'Units\uMobileUtils.pas',
   uFrmConvertationLanding in 'Convertation\uFrmConvertationLanding.pas' {FrmConvertationLanding: TFrame},
   uFrmConvertationSettings in 'Convertation\uFrmConvertationSettings.pas' {FrmConvertationSettings: TFrame},
-  uFrmConvertationProgress in 'Convertation\uFrmConvertationProgress.pas' {FrmConvertationProgress: TFrame};
+  uFrmConvertationProgress in 'Convertation\uFrmConvertationProgress.pas' {FrmConvertationProgress: TFrame},
+  uFrmSelectDBLanding in 'SelectDB\uFrmSelectDBLanding.pas' {FrmSelectDBLanding: TFrame},
+  uFrmSelectDBNewPathAndIcon in 'SelectDB\uFrmSelectDBNewPathAndIcon.pas' {FrmSelectDBNewPathAndIcon: TFrame},
+  uFrmSelectDBFromList in 'SelectDB\uFrmSelectDBFromList.pas' {FrmSelectDBFromList: TFrame},
+  uFrmSelectDBExistedFile in 'SelectDB\uFrmSelectDBExistedFile.pas' {FrmSelectDBExistedFile: TFrame},
+  uFrmSelectDBCreationSummary in 'SelectDB\uFrmSelectDBCreationSummary.pas' {FrmSelectDBCreationSummary: TFrame},
+  uInterfaces in 'Units\uInterfaces.pas';
 
 var
   S1: string;

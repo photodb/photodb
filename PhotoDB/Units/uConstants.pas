@@ -326,6 +326,11 @@ const
   TD_RESULT_NO = 7;
   TD_RESULT_CLOSE = 8;
 
+const
+  SELECT_DB_OPTION_NONE = 0;
+  SELECT_DB_OPTION_GET_DB = 1;
+  SELECT_DB_OPTION_GET_DB_OR_EXISTS = 2;
+
 implementation
 
 end.

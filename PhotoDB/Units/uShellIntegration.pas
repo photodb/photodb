@@ -16,7 +16,8 @@ procedure HideFromTaskBar(Handle: Thandle);
 procedure DisableWindowCloseButton(Handle: Thandle);
 procedure ShowPropertiesDialog(FName: string);
 procedure ShowMyComputerProperties(Hwnd: THandle);
-function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean;
+function ChangeIconDialog(HOwner: THandle; var FileName: string; var IconIndex: Integer): Boolean; overload;
+function ChangeIconDialog(HOwner: THandle; var IcoName: string): Boolean; overload;
 procedure LoadFilesFromClipBoard(var Effects: Integer; Files: TStrings);
 function ExtractAssociatedIconSafe(FileName: string; IconIndex: Word): HICON; overload;
 function ExtractAssociatedIconSafe(FileName: string): HICON;  overload;
@@ -154,6 +155,28 @@ begin
         until (Count = 0);
     end;
     CloseClipboard;
+  end;
+end;
+
+function ChangeIconDialog(HOwner: THandle; var IcoName: string): Boolean; overload;
+var
+  FileName: string;
+  IconIndex: Integer;
+  S, Icon: string;
+  I: Integer;
+begin
+  Result := False;
+  S := IcoName;
+  I := Pos(',', S);
+  FileName := Copy(S, 1, I - 1);
+  Icon := Copy(S, I + 1, Length(S) - I);
+  IconIndex := StrToIntDef(Icon, 0);
+  if ChangeIconDialog(HOwner, FileName, IconIndex) then
+  begin
+    if FileName <> '' then
+      Icon := FileName + ',' + IntToStr(IconIndex);
+    IcoName := Icon;
+    Result := True;
   end;
 end;
 

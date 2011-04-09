@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, uFrameWizardBase, jpeg, ExtCtrls, StdCtrls, uMemory, Menus,
   UnitDBDeclare, UnitDBCommonGraphics, Dolphin_DB, UnitDBCommon,
-  UnitDBFileDialogs, uResources, WebLink, Math, uConstants;
+  UnitDBFileDialogs, uResources, WebLink, Math, uConstants, uInterfaces;
 
 type
   TFrmConvertationSettings = class(TFrameWizardBase)
@@ -45,17 +45,22 @@ type
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
+    function LocalScope: string; override;
   public
     { Public declarations }
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Unload; override;
+    procedure InitNextStep; override;
     property ImageOptions: TImageDBOptions read GetImageOptions;
   end;
 
 implementation
 
 uses
-  UnitConvertDBForm, UnitHintCeator, UnitDBKernel;
+  UnitConvertDBForm,
+  UnitHintCeator,
+  UnitDBKernel,
+  uFrmSelectDBCreationSummary;
 
 {$R *.dfm}
 
@@ -118,7 +123,7 @@ end;
 
 function TFrmConvertationSettings.GetImageOptions: TImageDBOptions;
 begin
-  Result := TFormConvertingDB(Manager.Owner).ImageOptions;
+  Result := (Manager.Owner as IDBImageSettings).GetImageOptions;
 end;
 
 function TFrmConvertationSettings.HintCheck(
@@ -165,6 +170,12 @@ begin
   end;
 end;
 
+procedure TFrmConvertationSettings.InitNextStep;
+begin
+  inherited;
+  Manager.AddStep(TFrmSelectDBCreationSummary);
+end;
+
 procedure TFrmConvertationSettings.LoadLanguage;
 begin
   inherited;
@@ -177,6 +188,11 @@ begin
   WlPreviewDBJpegQuality.Text := L('Preview');
   WlPanelSize.Text := L('Preview');
   WlPreviewSize.Text := L('Preview');
+end;
+
+function TFrmConvertationSettings.LocalScope: string;
+begin
+  Result := 'ConvertDB';
 end;
 
 procedure TFrmConvertationSettings.ShowPreview(Graphic: TGraphic; Size: Int64);
@@ -225,19 +241,21 @@ end;
 
 procedure TFrmConvertationSettings.UpdateDBSize;
 var
-  Bitmap, Result: TBitmap;
-  W, H: Integer;
   JPEG: TJpegImage;
   ImageSize: Int64;
+  RecordCount: Integer;
 begin
   ImageSize := CalcJpegResampledSize(Image, ImageOptions.ThSize,
     ImageOptions.DBJpegCompressionQuality, JPEG);
   F(JPEG);
 
+  RecordCount := 1000;
+  if Manager.Owner is TFormConvertingDB then
+    RecordCount := TFormConvertingDB(Manager.Owner).RecordsCount;
+
   LbSingleImageSize.Caption := Format(L('Image size: %s'), [SizeInText(ImageSize)]);
   LbDatabaseSize.Caption := Format(L('The size of new database (approximately): %s'),
-    [SizeInText(TFormConvertingDB(Manager.Owner).RecordsCount * ImageSize)]);
-
+    [SizeInText(RecordCount * ImageSize)]);
 end;
 
 procedure TFrmConvertationSettings.WlPanelSizeClick(Sender: TObject);

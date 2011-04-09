@@ -18,6 +18,7 @@ type
     function L(StringToTranslate : string; Scope : string) : string; overload;
     procedure BeginTranslate;
     procedure EndTranslate;
+    property FormID: string read GetFormID;
   end;
 
 type
