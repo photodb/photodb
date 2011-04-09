@@ -118,8 +118,7 @@ begin
   EffectsChooser.EditManager.Enabled := False;
   EffectsChooser.OnKeyAction := EffectChooserPress;
 
-  SetLVSelection(EffectsChooser, [cmbLeft]);
-  EffectsChooser.Selection.RectSelect := False;
+  SetLVSelection(EffectsChooser, False, [cmbLeft]);
   EffectsChooser.Selection.BlendIcon := False;
   EffectsChooser.Selection.FullRowSelect := True;
 

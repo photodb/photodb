@@ -633,7 +633,7 @@ begin
   ElvMain.Font.Color := 0;
   ElvMain.View := ElsThumbnail;
   ElvMain.DragKind := DkDock;
-  SetLVSelection(ElvMain);
+  SetLVSelection(ElvMain, True);
   ElvMain.GroupFont.Color := clWindowText;
   ElvMain.Font.Name := 'Tahoma';
   ElvMain.HotTrack.Color := clWindowText;
@@ -1141,7 +1141,7 @@ begin
   DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
                      FBitmapImageList, Y,
                      True, Data.ID, Data.FileName, Data.Rating, Data.Rotation,
-                     Data.Access, Data.Crypted, Data.Exists, CustomInfo);
+                     Data.Access, Data.Crypted, Data.Exists, False, CustomInfo);
 
 end;
 

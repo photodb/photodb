@@ -43,11 +43,11 @@ begin
   FE := Exists <> -1;
 
   if FolderView then
-  if not FE then
-  begin
-    FileName := ProgramDir + FileName;
-    FE := FileExistsSafe(FileName);
-  end;
+    if not FE then
+    begin
+      FileName := ProgramDir + FileName;
+      FE := FileExistsSafe(FileName);
+    end;
 
   if (ExplorerManager <> nil) and ExplorerManager.ShowEXIF then
   begin

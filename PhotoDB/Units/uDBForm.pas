@@ -105,7 +105,7 @@ begin
 
   for I := 0 to FForms.Count - 1 do
   begin
-    if Supports(FForms[I], IImageSource) then
+    if Supports(TDBForm(FForms[I]), IImageSource) then
       Result := (TDBForm(FForms[I]) as IImageSource).GetImage(FileName, Bitmap, Width, Height);
     if Result then
       Exit;

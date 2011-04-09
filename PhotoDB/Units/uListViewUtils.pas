@@ -5,7 +5,8 @@ interface
 uses
   Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls, Math,
   UnitDBCommon, Dolphin_DB, UnitBitmapImageList, UnitDBCommonGraphics, uMemory,
-  MPCommonUtilities, uDBDrawing, TLayered_Bitmap, uGraphicUtils, uConstants, uRuntime;
+  MPCommonUtilities, uDBDrawing, TLayered_Bitmap, uGraphicUtils, uConstants, uRuntime,
+  uSettings;
 
 type
   TEasyCollectionItemX = class(TEasyCollectionItem)
@@ -52,13 +53,14 @@ procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEas
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
 procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
-procedure SetLVSelection(ListView : TEasyListView; MouseButton: TCommonMouseButtons = []);
+procedure SetLVSelection(ListView : TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : TEasyItem;
                              ARect : TRect; BImageList : TBitmapImageList; var Y : Integer;
                              ShowInfo : Boolean; ID : Integer;
                              FileName : string; Rating : Integer;
                              Rotate : Integer; Access : Integer;
                              Crypted : Boolean; var Exists : Integer;
+                             CanAddImages: Boolean;
                              CustomInfo: string = '');
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string); overload;
@@ -85,7 +87,7 @@ procedure DrawDBListViewItem(ListView : TEasylistView; ACanvas: TCanvas; Item : 
                              ShowInfo : Boolean; ID : Integer;
                              FileName : string; Rating : Integer;
                              Rotate : Integer; Access : Integer;
-                             Crypted : Boolean; var Exists : Integer; CustomInfo: string = '');
+                             Crypted : Boolean; var Exists : Integer; CanAddImages: Boolean; CustomInfo: string = '');
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;
   RoundRadius = 5;
@@ -122,7 +124,7 @@ begin
 
   if (esosHotTracking in Item.State) then
   begin
-    if (Rating = 0) and (not FolderView or (ID > 0)) then
+    if (Rating = 0) and (not FolderView or (ID > 0)) and CanAddImages then
       Rating := -1;
 
     if not Item.Selected then
@@ -575,14 +577,17 @@ begin
   end;
 end;
 
-procedure SetLVSelection(ListView : TEasyListView; MouseButton: TCommonMouseButtons = []);
+procedure SetLVSelection(ListView : TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 begin
   ListView.Selection.MouseButton := MouseButton;
   ListView.Selection.AlphaBlend := True;
   ListView.Selection.AlphaBlendSelRect := True;
-  ListView.Selection.MultiSelect := True;
-  ListView.Selection.RectSelect := True;
-  ListView.Selection.EnableDragSelect := True;
+  if Multiselect then
+  begin
+    ListView.Selection.MultiSelect := True;
+    ListView.Selection.RectSelect := True;
+    ListView.Selection.EnableDragSelect := True;
+  end;
   ListView.Selection.FullItemPaint := True;
   ListView.Selection.Gradient := True;
   ListView.Selection.GradientColorBottom := clGradientActiveCaption;
@@ -592,6 +597,7 @@ begin
   ListView.Selection.TextColor := clWindowText;
   ListView.PaintInfoItem.ShowBorder := False;
   ListView.HotTrack.Cursor := CrArrow;
+  ListView.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
 end;
 
 procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);

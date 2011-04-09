@@ -758,7 +758,7 @@ begin
   ElvMain.Font.Color := 0;
   ElvMain.View := elsThumbnail;
   ElvMain.DragKind := dkDock;
-  SetLVSelection(ElvMain);
+  SetLVSelection(ElvMain, True);
 
   ElvMain.Font.Name := 'Tahoma';
   ElvMain.IncrementalSearch.Enabled := True;
@@ -7154,7 +7154,7 @@ begin
   Exists := 1;
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.FileName,
-    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Exists);
+    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Exists, True);
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(

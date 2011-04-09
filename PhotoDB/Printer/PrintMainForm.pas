@@ -354,8 +354,7 @@ var
 begin
   LoadLanguage;
 
-  SetLVSelection(LvMain, [cmbLeft]);
-  LvMain.Selection.RectSelect := False;
+  SetLVSelection(LvMain, False, [cmbLeft]);
 
   PrintFormExists := True;
   FFiles := TStringList.Create;

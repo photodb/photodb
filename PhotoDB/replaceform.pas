@@ -10,13 +10,13 @@ uses
   ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
   UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
   uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm,
-  uSettings, uListViewUtils, uAssociations, uDBAdapter;
+  uSettings, uListViewUtils, uAssociations, uDBAdapter, MPCommonObjects,
+  EasyListview, MPCommonUtilities;
 
 type
   TDBReplaceForm = class(TDBForm)
-    LvMain: TListView;
     SizeImageList: TImageList;
-    Panel2: TPanel;
+    PnDBInfo: TPanel;
     LabelDBRating: TLabel;
     LabelDBWidth: TLabel;
     LabelDBHeight: TLabel;
@@ -33,7 +33,7 @@ type
     DB_HEIGHT: TEdit;
     DB_SIZE: TEdit;
     DB_PATH: TEdit;
-    Panel3: TPanel;
+    PnFileInfo: TPanel;
     Image1: TImage;
     LabelCurrentInfo: TLabel;
     LabelFName: TLabel;
@@ -45,7 +45,7 @@ type
     F_SIZE: TEdit;
     F_WIDTH: TEdit;
     F_HEIGHT: TEdit;
-    PopupMenu1: TPopupMenu;
+    PmListView: TPopupMenu;
     Delete1: TMenuItem;
     DropFileSource1: TDropFileSource;
     DropFileTarget1: TDropFileTarget;
@@ -56,13 +56,11 @@ type
     BtnReplace: TButton;
     BtnSkip: TButton;
     BtnDeleteFile: TButton;
-    BtnSkipAll: TButton;
-    BtnReplaceAll: TButton;
-    BtnAddAll: TButton;
+    CbForAll: TCheckBox;
+    LvMain: TEasyListview;
     procedure ExecuteToAdd(Filename : string; LongImageID : AnsiString; var ResultAction: Integer; var SelectedID: Integer; rec_ : TImageDBRecordA);
     procedure readDBInfoByID(id : integer);
     procedure AddItem(Text : string; ID : integer; fbit_ : tbitmap);
-    procedure LvMainSelectItem(Sender: TObject; Item: TListItem;Selected: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure BtnAddClick(Sender: TObject);
     procedure BtnReplaceAllClick(Sender: TObject);
@@ -79,8 +77,6 @@ type
         procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     procedure Image2ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    procedure LvMainCustomDrawItem(Sender: TCustomListView;
-      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Delete1Click(Sender: TObject);
@@ -89,8 +85,16 @@ type
     procedure BtnReplaceAndDeleteDuplicatesClick(Sender: TObject);
     procedure BtnDeleteFileClick(Sender: TObject);
     procedure BtnAddAllClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Image1DblClick(Sender: TObject);
+    procedure LvMainItemThumbnailDraw(Sender: TCustomEasyListview;
+      Item: TEasyItem; ACanvas: TCanvas; ARect: TRect;
+      AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
+    procedure LvMainItemSelectionChanged(Sender: TCustomEasyListview;
+      Item: TEasyItem);
+    procedure LvMainMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure LvMainMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -100,6 +104,7 @@ type
     FCurrentID: Integer;
     FSelectedMode,
     FSelectedID: Integer;
+    FListViewMouseDown: Boolean;
     procedure LoadLanguage;
   protected
     function GetFormID : string; override;
@@ -119,18 +124,18 @@ uses
 
 procedure TDBReplaceForm.Additem(Text: string; ID: integer; fbit_: tbitmap);
 var
-  New: TListItem;
+  New: TEasyItem;
   Bit: TBitmap;
-  TempBitmap, FBit: TBitmap;
+  FBit: TBitmap;
   Bs: TStream;
   J: TJpegImage;
   Password: string;
-  Exists, W, H: Integer;
+  W, H: Integer;
 const
   ListItemPreviewSize = 102;
 begin
   New := LvMain.Items.Add;
-  New.Indent := ID;
+  New.Data := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
   New.Caption := Text;
   Bit := TBitmap.Create;
   try
@@ -162,35 +167,24 @@ begin
           F(BS);
         end;
       end;
-      FillColorEx(Bit, clWindow);
+
       if (J.Width > ListItemPreviewSize) or (J.Height > ListItemPreviewSize) then
       begin
-        TempBitmap := TBitmap.Create;
+        FBit := TBitmap.Create;
         try
-          TempBitmap.PixelFormat := pf24bit;
-          FBit := TBitmap.Create;
-          try
-            FBit.PixelFormat := pf24bit;
-            FBit.Assign(J);
-            W := FBit.Width;
-            H := FBit.Height;
-            ProportionalSize(ListItemPreviewSize, ListItemPreviewSize, W, H);
-            DoResize(W, H, FBit, TempBitmap);
-          finally
-            F(FBit);
-          end;
-          Bit.Canvas.Draw(ListItemPreviewSize div 2 - TempBitmap.Width div 2,
-            ListItemPreviewSize div 2 - TempBitmap.Height div 2, TempBitmap);
+          FBit.PixelFormat := pf24bit;
+          FBit.Assign(J);
+          W := FBit.Width;
+          H := FBit.Height;
+          ProportionalSize(ListItemPreviewSize, ListItemPreviewSize, W, H);
+          DoResize(W, H, FBit, Bit);
         finally
-          F(TempBitmap);
+          F(FBit);
         end;
       end else
-        Bit.Canvas.Draw(ListItemPreviewSize div 2 - J.Width div 2, ListItemPreviewSize div 2 - J.Height div 2, J);
+        Bit.Assign(J);
 
       ApplyRotate(Bit, WDA.Rotation);
-      Exists := 0;
-      DrawAttributes(Bit, ListItemPreviewSize, WDA.Rating,
-        WDA.Rotation, WDA.Access, WDA.FileName, False, Exists, WDA.ID);
     finally
       F(J);
     end;
@@ -214,7 +208,6 @@ begin
   FSelectedMode := Result_invalid;
   FSelectedID := 0;
 
-  LvMain.Clear;
   FCurrentFileName := Filename;
   WorkQuery.Active := False;
   SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE StrTh = :str ');
@@ -229,14 +222,14 @@ begin
   if WorkQuery.RecordCount = 1 then
   begin
     LvMain.Visible := False;
-    Width := Panel3.Width + Panel2.Width + 10;
-    BtnReplaceAll.Enabled := True;
+    Width := PnFileInfo.Left + PnFileInfo.Width + PnDBInfo.Width + 25;
+    CbForAll.Enabled := True;
     BtnReplaceAndDeleteDuplicates.Enabled := False;
     BtnReplace.Enabled := True;
   end else
   begin
     LvMain.Visible := True;
-    BtnReplaceAll.Enabled := False;
+    CbForAll.Enabled := False;
     BtnReplace.Enabled := True;
     BtnReplaceAndDeleteDuplicates.Enabled := False;
   end;
@@ -247,7 +240,9 @@ begin
     AddItem(WDA.Name, WDA.ID, nil);
     WorkQuery.Next;
   end;
-  ReadDBInfoByID(WDA.ID);
+  if LvMain.Items.Count > 0 then
+    LvMain.Items[0].Selected := True;
+
   ShowModal;
   ResultAction := FSelectedMode;
   SelectedID := FSelectedID;
@@ -360,32 +355,36 @@ begin
   end;
 end;
 
-procedure TDBReplaceForm.LvMainSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+procedure TDBReplaceForm.LvMainItemSelectionChanged(Sender: TCustomEasyListview;
+  Item: TEasyItem);
 begin
   if Item <> nil then
-    ReadDBInfoByID(Item.Indent);
+    ReadDBInfoByID(TDBPopupMenuInfoRecord(Item.Data).ID);
 
-  BtnReplace.Enabled := Selected;
-  BtnReplaceAndDeleteDuplicates.Enabled := Selected;
+  BtnReplace.Enabled := Item.Selected;
+  BtnReplaceAndDeleteDuplicates.Enabled := Item.Selected;
 end;
 
 procedure TDBReplaceForm.FormCreate(Sender: TObject);
 begin
   DisableWindowCloseButton(Handle);
+  FListViewMouseDown := False;
   WorkQuery := GetQuery;
   WDA := TDBAdapter.Create(WorkQuery);
   DropFileTarget1.register(Self);
   FBitmapImageList := TBitmapImageList.Create;
-  LvMain.HotTrack := Settings.Readbool('Options', 'UseHotSelect', True);
   LvMain.DoubleBuffered := True;
-  LvMainSelectItem(Sender, nil, False);
   DBKernel.RegisterChangesID(Self, Self.ChangedDBDataByID);
   LoadLanguage;
+  SetLVSelection(LvMain, False, [cmbLeft]);
 end;
 
 procedure TDBReplaceForm.BtnAddClick(Sender: TObject);
 begin
-  FSelectedMode := Result_add;
+  if not CbForAll.Checked then
+    FSelectedMode := Result_Add
+  else
+    FSelectedMode := Result_Add_All;
   FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
@@ -524,20 +523,34 @@ end;
 
 procedure TDBReplaceForm.LvMainMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  Item: TListItem;
+  Item: TEasyItem;
 begin
-  if (Button = MbLeft) and (LvMain.GetItemAt(X, Y) <> nil) and FileExistsSafe(DB_PATH.Text) then
+  Item := ItemByPointImage(LvMain, Point(X, Y));
+  if (Button = MbLeft) and (Item <> nil) and FileExistsSafe(DB_PATH.Text) then
+    FListViewMouseDown := True;
+end;
+
+procedure TDBReplaceForm.LvMainMouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  if FListViewMouseDown and (LvMain.Selection.Count = 1) then
   begin
-    Item := LvMain.GetItemAt(X, Y);
+    FListViewMouseDown := False;
     DragImageList.Clear;
     DropFileSource1.Files.Clear;
     DropFileSource1.Files.Add(DB_PATH.Text);
 
-    CreateDragImage(FBitmapImageList[Item.ImageIndex].Bitmap, DragImageList, Font, DropFileSource1.Files[0]);
+    CreateDragImage(FBitmapImageList[LvMain.Selection.First.ImageIndex].Bitmap, DragImageList, Font, DropFileSource1.Files[0]);
 
     DropFileSource1.ImageIndex := 0;
     DropFileSource1.Execute;
   end;
+end;
+
+procedure TDBReplaceForm.LvMainMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  FListViewMouseDown := False;
 end;
 
 procedure TDBReplaceForm.Image1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -583,61 +596,27 @@ begin
   TDBPopupMenu.Instance.Execute(Self, Image2.ClientToScreen(MousePos).X, Image2.ClientToScreen(MousePos).Y, MenuInfo);
 end;
 
-procedure TDBReplaceForm.LvMainCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-  var DefaultDraw: Boolean);
+procedure TDBReplaceForm.LvMainItemThumbnailDraw(Sender: TCustomEasyListview;
+  Item: TEasyItem; ACanvas: TCanvas; ARect: TRect;
+  AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  R, R1, R2: TRect;
-  B: TBitmap;
-const
-  DrawTextOpt = DT_NOPREFIX + DT_CENTER + DT_WORDBREAK + DT_EDITCONTROL;
-  ListItemPreviewSize = 102;
+  Y: Integer;
+  Data: TDBPopupMenuInfoRecord;
 begin
-  if FBitmapImageList.Count = 0 then
-    Exit;
-  R := Item.DisplayRect(DrBounds);
-  if not RectInRect(Sender.ClientRect, R) then
-    Exit;
-
-  R1 := Item.DisplayRect(DrIcon);
-  R2 := Item.DisplayRect(DrLabel);
-  B := TBitmap.Create;
-  try
-    B.PixelFormat := pf24bit;
-    B.Assign(FBitmapImageList[Item.ImageIndex].Bitmap);
-    if not(Sender.IsEditing and (Sender.ItemFocused = Item)) then
-    begin
-      if Item.Selected then
-      begin
-        SelectedColor(B, MakeDarken(ClWindow, 0.5));
-        Sender.Canvas.Pen.Color := MakeDarken(clWindow, 0.9);
-        Sender.Canvas.Brush.Color := MakeDarken(clWindow, 0.9);
-        Sender.Canvas.FillRect(R2);
-      end else
-      begin
-        Sender.Canvas.Pen.Color := clWindow;
-        Sender.Canvas.Brush.Color := clWindow;
-        Sender.Canvas.FillRect(R2);
-      end;
-      Sender.Canvas.Font.Color := clWindowText;
-      if CdsHot in State then
-      begin
-        Sender.Canvas.Font.Style := [FsUnderline];
-        DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), R2, DrawTextOpt);
-      end else
-      begin
-        Sender.Canvas.Font.Style := [];
-        DrawText(Sender.Canvas.Handle, PWideChar(Item.Caption), Length(Item.Caption), R2, DrawTextOpt);
-      end;
-    end;
-    Sender.Canvas.Draw(R1.Left + ((R1.Right - R1.Left) div 2 - ListItemPreviewSize div 2), R1.Top, B);
-  finally
-    F(B);
-  end;
-  DefaultDraw := False;
+  Data := TDBPopupMenuInfoRecord(Item.Data);
+  DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
+                     FBitmapImageList, Y,
+                     True, Data.ID, Data.FileName, Data.Rating, Data.Rotation,
+                     Data.Access, Data.Crypted, Data.Exists, False);
 end;
 
 procedure TDBReplaceForm.FormDestroy(Sender: TObject);
+var
+  I: Integer;
 begin
+  for I := 0 to LvMain.Items.Count - 1 do
+    LvMain.Items[I].Data.Free;
+
   F(WDA);
   FreeDS(WorkQuery);
   DropFileTarget1.Unregister;
@@ -663,7 +642,7 @@ var
   SQL_: string;
 begin
   for I := 1 to LvMain.Items.Count do
-    if LvMain.Items[I - 1].Indent = PopupMenu1.Tag then
+    if TDBPopupMenuInfoRecord(LvMain.Items[I - 1]).ID = PmListView.Tag then
     begin
       if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete this information from the collection?'), L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)
         then
@@ -671,11 +650,12 @@ begin
         FQuery := GetQuery;
         try
           FQuery.Active := False;
-          SQL_ := 'DELETE FROM $DB$ WHERE (ID = ' + IntToStr(PopupMenu1.Tag) + ')';
+          SQL_ := 'DELETE FROM $DB$ WHERE (ID = ' + IntToStr(PmListView.Tag) + ')';
           SetSQL(FQuery, SQL_);
           try
             ExecSQL(FQuery);
-            DBKernel.DoIDEvent(Self, PopupMenu1.Tag, [EventID_Param_Delete], EventInfo);
+            DBKernel.DoIDEvent(Self, PmListView.Tag, [EventID_Param_Delete], EventInfo);
+            LvMain.Items[I - 1].Data.Free;
             LvMain.Items.Delete(I - 1);
           except
           end;
@@ -690,13 +670,14 @@ end;
 procedure TDBReplaceForm.LvMainContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  Item: TListItem;
+  Item: TEasyItem;
 begin
-  Item := LvMain.GetItemAt(MousePos.X, MousePos.Y);
+  Item := ItemByPointImage(LvMain, MousePos);
   if Item = nil then
     Exit;
-  PopupMenu1.Tag := Item.Indent;
-  PopupMenu1.Popup(LvMain.ClientTOScreen(MousePos).X, LvMain.ClientTOScreen(MousePos).Y);
+  Item.Selected := True;
+  PmListView.Tag := TDBPopupMenuInfoRecord(Item.Data).ID;
+  PmListView.Popup(LvMain.ClientTOScreen(MousePos).X, LvMain.ClientTOScreen(MousePos).Y);
 end;
 
 procedure TDBReplaceForm.LoadLanguage;
@@ -710,16 +691,14 @@ begin
     LabelFWidth.Caption := L('Width');
     LabelFHeight.Caption := L('Height');
     LabelFPath.Caption := L('Path');
-    LabelCurrentInfo.Caption := L('Current information from file') + ':';
+    LabelCurrentInfo.Caption := L('Information from file') + ':';
     BtnAdd.Caption := L('Add');
-    BtnReplaceAll.Caption := L('Replace for all');
-    BtnSkipAll.Caption := L('Skip for all');
-    BtnAddAll.Caption := L('Add for all');
+    CbForAll.Caption := L('Do this action for all conflicts');
     BtnReplace.Caption := L('Replace');
     BtnSkip.Caption := L('Skip');
     BtnReplaceAndDeleteDuplicates.Caption := L('Replace and delete duplicates');
     BtnDeleteFile.Caption := L('Delete file');
-    LabelDBInfo.Caption := L('Current information from collection') + ':';
+    LabelDBInfo.Caption := L('Information from collection') + ':';
     DbLabel_id.Caption := L('ID');
     LabelDBName.Caption := L('Name');
     LabelDBRating.Caption := L('Rating');
@@ -755,11 +734,6 @@ begin
   FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
-end;
-
-procedure TDBReplaceForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  Release;
 end;
 
 procedure TDBReplaceForm.Image1DblClick(Sender: TObject);

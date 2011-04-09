@@ -320,7 +320,7 @@ begin
   ElvMain.DragKind := DkDock;
   ElvMain.HotTrack.Color := clWindowText;
 
-  SetLVSelection(ElvMain);
+  SetLVSelection(ElvMain, True);
 
   FPictureSize := Max(85, ThSizePanelPreview);
   LoadSizes;
@@ -1225,7 +1225,7 @@ begin
 
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     True, Info.ID, Info.FileName,
-    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Exists);
+    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Exists, True);
 end;
 
 procedure TFormCont.EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;

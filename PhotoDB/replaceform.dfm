@@ -6,8 +6,8 @@ object DBReplaceForm: TDBReplaceForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Replace'
-  ClientHeight = 393
-  ClientWidth = 524
+  ClientHeight = 396
+  ClientWidth = 502
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,60 +16,43 @@ object DBReplaceForm: TDBReplaceForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    524
-    393)
+    502
+    396)
   PixelsPerInch = 96
   TextHeight = 13
-  object LvMain: TListView
-    Left = 184
-    Top = 8
-    Width = 156
-    Height = 282
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    Columns = <>
-    HideSelection = False
-    HotTrack = True
-    HotTrackStyles = [htHandPoint, htUnderlineHot]
-    LargeImages = SizeImageList
-    TabOrder = 0
-    OnContextPopup = LvMainContextPopup
-    OnCustomDrawItem = LvMainCustomDrawItem
-    OnMouseDown = LvMainMouseDown
-    OnSelectItem = LvMainSelectItem
-  end
-  object Panel2: TPanel
-    Left = 347
+  object PnDBInfo: TPanel
+    Left = 325
     Top = 8
     Width = 169
-    Height = 281
+    Height = 293
     Anchors = [akTop, akRight, akBottom]
     BevelOuter = bvNone
-    TabOrder = 1
+    TabOrder = 0
+    ExplicitLeft = 344
     DesignSize = (
       169
-      281)
+      293)
     object LabelDBRating: TLabel
-      Left = 0
-      Top = 160
+      Left = -1
+      Top = 164
       Width = 31
       Height = 13
       Caption = 'Rating'
     end
     object LabelDBWidth: TLabel
-      Left = 0
-      Top = 176
+      Left = -1
+      Top = 182
       Width = 28
       Height = 13
       Caption = 'Width'
     end
     object LabelDBHeight: TLabel
-      Left = 0
-      Top = 192
+      Left = -1
+      Top = 200
       Width = 31
       Height = 13
       Caption = 'Height'
@@ -88,13 +71,6 @@ object DBReplaceForm: TDBReplaceForm
       Width = 55
       Height = 13
       Caption = 'DB file Info:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsUnderline]
-      ParentFont = False
-      WordWrap = True
     end
     object DbLabel_id: TLabel
       Left = 0
@@ -104,22 +80,22 @@ object DBReplaceForm: TDBReplaceForm
       Caption = 'ID'
     end
     object LabelDBName: TLabel
-      Left = 0
-      Top = 144
+      Left = -1
+      Top = 146
       Width = 28
       Height = 13
       Caption = 'Name'
     end
     object LabelDBSize: TLabel
-      Left = 0
-      Top = 208
+      Left = -1
+      Top = 218
       Width = 20
       Height = 13
       Caption = 'Size'
     end
     object LabelDBPath: TLabel
-      Left = 0
-      Top = 224
+      Left = -1
+      Top = 236
       Width = 25
       Height = 13
       Caption = 'Path:'
@@ -129,7 +105,7 @@ object DBReplaceForm: TDBReplaceForm
       Left = 48
       Top = 128
       Width = 120
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -140,10 +116,10 @@ object DBReplaceForm: TDBReplaceForm
     end
     object DB_NAME: TEdit
       Tag = 1
-      Left = 48
-      Top = 144
+      Left = 47
+      Top = 146
       Width = 120
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -154,10 +130,10 @@ object DBReplaceForm: TDBReplaceForm
     end
     object DB_RATING: TEdit
       Tag = 1
-      Left = 48
-      Top = 160
+      Left = 47
+      Top = 164
       Width = 120
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -168,10 +144,10 @@ object DBReplaceForm: TDBReplaceForm
     end
     object DB_WIDTH: TEdit
       Tag = 1
-      Left = 48
-      Top = 176
+      Left = 47
+      Top = 182
       Width = 120
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -182,10 +158,10 @@ object DBReplaceForm: TDBReplaceForm
     end
     object DB_HEIGHT: TEdit
       Tag = 1
-      Left = 48
-      Top = 192
+      Left = 47
+      Top = 200
       Width = 120
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -196,10 +172,10 @@ object DBReplaceForm: TDBReplaceForm
     end
     object DB_SIZE: TEdit
       Tag = 1
-      Left = 48
-      Top = 208
+      Left = 47
+      Top = 218
       Width = 120
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -211,9 +187,9 @@ object DBReplaceForm: TDBReplaceForm
     object DB_PATH: TEdit
       Tag = 1
       Left = 0
-      Top = 240
+      Top = 255
       Width = 169
-      Height = 41
+      Height = 38
       Anchors = [akLeft, akTop, akRight, akBottom]
       AutoSize = False
       BorderStyle = bsNone
@@ -223,17 +199,17 @@ object DBReplaceForm: TDBReplaceForm
       Text = '<data>'
     end
   end
-  object Panel3: TPanel
+  object PnFileInfo: TPanel
     Left = 0
     Top = 0
     Width = 180
-    Height = 289
+    Height = 301
     Anchors = [akLeft, akTop, akBottom]
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 1
     DesignSize = (
       180
-      289)
+      301)
     object Image1: TImage
       Left = 10
       Top = 10
@@ -248,13 +224,6 @@ object DBReplaceForm: TDBReplaceForm
       Width = 80
       Height = 13
       Caption = 'Current File I nfo:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsUnderline]
-      ParentFont = False
-      WordWrap = True
     end
     object LabelFName: TLabel
       Left = 8
@@ -265,28 +234,28 @@ object DBReplaceForm: TDBReplaceForm
     end
     object LabelFSize: TLabel
       Left = 8
-      Top = 152
+      Top = 154
       Width = 20
       Height = 13
       Caption = 'Size'
     end
     object LabelFWidth: TLabel
       Left = 8
-      Top = 168
+      Top = 172
       Width = 28
       Height = 13
       Caption = 'Width'
     end
     object LabelFHeight: TLabel
       Left = 8
-      Top = 184
+      Top = 190
       Width = 31
       Height = 13
       Caption = 'Height'
     end
     object LabelFPath: TLabel
       Left = 8
-      Top = 200
+      Top = 209
       Width = 25
       Height = 13
       Caption = 'Path:'
@@ -296,7 +265,7 @@ object DBReplaceForm: TDBReplaceForm
       Left = 56
       Top = 136
       Width = 121
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -308,9 +277,9 @@ object DBReplaceForm: TDBReplaceForm
     object F_SIZE: TEdit
       Tag = 1
       Left = 56
-      Top = 152
+      Top = 154
       Width = 121
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -322,9 +291,9 @@ object DBReplaceForm: TDBReplaceForm
     object F_WIDTH: TEdit
       Tag = 1
       Left = 56
-      Top = 168
+      Top = 172
       Width = 121
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -336,9 +305,9 @@ object DBReplaceForm: TDBReplaceForm
     object F_HEIGHT: TEdit
       Tag = 1
       Left = 56
-      Top = 184
+      Top = 190
       Width = 121
-      Height = 13
+      Height = 18
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       BorderStyle = bsNone
@@ -350,9 +319,9 @@ object DBReplaceForm: TDBReplaceForm
     object F_PATH: TMemo
       Tag = 1
       Left = 8
-      Top = 216
-      Width = 169
-      Height = 69
+      Top = 227
+      Width = 170
+      Height = 73
       Anchors = [akLeft, akTop, akRight, akBottom]
       BorderStyle = bsNone
       Color = clBtnFace
@@ -364,84 +333,96 @@ object DBReplaceForm: TDBReplaceForm
     end
   end
   object BtnReplaceAndDeleteDuplicates: TButton
-    Left = 185
-    Top = 295
-    Width = 209
+    Left = 150
+    Top = 307
+    Width = 230
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Replace and Delete Dubplicates'
-    TabOrder = 3
+    TabOrder = 2
     OnClick = BtnReplaceAndDeleteDuplicatesClick
+    ExplicitLeft = 169
   end
   object BtnAdd: TButton
-    Left = 185
-    Top = 327
-    Width = 105
+    Left = 150
+    Top = 340
+    Width = 112
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Add'
-    TabOrder = 4
+    TabOrder = 3
     OnClick = BtnAddClick
+    ExplicitLeft = 169
   end
   object BtnReplace: TButton
-    Left = 297
-    Top = 327
-    Width = 105
+    Left = 268
+    Top = 340
+    Width = 112
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Replace'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = BtnReplaceClick
+    ExplicitLeft = 287
   end
   object BtnSkip: TButton
-    Left = 409
-    Top = 327
-    Width = 105
+    Left = 386
+    Top = 339
+    Width = 112
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Skip'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = BtnSkipClick
+    ExplicitLeft = 405
   end
   object BtnDeleteFile: TButton
-    Left = 400
-    Top = 295
-    Width = 114
+    Left = 386
+    Top = 307
+    Width = 112
     Height = 24
     Anchors = [akRight, akBottom]
     Caption = 'Delete File'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = BtnDeleteFileClick
+    ExplicitLeft = 405
   end
-  object BtnSkipAll: TButton
-    Left = 409
-    Top = 359
-    Width = 105
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Skip for All'
+  object CbForAll: TCheckBox
+    Left = 150
+    Top = 371
+    Width = 347
+    Height = 17
+    Anchors = [akTop, akRight]
+    Caption = 'Do this action for all conflicts'
+    TabOrder = 7
+    ExplicitLeft = 169
+  end
+  object LvMain: TEasyListview
+    Left = 186
+    Top = 8
+    Width = 133
+    Height = 293
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    EditManager.Font.Charset = DEFAULT_CHARSET
+    EditManager.Font.Color = clWindowText
+    EditManager.Font.Height = -11
+    EditManager.Font.Name = 'MS Sans Serif'
+    EditManager.Font.Style = []
+    Header.Columns.Items = {
+      0600000001000000110000005445617379436F6C756D6E53746F726564FFFECE
+      0006000000800800010100010000000000000161000000FFFFFF1F0001000000
+      00000000000000000000000000000000}
+    PaintInfoGroup.MarginBottom.CaptionIndent = 4
+    Scrollbars.HorzEnabled = False
     TabOrder = 8
-    OnClick = BtnSkipAllClick
-  end
-  object BtnReplaceAll: TButton
-    Left = 297
-    Top = 359
-    Width = 105
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Replace for All'
-    TabOrder = 9
-    OnClick = BtnReplaceAllClick
-  end
-  object BtnAddAll: TButton
-    Left = 185
-    Top = 359
-    Width = 105
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Add for All'
-    TabOrder = 10
-    OnClick = BtnAddAllClick
+    View = elsThumbnail
+    OnContextPopup = LvMainContextPopup
+    OnItemSelectionChanged = LvMainItemSelectionChanged
+    OnItemThumbnailDraw = LvMainItemThumbnailDraw
+    OnMouseDown = LvMainMouseDown
+    OnMouseMove = LvMainMouseMove
+    OnMouseUp = LvMainMouseUp
+    ExplicitWidth = 151
   end
   object SizeImageList: TImageList
     Height = 102
@@ -449,7 +430,7 @@ object DBReplaceForm: TDBReplaceForm
     Left = 16
     Top = 16
   end
-  object PopupMenu1: TPopupMenu
+  object PmListView: TPopupMenu
     Left = 48
     Top = 16
     object Delete1: TMenuItem
@@ -461,14 +442,14 @@ object DBReplaceForm: TDBReplaceForm
     DragTypes = [dtCopy]
     Images = DragImageList
     ShowImage = True
-    Left = 72
-    Top = 320
+    Left = 74
+    Top = 321
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = []
     OptimizedMove = True
-    Left = 120
-    Top = 320
+    Left = 122
+    Top = 321
   end
   object DragImageList: TImageList
     Left = 24
