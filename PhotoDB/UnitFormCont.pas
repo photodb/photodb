@@ -1224,7 +1224,7 @@ begin
   Info := Data[Item.Index];
 
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
-    True, Info.ID, Info.FileName,
+    True, Info.ID, Info.ExistedFileName,
     Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Exists, True);
 end;
 

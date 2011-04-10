@@ -9,7 +9,7 @@ uses
   UnitTimeCounter, uVistaFuncs, UnitDBFileDialogs, UnitDBDeclare,
   UnitDBCommon, UnitDBCommonGraphics, uFileUtils, uGraphicUtils,
   uConstants, uMemory, uDBForm, uShellIntegration, uRuntime,
-  uShellUtils, uSettings;
+  uShellUtils, uSettings, pngimage;
 
 type
   TImportPlace = class(TObject)

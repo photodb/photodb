@@ -48,7 +48,7 @@ type
     CbOpenFolder: TCheckBox;
     MemFolderName: TMemo;
     BtnSave: TButton;
-    CheckBox2: TCheckBox;
+    CbGetMultimediaFiles: TCheckBox;
     EdMultimediaMask: TEdit;
     CbAddProtosToDB: TCheckBox;
     DestroyTimer: TTimer;
@@ -76,7 +76,7 @@ type
     procedure EdFolderMaskChange(Sender: TObject);
     procedure BtnSaveClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
-    procedure CheckBox2Click(Sender: TObject);
+    procedure CbGetMultimediaFilesClick(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnScanDatesClick(Sender: TObject);
@@ -222,7 +222,7 @@ begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     FPath := Path;
-    if CheckBox2.Checked then
+    if CbGetMultimediaFiles.Checked then
     begin
       Mask := EdMultimediaMask.Text;
       Mask := '|' + Mask + '|';
@@ -265,7 +265,7 @@ begin
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');
     BtnSave.Caption := L('Save');
-    CheckBox2.Caption := L('Copy multimedia files');
+    CbGetMultimediaFiles.Caption := L('Copy multimedia files');
     CbAddProtosToDB.Caption := L('Add folder');
     LbListComment.Caption := L('Series of pictures by dates') + ':';
     LvMain.Columns[0].Caption := L('Options');
@@ -282,6 +282,7 @@ begin
     ShowImages1.Caption := L('Show photos');
 
     BtnScanDates.Caption := L('Scan directory');
+    ProgressBar.Text := L('Progress... (&%%)');
   finally
     EndTranslate;
   end;
@@ -341,8 +342,9 @@ begin
     CbMethod.ItemIndex := 0;
   end;
   EdFolderMaskChange(Sender);
+  LvMainResize(Self);
 
-  CheckBox2.Checked := Settings.ReadBool('GetPhotos', 'UseMultimediaMask', True);
+  CbGetMultimediaFiles.Checked := Settings.ReadBool('GetPhotos', 'UseMultimediaMask', True);
   EdMultimediaMask.Text := Settings.ReadString('GetPhotos', 'MultimediaMask', MultimediaBaseFiles)
 end;
 
@@ -370,7 +372,7 @@ begin
       Options.FolderMask := EdFolderMask.Text;
       Options.Comment := MemComment.Text;
       Options.ToFolder := EdFolder.Text;
-      Options.GetMultimediaFiles := CheckBox2.Checked;
+      Options.GetMultimediaFiles := CbGetMultimediaFiles.Checked;
       Options.MultimediaMask := EdMultimediaMask.Text;
       Options.Move := CbMethod.ItemIndex = 0;
       Options.OpenFolder := CbOpenFolder.Checked;
@@ -404,7 +406,7 @@ begin
   Settings.WriteString('GetPhotos', 'Comment', MemComment.Text);
   Settings.WriteInteger('GetPhotos', 'GetMethod', CbMethod.ItemIndex);
   Settings.WriteString('GetPhotos', 'MultimediaMask', EdMultimediaMask.Text);
-  Settings.WriteBool('GetPhotos', 'UseMultimediaMask', CheckBox2.Checked);
+  Settings.WriteBool('GetPhotos', 'UseMultimediaMask', CbGetMultimediaFiles.Checked);
 end;
 
 procedure TGetToPersonalFolderForm.BtnOkClick(Sender: TObject);
@@ -425,7 +427,7 @@ begin
     EdFolderMask.Enabled := False;
     MemComment.Enabled := False;
     EdFolder.Enabled := False;
-    CheckBox2.Enabled := False;
+    CbGetMultimediaFiles.Enabled := False;
     EdMultimediaMask.Enabled := False;
     CbMethod.Enabled := False;
     CbOpenFolder.Enabled := False;
@@ -504,7 +506,7 @@ begin
     try
       MaxFiles := 10000;
       FilesSearch := 100000;
-      if CheckBox2.Checked then
+      if CbGetMultimediaFiles.Checked then
       begin
         Mask := EdMultimediaMask.Text;
         Mask := '|' + Mask + '|';
@@ -514,9 +516,9 @@ begin
         if Length(Mask) > 0 then
           Delete(Mask, 1, 1);
         Mask := TFileAssociations.Instance.ExtensionList + Mask;
-      end
-      else
+      end else
         Mask := TFileAssociations.Instance.ExtensionList;
+
       GetFileNamesFromDrive(FPath, Mask, Files, FilesSearch, MaxFiles);
 
       Hide;
@@ -527,10 +529,7 @@ begin
           Show;
           SetFocus;
         end;
-      // WHAT IT??????
-      GetFileNameById(0);
-      Delay(1500);
-      /// ///////////////
+
       try
         CopyFilesSynch(0, Files, Folder, CbMethod.ItemIndex <> 1, True);
       except
@@ -551,9 +550,9 @@ begin
   Close;
 end;
 
-procedure TGetToPersonalFolderForm.CheckBox2Click(Sender: TObject);
+procedure TGetToPersonalFolderForm.CbGetMultimediaFilesClick(Sender: TObject);
 begin
-  EdMultimediaMask.Enabled := CheckBox2.Checked;
+  EdMultimediaMask.Enabled := CbGetMultimediaFiles.Checked;
   EdFolderMaskChange(Sender);
 end;
 
@@ -634,37 +633,43 @@ begin
   LastDate := 0;
   ClearList;
   SetLength(OptionsArray, 0);
-  for I := 0 to Length(FDataList) - 1 do
-  begin
-    if (LastDate = 0) or (LastDate <> FDataList[I].Date) then
-      with LvMain.Items.Add do
-      begin
-        LastDate := FDataList[I].Date;
-        P := TItemRecordOptions.Create;
-        P.StringDate := DateToStr(FDataList[I].Date);
-        P.Date := FDataList[I].Date;
-        P.Options := DIRECTORY_OPTION_DATE_SINGLE;
-        P.Tag := 0;
-        Data := P;
+  LvMain.Items.BeginUpdate;
+  try
+    for I := 0 to Length(FDataList) - 1 do
+    begin
+      if (LastDate = 0) or (LastDate <> FDataList[I].Date) then
+        with LvMain.Items.Add do
+        begin
+          LastDate := FDataList[I].Date;
+          P := TItemRecordOptions.Create;
+          P.StringDate := DateToStr(FDataList[I].Date);
+          P.Date := FDataList[I].Date;
+          P.Options := DIRECTORY_OPTION_DATE_SINGLE;
+          P.Tag := 0;
+          Data := P;
 
-        Options.Date := FDataList[I].Date;
-        Options.FolderMask := EdFolderMask.Text;
-        Options.Comment := MemComment.Text;
-        Options.ToFolder := EdFolder.Text;
-        Options.GetMultimediaFiles := CheckBox2.Checked;
-        Options.MultimediaMask := EdMultimediaMask.Text;
-        Options.Move := CbMethod.ItemIndex = 0;
-        Options.OpenFolder := CbOpenFolder.Checked;
-        Options.AddFolder := CbAddProtosToDB.Checked;
-        SetLength(OptionsArray, Length(OptionsArray) + 1);
-        OptionsArray[Length(OptionsArray) - 1] := Options;
-      end;
+          Options.Date := FDataList[I].Date;
+          Options.FolderMask := EdFolderMask.Text;
+          Options.Comment := MemComment.Text;
+          Options.ToFolder := EdFolder.Text;
+          Options.GetMultimediaFiles := CbGetMultimediaFiles.Checked;
+          Options.MultimediaMask := EdMultimediaMask.Text;
+          Options.Move := CbMethod.ItemIndex = 0;
+          Options.OpenFolder := CbOpenFolder.Checked;
+          Options.AddFolder := CbAddProtosToDB.Checked;
+          SetLength(OptionsArray, Length(OptionsArray) + 1);
+          OptionsArray[Length(OptionsArray) - 1] := Options;
+        end;
+    end;
+  finally
+    LvMain.Items.EndUpdate;
   end;
 end;
 
 procedure TGetToPersonalFolderForm.LvMainResize(Sender: TObject);
 begin
-  LvMain.Columns[1].Width := LvMain.Width - LvMain.Columns[0].Width - 5;
+  ShowScrollBar(LvMain.Handle, SB_HORZ, FALSE);
+  LvMain.Columns[1].Width := LvMain.Width - LvMain.Columns[0].Width - GetSystemMetrics(SM_CXHSCROLL) - 6;
 end;
 
 procedure TGetToPersonalFolderForm.LvMainAdvancedCustomDrawItem(Sender: TCustomListView; Item: TListItem;
@@ -733,7 +738,7 @@ begin
     EdFolderMask.Enabled := True;
     MemComment.Enabled := True;
     EdFolder.Enabled := True;
-    CheckBox2.Enabled := True;
+    CbGetMultimediaFiles.Enabled := True;
     EdMultimediaMask.Enabled := True;
     CbMethod.Enabled := True;
     CbOpenFolder.Enabled := True;
@@ -746,7 +751,7 @@ begin
     EdFolderMask.Text := DefaultOptions.FolderMask;
     MemComment.Text := DefaultOptions.Comment;
     EdFolder.Text := DefaultOptions.ToFolder;
-    CheckBox2.Checked := DefaultOptions.GetMultimediaFiles;
+    CbGetMultimediaFiles.Checked := DefaultOptions.GetMultimediaFiles;
     EdMultimediaMask.Text := DefaultOptions.MultimediaMask;
     if DefaultOptions.Move then
       CbMethod.ItemIndex := 0
@@ -772,7 +777,7 @@ begin
     DefaultOptions.FolderMask := EdFolderMask.Text;
     DefaultOptions.Comment := MemComment.Text;
     DefaultOptions.ToFolder := EdFolder.Text;
-    DefaultOptions.GetMultimediaFiles := CheckBox2.Checked;
+    DefaultOptions.GetMultimediaFiles := CbGetMultimediaFiles.Checked;
     DefaultOptions.MultimediaMask := EdMultimediaMask.Text;
     DefaultOptions.Move := CbMethod.ItemIndex = 0;
     DefaultOptions.OpenFolder := CbOpenFolder.Checked;
@@ -784,7 +789,7 @@ begin
       EdFolderMask.Enabled := False;
       MemComment.Enabled := False;
       EdFolder.Enabled := False;
-      CheckBox2.Enabled := False;
+      CbGetMultimediaFiles.Enabled := False;
       EdMultimediaMask.Enabled := False;
       CbMethod.Enabled := False;
       CbOpenFolder.Enabled := False;
@@ -1077,7 +1082,7 @@ begin
     EdFolderMask.Enabled := True;
     MemComment.Enabled := True;
     EdFolder.Enabled := True;
-    CheckBox2.Enabled := True;
+    CbGetMultimediaFiles.Enabled := True;
     EdMultimediaMask.Enabled := True;
     CbMethod.Enabled := True;
     CbOpenFolder.Enabled := True;
@@ -1091,7 +1096,7 @@ begin
     EdFolderMask.Text := Options.FolderMask;
     MemComment.Text := Options.Comment;
     EdFolder.Text := Options.ToFolder;
-    CheckBox2.Checked := Options.GetMultimediaFiles;
+    CbGetMultimediaFiles.Checked := Options.GetMultimediaFiles;
     EdMultimediaMask.Text := Options.MultimediaMask;
     if Options.Move then
       CbMethod.ItemIndex := 0
@@ -1107,7 +1112,7 @@ begin
     EdFolderMask.Enabled := False;
     MemComment.Enabled := False;
     EdFolder.Enabled := False;
-    CheckBox2.Enabled := False;
+    CbGetMultimediaFiles.Enabled := False;
     EdMultimediaMask.Enabled := False;
     CbMethod.Enabled := False;
     CbOpenFolder.Enabled := False;

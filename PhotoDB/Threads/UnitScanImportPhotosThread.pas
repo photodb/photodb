@@ -37,7 +37,6 @@ type
   private
     { Private declarations }
     FOptions: TScanImportPhotosThreadOptions;
-    FFiles: TStrings;
     FSID: TGUID;
     StrParam: string;
     BoolParam: Boolean;
@@ -89,6 +88,7 @@ var
   ExifData: TExifData;
   RAWExif: TRAWExif;
   FDate: TDateTime;
+  FFiles: TStrings;
 
   function L_Less_Than_R(L, R: TFileDateRecord): Boolean;
   begin
@@ -157,45 +157,50 @@ begin
   FOptions.Mask := TFileAssociations.Instance.ExtensionList + FOptions.Mask;
 
   FFiles := TStringList.Create;
-  MaxFilesCount := 10000;
-  MaxFilesSearch := 100000;
-  GetFileNamesFromDrive(FOptions.Directory, FOptions.Mask, FFiles, MaxFilesCount, MaxFilesSearch,
-    OnLoadingFilesCallBackEvent);
+  try
+    MaxFilesCount := 10000;
+    MaxFilesSearch := 100000;
+    GetFileNamesFromDrive(FOptions.Directory, FOptions.Mask, FFiles, MaxFilesCount, MaxFilesSearch,
+      OnLoadingFilesCallBackEvent);
 
-  SetMaxPosition(FFiles.Count);
-  for I := 0 to FFiles.Count - 1 do
-  begin
-    SetPosition(I + 1);
-    ExifData := TExifData.Create;
-    try
-      ExifData.LoadFromGraphic(FFiles[I]);
-      if not ExifData.Empty and (YearOf(ExifData.DateTimeOriginal) > 1900) then
-      begin
-        AddFileToList(FFiles[I], DateOf(ExifData.DateTimeOriginal));
-      end else
-      begin
-        if RAWImage.IsRAWSupport and IsRAWImageFile(FFiles[I]) then
+    SetMaxPosition(FFiles.Count);
+    for I := 0 to FFiles.Count - 1 do
+    begin
+      SetPosition(I + 1);
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(FFiles[I]);
+        if not ExifData.Empty and (YearOf(ExifData.DateTimeOriginal) > 1900) then
         begin
-          RAWExif := ReadRAWExif(FFiles[I]);
-          if RAWExif.IsEXIF then
+          AddFileToList(FFiles[I], DateOf(ExifData.DateTimeOriginal));
+        end else
+        begin
+          if RAWImage.IsRAWSupport and IsRAWImageFile(FFiles[I]) then
           begin
-            FDate := DateOf(RAWExif.TimeStamp);
-            if FDate > 0 then
-              AddFileToList(FFiles[I], FDate);
+            RAWExif := ReadRAWExif(FFiles[I]);
+            if RAWExif.IsEXIF then
+            begin
+              FDate := DateOf(RAWExif.TimeStamp);
+              if FDate > 0 then
+                AddFileToList(FFiles[I], FDate);
 
-            if IsEqualGUID(FSID, GetPhotosFormSID) then
-              Break;
+              if IsEqualGUID(FSID, GetPhotosFormSID) then
+                Break;
+            end;
           end;
         end;
+      finally
+        F(ExifData);
       end;
-    finally
-      F(ExifData);
     end;
+  finally
+    F(FFiles);
   end;
   if Length(DateFileList) > 1 then
     QuickSort(DateFileList, Length(DateFileList));
   Synchronize(SetDateDataList);
   Synchronize(DoOnDone);
+
 end;
 
 procedure TScanImportPhotosThread.SetDateDataList;

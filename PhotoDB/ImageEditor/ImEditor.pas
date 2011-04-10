@@ -198,7 +198,7 @@ type
     FStatusProgress: TProgressBar;
     WindowID: TGUID;
     ToolClass: TToolsPanelClass;
-    procedure MakeImage; override;
+    procedure MakeImage(ResizedWindow: Boolean = False); override;
     procedure DoPaint; override;
     procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     property CloseOnFailture: Boolean read FCloseOnFailture write SetCloseOnFailture;
@@ -446,39 +446,39 @@ procedure TImageEditor.LoadGIFImage(GIF: TGIFImage);
 var
   I, J: Integer;
 begin
-  StatusBar1.Panels[0].Text := 'Loading GIF format';
+  StatusBar1.Panels[0].Text := L('Loading GIF format');
 
-   StatusBar1.Repaint;
-   StatusBar1.Refresh;
-   FStatusProgress.Max := GIF.Height * 2;
-   FStatusProgress.Position := 0;
-   CurrentImage.Width := GIF.Width;
-   CurrentImage.Height := GIF.Height;
-   FStatusProgress.Position := GIF.Height div 2;
-   CurrentImage.Assign(GIF);
-   FStatusProgress.Position := GIF.Height;
-   CurrentImage.PixelFormat := Pf32bit;
-   MakePCurrentImage;
-   for I := 0 to GIF.Height - 1 do
-   begin
-     for J := 0 to GIF.Width - 1 do
-     begin
-       if GIF.Images[0].Transparent then
-       begin
-         if GIF.Images[0].Pixels[J, I] = GIF.Images[0].GraphicControlExtension.TransparentColorIndex then
-           PCurrentImage32[I, J].L := 0
-         else
-           PCurrentImage32[I, J].L := 255;
-       end else
-         PCurrentImage32[I, J].L := 255;
-     end;
-     if I mod 50 = 0 then
-       FStatusProgress.Position := I + GIF.Height;
-   end;
-   CurrentImage.PixelFormat := pf24bit;
-   MakePCurrentImage;
-   FStatusProgress.Position := 0;
-   StatusBar1.Panels[0].Text := '';
+  StatusBar1.Repaint;
+  StatusBar1.Refresh;
+  FStatusProgress.Max := GIF.Height * 2;
+  FStatusProgress.Position := 0;
+  CurrentImage.Width := GIF.Width;
+  CurrentImage.Height := GIF.Height;
+  FStatusProgress.Position := GIF.Height div 2;
+  CurrentImage.Assign(GIF);
+  FStatusProgress.Position := GIF.Height;
+  CurrentImage.PixelFormat := Pf32bit;
+  MakePCurrentImage;
+  for I := 0 to GIF.Height - 1 do
+  begin
+    for J := 0 to GIF.Width - 1 do
+    begin
+      if GIF.Images[0].Transparent then
+      begin
+        if GIF.Images[0].Pixels[J, I] = GIF.Images[0].GraphicControlExtension.TransparentColorIndex then
+          PCurrentImage32[I, J].L := 0
+        else
+          PCurrentImage32[I, J].L := 255;
+      end else
+        PCurrentImage32[I, J].L := 255;
+    end;
+    if I mod 50 = 0 then
+      FStatusProgress.Position := I + GIF.Height;
+  end;
+  CurrentImage.PixelFormat := pf24bit;
+  MakePCurrentImage;
+  FStatusProgress.Position := 0;
+  StatusBar1.Panels[0].Text := '';
 end;
 
 procedure TImageEditor.LoadJPEGImage(JPEG: TJPEGImage);
@@ -505,7 +505,7 @@ begin
   MakePCurrentImage;
 end;
 
-procedure TImageEditor.MakeImage;
+procedure TImageEditor.MakeImage(ResizedWindow: Boolean = False);
 var
   I, J: Integer;
   Fh, Fw: Integer;
@@ -522,7 +522,7 @@ begin
   if (CurrentImage.Height = 0) or (CurrentImage.Width = 0) then
     Exit;
 
-  if Tool <> ToolColor then
+  if (Tool <> ToolColor) or ResizedWindow then
   begin
     for I := 0 to Buffer.Height - 1 do
     begin
@@ -639,7 +639,7 @@ begin
   ToolsPanel.Left := ClientWidth - ToolsPanel.Width;
   ToolsPanel.Height := ClientHeight - ButtomPanel.Height - StatusBar1.Height;
   ReAllignScrolls(False, Point(0, 0));
-  MakeImage;
+  MakeImage(True);
   FormPaint(Sender);
   MakeCaption;
   StatusBar1.Top := ClientHeight - StatusBar1.Height;
@@ -874,7 +874,7 @@ var
   Res: Integer;
 
 begin
-  DoProcessPath(FileName);
+  DoProcessPath(FileName, True);
   Result := False;
 
   if not CheckEditingMode then

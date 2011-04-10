@@ -93,6 +93,7 @@ type
     FRealWidth: Integer;
     FRealHeight: Integer;
     FProcessingList: TStrings;
+    FPreviewAvalable: Boolean;
     procedure LoadLanguage;
     procedure CheckValidForm;
   protected
@@ -567,6 +568,7 @@ begin
   EdImageName.Text := ExtractFileName(FileName);
   F(FPreviewImage);
   FPreviewImage := PreviewImage;
+  FPreviewAvalable := PreviewImage <> nil;
   PbImage.Refresh;
 end;
 
@@ -823,6 +825,7 @@ var
   R: TRect;
   DisplayImage, ShadowImage: TBitmap;
   W, H, X, Y, Width, Height : Integer;
+  Text: string;
 begin
   if (FPreviewImage <> nil) and (FRealWidth + FRealHeight > 0) then
   begin
@@ -850,6 +853,12 @@ begin
       F(DisplayImage);
       F(ShadowImage);
     end;
+  end else
+  begin
+    Text := L('Preview isn''t avaliable. Image can be corrupted or encrypted.');
+    H := PbImage.Canvas.TextHeight(Text);
+    R := Rect(0, PbImage.Height div 2 - H div 2, PbImage.Width, PbImage.Height);
+    PbImage.Canvas.TextRect(R, Text, [tfCenter, tfWordBreak]);
   end;
 end;
 

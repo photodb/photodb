@@ -422,7 +422,6 @@ object DBReplaceForm: TDBReplaceForm
     OnMouseDown = LvMainMouseDown
     OnMouseMove = LvMainMouseMove
     OnMouseUp = LvMainMouseUp
-    ExplicitWidth = 151
   end
   object SizeImageList: TImageList
     Height = 102

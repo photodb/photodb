@@ -265,7 +265,6 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Top = 248
     Width = 217
     Height = 21
-    ReadOnly = True
     TabOrder = 7
     Text = 'EdFolder'
     OnChange = EdFolderMaskChange
@@ -274,7 +273,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Left = 224
     Top = 248
     Width = 17
-    Height = 19
+    Height = 21
     Caption = '...'
     TabOrder = 8
     OnClick = BtnChooseFolderClick
@@ -321,7 +320,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     TabOrder = 14
     OnClick = BtnSaveClick
   end
-  object CheckBox2: TCheckBox
+  object CbGetMultimediaFiles: TCheckBox
     Left = 8
     Top = 272
     Width = 233
@@ -330,7 +329,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Checked = True
     State = cbChecked
     TabOrder = 9
-    OnClick = CheckBox2Click
+    OnClick = CbGetMultimediaFilesClick
   end
   object EdMultimediaMask: TEdit
     Left = 8
@@ -357,6 +356,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Height = 297
     Columns = <
       item
+        AutoSize = True
         Caption = 'Action'
       end
       item

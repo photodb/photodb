@@ -39,7 +39,7 @@ type
     VirtualBrushCursor: Boolean;
     VBrush: TVBrushType;
     property Zoom : Extended read GetZoom;
-    procedure MakeImage; virtual; abstract;
+    procedure MakeImage(ResizedWindow: Boolean = False); virtual; abstract;
     procedure DoPaint; virtual; abstract;
   end;
 

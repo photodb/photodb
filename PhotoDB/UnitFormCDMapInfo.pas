@@ -21,7 +21,6 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure BtnSelectDriveClick(Sender: TObject);
     procedure BtnDontAskAgainClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     FCDName: string;
@@ -53,6 +52,7 @@ begin
   FCDName := CDName;
   EditCDName.Text := CDName;
   MapResult := False;
+  LoadLanguage;
   ShowModal;
   Result := MapResult;
 end;
@@ -81,11 +81,6 @@ procedure TFormCDMapInfo.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   Release;
-end;
-
-procedure TFormCDMapInfo.FormCreate(Sender: TObject);
-begin
-  LoadLanguage;
 end;
 
 procedure TFormCDMapInfo.BtnCancelClick(Sender: TObject);

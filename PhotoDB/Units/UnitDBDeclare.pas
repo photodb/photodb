@@ -206,7 +206,9 @@ type
 type
   TDBPopupMenuInfoRecord = class(TObject)
   private
+    FOriginalFileName: string;
     function GetInnerImage: Boolean;
+    function GetExistedFileName: string;
   protected
     function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
   public
@@ -248,6 +250,7 @@ type
     function FileExists: Boolean;
     procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
     property InnerImage: Boolean read GetInnerImage;
+    property ExistedFileName: string read GetExistedFileName;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
@@ -309,6 +312,7 @@ begin
   ID := Item.ID;
   Name := Item.Name;
   FileName := Item.FileName;
+  FOriginalFileName := Item.FOriginalFileName;
   Comment := Item.Comment;
   Groups := Item.Groups;
   FileSize := Item.FileSize;
@@ -353,6 +357,7 @@ begin
   PassTag := 0;
   Tag := 0;
   ID := 0;
+  FOriginalFileName := '';
   FileName := '';
   Comment := '';
   Groups := '';
@@ -386,6 +391,7 @@ end;
 constructor TDBPopupMenuInfoRecord.CreateFromFile(FileName: string);
 begin
   Create;
+  Self.FOriginalFileName := FileName;
   Self.FileName := FileName;
 end;
 
@@ -399,6 +405,14 @@ end;
 function TDBPopupMenuInfoRecord.FileExists: Boolean;
 begin
   Result := InnerImage or FileExistsSafe(FileName);
+end;
+
+function TDBPopupMenuInfoRecord.GetExistedFileName: string;
+begin
+  if FolderView then
+    Result := FileName
+  else
+    Result := FOriginalFileName;
 end;
 
 function TDBPopupMenuInfoRecord.GetInnerImage: Boolean;
@@ -421,11 +435,11 @@ begin
   try
     ID := DA.ID;
     Name := DA.Name;
-    FileName := DA.FileName;
+    FOriginalFileName := DA.FileName;
     if FolderView then
-      FileName := ExtractFilePath(ParamStr(0)) + FileName
+      FileName := ExtractFilePath(ParamStr(0)) + FOriginalFileName
     else
-      DoProcessPath(FileName, False);
+      FileName := ProcessPath(FOriginalFileName, False);
     KeyWords := DA.KeyWords;
     FileSize := DA.FileSize;
     Rotation := DA.Rotation;
@@ -464,7 +478,7 @@ begin
   DA := TDBAdapter.Create(DS);
   try
     DA.Name := Name;
-    DA.FileName := FileName;
+    DA.FileName := FOriginalFileName;
     DA.KeyWords := KeyWords;
     DA.FileSize := FileSize;
     DA.Rotation := Rotation;

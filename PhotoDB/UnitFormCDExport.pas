@@ -7,9 +7,8 @@ uses
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ComboBoxExDB, Menus, ImgList,
   Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
   DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
-  AppEvnts, uVistaFuncs, DB, uAssociatedIcons, WatermarkedEdit, uMemory,
-  uDBForm, uShellIntegration, uRuntime, uConstants, ShellApi, LoadingSign,
-  uCDMappingTypes;
+  AppEvnts, uAssociatedIcons, WatermarkedEdit, uMemory, uCDMappingTypes,
+  uDBForm, uShellIntegration, uRuntime, uConstants, ShellApi, LoadingSign;
 
 type
   TFormCDExport = class(TDBForm)
@@ -96,7 +95,7 @@ procedure DoCDExport;
 
 implementation
 
-uses FormManegerUnit, ExplorerThreadUnit, UnitStringPromtForm,
+uses FormManegerUnit, UnitStringPromtForm,
      UnitCDExportThread, ExplorerUnit;
 
 {$R *.dfm}

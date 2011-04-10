@@ -7155,7 +7155,7 @@ begin
 
   Exists := 1;
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
-    Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.FileName,
+    Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.ExistedFileName,
     Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Exists, True);
 end;
 

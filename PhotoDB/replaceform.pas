@@ -606,7 +606,7 @@ begin
   Data := TDBPopupMenuInfoRecord(Item.Data);
   DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
                      FBitmapImageList, Y,
-                     True, Data.ID, Data.FileName, Data.Rating, Data.Rotation,
+                     True, Data.ID, Data.ExistedFileName, Data.Rating, Data.Rotation,
                      Data.Access, Data.Crypted, Data.Exists, False);
 end;
 

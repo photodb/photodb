@@ -121,7 +121,7 @@ type
     PopupMenuPageSelecter: TPopupMenu;
     LsLoading: TLoadingSign;
     procedure FormCreate(Sender: TObject);
-    function LoadImage_(Sender: TObject; FileName : String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
+    function LoadImage_(Sender: TObject; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
     procedure RecreateDrawImage(Sender: TObject);
     procedure FormResize(Sender: TObject);
     Procedure Next_(Sender: TObject);
@@ -445,7 +445,7 @@ begin
   PostMessage(Handle, FProgressMessage, 0, 0);
 end;
 
-function TViewer.LoadImage_(Sender: TObject; FileName: String; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
+function TViewer.LoadImage_(Sender: TObject; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
 var
   NeedsUpdating: Boolean;
 begin
@@ -458,7 +458,7 @@ begin
 
   Item.InfoLoaded := True;
   Rotate := Item.Rotation;
-  Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(FileName), CurrentFileNumber + 1,
+  Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1,
     CurrentInfo.Count]);
 
   DisplayRating := Item.Rating;
@@ -466,15 +466,15 @@ begin
   TbRotateCW.Enabled := True;
 
   FSID := GetGUID;
-  if not ForwardThreadExists or (ForwardThreadFileName <> FileName) or (CurrentInfo.Count = 0)
+  if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0)
     or FullImage then
   begin
 
     Result := True;
     if not RealZoom then
-      TViewerThread.Create(Self, FileName, Rotate, FullImage, 1, FSID, False, False, FCurrentPage)
+      TViewerThread.Create(Self, Item.FileName, Rotate, FullImage, 1, FSID, False, False, FCurrentPage)
     else
-      TViewerThread.Create(Self, FileName, Rotate, FullImage, BeginZoom, FSID, False, False, FCurrentPage);
+      TViewerThread.Create(Self, Item.FileName, Rotate, FullImage, BeginZoom, FSID, False, False, FCurrentPage);
 
     ForwardThreadExists := False;
 
@@ -506,7 +506,6 @@ var
   FileName: string;
   TempImage, B: TBitmap;
   ACopyRect: TRect;
-  Text_error_out: string;
 
   procedure DrawRect(X1, Y1, X2, Y2: Integer);
   begin
@@ -515,6 +514,27 @@ var
       Drawimage.Canvas.Brush.Color := ClBtnFace;
       Drawimage.Canvas.Pen.Color := 0;
       Drawimage.Canvas.Rectangle(X1 - 1, Y1 - 1, X2 + 1, Y2 + 1);
+    end;
+  end;
+
+  procedure ShowErrorText(FileName: string);
+  var
+    MessageText: string;
+  begin
+    if FileName <> '' then
+    begin
+      MessageText := L('Can''t display file') + ':';
+      if not FullScreenNow then
+        DrawImage.Canvas.Font.Color := clWindowText
+      else
+        DrawImage.Canvas.Font.Color := clHighlightText;
+
+      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(MessageText) div 2,
+        DrawImage.Height div 2 - DrawImage.Canvas.Textheight(MessageText) div 2, MessageText);
+
+      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(FileName) div 2,
+        DrawImage.Height div 2 - DrawImage.Canvas.TextHeight(FileName) div 2 + DrawImage.Canvas.TextHeight
+          (FileName) + 4, FileName);
     end;
   end;
 
@@ -535,7 +555,7 @@ begin
     ProportionalSize(Screen.Width, Screen.Height, Fw, Fh);
     if ImageExists then
     begin
-      if False { DBKernel.ReadboolW('Options','SlideShow_UseCoolStretch',True) } then
+      if Settings.ReadboolW('Options','SlideShow_UseCoolStretch', True) then
       begin
         if ZoomerOn then
           Z := RealZoomInc * Zoom
@@ -573,15 +593,8 @@ begin
             Screen.Width div 2 - Fw div 2 + Fw, Screen.Height div 2 - Fh div 2 + Fh), FbImage);
       end;
     end else
-    begin
-      DrawImage.Canvas.Font.Color := $FFFFFF;
-      Text_error_out := L('Error showing image!');
-      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(Text_error_out) div 2,
-        DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2, Text_error_out);
-      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(FileName) div 2,
-        DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2 + DrawImage.Canvas.Textheight
-          (FileName) + 4, FileName);
-    end;
+      ShowErrorText(FileName);
+
     if FullScreenView <> nil then
       FullScreenView.Canvas.Draw(0, 0, DrawImage);
     Exit;
@@ -592,7 +605,10 @@ begin
   DrawImage.Canvas.Pen.Color := ClBtnFace;
   DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
   if (FbImage.Height = 0) or (FbImage.Width = 0) then
-    Exit;
+    begin
+      ShowErrorText(FileName);
+      Exit;
+    end;
   if (FbImage.Width > ClientWidth) or (FbImage.Height > HeightW) then
   begin
     if FbImage.Width / FbImage.Height < DrawImage.Width / DrawImage.Height then
@@ -709,14 +725,7 @@ begin
       end;
     end;
   end else
-  begin
-    DrawImage.Canvas.Font.Color := 0;
-    DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(Text_error_out) div 2,
-      DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2, Text_error_out);
-    DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(FileName) div 2,
-      DrawImage.Height div 2 - DrawImage.Canvas.Textheight(Text_error_out) div 2 + DrawImage.Canvas.Textheight
-        (FileName) + 4, FileName);
-  end;
+    ShowErrorText(FileName);
 
   if (not FIsWaiting) and (RealImageHeight * RealImageWidth <> 0) then
   begin
@@ -780,7 +789,7 @@ begin
       if DBKernel.FindPasswordForCryptImageFile(Item.FileName) = '' then
         Exit;
   if not SlideShowNow then
-    LoadImage_(Sender, Item.FileName, Item.Rotation, False,
+    LoadImage_(Sender, Item.Rotation, False,
       Zoom, False)
 end;
 
@@ -793,7 +802,7 @@ begin
     CurrentFileNumber := CurrentInfo.Count - 1;
   FCurrentPage := 0;
   if not SlideShowNow then
-    LoadImage_(Sender, Item.FileName, Item.Rotation, False,
+    LoadImage_(Sender, Item.Rotation, False,
       Zoom, False);
 end;
 
@@ -896,7 +905,7 @@ begin
     SlideShowNow := False;
     Loading := True;
     ImageExists := False;
-    LoadImage_(Sender, Item.FileName, Item.Rotation, False,
+    LoadImage_(Sender, Item.Rotation, False,
       Zoom, False);
     if DirectShowForm <> nil then
       DirectShowForm.Close;
@@ -1234,8 +1243,7 @@ begin
           CurrentInfo[I].InfoLoaded := True;
           CurrentInfo[I].ID := 0;
           if I = CurrentFileNumber then
-            LoadImage_(Sender, CurrentInfo[I].FileName,
-              CurrentInfo[I].Rotation, False, Zoom, False);
+            LoadImage_(Sender, Item.Rotation, False, Zoom, False);
           Exit;
         end;
       end;
@@ -1247,8 +1255,7 @@ begin
       if Value.NewName <> '' then
         Item.FileName := Value.NewName;
       Item.InfoLoaded := False;
-      LoadImage_(Sender, Item.FileName, Item.Rotation,
-        False, Zoom, False);
+      LoadImage_(Sender, Item.Rotation, False, Zoom, False);
       Exit;
     end;
 
@@ -1258,7 +1265,7 @@ begin
         begin
           CurrentInfo[I].InfoLoaded := False;
           if I = CurrentFileNumber then
-            LoadImage_(Sender, CurrentInfo[I].FileName, CurrentInfo[I].Rotation, False, Zoom, False);
+            LoadImage_(Sender, Item.Rotation, False, Zoom, False);
           Exit;
         end;
 
@@ -1271,8 +1278,7 @@ begin
     if (EventID_Param_Rotate in Params) then
       Item.Rotation := Value.Rotate;
     if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) then
-      LoadImage_(Sender, Item.FileName, Item.Rotation,
-        False, Zoom, False);
+      LoadImage_(Sender, Item.Rotation, False, Zoom, False);
   end;
 end;
 
@@ -1314,7 +1320,7 @@ begin
     FreeDS(FQuery);
   end;
   CurrentFileNumber := 0;
-  LoadImage_(nil, Item.FileName, Item.Rotation, False, Zoom, False);
+  LoadImage_(nil, Item.Rotation, False, Zoom, False);
   Show;
   SetFocus;
   if CurrentInfo.Count < 2 then
@@ -1621,7 +1627,6 @@ end;
 function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile : String) : boolean;
 var
   I: Integer;
-  TmpStr: string;
   FOldImageExists, NotifyUser: Boolean;
 
 begin
@@ -1671,9 +1676,7 @@ begin
     if I = CurrentInfo.Position then
       NotifyUser := CurrentInfo.Position < CurrentInfo.Count;
 
-    TmpStr := CurrentInfo[I].FileName;
-    DoProcessPath(TmpStr, NotifyUser);
-    CurrentInfo[I].FileName := TmpStr;
+    CurrentInfo[I].FileName := ProcessPath(CurrentInfo[I].FileName, NotifyUser);
   end;
 
   begin
@@ -1692,7 +1695,7 @@ begin
       Loading := True;
       TW.I.Start('LoadImage_');
 
-      LoadImage_(Sender, Item.FIleName, Item.Rotation, False, Zoom, False);
+      LoadImage_(Sender, Item.Rotation, False, Zoom, False);
     end else
     begin
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
@@ -2048,7 +2051,7 @@ begin
     ScrollBar2.PageSize := 0;
     ScrollBar2.Max := 100;
     ScrollBar2.Position := 50;
-    LoadImage_(Sender, Item.FileName, Item.Rotation, True, 1, True);
+    LoadImage_(Sender, Item.Rotation, True, 1, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end else
@@ -2096,7 +2099,7 @@ begin
     BestSize1.Enabled := False;
     ZoomIn1.Enabled := False;
     ZoomOut1.Enabled := False;
-    LoadImage_(Sender, Item.FileName, Item.Rotation, True, Z, True);
+    LoadImage_(Sender, Item.Rotation, True, Z, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end else
@@ -2145,7 +2148,7 @@ begin
     BestSize1.Enabled := False;
     ZoomIn1.Enabled := False;
     ZoomOut1.Enabled := False;
-    LoadImage_(Sender, Item.FileName, Item.Rotation, True, Z, True);
+    LoadImage_(Sender, Item.Rotation, True, Z, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end else
@@ -2487,7 +2490,7 @@ end;
 
 procedure TViewer.ReloadCurrent;
 begin
-  LoadImage_(Self, Item.FileName, Item.Rotation, False, Zoom, False);
+  LoadImage_(Self, Item.Rotation, False, Zoom, False);
 end;
 
 procedure TViewer.Pause;
@@ -2649,7 +2652,7 @@ begin
     Result := True;
     Width := Item.Width;
     Height := Item.Height;
-    Bitmap.Assign(DrawImage);
+    Bitmap.Assign(FbImage);
   end;
 end;
 
@@ -3092,7 +3095,7 @@ begin
     TbRotateCW.Enabled := False;
     RealSize1.Enabled := False;
     BestSize1.Enabled := False;
-    LoadImage_(Sender, Item.FileName, Item.Rotation, False, 1, True);
+    LoadImage_(Sender, Item.Rotation, False, 1, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end;

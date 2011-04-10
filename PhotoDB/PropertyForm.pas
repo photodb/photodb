@@ -16,7 +16,7 @@ uses
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
   uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
-  uSettings, uAssociations, uDBAdapter;
+  uSettings, uAssociations, uDBAdapter, pngimage;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -127,8 +127,8 @@ type
     LbGroupsEditInfo: TLabel;
     LbAvaliableGroups: TLabel;
     LstAvaliableGroups: TListBox;
-    Button7: TButton;
-    Button6: TButton;
+    BtnRemoveGroup: TButton;
+    BtnAddGroup: TButton;
     lstCurrentGroups: TListBox;
     LbCurrentGroups: TLabel;
     CbShowAllGroups: TCheckBox;
@@ -212,8 +212,8 @@ type
     procedure LstAvaliableGroupsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure lstCurrentGroupsDblClick(Sender: TObject);
-    procedure Button6Click(Sender: TObject);
-    procedure Button7Click(Sender: TObject);
+    procedure BtnAddGroupClick(Sender: TObject);
+    procedure BtnRemoveGroupClick(Sender: TObject);
     procedure lstCurrentGroupsContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure Clear1Click(Sender: TObject);
@@ -2048,7 +2048,10 @@ begin
           VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
       except
         on e : Exception do
+        begin
+          VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
           Eventlog(e.Message);
+        end;
       end;
     finally
       F(ExifData);
@@ -2670,6 +2673,7 @@ begin
     on E: Exception do
       EventLog(':TPropertiesForm.ListBox2DrawItem() throw exception: ' + E.message);
   end;
+  FreeGroups(XNewGroups);
 end;
 
 procedure TPropertiesForm.lstCurrentGroupsDblClick(Sender: TObject);
@@ -2688,7 +2692,7 @@ begin
     end;
 end;
 
-procedure TPropertiesForm.Button6Click(Sender: TObject);
+procedure TPropertiesForm.BtnAddGroupClick(Sender: TObject);
 var
   I: Integer;
 
@@ -2714,7 +2718,10 @@ var
       KeyWords := KeyWordsMemo.Text;
       AddWordsA(TempGroup.GroupKeyWords, KeyWords);
       KeyWordsMemo.Text := KeyWords;
+      FreeGroup(TempGroup);
     end;
+    FreeGroups(OldGroups);
+    FreeGroups(Groups);
   end;
 
 begin
@@ -2727,7 +2734,7 @@ begin
   CommentMemoChange(Sender);
 end;
 
-procedure TPropertiesForm.Button7Click(Sender: TObject);
+procedure TPropertiesForm.BtnRemoveGroupClick(Sender: TObject);
 var
   I, J: Integer;
   KeyWords, AllGroupsKeyWords, GroupKeyWords: string;
@@ -2804,7 +2811,7 @@ procedure TPropertiesForm.LstAvaliableGroupsDblClick(Sender: TObject);
 begin
   if FSaving then
     Exit;
-  Button6Click(Sender);
+  BtnAddGroupClick(Sender);
 end;
 
 function TPropertiesForm.AGetGroupByCode(GroupCode: string): Integer;
@@ -2922,8 +2929,8 @@ begin
   CbInclude.Enabled := False;
   LstAvaliableGroups.Enabled := False;
   LstCurrentGroups.Enabled := False;
-  Button6.Enabled := False;
-  Button7.Enabled := False;
+  BtnAddGroup.Enabled := False;
+  BtnRemoveGroup.Enabled := False;
 end;
 
 procedure TPropertiesForm.UnLockImput;
@@ -2938,8 +2945,8 @@ begin
   CbInclude.Enabled := True;
   LstAvaliableGroups.Enabled := True;
   LstCurrentGroups.Enabled := True;
-  Button6.Enabled := True;
-  Button7.Enabled := True;
+  BtnAddGroup.Enabled := True;
+  BtnRemoveGroup.Enabled := True;
 end;
 
 procedure TPropertiesForm.PmClearPopup(Sender: TObject);

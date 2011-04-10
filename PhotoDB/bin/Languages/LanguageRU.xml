@@ -121,6 +121,7 @@
     <translate name="Watermark Options" value="Настнойки водяного знака" />
 	<translate name="Please, choose a valid directory!" value="Пожалуйста, выберите существующую директорию!" />
     <translate name="processed" value="обработка" />
+	<translate name="Preview isn't avaliable. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждно или зашифровано." />	
   </scope>
   <scope name="Password">
     <translate name="Password" value="Пароль" />
@@ -135,7 +136,7 @@
     <translate name="Password requared" value="Необходим пароль" />
 	<translate name="Save password for session" value="Сохранить пароль на сессию" />
 	<translate name="Save password in settings" value="Сохранить пароль в настройках" />
-	<translate name="Don''t ask again" value="Больше не спрашивать" />
+	<translate name="Don't ask again" value="Больше не спрашивать" />
 	<translate name="Show files" value="Показать файлы" />
 	<translate name="These files have the same password (hashes are equals)" value="Эти файлы зашифрованы одним паролем (совпадение хэша)" />
 	<translate name="Skip these files" value="Пропустить эти файлы" />
@@ -669,7 +670,8 @@
     <translate name="View" value="Просмотр" />
     <translate name="Viewer" value="Просмотр фотографий" />
     <translate name="File %s not found!" value="Файл не найден!" />
-    <translate name="Error showing image!" value="ошибка отображения изображения!" />
+    <translate name="Can't display file" value="Невозможно отобразить файл" />
+    <translate name="Error displaying image!" value="Ошибка отображения изображения!" />
     <translate name="Loading list of images" value="загрузка списка изображений" />
 	<translate name="Collection Item [%d]" value="Информация в базе [%d]" />
     <translate name="Processing" value="Обработка" />
@@ -1054,6 +1056,9 @@
 	<translate name="For an unsaved file, the properties are not available." value="Для несохранённого файла, свойства недоступны." />
 	<translate name="Image was changed, save changes?" value="Изображение было изменено, сохранить изображение?" />
 	<translate name="Can not write to file &quot;%s&quot;. The file may be in use by another application..." value="Невозможно записать в файл &quot;%s&quot;. Возможно, файл занят другим приложением..." />
+	<translate name="Loading BMP format" value="Загрузка BMP формата" />
+	<translate name="Loading JPEG format" value="Загрузка JPEG формата" />
+	<translate name="Loading GIF format" value="Загрузка GIF формата" />
   </scope>
   <scope name="BrushTool">
 	<translate name="Brush size [%d]" value="Размер кисти [%d]" />
