@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DB, Dolphin_DB, ProgressActionUnit, uVistaFuncs,
   CmpUnit, ExtCtrls, ClipBrd, Menus, UnitDBkernel, CommonDBSupport, uMemory,
-  uDBForm, uShellIntegration, uConstants;
+  uDBForm, uShellIntegration, uConstants, uMemoryEx;
 
 type
   Item = string; { This defines the objects being sorted. }

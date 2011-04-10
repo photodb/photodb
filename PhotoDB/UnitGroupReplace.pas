@@ -5,7 +5,7 @@ interface
 uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Menus, UnitDBKernel, jpeg,
-  uConstants, uMemory, uDBForm, uShellIntegration, Dolphin_DB,
+  uConstants, uMemory, uDBForm, uShellIntegration, Dolphin_DB, uMemoryEx,
   CommonDBSupport;
 
 type

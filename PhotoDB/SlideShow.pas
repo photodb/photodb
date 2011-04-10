@@ -5,7 +5,7 @@ interface
 uses
   Shellapi, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
-  AppEvnts, ImgList, UnitDBKernel, jpeg, Win32crc, CommCtrl,
+  AppEvnts, ImgList, UnitDBKernel, jpeg, Win32crc, CommCtrl, uMemoryEx,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
   FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, uSearchTypes,
   ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage, uFileUtils,
@@ -2321,15 +2321,15 @@ begin
         ImageList_ReplaceIcon(Imlists[I].Handle, -1, Icons[I, J]);
         if I = 0 then
         begin
-          {if J in [0, 1, 12, 14, 15, 22] then
-          begin    }
+          if J in [0, 1, 12, 14, 15, 22] then
+          begin
             B.Canvas.Rectangle(0, 0, 16, 16);
             DrawIconEx(B.Canvas.Handle, 0, 0, Icons[I, J], 16, 16, 0, 0, DI_NORMAL);
             GrayScale(B);
             Imlists[2].Add(B, nil);
-          {end
+          end
           else
-            ImageList_ReplaceIcon(Imlists[2].Handle, -1, Icons[I, J]);    }
+            ImageList_ReplaceIcon(Imlists[2].Handle, -1, Icons[I, J]);
         end;
       end;
     TW.I.Start('DestroyIcon');
@@ -2338,7 +2338,7 @@ begin
         DestroyIcon(Icons[I, J]);
 
   finally
-    B.Free;
+    F(B);
   end;
   TW.I.Start('RecreateImLists - end');
 end;

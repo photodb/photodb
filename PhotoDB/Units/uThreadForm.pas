@@ -89,7 +89,7 @@ begin
     for I := 0 to FThreadList.Count - 1 do
     begin
       TThread(FThreadList[I]).OnTerminate := nil;
-      TThreadEx(FThreadList[I]).DoTerminate;
+      TThreadEx(FThreadList[I]).DoTerminateThread;
     end;
   finally
     FSync.Leave;

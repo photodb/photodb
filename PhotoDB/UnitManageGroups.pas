@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
   ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math, CommCtrl,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
-  UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils,
+  UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils, uMemoryEx,
   uShellIntegration, uConstants, Dolphin_DB, uSettings;
 
 type

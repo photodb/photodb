@@ -681,6 +681,4 @@ begin
     Result := ExtractFileName(CurrentInfo.Name);
 end;
 
-initialization
-
 end.

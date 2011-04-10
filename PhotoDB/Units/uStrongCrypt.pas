@@ -142,7 +142,6 @@ begin
 end;
 
 initialization
-
   SetDefaultCipherClass(TCipher_Blowfish);
   SetDefaultHashClass(THash_SHA1);
 

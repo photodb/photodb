@@ -43,13 +43,25 @@ var
   SqlText : string;
   ItemData : TDBPopupMenuInfoRecord;
   FQuery : TDataSet;
+
+  procedure FillPacket;
+  var
+    I: Integer;
+  begin
+    if not SynchronizeEx(FillDataPacket) then
+    begin
+      for I := 0 to FDataList.Count - 1 do
+        TObject(FDataList[I]).Free;
+    end;
+  end;
+
 begin
   FDataList := TList.Create;
   try              
     FQuery := GetQuery(True);
     try
       ForwardOnlyQuery(FQuery);
-      SqlText:='SELECT ID FROM $DB$ ORDER BY ID';
+      SqlText := 'SELECT ID FROM $DB$ ORDER BY ID';
       SetSQL(FQuery, SqlText);
       FQuery.Open;
 
@@ -65,14 +77,14 @@ begin
 
         if FDataList.Count = 500 then
         begin
-          SynchronizeEx(FillDataPacket);
+          FillPacket;
           FDataList.Clear;
         end;
 
         FQuery.Next;
       end;
             
-      Synchronize(FillDataPacket);  
+      FillPacket;
       FDataList.Clear;
     finally
       FreeDS(FQuery);
@@ -85,8 +97,7 @@ end;
 
 procedure TThreadLoadingManagerDB.FillDataPacket;
 begin
-  if not Terminated then
-    (FOwner as TManagerDB).DBLoadDataPacket(FDataList);
+  (FOwner as TManagerDB).DBLoadDataPacket(FDataList);
 end;
 
 end.

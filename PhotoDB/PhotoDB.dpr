@@ -321,7 +321,8 @@ uses
   uFrmSelectDBCreationSummary in 'SelectDB\uFrmSelectDBCreationSummary.pas' {FrmSelectDBCreationSummary: TFrame},
   uInterfaces in 'Units\uInterfaces.pas',
   uDBAdapter in 'Units\uDBAdapter.pas',
-  uCDMappingTypes in 'Units\uCDMappingTypes.pas';
+  uCDMappingTypes in 'Units\uCDMappingTypes.pas',
+  uMemoryEx in 'Units\uMemoryEx.pas';
 
 var
   S1: string;
@@ -699,7 +700,6 @@ begin
         TLoad.Instance.RequaredDBSettings;
       end;
 
-    TryRemoveConnection(DBName, True);
   except
     on e : Exception do
     begin

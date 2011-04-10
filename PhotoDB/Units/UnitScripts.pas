@@ -15,9 +15,10 @@ interface
 
 {$ENDIF}
 
-uses Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs,
-     Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-     uMemory, uGOM, uTime, uTranslate, uRuntime;
+uses
+  Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs, uMemoryEx,
+  Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
+  uMemory, uGOM, uTime, uTranslate, uRuntime;
 
 type
   TMenuItemW = class(TMenuItem)

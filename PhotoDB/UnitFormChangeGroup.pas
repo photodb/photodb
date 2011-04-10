@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, Math, UnitGroupsTools, uVistaFuncs,
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
   ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon,
-  uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo,
+  uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo, uMemoryEx,
   uShellIntegration, AppEvnts, uMemory, WebLinkList, WebLink;
 
 type

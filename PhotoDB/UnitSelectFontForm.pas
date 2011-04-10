@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, uDBForm, uMemory;
+  Dialogs, StdCtrls, Dolphin_DB, uDBForm, uMemory, uMemoryEx;
 
 type
   TFormSelectFont = class(TDBForm)

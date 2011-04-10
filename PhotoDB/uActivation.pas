@@ -6,7 +6,8 @@ uses
   UnitINI, Searching, dolphin_db, UnitDBKernel, Windows, Messages, SysUtils,
   Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
   Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm,
-  uMemory, uConstants, uWizards, pngimage, uResources, uPNGUtils, uSettings;
+  uMemory, uConstants, uWizards, pngimage, uResources, uPNGUtils, uSettings,
+  uMemoryEx;
 
 type
   TActivateForm = class(TDBForm)

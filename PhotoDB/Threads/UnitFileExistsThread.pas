@@ -52,17 +52,17 @@ implementation
     CheckThread : THandle;
   begin
 
-   EventLog(':CheckFileExistsWithMessageEx()...');
-   while CheckFileExistsWithMessageWork do
-    Application.ProcessMessages;
+    EventLog(':CheckFileExistsWithMessageEx()...');
+    while CheckFileExistsWithMessageWork do
+      Application.ProcessMessages;
 
-   CheckFileExistsWithMessageWork:=true;
-   CheckFileExistsWithMessageResult:=false;
+    CheckFileExistsWithMessageWork:=true;
+    CheckFileExistsWithMessageResult:=false;
 
-   CheckThread := TFileExistsThread.Create(FileName, IsDirectory).Handle;
-   WaitForSingleObject(CheckThread, FileCheckTimeOut);
+    CheckThread := TFileExistsThread.Create(FileName, IsDirectory).Handle;
+    WaitForSingleObject(CheckThread, FileCheckTimeOut);
 
-   Result:=CheckFileExistsWithMessageResult;
+    Result := CheckFileExistsWithMessageResult;
   end;
 
 { TFileExistsThread }

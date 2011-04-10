@@ -5,7 +5,7 @@ interface
 uses
   UnitGroupsWork, DBCMenu, CmpUnit, FileCtrl,
   ShellApi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DB, Menus, ExtCtrls, StdCtrls, uGraphicUtils,
+  Dialogs, DB, Menus, ExtCtrls, StdCtrls, uGraphicUtils, uMemoryEx,
   ImgList, ComCtrls, ActiveX, ShlObj, JPEG, DmProgress, ClipBrd,
   SaveWindowPos, ExtDlgs , ToolWin, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,

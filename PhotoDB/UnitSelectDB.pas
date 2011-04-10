@@ -3,7 +3,7 @@ unit UnitSelectDB;
 interface
 
 uses
-  Windows, SysUtils, Classes, Controls, Forms, Graphics, uMemory,
+  Windows, SysUtils, Classes, Controls, Forms, Graphics, uMemory, uMemoryEx,
   ExtCtrls, StdCtrls, UnitDBDeclare, uConstants, CommonDBSupport, uDBForm,
   uWizards, uInterfaces;
 

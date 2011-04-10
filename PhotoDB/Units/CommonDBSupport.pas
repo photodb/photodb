@@ -873,8 +873,6 @@ begin
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname);
   DBConnection.ADOConnection.LoginPrompt := False;
   DBConnection.ADOConnection.Provider := MDBProvider;
-  if DBConnection.Isolated then
-    DBConnection.ADOConnection.Mode := cmRead;
   Result := DBConnection.ADOConnection;
 end;
 

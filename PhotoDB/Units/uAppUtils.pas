@@ -17,13 +17,19 @@ var
 procedure CheckParams;
 var
   I : Integer;
+  S: string;
 begin
   if ProgramParams = nil then
   begin
     ProgramParams := TStringList.Create;
-    for I := 1 to ParamCount do
-      ProgramParams.Add(AnsiUpperCase(ParamStr(I)));
-    ProgramParams.Add('');
+    S := '';
+    I := 1;
+    repeat
+      S := AnsiUpperCase(ParamStr(I));
+      ProgramParams.Add(S);
+      Inc(I);
+    until S = '';
+
   end;
 end;
 

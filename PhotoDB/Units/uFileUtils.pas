@@ -682,34 +682,37 @@ begin
   end else
   begin
     Sl := TStringList.Create;
-    // Decode string
-    while IPos <> 0 do
-    begin
-      Sl.Add(Copy(SHelp, 1, (IPos - 1)));
-      SHelp := Copy(SHelp, (IPos + 1), Length(SHelp));
-      IPos := Pos('\', SHelp);
+    try
+      // Decode string
+      while IPos <> 0 do
+      begin
+        Sl.Add(Copy(SHelp, 1, (IPos - 1)));
+        SHelp := Copy(SHelp, (IPos + 1), Length(SHelp));
+        IPos := Pos('\', SHelp);
+      end;
+      if SHelp <> '' then
+      begin
+        Sl.Add(SHelp);
+      end;
+      // Encode string
+      SFile := Sl[Sl.Count - 1];
+      Sl.Delete(Sl.Count - 1);
+      Result := '';
+      while (Length(Result + SFile) < InSpace) and (Sl.Count <> 0) do
+      begin
+        Result := Result + Sl[0] + '\';
+        Sl.Delete(0);
+      end;
+      if Sl.Count = 0 then
+      begin
+        Result := Result + SFile;
+      end else
+      begin
+        Result := Result + '..\' + SFile;
+      end;
+    finally
+      F(Sl);
     end;
-    if SHelp <> '' then
-    begin
-      Sl.Add(SHelp);
-    end;
-    // Encode string
-    SFile := Sl[Sl.Count - 1];
-    Sl.Delete(Sl.Count - 1);
-    Result := '';
-    while (Length(Result + SFile) < InSpace) and (Sl.Count <> 0) do
-    begin
-      Result := Result + Sl[0] + '\';
-      Sl.Delete(0);
-    end;
-    if Sl.Count = 0 then
-    begin
-      Result := Result + SFile;
-    end else
-    begin
-      Result := Result + '..\' + SFile;
-    end;
-    Sl.Free;
   end;
 end;
 

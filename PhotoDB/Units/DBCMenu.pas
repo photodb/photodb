@@ -3,7 +3,7 @@ unit DBCMenu;
 interface
 
 uses
-  StdCtrls, UnitGroupsWork, ComCtrls, Dolphin_DB,
+  StdCtrls, UnitGroupsWork, ComCtrls, Dolphin_DB, uMemoryEx,
   dialogs,ExtCtrls, ShlObj, ComObj, ActiveX, Math, Controls, Filectrl,
   forms, Registry, ShellApi, Windows, SysUtils, Classes, DB, uCDMappingTypes,
   Graphics, Menus, UnitDBKernel, UnitCryptImageForm, GraphicCrypt,

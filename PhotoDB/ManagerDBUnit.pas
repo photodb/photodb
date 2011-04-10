@@ -7,7 +7,7 @@ uses
   SysUtils, Variants, Classes, Graphics, Controls, Forms, Math, uVistaFuncs,
   ExtCtrls, AppEvnts, ImgList, DropTarget, DragDropFile, DragDrop,
   DropSource, Menus, SaveWindowPos, DB, ComCtrls, WebLink, StdCtrls,
-  Dialogs, Grids, DBGrids, jpeg, TwButton, Rating, Mask,
+  Dialogs, Grids, DBGrids, jpeg, TwButton, Rating, Mask, uMemoryEx,
   GraphicCrypt, UnitStringPromtForm, CommonDBSupport, GraphicsCool,
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
@@ -252,6 +252,7 @@ var
 begin
   FLoadingDataThread := nil;
   FData := TList.Create;
+  LsLoadingDB.Color := clWindow;
   FormManagerHint := nil;
   PopupMenuRating.Images := DBkernel.ImageList;
   PopupMenuRotate.Images := DBkernel.ImageList;
@@ -387,32 +388,33 @@ end;
 
 procedure TManagerDB.FormDestroy(Sender: TObject);
 var
-  I : integer;
+  I : Integer;
 begin
+  NewFormState;
+
+  elvMain.WindowProc := OldWNDProc;
+
   ReleaseLoadingThread;
   FreeGroups(aGroups);
   for I := 0 to Length(GroupBitmaps) - 1 do
     GroupBitmaps[I].Free;
   SetLength(GroupBitmaps, 0);
 
+  ElvMain.Items.Count := 0;
   FreeDS(WorkQuery);
-  FBackUpFiles.Free;
-  if FormManagerHint<>nil then
-  begin
-    FormManagerHint.Release;
-    FormManagerHint := nil;
-  end;
+  F(FBackUpFiles);
+  R(FormManagerHint);
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
-//  DBkernel.UnRegisterForm(Self);
+
   DBkernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  FData.Free;
+  FreeList(FData);
 end;
 
 procedure TManagerDB.RbSQLSetClick(Sender: TObject);
 begin
-  CbSetField.Enabled:=RbSQLSet.Checked;
-  Edit2.Enabled:=RbSQLSet.Checked;
+  CbSetField.Enabled := RbSQLSet.Checked;
+  Edit2.Enabled := RbSQLSet.Checked;
   CheckSQL;
 end;
 
@@ -810,15 +812,15 @@ end;
 
 procedure TManagerDB.DBLoadDataPacket(DataList : TList);
 var
-  I : Integer;
+  I: Integer;
 begin
   elvMain.Items.BeginUpdate;
   try
     for I := 0 to DataList.Count - 1 do
-    begin
       FData.Add(DataList[I]);
-      ElvMain.Items.Add;
-    end;
+
+    ElvMain.Items.Count := ElvMain.Items.Count + DataList.Count;
+
     if (LastSelected = nil) and (elvMain.Items.Count > 0) then
     begin
       LastSelected := elvMain.Items[0];

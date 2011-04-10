@@ -1013,6 +1013,6 @@ end;
 
 initialization
 
-InitScriptFunction:=@InitializeScriptString;
+  InitScriptFunction := @InitializeScriptString;
 
 end.

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
   GraphicsCool, Effects, UnitDBCommonGraphics, uMemory, uDXUtils,
-  SyncObjs, uConstants, UnitDBKernel, uGraphicUtils, uDBThread,
+  SyncObjs, uConstants, UnitDBKernel, uGraphicUtils, uDBThread, uMemoryEx,
   uAssociations;
 
 type

@@ -255,201 +255,174 @@ begin
     Exit;
   end;
   FTestTable := nil;
-  if (GetDBType(DBName_) = DB_TYPE_MDB) and (GetFileSizeByName(DBName_) > 500 * 1025) then
-  begin
-    FTestTable := GetQuery(DBName_);
-    SetSQL(FTestTable, 'Select TOP 1 * From ImageTable Where ID<>0 ');
+  try
+    if (GetDBType(DBName_) = DB_TYPE_MDB) and (GetFileSizeByName(DBName_) > 500 * 1025) then
+    begin
+      FTestTable := GetQuery(DBName_);
+
+      SetSQL(FTestTable, 'Select TOP 1 * From ImageTable Where ID<>0 ');
+      try
+        FTestTable.Open;
+      except
+        on E: Exception do
+        begin
+          EventLog(':TDBKernel::TestDBEx()/Open throw exception: ' + E.message);
+          Result := -2;
+          Exit;
+        end;
+      end;
+    end;
+
+    if FTestTable <> nil then
+      if FTestTable.Active then
+        if FTestTable.RecordCount = 0 then
+        begin
+          FreeDS(FTestTable);
+          FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
+        end;
+
+    if FTestTable = nil then
+      FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
+
+    if FTestTable = nil then
+      Exit;
+    if not(FTestTable.Active) then
+    begin
+      if OpenInThread then
+      begin
+        ThreadOpenResultWork := False;
+        TActiveTableThread.Create(FTestTable, True, ThreadOpenResult);
+        repeat
+          Application.ProcessMessages;
+          Sleep(50);
+        until ThreadOpenResultBool;
+        ActiveOk := ThreadOpenResultBool;
+      end
+      else
+        ActiveOk := ActiveTable(FTestTable, True);
+      if not ActiveOk then
+      begin
+        Result := -3;
+        Exit;
+      end;
+    end;
+
     try
-      FTestTable.Open;
+      FTestTable.First;
+      FTestTable.FieldByName('ID').AsInteger;
+      if FTestTable.FindField('Name') = nil then
+      begin
+        FreeDS(FTestTable);
+        Result := -4;
+        Exit;
+      end;
+      FTestTable.FieldByName('Name').AsString;
+      if FTestTable.FindField('FFilename') = nil then
+      begin
+        FreeDS(FTestTable);
+        Result := -5;
+        Exit;
+      end;
+      FTestTable.FieldByName('FFilename').AsString;
+      FTestTable.FieldByName('StrTh').AsString;
+      FTestTable.FieldByName('Comment').AsString;
+      FTestTable.FieldByName('KeyWords').AsString;
+      FTestTable.FieldByName('Rating').AsInteger;
+      FTestTable.FieldByName('Attr').AsInteger;
+      FTestTable.FieldByName('Access').AsInteger;
+      FTestTable.FieldByName('Owner').AsString;
+      FTestTable.FieldByName('Collection').AsString;
+      FTestTable.FieldByName('FileSize').AsInteger;
+      FTestTable.FieldByName('Width').AsInteger;
+      FTestTable.FieldByName('Height').AsInteger;
+      FTestTable.FieldByName('Rotated').AsInteger;
+      Result := DB_VER_1_8;
+      // Added in PhotoDB v1.9
+      if FTestTable.FindField('Include') = nil then
+        Exit;
+
+      FTestTable.FindField('Include').AsBoolean;
+      if FTestTable.FindField('Links') = nil then
+        FreeDS(FTestTable);
+
+      FTestTable.FindField('Links').AsString;
+      Result := DB_VER_1_9;
+      if FTestTable.FindField('aTime') = nil then
+        FreeDS(FTestTable);
+
+      FTestTable.FindField('aTime').AsDateTime;
+      if FTestTable.FindField('IsTime') = nil then
+        FreeDS(FTestTable);
+
+
+      Result := DB_VER_2_0;
+      if (GetDBType(DBName_) = DB_TYPE_MDB) then
+        if FTestTable.FindField('FolderCRC') = nil then
+          FreeDS(FTestTable);
+
+      if (GetDBType(DBName_) = DB_TYPE_MDB) then
+        if FTestTable.FindField('StrThCRC') = nil then
+          FreeDS(FTestTable);
+
     except
       on E: Exception do
       begin
-        EventLog(':TDBKernel::TestDBEx()/Open throw exception: ' + E.message);
-        FreeDS(FTestTable);
-        Result := -2;
+        EventLog(':TDBKernel::TestDBEx() throw exception: ' + E.message);
+        Result := -6;
         Exit;
       end;
     end;
-  end;
-
-  if FTestTable <> nil then
-    if FTestTable.Active then
-      if FTestTable.RecordCount = 0 then
-      begin
-        FreeDS(FTestTable);
-        FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
-      end;
-
-  if FTestTable = nil then
-    FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
-
-  if FTestTable = nil then
-    Exit;
-  if not(FTestTable.Active) then
-  begin
-    if OpenInThread then
-    begin
-      ThreadOpenResultWork := False;
-      TActiveTableThread.Create(FTestTable, True, ThreadOpenResult);
-      repeat
-        Application.ProcessMessages;
-        Sleep(50);
-      until ThreadOpenResultBool;
-      ActiveOk := ThreadOpenResultBool;
-    end
-    else
-      ActiveOk := ActiveTable(FTestTable, True);
-    if not ActiveOk then
-    begin
-      FreeDS(FTestTable);
-      Result := -3;
-      Exit;
-    end;
-  end;
-
-  try
-    FTestTable.First;
-    FTestTable.FieldByName('ID').AsInteger;
-    if FTestTable.FindField('Name') = nil then
-    begin
-      FreeDS(FTestTable);
-      Result := -4;
-      Exit;
-    end;
-    FTestTable.FieldByName('Name').AsString;
-    if FTestTable.FindField('FFilename') = nil then
-    begin
-      FreeDS(FTestTable);
-      Result := -5;
-      Exit;
-    end;
-    FTestTable.FieldByName('FFilename').AsString;
-    FTestTable.FieldByName('StrTh').AsString;
-    FTestTable.FieldByName('Comment').AsString;
-    FTestTable.FieldByName('KeyWords').AsString;
-    FTestTable.FieldByName('Rating').AsInteger;
-    FTestTable.FieldByName('Attr').AsInteger;
-    FTestTable.FieldByName('Access').AsInteger;
-    FTestTable.FieldByName('Owner').AsString;
-    FTestTable.FieldByName('Collection').AsString;
-    FTestTable.FieldByName('FileSize').AsInteger;
-    FTestTable.FieldByName('Width').AsInteger;
-    FTestTable.FieldByName('Height').AsInteger;
-    FTestTable.FieldByName('Rotated').AsInteger;
-    Result := DB_VER_1_8;
-    // Added in PhotoDB v1.9
-    if FTestTable.FindField('Include') = nil then
-    begin
-      FreeDS(FTestTable);
-      Exit;
-    end;
-    FTestTable.FindField('Include').AsBoolean;
-    if FTestTable.FindField('Links') = nil then
-    begin
-      FreeDS(FTestTable);
-      Exit;
-    end;
-    FTestTable.FindField('Links').AsString;
-    Result := DB_VER_1_9;
-    if FTestTable.FindField('aTime') = nil then
-    begin
-      FreeDS(FTestTable);
-      Exit;
-    end;
-    FTestTable.FindField('aTime').AsDateTime;
-    if FTestTable.FindField('IsTime') = nil then
-    begin
-      FreeDS(FTestTable);
-      Exit;
-    end;
-
-    Result := DB_VER_2_0;
-    if (GetDBType(DBName_) = DB_TYPE_MDB) then
-      if FTestTable.FindField('FolderCRC') = nil then
-      begin
-        FreeDS(FTestTable);
-        Exit;
-      end;
-
-    if (GetDBType(DBName_) = DB_TYPE_MDB) then
-      if FTestTable.FindField('StrThCRC') = nil then
-      begin
-        FreeDS(FTestTable);
-        Exit;
-      end;
-
-  except
-    on E: Exception do
-    begin
-      EventLog(':TDBKernel::TestDBEx() throw exception: ' + E.message);
-      FreeDS(FTestTable);
-      Result := -6;
-      Exit;
-    end;
+  finally
+    F(FTestTable);
   end;
   if (GetDBType(DBName_) = DB_TYPE_MDB) then
   begin
     Result := DB_VER_2_1;
     FTestTable := nil;
-
     try
-      FTestTable := GetTable(DBName_, DB_TABLE_SETTINGS);
-      FTestTable.Open;
-    except
-      on E: Exception do
-      begin
-        EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: ' + E.message);
-        if FTestTable <> nil then
-          FreeDS(FTestTable);
-        Exit;
+      try
+        FTestTable := GetTable(DBName_, DB_TABLE_SETTINGS);
+        FTestTable.Open;
+      except
+        on E: Exception do
+        begin
+          EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: ' + E.message);
+          Exit;
+        end;
       end;
-    end;
-    if FTestTable <> nil then
-    begin
-      if FTestTable.RecordCount > 0 then
+      if FTestTable <> nil then
       begin
-        FTestTable.First;
-        if FTestTable.FindField('Version') = nil then
+        if FTestTable.RecordCount > 0 then
         begin
-          FreeDS(FTestTable);
-          Exit;
-        end;
-        if FTestTable.FindField('DBJpegCompressionQuality') = nil then
-        begin
-          FreeDS(FTestTable);
-          Exit;
-        end;
-        if FTestTable.FindField('ThSizePanelPreview') = nil then
-        begin
-          FreeDS(FTestTable);
-          Exit;
-        end;
-        if FTestTable.FindField('ThImageSize') = nil then
-        begin
-          FreeDS(FTestTable);
-          Exit;
-        end;
-        if FTestTable.FindField('ThHintSize') = nil then
-        begin
-          FreeDS(FTestTable);
-          Exit;
-        end;
-        try
-          FTestTable.FieldByName('Version').AsString;
-          FTestTable.FieldByName('DBJpegCompressionQuality').AsString;
-          FTestTable.FieldByName('ThSizePanelPreview').AsInteger;
-          FTestTable.FieldByName('ThImageSize').AsInteger;
-          FTestTable.FieldByName('ThHintSize').AsInteger;
-        except
-          on E: Exception do
-          begin
-            EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: ' + E.message);
-            FreeDS(FTestTable);
+          FTestTable.First;
+          if FTestTable.FindField('Version') = nil then
             Exit;
+          if FTestTable.FindField('DBJpegCompressionQuality') = nil then
+            Exit;
+          if FTestTable.FindField('ThSizePanelPreview') = nil then
+            Exit;
+          if FTestTable.FindField('ThImageSize') = nil then
+            Exit;
+          if FTestTable.FindField('ThHintSize') = nil then
+            Exit;
+
+          try
+            FTestTable.FieldByName('Version').AsString;
+            FTestTable.FieldByName('DBJpegCompressionQuality').AsString;
+            FTestTable.FieldByName('ThSizePanelPreview').AsInteger;
+            FTestTable.FieldByName('ThImageSize').AsInteger;
+            FTestTable.FieldByName('ThHintSize').AsInteger;
+          except
+            on E: Exception do
+            begin
+              EventLog(':TDBKernel::TestDBEx()/DB_TABLE_SETTINGS throw exception: ' + E.message);
+              Exit;
+            end;
           end;
+          Result := DB_VER_2_2;
         end;
-        Result := DB_VER_2_2;
       end;
+    finally
       FreeDS(FTestTable);
     end;
   end;

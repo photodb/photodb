@@ -8,7 +8,7 @@ uses
   Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
-  uTranslate, ActiveX, uActivationUtils, uSettings,
+  uTranslate, ActiveX, uActivationUtils, uSettings, uMemoryEx,
   UnitDBKernel, uAssociations;
 
 type

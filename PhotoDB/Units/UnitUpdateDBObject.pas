@@ -4,7 +4,7 @@ interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
      UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
-     uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM,
+     uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM, uMemoryEx,
      uTranslate, Dolphin_DB, uDBForm, uSettings, uAssociations;
 
 type

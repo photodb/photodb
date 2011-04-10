@@ -569,7 +569,6 @@ object ManagerDB: TManagerDB
       Visible = False
       Active = True
       FillPercent = 50
-      Color = clBtnFace
       ParentColor = False
       SignColor = clBlack
       MaxTransparencity = 255

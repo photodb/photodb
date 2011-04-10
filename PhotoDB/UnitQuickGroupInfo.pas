@@ -6,7 +6,8 @@ uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
   ComCtrls, jpeg, ExtCtrls, Dialogs, UnitDBCommonGraphics, uDBForm, uMemory,
-  uShellIntegration, uConstants, uSearchTypes, WebLinkList, WebLink, AppEvnts;
+  uShellIntegration, uConstants, uSearchTypes, WebLinkList, WebLink, AppEvnts,
+  uMemoryEx;
 
 type
   TFormQuickGroupInfo = class(TDBForm)

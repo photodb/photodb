@@ -2,7 +2,7 @@ unit uThreadEx;
 
 interface
 
-uses Classes, uThreadForm, Windows, SyncObjs, uDBThread, uGOM;
+uses Classes, uThreadForm, Windows, SyncObjs, uDBThread, uGOM, uRuntime;
 
 type
   TThreadExNotify = procedure(Sender: TObject; StateID: TGUID) of object;
@@ -35,7 +35,7 @@ type
     destructor Destroy; override;
     procedure RegisterSubThread(SubThread : TThreadEx);  
     procedure UnRegisterSubThread(SubThread : TThreadEx);
-    procedure DoTerminate;
+    procedure DoTerminateThread;
     property ThreadForm : TThreadForm read FThreadForm write FThreadForm;
     property StateID : TGUID read FState write FState;
     property IsTerminated : Boolean read GetIsTerminated write SetTerminated;
@@ -63,7 +63,7 @@ end;
 function TThreadEx.CheckForm: Boolean;
 begin
   Result := False;
-  if not IsTerminated then
+  if not IsTerminated and not DBTerminating then
   begin
     if FThreadForm.IsActualState(FState) then
       Result := True;
@@ -106,7 +106,7 @@ begin
   GOM.RemoveObj(Self);
 end;
 
-procedure TThreadEx.DoTerminate;
+procedure TThreadEx.DoTerminateThread;
 var
   I : Integer;
 begin

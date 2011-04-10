@@ -7,7 +7,7 @@ uses
   Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls, UnitINI,
   Dialogs, UnitDBKernel, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
-  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager,
+  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, uDBThread,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
   uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations;
 
@@ -56,9 +56,8 @@ const
 implementation
 
 uses
-  UnitCleanUpThread, ExplorerUnit, uSearchTypes, SlideShow,
-  uActivation, UnitUpdateDB, UnitInternetUpdate, uAbout,
-  UnitConvertDBForm, UnitImportingImagesForm, UnitFileCheckerDB,
+  UnitCleanUpThread, ExplorerUnit, uSearchTypes, SlideShow, UnitFileCheckerDB,
+  UnitInternetUpdate, uAbout, UnitConvertDBForm, UnitImportingImagesForm,
   UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
 
 {$R *.dfm}
@@ -138,7 +137,7 @@ begin
         if not IsGraphicFile(ParamStr1) then
         begin
           NewSearch := SearchManager.NewSearch;
-          if CheckFileExistsWithMessageEx(ParamStr1, False) then
+          if FileExistsSafe(ParamStr1) then
           begin
             if GetExt(ParamStr1) = 'IDS' then
             begin
@@ -258,6 +257,7 @@ var
 begin
   if ExitAppl then
     Exit;
+  DBTerminating := True;
   ExitAppl := True;
 
   EventLog(':TFormManager::ExitApplication()...');
@@ -279,6 +279,9 @@ begin
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
 
+  DBThreadManager.WaitForAllThreads(10000);
+  TryRemoveConnection(DBName, True);
+
   FormManager := nil;
 
   TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 10000, @TimerProc);
@@ -291,6 +294,7 @@ begin
   EventLog('');
   EventLog('');
   EventLog('finalization:');
+  Delay(100);
 end;
 
 function TFormManager.GetTimeLimitMessage: string;
@@ -322,6 +326,11 @@ begin
       EventLog('Loading Kernel.dll');
       TW.I.Start('StartCRCCheckThread');
       TLoad.Instance.StartCRCCheckThread;
+    end;
+    if (FCheckCount = 40) and not FolderView then //after 4 sec.
+    begin
+      if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
+        CleanUpThread.Create(False);
     end;
     if (FCheckCount = 50) and not FolderView then //after 5 sec.
     begin
