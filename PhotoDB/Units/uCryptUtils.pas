@@ -56,7 +56,7 @@ procedure TPasswordSettingsDBForm.FillChiperList;
           if not ChiperAvaliable then
             MenuItem.Enabled := False;
 
-          SettingsForm.GetPopupMenu.Items.Add(MenuItem);
+          SettingsForm.GetPasswordSettingsPopupMenu.Items.Add(MenuItem);
         end;
         if (ChiperAvaliable and (not SettingsForm.IsChiperSelected or (Integer(ClassType.Identity) = SettingsForm.SelectedChiper))) then
         begin

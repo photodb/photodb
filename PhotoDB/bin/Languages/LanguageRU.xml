@@ -434,7 +434,8 @@
 	<translate name="Connect this photo with original" value="Связать данное фото с оригиналом" />
     <translate name="Connect this photo with processed (Add link to this photo to processed)" value="Связать данное фото с обработкой (к обработке добавляется ссылка на этот оригинал)" />
 	<translate name="Connect this photo with original (Add link to this photo to original)" value="Связать данное фото с оригиналом (к оригиналу добавляется ссылка на эту обработку)" />
-    <translate name="Exif header not found." value="Exif заголовок не найден." />
+    <translate name="Exif header not found." value="Exif заголовок не найден." />	
+    <translate name="Info:" value="Информация:" />
     <translate name="Off" value="Выключена" />
     <translate name="On" value="Включена" />
     <translate name="Flash" value="Вспышка" />
@@ -1002,11 +1003,11 @@
   </scope>
   <scope name="MapCDInfo">
 	<translate name="Map CD/DVD" value="Связать диск с базой" />
-	<translate name="Select drive" value="Выберите диск" />	
+	<translate name="Select drive" value="Выбрать диск" />	
 	<translate name="You try to open file, which placed on removable drive (CD or DVD)" value="Вы пытаетесь открыть файл, который помещен на съемный диск (CD или DVD)" />	
 	<translate name="Enter, please, drive with label &quot;%s&quot; and choose &quot;%s&quot; to find this drive." value="Вставте, пожалуйста, диск с меткой &quot;%s&quot; и выберите &quot;%s&quot;, чтобы найти этот диск." />
 	<translate name="You can select a directory with files or file &quot;%s&quot; on the drive." value="Вы можете выбрать каталог с файлами или файл &quot;%s&quot; на диске." />
-	<translate name="Don''t ask me again" value="Не спрашивать меня более" />
+	<translate name="Don't ask me again" value="Не спрашивать меня более" />
 	<translate name="Disk" value="Диск" />
 	<translate name="Was loaded disc labeled &quot;%s&quot;, but required the disc labeled &quot;%s&quot;! Do you want to close this dialog?" value="Был загружен диск с меткой &quot;%s&quot;, но требуется диск с меткой &quot;%s&quot;! Хотите ли вы закрыть этот диалог?" />
   </scope>

@@ -191,11 +191,13 @@ begin
       ExifData := TExifData.Create;
       try
         ExifData.LoadFromGraphic(Files[I - 1]);
-        Dates[I] := DateOf(ExifData.DateTimeOriginal);
-      except
-        Dates[I] := DateOf(Now);
+        if not ExifData.Empty and (YearOf(ExifData.DateTimeOriginal) > 1900) then
+          Dates[I] := DateOf(ExifData.DateTimeOriginal)
+        else
+          Dates[I] := DateOf(Now);
+      finally
+        F(ExifData);
       end;
-      F(ExifData);
     end;
     Result := Now;
     for I := 1 to Min(4, Files.Count) - 1 do
@@ -203,8 +205,7 @@ begin
       begin
         Result := Now;
         Exit;
-      end
-      else
+      end else
         Result := Dates[1];
   finally
     F(Files);
@@ -298,6 +299,7 @@ begin
   ExtendedMode := False;
   GetPhotosFormSID := GetGUID;
   ThreadInProgress := False;
+  LvMain.DoubleBuffered := True;
   LoadLanguage;
   if DirectoryExists(Settings.ReadString('GetPhotos', 'DFolder')) then
     EdFolder.Text := Settings.ReadString('GetPhotos', 'DFolder')
@@ -1022,7 +1024,7 @@ begin
     Viewer.Execute(Sender, Info);
     Viewer.Show;
 
-  except
+  finally
     F(Info);
   end;
 end;

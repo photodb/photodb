@@ -3,9 +3,8 @@ unit FormManegerUnit;
 interface
 
 uses
-  GraphicCrypt, DB, UnitINI, UnitTerminationApplication,
-  Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls,
+  GraphicCrypt, DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls, UnitINI,
   Dialogs, UnitDBKernel, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager,
@@ -20,7 +19,6 @@ type
   private
     { Private declarations }
     FMainForms : TList;
-    FTemtinatedActions : TTemtinatedActions;
     FCheckCount : Integer;
     WasIde : Boolean;
     ExitAppl : Boolean;
@@ -33,8 +31,6 @@ type
     destructor Destroy; override;
     procedure RegisterMainForm(Value: TForm);
     procedure UnRegisterMainForm(Value: TForm);
-    procedure RegisterActionCanTerminating(Value: TTemtinatedAction);
-    procedure UnRegisterActionCanTerminating(Value: TTemtinatedAction);
     procedure Run;
     procedure Close(Form : TForm);
     function MainFormsCount : Integer;
@@ -259,8 +255,6 @@ end;
 procedure TFormManager.ExitApplication;
 var
   I: Integer;
-  FirstTick: Cardinal;
-  ApplReadyForEnd: Boolean;
 begin
   if ExitAppl then
     Exit;
@@ -284,39 +278,9 @@ begin
 
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
-  Delay(1000);
 
-  for I := 0 to Length(FTemtinatedActions) - 1 do
-    if (FTemtinatedActions[I].Options = TA_INFORM) or (FTemtinatedActions[I].Options = TA_INFORM_AND_NT) then
-    begin
-    end;
-  Delay(10);
-  ApplReadyForEnd := False;
-  for I := 0 to Length(FTemtinatedActions) - 1 do
-    FTemtinatedActions[I].TerminatedPointer^ := True;
-  FirstTick := GetTickCount;
-  repeat
-    Delay(10);
-    try
-      if (GetTickCount - FirstTick) > 5000 then
-        Break;
-      ApplReadyForEnd := True;
-      for I := 0 to Length(FTemtinatedActions) - 1 do
-        if not FTemtinatedActions[I].TerminatedPointer^ then
-        begin
-          ApplReadyForEnd := False;
-          Break;
-        end;
-    except
-      Break;
-    end;
-    if ApplReadyForEnd then
-      Break;
-  until False;
-{$IFDEF RELEASE}
-  TerminationApplication.Create;
-{$ENDIF}
   FormManager := nil;
+
   TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 10000, @TimerProc);
   Application.Terminate;
   TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
@@ -391,40 +355,6 @@ begin
     if FMainForms.Count = 0 then
       ExitApplication;
   end;
-end;
-
-procedure TFormManager.RegisterActionCanTerminating(
-  Value: TTemtinatedAction);
-var
-  I: Integer;
-  B: Boolean;
-begin
-  B := False;
-  for I := 0 to Length(FTemtinatedActions) - 1 do
-    if FTemtinatedActions[I].Owner = Value.Owner then
-    begin
-      B := True;
-      Break;
-    end;
-  if not B then
-  begin
-    SetLength(FTemtinatedActions, Length(FTemtinatedActions) + 1);
-    FTemtinatedActions[Length(FTemtinatedActions) - 1] := Value;
-  end;
-end;
-
-procedure TFormManager.UnRegisterActionCanTerminating(Value: TTemtinatedAction);
-var
-  I, J: Integer;
-begin
-  for I := 0 to Length(FTemtinatedActions) - 1 do
-    if FTemtinatedActions[I].Owner = Value.Owner then
-    begin
-      for J := I to Length(FTemtinatedActions) - 2 do
-        FTemtinatedActions[J] := FTemtinatedActions[J + 1];
-      SetLength(FTemtinatedActions, Length(FTemtinatedActions) - 1);
-      Break;
-    end;
 end;
 
 function TFormManager.MainFormsCount: Integer;

@@ -4,7 +4,8 @@ interface
 
 uses DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
      GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
-     uDBForm, DateUtils, SysUtils, uRuntime, uDBAdapter;
+     uDBForm, DateUtils, SysUtils, uRuntime, uDBAdapter,
+     uCDMappingTypes;
 
 const
   BufferSize = 100*3*4*4096;
@@ -422,7 +423,9 @@ begin
     Name := DA.Name;
     FileName := DA.FileName;
     if FolderView then
-      FileName := ExtractFilePath(ParamStr(0)) + FileName;
+      FileName := ExtractFilePath(ParamStr(0)) + FileName
+    else
+      DoProcessPath(FileName, False);
     KeyWords := DA.KeyWords;
     FileSize := DA.FileSize;
     Rotation := DA.Rotation;
@@ -480,7 +483,7 @@ begin
     DA.Include := Include;
     DA.Links := Links;
   finally
-    F(DS);
+    F(DA);
   end;
 end;
 

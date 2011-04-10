@@ -11,7 +11,7 @@ uses
   UnitBitmapImageList, EasyListview, DragDropFile, DragDrop, uShellIntegration,
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
-  UnitDBCommon, UnitCDMappingSupport, uLogger, uConstants, uThreadForm,
+  UnitDBCommon, uCDMappingTypes, uLogger, uConstants, uThreadForm,
   uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
   uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uDBBaseTypes, uSysUtils, uDBUtils, uDBFileTypes,

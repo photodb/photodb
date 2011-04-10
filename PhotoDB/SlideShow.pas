@@ -11,7 +11,7 @@ uses
   ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage, uFileUtils,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
+  uCDMappingTypes, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime,
@@ -247,9 +247,6 @@ type
     procedure WndProc(var Message: TMessage); override;
     function GetFormID : string; override;
     function GetItem: TDBPopupMenuInfoRecord; override;
-  //  procedure WMPaint(var Message: TWMPaint); message WM_PAINT;
-  //  procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
-  //  procedure WMPrintClient(var Message: TWMPrintClient); message WM_PRINTCLIENT;
   public
     { Public declarations }
     CurrentInfo: TDBPopupMenuInfo;
@@ -1695,8 +1692,7 @@ begin
       Loading := True;
       TW.I.Start('LoadImage_');
 
-      LoadImage_(Sender, Item.FIleName, Item.Rotation, False,
-        Zoom, False);
+      LoadImage_(Sender, Item.FIleName, Item.Rotation, False, Zoom, False);
     end else
     begin
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',

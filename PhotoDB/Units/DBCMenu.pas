@@ -5,7 +5,7 @@ interface
 uses
   StdCtrls, UnitGroupsWork, ComCtrls, Dolphin_DB,
   dialogs,ExtCtrls, ShlObj, ComObj, ActiveX, Math, Controls, Filectrl,
-  forms, Registry, ShellApi, Windows, SysUtils, Classes, DB,
+  forms, Registry, ShellApi, Windows, SysUtils, Classes, DB, uCDMappingTypes,
   Graphics, Menus, UnitDBKernel, UnitCryptImageForm, GraphicCrypt,
   ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
@@ -85,8 +85,7 @@ uses
   ExplorerUnit, PropertyForm, SlideShow, uSearchTypes, UnitFormCont,
   UnitLoadFilesToPanel, UnitEditGroupsForm, UnitMenuDateForm, CmpUnit,
   UnitQuickGroupInfo, UnitCrypting, UnitPasswordForm,
-  ImEditor, FormManegerUnit, CommonDBSupport, UnitSizeResizerForm,
-  UnitCDMappingSupport;
+  ImEditor, FormManegerUnit, CommonDBSupport, UnitSizeResizerForm;
 
 var
   DBPopupMenu: TDBPopupMenu = nil;

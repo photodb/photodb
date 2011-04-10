@@ -9,14 +9,14 @@ uses
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
   Network, GraphicCrypt, UnitCrypting, DropSource, DragDropFile, DragDrop,
-  DropTarget, ScPanel, uGOM,
+  DropTarget, ScPanel, uGOM, UnitCDMappingSupport,
   ShellContextMenu, ShlObj, Clipbrd, GraphicsCool, uShellIntegration,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
   EasyListview, MPCommonUtilities, MPCommonObjects,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
-  UnitDBCommon, UnitCDMappingSupport, SyncObjs, uResources, uListViewUtils,
+  UnitDBCommon, uCDMappingTypes, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
@@ -3219,7 +3219,7 @@ var
 begin
   Files := TStringList.Create;
   try
-    LoadFIlesFromClipBoard(Effects, Files);
+    LoadFilesFromClipBoard(Effects, Files);
     if Files.Count = 0 then
       Exit;
 
@@ -7020,20 +7020,22 @@ begin
     begin
       Index := ItemAtPos(p.X, p.Y).Index;
       Index := ItemIndexToMenuIndex(index);
-      if FFilesInfo[Index].ID > 0 then
-        RatingPopupMenu1.Tag := FFilesInfo[Index].ID
-      else
-        RatingPopupMenu1.Tag := -Index;
-
-      if not ((RatingPopupMenu1.Tag < 0) and FolderView) then
+      if fFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
       begin
-        Application.HideHint;
-        THintManager.Instance.CloseHint;
-        LastMouseItem := nil;
-        RatingPopupMenu1.Popup(p1.X, p1.Y);
-        Exit;
-      end;
+        if FFilesInfo[Index].ID > 0 then
+          RatingPopupMenu1.Tag := FFilesInfo[Index].ID
+        else
+          RatingPopupMenu1.Tag := -Index;
 
+        if not ((RatingPopupMenu1.Tag < 0) and FolderView) then
+        begin
+          Application.HideHint;
+          THintManager.Instance.CloseHint;
+          LastMouseItem := nil;
+          RatingPopupMenu1.Popup(p1.X, p1.Y);
+          Exit;
+        end;
+      end;
     end;
   end;
 
@@ -7634,8 +7636,7 @@ var
   Dir : string;
 begin
   Info := TCDIndexMapping.ReadMapFile(FFilesInfo[PmItemPopup.Tag].FileName);
-  if CDMapper = nil then
-    CDMapper := TCDDBMapping.Create;
+
   if Info.Loaded then
   begin
     Dir := ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName);

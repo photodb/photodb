@@ -8,7 +8,8 @@ uses
   Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
   DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
   AppEvnts, uVistaFuncs, DB, uAssociatedIcons, WatermarkedEdit, uMemory,
-  uDBForm, uShellIntegration, uRuntime, uConstants;
+  uDBForm, uShellIntegration, uRuntime, uConstants, ShellApi, LoadingSign,
+  uCDMappingTypes;
 
 type
   TFormCDExport = class(TDBForm)
@@ -49,6 +50,7 @@ type
     AddItems1: TMenuItem;
     ApplicationEvents1: TApplicationEvents;
     CheckBoxCreatePortableDB: TCheckBox;
+    LsMain: TLoadingSign;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
@@ -73,6 +75,7 @@ type
     procedure Paste1Click(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
+    procedure Open1Click(Sender: TObject);
   private
     { Private declarations }
     Mapping: TCDIndexMapping;
@@ -282,7 +285,8 @@ begin
     begin
       Mapping.SelectDirectory(TCDIndexMappingDirectory(Item.Data).Name);
       DrawCurrentDirectory(CDListView);
-    end;
+    end else
+      Open1Click(Sender);
 end;
 
 procedure TFormCDExport.ButtonRemoveItemsClick(Sender: TObject);
@@ -375,6 +379,7 @@ end;
 
 procedure TFormCDExport.EnableControls(Value : boolean);
 begin
+  LsMain.Visible := not Value;
   EditLabel.Enabled := Value;
   EditCDSize.Enabled := Value;
   PanelTop.Enabled := Value;
@@ -386,6 +391,7 @@ begin
   CheckBoxDeleteFiles.Enabled := Value;
   CheckBoxModifyDB.Enabled := Value;
   ButtonExport.Enabled := Value;
+  CheckBoxCreatePortableDB.Enabled := Value;
 end;
 
 procedure TFormCDExport.ButtonExportClick(Sender: TObject);
@@ -469,7 +475,7 @@ end;
 
 procedure TFormCDExport.PopupMenuListViewPopup(Sender: TObject);
 begin
-  Open1.Visible := CDListView.SelCount > 0;
+  Open1.Visible := (CDListView.SelCount = 1) and (TCDIndexMappingDirectory(CDListView.Selected.Data).RealFileName <> '');
   Copy1.Visible := CDListView.SelCount > 0;
   Cut1.Visible := CDListView.SelCount > 0;
   Paste1.Visible := CDListView.SelCount = 0;
@@ -563,6 +569,31 @@ begin
   end;
 
   Close;
+end;
+
+procedure TFormCDExport.Open1Click(Sender: TObject);
+var
+  I: Integer;
+  Item: TCDIndexMappingDirectory;
+  List: TList;
+  FileName: string;
+begin
+  List := TList.Create;
+  try
+    for I := CDListView.Items.Count - 1 downto 0 do
+      if CDListView.Items[I].Selected then
+      begin
+        Item := CDListView.Items[I].Data;
+        FileName := ProcessPath(Item.RealFileName);
+        if FileName <> '' then
+        begin
+          ShellExecute(Handle, 'open', PChar(FileName), nil, PChar(ExtractFileDir(FileName)), SW_NORMAL);
+          Exit;
+        end;
+      end;
+  finally
+    F(List);
+  end;
 end;
 
 end.

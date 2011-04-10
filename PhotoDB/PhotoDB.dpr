@@ -110,7 +110,6 @@ uses
   UnitPackingTable in 'Threads\UnitPackingTable.pas',
   UnitUpdateDBThread in 'Threads\UnitUpdateDBThread.pas',
   UnitExportThread in 'Threads\UnitExportThread.pas',
-  UnitTerminationApplication in 'Threads\UnitTerminationApplication.pas',
   UnitExplorerThumbnailCreatorThread in 'Threads\UnitExplorerThumbnailCreatorThread.pas',
   UnitSaveQueryThread in 'Threads\UnitSaveQueryThread.pas',
   UnitRecreatingThInTable in 'Threads\UnitRecreatingThInTable.pas',
@@ -322,7 +321,8 @@ uses
   uFrmSelectDBExistedFile in 'SelectDB\uFrmSelectDBExistedFile.pas' {FrmSelectDBExistedFile: TFrame},
   uFrmSelectDBCreationSummary in 'SelectDB\uFrmSelectDBCreationSummary.pas' {FrmSelectDBCreationSummary: TFrame},
   uInterfaces in 'Units\uInterfaces.pas',
-  uDBAdapter in 'Units\uDBAdapter.pas';
+  uDBAdapter in 'Units\uDBAdapter.pas',
+  uCDMappingTypes in 'Units\uCDMappingTypes.pas';
 
 var
   S1: string;

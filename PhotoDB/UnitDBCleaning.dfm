@@ -102,18 +102,18 @@ object DBCleaningForm: TDBCleaningForm
     OnClick = BntCloseClick
   end
   object BtnStart: TButton
-    Left = 120
-    Top = 160
-    Width = 99
+    Left = 7
+    Top = 159
+    Width = 106
     Height = 17
     Caption = 'Start Now'
     TabOrder = 7
     OnClick = BtnStartClick
   end
   object BtnStop: TButton
-    Left = 8
-    Top = 160
-    Width = 105
+    Left = 119
+    Top = 159
+    Width = 98
     Height = 17
     Caption = 'Stop Now'
     TabOrder = 8

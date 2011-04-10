@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel,
+  Dialogs, StdCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel, uCDMappingTypes,
   UnitCDMappingSupport, uShellIntegration, uConstants, uDBForm;
 
 type
@@ -25,34 +25,36 @@ type
   private
     { Private declarations }
     FCDName: string;
+    MapResult: Boolean;
     procedure LoadLanguage;
   protected
     function GetFormID : string; override;
   public
     { Public declarations }
-    function Execute(CDName: string): Integer;
+    function Execute(CDName: string): Boolean;
   end;
 
-function CheckCD(CDName : string) : integer;
+function CheckCD(CDName : string) : Boolean;
 
 implementation
 
-function CheckCD(CDName : string) : integer;
+function CheckCD(CDName : string) : Boolean;
 var
   FormCDMapInfo: TFormCDMapInfo;
 begin
   Application.CreateForm(TFormCDMapInfo, FormCDMapInfo);
-  Result:=FormCDMapInfo.Execute(CDName);
+  Result := FormCDMapInfo.Execute(CDName);
 end;
 
 {$R *.dfm}
 
-function TFormCDMapInfo.Execute(CDName : string) : integer;
+function TFormCDMapInfo.Execute(CDName : string) : Boolean;
 begin
   FCDName := CDName;
   EditCDName.Text := CDName;
+  MapResult := False;
   ShowModal;
-  Result := 0;
+  Result := MapResult;
 end;
 
 procedure TFormCDMapInfo.LoadLanguage;
@@ -115,11 +117,11 @@ begin
     if ID_YES = MessageBoxDB(Handle,
       Format(L('Was loaded disc labeled "%s", but required the disc labeled "%s"! Do you want to close this dialog?'), [CDLabel, EditCDName.Text]),
       L('Warning'), TD_BUTTON_YESNO, TD_ICON_QUESTION) then
-      Close
-    else
-      Exit;
+      Close;
 
+    Exit;
   end;
+  MapResult := True;
   Close;
 end;
 
@@ -128,5 +130,8 @@ begin
   CDMapper.SetCDWithNOQuestion(EditCDName.Text);
   Close;
 end;
+
+initialization
+  CheckCDFunction := CheckCD;
 
 end.

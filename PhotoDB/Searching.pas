@@ -15,7 +15,7 @@ uses
   UnitSearchBigImagesLoaderThread, DragDropFile, uFileUtils,
   DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
+  uCDMappingTypes, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
   uFastload, uListViewUtils, uDBDrawing, pngimage, uResources, uMemory,
   MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar,
   uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate, uAssociations,
@@ -2454,16 +2454,13 @@ begin
     Exit;
   end;
 
-  if GetDBType = DB_TYPE_MDB then
-  begin
-    DS := GetQuery(True);
-    try
-      SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
-      DS.Open;
-      XHint(DS);
-    finally
-      FreeDS(DS);
-    end;
+  DS := GetQuery(True);
+  try
+    SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
+    DS.Open;
+    XHint(DS);
+  finally
+    FreeDS(DS);
   end;
 end;
 

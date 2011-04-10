@@ -55,7 +55,8 @@ end;
 procedure TThreadOptimizeDublicates.Execute;
 var
   Table, SetQuery: TDataSet;
-  FileName, Groups, Links, KeyWords, Comment, S, Folder, StrTh, SQLText, SetStr: string;
+  FileName, Groups, Links, KeyWords, Comment, S, Folder, SQLText, SetStr: string;
+  StrTh: AnsiString;
   I, ID, FileSize, Rating, Access, Paramno, RecordCount, Attr: Integer;
   Query: TDataSet;
   AFile: string;
@@ -171,23 +172,16 @@ begin
 
     Query := GetQuery;
     Paramno := 0;
-    if (GetDBType(Dbname) = DB_TYPE_MDB) then
-    begin
-      if WideSearch then
-        FromDB := '$DB$'
-      else
-        FromDB := '(Select * from $DB$ where StrThCrc=:StrThCrc)';
 
-      SetSQL(Query, 'SELECT * FROM ' + FromDB + ' WHERE StrTh = :StrTh ORDER BY ID');
-      SetIntParam(Query, Nextparam, StringCRC(Table.FieldByName('StrTh').AsString));
-      if not WideSearch then
-        SetStrParam(Query, Nextparam, Table.FieldByName('StrTh').AsString);
-    end
+    if WideSearch then
+      FromDB := '$DB$'
     else
-    begin
-      SetSQL(Query, 'SELECT * FROM $DB$ WHERE StrTh = :StrTh ORDER BY ID');
-      SetStrParam(Query, Nextparam, Table.FieldByName('StrTh').AsString);
-    end;
+      FromDB := '(Select * from $DB$ where StrThCrc=:StrThCrc)';
+
+    SetSQL(Query, 'SELECT * FROM ' + FromDB + ' WHERE StrTh = :StrTh ORDER BY ID');
+    SetIntParam(Query, Nextparam, StringCRC(Table.FieldByName('StrTh').AsAnsiString));
+    if not WideSearch then
+      SetAnsiStrParam(Query, Nextparam, Table.FieldByName('StrTh').AsAnsiString);
 
     Query.Open;
 
@@ -250,14 +244,14 @@ begin
     Query.First;
     FileName := Query.FieldByName('FFileName').AsString;
     ID := Query.FieldByName('ID').AsInteger;
-    StrTh := Query.FieldByName('StrTh').AsString;
+    StrTh := Query.FieldByName('StrTh').AsAnsiString;
     FE := False;
     for I := 1 to Query.RecordCount do
     begin
       if FileExistsSafe(Query.FieldByName('FFileName').AsString) then
       begin
         FileName := Query.FieldByName('FFileName').AsString;
-        StrTh := Query.FieldByName('StrTh').AsString;
+        StrTh := Query.FieldByName('StrTh').AsAnsiString;
         ID := Query.FieldByName('ID').AsInteger;
         FE := True;
         Break;
@@ -363,8 +357,7 @@ begin
     SetStr := 'FFileName=:FFileName,';
     SetStr := SetStr + 'Name=:Name,';
     SetStr := SetStr + 'StrTh=:StrTh,';
-    if GetDBType = DB_TYPE_MDB then
-      SetStr := SetStr + 'StrThCrc=:StrThCrc,';
+    SetStr := SetStr + 'StrThCrc=:StrThCrc,';
     SetStr := SetStr + 'KeyWords=:KeyWords,';
     SetStr := SetStr + 'Comment=:Comment,';
     SetStr := SetStr + 'Links=:Links,';
@@ -372,10 +365,9 @@ begin
     SetStr := SetStr + 'Access=:Access,';
     SetStr := SetStr + 'Include=:Include,';
     SetStr := SetStr + 'Rating=:Rating,';
-    ;
+
     SetStr := SetStr + 'Attr=:Attr,';
-    if GetDBType = DB_TYPE_MDB then
-      SetStr := SetStr + 'FolderCRC=:FolderCRC';
+    SetStr := SetStr + 'FolderCRC=:FolderCRC';
 
     SetQuery := GetQuery;
     SQLText := 'Update $DB$ Set ' + SetStr + ' Where ID = ' + IntToStr(ID);
@@ -383,9 +375,8 @@ begin
 
     SetStrParam(SetQuery, Nextparam, AnsiLowerCase(FileName));
     SetStrParam(SetQuery, Nextparam, ExtractFileName(FileName));
-    SetStrParam(SetQuery, Nextparam, StrTh);
-    if GetDBType = DB_TYPE_MDB then
-      SetIntParam(SetQuery, Nextparam, Integer(StringCRC(StrTh)));
+    SetAnsiStrParam(SetQuery, Nextparam, StrTh);
+    SetIntParam(SetQuery, Nextparam, Integer(StringCRC(StrTh)));
     SetStrParam(SetQuery, Nextparam, KeyWords);
     SetStrParam(SetQuery, Nextparam, Comment);
     SetStrParam(SetQuery, Nextparam, Links);
@@ -394,8 +385,7 @@ begin
     SetBoolParam(SetQuery, Nextparam, Include);
     SetIntParam(SetQuery, Nextparam, Rating);
     SetIntParam(SetQuery, Nextparam, Attr);
-    if GetDBType = DB_TYPE_MDB then
-      SetIntParam(SetQuery, Nextparam, Integer(Crc));
+    SetIntParam(SetQuery, Nextparam, Integer(Crc));
 
     try
       ExecSQL(SetQuery);

@@ -6,16 +6,16 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, WebLink, StdCtrls, ExtCtrls, ComCtrls, ExtDlgs, Jpeg, GIFImage, Math,
   DropSource, DropTarget, ToolsUnit, CropToolUnit, SaveWindowPos,
-  ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd,
+  ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd, TiffImageUnit,
   EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus,
   CustomSelectTool, TextToolUnit, BrushToolUnit, InsertImageToolUnit,
-  GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm, UnitJPEGOptions,
+  GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm,
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
-  UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage, TiffImageUnit,
-  RAWImage, DragDrop, DragDropFile, UVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
-  UnitDBCommonGraphics, UnitCDMappingSupport, uLogger,
+  UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage,
+  RAWImage, DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
+  UnitDBCommonGraphics, uCDMappingTypes, uLogger, UnitJPEGOptions, uAssociations,
   CCR.Exif, uEditorTypes, uShellIntegration, uRuntime, uSysUtils, uSearchTypes,
-  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants, uSettings, uAssociations;
+  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants, uSettings;
 
 type
   TWindowEnableState = record

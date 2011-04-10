@@ -6,68 +6,9 @@ uses
   Windows, Classes, SysUtils, StrUtils, UnitDBFileDialogs,
   uShellIntegration, UnitDBDeclare, uVistaFuncs, uFileUtils,
   uMemory, uTranslate, uConstants, uDBBaseTypes, uDBUtils,
-  uDBPopupMenuInfo;
+  uDBPopupMenuInfo, uCDMappingTypes;
 
 type
- // File strusts//////////////////////////////////////
-  TCDIndexFileHeader = record
-    ID: string[20];
-    Version: Byte;
-    DBVersion: Integer;
-  end;
-
-  TCDIndexFileHeaderV1 = record
-    CDLabel: string[255];
-    Date: TDateTime;
-  end;
-
-  TCDIndexInfo = record
-    CDLabel: string[255];
-    Date: TDateTime;
-    DBVersion: Integer;
-    Loaded: Boolean;
-  end;
-
-  // DB Structs/////////////////////////////////////////
-  TCDDataArrayItem = record
-    name: string[255];
-    CDRelativePath: string;
-  end;
-
-  TCDDataArray = record
-    CDName: string;
-    Data: array of TCDDataArrayItem;
-  end;
-
-  TCDIndexMappingDirectory = class
-  private
-    FFiles : TList;
-    function GetFileByIndex(FileIndex: Integer): TCDIndexMappingDirectory;
-    function GetCount: Integer;
-  public
-    Name: string;
-    IsFile: Boolean;
-    Parent: TCDIndexMappingDirectory;
-    IsReal: Boolean;
-    RealFileName: string;
-    DB_ID: Integer;
-    FileSize: Int64;
-    constructor Create;
-    destructor Destroy; override;
-    function Add(Item : TCDIndexMappingDirectory) : Integer;
-    property Items[FileIndex : Integer] : TCDIndexMappingDirectory read GetFileByIndex; default;
-    property Count : Integer read GetCount;
-    procedure Remove(var Item : TCDIndexMappingDirectory);
-    procedure Delete(Index : Integer);
-  end;
-
-  TDBFilePath = record
-    FileName: string;
-    ID: Integer;
-  end;
-
-  TDBFilePathArray = array of TDBFilePath;
-
   TCDIndexMapping = class(TObject)
   private
     ClipboardCut: Boolean;
@@ -126,81 +67,21 @@ type
     property CDLabel: string read FCDLabel write SetCDLabel;
   end;
 
-const
-  TCD_CLASS_TAG_NONE = 0;
-  TCD_CLASS_TAG_NO_QUESTION = 1;
-
-  C_CD_MAP_FILE = 'DBCDMap.map';
-
-type
-  TCDClass = class(TObject)
-  public
-    Name: string;
-    Path: string;
-    Tag: Integer;
-  end;
-
-//  PCDClass = ^TCDClass;
-
-  TCDDBMapping = class(TObject)
-  private
-    CDLoadedList: TList;
-    CDFindedList: TList;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function GetCDByName(CDName: string): TCDClass;
-    function GetCDByNameInternal(CDName: string): TCDClass;
-    procedure DoProcessPath(var FileName: string; CanUserNotify: Boolean = False);
-    function ProcessPath(FileName: string; CanUserNotify: Boolean = False): string;
-    procedure AddCDMapping(CDName: string; Path: string; Permanent: Boolean);
-    procedure RemoveCDMapping(CDName: string);
-    function GetFindedCDList: TList;
-    procedure SetCDWithNOQuestion(CDName: string);
-    procedure UnProcessPath(var Path: string);
-  end;
-
-var
-  CDMapper: TCDDBMapping = nil;
-
-function ProcessPath(FileName: string; CanUserNotify: Boolean = False): string;
-procedure DoProcessPath(var FileName: string; CanUserNotify: Boolean = False);
 function AddCDLocation(Handle : THandle; CDName: string): string;
-procedure UnProcessPath(var FileName: string);
-function StaticPath(FileName: string): Boolean;
 
 implementation
 
 uses UnitFormCDMapInfo;
 
-function StaticPath(FileName: string): Boolean;
-begin
-  Result := True;
-  if Copy(FileName, 1, 2) = '::' then
-    if PosEx('::', FileName, 3) > 0 then
-      Result := False;
-end;
+{ TCDIndexMapping }
 
-procedure DoProcessPath(var FileName: string; CanUserNotify: Boolean = False);
-begin
-  if CDMapper = nil then
-    CDMapper := TCDDBMapping.Create;
-  CDMapper.DoProcessPath(FileName, CanUserNotify);
-end;
+//MAPPING:
+//label "PHOTOS"
+//c:\dir\path\image.jpeg
+//\folder\new_image.jpeg
+//db ::PHOTOS::\folder\new_image.jpeg
 
-procedure UnProcessPath(var FileName: string);
-begin
-  if CDMapper = nil then
-    CDMapper := TCDDBMapping.Create;
-  CDMapper.UnProcessPath(FileName);
-end;
-
-function ProcessPath(FileName: string; CanUserNotify: Boolean = False): string;
-begin
-  if CDMapper = nil then
-    CDMapper := TCDDBMapping.Create;
-  Result := CDMapper.ProcessPath(FileName, CanUserNotify);
-end;
+//::drive_label::/path_on_drive
 
 function GetValidCDIndexInFolder(Dir: string): string;
 var
@@ -236,7 +117,6 @@ begin
   FindClose(SearchRec);
 end;
 
-
 function AddCDLocation(Handle : THandle; CDName: string): string;
 var
   OpenDialog: DBOpenDialog;
@@ -246,8 +126,6 @@ var
   procedure LoadInfoByPath;
   begin
     Info := TCDIndexMapping.ReadMapFile(Path);
-    if CDMapper = nil then
-      CDMapper := TCDDBMapping.Create;
     CDMapper.AddCDMapping(Info.CDLabel, ExtractFilePath(Path), False);
     Result := Info.CDLabel;
   end;
@@ -295,31 +173,6 @@ begin
     end;
   finally
     F(OpenDialog);
-  end;
-end;
-
-{ TCDIndexMapping }
-
-//MAPPING:
-//label "PHOTOS"
-//c:\dir\path\image.jpeg
-//\folder\new_image.jpeg
-//db ::PHOTOS::\folder\new_image.jpeg
-
-//::drive_label::/path_on_drive
-
-function GetFileSizeByName(FileName: String): int64;
-var
-  FindData: TWin32FindData;
-  hFind: THandle;
-begin
-  Result := 0;
-  hFind := FindFirstFile(PChar(FileName), FindData);
-  if hFind <> INVALID_HANDLE_VALUE then
-  begin
-    Windows.FindClose(hFind);
-    if (FindData.dwFileAttributes and FILE_ATTRIBUTE_DIRECTORY) = 0 then
-      Result := FindData.NFileSizeHigh * 2 * MaxInt + FindData.NFileSizeLow;
   end;
 end;
 
@@ -572,7 +425,7 @@ end;
 
 function TCDIndexMapping.CurrentLevel: TCDIndexMappingDirectory;
 begin
-  SortLevel(CurrentDir.FFiles);
+  SortLevel(CurrentDir.Files);
   Result := CurrentDir;
 end;
 
@@ -1044,240 +897,23 @@ begin
   except
     Exit;
   end;
-
   try
-    FS.read(Header, SizeOf(Header));
-    FS.read(HeaderV1, SizeOf(HeaderV1));
-  except
-    FS.Free;
-    Exit;
-  end;
-  if Header.ID = 'PHOTODB_CD_INDEX' then
-  begin
-    Result.CDLabel := HeaderV1.CDLabel;
-    Result.Date := HeaderV1.Date;
-    Result.DBVersion := Header.DBVersion;
-    Result.Loaded := True;
-  end;
-  FS.Free;
-end;
-
-{ TCDDBMapping }
-
-procedure TCDDBMapping.AddCDMapping(CDName, Path: string;
-  Permanent: boolean);
-var
-  CD: TCDClass;
-begin
-  CD := GetCDByName(CDName);
-  if CD <> nil then
-  begin
-    CD.Path := Path;
-    Exit;
-  end;
-  CD := TCDClass.Create;
-  CD.Name := CDName;
-  CD.Tag := TCD_CLASS_TAG_NONE;
-  CD.Path := Path;
-  CDLoadedList.Add(CD);
-  if GetCDByNameInternal(CDName) = nil then
-  begin
-    CD := TCDClass.Create;
-    CD.Name := CDName;
-    CD.Tag := TCD_CLASS_TAG_NONE;
-    CD.Path := Path;
-    CDFindedList.Add(CD);
-  end;
-end;
-
-constructor TCDDBMapping.Create;
-begin
-  CDLoadedList := TList.Create;
-  CDFindedList := TList.Create;
-end;
-
-destructor TCDDBMapping.Destroy;
-begin
-  FreeList(CDLoadedList);
-  FreeList(CDFindedList);
-  inherited;
-end;
-
-procedure TCDDBMapping.DoProcessPath(var FileName: string;
-  CanUserNotify: boolean);
-var
-  P, MapResult: Integer;
-  CD: TCDClass;
-  CDName: string;
-begin
-  if Copy(FileName, 1, 2) = '::' then
-  begin
-    P := PosEx('::', FileName, 3);
-    if P > 0 then
-    begin
-      CDName := Copy(FileName, 3, P - 3);
-      CD := GetCDByName(CDName);
-      if CD <> nil then
-      begin
-        Delete(FileName, 1, P + 2);
-        FileName := CD.Path + FileName;
-      end else
-      begin
-        CD := GetCDByNameInternal(CDName);
-        if CD = nil then
-        begin
-          CD := TCDClass.Create;
-          CD.name := CDName;
-          CD.Tag := TCD_CLASS_TAG_NONE;
-          CD.Path := '';
-          CDFindedList.Add(CD);
-        end;
-        if CanUserNotify then
-        begin
-          CD := GetCDByNameInternal(CDName);
-          if CD.Tag <> TCD_CLASS_TAG_NO_QUESTION then
-            MapResult := CheckCD(CDName);
-        end;
-      end;
+    try
+      FS.Read(Header, SizeOf(Header));
+      FS.Read(HeaderV1, SizeOf(HeaderV1));
+    except
+      Exit;
     end;
-  end;
-end;
-
-function TCDDBMapping.GetCDByName(CDName: string): TCDClass;
-var
-  I: Integer;
-  CD : TCDClass;
-begin
-  Result := nil;
-  for I := 0 to CDLoadedList.Count - 1 do
-  begin
-    CD := TCDClass(CDLoadedList[I]);
-    if AnsiLowerCase(CD.Name) = AnsiLowerCase(CDName) then
+    if Header.ID = 'PHOTODB_CD_INDEX' then
     begin
-      Result := CD;
-      Break;
+      Result.CDLabel := HeaderV1.CDLabel;
+      Result.Date := HeaderV1.Date;
+      Result.DBVersion := Header.DBVersion;
+      Result.Loaded := True;
     end;
+  finally
+    F(FS);
   end;
 end;
-
-function TCDDBMapping.GetCDByNameInternal(CDName: string): TCDClass;
-var
-  I: Integer;
-  CD : TCDClass;
-begin
-  Result := nil;
-  for I := 0 to CDFindedList.Count - 1 do
-  begin
-    CD := TCDClass(CDFindedList[I]);
-    if AnsiLowerCase(CD.Name) = AnsiLowerCase(CDName) then
-    begin
-      Result := CD;
-      Break;
-    end;
-  end;
-end;
-
-function TCDDBMapping.GetFindedCDList: TList;
-begin
-  Result := CDFindedList;
-end;
-
-function TCDDBMapping.ProcessPath(FileName: string;
-  CanUserNotify: boolean): string;
-begin
-  Result := FileName;
-  DoProcessPath(Result, CanUserNotify);
-end;
-
-procedure TCDDBMapping.RemoveCDMapping(CDName: string);
-var
-  CD: TCDClass;
-begin
-  CD := GetCDByName(CDName);
-  if CD <> nil then
-  begin
-    CDLoadedList.Remove(CD);
-    F(CD);
-  end;
-end;
-
-procedure TCDDBMapping.SetCDWithNOQuestion(CDName: string);
-var
-  CD: TCDClass;
-begin
-  CD := GetCDByNameInternal(CDName);
-  if CD <> nil then
-    CD.Tag := TCD_CLASS_TAG_NO_QUESTION;
-end;
-
-procedure TCDDBMapping.UnProcessPath(var Path: string);
-var
-  I: Integer;
-  CDPath: string;
-  CD: TCDClass;
-begin
-  for I := 0 to CDLoadedList.Count - 1 do
-  begin
-    CD := TCDClass(CDLoadedList[I]);
-    if CD.Path <> '' then
-    begin
-      CDPath := ExcludeTrailingBackslash(CD.Path);
-      if AnsiLowerCase(Copy(Path, 1, Length(CDPath))) = AnsiLowerCase(CDPath) then
-      begin
-        Delete(Path, 1, Length(CDPath));
-        Path := AnsiLowerCase('::' + CD.name + '::' + Path);
-      end;
-    end;
-  end;
-end;
-
-{ TCDIndexMappingDirectory }
-
-function TCDIndexMappingDirectory.Add(
-  Item: TCDIndexMappingDirectory): Integer;
-begin
-  Result := FFiles.Add(Item);
-end;
-
-constructor TCDIndexMappingDirectory.Create;
-begin
-  FFiles := TList.Create;
-  Parent := nil;
-end;
-
-procedure TCDIndexMappingDirectory.Delete(Index: Integer);
-begin
-  Items[Index].Free;
-  FFiles.Delete(Index);
-end;
-
-destructor TCDIndexMappingDirectory.Destroy;
-begin
-  FreeList(FFiles);
-  inherited;
-end;
-
-function TCDIndexMappingDirectory.GetCount: Integer;
-begin
-  Result := FFiles.Count;
-end;
-
-function TCDIndexMappingDirectory.GetFileByIndex(
-  FileIndex: Integer): TCDIndexMappingDirectory;
-begin
-  Result := FFiles[FileIndex];
-end;
-
-procedure TCDIndexMappingDirectory.Remove(var Item: TCDIndexMappingDirectory);
-begin
-  FFiles.Remove(Item);
-  Item.Free;
-end;
-
-initialization
-
-finalization
-
-  F(CDMapper);
 
 end.

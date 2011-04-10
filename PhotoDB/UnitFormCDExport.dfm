@@ -124,6 +124,18 @@ object FormCDExport: TFormCDExport
       State = cbChecked
       TabOrder = 4
     end
+    object LsMain: TLoadingSign
+      Left = 568
+      Top = 80
+      Width = 24
+      Height = 24
+      Visible = False
+      Active = True
+      FillPercent = 50
+      Anchors = [akTop, akRight]
+      SignColor = clBlack
+      MaxTransparencity = 255
+    end
   end
   object PanelTop: TPanel
     Left = 0
@@ -547,6 +559,7 @@ object FormCDExport: TFormCDExport
     Top = 216
     object Open1: TMenuItem
       Caption = 'Open'
+      OnClick = Open1Click
     end
     object N2: TMenuItem
       Caption = '-'

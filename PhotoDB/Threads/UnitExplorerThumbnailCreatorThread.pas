@@ -4,7 +4,7 @@ interface
 
 uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
-     Effects, UnitDBCommonGraphics, UnitCDMappingSupport, uLogger, UnitDBCommon,
+     Effects, UnitDBCommonGraphics, uCDMappingTypes, uLogger, UnitDBCommon,
      uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel,
      uRuntime, uDBUtils, uFileUtils, uAssociations;
 

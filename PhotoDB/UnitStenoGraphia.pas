@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Menus, ExtDlgs, ExtCtrls, uStenography, ShlObj, UnitDBKernel,
   Math, PngImage, GraphicEx, uConstants, uAssociations,
-  GraphicCrypt, UnitDBFileDialogs, UnitCDMappingSupport, uFileUtils, uMemory,
+  GraphicCrypt, UnitDBFileDialogs, uCDMappingTypes, uFileUtils, uMemory,
   uShellIntegration, uDBForm, uStrongCrypt, DECUtil, DECCipher, win32crc,
   Dolphin_DB;
 

@@ -117,7 +117,7 @@ begin
       if IsTerminated then
         Break;
       Dest.Append;
-      CopyRecordsW(Src, Dest, True, DBFolder, FGroupsFounded);
+      CopyRecordsW(Src, Dest, True, False, DBFolder, FGroupsFounded);
       Dest.Post;
       SetProgress(Src.RecNo);
       Src.Next;

@@ -879,7 +879,7 @@ begin
       if MaxFilesCount < 0 then
         Break;
 
-      if FileExists and ExtInMask(Mask, GetExt(FileName)) then
+      if FileExists and (Pos(AnsiLowerCase(ExtractFileExt(FileName)), Mask) > 0) then
       begin
         if Files.Count >= MaxFilesSearch then
           Break;

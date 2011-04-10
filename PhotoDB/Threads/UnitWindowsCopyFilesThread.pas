@@ -84,7 +84,7 @@ begin
   try
     Res := CopyFilesSynch(0, FSrc, FDest, FMove, FAutoRename) = 0;
 
-    if Res and (FOwnerExplorerForm <> nil) then
+    if Res and (FOwnerExplorerForm <> nil) and FMove then
       CorrectPath(FOwnerExplorerForm, FSrc, FDest);
   except
     on e : Exception do

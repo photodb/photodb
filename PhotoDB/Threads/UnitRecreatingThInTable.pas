@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Graphics, Jpeg, DB, CommonDBSupport, UnitDBKernel, SysUtils,
-  GraphicCrypt, GraphicsCool, UnitDBDeclare, UnitCDMappingSupport,
+  GraphicCrypt, GraphicsCool, UnitDBDeclare, uCDMappingTypes,
   ActiveX, Dolphin_DB, uMemory, uDBBaseTypes, uDBTypes, uDBUtils,
   win32crc, uDBThread, uFileUtils;
 

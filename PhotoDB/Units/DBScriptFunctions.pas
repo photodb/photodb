@@ -5,7 +5,7 @@ interface
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
-     Math, uScript, UnitCDMappingSupport, uFileUtils, uAssociations,
+     Math, uScript, uCDMappingTypes, uFileUtils, uAssociations,
      UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
      uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings;
 

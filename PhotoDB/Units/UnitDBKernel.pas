@@ -4,7 +4,7 @@ interface
 
 uses Win32crc, Forms, Windows, Classes,
   Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
-  GraphicCrypt, ADODB, uLogger, uActivationUtils,
+  GraphicCrypt, ADODB, uLogger, uActivationUtils, uCDMappingTypes,
   uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
   uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,
   uRuntime, uDBBaseTypes, uStringUtils, uSettings, uSysUtils;
@@ -97,7 +97,7 @@ implementation
 
 uses UnitCrypting, CommonDBSupport,
   UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
-  UnitBackUpTableInCMD, UnitCDMappingSupport;
+  UnitBackUpTableInCMD;
 
 { TDBKernel }
 

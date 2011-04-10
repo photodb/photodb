@@ -7,7 +7,7 @@ uses
   Dialogs, ShellAPI, StdCtrls, ExtCtrls, ComCtrls, jpeg,
   ScrollingImage, printers, ScrollingImageAddons, ImgList, Math, UnitPrinterTypes,
   WebLink, SaveWindowPos, ExtDlgs, UnitDBFileDialogs, UnitDBKernel,
-  Dolphin_DB, GraphicCrypt, uVistaFuncs, UnitCDMappingSupport, uConstants,
+  Dolphin_DB, GraphicCrypt, uVistaFuncs, uCDMappingTypes, uConstants,
   Menus, uDBForm, uMemory, uTranslate, uShellIntegration, uFileUtils,
   uResources, CommCtrl, MPCommonObjects, EasyListview, MPCommonUtilities,
   uListViewUtils, uSettings;
@@ -116,7 +116,10 @@ function GetPrintForm(var Picture: TBitmap): TPrintForm; overload;
 
 implementation
 
-uses UnitGeneratorPrinterPreview, PrinterProgress, UnitJPEGOptions;
+uses
+  UnitGeneratorPrinterPreview,
+  PrinterProgress,
+  UnitJPEGOptions;
 
 {$R *.dfm}
 

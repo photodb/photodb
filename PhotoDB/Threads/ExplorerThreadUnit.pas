@@ -9,7 +9,7 @@ uses
   Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
   GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
   EasyListview, GraphicsCool, uVistaFuncs, uResources,
-  UnitDBCommonGraphics, UnitDBCommon, UnitCDMappingSupport,
+  UnitDBCommonGraphics, UnitDBCommon, uCDMappingTypes,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,

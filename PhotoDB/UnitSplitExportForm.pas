@@ -365,7 +365,7 @@ begin
       if RecordOk then
       begin
         D.Append;
-        CopyRecordsW(S, D, False, '', Groups);
+        CopyRecordsW(S, D, False, False, '', Groups);
         D.Post;
       end;
       S.Next;

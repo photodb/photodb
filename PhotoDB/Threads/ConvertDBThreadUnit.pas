@@ -122,7 +122,7 @@ begin
             TableIn.Post;
 
           TableIn.Append;
-          CopyRecordsW(TableOut, TableIn, True, '', FGroupsFounded);
+          CopyRecordsW(TableOut, TableIn, True, False, '', FGroupsFounded);
           TableOut.Next;
           if Terminated then
             Break;

@@ -10,7 +10,7 @@ uses
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
   uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations,
-  GraphicsBaseTypes, uDBAdapter;
+  GraphicsBaseTypes, uDBAdapter, uCDMappingTypes;
 
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -46,7 +46,7 @@ procedure UpdateImageThInLinks(OldImageTh, NewImageTh: AnsiString);
 function BitmapToString(Bit: TBitmap): AnsiString;
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
-procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile: Boolean; BaseFolder: string; var Groups: TGroups);
+procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
 
 { DB Types }
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
@@ -56,7 +56,6 @@ function GetMenuInfoByStrTh(StrTh: AnsiString): TDBPopupMenuInfo;
 implementation
 
 uses
-  UnitCDMappingSupport,
   UnitWindowsCopyFilesThread;
 
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
@@ -1422,12 +1421,11 @@ procedure GetFileListByMask(BeginFile, Mask: string; Info: TDBPopupMenuInfo; var
 var
   Found, I, J: Integer;
   SearchRec: TSearchRec;
-  Folder, DBFolder, S, AddFolder: string;
+  Folder, S, AddFolder: string;
   C: Integer;
   FQuery: TDataSet;
   FBlockedFiles,
   List: TStrings;
-  Crc: Cardinal;
   FE, EM: Boolean;
   P: PChar;
   PSupportedExt: PChar;
@@ -1452,35 +1450,13 @@ begin
       FQuery := GetQuery(True);
       try
         Folder := IncludeTrailingBackslash(AnsiLowerCase(Folder));
-        DBFolder := NormalizeDBStringLike(NormalizeDBString(Folder));
 
         if FolderView then
           AddFolder := AnsiLowerCase(ProgramDir)
         else
           AddFolder := '';
 
-        DBFolder := ExcludeTrailingBackslash(DBFolder);
-        CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
-
-        if (GetDBType = DB_TYPE_MDB) and not FolderView then
-          SetSQL(FQuery, 'Select * From (Select * from $DB$ where FolderCRC=' + Inttostr(Integer(Crc)) +
-              ') where (FFileName Like :FolderA) and not (FFileName like :FolderB)');
-        if FolderView then
-        begin
-          SetSQL(FQuery, 'Select * From $DB$ where FolderCRC = :crc');
-          S := DBFolder;
-          Delete(S, 1, Length(ProgramDir));
-          S := ExcludeTrailingBackslash(S);
-          CalcStringCRC32(AnsiLowerCase(S), Crc);
-          SetIntParam(FQuery, 0, Integer(Crc));
-        end else
-        begin
-          DBFolder := ExcludeTrailingBackslash(DBFolder);
-          CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
-          DBFolder := IncludeTrailingBackslash(DBFolder);
-          SetStrParam(FQuery, 0, '%' + DBFolder + '%');
-          SetStrParam(FQuery, 1, '%' + DBFolder + '%\%');
-        end;
+        SetSQL(FQuery, 'Select * from $DB$ where FolderCRC=' + IntToStr(GetPathCRC(Folder, False)));
 
         FQuery.Active := True;
         FQuery.First;
@@ -1643,11 +1619,9 @@ begin
   end;
 end;
 
-procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile: Boolean; BaseFolder: string; var Groups: TGroups);
+procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
 var
-  FileName,
-  S, Folder: string;
-  Crc: Cardinal;
+  FileName: string;
   Rec: TDBPopupMenuInfoRecord;
 begin
   Rec := TDBPopupMenuInfoRecord.Create;
@@ -1659,18 +1633,16 @@ begin
     if IsMobile then
     begin
       // subfolder crc neened
-      FileName := OutTable.FieldByName('FFileName').AsString;
-      S := FileName;
-      Delete(S, 1, Length(BaseFolder));
-      InTable.FieldByName('FFileName').AsString := S;
+      if not UseFinalLocation then
+      begin
+        FileName := OutTable.FieldByName('FFileName').AsString;
+        if StaticPath(FileName) then
+          Delete(FileName, 1, Length(BaseFolder));
+      end else
+        FileName := BaseFolder;
 
-      if Pos('\', S) > 0 then
-        Folder := ExtractFileDir(S)
-      else
-        Folder := '';
-
-      CalcStringCRC32(Folder, Crc);
-      InTable.FieldByName('FolderCRC').AsInteger := Crc;
+      InTable.FieldByName('FFileName').AsString := FileName;
+      InTable.FieldByName('FolderCRC').AsInteger := GetPathCRC(FileName, True);
     end;
 
     InTable.FieldByName('Thum').AsVariant := OutTable.FieldByName('Thum').AsVariant;

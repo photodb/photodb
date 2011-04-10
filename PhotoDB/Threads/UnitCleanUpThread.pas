@@ -5,7 +5,7 @@ interface
 uses
   UnitDBKernel, Windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
   SysUtils,ComCtrls, Graphics, jpeg, UnitINI, DateUtils, uFileUtils,
-  CommonDBSupport, win32crc, UnitCDMappingSupport, uLogger, uConstants,
+  CommonDBSupport, win32crc, uCDMappingTypes, uLogger, uConstants,
   CCR.Exif, uMemory, uRuntime, uDBUtils, uDBThread, uSettings;
 
 type
@@ -24,8 +24,6 @@ type
     procedure UpdateText;
     procedure InitializeForm;
     procedure FinalizeForm;
-    procedure RegisterThread;
-    procedure UnRegisterThread;
     function GetDBRecordCount: Integer;
   protected
     procedure Execute; override;
@@ -57,7 +55,6 @@ var
   IsDate, IsTime: Boolean;
 begin
   FreeOnTerminate := True;
-  Synchronize(RegisterThread);
 
   if Active then
     Exit;
@@ -253,17 +250,10 @@ begin
       begin
         FQuery.Active := False;
 
-        if (GetDBType(Dbname) = DB_TYPE_MDB) then
-        begin
-          FromDB := '(Select * from $DB$ where StrThCrc=:StrThCrc)';
-          SetSQL(FQuery, 'SELECT * FROM ' + FromDB + ' WHERE StrTh = :StrTh ORDER BY ID');
-          SetIntParam(FQuery, 0, StringCRC(FTable.FieldByName('StrTh').AsAnsiString));
-          SetStrParam(FQuery, 1, FTable.FieldByName('StrTh').AsString);
-        end else
-        begin
-          SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrTh = :StrTh ORDER BY ID');
-          SetStrParam(FQuery, 0, FTable.FieldByName('StrTh').AsString);
-        end;
+        FromDB := '(Select * from $DB$ where StrThCrc=:StrThCrc)';
+        SetSQL(FQuery, 'SELECT * FROM ' + FromDB + ' WHERE StrTh = :StrTh ORDER BY ID');
+        SetIntParam(FQuery, 0, StringCRC(FTable.FieldByName('StrTh').AsAnsiString));
+        SetStrParam(FQuery, 1, FTable.FieldByName('StrTh').AsString);
 
         if Termitating then
           Break;
@@ -299,12 +289,6 @@ begin
   FreeDS(FQuery);
   Synchronize(FinalizeForm);
   Active := False;
-  try
-    Synchronize(UnRegisterThread);
-  except
-    on E: Exception do
-      EventLog(':CleanUpThread::Execute()/UnRegisterThread throw exception: ' + E.message);
-  end;
 end;
 
 procedure CleanUpThread.FinalizeForm;
@@ -353,17 +337,6 @@ begin
   end;
 end;
 
-procedure CleanUpThread.RegisterThread;
-var
-  TermInfo: TTemtinatedAction;
-begin
-  TermInfo.TerminatedPointer := @Termitating;
-  TermInfo.TerminatedVerify := @Active;
-  TermInfo.Options := TA_INFORM_AND_NT;
-  TermInfo.Owner := Self;
-  FormManager.RegisterActionCanTerminating(TermInfo);
-end;
-
 procedure CleanUpThread.SavePosition;
 begin
   FReg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
@@ -374,17 +347,6 @@ begin
   finally
     F(FReg);
   end;
-end;
-
-procedure CleanUpThread.UnRegisterThread;
-var
-  TermInfo: TTemtinatedAction;
-begin
-  TermInfo.TerminatedPointer := @Termitating;
-  TermInfo.TerminatedVerify := @Active;
-  TermInfo.Options := TA_INFORM_AND_NT;
-  TermInfo.Owner := Self;
-  FormManager.UnRegisterActionCanTerminating(TermInfo);
 end;
 
 procedure CleanUpThread.UpdateMaxProgress;

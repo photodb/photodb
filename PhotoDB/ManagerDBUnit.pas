@@ -11,7 +11,7 @@ uses
   GraphicCrypt, UnitStringPromtForm, CommonDBSupport, GraphicsCool,
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uConstants, uFileUtils, uDBDrawing, adodb,
+  uCDMappingTypes, uConstants, uFileUtils, uDBDrawing, adodb,
   DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo,
   uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
   uSettings, uThreadForm, uDBAdapter;

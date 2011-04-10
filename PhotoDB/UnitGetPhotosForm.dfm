@@ -227,7 +227,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 65
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 16
+    TabOrder = 15
     OnClick = BtnCancelClick
   end
   object DtpFromDate: TDateTimePicker
@@ -318,7 +318,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 81
     Height = 25
     Caption = 'Save'
-    TabOrder = 15
+    TabOrder = 14
     OnClick = BtnSaveClick
   end
   object CheckBox2: TCheckBox

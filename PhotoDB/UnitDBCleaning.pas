@@ -46,7 +46,8 @@ var
 
 implementation
 
-uses UnitCleanUpThread;
+uses
+  UnitCleanUpThread;
 
 {$R *.dfm}
 

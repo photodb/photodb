@@ -811,7 +811,7 @@ begin
   for I := ADOConnections.Count - 1 downto 0 do
   begin
     if ADOConnections[I].FileName = Dbname then
-      if (ADOConnections[I].RefCount = 0) or Delete then
+      if (ADOConnections[I].RefCount = 0) and Delete then
       begin
         ADOConnections[I].ADOConnection.Close;
         ADOConnections[I].ADOConnection.Free;
@@ -873,6 +873,8 @@ begin
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname);
   DBConnection.ADOConnection.LoginPrompt := False;
   DBConnection.ADOConnection.Provider := MDBProvider;
+  if DBConnection.Isolated then
+    DBConnection.ADOConnection.Mode := cmRead;
   Result := DBConnection.ADOConnection;
 end;
 

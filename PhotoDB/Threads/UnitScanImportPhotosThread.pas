@@ -169,28 +169,28 @@ begin
     ExifData := TExifData.Create;
     try
       ExifData.LoadFromGraphic(FFiles[I]);
-    except
-    end;
-    if not ExifData.Empty then
-    begin
-      AddFileToList(FFiles[I], DateOf(ExifData.DateTimeOriginal));
-    end else
-    begin
-      if RAWImage.IsRAWSupport and IsRAWImageFile(FFiles[I]) then
+      if not ExifData.Empty and (YearOf(ExifData.DateTimeOriginal) > 1900) then
       begin
-        RAWExif := ReadRAWExif(FFiles[I]);
-        if RAWExif.IsEXIF then
+        AddFileToList(FFiles[I], DateOf(ExifData.DateTimeOriginal));
+      end else
+      begin
+        if RAWImage.IsRAWSupport and IsRAWImageFile(FFiles[I]) then
         begin
-          FDate := DateOf(RAWExif.TimeStamp);
-          if FDate > 0 then
-            AddFileToList(FFiles[I], FDate);
+          RAWExif := ReadRAWExif(FFiles[I]);
+          if RAWExif.IsEXIF then
+          begin
+            FDate := DateOf(RAWExif.TimeStamp);
+            if FDate > 0 then
+              AddFileToList(FFiles[I], FDate);
 
-          if IsEqualGUID(FSID, GetPhotosFormSID) then
-            Break;
+            if IsEqualGUID(FSID, GetPhotosFormSID) then
+              Break;
+          end;
         end;
       end;
+    finally
+      F(ExifData);
     end;
-    F(ExifData);
   end;
   if Length(DateFileList) > 1 then
     QuickSort(DateFileList, Length(DateFileList));
@@ -265,3 +265,4 @@ begin
 end;
 
 end.
+

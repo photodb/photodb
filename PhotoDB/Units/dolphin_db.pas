@@ -28,41 +28,6 @@ type
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
 
-{const
-  InstallType_Checked = 0;
-  InstallType_UnChecked = 1;
-  InstallType_Grayed = 2;
-
-type
-  TInstallExt = record
-    Ext: string;
-    InstallType: Integer;
-  end;
-
-  TInstallExts = array of TInstallExt;    }
-
-const
-  TA_UNKNOWN = 0;
-  TA_NEEDS_TERMINATING = 1;
-  TA_INFORM = 2;
-  TA_INFORM_AND_NT = 3;
-
-type
-  TProcTerminating = record
-    Proc: TNotifyEvent;
-    Owner: TObject;
-  end;
-
-  TTemtinatedAction = record
-    TerminatedPointer: PBoolean;
-    TerminatedVerify: PBoolean;
-    Options: Integer;
-    Discription: string;
-    Owner: TObject;
-  end;
-
-  TTemtinatedActions = array of TTemtinatedAction;
-
 type
   TCallbackInfo = record
     Action: Byte;

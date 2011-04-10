@@ -260,10 +260,7 @@ begin
         FSourceTable.FieldByName('Name').AsString]));
     StrTh := FSourceTable.FieldByName('StrTh').AsString;
 
-    if GetDBType = DB_TYPE_MDB then
-      FromDB := '(Select * from $DB$ Where StrThCrc = ' + IntToStr(Integer(StringCRC(StrTh))) + ')'
-    else
-      FromDB := '$DB$';
+    FromDB := '(Select * from $DB$ Where StrThCrc = ' + IntToStr(Integer(StringCRC(StrTh))) + ')';
 
     SetSQL(FQuery, 'Select * from $DB$ Where StrTh = :StrTh');
     SetStrParam(FQuery, 0, StrTh);

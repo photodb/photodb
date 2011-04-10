@@ -136,7 +136,7 @@ begin
                 end;
           TableIn.Last;
           TableIn.Append;
-          CopyRecordsW(TableOut, TableIn, True, '', FGroupsFounded);
+          CopyRecordsW(TableOut, TableIn, True, False, '', FGroupsFounded);
           TableOut.Next;
           if StopExport then
             Break;
@@ -169,21 +169,18 @@ begin
           end;
         end;
 
-        if GetDBType(FOptions.FileName) = DB_TYPE_MDB then
-        begin
-          FSpecQuery := GetQuery(FOptions.FileName);
-          try
-            SetSQL(FSpecQuery, 'Update $DB$ Set Comment="" where Comment is null');
-            ExecSQL(FSpecQuery);
-            SetSQL(FSpecQuery, 'Update $DB$ Set KeyWords="" where KeyWords is null');
-            ExecSQL(FSpecQuery);
-            SetSQL(FSpecQuery, 'Update $DB$ Set Groups="" where Groups is null');
-            ExecSQL(FSpecQuery);
-            SetSQL(FSpecQuery, 'Update $DB$ Set Links="" where Links is null');
-            ExecSQL(FSpecQuery);
-          finally
-            FreeDS(FSpecQuery);
-          end;
+        FSpecQuery := GetQuery(FOptions.FileName);
+        try
+          SetSQL(FSpecQuery, 'Update $DB$ Set Comment="" where Comment is null');
+          ExecSQL(FSpecQuery);
+          SetSQL(FSpecQuery, 'Update $DB$ Set KeyWords="" where KeyWords is null');
+          ExecSQL(FSpecQuery);
+          SetSQL(FSpecQuery, 'Update $DB$ Set Groups="" where Groups is null');
+          ExecSQL(FSpecQuery);
+          SetSQL(FSpecQuery, 'Update $DB$ Set Links="" where Links is null');
+          ExecSQL(FSpecQuery);
+        finally
+          FreeDS(FSpecQuery);
         end;
       except
       end;

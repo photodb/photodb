@@ -6,7 +6,7 @@ uses
   Classes, Forms, UnitCDMappingSupport, UnitDBKernel, uVistaFuncs, DB, ActiveX,
   UnitGroupsWork, UnitDBDeclare, CommonDBSupport, win32crc, SysUtils, uLogger,
   uFileUtils, uConstants, uShellIntegration, uDBTypes, uDBBaseTypes, uDBForm,
-  uDBThread, uMobileUtils, uMemory, uDBUtils;
+  uDBThread, uMobileUtils, uMemory, uDBUtils, uCDMappingTypes;
 
 type
   TCDExportOptions = record
@@ -30,7 +30,6 @@ type
     CRC: Cardinal;
     FRegGroups: TGroups;
     FGroupsFounded: TGroups;
-    ImageSettings: TImageDBOptions;
     IntParam, CopiedSize: Int64;
     StrParam: string;
     ProgressWindow: TForm;
@@ -141,7 +140,8 @@ end;
 procedure TCDExportThread.Execute;
 var
   I, J: Integer;
-  Directory, DBPath: string;
+  S, Directory, DBPath: string;
+  ImageSettings: TImageDBOptions;
 
 begin
   FreeOnTerminate := True;
@@ -175,44 +175,10 @@ begin
 
         IntParam := 3;
         Synchronize(SetProgressOperation);
-        if not IsClosedParam and Options.ModifyDB then
-        begin
-          DBRemapping := Mapping.GetDBRemappingArray;
-          DS := GetQuery;
-          try
-            DBUpdated := True;
-            IntParam := Length(DBRemapping) - 1;
-            Synchronize(SetMaxPosition);
-            for I := 0 to Length(DBRemapping) - 1 do
-            begin
-              IntParam := I;
-              Synchronize(SetPosition);
-              if IsClosedParam then
-                Break;
-
-              Directory := ExtractFileDir(DBRemapping[I].FileName);
-              CalcStringCRC32(AnsiLowerCase(Directory), Crc);
-
-              SetSQL(DS, 'Update $DB$ Set FFileName = :FileName, FolderCRC = :FolderCRC Where ID = :ID');
-              SetStrParam(DS, 0, DBRemapping[I].FileName);
-              SetIntParam(DS, 1, Integer(Crc));
-              SetIntParam(DS, 2, DBRemapping[I].ID);
-              try
-                ExecSQL(DS);
-              except
-                DBUpdated := False;
-              end;
-            end;
-          finally
-            FreeDS(DS);
-          end;
-        end;
 
         Directory := ExtractFileDir(Options.ToDirectory);
         Directory := Directory + Mapping.CDLabel + '\';
 
-        IntParam := 4;
-        Synchronize(SetProgressOperation);
         if not IsClosedParam and Options.CreatePortableDB then
         begin
           StrParam := Directory;
@@ -222,10 +188,14 @@ begin
           begin
 
             ImageSettings := CommonDBSupport.GetImageSettingsFromTable(DBName);
-            CommonDBSupport.UpdateImageSettings(DBPath, ImageSettings);
+            try
+              CommonDBSupport.UpdateImageSettings(DBPath, ImageSettings);
+            finally
+              F(ImageSettings);
+            end;
 
             DBRemapping := Mapping.GetDBRemappingArray;
-            ExtDS := GetTable(DBPath, DB_TYPE_MDB);
+            ExtDS := GetTable(DBPath, DB_TABLE_IMAGES);
 
             try
               ExtDS.Open;
@@ -252,16 +222,6 @@ begin
                 if IsClosedParam then
                   Break;
 
-                Delete(DBRemapping[I].FileName, 1, Length(Mapping.CDLabel) + 5);
-
-                Directory := DBRemapping[I].FileName;
-                if Pos('\', Directory) > 0 then
-                  Directory := ExtractFileDir(Directory)
-                else
-                  Directory := '';
-
-                CalcStringCRC32(AnsiLowerCase(Directory), Crc);
-
                 SetSQL(DS, 'Select * from $DB$  Where ID = :ID');
                 SetIntParam(DS, 0, DBRemapping[I].ID);
                 try
@@ -272,7 +232,11 @@ begin
                 if DS.RecordCount = 1 then
                 begin
                   ExtDS.Append;
-                  CopyRecordsW(DS, ExtDS, True, Directory, FGroupsFounded);
+
+                  S := DBRemapping[I].FileName;
+                  Delete(S, 1, Length(Mapping.CDLabel) + 5);
+
+                  CopyRecordsW(DS, ExtDS, True, True, S, FGroupsFounded);
                   ExtDS.Post;
                 end;
 
@@ -307,6 +271,42 @@ begin
             end;
           finally
             FreeGroups(FRegGroups);
+          end;
+        end;
+
+        IntParam := 4;
+        Synchronize(SetProgressOperation);
+
+        if not IsClosedParam and Options.ModifyDB then
+        begin
+          DBRemapping := Mapping.GetDBRemappingArray;
+          DS := GetQuery;
+          try
+            DBUpdated := True;
+            IntParam := Length(DBRemapping) - 1;
+            Synchronize(SetMaxPosition);
+            for I := 0 to Length(DBRemapping) - 1 do
+            begin
+              IntParam := I;
+              Synchronize(SetPosition);
+              if IsClosedParam then
+                Break;
+
+              Directory := ExtractFileDir(DBRemapping[I].FileName);
+              CalcStringCRC32(AnsiLowerCase(Directory), Crc);
+
+              SetSQL(DS, 'Update $DB$ Set FFileName = :FileName, FolderCRC = :FolderCRC Where ID = :ID');
+              SetStrParam(DS, 0, DBRemapping[I].FileName);
+              SetIntParam(DS, 1, Integer(Crc));
+              SetIntParam(DS, 2, DBRemapping[I].ID);
+              try
+                ExecSQL(DS);
+              except
+                DBUpdated := False;
+              end;
+            end;
+          finally
+            FreeDS(DS);
           end;
         end;
 

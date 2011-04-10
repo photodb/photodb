@@ -211,6 +211,7 @@ var
   GraphicHeader: TGraphicCryptFileHeader;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
 begin
+  FillChar(GraphicHeaderV2, SizeOf(GraphicHeaderV2), #0);
   GraphicHeaderV2.CRCFileExists := Options = CRYPT_OPTIONS_SAVE_CRC;
   if GraphicHeaderV2.CRCFileExists and (Src is TMemoryStream) then
   begin
@@ -602,7 +603,7 @@ begin
   Result := True;
 end;
 
-Function ValidPassInCryptGraphicFile(FileName, Password: String): Boolean;
+function ValidPassInCryptGraphicFile(FileName, Password: String): Boolean;
 var
   FS: TFileStream;
   CRC: Cardinal;

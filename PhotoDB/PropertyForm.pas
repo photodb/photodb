@@ -12,7 +12,7 @@ uses
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
   UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
-  UnitCDMappingSupport, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
+  uCDMappingTypes, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
   uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
@@ -2045,7 +2045,7 @@ begin
             XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
 
         end else
-          VleEXIF.InsertRow('Info:', L('Exif header not found.'), True);
+          VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
       except
         on e : Exception do
           Eventlog(e.Message);
