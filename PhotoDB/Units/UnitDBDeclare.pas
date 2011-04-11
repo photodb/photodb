@@ -393,6 +393,7 @@ begin
   Create;
   Self.FOriginalFileName := FileName;
   Self.FileName := FileName;
+  Self.Name := ExtractFileName(FileName);
 end;
 
 destructor TDBPopupMenuInfoRecord.Destroy;

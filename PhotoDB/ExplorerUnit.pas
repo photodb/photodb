@@ -713,15 +713,16 @@ begin
         ScrollBox1.BackGround.Canvas.Pen.Color := clBtnFace;
         ScrollBox1.BackGround.Canvas.Rectangle(0, 0, ScrollBox1.BackGround.Width, ScrollBox1.BackGround.Height);
         DrawTransparent(ExplorerBackgroundBMP, ScrollBox1.BackGround, 40);
+        ScrollBox1Resize(Self);
       finally
-        ExplorerBackgroundBMP.Free;
+        F(ExplorerBackgroundBMP);
        end;
     finally
-      ExplorerBackground.Free;
+      F(ExplorerBackground);
     end;
     ElvMain.BackGround.Image := Bitmap;
   finally
-    Bitmap.Free;
+    F(Bitmap);
   end;
 end;
 
@@ -3495,12 +3496,12 @@ var
 
 begin
   ScrollBox1.UpdatingPanel := True;
-  IsReallignInfo:=true;
+  IsReallignInfo := True;
   EventLog('ReallignInfo...');
 
   VerifyPaste(Self);
 
-  BeginScreenUpdate(Handle);
+  BeginScreenUpdate(ScrollBox1.Handle);
   try
     S := ExtractFileName(FSelectedInfo.FileName) + ' ';
     for I := Length(S) downto 1 do
@@ -3908,7 +3909,7 @@ begin
               L('Next...'), Help1CloseClick);
           end;
   finally
-    EndScreenUpdate(Handle, False);
+    EndScreenUpdate(ScrollBox1.Handle, False);
   end;
   EventLog('ReallignInfo OK');
 end;
@@ -4678,12 +4679,6 @@ procedure TExplorerForm.ScrollBox1Resize(Sender: TObject);
 begin
   ScrollBox1.BackgroundLeft:=ScrollBox1.Width-ScrollBox1.BackGround.Width - 3;
   ScrollBox1.BackgroundTop := ScrollBox1.Height - ScrollBox1.BackGround.Height - 3;
-
-  if ScrollBox1.VertScrollBar.Visible then
-  begin
-    // MainPanel.Width:=117+GetSystemMetrics(SM_CYHSCROLL);
-    // ScrollBox1.VertScrollBar.Visible:=true;
-  end;
 end;
 
 procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath; Explorer: Boolean; FileMask: string = '');

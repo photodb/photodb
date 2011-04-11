@@ -24,6 +24,8 @@ type
     function LoadThumbnailFromFile(const FileName : string; Width, Height : Integer) : boolean;
     procedure Assign(Source : TPersistent); override;
     property LoadHalfSize : boolean read FLoadHalfSize write SetLoadHalfSize;
+    property GraphicWidth: Integer read FWidth;
+    property GraphicHeight: Integer read FHeight;
   end;
        
   TRAWExifRecord = class(TObject)
@@ -133,23 +135,23 @@ end;
 constructor TRAWImage.Create;
 begin
   inherited;
-  fLoadHalfSize := False;
+  FLoadHalfSize := False;
 end;
 
 function TRAWImage.GetHeight: integer;
 begin
-  if fLoadHalfSize then
-    Result := fHeight * 2
+  if FLoadHalfSize then
+    Result := FHeight * 2
   else
-    Result := fHeight;
+    Result := FHeight;
 end;
 
 function TRAWImage.GetWidth: integer;
 begin             
-  if fLoadHalfSize then
-    Result := fWidth * 2
+  if FLoadHalfSize then
+    Result := FWidth * 2
   else
-    Result := fWidth;
+    Result := FWidth;
 end;
 
 procedure TRAWImage.LoadFromFile(const Filename: string);
@@ -158,7 +160,10 @@ var
 begin
   RawBitmap := TFreeWinBitmap.Create;
   try
-    RawBitmap.LoadU(Filename, RAW_PREVIEW);
+    if FLoadHalfSize then
+      RawBitmap.LoadU(Filename, RAW_PREVIEW)
+    else
+      RawBitmap.LoadU(Filename, RAW_DISPLAY);
     RawBitmap.ConvertTo24Bits;
     fWidth := RawBitmap.GetWidth;
     fHeight := RawBitmap.GetHeight;

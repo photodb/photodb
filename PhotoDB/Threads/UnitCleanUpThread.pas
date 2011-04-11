@@ -212,7 +212,7 @@ begin
           if Termitating or DBTerminating then
             Break;
 
-          if Settings.ReadBool('Options', 'FixDateAndTime', True) then
+          if Settings.ReadBool('Options', 'FixDateAndTime', True) and FileExistsSafe(FTable.FieldByName('FFileName').AsString) then
           begin
             ExifData := TExifData.Create;
             try

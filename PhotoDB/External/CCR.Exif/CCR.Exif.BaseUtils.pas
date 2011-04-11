@@ -30,6 +30,9 @@ uses
 { backfill basic types and routines for D2006-7 }
 
 type
+{$IF not Declared(EProgrammerNotFound)}
+  EProgrammerNotFound = class(Exception);
+{$IFEND}
 {$IFDEF UNICODE}
   TUnicodeStrings = TStrings;
   TUnicodeStringList = TStringList;
@@ -114,6 +117,29 @@ type
     function IsIPTCBlock(CheckID: Boolean = True): Boolean;
     function IsXMPBlock(CheckID: Boolean = True): Boolean;
     property Data: TDataStream read FData;
+  end;
+
+  TDateTimeTagValue = record
+  strict private const
+    FirstValidDateTime: TDateTime = -693593; //1st Jan, 1 AD
+    MissingOrInvalidValue: TDateTime = -700000;
+  strict private
+    FValue: TDateTime;
+    function GetAsString: string;
+  public
+    constructor CreateFromString(const AString: string);
+    class function CreateMissingOrInvalid: TDateTimeTagValue; static;
+    class operator Equal(const A, B: TDateTimeTagValue): Boolean;
+    class operator NotEqual(const A, B: TDateTimeTagValue): Boolean;
+    class operator Implicit(const Source: TDateTimeTagValue): TDateTime;
+    class operator Implicit(const Source: TDateTime): TDateTimeTagValue;
+    class operator LessThan(const A, B: TDateTimeTagValue): Boolean;
+    class operator LessThanOrEqual(const A, B: TDateTimeTagValue): Boolean;
+    class operator GreaterThan(const A, B: TDateTimeTagValue): Boolean;
+    class operator GreaterThanOrEqual(const A, B: TDateTimeTagValue): Boolean;
+    property AsString: string read GetAsString;
+    function MissingOrInvalid: Boolean; inline;
+    property Value: TDateTime read FValue;
   end;
 
   TLongIntTagValue = record
@@ -867,6 +893,77 @@ begin
   if CompareMem(SeekPtr, @TJPEGSegment.XMPHeader, SizeOf(TJPEGSegment.XMPHeader)) then
     Inc(SeekPtr, SizeOf(TJPEGSegment.XMPHeader));
   Result := CompareMem(SeekPtr, XMPStart, XMPStartLen);
+end;
+
+{ TDateTimeTagValue }
+
+constructor TDateTimeTagValue.CreateFromString(const AString: string);
+begin
+  if not TryStrToDateTime(AString, FValue) then
+    FValue := MissingOrInvalidValue;
+end;
+
+class function TDateTimeTagValue.CreateMissingOrInvalid: TDateTimeTagValue;
+begin
+  Result.FValue := MissingOrInvalidValue;
+end;
+
+function TDateTimeTagValue.MissingOrInvalid: Boolean;
+begin
+  Result := (Value < FirstValidDateTime);
+end;
+
+function TDateTimeTagValue.GetAsString: string;
+begin
+  if MissingOrInvalid then
+    Result := ''
+  else
+    Result := DateTimeToStr(Value);
+end;
+
+class operator TDateTimeTagValue.Equal(const A, B: TDateTimeTagValue): Boolean;
+begin
+  if A.MissingOrInvalid then
+    Result := B.MissingOrInvalid
+  else
+    Result := (A.Value = B.Value);
+end;
+
+class operator TDateTimeTagValue.NotEqual(const A, B: TDateTimeTagValue): Boolean;
+begin
+  Result := not (A = B);
+end;
+
+class operator TDateTimeTagValue.Implicit(const Source: TDateTimeTagValue): TDateTime;
+begin
+  Result := Source.Value;
+end;
+
+class operator TDateTimeTagValue.Implicit(const Source: TDateTime): TDateTimeTagValue;
+begin
+  Result.FValue := Source;
+end;
+
+class operator TDateTimeTagValue.LessThan(const A, B: TDateTimeTagValue): Boolean;
+begin
+  Result := (A.Value < B.Value) and not A.MissingOrInvalid and not B.MissingOrInvalid;
+end;
+
+class operator TDateTimeTagValue.LessThanOrEqual(const A, B: TDateTimeTagValue): Boolean;
+begin
+  Result := (A.MissingOrInvalid and B.MissingOrInvalid) or
+    ((A.Value <= B.Value) and not A.MissingOrInvalid and not B.MissingOrInvalid);
+end;
+
+class operator TDateTimeTagValue.GreaterThan(const A, B: TDateTimeTagValue): Boolean;
+begin
+  Result := (A.Value > B.Value) and not A.MissingOrInvalid and not B.MissingOrInvalid;
+end;
+
+class operator TDateTimeTagValue.GreaterThanOrEqual(const A, B: TDateTimeTagValue): Boolean;
+begin
+  Result := (A.MissingOrInvalid and B.MissingOrInvalid) or
+    ((A.Value >= B.Value) and not A.MissingOrInvalid and not B.MissingOrInvalid);
 end;
 
 { TLongIntTagValue }

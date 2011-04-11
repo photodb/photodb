@@ -7,7 +7,7 @@ uses
   GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel,
-  uGraphicUtils, uDBUtils, uViewerTypes, uAssociations;
+  uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage;
 
 type
   TViewerThread = class(TThread)
@@ -115,11 +115,14 @@ begin
     Graphic := GraphicClass.Create;
     try
 
+      if Graphic is TRAWImage then
+        TRAWImage(Graphic).LoadHalfSize := not FFullImage;
+
       try
         if PassWord <> '' then
         begin
           F(Graphic);
-          Graphic := DeCryptGraphicFileEx(FFileName, PassWord, FPages, False, FPage);
+          Graphic := DeCryptGraphicFileEx(FFileName, PassWord, FPages, FFullImage, FPage);
         end else
         begin
           if Crypted and (PassWord = '') then
@@ -152,6 +155,8 @@ begin
       FRealZoomScale := 1;
       if Graphic.Width <> 0 then
         FRealZoomScale := FRealWidth / Graphic.Width;
+      if Graphic is TRAWImage then
+        FRealZoomScale := TRAWImage(Graphic).Width / TRAWImage(Graphic).GraphicWidth;
 
       if Graphic is TGIFImage then
       begin
@@ -172,8 +177,7 @@ begin
             if PNG.TransparencyMode <> PtmNone then
             begin
               LoadPNGImage32bit(PNG, Bitmap, TransparentColor);
-            end
-            else
+            end else
               AssignGraphic(Bitmap, Graphic);
           end else
           begin

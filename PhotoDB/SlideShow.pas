@@ -83,7 +83,6 @@ type
     DropFileTarget1: TDropFileTarget;
     DropFileSource1: TDropFileSource;
     DragImageList: TImageList;
-    DestroyTimer: TTimer;
     ImageFrameTimer: TTimer;
     SlideShow1: TMenuItem;
     SlideTimer: TTimer;
@@ -181,7 +180,6 @@ type
       Point: TPoint; var Effect: Integer);
     procedure ReloadCurrent;
     procedure Pause;
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure ImageFrameTimerTimer(Sender: TObject);
     procedure UpdateInfo(SID : TGUID; Info : TDBPopupMenuInfoRecord);
     procedure TbSlideShowClick(Sender: TObject);
@@ -849,6 +847,9 @@ end;
 
 procedure TViewer.FormDestroy(Sender: TObject);
 begin
+  FormManager.UnRegisterMainForm(Self);
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+
   F(CurrentInfo);
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
@@ -1802,11 +1803,12 @@ end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  Viewer := nil;
   if FullScreenView <> nil then
     Exit1Click(nil);
   if DirectShowForm <> nil then
     DirectShowForm.Close;
-  DestroyTimer.Enabled := True;
+  Release;
 end;
 
 procedure TViewer.LoadLanguage;
@@ -2501,15 +2503,6 @@ begin
   MTimer1.ImageIndex := DB_IC_PLAY;
   FloatPanel.TbPlay.Down := False;
   FloatPanel.TbPause.Down := True;
-end;
-
-procedure TViewer.DestroyTimerTimer(Sender: TObject);
-begin
-  DestroyTimer.Enabled := False;
-  FormManager.UnRegisterMainForm(Self);
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  Release;
-  Viewer := nil;
 end;
 
 procedure TViewer.SetImageExists(const Value: Boolean);

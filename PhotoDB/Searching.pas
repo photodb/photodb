@@ -769,6 +769,7 @@ begin
     BreakOperation(Sender);
     NewFormState;
     NotifySearchingEnd;
+    FIsEstimatingActive := False;
   end;
 end;
 

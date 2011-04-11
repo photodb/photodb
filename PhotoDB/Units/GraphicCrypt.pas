@@ -486,7 +486,7 @@ begin
       Result := GraphicClass.Create;
 
       if (Result is TRAWImage) then
-         (Result as TRAWImage).LoadHalfSize := True;
+         (Result as TRAWImage).LoadHalfSize := not LoadFullRAW;
 
       if (Result is TiffImageUnit.TTIFFGraphic) then
       begin

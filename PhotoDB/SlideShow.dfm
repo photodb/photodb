@@ -499,13 +499,6 @@ object Viewer: TViewer
     Left = 368
     Top = 208
   end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 256
-    Top = 112
-  end
   object ImageFrameTimer: TTimer
     Enabled = False
     Interval = 100
