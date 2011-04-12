@@ -4,15 +4,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, uMemory, uConstants,
-  EncdDecd;
-
-type
-  TRelease = record
-    Version : Byte;
-    Major : Byte;
-    Minor : Byte;
-    Build : Cardinal;
-  end;
+  EncdDecd, uDBBaseTypes;
 
 type
   TUpdateInfo = record
@@ -48,7 +40,7 @@ const
   INTERNET_FLAG_RELOAD = $80000000;                 { retrieve the original item }
   wininet = 'wininet.dll';
 
-function DownloadFile(const Url: string): string;
+function DownloadFile(const Url: string; Encoding: TEncoding): string;
 function StringToRelease(const s: string) : TRelease;
 function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
 function InternetTimeToDateTime(const Value: string) : TDateTime;
@@ -145,7 +137,7 @@ begin
   end;
 end;
 
-function DownloadFile(const Url: string): string;
+function DownloadFile(const Url: string; Encoding: TEncoding): string;
 var
   NetHandle: HINTERNET;
   UrlHandle: HINTERNET;
@@ -156,6 +148,8 @@ var
   InternetReadFile : TInternetReadFile;
   InternetCloseHandle : TInternetCloseHandle;
   WinInetHandle : THandle;
+  MS: TMemoryStream;
+  SR: TStringStream;
 begin
   WinInetHandle := LoadLibrary(wininet);
   @InternetOpen := GetProcAddress(WinInetHandle, 'InternetOpenW');
@@ -170,12 +164,29 @@ begin
       if Assigned(UrlHandle) then
 { UrlHandle правильный? Начинаем загрузку }
         begin
-          FillChar(Buffer, SizeOf(Buffer), 0);
-          repeat
-            Result := Result + string(Buffer);
+          MS := TMemoryStream.Create;
+          try
             FillChar(Buffer, SizeOf(Buffer), 0);
-            InternetReadFile(UrlHandle, @Buffer, SizeOf(Buffer), BytesRead);
-          until BytesRead = 0;
+            BytesRead := 0;
+            repeat
+              MS.Write(Buffer, BytesRead);
+              //Result := Result + string(Buffer);
+              FillChar(Buffer, SizeOf(Buffer), 0);
+              InternetReadFile(UrlHandle, @Buffer, SizeOf(Buffer), BytesRead);
+            until BytesRead = 0;
+
+            SR := TStringStream.Create(Result, Encoding);
+            try
+              MS.Seek(0, soFromBeginning);
+              SR.CopyFrom(MS, MS.Size);
+              Result := SR.DataString;
+            finally
+              F(SR);
+            end;
+
+          finally
+            F(MS);
+          end;
           InternetCloseHandle(UrlHandle);
         end
       else

@@ -5,16 +5,16 @@ interface
 uses
    Classes, Windows, Messages, JPEG, Graphics, uTime,
    uConstants, uResources, UnitDBCommonGraphics, uMemory,
-   uTranslate, ActiveX, uFileUtils, pngimage,
+   uTranslate, ActiveX, uFileUtils, pngimage, uDBThread,
    uFormUtils, uAppUtils, uRuntime, uMobileUtils;
 
 type
-  TSplashThread = class(TThread)
+  TSplashThread = class(TDBThread)
   protected
     procedure Execute; override;
   end;
 
-  TLanguageThread = class(TThread)
+  TLanguageThread = class(TDBThread)
   protected
     procedure Execute; override;
   end;

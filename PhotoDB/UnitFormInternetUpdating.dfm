@@ -2,7 +2,7 @@ object FormInternetUpdating: TFormInternetUpdating
   Left = 261
   Top = 130
   BorderStyle = bsToolWindow
-  Caption = 'New updating avaliable'
+  Caption = 'New version is avaliable'
   ClientHeight = 277
   ClientWidth = 352
   Color = clBtnFace
@@ -10,68 +10,23 @@ object FormInternetUpdating: TFormInternetUpdating
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
-  Font.Style = []
+  Font.Style = [fsBold]
   FormStyle = fsStayOnTop
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  DesignSize = (
+    352
+    277)
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel1: TPanel
-    Left = 0
-    Top = 239
-    Width = 352
-    Height = 38
-    Align = alBottom
-    BevelOuter = bvNone
-    TabOrder = 0
-    object Button1: TButton
-      Left = 272
-      Top = 8
-      Width = 75
-      Height = 25
-      Caption = 'Ok'
-      TabOrder = 0
-      OnClick = Button1Click
-    end
-    object CheckBox1: TCheckBox
-      Left = 7
-      Top = 13
-      Width = 241
-      Height = 17
-      Caption = 'Remaind me later'
-      TabOrder = 1
-    end
-  end
-  object WebLink1: TWebLink
-    Left = 160
-    Top = 216
-    Width = 88
-    Height = 13
-    Cursor = crHandPoint
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
-    Text = 'Download now'
-    OnClick = WebLink1Click
-    ImageIndex = 0
-    IconWidth = 0
-    IconHeight = 0
-    UseEnterColor = True
-    EnterColor = clNavy
-    EnterBould = True
-    TopIconIncrement = 0
-    ImageCanRegenerate = False
-    UseSpecIconSize = True
-  end
-  object RichEdit1: TRichEdit
+  object RedInfo: TRichEdit
     Left = 8
     Top = 8
     Width = 337
     Height = 201
+    Anchors = [akLeft, akTop, akRight, akBottom]
     BevelInner = bvNone
     BevelOuter = bvNone
     BorderStyle = bsNone
@@ -85,31 +40,85 @@ object FormInternetUpdating: TFormInternetUpdating
     PlainText = True
     ReadOnly = True
     ScrollBars = ssVertical
-    TabOrder = 2
+    TabOrder = 0
   end
-  object WebLink2: TWebLink
-    Left = 4
-    Top = 216
+  object WlHomePage: TWebLink
+    Left = 8
+    Top = 233
     Width = 61
     Height = 13
     Cursor = crHandPoint
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
     Text = 'Home Page'
-    OnClick = WebLink2Click
+    OnClick = WlHomePageClick
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0
     UseEnterColor = True
-    EnterColor = clNavy
-    EnterBould = True
+    EnterColor = clBlack
+    EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = False
+    ImageCanRegenerate = True
     UseSpecIconSize = True
+    HightliteImage = False
   end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = DestroyTimerTimer
-    Left = 24
-    Top = 168
+  object CbRemindMeLater: TCheckBox
+    Left = 8
+    Top = 252
+    Width = 255
+    Height = 17
+    Anchors = [akLeft, akTop, akRight]
+    Caption = 'Remaind me later'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 2
+  end
+  object BtnOk: TButton
+    Left = 269
+    Top = 244
+    Width = 75
+    Height = 25
+    Anchors = [akTop, akRight]
+    Caption = 'Ok'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 3
+    OnClick = BtnOkClick
+  end
+  object WlDownload: TWebLink
+    Left = 8
+    Top = 215
+    Width = 88
+    Height = 13
+    Cursor = crHandPoint
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    Text = 'Download now'
+    OnClick = WlDownloadClick
+    ImageIndex = 0
+    IconWidth = 0
+    IconHeight = 0
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = False
+    TopIconIncrement = 0
+    ImageCanRegenerate = True
+    UseSpecIconSize = True
+    HightliteImage = False
   end
 end

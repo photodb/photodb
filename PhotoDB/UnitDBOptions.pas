@@ -112,11 +112,13 @@ end;
 procedure TFormDBOptions.FormCreate(Sender: TObject);
 begin
   DBFile := TPhotoDBFile.Create;
+  ImageOptions := nil;
   LoadLanguage;
 end;
 
 procedure TFormDBOptions.FormDestroy(Sender: TObject);
 begin
+  F(ImageOptions);
   F(DBFile);
 end;
 
@@ -192,30 +194,34 @@ var
 begin
   DisableControls;
   Options := CommonDBSupport.GetImageSettingsFromTable(DBFile.FileName);
-  Options.Name := NormalizeDBString(EdName.Text);
-  Options.Description := NormalizeDBString(EdDescriotion.Text);
-  Options.ThSizePanelPreview := SysUtils.StrToIntDef(ComboBox1.Text,
-    Options.ThSizePanelPreview);
-  Options.ThHintSize := SysUtils.StrToIntDef(ComboBox2.Text,
-    Options.ThHintSize);
-  if Options.ThSizePanelPreview < 50 then
-    Options.ThSizePanelPreview := 50;
-  if Options.ThSizePanelPreview > Options.ThSize then
-    Options.ThSizePanelPreview := Options.ThSize;
+  try
+    Options.Name := EdName.Text;
+    Options.Description := EdDescriotion.Text;
+    Options.ThSizePanelPreview := SysUtils.StrToIntDef(ComboBox1.Text,
+      Options.ThSizePanelPreview);
+    Options.ThHintSize := SysUtils.StrToIntDef(ComboBox2.Text,
+      Options.ThHintSize);
+    if Options.ThSizePanelPreview < 50 then
+      Options.ThSizePanelPreview := 50;
+    if Options.ThSizePanelPreview > Options.ThSize then
+      Options.ThSizePanelPreview := Options.ThSize;
 
-  if Options.ThHintSize < Options.ThSize then
-    Options.ThHintSize := Options.ThSize;
-  if Options.ThHintSize > Screen.Width then
-    Options.ThHintSize := Screen.Width;
+    if Options.ThHintSize < Options.ThSize then
+      Options.ThHintSize := Options.ThSize;
+    if Options.ThHintSize > Screen.Width then
+      Options.ThHintSize := Screen.Width;
 
-  CommonDBSupport.UpdateImageSettings(DBFile.FileName, Options);
-  if FName <> '' then
-    DBkernel.AddDB(FName, DBFile.FileName, DBFile.Icon, True);
+    CommonDBSupport.UpdateImageSettings(DBFile.FileName, Options);
+    if FName <> '' then
+      DBkernel.AddDB(FName, DBFile.FileName, DBFile.Icon, True);
 
-  if AnsiLowerCase(DBName) = AnsiLowerCase(DBFile.FileName) then
-  begin
-    DBkernel.ReadDBOptions;
-    DBkernel.DoIDEvent(Self, 0, [EventID_Param_DB_Changed], Value);
+    if AnsiLowerCase(DBName) = AnsiLowerCase(DBFile.FileName) then
+    begin
+      DBkernel.ReadDBOptions;
+      DBkernel.DoIDEvent(Self, 0, [EventID_Param_DB_Changed], Value);
+    end;
+  finally
+    F(Options);
   end;
   Close;
 end;

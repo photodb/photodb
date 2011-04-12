@@ -6,19 +6,19 @@ uses
   Classes, Registry, Windows, SysUtils, UnitDBKernel, Forms,
   uVistaFuncs, uLogger, uConstants, uShellIntegration, uGOM, DateUtils,
   uTranslate, uInternetUtils, MSXML, OmniXML_MSXML, uDBForm, ActiveX,
-  Dolphin_DB, uActivationUtils;
+  Dolphin_DB, uActivationUtils, uSettings, uSysUtils, uDBThread;
 
 type
-  TInternetUpdate = class(TThread)
+  TInternetUpdate = class(TDBThread)
   private
     { Private declarations }
-    NewVersion, Text, URL: string;
-    FNeedsInformation: Boolean;
+    FIsBackground: Boolean;
     StringParam: string;
     FNotifyHandler: TUpdateNotifyHandler;
     FOwner: TDBForm;
     Info : TUpdateInfo;
   protected
+    function GetThreadID: string; override;
     procedure Execute; override;
     procedure ShowUpdates;
     procedure Inform(Info : String);
@@ -26,7 +26,7 @@ type
     procedure ParceReply(Reply : string);
     procedure NotifySync;
   public
-   constructor Create(Owner : TDBForm; NeedsInformation : Boolean; NotifyHandler : TUpdateNotifyHandler);
+   constructor Create(Owner: TDBForm; IsBackground: Boolean; NotifyHandler: TUpdateNotifyHandler);
   end;
                                   
 implementation
@@ -34,11 +34,11 @@ implementation
 uses
   UnitFormInternetUpdating;
 
-constructor TInternetUpdate.Create(Owner : TDBForm; NeedsInformation : Boolean; NotifyHandler : TUpdateNotifyHandler);
+constructor TInternetUpdate.Create(Owner: TDBForm; IsBackground: Boolean; NotifyHandler: TUpdateNotifyHandler);
 begin
   inherited Create(False);
   FOwner := Owner;
-  FNeedsInformation := NeedsInformation;
+  FIsBackground := IsBackground;
   FNotifyHandler := NotifyHandler;
 end;
 
@@ -46,14 +46,24 @@ procedure TInternetUpdate.Execute;
 var
   UpdateFullUrl,
   UpdateText: string;
+  LastCheckDate: TDateTime;
 begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
+
+    if FIsBackground then
+    begin
+      LastCheckDate := Settings.ReadDateTime('Updater', 'LastTime', Now - 365);
+
+      if not (Now - LastCheckDate > 7) then
+        Exit;
+    end;
+
     try
       UpdateFullUrl := ResolveLanguageString(UpdateNotifyURL);
       UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion;
-      UpdateText := DownloadFile(UpdateFullUrl);
+      UpdateText := DownloadFile(UpdateFullUrl, TEncoding.UTF8);
     except
       on E: Exception do
         EventLog(':TInternetUpdate::Execute() throw exception: ' + E.message);
@@ -64,6 +74,11 @@ begin
   finally
     CoUninitialize;
   end;
+end;
+
+function TInternetUpdate.GetThreadID: string;
+begin
+  Result := 'Updates';
 end;
 
 procedure TInternetUpdate.Inform(Info: string);
@@ -86,9 +101,7 @@ end;
 procedure TInternetUpdate.NotifySync;
 begin
   if (Assigned(FNotifyHandler)) and GOM.IsObj(FOwner) then
-  begin
     FNotifyHandler(Self, Info);
-  end;
 end;
 
 {
@@ -98,7 +111,7 @@ end;
   <version>2.3.0.250</version>
   <release_date>201104312359</release_date>
   <release_notes>New Database 2.3</release_notes>
-  <release_text>New Database 2.3 release notes</release_text>
+  <release_text>New Database 2.3 release text</release_text>
   <download_url>http://photodb.illusdolphin.net/en/download.aspx</download_url>
 </update>
 }
@@ -139,12 +152,19 @@ begin
       Info.InfoAvaliable := True;
     end;
   end;
-  Synchronize(NotifySync);
+  if Info.InfoAvaliable then
+  begin
+    if IsNewRelease(GetExeVersion(ParamStr(0)), Info.Release) then
+      Synchronize(ShowUpdates)
+    else
+      Inform(L('No new updates are available'));
+  end else
+    Synchronize(NotifySync);
 end;
 
 procedure TInternetUpdate.ShowUpdates;
 begin
-  ShowAvaliableUpdating(NewVersion, Text, URL);
+  ShowAvaliableUpdating(Info);
 end;
 
 end.

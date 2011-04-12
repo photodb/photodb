@@ -91,44 +91,47 @@ begin
 
     Log(L('Opening collection'));
     TableIn := GetTable(ToFileName, DB_TABLE_IMAGES);
-    TableOut := GetTable(FFileName, DB_TABLE_IMAGES);
     try
+      TableOut := GetTable(FFileName, DB_TABLE_IMAGES);
       try
-        TableOut.Open;
-        TableIn.Open;
-      except
-        on E: Exception do
-        begin
-          FParamStr := E.message;
-          SynchronizeEx(ShowErrorMessage);
-          Exit;
-        end;
-      end;
-      try
-        Log(L('Converting the structure...'));
-        SetMaxValue(TableOut.RecordCount);
-        TableOut.First;
-        Pos := 0;
-        repeat
-          if BreakConverting then
-            Break;
-          Pos := Pos + 1;
-          if Pos mod 10 = 0 then
+        try
+          TableOut.Open;
+          TableIn.Open;
+        except
+          on E: Exception do
           begin
-            SetText(Format(L('Item #%d from %d'), [TableOut.RecNo, TableOut.RecordCount]));
-            SetPosition(TableOut.RecNo);
+            FParamStr := E.message;
+            SynchronizeEx(ShowErrorMessage);
+            Exit;
           end;
-          if Pos mod 100 = 0 then
-            TableIn.Post;
+        end;
+        try
+          Log(L('Converting the structure...'));
+          SetMaxValue(TableOut.RecordCount);
+          TableOut.First;
+          Pos := 0;
+          repeat
+            if BreakConverting then
+              Break;
+            Pos := Pos + 1;
+            if Pos mod 10 = 0 then
+            begin
+              SetText(Format(L('Item #%d from %d'), [TableOut.RecNo, TableOut.RecordCount]));
+              SetPosition(TableOut.RecNo);
+            end;
+            if Pos mod 100 = 0 then
+              TableIn.Post;
 
-          TableIn.Append;
-          CopyRecordsW(TableOut, TableIn, True, False, '', FGroupsFounded);
-          TableOut.Next;
-          if Terminated then
-            Break;
-        until TableOut.Eof;
+            TableIn.Append;
+            CopyRecordsW(TableOut, TableIn, True, False, '', FGroupsFounded);
+            TableOut.Next;
+            if Terminated then
+              Break;
+          until TableOut.Eof;
+        finally
+          FreeDS(TableOut);
+        end;
       finally
-        FreeDS(TableOut);
         FreeDS(TableIn);
       end;
 

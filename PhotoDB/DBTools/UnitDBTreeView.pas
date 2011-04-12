@@ -260,7 +260,7 @@ begin
   TempTable := GetQuery;
   SetSQL(WorkTable, 'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
   SetSQL(TempTable, 'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
-  TOpenQueryThread.Create(WorkTable, DBOpened);
+  TOpenQueryThread.Create(Self, WorkTable, DBOpened);
   OpenProgress := GetProgressWindow;
   OpenProgress.OneOperation := True;
   OpenProgress.OperationCounter.Inverse := True;
@@ -285,7 +285,7 @@ begin
   until not DBInOpening;
   WorkTable.First;
 
-  TOpenQueryThread.Create(TempTable, DBOpened);
+  TOpenQueryThread.Create(Self, TempTable, DBOpened);
   DBInOpening := True;
   repeat
     OpenProgress.MaxPosCurrentOperation := 100;

@@ -6,11 +6,11 @@ uses
   Windows, Classes, Graphics, GraphicCrypt, SysUtils, Forms,
   GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
-  uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel,
+  uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
   uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage;
 
 type
-  TViewerThread = class(TThread)
+  TViewerThread = class(TDBThread)
   private
     { Private declarations }
     FViewer: TViewerForm;

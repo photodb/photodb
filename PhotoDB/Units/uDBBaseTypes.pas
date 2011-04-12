@@ -43,6 +43,14 @@ type
 
   TCallBackProgressEvent = procedure(Sender : TObject; var Info : TProgressCallBackInfo) of object;
 
+type
+  TRelease = record
+    Version : Byte;
+    Major : Byte;
+    Minor : Byte;
+    Build : Cardinal;
+  end;
+
 implementation
 
 end.

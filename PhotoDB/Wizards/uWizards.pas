@@ -81,12 +81,12 @@ begin
       for I := FCurrentStep + 1 to Count - 1 do
       begin
         FStepTypes.Delete(I);
+        TFrameWizardBase(FSteps[I]).Unload;
         TFrameWizardBase(FSteps[I]).Free;
         FSteps.Delete(I);
-
-        FStepTypes.Add(Step);
-        AddStepInstance(Step);
       end;
+      FStepTypes.Add(Step);
+      AddStepInstance(Step);
     end;
   end;
 end;
@@ -130,8 +130,15 @@ begin
 end;
 
 destructor TWizardManager.Destroy;
+var
+  I: Integer;
 begin
-  FreeList(FSteps);
+  for I := 0 to FSteps.Count - 1 do
+  begin
+    Steps[I].Unload;
+    Steps[I].Free;
+  end;
+  F(FSteps);
   F(FStepTypes);
   inherited;
 end;

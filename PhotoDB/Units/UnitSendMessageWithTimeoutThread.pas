@@ -3,16 +3,16 @@ unit UnitSendMessageWithTimeoutThread;
 interface
 
 uses
-  Windows, Classes, Dolphin_DB, Forms, uLogger;
+  Windows, Classes, Forms, uLogger, uDBThread;
 
 type
-  TSendMessageWithTimeoutThread = class(TThread)
+  TSendMessageWithTimeoutThread = class(TDBThread)
   private
-    fhWnd: HWND;
-    fMsg: UINT;
-    fwParam: WPARAM;
-    flParam: LPARAM;
     { Private declarations }
+    FhWnd: HWND;
+    FMsg: UINT;
+    FwParam: WPARAM;
+    FlParam: LPARAM;
   protected
     procedure Execute; override;
   public

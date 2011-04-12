@@ -3,7 +3,7 @@ unit UnitLoadCRCCheckThread;
 interface
 
 uses
-  Windows, Classes, Dolphin_DB, UnitDBThread, UnitDBCommon;
+  Windows, Classes, Dolphin_DB, uDBThread, UnitDBCommon;
 
 type
   TLoadCRCCheckThread = class(TDBThread)
@@ -19,11 +19,12 @@ implementation
 
 procedure TLoadCRCCheckThread.Execute;
 type
-  TInitializeProc = function(s:PChar) : integer;
+  TInitializeProc = function(s: PChar) : Integer;
 var
   Initproc : TInitializeProc;
   KernelHandle : THandle;
 begin
+  FreeOnTerminate := True;
   KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
   if KernelHandle <> 0 then
   begin

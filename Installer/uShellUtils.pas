@@ -7,7 +7,7 @@ interface
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
   uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations,
-  ShellApi, ShlObj, uFileUtils, uRuntime;
+  ShellApi, ShlObj, uFileUtils, uRuntime, win32crc;
 
 type
   TRegistryInstallCallBack = procedure(Current, Total: Integer; var Terminate : Boolean) of object;
@@ -175,6 +175,7 @@ begin
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey(RegRoot, True);
+    FReg.WriteDateTime('InstallDate', FReg.ReadDateTime('InstallDate', Now));
     FReg.WriteString('ReleaseNumber', IntToStr(ReleaseNumber));
     FReg.WriteString('DataBase', Filename);
     FReg.WriteString('Language', TTranslateManager.Instance.Language);

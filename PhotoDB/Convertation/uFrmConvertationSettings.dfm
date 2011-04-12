@@ -1,11 +1,11 @@
 inherited FrmConvertationSettings: TFrmConvertationSettings
   Width = 433
-  Height = 361
+  Height = 329
   Color = clWhite
   ParentBackground = False
   ParentColor = False
   ExplicitWidth = 433
-  ExplicitHeight = 361
+  ExplicitHeight = 329
   object LbInfo: TLabel
     Left = 5
     Top = 8

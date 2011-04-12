@@ -93,7 +93,6 @@ begin
   FState := AState;
   FSubThreads := TList.Create;
   FParentThread := nil;
-  GOM.AddObj(Self);
 end;
 
 destructor TThreadEx.Destroy;
@@ -103,7 +102,6 @@ begin
   FSubThreads.Free;
   FSync.Free;
   inherited;
-  GOM.RemoveObj(Self);
 end;
 
 procedure TThreadEx.DoTerminateThread;

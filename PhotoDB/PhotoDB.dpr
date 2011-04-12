@@ -226,7 +226,6 @@ uses
   uStringUtils in 'Units\uStringUtils.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
   UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas',
-  UnitDBThread in 'Units\UnitDBThread.pas',
   UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
   uFastLoad in 'Units\uFastLoad.pas',
   uResources in 'Units\uResources.pas',
@@ -323,6 +322,8 @@ uses
   uDBAdapter in 'Units\uDBAdapter.pas',
   uCDMappingTypes in 'Units\uCDMappingTypes.pas',
   uMemoryEx in 'Units\uMemoryEx.pas';
+
+{$R *.res}
 
 var
   S1: string;

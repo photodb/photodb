@@ -3,7 +3,7 @@ unit wfsU;
 interface
 
 uses Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, uLogger,
-  uGOM, ExplorerTypes, uMemory, SyncObjs, uTime, uThreadEx,
+  uGOM, ExplorerTypes, uMemory, SyncObjs, uTime, uThreadEx, uDBThread,
   uThreadForm;
 
 type
@@ -13,7 +13,7 @@ const
   WathBufferSize = 165535;
 
 type
-  TWFS = class(TThread)
+  TWFS = class(TDBThread)
   private
     FName: string;
     FFilter: Cardinal;

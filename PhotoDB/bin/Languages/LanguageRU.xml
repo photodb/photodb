@@ -1845,6 +1845,7 @@
 	<translate name="Home page" value="Сайт программы"/>
 	<translate name="Download now!" value="Загрузить сейчас!"/>
 	<translate name="Remind me later" value="Напомнить мне потом"/>
+	<translate name="No new updates are available" value="Нет новых обновлений для программы"/>	
   </scope>
   <scope name="Mobile">
 	<translate name="Collection name" value="Имя БД"/>

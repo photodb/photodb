@@ -5,11 +5,11 @@ interface
 uses
   Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt,
   UnitDBDeclare, RAWImage, UnitDBCommonGraphics, UnitDBCommon,
-  uCDMappingTypes, uLogger, uMemory, UnitDBKernel,
+  uCDMappingTypes, uLogger, uMemory, UnitDBKernel, uDBThread,
   uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uAssociations;
 
 type
-  TPanelLoadingBigImagesThread = class(TThread)
+  TPanelLoadingBigImagesThread = class(TDBThread)
   private
     { Private declarations }
     FSender: TForm;

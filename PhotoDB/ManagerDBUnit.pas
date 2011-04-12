@@ -775,7 +775,10 @@ var
   B: TBitmap;
 begin
   LbDatabases.Enabled := False;
+  FreeGroups(aGroups);
   AGroups := GetRegisterGroupList(True);
+  for I := 0 to Length(GroupBitmaps) - 1 do
+    GroupBitmaps[I].Free;
   SetLength(GroupBitmaps, Length(AGroups));
   for I := 0 to Length(AGroups) - 1 do
   begin
@@ -1590,7 +1593,9 @@ begin
     begin
       FormManagerHint.DoubleBuffered := True;
       Application.ProcessMessages;
-      ShowWindow(FormManagerHint.Handle, SW_SHOWNOACTIVATE);
+      if FormManagerHint <> nil then
+        ShowWindow(FormManagerHint.Handle, SW_SHOWNOACTIVATE);
+
     end;
   end;
 end;

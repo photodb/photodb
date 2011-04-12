@@ -5,7 +5,7 @@ interface
 uses
   Windows, ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
   Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs,
-  Forms, OptimizeImageUnit, uEditorTypes, uGOM,
+  Forms, OptimizeImageUnit, uEditorTypes, uGOM, uDBThread,
   UnitDBKernel, uMemory, uSettings;
 
 type
@@ -32,7 +32,7 @@ type
   end;
 
 type
-  TGaussBlurThread = class(TThread)
+  TGaussBlurThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner : TObject;
@@ -75,7 +75,7 @@ type
   end;
 
 type
-  TSharpenThread = class(TThread)
+  TSharpenThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner : TObject;
@@ -120,7 +120,7 @@ type
   end;
 
 type
-  TPixelsEffectThread = class(TThread)
+  TPixelsEffectThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner : TObject;
@@ -171,7 +171,7 @@ type
   end;
 
 type
-  TWaveEffectThread = class(TThread)
+  TWaveEffectThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner: TObject;
@@ -224,7 +224,7 @@ type
   end;
 
 type
-  TDisorderEffectThread = class(TThread)
+  TDisorderEffectThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner : TObject;
@@ -284,7 +284,7 @@ type
   end;
 
 type
-  TReplaceColorEffectThread = class(TThread)
+  TReplaceColorEffectThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner : TObject;
@@ -353,7 +353,7 @@ type
   end;
 
 type
-  TCustomMatrixEffectThread = class(TThread)
+  TCustomMatrixEffectThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner : TObject;

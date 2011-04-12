@@ -189,7 +189,7 @@ begin
     _sqlexectext := 'Select FFileName from $DB$ order by FFileName';
     SetSQL(WorkQuery, _sqlexectext);
     DBInOpening := True;
-    TOpenQueryThread.Create(WorkQuery, DBOpened);
+    TOpenQueryThread.Create(Self, WorkQuery, DBOpened);
     I := 0;
     DprMain.MaxValue := 100;
     DprMain.Inverse := True;
@@ -286,7 +286,7 @@ begin
       _sqlexectext := 'Select ID,FFileName from $DB$';
       SetSQL(WorkQuery, _sqlexectext);
       DBInOpening := True;
-      TOpenQueryThread.Create(WorkQuery, DBOpened);
+      TOpenQueryThread.Create(Self, WorkQuery, DBOpened);
       I := 0;
       Count := 0;
       DprMain.MaxValue := 100;

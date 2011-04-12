@@ -5,7 +5,7 @@ interface
 uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
   UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB, uFileUtils,
-  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX;
+  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX, uDBThread;
 
 type
   TCryptImageThreadOptions = record
@@ -22,7 +22,7 @@ const
   ACTION_DECRYPT_IMAGES = 2;
 
 type
-  TCryptingImagesThread = class(TThread)
+  TCryptingImagesThread = class(TDBThread)
   private
     { Private declarations }
     FOptions: TCryptImageThreadOptions;

@@ -534,7 +534,7 @@ begin
     SQL := 'Update DBSettings Set Version=' + IntToStr(Settings.Version) + ', DBJpegCompressionQuality = ' + IntToStr
       (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = ' + IntToStr(Settings.ThSizePanelPreview)
       + ',' + 'ThImageSize = ' + IntToStr(Settings.ThSize) + ', ThHintSize = ' + IntToStr(Settings.ThHintSize)
-      + ', DBName = "' + Settings.name + '"' + ', DBDescription = "' + Settings.Description + '"';
+      + ', DBName = ' + NormalizeDBString(Settings.name)  + ', DBDescription = ' + NormalizeDBString(Settings.Description);
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);

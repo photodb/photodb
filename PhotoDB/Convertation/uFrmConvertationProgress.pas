@@ -128,6 +128,7 @@ begin
   inherited;
   F(PasswordKeeper);
   F(Infos);
+  F(ItemsData);
   for I := 0 to Length(Icons) - 1 do
     TIcon(Icons[I]).Free;
   SetLength(Icons, 0);

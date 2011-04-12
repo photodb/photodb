@@ -3,13 +3,14 @@ unit UnitFileExistsThread;
 interface
 
 uses
-  Windows, Classes, SysUtils, Forms, Dolphin_DB, UnitDBCommon, uLogger, uFIleUtils;
+  Windows, Classes, SysUtils, Forms, Dolphin_DB, UnitDBCommon, uLogger,
+  uFIleUtils, uDBThread;
 
 type
-  TFileExistsThread = class(TThread)
+  TFileExistsThread = class(TDBThread)
   private
-   fFileName : string;
-   fIsDirectory : boolean;
+   FFileName : string;
+   FIsDirectory : boolean;
     { Private declarations }
   protected
     procedure Execute; override;

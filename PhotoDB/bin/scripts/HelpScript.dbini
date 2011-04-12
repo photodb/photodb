@@ -28,6 +28,6 @@
     initialization:
       if ($Mobile=true) {InVisible;};
     run:
-      GetUpdates(true);
+      GetUpdates(false);
   }
 }

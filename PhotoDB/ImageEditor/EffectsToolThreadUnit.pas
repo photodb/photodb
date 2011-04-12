@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes, Forms,
-  uConstants, uLogger, uEditorTypes, uShellIntegration, uMemory;
+  uConstants, uLogger, uEditorTypes, uShellIntegration, uMemory, uDBThread;
 
 type
-  TBaseEffectThread = class(TThread)
+  TBaseEffectThread = class(TDBThread)
   private
     { Private declarations }
     FSID: string;

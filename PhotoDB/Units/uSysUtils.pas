@@ -3,7 +3,7 @@ unit uSysUtils;
 interface
 
 uses
-  Windows, Forms, Tlhelp32, SysUtils, ActiveX;
+  Windows, Forms, SysUtils, ActiveX, uDBBaseTypes;
 
 function StringToHexString(Text: string): string;
 function HexStringToString(Text: string): string;
@@ -17,12 +17,34 @@ function GetWindowsUserName: string;
 function AltKeyDown: Boolean;
 function CtrlKeyDown: Boolean;
 function ShiftKeyDown: Boolean;
-function KillTask(ExeFileName: string): Integer;
 function GetGUID: TGUID;
 function GetProgramPath: string;
 function GetSystemLanguage: string;
+function GetExeVersion(sFileName: string): TRelease;
 
 implementation
+
+function GetExeVersion(sFileName: string): TRelease;
+var
+  VerInfoSize: DWORD;
+  VerInfo: Pointer;
+  VerValueSize: DWORD;
+  VerValue: PVSFixedFileInfo;
+  Dummy: DWORD;
+begin
+  VerInfoSize := GetFileVersionInfoSize(PChar(sFileName), Dummy);
+  GetMem(VerInfo, VerInfoSize);
+  GetFileVersionInfo(PChar(sFileName), 0, VerInfoSize, VerInfo);
+  VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
+  with VerValue^ do
+  begin
+    Result.Version := dwFileVersionMS shr 16;
+    Result.Major := dwFileVersionMS and $FFFF;
+    Result.Minor := dwFileVersionLS shr 16;
+    Result.Build := dwFileVersionLS and $FFFF;
+  end;
+  FreeMem(VerInfo, VerInfoSize);
+end;
 
 function StripHexPrefix(const HexStr: string): string;
 begin
@@ -142,28 +164,6 @@ begin
   GetUserName(PWideChar(SUserName), DwUserNameLen);
   SetLength(SUserName, DwUserNameLen);
   Result := SUserName;
-end;
-
-function KillTask(ExeFileName: string): Integer;
-const
-  PROCESS_TERMINATE = $0001;
-var
-  ContinueLoop: BOOL;
-  FSnapshotHandle: THandle;
-  FProcessEntry32: TProcessEntry32;
-begin
-  Result := 0;
-  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  FProcessEntry32.DwSize := Sizeof(FProcessEntry32);
-  ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
-  while Integer(ContinueLoop) <> 0 do
-  begin
-    if ((UpperCase(ExtractFileName(FProcessEntry32.SzExeFile)) = UpperCase(ExeFileName)) or
-        (UpperCase(FProcessEntry32.SzExeFile) = UpperCase(ExeFileName))) then
-      Result := Integer(TerminateProcess(OpenProcess(PROCESS_TERMINATE, BOOL(0), FProcessEntry32.Th32ProcessID), 0));
-    ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
-  end;
-  CloseHandle(FSnapshotHandle);
 end;
 
 function GetSystemLanguage: string;

@@ -4,10 +4,10 @@ interface
 
 uses
   Classes, Windows, DBCommon, SysUtils, Forms, Dolphin_DB, uFileUtils, uMemory,
-  uLogger, uDBUtils, uDBForm, UnitDBDeclare, UnitDBKernel;
+  uLogger, uDBUtils, uDBForm, UnitDBDeclare, UnitDBKernel, uDBThread;
 
 type
-  TWindowsCopyFilesThread = class(TThread)
+  TWindowsCopyFilesThread = class(TDBThread)
   private
     { Private declarations }
     FHandle: Hwnd;

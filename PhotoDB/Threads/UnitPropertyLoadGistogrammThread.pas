@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
   Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes,
-  uMemory, uGraphicUtils, uDBGraphicTypes, uAssociations;
+  uMemory, uGraphicUtils, uDBGraphicTypes, uAssociations, uDBThread;
 
 type
   TPropertyLoadGistogrammThreadOptions = record
@@ -16,7 +16,7 @@ type
   end;
 
 type
-  TPropertyLoadGistogrammThread = class(TThread)
+  TPropertyLoadGistogrammThread = class(TDBThread)
   private
     { Private declarations }
     FOptions: TPropertyLoadGistogrammThreadOptions;

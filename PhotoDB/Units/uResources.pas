@@ -16,8 +16,6 @@ function GetActivationImage : TPNGImage;
 function GetPrinterPatternImage : TJpegImage;
 function GetBigPatternImage : TJpegImage;
 
-{$R PhotoDB.res}
-
 {$R Logo.res}
 {$R Slideshow_Load.res}
 {$R Directory_Large.res}

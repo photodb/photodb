@@ -9,7 +9,7 @@ uses
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, uDBThread,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
-  uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations;
+  uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations, uActivationUtils;
 
 type
   TFormManager = class(TDBForm)
@@ -58,7 +58,8 @@ implementation
 uses
   UnitCleanUpThread, ExplorerUnit, uSearchTypes, SlideShow, UnitFileCheckerDB,
   UnitInternetUpdate, uAbout, UnitConvertDBForm, UnitImportingImagesForm,
-  UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel;
+  UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel,
+  uActivation;
 
 {$R *.dfm}
 
@@ -76,6 +77,9 @@ begin
     Halt;
   end else if idEvent = TimerCheckMainFormsHandle then
   begin
+    //to avoid deadlock in delphi 2010
+    PostThreadMessage(GetCurrentThreadID, WM_NULL, 0, 0);
+
     if FormManager <> nil then
       FormManager.CheckTimerTimer(nil);
   end else if idEvent = TimerTerminateAppHandle then
@@ -279,12 +283,12 @@ begin
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
 
-  DBThreadManager.WaitForAllThreads(10000);
+  DBThreadManager.WaitForAllThreads(30000);
   TryRemoveConnection(DBName, True);
 
   FormManager := nil;
 
-  TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 10000, @TimerProc);
+  TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 30000, @TimerProc);
   Application.Terminate;
   TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
 
@@ -294,7 +298,6 @@ begin
   EventLog('');
   EventLog('');
   EventLog('finalization:');
-  Delay(100);
 end;
 
 function TFormManager.GetTimeLimitMessage: string;
@@ -308,8 +311,10 @@ begin
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
-{$IFDEF LICENCE}
 var
+  FReg: TBDRegistry;
+  InstallDate: TDateTime;
+{$IFDEF LICENCE}
   KernelHandle : THandle;
   Initaproc: TInitializeAProc;
 {$ENDIF}
@@ -326,6 +331,23 @@ begin
       EventLog('Loading Kernel.dll');
       TW.I.Start('StartCRCCheckThread');
       TLoad.Instance.StartCRCCheckThread;
+    end;
+    if (FCheckCount = 30) and not FolderView then //after 4 sec.
+    begin
+      if TActivationManager.Instance.IsDemoMode then
+      begin
+        FReg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
+        try
+          FReg.OpenKey(RegRoot, True);
+          InstallDate := FReg.ReadDateTime('InstallDate', 0);
+          //if more than 30 days
+          if (Now - InstallDate) > DemoDays then
+            ShowActivationDialog;
+
+        finally
+          F(FReg);
+        end;
+      end;
     end;
     if (FCheckCount = 40) and not FolderView then //after 4 sec.
     begin
@@ -356,7 +378,7 @@ begin
     if (FCheckCount = 100) then //after 10 sec. check for updates
     begin
       TW.I.Start('TInternetUpdate - Create');
-      TInternetUpdate.Create(nil, False, nil);
+      TInternetUpdate.Create(nil, True, nil);
     end;
     if (FCheckCount = 600) then //after 1.min. backup database
       DBKernel.BackUpTable;

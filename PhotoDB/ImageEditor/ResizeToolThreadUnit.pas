@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes,
-  UnitResampleFilters, uEditorTypes, uMemory;
+  UnitResampleFilters, uEditorTypes, uMemory, uDBThread;
 
 type
-  TResizeToolThread = class(TThread)
+  TResizeToolThread = class(TDBThread)
   private
     { Private declarations }
     FSID: string;

@@ -58,6 +58,7 @@ implementation
 
 uses
   UnitConvertDBForm,
+  UnitSelectDB,
   UnitHintCeator,
   UnitDBKernel,
   uFrmSelectDBCreationSummary;
@@ -173,7 +174,8 @@ end;
 procedure TFrmConvertationSettings.InitNextStep;
 begin
   inherited;
-  Manager.AddStep(TFrmSelectDBCreationSummary);
+  if Manager.Owner is TFormSelectDB then
+    Manager.AddStep(TFrmSelectDBCreationSummary);
 end;
 
 procedure TFrmConvertationSettings.LoadLanguage;

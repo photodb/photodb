@@ -3,7 +3,7 @@ unit UnitLoadDBSettingsThread;
 interface
 
 uses
-  Windows, Classes, DB, UnitDBKernel, CommonDBSupport, ActiveX, UnitDBThread,
+  Windows, Classes, DB, UnitDBKernel, CommonDBSupport, ActiveX, uDBThread,
   SysUtils, uTime, uLogger;
 
 type
@@ -19,7 +19,8 @@ implementation
 { TLoadDBSettingsThread }
 
 procedure TLoadDBSettingsThread.Execute;
-begin     
+begin
+  FreeOnTerminate := True;
   CoInitialize(nil);
   try
     try
@@ -31,7 +32,6 @@ begin
   finally
     CoUninitialize;
   end;
-  Terminate;
 end;
 
 end.

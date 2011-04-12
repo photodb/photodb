@@ -6,10 +6,10 @@ uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
      Effects, UnitDBCommonGraphics, uCDMappingTypes, uLogger, UnitDBCommon,
      uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel,
-     uRuntime, uDBUtils, uFileUtils, uAssociations;
+     uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread;
 
 type
-  TExplorerThumbnailCreator = class(TThread)
+  TExplorerThumbnailCreator = class(TDBThread)
   private
     FFileSID: TGUID;
     FFileName: string;

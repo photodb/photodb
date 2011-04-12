@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Classes, Effects, EffectsToolUnit, Graphics, RotateToolUnit,
-  GraphicsBaseTypes, ScanlinesFX, uEditorTypes, uMemory;
+  GraphicsBaseTypes, ScanlinesFX, uEditorTypes, uMemory, uDBThread;
 
 type
-  TRotateEffectThread = class(TThread)
+  TRotateEffectThread = class(TDBThread)
   private
     { Private declarations }
     FSID: string;

@@ -4143,9 +4143,9 @@ end;
 
 procedure TSearchForm.LoadDateRange;
 var
-  DS : TDataSet;
-  DateRangeBackgroundImage : TPNGImage;
-  DateRangeBackgroundImageBMP : TBitmap;
+  DS: TDataSet;
+  DateRangeBackgroundImage: TPNGImage;
+  DateRangeBackgroundImageBMP: TBitmap;
   BackgroundImage: TBitmap;
 begin
   if not elvDateRange.BackGround.Image.Empty then
@@ -4191,7 +4191,7 @@ begin
   SetSQL(DS, 'SELECT DISTINCT DateToAdd FROM $DB$ WHERE IsDate = True ORDER BY DateToAdd DESC');
   TADOQuery(DS).OnFetchProgress := FetchProgress;
 
-  TOpenQueryThread.Create(DS, DBRangeOpened);
+  TOpenQueryThread.Create(Self, DS, DBRangeOpened);
 end;
 
 procedure TSearchForm.FetchProgress(DataSet: TCustomADODataSet; Progress,

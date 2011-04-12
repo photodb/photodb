@@ -6,7 +6,7 @@ uses
   Classes, Messages, Forms, Dolphin_DB, RawImage, SysUtils,
   UnitDBDeclare, DateUtils, UnitDBCommon, uAssociations,
   CCR.Exif, uMemory, uDBBaseTypes, uFileUtils, uTranslate,
-  uGraphicUtils;
+  uGraphicUtils, uDBThread;
 
 type
   TScanImportPhotosThreadOptions = record
@@ -33,7 +33,7 @@ type
   DIRECTORY_OPTION_DATE_EXCLUDE     = 3;
 
 type
-  TScanImportPhotosThread = class(TThread)
+  TScanImportPhotosThread = class(TDBThread)
   private
     { Private declarations }
     FOptions: TScanImportPhotosThreadOptions;

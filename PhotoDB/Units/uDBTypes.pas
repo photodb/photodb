@@ -6,9 +6,6 @@ uses
   Jpeg, UnitDBDeclare, uDBBaseTypes;
 
 type
-  RString = type AnsiString(1251);
-
-type
   TSelectedInfo = record
     FileName: string;
     FileType: Integer;

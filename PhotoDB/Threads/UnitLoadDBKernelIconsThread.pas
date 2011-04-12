@@ -3,7 +3,7 @@ unit UnitLoadDBKernelIconsThread;
 interface
 
 uses
-  Windows, Classes, UnitDBkernel, Dolphin_DB, UnitDBThread,
+  Windows, Classes, UnitDBkernel, Dolphin_DB, uDBThread,
   uTime;
 
 type
@@ -20,8 +20,8 @@ implementation
 
 procedure TLoadDBKernelIconsThread.Execute;
 begin
+  FreeOnTerminate := True;
   DBKernel.LoadIcons;
-  Terminate;
 end;
 
 end.

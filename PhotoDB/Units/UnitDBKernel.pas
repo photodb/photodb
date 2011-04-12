@@ -942,6 +942,7 @@ end;
 
 procedure TDBKernel.ReadDBOptions;
 begin
+  F(FImageOptions);
   FImageOptions := CommonDBSupport.GetImageSettingsFromTable(DBName);
   DBJpegCompressionQuality := FImageOptions.DBJpegCompressionQuality;
   ThSize := FImageOptions.ThSize + 2;

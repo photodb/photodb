@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
-  UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics,
+  UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics, uDBThread,
   uMemory, GraphicsCool, uGraphicUtils, uRuntime, uAssociations,
   uConstants;
 
@@ -17,7 +17,7 @@ type
   end;
 
 type
-  TPropertyLoadImageThread = class(TThread)
+  TPropertyLoadImageThread = class(TDBThread)
   private
     { Private declarations }
     FOptions: TPropertyLoadImageThreadOptions;

@@ -10,17 +10,17 @@ uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings;
 
 procedure DoActivation;
-procedure GetUpdates(ShowInfo : boolean);
+procedure GetUpdates(IsBackground: boolean);
 procedure DoAbout;
-function ReadScriptFile(FileName : string) : string;
+function ReadScriptFile(FileName: string) : string;
 procedure ShowUpdateWindow;
 procedure DoManager;
 procedure DoOptions;
-function NewImageEditor : string;
-function NewExplorer : string;
-function NewExplorerByPath(Path : string) : string;
-function InitializeScriptString(Script : string) : string;
-procedure InitEnviroment(Enviroment : TScriptEnviroment);
+function NewImageEditor: string;
+function NewExplorer: string;
+function NewExplorerByPath(Path: string) : string;
+function InitializeScriptString(Script: string) : string;
+procedure InitEnviroment(Enviroment: TScriptEnviroment);
 
 implementation
 
@@ -39,9 +39,9 @@ begin
   ShowActivationDialog;
 end;
 
-procedure GetUpdates(ShowInfo : boolean);
+procedure GetUpdates(IsBackground : Boolean);
 begin
-  TInternetUpdate.Create(nil, ShowInfo, nil);
+  TInternetUpdate.Create(nil, IsBackground, nil);
 end;
 
 procedure DoAbout;

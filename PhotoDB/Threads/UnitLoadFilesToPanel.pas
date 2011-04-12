@@ -7,10 +7,10 @@ uses
   CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
   UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations,
-  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime;
+  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime, uDBThread;
 
 type
-  LoadFilesToPanel = class(TThread)
+  LoadFilesToPanel = class(TDBThread)
   private
     { Private declarations }
     FFiles: TArStrings;

@@ -4,7 +4,8 @@ interface
 
 uses
   Classes, uDBPopupMenuInfo, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitDBDeclare, SysUtils, uLogger, uMemory, uDBUtils, ActiveX, uDBForm;
+  UnitDBDeclare, SysUtils, uLogger, uMemory, uDBUtils, ActiveX, uDBForm,
+  uDBThread;
 
 type
   TRefreshIDRecordThreadOptions = record
@@ -12,7 +13,7 @@ type
   end;
 
 type
-  TRefreshDBRecordsThread = class(TThread)
+  TRefreshDBRecordsThread = class(TDBThread)
   private
     { Private declarations }
     FInfo: TDBPopupMenuInfo;

@@ -3,11 +3,11 @@ unit UnitBackUpTableInCMD;
 interface
 
 uses
-  Classes, SysUtils, UnitDBKernel, Forms, CommonDBSupport,
+  Classes, SysUtils, UnitDBKernel, Forms, CommonDBSupport, uDBThread,
   UnitDBDeclare, uConstants, uFileUtils, uTranslate, uSettings;
 
 type
-  BackUpTableInCMD = class(TThread)
+  BackUpTableInCMD = class(TDBThread)
   private
     { Private declarations }
     FStrParam: string;

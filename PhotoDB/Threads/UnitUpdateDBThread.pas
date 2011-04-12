@@ -9,13 +9,13 @@ uses
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
   uTranslate, ActiveX, uActivationUtils, uSettings, uMemoryEx,
-  UnitDBKernel, uAssociations;
+  UnitDBKernel, uAssociations, uDBThread;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
 
 type
-  UpdateDBThread = class(TThread)
+  UpdateDBThread = class(TDBThread)
   private
     { Private declarations }
     FOnDone: TNotifyEvent;
@@ -74,7 +74,7 @@ type
   end;
 
 type
-  DirectorySizeThread = class(TThread)
+  DirectorySizeThread = class(TDBThread)
   private
     { Private declarations }
     FDirectory, StrParam: string;

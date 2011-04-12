@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SysUtils, uMemory, uInternetUtils, uConstants, uActivationUtils,
-  uTranslate, uGOM, uDBForm;
+  uTranslate, uGOM, uDBForm, uDBThread;
 
 type
   TFreeRegistrationCallBack = procedure(Reply: string) of object;
@@ -22,7 +22,7 @@ type
   end;
 
 type
-  TInternetFreeActivationThread = class(TThread)
+  TInternetFreeActivationThread = class(TDBThread)
   private
     { Private declarations }
     FInfo: InternetActivationInfo;
@@ -68,7 +68,7 @@ begin
         EncodeBase64Url(FInfo.Country),
         EncodeBase64Url(FInfo.City),
         EncodeBase64Url(FInfo.Address)]);
-      FServerReply := DownloadFile(QueryUrl + QueryParams);
+      FServerReply := DownloadFile(QueryUrl + QueryParams, TEncoding.UTF8);
     except
       on e: Exception do
         FServerReply := e.Message;

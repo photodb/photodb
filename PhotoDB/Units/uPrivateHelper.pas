@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SyncObjs, SysUtils, DB, uConstants, CommonDBSupport, uMemory, uGOM,
-  win32crc, ActiveX;
+  win32crc, ActiveX, uDBThread;
 
 type
   TPrivateHelper = class(TObject)
@@ -27,7 +27,7 @@ type
     procedure AddToPrivateList(Directory : string);
   end;
 
-  TPrivateHelperThread = class(TThread)
+  TPrivateHelperThread = class(TDBThread)
   protected
     procedure Execute; override;
   end;

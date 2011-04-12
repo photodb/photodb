@@ -3,12 +3,12 @@ unit UnitActiveTableThread;
 interface
 
 uses
-  ActiveX, Classes, DB;
+  ActiveX, Classes, DB, uDBThread;
 
 type
   TNotifyBoolEvent = procedure(Result: boolean) of object;
 
-  TActiveTableThread = class(TThread)
+  TActiveTableThread = class(TDBThread)
   private
     { Private declarations }
     FTable: TDataSet;

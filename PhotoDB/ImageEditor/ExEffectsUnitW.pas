@@ -2,7 +2,7 @@ unit ExEffectsUnitW;
 
 interface
 
-uses ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
+uses ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2, uDBThread,
   Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs, uGOM,
   uEditorTypes, uMemory;
 
@@ -42,7 +42,7 @@ type
   end;
 
 type
-  TExEffectOneParamCustomThread = class(TThread)
+  TExEffectOneParamCustomThread = class(TDBThread)
   private
     { Private declarations }
     FAOwner : TObject;

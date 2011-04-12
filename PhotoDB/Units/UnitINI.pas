@@ -78,7 +78,7 @@ begin
  if Registry is TRegistry then (Registry as TRegistry).CloseKey;
 end;
 
-constructor TBDRegistry.Create(ASection: integer; ReadOnly : Boolean = false);
+constructor TBDRegistry.Create(ASection: integer; ReadOnly : Boolean = False);
 begin
   inherited Create;
   FSection := ASection;
@@ -229,14 +229,15 @@ begin
   end;
 end;
 
-function TBDRegistry.ReadDateTime(name: string; default: TDateTime): TDateTime;
+function TBDRegistry.ReadDateTime(Name: string; Default: TDateTime): TDateTime;
 var
   Key: string;
 begin
-  Result := default;
+  Result := Default;
   try
     if Registry is TRegistry then
-      Result := (Registry as TRegistry).ReadDateTime(name);
+      if (Registry as TRegistry).ValueExists(Name) then
+        Result := (Registry as TRegistry).ReadDateTime(Name);
     if Registry is TMyRegistryINIFile then
     begin
       Key := (Registry as TMyRegistryINIFile).Key;

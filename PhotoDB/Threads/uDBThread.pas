@@ -20,6 +20,12 @@ type
     destructor Destroy; override;
   end;
 
+  TThreadInfo = class
+  public
+    Thread: TDBThread;
+    Handle: THandle;
+  end;
+
   TDBThreadManager = class
   private
     FThreads: TList;
@@ -30,6 +36,8 @@ type
     procedure RegisterThread(Thread: TDBThread);
     procedure UnRegisterThread(Thread: TDBThread);
     procedure WaitForAllThreads(MaxTime: Cardinal);
+    function IsThread(Thread: TDBThread): Boolean;
+    function GetThreadHandle(Thread: TDBThread): THandle;
   end;
 
 function DBThreadManager: TDBThreadManager;
@@ -56,12 +64,14 @@ end;
 
 constructor TDBThread.Create(CreateSuspended: Boolean);
 begin
-  DBThreadManager.RegisterThread(Self);
   inherited Create(CreateSuspended);
+  DBThreadManager.RegisterThread(Self);
+  GOM.AddObj(Self);
 end;
 
 destructor TDBThread.Destroy;
 begin
+  GOM.RemoveObj(Self);
   DBThreadManager.UnRegisterThread(Self);
   inherited;
 end;
@@ -99,21 +109,70 @@ begin
   inherited;
 end;
 
+function TDBThreadManager.GetThreadHandle(Thread: TDBThread): THandle;
+var
+  I: Integer;
+begin
+  Result := 0;
+  FSync.Enter;
+  try
+    for I := 0 to FThreads.Count - 1 do
+      if TThreadInfo(FThreads[I]).Thread = Thread then
+      begin
+        Result := TThreadInfo(FThreads[I]).Handle;
+        Break;
+      end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TDBThreadManager.IsThread(Thread: TDBThread): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  FSync.Enter;
+  try
+    for I := 0 to FThreads.Count - 1 do
+      if TThreadInfo(FThreads[I]).Thread = Thread then
+      begin
+        Result := True;
+        Break;
+      end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
 procedure TDBThreadManager.RegisterThread(Thread: TDBThread);
+var
+  Info: TThreadInfo;
 begin
   FSync.Enter;
   try
-    FThreads.Add(Thread);
+    Info := TThreadInfo.Create;
+    Info.Thread := Thread;
+    Info.Handle := Thread.Handle;
+    FThreads.Add(Info);
   finally
     FSync.Leave;
   end;
 end;
 
 procedure TDBThreadManager.UnRegisterThread(Thread: TDBThread);
+var
+  I: Integer;
 begin
   FSync.Enter;
   try
-    FThreads.Remove(Thread);
+    for I := 0 to FThreads.Count - 1 do
+      if TThreadInfo(FThreads[I]).Thread = Thread then
+      begin
+        TThreadInfo(FThreads[I]).Free;
+        FThreads.Delete(I);
+        Break;
+      end;
   finally
     FSync.Leave;
   end;

@@ -139,7 +139,7 @@ begin
       try
         begin
 
-          TOpenQueryThread.Create(FTable, DBOpened);
+          TOpenQueryThread.Create(Self, FTable, DBOpened);
           OpenProgress := GetProgressWindow;
           OpenProgress.OneOperation := True;
           OpenProgress.OperationCounter.Inverse := True;

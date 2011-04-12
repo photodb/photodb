@@ -8,10 +8,10 @@ uses
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage,
   GraphicCrypt, UnitDBCommon, uGOM, uFileUtils,
   uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare,
-  uGraphicUtils, uRuntime, uAssociations;
+  uGraphicUtils, uRuntime, uAssociations, uDBThread;
 
 type
-  THintCeator = class(TThread)
+  THintCeator = class(TDBThread)
   private
     { Private declarations }
     Graphic: TGraphic;

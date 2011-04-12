@@ -4,37 +4,39 @@ interface
 
 uses
   Classes, DB, CommonDBSupport, ComObj, ActiveX, ShlObj, CommCtrl,
-  SysUtils, uLogger;
+  SysUtils, uLogger, uDBThread, uGOM;
 
 type
   TNotifyDBOpenedEvent = procedure(Sender : TObject; DS : TDataSet) of object;
 
-  TOpenQueryThread = class(TThread)
+  TOpenQueryThread = class(TDBThread)
   private
     { Private declarations }
     FOnEnd: TNotifyDBOpenedEvent;
     FQuery: TDataSet;
+    FOwner: TObject;
   protected
     procedure Execute; override;
   public
     procedure DoOnEnd;
-    constructor Create(Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
+    constructor Create(Owner: TObject; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
   end;
 
 implementation
 
 { TOpenQueryThread }
 
-constructor TOpenQueryThread.Create(Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
+constructor TOpenQueryThread.Create(Owner: TObject; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
 begin
   inherited Create(False);
   FQuery := Query;
   FOnEnd := OnEnd;
+  FOwner := Owner;
 end;
 
 procedure TOpenQueryThread.DoOnEnd;
 begin
-  if Assigned(FOnEnd) then
+  if GOM.IsObj(FOwner) and Assigned(FOnEnd) then
     FOnEnd(Self, FQuery);
 end;
 
