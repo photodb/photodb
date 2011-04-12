@@ -7,7 +7,8 @@ uses
   Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt,
   uConstants, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher,
   WatermarkedEdit, uDBForm, UnitDBKernel, uShellIntegration, uSettings,
-  uActivationUtils, uCryptUtils;
+  uActivationUtils, uCryptUtils, uDBPopupMenuInfo, UnitDBDeclare,
+  uTranslate;
 
 type
   TCryptImageForm = class(TPasswordSettingsDBForm)
@@ -46,10 +47,44 @@ type
   end;
 
 function GetPassForCryptImageFile(FileName : String) : TCryptImageOptions;
+procedure EncryptPhohos(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
 
 implementation
 
+uses
+  UnitCryptingImagesThread;
+
 {$R *.dfm}
+
+procedure EncryptPhohos(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
+var
+  Options: TCryptImageThreadOptions;
+  Opt: TCryptImageOptions;
+  I, CryptOptions: Integer;
+begin
+  Opt := GetPassForCryptImageFile(Text);
+  if Opt.SaveFileCRC then
+    CryptOptions := CRYPT_OPTIONS_SAVE_CRC
+  else
+    CryptOptions := CRYPT_OPTIONS_NORMAL;
+  if Opt.Password = '' then
+    Exit;
+
+  SetLength(Options.Files, Info.Count);
+  SetLength(Options.IDs, Info.Count);
+  SetLength(Options.Selected, Info.Count);
+  for I := 0 to Info.Count - 1 do
+  begin
+    Options.Files[I] := Info[I].FileName;
+    Options.IDs[I] := Info[I].ID;
+    Options.Selected[I] := Info[I].Selected;
+  end;
+
+  Options.Password := Opt.Password;
+  Options.CryptOptions := CryptOptions;
+  Options.Action := ACTION_CRYPT_IMAGES;
+  TCryptingImagesThread.Create(Owner, Options);
+end;
 
 function GetPassForCryptImageFile(FileName : String) : TCryptImageOptions;
 var

@@ -5,21 +5,8 @@ interface
 uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
   UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB, uFileUtils,
-  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX, uDBThread;
-
-type
-  TCryptImageThreadOptions = record
-    Files: TArStrings;
-    IDs: TArInteger;
-    Selected: TArBoolean;
-    Password: string;
-    CryptOptions: Integer;
-    Action: Integer;
-  end;
-
-const
-  ACTION_CRYPT_IMAGES   = 1;
-  ACTION_DECRYPT_IMAGES = 2;
+  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX, uDBThread,
+  uConstants;
 
 type
   TCryptingImagesThread = class(TDBThread)

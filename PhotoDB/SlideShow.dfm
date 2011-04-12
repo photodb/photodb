@@ -68,9 +68,9 @@ object Viewer: TViewer
     BevelOuter = bvNone
     TabOrder = 3
     object ToolsBar: TPanel
-      Left = 112
+      Left = 95
       Top = 0
-      Width = 449
+      Width = 489
       Height = 25
       BevelOuter = bvNone
       ParentColor = True
@@ -78,7 +78,7 @@ object Viewer: TViewer
       object TbrActions: TToolBar
         Left = 0
         Top = 0
-        Width = 449
+        Width = 481
         Height = 25
         Align = alNone
         ButtonHeight = 23
@@ -233,36 +233,43 @@ object Viewer: TViewer
           ImageIndex = 12
           OnClick = Print1Click
         end
-        object TbSeparator6: TToolButton
+        object TbEncrypt: TToolButton
           Left = 368
+          Top = 0
+          Caption = 'Encrypt'
+          ImageIndex = 23
+          OnClick = TbEncryptClick
+        end
+        object TbSeparator6: TToolButton
+          Left = 391
           Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
         end
         object TbRating: TToolButton
-          Left = 376
+          Left = 399
           Top = 0
           Caption = 'Rating'
           ImageIndex = 14
           OnClick = TbRatingClick
         end
         object TbSeparator7: TToolButton
-          Left = 399
+          Left = 422
           Top = 0
           Width = 8
           ImageIndex = 12
           Style = tbsSeparator
         end
         object TbEditImage: TToolButton
-          Left = 407
+          Left = 430
           Top = 0
           Caption = 'Edit Image'
           ImageIndex = 11
           OnClick = ImageEditor1Click
         end
         object TbInfo: TToolButton
-          Left = 430
+          Left = 453
           Top = 0
           Caption = 'Info'
           ImageIndex = 10
@@ -284,8 +291,8 @@ object Viewer: TViewer
     MaxTransparencity = 255
     GetBackGround = LsLoadingGetBackGround
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
+  object PmMain: TPopupMenu
+    OnPopup = PmMainPopup
     Left = 392
     Top = 16
     object Next1: TMenuItem

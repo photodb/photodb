@@ -204,6 +204,16 @@ type
   end;
 
 type
+  TCryptImageThreadOptions = record
+    Files: TArStrings;
+    IDs: TArInteger;
+    Selected: TArBoolean;
+    Password: string;
+    CryptOptions: Integer;
+    Action: Integer;
+  end;
+
+type
   TDBPopupMenuInfoRecord = class(TObject)
   private
     FOriginalFileName: string;

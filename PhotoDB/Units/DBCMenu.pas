@@ -456,33 +456,8 @@ begin
 end;
 
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);
-var
-  Options: TCryptImageThreadOptions;
-  Opt: TCryptImageOptions;
-  I, CryptOptions: Integer;
 begin
-  Opt := GetPassForCryptImageFile(TA('SelectedObjects', DBMenuID));
-  if Opt.SaveFileCRC then
-    CryptOptions := CRYPT_OPTIONS_SAVE_CRC
-  else
-    CryptOptions := CRYPT_OPTIONS_NORMAL;
-  if Opt.Password = '' then
-    Exit;
-
-  SetLength(Options.Files, FInfo.Count);
-  SetLength(Options.IDs, FInfo.Count);
-  SetLength(Options.Selected, FInfo.Count);
-  for I := 0 to FInfo.Count - 1 do
-  begin
-    Options.Files[I] := FInfo[I].FileName;
-    Options.IDs[I] := FInfo[I].ID;
-    Options.Selected[I] := FInfo[I].Selected;
-  end;
-
-  Options.Password := Opt.Password;
-  Options.CryptOptions := CryptOptions;
-  Options.Action := ACTION_CRYPT_IMAGES;
-  TCryptingImagesThread.Create(FOwner, Options);
+  EncryptPhohos(FOwner, TA('selected objects', DBMenuID), FInfo);
 end;
 
 procedure TDBPopupMenu.DateItemPopUpMenu_(Sender: TObject);

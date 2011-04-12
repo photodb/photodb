@@ -16,6 +16,7 @@ type
     ReleaseDate: TDateTime;
     ReleaseNotes: string;
     ReleaseText: string;
+    IsNewVersion: Boolean;
   end;
 
   TUpdateNotifyHandler = procedure(Sender : TObject; Info : TUpdateInfo) of object;

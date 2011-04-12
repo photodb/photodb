@@ -125,6 +125,7 @@ begin
   XmlReply := CreateXMLDoc;
   XmlReply.loadXML(Reply);
   Info.InfoAvaliable := False;
+  Info.IsNewVersion := False;
   DocumentNode := XmlReply.documentElement;
   if DocumentNode <> nil then
   begin
@@ -150,14 +151,20 @@ begin
           Info.UrlToDownload := DetailValue;
       end;
       Info.InfoAvaliable := True;
+      Info.IsNewVersion := IsNewRelease(GetExeVersion(ParamStr(0)), Info.Release);
     end;
   end;
-  if Info.InfoAvaliable then
+  if not Assigned(FNotifyHandler)  then
   begin
-    if IsNewRelease(GetExeVersion(ParamStr(0)), Info.Release) then
-      Synchronize(ShowUpdates)
-    else
-      Inform(L('No new updates are available'));
+    if not (FIsBackground and not Info.IsNewVersion) then
+    begin
+      if Info.IsNewVersion then
+        Synchronize(ShowUpdates)
+      else if Info.InfoAvaliable then
+        Inform(L('No new updates are available'))
+      else
+        Inform(L('Unable to check updates! Please, check internet settings in Internet Explorer!'));
+    end;
   end else
     Synchronize(NotifySync);
 end;

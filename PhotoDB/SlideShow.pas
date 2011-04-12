@@ -26,7 +26,7 @@ type
 
 type
   TViewer = class(TViewerForm, IImageSource)
-    PopupMenu1: TPopupMenu;
+    PmMain: TPopupMenu;
     Next1: TMenuItem;
     Previous1: TMenuItem;
     N1: TMenuItem;
@@ -119,6 +119,7 @@ type
     TbPageNumber: TToolButton;
     PopupMenuPageSelecter: TPopupMenu;
     LsLoading: TLoadingSign;
+    TbEncrypt: TToolButton;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -135,7 +136,7 @@ type
     procedure PaintBox1DblClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure newpicture(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
+    procedure PmMainPopup(Sender: TObject);
     procedure MTimer1Click(Sender: TObject);
     procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -200,6 +201,7 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
       Bitmap: TBitmap);
+    procedure TbEncryptClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount : Cardinal;
@@ -323,7 +325,7 @@ uses
   ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
-  UnitSlideShowUpdateInfoThread;
+  UnitSlideShowUpdateInfoThread, UnitCryptImageForm;
 
 {$R *.dfm}
 
@@ -390,7 +392,7 @@ begin
 
   SaveWindowPos1.Key := RegRoot + 'SlideShow';
   SaveWindowPos1.SetPosition;
-  PopupMenu1.Images := DBKernel.ImageList;
+  PmMain.Images := DBKernel.ImageList;
   Shell1.ImageIndex := DB_IC_SHELL;
   Exit1.ImageIndex := DB_IC_EXIT;
   FullScreen1.ImageIndex := DB_IC_DESKTOP;
@@ -462,6 +464,7 @@ begin
   DisplayRating := Item.Rating;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := True;
+  TbEncrypt.Enabled := not Item.Crypted;
 
   FSID := GetGUID;
   if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0)
@@ -482,6 +485,7 @@ begin
       TimerDBWork.Enabled := True;
       TbRotateCCW.Enabled := False;
       TbRotateCW.Enabled := False;
+      TbEncrypt.Enabled := not Item.Crypted;
       TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
     end;
 
@@ -998,7 +1002,7 @@ begin
   end;
 end;
 
-procedure TViewer.PopupMenu1Popup(Sender: TObject);
+procedure TViewer.PmMainPopup(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
   MenuRecord: TDBPopupMenuInfoRecord;
@@ -1019,7 +1023,7 @@ begin
     Info.IsPlusMenu := False;
     Info.IsListItem := False;
     for I := N2.MenuIndex + 1 to DBItem1.MenuIndex - 1 do
-      PopupMenu1.Items.Delete(N2.MenuIndex + 1);
+      PmMain.Items.Delete(N2.MenuIndex + 1);
     if Item.ID <> 0 then
     begin
       AddToDB1.Visible := False;
@@ -1034,7 +1038,7 @@ begin
         begin
           InitializeInfo;
           TDBPopupMenu.Instance.SetInfo(Self, Info);
-          TDBPopupMenu.Instance.AddUserMenu(PopupMenu1.Items, True, N2.MenuIndex + 1);
+          TDBPopupMenu.Instance.AddUserMenu(PmMain.Items, True, N2.MenuIndex + 1);
         end;
 
       AddToDB1.Visible := not FolderView;
@@ -1218,7 +1222,10 @@ begin
         if EventID_Param_IsTime in Params then
           CurrentInfo[I].IsTime := Value.IsTime;
         if EventID_Param_Crypt in Params then
+        begin
           CurrentInfo[I].Crypted := Value.Crypt;
+          TbEncrypt.Enabled := not Value.Crypt;
+        end;
         if EventID_Param_Groups in Params then
           CurrentInfo[I].Groups := Value.Groups;
         if EventID_Param_Date in Params then
@@ -1532,6 +1539,7 @@ begin
       if Msg.wParam = Byte('P') then Print1Click(Self);
       if Msg.wParam = Byte('E') then ImageEditor1Click(Self);
       if Msg.wParam = Byte('Z') then Properties1Click(Self);
+      if Msg.wParam = Byte('X') then TbEncryptClick(Self);
 
       if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N51Click(N01);
       if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N51Click(N11);
@@ -1832,6 +1840,7 @@ begin
     TbRating.Hint := L('Rating (Ctrl+rating)');
     TbEditImage.Hint := L('Image editor (Ctrl+E)');
     TbInfo.Hint := L('Properties (Ctrl+Z)');
+    TbEncrypt.Hint := L('Encrypt (Ctrl+X)');
   finally
     EndTranslate;
   end;
@@ -2279,23 +2288,23 @@ end;
 
 procedure TViewer.RecreateImLists;
 var
-  Icons: array [0 .. 1, 0 .. 22] of HIcon;
+  Icons: array [0 .. 1, 0 .. 23] of HIcon;
   I, J: Integer;
   B: TBitmap;
   Imlists: array [0 .. 2] of TImageList;
 const
-  Names: array [0 .. 1, 0 .. 22] of string = (('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
+  Names: array [0 .. 1, 0 .. 23] of string = (('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
       'Z_FULLSIZE_NORM', 'Z_FULLSCREEN_NORM', 'Z_ZOOMIN_NORM', 'Z_ZOOMOUT_NORM', 'Z_FULLSCREEN', 'Z_LEFT_NORM',
       'Z_RIGHT_NORM', 'Z_INFO_NORM', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1', 'TRATING_2',
-      'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES'), ('Z_NEXT_HOT', 'Z_PREVIOUS_HOT',
+      'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY'), ('Z_NEXT_HOT', 'Z_PREVIOUS_HOT',
       'Z_BESTSIZE_HOT', 'Z_FULLSIZE_HOT', 'Z_FULLSCREEN_HOT', 'Z_ZOOMIN_HOT', 'Z_ZOOMOUT_HOT', 'Z_FULLSCREEN',
       'Z_LEFT_HOT', 'Z_RIGHT_HOT', 'Z_INFO_HOT', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1',
-      'TRATING_2', 'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES'));
+      'TRATING_2', 'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY'));
 
 begin
   TW.I.Start('LoadIcon');
   for I := 0 to 1 do
-    for J := 0 to 22 do
+    for J := 0 to 23 do
       Icons[I, J] := LoadImage(HInstance, PWideChar(Names[I, J]), IMAGE_ICON, 16, 16, 0);
 
   Imlists[0] := ImageList1;
@@ -2318,12 +2327,12 @@ begin
     B.Canvas.Pen.Color := ClBtnFace;
     TW.I.Start('ImageList_ReplaceIcon');
     for I := 0 to 1 do
-      for J := 0 to 22 do
+      for J := 0 to 23 do
       begin
         ImageList_ReplaceIcon(Imlists[I].Handle, -1, Icons[I, J]);
         if I = 0 then
         begin
-          if J in [0, 1, 12, 14, 15, 22] then
+          if J in [0, 1, 12, 14, 15, 22, 23] then
           begin
             B.Canvas.Rectangle(0, 0, 16, 16);
             DrawIconEx(B.Canvas.Handle, 0, 0, Icons[I, J], 16, 16, 0, 0, DI_NORMAL);
@@ -2336,7 +2345,7 @@ begin
       end;
     TW.I.Start('DestroyIcon');
     for I := 0 to 1 do
-      for J := 0 to 22 do
+      for J := 0 to 23 do
         DestroyIcon(Icons[I, J]);
 
   finally
@@ -2470,7 +2479,7 @@ begin
     Exit;
   end;
   P := ClientToScreen(MousePos);
-  PopupMenu1.Popup(P.X, P.Y);
+  PmMain.Popup(P.X, P.Y);
 end;
 
 procedure TViewer.DropFileTarget1Drop(Sender: TObject;
@@ -2963,6 +2972,7 @@ begin
   DisplayRating := Info.Rating;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := TbRotateCCW.Enabled;
+  TbEncrypt.Enabled := not Info.Crypted;
 end;
 
 procedure TViewer.TbSlideShowClick(Sender: TObject);
@@ -3091,6 +3101,19 @@ begin
     LoadImage_(Sender, Item.Rotation, False, 1, True);
     TbrActions.Refresh;
     TbrActions.Realign;
+  end;
+end;
+
+procedure TViewer.TbEncryptClick(Sender: TObject);
+var
+  Info: TDBPopupMenuInfo;
+begin
+  Info := TDBPopupMenuInfo.Create;
+  try
+    Info.Add(Item.Copy);
+    EncryptPhohos(Self, L('photo'), Info);
+  finally
+    F(Info);
   end;
 end;
 
@@ -3231,9 +3254,9 @@ begin
     end;
 
   DisplayRating := Item.Rating;
-
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := True;
+  TbEncrypt.Enabled := not Item.Crypted;
 end;
 
 procedure TViewer.DoSetNoDBRecord(FileName: string);
@@ -3250,7 +3273,8 @@ begin
   DisplayRating := Item.Rating;
 
   TbRotateCCW.Enabled := True;
-  TbRotateCW.Enabled:=TbRotateCCW.Enabled;
+  TbRotateCW.Enabled := TbRotateCCW.Enabled;
+  TbEncrypt.Enabled := not Item.Crypted;
 end;
 
 procedure TViewer.TimerDBWorkTimer(Sender: TObject);

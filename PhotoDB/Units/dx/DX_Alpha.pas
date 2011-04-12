@@ -499,13 +499,13 @@ end;
 procedure TDirectShowForm.FormMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
-  MouseTimer.Enabled:=true;
-  if (abs(FOldPoint.X-x)>5) or (abs(FOldPoint.X-x)>5) then
+  MouseTimer.Enabled := True;
+  if (Abs(FOldPoint.X - X) > 5) or (Abs(FOldPoint.Y - Y) > 5) then
   begin
-   ShowMouse;
-   FOldPoint:=Point(x,y);
-   MouseTimer.Enabled:=false;
-   MouseTimer.Enabled:=true;
+    ShowMouse;
+    FOldPoint := Point(x,y);
+    MouseTimer.Enabled := False;
+    MouseTimer.Enabled := True;
   end;
 end;
 
@@ -513,26 +513,25 @@ procedure TDirectShowForm.FormContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 begin
   ShowMouse;
-  MouseTimer.Enabled:=false;
-  if Viewer<>nil then
-  begin
-   Viewer.PopupMenu1.Popup(ClientToScreen(MousePos).X,ClientToScreen(MousePos).y);
-  end;
+  MouseTimer.Enabled := False;
+  if Viewer <> nil then
+    Viewer.PmMain.Popup(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y);
 end;
 
 procedure TDirectShowForm.FormClick(Sender: TObject);
 begin
- if Viewer=nil then exit;
- Viewer.Pause;
- Viewer.NextImageClick(nil);
+  if Viewer = nil then
+    Exit;
+  Viewer.Pause;
+  Viewer.NextImageClick(nil);
 end;
 
 procedure TDirectShowForm.FormMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   ShowMouse;
-  MouseTimer.Enabled:=false;
-  MouseTimer.Enabled:=true;
+  MouseTimer.Enabled := False;
+  MouseTimer.Enabled := True;
 end;
 
 procedure TDirectShowForm.HideMouse;
@@ -639,7 +638,7 @@ begin
  fx.dwFillColor := PackColor (0, BPP, RBM, GBM, BBM);
  r := ClientRect;
   //...после чего определяем, какАя кнопка была нажата (первый или второй
-  //источник), и в зависимости от этого лепим картинку в соответствующий
+      // источник), и в зависимости от этого лепим картинку в соответствующий
   //буфер (предварительно закрасив его цветом фона, чтобы стереть предыдущее
   //содержимое).
  FileLoaded := true;

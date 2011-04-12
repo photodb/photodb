@@ -158,7 +158,7 @@ end;
 
 procedure TAboutForm.LnkGoToWebSiteClick(Sender: TObject);
 begin
-  if FUpdateInfo.InfoAvaliable then
+  if FUpdateInfo.InfoAvaliable and FUpdateInfo.IsNewVersion then
     ShellExecute(Handle, 'open', PChar(FUpdateInfo.UrlToDownload), nil, nil, SW_NORMAL)
   else
     ShellExecute(Handle, 'open', PChar(ResolveLanguageString(HomePageURL)), nil, nil, SW_NORMAL);
@@ -205,7 +205,9 @@ begin
   FUpdateInfo := Info;
   LsUpdates.Visible := False;
   if not Info.InfoAvaliable then
-    LnkGoToWebSite.Text := L('Can not check updates!')
+    LnkGoToWebSite.Text := L('Can not check for updates!')
+  else if not Info.IsNewVersion then
+    LnkGoToWebSite.Text := L('You''re using the latest version of PhotoDB!')
   else
     LnkGoToWebSite.Text := Format(L('New version (%s) is avaliable!'), [ReleaseToString(Info.Release)]);
 

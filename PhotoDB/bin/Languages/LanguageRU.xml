@@ -663,6 +663,7 @@
     <translate name="Icons" value="Иконки" />
     <translate name="Table" value="Таблица" />
     <translate name="List" value="Список" />
+	<translate name="selected objects" value="выбранных объектов" />
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />
@@ -725,8 +726,10 @@
     <translate name="Rating (Ctrl+rating)" value="Оценка (Ctrl+оценка)" />
     <translate name="Image editor (Ctrl+E)" value="Редактор (Ctrl+E)" />
     <translate name="Properties (Ctrl+Z)" value="Свойства (Ctrl+Z)" />
+    <translate name="Encrypt (Ctrl+X)" value="Зашифровать (Ctrl+X)" />	
     <translate name="Error initializing graphics mode: %s" value="Ошибка инициализации графического режима: %s" />
     <translate name="Unable to show file:" value="Невозможно отобразить файл:" />
+    <translate name="photo" value="фотографию" />	
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -1369,10 +1372,11 @@
   </scope>
   <scope name="About">
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
-	<translate name="Can not check updates!" value="Не удалось проверить обновления!"/>
+	<translate name="Can not check for updates!" value="Не удалось проверить обновления!"/>
 	<translate name="New version (%s) is avaliable!" value="Доступна новая версия (%s)!"/>
 	<translate name="This program isn't activated." value="Эта программа не активирована."/>	
-	<translate name="Program code" value="Код вашей копии программы"/>	
+	<translate name="Program code" value="Код вашей копии программы"/>
+	<translate name="You're using the latest version of PhotoDB!" value="Вы используете самую последнюю версию PhotoDB!" /> 
 	<translate name="Open activation form" value="Открыть форму активации"/>
 	<translate name="The program is registered to" value="Зарегистрировано на"/>
 	<translate name="Standalone database created using &quot;%s&quot;. In this program many features are disabled and these features are available in the full version." value="Автономная база данных созданная с помощью &quot;%s&quot;. В этой программе отключены многие функции, доступные в полной версии."/>
@@ -1845,6 +1849,7 @@
 	<translate name="Home page" value="Сайт программы"/>
 	<translate name="Download now!" value="Загрузить сейчас!"/>
 	<translate name="Remind me later" value="Напомнить мне потом"/>
+	<translate name="Unable to check updates! Please, check internet settings in Internet Explorer!" value="Не удаётся проверить обновления! Проверьте настройки соединения в Internet Explorer!"/>
 	<translate name="No new updates are available" value="Нет новых обновлений для программы"/>	
   </scope>
   <scope name="Mobile">

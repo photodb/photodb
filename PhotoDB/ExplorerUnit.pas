@@ -5088,7 +5088,7 @@ begin
   for I := 0 to ElvMain.Items.Count - 1 do
     if ElvMain.Items[I].Selected then
     begin
-      index := ItemIndexToMenuIndex(I);
+      Index := ItemIndexToMenuIndex(I);
       ItemFileNames[index] := ProcessPath(FFilesInfo[index].FileName);
       ItemIDs[index] := FFilesInfo[index].ID;
       ItemSelected[index] := True;

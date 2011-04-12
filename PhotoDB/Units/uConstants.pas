@@ -331,6 +331,10 @@ const
   SELECT_DB_OPTION_GET_DB = 1;
   SELECT_DB_OPTION_GET_DB_OR_EXISTS = 2;
 
+const
+  ACTION_CRYPT_IMAGES   = 1;
+  ACTION_DECRYPT_IMAGES = 2;
+
 implementation
 
 end.

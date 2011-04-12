@@ -130,7 +130,7 @@ begin
   ShowMouse;
   MouseTimer.Enabled := False;
   if Viewer <> nil then
-    Viewer.PopupMenu1.Popup(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y);
+    Viewer.PmMain.Popup(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y);
 end;
 
 procedure TFullScreenView.FormClick(Sender: TObject);
