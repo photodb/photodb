@@ -395,6 +395,9 @@ begin
         Stemp := '';
         A := 0;
         B := 0;
+        Sqltext := StringReplace(Sqltext, '"', '', [rfReplaceAll]);
+        Sqltext := StringReplace(Sqltext, '%', '', [rfReplaceAll]);
+        Sqltext := StringReplace(Sqltext, '''', '', [rfReplaceAll]);
         A := Pos('[+', Sqltext);
         if A > 0 then
           B := PosEx(']', Sqltext, A);

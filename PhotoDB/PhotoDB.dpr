@@ -390,26 +390,6 @@ begin
   end;
 end;
 
-procedure InputDisableIME;
-{const
-  Imm32dll = 'Imm32.dll';
-type
-  TImmDisableIMEFunc = function(ThreadID: THandle): BOOL; stdcall;
-var
-  DLLHandle: THandle;
-  ImmDisableIME: TImmDisableIMEFunc;  }
-begin
-  {DLLHandle := LoadLibrary(Imm32dll);
-  if DLLHandle = 0 then
-    Exit;
-  try
-    @ImmDisableIME := GetProcAddress(DLLHandle, 'ImmDisableIME');
-    ImmDisableIME(GetCurrentThreadID);
-  finally
-    FreeLibrary(DLLHandle);
-  end; }
-end;
-
 exports
   IsFalidDBFile name 'IsFalidDBFile',
   FileVersion name 'FileVersion';
@@ -497,7 +477,6 @@ begin
       TLoad.Instance.StartDBSettingsThread;
 
       SetSplashProgress(60);
-      InputDisableIME;
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
@@ -709,7 +688,6 @@ begin
 
     TW.I.Start('AllowDragAndDrop');
     AllowDragAndDrop;
-
 
     TW.I.Start('Application.Run');
 

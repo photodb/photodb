@@ -4,7 +4,7 @@ interface
 
 uses
   Forms, Classes, uTranslate, Graphics, SyncObjs, Messages,
-  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils, uTime;
+  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils;
 
 type
   TDBForm = class(TForm)

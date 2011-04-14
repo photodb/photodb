@@ -13,9 +13,12 @@ uses
 
 type
   TFormManager = class(TDBForm)
+    ApplicationEvents1: TApplicationEvents;
     procedure CalledTimerTimer(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     FMainForms : TList;
@@ -23,6 +26,7 @@ type
     WasIde : Boolean;
     ExitAppl : Boolean;
     LockCleaning : Boolean;
+    FSetLanguageMessage: Cardinal;
     procedure ExitApplication;
     procedure WMCopyData(var Msg : TWMCopyData); message WM_COPYDATA;
     function GetTimeLimitMessage: string;
@@ -300,9 +304,52 @@ begin
   EventLog('finalization:');
 end;
 
+procedure TFormManager.FormCreate(Sender: TObject);
+begin
+  FSetLanguageMessage := RegisterWindowMessage('UPDATE_APP_LANGUAGE');
+end;
+
 function TFormManager.GetTimeLimitMessage: string;
 begin
   Result := L('After the 30 days has expired, you must activate your copy!');
+end;
+
+procedure TFormManager.ApplicationEvents1Message(var Msg: tagMSG;
+  var Handled: Boolean);
+var
+  Count: Cardinal;
+  LpList: array [0 .. 9] of HKL;
+  BFound: Boolean;
+  I: Integer;
+begin
+  //START
+  //HACK - application hangs when language changes using ctrl+shift+number
+  if Msg.message = FSetLanguageMessage then
+    ActivateKeyboardLayout(HKL(Msg.LParam), KLF_ACTIVATE or KLF_SUBSTITUTE_OK or KLF_REPLACELANG);
+
+  if Msg.message = WM_INPUTLANGCHANGEREQUEST then
+  begin
+    Handled := True;
+    if GetKeyboardLayout(0) = HKL(Msg.LPARAM) then
+      Exit;
+    Count := GetKeyboardLayoutList(0, LpList);
+    if (Count = 0) then
+      Exit;
+
+    Count := GetKeyboardLayoutList(SizeOf(LpList), LpList);
+    BFound := FALSE;
+    for I := 0 to Count - 1 do
+    begin
+      if (HKL(Msg.LParam) = LpList[I]) then
+      begin
+        BFound := TRUE;
+        Break;
+      end
+    end;
+
+    if BFound then
+      PostThreadMessage(GetCurrentThreadID, FSetLanguageMessage, Msg.LParam, Msg.LParam);
+  end;
 end;
 
 procedure TFormManager.CalledTimerTimer(Sender: TObject);
