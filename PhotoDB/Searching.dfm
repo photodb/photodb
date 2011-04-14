@@ -700,6 +700,8 @@ object SearchForm: TSearchForm
         Width = 96
         Height = 16
         Cursor = crHandPoint
+        ShowHint = True
+        ParentShowHint = False
         Rating = 0
         RatingRange = 0
         OnChange = SearchEditChange
@@ -754,6 +756,8 @@ object SearchForm: TSearchForm
           0000C0010000C0010000C0010000C0010000E0030000F0070000F80F0000}
         Color = clBtnFace
         ParentColor = False
+        ShowHint = True
+        ParentShowHint = False
         OnlyMainImage = True
         OnChange = SearchEditChange
         IsLayered = False
@@ -763,8 +767,8 @@ object SearchForm: TSearchForm
       object ShowDateOptionsLink: TWebLink
         Left = 8
         Top = 156
-        Width = 113
-        Height = 16
+        Width = 97
+        Height = 13
         Cursor = crHandPoint
         Text = 'Show Date Options'
         OnClick = ShowDateOptionsLinkClick
@@ -782,8 +786,8 @@ object SearchForm: TSearchForm
       object SortLink: TWebLink
         Left = 8
         Top = 138
-        Width = 68
-        Height = 16
+        Width = 52
+        Height = 13
         Cursor = crHandPoint
         PopupMenu = SortingPopupMenu
         Text = 'Sort by ID'
@@ -820,7 +824,7 @@ object SearchForm: TSearchForm
         Top = 24
         Width = 167
         Height = 22
-        AutoCompleteOptions = []
+        AutoCompleteOptions = [acoAutoSuggest]
         ItemsEx = <>
         Anchors = [akLeft, akTop, akRight]
         Ctl3D = True
@@ -887,8 +891,8 @@ object SearchForm: TSearchForm
       object WlStartStop: TWebLink
         Left = 8
         Top = 50
-        Width = 127
-        Height = 16
+        Width = 111
+        Height = 13
         Cursor = crHandPoint
         Color = clBtnFace
         ParentColor = False
@@ -921,7 +925,7 @@ object SearchForm: TSearchForm
         Width = 16
         Height = 16
         Cursor = crHandPoint
-        Hint = 'Show private photos'
+        Hint = 'Show hiden photos'
         Icon.Data = {
           0000010001001010000001002000680400001600000028000000100000002000
           0000010020000000000040040000000000000000000000000000000000000000
@@ -959,6 +963,8 @@ object SearchForm: TSearchForm
           000000000000000000000000000000000000000000000000000000000000C3FF
           0000C3FF0000C3FF0000C3FF0000C3030000C2030000C0030000C0030000C003
           0000C0030000C0030000C0030000C0070000C03F0000C07F0000C0FF0000}
+        ShowHint = True
+        ParentShowHint = False
         OnlyMainImage = True
         OnChange = SearchEditChange
         IsLayered = False

@@ -155,17 +155,17 @@ begin
   try
     Caption := L('Change date and time');
     GoToCurrentDate1.Caption := L('Go to current date');
-    DateNotExists1.Caption := L('Date not sets');
-    DateExists1.Caption := L('Date set');
-    Label1.Caption := L('Date not set');
+    DateNotExists1.Caption := L('No date');
+    DateExists1.Caption := L('Set up date');
+    Label1.Caption := L('No date');
     Label2.Caption := L('Choose "Date set" in popup menu');
     BtOK.Caption := L('Ok');
     BtCancel.Caption := L('Cancel');
 
     GoToCurrentTime1.Caption := L('Go to current time');
-    TimeNotExists1.Caption := L('Time not set');
-    TimeExists1.Caption := L('Time set');
-    Label3.Caption := L('Time not set');
+    TimeNotExists1.Caption := L('No time');
+    TimeExists1.Caption := L('Set up time');
+    Label3.Caption := L('No time');
   finally
     EndTranslate;
   end;

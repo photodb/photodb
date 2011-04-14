@@ -30,7 +30,6 @@ type
     Next1: TMenuItem;
     Previous1: TMenuItem;
     N1: TMenuItem;
-    Shell1: TMenuItem;
     N2: TMenuItem;
     FullScreen1: TMenuItem;
     N3: TMenuItem;
@@ -54,11 +53,6 @@ type
     ImageList1: TImageList;
     ImageList2: TImageList;
     ImageList3: TImageList;
-    N5: TMenuItem;
-    ZoomOut1: TMenuItem;
-    ZoomIn1: TMenuItem;
-    RealSize1: TMenuItem;
-    BestSize1: TMenuItem;
     BottomImage: TPanel;
     ToolsBar: TPanel;
     TbrActions: TToolBar;
@@ -112,8 +106,6 @@ type
     N7: TMenuItem;
     SendTo1: TMenuItem;
     N8: TMenuItem;
-    Tools1: TMenuItem;
-    NewPanel1: TMenuItem;
     TimerDBWork: TTimer;
     TbSeparatorPageNumber: TToolButton;
     TbPageNumber: TToolButton;
@@ -128,7 +120,6 @@ type
     Procedure Previous_(Sender: TObject);
     procedure NextImageClick(Sender: TObject);
     procedure PreviousImageClick(Sender: TObject);
-    procedure Shell1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure SpeedButton5Click(Sender: TObject);
     procedure FullScreen1Click(Sender: TObject);
@@ -193,7 +184,6 @@ type
     procedure ApplicationEvents1Hint(Sender: TObject);
     procedure UpdateInfoAboutFileName(FileName : String; info : TDBPopupMenuInfoRecord);
     procedure SendTo1Click(Sender: TObject);
-    procedure NewPanel1Click(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
     procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
@@ -240,6 +230,7 @@ type
     procedure SendToItemPopUpMenu(Sender: TObject);
     procedure OnPageSelecterClick(Sender: TObject);
     procedure SetDisplayRating(const Value: Integer);
+    procedure UpdateCrypted;
   protected
     { Protected declarations }
     IncGrayScale: Integer;
@@ -393,7 +384,6 @@ begin
   SaveWindowPos1.Key := RegRoot + 'SlideShow';
   SaveWindowPos1.SetPosition;
   PmMain.Images := DBKernel.ImageList;
-  Shell1.ImageIndex := DB_IC_SHELL;
   Exit1.ImageIndex := DB_IC_EXIT;
   FullScreen1.ImageIndex := DB_IC_DESKTOP;
   Next1.ImageIndex := DB_IC_NEXT;
@@ -406,10 +396,6 @@ begin
   GoToSearchWindow1.ImageIndex := DB_IC_ADDTODB;
   Explorer1.ImageIndex := DB_IC_FOLDER;
   SetasDesktopWallpaper1.ImageIndex := DB_IC_WALLPAPER;
-  ZoomOut1.ImageIndex := DB_IC_ZOOMOUT;
-  ZoomIn1.ImageIndex := DB_IC_ZOOMIN;
-  RealSize1.ImageIndex := DB_IC_REALSIZE;
-  BestSize1.ImageIndex := DB_IC_BESTSIZE;
   Properties1.ImageIndex := DB_IC_PROPERTIES;
   Stretch1.ImageIndex := DB_IC_WALLPAPER;
   Center1.ImageIndex := DB_IC_WALLPAPER;
@@ -423,8 +409,6 @@ begin
   ImageEditor1.ImageIndex := DB_IC_IMEDITOR;
   Print1.ImageIndex := DB_IC_PRINTER;
   SendTo1.ImageIndex := DB_IC_SEND;
-  Tools1.ImageIndex:=DB_IC_OTHER_TOOLS;
-  NewPanel1.ImageIndex:=DB_IC_PANEL;
 
   DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
   TW.I.Start('LoadLanguage');
@@ -464,7 +448,7 @@ begin
   DisplayRating := Item.Rating;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := True;
-  TbEncrypt.Enabled := not Item.Crypted;
+  UpdateCrypted;
 
   FSID := GetGUID;
   if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0)
@@ -485,7 +469,7 @@ begin
       TimerDBWork.Enabled := True;
       TbRotateCCW.Enabled := False;
       TbRotateCW.Enabled := False;
-      TbEncrypt.Enabled := not Item.Crypted;
+      UpdateCrypted;
       TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
     end;
 
@@ -844,11 +828,6 @@ begin
   end;
 end;
 
-procedure TViewer.Shell1Click(Sender: TObject);
-begin
-  ShellExecute(Handle, 'open', PWideChar(Item.FileName), nil, nil, SW_NORMAL);
-end;
-
 procedure TViewer.FormDestroy(Sender: TObject);
 begin
   FormManager.UnRegisterMainForm(Self);
@@ -1048,10 +1027,6 @@ begin
     SlideShow1.Visible := not(FullScreenNow or SlideShowNow);
     begin
       AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Crypted and not FolderView;
-      ZoomOut1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
-      ZoomIn1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
-      RealSize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
-      BestSize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
       DBItem1.Visible := not(SlideShowNow or FullScreenNow) and (Item.ID <> 0);
       SetasDesktopWallpaper1.Visible := not(SlideShowNow) and ImageExists and not Item.Crypted and IsWallpaper(Item.FileName);
       Rotate1.Visible := not(SlideShowNow) and ImageExists;
@@ -1059,13 +1034,10 @@ begin
       GoToSearchWindow1.Visible := not(SlideShowNow);
       Explorer1.Visible := not(SlideShowNow);
       Resize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
-      Shell1.Visible := not(SlideShowNow or FullScreenNow);
       Print1.Visible := not(SlideShowNow) and ImageExists;
       ImageEditor1.Visible := not(SlideShowNow) and ImageExists;
       SendTo1.Visible := not(SlideShowNow) and ImageExists and (Item.ID = 0);
     end;
-    Tools1.Visible := Resize1.Visible or Print1.Visible or ImageEditor1.Visible or GoToSearchWindow1.Visible;
-    NewPanel1.Visible := Tools1.Visible;
   finally
     F(Info);
   end;
@@ -1224,7 +1196,7 @@ begin
         if EventID_Param_Crypt in Params then
         begin
           CurrentInfo[I].Crypted := Value.Crypt;
-          TbEncrypt.Enabled := not Value.Crypt;
+          UpdateCrypted;
         end;
         if EventID_Param_Groups in Params then
           CurrentInfo[I].Groups := Value.Groups;
@@ -1356,10 +1328,8 @@ begin
     Next1.Caption := L('Next');
     Previous1.Caption := L('Previous');
     MTimer1.Caption := L('Timer');
-    Shell1.Caption := L('Execute');
     Copy1.Caption := L('Copy');
     FullScreen1.Caption := L('Full screen');
-    Tools1.Caption := L('Tools');
     DBItem1.Caption := L('Collection item');
     AddToDB1.Caption := L('Add to collection');
     GoToSearchWindow1.Caption := L('Search photos');
@@ -1367,10 +1337,6 @@ begin
     Exit1.Caption := L('Exit');
     Onlythisfile1.Caption := L('Only this file');
     AllFolder1.Caption := L('Full directory with this file');
-    ZoomOut1.Caption := L('Zoom in');
-    ZoomIn1.Caption := L('Zoom out');
-    RealSize1.Caption := L('Real size');
-    BestSize1.Caption := L('Fit to window');
     Properties1.Caption := L('Properties');
     SetasDesktopWallpaper1.Caption := L('Set as desktop wallpaper');
     Stretch1.Caption := L('Stretch');
@@ -1385,7 +1351,6 @@ begin
     ImageEditor1.Caption := L('Image editor');
     Print1.Caption := L('Print');
     SendTo1.Caption := L('Send to');
-    NewPanel1.Caption := L('New panel');
   finally
     EndTranslate;
   end;
@@ -1840,7 +1805,7 @@ begin
     TbRating.Hint := L('Rating (Ctrl+rating)');
     TbEditImage.Hint := L('Image editor (Ctrl+E)');
     TbInfo.Hint := L('Properties (Ctrl+Z)');
-    TbEncrypt.Hint := L('Encrypt (Ctrl+X)');
+    TbEncrypt.Hint := L('Encrypt/Decrypt (Ctrl+X)');
   finally
     EndTranslate;
   end;
@@ -2046,16 +2011,12 @@ begin
     ZoomerOn := True;
     Zoom := 1;
     TbFitToWindow.Enabled := False;
-    ZoomIn1.Enabled := False;
-    ZoomOut1.Enabled := False;
     TbRealSize.Enabled := False;
     TbSlideShow.Enabled := False;
     TbZoomOut.Enabled := False;
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    RealSize1.Enabled := False;
-    BestSize1.Enabled := False;
     ScrollBar1.PageSize := 0;
     ScrollBar1.Max := 100;
     ScrollBar1.Position := 50;
@@ -2106,10 +2067,6 @@ begin
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    RealSize1.Enabled := False;
-    BestSize1.Enabled := False;
-    ZoomIn1.Enabled := False;
-    ZoomOut1.Enabled := False;
     LoadImage_(Sender, Item.Rotation, True, Z, True);
     TbrActions.Refresh;
     TbrActions.Realign;
@@ -2155,10 +2112,6 @@ begin
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    RealSize1.Enabled := False;
-    BestSize1.Enabled := False;
-    ZoomIn1.Enabled := False;
-    ZoomOut1.Enabled := False;
     LoadImage_(Sender, Item.Rotation, True, Z, True);
     TbrActions.Refresh;
     TbrActions.Realign;
@@ -2287,24 +2240,26 @@ begin
 end;
 
 procedure TViewer.RecreateImLists;
+const
+  IconsCount = 24;
 var
-  Icons: array [0 .. 1, 0 .. 23] of HIcon;
+  Icons: array [0 .. 1, 0 .. IconsCount] of HIcon;
   I, J: Integer;
   B: TBitmap;
   Imlists: array [0 .. 2] of TImageList;
 const
-  Names: array [0 .. 1, 0 .. 23] of string = (('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
+  Names: array [0 .. 1, 0 .. IconsCount] of string = (('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
       'Z_FULLSIZE_NORM', 'Z_FULLSCREEN_NORM', 'Z_ZOOMIN_NORM', 'Z_ZOOMOUT_NORM', 'Z_FULLSCREEN', 'Z_LEFT_NORM',
       'Z_RIGHT_NORM', 'Z_INFO_NORM', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1', 'TRATING_2',
-      'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY'), ('Z_NEXT_HOT', 'Z_PREVIOUS_HOT',
+      'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE'), ('Z_NEXT_HOT', 'Z_PREVIOUS_HOT',
       'Z_BESTSIZE_HOT', 'Z_FULLSIZE_HOT', 'Z_FULLSCREEN_HOT', 'Z_ZOOMIN_HOT', 'Z_ZOOMOUT_HOT', 'Z_FULLSCREEN',
       'Z_LEFT_HOT', 'Z_RIGHT_HOT', 'Z_INFO_HOT', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1',
-      'TRATING_2', 'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY'));
+      'TRATING_2', 'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE'));
 
 begin
   TW.I.Start('LoadIcon');
   for I := 0 to 1 do
-    for J := 0 to 23 do
+    for J := 0 to IconsCount do
       Icons[I, J] := LoadImage(HInstance, PWideChar(Names[I, J]), IMAGE_ICON, 16, 16, 0);
 
   Imlists[0] := ImageList1;
@@ -2327,7 +2282,7 @@ begin
     B.Canvas.Pen.Color := ClBtnFace;
     TW.I.Start('ImageList_ReplaceIcon');
     for I := 0 to 1 do
-      for J := 0 to 23 do
+      for J := 0 to IconsCount do
       begin
         ImageList_ReplaceIcon(Imlists[I].Handle, -1, Icons[I, J]);
         if I = 0 then
@@ -2345,7 +2300,7 @@ begin
       end;
     TW.I.Start('DestroyIcon');
     for I := 0 to 1 do
-      for J := 0 to 23 do
+      for J := 0 to IconsCount do
         DestroyIcon(Icons[I, J]);
 
   finally
@@ -2551,10 +2506,6 @@ begin
   TbZoomIn.Enabled := True;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := True;
-  ZoomIn1.Enabled := True;
-  ZoomOut1.Enabled := True;
-  RealSize1.Enabled := True;
-  BestSize1.Enabled := True;
   TbRealSize.Down := False;
   TbFitToWindow.Down := False;
   TbZoomOut.Down := False;
@@ -2603,10 +2554,6 @@ begin
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := True;
 
-  ZoomIn1.Enabled := True;
-  ZoomOut1.Enabled := True;
-  RealSize1.Enabled := True;
-  BestSize1.Enabled := True;
   TbRealSize.Down := False;
   TbFitToWindow.Down := False;
   TbZoomOut.Down := False;
@@ -2908,10 +2855,6 @@ begin
   TbZoomIn.Enabled := False;
   TbRotateCCW.Enabled := False;
   TbRotateCW.Enabled := False;
-  ZoomIn1.Enabled := False;
-  ZoomOut1.Enabled := False;
-  RealSize1.Enabled := False;
-  BestSize1.Enabled := False;
   TbRealSize.Down := False;
   TbFitToWindow.Down := False;
   TbZoomOut.Down := False;
@@ -2966,13 +2909,22 @@ begin
   end;
 end;
 
+procedure TViewer.UpdateCrypted;
+begin
+  TbEncrypt.Enabled := StaticPath(Item.FileName);
+  if Item.Crypted then
+    TbEncrypt.ImageIndex := 24
+  else
+    TbEncrypt.ImageIndex := 23;
+end;
+
 procedure TViewer.UpdateInfo(SID: TGUID; Info: TDBPopupMenuInfoRecord);
 begin
-  CurrentInfo[CurrentFileNumber].Assign(Info);
+  Item.Assign(Info);
   DisplayRating := Info.Rating;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := TbRotateCCW.Enabled;
-  TbEncrypt.Enabled := not Info.Crypted;
+  UpdateCrypted;
 end;
 
 procedure TViewer.TbSlideShowClick(Sender: TObject);
@@ -3034,7 +2986,7 @@ var
   SQL_: string;
   DeleteID: Integer;
 begin
-  if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete file to recycle bin?'), L('Delete confirn'),
+  if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete file to recycle bin?'), L('Delete confirmation'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     DeleteID := 0;
@@ -3088,16 +3040,12 @@ begin
         FloatPanel.SetButtonsEnabled(True);
     end;
     TbFitToWindow.Enabled := False;
-    ZoomIn1.Enabled := False;
-    ZoomOut1.Enabled := False;
     TbRealSize.Enabled := False;
     TbSlideShow.Enabled := False;
     TbZoomOut.Enabled := False;
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    RealSize1.Enabled := False;
-    BestSize1.Enabled := False;
     LoadImage_(Sender, Item.Rotation, False, 1, True);
     TbrActions.Refresh;
     TbrActions.Realign;
@@ -3111,7 +3059,11 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     Info.Add(Item.Copy);
-    EncryptPhohos(Self, L('photo'), Info);
+    if not Item.Crypted then
+      EncryptPhohos(Self, L('photo'), Info)
+    else if ID_OK = MessageBoxDB(Handle, L('Do you really want to decrypt this file?'), L('Decrypt confirmation'),
+    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      DecryptPhotos(Self, Info);
   finally
     F(Info);
   end;
@@ -3221,11 +3173,6 @@ begin
   LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, Panel);
 end;
 
-procedure TViewer.NewPanel1Click(Sender: TObject);
-begin
-  ManagerPanels.NewPanel.Show;
-end;
-
 procedure TViewer.DoUpdateRecordWithDataSet(FileName: string; DS: TDataSet);
 var
   I: Integer;
@@ -3256,7 +3203,7 @@ begin
   DisplayRating := Item.Rating;
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := True;
-  TbEncrypt.Enabled := not Item.Crypted;
+  UpdateCrypted;
 end;
 
 procedure TViewer.DoSetNoDBRecord(FileName: string);
@@ -3274,7 +3221,7 @@ begin
 
   TbRotateCCW.Enabled := True;
   TbRotateCW.Enabled := TbRotateCCW.Enabled;
-  TbEncrypt.Enabled := not Item.Crypted;
+  UpdateCrypted;
 end;
 
 procedure TViewer.TimerDBWorkTimer(Sender: TObject);

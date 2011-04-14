@@ -601,38 +601,8 @@ begin
 end;
 
 procedure TDBPopupMenu.DeCryptItemPopUpMenu_(Sender: TObject);
-var
-  I: Integer;
-  Options: TCryptImageThreadOptions;
-  ItemFileNames: TArStrings;
-  ItemIDs: TArInteger;
-  ItemSelected: TArBoolean;
-  Password: string;
 begin
-
-  Password := DBKernel.FindPasswordForCryptImageFile(FInfo[FInfo.Position].FileName);
-  if Password = '' then
-    if FileExistsSafe(FInfo[FInfo.Position].FileName) then
-      Password := GetImagePasswordFromUser(FInfo[FInfo.Position].FileName);
-
-  Setlength(ItemFileNames, FInfo.Count);
-  Setlength(ItemIDs, FInfo.Count);
-  Setlength(ItemSelected, FInfo.Count);
-
-  for I := 0 to FInfo.Count - 1 do
-  begin
-    ItemFileNames[I] := FInfo[I].FileName;
-    ItemIDs[I] := FInfo[I].ID;
-    ItemSelected[I] := FInfo[I].Selected;
-  end;
-
-  Options.Files := Copy(ItemFileNames);
-  Options.IDs := Copy(ItemIDs);
-  Options.Selected := Copy(ItemSelected);
-  Options.Action := ACTION_DECRYPT_IMAGES;
-  Options.Password := Password;
-  Options.CryptOptions := 0;
-  TCryptingImagesThread.Create(FOwner, Options);
+  DecryptPhotos(FOwner, FInfo);
 end;
 
 procedure TDBPopupMenu.DeleteDublicatesItemPopUpMenu_(Sender: TObject);

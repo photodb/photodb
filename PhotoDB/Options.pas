@@ -322,7 +322,7 @@ begin
     ImageList1.Clear;
     ImageList1.Width := 16;
     ImageList1.Height := 16;
-    ImageList1.BkColor := Clmenu;
+    ImageList1.BkColor := clMenu;
     Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
     try
       Reg.OpenKey(GetRegRootKey + '\Menu', True);
@@ -334,7 +334,7 @@ begin
         for I := 0 to S.Count - 1 do
         begin
           Reg.CloseKey;
-          Reg.OpenKey(GetRegRootKey + '\Menu' + S[I], True);
+          Reg.OpenKey(GetRegRootKey + '\Menu\' + S[I], False);
           UseSubMenu := True;
 
           if Reg.ValueExists('Caption') then
@@ -501,7 +501,7 @@ begin
       try
         Reg.GetKeyNames(S);
         Reg.CloseKey;
-        for I := 1 to S.Count do
+        for I := 0 to S.Count - 1 do
           Reg.DeleteKey(GetRegRootKey + '\Menu\.' + IntToStr(I));
       finally
         F(S);

@@ -82,7 +82,7 @@ begin
     for J := 0 to 4 do
     begin
       Icons[I, J] := TIcon.Create;
-      Icons[I, J].Handle := LoadIcon(HInstance, PWideChar(Names[I, J]));
+      Icons[I, J].Handle := LoadImage(HInstance, PWideChar(Names[I, J]), IMAGE_ICON, 16, 16, 0);
     end;
   Imlists[0] := NormalImageList;
   Imlists[1] := HotImageList;
@@ -100,6 +100,8 @@ begin
       begin
         Lb := TLayeredBitmap.Create;
         try
+          Lb.LoadFromHIcon(Icons[I, J].Handle);
+          Lb.GrayScale;
           B := TBitmap.Create;
           try
             B.Width := 16;

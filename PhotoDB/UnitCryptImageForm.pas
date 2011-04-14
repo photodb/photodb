@@ -8,7 +8,7 @@ uses
   uConstants, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher,
   WatermarkedEdit, uDBForm, UnitDBKernel, uShellIntegration, uSettings,
   uActivationUtils, uCryptUtils, uDBPopupMenuInfo, UnitDBDeclare,
-  uTranslate;
+  uTranslate, uDBBaseTypes, uFileUtils;
 
 type
   TCryptImageForm = class(TPasswordSettingsDBForm)
@@ -48,13 +48,50 @@ type
 
 function GetPassForCryptImageFile(FileName : String) : TCryptImageOptions;
 procedure EncryptPhohos(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
+procedure DecryptPhotos(Owner: TDBForm; Info: TDBPopupMenuInfo);
 
 implementation
 
 uses
-  UnitCryptingImagesThread;
+  UnitCryptingImagesThread,
+  UnitPasswordForm;
 
 {$R *.dfm}
+
+procedure DecryptPhotos(Owner: TDBForm; Info: TDBPopupMenuInfo);
+var
+  I: Integer;
+  Options: TCryptImageThreadOptions;
+  ItemFileNames: TArStrings;
+  ItemIDs: TArInteger;
+  ItemSelected: TArBoolean;
+  Password: string;
+begin
+
+  Password := DBKernel.FindPasswordForCryptImageFile(Info[Info.Position].FileName);
+  if Password = '' then
+    if FileExistsSafe(Info[Info.Position].FileName) then
+      Password := GetImagePasswordFromUser(Info[Info.Position].FileName);
+
+  Setlength(ItemFileNames, Info.Count);
+  Setlength(ItemIDs, Info.Count);
+  Setlength(ItemSelected, Info.Count);
+
+  for I := 0 to Info.Count - 1 do
+  begin
+    ItemFileNames[I] := Info[I].FileName;
+    ItemIDs[I] := Info[I].ID;
+    ItemSelected[I] := Info[I].Selected;
+  end;
+
+  Options.Files := Copy(ItemFileNames);
+  Options.IDs := Copy(ItemIDs);
+  Options.Selected := Copy(ItemSelected);
+  Options.Action := ACTION_DECRYPT_IMAGES;
+  Options.Password := Password;
+  Options.CryptOptions := 0;
+  TCryptingImagesThread.Create(Owner, Options);
+end;
 
 procedure EncryptPhohos(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
 var

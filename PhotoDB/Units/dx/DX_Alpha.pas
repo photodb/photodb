@@ -48,7 +48,7 @@ type
     procedure Play;
     procedure Next(XForward : Boolean);
     procedure Previous;
-    procedure DoClose;
+    procedure DoFormClose;
     function CanSetImage : Boolean;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure DestroyTimerTimer(Sender: TObject);
@@ -848,7 +848,7 @@ begin
  TDirectXSlideShowCreator.Create(Info,XForward,Next);
 end;
 
-procedure TDirectShowForm.DoClose;
+procedure TDirectShowForm.DoFormClose;
 begin
  ShowMouse;
  Hide;

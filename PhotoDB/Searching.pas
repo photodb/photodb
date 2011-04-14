@@ -2404,6 +2404,10 @@ begin
     TbLoad.Caption := L('Open');
     TbExplorer.Caption := L('Explorer');
     SearchEdit.StartText := L('Enter your query here');
+
+    RtgQueryRating.Hint := L('Rating');
+    TwbPrivate.Hint := L('Display private photos');
+    TwlIncludeAllImages.Hint := L('Display hidden photos');
   finally
     EndTranslate;
   end;

@@ -166,130 +166,111 @@ end;
 procedure TDirectXSlideShowCreator.Execute;
 var
   W, H: Integer;
-  LoadingPicture: Boolean;
   Zoom: Extended;
   TempImage: TBitmap;
   GraphicClass : TGraphicClass;
   Text_error_out : string;
 begin
   Text_error_out := L('Unable to show file:');
-  LoadingPicture := True;
   try
     if ValidCryptGraphicFile(FInfo.FileName) then
     begin
       FilePassword := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
       if FilePassword = '' then
-      begin
-        LoadingPicture := False;
         Exit;
-      end;
     end;
 
-    if LoadingPicture then
-    begin
-      GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
 
-      if GraphicClass = nil then
+    if GraphicClass = nil then
+      Exit;
+
+    Graphic := GraphicClass.Create;
+    try
+      if ValidCryptGraphicFile(FInfo.FileName) then
       begin
-        LoadingPicture := False;
-        Exit;
-      end;
+        F(Graphic);
+        Graphic := DeCryptGraphicFile(FInfo.FileName, FilePassword);
+      end else
+        Graphic.LoadFromFile(FInfo.FileName);
+      JPEGScale(Graphic, Screen.Width, Screen.Height);
 
-      Graphic := GraphicClass.Create;
+      Image := TBitmap.Create;
       try
-        if ValidCryptGraphicFile(FInfo.FileName) then
-        begin
-          F(Graphic);
-          Graphic := DeCryptGraphicFile(FInfo.FileName, FilePassword);
-        end else
-          Graphic.LoadFromFile(FInfo.FileName);
-        JPEGScale(Graphic, Screen.Width, Screen.Height);
+        AssignGraphic(Image, Graphic);
+        F(Graphic);
 
-        Image := TBitmap.Create;
+
+        ScreenImage := TBitmap.Create;
         try
-          AssignGraphic(Image, Graphic);
-          F(Graphic);
+          ScreenImage.Canvas.Pen.Color:=0;
+          ScreenImage.Canvas.Brush.Color:=0;
+          ScreenImage.SetSize(Screen.Width, Screen.Height);
 
-
-          ScreenImage := TBitmap.Create;
-          try
-            ScreenImage.Canvas.Pen.Color:=0;
-            ScreenImage.Canvas.Brush.Color:=0;
-            ScreenImage.SetSize(Screen.Width, Screen.Height);
-            if LoadingPicture then
+          W := Image.Width;
+          H := Image.Height;
+          case FInfo.Rotate of
+            DB_IMAGE_ROTATE_0 :
             begin
-              W := Image.Width;
-              H := Image.Height;
-              case FInfo.Rotate of
-                DB_IMAGE_ROTATE_0 :
-                begin
-                  ProportionalSize(Screen.Width,Screen.Height, W, H);
-                  if Image.Width <> 0 then
-                    Zoom := W / Image.Width
-                  else
-                    Zoom := 1;
+              ProportionalSize(Screen.Width,Screen.Height, W, H);
+              if Image.Width <> 0 then
+                Zoom := W / Image.Width
+              else
+                Zoom := 1;
 
-                  if (Zoom<ZoomSmoothMin) then
-                    StretchCoolEx0(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, Image, ScreenImage, $000000)
-                  else
-                  begin
-                    XFillRect(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, ScreenImage, $000000);
-                    TempImage := TBitmap.Create;
-                    try
-                      TempImage.PixelFormat:=pf24bit;
-                      TempImage.SetSize(W, H);
-                      SmoothResize(W, H, Image, TempImage);
-                      ThreadDraw(TempImage, ScreenImage, Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2);
-                    finally
-                      F(TempImage);
-                    end;
-                  end;
-                end;
-                DB_IMAGE_ROTATE_270 :
-                begin
-                  ProportionalSize(Screen.Width, Screen.Height, W, H);
-                  StretchCoolEx270(Screen.Width div 2 - H div 2, Screen.Height div 2 - W div 2, W, H, Image, ScreenImage, $000000)
-                end;
-                DB_IMAGE_ROTATE_90 :
-                begin
-                  ProportionalSize(Screen.Width, Screen.Height, W, H);
-                  StretchCoolEx90(Screen.Width div 2 - H div 2, Screen.Height div 2 - W div 2, W, H, Image, ScreenImage, $000000)
-                end;
-                DB_IMAGE_ROTATE_180 :
-                begin
-                  ProportionalSize(Screen.Width, Screen.Height, W, H);
-                  StretchCoolEx180(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, Image, ScreenImage,$000000)
+              if (Zoom<ZoomSmoothMin) then
+                StretchCoolEx0(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, Image, ScreenImage, $000000)
+              else
+              begin
+                XFillRect(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, ScreenImage, $000000);
+                TempImage := TBitmap.Create;
+                try
+                  TempImage.PixelFormat:=pf24bit;
+                  TempImage.SetSize(W, H);
+                  SmoothResize(W, H, Image, TempImage);
+                  ThreadDraw(TempImage, ScreenImage, Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2);
+                finally
+                  F(TempImage);
                 end;
               end;
-            end else
-            begin
-              ScreenImage.Canvas.Font.Color:=$FFFFFF;
-              ScreenImage.Canvas.TextOut(ScreenImage.Width div 2-ScreenImage.Canvas.TextWidth(text_error_out) div 2,ScreenImage.Height div 2-ScreenImage.Canvas.Textheight(text_error_out) div 2,text_error_out);
-              ScreenImage.Canvas.TextOut(ScreenImage.Width div 2-ScreenImage.Canvas.TextWidth(FInfo.FileName) div 2,ScreenImage.Height div 2-ScreenImage.Canvas.Textheight(text_error_out) div 2+ScreenImage.Canvas.Textheight(FInfo.FileName)+4,FInfo.FileName);
             end;
-            F(Image);
-
-            FillChar (fx, SizeOf (fx), 0);
-            fx.dwSize := SizeOf (fx);
-            fx.dwFillColor := PackColor (0, FInfo.BPP, FInfo.RBM, FInfo.GBM, FInfo.BBM);
-            Rct := Rect(0, 0, ScreenImage.Width, ScreenImage.Height);
-            Synchronize(Btl);
-            CenterBmp (FInfo.Buffer, ScreenImage, Rect(0, 0, ScreenImage.Width, ScreenImage.Height));
-            F(ScreenImage);
-            ReplaceTransform;
-
-          finally
-            F(ScreenImage);
+            DB_IMAGE_ROTATE_270 :
+            begin
+              ProportionalSize(Screen.Width, Screen.Height, W, H);
+              StretchCoolEx270(Screen.Width div 2 - H div 2, Screen.Height div 2 - W div 2, W, H, Image, ScreenImage, $000000)
+            end;
+            DB_IMAGE_ROTATE_90 :
+            begin
+              ProportionalSize(Screen.Width, Screen.Height, W, H);
+              StretchCoolEx90(Screen.Width div 2 - H div 2, Screen.Height div 2 - W div 2, W, H, Image, ScreenImage, $000000)
+            end;
+            DB_IMAGE_ROTATE_180 :
+            begin
+              ProportionalSize(Screen.Width, Screen.Height, W, H);
+              StretchCoolEx180(Screen.Width div 2 - W div 2, Screen.Height div 2 - H div 2, W, H, Image, ScreenImage,$000000)
+            end;
           end;
+          F(Image);
+
+          FillChar (fx, SizeOf (fx), 0);
+          fx.dwSize := SizeOf (fx);
+          fx.dwFillColor := PackColor (0, FInfo.BPP, FInfo.RBM, FInfo.GBM, FInfo.BBM);
+          Rct := Rect(0, 0, ScreenImage.Width, ScreenImage.Height);
+          Synchronize(Btl);
+          CenterBmp (FInfo.Buffer, ScreenImage, Rect(0, 0, ScreenImage.Width, ScreenImage.Height));
+          F(ScreenImage);
+          ReplaceTransform;
 
         finally
-          F(Image);
+          F(ScreenImage);
         end;
 
       finally
-        F(Graphic);
-        LoadingPicture := False;
+        F(Image);
       end;
+
+    finally
+      F(Graphic);
     end;
 
   finally

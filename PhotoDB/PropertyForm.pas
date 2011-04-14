@@ -1566,14 +1566,14 @@ begin
   try
     B.Width := 100;
     B.Height := 100;
-    B.PixelFormat := Pf24bit;
-    B.Canvas.Brush.Color := ClBtnFace;
+    B.PixelFormat := pf24bit;
+    B.Canvas.Brush.Color := clBtnFace;
     B.Canvas.Pen.Color := RGB(Round(GetRValue(ColorToRGB(ClBtnFace)) * 0.8),
       Round(GetGValue(ColorToRGB(ClBtnFace)) * 0.8), Round(GetBValue(ColorToRGB(ClBtnFace)) * 0.8));
     B.Canvas.Rectangle(0, 0, 100, 100);
     Ico := TIcon.Create;
     try
-      Ico.Handle := UnitDBKernel.Icons[DB_IC_MANY_FILES + 1];
+      Ico.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_MANY_FILES + 1]);
       B.Canvas.Draw(100 div 2 - Ico.Width div 2, 100 div 2 - Ico.Height div 2, Ico);
     finally
       Ico.Free;
@@ -1846,6 +1846,7 @@ begin
   CollectionLabel.Caption := L('Collection') + ':';
   RatingLabel1.Caption := L('Rating') + ':';
   DateLabel1.Caption := L('Date') + ':';
+  TimeLabel.Caption := L('Time') + ':';
   SizeLabel1.Caption := L('Size') + ':';
   WidthLabel.Caption := L('Width') + ':';
   Heightlabel.Caption := L('Height') + ':';
@@ -1913,6 +1914,9 @@ begin
   AddImThLink1.Caption := L('Connect this photo with processed');
   AddOriginalImThAndAddProcessngToOriginalImTh1.Caption := L('Connect this photo with original (Add link to this photo to original)');
   AddOriginalImTh1.Caption := L('Connect this photo with original');
+
+  VleExif.TitleCaptions[0] := L('Key');
+  VleExif.TitleCaptions[01] := L('Value');
 end;
 
 procedure TPropertiesForm.PcMainChange(Sender: TObject);

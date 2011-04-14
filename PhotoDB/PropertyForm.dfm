@@ -251,7 +251,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 308
     Height = 372
-    ActivePage = TsGroups
+    ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -260,10 +260,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -386,7 +382,7 @@ object PropertiesForm: TPropertiesForm
       end
       object OwnerLabel: TLabel
         Left = 3
-        Top = 89
+        Top = 88
         Width = 31
         Height = 13
         Caption = 'Owner'
@@ -412,7 +408,7 @@ object PropertiesForm: TPropertiesForm
       end
       object LabelName1: TLabel
         Left = 3
-        Top = 2
+        Top = 3
         Width = 28
         Height = 13
         Caption = 'Name'
@@ -590,7 +586,7 @@ object PropertiesForm: TPropertiesForm
       object LabelName: TMemo
         Tag = 11
         Left = 72
-        Top = 9
+        Top = 3
         Width = 225
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -610,10 +606,6 @@ object PropertiesForm: TPropertiesForm
     object TsGroups: TTabSheet
       Caption = 'Groups'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -936,7 +928,7 @@ object PropertiesForm: TPropertiesForm
       object BtnNewGroup: TButton
         Left = 3
         Top = 314
-        Width = 89
+        Width = 99
         Height = 25
         Anchors = [akLeft, akBottom]
         Caption = 'New Group'
@@ -944,7 +936,7 @@ object PropertiesForm: TPropertiesForm
         OnClick = BtnNewGroupClick
       end
       object BtnManageGroups: TButton
-        Left = 99
+        Left = 108
         Top = 314
         Width = 89
         Height = 25
@@ -957,10 +949,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -975,16 +963,12 @@ object PropertiesForm: TPropertiesForm
         OnContextPopup = VleExifContextPopup
         ColWidths = (
           136
-          151)
+          152)
       end
     end
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         300
         344)
@@ -1039,10 +1023,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         300
         344)

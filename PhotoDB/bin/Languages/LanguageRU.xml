@@ -91,12 +91,12 @@
   <scope name="DateChange">
     <translate name="Change date and time" value="Изменить дату и время" />
     <translate name="Go to current date" value="Перейти к текущей дате" />
-    <translate name="Date not sets" value="Дата не установлена" />
-    <translate name="Date sets" value="Дата установлена" />
+    <translate name="No date" value="Дата не установлена" />
+    <translate name="Set up date" value="Дата установлена" />
     <translate name="Choose &quot;Date set&quot; in popup menu" value="Выберите &quot;Дата установлена&quot; в контекстном меню" />
     <translate name="Go to current time" value="Перейти к текущему времени" />
-    <translate name="Time set" value="Время установлено" />
-    <translate name="Time not set" value="Время не установлено" />
+    <translate name="Set up time" value="Время установлено" />
+    <translate name="No time" value="Время не установлено" />
   </scope>
   <scope name="ConvertImage">
     <translate name="Change Image" value="Изменение изображения" />
@@ -254,7 +254,8 @@
     <translate name="Loading files" value="Загрузка файлов" />
     <translate name="Loading images" value="Загрузка изображений" />
     <translate name="Loading directories" value="Загрузка директорий" />
-    <translate name="Loading info" value="Загрузка информации" />	
+    <translate name="Loading info" value="Загрузка информации" />
+    <translate name="Loading previews" value="Загрузка предпросмотров" />	
     <translate name="Initialization" value="Инициализация" />	
     <translate name="New directory" value="Новая директория" />
     <translate name="Unable to create directory %s!" value="Невозможно создать директорию %s!" />
@@ -369,6 +370,7 @@
     <translate name="Collection" value="Коллекция" />
     <translate name="Rating" value="Рейтинг" />
     <translate name="Date" value="Дата" />
+    <translate name="Time" value="Время" />
     <translate name="Size" value="Размер" />
     <translate name="Width" value="Ширина" />
     <translate name="Height" value="Высота" />
@@ -393,6 +395,8 @@
     <translate name="General" value="Основное" />
     <translate name="Groups" value="Группы" />
     <translate name="EXIF" value="EXIF" />
+    <translate name="Key" value="Ключ" />
+    <translate name="Value" value="Значение" />
     <translate name="Gistogramm" value="Гистограмма" />
     <translate name="Additional" value="Дополнительно" />
     <translate name="Gistogramm image" value="Гистограмма изображения" />
@@ -462,6 +466,8 @@
     <translate name="Less than" value="Менее чем" />
     <translate name="Empty query" value="Пустой запрос" />
     <translate name="Search text" value="Текст поиска" />
+    <translate name="Display private photos" value="Отображать личные фотографии" />
+    <translate name="Display hidden photos" value="Отображать скрытые фотографии" />
     <translate name="ID" value="ID" />
     <translate name="Result" value="Результат" />
     <translate name="Rating" value="Оценка" />
@@ -628,6 +634,7 @@
     <translate name="Streatch" value="Растянуть" />
     <translate name="Center" value="По центру" />
     <translate name="Tile" value="Замостить" />
+    <translate name="Thumbnails" value="Предпросмотры" />
     <translate name="Image editor" value="Редактор" />
     <translate name="Update info" value="Обновить информацию" />
     <translate name="Scan image" value="Найти похожие изображения" />
@@ -664,6 +671,9 @@
     <translate name="Table" value="Таблица" />
     <translate name="List" value="Список" />
 	<translate name="selected objects" value="выбранных объектов" />
+	<translate name="Functions for [%s]" value="Функции для [%s]" />
+	<translate name="Memory for [%s]" value="Память для [%s]" />	
+	<translate name="Unknown" value="Неизвестно" />	
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />
@@ -681,10 +691,8 @@
 	<translate name="Next" value="Вперёд" />
     <translate name="Previous" value="Назад" />
     <translate name="Timer" value="Таймер" />
-    <translate name="Execute" value="Выполнить" />
     <translate name="Copy" value="Копировать" />
     <translate name="Full screen" value="На весь экран" />
-    <translate name="Tools" value="Утилиты" />
     <translate name="Collection item" value="Информация в базе" />
     <translate name="Add to collection" value="Добавить в базу" />
     <translate name="Search photos" value="Искать фотографии" />
@@ -692,10 +700,6 @@
     <translate name="Exit" value="Выход" />
     <translate name="Only this file" value="Только этот файл" />
     <translate name="Full directory with this file" value="Всю текущую директорию" />
-    <translate name="Zoom in" value="Увеличить" />
-    <translate name="Zoom out" value="Уменьшить" />
-    <translate name="Real size" value="Оригинальный размер" />
-    <translate name="Fit to window" value="Лучший размер" />
     <translate name="Properties" value="Свойства" />
     <translate name="Set as desktop wallpaper" value="Установить на рабочий стол" />
     <translate name="Stretch" value="Растянуть" />
@@ -726,10 +730,13 @@
     <translate name="Rating (Ctrl+rating)" value="Оценка (Ctrl+оценка)" />
     <translate name="Image editor (Ctrl+E)" value="Редактор (Ctrl+E)" />
     <translate name="Properties (Ctrl+Z)" value="Свойства (Ctrl+Z)" />
-    <translate name="Encrypt (Ctrl+X)" value="Зашифровать (Ctrl+X)" />	
+    <translate name="Encrypt/Decrypt (Ctrl+X)" value="Зашифровать/Расшифровать (Ctrl+X)" />	
     <translate name="Error initializing graphics mode: %s" value="Ошибка инициализации графического режима: %s" />
     <translate name="Unable to show file:" value="Невозможно отобразить файл:" />
-    <translate name="photo" value="фотографию" />	
+    <translate name="photo" value="фотографию" />
+	<translate name="Decrypt confirmation" value="Подтверждение расшифровки" />
+	<translate name="Do you really want to decrypt this file?" value="Вы действительно хотите расшифровать этот файл?" />
+ 	<translate name="Delete confirmation" value="Подтверждение удаления" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />

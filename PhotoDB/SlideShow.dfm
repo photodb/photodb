@@ -312,25 +312,6 @@ object Viewer: TViewer
     object N3: TMenuItem
       Caption = '-'
     end
-    object ZoomIn1: TMenuItem
-      Caption = 'Zoom In1'
-      OnClick = TbZoomInClick
-    end
-    object ZoomOut1: TMenuItem
-      Caption = 'Zoom Out'
-      OnClick = TbZoomOutClick
-    end
-    object RealSize1: TMenuItem
-      Caption = 'Real Size'
-      OnClick = RealSizeClick
-    end
-    object BestSize1: TMenuItem
-      Caption = 'Best Size'
-      OnClick = FitToWindowClick
-    end
-    object N5: TMenuItem
-      Caption = '-'
-    end
     object GoToSearchWindow1: TMenuItem
       Caption = 'Go To Search Window'
       OnClick = GoToSearchWindow1Click
@@ -377,16 +358,9 @@ object Viewer: TViewer
         OnClick = Tile1Click
       end
     end
-    object Tools1: TMenuItem
-      Caption = 'Tools'
-      object Resize1: TMenuItem
-        Caption = 'Resize'
-        OnClick = Resize1Click
-      end
-      object NewPanel1: TMenuItem
-        Caption = 'New Panel'
-        OnClick = NewPanel1Click
-      end
+    object Resize1: TMenuItem
+      Caption = 'Resize'
+      OnClick = Resize1Click
     end
     object N1: TMenuItem
       Caption = '-'
@@ -428,11 +402,6 @@ object Viewer: TViewer
     end
     object N7: TMenuItem
       Caption = '-'
-    end
-    object Shell1: TMenuItem
-      Caption = 'Shell'
-      ImageIndex = 1
-      OnClick = Shell1Click
     end
     object Copy1: TMenuItem
       Caption = 'Copy'

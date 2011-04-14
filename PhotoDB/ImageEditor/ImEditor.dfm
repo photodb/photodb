@@ -557,7 +557,7 @@ object ImageEditor: TImageEditor
         Height = 24
         Cursor = crHandPoint
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -696,7 +696,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -835,7 +835,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -974,7 +974,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -1113,7 +1113,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -1252,7 +1252,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -1391,7 +1391,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -1530,7 +1530,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -1633,7 +1633,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
@@ -1736,7 +1736,7 @@ object ImageEditor: TImageEditor
         Cursor = crHandPoint
         Enabled = False
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clMaroon
         Font.Height = -16
         Font.Name = 'Comic Sans MS'
         Font.Style = [fsBold]
