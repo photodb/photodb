@@ -128,7 +128,6 @@ type
     BigImagesTimer: TTimer;
     SearchGroupsImageList: TImageList;
     ImageAllGroups: TImage;
-    SearchImageList: TImageList;
     ComboBoxSearchGroups: TComboBoxExDB;
     SearchEdit: TComboBoxExDB;
     CoolBar1: TCoolBar;
@@ -162,6 +161,7 @@ type
     LsSearchResults: TLoadingSign;
     TwlIncludeAllImages: TTwButton;
     WllGroups: TWebLinkList;
+    SearchImageList: TImageList;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
@@ -311,13 +311,10 @@ type
     procedure ComboBoxSearchGroupsSelect(Sender: TObject);
     procedure ComboBoxSearchGroupsDropDown(Sender: TObject);
     procedure SearchEditDropDown(Sender: TObject);
-    procedure SearchEditSelect(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure TbZoomOutClick(Sender: TObject);
     procedure TbZoomInClick(Sender: TObject);
     procedure TbExplorerClick(Sender: TObject);
-    procedure SearchEditGetAdditionalImage(Sender: TObject; Index: Integer;
-      HDC: Cardinal; var Top, Left: Integer);
     procedure TbStopOperationClick(Sender: TObject);
     procedure SortingClick(Sender: TObject);
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
@@ -334,6 +331,7 @@ type
     procedure TmrSearchResultsCountTimer(Sender: TObject);
     procedure elvDateRangeItemSelectionChanged(Sender: TCustomEasyListview;
       Item: TEasyItem);
+    procedure SearchEditIconClick(Sender: TObject);
   private
     { Private declarations }
     FSearchInfo : TSearchInfo;
@@ -3488,8 +3486,6 @@ end;
 
 procedure TSearchForm.SearchEditDropDown(Sender: TObject);
 begin
-  if not GroupsLoaded then
-    LoadGroupsList(True);
   if not SearchEdit.ShowDropDownMenu then
   begin
     RebuildQueryList;
@@ -3497,49 +3493,27 @@ begin
   end;
 end;
 
+procedure TSearchForm.SearchEditIconClick(Sender: TObject);
+begin
+  DoSearchNow(Self);
+end;
+
 procedure TSearchForm.RebuildQueryList;
 var
-  I, GroupIndex : Integer;
-  GroupImage, GroupImageSmall : TBitmap;
-  GroupName: string;
+  I : Integer;
   CurrentText: string;
   EditIndex: Integer;
 begin
   CurrentText := SearchEdit.Text;
   EditIndex := SearchEdit.ShowEditIndex;
   SearchEdit.ItemsEx.Clear;
-  SearchImageList.Clear;
 
   for I := 0 to FSearchInfo.Count - 1 do
   begin
-    GroupImage := TBitmap.Create;
-    try
-      GroupName := FSearchInfo[I].GroupName;
-      if (GroupName = '') then
-        GroupName := L('All groups');
-
-      GroupIndex := ComboBoxSearchGroups.Items.IndexOf(GroupName);
-      if SearchGroupsImageList.GetBitmap(GroupIndex, GroupImage) then
-      begin
-        GroupImageSmall := TBitmap.Create;
-        try
-          DoResize(16, 16, GroupImage, GroupImageSmall);
-          SearchImageList.Add(GroupImageSmall, nil);
-
-          with SearchEdit.ItemsEx.Add do
-          begin
-            Caption := FSearchInfo[I].Query;
-            ImageIndex := I;
-            OverlayImageIndex := I;
-            SelectedImageIndex := I;
-            Data := FSearchInfo[I];
-          end;
-        finally
-          GroupImageSmall.Free;
-        end;
-      end;
-    finally
-      GroupImage.Free;
+    with SearchEdit.ItemsEx.Add do
+    begin
+      Caption := FSearchInfo[I].Query;
+      Data := FSearchInfo[I];
     end;
   end;
   SearchEdit.Text := CurrentText;
@@ -3564,26 +3538,6 @@ begin
                   Decremect1.Checked);
 
   RebuildQueryList;
-end;
-
-procedure TSearchForm.SearchEditSelect(Sender: TObject);
-var
-  GroupIndex : Integer;
-  SearchRecord : TSearchQuery;
-
-begin
-  SearchEdit.ItemIndex := SearchEdit.ItemIndex;
-  SearchEdit.Realign;
-  SearchEdit.SelStart:=0;
-  SearchEdit.SelLength:=0;
-  if SearchEdit.ItemIndex>-1 then
-  begin
-    SearchRecord := SearchEdit.ItemsEx[SearchEdit.ItemIndex].Data;
-    GroupIndex := ComboBoxSearchGroups.Items.IndexOf(SearchRecord.GroupName);
-    ComboBoxSearchGroups.ItemIndex := GroupIndex;
-    RtgQueryRating.Rating := SearchRecord.RatingFrom;
-    RtgQueryRating.RatingRange := SearchRecord.RatingTo;
-  end;
 end;
 
 procedure TSearchForm.FormResize(Sender: TObject);
@@ -3747,28 +3701,6 @@ begin
   SearchEdit.ShowDropDownMenu := False;
   GroupsLoaded := False;
   LoadGroupsList;
-end;
-
-procedure TSearchForm.SearchEditGetAdditionalImage(Sender: TObject;
-  Index: Integer; HDC: Cardinal; var Top, Left: Integer);
-var
-  SearchQuery : TSearchQuery;
-begin
-  SearchQuery := SearchEdit.ItemsEx[Index].Data;
-
-  if (SearchQuery.RatingFrom > 0) or (SearchQuery.RatingTo > 0) then
-  begin
-    if SearchQuery.RatingFrom <> SearchQuery.RatingTo then
-    begin
-      FillRect(HDC, Rect(SearchEdit.Width - 20 - 20, Top, SearchEdit.Width,Top + 16), SearchEdit.Canvas.Brush.Handle);
-      RtgQueryRating.DoDrawImageByrating(HDC, SearchEdit.Width - 18 - 20, Top, SearchQuery.RatingFrom);
-      RtgQueryRating.DoDrawImageByrating(HDC, SearchEdit.Width - 18, Top, SearchQuery.RatingTo);
-    end else
-    begin
-      FillRect(HDC, Rect(SearchEdit.Width - 20, Top, SearchEdit.Width ,Top + 16), SearchEdit.Canvas.Brush.Handle);
-      RtgQueryRating.DoDrawImageByrating(HDC, SearchEdit.Width - 18, Top, SearchQuery.RatingFrom);
-    end;
-  end;
 end;
 
 procedure TSearchForm.SortingClick(Sender: TObject);
@@ -4045,7 +3977,8 @@ begin
     SortMethod := Settings.ReadInteger(RegQueryPath, 'SortMethod', SM_DATE_TIME);
     SortDesc := Settings.ReadBool(RegQueryPath, 'SortDesc', True);
 
-    FSearchInfo.Add(RatingFrom, RatingTo, DateFrom, DateTo, GroupName, Query, SortMethod, SortDesc);
+    if Query <> '' then
+      FSearchInfo.Add(RatingFrom, RatingTo, DateFrom, DateTo, GroupName, Query, SortMethod, SortDesc);
   end;
 
   if FSearchInfo.Count = 0 then

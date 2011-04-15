@@ -29,7 +29,8 @@ var
 
 implementation
 
-uses SysUtils, Dialogs, Controls, UxTheme;   
+uses
+  SysUtils, Dialogs, Controls, UxTheme;
 
 procedure SetVistaTreeView(const AHandle: THandle);
 begin

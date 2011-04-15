@@ -13,11 +13,11 @@ uses
 
 type
   TFormManager = class(TDBForm)
-    ApplicationEvents1: TApplicationEvents;
+    AevMain: TApplicationEvents;
     procedure CalledTimerTimer(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
-    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+    procedure AevMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
@@ -314,7 +314,7 @@ begin
   Result := L('After the 30 days has expired, you must activate your copy!');
 end;
 
-procedure TFormManager.ApplicationEvents1Message(var Msg: tagMSG;
+procedure TFormManager.AevMainMessage(var Msg: tagMSG;
   var Handled: Boolean);
 var
   Count: Cardinal;

@@ -11,7 +11,6 @@ type
   private
   protected
     function GetFormID : string; virtual; abstract;
-    procedure WndProc(var Message: TMessage); override;
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
@@ -67,18 +66,6 @@ end;
 function TDBForm.L(StringToTranslate : string; Scope : string) : string;
 begin
   Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope)
-end;
-
-procedure TDBForm.WndProc(var Message: TMessage);
-begin
- (*   TW.I.Start(IntToStr(Message.Msg));
-    TW.I.Start('');
-  if Message.Msg = WM_IME_SELECT{45102} then
-  begin
-    Message.Result := 1;
-    Exit;
-  end; *)
-  inherited;
 end;
 
 function TDBForm.L(StringToTranslate : string) : string;
