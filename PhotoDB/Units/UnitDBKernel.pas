@@ -488,7 +488,7 @@ begin
   for I := 0 to FDBs.Count - 1 do
     if AnsiLowerCase(FDBs[I].FileName) = AnsiLowerCase(DBName) then
     begin
-      Result := FDBs[I].name;
+      Result := FDBs[I].Name;
     end;
 
   if Result = '' then

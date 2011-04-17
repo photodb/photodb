@@ -125,7 +125,8 @@ procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; BeginRotate : Int
 
 implementation
 
-uses UnitJPEGOptions, UImageConvertThread, FormManegerUnit, DBCMenu;
+uses
+  UnitJPEGOptions, uImageConvertThread, FormManegerUnit, DBCMenu;
 
 {$R *.dfm}
 

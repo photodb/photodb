@@ -88,97 +88,100 @@ var
 begin
   FreeOnTerminate := True;
 
-  if not FUpdating then
-  begin
-
-    repeat
-      Sleep(100);
-    until PanelUpdateBigImageThreadsCount < (ProcessorCount + 1);
-
-    PanelUpdateBigImageThreadsCount := PanelUpdateBigImageThreadsCount + 1;
-
-    for I := 0 to FData.Count - 1 do
+  try
+    if not FUpdating then
     begin
 
-      if I mod 5 = 0 then
-      begin
-        Synchronize(GetVisibleFiles);
-        VisibleUp(I);
-      end;
+      repeat
+        Sleep(100);
+      until PanelUpdateBigImageThreadsCount < (ProcessorCount + 1);
 
-      StrParam := FData[I].FileName;
-      Synchronize(FileNameExists);
-      if BoolParam then
+      PanelUpdateBigImageThreadsCount := PanelUpdateBigImageThreadsCount + 1;
+
+      for I := 0 to FData.Count - 1 do
       begin
 
-        GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(StrParam));
-        if GraphicClass = nil then
-          Continue;
-        Graphic := GraphicClass.Create;
+        if I mod 5 = 0 then
+        begin
+          Synchronize(GetVisibleFiles);
+          VisibleUp(I);
+        end;
 
-        try
-          if GraphicCrypt.ValidCryptGraphicFile(ProcessPath(StrParam)) then
-          begin
-            PassWord := DBKernel.FindPasswordForCryptImageFile(StrParam);
-            if PassWord = '' then
-              Continue;
+        StrParam := FData[I].FileName;
+        Synchronize(FileNameExists);
+        if BoolParam then
+        begin
 
-            F(Graphic);
-            Graphic := DeCryptGraphicFile(ProcessPath(StrParam), PassWord);
-          end else
-          begin
-            if Graphic is TRAWImage then
-            begin
-              if not(Graphic as TRAWImage).LoadThumbnailFromFile(StrParam, FPictureSize, FPictureSize) then
-                Graphic.LoadFromFile(ProcessPath(StrParam));
-            end else
-              Graphic.LoadFromFile(ProcessPath(StrParam));
-          end;
+          GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(StrParam));
+          if GraphicClass = nil then
+            Continue;
+          Graphic := GraphicClass.Create;
 
-          JPEGScale(Graphic, FPictureSize, FPictureSize);
-          Fbit := TBitmap.Create;
           try
-            Fbit.PixelFormat := Pf24bit;
+            if GraphicCrypt.ValidCryptGraphicFile(ProcessPath(StrParam)) then
+            begin
+              PassWord := DBKernel.FindPasswordForCryptImageFile(StrParam);
+              if PassWord = '' then
+                Continue;
 
-            LoadImageX(Graphic, Fbit, clWindow);
-            F(Graphic);
-            TempBitmap := TBitmap.Create;
-            try
-              TempBitmap.PixelFormat := Pf24bit;
-              W := Fbit.Width;
-              H := Fbit.Height;
-              ProportionalSize(FPictureSize, FPictureSize, W, H);
-              TempBitmap.SetSize(W, H);
-              DoResize(W, H, Fbit, TempBitmap);
-              F(FBit);
-
-              ApplyRotate(TempBitmap, FData[I].Rotation);
-              BitmapParam := TempBitmap;
-              FI := I + 1;
-              IntParam := FI;
-
-              Synchronize(ReplaceBigBitmap);
-            finally
-              F(TempBitmap);
+              F(Graphic);
+              Graphic := DeCryptGraphicFile(ProcessPath(StrParam), PassWord);
+            end else
+            begin
+              if Graphic is TRAWImage then
+              begin
+                if not(Graphic as TRAWImage).LoadThumbnailFromFile(StrParam, FPictureSize, FPictureSize) then
+                  Graphic.LoadFromFile(ProcessPath(StrParam));
+              end else
+                Graphic.LoadFromFile(ProcessPath(StrParam));
             end;
-          finally
-            F(Fbit);
-          end;
 
-        finally
-          F(Graphic);
+            JPEGScale(Graphic, FPictureSize, FPictureSize);
+            Fbit := TBitmap.Create;
+            try
+              Fbit.PixelFormat := Pf24bit;
+
+              LoadImageX(Graphic, Fbit, clWindow);
+              F(Graphic);
+              TempBitmap := TBitmap.Create;
+              try
+                TempBitmap.PixelFormat := Pf24bit;
+                W := Fbit.Width;
+                H := Fbit.Height;
+                ProportionalSize(FPictureSize, FPictureSize, W, H);
+                TempBitmap.SetSize(W, H);
+                DoResize(W, H, Fbit, TempBitmap);
+                F(FBit);
+
+                ApplyRotate(TempBitmap, FData[I].Rotation);
+                BitmapParam := TempBitmap;
+                FI := I + 1;
+                IntParam := FI;
+
+                Synchronize(ReplaceBigBitmap);
+              finally
+                F(TempBitmap);
+              end;
+            finally
+              F(Fbit);
+            end;
+
+          finally
+            F(Graphic);
+          end;
         end;
       end;
-    end;
-  end else
-  begin
-    repeat
-      Sleep(100);
-    until PanelUpdateBigImageThreadsCountByID < (ProcessorCount + 1);
+    end else
+    begin
+      repeat
+        Sleep(100);
+      until PanelUpdateBigImageThreadsCountByID < (ProcessorCount + 1);
 
-    PanelUpdateBigImageThreadsCountByID := PanelUpdateBigImageThreadsCountByID + 1;
+      PanelUpdateBigImageThreadsCountByID := PanelUpdateBigImageThreadsCountByID + 1;
+    end;
+  finally
+    Synchronize(DoStopLoading);
   end;
-  Synchronize(DoStopLoading);
 end;
 
 procedure TPanelLoadingBigImagesThread.FileNameExists;

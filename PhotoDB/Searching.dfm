@@ -883,7 +883,7 @@ object SearchForm: TSearchForm
       end
       object WlStartStop: TWebLink
         Left = 8
-        Top = 50
+        Top = 53
         Width = 111
         Height = 13
         Cursor = crHandPoint
@@ -903,7 +903,7 @@ object SearchForm: TSearchForm
       end
       object LsSearchResults: TLoadingSign
         Left = 157
-        Top = 52
+        Top = 53
         Width = 16
         Height = 16
         Visible = False
@@ -1138,8 +1138,8 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 500
     OnTimer = HintTimerTimer
-    Left = 352
-    Top = 56
+    Left = 320
+    Top = 376
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
@@ -1267,8 +1267,8 @@ object SearchForm: TSearchForm
   object HelpTimer: TTimer
     Enabled = False
     OnTimer = HelpTimerTimer
-    Left = 513
-    Top = 56
+    Left = 321
+    Top = 480
   end
   object PopupMenu8: TPopupMenu
     OnPopup = PopupMenu8Popup
@@ -1405,8 +1405,8 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 100
     OnTimer = HidePanelTimerTimer
-    Left = 489
-    Top = 128
+    Left = 321
+    Top = 272
   end
   object PopupMenu10: TPopupMenu
     OnPopup = PopupMenu7Popup
@@ -1438,8 +1438,8 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 55
     OnTimer = SelectTimerTimer
-    Left = 456
-    Top = 88
+    Left = 320
+    Top = 192
   end
   object DropFileTarget2: TDropFileTarget
     DragTypes = [dtCopy, dtLink]
@@ -1493,8 +1493,8 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 200
     OnTimer = BigImagesTimerTimer
-    Left = 417
-    Top = 88
+    Left = 321
+    Top = 424
   end
   object SearchGroupsImageList: TImageList
     AllocBy = 1
@@ -1527,14 +1527,14 @@ object SearchForm: TSearchForm
   object TmrSearchResultsCount: TTimer
     Enabled = False
     OnTimer = TmrSearchResultsCountTimer
-    Left = 377
-    Top = 210
+    Left = 321
+    Top = 234
   end
   object TmrQueryHintClose: TTimer
     Enabled = False
     Interval = 3000
-    Left = 473
-    Top = 202
+    Left = 321
+    Top = 322
   end
   object SearchImageList: TImageList
     Left = 553

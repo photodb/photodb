@@ -387,6 +387,8 @@ type
     function GetShowGroups: Boolean;
     function GetSortDecrement: Boolean;
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
+    function GetRegQueryRootPath: string;
+    property RegQueryRootPath: string read GetRegQueryRootPath;
   protected
    { Protected declarations }
     function TreeView : TShellTreeView;
@@ -594,7 +596,6 @@ begin
 
   TW.I.Start('S -> W7 TaskBar');
   FW7TaskBar := nil;
-//  FW7TaskBar := CreateTaskBarInstance;
   FProgressMessage := RegisterWindowMessage('SEARCHING_PROGRESS');
   FReloadGroupsMessage := RegisterWindowMessage('SEARCHING_RELOAD_GROUPS');
   PostMessage(Handle, FProgressMessage, 0, 0);
@@ -616,6 +617,7 @@ begin
     F(Ico);
   end;
   TW.I.Start('S -> Create - END');
+
 end;
 
 procedure TSearchForm.SetupListView;
@@ -2441,6 +2443,8 @@ var
 begin
   if not Active then
     Exit;
+  if  GetForegroundWindow <> Handle then
+    Exit;
   if FolderView then
     Exit;
   HelpTimer.Enabled := False;
@@ -3139,6 +3143,11 @@ begin
   Result := ElvMain;
 end;
 
+function TSearchForm.GetRegQueryRootPath: string;
+begin
+  Result := 'Search\DB_' + DBKernel.GetDataBaseName + '\Query';
+end;
+
 procedure TSearchForm.IsTimePanelDblClick(Sender: TObject);
 begin
   if FUpdatingDB then
@@ -3526,18 +3535,21 @@ var
 const
   SearchTextCount = 10;
 begin
-  DateRange := GetDateFilter;
+  if SearchEdit.Text <> '' then
+  begin
+    DateRange := GetDateFilter;
 
-  FSearchInfo.Add(Min(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
-                  Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
-                  DateRange.DateFrom,
-                  DateRange.DateTo,
-                  ComboBoxSearchGroups.Items[ComboBoxSearchGroups.ItemIndex],
-                  SearchEdit.Text,
-                  SortLink.Tag,
-                  Decremect1.Checked);
+    FSearchInfo.Add(Min(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
+                    Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
+                    DateRange.DateFrom,
+                    DateRange.DateTo,
+                    ComboBoxSearchGroups.Items[ComboBoxSearchGroups.ItemIndex],
+                    SearchEdit.Text,
+                    SortLink.Tag,
+                    Decremect1.Checked);
 
-  RebuildQueryList;
+    RebuildQueryList;
+  end;
 end;
 
 procedure TSearchForm.FormResize(Sender: TObject);
@@ -3698,7 +3710,6 @@ end;
 
 procedure TSearchForm.ReRecreateGroupsList;
 begin
-  SearchEdit.ShowDropDownMenu := False;
   GroupsLoaded := False;
   LoadGroupsList;
 end;
@@ -3957,11 +3968,9 @@ var
   DateFrom, DateTo : TDateTime;
   GroupName, Query : string;
   QueryCount : Integer;
-  RegQueryRootPath : string;
   RegQueryPath : string;
   FNow : TDateTime;
 begin
-  RegQueryRootPath := 'Search\DB_' + DBKernel.GetDataBaseName + '\Query';
 
   QueryCount := Settings.ReadInteger(RegQueryRootPath, 'Count', 0);
   FNow := Now;
@@ -4002,17 +4011,16 @@ begin
 
   RtgQueryRating.Rating := FSearchInfo[0].RatingFrom;
   RtgQueryRating.RatingRange := FSearchInfo[0].RatingTo;
-  SearchEdit.Text := FSearchInfo[0].Query;
+  SearchEdit.Text := Settings.ReadString(RegQueryRootPath, 'Text', '');
 end;
 
 procedure TSearchForm.SaveQueryList;
 var
   I : Integer;
-  RegQueryRootPath, RegQueryPath : string;
+  RegQueryPath : string;
 const
   MaxQueriesToSave = 20;
 begin
-  RegQueryRootPath := 'Search\DB_' + DBKernel.GetDataBaseName + '\Query';
   Settings.WriteInteger(RegQueryRootPath, 'Count', FSearchInfo.Count);
   for I := 0 to Min(MaxQueriesToSave, FSearchInfo.Count) - 1 do
   begin
@@ -4026,6 +4034,7 @@ begin
     Settings.WriteInteger(RegQueryPath, 'SortMethod', FSearchInfo[I].SortMethod);
     Settings.WriteBool(RegQueryPath, 'SortDesc', FSearchInfo[I].SortDecrement);
   end;
+  Settings.WriteString(RegQueryRootPath, 'Text', SearchEdit.Text);
 end;
 
 function TSearchForm.TreeView: TShellTreeView;
@@ -4638,6 +4647,7 @@ begin
   if FIsSearchingActive <> False then
   begin
     FIsSearchingActive := False;
+    FIsEstimatingActive := False;
     UpdateSearchState;
   end;
 end;

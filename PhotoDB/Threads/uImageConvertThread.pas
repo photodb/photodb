@@ -267,10 +267,13 @@ const
     finally
       if (AnsiLowerCase(FileName) = AnsiLowerCase(FData.FileName)) then
       begin
-        UpdateImageRecord(ThreadForm, FData.FileName, FData.ID);
-        Synchronize(NotifyDB);
-        TLockFiles.Instance.RemoveLockedFile(FileName);
-        TLockFiles.Instance.AddLockedFile(FileName, 100);
+        if not FProcessingParams.PreviewOptions.GeneratePreview then
+        begin
+          UpdateImageRecord(ThreadForm, FData.FileName, FData.ID);
+          Synchronize(NotifyDB);
+          TLockFiles.Instance.RemoveLockedFile(FileName);
+          TLockFiles.Instance.AddLockedFile(FileName, 100);
+        end;
       end;
     end;
   end;
