@@ -173,7 +173,7 @@ begin
   FForm := OwnerForm;
   FFilesInfo := TDBPopupMenuInfo.Create;
   ScriptProcessString := Include('Scripts\Adding_AddFile.dbini');
-  FProcessScript := TScript.Create('');
+  FProcessScript := TScript.Create(FForm, '');
   FProcessScript.Description := 'Add File script';
 
   NoLimit := False;

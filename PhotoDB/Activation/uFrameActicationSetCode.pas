@@ -70,7 +70,7 @@ begin
   inherited;
   EdApplicationCode.EditLabel.Caption := L('Program code') + ':';
   EdActivationCode.EditLabel.Caption := L('Enter here activation key') + ':';
-  EdActivationName.EditLabel.Caption := L('User name');
+  EdActivationName.EditLabel.Caption := L('User name') + ':';
 end;
 
 end.

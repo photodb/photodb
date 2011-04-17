@@ -23,6 +23,7 @@
     <translate name="%dpx." value="%dпк." />
     <translate name="All formats (%s)" value="Все форматы (%s)" />
     <translate name="Unknown" value="Неизвестно" />
+    <translate name="Unregistered user" value="Незарегистрированный пользователь" />	
   </scope>
   <scope name="InstallLanguage">
     <translate name="Select language" value="Выбор языка" />
@@ -128,7 +129,7 @@
     <translate name="Password confirm" value="Подтвердите пароль" />
     <translate name="Enter password for selected objects" value="Введите пароль для выбранных объектов" />
     <translate name="Confirm password" value="Подтвердите пароль" />
-    <translate name="Crypt objects" value="Зашифровать объекты" />
+    <translate name="Enrypt objects" value="Зашифровать объекты" />
     <translate name="Save CRC" value="Сохранять контрольную сумму" />
     <translate name="Enter your password here" value="Введите пароль здесь" />
     <translate name="Show password" value="Показывать пароль" />
@@ -567,7 +568,10 @@
 	<translate name="Edit related groups" value="Редактировать связанные группы" />
 	<translate name="There are no related groups" value="Нет связанных групп" />	
   </scope>
-  <scope name="DBMenu">
+  <scope name="DBMenu">  
+    <translate name="Find this file manually" value="Найти  файл вручную" />
+    <translate name="Analyzer" value="Анализатор" />
+    <translate name="Dear {2}!{1}The degree of similarity of these 2 images is - {3}%!{1}Good luck!" value="Дорогой {2}!{1}Степень похожести этих двук картинок - {3}%!{1}Удачи!" />
     <translate name="File" value="Файл" />
     <translate name="Execute" value="Выполнить" />
     <translate name="Exit" value="Выход" />
@@ -624,7 +628,7 @@
     <translate name="Date" value="Дата" />
     <translate name="Groups" value="Группы" />
     <translate name="Keywords" value="Ключевые слова" />
-    <translate name="Crypting" value="Шифрование" />
+    <translate name="Encrypting" value="Шифрование" />
     <translate name="Enter password" value="Ввести пароль" />
     <translate name="Decrypt" value="Расшифровать" />
     <translate name="Encrypt" value="Зашифровать" />
@@ -709,6 +713,7 @@
     <translate name="Left" value="Влево" />
     <translate name="Right" value="Вправо" />
     <translate name="180 Degree" value="180 градусов" />
+    <translate name="By EXIF" value="Согласно EXIF" />
     <translate name="Resize" value="Изменить размер" />
     <translate name="Slide show" value="Слайд шоу" />
     <translate name="Image editor" value="Редактор" />
@@ -1677,8 +1682,8 @@
 	<translate name="Export items with rating" value="Экспорт только записей с оценкой"/>
 	<translate name="Export items without files" value="Экспорт записей без файлов"/>
 	<translate name="Export of groups" value="Экспортировать группы"/>
-	<translate name="Export crypted items" value="Экспортировать зашифрованные записи"/>
-	<translate name="Export crypted items if password has been found" value="Экспортировать зашифрованные, если найден пароль"/>
+	<translate name="Export encrypted items" value="Экспортировать зашифрованные записи"/>
+	<translate name="Export encrypted items if password has been found" value="Экспортировать зашифрованные, если найден пароль"/>
 	<translate name="Begin export" value="Начать экспорт"/>
 	<translate name="Break!" value="Прервать!"/>
 	<translate name="Item" value="Запись"/>

@@ -5,7 +5,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   BorderStyle = bsToolWindow
   Caption = 'Quick Group Info'
   ClientHeight = 327
-  ClientWidth = 267
+  ClientWidth = 273
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,6 +18,9 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
+  DesignSize = (
+    273
+    327)
   PixelsPerInch = 96
   TextHeight = 13
   object GroupImage: TImage
@@ -174,8 +177,9 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Tag = 1
     Left = 60
     Top = 28
-    Width = 201
+    Width = 207
     Height = 30
+    Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -187,89 +191,105 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ReadOnly = True
     TabOrder = 0
     Text = '<GroupName>'
+    ExplicitWidth = 201
   end
   object CommentMemo: TMemo
     Tag = 1
     Left = 5
     Top = 71
-    Width = 257
+    Width = 263
     Height = 26
+    Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
     Lines.Strings = (
       '<Comment>')
     ParentColor = True
     ReadOnly = True
     TabOrder = 1
+    ExplicitWidth = 257
   end
   object BtnOk: TButton
-    Left = 187
+    Left = 193
     Top = 301
     Width = 75
     Height = 21
+    Anchors = [akTop, akRight]
     Caption = 'Ok'
     TabOrder = 7
     OnClick = BtnOkClick
+    ExplicitLeft = 187
   end
   object DateEdit: TEdit
     Tag = 1
     Left = 4
     Top = 246
-    Width = 257
+    Width = 263
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
     ParentColor = True
     ReadOnly = True
     TabOrder = 5
     Text = '<Data>'
+    ExplicitWidth = 257
   end
   object AccessEdit: TEdit
     Tag = 1
     Left = 4
     Top = 278
-    Width = 257
+    Width = 263
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
     ParentColor = True
     ReadOnly = True
     TabOrder = 6
     Text = '<Data>'
+    ExplicitWidth = 257
   end
   object KeyWordsMemo: TMemo
     Tag = 1
     Left = 4
     Top = 119
-    Width = 257
+    Width = 263
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
     Lines.Strings = (
       '<Key Words>')
     ParentColor = True
     ReadOnly = True
     TabOrder = 2
+    ExplicitWidth = 257
   end
   object CbAddKeywords: TCheckBox
     Left = 4
     Top = 144
-    Width = 249
+    Width = 264
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Auto Added'
     Enabled = False
     TabOrder = 3
+    ExplicitWidth = 258
   end
   object CbInclude: TCheckBox
     Left = 3
     Top = 209
-    Width = 253
+    Width = 262
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Include In Quick Lists'
     Enabled = False
     TabOrder = 4
+    ExplicitWidth = 256
   end
   object WllGroups: TWebLinkList
     Left = 4
     Top = 183
-    Width = 255
+    Width = 261
     Height = 22
+    Anchors = [akLeft, akTop, akRight]
     BevelEdges = []
     BevelInner = bvNone
     BevelOuter = bvNone
@@ -280,6 +300,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     LineHeight = 0
     PaddingTop = 2
     PaddingLeft = 2
+    ExplicitWidth = 255
   end
   object PopupMenu1: TPopupMenu
     Left = 120

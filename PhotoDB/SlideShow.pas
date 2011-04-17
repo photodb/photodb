@@ -14,7 +14,7 @@ uses
   uCDMappingTypes, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
-  uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime,
+  uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign;
 
 type
@@ -112,6 +112,8 @@ type
     PopupMenuPageSelecter: TPopupMenu;
     LsLoading: TLoadingSign;
     TbEncrypt: TToolButton;
+    N5: TMenuItem;
+    ByEXIF1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -192,6 +194,7 @@ type
     procedure LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
       Bitmap: TBitmap);
     procedure TbEncryptClick(Sender: TObject);
+    procedure ByEXIF1Click(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount : Cardinal;
@@ -404,6 +407,7 @@ begin
   RotateCW1.ImageIndex := DB_IC_ROTETED_90;
   Rotateon1801.ImageIndex := DB_IC_ROTETED_180;
   Rotate1.ImageIndex := DB_IC_ROTETED_0;
+  ByEXIF1.ImageIndex := DB_IC_ROTATE_MAGIC;
   Resize1.ImageIndex := DB_IC_RESIZE;
   SlideShow1.ImageIndex := DB_IC_DO_SLIDE_SHOW;
   ImageEditor1.ImageIndex := DB_IC_IMEDITOR;
@@ -1351,6 +1355,7 @@ begin
     ImageEditor1.Caption := L('Image editor');
     Print1.Caption := L('Print');
     SendTo1.Caption := L('Send to');
+    ByEXIF1.Caption := L('By EXIF');
   finally
     EndTranslate;
   end;
@@ -1490,6 +1495,10 @@ begin
     if (Msg.wParam = Byte(' ')) then
       Next_(Self);
 
+    if ShiftKeyDown then
+    begin
+      if Msg.wParam = Byte('R') then ByEXIF1Click(Self);
+    end;
     if CtrlKeyDown then
     begin
       if Msg.wParam = Byte('F') then FitToWindowClick(Self);
@@ -2354,6 +2363,34 @@ begin
   end;
 end;
 
+procedure TViewer.ByEXIF1Click(Sender: TObject);
+var
+  ExifData: TExifData;
+begin
+  ExifData := TExifData.Create;
+  try
+    ExifData.LoadFromGraphic(Item.FileName);
+    case ExifOrientationToRatation(Ord(ExifData.Orientation)) of
+      DB_IMAGE_ROTATE_180:
+        begin
+          Rotateon1801Click(Sender);
+        end;
+      DB_IMAGE_ROTATE_90:
+        begin
+          RotateCW1Click(Sender);
+        end;
+      DB_IMAGE_ROTATE_270:
+        begin
+          RotateCCW1Click(Sender);
+        end;
+    end;
+  except
+    on e : Exception do
+      EventLog(e.Message);
+  end;
+  F(ExifData);
+end;
+
 procedure TViewer.Rotateon1801Click(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
@@ -2865,6 +2902,7 @@ begin
   ValidImages := 0;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
+  Invalidate;
   RecreateDrawImage(Self);
   PrepareNextImage;
   FRotatingImageInfo.Enabled := False;

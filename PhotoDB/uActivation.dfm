@@ -91,4 +91,15 @@ object ActivateForm: TActivateForm
     TabOrder = 1
     OnClick = BtnPreviousClick
   end
+  object LsLoading: TLoadingSign
+    Left = 270
+    Top = 348
+    Width = 21
+    Height = 21
+    Visible = False
+    Active = True
+    FillPercent = 50
+    SignColor = clBlack
+    MaxTransparencity = 255
+  end
 end

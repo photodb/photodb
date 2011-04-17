@@ -3,7 +3,7 @@ unit uScript;
 interface
 
 uses Windows, SysUtils, Classes, uStringUtils, uMemory, uGOM, uRuntime,
-     uSysUtils;
+     uSysUtils, uDBForm;
 
 const
   VALUE_TYPE_ERROR         = 0;
@@ -40,7 +40,7 @@ type
     FloatArray : TArrayOfFloat;
     BoolArray : TArrayOfBool;
     ArrayLength : Integer;
-    AType :Integer;            
+    AType :Integer;
     constructor Create(AOwner : TScript); overload;
     constructor CreateAsError(AOwner : TScript; Name : string); overload;
     procedure Assign(Value : TValue);
@@ -87,21 +87,21 @@ type
 
   TNamedValues = class(TObject)
   private
-    FValues : TList;
-    FOwner : TScript;
-    function GetValueByIndex(Index: Integer): TValue;
+    FValues: TList;
+    FOwner: TScript;
+    function GetValueByIndex(index: Integer): TValue;
     function GetCount: Integer;
-  public        
-    function GetValueByName(Index: string): TValue;
-    constructor Create(AOwner : TScript);
+  public
+    function GetValueByName(index: string): TValue;
+    constructor Create(AOwner: TScript);
     destructor Destroy; override;
-    procedure Remove(Name : string);
+    procedure Remove(name: string);
     procedure Clear;
-    procedure SetValueByName(Index: string; const Value: TValue);
-    function Exists(Name : string; SearchInParent : Boolean = False) : Boolean;
-    function GetByNameAndType(Name : string; AType : Integer) : TValue;
-    property Items[Index: Integer]: TValue read GetValueByIndex; default;
-    property Count : Integer read GetCount;
+    procedure SetValueByName(index: string; const Value: TValue);
+    function Exists(name: string; SearchInParent: Boolean = False): Boolean;
+    function GetByNameAndType(name: string; AType: Integer): TValue;
+    property Items[index: Integer]: TValue read GetValueByIndex; default;
+    property Count: Integer read GetCount;
   end;
 
   TStringFunctions = class(TObject)
@@ -123,60 +123,62 @@ type
 
   TScriptEnviroment = class(TObject)
   private
-    FFunctions : TStringFunctions;
-    FName : string;
-    FInitProc : TScriptEnviromentInitProcedure;
+    FFunctions: TStringFunctions;
+    FName: string;
+    FInitProc: TScriptEnviromentInitProcedure;
   public
-    constructor Create(AName : string);
+    constructor Create(AName: string);
     destructor Destroy; override;
-    procedure SetInitProc(InitProc : TScriptEnviromentInitProcedure);
-    property Name : string read FName;
+    procedure SetInitProc(InitProc: TScriptEnviromentInitProcedure);
+    property name: string read FName;
     property Functions : TStringFunctions read FFunctions;
   end;
 
   TScriptEnviroments = class(TObject)
   private
-    FEnviroments : TList;
+    FEnviroments: TList;
     constructor Create;
-  public       
+  public
     destructor Destroy; override;
-    class function Instance : TScriptEnviroments;
-    function GetEnviroment(Name : string) : TScriptEnviroment;
+    class function Instance: TScriptEnviroments;
+    function GetEnviroment(name: string): TScriptEnviroment;
   end;
 
   TCombinedEnviromentFunctionList = class(TObject)
   private
-    FEnviroment1 : TScriptEnviroment;
-    FEnviroment2 : TScriptEnviroment;
+    FEnviroment1: TScriptEnviroment;
+    FEnviroment2: TScriptEnviroment;
     function GetCount: Integer;
-    function GetFunctionByIndex(Index: Integer): TScriptFunction;
+    function GetFunctionByIndex(index: Integer): TScriptFunction;
   public
-    constructor Create(Enviroment1, Enviroment2 : TScriptEnviroment);
-    property Count : Integer read GetCount;
-    property Items[Index: Integer]: TScriptFunction read GetFunctionByIndex; default;
+    constructor Create(Enviroment1, Enviroment2: TScriptEnviroment);
+    property Count: Integer read GetCount;
+    property Items[index: Integer]: TScriptFunction read GetFunctionByIndex; default;
   end;
 
   TScript = class(TObject)
   private
-    FDescription : string;
-    FNamedValues : TNamedValues;
-    FID : String;
-    FParentScript : TScript;
-    FEnviroment : TScriptEnviroment; 
-    FPrivateEnviroment : TScriptEnviroment;
-    FCombinedEnviromentFunctionList : TCombinedEnviromentFunctionList;
+    FDescription: string;
+    FNamedValues: TNamedValues;
+    FID: string;
+    FParentScript: TScript;
+    FEnviroment: TScriptEnviroment;
+    FPrivateEnviroment: TScriptEnviroment;
+    FOwner: TDBForm;
+    FCombinedEnviromentFunctionList: TCombinedEnviromentFunctionList;
     function GetScriptFunctions: TCombinedEnviromentFunctionList;
     procedure SetEnviroment(const Value: TScriptEnviroment);
   public
-    constructor Create(EnviromentName : string);
+    constructor Create(Form: TDBForm; EnviromentName: string);
     destructor Destroy; override;
-    property Description : string read FDescription write FDescription;
-    property NamedValues : TNamedValues read FNamedValues;
-    property ParentScript : TScript read FParentScript write FParentScript;
-    property ScriptFunctions : TCombinedEnviromentFunctionList read GetScriptFunctions;
-    property Enviroment : TScriptEnviroment read FEnviroment write SetEnviroment;
-    property PrivateEnviroment : TScriptEnviroment read FPrivateEnviroment;
-    property ID : string read FID write FID;
+    property Description: string read FDescription write FDescription;
+    property NamedValues: TNamedValues read FNamedValues;
+    property ParentScript: TScript read FParentScript write FParentScript;
+    property ScriptFunctions: TCombinedEnviromentFunctionList read GetScriptFunctions;
+    property Enviroment: TScriptEnviroment read FEnviroment write SetEnviroment;
+    property PrivateEnviroment: TScriptEnviroment read FPrivateEnviroment;
+    property ID: string read FID write FID;
+    property Owner: TDBForm read FOwner;
   end;
 
 
@@ -187,9 +189,10 @@ var
 
 { TScript }
 
-constructor TScript.Create(EnviromentName : string);
+constructor TScript.Create(Form: TDBForm; EnviromentName : string);
 begin
   FID := GUIDToString(GetGUID);
+  FOwner := Form;
   FParentScript := nil;
   FNamedValues := TNamedValues.Create(Self);
   FPrivateEnviroment := TScriptEnviroment.Create(''); //CREATE PRIVATE UNNAMED ENVIROMENT
@@ -211,6 +214,8 @@ begin
   FNamedValues.GetValueByName('$LINK_TYPE_FOLDER').SetInteger(4);
   FNamedValues.GetValueByName('$LINK_TYPE_TXT').SetInteger(5);
   FNamedValues.GetValueByName('$InvalidQuery').SetString(#8);
+  if FOwner <> nil then
+    FNamedValues.GetValueByName('$FORM').SetString(FOwner.WindowID);
 
   FNamedValues.GetValueByName('$Mobile').SetBool(FolderView);
   GOM.AddObj(Self);
@@ -328,7 +333,7 @@ begin
       TValue(FValues[I]).Free;
       FValues.Delete(I);
       Exit;
-    end; 
+    end;
 end;
 
 procedure TNamedValues.SetValueByName(Index: string; const Value: TValue);
@@ -372,7 +377,7 @@ begin
     aType := VALUE_TYPE_INTEGER;
     IntValue := StrToIntDef(Value,0);
    end;
-  VALUE_TYPE_FLOAT:    
+  VALUE_TYPE_FLOAT:
    begin
     aType := VALUE_TYPE_FLOAT;
     FloatValue := StrToFloatDef(ConvertUniversalFloatToLocal(Value), 0);
@@ -556,7 +561,7 @@ begin
   begin
     if Index < FEnviroment1.FFunctions.Count then
       Result := FEnviroment1.FFunctions[Index]
-    else         
+    else
       Result := FEnviroment2.FFunctions[Index - FEnviroment1.FFunctions.Count]
   end else
     Exception.CreateFmt('Index out of range : %d', [Index]);

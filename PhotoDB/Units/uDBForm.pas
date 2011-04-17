@@ -4,11 +4,12 @@ interface
 
 uses
   Forms, Classes, uTranslate, Graphics, SyncObjs, Messages,
-  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils;
+  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils, uSysUtils;
 
 type
   TDBForm = class(TForm)
   private
+    FWindowID: string;
   protected
     function GetFormID : string; virtual; abstract;
   public
@@ -19,6 +20,7 @@ type
     procedure BeginTranslate;
     procedure EndTranslate;
     property FormID: string read GetFormID;
+    property WindowID: string read FWindowID;
   end;
 
 type
@@ -33,6 +35,7 @@ type
     procedure UnRegisterForm(Form: TDBForm);
     procedure RegisterForm(Form: TDBForm);
     function GetImage(BaseForm: TDBForm; FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean;
+    function GetForm(WindowID: string): TDBForm;
   end;
 
 implementation
@@ -47,6 +50,7 @@ end;
 constructor TDBForm.Create(AOwner: TComponent);
 begin
   inherited;
+  FWindowID := GUIDToString(GetGUID);
   TFormCollection.Instance.RegisterForm(Self);
   GOM.AddObj(Self);
 end;
@@ -89,6 +93,18 @@ begin
   F(FSync);
   F(FForms);
   inherited;
+end;
+
+function TFormCollection.GetForm(WindowID: string): TDBForm;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to FForms.Count - 1 do
+  begin
+    if TDBForm(FForms[I]).WindowID = WindowID then
+      Result := TDBForm(FForms[I]);
+  end;
 end;
 
 function TFormCollection.GetImage(BaseForm: TDBForm; FileName: string;

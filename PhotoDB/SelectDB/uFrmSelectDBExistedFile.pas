@@ -41,6 +41,7 @@ type
     function IsFinal: Boolean; override;
     property DBFile: TPhotoDBFile read GetDBFile;
     function ValidateStep(Silent: Boolean): Boolean; override;
+    procedure Execute; override;
   end;
 
 implementation
@@ -71,6 +72,14 @@ end;
 procedure TFrmSelectDBExistedFile.EdInternalNameChange(Sender: TObject);
 begin
   DBFile.Name := EdInternalName.Text;
+end;
+
+procedure TFrmSelectDBExistedFile.Execute;
+begin
+  inherited;
+  DBKernel.AddDB(DBFile.Name, DBFile.FileName, DBFile.Icon);
+  IsStepComplete := True;
+  Changed;
 end;
 
 function TFrmSelectDBExistedFile.IsFinal: Boolean;

@@ -1,6 +1,6 @@
 object SearchForm: TSearchForm
-  Left = 459
-  Top = 60
+  Left = 0
+  Top = 96
   ActiveControl = ShowDateOptionsLink
   Caption = 'Search'
   ClientHeight = 715
@@ -15,6 +15,7 @@ object SearchForm: TSearchForm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  Position = poDesigned
   ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate
@@ -36,8 +37,8 @@ object SearchForm: TSearchForm
     ExplicitHeight = 615
   end
   object ImageAllGroups: TImage
-    Left = 189
-    Top = 182
+    Left = 182
+    Top = 25
     Width = 33
     Height = 33
     Picture.Data = {
@@ -184,7 +185,9 @@ object SearchForm: TSearchForm
     Width = 180
     Height = 690
     Align = alLeft
+    DoubleBuffered = True
     ParentColor = True
+    ParentDoubleBuffered = False
     ParentShowHint = False
     ShowHint = False
     TabOrder = 0
@@ -1131,25 +1134,25 @@ object SearchForm: TSearchForm
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\DolphinImagesDB\Search'
-    Left = 224
-    Top = 56
+    Left = 240
+    Top = 32
   end
   object HintTimer: TTimer
     Enabled = False
     Interval = 500
     OnTimer = HintTimerTimer
-    Left = 320
-    Top = 376
+    Left = 232
+    Top = 408
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
-    Left = 448
-    Top = 56
+    Left = 704
+    Top = 48
   end
   object PmSearchOptions: TPopupMenu
     OnPopup = PmSearchOptionsPopup
-    Left = 320
-    Top = 56
+    Left = 592
+    Top = 104
     object DoSearchNow1: TMenuItem
       Caption = 'Do Search Now'
       OnClick = DoSearchNow
@@ -1172,7 +1175,7 @@ object SearchForm: TSearchForm
   object PopupMenu3: TPopupMenu
     OnPopup = PopupMenu3Popup
     Left = 480
-    Top = 56
+    Top = 368
     object Datenotexists1: TMenuItem
       Caption = 'Date not exists'
       OnClick = Datenotexists1Click
@@ -1188,7 +1191,7 @@ object SearchForm: TSearchForm
   end
   object PmEditGroups: TPopupMenu
     OnPopup = PmEditGroupsPopup
-    Left = 224
+    Left = 480
     Top = 88
     object EditGroups1: TMenuItem
       Caption = 'Edit Groups'
@@ -1201,8 +1204,8 @@ object SearchForm: TSearchForm
   end
   object PopupMenu5: TPopupMenu
     OnPopup = PopupMenu5Popup
-    Left = 257
-    Top = 88
+    Left = 481
+    Top = 608
     object Ratingnotsets1: TMenuItem
       Caption = 'Rating not sets'
       OnClick = Ratingnotsets1Click
@@ -1210,8 +1213,8 @@ object SearchForm: TSearchForm
   end
   object PopupMenu6: TPopupMenu
     OnPopup = PopupMenu6Popup
-    Left = 288
-    Top = 88
+    Left = 480
+    Top = 560
     object SetComent1: TMenuItem
       Caption = 'Set Coment'
       OnClick = SetComent1Click
@@ -1252,8 +1255,8 @@ object SearchForm: TSearchForm
   end
   object PopupMenu7: TPopupMenu
     OnPopup = PopupMenu7Popup
-    Left = 322
-    Top = 88
+    Left = 482
+    Top = 512
     object Setvalue1: TMenuItem
       Caption = 'Set value'
       OnClick = PanelValueIsDateSetsDblClick
@@ -1262,18 +1265,19 @@ object SearchForm: TSearchForm
   object ImageList1: TImageList
     Height = 102
     Width = 102
-    Left = 479
+    Left = 335
+    Top = 424
   end
   object HelpTimer: TTimer
     Enabled = False
     OnTimer = HelpTimerTimer
-    Left = 321
-    Top = 480
+    Left = 233
+    Top = 504
   end
   object PopupMenu8: TPopupMenu
     OnPopup = PopupMenu8Popup
-    Left = 354
-    Top = 88
+    Left = 482
+    Top = 464
     object OpeninExplorer1: TMenuItem
       Caption = 'Open in Explorer'
       OnClick = OpeninExplorer1Click
@@ -1297,34 +1301,34 @@ object SearchForm: TSearchForm
     Images = DragImageList
     ShowImage = True
     AllowAsyncTransfer = True
-    Left = 290
-    Top = 128
+    Left = 234
+    Top = 88
   end
   object DragImageList: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
     Height = 102
     Width = 102
-    Left = 258
-    Top = 128
+    Left = 338
+    Top = 280
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = []
     AutoRegister = False
     OptimizedMove = True
     AllowAsyncTransfer = True
-    Left = 322
-    Top = 128
+    Left = 234
+    Top = 136
   end
   object QuickGroupsSearch: TPopupMenu
     Images = GroupsImageList
-    Left = 384
-    Top = 88
+    Left = 480
+    Top = 48
   end
   object SortingPopupMenu: TPopupMenu
     OnPopup = SortingPopupMenuPopup
-    Left = 361
-    Top = 128
+    Left = 481
+    Top = 176
     object SortbyID1: TMenuItem
       Caption = 'Sort by ID'
       Checked = True
@@ -1395,23 +1399,24 @@ object SearchForm: TSearchForm
     end
   end
   object GroupsImageList: TImageList
-    Left = 641
+    Left = 337
+    Top = 520
   end
   object InsertSpesialQueryPopupMenu: TPopupMenu
-    Left = 521
-    Top = 88
+    Left = 481
+    Top = 320
   end
   object HidePanelTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = HidePanelTimerTimer
-    Left = 321
-    Top = 272
+    Left = 233
+    Top = 320
   end
   object PopupMenu10: TPopupMenu
     OnPopup = PopupMenu7Popup
-    Left = 386
-    Top = 56
+    Left = 482
+    Top = 136
     object Setvalue2: TMenuItem
       Caption = 'Set value'
       OnClick = PanelValueIsTimeSetsDblClick
@@ -1419,8 +1424,8 @@ object SearchForm: TSearchForm
   end
   object PopupMenu11: TPopupMenu
     OnPopup = PopupMenu11Popup
-    Left = 416
-    Top = 56
+    Left = 480
+    Top = 416
     object Timenotexists1: TMenuItem
       Caption = 'Time not exists'
       OnClick = Timenotexists1Click
@@ -1438,27 +1443,27 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 55
     OnTimer = SelectTimerTimer
-    Left = 320
-    Top = 192
+    Left = 232
+    Top = 232
   end
   object DropFileTarget2: TDropFileTarget
     DragTypes = [dtCopy, dtLink]
     OnDrop = DropFileTarget2Drop
     OptimizedMove = True
-    Left = 393
-    Top = 128
+    Left = 233
+    Top = 184
   end
   object ScriptListPopupMenu: TPopupMenu
-    Left = 256
-    Top = 56
+    Left = 592
+    Top = 48
   end
   object ScriptMainMenu: TMainMenu
-    Left = 289
-    Top = 56
+    Left = 337
+    Top = 32
   end
   object RatingPopupMenu1: TPopupMenu
-    Left = 425
-    Top = 128
+    Left = 481
+    Top = 272
     object N00: TMenuItem
       Caption = '0'
       OnClick = N05Click
@@ -1493,8 +1498,8 @@ object SearchForm: TSearchForm
     Enabled = False
     Interval = 200
     OnTimer = BigImagesTimerTimer
-    Left = 321
-    Top = 424
+    Left = 233
+    Top = 456
   end
   object SearchGroupsImageList: TImageList
     AllocBy = 1
@@ -1502,41 +1507,42 @@ object SearchForm: TSearchForm
     Masked = False
     ShareImages = True
     Width = 32
-    Left = 225
-    Top = 128
+    Left = 337
+    Top = 328
   end
   object ToolBarImageList: TImageList
     ColorDepth = cd32Bit
     Height = 32
     Width = 32
-    Left = 657
-    Top = 144
+    Left = 337
+    Top = 232
   end
   object DisabledToolBarImageList: TImageList
     ColorDepth = cd32Bit
     Height = 32
     Width = 32
-    Left = 657
-    Top = 97
+    Left = 337
+    Top = 377
   end
   object PopupMenuZoomDropDown: TPopupMenu
     OnPopup = PopupMenuZoomDropDownPopup
-    Left = 489
-    Top = 89
+    Left = 481
+    Top = 225
   end
   object TmrSearchResultsCount: TTimer
     Enabled = False
     OnTimer = TmrSearchResultsCountTimer
-    Left = 321
-    Top = 234
+    Left = 233
+    Top = 274
   end
   object TmrQueryHintClose: TTimer
     Enabled = False
     Interval = 3000
-    Left = 321
-    Top = 322
+    Left = 233
+    Top = 362
   end
   object SearchImageList: TImageList
-    Left = 553
+    Left = 337
+    Top = 472
   end
 end

@@ -174,7 +174,7 @@ type
     CopyToLink: TWebLink;
     AddLink: TWebLink;
     AccessLabel: TLabel;
-    PopupMenu5: TPopupMenu;
+    PmListViewType: TPopupMenu;
     Thumbnails1: TMenuItem;
     Icons1: TMenuItem;
     List1: TMenuItem;
@@ -823,7 +823,7 @@ begin
   SlashHandled := False;
 
   TW.I.Start('aScript');
-  aScript := TScript.Create('');
+  aScript := TScript.Create(Self, '');
 
   AddScriptObjFunction(aScript.PrivateEnviroment,'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, CloseWindow);
 
@@ -2121,7 +2121,10 @@ begin
       RefreshItemByName(Value.NewName);
 
   if [EventID_Param_DB_Changed, EventID_Param_Refresh_Window] * Params <> [] then
+  begin
+    ElvMain.Selection.ClearAll;
     RefreshLinkClick(RefreshLink);
+  end;
 
 end;
 
@@ -4884,7 +4887,7 @@ end;
 
 procedure TExplorerForm.RefreshLinkClick(Sender: TObject);
 begin
- if (SelCount=0) or (GetCurrentPathW.PType=EXPLORER_ITEM_MYCOMPUTER) then
+ if (SelCount=0) or (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
     Refresh2Click(Sender)
   else
     Refresh1Click(Sender);
@@ -5336,14 +5339,14 @@ var
   C: Integer;
 begin
   ScriptString := Include('scripts\ExplorerSetNewPath.dbini');
-  FScript := TScript.Create('');
+  FScript := TScript.Create(Self, '');
   try
     FScript.Description := 'Set path script';
     SetNamedValueStr(FScript, '$Path', Path);
     ExecuteScript(nil, FScript, ScriptString, C, nil);
     Path := GetNamedValueString(FScript, '$Path');
   finally
-    FScript.Free;
+    F(FScript);
   end;
   if Path = #8 then
     Exit;
@@ -7301,7 +7304,7 @@ var
 begin
   APoint := Point(ToolButtonView.Left, ToolButtonView.Top + ToolButtonView.Height);
   APoint := ToolBar1.ClientToScreen(APoint);
-  PopupMenu5.Popup(APoint.X, APoint.Y);
+  PmListViewType.Popup(APoint.X, APoint.Y);
 end;
 
 procedure TExplorerForm.Thumbnails1Click(Sender: TObject);

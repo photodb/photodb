@@ -14,7 +14,6 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Select file on hard disk'
     TabOrder = 0
-    ExplicitWidth = 601
     DesignSize = (
       480
       297)
@@ -61,7 +60,6 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       Color = 11206655
       ReadOnly = True
       TabOrder = 0
-      ExplicitWidth = 489
     end
     object EdDBType: TWatermarkedEdit
       Left = 8
@@ -71,7 +69,6 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       Anchors = [akLeft, akTop, akRight]
       ReadOnly = True
       TabOrder = 1
-      ExplicitWidth = 585
     end
     object BtnChooseIcon: TButton
       Left = 8
@@ -100,7 +97,6 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       Caption = 'Select'
       TabOrder = 2
       OnClick = BtnSelectFileClick
-      ExplicitLeft = 504
     end
     object WlDBOptions: TWebLink
       Left = 8
@@ -130,7 +126,6 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       TabOrder = 4
       Text = 'EdInternalName'
       OnChange = EdInternalNameChange
-      ExplicitWidth = 585
     end
   end
 end

@@ -4,7 +4,7 @@ object ExplorerForm: TExplorerForm
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
   ClientHeight = 613
-  ClientWidth = 870
+  ClientWidth = 867
   Color = clBtnFace
   Constraints.MinHeight = 200
   Constraints.MinWidth = 300
@@ -21,7 +21,7 @@ object ExplorerForm: TExplorerForm
   OnDeactivate = FormDeactivate
   OnShow = FormShow
   DesignSize = (
-    870
+    867
     613)
   PixelsPerInch = 96
   TextHeight = 13
@@ -256,8 +256,8 @@ object ExplorerForm: TExplorerForm
         object SlideShowLink: TWebLink
           Left = 5
           Top = 237
-          Width = 74
-          Height = 16
+          Width = 58
+          Height = 13
           Cursor = crHandPoint
           Text = 'Slide Show'
           OnClick = SlideShowLinkClick
@@ -275,8 +275,8 @@ object ExplorerForm: TExplorerForm
         object ShellLink: TWebLink
           Left = 5
           Top = 285
-          Width = 47
-          Height = 16
+          Width = 31
+          Height = 13
           Cursor = crHandPoint
           Text = 'Open'
           OnClick = Open1Click
@@ -294,8 +294,8 @@ object ExplorerForm: TExplorerForm
         object RenameLink: TWebLink
           Left = 5
           Top = 333
-          Width = 61
-          Height = 16
+          Width = 45
+          Height = 13
           Cursor = crHandPoint
           Text = 'Rename'
           OnClick = Rename1Click
@@ -313,8 +313,8 @@ object ExplorerForm: TExplorerForm
         object RefreshLink: TWebLink
           Left = 5
           Top = 366
-          Width = 58
-          Height = 16
+          Width = 42
+          Height = 13
           Cursor = crHandPoint
           Text = 'Refresh'
           OnClick = RefreshLinkClick
@@ -332,8 +332,8 @@ object ExplorerForm: TExplorerForm
         object PropertiesLink: TWebLink
           Left = 5
           Top = 349
-          Width = 68
-          Height = 16
+          Width = 52
+          Height = 13
           Cursor = crHandPoint
           Text = 'Properties'
           OnClick = PropertiesLinkClick
@@ -351,8 +351,8 @@ object ExplorerForm: TExplorerForm
         object PrintLink: TWebLink
           Left = 5
           Top = 269
-          Width = 42
-          Height = 16
+          Width = 26
+          Height = 13
           Cursor = crHandPoint
           Text = 'Print'
           OnClick = PrintLinkClick
@@ -370,8 +370,8 @@ object ExplorerForm: TExplorerForm
         object MyPicturesLink: TWebLink
           Left = 5
           Top = 454
-          Width = 76
-          Height = 16
+          Width = 60
+          Height = 13
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Pictures'
@@ -390,8 +390,8 @@ object ExplorerForm: TExplorerForm
         object MyDocumentsLink: TWebLink
           Left = 5
           Top = 470
-          Width = 92
-          Height = 16
+          Width = 76
+          Height = 13
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Documents'
@@ -410,8 +410,8 @@ object ExplorerForm: TExplorerForm
         object MyComputerLink: TWebLink
           Left = 5
           Top = 438
-          Width = 83
-          Height = 16
+          Width = 67
+          Height = 13
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Computer'
@@ -430,8 +430,8 @@ object ExplorerForm: TExplorerForm
         object MoveToLink: TWebLink
           Left = 5
           Top = 317
-          Width = 64
-          Height = 16
+          Width = 48
+          Height = 13
           Cursor = crHandPoint
           Text = 'Move To'
           OnClick = MoveToLinkClick
@@ -449,8 +449,8 @@ object ExplorerForm: TExplorerForm
         object ImageEditorLink: TWebLink
           Left = 5
           Top = 253
-          Width = 80
-          Height = 16
+          Width = 64
+          Height = 13
           Cursor = crHandPoint
           Text = 'Image Editor'
           OnClick = ImageEditorLinkClick
@@ -468,8 +468,8 @@ object ExplorerForm: TExplorerForm
         object DesktopLink: TWebLink
           Left = 5
           Top = 486
-          Width = 61
-          Height = 16
+          Width = 45
+          Height = 13
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'Desktop'
@@ -488,8 +488,8 @@ object ExplorerForm: TExplorerForm
         object DeleteLink: TWebLink
           Left = 5
           Top = 382
-          Width = 52
-          Height = 16
+          Width = 36
+          Height = 13
           Cursor = crHandPoint
           Text = 'Delete'
           OnClick = DeleteLinkClick
@@ -507,8 +507,8 @@ object ExplorerForm: TExplorerForm
         object CopyToLink: TWebLink
           Left = 5
           Top = 301
-          Width = 61
-          Height = 16
+          Width = 45
+          Height = 13
           Cursor = crHandPoint
           Text = 'Copy To'
           OnClick = CopyToLinkClick
@@ -526,8 +526,8 @@ object ExplorerForm: TExplorerForm
         object AddLink: TWebLink
           Left = 5
           Top = 398
-          Width = 74
-          Height = 16
+          Width = 58
+          Height = 13
           Cursor = crHandPoint
           Text = 'Add Object'
           OnClick = AddLinkClick
@@ -548,7 +548,7 @@ object ExplorerForm: TExplorerForm
   object StatusBar1: TStatusBar
     Left = 0
     Top = 593
-    Width = 870
+    Width = 867
     Height = 20
     Panels = <
       item
@@ -557,11 +557,12 @@ object ExplorerForm: TExplorerForm
       item
         Width = 150
       end>
+    ExplicitWidth = 870
   end
   object CoolBar1: TCoolBar
     Left = 0
     Top = 25
-    Width = 870
+    Width = 867
     Height = 22
     AutoSize = True
     Bands = <
@@ -569,16 +570,17 @@ object ExplorerForm: TExplorerForm
         Control = ToolBar2
         ImageIndex = -1
         MinHeight = 20
-        Width = 864
+        Width = 861
       end>
     EdgeBorders = [ebLeft, ebRight, ebBottom]
     ParentShowHint = False
     ShowHint = True
     OnResize = PageScroller2Resize
+    ExplicitWidth = 870
     object ToolBar2: TToolBar
       Left = 11
       Top = 0
-      Width = 855
+      Width = 852
       Height = 20
       AutoSize = True
       ButtonHeight = 20
@@ -822,7 +824,7 @@ object ExplorerForm: TExplorerForm
   object CoolBar2: TCoolBar
     Left = 0
     Top = 0
-    Width = 870
+    Width = 867
     Height = 25
     AutoSize = True
     Bands = <
@@ -830,12 +832,13 @@ object ExplorerForm: TExplorerForm
         Control = ToolBar1
         ImageIndex = -1
         MinHeight = 21
-        Width = 864
+        Width = 861
       end>
+    ExplicitWidth = 870
     object ToolBar1: TToolBar
       Left = 11
       Top = 0
-      Width = 855
+      Width = 852
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 48
@@ -932,7 +935,7 @@ object ExplorerForm: TExplorerForm
         Left = 150
         Top = 0
         AutoSize = True
-        DropdownMenu = PopupMenu5
+        DropdownMenu = PmListViewType
         ImageIndex = 7
         Style = tbsDropDown
         OnClick = ToolButtonViewClick
@@ -1010,7 +1013,7 @@ object ExplorerForm: TExplorerForm
     end
   end
   object LsMain: TLoadingSign
-    Left = 845
+    Left = 842
     Top = 49
     Width = 20
     Height = 20
@@ -1020,17 +1023,18 @@ object ExplorerForm: TExplorerForm
     Anchors = [akTop, akRight]
     SignColor = clBlack
     MaxTransparencity = 255
+    ExplicitLeft = 845
   end
   object SizeImageList: TImageList
     Height = 102
     Width = 102
-    Left = 264
-    Top = 80
+    Left = 200
+    Top = 208
   end
   object PmItemPopup: TPopupMenu
     OnPopup = PmItemPopupPopup
-    Left = 136
-    Top = 80
+    Left = 360
+    Top = 552
     object Open1: TMenuItem
       Caption = 'Open'
       OnClick = Open1Click
@@ -1224,8 +1228,8 @@ object ExplorerForm: TExplorerForm
   end
   object PmListPopup: TPopupMenu
     OnPopup = PmListPopupPopup
-    Left = 168
-    Top = 80
+    Left = 360
+    Top = 504
     object OpenInNewWindow1: TMenuItem
       Caption = 'Open In New Window'
       OnClick = OpenInNewWindow1Click
@@ -1341,25 +1345,25 @@ object ExplorerForm: TExplorerForm
   end
   object HintTimer: TTimer
     OnTimer = HintTimerTimer
-    Left = 200
-    Top = 80
+    Left = 536
+    Top = 136
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 296
-    Top = 80
+    Left = 200
+    Top = 56
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
-    Left = 329
-    Top = 80
+    Left = 753
+    Top = 72
   end
   object PopupMenu8: TPopupMenu
     OnPopup = PopupMenu8Popup
     Left = 361
-    Top = 80
+    Top = 152
     object OpeninExplorer1: TMenuItem
       Caption = 'Open in Explorer'
       OnClick = OpeninExplorer1Click
@@ -1377,29 +1381,29 @@ object ExplorerForm: TExplorerForm
     ColorDepth = cd32Bit
     Height = 32
     Width = 32
-    Left = 136
-    Top = 124
+    Left = 200
+    Top = 404
   end
   object PopupMenuBack: TPopupMenu
-    Left = 232
-    Top = 124
+    Left = 360
+    Top = 452
   end
   object PopupMenuForward: TPopupMenu
-    Left = 264
-    Top = 124
+    Left = 360
+    Top = 404
   end
   object DragTimer: TTimer
     Interval = 100
     OnTimer = DragTimerTimer
-    Left = 296
-    Top = 124
+    Left = 536
+    Top = 356
   end
   object ToolBarDisabledImageList: TImageList
     ColorDepth = cd32Bit
     Height = 32
     Width = 32
-    Left = 169
-    Top = 124
+    Left = 201
+    Top = 156
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = [dtCopy, dtMove]
@@ -1409,40 +1413,40 @@ object ExplorerForm: TExplorerForm
     MultiTarget = True
     AutoRegister = False
     OptimizedMove = True
-    Left = 480
-    Top = 80
+    Left = 648
+    Top = 168
   end
   object DropFileSourceMain: TDropFileSource
     DragTypes = [dtCopy, dtMove, dtLink]
     Images = DragImageList
     ShowImage = True
-    Left = 512
-    Top = 80
+    Left = 648
+    Top = 120
   end
   object DragImageList: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
     Height = 102
     Width = 102
-    Left = 448
-    Top = 80
+    Left = 200
+    Top = 256
   end
   object DropFileTarget2: TDropFileTarget
     DragTypes = []
     AutoRegister = False
     OptimizedMove = True
-    Left = 544
-    Top = 80
+    Left = 648
+    Top = 72
   end
   object HelpTimer: TTimer
     Interval = 2000
     OnTimer = HelpTimerTimer
-    Left = 136
-    Top = 176
+    Left = 536
+    Top = 456
   end
   object PmLinkOptions: TPopupMenu
-    Left = 168
-    Top = 176
+    Left = 360
+    Top = 104
     object Open2: TMenuItem
       Caption = 'Open'
       OnClick = Open2Click
@@ -1453,8 +1457,8 @@ object ExplorerForm: TExplorerForm
     end
   end
   object PmDragMode: TPopupMenu
-    Left = 200
-    Top = 176
+    Left = 360
+    Top = 200
     object Copy4: TMenuItem
       Caption = 'Copy'
       OnClick = Copy4Click
@@ -1474,30 +1478,30 @@ object ExplorerForm: TExplorerForm
     Enabled = False
     Interval = 55
     OnTimer = SelectTimerTimer
-    Left = 327
-    Top = 124
+    Left = 535
+    Top = 300
   end
   object ScriptMainMenu: TMainMenu
-    Left = 393
-    Top = 80
+    Left = 361
+    Top = 56
   end
   object CloseTimer: TTimer
     Enabled = False
     Interval = 1
     OnTimer = CloseTimerTimer
-    Left = 232
-    Top = 176
+    Left = 536
+    Top = 408
   end
   object AutoCompliteTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = AutoCompliteTimerTimer
-    Left = 280
-    Top = 176
+    Left = 536
+    Top = 184
   end
   object RatingPopupMenu1: TPopupMenu
-    Left = 313
-    Top = 176
+    Left = 361
+    Top = 352
     object N00: TMenuItem
       Caption = '0'
       OnClick = N05Click
@@ -1528,9 +1532,9 @@ object ExplorerForm: TExplorerForm
       OnClick = N05Click
     end
   end
-  object PopupMenu5: TPopupMenu
-    Left = 232
-    Top = 256
+  object PmListViewType: TPopupMenu
+    Left = 360
+    Top = 296
     object Thumbnails1: TMenuItem
       Caption = 'Thumbnails'
       Checked = True
@@ -1574,18 +1578,18 @@ object ExplorerForm: TExplorerForm
     Height = 32
     Width = 32
     Left = 200
-    Top = 256
+    Top = 304
   end
   object SmallIconsImageList: TImageList
     Left = 200
-    Top = 288
+    Top = 352
   end
   object BigImagesTimer: TTimer
     Enabled = False
     Interval = 200
     OnTimer = BigImagesTimerTimer
-    Left = 362
-    Top = 123
+    Left = 538
+    Top = 243
   end
   object PopupMenuZoomDropDown: TPopupMenu
     OnPopup = PopupMenuZoomDropDownPopup

@@ -178,8 +178,8 @@ begin
     CbRating.Caption := L('Export items with rating');
     CbWithoutFiles.Caption := L('Export items without files');
     CbGroups.Caption := L('Export of groups');
-    CbCrypted.Caption := L('Export crypted items');
-    CbCryptedPass.Caption := L('Export crypted items if password has been found');
+    CbCrypted.Caption := L('Export encrypted items');
+    CbCryptedPass.Caption := L('Export encrypted items if password has been found');
     BtnStart.Caption := L('Begin export');
     BtnBreak.Caption := L('Break!');
     Label1.Caption := L('Item') + ':';

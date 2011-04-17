@@ -330,6 +330,13 @@ object Viewer: TViewer
     end
     object Rotate1: TMenuItem
       Caption = 'Rotate Image'
+      object ByEXIF1: TMenuItem
+        Caption = 'By EXIF'
+        OnClick = ByEXIF1Click
+      end
+      object N5: TMenuItem
+        Caption = '-'
+      end
       object RotateCCW1: TMenuItem
         Caption = 'Rotate CCW'
         OnClick = RotateCCW1Click

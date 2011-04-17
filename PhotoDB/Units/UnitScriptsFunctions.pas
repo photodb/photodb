@@ -76,7 +76,7 @@ var
   LoadScript: string;
   AFS: TFileStream;
 begin
-  AScript := TScript.Create('');
+  AScript := TScript.Create(nil, '');
   try
     LoadScript := '';
     try

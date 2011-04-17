@@ -8,8 +8,9 @@ initialization:
   if ($IsFile=true) {InVisible;};
 run:
  $mask=GetImagesMask;
- $File=GetOpenImageFileName("Найдите самостоятельно данный файл",$mask);
- if ($File<>"")
+ $caption=T("Find this file manually");
+ $File=GetOpenImageFileName($caption,$mask);
+ if ($File!="")
  {
   SetFileNameByID($ID,$File);
  };
@@ -33,7 +34,7 @@ initialization:
  if ($Visible=true) {
  for($i=0;$i<$MenuLength;$i=%$i+1)
  {
-  LoadVariablesNo($i);
+  LoadVariablesSelectedFileNo($i);
   if ($Selected=true) 
   {
    $SelCount=%$SelCount+1;
@@ -41,8 +42,8 @@ initialization:
    if ($SelCount=2) {$f1=$FileName;};
   };
  };
- LoadVariablesNo($Position);
- if ($SelCount<>2) {InVisible;};
+ LoadVariablesSelectedFileNo($Position);
+ if ($SelCount!=2) {InVisible;};
  };
 run:
  
@@ -50,10 +51,11 @@ run:
  $s=IntToStr($cp);
  $user=GetCurrentUser;
  $nl=Char(13);
- $s="Дорогой "+$user+"!"+$nl+"Степень похожести этих двук картинок - "+$s+"%!";
- $s=$s+$nl+"Удачи!";
+ $text=T("Dear {2}!{1}The degree of similarity of these 2 images is - {3}%!{1}Good luck!");
+ $s=Format($text,$nl,$user,$s);
  $p=%$MB_OK+$MB_ICONINFORMATION;
- MessageBox($s,"Анализатор",$p);
+ $caption=T("Analyzer");
+ MessageBox($s,$caption,$p);
 }
 
 <Apply actions>[DB_IC_APPLY_ACTION]
@@ -264,7 +266,7 @@ initialization:
   if ($shift=true) {InVisible;}; 
 }
 
-<Crypting>[DB_IC_KEY]
+<Enrypting>[DB_IC_KEY]
 {
 initialization:
   if ($Crypted=true) {

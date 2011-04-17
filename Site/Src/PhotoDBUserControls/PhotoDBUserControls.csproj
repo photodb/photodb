@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ContactUsForm.ascx" />
+    <Content Include="CountryLocator.ascx" />
     <Content Include="DownloadHandler.ascx" />
     <Content Include="FreeActivationHandler.ascx" />
     <Content Include="FreeActivationForm.ascx" />
@@ -78,6 +79,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\MaxMind\CountryLookup.cs" />
+    <Compile Include="Classes\MaxMind\GeoIPCountry.cs" />
     <Compile Include="Classes\UmbracoUserControl.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -87,6 +90,13 @@
     </Compile>
     <Compile Include="ContactUsForm.ascx.designer.cs">
       <DependentUpon>ContactUsForm.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="CountryLocator.ascx.cs">
+      <DependentUpon>CountryLocator.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CountryLocator.ascx.designer.cs">
+      <DependentUpon>CountryLocator.ascx</DependentUpon>
     </Compile>
     <Compile Include="DownloadHandler.ascx.cs">
       <DependentUpon>DownloadHandler.ascx</DependentUpon>

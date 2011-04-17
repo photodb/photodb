@@ -6,7 +6,7 @@ inherited FrameActicationSetCode: TFrameActicationSetCode
   ExplicitHeight = 320
   object EdActivationName: TLabeledEdit
     Left = 3
-    Top = 56
+    Top = 64
     Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]
@@ -18,7 +18,7 @@ inherited FrameActicationSetCode: TFrameActicationSetCode
   end
   object EdActivationCode: TLabeledEdit
     Left = 3
-    Top = 96
+    Top = 112
     Width = 314
     Height = 21
     Anchors = [akLeft, akTop, akRight]

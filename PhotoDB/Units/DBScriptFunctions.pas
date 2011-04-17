@@ -5,7 +5,7 @@ interface
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
-     Math, uScript, uCDMappingTypes, uFileUtils, uAssociations,
+     Math, uScript, uCDMappingTypes, uFileUtils, uAssociations, uDBForm,
      UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
      uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings;
 
@@ -861,6 +861,15 @@ begin
   Result := TFileAssociations.Instance.ExtensionList;
 end;
 
+function DoSelectDB(FormID, DbName: string): string;
+var
+  Form: TDBForm;
+begin
+  Form := TFormCollection.Instance.GetForm(FormID);
+  if Form <> nil then
+    SelectDB(Form, DbName);
+end;
+
 Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);
 begin
  //Crypt
@@ -886,7 +895,6 @@ begin
 
  AddScriptFunction(Enviroment,'GetCurrentDB',F_TYPE_FUNCTION_IS_STRING,@GetCurrentDB);
  AddScriptFunction(Enviroment,'GetProgramPath',F_TYPE_FUNCTION_IS_STRING,@GetProgramPath);
- AddScriptFunction(Enviroment,'SelectDB',F_TYPE_PROCEDURE_STRING,@SelectDB);
  AddScriptFunction(Enviroment,'TestDB',F_TYPE_FUNCTION_STRING_IS_BOOLEAN,@TestDB);
  AddScriptFunction(Enviroment,'AddDBFile',F_TYPE_PROCEDURE_NO_PARAMS,@AddDBFile);
 
@@ -926,7 +934,6 @@ begin
 
  AddScriptFunction(Enviroment,'GetFileNameByID',F_TYPE_FUNCTION_INTEGER_IS_STRING,@GetFileNameByID);
  AddScriptFunction(Enviroment,'GetIDByFileName',F_TYPE_FUNCTION_STRING_IS_INTEGER,@GetIDByFileName);
-// AddScriptFunction(Enviroment,'InstalledFileName',F_TYPE_FUNCTION_IS_STRING,@InstalledFileName);
 
  AddScriptFunction(Enviroment,'DoManager',F_TYPE_PROCEDURE_NO_PARAMS,@DoManager);
 
@@ -1002,6 +1009,7 @@ begin
 
  AddScriptFunction(Enviroment,'DoCDExport',F_TYPE_PROCEDURE_NO_PARAMS,@DoCDExport);
  AddScriptFunction(Enviroment,'DoCDMapping',F_TYPE_PROCEDURE_NO_PARAMS,@DoManageCDMapping);
+ AddScriptFunction(Enviroment,'SelectDB',F_TYPE_PROCEDURE_STRING_STRING,@DoSelectDB);
 end;
 
 procedure InitEnviroment(Enviroment : TScriptEnviroment);

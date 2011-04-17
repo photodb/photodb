@@ -68,7 +68,9 @@ type TDBPopupMenu = class
     procedure SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
     procedure ScriptExecuted(Sender: TObject);
     function GetGroupImageInImageList(GroupCode: string): Integer;
-    function LoadVariablesNo(int : Integer) : integer;
+    function LoadVariablesNo(Int: Integer): Integer;
+    function LoadVariablesSelectedFileNo(Int: Integer): Integer;
+
   end;
 
  procedure ReloadIDMenu;
@@ -415,7 +417,7 @@ begin
 
   FBusy := False;
   Finfo := TDBPopupMenuInfo.Create;
-  AScript := TScript.Create('');
+  AScript := TScript.Create(FOwner, '');
   AScript.Description := 'ID Menu';
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
@@ -451,6 +453,7 @@ begin
 
   AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesNo',Self.LoadVariablesNo);
+  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesSelectedFileNo',Self.LoadVariablesNo);
 
   _popupmenu := TPopupMenu.Create(nil);
 end;
@@ -1064,7 +1067,22 @@ begin
   Result := DBPopupMenu
 end;
 
-function TDBPopupMenu.LoadVariablesNo(int: integer): integer;
+function TDBPopupMenu.LoadVariablesSelectedFileNo(Int: Integer): Integer;
+var
+  Item: TDBPopupMenuInfoRecord;
+begin
+  Result := 0;
+  if Int < 0 then
+    Exit;
+  if Int > Finfo.Count - 1 then
+    Exit;
+  Item := Finfo[Int];
+
+  SetBoolAttr(AScript, '$Selected', Item.Selected);
+  SetNamedValueStr(AScript, '$FileName', ProcessPath(Item.FileName));
+end;
+
+function TDBPopupMenu.LoadVariablesNo(Int: Integer): Integer;
 var
   Item: TDBPopupMenuInfoRecord;
 begin

@@ -73,6 +73,9 @@ begin
     if FileExistsSafe(Info[Info.Position].FileName) then
       Password := GetImagePasswordFromUser(Info[Info.Position].FileName);
 
+  if Password = '' then
+    Exit;
+
   Setlength(ItemFileNames, Info.Count);
   Setlength(ItemIDs, Info.Count);
   Setlength(ItemSelected, Info.Count);
@@ -216,7 +219,7 @@ begin
     EdPassword.WatermarkText := L('Password');
     LbPasswordConfirm.Caption := L('Confirm password') + ':';
     EdPasswordConfirm.WatermarkText := L('Confirm password');
-    Caption := L('Crypt objects');
+    Caption := L('Encrypt objects');
     BtCancel.Caption := L('Cancel');
     BtOk.Caption := L('Ok');
     CbSaveCRC.Caption := L('Save CRC');

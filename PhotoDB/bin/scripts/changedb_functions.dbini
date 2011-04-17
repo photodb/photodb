@@ -30,7 +30,7 @@
       $dbname=GetCurrentDB; //current DB
       $dbname=LowerCase($dbname); //to lower case to compare
       if ($dbname=$file) {$b=true;}; else {$b=false;}; //if current db - bold font
-      $run=PathFormat("SelectDB(""%1"");",$file); //by click - select new db
+      $run=PathFormat("SelectDB($FORM,""%1"");",$file); //by click - select new db
       CreateItemDefChecked($aCaption,$ic,$run,$b,true,false,0);
      };
    };

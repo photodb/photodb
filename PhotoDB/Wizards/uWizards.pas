@@ -12,8 +12,9 @@ type
     FSteps: TList;
     FOwner: TWinControl;
     FX, FY: Integer;
-    FCurrentStep : Integer;
-    FOnChange : TNotifyEvent;
+    FCurrentStep: Integer;
+    FOnChange: TNotifyEvent;
+    FStepCreation: Boolean;
     function GetStepByIndex(Index: Integer): TFrameWizardBase;
     procedure Changed;
     procedure OnStepChanged(Sender : TObject);
@@ -37,6 +38,7 @@ type
     procedure Execute;
     procedure Start(Owner: TWinControl; X, Y: Integer);
     procedure BreakOperation; override;
+    procedure NotifyChange; override;
     property OnChange : TNotifyEvent read FOnChange write FOnChange;
     property Steps[Index : Integer] : TFrameWizardBase read GetStepByIndex; default;
     property Count: Integer read GetCount;
@@ -60,6 +62,11 @@ begin
     UpdateCurrentStep;
     Changed;
   end;
+end;
+
+procedure TWizardManager.NotifyChange;
+begin
+  Changed;
 end;
 
 procedure TWizardManager.AddStep(Step: TFrameWizardBaseClass);
@@ -95,14 +102,21 @@ procedure TWizardManager.AddStepInstance(StepType: TFrameWizardBaseClass);
 var
   Frame : TFrameWizardBase;
 begin
-  Frame := StepType.Create(FOwner);
-  Frame.Parent := FOwner;
-  Frame.Left := FX;
-  Frame.Top := FY;
-  Frame.Visible := False;
-  Frame.Init(Self, True);
-  Frame.OnChange := OnStepChanged;
-  FSteps.Add(Frame);
+  FStepCreation := True;
+  Changed;
+  try
+    Frame := StepType.Create(FOwner);
+    Frame.Parent := FOwner;
+    Frame.Left := FX;
+    Frame.Top := FY;
+    Frame.Visible := False;
+    Frame.Init(Self, True);
+    Frame.OnChange := OnStepChanged;
+    FSteps.Add(Frame);
+  finally
+    FStepCreation := False;
+    Changed;
+  end;
 end;
 
 procedure TWizardManager.BreakOperation;
@@ -127,6 +141,7 @@ begin
   FCurrentStep := -1;
   FX := 0;
   FY := 0;
+  FStepCreation := False;
 end;
 
 destructor TWizardManager.Destroy;
@@ -155,6 +170,12 @@ end;
 
 function TWizardManager.GetCanGoNext: Boolean;
 begin
+  if CurrentStep = -1 then
+  begin
+    Result := False;
+    Exit;
+  end;
+
   Result := Steps[CurrentStep].CanGoNext and Steps[CurrentStep].ValidateStep(True) and not IsBusy and not OperationInProgress;
 end;
 
@@ -165,11 +186,22 @@ end;
 
 function TWizardManager.GetIsBusy: Boolean;
 begin
-  Result := Steps[CurrentStep].IsBusy;
+  if CurrentStep = -1 then
+  begin
+    Result := True;
+    Exit;
+  end;
+  Result := FStepCreation or Steps[CurrentStep].IsBusy;
 end;
 
 function TWizardManager.GetIsFinalStep: Boolean;
 begin
+  if CurrentStep = -1 then
+  begin
+    Result := False;
+    Exit;
+  end;
+
   Result := Steps[CurrentStep].IsFinal;
 end;
 
@@ -199,6 +231,12 @@ end;
 
 function TWizardManager.GetWizardDone: Boolean;
 begin
+  if CurrentStep = -1 then
+  begin
+    Result := False;
+    Exit;
+  end;
+
   Result := Steps[CurrentStep].IsFinal and Steps[CurrentStep].IsStepComplete;
 end;
 

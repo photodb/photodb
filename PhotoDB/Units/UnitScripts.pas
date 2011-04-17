@@ -18,7 +18,7 @@ interface
 uses
   Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs, uMemoryEx,
   Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-  uMemory, uGOM, uTime, uTranslate, uRuntime;
+  uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -158,6 +158,7 @@ type
     F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED_SUBTAG = 62;
     F_TYPE_FUNCTION_SAVE_VAR = 63;
     F_TYPE_FUNCTION_DELETE_VAR = 64;
+    F_TYPE_FUNCTION_FORMAT = 65;
 
 
 //MessageBox
@@ -1379,7 +1380,7 @@ begin
 
           F_TYPE_FUNCTION_OF_SCRIPT:
             begin
-              TempScript := TScript.Create(AScript.Enviroment.name);
+              TempScript := TScript.Create(AScript.Owner, AScript.Enviroment.name);
               try
                 for J := 0 to Length(AScript.ScriptFunctions[I].ScriptStringFunction.FArgs) - 1 do
                 begin
@@ -1518,6 +1519,23 @@ begin
               S1 := ProcedureWriteString(S1);
               Insert(S1, Script, N + 1);
             end;
+
+          F_TYPE_FUNCTION_FORMAT:
+            begin
+              if R <> 0 then
+              begin
+                S1 := GetNamedValueString(AScript, FirstParam(Command));
+                I1 := 2;
+                repeat
+                  S2 := GetNamedValueString(AScript, ParamNO(Command, I1));
+                  if S2 <> '' then
+                    S1 := StringReplace(S1, '{' + IntToStr(I1 - 1) + '}', S2, [rfReplaceAll]);
+                  Inc(I1);
+                until S2 = '';
+                SetNamedValueStr(AScript, NVar, S1);
+              end;
+            end;
+
           F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING:
             begin
               @FunctionStringStringIsArrayString := AScript.ScriptFunctions[I].AFunction;
@@ -3018,9 +3036,22 @@ begin
   Result := StringReplace(Str, WhatReplase, ToReplase, [RfIgnoreCase]);
 end;
 
+function TranslateMenuString(Str: string): string;
+begin
+  Result := TA(Str, 'DBMenu');
+end;
+
+function GetCurrentUser: string;
+begin
+  Result := TActivationManager.Instance.ActivationUserName;
+  if Result = '' then
+    Result := TA('Unregistered user');
+end;
+
 procedure LoadBaseFunctions(Enviroment : TScriptEnviroment);
 begin
   AddScriptFunction(Enviroment, 'ShowString', F_TYPE_PROCEDURE_STRING, @ShowString);
+  AddScriptFunction(Enviroment, 'Format', F_TYPE_FUNCTION_FORMAT, nil);
 
   AddScriptFunction(Enviroment, 'REGISTER_SCRIPT', F_TYPE_FUNCTION_REGISTER_SCRIPT, nil);
 
@@ -3114,6 +3145,8 @@ begin
 
   AddScriptFunction(Enviroment, 'FileHasExt', F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,
     @UnitScriptsFunctions.FileHasExt);
+  AddScriptFunction(Enviroment, 'T', F_TYPE_FUNCTION_STRING_IS_STRING, @TranslateMenuString);
+  AddScriptFunction(Enviroment, 'GetCurrentUser', F_TYPE_FUNCTION_IS_STRING, @GetCurrentUser);
 end;
 
 procedure LoadFileFunctions(Enviroment: TScriptEnviroment);

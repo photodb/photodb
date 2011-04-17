@@ -1356,7 +1356,7 @@ begin
   IDLabel.Text := L('Not avaliable');
   OwnerMemo.Text := L('Not avaliable');
 
-  if FFileDate <> 0 then
+  if Double(FFileDate) > 0 then
     DateEdit.DateTime := FFileDate
   else
     DateEdit.DateTime := Now;

@@ -490,7 +490,7 @@ begin
   WindowID := GetGUID;
   TW.I.Start('S -> TScript');
 
-  aScript := TScript.Create('');
+  aScript := TScript.Create(Self, '');
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'HideExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Properties1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SlideShow',          F_TYPE_OBJ_PROCEDURE_TOBJECT, SlideShow1Click);
@@ -703,7 +703,7 @@ begin
   FSearchByCompating := False;
   ScriptString := Include('Scripts\DoSearch.dbini');
 
-  FScript := TScript.Create('');
+  FScript := TScript.Create(Self, '');
   try
     FScript.Description := 'New search script';
     SearchEdit.Text := SysUtils.StringReplace(SearchEdit.Text,'"',' ',[rfReplaceAll]);
@@ -1868,6 +1868,8 @@ begin
     ReRecreateGroupsList;
     FPictureSize := ThImageSize;
     LoadSizes;
+    ClearItems;
+    SearchEditChange(Self);
   end else
   if ID=-2 then
     Exit

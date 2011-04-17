@@ -7,7 +7,7 @@ uses
   Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
   Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm,
   uMemory, uConstants, uWizards, pngimage, uResources, uPNGUtils, uSettings,
-  uMemoryEx;
+  uMemoryEx, LoadingSign;
 
 type
   TActivateForm = class(TDBForm)
@@ -18,6 +18,7 @@ type
     BtnPrevious: TButton;
     ImActivationImage: TImage;
     LbInfo: TLabel;
+    LsLoading: TLoadingSign;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure Execute;
@@ -154,8 +155,9 @@ end;
 
 procedure TActivateForm.StepChanged(Sender: TObject);
 begin
+  LsLoading.Visible := FWizard.IsBusy;
   BtnCancel.Enabled := not FWizard.IsBusy;
-  BtnNext.Enabled := FWizard.CanGoNext;
+  BtnNext.Enabled := FWizard.CanGoNext and not FWizard.IsBusy;
   BtnPrevious.Enabled := FWizard.CanGoBack;
   BtnFinish.Enabled := FWizard.IsFinalStep and not FWizard.IsBusy;
 
