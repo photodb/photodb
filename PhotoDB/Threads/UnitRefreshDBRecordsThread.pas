@@ -52,7 +52,7 @@ constructor TRefreshDBRecordsThread.Create(Owner: TDBForm; Options: TRefreshIDRe
 var
   I: Integer;
 begin
-  inherited Create(False);
+  inherited Create(Owner, False);
   DBEvent_Sender := Owner;
   FInfo := TDBPopupMenuInfo.Create;
   FInfo.Assign(Options.Info);
@@ -76,20 +76,20 @@ begin
       if FInfo[I].ID <> 0 then
         if FInfo[I].Selected then
           Inc(Count);
-    Synchronize(InitializeProgress);
+    SynchronizeEx(InitializeProgress);
     C := 0;
     for I := 0 to FInfo.Count - 1 do
     begin
       if FInfo[I].ID <> 0 then
         if FInfo[I].Selected then
         begin
-          Synchronize(IfBreakOperation);
+          SynchronizeEx(IfBreakOperation);
           if BoolParam then
           begin
             for J := I to FInfo.Count - 1 do
               ProcessedFilesCollection.RemoveFile(FInfo[J].FileName);
 
-            Synchronize(DoDBkernelEventRefreshList);
+            SynchronizeEx(DoDBkernelEventRefreshList);
             Continue;
           end;
           Inc(C);
@@ -103,14 +103,14 @@ begin
           IntParam := FInfo[I].ID;
           StrParam := FInfo[I].FileName;
           ProcessedFilesCollection.RemoveFile(FInfo[I].FileName);
-          Synchronize(DoDBkernelEventRefreshList);
-          Synchronize(DoDBkernelEvent);
+          SynchronizeEx(DoDBKernelEventRefreshList);
+          SynchronizeEx(DoDBKernelEvent);
         end;
     end;
   finally
     CoUninitialize;
   end;
-  Synchronize(DestroyProgress);
+  SynchronizeEx(DestroyProgress);
 end;
 
 procedure TRefreshDBRecordsThread.InitializeProgress;
@@ -147,7 +147,7 @@ end;
 procedure TRefreshDBRecordsThread.SetProgressPosition(Position: Integer);
 begin
   IntParam := Position;
-  Synchronize(SetProgressPositionSynch);
+  SynchronizeEx(SetProgressPositionSynch);
 end;
 
 procedure TRefreshDBRecordsThread.SetProgressPositionSynch;
@@ -178,7 +178,7 @@ begin
   DBEvent_ID := ID;
   DBEvent_Params := Params;
   DBEvent_Value := Value;
-  Synchronize(OnDBKernelEventProcedureSunch);
+  SynchronizeEx(OnDBKernelEventProcedureSunch);
 end;
 
 procedure TRefreshDBRecordsThread.OnDBKernelEventProcedureSunch;

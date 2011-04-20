@@ -6,7 +6,7 @@ uses
   Classes, Graphics, Jpeg, DB, CommonDBSupport, UnitDBKernel, SysUtils,
   GraphicCrypt, GraphicsCool, UnitDBDeclare, uCDMappingTypes,
   ActiveX, Dolphin_DB, uMemory, uDBBaseTypes, uDBTypes, uDBUtils,
-  win32crc, uDBThread, uFileUtils;
+  win32crc, uDBThread, uFileUtils, uGOM;
 
 type
   RecreatingThInTable = class(TDBThread)
@@ -43,7 +43,8 @@ implementation
 
 { RecreatingThInTable }
 
-uses CMDUnit, UnitPasswordForm;
+uses
+  CMDUnit, UnitPasswordForm;
 
 procedure RecreatingThInTable.AddCryptFileCall;
 begin
@@ -56,12 +57,12 @@ begin
   FRec.FileName := FileName;
   FRec.ID := ID;
   FRec.CRC := GraphicCrypt.GetPasswordCRCFromCryptGraphicFile(FileName);
-  Synchronize(AddCryptFileCall);
+  SynchronizeEx(AddCryptFileCall);
 end;
 
 constructor RecreatingThInTable.Create(Options: TRecreatingThInTableOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.OwnerForm, False);
   FOptions := Options;
 end;
 
@@ -102,7 +103,7 @@ var
       begin
         FStrParam := Format(L('Unable to get information about the file "%s" because: %s'), [Trim(Table.FieldByname('Name').AsString), Info.ErrorText]);
         FIntParam := LINE_INFO_ERROR;
-        Synchronize(TextOutEx);
+        SynchronizeEx(TextOutEx);
         Exit;
       end;
       Table.Edit;
@@ -131,7 +132,7 @@ var
           FIntParam := LINE_INFO_OK;
           if Crypted then
             FStrParam := FStrParam + ' *';
-          Synchronize(TextOutEx);
+          SynchronizeEx(TextOutEx);
           Table.FieldByName('StrTh').AsAnsiString := Info.ImTh;
           CRC := StringCRC(Info.ImTh);
           if Integer(CRC) <> Table.FieldByName('StrThCrc').AsInteger then
@@ -147,15 +148,15 @@ var
         ProgressInfo.Position := Table.RecNo;
         ProgressInfo.Information := L('Update previews in collection...');
         ProgressInfo.Terminate := False;
-        Synchronize(DoProgress);
+        SynchronizeEx(DoProgress);
       end;
       FIntParam := LINE_INFO_OK;
-      Synchronize(TextOut);
+      SynchronizeEx(TextOut);
       Table.Post;
     except
       FStrParam := Format(L('Failed to update item: %s'), [Table.FieldByname('Name').AsString]);
       FIntParam := LINE_INFO_ERROR;
-      Synchronize(TextOut);
+      SynchronizeEx(TextOut);
     end;
   end;
 
@@ -175,8 +176,8 @@ begin
         begin
           FStrParam := Format(L('Failed to update item: %s'), [e.Message]);
           FIntParam := LINE_INFO_ERROR;
-          Synchronize(TextOut);
-          Synchronize(DoExit);
+          SynchronizeEx(TextOut);
+          SynchronizeEx(DoExit);
           Exit;
         end;
       end;
@@ -196,7 +197,7 @@ begin
             FStrParam := Format(L('Update item %s from %s [%s] is canceled (CD\DVD files are updated from disk management window)'),
               [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
             FIntParam := LINE_INFO_WARNING;
-            Synchronize(TextOutEx);
+            SynchronizeEx(TextOutEx);
             Table.Next;
             Continue;
           end;
@@ -211,14 +212,14 @@ begin
               FStrParam := Format(L('Update item %s from %s [%s] postponed (encrypted)'),
                 [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
               FIntParam := LINE_INFO_WARNING;
-              Synchronize(TextOutEx);
+              SynchronizeEx(TextOutEx);
 
               if not GraphicCrypt.ValidCryptBlobStreamJPG(Table.FieldByName('thum')) then
               begin
                 FStrParam := Format(L('For item %s from %s [%s] removed the preview (the file is encrypted, and the record - no)'),
                   [IntToStr(Table.RecNo), IntToStr(Table.RecordCount), Trim(Table.FieldByname('Name').AsString)]);
                 FIntParam := LINE_INFO_WARNING;
-                Synchronize(TextOutEx);
+                SynchronizeEx(TextOutEx);
                 // fixing image -> deleting it
                 Bmp := TBitmap.Create;
                 try
@@ -257,7 +258,7 @@ begin
             FIntParam := LINE_INFO_WARNING;
             FStrParam := Format(L('The action was interrupted on item %s from %s [%s]'), [IntToStr(Table.RecNo), IntToStr(Table.RecordCount),
               Copy(Table.FieldByname('Name').AsString, 1, 15)]);
-            Synchronize(TextOut);
+            SynchronizeEx(TextOut);
             Break;
           end;
 
@@ -265,7 +266,7 @@ begin
         Table.Next;
       until Table.Eof;
 
-      Synchronize(GetCryptFileList);
+      SynchronizeEx(GetCryptFileList);
       Crypting := True;
       repeat
 
@@ -288,15 +289,15 @@ begin
 
     FIntParam := LINE_INFO_PROGRESS;
     FStrParam := L('Packing collection files...');
-    Synchronize(TextOut);
+    SynchronizeEx(TextOut);
 
     PackTable(FOptions.FileName);
 
     FIntParam := LINE_INFO_OK;
     FStrParam := L('Packing is completed...');
-    Synchronize(TextOut);
+    SynchronizeEx(TextOut);
 
-    Synchronize(DoExit);
+    SynchronizeEx(DoExit);
   finally
     CoUninitialize;
   end;

@@ -160,7 +160,9 @@ begin
   Hide;
   Application.ProcessMessages;
   ImportProgressForm.Show;
-  CmpDBTh.Create(False);
+  CmpDBTh.Create(Self, False);
+
+  //TODO: old comment - WTF?
   Close; // ?
 end;
 

@@ -17,9 +17,9 @@ type
 type
   TPasswordRecord = class
   public
-    CRC : Cardinal;
-    FileName : String;
-    ID : integer;
+    CRC: Cardinal;
+    FileName: string;
+    ID: Integer;
   end;
 
   TWriteLineProcedure = procedure(Sender : TObject; Line : string; aType : integer) of object;
@@ -27,15 +27,17 @@ type
   TAddCryptFileToListProc = procedure(Sender : TObject; Rec : TPasswordRecord)  of object;
   TGetAvaliableCryptFileList = function(Sender : TObject) : TArInteger  of object;
 
+  //todo: add form owner
   TRecreatingThInTableOptions = record
-    WriteLineProc : TWriteLineProcedure;
-    WriteLnLineProc : TWriteLineProcedure;
-    OnEndProcedure : TNotifyEvent;
-    FileName : string;
-    GetFilesWithoutPassProc : TGetFilesWithoutPassProc;
-    AddCryptFileToListProc : TAddCryptFileToListProc;
-    GetAvaliableCryptFileList : TGetAvaliableCryptFileList;
-    OnProgress : TCallBackProgressEvent;
+    OwnerForm: TDBForm;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
+    OnEndProcedure: TNotifyEvent;
+    FileName: string;
+    GetFilesWithoutPassProc: TGetFilesWithoutPassProc;
+    AddCryptFileToListProc: TAddCryptFileToListProc;
+    GetAvaliableCryptFileList: TGetAvaliableCryptFileList;
+    OnProgress: TCallBackProgressEvent;
   end;
 
   TImageDBOptions = class
@@ -52,78 +54,84 @@ type
   end;
 
   TPackingTableThreadOptions = record
-   FileName : string;
-   OnEnd : TNotifyEvent;
-   WriteLineProc :  TWriteLineProcedure;
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
   end;
 
   TRestoreThreadOptions = record
-   FileName : string;
-   OnEnd : TNotifyEvent;
-   WriteLineProc :  TWriteLineProcedure;
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
   end;
 
   TShowBadLinksThreadOptions = record
-   FileName : string;
-   OnEnd : TNotifyEvent;
-   WriteLineProc :  TWriteLineProcedure;
-   WriteLnLineProc :  TWriteLineProcedure;
-   OnProgress : TCallBackProgressEvent;
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
+    OnProgress: TCallBackProgressEvent;
   end;
 
   TBackUpTableThreadOptions = record
-   FileName : string;
-   OnEnd : TNotifyEvent;
-   WriteLineProc :  TWriteLineProcedure;
-   WriteLnLineProc :  TWriteLineProcedure;
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
   end;
 
   TOptimizeDublicatesThreadOptions = record
-   FileName : string;
-   OnEnd : TNotifyEvent;
-   WriteLineProc :  TWriteLineProcedure;
-   WriteLnLineProc :  TWriteLineProcedure;
-   OnProgress : TCallBackProgressEvent;
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
+    OnProgress: TCallBackProgressEvent;
   end;
 
-Type TEventField=(EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
-     EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
-     EventID_Param_KeyWords, EventID_Param_Access, EventID_Param_Attr,
-     EventID_Param_Image, EventID_Param_Owner, EventID_Param_Collection,
-     EventID_Param_Refresh, EventID_Param_ThemeCH, EventID_Param_Critical,
-     EventID_Param_Add, EventID_Param_Delete, EventID_Param_Date,
-     EventID_Param_Time, EventID_Param_IsDate , EventID_Param_IsTime,
-     EventID_Param_Groups, EventID_Param_Crypt, EventID_Param_Include,
-     EventID_Param_GroupsChanged, EventID_Param_CopyPaste,
-     EventID_Param_Add_Crypt_WithoutPass, SetNewIDFileData,
-     EventID_Param_Links,  EventID_Param_DB_Changed, EventID_Param_Refresh_Window,
-     EventID_FileProcessed, EventID_Repaint_ImageList);
+type
+  TEventField = (EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
+    EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
+    EventID_Param_KeyWords, EventID_Param_Access, EventID_Param_Attr,
+    EventID_Param_Image, EventID_Param_Owner, EventID_Param_Collection,
+    EventID_Param_Refresh, EventID_Param_ThemeCH, EventID_Param_Critical,
+    EventID_Param_Add, EventID_Param_Delete, EventID_Param_Date,
+    EventID_Param_Time, EventID_Param_IsDate , EventID_Param_IsTime,
+    EventID_Param_Groups, EventID_Param_Crypt, EventID_Param_Include,
+    EventID_Param_GroupsChanged, EventID_Param_CopyPaste,
+    EventID_Param_Add_Crypt_WithoutPass, SetNewIDFileData,
+    EventID_Param_Links,  EventID_Param_DB_Changed, EventID_Param_Refresh_Window,
+    EventID_FileProcessed, EventID_Repaint_ImageList);
 
-     TEventFields = set of TEventField;
+  TEventFields = set of TEventField;
 
   TEventValues = record
-      Name : String;
-      NewName : String;
-      ID : integer;
-      Rotate : integer;
-      Rating : integer;
-      Comment : String;
-      KeyWords : string;
-      Access : integer;
-      Attr : integer;
-      Image : TBitmap;
-      Date : TDateTime;
-      IsDate : Boolean;
-      IsTime : Boolean;
-      Time : TDateTime;
-      Groups : String;
-      JPEGImage : TJpegImage;
-      Collection : string;
-      Owner : string;
-      Crypt : Boolean;
-      Include : Boolean;
-      Links : string;
-     end;
+    name: string;
+    NewName: string;
+    ID: Integer;
+    Rotate: Integer;
+    Rating: Integer;
+    Comment: string;
+    KeyWords: string;
+    Access: Integer;
+    Attr: Integer;
+    Image: TBitmap;
+    Date: TDateTime;
+    IsDate: Boolean;
+    IsTime: Boolean;
+    Time: TDateTime;
+    Groups: string;
+    JPEGImage: TJpegImage;
+    Collection: string;
+    Owner: string;
+    Crypt: Boolean;
+    Include: Boolean;
+    Links: string;
+  end;
 
   TOnDBKernelEventProcedure = procedure(Sender : TDBForm; ID : integer; params : TEventFields; Value : TEventValues) of object;
 

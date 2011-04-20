@@ -191,12 +191,12 @@ initialization
   if not GetParamStrDBBool('/NoLogo') then
   begin
     TW.I.Start('TSplashThread');
-    SplashThread := TSplashThread.Create(False);
+    SplashThread := TSplashThread.Create(nil, False);
     TW.I.Start('TSplashThread - Created');
   end;
   if FolderView then
     LanguageInitCallBack := LoadLanguageFromMobileFS;
 
-  TLanguageThread.Create(False);
+  TLanguageThread.Create(nil, False);
 
 end.

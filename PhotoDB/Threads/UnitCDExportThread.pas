@@ -42,7 +42,7 @@ type
     function GetThreadID : string; override;
   public
     { Public declarations }
-    constructor Create(Owner : TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
+    constructor Create(Owner: TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
     procedure DoErrorDeletingFiles;
     procedure ShowError;
     procedure DoOnEnd;
@@ -65,9 +65,9 @@ uses
 
 { TCDExportThread }
 
-constructor TCDExportThread.Create(Owner : TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
+constructor TCDExportThread.Create(Owner: TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
 begin
-  inherited Create(False);
+  inherited Create(Owner, False);
   FOwner := Owner;
   Mapping := AMapping;
   Options := AOptions;

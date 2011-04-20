@@ -113,7 +113,8 @@ constructor UpdateDBThread.Create(Sender : TUpdaterDB;
   AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
   Pause: PBoolean; NoLimit : boolean = false);
 begin
-  Inherited Create(False);
+  //owner is dynamic
+  inherited Create(nil, False);
   FInfo := Info; //Copy pointer to self
 
   FOnDone := OnDone;
@@ -260,7 +261,7 @@ var
     if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
       FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsTime, FInfo[FileNumber].Rating,
       FInfo[FileNumber].Rotation, FInfo[FileNumber].Links, FInfo[FileNumber].Access, FInfo[FileNumber].Groups) then
-      Synchronize(SetImages)
+      SynchronizeEx(SetImages)
     else
       F(ResArray[FileNumber].Jpeg);
 
@@ -293,7 +294,7 @@ begin
       begin
         if ShowMessageAboutLimit then
         begin
-          Synchronize(Limiterror);
+          SynchronizeEx(Limiterror);
           ShowMessageAboutLimit := False;
         end;
         EventLog(':Limit of records! --> exit updating DB');
@@ -311,7 +312,7 @@ begin
         if (Res.Count = 1) and ((Res.Attr[0] = Db_attr_not_exists) or (Res.FileNames[0] <> FInfo[FileNumber].FileName)) and
           (AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(FInfo[FileNumber].FileName)) then
         begin
-          Synchronize(FileProcessed);
+          SynchronizeEx(FileProcessed);
           UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
           DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
         end;
@@ -324,18 +325,18 @@ begin
           begin
             FCurrentImageDBRecord := Res;
             AnsiStringParam := Res.ImTh;
-            Synchronize(ExecuteReplaceDialog);
+            SynchronizeEx(ExecuteReplaceDialog);
             case IntResult of
               Result_Add_All:
                 begin
                   FAutoAnswer := Result_Add_all;
-                  Synchronize(AddAutoAnswer);
+                  SynchronizeEx(AddAutoAnswer);
                 end;
               Result_skip_all:
                 begin
               FAutoAnswer := Result_skip_all;
                   AutoAnswerSetted := True;
-                  Synchronize(AddAutoAnswer);
+                  SynchronizeEx(AddAutoAnswer);
                 end;
               Result_replace:
                 begin
@@ -425,13 +426,13 @@ begin
           begin
             FCurrentImageDBRecord := Res;
             AnsiStringParam := Res.ImTh;
-            Synchronize(ExecuteReplaceDialog);
+            SynchronizeEx(ExecuteReplaceDialog);
 
             case IntResult of
               Result_skip_all:
                 begin
                   FAutoAnswer := Result_skip_all;
-                  Synchronize(AddAutoAnswer);
+                  SynchronizeEx(AddAutoAnswer);
                   AutoAnswerSetted := True;
                 end;
               Result_Delete_File:
@@ -441,7 +442,7 @@ begin
               Result_replace_all:
                 begin
                   FAutoAnswer := Result_replace_All;
-                  Synchronize(AddAutoAnswer);
+                  SynchronizeEx(AddAutoAnswer);
                   AutoAnswerSetted := True;
                   UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
                   DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
@@ -453,7 +454,7 @@ begin
                   begin
                     if Res.ChangedRotate[0] then
                       SetRotate(Res.Ids[0], DB_IMAGE_ROTATE_0);
-                    Synchronize(UpdateCurrent);
+                    SynchronizeEx(UpdateCurrent);
                   end;
                   DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
                 end;
@@ -478,7 +479,7 @@ begin
               Result_Add_All:
                 begin
                   FAutoAnswer := Result_Add_All;
-                  Synchronize(AddAutoAnswer);
+                  SynchronizeEx(AddAutoAnswer);
                   AutoAnswerSetted := True;
                   AddFileToDB;
                   FQuery := GetQuery;
@@ -534,7 +535,7 @@ begin
           AddFileToDB;
       end else
       begin
-        Synchronize(CryptFileWithoutPass);
+        SynchronizeEx(CryptFileWithoutPass);
       end;
       if Res.Jpeg <> nil then
         Res.Jpeg.Free;
@@ -543,7 +544,7 @@ begin
 
   finally
     CoUninitialize;
-    Synchronize(DoOnDone);
+    SynchronizeEx(DoOnDone);
   end;
 end;
 
@@ -579,7 +580,7 @@ procedure UpdateDBThread.DoEventReplace(ID: Integer; Name: String);
 begin
   IDParam := ID;
   NameParam := name;
-  Synchronize(DoEventReplaceSynch);
+  SynchronizeEx(DoEventReplaceSynch);
 end;
 
 procedure UpdateDBThread.DoEventReplaceSynch;
@@ -696,11 +697,11 @@ begin
         Result := Result + SearchRec.Size;
         FileName := DirectoryName + SearchRec.Name;
         StrParam := FileName;
-        Synchronize(DoFileProcessed);
+        SynchronizeEx(DoFileProcessed);
         FileName := StrParam;
         Files.Add(FileName);
         IntParam := SearchRec.Size;
-        Synchronize(DoOnFileFounded);
+        SynchronizeEx(DoOnFileFounded);
       end
       else if DirectoryExists(DirectoryName + SearchRec.Name) then
         Result := Result + GetDirectory(DirectoryName + SearchRec.Name, Files, Terminating);
@@ -713,7 +714,7 @@ end;
 constructor DirectorySizeThread.Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded : TFileFoundedEvent;
   ProcessFileEvent : TFileProcessProcedureOfObject = nil);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FDirectory := Directory;
   FTerminating := Terminating;
   FOnFileFounded := OnFileFounded;
@@ -741,7 +742,7 @@ begin
     try
       FObject.FTIntValue := Size;
       FObject.FSTStrValue := Files;
-      Synchronize(DoOnDone);
+      SynchronizeEx(DoOnDone);
     finally
       F(FObject);
     end;

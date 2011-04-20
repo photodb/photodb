@@ -557,7 +557,6 @@ object ExplorerForm: TExplorerForm
       item
         Width = 150
       end>
-    ExplicitWidth = 870
   end
   object CoolBar1: TCoolBar
     Left = 0
@@ -576,7 +575,6 @@ object ExplorerForm: TExplorerForm
     ParentShowHint = False
     ShowHint = True
     OnResize = PageScroller2Resize
-    ExplicitWidth = 870
     object ToolBar2: TToolBar
       Left = 11
       Top = 0
@@ -834,7 +832,6 @@ object ExplorerForm: TExplorerForm
         MinHeight = 21
         Width = 861
       end>
-    ExplicitWidth = 870
     object ToolBar1: TToolBar
       Left = 11
       Top = 0
@@ -1023,7 +1020,6 @@ object ExplorerForm: TExplorerForm
     Anchors = [akTop, akRight]
     SignColor = clBlack
     MaxTransparencity = 255
-    ExplicitLeft = 845
   end
   object SizeImageList: TImageList
     Height = 102

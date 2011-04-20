@@ -53,7 +53,7 @@ end;
 
 procedure TLoad.StartDBKernelIconsThread;
 begin
-  LoadDBKernelIconsThread := TLoadDBKernelIconsThread.Create(False);
+  LoadDBKernelIconsThread := TLoadDBKernelIconsThread.Create(nil, False);
 end;
 
 class function TLoad.Instance: TLoad;
@@ -66,7 +66,7 @@ end;
 
 procedure TLoad.StartDBSettingsThread;
 begin
-  LoadDBSettingsThread := TLoadDBSettingsThread.Create(False);
+  LoadDBSettingsThread := TLoadDBSettingsThread.Create(nil, False);
 end;
 
 procedure TLoad.Stop;
@@ -91,7 +91,7 @@ end;
 
 procedure TLoad.StartCRCCheckThread;
 begin
-  LoadCRCCheckThread := TLoadCRCCheckThread.Create(False);
+  LoadCRCCheckThread := TLoadCRCCheckThread.Create(nil, False);
 end;
 
 procedure TLoad.RequaredCRCCheck;

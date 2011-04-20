@@ -260,7 +260,7 @@ constructor TExEffectOneParamCustomThread.Create(AOwner: TObject;
   Effect: TEffectOneIntParam; CreateSuspended: Boolean; S: TBitmap;
   Int: Integer; SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FEffect := Effect;
   FS := S;

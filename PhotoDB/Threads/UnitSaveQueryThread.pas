@@ -6,8 +6,8 @@ uses
   Windows, SysUtils, UnitGroupsWork, UnitExportThread, Classes, DB, Dolphin_DB,
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
   acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants, uDBUtils,
-  uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate,
-  uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils;
+  uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate, ExplorerTypes,
+  uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils, uTime;
 
 type
   TSaveQueryThread = class(TThreadEx)
@@ -152,7 +152,11 @@ begin
         Exit;
 
       ImageSettings := CommonDBSupport.GetImageSettingsFromTable(DBName);
-      CommonDBSupport.UpdateImageSettings(FDBFileName, ImageSettings);
+      try
+        CommonDBSupport.UpdateImageSettings(FDBFileName, ImageSettings);
+      finally
+        F(ImageSettings);
+      end;
 
       FTable := GetTable(FDBFileName, DB_TABLE_IMAGES);
 
@@ -199,10 +203,15 @@ begin
       end;
       TryRemoveConnection(FDBFileName, True);
 
+      TW.I.Check('Copy File');
+
       FExeFileName := ExtractFilePath(FDBFileName) + SaveToDBName + '.exe';
+
       CopyFile(PChar(Application.Exename), PChar(FExeFileName), False);
+      TW.I.Check('Update File Resources');
       UpdateExeResources(FExeFileName);
 
+      TW.I.Check('Change File Icon');
       NewIcon := TIcon.Create;
       try
         SynchronizeEx(ReplaceIconAction);

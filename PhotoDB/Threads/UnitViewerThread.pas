@@ -59,7 +59,7 @@ uses UnitPasswordForm, SlideShow;
 
 constructor TViewerThread.Create(Viewer: TViewerForm; FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
 begin
-  inherited Create(False);
+  inherited Create(Viewer, False);
   FPage := Page;
   FFileName := FileName;
   FRotate := Rotate;
@@ -225,7 +225,7 @@ begin
     if PassWord = '' then
     begin
       if not FIsForward then
-        Synchronize(GetPasswordSynch)
+        SynchronizeEx(GetPasswordSynch)
       else
       begin
         repeat
@@ -237,7 +237,7 @@ begin
             Break;
           if Viewer.ForwardThreadNeeds then
           begin
-            Synchronize(GetPasswordSynch);
+            SynchronizeEx(GetPasswordSynch);
             Exit;
           end;
           Sleep(10);
@@ -275,7 +275,7 @@ procedure TViewerThread.SetAnimatedImageAsynch;
 begin
   if not FIsForward then
   begin
-    Synchronize(SetAnimatedImage);
+    SynchronizeEx(SetAnimatedImage);
     Exit;
   end else
   begin
@@ -288,7 +288,7 @@ begin
         Break;
       if Viewer.ForwardThreadNeeds then
       begin
-        Synchronize(SetAnimatedImage);
+        SynchronizeEx(SetAnimatedImage);
         Exit;
       end;
       Sleep(10);
@@ -317,7 +317,7 @@ procedure TViewerThread.SetNOImageAsynch;
 begin
   if not FIsForward then
   begin
-    Synchronize(SetNOImage);
+    SynchronizeEx(SetNOImage);
     Exit;
   end else
   begin
@@ -330,7 +330,7 @@ begin
         Break;
       if Viewer.ForwardThreadNeeds then
       begin
-        Synchronize(SetNOImage);
+        SynchronizeEx(SetNOImage);
         Exit;
       end;
       Sleep(10);
@@ -360,7 +360,7 @@ procedure TViewerThread.SetStaticImageAsynch;
 begin
   if not FIsForward then
   begin
-    Synchronize(SetStaticImage);
+    SynchronizeEx(SetStaticImage);
     Exit;
   end else
   begin
@@ -373,7 +373,7 @@ begin
         Break;
       if Viewer.ForwardThreadNeeds then
       begin
-        Synchronize(SetStaticImage);
+        SynchronizeEx(SetStaticImage);
         Exit;
       end;
       Sleep(10);
@@ -385,7 +385,7 @@ end;
 function TViewerThread.TestThread: Boolean;
 begin
   FBooleanResult := False;
-  Synchronize(TestThreadSynch);
+  SynchronizeEx(TestThreadSynch);
   Result := FBooleanResult;
 end;
 

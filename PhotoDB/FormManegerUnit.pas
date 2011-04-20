@@ -287,12 +287,12 @@ begin
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
 
-  DBThreadManager.WaitForAllThreads(30000);
+  DBThreadManager.WaitForAllThreads(60000);
   TryRemoveConnection(DBName, True);
 
   FormManager := nil;
 
-  TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 30000, @TimerProc);
+  TimerTerminateHandle := SetTimer(0, TIMER_TERMINATE, 60000, @TimerProc);
   Application.Terminate;
   TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
 
@@ -399,7 +399,7 @@ begin
     if (FCheckCount = 40) and not FolderView then //after 4 sec.
     begin
       if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
-        CleanUpThread.Create(False);
+        CleanUpThread.Create(Self, False);
     end;
     if (FCheckCount = 50) and not FolderView then //after 5 sec.
     begin
@@ -511,7 +511,7 @@ begin
       if Settings.ReadboolW('DBCheck', ExtractFileName(dbname), True) = True then
       begin
         Settings.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
-        if CommonDBSupport.GetRecordsCount(Dbname) = 0 then
+        if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
         begin
           CloseSplashWindow;
           ImportImages(dbname);

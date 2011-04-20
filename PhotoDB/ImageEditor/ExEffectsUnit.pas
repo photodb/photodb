@@ -478,7 +478,7 @@ end;
 constructor TGaussBlurThread.Create(AOwner: TObject; S: TBitmap; Radius: Double; SID: string;
   OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FS := S;
   FRadius := Radius;
@@ -541,7 +541,7 @@ end;
 constructor TSharpenThread.Create(AOwner: TObject; S: TBitmap; EffectSize: Integer; SID: string;
   OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FS := S;
   FEffectSize := EffectSize;
@@ -820,7 +820,7 @@ end;
 constructor TPixelsEffectThread.Create(AOwner: TObject; CreateSuspended: Boolean; S: TBitmap; Width, Height: Integer;
   SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FS := S;
   FWidth := Width;
@@ -1043,7 +1043,7 @@ end;
 constructor TWaveEffectThread.Create(AOwner: TObject; CreateSuspended: Boolean; S: TBitmap; Frequency, Length: Integer;
   Horizontal: Boolean; BkColor: TColor; SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FS := S;
   FFrequency := Frequency;
@@ -1251,7 +1251,7 @@ end;
 constructor TDisorderEffectThread.Create(AOwner: TObject; S: TBitmap; W, H: Integer; BkColor: TColor; SID: string;
   OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FS := S;
   FW := W;
@@ -1525,7 +1525,7 @@ end;
 constructor TReplaceColorEffectThread.Create(AOwner: TObject; S: TBitmap; ColorBase, ColorNew: TColor;
   Size, Value: Integer; SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FS := S;
   FSize := Size;
@@ -1928,7 +1928,7 @@ end;
 constructor TCustomMatrixEffectThread.Create(AOwner: TObject; CreateSuspended: Boolean; S: TBitmap;
   M: TConvolutionMatrix; SID: string; OnExit: TBaseEffectProcThreadExit);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FAOwner := AOwner;
   FS := S;
   FM := M;

@@ -3,14 +3,14 @@ unit UnitPropertyLoadGistogrammThread;
 interface
 
 uses
-  Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
+  Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage, uDBForm,
   Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes,
   uMemory, uGraphicUtils, uDBGraphicTypes, uAssociations, uDBThread;
 
 type
   TPropertyLoadGistogrammThreadOptions = record
     FileName : String;
-    Owner : TForm;
+    Owner : TDBForm;
     SID : TGUID;
     OnDone : TNotifyEvent;
   end;
@@ -41,7 +41,7 @@ uses PropertyForm, UnitPasswordForm;
 
 constructor TPropertyLoadGistogrammThread.Create(Options: TPropertyLoadGistogrammThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.Owner, False);
   FOptions := Options;
 end;
 

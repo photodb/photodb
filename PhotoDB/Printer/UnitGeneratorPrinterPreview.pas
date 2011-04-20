@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Graphics, UnitPrinterTypes, Printers, PrinterProgress,
-  uTranslate, uMemory, uDBThread;
+  uTranslate, uMemory, uDBThread, uDBForm;
 
 type
   TOnEndGeneratePrinterPreviewEvent = procedure(Bitmap: TBitmap; SID: string) of object;
@@ -23,7 +23,7 @@ type
     Pages: Integer;
     IntParam: Integer;
     StringParam: string;
-    FSender: TObject;
+    FSender: TDBForm;
     FormProgress: TFormPrinterProgress;
     FTerminating: Boolean;
     FOptions: TGenerateImageOptions;
@@ -38,7 +38,7 @@ type
     { Public declarations }
     procedure SetImage;
     procedure PrintImage;
-    constructor Create(CreateSuspennded: Boolean; Sender: TObject; SID: string; SampleType: TPrintSampleSizeOne;
+    constructor Create(CreateSuspennded: Boolean; Sender: TDBForm; SID: string; SampleType: TPrintSampleSizeOne;
       Files: TStrings; OnEndProc: TOnEndGeneratePrinterPreviewEvent; DoPrint: Boolean; Options: TGenerateImageOptions;
       PrintImagePerPage: Integer; VirtualBitmaped: Boolean; VirtualBitmap: TBitmap; DestroyBitmap: Boolean);
     destructor Destroy; override;
@@ -133,12 +133,12 @@ begin
   Result := 'Printer';
 end;
 
-constructor TGeneratorPrinterPreview.Create(CreateSuspennded: Boolean; Sender: TObject; SID: string;
+constructor TGeneratorPrinterPreview.Create(CreateSuspennded: Boolean; Sender: TDBForm; SID: string;
   SampleType: TPrintSampleSizeOne; Files: TStrings; OnEndProc: TOnEndGeneratePrinterPreviewEvent; DoPrint: Boolean;
   Options: TGenerateImageOptions; PrintImagePerPage: Integer; VirtualBitmaped: Boolean; VirtualBitmap: TBitmap;
   DestroyBitmap: Boolean);
 begin
-  inherited Create(False);
+  inherited Create(Sender, False);
   FSID := SID;
   FSender := Sender;
   FFiles := TStringList.Create;
@@ -184,7 +184,7 @@ end;
 procedure TGeneratorPrinterPreview.SetMax(I: Integer);
 begin
   IntParam := I;
-  Synchronize(SetMaxSynch)
+  SynchronizeEx(SetMaxSynch)
 end;
 
 procedure TGeneratorPrinterPreview.SetMaxSynch;
@@ -215,7 +215,7 @@ end;
 procedure TGeneratorPrinterPreview.CallBack(Progress: Byte; var Terminate: Boolean);
 begin
   IntParam := Progress;
-  Synchronize(SetProgress);
+  SynchronizeEx(SetProgress);
   Terminate := not PrintFormExists;
 end;
 
@@ -244,7 +244,7 @@ end;
 procedure TGeneratorPrinterPreview.SetCommentText(Text: string);
 begin
   StringParam := Text;
-  Synchronize(SetCommentTextCynch);
+  SynchronizeEx(SetCommentTextCynch);
 end;
 
 procedure TGeneratorPrinterPreview.SetCommentTextCynch;
@@ -276,7 +276,7 @@ end;
 procedure TGeneratorPrinterPreview.SetProgressWindowMax(Value: Integer);
 begin
   IntParam := Value;
-  Synchronize(SetProgressWindowMaxSynch);
+  SynchronizeEx(SetProgressWindowMaxSynch);
 end;
 
 procedure TGeneratorPrinterPreview.SetProgressWindowMaxSynch;
@@ -287,7 +287,7 @@ end;
 procedure TGeneratorPrinterPreview.SetProgressWindowValue(Value: Integer);
 begin
   IntParam := Value;
-  Synchronize(SetProgressWindowValueSynch);
+  SynchronizeEx(SetProgressWindowValueSynch);
 end;
 
 procedure TGeneratorPrinterPreview.SetProgressWindowValueSynch;

@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Classes, Graphics, acWorkRes, UnitDBFileDialogs, uTranslate,
-  uFileUtils, uShellIntegration, uConstants, Forms, uShellUtils, uMemory;
+  uFileUtils, uShellIntegration, uConstants, Forms, uShellUtils, uMemory,
+  uTime;
 
 function GetRCDATAResourceStream(ResName : string) : TMemoryStream;
 function ReplaceIcon(ExeFileName: string; IcoTempNameW: PWideChar): Boolean;
@@ -41,8 +42,11 @@ end;
 
 function LoadFileResourceFromStream(Update: dword; Section, Name: PWideChar; MS: TMemoryStream) : Bool;
 begin
+  TW.I.Check('LoadFileResourceFromStream - START');
   MS.Seek(0, soFromBeginning);
+  TW.I.Check('SEEK');
   Result := UpdateResourceW(Update, Section, Name, 0, MS.Memory, MS.Size);
+  TW.I.Check('LoadFileResourceFromStream - END');
 end;
 
 function GetIconLanguage(Update:Integer; Index: Integer): DWORD;

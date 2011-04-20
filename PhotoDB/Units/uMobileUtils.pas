@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Graphics, SysUtils, Forms, uResourceUtils, uFileUtils, uMemory,
-  Dolphin_DB, uTranslate, uShellIntegration, uConstants, acWorkRes,
+  Dolphin_DB, uTranslate, uShellIntegration, uConstants, acWorkRes, uTime,
   Classes;
 
 const
@@ -69,6 +69,7 @@ var
   var
     FS: TFileStream;
   begin
+    TW.I.Check('AddFileToStream: ' + FileName);
     if Name = '' then
       Name := ExtractFileName(FileName);
     FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
@@ -82,9 +83,11 @@ var
     finally
       F(FS);
     end;
+    TW.I.Check('AddFileToStream - END: ' + FileName);
   end;
 
 begin
+  TW.I.Check('UpdateExeResources start: ' + ExeFileName);
   MS := TMemoryStream.Create;
   Files := TStringList.Create;
   try
@@ -99,18 +102,22 @@ begin
     for FileName in Files do
       AddFileToStream(FileName);
 
+    TW.I.Check('BeginUpdateResourceW');
     Update := BeginUpdateResourceW(PChar(ExeFileName), False);
     if Update = 0 then
       Exit;
     try
+      TW.I.Check('LoadFileResourceFromStream');
       LoadFileResourceFromStream(Update, RT_RCDATA, 'MOBILE_FS', MS);
     finally
+      TW.I.Check('EndUpdateResourceW');
       EndUpdateResourceW(Update, False);
     end;
   finally
     F(Files);
     F(MS);
   end;
+  TW.I.Check('END');
 end;
 
 function ReadInternalFSContent(Name: string): string;

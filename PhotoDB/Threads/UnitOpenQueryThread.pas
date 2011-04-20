@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, DB, CommonDBSupport, ComObj, ActiveX, ShlObj, CommCtrl,
-  SysUtils, uLogger, uDBThread, uGOM;
+  SysUtils, uLogger, uDBThread, uGOM, uDBForm;
 
 type
   TNotifyDBOpenedEvent = procedure(Sender : TObject; DS : TDataSet) of object;
@@ -19,16 +19,16 @@ type
     procedure Execute; override;
   public
     procedure DoOnEnd;
-    constructor Create(Owner: TObject; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
+    constructor Create(Owner: TDBForm; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
   end;
 
 implementation
 
 { TOpenQueryThread }
 
-constructor TOpenQueryThread.Create(Owner: TObject; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
+constructor TOpenQueryThread.Create(Owner: TDBForm; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
 begin
-  inherited Create(False);
+  inherited Create(Owner, False);
   FQuery := Query;
   FOnEnd := OnEnd;
   FOwner := Owner;
@@ -36,7 +36,7 @@ end;
 
 procedure TOpenQueryThread.DoOnEnd;
 begin
-  if GOM.IsObj(FOwner) and Assigned(FOnEnd) then
+  if Assigned(FOnEnd) then
     FOnEnd(Self, FQuery);
 end;
 
@@ -52,7 +52,7 @@ begin
         Eventlog('Error opening query: ' + e.Message);
     end;
   finally
-    Synchronize(DoOnEnd);
+    SynchronizeEx(DoOnEnd);
     CoUninitialize;
   end;
 end;

@@ -119,6 +119,7 @@ begin
   WriteLnLine(Self, L('Packing table:'), LINE_INFO_OK);
   SetWideIndex;
   Timer1.Enabled := True;
+  Options.OwnerForm := Self;
   Options.FileName := DBName;
   Options.OnEnd := OnEnd;
   Options.WriteLineProc := WriteLine;
@@ -189,6 +190,7 @@ begin
   TopRecords := 2;
 
   Timer1.Enabled := False;
+  Options.OwnerForm := Self;
   Options.WriteLineProc := WriteLine;
   Options.WriteLnLineProc := WriteLnLine;
   Options.OnEndProcedure := OnEnd;
@@ -217,6 +219,7 @@ begin
   SetWideIndex;
 
   Timer1.Enabled := True;
+  Options.OwnerForm := Self;
   Options.WriteLineProc := WriteLine;
   Options.OnEnd := OnEnd;
   Options.FileName := FileName;
@@ -261,6 +264,7 @@ begin
 
   Timer1.Enabled := False;
 
+  Options.OwnerForm := Self;
   Options.WriteLineProc := WriteLine;
   Options.WriteLnLineProc := WriteLnLine;
   Options.OnEnd := OnEnd;
@@ -286,6 +290,7 @@ begin
   SetWideIndex;
   TopRecords := 0;
 
+  Options.OwnerForm := Self;
   Options.WriteLineProc := WriteLine;
   Options.WriteLnLineProc := WriteLnLine;
   Options.OnEnd := OnEnd;
@@ -309,6 +314,7 @@ begin
   WriteLnLine(Self, L('Performing scanning the collection, please wait...'), LINE_INFO_OK);
   TopRecords := 2;
 
+  Options.OwnerForm := Self;
   Options.WriteLineProc := WriteLine;
   Options.WriteLnLineProc := WriteLnLine;
   Options.OnEnd := OnEnd;

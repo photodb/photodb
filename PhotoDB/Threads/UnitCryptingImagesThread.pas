@@ -24,9 +24,9 @@ type
     FE: Boolean;
     Position: Integer;
     CryptResult: Integer;
-    FSender : TDBForm;
+    FSender: TDBForm;
   public
-    constructor Create(Sender : TDBForm; Options: TCryptImageThreadOptions);
+    constructor Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
   protected
     procedure Execute; override;
     procedure InitializeProgress;
@@ -50,11 +50,11 @@ uses ProgressActionUnit, UnitPasswordForm;
 
 { TCryptingImagesThread }
 
-constructor TCryptingImagesThread.Create(Sender : TDBForm; Options: TCryptImageThreadOptions);
+constructor TCryptingImagesThread.Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
 var
   I: Integer;
 begin
-  inherited Create(False);
+  inherited Create(Sender, False);
   FSender := Sender;
   Table := nil;
   FOptions := Options;

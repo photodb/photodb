@@ -112,5 +112,6 @@ inherited FrameFreeActivation: TFrameFreeActivation
     Active = True
     FillPercent = 65
     SignColor = clBlack
+    MaxTransparencity = 255
   end
 end

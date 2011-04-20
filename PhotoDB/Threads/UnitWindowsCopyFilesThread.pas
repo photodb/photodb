@@ -38,7 +38,7 @@ uses ExplorerUnit;
 constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
    OwnerExplorerForm: TDBForm);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FHandle := Handle;
   FSrc := TStringList.Create;
   FSrc.Assign(Src);

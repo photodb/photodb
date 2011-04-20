@@ -576,9 +576,9 @@ var
   I : Integer;
   FFile : TLockedFile;
 begin
+  FileName := AnsiLowerCase(FileName);
   FSync.Enter;
   try
-    FileName := AnsiLowerCase(FileName);
     for I := FFiles.Count - 1 downto 0 do
     begin
       FFile := TLockedFile(FFiles[I]);
@@ -655,9 +655,9 @@ var
   I : Integer;
   FFile : TLockedFile;
 begin
-  FSync.Enter;
   Result := False;
   FileName := AnsiLowerCase(FileName);
+  FSync.Enter;
   try
     for I := FFiles.Count - 1 downto 0 do
     begin

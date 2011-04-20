@@ -3,20 +3,26 @@ unit uDBThread;
 interface
 
 uses
-  Windows, Classes, uTranslate, uAssociations, uMemory, uGOM, SyncObjs, Forms;
+  Windows, Classes, uTranslate, uAssociations, uMemory, uGOM, SyncObjs, Forms,
+  uDBForm;
 
 type
   TDBThread = class(TThread)
   private
     FSupportedExt: string;
+    FMethod: TThreadMethod;
+    FCallResult: Boolean;
+    FOwnerForm: TDBForm;
     function GetSupportedExt: string;
+    procedure CallMethod;
   protected
     function L(TextToTranslate : string) : string; overload;
     function L(TextToTranslate, Scope : string) : string; overload;
     function GetThreadID: string; virtual;
+    function SynchronizeEx(Method: TThreadMethod) : Boolean; virtual;
     property SupportedExt: string read GetSupportedExt;
   public
-    constructor Create(CreateSuspended: Boolean);
+    constructor Create(OwnerForm: TDBForm; CreateSuspended: Boolean);
     destructor Destroy; override;
   end;
 
@@ -62,10 +68,18 @@ begin
   Result := TA(TextToTranslate, GetThreadID);
 end;
 
-constructor TDBThread.Create(CreateSuspended: Boolean);
+procedure TDBThread.CallMethod;
+begin
+  FCallResult := GOM.IsObj(FOwnerForm);
+  if FCallResult or (FOwnerForm = nil) then
+    FMethod;
+end;
+
+constructor TDBThread.Create(OwnerForm: TDBForm; CreateSuspended: Boolean);
 begin
   inherited Create(CreateSuspended);
   DBThreadManager.RegisterThread(Self);
+  FOwnerForm := OwnerForm;
   GOM.AddObj(Self);
 end;
 
@@ -92,6 +106,14 @@ end;
 function TDBThread.L(TextToTranslate, Scope: string): string;
 begin
   Result := TA(TextToTranslate, Scope);
+end;
+
+function TDBThread.SynchronizeEx(Method: TThreadMethod): Boolean;
+begin
+  FMethod := Method;
+  FCallResult := False;
+  Synchronize(CallMethod);
+  Result := FCallResult;
 end;
 
 { TDBThreadManager }
@@ -193,6 +215,7 @@ begin
     end;
     Sleep(1);
     Application.ProcessMessages;
+    CheckSynchronize;
 
   until (Count = 0) or (GetTickCount - StartTime > MaxTime);
 

@@ -37,7 +37,7 @@ Uses CmdUnit;
 
 constructor TThreadShowBadLinks.Create(Options: TShowBadLinksThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.OwnerForm, False);
   FOptions := Options;
 end;
 
@@ -63,7 +63,7 @@ var
     FStrParam := Format(L('Incorrect link in item #%d [%s]. Link "%s" has type "%s"'), [Table.FieldByName('ID').AsInteger,
       Trim(Table.FieldByname('Name').AsString), SN, LinkType(LT)]);
     FIntParam := LINE_INFO_WARNING;
-    Synchronize(TextOutEx);
+    SynchronizeEx(TextOutEx);
   end;
 
 begin
@@ -79,13 +79,13 @@ begin
         except
           FIntParam := LINE_INFO_ERROR;
           FStrParam := TA('Error');
-          Synchronize(TextOut);
+          SynchronizeEx(TextOut);
           Exit;
         end;
         FIntParam := LINE_INFO_OK;
         FStrParam := TA(
           'Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)', 'CMD');
-        Synchronize(TextOutEx);
+        SynchronizeEx(TextOutEx);
         Table.First;
         repeat
           // TODO: CMD_Command_Break
@@ -95,9 +95,9 @@ begin
             Trim(Table.FieldByname('FFileName').AsString)]);
           ProgressInfo.MaxValue := Table.RecordCount;
           ProgressInfo.Position := Table.RecNo;
-          Synchronize(DoProgress);
+          SynchronizeEx(DoProgress);
           FIntParam := LINE_INFO_OK;
-          Synchronize(TextOut);
+          SynchronizeEx(TextOut);
           if Table.FieldByName('Links').AsString <> '' then
           begin
             SetLength(LI, 0);
@@ -153,7 +153,7 @@ begin
       CoUninitialize;
     end;
   finally
-    Synchronize(DoExit);
+    SynchronizeEx(DoExit);
   end;
 end;
 

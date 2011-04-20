@@ -61,6 +61,8 @@ inherited FrmConvertationProgress: TFrmConvertationProgress
     Height = 201
     Style = lbOwnerDrawVariable
     Anchors = [akLeft, akTop, akRight, akBottom]
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
     TabOrder = 1
     OnDrawItem = InfoListBoxDrawItem
   end

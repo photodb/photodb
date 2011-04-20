@@ -94,6 +94,8 @@ unit acWorkRes;
 
 interface
 
+{$DEFINE UNICODE}
+
 uses Windows;
 
 // ***************************************************************
@@ -219,7 +221,7 @@ function IntToHexEx(value    : integer;
                     fillChar : char    = '0') : string; overload;
 
 // same as SysUtils.CompareStr, but supports ['д', 'й', ...]
-function CompareStr(const s1, s2: string) : integer; assembler;
+//function CompareStr(const s1, s2: string) : integer; assembler;
 
 function SaveIconGroupResource(update:  dword;
                                name:    PWideChar;
@@ -858,7 +860,7 @@ function UpdateResourceW(update: dword; type_, name: PWideChar; language: word; 
     end else begin
       s1 := wideString(name);
       while (ppr1^ <> nil) and (ppr1^^.name <> '') and
-            (acWorkRes.CompareStr(ppr1^^.name, s1) < 0) do
+            (CompareStr(ppr1^^.name, s1) < 0) do
         ppr1 := @ppr1^.next;
       result^.name := name;
       inc(tree^.namedItems);
@@ -1345,10 +1347,16 @@ end;
 
 function PWideToString(pw: PWideChar): string;
 // Преобразование PWideChar в String
+{$IFNDEF UNICODE}
 var
   p: PAnsiChar;
   iLen: Integer;
+{$ENDIF}
 begin
+{$IFDEF UNICODE}
+  Result := string(pw);
+{$ENDIF}
+{$IFNDEF UNICODE}
   iLen:= lstrlenw(pw) + 1;
   GetMem(p, iLen);
   try
@@ -1357,6 +1365,7 @@ begin
   finally
     FreeMem(p, iLen);
   end;
+{$ENDIF}
 end;
 
 ////////////////////////////// madTools /////////////////////////////
@@ -1391,12 +1400,14 @@ begin
   Delete(result, index, count);
 end;
 
-procedure _FillStr(var str: string; fillLen: integer; addLeft: boolean; fillChar: char);
+procedure _FillStr(var str: string; fillLen: integer; addLeft: boolean; fillChar: Char);
 var s1 : string;
+I: Integer;
 begin
   if fillLen > 0 then begin
     SetLength(s1, fillLen);
-    system.FillChar(pointer(s1)^, fillLen, byte(fillChar));
+    for I := 1 to fillLen do
+      s1[I] := fillChar;
     if addLeft then begin
       if CharInSet(fillChar, ['0'..'9']) and (str <> '') and (str[1] = '-') then
            str := '-' + s1 + RetDelete(str, 1, 1)
@@ -1404,7 +1415,6 @@ begin
     end else str := str + s1;
   end;
 end;
-
 
 function IntToHex(value: integer) : string; overload;
 var c1, c2, c3 : cardinal;
@@ -1440,7 +1450,7 @@ begin
     _FillStr(result, abs(minLen) - Length(result) + 1, true, fillChar);
   end;
 end;
-
+     {
 function CompareStr(const s1, s2: string) : integer; assembler;
 asm      //               EAX EDX           EAX
         CMP     EAX,EDX
@@ -1475,6 +1485,6 @@ asm      //               EAX EDX           EAX
         POP     EDI
         POP     ESI
 @@noWork:
-end;
+end;   }
 
 end.

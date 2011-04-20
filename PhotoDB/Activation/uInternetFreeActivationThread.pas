@@ -10,7 +10,7 @@ type
   TFreeRegistrationCallBack = procedure(Reply: string) of object;
 
   InternetActivationInfo = record
-    Owner: TObject;
+    Owner: TDBForm;
     FirstName: string;
     LastName: string;
     Email: string;
@@ -40,7 +40,7 @@ implementation
 
 constructor TInternetFreeActivationThread.Create(Info: InternetActivationInfo);
 begin
-  inherited Create(False);
+  inherited Create(Info.Owner, False);
   FInfo := Info;
 end;
 

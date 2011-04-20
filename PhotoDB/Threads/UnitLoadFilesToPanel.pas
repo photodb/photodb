@@ -6,7 +6,7 @@ uses
   SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
   CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
   UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
-  UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations,
+  UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations, uDBForm,
   uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime, uDBThread;
 
 type
@@ -17,7 +17,7 @@ type
     FIDs: TArInteger;
     FRotates: TArInteger;
     FQuery: TDataSet;
-    FOwner: TForm;
+    FOwner: TDBForm;
     FBS: TStream;
     Fbit: TBitmap;
     FTermitated: Boolean;
@@ -38,7 +38,7 @@ type
     procedure GetSIDFromForm;
     procedure DoStopLoading;
   public
-    constructor Create(Files : TArStrings; IDs : TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TForm);
+    constructor Create(Files : TArStrings; IDs : TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TDBForm);
     destructor Destroy; override;
   end;
 
@@ -60,21 +60,18 @@ begin
   end;
 end;
 
-constructor LoadFilesToPanel.Create(Files: TArStrings; IDs : TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TForm);
+constructor LoadFilesToPanel.Create(Files: TArStrings; IDs : TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TDBForm);
 var
   I: Integer;
 begin
-  inherited Create(False);
+  inherited Create(Owner, False);
   FInfo := nil;
   // enable stop button
   (Owner as TFormCont).TbStop.Enabled := True;
   FValidThread := True;
 
   FTermitated := False;
-  if Owner = nil then
-    Exit;
-  if not(Owner is TFormCont) then
-    Exit;
+
   FSID := (Owner as TFormCont).SID;
   (Owner as TFormCont).AddThread;
   FPictureSize := (Owner as TFormCont).PictureSize;
@@ -181,7 +178,6 @@ begin
       end;
     end;
   end;
-
 end;
 
 destructor LoadFilesToPanel.Destroy;
@@ -226,7 +222,7 @@ begin
       begin
         for I := 0 to L - 1 do
         begin
-          Synchronize(GetPictureSize);
+          SynchronizeEx(GetPictureSize);
           if not FValidThread then
             Break;
           if not Fbyid then
@@ -259,7 +255,7 @@ begin
       FreeDS(FQuery);
     end;
 
-    Synchronize(GetSIDFromForm);
+    SynchronizeEx(GetSIDFromForm);
     /// /////////////////////////////////
     if (FPictureSize <> ThSizePanelPreview) and ManagerPanels.ExistsPanel(FOwner, FSID) then
     begin
@@ -279,7 +275,7 @@ begin
       end;
     end else
     begin
-      Synchronize(DoStopLoading);
+      SynchronizeEx(DoStopLoading);
     end;
   finally
     CoUninitialize;
@@ -410,7 +406,7 @@ begin
       DoResize(W, H, B, Fbit);
       F(B);
       ApplyRotate(Fbit, FInfo.Rotation);
-      Synchronize(AddToPanel);
+      SynchronizeEx(AddToPanel);
       FBit := nil;
     finally
       F(FBit);

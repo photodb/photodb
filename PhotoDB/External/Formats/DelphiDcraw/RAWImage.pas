@@ -135,6 +135,7 @@ end;
 constructor TRAWImage.Create;
 begin
   inherited;
+  FreeImageInit;
   FLoadHalfSize := False;
 end;
 

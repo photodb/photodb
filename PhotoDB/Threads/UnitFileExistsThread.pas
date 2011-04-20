@@ -70,7 +70,7 @@ implementation
 
 constructor TFileExistsThread.Create(FileName: string; IsDirectory : boolean);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FFileName := FileName;
   FIsDirectory := IsDirectory;
 end;

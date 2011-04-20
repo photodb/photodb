@@ -41,7 +41,7 @@ type
     procedure TDoTerminate;
     procedure DoClosingEvent;
   public
-    constructor Create(PublicOwner : TObject; pName: string;
+    constructor Create(PublicOwner: TObject; pName: string;
       pFilter: cardinal; pSubTree: boolean; pInfoCallback: TWatchFileSystemCallback;  OnNeedClosing: TThreadExNotify; OnThreadClosing : TNotifyEvent; CID : TGUID);
     destructor Destroy; override;
   end;
@@ -173,11 +173,11 @@ begin
   end;
 end;
 
-constructor TWFS.Create(PublicOwner : TObject; PName: string; PFilter: Cardinal; PSubTree: Boolean; PInfoCallback: TWatchFileSystemCallback;
+constructor TWFS.Create(PublicOwner: TObject; PName: string; PFilter: Cardinal; PSubTree: Boolean; PInfoCallback: TWatchFileSystemCallback;
   OnNeedClosing: TThreadExNotify; OnThreadClosing : TNotifyEvent; CID : TGUID);
 begin
   TW.I.Start('TWFS.Create');
-  inherited Create(False);
+  inherited Create(nil, False);
   TW.I.Start('TWFS.Created');
   OM.AddObj(Self);
   FPublicOwner := PublicOwner;

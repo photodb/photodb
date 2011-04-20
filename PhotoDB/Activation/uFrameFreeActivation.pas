@@ -61,7 +61,7 @@ begin
   LbInternetQuery.Show;
   LsQuery.Show;
   ActivateControls(False);
-  Info.Owner := Self;
+  Info.Owner := Manager.Owner;
   Info.FirstName := EdFirstName.Text;
   Info.LastName := EdLastName.Text;
   Info.Email := EdEmail.Text;

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, ExtCtrls, JPEG, DB,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage,
-  GraphicCrypt, UnitDBCommon, uGOM, uFileUtils,
+  GraphicCrypt, UnitDBCommon, uGOM, uFileUtils, uDBForm,
   uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare,
   uGraphicUtils, uRuntime, uAssociations, uDBThread;
 
@@ -29,7 +29,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
+    constructor Create(AOwner : TDBForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
       Point : TPoint; HintCheckProc : THintCheckFunction);
   end;
 
@@ -42,7 +42,7 @@ type
   public
     destructor Destroy; override;
     class function Instance : THintManager;
-    procedure CreateHintWindow(Owner : TForm; Info : TDBPopupMenuInfoRecord;
+    procedure CreateHintWindow(Owner : TDBForm; Info : TDBPopupMenuInfoRecord;
       Point : TPoint; HintCheckProc : THintCheckFunction);
     procedure NewState;
     procedure RegisterHint(HintWindow : TForm);
@@ -60,10 +60,10 @@ var
 
 { HintcCeator }
 
-constructor THintCeator.Create(AOwner : TForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
+constructor THintCeator.Create(AOwner : TDBForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
                               Point : TPoint; HintCheckProc : THintCheckFunction);
 begin
-  inherited Create(False);
+  inherited Create(AOwner, False);
   FOwner := AOwner;
   FStateID := AStateID;
   FInfo := AInfo;
@@ -146,7 +146,7 @@ begin
 
       if (Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 1) then
       begin
-        Synchronize(DoShowHint);
+        SynchronizeEx(DoShowHint);
         Exit;
       end else
       begin
@@ -185,7 +185,7 @@ begin
 
             Graphic := FB;
             FB := nil;
-            Synchronize(DoShowHint);
+            SynchronizeEx(DoShowHint);
           finally
             F(FB);
           end;
@@ -203,14 +203,13 @@ end;
 
 function THintCeator.CheckThreadState: boolean;
 begin
-  Synchronize(CheckThreadStateSync);
+  SynchronizeEx(CheckThreadStateSync);
   Result := BooleanResult;
 end;
 
 procedure THintCeator.CheckThreadStateSync;
 begin
-  if GOM.IsObj(FOwner) then
-    BooleanResult := FHintCheckProc(FInfo);
+  BooleanResult := FHintCheckProc(FInfo);
 end;
 
 procedure THintCeator.DoShowHint;
@@ -238,7 +237,7 @@ begin
   FSync := TCriticalSection.Create;
 end;
 
-procedure THintManager.CreateHintWindow(Owner: TForm;
+procedure THintManager.CreateHintWindow(Owner: TDBForm;
   Info: TDBPopupMenuInfoRecord; Point: TPoint; HintCheckProc : THintCheckFunction);
 begin
   FSync.Enter;

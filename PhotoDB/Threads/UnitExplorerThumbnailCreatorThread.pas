@@ -34,9 +34,9 @@ uses ExplorerThreadUnit;
 
 { TExplorerThumbnailCreator }
 
-constructor TExplorerThumbnailCreator.Create(FileName : string; FileSID: TGUID; Owner : TExplorerForm);
+constructor TExplorerThumbnailCreator.Create(FileName : string; FileSID: TGUID; Owner: TExplorerForm);
 begin
-  inherited Create(False);
+  inherited Create(Owner, False);
   Info := TDBPopupMenuInfoRecord.Create;
   FFileName := FileName;
   FFileSID := FileSID;
@@ -188,9 +188,9 @@ begin
             F(FGraphic);
           end;
         end;
-        Synchronize(DoDrawAttributes);
-        Synchronize(SetInfo);
-        Synchronize(SetImage);
+        SynchronizeEx(DoDrawAttributes);
+        SynchronizeEx(SetInfo);
+        SynchronizeEx(SetImage);
       finally
         F(Info.Image);
       end;

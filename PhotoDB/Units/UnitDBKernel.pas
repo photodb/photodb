@@ -312,14 +312,12 @@ begin
       FTestTable.FieldByName('ID').AsInteger;
       if FTestTable.FindField('Name') = nil then
       begin
-        FreeDS(FTestTable);
         Result := -4;
         Exit;
       end;
       FTestTable.FieldByName('Name').AsString;
       if FTestTable.FindField('FFilename') = nil then
       begin
-        FreeDS(FTestTable);
         Result := -5;
         Exit;
       end;
@@ -343,26 +341,26 @@ begin
 
       FTestTable.FindField('Include').AsBoolean;
       if FTestTable.FindField('Links') = nil then
-        FreeDS(FTestTable);
+        Exit;
 
       FTestTable.FindField('Links').AsString;
       Result := DB_VER_1_9;
       if FTestTable.FindField('aTime') = nil then
-        FreeDS(FTestTable);
+        Exit;
 
       FTestTable.FindField('aTime').AsDateTime;
       if FTestTable.FindField('IsTime') = nil then
-        FreeDS(FTestTable);
+        Exit;
 
 
       Result := DB_VER_2_0;
       if (GetDBType(DBName_) = DB_TYPE_MDB) then
         if FTestTable.FindField('FolderCRC') = nil then
-          FreeDS(FTestTable);
+        Exit;
 
       if (GetDBType(DBName_) = DB_TYPE_MDB) then
         if FTestTable.FindField('StrThCRC') = nil then
-          FreeDS(FTestTable);
+        Exit;
 
     except
       on E: Exception do
@@ -373,7 +371,7 @@ begin
       end;
     end;
   finally
-    F(FTestTable);
+    FreeDS(FTestTable);
   end;
   if (GetDBType(DBName_) = DB_TYPE_MDB) then
   begin
@@ -533,7 +531,7 @@ begin
     Options.WriteLnLineProc := nil;
     Options.OnEnd := nil;
     Options.FileName := DBName;
-
+    Options.OwnerForm := nil;
     BackUpTableInCMD.Create(Options);
 
     Settings.WriteBool('StartUp', 'BackUp', True);

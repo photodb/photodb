@@ -398,6 +398,7 @@ end;
 procedure TFormSizeResizer.BtOkClick(Sender: TObject);
 var
   I: Integer;
+  EventInfo: TEventValues;
 
   function CheckFileTypes: Boolean;
   var
@@ -429,6 +430,7 @@ begin
     ProcessedFilesCollection.AddFile(FData[I].FileName);
     FProcessingList.Add(AnsiLOwerCase(FData[I].FileName));
   end;
+  DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
 
   // change form state
   PnOptions.Hide;

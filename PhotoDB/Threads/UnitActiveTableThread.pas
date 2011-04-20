@@ -31,7 +31,7 @@ uses CommonDBSupport;
 constructor TActiveTableThread.Create(
   Table: TDataSet; Active: boolean; OnEnd: TNotifyBoolEvent);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FTable := Table;
   FActive := Active;
   FOnEnd := OnEnd;

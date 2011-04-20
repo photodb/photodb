@@ -48,7 +48,7 @@ constructor TRotateEffectThread.Create(AOwner: TObject;
   CreateSuspended: Boolean; Proc: TBaseEffectProc; S: TBitmap; SID: string;
   OnExit: TBaseEffectProcThreadExit; Angle: Double; BackColor: TColor; Editor : TObject);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FOwner := AOwner;
   FSID := SID;
   FAngle := Angle;

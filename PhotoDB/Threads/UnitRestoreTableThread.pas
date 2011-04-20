@@ -35,7 +35,7 @@ end;
 
 constructor ThreadRestoreTable.Create(Options: TRestoreThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.OwnerForm, False);
   FOptions := Options;
 end;
 
@@ -59,9 +59,9 @@ begin
     on E: Exception do
     begin
       StrParam := Format(L('Error! Unable to create backup for currect collection: %s!'), [E.message]);
-      Synchronize(TextOut);
+      SynchronizeEx(TextOut);
       Sleep(10000);
-      Synchronize(DoExit);
+      SynchronizeEx(DoExit);
       Exit;
     end;
   end;
@@ -81,9 +81,9 @@ begin
     begin
       StrParam := Format(L('Unable to restore collection (%s)! The current collection may be corrupted or missing! After starting try to restore the file "%s" which is a backup of your collection. Error: %s'), [FOptions.FileName,
         GetAppDataDirectory + BackUpFolder + GetFileNameWithoutExt(Dbname) + '[BU].db', e.Message]);
-      Synchronize(TextOut);
+      SynchronizeEx(TextOut);
       Sleep(10000);
-      Synchronize(DoExit);
+      SynchronizeEx(DoExit);
       Exit;
     end;
   end;
@@ -91,7 +91,7 @@ begin
   DBKernel.SetDataBase(FileName);
 
   Sleep(2000);
-  Synchronize(DoExit);
+  SynchronizeEx(DoExit);
 end;
 
 function ThreadRestoreTable.GetThreadID: string;

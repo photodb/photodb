@@ -50,7 +50,7 @@ implementation
 constructor TSendMessageWithTimeoutThread.Create(
   hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FhWnd := HWnd;
   FMsg := Msg;
   FwParam := FwParam;

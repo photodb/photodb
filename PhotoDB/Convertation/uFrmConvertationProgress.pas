@@ -108,7 +108,6 @@ begin
     FInfo := '';
     Infos := TStringList.Create;
     ItemsData := TList.Create;
-    InfoListBox.DoubleBuffered := true;
     InfoListBox.ItemHeight := InfoListBox.Canvas.TextHeight('Iy') * 3 + 5;
     InfoListBox.Clear;
     LoadIconList;
@@ -146,12 +145,12 @@ end;
 procedure TFrmConvertationProgress.WriteLine(Sender: TObject; Line: string;
   Info: Integer);
 begin
-  BeginScreenUpdate(Handle);
+  BeginScreenUpdate(InfoListBox.Handle);
   try
     ItemsData[0] := Pointer(Info);
     InfoListBox.Items[0] := Line;
   finally
-    EndScreenUpdate(Handle, False);
+    EndScreenUpdate(InfoListBox.Handle, False);
   end;
 end;
 
@@ -162,7 +161,7 @@ begin
     FInfo := Line;
     Exit;
   end;
-  BeginScreenUpdate(Handle);
+  BeginScreenUpdate(InfoListBox.Handle);
   try
     Infos.Insert(0, FInfo);
 
@@ -172,7 +171,7 @@ begin
     FInfo := '';
 
   finally
-    EndScreenUpdate(Handle, False);
+    EndScreenUpdate(InfoListBox.Handle, False);
   end;
 end;
 
@@ -240,6 +239,7 @@ procedure TFrmConvertationProgress.OnConvertingStructureEnd(Sender: TObject;
 var
   Options: TRecreatingThInTableOptions;
 begin
+  Options.OwnerForm := Manager.Owner;
   Options.WriteLineProc := WriteLine;
   Options.WriteLnLineProc := WriteLnLine;
   Options.OnEndProcedure := DoFormExit;

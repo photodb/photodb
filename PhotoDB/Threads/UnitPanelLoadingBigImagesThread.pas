@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt,
   UnitDBDeclare, RAWImage, UnitDBCommonGraphics, UnitDBCommon,
-  uCDMappingTypes, uLogger, uMemory, UnitDBKernel, uDBThread,
+  uCDMappingTypes, uLogger, uMemory, UnitDBKernel, uDBThread, uDBForm,
   uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uAssociations;
 
 type
@@ -30,8 +30,8 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(Sender : TForm; SID : TGUID;
-      AOnDone : TNotifyEvent; PictureSize : integer; Files : TDBPopupMenuInfo; Updating : boolean = false);
+    constructor Create(Sender: TDBForm; SID: TGUID; AOnDone: TNotifyEvent; PictureSize: Integer;
+      Files: TDBPopupMenuInfo; Updating: Boolean = False);
     procedure ReplaceBigBitmap;
     procedure DoStopLoading;
     destructor Destroy; override;
@@ -47,10 +47,10 @@ uses UnitFormCont;
 
 { TPanelLoadingBigImagesThread }
 
-constructor TPanelLoadingBigImagesThread.Create(Sender : TForm; SID : TGUID;
-      AOnDone : TNotifyEvent; PictureSize : integer; Files : TDBPopupMenuInfo; Updating : boolean = false);
+constructor TPanelLoadingBigImagesThread.Create(Sender: TDBForm; SID: TGUID; AOnDone: TNotifyEvent;
+  PictureSize: Integer; Files: TDBPopupMenuInfo; Updating: Boolean = False);
 begin
-  inherited Create(False);
+  inherited Create(Sender, False);
   FData := TDBPopupMenuInfo.Create;
   FData.Assign(Files);
   FSender := Sender;
@@ -103,12 +103,12 @@ begin
 
         if I mod 5 = 0 then
         begin
-          Synchronize(GetVisibleFiles);
+          SynchronizeEx(GetVisibleFiles);
           VisibleUp(I);
         end;
 
         StrParam := FData[I].FileName;
-        Synchronize(FileNameExists);
+        SynchronizeEx(FileNameExists);
         if BoolParam then
         begin
 
@@ -158,7 +158,7 @@ begin
                 FI := I + 1;
                 IntParam := FI;
 
-                Synchronize(ReplaceBigBitmap);
+                SynchronizeEx(ReplaceBigBitmap);
               finally
                 F(TempBitmap);
               end;
@@ -180,7 +180,7 @@ begin
       PanelUpdateBigImageThreadsCountByID := PanelUpdateBigImageThreadsCountByID + 1;
     end;
   finally
-    Synchronize(DoStopLoading);
+    SynchronizeEx(DoStopLoading);
   end;
 end;
 

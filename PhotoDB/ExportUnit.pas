@@ -75,6 +75,7 @@ begin
   System.Close(F);
   BtnSelectFile.Enabled := False;
   BtnStart.Enabled := False;
+  Options.OwnerForm := Self;
   Options.ExportPrivate := CbPrivate.Checked;
   Options.ExportRatingOnly := CbRating.Checked;
   Options.ExportNoFiles := CbWithoutFiles.Checked;

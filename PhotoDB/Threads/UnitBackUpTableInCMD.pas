@@ -24,13 +24,14 @@ type
 
 implementation
 
-uses CMDUnit;
+uses
+  CMDUnit;
 
 { BackUpTableInCMD }
 
 constructor BackUpTableInCMD.Create(Options: TBackUpTableThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.OwnerForm, False);
   FOptions := Options;
 end;
 
@@ -66,15 +67,15 @@ begin
     begin
       FStrParam := TA('Error') + ': ' + e.Message;
       FIntParam := LINE_INFO_ERROR;
-      Synchronize(TextOut);
-      Synchronize(DoExit);
+      SynchronizeEx(TextOut);
+      SynchronizeEx(DoExit);
       Exit;
     end;
   end;
   FStrParam := TA('Backup process successfully ended.', 'BackUp');
   FIntParam := LINE_INFO_OK;
-  Synchronize(TextOut);
-  Synchronize(DoExit);
+  SynchronizeEx(TextOut);
+  SynchronizeEx(DoExit);
   Settings.WriteDateTime('Options', 'BackUpDateTime', Now)
 end;
 

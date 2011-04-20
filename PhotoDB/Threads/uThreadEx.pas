@@ -21,7 +21,7 @@ type
     procedure SetTerminated(const Value: Boolean);
     procedure TestMethod;
   protected
-    function SynchronizeEx(Method: TThreadMethod) : Boolean;
+    function SynchronizeEx(Method: TThreadMethod) : Boolean; override;
     procedure CallMethod;
     procedure Start;
     function CheckForm : Boolean; virtual;
@@ -87,7 +87,8 @@ end;
 
 constructor TThreadEx.Create(AOwnerForm: TThreadForm; AState : TGUID);
 begin
-  inherited Create(False);
+  inherited Create(AOwnerForm, False);
+  FIsTerminated := False;
   FSync := TCriticalSection.Create;
   FThreadForm := AOwnerForm;
   FState := AState;

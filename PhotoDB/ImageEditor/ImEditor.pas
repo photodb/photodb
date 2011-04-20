@@ -78,7 +78,7 @@ type
     TempPanel: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure OpenFile(Sender: TObject);
-    procedure LoadProgramImageFormat(Pic : TPicture);
+    procedure LoadProgramImageFormat(Graphic: TGraphic);
     procedure FormPaint(Sender: TObject);
     procedure ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
     procedure LoadJPEGImage(JPEG : TJPEGImage);
@@ -362,19 +362,19 @@ begin
   Actions1.ImageIndex := DB_IC_NEW_SHELL;
 end;
 
-procedure TImageEditor.LoadProgramImageFormat(Pic: TPicture);
+procedure TImageEditor.LoadProgramImageFormat(Graphic: TGraphic);
 begin
-  if Pic.Graphic is TJPEGImage then
+  if Graphic is TJPEGImage then
   begin
-    LoadJPEGImage(Pic.Graphic as TJPEGImage);
-  end else if Pic.Graphic is TBitmap then
+    LoadJPEGImage(Graphic as TJPEGImage);
+  end else if Graphic is TBitmap then
   begin
-    LoadBMPImage(Pic.Graphic as TBitmap);
-  end else if Pic.Graphic is TGIFImage then
+    LoadBMPImage(Graphic as TBitmap);
+  end else if Graphic is TGIFImage then
   begin
-    LoadGIFImage(Pic.Graphic as TGIFImage);
+    LoadGIFImage(Graphic as TGIFImage);
   end else
-    LoadImageVariousformat(Pic.Graphic);
+    LoadImageVariousformat(Graphic);
 end;
 
 procedure TImageEditor.OpenFile(Sender: TObject);
@@ -869,7 +869,8 @@ end;
 
 function TImageEditor.OpenFileName(FileName: String): boolean;
 var
-  Pic: TPicture;
+  G: TGraphic;
+  GraphicClass: TGraphicClass;
   PassWord: string;
   Res: Integer;
 
@@ -896,7 +897,7 @@ begin
   end;
 
   try
-    Pic := TPicture.Create;
+    G := nil;
     try
       if ValidCryptGraphicFile(FileName) then
       begin
@@ -906,7 +907,7 @@ begin
 
         if PassWord <> '' then
         begin
-          Pic.Graphic := DeCryptGraphicFile(FileName, PassWord, True);
+          G := DeCryptGraphicFile(FileName, PassWord, True);
           CurrentFileName := FileName;
           F(EXIFSection);
         end else
@@ -916,28 +917,30 @@ begin
       begin
         if TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage then
         begin
-          Pic.Graphic := TRAWImage.Create;
+          G := TRAWImage.Create;
           // by default RAW is half-sized
-          (Pic.Graphic as TRAWImage).LoadHalfSize := False;
-          Pic.Graphic.LoadFromFile(FileName);
+          (G as TRAWImage).LoadHalfSize := False;
+          G.LoadFromFile(FileName);
           CurrentFileName := FileName;
           F(EXIFSection);
         end else
         begin
-          Pic.LoadFromFile(FileName);
+          GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+          G := GraphicClass.Create;
+          G.LoadFromFile(FileName);
           CurrentFileName := FileName;
         end;
       end;
       EXIFSection := TExifData.Create;
-      if not Pic.Graphic.Empty then
-        EXIFSection.LoadFromGraphic(Pic.Graphic);
+      if not G.Empty then
+        EXIFSection.LoadFromGraphic(G);
 
       FilePassWord := PassWord;
       (ActionForm as TActionsForm).Reset;
-      if not Pic.Graphic.Empty then
-        LoadProgramImageFormat(pic);
+      if not G.Empty then
+        LoadProgramImageFormat(G);
     finally
-      F(Pic);
+      F(G);
     end;
   finally
     if CurrentFileName = '' then

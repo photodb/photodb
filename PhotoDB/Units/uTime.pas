@@ -13,26 +13,27 @@ type
   TW = class(TObject)
   private
 {$IFDEF PROFILER}
-    FS : TFileStream;
-    SW : TStreamWriter;
+    FS: TFileStream;
+    SW: TStreamWriter;
 {$ENDIF}
-    FStart : TDateTime;
-    FMessageThreadID : THandle;
-    FStartUp : TDateTime;
-    IsRuning : Boolean;
-    FName : string;
-    FThreadID : THandle;
+    FStart: TDateTime;
+    FMessageThreadID: THandle;
+    FStartUp: TDateTime;
+    IsRuning: Boolean;
+    FName: string;
+    FThreadID: THandle;
 {$IFDEF MULTITHREAD}
-    FSync : TCriticalSection;
+    FSync: TCriticalSection;
 {$ENDIF}
   private
     procedure Stop;
   public
-    constructor Create(ThreadID : THandle);
+    constructor Create(ThreadID: THandle);
     destructor Destroy; override;
-    procedure Start(Name : string);
-    class function I : TW;
-    property ThreadID : THandle read FThreadID;
+    procedure Start(Name: string);
+    procedure Check(Name: string);
+    class function I: TW;
+    property ThreadID: THandle read FThreadID;
   end;
 
 implementation
@@ -42,6 +43,12 @@ var
   Sync : TCriticalSection = nil;
 
 { TW }
+
+procedure TW.Check(Name: string);
+begin
+  Start(Name);
+  Stop;
+end;
 
 constructor TW.Create(ThreadID : THandle);
 begin

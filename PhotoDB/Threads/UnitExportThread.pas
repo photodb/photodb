@@ -4,11 +4,12 @@ interface
 
 uses
   UnitGroupsWork, Classes, DB, UnitDBKernel, SysUtils, GraphicCrypt, ActiveX,
-  UnitDBDeclare, uFileUtils, uConstants, uDBUtils,
+  UnitDBDeclare, uFileUtils, uConstants, uDBUtils, uDBForm,
   uTranslate, uDBThread;
 
 Type
   TExportOptions = record
+    OwnerForm: TDBForm;
     ExportPrivate : Boolean;
     ExportNoFiles : Boolean;
     ExportRatingOnly : Boolean;
@@ -56,7 +57,7 @@ uses ExportUnit, CommonDBSupport;
 
 constructor ExportThread.Create(Options: TExportOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.OwnerForm, False);
   StopExport := False;
   FOptions := Options;
 end;
@@ -188,7 +189,7 @@ begin
       CoUnInitialize;
     end;
   finally
-    Synchronize(DoExit);
+    SynchronizeEx(DoExit);
   end;
 end;
 
@@ -200,7 +201,7 @@ end;
 procedure ExportThread.SetMaxValue(Value: Integer);
 begin
   FIntParam := Value;
-  Synchronize(SetMaxValueA);
+  SynchronizeEx(SetMaxValueA);
 end;
 
 procedure ExportThread.SetMaxValueA;
@@ -216,13 +217,13 @@ end;
 procedure ExportThread.SetPosition(Value: Integer);
 begin
   FIntParam := Value;
-  Synchronize(SetPositionA);
+  SynchronizeEx(SetPositionA);
 end;
 
 procedure ExportThread.SetProgressText(Value: string);
 begin
   FStringParam := Value;
-  Synchronize(SetProgressTextA);
+  SynchronizeEx(SetProgressTextA);
 end;
 
 procedure ExportThread.SetProgressTextA;
@@ -233,7 +234,7 @@ end;
 procedure ExportThread.SetText(Value: string);
 begin
   FStringParam := Value;
-  Synchronize(SetTextA);
+  SynchronizeEx(SetTextA);
 end;
 
 procedure ExportThread.SetTextA;

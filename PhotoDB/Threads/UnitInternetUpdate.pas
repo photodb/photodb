@@ -36,7 +36,8 @@ uses
 
 constructor TInternetUpdate.Create(Owner: TDBForm; IsBackground: Boolean; NotifyHandler: TUpdateNotifyHandler);
 begin
-  inherited Create(False);
+  //form synchronization isn't used
+  inherited Create(nil, False);
   FOwner := Owner;
   FIsBackground := IsBackground;
   FNotifyHandler := NotifyHandler;

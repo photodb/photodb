@@ -56,7 +56,7 @@ end;
 constructor TBaseEffectThread.Create(AOwner : TObject;
   Proc: TBaseEffectProc; S: TBitmap; SID: string; OnExit : TBaseEffectProcThreadExit; Editor : TImageEditorForm);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FOwner := AOwner;
   FSID := SID;
   FOnExit := OnExit;

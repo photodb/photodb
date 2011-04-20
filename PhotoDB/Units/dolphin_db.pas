@@ -6,7 +6,7 @@ uses  Registry, Windows, uVistaFuncs,CommonDBSupport,
       Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
       Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
       ImgList, ComCtrls, JPEG, DmProgress, win32crc,
-      SaveWindowPos, ExtDlgs, UnitDBDeclare,
+      SaveWindowPos, ExtDlgs, UnitDBDeclare, uDBForm,
       acDlgSelect, GraphicCrypt, psAPI, ShellApi,
       MAPI, DDraw, Math, DateUtils, GraphicsCool,
       GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
@@ -66,7 +66,7 @@ type
     TransSrc1, TransSrc2, TempSrc: PByteArr;
     SID: TGUID;
     Manager: TObject;
-    Form: TForm;
+    Form: TDBForm;
   end;
 
 type

@@ -49,7 +49,7 @@ var
 implementation
 
 uses
-  UnitDBkernel, //UnitExportThread, UnitUpdateDB,
+  UnitDBKernel,
   uFrmConvertationProgress;
 
 constructor TConvertDBThread.Create(Form: TThreadForm; Owner: TFrameWizardBase; ADBName: string; ImageOptions: TImageDBOptions);
@@ -181,7 +181,7 @@ begin
 
     // deleting temp and system db files
     FileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName) + '.ldb';
-    if not DeleteFile(FileName) then
+    if FileExists(FileName) and not DeleteFile(FileName) then
     begin
       FParamStr := Format(L('Can not delete file %s, maybe he''s busy with another program or process. Will use a different name (file_name_1)'), [FileName]);
       FIntParam := LINE_INFO_ERROR;
@@ -189,7 +189,7 @@ begin
     end;
 
     FFileName := SysUtils.StringReplace(FFileName, '$', '', [RfReplaceAll]);
-    NewFileName := ExtractFileDir(FFileName) + GetFileNameWithoutExt(FFileName);
+    NewFileName := IncludeTrailingBackSlash(ExtractFileDir(FFileName)) + GetFileNameWithoutExt(FFileName);
     NewFileName := NewFileName + '.photodb';
     RenameFile(ToFileName, NewFileName);
 

@@ -6,12 +6,12 @@ uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
   UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics, uDBThread,
   uMemory, GraphicsCool, uGraphicUtils, uRuntime, uAssociations,
-  uConstants;
+  uConstants, uDBForm;
 
 type
   TPropertyLoadImageThreadOptions = record
     FileName: string;
-    Owner: TForm;
+    Owner: TDBForm;
     SID: TGUID;
     OnDone: TNotifyEvent;
   end;
@@ -44,7 +44,7 @@ uses PropertyForm, UnitPasswordForm;
 
 constructor TPropertyLoadImageThread.Create(Options: TPropertyLoadImageThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.Owner, False);
   FOptions := Options;
 end;
 

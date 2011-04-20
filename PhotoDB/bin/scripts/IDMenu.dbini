@@ -266,7 +266,7 @@ initialization:
   if ($shift=true) {InVisible;}; 
 }
 
-<Enrypting>[DB_IC_KEY]
+<Encrypting>[DB_IC_KEY]
 {
 initialization:
   if ($Crypted=true) {

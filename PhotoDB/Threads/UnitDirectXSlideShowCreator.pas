@@ -86,7 +86,7 @@ function TDirectXSlideShowCreator.CenterBmp(Buffer: IDirectDrawSurface4;
   Bitmap: TBitmap; Rect: TRect): TRect;
 begin
   FSynchBitmap := Bitmap;
-  Synchronize(CenterBmpSynch);
+  SynchronizeEx(CenterBmpSynch);
 end;
 
 procedure TDirectXSlideShowCreator.CenterBmpSynch;
@@ -103,7 +103,7 @@ end;
 
 constructor TDirectXSlideShowCreator.Create(Info: TDirectXSlideShowCreatorInfo; XForward, Next : Boolean);
 begin
-  inherited Create(False);
+  inherited Create(Info.Form, False);
   FInfo := Info;
   FXForward := XForward;
   FNext := Next;
@@ -116,7 +116,7 @@ begin
   FCallBackAction := Action;
   if Action = CallBack_Next then
     Sleep(10);
-  Synchronize(DoCallBackSynch)
+  SynchronizeEx(DoCallBackSynch)
 end;
 
 procedure TDirectXSlideShowCreator.DoCallBackSynch;
@@ -136,7 +136,7 @@ end;
 
 procedure TDirectXSlideShowCreator.DoExit;
 begin
-  Synchronize(IFPause);
+  SynchronizeEx(IFPause);
   Paused := BooleanParam;
   if FXForward or Paused then
   begin
@@ -147,7 +147,7 @@ begin
       Sleep(10);
     until False;
   end;
-  Synchronize(DoExitSynch);
+  SynchronizeEx(DoExitSynch);
   R(FInfo.Buffer);
   FreeMem(FInfo.TempSrc)
 end;
@@ -256,7 +256,7 @@ begin
           fx.dwSize := SizeOf (fx);
           fx.dwFillColor := PackColor (0, FInfo.BPP, FInfo.RBM, FInfo.GBM, FInfo.BBM);
           Rct := Rect(0, 0, ScreenImage.Width, ScreenImage.Height);
-          Synchronize(Btl);
+          SynchronizeEx(Btl);
           CenterBmp (FInfo.Buffer, ScreenImage, Rect(0, 0, ScreenImage.Width, ScreenImage.Height));
           F(ScreenImage);
           ReplaceTransform;

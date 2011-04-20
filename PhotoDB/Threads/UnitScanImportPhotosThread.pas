@@ -69,7 +69,7 @@ uses UnitGetPhotosForm;
 constructor TScanImportPhotosThread.Create(CreateSuspennded: Boolean;
   Options: TScanImportPhotosThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(nil, False);
   FOptions := Options;
   FSID := GetPhotosFormSID;
 end;

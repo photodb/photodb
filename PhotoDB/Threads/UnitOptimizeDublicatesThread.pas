@@ -38,7 +38,7 @@ uses CMDUnit;
 
 constructor TThreadOptimizeDublicates.Create(Options: TOptimizeDublicatesThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.OwnerForm, False);
   FOptions := Options;
 end;
 
@@ -52,6 +52,7 @@ begin
   FOptions.OnProgress(Self,ProgressInfo);
 end;
 
+//TODO: review
 procedure TThreadOptimizeDublicates.Execute;
 var
   Table, SetQuery: TDataSet;
@@ -73,7 +74,7 @@ var
     FStrParam := Format(L('Record #%d [%s] is updated'), [Table.FieldByName('ID').AsInteger,
       Trim(Table.FieldByname('Name').AsString)]);
     FIntParam := LINE_INFO_OK;
-    Synchronize(TextOutEx);
+    SynchronizeEx(TextOutEx);
     Query.First;
     KeyWords := '';
     Query.First;
@@ -81,12 +82,12 @@ var
     begin
       FStrParam := L('Info is merged');
       FIntParam := LINE_INFO_INFO;
-      Synchronize(TextOutEx);
+      SynchronizeEx(TextOutEx);
 
       FStrParam := IntToStr(Query.FieldByName('ID').AsInteger) + ' [' + Trim(Query.FieldByName('FFileName').AsString)
         + ']';
       FIntParam := LINE_INFO_PLUS;
-      Synchronize(TextOutEx);
+      SynchronizeEx(TextOutEx);
       Query.Next;
     end;
   end;
@@ -150,9 +151,9 @@ begin
     RecordCount := CommonDBSupport.GetRecordsCount(Dbname);
   except
     FStrParam := TA('Error');
-    Synchronize(TextOut);
+    SynchronizeEx(TextOut);
     FreeDS(Table);
-    Synchronize(DoExit);
+    SynchronizeEx(DoExit);
     Exit;
   end;
   Table.First;
@@ -164,11 +165,11 @@ begin
     FStrParam := Format(L('Current item: %s from %s [%s]'), [IntToStr(Table.RecNo), IntToStr(RecordCount),
       Trim(Table.FieldByname('Name').AsString)]);
     FIntParam := LINE_INFO_PROGRESS;
-    Synchronize(TextOut);
+    SynchronizeEx(TextOut);
 
     ProgressInfo.MaxValue := Table.RecordCount;
     ProgressInfo.Position := Table.RecNo;
-    Synchronize(DoProgress);
+    SynchronizeEx(DoProgress);
 
     Query := GetQuery;
     Paramno := 0;
@@ -191,11 +192,11 @@ begin
       begin
         FStrParam := TA('Warning');
         FIntParam := LINE_INFO_INFO;
-        Synchronize(TextOutEx);
+        SynchronizeEx(TextOutEx);
 
         FStrParam := Format(L('Item %d not foud by ID -> advanced search'), [Table.FieldByName('ID').AsInteger]);
         FIntParam := LINE_INFO_WARNING;
-        Synchronize(TextOutEx);
+        SynchronizeEx(TextOutEx);
         WideSearch := True;
         FreeDS(Query);
         Continue;
@@ -204,12 +205,12 @@ begin
       begin
         FStrParam := TA('Error');
         FIntParam := LINE_INFO_INFO;
-        Synchronize(TextOutEx);
+        SynchronizeEx(TextOutEx);
 
         FStrParam := Format(L('Item %d not found! [%s]'), [Table.FieldByName('ID').AsInteger,
           Table.FieldByName('FFileName').AsString]);
         FIntParam := LINE_INFO_ERROR;
-        Synchronize(TextOutEx);
+        SynchronizeEx(TextOutEx);
         WideSearch := False;
       end;
 
@@ -423,7 +424,7 @@ begin
   until Table.Eof;
   FreeDS(Table);
   Sleep(5000);
-  Synchronize(DoExit);
+  SynchronizeEx(DoExit);
 end;
 
 function TThreadOptimizeDublicates.GetThreadID: string;

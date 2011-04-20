@@ -83,7 +83,7 @@ begin
   if not FInitialized then
   begin
     FInitialized := True;
-    TPrivateHelperThread.Create(False);
+    TPrivateHelperThread.Create(nil, False);
   end;
 end;
 

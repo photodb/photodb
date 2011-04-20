@@ -35,12 +35,12 @@ begin
   FreeOnTerminate := True;
   try
     FText := L('Packing collection files...');
-    Synchronize(AddTextLine);
+    SynchronizeEx(AddTextLine);
     PackTable(FOptions.FileName);
     FText := L('Packing completed...');
-    Synchronize(AddTextLine);
+    SynchronizeEx(AddTextLine);
   finally
-    Synchronize(DoExit);
+    SynchronizeEx(DoExit);
   end;
 end;
 
@@ -56,7 +56,7 @@ end;
 
 constructor PackingTable.Create(Options: TPackingTableThreadOptions);
 begin
-  inherited Create(False);
+  inherited Create(Options.OwnerForm, False);
   FOptions := Options;
 end;
 

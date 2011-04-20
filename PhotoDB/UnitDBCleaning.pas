@@ -129,7 +129,8 @@ procedure TDBCleaningForm.BtnStartClick(Sender: TObject);
 begin
   BtnSaveClick(Sender);
   if not FolderView then
-    CleanUpThread.Create(False);
+    //Clean-up form is dynamic, it isn't a owner!
+    CleanUpThread.Create(nil, False);
   BtnStart.Enabled := False;
   BtnStop.Enabled := True;
 end;
