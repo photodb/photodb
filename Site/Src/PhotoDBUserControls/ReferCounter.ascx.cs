@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using PhotoDBDatabase.Classes;
 
 namespace PhotoDBUserControls
 {
@@ -11,7 +7,11 @@ namespace PhotoDBUserControls
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            if (Session["REFER_CHECK"] == null)
+            {
+                Session["REFER_CHECK"] = new object();
+                StatsManager.CheckRefer();
+            }
         }
     }
 }

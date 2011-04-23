@@ -23,7 +23,7 @@
       <xsl:if test="position()=1">
         
         <xsl:variable name="fileName" select="umbraco.library:GetMedia(./installerFile, false)/installerFile" />
-        <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?file=',./installerFile)" />
+        <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
 
           <div class="download">
             <div class="download_info">
@@ -34,7 +34,9 @@
             <div class="downloadInfo">
               <h1><a href="{$downloadUrl}"><xsl:value-of select="$currentPage/downloadStableLabelText" disable-output-escaping="yes" /></a></h1>
               <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />
-              <br />(<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)
+              <xsl:if test="string(./displayCounter)='1' or Plib:IsLoggedIntoBackend()">
+                <br />(<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)
+              </xsl:if>
             </div><!--downloadInfo-->
           </div><!--download-->
         
@@ -47,7 +49,7 @@
       <xsl:if test="position()=1">
         
         <xsl:variable name="fileName" select="umbraco.library:GetMedia(./installerFile, false)/installerFile" />
-        <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?file=',./installerFile)" />
+        <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
 
           <div class="download_beta">
             <div class="download_info">
@@ -58,7 +60,9 @@
             <div class="downloadInfo">
               <h1><a href="{$downloadUrl}"><xsl:value-of select="$currentPage/downloadNotStableLabelText" disable-output-escaping="yes" /></a></h1>
               <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />
-              <br />(<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)
+              <xsl:if test="string(./displayCounter)='1' or Plib:IsLoggedIntoBackend()">
+                <br />(<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)
+              </xsl:if>  
             </div><!--downloadInfo-->
           </div><!--download-->
        

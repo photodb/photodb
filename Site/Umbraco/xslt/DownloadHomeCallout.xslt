@@ -23,16 +23,19 @@
     <xsl:if test="position()=1">
       
       <xsl:variable name="fileName" select="umbraco.library:GetMedia(./installerFile, false)/installerFile" />
-      <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?file=',./installerFile)" />
+      <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
 
       <div class="download">
-        <a href="{umbraco.library:NiceUrl($DownloadHelper/@id)}?file={./installerFile}"><img src="/img/download-icon-windows.png" /></a>
+        <a href="{umbraco.library:NiceUrl($DownloadHelper/@id)}?id={./@id}"><img src="/img/download-icon-windows.png" /></a>
         <span class="phdInfo"><a href="{$downloadUrl}"><xsl:value-of select="./productName" /></a></span>
         <div class="downloadInfo">
           <h1><a href="{$downloadUrl}" ><xsl:value-of select="$ReleasesHolder/downloadText" /></a></h1>
           <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />
-          <br />(<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)
-        </div><!--downloadInfo-->
+          <br />
+          <xsl:if test="string(./displayCounter)='1' or Plib:IsLoggedIntoBackend()">
+            (<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)
+          </xsl:if>
+          </div><!--downloadInfo-->
       </div><!--download-->
       
     </xsl:if>

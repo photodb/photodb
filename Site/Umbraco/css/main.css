@@ -199,7 +199,7 @@ span .clearSpan10{
   height: 60px;
   text-align: center;
   vertical-align: bottom;
-  margin-top: -22px;
+  margin-top: -15px;
   color: #888;
 }
 .footer span {
@@ -425,6 +425,8 @@ donate_pay_warning{
     clear: both;
     visibility: hidden;
 }
+
+
 
 
 /* EDITOR PROPERTIES - PLEASE DON'T DELETE THIS LINE TO AVOID DUPLICATE PROPERTIES */

@@ -1,6 +1,7 @@
 ﻿<%@ Master Language="C#" MasterPageFile="~/masterpages/Master.master" AutoEventWireup="true" %>
 
 <asp:Content ContentPlaceHolderID="PageContent" runat="server">
+  <umbraco:Macro Alias="CountrySelection" runat="server" />
   <span class="leftColumnHome">
     <umbraco:Macro Alias="DownloadHomeCallout" runat="server" />
     <div class="clearDiv10"></div>

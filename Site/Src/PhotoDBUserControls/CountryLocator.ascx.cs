@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Web;
 using CountryLookupProj;
+using PhotoDBUserControls.Classes.MaxMind;
 
 namespace PhotoDBUserControls
 {
@@ -13,13 +14,10 @@ namespace PhotoDBUserControls
         {
             if (!IsPostBack)
             {
-                if (Session[SESSION_ID] == null && Request.Url.Query.Length < 3)
+                if (Session[SESSION_ID] == null && Request.Url.Query.Length < 2)
                 {
                     Session[SESSION_ID] = DateTime.Now;
-                    string fileName = ConfigurationManager.AppSettings["IPDatabase"];
-                    CountryLookup lookup = new CountryLookup(fileName);
-                    string userIp = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
-                    string userCountryCode = lookup.lookupCountryCode(userIp);
+                    string userCountryCode = GeoIPHelper.CountryCode;
                     if (!String.IsNullOrEmpty(userCountryCode))
                     {
                         userCountryCode = userCountryCode.ToUpper();

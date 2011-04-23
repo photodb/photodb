@@ -25,7 +25,7 @@
         <xsl:sort select="umbraco.library:FormatDateTime(dateOfRelease, 'yyyyMMddHHmmss')" data-type="number" order="descending"/>
         <xsl:if test="position()&lt;5">      
           <xsl:variable name="fileName" select="umbraco.library:GetMedia(./installerFile, false)/installerFile" />
-          <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?file=',./installerFile)" />
+          <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
           <div>
             <xsl:attribute name="class">release<xsl:if test="string(./isStable)='1'"> stable</xsl:if></xsl:attribute>
             <div class="release_download">
@@ -33,7 +33,7 @@
                 <img src="/img/download-icon-windows-small.png" />                          
               </a>
             </div>
-            <div class="release_name"><a href="{$downloadUrl}"><xsl:value-of select="./productName" />, <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" /></a> (<xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />) - <xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" /></div>    
+            <div class="release_name"><a href="{$downloadUrl}"><xsl:value-of select="./productName" />, <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" /></a> (<xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />) - <xsl:if test="string(./displayCounter)='1' or Plib:IsLoggedIntoBackend()"><xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />,</xsl:if>&nbsp;<xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" /></div>    
           </div>          
         </xsl:if>
       </xsl:for-each>

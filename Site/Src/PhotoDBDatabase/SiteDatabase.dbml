@@ -18,28 +18,15 @@
       <Column Name="DateUpdate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
     </Type>
   </Table>
-  <Table Name="dbo.Download" Member="Downloads">
-    <Type Name="Download">
-      <Column Name="DownloadId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="DownloadPageId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="RequestedUrl" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
-      <Column Name="MediaId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="DownloadUrl" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
-      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="ReferId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="DownloadDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
-      <Association Name="Host_Download" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
-    </Type>
-  </Table>
   <Table Name="dbo.Host" Member="Hosts">
     <Type Name="Host">
       <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="HostName" Type="System.String" DbType="NChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="HostDescription" Type="System.String" DbType="NChar(250) NOT NULL" CanBeNull="false" />
       <Association Name="Host_PageView" Member="PageViews" ThisKey="HostId" OtherKey="HostId" Type="PageView" />
-      <Association Name="Host_Download" Member="Downloads" ThisKey="HostId" OtherKey="HostId" Type="Download" />
       <Association Name="Host_Activation" Member="Activations" ThisKey="HostId" OtherKey="HostId" Type="Activation" />
       <Association Name="Host_Contact" Member="Contacts" ThisKey="HostId" OtherKey="HostId" Type="Contact" />
+      <Association Name="Host_Download" Member="Downloads" ThisKey="HostId" OtherKey="HostId" Type="Download" />
     </Type>
   </Table>
   <Table Name="dbo.Activation" Member="Activations">
@@ -73,6 +60,20 @@
       <Column Name="Organization" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
       <Column Name="Theme" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
       <Association Name="Host_Contact" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Download" Member="Downloads">
+    <Type Name="Download">
+      <Column Name="DownloadId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="DownloadPageId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="RequestedUrl" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
+      <Column Name="MediaId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DownloadUrl" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
+      <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ReferId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DownloadDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="CountryCode" Type="System.String" DbType="NChar(5) NOT NULL" CanBeNull="false" />
+      <Association Name="Host_Download" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
     </Type>
   </Table>
 </Database>

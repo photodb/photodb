@@ -20,7 +20,7 @@ namespace PhotoDBDatabase.Classes
             }
         }
 
-        public static void NewDownload(int mediaId, int pageId, string requestUrl, string downloadUrl)
+        public static void NewDownload(int mediaId, int pageId, string requestUrl, string downloadUrl, string countryCode)
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
             {
@@ -33,6 +33,7 @@ namespace PhotoDBDatabase.Classes
                     MediaId = mediaId,
                     ReferId = StatsManager.CurrentRefererId,
                     HostId = StatsManager.HostId,
+                    CountryCode = countryCode,
                 };
                 db.Downloads.InsertOnSubmit(d);
                 db.SubmitChanges();

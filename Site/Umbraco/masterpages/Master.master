@@ -3,12 +3,11 @@
 <asp:Content ContentPlaceHolderID="ContentPlaceHolderDefault" runat="server">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
+  <head>    
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <meta NAME="KEYWORDS" CONTENT="<umbraco:Item field='mETAKeywords' runat='server' />" />
-    <meta NAME="DESCRIPTION" CONTENT="<umbraco:Item field='mETADescription' runat='server' />" />
+    <umbraco:Macro Alias="MetaTags" runat="server" />
     <meta NAME="autor" Content="Veresov Dzmitry, E-Mail: illusdolphin@gmail.com" />
-    <meta NAME="copyright" Content="Studio Illusdolphin" />
+    <meta NAME="copyright" Content="Studio 'Illusion Dolphin' (c) 2003-2011" />
     <meta NAME="design" Content="Veresova Hanna, E-Mail: miaur@mail.ru" />
     <link rel="stylesheet" type="text/css" href="/css/reset.css" />
     <link rel="stylesheet" type="text/css" href="/css/main.css" />
