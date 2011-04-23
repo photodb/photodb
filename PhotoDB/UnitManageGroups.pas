@@ -8,7 +8,8 @@ uses
   ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math, CommCtrl,
   ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
   UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils, uMemoryEx,
-  uShellIntegration, uConstants, Dolphin_DB, uSettings;
+  uShellIntegration, uConstants, Dolphin_DB, uSettings, uRuntime,
+  CommonDBSupport;
 
 type
   TFormManageGroups = class(TDBForm)
@@ -28,14 +29,14 @@ type
     CoolBar1: TCoolBar;
     ToolBar1: TToolBar;
     TbAdd: TToolButton;
-    ToolButton2: TToolButton;
-    ToolButton3: TToolButton;
+    TbEdit: TToolButton;
+    TbDelete: TToolButton;
     ToolButton4: TToolButton;
     TbExit: TToolButton;
     ToolButton6: TToolButton;
     ToolBarImageList: TImageList;
     ToolButton7: TToolButton;
-    ToolButton8: TToolButton;
+    TbOptions: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ImageContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
@@ -55,8 +56,8 @@ type
     procedure ShowAll1Click(Sender: TObject);
     procedure SelectFont1Click(Sender: TObject);
     procedure TbExitClick(Sender: TObject);
-    procedure ToolButton2Click(Sender: TObject);
-    procedure ToolButton3Click(Sender: TObject);
+    procedure TbEditClick(Sender: TObject);
+    procedure TbDeleteClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
@@ -83,11 +84,12 @@ type
 var
   FormManageGroups: TFormManageGroups;
 
-Procedure ExecuteGroupManager;
+procedure ExecuteGroupManager;
 
 implementation
 
-uses UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo,
+uses
+  UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo,
   uSearchTypes, UnitSelectFontForm;
 
 {$R *.dfm}
@@ -115,8 +117,9 @@ begin
   if Length(Groups) > 0 then
     ShowModal
   else begin
-    if ID_OK = MessageBoxDB(Handle, L('Groups in collection aren''t found! Do you want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-      CreateNewGroupDialog;
+    if not DBReadOnly then
+      if ID_OK = MessageBoxDB(Handle, L('Groups in collection aren''t found! Do you want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+        CreateNewGroupDialog;
   end;
 end;
 
@@ -139,6 +142,13 @@ begin
     ShowAll1.ImageIndex := -1;
   LoadToolBarIcons;
   ImagePopupMenu := nil;
+  if DBReadOnly then
+  begin
+    AddGroup1.Enabled := False;
+    TbAdd.Enabled := False;
+    TbEdit.Enabled := False;
+    TbDelete.Enabled := False;
+  end;
 end;
 
 procedure TFormManageGroups.ImageContextPopup(Sender: TObject;
@@ -447,9 +457,9 @@ begin
     ListView1.Columns[0].Caption := L('List of groups');
     TbExit.Caption := L('Exit');
     TbAdd.Caption := L('Create group');
-    ToolButton2.Caption := L('Edit');
-    ToolButton3.Caption := L('Delete');
-    ToolButton8.Caption := L('Options');
+    TbEdit.Caption := L('Edit');
+    TbDelete.Caption := L('Delete');
+    TbOptions.Caption := L('Options');
     Help1.Caption := L('Help');
     Contents1.Caption := L('Content');
     Actions1.Caption := L('Actions');
@@ -525,9 +535,9 @@ begin
 
   TbExit.ImageIndex := 0;
   TbAdd.ImageIndex := 1;
-  ToolButton2.ImageIndex := 2;
-  ToolButton3.ImageIndex := 3;
-  ToolButton8.ImageIndex := 4;
+  TbEdit.ImageIndex := 2;
+  TbDelete.ImageIndex := 3;
+  TbOptions.ImageIndex := 4;
 end;
 
 procedure TFormManageGroups.TbExitClick(Sender: TObject);
@@ -535,14 +545,14 @@ begin
   Close;
 end;
 
-procedure TFormManageGroups.ToolButton2Click(Sender: TObject);
+procedure TFormManageGroups.TbEditClick(Sender: TObject);
 begin
   if ListView1.Selected = nil then
     Exit;
   DBChangeGroup(Groups[ListView1.Selected.index]);
 end;
 
-procedure TFormManageGroups.ToolButton3Click(Sender: TObject);
+procedure TFormManageGroups.TbDeleteClick(Sender: TObject);
 begin
   if ListView1.Selected = nil then
     Exit;

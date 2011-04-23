@@ -128,8 +128,6 @@ begin
     try
       FQuery.Active := True;
     except
-      // TODO: review
-      FreeDS(FQuery);
       Exit;
     end;
     if FQuery.RecordCount = 0 then

@@ -34,6 +34,7 @@ type
     procedure DoProgress;
   public
     constructor Create(Options: TRecreatingThInTableOptions);
+    destructor Destroy; override;
   end;
 
 var
@@ -62,8 +63,15 @@ end;
 
 constructor RecreatingThInTable.Create(Options: TRecreatingThInTableOptions);
 begin
+  ImageOptions := nil;
   inherited Create(Options.OwnerForm, False);
   FOptions := Options;
+end;
+
+destructor RecreatingThInTable.Destroy;
+begin
+  F(ImageOptions);
+  inherited;
 end;
 
 procedure RecreatingThInTable.DoExit;

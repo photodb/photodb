@@ -194,7 +194,7 @@ begin
             if Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
               SetPath(Settings.ReadString('Options', 'SpecialStartUpFolder'))
             else
-              SetNewPathW(GetCurrentPathW, False);
+              LoadLastPath;
             CloseSplashWindow;
             Show;
           end;

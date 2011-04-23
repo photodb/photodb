@@ -5,14 +5,15 @@ interface
 uses
   CmpUnit, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, StdCtrls, CheckLst, DB, CommonDBSupport, ExtCtrls,
-  uConstants, UnitDBKernel, uShellIntegration, uSysUtils, uDBForm;
+  uConstants, UnitDBKernel, uShellIntegration, uSysUtils, uDBForm,
+  WatermarkedEdit;
 
 type
   TImportDataBaseForm = class(TDBForm)
-    Label3: TLabel;
-    Edit2: TEdit;
+    LbDatabase: TLabel;
+    EdDatabase: TWatermarkedEdit;
     Button2: TButton;
-    CheckListBox1: TCheckListBox;
+    ClbOptions: TCheckListBox;
     GroupBox1: TGroupBox;
     Label9: TLabel;
     Label10: TLabel;
@@ -26,23 +27,21 @@ type
     Edit10: TEdit;
     Edit11: TEdit;
     Edit12: TEdit;
-    Button4: TButton;
-    Button5: TButton;
+    BtnOk: TButton;
+    BtnCancel: TButton;
     Label5: TLabel;
-    Memo1: TMemo;
+    MemIgnoreKeywords: TMemo;
     Label4: TLabel;
-    Edit4: TEdit;
+    EdAuthor: TEdit;
     OpenDialog1: TOpenDialog;
-    CheckBox1: TCheckBox;
-    DestroyTimer: TTimer;
-    procedure Button5Click(Sender: TObject);
+    CbScanByName: TCheckBox;
+    procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Execute;
     Function DBsNormal : Boolean;
     Procedure CheckEnabled;
-    procedure Button4Click(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
@@ -63,34 +62,31 @@ uses
 
 {$R *.dfm}
 
-procedure TImportDataBaseForm.Button5Click(Sender: TObject);
+procedure TImportDataBaseForm.BtnCancelClick(Sender: TObject);
 begin
   Close;
 end;
 
 procedure TImportDataBaseForm.FormCreate(Sender: TObject);
-var
-  Filter: string;
 begin
-  Filter := 'Access files (*.photodb;*.mdb)|*.photodb;*.mdb';
-  OpenDialog1.Filter := Filter;
-  Memo1.Lines.Clear;
+  OpenDialog1.Filter := L('Photo Database files (*.photodb)|*.photodb');
+  MemIgnoreKeywords.Lines.Clear;
   CheckEnabled;
-  Edit4.Text := GetWindowsUserName;
+  EdAuthor.Text := GetWindowsUserName;
   LoadLanguage;
-  CheckListBox1.Checked[0] := True;
-  CheckListBox1.Checked[1] := True;
-  CheckListBox1.Checked[2] := True;
-  CheckListBox1.Checked[3] := True;
-  CheckListBox1.Checked[4] := True;
-  CheckListBox1.Checked[5] := True;
-  CheckListBox1.Checked[6] := True;
-  CheckListBox1.Checked[7] := True;
-  CheckListBox1.Checked[8] := True;
-  CheckListBox1.Checked[9] := True;
-  CheckListBox1.Checked[10] := True;
-  CheckListBox1.Checked[11] := True;
-  CheckListBox1.Checked[12] := False;
+  ClbOptions.Checked[0] := True;
+  ClbOptions.Checked[1] := False;
+  ClbOptions.Checked[2] := True;
+  ClbOptions.Checked[3] := True;
+  ClbOptions.Checked[4] := True;
+  ClbOptions.Checked[5] := True;
+  ClbOptions.Checked[6] := True;
+  ClbOptions.Checked[7] := True;
+  ClbOptions.Checked[8] := True;
+  ClbOptions.Checked[9] := True;
+  ClbOptions.Checked[10] := True;
+  ClbOptions.Checked[11] := True;
+  ClbOptions.Checked[12] := False;
 end;
 
 procedure TImportDataBaseForm.Button2Click(Sender: TObject);
@@ -107,10 +103,10 @@ begin
     end;
     if DBTestOK then
     begin
-      Edit2.Text := OpenDialog1.FileName;
-      Label3.Caption := Format(L('Add collection (%d items)'), [GetRecordsCount(OpenDialog1.FileName)]);
+      EdDatabase.Text := OpenDialog1.FileName;
+      LbDatabase.Caption := Format(L('Add collection (%d items)'), [GetRecordsCount(OpenDialog1.FileName)]);
     end else
-      Edit2.Text := L('No file');
+      EdDatabase.Text := L('No file');
   end;
   CheckEnabled;
 end;
@@ -122,48 +118,44 @@ end;
 
 function TImportDataBaseForm.DBsNormal: Boolean;
 begin
-  Result := DBKernel.TestDB(Edit2.Text);
+  Result := DBKernel.TestDB(EdDatabase.Text);
 end;
 
 procedure TImportDataBaseForm.CheckEnabled;
 begin
-  Button4.Enabled := DBsNormal;
+  BtnOk.Enabled := DBsNormal;
 end;
 
-procedure TImportDataBaseForm.Button4Click(Sender: TObject);
+procedure TImportDataBaseForm.BtnOkClick(Sender: TObject);
 var
   Options: TCompOptions;
 begin
   with Options do
   begin
-    AddNewRecords := CheckListBox1.Checked[0];
-    AddRecordsWithoutFiles := CheckListBox1.Checked[1];
-    AddRating := CheckListBox1.Checked[2];
-    AddRotate := CheckListBox1.Checked[3];
-    AddPrivate := CheckListBox1.Checked[4];
-    AddKeyWords := CheckListBox1.Checked[5];
-    AddGroups := CheckListBox1.Checked[6];
-    AddNilComment := CheckListBox1.Checked[7];
-    AddComment := CheckListBox1.Checked[8];
-    AddNamedComment := CheckListBox1.Checked[9];
-    AddDate := CheckListBox1.Checked[10];
-    AddLinks := CheckListBox1.Checked[11];
-    IgnoreWords := CheckListBox1.Checked[12];
-    IgWords := Memo1.Text;
-    Autor := Edit4.Text;
-    UseScanningByFileName := CheckBox1.Checked;
+    AddNewRecords := ClbOptions.Checked[0];
+    AddRecordsWithoutFiles := ClbOptions.Checked[1];
+    AddRating := ClbOptions.Checked[2];
+    AddRotate := ClbOptions.Checked[3];
+    AddPrivate := ClbOptions.Checked[4];
+    AddKeyWords := ClbOptions.Checked[5];
+    AddGroups := ClbOptions.Checked[6];
+    AddNilComment := ClbOptions.Checked[7];
+    AddComment := ClbOptions.Checked[8];
+    AddNamedComment := ClbOptions.Checked[9];
+    AddDate := ClbOptions.Checked[10];
+    AddLinks := ClbOptions.Checked[11];
+    IgnoreWords := ClbOptions.Checked[12];
+    IgWords := MemIgnoreKeywords.Text;
+    Autor := EdAuthor.Text;
+    UseScanningByFileName := CbScanByName.Checked;
   end;
-  UnitCmpDB.SourceTableName := Edit2.Text;
-  UnitCmpDB.Options := Options;
-  UnitCmpDB.IgnoredWords := Memo1.Text;
   Application.CreateForm(TImportProgressForm, ImportProgressForm);
   Hide;
   Application.ProcessMessages;
   ImportProgressForm.Show;
-  CmpDBTh.Create(Self, False);
+  CmpDBTh.Create(ImportProgressForm, Options, EdAuthor.Text, MemIgnoreKeywords.Text, EdDatabase.Text);
 
-  //TODO: old comment - WTF?
-  Close; // ?
+  Close;
 end;
 
 function TImportDataBaseForm.GetFormID: string;
@@ -176,46 +168,41 @@ begin
   BeginTranslate;
   try
     Caption := L('Import settings');
-    CheckListBox1.Clear;
-    CheckListBox1.Items.Add(L('Add new items'));
-    CheckListBox1.Items.Add(L('Add items without files'));
-    CheckListBox1.Items.Add(L('Add rating'));
-    CheckListBox1.Items.Add(L('Add rotate'));
-    CheckListBox1.Items.Add(L('Add private'));
-    CheckListBox1.Items.Add(L('Add keywords'));
-    CheckListBox1.Items.Add(L('Add groups'));
-    CheckListBox1.Items.Add(L('Add empty comments'));
-    CheckListBox1.Items.Add(L('Add comments'));
-    CheckListBox1.Items.Add(L('Add comments with author'));
-    CheckListBox1.Items.Add(L('Добавлять дату'));
-    CheckListBox1.Items.Add(L('Add links'));
-    CheckListBox1.Items.Add(L('Ignore keywords'));
-    Button5.Caption := L('Cancel');
-    Button4.Caption := L('Ok');
+    EdDatabase.WatermarkText := L('Please, choose collection');
+    ClbOptions.Clear;
+    ClbOptions.Items.Add(L('Add new items'));
+    ClbOptions.Items.Add(L('Add items without files'));
+    ClbOptions.Items.Add(L('Add rating'));
+    ClbOptions.Items.Add(L('Add rotate'));
+    ClbOptions.Items.Add(L('Add private'));
+    ClbOptions.Items.Add(L('Add keywords'));
+    ClbOptions.Items.Add(L('Add groups'));
+    ClbOptions.Items.Add(L('Add empty comments'));
+    ClbOptions.Items.Add(L('Add comments'));
+    ClbOptions.Items.Add(L('Add comments with author'));
+    ClbOptions.Items.Add(L('Add date'));
+    ClbOptions.Items.Add(L('Add links'));
+    ClbOptions.Items.Add(L('Ignore keywords'));
+    BtnCancel.Caption := L('Cancel');
+    BtnOk.Caption := L('Ok');
     GroupBox1.Caption := L('Replace');
     Label9.Caption := L('to');
     Label10.Caption := L('to');
     Label11.Caption := L('to');
     Label12.Caption := L('to');
-    Label3.Caption := L('Add collection');
+    LbDatabase.Caption := L('Add collection') + ':';
     Label4.Caption := L('Author');
     Label5.Caption := L('List of ignored words') + ':';
-    CheckBox1.Caption := L('Advanced search if file names equals');
+    CbScanByName.Caption := L('Advanced search if file names equals');
   finally
     EndTranslate;
   end;
 end;
 
-procedure TImportDataBaseForm.DestroyTimerTimer(Sender: TObject);
-begin
-  DestroyTimer.Enabled := False;
-  ImportDataBaseForm := nil;
-  Release;
-end;
-
 procedure TImportDataBaseForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  DestroyTimer.Enabled := True;
+  ImportDataBaseForm := nil;
+  Release;
 end;
 
 end.

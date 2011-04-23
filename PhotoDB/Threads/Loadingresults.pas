@@ -40,6 +40,7 @@ type
     StrParam : String;
     IntParam : Integer;
     ExtendedParam: Extended;
+    FCurrentQueryType: TQueryType;
     procedure ErrorSQL;
     function CreateQuery : TDBQueryParams;
     procedure DoOnDone;
@@ -85,7 +86,7 @@ uses
 constructor SearchThread.Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
 begin
   inherited Create(Sender, SID);
-
+  FCurrentQueryType := QT_TEXT;
   FPictureSize := PictureSize;
   LastYear := 0;
   FOnDone := OnDone;
@@ -571,16 +572,15 @@ begin
       FOnDone(Self);
 
   (ThreadForm as TSearchForm).StopLoadingList;
-    //if (ThreadForm as TSearchForm).SearchByCompating then
-    //TODO:!!!begin
-    //TODO:!!! (ThreadForm as TSearchForm).Decremect1.Checked:=true;
-    //TODO:!!! (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
-    //TODO:!!!end else
+  if FCurrentQueryType = QT_W_SCAN_FILE then
+  begin
+    (ThreadForm as TSearchForm).DoSetSearchByComparing;
+    (ThreadForm as TSearchForm).Decremect1.Checked := True;
+    (ThreadForm as TSearchForm).SortbyCompare1Click((ThreadForm as TSearchForm).SortbyCompare1);
+  end else
   begin
     if (ThreadForm as TSearchForm).SortbyCompare1.Checked then
-    begin
       (ThreadForm as TSearchForm).SortbyDate1Click((ThreadForm as TSearchForm).SortbyDate1);
-    end;
   end;
 
 end;
@@ -636,11 +636,6 @@ begin
   end;
 end;
 
-{procedure SearchThread.DoSetSearchByComparing;
-begin
-  (ThreadForm as TSearchForm).DoSetSearchByComparing;
-end; }
-
 procedure SearchThread.GetPassForFile;
 begin
   StrParam := GetImagePasswordFromUser(StrParam);
@@ -653,6 +648,7 @@ var
 begin
   QueryParams := CreateQuery;
   try
+    FCurrentQueryType := QueryParams.QueryType;
     if FSearchParams.IsEstimate and not QueryParams.CanBeEstimated then
     begin
       IntParam := -1;
@@ -824,7 +820,6 @@ begin
           PassWord := StrParam;
         end;
         if PassWord = '' then
-        //TODO:
           Exit;
 
         Graphic := DeCryptGraphicFile(ScanParams.ScanFileName, PassWord);

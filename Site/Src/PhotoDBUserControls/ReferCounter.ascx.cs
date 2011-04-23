@@ -1,5 +1,6 @@
 ﻿using System;
 using PhotoDBDatabase.Classes;
+using umbraco.NodeFactory;
 
 namespace PhotoDBUserControls
 {
@@ -7,10 +8,15 @@ namespace PhotoDBUserControls
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["REFER_CHECK"] == null)
+            if (!IsPostBack)
             {
-                Session["REFER_CHECK"] = new object();
-                StatsManager.CheckRefer();
+                if (Session["REFER_CHECK"] == null)
+                {
+                    Session["REFER_CHECK"] = new object();
+                    StatsManager.CheckRefer();
+                }
+                int id = Node.GetCurrent().Id;
+                StatsManager.MarkView(id, umbraco.library.NiceUrl(id));
             }
         }
     }

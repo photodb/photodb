@@ -254,6 +254,7 @@ begin
 
     if (FThreadType = THREAD_TYPE_BIG_IMAGES) then
     begin
+      F(FFiles);
       FFiles := TExplorerFileInfos.Create;
       ShowProgress;
       DoLoadBigImages;
@@ -337,13 +338,12 @@ begin
 
         DBFolderToSearch := FFolder;
 
-        //TODO: review
         UnProcessPath(DBFolderToSearch);
         DBFolderToSearch := ExcludeTrailingBackslash(AnsiLowerCase(DBFolderToSearch));
         CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
         DBFolderToSearch := IncludeTrailingBackslash(DBFolderToSearch);
         FFolder := IncludeTrailingBackslash(FFolder);
-
+        F(FFiles);
         FFiles := TExplorerFileInfos.Create;
 
         IsPrivateDirectory := TPrivateHelper.Instance.IsPrivateDirectory(DBFolderToSearch);
@@ -1261,6 +1261,7 @@ begin
     if AnsiLowerCase(ExtractFileExt(Info.FileName)) = '.ldb' then
       Exit;
 
+  F(FFiles);
   FFiles := TExplorerFileInfos.Create;
   try
     Ext_ := ExtractFileExt(Info.FileName);
@@ -1319,7 +1320,8 @@ begin
   if not IsTerminated then
   begin
     FSender.AddInfoAboutFile(FFiles);
-    FSender.AddIcon(FIcon, True, GUIDParam);
+    if not FSender.AddIcon(FIcon, True, GUIDParam) then
+      F(FIcon);
 
     if FUpdaterInfo.NewFileItem then
       FSender.SetNewFileNameGUID(GUIDParam);
@@ -1467,6 +1469,7 @@ var
 begin
   HideProgress;
   ShowInfo(L('Loading "My computer" directory') + '...', 1, 0);
+  F(FFiles);
   FFiles := TExplorerFileInfos.Create;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   for I := Ord('C') to Ord('Z') do
@@ -1522,6 +1525,7 @@ var
 begin
   HideProgress;
   ShowInfo(L('Scaning network') + '...', 1, 0);
+  F(FFiles);
   FFiles := TExplorerFileInfos.Create;
   try
     NetworkList := TStringList.Create;
@@ -1568,6 +1572,7 @@ begin
   HideProgress;
   try
     ShowInfo(L('Scaning workgroup') + '...', 1, 0);
+    F(FFiles);
     FFiles := TExplorerFileInfos.Create;
     try
       ComputerList := TStringList.Create;
@@ -1617,6 +1622,7 @@ begin
   HideProgress;
   try
     ShowInfo(L('Opening computer'), 1, 0);
+    F(FFiles);
     FFiles := TExplorerFileInfos.Create;
     try
       ShareList := TStringList.Create;
@@ -1677,8 +1683,6 @@ begin
 
   FQuery := GetQuery;
   ReadOnlyQuery(FQuery);
-
-  //TODO:!!!
   UnProcessPath(FFolder);
 
   SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
@@ -1691,6 +1695,7 @@ begin
     on e : Exception do
       EventLog(e.Message);
   end;
+  F(FFiles);
   FFiles := TExplorerFileInfos.Create;
   try
     if FQuery.RecordCount > 0 then
@@ -1787,7 +1792,8 @@ end;
 
 procedure TExplorerThread.UpdateFolder;
 begin
-  FFiles:=TExplorerFileInfos.Create;
+  F(FFiles);
+  FFiles := TExplorerFileInfos.Create;
   AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(Fmask), 0, 0, 0, 0, 0, '', '', '', 0,
     False, False, True);
   GUIDParam := FFiles[0].SID;
@@ -1980,7 +1986,10 @@ end;
 procedure TExplorerThread.GetAllFiles;
 begin
   if not IsTerminated then
+  begin
+    F(FFiles);
     FFiles := FSender.GetAllItems;
+  end;
 end;
 
 function TExplorerThread.GetThreadID: string;

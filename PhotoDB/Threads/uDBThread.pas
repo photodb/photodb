@@ -21,6 +21,7 @@ type
     function GetThreadID: string; virtual;
     function SynchronizeEx(Method: TThreadMethod) : Boolean; virtual;
     property SupportedExt: string read GetSupportedExt;
+    property OwnerForm: TDBForm read FOwnerForm;
   public
     constructor Create(OwnerForm: TDBForm; CreateSuspended: Boolean);
     destructor Destroy; override;

@@ -688,8 +688,6 @@ end;
 
 function IsValidGroupsTable: Boolean;
 begin
-  Result := True;
-  Exit; // TODO:!!!
   Result := IsValidGroupsTableW(Dbname);
 end;
 

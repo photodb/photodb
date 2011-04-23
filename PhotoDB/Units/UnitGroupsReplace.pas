@@ -137,7 +137,6 @@ var
   end;
 
 begin
-
   Pi := @I;
   for I := 0 to Length(Groups) - 1 do
   begin

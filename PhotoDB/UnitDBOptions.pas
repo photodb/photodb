@@ -333,7 +333,6 @@ end;
 
 procedure TFormDBOptions.SetDefaultIcon(Path: string = '');
 begin
-  //TODO: check
   if Path = '' then
     Path := Application.ExeName + ',1';
   DBFile.Icon := Path;

@@ -186,40 +186,40 @@ end;
 
 procedure TCryptingImagesThread.GetPassword;
 begin
-  //TODO: review!!!
   if FE then
     Synchronize(FindPasswordToFile)
   else
   begin
-  if Table=nil then
-  begin
-   Table := GetTable;
-   Table.Open;
-  end;
-  Table.Locate('ID',IntParam,[loPartialKey]);
-  fField:=Table.FieldByName('thum');
-  Synchronize(FindPasswordToBlob);
- end;
- if fPassword='' then
- begin
-  begin
-   if not FE then
-   begin
-    if IntParam=0 then
+    if Table = nil then
     begin
-     exit;
+      Table := GetTable;
+      Table.Open;
     end;
-    Table.Locate('ID',IntParam,[loPartialKey]);
-    Table.Edit;
-    fField:=Table.FieldByName('thum');
+    Table.Locate('ID', IntParam, [LoPartialKey]);
+    FField := Table.FieldByName('thum');
     Synchronize(FindPasswordToBlob);
-    Table.Post;
-    end else
-   begin
-    Synchronize(GetPasswordFromUserFile);
-   end;
   end;
- end;
+  if FPassword = '' then
+  begin
+    begin
+      if not FE then
+      begin
+        if IntParam = 0 then
+        begin
+          Exit;
+        end;
+        Table.Locate('ID', IntParam, [LoPartialKey]);
+        Table.Edit;
+        FField := Table.FieldByName('thum');
+        Synchronize(FindPasswordToBlob);
+        Table.Post;
+      end
+      else
+      begin
+        Synchronize(GetPasswordFromUserFile);
+      end;
+    end;
+  end;
 end;
 
 procedure TCryptingImagesThread.IfBreakOperation;

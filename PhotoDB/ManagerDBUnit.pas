@@ -12,7 +12,7 @@ uses
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
   UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
   uCDMappingTypes, uConstants, uFileUtils, uDBDrawing, adodb,
-  DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo,
+  DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo, uGOM,
   uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
   uSettings, uThreadForm, uDBAdapter;
 
@@ -403,7 +403,8 @@ begin
   ElvMain.Items.Count := 0;
   FreeDS(WorkQuery);
   F(FBackUpFiles);
-  R(FormManagerHint);
+  if GOM.IsObj(FormManagerHint) then
+    R(FormManagerHint);
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
 
@@ -952,7 +953,7 @@ begin
       end else
       begin
         elvMain.Canvas.Font.Color := $808080;
-        Caption := L('No date set');
+        Caption := L('No date');
         DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
         elvMain.Canvas.Font.Color := $0;
       end;
@@ -962,12 +963,12 @@ begin
         ARect.Top := ARect.Top + 2;
         if ItemData.IsTime then
         begin
-          Caption := FormatDateTime('hh.mm.ss', ItemData.Time);
+          Caption := FormatDateTime('hh:mm:ss', ItemData.Time);
           DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), ARect, DrawTextOpt);
         end else
         begin
           ElvMain.Canvas.Font.Color := $808080;
-          Caption := L('No time set');
+          Caption := L('No time');
           DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), ARect, DrawTextOpt);
           ElvMain.Canvas.Font.Color := $0;
         end;

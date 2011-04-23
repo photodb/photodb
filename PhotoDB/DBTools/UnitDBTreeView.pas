@@ -93,11 +93,11 @@ procedure MakeDBFileTree(DBFileName: string);
 
 implementation
 
-uses ExplorerUnit, Searching, UnitOpenQueryThread, ProgressActionUnit;
+uses
+  ExplorerUnit, Searching, UnitOpenQueryThread, ProgressActionUnit;
 
 {$R *.dfm}
 
-//TODO: create new-look preview and drawg and drop, access to fields via class
 procedure MakeDBFileTree(DBFileName: string);
 var
   FormCreateDBFileTree: TFormCreateDBFileTree;

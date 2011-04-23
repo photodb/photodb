@@ -22,7 +22,6 @@ type
     CbCrypted: TCheckBox;
     CbCryptedPass: TCheckBox;
     BtnBreak: TButton;
-    DestroyTimer: TTimer;
     EdName: TWatermarkedEdit;
     procedure BtnStartClick(Sender: TObject);
     procedure BtnSelectFileClick(Sender: TObject);
@@ -37,8 +36,8 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure CbCryptedClick(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure BtnBreakClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   protected
@@ -53,7 +52,8 @@ var
 
 implementation
 
-uses UnitExportThread;
+uses
+  UnitExportThread;
 
 {$R *.dfm}
 
@@ -75,6 +75,7 @@ begin
   System.Close(F);
   BtnSelectFile.Enabled := False;
   BtnStart.Enabled := False;
+  EdName.Enabled := False;
   Options.OwnerForm := Self;
   Options.ExportPrivate := CbPrivate.Checked;
   Options.ExportRatingOnly := CbRating.Checked;
@@ -164,10 +165,16 @@ begin
   Close;
 end;
 
+procedure TExportForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Release;
+end;
+
 procedure TExportForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
- If Working then CanClose:=false;
+  if Working then
+    CanClose := False;
 end;
 
 procedure TExportForm.LoadLanguage;
@@ -184,6 +191,7 @@ begin
     BtnStart.Caption := L('Begin export');
     BtnBreak.Caption := L('Break!');
     Label1.Caption := L('Item') + ':';
+    Label2.Caption := L('[no records]');
     PbMain.text := L('Executing... (&%%)');
     EdName.WatermarkText := L('Please select a file');
   finally
@@ -194,12 +202,6 @@ end;
 procedure TExportForm.CbCryptedClick(Sender: TObject);
 begin
   CbCryptedPass.Enabled := CbCrypted.Checked;
-end;
-
-procedure TExportForm.DestroyTimerTimer(Sender: TObject);
-begin
-  DestroyTimer.Enabled := False;
-  Release;
 end;
 
 procedure TExportForm.BtnBreakClick(Sender: TObject);

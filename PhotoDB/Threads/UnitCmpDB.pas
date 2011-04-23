@@ -6,7 +6,7 @@ uses
   UnitGroupsReplace, CmpUnit, Classes, DB, dolphin_db, SysUtils,
   UnitGroupsWork, UnitLinksSupport, GraphicCrypt, JPEG, CommonDBSupport,
   UnitDBDeclare, UnitDBKernel, uDBTypes, uDBGraphicTypes, win32crc,
-  uGraphicUtils, uDBThread, uMemory, uFileUtils;
+  uGraphicUtils, uDBThread, uMemory, uFileUtils, uDBForm, uDBAdapter;
 
 type
   CmpDBTh = class(TDBThread)
@@ -26,9 +26,11 @@ type
     FParamFOutRegGroups: TGroups;
     FParamFRegGroups: TGroups;
     FParamGroupsActions: TGroupsActionsW;
+    FSourceTableName: string;
   protected
     function GetThreadID : string; override;
   public
+    constructor Create(OwnerForm: TDBForm; Options: TCompOptions; Autor, IgnoredWords, SourceTableName: string);
     procedure AddNewRecord;
     procedure AddNewRecordA;
     procedure AddUpdatedRecord;
@@ -49,11 +51,8 @@ type
   end;
 
 var
-  Autor, IgnoredWords, SourceTableName: string;
-  Terminated_: Boolean = False;
-  Active_: Boolean = False;
-  Paused: Boolean = False;
-  Options: TCompOptions;
+  CompareThreadTerminated: Boolean = False;
+  CompareThreadPaused: Boolean = False;
 
 implementation
 
@@ -64,29 +63,38 @@ uses
 
 procedure CmpDBTh.AddNewRecord;
 begin
-  Synchronize(AddNewRecordA);
+  SynchronizeEx(AddNewRecordA);
 end;
 
 procedure CmpDBTh.AddNewRecordA;
 begin
-  if ImportProgressForm <> nil then
-    ImportProgressForm.AddNewRecord;
+  ImportProgressForm.AddNewRecord;
 end;
 
 procedure CmpDBTh.AddUpdatedRecord;
 begin
-  Synchronize(AddUpdatedRecordA);
+  SynchronizeEx(AddUpdatedRecordA);
 end;
 
 procedure CmpDBTh.AddUpdatedRecordA;
 begin
-  if ImportProgressForm <> nil then
-    ImportProgressForm.AddUpdatedRecord;
+  ImportProgressForm.AddUpdatedRecord;
+end;
+
+constructor CmpDBTh.Create(OwnerForm: TDBForm; Options: TCompOptions; Autor,
+  IgnoredWords, SourceTableName: string);
+begin
+  inherited Create(OwnerForm, False);
+  FOptions := Options;
+  FAutor := Autor;
+  FIgnoredWords := IgnoredWords;
+  FSourceTableName := SourceTableName;
 end;
 
 function GetImageIDFileNameW(DBFileName, FN: String; JPEG : TJPEGImage): TImageDBRecordA;
 var
   FQuery: TDataSet;
+  DA: TDBAdapter;
   I, Count, Rot: Integer;
   Res: TImageCompareResult;
   Val: array of Boolean;
@@ -101,9 +109,10 @@ begin
     Exit;
   end;
   FQuery := GetQuery(DBFileName);
+  DA := TDBAdapter.Create(FQuery);
   try
     SetSQL(FQuery, 'SELECT ID, FFileName, Attr, StrTh, Thum FROM ' + GetTableNameByFileName(DBFileName)
-        + ' WHERE FFileName like :str ');
+        + ' WHERE Name like :str ');
     SetStrParam(FQuery, 0, '%' + NormalizeDBStringLike((AnsiLowerCase(ExtractFileName(FN)))) + '%');
     try
       FQuery.Active := True;
@@ -125,14 +134,14 @@ begin
     try
       for I := 1 to FQuery.RecordCount do
       begin
-        if ValidCryptBlobStreamJPG(FQuery.FieldByName('Thum')) then
+        if ValidCryptBlobStreamJPG(DA.Thumb) then
         begin
           Pass := '';
-          Pass := DBkernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('Thum'));
+          Pass := DBkernel.FindPasswordForCryptBlobStream(DA.Thumb);
           if Pass <> '' then
-            DeCryptBlobStreamJPG(FQuery.FieldByName('Thum'), Pass, FJPEG);
+            DeCryptBlobStreamJPG(DA.Thumb, Pass, FJPEG);
         end else
-          FJPEG.Assign(FQuery.FieldByName('Thum'));
+          FJPEG.Assign(DA.Thumb);
 
         Res := CompareImages(FJPEG, JPEG, Rot);
         Xrot[I - 1] := Rot;
@@ -158,13 +167,14 @@ begin
       begin
         Inc(Count);
         Result.ChangedRotate[Count] := Xrot[Count] <> 0;
-        Result.Ids[Count] := FQuery.FieldByName('ID').AsInteger;
-        Result.FileNames[Count] := FQuery.FieldByName('FFileName').AsString;
-        Result.Attr[Count] := FQuery.FieldByName('Attr').AsInteger;
-        Result.ImTh := FQuery.FieldByName('StrTh').AsAnsiString;
+        Result.Ids[Count] := DA.ID;
+        Result.FileNames[Count] := DA.FileName;
+        Result.Attr[Count] := DA.Attributes;
+        Result.ImTh := DA.LongImageID;
         FQuery.Next;
       end;
   finally
+    F(DA);
     FreeDS(FQuery);
   end;
 end;
@@ -173,351 +183,363 @@ procedure CmpDBTh.Execute;
 var
   Res, Updated, FE: Boolean;
   I, J: Integer;
-  OldGroups, Groups, Groups_, StrTh, R, KeyWords, KeyWords_, _sqlexectext: string;
+  OldGroups, Groups, Groups_, R, KeyWords, KeyWords_, _sqlexectext: string;
+  StrTh: AnsiString;
   FTempGroup, FRegGroups, FOutRegGroups: TGroups;
   GroupsActions: TGroupsActionsW;
   SLinks, DLinks: TLinksInfo;
   IDinfo: TImageDBRecordA;
   JPEG: TJpegImage;
-  Pass, S, FromDB: string;
+  Pass, S: string;
+  SDA, QDA: TDBAdapter;
   Date, Time: TDateTime;
   IsTime: Boolean;
 
-  //TODO: review
-  procedure DoExit;
-  begin
-    FreeDS(FSourceTable);
-    FreeDS(FPostQuery);
-    FreeDS(FQuery);
-    Paused := False;
-    Active_ := False;
-    Terminated_ := False;
-    Synchronize(ThreadExit);
-  end;
-
   procedure LoadCurrentJpeg;
   begin
+    F(JPEG);
     JPEG := TJpegImage.Create;
-    if ValidCryptBlobStreamJPG(FSourceTable.FieldByName('thum')) then
+    if ValidCryptBlobStreamJPG(SDA.Thumb) then
     begin
-      Pass := DBKernel.FindPasswordForCryptBlobStream(FSourceTable.FieldByName('thum'));
+      Pass := DBKernel.FindPasswordForCryptBlobStream(SDA.Thumb);
       if Pass <> '' then
-        DeCryptBlobStreamJPG(FSourceTable.FieldByName('thum'), Pass, JPEG);
-    end
-    else
-      JPEG.Assign(FSourceTable.FieldByName('thum'));
+        DeCryptBlobStreamJPG(SDA.Thumb, Pass, JPEG);
+    end else
+      JPEG.Assign(SDA.Thumb);
   end;
 
 begin
   FreeOnTerminate := True;
-  if Active_ then
-    Exit;
-  SetStatusText(L('Initialization'));
-  SetActionText(L('Please wait a minute...'));
-  FOptions := Options;
-  Active_ := True;
-  Terminated_ := False;
-  FIgnoredWords := IgnoredWords;
-  FAutor := Autor;
-
-  FQuery := GetQuery;
-  FSourceTable := GetTable(SourceTableName, DB_TABLE_IMAGES);
-
-  FProgress := 0;
+  CompareThreadTerminated := False;
   try
-    FSourceTable.Open;
-  except
-    DoExit;
-    Exit;
-  end;
-  FMaxValue := FSourceTable.RecordCount;
-  FSourceTable.First;
-  SetStatusText(L('Reading information about groups'));
-  SetActionText(L('Please wait a minute...'));
+    SetStatusText(L('Initialization'));
+    SetActionText(L('Please wait a minute...'));
 
-  FRegGroups := GetRegisterGroupList(True);
-  FOutRegGroups := GetRegisterGroupListW(SourceTableName, True, DBKernel.SortGroupsByName);
-  GroupsActions.IsActionForKnown := False;
-  GroupsActions.IsActionForUnKnown := False;
-
-  SetStatusText(L('Reading collection information'));
-  SetActionText(L('Please wait a minute...'));
-
-  SetMaxValue(FSourceTable.RecordCount);
-  SetLength(GroupsActions.Actions, 0);
-  SetLength(SLinks, 0);
-  SetLength(DLinks, 0);
-  SetLength(FTempGroup, 0);
-  SetLength(FRegGroups, 0);
-  SetLength(FOutRegGroups, 0);
-  repeat
-    IfPause;
-    if Terminated_ then
-      Break;
-    Inc(FProgress);
-    SetPosition(FSourceTable.RecNo);
-    SetActionText(Format(L('Item #%s [%s]'), [Inttostr(FSourceTable.RecNo),
-        FSourceTable.FieldByName('Name').AsString]));
-    StrTh := FSourceTable.FieldByName('StrTh').AsString;
-
-    FromDB := '(Select * from $DB$ Where StrThCrc = ' + IntToStr(Integer(StringCRC(StrTh))) + ')';
-
-    SetSQL(FQuery, 'Select * from $DB$ Where StrTh = :StrTh');
-    SetStrParam(FQuery, 0, StrTh);
-    FQuery.Open;
-    Updated := False;
-
+    FQuery := GetQuery;
+    QDA := TDBAdapter.Create(FQuery);
     try
-
-      if (FQuery.RecordCount = 0) and Foptions.UseScanningByFileName then
-      begin
-        JPEG := nil;
-
-        LoadCurrentJpeg;
-
-        IDinfo := GetImageIDFileNameW(Dbname, FSourceTable.FieldByName('FFileName').AsString, JPEG);
-        if Length(IDinfo.IDs) > 0 then
-        begin
-          FQuery.Active := False;
-          _sqlexectext := 'Select * from $DB$ Where ID in (';
-          S := '';
-          for I := 0 to Length(IDinfo.IDs) - 1 do
-          begin
-            if I = 0 then
-              S := S + IntToStr(IDinfo.IDs[I])
-            else
-              S := S + ',' + IntToStr(IDinfo.IDs[I]);
-          end;
-          _sqlexectext := _sqlexectext + S + ')';
-          SetSQL(FQuery, _sqlexectext);
-
-          FQuery.Open;
-        end;
-      end;
-
-    except
-      if JPEG <> nil then
-        JPEG.Free;
-    end;
-
-    if FQuery.RecordCount = 0 then
-    begin
-      if Foptions.AddNewRecords then
-      begin
+      FSourceTable := GetTable(FSourceTableName, DB_TABLE_IMAGES);
+      SDA := TDBAdapter.Create(FSourceTable);
+      try
+        FProgress := 0;
         try
-          FE := FileExistsSafe(FSourceTable.FieldByName('FFileName').AsString);
-          if FE or (not FE and Foptions.AddRecordsWithoutFiles) then
-          begin
-            AddNewRecord;
-            LoadCurrentJpeg;
-            Date := FSourceTable.FieldByName('DateToAdd').AsDateTime;
-            Time := FSourceTable.FieldByName('aTime').AsDateTime;
-            IsTime := FSourceTable.FieldByName('IsTime').AsBoolean;
-
-            if Foptions.AddGroups then
-            begin
-              Groups := FQuery.FieldByName('Groups').AsString;
-              OldGroups := Groups;
-              Groups_ := FSourceTable.FieldByName('Groups').AsString;
-              FTempGroup := EnCodeGroups(Groups_);
-              FParamTempGroup := FTempGroup;
-              FParamFOutRegGroups := FOutRegGroups;
-              FParamFRegGroups := FRegGroups;
-              FParamGroupsActions := GroupsActions;
-              Synchronize(FilterGroupsSync);
-              GroupsActions := FParamGroupsActions;
-              Groups_ := CodeGroups(FParamTempGroup);
-              AddGroupsToGroups(Groups_, Groups);
-            end;
-
-            SQL_AddFileToDB(GetDBFileName(FSourceTable.FieldByName('FFileName').AsString, SourceTableName),
-              ValidCryptBlobStreamJPG(FSourceTable.FieldByName('thum')), Jpeg,
-              FSourceTable.FieldByName('StrTh').AsAnsiString, FSourceTable.FieldByName('KeyWords').AsString,
-              FSourceTable.FieldByName('Comment').AsString, Pass, FSourceTable.FieldByName('Width').AsInteger,
-              FSourceTable.FieldByName('Height').AsInteger, Date, Time, IsTime,
-              FSourceTable.FieldByName('Rating').AsInteger, FSourceTable.FieldByName('Rotated').AsInteger,
-              FSourceTable.FieldByName('Links').AsString, FSourceTable.FieldByName('Access').AsInteger,
-              Groups_);
-
-          end;
+          FSourceTable.Open;
         except
+          Exit;
         end;
-      end;
-    end
-    else
-    begin
-      FQuery.First;
-      for I := 1 to FQuery.RecordCount do
-      begin
-        try
-          if Foptions.AddKeyWords then
-          begin
-            KeyWords := FQuery.FieldByName('KeyWords').AsString;
-            KeyWords_ := FSourceTable.FieldByName('KeyWords').AsString;
-            if Foptions.IgnoreWords then
-              Res := AddWordsW(KeyWords_, FIgnoredWords, KeyWords)
-            else
-              Res := AddWordsA(KeyWords_, KeyWords);
-            if Res then
-            begin
-              _sqlexectext := 'Update $DB$';
-              _sqlexectext := _sqlexectext + ' Set KeyWords="' + KeyWords + '"';
-              _sqlexectext := _sqlexectext + ' Where ID=' + Inttostr(FQuery.FieldByName('ID').AsInteger);
-              Post(_sqlexectext);
-              Updated := True;
-            end;
-          end;
-        except
-        end;
-        try
-          if Foptions.AddGroups then
-          begin
-            Groups := FQuery.FieldByName('Groups').AsString;
-            OldGroups := Groups;
-            Groups_ := FSourceTable.FieldByName('Groups').AsString;
-            FTempGroup := EnCodeGroups(Groups_);
-            FParamTempGroup := FTempGroup;
-            FParamFOutRegGroups := FOutRegGroups;
-            FParamFRegGroups := FRegGroups;
-            FParamGroupsActions := GroupsActions;
-            Synchronize(FilterGroupsSync);
-            GroupsActions := FParamGroupsActions;
-            Groups_ := CodeGroups(FParamTempGroup);
-            AddGroupsToGroups(Groups_, Groups);
-            if not CompareGroups(OldGroups, Groups_) then
-            begin
-              _sqlexectext := 'Update $DB$';
-              _sqlexectext := _sqlexectext + ' Set Groups="' + Groups_ + '"';
-              _sqlexectext := _sqlexectext + ' Where ID=' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
-              Post(_sqlexectext);
-              Updated := True;
-            end;
-          end;
-        except
-        end;
-        try
-          if Foptions.AddRotate then
-          begin
-            if (FQuery.FieldByName('Rotated').AsInteger = 0) and (FSourceTable.FieldByName('Rotated').AsInteger > 0)
-              then
-            begin
-              _sqlexectext := 'Update $DB$';
-              _sqlexectext := _sqlexectext + ' Set Rotated=' + Inttostr(FSourceTable.FieldByName('Rotated').AsInteger)
-                + '';
-              _sqlexectext := _sqlexectext + ' Where ID=' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
-              Post(_sqlexectext);
-              Updated := True;
-            end;
-          end;
-        except
-        end;
-        try
-          if Foptions.AddRating then
-          begin
-            if (FQuery.FieldByName('Rating').AsInteger = 0) and (FSourceTable.FieldByName('Rating').AsInteger > 0) then
-            begin
-              _sqlexectext := 'Update $DB$';
-              _sqlexectext := _sqlexectext + ' Set Rating=' + Inttostr(FSourceTable.FieldByName('Rating').AsInteger)
-                + '';
-              _sqlexectext := _sqlexectext + ' Where ID=' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
-              Post(_sqlexectext);
-              Updated := True;
-            end;
-          end;
-        except
-        end;
-        try
-          if Foptions.AddDate then
-          begin
-            if (FQuery.FieldByName('IsDate').AsBoolean = False) and
-              (FSourceTable.FieldByName('IsDate').AsBoolean = True) then
-            begin
-              _sqlexectext := 'Update $DB$';
-              _sqlexectext := _sqlexectext + ' Set IsDate=:IsDate, DateToAdd=:DateToAdd';
-              _sqlexectext := _sqlexectext + ' Where ID=' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
-              FPostQuery := GetQuery;
-              SetSQL(FPostQuery, _sqlexectext);
-              SetBoolParam(FPostQuery, 0, True);
-              SetDateParam(FPostQuery, 'DateToAdd', FSourceTable.FieldByName('DateToAdd').AsDateTime);
-              ExecSQL(FPostQuery);
-              FreeDS(FPostQuery);
+        FMaxValue := FSourceTable.RecordCount;
+        FSourceTable.First;
+        SetStatusText(L('Reading information about groups'));
+        SetActionText(L('Please wait a minute...'));
 
-              Updated := True;
-            end;
-          end;
-        except
-        end;
-        try
-          if Foptions.AddComment then
-          begin
-            Res := False;
-            if Length(FSourceTable.FieldByName('Comment').AsString) > 1 then
-            begin
-              if Length(FQuery.FieldByName('Comment').AsString) > 1 then
-              begin
-                Res := not SimilarTexts(FSourceTable.FieldByName('Comment').AsString,
-                  FQuery.FieldByName('Comment').AsString);
-                if Foptions.AddNamedComment then
-                  R := FQuery.FieldByName('Comment').AsString + ' ' + Foptions.Autor + ': "' + FSourceTable.FieldByName
-                    ('Comment').AsString + '"'
-                else
-                  R := FQuery.FieldByName('Comment').AsString + ' P.S. ' + FSourceTable.FieldByName('Comment').AsString
-              end
-              else
-              begin
-                Res := True;
-                R := FSourceTable.FieldByName('Comment').AsString;
-              end;
-            end;
-            if Res then
-            begin
-              _sqlexectext := 'Update $DB$';
-              _sqlexectext := _sqlexectext + ' Set Comment =' + NormalizeDBString(R) + '';
-              _sqlexectext := _sqlexectext + ' Where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
-              Post(_sqlexectext);
-              Updated := True;
-            end;
-          end;
-        except
-        end;
+        SetLength(GroupsActions.Actions, 0);
+        GroupsActions.ActionForUnKnown.OutGroup.GroupImage := nil;
+        GroupsActions.ActionForUnKnown.InGroup.GroupImage := nil;
+        GroupsActions.ActionForKnown.OutGroup.GroupImage := nil;
+        GroupsActions.ActionForKnown.InGroup.GroupImage := nil;
+        GroupsActions.IsActionForKnown := False;
+        GroupsActions.IsActionForUnKnown := False;
 
+        SetStatusText(L('Reading collection information'));
+        SetActionText(L('Please wait a minute...'));
+
+        SetMaxValue(FSourceTable.RecordCount);
         try
-          if Foptions.AddLinks then
-          begin
-            if Length(FSourceTable.FieldByName('Links').AsString) > 1 then
-            begin
-              Res := False;
-              SLinks := ParseLinksInfo(FSourceTable.FieldByName('Links').AsString);
-              DLinks := ParseLinksInfo(FQuery.FieldByName('Links').AsString);
-              for J := 0 to Length(SLinks) - 1 do
-                if not LinkInLinksExists(SLinks[J], DLinks, False) then
+          SetLength(SLinks, 0);
+          SetLength(DLinks, 0);
+          SetLength(FTempGroup, 0);
+          SetLength(FRegGroups, 0);
+          SetLength(FOutRegGroups, 0);
+          repeat
+            IfPause;
+            if CompareThreadTerminated then
+              Break;
+            Inc(FProgress);
+            SetPosition(FSourceTable.RecNo);
+            SetActionText(Format(L('Item #%s [%s]'), [IntToStr(FSourceTable.RecNo), SDA.Name]));
+            StrTh := SDA.LongImageID;
+
+            SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrThCrc = ' + IntToStr(Integer(StringCRC(StrTh))) + ' AND StrTh = :StrTh');
+            SetAnsiStrParam(FQuery, 0, StrTh);
+            FQuery.Open;
+            Updated := False;
+
+            JPEG := nil;
+            try
+              try
+                if (FQuery.RecordCount = 0) and Foptions.UseScanningByFileName then
                 begin
-                  SetLength(DLinks, Length(DLinks) + 1);
-                  DLinks[Length(DLinks) - 1] := SLinks[J];
-                  Res := True;
+
+                  LoadCurrentJpeg;
+
+                  IDinfo := GetImageIDFileNameW(Dbname, SDA.FileName, JPEG);
+                  if Length(IDinfo.IDs) > 0 then
+                  begin
+                    FQuery.Active := False;
+                    _sqlexectext := 'Select * from $DB$ Where ID in (';
+                    S := '';
+                    for I := 0 to Length(IDinfo.IDs) - 1 do
+                    begin
+                      if I = 0 then
+                        S := S + IntToStr(IDinfo.IDs[I])
+                      else
+                        S := S + ',' + IntToStr(IDinfo.IDs[I]);
+                    end;
+                    _sqlexectext := _sqlexectext + S + ')';
+                    SetSQL(FQuery, _sqlexectext);
+
+                    FQuery.Open;
+                  end;
                 end;
-              if Res then
-              begin
-                _sqlexectext := 'Update $DB$';
-                _sqlexectext := _sqlexectext + ' Set Links =' + NormalizeDBString(CodeLinksInfo(DLinks));
-                _sqlexectext := _sqlexectext + ' Where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger) + '';
-                Post(_sqlexectext);
-                Updated := True;
+
+              except
+                F(JPEG);
               end;
+
+              if FQuery.RecordCount = 0 then
+              begin
+                if Foptions.AddNewRecords then
+                begin
+                  try
+                    FE := FileExistsSafe(SDA.FileName);
+                    if FE or (not FE and Foptions.AddRecordsWithoutFiles) then
+                    begin
+                      AddNewRecord;
+                      LoadCurrentJpeg;
+
+                      if Foptions.AddGroups then
+                      begin
+                        Groups := QDA.Groups;
+                        OldGroups := Groups;
+                        Groups_ := SDA.Groups;
+                        FTempGroup := EnCodeGroups(Groups_);
+                        FParamTempGroup := FTempGroup;
+                        FParamFOutRegGroups := FOutRegGroups;
+                        FParamFRegGroups := FRegGroups;
+                        FParamGroupsActions := GroupsActions;
+                        SynchronizeEx(FilterGroupsSync);
+                        GroupsActions := FParamGroupsActions;
+                        Groups_ := CodeGroups(FParamTempGroup);
+                        FreeGroups(FParamTempGroup);
+                        AddGroupsToGroups(Groups_, Groups);
+                      end;
+
+                      Date := SDA.Date;
+                      Time := SDA.Time;
+                      IsTime := SDA.IsTime;
+                      SQL_AddFileToDB(GetDBFileName(SDA.FileName, FSourceTableName),
+                        ValidCryptBlobStreamJPG(SDA.Thumb), Jpeg,
+                        SDA.LongImageID, SDA.KeyWords,
+                        SDA.Comment, Pass, SDA.Width,
+                        SDA.Height, Date, Time, IsTime,
+                        SDA.Rating, SDA.Rotation,
+                        SDA.Links, SDA.Access, Groups_);
+
+                    end;
+                  except
+                  end;
+                end;
+              end else
+              begin
+                FQuery.First;
+                for I := 1 to FQuery.RecordCount do
+                begin
+                  try
+                    if Foptions.AddKeyWords then
+                    begin
+                      KeyWords := QDA.KeyWords;
+                      KeyWords_ := SDA.KeyWords;
+                      if Foptions.IgnoreWords then
+                        Res := AddWordsW(KeyWords_, FIgnoredWords, KeyWords)
+                      else
+                        Res := AddWordsA(KeyWords_, KeyWords);
+                      if Res then
+                      begin
+                        _sqlexectext := 'Update $DB$';
+                        _sqlexectext := _sqlexectext + ' Set KeyWords=' + NormalizeDBString(KeyWords);
+                        _sqlexectext := _sqlexectext + ' Where ID=' + IntToStr(QDA.ID);
+                        Post(_sqlexectext);
+                        Updated := True;
+                      end;
+                    end;
+                  except
+                  end;
+                  try
+                    if Foptions.AddGroups then
+                    begin
+                      Groups := QDA.Groups;
+                      OldGroups := Groups;
+                      Groups_ := SDA.Groups;
+                      FTempGroup := EnCodeGroups(Groups_);
+                      FParamTempGroup := FTempGroup;
+                      FParamFOutRegGroups := FOutRegGroups;
+                      FParamFRegGroups := FRegGroups;
+                      FParamGroupsActions := GroupsActions;
+                      SynchronizeEx(FilterGroupsSync);
+                      GroupsActions := FParamGroupsActions;
+                      Groups_ := CodeGroups(FParamTempGroup);
+                      FreeGroups(FParamTempGroup);
+                      AddGroupsToGroups(Groups_, Groups);
+                      if not CompareGroups(OldGroups, Groups_) then
+                      begin
+                        _sqlexectext := 'Update $DB$';
+                        _sqlexectext := _sqlexectext + ' Set Groups=' + NormalizeDBString(Groups_);
+                        _sqlexectext := _sqlexectext + ' Where ID=' + Inttostr(QDA.ID) + '';
+                        Post(_sqlexectext);
+                        Updated := True;
+                      end;
+                    end;
+                  except
+                  end;
+                  try
+                    if Foptions.AddRotate then
+                    begin
+                      if (QDA.Rotation = 0) and (SDA.Rotation > 0)
+                        then
+                      begin
+                        _sqlexectext := 'Update $DB$';
+                        _sqlexectext := _sqlexectext + ' Set Rotated=' + IntToStr(SDA.Rotation);
+                        _sqlexectext := _sqlexectext + ' Where ID=' + IntToStr(QDA.ID) + '';
+                        Post(_sqlexectext);
+                        Updated := True;
+                      end;
+                    end;
+                  except
+                  end;
+                  try
+                    if Foptions.AddRating then
+                    begin
+                      if (QDA.Rating = 0) and (SDA.Rating > 0) then
+                      begin
+                        _sqlexectext := 'Update $DB$';
+                        _sqlexectext := _sqlexectext + ' Set Rating=' + IntToStr(SDA.Rating);
+                        _sqlexectext := _sqlexectext + ' Where ID=' + IntToStr(QDA.ID) + '';
+                        Post(_sqlexectext);
+                        Updated := True;
+                      end;
+                    end;
+                  except
+                  end;
+                  try
+                    if Foptions.AddDate then
+                    begin
+                      if (not QDA.IsDate) and SDA.IsDate then
+                      begin
+                        _sqlexectext := 'Update $DB$';
+                        _sqlexectext := _sqlexectext + ' Set IsDate=:IsDate, DateToAdd=:DateToAdd';
+                        _sqlexectext := _sqlexectext + ' Where ID=' + Inttostr(QDA.ID) + '';
+                        FPostQuery := GetQuery;
+                        try
+                          SetSQL(FPostQuery, _sqlexectext);
+                          SetBoolParam(FPostQuery, 0, True);
+                          SetDateParam(FPostQuery, 'DateToAdd', SDA.Date);
+                          ExecSQL(FPostQuery);
+                        finally
+                          FreeDS(FPostQuery);
+                        end;
+
+                        Updated := True;
+                      end;
+                    end;
+                  except
+                  end;
+                  try
+                    if Foptions.AddComment then
+                    begin
+                      Res := False;
+                      if Length(SDA.Comment) > 1 then
+                      begin
+                        if Length(QDA.Comment) > 1 then
+                        begin
+                          Res := not SimilarTexts(SDA.Comment, QDA.Comment);
+                          if Foptions.AddNamedComment then
+                            R := QDA.Comment + ' ' + Foptions.Autor + ': "' + SDA.Comment + '"'
+                          else
+                            R := QDA.Comment + ' P.S. ' + SDA.Comment;
+                        end else
+                        begin
+                          Res := True;
+                          R := SDA.Comment;
+                        end;
+                      end;
+                      if Res then
+                      begin
+                        _sqlexectext := 'Update $DB$';
+                        _sqlexectext := _sqlexectext + ' Set Comment =' + NormalizeDBString(R);
+                        _sqlexectext := _sqlexectext + ' Where ID = ' + Inttostr(QDA.ID);
+                        Post(_sqlexectext);
+                        Updated := True;
+                      end;
+                    end;
+                  except
+                  end;
+
+                  try
+                    if Foptions.AddLinks then
+                    begin
+                      if Length(SDA.Links) > 1 then
+                      begin
+                        Res := False;
+                        SLinks := ParseLinksInfo(SDA.Links);
+                        DLinks := ParseLinksInfo(QDA.Links);
+                        for J := 0 to Length(SLinks) - 1 do
+                          if not LinkInLinksExists(SLinks[J], DLinks, False) then
+                          begin
+                            SetLength(DLinks, Length(DLinks) + 1);
+                            DLinks[Length(DLinks) - 1] := SLinks[J];
+                            Res := True;
+                          end;
+                        if Res then
+                        begin
+                          _sqlexectext := 'Update $DB$';
+                          _sqlexectext := _sqlexectext + ' Set Links =' + NormalizeDBString(CodeLinksInfo(DLinks));
+                          _sqlexectext := _sqlexectext + ' Where ID = ' + IntToStr(QDA.ID);
+                          Post(_sqlexectext);
+                          Updated := True;
+                        end;
+                      end;
+                    end;
+                  except
+                  end;
+
+                  FQuery.Next;
+                end;
+                if Updated then
+                  AddUpdatedRecord;
+              end;
+            finally
+              F(JPEG);
             end;
+
+            FSourceTable.Next;
+
+          until FSourceTable.Eof;
+        finally
+          FreeGroup(FParamGroupsActions.ActionForUnKnown.OutGroup);
+          FreeGroup(FParamGroupsActions.ActionForUnKnown.InGroup);
+          FreeGroup(FParamGroupsActions.ActionForKnown.OutGroup);
+          FreeGroup(FParamGroupsActions.ActionForKnown.InGroup);
+          for I := 0 to Length(GroupsActions.Actions) - 1 do
+          begin
+            FreeGroup(GroupsActions.Actions[I].OutGroup);
+            FreeGroup(GroupsActions.Actions[I].InGroup);
           end;
-        except
+          SetLength(GroupsActions.Actions, 0);
         end;
-
-        FQuery.Next;
+      finally
+        F(SDA);
+        FreeDS(FSourceTable);
       end;
-      if Updated then
-        AddUpdatedRecord;
+    finally
+      F(QDA);
+      FreeDS(FQuery);
     end;
-    FSourceTable.Next;
-
-  until FSourceTable.Eof;
-  DoExit;
+  finally
+    TryRemoveConnection(FSourceTableName, True);
+    CompareThreadTerminated := True;
+    CompareThreadPaused := False;
+    SynchronizeEx(ThreadExit);
+  end;
 end;
 
 procedure CmpDBTh.FilterGroupsSync;
@@ -532,12 +554,12 @@ end;
 
 procedure CmpDBTh.IfPause;
 begin
-  if Paused then
+  if CompareThreadPaused then
   begin
     SetActionText(L('Pause') + '...');
     repeat
       Sleep(100);
-    until not Paused or Terminated_;
+    until not CompareThreadPaused or CompareThreadTerminated;
   end;
 end;
 
@@ -555,55 +577,50 @@ end;
 procedure CmpDBTh.SetActionText(Value: string);
 begin
   StrParam := Value;
-  Synchronize(SetActionTextA);
+  SynchronizeEx(SetActionTextA);
 end;
 
 procedure CmpDBTh.SetActionTextA;
 begin
-  if ImportProgressForm <> nil then
-    ImportProgressForm.SetActionText(StrParam);
+  ImportProgressForm.SetActionText(StrParam);
 end;
 
 procedure CmpDBTh.SetMaxValue(Value: Integer);
 begin
   IntParam := Value;
-  Synchronize(SetMaxValueA);
+  SynchronizeEx(SetMaxValueA);
 end;
 
 procedure CmpDBTh.SetMaxValueA;
 begin
-  if ImportProgressForm <> nil then
-    ImportProgressForm.SetMaxRecords(IntParam);
+  ImportProgressForm.SetMaxRecords(IntParam);
 end;
 
 procedure CmpDBTh.SetPosition(Value: Integer);
 begin
   IntParam := Value;
-  Synchronize(SetPositionA);
+  SynchronizeEx(SetPositionA);
 end;
 
 procedure CmpDBTh.SetPositionA;
 begin
-  if ImportProgressForm <> nil then
-    ImportProgressForm.SetProgress(IntParam);
+  ImportProgressForm.SetProgress(IntParam);
 end;
 
 procedure CmpDBTh.SetStatusText(Value: string);
 begin
   StrParam := Value;
-  Synchronize(SetStatusTextA);
+  SynchronizeEx(SetStatusTextA);
 end;
 
 procedure CmpDBTh.SetStatusTextA;
 begin
-  if ImportProgressForm <> nil then
-    ImportProgressForm.SetStatusText(StrParam);
+  ImportProgressForm.SetStatusText(StrParam);
 end;
 
 procedure CmpDBTh.ThreadExit;
 begin
   ImportProgressForm.Close;
-  ImportProgressForm.Release;
 end;
 
 end.

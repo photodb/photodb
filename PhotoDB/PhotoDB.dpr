@@ -496,16 +496,6 @@ begin
     SetSplashProgress(90);
 
     EventLog('...GROUPS CHECK + MENU...');
-    TW.I.Start('IsValidGroupsTable');
-
-    try
-      if not DBTerminating then
-        if not IsValidGroupsTable then
-            CreateGroupsTable;
-    except
-      on e: Exception do
-        EventLog(':PhotoDB() throw exception: ' + e.Message);
-    end;
     // DB FAULT ----------------------------------------------------
 
     TW.I.Start('CHECKS');

@@ -102,13 +102,13 @@ object FormManageGroups: TFormManageGroups
         ImageIndex = 0
         OnClick = MenuActionAddGroup
       end
-      object ToolButton2: TToolButton
+      object TbEdit: TToolButton
         Left = 138
         Top = 0
         AutoSize = True
         Caption = 'Edit'
         ImageIndex = 1
-        OnClick = ToolButton2Click
+        OnClick = TbEditClick
       end
       object ToolButton6: TToolButton
         Left = 203
@@ -118,13 +118,13 @@ object FormManageGroups: TFormManageGroups
         ImageIndex = 3
         Style = tbsSeparator
       end
-      object ToolButton3: TToolButton
+      object TbDelete: TToolButton
         Left = 211
         Top = 0
         AutoSize = True
         Caption = 'Delete'
         ImageIndex = 2
-        OnClick = ToolButton3Click
+        OnClick = TbDeleteClick
       end
       object ToolButton7: TToolButton
         Left = 289
@@ -134,7 +134,7 @@ object FormManageGroups: TFormManageGroups
         ImageIndex = 3
         Style = tbsSeparator
       end
-      object ToolButton8: TToolButton
+      object TbOptions: TToolButton
         Left = 297
         Top = 0
         AutoSize = True

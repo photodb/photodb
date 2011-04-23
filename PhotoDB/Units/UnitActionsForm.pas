@@ -288,7 +288,6 @@ begin
   try
     OpenDialog.Filter := L('PhotoDB actions file (*.dbact)|*.dbact');
     OpenDialog.FilterIndex := 1;
-    // TODO: load file list from directory actions!
     if OpenDialog.Execute then
     begin
       AActions := TStringList.Create;

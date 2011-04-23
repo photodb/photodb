@@ -418,7 +418,6 @@ begin
   end;
 end;
 
-//TODO: speed up!!!
 function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
 var

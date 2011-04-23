@@ -18,8 +18,6 @@ type
 
 implementation
 
-uses Dolphin_DB;
-
 {$R *.dfm}
 
 procedure TFormManagerHint.FormCreate(Sender: TObject);

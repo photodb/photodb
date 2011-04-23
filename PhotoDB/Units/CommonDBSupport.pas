@@ -184,10 +184,12 @@ function NormalizeDBStringLike(S: string): string;
 function TryOpenCDS(DS: TDataSet): Boolean;
 procedure ForwardOnlyQuery(DS: TDataSet);
 procedure ReadOnlyQuery(DS: TDataSet);
+function DBReadOnly: Boolean;
 
 implementation
 
- uses UnitGroupsWork;
+uses
+  UnitGroupsWork;
 
 procedure ForwardOnlyQuery(DS: TDataSet);
 begin
@@ -439,6 +441,8 @@ begin
     begin
       Result := TADOQuery.Create(nil);
       (Result as TADOQuery).Connection := ADOInitialize(TableName, IsolateThread);
+      if DBReadOnly then
+        ReadOnlyQuery(Result);
     end;
   finally
     FSync.Leave;
@@ -1157,13 +1161,19 @@ var
   ProgramDir: string;
 begin
   Result := False;
+  if not FolderView then
+    Exit;
+
   ProgramDir := IncludeTrailingBackSlash(ExtractFileDir(ParamStr(0)));
 
   if FileExists(ProgramDir + 'FolderDB.photodb') then
   begin
     Attr := Windows.GetFileAttributes(PChar(ProgramDir + 'FolderDB.photodb'));
     if Attr and FILE_ATTRIBUTE_READONLY <> 0 then
+    begin
       Result := True;
+      Exit;
+    end;
   end;
 
   if FileExists(ProgramDir + GetFileNameWithoutExt(ParamStr(0)) + '.photodb') then
@@ -1183,7 +1193,7 @@ initialization
   if FolderView then
   begin
     if DBReadOnly then
-      DBFConnectionString:=DBViewConnectionString;
+      DBFConnectionString := DBViewConnectionString;
   end;
 
 finalization

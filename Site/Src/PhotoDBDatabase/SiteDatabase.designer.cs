@@ -30,9 +30,6 @@ namespace PhotoDBDatabase
 		
     #region Extensibility Method Definitions
     partial void OnCreated();
-    partial void InsertPageView(PageView instance);
-    partial void UpdatePageView(PageView instance);
-    partial void DeletePageView(PageView instance);
     partial void InsertRefer(Refer instance);
     partial void UpdateRefer(Refer instance);
     partial void DeleteRefer(Refer instance);
@@ -48,6 +45,9 @@ namespace PhotoDBDatabase
     partial void InsertDownload(Download instance);
     partial void UpdateDownload(Download instance);
     partial void DeleteDownload(Download instance);
+    partial void InsertPageView(PageView instance);
+    partial void UpdatePageView(PageView instance);
+    partial void DeletePageView(PageView instance);
     #endregion
 		
 		public SiteDatabaseDataContext() : 
@@ -78,14 +78,6 @@ namespace PhotoDBDatabase
 				base(connection, mappingSource)
 		{
 			OnCreated();
-		}
-		
-		public System.Data.Linq.Table<PageView> PageViews
-		{
-			get
-			{
-				return this.GetTable<PageView>();
-			}
 		}
 		
 		public System.Data.Linq.Table<Refer> Refers
@@ -127,179 +119,12 @@ namespace PhotoDBDatabase
 				return this.GetTable<Download>();
 			}
 		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.PageView")]
-	public partial class PageView : INotifyPropertyChanging, INotifyPropertyChanged
-	{
 		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _PageViewId;
-		
-		private int _PageId;
-		
-		private int _HostId;
-		
-		private System.DateTime _ViewDate;
-		
-		private EntityRef<Host> _Host;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnPageViewIdChanging(int value);
-    partial void OnPageViewIdChanged();
-    partial void OnPageIdChanging(int value);
-    partial void OnPageIdChanged();
-    partial void OnHostIdChanging(int value);
-    partial void OnHostIdChanged();
-    partial void OnViewDateChanging(System.DateTime value);
-    partial void OnViewDateChanged();
-    #endregion
-		
-		public PageView()
-		{
-			this._Host = default(EntityRef<Host>);
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PageViewId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int PageViewId
+		public System.Data.Linq.Table<PageView> PageViews
 		{
 			get
 			{
-				return this._PageViewId;
-			}
-			set
-			{
-				if ((this._PageViewId != value))
-				{
-					this.OnPageViewIdChanging(value);
-					this.SendPropertyChanging();
-					this._PageViewId = value;
-					this.SendPropertyChanged("PageViewId");
-					this.OnPageViewIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PageId", DbType="Int NOT NULL")]
-		public int PageId
-		{
-			get
-			{
-				return this._PageId;
-			}
-			set
-			{
-				if ((this._PageId != value))
-				{
-					this.OnPageIdChanging(value);
-					this.SendPropertyChanging();
-					this._PageId = value;
-					this.SendPropertyChanged("PageId");
-					this.OnPageIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostId", DbType="Int NOT NULL")]
-		public int HostId
-		{
-			get
-			{
-				return this._HostId;
-			}
-			set
-			{
-				if ((this._HostId != value))
-				{
-					if (this._Host.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnHostIdChanging(value);
-					this.SendPropertyChanging();
-					this._HostId = value;
-					this.SendPropertyChanged("HostId");
-					this.OnHostIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ViewDate", DbType="DateTime NOT NULL")]
-		public System.DateTime ViewDate
-		{
-			get
-			{
-				return this._ViewDate;
-			}
-			set
-			{
-				if ((this._ViewDate != value))
-				{
-					this.OnViewDateChanging(value);
-					this.SendPropertyChanging();
-					this._ViewDate = value;
-					this.SendPropertyChanged("ViewDate");
-					this.OnViewDateChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_PageView", Storage="_Host", ThisKey="HostId", OtherKey="HostId", IsForeignKey=true)]
-		public Host Host
-		{
-			get
-			{
-				return this._Host.Entity;
-			}
-			set
-			{
-				Host previousValue = this._Host.Entity;
-				if (((previousValue != value) 
-							|| (this._Host.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Host.Entity = null;
-						previousValue.PageViews.Remove(this);
-					}
-					this._Host.Entity = value;
-					if ((value != null))
-					{
-						value.PageViews.Add(this);
-						this._HostId = value.HostId;
-					}
-					else
-					{
-						this._HostId = default(int);
-					}
-					this.SendPropertyChanged("Host");
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+				return this.GetTable<PageView>();
 			}
 		}
 	}
@@ -474,13 +299,13 @@ namespace PhotoDBDatabase
 		
 		private string _HostDescription;
 		
-		private EntitySet<PageView> _PageViews;
-		
 		private EntitySet<Activation> _Activations;
 		
 		private EntitySet<Contact> _Contacts;
 		
 		private EntitySet<Download> _Downloads;
+		
+		private EntitySet<PageView> _PageViews;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -496,10 +321,10 @@ namespace PhotoDBDatabase
 		
 		public Host()
 		{
-			this._PageViews = new EntitySet<PageView>(new Action<PageView>(this.attach_PageViews), new Action<PageView>(this.detach_PageViews));
 			this._Activations = new EntitySet<Activation>(new Action<Activation>(this.attach_Activations), new Action<Activation>(this.detach_Activations));
 			this._Contacts = new EntitySet<Contact>(new Action<Contact>(this.attach_Contacts), new Action<Contact>(this.detach_Contacts));
 			this._Downloads = new EntitySet<Download>(new Action<Download>(this.attach_Downloads), new Action<Download>(this.detach_Downloads));
+			this._PageViews = new EntitySet<PageView>(new Action<PageView>(this.attach_PageViews), new Action<PageView>(this.detach_PageViews));
 			OnCreated();
 		}
 		
@@ -563,19 +388,6 @@ namespace PhotoDBDatabase
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_PageView", Storage="_PageViews", ThisKey="HostId", OtherKey="HostId")]
-		public EntitySet<PageView> PageViews
-		{
-			get
-			{
-				return this._PageViews;
-			}
-			set
-			{
-				this._PageViews.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_Activation", Storage="_Activations", ThisKey="HostId", OtherKey="HostId")]
 		public EntitySet<Activation> Activations
 		{
@@ -615,6 +427,19 @@ namespace PhotoDBDatabase
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_PageView", Storage="_PageViews", ThisKey="HostId", OtherKey="HostId")]
+		public EntitySet<PageView> PageViews
+		{
+			get
+			{
+				return this._PageViews;
+			}
+			set
+			{
+				this._PageViews.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -633,18 +458,6 @@ namespace PhotoDBDatabase
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
-		}
-		
-		private void attach_PageViews(PageView entity)
-		{
-			this.SendPropertyChanging();
-			entity.Host = this;
-		}
-		
-		private void detach_PageViews(PageView entity)
-		{
-			this.SendPropertyChanging();
-			entity.Host = null;
 		}
 		
 		private void attach_Activations(Activation entity)
@@ -678,6 +491,18 @@ namespace PhotoDBDatabase
 		}
 		
 		private void detach_Downloads(Download entity)
+		{
+			this.SendPropertyChanging();
+			entity.Host = null;
+		}
+		
+		private void attach_PageViews(PageView entity)
+		{
+			this.SendPropertyChanging();
+			entity.Host = this;
+		}
+		
+		private void detach_PageViews(PageView entity)
 		{
 			this.SendPropertyChanging();
 			entity.Host = null;
@@ -1657,6 +1482,205 @@ namespace PhotoDBDatabase
 					if ((value != null))
 					{
 						value.Downloads.Add(this);
+						this._HostId = value.HostId;
+					}
+					else
+					{
+						this._HostId = default(int);
+					}
+					this.SendPropertyChanged("Host");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.PageView")]
+	public partial class PageView : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _PageViewId;
+		
+		private int _PageId;
+		
+		private int _HostId;
+		
+		private System.DateTime _ViewDate;
+		
+		private string _Page;
+		
+		private EntityRef<Host> _Host;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnPageViewIdChanging(int value);
+    partial void OnPageViewIdChanged();
+    partial void OnPageIdChanging(int value);
+    partial void OnPageIdChanged();
+    partial void OnHostIdChanging(int value);
+    partial void OnHostIdChanged();
+    partial void OnViewDateChanging(System.DateTime value);
+    partial void OnViewDateChanged();
+    partial void OnPageChanging(string value);
+    partial void OnPageChanged();
+    #endregion
+		
+		public PageView()
+		{
+			this._Host = default(EntityRef<Host>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PageViewId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int PageViewId
+		{
+			get
+			{
+				return this._PageViewId;
+			}
+			set
+			{
+				if ((this._PageViewId != value))
+				{
+					this.OnPageViewIdChanging(value);
+					this.SendPropertyChanging();
+					this._PageViewId = value;
+					this.SendPropertyChanged("PageViewId");
+					this.OnPageViewIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PageId", DbType="Int NOT NULL")]
+		public int PageId
+		{
+			get
+			{
+				return this._PageId;
+			}
+			set
+			{
+				if ((this._PageId != value))
+				{
+					this.OnPageIdChanging(value);
+					this.SendPropertyChanging();
+					this._PageId = value;
+					this.SendPropertyChanged("PageId");
+					this.OnPageIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HostId", DbType="Int NOT NULL")]
+		public int HostId
+		{
+			get
+			{
+				return this._HostId;
+			}
+			set
+			{
+				if ((this._HostId != value))
+				{
+					if (this._Host.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnHostIdChanging(value);
+					this.SendPropertyChanging();
+					this._HostId = value;
+					this.SendPropertyChanged("HostId");
+					this.OnHostIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ViewDate", DbType="DateTime NOT NULL")]
+		public System.DateTime ViewDate
+		{
+			get
+			{
+				return this._ViewDate;
+			}
+			set
+			{
+				if ((this._ViewDate != value))
+				{
+					this.OnViewDateChanging(value);
+					this.SendPropertyChanging();
+					this._ViewDate = value;
+					this.SendPropertyChanged("ViewDate");
+					this.OnViewDateChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Page", DbType="NVarChar(500) NOT NULL", CanBeNull=false)]
+		public string Page
+		{
+			get
+			{
+				return this._Page;
+			}
+			set
+			{
+				if ((this._Page != value))
+				{
+					this.OnPageChanging(value);
+					this.SendPropertyChanging();
+					this._Page = value;
+					this.SendPropertyChanged("Page");
+					this.OnPageChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Host_PageView", Storage="_Host", ThisKey="HostId", OtherKey="HostId", IsForeignKey=true)]
+		public Host Host
+		{
+			get
+			{
+				return this._Host.Entity;
+			}
+			set
+			{
+				Host previousValue = this._Host.Entity;
+				if (((previousValue != value) 
+							|| (this._Host.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Host.Entity = null;
+						previousValue.PageViews.Remove(this);
+					}
+					this._Host.Entity = value;
+					if ((value != null))
+					{
+						value.PageViews.Add(this);
 						this._HostId = value.HostId;
 					}
 					else

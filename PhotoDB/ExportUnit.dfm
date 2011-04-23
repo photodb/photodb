@@ -14,13 +14,14 @@ object ExportForm: TExportForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8
-    Top = 128
+    Top = 131
     Width = 46
     Height = 13
     Caption = 'Record:'
@@ -42,7 +43,7 @@ object ExportForm: TExportForm
     Left = 296
     Top = 8
     Width = 17
-    Height = 19
+    Height = 21
     Caption = '...'
     TabOrder = 1
     OnClick = BtnSelectFileClick
@@ -140,18 +141,13 @@ object ExportForm: TExportForm
     Width = 289
     Height = 21
     TabOrder = 0
+    OnChange = Edit1Change
+    OnKeyPress = Edit1KeyPress
     WatermarkText = 'Please select a file'
   end
   object SaveDialog1: TSaveDialog
     Filter = 'PhotoDB Files (*.photodb)|*.photodb'
     Left = 224
     Top = 48
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 224
-    Top = 96
   end
 end

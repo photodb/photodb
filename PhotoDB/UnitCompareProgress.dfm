@@ -4,8 +4,8 @@ object ImportProgressForm: TImportProgressForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Importing database'
-  ClientHeight = 134
-  ClientWidth = 305
+  ClientHeight = 154
+  ClientWidth = 354
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,13 +14,17 @@ object ImportProgressForm: TImportProgressForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  DesignSize = (
+    354
+    154)
   PixelsPerInch = 96
   TextHeight = 13
   object Label13: TLabel
     Left = 8
-    Top = 56
+    Top = 43
     Width = 86
     Height = 13
     Caption = 'Current Action:'
@@ -32,16 +36,19 @@ object ImportProgressForm: TImportProgressForm
     ParentFont = False
   end
   object ActionLabel: TLabel
-    Left = 8
-    Top = 72
+    Left = 9
+    Top = 62
     Width = 153
-    Height = 13
+    Height = 33
+    Anchors = [akLeft, akTop, akBottom]
     AutoSize = False
     Caption = '<Action>'
+    WordWrap = True
+    ExplicitHeight = 32
   end
   object Label14: TLabel
     Left = 8
-    Top = 24
+    Top = 8
     Width = 41
     Height = 13
     Caption = 'Status:'
@@ -54,7 +61,7 @@ object ImportProgressForm: TImportProgressForm
   end
   object StatusLabel: TLabel
     Left = 8
-    Top = 40
+    Top = 24
     Width = 42
     Height = 13
     Caption = '<Status>'
@@ -85,18 +92,12 @@ object ImportProgressForm: TImportProgressForm
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label3: TLabel
-    Left = 8
-    Top = 8
-    Width = 33
-    Height = 13
-    Caption = 'Status:'
-  end
   object PbMain: TDmProgress
-    Left = 8
-    Top = 88
-    Width = 289
+    Left = 6
+    Top = 101
+    Width = 338
     Height = 18
+    Anchors = [akLeft, akRight, akBottom]
     Position = 57
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
@@ -110,30 +111,36 @@ object ImportProgressForm: TImportProgressForm
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
+    ExplicitTop = 100
   end
   object BtnStop: TButton
-    Left = 224
-    Top = 112
+    Left = 271
+    Top = 125
     Width = 75
-    Height = 17
+    Height = 21
+    Anchors = [akRight, akBottom]
     Caption = 'Stop!'
     TabOrder = 1
     OnClick = BtnStopClick
+    ExplicitTop = 124
   end
   object BtnPause: TButton
-    Left = 144
-    Top = 112
+    Left = 191
+    Top = 125
     Width = 73
-    Height = 17
+    Height = 21
+    Anchors = [akRight, akBottom]
     Caption = 'Pause'
     TabOrder = 2
     OnClick = BtnPauseClick
+    ExplicitTop = 124
   end
   object PbItemsAdded: TDmProgress
     Left = 168
     Top = 24
-    Width = 129
+    Width = 178
     Height = 18
+    Anchors = [akLeft, akTop, akRight]
     Position = 34
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
@@ -147,12 +154,14 @@ object ImportProgressForm: TImportProgressForm
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
+    ExplicitWidth = 129
   end
   object PbItemsUpdated: TDmProgress
     Left = 168
     Top = 64
-    Width = 129
+    Width = 178
     Height = 18
+    Anchors = [akLeft, akTop, akRight]
     Position = 56
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
@@ -166,5 +175,6 @@ object ImportProgressForm: TImportProgressForm
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
+    ExplicitWidth = 129
   end
 end

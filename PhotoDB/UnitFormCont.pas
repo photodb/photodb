@@ -1476,7 +1476,7 @@ begin
   GetCursorPos(MousePos);
   Pos := ElvMain.ScreenToClient(MousePos);
   Item := ItemAtPos(Pos.X, Pos.Y);
-  if (Item <> nil) and (Item.ImageIndex > -1) then
+  if (Item <> nil) and (Item.ImageIndex > -1) and not DBReadOnly then
   begin
     Item := ItemByPointStar(ElvMain, Pos, FPictureSize, FBitmapImageList[Item.ImageIndex].Graphic);
     if Item <> nil then

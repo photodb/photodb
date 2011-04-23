@@ -634,6 +634,8 @@ begin
   if FolderView then
     if not FileExists(FileName) then
       FileName := ProgramDir + FileName;
+  if DBReadOnly then
+    Exit;
 
   FileName := LongFileNameW(FileName);
   for I := Length(FileName) - 1 downto 1 do
@@ -866,60 +868,66 @@ begin
     Exit;
   end;
   FQuery.First;
-  // pic := TPicture.Create;
-  G := nil;
-  if FQuery.RecordCount <> 0 then
-  begin
-    if GraphicCrypt.ValidCryptGraphicFile(FileName) then
-    begin
-      Pass := DBKernel.FindPasswordForCryptImageFile(FileName);
-      if Pass = '' then
-      begin
-        Setlength(Result.Ids, 0);
-        Setlength(Result.FileNames, 0);
-        Setlength(Result.Attr, 0);
-        Result.Count := 0;
-        Result.ImTh := '';
-        Exit;
-      end
-      else
-        G := DeCryptGraphicFile(FileName, Pass);
-    end else
-    begin
-      G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
-      G.LoadFromFile(FileName);
-    end;
-  end;
-  JPEGScale(G, 100, 100);
-  SetLength(Val, FQuery.RecordCount);
-  SetLength(Xrot, FQuery.RecordCount);
-  Count := 0;
-  FJPEG := nil;
-  for I := 1 to FQuery.RecordCount do
-  begin
-    if ValidCryptBlobStreamJPG(FQuery.FieldByName('Thum')) then
-    begin
-      Pass := '';
-      Pass := DBkernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('Thum'));
-      FJPEG := TJPEGImage.Create;
-      if Pass <> '' then
-        DeCryptBlobStreamJPG(FQuery.FieldByName('Thum'), Pass, FJPEG);
 
-    end else
+  G := nil;
+  try
+    if FQuery.RecordCount <> 0 then
     begin
-      FJPEG := TJPEGImage.Create;
-      FJPEG.Assign(FQuery.FieldByName('Thum'));
+      if GraphicCrypt.ValidCryptGraphicFile(FileName) then
+      begin
+        Pass := DBKernel.FindPasswordForCryptImageFile(FileName);
+        if Pass = '' then
+        begin
+          Setlength(Result.Ids, 0);
+          Setlength(Result.FileNames, 0);
+          Setlength(Result.Attr, 0);
+          Result.Count := 0;
+          Result.ImTh := '';
+          Exit;
+        end
+        else
+          G := DeCryptGraphicFile(FileName, Pass);
+      end else
+      begin
+        G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
+        G.LoadFromFile(FileName);
+      end;
     end;
-    // FJPEG.FREE ??? TODO: check
-    Res := CompareImages(FJPEG, G, Rot);
-    Xrot[I - 1] := Rot;
-    Val[I - 1] := (Res.ByGistogramm > 1) or (Res.ByPixels > 1);
-    if Val[I - 1] then
-      Inc(Count);
-    FQuery.Next;
+    JPEGScale(G, 100, 100);
+    SetLength(Val, FQuery.RecordCount);
+    SetLength(Xrot, FQuery.RecordCount);
+    Count := 0;
+    FJPEG := nil;
+    for I := 1 to FQuery.RecordCount do
+    begin
+      if ValidCryptBlobStreamJPG(FQuery.FieldByName('Thum')) then
+      begin
+        Pass := '';
+        Pass := DBkernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('Thum'));
+        FJPEG := TJPEGImage.Create;
+        if Pass <> '' then
+          DeCryptBlobStreamJPG(FQuery.FieldByName('Thum'), Pass, FJPEG);
+
+      end else
+      begin
+        FJPEG := TJPEGImage.Create;
+        FJPEG.Assign(FQuery.FieldByName('Thum'));
+      end;
+      try
+        Res := CompareImages(FJPEG, G, Rot);
+      finally
+        F(FJPEG);
+      end;
+      Xrot[I - 1] := Rot;
+      Val[I - 1] := (Res.ByGistogramm > 1) or (Res.ByPixels > 1);
+      if Val[I - 1] then
+        Inc(Count);
+      FQuery.Next;
+    end;
+    F(FJPEG);
+  finally
+    F(G);
   end;
-  F(FJPEG);
-  F(G);
   Setlength(Result.Ids, Count);
   Setlength(Result.FileNames, Count);
   Setlength(Result.Attr, Count);
@@ -1647,7 +1655,7 @@ begin
 
     InTable.FieldByName('Thum').AsVariant := OutTable.FieldByName('Thum').AsVariant;
 
-    if FileExistsSafe(FileName) then
+    if FileExistsSafe(OutTable.FieldByName('FFileName').AsString) then
       InTable.FieldByName('Attr').AsInteger := Db_attr_norm
     else
       InTable.FieldByName('Attr').AsInteger := Db_attr_not_exists;

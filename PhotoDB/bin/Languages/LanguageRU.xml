@@ -295,6 +295,7 @@
     <translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
     <translate name="Add file" value="Добавить файл" />
 	<translate name="This folder (%s) contains %d photos in the database!. Adjust the information in the database?" value="В данной папке (%s) содержится %d фотографий из БД! Скорректировать информацию в БД?" />
+    <translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />	
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />
@@ -343,8 +344,8 @@
     <translate name="New name" value="Новое имя" />
     <translate name="Please, enter a new name" value="Пожалуйста, ведите новое имя" />
     <translate name="File with that name already exists! Select a different file name." value="Файл с таким именем уже существует! Выберите другое имя файла" />
-    <translate name="No date set" value="Дата не установлена" />
-	<translate name="No time set" value="Время не установлено" />
+    <translate name="No date" value="Дата не установлена" />
+	<translate name="No time" value="Время не установлено" />
 	<translate name="Edit groups" value="Редактировать группы" />
 	<translate name="Do you really want to pack the table? Packing will begin the next startup..." value="Вы действительно хотите упаковать таблицу? Упаковка начнётся при следующем запуске программы..." />
 	<translate name="Do you really want to export the table?" value="Вы действительно хотите экспортировать таблицу?" />
@@ -569,7 +570,8 @@
 	<translate name="There are no related groups" value="Нет связанных групп" />	
   </scope>
   <scope name="DBMenu">  
-    <translate name="Find this file manually" value="Найти  файл вручную" />
+    <translate name="Collection is read only!" value="База данных только для чтения!" />
+    <translate name="Find this file manually" value="Найти файл вручную" />	
     <translate name="Analyzer" value="Анализатор" />
     <translate name="Dear {2}!{1}The degree of similarity of these 2 images is - {3}%!{1}Good luck!" value="Дорогой {2}!{1}Степень похожести этих двук картинок - {3}%!{1}Удачи!" />
     <translate name="File" value="Файл" />
@@ -1691,7 +1693,9 @@
 	<translate name="Please select a file" value="Выберите файл"/>
 	<translate name="Item #%s from %s" value="Запись #%s из %s" />
 	<translate name="Saving groups" value="Сохранение групп" />
-	<translate name="Saving group: %s" value="Сохранение группs: %s" />	
+	<translate name="Saving group: %s" value="Сохранение групп: %s" />
+	<translate name="[no records]" value="[нет записей]"/>
+	<translate name="Initialization" value="Инициализация"/>	
   </scope>
   <scope name="DBCleaning">
 	<translate name="Save" value="Сохранить"/>
@@ -1715,6 +1719,7 @@
   </scope>
   <scope name="ImportDB">
     <translate name="Import settings" value="Настройки импорта" />
+    <translate name="Please, choose collection" value="Пожалуйста, выберите базу" />	
     <translate name="Add new items" value="Добавлять новые записи" />
     <translate name="Add items without files" value="Добавлять записи без файлов" />
     <translate name="Add rating" value="Добавлять оценку" />
@@ -1725,6 +1730,7 @@
     <translate name="Add empty comments" value="Добавлять пустые комментарии" />
     <translate name="Add comments" value="Добавлять комментарии" />
     <translate name="Add comments with author" value="Добавлять именованые комментарии" />
+    <translate name="Add date" value="Добавлять дату" />
     <translate name="Add links" value="Добавлять ссылки" />
     <translate name="Ignore keywords" value="Игнорировать слова" />
     <translate name="Replace" value="Заменить" />
@@ -1754,6 +1760,7 @@
     <translate name="Reading collection information" value="Чтение базы данных..." />
     <translate name="Item #%s [%s]" value="Запись №%s [%s]" />
 	<translate name="No file" value="Файл не выбран"/>
+	<translate name="Photo Database files (*.photodb)|*.photodb" value="Файлы Photo Database (*.photodb)|*.photodb"/>	
   </scope>
   <scope name="ActionProgress">
   	<translate name="Current action" value="Текущее действие"/>

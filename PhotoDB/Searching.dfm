@@ -278,17 +278,17 @@ object SearchForm: TSearchForm
         Width = 96
         Height = 16
         Cursor = crHandPoint
-        PopupMenu = PopupMenu5
+        PopupMenu = PmRating
         Rating = 2
         RatingRange = 0
-        OnChange = Memo1Change
+        OnChange = MemKeyWordsChange
         Islayered = False
         Layered = 100
         OnMouseDown = RatingEditMouseDown
         ImageCanRegenerate = True
         CanSelectRange = False
       end
-      object Memo2: TMemo
+      object MemComments: TMemo
         Tag = 1
         Left = 8
         Top = 176
@@ -304,10 +304,10 @@ object SearchForm: TSearchForm
         ParentFont = False
         ScrollBars = ssVertical
         TabOrder = 5
-        OnChange = Memo1Change
+        OnChange = MemKeyWordsChange
         OnDblClick = SetComent1Click
       end
-      object Memo1: TMemo
+      object MemKeyWords: TMemo
         Tag = 1
         Left = 8
         Top = 268
@@ -323,7 +323,7 @@ object SearchForm: TSearchForm
         ParentFont = False
         ScrollBars = ssVertical
         TabOrder = 6
-        OnChange = Memo1Change
+        OnChange = MemKeyWordsChange
       end
       object Save: TButton
         Left = 110
@@ -335,7 +335,7 @@ object SearchForm: TSearchForm
         TabOrder = 7
         OnClick = SaveClick
       end
-      object DateTimePicker1: TDateTimePicker
+      object DtpDate: TDateTimePicker
         Tag = 1
         Left = 8
         Top = 50
@@ -356,9 +356,9 @@ object SearchForm: TSearchForm
         Font.Style = []
         ParentColor = True
         ParentFont = False
-        PopupMenu = PopupMenu3
+        PopupMenu = PmDateEdit
         TabOrder = 1
-        OnChange = Memo1Change
+        OnChange = MemKeyWordsChange
       end
       object IsDatePanel: TPanel
         Left = 8
@@ -369,7 +369,7 @@ object SearchForm: TSearchForm
         BevelInner = bvLowered
         Caption = '<no date>'
         ParentColor = True
-        PopupMenu = PopupMenu3
+        PopupMenu = PmDateEdit
         TabOrder = 4
         OnDblClick = IsDatePanelDblClick
       end
@@ -390,12 +390,12 @@ object SearchForm: TSearchForm
         ParentColor = True
         ParentCtl3D = False
         ParentFont = False
-        PopupMenu = PopupMenu7
+        PopupMenu = PmSetDate
         TabOrder = 3
         Visible = False
         OnDblClick = PanelValueIsDateSetsDblClick
       end
-      object DateTimePicker4: TDateTimePicker
+      object DtpTime: TDateTimePicker
         Tag = 1
         Left = 8
         Top = 75
@@ -407,9 +407,9 @@ object SearchForm: TSearchForm
         Color = clBtnFace
         Kind = dtkTime
         ParentColor = True
-        PopupMenu = PopupMenu11
+        PopupMenu = PmTimeEdit
         TabOrder = 2
-        OnChange = Memo1Change
+        OnChange = MemKeyWordsChange
       end
       object IsTimePanel: TPanel
         Left = 8
@@ -420,7 +420,7 @@ object SearchForm: TSearchForm
         BevelInner = bvLowered
         Caption = '<no time>'
         ParentColor = True
-        PopupMenu = PopupMenu11
+        PopupMenu = PmTimeEdit
         TabOrder = 8
         OnDblClick = IsTimePanelDblClick
       end
@@ -441,7 +441,7 @@ object SearchForm: TSearchForm
         ParentColor = True
         ParentCtl3D = False
         ParentFont = False
-        PopupMenu = PopupMenu10
+        PopupMenu = PmSetTime
         TabOrder = 9
         Visible = False
         OnDblClick = PanelValueIsTimeSetsDblClick
@@ -1172,8 +1172,8 @@ object SearchForm: TSearchForm
       end
     end
   end
-  object PopupMenu3: TPopupMenu
-    OnPopup = PopupMenu3Popup
+  object PmDateEdit: TPopupMenu
+    OnPopup = PmDateEditPopup
     Left = 480
     Top = 368
     object Datenotexists1: TMenuItem
@@ -1202,8 +1202,8 @@ object SearchForm: TSearchForm
       OnClick = GroupsManager1Click
     end
   end
-  object PopupMenu5: TPopupMenu
-    OnPopup = PopupMenu5Popup
+  object PmRating: TPopupMenu
+    OnPopup = PmRatingPopup
     Left = 481
     Top = 608
     object Ratingnotsets1: TMenuItem
@@ -1211,8 +1211,8 @@ object SearchForm: TSearchForm
       OnClick = Ratingnotsets1Click
     end
   end
-  object PopupMenu6: TPopupMenu
-    OnPopup = PopupMenu6Popup
+  object PmComment: TPopupMenu
+    OnPopup = PmCommentPopup
     Left = 480
     Top = 560
     object SetComent1: TMenuItem
@@ -1253,8 +1253,8 @@ object SearchForm: TSearchForm
       OnClick = Undo1Click
     end
   end
-  object PopupMenu7: TPopupMenu
-    OnPopup = PopupMenu7Popup
+  object PmSetDate: TPopupMenu
+    OnPopup = PmSetDatePopup
     Left = 482
     Top = 512
     object Setvalue1: TMenuItem
@@ -1262,20 +1262,14 @@ object SearchForm: TSearchForm
       OnClick = PanelValueIsDateSetsDblClick
     end
   end
-  object ImageList1: TImageList
-    Height = 102
-    Width = 102
-    Left = 335
-    Top = 424
-  end
   object HelpTimer: TTimer
     Enabled = False
     OnTimer = HelpTimerTimer
     Left = 233
     Top = 504
   end
-  object PopupMenu8: TPopupMenu
-    OnPopup = PopupMenu8Popup
+  object PmExplorerMenu: TPopupMenu
+    OnPopup = PmExplorerMenuPopup
     Left = 482
     Top = 464
     object OpeninExplorer1: TMenuItem
@@ -1400,7 +1394,7 @@ object SearchForm: TSearchForm
   end
   object GroupsImageList: TImageList
     Left = 337
-    Top = 520
+    Top = 480
   end
   object InsertSpesialQueryPopupMenu: TPopupMenu
     Left = 481
@@ -1413,8 +1407,8 @@ object SearchForm: TSearchForm
     Left = 233
     Top = 320
   end
-  object PopupMenu10: TPopupMenu
-    OnPopup = PopupMenu7Popup
+  object PmSetTime: TPopupMenu
+    OnPopup = PmSetDatePopup
     Left = 482
     Top = 136
     object Setvalue2: TMenuItem
@@ -1422,8 +1416,8 @@ object SearchForm: TSearchForm
       OnClick = PanelValueIsTimeSetsDblClick
     end
   end
-  object PopupMenu11: TPopupMenu
-    OnPopup = PopupMenu11Popup
+  object PmTimeEdit: TPopupMenu
+    OnPopup = PmTimeEditPopup
     Left = 480
     Top = 416
     object Timenotexists1: TMenuItem
@@ -1543,6 +1537,6 @@ object SearchForm: TSearchForm
   end
   object SearchImageList: TImageList
     Left = 337
-    Top = 472
+    Top = 432
   end
 end

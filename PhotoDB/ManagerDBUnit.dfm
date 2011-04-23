@@ -132,7 +132,7 @@ object ManagerDB: TManagerDB
       end
       object CbWhereCombinator: TComboBox
         Left = 212
-        Top = 96
+        Top = 100
         Width = 49
         Height = 21
         Style = csDropDownList
@@ -242,7 +242,7 @@ object ManagerDB: TManagerDB
       object RecordNumberEdit: TEdit
         Left = 656
         Top = 19
-        Width = 129
+        Width = 177
         Height = 21
         TabOrder = 12
         Text = '1'
@@ -251,7 +251,7 @@ object ManagerDB: TManagerDB
       object LbBackups: TListBox
         Left = 656
         Top = 64
-        Width = 129
+        Width = 177
         Height = 137
         Style = lbOwnerDrawFixed
         ItemHeight = 20
@@ -262,8 +262,8 @@ object ManagerDB: TManagerDB
       object PackTabelLink: TWebLink
         Left = 8
         Top = 8
-        Width = 76
-        Height = 16
+        Width = 60
+        Height = 13
         Cursor = crHandPoint
         Text = 'Pack Table'
         OnClick = PackTabelLinkClick
@@ -281,8 +281,8 @@ object ManagerDB: TManagerDB
       object ExportTableLink: TWebLink
         Left = 8
         Top = 28
-        Width = 81
-        Height = 16
+        Width = 65
+        Height = 13
         Cursor = crHandPoint
         Text = 'Export Table'
         OnClick = ExportTableLinkClick
@@ -300,8 +300,8 @@ object ManagerDB: TManagerDB
       object ImportTableLink: TWebLink
         Left = 8
         Top = 48
-        Width = 80
-        Height = 16
+        Width = 64
+        Height = 13
         Cursor = crHandPoint
         Text = 'Import Table'
         OnClick = ImportTableLinkClick
@@ -319,8 +319,8 @@ object ManagerDB: TManagerDB
       object RecreateIDExLink: TWebLink
         Left = 8
         Top = 68
-        Width = 91
-        Height = 16
+        Width = 75
+        Height = 13
         Cursor = crHandPoint
         Text = 'Recreate IDEx'
         OnClick = RecreateIDExLinkClick
@@ -338,8 +338,8 @@ object ManagerDB: TManagerDB
       object ScanforBadLinksLink: TWebLink
         Left = 8
         Top = 88
-        Width = 111
-        Height = 16
+        Width = 95
+        Height = 13
         Cursor = crHandPoint
         Text = 'Scan for Bad Links'
         OnClick = ScanforBadLinksLinkClick
@@ -357,8 +357,8 @@ object ManagerDB: TManagerDB
       object BackUpDBLink: TWebLink
         Left = 8
         Top = 108
-        Width = 78
-        Height = 16
+        Width = 62
+        Height = 13
         Cursor = crHandPoint
         Text = 'BackUp DB'
         OnClick = BackUpDBLinkClick
@@ -376,8 +376,8 @@ object ManagerDB: TManagerDB
       object CleaningLink: TWebLink
         Left = 8
         Top = 128
-        Width = 62
-        Height = 16
+        Width = 46
+        Height = 13
         Cursor = crHandPoint
         Text = 'Cleaning'
         OnClick = CleaningLinkClick
@@ -416,8 +416,8 @@ object ManagerDB: TManagerDB
       object DublicatesLink: TWebLink
         Left = 8
         Top = 168
-        Width = 122
-        Height = 16
+        Width = 106
+        Height = 13
         Cursor = crHandPoint
         Text = 'Optimizing Dublicates'
         OnClick = DublicatesLinkClick
@@ -435,8 +435,8 @@ object ManagerDB: TManagerDB
       object ConvertLink: TWebLink
         Left = 8
         Top = 148
-        Width = 76
-        Height = 16
+        Width = 60
+        Height = 13
         Cursor = crHandPoint
         Text = 'Convert DB'
         OnClick = ConvertLinkClick
@@ -454,8 +454,8 @@ object ManagerDB: TManagerDB
       object ChangePathLink: TWebLink
         Left = 8
         Top = 188
-        Width = 204
-        Height = 16
+        Width = 188
+        Height = 13
         Cursor = crHandPoint
         Text = 'Change Path in DB (if files was moved)'
         OnClick = ChangePathLinkClick
@@ -569,6 +569,7 @@ object ManagerDB: TManagerDB
       Visible = False
       Active = True
       FillPercent = 50
+      Color = clBtnFace
       ParentColor = False
       SignColor = clBlack
       MaxTransparencity = 255

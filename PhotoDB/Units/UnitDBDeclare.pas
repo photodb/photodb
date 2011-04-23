@@ -27,7 +27,6 @@ type
   TAddCryptFileToListProc = procedure(Sender : TObject; Rec : TPasswordRecord)  of object;
   TGetAvaliableCryptFileList = function(Sender : TObject) : TArInteger  of object;
 
-  //todo: add form owner
   TRecreatingThInTableOptions = record
     OwnerForm: TDBForm;
     WriteLineProc: TWriteLineProcedure;

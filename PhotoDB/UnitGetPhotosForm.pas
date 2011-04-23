@@ -256,7 +256,7 @@ begin
     CbOpenFolder.Caption := L('Open this folder');
     Label2.Caption := L('Folder mask') + ':';
     Label3.Caption := L('Comment for folder') + ':';
-    MemComment.Text := L('Your comment');  //TODO: shadow
+    MemComment.Text := L('Your comment');
     Label4.Caption := L('Folder name') + ':';
     Label5.Caption := L('Final location');
     Label6.Caption := L('Method') + ':';

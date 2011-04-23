@@ -70,7 +70,7 @@ type TDBPopupMenu = class
     function GetGroupImageInImageList(GroupCode: string): Integer;
     function LoadVariablesNo(Int: Integer): Integer;
     function LoadVariablesSelectedFileNo(Int: Integer): Integer;
-
+    function CheckDBReadOnly: Boolean;
   end;
 
  procedure ReloadIDMenu;
@@ -498,10 +498,11 @@ begin
   Date := MaxStatDate(ArDates);
   Time := MaxStatTime(ArTimes);
   ChangeDate(Date, IsDate, Changed, Time, IsTime);
-  if Changed then
+
+  if Changed and not CheckDBReadOnly then
   begin
     FQuery := GetQuery;
-    begin
+    try
    // [BEGIN] Date Support
       if IsDate then
       begin
@@ -526,8 +527,7 @@ begin
         for I := 0 to FInfo.Count - 1 do
           if FInfo[I].Selected then
             DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
-      end
-      else
+      end else
       begin
         _sqlexectext := 'Update $DB$ Set IsDate = FALSE Where ID in (';
         FirstID := True;
@@ -574,8 +574,7 @@ begin
         for I := 0 to Finfo.Count - 1 do
           if Finfo[I].Selected then
             DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
-      end
-      else
+      end else
       begin
         _sqlexectext := 'Update $DB$ Set IsTime = FALSE Where ID in (';
         FirstID := True;
@@ -598,8 +597,9 @@ begin
             DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_IsTime], EventInfo);
       end;
       // [END] Time Support
+    finally
+      FreeDS(FQuery);
     end;
-    FreeDS(FQuery);
   end;
 end;
 
@@ -618,6 +618,8 @@ var
   IDs: TArInteger;
   DA: TDBAdapter;
 begin
+  if CheckDBReadOnly then
+    Exit;
   if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID),
     TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
@@ -682,6 +684,8 @@ var
   S: TArStrings;
   FirstID: Boolean;
 begin
+  if CheckDBReadOnly then
+    Exit;
   if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want to delete this info from collection?'), TA('Confirm'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
@@ -727,6 +731,8 @@ var
   SQL_: string;
   FirstID: Boolean;
 begin
+  if CheckDBReadOnly then
+    Exit;
  if IdOk = MessageBoxDB(GetActiveFormHandle, TA('Do you really want to delete this info from collection?', DBMenuID),
     TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
@@ -938,6 +944,8 @@ begin
     VarKeyWords := VariousKeyWords(OldKeyWords, NewKeyWords);
     VarGroups := not CompareGroups(StrOldGroups, StrNewGroups);
     if not VarKeyWords and not VarGroups then
+      Exit;
+    if CheckDBReadOnly then
       Exit;
 
     fQuery := GetQuery;
@@ -1152,6 +1160,8 @@ var
   Count: Integer;
   ProgressForm: TProgressActionForm;
 begin
+  if CheckDBReadOnly then
+    Exit;
   FBusy := True;
   OldAccess := (Sender as TMenuItem).Tag;
   Count := 0;
@@ -1177,8 +1187,7 @@ begin
           EventInfo.Access := Db_access_private;
           DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
         end;
-      end
-      else
+      end else
       begin
         if FInfo[I].Access = DB_Access_Private then
         begin
@@ -1252,6 +1261,8 @@ procedure TDBPopupMenu.RefreshIDItemPopUpMenu_(Sender: TObject);
 var
   Options : TRefreshIDRecordThreadOptions;
 begin
+  if CheckDBReadOnly then
+    Exit;
   Options.Info := FInfo;
   TRefreshDBRecordsThread.Create(FOwner, Options);
 end;
@@ -1353,6 +1364,8 @@ var
   FQuery: TDataSet;
   FirstID: Boolean;
 begin
+  if CheckDBReadOnly then
+    Exit;
   Str := (Sender as Tmenuitem).Caption;
   System.Delete(Str, 1, 1);
   NewRating := StrToInt(Str);
@@ -1394,6 +1407,8 @@ var
   EventInfo: TEventValues;
   NewRotate: Integer;
 begin
+  if CheckDBReadOnly then
+    Exit;
   NewRotate := (Sender as Tmenuitem).Tag;
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
@@ -1440,6 +1455,13 @@ begin
     Application.CreateForm(TViewer, Viewer);
   Viewer.Execute(Sender, FInfo);
   Viewer.Show;
+end;
+
+function TDBPopupMenu.CheckDBReadOnly: Boolean;
+begin
+  Result := DBReadOnly;
+  if Result then
+    MessageBoxDB(GetActiveFormHandle, TA('Collection is read only!', DBMenuID), TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
 end;
 
 procedure TDBPopupMenu.ConvertItemPopUpMenu_(Sender: TObject);

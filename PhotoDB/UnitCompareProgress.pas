@@ -19,11 +19,11 @@ type
     Label1: TLabel;
     Label2: TLabel;
     PbItemsUpdated: TDmProgress;
-    Label3: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnPauseClick(Sender: TObject);
     procedure BtnStopClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   protected
@@ -45,7 +45,8 @@ var
 
 implementation
 
-uses UnitCmpDB, FormManegerUnit;
+uses
+  UnitCmpDB, FormManegerUnit;
 
 {$R *.dfm}
 
@@ -64,6 +65,12 @@ end;
 procedure TImportProgressForm.SetStatusText(Value: String);
 begin
   StatusLabel.Caption := Value;
+end;
+
+procedure TImportProgressForm.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Release;
 end;
 
 procedure TImportProgressForm.FormCreate(Sender: TObject);
@@ -105,8 +112,8 @@ end;
 
 procedure TImportProgressForm.BtnPauseClick(Sender: TObject);
 begin
-  UnitCmpDB.Paused := not UnitCmpDB.Paused;
-  if UnitCmpDB.Paused then
+  UnitCmpDB.CompareThreadPaused := not UnitCmpDB.CompareThreadPaused;
+  if UnitCmpDB.CompareThreadPaused then
     BtnPause.Caption := L('Unpause')
   else
     BtnPause.Caption := L('Pause');
@@ -114,7 +121,7 @@ end;
 
 procedure TImportProgressForm.BtnStopClick(Sender: TObject);
 begin
-  UnitCmpDB.Terminated_ := True;
+  UnitCmpDB.CompareThreadTerminated := True;
 end;
 
 procedure TImportProgressForm.Done(Sender: TObject);
@@ -132,7 +139,6 @@ begin
     PbItemsUpdated.Text := L('&%% (Updated)');
     BtnPause.Caption := L('Pause');
     BtnStop.Caption := L('Stop');
-    Label3.Caption := L('Status');
     Label14.Caption := L('Status') + ':';
     Label13.Caption := L('Current action') + ':';
     ActionLabel.Caption := L('<Status>');

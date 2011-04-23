@@ -403,9 +403,7 @@ begin
   begin
     SetLength(Result, ExplorerManager.ExplorersCount);
     for I := 0 to ExplorerManager.ExplorersCount - 1 do
-    begin
-      // TODO: Result[i]:=ExplorerManager.Explorers[i].WindowID;
-    end;
+      Result[I] := GUIDToString(ExplorerManager[I].WindowID);
   end;
 end;
 

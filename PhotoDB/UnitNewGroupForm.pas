@@ -209,6 +209,7 @@ begin
   FCreated := False;
   FExecuteW := True;
   FGroupCode := GroupCode;
+  ReloadGroups;
   ShowModal;
   GroupName := FNewGroupName;
   Created := FCreated;

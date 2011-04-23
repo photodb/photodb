@@ -1404,7 +1404,10 @@ end;
 
 procedure TPropertiesForm.EnableEditing(Value: Boolean);
 begin
-  CommentMemo.Enabled := False;
+  if DBReadOnly then
+    Value := False;
+
+  CommentMemo.Enabled := Value;
   RatingEdit.Enabled := Value;
   DateEdit.Enabled := Value;
   TimeEdit.Enabled := Value;

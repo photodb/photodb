@@ -506,20 +506,23 @@ begin
   if (SetNewIDFileData in params) or (EventID_FileProcessed in params) then
     if UpdateObject.Active then
     begin
-      //TODO: check it!
       Image3.Visible := false;
       Bit := TBitmap.Create;
-      Bit.PixelFormat := pf24bit;
-      Bit.Assign(Value.JPEGImage);
-      Bit.Width := ThSize;
-      Bit.Height := ThSize;
-      FillRectToBitmapA(Bit);
-      Bit.Canvas.Draw(ThSize div 2 - Value.JPEGImage.Width div 2,
-        ThSize div 2 - Value.JPEGImage.Height div 2, Value.JPEGImage);
-      Image2.Picture.Graphic := Bit;
+      try
+        Bit.PixelFormat := pf24bit;
+        Bit.Assign(Value.JPEGImage);
+        Bit.Width := ThSize;
+        Bit.Height := ThSize;
+        FillRectToBitmapA(Bit);
+        Bit.Canvas.Draw(ThSize div 2 - Value.JPEGImage.Width div 2,
+          ThSize div 2 - Value.JPEGImage.Height div 2, Value.JPEGImage);
+        Image2.Picture.Graphic := Bit;
+      finally
+        F(Bit);
+      end;
       Edit4.Text := Value.Name;
 
-      inc(ImageProcessedCounter);
+      Inc(ImageProcessedCounter);
       FileSize := GetFileSizeByName(Value.Name);
       ProcessingSize := ProcessingSize + FileSize;
       Label11.Caption := Format(L('Size: %s from %s'),
@@ -533,7 +536,7 @@ begin
       Label8.Caption := Format(L('Time remaining: %s (&%%)'),
         [FormatDateTime('hh:mm:ss', TimeCounter.GetTimeRemaining)]);
 
-      exit;
+      Exit;
     end;
 
   if EventID_Param_Add_Crypt_WithoutPass in params then

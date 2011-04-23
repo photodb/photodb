@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Menus, UnitDBKernel, jpeg,
   uConstants, uMemory, uDBForm, uShellIntegration, Dolphin_DB, uMemoryEx,
-  CommonDBSupport;
+  CommonDBSupport, WatermarkedEdit, pngimage;
 
 type
   GroupReplaceOptions = record
@@ -29,11 +29,10 @@ type
     CbReplaceImage: TCheckBox;
     Panel3: TPanel;
     WarningLabelText: TLabel;
-    Image1: TImage;
-    Image2: TImage;
+    ImMain: TImage;
     CbAllUnknownGroups: TCheckBox;
     BtnOk: TButton;
-    NewGroupNameBox: TEdit;
+    NewGroupNameBox: TWatermarkedEdit;
     CbAllKnownGroups: TCheckBox;
     RbAddGroup: TRadioButton;
     PopupMenu1: TPopupMenu;
@@ -45,6 +44,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CbExistedGroupsKeyPress(Sender: TObject; var Key: Char);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FGroup: TGroup;
@@ -139,9 +139,15 @@ end;
 
 procedure TFormGroupReplace.FormCreate(Sender: TObject);
 begin
+  SetLength(RegGroups, 0);
   FGroupFileName := Dbname;
   RecreateGroupsList;
   LoadLanguage;
+end;
+
+procedure TFormGroupReplace.FormDestroy(Sender: TObject);
+begin
+  FreeGroups(RegGroups);
 end;
 
 function TFormGroupReplace.GetFormID: string;
@@ -176,6 +182,7 @@ procedure TFormGroupReplace.RecreateGroupsList;
 var
   I: Integer;
 begin
+  FreeGroups(RegGroups);
   RegGroups := GetRegisterGroupListW(FGroupFileName, False, DBKernel.SortGroupsByName);
   CbExistedGroups.Clear;
   for I := 0 to Length(RegGroups) - 1 do
@@ -184,7 +191,7 @@ end;
 
 procedure TFormGroupReplace.SetText(GroupName: string);
 begin
-  WarningLabelText.Caption := Format(L('The database found a group named "%s". What to do with this group when you import an existing database?"'), [GroupName]);
+  WarningLabelText.Caption := Format(L('The database found a group named "%s". What to do with this group when you import an existing database?'), [GroupName]);
 end;
 
 procedure TFormGroupReplace.RbMergeWithClick(Sender: TObject);
@@ -313,7 +320,7 @@ begin
     RbMergeWith.Caption := L('Megre with');
     RbAddWithAnotherName.Caption := L('Add with another name');
     RbSkipGroup.Caption := L('Skip this group');
-    NewGroupNameBox.Text := L('<Group>');
+    NewGroupNameBox.WatermarkText := L('Group');
   finally
     EndTranslate;
   end;

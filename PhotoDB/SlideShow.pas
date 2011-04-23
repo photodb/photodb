@@ -3319,7 +3319,7 @@ end;
 
 procedure TViewer.SetDisplayRating(const Value: Integer);
 begin
-  TbRating.Enabled := not (FolderView and (Item.ID = 0));
+  TbRating.Enabled := not (FolderView and (Item.ID = 0)) and not DBReadOnly;
   TbRating.ImageIndex := 14 + Abs(Value);
 end;
 

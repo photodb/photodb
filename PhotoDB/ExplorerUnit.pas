@@ -12,7 +12,7 @@ uses
   DropTarget, ScPanel, uGOM, UnitCDMappingSupport,
   ShellContextMenu, ShlObj, Clipbrd, GraphicsCool, uShellIntegration,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
-  EasyListview, MPCommonUtilities, MPCommonObjects,
+  EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
   UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
@@ -585,6 +585,7 @@ type
      function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
    public
      NoLockListView : boolean;
+     procedure LoadLastPath;
      Procedure LoadLanguage;
      procedure LoadSizes;
      procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
@@ -728,8 +729,7 @@ end;
 
 procedure TExplorerForm.FormCreate(Sender: TObject);
 var
-  NewPath : String;
-  NewPathType, i : Integer;
+  I: Integer;
 begin
   TPrivateHelper.Instance.Init;
   DirectoryWatcher := TWachDirectoryClass.Create;
@@ -904,18 +904,8 @@ begin
 
   GOM.AddObj(Self);
   if FGoToLastSavedPath then
-  begin
-    NewPath := Settings.ReadString('Explorer', 'Patch');
-    NewPathType := Settings.ReadInteger('Explorer', 'PatchType', EXPLORER_ITEM_MYCOMPUTER);
+    LoadLastPath;
 
-    Settings.WriteString('Explorer', 'Patch', '');
-    Settings.WriteInteger('Explorer', 'PatchType', EXPLORER_ITEM_MYCOMPUTER);
-
-    SetNewPathW(ExplorerPath(NewPath, NewPathType), True);
-
-    Settings.WriteString('Explorer', 'Patch', NewPath);
-    Settings.WriteInteger('Explorer', 'PatchType', NewPathType);
-  end;
   CreateBackgrounds;
 
   for I := 0 to ComponentCount - 1 do
@@ -1550,9 +1540,8 @@ begin
   DBKernel.UnRegisterChangesID(Sender,ChangedDBDataByID);
 
   Settings.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
-
-  Settings.WriteString('Explorer','Patch',GetCurrentPathW.Path);
-  Settings.WriteInteger('Explorer','PatchType',GetCurrentPathW.PType);
+  Settings.WriteString('Explorer','Path',GetCurrentPathW.Path);
+  Settings.WriteInteger('Explorer','PathType',GetCurrentPathW.PType);
   FStatusProgress.Free;
   FormManager.UnRegisterMainForm(Self);
   F(FFilesInfo);
@@ -2534,7 +2523,7 @@ procedure TExplorerForm.OpenInNewWindow1Click(Sender: TObject);
 begin
   with ExplorerManager.NewExplorer(False) do
   begin
-    SetNewPathW(Self.GetCurrentPathW,False);
+    SetNewPathW(Self.GetCurrentPathW, False);
     Show;
   end;
 end;
@@ -4635,6 +4624,14 @@ begin
   finally
     EndTranslate;
   end;
+end;
+
+procedure TExplorerForm.LoadLastPath;
+begin
+  SetNewPathW(
+    ExplorerPath(
+      Settings.ReadString('Explorer', 'Path', GetMyPicturesPath),
+      Settings.ReadInteger('Explorer', 'PathType', EXPLORER_ITEM_FOLDER)), False);
 end;
 
 procedure TExplorerForm.Help1Click(Sender: TObject);
@@ -7015,7 +7012,7 @@ begin
   GetCursorPos(P1);
   P := ElvMain.ScreenToClient(p1);
   EasyItem := ElvMain.Selection.FocusedItem;
-  if (EasyItem <> nil) and (EasyItem.ImageIndex > -1) then
+  if (EasyItem <> nil) and (EasyItem.ImageIndex > -1) and not DBReadOnly then
   begin
     if ItemByPointStar(ElvMain, p, FPictureSize, FBitmapImageList[EasyItem.ImageIndex].Graphic) = EasyItem then
     begin

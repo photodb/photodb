@@ -95,7 +95,8 @@ var
 
 implementation
 
-uses UnitCrypting, CommonDBSupport,
+uses
+  UnitCrypting, CommonDBSupport,
   UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
   UnitBackUpTableInCMD;
 
@@ -258,7 +259,7 @@ begin
   try
     if (GetDBType(DBName_) = DB_TYPE_MDB) and (GetFileSizeByName(DBName_) > 500 * 1025) then
     begin
-      FTestTable := GetQuery(DBName_);
+      FTestTable := GetQuery(DBName_, True);
 
       SetSQL(FTestTable, 'Select TOP 1 * From ImageTable Where ID<>0 ');
       try
@@ -695,6 +696,7 @@ var
   I, DBType : Integer;
   Icon, FileName : string;
 begin
+  F(FDBs);
   FDBs := TPhotoDBFiles.Create;
 
   List := TStringList.Create;

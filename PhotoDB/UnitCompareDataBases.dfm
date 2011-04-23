@@ -4,8 +4,8 @@ object ImportDataBaseForm: TImportDataBaseForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
   Caption = 'Importing options'
-  ClientHeight = 318
-  ClientWidth = 358
+  ClientHeight = 324
+  ClientWidth = 428
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,9 +16,12 @@ object ImportDataBaseForm: TImportDataBaseForm
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  DesignSize = (
+    428
+    324)
   PixelsPerInch = 96
   TextHeight = 13
-  object Label3: TLabel
+  object LbDatabase: TLabel
     Left = 8
     Top = 8
     Width = 95
@@ -26,30 +29,30 @@ object ImportDataBaseForm: TImportDataBaseForm
     Caption = 'Additianal Database'
   end
   object Label5: TLabel
-    Left = 168
-    Top = 48
+    Left = 248
+    Top = 51
     Width = 94
     Height = 13
     Caption = 'List of ignore words:'
   end
   object Label4: TLabel
-    Left = 168
+    Left = 248
     Top = 8
     Width = 46
     Height = 13
     Caption = 'By Author'
   end
-  object Edit2: TEdit
+  object EdDatabase: TWatermarkedEdit
     Left = 8
     Top = 24
-    Width = 137
+    Width = 225
     Height = 21
     ReadOnly = True
     TabOrder = 0
-    Text = '<no database>'
+    WatermarkText = 'Please, choose collection'
   end
   object Button2: TButton
-    Left = 144
+    Left = 225
     Top = 24
     Width = 17
     Height = 21
@@ -57,11 +60,11 @@ object ImportDataBaseForm: TImportDataBaseForm
     TabOrder = 1
     OnClick = Button2Click
   end
-  object CheckListBox1: TCheckListBox
+  object ClbOptions: TCheckListBox
     Tag = 1
     Left = 8
     Top = 48
-    Width = 153
+    Width = 234
     Height = 225
     Color = clBtnFace
     ItemHeight = 13
@@ -82,12 +85,16 @@ object ImportDataBaseForm: TImportDataBaseForm
     TabOrder = 2
   end
   object GroupBox1: TGroupBox
-    Left = 168
+    Left = 248
     Top = 155
-    Width = 185
+    Width = 175
     Height = 121
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Replace'
     TabOrder = 3
+    DesignSize = (
+      175
+      121)
     object Label9: TLabel
       Left = 72
       Top = 24
@@ -135,16 +142,18 @@ object ImportDataBaseForm: TImportDataBaseForm
     object Edit6: TEdit
       Left = 104
       Top = 16
-      Width = 73
+      Width = 63
       Height = 21
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
       Text = '-'
     end
     object Edit7: TEdit
       Left = 104
       Top = 40
-      Width = 73
+      Width = 63
       Height = 21
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
       Text = '-'
     end
@@ -159,8 +168,9 @@ object ImportDataBaseForm: TImportDataBaseForm
     object Edit9: TEdit
       Left = 104
       Top = 64
-      Width = 73
+      Width = 63
       Height = 21
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 4
       Text = '-'
     end
@@ -175,8 +185,9 @@ object ImportDataBaseForm: TImportDataBaseForm
     object Edit11: TEdit
       Left = 104
       Top = 88
-      Width = 73
+      Width = 63
       Height = 21
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 6
       Text = '-'
     end
@@ -189,57 +200,55 @@ object ImportDataBaseForm: TImportDataBaseForm
       Text = '-'
     end
   end
-  object Button4: TButton
-    Left = 264
-    Top = 298
+  object BtnOk: TButton
+    Left = 333
+    Top = 299
     Width = 89
-    Height = 17
+    Height = 22
+    Anchors = [akTop, akRight]
     Caption = 'Ok'
     TabOrder = 4
-    OnClick = Button4Click
+    OnClick = BtnOkClick
   end
-  object Button5: TButton
-    Left = 168
-    Top = 298
+  object BtnCancel: TButton
+    Left = 238
+    Top = 299
     Width = 89
-    Height = 17
+    Height = 22
+    Anchors = [akTop, akRight]
     Caption = 'Cancel'
     TabOrder = 5
-    OnClick = Button5Click
+    OnClick = BtnCancelClick
   end
-  object Memo1: TMemo
-    Left = 168
-    Top = 64
-    Width = 185
-    Height = 89
+  object MemIgnoreKeywords: TMemo
+    Left = 248
+    Top = 70
+    Width = 175
+    Height = 83
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 6
   end
-  object Edit4: TEdit
-    Left = 168
+  object EdAuthor: TEdit
+    Left = 248
     Top = 24
-    Width = 185
+    Width = 175
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 7
     Text = 'Autor'
   end
-  object CheckBox1: TCheckBox
+  object CbScanByName: TCheckBox
     Left = 8
-    Top = 280
-    Width = 345
+    Top = 279
+    Width = 415
     Height = 16
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Use Scaning By Filename'
-    Checked = True
-    State = cbChecked
     TabOrder = 8
   end
   object OpenDialog1: TOpenDialog
     Filter = 'DataBase Files (*.db)|*.db'
-    Left = 256
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = DestroyTimerTimer
-    Left = 288
+    Left = 200
+    Top = 56
   end
 end

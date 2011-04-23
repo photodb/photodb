@@ -95,5 +95,21 @@ namespace PhotoDBDatabase.Classes
                 return refer.ReferId;
             }
         }
+
+        public static void MarkView(int pageId, string page)
+        {
+            using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
+            {
+                PageView pv = new PageView()
+                {
+                    HostId = HostId,
+                    PageId = pageId,
+                    ViewDate = DateTime.Now,
+                    Page = page,
+                };
+                db.PageViews.InsertOnSubmit(pv);
+                db.SubmitChanges();
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@ interface
 
 uses
   UnitGroupsWork, Classes, DB, UnitDBKernel, SysUtils, GraphicCrypt, ActiveX,
-  UnitDBDeclare, uFileUtils, uConstants, uDBUtils, uDBForm,
+  UnitDBDeclare, uFileUtils, uConstants, uDBUtils, uDBForm, uMemory,
   uTranslate, uDBThread;
 
 Type
@@ -47,11 +47,12 @@ type
   end;
 
 var
-  StopExport : boolean = false;
+  StopExport : Boolean = false;
 
 implementation
 
-uses ExportUnit, CommonDBSupport;
+uses
+  ExportUnit, CommonDBSupport;
 
 { ExportThread }
 
@@ -78,7 +79,11 @@ begin
 
       DBKernel.CreateDBbyName(FOptions.FileName);
       ImageSettings := CommonDBSupport.GetImageSettingsFromTable(DBName);
-      CommonDBSupport.UpdateImageSettings(FOptions.FileName, ImageSettings);
+      try
+        CommonDBSupport.UpdateImageSettings(FOptions.FileName, ImageSettings);
+      finally
+        F(ImageSettings);
+      end;
 
       TableIn := GetTable(FOptions.FileName, DB_TABLE_IMAGES);
 
@@ -185,6 +190,7 @@ begin
         end;
       except
       end;
+      TryRemoveConnection(FOptions.FileName, True);
     finally
       CoUnInitialize;
     end;
@@ -206,12 +212,12 @@ end;
 
 procedure ExportThread.SetMaxValueA;
 begin
-  //TODO: send owner ExportForm.SetProgressMaxValue(FIntParam);
+  TExportForm(OwnerForm).SetProgressMaxValue(FIntParam);
 end;
 
 procedure ExportThread.SetPositionA;
 begin
-  //TODO: send owner ExportForm.SetProgressPosition(FIntParam);
+  TExportForm(OwnerForm).SetProgressPosition(FIntParam);
 end;
 
 procedure ExportThread.SetPosition(Value: Integer);
@@ -228,7 +234,7 @@ end;
 
 procedure ExportThread.SetProgressTextA;
 begin
-  // TODO: send owner ExportForm.SetProgressText(FStringParam);
+  TExportForm(OwnerForm).SetProgressText(FStringParam);
 end;
 
 procedure ExportThread.SetText(Value: string);
@@ -239,12 +245,13 @@ end;
 
 procedure ExportThread.SetTextA;
 begin
-  // TODO: send owner ExportForm.SetRecordText(FStringParam);
+  TExportForm(OwnerForm).SetRecordText(FStringParam);
 end;
 
 procedure ExportThread.DoExit;
 begin
-  // TODO: send owner ExportForm.DoExit(Self);
+  Working := False;
+  TExportForm(OwnerForm).Close;
 end;
 
 end.

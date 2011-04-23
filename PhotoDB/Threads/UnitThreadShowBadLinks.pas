@@ -88,7 +88,6 @@ begin
         SynchronizeEx(TextOutEx);
         Table.First;
         repeat
-          // TODO: CMD_Command_Break
           if TerminatingShowBadLinks or CMD_Command_Break then
             Break;
           FStrParam := Format(L('Current item: %s from %s [%s]'), [IntToStr(Table.RecNo), IntToStr(Table.RecordCount),
