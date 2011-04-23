@@ -2794,6 +2794,9 @@ begin
   if Msg.message<>8448 then
   Showmessage(Inttostr(Msg.message)); }
 
+  if not Self.Active then
+    Exit;
+
   if Msg.message = WM_KEYDOWN then
     if Msg.Wparam = VK_OEM_5 then
       if Length(CbPathEdit.Text) > 3 then
@@ -6812,7 +6815,7 @@ begin
     try
       Folder := IncludeTrailingBackslash(GetCurrentPath);
       SetSQL(Query, 'SELECT count(*) AS CountField FROM $DB$ WHERE (FFileName LIKE :FolderA)');
-      SetStrParam(Query, 0, '%' + Folder + NormalizeDBStringLike('%\%'));
+      SetStrParam(Query, 0, '%' + Folder + '%\%');
       Query.Open;
       if Query.FieldByName('CountField').AsInteger > 0 then
         IncludeSub := MessageBoxDB(Handle, L('Include subfolders?'), L('Question'), TD_BUTTON_OKCANCEL,

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Graphics, SysUtils, Forms, uResourceUtils, uFileUtils, uMemory,
   Dolphin_DB, uTranslate, uShellIntegration, uConstants, acWorkRes, uTime,
-  Classes;
+  Classes, uSysUtils;
 
 const
   FSLanguageFileName = 'Language.xml';
@@ -65,13 +65,39 @@ var
   Files: TStrings;
   Update: Integer;
 
-  procedure AddFileToStream(FileName: string; Name: string = '');
+  procedure AddFileToStream(FileName: string; Name: string = ''; Content: string = '');
   var
     FS: TFileStream;
+    SW: TStreamWriter;
+    TMS: TMemoryStream;
   begin
     TW.I.Check('AddFileToStream: ' + FileName);
     if Name = '' then
       Name := ExtractFileName(FileName);
+
+    if Content <> '' then
+    begin
+      TMS := TMemoryStream.Create;
+      try
+        SW := TStreamWriter.Create(TMS, TEncoding.UTF8);
+        try
+          SW.Write(Content);
+          TMS.Seek(0, soFromBeginning);
+
+          FillChar(Header, SizeOf(Header), #0);
+          Header.Name := AnsiString(Name);
+          Header.Size := TMS.Size;
+          MS.Write(Header, SizeOf(Header));
+          MS.CopyFrom(TMS, TMS.Size);
+        finally
+          F(SW);
+        end;
+      finally
+        F(TMS);
+      end;
+      Exit;
+    end;
+
     FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
     try
       FillChar(Header, SizeOf(Header), #0);
@@ -91,6 +117,8 @@ begin
   MS := TMemoryStream.Create;
   Files := TStringList.Create;
   try
+    AddFileToStream('', 'ID', GUIDToString(GetGUID));
+
     LanguageXMLFileName := ExtractFilePath(ParamStr(0)) + Format('Languages\%s%s.xml', [LanguageFileMask, TTranslateManager.Instance.Language]);
     AddFileToStream(LanguageXMLFileName, FSLanguageFileName);
 

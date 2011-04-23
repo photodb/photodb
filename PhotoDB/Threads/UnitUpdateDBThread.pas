@@ -574,6 +574,7 @@ end;
 destructor UpdateDBThread.Destroy;
 begin
   F(FInfo);
+  inherited;
 end;
 
 procedure UpdateDBThread.DoEventReplace(ID: Integer; Name: String);

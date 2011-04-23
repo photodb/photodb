@@ -357,7 +357,7 @@ begin
   begin
     CloseHandle(HSemaphore);
 
-    if FindWindow(nil, DBID) <> 0 then
+    if FindWindow(nil, PChar(DBID)) <> 0 then
     begin
 
       if ParamStr(1) = '' then
@@ -375,13 +375,16 @@ begin
           StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
           cd.lpData := Buf;
 
-          CloseSplashWindow;
-          if SendMessageEx(FindWindow(nil, DBID), WM_COPYDATA, 0, LongInt(@cd)) then
+          if SendMessageEx(FindWindow(nil, PChar(DBID)), WM_COPYDATA, 0, LongInt(@cd)) then
           begin
+            CloseSplashWindow;
             DBTerminating := True;
           end else
+          begin
+            CloseSplashWindow;
             if ID_YES <> MessageBoxDB(0, TA('This program already running, but not responds! Run new instance?'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
               DBTerminating := True;
+          end;
 
         finally
           FreeMem(Buf);
@@ -436,6 +439,8 @@ begin
     EventLog('');
     EventLog(Format('Program running! [%s]', [ProductName]));
 
+    if FolderView then
+      DBID := ReadInternalFSContent('ID');
     // Lazy init enviroment procedure
     TW.i.Start('TScriptEnviroments');
     TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);

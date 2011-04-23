@@ -131,6 +131,7 @@ end;
 destructor TRefreshDBRecordsThread.Destroy;
 begin
   F(FInfo);
+  inherited;
 end;
 
 procedure TRefreshDBRecordsThread.DestroyProgress;

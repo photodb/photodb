@@ -18,14 +18,16 @@ type
     FID: Integer;
     FParams: TEventFields;
     FValue: TEventValues;
+    FOnDone: TNotifyEvent;
     procedure CorrectPath(Owner : TDBForm; Src: TStrings; Dest: string);
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure KernelEventCallBackSync;
+    procedure DoOnDone;
   protected
     procedure Execute; override;
   public
     constructor Create(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean;
-      AutoRename: Boolean; OwnerExplorerForm: TDBForm);
+      AutoRename: Boolean; OwnerExplorerForm: TDBForm; OnDone: TNotifyEvent = nil);
     destructor Destroy; override;
   end;
 
@@ -36,9 +38,10 @@ uses ExplorerUnit;
 { TWindowsCopyFilesThread }
 
 constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
-   OwnerExplorerForm: TDBForm);
+   OwnerExplorerForm: TDBForm; OnDone: TNotifyEvent = nil);
 begin
   inherited Create(nil, False);
+  FOnDone := OnDone;
   FHandle := Handle;
   FSrc := TStringList.Create;
   FSrc.Assign(Src);
@@ -52,6 +55,11 @@ destructor TWindowsCopyFilesThread.Destroy;
 begin
   F(FSrc);
   inherited;
+end;
+
+procedure TWindowsCopyFilesThread.DoOnDone;
+begin
+  FOnDone(Self);
 end;
 
 procedure TWindowsCopyFilesThread.CorrectPath(Owner : TDBForm; Src: TStrings; Dest: string);
@@ -82,7 +90,7 @@ var
 begin
   FreeOnTerminate := True;
   try
-    Res := CopyFilesSynch(0, FSrc, FDest, FMove, FAutoRename) = 0;
+    Res := CopyFilesSynch(FHandle, FSrc, FDest, FMove, FAutoRename) = 0;
 
     if Res and (FOwnerExplorerForm <> nil) and FMove then
       CorrectPath(FOwnerExplorerForm, FSrc, FDest);
@@ -90,6 +98,8 @@ begin
     on e : Exception do
       EventLog(e.Message);
   end;
+  if Assigned(FOnDone) then
+    SynchronizeEx(DoOnDone);
 end;
 
 procedure TWindowsCopyFilesThread.KernelEventCallBack(ID: Integer;

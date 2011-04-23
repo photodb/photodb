@@ -7,7 +7,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
-  uInstallTypes, uInstallUtils, uMemory, uConstants,
+  uInstallTypes, uInstallUtils, uMemory, uConstants, uRuntime,
   uVistaFuncs, uInstallScope, Registry, uShellUtils, uSteps,
 {$IFDEF INSTALL}
   uInstallSteps,

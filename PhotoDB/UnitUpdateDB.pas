@@ -51,7 +51,6 @@ type
     ImageGo: TImage;
     ImageHourGlass: TImage;
     Timer1: TTimer;
-    TimerTerminate: TTimer;
     TwWindowsPos: TTwButton;
     procedure ButtonCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -85,7 +84,6 @@ type
       Shift: TShiftState);
     procedure WebLinkOpenImageClick(Sender: TObject);
     procedure WebLinkOpenFolderClick(Sender: TObject);
-    procedure TimerTerminateTimer(Sender: TObject);
   private
     { Private declarations }
     FImage : TLayeredBitmap;
@@ -130,13 +128,13 @@ type
   end;
 
 var
-  UpdaterDB : TUpdaterDB;
+  UpdaterDB: TUpdaterDB = nil;
 
 implementation
 
-uses FormManegerUnit, UnitHistoryForm,
-  ExplorerUnit, SlideShow, UnitScripts, DBScriptFunctions,
-  UnitUpdateDBThread;
+uses
+  FormManegerUnit, UnitHistoryForm, ExplorerUnit, SlideShow, UnitScripts,
+  DBScriptFunctions, UnitUpdateDBThread;
 
 {$R *.dfm}
 
@@ -343,7 +341,7 @@ begin
   begin
     if GetParamStrDBBool('/NoFullRun') then
     begin
-      TimerTerminate.Enabled := True;
+      Close;
       Exit;
     end;
   end;
@@ -486,8 +484,9 @@ procedure TUpdateDBForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   if FormManager.IsMainForms(Self) and (FormManager.MainFormsCount = 1) then
-    FAddObject.DoTerminate;
-
+    FAddObject.DoTerminate
+  else
+    Release;
 end;
 
 procedure TUpdateDBForm.ApplicationEvents1Message(var Msg: tagMSG;
@@ -805,13 +804,6 @@ begin
       SetFocus;
     end;
   end;
-end;
-
-procedure TUpdateDBForm.TimerTerminateTimer(Sender: TObject);
-begin
-  TimerTerminate.Enabled := False;
-  FormManager.UnRegisterMainForm(Self);
-  Close;
 end;
 
 initialization

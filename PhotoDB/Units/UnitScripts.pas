@@ -18,7 +18,7 @@ interface
 uses
   Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs, uMemoryEx,
   Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-  uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils;
+  uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils, uSysUtils;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -301,24 +301,16 @@ type
      function GetIncludeScript(FileName : string) : TIncludeScript;
    end;
 
-{$EXTERNALSYM CoCreateGuid}
-function CoCreateGuid(out guid: TGUID): HResult; stdcall;
+var
+ InitScriptFunction : Pointer = nil;
+ ScriptsManager : TScriptsManager = nil;
 
-const
-  ole32    = 'ole32.dll';
-
-   var
-     InitScriptFunction : Pointer = nil;
-     ScriptsManager : TScriptsManager = nil;
-
-function CoCreateGuid; external ole32 name 'CoCreateGuid';
-//function ReadFile(FileName : string) : string;
 function IsVariable(const s : string) : Boolean;
 
 implementation
 
- uses UnitScriptsMath, UnitScriptsFunctions, DBScriptFunctions, uMobileUtils
-
+uses
+  UnitScriptsMath, UnitScriptsFunctions, DBScriptFunctions, uMobileUtils
  {$IFDEF USEDEBUG}
    ,UnitDebugScriptForm
  {$ENDIF}
@@ -332,11 +324,8 @@ begin
 end;
 
 function GetCID: string;
-var
-  CID: TGUID;
 begin
-  CoCreateGuid(CID);
-  Result := GUIDToString(CID);
+  Result := GUIDToString(GetGUID);
 end;
 
 function GetValueType(const aScript : TScript; const Value : string) : integer;

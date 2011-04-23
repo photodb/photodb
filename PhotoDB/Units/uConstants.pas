@@ -44,10 +44,6 @@ const
   BuyPageURL = 'http://photodb.illusdolphin.net/{LNG}/buy';
   FreeActivationURL = 'http://photodb.illusdolphin.net/FreeActivationHandler';
 
-  //install
-  DBID = '{E1446065-CB87-440D-9315-6FA356F921B5}';
-  DBBeginInstallID = '{A8C9FD9D-C2F6-4B1C-9164-11E6075FD527}';
-  DBEndInstallID = '{C5348907-0AD6-4D02-8E0D-4063057B652F}';
   ReleaseNumber = 12;
 
 const

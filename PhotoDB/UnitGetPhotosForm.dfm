@@ -281,7 +281,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object CbMethod: TComboBox
     Left = 8
     Top = 327
-    Width = 97
+    Width = 90
     Height = 21
     Style = csDropDownList
     ItemIndex = 0
@@ -293,9 +293,9 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
       'Copy')
   end
   object CbOpenFolder: TCheckBox
-    Left = 112
-    Top = 314
-    Width = 129
+    Left = 104
+    Top = 313
+    Width = 138
     Height = 17
     Caption = 'Open This Folder'
     TabOrder = 11
@@ -341,9 +341,9 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     OnChange = EdFolderMaskChange
   end
   object CbAddProtosToDB: TCheckBox
-    Left = 112
+    Left = 104
     Top = 330
-    Width = 129
+    Width = 146
     Height = 17
     Caption = 'Add photos to DB'
     TabOrder = 13
@@ -411,13 +411,6 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 96
-    Top = 56
   end
   object OptionsImageList: TImageList
     Left = 288

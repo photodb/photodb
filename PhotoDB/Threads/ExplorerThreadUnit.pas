@@ -1310,7 +1310,8 @@ procedure TExplorerThread.AddImageFileToExplorerW;
 begin
   F(TempBitmap);
   FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
-  SynchronizeEx(AddImageFileItemToExplorerW);
+  if not SynchronizeEx(AddImageFileItemToExplorerW) then
+    F(FIcon);
 end;
 
 procedure TExplorerThread.AddImageFileItemToExplorerW;
@@ -1323,7 +1324,8 @@ begin
     if FUpdaterInfo.NewFileItem then
       FSender.SetNewFileNameGUID(GUIDParam);
     FSender.AddItem(GUIDParam, False);
-  end;
+  end else
+    F(FIcon);
 end;
 
 procedure TExplorerThread.MakeFolderImage(Folder: String);

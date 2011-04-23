@@ -51,7 +51,6 @@ type
     CbGetMultimediaFiles: TCheckBox;
     EdMultimediaMask: TEdit;
     CbAddProtosToDB: TCheckBox;
-    DestroyTimer: TTimer;
     LvMain: TListView;
     LbListComment: TLabel;
     BtnScanDates: TButton;
@@ -77,7 +76,6 @@ type
     procedure BtnSaveClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
     procedure CbGetMultimediaFilesClick(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnScanDatesClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -106,8 +104,11 @@ type
     ThreadInProgress: Boolean;
     DefaultOptions: TGetImagesOptions;
     OptionsArray: TGetImagesOptionsArray;
+    FThreadDone: Boolean;
     procedure ClearList;    
     procedure LoadLanguage;
+    procedure DoCopyFilesSynch(Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean);
+    procedure OnThreadDone(Sender: TObject);
   protected
     function GetFormID : string; override;
   public
@@ -134,7 +135,7 @@ procedure GetPhotosFromFolder(Folder: string);
 implementation
 
 uses
-  ExplorerUnit, UnitUpdateDB, SlideShow;
+  ExplorerUnit, UnitUpdateDB, SlideShow, UnitWindowsCopyFilesThread;
 
 procedure GetPhotosFromDrive(DriveLetter: Char);
 var
@@ -295,6 +296,7 @@ end;
 
 procedure TGetToPersonalFolderForm.FormCreate(Sender: TObject);
 begin
+  FThreadDone := False;
   Width := 273;
   ExtendedButton.Left := 248;
   ExtendedMode := False;
@@ -422,7 +424,7 @@ begin
 
   if ExtendedMode then
   begin
-
+    ExtendedButton.Enabled := False;
     DtpFromDate.Enabled := False;
     EdFolderMask.Enabled := False;
     MemComment.Enabled := False;
@@ -474,7 +476,7 @@ begin
           end;
 
         try
-          CopyFilesSynch(0, Files, Folder, Options.Move, True);
+          DoCopyFilesSynch(Files, Folder, Options.Move, True);
         except
           MessageBoxDB(Handle, L('An error occurred during the preparation of photographs. Perhaps you''re trying to move pictures from media which is read-only'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         end;
@@ -531,7 +533,7 @@ begin
         end;
 
       try
-        CopyFilesSynch(0, Files, Folder, CbMethod.ItemIndex <> 1, True);
+        DoCopyFilesSynch(Files, Folder, CbMethod.ItemIndex <> 1, True);
       except
         MessageBoxDB(Handle, L('An error occurred during the preparation of photographs. Perhaps you''re trying to move pictures from media which is read-only'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
       end;
@@ -566,15 +568,9 @@ begin
   LvMain.Clear;
 end;
 
-procedure TGetToPersonalFolderForm.DestroyTimerTimer(Sender: TObject);
-begin
-  DestroyTimer.Enabled := False;
-  Release;
-end;
-
 procedure TGetToPersonalFolderForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  DestroyTimer.Enabled := True;
+  Release;
 end;
 
 procedure TGetToPersonalFolderForm.BtnScanDatesClick(Sender: TObject);
@@ -620,6 +616,11 @@ begin
   ProgressBar.MaxValue := 1;
   ProgressBar.Position := 0;
   ProgressBar.Text := Mince(Info.Information, 25);
+end;
+
+procedure TGetToPersonalFolderForm.OnThreadDone(Sender: TObject);
+begin
+  FThreadDone := True;
 end;
 
 procedure TGetToPersonalFolderForm.SetDataList(DataList: TFileDateList);
@@ -864,6 +865,20 @@ begin
   OptionsArray[PmListView.Tag] := OptionsArray[PmListView.Tag + 1];
   RecountGroups;
   LvMain.Refresh;
+end;
+
+procedure TGetToPersonalFolderForm.DoCopyFilesSynch(Src: TStrings;
+  Dest: string; Move, AutoRename: Boolean);
+begin
+  FThreadDone := False;
+  TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, Self, OnThreadDone);
+  while not FThreadDone do
+  begin
+    Application.ProcessMessages;
+    Application.ProcessMessages;
+    Application.ProcessMessages;
+    CheckSynchronize;
+  end;
 end;
 
 procedure TGetToPersonalFolderForm.DontCopy1Click(Sender: TObject);

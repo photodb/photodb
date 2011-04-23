@@ -35,7 +35,8 @@ type
 
 implementation
 
-uses PropertyForm, UnitPasswordForm;
+uses
+  PropertyForm, UnitPasswordForm;
 
 { TPropertyLoadGistogrammThread }
 

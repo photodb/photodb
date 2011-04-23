@@ -129,7 +129,7 @@
     <translate name="Password confirm" value="Подтвердите пароль" />
     <translate name="Enter password for selected objects" value="Введите пароль для выбранных объектов" />
     <translate name="Confirm password" value="Подтвердите пароль" />
-    <translate name="Enrypt objects" value="Зашифровать объекты" />
+    <translate name="Encrypt objects" value="Зашифровать объекты" />
     <translate name="Save CRC" value="Сохранять контрольную сумму" />
     <translate name="Enter your password here" value="Введите пароль здесь" />
     <translate name="Show password" value="Показывать пароль" />

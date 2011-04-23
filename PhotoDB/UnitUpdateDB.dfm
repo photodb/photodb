@@ -446,8 +446,8 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 8
     Top = 112
-    Width = 79
-    Height = 16
+    Width = 63
+    Height = 13
     Cursor = crHandPoint
     Enabled = False
     Color = clWhite
@@ -469,8 +469,8 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 7
     Top = 131
-    Width = 79
-    Height = 16
+    Width = 63
+    Height = 13
     Cursor = crHandPoint
     Enabled = False
     Color = clWhite
@@ -492,8 +492,8 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 304
     Top = 176
-    Width = 89
-    Height = 16
+    Width = 73
+    Height = 13
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -573,8 +573,8 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 112
     Top = 109
-    Width = 142
-    Height = 16
+    Width = 126
+    Height = 13
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -595,8 +595,8 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 112
     Top = 132
-    Width = 125
-    Height = 16
+    Width = 109
+    Height = 13
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -617,8 +617,8 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 8
     Top = 176
-    Width = 57
-    Height = 16
+    Width = 41
+    Height = 13
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -830,12 +830,5 @@ object UpdateDBForm: TUpdateDBForm
     OnTimer = Timer1Timer
     Left = 352
     Top = 104
-  end
-  object TimerTerminate: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = TimerTerminateTimer
-    Left = 216
-    Top = 56
   end
 end
