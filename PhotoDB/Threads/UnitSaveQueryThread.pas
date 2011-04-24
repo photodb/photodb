@@ -7,7 +7,8 @@ uses
   CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
   acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants, uDBUtils,
   uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate, ExplorerTypes,
-  uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils, uTime;
+  uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils, uTime,
+  uDBShellUtils;
 
 type
   TSaveQueryThread = class(TThreadEx)

@@ -3,10 +3,11 @@ unit UnitCDExportThread;
 interface
 
 uses
-  Classes, Forms, UnitCDMappingSupport, UnitDBKernel, uVistaFuncs, DB, ActiveX,
+  Windows, Classes, Forms, UnitCDMappingSupport, UnitDBKernel, DB, ActiveX,
   UnitGroupsWork, UnitDBDeclare, CommonDBSupport, win32crc, SysUtils, uLogger,
   uFileUtils, uConstants, uShellIntegration, uDBTypes, uDBBaseTypes, uDBForm,
-  uDBThread, uMobileUtils, uMemory, uDBUtils, uCDMappingTypes;
+  uDBThread, uMobileUtils, uMemory, uDBUtils, uCDMappingTypes, uTranslate,
+  uResourceUtils, Graphics, uVistaFuncs, uDBShellUtils;
 
 type
   TCDExportOptions = record
@@ -76,8 +77,34 @@ begin
 end;
 
 procedure TCDExportThread.CreatePortableDB;
+var
+  NewIcon : TIcon;
+  IcoTempName, ExeFileName : string;
+  Language : Integer;
 begin
-  CreateMobileDBFilesInDirectory(StrParam, Mapping.CDLabel);
+  StrParam := IncludeTrailingBackslash(StrParam);
+  ExeFileName := StrParam + Mapping.CDLabel + '.exe';
+  CreateMobileDBFilesInDirectory(ExeFileName);
+
+  if ID_YES = MessageBoxDB(GetForegroundWindow, TA('Do you want to change the icon for the final collection?', 'Mobile'), TA('Question'),
+    TD_BUTTON_YESNO, TD_ICON_QUESTION) then
+  begin
+    NewIcon := TIcon.Create;
+    try
+      if GetIconForFile(NewIcon, IcoTempName, Language) then
+      begin
+        NewIcon.SaveToFile(IcoTempName);
+
+        ReplaceIcon(StrParam, PChar(IcoTempName));
+
+        if FileExistsSafe(IcoTempName) then
+          DeleteFile(IcoTempName);
+
+      end;
+    finally
+      F(NewIcon);
+    end;
+  end;
 end;
 
 procedure TCDExportThread.DoErrorDeletingFiles;

@@ -7,6 +7,7 @@ uses
   uInit in 'Units\uInit.pas',
   uTime in 'Units\uTime.pas',
   uSplashThread in 'Threads\uSplashThread.pas',
+  uLanguageLoadThread in 'Threads\uLanguageLoadThread.pas',
   ActiveX,
   ComObj,
   ADODB,
@@ -321,7 +322,8 @@ uses
   uInterfaces in 'Units\uInterfaces.pas',
   uDBAdapter in 'Units\uDBAdapter.pas',
   uCDMappingTypes in 'Units\uCDMappingTypes.pas',
-  uMemoryEx in 'Units\uMemoryEx.pas';
+  uMemoryEx in 'Units\uMemoryEx.pas',
+  uDBShellUtils in 'Units\uDBShellUtils.pas';
 
 {$R *.res}
 

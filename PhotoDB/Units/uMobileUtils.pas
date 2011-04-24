@@ -3,9 +3,8 @@ unit uMobileUtils;
 interface
 
 uses
-  Windows, Graphics, SysUtils, Forms, uResourceUtils, uFileUtils, uMemory,
-  Dolphin_DB, uTranslate, uShellIntegration, uConstants, acWorkRes, uTime,
-  Classes, uSysUtils;
+  Windows, Graphics, SysUtils, uResourceUtils, uFileUtils, uMemory,
+  uTranslate, uConstants, acWorkRes, uTime, Classes, uSysUtils, uResources;
 
 const
   FSLanguageFileName = 'Language.xml';
@@ -17,42 +16,17 @@ type
     Size: Int64;
   end;
 
-function CreateMobileDBFilesInDirectory(Directory, SaveToDBName  : string) : Boolean;
+function CreateMobileDBFilesInDirectory(DestinationName: string): Boolean;
 procedure UpdateExeResources(ExeFileName: string);
 function ReadInternalFSContent(Name: string): string;
 procedure LoadLanguageFromMobileFS(var Language : TLanguage; var LanguageCode : string);
 
 implementation
 
-function CreateMobileDBFilesInDirectory(Directory, SaveToDBName  : string) : Boolean;
-var
-  NewIcon : TIcon;
-  IcoTempName, ExeFileName : string;
-  Language : integer;
+function CreateMobileDBFilesInDirectory(DestinationName: string): Boolean;
 begin
-  Directory := IncludeTrailingBackslash(Directory);
-  ExeFileName := Directory + SaveToDBName + '.exe';
-  CopyFile(PChar(Application.Exename), PChar(ExeFileName), False);
-  UpdateExeResources(ExeFileName);
-  if ID_YES = MessageBoxDB(GetActiveFormHandle, TA('Do you want to change the icon for the final collection?', 'Mobile'), TA('Question'),
-    TD_BUTTON_YESNO, TD_ICON_QUESTION) then
-  begin
-    NewIcon := TIcon.Create;
-    try
-      if GetIconForFile(NewIcon, IcoTempName, Language) then
-      begin
-        NewIcon.SaveToFile(IcoTempName);
-
-        ReplaceIcon(ExeFileName, PChar(IcoTempName));
-
-        if FileExistsSafe(IcoTempName) then
-          DeleteFile(IcoTempName);
-
-      end;
-    finally
-      F(NewIcon);
-    end;
-  end;
+  CopyFile(PChar(ParamStr(0)), PChar(DestinationName), False);
+  UpdateExeResources(DestinationName);
   Result := True;
 end;
 

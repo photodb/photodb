@@ -3,18 +3,11 @@ unit uSplashThread;
 interface
 
 uses
-   Classes, Windows, Messages, JPEG, Graphics, uTime,
-   uConstants, uResources, UnitDBCommonGraphics, uMemory,
-   uTranslate, ActiveX, uFileUtils, pngimage, uDBThread,
-   uFormUtils, uAppUtils, uRuntime, uMobileUtils;
+   Classes, Windows, Messages, Graphics, uTime,
+   uConstants, uResources, uMemory, pngimage, uFormUtils, uAppUtils, uRuntime;
 
 type
-  TSplashThread = class(TDBThread)
-  protected
-    procedure Execute; override;
-  end;
-
-  TLanguageThread = class(TDBThread)
+  TSplashThread = class(TThread)
   protected
     procedure Execute; override;
   end;
@@ -172,31 +165,13 @@ begin
   end;
 end; // ShowSplashWindow
 
-{ TLanguageThread }
-
-procedure TLanguageThread.Execute;
-begin
-  FreeOnTerminate := True;
-  CoInitialize(nil);
-  try
-    //call translate manager to load XML with language in separate thead
-    TA('PhotoDB');
-  finally
-    CoUninitialize;
-  end;
-end;
-
 initialization
 
   if not GetParamStrDBBool('/NoLogo') then
   begin
     TW.I.Start('TSplashThread');
-    SplashThread := TSplashThread.Create(nil, False);
+    SplashThread := TSplashThread.Create(False);
     TW.I.Start('TSplashThread - Created');
   end;
-  if FolderView then
-    LanguageInitCallBack := LoadLanguageFromMobileFS;
-
-  TLanguageThread.Create(nil, False);
 
 end.

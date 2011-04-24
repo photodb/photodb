@@ -103,7 +103,7 @@ begin
       end;
     end;
 
-    RenderForm(Self, FCurrentImage, 255);
+    RenderForm(Handle, FCurrentImage, 255);
   finally
     F(FCurrentImage);
   end;

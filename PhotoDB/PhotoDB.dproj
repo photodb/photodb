@@ -54,6 +54,7 @@
 			<DCCReference Include="Units\uInit.pas"/>
 			<DCCReference Include="Units\uTime.pas"/>
 			<DCCReference Include="Threads\uSplashThread.pas"/>
+			<DCCReference Include="Threads\uLanguageLoadThread.pas"/>
 			<DCCReference Include="Searching.pas">
 				<Form>SearchForm</Form>
 			</DCCReference>
@@ -510,6 +511,7 @@
 			<DCCReference Include="Units\uDBAdapter.pas"/>
 			<DCCReference Include="Units\uCDMappingTypes.pas"/>
 			<DCCReference Include="Units\uMemoryEx.pas"/>
+			<DCCReference Include="Units\uDBShellUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -535,7 +537,6 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">/nologo</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>

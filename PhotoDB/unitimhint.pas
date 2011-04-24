@@ -167,7 +167,7 @@ begin
     R.Bottom := R.Bottom + TextHeight + 5;
     R.Top := R.Top + TextHeight + 5;
     DrawText32Bit(FFormBuffer, SImageSize, Font, R, 0);
-    RenderForm(Self, FFormBuffer, FAlphaBlend);
+    RenderForm(Self.Handle, FFormBuffer, FAlphaBlend);
   finally
     F(Bitmap);
   end;

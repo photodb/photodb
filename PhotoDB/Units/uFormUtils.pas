@@ -2,13 +2,13 @@ unit uFormUtils;
 
 interface
 
-uses Windows, Graphics, Forms, Classes;
+uses Windows, Graphics, {Forms, }Classes;
 
-procedure RenderForm(Form : TForm; Bitmap32 : TBitmap; Transparenty : Byte); overload;
+//procedure RenderForm(Form : TForm; Bitmap32 : TBitmap; Transparenty : Byte); overload;
 procedure RenderForm(FormHandle : THandle; Bitmap32 : TBitmap; Transparenty : Byte); overload;
 
 implementation
-
+{
 procedure RenderForm(Form : TForm; Bitmap32 : TBitmap; Transparenty : Byte);
 var
   zSize: TSize;
@@ -37,7 +37,7 @@ begin
 
   UpdateLayeredWindow(Form.Handle, GetDC(0), @TopLeft, @zSize,
     Bitmap32.Canvas.Handle, @zPoint, 0, @zBf, ULW_ALPHA);
-end;
+end;    }
 
 procedure RenderForm(FormHandle : THandle; Bitmap32 : TBitmap; Transparenty : Byte);
 var
