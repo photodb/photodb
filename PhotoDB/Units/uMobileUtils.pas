@@ -37,7 +37,7 @@ var
   LanguageXMLFileName, LicenseTxtFileName: string;
   Header: TInternalFSHeader;
   Files: TStrings;
-  Update: Integer;
+  Update, Counter: Integer;
 
   procedure AddFileToStream(FileName: string; Name: string = ''; Content: string = '');
   var
@@ -105,9 +105,27 @@ begin
       AddFileToStream(FileName);
 
     TW.I.Check('BeginUpdateResourceW');
-    Update := BeginUpdateResourceW(PChar(ExeFileName), False);
+    Counter := 0;
+    Update := 0;
+    repeat
+      if Counter > 100 then
+        Break;
+
+      Update := BeginUpdateResourceW(PChar(ExeFileName), False);
+      //in some cases file can be busy (IO error 32), just wait 10sec...
+      if Update = 0 then
+      begin
+        Inc(Counter);
+        Sleep(100);
+      end;
+    until Update <> 0;
+
     if Update = 0 then
+    begin
+      MessageBox(0, PChar(Format('An unexpected error occurred: %s', ['I/O Error: ' + IntToStr(GetLastError)])), PChar(TA('Error')), MB_OK + MB_ICONERROR);
       Exit;
+    end;
+
     try
       TW.I.Check('LoadFileResourceFromStream');
       LoadFileResourceFromStream(Update, RT_RCDATA, 'MOBILE_FS', MS);

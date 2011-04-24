@@ -4,7 +4,7 @@ interface
 
 uses
   StdCtrls, UnitGroupsWork, ComCtrls, Dolphin_DB, uMemoryEx,
-  dialogs,ExtCtrls, ShlObj, ComObj, ActiveX, Math, Controls, Filectrl,
+  dialogs,ExtCtrls, ShlObj, ComObj, ActiveX, Math, Controls,
   forms, Registry, ShellApi, Windows, SysUtils, Classes, DB, uCDMappingTypes,
   Graphics, Menus, UnitDBKernel, UnitCryptImageForm, GraphicCrypt,
   ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,

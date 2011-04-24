@@ -1498,8 +1498,7 @@ begin
     if ShiftKeyDown then
     begin
       if Msg.wParam = Byte('R') then ByEXIF1Click(Self);
-    end;
-    if CtrlKeyDown then
+    end else if CtrlKeyDown then
     begin
       if Msg.wParam = Byte('F') then FitToWindowClick(Self);
       if Msg.wParam = Byte('A') then RealSizeClick(Self);
@@ -1521,6 +1520,15 @@ begin
       if (Msg.wParam = Byte('3')) or (Msg.wParam = Byte(VK_NUMPAD3)) then N51Click(N31);
       if (Msg.wParam = Byte('4')) or (Msg.wParam = Byte(VK_NUMPAD4)) then N51Click(N41);
       if (Msg.wParam = Byte('5')) or (Msg.wParam = Byte(VK_NUMPAD5)) then N51Click(N51);
+    end else
+    begin
+      if Msg.wParam = VK_RETURN then
+      begin
+        if WindowState = wsNormal then
+          WindowState := wsMaximized
+        else if WindowState = wsMaximized then
+          WindowState := wsNormal;
+      end;
     end;
 
     if CtrlKeyDown and ShiftKeyDown then

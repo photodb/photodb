@@ -279,7 +279,8 @@ var DontShrinkResourceSection : boolean = false;
 
 implementation
 
-uses { Alx madStrings, madTools, }SysUtils;
+uses
+  SysUtils;
 
 // ***************************************************************
 
@@ -320,7 +321,7 @@ type
     name    : WideString;
     child   : TPResItem;
     next    : TPResItem;
-    strBuf  : String;  // temporare memory buffer for item data < 32kb
+    strBuf  : Pointer;  // temporare memory buffer for item data < 32kb
     case isDir: Boolean of
       true  : (attr       : dword;
                time       : dword;
@@ -491,6 +492,8 @@ begin
       CloseHandle(res2^.fileBuf);
       DeleteFile(pchar(GetTempFile(res2)));
     end;
+    if res2.strBuf <> nil then
+      FreeMem(res2.strBuf);
     Dispose(res2);
   end;
 end;
@@ -568,8 +571,8 @@ var sp, np, dp : dword;
         if res^.data <> nil then
           Move(res^.data^, pointer(dword(buf) + dp)^, Size)
         else
-          if res^.strBuf <> '' then
-            Move(pointer(res^.strBuf)^, pointer(dword(buf) + dp)^, Size)
+          if res^.strBuf <> nil then
+            Move(res^.strBuf^, pointer(dword(buf) + dp)^, Size)
           else
             if res^.fileBuf <> 0 then begin
               SetFilePointer(res^.fileBuf, 0, nil, FILE_BEGIN);
@@ -585,7 +588,8 @@ begin
   np := ss;
   dp := Align(ss + ns, 4);
   if ss + ns + ds > 0 then begin
-    fh := CreateFile(pchar(GetTempFile(res)), GENERIC_READ or GENERIC_WRITE, 0, nil, CREATE_ALWAYS, 0, 0);
+    s1 := GetTempFile(res);
+    fh := CreateFile(pchar(s1), GENERIC_READ or GENERIC_WRITE, 0, nil, CREATE_ALWAYS, 0, 0);
     if fh <> INVALID_HANDLE_VALUE then begin
       SetFilePointer(fh, Align(ss + ns, 4) + ds, nil, FILE_BEGIN);
       SetEndOfFile(fh);
@@ -821,13 +825,17 @@ function UpdateResourceW(update: dword; type_, name: PWideChar; language: word; 
     item^.data     := nil;
     item^.size     := size;
     item^.codePage := 0;//language;
-    if size > 32 * 1024 then begin
+    //load all resources to memory!
+    {if size > 32 * 1024 then begin
       item^.fileBuf := CreateFile(pchar(GetTempFile(item)), GENERIC_READ or GENERIC_WRITE, 0, nil, CREATE_ALWAYS, 0, 0);
       if item^.fileBuf <> INVALID_HANDLE_VALUE then
            WriteFile(item^.fileBuf, data^, size, c1, nil)
       else item^.fileBuf := 0;
-    end else
-      SetString(item^.strBuf, pchar(data), size);
+    end else}
+    begin
+      GetMem(item^.strBuf, size);
+      CopyMemory(item^.strBuf, data, size);
+    end;
   end;
 
   function AddItem(tree: TPResItem) : TPResItem;
@@ -883,6 +891,8 @@ function UpdateResourceW(update: dword; type_, name: PWideChar; language: word; 
         CloseHandle(pr1^.fileBuf);
         DeleteFile(pchar(GetTempFile(pr1)));
       end;
+      if pr1.strBuf <> nil then
+        FreeMem(pr1.strBuf);
       Dispose(pr1);
       if items[i1 + 1]^.idItems + items[i1 + 1]^.namedItems > 0 then
         break;
@@ -1450,41 +1460,5 @@ begin
     _FillStr(result, abs(minLen) - Length(result) + 1, true, fillChar);
   end;
 end;
-     {
-function CompareStr(const s1, s2: string) : integer; assembler;
-asm      //               EAX EDX           EAX
-        CMP     EAX,EDX
-        JNE     @@doIt
-        XOR     EAX,EAX
-        JMP     @@noWork
-@@doIt:
-        PUSH    ESI
-        PUSH    EDI
-        MOV     ESI,EAX
-        MOV     EDI,EDX
-        OR      EAX,EAX
-        JE      @@s1Nil
-        MOV     EAX,[EAX-4]
-@@s1Nil:
-        OR      EDX,EDX
-        JE      @@s2Nil
-        MOV     EDX,[EDX-4]
-@@s2Nil:
-        MOV     ECX,EAX
-        CMP     ECX,EDX
-        JBE     @@s1Shorter
-        MOV     ECX,EDX
-@@s1Shorter:
-        CMP     ECX,ECX
-        REPE    CMPSB
-        JE      @@firstCharsEqual
-        MOVZX   EAX,BYTE PTR [ESI-1]
-        MOVZX   EDX,BYTE PTR [EDI-1]
-@@firstCharsEqual:
-        SUB     EAX,EDX
-        POP     EDI
-        POP     ESI
-@@noWork:
-end;   }
 
 end.

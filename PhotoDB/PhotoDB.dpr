@@ -11,7 +11,6 @@ uses
   ActiveX,
   ComObj,
   ADODB,
-  FileCtrl,
   ShellApi,
   Windows,
   Messages,
@@ -23,8 +22,6 @@ uses
   Forms,
   Dialogs,
   DB,
-  Grids,
-  DBGrids,
   Menus,
   ExtCtrls,
   StdCtrls,
@@ -465,7 +462,7 @@ begin
 
     EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
-    TW.i.Start('FindRunningVersion');
+    TW.I.Start('FindRunningVersion');
     if not GetParamStrDBBool('/NoPrevVersion') then
       FindRunningVersion;
 

@@ -3,11 +3,11 @@ unit Searching;
 interface
 
 uses
-  UnitGroupsWork, DBCMenu, CmpUnit, FileCtrl,
+  UnitGroupsWork, DBCMenu, CmpUnit, ToolWin,
   ShellApi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DB, Menus, ExtCtrls, StdCtrls, uGraphicUtils, uMemoryEx,
   ImgList, ComCtrls, ActiveX, ShlObj, JPEG, DmProgress, ClipBrd,
-  SaveWindowPos, ExtDlgs , ToolWin, UnitDBKernel, Rating, Math, CommonDBSupport,
+  SaveWindowPos, ExtDlgs, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
   ShellContextMenu, DropSource, DropTarget, DateUtils, acDlgSelect,
   ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts, DBScriptFunctions,

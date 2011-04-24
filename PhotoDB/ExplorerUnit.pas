@@ -2787,12 +2787,25 @@ begin
     Exit;
 
   if Msg.message = WM_KEYDOWN then
+  begin
     if Msg.Wparam = VK_OEM_5 then
       if Length(CbPathEdit.Text) > 3 then
       begin
         SlashHandled := True;
         ComboBox1DropDown;
       end;
+    if Msg.Wparam = VK_BACK then
+    begin
+      if TbBack.Enabled then
+        TbBack.Click
+      else
+        if TbForward.Enabled then
+          TbForward.Click
+        else
+          if TbUp.Enabled then
+            TbUp.Click
+    end;
+  end;
 
   if Msg.message = WM_MOUSEMOVE then
   begin
@@ -2857,11 +2870,11 @@ begin
   if Msg.message = WM_KEYDOWN then
   begin
     WindowsMenuTickCount := GetTickCount;
-    if (Msg.WParam = VK_LEFT) and CtrlKeyDown then
+    if (Msg.WParam = VK_LEFT) and CtrlKeyDown and TbBack.Enabled then
       SpeedButton1Click(Self);
-    if (Msg.WParam = VK_RIGHT) and CtrlKeyDown then
+    if (Msg.WParam = VK_RIGHT) and CtrlKeyDown and TbForward.Enabled then
       SpeedButton2Click(Self);
-    if (Msg.WParam = VK_UP) and CtrlKeyDown then
+    if (Msg.WParam = VK_UP) and CtrlKeyDown and TbUp.Enabled then
       SpeedButton3Click(Self);
     if (Msg.WParam = 83) and CtrlKeyDown then
       if TbStop.Enabled then

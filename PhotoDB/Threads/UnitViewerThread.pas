@@ -351,8 +351,7 @@ begin
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
       Viewer.SetStaticImage(Bitmap, FTransparent);
-    end
-    else
+    end else
       F(Bitmap);
 end;
 
@@ -406,6 +405,7 @@ var
 begin
   CoInitialize(nil);
   try
+    F(FInfo);
     FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
     Query := GetQuery;
     ReadOnlyQuery(Query);
