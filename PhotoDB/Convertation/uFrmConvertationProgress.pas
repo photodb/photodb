@@ -45,11 +45,13 @@ type
     procedure Unload; override;
     procedure Execute; override;
     function IsFinal: Boolean; override;
+    procedure BreakOperation; override;
     //thread call-backs
     procedure WriteLine(Sender: TObject; Line: string; Info: Integer);
     procedure WriteLnLine(Sender: TObject; Line: string; Info : integer);
     procedure ProgressCallBack(Sender: TObject; var Info: TProgressCallBackInfo);
-    procedure OnConvertingStructureEnd(Sender: TObject; NewFileName: string);
+    procedure OnConvertingStructureEnd(Sender: TObject; NewFileName: string;
+      Result: Boolean);
     property ImageOptions: TImageDBOptions read GetImageOptions;
   end;
 
@@ -205,10 +207,17 @@ begin
   Progress.Text := Info.Information + ' (&%%)';
 end;
 
+procedure TFrmConvertationProgress.BreakOperation;
+begin
+  inherited;
+  BreakConverting := True;
+end;
+
 procedure TFrmConvertationProgress.DoFormExit(Sender: TObject);
 begin
   FWorking := False;
   IsStepComplete := True;
+  TFormConvertingDB(Manager.Owner).SilentClose := True;
   MessageBoxDB(Handle, L('Convertation of the collection is completed!'), L('Information'),
     TD_BUTTON_OK, TD_ICON_INFORMATION);
   Changed;
@@ -235,20 +244,24 @@ begin
 end;
 
 procedure TFrmConvertationProgress.OnConvertingStructureEnd(Sender: TObject;
-  NewFileName: string);
+  NewFileName: string; Result: Boolean);
 var
   Options: TRecreatingThInTableOptions;
 begin
-  Options.OwnerForm := Manager.Owner;
-  Options.WriteLineProc := WriteLine;
-  Options.WriteLnLineProc := WriteLnLine;
-  Options.OnEndProcedure := DoFormExit;
-  Options.FileName := NewFileName;
-  Options.GetFilesWithoutPassProc := PasswordKeeper.GetActiveFiles;
-  Options.AddCryptFileToListProc := PasswordKeeper.AddCryptFileToListProc;
-  Options.GetAvaliableCryptFileList := PasswordKeeper.GetAvaliableCryptFileList;
-  Options.OnProgress := ProgressCallBack;
-  RecreatingThInTable.Create(Options);
+  if Result then
+  begin
+    Options.OwnerForm := Manager.Owner;
+    Options.WriteLineProc := WriteLine;
+    Options.WriteLnLineProc := WriteLnLine;
+    Options.OnEndProcedure := DoFormExit;
+    Options.FileName := NewFileName;
+    Options.GetFilesWithoutPassProc := PasswordKeeper.GetActiveFiles;
+    Options.AddCryptFileToListProc := PasswordKeeper.AddCryptFileToListProc;
+    Options.GetAvaliableCryptFileList := PasswordKeeper.GetAvaliableCryptFileList;
+    Options.OnProgress := ProgressCallBack;
+    RecreatingThInTable.Create(Options);
+  end else
+    DoFormExit(Self);
 end;
 
 end.

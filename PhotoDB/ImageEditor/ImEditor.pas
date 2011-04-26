@@ -919,7 +919,7 @@ begin
         begin
           G := TRAWImage.Create;
           // by default RAW is half-sized
-          (G as TRAWImage).LoadHalfSize := False;
+          (G as TRAWImage).IsPreview := False;
           G.LoadFromFile(FileName);
           CurrentFileName := FileName;
           F(EXIFSection);

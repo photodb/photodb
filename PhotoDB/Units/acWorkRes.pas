@@ -819,7 +819,7 @@ end;
 function UpdateResourceW(update: dword; type_, name: PWideChar; language: word; data: pointer; size: dword) : bool; stdcall;
 
   procedure SetData(item: TPResItem);
-  var c1 : dword;
+  //var c1 : dword;
   begin
     item^.id       := language;
     item^.data     := nil;

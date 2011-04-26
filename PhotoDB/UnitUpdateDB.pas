@@ -140,15 +140,15 @@ uses
 
 { TUpdateDBForm }
 
- procedure TUpdateDBForm.WMMouseDown(var S: Tmessage);
- begin
-   Perform(WM_NCLButtonDown, HTcaption, S.Lparam);
- end;
+procedure TUpdateDBForm.WMMouseDown(var S: Tmessage);
+begin
+  Perform(WM_NCLButtonDown, HTcaption, S.Lparam);
+end;
 
- procedure TUpdateDBForm.ButtonCloseClick(Sender: TObject);
- begin
-   Close;
- end;
+procedure TUpdateDBForm.ButtonCloseClick(Sender: TObject);
+begin
+  Close;
+end;
 
 procedure TUpdateDBForm.FormCreate(Sender: TObject);
 var
@@ -455,7 +455,6 @@ begin
   F(FImageInv);
   F(FImageHourGlass);
 
-  UpdaterDB.SaveWork;
   F(TimeCounter);
   F(BadHistory);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
@@ -484,9 +483,9 @@ procedure TUpdateDBForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   if FormManager.IsMainForms(Self) and (FormManager.MainFormsCount = 1) then
-    FAddObject.DoTerminate
-  else
-    Release;
+    FAddObject.DoTerminate;
+  //do not free this form, it owned by update object
+  //TODO: check how application terminating when this form is last
 end;
 
 procedure TUpdateDBForm.ApplicationEvents1Message(var Msg: tagMSG;

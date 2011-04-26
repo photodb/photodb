@@ -17,7 +17,6 @@ type
   TArMenuItem   = array of TMenuItem;
   TArInteger    = array of Integer;
   TArStrings    = array of String;
-  TArAnsiStrings= array of AnsiString;
   TArBoolean    = array of Boolean;
   TArDateTime   = array of TDateTime;
   TArTime       = array of TDateTime;

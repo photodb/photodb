@@ -3,7 +3,7 @@ unit uDBAdapter;
 interface
 
 uses
-  DB, SysUtils, DateUtils;
+  DB, SysUtils, DateUtils, StrUtils;
 
 type
   TDBAdapter = class(TObject)
@@ -44,8 +44,8 @@ type
     procedure SetGroups(const Value: string);
     function GetInclude: Boolean;
     procedure SetInclude(const Value: Boolean);
-    function GetLongImageID: AnsiString;
-    procedure SetLongImageID(const Value: AnsiString);
+    function GetLongImageID: string;
+    procedure SetLongImageID(const Value: string);
     function GetLinks: string;
     procedure SetLinks(const Value: string);
     function GetAttributes: Integer;
@@ -70,7 +70,7 @@ type
     property IsTime: Boolean read GetIsTime write SetIsTime;
     property Groups: string read GetGroups write SetGroups;
     property Include: Boolean read GetInclude write SetInclude;
-    property LongImageID: AnsiString read GetLongImageID write SetLongImageID;
+    property LongImageID: string read GetLongImageID write SetLongImageID;
     property Links: string read GetLinks write SetLinks;
     property Attributes: Integer read GetAttributes write SetAttributes;
   end;
@@ -154,9 +154,9 @@ begin
   Result := FDS.FieldByName('Links').AsString;
 end;
 
-function TDBAdapter.GetLongImageID: AnsiString;
+function TDBAdapter.GetLongImageID: string;
 begin
-  Result := FDS.FieldByName('StrTh').AsAnsiString;
+  Result := FDS.FieldByName('StrTh').AsString;
 end;
 
 function TDBAdapter.GetName: string;
@@ -259,9 +259,9 @@ begin
   FDS.FieldByName('Links').AsString := Value;
 end;
 
-procedure TDBAdapter.SetLongImageID(const Value: AnsiString);
+procedure TDBAdapter.SetLongImageID(const Value: string);
 begin
-  FDS.FieldByName('StrTh').AsAnsiString := Value;
+  FDS.FieldByName('StrTh').AsString :=  LeftStr(Value, 100);
 end;
 
 procedure TDBAdapter.SetName(const Value: string);

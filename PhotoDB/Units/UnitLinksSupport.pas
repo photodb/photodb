@@ -49,30 +49,30 @@ const
    LINK_PROC_ACTION_ADD    = 0;
    LINK_PROC_ACTION_MODIFY = 1;
 
-function CodeLinkInfo(info : TLinkInfo) : String;
-function CodeLinksInfo(info : TLinksInfo) : String;
-function ParseLinksInfo(Info : String) : TLinksInfo;
-function CopyLinksInfo(info : TLinksInfo) : TLinksInfo;
-function VariousLinks(info1, info2 : TLinksInfo) : boolean; overload;
-function VariousLinks(info1, info2 : String) : boolean; overload;
+ function CodeLinkInfo(Info: TLinkInfo): string;
+ function CodeLinksInfo(Info: TLinksInfo): string;
+ function ParseLinksInfo(Info: string): TLinksInfo;
+ function CopyLinksInfo(Info: TLinksInfo): TLinksInfo;
+ function VariousLinks(Info1, Info2: TLinksInfo): Boolean; overload;
+ function VariousLinks(Info1, Info2: string): Boolean; overload;
 
-function DeleteLinkAtPos(var info : String; pos : integer) : boolean; overload;
-function DeleteLinkAtPos(var info : TLinksInfo; pos : integer) : boolean; overload;
+ function DeleteLinkAtPos(var Info: string; Pos: Integer): Boolean; overload;
+ function DeleteLinkAtPos(var Info: TLinksInfo; Pos: Integer): Boolean; overload;
 
-function GetCommonLinks(LinksList : TStringList) : TLinksInfo; overload;
-function GetCommonLinks(info : TArLinksInfo) : TLinksInfo; overload;
+ function GetCommonLinks(LinksList: TStringList): TLinksInfo; overload;
+ function GetCommonLinks(Info: TArLinksInfo): TLinksInfo; overload;
 
-Procedure ReplaceLinks(LinksToDelete, LinksToAdd : TLinksInfo; var Links : TLinksInfo); overload;
-Procedure ReplaceLinks(LinksToDelete, LinksToAdd : String; var Links : String); overload;
+ procedure ReplaceLinks(LinksToDelete, LinksToAdd: TLinksInfo; var Links: TLinksInfo); overload;
+ procedure ReplaceLinks(LinksToDelete, LinksToAdd: string; var Links: string); overload;
 
-function CompareLinks(LinksA, LinksB : TLinksInfo; Simple : boolean = false) : Boolean; overload;
-Function CompareLinks(LinksA, LinksB : string; Simple : boolean = false) : Boolean; overload;
+ function CompareLinks(LinksA, LinksB: TLinksInfo; Simple: Boolean = False): Boolean; overload;
+ function CompareLinks(LinksA, LinksB: string; Simple: Boolean = False): Boolean; overload;
 
-function LinkInLinksExists(Link : TLinkInfo; Links : TLinksInfo; UseValue : boolean = true) : boolean;
+ function LinkInLinksExists(Link: TLinkInfo; Links: TLinksInfo; UseValue: Boolean = True): Boolean;
 
-function CodeExtID(ExtID : AnsiString) : String;
-function DeCodeExtID(S : String) : AnsiString;
-function CompareTwoLinks(Link1, Link2 : TLinkInfo; UseValue: boolean = false) : boolean;
+ function CodeExtID(ExtID: string): string;
+ function DeCodeExtID(S: string): string;
+ function CompareTwoLinks(Link1, Link2: TLinkInfo; UseValue: Boolean = False): Boolean;
 
 function LinkType(LinkTypeN : integer) : String;
 
@@ -394,27 +394,31 @@ begin
   end;
 end;
 
-function CodeExtID(ExtID: AnsiString): string;
+function CodeExtID(ExtID: string): string;
 var
   I: Integer;
+  W: Word;
 begin
   Result := '';
   for I := 1 to Length(ExtID) do
-    Result := Result + IntToHex(Byte(ExtID[I]), 2);
+  begin
+    W := Word(ExtID[I]);
+    Result := Result + IntToHex((W shr 8) and $FF, 2);
+    Result := Result + IntToHex(W and $FF, 2);
+  end;
 end;
 
-function DeCodeExtID(S: string): AnsiString;
+function DeCodeExtID(S: string): string;
 var
   I: Integer;
-  Str: string;
+  Str, Str2: string;
 begin
   Result := '';
-  for I := 1 to (Length(S) div 2) do
+  for I := 1 to (Length(S) div 4) do
   begin
-    Str := Copy(S, 1 + 2 * (I - 1), 2);
-    if FIXIDEX then
-      if not((I = 200) and (Str = '20')) then
-        Result := Result + AnsiChar(HexToIntDef(Str, 32));
+    Str := Copy(S, 1 + 4 * (I - 1), 2);
+    Str2 := Copy(S, 1 + 4 * (I - 1) + 2, 2);
+    Result := Result + Char(HexToIntDef(Str, 0) shl 8 + HexToIntDef(Str2, 0));
   end;
 end;
 

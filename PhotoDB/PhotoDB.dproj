@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_Optimize>false</DCC_Optimize>
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
@@ -512,6 +513,7 @@
 			<DCCReference Include="Units\uCDMappingTypes.pas"/>
 			<DCCReference Include="Units\uMemoryEx.pas"/>
 			<DCCReference Include="Units\uDBShellUtils.pas"/>
+			<DCCReference Include="Units\uDBImageUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -545,7 +547,7 @@
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">272</VersionInfo>
+						<VersionInfo Name="Build">273</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -557,7 +559,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.0.272</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.0.273</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>

@@ -21,7 +21,7 @@ type
     FOnDone: TNotifyEvent;
     FTerminating: PBoolean;
     FPause: PBoolean;
-    AnsiStringParam: AnsiString;
+    StringParam: string;
     IntResult, IntIDResult: Integer;
     FCurrentImageDBRecord: TImageDBRecordA;
     FSender: TUpdaterDB;
@@ -100,7 +100,7 @@ var
   CryptFileWithoutPassChecked: Boolean = False;
   FAutoAnswer: Integer = -1;
 
-function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: AnsiString; KeyWords, Comment, Password: string;
+function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
   OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsTime: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 
@@ -132,7 +132,7 @@ begin
     FOnDone(Self);
 end;
 
-function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: AnsiString; KeyWords, Comment, Password: string;
+function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
   OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsTime: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 var
@@ -140,7 +140,6 @@ var
   Sql: string;
   FQuery: TDataSet;
   M: TMemoryStream;
-  StrThCrc: Cardinal;
 begin
   Result := False;
   if Settings.ReadBool('Options', 'NoAddSmallImages', True) then
@@ -205,7 +204,7 @@ begin
     end else
       AssignParam(FQuery, 4, Jpeg);
 
-    SetAnsiStrParam(FQuery, 5, ImTh);
+    SetStrParam(FQuery, 5, ImTh);
     SetStrParam(FQuery, 6, KeyWords);
     SetStrParam(FQuery, 7, GetWindowsUserName);
     SetStrParam(FQuery, 8, 'PhotoAlbum');
@@ -222,8 +221,7 @@ begin
 
   {$R-}
     SetIntParam(FQuery, 22, GetPathCRC(Path, True));
-    CalcAnsiStringCRC32(ImTh, StrThCrc);
-    SetIntParam(FQuery, 23, StrThCrc);
+    SetIntParam(FQuery, 23, StringCRC(ImTh));
     try
       ExecSQL(FQuery);
       if LastInseredID = 0 then
@@ -324,7 +322,7 @@ begin
           if not((FAutoAnswer = Result_skip_all) or (FAutoAnswer = Result_add_all)) then
           begin
             FCurrentImageDBRecord := Res;
-            AnsiStringParam := Res.ImTh;
+            StringParam := Res.ImTh;
             SynchronizeEx(ExecuteReplaceDialog);
             case IntResult of
               Result_Add_All:
@@ -354,7 +352,7 @@ begin
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
                     SetIntParam(FQuery, 0, Db_attr_dublicate);
-                    SetAnsiStrParam(FQuery, 1, Res.ImTh);
+                    SetStrParam(FQuery, 1, Res.ImTh);
                     try
                       ExecSQL(FQuery);
                     except
@@ -376,7 +374,7 @@ begin
                   FQuery := GetQuery;
                   try
                     SetSQL(FQuery, 'DELETE FROM $DB$ WHERE StrTh=:s and ID<>:ID');
-                    SetAnsiStrParam(FQuery, 0, Res.ImTh);
+                    SetStrParam(FQuery, 0, Res.ImTh);
                     SetIntParam(FQuery, 1, IntIDResult);
                     try
                       ExecSQL(FQuery);
@@ -405,7 +403,7 @@ begin
               try
                 SetSQL(FQuery, 'Update $DB$ Set Attr = :Attr Where StrTh = :s');
                 SetIntParam(FQuery, 0, Db_attr_dublicate);
-                SetAnsiStrParam(FQuery, 1, Res.ImTh);
+                SetStrParam(FQuery, 1, Res.ImTh);
                 try
                   ExecSQL(FQuery);
                 except
@@ -425,7 +423,7 @@ begin
           if not((FAutoAnswer = Result_skip_all) or (FAutoAnswer = Result_replace_All) or (FAutoAnswer = Result_add_all)) then
           begin
             FCurrentImageDBRecord := Res;
-            AnsiStringParam := Res.ImTh;
+            StringParam := Res.ImTh;
             SynchronizeEx(ExecuteReplaceDialog);
 
             case IntResult of
@@ -465,7 +463,7 @@ begin
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
                     SetIntParam(FQuery, 0, Db_attr_dublicate);
-                    SetAnsiStrParam(FQuery, 1, Res.ImTh);
+                    SetStrParam(FQuery, 1, Res.ImTh);
                     try
                       ExecSQL(FQuery);
                     except
@@ -486,7 +484,7 @@ begin
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
                     SetIntParam(FQuery, 0, Db_attr_dublicate);
-                    SetAnsiStrParam(FQuery, 1, Res.ImTh);
+                    SetStrParam(FQuery, 1, Res.ImTh);
                     try
                       ExecSQL(FQuery);
                     except
@@ -516,7 +514,7 @@ begin
               try
                 SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
                 SetIntParam(FQuery, 0, Db_attr_dublicate);
-                SetAnsiStrParam(FQuery, 1, Res.ImTh);
+                SetStrParam(FQuery, 1, Res.ImTh);
                 try
                   ExecSQL(FQuery);
                 except
@@ -560,7 +558,7 @@ var
 begin
   Application.CreateForm(TDBReplaceForm, DBReplaceForm);
   try
-    DBReplaceForm.ExecuteToAdd(FInfo[FileNumber].FileName, AnsiStringParam, IntResult, IntIDResult, FCurrentImageDBRecord);
+    DBReplaceForm.ExecuteToAdd(FInfo[FileNumber].FileName, StringParam, IntResult, IntIDResult, FCurrentImageDBRecord);
   finally
     R(DBReplaceForm);
   end;

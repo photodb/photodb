@@ -2131,7 +2131,7 @@ begin
     ReplaceThumbImageToFolder(FInfo.FileName, FFileID);
 
   if Mode = THREAD_PREVIEW_MODE_BIG_IMAGE then
-     ExtractBigPreview(FInfo.FileName, FInfo.Rotation, FFileID);
+    ExtractBigPreview(FInfo.FileName, FInfo.Rotation, FFileID);
 
   F(FUpdaterInfo.FileInfo);
 end;

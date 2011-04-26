@@ -8,8 +8,8 @@ uses
 function SaveIDsTofile(FileName: string; IDs: TArInteger): Boolean;
 function LoadIDsFromfile(FileName: string): string;
 function LoadIDsFromfileA(FileName: string): TArInteger;
-function LoadImThsFromfileA(FileName: string): TArAnsiStrings;
-function SaveImThsTofile(FileName: string; ImThs: TArAnsiStrings): Boolean;
+function LoadImThsFromfileA(FileName: string): TArStrings;
+function SaveImThsTofile(FileName: string; ImThs: TArStrings): Boolean;
 procedure LoadDblFromfile(FileName: string; var IDs: TArInteger; var Files: TArStrings);
 function SaveListTofile(FileName: string; IDs: TArInteger; Files: TArStrings): Boolean;
 function LoadActionsFromfileA(FileName: string; Info : TStrings) : Boolean;
@@ -232,18 +232,21 @@ begin
   end;
 end;
 
-function SaveImThsTofile(FileName: string; ImThs: TArAnsiStrings): Boolean;
+function SaveImThsTofile(FileName: string; ImThs: TArStrings): Boolean;
 var
   I: Integer;
   X: array of Byte;
-  Fs: Tfilestream;
-  S: AnsiString;
+  FS: TFileStream;
+  MS: TMemoryStream;
+  SW: TStreamWriter;
+  S: string;
+  B: Byte;
 begin
   Result := False;
   if Length(ImThs) = 0 then
     Exit;
   try
-    Fs := TFileStream.Create(Filename, FmOpenWrite or FmCreate);
+    FS := TFileStream.Create(Filename, FmOpenWrite or FmCreate);
   except
     Exit;
   end;
@@ -262,11 +265,26 @@ begin
     X[10] := Ord('S');
     X[11] := Ord('-');
     X[12] := Ord('V');
-    X[13] := Ord('1');
-    Fs.write(Pointer(X)^, 14);
+    X[13] := Ord('2');
+    Fs.Write(Pointer(X)^, 14);
     for I := 0 to Length(ImThs) - 1 do
     begin
-      S := AnsiString(ImThs[I]);
+      S := ImThs[I];
+      MS := TMemoryStream.Create;
+      try
+        SW := TStreamWriter.Create(MS, TEncoding.UTF8);
+        try
+          SW.Write(S);
+          MS.Seek(0, soFromBeginning);
+          B := Byte(MS.Size);
+          FS.Write(B, 1);
+          FS.CopyFrom(MS, MS.Size);
+        finally
+          F(SW);
+        end;
+      finally
+        F(MS);
+      end;
       FS.Write(S[1], Length(S));
     end;
   except
@@ -277,37 +295,45 @@ begin
   Result := True;
 end;
 
-function LoadImThsFromfileA(FileName: string): TArAnsiStrings;
+function LoadImThsFromfileA(FileName: string): TArStrings;
 var
-  I: Integer;
-  S: AnsiString;
+  I, L: Integer;
+  S: string;
   X: array of Byte;
-  Fs: Tfilestream;
-  V1: Boolean;
+  FS: TFileStream;
+  SR: TStringStream;
+  V2: Boolean;
+  B: Byte;
 begin
   SetLength(Result, 0);
   if not FileExists(FileName) then
     Exit;
   try
-    Fs := TFileStream.Create(Filename, FmOpenRead);
+    FS := TFileStream.Create(Filename, FmOpenRead);
   except
     Exit;
   end;
   try
     SetLength(X, 14);
     FS.Read(Pointer(X)^, 14);
-    V1 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
+    V2 := (X[1] = Ord('F')) and (X[2] = Ord('I')) and (X[3] = Ord('L')) and (X[4] = Ord('E')) and (X[5] = Ord('-')) and
       (X[6] = Ord('I')) and (X[7] = Ord('M')) and (X[8] = Ord('T')) and (X[9] = Ord('H')) and (X[10] = Ord('S')) and
-      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('1'));
+      (X[11] = Ord('-')) and (X[12] = Ord('V')) and (X[13] = Ord('2'));
 
-    if V1 then
+    if V2 then
     begin
-      for I := 1 to (Fs.Size - 14) div 200 do
+      FS.Read(L, SizeOf(L));
+      for I := 1 to L do
       begin
-        SetLength(S, 200);
-        FS.Read(S[1], 200);
-        SetLength(Result, Length(Result) + 1);
-        Result[Length(Result) - 1] := S;
+        FS.Read(B, 1);
+        SR := TStringStream.Create(S, TEncoding.UTF8);
+        try
+          SR.CopyFrom(FS, B);
+          SetLength(Result, Length(Result) + 1);
+          Result[Length(Result) - 1] := S;
+        finally
+          F(SR);
+        end;
       end;
     end;
   finally
@@ -349,7 +375,7 @@ begin
     X[13] := Ord('1');
     Fs.write(Pointer(X)^, 14);
     L := Actions.Count;
-    Fs.Write(L, SizeOf(L));
+    FS.Write(L, SizeOf(L));
     for I := 0 to Actions.Count - 1 do
     begin
       Action := AnsiString(Actions[I]);

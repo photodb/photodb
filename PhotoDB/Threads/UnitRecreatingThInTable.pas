@@ -66,11 +66,13 @@ begin
   ImageOptions := nil;
   inherited Create(Options.OwnerForm, False);
   FOptions := Options;
+  FCryptFileList := nil;
 end;
 
 destructor RecreatingThInTable.Destroy;
 begin
   F(ImageOptions);
+  F(FCryptFileList);
   inherited;
 end;
 
@@ -134,14 +136,14 @@ var
       end;
       if Info.ImTh <> '' then
       begin
-        if Table.FieldByName('StrTh').AsAnsiString <> Info.ImTh then
+        if Table.FieldByName('StrTh').AsString <> Info.ImTh then
         begin
           FStrParam := Format(L('Updated information about file "%s"'), [Trim(Table.FieldByname('Name').AsString)]);
           FIntParam := LINE_INFO_OK;
           if Crypted then
             FStrParam := FStrParam + ' *';
           SynchronizeEx(TextOutEx);
-          Table.FieldByName('StrTh').AsAnsiString := Info.ImTh;
+          Table.FieldByName('StrTh').AsString := Info.ImTh;
           CRC := StringCRC(Info.ImTh);
           if Integer(CRC) <> Table.FieldByName('StrThCrc').AsInteger then
             Table.FieldByName('StrThCrc').AsInteger := Integer(CRC);
@@ -318,6 +320,7 @@ end;
 
 procedure RecreatingThInTable.GetCryptFileList;
 begin
+  F(FCryptFileList);
   FCryptFileList := FOptions.GetFilesWithoutPassProc(Self);
 end;
 

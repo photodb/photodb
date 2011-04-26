@@ -58,7 +58,7 @@ type
     BtnDeleteFile: TButton;
     CbForAll: TCheckBox;
     LvMain: TEasyListview;
-    procedure ExecuteToAdd(Filename : string; LongImageID : AnsiString; var ResultAction: Integer; var SelectedID: Integer; rec_ : TImageDBRecordA);
+    procedure ExecuteToAdd(Filename : string; LongImageID : string; var ResultAction: Integer; var SelectedID: Integer; rec_ : TImageDBRecordA);
     procedure readDBInfoByID(id : integer);
     procedure AddItem(Text : string; ID : integer; fbit_ : tbitmap);
     procedure FormCreate(Sender: TObject);
@@ -197,7 +197,7 @@ begin
   LvMain.Refresh;
 end;
 
-procedure TDBReplaceForm.ExecuteToAdd(FileName: string; LongImageID: AnsiString; var ResultAction: Integer; var SelectedID: Integer;
+procedure TDBReplaceForm.ExecuteToAdd(FileName: string; LongImageID: string; var ResultAction: Integer; var SelectedID: Integer;
   Rec_: TImageDBRecordA);
 var
   I: Integer;
@@ -211,7 +211,7 @@ begin
   FCurrentFileName := Filename;
   WorkQuery.Active := False;
   SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE StrTh = :str ');
-  SetAnsiStrParam(WorkQuery, 0, LongImageID);
+  SetStrParam(WorkQuery, 0, LongImageID);
   WorkQuery.Active := True;
   if WorkQuery.RecordCount = 0 then
   begin

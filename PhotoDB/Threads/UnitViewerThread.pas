@@ -116,7 +116,7 @@ begin
     try
 
       if Graphic is TRAWImage then
-        TRAWImage(Graphic).LoadHalfSize := not FFullImage;
+        TRAWImage(Graphic).IsPreview := not FFullImage;
 
       try
         if PassWord <> '' then

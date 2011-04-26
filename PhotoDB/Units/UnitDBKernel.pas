@@ -260,8 +260,9 @@ begin
     if (GetDBType(DBName_) = DB_TYPE_MDB) and (GetFileSizeByName(DBName_) > 500 * 1025) then
     begin
       FTestTable := GetQuery(DBName_, True);
+      ForwardOnlyQuery(FTestTable);
 
-      SetSQL(FTestTable, 'Select TOP 1 * From ImageTable Where ID<>0 ');
+      SetSQL(FTestTable, 'Select TOP 1 * From ImageTable');
       try
         FTestTable.Open;
       except
@@ -295,11 +296,11 @@ begin
         TActiveTableThread.Create(FTestTable, True, ThreadOpenResult);
         repeat
           Application.ProcessMessages;
-          Sleep(50);
+          CheckSynchronize;
+          Sleep(10);
         until ThreadOpenResultBool;
         ActiveOk := ThreadOpenResultBool;
-      end
-      else
+      end else
         ActiveOk := ActiveTable(FTestTable, True);
       if not ActiveOk then
       begin
@@ -406,7 +407,7 @@ begin
             Exit;
 
           try
-            FTestTable.FieldByName('Version').AsString;
+            FTestTable.FieldByName('Version').AsInteger;
             FTestTable.FieldByName('DBJpegCompressionQuality').AsString;
             FTestTable.FieldByName('ThSizePanelPreview').AsInteger;
             FTestTable.FieldByName('ThImageSize').AsInteger;
@@ -419,6 +420,8 @@ begin
             end;
           end;
           Result := DB_VER_2_2;
+          if FTestTable.FieldByName('Version').AsInteger = 2 then
+            Result := DB_VER_2_3;
         end;
       end;
     finally
@@ -599,13 +602,13 @@ begin
     for I := 0 to FPasswodsInSession.Count - 1 do
       if ValidPassInCryptBlobStreamJPG(DF, FPasswodsInSession[I]) then
       begin
-        Result:=FPasswodsInSession[I];
+        Result := FPasswodsInSession[I];
         Exit;
       end;
     for I := 0 to FINIPasswods.Count - 1 do
       if ValidPassInCryptBlobStreamJPG(DF, FINIPasswods[I]) then
       begin
-        Result:=FINIPasswods[I];
+        Result := FINIPasswods[I];
         Exit;
       end;
   finally
@@ -932,12 +935,9 @@ begin
 end;
 
 function TDBKernel.ValidDBVersion(DBFile: string;
-  DBVersion: integer): boolean;
+  DBVersion: Integer): boolean;
 begin
-  if CommonDBSupport.GetDBType(DBFile) = DB_TYPE_MDB then
-    Result := DBVersion > DB_VER_2_1
-  else
-    Result := DBVersion > DB_VER_1_9;
+  Result := DBVersion = DB_VER_2_3;
 end;
 
 procedure TDBKernel.ReadDBOptions;

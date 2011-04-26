@@ -736,7 +736,7 @@ object FormConvertingDB: TFormConvertingDB
     OnClick = BtnNextClick
   end
   object BtnCancel: TButton
-    Left = 305
+    Left = 303
     Top = 374
     Width = 77
     Height = 25

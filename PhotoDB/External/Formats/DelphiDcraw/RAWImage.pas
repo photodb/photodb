@@ -11,11 +11,11 @@ type
   protected
     FWidth : Integer;
     FHeight : Integer;
-    fLoadHalfSize: boolean;
+    FIsPreview: Boolean;
     function GetWidth : integer; override;
     function GetHeight : integer; override;
   private
-    procedure SetLoadHalfSize(const Value: boolean);
+    procedure SetIsPreview(const Value: boolean);
     procedure LoadFromFreeImage(Image : TFreeBitmap);
   public
     constructor Create; override;
@@ -23,19 +23,19 @@ type
     procedure LoadFromFile(const Filename: string); override;
     function LoadThumbnailFromFile(const FileName : string; Width, Height : Integer) : boolean;
     procedure Assign(Source : TPersistent); override;
-    property LoadHalfSize : boolean read FLoadHalfSize write SetLoadHalfSize;
+    property IsPreview : Boolean read FIsPreview write SetIsPreview;
     property GraphicWidth: Integer read FWidth;
     property GraphicHeight: Integer read FHeight;
   end;
-       
+
   TRAWExifRecord = class(TObject)
-  private        
+  private
     FDescription : string;
     FKey : string;
     FValue : string;
   public
     property Key : string read FKey write FKey;
-    property Value : string read FValue write FValue;  
+    property Value : string read FValue write FValue;
     property Description : string read FDescription write FDescription;
   end;
 
@@ -103,7 +103,7 @@ begin
     for I := FIMD_NODATA to FIMD_CUSTOM do
     begin
       FindMetaData := FreeImage_FindFirstMetadata(I, RawBitmap.Dib, TagData);
-      try       
+      try
         if FindMetaData <> nil then
         begin
           AddTag;
@@ -127,7 +127,7 @@ begin
     //for crypting - loading private variables width and height
     FWidth := (Source as TRAWImage).FWidth;
     FHeight := (Source as TRAWImage).FHeight;
-    FLoadHalfSize:=(Source as TRAWImage).FLoadHalfSize;
+    FIsPreview := (Source as TRAWImage).FIsPreview;
   end;
   inherited Assign(Source);
 end;
@@ -136,20 +136,20 @@ constructor TRAWImage.Create;
 begin
   inherited;
   FreeImageInit;
-  FLoadHalfSize := False;
+  FIsPreview := False;
 end;
 
 function TRAWImage.GetHeight: integer;
 begin
-  if FLoadHalfSize then
+  if FIsPreview then
     Result := FHeight * 2
   else
     Result := FHeight;
 end;
 
 function TRAWImage.GetWidth: integer;
-begin             
-  if FLoadHalfSize then
+begin
+  if FIsPreview then
     Result := FWidth * 2
   else
     Result := FWidth;
@@ -161,7 +161,7 @@ var
 begin
   RawBitmap := TFreeWinBitmap.Create;
   try
-    if FLoadHalfSize then
+    if FIsPreview then
       RawBitmap.LoadU(Filename, RAW_PREVIEW)
     else
       RawBitmap.LoadU(Filename, RAW_DISPLAY);
@@ -187,7 +187,7 @@ begin
       Data := TMemoryStream(Stream).Memory;
       MemIO := TFreeMemoryIO.Create(Data, Stream.Size);
       try
-        if FLoadHalfSize then
+        if FIsPreview then
           RawBitmap.LoadFromMemory(MemIO, RAW_PREVIEW)
         else
           RawBitmap.LoadFromMemory(MemIO, RAW_DISPLAY);
@@ -196,7 +196,7 @@ begin
       end;
     end else
     begin
-      if FLoadHalfSize then
+      if FIsPreview then
         RawBitmap.LoadFromStream(Stream, RAW_PREVIEW)
       else
         RawBitmap.LoadFromStream(Stream, RAW_DISPLAY);
@@ -242,7 +242,7 @@ begin
   try
     RawBitmap.LoadU(Filename, RAW_PREVIEW);
     RawThumb := TFreeWinBitmap.Create;
-    try           
+    try
       fWidth := RawBitmap.GetWidth;
       fHeight := RawBitmap.GetHeight;
       W := fWidth;
@@ -258,14 +258,9 @@ begin
   end;
 end;
 
-procedure TRAWImage.SetLoadHalfSize(const Value: boolean);
+procedure TRAWImage.SetIsPreview(const Value: boolean);
 begin
-  fLoadHalfSize := Value;
-end;
-
-function aSetString(S : String) : String;
-begin
- Result := S;
+  FIsPreview := Value;
 end;
 
 { TRAWExif }

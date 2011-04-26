@@ -55,8 +55,7 @@ end;
 procedure TThreadOptimizeDublicates.Execute;
 var
   Table, SetQuery: TDataSet;
-  FileName, Groups, Links, KeyWords, Comment, S, Folder, SQLText, SetStr: string;
-  StrTh: AnsiString;
+  FileName, Groups, Links, KeyWords, Comment, S, Folder, SQLText, StrTh, SetStr: string;
   I, ID, FileSize, Rating, Access, Paramno, RecordCount, Attr: Integer;
   Query: TDataSet;
   AFile: string;
@@ -180,9 +179,9 @@ begin
           FromDB := '(Select * from $DB$ where StrThCrc=:StrThCrc)';
 
         SetSQL(Query, 'SELECT * FROM ' + FromDB + ' WHERE StrTh = :StrTh ORDER BY ID');
-        SetIntParam(Query, Nextparam, StringCRC(Table.FieldByName('StrTh').AsAnsiString));
+        SetIntParam(Query, Nextparam, StringCRC(Table.FieldByName('StrTh').AsString));
         if not WideSearch then
-          SetAnsiStrParam(Query, Nextparam, Table.FieldByName('StrTh').AsAnsiString);
+          SetStrParam(Query, Nextparam, Table.FieldByName('StrTh').AsString);
 
         Query.Open;
 
@@ -241,14 +240,14 @@ begin
         Query.First;
         FileName := Query.FieldByName('FFileName').AsString;
         ID := Query.FieldByName('ID').AsInteger;
-        StrTh := Query.FieldByName('StrTh').AsAnsiString;
+        StrTh := Query.FieldByName('StrTh').AsString;
         FE := False;
         for I := 1 to Query.RecordCount do
         begin
           if FileExistsSafe(Query.FieldByName('FFileName').AsString) then
           begin
             FileName := Query.FieldByName('FFileName').AsString;
-            StrTh := Query.FieldByName('StrTh').AsAnsiString;
+            StrTh := Query.FieldByName('StrTh').AsString;
             ID := Query.FieldByName('ID').AsInteger;
             FE := True;
             Break;
@@ -373,7 +372,7 @@ begin
 
           SetStrParam(SetQuery, Nextparam, AnsiLowerCase(FileName));
           SetStrParam(SetQuery, Nextparam, ExtractFileName(FileName));
-          SetAnsiStrParam(SetQuery, Nextparam, StrTh);
+          SetStrParam(SetQuery, Nextparam, StrTh);
           SetIntParam(SetQuery, Nextparam, Integer(StringCRC(StrTh)));
           SetStrParam(SetQuery, Nextparam, KeyWords);
           SetStrParam(SetQuery, Nextparam, Comment);

@@ -29,7 +29,7 @@ type
     ScanRotation: Boolean;
     ScanPercent: Extended;
   end;
-  
+
 type
   SearchThread = class(TThreadEx)
   private
@@ -61,9 +61,9 @@ type
     procedure Execute; override;
     procedure LoadImages;
     procedure UpdateQueryEstimateCount;
-    procedure SendDataPacketToForm;             
+    procedure SendDataPacketToForm;
     procedure AddItem(S : TDataSet);
-    procedure LoadTextQuery(QueryParams : TDBQueryParams);  
+    procedure LoadTextQuery(QueryParams : TDBQueryParams);
     procedure DoScanSimilarFiles(QueryParams : TDBQueryParams);
     procedure NitifyEstimateStart;
     procedure NitifyEstimateEnd;
@@ -80,7 +80,7 @@ const
 
 implementation
 
-uses 
+uses
   Searching, UnitGroupsWork;
 
 constructor SearchThread.Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
@@ -163,9 +163,9 @@ var
   FSpecQuery: TDataSet;
   Sid: string;
   ScanParams: TScanFileParams;
-  ImThs : TArAnsiStrings;
-  IthIds : TArInteger;       
-  TempString : string;
+  ImThs: TArStrings;
+  IthIds: TArInteger;
+  TempString: string;
 const
   AllocImThBy = 5;
 
@@ -222,10 +222,10 @@ begin
       end;
 
       if AnsiLowerCase(Copy(Sysaction, 1, 9)) = AnsiLowerCase('ScanImage') then
-      begin      
-        ScanParams := TScanFileParams.Create;  
+      begin
+        ScanParams := TScanFileParams.Create;
         Result.Data := ScanParams;
-        
+
         ScanParams.ScanRotation := False;
         Result.QueryType := QT_W_SCAN_FILE;
         Result.CanBeEstimated := False;
@@ -241,17 +241,17 @@ begin
           Stemp := Copy(S, PosEx(':', S, 3) + 1, Length(S) - PosEx(':', S, 3));
           ScanParams.ScanPercent := Min(100, Max(0.0000000001, StrToFloatDef(Stemp, 50)));
         end;
-        
+
         SystemQuery := True;
       end;
 
       if AnsiLowerCase(Copy(Sysaction, 1, 10)) = AnsiLowerCase('ScanImageW') then
-      begin         
-        ScanParams := TScanFileParams.Create;  
+      begin
+        ScanParams := TScanFileParams.Create;
         Result.Data := ScanParams;
-        
+
         ScanParams.ScanRotation := True;
-        Result.QueryType := QT_W_SCAN_FILE;   
+        Result.QueryType := QT_W_SCAN_FILE;
         Result.CanBeEstimated := False;
         S := Copy(Sysaction, 12, Length(Sysaction) - 12);
         if PosEx(':', S, 3) = -1 then
@@ -348,7 +348,7 @@ begin
         end;
         SetSQL(FSpecQuery, SQLText);
         for I := 1 to M do
-          SetAnsiStrParam(FSpecQuery, I - 1, ImThs[I - 1 + AllocImThBy * (J - 1)]);
+          SetStrParam(FSpecQuery, I - 1, ImThs[I - 1 + AllocImThBy * (J - 1)]);
         FSpecQuery.Active := True;
         FSpecQuery.First;
         for I := 1 to FSpecQuery.RecordCount do
@@ -359,7 +359,7 @@ begin
         end;
         //SetProgress(J - 1);
       end;
-    finally  
+    finally
       FreeDS(FSpecQuery);
     end;
     First := True;
@@ -642,7 +642,7 @@ begin
 end;
 
 procedure SearchThread.LoadImages;
-var                          
+var
   QueryParams: TDBQueryParams;
 
 begin
@@ -654,21 +654,21 @@ begin
       IntParam := -1;
       SynchronizeEx(UpdateQueryEstimateCount);
     end;
-      
+
     if QueryParams.QueryType = QT_TEXT then
       LoadTextQuery(QueryParams);
-               
+
     if QueryParams.QueryType = QT_W_SCAN_FILE then
       DoScanSimilarFiles(QueryParams);
 
   finally
     F(QueryParams);
-  end; 
+  end;
 end;
 
 procedure SearchThread.LoadTextQuery(QueryParams: TDBQueryParams);
 var
-  FWorkQuery: TDataSet;    
+  FWorkQuery: TDataSet;
   Counter: Integer;
   FLastPacketTime: Cardinal;
 begin
@@ -722,14 +722,14 @@ begin
       SynchronizeEx(SendDataPacketToForm);
       FData.Clear;
     end;
-        
+
     if FSearchParams.IsEstimate then
     begin
       if not FWorkQuery.IsEmpty then
         IntParam := FWorkQuery.Fields[0].AsInteger
       else
         IntParam := -1;
-          
+
       SynchronizeEx(UpdateQueryEstimateCount);
     end;
 
@@ -807,7 +807,7 @@ begin
   ScanParams := TScanFileParams(QueryParams.Data);
   if not FSearchParams.IsEstimate then
   begin
-  
+
     Pic := TPicture.Create;
     try
       if GraphicCrypt.ValidCryptGraphicFile(ScanParams.ScanFileName) then
@@ -845,9 +845,9 @@ begin
           if FSearchParams.GroupName <> '' then
             TempSql := TempSql + ' AND (Groups like "' + GroupSearchByGroupName(FSearchParams.GroupName) + '")';
           TempSql := TempSql + ' AND ((DateToAdd > :MinDate) and (DateToAdd<:MaxDate))';
-  
+
           FQuery := GetQuery(True);
-          try              
+          try
             SetSQL(FQuery, StringReplace(TempSql, '{FIELDS}', 'COUNT(*)', []));
             SetDateParam(FQuery, 'MinDate', DateOf(FSearchParams.DateFrom));
             SetDateParam(FQuery, 'MaxDate', DateOf(FSearchParams.DateTo));
@@ -855,9 +855,9 @@ begin
             EstimateRecordsCOunt := FQuery.Fields[0].AsInteger;
           finally
             FreeDS(FQuery);
-          end; 
+          end;
           FQuery := GetQuery(True);
-          try              
+          try
             SetSQL(FQuery, StringReplace(TempSql, '{FIELDS}', '*', []) + ' ORDER BY ID DESC');
             SetDateParam(FQuery, 'MinDate', DateOf(FSearchParams.DateFrom));
             SetDateParam(FQuery, 'MaxDate', DateOf(FSearchParams.DateTo));
@@ -872,20 +872,20 @@ begin
               begin
                 //TW.I.Start('COMPARE NEXT ITEM');
                 if FQuery.RecNo mod 10 = 0 then
-                begin    
+                begin
                   //TW.I.Start('COMPARE PROGRESS START');
                   SetPercentProgress(100 * (FQuery.RecNo / EstimateRecordsCount));
                   if (FData.Count > 0) then
                   begin
                     SynchronizeEx(SendDataPacketToForm);
                     FData.Clear;
-                  end;    
+                  end;
                   //TW.I.Start('COMPARE PROGRESS END');
                 end;
-              
+
                 if Terminated then
                   Break;
-            
+
                 //TW.I.Start('COMPARE LOAD IMAGE');
                 JPEG := nil;
                 try
@@ -903,12 +903,12 @@ begin
                     JPEG := TJPEGImage.Create;
                     JPEG.Assign(FQuery.FieldByName('thum'));
                   end;
-                        
+
                   //TW.I.Start('COMPARE LOAD IMAGE END');
                   if JPEG <> nil then
-                  begin         
+                  begin
                     //TW.I.Start('COMPARE COMPARE START');
-                    CmpResult := CompareImagesEx(JPEG, CompareInfo, Rot, ScanParams.ScanRotation, not ScanParams.ScanRotation, 60);         
+                    CmpResult := CompareImagesEx(JPEG, CompareInfo, Rot, ScanParams.ScanRotation, not ScanParams.ScanRotation, 60);
                     //TW.I.Start('COMPARE COMPARE END');
                     if (CmpResult.ByGistogramm > ScanParams.ScanPercent) or (CmpResult.ByPixels > ScanParams.ScanPercent) then
                     begin

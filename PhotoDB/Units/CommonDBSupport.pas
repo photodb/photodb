@@ -150,7 +150,6 @@ procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; 
 procedure SetDateParam(Query: TDataSet; name: string; Date: TDateTime);
 procedure SetBoolParam(Query: TDataSet; Index: Integer; Bool: Boolean);
 procedure SetStrParam(Query: TDataSet; Index: Integer; Value: string);
-procedure SetAnsiStrParam(Query: TDataSet; Index: Integer; Value: AnsiString);
 procedure SetIntParam(Query: TDataSet; Index: Integer; Value: Integer);
 function QueryParamsCount(Query: TDataSet): Integer;
 
@@ -304,12 +303,6 @@ begin
 end;
 
 procedure SetIntParam(Query : TDataSet; Index : integer; Value : integer);
-begin
-  if (Query is TADOQuery) then
-    (Query as TADOQuery).Parameters[Index].Value := Value;
-end;
-
-procedure SetAnsiStrParam(Query: TDataSet; Index: Integer; Value: AnsiString);
 begin
   if (Query is TADOQuery) then
     (Query as TADOQuery).Parameters[Index].Value := Value;
@@ -535,7 +528,7 @@ begin
   Result := True;
   FQuery := GetQuery(TableName, True);
   try
-    SQL := 'Update DBSettings Set Version=' + IntToStr(Settings.Version) + ', DBJpegCompressionQuality = ' + IntToStr
+    SQL := 'Update DBSettings Set DBJpegCompressionQuality = ' + IntToStr
       (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = ' + IntToStr(Settings.ThSizePanelPreview)
       + ',' + 'ThImageSize = ' + IntToStr(Settings.ThSize) + ', ThHintSize = ' + IntToStr(Settings.ThHintSize)
       + ', DBName = ' + NormalizeDBString(Settings.name)  + ', DBDescription = ' + NormalizeDBString(Settings.Description);
@@ -670,18 +663,8 @@ begin
       ':DBJpegCompressionQuality,:ThSizePanelPreview,:ThImageSize,:ThHintSize)'; }
 
     SQL := 'Insert Into DBSettings  (Version, DBJpegCompressionQuality, ThSizePanelPreview,' +
-      'ThImageSize, ThHintSize, DBName, DBDescription) Values (1,75,75,150,300,"","")';
+      'ThImageSize, ThHintSize, DBName, DBDescription) Values (2,75,75,150,300,"","")';
     SetSQL(FQuery, SQL);
-    try
-      ExecSQL(FQuery);
-    except
-      on E: Exception do
-      begin
-        EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
-        Result := False;
-      end;
-    end;
-
     try
       ExecSQL(FQuery);
     except
@@ -767,8 +750,7 @@ begin
   try
     SQL := 'CREATE TABLE ImageTable (' + 'ID Autoincrement,' + 'Name Character(255),' + 'FFileName Memo,' +
       'Comment Memo,' + 'IsDate Logical,' + 'DateToAdd Date ,' + 'Owner  Character(255),' + 'Rating INTEGER ,' +
-      'Thum  LONGBINARY,' + 'FileSize INTEGER ,' + 'KeyWords Memo,' + 'Groups Memo,' + 'StrTh  Memo,' +
-    // Character fault when special characters
+      'Thum  LONGBINARY,' + 'FileSize INTEGER ,' + 'KeyWords Memo,' + 'Groups Memo,' + 'StrTh Character(100),' +
       'StrThCrc INTEGER , ' + 'Attr INTEGER,' + 'Collection  Character(255),' + 'Access INTEGER ,' + 'Width INTEGER ,' +
       'Height INTEGER ,' + 'Colors INTEGER ,' + 'Include Logical,' + 'Links Memo,' + 'aTime TIME,' + 'IsTime Logical,' +
       'FolderCRC INTEGER,' + 'Rotated INTEGER )';

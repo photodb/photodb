@@ -252,7 +252,7 @@ type
     Width, Height: Integer;
     Links: string;
     Exists: Integer; // for drawing in lists
-    LongImageID: AnsiString;
+    LongImageID: string;
     Data: TClonableObject;
     Image: TJpegImage;
     Tag: Integer;

@@ -390,6 +390,7 @@ begin
   for I := 0 to Length(Icons) - 1 do
     Icons[I].Free;
   F(ItemsData);
+  F(Infos);
 end;
 
 procedure TCMDForm.FormShow(Sender: TObject);

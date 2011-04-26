@@ -183,8 +183,7 @@ procedure CmpDBTh.Execute;
 var
   Res, Updated, FE: Boolean;
   I, J: Integer;
-  OldGroups, Groups, Groups_, R, KeyWords, KeyWords_, _sqlexectext: string;
-  StrTh: AnsiString;
+  OldGroups, Groups, Groups_, R, KeyWords, KeyWords_, _sqlexectext, StrTh: string;
   FTempGroup, FRegGroups, FOutRegGroups: TGroups;
   GroupsActions: TGroupsActionsW;
   SLinks, DLinks: TLinksInfo;
@@ -260,7 +259,7 @@ begin
             StrTh := SDA.LongImageID;
 
             SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrThCrc = ' + IntToStr(Integer(StringCRC(StrTh))) + ' AND StrTh = :StrTh');
-            SetAnsiStrParam(FQuery, 0, StrTh);
+            SetStrParam(FQuery, 0, StrTh);
             FQuery.Open;
             Updated := False;
 

@@ -32,7 +32,6 @@ type
     { Private declarations }
     FFileName: string;
     Step: Integer;
-    SilentClose: Boolean;
     FImageOptions: TImageDBOptions;
     RecordCount: Integer;
     CurrentWideIndex: Integer;
@@ -43,6 +42,7 @@ type
     function GetFormID : string; override;
   public
    { Public declarations }
+    SilentClose: Boolean;
     procedure LoadLanguage;
     procedure Execute(FileName: string);
     property FileName: string read FFileName;
@@ -162,6 +162,7 @@ begin
       TD_BUTTON_YESNO, TD_ICON_WARNING) then
     begin
       BtnCancel.Enabled := False;
+      CanClose := False;
       FWizard.BreakOperation;
       Exit;
     end;

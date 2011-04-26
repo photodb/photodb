@@ -320,7 +320,8 @@ uses
   uDBAdapter in 'Units\uDBAdapter.pas',
   uCDMappingTypes in 'Units\uCDMappingTypes.pas',
   uMemoryEx in 'Units\uMemoryEx.pas',
-  uDBShellUtils in 'Units\uDBShellUtils.pas';
+  uDBShellUtils in 'Units\uDBShellUtils.pas',
+  uDBImageUtils in 'Units\uDBImageUtils.pas';
 
 {$R *.res}
 

@@ -85,7 +85,7 @@ end;
 
 destructor TPasswordKeeper.Destroy;
 begin
-  F(PasswordList);
+  FreeList(PasswordList);
   F(FSync);
 end;
 
@@ -199,7 +199,6 @@ begin
         Cp.FileName := P.FileName;
         Cp.ID := P.ID;
         Result.Add(Cp);
-        Result.Add(Cp);
       end;
     end;
   finally
@@ -249,12 +248,15 @@ begin
         DBKernel.AddTemporaryPasswordInSession(Password);
 
         // moving from password list to OKpassword list FILES
-
         FileOkList := PasswordOKForRecords(Password);
-        for I := 0 to FileOkList.Count - 1 do
-        begin
-          P := FileOkList[I];
-          AddToOKList(P.ID);
+        try
+          for I := 0 to FileOkList.Count - 1 do
+          begin
+            P := FileOkList[I];
+            AddToOKList(P.ID);
+          end;
+        finally
+          FreeList(FileOkList);
         end;
         RemoveRecordsByPasswordCRC(PasswordCRC);
       end;

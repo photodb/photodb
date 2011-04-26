@@ -4,10 +4,10 @@ interface
 
 uses
   GraphicCrypt, DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls, UnitINI,
+  Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls, UnitINI, uAppUtils,
   Dialogs, UnitDBKernel, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
-  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, uDBThread,
+  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, uDBThread, win32crc,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
   uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations, uActivationUtils;
 
@@ -63,7 +63,7 @@ uses
   UnitCleanUpThread, ExplorerUnit, uSearchTypes, SlideShow, UnitFileCheckerDB,
   UnitInternetUpdate, uAbout, UnitConvertDBForm, UnitImportingImagesForm,
   UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel,
-  uActivation;
+  uActivation, UnitUpdateDB;
 
 {$R *.dfm}
 
@@ -284,6 +284,8 @@ begin
   // to allow run new copy
   Caption := '';
 
+  F(UpdaterDB);
+
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
 
@@ -463,6 +465,7 @@ procedure TFormManager.Load;
 var
   DBFile: TPhotoDBFile;
   DBVersion: Integer;
+  StringDBCheckKey: string;
 begin
   TW.I.Start('FM -> Load');
   Caption := DBID;
@@ -500,11 +503,33 @@ begin
 
           DBVersion := DBKernel.TestDBEx(dbname, True);
           if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+          begin
             Application.Terminate;
+            Exit;
+          end;
 
         finally
           F(DBFile);
         end;
+      end;
+
+      //check valid db version
+      StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(dbname)), DB_VER_2_3]);
+      if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
+      begin
+        DBVersion := DBKernel.TestDBEx(dbname, True);
+        if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+        begin
+          CloseSplashWindow;
+          ConvertDB(dbname);
+          DBVersion := DBKernel.TestDBEx(dbname, True);
+          if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+          begin
+            Application.Terminate;
+            Exit;
+          end;
+        end;
+        Settings.WriteBool('DBVersionCheck', StringDBCheckKey, True);
       end;
 
       // checking RecordCount
@@ -516,9 +541,8 @@ begin
           CloseSplashWindow;
           ImportImages(dbname);
         end else
-        begin
           Settings.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
-        end;
+
       end;
     end;
 

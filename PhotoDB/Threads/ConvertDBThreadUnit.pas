@@ -23,6 +23,7 @@ type
     FImageOptions: TImageDBOptions;
     NewFileName: string;
     FOwner: TFrameWizardBase;
+    ConvertationResult: Boolean;
   protected
     function GetThreadID : string; override;
   public
@@ -38,6 +39,7 @@ type
     procedure LogSynch;
     procedure Log(Value: String);
     procedure ShowErrorMessage;
+    procedure OnDone;
   public
     constructor Create(Form: TThreadForm; Owner: TFrameWizardBase; ADBName: string; ImageOptions: TImageDBOptions);
     destructor Destroy; override;
@@ -75,6 +77,7 @@ var
   FileName: string;
   FSpecQuery: TDataSet;
 begin
+  ConvertationResult := False;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
@@ -159,6 +162,7 @@ begin
             end;
         end;
       finally
+        FreeGroups(FGroupsFounded);
         FreeGroups(FRegGroups);
       end;
       SetMaxValue(100);
@@ -168,10 +172,14 @@ begin
       begin
         FParamStr := E.message;
         SynchronizeEx(ShowErrorMessage);
+        Exit;
       end;
     end;
     CommonDBSupport.TryRemoveConnection(FFileName, True);
     CommonDBSupport.TryRemoveConnection(ToFileName, True);
+    if BreakConverting then
+      Exit;
+
     if not DeleteFile(FFileName) then
     begin
       FParamStr := Format(L('Can not delete file %s, maybe he''s busy with another program or process. Will use a different name (file_name_1)'), [FFileName]);
@@ -213,10 +221,16 @@ begin
     finally
       FreeDS(FSpecQuery);
     end;
+    ConvertationResult := True;
   finally
     CoUninitialize;
-    TFrmConvertationProgress(FOwner).OnConvertingStructureEnd(Self, NewFileName);
+    SynchronizeEx(OnDone);
   end;
+end;
+
+procedure TConvertDBThread.OnDone;
+begin
+  TFrmConvertationProgress(FOwner).OnConvertingStructureEnd(Self, NewFileName, ConvertationResult);
 end;
 
 function TConvertDBThread.GetThreadID: string;

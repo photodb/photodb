@@ -43,7 +43,7 @@ type
   TImageDBRecordA = record
     IDs: array of Integer;
     FileNames: array of string;
-    ImTh: AnsiString;
+    ImTh: string;
     Count: Integer;
     Attr: array of Integer;
     Jpeg: TJpegImage;

@@ -212,6 +212,7 @@ end;
 
 destructor TUpdaterDB.Destroy;
 begin
+  SaveWork;
   if GOM.IsObj(FForm) then
     R(FForm);
   F(FProcessScript);

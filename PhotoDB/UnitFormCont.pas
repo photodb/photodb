@@ -773,7 +773,7 @@ var
   I: Integer;
   SaveDialog: DBSaveDialog;
   FileName: string;
-  ItemsImThArray: TArAnsiStrings;
+  ItemsImThArray: TArStrings;
   ItemsIDArray: TArInteger;
 begin
   SaveDialog := DBSaveDialog.Create;

@@ -9,7 +9,7 @@ uses
   uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
-  uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations,
+  uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations, uDBImageUtils,
   GraphicsBaseTypes, uDBAdapter, uCDMappingTypes;
 
 type
@@ -20,11 +20,11 @@ procedure CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory : string
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
 procedure RenameFolderWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; Ask: Boolean = True);
 function RenameFileWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
-function GetImageIDW(Image: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
+function GetImageIDW(FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
 function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
   OnlyImTh: Boolean = False): TImageDBRecordAArray;
-function GetImageIDTh(ImageTh: AnsiString): TImageDBRecordA;
+function GetImageIDTh(ImageTh: string): TImageDBRecordA;
 function GetIdByFileName(FileName: string): Integer;
 function GetFileNameById(ID: Integer): string;
 procedure SetPrivate(ID: Integer);
@@ -42,15 +42,15 @@ procedure ExecuteQuery(SQL: string);
 procedure GetFileListByMask(BeginFile, Mask: string;
   Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
 function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
-procedure UpdateImageThInLinks(OldImageTh, NewImageTh: AnsiString);
-function BitmapToString(Bit: TBitmap): AnsiString;
+procedure UpdateImageThInLinks(OldImageTh, NewImageTh: string);
+function BitmapToString(Bit: TBitmap): string;
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
 
 { DB Types }
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
-function GetMenuInfoByStrTh(StrTh: AnsiString): TDBPopupMenuInfo;
+function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
 { END DB Types }
 
 implementation
@@ -605,8 +605,7 @@ var
   EventInfo: TEventValues;
   ExifData: TExifData;
   EF: TEventFields;
-  Path, Folder, _SetSql: string;
-  OldImTh: AnsiString;
+  OldImTh, Path, Folder, _SetSql: string;
   Crc: Cardinal;
   DateToAdd, ATime: TDateTime;
   Ms: TMemoryStream;
@@ -658,7 +657,7 @@ begin
     SetSQL(Table, 'Select StrTh,Attr from $DB$ where ID = ' + IntToStr(ID));
     try
       Table.Open;
-      OldImTh := Table.FieldByName('StrTh').AsAnsiString;
+      OldImTh := Table.FieldByName('StrTh').AsString;
       Attr := Table.FieldByName('Attr').AsInteger;
       Table.Close;
       _SetSql := 'FFileName=:FFileName,';
@@ -756,7 +755,7 @@ begin
       SetStrParam(Table, Next, Path);
 
       SetStrParam(Table, Next, ExtractFileName(FileName));
-      SetAnsiStrParam(Table, Next, Res.ImTh);
+      SetStrParam(Table, Next, Res.ImTh);
       SetIntParam(Table, Next, Integer(StringCRC(Res.ImTh)));
       // if crypted file not password entered
       if Res.Crypt or (Res.Password <> '') then
@@ -793,7 +792,7 @@ begin
   UpdateImageThInLinks(OldImTh, Res.ImTh);
 end;
 
-function GetimageIDTh(ImageTh: AnsiString): TImageDBRecordA;
+function GetimageIDTh(ImageTh: string): TImageDBRecordA;
 var
   FQuery: TDataSet;
   I: Integer;
@@ -943,7 +942,7 @@ begin
       Result.Ids[Count] := FQuery.FieldByName('ID').AsInteger;
       Result.FileNames[Count] := FQuery.FieldByName('FFileName').AsString;
       Result.Attr[Count] := FQuery.FieldByName('Attr').AsInteger;
-      Result.ImTh := FQuery.FieldByName('StrTh').AsAnsiString;
+      Result.ImTh := FQuery.FieldByName('StrTh').AsString;
       FQuery.Next;
     end;
   finally
@@ -956,8 +955,7 @@ function GetimageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
 var
   K, I, L, Len: Integer;
   FQuery: TDataSet;
-  Sql, FromDB: string;
-  Temp: AnsiString;
+  Temp, Sql, FromDB: string;
   ThImS: TImageDBRecordAArray;
 begin
   L := Images.Count;
@@ -1001,15 +999,14 @@ begin
       SetIntParam(FQuery, I, Integer(StringCRC(ThImS[I].ImTh)));
     end;
     for I := L to 2 * L - 1 do
-      SetAnsiStrParam(FQuery, I, ThImS[I - L].ImTh);
+      SetStrParam(FQuery, I, ThImS[I - L].ImTh);
 
-  end
-  else
+  end else
   begin
     for I := 0 to L - 1 do
     begin
       Result[I] := ThImS[I];
-      SetAnsiStrParam(FQuery, I, ThImS[I].ImTh);
+      SetStrParam(FQuery, I, ThImS[I].ImTh);
     end;
   end;
 
@@ -1041,7 +1038,7 @@ begin
     for I := 1 to FQuery.RecordCount do
     begin
 
-      Temp := FQuery.FieldByName('StrTh').AsAnsiString;
+      Temp := FQuery.FieldByName('StrTh').AsString;
       if Temp = ThImS[K].ImTh then
       begin
         Inc(Len);
@@ -1060,154 +1057,109 @@ begin
   FreeDS(FQuery);
 end;
 
-function GetImageIDW(Image: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
+function GetImageIDW(FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
 var
   Bmp, Thbmp: TBitmap;
-  FileName, PassWord: string;
-  Imth: AnsiString;
+  PassWord,
+  Imth: string;
+  IsEncrypted: Boolean;
   G: TGraphic;
 begin
-  DoProcessPath(Image);
+  DoProcessPath(FileName);
   if AThImageSize = 0 then
     AThImageSize := ThImageSize;
   if ADBJpegCompressionQuality = 0 then
     ADBJpegCompressionQuality := DBJpegCompressionQuality;
+
   Result.Crypt := False;
   Result.Password := '';
+  Result.ImTh := '';
+  Result.Count := 0;
   Result.UsedFileNameSearch := False;
   Result.IsError := False;
-  G := nil;
-  FileName := Image;
   Result.Jpeg := nil;
+  Result.OrWidth := 0;
+  Result.Orheight := 0;
+
+  G := nil;
   try
-    if ValidCryptGraphicFile(FileName) then
-    begin
-      Result.Crypt := True;
-      Password := DBKernel.FindPasswordForCryptImageFile(FileName);
-      Result.Password := Password;
-      if PassWord = '' then
-      begin
-        F(G);
-        Result.Count := 0;
-        Result.ImTh := '';
-        Exit;
-      end;
-      try
-        G := DeCryptGraphicFile(FileName, PassWord);
-      except
-        F(G);
-        Result.Count := 0;
-        Exit;
-      end;
-    end  else
-    begin
-      Result.Crypt := False;
-      G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
-      G.LoadFromFile(FileName);
-    end;
-  except
-    on E: Exception do
-    begin
-      Result.IsError := True;
-      Result.ErrorText := E.message;
-      F(G);
-      Result.Count := 0;
-      Exit;
-    end;
-  end;
-  Result.OrWidth := G.Width;
-  Result.OrHeight := G.Height;
-  try
-    JpegScale(G, AThImageSize, AThImageSize);
-    Result.Jpeg := TJpegImage.Create;
-    Result.Jpeg.CompressionQuality := ADBJpegCompressionQuality;
-    Thbmp := TBitmap.Create;
     try
-      Thbmp.PixelFormat := pf24bit;
-      Bmp := TBitmap.Create;
-      try
-        Bmp.PixelFormat := pf24bit;
-        if Max(G.Width, G.Height) > AThImageSize then
-        begin
-          if G.Width > G.Height then
-            Thbmp.SetSize(AThImageSize, Round(AThImageSize * (G.Height / G.Width)))
-          else
-            Thbmp.SetSize(Round(AThImageSize * (G.Width / G.Height)), AThImageSize);
-
-        end else
-          Thbmp.SetSize(G.Width, G.Height);
-
-        try
-          LoadImageX(G, Bmp, $FFFFFF);
-        except
-          on E: Exception do
-          begin
-            EventLog(':GetImageIDW() throw exception: ' + E.message);
-            Result.IsError := True;
-            Result.ErrorText := E.message;
-
-            Bmp.SetSize(AThImageSize, AThImageSize);
-            FillRectNoCanvas(Bmp, $FFFFFF);
-            DrawIconEx(Bmp.Canvas.Handle, 70, 70, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 16, 16, 0, 0, DI_NORMAL);
-            Thbmp.SetSize(100, 100);
-          end;
-        end;
-        F(G);
-        DoResize(Thbmp.Width, Thbmp.Height, Bmp, Thbmp);
-      finally
-        F(Bmp);
-      end;
-      Result.Jpeg.Assign(Thbmp); // +s
-      try
-        Result.Jpeg.JPEGNeeded;
-      except
-        on E: Exception do
-        begin
-          Result.IsError := True;
-          Result.ErrorText := E.message;
-        end;
-      end;
-
-      try
-        Thbmp.Assign(Result.Jpeg);
-      except
-        on E: Exception do
-        begin
-          EventLog(':GetImageIDW() throw exception: ' + E.message);
-          Result.IsError := True;
-          Result.ErrorText := E.message;
-          Thbmp.SetSize(Result.Jpeg.Width, Result.Jpeg.Height);
-          FillRectNoCanvas(Thbmp, $0);
-        end;
-      end;
-      Imth := BitmapToString(Thbmp);
-    finally
-      F(Thbmp);
-    end;
-
-    if OnlyImTh and not UseFileNameScanning then
-    begin
-      Result.ImTh := Imth;
-    end else
-    begin
-      Result := GetImageIDTh(Imth);
-      if (Result.Count = 0) and UseFileNameScanning then
+      LoadGraphic(FileName, G, IsEncrypted, PassWord);
+      Result.Crypt := IsEncrypted;
+      Result.Password := Password;
+      if G = nil then
+        Exit;
+    except
+      on E: Exception do
       begin
-        Result := GetImageIDFileName(FileName);
-        Result.UsedFileNameSearch := True;
+        Result.IsError := True;
+        Result.ErrorText := E.message;
+        Exit;
       end;
     end;
-  except
-    on E: Exception do
-    begin
-      Result.IsError := True;
-      Result.ErrorText := E.message;
+
+    Result.OrWidth := G.Width;
+    Result.OrHeight := G.Height;
+    try
+      JpegScale(G, AThImageSize, AThImageSize);
+      Result.Jpeg := TJpegImage.Create;
+      Result.Jpeg.CompressionQuality := ADBJpegCompressionQuality;
+      Thbmp := TBitmap.Create;
+      try
+        Thbmp.PixelFormat := pf24bit;
+        Bmp := TBitmap.Create;
+        try
+          Bmp.PixelFormat := pf24bit;
+          if Max(G.Width, G.Height) > AThImageSize then
+          begin
+            if G.Width > G.Height then
+              Thbmp.SetSize(AThImageSize, Round(AThImageSize * (G.Height / G.Width)))
+            else
+              Thbmp.SetSize(Round(AThImageSize * (G.Width / G.Height)), AThImageSize);
+
+          end else
+            Thbmp.SetSize(G.Width, G.Height);
+
+          LoadImageX(G, Bmp, $FFFFFF);
+          F(G);
+          DoResize(Thbmp.Width, Thbmp.Height, Bmp, Thbmp);
+        finally
+          F(Bmp);
+        end;
+        Result.Jpeg.Assign(Thbmp);
+        Result.Jpeg.JPEGNeeded;
+        AssignGraphic(Thbmp, Result.Jpeg);
+        Imth := BitmapToString(Thbmp);
+      finally
+        F(Thbmp);
+      end;
+
+      if OnlyImTh and not UseFileNameScanning then
+      begin
+        Result.ImTh := Imth;
+      end else
+      begin
+        Result := GetImageIDTh(Imth);
+        if (Result.Count = 0) and UseFileNameScanning then
+        begin
+          Result := GetImageIDFileName(FileName);
+          Result.UsedFileNameSearch := True;
+        end;
+      end;
+    except
+      on E: Exception do
+      begin
+        Result.IsError := True;
+        Result.ErrorText := E.message;
+      end;
     end;
+  finally
+    F(G);
   end;
 end;
 
-procedure UpdateImageThInLinks(OldImageTh, NewImageTh: AnsiString);
+procedure UpdateImageThInLinks(OldImageTh, NewImageTh: string);
 var
   FQuery: TDataSet;
   IDs: TArInteger;
@@ -1268,7 +1220,7 @@ begin
     for I := 0 to Length(IDs) - 1 do
     begin
       Link := CodeLinksInfo(Info[I]);
-      SetSQL(Table, 'Update $DB$ set Links="' + Link + '" where ID = ' + IntToStr(IDs[I]));
+      SetSQL(Table, 'Update $DB$ set Links=' + NormalizeDBString(Link) + ' where ID = ' + IntToStr(IDs[I]));
       ExecSQL(Table);
     end;
   finally
@@ -1366,7 +1318,7 @@ begin
   end;
 end;
 
-function BitmapToString(Bit: TBitmap): AnsiString;
+function BitmapToString(Bit: TBitmap): string;
 var
   I, J: Integer;
   Rr1, Bb1, Gg1: Byte;
@@ -1395,25 +1347,12 @@ begin
         B1 := B1 + Gg1 shr 2;
         B2 := Gg1 shl 6;
         B2 := B2 + Bb1 shl 1;
-        if (B1 = 0) and (B2 <> 0) then
-        begin
-          B2 := B2 + 1;
-          B1 := B1 or 135;
-        end;
-        if (B1 <> 0) and (B2 = 0) then
-        begin
-          B2 := B2 + 1;
-          B2 := B2 or 225;
-        end;
         if (B1 = 0) and (B2 = 0) then
         begin
-          B1 := 255;
-          B2 := 255;
+          B1 := 1;
+          B2 := 1;
         end;
-        if FIXIDEX then
-          if (I = 9) and (J = 9) and (B2 = 32) then
-            B2 := 255;
-        Result := Result + AnsiChar(B1) + AnsiChar(B2);
+        Result := Result + Char(B1 shl 8 or B2);
       end;
     end;
 {$IFDEF CKRANGE}
@@ -1599,7 +1538,7 @@ begin
   end;
 end;
 
-function GetMenuInfoByStrTh(StrTh: AnsiString): TDBPopupMenuInfo;
+function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
 var
   FQuery: TDataSet;
   MenuRecord: TDBPopupMenuInfoRecord;
@@ -1609,7 +1548,7 @@ begin
   try
     SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrThCrc = :CRC AND StrTh = :StrTh');
     SetIntParam(FQuery, 0, StringCRC(StrTh));
-    SetAnsiStrParam(FQuery, 1, StrTh);
+    SetStrParam(FQuery, 1, StrTh);
     FQuery.Open;
     if FQuery.RecordCount <> 1 then
       Exit;

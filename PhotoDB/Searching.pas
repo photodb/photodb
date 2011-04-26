@@ -1251,7 +1251,7 @@ procedure TSearchForm.SaveResults1Click(Sender: TObject);
 var
   N, I : integer;
   LA : TArStrings;
-  ItemsImThArray : TArAnsiStrings;
+  ItemsImThArray : TArStrings;
   ItemsIDArray : TArInteger;
   SaveDialog : DBSaveDialog;
   FileName : string;
