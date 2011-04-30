@@ -925,20 +925,25 @@ begin
   try
     GroupList := TStringList.Create;
     KeyWordList := TStringList.Create;
-    Count := 0;
-    for I := 0 to FInfo.Count - 1 do
-      if FInfo[I].Selected then
-        Inc(Count);
+    try
+      Count := 0;
+      for I := 0 to FInfo.Count - 1 do
+        if FInfo[I].Selected then
+          Inc(Count);
 
-    for I := 0 to FInfo.Count - 1 do
-      if FInfo[I].Selected then
-      begin
-        GroupList.Add(FInfo[I].Groups);
-        KeyWordList.Add(FInfo[I].KeyWords);
-      end;
-    StrOldGroups := GetCommonGroups(GroupList);
-    StrNewGroups := GetCommonGroups(GroupList);
-    OldKeyWords := GetCommonWordsA(KeyWordList);
+      for I := 0 to FInfo.Count - 1 do
+        if FInfo[I].Selected then
+        begin
+          GroupList.Add(FInfo[I].Groups);
+          KeyWordList.Add(FInfo[I].KeyWords);
+        end;
+      StrOldGroups := GetCommonGroups(GroupList);
+      StrNewGroups := GetCommonGroups(GroupList);
+      OldKeyWords := GetCommonWordsA(KeyWordList);
+    finally
+      F(GroupList);
+      F(KeyWordList);
+    end;
     NewKeyWords := OldKeyWords;
     DBChangeGroups(StrNewGroups, NewKeyWords);
     VarKeyWords := VariousKeyWords(OldKeyWords, NewKeyWords);

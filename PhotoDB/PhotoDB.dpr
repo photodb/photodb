@@ -321,7 +321,9 @@ uses
   uCDMappingTypes in 'Units\uCDMappingTypes.pas',
   uMemoryEx in 'Units\uMemoryEx.pas',
   uDBShellUtils in 'Units\uDBShellUtils.pas',
-  uDBImageUtils in 'Units\uDBImageUtils.pas';
+  uDBImageUtils in 'Units\uDBImageUtils.pas',
+  uFormSteganography in 'uFormSteganography.pas' {FormSteganography},
+  uFrmSteganographyLanding in 'Steganography\uFrmSteganographyLanding.pas' {Frame1: TFrame};
 
 {$R *.res}
 
@@ -485,7 +487,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+      Application.ShowMainForm := False;
       // This is main form of application
 
       TW.I.Start('SetSplashProgress 70');

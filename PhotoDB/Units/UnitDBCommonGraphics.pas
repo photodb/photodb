@@ -206,7 +206,9 @@ begin
   SetLength(PDA, Dest32.Height);
 
   AddrLineD := Integer(Dest32.ScanLine[0]);
-  DeltaD := Integer(Dest32.ScanLine[1])- AddrLineD;
+  DeltaD := 0;
+  if Dest32.Height > 1 then
+    DeltaD := Integer(Dest32.ScanLine[1])- AddrLineD;
 
   //buffer scanlines
   for I := 0 to Dest32.Height - 1 do
@@ -1547,7 +1549,9 @@ begin
   outw := BmpOut.Width;
   outh := BmpOut.Height;
   adrLine0 := Integer(bmpIn.ScanLine[0]);
-  deltaLine := Integer(BmpIn.ScanLine[1]) - adrLine0;
+  deltaLine := 0;
+  if BmpIn.Height > 1 then
+    deltaLine := Integer(BmpIn.ScanLine[1]) - adrLine0;
  yi2 := 0;
  for y := 0 to outh-1 do
  begin

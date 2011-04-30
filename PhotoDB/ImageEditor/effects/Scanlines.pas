@@ -78,7 +78,9 @@ begin
 
   if Bitmap <> nil then begin
     FScanLine0 := Bitmap.ScanLine[0];
-    FScanLineIncrement := integer(Bitmap.Scanline[1]) -integer(FScanLine0);
+    FScanLineIncrement := 0;
+    if Bitmap.Height > 0 then
+      FScanLineIncrement := integer(Bitmap.Scanline[1]) -integer(FScanLine0);
     FMaxRow := Bitmap.Height;
   end;
 end;
@@ -117,7 +119,9 @@ begin
     X := Bitmap.Width;
 
     ScanlinePtr := Bitmap.Scanline[0];
-    ScanlineIncrement := integer(Bitmap.Scanline[1]) - integer(ScanlinePtr);
+    ScanlineIncrement := 0;
+    if Bitmap.Height > 1 then
+      ScanlineIncrement := integer(Bitmap.Scanline[1]) - integer(ScanlinePtr);
     LastScanline := ScanlinePtr;
     Inc(LastScanLine, ScanlineIncrement  * Bitmap.Height);
 
@@ -149,7 +153,9 @@ begin
     X := Bitmap.Width;
 
     ScanlinePtr := Bitmap.Scanline[0];
-    ScanlineIncrement := integer(Bitmap.Scanline[1]) - integer(ScanlinePtr);
+    ScanlineIncrement := 0;
+    if Bitmap.Height > 1 then
+      ScanlineIncrement := integer(Bitmap.Scanline[1]) - integer(ScanlinePtr);
     LastScanline := ScanlinePtr;
     Inc(LastScanLine, ScanlineIncrement  * Bitmap.Height);
 
@@ -203,10 +209,14 @@ begin
   yscale := bTmp.Height / (Bitmap.Height-1);
 
   liPByte := Bitmap.Scanline[0];
-  liSize := integer(Bitmap.Scanline[1]) -integer(liPByte);
+  liSize := 0;
+  if Bitmap.Height > 1 then
+    liSize := integer(Bitmap.Scanline[1]) -integer(liPByte);
 
   loPByte := bTmp.Scanline[0];
-  loSize := integer(bTmp.Scanline[1]) -integer(loPByte);
+  loSize := 0;
+  if bTmp.Height > 1 then
+    loSize := integer(bTmp.Scanline[1]) -integer(loPByte);
 
   for to_y := 0 to bTmp.Height-1 do begin
     sfrom_y := to_y / yscale;
@@ -596,7 +606,9 @@ end;
              X := Bitmap.Width;
 
              ScanlinePtr := Bitmap.Scanline[0];
-             ScanlineIncrement := integer(Bitmap.Scanline[1]) - integer(ScanlinePtr);
+             ScanlineIncrement := 0;
+             if Bitmap.Height > 1 then
+               ScanlineIncrement := integer(Bitmap.Scanline[1]) - integer(ScanlinePtr);
              LastScanline := ScanlinePtr;
              Inc(LastScanLine, ScanlineIncrement  * Bitmap.Height);
 

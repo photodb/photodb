@@ -1,5 +1,6 @@
 ﻿using System;
 using PhotoDBDatabase.Classes;
+using PhotoDBUserControls.Classes.MaxMind;
 using umbraco.NodeFactory;
 
 namespace PhotoDBUserControls
@@ -16,7 +17,7 @@ namespace PhotoDBUserControls
                     StatsManager.CheckRefer();
                 }
                 int id = Node.GetCurrent().Id;
-                StatsManager.MarkView(id, umbraco.library.NiceUrl(id));
+                StatsManager.MarkView(id, umbraco.library.NiceUrl(id), GeoIPHelper.CountryCode);
             }
         }
     }

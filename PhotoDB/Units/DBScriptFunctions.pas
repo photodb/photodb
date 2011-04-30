@@ -282,6 +282,7 @@ begin
   try
     InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     try
+      Info.Add(InfoItem);
       Viewer.Execute(nil, Info);
       Viewer.Show;
     finally

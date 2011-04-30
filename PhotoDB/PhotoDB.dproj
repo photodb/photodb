@@ -514,6 +514,13 @@
 			<DCCReference Include="Units\uMemoryEx.pas"/>
 			<DCCReference Include="Units\uDBShellUtils.pas"/>
 			<DCCReference Include="Units\uDBImageUtils.pas"/>
+			<DCCReference Include="uFormSteganography.pas">
+				<Form>FormSteganography</Form>
+			</DCCReference>
+			<DCCReference Include="Steganography\uFrmSteganographyLanding.pas">
+				<Form>Frame1</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

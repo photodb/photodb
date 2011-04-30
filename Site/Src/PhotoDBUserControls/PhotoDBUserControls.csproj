@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BuyForm.ascx" />
     <Content Include="ContactUsForm.ascx" />
     <Content Include="CountryLocator.ascx" />
     <Content Include="DownloadHandler.ascx" />
@@ -78,6 +79,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuyForm.ascx.cs">
+      <DependentUpon>BuyForm.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="BuyForm.ascx.designer.cs">
+      <DependentUpon>BuyForm.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Classes\MaxMind\CountryLookup.cs" />
     <Compile Include="Classes\MaxMind\GeoIPCountry.cs" />
     <Compile Include="Classes\MaxMind\GeoIPHelper.cs" />

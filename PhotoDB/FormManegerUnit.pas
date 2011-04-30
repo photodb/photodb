@@ -517,12 +517,12 @@ begin
       StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(dbname)), DB_VER_2_3]);
       if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
       begin
-        DBVersion := DBKernel.TestDBEx(dbname, True);
+        DBVersion := DBKernel.TestDBEx(dbname, False);
         if not DBKernel.ValidDBVersion(dbname, DBVersion) then
         begin
           CloseSplashWindow;
           ConvertDB(dbname);
-          DBVersion := DBKernel.TestDBEx(dbname, True);
+          DBVersion := DBKernel.TestDBEx(dbname, False);
           if not DBKernel.ValidDBVersion(dbname, DBVersion) then
           begin
             Application.Terminate;

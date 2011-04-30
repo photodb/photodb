@@ -74,6 +74,7 @@
       <Column Name="HostId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ViewDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
       <Column Name="Page" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
+      <Column Name="CountryCode" Type="System.String" DbType="NChar(5) NOT NULL" CanBeNull="false" />
       <Association Name="Host_PageView" Member="Host" ThisKey="HostId" OtherKey="HostId" Type="Host" IsForeignKey="true" />
     </Type>
   </Table>

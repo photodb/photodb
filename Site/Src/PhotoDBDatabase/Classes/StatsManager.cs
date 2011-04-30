@@ -96,7 +96,7 @@ namespace PhotoDBDatabase.Classes
             }
         }
 
-        public static void MarkView(int pageId, string page)
+        public static void MarkView(int pageId, string page, string countryCode)
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
             {
@@ -106,6 +106,7 @@ namespace PhotoDBDatabase.Classes
                     PageId = pageId,
                     ViewDate = DateTime.Now,
                     Page = page,
+                    CountryCode = countryCode,
                 };
                 db.PageViews.InsertOnSubmit(pv);
                 db.SubmitChanges();

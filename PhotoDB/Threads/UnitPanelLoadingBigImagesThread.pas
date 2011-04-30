@@ -27,13 +27,13 @@ type
     procedure VisibleUp(TopIndex: integer);
     procedure FileNameExists;
     procedure GetVisibleFiles;
+    procedure RemoveWorkerThread;
   protected
     procedure Execute; override;
   public
     constructor Create(Sender: TDBForm; SID: TGUID; AOnDone: TNotifyEvent; PictureSize: Integer;
       Files: TDBPopupMenuInfo; Updating: Boolean = False);
     procedure ReplaceBigBitmap;
-    procedure DoStopLoading;
     destructor Destroy; override;
   end;
 
@@ -43,7 +43,8 @@ var
 
 implementation
 
-uses UnitFormCont;
+uses
+  UnitFormCont;
 
 { TPanelLoadingBigImagesThread }
 
@@ -51,6 +52,7 @@ constructor TPanelLoadingBigImagesThread.Create(Sender: TDBForm; SID: TGUID; AOn
   PictureSize: Integer; Files: TDBPopupMenuInfo; Updating: Boolean = False);
 begin
   inherited Create(Sender, False);
+  TFormCont(Sender).AddWorkerThread;
   FData := TDBPopupMenuInfo.Create;
   FData.Assign(Files);
   FSender := Sender;
@@ -145,7 +147,7 @@ begin
               F(Graphic);
               TempBitmap := TBitmap.Create;
               try
-                TempBitmap.PixelFormat := Pf24bit;
+                TempBitmap.PixelFormat := pf24bit;
                 W := Fbit.Width;
                 H := Fbit.Height;
                 ProportionalSize(FPictureSize, FPictureSize, W, H);
@@ -180,27 +182,23 @@ begin
       PanelUpdateBigImageThreadsCountByID := PanelUpdateBigImageThreadsCountByID + 1;
     end;
   finally
-    SynchronizeEx(DoStopLoading);
+    SynchronizeEx(RemoveWorkerThread);
   end;
 end;
 
 procedure TPanelLoadingBigImagesThread.FileNameExists;
 begin
-  BoolParam:=false;
-  if ManagerPanels.IsPanelForm(FSender) then
-    if IsEqualGUID((FSender as TFormCont).BigImagesSID, FSID) then
-      if (FSender as TFormCont).FileNameExistsInList(StrParam) then
-        BoolParam:=true;
+  BoolParam := False;
+  if IsEqualGUID((FSender as TFormCont).BigImagesSID, FSID) then
+    if (FSender as TFormCont).FileNameExistsInList(StrParam) then
+      BoolParam := True;
 end;
 
 procedure TPanelLoadingBigImagesThread.GetVisibleFiles;
 begin
-  if ManagerPanels.IsPanelForm(FSender) then
-  begin
-    FVisibleFiles := (FSender as TFormCont).GetVisibleItems;
-    if not FSender.Active then
-      Priority := TpLowest;
-  end
+  FVisibleFiles := (FSender as TFormCont).GetVisibleItems;
+  if not FSender.Active then
+    Priority := TpLowest;
 end;
 
 destructor TPanelLoadingBigImagesThread.Destroy;
@@ -210,23 +208,19 @@ begin
   else
     Dec(PanelUpdateBigImageThreadsCountByID);
 
-  inherited Destroy;
   F(FData);
+  inherited Destroy;
+end;
+
+procedure TPanelLoadingBigImagesThread.RemoveWorkerThread;
+begin
+  (FSender as TFormCont).RemoveWorkerThread;
 end;
 
 procedure TPanelLoadingBigImagesThread.ReplaceBigBitmap;
 begin
-  if ManagerPanels.IsPanelForm(FSender) then
-    if IsEqualGUID((FSender as TFormCont).BigImagesSID, FSID) then
-      (FSender as TFormCont).ReplaseBitmapWithPath(StrParam,BitmapParam);
-end;
-
-procedure TPanelLoadingBigImagesThread.DoStopLoading;
-begin
-  if ManagerPanels.ExistsPanel(FSender, FSID) then
-    (FSender as TFormCont).DoStopLoading(FSID)
-  else
-    Exit;
+  if IsEqualGUID((FSender as TFormCont).BigImagesSID, FSID) then
+    (FSender as TFormCont).ReplaseBitmapWithPath(StrParam,BitmapParam);
 end;
 
 end.

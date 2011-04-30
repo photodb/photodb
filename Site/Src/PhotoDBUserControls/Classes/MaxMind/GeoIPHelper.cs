@@ -13,10 +13,19 @@ namespace PhotoDBUserControls.Classes.MaxMind
         {
             get
             {
-                string fileName = ConfigurationManager.AppSettings["IPDatabase"];
-                CountryLookup lookup = new CountryLookup(fileName);
-                string userIp = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
-                return lookup.lookupCountryCode(userIp);
+                if (HttpContext.Current.Session["COUNTRY_CODE"] == null)
+                {
+                    string fileName = ConfigurationManager.AppSettings["IPDatabase"];
+                    CountryLookup lookup = new CountryLookup(fileName);
+                    string userIp = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+                    string countryCode = lookup.lookupCountryCode(userIp);
+                    HttpContext.Current.Session["COUNTRY_CODE"] = countryCode;
+                    return countryCode;
+                }
+                else
+                {
+                    return (string)HttpContext.Current.Session["COUNTRY_CODE"];
+                }
             }
         }
     }

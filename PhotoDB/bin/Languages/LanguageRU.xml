@@ -579,7 +579,7 @@
     <translate name="Exit" value="Выход" />
     <translate name="Back" value="Назад" />
     <translate name="Forward" value="Вперёд" />
-    <translate name="Show private images" value="Показывать личные изображения" />
+    <translate name="Display private images" value="Показывать личные изображения" />
     <translate name="Public only" value="Только публичные изображения" />
     <translate name="Edit" value="Редактировать" />
     <translate name="View" value="Вид" />
@@ -637,7 +637,7 @@
     <translate name="Hide info in image" value="Скрыть данные в изображении" />
     <translate name="Extract info from image" value="Извлечь скрытые данные" />
     <translate name="Set as desktop wallpaper" value="Установить на рабочий стол" />
-    <translate name="Streatch" value="Растянуть" />
+    <translate name="Stretch" value="Растянуть" />
     <translate name="Center" value="По центру" />
     <translate name="Tile" value="Замостить" />
     <translate name="Thumbnails" value="Предпросмотры" />

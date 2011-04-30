@@ -1031,9 +1031,13 @@ begin
 
 
     SourceLine := Work.ScanLine[0];
-    Delta := Integer(Work.ScanLine[1]) - Integer(SourceLine);
+    Delta := 0;
+    if Work.Height > 1 then
+      Delta := Integer(Work.ScanLine[1]) - Integer(SourceLine);
     DestLine := Target.ScanLine[0];
-    DestDelta := Integer(Target.ScanLine[1]) - Integer(DestLine);
+    DestDelta := 0;
+    if Target.Height > 1 then
+      DestDelta := Integer(Target.ScanLine[1]) - Integer(DestLine);
     for K := 0 to TargetWidth - 1 do
     begin
       DestPixel := Pointer(DestLine);

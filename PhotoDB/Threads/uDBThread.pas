@@ -73,7 +73,9 @@ procedure TDBThread.CallMethod;
 begin
   FCallResult := GOM.IsObj(FOwnerForm);
   if FCallResult or (FOwnerForm = nil) then
-    FMethod;
+    FMethod
+  else
+    Terminate;
 end;
 
 constructor TDBThread.Create(OwnerForm: TDBForm; CreateSuspended: Boolean);

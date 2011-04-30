@@ -96,32 +96,32 @@ object FormSteno: TFormSteno
     ReadOnly = True
     TabOrder = 1
   end
-  object Button1: TButton
+  object BtnOpenImage: TButton
     Left = 8
     Top = 208
     Width = 137
     Height = 25
     Caption = 'Open Image'
     TabOrder = 2
-    OnClick = Button1Click
+    OnClick = BtnOpenImageClick
   end
-  object Button2: TButton
+  object BtnAddInfo: TButton
     Left = 152
     Top = 208
     Width = 185
     Height = 25
     Caption = 'Add Info and Save'
     TabOrder = 3
-    OnClick = Button2Click
+    OnClick = BtnAddInfoClick
   end
-  object Button3: TButton
+  object BtnExtractData: TButton
     Left = 344
     Top = 208
     Width = 169
     Height = 25
     Caption = 'Decrypt Image'
     TabOrder = 4
-    OnClick = Button3Click
+    OnClick = BtnExtractDataClick
   end
   object ComboBox1: TComboBox
     Left = 167
@@ -142,11 +142,11 @@ object FormSteno: TFormSteno
     Top = 56
     object LoadFromFile1: TMenuItem
       Caption = 'Load From File'
-      OnClick = Button1Click
+      OnClick = BtnOpenImageClick
     end
     object AddInfo1: TMenuItem
       Caption = 'Add Info'
-      OnClick = Button2Click
+      OnClick = BtnAddInfoClick
     end
   end
   object OpenDialog1: TOpenDialog

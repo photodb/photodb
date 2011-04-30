@@ -403,7 +403,9 @@ var
   PC, P1, D: Integer;
 begin
   P1 := Integer(Image.ScanLine[0]);
-  D := Integer(Image.ScanLine[1]) - P1;
+  D := 0;
+  if Image.Height > 1 then
+    D := Integer(Image.ScanLine[1]) - P1;
   for I := 0 to 99 do
   begin
     PC := P1;

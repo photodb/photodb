@@ -102,7 +102,7 @@
   CreateItemDefChecked("Public only",DB_IC_COMMON,"HidePrivate;",false,true,false,0);
  }; else
  {
-  CreateItemDefChecked("Show private images",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
+  CreateItemDefChecked("Display private images",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
  };
  CreateItemDefChecked("-",0,"",false,false,false,0);
  CreateItemDefChecked("View",DB_IC_SORT,"",false,true,false,-1);

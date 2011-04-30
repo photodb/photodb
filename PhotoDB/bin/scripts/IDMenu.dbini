@@ -291,7 +291,7 @@ initialization:
   if ($IsCurrentFile=false) {InVisible;};
   if ($WallPaper=false) {InVisible;};
   if ($Crypted=true) {InVisible;};
-  CreateItem("Streatch",DB_IC_WALLPAPER,"WallpaperStretchItemPopUpMenu;",false,0);
+  CreateItem("Stretch",DB_IC_WALLPAPER,"WallpaperStretchItemPopUpMenu;",false,0);
   CreateItem("Center",DB_IC_WALLPAPER,"WallpaperCenterItemPopUpMenu;",false,0);
   CreateItem("Tile",DB_IC_WALLPAPER,"WallpaperTileItemPopUpMenu;",false,0);
 }

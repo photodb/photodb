@@ -30,9 +30,15 @@ begin
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineSA := Integer(PNG.AlphaScanline[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
-  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-  DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
-  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  DeltaS := 0;
+  DeltaSA := 0;
+  DeltaD := 0;
+  if PNG.Height > 1 then
+  begin
+    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  end;
 
   for I := 0 to PNG.Height - 1 do
   begin
@@ -68,8 +74,13 @@ begin
 
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
-  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  DeltaS := 0;
+  DeltaD := 0;
+  if PNG.Height > 1 then
+  begin
+    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  end;
 
   for I := 0 to PNG.Height - 1 do
   begin
@@ -108,9 +119,15 @@ begin
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineSA := Integer(PNG.AlphaScanline[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
-  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-  DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
-  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  DeltaS := 0;
+  DeltaSA := 0;
+  DeltaD := 0;
+  if PNG.Height > 1 then
+  begin
+    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  end;
 
   for I := 0 to PNG.Height - 1 do
   begin
@@ -148,8 +165,13 @@ begin
 
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
-  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  DeltaS := 0;
+  DeltaD := 0;
+  if PNG.Height > 1 then
+  begin
+    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  end;
 
   for I := 0 to PNG.Height - 1 do
   begin
@@ -182,8 +204,13 @@ begin
 
   AddrLineS := Integer(PNG.ScanLine[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
-  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  DeltaS := 0;
+  DeltaD := 0;
+  if PNG.Height > 1 then
+  begin
+    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  end;
 
   for I := 0 to PNG.Height - 1 do
   begin
@@ -223,9 +250,15 @@ begin
   AddrLineSA := Integer(PNG.AlphaScanline[0]);
   AddrLineD := Integer(Bitmap.ScanLine[0]);
 
-  DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-  DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
-  DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  DeltaS := 0;
+  DeltaSA := 0;
+  DeltaD := 0;
+  if PNG.Height > 1 then
+  begin
+    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  end;
 
   for I := 0 to PNG.Height - 1 do
   begin
@@ -251,6 +284,5 @@ begin
     Inc(AddrLineD, DeltaD);
   end;
 end;
-
 
 end.

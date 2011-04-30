@@ -499,9 +499,13 @@ begin
     // --------------------------------------------------
 {$IFDEF USE_SCANLINE}
     SourceLine := Work.ScanLine[0];
-    Delta := integer(Work.ScanLine[1]) - integer(SourceLine);
+    Delta := 0;
+    if Work.Height > 1 then
+      Delta := integer(Work.ScanLine[1]) - integer(SourceLine);
     DestLine := Dst.ScanLine[0];
-    DestDelta := integer(Dst.ScanLine[1]) - integer(DestLine);
+    DestDelta := 0;
+    if Dst.Height > 1 then
+      DestDelta := integer(Dst.ScanLine[1]) - integer(DestLine);
 {$ENDIF}
     for k := 0 to DstWidth-1 do
     begin

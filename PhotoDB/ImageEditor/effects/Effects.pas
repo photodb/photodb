@@ -2051,7 +2051,9 @@ begin
 
   // Sharpening...
   S1 := Integer(Dest.ScanLine[0]);
-  IDst := Integer(Dest.ScanLine[1]) - S1;
+  IDst := 0;
+  if Dest.Height > 1 then
+    IDst := Integer(Dest.ScanLine[1]) - S1;
   Ny1 := Integer(S1);
   Ny2 := Ny1 + IDst;
   Ny3 := Ny2 + IDst;
@@ -2137,7 +2139,9 @@ begin
   else
   begin
     DstLine := D.ScanLine[0];
-    DstGap := Integer(D.ScanLine[1]) - Integer(DstLine);
+    DstGap := 0;
+    if D.Height > 1 then
+      DstGap := Integer(D.ScanLine[1]) - Integer(DstLine);
 
     XP2 := MulDiv(Pred(S.Width), $10000, D.Width);
     YP2 := MulDiv(Pred(S.Height), $10000, D.Height);
@@ -2219,7 +2223,9 @@ begin
   else
   begin
     DstLine := D.ScanLine[0];
-    DstGap  := Integer(D.ScanLine[1]) - Integer(DstLine);
+    DstGap := 0;
+    if D.Height > 1 then
+      DstGap  := Integer(D.ScanLine[1]) - Integer(DstLine);
     Mx := MulDiv(S.Width, $10000, D.Width);
     My := MulDiv(S.Height, $10000, D.Height);
     yP  := 0;

@@ -4,7 +4,7 @@ interface
 
 uses
   Math, Classes, SysUtils, Windows, Graphics, Win32crc, GraphicsBaseTypes,
-  uMemory, uStrongCrypt, DECUtil, DECCipher;
+  uMemory, uStrongCrypt, DECUtil, DECCipher, Jpeg;
 
 const
   MaxSizeWidthHeight = 32768;
@@ -29,12 +29,17 @@ function SaveInfoToBmpFile(BeginImage: TGraphic; ResultImage : TBitmap; Info: TS
 // достаЄм информацию из Bitmap
 function ExtractInfoFromBitmap(Dest: TStream; Bitmap: TBitmap) : Boolean;
 // Save file to stream, optional crypting
-procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TStream);
+procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TStream; HeaderInTheEnd: Boolean);
 // максимально возможное количество информации, которое можо записать в Graphic с €чейкой размером Cell
 function MaxSizeInfoInGraphic(Graphic: TGraphic; Cell: Integer): Integer;
 // выдаЄт размер Cell, наиболее оптимальный если сохран€ть в Graphic информацию о файле FileName
 function GetMaxPixelsInSquare(FileName: string; Graphic: TGraphic): Integer;
 function GetFileSizeByName(FileName: string): Integer;
+
+//JPEG-steno
+function CreateJPEGSteno(SourceFileName, DestFileName: string; Source: TJpegImage; Password: string): Boolean;
+function IsValidJPEGSteno(FileName: string): Boolean;
+function ExtractJPEGSteno(MS: TMemoryStream; Dest: TMemoryStream): Boolean;
 
 implementation
 
@@ -262,7 +267,7 @@ begin
   Result := ((Graphic.Height - 1) div Cell) * ((Graphic.Width - 1) div Cell) - SizeOf(StenographyHeader);
 end;
 
-procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TStream);
+procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TStream; HeaderInTheEnd: Boolean);
 var
   FS: TFileStream;
   I: Integer;
@@ -272,7 +277,7 @@ var
   Chiper : TDECCipherClass;
 begin
   try
-    FS := TFileStream.Create(FileName, FmOpenRead);
+    FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   except
     Exit;
   end;
@@ -299,7 +304,9 @@ begin
       Header.Chiper := Chiper.Identity;
       Seed := RandomBinary(16);
       Header.Seed := ConvertSeed(Seed);
-      Dest.Write(Header, SizeOf(Header));
+
+      if not HeaderInTheEnd then
+        Dest.Write(Header, SizeOf(Header));
 
       //Saving data
       MS.Seek(0, soFromBeginning);
@@ -310,6 +317,9 @@ begin
         StrongCryptInit;
         CryptStreamV2(MS, Dest, Password, Seed);
       end;
+
+      if HeaderInTheEnd then
+        Dest.Write(Header, SizeOf(Header));
     finally
       F(MS);
     end;
@@ -334,6 +344,65 @@ begin
   end;
   if Result < 2 then
     Result := -1;
+end;
+
+function CreateJPEGSteno(SourceFileName, DestFileName: string; Source: TJpegImage; Password: string): Boolean;
+var
+  DS: TFileStream;
+begin
+  Result := False;
+  DS := TFileStream.Create(SourceFileName, fmCreate);
+  try
+    Source.SaveToStream(DS);
+    SaveFileToCryptedStream(SourceFileName, Password, DS, True);
+    Result := True;
+  finally
+    F(DS);
+  end;
+end;
+
+function IsValidJPEGSteno(FileName: string): Boolean;
+var
+  FS: TFileStream;
+  Header: StenographyHeader;
+begin
+  Result := False;
+  FS := TFileStream.Create(FileName, fmOpenRead, fmShareDenyWrite);
+  try
+    if FS.Size > SizeOf(Header) then
+    begin
+      FS.Seek(SizeOf(Header), soFromEnd);
+      FS.Read(Header, SizeOf(Header));
+      Result := Header.ID = StenoHeaderId;
+    end;
+  finally
+    F(FS);
+  end;
+end;
+
+function ExtractJPEGSteno(MS: TMemoryStream; Dest: TMemoryStream): Boolean;
+var
+  Header: StenographyHeader;
+begin
+  Result := False;
+  if MS.Size > SizeOf(Header) then
+  begin
+    MS.Seek(SizeOf(Header), soFromEnd);
+    MS.Read(Header, SizeOf(Header));
+    if Header.ID = StenoHeaderId then
+    begin
+      //valid jpeg steno
+      MS.Seek(SizeOf(Header) + Header.FileSize, soFromEnd);
+      MS := TMemoryStream.Create;
+      try
+        MS.Write(Header, SizeOf(Header));
+        MS.CopyFrom(MS, Header.FileSize);
+        Result := True;
+      finally
+        F(MS);
+      end;
+    end;
+  end;
 end;
 
 end.

@@ -89,7 +89,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefreshItemByID( ID: integer);
-    procedure AddNewItem(Image : tbitmap; Info : TDBPopupMenuInfoRecord);
+    function AddNewItem(Image : TBitmap; Info : TDBPopupMenuInfoRecord): Boolean;
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -136,22 +136,23 @@ type
     procedure TwWindowsPosChange(Sender: TObject);
   private
     { protected declarations }
-    MouseDowned : Boolean;
-    PopupHandled : Boolean;
-    LastMouseItem, ItemWithHint : TEasyItem;
-    ElvMain : TEasyListView;
-    FilePushed : boolean;
-    FilePushedName : string;
-    Data : TDBPopupMenuInfo;
-    FilesToDrag : TStringList;
-    DBCanDrag : Boolean;
-    DBDragPoint : TPoint;
-    WindowsMenuTickCount : Cardinal;
-    ItemByMouseDown : Boolean;
-    ItemSelectedByMouseDown : Boolean;
-    FPictureSize : Integer;
-    FThreadCount : Integer;
-    FBitmapImageList : TBitmapImageList;
+    MouseDowned: Boolean;
+    PopupHandled: Boolean;
+    LastMouseItem, ItemWithHint: TEasyItem;
+    ElvMain: TEasyListView;
+    FilePushed: Boolean;
+    FilePushedName: string;
+    Data: TDBPopupMenuInfo;
+    FilesToDrag: TStringList;
+    DBCanDrag: Boolean;
+    DBDragPoint: TPoint;
+    WindowsMenuTickCount: Cardinal;
+    ItemByMouseDown: Boolean;
+    ItemSelectedByMouseDown: Boolean;
+    FPictureSize: Integer;
+ //   FThreadCount: Integer;
+    FBitmapImageList: TBitmapImageList;
+    FWorkerThreadCount: Integer;
     procedure DeleteIndexItemByID(ID : integer);
     procedure EasyListview1ItemThumbnailDraw(
       Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
@@ -171,6 +172,7 @@ type
     Function SelCount : integer;
     procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    function HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
   protected
     { Protected declarations }
     function GetFormID : string; override;
@@ -181,21 +183,22 @@ type
     WindowID: TGUID;
     SID: TGUID;
     BigImagesSID: TGUID;
-    procedure DoStopLoading(CID: TGUID);
+//    procedure DoStopLoading(CID: TGUID);
     procedure AddFileName(FileName: string);
     procedure ZoomOut;
     procedure ZoomIn;
     function GetVisibleItems: TArStrings;
     function FileNameExistsInList(FileName: string): Boolean;
     procedure ReplaseBitmapWithPath(FileName: string; Bitmap: TBitmap);
-    procedure AddThread;
+//    procedure AddThread;
     procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
     procedure LoadLanguage;
     procedure LoadToolBarIcons;
     procedure LoadSizes;
     procedure CreateBackgroundImage;
     procedure ClearList;
-    function HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
+    procedure AddWorkerThread;
+    procedure RemoveWorkerThread;
   published
     property PictureSize : Integer read FPictureSize;
   end;
@@ -262,6 +265,13 @@ begin
   end;
 end;
 
+procedure TFormCont.RemoveWorkerThread;
+begin
+  Dec(FWorkerThreadCount);
+  if FWorkerThreadCount = 0 then
+    TbStop.Enabled := False;
+end;
+
 procedure TFormCont.CreateBackgroundImage;
 var
   BackgroundImage : TPNGImage;
@@ -295,10 +305,11 @@ end;
 
 procedure TFormCont.FormCreate(Sender: TObject);
 begin
+  FWorkerThreadCount := 0;
   Data := TDBPopupMenuInfo.Create;
   FilesToDrag := TStringList.Create;
   FilePushedName := '';
-  FThreadCount := 0;
+//  FThreadCount := 0;
   SID := GetGUID;
   BigImagesSID := GetGUID;
   FPictureSize := ThSizePanelPreview;
@@ -663,10 +674,11 @@ begin
     Close;
 end;
 
-procedure TFormCont.AddNewItem(Image : Tbitmap; Info : TDBPopupMenuInfoRecord);
+function TFormCont.AddNewItem(Image : Tbitmap; Info : TDBPopupMenuInfoRecord): Boolean;
 var
   New: TEasyItem;
 begin
+  Result := False;
   if Info = nil then
     Exit;
 
@@ -674,8 +686,7 @@ begin
   begin
     if ExistsItemById(Info.Id) then
       Exit;
-  end
-  else
+  end else
   begin
     if ExistsItemByFileName(Info.FileName) then
       Exit;
@@ -693,6 +704,7 @@ begin
 
   FBitmapImageList.AddBitmap(Image);
   New.ImageIndex := FBitmapImageList.Count - 1;
+  Result := True;
 end;
 
 procedure TFormCont.ListView1SelectItem(Sender: TObject; Item: TEasyItem;
@@ -1269,10 +1281,17 @@ begin
     end;
   end;
 end;
-
+   {
 procedure TFormCont.AddThread;
 begin
   Inc(FThreadCount);
+end;  }
+
+procedure TFormCont.AddWorkerThread;
+begin
+  Inc(FWorkerThreadCount);
+  if FWorkerThreadCount = 1 then
+    TbStop.Enabled := True;
 end;
 
 procedure TFormCont.BigSizeCallBack(Sender: TObject; SizeX,
@@ -1964,7 +1983,7 @@ begin
   BigImagesSID := GetGUID;
   TbStop.Enabled := False;
 end;
-
+             {
 procedure TFormCont.DoStopLoading(CID: TGUID);
 begin
   if IsEqualGUID(CID, SID) or IsEqualGUID(CID, BigImagesSID) then
@@ -1974,7 +1993,7 @@ begin
     if FThreadCount = 0 then
       TbStop.Enabled := False;
   end;
-end;
+end;      }
 
 procedure TFormCont.TerminateTimerTimer(Sender: TObject);
 begin

@@ -1530,6 +1530,8 @@ namespace PhotoDBDatabase
 		
 		private string _Page;
 		
+		private string _CountryCode;
+		
 		private EntityRef<Host> _Host;
 		
     #region Extensibility Method Definitions
@@ -1546,6 +1548,8 @@ namespace PhotoDBDatabase
     partial void OnViewDateChanged();
     partial void OnPageChanging(string value);
     partial void OnPageChanged();
+    partial void OnCountryCodeChanging(string value);
+    partial void OnCountryCodeChanged();
     #endregion
 		
 		public PageView()
@@ -1654,6 +1658,26 @@ namespace PhotoDBDatabase
 					this._Page = value;
 					this.SendPropertyChanged("Page");
 					this.OnPageChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CountryCode", DbType="NChar(5) NOT NULL", CanBeNull=false)]
+		public string CountryCode
+		{
+			get
+			{
+				return this._CountryCode;
+			}
+			set
+			{
+				if ((this._CountryCode != value))
+				{
+					this.OnCountryCodeChanging(value);
+					this.SendPropertyChanging();
+					this._CountryCode = value;
+					this.SendPropertyChanged("CountryCode");
+					this.OnCountryCodeChanged();
 				}
 			}
 		}

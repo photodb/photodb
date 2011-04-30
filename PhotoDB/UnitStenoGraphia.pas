@@ -24,17 +24,17 @@ type
     LoadFromFile1: TMenuItem;
     AddInfo1: TMenuItem;
     OpenDialog1: TOpenDialog;
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
+    BtnOpenImage: TButton;
+    BtnAddInfo: TButton;
+    BtnExtractData: TButton;
     Label6: TLabel;
     ComboBox1: TComboBox;
     Label7: TLabel;
-    procedure Button3Click(Sender: TObject);
+    procedure BtnExtractDataClick(Sender: TObject);
     procedure OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
       var Include: Boolean);
-    procedure Button2Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnAddInfoClick(Sender: TObject);
+    procedure BtnOpenImageClick(Sender: TObject);
     function LoadInfoFromFile(FileName: String) : boolean;
     procedure LoadImage(FileName: String; CloseIfOk : boolean = false);
     procedure FormCreate(Sender: TObject);
@@ -90,7 +90,7 @@ begin
   end;
 end;
 
-procedure TFormSteno.Button3Click(Sender: TObject);
+procedure TFormSteno.BtnExtractDataClick(Sender: TObject);
 var
   OpenPictureDialog: DBOpenPictureDialog;
 begin
@@ -285,7 +285,7 @@ begin
   end;
 end;
 
-procedure TFormSteno.Button2Click(Sender: TObject);
+procedure TFormSteno.BtnAddInfoClick(Sender: TObject);
 var
   Size: Integer;
   Bitmap : TBitmap;
@@ -301,7 +301,7 @@ var
 begin
   if ImPreview.Picture.Graphic = nil then
   begin
-    Button1Click(Sender);
+    BtnOpenImageClick(Sender);
     if ImPreview.Picture.Graphic = nil then
       Exit;
   end;
@@ -347,7 +347,7 @@ begin
 
         InfoStream := TMemoryStream.Create;
         try
-          SaveFileToCryptedStream(FileName, Opt.Password, InfoStream);
+          SaveFileToCryptedStream(FileName, Opt.Password, InfoStream, False);
           N := GetMaxPixelsInSquare(FileName, ImPreview.Picture.Graphic);
           if N < 0 then
           begin
@@ -391,7 +391,7 @@ begin
   end;
 end;
 
-procedure TFormSteno.Button1Click(Sender: TObject);
+procedure TFormSteno.BtnOpenImageClick(Sender: TObject);
 var
   OpenPictureDialog: DBOpenPictureDialog;
 begin
@@ -452,7 +452,7 @@ begin
   Label7.Caption := Format(L('Best size = %s'),
     [SizeInText(Max(0, MaxSizeInfoInGraphic(ImPreview.Picture.Graphic, 8) - 255))]);
   if MaxFileSize > 0 then
-    Button2Click(Self);
+    BtnExtractDataClick(Self);
 end;
 
 procedure TFormSteno.FormCreate(Sender: TObject);
@@ -481,9 +481,9 @@ begin
     ComboBox1.Items[0] := L('Max size (worse quality, big noise)');
     ComboBox1.Items[1] := L('Standard size (almost imperceptibly)');
     ComboBox1.Items[2] := L('Best size (imperceptibly)');
-    Button1.Caption := L('Open image');
-    Button2.Caption := L('Hide file and save image');
-    Button3.Caption := L('Extract file');
+    BtnOpenImage.Caption := L('Open image');
+    BtnAddInfo.Caption := L('Hide file and save image');
+    BtnExtractData.Caption := L('Extract file');
     LoadFromFile1.Caption := L('Open image');
     AddInfo1.Caption := L('Hide file and save image');
     ComboBox1.ItemIndex := 1;
