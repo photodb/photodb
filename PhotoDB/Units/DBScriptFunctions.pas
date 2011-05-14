@@ -4,7 +4,7 @@ interface
 
 uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
-     Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, UnitStenoGraphia,
+     Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs,
      Math, uScript, uCDMappingTypes, uFileUtils, uAssociations, uDBForm,
      UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
      uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings;
@@ -32,7 +32,7 @@ uses
   SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
   UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
-  UnitFormCDMapper, UnitFormCDExport;
+  UnitFormCDMapper, UnitFormCDExport, uFormSteganography;
 
 procedure DoActivation;
 begin
@@ -1003,8 +1003,8 @@ begin
 
  AddScriptFunction(Enviroment,'SetJPEGOptions',F_TYPE_PROCEDURE_NO_PARAMS,@SetJPEGOptions);
 
- AddScriptFunction(Enviroment,'DoDesteno',F_TYPE_PROCEDURE_STRING,@DoDesteno);
- AddScriptFunction(Enviroment,'DoSteno',F_TYPE_PROCEDURE_STRING,@DoSteno);
+ AddScriptFunction(Enviroment,'DoDesteno',F_TYPE_PROCEDURE_STRING,@HideDataInImage);
+ AddScriptFunction(Enviroment,'DoSteno',F_TYPE_PROCEDURE_STRING,@ExtractDataFromImage);
 
  AddScriptFunction(Enviroment,'DoCDExport',F_TYPE_PROCEDURE_NO_PARAMS,@DoCDExport);
  AddScriptFunction(Enviroment,'DoCDMapping',F_TYPE_PROCEDURE_NO_PARAMS,@DoManageCDMapping);

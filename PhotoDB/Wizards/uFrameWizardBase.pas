@@ -19,7 +19,7 @@ type
     function GetOperationInProgress: Boolean; virtual; abstract;
   public
     constructor Create(Owner: TDBForm);  virtual;
-    procedure NextStep;  virtual; abstract;
+    procedure NextStep; virtual; abstract;
     procedure NotifyChange; virtual; abstract;
     function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; virtual; abstract;
     procedure AddStep(Step: TFrameWizardBaseClass); virtual; abstract;
@@ -49,7 +49,7 @@ type
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     procedure Execute; virtual;
-    procedure InitNextStep; virtual;
+    function InitNextStep: Boolean; virtual;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); virtual;
     procedure Unload; virtual;
     function IsFinal: Boolean; virtual;
@@ -119,8 +119,9 @@ begin
   end;
 end;
 
-procedure TFrameWizardBase.InitNextStep;
+function TFrameWizardBase.InitNextStep: Boolean;
 begin
+  Result := True;
   //insert here next step initialization
 end;
 

@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel,
   ImgList, UnitCDMappingSupport, UnitDBCommonGraphics, Menus, DB, CommonDBSupport,
   uVistaFuncs, uLogger, uDBForm, uMemory, UnitDBDeclare, uDBPopupMenuInfo,
-  uShellIntegration, uConstants, uCDMappingTypes;
+  uShellIntegration, uConstants, uCDMappingTypes, pngimage;
 
 type
   TFormCDMapper = class(TDBForm)

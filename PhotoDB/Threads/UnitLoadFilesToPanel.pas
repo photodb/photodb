@@ -307,12 +307,14 @@ begin
     begin
       if Graphic is TRAWImage then
       begin
-        if not(Graphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
+        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
           Graphic.LoadFromFile(FileName);
-      end
-      else
+      end else
         Graphic.LoadFromFile(FileName);
     end;
+    FInfo.Width := Graphic.Width;
+    FInfo.Height := Graphic.Height;
+
     JPEGScale(Graphic, FPictureSize, FPictureSize);
   end else
   begin
@@ -333,7 +335,7 @@ begin
           Graphic := JPEG;
           JPEG := nil;
         finally
-          JPEG.Free;
+          F(JPEG);
         end;
       end;
     end else

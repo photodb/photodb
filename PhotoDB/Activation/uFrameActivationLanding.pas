@@ -16,7 +16,7 @@ type
     procedure LoadLanguage; override;
   public
     { Public declarations }
-    procedure InitNextStep; override;
+    function InitNextStep: Boolean; override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
   end;
 
@@ -43,9 +43,9 @@ begin
     RbSetCode.Checked := True;
 end;
 
-procedure TFrameActivationLanding.InitNextStep;
+function TFrameActivationLanding.InitNextStep: Boolean;
 begin
-  inherited;
+  Result := inherited;
   if RbActivateApplication.Checked then
   begin
     if TActivationManager.Instance.CanUseFreeActivation then

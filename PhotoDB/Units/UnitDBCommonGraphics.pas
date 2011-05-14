@@ -1244,7 +1244,7 @@ begin
   AssignGraphic(Bitmap, Image);
 end;
 
-procedure DoResize(Width,Height : integer; S,D : TBitmap);
+procedure DoResize(Width, Height: Integer; S, D : TBitmap);
 begin
   if (Width = 0) or (Height = 0) then
     Exit;
@@ -1257,16 +1257,20 @@ begin
     Exit;
   end;
 
-  if (Width / S.Width > 1) or (Height / S.Height > 1) then
-    Interpolate(0, 0, Width, Height, Rect(0, 0, S.Width, S.Height), S, D)
-  else
+  if ((Width / S.Width > 1) or (Height / S.Height > 1)) then
+  begin
+    if (S.Width > 2) and (S.Height > 2) then
+      Interpolate(0, 0, Width, Height, Rect(0, 0, S.Width, S.Height), S, D)
+    else
+      StretchCool(Width, Height, S, D);
+  end else
   begin
     if ((S.Width div Width >= 8) or (S.Height div Height >= 8)) and
       (S.Width > 2) and (S.Height > 2) then
       QuickReduce(Width, Height, S, D)
     else
     begin
-      if (Width / S.Width > ZoomSmoothMin) and (S.PixelFormat <> pf32bit) then
+      if (Width / S.Width > ZoomSmoothMin) and (S.PixelFormat <> pf32bit) and (S.Width > 1) then
         SmoothResize(Width, Height, S, D)
       else
         StretchCool(Width, Height, S, D);
@@ -1352,10 +1356,10 @@ begin
   D.PixelFormat := pf24bit;
   D.SetSize(Math.Max(D.Width, X + Width), Math.Max(D.height, Y + Height));
   SW := S.Width;
-  Dw := Math.Min(D.Width - X, X + Width);
-  Dh := Math.Min(D.Height - y, Y + Height);
-  Dx := Width / (Rect.Right - Rect.Left - 1);
-  Dy := Height / (Rect.Bottom - Rect.Top - 1);
+  DW := Math.Min(D.Width - X, X + Width);
+  DH := Math.Min(D.Height - y, Y + Height);
+  DX := Width / (Rect.Right - Rect.Left - 1);
+  DY := Height / (Rect.Bottom - Rect.Top - 1);
   if (Dx < 1) and (Dy < 1) then
     Exit;
   SetLength(Xs, S.Height);
@@ -1372,7 +1376,7 @@ begin
     XAWD[I] := I / Dx - XAW[I];
   end;
 
-  for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * Dy) - 1, Dh - 1) do
+  for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
   begin
     Yo := FastTrunc(I / Dy) + Rect.Top;
     Y1r := FastTrunc(I / Dy) * Dy;
@@ -1381,10 +1385,10 @@ begin
     if I + Y < 0 then
       Continue;
 
-    for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * Dx) - 1, Dw - 1) do
+    for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
     begin
       Xo := XAW[J] + Rect.Left;
-      if xo > SW then
+      if Xo > SW then
         Continue;
       if J + X < 0 then
         Continue;
@@ -1626,7 +1630,7 @@ begin
 
   SetLength(XAW, Width + 1);
   for I := 0 to Width do
-    XAW[I] := Round(Sw * I);
+    XAW[I] := Ceil(SW * I);
 
   if S.PixelFormat = pf24bit then
   begin
@@ -1638,7 +1642,7 @@ begin
     begin
       P := D.ScanLine[I];
       YMin := Round(SH * I);
-      YMax := MinI32(SHI - 1, Round(SH * (I + 1)) - 1);
+      YMax := MinI32(SHI - 1, Ceil(SH * (I + 1)) - 1);
       for J := 0 to Width - 1 do
       begin
         Count := 0;
@@ -1673,7 +1677,7 @@ begin
     begin
       P32 := D.ScanLine[I];
       YMin := Round(SH * I);
-      YMax := MinI32(SHI - 1, Round(SH * (I + 1)) - 1);
+      YMax := MinI32(SHI - 1, Ceil(SH * (I + 1)) - 1);
       for J := 0 to Width - 1 do
       begin
         Count := 0;

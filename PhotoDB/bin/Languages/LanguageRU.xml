@@ -567,7 +567,9 @@
 	<translate name="Include in quick group list" value="Включать в базовый список групп" />
 	<translate name="Related groups" value="Связанные группы" />
 	<translate name="Edit related groups" value="Редактировать связанные группы" />
-	<translate name="There are no related groups" value="Нет связанных групп" />	
+	<translate name="There are no related groups" value="Нет связанных групп" />
+	<translate name="Group with this name already exists!" value="Группа с таким именем уже существует!" />
+	<translate name="Do you really want to change name of this group?" value="Вы действительно хотите изменить имя этой группы?" />	
   </scope>
   <scope name="DBMenu">  
     <translate name="Collection is read only!" value="База данных только для чтения!" />
@@ -1888,5 +1890,6 @@
 	<translate name="Blocks vertically" value="Блоки по вертикали"/>
 	<translate name="Text color" value="Цвет текста"/>
 	<translate name="Transparency" value="Прозрачность"/>
+	<translate name="Font Name" value="Имя шрифта"/>	
   </scope>  
 </language>

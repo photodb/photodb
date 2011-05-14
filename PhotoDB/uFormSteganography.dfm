@@ -593,6 +593,7 @@ object FormSteganography: TFormSteganography
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 1
+    OnClick = BtnCancelClick
   end
   object BtnPrevious: TButton
     Left = 370
@@ -606,7 +607,7 @@ object FormSteganography: TFormSteganography
   end
   object BtnFinish: TButton
     Left = 451
-    Top = 321
+    Top = 320
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]

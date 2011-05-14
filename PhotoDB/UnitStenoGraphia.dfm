@@ -112,7 +112,6 @@ object FormSteno: TFormSteno
     Height = 25
     Caption = 'Add Info and Save'
     TabOrder = 3
-    OnClick = BtnAddInfoClick
   end
   object BtnExtractData: TButton
     Left = 344
@@ -121,7 +120,6 @@ object FormSteno: TFormSteno
     Height = 25
     Caption = 'Decrypt Image'
     TabOrder = 4
-    OnClick = BtnExtractDataClick
   end
   object ComboBox1: TComboBox
     Left = 167
@@ -146,13 +144,11 @@ object FormSteno: TFormSteno
     end
     object AddInfo1: TMenuItem
       Caption = 'Add Info'
-      OnClick = BtnAddInfoClick
     end
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All Files (*.*)|*?*'
     Options = [ofHideReadOnly, ofEnableIncludeNotify, ofEnableSizing]
-    OnIncludeItem = OpenDialog1IncludeItem
     Left = 56
     Top = 56
   end

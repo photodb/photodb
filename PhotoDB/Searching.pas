@@ -4245,11 +4245,14 @@ begin
       if YearOf(Date) <> CurrentYear then
       begin
         CurrentYear := YearOf(Date);
-        with elvDateRange.Groups.Add do
+        if CurrentYear > 1900 then
         begin
-          Caption := FormatDateTime('yyyy',Date);
-          Visible := True;
-          Tag := CurrentYear;
+          with elvDateRange.Groups.Add do
+          begin
+            Caption := FormatDateTime('yyyy',Date);
+            Visible := True;
+            Tag := CurrentYear;
+          end;
         end;
       end;
 

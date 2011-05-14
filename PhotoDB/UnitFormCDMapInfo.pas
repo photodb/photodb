@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel, uCDMappingTypes,
-  UnitCDMappingSupport, uShellIntegration, uConstants, uDBForm;
+  UnitCDMappingSupport, uShellIntegration, uConstants, uDBForm, pngimage;
 
 type
   TFormCDMapInfo = class(TDBForm)

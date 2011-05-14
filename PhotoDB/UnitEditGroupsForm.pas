@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
   uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, uDBForm, uShellIntegration,
-  uGraphicUtils, uConstants, uMemory, uSettings;
+  uGraphicUtils, uConstants, uMemory, uSettings, pngimage;
 
 type
   TEditGroupsForm = class(TDBForm)
@@ -317,13 +317,13 @@ end;
 
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);
 begin
-  CreateNewGroupDialogA(fGroups[PmGroup.Tag].GroupName,fGroups[PmGroup.Tag].GroupCode);
+  CreateNewGroupDialogA(FGroups[PmGroup.Tag].GroupName, FGroups[PmGroup.Tag].GroupCode);
 end;
 
 procedure TEditGroupsForm.RecreateGroupsList;
 var
-  I, Size : integer;
-  SmallB, B : TBitmap;
+  I, Size: Integer;
+  SmallB, B: TBitmap;
 begin
   FreeGroups(FRegGroups);
   FreeGroups(FShowenRegGroups);
@@ -398,7 +398,7 @@ end;
 
 procedure TEditGroupsForm.QuickInfo1Click(Sender: TObject);
 begin
-  ShowGroupInfo(FGroups[PmGroup.Tag], False, nil);
+  ShowGroupInfo(FSetGroups[PmGroup.Tag], False, nil);
 end;
 
 procedure TEditGroupsForm.Clear1Click(Sender: TObject);
@@ -419,10 +419,10 @@ procedure TEditGroupsForm.LstSelectedGroupsDblClick(Sender: TObject);
 var
   I: Integer;
 begin
-  for I :=0 to LstSelectedGroups.Items.Count-1 do
-  if LstSelectedGroups.Selected[i] then
+  for I := 0 to LstSelectedGroups.Items.Count - 1 do
+  if LstSelectedGroups.Selected[I] then
     begin
-      ShowGroupInfo(FSetGroups[i],false,nil);
+      ShowGroupInfo(FSetGroups[I], False, nil);
     Break;
   end;
 end;

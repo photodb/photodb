@@ -21,7 +21,7 @@ type
     FSID: TGUID;
     Graphic: TGraphic;
     PassWord: string;
-    Crypted: Boolean;
+    FIsEncrypted: Boolean;
     FRealWidth, FRealHeight: Integer;
     FRealZoomScale: Extended;
     Bitmap: TBitmap;
@@ -70,6 +70,7 @@ begin
   FUpdateInfo := UpdateInfo;
   FViewer := Viewer;
   FInfo := nil;
+  FIsEncrypted := False;
   if Viewer.FullScreenNow then
     TransparentColor := 0
   else
@@ -100,7 +101,7 @@ begin
     end;
 
     GetPassword;
-    if Crypted and (PassWord = '') then
+    if FIsEncrypted and (PassWord = '') then
     begin
       SetNOImageAsynch;
       Exit;
@@ -125,7 +126,7 @@ begin
           Graphic := DeCryptGraphicFileEx(FFileName, PassWord, FPages, FFullImage, FPage);
         end else
         begin
-          if Crypted and (PassWord = '') then
+          if FIsEncrypted and (PassWord = '') then
           begin
             SetNOImageAsynch;
             Exit;
@@ -220,7 +221,8 @@ begin
   PassWord := '';
   if ValidCryptGraphicFile(FFileName) then
   begin
-    Crypted := True;
+
+    FIsEncrypted := True;
     PassWord := DBKernel.FindPasswordForCryptImageFile(FFileName);
     if PassWord = '' then
     begin
@@ -245,7 +247,7 @@ begin
       end;
     end;
   end else
-    Crypted := False;
+    FIsEncrypted := False;
 end;
 
 procedure TViewerThread.GetPasswordSynch;
@@ -305,6 +307,7 @@ begin
       Viewer.RealImageHeight := FRealHeight;
       Viewer.RealImageWidth := FRealWidth;
       Viewer.RealZoomInc := FRealZoomScale;
+      Viewer.Item.Crypted := FIsEncrypted;
       if FUpdateInfo then
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.ImageExists := False;
@@ -347,6 +350,7 @@ begin
       Viewer.RealImageHeight := FRealHeight;
       Viewer.RealImageWidth := FRealWidth;
       Viewer.RealZoomInc := FRealZoomScale;
+      Viewer.Item.Crypted := FIsEncrypted;
       if FUpdateInfo then
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);

@@ -84,7 +84,7 @@ begin
   else
   begin
     EventInfo.NewName := StrParam;
-    DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Name], EventInfo)
+    DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt, EventID_Param_Name], EventInfo)
   end;
 end;
 

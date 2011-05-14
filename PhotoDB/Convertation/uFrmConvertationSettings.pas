@@ -50,7 +50,7 @@ type
     { Public declarations }
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Unload; override;
-    procedure InitNextStep; override;
+    function InitNextStep: Boolean; override;
     property ImageOptions: TImageDBOptions read GetImageOptions;
   end;
 
@@ -171,9 +171,9 @@ begin
   end;
 end;
 
-procedure TFrmConvertationSettings.InitNextStep;
+function TFrmConvertationSettings.InitNextStep: Boolean;
 begin
-  inherited;
+  Result := inherited;
   if Manager.Owner is TFormSelectDB then
     Manager.AddStep(TFrmSelectDBCreationSummary);
 end;

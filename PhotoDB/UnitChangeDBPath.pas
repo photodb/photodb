@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, Dolphin_DB, StdCtrls, DmProgress, DB, win32crc,
   UnitDBFileDialogs, UnitOpenQueryThread, CommonDBSupport, uConstants,
   UnitDBkernel, UnitDBDeclare, uFileUtils, uDBForm, uMemory,
-  uShellIntegration;
+  uShellIntegration, pngimage;
 
 type
   TFormChangeDBPath = class(TDBForm)

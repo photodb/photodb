@@ -8,7 +8,8 @@ uses
   Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
   DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
   AppEvnts, uAssociatedIcons, WatermarkedEdit, uMemory, uCDMappingTypes,
-  uDBForm, uShellIntegration, uRuntime, uConstants, ShellApi, LoadingSign;
+  uDBForm, uShellIntegration, uRuntime, uConstants, ShellApi, LoadingSign,
+  pngimage;
 
 type
   TFormCDExport = class(TDBForm)

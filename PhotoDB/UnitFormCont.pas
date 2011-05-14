@@ -183,7 +183,6 @@ type
     WindowID: TGUID;
     SID: TGUID;
     BigImagesSID: TGUID;
-//    procedure DoStopLoading(CID: TGUID);
     procedure AddFileName(FileName: string);
     procedure ZoomOut;
     procedure ZoomIn;

@@ -323,7 +323,9 @@ uses
   uDBShellUtils in 'Units\uDBShellUtils.pas',
   uDBImageUtils in 'Units\uDBImageUtils.pas',
   uFormSteganography in 'uFormSteganography.pas' {FormSteganography},
-  uFrmSteganographyLanding in 'Steganography\uFrmSteganographyLanding.pas' {Frame1: TFrame};
+  uFrmSteganographyLanding in 'Steganography\uFrmSteganographyLanding.pas' {FrmSteganographyLanding: TFrame},
+  uFrmCreatePNGSteno in 'Steganography\uFrmCreatePNGSteno.pas' {FrmCreatePNGSteno: TFrame},
+  uFrmCreateJPEGSteno in 'Steganography\uFrmCreateJPEGSteno.pas' {FrmCreateJPEGSteno: TFrame};
 
 {$R *.res}
 
@@ -487,7 +489,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-      Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
       // This is main form of application
 
       TW.I.Start('SetSplashProgress 70');

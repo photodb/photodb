@@ -24,7 +24,7 @@ type
     { Public declarations }
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Execute; override;
-    procedure InitNextStep; override;
+    function InitNextStep: Boolean; override;
     function IsFinal: Boolean; override;
     property Options: Integer read GetOptions;
     property DBFile: TPhotoDBFile read GetDBFile;
@@ -112,9 +112,9 @@ begin
   end;
 end;
 
-procedure TFrmSelectDBLanding.InitNextStep;
+function TFrmSelectDBLanding.InitNextStep: Boolean;
 begin
-  inherited;
+  Result := inherited;
   case RgMode.ItemIndex of
     0:
       begin

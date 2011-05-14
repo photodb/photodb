@@ -518,7 +518,15 @@
 				<Form>FormSteganography</Form>
 			</DCCReference>
 			<DCCReference Include="Steganography\uFrmSteganographyLanding.pas">
-				<Form>Frame1</Form>
+				<Form>FrmSteganographyLanding</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Steganography\uFrmCreatePNGSteno.pas">
+				<Form>FrmCreatePNGSteno</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Steganography\uFrmCreateJPEGSteno.pas">
+				<Form>FrmCreateJPEGSteno</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<BuildConfiguration Include="Base">
@@ -546,7 +554,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">/nologo</Parameters>
+						<Parameters Name="RunParams"> /nologo</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>

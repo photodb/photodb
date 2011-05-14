@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, UnitDBKernel, uDBForm, JPEG,
-  uSettings;
+  uSettings, pngimage;
 
 type
   TDBJPEGOptions = record

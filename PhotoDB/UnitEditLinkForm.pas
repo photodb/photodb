@@ -8,7 +8,7 @@ uses
   acDlgSelect, DropSource, DropTarget, uDBUtils, ComCtrls, ImgList,
   UnitDBKernel, DragDrop, DragDropFile, uVistaFuncs, ComboBoxExDB,
   UnitDBFileDialogs, uDBForm, WatermarkedMemo, WatermarkedEdit,
-  uShellIntegration, Dolphin_db, uConstants, uAssociations, uMemory;
+  uShellIntegration, Dolphin_db, uConstants, uAssociations, uMemory, pngimage;
 
 type
   TFormEditLink = class(TDBForm)

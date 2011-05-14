@@ -639,7 +639,7 @@ uses UnitUpdateDB, ExplorerThreadUnit, uSearchTypes,
      UnitGetPhotosForm, UnitFormCont,
      UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
      UnitSavingTableForm, UnitUpdateDBObject, Loadingresults,
-     UnitStenoGraphia, UnitBigImagesSize;
+     uFormSteganography, UnitBigImagesSize;
 
 {$R *.dfm}
 
@@ -1171,13 +1171,12 @@ begin
     Paste2.Visible := True;
     Shell1.Visible := True;
   end;
-  if fFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
   begin
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
     AddHiddenInfo1.Visible := (SelCount = 1);
-    ExtractHiddenInfo1.Visible := True;
-    ExtractHiddenInfo1.Visible := ExtInMask('|PNG|BMP|', GetExt(FFilesInfo[PmItemPopup.Tag].FileName));
+    ExtractHiddenInfo1.Visible := ExtInMask('|PNG|BMP|JPG|JPEG|', GetExt(FFilesInfo[PmItemPopup.Tag].FileName));
 
     MakeFolderViewer2.Visible := not FolderView;
     Print1.Visible := True;
@@ -7480,7 +7479,7 @@ begin
   if SelCount = 1 then
   begin
     Index := ItemIndexToMenuIndex(ListView1Selected.index);
-    DoSteno(FFilesInfo[index].FileName);
+    HideDataInImage(FFilesInfo[index].FileName);
   end;
 end;
 
@@ -7488,10 +7487,10 @@ procedure TExplorerForm.ExtractHiddenInfo1Click(Sender: TObject);
 var
   Index: Integer;
 begin
-  if SelCount=1 then
+  if SelCount = 1 then
   begin
-    Index:=ItemIndexToMenuIndex(ListView1Selected.Index);
-    DoDeSteno(FFilesInfo[Index].FileName);
+    Index := ItemIndexToMenuIndex(ListView1Selected.Index);
+    ExtractDataFromImage(FFilesInfo[Index].FileName);
   end;
 end;
 

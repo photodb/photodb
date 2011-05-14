@@ -104,7 +104,8 @@ begin
     LbBlocksX.Caption := L('Blocks horizontally') + ':';
     LbBlocksY.Caption := L('Blocks vertically') + ':';
     LbTextColor.Caption := L('Text color') + ':';
-    LbTransparency.Caption := L('Transparency');
+    LbTransparency.Caption := L('Transparency') + ':';
+    LbFontName.Caption := L('Font Name') + ':';
     BtnOk.Caption := L('Ok');
     BtnCancel.Caption := L('Cancel');
   finally

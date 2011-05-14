@@ -37,7 +37,7 @@ type
   public
     { Public declarations }
     function ValidateStep(Silent: Boolean): Boolean; override;
-    procedure InitNextStep; override;
+    function InitNextStep: Boolean; override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     property DBFile: TPhotoDBFile read GetDBFile;
   end;
@@ -134,9 +134,9 @@ begin
   end;
 end;
 
-procedure TFrmSelectDBNewPathAndIcon.InitNextStep;
+function TFrmSelectDBNewPathAndIcon.InitNextStep: Boolean;
 begin
-  inherited;
+  Result := inherited;
   Manager.AddStep(TFrmConvertationSettings);
 end;
 

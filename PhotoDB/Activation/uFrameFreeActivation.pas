@@ -28,7 +28,7 @@ type
     { Public declarations }
     function IsFinal: Boolean; override;
     procedure Execute; override;
-    procedure InitNextStep; override;
+    function InitNextStep: Boolean; override;
   end;
 
 implementation
@@ -74,9 +74,9 @@ begin
   Changed;
 end;
 
-procedure TFrameFreeActivation.InitNextStep;
+function TFrameFreeActivation.InitNextStep: Boolean;
 begin
-  inherited;
+  Result := inherited;
   Manager.AddStep(TFrameFreeManualActivation);
 end;
 

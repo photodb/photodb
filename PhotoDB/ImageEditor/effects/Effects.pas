@@ -2256,6 +2256,7 @@ begin
         w3 := z2 - w4;
         if (t3>=S.Width-1)or(x=D.Width-1) then
          t3:=S.Width-2;
+
         DstLine[x].rgbtRed := (SrcLine1[t3].rgbtRed * w1 +
           SrcLine1[t3 + 1].rgbtRed * w2 + SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
 

@@ -21,6 +21,7 @@ type
     procedure BtnPreviousClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure BtnCancelClick(Sender: TObject);
   private
     { Private declarations }
     FWizard: TWizardManager;
@@ -35,9 +36,12 @@ type
   end;
 
 procedure HideDataInImage(InitialFileName: string);
-procedure ExtractDataInImage(InitialFileName: string);
+procedure ExtractDataFromImage(InitialFileName: string);
 
 implementation
+
+uses
+  uFrmSteganographyLanding;
 
 {$R *.dfm}
 
@@ -49,7 +53,7 @@ begin
   FormSteganography.HideData(InitialFileName);
 end;
 
-procedure ExtractDataInImage(InitialFileName: string);
+procedure ExtractDataFromImage(InitialFileName: string);
 var
   FormSteganography: TFormSteganography;
 begin
@@ -58,6 +62,11 @@ begin
 end;
 
 { TFrmSteganography }
+
+procedure TFormSteganography.BtnCancelClick(Sender: TObject);
+begin
+  Close;
+end;
 
 procedure TFormSteganography.BtnFinishClick(Sender: TObject);
 begin
@@ -78,7 +87,7 @@ end;
 
 procedure TFormSteganography.ExtractData(InitialFileName: string);
 begin
-  //
+  ShowModal;
 end;
 
 procedure TFormSteganography.FormClose(Sender: TObject;
@@ -91,7 +100,7 @@ procedure TFormSteganography.FormCreate(Sender: TObject);
 begin
   FWizard := TWizardManager.Create(Self);
   FWizard.OnChange := StepChanged;
-//  FWizard.AddStep(TFrmStegoLanding);
+  FWizard.AddStep(TFrmSteganographyLanding);
   FWizard.Start(Self, 127, 8);
 end;
 
@@ -106,8 +115,15 @@ begin
 end;
 
 procedure TFormSteganography.HideData(InitialFileName: string);
+var
+  LandingFrame: TFrmSteganographyLanding;
 begin
-  //
+  LandingFrame := (FWizard.GetStepByType(TFrmSteganographyLanding)) as TFrmSteganographyLanding;
+  if LandingFrame <> nil then
+  begin
+    if not LandingFrame.LoadInfoFromFile(InitialFileName) then
+      ShowModal;
+  end;
 end;
 
 procedure TFormSteganography.StepChanged(Sender: TObject);

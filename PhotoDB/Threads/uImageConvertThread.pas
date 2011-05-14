@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Graphics, Forms, SysUtils, UnitDBKernel, GraphicCrypt,
-  uLogger, GraphicEx, UnitDBCommon, uMemory, uFileUtils,
+  uLogger, GraphicEx, UnitDBCommon, uMemory, uFileUtils, GIFImage,
   PngImage, uGOM, uDBForm, Dialogs, UnitDBDeclare, JPEG, UnitJPEGOptions,
   UnitDBCommonGraphics, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
@@ -382,7 +382,7 @@ begin
           JPEGScale(Graphic, FProcessingParams.PreviewOptions.PreviewWidth,
             FProcessingParams.PreviewOptions.PreviewHeight);
 
-        Original.Assign(Graphic);
+        AssignGraphic(Original, Graphic);
         F(Graphic);
 
         if FProcessingParams.Resize then
@@ -447,6 +447,11 @@ begin
         //save
         NewGraphic := NewGraphicClass.Create;
         try
+          if NewGraphic is TGifImage then
+          begin
+            TGifImage(NewGraphic).DitherMode := dmFloydSteinberg;
+            TGifImage(NewGraphic).ColorReduction := rmQuantize;
+          end;
           NewGraphic.Assign(Original);
           F(Graphic);
 

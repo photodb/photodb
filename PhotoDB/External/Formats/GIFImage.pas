@@ -4733,8 +4733,8 @@ begin
     end;
 
 {$IFNDEF VER9x}
-    if (Bitmap.Width*Bitmap.Height > BitmapAllocationThreshold) then
-      SetPixelFormat(Result, pf1bit); // To reduce resource consumption of resize
+ //   if (Bitmap.Width*Bitmap.Height > BitmapAllocationThreshold) then
+ //     SetPixelFormat(Result, pf1bit); // To reduce resource consumption of resize
 {$ENDIF}
 
     ColorLookup := nil;

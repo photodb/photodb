@@ -62,7 +62,8 @@ procedure DBChangeGroup(Group: TGroup);
 
 implementation
 
-uses UnitDBKernel, UnitQuickGroupInfo, UnitEditGroupsForm;
+uses
+  UnitDBKernel, UnitQuickGroupInfo, UnitEditGroupsForm;
 
 {$R *.dfm}
 
@@ -143,12 +144,12 @@ var
 begin
   if GroupNameExists(EdName.Text) and (FGroup.GroupName <> EdName.Text) then
   begin
-    MessageBoxDB(Handle, L('Group with this name alreadt exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    MessageBoxDB(Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;
   if FGroup.GroupName <> EdName.Text then
   begin
-    if ID_OK <> MessageBoxDB(Handle, L('Do you really want ot change name of group?'), L('Warning'), TD_BUTTON_OKCANCEL,
+    if ID_OK <> MessageBoxDB(Handle, L('Do you really want to change name of this group?'), L('Warning'), TD_BUTTON_OKCANCEL,
       TD_ICON_WARNING) then
       Exit;
   end;

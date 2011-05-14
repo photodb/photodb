@@ -10,7 +10,7 @@ uses
    UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
    GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
    uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
-   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo;
+   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage;
 
 type
   TUpdateDBForm = class(TDBForm)

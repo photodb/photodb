@@ -9,7 +9,7 @@ uses
   ExtDlgs, Graphics, UnitDBDeclare, AppEvnts, uWizards,
   UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon,
   uSplashThread, uThreadForm, uMemory, uShellIntegration,
-  uDBBaseTypes, uDBTypes, uInterfaces;
+  uDBBaseTypes, uDBTypes, uInterfaces, pngimage;
 
 type
   TFormConvertingDB = class(TThreadForm, IDBImageSettings)

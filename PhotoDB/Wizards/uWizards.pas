@@ -57,10 +57,12 @@ procedure TWizardManager.NextStep;
 begin
   if CanGoNext and Steps[CurrentStep].ValidateStep(False) then
   begin
-    Steps[CurrentStep].InitNextStep;
-    Inc(FCurrentStep);
-    UpdateCurrentStep;
-    Changed;
+    if Steps[CurrentStep].InitNextStep then
+    begin
+      Inc(FCurrentStep);
+      UpdateCurrentStep;
+      Changed;
+    end;
   end;
 end;
 

@@ -1186,7 +1186,8 @@ begin
     Exit;
   end;
 
- if ID>0 then
+
+  if ID > 0 then
   begin
     for I := 0 to CurrentInfo.Count - 1 do
       if CurrentInfo[I].ID = ID then
@@ -1231,10 +1232,21 @@ begin
           Exit;
         end;
       end;
+  end else
+  begin
+    if EventID_Param_Crypt in Params then
+    begin
+      for I := 0 to CurrentInfo.Count - 1 do
+        if AnsiLowerCase(CurrentInfo[I].FileName) = AnsiLowerCase(Value.NewName) then
+        begin
+          CurrentInfo[I].Crypted := Value.Crypt;
+          UpdateCrypted;
+        end;
+    end;
   end;
   if (EventID_Param_Name in Params) then
   begin
-    if Item.FileName = Value.name then
+    if Item.FileName = Value.Name then
     begin
       if Value.NewName <> '' then
         Item.FileName := Value.NewName;
@@ -3105,6 +3117,8 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     Info.Add(Item.Copy);
+    Info[0].Selected := True;
+    Item.Crypted := ValidCryptGraphicFile(Item.FileName);
     if not Item.Crypted then
       EncryptPhohos(Self, L('photo'), Info)
     else if ID_OK = MessageBoxDB(Handle, L('Do you really want to decrypt this file?'), L('Decrypt confirmation'),

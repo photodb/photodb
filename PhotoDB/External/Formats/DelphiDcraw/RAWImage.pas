@@ -12,8 +12,8 @@ type
     FWidth : Integer;
     FHeight : Integer;
     FIsPreview: Boolean;
-    function GetWidth : integer; override;
-    function GetHeight : integer; override;
+    function GetWidth : Integer; override;
+    function GetHeight : Integer; override;
   private
     procedure SetIsPreview(const Value: boolean);
     procedure LoadFromFreeImage(Image : TFreeBitmap);
