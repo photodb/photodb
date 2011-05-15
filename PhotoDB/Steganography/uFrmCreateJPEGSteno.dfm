@@ -10,7 +10,9 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Left = 0
     Top = 19
     Width = 150
-    Height = 142
+    Height = 150
+    Anchors = [akLeft, akTop, akRight]
+    Center = True
   end
   object LbJpegFileInfo: TLabel
     Left = 0
@@ -21,14 +23,14 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
   end
   object LbJpegFileSize: TLabel
     Left = 3
-    Top = 167
+    Top = 175
     Width = 71
     Height = 13
     Caption = 'FileSize: 100kb'
   end
   object LbImageSize: TLabel
     Left = 3
-    Top = 186
+    Top = 194
     Width = 110
     Height = 13
     Caption = 'ImageSize: 100x100px'
@@ -69,6 +71,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Top = 237
     Width = 20
     Height = 21
+    Anchors = [akTop, akRight]
     Caption = '...'
     TabOrder = 1
   end
@@ -77,6 +80,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Top = 3
     Width = 281
     Height = 228
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Options:'
     TabOrder = 2
     DesignSize = (

@@ -6,14 +6,16 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, uFrameWizardBase, StdCtrls, WatermarkedEdit, ExtCtrls, ShlObj,
   uMemory, UnitDBFileDialogs, pngimage, uFileUtils, uConstants, uStenography,
-  GraphicCrypt, dolphin_db, UnitDBKernel, uAssociations, uShellIntegration;
+  GraphicCrypt, dolphin_db, UnitDBKernel, uAssociations, uShellIntegration,
+  UnitDBCommonGraphics, UnitDBCommon, uGraphicUtils, uDBPopupMenuInfo,
+  UnitDBDeclare, DBCMenu;
 
 type
   TFrmCreatePNGSteno = class(TFrameWizardBase)
     LbImageSize: TLabel;
     LbJpegFileSize: TLabel;
-    ImJpegFile: TImage;
-    LbJpegFileInfo: TLabel;
+    ImImageFile: TImage;
+    LbImageFileInfo: TLabel;
     Gbptions: TGroupBox;
     LbPassword: TLabel;
     Label1: TLabel;
@@ -22,7 +24,7 @@ type
     EdPasswordConfirm: TWatermarkedEdit;
     CbIncludeCRC: TCheckBox;
     LbSelectFile: TLabel;
-    WatermarkedEdit1: TWatermarkedEdit;
+    EdDataFileName: TWatermarkedEdit;
     LbFileSize: TLabel;
     LbResultImageSize: TLabel;
     BtnChooseFile: TButton;
@@ -31,13 +33,21 @@ type
     OpenDialog1: TOpenDialog;
     procedure OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
       var Include: Boolean);
+    procedure ImImageFileContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure BtnChooseFileClick(Sender: TObject);
   private
     { Private declarations }
     MaxFileSize: Integer;
     NormalFileSize: Integer;
     GoodFileSize: Integer;
     FBitmapImage: TBitmap;
+    FImagePassword: string;
     function MaxDataFileSize: Cardinal;
+    function GetFileName: string;
+  protected
+    { Protected declarations }
+    procedure LoadLanguage; override;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -45,12 +55,15 @@ type
     procedure Execute; override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Unload; override;
+    function ValidateStep(Silent: Boolean): Boolean; override;
+    property ImageFileName: string read GetFileName;
   end;
 
 implementation
 
 uses
   UnitPasswordForm,
+  UnitCryptImageForm,
   uFrmSteganographyLanding;
 
 {$R *.dfm}
@@ -82,25 +95,10 @@ begin
   end;
 end;
 
-constructor TFrmCreatePNGSteno.Create(AOwner: TComponent);
-begin
-  inherited;
-  FBitmapImage := nil;
-end;
-
-procedure TFrmCreatePNGSteno.Execute;
+procedure TFrmCreatePNGSteno.BtnChooseFileClick(Sender: TObject);
 var
-  Size: Integer;
-  Bitmap : TBitmap;
-  N : Integer;
-  Options : TOpenOptions;
-  S: string;
   DialogFileSize: Integer;
-  PNG: TPngImage;
-  Opt: TCryptImageOptions;
-  SavePictureDialog: DBSavePictureDialog;
-  FileName: string;
-  InfoStream : TMemoryStream;
+  Options : TOpenOptions;
 begin
   inherited;
   DialogFileSize := MaxDataFileSize;
@@ -112,86 +110,116 @@ begin
   OpenDialog1.Options := Options;
   OpenDialog1.Filter := Format(L('All files (Size < %s)|*?*'), [SizeInText(DialogFileSize)]);
   if OpenDialog1.Execute then
-  begin
-    FileName := OpenDialog1.FileName;
-    Size := GetFileSizeByName(FileName);
-    //Memo1.Text := FileName;
-    //Label5.Caption := Format(L('File size = %s'), [SizeInText(Size)]);
-    //S := ExtractFileName(PictureFileName);
+    EdDataFileName.Text := OpenDialog1.FileName;
+  Changed;
+end;
 
-    SavePictureDialog := DBSavePictureDialog.Create;
-    try
-      SavePictureDialog.Filter := L('PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp');
-      SavePictureDialog.FilterIndex := 1;
-      //S := ExtractFilePath(PictureFileName) + GetFileNameWithoutExt(S) + '.png';
+constructor TFrmCreatePNGSteno.Create(AOwner: TComponent);
+begin
+  inherited;
+  FBitmapImage := nil;
+  FImagePassword := '';
+end;
 
-      SavePictureDialog.SetFileName(S);
-      if SavePictureDialog.Execute then
+procedure TFrmCreatePNGSteno.Execute;
+var
+  Bitmap : TBitmap;
+  N : Integer;
+  PNG: TPngImage;
+  Opt: TCryptImageOptions;
+  SavePictureDialog: DBSavePictureDialog;
+  FileName: string;
+  InfoStream : TMemoryStream;
+begin
+  inherited;
+
+  FileName := EdDataFileName.Text;
+
+  SavePictureDialog := DBSavePictureDialog.Create;
+  try
+    SavePictureDialog.Filter := TFileAssociations.Instance.GetFilter('.bmp|.png', True, False);
+    SavePictureDialog.FilterIndex := 1;
+
+    SavePictureDialog.SetFileName(ChangeFileExt(ImageFileName, '.png'));
+    if SavePictureDialog.Execute then
+    begin
+      if SavePictureDialog.GetFilterIndex = 0 then
       begin
-        if SavePictureDialog.GetFilterIndex = 0 then
-        begin
-          if GetExt(SavePictureDialog.FileName) <> 'BMP' then
-            SavePictureDialog.SetFileName(SavePictureDialog.FileName + '.bmp');
-        end;
-        if SavePictureDialog.GetFilterIndex = 1 then
-        begin
-          if GetExt(SavePictureDialog.FileName) <> 'PNG' then
-            SavePictureDialog.SetFileName(SavePictureDialog.FileName + '.png');
-        end;
-        {Opt := GetPassForCryptImageFile(FileName);
-        if Opt.Password = '' then
-          MessageBoxDB(Handle, L('Information in the file will not be encrypted!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+        if GetExt(SavePictureDialog.FileName) <> 'BMP' then
+          SavePictureDialog.SetFileName(SavePictureDialog.FileName + '.bmp');
+      end;
+      if SavePictureDialog.GetFilterIndex = 1 then
+      begin
+        if GetExt(SavePictureDialog.FileName) <> 'PNG' then
+          SavePictureDialog.SetFileName(SavePictureDialog.FileName + '.png');
+      end;
+      Opt := GetPassForCryptImageFile(FileName);
+      if Opt.Password = '' then
+        MessageBoxDB(Handle, L('Information in the file will not be encrypted!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
 
-        InfoStream := TMemoryStream.Create;
+      InfoStream := TMemoryStream.Create;
+      try
+        SaveFileToCryptedStream(FileName, Opt.Password, InfoStream, False);
+        N := GetMaxPixelsInSquare(FileName, FBitmapImage);
+        if N < 0 then
+        begin
+          MessageBoxDB(Handle, L('File is too large!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+          Exit;
+        end;
+        Bitmap := TBitmap.Create;
         try
-          SaveFileToCryptedStream(FileName, Opt.Password, InfoStream, False);
-          N := GetMaxPixelsInSquare(FileName, ImPreview.Picture.Graphic);
-          if N < 0 then
-          begin
-            MessageBoxDB(Handle, L('File is too large!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+          if not SaveInfoToBmpFile(FBitmapImage, Bitmap, InfoStream, N) then
             Exit;
-          end;
-          Bitmap := TBitmap.Create;
-          try
-            if not SaveInfoToBmpFile(ImPreview.Picture.Graphic, Bitmap, InfoStream, N) then
-              Exit;
 
-            if SavePictureDialog.GetFilterIndex = 0 then
-            begin
-              Bitmap.SaveToFile(SavePictureDialog.FileName);
-              if ImagePassword <> '' then
-                CryptGraphicFileV2(SavePictureDialog.FileName, ImagePassword, CRYPT_OPTIONS_NORMAL);
-              ImageSaved := True;
-            end else
-            begin
-              PNG := TPngImage.Create;
-              try
-                PNG.Assign(Bitmap);
-                PNG.SaveToFile(SavePictureDialog.FileName);
-                if ImagePassword <> '' then
-                  CryptGraphicFileV2(SavePictureDialog.FileName, ImagePassword, CRYPT_OPTIONS_NORMAL);
-                ImageSaved := True;
-              finally
-                F(PNG);
-              end;
+          if SavePictureDialog.GetFilterIndex = 0 then
+          begin
+            Bitmap.SaveToFile(SavePictureDialog.FileName);
+            if FImagePassword <> '' then
+              CryptGraphicFileV2(SavePictureDialog.FileName, FImagePassword, CRYPT_OPTIONS_NORMAL);
+            IsStepComplete := True;
+            Changed;
+          end else
+          begin
+            PNG := TPngImage.Create;
+            try
+              PNG.Assign(Bitmap);
+              PNG.SaveToFile(SavePictureDialog.FileName);
+              if FImagePassword <> '' then
+                CryptGraphicFileV2(SavePictureDialog.FileName, FImagePassword, CRYPT_OPTIONS_NORMAL);
+              IsStepComplete := True;
+              Changed;
+            finally
+              F(PNG);
             end;
-          finally
-            F(Bitmap);
           end;
         finally
-          F(InfoStream);
+          F(Bitmap);
         end;
-        }
+      finally
+        F(InfoStream);
       end;
-    finally
-      F(SavePictureDialog);
     end;
+  finally
+    F(SavePictureDialog);
   end;
+end;
+
+function TFrmCreatePNGSteno.GetFileName: string;
+begin
+  Result := TFrmSteganographyLanding(Manager.GetStepByType(TFrmSteganographyLanding)).ImageFileName;
 end;
 
 function TFrmCreatePNGSteno.IsFinal: Boolean;
 begin
   Result := True;
+end;
+
+procedure TFrmCreatePNGSteno.LoadLanguage;
+begin
+  inherited;
+  CbFilter.Items[0] := L('Max size (worse quality, big noise)');
+  CbFilter.Items[1] := L('Standard size (almost imperceptibly)');
+  CbFilter.Items[2] := L('Best size (imperceptibly)');
 end;
 
 procedure TFrmCreatePNGSteno.OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
@@ -202,7 +230,7 @@ var
   SHigh, SLow: Cardinal;
   IDL: PItemIDList;
 begin
-  Include := True; // На всяк пожарный
+  Include := True; // Will not work :(
   Ofn.Psf.GetDisplayNameOf(Ofn.Pidl, SHGDN_FORPARSING, Sr);
   case Sr.UType of
     STRRET_CSTR:
@@ -215,21 +243,36 @@ begin
   IDL := Ofn.Pidl;
   if (FileExists(FileName, SHigh, SLow) = 0) and ((SHigh > 0) or (SLow > MaxDataFileSize)) then
   begin
-    Include := False; // На всяк пожарный
+    Include := False; // Will not work :(
     try
-      // IDL^.mkid.cb:=0; //приводит к утечкам
       IDL^.Mkid.AbID[0] := 0;
-    except // На всяк пожарный - а то вдруг и вправду привелегий не будет
+    except
     end;
+  end;
+end;
+
+procedure TFrmCreatePNGSteno.ImImageFileContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  Info: TDBPopupMenuInfo;
+  Rec: TDBPopupMenuInfoRecord;
+begin
+  Info := TDBPopupMenuInfo.Create;
+  try
+    Rec := TDBPopupMenuInfoRecord.CreateFromFile(ImageFileName);
+    Info.Add(Rec);
+    Info.AttrExists := False;
+    TDBPopupMenu.Instance.Execute(Manager.Owner, ImImageFile.ClientToScreen(MousePos).X, ImImageFile.ClientToScreen(MousePos).Y, Info);
+  finally
+    F(Info);
   end;
 end;
 
 procedure TFrmCreatePNGSteno.Init(Manager: TWizardManagerBase;
   FirstInitialization: Boolean);
 var
-  B: TBitmap;
-  Password,
-  FileName: string;
+  PreviewImage, B32: TBitmap;
+  W, H: Integer;
   Graphic: TGraphic;
   GraphicClass: TGraphicClass;
 begin
@@ -237,45 +280,79 @@ begin
 
   F(FBitmapImage);
   FBitmapImage := TBitmap.Create;
-  FileName := TFrmSteganographyLanding(Manager.GetStepByType(TFrmSteganographyLanding)).ImageFileName;
 
-  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ImageFileName));
   if GraphicClass = nil then
     Exit;
 
   Graphic := nil;
   try
-    if ValidCryptGraphicFile(FileName) then
+    if ValidCryptGraphicFile(ImageFileName) then
     begin
-      Password := DBkernel.FindPasswordForCryptImageFile(FileName);
-      if Password = '' then
-        Password := GetImagePasswordFromUser(FileName);
+      FImagePassword := DBkernel.FindPasswordForCryptImageFile(ImageFileName);
+      if FImagePassword = '' then
+        FImagePassword := GetImagePasswordFromUser(ImageFileName);
 
-      if Password <> '' then
+      if FImagePassword <> '' then
       begin
-        Graphic := DeCryptGraphicFile(FileName, Password);
+        Graphic := DeCryptGraphicFile(ImageFileName, FImagePassword);
       end else
       begin
-        MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [ImageFileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         Exit;
       end;
     end else
     begin
       Graphic := GraphicClass.Create;
-      Graphic.LoadFromFile(FileName);
+      Graphic.LoadFromFile(ImageFileName);
     end;
 
-    B.Assign(Graphic);
+    JPEGScale(Graphic, Screen.Width, Screen.Height);
+    FBitmapImage.Assign(Graphic);
+    F(Graphic);
+    FBitmapImage.PixelFormat := pf24bit;
+
+    PreviewImage := TBitmap.Create;
+    try
+      W := FBitmapImage.Width;
+      H := FBitmapImage.Height;
+      ProportionalSize(146, 146, W, H);
+      DoResize(W, H, FBitmapImage, PreviewImage);
+      B32 := TBitmap.Create;
+      try
+        DrawShadowToImage(B32, PreviewImage);
+        LoadBMPImage32bit(B32, PreviewImage, Color);
+        ImImageFile.Picture.Graphic := PreviewImage;
+      finally
+        F(B32);
+      end;
+    finally
+      F(PreviewImage);
+    end;
 
   finally
     F(Graphic);
   end;
+
+  MaxFileSize := MaxSizeInfoInGraphic(FBitmapImage, 2);
+  NormalFileSize := MaxSizeInfoInGraphic(FBitmapImage, 5);
+  GoodFileSize := MaxSizeInfoInGraphic(FBitmapImage, 8);
 end;
 
 procedure TFrmCreatePNGSteno.Unload;
 begin
   inherited;
   F(FBitmapImage);
+end;
+
+function TFrmCreatePNGSteno.ValidateStep(Silent: Boolean): Boolean;
+begin
+  Result := EdDataFileName.Text <> '';
+  if CbEncryptdata.Checked then
+  begin
+    Result := Result and (EdPassword.Text = EdPasswordConfirm.Text) and
+      (EdPassword.Text <> '');
+  end;
 end;
 
 function TFrmCreatePNGSteno.MaxDataFileSize: Cardinal;

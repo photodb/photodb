@@ -132,6 +132,7 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
     Top = 32
   end
   object DragImageList: TImageList
+    ColorDepth = cd32Bit
     BlendColor = clBlack
     BkColor = clBlack
     Left = 128

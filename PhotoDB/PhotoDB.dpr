@@ -98,7 +98,6 @@ uses
   UnitImportingImagesForm in 'UnitImportingImagesForm.pas' {FormImportingImages},
   UnitConvertDBForm in 'UnitConvertDBForm.pas' {FormConvertingDB},
   UnitBigImagesSize in 'UnitBigImagesSize.pas' {BigImagesSizeForm},
-  UnitStenoGraphia in 'UnitStenoGraphia.pas' {FormSteno},
   Loadingresults in 'Threads\Loadingresults.pas',
   UnitCleanUpThread in 'Threads\UnitCleanUpThread.pas',
   UnitLoadFilesToPanel in 'Threads\UnitLoadFilesToPanel.pas',

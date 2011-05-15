@@ -3,7 +3,7 @@ object FormSteganography: TFormSteganography
   Top = 0
   Caption = 'Steganography'
   ClientHeight = 354
-  ClientWidth = 536
+  ClientWidth = 571
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,7 +15,7 @@ object FormSteganography: TFormSteganography
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    536
+    571
     354)
   PixelsPerInch = 96
   TextHeight = 13
@@ -570,13 +570,14 @@ object FormSteganography: TFormSteganography
   object Bevel1: TBevel
     Left = 8
     Top = 313
-    Width = 520
+    Width = 555
     Height = 1
     Anchors = [akLeft, akRight, akBottom]
     Shape = bsTopLine
+    ExplicitWidth = 520
   end
   object BtnNext: TButton
-    Left = 451
+    Left = 486
     Top = 320
     Width = 77
     Height = 25
@@ -584,9 +585,10 @@ object FormSteganography: TFormSteganography
     Caption = 'BtnNext'
     TabOrder = 0
     OnClick = BtnNextClick
+    ExplicitLeft = 451
   end
   object BtnCancel: TButton
-    Left = 289
+    Left = 324
     Top = 320
     Width = 77
     Height = 25
@@ -594,9 +596,10 @@ object FormSteganography: TFormSteganography
     Caption = 'BtnCancel'
     TabOrder = 1
     OnClick = BtnCancelClick
+    ExplicitLeft = 289
   end
   object BtnPrevious: TButton
-    Left = 370
+    Left = 405
     Top = 320
     Width = 77
     Height = 25
@@ -604,9 +607,10 @@ object FormSteganography: TFormSteganography
     Caption = 'Previous'
     TabOrder = 2
     OnClick = BtnPreviousClick
+    ExplicitLeft = 370
   end
   object BtnFinish: TButton
-    Left = 451
+    Left = 486
     Top = 320
     Width = 77
     Height = 25
@@ -614,5 +618,6 @@ object FormSteganography: TFormSteganography
     Caption = 'BtnFinish'
     TabOrder = 3
     OnClick = BtnFinishClick
+    ExplicitLeft = 451
   end
 end

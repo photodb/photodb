@@ -245,9 +245,6 @@
 			<DCCReference Include="UnitBigImagesSize.pas">
 				<Form>BigImagesSizeForm</Form>
 			</DCCReference>
-			<DCCReference Include="UnitStenoGraphia.pas">
-				<Form>FormSteno</Form>
-			</DCCReference>
 			<DCCReference Include="Threads\Loadingresults.pas"/>
 			<DCCReference Include="Threads\UnitCleanUpThread.pas"/>
 			<DCCReference Include="Threads\UnitLoadFilesToPanel.pas"/>

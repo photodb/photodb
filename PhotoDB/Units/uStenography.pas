@@ -350,7 +350,6 @@ function CreateJPEGSteno(SourceFileName, DestFileName: string; Source: TJpegImag
 var
   DS: TFileStream;
 begin
-  Result := False;
   DS := TFileStream.Create(SourceFileName, fmCreate);
   try
     Source.SaveToStream(DS);

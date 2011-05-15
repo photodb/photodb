@@ -90,7 +90,7 @@ begin
   begin
     if RbHideDataInImage.Checked then
       Manager.AddStep(TFrmCreatePNGSteno);
-    if RbHideDataInImage.Checked then
+    if RbHideDataInJPEGFile.Checked then
       Manager.AddStep(TFrmCreateJPEGSteno);
   end;
 end;

@@ -1,6 +1,7 @@
 inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
   Width = 447
   Height = 304
+  Anchors = [akLeft, akTop, akRight]
   Color = clWhite
   ParentBackground = False
   ParentColor = False
@@ -8,30 +9,32 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
   ExplicitHeight = 304
   object LbImageSize: TLabel
     Left = 3
-    Top = 186
+    Top = 194
     Width = 110
     Height = 13
     Caption = 'ImageSize: 100x100px'
   end
   object LbJpegFileSize: TLabel
     Left = 3
-    Top = 167
+    Top = 175
     Width = 71
     Height = 13
     Caption = 'FileSize: 100kb'
   end
-  object ImJpegFile: TImage
+  object ImImageFile: TImage
     Left = 0
     Top = 19
     Width = 150
-    Height = 142
+    Height = 150
+    Center = True
+    OnContextPopup = ImImageFileContextPopup
   end
-  object LbJpegFileInfo: TLabel
+  object LbImageFileInfo: TLabel
     Left = 0
     Top = 3
-    Width = 43
+    Width = 50
     Height = 13
-    Caption = 'JpegFile:'
+    Caption = 'ImageFile:'
   end
   object LbSelectFile: TLabel
     Left = 3
@@ -59,6 +62,7 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     Top = 3
     Width = 281
     Height = 228
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Options:'
     TabOrder = 0
     DesignSize = (
@@ -126,9 +130,10 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     object CbFilter: TComboBox
       Left = 12
       Top = 39
-      Width = 260
+      Width = 262
       Height = 21
       Style = csDropDownList
+      Anchors = [akLeft, akTop, akRight]
       ItemIndex = 1
       TabOrder = 4
       Text = 'Normal Size (Recomended)'
@@ -136,15 +141,17 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
         'MaxSize (Minimal quality)'
         'Normal Size (Recomended)'
         'Good Size (Best)')
+      ExplicitWidth = 260
     end
   end
-  object WatermarkedEdit1: TWatermarkedEdit
+  object EdDataFileName: TWatermarkedEdit
     Left = 0
     Top = 237
     Width = 417
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Color = 11206655
+    ReadOnly = True
     TabOrder = 1
     WatermarkText = 'Please select a file'
   end
@@ -153,8 +160,10 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     Top = 237
     Width = 20
     Height = 21
+    Anchors = [akTop, akRight]
     Caption = '...'
     TabOrder = 2
+    OnClick = BtnChooseFileClick
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All Files (*.*)|*?*'
