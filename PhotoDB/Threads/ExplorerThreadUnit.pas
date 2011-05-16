@@ -1884,7 +1884,7 @@ begin
           if ProcessorCount > 1 then
             TExplorerThreadPool.Instance.ExtractBigImage(Self, FFiles[i].FileName, FFiles[i].Rotation, GUIDParam)
           else
-            ExtractBigPreview(CurrentFile, FFiles[i].Rotation, GUIDParam);
+            ExtractBigPreview(FFiles[i].FileName, FFiles[i].Rotation, GUIDParam);
         end;
       end;
 

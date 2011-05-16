@@ -4,17 +4,17 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, uDBForm, StdCtrls, ExtCtrls, uWizards, uMemory, uMemoryEx;
+  Dialogs, uDBForm, StdCtrls, ExtCtrls, uWizards, uMemory, uMemoryEx, pngimage;
 
 type
   TFormSteganography = class(TDBForm)
-    Image2: TImage;
     LbStepInfo: TLabel;
     Bevel1: TBevel;
     BtnNext: TButton;
     BtnCancel: TButton;
     BtnPrevious: TButton;
     BtnFinish: TButton;
+    Image2: TImage;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnFinishClick(Sender: TObject);
     procedure BtnNextClick(Sender: TObject);
@@ -26,6 +26,7 @@ type
     { Private declarations }
     FWizard: TWizardManager;
     procedure StepChanged(Sender: TObject);
+    procedure LoadLanguage;
   protected
     { Protected declarations }
     function GetFormID : string; override;
@@ -86,8 +87,15 @@ begin
 end;
 
 procedure TFormSteganography.ExtractData(InitialFileName: string);
+var
+  LandingFrame: TFrmSteganographyLanding;
 begin
-  ShowModal;
+  LandingFrame := (FWizard.GetStepByType(TFrmSteganographyLanding)) as TFrmSteganographyLanding;
+  if LandingFrame <> nil then
+  begin
+    if not LandingFrame.LoadInfoFromFile(InitialFileName) then
+      ShowModal;
+  end;
 end;
 
 procedure TFormSteganography.FormClose(Sender: TObject;
@@ -102,6 +110,7 @@ begin
   FWizard.OnChange := StepChanged;
   FWizard.AddStep(TFrmSteganographyLanding);
   FWizard.Start(Self, 127, 8);
+  LoadLanguage;
 end;
 
 procedure TFormSteganography.FormDestroy(Sender: TObject);
@@ -121,8 +130,23 @@ begin
   LandingFrame := (FWizard.GetStepByType(TFrmSteganographyLanding)) as TFrmSteganographyLanding;
   if LandingFrame <> nil then
   begin
-    if not LandingFrame.LoadInfoFromFile(InitialFileName) then
-      ShowModal;
+    LandingFrame.ImageFileName := InitialFileName;
+    ShowModal;
+  end;
+end;
+
+procedure TFormSteganography.LoadLanguage;
+begin
+  BeginTranslate;
+  try
+    BtnCancel.Caption := L('Close');
+    BtnPrevious.Caption := L('Previous');
+    BtnNext.Caption := L('Next');
+    BtnFinish.Caption := L('Finish');
+    Caption := L('Data hiding');
+    LbStepInfo.Caption := L('The advantage of steganography, over cryptography alone, is that messages do not attract attention to themselves.');
+  finally
+    EndTranslate;
   end;
 end;
 

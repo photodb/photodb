@@ -385,7 +385,7 @@ begin
           end else
           begin
             CloseSplashWindow;
-            if ID_YES <> MessageBoxDB(0, TA('This program already running, but not responds! Run new instance?'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
+            if ID_YES <> MessageBoxDB(0, TA('This program is running, but isn''t responding! Run new instance?', 'System'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
               DBTerminating := True;
           end;
 

@@ -8,17 +8,17 @@ uses
   uMemory, UnitDBFileDialogs, pngimage, uFileUtils, uConstants, uStenography,
   GraphicCrypt, dolphin_db, UnitDBKernel, uAssociations, uShellIntegration,
   UnitDBCommonGraphics, UnitDBCommon, uGraphicUtils, uDBPopupMenuInfo,
-  UnitDBDeclare, DBCMenu;
+  UnitDBDeclare, DBCMenu, Menus, WebLink, uCryptUtils, uDBUtils;
 
 type
   TFrmCreatePNGSteno = class(TFrameWizardBase)
     LbImageSize: TLabel;
-    LbJpegFileSize: TLabel;
+    LbImageFileSize: TLabel;
     ImImageFile: TImage;
     LbImageFileInfo: TLabel;
-    Gbptions: TGroupBox;
+    GbOptions: TGroupBox;
     LbPassword: TLabel;
-    Label1: TLabel;
+    LbPasswordConfirm: TLabel;
     CbEncryptdata: TCheckBox;
     EdPassword: TWatermarkedEdit;
     EdPasswordConfirm: TWatermarkedEdit;
@@ -26,16 +26,18 @@ type
     LbSelectFile: TLabel;
     EdDataFileName: TWatermarkedEdit;
     LbFileSize: TLabel;
-    LbResultImageSize: TLabel;
     BtnChooseFile: TButton;
     CbFilter: TComboBox;
-    Label2: TLabel;
+    LbFilter: TLabel;
     OpenDialog1: TOpenDialog;
+    WblMethod: TWebLink;
+    PmCryptMethod: TPopupMenu;
     procedure OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
       var Include: Boolean);
     procedure ImImageFileContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure BtnChooseFileClick(Sender: TObject);
+    procedure CbEncryptdataClick(Sender: TObject);
   private
     { Private declarations }
     MaxFileSize: Integer;
@@ -43,8 +45,10 @@ type
     GoodFileSize: Integer;
     FBitmapImage: TBitmap;
     FImagePassword: string;
+    FMethodChanger: TPasswordMethodChanger;
     function MaxDataFileSize: Cardinal;
     function GetFileName: string;
+    procedure CountResultFileSize;
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
@@ -111,7 +115,27 @@ begin
   OpenDialog1.Filter := Format(L('All files (Size < %s)|*?*'), [SizeInText(DialogFileSize)]);
   if OpenDialog1.Execute then
     EdDataFileName.Text := OpenDialog1.FileName;
+
+  CountResultFileSize;
   Changed;
+end;
+
+procedure TFrmCreatePNGSteno.CbEncryptdataClick(Sender: TObject);
+begin
+  EdPassword.Enabled := CbEncryptdata.Checked;
+  EdPasswordConfirm.Enabled := CbEncryptdata.Checked;
+  WblMethod.Enabled := CbEncryptdata.Checked;
+end;
+
+procedure TFrmCreatePNGSteno.CountResultFileSize;
+var
+  FileSize: Int64;
+begin
+  FileSize := 0;
+  if EdDataFileName.Text <> '' then
+    FileSize := GetFileSize(EdDataFileName.Text);
+
+  LbFileSize.Caption := Format(L('File size: %s'), [SizeInText(FileSize)]);
 end;
 
 constructor TFrmCreatePNGSteno.Create(AOwner: TComponent);
@@ -126,7 +150,6 @@ var
   Bitmap : TBitmap;
   N : Integer;
   PNG: TPngImage;
-  Opt: TCryptImageOptions;
   SavePictureDialog: DBSavePictureDialog;
   FileName: string;
   InfoStream : TMemoryStream;
@@ -153,13 +176,17 @@ begin
         if GetExt(SavePictureDialog.FileName) <> 'PNG' then
           SavePictureDialog.SetFileName(SavePictureDialog.FileName + '.png');
       end;
-      Opt := GetPassForCryptImageFile(FileName);
-      if Opt.Password = '' then
+
+      if not CbEncryptdata.Checked then
         MessageBoxDB(Handle, L('Information in the file will not be encrypted!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
 
       InfoStream := TMemoryStream.Create;
       try
-        SaveFileToCryptedStream(FileName, Opt.Password, InfoStream, False);
+        if CbEncryptdata.Checked then
+          SaveFileToCryptedStream(FileName, EdPassword.Text, InfoStream, False)
+        else
+          SaveFileToCryptedStream(FileName, '', InfoStream, False);
+
         N := GetMaxPixelsInSquare(FileName, FBitmapImage);
         if N < 0 then
         begin
@@ -220,6 +247,22 @@ begin
   CbFilter.Items[0] := L('Max size (worse quality, big noise)');
   CbFilter.Items[1] := L('Standard size (almost imperceptibly)');
   CbFilter.Items[2] := L('Best size (imperceptibly)');
+
+  LbImageFileInfo.Caption := L('Original image preview') + ':';
+  GbOptions.Caption := L('Options');
+  LbFilter.Caption := L('Filter') + ':';
+  CbIncludeCRC.Caption := L('Add checksum (CRC)');
+  CbEncryptdata.Caption := L('Encrypt data');
+  LbPassword.Caption := L('Password') + ':';
+  EdPassword.WatermarkText := L('Password');
+  LbPasswordConfirm.Caption := L('Password confirm') + ':';
+  EdPasswordConfirm.WatermarkText := L('Password confirm');
+
+  LbSelectFile.Caption := L('File to hide') + ':';
+  EdDataFileName.WatermarkText := L('Please select a file');
+
+  CountResultFileSize;
+  CbFilter.ItemIndex := 1;
 end;
 
 procedure TFrmCreatePNGSteno.OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
@@ -260,6 +303,8 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     Rec := TDBPopupMenuInfoRecord.CreateFromFile(ImageFileName);
+    uDBUtils.GetInfoByFileNameA(ImageFileName, False, Rec);
+    Rec.Selected := True;
     Info.Add(Rec);
     Info.AttrExists := False;
     TDBPopupMenu.Instance.Execute(Manager.Owner, ImImageFile.ClientToScreen(MousePos).X, ImImageFile.ClientToScreen(MousePos).Y, Info);
@@ -275,8 +320,22 @@ var
   W, H: Integer;
   Graphic: TGraphic;
   GraphicClass: TGraphicClass;
+  FPassIcon: HIcon;
 begin
   inherited;
+
+  if FirstInitialization then
+  begin
+    FMethodChanger := TPasswordMethodChanger.Create(WblMethod, PmCryptMethod);
+    FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
+    try
+      WblMethod.LoadFromHIcon(FPassIcon);
+    finally
+      DestroyIcon(FPassIcon);
+    end;
+  end;
+
+  LbImageFileSize.Caption := Format(L('File size: %s'), [SizeInText(GetFileSize(ImageFileName))]);
 
   F(FBitmapImage);
   FBitmapImage := TBitmap.Create;
@@ -299,6 +358,7 @@ begin
       end else
       begin
         MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [ImageFileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        Manager.PrevStep;
         Exit;
       end;
     end else
@@ -307,6 +367,7 @@ begin
       Graphic.LoadFromFile(ImageFileName);
     end;
 
+    LbImageSize.Caption := Format(L('Image size: %dx%d px.'), [Graphic.Width, Graphic.Height]);
     JPEGScale(Graphic, Screen.Width, Screen.Height);
     FBitmapImage.Assign(Graphic);
     F(Graphic);
@@ -343,6 +404,7 @@ procedure TFrmCreatePNGSteno.Unload;
 begin
   inherited;
   F(FBitmapImage);
+  F(FMethodChanger);
 end;
 
 function TFrmCreatePNGSteno.ValidateStep(Silent: Boolean): Boolean;

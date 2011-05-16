@@ -155,11 +155,13 @@ begin
   CryptFileName := False;
   Password := '';
   LoadLanguage;
-  FillChiperList;
 
   FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
-  WblMethod.LoadFromHIcon(FPassIcon);
-  DestroyIcon(FPassIcon);
+  try
+    WblMethod.LoadFromHIcon(FPassIcon);
+  finally
+    DestroyIcon(FPassIcon);
+  end;
 end;
 
 procedure TCryptImageForm.BtOkClick(Sender: TObject);

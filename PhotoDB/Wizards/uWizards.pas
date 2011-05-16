@@ -31,7 +31,7 @@ type
     constructor Create(Owner: TDBForm); override;
     destructor Destroy; override;
     procedure NextStep; override;
-    procedure PrevStep;
+    procedure PrevStep; override;
     procedure UpdateCurrentStep;
     procedure AddStep(Step: TFrameWizardBaseClass); override;
     function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; override;

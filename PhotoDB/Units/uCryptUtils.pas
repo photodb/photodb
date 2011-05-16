@@ -7,21 +7,66 @@ uses
   uActivationUtils, uSettings, uMemory, uDBForm, WebLink;
 
 type
-  TPasswordSettingsDBForm = class(TDBForm)
+  TPasswordMethodChanger = class(TObject)
   private
-    IsChiperSelected: Boolean;
-    SelectedChiper: Integer;
-  public
-    function GetPasswordSettingsPopupMenu: TPopupMenu; virtual; abstract;
-    function GetPaswordLink: TWebLink; virtual; abstract;
+    FIsChiperSelected: Boolean;
+    FSelectedChiper: Integer;
+    FWebLink: TWebLink;
+    FPopupMenu: TPopupMenu;
     procedure FillChiperList;
     procedure OnChiperSelected(Sender: TObject);
     procedure WblMethodClick(Sender: TObject);
+  public
+    constructor Create(WebLink: TWebLink; PopupMenu: TPopupMenu);
+  end;
+
+  TPasswordSettingsDBForm = class(TDBForm)
+  private
+    FMethodChanger: TPasswordMethodChanger;
+  public
+    constructor Create(AOwner : TComponent); override;
+    destructor Destroy; override;
+    function GetPasswordSettingsPopupMenu: TPopupMenu; virtual; abstract;
+    function GetPaswordLink: TWebLink; virtual; abstract;
   end;
 
 implementation
 
-procedure TPasswordSettingsDBForm.FillChiperList;
+constructor TPasswordSettingsDBForm.Create(AOwner: TComponent);
+begin
+  inherited;
+  FMethodChanger := TPasswordMethodChanger.Create(GetPaswordLink, GetPasswordSettingsPopupMenu);
+end;
+
+destructor TPasswordSettingsDBForm.Destroy;
+begin
+  F(FMethodChanger);
+  inherited;
+end;
+
+{procedure TPasswordSettingsDBForm.FillChiperList;
+begin
+end;
+
+procedure TPasswordSettingsDBForm.OnChiperSelected(Sender: TObject);
+begin
+end;
+
+procedure TPasswordSettingsDBForm.WblMethodClick(Sender: TObject);
+begin
+end;}
+
+{ TPasswordMethodChanger }
+
+constructor TPasswordMethodChanger.Create(WebLink: TWebLink;
+  PopupMenu: TPopupMenu);
+begin
+  FWebLink := WebLink;
+  FPopupMenu := PopupMenu;
+  FillChiperList;
+end;
+
+procedure TPasswordMethodChanger.FillChiperList;
 
   function GetChipperName(Chiper : TDECCipher) : string;
   var
@@ -37,11 +82,11 @@ procedure TPasswordSettingsDBForm.FillChiperList;
     Chiper: TDECCipher;
     ChiperLength: Integer;
     ChiperAvaliable: Boolean;
-    SettingsForm: TPasswordSettingsDBForm;
+    Owner: TPasswordMethodChanger;
   begin
     Result := False;
-    SettingsForm := TPasswordSettingsDBForm(Data);
-    MenuItem := TMenuItem.Create(SettingsForm.GetPasswordSettingsPopupMenu);
+    Owner := TPasswordMethodChanger(Data);
+    MenuItem := TMenuItem.Create(Owner.FPopupMenu);
     if ClassType.InheritsFrom(TDECCipher) then
     begin
       Chiper := CipherByIdentity(ClassType.Identity).Create;
@@ -52,49 +97,49 @@ procedure TPasswordSettingsDBForm.FillChiperList;
         begin
           MenuItem.Caption := GetChipperName(Chiper);
           MenuItem.Tag := Integer(Chiper.Identity);
-          MenuItem.OnClick := SettingsForm.OnChiperSelected;
+          MenuItem.OnClick := Owner.OnChiperSelected;
           if not ChiperAvaliable then
             MenuItem.Enabled := False;
 
-          SettingsForm.GetPasswordSettingsPopupMenu.Items.Add(MenuItem);
+          Owner.FPopupMenu.Items.Add(MenuItem);
         end;
-        if (ChiperAvaliable and (not SettingsForm.IsChiperSelected or (Integer(ClassType.Identity) = SettingsForm.SelectedChiper))) then
+        if (ChiperAvaliable and (not Owner.FIsChiperSelected or (Integer(ClassType.Identity) = Owner.FSelectedChiper))) then
         begin
           MenuItem.Click;
-          SettingsForm.IsChiperSelected := True;
+          Owner.FIsChiperSelected := True;
         end;
       finally
         F(Chiper);
       end;
-
     end;
   end;
+
 begin
-  GetPaswordLink.PopupMenu := GetPasswordSettingsPopupMenu;
-  GetPaswordLink.OnClick := WblMethodClick;
-  IsChiperSelected := False;
+  FWebLink.PopupMenu := FPopupMenu;
+  FWebLink.OnClick := WblMethodClick;
+  FIsChiperSelected := False;
   StrongCryptInit;
-  SelectedChiper := Settings.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity));
+  FSelectedChiper := Settings.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity));
 
   DECEnumClasses(@DoEnumClasses, Self);
 end;
 
-procedure TPasswordSettingsDBForm.OnChiperSelected(Sender: TObject);
+procedure TPasswordMethodChanger.OnChiperSelected(Sender: TObject);
 begin
   TMenuItem(Sender).Default := True;
-  GetPaswordLink.Text := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
-  GetPaswordLink.Tag := TMenuItem(Sender).Tag;
+  FWebLink.Text := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+  FWebLink.Tag := TMenuItem(Sender).Tag;
 
   Settings.WriteInteger('Options', 'DefaultCryptClass', TMenuItem(Sender).Tag);
   SetDefaultCipherClass(CipherByIdentity(TMenuItem(Sender).Tag));
 end;
 
-procedure TPasswordSettingsDBForm.WblMethodClick(Sender: TObject);
+procedure TPasswordMethodChanger.WblMethodClick(Sender: TObject);
 var
   P : TPoint;
 begin
   GetCursorPos(P);
-  GetPasswordSettingsPopupMenu.Popup(P.X, P.Y);
+  FPopupMenu.Popup(P.X, P.Y);
 end;
 
 end.

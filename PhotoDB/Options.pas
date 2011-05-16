@@ -285,7 +285,6 @@ begin
   end;
   if NewTab = 4 then
   begin
-    FillChiperList;
     CbAutoSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
     CbAutoSavePasswordInSettings.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
     SedBackupDays.Value := Settings.ReadInteger('Options', 'BackUpdays', 7);

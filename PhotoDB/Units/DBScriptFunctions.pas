@@ -1003,8 +1003,8 @@ begin
 
  AddScriptFunction(Enviroment,'SetJPEGOptions',F_TYPE_PROCEDURE_NO_PARAMS,@SetJPEGOptions);
 
- AddScriptFunction(Enviroment,'DoDesteno',F_TYPE_PROCEDURE_STRING,@HideDataInImage);
- AddScriptFunction(Enviroment,'DoSteno',F_TYPE_PROCEDURE_STRING,@ExtractDataFromImage);
+ AddScriptFunction(Enviroment,'DoDesteno',F_TYPE_PROCEDURE_STRING,@ExtractDataFromImage);
+ AddScriptFunction(Enviroment,'DoSteno',F_TYPE_PROCEDURE_STRING,@HideDataInImage);
 
  AddScriptFunction(Enviroment,'DoCDExport',F_TYPE_PROCEDURE_NO_PARAMS,@DoCDExport);
  AddScriptFunction(Enviroment,'DoCDMapping',F_TYPE_PROCEDURE_NO_PARAMS,@DoManageCDMapping);

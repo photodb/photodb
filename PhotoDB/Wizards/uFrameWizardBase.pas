@@ -20,6 +20,7 @@ type
   public
     constructor Create(Owner: TDBForm);  virtual;
     procedure NextStep; virtual; abstract;
+    procedure PrevStep; virtual; abstract;
     procedure NotifyChange; virtual; abstract;
     function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; virtual; abstract;
     procedure AddStep(Step: TFrameWizardBaseClass); virtual; abstract;

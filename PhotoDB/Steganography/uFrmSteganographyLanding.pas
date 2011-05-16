@@ -20,13 +20,17 @@ type
   private
     { Private declarations }
     FImageFileName: string;
+  protected
+    { Protected declarations }
+    procedure LoadLanguage; override;
   public
     { Public declarations }
+    procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     function IsFinal: Boolean; override;
     function InitNextStep: Boolean; override;
     procedure Execute; override;
     function LoadInfoFromFile(FileName: String) : Boolean;
-    property ImageFileName: string read FImageFileName;
+    property ImageFileName: string read FImageFileName write FImageFileName;
   end;
 
 implementation
@@ -43,7 +47,7 @@ begin
   inherited;
   OpenPictureDialog := DBOpenPictureDialog.Create;
   try
-    OpenPictureDialog.Filter := TFileAssociations.Instance.GetFilter('PNG|JPEG|BMP', True, True);
+    OpenPictureDialog.Filter := TFileAssociations.Instance.GetFilter('.png|.jpg|.bmp', True, True);
     OpenPictureDialog.FilterIndex := 1;
     if OpenPictureDialog.Execute then
       if LoadInfoFromFile(OpenPictureDialog.FileName) then
@@ -56,6 +60,14 @@ begin
   end;
 end;
 
+procedure TFrmSteganographyLanding.Init(Manager: TWizardManagerBase;
+  FirstInitialization: Boolean);
+begin
+  inherited;
+  if not FirstInitialization then
+    FImageFileName := '';
+end;
+
 function TFrmSteganographyLanding.InitNextStep: Boolean;
 var
   OpenPictureDialog: DBOpenPictureDialog;
@@ -63,26 +75,29 @@ var
 begin
   Result := True;
 
-  FImageFileName := '';
   Filter := '';
-  if RbHideDataInImage.Checked then
-    Filter := TFileAssociations.Instance.FullFilter;
-  if RbHideDataInJPEGFile.Checked then
-    Filter := TFileAssociations.Instance.GetFilter('.jpg', True, True);
-
-  if Filter <> '' then
+  if FImageFileName = '' then
   begin
-    OpenPictureDialog := DBOpenPictureDialog.Create;
-    try
-      OpenPictureDialog.Filter := Filter;
-      OpenPictureDialog.FilterIndex := 1;
-      if OpenPictureDialog.Execute then
-        FImageFileName := OpenPictureDialog.FileName
-      else
-        Result := False;
+    if RbHideDataInImage.Checked then
+      Filter := TFileAssociations.Instance.FullFilter;
+    if RbHideDataInJPEGFile.Checked then
+      Filter := TFileAssociations.Instance.GetFilter('.jpg', True, True);
 
-    finally
-      F(OpenPictureDialog);
+    if Filter <> '' then
+    begin
+      FImageFileName := '';
+      OpenPictureDialog := DBOpenPictureDialog.Create;
+      try
+        OpenPictureDialog.Filter := Filter;
+        OpenPictureDialog.FilterIndex := 1;
+        if OpenPictureDialog.Execute then
+          FImageFileName := OpenPictureDialog.FileName
+        else
+          Result := False;
+
+      finally
+        F(OpenPictureDialog);
+      end;
     end;
   end;
 
@@ -144,15 +159,18 @@ begin
     begin
       try
         PNG := TPngImage(LoadCryptFile(FileName, TPngImage));
-        Bitmap := TBitmap.Create;
-        Bitmap.Assign(PNG);
+        try
+          Bitmap := TBitmap.Create;
+          Bitmap.Assign(PNG);
+        finally
+          F(PNG);
+        end;
       finally
         F(PNG);
       end;
     end else
-    begin
       Bitmap := TBitmap(LoadCryptFile(FileName, TBitmap));
-    end;
+
     Info := TMemoryStream.Create;
     try
       Result := ExtractInfoFromBitmap(Info, Bitmap);
@@ -218,6 +236,17 @@ begin
   finally
     F(Bitmap);
   end;
+end;
+
+procedure TFrmSteganographyLanding.LoadLanguage;
+begin
+  inherited;
+  LbStepInfo.Caption := L('This wizard helps to create images files with hidden information inside them. Please, choose nesessary option:');
+  RbHideDataInImage.Caption := L('Hide information inside image');
+  LbHideDataInImageInfo.Caption := L('Information will be stored in raster graphics, image will be modified!');
+  RbHideDataInJPEGFile.Caption := L('Hide information inside JPEG file');
+  LbHideDataInJPEGFileInfo.Caption := L('Information will be stored in file after JPEG image information');
+  RbExtractDataFromImage.Caption := L('Extract hidden information from image file');
 end;
 
 procedure TFrmSteganographyLanding.RbHideDataInImageClick(Sender: TObject);

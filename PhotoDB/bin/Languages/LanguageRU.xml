@@ -29,7 +29,8 @@
     <translate name="Select language" value="Выбор языка" />
     <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
-  <scope name="System">
+  <scope name="System">    
+	<translate name="This program is running, but isn't responding! Run new instance?" value="Получить фотографии" />
     <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
     <translate name="View with PhotoDB" value="Просмотр с помощью PhotoDB" />
     <translate name="Photo Database {V} helps you to find, protect and organize your photos." value="Photo Database {V} поможет вам в поиске, защите и организации ваших фотографий." />
@@ -750,7 +751,6 @@
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
     <translate name="Size" value="Размер" />
-    <translate name="Close" value="Закрыть" />
     <translate name="%dx%d pixels" value="%dx%d точек" />
   </scope>
   <scope name="ChangeDBPath">
@@ -831,7 +831,6 @@
 	<translate name="Load from file" value="Загрузить из файла" />
 	<translate name="Save to file" value="Сохранить в файл" />
 	<translate name="Clear" value="Очистить" />
-	<translate name="Close" value="Закрыть" />
 	<translate name="Resize" value="Размер" />
 	<translate name="Convert" value="Формат" />
 	<translate name="Export" value="Экспорт" />
@@ -1070,7 +1069,6 @@
 	<translate name="Text" value="Текст" />
 	<translate name="New editor" value="Новый редактор" />
 	<translate name="Actions" value="Действия" />
-	<translate name="Close" value="Закрыть" />
 	<translate name="Select background color" value="Выбрать цвет фона" />
 	<translate name="For an unsaved file, the properties are not available." value="Для несохранённого файла, свойства недоступны." />
 	<translate name="Image was changed, save changes?" value="Изображение было изменено, сохранить изображение?" />
@@ -1266,7 +1264,6 @@
 	<translate name="Actions" value="Действия" />
 	<translate name="Save to file" value="Сохранить в файл" />
 	<translate name="Load from file" value="Загрузить из файла" />
-	<translate name="Close" value="Закрыть" />
 	<translate name="PhotoDB actions file (*.dbact)|*.dbact" value="PhotoDB действия (*.dbact)|*.dbact" />
   </scope>
   <scope name="PrinterProgress">
@@ -1282,7 +1279,6 @@
 	<translate name="Zoom in" value="Увеличить" />
 	<translate name="Full size" value="Полный размер" />
 	<translate name="Fit to window" value="Лучший размер" />
-	<translate name="Close" value="Закрыть" />
 	<translate name="Print" value="Печать" />
 	<translate name="Print photos" value="Печать фотографий" />
 	<translate name="Current format" value="Текущий формат" />
@@ -1317,7 +1313,6 @@
 	<translate name="No files" value="Нет файлов" />
 	<translate name="Stop" value="Остановить" />
 	<translate name="Pause" value="Пауза" />
-	<translate name="Close" value="Закрыть" />
 	<translate name="Progress... (&amp;%%)" value="Прогресс... (&amp;%%)" />
 	<translate name="Stay on top" value="Поверх всех окон" />
 	<translate name="Transparency" value="Прозрачность" />
@@ -1363,28 +1358,40 @@
   </scope>
   <scope name="Steganography">
 	<translate name="Data hiding" value="Скрытие данных"/>
-	<translate name="Max size = %s" value="Максимальный размер = %s"/>
-	<translate name="Normal size = %s" value="Нормальный размер = %s"/>
-	<translate name="Best size = %s" value="Наилучший размер = %s"/>
-	<translate name="File size = %s" value="Размер файла - %s"/>
+	<translate name="File size: %s" value="Размер файла: %s"/>
+	<translate name="Image size: %dx%d px." value="Изображение: %dx%d пк."/>
+	<translate name="Original image preview" value="Предпросмотр"/>
+	<translate name="Options" value="Настройки"/>
+	<translate name="Filter" value="Фильтр"/>
+	<translate name="Add checksum (CRC)" value="Добавить контрольную сумму" />
+	<translate name="Encrypt data" value="Зашифровать данные" />
+	<translate name="Password" value="Пароль" />
+	<translate name="Password confirm" value="Подтверждение пароля" />
 	<translate name="File to hide" value="Файл для скрытия"/>
+	<translate name="Please select a file" value="Пожалуйста выберите файл"/>	
+	<translate name="Previous" value="Назад"/>
+	<translate name="Next" value="Далее"/>
+	<translate name="Finish" value="Финиш"/>
+	<translate name="This wizard helps to create images files with hidden information inside them. Please, choose nesessary option:" value="Этот диалог помогает создавать изображения со скрытой информации в них. Пожалуйста, выберите необходимые опции:"/>
+	<translate name="Hide information inside image" value="Скрыть информацию в изображении"/>
+	<translate name="Hide information inside JPEG file" value="Скрыть информацию в JPEG файле"/>
+	<translate name="Extract hidden information from image file" value="Извлечь скрытую информацию из файла"/>
+	<translate name="Information will be stored in raster graphics, image will be modified!" value="Информация будет храниться в растре изображения, изображение будет модифицировано!"/>
+	<translate name="Information will be stored in file after JPEG image information" value="Информация будет храниться в файле после информации о JPEG изображении"/>
+	<translate name="Result file size: %s" value="Размер результирующго файла: %s"/>
+	<translate name="All files (*.*)|*.*" value="Все файлы (*.*)|*.*"/>	
+	<translate name="All files (Size &lt; %s)|*?*" value="Все файлы (Размер &lt; %s)|*?*"/>	
 	<translate name="File name = &quot;%s&quot;" value="Имя файла = &quot;%s&quot;"/>
-	<translate name="Open image" value="Открыть изображение"/>
-	<translate name="All files (Size &lt; %s)|*?*" value="Все файлы (Размер &lt; %s)|*?*"/>
-	<translate name="Hide file in image" value="Скрыть файл в изображении"/>
 	<translate name="File is too large!" value="Файл слишком большой!"/>
-	<translate name="Extract file" value="Извлечь файл"/>
-	<translate name="Use a filter when selecting a file" value="Использовать фильтр при выборе файла"/>
-	<translate name="Hide file and save image" value="Добавить файл и сохранить"/>
 	<translate name="Max size (worse quality, big noise)" value="Максимальный размер (заметное ухудшение качества)"/>
 	<translate name="Standard size (almost imperceptibly)" value="Нормальный размер (практически незаметно)"/>
 	<translate name="Best size (imperceptibly)" value="Лучший размер (незаметно)"/>
-	<translate name="PNG Images (*.png)|*.png|Bitmaps (*.bmp)|*.bmp" value="PNG изображения (*.png)|*.png|BMP изображения (*.bmp)|*.bmp"/>
 	<translate name="Unable to load image from file: %s" value="Невозможно загрузить изображение из файла: %s"/>
 	<translate name="The image does not contain hidden information, or this format is not supported!" value="Изображение не содержит скрытую информацию или данный формат не поддерживается!"/>
 	<translate name="Information in the file is corrupted! Checksum did not match!" value="Информация повреждена в файле! Контрольная сумма не совпала!"/>
 	<translate name="Information in the file will not be encrypted!" value="Информация в файле не будет зашифрована!"/>
 	<translate name="The image contains hidden information, but this format is not supported (version = %d)!" value="Это изображеие содержит скрытую информацию, но формат не поддерживается (версия = %d)!"/>
+	<translate name="The advantage of steganography, over cryptography alone, is that messages do not attract attention to themselves." value="Преимущество стеганографии над шифрованием является то, что скрытая информация не привлекает к себе лишнего внимания."/>
   </scope>
   <scope name="About">
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
@@ -1701,7 +1708,6 @@
   </scope>
   <scope name="DBCleaning">
 	<translate name="Save" value="Сохранить"/>
-	<translate name="Close" value="Закрыть"/>
 	<translate name="Stop" value="Остановить"/>
 	<translate name="Start" value="Начать"/>
 	<translate name="Cleaning" value="Очистка"/>
@@ -1790,7 +1796,7 @@
 	<translate name="Delete file" value="Удалить файл"/>
 	<translate name="Information from collection" value="Текущая информация по БД"/>
 	<translate name="Do you really want to delete this file?" value="Вы действительно хотите удалить этот файл?"/>
-	<translate name="%dpx." value="%dpx."/>
+	<translate name="%dpx." value="%dпк."/>
 	<translate name="Do you really want to delete this information from the collection?" value="Вы действительно хотите удалить эту информацию из БД?"/>
   </scope>
   <scope name="CMD">
