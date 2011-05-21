@@ -747,6 +747,8 @@
 	<translate name="Decrypt confirmation" value="Подтверждение расшифровки" />
 	<translate name="Do you really want to decrypt this file?" value="Вы действительно хотите расшифровать этот файл?" />
  	<translate name="Delete confirmation" value="Подтверждение удаления" />
+    <translate name="Hide data in image" value="Скрыть данные в изображении" />
+    <translate name="Extract hidden data" value="Извлечь скрытые данные" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -1392,6 +1394,10 @@
 	<translate name="Information in the file will not be encrypted!" value="Информация в файле не будет зашифрована!"/>
 	<translate name="The image contains hidden information, but this format is not supported (version = %d)!" value="Это изображеие содержит скрытую информацию, но формат не поддерживается (версия = %d)!"/>
 	<translate name="The advantage of steganography, over cryptography alone, is that messages do not attract attention to themselves." value="Преимущество стеганографии над шифрованием является то, что скрытая информация не привлекает к себе лишнего внимания."/>
+	<translate name="Use another image" value="Использовать другое изображение"/>
+	<translate name="Load other image" value="Загрузить другое изображение"/>
+	<translate name="Convert image" value="Конвертировать изображение"/>
+	<translate name="Please choose larger image for this action!" value="Пожалуйста, выберите больше изоббражение для этого действия!"/>
   </scope>
   <scope name="About">
 	<translate name="Checking updates..." value="Поиск обновлений..."/>

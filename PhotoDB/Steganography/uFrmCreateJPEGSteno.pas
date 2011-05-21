@@ -7,8 +7,9 @@ uses
   Dialogs, uFrameWizardBase, ExtCtrls, StdCtrls, WatermarkedEdit, Menus,
   WebLink, uDBPopupMenuInfo, UnitDBDeclare, uDBUtils, DBCMenu, uMemory, jpeg,
   uShellIntegration, GraphicCrypt, UnitDBKernel, uConstants, uGraphicUtils,
-  UnitDBCommon, UnitDBCommonGraphics, uCryptUtils, Dolphin_db,
-  UnitDBFileDialogs, uFileUtils;
+  UnitDBCommon, UnitDBCommonGraphics, uCryptUtils, Dolphin_db, uDBBaseTypes,
+  UnitDBFileDialogs, uFileUtils, uAssociations, uStenography, LoadingSign,
+  CCR.Exif;
 
 type
   TFrmCreateJPEGSteno = class(TFrameWizardBase)
@@ -30,33 +31,47 @@ type
     CbIncludeCRC: TCheckBox;
     WblMethod: TWebLink;
     PmCryptMethod: TPopupMenu;
+    CbConvertImage: TCheckBox;
+    WblJpegOptions: TWebLink;
+    LsImage: TLoadingSign;
     procedure ImJpegFileContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure CbEncryptdataClick(Sender: TObject);
     procedure BtnChooseFileClick(Sender: TObject);
+    procedure WblJpegOptionsClick(Sender: TObject);
+    procedure CbConvertImageClick(Sender: TObject);
   private
     { Private declarations }
     FImagePassword: string;
     FImageFileSize: Int64;
     FDataFileSize: Int64;
     FMethodChanger: TPasswordMethodChanger;
+    FBitmapImage: TBitmap;
     function GetFileName: string;
     procedure CountResultFileSize;
+    procedure LoadOtherImageHandler(Sender: TObject);
+    procedure ErrorLoadingImageHandler(FileName: string);
+    procedure SetPreviewLoadingImageHandler(Width, Height: Integer; var Bitmap: TBitmap; Preview: TBitmap; Password: string);
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
   public
     { Public declarations }
+    constructor Create(AOwner: TComponent); override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Unload; override;
     function IsFinal: Boolean; override;
+    function ValidateStep(Silent: Boolean): Boolean; override;
+    procedure Execute; override;
     property ImageFileName: string read GetFileName;
   end;
 
 implementation
 
 uses
+  UnitJPEGOptions,
   UnitPasswordForm,
+  uStenoLoadImageThread,
   uFrmSteganographyLanding;
 
 {$R *.dfm}
@@ -82,6 +97,12 @@ begin
   end;
 end;
 
+procedure TFrmCreateJPEGSteno.CbConvertImageClick(Sender: TObject);
+begin
+  inherited;
+  WblJpegOptions.Enabled := CbConvertImage.Checked;
+end;
+
 procedure TFrmCreateJPEGSteno.CbEncryptdataClick(Sender: TObject);
 begin
   inherited;
@@ -96,6 +117,89 @@ begin
   LbResultImageSize.Caption := Format(L('Result file size: %s'), [SizeInText(FImageFileSize + FDataFileSize)]);
 end;
 
+constructor TFrmCreateJPEGSteno.Create(AOwner: TComponent);
+begin
+  inherited;
+  FBitmapImage := nil;
+end;
+
+procedure TFrmCreateJPEGSteno.ErrorLoadingImageHandler(FileName: string);
+begin
+  Manager.PrevStep;
+end;
+
+procedure TFrmCreateJPEGSteno.Execute;
+var
+  SavePictureDialog: DBSavePictureDialog;
+  J: TJpegImage;
+  EXIFSection: TExifData;
+  MS: TMemoryStream;
+begin
+  inherited;
+  SavePictureDialog := DBSavePictureDialog.Create;
+  try
+    SavePictureDialog.Filter := TFileAssociations.Instance.GetFilter('.jpg', True, False);
+    SavePictureDialog.FilterIndex := 1;
+    SavePictureDialog.SetFileName(ChangeFileExt(ImageFileName, '.jpg'));
+    if SavePictureDialog.Execute then
+    begin
+      if CbConvertImage.Checked then
+      begin
+        J := TJpegImage.Create;
+        try
+          J.Assign(FBitmapImage);
+          SetJPEGOptions('JpegSteganography');
+          SetJPEGGraphicSaveOptions('JpegSteganography', J);
+          J.Compress;
+
+          EXIFSection := TExifData.Create;
+          try
+            EXIFSection.LoadFromGraphic(ImageFileName);
+
+            MS := TMemoryStream.Create;
+            try
+              J.SaveToStream(MS);
+              MS.Seek(0, soFromBeginning);
+
+              if not CbEncryptdata.Checked then
+              begin
+                MessageBoxDB(Handle, L('Information in the file will not be encrypted!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+                CreateJPEGStenoEx(EdDataFileName.Text, SavePictureDialog.FileName, MS, '');
+              end else
+                CreateJPEGStenoEx(EdDataFileName.Text, SavePictureDialog.FileName, MS, EdPassword.Text);
+
+              if not EXIFSection.Empty then
+                EXIFSection.SaveToGraphic(SavePictureDialog.FileName);
+
+              IsStepComplete := True;
+              Changed;
+            finally
+              F(MS);
+            end;
+
+          finally
+            F(EXIFSection);
+          end;
+        finally
+          F(J);
+        end;
+      end else
+      begin
+        if not CbEncryptdata.Checked then
+        begin
+          MessageBoxDB(Handle, L('Information in the file will not be encrypted!'), L('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+          CreateJPEGSteno(EdDataFileName.Text, SavePictureDialog.FileName, ImageFileName, '');
+        end else
+          CreateJPEGSteno(EdDataFileName.Text, SavePictureDialog.FileName, ImageFileName, EdPassword.Text);
+        IsStepComplete := True;
+        Changed;
+      end;
+    end;
+  finally
+    F(SavePictureDialog);
+  end;
+end;
+
 function TFrmCreateJPEGSteno.GetFileName: string;
 begin
   Result := TFrmSteganographyLanding(Manager.GetStepByType(TFrmSteganographyLanding)).ImageFileName;
@@ -106,15 +210,25 @@ procedure TFrmCreateJPEGSteno.ImJpegFileContextPopup(Sender: TObject;
 var
   Info: TDBPopupMenuInfo;
   Rec: TDBPopupMenuInfoRecord;
+  Menus: TArMenuItem;
 begin
   Info := TDBPopupMenuInfo.Create;
   try
     Rec := TDBPopupMenuInfoRecord.CreateFromFile(ImageFileName);
     uDBUtils.GetInfoByFileNameA(ImageFileName, False, Rec);
     Rec.Selected := True;
-    Info.Add(Rec);
+
+    Info.IsPlusMenu := False;
+    Info.IsListItem := False;
     Info.AttrExists := False;
-    TDBPopupMenu.Instance.Execute(Manager.Owner, ImJpegFile.ClientToScreen(MousePos).X, ImJpegFile.ClientToScreen(MousePos).Y, Info);
+    Info.Add(Rec);
+    Setlength(Menus, 1);
+    Menus[0] := TMenuItem.Create(nil);
+    Menus[0].Caption := L('Load other image');
+    Menus[0].ImageIndex := DB_IC_LOADFROMFILE;
+    Menus[0].OnClick := LoadOtherImageHandler;
+    TDBPopupMenu.Instance.ExecutePlus(Manager.Owner, ImJpegFile.ClientToScreen(MousePos).X, ImJpegFile.ClientToScreen(MousePos).Y, Info,
+      Menus);
   finally
     F(Info);
   end;
@@ -123,12 +237,8 @@ end;
 procedure TFrmCreateJPEGSteno.Init(Manager: TWizardManagerBase;
   FirstInitialization: Boolean);
 var
-  JPEG: TJpegImage;
-  B32,
-  FBitmapImage,
-  PreviewImage: TBitmap;
-  W, H: Integer;
   FPassIcon: HIcon;
+  GraphicClass: TGraphicClass;
 begin
   inherited;
 
@@ -148,62 +258,25 @@ begin
   FImageFileSize := GetFileSize(ImageFileName);
   LbJpegFileSize.Caption := Format(L('File size: %s'), [SizeInText(FImageFileSize)]);
 
-  FImagePassword := '';
-  FBitmapImage := TBitmap.Create;
-  try
-    JPEG := nil;
-    try
-      if ValidCryptGraphicFile(ImageFileName) then
-      begin
-        FImagePassword := DBkernel.FindPasswordForCryptImageFile(ImageFileName);
-        if FImagePassword = '' then
-          FImagePassword := GetImagePasswordFromUser(ImageFileName);
+  F(FBitmapImage);
+  if ImJpegFile.Picture.Graphic = nil then
+    LsImage.Show;
+  TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color,
+    ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
 
-        if FImagePassword <> '' then
-        begin
-          JPEG := DeCryptGraphicFile(ImageFileName, FImagePassword) as TJpegImage;
-        end else
-        begin
-          MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [ImageFileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-          Manager.PrevStep;
-          Exit;
-        end;
-      end else
-      begin
-        JPEG := TJpegImage.Create;
-        JPEG.LoadFromFile(ImageFileName);
-      end;
-
-      LbImageSize.Caption := Format(L('Image size: %dx%d px.'), [JPEG.Width, JPEG.Height]);
-      JPEGScale(JPEG, Screen.Width, Screen.Height);
-      FBitmapImage.Assign(JPEG);
-      F(JPEG);
-      FBitmapImage.PixelFormat := pf24bit;
-
-      PreviewImage := TBitmap.Create;
-      try
-        W := FBitmapImage.Width;
-        H := FBitmapImage.Height;
-        ProportionalSize(146, 146, W, H);
-        DoResize(W, H, FBitmapImage, PreviewImage);
-        B32 := TBitmap.Create;
-        try
-          DrawShadowToImage(B32, PreviewImage);
-          LoadBMPImage32bit(B32, PreviewImage, Color);
-          ImJpegFile.Picture.Graphic := PreviewImage;
-        finally
-          F(B32);
-        end;
-      finally
-        F(PreviewImage);
-      end;
-
-    finally
-      F(JPEG);
-    end;
-  finally
-    F(FBitmapImage);
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ImageFileName));
+  if GraphicClass = TJPEGImage then
+  begin
+    CbConvertImage.Checked := False;
+    CbConvertImage.Enabled := True;
+  end else
+  begin
+    CbConvertImage.Checked := True;
+    CbConvertImage.Enabled := False;
   end;
+  CbConvertImageClick(Self);
+  IsBusy := True;
+  Changed;
 end;
 
 function TFrmCreateJPEGSteno.IsFinal: Boolean;
@@ -226,13 +299,70 @@ begin
   LbSelectFile.Caption := L('File to hide') + ':';
   EdDataFileName.WatermarkText := L('Please select a file');
 
+  WblJpegOptions.Text := L('JPEG Options');
+  CbConvertImage.Caption := L('Convert image');
+
   CountResultFileSize;
+end;
+
+procedure TFrmCreateJPEGSteno.LoadOtherImageHandler(Sender: TObject);
+var
+  OpenPictureDialog: DBOpenPictureDialog;
+begin
+   OpenPictureDialog := DBOpenPictureDialog.Create;
+  try
+    OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
+    OpenPictureDialog.FilterIndex := 1;
+    if OpenPictureDialog.Execute then
+    begin
+      TFrmSteganographyLanding(Manager.GetStepByType(TFrmSteganographyLanding)).ImageFileName := OpenPictureDialog.FileName;
+      Init(Manager, False);
+    end;
+
+  finally
+    F(OpenPictureDialog);
+  end;
+end;
+
+procedure TFrmCreateJPEGSteno.SetPreviewLoadingImageHandler(Width,
+  Height: Integer; var Bitmap: TBitmap; Preview: TBitmap; Password: string);
+begin
+  F(FBitmapImage);
+  FBitmapImage := Bitmap;
+  Bitmap := nil;
+
+  ImJpegFile.Picture.Graphic := Preview;
+  LbImageSize.Caption := Format(L('Image size: %dx%d px.'), [Width, Height]);
+  LbImageSize.Show;
+
+  FImagePassword := Password;
+
+  LsImage.Hide;
+  IsBusy := False;
+  Changed;
 end;
 
 procedure TFrmCreateJPEGSteno.Unload;
 begin
   inherited;
   F(FMethodChanger);
+  F(FBitmapImage);
+end;
+
+function TFrmCreateJPEGSteno.ValidateStep(Silent: Boolean): Boolean;
+begin
+  Result := FileExistsSafe(EdDataFileName.Text);
+  if CbEncryptdata.Checked then
+  begin
+    Result := Result and (EdPassword.Text = EdPasswordConfirm.Text) and
+      (EdPassword.Text <> '');
+  end;
+end;
+
+procedure TFrmCreateJPEGSteno.WblJpegOptionsClick(Sender: TObject);
+begin
+  inherited;
+  SetJPEGOptions('JpegSteganography');
 end;
 
 end.

@@ -324,7 +324,8 @@ uses
   uFormSteganography in 'uFormSteganography.pas' {FormSteganography},
   uFrmSteganographyLanding in 'Steganography\uFrmSteganographyLanding.pas' {FrmSteganographyLanding: TFrame},
   uFrmCreatePNGSteno in 'Steganography\uFrmCreatePNGSteno.pas' {FrmCreatePNGSteno: TFrame},
-  uFrmCreateJPEGSteno in 'Steganography\uFrmCreateJPEGSteno.pas' {FrmCreateJPEGSteno: TFrame};
+  uFrmCreateJPEGSteno in 'Steganography\uFrmCreateJPEGSteno.pas' {FrmCreateJPEGSteno: TFrame},
+  uStenoLoadImageThread in 'Threads\uStenoLoadImageThread.pas';
 
 {$R *.res}
 

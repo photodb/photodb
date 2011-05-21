@@ -410,7 +410,7 @@ var
   I: Integer;
   Info: TDBPopupMenuInfo;
   Item: TEasyItem;
-  Menus: TArMenuitem;
+  Menus: TArMenuItem;
   FileNames: TStrings;
 begin
   if CopyFilesSynchCount > 0 then

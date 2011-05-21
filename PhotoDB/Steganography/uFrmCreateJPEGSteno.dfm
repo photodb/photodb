@@ -34,6 +34,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Width = 110
     Height = 13
     Caption = 'ImageSize: 100x100px'
+    Visible = False
   end
   object LbSelectFile: TLabel
     Left = 3
@@ -65,7 +66,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Color = 11206655
     TabOrder = 0
     WatermarkText = 'Please select a file'
-    ExplicitWidth = 417
   end
   object BtnChooseFile: TButton
     Left = 457
@@ -76,7 +76,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Caption = '...'
     TabOrder = 1
     OnClick = BtnChooseFileClick
-    ExplicitLeft = 417
   end
   object GbOptions: TGroupBox
     Left = 168
@@ -86,7 +85,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Options:'
     TabOrder = 2
-    ExplicitWidth = 269
     DesignSize = (
       309
       228)
@@ -113,7 +111,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       Caption = 'Encrypt data'
       TabOrder = 0
       OnClick = CbEncryptdataClick
-      ExplicitWidth = 260
     end
     object EdPassword: TWatermarkedEdit
       Left = 12
@@ -122,9 +119,9 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       Enabled = False
+      PasswordChar = '*'
       TabOrder = 1
       WatermarkText = 'Password'
-      ExplicitWidth = 260
     end
     object EdPasswordConfirm: TWatermarkedEdit
       Left = 12
@@ -133,9 +130,9 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       Enabled = False
+      PasswordChar = '*'
       TabOrder = 2
       WatermarkText = 'Password confirm'
-      ExplicitWidth = 260
     end
     object CbIncludeCRC: TCheckBox
       Left = 12
@@ -147,7 +144,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       Checked = True
       State = cbChecked
       TabOrder = 3
-      ExplicitWidth = 260
     end
     object WblMethod: TWebLink
       Left = 12
@@ -168,9 +164,48 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       UseSpecIconSize = True
       HightliteImage = False
     end
+    object CbConvertImage: TCheckBox
+      Left = 12
+      Top = 183
+      Width = 285
+      Height = 17
+      Caption = 'Convert Image'
+      TabOrder = 5
+      OnClick = CbConvertImageClick
+    end
+    object WblJpegOptions: TWebLink
+      Left = 12
+      Top = 206
+      Width = 83
+      Height = 13
+      Cursor = crHandPoint
+      Enabled = False
+      Text = 'WblJpegOptions'
+      OnClick = WblJpegOptionsClick
+      ImageIndex = 0
+      IconWidth = 0
+      IconHeight = 0
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
+      UseSpecIconSize = True
+      HightliteImage = False
+    end
+  end
+  object LsImage: TLoadingSign
+    Left = 50
+    Top = 65
+    Width = 49
+    Height = 49
+    Active = True
+    FillPercent = 70
+    SignColor = clBlack
+    MaxTransparencity = 255
   end
   object PmCryptMethod: TPopupMenu
-    Left = 280
-    Top = 168
+    Left = 440
+    Top = 152
   end
 end

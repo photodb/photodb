@@ -51,7 +51,6 @@ inherited FrmSteganographyLanding: TFrmSteganographyLanding
     TabOrder = 0
     TabStop = True
     OnClick = RbHideDataInImageClick
-    ExplicitWidth = 429
   end
   object RbHideDataInJPEGFile: TRadioButton
     Left = 3
@@ -62,7 +61,6 @@ inherited FrmSteganographyLanding: TFrmSteganographyLanding
     Caption = 'CbHideDataInJPEGFile'
     TabOrder = 1
     OnClick = RbHideDataInImageClick
-    ExplicitWidth = 429
   end
   object RbExtractDataFromImage: TRadioButton
     Left = 3
@@ -73,6 +71,14 @@ inherited FrmSteganographyLanding: TFrmSteganographyLanding
     Caption = 'RbExtractDataFromImage'
     TabOrder = 2
     OnClick = RbHideDataInImageClick
-    ExplicitWidth = 429
+  end
+  object CbUseAnotherImage: TCheckBox
+    Left = 3
+    Top = 276
+    Width = 469
+    Height = 17
+    Anchors = [akLeft, akTop, akRight]
+    Caption = 'Use another image'
+    TabOrder = 3
   end
 end

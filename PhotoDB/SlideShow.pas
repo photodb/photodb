@@ -114,6 +114,9 @@ type
     TbEncrypt: TToolButton;
     N5: TMenuItem;
     ByEXIF1: TMenuItem;
+    PmSteganography: TPopupMenu;
+    AddHiddenInfo1: TMenuItem;
+    ExtractHiddenInfo1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -195,6 +198,11 @@ type
       Bitmap: TBitmap);
     procedure TbEncryptClick(Sender: TObject);
     procedure ByEXIF1Click(Sender: TObject);
+    procedure PmSteganographyPopup(Sender: TObject);
+    procedure AddHiddenInfo1Click(Sender: TObject);
+    procedure ExtractHiddenInfo1Click(Sender: TObject);
+    procedure TbEncryptMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     WindowsMenuTickCount : Cardinal;
@@ -319,7 +327,8 @@ uses
   ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
-  UnitSlideShowUpdateInfoThread, UnitCryptImageForm;
+  UnitSlideShowUpdateInfoThread, UnitCryptImageForm,
+  uFormSteganography;
 
 {$R *.dfm}
 
@@ -413,8 +422,11 @@ begin
   ImageEditor1.ImageIndex := DB_IC_IMEDITOR;
   Print1.ImageIndex := DB_IC_PRINTER;
   SendTo1.ImageIndex := DB_IC_SEND;
+  PmSteganography.Images := DBKernel.ImageList;
+  AddHiddenInfo1.ImageIndex := DB_IC_STENO;
+  ExtractHiddenInfo1.ImageIndex := DB_IC_DESTENO;
 
-  DBKernel.RegisterChangesID(Self,ChangedDBDataByID);
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   TW.I.Start('LoadLanguage');
   LoadLanguage;
 
@@ -1047,6 +1059,13 @@ begin
   end;
 end;
 
+procedure TViewer.PmSteganographyPopup(Sender: TObject);
+begin
+  AddHiddenInfo1.Caption := L('Hide data in image');
+  ExtractHiddenInfo1.Caption := L('Extract hidden data');
+  ExtractHiddenInfo1.Visible := ExtInMask('|PNG|BMP|JPG|JPEG|', GetExt(Item.FileName));
+end;
+
 procedure TViewer.MTimer1Click(Sender: TObject);
 begin
   if not SlideShowNow then
@@ -1310,6 +1329,7 @@ begin
         InfoItem.FileName := FileName;
         InfoItem.Crypted := ValidCryptGraphicFile(FileName);
         InfoItem.InfoLoaded := True;
+        CurrentInfo.Add(InfoItem);
       end;
     end;
   finally
@@ -1461,6 +1481,7 @@ procedure TViewer.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
   FButtons: array[0..1] of TThumbButton;
+  P, PL: TPoint;
 begin
   if msg.message = FProgressMessage then
   begin
@@ -1486,6 +1507,14 @@ begin
 
   if not Active or SlideShowNow or FullScreenNow then
     Exit;
+
+  if Msg.message = WM_RBUTTONUP then
+  begin
+    GetCursorPos(P);
+    PL := TbEncrypt.ScreenToClient(P);
+    if PtInRect(TbEncrypt.ClientRect, PL) then
+      PmSteganography.Popup(P.X, P.Y);
+  end;
 
   if Msg.message = WM_KEYDOWN then
   begin
@@ -1773,6 +1802,11 @@ begin
   UpdaterDB.AddFile(Item.FileName)
 end;
 
+procedure TViewer.AddHiddenInfo1Click(Sender: TObject);
+begin
+  HideDataInImage(Item.FileName);
+end;
+
 procedure TViewer.AllFolder1Click(Sender: TObject);
 begin
   if UpdaterDB = nil then
@@ -1801,6 +1835,11 @@ begin
     SetPath(ExtractFileDir(Item.FileName));
     Show;
   end;
+end;
+
+procedure TViewer.ExtractHiddenInfo1Click(Sender: TObject);
+begin
+  ExtractDataFromImage(Item.FileName);
 end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -3126,6 +3165,19 @@ begin
       DecryptPhotos(Self, Info);
   finally
     F(Info);
+  end;
+end;
+
+procedure TViewer.TbEncryptMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  P: TPoint;
+begin
+  if Button = mbRight then
+  begin
+    P := Point(X, Y);
+    P := TControl(Sender).ClientToScreen(P);
+    PmSteganography.Popup(P.X, P.Y);
   end;
 end;
 

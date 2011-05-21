@@ -1,9 +1,11 @@
 object FormSteganography: TFormSteganography
   Left = 0
   Top = 0
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
   Caption = 'Steganography'
-  ClientHeight = 354
-  ClientWidth = 611
+  ClientHeight = 364
+  ClientWidth = 621
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,33 +13,36 @@ object FormSteganography: TFormSteganography
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesktopCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    611
-    354)
+    621
+    364)
   PixelsPerInch = 96
   TextHeight = 13
   object LbStepInfo: TLabel
     Left = 8
     Top = 135
     Width = 97
-    Height = 172
+    Height = 182
     Anchors = [akLeft, akTop, akBottom]
     AutoSize = False
     Caption = 
       'The advantage of steganography, over cryptography alone, is that' +
       ' messages do not attract attention to themselves.'
     WordWrap = True
+    ExplicitHeight = 172
   end
   object Bevel1: TBevel
     Left = 8
-    Top = 313
-    Width = 595
+    Top = 323
+    Width = 605
     Height = 1
     Anchors = [akLeft, akRight, akBottom]
     Shape = bsTopLine
+    ExplicitTop = 313
     ExplicitWidth = 520
   end
   object Image2: TImage
@@ -324,47 +329,62 @@ object FormSteganography: TFormSteganography
       454E44AE426082}
   end
   object BtnNext: TButton
-    Left = 526
-    Top = 320
+    Left = 536
+    Top = 330
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnNext'
     TabOrder = 0
     OnClick = BtnNextClick
-    ExplicitLeft = 486
+    ExplicitLeft = 526
+    ExplicitTop = 320
   end
   object BtnCancel: TButton
-    Left = 364
-    Top = 320
+    Left = 374
+    Top = 330
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 1
     OnClick = BtnCancelClick
-    ExplicitLeft = 324
+    ExplicitLeft = 364
+    ExplicitTop = 320
   end
   object BtnPrevious: TButton
-    Left = 445
-    Top = 320
+    Left = 455
+    Top = 330
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Previous'
     TabOrder = 2
     OnClick = BtnPreviousClick
-    ExplicitLeft = 405
+    ExplicitLeft = 445
+    ExplicitTop = 320
   end
   object BtnFinish: TButton
-    Left = 526
-    Top = 320
+    Left = 536
+    Top = 330
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnFinish'
     TabOrder = 3
     OnClick = BtnFinishClick
-    ExplicitLeft = 486
+    ExplicitLeft = 526
+    ExplicitTop = 320
+  end
+  object LsWorking: TLoadingSign
+    Left = 343
+    Top = 330
+    Width = 25
+    Height = 25
+    Visible = False
+    Active = True
+    FillPercent = 50
+    SignColor = clBlack
+    MaxTransparencity = 255
   end
 end

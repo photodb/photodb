@@ -8,7 +8,8 @@ uses
   uMemory, UnitDBFileDialogs, pngimage, uFileUtils, uConstants, uStenography,
   GraphicCrypt, dolphin_db, UnitDBKernel, uAssociations, uShellIntegration,
   UnitDBCommonGraphics, UnitDBCommon, uGraphicUtils, uDBPopupMenuInfo,
-  UnitDBDeclare, DBCMenu, Menus, WebLink, uCryptUtils, uDBUtils;
+  UnitDBDeclare, DBCMenu, Menus, WebLink, uCryptUtils, uDBUtils, LoadingSign,
+  uDBBaseTypes;
 
 type
   TFrmCreatePNGSteno = class(TFrameWizardBase)
@@ -32,6 +33,7 @@ type
     OpenDialog1: TOpenDialog;
     WblMethod: TWebLink;
     PmCryptMethod: TPopupMenu;
+    LsImage: TLoadingSign;
     procedure OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
       var Include: Boolean);
     procedure ImImageFileContextPopup(Sender: TObject; MousePos: TPoint;
@@ -49,6 +51,9 @@ type
     function MaxDataFileSize: Cardinal;
     function GetFileName: string;
     procedure CountResultFileSize;
+    procedure LoadOtherImageHandler(Sender: TObject);
+    procedure ErrorLoadingImageHandler(FileName: string);
+    procedure SetPreviewLoadingImageHandler(Width, Height: Integer; var Bitmap: TBitmap; Preview: TBitmap; Password: string);
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
@@ -56,10 +61,10 @@ type
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     function IsFinal: Boolean; override;
-    procedure Execute; override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Unload; override;
     function ValidateStep(Silent: Boolean): Boolean; override;
+    procedure Execute; override;
     property ImageFileName: string read GetFileName;
   end;
 
@@ -68,7 +73,8 @@ implementation
 uses
   UnitPasswordForm,
   UnitCryptImageForm,
-  uFrmSteganographyLanding;
+  uFrmSteganographyLanding,
+  uStenoLoadImageThread;
 
 {$R *.dfm}
 
@@ -106,6 +112,11 @@ var
 begin
   inherited;
   DialogFileSize := MaxDataFileSize;
+  if DialogFileSize <= 0 then
+  begin
+    MessageBoxDB(Handle, L('Please choose larger image for this action!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
   if MaxFileSize < 0 then
     Exit;
   Options := OpenDialog1.Options;
@@ -143,6 +154,11 @@ begin
   inherited;
   FBitmapImage := nil;
   FImagePassword := '';
+end;
+
+procedure TFrmCreatePNGSteno.ErrorLoadingImageHandler(FileName: string);
+begin
+  Manager.PrevStep;
 end;
 
 procedure TFrmCreatePNGSteno.Execute;
@@ -265,6 +281,25 @@ begin
   CbFilter.ItemIndex := 1;
 end;
 
+procedure TFrmCreatePNGSteno.LoadOtherImageHandler(Sender: TObject);
+var
+  OpenPictureDialog: DBOpenPictureDialog;
+begin
+   OpenPictureDialog := DBOpenPictureDialog.Create;
+  try
+    OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
+    OpenPictureDialog.FilterIndex := 1;
+    if OpenPictureDialog.Execute then
+    begin
+      TFrmSteganographyLanding(Manager.GetStepByType(TFrmSteganographyLanding)).ImageFileName := OpenPictureDialog.FileName;
+      Init(Manager, False);
+    end;
+
+  finally
+    F(OpenPictureDialog);
+  end;
+end;
+
 procedure TFrmCreatePNGSteno.OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
   var Include: Boolean);
 var
@@ -294,20 +329,51 @@ begin
   end;
 end;
 
+procedure TFrmCreatePNGSteno.SetPreviewLoadingImageHandler(Width,
+  Height: Integer; var Bitmap: TBitmap; Preview: TBitmap; Password: string);
+begin
+  F(FBitmapImage);
+  FBitmapImage := Bitmap;
+  Bitmap := nil;
+  ImImageFile.Picture.Graphic := Preview;
+  LbImageSize.Caption := Format(L('Image size: %dx%d px.'), [Width, Height]);
+  LbImageSize.Show;
+
+  MaxFileSize := MaxSizeInfoInGraphic(FBitmapImage, 2);
+  NormalFileSize := MaxSizeInfoInGraphic(FBitmapImage, 5);
+  GoodFileSize := MaxSizeInfoInGraphic(FBitmapImage, 8);
+
+  FImagePassword := Password;
+
+  LsImage.Hide;
+  IsBusy := False;
+  Changed;
+end;
+
 procedure TFrmCreatePNGSteno.ImImageFileContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   Info: TDBPopupMenuInfo;
   Rec: TDBPopupMenuInfoRecord;
+  Menus: TArMenuItem;
 begin
   Info := TDBPopupMenuInfo.Create;
   try
     Rec := TDBPopupMenuInfoRecord.CreateFromFile(ImageFileName);
     uDBUtils.GetInfoByFileNameA(ImageFileName, False, Rec);
     Rec.Selected := True;
-    Info.Add(Rec);
+
+    Info.IsPlusMenu := False;
+    Info.IsListItem := False;
     Info.AttrExists := False;
-    TDBPopupMenu.Instance.Execute(Manager.Owner, ImImageFile.ClientToScreen(MousePos).X, ImImageFile.ClientToScreen(MousePos).Y, Info);
+    Info.Add(Rec);
+    Setlength(Menus, 1);
+    Menus[0] := TMenuItem.Create(nil);
+    Menus[0].Caption := L('Load other image');
+    Menus[0].ImageIndex := DB_IC_LOADFROMFILE;
+    Menus[0].OnClick := LoadOtherImageHandler;
+    TDBPopupMenu.Instance.ExecutePlus(Manager.Owner, ImImageFile.ClientToScreen(MousePos).X, ImImageFile.ClientToScreen(MousePos).Y, Info,
+      Menus);
   finally
     F(Info);
   end;
@@ -316,10 +382,6 @@ end;
 procedure TFrmCreatePNGSteno.Init(Manager: TWizardManagerBase;
   FirstInitialization: Boolean);
 var
-  PreviewImage, B32: TBitmap;
-  W, H: Integer;
-  Graphic: TGraphic;
-  GraphicClass: TGraphicClass;
   FPassIcon: HIcon;
 begin
   inherited;
@@ -338,66 +400,12 @@ begin
   LbImageFileSize.Caption := Format(L('File size: %s'), [SizeInText(GetFileSize(ImageFileName))]);
 
   F(FBitmapImage);
-  FBitmapImage := TBitmap.Create;
-
-  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ImageFileName));
-  if GraphicClass = nil then
-    Exit;
-
-  Graphic := nil;
-  try
-    if ValidCryptGraphicFile(ImageFileName) then
-    begin
-      FImagePassword := DBkernel.FindPasswordForCryptImageFile(ImageFileName);
-      if FImagePassword = '' then
-        FImagePassword := GetImagePasswordFromUser(ImageFileName);
-
-      if FImagePassword <> '' then
-      begin
-        Graphic := DeCryptGraphicFile(ImageFileName, FImagePassword);
-      end else
-      begin
-        MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [ImageFileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-        Manager.PrevStep;
-        Exit;
-      end;
-    end else
-    begin
-      Graphic := GraphicClass.Create;
-      Graphic.LoadFromFile(ImageFileName);
-    end;
-
-    LbImageSize.Caption := Format(L('Image size: %dx%d px.'), [Graphic.Width, Graphic.Height]);
-    JPEGScale(Graphic, Screen.Width, Screen.Height);
-    FBitmapImage.Assign(Graphic);
-    F(Graphic);
-    FBitmapImage.PixelFormat := pf24bit;
-
-    PreviewImage := TBitmap.Create;
-    try
-      W := FBitmapImage.Width;
-      H := FBitmapImage.Height;
-      ProportionalSize(146, 146, W, H);
-      DoResize(W, H, FBitmapImage, PreviewImage);
-      B32 := TBitmap.Create;
-      try
-        DrawShadowToImage(B32, PreviewImage);
-        LoadBMPImage32bit(B32, PreviewImage, Color);
-        ImImageFile.Picture.Graphic := PreviewImage;
-      finally
-        F(B32);
-      end;
-    finally
-      F(PreviewImage);
-    end;
-
-  finally
-    F(Graphic);
-  end;
-
-  MaxFileSize := MaxSizeInfoInGraphic(FBitmapImage, 2);
-  NormalFileSize := MaxSizeInfoInGraphic(FBitmapImage, 5);
-  GoodFileSize := MaxSizeInfoInGraphic(FBitmapImage, 8);
+  if ImImageFile.Picture.Graphic = nil then
+    LsImage.Show;
+  TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color,
+    ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
+  IsBusy := True;
+  Changed;
 end;
 
 procedure TFrmCreatePNGSteno.Unload;

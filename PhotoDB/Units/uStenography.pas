@@ -37,9 +37,10 @@ function GetMaxPixelsInSquare(FileName: string; Graphic: TGraphic): Integer;
 function GetFileSizeByName(FileName: string): Integer;
 
 //JPEG-steno
-function CreateJPEGSteno(SourceFileName, DestFileName: string; Source: TJpegImage; Password: string): Boolean;
+function CreateJPEGSteno(DataFileName, DestFileName: string; SourceJpegImage: string; Password: string): Boolean;
+function CreateJPEGStenoEx(DataFileName, DestFileName: string; SourceJpegImage: TStream; Password: string): Boolean;
 function IsValidJPEGSteno(FileName: string): Boolean;
-function ExtractJPEGSteno(MS: TMemoryStream; Dest: TMemoryStream): Boolean;
+function ExtractJPEGSteno(MS, Dest: TStream; out Header: StenographyHeader): Boolean;
 
 implementation
 
@@ -265,6 +266,7 @@ end;
 function MaxSizeInfoInGraphic(Graphic: TGraphic; Cell: Integer): Integer;
 begin
   Result := ((Graphic.Height - 1) div Cell) * ((Graphic.Width - 1) div Cell) - SizeOf(StenographyHeader);
+  Result := Max(0, Result);
 end;
 
 procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TStream; HeaderInTheEnd: Boolean);
@@ -333,12 +335,12 @@ var
   I, FileSize: Integer;
 begin
   FileSize := GetFileSizeByName(FileName) + 255;
-  for I := 3 to 23 do
+  Result := -1;
+  for I := 23 downto 2 do
   begin
-    Result := I;
-    if MaxSizeInfoInGraphic(Graphic, I) < FileSize then
+    if MaxSizeInfoInGraphic(Graphic, I) >= FileSize then
     begin
-      Result := I - 1;
+      Result := I;
       Break;
     end;
   end;
@@ -346,14 +348,26 @@ begin
     Result := -1;
 end;
 
-function CreateJPEGSteno(SourceFileName, DestFileName: string; Source: TJpegImage; Password: string): Boolean;
+function CreateJPEGSteno(DataFileName, DestFileName: string; SourceJpegImage: string; Password: string): Boolean;
+var
+  SS: TFileStream;
+begin
+  SS := TFileStream.Create(SourceJpegImage, fmOpenRead or fmShareDenyNone);
+  try
+    Result := CreateJPEGStenoEx(DataFileName, DestFileName, SS, Password);
+  finally
+    F(SS);
+  end;
+end;
+
+function CreateJPEGStenoEx(DataFileName, DestFileName: string; SourceJpegImage: TStream; Password: string): Boolean;
 var
   DS: TFileStream;
 begin
-  DS := TFileStream.Create(SourceFileName, fmCreate);
+  DS := TFileStream.Create(DestFileName, fmCreate);
   try
-    Source.SaveToStream(DS);
-    SaveFileToCryptedStream(SourceFileName, Password, DS, True);
+    DS.CopyFrom(SourceJpegImage, SourceJpegImage.Size);
+    SaveFileToCryptedStream(DataFileName, Password, DS, True);
     Result := True;
   finally
     F(DS);
@@ -379,27 +393,19 @@ begin
   end;
 end;
 
-function ExtractJPEGSteno(MS: TMemoryStream; Dest: TMemoryStream): Boolean;
-var
-  Header: StenographyHeader;
+function ExtractJPEGSteno(MS, Dest: TStream; out Header: StenographyHeader): Boolean;
 begin
   Result := False;
   if MS.Size > SizeOf(Header) then
   begin
-    MS.Seek(SizeOf(Header), soFromEnd);
+    MS.Seek(-SizeOf(Header), soFromEnd);
     MS.Read(Header, SizeOf(Header));
     if Header.ID = StenoHeaderId then
     begin
       //valid jpeg steno
-      MS.Seek(SizeOf(Header) + Header.FileSize, soFromEnd);
-      MS := TMemoryStream.Create;
-      try
-        MS.Write(Header, SizeOf(Header));
-        MS.CopyFrom(MS, Header.FileSize);
-        Result := True;
-      finally
-        F(MS);
-      end;
+      MS.Seek(-(SizeOf(Header) + Header.FileSize), soFromEnd);
+      Dest.CopyFrom(MS, Header.FileSize);
+      Result := True;
     end;
   end;
 end;

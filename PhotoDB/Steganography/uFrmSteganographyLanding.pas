@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, StdCtrls, uFrameWizardBase, pngimage, uStenography, UnitDBFileDialogs,
   GraphicCrypt, DECUtil, DECCipher, win32crc, UnitDBKernel, uShellIntegration,
-  uConstants, uFileUtils, uMemory, uStrongCrypt, uAssociations;
+  uConstants, uFileUtils, uMemory, uStrongCrypt, uAssociations, jpeg;
 
 type
   TFrmSteganographyLanding = class(TFrameWizardBase)
@@ -16,10 +16,12 @@ type
     LbHideDataInJPEGFileInfo: TLabel;
     LbStepInfo: TLabel;
     RbExtractDataFromImage: TRadioButton;
+    CbUseAnotherImage: TCheckBox;
     procedure RbHideDataInImageClick(Sender: TObject);
   private
     { Private declarations }
     FImageFileName: string;
+    procedure SetImageFileName(const Value: string);
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
@@ -30,7 +32,7 @@ type
     function InitNextStep: Boolean; override;
     procedure Execute; override;
     function LoadInfoFromFile(FileName: String) : Boolean;
-    property ImageFileName: string read FImageFileName write FImageFileName;
+    property ImageFileName: string read FImageFileName write SetImageFileName;
   end;
 
 implementation
@@ -43,18 +45,34 @@ uses
 procedure TFrmSteganographyLanding.Execute;
 var
   OpenPictureDialog: DBOpenPictureDialog;
+
+  procedure LoadInfo;
+  begin
+    if LoadInfoFromFile(ImageFileName) then
+    begin
+      IsStepComplete := True;
+      Changed;
+    end;
+  end;
+
 begin
   inherited;
+
+  if not CbUseAnotherImage.Checked and (ImageFileName <> '') then
+  begin
+    LoadInfo;
+    Exit;
+  end;
+
   OpenPictureDialog := DBOpenPictureDialog.Create;
   try
     OpenPictureDialog.Filter := TFileAssociations.Instance.GetFilter('.png|.jpg|.bmp', True, True);
     OpenPictureDialog.FilterIndex := 1;
     if OpenPictureDialog.Execute then
-      if LoadInfoFromFile(OpenPictureDialog.FileName) then
-      begin
-        IsStepComplete := True;
-        Changed;
-      end;
+    begin
+      ImageFileName := OpenPictureDialog.FileName;
+      LoadInfo;
+    end;
   finally
     F(OpenPictureDialog);
   end;
@@ -64,40 +82,33 @@ procedure TFrmSteganographyLanding.Init(Manager: TWizardManagerBase;
   FirstInitialization: Boolean);
 begin
   inherited;
-  if not FirstInitialization then
-    FImageFileName := '';
 end;
 
 function TFrmSteganographyLanding.InitNextStep: Boolean;
 var
   OpenPictureDialog: DBOpenPictureDialog;
-  Filter: string;
 begin
   Result := True;
 
-  Filter := '';
+  if CbUseAnotherImage.Checked then
+    FImageFileName := '';
+
   if FImageFileName = '' then
   begin
-    if RbHideDataInImage.Checked then
-      Filter := TFileAssociations.Instance.FullFilter;
-    if RbHideDataInJPEGFile.Checked then
-      Filter := TFileAssociations.Instance.GetFilter('.jpg', True, True);
 
-    if Filter <> '' then
-    begin
-      FImageFileName := '';
-      OpenPictureDialog := DBOpenPictureDialog.Create;
-      try
-        OpenPictureDialog.Filter := Filter;
-        OpenPictureDialog.FilterIndex := 1;
-        if OpenPictureDialog.Execute then
-          FImageFileName := OpenPictureDialog.FileName
-        else
-          Result := False;
+    OpenPictureDialog := DBOpenPictureDialog.Create;
+    try
+      OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
+      OpenPictureDialog.FilterIndex := 1;
+      if OpenPictureDialog.Execute then
+      begin
+        CbUseAnotherImage.Checked := False;
+        FImageFileName := OpenPictureDialog.FileName
+      end else
+        Result := False;
 
-      finally
-        F(OpenPictureDialog);
-      end;
+    finally
+      F(OpenPictureDialog);
     end;
   end;
 
@@ -119,12 +130,16 @@ function TFrmSteganographyLanding.LoadInfoFromFile(FileName: String) : Boolean;
 var
   Bitmap: TBitmap;
   PNG: TPngImage;
-  Info, Data: TMemoryStream;
+  Info: TMemoryStream;
   Header: StenographyHeader;
   Password: string;
   CRC: Cardinal;
   SaveDialog: DBSaveDialog;
   Chipper : TDECCipherClass;
+  GraphicClass: TGraphicClass;
+  J: TJPEGImage;
+  MS: TMemoryStream;
+  FS: TFileStream;
 
   function LoadCryptFile(FileName: string; _class: TGraphicClass): TGraphic;
   var
@@ -151,42 +166,13 @@ var
     end;
   end;
 
-begin
-  Bitmap := nil;
-  PNG := nil;
-  try
-    if GetExt(FileName) <> 'BMP' then
+  procedure SaveData(Header: StenographyHeader; SourceStream: TStream);
+  var
+    Data: TMemoryStream;
+  begin
+    if Header.Version = 1 then
     begin
-      try
-        PNG := TPngImage(LoadCryptFile(FileName, TPngImage));
-        try
-          Bitmap := TBitmap.Create;
-          Bitmap.Assign(PNG);
-        finally
-          F(PNG);
-        end;
-      finally
-        F(PNG);
-      end;
-    end else
-      Bitmap := TBitmap(LoadCryptFile(FileName, TBitmap));
-
-    Info := TMemoryStream.Create;
-    try
-      Result := ExtractInfoFromBitmap(Info, Bitmap);
-      Info.Seek(0, soFromBeginning);
-      FillChar(Header, SizeOf(Header), 0);
-      if (Info.Size > SizeOf(Header)) then
-        Info.Read(Header, SizeOf(Header));
-
-      if not Result or (Header.ID <> StenoHeaderId) then
-      begin
-        MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
-          TD_ICON_WARNING);
-        Exit;
-      end;
-
-      if Header.Version = 1 then
+      if Header.IsCrypted then
       begin
         Password := GetImagePasswordFromUserStenoraphy(Header.FileName, Header.PassCRC);
         if Password = '' then
@@ -194,47 +180,142 @@ begin
           Result := False;
           Exit;
         end;
+      end;
 
-        Data := TMemoryStream.Create;
+      Data := TMemoryStream.Create;
+      try
+        if not Header.IsCrypted then
+        begin
+          Data.CopyFrom(SourceStream, Header.FileSize);
+        end else
+        begin
+          Chipper := CipherByIdentity(Header.Chiper);
+          DeCryptStreamV2(SourceStream, Data, Password, SeedToBinary(Header.Seed), Header.FileSize, Chipper);
+        end;
+        CalcBufferCRC32(TMemoryStream(Data).Memory, Data.Size, CRC);
+
+        if CRC <> Header.DataCRC then
+          MessageBoxDB(Handle, L('Information in the file is corrupted! Checksum did not match!'), L('Information'), TD_BUTTON_OK,
+            TD_ICON_WARNING);
+
+        SaveDialog := DBSaveDialog.Create;
         try
-          if not Header.IsCrypted then
+          SaveDialog.SetFileName(Header.FileName);
+          if SaveDialog.Execute then
           begin
-            Data.CopyFrom(Info, Header.FileSize);
-          end else
-          begin
-            Chipper := CipherByIdentity(Header.Chiper);
-            DeCryptStreamV2(Info, Data, Password, SeedToBinary(Header.Seed), Header.FileSize, Chipper);
+            Data.SaveToFile(SaveDialog.FileName);
+            Result := True;
           end;
-          CalcBufferCRC32(TMemoryStream(Data).Memory, Data.Size, CRC);
-
-          if CRC <> Header.DataCRC then
-            MessageBoxDB(Handle, L('Information in the file is corrupted! Checksum did not match!'), L('Information'), TD_BUTTON_OK,
-              TD_ICON_WARNING);
-
-          SaveDialog := DBSaveDialog.Create;
-          try
-            SaveDialog.SetFileName(Header.FileName);
-            if SaveDialog.Execute then
-            begin
-              Data.SaveToFile(SaveDialog.FileName);
-              Result := True;
-            end;
-          finally
-            F(SaveDialog);
-          end;
-
         finally
-          F(Data);
+          F(SaveDialog);
         end;
 
+      finally
+        F(Data);
+      end;
+
+    end else
+      MessageBoxDB(Handle, Format(L('The image contains hidden information, but this format is not supported (version = %d)!'), [Header.Version]), L('Warning'), TD_BUTTON_OK,
+        TD_ICON_WARNING);
+  end;
+
+begin
+  RbExtractDataFromImage.Checked := True;
+  Result := False;
+
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+
+  if (GraphicClass = TBitmap) or (GraphicClass = TPngImage) then
+  begin
+    Bitmap := nil;
+    PNG := nil;
+    try
+      if GetExt(FileName) <> 'BMP' then
+      begin
+        try
+          PNG := TPngImage(LoadCryptFile(FileName, TPngImage));
+          try
+            Bitmap := TBitmap.Create;
+            Bitmap.Assign(PNG);
+          finally
+            F(PNG);
+          end;
+        finally
+          F(PNG);
+        end;
       end else
-        MessageBoxDB(Handle, Format(L('The image contains hidden information, but this format is not supported (version = %d)!'), [Header.Version]), L('Warning'), TD_BUTTON_OK,
-          TD_ICON_WARNING);
+        Bitmap := TBitmap(LoadCryptFile(FileName, TBitmap));
+
+      Info := TMemoryStream.Create;
+      try
+        Result := ExtractInfoFromBitmap(Info, Bitmap);
+        Info.Seek(0, soFromBeginning);
+        FillChar(Header, SizeOf(Header), 0);
+        if (Info.Size > SizeOf(Header)) then
+          Info.Read(Header, SizeOf(Header));
+
+        if not Result or (Header.ID <> StenoHeaderId) then
+        begin
+          MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
+            TD_ICON_WARNING);
+          Exit;
+        end;
+
+        SaveData(Header, Info);
+      finally
+        F(Info);
+      end;
     finally
-      F(Info);
+      F(Bitmap);
     end;
-  finally
-    F(Bitmap);
+  end;
+
+  if (GraphicClass = TJpegImage) then
+  begin
+    J := nil;
+    try
+      MS := TMemoryStream.Create;
+      try;
+        if ValidCryptGraphicFile(FileName) then
+        begin
+          Password := DBkernel.FindPasswordForCryptImageFile(FileName);
+          if Password = '' then
+            Password := GetImagePasswordFromUser(FileName);
+
+          if Password <> '' then
+            if not DeCryptGraphicFileToStream(FileName, Password, MS) then
+            begin
+              MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+              Exit;
+            end
+          else begin
+            MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+            Exit;
+          end;
+        end else
+        begin
+          FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+          try
+            if not ExtractJPEGSteno(FS, MS, Header) then
+            begin
+              MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
+                TD_ICON_WARNING);
+              Exit;
+            end;
+
+            MS.Seek(0, soFromBeginning);
+            SaveData(Header, MS);
+
+          finally
+            F(FS);
+          end;
+        end;
+      finally
+        F(MS);
+      end;
+    finally
+      F(J);
+    end;
   end;
 end;
 
@@ -247,12 +328,23 @@ begin
   RbHideDataInJPEGFile.Caption := L('Hide information inside JPEG file');
   LbHideDataInJPEGFileInfo.Caption := L('Information will be stored in file after JPEG image information');
   RbExtractDataFromImage.Caption := L('Extract hidden information from image file');
+  CbUseAnotherImage.Caption := L('Use another image');
 end;
 
 procedure TFrmSteganographyLanding.RbHideDataInImageClick(Sender: TObject);
 begin
   inherited;
   Changed;
+end;
+
+procedure TFrmSteganographyLanding.SetImageFileName(const Value: string);
+var
+  GC: TGraphicClass;
+begin
+  FImageFileName := Value;
+  GC := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ImageFileName));
+  if GC = TJPEGImage then
+    RbHideDataInJPEGFile.Checked := True;
 end;
 
 end.

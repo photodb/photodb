@@ -238,7 +238,9 @@ object Viewer: TViewer
           Top = 0
           Caption = 'Encrypt'
           ImageIndex = 23
+          PopupMenu = PmSteganography
           OnClick = TbEncryptClick
+          OnMouseDown = TbEncryptMouseDown
         end
         object TbSeparator6: TToolButton
           Left = 391
@@ -535,5 +537,18 @@ object Viewer: TViewer
   object PopupMenuPageSelecter: TPopupMenu
     Left = 136
     Top = 200
+  end
+  object PmSteganography: TPopupMenu
+    OnPopup = PmSteganographyPopup
+    Left = 40
+    Top = 376
+    object AddHiddenInfo1: TMenuItem
+      Caption = 'Add Hidden Info'
+      OnClick = AddHiddenInfo1Click
+    end
+    object ExtractHiddenInfo1: TMenuItem
+      Caption = 'Extract Hidden Info'
+      OnClick = ExtractHiddenInfo1Click
+    end
   end
 end

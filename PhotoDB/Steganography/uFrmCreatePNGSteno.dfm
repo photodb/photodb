@@ -13,6 +13,7 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     Width = 110
     Height = 13
     Caption = 'ImageSize: 100x100px'
+    Visible = False
   end
   object LbImageFileSize: TLabel
     Left = 3
@@ -58,7 +59,6 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Options'
     TabOrder = 0
-    ExplicitWidth = 269
     DesignSize = (
       309
       228)
@@ -92,7 +92,6 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
       Caption = 'Encrypt data'
       TabOrder = 0
       OnClick = CbEncryptdataClick
-      ExplicitWidth = 260
     end
     object EdPassword: TWatermarkedEdit
       Left = 12
@@ -101,9 +100,9 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       Enabled = False
+      PasswordChar = '*'
       TabOrder = 1
       WatermarkText = 'Password'
-      ExplicitWidth = 260
     end
     object EdPasswordConfirm: TWatermarkedEdit
       Left = 12
@@ -112,9 +111,9 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       Enabled = False
+      PasswordChar = '*'
       TabOrder = 2
       WatermarkText = 'Password confirm'
-      ExplicitWidth = 260
     end
     object CbIncludeCRC: TCheckBox
       Left = 12
@@ -126,7 +125,6 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
       Checked = True
       State = cbChecked
       TabOrder = 3
-      ExplicitWidth = 260
     end
     object CbFilter: TComboBox
       Left = 12
@@ -142,7 +140,6 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
         'MaxSize (Minimal quality)'
         'Normal Size (Recomended)'
         'Good Size (Best)')
-      ExplicitWidth = 262
     end
     object WblMethod: TWebLink
       Left = 12
@@ -174,7 +171,6 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     ReadOnly = True
     TabOrder = 1
     WatermarkText = 'Please select a file'
-    ExplicitWidth = 417
   end
   object BtnChooseFile: TButton
     Left = 457
@@ -185,7 +181,16 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     Caption = '...'
     TabOrder = 2
     OnClick = BtnChooseFileClick
-    ExplicitLeft = 417
+  end
+  object LsImage: TLoadingSign
+    Left = 50
+    Top = 65
+    Width = 49
+    Height = 49
+    Active = True
+    FillPercent = 70
+    SignColor = clBlack
+    MaxTransparencity = 255
   end
   object OpenDialog1: TOpenDialog
     Filter = 'All Files (*.*)|*?*'

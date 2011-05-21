@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, uDBForm, StdCtrls, ExtCtrls, uWizards, uMemory, uMemoryEx, pngimage;
+  Dialogs, uDBForm, StdCtrls, ExtCtrls, uWizards, uMemory, uMemoryEx, pngimage,
+  LoadingSign;
 
 type
   TFormSteganography = class(TDBForm)
@@ -15,6 +16,7 @@ type
     BtnPrevious: TButton;
     BtnFinish: TButton;
     Image2: TImage;
+    LsWorking: TLoadingSign;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnFinishClick(Sender: TObject);
     procedure BtnNextClick(Sender: TObject);
@@ -93,6 +95,7 @@ begin
   LandingFrame := (FWizard.GetStepByType(TFrmSteganographyLanding)) as TFrmSteganographyLanding;
   if LandingFrame <> nil then
   begin
+    LandingFrame.ImageFileName := InitialFileName;
     if not LandingFrame.LoadInfoFromFile(InitialFileName) then
       ShowModal;
   end;
@@ -159,6 +162,7 @@ begin
 
   BtnFinish.Visible := FWizard.IsFinalStep;
   BtnNext.Visible := not FWizard.IsFinalStep;
+  LsWorking.Visible := FWizard.IsBusy;
 
   if FWizard.WizardDone then
     Close;

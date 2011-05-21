@@ -7,7 +7,7 @@ interface
 uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
   JPEG, PngImage, TiffImageUnit, uFileUtils, uAssociations,
   GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil, DECCipher,
-  GIFImage, DB;
+  GIFImage, DB, uMemoryUtils;
 
 type
 
@@ -78,6 +78,7 @@ function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Wor
   LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function DeCryptGraphicFile(FileName: string; Password: string;
   LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
+function DecryptGraphicFileToStream(FileName, Password: string; S: TStream): Boolean;
 function ValidPassInCryptGraphicFile(FileName, Password: string): Boolean;
 function ResetPasswordInGraphicFile(FileName, Password: string): Boolean;
 function ChangePasswordInGraphicFile(FileName: string; OldPass, NewPass: string): Boolean;
@@ -335,7 +336,7 @@ begin
     WriteCryptHeaderV2(Dest, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
     CryptStreamV2(MS, Dest, Password, Seed);
   finally
-    MS.Free;
+    F(MS);
   end;
 end;
 
@@ -432,6 +433,32 @@ begin
     Result := True;
   end;
 end;
+
+function DecryptGraphicFileToStream(FileName, Password: string; S: TStream): Boolean;
+var
+  FS: TFileStream;
+  GraphicHeader: TGraphicCryptFileHeader;
+begin
+  Result := False;
+
+  TryOpenFSForRead(FS, FileName);
+  if FS = nil then
+    Exit;
+
+  try
+    FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    if GraphicHeader.ID <> PhotoDBFileHeaderID then
+      Exit;
+
+    if not DecryptStream(FS, GraphicHeader, Password, S) then
+      Exit;
+
+    Result := True;
+  finally
+    F(FS);
+  end;
+end;
+
 
 function DecryptFileToStream(FileName: String; Password : string; Stream : TStream) : Boolean;
 var

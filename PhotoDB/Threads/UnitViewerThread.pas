@@ -166,46 +166,49 @@ begin
       begin
         Bitmap := TBitmap.Create;
         try
-          if PassWord = '' then
-            if Graphic is TiffImageUnit.TTiffGraphic then
-            begin
-              FPages := (Graphic as TiffImageUnit.TTiffGraphic).Pages;
-            end;
-          if Graphic is TPNGImage then
-          begin
-            FTransparent := True;
-            PNG := (Graphic as TPNGImage);
-            if PNG.TransparencyMode <> PtmNone then
-            begin
-              LoadPNGImage32bit(PNG, Bitmap, TransparentColor);
-            end else
-              AssignGraphic(Bitmap, Graphic);
-          end else
-          begin
-            if (Graphic is TBitmap) then
-            begin
-              if PSDTransparent then
+          try
+            if PassWord = '' then
+              if Graphic is TiffImageUnit.TTiffGraphic then
               begin
-                if (Graphic as TBitmap).PixelFormat = Pf32bit then
+                FPages := (Graphic as TiffImageUnit.TTiffGraphic).Pages;
+              end;
+            if Graphic is TPNGImage then
+            begin
+              FTransparent := True;
+              PNG := (Graphic as TPNGImage);
+              if PNG.TransparencyMode <> PtmNone then
+              begin
+                LoadPNGImage32bit(PNG, Bitmap, TransparentColor);
+              end else
+                AssignGraphic(Bitmap, Graphic);
+            end else
+            begin
+              if (Graphic is TBitmap) then
+              begin
+                if PSDTransparent then
                 begin
-                  FTransparent := True;
-                  LoadBMPImage32bit(Graphic as TBitmap, Bitmap, TransparentColor);
+                  if (Graphic as TBitmap).PixelFormat = Pf32bit then
+                  begin
+                    FTransparent := True;
+                    LoadBMPImage32bit(Graphic as TBitmap, Bitmap, TransparentColor);
+                  end else
+                    AssignGraphic(Bitmap, Graphic);
                 end else
                   AssignGraphic(Bitmap, Graphic);
               end else
                 AssignGraphic(Bitmap, Graphic);
-            end else
-              AssignGraphic(Bitmap, Graphic);
+            end;
+            Bitmap.PixelFormat := pf24bit;
+          except
+            SetNOImageAsynch;
+            Exit;
           end;
-          Bitmap.PixelFormat := pf24bit;
-        except
-          F(Bitmap);
-          SetNOImageAsynch;
-          Exit;
-        end;
 
-        ApplyRotate(Bitmap, FRotate);
-        SetStaticImageAsynch;
+          ApplyRotate(Bitmap, FRotate);
+          SetStaticImageAsynch;
+        finally
+          F(Bitmap);
+        end;
       end;
     finally
       F(Graphic);
@@ -355,6 +358,7 @@ begin
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
       Viewer.SetStaticImage(Bitmap, FTransparent);
+      Bitmap := nil;
     end else
       F(Bitmap);
 end;
@@ -376,7 +380,8 @@ begin
         Break;
       if Viewer.ForwardThreadNeeds then
       begin
-        SynchronizeEx(SetStaticImage);
+        if not SynchronizeEx(SetStaticImage) then
+          F(Bitmap);
         Exit;
       end;
       Sleep(10);
