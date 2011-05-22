@@ -158,6 +158,8 @@ end;
 
 procedure TFrmCreatePNGSteno.ErrorLoadingImageHandler(FileName: string);
 begin
+  IsBusy := False;
+  Changed;
   Manager.PrevStep;
 end;
 
@@ -395,17 +397,18 @@ begin
     finally
       DestroyIcon(FPassIcon);
     end;
+  end else
+  begin
+    LbImageFileSize.Caption := Format(L('File size: %s'), [SizeInText(GetFileSize(ImageFileName))]);
+
+    F(FBitmapImage);
+    if ImImageFile.Picture.Graphic = nil then
+      LsImage.Show;
+    TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color,
+      ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
+    IsBusy := True;
+    Changed;
   end;
-
-  LbImageFileSize.Caption := Format(L('File size: %s'), [SizeInText(GetFileSize(ImageFileName))]);
-
-  F(FBitmapImage);
-  if ImImageFile.Picture.Graphic = nil then
-    LsImage.Show;
-  TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color,
-    ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
-  IsBusy := True;
-  Changed;
 end;
 
 procedure TFrmCreatePNGSteno.Unload;
@@ -417,12 +420,14 @@ end;
 
 function TFrmCreatePNGSteno.ValidateStep(Silent: Boolean): Boolean;
 begin
-  Result := EdDataFileName.Text <> '';
+  Result := (EdDataFileName.Text <> '') and (ImImageFile.Picture.Graphic <> nil);
   if CbEncryptdata.Checked then
   begin
     Result := Result and (EdPassword.Text = EdPasswordConfirm.Text) and
       (EdPassword.Text <> '');
   end;
+  if not Silent and (ImImageFile.Picture.Graphic = nil) then
+    LoadOtherImageHandler(Self);
 end;
 
 function TFrmCreatePNGSteno.MaxDataFileSize: Cardinal;

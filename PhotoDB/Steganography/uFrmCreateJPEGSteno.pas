@@ -125,6 +125,8 @@ end;
 
 procedure TFrmCreateJPEGSteno.ErrorLoadingImageHandler(FileName: string);
 begin
+  IsBusy := False;
+  Changed;
   Manager.PrevStep;
 end;
 
@@ -253,30 +255,32 @@ begin
     finally
       DestroyIcon(FPassIcon);
     end;
-  end;
-
-  FImageFileSize := GetFileSize(ImageFileName);
-  LbJpegFileSize.Caption := Format(L('File size: %s'), [SizeInText(FImageFileSize)]);
-
-  F(FBitmapImage);
-  if ImJpegFile.Picture.Graphic = nil then
-    LsImage.Show;
-  TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color,
-    ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
-
-  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ImageFileName));
-  if GraphicClass = TJPEGImage then
-  begin
-    CbConvertImage.Checked := False;
-    CbConvertImage.Enabled := True;
   end else
   begin
-    CbConvertImage.Checked := True;
-    CbConvertImage.Enabled := False;
+
+    FImageFileSize := GetFileSize(ImageFileName);
+    LbJpegFileSize.Caption := Format(L('File size: %s'), [SizeInText(FImageFileSize)]);
+
+    F(FBitmapImage);
+    if ImJpegFile.Picture.Graphic = nil then
+      LsImage.Show;
+    TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color,
+      ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
+
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ImageFileName));
+    if GraphicClass = TJPEGImage then
+    begin
+      CbConvertImage.Checked := False;
+      CbConvertImage.Enabled := True;
+    end else
+    begin
+      CbConvertImage.Checked := True;
+      CbConvertImage.Enabled := False;
+    end;
+    CbConvertImageClick(Self);
+    IsBusy := True;
+    Changed;
   end;
-  CbConvertImageClick(Self);
-  IsBusy := True;
-  Changed;
 end;
 
 function TFrmCreateJPEGSteno.IsFinal: Boolean;
@@ -351,12 +355,14 @@ end;
 
 function TFrmCreateJPEGSteno.ValidateStep(Silent: Boolean): Boolean;
 begin
-  Result := FileExistsSafe(EdDataFileName.Text);
+  Result := FileExistsSafe(EdDataFileName.Text) and (ImJpegFile.Picture.Graphic <> nil);
   if CbEncryptdata.Checked then
   begin
     Result := Result and (EdPassword.Text = EdPasswordConfirm.Text) and
       (EdPassword.Text <> '');
   end;
+  if not Silent and (ImJpegFile.Picture.Graphic = nil) then
+    LoadOtherImageHandler(Self);
 end;
 
 procedure TFrmCreateJPEGSteno.WblJpegOptionsClick(Sender: TObject);

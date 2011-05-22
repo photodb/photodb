@@ -108,7 +108,7 @@ begin
 
       if I mod 5 = 0 then
       begin
-        Synchronize(GetVisibleFiles);
+        SynchronizeEx(GetVisibleFiles);
         VisibleUp(I);
       end;
 

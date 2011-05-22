@@ -59,7 +59,6 @@ object FormSizeResizer: TFormSizeResizer
     Enabled = False
     TabOrder = 6
     OnClick = BtOkClick
-    ExplicitTop = 475
   end
   object BtCancel: TButton
     Left = 230
@@ -70,7 +69,6 @@ object FormSizeResizer: TFormSizeResizer
     Caption = 'Cancel'
     TabOrder = 3
     OnClick = BtCancelClick
-    ExplicitTop = 475
   end
   object BtSaveAsDefault: TButton
     Left = 8
@@ -81,7 +79,6 @@ object FormSizeResizer: TFormSizeResizer
     Caption = 'Save settings as default'
     TabOrder = 2
     OnClick = BtSaveAsDefaultClick
-    ExplicitTop = 475
   end
   object EdImageName: TEdit
     Left = 38
@@ -100,7 +97,6 @@ object FormSizeResizer: TFormSizeResizer
     TabOrder = 0
     Text = 'Image Name'
     OnEnter = EdImageNameEnter
-    ExplicitTop = 264
   end
   object LsMain: TLoadingSign
     Left = 358
@@ -132,7 +128,6 @@ object FormSizeResizer: TFormSizeResizer
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
-    ExplicitTop = 240
   end
   object PnOptions: TPanel
     Left = 0
@@ -142,7 +137,6 @@ object FormSizeResizer: TFormSizeResizer
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 291
     DesignSize = (
       394
       178)
@@ -196,7 +190,6 @@ object FormSizeResizer: TFormSizeResizer
       Anchors = [akRight, akBottom]
       Caption = 'JPEG Optinons'
       DoubleBuffered = False
-      Enabled = False
       ParentDoubleBuffered = False
       TabOrder = 4
       OnClick = BtJPEGOptionsClick
@@ -421,7 +414,6 @@ object FormSizeResizer: TFormSizeResizer
       0700FE000700FF000700FF87FF00FF87FF00FFC7FF00FFE7FF00FFFFFF00}
     UseSpecIconSize = True
     HightliteImage = True
-    ExplicitTop = 262
   end
   object WlNext: TWebLink
     Left = 357
@@ -520,7 +512,6 @@ object FormSizeResizer: TFormSizeResizer
       3F00E0007F00E000FF00FFE1FF00FFE1FF00FFE3FF00FFE7FF00FFFFFF00}
     UseSpecIconSize = True
     HightliteImage = True
-    ExplicitTop = 262
   end
   object ImlWatermarkPatterns: TImageList
     Left = 48

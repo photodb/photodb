@@ -24,9 +24,9 @@ function UpperCase(S: string): string;
 var
   I: Integer;
 begin
-  Result := S;
   for I := 1 to Length(S) do
     S[I] := UpCase(S[I]);
+  Result := S;
 end;
 
 procedure CheckParams;
@@ -113,6 +113,6 @@ finalization
   {$IFNDEF ONECPU}
   FSync.Free;
   {$ENDIF}
- // ProgramParams.Free;
+  SetLength(ProgramParams, 0);
 
 end.

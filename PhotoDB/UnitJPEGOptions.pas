@@ -14,6 +14,9 @@ type
   end;
 
 type
+  TJpegX = class(TJPEGImage);
+
+type
   TCompresJPEGToSizeCallback = procedure(CurrentSize, CompressionRate: Integer; var Break: Boolean) of object;
 
 type
@@ -138,6 +141,7 @@ begin
    (Graphic as TJPEGImage).CompressionQuality := Compression;
    (Graphic as TJPEGImage).ProgressiveEncoding := Progressive;
    (Graphic as TJPEGImage).Compress;
+   TJpegX(Graphic).FreeBitmap;
   end;
 end;
 

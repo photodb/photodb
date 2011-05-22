@@ -27,6 +27,7 @@ type
     procedure AskUserForPassword;
     procedure HandleError;
     procedure UpdatePreview;
+    function GetThreadID: string; override;
   public
     constructor Create(OwnerForm: TDBForm; FileName: string; Color: TColor;
       ErrorHandler: TErrorLoadingImageHandler;
@@ -83,7 +84,7 @@ begin
 
         if FPassword <> '' then
         begin
-          Graphic := DeCryptGraphicFile(FPassword, FPassword);
+          Graphic := DeCryptGraphicFile(FFileName, FPassword);
         end else
         begin
           SynchronizeEx(HandleError);
@@ -94,6 +95,9 @@ begin
         Graphic := GraphicClass.Create;
         Graphic.LoadFromFile(FFileName);
       end;
+
+      if Graphic = nil then
+        Exit;
 
       FWidth := Graphic.Width;
       FHeight := Graphic.Height;
@@ -131,6 +135,11 @@ begin
   except
     SynchronizeEx(HandleError);
   end;
+end;
+
+function TStenoLoadImageThread.GetThreadID: string;
+begin
+  Result := 'Steganography';
 end;
 
 procedure TStenoLoadImageThread.HandleError;

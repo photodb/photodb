@@ -917,12 +917,14 @@ begin
   _y := Round((564-68)*ps/1200);
   SmallImageSize := Round(_y/1.05);
   CountFilesInFolder := 0;
-  for i := 1 to 4 do
+  for I := 1 to 4 do
     FilesInFolder[i] := '';
 
   CurrentFile := IncludeTrailingBackslash(CurrentFile);
-  fFolderImages.Directory := CurrentFile;
-  FFolderImagesResult := AExplorerFolders.GetFolderImages(CurrentFile, SmallImageSize, SmallImageSize);
+  FFolderImages.Directory := CurrentFile;
+  FFolderImagesResult.Directory := '';
+  if FThreadType <> THREAD_TYPE_FOLDER_UPDATE then
+    FFolderImagesResult := AExplorerFolders.GetFolderImages(CurrentFile, SmallImageSize, SmallImageSize);
   FFastDirectoryLoading := False;
   if FFolderImagesResult.Directory <> '' then
     FFastDirectoryLoading := True
@@ -966,7 +968,7 @@ begin
           if not Query.IsEmpty then
           begin
             Query.First;
-            for i:=1 to Query.RecordCount do
+            for I := 1 to Query.RecordCount do
             begin
               if Query.FieldByName('Access').AsInteger = db_access_private then
                 FPrivateFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
@@ -1030,26 +1032,33 @@ begin
             FindClose(SearchRec);
           end;
           if Count + Nbr = 0 then
+          begin
+            if FThreadType = THREAD_TYPE_FOLDER_UPDATE then
+            begin
+              MakeFolderImage(CurrentFile);
+              SynchronizeEx(AddImageFileImageToExplorer);
+            end;
             Exit;
+          end;
         end;
       finally
         F(FFileNames);
         F(FPrivateFileNames);
       end;
 
-      Dx:=4;
+      Dx := 4;
 
       TempBitmap := TBitmap.Create;
       DrawFolderImageBig(TempBitmap);
 
-      c:=0;
+      C := 0;
 
-      for i:=1 to 2 do
-      for j:=1 to 2 do
+      for I := 1 to 2 do
+      for J := 1 to 2 do
       begin
         if IsTerminated then
           Exit;
-        Index:=(i - 1) * 2 + j;
+        Index := (I - 1) * 2 + J;
         FcountOfFolderImage := Index;
         // 34  68
         // 562 564
@@ -1086,8 +1095,7 @@ begin
             begin
               FJPEG := TJpegImage.Create;
               DeCryptBlobStreamJPG(Query.FieldByName('thum'), Password, FJPEG);
-            end
-            else
+            end else
               Continue;
           end else
           begin
@@ -1106,8 +1114,8 @@ begin
             F(fJpeg);
             ApplyRotate(fbmp, Query.FieldByName('Rotated').AsInteger);
 
-            w := fbmp.Width;
-            h := fbmp.Height;
+            W := fbmp.Width;
+            H := fbmp.Height;
             ProportionalSize(SmallImageSize, SmallImageSize, W, H);
             DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
           finally
@@ -1169,7 +1177,7 @@ begin
         end;
       end;
     finally
-      FreeAndNil(Query);
+      FreeDS(Query);
     end;
 
     if not FFastDirectoryLoading and ExplorerInfo.SaveThumbNailsForFolders then

@@ -393,6 +393,7 @@ end;
 procedure TFormSizeResizer.BtJPEGOptionsClick(Sender: TObject);
 begin
   SetJPEGOptions(ConvertImageID);
+  CheckValidForm;
 end;
 
 procedure TFormSizeResizer.BtOkClick(Sender: TObject);
@@ -676,7 +677,6 @@ end;
 
 procedure TFormSizeResizer.DdConvertChange(Sender: TObject);
 begin
-  BtJPEGOptions.Enabled := DdConvert.Enabled and (DdConvert.ItemIndex = 0);
   CheckValidForm;
 end;
 

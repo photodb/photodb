@@ -606,7 +606,7 @@ end;
 
 destructor TLockFiles.Destroy;
 begin
-  F(FFiles);
+  FreeList(FFiles);
   F(FSync);
   inherited;
 end;

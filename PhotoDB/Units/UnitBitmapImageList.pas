@@ -15,6 +15,7 @@ type
     Icon : TIcon;
     SelfReleased : Boolean;
     Ext : string;
+    procedure UpdateIcon(Icon: TIcon; IsSelfReleased: Boolean);
     constructor Create;
     destructor Destroy; override;
     property Graphic : TGraphic read GetGraphic write SetGraphic;
@@ -173,6 +174,13 @@ begin
     Bitmap := Value as TBitmap
   else
     Icon := Value as TIcon;
+end;
+
+procedure TBitmapImageListImage.UpdateIcon(Icon: TIcon;
+  IsSelfReleased: Boolean);
+begin
+  SetGraphic(Icon);
+  SelfReleased := IsSelfReleased;
 end;
 
 end.

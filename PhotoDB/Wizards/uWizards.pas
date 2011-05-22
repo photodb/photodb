@@ -294,11 +294,11 @@ begin
   begin
     if (I <> FCurrentStep) and Steps[I].Visible then
       Steps[I].Hide;
-
-    Steps[CurrentStep].IsBusy := False;
-    Steps[CurrentStep].Init(Self, False);
-    Steps[CurrentStep].Show;
   end;
+
+  Steps[CurrentStep].IsBusy := False;
+  Steps[CurrentStep].Init(Self, False);
+  Steps[CurrentStep].Show;
 end;
 
 end.

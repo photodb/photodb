@@ -2673,12 +2673,20 @@ end;
 
 function TExplorerForm.AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
 var
+  Index,
   I : Integer;
 begin
   Result := False;
   for I := FFilesInfo.Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
       begin
+        Index := FFilesInfo[I].ImageIndex;
+        if Index > -1 then
+        begin
+          FBitmapImageList.Items[I].UpdateIcon(Icon, SelfReleased);
+          Result := True;
+          Break;
+        end;
         FBitmapImageList.AddIcon(Icon, SelfReleased);
         FFilesInfo[I].ImageIndex := FBitmapImageList.Count - 1;
         Result := True;
@@ -5276,9 +5284,9 @@ begin
       begin
         FDBCanDragW := False;
 
-        if CtrlKeyDown then
+        if Effect = DROPEFFECT_COPY then
           CopyFiles(Handle, DropInfo, GetCurrentPath, False, False, Self)
-        else
+        else if Effect = DROPEFFECT_MOVE then
           CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, Self);
 
       end;
@@ -5292,10 +5300,10 @@ begin
           begin
             Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
-            if CtrlKeyDown then
-              CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, Self)
-            else
-              CopyFiles(Handle, DropInfo, Str, ShiftKeyDown, False, Self);
+            if Effect = DROPEFFECT_COPY then
+              CopyFiles(Handle, DropInfo, Str, False, False, Self)
+            else if Effect = DROPEFFECT_MOVE then
+              CopyFiles(Handle, DropInfo, Str, True, False, Self);
 
           end;
         end;
@@ -5331,7 +5339,7 @@ end;
 procedure TExplorerForm.DropFileTarget1Enter(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 begin
-  LastShift:=ShiftState;
+  LastShift := ShiftState;
   if not SelfDraging then
     Outdrag := True;
   FDBCanDrag := True;
@@ -6029,78 +6037,80 @@ begin
             for I := 1 to 4 do
               FFolderImagesResult.Images[I] := nil;
             FFolderImagesResult := AExplorerFolders.GetFolderImages(FileName, 40, 40);
-            if FFolderImagesResult.Directory = '' then
-            begin
-              S := ExcludeTrailingBackslash(FileName);
-              if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
-                FileName := IncludeTrailingBackslash(FileName);
+            try
+              if FFolderImagesResult.Directory = '' then
+              begin
+                S := ExcludeTrailingBackslash(FileName);
+                if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
+                  FileName := IncludeTrailingBackslash(FileName);
 
-              OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+                OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
 
-              Ico := TAIcons.Instance.GetIconByExt(FileName, (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
-                  (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER), 48, False);
-              try
-              Ico48 := TIcon48.Create;
+                Ico := TAIcons.Instance.GetIconByExt(FileName, (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
+                    (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER), 48, False);
                 try
-                  Ico48.Assign(Ico);
-                  SetErrorMode(OldMode);
+                Ico48 := TIcon48.Create;
+                  try
+                    Ico48.Assign(Ico);
+                    SetErrorMode(OldMode);
 
-                  Canvas.Draw(ThSizeExplorerPreview div 2 - Ico48.Width div 2,
-                    ThSizeExplorerPreview div 2 - Ico48.Height div 2, Ico48);
+                    Canvas.Draw(ThSizeExplorerPreview div 2 - Ico48.Width div 2,
+                      ThSizeExplorerPreview div 2 - Ico48.Height div 2, Ico48);
+                  finally
+                    F(Ico48);
+                  end;
                 finally
-                  F(Ico48);
+                  F(Ico);
                 end;
-              finally
-                F(Ico);
-              end;
-            end else
-            begin
-              Pic := GetFolderPicture;
-              if Pic = nil then
-                Exit;
+              end else
+              begin
+                Pic := GetFolderPicture;
+                if Pic = nil then
+                  Exit;
 
-              TempBitmap := TBitmap.Create;
-              try
-                Bit32 := TBitmap.Create;
+                TempBitmap := TBitmap.Create;
                 try
-                  LoadPNGImage32bit(Pic, Bit32, ClBtnFace);
-                  F(Pic);
-                  StretchCoolW(0, 0, 100, 100, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, TempBitmap);
+                  Bit32 := TBitmap.Create;
+                  try
+                    LoadPNGImage32bit(Pic, Bit32, ClBtnFace);
+                    F(Pic);
+                    StretchCoolW(0, 0, 100, 100, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, TempBitmap);
+                  finally
+                    F(Bit32);
+                  end;
+
+                  Canvas.Draw(0, 0, TempBitmap);
                 finally
-                  F(Bit32);
+                  F(TempBitmap);
                 end;
 
-                Canvas.Draw(0, 0, TempBitmap);
-              finally
-                F(TempBitmap);
+                Dx := 5;
+                for I := 1 to 2 do
+                  for J := 1 to 2 do
+                  begin
+                    index := (I - 1) * 2 + J;
+                    X := (J - 1) * 42 + 5 + Dx;
+                    Y := (I - 1) * 42 + 8 + Dx;
+                    if FFolderImagesResult.Images[index] = nil then
+                      Break;
+                    Fbmp := FFolderImagesResult.Images[index];
+                    W := Fbmp.Width;
+                    H := Fbmp.Height;
+                    ProportionalSize(40, 40, W, H);
+                    FolderImageRect := Rect(X + 40 div 2 - W div 2, Y + 40 div 2 - H div 2, X + 40 div 2 + W div 2,
+                      Y + 40 div 2 + H div 2);
+
+                    if Fbmp.PixelFormat = pf32Bit then
+                      StretchCoolW32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap)
+                    else
+                      StretchCoolW24To32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap);
+
+                  end;
               end;
-
-              Dx := 5;
-              for I := 1 to 2 do
-                for J := 1 to 2 do
-                begin
-                  index := (I - 1) * 2 + J;
-                  X := (J - 1) * 42 + 5 + Dx;
-                  Y := (I - 1) * 42 + 8 + Dx;
-                  if FFolderImagesResult.Images[index] = nil then
-                    Break;
-                  Fbmp := FFolderImagesResult.Images[index];
-                  W := Fbmp.Width;
-                  H := Fbmp.Height;
-                  ProportionalSize(40, 40, W, H);
-                  FolderImageRect := Rect(X + 40 div 2 - W div 2, Y + 40 div 2 - H div 2, X + 40 div 2 + W div 2,
-                    Y + 40 div 2 + H div 2);
-
-                  if Fbmp.PixelFormat = pf32Bit then
-                    StretchCoolW32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap)
-                  else
-                    StretchCoolW24To32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap);
-
-                end;
+            finally
+              for I := 1 to 4 do
+                F(FFolderImagesResult.Images[I]);
             end;
-
-            for I := 1 to 4 do
-              F(FFolderImagesResult.Images[I]);
           end;
           if (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
