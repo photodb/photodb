@@ -424,12 +424,12 @@ begin
       end;
       {$ENDIF}
     end;
-    if (FCheckCount = 100) then //after 10 sec. check for updates
+    if (FCheckCount = 100) and not FolderView then //after 10 sec. check for updates
     begin
       TW.I.Start('TInternetUpdate - Create');
       TInternetUpdate.Create(nil, True, nil);
     end;
-    if (FCheckCount = 600) then //after 1.min. backup database
+    if (FCheckCount = 600) and not FolderView then //after 1.min. backup database
       DBKernel.BackUpTable;
 
     if FMainForms.Count = 0 then

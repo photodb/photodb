@@ -142,10 +142,10 @@ var
   M: TMemoryStream;
 begin
   Result := False;
-  if Settings.ReadBool('Options', 'NoAddSmallImages', True) then
+  if Settings.ReadBool('Options', 'DontAddSmallImages', True) then
   begin
-    if (Settings.ReadInteger('Options', 'NoAddSmallImagesWidth', 64) > OrWidth) or (Settings.ReadInteger('Options',
-        'NoAddSmallImagesHeight', 64) > OrHeight) then
+    if (Settings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64) > OrWidth) or (Settings.ReadInteger('Options',
+        'DontAddSmallImagesHeight', 64) > OrHeight) then
       // small images - no photos
       Exit;
   end;
@@ -668,7 +668,7 @@ end;
 
 { DirectorySizeThread }
 
-function DirectorySizeThread.GetDirectory(DirectoryName: string; var Files : TStrings; Terminating : PBoolean):integer;
+function DirectorySizeThread.GetDirectory(DirectoryName: string; var Files : TStrings; Terminating : PBoolean): Integer;
 var
   Found: Integer;
   SearchRec: TSearchRec;
@@ -734,17 +734,21 @@ var
 begin
   FreeOnTerminate := True;
   Files := TStringList.Create;
-  Size := GetDirectory(FDirectory, Files, FTerminating);
-  if not FTerminating^ then
-  begin
-    FObject := TValueObject.Create;
-    try
-      FObject.FTIntValue := Size;
-      FObject.FSTStrValue := Files;
-      SynchronizeEx(DoOnDone);
-    finally
-      F(FObject);
+  try
+    Size := GetDirectory(FDirectory, Files, FTerminating);
+    if not FTerminating^ then
+    begin
+      FObject := TValueObject.Create;
+      try
+        FObject.TIntValue := Size;
+        FObject.TStrValue := Files;
+        SynchronizeEx(DoOnDone);
+      finally
+        F(FObject);
+      end;
     end;
+  finally
+    F(Files);
   end;
 end;
 

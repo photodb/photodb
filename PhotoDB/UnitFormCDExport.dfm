@@ -322,6 +322,7 @@ object FormCDExport: TFormCDExport
       Top = 112
       Width = 177
       Height = 21
+      Color = 11206655
       TabOrder = 0
       WatermarkText = 'CDLabel'
     end

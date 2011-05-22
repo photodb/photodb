@@ -1,6 +1,9 @@
 inherited FrmConvertationProgress: TFrmConvertationProgress
   Width = 433
   Height = 361
+  Color = clWhite
+  ParentBackground = False
+  ParentColor = False
   ExplicitWidth = 433
   ExplicitHeight = 361
   object LbInfo: TLabel

@@ -114,7 +114,7 @@ procedure TImportProgressForm.BtnPauseClick(Sender: TObject);
 begin
   UnitCmpDB.CompareThreadPaused := not UnitCmpDB.CompareThreadPaused;
   if UnitCmpDB.CompareThreadPaused then
-    BtnPause.Caption := L('Unpause')
+    BtnPause.Caption := L('Resume')
   else
     BtnPause.Caption := L('Pause');
 end;

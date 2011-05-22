@@ -18,10 +18,6 @@ type
     Label1: TLabel;
     DropFileTarget1: TDropFileTarget;
     Label2: TLabel;
-    Panel2: TPanel;
-    Panel3: TPanel;
-    BtnOk: TButton;
-    BtnCancel: TButton;
     ImageList1: TImageList;
     MethodImageList: TImageList;
     PmMethod: TPopupMenu;
@@ -29,20 +25,17 @@ type
     Cut1: TMenuItem;
     Delete1: TMenuItem;
     N1: TMenuItem;
-    Panel4: TPanel;
-    Label3: TLabel;
-    Panel5: TPanel;
-    CheckBox1: TCheckBox;
-    Panel6: TPanel;
-    Panel7: TPanel;
-    Panel8: TPanel;
+    BtnCancel: TButton;
+    BtnOk: TButton;
     EdDBName: TWatermarkedEdit;
-    Button1: TButton;
+    BtnChooseFile: TButton;
     BtnNew: TButton;
+    CbDeleteRecords: TCheckBox;
+    Label3: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnChooseFileClick(Sender: TObject);
     procedure ListView1AdvancedCustomDrawSubItem(Sender: TCustomListView;
       Item: TListItem; SubItem: Integer; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
@@ -152,7 +145,7 @@ begin
           with ListView1.Items.Add do
           begin
             Caption := '';
-            ImageIndex := Byte(CheckBox1.Checked);
+            ImageIndex := Byte(CbDeleteRecords.Checked);
             Data := Pointer(ImageList1.Count);
           end;
           Items.Add(DropFileTarget1.Files[I]);
@@ -169,8 +162,8 @@ begin
             Ico.Handle := ExtractAssociatedIconSafe(DropFileTarget1.Files[I], 0);
             with ListView1.Items.Add do
             begin
-              Caption := ''; // IntToStr(Index+1);
-              ImageIndex := Byte(CheckBox1.Checked);
+              Caption := '';
+              ImageIndex := Byte(CbDeleteRecords.Checked);
               Data := Pointer(ImageList1.Count);
             end;
             Items.Add(DropFileTarget1.Files[I]);
@@ -182,7 +175,7 @@ begin
     end;
 end;
 
-procedure TSplitExportForm.Button1Click(Sender: TObject);
+procedure TSplitExportForm.BtnChooseFileClick(Sender: TObject);
 var
   OpenDialog: DBOpenDialog;
 begin
@@ -207,7 +200,7 @@ begin
     Caption := L('Split Collection');
     BtnOk.Caption := L('Ok');
     BtnCancel.Caption := L('Cancel');
-    CheckBox1.Caption := L('Delete records after finish');
+    CbDeleteRecords.Caption := L('Delete records after finish');
     Label2.Caption := L('Path');
     Label3.Caption := L('Files and folders') + ':';
     Copy1.Caption := L('Copy');
@@ -346,73 +339,86 @@ begin
   begin
     SetLength(ID_Delete, 0);
     ProgressWindow := GetProgressWindow;
-    ProgressWindow.OneOperation := False;
-    ProgressWindow.OperationCount := 3;
-    ProgressWindow.OperationPosition := 1;
-    ProgressWindow.DoubleBuffered := True;
-    S := GetTable;
-    S.Open;
-    ProgressWindow.xPosition := 0;
-    ProgressWindow.MaxPosCurrentOperation := S.RecordCount;
+    try
+      ProgressWindow.OneOperation := False;
+      ProgressWindow.OperationCount := 3;
+      ProgressWindow.OperationPosition := 1;
+      ProgressWindow.DoubleBuffered := True;
+      S := GetTable;
+      try
+        S.Open;
+        ProgressWindow.xPosition := 0;
+        ProgressWindow.MaxPosCurrentOperation := S.RecordCount;
 
-    ProgressWindow.Show;
-    ProgressWindow.Repaint;
-    SetLength(FGroupsFounded, 0);
-    D := GetTable(EdDBName.Text, DB_TABLE_IMAGES);
-    D.Open;
-    for I := 1 to S.RecordCount do
-    begin
-      if RecordOk then
-      begin
-        D.Append;
-        CopyRecordsW(S, D, False, False, '', Groups);
-        D.Post;
-      end;
-      S.Next;
-      if I mod 10 = 0 then
+        ProgressWindow.Show;
         ProgressWindow.Repaint;
-      ProgressWindow.xPosition := I;
-      if not ProgressWindow.Visible then
-        Break;
-    end;
+        SetLength(FGroupsFounded, 0);
+        D := GetTable(EdDBName.Text, DB_TABLE_IMAGES);
+        try
+          D.Open;
+          for I := 1 to S.RecordCount do
+          begin
+            if RecordOk then
+            begin
+              D.Append;
+              CopyRecordsW(S, D, False, False, '', Groups);
+              D.Post;
+            end;
+            S.Next;
+            if I mod 10 = 0 then
+              ProgressWindow.Repaint;
+            ProgressWindow.xPosition := I;
+            if not ProgressWindow.Visible then
+              Break;
+          end;
 
-    ProgressWindow.OperationPosition := 2;
-    ProgressWindow.xPosition := 0;
-    ProgressWindow.MaxPosCurrentOperation := Length(FGroupsFounded);
-    FRegGroups := GetRegisterGroupList(True);
-    CreateGroupsTableW(EdDBName.Text);
-    for I := 0 to Length(FGroupsFounded) - 1 do
-    begin
-      ProgressWindow.xPosition := I;
-      for J := 0 to Length(FRegGroups) - 1 do
-        if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
-        begin
-          AddGroupW(FRegGroups[J], EdDBName.Text);
-          Break;
+          ProgressWindow.OperationPosition := 2;
+          ProgressWindow.xPosition := 0;
+          ProgressWindow.MaxPosCurrentOperation := Length(FGroupsFounded);
+          FRegGroups := GetRegisterGroupList(True);
+          try
+            CreateGroupsTableW(EdDBName.Text);
+            for I := 0 to Length(FGroupsFounded) - 1 do
+            begin
+              ProgressWindow.xPosition := I;
+              for J := 0 to Length(FRegGroups) - 1 do
+                if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
+                begin
+                  AddGroupW(FRegGroups[J], EdDBName.Text);
+                  Break;
+                end;
+            end;
+          finally
+            FreeGroups(FRegGroups);
+          end;
+
+          ProgressWindow.OperationPosition := 3;
+          ProgressWindow.xPosition := 0;
+          ProgressWindow.MaxPosCurrentOperation := S.RecordCount;
+          S.Last;
+          for I := S.RecordCount downto 1 do
+          begin
+            if RecordDelOk then
+              S.Delete;
+
+            S.Prior;
+            if S.Bof then
+              Break;
+            if I mod 10 = 0 then
+              ProgressWindow.Repaint;
+            ProgressWindow.xPosition := S.RecordCount - I;
+            if not ProgressWindow.Visible then
+              Break;
+          end;
+        finally
+          FreeDS(D);
         end;
-    end;
-
-    ProgressWindow.OperationPosition := 3;
-    ProgressWindow.xPosition := 0;
-    ProgressWindow.MaxPosCurrentOperation := S.RecordCount;
-    S.Last;
-    for I := S.RecordCount downto 1 do
-    begin
-      if RecordDelOk then
-      begin
-        S.Delete;
+      finally
+        FreeDS(S);
       end;
-      S.Prior;
-      if S.Bof then
-        Break;
-      if I mod 10 = 0 then
-        ProgressWindow.Repaint;
-      ProgressWindow.xPosition := S.RecordCount - I;
-      if not ProgressWindow.Visible then
-        Break;
+    finally
+      ProgressWindow.Release;
     end;
-
-    ProgressWindow.Release;
 
     Close;
   end;

@@ -4,7 +4,7 @@ object FormInternetUpdating: TFormInternetUpdating
   BorderStyle = bsToolWindow
   Caption = 'New version is avaliable'
   ClientHeight = 277
-  ClientWidth = 352
+  ClientWidth = 367
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,14 +17,14 @@ object FormInternetUpdating: TFormInternetUpdating
   OnClose = FormClose
   OnCreate = FormCreate
   DesignSize = (
-    352
+    367
     277)
   PixelsPerInch = 96
   TextHeight = 13
   object RedInfo: TRichEdit
     Left = 8
     Top = 8
-    Width = 337
+    Width = 352
     Height = 201
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelInner = bvNone
@@ -41,6 +41,7 @@ object FormInternetUpdating: TFormInternetUpdating
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 337
   end
   object WlHomePage: TWebLink
     Left = 8
@@ -69,7 +70,7 @@ object FormInternetUpdating: TFormInternetUpdating
   object CbRemindMeLater: TCheckBox
     Left = 8
     Top = 252
-    Width = 255
+    Width = 270
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Remaind me later'
@@ -80,9 +81,10 @@ object FormInternetUpdating: TFormInternetUpdating
     Font.Style = []
     ParentFont = False
     TabOrder = 2
+    ExplicitWidth = 255
   end
   object BtnOk: TButton
-    Left = 269
+    Left = 284
     Top = 244
     Width = 75
     Height = 25
@@ -96,6 +98,7 @@ object FormInternetUpdating: TFormInternetUpdating
     ParentFont = False
     TabOrder = 3
     OnClick = BtnOkClick
+    ExplicitLeft = 269
   end
   object WlDownload: TWebLink
     Left = 8

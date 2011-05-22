@@ -22,6 +22,7 @@ type
     procedure NextStep; virtual; abstract;
     procedure PrevStep; virtual; abstract;
     procedure NotifyChange; virtual; abstract;
+    procedure Pause(Value: Boolean); virtual; abstract;
     function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; virtual; abstract;
     procedure AddStep(Step: TFrameWizardBaseClass); virtual; abstract;
     property WizardDone: Boolean read GetWizardDone;
@@ -53,7 +54,9 @@ type
     function InitNextStep: Boolean; virtual;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); virtual;
     procedure Unload; virtual;
+    procedure Pause(Value: Boolean); virtual;
     function IsFinal: Boolean; virtual;
+    function IsPaused: Boolean; virtual;
     function ValidateStep(Silent: Boolean): Boolean; virtual;
     procedure BreakOperation; virtual;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -141,6 +144,11 @@ begin
   Result := False;
 end;
 
+function TFrameWizardBase.IsPaused: Boolean;
+begin
+  Result := False;
+end;
+
 procedure TFrameWizardBase.LoadLanguage;
 begin
   //create here logic to load language
@@ -149,6 +157,11 @@ end;
 function TFrameWizardBase.LocalScope: string;
 begin
   Result := Manager.Owner.FormID;
+end;
+
+procedure TFrameWizardBase.Pause(Value: Boolean);
+begin
+  //custom pause action
 end;
 
 procedure TFrameWizardBase.Unload;

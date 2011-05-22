@@ -239,8 +239,6 @@ type
     procedure DeleteItemByID(ID : integer);
     procedure HelpNextClick(Sender: TObject);
     procedure HelpCloseClick(Sender : TObject; var CanClose : Boolean);
-    procedure HelpActivationNextClick(Sender: TObject);
-    procedure HelpActivationCloseClick(Sender : TObject; var CanClose : Boolean);
     procedure FormShow(Sender: TObject);
     procedure Image3Click(Sender: TObject);
     procedure QuickGroupsearch(Sender: TObject);
@@ -2419,7 +2417,6 @@ end;
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
 var
   DS : TDataSet;
-  MessageText: string;
 
   procedure XHint(XDS: TDataSet);
   var
@@ -2451,18 +2448,6 @@ begin
   if FolderView then
     Exit;
   HelpTimer.Enabled := False;
-  if not Settings.ReadBool('HelpSystem', 'CheckRecCount', True) then
-  begin
-    HelpActivationNO := 0;
-    MessageText := '     ' + L('Do you want to get help, how to activate the program? If YES, then click on "More..." for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed. $nl$$nl$', 'Help');
-    if TActivationManager.Instance.IsDemoMode then
-      if Settings.ReadBool('HelpSystem', 'ActivationHelp', True) then
-        DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
-          HelpActivationNextClick, L('Next...'), HelpActivationCloseClick)
-      else if not TActivationManager.Instance.IsDemoMode then
-        Settings.WriteBool('HelpSystem', 'ActivationHelp', False);
-    Exit;
-  end;
 
   DS := GetQuery(True);
   try
@@ -2582,36 +2567,6 @@ begin
   FHelpTimerStarted := True;
 
   SearchEdit.SetFocus;
-end;
-
-procedure TSearchForm.HelpActivationCloseClick(Sender: TObject; var CanClose: Boolean);
-begin
-  CanClose := ID_OK = MessageBoxDB(Handle, L('Do you really want to refuse help?', 'Help'), L('Confirm'),
-    TD_BUTTON_OKCANCEL, TD_ICON_QUESTION);
-  if CanClose then
-  begin
-    HelpActivationNO := 0;
-    Settings.WriteBool('HelpSystem', 'ActivationHelp', False);
-  end;
-end;
-
-procedure TSearchForm.HelpActivationNextClick(Sender: TObject);
-var
-  Handled: Boolean;
-  MessageText: string;
-begin
-  HelpActivationNO := HelpActivationNO + 1;
-  if HelpActivationNO = 1 then
-  begin
-    MessageText := '     ' + L('To activate the program call the context menu, select "Help" -> "Activation"$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$', 'Help');
-    DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain,
-      HelpActivationNextClick, L('Next...'), HelpActivationCloseClick);
-  end;
-  if HelpActivationNO = 2 then
-  begin
-    ListViewContextPopup(ElvMain, Point(0, 0), Handled);
-    HelpActivationNO := 3;
-  end;
 end;
 
 procedure TSearchForm.Image3Click(Sender: TObject);

@@ -366,7 +366,7 @@ begin
 
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    ItemData := TDBPopupMenuInfoRecord(ElvMain.Items[i].Data);
+    ItemData := FData[I];
     if ItemData.ID = ID then
     begin
       if EventID_Param_Date in params then ItemData.Date := Value.Date;
@@ -663,28 +663,31 @@ end;
 procedure TManagerDB.LbBackupsContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  index, i  : integer;
+  Index, I: Integer;
 begin
- index:=LbBackups.ItemAtPos(MousePos,true);
- if index=-1 then
- begin
-  for i:=0 to LbBackups.Items.Count-1 do
-  LbBackups.Selected[i]:=false;
-  Refresh1.Visible:=true;
-  Restore1.Visible:=false;
-  Rename1.Visible:=false;
-  Delete1.Visible:=false;
- end else
- begin
-  Refresh1.Visible:=false;
-  Restore1.Visible:=true;
-  Rename1.Visible:=true;
-  Delete1.Visible:=true;
- end;
- if index<>-1 then
- LbBackups.Selected[index]:=true else PopupMenu5.Tag:=0;
- PopupMenu5.Tag:=index;
- PopupMenu5.Popup(LbBackups.ClientToScreen(MousePos).X,LbBackups.ClientToScreen(MousePos).Y);
+  Index := LbBackups.ItemAtPos(MousePos, True);
+  if Index = -1 then
+  begin
+    for I := 0 to LbBackups.Items.Count - 1 do
+      LbBackups.Selected[I] := False;
+    Refresh1.Visible := True;
+    Restore1.Visible := False;
+    Rename1.Visible := False;
+    Delete1.Visible := False;
+  end
+  else
+  begin
+    Refresh1.Visible := False;
+    Restore1.Visible := True;
+    Rename1.Visible := True;
+    Delete1.Visible := True;
+  end;
+  if Index <> -1 then
+    LbBackups.Selected[Index] := True
+  else
+    PopupMenu5.Tag := 0;
+  PopupMenu5.Tag := Index;
+  PopupMenu5.Popup(LbBackups.ClientToScreen(MousePos).X, LbBackups.ClientToScreen(MousePos).Y);
 end;
 
 procedure TManagerDB.Delete1Click(Sender: TObject);
@@ -868,7 +871,7 @@ begin
   if LockDraw then
     Exit;
 
-  ItemData := TDBPopupMenuInfoRecord(Item.Data);
+  ItemData := FData[Item.Index];
   if SubItem=1 then
   begin
     r2 := Item.DisplayRect(drLabel);
@@ -1035,8 +1038,9 @@ begin
   begin
     if Index + i < 0 then
       Continue;
-    if elvMain.Items.Count <= Index + I then Break;
-    ItemData := TDBPopupMenuInfoRecord(elvMain.Items[Index + I].Data);
+    if ElvMain.Items.Count <= index + I then
+      Break;
+    ItemData := FData[Index + I];
     if not ItemData.InfoLoaded then
     begin
       if B then
@@ -1065,7 +1069,7 @@ begin
         if Index + J >= 0 then
         if Index + J <= elvMain.Items.Count then
         begin
-          ItemData := TDBPopupMenuInfoRecord(elvMain.Items[Index + J].Data);
+          ItemData := FData[Index + J];
           if ItemData.ID = L then
           begin
             N := Index + J;
@@ -1076,7 +1080,7 @@ begin
         if N = MaxInt then
           Continue;
 
-        ItemData := TDBPopupMenuInfoRecord(elvMain.Items[N].Data);
+        ItemData := FData[N];
         ItemData.Exists     := 0;
         ItemData.FileName   := Mince(DA.FileName, 50);
         ItemData.KeyWords   := DA.KeyWords;
@@ -1212,7 +1216,7 @@ begin
       Item := GetListViewItemAt(P.Y);
       if Item = nil then
         Exit;
-      ItemData := TDBPopupMenuInfoRecord(Item.Data);
+      ItemData := FData[Item.Index];
       SetLength(G, 0);
       if ShiftKeyDown then
         CopyFullRecordInfo(Handle, ItemData.ID);
@@ -1386,7 +1390,7 @@ begin
     if s[I] = '&' then
       Delete(S, I, 1);
   NewRating := StrToIntDef(S, 0);
-  ItemData := TDBPopupMenuInfoRecord(ElvMain.Items[Index].Data);
+  ItemData := FData[Index];
   ItemData.Rating := NewRating;
   FQuery := GetQuery;
   try
@@ -1406,7 +1410,7 @@ var
 begin
   Index := PopupMenuRotate.Tag;
   NewRotate := (Sender as TMenuItem).Tag;
-  ItemData := TDBPopupMenuInfoRecord(ElvMain.Items[Index].Data);
+  ItemData := FData[Index];
   ItemData.Rotation := NewRotate;
   FQuery := GetQuery;
   try
@@ -1443,7 +1447,7 @@ begin
   if ElvMain.Selected = nil then
     Exit;
 
-  ItemData := TDBPopupMenuInfoRecord(ElvMain.Selected.Data);
+  ItemData := FData[ElvMain.Selected.Index];
   KeyWords := ItemData.KeyWords;
   G := ItemData.Groups;
   Groups := EnCodeGroups(G);
@@ -1516,7 +1520,7 @@ begin
     if Item.Index = SI then
       Exit;
 
-    ItemData := TDBPopupMenuInfoRecord(Item.Data);
+    ItemData := FData[Item.Index];
     SI := Item.Index;
     P.X := 0;
     P.Y := Y + 18;
@@ -1672,15 +1676,19 @@ begin
   if Item = nil then
     Exit;
 
-  ItemData := TDBPopupMenuInfoRecord(Item.Data);
+  ItemData := FData[Item.Index];
   MenuInfo := GetMenuInfoByID(ItemData.ID);
-  if MenuInfo.Count = 1 then
-    DoProcessPath(MenuInfo[0].FileName);
+  try
+    if MenuInfo.Count = 1 then
+      DoProcessPath(MenuInfo[0].FileName);
 
-  MenuInfo.IsPlusMenu := False;
-  MenuInfo.IsListItem := False;
-  MenuInfo.AttrExists := False;
-  TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, MenuInfo);
+    MenuInfo.IsPlusMenu := False;
+    MenuInfo.IsListItem := False;
+    MenuInfo.AttrExists := False;
+    TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, MenuInfo);
+  finally
+    F(MenuInfo);
+  end;
 end;
 
 procedure TManagerDB.DeleteItemWithID(ID: integer);
@@ -1689,9 +1697,9 @@ var
   SI : integer;
   ItemData : TDBPopupMenuInfoRecord;
 begin
-  for I := 0 to ElvMain.Items.Count - 1 do
+  for I := ElvMain.Items.Count - 1 downto 0 do
   begin
-    ItemData := TDBPopupMenuInfoRecord(ElvMain.Items[I].Data);
+    ItemData := FData[I];
     if ItemData.ID = ID then
     begin
       if ElvMain.Selected <> nil then
@@ -1704,7 +1712,8 @@ begin
         ElvMain.Selected := nil;
         ElvMain.Items.BeginUpdate;
         try
-          ElvMain.Items.Delete(I);
+          FData.Delete(I);
+          ElvMain.Items.Count := ElvMain.Items.Count - 1;
           ItemData.Free;
         finally
           ElvMain.Items.EndUpdate;
@@ -1745,8 +1754,12 @@ var
   DBFile: TPhotoDBFile;
 begin
   DBFile := DoChooseDBFile;
-  if DBKernel.TestDB(DBFile.FileName) then
-    DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
+  try
+    if DBKernel.TestDB(DBFile.FileName) then
+      DBKernel.AddDB(DBFile.Name, DBFile.FileName, DBFile.Icon);
+  finally
+    F(DBFile);
+  end;
   RefreshDBList;
 end;
 
@@ -1768,7 +1781,7 @@ begin
         Ico.Handle := ExtractSmallIconByPath(Application.ExeName + ',0');
       DBImageList.AddIcon(Ico);
     finally
-      Ico.Free;
+      F(Ico);
     end;
   end;
 end;
@@ -1889,7 +1902,7 @@ begin
   N := StrToIntDef(RecordNumberEdit.Text, 1);
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    ItemData := TDBPopupMenuInfoRecord(ElvMain.Items[I].Data);
+    ItemData := FData[I];
     if ItemData.ID >= N then
     begin
       LastSelected := ElvMain.Items[I];

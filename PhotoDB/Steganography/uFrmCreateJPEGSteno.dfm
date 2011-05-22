@@ -65,6 +65,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     Anchors = [akLeft, akTop, akRight]
     Color = 11206655
     TabOrder = 0
+    OnDblClick = BtnChooseFileClick
     WatermarkText = 'Please select a file'
   end
   object BtnChooseFile: TButton

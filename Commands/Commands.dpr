@@ -3,12 +3,19 @@ program Commands;
 uses
   Windows,
   SysUtils,
-  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
-  uMemory in '..\PhotoDB\Units\uMemory.pas';
+  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas';
 
 var
   Action : string;
   FileName : string;
+
+  function StrToIntDef(const S: string; Default: Integer): Integer;
+  var
+    E: Integer;
+  begin
+    Val(S, Result, E);
+    if E <> 0 then Result := Default;
+  end;
 
   procedure DoWait;
   var
@@ -33,6 +40,7 @@ begin
   if Action = '/delete' then
   begin
     FileName := GetParamStrDBValue('/delete');
+
     if FileExists(FileName) then
     begin
       DoWait;

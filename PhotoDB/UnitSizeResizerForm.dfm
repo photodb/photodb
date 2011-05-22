@@ -1,10 +1,8 @@
 object FormSizeResizer: TFormSizeResizer
   Left = 366
   Top = 205
-  BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsSizeToolWin
   Caption = 'Change Image'
-  ClientHeight = 506
+  ClientHeight = 502
   ClientWidth = 394
   Color = clBtnFace
   Constraints.MinHeight = 540
@@ -25,7 +23,7 @@ object FormSizeResizer: TFormSizeResizer
   OnResize = FormResize
   DesignSize = (
     394
-    506)
+    502)
   PixelsPerInch = 96
   TextHeight = 13
   object LbInfo: TLabel
@@ -45,14 +43,15 @@ object FormSizeResizer: TFormSizeResizer
     Left = 8
     Top = 56
     Width = 377
-    Height = 177
+    Height = 173
     Anchors = [akLeft, akTop, akRight, akBottom]
     OnContextPopup = PbImageContextPopup
     OnPaint = PbImagePaint
+    ExplicitHeight = 177
   end
   object BtOk: TButton
     Left = 311
-    Top = 475
+    Top = 471
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -60,30 +59,33 @@ object FormSizeResizer: TFormSizeResizer
     Enabled = False
     TabOrder = 6
     OnClick = BtOkClick
+    ExplicitTop = 475
   end
   object BtCancel: TButton
     Left = 230
-    Top = 475
+    Top = 471
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Cancel'
     TabOrder = 3
     OnClick = BtCancelClick
+    ExplicitTop = 475
   end
   object BtSaveAsDefault: TButton
     Left = 8
-    Top = 475
+    Top = 471
     Width = 153
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'Save settings as default'
     TabOrder = 2
     OnClick = BtSaveAsDefaultClick
+    ExplicitTop = 475
   end
   object EdImageName: TEdit
     Left = 38
-    Top = 264
+    Top = 260
     Width = 318
     Height = 21
     TabStop = False
@@ -98,6 +100,7 @@ object FormSizeResizer: TFormSizeResizer
     TabOrder = 0
     Text = 'Image Name'
     OnEnter = EdImageNameEnter
+    ExplicitTop = 264
   end
   object LsMain: TLoadingSign
     Left = 358
@@ -112,7 +115,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object PrbMain: TDmProgress
     Left = 8
-    Top = 240
+    Top = 236
     Width = 378
     Height = 18
     Visible = False
@@ -129,15 +132,17 @@ object FormSizeResizer: TFormSizeResizer
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
+    ExplicitTop = 240
   end
   object PnOptions: TPanel
     Left = 0
-    Top = 291
+    Top = 287
     Width = 394
     Height = 178
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = 291
     DesignSize = (
       394
       178)
@@ -321,7 +326,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object WlBack: TWebLink
     Left = 8
-    Top = 262
+    Top = 258
     Width = 29
     Height = 24
     Cursor = crHandPoint
@@ -416,10 +421,11 @@ object FormSizeResizer: TFormSizeResizer
       0700FE000700FF000700FF87FF00FF87FF00FFC7FF00FFE7FF00FFFFFF00}
     UseSpecIconSize = True
     HightliteImage = True
+    ExplicitTop = 262
   end
   object WlNext: TWebLink
     Left = 357
-    Top = 262
+    Top = 258
     Width = 29
     Height = 24
     Cursor = crHandPoint
@@ -514,6 +520,7 @@ object FormSizeResizer: TFormSizeResizer
       3F00E0007F00E000FF00FFE1FF00FFE1FF00FFE3FF00FFE7FF00FFFFFF00}
     UseSpecIconSize = True
     HightliteImage = True
+    ExplicitTop = 262
   end
   object ImlWatermarkPatterns: TImageList
     Left = 48

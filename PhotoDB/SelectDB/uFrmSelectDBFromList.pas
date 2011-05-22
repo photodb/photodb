@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, uFrameWizardBase, StdCtrls, ComCtrls, ComboBoxExDB, uMemory,
   UnitDBKernel, ImgList, UnitDBCommonGraphics, uShellIntegration, UnitDBDeclare,
-  uConstants;
+  uConstants, CommonDBSupport;
 
 type
   TFrmSelectDBFromList = class(TFrameWizardBase)
@@ -51,9 +51,14 @@ begin
 end;
 
 procedure TFrmSelectDBFromList.Execute;
+var
+  FileName: string;
 begin
   inherited;
-  DBKernel.AddDB(DBFile.Name, DBFile.FileName, DBFile.Icon);
+  FileName := DBKernel.DBs[CbDBList.ItemIndex].FileName;
+  if CbDefaultDB.Checked then
+    DBKernel.SetDataBase(FileName);
+  dbname := FileName;
   IsStepComplete := True;
   Changed;
 end;

@@ -4,7 +4,7 @@ object ExportForm: TExportForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
   Caption = 'Export Table'
-  ClientHeight = 207
+  ClientHeight = 210
   ClientWidth = 320
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -94,7 +94,7 @@ object ExportForm: TExportForm
     Left = 208
     Top = 184
     Width = 107
-    Height = 17
+    Height = 21
     Caption = 'Begin Export'
     TabOrder = 10
     OnClick = BtnStartClick
@@ -129,7 +129,7 @@ object ExportForm: TExportForm
     Left = 96
     Top = 184
     Width = 105
-    Height = 17
+    Height = 21
     Caption = 'Break'
     Enabled = False
     TabOrder = 9
@@ -140,8 +140,10 @@ object ExportForm: TExportForm
     Top = 8
     Width = 289
     Height = 21
+    Color = 11206655
     TabOrder = 0
     OnChange = Edit1Change
+    OnDblClick = BtnSelectFileClick
     OnKeyPress = Edit1KeyPress
     WatermarkText = 'Please select a file'
   end

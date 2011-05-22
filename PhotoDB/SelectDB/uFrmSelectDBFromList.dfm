@@ -14,7 +14,6 @@ inherited FrmSelectDBFromList: TFrmSelectDBFromList
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Select DB'
     TabOrder = 0
-    ExplicitWidth = 601
     DesignSize = (
       480
       121)
@@ -45,7 +44,8 @@ inherited FrmSelectDBFromList: TFrmSelectDBFromList
       ShowDropDownMenu = True
       LastItemIndex = 0
       ShowEditIndex = -1
-      ExplicitWidth = 585
+      HideItemIcons = False
+      CanClickIcon = False
     end
     object SelectDBFileNameEdit: TEdit
       Left = 8
@@ -55,7 +55,6 @@ inherited FrmSelectDBFromList: TFrmSelectDBFromList
       Anchors = [akLeft, akTop, akRight]
       ReadOnly = True
       TabOrder = 1
-      ExplicitWidth = 585
     end
   end
   object CbDefaultDB: TCheckBox
@@ -66,7 +65,6 @@ inherited FrmSelectDBFromList: TFrmSelectDBFromList
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Use as DB by default'
     TabOrder = 1
-    ExplicitWidth = 590
   end
   object DBImageList: TImageList
     Left = 40

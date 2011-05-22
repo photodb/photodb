@@ -3,7 +3,11 @@ unit uAppUtils;
 interface
 
 uses
-  Classes, SysUtils, uMemory, SyncObjs;
+  Windows
+  {$IFNDEF ONECPU}
+  , SyncObjs
+  {$ENDIF}
+  ;
 
 function GetParamStrDBValue(ParamName : string) : string;
 function GetParamStrDBBool(ParamName : string) : Boolean;
@@ -11,22 +15,36 @@ function GetParamStrDBBool(ParamName : string) : Boolean;
 implementation
 
 var
-  ProgramParams : TStringList = nil;
+  ProgramParams : array of string = nil;
+  {$IFNDEF ONECPU}
   FSync: TCriticalSection;
+  {$ENDIF}
+
+function UpperCase(S: string): string;
+var
+  I: Integer;
+begin
+  Result := S;
+  for I := 1 to Length(S) do
+    S[I] := UpCase(S[I]);
+end;
 
 procedure CheckParams;
 var
-  I : Integer;
+  L,
+  I: Integer;
   S: string;
 begin
   if ProgramParams = nil then
   begin
-    ProgramParams := TStringList.Create;
+    SetLength(ProgramParams, 0);
     S := '';
     I := 1;
     repeat
-      S := AnsiUpperCase(ParamStr(I));
-      ProgramParams.Add(S);
+      S := UpperCase(ParamStr(I));
+      L := Length(ProgramParams);
+      SetLength(ProgramParams, L + 1);
+      ProgramParams[L] := S;
       Inc(I);
     until S = '';
 
@@ -34,41 +52,67 @@ begin
 end;
 
 function GetParamStrDBBool(ParamName : string) : Boolean;
+var
+  I: Integer;
 begin
+  {$IFNDEF ONECPU}
   FSync.Enter;
+  {$ENDIF}
   try
     CheckParams;
-    Result := ProgramParams.IndexOf(AnsiUpperCase(ParamName)) > -1;
+    Result := False;
+    ParamName := UpperCase(ParamName);
+    for I := 0 to Length(ProgramParams) - 1 do
+      if ProgramParams[I] = ParamName then
+      begin
+        Result := True;
+        Break;
+      end;
   finally
+    {$IFNDEF ONECPU}
     FSync.Leave;
+    {$ENDIF}
   end;
 end;
 
 function GetParamStrDBValue(ParamName : string) : string;
 var
-  Index : Integer;
+  I: Integer;
 begin
+  {$IFNDEF ONECPU}
   FSync.Enter;
+  {$ENDIF}
   try
     Result := '';
     if ParamName = '' then
       Exit;
     CheckParams;
-    Index := ProgramParams.IndexOf(AnsiUpperCase(ParamName));
-    if Index > -1 then
-      Result := ProgramParams[Index + 1];
+    ParamName := UpperCase(ParamName);
+    for I := 0 to Length(ProgramParams) - 2 do
+      if ProgramParams[I] = ParamName then
+      begin
+        Result := ProgramParams[I + 1];
+        Break;
+      end;
+
   finally
+    {$IFNDEF ONECPU}
     FSync.Leave;
+    {$ENDIF}
   end;
 end;
 
 initialization
 
+  {$IFNDEF ONECPU}
   FSync := TCriticalSection.Create;
+  {$ENDIF}
 
 finalization
 
-  F(FSync);
-  F(ProgramParams);
+  {$IFNDEF ONECPU}
+  FSync.Free;
+  {$ENDIF}
+ // ProgramParams.Free;
 
 end.

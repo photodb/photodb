@@ -309,9 +309,9 @@ begin
     CbExplorerStartupLocation.Enabled := CbStartUpExplorer.Checked;
     EdExplorerStartupLocation.Enabled := CbExplorerStartupLocation.Checked and CbExplorerStartupLocation.Enabled;
 
-    CbDontAddSmallFiles.Checked := Settings.ReadBool('Options', 'NoAddSmallImages', True);
-    SedMinWidth.Value := Settings.ReadInteger('Options', 'NoAddSmallImagesWidth', 64);
-    SedMinHeight.Value := Settings.ReadInteger('Options', 'NoAddSmallImagesHeight', 64);
+    CbDontAddSmallFiles.Checked := Settings.ReadBool('Options', 'DontAddSmallImages', True);
+    SedMinWidth.Value := Settings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64);
+    SedMinHeight.Value := Settings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64);
     SedMinWidth.Enabled := CbDontAddSmallFiles.Checked;
     SedMinHeight.Enabled := CbDontAddSmallFiles.Checked;
   end;
@@ -546,9 +546,9 @@ begin
     Settings.WriteBool('Options', 'UseSpecialStartUpFolder', CbExplorerStartupLocation.Checked);
     Settings.WriteString('Options', 'SpecialStartUpFolder', EdExplorerStartupLocation.Text);
 
-    Settings.WriteBool('Options', 'NoAddSmallImages', CbDontAddSmallFiles.Checked);
-    Settings.WriteInteger('Options', 'NoAddSmallImagesWidth', SedMinWidth.Value);
-    Settings.WriteInteger('Options', 'NoAddSmallImagesHeight', SedMinHeight.Value);
+    Settings.WriteBool('Options', 'DontAddSmallImages', CbDontAddSmallFiles.Checked);
+    Settings.WriteInteger('Options', 'DontAddSmallImagesWidth', SedMinWidth.Value);
+    Settings.WriteInteger('Options', 'DontAddSmallImagesHeight', SedMinHeight.Value);
 
   end;
   // 2 :

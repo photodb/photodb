@@ -142,7 +142,13 @@ begin
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
     BtnPrevious.Caption := L('Previous');
+
+{$IFDEF INSTALL}
     BtnInstall.Caption := L('Install');
+{$ENDIF}
+{$IFDEF UNINSTALL}
+    BtnInstall.Caption := L('Uninstall');
+{$ENDIF}
     LbWelcome.Caption := L('Welcome to the Photo Database 2.3');
   finally
     EndTranslate;

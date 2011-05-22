@@ -125,7 +125,7 @@ object ManagerDB: TManagerDB
         Left = 212
         Top = 162
         Width = 237
-        Height = 17
+        Height = 25
         Caption = 'Exes SQL'
         TabOrder = 4
         OnClick = BtnExecSQLClick

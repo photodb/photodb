@@ -47,6 +47,7 @@
     <translate name="Update" value="Обновление" />
     <translate name="Program already started!" value="Программа уже запущена!" />
     <translate name="Install" value="Установить" />
+    <translate name="Uninstall" value="Удалить" />
     <translate name="Next" value="Далее" />
     <translate name="Previous" value="Назад" />	
     <translate name="Install path" value="Путь для установки" />
@@ -1504,7 +1505,6 @@
 	<translate name="Do you really want to close this wizard?" value="Вы действительно  хотите закрыть этот диалог?"/>
 	<translate name="Size: %s from %s" value="Размер: %s из %s"/>	
 	<translate name="Processed %d from %d" value="Обработано %d из %d"/>	
-	<translate name="Time remaining: %s (&amp;%%)" value="Осталось времени: %s (&amp;%%)"/>
 	<translate name="Can't add some files to collection because password was not found!" value="Не удалось добавить некоторые файлы в БД т.к. не был найден пароль!"/>
 	<translate name="Convert collection" value="Конвертировать БД"/>	
 	<translate name="This wizard will help you convert your database from one format to another." value="Этот диалог поможет вам конвертировать Вашу базу данных из одного формата в другой."/>
@@ -1514,7 +1514,6 @@
 	<translate name="Please wait until convertation is in progress. This can take some time to complete..." value="Подождите пока выполнится ппреобразование БД, это может потребовать несколько минут..."/>
 	<translate name="Current action" value="Текущее действие"/>	
 	<translate name="You can adjust the size and compression quality of images in the database and other sizes of images" value="Вы можете настроить размеры и качество сжатия изображений в БД и другие размеры изображений"/>
-	
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
 	<translate name="Convertation of the collection is completed!" value="Конвертирование БД завершено!"/>
 	<translate name="Image size: %s" value="Размер изображения: %s"/>
@@ -1535,13 +1534,11 @@
 	<translate name="Previous" value="Назад"/>
 	<translate name="Next" value="Далее"/>
 	<translate name="Delete" value="Удалить"/>
-	<translate name="Start" value="Начать"/>
 	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
 	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
 	<translate name="Finish" value="Финиш"/>
-	<translate name="Break" value="Прервать"/>
 	<translate name="Pause" value="Пауза"/>
-	<translate name="Unpause" value="Запустить"/>
+	<translate name="Resume" value="Запустить"/>
 	<translate name="Width" value="Ширина"/>
 	<translate name="Height" value="Высота"/>
 	<translate name="Import your images into the database" value="Импорт ваших изображений в БД"/>	
@@ -1567,6 +1564,10 @@
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>	
 	<translate name="Please, add any path to import images!" value="Не выбрано ни одного пути для добавления - продолжение невозможно. Нажмите на кнопку &quot;Добавить папку&quot; чтобы добавить путь к фотографиям."/>
 	<translate name="Processing images" value="Обработка изображений"/>
+	<translate name="New collection path" value="Путь к новой базе"/>
+	<translate name="Time remaining: %s" value="Осталось времени: %s"/>
+	<translate name="Processed %d from %d" value="Обработано %d из %d"/>
+	<translate name="Size: %s from %s" value="Размер: %s из %s"/>	
   </scope>
   <scope name="SplitDatabase">
 	<translate name="Select a file to split the database" value="Выбарите файл для разбивки базы"/>
@@ -1683,8 +1684,6 @@
 	<translate name="Help" value="Помощь"/>
 	<translate name="Copy" value="Копировать"/>
 	<translate name="Do you really want to refuse help?" value="Вы действительно хотите отказаться от помощи?"/>
-	<translate name="Do you want to get help, how to activate the program? If YES, then click on &quot;More...&quot; for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed. $nl$$nl$" value="Вы хотите получить справку, как активировать программу? Если ДА, то нажмите на кнопку &quot;Далее...&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$$nl$"/>
-	<translate name="To activate the program call the context menu, select &quot;Help&quot; -> &quot;Activation&quot;$nl$$nl$     Click &quot;More ...&quot; for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$" value="Для активации программы в контекстном меню выберите пункт &quot;Справка&quot;->&quot;Активация программы&quot;$nl$$nl$     Нажмите &quot;Далее...&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$$nl$"/>
 	<translate name="Find in explorer folder with your photos, select the photo and press &quot;Add item(s)&quot; in menu.$nl$$nl$     Click &quot;More ...&quot; for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$" value="Найдите в проводнике папку с вашими фотографиями и, выделив фотографии, в меню выберите &quot;Добавить объект(ы)&quot;.$nl$$nl$     Нажмите &quot;Далее...&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$$nl$"/>
 	<translate name="Now the pictures that do not have icon (+) in the upper left corner are in the collection. They are available using the search and for them advanced context menu is available. Further help is available from the main menu (Help -> Help).$nl$$nl$" value="Теперь фотографии, у которых не отображается иконка (+) в верхнем левом углу находятся в БД. Они доступны по поиску в окне поиска и к ним доступно контекстное меню со свойствами. Дальнейшая справка доступна из главного меню (Справка -> Справка).$nl$$nl$"/>
 	<translate name="Click the &quot;Add item (s)&quot; to add photos to the database. After that the pictures you can add information.$nl$$nl$     Click &quot;More ...&quot; for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$" value="Нажмите на кнопку &quot;Добавить объект(ы)&quot; чтобы добавить фотографии в БД. После этого к фотографии можно добавлять информацию.$nl$$nl$     Нажмите &quot;Далее...&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$$nl$"/>	
@@ -1759,7 +1758,7 @@
     <translate name="Stop" value="Остановить" />
     <translate name="Abort" value="Прервать" />
     <translate name="Pause" value="Пауза"/>
-    <translate name="Unpause" value="Запустить"/>
+    <translate name="Resume" value="Запустить"/>
     <translate name="Current action" value="Текущее действие"/>	
     <translate name="&amp;%% (Added)" value="&amp;%% (Добавлено)" />
     <translate name="&amp;%% (Updated)" value="&amp;%% (Обновлено)" />

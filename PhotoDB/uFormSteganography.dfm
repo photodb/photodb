@@ -337,8 +337,6 @@ object FormSteganography: TFormSteganography
     Caption = 'BtnNext'
     TabOrder = 0
     OnClick = BtnNextClick
-    ExplicitLeft = 526
-    ExplicitTop = 320
   end
   object BtnCancel: TButton
     Left = 374
@@ -349,8 +347,6 @@ object FormSteganography: TFormSteganography
     Caption = 'BtnCancel'
     TabOrder = 1
     OnClick = BtnCancelClick
-    ExplicitLeft = 364
-    ExplicitTop = 320
   end
   object BtnPrevious: TButton
     Left = 455
@@ -361,8 +357,6 @@ object FormSteganography: TFormSteganography
     Caption = 'Previous'
     TabOrder = 2
     OnClick = BtnPreviousClick
-    ExplicitLeft = 445
-    ExplicitTop = 320
   end
   object BtnFinish: TButton
     Left = 536
@@ -373,8 +367,6 @@ object FormSteganography: TFormSteganography
     Caption = 'BtnFinish'
     TabOrder = 3
     OnClick = BtnFinishClick
-    ExplicitLeft = 526
-    ExplicitTop = 320
   end
   object LsWorking: TLoadingSign
     Left = 343
@@ -384,6 +376,7 @@ object FormSteganography: TFormSteganography
     Visible = False
     Active = True
     FillPercent = 50
+    Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
   end

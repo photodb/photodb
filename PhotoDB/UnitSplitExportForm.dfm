@@ -2,8 +2,8 @@ object SplitExportForm: TSplitExportForm
   Left = 203
   Top = 157
   Caption = 'SplitExportForm'
-  ClientHeight = 389
-  ClientWidth = 470
+  ClientHeight = 405
+  ClientWidth = 486
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,15 +16,22 @@ object SplitExportForm: TSplitExportForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  DesignSize = (
+    486
+    405)
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 470
+    Width = 486
     Height = 113
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 470
+    DesignSize = (
+      486
+      113)
     object Image1: TImage
       Left = 8
       Top = 8
@@ -72,8 +79,9 @@ object SplitExportForm: TSplitExportForm
     object Label1: TLabel
       Left = 32
       Top = 8
-      Width = 377
+      Width = 446
       Height = 33
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Label1'
       WordWrap = True
@@ -85,100 +93,65 @@ object SplitExportForm: TSplitExportForm
       Height = 13
       Caption = 'FileName'
     end
-    object Panel4: TPanel
-      Left = 1
-      Top = 94
-      Width = 468
-      Height = 18
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 0
-      object Label3: TLabel
-        Left = 8
-        Top = 2
-        Width = 82
-        Height = 13
-        Caption = 'Folders and Files:'
-      end
+    object Label3: TLabel
+      Left = 9
+      Top = 93
+      Width = 82
+      Height = 13
+      Caption = 'Folders and Files:'
     end
-    object Panel5: TPanel
-      Left = 1
-      Top = 71
-      Width = 468
-      Height = 23
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 1
-      object CheckBox1: TCheckBox
-        Left = 8
-        Top = 3
-        Width = 281
-        Height = 17
-        Caption = 'Delete this Records after finishing'
-        TabOrder = 0
-      end
-    end
-    object Panel6: TPanel
-      Left = 1
+    object EdDBName: TWatermarkedEdit
+      Left = 9
       Top = 47
-      Width = 468
-      Height = 24
-      Align = alBottom
-      BevelOuter = bvNone
+      Width = 403
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
+      Color = 11206655
+      ReadOnly = True
+      TabOrder = 0
+      OnDblClick = BtnChooseFileClick
+      WatermarkText = 'Select a file to split the database'
+      ExplicitWidth = 379
+    end
+    object BtnChooseFile: TButton
+      Left = 411
+      Top = 47
+      Width = 17
+      Height = 21
+      Anchors = [akTop, akRight]
+      Caption = '...'
+      TabOrder = 1
+      OnClick = BtnChooseFileClick
+      ExplicitLeft = 387
+    end
+    object BtnNew: TButton
+      Left = 427
+      Top = 47
+      Width = 51
+      Height = 21
+      Anchors = [akTop, akRight]
+      Caption = 'New'
       TabOrder = 2
-      object Panel7: TPanel
-        Left = 391
-        Top = 0
-        Width = 77
-        Height = 24
-        Align = alRight
-        BevelOuter = bvNone
-        TabOrder = 0
-        object Button1: TButton
-          Left = 4
-          Top = 4
-          Width = 17
-          Height = 20
-          Caption = '...'
-          TabOrder = 0
-          OnClick = Button1Click
-        end
-        object BtnNew: TButton
-          Left = 24
-          Top = 4
-          Width = 51
-          Height = 19
-          Caption = 'New'
-          TabOrder = 1
-          OnClick = BtnNewClick
-        end
-      end
-      object Panel8: TPanel
-        Left = 0
-        Top = 0
-        Width = 391
-        Height = 24
-        Align = alClient
-        BevelOuter = bvNone
-        TabOrder = 1
-        object EdDBName: TWatermarkedEdit
-          Left = 8
-          Top = 0
-          Width = 1200
-          Height = 21
-          ReadOnly = True
-          TabOrder = 0
-          WatermarkText = 'Select a file to split the database'
-        end
-      end
+      OnClick = BtnNewClick
+      ExplicitLeft = 403
+    end
+    object CbDeleteRecords: TCheckBox
+      Left = 8
+      Top = 71
+      Width = 470
+      Height = 17
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 'Delete this Records after finishing'
+      TabOrder = 3
+      ExplicitWidth = 446
     end
   end
   object ListView1: TListView
     Left = 0
     Top = 113
-    Width = 470
-    Height = 235
-    Align = alClient
+    Width = 494
+    Height = 253
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Columns = <
       item
         Caption = 'Method'
@@ -197,60 +170,51 @@ object SplitExportForm: TSplitExportForm
     OnKeyDown = ListView1KeyDown
     OnMouseDown = ListView1MouseDown
     OnResize = ListView1Resize
+    ExplicitWidth = 470
+    ExplicitHeight = 220
   end
-  object Panel2: TPanel
-    Left = 0
-    Top = 348
-    Width = 470
-    Height = 41
-    Align = alBottom
+  object BtnCancel: TButton
+    Left = 322
+    Top = 372
+    Width = 75
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Cancel'
     TabOrder = 2
-    object Panel3: TPanel
-      Left = 301
-      Top = 1
-      Width = 168
-      Height = 39
-      Align = alRight
-      BevelOuter = bvNone
-      TabOrder = 0
-      object BtnOk: TButton
-        Left = 88
-        Top = 8
-        Width = 75
-        Height = 25
-        Caption = 'Ok'
-        TabOrder = 0
-        OnClick = BtnOkClick
-      end
-      object BtnCancel: TButton
-        Left = 7
-        Top = 8
-        Width = 75
-        Height = 25
-        Caption = 'Cancel'
-        TabOrder = 1
-        OnClick = BtnCancelClick
-      end
-    end
+    OnClick = BtnCancelClick
+    ExplicitLeft = 298
+    ExplicitTop = 339
+  end
+  object BtnOk: TButton
+    Left = 403
+    Top = 372
+    Width = 75
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Ok'
+    TabOrder = 3
+    OnClick = BtnOkClick
+    ExplicitLeft = 379
+    ExplicitTop = 339
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = [dtCopy, dtLink]
     OnDrop = DropFileTarget1Drop
     OptimizedMove = True
-    Left = 8
-    Top = 280
+    Left = 56
+    Top = 312
   end
   object ImageList1: TImageList
-    Left = 296
-    Top = 72
+    Left = 200
+    Top = 256
   end
   object MethodImageList: TImageList
-    Left = 336
-    Top = 72
+    Left = 200
+    Top = 312
   end
   object PmMethod: TPopupMenu
-    Left = 176
-    Top = 152
+    Left = 128
+    Top = 312
     object Copy1: TMenuItem
       Caption = 'Copy'
       OnClick = Copy1Click

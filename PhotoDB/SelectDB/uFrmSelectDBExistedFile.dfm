@@ -60,6 +60,7 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       Color = 11206655
       ReadOnly = True
       TabOrder = 0
+      OnDblClick = BtnSelectFileClick
     end
     object EdDBType: TWatermarkedEdit
       Left = 8

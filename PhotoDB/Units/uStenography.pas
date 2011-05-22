@@ -14,10 +14,10 @@ const
 type
   StenographyHeader = record
     ID: string[StenoHeaderIdLength];
+    Version : Byte;
     FileSize : Integer;
     Seed: TSeed;
     FileName: TFileNameUnicode;
-    Version : Byte;
     IsCrypted: Boolean;
     PassCRC: Cardinal;
     Chiper : Cardinal;

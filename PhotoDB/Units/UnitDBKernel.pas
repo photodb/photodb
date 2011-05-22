@@ -809,37 +809,40 @@ begin
   Result := DBNamePattern;
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    Reg.OpenKey(RegRoot + 'dbs', True);
-    DBS := TStringList.Create;
     try
-      Reg.GetKeyNames(DBS);
-      Reg.CloseKey;
-      DBNameCurrent := DBNamePattern;
-      for J := 1 to 1000 do
-      begin
-        B := False;
-        for I := 0 to DBS.Count - 1 do
+      Reg.OpenKey(RegRoot + 'dbs', True);
+      DBS := TStringList.Create;
+      try
+        Reg.GetKeyNames(DBS);
+        Reg.CloseKey;
+        DBNameCurrent := DBNamePattern;
+        for J := 1 to 1000 do
         begin
-          if AnsiLowerCase(DBS[I]) = AnsiLowerCase(DBNameCurrent) then
+          B := False;
+          for I := 0 to DBS.Count - 1 do
           begin
-            B := True;
+            if AnsiLowerCase(DBS[I]) = AnsiLowerCase(DBNameCurrent) then
+            begin
+              B := True;
+            end;
+          end;
+          if B then
+            DBNameCurrent := DBNamePattern + '_' + IntToStr(J)
+          else begin
+            Result := DBNameCurrent;
+            Exit;
           end;
         end;
-        if B then
-          DBNameCurrent := DBNamePattern + '_' + IntToStr(J)
-        else begin
-          Result := DBNameCurrent;
-          Exit;
-        end;
+      finally
+        F(DBS);
       end;
-    finally
-      F(DBS);
+    except
+      on E: Exception do
+        EventLog(':TDBKernel::NewDBName() throw exception: ' + E.message);
     end;
-  except
-    on E: Exception do
-      EventLog(':TDBKernel::NewDBName() throw exception: ' + E.message);
+  finally
+    F(Reg);
   end;
-  F(Reg);
 end;
 
 procedure TDBKernel.AddDB(DBName, DBFile, DBIco: string; Force: Boolean = False);

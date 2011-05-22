@@ -24,6 +24,7 @@ type
     function GetIsFinalStep: Boolean;
     function GetIsBusy: Boolean;
     procedure AddStepInstance(StepType: TFrameWizardBaseClass);
+    function GetIsPaused: Boolean;
   protected
     function GetWizardDone: Boolean; override;
     function GetOperationInProgress: Boolean; override;
@@ -37,6 +38,7 @@ type
     function GetStepByType(StepType: TFrameWizardBaseClass) : TFrameWizardBase; override;
     procedure Execute;
     procedure Start(Owner: TWinControl; X, Y: Integer);
+    procedure Pause(Value: Boolean); override;
     procedure BreakOperation; override;
     procedure NotifyChange; override;
     property OnChange : TNotifyEvent read FOnChange write FOnChange;
@@ -47,6 +49,7 @@ type
     property CanGoBack: Boolean read GetCanGoBack;
     property CanGoNext: Boolean read GetCanGoNext;
     property IsFinalStep: Boolean read GetIsFinalStep;
+    property IsPaused: Boolean read GetIsPaused;
   end;
 
 implementation
@@ -207,6 +210,11 @@ begin
   Result := Steps[CurrentStep].IsFinal;
 end;
 
+function TWizardManager.GetIsPaused: Boolean;
+begin
+  Result := Steps[CurrentStep].IsPaused;
+end;
+
 function TWizardManager.GetOperationInProgress: Boolean;
 begin
   Result := Steps[CurrentStep].OperationInProgress;
@@ -246,6 +254,11 @@ procedure TWizardManager.OnStepChanged(Sender: TObject);
 begin
   if Assigned(FOnChange) then
     FOnChange(Sender);
+end;
+
+procedure TWizardManager.Pause(Value: Boolean);
+begin
+  Steps[CurrentStep].Pause(Value);
 end;
 
 procedure TWizardManager.PrevStep;

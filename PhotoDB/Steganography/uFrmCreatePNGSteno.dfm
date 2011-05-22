@@ -170,6 +170,7 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     Color = 11206655
     ReadOnly = True
     TabOrder = 1
+    OnDblClick = BtnChooseFileClick
     WatermarkText = 'Please select a file'
   end
   object BtnChooseFile: TButton

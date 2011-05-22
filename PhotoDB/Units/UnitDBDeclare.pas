@@ -221,6 +221,12 @@ type
   end;
 
 type
+  TImportPlace = class(TObject)
+  public
+    Path: string;
+  end;
+
+type
   TDBPopupMenuInfoRecord = class(TObject)
   private
     FOriginalFileName: string;

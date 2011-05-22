@@ -325,7 +325,10 @@ uses
   uFrmSteganographyLanding in 'Steganography\uFrmSteganographyLanding.pas' {FrmSteganographyLanding: TFrame},
   uFrmCreatePNGSteno in 'Steganography\uFrmCreatePNGSteno.pas' {FrmCreatePNGSteno: TFrame},
   uFrmCreateJPEGSteno in 'Steganography\uFrmCreateJPEGSteno.pas' {FrmCreateJPEGSteno: TFrame},
-  uStenoLoadImageThread in 'Threads\uStenoLoadImageThread.pas';
+  uStenoLoadImageThread in 'Threads\uStenoLoadImageThread.pas',
+  uFrmImportImagesLanding in 'ImportImages\uFrmImportImagesLanding.pas' {FrmImportImagesLanding: TFrame},
+  uFrmImportImagesOptions in 'ImportImages\uFrmImportImagesOptions.pas' {FrmImportImagesOptions: TFrame},
+  uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame};
 
 {$R *.res}
 
