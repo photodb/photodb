@@ -22,6 +22,7 @@ type
     function SynchronizeEx(Method: TThreadMethod) : Boolean; virtual;
     property SupportedExt: string read GetSupportedExt;
     property OwnerForm: TDBForm read FOwnerForm;
+    procedure Execute; override;
   public
     constructor Create(OwnerForm: TDBForm; CreateSuspended: Boolean);
     destructor Destroy; override;
@@ -47,12 +48,16 @@ type
     function GetThreadHandle(Thread: TDBThread): THandle;
   end;
 
+  TpImmDisableIME = function(idThread: DWORD ): BOOL; stdcall;
+
 function DBThreadManager: TDBThreadManager;
 
 implementation
 
 var
   FDBThreadManager: TDBThreadManager = nil;
+  pImmDisableIME: TpImmDisableIME = nil;
+  hModuleImm32: THandle = 0;
 
 function DBThreadManager: TDBThreadManager;
 begin
@@ -91,6 +96,18 @@ begin
   GOM.RemoveObj(Self);
   DBThreadManager.UnRegisterThread(Self);
   inherited;
+end;
+
+procedure TDBThread.Execute;
+begin
+  if hModuleImm32 = 0 then
+  begin
+    hModuleImm32 := LoadLibrary('imm32.dll');
+    if (hModuleImm32 > 0) then
+      pImmDisableIME := GetProcAddress(hModuleImm32, 'ImmDisableIME');
+  end;
+  if Assigned(pImmDisableIME) then
+    pImmDisableIME(0);
 end;
 
 function TDBThread.GetSupportedExt: string;

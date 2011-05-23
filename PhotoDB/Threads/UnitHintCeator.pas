@@ -80,6 +80,7 @@ var
   Bitmap, FB : TBitmap;
   FW, FH : Integer;
 begin
+  inherited;
   FreeOnTerminate := True;
 
   try

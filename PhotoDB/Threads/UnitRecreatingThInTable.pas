@@ -171,6 +171,7 @@ var
   end;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

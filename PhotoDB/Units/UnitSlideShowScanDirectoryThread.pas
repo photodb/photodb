@@ -36,8 +36,9 @@ end;
 
 procedure TSlideShowScanDirectoryThread.Execute;
 var
-  N : integer;
+  N: Integer;
 begin
+  inherited;
   FreeOnTerminate:=true;
   CoInitialize(nil);
   try

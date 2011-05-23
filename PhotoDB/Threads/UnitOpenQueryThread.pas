@@ -42,6 +42,7 @@ end;
 
 procedure TOpenQueryThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

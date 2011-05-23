@@ -54,6 +54,7 @@ var
   Graphic : TGraphic;
   GraphicClass : TGraphicClass;
 begin
+  inherited;
   FreeOnTerminate := True;
   GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FOptions.FileName));
   if GraphicClass = nil then

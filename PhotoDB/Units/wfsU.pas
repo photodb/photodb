@@ -217,6 +217,7 @@ end;
 
 procedure TWFS.Execute;
 begin
+  inherited;
   TW.I.Start('TWFS.Execute - START');
 
   FreeOnTerminate := True;

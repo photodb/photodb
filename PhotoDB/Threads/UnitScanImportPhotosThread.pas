@@ -146,6 +146,7 @@ var
 
 
 begin
+  inherited;
   FreeOnTerminate := True;
 
   FOptions.Mask := '|' + FOptions.Mask + '|';

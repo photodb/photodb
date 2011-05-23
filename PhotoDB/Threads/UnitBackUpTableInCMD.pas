@@ -46,6 +46,7 @@ var
   FSIn, FSOut: TFileStream;
   Directory : string;
 begin
+  inherited;
   FreeOnTerminate := True;
 
   Directory := ExcludeTrailingBackslash(GetAppDataDirectory + BackUpFolder);

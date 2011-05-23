@@ -73,6 +73,7 @@ var
   J, I, Incr: Integer;
   Files: TStrings;
 begin
+  inherited;
   FreeOnTerminate := True;
   if not FDoPrint then
   begin

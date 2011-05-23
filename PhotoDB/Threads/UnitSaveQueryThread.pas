@@ -135,6 +135,7 @@ var
   FQuery: TDataSet;
   FTable: TDataSet;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     CoInitialize(nil);

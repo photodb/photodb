@@ -171,6 +171,7 @@ var
   GraphicClass : TGraphicClass;
   Text_error_out : string;
 begin
+  inherited;
   Text_error_out := L('Unable to show file:');
   try
     if ValidCryptGraphicFile(FInfo.FileName) then

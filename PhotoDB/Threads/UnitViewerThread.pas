@@ -88,6 +88,7 @@ var
   PNG : TPNGImage;
   GraphicClass : TGraphicClass;
 begin
+  inherited;
   FreeOnTerminate := True;
   FPages := 0;
   Priority := TpHigher;

@@ -93,6 +93,7 @@ var
   GraphicClass : TGraphicClass;
   OldMode : Cardinal;
 begin
+  inherited;
   FreeOnTerminate := True;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try

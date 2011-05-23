@@ -100,6 +100,7 @@ var
   I, J: Integer;
   C: Integer;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

@@ -49,6 +49,7 @@ var
   UpdateText: string;
   LastCheckDate: TDateTime;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

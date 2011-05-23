@@ -56,6 +56,7 @@ var
   end;
 
 begin
+  inherited;
   FDataList := TList.Create;
   try              
     FQuery := GetQuery(True);

@@ -171,6 +171,7 @@ var
   ImageSettings: TImageDBOptions;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     CoInitialize(nil);

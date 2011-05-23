@@ -182,6 +182,7 @@ var
   Data: TDBPopupMenuInfo;
   DataRec: TDBPopupMenuInfoRecord;
 begin
+  inherited;
   FreeOnTerminate := True;
   Graphic := nil;
   CoInitialize(nil);

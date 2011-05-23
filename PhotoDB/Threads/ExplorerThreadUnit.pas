@@ -226,6 +226,7 @@ var
   end;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
@@ -558,7 +559,7 @@ begin
             begin
               Inc(InfoPosition);
               ShowInfo(InfoPosition);
-              CurrentFile:=FFiles[I].FileName;
+              CurrentFile := FFiles[I].FileName;
               CurrentInfoPos := I;
               ReplaceImageItemImage(FFiles[I].FileName, FFiles[I].FileSize, FFiles[I].SID);
             end;

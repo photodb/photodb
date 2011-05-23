@@ -51,6 +51,7 @@ var
   GraphicClass : TGraphicClass;
   ShadowImage : TBitmap;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

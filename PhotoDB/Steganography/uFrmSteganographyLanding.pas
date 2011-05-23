@@ -219,6 +219,19 @@ var
         TD_ICON_WARNING);
   end;
 
+  procedure ExtractJpegInfo(S: TStream);
+  begin
+    if not ExtractJPEGSteno(S, MS, Header) then
+    begin
+      MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
+        TD_ICON_WARNING);
+      Exit;
+    end;
+
+    MS.Seek(0, soFromBeginning);
+    SaveData(Header, MS);
+  end;
+
 begin
   RbExtractDataFromImage.Checked := True;
   Result := False;
@@ -282,30 +295,31 @@ begin
           if Password = '' then
             Password := GetImagePasswordFromUser(FileName);
 
-          if Password <> '' then
-            if not DeCryptGraphicFileToStream(FileName, Password, MS) then
-            begin
-              MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-              Exit;
-            end
-          else begin
-            MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-            Exit;
-          end;
-        end else
-        begin
-          FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+          Info := TMemoryStream.Create;
           try
-            if not ExtractJPEGSteno(FS, MS, Header) then
+            if Password <> '' then
             begin
-              MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
-                TD_ICON_WARNING);
+              if not DeCryptGraphicFileToStream(FileName, Password, Info) then
+              begin
+                MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+                Exit;
+              end
+            end else begin
+              MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
               Exit;
             end;
 
-            MS.Seek(0, soFromBeginning);
-            SaveData(Header, MS);
+            ExtractJpegInfo(Info);
+          finally
+            F(Info);
+          end;
 
+        end else
+        begin
+
+          FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+          try
+            ExtractJpegInfo(FS);
           finally
             F(FS);
           end;

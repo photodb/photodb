@@ -67,6 +67,7 @@ var
   PreviewImage: TBitmap;
   W, H: Integer;
 begin
+  inherited;
   FreeOnTerminate := True;
 
   try

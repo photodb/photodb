@@ -70,6 +70,7 @@ var
   ImageSettings: TImageDBOptions;
   FRegGroups : TGroups;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     SetText(L('Initialization') + '...');

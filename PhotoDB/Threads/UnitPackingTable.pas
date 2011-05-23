@@ -32,6 +32,7 @@ end;
 
 procedure PackingTable.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     FText := L('Packing collection files...');

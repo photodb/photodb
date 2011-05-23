@@ -77,8 +77,9 @@ var
   FileName: string;
   FSpecQuery: TDataSet;
 begin
-  ConvertationResult := False;
+  inherited;
   FreeOnTerminate := True;
+  ConvertationResult := False;
   CoInitialize(nil);
   try
     ToFileName := IncludeTrailingBackslash(ExtractFileDir(FFileName)) + GetFileNameWithoutExt(FFileName) + '$';

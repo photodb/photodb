@@ -101,6 +101,7 @@ end;
 
 procedure SearchThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

@@ -67,6 +67,7 @@ var
   end;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     CoInitialize(nil);

@@ -88,6 +88,7 @@ procedure TWindowsCopyFilesThread.Execute;
 var
   Res: Boolean;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     Res := CopyFilesSynch(FHandle, FSrc, FDest, FMove, FAutoRename) = 0;

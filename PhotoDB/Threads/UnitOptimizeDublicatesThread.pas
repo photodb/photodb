@@ -139,6 +139,7 @@ var
   end;
 
 begin
+  inherited;
 
   Locked := False;
   TerminatingOptimizeDublicates := False;

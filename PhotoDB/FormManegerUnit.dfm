@@ -14,9 +14,4 @@ object FormManager: TFormManager
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object AevMain: TApplicationEvents
-    OnMessage = AevMainMessage
-    Left = 16
-    Top = 8
-  end
 end

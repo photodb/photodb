@@ -280,6 +280,7 @@ const
   end;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   FEndProcessing := False;
   NewGraphic := nil;

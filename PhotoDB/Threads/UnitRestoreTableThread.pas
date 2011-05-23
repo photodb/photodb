@@ -44,6 +44,7 @@ var
   S: string;
   FileName: string;
 begin
+  inherited;
   FreeOnTerminate := True;
 
   S := ExtractFilePath(Application.ExeName);

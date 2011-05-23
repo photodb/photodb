@@ -87,6 +87,7 @@ procedure TSearchBigImagesLoaderThread.Execute;
 var
   I : Integer;
 begin
+  inherited;
   FreeOnTerminate := True;
 
   if not FMainThread then

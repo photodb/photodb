@@ -142,6 +142,7 @@ procedure TPrivateHelperThread.Execute;
 var
   Query : TDataSet;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

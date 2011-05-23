@@ -83,6 +83,7 @@ end;
 
 procedure TBaseEffectThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   D := TBitmap.Create;
   FProc(BaseImage, D, CallBack);

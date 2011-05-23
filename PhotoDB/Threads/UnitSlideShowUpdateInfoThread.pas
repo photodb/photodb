@@ -43,6 +43,7 @@ end;
 
 procedure TSlideShowUpdateInfoThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

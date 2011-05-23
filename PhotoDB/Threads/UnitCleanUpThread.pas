@@ -55,6 +55,8 @@ var
   DateToAdd, ATime: TDateTime;
   IsDate, IsTime: Boolean;
 begin
+  inherited;
+
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

@@ -208,6 +208,7 @@ var
   end;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   CompareThreadTerminated := False;
   try

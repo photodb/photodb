@@ -278,6 +278,7 @@ var
   end;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
@@ -732,6 +733,7 @@ var
   Size: Integer;
   Files: TStrings;
 begin
+  inherited;
   FreeOnTerminate := True;
   Files := TStringList.Create;
   try

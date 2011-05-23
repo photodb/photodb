@@ -88,6 +88,7 @@ var
   FBit, TempBitmap: TBitmap;
   W, H: Integer;
 begin
+  inherited;
   FreeOnTerminate := True;
 
   try

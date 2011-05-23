@@ -20,6 +20,7 @@ implementation
 
 procedure TLoadDBSettingsThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

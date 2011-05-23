@@ -45,6 +45,7 @@ end;
 
 procedure TActiveTableThread.Execute;
 begin
+  inherited;
   ActiveOk := False;
   CoInitialize(nil);
   try
