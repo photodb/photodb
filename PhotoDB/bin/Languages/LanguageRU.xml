@@ -1489,6 +1489,7 @@
 	<translate name="Preview size: %dpx" value="Предпросмотр: %dpx"/>
 	<translate name="Small preview size: %dpx" value="Изображения в панели: %dpx"/>
 	<translate name="Change the size and quality of previews" value="Изменение размеров предпросмотров и качества"/>
+	<translate name="There is no registered collection!" value="Нет зарегистрированных баз!"/>
   </scope>
   <scope name="ConvertDB">
 	<translate name="Previous" value="Назад"/>

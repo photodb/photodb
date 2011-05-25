@@ -165,7 +165,8 @@ end;
 
 procedure TWizardManager.Execute;
 begin
-  Steps[CurrentStep].Execute;
+  if Steps[CurrentStep].ValidateStep(True) then
+    Steps[CurrentStep].Execute;
 end;
 
 function TWizardManager.GetCanGoBack: Boolean;

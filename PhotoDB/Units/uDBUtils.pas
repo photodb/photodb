@@ -96,18 +96,20 @@ end;
 
 procedure CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory : string);
 var
-  NewGroup : TGroup;
+  NewGroup: TGroup;
+  ImagesDir: string;
 begin
   if not IsValidGroupsTableW(FileName) then
   begin
-    if FileExists(CurrentImagesDirectory + 'Images\Me.jpg') then
+    ImagesDir := IncludeTrailingBackslash(CurrentImagesDirectory) + 'Images\';
+    if FileExists(ImagesDir + 'Me.jpg') then
     begin
       try
         NewGroup.GroupName := GetWindowsUserName;
         NewGroup.GroupCode := CreateNewGroupCode;
         NewGroup.GroupImage := TJPEGImage.Create;
         try
-          NewGroup.GroupImage.LoadFromFile(CurrentImagesDirectory + 'Images\Me.jpg');
+          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Me.jpg');
           NewGroup.GroupDate := Now;
           NewGroup.GroupComment := '';
           NewGroup.GroupFaces := '';
@@ -125,19 +127,19 @@ begin
           EventLog(':CreateExampleDB() throw exception: ' + E.message);
       end;
     end;
-  if FileExists(CurrentImagesDirectory + 'Images\Friends.jpg') then
+  if FileExists(ImagesDir + 'Friends.jpg') then
     begin
       try
-        NewGroup.GroupName := TA('Friends', 'Groups');
+        NewGroup.GroupName := TA('Friends', 'Setup');
         NewGroup.GroupCode := CreateNewGroupCode;
         NewGroup.GroupImage := TJPEGImage.Create;
         try
-          NewGroup.GroupImage.LoadFromFile(CurrentImagesDirectory + 'Images\Friends.jpg');
+          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Friends.jpg');
           NewGroup.GroupDate := Now;
           NewGroup.GroupComment := '';
           NewGroup.GroupFaces := '';
           NewGroup.GroupAccess := 0;
-          NewGroup.GroupKeyWords := TA('Friends', 'Groups');
+          NewGroup.GroupKeyWords := TA('Friends', 'Setup');
           NewGroup.AutoAddKeyWords := True;
           NewGroup.RelatedGroups := '';
           NewGroup.IncludeInQuickList := True;
@@ -150,19 +152,19 @@ begin
           EventLog(':CreateExampleDB() throw exception: ' + E.message);
       end;
     end;
-    if FileExists(CurrentImagesDirectory + 'Images\Family.jpg') then
+    if FileExists(ImagesDir + 'Family.jpg') then
     begin
       try
-        NewGroup.GroupName := TA('Family', 'Groups');
+        NewGroup.GroupName := TA('Family', 'Setup');
         NewGroup.GroupCode := CreateNewGroupCode;
         NewGroup.GroupImage := TJPEGImage.Create;
         try
-          NewGroup.GroupImage.LoadFromFile(CurrentImagesDirectory + 'Images\Family.jpg');
+          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Family.jpg');
           NewGroup.GroupDate := Now;
           NewGroup.GroupComment := '';
           NewGroup.GroupFaces := '';
           NewGroup.GroupAccess := 0;
-          NewGroup.GroupKeyWords := TA('Family', 'Groups');
+          NewGroup.GroupKeyWords := TA('Family', 'Setup');
           NewGroup.AutoAddKeyWords := True;
           NewGroup.RelatedGroups := '';
           NewGroup.IncludeInQuickList := True;

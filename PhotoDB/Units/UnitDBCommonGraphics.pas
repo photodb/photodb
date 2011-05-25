@@ -53,6 +53,7 @@ procedure SelectedColor(Image: TBitmap; Color: TColor);
 procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
 procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
 procedure AssignGraphic(Dest: TBitmap; Src: TGraphic);
+procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
 procedure RemoveBlackColor(Bitmap: TBitmap);
 function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 procedure SetIconToPictureFromPath(Picture: TPicture; IconPath: string);
@@ -363,6 +364,7 @@ var
   Angle : Integer;
   Mask : TBitmap;
   PS, PD : PARGB;
+  PD32: PARGB32;
   R, G, B : Byte;
   L, L1 : Byte;
   RealAngle: Double;
@@ -373,7 +375,8 @@ var
 begin
   if Text = '' then
     Exit;
-  Bitmap.PixelFormat := pf24bit;
+  if Bitmap.PixelFormat <> pf32Bit then
+   Bitmap.PixelFormat := pf24bit;
   Width := Round(Bitmap.Width / XBlocks);
   Height := Round(Bitmap.Height / YBlocks);
   TextHeight := 0;
@@ -459,18 +462,38 @@ begin
           Mask.Canvas.TextRect(Rct, Text, [tfBottom, tfSingleLine]);
       end;
 
-    for I := 0 to Bitmap.Height - 1 do
+    if Bitmap.PixelFormat = pf32bit then
     begin
-      PS := Mask.ScanLine[I];
-      PD := Bitmap.ScanLine[I];
-      for J := 0 to Bitmap.Width - 1 do
+      for I := 0 to Bitmap.Height - 1 do
       begin
-        L := 255 - PS[J].R;
-        L := L * Transparent div 255;
-        L1 := 255 - L;
-        PD[J].R := (PD[J].R * L1 + R * L + $7F) div 255;
-        PD[J].G := (PD[J].G * L1 + G * L + $7F) div 255;
-        PD[J].B := (PD[J].B * L1 + B * L + $7F) div 255;
+        PS := Mask.ScanLine[I];
+        PD32 := Bitmap.ScanLine[I];
+        for J := 0 to Bitmap.Width - 1 do
+        begin
+          L := 255 - PS[J].R;
+          L := L * Transparent div 255;
+          L1 := 255 - L;
+          PD32[J].R := (PD32[J].R * L1 + R * L + $7F) div 255;
+          PD32[J].G := (PD32[J].G * L1 + G * L + $7F) div 255;
+          PD32[J].B := (PD32[J].B * L1 + B * L + $7F) div 255;
+          PD32[J].L := SumLMatrix[PD32[J].L, L];
+        end;
+      end;
+    end else
+    begin
+      for I := 0 to Bitmap.Height - 1 do
+      begin
+        PS := Mask.ScanLine[I];
+        PD := Bitmap.ScanLine[I];
+        for J := 0 to Bitmap.Width - 1 do
+        begin
+          L := 255 - PS[J].R;
+          L := L * Transparent div 255;
+          L1 := 255 - L;
+          PD[J].R := (PD[J].R * L1 + R * L + $7F) div 255;
+          PD[J].G := (PD[J].G * L1 + G * L + $7F) div 255;
+          PD[J].B := (PD[J].B * L1 + B * L + $7F) div 255;
+        end;
       end;
     end;
   finally
@@ -1228,6 +1251,17 @@ begin
     Dest.Assign(Src);
 end;
 
+procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
+var
+  PNG: TPngImage;
+begin
+  if (Dest is TPngImage) and (Src.PixelFormat = pf32Bit) then
+  begin
+    SavePNGImageTransparent(TPngImage(Dest), Src);
+  end else
+    Dest.Assign(Src);
+end;
+
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 begin
   if Image is TGIFImage then
@@ -1253,7 +1287,10 @@ begin
 
   if (S.PixelFormat = pf32bit) and (D.PixelFormat = pf32bit) then
   begin
-    StretchCool(Width, Height, S, D);
+    if ((Width / S.Width > 1) or (Height / S.Height > 1)) and (S.Width > 2) and (S.Height > 2) then
+      Interpolate(0, 0, Width, Height, Rect(0, 0, S.Width, S.Height), S, D)
+    else
+      StretchCool(Width, Height, S, D);
     Exit;
   end;
 
@@ -1347,14 +1384,18 @@ var
   I, J, SW: Integer;
   Dw, Dh, Xo, Yo: Integer;
   Y1r: Extended;
-  Xs, Xd: array of PARGB;
+  XS, XD: array of PARGB;
+  XS32, XD32: array of PARGB32;
   Dx, Dy, Dxjx1r: Extended;
   XAW : array of Integer;
   XAWD : array of Extended;
 begin
-  S.PixelFormat := pf24bit;
-  D.PixelFormat := pf24bit;
-  D.SetSize(Math.Max(D.Width, X + Width), Math.Max(D.height, Y + Height));
+  if not ((S.PixelFormat = pf32bit) and (D.PixelFormat = pf32bit)) then
+  begin
+    S.PixelFormat := pf24bit;
+    D.PixelFormat := pf24bit;
+  end;
+  D.SetSize(Math.Max(D.Width, X + Width), Math.Max(D.Height, Y + Height));
   SW := S.Width;
   DW := Math.Min(D.Width - X, X + Width);
   DH := Math.Min(D.Height - y, Y + Height);
@@ -1362,12 +1403,25 @@ begin
   DY := Height / (Rect.Bottom - Rect.Top - 1);
   if (Dx < 1) and (Dy < 1) then
     Exit;
-  SetLength(Xs, S.Height);
-  for I := 0 to S.Height - 1 do
-    Xs[I] := S.Scanline[I];
-  SetLength(Xd, D.Height);
-  for I := 0 to D.Height - 1 do
-    Xd[I] := D.Scanline[I];
+
+  if (S.PixelFormat = pf24Bit) then
+  begin
+    SetLength(Xs, S.Height);
+    for I := 0 to S.Height - 1 do
+      XS[I] := S.Scanline[I];
+    SetLength(Xd, D.Height);
+    for I := 0 to D.Height - 1 do
+      XD[I] := D.Scanline[I];
+  end else
+  begin
+    SetLength(XS32, S.Height);
+    for I := 0 to S.Height - 1 do
+      XS32[I] := S.Scanline[I];
+    SetLength(XD32, D.Height);
+    for I := 0 to D.Height - 1 do
+      XD32[I] := D.Scanline[I];
+  end;
+
   SetLength(XAW, Width + 1);
   SetLength(XAWD, Width + 1);
   for I := 0 to Width do
@@ -1376,39 +1430,84 @@ begin
     XAWD[I] := I / Dx - XAW[I];
   end;
 
-  for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
+  if (S.PixelFormat = pf24Bit) then
   begin
-    Yo := FastTrunc(I / Dy) + Rect.Top;
-    Y1r := FastTrunc(I / Dy) * Dy;
-    if Yo > S.Height then
-      Break;
-    if I + Y < 0 then
-      Continue;
-
-    for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
+    for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
     begin
-      Xo := XAW[J] + Rect.Left;
-      if Xo > SW then
+      Yo := FastTrunc(I / Dy) + Rect.Top;
+      Y1r := FastTrunc(I / Dy) * Dy;
+      if Yo > S.Height then
+        Break;
+      if I + Y < 0 then
         Continue;
-      if J + X < 0 then
+
+      for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
+      begin
+        Xo := XAW[J] + Rect.Left;
+        if Xo > SW then
+          Continue;
+        if J + X < 0 then
+          Continue;
+
+        Dxjx1r := XAWD[J];
+
+        Z1 := (Xs[Yo, Xo + 1].R - Xs[Yo, Xo].R) * Dxjx1r + Xs[Yo, Xo].R;
+        Z2 := (Xs[Yo + 1, Xo + 1].R - Xs[Yo + 1, Xo].R) * Dxjx1r + Xs[Yo + 1, Xo].R;
+        k := (z2 - Z1) / Dy;
+        Xd[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
+
+        Z1 := (Xs[Yo, Xo + 1].G - Xs[Yo, Xo].G)* Dxjx1r + Xs[Yo, Xo].G;
+        Z2 := (Xs[Yo + 1, Xo + 1].G - Xs[Yo + 1, Xo].G) * Dxjx1r + Xs[Yo + 1, Xo].G;
+        K := (Z2 - Z1) / Dy;
+        Xd[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
+
+        Z1 := (Xs[Yo, Xo + 1].B - Xs[Yo, Xo].B) * Dxjx1r + Xs[Yo, Xo].B;
+        Z2 := (Xs[Yo + 1, Xo + 1].B - Xs[Yo + 1, Xo].B)  * Dxjx1r + Xs[Yo + 1, Xo].B;
+        K := (Z2 - Z1) / Dy;
+        Xd[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
+      end;
+    end;
+  end else
+  begin
+    for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
+    begin
+      Yo := FastTrunc(I / Dy) + Rect.Top;
+      Y1r := FastTrunc(I / Dy) * Dy;
+      if Yo > S.Height then
+        Break;
+      if I + Y < 0 then
         Continue;
 
-      Dxjx1r := XAWD[J];
+      for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
+      begin
+        Xo := XAW[J] + Rect.Left;
+        if Xo > SW then
+          Continue;
+        if J + X < 0 then
+          Continue;
 
-      Z1 := (Xs[Yo, Xo + 1].R - Xs[Yo, Xo].R) * Dxjx1r + Xs[Yo, Xo].R;
-      Z2 := (Xs[Yo + 1, Xo + 1].R - Xs[Yo + 1, Xo].R) * Dxjx1r + Xs[Yo + 1, Xo].R;
-      k := (z2 - Z1) / Dy;
-      Xd[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
+        Dxjx1r := XAWD[J];
 
-      Z1 := (Xs[Yo, Xo + 1].G - Xs[Yo, Xo].G)* Dxjx1r + Xs[Yo, Xo].G;
-      Z2 := (Xs[Yo + 1, Xo + 1].G - Xs[Yo + 1, Xo].G) * Dxjx1r + Xs[Yo + 1, Xo].G;
-      K := (Z2 - Z1) / Dy;
-      Xd[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
+        Z1 := (XS32[Yo, Xo + 1].R - XS32[Yo, Xo].R) * Dxjx1r + XS32[Yo, Xo].R;
+        Z2 := (XS32[Yo + 1, Xo + 1].R - XS32[Yo + 1, Xo].R) * Dxjx1r + XS32[Yo + 1, Xo].R;
+        k := (z2 - Z1) / Dy;
+        XD32[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
 
-      Z1 := (Xs[Yo, Xo + 1].B - Xs[Yo, Xo].B) * Dxjx1r + Xs[Yo, Xo].B;
-      Z2 := (Xs[Yo + 1, Xo + 1].B - Xs[Yo + 1, Xo].B)  * Dxjx1r + Xs[Yo + 1, Xo].B;
-      K := (Z2 - Z1) / Dy;
-      Xd[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
+        Z1 := (XS32[Yo, Xo + 1].G - XS32[Yo, Xo].G)* Dxjx1r + XS32[Yo, Xo].G;
+        Z2 := (XS32[Yo + 1, Xo + 1].G - XS32[Yo + 1, Xo].G) * Dxjx1r + XS32[Yo + 1, Xo].G;
+        K := (Z2 - Z1) / Dy;
+        XD32[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
+
+        Z1 := (XS32[Yo, Xo + 1].B - XS32[Yo, Xo].B) * Dxjx1r + XS32[Yo, Xo].B;
+        Z2 := (XS32[Yo + 1, Xo + 1].B - XS32[Yo + 1, Xo].B)  * Dxjx1r + XS32[Yo + 1, Xo].B;
+        K := (Z2 - Z1) / Dy;
+        XD32[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
+
+        Z1 := (XS32[Yo, Xo + 1].L - XS32[Yo, Xo].L) * Dxjx1r + XS32[Yo, Xo].L;
+        Z2 := (XS32[Yo + 1, Xo + 1].L - XS32[Yo + 1, Xo].L)  * Dxjx1r + XS32[Yo + 1, Xo].L;
+        K := (Z2 - Z1) / Dy;
+        XD32[I + Y, J + X].L := Round(I * K + Z1 - Y1r * K);
+      end;
     end;
   end;
 end;

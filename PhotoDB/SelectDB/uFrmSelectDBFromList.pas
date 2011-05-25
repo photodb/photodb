@@ -76,6 +76,11 @@ begin
   begin
     CbDBListChange(Self);
     RefreshDBList;
+    if CbDBList.Items.Count = 0 then
+    begin
+      MessageBoxDB(Handle, L('There is no registered collection!'), L('Error'),
+        TD_BUTTON_OK, TD_ICON_ERROR);
+    end;
   end;
 end;
 
@@ -127,6 +132,10 @@ end;
 
 function TFrmSelectDBFromList.ValidateStep(Silent: Boolean): Boolean;
 begin
+  Result := False;
+  if CbDBList.ItemIndex < 0 then
+    Exit;
+
   Result := True;
   if not DBKernel.TestDB(DBFile.FileName) then
   begin

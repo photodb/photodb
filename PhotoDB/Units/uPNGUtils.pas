@@ -13,7 +13,53 @@ uses
   procedure LoadPNGImage8bitTransparent(PNG : TPNGImage; Bitmap : TBitmap);
   procedure LoadPNGImagePalette(PNG : TPNGImage; Bitmap : TBitmap);
 
+  procedure SavePNGImageTransparent(PNG : TPNGImage; Bitmap : TBitmap);
+
 implementation
+
+procedure SavePNGImageTransparent(PNG : TPNGImage; Bitmap : TBitmap);
+var
+  I, J : Integer;
+  DeltaS, DeltaSA, DeltaD : Integer;
+  AddrLineS, AddrLineSA, AddrLineD : Integer;
+  AddrS, AddrSA, AddrD : Integer;
+begin
+  PNG.Chunks.Free;
+  PNG.Canvas.Free;
+  PNG.CreateBlank(COLOR_RGBALPHA, 8, Bitmap.Width, Bitmap.Height);
+
+  AddrLineS := Integer(PNG.ScanLine[0]);
+  AddrLineSA := Integer(PNG.AlphaScanline[0]);
+  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  DeltaS := 0;
+  DeltaSA := 0;
+  DeltaD := 0;
+  if PNG.Height > 1 then
+  begin
+    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+  end;
+
+  for I := 0 to PNG.Height - 1 do
+  begin
+    AddrS := AddrLineS;
+    AddrSA := AddrLineSA;
+    AddrD := AddrLineD;
+    for J := 0 to PNG.Width - 1 do
+    begin
+      PRGB(AddrS)^ := PRGB(AddrD)^;
+      Inc(AddrS, 3);
+      Inc(AddrD, 3);
+      PByte(AddrSA)^ := PByte(AddrD)^;
+      Inc(AddrD, 1);
+      Inc(AddrSA, 1);
+    end;
+    Inc(AddrLineS, DeltaS);
+    Inc(AddrLineSA, DeltaSA);
+    Inc(AddrLineD, DeltaD);
+  end;
+end;
 
 procedure LoadPNGImageTransparent(PNG : TPNGImage; Bitmap : TBitmap);
 var

@@ -47,6 +47,7 @@ procedure TActiveTableThread.Execute;
 begin
   inherited;
   ActiveOk := False;
+  FreeOnTerminate := True;
   CoInitialize(nil);
   try
     try

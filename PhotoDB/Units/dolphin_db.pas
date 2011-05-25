@@ -124,6 +124,7 @@ type
     Resize : Boolean;
     Rotate : Boolean;
     PercentResize : Integer;
+    Convert: Boolean;
     GraphicClass : TGraphicClass;
     SaveAspectRation : Boolean;
     Preffix : string;

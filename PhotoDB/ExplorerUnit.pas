@@ -2801,7 +2801,7 @@ begin
         SlashHandled := True;
         ComboBox1DropDown;
       end;
-    if Msg.Wparam = VK_BACK then
+    if (Msg.Wparam = VK_BACK) and ElvMain.Focused then
     begin
       if TbBack.Enabled then
         TbBack.Click

@@ -137,9 +137,12 @@ procedure TFrmImportImagesProgress.Unload;
 begin
   inherited;
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  UpdateObject.SetDone := nil;
-  UpdateObject.DoTerminate;
-  F(UpdateObject);
+  if UpdateObject <> nil then
+  begin
+    UpdateObject.SetDone := nil;
+    UpdateObject.DoTerminate;
+    F(UpdateObject);
+  end;
   F(TimeCounter);
 end;
 

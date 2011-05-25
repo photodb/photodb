@@ -64,13 +64,23 @@ var
   GraphicClass, NewGraphicClass : TGraphicClass;
   Password, Ext : string;
   FileName : string;
-  Original : TBitmap;
+  Original,
+  TmpBitmap : TBitmap;
   ExifData: TExifData;
   W, H, Width, Height: Integer;
   Crypted : Boolean;
   MS, MD : TMemoryStream;
   FS : TFileStream;
   IsPreviewAvalialbe: Boolean;
+
+  procedure Exchange(var A, B: TBitmap);
+  var
+    C: TBitmap;
+  begin
+    C := A;
+    A := B;
+    B := C;
+  end;
 
   procedure FixEXIFRotate;
   begin
@@ -160,9 +170,10 @@ const
         Exit;
       Bitmap := TBitmap.Create;
       try
-        Bitmap.Assign(NewGraphic);
+        AssignGraphic(Bitmap, NewGraphic);
         BitmapParam := TBitmap.Create;
         try
+          BitmapParam.PixelFormat := Bitmap.PixelFormat;
           W := Bitmap.Width;
           H := Bitmap.Height;
           ProportionalSize(FProcessingParams.PreviewOptions.PreviewWidth,
@@ -279,6 +290,16 @@ const
     end;
   end;
 
+  function ClearString(S: string): string;
+  var
+    I: Integer;
+  begin
+    for I := 1 to Length(S) do
+      if CharInSet(S[I], ['%', ':', '"', '/', '\', '?', '*', '|']) then
+        S[I] := '_';
+    Result := S;
+  end;
+
 begin
   inherited;
   FreeOnTerminate := True;
@@ -287,10 +308,8 @@ begin
   IsPreviewAvalialbe := False;
   CoInitialize(nil);
   try
-
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FData.FileName));
-    if GraphicClass = nil then
-      Exit;
+    Ext := ExtractFileExt(FData.FileName);
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(Ext);
 
     Crypted := ValidCryptGraphicFile(FData.FileName);
     if Crypted then
@@ -300,10 +319,10 @@ begin
         Exit;
     end;
 
-    if FProcessingParams.GraphicClass = nil then
-      NewGraphicClass := GraphicClass
+    if FProcessingParams.Convert or not TFileAssociations.Instance.IsConvertableExt(Ext) then
+      NewGraphicClass := FProcessingParams.GraphicClass
     else
-      NewGraphicClass := FProcessingParams.GraphicClass;
+      NewGraphicClass := GraphicClass;
 
     if (NewGraphicClass = GraphicClass) then
       Ext := ExtractFileExt(FData.FileName)
@@ -311,7 +330,7 @@ begin
       Ext := '.' + GraphicExtension(NewGraphicClass);
 
     FileName := IncludeTrailingPathDelimiter(FProcessingParams.WorkDirectory);
-    FileName := FileName + TrimLeftString(GetFileNameWithoutExt(FData.FileName) + FProcessingParams.Preffix, 255 - Length(Ext));
+    FileName := FileName + TrimLeftString(GetFileNameWithoutExt(FData.FileName) + ClearString(FProcessingParams.Preffix), 255 - Length(Ext));
 
     FileName := FileName + Ext;
 
@@ -409,10 +428,23 @@ begin
           end;
 
           //resample image
-          if FProcessingParams.PreviewOptions.GeneratePreview then
-            Stretch(Width, Height, sfBox, 0, Original)
-          else
-            Stretch(Width, Height, sfLanczos3, 0, Original);
+          if Original.PixelFormat = pf32Bit then
+          begin
+            TmpBitmap := TBitmap.Create;
+            try
+              TmpBitmap.PixelFormat := pf32Bit;
+              DoResize(Width, Height, Original, TmpBitmap);
+              Exchange(Original, TmpBitmap);
+            finally
+              F(TmpBitmap);
+            end;
+          end else
+          begin
+            if FProcessingParams.PreviewOptions.GeneratePreview then
+              Stretch(Width, Height, sfBox, 0, Original)
+            else
+              Stretch(Width, Height, sfLanczos3, 0, Original);
+          end;
         end;
 
         if not CheckThread then
@@ -454,7 +486,10 @@ begin
             TGifImage(NewGraphic).DitherMode := dmFloydSteinberg;
             TGifImage(NewGraphic).ColorReduction := rmQuantize;
           end;
-          NewGraphic.Assign(Original);
+          if (NewGraphicClass <> TPngImage) and (NewGraphicClass <> TBitmap) then
+            Original.PixelFormat := pf24Bit;
+
+          AssignToGraphic(NewGraphic, Original);
           F(Graphic);
 
           SetJPEGGraphicSaveOptions(ConvertImageID, NewGraphic);

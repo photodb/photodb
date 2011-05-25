@@ -192,6 +192,7 @@ begin
 
   FProcessingParams.Rotate := CbRotate.Checked;
   FProcessingParams.Rotation := Rotations[DdRotate.ItemIndex];
+  FProcessingParams.Convert := CbConvert.Checked;
   if DdConvert.ItemIndex = -1 then
     FProcessingParams.GraphicClass := nil
   else

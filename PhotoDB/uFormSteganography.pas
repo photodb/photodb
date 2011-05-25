@@ -24,6 +24,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     FWizard: TWizardManager;
@@ -119,6 +120,13 @@ end;
 procedure TFormSteganography.FormDestroy(Sender: TObject);
 begin
   F(FWizard);
+end;
+
+procedure TFormSteganography.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 function TFormSteganography.GetFormID: string;
