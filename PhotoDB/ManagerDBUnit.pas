@@ -191,6 +191,7 @@ type
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
     function GetListViewItemAt(y : integer): TListItem;
+    procedure ShowGroupQuickInfo(Sender: TObject);
   protected
     { protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -352,9 +353,12 @@ begin
   if EventID_Param_DB_Changed in params then
   begin
     elvMain.Clear;
+    for I := 0 to FData.Count - 1 do
+      TObject(FData[I]).Free;
+    FData.Clear;
     FreeDS(WorkQuery);
-    InitializeQueryList;
     WorkQuery := GetQuery;
+    InitializeQueryList;
     Exit;
   end;
 
@@ -1222,9 +1226,9 @@ begin
         CopyFullRecordInfo(Handle, ItemData.ID);
       if GetSubItemIndexByPoint(ElvMain, Item, P) = 2 then
       begin
-        Words:=SpilitWords(ItemData.KeyWords);
+        Words := SpilitWords(ItemData.KeyWords);
         PopupMenuKeyWords.Items.Clear;
-        for i:=0 to Length(Words) - 1 do
+        for I := 0 to Length(Words) - 1 do
         begin
           MenuItem := TMenuItem.Create(PopupMenuKeyWords);
           MenuItem.Caption := Words[I];
@@ -1232,7 +1236,7 @@ begin
         end;
         P := ElvMain.ClientToScreen(P);
         PopupMenuKeyWords.Popup(P.X, P.Y);
-      end else if GetSubItemIndexByPoint(ElvMain, Item, P)=4 then
+      end else if GetSubItemIndexByPoint(ElvMain, Item, P) = 4 then
       begin
         PopupMenuRating.Tag := Item.Index;
         P := ElvMain.ClientToScreen(P);
@@ -1241,7 +1245,7 @@ begin
         PopupMenuRating.Popup(P.X, P. Y);
       end else if GetSubItemIndexByPoint(ElvMain, Item, P) = 5 then
       begin
-        PopupMenuRotate.Tag:=Item.Index;
+        PopupMenuRotate.Tag := Item.Index;
         p := ElvMain.ClientToScreen(p);
         for I := 0 to 3 do
           (FindComponent('R0' + IntToStr(I + 1)) as TMenuItem).Default := ItemData.Rotation = I;
@@ -1320,6 +1324,7 @@ begin
               MenuItem := TMenuItem.Create(PopupMenuGroups);
               MenuItem.Caption := G[I].GroupName;
               MenuItem.ImageIndex := ImageListPopupGroups.Count - 1;
+              MenuItem.OnClick := ShowGroupQuickInfo;
               PopupMenuGroups.Items.Add(MenuItem);
               Break;
             end;
@@ -1452,7 +1457,7 @@ begin
   G := ItemData.Groups;
   Groups := EnCodeGroups(G);
   DBChangeGroups(Groups, KeyWords);
-  if (G = ItemData.Groups) and (KeyWords = ItemData.KeyWords) then
+  if (ItemData.Groups = CodeGroups(Groups)) and (KeyWords = ItemData.KeyWords) then
     Exit;
   G := CodeGroups(Groups);
   ItemData.KeyWords := KeyWords;
@@ -1947,6 +1952,11 @@ begin
     SetPath(ExtractFileDir(Path));
     Show;
   end;
+end;
+
+procedure TManagerDB.ShowGroupQuickInfo(Sender: TObject);
+begin
+  ShowGroupInfo(StringReplace(TMenuItem(Sender).Caption, '&', '', []), False, Self);
 end;
 
 procedure TManagerDB.ElvMainData(Sender: TObject; Item: TListItem);

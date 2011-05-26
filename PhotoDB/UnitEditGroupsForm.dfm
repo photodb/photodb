@@ -321,10 +321,12 @@ object EditGroupsForm: TEditGroupsForm
     Width = 209
     Height = 297
     Style = lbOwnerDrawFixed
+    DoubleBuffered = True
     ItemHeight = 36
     Items.Strings = (
       '<Data>')
     MultiSelect = True
+    ParentDoubleBuffered = False
     TabOrder = 3
     OnContextPopup = LstSelectedGroupsContextPopup
     OnDblClick = LstSelectedGroupsDblClick
@@ -336,10 +338,12 @@ object EditGroupsForm: TEditGroupsForm
     Width = 209
     Height = 297
     Style = lbOwnerDrawFixed
+    DoubleBuffered = True
     ItemHeight = 36
     Items.Strings = (
       '<Data>')
     MultiSelect = True
+    ParentDoubleBuffered = False
     TabOrder = 0
     OnDblClick = BtnAddGroupClick
     OnDrawItem = LstAvaliableGroupsDrawItem

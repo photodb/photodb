@@ -723,8 +723,8 @@ begin
       Exit;
     end;
     Query.First;
-    Result.GroupName := Query.FieldByName('GroupName').AsString;
-    Result.GroupCode := Query.FieldByName('GroupCode').AsString;
+    Result.GroupName := Trim(Query.FieldByName('GroupName').AsString);
+    Result.GroupCode := Trim(Query.FieldByName('GroupCode').AsString);
     Result.GroupImage := nil;
     if LoadImage then
     begin
@@ -780,8 +780,8 @@ begin
       Exit;
     end;
     Query.First;
-    Result.GroupName := Query.FieldByName('GroupName').AsString;
-    Result.GroupCode := Query.FieldByName('GroupCode').AsString;
+    Result.GroupName := Trim(Query.FieldByName('GroupName').AsString);
+    Result.GroupCode := Trim(Query.FieldByName('GroupCode').AsString);
     Result.GroupImage := nil;
     if LoadImage then
     begin
@@ -840,8 +840,8 @@ begin
           end;
         N := Length(Result);
         Setlength(Result, N + 1);
-        Result[N].GroupName := Table.FieldByName('GroupName').AsString;
-        Result[N].GroupCode := Table.FieldByName('GroupCode').AsString;
+        Result[N].GroupName := Trim(Table.FieldByName('GroupName').AsString);
+        Result[N].GroupCode := Trim(Table.FieldByName('GroupCode').AsString);
         Result[N].GroupImage := nil;
         if LoadImages then
         begin

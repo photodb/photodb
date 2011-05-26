@@ -95,7 +95,44 @@ procedure ProportionalSizeX(aWidth, aHeight: Integer; var aWidthToSize, aHeightT
 
 procedure ThreadDraw(S, D : TBitmap; x, y : integer);
 
+procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
+
 implementation
+
+procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
+var
+  I, J: Integer;
+  PS, PD: PARGB;
+  PS32, PD32: PARGB32;
+begin
+  if Src.PixelFormat <> pf32bit then
+  begin
+    Src.PixelFormat := pf24bit;
+    Dest.PixelFormat := pf24bit;
+    Dest.SetSize(Src.Width, Src.Height);
+
+    for I := 0 to Src.Height - 1 do
+    begin
+      PD := Dest.ScanLine[I];
+      PS := Src.ScanLine[I];
+      for J := 0 to Src.Width - 1 do
+        PD[J] := PS[J];
+    end;
+  end else
+  begin
+    Src.PixelFormat := pf32bit;
+    Dest.PixelFormat := pf32bit;
+    Dest.SetSize(Src.Width, Src.Height);
+
+    for I := 0 to Src.Height - 1 do
+    begin
+      PD32 := Dest.ScanLine[I];
+      PS32 := Src.ScanLine[I];
+      for J := 0 to Src.Width - 1 do
+        PD32[J] := PS32[J];
+    end;
+  end;
+end;
 
 procedure ProportionalSizeX(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
 begin
@@ -604,7 +641,7 @@ begin
   D.PixelFormat := Pf24bit;
   if (Hor = 1) and (Ver = 1) then
   begin
-    D.Assign(S);
+    AssignBitmap(D, S);
     Exit;
   end;
 
@@ -797,7 +834,7 @@ begin
   S.PixelFormat := pf24bit;
   D.PixelFormat := pf24bit;
 
-  D.Assign(S);
+  AssignBitmap(D, S);
   D.Canvas.Brush.Color := BackColor;
   D.Canvas.FillRect(Rect(0, 0, D.Width, D.Height));
   Xd := (D.Width - 1) div Hor;
@@ -903,7 +940,7 @@ begin
   D.Height := S.Height;
   if (Red = 0) and (Green = 0) and (Blue = 0) then
   begin
-    D.Assign(S);
+    AssignBitmap(D, S);
     Exit;
   end;
   for I := 0 to 255 do
@@ -1077,19 +1114,19 @@ procedure Contrast(S, D: TBitmap; Value: Extended; Local: Boolean);
 var
   Dest, Sour: pRGBTriple;
   x, y, mr, mg, mb,
-    W, H, tr, tg, tb: Integer;
+  W, H, tr, tg, tb: Integer;
   vd: Double;
 
 begin
- D.Width := S.Width;
- D.Height := S.Height;
- S.PixelFormat := pf24bit;
- D.PixelFormat := pf24bit;
- if Value = 0 then
- begin
-  D.Assign(S);
-  Exit;
- end;
+  D.Width := S.Width;
+  D.Height := S.Height;
+  S.PixelFormat := pf24bit;
+  D.PixelFormat := pf24bit;
+  if Value = 0 then
+  begin
+    AssignBitmap(D, S);
+   Exit;
+  end;
   W := S.Width - 1;
   H := S.Height - 1;
   if Local then
@@ -1868,7 +1905,7 @@ begin
   Bmp := TBitmap.Create;
   Bitmap.PixelFormat := pf24Bit;
   try
-    Bmp.Assign(Bitmap);
+    AssignBitmap(Bmp, Bitmap);
     W := Bitmap.Width - 1;
     H := Bitmap.Height - 1;
     if Frac(Angle) <> 0.0
@@ -1971,7 +2008,7 @@ begin
 
   if (Src.Width <= Dest.Width) and (Src.Height <= Dest.Height) then
   begin
-    Dest.Assign(Src);
+    AssignBitmap(Dest, Src);
     Exit;
   end;
 
@@ -2129,13 +2166,14 @@ begin
   if Width * Height = 0 then
   begin
     D.Assign(S);
+    AssignBitmap(D, S);
     Exit;
   end;
   D.Width := Width;
   D.Height := Height;
   Terminating := False;
   if (S.Width = D.Width) and (S.Height = D.Height) then
-    D.Assign(S)
+    AssignBitmap(D, S)
   else
   begin
     DstLine := D.ScanLine[0];
@@ -2191,7 +2229,7 @@ begin
   end; { if }
 end; { SmoothResize }
 
-procedure SmoothResize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure SmoothResize(Width, Height : integer; S, D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
 type
   TRGBArray = array[Word] of TRGBTriple;
   pRGBArray = ^TRGBArray;
@@ -2201,28 +2239,34 @@ var
   XP, YP: Integer;
   Mx, My: Integer;
   SrcLine1, SrcLine2: PRGBArray;
+  SrcLine132, SrcLine232: PARGB32;
   T3: Integer;
   Z, Z2, Iz2: Integer;
   DstLine: PRGBArray;
+  DstLine32: PARGB32;
   DstGap: Integer;
-  W1, W2, W3, W4: Integer;
+  W1, W2, W3, W4, DW1, SW1: Integer;
   Terminating: Boolean;
 begin
   Terminating := false;
-  S.PixelFormat := pf24Bit;
-  D.PixelFormat := pf24Bit;
-  if Width*Height=0 then
+  if not ((S.PixelFormat = pf32Bit) and (D.PixelFormat = pf32Bit)) then
   begin
-   D.Assign(S);
-   exit;
+    S.PixelFormat := pf24Bit;
+    D.PixelFormat := pf24Bit;
   end;
-  D.Width:=Width;
-  D.Height:=Height;
+
+  if Width * Height=0 then
+  begin
+    AssignBitmap(D, S);
+    Exit;
+  end;
+  D.SetSize(Width, Height);
   if (S.Width = D.Width) and (S.Height = D.Height) then
-    D.Assign(S)
+    AssignBitmap(D, S)
   else
   begin
     DstLine := D.ScanLine[0];
+    DstLine32 := PARGB32(DstLine);
     DstGap := 0;
     if D.Height > 1 then
       DstGap  := Integer(D.ScanLine[1]) - Integer(DstLine);
@@ -2230,49 +2274,107 @@ begin
     My := MulDiv(S.Height, $10000, D.Height);
     yP  := 0;
 
-    for y := 0 to pred(D.Height) do
+    DW1 := D.Width - 1;
+    SW1 := S.Width - 1;
+
+    if S.PixelFormat = pf32Bit then
     begin
-      xP := 0;
 
-      SrcLine1 := S.ScanLine[yP shr 16];
-
-      if (yP shr 16 < pred(S.Height))and(Y<>D.Height-1) then
-        SrcLine2 := S.ScanLine[succ(yP shr 16)]
-      else
+      for y := 0 to pred(D.Height) do
       begin
-        SrcLine1 := S.ScanLine[S.Height-2];
-        SrcLine2 := S.ScanLine[S.Height-1];
-      end;
+        xP := 0;
 
-      z2  := succ(yP and $FFFF);
-      iz2 := succ((not yp) and $FFFF);
-      for x := 0 to pred(D.Width) do
-      begin
-        t3 := xP shr 16;
-        z  := xP and $FFFF;
-        w2 := MulDiv(z, iz2, $10000);
-        w1 := iz2 - w2;
-        w4 := MulDiv(z, z2, $10000);
-        w3 := z2 - w4;
-        if (t3>=S.Width-1)or(x=D.Width-1) then
-         t3:=S.Width-2;
+        SrcLine132 := S.ScanLine[yP shr 16];
 
-        DstLine[x].rgbtRed := (SrcLine1[t3].rgbtRed * w1 +
-          SrcLine1[t3 + 1].rgbtRed * w2 + SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
+        if (yP shr 16 < pred(S.Height))and(Y <> D.Height-1) then
+          SrcLine232 := S.ScanLine[succ(yP shr 16)]
+        else
+        begin
+          SrcLine132 := S.ScanLine[S.Height - 2];
+          SrcLine232 := S.ScanLine[S.Height - 1];
+        end;
 
-        DstLine[x].rgbtGreen := (SrcLine1[t3].rgbtGreen * w1 + SrcLine1[t3 + 1].rgbtGreen * w2 +
-          SrcLine2[t3].rgbtGreen * w3 + SrcLine2[t3 + 1].rgbtGreen * w4) shr 16;
+        z2  := succ(yP and $FFFF);
+        iz2 := succ((not yp) and $FFFF);
+        for x := 0 to pred(D.Width) do
+        begin
+          t3 := xP shr 16;
+          z  := xP and $FFFF;
+          w2 := MulDiv(z, iz2, $10000);
+          w1 := iz2 - w2;
+          w4 := MulDiv(z, z2, $10000);
+          w3 := z2 - w4;
+          if (t3 >= SW1) or (x = DW1) then
+           t3 := S.Width - 2;
 
-        DstLine[x].rgbtBlue := (SrcLine1[t3].rgbtBlue * w1 +
-          SrcLine1[t3 + 1].rgbtBlue * w2 +SrcLine2[t3].rgbtBlue * w3 +  SrcLine2[t3 + 1].rgbtBlue * w4) shr 16;
-        Inc(xP, Mx);
+          DstLine32[x].R := (SrcLine132[t3].R * w1 +
+            SrcLine132[t3 + 1].R * w2 + SrcLine232[t3].R * w3 + SrcLine232[t3 + 1].R * w4) shr 16;
+
+          DstLine32[x].G := (SrcLine132[t3].G * w1 + SrcLine132[t3 + 1].G * w2 +
+            SrcLine232[t3].G * w3 + SrcLine232[t3 + 1].G * w4) shr 16;
+
+          DstLine32[x].B := (SrcLine132[t3].B * w1 +  SrcLine132[t3 + 1].B * w2 +
+            SrcLine232[t3].B * w3 +  SrcLine232[t3 + 1].B * w4) shr 16;
+
+          DstLine32[x].L := (SrcLine132[t3].L * w1 + SrcLine132[t3 + 1].L * w2 +
+            SrcLine232[t3].L * w3 +  SrcLine232[t3 + 1].L * w4) shr 16;
+
+          Inc(xP, Mx);
+        end; {for}
+        Inc(yP, My);
+        DstLine32 := PARGB32(Integer(DstLine32) + DstGap);
+        if y mod 50 = 0 then
+        if Assigned(CallBack) then CallBack(Round(100* Y / D.Height), Terminating);
+        if Terminating then Break;
       end; {for}
-      Inc(yP, My);
-      DstLine := pRGBArray(Integer(DstLine) + DstGap);
-      if y mod 50=0 then
-      If Assigned(CallBack) then CallBack(Round(100*y/D.Height),Terminating);
-      if Terminating then Break;
-    end; {for}
+
+    end else
+    begin
+
+      for y := 0 to pred(D.Height) do
+      begin
+        xP := 0;
+
+        SrcLine1 := S.ScanLine[yP shr 16];
+
+        if (yP shr 16 < pred(S.Height))and(Y<>D.Height-1) then
+          SrcLine2 := S.ScanLine[succ(yP shr 16)]
+        else
+        begin
+          SrcLine1 := S.ScanLine[S.Height-2];
+          SrcLine2 := S.ScanLine[S.Height-1];
+        end;
+
+        z2  := succ(yP and $FFFF);
+        iz2 := succ((not yp) and $FFFF);
+        for x := 0 to pred(D.Width) do
+        begin
+          t3 := xP shr 16;
+          z  := xP and $FFFF;
+          w2 := MulDiv(z, iz2, $10000);
+          w1 := iz2 - w2;
+          w4 := MulDiv(z, z2, $10000);
+          w3 := z2 - w4;
+          if (t3 >= SW1) or (x = DW1) then
+           t3 := S.Width - 2;
+
+          DstLine[x].rgbtRed := (SrcLine1[t3].rgbtRed * w1 +
+            SrcLine1[t3 + 1].rgbtRed * w2 + SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
+
+          DstLine[x].rgbtGreen := (SrcLine1[t3].rgbtGreen * w1 + SrcLine1[t3 + 1].rgbtGreen * w2 +
+            SrcLine2[t3].rgbtGreen * w3 + SrcLine2[t3 + 1].rgbtGreen * w4) shr 16;
+
+          DstLine[x].rgbtBlue := (SrcLine1[t3].rgbtBlue * w1 +
+            SrcLine1[t3 + 1].rgbtBlue * w2 +SrcLine2[t3].rgbtBlue * w3 +  SrcLine2[t3 + 1].rgbtBlue * w4) shr 16;
+          Inc(xP, Mx);
+        end; {for}
+        Inc(yP, My);
+        DstLine := pRGBArray(Integer(DstLine) + DstGap);
+        if y mod 50=0 then
+        If Assigned(CallBack) then CallBack(Round(100*y/D.Height),Terminating);
+        if Terminating then Break;
+      end; {for}
+    end;
   end; {if}
 end; {SmoothResize}
 
@@ -2472,7 +2574,7 @@ begin
             end;
           end;
         end;
-        Temp.Assign(Tempb);
+        AssignBitmap(Temp, Tempb);
       end;
       Bitmap.PixelFormat := Pf24bit;
       if Bitmap.Width = 0 then
@@ -2857,10 +2959,10 @@ var
   SL : TScanlines;
   Terminating : Boolean;
 begin
-  D.Assign(S);
-  D.PixelFormat:=pf24bit;
+  AssignBitmap(D, S);
+  D.PixelFormat := pf24bit;
   SL := TScanlines.Create(D);
-  Terminating:=false;
+  Terminating := False;
   try
 
     for y := 0 to D.Height-2 do
@@ -2926,12 +3028,12 @@ begin
    end;
 end;
 
- procedure AntiAlias(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
- begin
-   D.Assign(S);
-   D.PixelFormat := Pf24bit;
-   AntiAliasRect(D, 0, 0, D.Width, D.Height, CallBack);
- end;
+procedure AntiAlias(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+begin
+  AssignBitmap(D, S);
+  D.PixelFormat := Pf24bit;
+  AntiAliasRect(D, 0, 0, D.Width, D.Height, CallBack);
+end;
 
 function IntToByte(i:Integer):Byte;
 begin
@@ -2946,14 +3048,14 @@ end;
 
 procedure AddColorNoise(S, D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
 var
-  p0 : pbytearray;
-  x, y, r, g, b : Integer;
+  p0: pbytearray;
+  x, y, r, g, b: Integer;
   SL : TScanLines;
-  Terminating : Boolean;
+  Terminating: Boolean;
 begin
-  D.Assign(S);
-  D.PixelFormat:=pf24bit;
-  Terminating:=false;
+  AssignBitmap(D, S);
+  D.PixelFormat := pf24bit;
+  Terminating := False;
   SL := TScanLines.Create(D);
   try
 
@@ -2987,7 +3089,7 @@ var
   Terminating: Boolean;
   SL: TScanLines;
 begin
-  D.Assign(S);
+  AssignBitmap(D, S);
   D.PixelFormat := Pf24bit;
   Terminating := False;
   SL := TScanlines.Create(D);
@@ -3041,7 +3143,7 @@ begin
   Amount:=0.5+xAmount/100;
   xmid := Bmp.Width/2;
   ymid := Bmp.Height/2;
-  Dst.Assign(Bmp);
+  AssignBitmap(Dst, Bmp);
   rmax := Dst.Width * Amount;
   Terminating:=false;
   SL1 := TScanlines.Create(Bmp);
@@ -3169,8 +3271,8 @@ end;
 
 procedure SplitBlur(S, D : TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
 begin
-  D.Assign(S);
-  D.PixelFormat:=pf24bit;
+  AssignBitmap(D, S);
+  D.PixelFormat := pf24Bit;
   SplitBlurW(D,Amount,CallBack);
 end;
 
@@ -3285,7 +3387,7 @@ var
   end;
 
 begin
-  Dst.Assign(Bmp);
+  AssignBitmap(Dst, Bmp);
   Terminating:=false;
   OFFSET := -(Pi/2);
   dx := Bmp.Width - 1;

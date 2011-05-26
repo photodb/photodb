@@ -165,6 +165,7 @@ begin
                 F(FGraphic);
                 W := TempBit.Width;
                 H := TempBit.Height;
+                FBit.PixelFormat := TempBit.PixelFormat;
                 if Max(W,H) < ThSizeExplorerPreview then
                   AssignBitmap(FBit, TempBit)
                 else begin

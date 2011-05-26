@@ -1720,7 +1720,7 @@ begin
   SaveCurrentButton.Width := 100;
   SaveCurrentButton.Height := 21;
   SaveCurrentButton.Parent := Panel;
-  SaveCurrentButton.Caption := L('Save configuration');
+  SaveCurrentButton.Caption := L('Save');
   SaveCurrentButton.Visible := True;
   SaveCurrentButton.OnClick := SavePresentClick;
 
@@ -1739,7 +1739,7 @@ begin
   LoadSelectedButton.Width := 100;
   LoadSelectedButton.Height := 21;
   LoadSelectedButton.Parent := Panel;
-  LoadSelectedButton.Caption := L('Load configuration');
+  LoadSelectedButton.Caption := L('Load');
   LoadSelectedButton.Visible := True;
   LoadSelectedButton.OnClick := LoadPresentClick;
 
@@ -1749,7 +1749,7 @@ begin
   DeleteSelectedButton.Width := 100;
   DeleteSelectedButton.Height := 21;
   DeleteSelectedButton.Parent := Panel;
-  DeleteSelectedButton.Caption := L('Delete configuration');
+  DeleteSelectedButton.Caption := L('Delete');
   DeleteSelectedButton.Visible := True;
   DeleteSelectedButton.OnClick := DeletePresentClick;
 

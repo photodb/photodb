@@ -926,6 +926,8 @@ begin
         end else
         begin
           GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+          if GraphicClass = nil then
+            Exit;
           G := GraphicClass.Create;
           G.LoadFromFile(FileName);
           CurrentFileName := FileName;

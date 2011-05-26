@@ -377,6 +377,7 @@ begin
     ProportionalSize(FPictureSize, FPictureSize, W, H);
     FBit := TBitmap.Create;
     try
+      Fbit.PixelFormat := B.PixelFormat;
       DoResize(W, H, B, Fbit);
       F(B);
       ApplyRotate(Fbit, FInfo.Rotation);

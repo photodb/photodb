@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
   Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
   GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
-  EasyListview, GraphicsCool, uVistaFuncs, uResources,
+  EasyListview, GraphicsCool, uVistaFuncs, uResources, Effects,
   UnitDBCommonGraphics, UnitDBCommon, uCDMappingTypes,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
@@ -24,7 +24,7 @@ type
     FIcon: Ticon;
     FCID: TGUID;
     TempBitmap: TBitmap;
-    FBmp: Tbitmap;
+    FBmp: TBitmap;
     FSelected: TEasyItem;
     FFolderBitmap: TBitmap;
     FFolderImages: TFolderImages;
@@ -1070,16 +1070,16 @@ begin
         _y := Round((564-68)*ps/1200);
         SmallImageSize := Round(_y/1.05);
 
-        x:=(j - 1) * _x + deltax;
-        y:=(i - 1) * _y + deltay;
-        if fFastDirectoryLoading then
+        X := (J - 1) * _x + deltax;
+        Y := (I - 1) * _y + deltay;
+        if FFastDirectoryLoading then
         begin
           if FFolderImagesResult.Images[Index]=nil then
             Break;
-          fbmp := FFolderImagesResult.Images[Index];
-          W := fbmp.Width;
-          H := fbmp.Height;
-          ProportionalSize(SmallImageSize,SmallImageSize,w,h);
+          Fbmp := FFolderImagesResult.Images[Index];
+          W := Fbmp.Width;
+          H := Fbmp.Height;
+          ProportionalSize(SmallImageSize,SmallImageSize, W, H);
           DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
           Continue;
         end;
@@ -1108,7 +1108,7 @@ begin
               F(FBS);
             end;
           end;
-          fbmp := TBitmap.Create;
+          Fbmp := TBitmap.Create;
           try
             JPEGScale(fJpeg, SmallImageSize, SmallImageSize);
             AssignJpeg(FBmp, FJpeg);
@@ -1157,13 +1157,14 @@ begin
             W := Graphic.Width;
             H := Graphic.Height;
             ProportionalSize(SmallImageSize, SmallImageSize, W, H);
-            Fbmp := TBitmap.Create;
+            FBmp := TBitmap.Create;
             try
-              bmp := TBitmap.Create;
+              Bmp := TBitmap.Create;
               try
                 AssignGraphic(BMP, Graphic);
                 F(Graphic);
 
+                FBMP.PixelFormat := BMP.PixelFormat;
                 DoResize(W, H, BMP, FBMP);
                 DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
               finally
@@ -1239,7 +1240,7 @@ end;
 
 procedure TExplorerThread.DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
 begin
-  if not fFastDirectoryLoading then
+  if not FFastDirectoryLoading then
   if ExplorerInfo.SaveThumbNailsForFolders then
   begin
     FFolderImages.Images[FcountOfFolderImage] := TBitmap.create;
@@ -1977,6 +1978,7 @@ begin
       W := FBit.Width;
       H := FBit.Height;
       ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
+      TempBitmap.PixelFormat := FBit.PixelFormat;
       TempBitmap.SetSize(W, H);
       DoResize(W, H, FBit, TempBitmap);
     finally
@@ -2092,6 +2094,7 @@ begin
           else
           begin
             ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
+            TempBitmap.PixelFormat := TempBit.PixelFormat;
             DoResize(W, H, TempBit, TempBitmap);
           end;
         finally

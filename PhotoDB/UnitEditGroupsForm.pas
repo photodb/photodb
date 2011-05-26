@@ -269,8 +269,15 @@ begin
     if LstAvaliableGroups.Selected[I] then
       AddGroup(FShowenRegGroups[I]);
 
-  LstSelectedGroups.Invalidate;
-  LstAvaliableGroups.Invalidate;
+  BeginScreenUpdate(LstSelectedGroups.Handle);
+  BeginScreenUpdate(LstSelectedGroups.Handle);
+  try
+    LstSelectedGroups.Invalidate;
+    LstAvaliableGroups.Invalidate;
+  finally
+    EndScreenUpdate(LstSelectedGroups.Handle, False);
+    EndScreenUpdate(LstSelectedGroups.Handle, False);
+  end;
 end;
 
 procedure TEditGroupsForm.LstSelectedGroupsContextPopup(Sender: TObject;
@@ -527,7 +534,6 @@ begin
     XNewGroups := CopyGroups(FOldGroups);
     RemoveGroupsFromGroups(xNewGroups,FSetGroups);
   end;
-
   try
     if index = -1 then
       Exit;
@@ -537,7 +543,7 @@ begin
       N := -1;
       if Control = LstSelectedGroups then
       begin
-        for i:=0 to Length(FRegGroups)-1 do
+        for I := 0 to Length(FRegGroups)-1 do
         begin
           if FRegGroups[I].GroupCode = FSetGroups[index].GroupCode then
           begin

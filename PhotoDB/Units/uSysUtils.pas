@@ -163,7 +163,7 @@ begin
   SetLength(SUserName, CnMaxUserNameLen);
   GetUserName(PWideChar(SUserName), DwUserNameLen);
   SetLength(SUserName, DwUserNameLen);
-  Result := SUserName;
+  Result := Trim(SUserName);
 end;
 
 function GetSystemLanguage: string;

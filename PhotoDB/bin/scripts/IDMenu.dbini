@@ -78,15 +78,9 @@ initialization:
 
      $file_name=ExtractFileName($file);
 
-     $script="ApplyActionsToSelected("""+$sID+""","""+$file+""");";
+     $script="ApplyActionsToSelected("""+$MenuLength+""","""+$sID+""","""+$file+""");";
      CreateItem($file_name,DB_IC_APPLY_ACTION,$script,false,0);
   };
-
-   run:
-
-//$file=GetOpenFileName("Result.dbact","DB Action Files (*.dbact)|*.dbact");
-//$sID=REGISTER_SCRIPT;
-//ApplyActionsToSelected($sID,$file);
 }
 
 <Shell>[DB_IC_SHELL]

@@ -12,6 +12,9 @@ uses
   uAssociations;
 
 type
+  TJpegX = class(TJPEGImage);
+
+type
   TImageConvertThread = class(TThreadEx)
   private
     { Private declarations }
@@ -493,6 +496,8 @@ begin
           F(Graphic);
 
           SetJPEGGraphicSaveOptions(ConvertImageID, NewGraphic);
+          if NewGraphic is TJPEGImage then
+            TJpegX(NewGraphic).FreeBitmap;
 
           if FProcessingParams.PreviewOptions.GeneratePreview then
             SaveFile(MODE_PREVIEW)

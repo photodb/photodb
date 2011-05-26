@@ -1193,6 +1193,7 @@
 	<translate name="Font size" value="Размер шрифта" />
 	<translate name="Font color" value="Цвет шрифта" />
 	<translate name="Text rotation" value="Поворот текста" />
+	<translate name="Normal" value="Обычная" />	
 	<translate name="90°" value="90°" />
 	<translate name="180°" value="180°" />
 	<translate name="270°" value="270°" />
@@ -1234,10 +1235,10 @@
 	<translate name="Matrix 5x5" value="Матрица 5x5" />
 	<translate name="Devider" value="Делитель" />
 	<translate name="Sample effect" value="Примеры эффектов" />
-	<translate name="Configuration name" value="Имя конфигурация" />
-	<translate name="Save configuration" value="Сохранить конфигурацию" />
-	<translate name="Load configuration" value="Загрузить конфигурацию" />
-	<translate name="Delete configuration" value="Удалить конфигурацию" />
+	<translate name="Configuration name" value="Имя конфигурации" />
+	<translate name="Save" value="Сохранить" />
+	<translate name="Load" value="Загрузить" />
+	<translate name="Delete" value="Удалить" />
 	<translate name="Custom Effect" value="Произвольный эффект" />
 	<translate name="Sepia" value="Сепия" />
 	<translate name="Grayscale" value="Чёрно-белое" />

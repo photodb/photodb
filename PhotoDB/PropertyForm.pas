@@ -622,7 +622,10 @@ begin
       CollectionMemo.Text := DBkernel.GetDataBaseName;
       OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
-      DateEdit.DateTime := DataRecord.Date;
+      if YearOf(DataRecord.Date) > 1900 then
+        DateEdit.DateTime := DataRecord.Date
+      else
+        DateEdit.DateTime := DateOf(Now);
       TimeEdit.Time := DataRecord.Time;
       DateEdit.Checked := DataRecord.IsDate;
       TimeEdit.Checked := DataRecord.IsTime;

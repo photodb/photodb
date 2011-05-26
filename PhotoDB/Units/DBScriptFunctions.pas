@@ -256,8 +256,10 @@ function SelectDir(Text: string): string;
 var
   Dir: string;
 begin
+  Result := '';
   Dir := UnitDBFileDialogs.DBSelectDir(Application.Handle, Text, UseSimpleSelectFolderDialog);
-  Result := IncludeTrailingBackslash(Dir);
+  if Dir <> '' then
+    Result := IncludeTrailingBackslash(Dir);
 end;
 
 procedure AMakeDBFileTree;

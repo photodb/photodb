@@ -289,6 +289,7 @@ begin
         ProportionalSize(100, 100, W, H);
         DoResize(W, H, Bit, Bitmap);
 
+        F(FCurrentImage);
         FCurrentImage := TBitmap.Create;
         FCurrentImage.Assign(Bitmap);
         Repaint;

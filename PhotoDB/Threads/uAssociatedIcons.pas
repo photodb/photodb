@@ -179,7 +179,7 @@ begin
       Stream.WriteBuffer(lpIconImage^, GRP.idEntries[i0].dwBytesInRes);
 
       Stream.Position := 0;
-      Icon:=TIcon.Create;
+      Icon := TIcon.Create;
       Icon.LoadFromStream(Stream);
     finally
       Stream.Free;

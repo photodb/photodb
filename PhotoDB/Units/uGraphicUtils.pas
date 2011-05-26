@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Classes, Graphics, Jpeg, Math, uConstants,
   UnitDBCommonGraphics, GraphicsBaseTypes, uDBGraphicTypes, uAssociations,
-  RAWImage, uMemory;
+  RAWImage, uMemory, Effects;
 
 type
   TCompareArray = array [0 .. 99, 0 .. 99, 0 .. 2] of Integer;

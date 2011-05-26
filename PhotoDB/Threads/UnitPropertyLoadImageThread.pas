@@ -98,7 +98,7 @@ begin
 
     FB := TBitmap.Create;
     try
-      FB.PixelFormat := Pf24bit;
+      FB.PixelFormat := pf24bit;
 
       FB1 := TBitmap.Create;
       try
@@ -119,6 +119,7 @@ begin
        try
           TempBitmap.Assign(Graphic);
           F(Graphic);
+          FB.PixelFormat := TempBitmap.PixelFormat;
           DoResize(FB.Width, FB.Height, TempBitmap, FB);
           F(TempBitmap);
 
@@ -126,8 +127,12 @@ begin
 
           FillRectNoCanvas(FB1, ClBtnFace);
 
-          DrawImageEx(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,
-            ThSizePropertyPreview div 2 - FB.Height div 2);
+          if FB.PixelFormat = pf24Bit then
+            DrawImageEx(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,
+              ThSizePropertyPreview div 2 - FB.Height div 2)
+          else
+            DrawImageEx32To24(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,
+              ThSizePropertyPreview div 2 - FB.Height div 2);
 
           Synchronize(SetImage);
         finally

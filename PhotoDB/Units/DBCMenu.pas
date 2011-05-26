@@ -453,7 +453,7 @@ begin
 
   AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesNo',Self.LoadVariablesNo);
-  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesSelectedFileNo',Self.LoadVariablesNo);
+  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesSelectedFileNo',Self.LoadVariablesSelectedFileNo);
 
   _popupmenu := TPopupMenu.Create(nil);
 end;

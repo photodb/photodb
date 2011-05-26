@@ -148,7 +148,7 @@ begin
               F(Graphic);
               TempBitmap := TBitmap.Create;
               try
-                TempBitmap.PixelFormat := pf24bit;
+                TempBitmap.PixelFormat := Fbit.PixelFormat;
                 W := Fbit.Width;
                 H := Fbit.Height;
                 ProportionalSize(FPictureSize, FPictureSize, W, H);

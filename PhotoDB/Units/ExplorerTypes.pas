@@ -4,7 +4,7 @@ interface
 
 uses Forms, SysUtils, Windows, Graphics, UnitDBDeclare,
   Messages, Classes, DB, GraphicsCool, JPEG, SyncObjs,
-  UnitDBCommon, UnitDBCommonGraphics, uFileUtils,
+  UnitDBCommon, UnitDBCommonGraphics, Effects, uFileUtils,
   uMemory, uDBPopupMenuInfo;
 
 type
@@ -295,6 +295,7 @@ begin
               W := FImages[I].Images[J].Width;
               H := FImages[I].Images[J].height;
               ProportionalSize(Width, Height, W, H);
+              Result.Images[J].PixelFormat := FImages[I].Images[J].PixelFormat;
               DoResize(W, H, FImages[I].Images[J], Result.Images[J]);
             end;
           end;

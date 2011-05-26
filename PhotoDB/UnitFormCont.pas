@@ -49,7 +49,7 @@ type
     DropFileTarget2: TDropFileTarget;
     Label2: TLabel;
     WlConvert: TWebLink;
-    GroupBox1: TGroupBox;
+    GbImageInfo: TGroupBox;
     Label1: TLabel;
     Image1: TImage;
     LabelName: TLabel;
@@ -709,7 +709,7 @@ end;
 procedure TFormCont.ListView1SelectItem(Sender: TObject; Item: TEasyItem;
       Selected: Boolean);
 var
-  Image: TBitmap;
+  Image, B: TBitmap;
   W, H: Integer;
 begin
   Application.HideHint;
@@ -726,20 +726,33 @@ begin
     TbConvert.Enabled := False;
     TbExport.Enabled := False;
     TbCopy.Enabled := False;
-  end
-  else
+  end else
   begin
     if Image1.Picture.Bitmap <> nil then
       Image1.Picture.Graphic := nil;
 
     Image := TBitmap.Create;
-    Image.PixelFormat := Pf24bit;
-    W := FBitmapImageList[Item.ImageIndex].Bitmap.Width;
-    H := FBitmapImageList[Item.ImageIndex].Bitmap.Height;
-    ProportionalSize(50, 50, W, H);
-    DoResize(W, H, FBitmapImageList[Item.ImageIndex].Bitmap, Image);
-    Image1.Picture.Bitmap.Assign(Image);
-    Image.Free;
+    try
+      Image.PixelFormat := FBitmapImageList[Item.ImageIndex].Bitmap.PixelFormat;
+      W := FBitmapImageList[Item.ImageIndex].Bitmap.Width;
+      H := FBitmapImageList[Item.ImageIndex].Bitmap.Height;
+      ProportionalSize(50, 50, W, H);
+      DoResize(W, H, FBitmapImageList[Item.ImageIndex].Bitmap, Image);
+      if Image.PixelFormat = pf24Bit then
+        Image1.Picture.Graphic := Image
+      else
+      begin
+        B := TBitmap.Create;
+        try
+          LoadBMPImage32bit(Image, B, GbImageInfo.Color);
+          Image1.Picture.Graphic := B
+        finally
+          F(B);
+        end;
+      end;
+    finally
+      F(Image);
+    end;
 
     LabelName.Caption := ExtractFileName(Data[Item.index].FileName); // else
     LabelID.Caption := Format(L('ID = %d'), [Data[Item.index].ID]);
@@ -1173,7 +1186,7 @@ begin
     WlConvert.Text := L('Convert');
     ExportLink.Text := L('Export');
     ExCopyLink.Text := L('Copy');
-    GroupBox1.Caption := L('Photo');
+    GbImageInfo.Caption := L('Photo');
     Label2.Caption := L('Actions') + ':';
     Rename1.Caption := L('Rename');
 

@@ -892,13 +892,22 @@ var
       if (C = '=') or ((C = '!') and (S[I + 1] = '=')) or (C = '<') or (C = '>') then
       begin
         if (C = '=') then
-          Result := 1
-        else if ((C = '!') and (S[I + 1] = '=')) then
-          Result := 2
-        else if (C = '<') then
-          Result := 3
-        else if (C = '>') then
+        begin
+          Result := 1;
+          Exit;
+        end else if ((C = '!') and (S[I + 1] = '=')) then
+        begin
+          Result := 2;
+          Exit;
+        end else if (C = '<') then
+        begin
+          Result := 3;
+          Exit;
+        end else if (C = '>') then
+        begin
           Result := 4;
+          Exit;
+        end;
       end;
     end;
   end;

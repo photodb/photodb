@@ -180,7 +180,7 @@ begin
       F(ExifData);
     end;
     SetBoolParam(FQuery, 16, True);
-    if Date = 0 then
+    if YearOf(Date) < 1900 then
     begin
       SetDateParam(FQuery, 'DateToAdd', Now);
       SetDateParam(FQuery, 'aTime', TimeOf(Now));

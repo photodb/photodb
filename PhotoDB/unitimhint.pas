@@ -349,7 +349,7 @@ begin
     ProportionalSize(ThSize, ThSize, W, H);
     DragImage:=TBitmap.Create;
     try
-      DragImage.PixelFormat := pf24bit;
+      DragImage.PixelFormat := ImageBuffer.PixelFormat;
       DoResize(W, H, ImageBuffer, DragImage);
 
       CreateDragImage(DragImage, DragImageList, Font, ExtractFileName(CurrentInfo.FileName));

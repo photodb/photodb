@@ -1,12 +1,11 @@
 ﻿  @functions 
 
-  .void ApplyActionsToSelected($ID,$FILE){
+  .void ApplyActionsToSelected($MenuLength,$ID,$FILE){
 
     LOAD_VARS($ID);
     DELETE_VAR($FileName);
     DELETE_VAR($Selected);
     SAVE_VAR($sID,$FILE);
-
     if ($FILE!="") 
     {
       $ar=GetStringArray;

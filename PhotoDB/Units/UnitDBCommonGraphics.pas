@@ -32,7 +32,7 @@ function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte;
   out JpegImageResampled: TJpegImage): Int64;
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
-procedure QuickReduce(NewWidth, NewHeight: Integer; BmpIn, BmpOut: TBitmap);
+procedure QuickReduce(NewWidth, NewHeight: Integer; D, S: TBitmap);
 procedure StretchCool(X, Y, Width, Height: Integer; S, D: TBitmap); overload;
 procedure StretchCool(Width, Height: Integer; S, D: TBitmap); overload;
 procedure QuickReduceWide(Width, Height: Integer; S, D: TBitmap);
@@ -51,7 +51,6 @@ procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
 procedure GrayScale(Image: TBitmap);
 procedure SelectedColor(Image: TBitmap; Color: TColor);
 procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
-procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
 procedure AssignGraphic(Dest: TBitmap; Src: TGraphic);
 procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
 procedure RemoveBlackColor(Bitmap: TBitmap);
@@ -1177,41 +1176,6 @@ begin
   end;
 end;
 
-procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
-var
-  I, J: Integer;
-  PS, PD: PARGB;
-  PS32, PD32: PARGB32;
-begin
-  if Src.PixelFormat <> pf32bit then
-  begin
-    Src.PixelFormat := pf24bit;
-    Dest.PixelFormat := pf24bit;
-    Dest.SetSize(Src.Width, Src.Height);
-
-    for I := 0 to Src.Height - 1 do
-    begin
-      PD := Dest.ScanLine[I];
-      PS := Src.ScanLine[I];
-      for J := 0 to Src.Width - 1 do
-        PD[J] := PS[J];
-    end;
-  end else
-  begin
-    Src.PixelFormat := pf32bit;
-    Dest.PixelFormat := pf32bit;
-    Dest.SetSize(Src.Width, Src.Height);
-
-    for I := 0 to Src.Height - 1 do
-    begin
-      PD32 := Dest.ScanLine[I];
-      PS32 := Src.ScanLine[I];
-      for J := 0 to Src.Width - 1 do
-        PD32[J] := PS32[J];
-    end;
-  end;
-end;
-
 procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
 begin
   JPEG.Performance := jpBestSpeed;
@@ -1252,8 +1216,6 @@ begin
 end;
 
 procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
-var
-  PNG: TPngImage;
 begin
   if (Dest is TPngImage) and (Src.PixelFormat = pf32Bit) then
   begin
@@ -1285,15 +1247,6 @@ begin
   if (S.Width = 0) or (S.Height = 0) then
     Exit;
 
-  if (S.PixelFormat = pf32bit) and (D.PixelFormat = pf32bit) then
-  begin
-    if ((Width / S.Width > 1) or (Height / S.Height > 1)) and (S.Width > 2) and (S.Height > 2) then
-      Interpolate(0, 0, Width, Height, Rect(0, 0, S.Width, S.Height), S, D)
-    else
-      StretchCool(Width, Height, S, D);
-    Exit;
-  end;
-
   if ((Width / S.Width > 1) or (Height / S.Height > 1)) then
   begin
     if (S.Width > 2) and (S.Height > 2) then
@@ -1307,7 +1260,7 @@ begin
       QuickReduce(Width, Height, S, D)
     else
     begin
-      if (Width / S.Width > ZoomSmoothMin) and (S.PixelFormat <> pf32bit) and (S.Width > 1) then
+      if (Width / S.Width > ZoomSmoothMin) and (S.Width > 1) then
         SmoothResize(Width, Height, S, D)
       else
         StretchCool(Width, Height, S, D);
@@ -1636,65 +1589,117 @@ begin
   end;
 end;
 
-procedure QuickReduce(NewWidth, NewHeight : integer; BmpIn, BmpOut : TBitmap);
+procedure QuickReduce(NewWidth, NewHeight: Integer; D, S: TBitmap);
 var
   x, y, xi1, yi1, xi2, yi2, xx, yy, lw1 : integer;
   bufw, bufh, outw, outh : integer;
-  sumr, sumb, sumg, Pixcnt: Dword;
+  sumr, sumb, sumg, suml, Pixcnt: Dword;
   AdrIn, AdrOut, AdrLine0, DeltaLine, DeltaLine2: Integer;
 begin
 {$R-}
-  BmpIn.PixelFormat := pf24bit;
-  BmpOut.PixelFormat := pf24bit;
-  BmpOut.SetSize(NewWidth, NewHeight);
-  bufw := BmpIn.Width;
-  bufh := BmpIn.Height;
-  outw := BmpOut.Width;
-  outh := BmpOut.Height;
-  adrLine0 := Integer(bmpIn.ScanLine[0]);
+  if not ((S.PixelFormat = pf32Bit) and (D.PixelFormat = pf32Bit)) then
+  begin
+    S.PixelFormat := pf24Bit;
+    D.PixelFormat := pf24Bit;
+  end;
+  S.SetSize(NewWidth, NewHeight);
+  bufw := D.Width;
+  bufh := D.Height;
+  outw := S.Width;
+  outh := S.Height;
+  adrLine0 := Integer(D.ScanLine[0]);
   deltaLine := 0;
-  if BmpIn.Height > 1 then
-    deltaLine := Integer(BmpIn.ScanLine[1]) - adrLine0;
- yi2 := 0;
- for y := 0 to outh-1 do
- begin
-   adrOut := DWORD(BmpOut.ScanLine[y]);
-   yi1 := yi2 {+ 1};
-   yi2 := ((y+1) * bufh) div outh - 1;
-   if yi2 > bufh-1 then yi2 := bufh;
-   xi2 := 0;
-   for x := 0 to outw-1 do
-   begin
-     xi1 := xi2 {+ 1};
-     xi2 := ((x+1) * bufw) div outw - 1;
-     if xi2 > bufw-1 then xi2 := bufw-1; //
-     lw1 := xi2-xi1+1;
-     deltaLine2 := deltaLine - lw1*3;
-     sumb := 0;
-     sumg := 0;
-     sumr := 0;
-     adrIn := adrLine0 + yi1*deltaLine + xi1*3;
-     for yy := yi1 to yi2 do
-     begin
-       for xx := 1 to lw1 do
-       begin
-         Inc(sumb, PByte(adrIn+0)^);
-         Inc(sumg, PByte(adrIn+1)^);
-         Inc(sumr, PByte(adrIn+2)^);
-         Inc(adrIn, 3);
-       end;
-       Inc (adrIn, deltaLine2);
-     end;
-     pixcnt := (yi2-yi1+1)*lw1;
-     if pixcnt<>0 then
-     begin
-      PByte(adrOut+0)^ := sumb div pixcnt;
-      PByte(adrOut+1)^ := sumg div pixcnt;
-      PByte(adrOut+2)^ := sumr div pixcnt;
-     end;
-     Inc(adrOut, 3);
-   end;
- end;
+  if D.Height > 1 then
+    deltaLine := Integer(D.ScanLine[1]) - adrLine0;
+  yi2 := 0;
+
+  if S.PixelFormat = pf32Bit then
+  begin
+
+    for y := 0 to outh-1 do
+    begin
+      adrOut := DWORD(S.ScanLine[y]);
+      yi1 := yi2 {+ 1};
+      yi2 := ((y+1) * bufh) div outh - 1;
+      if yi2 > bufh-1 then yi2 := bufh;
+      xi2 := 0;
+      for x := 0 to outw-1 do
+      begin
+        xi1 := xi2 {+ 1};
+        xi2 := ((x+1) * bufw) div outw - 1;
+        if xi2 > bufw-1 then xi2 := bufw-1; //
+        lw1 := xi2-xi1+1;
+        deltaLine2 := deltaLine - lw1*4;
+        sumb := 0;
+        sumg := 0;
+        sumr := 0;
+        suml := 0;
+        adrIn := adrLine0 + yi1*deltaLine + xi1*4;
+        for yy := yi1 to yi2 do
+        begin
+          for xx := 1 to lw1 do
+          begin
+            Inc(sumb, PByte(adrIn+0)^);
+            Inc(sumg, PByte(adrIn+1)^);
+            Inc(sumr, PByte(adrIn+2)^);
+            Inc(suml, PByte(adrIn+3)^);
+            Inc(adrIn, 4);
+          end;
+          Inc (adrIn, deltaLine2);
+        end;
+        pixcnt := (yi2-yi1+1)*lw1;
+        if pixcnt<>0 then
+        begin
+         PByte(adrOut+0)^ := sumb div pixcnt;
+         PByte(adrOut+1)^ := sumg div pixcnt;
+         PByte(adrOut+2)^ := sumr div pixcnt;
+         PByte(adrOut+3)^ := suml div pixcnt;
+        end;
+        Inc(adrOut, 4);
+      end;
+    end;
+  end else
+  begin
+    for y := 0 to outh-1 do
+    begin
+      adrOut := DWORD(S.ScanLine[y]);
+      yi1 := yi2 {+ 1};
+      yi2 := ((y+1) * bufh) div outh - 1;
+      if yi2 > bufh-1 then yi2 := bufh;
+      xi2 := 0;
+      for x := 0 to outw-1 do
+      begin
+        xi1 := xi2 {+ 1};
+        xi2 := ((x+1) * bufw) div outw - 1;
+        if xi2 > bufw-1 then xi2 := bufw-1; //
+        lw1 := xi2-xi1+1;
+        deltaLine2 := deltaLine - lw1*3;
+        sumb := 0;
+        sumg := 0;
+        sumr := 0;
+        adrIn := adrLine0 + yi1*deltaLine + xi1*3;
+        for yy := yi1 to yi2 do
+        begin
+          for xx := 1 to lw1 do
+          begin
+            Inc(sumb, PByte(adrIn+0)^);
+            Inc(sumg, PByte(adrIn+1)^);
+            Inc(sumr, PByte(adrIn+2)^);
+            Inc(adrIn, 3);
+          end;
+          Inc (adrIn, deltaLine2);
+        end;
+        pixcnt := (yi2-yi1+1)*lw1;
+        if pixcnt<>0 then
+        begin
+         PByte(adrOut+0)^ := sumb div pixcnt;
+         PByte(adrOut+1)^ := sumg div pixcnt;
+         PByte(adrOut+2)^ := sumr div pixcnt;
+        end;
+        Inc(adrOut, 3);
+      end;
+    end;
+  end;
 end;
 
 procedure StretchCool(Width, Height : Integer; S, D : TBitmap);
