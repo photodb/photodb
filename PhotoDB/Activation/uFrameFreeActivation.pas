@@ -95,7 +95,7 @@ begin
   EdCountry.EditLabel.Caption := L('Country') + ':';
   EdCity.EditLabel.Caption := L('City') + ':';
   EdAddress.EditLabel.Caption := L('Address') + ':';
-  LbInternetQuery.Caption := L('Please wait until program copmletes the activation process...');
+  LbInternetQuery.Caption := L('Please wait until program completes the activation process...');
 end;
 
 procedure TFrameFreeActivation.RegistrationCallBack(Reply: string);
@@ -142,7 +142,7 @@ begin
     end;
 
     EventLog('Invalid reply from server: ' + Reply);
-    MessageBoxDB(Handle, L('Activation via internet failed! Please, check your internet connection settings in IE. Only manual actiovation is possible at this moment!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    MessageBoxDB(Handle, L('Activation via internet failed! Please, check your internet connection settings in IE. Only manual activation is possible at this moment!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
 
     IsBusy := False;
     Manager.NextStep;

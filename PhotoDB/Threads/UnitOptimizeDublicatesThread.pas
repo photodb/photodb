@@ -195,7 +195,7 @@ begin
               FStrParam := TA('Warning');
               FIntParam := LINE_INFO_INFO;
               SynchronizeEx(TextOutEx);
-              FStrParam := Format(L('Item %d not foud by ID -> advanced search'), [Table.FieldByName('ID').AsInteger]);
+              FStrParam := Format(L('Item %d not found by ID -> advanced search'), [Table.FieldByName('ID').AsInteger]);
               FIntParam := LINE_INFO_WARNING;
               SynchronizeEx(TextOutEx);
               WideSearch := True;

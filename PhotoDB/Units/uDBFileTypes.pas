@@ -353,7 +353,7 @@ begin
     Exit;
 
   try
-    Fs := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
+    FS := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
   except
     Exit;
   end;
@@ -373,15 +373,15 @@ begin
     X[11] := Ord('-');
     X[12] := Ord('V');
     X[13] := Ord('1');
-    Fs.write(Pointer(X)^, 14);
+    Fs.Write(Pointer(X)^, 14);
     L := Actions.Count;
     FS.Write(L, SizeOf(L));
     for I := 0 to Actions.Count - 1 do
     begin
       Action := AnsiString(Actions[I]);
       L := Length(Action);
-      Fs.Write(L, SizeOf(L));
-      Fs.Write(Action[1], Length(Action));
+      FS.Write(L, SizeOf(L));
+      FS.Write(Action[1], Length(Action));
     end;
   except
     F(FS);

@@ -188,7 +188,7 @@ begin
       StrAction := L('Insert image', 'Editor');
     end;
 
-    ActionObject := TActionObject.Create(StrAction, Ico);
+    ActionObject := TActionObject.Create(Action, Ico);
     Actions.Add(ActionObject);
     ActionList.Items.Add(StrAction);
   end;

@@ -128,7 +128,7 @@ procedure TProgressActionForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Label3.Caption := L('Please wait while the program performs the current operation and updates the the collection.');
+    Label3.Caption := L('Please wait while the program performs the current operation and updates the collection.');
     Label2.Caption := L('Tasks') + ':';
     Label1.Caption := L('Current action') + ':';
     Caption := L('Action is performed');

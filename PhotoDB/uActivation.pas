@@ -143,7 +143,7 @@ begin
   BeginTranslate;
   try
     Caption := L('Activation');
-    LbInfo.Caption := L('This wizard helps you to activate this copy of application. Please fill all requared filds and follow the instructions.');
+    LbInfo.Caption := L('This wizard helps you to activate this copy of application. Please fill all required fields and follow the instructions.');
     BtnCancel.Caption := L('Close');
     BtnPrevious.Caption := L('Previous');
     BtnNext.Caption := L('Next');

@@ -78,7 +78,7 @@ initialization:
 
      $file_name=ExtractFileName($file);
 
-     $script="ApplyActionsToSelected("""+$MenuLength+""","""+$sID+""","""+$file+""");";
+     $script="ApplyActionsToSelected("""+$sID+""","""+$file+""");";
      CreateItem($file_name,DB_IC_APPLY_ACTION,$script,false,0);
   };
 }

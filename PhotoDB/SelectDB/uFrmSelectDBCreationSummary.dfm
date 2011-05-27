@@ -18,6 +18,5 @@ inherited FrmSelectDBCreationSummary: TFrmSelectDBCreationSummary
     ReadOnly = True
     ScrollBars = ssBoth
     TabOrder = 0
-    ExplicitWidth = 596
   end
 end

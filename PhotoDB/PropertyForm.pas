@@ -1356,10 +1356,10 @@ begin
   CommentMemo.Hide;
   RatingEdit.Rating := 0;
   Image2.Visible := False;
-  CollectionMemo.Text := L('Not avaliable');
+  CollectionMemo.Text := L('Not available');
   CollectionMemo.readonly := True;
-  IDLabel.Text := L('Not avaliable');
-  OwnerMemo.Text := L('Not avaliable');
+  IDLabel.Text := L('Not available');
+  OwnerMemo.Text := L('Not available');
 
   if Double(FFileDate) > 0 then
     DateEdit.DateTime := FFileDate
@@ -1683,11 +1683,11 @@ begin
     try
       Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
       SizeLAbel.Text := SizeInText(Size);
-      OwnerMemo.Text := L('Not avaliable');
-      CollectionMemo.Text := L('Not avaliable');
-      OwnerMemo.readonly := True;
+      OwnerMemo.Text := L('Not available');
+      CollectionMemo.Text := L('Not available');
+      OwnerMemo.Readonly := True;
       CommentMemo.PopupMenu := nil;
-      CollectionMemo.readonly := True;
+      CollectionMemo.Readonly := True;
 
       if FFilesInfo.IsVariousInclude then
         CbInclude.State := CbGrayed
@@ -1923,7 +1923,7 @@ begin
   Delete1.Caption := L('Delete');
   BtnManageGroups.Caption := L('Manage');
   BtnNewGroup.Caption := L('Create group');
-  LbAvaliableGroups.Caption := L('Avaliable groups') + ':';
+  LbAvaliableGroups.Caption := L('Available groups') + ':';
   LbCurrentGroups.Caption := L('Selected groups') + ':';
   Clear1.Caption := L('Clear');
   MenuItem1.Caption := L('Delete');

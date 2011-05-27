@@ -555,15 +555,15 @@ end;
 
 procedure TFormCont.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
 var
-  i, ReRotation : integer;
-  item: TEasyItem;
-  RefreshParams : TEventFields;
+  I, ReRotation: Integer;
+  Item: TEasyItem;
+  RefreshParams: TEventFields;
 begin
- if EventID_Repaint_ImageList in params then
- begin
-  ElvMain.Refresh;
-  exit;
- end;
+  if EventID_Repaint_ImageList in params then
+  begin
+    ElvMain.Refresh;
+    Exit;
+  end;
 
   if ID = -2 then
     Exit;
@@ -602,7 +602,16 @@ begin
         Data[I].Groups := Value.Groups;
       if EventID_Param_Links in Params then
         Data[I].Links := Value.Links;
-
+      if EventID_Param_Name in Params then
+      begin
+        if Value.NewName <> '' then
+          Data[I].FileName := Value.NewName
+        else
+          Data[I].FileName := Value.Name;
+        Item := GetListItemById(Id);
+          if Item <> nil then
+            Item.Caption := ExtractFileName(Data[I].FileName);
+      end;
       if EventID_Param_Include in params then
       begin
         Data[I].Include := Value.Include;

@@ -1870,7 +1870,7 @@ begin
   if ID=-2 then
     Exit
     //TODO: move -2 to some constant
-  else if [EventID_Param_DB_Changed,EventID_Param_Refresh_Window] * params<>[] then
+  else if [EventID_Param_DB_Changed, EventID_Param_Refresh_Window] * params<>[] then
   begin
     ReRecreateGroupsList;
     LoadQueryList;
@@ -1900,7 +1900,14 @@ begin
       if EventID_Param_Date in params then SearchRecord.Date := Value.Date;
       if EventID_Param_Time in params then SearchRecord.Time := Value.Time;
       if EventID_Param_Rating in params then SearchRecord.Rating := Value.Rating;
-      if EventID_Param_Name in params then SearchRecord.FileName := Value.Name;
+      if EventID_Param_Name in params then
+      begin
+        if Value.NewName <> '' then
+          SearchRecord.FileName := Value.NewName
+        else
+          SearchRecord.FileName := Value.Name;
+        ElvMain.Items[I].Caption := ExtractFileName(SearchRecord.FileName);
+      end;
       if EventID_Param_KeyWords in params then SearchRecord.KeyWords := Value.KeyWords;
       if EventID_Param_Comment in params then SearchRecord.Comment := Value.Comment;
       if EventID_Param_Rotate in params then

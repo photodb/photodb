@@ -966,7 +966,7 @@ begin
   ColorChooserLabel.Parent := Panel;
   ColorChooserLabel.Top := FHorizontal.Top + FHorizontal.Height + 8;
   ColorChooserLabel.Left := ColorChooser.Left + ColorChooser.Width + 5;
-  ColorChooserLabel.Caption := L('Backgroud color');
+  ColorChooserLabel.Caption := L('Background color');
 
   Result := True;
   MakeImage(Self);
@@ -1183,7 +1183,7 @@ begin
   ColorChooserLabel.Parent := Panel;
   ColorChooserLabel.Top := FDisorderLengthH.Top + FDisorderLengthH.Height + 8;
   ColorChooserLabel.Left := ColorChooser.Left + ColorChooser.Width + 5;
-  ColorChooserLabel.Caption := L('Backgroud color');
+  ColorChooserLabel.Caption := L('Background color');
 
   Result := True;
   if AMakeImage then
@@ -1648,7 +1648,7 @@ begin
   E[3, 3].Text := '1';
   DeviderLabel := TLabel.Create(Panel);
   DeviderLabel.Parent := Panel;
-  DeviderLabel.Caption := L('Devider') + ':';
+  DeviderLabel.Caption := L('Divider') + ':';
   DeviderLabel.Top := E[5, 5].Top + E[5, 5].Height + 8;
   DeviderLabel.Left := 8;
   DeviderLabel.Width := 100;
@@ -1821,7 +1821,7 @@ begin
     begin
       E[3 + I, 3 + J].Text := Settings.ReadString('Editor\CustomEffect\' + name, InttoStr((I + 2) * 5 + J + 2));
     end;
-  DeviderEdit.Text := Settings.ReadString('Editor\CustomEffect\' + name, 'Devider');
+  DeviderEdit.Text := Settings.ReadString('Editor\CustomEffect\' + name, 'Divider');
 end;
 
 procedure TCustomMatrixEffect.MakeImage(Sender: TObject);
@@ -1906,7 +1906,7 @@ begin
     for J := -2 to 2 do
       Settings.WriteString('Editor\CustomEffect\' + name, IntToStr((I + 2) * 5 + J + 2), E[3 + I, 3 + J].Text);
 
-  Settings.WriteString('Editor\CustomEffect\' + name, 'Devider', DeviderEdit.Text);
+  Settings.WriteString('Editor\CustomEffect\' + name, 'Divider', DeviderEdit.Text);
 
   ReloadUserPresents;
 end;
@@ -1915,7 +1915,7 @@ procedure TCustomMatrixEffect.SetProperties(Properties: string);
 var
   I, J: Integer;
 begin
-  DeviderEdit.Text := GetValueByName(Properties, 'Devider');
+  DeviderEdit.Text := GetValueByName(Properties, 'Divider');
   for I := 1 to 5 do
     for J := 1 to 5 do
       E[I, J].Text := GetValueByName(Properties, Format('v%d&%d', [I, J]));

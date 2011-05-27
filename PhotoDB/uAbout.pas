@@ -209,7 +209,7 @@ begin
   else if not Info.IsNewVersion then
     LnkGoToWebSite.Text := L('You''re using the latest version of PhotoDB!')
   else
-    LnkGoToWebSite.Text := Format(L('New version (%s) is avaliable!'), [ReleaseToString(Info.Release)]);
+    LnkGoToWebSite.Text := Format(L('New version (%s) is available!'), [ReleaseToString(Info.Release)]);
 
   LnkGoToWebSite.Left := LsUpdates.Left + LsUpdates.Width - LnkGoToWebSite.Width;
   LnkGoToWebSite.Refresh;

@@ -1855,9 +1855,9 @@ begin
       if DBVersion > 0 then
         if not DBKernel.ValidDBVersion(FileName, DBVersion) then
         begin
-          DialogResult := MessageBoxDB(Handle, L('This database may not be used without conversion, ie It is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'),
+          DialogResult := MessageBoxDB(Handle, L('This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'),
             '', TD_BUTTON_YESNO, TD_ICON_WARNING);
-          if ID_OK = DialogResult then
+          if ID_YES = DialogResult then
             ConvertDB(FileName);
         end;
     end;

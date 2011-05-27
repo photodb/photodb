@@ -1,6 +1,6 @@
 ﻿  @functions 
 
-  .void ApplyActionsToSelected($MenuLength,$ID,$FILE){
+  .void ApplyActionsToSelected($ID,$FILE){
 
     LOAD_VARS($ID);
     DELETE_VAR($FileName);
@@ -40,7 +40,7 @@
         };
       }; else 
       { 
-        $folder=GetOpenDirectory("TEXT_MES_APPLY_ACTION_DIR","");
+        $folder=GetOpenDirectory("Please select directory to place for processed files","");
         $de=DirectoryExists($folder);
         if ($de=true)
         {

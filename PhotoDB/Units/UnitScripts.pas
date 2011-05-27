@@ -1373,7 +1373,8 @@ begin
               S1 := GetNamedValueString(AScript, ParamNO(Command, 1));
               S2 := ParamNO(Command, 2);
               PTempScript := ScriptsManager.GetScriptByID(S1);
-              PTempScript.NamedValues.GetValueByName(S2).Assign(AScript.NamedValues.GetValueByName(S2));
+              if PTempScript <> nil then
+                PTempScript.NamedValues.GetValueByName(S2).Assign(AScript.NamedValues.GetValueByName(S2));
             end;
 
           F_TYPE_FUNCTION_OF_SCRIPT:

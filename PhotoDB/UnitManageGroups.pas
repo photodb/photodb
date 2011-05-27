@@ -248,7 +248,7 @@ begin
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
     if UnitGroupsWork.DeleteGroup(Groups[index]) then
     begin
-      if ID_OK = MessageBoxDB(Handle, Format(L('Scan colection and remove all pointers to group "%s"?'), [Groups[index].GroupName]),
+      if ID_OK = MessageBoxDB(Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Groups[index].GroupName]),
         L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       begin
         FSaving := True;

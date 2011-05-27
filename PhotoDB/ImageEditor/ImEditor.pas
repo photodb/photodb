@@ -2902,13 +2902,12 @@ begin
   begin
     ToolClass := TColorToolPanelClass.Create(TempPanel);
     BaseConfigureTool;
+    TColorToolPanelClass(ToolClass).Init;
   end;
   if ToolClass <> nil then
     ToolClass.ExecuteProperties(Action, ReadNextAction)
   else
     ReadNextAction(Self);
-
-//  F(ToolClass);
 end;
 
 procedure TImageEditor.ReadActionsFile(FileName: string);

@@ -138,6 +138,7 @@ end;
 
 function GetOpenDirectory(Caption, Root: string): string;
 begin
+  Caption := TA(Caption, 'DBMenu');
   if DirectoryExists(Root) then
     Result := UnitDBFileDialogs.DBSelectDir(Application.Handle, Caption, Root, UseSimpleSelectFolderDialog)
   else

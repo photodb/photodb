@@ -448,7 +448,7 @@ begin
     BtnCreateGroup.Caption := L('Create group');
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');
-    Label2.Caption := L('Avaliable groups') + ':';
+    Label2.Caption := L('Available groups') + ':';
     Label1.Caption := L('Selected groups') + ':';
     Clear1.Caption := L('Clear');
     GroupManeger2.Caption := L('Groups manager');

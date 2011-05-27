@@ -33,12 +33,12 @@ end;
 
 procedure TSlideShowUpdateInfoThread.DoSetNotDBRecord;
 begin
-  Viewer.DoSetNoDBRecord(fFileName);
+  Viewer.DoSetNoDBRecord(FFileName);
 end;
 
 procedure TSlideShowUpdateInfoThread.DoUpdateWithSlideShow;
 begin
-  Viewer.DoUpdateRecordWithDataSet(fFileName, DS);
+  Viewer.DoUpdateRecordWithDataSet(FFileName, DS);
 end;
 
 procedure TSlideShowUpdateInfoThread.Execute;

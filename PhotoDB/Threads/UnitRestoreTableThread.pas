@@ -59,7 +59,7 @@ begin
   except
     on E: Exception do
     begin
-      StrParam := Format(L('Error! Unable to create backup for currect collection: %s!'), [E.message]);
+      StrParam := Format(L('Error! Unable to create backup for current collection: %s!'), [E.message]);
       SynchronizeEx(TextOut);
       Sleep(10000);
       SynchronizeEx(DoExit);

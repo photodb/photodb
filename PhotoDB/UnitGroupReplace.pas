@@ -317,7 +317,7 @@ begin
     Label1.Caption := L('Group') + ':';
     Caption := L('Replace group');
     RbAddGroup.Caption := L('Add group');
-    RbMergeWith.Caption := L('Megre with');
+    RbMergeWith.Caption := L('Merge with');
     RbAddWithAnotherName.Caption := L('Add with another name');
     RbSkipGroup.Caption := L('Skip this group');
     NewGroupNameBox.WatermarkText := L('Group');

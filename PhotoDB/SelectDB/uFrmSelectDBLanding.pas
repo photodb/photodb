@@ -89,7 +89,7 @@ begin
         DBFile.Icon := Application.ExeName + ',0';
         DBKernel.AddDB(DBFile.Name, DBFile.FileName, DBFile.Icon);
 
-        MessageBoxDB(Handle, Format(L('Collection "%s" succesfully created!'),
+        MessageBoxDB(Handle, Format(L('Collection "%s" successfully created!'),
             [FileName]), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
         IsStepComplete := True;
         Changed;

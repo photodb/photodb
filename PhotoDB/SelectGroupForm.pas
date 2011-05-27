@@ -63,7 +63,7 @@ begin
   BeginTranslate;
   try
     Caption := L('Select group');
-    LbInfo.Caption := L('Select, please, nesessary group') + ':';
+    LbInfo.Caption := L('Select, please, necessary group') + ':';
     BtCancel.Caption := L('Cancel');
     BtOk.Caption := L('Ok');
   finally

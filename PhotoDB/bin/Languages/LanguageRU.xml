@@ -124,7 +124,7 @@
     <translate name="Watermark Options" value="Настнойки водяного знака" />
 	<translate name="Please, choose a valid directory!" value="Пожалуйста, выберите существующую директорию!" />
     <translate name="processed" value="обработка" />
-	<translate name="Preview isn't avaliable. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждно или зашифровано." />	
+	<translate name="Preview isn't available. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждно или зашифровано." />	
   </scope>
   <scope name="Password">
     <translate name="Password" value="Пароль" />
@@ -136,7 +136,7 @@
     <translate name="Enter your password here" value="Введите пароль здесь" />
     <translate name="Show password" value="Показывать пароль" />
     <translate name="Enter password to open file &quot;%s&quot; here:" value="Введите пароль для открытия файла '%s' сюда:" />
-    <translate name="Password requared" value="Необходим пароль" />
+    <translate name="Password is required" value="Необходим пароль" />
 	<translate name="Save password for session" value="Сохранить пароль на сессию" />
 	<translate name="Save password in settings" value="Сохранить пароль в настройках" />
 	<translate name="Don't ask again" value="Больше не спрашивать" />
@@ -238,7 +238,7 @@
     <translate name="Icons" value="Иконки" />
     <translate name="Table" value="Таблица" />
     <translate name="List" value="Список" />
-    <translate name="Data hidding" value="Сокрытие данных" />
+    <translate name="Data hiding" value="Сокрытие данных" />
     <translate name="Hide data in image" value="Скрыть данные в изображении" />
     <translate name="Extract hidden data" value="Извлечь скрытые данные" />
     <translate name="Map CD with collection" value="Связать диск с базой" />
@@ -423,7 +423,7 @@
     <translate name="Delete" value="Удалить" />
     <translate name="Manage" value="Управление" />
     <translate name="Create group" value="Создать группу" />
-    <translate name="Avaliable groups" value="Доступные группы" />
+    <translate name="Available groups" value="Доступные группы" />
     <translate name="Selected groups" value="Выбранные группы" />
     <translate name="Clear" value="Очистить" />
     <translate name="Change group" value="Изменить группу" />
@@ -463,7 +463,7 @@
     <translate name="Copyright" value="Права" />
     <translate name="Make" value="Производитель" />
     <translate name="Model" value="Модель" />
-    <translate name="Not avaliable" value="Не доступно" />
+    <translate name="Not available" value="Не доступно" />
   </scope>
   <scope name="Search">
     <translate name="More than" value="Больше чем" />
@@ -553,7 +553,7 @@
   </scope>
   <scope name="SelectGroup">
     <translate name="Select group" value="Выбор группы" />
-    <translate name="Select, please, nesessary group" value="Выберите, пожалуйста, необходимую группу" />
+    <translate name="Select, please, necessary group" value="Выберите, пожалуйста, необходимую группу" />
   </scope>
   <scope name="ChangeGroup">
     <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах чтобы видеть изменения!" />
@@ -613,7 +613,7 @@
     <translate name="CD,DVD drives" value="CD,DVD диски" />
     <translate name="No removable drives" value="Нет внешних дисков" />
     <translate name="No CD,DVD drives" value="Нет CD,DVD дисков" />
-    <translate name="Select folder to import" value="Выберите папку для испорта" />
+    <translate name="Select folder to import" value="Выберите папку для импорта" />
     <translate name="Select location" value="Выберите расположение" />
     <translate name="Help" value="Справка" />
     <translate name="Activation" value="Активация" />
@@ -682,8 +682,9 @@
     <translate name="List" value="Список" />
 	<translate name="selected objects" value="выбранных объектов" />
 	<translate name="Functions for [%s]" value="Функции для [%s]" />
-	<translate name="Memory for [%s]" value="Память для [%s]" />	
-	<translate name="Unknown" value="Неизвестно" />	
+	<translate name="Memory for [%s]" value="Память для [%s]" />
+	<translate name="Unknown" value="Неизвестно" />
+	<translate name="Please select directory to place for processed files" value="Выберите директорию, куда будут помещаться обработанные файлы" />	
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />
@@ -774,7 +775,7 @@
 	<translate name="Groups manager" value="Управление группами" />
 	<translate name="Create group" value="Создать группу" />
 	<translate name="Change group" value="Изменить группу" />	
-	<translate name="Avaliable groups" value="Доступные группы" />
+	<translate name="Available groups" value="Доступные группы" />
 	<translate name="Selected groups" value="Выбранные группы" />
 	<translate name="Clear" value="Очистить" />
 	<translate name="Delete" value="Удалить" />
@@ -872,7 +873,7 @@
 	<translate name="Groups" value="Группы" />
 	<translate name="Keywords" value="Ключевые слова" />
 	<translate name="Do you really want to delete group &quot;%s&quot;?" value="Вы действительно хотите удалить группу &quot;%s&quot;?" />
-	<translate name="Scan colection and remove all pointers to group &quot;%s&quot;?" value="Сканировать базу и удалить все указатели на группу &quot;%s&quot;?" />
+	<translate name="Scan collection and remove all pointers to group &quot;%s&quot;?" value="Сканировать базу и удалить все указатели на группу &quot;%s&quot;?" />
     <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
 	<translate name="Group info" value="Информация о группе" />
 	<translate name="Search images of group" value="Искать фотографии группы" />
@@ -963,7 +964,7 @@
 	<translate name="Group" value="Группа" />
 	<translate name="Replace group" value="Заменить группу" />
 	<translate name="Add group" value="Добавить группу" />
-	<translate name="Megre with" value="Совместить с" />
+	<translate name="Merge with" value="Совместить с" />
 	<translate name="Add with another name" value="Добавить с другим именем" />
 	<translate name="Skip this group" value="Пропустить эту группу" />
 	<translate name="Do you really want to create a new group and use it to import?" value="Вы действительно хотите создать новую группу и использовать её для импорта?" />
@@ -1176,7 +1177,7 @@
 	<translate name="Rotate left" value="Повернуть влево" />
 	<translate name="Rotate right" value="Повернуть вправо" />
 	<translate name="Rotate on 180 degree" value="Повернуть на 180°" />
-	<translate name="Flip horisontal" value="Отразить по горизонтали" />
+	<translate name="Flip horizontal" value="Отразить по горизонтали" />
 	<translate name="Flip vertical" value="Отразить по вертикали" />
 	<translate name="Custom angle" value="Произвольный угол" />
 	<translate name="Actions" value="Действия" />
@@ -1219,7 +1220,7 @@
 	<translate name="Height [%d]" value="Высота [%d]" />
 	<translate name="Pixels" value="Пиксели" />
 	<translate name="Horizontal" value="Горизонтально" />
-	<translate name="Backgroud color" value="Цвет фона" />
+	<translate name="Background color" value="Цвет фона" />
 	<translate name="Frequency [%d]" value="Частота [%d]" />
 	<translate name="Length [%d]" value="Длинна [%d]" />
 	<translate name="Wave" value="Волна" />
@@ -1233,7 +1234,7 @@
 	<translate name="Select color" value="Выбрать цвет" />
 	<translate name="Replace color" value="Замена Цвета" />
 	<translate name="Matrix 5x5" value="Матрица 5x5" />
-	<translate name="Devider" value="Делитель" />
+	<translate name="Divider" value="Делитель" />
 	<translate name="Sample effect" value="Примеры эффектов" />
 	<translate name="Configuration name" value="Имя конфигурации" />
 	<translate name="Save" value="Сохранить" />
@@ -1247,7 +1248,7 @@
 	<translate name="Auto levels" value="Авто уровни" />
 	<translate name="Emboss" value="Барельеф" />
 	<translate name="Smoothing" value="Сглаживание" />
-	<translate name="Optmize image" value="Оптимизировать изображение" />	
+	<translate name="Optimize image" value="Оптимизировать изображение" />	
 	<translate name="Filter &quot;%s&quot; is working" value="Фильтр &quot;%s&quot; работает" />	
 	<translate name="Сolor - Grayscale [%d]" value="Цветное - Чёрно-белое [%d]" />
 	<translate name="Custom grayscale" value="Произвольное чёрно-белое" />	
@@ -1404,7 +1405,7 @@
   <scope name="About">
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
 	<translate name="Can not check for updates!" value="Не удалось проверить обновления!"/>
-	<translate name="New version (%s) is avaliable!" value="Доступна новая версия (%s)!"/>
+	<translate name="New version (%s) is available!" value="Доступна новая версия (%s)!"/>
 	<translate name="This program isn't activated." value="Эта программа не активирована."/>	
 	<translate name="Program code" value="Код вашей копии программы"/>
 	<translate name="You're using the latest version of PhotoDB!" value="Вы используете самую последнюю версию PhotoDB!" /> 
@@ -1440,7 +1441,7 @@
 	<translate name="Back" value="Назад"/>
 	<translate name="Next" value="Далее"/>
 	<translate name="Finish" value="Финиш"/>
-	<translate name="Collection &quot;%s&quot; succesfully created!" value="База &quot;%s&quot; успешно создана"/>
+	<translate name="Collection &quot;%s&quot; successfully created!" value="База &quot;%s&quot; успешно создана"/>
 	<translate name="Panel preview size" value="Панель"/>
 	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
 	<translate name="Preview" value="Предпросмотр"/>
@@ -1690,7 +1691,7 @@
 	<translate name="Now the pictures that do not have icon (+) in the upper left corner are in the collection. They are available using the search and for them advanced context menu is available. Further help is available from the main menu (Help -> Help).$nl$$nl$" value="Теперь фотографии, у которых не отображается иконка (+) в верхнем левом углу находятся в БД. Они доступны по поиску в окне поиска и к ним доступно контекстное меню со свойствами. Дальнейшая справка доступна из главного меню (Справка -> Справка).$nl$$nl$"/>
 	<translate name="Click the &quot;Add item (s)&quot; to add photos to the database. After that the pictures you can add information.$nl$$nl$     Click &quot;More ...&quot; for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$" value="Нажмите на кнопку &quot;Добавить объект(ы)&quot; чтобы добавить фотографии в БД. После этого к фотографии можно добавлять информацию.$nl$$nl$     Нажмите &quot;Далее...&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$$nl$"/>	
 	<translate name="Click the &quot;Get code&quot; and then start mail program with a new letter in the title of which is given all the necessary information to activate. $nl$You need send this letter or (if the mailer does not run) Send by email to %email%, in which you want to specify the code of the program and its version.$nl$     Press &quot;Next ...&quot; for further assistance.$nl$    Or click on the cross at the top to help is no longer displayed. $nl$$nl$$nl$$nl$" value="Нажмите на кнопку &quot;Получить код&quot;, после чего запустится почтовая программа с новым письмом, в заголовке которого дана вся необходимая  для активации информация. $nl$     Вам необходимо отослать это письмо или же (если почтовая программа не запустилась) самим отправить письмо на адрес %email%, в котором нужно указать код программы и её версию.$nl$$nl$     Нажмите &quot;Далее...&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$$nl$$nl$$nl$"/>
-	<translate name="During the day we will send you an activation code that you shoulf enter into this box and click on &quot;Install code&quot;. After that the program will be activated.$nl$$nl$" value="     В течении суток вам будет выслан код активации, который нужно ввести в это окно и нажать на кнопку &quot;Установить код&quot;. После этого программа будет активирована.$nl$$nl$"/>
+	<translate name="During the day we will send you an activation code that you should enter into this box and click on &quot;Install code&quot;. After that the program will be activated.$nl$$nl$" value="     В течении суток вам будет выслан код активации, который нужно ввести в это окно и нажать на кнопку &quot;Установить код&quot;. После этого программа будет активирована.$nl$$nl$"/>
 	<translate name="To add photos to the collection, select &quot;Explore&quot; from the context menu, then find your pictures and select &quot;Add items&quot;.$nl$$nl$    Click &quot;Help&quot; for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$" value="Для добавления фотографий в Базу Данных выберите пункт &quot;Проводник&quot; в контекстном меню, затем найдите ваши фотографии и в меню выберите &quot;Добавить объекты&quot;.$nl$$nl$     Нажмите &quot;Справка&quot; для дальнейшей помощи.$nl$     Или нажмите на крестик сверху, чтобы справка более не отображалась.$nl$ $nl$$nl$"/>
   </scope>
   <scope name="ExportDB">
@@ -1779,7 +1780,7 @@
   </scope>
   <scope name="ActionProgress">
   	<translate name="Current action" value="Текущее действие"/>
-  	<translate name="Please wait while the program performs the current operation and updates the the collection." value="Пожалуйста, подождите, пока программа выполнит текущую операцию и обновит базу данных."/>
+  	<translate name="Please wait while the program performs the current operation and updates the collection." value="Пожалуйста, подождите, пока программа выполнит текущую операцию и обновит базу данных."/>
     <translate name="Do you really want to abort the operation?" value="Вы действительно хотите прервать выполнение текущей операции?"/>
     <translate name="Tasks" value="Задачи"/>	
     <translate name="Action is performed" value="Выполняется действие"/>
@@ -1842,9 +1843,9 @@
 	<translate name="Current item: %s from %s [%s]" value="Текущая запись: %s из %s [%s]"/>
 	<translate name="Record #%d [%s] is updated" value="Обновлена запись #%d [%s]"/>
 	<translate name="Info is merged" value="Файл объединён"/>
-	<translate name="Item %d not foud by ID -&gt; advanced search" value="Запись %d не найдена по ключу -&gt; расширенный поиск"/>
+	<translate name="Item %d not found by ID -&gt; advanced search" value="Запись %d не найдена по ключу -&gt; расширенный поиск"/>
 	<translate name="Item %d not found! [%s]" value="Запись %d не найдена! [%s]"/>
-	<translate name="Error! Unable to create backup for currect collection: %s!" value="Ошибка! Не удалось сделать резервную копию текущей БД: %s!"/>
+	<translate name="Error! Unable to create backup for current collection: %s!" value="Ошибка! Не удалось сделать резервную копию текущей БД: %s!"/>
 	<translate name="Unable to restore collection (%s)! The current collection may be corrupted or missing! After starting try to restore the file &quot;%s&quot; which is a backup of your collection. Error: %s" value="Не удалось восстановить БД (%s)! Текущая БД может быть повреждена или отсутствовать! После запуска попробуйте восстановить файл &quot;%s&quot; в котором находится резервная копия вашей БД. Возникла ошибка: %s"/>
   </scope>
   <scope name="Activation">
@@ -1860,9 +1861,9 @@
     <translate name="City" value="Город" />
     <translate name="Address" value="Адрес" />
     <translate name="Thank you for activation the program!" value="Спасибо за активацию программы" />
-    <translate name="Please wait until program copmletes the activation process..." value="Пожалуйста, подождите пока программма выполнит активацию через интернет..." />
-    <translate name="Activation via internet failed! Please, check your internet connection settings in IE. Only manual actiovation is possible at this moment!" value="Активация через интернет не удалась! Проверьте настройки интернета в IE. Возможна только ручная активация!" />
-    <translate name="This wizard helps you to activate this copy of application. Please fill all requared filds and follow the instructions." value="Этот диалог поможет вам активировать программу. Пожалуйста, заполните все необходимые поля и следуйте инструкциям." />
+    <translate name="Please wait until program completes the activation process..." value="Пожалуйста, подождите пока программма выполнит активацию через интернет..." />
+    <translate name="Activation via internet failed! Please, check your internet connection settings in IE. Only manual activation is possible at this moment!" value="Активация через интернет не удалась! Проверьте настройки интернета в IE. Возможна только ручная активация!" />
+    <translate name="This wizard helps you to activate this copy of application. Please fill all required fields and follow the instructions." value="Этот диалог поможет вам активировать программу. Пожалуйста, заполните все необходимые поля и следуйте инструкциям." />
     <translate name="Field &quot;%s&quot; is required!" value="Поле &quot;%s&quot; является обязательным!" />
 	<translate name="Activate new copy of application" value="Активировать новую копию приложения" />
     <translate name="Install activation code" value="Установить в систему код активации" />

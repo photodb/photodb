@@ -121,7 +121,7 @@ begin
   SelectChooseBox.Items.Add(L('Rotate left'));
   SelectChooseBox.Items.Add(L('Rotate right'));
   SelectChooseBox.Items.Add(L('Rotate on 180 degree'));
-  SelectChooseBox.Items.Add(L('Flip horisontal'));
+  SelectChooseBox.Items.Add(L('Flip horizontal'));
   SelectChooseBox.Items.Add(L('Flip vertical'));
   SelectChooseBox.Items.Add(L('Custom angle'));
   SelectChooseBox.Caption := L('Actions');

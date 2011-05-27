@@ -448,7 +448,7 @@ begin
   AddBaseEffect(BaseEffectProcW(AutoColors,     L('Auto colors'),        '{B09B7105-8FB8-4E1B-B1D5-09486B33ED5B}'));
   AddBaseEffect(BaseEffectProcW(Emboss,         L('Emboss'),             '{1262A88E-55C5-4894-873F-ED458D1CDD8C}'));
   AddBaseEffect(BaseEffectProcW(AntiAlias,      L('Smoothing'),          '{C0EF3036-EFB4-459E-A16E-6DE8AA7D6EBD}'));
-  AddBaseEffect(BaseEffectProcW(OptimizeImage,  L('Optmize image'),      '{718F3546-E030-4CBF-BE61-49DAD7232B10}'));
+  AddBaseEffect(BaseEffectProcW(OptimizeImage,  L('Optimize image'),     '{718F3546-E030-4CBF-BE61-49DAD7232B10}'));
 
   AddExEffect(TDisorderEffect);
   AddExEffect(TGausBlur);

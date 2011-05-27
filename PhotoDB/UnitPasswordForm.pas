@@ -192,7 +192,7 @@ begin
   BeginTranslate;
   try
     EdPassword.WatermarkText := L('Enter your password here');
-    Caption := L('Password requared');
+    Caption := L('Password is required');
     LbTitle.Caption := L('Enter password to open file "%s" here:');
     BtCancel.Caption := L('Cancel');
     BtOk.Caption := L('OK');

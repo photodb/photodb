@@ -4616,7 +4616,7 @@ begin
     SmallIcons1.Caption := L('Table');
     List1.Caption := L('List');
 
-    StenoGraphia1.Caption := L('Data hidding');
+    StenoGraphia1.Caption := L('Data hiding');
     AddHiddenInfo1.Caption := L('Hide data in image');
     ExtractHiddenInfo1.Caption := L('Extract hidden data');
 

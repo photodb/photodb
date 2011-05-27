@@ -357,6 +357,8 @@ begin
       Viewer.Item.Crypted := FIsEncrypted;
       if FUpdateInfo then
         Viewer.UpdateInfo(FSID, FInfo);
+      Viewer.Item.Width := FRealWidth;
+      Viewer.Item.Height := FRealHeight;
       Viewer.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
       Viewer.SetStaticImage(Bitmap, FTransparent);
       Bitmap := nil;

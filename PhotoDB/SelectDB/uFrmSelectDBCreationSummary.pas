@@ -71,7 +71,7 @@ begin
   if SettingsFrame.CbSetAsDefaultDB.Checked then
     DBKernel.SetDataBase(DBFile.FileName);
 
-  MessageBoxDB(Handle, Format(L('Collection "%s" succesfully created!'),
+  MessageBoxDB(Handle, Format(L('Collection "%s" successfully created!'),
       [DBFile.FileName]), L('Information'), TD_BUTTON_OK,
     TD_ICON_INFORMATION);
 

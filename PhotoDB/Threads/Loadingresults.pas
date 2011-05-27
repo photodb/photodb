@@ -11,7 +11,7 @@ uses
   CommonDBSupport, uFileUtils, uTranslate, uMemory, ActiveX,
   uAssociatedIcons, uDBPopupMenuInfo, uConstants, uGraphicUtils,
   uDBBaseTypes, uDBFileTypes, uRuntime, uDBGraphicTypes, uSysUtils,
-  uTime;
+  uTime, uDBUtils;
 
 const
   SM_ID         = 0;
@@ -283,7 +283,11 @@ begin
       begin
         Systemquery := True;
 
-        Folder := IncludeTrailingBackslash(Copy(Sysaction, 8, Length(Sysaction) - 8));
+        Folder := Copy(Sysaction, 8, Length(Sysaction) - 8);
+        if StrToIntDef(Folder, -1) <> -1 then
+          Folder := ExtractFileDir(uDBUtils.GetFileNameById(StrToInt(Folder)));
+
+        Folder := IncludeTrailingBackslash(Folder);
 
         Result.Query := Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
         Result.AddIntParam('CRC', GetPathCRC(Folder, False));

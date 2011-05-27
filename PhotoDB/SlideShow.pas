@@ -2695,8 +2695,15 @@ begin
   if AnsiLowerCase(FileName) = AnsiLowerCase(Item.FileName) then
   begin
     Result := True;
-    Width := Item.Width;
-    Height := Item.Height;
+    if (Item.Width > 0) and (Item.Height > 0) then
+    begin
+      Width := Item.Width;
+      Height := Item.Height;
+    end else
+    begin
+      Width := FbImage.Width;
+      Height := FbImage.Height;
+    end;
     Bitmap.Assign(FbImage);
   end;
 end;

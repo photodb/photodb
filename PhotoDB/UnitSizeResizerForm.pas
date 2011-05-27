@@ -859,7 +859,7 @@ begin
     end;
   end else
   begin
-    Text := L('Preview isn''t avaliable. Image can be corrupted or encrypted.');
+    Text := L('Preview isn''t available. Image can be corrupted or encrypted.');
     H := PbImage.Canvas.TextHeight(Text);
     R := Rect(0, PbImage.Height div 2 - H div 2, PbImage.Width, PbImage.Height);
     PbImage.Canvas.TextRect(R, Text, [tfCenter, tfWordBreak]);
