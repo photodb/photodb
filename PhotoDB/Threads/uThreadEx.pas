@@ -171,8 +171,6 @@ end;
 
 procedure TThreadEx.UnRegisterSubThread(SubThread: TThreadEx);
 begin
-  if Terminated then
-    Exit;
   FSync.Enter;
   try
     SubThread.FParentThread := nil;
@@ -189,17 +187,26 @@ var
   I : Integer;
   Count : Integer;
   ThreadHandles : array[0 .. MAX - 1] of THandle;
-begin  
-  FSync.Enter;
-  try
-    Count := FSubThreads.Count;
-    for I := 0 to Count - 1 do
-      ThreadHandles[I] := TThreadEx(FSubThreads[I]).FEvent;
-  finally
-    FSync.Leave;
+begin
+  while True do
+  begin
+    FSync.Enter;
+    try
+      for I := 0 to FSubThreads.Count - 1 do
+        if not GOM.IsObj(FSubThreads[I]) then
+          FSubThreads.Delete(I);
+
+      Count := FSubThreads.Count;
+      for I := 0 to Count - 1 do
+        ThreadHandles[I] := TThreadEx(FSubThreads[I]).FEvent;
+    finally
+      FSync.Leave;
+    end;
+    if Count > 0 then
+      WaitForMultipleObjects(Count, @ThreadHandles[0], True, 1000)
+    else
+      Break;
   end;
-  if Count > 0 then
-    WaitForMultipleObjects(Count, @ThreadHandles[0], True, INFINITE);
 end;
 
 end.

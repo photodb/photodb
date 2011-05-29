@@ -337,12 +337,12 @@ begin
         try
           DoMultiProcessorTask;
 
-          if Mode = 0 then
-            Exit;
-
           TW.I.Start('UnRegisterSubThread: ' + IntToStr(FEvent));
           if GOM.IsObj(ParentThread) then
             ParentThread.UnRegisterSubThread(Self);
+
+          if Mode = 0 then
+            Exit;
         except
           on E: Exception do
             EventLog('TExplorerThread.ProcessThreadImages' + E.message);
@@ -387,4 +387,5 @@ finalization
  F(MultiThreadManagers);
 
 end.
+
 

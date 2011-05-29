@@ -33,7 +33,6 @@ type
     NewImage: TBitmap;
     CloseLink: TWebLink;
     MakeItLink: TWebLink;
-    //EffectsChooser: TListView;
     EffectsChooser: TEasyListView;
     ImageList: TImageList;
     EM: TEffectsManager;
@@ -166,6 +165,7 @@ begin
   F(EM);
   F(ImageList);
   F(BaseImage);
+  F(NewImage);
   inherited;
 end;
 
@@ -270,6 +270,7 @@ begin
   begin
     ImageHistory.Add(NewImage, '{' + ID + '}[' + GetProperties + ']');
     SetImagePointer(NewImage);
+    NewImage := nil;
   end;
   ClosePanel;
 end;
@@ -281,6 +282,7 @@ var
   ExEffect: TExEffect;
 
 begin
+  F(NewImage);
   NewImage := TBitmap.Create;
   NewImage.PixelFormat := pf24bit;
   if ApplyOnDone = True then
@@ -344,6 +346,7 @@ end;
 procedure TEffectsToolPanelClass.SetNewImage(Image: TBitmap);
 begin
   FilterID := TempFilterID;
+  F(NewImage);
   Pointer(NewImage) := Pointer(Image);
   SetTempImage(Image);
 end;
@@ -364,6 +367,7 @@ begin
   if SID = FSID then
   begin
     FilterID := TempFilterID;
+    F(NewImage);
     Pointer(NewImage) := Pointer(Image);
     SetTempImage(Image);
   end else

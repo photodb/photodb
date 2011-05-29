@@ -81,8 +81,7 @@ begin
     BtnCancel.Enabled := False;
     BtnOk.Enabled := False;
     InitiatedByString := True;
-  end
-  else
+  end else
     InitiatedByString := False;
 
   FOwner := Owner;
@@ -93,8 +92,7 @@ begin
   begin
     FEffect.Execute(S, D, EffectPanel, False);
     FEffect.SetProperties(InitialString);
-  end
-  else
+  end else
     FEffect.Execute(S, D, EffectPanel, True);
   S.PixelFormat := pf24bit;
   D.PixelFormat := pf24bit;
@@ -152,8 +150,7 @@ begin
     begin
      (FOwner as TEffectsToolPanelClass).SetTempImage(Image);
       FInitialString := FEffect.GetProperties;
-    end
-    else
+    end else
       F(Image);
   end;
 end;

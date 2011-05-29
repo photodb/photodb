@@ -3,7 +3,7 @@ unit uSysUtils;
 interface
 
 uses
-  Windows, Forms, SysUtils, ActiveX, uDBBaseTypes;
+  Windows, Forms, Classes, SysUtils, ActiveX, uDBBaseTypes, uMemory;
 
 function StringToHexString(Text: string): string;
 function HexStringToString(Text: string): string;
@@ -21,6 +21,9 @@ function GetGUID: TGUID;
 function GetProgramPath: string;
 function GetSystemLanguage: string;
 function GetExeVersion(sFileName: string): TRelease;
+function StringToRelease(const s: string) : TRelease;
+function ReleaseToString(Release : TRelease) : string;
+function ProductVersion: string;
 
 implementation
 
@@ -44,6 +47,45 @@ begin
     Result.Build := dwFileVersionLS and $FFFF;
   end;
   FreeMem(VerInfo, VerInfoSize);
+end;
+
+
+function ReleaseToString(Release : TRelease) : string;
+begin
+  Result := IntToStr(Release.Version) + '.' +
+            IntToStr(Release.Major) + '.' +
+            IntToStr(Release.Minor) + '.' +
+            IntToStr(Release.Build);
+end;
+
+function StringToRelease(const s : string) : TRelease;
+var
+  Items: TStrings;
+begin
+  Result.Version := 0;
+  Result.Major   := 0;
+  Result.Minor   := 0;
+  Result.Build   := 0;
+
+  Items := TStringList.Create;
+  try
+    Items.Delimiter := '.';
+    Items.DelimitedText  := s;
+    if Items.Count = 4 then
+    begin
+      Result.Version := StrToIntDef(Items[0], 0);
+      Result.Major   := StrToIntDef(Items[1], 0);
+      Result.Minor   := StrToIntDef(Items[2], 0);
+      Result.Build   := StrToIntDef(Items[3], 0);
+    end;
+  finally
+    F(Items);
+  end;
+end;
+
+function ProductVersion: string;
+begin
+  Result := ReleaseToString(GetExeVersion(ParamStr(0)));
 end;
 
 function StripHexPrefix(const HexStr: string): string;

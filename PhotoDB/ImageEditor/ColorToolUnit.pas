@@ -29,7 +29,7 @@ type
     ApplyOnDone: Boolean;
     FOnDone: TNotifyEvent;
     PImage, PNewImage: TArPARGB;
-    FOverageContrast : Integer;
+    FOverageContrast: Integer;
   protected
     function LangID: string; override;
   public

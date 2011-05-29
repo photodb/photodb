@@ -8,7 +8,7 @@ uses
   ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
   UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
   uMemory, uTranslate, uRuntime, uActivationUtils, uDBForm, uMemoryEx,
-  UnitInternetUpdate, uInternetUtils, ShellApi, Dolphin_DB,
+  UnitInternetUpdate, uInternetUtils, ShellApi, Dolphin_DB, uSysUtils,
   uMobileUtils;
 
 type

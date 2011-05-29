@@ -3501,9 +3501,11 @@ end;
 
 procedure SetContractBrightnessRGBChannelValue(ImageS, ImageD: TArPARGB; Width, Height: Integer;  Contrast : Extended; var OverageBrightnss : Integer; Brightness, Red, Green, Blue: Integer); overload;
 var
-  Mb, I, J, W, H, Tb: Integer;
+  Mr, Mg, Mb, I, J, W, H: Integer;
   vd: Double;
-  ContrastArray : T255ByteArray;
+  ContrastArrayR,
+  ContrastArrayG,
+  ContrastArrayB: T255ByteArray;
 
   LUT: array [Byte] of Byte;
   V: Integer;
@@ -3538,7 +3540,9 @@ begin
         Inc(OverageBrightnss, (ImageS[I, J].R * 77 + ImageS[I, J].G * 151 + ImageS[I, J].B * 28) shr 8);
   end;
 
-  MB := Round(Tb / (W * H));
+  MR := Round(OverageBrightnss / (W * H));
+  MG := Round(OverageBrightnss / (W * H));
+  MB := Round(OverageBrightnss / (W * H));
 
   if Contrast > 0 then
     Vd := 1 + (Contrast / 10)
@@ -3546,7 +3550,11 @@ begin
     Vd := 1 - (Sqrt(-Contrast) / 10);
 
   for I := 0 to 255 do
-    ContrastArray[I] := BLimit(MB + Round((I - MB) * Vd));
+  begin
+    ContrastArrayR[I] := BLimit(MR + Round((I - MR) * Vd));
+    ContrastArrayG[I] := BLimit(MG + Round((I - MG) * Vd));
+    ContrastArrayB[I] := BLimit(MB + Round((I - MB) * Vd));
+  end;
 
   //brightness
   for I := 0 to 255 do
@@ -3572,9 +3580,9 @@ begin
 
   for I := 0 to 255 do
   begin
-    RFull[I] := RArray[LUT[ContrastArray[I]]];
-    GFull[I] := GArray[LUT[ContrastArray[I]]];
-    BFull[I] := BArray[LUT[ContrastArray[I]]];
+    RFull[I] := RArray[LUT[ContrastArrayR[I]]];
+    GFull[I] := GArray[LUT[ContrastArrayG[I]]];
+    BFull[I] := BArray[LUT[ContrastArrayB[I]]];
   end;
 
   for I := 0 to Height - 1 do
