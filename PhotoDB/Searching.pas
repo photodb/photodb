@@ -161,6 +161,7 @@ type
     TwlIncludeAllImages: TTwButton;
     WllGroups: TWebLinkList;
     SearchImageList: TImageList;
+    TmOpenDatesRange: TTimer;
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
@@ -329,6 +330,7 @@ type
     procedure elvDateRangeItemSelectionChanged(Sender: TCustomEasyListview;
       Item: TEasyItem);
     procedure SearchEditIconClick(Sender: TObject);
+    procedure TmOpenDatesRangeTimer(Sender: TObject);
   private
     { Private declarations }
     FSearchInfo : TSearchInfo;
@@ -374,6 +376,7 @@ type
     FLastProgressState: TBPF;
     FProgressMessage: Cardinal;
     FReloadGroupsMessage: Cardinal;
+    FDateRangeDS: TDataSet;
     function HintRealA(Info : TDBPopupMenuInfoRecord) : Boolean;
     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
     function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
@@ -393,7 +396,7 @@ type
     procedure LoadDateRange;
     procedure FetchProgress(DataSet: TCustomADODataSet;
                             Progress, MaxProgress: Integer; var EventStatus: TEventStatus);
-    procedure DBRangeOpened(Sender : TObject; DS : TDataSet);
+    procedure DBRangeOpened(Sender: TObject; DS: TDataSet);
     procedure ClearItems;
 
     function GetListView : TEasyListview; override;
@@ -474,6 +477,7 @@ begin
   FUpdatingDB := False;
   FCanBackgroundSearch := False;
   DBCanDrag := False;
+  FDateRangeDS := nil;
 
   TW.I.Start('S -> FormCreate');
 
@@ -656,7 +660,7 @@ end;
 
 procedure TSearchForm.FormDestroy(Sender: TObject);
 begin
-  Settings.WriteInteger('Search','LeftPanelWidth',PnLeft.Width);
+  Settings.WriteInteger('Search', 'LeftPanelWidth', PnLeft.Width);
 
   ClearItems;
   SaveQueryList;
@@ -676,6 +680,7 @@ begin
   F(FBitmapImageList);
   F(FSearchInfo);
   F(CurrentItemInfo);
+  FreeDS(FDateRangeDS);
 end;
 
 procedure TSearchForm.Edit1_KeyPress(Sender: TObject; var Key: Char);
@@ -3483,51 +3488,6 @@ begin
   DoSearchNow(Self);
 end;
 
-procedure TSearchForm.RebuildQueryList;
-var
-  I : Integer;
-  CurrentText: string;
-  EditIndex: Integer;
-begin
-  CurrentText := SearchEdit.Text;
-  EditIndex := SearchEdit.ShowEditIndex;
-  SearchEdit.ItemsEx.Clear;
-
-  for I := 0 to FSearchInfo.Count - 1 do
-  begin
-    with SearchEdit.ItemsEx.Add do
-    begin
-      Caption := FSearchInfo[I].Query;
-      Data := FSearchInfo[I];
-    end;
-  end;
-  SearchEdit.Text := CurrentText;
-  SearchEdit.ShowEditIndex := EditIndex;
-end;
-
-procedure TSearchForm.AddNewSearchListEntry;
-var
-  DateRange : TDateRange;
-const
-  SearchTextCount = 10;
-begin
-  if SearchEdit.Text <> '' then
-  begin
-    DateRange := GetDateFilter;
-
-    FSearchInfo.Add(Min(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
-                    Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
-                    DateRange.DateFrom,
-                    DateRange.DateTo,
-                    ComboBoxSearchGroups.Items[ComboBoxSearchGroups.ItemIndex],
-                    SearchEdit.Text,
-                    SortLink.Tag,
-                    Decremect1.Checked);
-
-    RebuildQueryList;
-  end;
-end;
-
 procedure TSearchForm.FormResize(Sender: TObject);
 var
   aTop, N, LastIndex : Integer;
@@ -3940,14 +3900,58 @@ begin
   SortingClick(Sender);
 end;
 
+procedure TSearchForm.RebuildQueryList;
+var
+  I : Integer;
+  CurrentText: string;
+  EditIndex: Integer;
+begin
+  CurrentText := SearchEdit.Text;
+  EditIndex := SearchEdit.ShowEditIndex;
+  SearchEdit.ItemsEx.Clear;
+
+  for I := 0 to FSearchInfo.Count - 1 do
+  begin
+    with SearchEdit.ItemsEx.Add do
+    begin
+      Caption := FSearchInfo[I].Query;
+      Data := FSearchInfo[I];
+    end;
+  end;
+  SearchEdit.Text := CurrentText;
+  SearchEdit.ShowEditIndex := EditIndex;
+end;
+
+procedure TSearchForm.AddNewSearchListEntry;
+var
+  DateRange : TDateRange;
+const
+  SearchTextCount = 10;
+begin
+  if SearchEdit.Text <> '' then
+  begin
+    DateRange := GetDateFilter;
+
+    FSearchInfo.Add(Min(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
+                    Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange),
+                    DateRange.DateFrom,
+                    DateRange.DateTo,
+                    ComboBoxSearchGroups.Items[ComboBoxSearchGroups.ItemIndex],
+                    SearchEdit.Text,
+                    SortLink.Tag,
+                    Decremect1.Checked);
+
+    RebuildQueryList;
+  end;
+end;
+
 procedure TSearchForm.LoadQueryList;
 var
-  I, RatingFrom, RatingTo, SortMethod : integer;
+  I, SortMethod: integer;
   SortDesc : Boolean;
-  DateFrom, DateTo : TDateTime;
-  GroupName, Query : string;
-  QueryCount : Integer;
-  RegQueryPath : string;
+  Query: string;
+  QueryCount: Integer;
+  RegQueryPath: string;
   FNow : TDateTime;
 begin
 
@@ -3956,41 +3960,39 @@ begin
   for I := QueryCount - 1 downto 0 do
   begin
     RegQueryPath := RegQueryRootPath + IntToStr(I);
-    RatingFrom := Settings.ReadInteger(RegQueryPath, 'RatingFrom', 0);
-    RatingTo := Settings.ReadInteger(RegQueryPath, 'RatingTo', 5);
-    DateFrom := Settings.ReadDateTime(RegQueryPath, 'DateFrom', FNow - 365);
-    DateTo := Settings.ReadDateTime(RegQueryPath, 'DateTo', FNow);
-    GroupName := Settings.ReadString(RegQueryPath, 'GroupName');
     Query := Settings.ReadString(RegQueryPath, 'Query');
-    SortMethod := Settings.ReadInteger(RegQueryPath, 'SortMethod', SM_DATE_TIME);
-    SortDesc := Settings.ReadBool(RegQueryPath, 'SortDesc', True);
 
     if Query <> '' then
-      FSearchInfo.Add(RatingFrom, RatingTo, DateFrom, DateTo, GroupName, Query, SortMethod, SortDesc);
+      FSearchInfo.Add(0, 0, 0, 0, '', Query, 0, False);
   end;
+
+  RegQueryPath := RegQueryRootPath;
+
+  SortMethod := Settings.ReadInteger(RegQueryRootPath, 'SortMethod', SM_DATE_TIME);
+  SortDesc := Settings.ReadBool(RegQueryRootPath, 'SortDesc', True);
 
   if FSearchInfo.Count = 0 then
     FSearchInfo.Add(0, 5, FNow - 365, FNow, '', '', SM_DATE_TIME, True);
 
-  if FSearchInfo[0].SortDecrement then
+  if SortDesc then
     Decremect1Click(Self)
   else
     Increment1Click(Self);
 
-  case FSearchInfo[0].SortMethod of
-    SM_ID        : SortbyID1Click(nil);
-    SM_TITLE     : SortbyName1Click(nil);
-    SM_DATE_TIME : SortbyDate1Click(nil);
-    SM_RATING    : SortbyRating1Click(nil);
-    SM_FILE_SIZE : SortbyFileSize1Click(nil);
-    SM_SIZE      : SortbySize1Click(nil);
+  case SortMethod of
+    SM_ID        : SortbyID1Click(Self);
+    SM_TITLE     : SortbyName1Click(Self);
+    SM_DATE_TIME : SortbyDate1Click(Self);
+    SM_RATING    : SortbyRating1Click(Self);
+    SM_FILE_SIZE : SortbyFileSize1Click(Self);
+    SM_SIZE      : SortbySize1Click(Self);
     else
-     SortbyDate1Click(nil);
+     SortbyDate1Click(Self);
   end;
 
-  RtgQueryRating.Rating := FSearchInfo[0].RatingFrom;
-  RtgQueryRating.RatingRange := FSearchInfo[0].RatingTo;
-  SearchEdit.Text := Settings.ReadString(RegQueryRootPath, 'Text', '');
+  RtgQueryRating.Rating := Settings.ReadInteger(RegQueryRootPath, 'RatingFrom', 0);
+  RtgQueryRating.RatingRange := Settings.ReadInteger(RegQueryRootPath, 'RatingTo', 5);
+  SearchEdit.Text := Settings.ReadString(RegQueryPath, 'Text', '');
 end;
 
 procedure TSearchForm.SaveQueryList;
@@ -4004,16 +4006,13 @@ begin
   for I := 0 to Min(MaxQueriesToSave, FSearchInfo.Count) - 1 do
   begin
     RegQueryPath := RegQueryRootPath + IntToStr(I);
-    Settings.WriteInteger(RegQueryPath, 'RatingFrom', FSearchInfo[I].RatingFrom);
-    Settings.WriteInteger(RegQueryPath, 'RatingTo', FSearchInfo[I].RatingTo);
-    Settings.WriteDateTime(RegQueryPath, 'DateFrom', FSearchInfo[I].DateFrom);
-    Settings.WriteDateTime(RegQueryPath, 'DateTo', FSearchInfo[I].DateTo);
-    Settings.WriteString(RegQueryPath, 'GroupName', FSearchInfo[I].GroupName);
     Settings.WriteString(RegQueryPath, 'Query', FSearchInfo[I].Query);
-    Settings.WriteInteger(RegQueryPath, 'SortMethod', FSearchInfo[I].SortMethod);
-    Settings.WriteBool(RegQueryPath, 'SortDesc', FSearchInfo[I].SortDecrement);
   end;
   Settings.WriteString(RegQueryRootPath, 'Text', SearchEdit.Text);
+  Settings.WriteInteger(RegQueryRootPath, 'RatingFrom', RtgQueryRating.Rating);
+  Settings.WriteInteger(RegQueryRootPath, 'RatingTo', RtgQueryRating.RatingRange);
+  Settings.WriteInteger(RegQueryRootPath, 'SortMethod', SortLink.Tag);
+  Settings.WriteBool(RegQueryRootPath, 'SortDesc', Decremect1.Checked);
 end;
 
 function TSearchForm.TreeView: TShellTreeView;
@@ -4068,7 +4067,6 @@ end;
 
 procedure TSearchForm.LoadDateRange;
 var
-  DS: TDataSet;
   DateRangeBackgroundImage: TPNGImage;
   DateRangeBackgroundImageBMP: TBitmap;
   BackgroundImage: TBitmap;
@@ -4109,14 +4107,14 @@ begin
   end;
   elvDateRange.Refresh;
 
-  DS := GetQuery(True);
+  FDateRangeDS := GetQuery(True);
 
-  ForwardOnlyQuery(DS);
-  TADOQuery(DS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
-  SetSQL(DS, 'SELECT DISTINCT DateToAdd FROM $DB$ WHERE IsDate = True ORDER BY DateToAdd DESC');
-  TADOQuery(DS).OnFetchProgress := FetchProgress;
+  ForwardOnlyQuery(FDateRangeDS);
+  TADOQuery(FDateRangeDS).ExecuteOptions := [eoAsyncFetch, eoAsyncFetchNonBlocking];
+  SetSQL(FDateRangeDS, 'SELECT DISTINCT DateToAdd FROM $DB$ WHERE IsDate = True ORDER BY DateToAdd DESC');
+  TADOQuery(FDateRangeDS).OnFetchProgress := FetchProgress;
 
-  TOpenQueryThread.Create(Self, DS, DBRangeOpened);
+  TOpenQueryThread.Create(Self, FDateRangeDS, DBRangeOpened);
 end;
 
 procedure TSearchForm.FetchProgress(DataSet: TCustomADODataSet; Progress,
@@ -4178,64 +4176,10 @@ begin
   end;
 end;
 
-procedure TSearchForm.DBRangeOpened(Sender : TObject; DS : TDataSet);
-var
-  Date : TDateTime;
-  CurrentYear : Integer;
-  CurrentMonth : Integer;
-  DA: TDBAdapter;
+procedure TSearchForm.DBRangeOpened(Sender: TObject; DS: TDataSet);
 begin
-  DA := TDBAdapter.Create(DS);
-  try
-    dblDate.Hide;
-
-    Application.ProcessMessages;
-    lsDate.Color := elvDateRange.Color;
-    lsDate.Active := True;
-    lsDate.Visible := True;
-    CurrentYear := 0;
-    CurrentMonth := 0;
-    elvDateRange.Groups.Clear;
-    elvDateRange.Header.Columns.Clear;
-    elvDateRange.Header.Columns.Add.Width := 150;
-
-    DS.First;
-    while not DS.EOF do
-    begin
-      Application.ProcessMessages;
-      Date := DA.Date;
-      if YearOf(Date) <> CurrentYear then
-      begin
-        CurrentYear := YearOf(Date);
-        if CurrentYear > 1900 then
-        begin
-          with elvDateRange.Groups.Add do
-          begin
-            Caption := FormatDateTime('yyyy',Date);
-            Visible := True;
-            Tag := CurrentYear;
-          end;
-        end;
-      end;
-
-      Date := DA.Date;
-      if MonthOf(Date) <> CurrentMonth then
-      begin
-        CurrentMonth := MonthOf(Date);
-        with elvDateRange.Items.Add do
-        begin
-          Caption := FormatDateTime('mmmm',Date);
-          Tag := CurrentMonth;
-        end;
-      end;
-      DS.Next;
-    end;
-  finally
-    F(DA);
-    FreeDS(DS);
-  end;
-  lsDate.Active := False;
-  lsDate.Visible := False;
+  FDateRangeDS := DS;
+  TmOpenDatesRange.Enabled := True;
 end;
 
 procedure TSearchForm.elvDateRangeResize(Sender: TObject);
@@ -4584,6 +4528,73 @@ begin
 
   TmrSearchResultsCount.Enabled := False;
   TmrSearchResultsCount.Enabled := True;
+end;
+
+procedure TSearchForm.TmOpenDatesRangeTimer(Sender: TObject);
+var
+  Date : TDateTime;
+  CurrentYear : Integer;
+  CurrentMonth : Integer;
+  DA: TDBAdapter;
+begin
+  TmOpenDatesRange.Enabled := False;
+  DA := TDBAdapter.Create(FDateRangeDS);
+  try
+    dblDate.Hide;
+
+    Application.ProcessMessages;
+    CheckSynchronize;
+    if DBTerminating then
+      Exit;
+    lsDate.Color := elvDateRange.Color;
+    lsDate.Active := True;
+    lsDate.Visible := True;
+    CurrentYear := 0;
+    CurrentMonth := 0;
+    elvDateRange.Groups.Clear;
+    elvDateRange.Header.Columns.Clear;
+    elvDateRange.Header.Columns.Add.Width := 150;
+
+    FDateRangeDS.First;
+    while not FDateRangeDS.EOF do
+    begin
+      Application.ProcessMessages;
+      CheckSynchronize;
+      if DBTerminating then
+        Exit;
+      Date := DA.Date;
+      if YearOf(Date) <> CurrentYear then
+      begin
+        CurrentYear := YearOf(Date);
+        if CurrentYear > 1900 then
+        begin
+          with elvDateRange.Groups.Add do
+          begin
+            Caption := FormatDateTime('yyyy',Date);
+            Visible := True;
+            Tag := CurrentYear;
+          end;
+        end;
+      end;
+
+      Date := DA.Date;
+      if MonthOf(Date) <> CurrentMonth then
+      begin
+        CurrentMonth := MonthOf(Date);
+        with elvDateRange.Items.Add do
+        begin
+          Caption := FormatDateTime('mmmm',Date);
+          Tag := CurrentMonth;
+        end;
+      end;
+      FDateRangeDS.Next;
+    end;
+  finally
+    F(DA);
+    FreeDS(FDateRangeDS);
+  end;
+  lsDate.Active := False;
+  lsDate.Visible := False;
 end;
 
 procedure TSearchForm.TmrSearchResultsCountTimer(Sender: TObject);

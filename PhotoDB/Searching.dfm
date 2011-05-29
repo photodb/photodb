@@ -1539,4 +1539,11 @@ object SearchForm: TSearchForm
     Left = 337
     Top = 432
   end
+  object TmOpenDatesRange: TTimer
+    Enabled = False
+    Interval = 1
+    OnTimer = TmOpenDatesRangeTimer
+    Left = 232
+    Top = 560
+  end
 end

@@ -367,6 +367,8 @@
   </scope>
   <scope name="PropertiesForm">
     <translate name="Properties" value="Свойства" />
+    <translate name="Diffrent files" value="Различные файлы" />
+    <translate name="%d files are selected" value="Выбрано %d файлов" />	
     <translate name="Comment" value="Коментарий" />
     <translate name="Name" value="Имя" />
     <translate name="Full path" value="Полный путь" />
@@ -378,7 +380,11 @@
     <translate name="Size" value="Размер" />
     <translate name="Width" value="Ширина" />
     <translate name="Height" value="Высота" />
+    <translate name="All - %spx." value="Все - %sпк." />
+    <translate name="Differen width" value="Различная ширина" />
+    <translate name="Differen height" value="Различная высота" />
     <translate name="ID" value="ID" />
+    <translate name="All in %s" value="Все в %s" />	
     <translate name="Keywords" value="Ключевые слова" />
     <translate name="Find" value="Найти" />
     <translate name="Save" value="Сохранить" />
@@ -464,6 +470,7 @@
     <translate name="Make" value="Производитель" />
     <translate name="Model" value="Модель" />
     <translate name="Not available" value="Не доступно" />
+    <translate name="Unable to load info: item not found!" value="Невозможно отобразить информацию: запись не найдена!" />	
   </scope>
   <scope name="Search">
     <translate name="More than" value="Больше чем" />

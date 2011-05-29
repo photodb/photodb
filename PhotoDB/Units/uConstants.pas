@@ -30,6 +30,7 @@ const
   PhotoDBFileName = 'PhotoDB.exe';
   ProductName = 'Photo DataBase 2.3';
   StartMenuProgramsPath = 'Photo DB v2.3';
+  ProductMajorVersionVersion = '2.3';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;

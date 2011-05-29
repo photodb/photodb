@@ -119,7 +119,7 @@ procedure TUninstallNotify.Execute(Callback: TActionCallback);
 var
   NotifyUrl: string;
 begin
-  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + ProductVersion + '&ac=' + TActivationManager.Instance.ApplicationCode;
+  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + ProductMajorVersionVersion + '&ac=' + TActivationManager.Instance.ApplicationCode;
   ShellExecute(GetActiveWindow, 'open', PWideChar(NotifyUrl), nil, nil, SW_NORMAL);
 end;
 

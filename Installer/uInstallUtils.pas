@@ -121,7 +121,7 @@ var
   StartMenuPath : string;
   Reg : TRegIniFile;
 begin
-  Result := StringReplace(Path, '{V}', ProductVersion, [rfIgnoreCase]);
+  Result := StringReplace(Path, '{V}', ProductMajorVersionVersion, [rfIgnoreCase]);
   Result := StringReplace(Result, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [rfIgnoreCase]);
   try
     ProgramPath := CurrentInstall.DestinationPath;

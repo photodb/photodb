@@ -444,9 +444,7 @@ begin
           (FFilesInfo[0].Date <> DateEdit.DateTime)) and DateEdit.Enabled);
 
   if FShowInfoType = SHOW_INFO_IDS then
-    Result := ((FFilesInfo.StatIsDate <> not DateEdit.Checked) or
-        (FFilesInfo.StatDate <> DateEdit.DateTime) or (FFilesInfo.IsVariousDate))
-      and DateEdit.Enabled;
+    Result := DateEdit.Checked and (FFilesInfo.StatDate <> DateEdit.DateTime);
 
 end;
 
@@ -462,9 +460,8 @@ begin
   end;
   if FShowInfoType = SHOW_INFO_IDS then
   begin
-    VarTime := Abs(FFilesInfo.StatTime - TimeOf(TimeEdit.Time)) > 1 / (24 * 60 * 60 * 3);
-    Result := ((FFilesInfo.StatIsTime <> not TimeEdit.Checked) or VarTime or (FFilesInfo.IsVariousTime))
-      and TimeEdit.Enabled;
+    VarTime := Abs(TimeOf(FFilesInfo.StatTime) - TimeOf(TimeEdit.Time)) > 1 / (24 * 60 * 60 * 3);
+    Result := TimeEdit.Checked and VarTime;
   end;
 end;
 
@@ -644,6 +641,7 @@ begin
       ItemLinks := ParseLinksInfo(DataRecord.Links);
       FPropertyLinks := CopyLinksInfo(ItemLinks);
 
+      FreeGroups(FNowGroups);
       FNowGroups := UnitGroupsWork.EncodeGroups(DataRecord.Groups);
       FOldGroups := CopyGroups(FNowGroups);
 
@@ -708,8 +706,9 @@ begin
   PropertyManager.AddProperty(Self);
   LstCurrentGroups.DoubleBuffered := True;
   LstAvaliableGroups.DoubleBuffered := True;
-  FreeGroups(RegGroups);
-  FreeGroups(FShowenRegGroups);
+  SetLength(RegGroups, 0);
+  SetLength(FShowenRegGroups, 0);
+  SetLength(FNowGroups, 0);
 
   SetLength(Links, 0);
   FReadingInfo := False;
@@ -883,12 +882,12 @@ var
 
 begin
   WorkQuery := GetQuery;
+  BtSave.Enabled := False;
   try
     if FShowInfoType = SHOW_INFO_IDS then
     begin
       XCount := 0;
       LockImput;
-      BtSave.Enabled := False;
 
       ProgressForm := nil;
       if VariousKeyWords(KeywordsMemo.Text, FFilesInfo.CommonKeyWords) then
@@ -1137,7 +1136,6 @@ begin
       R(ProgressForm);
 
       UnLockImput;
-      BtSave.Enabled := True;
       if Visible then
       begin
         SetLength(IDArray, FFilesInfo.Count);
@@ -1187,7 +1185,6 @@ begin
         EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include], EventInfo);
     end else
     begin
-      BtSave.Enabled := True;
       FSaving := False;
       if UpdaterDB = nil then
         UpdaterDB := TUpdaterDB.Create;
@@ -1510,6 +1507,7 @@ begin
   SaveWindowPos1.SavePosition;
   F(FFilesInfo);
   FreeGroups(RegGroups);
+  FreeGroups(FNowGroups);
   FreeGroups(FShowenRegGroups);
 end;
 
@@ -1670,7 +1668,7 @@ begin
       end;
     if FFilesInfo.Count = 0 then
     begin
-      MessageBoxDB(Handle, L('Unable to load info: ') + L('No DB records found!'), L('Error'), TD_BUTTON_OK,
+      MessageBoxDB(Handle, L('Unable to load info: item not found!'), L('Error'), TD_BUTTON_OK,
         TD_ICON_ERROR);
       Exit;
     end;
@@ -1700,12 +1698,12 @@ begin
       end;
 
       if WidthList.HasVarValues then
-        WidthMemo.Text := L('Width differens')
+        WidthMemo.Text := L('Differen width')
       else
         WidthMemo.Text := Format(L('All - %spx.'), [IntToStr(WidthList[0])]);
 
       if HeightList.HasVarValues then
-        HeightMemo.Text := L('Height differens')
+        HeightMemo.Text := L('Differen height')
       else
         HeightMemo.Text := Format(L('All - %spx.'), [IntToStr(HeightList[0])]);
 
@@ -1724,11 +1722,11 @@ begin
       TimeEdit.Time := FFilesInfo.StatTime;
       DateEdit.DateTime := FFilesInfo.StatDate;
 
-      DateEdit.Checked := FFilesInfo.StatIsDate or FFilesInfo.IsVariousDate;
-      TimeEdit.Checked := FFilesInfo.StatIsTime or FFilesInfo.IsVariousDate;
+      DateEdit.Checked := FFilesInfo.StatIsDate and not FFilesInfo.IsVariousDate;
+      TimeEdit.Checked := FFilesInfo.StatIsTime and not FFilesInfo.IsVariousTime;
 
       KeyWordsMemo.Text := FFilesInfo.CommonKeyWords;
-      IDLabel.Text := Format(L('Selected %d items'), [FFilesInfo.Count]);
+      IDLabel.Text := Format(L('%d files are selected'), [FFilesInfo.Count]);
       CommentMemo.Cursor := CrDefault;
 
       if FFilesInfo.IsVariousComments then
@@ -1739,6 +1737,7 @@ begin
       end;
       CommentMemo.Text := FFilesInfo.CommonComments;
 
+      FreeGroups(FNowGroups);
       FNowGroups := UnitGroupsWork.EncodeGroups(FFilesInfo.CommonGroups);
       FOldGroups := CopyGroups(FNowGroups);
 
@@ -2741,6 +2740,7 @@ var
     Groups := CopyGroups(OldGroups);
     AddGroupToGroups(Groups, Group);
     AddGroupsToGroups(Groups, FRelatedGroups);
+    FreeGroups(FNowGroups);
     FNowGroups := CopyGroups(Groups);
     RemoveGroupsFromGroups(Groups, OldGroups);
     for I := 0 to Length(Groups) - 1 do

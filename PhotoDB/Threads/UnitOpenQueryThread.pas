@@ -20,6 +20,7 @@ type
   public
     procedure DoOnEnd;
     constructor Create(Owner: TDBForm; Query: TDataSet; OnEnd: TNotifyDBOpenedEvent);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -34,9 +35,15 @@ begin
   FOwner := Owner;
 end;
 
+destructor TOpenQueryThread.Destroy;
+begin
+
+  inherited;
+end;
+
 procedure TOpenQueryThread.DoOnEnd;
 begin
-  if Assigned(FOnEnd) then
+  if GOM.IsObj(FOwner) and Assigned(FOnEnd) then
     FOnEnd(Self, FQuery);
 end;
 
@@ -44,16 +51,19 @@ procedure TOpenQueryThread.Execute;
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
   try
+    CoInitialize(nil);
     try
-      FQuery.Open;
-    except
-      on e : Exception do
-        Eventlog('Error opening query: ' + e.Message);
+      try
+        FQuery.Open;
+      except
+        on e : Exception do
+          Eventlog('Error opening query: ' + e.Message);
+      end;
+    finally
+      SynchronizeEx(DoOnEnd);
     end;
   finally
-    SynchronizeEx(DoOnEnd);
     CoUninitialize;
   end;
 end;

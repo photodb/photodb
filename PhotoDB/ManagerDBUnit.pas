@@ -220,7 +220,7 @@ implementation
 uses UnitQuickGroupInfo, ExplorerUnit,
      Searching, SlideShow, ExportUnit, UnitManageGroups,
      UnitDBCleaning, UnitCompareDataBases, UnitEditGroupsForm,
-     UnitPasswordForm, UnitOpenQueryThread, ProgressActionUnit,
+     UnitPasswordForm, ProgressActionUnit,
      UnitMenuDateForm, UnitChangeDBPath, UnitSelectDB, uThreadLoadingManagerDB,
      UnitDBOptions, uListViewUtils;
 
