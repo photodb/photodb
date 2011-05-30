@@ -244,7 +244,6 @@ type
     procedure UpdateCrypted;
   protected
     { Protected declarations }
-    IncGrayScale: Integer;
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WndProc(var Message: TMessage); override;
     function GetFormID : string; override;
@@ -365,7 +364,6 @@ begin
   DBCanDrag := False;
   DropFileTarget1.Register(Self);
   SlideTimer.Interval := Math.Min(Math.Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
-  IncGrayScale := Math.Min(Math.Max(Settings.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
   FullScreenNow := False;
   SlideShowNow := False;
   Drawimage := Tbitmap.Create;
@@ -1006,6 +1004,7 @@ var
   procedure InitializeInfo;
   begin
     MenuRecord := CurrentInfo[CurrentFileNumber].Copy;
+    MenuRecord.Selected := True;
     Info.Add(MenuRecord);
   end;
 
@@ -1763,7 +1762,6 @@ begin
   inherited;
   ZoomerOn := False;
   Zoom := 1;
-  IncGrayScale := 20;
   FIsWaiting := False;
   RealZoomInc := 1;
 end;

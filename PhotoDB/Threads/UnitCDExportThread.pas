@@ -205,7 +205,7 @@ begin
         Synchronize(SetProgressOperation);
 
         Directory := ExtractFileDir(Options.ToDirectory);
-        Directory := Directory + Mapping.CDLabel + '\';
+        Directory := IncludeTrailingBackslash(Directory) + Mapping.CDLabel + '\';
 
         if not IsClosedParam and Options.CreatePortableDB then
         begin

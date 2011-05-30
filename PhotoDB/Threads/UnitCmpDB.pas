@@ -192,7 +192,7 @@ var
   Pass, S: string;
   SDA, QDA: TDBAdapter;
   Date, Time: TDateTime;
-  IsTime: Boolean;
+  IsDate, IsTime: Boolean;
 
   procedure LoadCurrentJpeg;
   begin
@@ -327,11 +327,12 @@ begin
                       Date := SDA.Date;
                       Time := SDA.Time;
                       IsTime := SDA.IsTime;
+                      IsDate := SDA.IsDate;
                       SQL_AddFileToDB(GetDBFileName(SDA.FileName, FSourceTableName),
                         ValidCryptBlobStreamJPG(SDA.Thumb), Jpeg,
                         SDA.LongImageID, SDA.KeyWords,
                         SDA.Comment, Pass, SDA.Width,
-                        SDA.Height, Date, Time, IsTime,
+                        SDA.Height, Date, Time, IsDate, IsTime,
                         SDA.Rating, SDA.Rotation,
                         SDA.Links, SDA.Access, Groups_);
 

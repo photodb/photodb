@@ -28,6 +28,8 @@ type
     destructor Destroy; override;
   end;
 
+  TTDBThreadClass = class of TDBThread;
+
   TThreadInfo = class
   public
     Thread: TDBThread;

@@ -201,6 +201,7 @@ const
     if AnsiLowerCase(FData.FileName) = AnsiLowerCase(FileName) then
       TLockFiles.Instance.AddLockedFile(FileName, 10000);
     try
+
       RetryCounter := 0;
       repeat
         try
@@ -235,8 +236,16 @@ const
 
             MODE_CUSTOM:
               begin
-                NewGraphic.SaveToFile(FileName);
+                ExifData := TExifData.Create;
+                try
+                  ExifData.LoadFromGraphic(FData.FileName);
+                  NewGraphic.SaveToFile(FileName);
+                  if not ExifData.Empty then
+                    ExifData.SaveToGraphic(FileName);
 
+                finally
+                  F(ExifData);
+                end;
                 if Password <> '' then
                   CryptGraphicFileV2(FileName, Password, CRYPT_OPTIONS_SAVE_CRC);
 

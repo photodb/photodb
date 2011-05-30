@@ -1118,8 +1118,7 @@ begin
           EventInfo.IsTime := False;
           for I := 0 to FFilesInfo.Count - 1 do
             DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
-        end
-        else
+        end else
         begin
           _sqlexectext := Format('Update $DB$ Set aTime = :aTime, IsTime = True Where ID in (%s)', [GenerateIDList]);
           WorkQuery.Active := False;
@@ -1178,8 +1177,8 @@ begin
       EventInfo.Include := CbInclude.Checked;
       EventInfo.Date := DateEdit.DateTime;
       EventInfo.Time := TimeOf(TimeEdit.Time);
-      EventInfo.IsDate := not DateEdit.Checked;
-      EventInfo.IsTime := not TimeEdit.Checked;
+      EventInfo.IsDate := DateEdit.Checked;
+      EventInfo.IsTime := TimeEdit.Checked;
       DBKernel.DoIDEvent(Self, ImageId, [EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Rating,
         EventID_Param_Owner, EventID_Param_Collection, EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate,
         EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include], EventInfo);
@@ -1195,10 +1194,11 @@ begin
         FileInfo.Rating := RatingEdit.Rating;
         FileInfo.Groups := CodeGroups(FNowGroups);
         FileInfo.Include := CbInclude.Checked;
-        FileInfo.Date := DateEdit.DateTime;
+        FileInfo.Date := DateOf(DateEdit.DateTime);
         FileInfo.Time := TimeOf(TimeEdit.Time);
-        FileInfo.IsDate := not DateEdit.Checked;
-        FileInfo.IsTime := not TimeEdit.Checked;
+        FileInfo.IsDate := DateEdit.Checked;
+        FileInfo.IsTime := TimeEdit.Checked;
+        FileInfo.Links := CodeLinksInfo(FPropertyLinks);
         UpdaterDB.AddFileEx(FileInfo, True, True);
       finally
         F(FileInfo);
@@ -1315,7 +1315,7 @@ begin
       try
         if RAWExif.IsEXIF then
         begin
-          FDateTimeInFileExists := True;
+          //FDateTimeInFileExists := True;
           FFileDate := DateOf(RAWExif.TimeStamp);
           FFileTime := TimeOf(RAWExif.TimeStamp);
         end;
@@ -1358,13 +1358,17 @@ begin
   IDLabel.Text := L('Not available');
   OwnerMemo.Text := L('Not available');
 
-  if Double(FFileDate) > 0 then
-    DateEdit.DateTime := FFileDate
-  else
-    DateEdit.DateTime := Now;
+  if YearOf(FFileDate) > 1900 then
+  begin
+    DateEdit.DateTime := FFileDate;
+    TimeEdit.Time := FFileTime;
+  end else
+  begin
+    DateEdit.DateTime := DateOf(Now);
+    TimeEdit.Time := TimeOf(Now);
+  end;
 
-  TimeEdit.Time := FFileTime;
-
+  CbInclude.Checked := True;
   DateEdit.Checked := FDateTimeInFileExists;
   TimeEdit.Checked := FDateTimeInFileExists;
 

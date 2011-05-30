@@ -11,7 +11,7 @@ uses
   DmProgress, uW7TaskBar, PngImage, uWatermarkOptions, uImageSource,
   UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
   uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime, ImButton, uLogger,
-  WebLink, SaveWindowPos;
+  WebLink, SaveWindowPos, uDBThread;
 
 const
   Settings_ConvertForm = 'Convert settings';
@@ -94,6 +94,7 @@ type
     FRealHeight: Integer;
     FProcessingList: TStrings;
     FPreviewAvalable: Boolean;
+    FThreadCount: Integer;
     procedure LoadLanguage;
     procedure CheckValidForm;
   protected
@@ -427,6 +428,7 @@ begin
     Exit;
   end;
 
+  FThreadCount := 0;
   for I := 0 to FData.Count - 1 do
   begin
     ProcessedFilesCollection.AddFile(FData[I].FileName);
@@ -466,7 +468,10 @@ begin
   NewFormState;
   FProcessingParams.PreviewOptions.GeneratePreview := False;
   for I := 1 to Min(FData.Count, ProcessorCount) do
+  begin
+    Inc(FThreadCount);
     TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams);
+  end;
 end;
 
 procedure TFormSizeResizer.SetInfo(Owner: TDBForm; List: TDBPopupMenuInfo);
@@ -511,6 +516,7 @@ procedure TFormSizeResizer.ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing
 var
   I: Integer;
 begin
+  Dec(FThreadCount);
   PrbMain.Position := FDataCount - FData.Count;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressValue(Handle, FDataCount - FData.Count, FDataCount);
@@ -520,8 +526,10 @@ begin
     FProcessingList.Delete(I);
   FillProcessingParams;
   if (FData.Count > 0) and not EndProcessing then
-    TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams)
-  else
+  begin
+    TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams);
+    Inc(FThreadCount);
+  end else if (FThreadCount = 0) or EndProcessing then
     Close;
 end;
 

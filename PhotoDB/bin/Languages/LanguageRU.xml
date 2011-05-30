@@ -469,6 +469,12 @@
     <translate name="Copyright" value="Права" />
     <translate name="Make" value="Производитель" />
     <translate name="Model" value="Модель" />
+    <translate name="Author" value="Автор" />
+    <translate name="Comments" value="Коментарии" />
+    <translate name="Keywords" value="Ключевые слова" />
+    <translate name="Subject" value="Тема" />
+    <translate name="Title" value="Подпись" />
+    <translate name="User Rating" value="Оценка" />
     <translate name="Not available" value="Не доступно" />
     <translate name="Unable to load info: item not found!" value="Невозможно отобразить информацию: запись не найдена!" />	
   </scope>
@@ -1634,9 +1640,8 @@
 	<translate name="Use high-quality rendering" value="Использовать качественную прорисовку"/>
 	<translate name="Extensions" value="Текущие расширения"/>	
 	<translate name="WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!" value="ВНИМАНИЕ: Используйте возможности шифрования осторожно. Если Вы забыли пароль к каким-либо изображениям, их восстановить невозможно!"/>
-	<translate name="Speed of displaying images for fullscreen: %d ms." value="Скорость слайдов для полноэкранного режима: %d ms."/>
-	<translate name="Grayscale effect speed: %d." value="Скорость для перехода в чёрно-белый цвет (загрузка): %d."/>
-	<translate name="Slide show delay: %d ms." value="Дополнительная задержка для Слайд-Шоу: %d ms."/>
+	<translate name="Speed of displaying images for fullscreen: %d ms." value="Скорость слайдов для полноэкранного режима: %d мс."/>
+	<translate name="Slide show delay: %d ms." value="Дополнительная задержка для Слайд-Шоу: %d мс."/>
 	<translate name="Number of steps for slide show: %d" value="Количество шагов для Слайд-Шоу: %d"/>
 	<translate name="Programs (*.exe)|*.exe|All Files (*.*)|*.*'" value="Программы (*.exe)|*.exe|Все файлы (*.*)|*.*'"/>
 	<translate name="Automatically save passwords for the current session" value="Автоматически сохранять пароли для текущей сессии"/>

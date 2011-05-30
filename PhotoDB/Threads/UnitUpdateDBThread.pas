@@ -101,7 +101,7 @@ var
   FAutoAnswer: Integer = -1;
 
 function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
-  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsTime: Boolean; Rating: Integer = 0;
+  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 
 implementation
@@ -133,7 +133,7 @@ begin
 end;
 
 function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
-  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsTime: Boolean; Rating: Integer = 0;
+  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 var
   ExifData : TExifData;
@@ -161,23 +161,33 @@ begin
     SetStrParam(FQuery, 0, ExtractFileName(Path));
     SetStrParam(FQuery, 1, AnsiLowerCase(Path));
     SetIntParam(FQuery, 2, GetFileSize(Path));
-    ExifData := TExifData.Create;
-    try
-      Date := 0;
+
+    //if date isn't defined yet
+    if not ((YearOf(Date) > 1900) and IsTime and IsDate) then
+    begin
+      ExifData := TExifData.Create;
       try
-        ExifData.LoadFromGraphic(Path);
-        if not ExifData.Empty then
-        begin;
-          Date := DateOf(ExifData.DateTimeOriginal);
-          Time := TimeOf(ExifData.DateTimeOriginal);
-          Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
+        Date := 0;
+        Time := 0;
+        IsDate := False;
+        IsTime := False;
+        try
+          ExifData.LoadFromGraphic(Path);
+          if not ExifData.Empty then
+          begin;
+            Date := DateOf(ExifData.DateTimeOriginal);
+            Time := TimeOf(ExifData.DateTimeOriginal);
+            IsDate := True;
+            IsTime := True;
+            Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
+          end;
+        except
+          on e : Exception do
+            Eventlog('Reading EXIF failed: ' + e.Message);
         end;
-      except
-        on e : Exception do
-          Eventlog('Reading EXIF failed: ' + e.Message);
+      finally
+        F(ExifData);
       end;
-    finally
-      F(ExifData);
     end;
     SetBoolParam(FQuery, 16, True);
     if YearOf(Date) < 1900 then
@@ -257,7 +267,7 @@ var
   procedure AddFileToDB;
   begin
     if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
-      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsTime, FInfo[FileNumber].Rating,
+      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, FInfo[FileNumber].Rating,
       FInfo[FileNumber].Rotation, FInfo[FileNumber].Links, FInfo[FileNumber].Access, FInfo[FileNumber].Groups) then
       SynchronizeEx(SetImages)
     else
@@ -275,6 +285,14 @@ var
     finally
       FreeDS(Demotable);
     end;
+  end;
+
+  procedure FixdateTime;
+  begin
+    Date := FInfo[FileNumber].Date;
+    IsDate := FInfo[FileNumber].IsDate;
+    Time := FInfo[FileNumber].Time;
+    IsTime := FInfo[FileNumber].IsTime;
   end;
 
 begin
@@ -344,10 +362,7 @@ begin
                 end;
               Result_Add:
                 begin
-                  Date := FInfo[FileNumber].Date;
-                  IsDate := FInfo[FileNumber].IsDate;
-                  Time := FInfo[FileNumber].Time;
-                  IsTime := FInfo[FileNumber].IsTime;
+                  FixdateTime;
                   AddFileToDB;
                   FQuery := GetQuery;
                   try
@@ -531,7 +546,10 @@ begin
         AutoAnswerSetted := False;
 
         if Res.Count = 0 then
+        begin
+          FixdateTime;
           AddFileToDB;
+        end;
       end else
       begin
         SynchronizeEx(CryptFileWithoutPass);

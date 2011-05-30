@@ -65,8 +65,6 @@ type
     Label15: TLabel;
     Label22: TLabel;
     TrackBar2: TTrackBar;
-    Label16: TLabel;
-    TrackBar3: TTrackBar;
     TrackBar4: TTrackBar;
     Label26: TLabel;
     CbViewerNextOnClick: TCheckBox;
@@ -136,7 +134,6 @@ type
     Bevel2: TBevel;
     WlDefaultJPEGOptions: TWebLink;
     AeMain: TApplicationEvents;
-    WlViewerJPEGOptions: TWebLink;
     SedBackupDays: TSpinEdit;
     WblMethod: TWebLink;
     LbDefaultPasswordMethod: TLabel;
@@ -158,7 +155,6 @@ type
     procedure BtnInstallExtensionsClick(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar2Change(Sender: TObject);
-    procedure TrackBar3Change(Sender: TObject);
     procedure LoadDefaultExtStates;
     procedure BtnClearSessionPasswordsClick(Sender: TObject);
     procedure BtnClearPasswordsInSettingsClick(Sender: TObject);
@@ -203,7 +199,6 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure WlDefaultJPEGOptionsClick(Sender: TObject);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
-    procedure WlViewerJPEGOptionsClick(Sender: TObject);
   private
     FThemeList : TStringList;
     FUserMenu : TUserMenuItemArray;
@@ -275,12 +270,10 @@ begin
     CbViewerNextOnClick.Checked := Settings.Readbool('Options', 'NextOnClick', False);
     TrackBar1.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
     TrackBar2.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100);
-    TrackBar3.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_GrayScale', 20), 1), 100);
     TrackBar4.Position := Min(Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100);
     CbViewerUseCoolStretch.Checked := Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True);
     TrackBar1Change(Sender);
     TrackBar2Change(Sender);
-    TrackBar3Change(Sender);
     TrackBar4Change(Sender);
   end;
   if NewTab = 4 then
@@ -440,7 +433,6 @@ begin
   ClientHeight := 484;
   PcMainChange(Self);
   WlDefaultJPEGOptions.Color := clWindow;
-  WlViewerJPEGOptions.Color := clWindow;
   WblMethod.Color := clWindow;
 
   FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
@@ -558,7 +550,6 @@ begin
     Settings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CbViewerUseCoolStretch.Checked);
     Settings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
     Settings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
-    Settings.WriteInteger('Options', 'SlideShow_GrayScale', TrackBar3.Position);
     Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
   end;
   // end;
@@ -666,7 +657,6 @@ begin
     CbViewerUseCoolStretch.Caption := L('Use high-quality rendering');
     LbShellExtensions.Caption := L('Extensions') + ':';
     TrackBar4Change(Self);
-    TrackBar3Change(Self);
     TrackBar2Change(Self);
     TrackBar1Change(Self);
     LbSecureInfo.Caption := L('WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!');
@@ -701,7 +691,6 @@ begin
     CbExplorerShowPlaces.Caption := L('Display links "Other places"');
     CbViewerNextOnClick.Caption := L('"Next" by click');
     CbListViewHotSelect.Caption := L('Use the selection by hover on the list');
-    WlViewerJPEGOptions.Text := L('JPEG Options');
     WlDefaultJPEGOptions.Text := L('Change default JPEG Options');
     CbSortGroups.Caption := L('Sort groups');
     BlBackupInterval.Caption := L('Create backup every') + ':';
@@ -749,11 +738,6 @@ end;
 procedure TOptionsForm.TrackBar2Change(Sender: TObject);
 begin
   Label22.Caption := Format(L('Slide show delay: %d ms.'), [TrackBar2.Position * 50]);
-end;
-
-procedure TOptionsForm.TrackBar3Change(Sender: TObject);
-begin
-  Label16.Caption := Format(L('Grayscale effect speed: %d.'), [TrackBar3.Position]);
 end;
 
 procedure TOptionsForm.TrackBar4Change(Sender: TObject);
@@ -1188,11 +1172,6 @@ end;
 procedure TOptionsForm.WlDefaultJPEGOptionsClick(Sender: TObject);
 begin
   SetJPEGOptions;
-end;
-
-procedure TOptionsForm.WlViewerJPEGOptionsClick(Sender: TObject);
-begin
-  SetJPEGOptions('Viewer');
 end;
 
 procedure TOptionsForm.WritePlaces;

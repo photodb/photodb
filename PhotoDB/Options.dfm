@@ -54,10 +54,6 @@ object OptionsForm: TOptionsForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -184,10 +180,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -390,10 +382,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -414,18 +402,9 @@ object OptionsForm: TOptionsForm
         AutoSize = False
         Caption = 'Slide Show Speed (5000)'
       end
-      object Label16: TLabel
-        Left = 5
-        Top = 111
-        Width = 420
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
-        Caption = 'Gray Scale Speed (20)'
-      end
       object Label26: TLabel
         Left = 6
-        Top = 159
+        Top = 111
         Width = 420
         Height = 13
         Anchors = [akLeft, akTop, akRight]
@@ -458,84 +437,41 @@ object OptionsForm: TOptionsForm
         ThumbLength = 15
         OnChange = TrackBar2Change
       end
-      object TrackBar3: TTrackBar
-        Left = 3
-        Top = 125
-        Width = 420
-        Height = 25
-        Anchors = [akLeft, akTop, akRight]
-        Max = 100
-        Min = 5
-        Position = 50
-        TabOrder = 2
-        ThumbLength = 15
-        OnChange = TrackBar3Change
-      end
       object TrackBar4: TTrackBar
         Left = 3
-        Top = 172
+        Top = 124
         Width = 420
         Height = 29
         Anchors = [akLeft, akTop, akRight]
         Max = 100
         Min = 5
         Position = 50
-        TabOrder = 3
+        TabOrder = 2
         ThumbLength = 15
         OnChange = TrackBar4Change
       end
       object CbViewerNextOnClick: TCheckBox
-        Left = 6
-        Top = 240
+        Left = 8
+        Top = 168
         Width = 410
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Next on Click'
-        TabOrder = 4
+        TabOrder = 3
       end
       object CbViewerUseCoolStretch: TCheckBox
-        Left = 6
-        Top = 263
+        Left = 8
+        Top = 191
         Width = 410
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use Cool Stretch'
-        TabOrder = 6
-      end
-      object WlViewerJPEGOptions: TWebLink
-        Left = 6
-        Top = 207
-        Width = 71
-        Height = 13
-        Cursor = crHandPoint
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlue
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        Color = clBtnFace
-        ParentColor = False
-        Text = 'JPEG settings'
-        OnClick = WlViewerJPEGOptionsClick
-        ImageIndex = 0
-        IconWidth = 0
-        IconHeight = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        ImageCanRegenerate = True
-        UseSpecIconSize = True
-        HightliteImage = False
+        TabOrder = 4
       end
     end
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -791,10 +727,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -1230,10 +1162,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
