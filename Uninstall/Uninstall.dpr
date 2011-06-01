@@ -15,7 +15,6 @@ uses
   VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   uFormUtils in '..\PhotoDB\Units\uFormUtils.pas',
-  uInstallUtils in '..\Installer\uInstallUtils.pas',
   uInstallTypes in '..\Installer\uInstallTypes.pas',
   uInstallScope in '..\Installer\uInstallScope.pas',
   UnitINI in '..\PhotoDB\Units\UnitINI.pas',
@@ -39,12 +38,20 @@ uses
   uUninstallProcess in 'uUninstallProcess.pas',
   uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
   uActivationUtils in '..\PhotoDB\Units\uActivationUtils.pas',
-  uImageSource in '..\PhotoDB\Units\uImageSource.pas';
+  uImageSource in '..\PhotoDB\Units\uImageSource.pas',
+  uIsAdmin in '..\Installer\uIsAdmin.pas',
+  uInstallUtils in '..\Installer\uInstallUtils.pas',
+  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
+  uIME in '..\PhotoDB\Units\uIME.pas',
+  uUserUtils in '..\Installer\uUserUtils.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}
 
 begin
+  if UserAccountService then
+    Exit;
+
   Application.Initialize;
 
   If ID_YES = TaskDialogEx(0, TA('Do you really want to delete Photo Database 2.3?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO,
@@ -52,6 +59,6 @@ begin
   begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TFrmMain, FrmMain);
-  Application.Run;
+    Application.Run;
   end;
 end.

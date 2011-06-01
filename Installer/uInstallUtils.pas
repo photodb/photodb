@@ -7,7 +7,8 @@ interface
 uses
   Windows, SysUtils, Classes, Messages, Registry, ShlObj, ComObj, ActiveX,
   uConstants, uMemory, uInstallTypes, uInstallScope, VRSIShortCuts,
-  IniFiles, uTranslate, uLogger, UnitINI, uShellUtils;
+  IniFiles, uTranslate, uLogger, UnitINI, uShellUtils, uIsAdmin, uUserUtils,
+  uAppUtils;
 
 type
   TBooleanFunction = function: Boolean;
@@ -18,8 +19,63 @@ procedure CreateShortcut(SourceFileName, ShortcutPath: string; Description: stri
 function ResolveInstallPath(Path : string) : string;
 procedure CreateInternetShortcut(const FileName, LocationURL : string);
 function GetInstalledFileName : string;
+function UserAccountService: Boolean;
 
 implementation
+
+function UserAccountService: Boolean;
+var
+  InstallHandle: THandle;
+  CommandsFileName: string;
+  ExitCode: Cardinal;
+  IsCurrentUserAdmin: Boolean;
+begin
+  Result := False;
+  IsCurrentUserAdmin := IsUserAnAdmin or IsWindowsAdmin;
+
+  if not GetParamStrDBBool('/install') then
+  begin
+    Result := True;
+    CommandsFileName := GetTempFileName;
+    CloseHandle(CreateFile(PChar(CommandsFileName),
+      GENERIC_READ or GENERIC_WRITE, 0, nil, CREATE_ALWAYS,
+      FILE_ATTRIBUTE_NORMAL or
+      FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, 0));
+
+    try
+      InstallHandle := RunAsAdmin(0, ParamStr(0), '/install /commands "' + CommandsFileName + '"', IsCurrentUserAdmin);
+      if InstallHandle <> 0 then
+      begin
+
+        if InstallHandle > 0 then
+        begin
+          repeat
+            Sleep(100);
+            ProcessCommands(CommandsFileName);
+
+            GetExitCodeProcess(InstallHandle, ExitCode);
+          until ExitCode <> STILL_ACTIVE;
+        end;
+      end;
+
+    finally
+      DeleteFile(PChar(CommandsFileName));
+    end;
+    Exit;
+  end;
+
+  if not GetParamStrDBBool('/install') then
+  begin
+    Result := True;
+    Exit;
+  end;
+  if not IsCurrentUserAdmin then
+  begin
+    Result := True;
+    MessageBox(0, 'Please start this program using account with administrator rights!', 'Error', MB_OK or MB_ICONERROR);
+    Exit;
+  end;
+end;
 
 function GetInstalledFileName : string;
 var

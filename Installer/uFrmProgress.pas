@@ -45,6 +45,7 @@ var
   Png : TPngImage;
 begin
   LoadLanguage;
+  FProgress := 0;
   FBackgroundImage := TBitmap.Create;
   FBackgroundImage.PixelFormat := pf32bit;
   MS := TMemoryStream.Create;
@@ -61,6 +62,7 @@ begin
   finally
     F(MS);
   end;
+  RenderFormImage;
 end;
 
 procedure TFrmProgress.RenderFormImage;

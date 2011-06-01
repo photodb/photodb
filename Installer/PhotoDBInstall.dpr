@@ -51,55 +51,16 @@ uses
   uImageSource in '..\PhotoDB\Units\uImageSource.pas',
   uUserUtils in 'uUserUtils.pas',
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
-  uIsAdmin in 'uIsAdmin.pas';
+  uIsAdmin in 'uIsAdmin.pas',
+  uIME in '..\PhotoDB\Units\uIME.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}
 
-var
-  InstallHandle: THandle;
-  CommandsFileName: string;
-  ExitCode: Cardinal;
-  
 begin
-  if ParamStr(1) = '' then
-  begin
-    CommandsFileName := GetTempFileName;
-    CloseHandle(CreateFile(PChar(CommandsFileName),
-      GENERIC_READ or GENERIC_WRITE, 0, nil, CREATE_ALWAYS,
-      FILE_ATTRIBUTE_NORMAL or
-      FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, 0));
-
-    try
-      InstallHandle := RunAsAdmin(0, ParamStr(0), '/install /commands "' + CommandsFileName + '"');
-      if InstallHandle <> 0 then
-      begin
-
-        if InstallHandle > 0 then
-        begin
-          repeat
-            Sleep(100);
-            ProcessCommands(CommandsFileName);
-
-            GetExitCodeProcess(InstallHandle, ExitCode);
-          until ExitCode <> STILL_ACTIVE;
-        end;
-      end;
-
-    finally
-      DeleteFile(PChar(CommandsFileName));
-    end;
+  if UserAccountService then
     Exit;
-  end;
-
-  if not GetParamStrDBBool('/install') then
-    Exit;
-  if not IsUserAnAdmin then
-  begin
-    MessageBox(0, 'Please start this program using account with administrator rights!', 'Error', MB_OK or MB_ICONERROR);
-    Exit;
-  end;
 
   Application.Initialize;
 

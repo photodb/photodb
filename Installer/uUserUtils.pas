@@ -11,13 +11,13 @@ uses
   uAppUtils,
   ShellApi;
 
-function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string): THandle;
+function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string; IsCurrentUserAdmin: Boolean): THandle;
 function RunAsUser(ExeName, ParameterString, WorkDirectory: string): THandle;
 procedure ProcessCommands(FileName: string);
 
 implementation
 
-function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string): THandle;
+function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string; IsCurrentUserAdmin: Boolean): THandle;
 {
     See Step 3: Redesign for UAC Compatibility (UAC)
     http://msdn.microsoft.com/en-us/library/bb756922.aspx
@@ -29,7 +29,10 @@ begin
   sei.cbSize := SizeOf(TShellExecuteInfo);
   sei.Wnd := hwnd;
   sei.fMask := SEE_MASK_FLAG_DDEWAIT or SEE_MASK_FLAG_NO_UI or SEE_MASK_NOCLOSEPROCESS;
-  sei.lpVerb := PChar('runas');
+  if IsCurrentUserAdmin then
+    sei.lpVerb := PChar('open')
+  else
+    sei.lpVerb := PChar('runas');
   sei.lpFile := PChar(FileName); // PAnsiChar;
   if parameters <> '' then
       sei.lpParameters := PChar(parameters); // PAnsiChar;
@@ -46,6 +49,7 @@ var
   SW: TStreamWriter;
   SR: TStreamReader;
   StartTime: Cardinal;
+  Res: Integer;
   CommandFileName: string;
 begin
   CommandFileName := GetParamStrDBValue('/commands');
@@ -80,9 +84,12 @@ begin
       try
         SR := TStreamReader.Create(FS);
         try
-          Result := StrToIntDef(SR.ReadLine, 0);
-          if Result > 0 then
+          Res := StrToIntDef(SR.ReadLine, -1);
+          if Res >= 0 then
+          begin
+            Result := Res;
             Break;
+          end;
         finally
           F(SR);
         end;
@@ -103,6 +110,26 @@ var
   SR: TStreamReader;
   SW: TStreamWriter;
   ExeFileName, ExeParams, ExeDirectory: string;
+
+  procedure WritePID(PID: Integer);
+  begin
+    try
+      FS := TFileStream.Create(FileName, fmOpenWrite);
+      try
+        FS.Size := 0;
+        SW := TStreamWriter.Create(FS);
+        try
+          SW.Write(IntToStr(PID));
+        finally
+          F(SW);
+        end;
+      finally
+        F(FS);
+      end;
+    except
+      Exit;
+    end;
+  end;
 begin
   try
     FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
@@ -122,6 +149,12 @@ begin
     Exit;
   end;
 
+  if (ExeFileName <> '') and (ExeFileName = ExeParams) and (ExeFileName = ExeDirectory) then
+  begin
+    ShellExecute(0, 'open', PWideChar(ExeFileName), nil, nil, SW_NORMAL);
+    WritePID(0);
+  end;
+
   if FileExistsSafe(ExeFileName) and (ExeParams <> '') and (ExeDirectory <> '') then
   begin
     { fill with known state }
@@ -133,22 +166,7 @@ begin
                 CREATE_NEW_PROCESS_GROUP + NORMAL_PRIORITY_CLASS,
                 nil, PChar(ExeDirectory), StartInfo, ProcInfo);
 
-    try
-      FS := TFileStream.Create(FileName, fmOpenWrite);
-      try
-        FS.Size := 0;
-        SW := TStreamWriter.Create(FS);
-        try
-          SW.Write(IntToStr(ProcInfo.hProcess));
-        finally
-          F(SW);
-        end;
-      finally
-        F(FS);
-      end;
-    except
-      Exit;
-    end;
+    WritePID(ProcInfo.hProcess);
   end;
 end;
 

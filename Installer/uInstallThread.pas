@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, uInstallTypes, uDBForm, uMemory, uConstants,
-  uInstallUtils, uInstallScope, uActions, ActiveX, SysUtils;
+  uInstallUtils, uInstallScope, uActions, ActiveX, SysUtils, uIME;
 
 type
   TInstallThread = class(TThread)
@@ -39,6 +39,7 @@ end;
 
 procedure TInstallThread.Execute;
 begin
+  DisableIME;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

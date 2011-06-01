@@ -328,7 +328,8 @@ uses
   uStenoLoadImageThread in 'Threads\uStenoLoadImageThread.pas',
   uFrmImportImagesLanding in 'ImportImages\uFrmImportImagesLanding.pas' {FrmImportImagesLanding: TFrame},
   uFrmImportImagesOptions in 'ImportImages\uFrmImportImagesOptions.pas' {FrmImportImagesOptions: TFrame},
-  uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame};
+  uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame},
+  uIME in 'Units\uIME.pas';
 
 {$R *.res}
 

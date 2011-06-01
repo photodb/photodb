@@ -9,8 +9,61 @@ function CheckTokenMembership(TokenHandle: THandle; SidToCheck: PSID;
   out IsMember: BOOL): BOOL; stdcall;
 function SHTestTokenMembership(hToken: THandle; ulRID: ULONG): BOOL; stdcall;
 function IsUserAnAdmin(): BOOL; stdcall;
+function IsWindowsAdmin: Boolean;
+
+const
+   SECURITY_NT_AUTHORITY: TSIDIdentifierAuthority = (Value: (0, 0, 0, 0, 0, 5)) ;
+
+const
+  SECURITY_BUILTIN_DOMAIN_RID = $00000020;
+  DOMAIN_ALIAS_RID_ADMINS = $00000220;
 
 implementation
+
+function IsWindowsAdmin: Boolean;
+var
+  hAccessToken: THandle;
+  ptgGroups: PTokenGroups;
+  dwInfoBufferSize: DWORD;
+  psidAdministrators: PSID;
+  g: Integer;
+  bSuccess: BOOL;
+ begin
+   Result := False;
+
+   bSuccess := OpenThreadToken(GetCurrentThread, TOKEN_QUERY, True, hAccessToken) ;
+   if not bSuccess then
+   begin
+     if GetLastError = ERROR_NO_TOKEN then
+     bSuccess := OpenProcessToken(GetCurrentProcess, TOKEN_QUERY, hAccessToken) ;
+   end;
+
+
+   if bSuccess then
+   begin
+     GetMem(ptgGroups, 1024) ;
+
+     bSuccess := GetTokenInformation(hAccessToken, TokenGroups, ptgGroups, 1024, dwInfoBufferSize) ;
+
+     CloseHandle(hAccessToken) ;
+
+     if bSuccess then
+     begin
+       AllocateAndInitializeSid(SECURITY_NT_AUTHORITY, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, psidAdministrators) ;
+
+       for g := 0 to ptgGroups.GroupCount - 1 do
+         if EqualSid(psidAdministrators, ptgGroups.Groups[g].Sid) then
+         begin
+           Result := True;
+           Break;
+         end;
+
+       FreeSid(psidAdministrators) ;
+     end;
+
+     FreeMem(ptgGroups) ;
+   end;
+ end;
 
 function GetAdvApi32Lib(): HMODULE;
 const

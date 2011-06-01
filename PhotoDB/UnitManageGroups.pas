@@ -365,7 +365,7 @@ begin
           if Fn <> '' then
             Btext.Canvas.Font.name := Fn
           else
-            Btext.Canvas.Font.name := 'MS Sans Serif';
+            Btext.Canvas.Font.name := 'Tahoma';
           if Groups[Item.index].IncludeInQuickList then
             Btext.Canvas.Font.Style := [Fsbold] + [FsUnderline]
           else

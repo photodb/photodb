@@ -195,7 +195,7 @@ begin
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase', True);
-    FReg.WriteString('UninstallString', '"' + IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'UnInstall.exe"' + ' /uninstall');
+    FReg.WriteString('UninstallString', '"' + IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'UnInstall.exe"');
     FReg.WriteString('DisplayName', 'Photo DataBase');
     FReg.WriteString('DisplayVersion', ProductVersion);
     FReg.WriteString('HelpLink', ResolveLanguageString(HomePageURL));

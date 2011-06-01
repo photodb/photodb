@@ -6,13 +6,14 @@ interface
 
 uses
   Windows, uActions, uInstallScope, SysUtils, uInstallUtils,
-  uFileUtils, StrUtils, uConstants, uTranslate, ShellAPI,
-  uActivationUtils;
+  uFileUtils, StrUtils, uConstants, uTranslate, ShellAPI, Registry,
+  uActivationUtils, uUserUtils;
 
 const
   DeleteFilePoints = 128 * 1024;
   UnInstallPoints_ShortCut = 128 * 1024;
   UninstallNotifyPoints_ShortCut = 1024 * 1024;
+  DeleteRegistryPoints = 128 * 1024;
 
 type
   TUninstallFiles = class(TInstallAction)
@@ -28,6 +29,12 @@ type
   end;
 
   TUninstallNotify = class(TInstallAction)
+  public
+    function CalculateTotalPoints : Int64; override;
+    procedure Execute(Callback : TActionCallback); override;
+  end;
+
+  TUninstallRegistry = class(TInstallAction)
   public
     function CalculateTotalPoints : Int64; override;
     procedure Execute(Callback : TActionCallback); override;
@@ -120,7 +127,74 @@ var
   NotifyUrl: string;
 begin
   NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + ProductMajorVersionVersion + '&ac=' + TActivationManager.Instance.ApplicationCode;
-  ShellExecute(GetActiveWindow, 'open', PWideChar(NotifyUrl), nil, nil, SW_NORMAL);
+  RunAsUser(NotifyUrl, NotifyUrl, NotifyUrl);
+end;
+
+{ TUninstallRegistry }
+
+function TUninstallRegistry.CalculateTotalPoints: Int64;
+begin
+  Result := 5 * DeleteRegistryPoints;
+end;
+
+procedure TUninstallRegistry.Execute(Callback: TActionCallback);
+var
+  FReg: TRegistry;
+  Terminated: Boolean;
+begin
+  Terminated := False;
+  FReg := TRegistry.Create;
+  try
+    FReg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    FReg.DeleteKey('\.photodb');
+    FReg.DeleteKey('\PhotoDB.PhotodbFile\');
+    FReg.DeleteKey('\.ids');
+    FReg.DeleteKey('\PhotoDB.IdsFile\');
+    FReg.DeleteKey('\.dbl');
+    FReg.DeleteKey('\PhotoDB.DblFile\');
+    FReg.DeleteKey('\.ith');
+    FReg.DeleteKey('\PhotoDB.IthFile\');
+    FReg.DeleteKey('\Directory\Shell\PhDBBrowse\');
+    FReg.DeleteKey('\Drive\Shell\PhDBBrowse\');
+  except
+  end;
+  FReg.Free;
+  Callback(Self, 1 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
+  FReg := TRegistry.Create;
+  try
+    FReg.RootKey := HKEY_INSTALL;
+    FReg.DeleteKey(RegRoot);
+  except
+  end;
+  FReg.Free;
+  Callback(Self, 2 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
+  FReg := TRegistry.Create;
+  try
+    FReg.RootKey := HKEY_USER_WORK;
+    FReg.DeleteKey(RegRoot);
+  except
+  end;
+  FReg.Free;
+  Callback(Self, 3 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
+  FReg := TRegistry.Create;
+  try
+    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    FReg.DeleteKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase');
+  except
+  end;
+  FReg.Free;
+  Callback(Self, 4 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
+  FReg := TRegistry.Create;
+  try
+    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    FReg.DeleteKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\Handlers\PhotoDBGetPhotosHandler');
+    FReg.DeleteKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler');
+    FReg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\ShowPicturesOnArrival', True);
+    FReg.DeleteValue('PhotoDBgetPhotosHandler');
+  except
+  end;
+  FReg.Free;
+  Callback(Self, 5 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
 end;
 
 end.
