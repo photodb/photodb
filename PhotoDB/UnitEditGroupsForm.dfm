@@ -10,7 +10,7 @@ object EditGroupsForm: TEditGroupsForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -32,7 +32,7 @@ object EditGroupsForm: TEditGroupsForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
   end
@@ -258,13 +258,13 @@ object EditGroupsForm: TEditGroupsForm
     Tag = 2
     Left = 8
     Top = 74
-    Width = 107
+    Width = 100
     Height = 16
     Caption = 'Avaliable Groups:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
   end

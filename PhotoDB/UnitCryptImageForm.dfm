@@ -10,7 +10,7 @@ object CryptImageForm: TCryptImageForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -25,14 +25,14 @@ object CryptImageForm: TCryptImageForm
   object LbPassword: TLabel
     Left = 8
     Top = 8
-    Width = 146
+    Width = 152
     Height = 13
     Caption = 'Enter password for image here:'
   end
   object LbPasswordConfirm: TLabel
     Left = 8
     Top = 56
-    Width = 160
+    Width = 165
     Height = 13
     Caption = 'ReEnter password for image here:'
   end
@@ -95,7 +95,7 @@ object CryptImageForm: TCryptImageForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -19
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     PasswordChar = '*'
@@ -112,7 +112,7 @@ object CryptImageForm: TCryptImageForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -19
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     PasswordChar = '*'
@@ -133,8 +133,8 @@ object CryptImageForm: TCryptImageForm
   object WblMethod: TWebLink
     Left = 8
     Top = 178
-    Width = 84
-    Height = 16
+    Width = 68
+    Height = 13
     Cursor = crHandPoint
     Text = 'BlowFish - 56'
     ImageIndex = 0

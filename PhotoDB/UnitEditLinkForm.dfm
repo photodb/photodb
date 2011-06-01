@@ -10,7 +10,7 @@ object FormEditLink: TFormEditLink
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
@@ -105,21 +105,21 @@ object FormEditLink: TFormEditLink
   object Label1: TLabel
     Left = 8
     Top = 56
-    Width = 50
+    Width = 49
     Height = 13
     Caption = 'Link Type:'
   end
   object Label2: TLabel
     Left = 8
     Top = 96
-    Width = 54
+    Width = 52
     Height = 13
     Caption = 'Link Name:'
   end
   object Label3: TLabel
     Left = 8
     Top = 136
-    Width = 52
+    Width = 51
     Height = 13
     Caption = 'Link value:'
   end

@@ -10,7 +10,7 @@ object ImageEditor: TImageEditor
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -2145,7 +2145,7 @@ object ImageEditor: TImageEditor
     object UndoLink: TWebLink
       Left = 512
       Top = 8
-      Width = 55
+      Width = 54
       Height = 24
       Cursor = crHandPoint
       Enabled = False
@@ -2279,7 +2279,7 @@ object ImageEditor: TImageEditor
     object RedoLink: TWebLink
       Left = 608
       Top = 8
-      Width = 55
+      Width = 54
       Height = 24
       Cursor = crHandPoint
       Enabled = False
@@ -2413,7 +2413,7 @@ object ImageEditor: TImageEditor
     object FitToSizeLink: TWebLink
       Left = 392
       Top = 8
-      Width = 79
+      Width = 78
       Height = 24
       Cursor = crHandPoint
       Text = 'Fit To Size'
@@ -2546,7 +2546,7 @@ object ImageEditor: TImageEditor
     object SaveLink: TWebLink
       Left = 8
       Top = 8
-      Width = 54
+      Width = 53
       Height = 24
       Cursor = crHandPoint
       Enabled = False
@@ -2680,7 +2680,7 @@ object ImageEditor: TImageEditor
     object FullSiseLink: TWebLink
       Left = 312
       Top = 8
-      Width = 68
+      Width = 67
       Height = 24
       Cursor = crHandPoint
       Text = 'Full Size'
@@ -2842,7 +2842,7 @@ object ImageEditor: TImageEditor
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Locked = True
     ParentBiDiMode = False

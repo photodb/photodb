@@ -12,7 +12,7 @@ object FormChangeGroup: TFormChangeGroup
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -87,14 +87,14 @@ object FormChangeGroup: TFormChangeGroup
     Tag = 2
     Left = 5
     Top = 56
-    Width = 97
+    Width = 102
     Height = 13
     Caption = 'Comments for group:'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentColor = False
     ParentFont = False
@@ -104,14 +104,14 @@ object FormChangeGroup: TFormChangeGroup
     Tag = 2
     Left = 5
     Top = 121
-    Width = 97
+    Width = 101
     Height = 13
     Caption = 'KeyWords for group:'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentColor = False
     ParentFont = False
@@ -121,11 +121,10 @@ object FormChangeGroup: TFormChangeGroup
     Tag = 2
     Left = 8
     Top = 214
-    Width = 77
+    Width = 78
     Height = 13
     Anchors = [akLeft, akBottom]
     Caption = 'Related Groups:'
-    ExplicitTop = 231
   end
   object MemComments: TWatermarkedMemo
     Left = 4
@@ -192,7 +191,7 @@ object FormChangeGroup: TFormChangeGroup
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -24
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 0

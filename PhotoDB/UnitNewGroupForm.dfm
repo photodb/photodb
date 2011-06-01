@@ -12,7 +12,7 @@ object NewGroupForm: TNewGroupForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -87,7 +87,7 @@ object NewGroupForm: TNewGroupForm
     Tag = 2
     Left = 8
     Top = 120
-    Width = 97
+    Width = 101
     Height = 13
     Caption = 'KeyWords for group:'
   end
@@ -95,7 +95,7 @@ object NewGroupForm: TNewGroupForm
     Tag = 2
     Left = 8
     Top = 56
-    Width = 97
+    Width = 102
     Height = 13
     Caption = 'Comments for group:'
   end
@@ -103,7 +103,7 @@ object NewGroupForm: TNewGroupForm
     Tag = 2
     Left = 4
     Top = 208
-    Width = 77
+    Width = 78
     Height = 13
     Anchors = [akLeft, akBottom]
     Caption = 'Related Groups:'

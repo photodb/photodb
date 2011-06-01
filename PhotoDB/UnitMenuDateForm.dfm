@@ -10,7 +10,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -335,13 +335,13 @@ object FormMenuDateEdit: TFormMenuDateEdit
   object Label1: TLabel
     Left = 18
     Top = 64
-    Width = 101
+    Width = 94
     Height = 13
     Caption = 'Date Not Exists...'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
   end
@@ -405,13 +405,13 @@ object FormMenuDateEdit: TFormMenuDateEdit
   object Label3: TLabel
     Left = 20
     Top = 163
-    Width = 101
+    Width = 95
     Height = 13
     Caption = 'Time Not Exists...'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
     PopupMenu = PmTime
@@ -422,7 +422,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Top = 0
     Width = 162
     Height = 154
-    Date = 38187.010807268520000000
+    Date = 38187.033727118050000000
     PopupMenu = PmDate
     TabOrder = 0
     OnDblClick = BtOKClick

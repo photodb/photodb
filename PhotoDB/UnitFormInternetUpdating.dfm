@@ -9,7 +9,7 @@ object FormInternetUpdating: TFormInternetUpdating
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = [fsBold]
   FormStyle = fsStayOnTop
   OldCreateOrder = False
@@ -34,14 +34,13 @@ object FormInternetUpdating: TFormInternetUpdating
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     PlainText = True
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 337
   end
   object WlHomePage: TWebLink
     Left = 8
@@ -52,7 +51,7 @@ object FormInternetUpdating: TFormInternetUpdating
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Home Page'
     OnClick = WlHomePageClick
@@ -77,11 +76,10 @@ object FormInternetUpdating: TFormInternetUpdating
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 2
-    ExplicitWidth = 255
   end
   object BtnOk: TButton
     Left = 284
@@ -93,12 +91,11 @@ object FormInternetUpdating: TFormInternetUpdating
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 3
     OnClick = BtnOkClick
-    ExplicitLeft = 269
   end
   object WlDownload: TWebLink
     Left = 8
@@ -109,7 +106,7 @@ object FormInternetUpdating: TFormInternetUpdating
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     Text = 'Download now'
     OnClick = WlDownloadClick

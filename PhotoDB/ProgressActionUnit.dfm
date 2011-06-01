@@ -9,7 +9,7 @@ object ProgressActionForm: TProgressActionForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
@@ -24,14 +24,14 @@ object ProgressActionForm: TProgressActionForm
   object Label1: TLabel
     Left = 8
     Top = 96
-    Width = 70
+    Width = 74
     Height = 13
     Caption = 'Current Action:'
   end
   object Label2: TLabel
     Left = 8
     Top = 56
-    Width = 32
+    Width = 31
     Height = 13
     Caption = 'Tasks:'
   end
@@ -126,7 +126,7 @@ object ProgressActionForm: TProgressActionForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Progress... (&%%)'
     BorderColor = 38400
@@ -144,7 +144,7 @@ object ProgressActionForm: TProgressActionForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Progress... (&%%)'
     BorderColor = 38400

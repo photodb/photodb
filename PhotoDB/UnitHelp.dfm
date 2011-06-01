@@ -10,7 +10,7 @@ object HelpPopup: THelpPopup
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
@@ -35,7 +35,7 @@ object HelpPopup: THelpPopup
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
   end
@@ -430,12 +430,12 @@ object HelpPopup: THelpPopup
     FontNormal.Charset = DEFAULT_CHARSET
     FontNormal.Color = clWindowText
     FontNormal.Height = -11
-    FontNormal.Name = 'MS Sans Serif'
+    FontNormal.Name = 'Tahoma'
     FontNormal.Style = []
     FontEnter.Charset = DEFAULT_CHARSET
     FontEnter.Color = clWindowText
     FontEnter.Height = -11
-    FontEnter.Name = 'MS Sans Serif'
+    FontEnter.Name = 'Tahoma'
     FontEnter.Style = []
     PixelsBetweenPictureAndText = 10
     FadeDelay = 10
@@ -895,12 +895,12 @@ object HelpPopup: THelpPopup
     FontNormal.Charset = DEFAULT_CHARSET
     FontNormal.Color = clWindowText
     FontNormal.Height = -11
-    FontNormal.Name = 'MS Sans Serif'
+    FontNormal.Name = 'Tahoma'
     FontNormal.Style = []
     FontEnter.Charset = DEFAULT_CHARSET
     FontEnter.Color = clWindowText
     FontEnter.Height = -11
-    FontEnter.Name = 'MS Sans Serif'
+    FontEnter.Name = 'Tahoma'
     FontEnter.Style = []
     PixelsBetweenPictureAndText = 10
     FadeDelay = 10

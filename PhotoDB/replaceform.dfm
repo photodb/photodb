@@ -12,7 +12,7 @@ object DBReplaceForm: TDBReplaceForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -32,7 +32,6 @@ object DBReplaceForm: TDBReplaceForm
     Anchors = [akTop, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = 344
     DesignSize = (
       169
       293)
@@ -68,7 +67,7 @@ object DBReplaceForm: TDBReplaceForm
     object LabelDBInfo: TLabel
       Left = 0
       Top = 112
-      Width = 55
+      Width = 57
       Height = 13
       Caption = 'DB file Info:'
     end
@@ -82,21 +81,21 @@ object DBReplaceForm: TDBReplaceForm
     object LabelDBName: TLabel
       Left = -1
       Top = 146
-      Width = 28
+      Width = 27
       Height = 13
       Caption = 'Name'
     end
     object LabelDBSize: TLabel
       Left = -1
       Top = 218
-      Width = 20
+      Width = 19
       Height = 13
       Caption = 'Size'
     end
     object LabelDBPath: TLabel
       Left = -1
       Top = 236
-      Width = 25
+      Width = 26
       Height = 13
       Caption = 'Path:'
     end
@@ -221,21 +220,21 @@ object DBReplaceForm: TDBReplaceForm
     object LabelCurrentInfo: TLabel
       Left = 8
       Top = 120
-      Width = 80
+      Width = 83
       Height = 13
-      Caption = 'Current File I nfo:'
+      Caption = 'Current File Info:'
     end
     object LabelFName: TLabel
       Left = 8
       Top = 136
-      Width = 28
+      Width = 27
       Height = 13
       Caption = 'Name'
     end
     object LabelFSize: TLabel
       Left = 8
       Top = 154
-      Width = 20
+      Width = 19
       Height = 13
       Caption = 'Size'
     end
@@ -256,7 +255,7 @@ object DBReplaceForm: TDBReplaceForm
     object LabelFPath: TLabel
       Left = 8
       Top = 209
-      Width = 25
+      Width = 26
       Height = 13
       Caption = 'Path:'
     end
@@ -341,7 +340,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Replace and Delete Dubplicates'
     TabOrder = 2
     OnClick = BtnReplaceAndDeleteDuplicatesClick
-    ExplicitLeft = 169
   end
   object BtnAdd: TButton
     Left = 150
@@ -352,7 +350,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Add'
     TabOrder = 3
     OnClick = BtnAddClick
-    ExplicitLeft = 169
   end
   object BtnReplace: TButton
     Left = 268
@@ -363,7 +360,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Replace'
     TabOrder = 4
     OnClick = BtnReplaceClick
-    ExplicitLeft = 287
   end
   object BtnSkip: TButton
     Left = 386
@@ -374,7 +370,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Skip'
     TabOrder = 5
     OnClick = BtnSkipClick
-    ExplicitLeft = 405
   end
   object BtnDeleteFile: TButton
     Left = 386
@@ -385,7 +380,6 @@ object DBReplaceForm: TDBReplaceForm
     Caption = 'Delete File'
     TabOrder = 6
     OnClick = BtnDeleteFileClick
-    ExplicitLeft = 405
   end
   object CbForAll: TCheckBox
     Left = 150
@@ -395,7 +389,6 @@ object DBReplaceForm: TDBReplaceForm
     Anchors = [akTop, akRight]
     Caption = 'Do this action for all conflicts'
     TabOrder = 7
-    ExplicitLeft = 169
   end
   object LvMain: TEasyListview
     Left = 186
@@ -406,7 +399,7 @@ object DBReplaceForm: TDBReplaceForm
     EditManager.Font.Charset = DEFAULT_CHARSET
     EditManager.Font.Color = clWindowText
     EditManager.Font.Height = -11
-    EditManager.Font.Name = 'MS Sans Serif'
+    EditManager.Font.Name = 'Tahoma'
     EditManager.Font.Style = []
     Header.Columns.Items = {
       0600000001000000110000005445617379436F6C756D6E53746F726564FFFECE

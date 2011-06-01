@@ -8,7 +8,7 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -45,14 +45,14 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
     object Label1: TLabel
       Left = 8
       Top = 40
-      Width = 65
+      Width = 66
       Height = 13
       Caption = 'Selected info:'
     end
     object Label2: TLabel
       Left = 8
       Top = 168
-      Width = 23
+      Width = 25
       Height = 13
       Caption = 'ID = '
     end

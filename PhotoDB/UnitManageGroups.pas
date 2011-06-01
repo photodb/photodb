@@ -500,7 +500,7 @@ var
 begin
   Fn := Settings.ReadString('GroupsManager', 'FontName');
   if Fn = '' then
-    Fn := 'MS Sans Serif';
+    Fn := 'Tahoma';
   if SelectFont(Fn, NewFont) then
     Settings.WriteString('GroupsManager', 'FontName', NewFont);
   ListView1.Refresh;

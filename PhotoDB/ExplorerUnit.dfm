@@ -11,7 +11,7 @@ object ExplorerForm: TExplorerForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -42,6 +42,8 @@ object ExplorerForm: TExplorerForm
     Align = alLeft
     ParentColor = True
     TabOrder = 0
+    ExplicitTop = 40
+    ExplicitHeight = 553
     object CloseButtonPanel: TPanel
       Left = 1
       Top = 1
@@ -80,6 +82,7 @@ object ExplorerForm: TExplorerForm
       ParentCtl3D = False
       TabOrder = 1
       OnResize = PropertyPanelResize
+      ExplicitHeight = 530
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
@@ -101,6 +104,7 @@ object ExplorerForm: TExplorerForm
         Caption = 'ScrollBox1'
         TabOrder = 0
         OnResize = ScrollBox1Resize
+        ExplicitHeight = 530
         object TypeLabel: TLabel
           Left = 7
           Top = 141
@@ -118,13 +122,13 @@ object ExplorerForm: TExplorerForm
           Tag = 1
           Left = 8
           Top = 224
-          Width = 35
+          Width = 33
           Height = 13
           Caption = 'Tasks'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
-          Font.Name = 'MS Sans Serif'
+          Font.Name = 'Tahoma'
           Font.Style = [fsBold]
           ParentFont = False
         end
@@ -158,13 +162,13 @@ object ExplorerForm: TExplorerForm
           Tag = 1
           Left = 8
           Top = 425
-          Width = 74
+          Width = 71
           Height = 13
           Caption = 'Other Places'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
-          Font.Name = 'MS Sans Serif'
+          Font.Name = 'Tahoma'
           Font.Style = [fsBold]
           ParentFont = False
         end
@@ -256,7 +260,7 @@ object ExplorerForm: TExplorerForm
         object SlideShowLink: TWebLink
           Left = 5
           Top = 237
-          Width = 58
+          Width = 56
           Height = 13
           Cursor = crHandPoint
           Text = 'Slide Show'
@@ -294,7 +298,7 @@ object ExplorerForm: TExplorerForm
         object RenameLink: TWebLink
           Left = 5
           Top = 333
-          Width = 45
+          Width = 44
           Height = 13
           Cursor = crHandPoint
           Text = 'Rename'
@@ -313,7 +317,7 @@ object ExplorerForm: TExplorerForm
         object RefreshLink: TWebLink
           Left = 5
           Top = 366
-          Width = 42
+          Width = 43
           Height = 13
           Cursor = crHandPoint
           Text = 'Refresh'
@@ -332,7 +336,7 @@ object ExplorerForm: TExplorerForm
         object PropertiesLink: TWebLink
           Left = 5
           Top = 349
-          Width = 52
+          Width = 54
           Height = 13
           Cursor = crHandPoint
           Text = 'Properties'
@@ -351,7 +355,7 @@ object ExplorerForm: TExplorerForm
         object PrintLink: TWebLink
           Left = 5
           Top = 269
-          Width = 26
+          Width = 27
           Height = 13
           Cursor = crHandPoint
           Text = 'Print'
@@ -390,7 +394,7 @@ object ExplorerForm: TExplorerForm
         object MyDocumentsLink: TWebLink
           Left = 5
           Top = 470
-          Width = 76
+          Width = 75
           Height = 13
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
@@ -410,7 +414,7 @@ object ExplorerForm: TExplorerForm
         object MyComputerLink: TWebLink
           Left = 5
           Top = 438
-          Width = 67
+          Width = 69
           Height = 13
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
@@ -430,7 +434,7 @@ object ExplorerForm: TExplorerForm
         object MoveToLink: TWebLink
           Left = 5
           Top = 317
-          Width = 48
+          Width = 46
           Height = 13
           Cursor = crHandPoint
           Text = 'Move To'
@@ -449,7 +453,7 @@ object ExplorerForm: TExplorerForm
         object ImageEditorLink: TWebLink
           Left = 5
           Top = 253
-          Width = 64
+          Width = 66
           Height = 13
           Cursor = crHandPoint
           Text = 'Image Editor'
@@ -468,7 +472,7 @@ object ExplorerForm: TExplorerForm
         object DesktopLink: TWebLink
           Left = 5
           Top = 486
-          Width = 45
+          Width = 44
           Height = 13
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
@@ -526,7 +530,7 @@ object ExplorerForm: TExplorerForm
         object AddLink: TWebLink
           Left = 5
           Top = 398
-          Width = 58
+          Width = 59
           Height = 13
           Cursor = crHandPoint
           Text = 'Add Object'
@@ -589,7 +593,7 @@ object ExplorerForm: TExplorerForm
       object Label2: TLabel
         Left = 0
         Top = 0
-        Width = 41
+        Width = 42
         Height = 20
         Alignment = taCenter
         Caption = 'Address '
@@ -597,14 +601,14 @@ object ExplorerForm: TExplorerForm
         Layout = tlCenter
       end
       object ToolButton9: TToolButton
-        Left = 41
+        Left = 42
         Top = 0
         Width = 8
         Caption = 'ToolButton9'
         Style = tbsSeparator
       end
       object CbPathEdit: TComboBoxEx
-        Left = 49
+        Left = 50
         Top = 0
         Width = 568
         Height = 22
@@ -621,7 +625,7 @@ object ExplorerForm: TExplorerForm
         OnKeyPress = CbPathEditKeyPress
       end
       object ImButton1: TImButton
-        Left = 617
+        Left = 618
         Top = 0
         Width = 20
         Height = 20
@@ -798,12 +802,12 @@ object ExplorerForm: TExplorerForm
         FontNormal.Charset = DEFAULT_CHARSET
         FontNormal.Color = clWindowText
         FontNormal.Height = -11
-        FontNormal.Name = 'MS Sans Serif'
+        FontNormal.Name = 'Tahoma'
         FontNormal.Style = []
         FontEnter.Charset = DEFAULT_CHARSET
         FontEnter.Color = clWindowText
         FontEnter.Height = -11
-        FontEnter.Name = 'MS Sans Serif'
+        FontEnter.Name = 'Tahoma'
         FontEnter.Style = []
         PixelsBetweenPictureAndText = 10
         FadeDelay = 10

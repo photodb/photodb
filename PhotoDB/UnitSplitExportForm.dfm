@@ -8,7 +8,7 @@ object SplitExportForm: TSplitExportForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
@@ -28,7 +28,6 @@ object SplitExportForm: TSplitExportForm
     Height = 113
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 470
     DesignSize = (
       486
       113)
@@ -89,14 +88,14 @@ object SplitExportForm: TSplitExportForm
     object Label2: TLabel
       Left = 8
       Top = 112
-      Width = 44
+      Width = 43
       Height = 13
       Caption = 'FileName'
     end
     object Label3: TLabel
       Left = 9
       Top = 93
-      Width = 82
+      Width = 84
       Height = 13
       Caption = 'Folders and Files:'
     end
@@ -111,7 +110,6 @@ object SplitExportForm: TSplitExportForm
       TabOrder = 0
       OnDblClick = BtnChooseFileClick
       WatermarkText = 'Select a file to split the database'
-      ExplicitWidth = 379
     end
     object BtnChooseFile: TButton
       Left = 411
@@ -122,7 +120,6 @@ object SplitExportForm: TSplitExportForm
       Caption = '...'
       TabOrder = 1
       OnClick = BtnChooseFileClick
-      ExplicitLeft = 387
     end
     object BtnNew: TButton
       Left = 427
@@ -133,7 +130,6 @@ object SplitExportForm: TSplitExportForm
       Caption = 'New'
       TabOrder = 2
       OnClick = BtnNewClick
-      ExplicitLeft = 403
     end
     object CbDeleteRecords: TCheckBox
       Left = 8
@@ -143,7 +139,6 @@ object SplitExportForm: TSplitExportForm
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Delete this Records after finishing'
       TabOrder = 3
-      ExplicitWidth = 446
     end
   end
   object ListView1: TListView
@@ -170,8 +165,6 @@ object SplitExportForm: TSplitExportForm
     OnKeyDown = ListView1KeyDown
     OnMouseDown = ListView1MouseDown
     OnResize = ListView1Resize
-    ExplicitWidth = 470
-    ExplicitHeight = 220
   end
   object BtnCancel: TButton
     Left = 322
@@ -182,8 +175,6 @@ object SplitExportForm: TSplitExportForm
     Caption = 'Cancel'
     TabOrder = 2
     OnClick = BtnCancelClick
-    ExplicitLeft = 298
-    ExplicitTop = 339
   end
   object BtnOk: TButton
     Left = 403
@@ -194,8 +185,6 @@ object SplitExportForm: TSplitExportForm
     Caption = 'Ok'
     TabOrder = 3
     OnClick = BtnOkClick
-    ExplicitLeft = 379
-    ExplicitTop = 339
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = [dtCopy, dtLink]

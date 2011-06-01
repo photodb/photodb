@@ -8,7 +8,7 @@ object PropertiesForm: TPropertiesForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -35,13 +35,13 @@ object PropertiesForm: TPropertiesForm
   object LabelComment: TLabel
     Left = 120
     Top = 8
-    Width = 47
+    Width = 49
     Height = 13
     Caption = 'Comment:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsUnderline]
     ParentFont = False
   end
@@ -193,13 +193,13 @@ object PropertiesForm: TPropertiesForm
       object LabelKeywords: TLabel
         Left = 3
         Top = 280
-        Width = 52
+        Width = 53
         Height = 13
         Caption = 'KeyWords:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
@@ -212,7 +212,7 @@ object PropertiesForm: TPropertiesForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
@@ -225,33 +225,33 @@ object PropertiesForm: TPropertiesForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object Heightlabel: TLabel
         Left = 3
         Top = 242
-        Width = 28
+        Width = 27
         Height = 13
         Caption = 'Heigh'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object SizeLabel1: TLabel
         Left = 3
         Top = 205
-        Width = 20
+        Width = 19
         Height = 13
         Caption = 'Size'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
@@ -264,20 +264,20 @@ object PropertiesForm: TPropertiesForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object TimeLabel: TLabel
         Left = 3
         Top = 180
-        Width = 23
+        Width = 22
         Height = 13
         Caption = 'Time'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
@@ -290,7 +290,7 @@ object PropertiesForm: TPropertiesForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
@@ -303,46 +303,46 @@ object PropertiesForm: TPropertiesForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object OwnerLabel: TLabel
         Left = 3
         Top = 88
-        Width = 31
+        Width = 32
         Height = 13
         Caption = 'Owner'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object Label4: TLabel
         Left = 3
         Top = 21
-        Width = 43
+        Width = 45
         Height = 13
         Caption = 'Full path:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object LabelName1: TLabel
         Left = 3
         Top = 3
-        Width = 28
+        Width = 27
         Height = 13
         Caption = 'Name'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
@@ -769,7 +769,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 2
         Left = 3
         Top = 74
-        Width = 83
+        Width = 84
         Height = 13
         Caption = 'Avaliable Groups:'
       end
@@ -777,7 +777,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 2
         Left = 171
         Top = 73
-        Width = 74
+        Width = 78
         Height = 13
         Caption = 'Current Groups:'
       end
@@ -917,7 +917,7 @@ object PropertiesForm: TPropertiesForm
       object Label2: TLabel
         Left = 3
         Top = 5
-        Width = 89
+        Width = 91
         Height = 13
         Caption = 'Gistogramm image:'
       end
@@ -940,7 +940,7 @@ object PropertiesForm: TPropertiesForm
       object LbEffectiveRange: TStaticText
         Left = 3
         Top = 325
-        Width = 120
+        Width = 123
         Height = 17
         Anchors = [akLeft, akBottom]
         Caption = 'Effective Range - 0..255'
@@ -956,7 +956,7 @@ object PropertiesForm: TPropertiesForm
       object LbLinks: TLabel
         Left = 3
         Top = 32
-        Width = 74
+        Width = 75
         Height = 13
         Caption = 'Links for Photo:'
       end

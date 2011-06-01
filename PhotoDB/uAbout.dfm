@@ -9,7 +9,7 @@ object AboutForm: TAboutForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -405,12 +405,12 @@ object AboutForm: TAboutForm
     FontNormal.Charset = DEFAULT_CHARSET
     FontNormal.Color = clWindowText
     FontNormal.Height = -11
-    FontNormal.Name = 'MS Sans Serif'
+    FontNormal.Name = 'Tahoma'
     FontNormal.Style = []
     FontEnter.Charset = DEFAULT_CHARSET
     FontEnter.Color = clWindowText
     FontEnter.Height = -11
-    FontEnter.Name = 'MS Sans Serif'
+    FontEnter.Name = 'Tahoma'
     FontEnter.Style = []
     PixelsBetweenPictureAndText = 10
     FadeDelay = 10
@@ -428,7 +428,7 @@ object AboutForm: TAboutForm
     Left = 63
     Top = 390
     Width = 185
-    Height = 17
+    Height = 21
     Caption = 'Open an activation form'
     TabOrder = 1
     OnClick = BtShowActivationFormClick
@@ -441,7 +441,7 @@ object AboutForm: TAboutForm
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWhite
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Lines.Strings = (
       'MemoInfo')
@@ -459,7 +459,7 @@ object AboutForm: TAboutForm
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWhite
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Lines.Strings = (
       'MemoInfo')
@@ -480,7 +480,7 @@ object AboutForm: TAboutForm
   object LnkGoToWebSite: TWebLink
     Left = 505
     Top = 403
-    Width = 100
+    Width = 102
     Height = 13
     Cursor = crHandPoint
     Color = clWhite

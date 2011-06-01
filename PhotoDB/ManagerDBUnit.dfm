@@ -8,7 +8,7 @@ object ManagerDB: TManagerDB
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poDesigned
@@ -34,14 +34,14 @@ object ManagerDB: TManagerDB
       object Label7: TLabel
         Left = 656
         Top = 4
-        Width = 79
+        Width = 77
         Height = 13
         Caption = 'GoToRecord ID:'
       end
       object Label9: TLabel
         Left = 360
         Top = 8
-        Width = 6
+        Width = 8
         Height = 13
         Caption = '='
       end
@@ -55,7 +55,7 @@ object ManagerDB: TManagerDB
       object Label11: TLabel
         Left = 656
         Top = 45
-        Width = 47
+        Width = 44
         Height = 13
         Caption = 'BackUps:'
       end
@@ -214,12 +214,6 @@ object ManagerDB: TManagerDB
         Height = 17
         Caption = 'Set'
         Checked = True
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
         TabOrder = 10
         TabStop = True
         OnClick = RbSQLSetClick
@@ -230,12 +224,6 @@ object ManagerDB: TManagerDB
         Width = 237
         Height = 17
         Caption = 'Delete'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
         TabOrder = 11
         OnClick = RbSQLSetClick
       end
@@ -262,7 +250,7 @@ object ManagerDB: TManagerDB
       object PackTabelLink: TWebLink
         Left = 8
         Top = 8
-        Width = 60
+        Width = 56
         Height = 13
         Cursor = crHandPoint
         Text = 'Pack Table'
@@ -281,7 +269,7 @@ object ManagerDB: TManagerDB
       object ExportTableLink: TWebLink
         Left = 8
         Top = 28
-        Width = 65
+        Width = 66
         Height = 13
         Cursor = crHandPoint
         Text = 'Export Table'
@@ -300,7 +288,7 @@ object ManagerDB: TManagerDB
       object ImportTableLink: TWebLink
         Left = 8
         Top = 48
-        Width = 64
+        Width = 66
         Height = 13
         Cursor = crHandPoint
         Text = 'Import Table'
@@ -338,7 +326,7 @@ object ManagerDB: TManagerDB
       object ScanforBadLinksLink: TWebLink
         Left = 8
         Top = 88
-        Width = 95
+        Width = 92
         Height = 13
         Cursor = crHandPoint
         Text = 'Scan for Bad Links'
@@ -357,7 +345,7 @@ object ManagerDB: TManagerDB
       object BackUpDBLink: TWebLink
         Left = 8
         Top = 108
-        Width = 62
+        Width = 56
         Height = 13
         Cursor = crHandPoint
         Text = 'BackUp DB'
@@ -454,7 +442,7 @@ object ManagerDB: TManagerDB
       object ChangePathLink: TWebLink
         Left = 8
         Top = 188
-        Width = 188
+        Width = 190
         Height = 13
         Cursor = crHandPoint
         Text = 'Change Path in DB (if files was moved)'

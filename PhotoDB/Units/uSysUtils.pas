@@ -38,15 +38,18 @@ begin
   VerInfoSize := GetFileVersionInfoSize(PChar(sFileName), Dummy);
   GetMem(VerInfo, VerInfoSize);
   GetFileVersionInfo(PChar(sFileName), 0, VerInfoSize, VerInfo);
-  VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
-  with VerValue^ do
+  if VerInfo <> nil then
   begin
-    Result.Version := dwFileVersionMS shr 16;
-    Result.Major := dwFileVersionMS and $FFFF;
-    Result.Minor := dwFileVersionLS shr 16;
-    Result.Build := dwFileVersionLS and $FFFF;
+    VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
+    with VerValue^ do
+    begin
+      Result.Version := dwFileVersionMS shr 16;
+      Result.Major := dwFileVersionMS and $FFFF;
+      Result.Minor := dwFileVersionLS shr 16;
+      Result.Build := dwFileVersionLS and $FFFF;
+    end;
+    FreeMem(VerInfo, VerInfoSize);
   end;
-  FreeMem(VerInfo, VerInfoSize);
 end;
 
 

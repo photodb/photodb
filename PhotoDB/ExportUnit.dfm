@@ -10,7 +10,7 @@ object ExportForm: TExportForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -28,14 +28,14 @@ object ExportForm: TExportForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
   end
   object Label2: TLabel
     Left = 8
     Top = 144
-    Width = 56
+    Width = 59
     Height = 13
     Caption = '[no records]'
   end
@@ -81,7 +81,7 @@ object ExportForm: TExportForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Progress... (&%%)'
     BorderColor = 38400

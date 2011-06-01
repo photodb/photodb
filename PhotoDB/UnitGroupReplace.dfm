@@ -9,7 +9,7 @@ object FormGroupReplace: TFormGroupReplace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -27,7 +27,6 @@ object FormGroupReplace: TFormGroupReplace
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 257
     object CbExistedGroups: TComboBox
       Left = 180
       Top = 32
@@ -98,11 +97,10 @@ object FormGroupReplace: TFormGroupReplace
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 257
     object Label1: TLabel
       Left = 64
       Top = 4
-      Width = 32
+      Width = 33
       Height = 13
       Caption = 'Group:'
     end
@@ -120,7 +118,7 @@ object FormGroupReplace: TFormGroupReplace
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -19
-      Font.Name = 'MS Sans Serif'
+      Font.Name = 'Tahoma'
       Font.Style = []
       ParentColor = True
       ParentFont = False
@@ -138,7 +136,6 @@ object FormGroupReplace: TFormGroupReplace
     BevelOuter = bvNone
     TabOrder = 2
     Visible = False
-    ExplicitHeight = 51
     DesignSize = (
       207
       26)
@@ -178,7 +175,6 @@ object FormGroupReplace: TFormGroupReplace
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitWidth = 257
     DesignSize = (
       288
       89)

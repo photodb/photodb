@@ -2,9 +2,6 @@ unit uInstallTypes;
 
 interface
 
-uses
-  Windows, Classes, SysUtils;
-
 const
   MaxFileNameLength = 255;
   ReadBufferSize = 16 * 1024;

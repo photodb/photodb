@@ -5,7 +5,11 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Classes, uMemory, uConstants, uTranslate;
+  Classes, uMemory,
+{$IFNDEF EXTERNAL}
+  uTranslate,
+{$ENDIF}
+  uConstants;
 
 type
   //OBJECTS
@@ -96,6 +100,13 @@ implementation
 
 var
   FCurrentInstall : TInstall = nil;
+
+{$IFDEF EXTERNAL}
+function TA(StringToTranslate, Scope: string): string;
+begin
+  Result := StringToTranslate;
+end;
+{$ENDIF}
 
 function CurrentInstall : TInstall;
 begin

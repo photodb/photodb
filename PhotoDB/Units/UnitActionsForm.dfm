@@ -9,7 +9,7 @@ object ActionsForm: TActionsForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
@@ -39,8 +39,8 @@ object ActionsForm: TActionsForm
     object SaveToFileLink: TWebLink
       Left = 8
       Top = 8
-      Width = 81
-      Height = 16
+      Width = 65
+      Height = 13
       Cursor = crHandPoint
       Text = 'Save To File'
       OnClick = SaveToFileLinkClick
@@ -58,8 +58,8 @@ object ActionsForm: TActionsForm
     object LoadFromFileLink: TWebLink
       Left = 8
       Top = 24
-      Width = 90
-      Height = 16
+      Width = 74
+      Height = 13
       Cursor = crHandPoint
       Text = 'Load From File'
       OnClick = LoadFromFileLinkClick
@@ -77,8 +77,8 @@ object ActionsForm: TActionsForm
     object CloseLink: TWebLink
       Left = 8
       Top = 40
-      Width = 47
-      Height = 16
+      Width = 31
+      Height = 13
       Cursor = crHandPoint
       Text = 'Close'
       OnClick = CloseLinkClick

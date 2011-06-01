@@ -12,7 +12,7 @@ object FormChangeDBPath: TFormChangeDBPath
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
@@ -193,7 +193,7 @@ object FormChangeDBPath: TFormChangeDBPath
   object LbNewPath: TLabel
     Left = 8
     Top = 136
-    Width = 76
+    Width = 77
     Height = 13
     Caption = 'Path to change:'
   end
@@ -246,7 +246,7 @@ object FormChangeDBPath: TFormChangeDBPath
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Progress... (&%%)'
     BorderColor = 38400

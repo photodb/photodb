@@ -9,7 +9,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
@@ -62,8 +62,8 @@ object BigImagesSizeForm: TBigImagesSizeForm
     object LnkClose: TWebLink
       Left = 48
       Top = 151
-      Width = 47
-      Height = 16
+      Width = 31
+      Height = 13
       Cursor = crHandPoint
       Text = 'Close'
       OnClick = LnkCloseClick
@@ -76,6 +76,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
       TopIconIncrement = 0
       ImageCanRegenerate = True
       UseSpecIconSize = True
+      HightliteImage = False
     end
   end
   object TimerActivate: TTimer

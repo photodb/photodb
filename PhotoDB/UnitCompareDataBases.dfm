@@ -10,7 +10,7 @@ object ImportDataBaseForm: TImportDataBaseForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -24,21 +24,21 @@ object ImportDataBaseForm: TImportDataBaseForm
   object LbDatabase: TLabel
     Left = 8
     Top = 8
-    Width = 95
+    Width = 96
     Height = 13
     Caption = 'Additianal Database'
   end
   object Label5: TLabel
     Left = 248
     Top = 51
-    Width = 94
+    Width = 98
     Height = 13
     Caption = 'List of ignore words:'
   end
   object Label4: TLabel
     Left = 248
     Top = 8
-    Width = 46
+    Width = 48
     Height = 13
     Caption = 'By Author'
   end

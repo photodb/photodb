@@ -10,7 +10,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -87,14 +87,14 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Tag = 2
     Left = 5
     Top = 56
-    Width = 47
+    Width = 49
     Height = 13
     Caption = 'Comment:'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentColor = False
     ParentFont = False
@@ -104,14 +104,14 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Tag = 2
     Left = 4
     Top = 230
-    Width = 65
+    Width = 67
     Height = 13
     Caption = 'Date created:'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentColor = False
     ParentFont = False
@@ -121,14 +121,14 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Tag = 2
     Left = 4
     Top = 262
-    Width = 47
+    Width = 52
     Height = 13
     Caption = 'Attributes:'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentColor = False
     ParentFont = False
@@ -138,13 +138,13 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Tag = 12012
     Left = 64
     Top = 8
-    Width = 49
-    Height = 21
+    Width = 52
+    Height = 23
     Caption = 'Group'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -19
-    Font.Name = 'Times New Roman'
+    Font.Name = 'Tahoma'
     Font.Style = [fsUnderline]
     ParentFont = False
   end
@@ -152,14 +152,14 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Tag = 2
     Left = 5
     Top = 104
-    Width = 52
+    Width = 53
     Height = 13
     Caption = 'KeyWords:'
     Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentColor = False
     ParentFont = False
@@ -169,7 +169,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Tag = 2
     Left = 4
     Top = 164
-    Width = 77
+    Width = 78
     Height = 13
     Caption = 'Related Groups:'
   end
@@ -184,14 +184,13 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -24
-    Font.Name = 'Times New Roman'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentColor = True
     ParentFont = False
     ReadOnly = True
     TabOrder = 0
     Text = '<GroupName>'
-    ExplicitWidth = 201
   end
   object CommentMemo: TMemo
     Tag = 1
@@ -206,7 +205,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ParentColor = True
     ReadOnly = True
     TabOrder = 1
-    ExplicitWidth = 257
   end
   object BtnOk: TButton
     Left = 193
@@ -217,7 +215,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Caption = 'Ok'
     TabOrder = 7
     OnClick = BtnOkClick
-    ExplicitLeft = 187
   end
   object DateEdit: TEdit
     Tag = 1
@@ -231,7 +228,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ReadOnly = True
     TabOrder = 5
     Text = '<Data>'
-    ExplicitWidth = 257
   end
   object AccessEdit: TEdit
     Tag = 1
@@ -245,7 +241,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ReadOnly = True
     TabOrder = 6
     Text = '<Data>'
-    ExplicitWidth = 257
   end
   object KeyWordsMemo: TMemo
     Tag = 1
@@ -260,7 +255,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ParentColor = True
     ReadOnly = True
     TabOrder = 2
-    ExplicitWidth = 257
   end
   object CbAddKeywords: TCheckBox
     Left = 4
@@ -271,7 +265,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Caption = 'Auto Added'
     Enabled = False
     TabOrder = 3
-    ExplicitWidth = 258
   end
   object CbInclude: TCheckBox
     Left = 3
@@ -282,7 +275,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Caption = 'Include In Quick Lists'
     Enabled = False
     TabOrder = 4
-    ExplicitWidth = 256
   end
   object WllGroups: TWebLinkList
     Left = 4
@@ -300,7 +292,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     LineHeight = 0
     PaddingTop = 2
     PaddingLeft = 2
-    ExplicitWidth = 255
   end
   object PopupMenu1: TPopupMenu
     Left = 120

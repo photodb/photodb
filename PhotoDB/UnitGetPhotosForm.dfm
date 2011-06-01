@@ -10,7 +10,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
@@ -165,7 +165,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object LbDate: TLabel
     Left = 56
     Top = 8
-    Width = 62
+    Width = 63
     Height = 13
     Caption = 'Photos Date:'
   end
@@ -179,35 +179,35 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object Label3: TLabel
     Left = 8
     Top = 96
-    Width = 91
+    Width = 97
     Height = 13
     Caption = 'Comment for folder:'
   end
   object Label4: TLabel
     Left = 8
     Top = 176
-    Width = 61
+    Width = 63
     Height = 13
     Caption = 'Folder name:'
   end
   object Label5: TLabel
     Left = 8
     Top = 232
-    Width = 32
+    Width = 34
     Height = 13
     Caption = 'Folder:'
   end
   object Label6: TLabel
     Left = 8
     Top = 312
-    Width = 39
+    Width = 40
     Height = 13
     Caption = 'Method:'
   end
   object LbListComment: TLabel
     Left = 256
     Top = 8
-    Width = 95
+    Width = 98
     Height = 13
     Caption = 'Photos series dates:'
     Visible = False
@@ -403,7 +403,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Progress... (&%%)'
     BorderColor = 38400

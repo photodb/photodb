@@ -12,7 +12,7 @@ object FormManageGroups: TFormManageGroups
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   Menu = MmMain
@@ -71,7 +71,7 @@ object FormManageGroups: TFormManageGroups
       Height = 38
       AutoSize = True
       ButtonHeight = 38
-      ButtonWidth = 79
+      ButtonWidth = 80
       Caption = 'ToolBar1'
       Images = ToolBarImageList
       List = True
@@ -87,7 +87,7 @@ object FormManageGroups: TFormManageGroups
         OnClick = TbExitClick
       end
       object ToolButton4: TToolButton
-        Left = 64
+        Left = 65
         Top = 0
         Width = 8
         Caption = 'ToolButton4'
@@ -95,7 +95,7 @@ object FormManageGroups: TFormManageGroups
         Style = tbsSeparator
       end
       object TbAdd: TToolButton
-        Left = 72
+        Left = 73
         Top = 0
         AutoSize = True
         Caption = 'Add'
@@ -103,7 +103,7 @@ object FormManageGroups: TFormManageGroups
         OnClick = MenuActionAddGroup
       end
       object TbEdit: TToolButton
-        Left = 138
+        Left = 139
         Top = 0
         AutoSize = True
         Caption = 'Edit'
@@ -111,7 +111,7 @@ object FormManageGroups: TFormManageGroups
         OnClick = TbEditClick
       end
       object ToolButton6: TToolButton
-        Left = 203
+        Left = 204
         Top = 0
         Width = 8
         Caption = 'ToolButton6'
@@ -119,7 +119,7 @@ object FormManageGroups: TFormManageGroups
         Style = tbsSeparator
       end
       object TbDelete: TToolButton
-        Left = 211
+        Left = 212
         Top = 0
         AutoSize = True
         Caption = 'Delete'
@@ -127,7 +127,7 @@ object FormManageGroups: TFormManageGroups
         OnClick = TbDeleteClick
       end
       object ToolButton7: TToolButton
-        Left = 289
+        Left = 290
         Top = 0
         Width = 8
         Caption = 'ToolButton7'
@@ -135,7 +135,7 @@ object FormManageGroups: TFormManageGroups
         Style = tbsSeparator
       end
       object TbOptions: TToolButton
-        Left = 297
+        Left = 298
         Top = 0
         AutoSize = True
         Caption = 'Options'

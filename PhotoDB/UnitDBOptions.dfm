@@ -10,7 +10,7 @@ object FormDBOptions: TFormDBOptions
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -21,42 +21,42 @@ object FormDBOptions: TFormDBOptions
   object LbCollectionName: TLabel
     Left = 8
     Top = 8
-    Width = 49
+    Width = 47
     Height = 13
     Caption = 'DB Name:'
   end
   object LbDescription: TLabel
     Left = 8
     Top = 56
-    Width = 71
+    Width = 69
     Height = 13
     Caption = 'DB Description'
   end
   object Label3: TLabel
     Left = 8
     Top = 152
-    Width = 98
+    Width = 95
     Height = 13
     Caption = 'ThSizePanelPreview'
   end
   object Label4: TLabel
     Left = 8
     Top = 200
-    Width = 52
+    Width = 50
     Height = 13
     Caption = 'ThHintSize'
   end
   object Label5: TLabel
     Left = 8
     Top = 248
-    Width = 88
+    Width = 85
     Height = 13
     Caption = 'DB Thumbnail size'
   end
   object Label6: TLabel
     Left = 184
     Top = 248
-    Width = 111
+    Width = 113
     Height = 13
     Caption = 'Jpeg Thumbnail quality:'
   end
@@ -150,7 +150,7 @@ object FormDBOptions: TFormDBOptions
   object WlChangeImageQuality: TWebLink
     Left = 8
     Top = 288
-    Width = 246
+    Width = 248
     Height = 13
     Cursor = crHandPoint
     Color = clBtnFace
@@ -212,7 +212,7 @@ object FormDBOptions: TFormDBOptions
     object Label8: TLabel
       Left = 8
       Top = 24
-      Width = 64
+      Width = 66
       Height = 13
       Caption = 'Icon preview:'
     end

@@ -10,7 +10,7 @@ object FormCDExport: TFormCDExport
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -62,7 +62,7 @@ object FormCDExport: TFormCDExport
     object LabelExportDirectory: TLabel
       Left = 8
       Top = 8
-      Width = 76
+      Width = 82
       Height = 13
       Caption = 'Export directory:'
     end
@@ -250,21 +250,21 @@ object FormCDExport: TFormCDExport
     object LabelCDLabel: TLabel
       Left = 8
       Top = 96
-      Width = 99
+      Width = 102
       Height = 13
       Caption = 'Create CD with label:'
     end
     object LabelPath: TLabel
       Left = 8
       Top = 140
-      Width = 25
+      Width = 26
       Height = 13
       Caption = 'Path:'
     end
     object LabelExportSize: TLabel
       Left = 208
       Top = 96
-      Width = 54
+      Width = 57
       Height = 13
       Caption = 'Export size:'
     end

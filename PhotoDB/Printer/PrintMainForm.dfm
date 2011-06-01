@@ -8,7 +8,7 @@ object PrintForm: TPrintForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -38,7 +38,7 @@ object PrintForm: TPrintForm
       object Label1: TLabel
         Left = 8
         Top = 72
-        Width = 64
+        Width = 68
         Height = 13
         Caption = 'Print Formats:'
       end
@@ -72,14 +72,14 @@ object PrintForm: TPrintForm
       object Label4: TLabel
         Left = 54
         Top = 57
-        Width = 7
+        Width = 6
         Height = 13
         Caption = 'X'
       end
       object Label3: TLabel
         Left = 8
         Top = 36
-        Width = 61
+        Width = 62
         Height = 13
         Caption = 'Custom Size:'
       end
@@ -141,8 +141,8 @@ object PrintForm: TPrintForm
       object WlGeneratePreview: TWebLink
         Left = 8
         Top = 80
-        Width = 80
-        Height = 16
+        Width = 63
+        Height = 13
         Cursor = crHandPoint
         Text = 'Make Image'
         ImageIndex = 0
@@ -166,7 +166,7 @@ object PrintForm: TPrintForm
       EditManager.Font.Charset = DEFAULT_CHARSET
       EditManager.Font.Color = clWindowText
       EditManager.Font.Height = -11
-      EditManager.Font.Name = 'MS Sans Serif'
+      EditManager.Font.Name = 'Tahoma'
       EditManager.Font.Style = []
       Header.Columns.Items = {
         0600000001000000110000005445617379436F6C756D6E53746F726564FFFECE
@@ -245,7 +245,7 @@ object PrintForm: TPrintForm
     object Label5: TLabel
       Left = 8
       Top = 304
-      Width = 72
+      Width = 78
       Height = 13
       Caption = 'Current Format:'
     end
@@ -389,7 +389,7 @@ object PrintForm: TPrintForm
     object FullSizeLink: TWebLink
       Left = 8
       Top = 160
-      Width = 60
+      Width = 59
       Height = 16
       Cursor = crHandPoint
       Enabled = False
@@ -446,7 +446,7 @@ object PrintForm: TPrintForm
     object FitToSizeLink: TWebLink
       Left = 6
       Top = 182
-      Width = 64
+      Width = 66
       Height = 16
       Cursor = crHandPoint
       Enabled = False

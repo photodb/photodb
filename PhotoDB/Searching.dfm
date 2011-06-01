@@ -11,7 +11,7 @@ object SearchForm: TSearchForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -207,13 +207,13 @@ object SearchForm: TSearchForm
       object Label2: TLabel
         Left = 8
         Top = 0
-        Width = 24
+        Width = 26
         Height = 13
         Caption = 'Ident'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = [fsUnderline]
         ParentFont = False
       end
@@ -221,26 +221,26 @@ object SearchForm: TSearchForm
         Tag = 2
         Left = 8
         Top = 16
-        Width = 34
+        Width = 35
         Height = 13
         Caption = 'Rating:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = [fsUnderline]
         ParentFont = False
       end
       object Label4: TLabel
         Left = 8
         Top = 145
-        Width = 20
+        Width = 19
         Height = 13
         Caption = 'Size'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = [fsUnderline]
         ParentFont = False
       end
@@ -248,13 +248,13 @@ object SearchForm: TSearchForm
         Tag = 2
         Left = 8
         Top = 160
-        Width = 52
+        Width = 54
         Height = 13
         Caption = 'Comments:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = [fsUnderline]
         ParentFont = False
       end
@@ -262,13 +262,13 @@ object SearchForm: TSearchForm
         Tag = 2
         Left = 8
         Top = 248
-        Width = 54
-        Height = 14
+        Width = 53
+        Height = 13
         Caption = 'KeyWords:'
         Font.Charset = EASTEUROPE_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = [fsUnderline]
         ParentFont = False
       end
@@ -352,7 +352,7 @@ object SearchForm: TSearchForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentColor = True
         ParentFont = False
@@ -385,7 +385,7 @@ object SearchForm: TSearchForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentColor = True
         ParentCtl3D = False
@@ -436,7 +436,7 @@ object SearchForm: TSearchForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         ParentColor = True
         ParentCtl3D = False
@@ -589,13 +589,13 @@ object SearchForm: TSearchForm
       object Label1: TLabel
         Left = 10
         Top = 5
-        Width = 54
+        Width = 56
         Height = 13
         Caption = 'Search text'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = [fsUnderline]
         ParentFont = False
         PopupMenu = InsertSpesialQueryPopupMenu
@@ -789,7 +789,7 @@ object SearchForm: TSearchForm
       object SortLink: TWebLink
         Left = 8
         Top = 138
-        Width = 52
+        Width = 54
         Height = 13
         Cursor = crHandPoint
         PopupMenu = SortingPopupMenu
@@ -887,7 +887,7 @@ object SearchForm: TSearchForm
       object WlStartStop: TWebLink
         Left = 8
         Top = 53
-        Width = 111
+        Width = 114
         Height = 13
         Cursor = crHandPoint
         Color = clBtnFace

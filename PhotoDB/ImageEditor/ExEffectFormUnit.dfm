@@ -10,7 +10,7 @@ object ExEffectForm: TExEffectForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -83,7 +83,7 @@ object ExEffectForm: TExEffectForm
     object Label1: TLabel
       Left = 58
       Top = 146
-      Width = 26
+      Width = 29
       Height = 13
       Caption = '100%'
     end
@@ -93,12 +93,6 @@ object ExEffectForm: TExEffectForm
       Width = 270
       Height = 233
       Caption = 'Effect Name'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 0
     end
     object CbPreview: TCheckBox

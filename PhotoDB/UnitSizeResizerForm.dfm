@@ -10,7 +10,7 @@ object FormSizeResizer: TFormSizeResizer
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -90,7 +90,7 @@ object FormSizeResizer: TFormSizeResizer
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clGrayText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     ReadOnly = True
@@ -143,13 +143,11 @@ object FormSizeResizer: TFormSizeResizer
     object LbSizeSeparator: TLabel
       Left = 329
       Top = 91
-      Width = 7
+      Width = 6
       Height = 13
       Anchors = [akRight, akBottom]
       Caption = 'X'
       Enabled = False
-      ExplicitLeft = 362
-      ExplicitTop = 126
     end
     object CbWatermark: TCheckBox
       Left = 8

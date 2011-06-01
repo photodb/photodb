@@ -10,7 +10,7 @@ object FormImportingImages: TFormImportingImages
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -322,8 +322,6 @@ object FormImportingImages: TFormImportingImages
     Caption = 'Next'
     TabOrder = 0
     OnClick = BtnNextClick
-    ExplicitLeft = 315
-    ExplicitTop = 287
   end
   object BtnPrev: TButton
     Left = 263
@@ -335,8 +333,6 @@ object FormImportingImages: TFormImportingImages
     Enabled = False
     TabOrder = 1
     OnClick = BtnPrevClick
-    ExplicitLeft = 234
-    ExplicitTop = 287
   end
   object BtnCancel: TButton
     Left = 182
@@ -347,8 +343,6 @@ object FormImportingImages: TFormImportingImages
     Caption = 'Cancel'
     TabOrder = 2
     OnClick = BtnCancelClick
-    ExplicitLeft = 153
-    ExplicitTop = 287
   end
   object BtnPause: TButton
     Left = 263
@@ -360,8 +354,6 @@ object FormImportingImages: TFormImportingImages
     TabOrder = 3
     Visible = False
     OnClick = BtnPauseClick
-    ExplicitLeft = 234
-    ExplicitTop = 287
   end
   object BtnFinish: TButton
     Left = 344
@@ -373,8 +365,6 @@ object FormImportingImages: TFormImportingImages
     TabOrder = 4
     Visible = False
     OnClick = BtnFinishClick
-    ExplicitLeft = 315
-    ExplicitTop = 287
   end
   object LsWorking: TLoadingSign
     Left = 151
@@ -387,6 +377,5 @@ object FormImportingImages: TFormImportingImages
     Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
-    ExplicitLeft = 122
   end
 end

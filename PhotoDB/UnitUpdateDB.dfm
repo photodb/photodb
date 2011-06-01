@@ -14,7 +14,7 @@ object UpdateDBForm: TUpdateDBForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
@@ -229,7 +229,7 @@ object UpdateDBForm: TUpdateDBForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     Lines.Strings = (
       'Processing FileName:')
@@ -265,7 +265,7 @@ object UpdateDBForm: TUpdateDBForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Time remaining - 1 minute (&%%)'
     BorderColor = 38400
@@ -278,7 +278,7 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 8
     Top = 112
-    Width = 63
+    Width = 64
     Height = 13
     Cursor = crHandPoint
     Enabled = False
@@ -301,7 +301,7 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 7
     Top = 131
-    Width = 63
+    Width = 64
     Height = 13
     Cursor = crHandPoint
     Enabled = False
@@ -324,7 +324,7 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 304
     Top = 176
-    Width = 73
+    Width = 72
     Height = 13
     Cursor = crHandPoint
     Color = clWhite
@@ -405,7 +405,7 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 112
     Top = 109
-    Width = 126
+    Width = 125
     Height = 13
     Cursor = crHandPoint
     Color = clWhite
@@ -427,7 +427,7 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 112
     Top = 132
-    Width = 109
+    Width = 111
     Height = 13
     Cursor = crHandPoint
     Color = clWhite
@@ -449,7 +449,7 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 8
     Top = 176
-    Width = 41
+    Width = 42
     Height = 13
     Cursor = crHandPoint
     Color = clWhite

@@ -10,7 +10,7 @@ object FormJpegOptions: TFormJpegOptions
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -161,7 +161,7 @@ object FormJpegOptions: TFormJpegOptions
     object lbCompressionRate: TLabel
       Left = 8
       Top = 16
-      Width = 119
+      Width = 122
       Height = 13
       Caption = 'JPEG Compression (75%)'
     end

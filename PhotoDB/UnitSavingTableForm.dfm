@@ -9,7 +9,7 @@ object SavingTableForm: TSavingTableForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -20,7 +20,7 @@ object SavingTableForm: TSavingTableForm
   object Label1: TLabel
     Left = 8
     Top = 5
-    Width = 85
+    Width = 89
     Height = 13
     Caption = 'Saving progress...'
   end
@@ -33,7 +33,7 @@ object SavingTableForm: TSavingTableForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Progress... (&%%)'
     BorderColor = 38400

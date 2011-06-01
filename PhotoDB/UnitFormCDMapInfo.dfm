@@ -10,7 +10,7 @@ object FormCDMapInfo: TFormCDMapInfo
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
@@ -121,7 +121,7 @@ object FormCDMapInfo: TFormCDMapInfo
   object LabelDisk: TLabel
     Left = 8
     Top = 96
-    Width = 24
+    Width = 23
     Height = 13
     Caption = 'Disk:'
   end
@@ -143,7 +143,7 @@ object FormCDMapInfo: TFormCDMapInfo
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     ReadOnly = True

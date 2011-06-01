@@ -10,7 +10,7 @@ object OptionsForm: TOptionsForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   PrintScale = poNone
@@ -54,6 +54,10 @@ object OptionsForm: TOptionsForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -98,7 +102,7 @@ object OptionsForm: TOptionsForm
       object LbShellExtensions: TStaticText
         Left = 3
         Top = 11
-        Width = 84
+        Width = 85
         Height = 17
         Caption = 'Shell Extensions:'
         TabOrder = 0
@@ -152,14 +156,14 @@ object OptionsForm: TOptionsForm
       object WlDefaultJPEGOptions: TWebLink
         Left = 3
         Top = 391
-        Width = 146
+        Width = 147
         Height = 13
         Cursor = crHandPoint
         Anchors = [akLeft, akBottom]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlue
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'Tahoma'
         Font.Style = []
         Color = clBtnFace
         ParentColor = False
@@ -180,6 +184,10 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -193,7 +201,7 @@ object OptionsForm: TOptionsForm
       object LbPlacesList: TLabel
         Left = 3
         Top = 136
-        Width = 97
+        Width = 98
         Height = 13
         Caption = 'User defined places:'
       end
@@ -382,6 +390,10 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -472,13 +484,17 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         443
         413)
       object Label23: TLabel
         Left = 3
         Top = 278
-        Width = 93
+        Width = 91
         Height = 13
         Caption = 'User Submenu icon'
       end
@@ -492,7 +508,7 @@ object OptionsForm: TOptionsForm
       object Label24: TLabel
         Left = 3
         Top = 321
-        Width = 41
+        Width = 42
         Height = 13
         Caption = 'Preview:'
       end
@@ -512,21 +528,21 @@ object OptionsForm: TOptionsForm
       object Label25: TLabel
         Left = 135
         Top = 87
-        Width = 38
+        Width = 39
         Height = 13
         Caption = 'Params:'
       end
       object Label18: TLabel
         Left = 135
         Top = 47
-        Width = 72
+        Width = 74
         Height = 13
         Caption = 'Executable file:'
       end
       object Label20: TLabel
         Left = 135
         Top = 7
-        Width = 39
+        Width = 41
         Height = 13
         Caption = 'Caption:'
       end
@@ -727,6 +743,10 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -748,7 +768,7 @@ object OptionsForm: TOptionsForm
         object BlBackupInterval: TLabel
           Left = 8
           Top = 19
-          Width = 127
+          Width = 128
           Height = 13
           Caption = 'Create backUp copy every'
         end
@@ -756,7 +776,7 @@ object OptionsForm: TOptionsForm
           Left = 7
           Top = 38
           Width = 121
-          Height = 22
+          Height = 21
           MaxValue = 100
           MinValue = 0
           TabOrder = 0
@@ -1099,7 +1119,7 @@ object OptionsForm: TOptionsForm
         object LbDefaultPasswordMethod: TLabel
           Left = 8
           Top = 116
-          Width = 125
+          Width = 127
           Height = 13
           Caption = 'Default Password Method:'
         end
@@ -1162,6 +1182,10 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -1284,7 +1308,7 @@ object OptionsForm: TOptionsForm
         Left = 126
         Top = 271
         Width = 41
-        Height = 22
+        Height = 21
         MaxValue = 10000
         MinValue = 1
         TabOrder = 12
@@ -1294,7 +1318,7 @@ object OptionsForm: TOptionsForm
         Left = 11
         Top = 271
         Width = 41
-        Height = 22
+        Height = 21
         MaxValue = 10000
         MinValue = 1
         TabOrder = 11

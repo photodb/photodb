@@ -10,7 +10,7 @@ object ImportProgressForm: TImportProgressForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -25,13 +25,13 @@ object ImportProgressForm: TImportProgressForm
   object Label13: TLabel
     Left = 8
     Top = 43
-    Width = 86
+    Width = 85
     Height = 13
     Caption = 'Current Action:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
   end
@@ -49,46 +49,46 @@ object ImportProgressForm: TImportProgressForm
   object Label14: TLabel
     Left = 8
     Top = 8
-    Width = 41
+    Width = 40
     Height = 13
     Caption = 'Status:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
   end
   object StatusLabel: TLabel
     Left = 8
     Top = 24
-    Width = 42
+    Width = 47
     Height = 13
     Caption = '<Status>'
   end
   object Label1: TLabel
     Left = 168
     Top = 8
-    Width = 92
+    Width = 88
     Height = 13
     Caption = 'Records Added:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
   end
   object Label2: TLabel
     Left = 168
     Top = 48
-    Width = 104
+    Width = 100
     Height = 13
     Caption = 'Records Updated:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
   end
@@ -103,7 +103,7 @@ object ImportProgressForm: TImportProgressForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = 'Progress... (&%%)'
     BorderColor = 38400
@@ -111,7 +111,6 @@ object ImportProgressForm: TImportProgressForm
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
-    ExplicitTop = 100
   end
   object BtnStop: TButton
     Left = 271
@@ -122,7 +121,6 @@ object ImportProgressForm: TImportProgressForm
     Caption = 'Stop!'
     TabOrder = 1
     OnClick = BtnStopClick
-    ExplicitTop = 124
   end
   object BtnPause: TButton
     Left = 191
@@ -133,7 +131,6 @@ object ImportProgressForm: TImportProgressForm
     Caption = 'Pause'
     TabOrder = 2
     OnClick = BtnPauseClick
-    ExplicitTop = 124
   end
   object PbItemsAdded: TDmProgress
     Left = 168
@@ -146,7 +143,7 @@ object ImportProgressForm: TImportProgressForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = '&%% (Added)'
     BorderColor = 38400
@@ -154,7 +151,6 @@ object ImportProgressForm: TImportProgressForm
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
-    ExplicitWidth = 129
   end
   object PbItemsUpdated: TDmProgress
     Left = 168
@@ -167,7 +163,7 @@ object ImportProgressForm: TImportProgressForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
     Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Name = 'Tahoma'
     Font.Style = []
     Text = '&%% (Updated)'
     BorderColor = 38400
@@ -175,6 +171,5 @@ object ImportProgressForm: TImportProgressForm
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
-    ExplicitWidth = 129
   end
 end

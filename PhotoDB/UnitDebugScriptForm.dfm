@@ -1,14 +1,14 @@
 object DebugScriptForm: TDebugScriptForm
   Left = 258
   Top = 273
-  Width = 635
-  Height = 490
   Caption = 'Debug Scripts'
+  ClientHeight = 452
+  ClientWidth = 619
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
@@ -20,13 +20,14 @@ object DebugScriptForm: TDebugScriptForm
   object Splitter1: TSplitter
     Left = 401
     Top = 41
-    Height = 413
+    Height = 411
+    ExplicitHeight = 413
   end
   object ListBox1: TListBox
     Left = 0
     Top = 41
     Width = 401
-    Height = 413
+    Height = 411
     Style = lbOwnerDrawVariable
     Align = alLeft
     ItemHeight = 13
@@ -72,13 +73,13 @@ object DebugScriptForm: TDebugScriptForm
     Left = 404
     Top = 41
     Width = 215
-    Height = 413
+    Height = 411
     Align = alClient
     TabOrder = 2
     OnResize = Panel2Resize
     object Panel3: TPanel
       Left = 1
-      Top = 371
+      Top = 369
       Width = 213
       Height = 41
       Align = alBottom
@@ -105,7 +106,7 @@ object DebugScriptForm: TDebugScriptForm
       Left = 1
       Top = 1
       Width = 213
-      Height = 370
+      Height = 368
       Align = alClient
       ColCount = 2
       FixedCols = 0

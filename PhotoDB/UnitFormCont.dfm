@@ -9,7 +9,7 @@ object FormCont: TFormCont
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   OnClose = FormClose
@@ -38,7 +38,7 @@ object FormCont: TFormCont
       object Label2: TLabel
         Left = 8
         Top = 144
-        Width = 21
+        Width = 22
         Height = 13
         Caption = 'Edit:'
       end
@@ -71,7 +71,7 @@ object FormCont: TFormCont
         object Label1: TLabel
           Left = 8
           Top = 13
-          Width = 52
+          Width = 53
           Height = 13
           Caption = 'Quick Info:'
         end
@@ -85,21 +85,21 @@ object FormCont: TFormCont
         object LabelName: TLabel
           Left = 8
           Top = 85
-          Width = 54
+          Width = 52
           Height = 13
           Caption = 'LabelName'
         end
         object LabelID: TLabel
           Left = 8
           Top = 101
-          Width = 37
+          Width = 36
           Height = 13
           Caption = 'LabelID'
         end
         object LabelSize: TLabel
           Left = 8
           Top = 117
-          Width = 46
+          Width = 44
           Height = 13
           Caption = 'LabelSize'
           Visible = False
@@ -108,7 +108,7 @@ object FormCont: TFormCont
       object ExportLink: TWebLink
         Left = 9
         Top = 204
-        Width = 35
+        Width = 37
         Height = 13
         Cursor = crHandPoint
         Text = 'Export'
@@ -127,7 +127,7 @@ object FormCont: TFormCont
       object ExCopyLink: TWebLink
         Left = 9
         Top = 228
-        Width = 29
+        Width = 30
         Height = 13
         Cursor = crHandPoint
         Text = 'Copy'
@@ -146,7 +146,7 @@ object FormCont: TFormCont
       object WlResize: TWebLink
         Left = 8
         Top = 160
-        Width = 25
+        Width = 24
         Height = 13
         Cursor = crHandPoint
         Text = 'Size'
@@ -275,7 +275,7 @@ object FormCont: TFormCont
       Height = 30
       AutoSize = True
       ButtonHeight = 30
-      ButtonWidth = 70
+      ButtonWidth = 72
       Caption = 'ToolBar1'
       Images = ToolBarImageList
       List = True
@@ -291,7 +291,7 @@ object FormCont: TFormCont
         OnClick = WlResizeClick
       end
       object TbConvert: TToolButton
-        Left = 63
+        Left = 62
         Top = 0
         AutoSize = True
         Caption = 'Convert'
@@ -299,7 +299,7 @@ object FormCont: TFormCont
         OnClick = WlConvertClick
       end
       object TbExport: TToolButton
-        Left = 131
+        Left = 132
         Top = 0
         AutoSize = True
         Caption = 'Export'
@@ -307,7 +307,7 @@ object FormCont: TFormCont
         OnClick = ExportLinkClick
       end
       object TbCopy: TToolButton
-        Left = 192
+        Left = 195
         Top = 0
         AutoSize = True
         Caption = 'Copy'
@@ -315,7 +315,7 @@ object FormCont: TFormCont
         OnClick = ExCopyLinkClick
       end
       object TbSeparator: TToolButton
-        Left = 247
+        Left = 251
         Top = 0
         Width = 8
         Caption = 'TbSeparator'
@@ -323,14 +323,14 @@ object FormCont: TFormCont
         Style = tbsSeparator
       end
       object TbZoomIn: TToolButton
-        Left = 255
+        Left = 259
         Top = 0
         AutoSize = True
         ImageIndex = 5
         OnClick = TbZoomInClick
       end
       object TbZoomOut: TToolButton
-        Left = 289
+        Left = 293
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
@@ -339,7 +339,7 @@ object FormCont: TFormCont
         OnClick = TbZoomOutClick
       end
       object ToolButton11: TToolButton
-        Left = 344
+        Left = 348
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -347,14 +347,14 @@ object FormCont: TFormCont
         Style = tbsSeparator
       end
       object TbStop: TToolButton
-        Left = 352
+        Left = 356
         Top = 0
         AutoSize = True
         ImageIndex = 5
         OnClick = TbStopClick
       end
       object ToolButton5: TToolButton
-        Left = 386
+        Left = 390
         Top = 0
         Width = 8
         Caption = 'ToolButton5'
@@ -362,7 +362,7 @@ object FormCont: TFormCont
         Style = tbsSeparator
       end
       object TbClose: TToolButton
-        Left = 394
+        Left = 398
         Top = 0
         AutoSize = True
         Caption = 'Close'

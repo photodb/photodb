@@ -7,7 +7,7 @@ interface
 uses
   Windows, Classes, uMemory, uInstallTypes, uInstallUtils, uConstants, uInstallScope,
   VRSIShortCuts, ShellApi, ShlObj, SysUtils, uTranslate, StrUtils, uInstallZip,
-  uAssociations, uShellUtils, uActions;
+  uAssociations, uShellUtils, uActions, uUserUtils;
 
 const
   InstallPoints_ShortCut = 500 * 1024;
@@ -194,22 +194,10 @@ procedure TInstallRunProgram.Execute(Callback: TActionCallback);
 var
   Terminate : Boolean;
   PhotoDBExeFile : string;
-  StartInfo  : TStartupInfo;
-  ProcInfo   : TProcessInformation;
 begin
   PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
 
-  { fill with known state }
-  FillChar(StartInfo, SizeOf(TStartupInfo), #0);
-  FillChar(ProcInfo, SizeOf(TProcessInformation), #0);
-  StartInfo.Cb := SizeOf(TStartupInfo);
-
-  CreateProcess(PChar(PhotoDBExeFile), PChar(PhotoDBExeFile + ' /sleep'), nil, nil, False,
-              CREATE_NEW_PROCESS_GROUP + NORMAL_PRIORITY_CLASS,
-              nil, PChar(CurrentInstall.DestinationPath), StartInfo, ProcInfo);
-
-  CloseHandle(ProcInfo.hProcess);
-  CloseHandle(ProcInfo.hThread);
+  RunAsUser(PhotoDBExeFile, PhotoDBExeFile + ' /sleep', CurrentInstall.DestinationPath);
 
   Callback(Self, InstallPoints_RunProgram, InstallPoints_RunProgram, Terminate);
 end;

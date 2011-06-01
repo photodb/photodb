@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_DebugDCUs>true</DCC_DebugDCUs>
 			<DCC_ExeOutput>..\</DCC_ExeOutput>
 			<DCC_DcuOutput>..\PhotoDB\dcu\</DCC_DcuOutput>
 			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
@@ -102,6 +103,9 @@
 			<DCCReference Include="..\PhotoDB\Units\uStringUtils.pas"/>
 			<DCCReference Include="uLangUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uImageSource.pas"/>
+			<DCCReference Include="uUserUtils.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
+			<DCCReference Include="uIsAdmin.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
