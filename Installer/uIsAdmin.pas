@@ -8,7 +8,7 @@ uses
 function CheckTokenMembership(TokenHandle: THandle; SidToCheck: PSID;
   out IsMember: BOOL): BOOL; stdcall;
 function SHTestTokenMembership(hToken: THandle; ulRID: ULONG): BOOL; stdcall;
-function IsUserAnAdmin(): BOOL; stdcall;
+function IsUserAnAdmin: BOOL; stdcall;
 function IsWindowsAdmin: Boolean;
 
 const

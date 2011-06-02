@@ -3,8 +3,9 @@ object FormFastFileRenamer: TFormFastFileRenamer
   Top = 125
   Caption = 'FormFastFileRenamer'
   ClientHeight = 436
-  ClientWidth = 503
+  ClientWidth = 479
   Color = clBtnFace
+  Constraints.MinHeight = 350
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -18,7 +19,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
   object ValueListEditor1: TValueListEditor
     Left = 0
     Top = 73
-    Width = 503
+    Width = 479
     Height = 332
     Align = alClient
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect, goThumbTracking]
@@ -29,20 +30,22 @@ object FormFastFileRenamer: TFormFastFileRenamer
     TitleCaptions.Strings = (
       'Original File Name'
       'New File Name')
+    ExplicitWidth = 313
     ColWidths = (
       188
-      309)
+      285)
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 503
+    Width = 479
     Height = 73
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitWidth = 503
     DesignSize = (
-      503
+      479
       73)
     object LblTitle: TLabel
       Left = 8
@@ -52,7 +55,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Caption = 'Mask:'
     end
     object Label2: TLabel
-      Left = 358
+      Left = 334
       Top = 8
       Width = 37
       Height = 13
@@ -61,7 +64,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       ExplicitLeft = 240
     end
     object BtnHelp: TButton
-      Left = 420
+      Left = 396
       Top = 24
       Width = 75
       Height = 22
@@ -69,15 +72,17 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Caption = '???'
       TabOrder = 2
       OnClick = BtnHelpClick
+      ExplicitLeft = 420
     end
     object CmMaskList: TComboBox
       Left = 8
       Top = 24
-      Width = 343
+      Width = 319
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       OnChange = Edit1Change
+      ExplicitWidth = 343
     end
     object BtAdd: TButton
       Left = 9
@@ -101,7 +106,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Tag = -1
       Left = 189
       Top = 52
-      Width = 110
+      Width = 112
       Height = 13
       Cursor = crHandPoint
       Font.Charset = DEFAULT_CHARSET
@@ -125,7 +130,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       HightliteImage = False
     end
     object SedStartN: TSpinEdit
-      Left = 357
+      Left = 333
       Top = 24
       Width = 57
       Height = 22
@@ -134,27 +139,30 @@ object FormFastFileRenamer: TFormFastFileRenamer
       MinValue = 0
       TabOrder = 1
       Value = 0
+      ExplicitLeft = 357
     end
   end
   object Panel2: TPanel
     Left = 0
     Top = 405
-    Width = 503
+    Width = 479
     Height = 31
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitWidth = 503
     DesignSize = (
-      503
+      479
       31)
     object Panel3: TPanel
-      Left = 338
+      Left = 314
       Top = 0
       Width = 165
       Height = 31
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitLeft = 338
       object BtnOK: TButton
         Left = 86
         Top = 3
@@ -177,13 +185,14 @@ object FormFastFileRenamer: TFormFastFileRenamer
     object CheckBox1: TCheckBox
       Left = 8
       Top = 8
-      Width = 327
+      Width = 303
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Change EXT'
       Constraints.MinWidth = 130
       TabOrder = 0
       OnClick = Edit1Change
+      ExplicitWidth = 327
     end
   end
   object pmSort: TPopupMenu

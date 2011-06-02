@@ -44,7 +44,7 @@ end;
 function AddFileToStream(Stream : TStream; FileName : string) : Boolean;
 var
   FS : TFileStream;
-  MS : TmemoryStream;
+  MS : TMemoryStream;
   Compression : TCompressionStream;
   EntryHeader : TZipEntryHeader;
 begin

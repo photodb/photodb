@@ -16,6 +16,7 @@ cd photodb/resources
 "%BRCC32%" ImagePanelBackground.rc
 "%BRCC32%" Loading.rc
 "%BRCC32%" Install.rc
+"%BRCC32%" PhotoDBInstall.rc
 "%BRCC32%" Activation.rc
 "%BRCC32%" PrinterPattern.rc
 "%BRCC32%" BigPattern.rc
@@ -64,7 +65,12 @@ cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
 "%BRCC32%" SETUP_ZIP.rc
-"%DCC32%" Install -D"INSTALL" -E".." -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" Install -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+
+InstallMaker /setup Install.exe
+"%BRCC32%" Install_Package.rc
+"%DCC32%" PhotoDBInstall -E".." -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+
 cd ..
 cd PhotoDB
 

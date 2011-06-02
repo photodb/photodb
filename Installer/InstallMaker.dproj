@@ -45,6 +45,7 @@
 			<DCCReference Include="uInstallScope.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
 			<DCCReference Include="uInstallZip.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -70,7 +71,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">$db_install.dat</Parameters>
+						<Parameters Name="RunParams">/setup Install.exe</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>

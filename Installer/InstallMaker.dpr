@@ -11,7 +11,10 @@ uses
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   uInstallScope in 'uInstallScope.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
-  uInstallZip in 'uInstallZip.pas';
+  uInstallZip in 'uInstallZip.pas',
+  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas';
+
+{$R ..\PhotoDB\Resources\PhotoDBInstall.res}
 
 var
   FileName : string;
@@ -35,19 +38,64 @@ var
     AddDirectoryToStream(FS, DirectoryName);
   end;
 
-begin
-  FileName := IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + ParamStr(1);
-  FS := TFileStream.Create(FileName, fmCreate);
-  try
-    for I := 0 to CurrentInstall.Files.Count - 1 do
-    begin
-      DiskObject := CurrentInstall.Files[I];
-      if DiskObject is TFileObject then
-        AddFile('..\PhotoDB\bin\' + DiskObject.Name);
-      if DiskObject is TDirectoryObject then
-        AddDirectory('..\PhotoDB\bin\' + DiskObject.Name);
+  procedure PackZip(S, D: string);
+  var
+    MS: TMemoryStream;
+    FS,
+    FD: TFileStream;
+    Size: Int64;
+    Compression : TCompressionStream;
+  begin
+    FS := TFileStream.Create(S, fmOpenRead or fmShareDenyWrite);
+    try
+      MS := TMemoryStream.Create;
+      try
+        Size := FS.Size;
+        MS.Write(Size, SizeOf(Size));
+        Compression := TCompressionStream.Create(clMax, MS);
+        try
+          FS.Seek(0, soFromBeginning);
+          Compression.CopyFrom(FS, FS.Size);
+          F(Compression);
+          FD := TFileStream.Create(D, fmCreate);
+          try
+            MS.Seek(0, soFromBeginning);
+            FD.CopyFrom(MS, MS.Size);
+          finally
+            F(FD);
+          end;
+        finally
+          F(Compression);
+        end;
+
+      finally
+        F(MS);
+      end;
+    finally
+      F(FS);
     end;
-  finally
-    F(FS);
+  end;
+
+begin
+  if GetParamStrDBBool('/setup') then
+  begin
+    FileName := IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + GetParamStrDBValue('/setup');
+    PackZip(FileName, FileName + '.zip');
+  end else
+  begin
+    FileName := IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + ParamStr(1);
+    FS := TFileStream.Create(FileName, fmCreate);
+    try
+      for I := 0 to CurrentInstall.Files.Count - 1 do
+      begin
+        DiskObject := CurrentInstall.Files[I];
+        if DiskObject is TFileObject then
+          AddFile('..\PhotoDB\bin\' + DiskObject.Name);
+        if DiskObject is TDirectoryObject then
+          AddDirectory('..\PhotoDB\bin\' + DiskObject.Name);
+      end;
+    finally
+      F(FS);
+    end;
   end;
 end.

@@ -49,8 +49,17 @@ uses
 {$R ..\PhotoDB\Resources\Install.res}
 
 begin
-  if UserAccountService then
+  if not GetParamStrDBBool('/admin') then
+  begin
+    UserAccountService(ParamStr(0), IsUserAnAdmin or IsWindowsAdmin);
     Exit;
+  end;
+
+  if not (IsUserAnAdmin or IsWindowsAdmin) then
+  begin
+    MessageBox(0, 'Please start this program using account with administrator rights!', 'Error', MB_OK or MB_ICONERROR);
+    Exit;
+  end;
 
   Application.Initialize;
 

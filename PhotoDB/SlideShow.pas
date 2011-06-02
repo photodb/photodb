@@ -140,12 +140,12 @@ type
     procedure LoadListImages(List : TstringList);
     Procedure ShowFile(FileName : String);
     Procedure ShowFolder(Files : Tstrings; CurrentN : integer);
-    Procedure ShowFolderA(FileName : string; ShowPrivate : Boolean);
-    Procedure UpdateRecord(FileNo: integer);
+    function ShowFolderA(FileName : string; ShowPrivate : Boolean): Boolean;
+    procedure UpdateRecord(FileNo: integer);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
-    Procedure DoWaitToImage(Sender: TObject);
-    Procedure EndWaitToImage(Sender: TObject);
+    procedure DoWaitToImage(Sender: TObject);
+    procedure EndWaitToImage(Sender: TObject);
     procedure Onlythisfile1Click(Sender: TObject);
     procedure AllFolder1Click(Sender: TObject);
     procedure GoToSearchWindow1Click(Sender: TObject);
@@ -1606,19 +1606,23 @@ begin
   end;
 end;
 
-procedure TViewer.ShowFolderA(FileName : string; ShowPrivate : Boolean);
+function TViewer.ShowFolderA(FileName : string; ShowPrivate : Boolean): Boolean;
 var
   N: Integer;
   Info: TDBPopupMenuInfo;
 begin
-  if FileExistsSafe(FileName) then
+  Result := False;
+  if FileExistsSafe(FileName) or DirectoryExistsSafe(FileName) then
   begin
     FileName := LongFileName(FileName);
     Info := TDBPopupMenuInfo.Create;
     try
       GetFileListByMask(FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
-      if info.Count > 0 then
+      if Info.Count > 0 then
+      begin
         Execute(Self, info);
+        Result := True;
+      end;
     finally
       F(Info);
     end;
@@ -1659,7 +1663,7 @@ function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile 
 var
   I: Integer;
   FOldImageExists, NotifyUser: Boolean;
-
+  Item: TDBPopupMenuInfoRecord;
 begin
   TW.I.Start('ExecuteW');
   Result := True;
@@ -1672,6 +1676,20 @@ begin
   if LoadBaseFile = '' then
     ImageFrameTimer.Enabled := False;
   TW.I.Start('ToolButton1.Enabled');
+
+  CurrentInfo.Clear;
+  for I := 0 to Info.Count - 1 do
+  begin
+    Item := Info[I];
+    if Item.Selected then
+    begin
+      CurrentInfo.Add(Item.Copy);
+      if Item.IsCurrent then
+        CurrentInfo.Position := CurrentInfo.Count - 1;
+    end;
+  end;
+  if CurrentInfo.Count < 2 then
+    CurrentInfo.Assign(Info);
 
   SetProgressPosition(Info.Position + 1, Info.Count);
   if Info.Count = 0 then
@@ -1698,7 +1716,6 @@ begin
     TbRotateCW.Enabled := False;
   end;
 
-  CurrentInfo.Assign(Info);
   TW.I.Start('DoProcessPath');
 
   for I := 0 to CurrentInfo.Count - 1 do

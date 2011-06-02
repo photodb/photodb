@@ -1000,8 +1000,10 @@ begin
   end;
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
   begin
-    Viewer.ShowFolderA(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate);
-    Viewer.Show;
+    if Viewer.ShowFolderA(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate) then
+      Viewer.Show
+    else
+      MessageBoxDB(Handle, L('There is no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   end;
 end;
 
@@ -4430,8 +4432,11 @@ begin
   begin
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
-    Viewer.ShowFolderA(GetCurrentPath, ExplorerManager.ShowPrivate);
-    Viewer.Show;
+    if Viewer.ShowFolderA(GetCurrentPath, ExplorerManager.ShowPrivate) then
+      Viewer.Show
+    else
+      MessageBoxDB(Handle, L('There is no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+
   end;
 end;
 

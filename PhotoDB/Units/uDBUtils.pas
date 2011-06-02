@@ -1378,13 +1378,15 @@ var
   FE, EM: Boolean;
   P: PChar;
   PSupportedExt: PChar;
+  ByDirectory: Boolean;
 
 begin
 
   if FileExists(BeginFile) then
     Folder := ExtractFileDir(BeginFile);
 
-  if DirectoryExists(BeginFile) then
+  ByDirectory := DirectoryExists(BeginFile);
+  if ByDirectory then
     Folder := BeginFile;
 
   if Folder = '' then
@@ -1477,7 +1479,7 @@ begin
   finally
     F(List);
   end;
-  if Info.Count = 0 then
+  if (Info.Count = 0) and not ByDirectory then
     Info.Add(TDBPopupMenuInfoRecord.CreateFromFile(BeginFile));
 end;
 

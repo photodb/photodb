@@ -33,6 +33,8 @@ var
   PhotoDBExeFile: string;
   Terminate: Boolean;
   HProcess: THandle;
+  ExitCode,
+  StartTime: Cardinal;
 begin
   inherited;
   PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
@@ -41,7 +43,12 @@ begin
 
   Callback(Self, InstallPoints_StartProgram, CalculateTotalPoints, Terminate);
 
-  WaitForSingleObject(HProcess, 10000);
+  StartTime := GetTickCount;
+  repeat
+    Sleep(100);
+
+    GetExitCodeProcess(HProcess, ExitCode);
+  until (ExitCode <> STILL_ACTIVE) or (GetTickCount - StartTime > 10 * 1000);
 
   Callback(Self, InstallPoints_StartProgram + InstallPoints_SetUpDatabaseProgram, CalculateTotalPoints, Terminate);
 end;

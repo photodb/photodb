@@ -51,16 +51,19 @@ uses
   uImageSource in '..\PhotoDB\Units\uImageSource.pas',
   uUserUtils in 'uUserUtils.pas',
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
-  uIsAdmin in 'uIsAdmin.pas',
-  uIME in '..\PhotoDB\Units\uIME.pas';
+  uIME in '..\PhotoDB\Units\uIME.pas',
+  uIsAdmin in 'uIsAdmin.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}
 
 begin
-  if UserAccountService then
+  if not (IsUserAnAdmin or IsWindowsAdmin) then
+  begin
+    MessageBox(0, 'Please start this program using account with administrator rights!', 'Error', MB_OK or MB_ICONERROR);
     Exit;
+  end;
 
   Application.Initialize;
 
