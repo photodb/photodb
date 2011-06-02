@@ -485,6 +485,8 @@ begin
     end;
 
     R(EditLinkForm);
+    PcMain.Pages[2].TabVisible := True;
+    PcMain.Pages[3].TabVisible := True;
 
     Editing_info := False;
     FCurrentPass := '';
@@ -1285,6 +1287,9 @@ begin
   if not IsGraphicFile(FileName) or not FileExistsSafe(FileName) then
     Exit;
 
+  PcMain.Pages[2].TabVisible := True;
+  PcMain.Pages[3].TabVisible := True;
+
   DoProcessPath(FileName);
   SetLength(FPropertyLinks, 0);
   SetLength(FNowGroups, 0);
@@ -1574,6 +1579,8 @@ begin
   R(EditLinkForm);
   ResetBold;
 
+  PcMain.Pages[2].TabVisible := False;
+  PcMain.Pages[3].TabVisible := False;
   DirectoryList := TStringList.Create;
   WidthList := TList64.Create;
   HeightList := TList64.Create;

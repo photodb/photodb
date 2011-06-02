@@ -2321,8 +2321,8 @@ end;
 procedure TExplorerForm.ListView1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  I, Index : integer;
-  Item, Itemsel: TEasyItem;
+  I, Index: Integer;
+  Item, ItemSel: TEasyItem;
 begin
   ItemsDeselected := False;
   FWasDragAndDrop := False;
@@ -2330,10 +2330,10 @@ begin
   Item := ItemAtPos(x, y);
 
   MouseDowned := Button = mbRight;
-  if Item = nil then
+  if (Item = nil) and not ((Button = MbLeft) and CtrlKeyDown) then
      ElvMain.Selection.ClearAll;
 
-  itemsel:= Item;
+  ItemSel := Item;
   ItemByMouseDown := False;
 
   EnsureSelectionInListView(ElvMain, ItemSel, Shift, X, Y, ItemSelectedByMouseDown, ItemByMouseDown);
@@ -2365,7 +2365,7 @@ begin
     if Length(FFilesToDrag) = 0 then
       FDBCanDrag := False;
   end;
-  FDblClicked:=false;
+  FDblClicked := False;
 end;
 
 procedure TExplorerForm.ListView1MouseUp(Sender: TObject;

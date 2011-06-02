@@ -166,8 +166,8 @@ begin
     else
       RawBitmap.LoadU(Filename, RAW_DISPLAY);
     RawBitmap.ConvertTo24Bits;
-    fWidth := RawBitmap.GetWidth;
-    fHeight := RawBitmap.GetHeight;
+    FWidth := RawBitmap.GetWidth;
+    FHeight := RawBitmap.GetHeight;
     LoadFromFreeImage(RawBitmap);
   finally
     RawBitmap.Free;

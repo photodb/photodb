@@ -25,8 +25,11 @@ type
     FErrorMessage: string;
     BitmapParam: TBitmap;
     FStringParam: string;
+    FFontParam: HFont;
     OriginalWidth, OriginalHeight : Integer;
     FRect: TRect;
+    FIntParam: Integer;
+    FLongFont: TLogFont;
     procedure ShowWriteError;
     procedure OnEnd;
     procedure NotifyDB;
@@ -37,6 +40,10 @@ type
     constructor Create(AOwnerForm: TThreadForm; AState : TGUID; AData : TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
     procedure AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect; Text: string);
     procedure SyncDrawCallBack;
+    function AsyncPrepareBitmapCallBack(Bitmap: TBitmap; Font: HFont; Text: string): Integer;
+    procedure SyncPrepareBitmap;
+    function AsyncGetFontCallBack(Bitmap: TBitmap): TLogFont;
+    procedure SyncGetFont;
   end;
 
 implementation
@@ -52,6 +59,23 @@ begin
   FRect := Rct;
   FStringParam := Text;
   Synchronize(SyncDrawCallBack);
+end;
+
+function TImageConvertThread.AsyncGetFontCallBack(Bitmap: TBitmap): TLogFont;
+begin
+  BitmapParam := Bitmap;
+  SynchronizeEx(SyncGetFont);
+  Result := FLongFont;
+end;
+
+function TImageConvertThread.AsyncPrepareBitmapCallBack(Bitmap: TBitmap;
+  Font: HFont; Text: string): Integer;
+begin
+  BitmapParam := Bitmap;
+  FStringParam := Text;
+  FFontParam := Font;
+  Synchronize(SyncPrepareBitmap);
+  Result := FIntParam;
 end;
 
 constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState : TGUID; AData: TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
@@ -482,7 +506,7 @@ begin
             FProcessingParams.WatermarkOptions.Color,
             FProcessingParams.WatermarkOptions.Transparenty,
             FProcessingParams.WatermarkOptions.FontName,
-            AsyncDrawCallBack);
+            AsyncDrawCallBack, AsyncPrepareBitmapCallBack, AsyncGetFontCallBack);
 
         if not CheckThread then
           Exit;
@@ -564,6 +588,18 @@ end;
 procedure TImageConvertThread.SyncDrawCallBack;
 begin
   BitmapParam.Canvas.TextRect(FRect, FStringParam, [tfBottom, tfSingleLine]);
+end;
+
+procedure TImageConvertThread.SyncGetFont;
+begin
+  GetObject(BitmapParam.Canvas.Font.Handle, SizeOf(TLogFont), @FLongFont)
+end;
+
+procedure TImageConvertThread.SyncPrepareBitmap;
+begin
+  BitmapParam.Canvas.Font.Handle := FFontParam;
+  BitmapParam.Canvas.Font.Color := clBlack;
+  FIntParam := BitmapParam.Canvas.TextHeight(FStringParam);
 end;
 
 procedure TImageConvertThread.UpdatePreview;

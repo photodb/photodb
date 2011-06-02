@@ -5,23 +5,23 @@ interface
 uses
   UnitGroupsWork, DBCMenu, CmpUnit, ToolWin,
   ShellApi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DB, Menus, ExtCtrls, StdCtrls, uGraphicUtils, uMemoryEx,
+  Dialogs, DB, Menus, ExtCtrls, StdCtrls, UGraphicUtils, UMemoryEx,
   ImgList, ComCtrls, ActiveX, ShlObj, JPEG, DmProgress, ClipBrd,
   SaveWindowPos, ExtDlgs, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
-  ShellContextMenu, DropSource, DropTarget, DateUtils, acDlgSelect,
-  ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts, DBScriptFunctions,
+  ShellContextMenu, DropSource, DropTarget, DateUtils, AcDlgSelect,
+  ProgressActionUnit, UnitSQLOptimizing, UScript, UnitScripts, DBScriptFunctions,
   EasyListview, WebLink, MPCommonUtilities, GraphicsCool,
-  UnitSearchBigImagesLoaderThread, DragDropFile, uFileUtils,
-  DragDrop, UnitPropeccedFilesSupport, uVistaFuncs, ComboBoxExDB,
+  UnitSearchBigImagesLoaderThread, DragDropFile, UFileUtils,
+  DragDrop, UnitPropeccedFilesSupport, UVistaFuncs, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  uCDMappingTypes, uThreadForm, uLogger, uConstants, uTime, CommCtrl,
-  uFastload, uListViewUtils, uDBDrawing, pngimage, uResources, uMemory,
-  MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar,
-  uFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate, uAssociations,
-  uShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
-  uDBUtils, uDBFileTypes, Dolphin_DB, uActivationUtils, uSettings,
-  uSearchTypes, WebLinkList, uDBAdapter;
+  UCDMappingTypes, UThreadForm, ULogger, UConstants, UTime, CommCtrl,
+  UFastload, UListViewUtils, UDBDrawing, Pngimage, UResources, UMemory,
+  MPCommonObjects, ADODB, DBLoading, LoadingSign, UW7TaskBar,
+  UFormListView, UDBPopupMenuInfo, UPNGUtils, UTranslate, UAssociations,
+  UShellIntegration, UDBBaseTypes, UDBTypes, URuntime, USysUtils,
+  UDBUtils, UDBFileTypes, Dolphin_DB, UActivationUtils, USettings,
+  USearchTypes, WebLinkList, UDBAdapter;
 
 type
   TSearchForm = class(TSearchCustomForm)
@@ -76,7 +76,7 @@ type
     PmSetDate: TPopupMenu;
     Setvalue1: TMenuItem;
     HelpTimer: TTimer;
-    pnDateRange: TPanel;
+    PnDateRange: TPanel;
     PmExplorerMenu: TPopupMenu;
     OpeninExplorer1: TMenuItem;
     AddFolder1: TMenuItem;
@@ -150,9 +150,9 @@ type
     DisabledToolBarImageList: TImageList;
     PopupMenuZoomDropDown: TPopupMenu;
     SortbyCompare1: TMenuItem;
-    elvDateRange: TEasyListview;
-    dblDate: TDBLoading;
-    lsDate: TLoadingSign;
+    ElvDateRange: TEasyListview;
+    DblDate: TDBLoading;
+    LsDate: TLoadingSign;
     LsData: TLoadingSign;
     TmrSearchResultsCount: TTimer;
     TmrQueryHintClose: TTimer;
@@ -172,12 +172,12 @@ type
     procedure ListViewDblClick(Sender: TObject);
     procedure SlideShow1Click(Sender: TObject);
     procedure SaveClick(Sender: TObject);
-    function GetSelectedTstrings :  Tstrings;
+    function GetSelectedTstrings: Tstrings;
     procedure FormDestroy(Sender: TObject);
-    procedure breakoperation(Sender: TObject);
+    procedure Breakoperation(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
-    function GetAllFiles:  TStrings;
-    procedure RefreshInfoByID(ID : integer);
+    function GetAllFiles: TStrings;
+    procedure RefreshInfoByID(ID: Integer);
     procedure MemKeyWordsChange(Sender: TObject);
     procedure ErrorQSL(sql : string);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
@@ -186,7 +186,7 @@ type
     procedure CopySearchResults1Click(Sender: TObject);
     procedure HintTimerTimer(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
-    procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
+    procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     procedure SaveResults1Click(Sender: TObject);
     procedure LoadResults1Click(Sender: TObject);
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -239,7 +239,7 @@ type
       var Accept: Boolean);
     procedure DeleteItemByID(ID : integer);
     procedure HelpNextClick(Sender: TObject);
-    procedure HelpCloseClick(Sender : TObject; var CanClose : Boolean);
+    procedure HelpCloseClick(Sender: TObject; var CanClose: Boolean);
     procedure FormShow(Sender: TObject);
     procedure Image3Click(Sender: TObject);
     procedure QuickGroupsearch(Sender: TObject);
@@ -299,13 +299,13 @@ type
       var CompareResult: Integer);
     procedure ShowDateOptionsLinkClick(Sender: TObject);
     procedure LoadSizes;
-    function FileNameExistsInList(FileName : string) : boolean;
-    function ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap) : Boolean;
+    function FileNameExistsInList(FileName: string): Boolean;
+    function ReplaceBitmapWithPath(FileName: string; Bitmap: TBitmap): Boolean;
 
     procedure ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure BigImagesTimerTimer(Sender: TObject);
-    function GetVisibleItems : TArStrings;
+    function GetVisibleItems: TArStrings;
     procedure ComboBoxSearchGroupsSelect(Sender: TObject);
     procedure ComboBoxSearchGroupsDropDown(Sender: TObject);
     procedure SearchEditDropDown(Sender: TObject);
@@ -333,40 +333,40 @@ type
     procedure TmOpenDatesRangeTimer(Sender: TObject);
   private
     { Private declarations }
-    FSearchInfo : TSearchInfo;
-    FListUpdating : boolean;
-    FPropertyGroups: String;
-    TempFolderName : String;
-    WindowsMenuTickCount : Cardinal;
-    FLastSelectionCount : Integer;
-    FUpdatingDB : Boolean;
-    DestroyCounter : Integer;
-    GroupsLoaded : Boolean;
-    FShellTreeView : TShellTreeView;
+    FSearchInfo: TSearchInfo;
+    FListUpdating: Boolean;
+    FPropertyGroups: string;
+    TempFolderName: string;
+    WindowsMenuTickCount: Cardinal;
+    FLastSelectionCount: Integer;
+    FUpdatingDB: Boolean;
+    DestroyCounter: Integer;
+    GroupsLoaded: Boolean;
+    FShellTreeView: TShellTreeView;
     ElvMain: TEasyListView;
-    LastMouseItem, ItemWithHint : TEasyItem;
-    FBitmapImageList : TBitmapImageList;
-    MouseDowned : Boolean;
-    RenameResult : Boolean;
-    PopupHandled : Boolean;
-    ItemSelectedByMouseDown : Boolean;
-    ItemByMouseDown : Boolean;
-    FSearchPath : string;
-    FilesToDrag : TStringList;
-    DBCanDrag : Boolean;
-    DBDragPoint : TPoint;
-    FCurrentSelectedID : Integer;
-    CurrentItemInfo : TDBPopupMenuInfoRecord;
-    SelectedInfo : TSelectedInfo;
-    Creating : Boolean;
-    LockChangePath : Boolean;
-    FHelpTimerStarted : boolean;
-    aScript : TScript;
-    ListMenuScript : String;
-    FPictureSize : Integer;
-    FSearchByCompating : Boolean;
-    FFillListInfo : TListFillInfo;
-    FW7TaskBar : ITaskbarList3;
+    LastMouseItem, ItemWithHint: TEasyItem;
+    FBitmapImageList: TBitmapImageList;
+    MouseDowned: Boolean;
+    RenameResult: Boolean;
+    PopupHandled: Boolean;
+    ItemSelectedByMouseDown: Boolean;
+    ItemByMouseDown: Boolean;
+    FSearchPath: string;
+    FilesToDrag: TStringList;
+    DBCanDrag: Boolean;
+    DBDragPoint: TPoint;
+    FCurrentSelectedID: Integer;
+    CurrentItemInfo: TDBPopupMenuInfoRecord;
+    SelectedInfo: TSelectedInfo;
+    Creating: Boolean;
+    LockChangePath: Boolean;
+    FHelpTimerStarted: Boolean;
+    AScript: TScript;
+    ListMenuScript: string;
+    FPictureSize: Integer;
+    FSearchByCompating: Boolean;
+    FFillListInfo: TListFillInfo;
+    FW7TaskBar: ITaskbarList3;
     FCanBackgroundSearch: Boolean;
     FMoreThan, FLessThan: string;
     FEstimateCount: Integer;
@@ -390,8 +390,8 @@ type
     function GetRegQueryRootPath: string;
     property RegQueryRootPath: string read GetRegQueryRootPath;
   protected
-   { Protected declarations }
-    function TreeView : TShellTreeView;
+    { Protected declarations }
+    function TreeView: TShellTreeView;
     procedure CreateBackground;
     procedure LoadDateRange;
     procedure FetchProgress(DataSet: TCustomADODataSet;
@@ -406,7 +406,7 @@ type
     procedure SetSearchText(Value: string); override;
     procedure SetupListView;
   public
-    procedure LoadGroupsList(LoadAllLIst : boolean = false);
+    procedure LoadGroupsList(LoadAllLIst: Boolean = False);
     procedure AddNewSearchListEntry;
     procedure LoadToolBarIcons;
     procedure ZoomIn;
@@ -415,13 +415,13 @@ type
     procedure DoSetSearchByComparing;
     procedure SaveQueryList;
     procedure LoadQueryList;
-    procedure LoadDataPacket(Packet : TDBPopupMenuInfo);
+    procedure LoadDataPacket(Packet: TDBPopupMenuInfo);
     procedure EmptyFillListInfo;
-    procedure StartSearchThread(IsEstimate : Boolean);
+    procedure StartSearchThread(IsEstimate: Boolean);
     procedure StopLoadingList;
     procedure ReloadBigImages;
 
-    //Search indicator
+    // Search indicator
     procedure NotifySearchingStart;
     procedure NotifySearchingEnd;
     procedure NitifyEstimateStart;
@@ -430,7 +430,7 @@ type
     procedure UpdateProgressState(ProgressValue: Extended);
     procedure UpdateSearchState;
     procedure UpdateVistaProgressState(State: TBPF);
-    //END of Search indicator
+    // END of Search indicator
 
     procedure StartSearch; overload; override;
     procedure StartSearch(Text: string); overload; override;
@@ -438,9 +438,9 @@ type
     procedure StartSearchDirectory(Directory: string; FileID: Integer); overload; override;
     procedure StartSearchSimilar(FileName: string); override;
   published
-    property SortMethod : Integer read GetSortMethod;
-    property ShowGroups : Boolean read GetShowGroups;
-    property SortDecrement : Boolean read GetSortDecrement;
+    property SortMethod: Integer read GetSortMethod;
+    property ShowGroups: Boolean read GetShowGroups;
+    property SortDecrement: Boolean read GetSortDecrement;
   end;
 
 implementation
@@ -453,7 +453,6 @@ uses
   UnitGroupReplace, UnitSavingTableForm, UnitHelp,
   UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
   UnitOpenQueryThread;
-
 {$R *.dfm}
 
 procedure TSearchForm.FormCreate(Sender: TObject);
@@ -461,7 +460,7 @@ const
   N = 3;
 var
   MenuItem: TMenuItem;
-  Captions: array[0 .. N - 1] of string;
+  Captions: array [0 .. N - 1] of string;
   I: Integer;
   MainMenuScript: string;
   Ico: TIcon;
@@ -520,8 +519,8 @@ begin
   ScriptMainMenu.Images := DBKernel.ImageList;
 
   TW.I.Start('S -> Register');
-  DropFileTarget2.Register(SearchEdit);
-  DropFileTarget1.Register(Self);
+  DropFileTarget2.register(SearchEdit);
+  DropFileTarget1.register(Self);
 
   TW.I.Start('S -> InsertSpesialQueryPopupMenu');
 
@@ -635,9 +634,9 @@ begin
   ElvMain.View := ElsThumbnail;
   ElvMain.DragKind := DkDock;
   SetLVSelection(ElvMain, True);
-  ElvMain.GroupFont.Color := clWindowText;
-  ElvMain.Font.Name := 'Tahoma';
-  ElvMain.HotTrack.Color := clWindowText;
+  ElvMain.GroupFont.Color := ClWindowText;
+  ElvMain.Font.name := 'Tahoma';
+  ElvMain.HotTrack.Color := ClWindowText;
   ElvMain.HotTrack.Cursor := CrArrow;
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   ElvMain.IncrementalSearch.Enabled := True;
@@ -675,7 +674,7 @@ begin
   FormManager.UnRegisterMainForm(Self);
   Creating := True;
 
-  F(aScript);
+  F(AScript);
   F(FilesToDrag);
   F(FBitmapImageList);
   F(FSearchInfo);
@@ -694,10 +693,10 @@ end;
 
 procedure TSearchForm.DoSearchNow(Sender: TObject);
 var
-  FScript : TScript;
-  ScriptString : string;
-  ImagesCount : Integer;
-  DateRange : TDateRange;
+  FScript: TScript;
+  ScriptString: string;
+  ImagesCount: Integer;
+  DateRange: TDateRange;
 begin
   if FUpdatingDB or Creating then
     Exit;
@@ -708,10 +707,10 @@ begin
   FScript := TScript.Create(Self, '');
   try
     FScript.Description := 'New search script';
-    SearchEdit.Text := SysUtils.StringReplace(SearchEdit.Text,'"',' ',[rfReplaceAll]);
+    SearchEdit.Text := SysUtils.StringReplace(SearchEdit.Text, '"', ' ', [RfReplaceAll]);
 
-    SetNamedValue(fScript, '$SearchString', AnsiQuotedStr(SearchEdit.Text, '"'));
-    SetNamedValue(fScript, '$Rating', IntToStr(RtgQueryRating.Rating));
+    SetNamedValue(FScript, '$SearchString', AnsiQuotedStr(SearchEdit.Text, '"'));
+    SetNamedValue(FScript, '$Rating', IntToStr(RtgQueryRating.Rating));
 
     ExecuteScript(nil, FScript, ScriptString, ImagesCount, nil);
     SearchEdit.Text := GetNamedValueString(FScript, '$SearchString');
@@ -723,8 +722,8 @@ begin
   LsSearchResults.Color := ElvMain.Color;
 
   DateRange := GetDateFilter;
-  WlStartStop.OnClick:= BreakOperation;
-  WlStartStop.Text:= L('Stop');
+  WlStartStop.OnClick := BreakOperation;
+  WlStartStop.Text := L('Stop');
   ClearItems;
   FBitmapImageList.Clear;
   ElvMain.ShowGroupMargins := Settings.Readbool('Options', 'UseGroupsInSearch', True);
@@ -737,10 +736,10 @@ begin
   AddNewSearchListEntry;
 end;
 
-procedure TSearchForm.StartSearchThread(IsEstimate : Boolean);
+procedure TSearchForm.StartSearchThread(IsEstimate: Boolean);
 var
-  WideSearch : TSearchQuery;
-  ItemEx : TComboExItem;
+  WideSearch: TSearchQuery;
+  ItemEx: TComboExItem;
 begin
   WideSearch := TSearchQuery.Create;
   WideSearch.Query := SearchEdit.Text;
@@ -773,19 +772,18 @@ begin
     FIsEstimatingActive := False;
   end;
 end;
-
 {$REGION 'ListView events'}
 
 procedure TSearchForm.ListViewContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
-  Info : TDBPopupMenuInfo;
-  item: TEasyItem;
-  FileNames : TStrings;
-  i : integer;
-  S : String;
-  FileList : TStrings;
-  FilesCount : Integer;
+  Info: TDBPopupMenuInfo;
+  Item: TEasyItem;
+  FileNames: TStrings;
+  I: Integer;
+  S: string;
+  FileList: TStrings;
+  FilesCount: Integer;
 begin
   if CopyFilesSynchCount > 0 then
     WindowsMenuTickCount := GetTickCount;
@@ -794,16 +792,16 @@ begin
   Item:=ItemByPointImage(ElvMain, Point(MousePos.x, MousePos.y));
   if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ElvMain.Selection.First;
 
-  if (item <> nil) and (item.Selected) then
+  if (Item <> nil) and (Item.Selected) then
   begin
-    LastMouseItem:= nil;
+    LastMouseItem := nil;
     if Active then
       Application.HideHint;
     THintManager.Instance.CloseHint;
     HintTimer.Enabled := False;
     Info := GetCurrentPopUpMenuInfo(Item);
     try
-      if not (GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
+      if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
       begin
         TTranslateManager.Instance.BeginTranslate;
         try
@@ -816,8 +814,8 @@ begin
         FileNames := TStringList.Create;
         try
           for I := 0 to Info.Count - 1 do
-          if Info[i].Selected then
-            FileNames.Add(Info[i].FileName);
+            if Info[I].Selected then
+              FileNames.Add(Info[I].FileName);
 
           GetProperties(FileNames, MousePos, ElvMain);
         finally
@@ -849,7 +847,7 @@ begin
     finally
       TTranslateManager.Instance.EndTranslate;
     end;
-    ScriptListPopupMenu.Popup(ElvMain.ClientToScreen(MousePos).x, ElvMain.ClientToScreen(MousePos).y);
+    ScriptListPopupMenu.Popup(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
   end;
 end;
 
@@ -863,8 +861,8 @@ begin
   Item := ItemAtPos(X, Y);
   MouseDowned := Button = mbRight;
   ItemByMouseDown := False;
-  if Item = nil then
-    ElvMain.Selection.ClearAll;
+  if (Item = nil) and not ((Button = MbLeft) and CtrlKeyDown) then
+     ElvMain.Selection.ClearAll;
 
   EnsureSelectionInListView(ElvMain, Item, Shift, X, Y, ItemSelectedByMouseDown, ItemByMouseDown);
 
@@ -876,7 +874,7 @@ begin
     MenuInfo := GetCurrentPopUpMenuInfo(Item);
     try
 
-      for I:=0 to MenuInfo.Count - 1 do
+      for I := 0 to MenuInfo.Count - 1 do
         if MenuInfo[I].Selected then
           if FileExistsSafe(MenuInfo[I].FileName) then
             FilesToDrag.Add(MenuInfo[I].FileName);
@@ -939,11 +937,11 @@ end;
 procedure TSearchForm.ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
-  Pos, MousePos : Tpoint;
-  I : Integer;
+  Pos, MousePos: Tpoint;
+  I: Integer;
   Item: TEasyItem;
-  Data : TDBPopupMenuInfoRecord;
-  SpotX, SpotY : Integer;
+  Data: TDBPopupMenuInfoRecord;
+  SpotX, SpotY: Integer;
 
 begin
   PopupHandled := False;
@@ -954,12 +952,12 @@ begin
     if (Abs(DBDragPoint.X - MousePos.X) > 3) or (Abs(DBDragPoint.Y - MousePos.Y) > 3) then
     begin
       Pos := ElvMain.ScreenToClient(DBDragPoint);
-      item := ItemAtPos(Pos.X, Pos.Y);
-      if item = nil then
+      Item := ItemAtPos(Pos.X, Pos.Y);
+      if Item = nil then
         Exit;
 
       if ElvMain.Selection.FocusedItem = nil then
-        ElvMain.Selection.FocusedItem := item;
+        ElvMain.Selection.FocusedItem := Item;
 
       DBDragPoint := ElvMain.ScreenToClient(DBDragPoint);
       CreateDragImage(ElvMain, DragImageList, FBitmapImageList, Item.Caption, DBDragPoint, SpotX, SpotY);
@@ -985,7 +983,7 @@ begin
   if THintManager.Instance.HintAtPoint(MousePos) <> nil then
     Exit;
 
-  Item := ItemByPointImage(ElvMain, Point(X,Y));
+  Item := ItemByPointImage(ElvMain, Point(X, Y));
 
   if LastMouseItem = Item then
     Exit;
@@ -1042,7 +1040,7 @@ begin
 end;
 
 procedure TSearchForm.EasyListViewDblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
-      ShiftState: TShiftState; var Handled: Boolean);
+  ShiftState: TShiftState; var Handled: Boolean);
 begin
   ListViewDblClick(Sender);
 end;
@@ -1064,7 +1062,7 @@ begin
     ListViewKeyDown(Sender, CharCode, []);
 end;
 
-procedure TSearchForm.ListViewResize(Sender : TObject);
+procedure TSearchForm.ListViewResize(Sender: TObject);
 begin
   ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
   ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
@@ -1074,7 +1072,7 @@ end;
 procedure TSearchForm.ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
-  if not (ssCtrl in Shift) then
+  if not(SsCtrl in Shift) then
     Exit;
 
   if WheelDelta < 0 then
@@ -1092,15 +1090,15 @@ begin
   SetLength(CompareStr, Length(SearchBuffer));
 
   if IsUnicode then
-    CompareResult := lstrcmpiW(PWideChar(SearchBuffer), PWideChar(CompareStr))
+    CompareResult := LstrcmpiW(PWideChar(SearchBuffer), PWideChar(CompareStr))
   else
-    CompareResult := lstrcmpi(PChar(string(SearchBuffer)), PChar(string(CompareStr)));
+    CompareResult := Lstrcmpi(PChar(string(SearchBuffer)), PChar(string(CompareStr)));
 end;
 
 procedure TSearchForm.EasyListViewItemEdited(Sender: TCustomEasyListview;
   Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
 var
-  S : string;
+  S: string;
 begin
   S := NewValue;
   RenameResult := True;
@@ -1116,8 +1114,8 @@ procedure TSearchForm.EasyListViewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  Data : TDBPopupMenuInfoRecord;
-  Y : Integer;
+  Data: TDBPopupMenuInfoRecord;
+  Y: Integer;
   CustomInfo: string;
   Extension: TSearchDataExtension;
   SimilarAmount: Integer;
@@ -1146,9 +1144,7 @@ begin
                      Data.Access, Data.Crypted, Data.Exists, False, CustomInfo);
 
 end;
-
 {$ENDREGION}
-
 {$REGION 'Button events'}
 
 procedure TSearchForm.SlideShow1Click(Sender: TObject);
@@ -1185,8 +1181,8 @@ end;
 
 procedure TSearchForm.CopySearchResults1Click(Sender: TObject);
 var
-  I : integer;
-  Sclipbrd : string;
+  I: Integer;
+  Sclipbrd: string;
 begin
   Sclipbrd := '';
   for I := 1 to ElvMain.Items.Count do
@@ -1252,12 +1248,12 @@ end;
 
 procedure TSearchForm.SaveResults1Click(Sender: TObject);
 var
-  N, I : integer;
-  LA : TArStrings;
-  ItemsImThArray : TArStrings;
-  ItemsIDArray : TArInteger;
-  SaveDialog : DBSaveDialog;
-  FileName : string;
+  N, I: Integer;
+  LA: TArStrings;
+  ItemsImThArray: TArStrings;
+  ItemsIDArray: TArInteger;
+  SaveDialog: DBSaveDialog;
+  FileName: string;
 begin
   SaveDialog := DBSaveDialog.Create;
   try
@@ -1379,7 +1375,7 @@ end;
 procedure TSearchForm.ListViewEdited(Sender: TObject; Item: TEasyItem;
   var S: String);
 var
-  SearchRecord : TDBPopupMenuInfoRecord;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
   S := Copy(S, 1, Min(Length(S), 255));
   SearchRecord := GetSearchRecordFromItemData(Item);
@@ -1417,7 +1413,6 @@ begin
     Application.HideHint;
   THintManager.Instance.CloseHint;
 end;
-
 {$ENDREGION}
 
 procedure TSearchForm.SaveClick(Sender: TObject);
@@ -1712,9 +1707,10 @@ begin
     FreeDS(WorkQuery);
   end;
   Save.Enabled := False;
+  DoShowSelectInfo;
 end;
 
-function TSearchForm.GetListItemByID(ID : integer) : TEasyItem;
+function TSearchForm.GetListItemByID(ID: Integer): TEasyItem;
 var
   I: Integer;
 begin
@@ -1731,8 +1727,8 @@ end;
 
 function TSearchForm.GetSelectedTStrings: TStrings;
 var
-  I : Integer;
-  SearchRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TStringList.Create;
 
@@ -1747,24 +1743,24 @@ end;
 
 function TSearchForm.GetAllFiles: TStrings;
 var
-  I : Integer;
+  I: Integer;
 begin
   Result := TStringList.Create;
   for I := 0 to ElvMain.Items.Count - 1 do
     Result.Add(GetSearchRecordFromItemData(ElvMain.Items[I]).FileName);
 end;
 
-procedure TSearchForm.RefreshInfoByID(ID : integer);
+procedure TSearchForm.RefreshInfoByID(ID: Integer);
 begin
   if FCurrentSelectedID <> ID then
     Exit;
 
-  ListViewSelectItem(nil, GetListItemByID(ID), true);
+  ListViewSelectItem(nil, GetListItemByID(ID), True);
 end;
 
 procedure TSearchForm.ClearItems;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to ElvMain.Items.Count - 1 do
     TDataObject(ElvMain.Items[I].Data).Free;
@@ -1798,7 +1794,7 @@ procedure TSearchForm.MemKeyWordsChange(Sender: TObject);
   end;
 
 begin
- if GetSelectionCount > 1 then
+  if GetSelectionCount > 1 then
   begin
     if ReadCHTime or ReadCHDate or not RatingEdit.Islayered or (not MemComments.readonly and SelectedInfo.IsVariousComments)
       or (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment <> MemComments.Text)) or VariousKeyWords
@@ -1810,7 +1806,7 @@ begin
       Label8.Font.Style := Label8.Font.Style + [FsBold]
     else
       Label8.Font.Style := Label8.Font.Style - [FsBold];
-    if (not MemComments.readonly and SelectedInfo.IsVariousComments) or
+    if (not MemComments.ReadOnly and SelectedInfo.IsVariousComments) or
       (not SelectedInfo.IsVariousComments and (SelectedInfo.CommonComment <> MemComments.Text)) then
       Label6.Font.Style := Label6.Font.Style + [FsBold]
     else
@@ -1842,18 +1838,18 @@ begin
   end;
 end;
 
-procedure TSearchForm.ErrorQSL(sql : string);
+procedure TSearchForm.ErrorQSL(Sql: string);
 begin
   MessageBoxDB(Handle, Format(L('Error in SQL. Query: %s'), [Sql]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
-procedure TSearchForm.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
+procedure TSearchForm.ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
 var
-  RefreshParams : TEventFields;
-  FilesToUpdate : TDBPopupMenuInfo;
-  I, ReRotation : Integer;
-  SearchRecord  : TDBPopupMenuInfoRecord;
-  DataObject    : TDataObject;
+  RefreshParams: TEventFields;
+  FilesToUpdate: TDBPopupMenuInfo;
+  I, ReRotation: Integer;
+  SearchRecord: TDBPopupMenuInfoRecord;
+  DataObject: TDataObject;
 begin
 
   if EventID_Repaint_ImageList in params then
@@ -1865,7 +1861,7 @@ begin
   else
   if EventID_Param_DB_Changed in params then
   begin
-    Caption:=ProductName + ' -  ['+DBkernel.GetDataBaseName+']';
+    Caption := ProductName + ' -  [' + DBkernel.GetDataBaseName + ']';
     ReRecreateGroupsList;
     FPictureSize := ThImageSize;
     LoadSizes;
@@ -1920,11 +1916,11 @@ begin
         ReRotation := GetNeededRotation(SearchRecord.Rotation, Value.Rotate);
         SearchRecord.Rotation := Value.Rotate;
 
-        if ElvMain.Items[i].ImageIndex > -1 then
-          ApplyRotate(FBitmapImageList[ElvMain.Items[i].ImageIndex].Bitmap, ReRotation);
+        if ElvMain.Items[I].ImageIndex > -1 then
+          ApplyRotate(FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap, ReRotation);
       end;
       RefreshParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
-      if (ElvMain.Items[i].ImageIndex < 0) or (RefreshParams * params <> []) then
+      if (ElvMain.Items[I].ImageIndex < 0) or (RefreshParams * Params <> []) then
       begin
         FilesToUpdate := TDBPopupMenuInfo.Create;
         FilesToUpdate.Add(SearchRecord.Copy);
@@ -1944,10 +1940,10 @@ begin
   Getcursorpos(P);
   P1 := ElvMain.ScreenToClient(P);
   Result := not((not Self.Active) or (not ElvMain.Focused) or (ItemAtPos(P1.X, P1.Y) <> LastMouseItem) or
-    (ItemAtPos(P1.X, P1.Y) = nil));
+      (ItemAtPos(P1.X, P1.Y) = nil));
 end;
 
-procedure TSearchForm.CMMOUSELEAVE(var Message: TWMNoParams);
+procedure TSearchForm.CMMOUSELEAVE(var message: TWMNoParams);
 var
   P: Tpoint;
 begin
@@ -1970,7 +1966,7 @@ begin
   DoSearchNow(Sender);
 end;
 
-function TSearchForm.GetCurrentPopUpMenuInfo(Item : TEasyItem) : TDBPopupMenuInfo;
+function TSearchForm.GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
 var
   I: Integer;
   MenuRecord: TDBPopupMenuInfoRecord;
@@ -2055,34 +2051,34 @@ end;
 procedure TSearchForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
-  i : integer;
-  TmpBool : Boolean;
+  I: Integer;
+  TmpBool: Boolean;
 begin
-  if msg.message = FProgressMessage then
+  if Msg.message = FProgressMessage then
     FW7TaskBar := CreateTaskBarInstance;
 
-  if msg.message = FReloadGroupsMessage then
+  if Msg.message = FReloadGroupsMessage then
     ReloadGroups;
 
-  if (Msg.message = WM_KEYDOWN) and (SearchEdit.Focused) and (Msg.wParam = VK_RETURN) then
+  if (Msg.message = WM_KEYDOWN) and (SearchEdit.Focused) and (Msg.WParam = VK_RETURN) then
   begin
     Handled := True;
-    Msg.Message := 0;
+    Msg.message := 0;
     DoSearchNow(nil);
   end;
 
   if (Msg.message = WM_KEYUP) and SearchEdit.Focused then
-    Msg.Message := 0;
+    Msg.message := 0;
 
   if (Msg.message = WM_MOUSEWHEEL) then
-    WllGroups.PerformMouseWheel(Msg.wParam, Handled);
+    WllGroups.PerformMouseWheel(Msg.WParam, Handled);
 
-  if Msg.hwnd = ElvMain.Handle then
+  if Msg.Hwnd = ElvMain.Handle then
   begin
     if Msg.message = WM_RBUTTONDOWN then
-      WindowsMenuTickCount:=GetTickCount;
+      WindowsMenuTickCount := GetTickCount;
 
-    //middle mouse button
+    // middle mouse button
     if Msg.message = WM_MBUTTONDOWN then
     begin
       Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
@@ -2108,27 +2104,27 @@ begin
 
     if Msg.message = WM_KEYDOWN then
     begin
-      WindowsMenuTickCount:=GetTickCount;
-      //context menu button
-      if (Msg.wParam = VK_APPS) then
-        ListViewContextPopup(ElvMain,Point(-1,-1), TmpBool);
+      WindowsMenuTickCount := GetTickCount;
+      // context menu button
+      if (Msg.WParam = VK_APPS) then
+        ListViewContextPopup(ElvMain, Point(-1, -1), TmpBool);
 
-      if (Msg.wParam = Ord('r')) or (Msg.wParam = Ord('R')) and ShiftkeyDown then
+      if (Msg.WParam = Ord('r')) or (Msg.WParam = Ord('R')) and ShiftkeyDown then
       begin
         ReloadIDMenu;
         ReloadListMenu;
-        MessageBoxDB(Handle, L('Menu reloaded!'), L('Information'), TD_BUTTON_OK,TD_ICON_INFORMATION);
+        MessageBoxDB(Handle, L('Menu reloaded!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
       end;
 
-      if (Msg.wParam = VK_SUBTRACT) then
+      if (Msg.WParam = VK_SUBTRACT) then
         ZoomOut;
-      if (Msg.wParam = VK_ADD) then
+      if (Msg.WParam = VK_ADD) then
         ZoomIn;
-      if (Msg.wParam = VK_DELETE) and not FUpdatingDB then
+      if (Msg.WParam = VK_DELETE) and not FUpdatingDB then
         DeleteSelected;
-      if (Msg.wParam = Ord('a')) and CtrlKeyDown and not FUpdatingDB then
-        SelectAll1Click(Nil);
-      if (Msg.wParam = Ord('s')) and CtrlKeyDown and tbStopOperation.Enabled then
+      if (Msg.WParam = Ord('a')) and CtrlKeyDown and not FUpdatingDB then
+        SelectAll1Click(nil);
+      if (Msg.WParam = Ord('s')) and CtrlKeyDown and TbStopOperation.Enabled then
         TbStopOperationClick(nil);
 
     end;
@@ -2223,7 +2219,7 @@ end;
 
 procedure TSearchForm.GroupClick(Sender: TObject);
 var
-  KeyWords : string;
+  KeyWords: string;
   WL: TWebLink;
 begin
   WL := TWebLink(Sender);
@@ -2258,7 +2254,7 @@ end;
 
 procedure TSearchForm.DateExists1Click(Sender: TObject);
 begin
-  IsDatePanel.Visible:=False;
+  IsDatePanel.Visible := False;
   MemKeyWordsChange(Sender);
 end;
 
@@ -2311,9 +2307,8 @@ end;
 
 procedure TSearchForm.SetComent1Click(Sender: TObject);
 begin
-  if not MemComments.Readonly then
+  if not MemComments.ReadOnly then
     Exit;
-  MemComments.ReadOnly := False;
   MemComments.Cursor := CrDefault;
   MemComments.Text := '';
   SelectedInfo.CommonComment := '';
@@ -2401,8 +2396,8 @@ begin
     PanelValueIsTimeSets.Caption := L('Different values');
 
     Timenotsets1.Caption := L('No time');
-    TimeExists1.Caption := L('Set time');;
-    TimenotExists1.Caption := L('No time');;
+    TimeExists1.Caption := L('Set time'); ;
+    TimenotExists1.Caption := L('No time'); ;
 
     View2.Caption := L('Slide show');
     ShowDateOptionsLink.Text := L('Date options');
@@ -2428,7 +2423,7 @@ end;
 
 procedure TSearchForm.HelpTimerTimer(Sender: TObject);
 var
-  DS : TDataSet;
+  DS: TDataSet;
 
   procedure XHint(XDS: TDataSet);
   var
@@ -2455,7 +2450,7 @@ var
 begin
   if not Active then
     Exit;
-  if  GetForegroundWindow <> Handle then
+  if GetForegroundWindow <> Handle then
     Exit;
   if FolderView then
     Exit;
@@ -2536,10 +2531,10 @@ begin
   Accept := (NewSize >= 150) and (NewSize <= 340)
 end;
 
-procedure TSearchForm.DeleteItemByID(ID: integer);
+procedure TSearchForm.DeleteItemByID(ID: Integer);
 var
-  I : Integer;
-  SearchRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
@@ -2805,7 +2800,6 @@ begin
     end;
   end;
 
-
 end;
 
 procedure TSearchForm.InsertSpesialQueryPopupMenuItemClick(
@@ -2874,7 +2868,7 @@ end;
 
 procedure TSearchForm.Timenotsets1Click(Sender: TObject);
 begin
-  PanelValueIsTimeSets.Visible:=True;
+  PanelValueIsTimeSets.Visible := True;
   MemKeyWordsChange(Sender);
 end;
 
@@ -2893,20 +2887,20 @@ end;
 
 procedure TSearchForm.DoShowSelectInfo;
 var
-  I, Indent : integer;
-  Size : Int64;
-  KeyWordList : TStringList;
-  CommonKeyWords : String;
-  ArComments : TStringList;
-  ArDates : TArDateTime;
-  ArIsDates : TArBoolean;
-  ArIsTimes : TArBoolean;
-  ArInt : TArInteger;
-  ArGroups : TStringList;
-  ArTimes : TArTime;
-  WorkQuery : TDataSet;
-  SearchRecord : TDBPopupMenuInfoRecord;
-  SelectQuery : TDataSet;
+  I, Indent: Integer;
+  Size: Int64;
+  KeyWordList: TStringList;
+  CommonKeyWords: string;
+  ArComments: TStringList;
+  ArDates: TArDateTime;
+  ArIsDates: TArBoolean;
+  ArIsTimes: TArBoolean;
+  ArInt: TArInteger;
+  ArGroups: TStringList;
+  ArTimes: TArTime;
+  WorkQuery: TDataSet;
+  SearchRecord: TDBPopupMenuInfoRecord;
+  SelectQuery: TDataSet;
   DA: TDBAdapter;
 
   procedure EnableEditing(Value: Boolean);
@@ -2981,58 +2975,58 @@ begin
                 ArGroups.Add(SearchRecord.Groups);
               end;
 
-              SelectedInfo.CommonRating := MaxStatInt(ArInt);
-              RatingEdit.Rating := SelectedInfo.CommonRating;
-              RatingEdit.Islayered := True;
-              RatingEdit.Layered := 100;
+            SelectedInfo.CommonRating := MaxStatInt(ArInt);
+            RatingEdit.Rating := SelectedInfo.CommonRating;
+            RatingEdit.Islayered := True;
+            RatingEdit.Layered := 100;
 
-              CurrentItemInfo.Date := MaxStatDate(ArDates);
-              CurrentItemInfo.IsDate := MaxStatBool(ArIsDates);
-              SelectedInfo.Date := MaxStatDate(ArDates);
-              SelectedInfo.IsDate := MaxStatBool(ArIsDates);
-              PanelValueIsDateSets.Visible := IsVariousBool(ArIsDates) or IsVariousDate(ArDates);
-              DtpDate.DateTime := SelectedInfo.Date;
-              IsDatePanel.Visible := not SelectedInfo.IsDate;
-              SelectedInfo.IsVariousDates := PanelValueIsDateSets.Visible;
+            CurrentItemInfo.Date := MaxStatDate(ArDates);
+            CurrentItemInfo.IsDate := MaxStatBool(ArIsDates);
+            SelectedInfo.Date := MaxStatDate(ArDates);
+            SelectedInfo.IsDate := MaxStatBool(ArIsDates);
+            PanelValueIsDateSets.Visible := IsVariousBool(ArIsDates) or IsVariousDate(ArDates);
+            DtpDate.DateTime := SelectedInfo.Date;
+            IsDatePanel.Visible := not SelectedInfo.IsDate;
+            SelectedInfo.IsVariousDates := PanelValueIsDateSets.Visible;
 
-              CurrentItemInfo.Time := MaxStatDate(TArDateTime(ArTimes));
-              CurrentItemInfo.IsTime := MaxStatBool(ArIsTimes);
-              SelectedInfo.Time := MaxStatTime(ArTimes);
-              SelectedInfo.IsTime := MaxStatBool(ArIsTimes);
-              PanelValueIsTimeSets.Visible := IsVariousBool(ArIsTimes) or IsVariousDate(TArDateTime(ArTimes));
-              DtpTime.DateTime := SelectedInfo.Time;
-              IsTimePanel.Visible := not SelectedInfo.IsTime;
-              SelectedInfo.IsVariousTimes := PanelValueIsTimeSets.Visible;
+            CurrentItemInfo.Time := MaxStatDate(TArDateTime(ArTimes));
+            CurrentItemInfo.IsTime := MaxStatBool(ArIsTimes);
+            SelectedInfo.Time := MaxStatTime(ArTimes);
+            SelectedInfo.IsTime := MaxStatBool(ArIsTimes);
+            PanelValueIsTimeSets.Visible := IsVariousBool(ArIsTimes) or IsVariousDate(TArDateTime(ArTimes));
+            DtpTime.DateTime := SelectedInfo.Time;
+            IsTimePanel.Visible := not SelectedInfo.IsTime;
+            SelectedInfo.IsVariousTimes := PanelValueIsTimeSets.Visible;
 
-              CommonKeyWords := GetCommonWordsA(KeyWordList);
-              SelectedInfo.CommonKeyWords := CommonKeyWords;
-              Label4.Caption := Format(L('Size: %s'), [SizeInText(Size)]);
-              Label2.Caption := L('Items') + ' = ' + Inttostr(GetSelectionCount);
-              MemKeyWords.Lines.Text := CommonKeyWords;
-              SelectedInfo.IsVariousComments := IsVariousArStrings(ArComments);
-              if SelectedInfo.IsVariousComments then
-              begin
-                SelectedInfo.CommonComment := L('<Different comments>');
-                CurrentItemInfo.Comment := SelectedInfo.CommonComment;
-                MemComments.PopupMenu := PmComment;
-              end else
-              begin
-                SelectedInfo.CommonComment := ArComments[0];
-                CurrentItemInfo.Comment := SelectedInfo.CommonComment;
-              end;
-              if SelectedInfo.IsVariousComments then
-              begin
-                MemComments.Readonly := True;
-                MemComments.Cursor := CrHandPoint;
-              end;
-              MemComments.Text := SelectedInfo.CommonComment;
-              CurrentItemInfo.Groups := GetCommonGroups(ArGroups);
-              SelectedInfo.Groups := CurrentItemInfo.Groups;
-              FPropertyGroups := CurrentItemInfo.Groups;
-              ReloadGroups;
-              MemKeyWordsChange(Self);
-              if DBReadOnly then
-                EnableEditing(False);
+            CommonKeyWords := GetCommonWordsA(KeyWordList);
+            SelectedInfo.CommonKeyWords := CommonKeyWords;
+            Label4.Caption := Format(L('Size: %s'), [SizeInText(Size)]);
+            Label2.Caption := L('Items') + ' = ' + Inttostr(GetSelectionCount);
+            MemKeyWords.Lines.Text := CommonKeyWords;
+            SelectedInfo.IsVariousComments := IsVariousArStrings(ArComments);
+            if SelectedInfo.IsVariousComments then
+            begin
+              SelectedInfo.CommonComment := L('Different comments');
+              CurrentItemInfo.Comment := SelectedInfo.CommonComment;
+              MemComments.PopupMenu := PmComment;
+            end else
+            begin
+              SelectedInfo.CommonComment := ArComments[0];
+              CurrentItemInfo.Comment := SelectedInfo.CommonComment;
+            end;
+            if SelectedInfo.IsVariousComments then
+            begin
+              MemComments.readonly := True;
+              MemComments.Cursor := CrHandPoint;
+            end;
+            MemComments.Text := SelectedInfo.CommonComment;
+            CurrentItemInfo.Groups := GetCommonGroups(ArGroups);
+            SelectedInfo.Groups := CurrentItemInfo.Groups;
+            FPropertyGroups := CurrentItemInfo.Groups;
+            ReloadGroups;
+            MemKeyWordsChange(Self);
+            if DBReadOnly then
+              EnableEditing(False);
 
             FCurrentSelectedID := -1;
           finally
@@ -3051,41 +3045,42 @@ begin
           SetSQL(SelectQuery, 'SELECT * FROM $DB$ WHERE ID=' + Inttostr(Indent));
           SelectQuery.Active := True;
 
-            Label2.Caption := Format(L('ID = %d'), [Indent]);
-            Label4.Caption := Format(L('Size = %s'), [SizeInText(DA.FileSize)]);
-            MemKeyWords.Lines.Text := DA.KeyWords;
-            MemComments.Lines.Text := DA.Comment;
-            RatingEdit.Rating := DA.Rating;
-            CurrentItemInfo.Rating := RatingEdit.Rating;
+          Label2.Caption := Format(L('ID = %d'), [Indent]);
+          Label4.Caption := Format(L('Size = %s'), [SizeInText(DA.FileSize)]);
+          MemKeyWords.Lines.Text := DA.KeyWords;
+          MemComments.Lines.Text := DA.Comment;
+          RatingEdit.Rating := DA.Rating;
+          CurrentItemInfo.Rating := RatingEdit.Rating;
 
-            ElvMain.Hint := DA.Comment;
-            FCurrentSelectedID := DA.ID;
-            CurrentItemInfo.KeyWords := DA.KeyWords;
-            CurrentItemInfo.Comment := DA.Comment;
+          ElvMain.Hint := DA.Comment;
+          FCurrentSelectedID := DA.ID;
+          CurrentItemInfo.KeyWords := DA.KeyWords;
+          CurrentItemInfo.Comment := DA.Comment;
 
-            DtpDate.DateTime := DA.Date;
-            CurrentItemInfo.Date := DA.Date;
-            CurrentItemInfo.IsDate := DA.IsDate;
-            SelectedInfo.IsDate := CurrentItemInfo.IsDate;
-            IsDatePanel.Visible := not CurrentItemInfo.IsDate;
-            PanelValueIsDateSets.Visible := False;
+          DtpDate.DateTime := DA.Date;
+          CurrentItemInfo.Date := DA.Date;
+          CurrentItemInfo.IsDate := DA.IsDate;
+          SelectedInfo.IsDate := CurrentItemInfo.IsDate;
+          IsDatePanel.Visible := not CurrentItemInfo.IsDate;
+          PanelValueIsDateSets.Visible := False;
+          MemComments.ReadOnly := False;
 
-            DtpTime.DateTime := DA.Time;
-            CurrentItemInfo.Time := DA.Time;
-            CurrentItemInfo.IsTime := DA.IsTime;
-            SelectedInfo.IsTime := CurrentItemInfo.IsTime;
-            IsTimePanel.Visible := not CurrentItemInfo.IsTime;
-            PanelValueIsTimeSets.Visible := False;
+          DtpTime.DateTime := DA.Time;
+          CurrentItemInfo.Time := DA.Time;
+          CurrentItemInfo.IsTime := DA.IsTime;
+          SelectedInfo.IsTime := CurrentItemInfo.IsTime;
+          IsTimePanel.Visible := not CurrentItemInfo.IsTime;
+          PanelValueIsTimeSets.Visible := False;
 
-            CurrentItemInfo.Groups := DA.Groups;
-            FPropertyGroups := CurrentItemInfo.Groups;
-            ReloadGroups;
-            Save.Enabled := False;
-            MemComments.Cursor := CrDefault;
-            Application.HintHidePause := 50 * Length(DA.Comment);
-            MemKeyWordsChange(Self);
-            if DBReadOnly then
-              EnableEditing(False);
+          CurrentItemInfo.Groups := DA.Groups;
+          FPropertyGroups := CurrentItemInfo.Groups;
+          ReloadGroups;
+          Save.Enabled := False;
+          MemComments.Cursor := CrDefault;
+          Application.HintHidePause := 50 * Length(DA.Comment);
+          MemKeyWordsChange(Self);
+          if DBReadOnly then
+            EnableEditing(False);
         end;
       finally
         FreeDS(WorkQuery);
@@ -3139,7 +3134,7 @@ end;
 
 procedure TSearchForm.PmSearchOptionsPopup(Sender: TObject);
 begin
-  DoSearchNow1.Visible:=not FUpdatingDB;
+  DoSearchNow1.Visible := not FUpdatingDB;
 end;
 
 procedure TSearchForm.View2Click(Sender: TObject);
@@ -3179,46 +3174,46 @@ end;
 
 procedure TSearchForm.ScriptExecuted(Sender: TObject);
 begin
-  LoadItemVariables(aScript,Sender as TMenuItemW);
+  LoadItemVariables(AScript, Sender as TMenuItemW);
   if Trim((Sender as TMenuItemW).Script) <> '' then
-    ExecuteScript(Sender as TMenuItemW, aScript, '', FExtImagesInImageList, DBkernel.ImageList, ScriptExecuted);
+    ExecuteScript(Sender as TMenuItemW, AScript, '', FExtImagesInImageList, DBkernel.ImageList, ScriptExecuted);
 end;
 
 procedure TSearchForm.LoadExplorerValue(Sender: TObject);
 begin
-  SetBoolAttr(aScript,'$explorer',ExplorerPanel.Visible);
+  SetBoolAttr(AScript, '$explorer', ExplorerPanel.Visible);
 end;
 
-function TSearchForm.GetSelectionCount : integer;
+function TSearchForm.GetSelectionCount: Integer;
 begin
   Result := ElvMain.Selection.Count;
 end;
 
-function TSearchForm.ListViewSelected : TEasyItem;
+function TSearchForm.ListViewSelected: TEasyItem;
 begin
   Result := ElvMain.Selection.First;
 end;
 
-function TSearchForm.ItemAtPos(X,Y : integer): TEasyItem;
+function TSearchForm.ItemAtPos(X, Y: Integer): TEasyItem;
 begin
   Result := ItemByPointImage(ElvMain, Point(X, Y));
 end;
 
 procedure TSearchForm.N05Click(Sender: TObject);
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
-  SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
-  EventInfo.Rating:=(Sender as TMenuItem).Tag;
-  DBKernel.DoIDEvent(Self,RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
+  SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
+  EventInfo.Rating := (Sender as TMenuItem).Tag;
+  DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag, [EventID_Param_Rating], EventInfo);
 end;
 
-function TSearchForm.ItemIndex(item : TEasyItem) : integer;
+function TSearchForm.ItemIndex(Item: TEasyItem): Integer;
 var
-  I : integer;
+  I: Integer;
 begin
-  Result := item.Index;
-  for I := 0 to item.OwnerGroup.Index - 1 do
+  Result := Item.index;
+  for I := 0 to Item.OwnerGroup.index - 1 do
     Result := Result + ElvMain.Groups[I].Items.Count;
 end;
 
@@ -3247,8 +3242,8 @@ end;
 function TSearchForm.InternalGetImage(FileName: string;
   Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 var
-  I : Integer;
-  SearchRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
   Result := False;
   FileName := AnsiLowerCase(FileName);
@@ -3270,10 +3265,10 @@ begin
   end;
 end;
 
-function TSearchForm.FileNameExistsInList(FileName : string) : Boolean;
+function TSearchForm.FileNameExistsInList(FileName: string): Boolean;
 var
-  I : Integer;
-  SearchRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
   Result := False;
   FileName := AnsiLowerCase(FileName);
@@ -3288,11 +3283,11 @@ begin
   end;
 end;
 
-function TSearchForm.ReplaceBitmapWithPath(FileName : string; Bitmap : TBitmap) : Boolean;
+function TSearchForm.ReplaceBitmapWithPath(FileName: string; Bitmap: TBitmap): Boolean;
 var
-  I : Integer;
-  SearchRecord : TDBPopupMenuInfoRecord;
-  ListItem : TEasyItem;
+  I: Integer;
+  SearchRecord: TDBPopupMenuInfoRecord;
+  ListItem: TEasyItem;
 begin
   FileName := AnsiLowerCase(FileName);
   Result := False;
@@ -3315,43 +3310,42 @@ begin
   F(Bitmap);
 end;
 
-procedure TSearchForm.BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
+procedure TSearchForm.BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
 var
-  SelectedVisible : boolean;
+  SelectedVisible: Boolean;
 begin
   ElvMain.BeginUpdate;
   try
     SelectedVisible := IsSelectedVisible;
     FPictureSize := SizeX;
     LoadSizes;
-    BigImagesTimer.Enabled:=false;
-    BigImagesTimer.Enabled:=true;
+    BigImagesTimer.Enabled := False;
+    BigImagesTimer.Enabled := True;
 
-    ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+    ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
     ElvMain.Groups.ReIndexItems;
-    ElvMain.Groups.Rebuild(true);
+    ElvMain.Groups.Rebuild(True);
 
     if SelectedVisible then
-      ElvMain.Selection.First.MakeVisible(emvTop);
+      ElvMain.Selection.First.MakeVisible(EmvTop);
   finally
     ElvMain.EndUpdate;
   end;
 end;
-
 
 procedure TSearchForm.BigImagesTimerTimer(Sender: TObject);
 begin
   if FListUpdating then
     Exit;
   BigImagesTimer.Enabled := False;
-  //тут начинается загрузка больших картинок
+  // тут начинается загрузка больших картинок
   ReloadBigImages;
 end;
 
 procedure TSearchForm.ReloadBigImages;
 var
-  I : Integer;
-  Data : TDBPopupMenuInfo;
+  I: Integer;
+  Data: TDBPopupMenuInfo;
 begin
   NewFormSubState;
   Data := TDBPopupMenuInfo.Create;
@@ -3363,19 +3357,20 @@ end;
 
 function TSearchForm.GetVisibleItems: TArStrings;
 var
-  I : integer;
-  R : TRect;
-  RV : TRect;
-  SearchRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  R: TRect;
+  RV: TRect;
+  SearchRecord: TDBPopupMenuInfoRecord;
 begin
   SetLength(Result, 0);
 
-  RV :=  ElvMain.Scrollbars.ViewableViewportRect;
+  RV := ElvMain.Scrollbars.ViewableViewportRect;
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
     SearchRecord := GetSearchRecordFromItemData(ElvMain.Items[I]);
-    r:=Rect(ElvMain.ClientRect.Left + RV.Left, ElvMain.ClientRect.Top + RV.Top, ElvMain.ClientRect.Right + RV.Left, ElvMain.ClientRect.Bottom + RV.Top);
-    if RectInRect(R, TEasyCollectionItemX(ElvMain.Items[i]).GetDisplayRect) then
+    R := Rect(ElvMain.ClientRect.Left + RV.Left, ElvMain.ClientRect.Top + RV.Top, ElvMain.ClientRect.Right + RV.Left,
+      ElvMain.ClientRect.Bottom + RV.Top);
+    if RectInRect(R, TEasyCollectionItemX(ElvMain.Items[I]).GetDisplayRect) then
     begin
       SetLength(Result, Length(Result) + 1);
       Result[Length(Result) - 1] := SearchRecord.FileName;
@@ -3383,12 +3378,12 @@ begin
   end;
 end;
 
-procedure TSearchForm.LoadGroupsList(LoadAllLIst : boolean = false);
+procedure TSearchForm.LoadGroupsList(LoadAllLIst: Boolean = False);
 var
-  Groups : TGroups;
-  Size, I : integer;
-  SmallB, B : TBitmap;
-  JPEG : TJPEGImage;
+  Groups: TGroups;
+  Size, I: Integer;
+  SmallB, B: TBitmap;
+  JPEG: TJPEGImage;
 begin
   SmallB := TBitmap.Create;
   try
@@ -3413,11 +3408,11 @@ begin
         finally
           B.Free;
         end;
-       Data := Pointer(1);
-       Caption := L('All groups');
-       ImageIndex := 0;
+        Data := Pointer(1);
+        Caption := L('All groups');
+        ImageIndex := 0;
       end;
-      ComboBoxSearchGroups.ItemIndex:=0;
+      ComboBoxSearchGroups.ItemIndex := 0;
       Exit;
     end;
     if GroupsLoaded then
@@ -3490,11 +3485,11 @@ end;
 
 procedure TSearchForm.FormResize(Sender: TObject);
 var
-  aTop, N, LastIndex : Integer;
+  ATop, N, LastIndex: Integer;
 begin
   LastIndex := ComboBoxSearchGroups.ItemIndex;
-  aTop := ClientHeight - ComboBoxSearchGroups.Top - ComboBoxSearchGroups.Height - PnLeft.Top;
-  N := Max(5, aTop div 32);
+  ATop := ClientHeight - ComboBoxSearchGroups.Top - ComboBoxSearchGroups.Height - PnLeft.Top;
+  N := Max(5, ATop div 32);
   if N <> ComboBoxSearchGroups.DropDownCount then
   begin
     ComboBoxSearchGroups.DropDownCount := N;
@@ -3514,7 +3509,7 @@ begin
     BigImagesTimer.Enabled := True;
     ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
     ElvMain.Groups.ReIndexItems;
-    ElvMain.Groups.Rebuild(true);
+    ElvMain.Groups.Rebuild(True);
 
     if IsSelectedVisible then
       ElvMain.Selection.First.MakeVisible(emvTop);
@@ -3528,7 +3523,7 @@ begin
   ElvMain.BeginUpdate;
   try
     if FPictureSize > ListViewMinThumbnailSize then
-      FPictureSize:=FPictureSize - 10;
+      FPictureSize := FPictureSize - 10;
 
     LoadSizes;
     BigImagesTimer.Enabled := False;
@@ -3542,7 +3537,6 @@ begin
     ElvMain.EndUpdate;
   end;
 end;
-
 {$REGION 'Tool bar'}
 
 procedure TSearchForm.LoadToolBarIcons;
@@ -3597,7 +3591,7 @@ begin
 
   AddDisabledIcon('SEARCH_BREAK_GRAY');
 
-  TbSearch.ImageIndex:=0;
+  TbSearch.ImageIndex := 0;
   TbSort.ImageIndex := 1;
   TbZoomOut.ImageIndex := 3;
   TbZoomIn.ImageIndex := 2;
@@ -3608,7 +3602,7 @@ begin
   TbStopOperation.ImageIndex := 8;
 
   TbMain.Images := ToolBarImageList;
-  TbMain.DisabledImages:= DisabledToolBarImageList;
+  TbMain.DisabledImages := DisabledToolBarImageList;
 end;
 
 procedure TSearchForm.TbZoomOutClick(Sender: TObject);
@@ -3623,7 +3617,7 @@ end;
 
 procedure TSearchForm.TbExplorerClick(Sender: TObject);
 var
-  FileName : string;
+  FileName: string;
 begin
   if ElvMain.Selection.Count = 0 then
   begin
@@ -3641,7 +3635,6 @@ begin
     end;
   end;
 end;
-
 {$ENDREGION}
 
 procedure TSearchForm.ReRecreateGroupsList;
@@ -3779,14 +3772,15 @@ var
 begin
   if Sender = nil then
     Exit;
-  if not (Sender is TMenuItem) then
+  if not(Sender is TMenuItem) then
     Exit;
-  //NOT RIGHT! SORTING BY FOLDERS-IMAGES-OTHERS
-  if ((Sender as TMenuItem).Tag = -1) then exit;
+  // NOT RIGHT! SORTING BY FOLDERS-IMAGES-OTHERS
+  if ((Sender as TMenuItem).Tag = -1) then
+    Exit;
   if ElvMain.Items.Count < 2 then
     Exit;
 
-  ElvMain.Groups.BeginUpdate(false);
+  ElvMain.Groups.BeginUpdate(False);
   try
     try
       L := ElvMain.Items.Count;
@@ -3873,7 +3867,7 @@ end;
 procedure TSearchForm.PopupMenuZoomDropDownPopup(Sender: TObject);
 begin
   Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
-  BigImagesSizeForm.Execute(self,fPictureSize, BigSizeCallBack);
+  BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
 end;
 
 procedure TSearchForm.DoSetSearchByComparing;
@@ -3883,12 +3877,12 @@ end;
 
 procedure TSearchForm.SortingPopupMenuPopup(Sender: TObject);
 var
-  I : Integer;
+  I: Integer;
 begin
   SortbyCompare1.Visible := FSearchByCompating;
 
   for I := 0 to SortingPopupMenu.Items.Count - 1 do
-    SortingPopupMenu.Items[i].Enabled := not FListUpdating;
+    SortingPopupMenu.Items[I].Enabled := not FListUpdating;
 end;
 
 procedure TSearchForm.SortbyCompare1Click(Sender: TObject);
@@ -3902,7 +3896,7 @@ end;
 
 procedure TSearchForm.RebuildQueryList;
 var
-  I : Integer;
+  I: Integer;
   CurrentText: string;
   EditIndex: Integer;
 begin
@@ -3924,7 +3918,7 @@ end;
 
 procedure TSearchForm.AddNewSearchListEntry;
 var
-  DateRange : TDateRange;
+  DateRange: TDateRange;
 const
   SearchTextCount = 10;
 begin
@@ -3947,12 +3941,12 @@ end;
 
 procedure TSearchForm.LoadQueryList;
 var
-  I, SortMethod: integer;
-  SortDesc : Boolean;
+  I, SortMethod: Integer;
+  SortDesc: Boolean;
   Query: string;
   QueryCount: Integer;
   RegQueryPath: string;
-  FNow : TDateTime;
+  FNow: TDateTime;
 begin
 
   QueryCount := Settings.ReadInteger(RegQueryRootPath, 'Count', 0);
@@ -3997,8 +3991,8 @@ end;
 
 procedure TSearchForm.SaveQueryList;
 var
-  I : Integer;
-  RegQueryPath : string;
+  I: Integer;
+  RegQueryPath: string;
 const
   MaxQueriesToSave = 20;
 begin
@@ -4051,7 +4045,7 @@ begin
     try
       SearchBackgroundBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, clWindow);
+        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, ClWindow);
         Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
       finally
         F(SearchBackgroundBMP);
@@ -4192,7 +4186,7 @@ end;
 
 function TSearchForm.GetDateFilter: TDateRange;
 var
-  I, J : Integer;
+  I, J: Integer;
 begin
   Result.DateFrom := 0;
   Result.DateTo := 0;
@@ -4236,10 +4230,10 @@ end;
 
 procedure TSearchForm.AddItemInListViewByGroups(DataRecord : TDBPopupMenuInfoRecord; ReplaceBitmap : Boolean; CreateData: Boolean);
 var
-  new: TEasyItem;
-  I, I10 : integer;
-  DataObject : TDataObject;
-  SearchExtraInfo : TSearchDataExtension;
+  New: TEasyItem;
+  I, I10: Integer;
+  DataObject: TDataObject;
+  SearchExtraInfo: TSearchDataExtension;
 begin
   if (SortMethod = 0) or not ShowGroups then
   begin
@@ -4408,9 +4402,9 @@ begin
         else
           Caption := L('Rating') + ': ' + IntToStr(DataRecord.Rating);
 
-        Visible := True;
+          Visible := True;
+        end;
       end;
-    end;
 
     if SortMethod = SM_DATE_TIME then
     if (YearOf(DataRecord.Date) <> FFillListInfo.LastYear) or (MonthOf(DataRecord.Date) <> FFillListInfo.LastMonth) then
@@ -4457,7 +4451,7 @@ end;
 
 procedure TSearchForm.LoadDataPacket(Packet: TDBPopupMenuInfo);
 var
-  I : Integer;
+  I: Integer;
 begin
   ElvMain.BeginUpdate;
   try
@@ -4467,7 +4461,6 @@ begin
     ElvMain.EndUpdate;
   end;
 end;
-
 {$REGION 'Properties'}
 
 function TSearchForm.GetSearchText: string;
@@ -4494,7 +4487,6 @@ function TSearchForm.GetSortDecrement: Boolean;
 begin
   Result := Decremect1.Checked;
 end;
-
 {$ENDREGION}
 
 procedure TSearchForm.EmptyFillListInfo;
@@ -4509,8 +4501,8 @@ end;
 procedure TSearchForm.dblDateDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := clWindow;
-  Buffer.Canvas.Brush.Color := clWindow;
+  Buffer.Canvas.Pen.Color := ClWindow;
+  Buffer.Canvas.Brush.Color := ClWindow;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 
@@ -4532,9 +4524,9 @@ end;
 
 procedure TSearchForm.TmOpenDatesRangeTimer(Sender: TObject);
 var
-  Date : TDateTime;
-  CurrentYear : Integer;
-  CurrentMonth : Integer;
+  Date: TDateTime;
+  CurrentYear: Integer;
+  CurrentMonth: Integer;
   DA: TDBAdapter;
 begin
   TmOpenDatesRange.Enabled := False;
@@ -4570,7 +4562,7 @@ begin
         begin
           with elvDateRange.Groups.Add do
           begin
-            Caption := FormatDateTime('yyyy',Date);
+            Caption := FormatDateTime('yyyy', Date);
             Visible := True;
             Tag := CurrentYear;
           end;
@@ -4583,7 +4575,7 @@ begin
         CurrentMonth := MonthOf(Date);
         with elvDateRange.Items.Add do
         begin
-          Caption := FormatDateTime('mmmm',Date);
+          Caption := FormatDateTime('mmmm', Date);
           Tag := CurrentMonth;
         end;
       end;
@@ -4613,7 +4605,6 @@ function TSearchForm.GetFormID: string;
 begin
   Result := 'Search';
 end;
-
 {$REGION 'Search Indicator'}
 
 procedure TSearchForm.NitifyEstimateStart;
@@ -4674,7 +4665,7 @@ end;
 
 procedure TSearchForm.UpdateSearchState;
 var
-  Counter : string;
+  Counter: string;
 begin
   if FIsSearchingActive then
   begin
@@ -4738,16 +4729,14 @@ begin
   begin
     if FLastProgressState <> State then
     begin
-      //to reset state to 'NORMAL'
+      // to reset state to 'NORMAL'
       FW7TaskBar.SetProgressValue(Handle, 1, 1);
       FW7TaskBar.SetProgressState(Handle, State);
       FLastProgressState := State;
     end;
   end;
 end;
-
 {$ENDREGION}
-
 {$REGION 'CUSTOM FORM overrides'}
 
 procedure TSearchForm.StartSearch(Text: string);
@@ -4788,7 +4777,6 @@ begin
   Show;
   SetFocus;
 end;
-
 {$ENDREGION}
 
 end.

@@ -564,6 +564,7 @@
     <translate name="Rating found" value="Оценка" />
     <translate name="Search (%s results)" value="Поиск (%s результатов)" />
     <translate name="Next..." value="Далее..." />
+    <translate name="Different comments" value="Различные комментарии" />	
     <translate name="Stop (%s%%)" value="Остановить (%s%%)" />	
     <translate name="Collection Results (*.ids)|*.ids|Collection file list (*.dbl)|*.dbl|Collection hashes (*.ith)|*.ith" value="Список идентификаторов (*.ids)|*.ids|Результаты в виде списка файлов (*.dbl)|*.dbl|Результаты в виде хэшей (*.ith)|*.ith" />
     <translate name="All Supported (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|Collection Results (*.ids)|*.ids|Collection file list (*.dbl)|*.dbl|Collection hashes (*.ith)|*.ith" value="Все поддерживаемые форматы (*.ids;*.ith;*.dbl)|*.ids;*.ith;*.dbl|Список идентификаторов (*.ids)|*.ids|Результаты в виде списка файлов (*.dbl)|*.dbl|Результаты в виде хэшей (*.ith)|*.ith" />

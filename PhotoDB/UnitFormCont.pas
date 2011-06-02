@@ -150,7 +150,6 @@ type
     ItemByMouseDown: Boolean;
     ItemSelectedByMouseDown: Boolean;
     FPictureSize: Integer;
- //   FThreadCount: Integer;
     FBitmapImageList: TBitmapImageList;
     FWorkerThreadCount: Integer;
     procedure DeleteIndexItemByID(ID : integer);
@@ -467,18 +466,17 @@ end;
 procedure TFormCont.ListView1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  I : Integer;
-  MenuInfo : TDBPopupMenuInfo;
+  I: Integer;
+  MenuInfo: TDBPopupMenuInfo;
   Item, Itemsel: TEasyItem;
 begin
+  Item := ItemAtPos(x,y);
+  if (Item = nil) and not ((Button = MbLeft) and CtrlKeyDown) then
+     ElvMain.Selection.ClearAll;
 
-  Item:=ItemAtPos(x,y);
-  if Item = nil then
-    ElvMain.Selection.ClearAll;
-
-  MouseDowned:=Button=mbRight;
-  itemsel:=Item;
-  ItemByMouseDown:=false;
+  MouseDowned := Button = MbRight;
+  ItemSel := Item;
+  ItemByMouseDown := False;
 
   EnsureSelectionInListView(ElvMain, ItemSel, Shift, X, Y, ItemSelectedByMouseDown, ItemByMouseDown);
 
@@ -546,8 +544,6 @@ begin
         P_i^ := I - 1;
       end;
     end;
-    //WTF?
-    Sender.Free;
   finally
     ElvMain.Groups.EndUpdate;
   end;

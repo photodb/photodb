@@ -1663,7 +1663,7 @@ function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile 
 var
   I: Integer;
   FOldImageExists, NotifyUser: Boolean;
-  Item: TDBPopupMenuInfoRecord;
+  DBItem: TDBPopupMenuInfoRecord;
 begin
   TW.I.Start('ExecuteW');
   Result := True;
@@ -1680,11 +1680,11 @@ begin
   CurrentInfo.Clear;
   for I := 0 to Info.Count - 1 do
   begin
-    Item := Info[I];
-    if Item.Selected then
+    DBItem := Info[I];
+    if DBItem.Selected then
     begin
-      CurrentInfo.Add(Item.Copy);
-      if Item.IsCurrent then
+      CurrentInfo.Add(DBItem.Copy);
+      if DBItem.IsCurrent then
         CurrentInfo.Position := CurrentInfo.Count - 1;
     end;
   end;

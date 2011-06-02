@@ -15,7 +15,9 @@ type
     function InnerBitmap: TBitmap;
   end;
 
+  TTextPrepareAsyncProcedure = function(Bitmap: TBitmap; Font: HFont; Text: string): Integer of object;
   TDrawTextAsyncProcedure = procedure(Bitmap: TBitmap; Rct: TRect; Text: string) of object;
+  TGetAsyncCanvasFontProcedure = function(Bitmap: TBitmap): TLogFont of object;
 
 const
   PSDTransparent = True;
@@ -58,7 +60,9 @@ function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 procedure SetIconToPictureFromPath(Picture: TPicture; IconPath: string);
 procedure AddIconToListFromPath(ImageList: TImageList; IconPath: string);
 procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer; Text: string; AAngle: Integer; Color: TColor;
-  Transparent: Byte; FontName: string; SyncCallBack: TDrawTextAsyncProcedure);
+  Transparent: Byte; FontName: string; SyncCallBack: TDrawTextAsyncProcedure;
+  SyncTextPrepare: TTextPrepareAsyncProcedure;
+  GetFontHandle: TGetAsyncCanvasFontProcedure);
 procedure DrawText32Bit(Bitmap32: TBitmap; Text: string; Font: TFont; ARect: TRect; DrawTextOptions: Cardinal);
 procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
 procedure DrawShadowToImage(Dest32, Src: TBitmap; Transparenty: Byte = 0);
@@ -355,7 +359,9 @@ end;
 
 procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer;
   Text : string; AAngle : Integer; Color : TColor; Transparent : Byte; FontName: string;
-  SyncCallBack: TDrawTextAsyncProcedure);
+  SyncCallBack: TDrawTextAsyncProcedure;
+  SyncTextPrepare: TTextPrepareAsyncProcedure;
+  GetFontHandle: TGetAsyncCanvasFontProcedure);
 var
   lf: TLogFont;
   I, J : Integer;
@@ -371,11 +377,12 @@ var
   Dioganal: Integer;
   Rct: TRect;
   DX, DY: Integer;
+  FontHandle: Cardinal;
 begin
   if Text = '' then
     Exit;
   if Bitmap.PixelFormat <> pf32Bit then
-   Bitmap.PixelFormat := pf24bit;
+    Bitmap.PixelFormat := pf24bit;
   Width := Round(Bitmap.Width / XBlocks);
   Height := Round(Bitmap.Height / YBlocks);
   TextHeight := 0;
@@ -407,7 +414,11 @@ begin
     Mask.PixelFormat := pf24bit;
     Mask.SetSize(Bitmap.Width, Bitmap.Height);
 
-    GetObject(Mask.Canvas.Font.Handle, SizeOf(TLogFont), @lf);
+    if not Assigned(GetFontHandle) then
+      GetObject(Mask.Canvas.Font.Handle, SizeOf(TLogFont), @lf)
+    else
+      lf := GetFontHandle(Mask);
+
     with lf do begin
       // Ўирина буквы
       lfWidth := TextWidth;
@@ -445,9 +456,15 @@ begin
     DX := Round(DX - (TextWidth / 1.7) * Sin((RealAngle)));
     DY := Round(DY + (TextWidth / 1.7) * Sin((RealAngle)));
 
-    Mask.Canvas.Font.Handle := CreateFontIndirect(lf);
-    Mask.Canvas.Font.Color := clBlack;
-    H := Mask.Canvas.TextHeight(Text);
+    if not Assigned(SyncTextPrepare) then
+    begin
+      Mask.Canvas.Font.Handle := CreateFontIndirect(lf);
+      Mask.Canvas.Font.Color := clBlack;
+      H := Mask.Canvas.TextHeight(Text);
+    end else
+    begin
+      SyncTextPrepare(Mask, CreateFontIndirect(lf), Text);
+    end;
     for I := 1 to XBlocks do
       for J := 1 to YBlocks do
       begin

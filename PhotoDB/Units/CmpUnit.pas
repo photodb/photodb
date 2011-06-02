@@ -32,20 +32,20 @@ type
   UpDown : boolean;
  end;
 
-procedure SpilitWords(S: string; var Words_: TStrings);
-procedure SpilitWordsA(S: string; var Words_: TStrings; Options: TSpilitOptions);
+procedure SpilitWords(S: string; var Words: TStrings);
+procedure SpilitWordsA(S: string; var Words: TStrings; Options: TSpilitOptions);
 procedure AddWords(var S, D: Tstrings);
 procedure AddWordsB(var S, D: TStrings);
-procedure DeleteWords(S: Tstrings; var D: Tstrings); overload;
+procedure DeleteWords(S: TStrings; var D: TStrings); overload;
 function AddWordsA(S: string; var D: string): Boolean;
 function AddWordsW(S, Ig: string; var D: string): Boolean;
-procedure DelSpaces(S: Tstrings);
+procedure DelSpaces(S: TStrings);
 procedure DelSpacesA(var S: string);
 procedure DelSpacesW(var S: string);
 
-function WordExists(Words_: TStrings; S: string): Boolean;
+function WordExists(Words: TStrings; S: string): Boolean;
 
-procedure GetCommonWords(A, B: Tstrings; var D: Tstrings);
+procedure GetCommonWords(A, B: Tstrings; var D: TStrings);
 function WordsToString(Words: TStrings): string;
 {$IFNDEF EXT}
 function GetCommonWordsA(Words: TStringList): string;
@@ -68,80 +68,84 @@ function IsVariousArBoolean(Ar: TArBoolean): Boolean;
 
 implementation
 
-function WordExists(Words_: TStrings; S: string): Boolean;
+function WordExists(Words: TStrings; S: string): Boolean;
 var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to Words_.Count - 1 do
-    if Words_[I] = S then
+  for I := 0 to Words.Count - 1 do
+    if Words[I] = S then
     begin
       Result := True;
       Break;
     end;
 end;
 
-procedure SpilitWords(S: string; var Words_: TStrings);
+function ValidChar(const C: Char): Boolean;
+begin
+  Result := (C <> ' ') and (C <> ',') and (C <> '.');
+end;
+
+procedure SpilitWords(S: string; var Words: TStrings);
 var
   I, J: Integer;
   Pi_: PInteger;
 begin
-  if Words_ = nil then
-    Words_ := Tstringlist.Create;
-  Words_.Clear;
+  if Words = nil then
+    Words := TStringList.Create;
+  Words.Clear;
   S := ' ' + S + ' ';
   Pi_ := @I;
   for I := 1 to Length(S) - 1 do
   begin
     if I + 1 > Length(S) - 1 then
       Break;
-    if (not CharInSet(S[I], Abs_alldb)) and CharInSet(S[I + 1], Abs_alldb) then
+    if (not ValidChar(S[I])) and ValidChar(S[I + 1]) then
       for J := I + 1 to Length(S) do
-        if not CharInSet(S[J], Abs_alldb) or (J = Length(S)) then
+        if not ValidChar(S[J]) or (J = Length(S)) then
         begin
-          Words_.Add(Copy(S, I + 1, J - I - 1));
+          Words.Add(Copy(S, I + 1, J - I - 1));
           Pi_^ := J - 1;
           Break;
         end;
   end;
-  DelSpaces(Words_);
+  DelSpaces(Words);
 end;
 
-procedure SpilitWordsA(S: string; var Words_: TStrings; Options: TSpilitOptions);
+procedure SpilitWordsA(S: string; var Words: TStrings; Options: TSpilitOptions);
 var
   I, J, N: Integer;
   Pi_: PInteger;
 begin
-  if Words_ = nil then
-    Words_ := TStringlist.Create;
-  Words_.Clear;
+  if Words = nil then
+    Words := TStringlist.Create;
+  Words.Clear;
   S := ' ' + S + ' ';
   Pi_ := @I;
   N := 0;
   if Options.UpDown then
     repeat
       Inc(N);
-      if (CharInSet(S[I], Abs_englUp) or CharInSet(S[I], Abs_rusUp)) and
-        (CharInSet(S[I], Abs_englDown) or CharInSet(S[I], Abs_rusDown)) then
+      if (ValidChar(S[I])) then
         Insert(' ', S, I);
     until N + 1 > Length(S);
     for I := 1 to Length(S) - 1 do
     begin
       if I + 1 > Length(S) - 1 then
         Break;
-      if (not CharInSet(S[I], Abs_alldb)) and CharInSet(S[I + 1], Abs_alldb) then
+      if (not ValidChar(S[I])) and ValidChar(S[I + 1]) then
         for J := I + 1 to Length(S) do
-          if not CharInSet(S[J], Abs_alldb) or (J = Length(S)) then
+          if not ValidChar(S[J]) or (J = Length(S)) then
           begin
-            Words_.Add(Copy(S, I + 1, J - I - 1));
+            Words.Add(Copy(S, I + 1, J - I - 1));
             Pi_^ := J - 1;
             Break;
           end;
     end;
-  DelSpaces(Words_);
+  DelSpaces(Words);
 end;
 
-procedure AddWords(var S, D: Tstrings);
+procedure AddWords(var S, D: TStrings);
 var
   I: Integer;
 begin
@@ -158,7 +162,7 @@ begin
     D.Add(S[I])
 end;
 
-procedure DeleteWords(S: Tstrings; var D: Tstrings);
+procedure DeleteWords(S: TStrings; var D: TStrings);
 var
   I: Integer;
   Temp: TStrings;
