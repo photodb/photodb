@@ -1,4 +1,4 @@
-program PhotoDBInstall;
+program Install;
 
 uses
   Forms,

@@ -2,12 +2,11 @@ unit uVistaFuncs;
 
 interface
 
-uses Forms, Windows, Graphics, uConstants, Messages;
+uses Forms, Windows, Graphics, uConstants, Messages, uSysUtils;
 
 type
   TChangeWindowMessageFilter = function(msg: Cardinal; action: Word): BOOL; stdcall;
 
-function IsWindowsVista: Boolean;  
 procedure SetVistaFonts(const AForm: TCustomForm);
 procedure SetVistaContentFonts(const AFont: TFont; Increment : integer = 2);
 procedure SetDesktopIconFonts(const AFont: TFont);
@@ -95,15 +94,6 @@ begin
   else
     SetDefaultFonts(AFont);
 end;
-
-function IsWindowsVista: Boolean;   
-var
-  VerInfo: TOSVersioninfo;
-begin
-  VerInfo.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
-  GetVersionEx(VerInfo);        
-  Result := VerInfo.dwMajorVersion >= 6;
-end;  
 
 const
   dwmapi = 'dwmapi.dll';

@@ -2,7 +2,7 @@
 		<PropertyGroup>
 			<ProjectGuid>{4C03476C-1E9C-42ED-95A6-2DF61B89636A}</ProjectGuid>
 			<ProjectVersion>12.0</ProjectVersion>
-			<MainSource>PhotoDBInstall.dpr</MainSource>
+			<MainSource>Install.dpr</MainSource>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 		</PropertyGroup>
@@ -26,7 +26,7 @@
 			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_Define>DBDEBUG,INSTALL;$(DCC_Define)</DCC_Define>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_DependencyCheckOutputName>..\PhotoDBInstall.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\Install.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_Platform>x86</DCC_Platform>
 		</PropertyGroup>
@@ -40,7 +40,7 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="PhotoDBInstall.dpr">
+			<DelphiCompile Include="Install.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="uFrmMain.pas">
@@ -126,7 +126,7 @@
 			<BorlandProject>
 				<Delphi.Personality>
 					<Source>
-						<Source Name="MainSource">PhotoDBInstall.dpr</Source>
+						<Source Name="MainSource">Install.dpr</Source>
 					</Source>
 					<Parameters>
 						<Parameters Name="UseLauncher">False</Parameters>

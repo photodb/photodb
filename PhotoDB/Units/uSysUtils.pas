@@ -24,8 +24,18 @@ function GetExeVersion(sFileName: string): TRelease;
 function StringToRelease(const s: string) : TRelease;
 function ReleaseToString(Release : TRelease) : string;
 function ProductVersion: string;
+function IsWindowsVista: Boolean;
 
 implementation
+
+function IsWindowsVista: Boolean;
+var
+  VerInfo: TOSVersioninfo;
+begin
+  VerInfo.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
+  GetVersionEx(VerInfo);
+  Result := VerInfo.dwMajorVersion >= 6;
+end;
 
 function GetExeVersion(sFileName: string): TRelease;
 var

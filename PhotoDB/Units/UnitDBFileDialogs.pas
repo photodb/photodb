@@ -10,7 +10,7 @@ uses
   UnitDBCommon,
   uAppUtils,
   {$ENDIF}
-  Classes, uMemory,
+  Classes, uMemory, uSysUtils,
   uVistaFuncs, VistaFileDialogs, Dialogs, ExtDlgs, acDlgSelect, SysUtils;
 
 type
@@ -119,7 +119,7 @@ end;
 
 function CanUseVistaDlg: Boolean;
 begin
-  Result := UVistaFuncs.IsWindowsVista and (GetDOSEnvVar('SAFEBOOT_OPTION') = '')
+  Result := IsWindowsVista and (GetDOSEnvVar('SAFEBOOT_OPTION') = '')
   {$IFDEF PHOTODB} and not GetParamStrDBBool ('/NoVistaFileDlg'){$ENDIF};
 end;
 

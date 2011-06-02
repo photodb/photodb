@@ -9,6 +9,7 @@ uses
   uMemory,
   uFileUtils,
   uAppUtils,
+  uSysUtils,
   ShellApi;
 
 function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string; IsCurrentUserAdmin: Boolean): THandle;
@@ -29,7 +30,7 @@ begin
   sei.cbSize := SizeOf(TShellExecuteInfo);
   sei.Wnd := hwnd;
   sei.fMask := SEE_MASK_FLAG_DDEWAIT or SEE_MASK_FLAG_NO_UI or SEE_MASK_NOCLOSEPROCESS;
-  if IsCurrentUserAdmin then
+  if IsCurrentUserAdmin and not IsWindowsVista then
     sei.lpVerb := PChar('open')
   else
     sei.lpVerb := PChar('runas');
