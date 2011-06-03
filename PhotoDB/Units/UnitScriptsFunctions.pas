@@ -529,7 +529,7 @@ var
   Dir, CmdLine : string;
   P: TProcessInformation;
 begin
-  CmdLine := '"' + ExeFile + '" ' + Params;
+  CmdLine := '"' + ExeFile + '" "' + Params + '"';
   Dir := ExtractFilePath(ExeFile);
   FillChar(Si, SizeOf(Si), 0);
   with Si do

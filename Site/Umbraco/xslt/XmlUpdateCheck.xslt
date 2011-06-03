@@ -10,7 +10,7 @@
 <xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
-<xsl:variable name="mode" select="string(umbraco.library:RequestQueryString('mode'))" />
+<xsl:variable name="mode" select="'stable'" />
 <xsl:variable name="home" select="$currentPage/ancestor-or-self::*[@level=1]" />
 <xsl:variable name="releasesHolderDocTypeId" select="1091" /> 
 <xsl:variable name="downloadPageDocTypeId" select="1072" />

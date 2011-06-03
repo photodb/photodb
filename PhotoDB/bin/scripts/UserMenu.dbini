@@ -16,7 +16,7 @@ initialization:
     $IconN=AddIcon($Icon);
     $SubItem=ReadRegRealBool($x,"UseSubMenu");   
     $Params=PathFormat($Params,$FileName);
-    $RunString="Run("""+$Exe+""","""""+$Params+""""");";
+    $RunString="Run("""+$Exe+""","""+$Params+""");";
     if ($SubItem=true) {
       CreateItem($Caption,$IconN,$RunString,false,0);
       $c=SumInt($c,1);

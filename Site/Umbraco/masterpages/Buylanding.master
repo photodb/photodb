@@ -1,5 +1,5 @@
 ﻿<%@ Master Language="C#" MasterPageFile="~/masterpages/LeftNavigation.master" AutoEventWireup="true" %>
 
 <asp:Content ContentPlaceHolderID="RightContent" runat="server">
-  Buy landing
+  Currently this page isn't ready...
 </asp:Content>
