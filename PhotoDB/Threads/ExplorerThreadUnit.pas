@@ -384,7 +384,7 @@ begin
             if IsTerminated then
               Break;
             try
-              if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+              if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
               begin
                 FA := SearchRec.Attr and FaHidden;
                 if ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
@@ -394,7 +394,7 @@ begin
                       Continue;
 
                   Inc(FilesReadedCount);
-                  if FilesReadedCount mod 10 = 0 then
+                  if FilesReadedCount mod 50 = 0 then
                     ShowInfo(Format(L('Reading directory [%d objects found]'), [FilesReadedCount]), 1, 0);
                   if ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
                   begin

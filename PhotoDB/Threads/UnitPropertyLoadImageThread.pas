@@ -115,9 +115,9 @@ begin
           FB.Height := ThSizePropertyPreview;
         end;
 
-       TempBitmap:=TBitmap.Create;
-       try
-          TempBitmap.Assign(Graphic);
+        TempBitmap:=TBitmap.Create;
+        try
+          AssignGraphic(TempBitmap, Graphic);
           F(Graphic);
           FB.PixelFormat := TempBitmap.PixelFormat;
           DoResize(FB.Width, FB.Height, TempBitmap, FB);

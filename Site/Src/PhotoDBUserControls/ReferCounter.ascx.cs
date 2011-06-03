@@ -1,5 +1,6 @@
 ﻿using System;
 using PhotoDBDatabase.Classes;
+using PhotoDBUmbracoExtensions;
 using PhotoDBUserControls.Classes.MaxMind;
 using umbraco.NodeFactory;
 
@@ -11,13 +12,16 @@ namespace PhotoDBUserControls
         {
             if (!IsPostBack)
             {
-                if (Session["REFER_CHECK"] == null)
+                if (!UmbracoHelper.IsLoggedIntoBackend)
                 {
-                    Session["REFER_CHECK"] = new object();
-                    StatsManager.CheckRefer();
+                    if (Session["REFER_CHECK"] == null)
+                    {
+                        Session["REFER_CHECK"] = new object();
+                        StatsManager.CheckRefer();
+                    }
+                    int id = Node.GetCurrent().Id;
+                    StatsManager.MarkView(id, umbraco.library.NiceUrl(id), GeoIPHelper.CountryCode);
                 }
-                int id = Node.GetCurrent().Id;
-                StatsManager.MarkView(id, umbraco.library.NiceUrl(id), GeoIPHelper.CountryCode);
             }
         }
     }

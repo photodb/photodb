@@ -30,7 +30,7 @@
     <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
   <scope name="System">    
-	<translate name="This program is running, but isn't responding! Run new instance?" value="Получить фотографии" />
+    <translate name="This program is running, but isn't responding! Run new instance?" value="Получить фотографии" />
     <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
     <translate name="View with PhotoDB" value="Просмотр с помощью PhotoDB" />
     <translate name="Photo Database {V} helps you to find, protect and organize your photos." value="Photo Database {V} поможет вам в поиске, защите и организации ваших фотографий." />
@@ -38,7 +38,7 @@
     <translate name="Browse with PhotoDB" value="Проводник с PhotoDB" />
     <translate name="After the 30 days has expired, you must activate your copy!" value="Время работы программы истекло! Вы должны активизировать данную копию!" />
     <translate name="Application is damaged! Possible it is infected by a virus!" value="Приложение повреждено! Возможно, что оно инфицировано каким-либо вирусом!" />
-	<translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
+    <translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
   </scope>
   <scope name="Setup">
     <translate name="Welcome to the Photo Database 2.3" value="Добро пожаловать в Photo Database 2.3" />
@@ -122,9 +122,9 @@
     <translate name="Add filename suffix" value="Добавлять суффикс к имени файла" />
     <translate name="Error writing data on disk: %s." value="Ошибка записи данных на диск: %s." />
     <translate name="Watermark Options" value="Настнойки водяного знака" />
-	<translate name="Please, choose a valid directory!" value="Пожалуйста, выберите существующую директорию!" />
+    <translate name="Please, choose a valid directory!" value="Пожалуйста, выберите существующую директорию!" />
     <translate name="processed" value="обработка" />
-	<translate name="Preview isn't available. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждно или зашифровано." />	
+    <translate name="Preview isn't available. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждно или зашифровано." />	
   </scope>
   <scope name="Password">
     <translate name="Password" value="Пароль" />
@@ -253,6 +253,7 @@
     <translate name="Stop" value="Прервать" />
     <translate name="Query in collection..." value="Получение информации из БД..." />
     <translate name="Reading directory" value="Чтение директории" />
+    <translate name="Reading directory [%d objects found]" value="Чтение директории [найдено %d объектов]" />
     <translate name="Loading thumbnails" value="Загрузка предпросмотров" />
     <translate name="Loading files" value="Загрузка файлов" />
     <translate name="Loading images" value="Загрузка изображений" />
@@ -263,7 +264,7 @@
     <translate name="Opening computer" value="Открытие компьютера" />	
     <translate name="Error opening computer &quot;%s&quot;!" value="Ошибка открытия компьютера &quot;%s&quot;!" />
     <translate name="Loading &quot;My computer&quot; directory" value="Загрузка папки &quot;Мой компьютер&quot;" />
-	<translate name="New directory" value="Новая директория" />
+    <translate name="New directory" value="Новая директория" />
     <translate name="Unable to create directory %s!" value="Невозможно создать директорию %s!" />
     <translate name="Directory &quot;%s&quot; not found!" value="Директория &quot;%s&quot; не найдена!" />	
     <translate name="Text document" value="Текстовый документ" />
@@ -299,9 +300,9 @@
     <translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />
     <translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
     <translate name="Add file" value="Добавить файл" />
-	<translate name="This folder (%s) contains %d photos in the database!. Adjust the information in the database?" value="В данной папке (%s) содержится %d фотографий из БД! Скорректировать информацию в БД?" />
+    <translate name="This folder (%s) contains %d photos in the database!. Adjust the information in the database?" value="В данной папке (%s) содержится %d фотографий из БД! Скорректировать информацию в БД?" />
     <translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />	
-	<translate name="There is no images to display!" value="Нет файлов для отображения!" />
+    <translate name="There is no images to display!" value="Нет файлов для отображения!" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />
@@ -1825,7 +1826,7 @@
 	<translate name="Do you really want to delete this information from the collection?" value="Вы действительно хотите удалить эту информацию из БД?"/>
   </scope>
   <scope name="CMD">
-	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
+    <translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
     <translate name="Welcome to %s!" value="Добро пожаловать в %s!"/>
     <translate name="Packing table:" value="Упаковка таблицы:"/>	
     <translate name="Commands window" value="Окно команд"/>	
@@ -1866,7 +1867,7 @@
 	<translate name="Unable to restore collection (%s)! The current collection may be corrupted or missing! After starting try to restore the file &quot;%s&quot; which is a backup of your collection. Error: %s" value="Не удалось восстановить БД (%s)! Текущая БД может быть повреждена или отсутствовать! После запуска попробуйте восстановить файл &quot;%s&quot; в котором находится резервная копия вашей БД. Возникла ошибка: %s"/>
   </scope>
   <scope name="Activation">
-	<translate name="Activation" value="Активация"/>
+    <translate name="Activation" value="Активация"/>
     <translate name="Previous" value="Назад" />
     <translate name="Next" value="Далее" />
     <translate name="Finish" value="Финиш" />
@@ -1882,10 +1883,11 @@
     <translate name="Activation via internet failed! Please, check your internet connection settings in IE. Only manual activation is possible at this moment!" value="Активация через интернет не удалась! Проверьте настройки интернета в IE. Возможна только ручная активация!" />
     <translate name="This wizard helps you to activate this copy of application. Please fill all required fields and follow the instructions." value="Этот диалог поможет вам активировать программу. Пожалуйста, заполните все необходимые поля и следуйте инструкциям." />
     <translate name="Field &quot;%s&quot; is required!" value="Поле &quot;%s&quot; является обязательным!" />
+    <translate name="Field &quot;%s&quot; is required and should be well-formatted!" value="Поле &quot;%s&quot; является обязательным и должно быть корректно заполнено!" />
 	<translate name="Activate new copy of application" value="Активировать новую копию приложения" />
     <translate name="Install activation code" value="Установить в систему код активации" />
     <translate name="To manually activate the program you need to send a letter with the following information to" value="Для ручной активации программы Вам необходимо отослать письмо со следующими данными на адрес" />
-	<translate name="(*) - required fields" value="(*) - обязательные поля" />    
+    <translate name="(*) - required fields" value="(*) - обязательные поля" />    
     <translate name="Next..." value="Далее..." />
     <translate name="Program code" value="Код вашей копии программы"/>
     <translate name="Enter here activation key" value="Введите сюда ключ для активации"/>
@@ -1905,13 +1907,13 @@
 	<translate name="No new updates are available" value="Нет новых обновлений для программы"/>	
   </scope>
   <scope name="Mobile">
-	<translate name="Collection name" value="Имя БД"/>
-	<translate name="Please enter name for new collection" value="Введите имя новой БД"/>
-	<translate name="Do you want to change the icon for the final collection?" value="Вы хотите сменить иконку у конечной БД?"/>
+    <translate name="Collection name" value="Имя БД"/>
+    <translate name="Please enter name for new collection" value="Введите имя новой БД"/>
+    <translate name="Do you want to change the icon for the final collection?" value="Вы хотите сменить иконку у конечной БД?"/>
   </scope>
   <scope name="Hint">
-	<translate name="Image size: %d x %d" value="Размер изображения: %d x %d"/>
-	<translate name="File size: %s" value="Размер файла: %s"/>
+    <translate name="Image size: %d x %d" value="Размер изображения: %d x %d"/>
+    <translate name="File size: %s" value="Размер файла: %s"/>
   </scope>
   <scope name="WatermarkOptions">
 	<translate name="Watermark options" value="Водяной знак"/>

@@ -5,7 +5,8 @@ interface
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage, uDBForm,
   Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes,
-  uMemory, uGraphicUtils, uDBGraphicTypes, uAssociations, uDBThread;
+  uMemory, uGraphicUtils, uDBGraphicTypes, uAssociations, uDBThread,
+  UnitDBCommonGraphics;
 
 type
   TPropertyLoadGistogrammThreadOptions = record
@@ -131,7 +132,7 @@ begin
       end;
       Bitmap := TBitmap.Create;
       try
-        Bitmap.Assign(Graphic);
+        AssignGraphic(Bitmap, Graphic);
         F(Graphic);
         Bitmap.PixelFormat := pf24bit;
         SetLength(PRGBArr, Bitmap.Height);

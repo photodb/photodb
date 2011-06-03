@@ -1494,7 +1494,7 @@ begin
     if Bitmap.PixelFormat <> pf32bit then
     begin
       Bitmap.PixelFormat := pf24bit;
-      Image.Assign(Bitmap);
+      AssignBitmap(Image, Bitmap);
       for I := 0 to Image.Height - 1 do
       begin
         PS := Image.ScanLine[I];
@@ -1504,7 +1504,7 @@ begin
       end;
     end else
     begin
-      Image.Assign(Bitmap);
+      AssignBitmap(Image, Bitmap);
       for I := 0 to Image.Height - 1 do
       begin
         PS32 := Image.ScanLine[I];
@@ -1514,7 +1514,7 @@ begin
       end;
     end;
   finally
-    Image.Free;
+    F(Image);
   end;
 end;
 
@@ -1531,10 +1531,10 @@ begin
   try
     if Bitmap.PixelFormat <> pf32bit then
     begin
-      Image.PixelFormat := pf24bit;
-      Image.Assign(Bitmap);
+      Bitmap.PixelFormat := pf24bit;
+      AssignBitmap(Image, Bitmap);
       Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA, Image.Width);
+      SetLength(PA, Bitmap.Height);
       for I := 0 to Bitmap.Height - 1 do
         PA[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
       for I := 0 to Image.Height - 1 do
@@ -1545,9 +1545,9 @@ begin
       end;
     end else
     begin
-      Image.Assign(Bitmap);
+      AssignBitmap(Image, Bitmap);
       Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA32, Image.Height);
+      SetLength(PA32, Bitmap.Height);
       for I := 0 to Bitmap.Height - 1 do
         PA32[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
       for I := 0 to Image.Height - 1 do
@@ -1558,7 +1558,7 @@ begin
       end;
     end;
   finally
-    Image.Free;
+    F(Image);
   end;
 end;
 
@@ -1573,13 +1573,13 @@ var
 begin
   Image := TBitmap.Create;
   try
-    if Image.PixelFormat <> pf32bit then
+    if Bitmap.PixelFormat <> pf32bit then
     begin
       Bitmap.PixelFormat := pf24bit;
-      Image.Assign(Bitmap);
+      AssignBitmap(Image, Bitmap);
       Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA, Image.Width);
-      for I := 0 to Image.Width - 1 do
+      SetLength(PA, Bitmap.Height);
+      for I := 0 to Bitmap.Height - 1 do
         PA[I] := Bitmap.ScanLine[I];
       for I := 0 to Image.Height - 1 do
       begin
@@ -1589,10 +1589,10 @@ begin
       end;
     end else
     begin
-      Image.Assign(Bitmap);
+      AssignBitmap(Image, Bitmap);
       Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA, Image.Width);
-      for I := 0 to Image.Width - 1 do
+      SetLength(PA32, Bitmap.Height);
+      for I := 0 to Bitmap.Height - 1 do
         PA32[I] := Bitmap.ScanLine[I];
       for I := 0 to Image.Height - 1 do
       begin
@@ -1602,7 +1602,7 @@ begin
       end;
     end;
   finally
-    Image.Free;
+    F(Image);
   end;
 end;
 

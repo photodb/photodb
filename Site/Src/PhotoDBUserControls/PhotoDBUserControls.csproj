@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="BuyForm.ascx.cs">
       <DependentUpon>BuyForm.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="BuyForm.ascx.designer.cs">
       <DependentUpon>BuyForm.ascx</DependentUpon>
@@ -143,6 +144,10 @@
     <ProjectReference Include="..\PhotoDBDatabase\PhotoDBDatabase.csproj">
       <Project>{CA0C90D6-79A6-42F6-97D6-715819E0AED1}</Project>
       <Name>PhotoDBDatabase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PhotoDBUmbracoExtensions\PhotoDBUmbracoExtensions.csproj">
+      <Project>{A6BA60D7-AB3A-47C5-92FB-5ADC3EB13D6C}</Project>
+      <Name>PhotoDBUmbracoExtensions</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -207,6 +207,7 @@ begin
   AppKey := ApplicationCode;
   IsDemo := True;
   IsFull := False;
+  Result := '';
   for I := 0 to Length(ActivetionModes) - 1 do
   begin
     Reg := TRegistry.Create;
@@ -219,12 +220,9 @@ begin
           ActCode := Reg.ReadString(RegistrationCode);
           CheckActivationCode(AppKey, ActCode, IsDemo, IsFull);
           if not IsDemo then
-          begin
-            if IsFull or (ActivetionModes[I] = HKEY_LOCAL_MACHINE) then
-              Result := Reg.ReadString(OptionName);
-          end;
+            Result := Reg.ReadString(OptionName);
 
-          if Result <> '' then
+          if (Result <> '') and IsFull then
             Exit;
         end;
       end;

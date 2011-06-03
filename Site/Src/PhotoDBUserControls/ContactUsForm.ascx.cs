@@ -2,6 +2,7 @@
 using System.Web.UI;
 using PhotoDBDatabase.Classes;
 using PhotoDBUserControls.Classes;
+using PhotoDBUmbracoExtensions;
 
 namespace PhotoDBUserControls
 {
@@ -41,6 +42,16 @@ namespace PhotoDBUserControls
                     txtTheme.Text,
                     txtMessageText.Text,
                     "CONTACTUS");
+
+                MailData data = new MailData();
+                data.Add("First Name", txtFirstName.Text);
+                data.Add("Last Name", txtLastName.Text);
+                data.Add("Email", txtEmail.Text);
+                data.Add("Organization", txtOrganization.Text);
+                data.Add("Theme", txtTheme.Text);
+                data.Add("Text", txtMessageText.Text);
+                Mailer.MailNotify("Contact Us Form", data);
+
                 ltrThankYouMessage.Text = GetProperty("thankYouMessage");
                 mvMain.ActiveViewIndex = 1;
             }

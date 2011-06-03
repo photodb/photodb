@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using PhotoDBActivation;
 using PhotoDBDatabase.Classes;
+using PhotoDBUmbracoExtensions;
 
 namespace PhotoDBUserControls
 {
@@ -73,6 +74,19 @@ namespace PhotoDBUserControls
             string freeActivationKey = ActivationHelper.GenerateFreeActivationNumber(programKey);
             ActivationManager.NewFreeActivation(firstName, lastName, email, phone,
                 country, city, address, programKey, freeActivationKey, programVersion);
+
+            MailData data = new MailData();
+            data.Add("First Name", firstName);
+            data.Add("Last Name", lastName);
+            data.Add("Email", email);
+            data.Add("Phone", phone);
+            data.Add("Country", country);
+            data.Add("City", city);
+            data.Add("Address", address);
+            data.Add("Program Key", programKey);
+            data.Add("Activation Key", freeActivationKey);
+            data.Add("Program Version", programVersion);
+            Mailer.MailNotify("Activation", data);
 
             ltrReply.Text = freeActivationKey;
         }

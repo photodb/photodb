@@ -755,10 +755,10 @@ object PropertiesForm: TPropertiesForm
         OnDblClick = GroupManeger1Click
       end
       object LbGroupsEditInfo: TLabel
-        Left = 67
-        Top = 8
-        Width = 209
-        Height = 65
+        Left = 74
+        Top = 16
+        Width = 208
+        Height = 57
         AutoSize = False
         Caption = 
           'Use "-->" button to add groups to selected objects and "<--" but' +

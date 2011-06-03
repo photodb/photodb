@@ -105,7 +105,6 @@ begin
       FBitmapImage := TBitmap.Create;
       try
         AssignGraphic(FBitmapImage, Graphic);
-        FBitmapImage.Assign(Graphic);
         F(Graphic);
         FBitmapImage.PixelFormat := pf24bit;
 

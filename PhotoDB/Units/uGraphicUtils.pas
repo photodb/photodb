@@ -452,13 +452,13 @@ begin
   B2 := TBitmap.Create;
   try
     B2.PixelFormat := pf24bit;
-    B2.Assign(Image);
+    AssignGraphic(B2, Image);
 
     if Quick then
     begin
       if (B2.Width = 100) and (B2.Height = 100) then
       begin
-        B2_0.Assign(B2);
+        AssignBitmap(B2_0, B2);
       end else
         StretchA(100, 100, B2, B2_0);
 

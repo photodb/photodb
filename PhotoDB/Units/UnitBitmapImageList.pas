@@ -2,7 +2,7 @@ unit UnitBitmapImageList;
 
 interface
 
-uses Classes, Graphics, uMemory;
+uses Classes, Graphics, uMemory, Effects;
 
 type
   TBitmapImageListImage = class
@@ -57,7 +57,7 @@ begin
       Pointer(Item.Bitmap) := Pointer(Bitmap)
     else begin
       Item.Bitmap := TBitmap.Create;
-      Item.Bitmap.Assign(Bitmap);
+      AssignBitmap(Item.Bitmap, Bitmap);
     end;
     Item.SelfReleased := True;
   end else

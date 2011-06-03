@@ -52,16 +52,23 @@ implementation
 uses
   UnitHelp, FormManegerUnit, uFrameActivationLanding;
 
+var
+  IsActivationActive: Boolean = False;
+
 procedure ShowActivationDialog;
 var
   ActivateForm: TActivateForm;
 begin
   if not FolderView then
   begin
+    if IsActivationActive then
+      Exit;
     Application.CreateForm(TActivateForm, ActivateForm);
+    IsActivationActive := True;
     try
       ActivateForm.Execute;
     finally
+      IsActivationActive := False;
       R(ActivateForm);
     end;
   end;

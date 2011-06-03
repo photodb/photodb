@@ -2,6 +2,7 @@
 using System.Web.UI;
 using PhotoDBDatabase.Classes;
 using PhotoDBUserControls.Classes;
+using PhotoDBUmbracoExtensions;
 
 namespace PhotoDBUserControls
 {
@@ -34,6 +35,13 @@ namespace PhotoDBUserControls
                     "UNINSTALL",
                     txtMessageText.Text,
                     "UNINSTALL");
+
+                MailData data = new MailData();
+                data.Add("Name", txtName.Text);
+                data.Add("Reason", txtMessageText.Text);
+                data.Add("Email", txtEmail.Text);
+                Mailer.MailNotify("UnInstall :(", data);
+
                 ltrThankYouMessage.Text = GetProperty("thankYouMessage");
                 mvMain.ActiveViewIndex = 1;
             }
