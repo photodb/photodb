@@ -153,7 +153,7 @@ begin
   EdPath.WatermarkText := L('No file');
   CbSetAsDefaultDB.Caption := L('Use as default collection');
   LbDBDescription.Caption := L('Display name');
-  EdDBDescription.WatermarkText := L('Short DB description');
+  EdDBDescription.WatermarkText := L('Short collection description');
   CbAddDefaultGroups.Caption := L('Add standard groups');
 end;
 

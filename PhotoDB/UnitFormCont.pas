@@ -471,7 +471,7 @@ var
   Item, Itemsel: TEasyItem;
 begin
   Item := ItemAtPos(x,y);
-  if (Item = nil) and not ((Button = MbLeft) and CtrlKeyDown) then
+  if (Item = nil) and not CtrlKeyDown then
      ElvMain.Selection.ClearAll;
 
   MouseDowned := Button = MbRight;

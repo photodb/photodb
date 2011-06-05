@@ -92,7 +92,7 @@ begin
   inherited;
   GroupBox3.Caption := L('Select an file');
   LbName.Caption := L('File name') + ':';
-  LbDBType.Caption := L('DB Type') + ':';
+  LbDBType.Caption := L('Collection type') + ':';
   LbIconPreview.Caption := L('Icon preview') + ':';
   BtnChooseIcon.Caption := L('Choose icon');
   BtnChangeDBOptions.Caption := L('Change Collection Settings');
@@ -101,7 +101,7 @@ begin
   LbDisplayName.Caption := L('Display name');
   EdFileName.WatermarkText := L('No file');
   EdDBType.WatermarkText := L('No file');
-  EdInternalName.WatermarkText := L('Short DB description');
+  EdInternalName.WatermarkText := L('Short collection description');
   EdInternalName.Text := DBKernel.NewDBName(L('New collection'));
   WlDBOptions.Text := L('Change the size and quality of previews');
 end;

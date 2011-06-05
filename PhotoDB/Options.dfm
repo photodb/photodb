@@ -54,10 +54,6 @@ object OptionsForm: TOptionsForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -184,10 +180,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -390,10 +382,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -484,10 +472,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -743,10 +727,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -776,7 +756,7 @@ object OptionsForm: TOptionsForm
           Left = 7
           Top = 38
           Width = 121
-          Height = 21
+          Height = 22
           MaxValue = 100
           MinValue = 0
           TabOrder = 0
@@ -1182,10 +1162,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         443
         413)
@@ -1308,7 +1284,7 @@ object OptionsForm: TOptionsForm
         Left = 126
         Top = 271
         Width = 41
-        Height = 21
+        Height = 22
         MaxValue = 10000
         MinValue = 1
         TabOrder = 12
@@ -1318,7 +1294,7 @@ object OptionsForm: TOptionsForm
         Left = 11
         Top = 271
         Width = 41
-        Height = 21
+        Height = 22
         MaxValue = 10000
         MinValue = 1
         TabOrder = 11

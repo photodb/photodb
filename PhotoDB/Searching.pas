@@ -861,7 +861,7 @@ begin
   Item := ItemAtPos(X, Y);
   MouseDowned := Button = mbRight;
   ItemByMouseDown := False;
-  if (Item = nil) and not ((Button = MbLeft) and CtrlKeyDown) then
+  if (Item = nil) and not CtrlKeyDown then
      ElvMain.Selection.ClearAll;
 
   EnsureSelectionInListView(ElvMain, Item, Shift, X, Y, ItemSelectedByMouseDown, ItemByMouseDown);
@@ -2809,7 +2809,7 @@ begin
     1:
       SearchEdit.Text := ':DeletedFiles:';
     2:
-      SearchEdit.Text := ':Dublicates:';
+      SearchEdit.Text := ':Duplicates:';
   end;
 end;
 

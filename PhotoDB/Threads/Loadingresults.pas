@@ -142,9 +142,9 @@ begin
     db_attr_norm:
       Params.Query := Params.Query + Format(' AND (Attr <> %d)',[db_attr_not_exists]);
     db_attr_dublicate:
-      Params.Query := Params.Query + Format(' AND (Attr = %d)', [db_attr_dublicate]);
+      Params.Query := Params.Query + Format(' (Attr = %d)', [db_attr_dublicate]);
     db_attr_not_exists:
-      Params.Query := Params.Query + Format('(Attr = %d)', [db_attr_not_exists]);
+      Params.Query := Params.Query + Format(' (Attr = %d)', [db_attr_not_exists]);
   end;
 
   if not FSearchParams.ShowPrivate then
@@ -279,6 +279,15 @@ begin
         ApplyFilter(Result, Db_attr_norm);
       end;
 
+      if AnsiLowerCase(Copy(Sysaction, 1, 5)) = AnsiLowerCase('Group') then
+      begin
+        SystemQuery := True;
+        Stemp := GroupSearchByGroupName(Copy(Sysaction, 7, Length(Sysaction) - 7));
+        Result.Query := Format('SELECT %s FROM $DB$', [FIELDS]);
+        Result.Query := Result.Query + ' WHERE (Groups LIKE "' + Stemp + '")';
+        ApplyFilter(Result, Db_attr_norm);
+      end;
+	  
       if AnsiLowerCase(Copy(Sysaction, 1, 6)) = AnsiLowerCase('folder') then
       begin
         Systemquery := True;

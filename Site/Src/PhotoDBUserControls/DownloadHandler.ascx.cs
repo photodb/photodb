@@ -5,6 +5,7 @@ using PhotoDBUserControls.Classes.MaxMind;
 using umbraco.cms.businesslogic.media;
 using umbraco.cms.businesslogic.property;
 using umbraco.interfaces;
+using PhotoDBUmbracoExtensions;
 
 namespace PhotoDBUserControls
 {
@@ -69,7 +70,8 @@ namespace PhotoDBUserControls
                             if (currentWeight >= downloadPageWeight)
                             {
                                 int pageId = umbraco.NodeFactory.Node.GetCurrent().Id;
-                                DownloadManager.NewDownload(mediaId, pageId, Request.RawUrl, d.DownloadPage, GeoIPHelper.CountryCode);
+                                if (!UmbracoHelper.IsLoggedIntoBackend)
+                                    DownloadManager.NewDownload(mediaId, pageId, Request.RawUrl, d.DownloadPage, GeoIPHelper.CountryCode);
                                 Response.Redirect(d.DownloadPage);
                                 break;
                             }

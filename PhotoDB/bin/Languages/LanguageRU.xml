@@ -124,7 +124,7 @@
     <translate name="Watermark Options" value="Настнойки водяного знака" />
     <translate name="Please, choose a valid directory!" value="Пожалуйста, выберите существующую директорию!" />
     <translate name="processed" value="обработка" />
-    <translate name="Preview isn't available. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждно или зашифровано." />	
+    <translate name="Preview isn't available. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждено или зашифровано." />	
   </scope>
   <scope name="Password">
     <translate name="Password" value="Пароль" />
@@ -217,7 +217,7 @@
     <translate name="Collection Info" value="Информация" />
     <translate name="Image editor" value="Редактор" />
     <translate name="Other tasks" value="Другие задачи" />
-    <translate name="Export images" value="Экспорт изображний" />
+    <translate name="Export images" value="Экспорт изображений" />
     <translate name="Print" value="Печать" />
     <translate name="Other places" value="Другие места" />
     <translate name="New text file" value="Новый текстовый файл" />
@@ -337,7 +337,7 @@
     <translate name="ID" value="ID" />
     <translate name="File name" value="Имя файла" />
     <translate name="Keywords" value="Ключевые слова" />
-    <translate name="Comment" value="Коментарий" />
+    <translate name="Comment" value="Комментарий" />
     <translate name="Rating" value="Рейтинг" />
     <translate name="Rotate" value="Поворот" />
     <translate name="Access" value="Доступ" />
@@ -374,7 +374,7 @@
     <translate name="Properties" value="Свойства" />
     <translate name="Diffrent files" value="Различные файлы" />
     <translate name="%d files are selected" value="Выбрано %d файлов" />	
-    <translate name="Comment" value="Коментарий" />
+    <translate name="Comment" value="Комментарий" />
     <translate name="Name" value="Имя" />
     <translate name="Full path" value="Полный путь" />
     <translate name="Owner" value="Владелец" />
@@ -401,7 +401,7 @@
     <translate name="Find item" value="Найти" />
     <translate name="Rating not sets" value="Рейтинг не установлен" />
     <translate name="Set comment" value="Установить комментарий" />
-    <translate name="Comment not exists" value="Коментарий не установлен" />
+    <translate name="Comment not exists" value="Комментарий не установлен" />
     <translate name="Select all" value="Выделить всё" />
     <translate name="Cut" value="Вырезать" />
     <translate name="Copy" value="Скопировать" />
@@ -415,7 +415,7 @@
     <translate name="Gistogramm" value="Гистограмма" />
     <translate name="Additional" value="Дополнительно" />
     <translate name="Gistogramm image" value="Гистограмма изображения" />
-    <translate name="Effective range: %d..%d" value="Эффективный диапозон: %d..%d" />
+    <translate name="Effective range: %d..%d" value="Эффективный диапазон: %d..%d" />
     <translate name="Channel" value="Канал" />
     <translate name="Gray" value="Чёрно-белое" />
     <translate name="Red channel" value="Красный канал" />
@@ -494,7 +494,7 @@
     <translate name="Result" value="Результат" />
     <translate name="Rating" value="Оценка" />
     <translate name="Size" value="Размер" />
-    <translate name="Comment" value="Коментарий" />
+    <translate name="Comment" value="Комментарий" />
     <translate name="Keywords" value="Ключевые слова" />
     <translate name="Edit groups" value="Редактировать группы" />
     <translate name="There are no groups" value="Нет групп" />
@@ -506,7 +506,7 @@
     <translate name="Edit groups" value="Редактировать группы" />
     <translate name="Groups manager" value="Управление группами" />
     <translate name="No rating" value="Без оценки" />
-    <translate name="Set comment" value="Установить коментарий" />
+    <translate name="Set comment" value="Установить комментарий" />
     <translate name="No comment" value="Без коментария" />
     <translate name="Select all" value="Выделить всё" />
     <translate name="Cut" value="Вырезать" />
@@ -548,7 +548,7 @@
     <translate name="Query executing" value="Выполнение запроса" />
     <translate name="System query" value="Системный запрос" />
     <translate name="Show deleted items" value="Показать удалённые изображения" />
-    <translate name="Show duplicates" value="Показать дупликаты" />
+    <translate name="Show duplicates" value="Показать дубликаты" />
     <translate name="Error in SQL. Query: %s" value="Ошибка в SQL запросе: %s" />
     <translate name="No results" value="Нет результатов" />
     <translate name="File already exists! Replace?" value="Файл уже существует! Заменить?" />
@@ -579,11 +579,11 @@
     <translate name="Edit group" value="Редактировать группу" />
     <translate name="Enter group name" value="Введите имя группы" />
     <translate name="Group is private" value="Личная группа" />
-    <translate name="Write here comment for this group" value="Запишите сюда коментарий к группе" />
+    <translate name="Write here comment for this group" value="Запишите сюда комментарий к группе" />
     <translate name="Write here keywords for this group" value="Запишите сюда ключевые слова к группе" />
     <translate name="Load from file" value="Загрузить из файла" />
 	<translate name="Auto add keywords to photo" value="Добавлять ключевые слова" />
-	<translate name="Comment for group" value="Коментарий к группе" />
+	<translate name="Comment for group" value="Комментарий к группе" />
 	<translate name="Keywords for group" value="Ключевые слова к группе" />
 	<translate name="Include in quick group list" value="Включать в базовый список групп" />
 	<translate name="Related groups" value="Связанные группы" />
@@ -596,7 +596,7 @@
     <translate name="Collection is read only!" value="База данных только для чтения!" />
     <translate name="Find this file manually" value="Найти файл вручную" />	
     <translate name="Analyzer" value="Анализатор" />
-    <translate name="Dear {2}!{1}The degree of similarity of these 2 images is - {3}%!{1}Good luck!" value="Дорогой {2}!{1}Степень похожести этих двук картинок - {3}%!{1}Удачи!" />
+    <translate name="Dear {2}!{1}The degree of similarity of these 2 images is - {3}%!{1}Good luck!" value="Дорогой {2}!{1}Степень похожести этих двух картинок - {3}%!{1}Удачи!" />
     <translate name="File" value="Файл" />
     <translate name="Execute" value="Выполнить" />
     <translate name="Exit" value="Выход" />
@@ -620,7 +620,7 @@
     <translate name="Collection Manager" value="Управление БД" />
     <translate name="Image editor" value="Редактор изображений" />
     <translate name="New panel" value="Новая панель" />
-    <translate name="New search" value="Новая окно поиска" />
+    <translate name="New search" value="Новое окно поиска" />
     <translate name="Groups manager" value="Управление группами" />
     <translate name="Explorer" value="Проводник" />
     <translate name="Split Collection" value="Разделить БД" />
@@ -716,7 +716,7 @@
     <translate name="Loading list of images" value="загрузка списка изображений" />
 	<translate name="Collection Item [%d]" value="Информация в базе [%d]" />
     <translate name="Processing" value="Обработка" />
-    <translate name="Do you really want to delete file to recycle bin?" value="Вы действительно хотите удалить файл в коозину?" />
+    <translate name="Do you really want to delete file to recycle bin?" value="Вы действительно хотите удалить файл в корзину?" />
     <translate name="Page %d from %d" value="Страница %d из %d" />
 	<translate name="Next" value="Вперёд" />
     <translate name="Previous" value="Назад" />
@@ -906,11 +906,11 @@
 	<translate name="Enter group name" value="Введите имя группы" />
 	<translate name="Group is private" value="Личная группа" />
 	<translate name="Keywords for group" value="Ключевые слова группы" />    
-	<translate name="Write here comment for this group" value="Запишите сюда коментарий к группе" />
+	<translate name="Write here comment for this group" value="Запишите сюда комментарий к группе" />
     <translate name="Write here keywords for this group" value="Запишите сюда ключевые слова к группе" />
     <translate name="Load from file" value="Загрузить из файла" />
 	<translate name="Auto add keywords to photo" value="Автоматически добавлять ключевые слова" />    
-	<translate name="Comment for group" value="Коментарий к группе" />   
+	<translate name="Comment for group" value="Комментарий к группе" />   
 	<translate name="Include in quick group list" value="Включать в базовый список групп" />    
 	<translate name="Related groups" value="Связанные группы" />
 	<translate name="Edit related groups" value="Редактировать связанные группы" />
@@ -920,13 +920,13 @@
 	<translate name="Group info" value="Информация о группе" />
 	<translate name="Group" value="Группа" />
 	<translate name="Date created" value="Дата создания" />
-	<translate name="Attributes" value="Аттрибуты" />
+	<translate name="Attributes" value="Атрибуты" />
 	<translate name="Edit group" value="Редактировать группу" />
 	<translate name="Groups manager" value="Управление группами" />
 	<translate name="Search for group photos" value="Искать фотографии группы" />
 	<translate name="Auto add keywords" value="Автоматически добавлять ключевые слова" />
 	<translate name="Keywords for group" value="Ключевые слова к группе" />
-	<translate name="Comment for group" value="Коментарий к группе" />
+	<translate name="Comment for group" value="Комментарий к группе" />
 	<translate name="Include in quick access list" value="Включать в список быстрого доступа" />     
 	<translate name="Related groups" value="Связанные группы" />
 	<translate name="Group not found!" value="Группа не найдена!" />
@@ -942,15 +942,15 @@
 	<translate name="Open in explorer" value="Открыть в проводнике" />
 	<translate name="Building tree of collection" value="Построение дерева коллекции" />
 	<translate name="Unknown file" value="Неизвестный файл" />
-	<translate name="Please wait while the search is executed" value="Пожалуйста, подождите пока выполниться поиск" />
+	<translate name="Please wait while the search is executed" value="Пожалуйста, подождите, пока выполниться поиск" />
   </scope>
   <scope name="GetPhotos">
 	<translate name="Import of photos" value="Импорт фотографий" />
 	<translate name="Date of photos" value="Дата фотографий" />
 	<translate name="Open this folder" value="Открыть папку" />
 	<translate name="Folder mask" value="Маска имени директории" />
-	<translate name="Comment for folder" value="Коментарий к папке" />
-	<translate name="Your comment" value="Ваш коментарий" />
+	<translate name="Comment for folder" value="Комментарий к папке" />
+	<translate name="Your comment" value="Ваш комментарий" />
 	<translate name="Folder name" value="Имя директории" />
 	<translate name="Final location" value="Конечная директория" />
 	<translate name="Method" value="Метод" />
@@ -975,7 +975,7 @@
 	<translate name="Select a folder to place images" value="Выберите папку для размещения изображений" />
 	<translate name="Do you really want to delete this item?" value="Вы действительно хотите удалить этот пункт?" />
 	<translate name="No photos found! Window will be closed!" value="Фотографии не найдены! Окно будет закрыто!" />
-	<translate name="An error occurred during the preparation of photographs. Perhaps you're trying to move pictures from media which is read-only" value="Произошла ошибка в процессе получения фотографий. Возможно Вы пытаетесь переместить фотографии с носителя, который доступен только для чтения" />
+	<translate name="An error occurred during the preparation of photographs. Perhaps you're trying to move pictures from media which is read-only" value="Произошла ошибка в процессе получения фотографий. Возможно, Вы пытаетесь переместить фотографии с носителя, который доступен только для чтения" />
 	<translate name="Unable to create directory: &quot;%s&quot;" value="Невозможно создать директорию: &quot;%s&quot;" />
 	<translate name="Photos in the specified path: &quot;%s&quot; not found" value="Фотографии по указанному пути: &quot;%s&quot; не найдены" />
   </scope> 
@@ -997,7 +997,7 @@
 	<translate name="The size of files for export" value="Размер файлов для экспорта" />
 	<translate name="Delete original files after a successful export" value="Удалять оригинальные фотографии после успешного экспорта" />
 	<translate name="Adjust the information in the database after a successful export" value="Корректировать информацию в БД после удачного экспорта" />
-	<translate name="Create portable database on disk" value="Создать портабельную базу данных на диске" />
+	<translate name="Create portable database on disk" value="Создать мобильную базу данных на диске" />
 	<translate name="Export photos to a removable disk" value="Экспорт фотографий на съемный диск" />
 	<translate name="This dialog will help you to transfer a portion of photos stored on your hard drive - on CD \ DVD drive.$nl$Thus the information about the photographs will remain in the database, and if you want to see photos of the program will ask you to insert the appropriate disc.$nl$Program does not record data on the disc, but only generates a folder designed to write to the disk. $nl$To write to disk data files using special software!" value="Данный диалог поможет Вам перенести часть фотографий, хранящихся на жёстком диске - на CD\DVD диск.$nl$ При этом информация о фотографиях останется в базе, а при необходимости просмотра фотографий программа попросит Вас вставить соответствующий диск.$nl$Программа не записывает данные на диск, а всего лишь формирует папку предназначенную для записи на диск.$nl$ Чтобы записать на диск данные файлы используйте специализированные программы!" />
 	<translate name="Create directory" value="Создать директорию" />
@@ -1005,7 +1005,7 @@
 	<translate name="Select a folder to export files" value="Выберите папку для экспорта файлов" />
 	<translate name="Please enter a disk label that uniquely identify a disk! The title character is not allowed &quot;:&quot;, &quot;\&quot; and &quot;?&quot;" value="Пожалуйста, введите метку диска которая уникально определит диск! В названии нельзя использовать символы &quot;:&quot;, &quot;\&quot; и &quot;?&quot;" />
 	<translate name="Can not copy files: detected insufficient disk space! Need %s, and free only %s!" value="Невозможно скопировать файлы: обнаружено недостаточное количество свободного места на диске! Необходимо %s, а свободно %s!" />
-	<translate name="The exported data can not have files associated with the current database! You may not have selected the correct database! Continue to export?" value="Экспортируемые данные не имеют файлов, связанных с текущей базой данных! Возможно Вы не выбрали нужную базу! Продолжать экспорт?" />
+	<translate name="The exported data can not have files associated with the current database! You may not have selected the correct database! Continue to export?" value="Экспортируемые данные не имеют файлов, связанных с текущей базой данных! Возможно, Вы не выбрали нужную базу! Продолжать экспорт?" />
 	<translate name="Create CD\DVD image with name" value="Создать CD\DVD с именем" />
 	<translate name="Name of drive" value="Имя диска" />
 	<translate name="Location" value="Расположение" />
@@ -1293,7 +1293,7 @@
   <scope name="PrinterProgress">
 	<translate name="Abort" value="Прервать" />
 	<translate name="Printing ..." value="Идёт печать..." />
-	<translate name="Please wait until done printing..." value="Пожалуйста, подождите пока производится вывод на печать..." />
+	<translate name="Please wait until done printing..." value="Пожалуйста, подождите, пока производится вывод на печать..." />
   </scope>
   <scope name="Printer">
 	<translate name="Generating preview" value="Генерация предпросмотра" />
@@ -1392,7 +1392,7 @@
 	<translate name="Password" value="Пароль" />
 	<translate name="Password confirm" value="Подтверждение пароля" />
 	<translate name="File to hide" value="Файл для скрытия"/>
-	<translate name="Please select a file" value="Пожалуйста выберите файл"/>	
+	<translate name="Please select a file" value="Пожалуйста, выберите файл"/>	
 	<translate name="Previous" value="Назад"/>
 	<translate name="Next" value="Далее"/>
 	<translate name="Finish" value="Финиш"/>
@@ -1402,7 +1402,7 @@
 	<translate name="Extract hidden information from image file" value="Извлечь скрытую информацию из файла"/>
 	<translate name="Information will be stored in raster graphics, image will be modified!" value="Информация будет храниться в растре изображения, изображение будет модифицировано!"/>
 	<translate name="Information will be stored in file after JPEG image information" value="Информация будет храниться в файле после информации о JPEG изображении"/>
-	<translate name="Result file size: %s" value="Размер результирующго файла: %s"/>
+	<translate name="Result file size: %s" value="Размер результирующего файла: %s"/>
 	<translate name="All files (*.*)|*.*" value="Все файлы (*.*)|*.*"/>	
 	<translate name="All files (Size &lt; %s)|*?*" value="Все файлы (Размер &lt; %s)|*?*"/>	
 	<translate name="File name = &quot;%s&quot;" value="Имя файла = &quot;%s&quot;"/>
@@ -1414,12 +1414,12 @@
 	<translate name="The image does not contain hidden information, or this format is not supported!" value="Изображение не содержит скрытую информацию или данный формат не поддерживается!"/>
 	<translate name="Information in the file is corrupted! Checksum did not match!" value="Информация повреждена в файле! Контрольная сумма не совпала!"/>
 	<translate name="Information in the file will not be encrypted!" value="Информация в файле не будет зашифрована!"/>
-	<translate name="The image contains hidden information, but this format is not supported (version = %d)!" value="Это изображеие содержит скрытую информацию, но формат не поддерживается (версия = %d)!"/>
+	<translate name="The image contains hidden information, but this format is not supported (version = %d)!" value="Это изображение содержит скрытую информацию, но формат не поддерживается (версия = %d)!"/>
 	<translate name="The advantage of steganography, over cryptography alone, is that messages do not attract attention to themselves." value="Преимущество стеганографии над шифрованием является то, что скрытая информация не привлекает к себе лишнего внимания."/>
 	<translate name="Use another image" value="Использовать другое изображение"/>
 	<translate name="Load other image" value="Загрузить другое изображение"/>
 	<translate name="Convert image" value="Конвертировать изображение"/>
-	<translate name="Please choose larger image for this action!" value="Пожалуйста, выберите больше изоббражение для этого действия!"/>
+	<translate name="Please choose larger image for this action!" value="Пожалуйста, выберите больше изображение для этого действия!"/>
   </scope>
   <scope name="About">
 	<translate name="Checking updates..." value="Поиск обновлений..."/>
@@ -1449,7 +1449,7 @@
 	<translate name="New collection" value="Новая БД"/>
 	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
 	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>
-	<translate name="DB Image size" value="Изображения в БД"/>
+	<translate name="Collection image size" value="Изображения в БД"/>
 	<translate name="JPEG quality" value="JPEG качество"/>
   </scope>
   <scope name="SelectDB">
@@ -1467,7 +1467,7 @@
 	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>	
 	<translate name="Sets the compression quality of images stored in the database. Takes the value 1-100" value="Устанавливает качество сжатия изображения, хранимых в базе. Принимает значение 1-100"/>
 	<translate name="JPEG quality" value="JPEG качество"/>
-	<translate name="DB Image size" value="Изображения в БД"/>
+	<translate name="Collection image size" value="Изображения в БД"/>
 	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
 	<translate name="Display name" value="Отображаемое имя"/>
 	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
@@ -1483,11 +1483,11 @@
 	<translate name="Choose file for new collection" value="Выберите файл для новой базы"/>
 	<translate name="File name and location" value="Название и месторасположение файлов"/>
 	<translate name="New collection" value="Новая база"/>	
-	<translate name="DB Type" value="Тип БД"/>
+	<translate name="Collection type" value="Тип БД"/>
 	<translate name="Value" value="Значение"/>	
 	<translate name="Select an file" value="Выбрать файл"/>
 	<translate name="Select an action" value="Выберите действие"/>
-	<translate name="Short DB description" value="Описание базы"/>	
+	<translate name="Short collection description" value="Описание базы"/>	
 	<translate name="Add standard groups" value="Добавить стандартные группы"/>
 	<translate name="Select collection from list" value="Выбрать БД из списка"/>
 	<translate name="No file" value="Файл не выбран"/>
@@ -1533,7 +1533,7 @@
 	<translate name="Current collection" value="Текущая БД"/>	
 	<translate name="Convert to *.photodb (PhotoDB)" value="Конвертировать в *.photodb (PhotoDB)"/>	
 	<translate name="Convert to *.db (Paradox)" value="Конвертировать в *.db (Paradox)"/>	
-	<translate name="Please wait until convertation is in progress. This can take some time to complete..." value="Подождите пока выполнится ппреобразование БД, это может потребовать несколько минут..."/>
+	<translate name="Please wait until convertation is in progress. This can take some time to complete..." value="Подождите пока выполнится преобразование БД, это может потребовать несколько минут..."/>
 	<translate name="Current action" value="Текущее действие"/>	
 	<translate name="You can adjust the size and compression quality of images in the database and other sizes of images" value="Вы можете настроить размеры и качество сжатия изображений в БД и другие размеры изображений"/>
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
@@ -1565,7 +1565,7 @@
 	<translate name="Height" value="Высота"/>
 	<translate name="Import your images into the database" value="Импорт ваших изображений в БД"/>	
 	<translate name="This wizard will help you add to the database your photos or other images" value="Этот диалог поможет вам добавить в БД ваши фотографии или другие изображения"/>
-	<translate name="Select folders to import images" value="Выберите папки откуда будут импортировать изображения"/>
+	<translate name="Select folders to import images" value="Выберите папки, откуда будут импортировать изображения"/>
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
 	<translate name="Current collection" value="Текущий файл БД" />	
 	<translate name="Create new collection" value="Создать новый файл БД"/>	
@@ -1577,7 +1577,7 @@
 	<translate name="Replace all" value="Заменить все"/>
 	<translate name="Add folder" value="Добавить папку"/>
 	<translate name="Please, select additional options of import" value="Выберите дополнительные опции импорта изображений."/>
-	<translate name="Click the &quot;Start&quot; button and wait until the program finds and adds all your images. This may require a long time depending on the size of your photo album" value="Нажмите на &quot;Старт&quot; и подождите пока программа найдёт и добавит все ваши изображения. Это может потребовать много времени в зависимости от величины вашего фотоальбома"/>
+	<translate name="Click the &quot;Start&quot; button and wait until the program finds and adds all your images. This may require a long time depending on the size of your photo album" value="Нажмите на &quot;Старт&quot; и подождите, пока программа найдёт и добавит все ваши изображения. Это может потребовать много времени в зависимости от величины вашего фотоальбома"/>
 	<translate name="If duplicates are found" value="При нахождении дубликатов"/>	
 	<translate name="Searching for images..." value="Поиск изображений..."/>
 	<translate name="Current size - %s" value="Текущий размер - %s"/>	
@@ -1592,7 +1592,7 @@
 	<translate name="Size: %s from %s" value="Размер: %s из %s"/>	
   </scope>
   <scope name="SplitDatabase">
-	<translate name="Select a file to split the database" value="Выбарите файл для разбивки базы"/>
+	<translate name="Select a file to split the database" value="Выберите файл для разбивки базы"/>
 	<translate name="Copy" value="Копировать"/>
 	<translate name="Cut" value="Вырезать"/>
 	<translate name="Delete" value="Удалить"/>
@@ -1606,7 +1606,7 @@
 	<translate name="Delete records after finish" value="Удалить записи по окончанию"/>
 	<translate name="Drag into the list files or folders with images. You can move all these images to separeted collection" value="Перетащите в список файлы и папки, в которых содержатся изображения, которые необходимо перенести в другую БД"/>
 	<translate name="Please select any database" value="Пожалуйста, выберите сперва базу данных"/>
-	<translate name="Do you really want to split the database and use this file: $nl$&quot;%s&quot;?$nl$WARNING: $nl$During the process all other windows will not be available!" value="Вы действительно хотите разбить БД и использовать данный файл:$nl$&quot;%s&quot; ?$nl$ВНИМАНИЕ:$nl$ВО время разбивки другие окна будут недоступны!"/>
+	<translate name="Do you really want to split the database and use this file: $nl$&quot;%s&quot;?$nl$WARNING: $nl$During the process all other windows will not be available!" value="Вы действительно хотите разбить БД и использовать данный файл:$nl$&quot;%s&quot; ?$nl$ВНИМАНИЕ:$nl$Во время разбивки другие окна будут недоступны!"/>
 	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
 	<translate name="PhotoDB files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
 	<translate name="Path" value="Размещение"/>
@@ -1763,7 +1763,7 @@
     <translate name="Add groups" value="Добавлять группы" />
     <translate name="Add empty comments" value="Добавлять пустые комментарии" />
     <translate name="Add comments" value="Добавлять комментарии" />
-    <translate name="Add comments with author" value="Добавлять именованые комментарии" />
+    <translate name="Add comments with author" value="Добавлять именованные комментарии" />
     <translate name="Add date" value="Добавлять дату" />
     <translate name="Add links" value="Добавлять ссылки" />
     <translate name="Ignore keywords" value="Игнорировать слова" />
@@ -1830,13 +1830,13 @@
     <translate name="Welcome to %s!" value="Добро пожаловать в %s!"/>
     <translate name="Packing table:" value="Упаковка таблицы:"/>	
     <translate name="Commands window" value="Окно команд"/>	
-    <translate name="Please wait until the program completes the operation..." value="Подождите пока программа выполнит операцию..."/>
+    <translate name="Please wait until the program completes the operation..." value="Подождите пока, программа выполнит операцию..."/>
     <translate name="Collection" value="База"/>
     <translate name="Updating..." value="Обновление..."/>	
-    <translate name="Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl + B)" value="Начало обновления таблицы. Это долгое действие, пожалуйста - подождите... (чтобы прервать действие, нажмите Ctrl+B)"/>
+    <translate name="Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl + B)" value="Начало обновления таблицы. Это долгое действие, пожалуйста, подождите... (чтобы прервать действие, нажмите Ctrl+B)"/>
     <translate name="Restoring collection:" value="Восстановление БД:"/>
     <translate name="Restoring" value="Восстановление"/>
-    <translate name="Starting restoring of collection. Please wait..." value="Начало обновления таблицы. Пожалуйста - подождите..."/>
+    <translate name="Starting restoring of collection. Please wait..." value="Начало обновления таблицы. Пожалуйста, подождите..."/>
     <translate name="Will be searched for invalid references in the collection:" value="Будет произведён поиск недействительных ссылок по БД:"/>
     <translate name="Search is executing" value="Выполняется поиск"/>
 	<translate name="Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)" value="Выполняется поиск, пожалуйста, подождите... $nl$(по завершению лог будет скопирован в буфер обмена)"/>
@@ -1879,7 +1879,7 @@
     <translate name="City" value="Город" />
     <translate name="Address" value="Адрес" />
     <translate name="Thank you for activation the program!" value="Спасибо за активацию программы" />
-    <translate name="Please wait until program completes the activation process..." value="Пожалуйста, подождите пока программма выполнит активацию через интернет..." />
+    <translate name="Please wait until program completes the activation process..." value="Пожалуйста, подождите, пока программма выполнит активацию через интернет..." />
     <translate name="Activation via internet failed! Please, check your internet connection settings in IE. Only manual activation is possible at this moment!" value="Активация через интернет не удалась! Проверьте настройки интернета в IE. Возможна только ручная активация!" />
     <translate name="This wizard helps you to activate this copy of application. Please fill all required fields and follow the instructions." value="Этот диалог поможет вам активировать программу. Пожалуйста, заполните все необходимые поля и следуйте инструкциям." />
     <translate name="Field &quot;%s&quot; is required!" value="Поле &quot;%s&quot; является обязательным!" />

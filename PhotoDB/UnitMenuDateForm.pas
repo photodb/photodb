@@ -77,7 +77,7 @@ procedure TFormMenuDateEdit.Execute(var Date: TDateTime; var IsDate: Boolean; ou
   var Time: TDateTime; var IsTime: Boolean);
 begin
   if YearOf(Date) > 1900 then
-    McDate.Date := McDate.Date
+    McDate.Date := DateOf(Date)
   else
     McDate.Date := DateOf(Now);
   McDate.Visible := IsDate;

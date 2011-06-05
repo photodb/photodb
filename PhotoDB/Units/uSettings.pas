@@ -13,6 +13,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure ClearCache;
     function ReadProperty(Key, Name: string): string;
     procedure DeleteKey(Key: string);
     procedure WriteProperty(Key, Name, Value: string);
@@ -147,6 +148,11 @@ begin
   finally
     F(Reg);
   end;
+end;
+
+procedure TSettings.ClearCache;
+begin
+  FRegistryCache.Clear;
 end;
 
 constructor TSettings.Create;

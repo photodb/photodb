@@ -139,7 +139,7 @@ begin
     BtnChangeFileLocation.Caption := L('Change file location');
     Label3.Caption := L('Size of the images in the panel by default');
     Label4.Caption := L('Image preview size');
-    Label5.Caption := L('DB Image size');
+    Label5.Caption := L('Collection image size');
     Label6.Caption := L('JPEG quality');
     WlChangeImageQuality.Text := L('Press this link to change the size and quality of previews using convertation wizard');
     BtnCancel.Caption := L('Cancel');

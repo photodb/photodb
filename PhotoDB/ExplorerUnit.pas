@@ -2330,7 +2330,7 @@ begin
   Item := ItemAtPos(x, y);
 
   MouseDowned := Button = mbRight;
-  if (Item = nil) and not ((Button = MbLeft) and CtrlKeyDown) then
+  if (Item = nil) and not CtrlKeyDown then
      ElvMain.Selection.ClearAll;
 
   ItemSel := Item;

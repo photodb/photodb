@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SysUtils, uMemory, uInternetUtils, uConstants, uActivationUtils,
-  uTranslate, uGOM, uDBForm, uDBThread;
+  uTranslate, uGOM, uDBForm, uDBThread, uSysUtils;
 
 type
   TFreeRegistrationCallBack = procedure(Reply: string) of object;
@@ -58,9 +58,9 @@ begin
   try
     try
       QueryUrl := FreeActivationURL;
-      QueryParams := Format('?k=%s&v=%d&fn=%s&ln=%s&e=%s&p=%s&co=%s&ci=%s&a=%s',
+      QueryParams := Format('?k=%s&v=%s&fn=%s&ln=%s&e=%s&p=%s&co=%s&ci=%s&a=%s',
         [TActivationManager.Instance.ApplicationCode,
-        ReleaseNumber,
+        ProductVersion,
         EncodeBase64Url(FInfo.FirstName),
         EncodeBase64Url(FInfo.LastName),
         EncodeBase64Url(FInfo.Email),

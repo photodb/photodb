@@ -72,6 +72,7 @@ begin
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_IMAGE;
       Avaliablethread.OwnerThreadType := Thread.ThreadType;
+      Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
 
       StartThread(Thread, Avaliablethread);
     end;
@@ -109,6 +110,7 @@ begin
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_BIG_IMAGE;
       Avaliablethread.OwnerThreadType := Thread.ThreadType;
+      Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
 
       StartThread(Thread, Avaliablethread);
     end;
@@ -145,6 +147,7 @@ begin
       Avaliablethread.FFileID := FileID;
       Avaliablethread.Mode := THREAD_PREVIEW_MODE_DIRECTORY;
       Avaliablethread.OwnerThreadType := Thread.ThreadType;
+      Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
 
       StartThread(Thread, Avaliablethread);
     end;

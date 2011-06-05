@@ -48,6 +48,7 @@ type
     FSync: TCriticalSection;
   public
     constructor Create;
+    procedure Clear;
     destructor Destroy; override;
     function GetSection(ASection : Integer; AKey : string) : TBDRegistry;
   end;
@@ -356,6 +357,20 @@ begin
 end;
 
 { TDBRegistryCache }
+
+procedure TDBRegistryCache.Clear;
+var
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    for I := 0 to FList.Count - 1 do
+      TObject(FList[I]).Free;
+    FList.Clear;
+  finally
+    FSync.Leave;
+  end;
+end;
 
 constructor TDBRegistryCache.Create;
 begin

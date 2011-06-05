@@ -54,7 +54,6 @@ type
     CurrentInfoPos: Integer;
     FVisibleFiles: TStrings;
     IsBigImage: Boolean;
-    LoadingAllBigImages: Boolean;
     NewItem: TEasyItem;
     FOwnerThreadType : Integer;
     CurrentFileInfo : TExplorerFileInfo;
@@ -119,7 +118,7 @@ type
     procedure AddIconFileImageToExplorer;
     procedure EndUpdateID;
     procedure VisibleUp(TopIndex : integer);
-    procedure DoLoadBigImages;
+    procedure DoLoadBigImages(LoadOnlyDBItems: Boolean);
     procedure GetAllFiles;
     procedure DoDefaultSort;
     procedure ExtractImage(Info : TDBPopupMenuInfoRecord; CryptedFile : Boolean; FileID : TGUID);
@@ -139,6 +138,7 @@ type
     IsCryptedFile : Boolean;
     FFileID : TGUID;
     FSender : TExplorerForm;
+    LoadingAllBigImages: Boolean;
     constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
@@ -258,7 +258,7 @@ begin
       F(FFiles);
       FFiles := TExplorerFileInfos.Create;
       ShowProgress;
-      DoLoadBigImages;
+      DoLoadBigImages(False);
       Exit;
     end;
 
@@ -539,7 +539,7 @@ begin
           TW.I.Start('Loading thumbnails');
           ShowInfo(L('Loading thumbnails') + '...');
           ShowInfo(FFiles.Count, 0);
-          InfoPosition:=0;
+          InfoPosition := 0;
 
           SynchronizeEx(HideLoadingSign);
 
@@ -598,7 +598,10 @@ begin
           end;
 
           if (ExplorerInfo.View = LV_THUMBS) and (ExplorerInfo.PictureSize <> ThImageSize) then
-            DoLoadBigImages;
+          begin
+            LoadingAllBigImages := False;
+            DoLoadBigImages(True);
+          end;
 
           HideProgress;
           ShowInfo('');
@@ -607,7 +610,7 @@ begin
           FreeDS(FQuery);
         end;
       finally
-        PrivateFiles.Free;
+        F(PrivateFiles);
       end;
     finally
       SynchronizeEx(HideLoadingSign);
@@ -694,7 +697,7 @@ procedure TExplorerThread.FileNeededAW;
 begin
   BooleanResult := False;
   If not IsTerminated then
-    BooleanResult:=FSender.FileNeededW(GUIDParam);
+    BooleanResult := FSender.FileNeededW(GUIDParam);
 end;
 
 procedure TExplorerThread.AddDriveToExplorer;
@@ -1390,9 +1393,9 @@ end;
 
 procedure TExplorerThread.ShowInfo(Max, Value: Integer);
 begin
-  SetText:=false;
-  SetMax:=True;
-  SetPos:=True;
+  SetText := False;
+  SetMax := True;
+  SetPos := True;
   FInfoMax := Max;
   FInfoPosition := Value;
   SynchronizeEx(SetInfoToStatusBar);
@@ -1401,10 +1404,10 @@ end;
 procedure TExplorerThread.ShowInfo(StatusText: String; Max,
   Value: Integer);
 begin
-  SetText:=True;
-  SetMax:=True;
-  SetPos:=True;
-  FInfoText:=StatusText;
+  SetText := True;
+  SetMax := True;
+  SetPos := True;
+  FInfoText := StatusText;
   FInfoMax := Max;
   FInfoPosition := Value;
   SynchronizeEx(SetInfoToStatusBar);
@@ -1412,9 +1415,9 @@ end;
 
 procedure TExplorerThread.ShowInfo(Pos: Integer);
 begin
-  SetText:=False;
-  SetMax:=False;
-  SetPos:=True;
+  SetText := False;
+  SetMax := False;
+  SetPos := True;
   FInfoPosition := Pos;
   SynchronizeEx(SetInfoToStatusBar);
 end;
@@ -1733,7 +1736,7 @@ begin
     SynchronizeEx(EndUpdateID);
     FreeDS(FQuery);
 
-    DoLoadBigImages;
+    DoLoadBigImages(False);
 
   finally
     F(FFiles);
@@ -1844,7 +1847,7 @@ begin
       end;
 end;
 
-procedure TExplorerThread.DoLoadBigImages;
+procedure TExplorerThread.DoLoadBigImages(LoadOnlyDBItems: Boolean);
 var
   I, InfoPosition : integer;
 begin
@@ -1854,19 +1857,20 @@ begin
   Inc(ExplorerUpdateBigImageThreadsCount);
 
   try
-    if LoadingAllBigImages then
+    if LoadingAllBigImages or LoadOnlyDBItems then
       if not SynchronizeEx(GetAllFiles) then
         Exit;
 
     ShowInfo(L('Loading previews'));
-    ShowInfo(FFiles.Count ,0);
-    InfoPosition:=0;
+    ShowInfo(FFiles.Count, 0);
+    InfoPosition := 0;
 
     for I := 0 to FFiles.Count - 1 do
     begin
 
       Inc(InfoPosition);
       ShowInfo(InfoPosition);
+      if IsTerminated then Break;
 
       if I mod 5 = 0 then
       begin
@@ -1875,9 +1879,9 @@ begin
          VisibleUp(I);
       end;
 
-      GUIDParam := FFiles[i].SID;
+      GUIDParam := FFiles[I].SID;
 
-      if FFiles[i].FileType = EXPLORER_ITEM_IMAGE then
+      if FFiles[I].FileType = EXPLORER_ITEM_IMAGE then
       begin
 
         BooleanResult := False;
@@ -1889,29 +1893,32 @@ begin
 
         if IsTerminated then Break;
 
+        if LoadOnlyDBItems then
+          BooleanResult := FFiles[I].ID > 0;
+
         if BooleanResult then
         begin
           if ProcessorCount > 1 then
-            TExplorerThreadPool.Instance.ExtractBigImage(Self, FFiles[i].FileName, FFiles[i].Rotation, GUIDParam)
+            TExplorerThreadPool.Instance.ExtractBigImage(Self, FFiles[I].FileName, FFiles[I].Rotation, GUIDParam)
           else
-            ExtractBigPreview(FFiles[i].FileName, FFiles[i].Rotation, GUIDParam);
+            ExtractBigPreview(FFiles[I].FileName, FFiles[I].Rotation, GUIDParam);
         end;
       end;
 
       //directories
-      if FFiles[i].FileType = EXPLORER_ITEM_FOLDER then
+      if (FFiles[I].FileType = EXPLORER_ITEM_FOLDER) and not LoadOnlyDBItems then
       begin
         BooleanResult := False;
         if not SynchronizeEx(FileNeededAW) then
           Exit;
 
-        CurrentFile := FFiles[i].FileName;
+        CurrentFile := FFiles[I].FileName;
 
         //при загрузке всех картинок проверка, если только одна грузится то не проверяем т.к. явно она вызвалась значит нужна
         if not LoadingAllBigImages then
           BooleanResult := True;
 
-        if IsTerminated then break;
+        if IsTerminated then Break;
 
         if BooleanResult and ExplorerInfo.ShowThumbNailsForFolders then
           ExtractDirectoryPreview(CurrentFile, GUIDParam);

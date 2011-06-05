@@ -552,7 +552,8 @@ begin
     Settings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
     Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
   end;
-  // end;
+
+  Settings.ClearCache;
   Close;
 end;
 
