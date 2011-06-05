@@ -14,21 +14,6 @@ uses
   uSettings, uAssociations;
 
 type
-  TGetImagesOptions = record
-    Date: TDateTime;
-    FolderMask: string;
-    Comment: string;
-    ToFolder: string;
-    GetMultimediaFiles: Boolean;
-    MultimediaMask: string;
-    Move: Boolean;
-    OpenFolder: Boolean;
-    AddFolder: Boolean;
-  end;
-
-  TGetImagesOptionsArray = array of TGetImagesOptions;
-
-type
   TGetToPersonalFolderForm = class(TDBForm)
     BtnOk: TButton;
     BtnCancel: TButton;
@@ -104,10 +89,8 @@ type
     ThreadInProgress: Boolean;
     DefaultOptions: TGetImagesOptions;
     OptionsArray: TGetImagesOptionsArray;
-    FThreadDone: Boolean;
     procedure ClearList;    
     procedure LoadLanguage;
-    procedure DoCopyFilesSynch(Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean);
     procedure OnThreadDone(Sender: TObject);
   protected
     function GetFormID : string; override;
@@ -118,15 +101,6 @@ type
     procedure OnLoadingFilesCallBackEvent(Sender: TObject; var Info: TProgressCallBackInfo);
     procedure SetDataList(DataList: TFileDateList);
     procedure RecountGroups;
-    function FormatFolderName(Mask, Comment: string; Date: TDateTime): string;
-  end;
-
-  TItemRecordOptions = class
-  public
-    StringDate: string;
-    Date: TDateTime;
-    Options: Integer;
-    Tag: Integer;
   end;
 
 procedure GetPhotosFromDrive(DriveLetter: Char);
@@ -135,7 +109,7 @@ procedure GetPhotosFromFolder(Folder: string);
 implementation
 
 uses
-  ExplorerUnit, UnitUpdateDB, SlideShow, UnitWindowsCopyFilesThread;
+  SlideShow, uGetPhotosThread;
 
 procedure GetPhotosFromDrive(DriveLetter: Char);
 var
@@ -296,9 +270,8 @@ end;
 
 procedure TGetToPersonalFolderForm.FormCreate(Sender: TObject);
 begin
-  FThreadDone := False;
-  Width := 273;
-  ExtendedButton.Left := 248;
+  Width := 283;
+  ExtendedButton.Left := 258;
   ExtendedMode := False;
   GetPhotosFormSID := GetGUID;
   ThreadInProgress := False;
@@ -413,143 +386,41 @@ end;
 
 procedure TGetToPersonalFolderForm.BtnOkClick(Sender: TObject);
 var
-  Files: TStrings;
-  MaxFiles, FilesSearch,
-  I, J: Integer;
-  Folder, Mask: string;
-  Options: TGetImagesOptions;
-  ItemOptions: TItemRecordOptions;
-  Date: TDateTime;
+  I: Integer;
+  Options: TGetPhotosThreadOptions;
 begin
+  ExtendedButton.Enabled := False;
+  DtpFromDate.Enabled := False;
+  EdFolderMask.Enabled := False;
+  MemComment.Enabled := False;
+  EdFolder.Enabled := False;
+  CbGetMultimediaFiles.Enabled := False;
+  EdMultimediaMask.Enabled := False;
+  CbMethod.Enabled := False;
+  CbOpenFolder.Enabled := False;
+  CbAddProtosToDB.Enabled := False;
+  LvMain.Enabled := False;
+  BtnOk.Enabled := False;
+  BtnCancel.Enabled := False;
+  BtnChooseFolder.Enabled := False;
+  BtnSave.Enabled := False;
+  BtnScanDates.Enabled := False;
 
-  if ExtendedMode then
-  begin
-    ExtendedButton.Enabled := False;
-    DtpFromDate.Enabled := False;
-    EdFolderMask.Enabled := False;
-    MemComment.Enabled := False;
-    EdFolder.Enabled := False;
-    CbGetMultimediaFiles.Enabled := False;
-    EdMultimediaMask.Enabled := False;
-    CbMethod.Enabled := False;
-    CbOpenFolder.Enabled := False;
-    CbAddProtosToDB.Enabled := False;
-    LvMain.Enabled := False;
-    BtnOk.Enabled := False;
-    BtnCancel.Enabled := False;
-    BtnChooseFolder.Enabled := False;
-    BtnSave.Enabled := False;
-    BtnScanDates.Enabled := False;
-
-    // EXTENDED LOADING FILES
-    for I := 0 to LvMain.Items.Count - 1 do
-    begin
-      ItemOptions := TItemRecordOptions(LvMain.Items[I].Data);
-      if ItemOptions.Options = DIRECTORY_OPTION_DATE_EXCLUDE then
-        Continue;
-      Options := OptionsArray[I];
-
-      Folder := IncludeTrailingBackslash(Options.ToFolder);
-      Folder := Folder + FormatFolderName(Options.FolderMask, Options.Comment, Options.Date);
-      CreateDirA(Folder);
-      if not DirectoryExists(Folder) then
-      begin
-        MessageBoxDB(Handle, Format(L('Unable to create directory: "%s"'), [Folder]), L('Error'), TD_BUTTON_OK,
-          TD_ICON_ERROR);
-        Exit;
-      end;
-      Files := TStringList.Create;
-      try
-        Date := TItemRecordOptions(LvMain.Items[I].Data).Date;
-        TItemRecordOptions(LvMain.Items[I].Data).Tag := -1;
-        LvMain.Refresh;
-        for J := 0 to Length(FDataList) - 1 do
-          if FDataList[J].Date = Date then
-            Files.Add(FDataList[J].FileName);
-
-        if Options.OpenFolder then
-          with ExplorerManager.NewExplorer(False) do
-          begin
-            SetPath(Folder);
-            Show;
-            SetFocus;
-          end;
-
-        try
-          DoCopyFilesSynch(Files, Folder, Options.Move, True);
-        except
-          MessageBoxDB(Handle, L('An error occurred during the preparation of photographs. Perhaps you''re trying to move pictures from media which is read-only'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-        end;
-        if Options.AddFolder then
-        begin
-          if UpdaterDB = nil then
-            UpdaterDB := TUpdaterDB.Create;
-          UpdaterDB.AddDirectory(Folder, nil);
-        end;
-      finally
-        F(Files);
-      end;
-    end;
-    // END
-  end else
-  begin
-
-    Folder := IncludeTrailingBackslash(EdFolder.Text);
-    Folder := Folder + MemFolderName.Text;
-    CreateDirA(Folder);
-    if not DirectoryExists(Folder) then
-    begin
-      MessageBoxDB(Handle, Format(L('Unable to create directory: "%s"'), [Folder]), L('Error'), TD_BUTTON_OK,
-        TD_ICON_ERROR);
-      Exit;
-    end;
-
-    Files := TStringList.Create;
-    try
-      MaxFiles := 10000;
-      FilesSearch := 100000;
-      if CbGetMultimediaFiles.Checked then
-      begin
-        Mask := EdMultimediaMask.Text;
-        Mask := '|' + Mask + '|';
-        for I := Length(Mask) downto 2 do
-          if (Mask[I] = '|') and (Mask[I - 1] = '|') then
-            Delete(Mask, I, 1);
-        if Length(Mask) > 0 then
-          Delete(Mask, 1, 1);
-        Mask := TFileAssociations.Instance.ExtensionList + Mask;
-      end else
-        Mask := TFileAssociations.Instance.ExtensionList;
-
-      GetFileNamesFromDrive(FPath, Mask, Files, FilesSearch, MaxFiles);
-
-      Hide;
-      if CbOpenFolder.Checked then
-        with ExplorerManager.NewExplorer(False) do
-        begin
-          SetPath(Folder);
-          Show;
-          SetFocus;
-        end;
-
-      try
-        DoCopyFilesSynch(Files, Folder, CbMethod.ItemIndex <> 1, True);
-      except
-        MessageBoxDB(Handle, L('An error occurred during the preparation of photographs. Perhaps you''re trying to move pictures from media which is read-only'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-      end;
-      if CbAddProtosToDB.Checked then
-      begin
-        if UpdaterDB = nil then
-          UpdaterDB := TUpdaterDB.Create;
-        UpdaterDB.AddDirectory(Folder, nil);
-      end;
-
-    finally
-      F(Files);
-    end;
-  end;
-
-  Close;
+  Options.BasePath := FPath;
+  Options.GetMultimediaFiles := CbGetMultimediaFiles.Checked;
+  Options.IsExtendedMode := ExtendedMode;
+  Options.Options := Copy(OptionsArray);
+  Options.AddPhotosToDB := CbAddProtosToDB.Checked;
+  Options.Move := CbMethod.ItemIndex <> 1;
+  Options.Folder := EdFolder.Text;
+  Options.FolderName := MemFolderName.Text;
+  Options.MultimediaMask := EdMultimediaMask.Text;
+  Options.FileData := Copy(FDataList);
+  Options.OpenFolder := CbOpenFolder.Checked;
+  Options.Data := TList.Create;
+  for I := 0 to LvMain.Items.Count - 1 do
+    Options.Data.Add(LvMain.Items[I].Data);
+  TGetPhotosThread.Create(Self, Options, OnThreadDone);
 end;
 
 procedure TGetToPersonalFolderForm.CbGetMultimediaFilesClick(Sender: TObject);
@@ -597,13 +468,12 @@ begin
   LvMain.Refresh;
   if ExtendedMode then
     BtnOk.Enabled := LvMain.Items.Count > 0;
-  //
 end;
 
 procedure TGetToPersonalFolderForm.FormDestroy(Sender: TObject);
 begin
   ClearList;
-  GetPhotosFormSID := GetGUID; // to prevent Thread AV
+  GetPhotosFormSID := GetGUID;
 end;
 
 function TGetToPersonalFolderForm.GetFormID: string;
@@ -620,7 +490,7 @@ end;
 
 procedure TGetToPersonalFolderForm.OnThreadDone(Sender: TObject);
 begin
-  FThreadDone := True;
+  Close;
 end;
 
 procedure TGetToPersonalFolderForm.SetDataList(DataList: TFileDateList);
@@ -761,15 +631,15 @@ begin
     CbOpenFolder.Checked := DefaultOptions.OpenFolder;
     CbAddProtosToDB.Checked := DefaultOptions.AddFolder;
 
-    Width := 273;
-    BtnCancel.Left := 104;
-    BtnOk.Left := 176;
+    Width := 283;
+    BtnCancel.Left := 114;
+    BtnOk.Left := 186;
     BtnScanDates.Visible := False;
     ProgressBar.Visible := False;
     LbListComment.Visible := False;
     LvMain.Visible := False;
     ExtendedButton.Caption := '>';
-    ExtendedButton.Left := 248;
+    ExtendedButton.Left := 258;
     BtnOk.Enabled := True;
   end else
   begin
@@ -798,17 +668,17 @@ begin
     end else
       LvMainSelectItem(LvMain, LvMain.Selected, True);
 
-    BtnCancel.Left := 344;
-    BtnOk.Left := 416;
+    BtnCancel.Left := 354;
+    BtnOk.Left := 426;
     BtnOk.Enabled := LvMain.Items.Count > 0;
     LbListComment.Visible := True;
     LvMain.Visible := True;
     ProgressBar.Visible := ThreadInProgress;
     BtnScanDates.Visible := not ThreadInProgress;
-    Width := 513;
+    Width := 523;
     ExtendedMode := True;
     ExtendedButton.Caption := '<';
-    ExtendedButton.Left := 488;
+    ExtendedButton.Left := 498;
   end;
 end;
 
@@ -865,20 +735,6 @@ begin
   OptionsArray[PmListView.Tag] := OptionsArray[PmListView.Tag + 1];
   RecountGroups;
   LvMain.Refresh;
-end;
-
-procedure TGetToPersonalFolderForm.DoCopyFilesSynch(Src: TStrings;
-  Dest: string; Move, AutoRename: Boolean);
-begin
-  FThreadDone := False;
-  TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, Self, OnThreadDone);
-  while not FThreadDone do
-  begin
-    Application.ProcessMessages;
-    Application.ProcessMessages;
-    Application.ProcessMessages;
-    CheckSynchronize;
-  end;
 end;
 
 procedure TGetToPersonalFolderForm.DontCopy1Click(Sender: TObject);
@@ -1133,44 +989,6 @@ begin
     CbOpenFolder.Enabled := False;
     CbAddProtosToDB.Enabled := False;
   end;
-end;
-
-function TGetToPersonalFolderForm.FormatFolderName(Mask, Comment: String;
-  Date: TDateTime): String;
-var
-  S : String;
-  i : integer;
-  TempSysTime: TSystemTime;
-  FineDate: array[0..255] of Char;
-begin
-  S := Mask;
-  if S = '' then
-    S := '%yy:mm:dd';
-  S := StringReplace(S, '%yy:mm:dd', FormatDateTime('yy.mm.dd', Date), [RfReplaceAll, RfIgnoreCase]);
-  DateTimeToSystemTime(Date, TempSysTime);
-  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'dddd, d MMMM yyyy ', @FineDate, 255);
-  S := StringReplace(S, '%YMD', FineDate + L('y.'), [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%coment', Comment, [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%yyyy', FormatDateTime('yyyy', Date), [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%yy', FormatDateTime('yy', Date), [RfReplaceAll, RfIgnoreCase]);
-  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'dd MMMM', @FineDate, 255);
-  S := StringReplace(S, '%mmmdd', FineDate, [RfReplaceAll, RfIgnoreCase]);
-  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM', @FineDate, 255);
-  S := StringReplace(S, '%mmmd', FineDate, [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%mmm', FormatDateTime('mmm', Date), [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%mm', FormatDateTime('mm', Date), [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%m', FormatDateTime('m', Date), [RfReplaceAll, RfIgnoreCase]);
-  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'dddd', @FineDate, 255);
-  S := StringReplace(S, '%dddd', FineDate, [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%ddd', FormatDateTime('ddd', Date), [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%dd', FormatDateTime('dd', Date), [RfReplaceAll, RfIgnoreCase]);
-  S := StringReplace(S, '%d', FormatDateTime('d', Date), [RfReplaceAll, RfIgnoreCase]);
-  for I := Length(S) downto 1 do
-    if (CharInSet(S[I], Unusedchar_folders)) then
-      Delete(S, I, 1);
-  if S = '' then
-    S := FormatDateTime('yy.mm.dd', Date);
-  Result := S;
 end;
 
 end.

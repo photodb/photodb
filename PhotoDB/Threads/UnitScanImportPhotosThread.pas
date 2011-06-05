@@ -6,31 +6,7 @@ uses
   Classes, Messages, Forms, Dolphin_DB, RawImage, SysUtils,
   UnitDBDeclare, DateUtils, UnitDBCommon, uAssociations,
   CCR.Exif, uMemory, uDBBaseTypes, uFileUtils, uTranslate,
-  uGraphicUtils, uDBThread;
-
-type
-  TScanImportPhotosThreadOptions = record
-    Directory: string;
-    Mask: string;
-    OnEnd: TNotifyEvent;
-    Owner: TForm;
-    OnProgress: TCallBackProgressEvent;
-  end;
-
-  TFileDateRecord = record
-    FileName: string;
-    Date: TDateTime;
-    Options: Integer;
-    Tag: Integer;
-  end;
-
- TFileDateList = array of TFileDateRecord;
-
- const
-  DIRECTORY_OPTION_DATE_SINGLE      = 0;
-  DIRECTORY_OPTION_DATE_WITH_UP     = 1;
-  DIRECTORY_OPTION_DATE_WITH_DOWN   = 2;
-  DIRECTORY_OPTION_DATE_EXCLUDE     = 3;
+  uGraphicUtils, uDBThread, uDBTypes;
 
 type
   TScanImportPhotosThread = class(TDBThread)

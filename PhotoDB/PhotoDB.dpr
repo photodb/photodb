@@ -329,7 +329,8 @@ uses
   uFrmImportImagesLanding in 'ImportImages\uFrmImportImagesLanding.pas' {FrmImportImagesLanding: TFrame},
   uFrmImportImagesOptions in 'ImportImages\uFrmImportImagesOptions.pas' {FrmImportImagesOptions: TFrame},
   uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame},
-  uIME in 'Units\uIME.pas';
+  uIME in 'Units\uIME.pas',
+  uGetPhotosThread in 'Threads\uGetPhotosThread.pas';
 
 {$R *.res}
 

@@ -5,7 +5,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   BorderStyle = bsSingle
   Caption = 'Get Photos'
   ClientHeight = 383
-  ClientWidth = 505
+  ClientWidth = 515
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -205,7 +205,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Caption = 'Method:'
   end
   object LbListComment: TLabel
-    Left = 256
+    Left = 266
     Top = 8
     Width = 98
     Height = 13
@@ -233,7 +233,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object DtpFromDate: TDateTimePicker
     Left = 56
     Top = 24
-    Width = 186
+    Width = 196
     Height = 21
     Date = 38476.977185509260000000
     Time = 38476.977185509260000000
@@ -244,7 +244,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object EdFolderMask: TEdit
     Left = 8
     Top = 72
-    Width = 233
+    Width = 243
     Height = 21
     TabOrder = 4
     Text = '%yy:mm:dd = %YMD (%coment)'
@@ -253,7 +253,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object MemComment: TMemo
     Left = 8
     Top = 112
-    Width = 233
+    Width = 243
     Height = 57
     Lines.Strings = (
       'You comment')
@@ -263,14 +263,14 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object EdFolder: TEdit
     Left = 8
     Top = 248
-    Width = 217
+    Width = 227
     Height = 21
     TabOrder = 7
     Text = 'EdFolder'
     OnChange = EdFolderMaskChange
   end
   object BtnChooseFolder: TButton
-    Left = 224
+    Left = 234
     Top = 248
     Width = 17
     Height = 21
@@ -281,7 +281,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object CbMethod: TComboBox
     Left = 8
     Top = 327
-    Width = 90
+    Width = 98
     Height = 21
     Style = csDropDownList
     ItemIndex = 0
@@ -293,9 +293,9 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
       'Copy')
   end
   object CbOpenFolder: TCheckBox
-    Left = 104
+    Left = 112
     Top = 313
-    Width = 138
+    Width = 148
     Height = 17
     Caption = 'Open This Folder'
     TabOrder = 11
@@ -304,7 +304,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object MemFolderName: TMemo
     Left = 8
     Top = 192
-    Width = 233
+    Width = 243
     Height = 37
     Lines.Strings = (
       'Memo2')
@@ -334,23 +334,23 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
   object EdMultimediaMask: TEdit
     Left = 8
     Top = 288
-    Width = 233
+    Width = 243
     Height = 21
     TabOrder = 10
     Text = '|MOV|MP3|AVI|MPEG|MPG|'
     OnChange = EdFolderMaskChange
   end
   object CbAddProtosToDB: TCheckBox
-    Left = 104
+    Left = 112
     Top = 330
-    Width = 146
+    Width = 148
     Height = 17
     Caption = 'Add photos to DB'
     TabOrder = 13
     OnClick = EdFolderMaskChange
   end
   object LvMain: TListView
-    Left = 256
+    Left = 266
     Top = 24
     Width = 225
     Height = 297
@@ -375,17 +375,17 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     OnSelectItem = LvMainSelectItem
   end
   object BtnScanDates: TButton
-    Left = 256
-    Top = 328
+    Left = 266
+    Top = 327
     Width = 225
-    Height = 17
+    Height = 20
     Caption = 'Scan dates'
     TabOrder = 2
     Visible = False
     OnClick = BtnScanDatesClick
   end
   object ExtendedButton: TButton
-    Left = 488
+    Left = 496
     Top = 120
     Width = 17
     Height = 137
@@ -394,7 +394,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     OnClick = ExtendedButtonClick
   end
   object ProgressBar: TDmProgress
-    Left = 256
+    Left = 266
     Top = 327
     Width = 225
     Height = 18
@@ -413,7 +413,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Inverse = False
   end
   object OptionsImageList: TImageList
-    Left = 288
+    Left = 296
     Top = 48
   end
   object PmListView: TPopupMenu

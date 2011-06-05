@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Windows, DBCommon, SysUtils, Forms, Dolphin_DB, uFileUtils, uMemory,
-  uLogger, uDBUtils, uDBForm, UnitDBDeclare, UnitDBKernel, uDBThread;
+  uLogger, uDBUtils, uDBForm, UnitDBDeclare, UnitDBKernel, uDBThread, ActiveX;
 
 type
   TWindowsCopyFilesThread = class(TDBThread)
@@ -14,7 +14,7 @@ type
     FSrc: TStrings;
     FDest: string;
     FMove, FAutoRename: Boolean;
-    FOwnerExplorerForm: TDBForm;
+    FOwnerForm: TDBForm;
     FID: Integer;
     FParams: TEventFields;
     FValue: TEventValues;
@@ -27,7 +27,7 @@ type
     procedure Execute; override;
   public
     constructor Create(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean;
-      AutoRename: Boolean; OwnerExplorerForm: TDBForm; OnDone: TNotifyEvent = nil);
+      AutoRename: Boolean; OwnerForm: TDBForm; OnDone: TNotifyEvent = nil);
     destructor Destroy; override;
   end;
 
@@ -38,7 +38,7 @@ uses ExplorerUnit;
 { TWindowsCopyFilesThread }
 
 constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
-   OwnerExplorerForm: TDBForm; OnDone: TNotifyEvent = nil);
+   OwnerForm: TDBForm; OnDone: TNotifyEvent = nil);
 begin
   inherited Create(nil, False);
   FOnDone := OnDone;
@@ -48,7 +48,7 @@ begin
   FDest := Dest;
   FMove := Move;
   FAutoRename := AutoRename;
-  FOwnerExplorerForm := OwnerExplorerForm;
+  FOwnerForm := OwnerForm;
 end;
 
 destructor TWindowsCopyFilesThread.Destroy;
@@ -91,10 +91,15 @@ begin
   inherited;
   FreeOnTerminate := True;
   try
-    Res := CopyFilesSynch(FHandle, FSrc, FDest, FMove, FAutoRename) = 0;
+    CoInitialize(nil);
+    try
+      Res := CopyFilesSynch(FHandle, FSrc, FDest, FMove, FAutoRename) = 0;
 
-    if Res and (FOwnerExplorerForm <> nil) and FMove then
-      CorrectPath(FOwnerExplorerForm, FSrc, FDest);
+      if Res and (FOwnerForm <> nil) and FMove then
+        CorrectPath(FOwnerForm, FSrc, FDest);
+    finally
+      CoUninitialize;
+    end;
   except
     on e : Exception do
       EventLog(e.Message);
@@ -114,7 +119,7 @@ end;
 
 procedure TWindowsCopyFilesThread.KernelEventCallBackSync;
 begin
-  DBKernel.DoIDEvent(FOwnerExplorerForm, FID, FParams, FValue);
+  DBKernel.DoIDEvent(FOwnerForm, FID, FParams, FValue);
 end;
 
 end.
