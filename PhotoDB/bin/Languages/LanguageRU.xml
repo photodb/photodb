@@ -482,6 +482,7 @@
     <translate name="User Rating" value="Оценка" />
     <translate name="Not available" value="Не доступно" />
     <translate name="Unable to load info: item not found!" value="Невозможно отобразить информацию: запись не найдена!" />	
+    <translate name="Unable to find this image!" value="Изображение в базе не найдено!" />
   </scope>
   <scope name="Search">
     <translate name="More than" value="Больше чем" />
@@ -1633,7 +1634,7 @@
 	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
 	<translate name="Add menu item" value="Использовать пункт в меню"/>	
 	<translate name="Show previews" value="Показывать предпросмотр"/>	
-	<translate name="Show object types" value="Показывать следующие объекты"/>	
+	<translate name="Show object types" value="Показывать объекты"/>	
 	<translate name="Folders" value="Папки"/>
 	<translate name="Simple files" value="Простые файлы"/>
 	<translate name="Images" value="Изображения"/>

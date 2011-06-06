@@ -235,7 +235,7 @@ type
       var S: String);
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure HintTimerTimer(Sender: TObject);
-    function hintrealA(Info: TDBPopupMenuInfoRecord): Boolean;
+    function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     Procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
@@ -1969,13 +1969,13 @@ begin
         if HelpNo = 3 then
           Help1NextClick(Self);
 
-        fFilesInfo[I].ID := ID;
-        fFilesInfo[I].Rating := Value.Rating;
-        fFilesInfo[I].Rotation := Value.Rotate;
-        fFilesInfo[I].Comment := Value.Comment;
-        fFilesInfo[I].KeyWords := Value.Comment;
-        fFilesInfo[I].Links := Value.Links;
-        fFilesInfo[I].Groups := Value.Groups;
+        FFilesInfo[I].ID := ID;
+        FFilesInfo[I].Rating := Value.Rating;
+        FFilesInfo[I].Rotation := Value.Rotate;
+        FFilesInfo[I].Comment := Value.Comment;
+        FFilesInfo[I].KeyWords := Value.Comment;
+        FFilesInfo[I].Links := Value.Links;
+        FFilesInfo[I].Groups := Value.Groups;
         FFilesInfo[I].IsDate := True;
         FFilesInfo[I].IsTime := Value.IsTime;
         FFilesInfo[I].Loaded := True;
@@ -1994,6 +1994,10 @@ begin
           FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap := Bit;
         end;
         ElvMain.Refresh;
+        if FFilesInfo[I].FileName = FSelectedInfo.FileName then
+          if SelCount = 1 then
+            ListView1SelectItem(nil, ListView1Selected, True);
+
         Break;
       end;
     Exit;

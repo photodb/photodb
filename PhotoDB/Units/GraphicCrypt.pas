@@ -304,7 +304,7 @@ begin
       MS.CopyFrom(Fs, FS.Size);
       MS.Position := 0;
     finally
-      FS.Free;
+      F(FS);
     end;
 
     FA := FileGetAttr(FileName);
@@ -314,7 +314,7 @@ begin
     try
       CryptStream(MS, FS, Password, Options, FileName);
     finally
-      FS.Free;
+      F(FS);
     end;
   finally
     MS.Free;
@@ -470,13 +470,17 @@ begin
   TryOpenFSForRead(FS, FileName);
   if FS = nil then
     Exit;
+  try
 
-  FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
-  if GraphicHeader.ID <> PhotoDBFileHeaderID then
-    Exit;
+    FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    if GraphicHeader.ID <> PhotoDBFileHeaderID then
+      Exit;
 
-  if not DecryptStream(FS, GraphicHeader, Password, Stream) then
-    Exit;
+    if not DecryptStream(FS, GraphicHeader, Password, Stream) then
+      Exit;
+  finally
+    F(FS);
+  end;
 
   Result := True;
 end;
@@ -528,11 +532,11 @@ begin
       end else
         Result.LoadFromStream(MS);
 
+    finally
+      F(FS);
+    end;
   finally
-    FS.Free;
-  end;
-  finally
-    MS.Free;
+    F(MS);
   end;
 end;
 
@@ -562,7 +566,7 @@ begin
         Exit;
 
     finally
-      FS.Free;
+      F(FS);
     end;
 
     FA := FileGetAttr(FileName);
@@ -573,10 +577,10 @@ begin
       MS.Seek(0, soFromBeginning);
       FS.CopyFrom(MS, MS.Size);
     finally
-      FS.Free;
+      F(FS);
     end;
   finally
-    MS.Free;
+    F(MS);
   end;
   FileSetAttr(FileName, FA);
   Result := True;
@@ -610,7 +614,7 @@ begin
         Exit;
 
     finally
-      FS.Free;
+      F(FS);
     end;
     FA := FileGetAttr(FileName);
     ResetFileattributes(FileName, FA);
@@ -620,11 +624,11 @@ begin
       WriteCryptHeaderV2(FS, MS, FileName, NewPass, CRYPT_OPTIONS_SAVE_CRC, Seed);
       CryptStreamV2(MS, FS, NewPass, Seed);
     finally
-      FS.Free;
+      F(FS);
     end;
 
   finally
-    MS.Free;
+    F(MS);
   end;
   FileSetAttr(FileName, FA);
   Result := True;
@@ -663,7 +667,7 @@ begin
       Result := GraphicHeaderV2.PassCRC = CRC;
     end;
   finally
-    FS.Free;
+    F(FS);
   end;
 end;
 
@@ -683,7 +687,7 @@ begin
     FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
     Result := GraphicHeader.ID = PhotoDBFileHeaderID;
   finally
-    FS.Free;
+    F(FS);
   end;
 end;
 
@@ -717,7 +721,7 @@ begin
       end;
     end;
   finally
-    FS.Free;
+    F(FS);
   end;
 end;
 
@@ -740,7 +744,7 @@ begin
 
       FBS.Seek(0, soFromBeginning);
     finally
-      FBS.Free;
+      F(FBS);
     end;
 
     FBS := TADOBlobStream.Create(TBlobField(DF), bmWrite);
@@ -748,10 +752,10 @@ begin
       WriteCryptHeaderV2(FBS, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
       CryptStreamV2(MS, FBS, Password, Seed);
     finally
-      FBS.Free;
+      F(FBS);
     end;
   finally
-    MS.Free;
+    F(MS);
   end;
   Result := True;
 end;
@@ -780,10 +784,10 @@ begin
       MS.Seek(0, SoFromBeginning);
       JPEG.LoadFromStream(MS);
     finally
-      FBS.Free;
+      F(FBS);
     end;
   finally
-    MS.Free;
+    F(MS);
   end;
   Result := True;
 end;
@@ -799,7 +803,7 @@ begin
     FBS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
     Result := GraphicHeader.ID = PhotoDBFileHeaderID;
   finally
-    FBS.Free;
+    F(FBS);
   end;
 end;
 
@@ -834,7 +838,7 @@ begin
     end;
 
   finally
-    FBS.Free;
+    F(FBS);
   end;
 end;
 
@@ -857,7 +861,7 @@ begin
         Exit;
 
     finally
-      FBS.Free;
+      F(FBS);
     end;
 
     FBS := GetBlobStream(DF, bmWrite);
@@ -865,10 +869,10 @@ begin
       MS.Seek(0, soBeginning);
       FBS.CopyFrom(MS, MS.Size);
     finally
-      FBS.Free;
+      F(FBS);
     end;
   finally
-    MS.Free;
+    F(MS);
   end;
   Result := True;
 end;

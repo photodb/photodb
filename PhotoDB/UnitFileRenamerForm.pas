@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus, UnitDBKernel,
-  DB, WebLink, uConstants, UnitDBDeclare, uFileUtils, Dolphin_DB,
+  DB, WebLink, uConstants, UnitDBDeclare, uFileUtils, Dolphin_DB, uMemory,
   uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils, uSettings, Spin;
 
 type
@@ -45,10 +45,12 @@ type
     procedure BtDeleteClick(Sender: TObject);
     procedure WebLinkWarningClick(Sender: TObject);
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   protected
     function GetFormID : string; override;
+    procedure SaveSettings;
   public
     { Public declarations }
     FFiles: TStrings;
@@ -84,11 +86,28 @@ end;
 
 { TFormFastFileRenamer }
 
+procedure TFormFastFileRenamer.SaveSettings;
+var
+  I: Integer;
+begin
+  Settings.DeleteValues('Renamer');
+  for I := 0 to CmMaskList.Items.Count - 1 do
+    Settings.WriteString('Renamer', 'val' + IntToStr(I + 1), CmMaskList.Items[I]);
+
+  Settings.WriteString('Options', 'RenameText', CmMaskList.Text);
+end;
+
 procedure TFormFastFileRenamer.SetFiles(Files: TStrings; IDS: TArInteger);
 begin
   FFiles := Files;
   FIDS := IDS;
   SetFilesA;
+end;
+
+procedure TFormFastFileRenamer.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  SaveSettings;
 end;
 
 procedure TFormFastFileRenamer.FormCreate(Sender: TObject);
@@ -98,12 +117,15 @@ var
 begin
   LoadLanguage;
   List := Settings.ReadValues('Renamer');
-  CmMaskList.Items.Clear;
-  for I := 0 to List.Count - 1 do
-    CmMaskList.Items.Add(Settings.ReadString('Renamer', List[I]));
+  try
+    CmMaskList.Items.Clear;
+    for I := 0 to List.Count - 1 do
+      CmMaskList.Items.Add(Settings.ReadString('Renamer', List[I]));
 
-  CmMaskList.Text := Settings.ReadString('Options', 'RenameText');
-  List.Free;
+    CmMaskList.Text := Settings.ReadString('Options', 'RenameText');
+  finally
+    F(List);
+  end;
 
   if CmMaskList.Text = '' then
     CmMaskList.Text := L('Image #%3d [%date]');
@@ -204,8 +226,6 @@ begin
 end;
 
 procedure TFormFastFileRenamer.BtnOKClick(Sender: TObject);
-var
-  I: Integer;
 begin
   if CheckConflictFileNames then
   begin
@@ -216,12 +236,6 @@ begin
 
   DoRename;
 
-  Settings.DeleteValues('Renamer');
-  for I := 0 to CmMaskList.Items.Count - 1 do
-  begin
-    Settings.WriteString('Renamer', 'val' + IntToStr(I + 1), CmMaskList.Items[I]);
-  end;
-  Settings.WriteString('Options', 'RenameText', CmMaskList.Text);
   Close;
 end;
 

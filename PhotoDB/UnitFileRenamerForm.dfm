@@ -13,6 +13,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -30,7 +31,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
     TitleCaptions.Strings = (
       'Original File Name'
       'New File Name')
-    ExplicitWidth = 313
     ColWidths = (
       188
       285)
@@ -43,7 +43,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 503
     DesignSize = (
       479
       73)
@@ -72,7 +71,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Caption = '???'
       TabOrder = 2
       OnClick = BtnHelpClick
-      ExplicitLeft = 420
     end
     object CmMaskList: TComboBox
       Left = 8
@@ -82,7 +80,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       OnChange = Edit1Change
-      ExplicitWidth = 343
     end
     object BtAdd: TButton
       Left = 9
@@ -139,7 +136,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       MinValue = 0
       TabOrder = 1
       Value = 0
-      ExplicitLeft = 357
+      OnChange = Edit1Change
     end
   end
   object Panel2: TPanel
@@ -150,7 +147,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitWidth = 503
     DesignSize = (
       479
       31)
@@ -162,7 +158,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 338
       object BtnOK: TButton
         Left = 86
         Top = 3
@@ -192,7 +187,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Constraints.MinWidth = 130
       TabOrder = 0
       OnClick = Edit1Change
-      ExplicitWidth = 327
     end
   end
   object pmSort: TPopupMenu

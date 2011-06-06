@@ -63,9 +63,7 @@ type
     procedure AddItem(Text : string; ID : integer; fbit_ : tbitmap);
     procedure FormCreate(Sender: TObject);
     procedure BtnAddClick(Sender: TObject);
-    procedure BtnReplaceAllClick(Sender: TObject);
     procedure BtnReplaceClick(Sender: TObject);
-    procedure BtnSkipAllClick(Sender: TObject);
     procedure BtnSkipClick(Sender: TObject);
     procedure ReadFileInfo(FileName : string);
     procedure Image2MouseDown(Sender: TObject; Button: TMouseButton;
@@ -390,25 +388,12 @@ begin
   Close;
 end;
 
-procedure TDBReplaceForm.BtnReplaceAllClick(Sender: TObject);
-begin
-  FSelectedMode := Result_replace_all;
-  FSelectedID := StrToInt(DB_ID.Text);
-  OnCloseQuery := nil;
-  Close;
-end;
-
 procedure TDBReplaceForm.BtnReplaceClick(Sender: TObject);
 begin
-  FSelectedMode := Result_replace;
-  FSelectedID := StrToInt(DB_ID.Text);
-  OnCloseQuery := nil;
-  Close;
-end;
-
-procedure TDBReplaceForm.BtnSkipAllClick(Sender: TObject);
-begin
-  FSelectedMode := Result_skip_all;
+  if not CbForAll.Checked then
+    FSelectedMode := Result_replace
+  else
+    FSelectedMode := Result_replace_all;
   FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;
@@ -416,7 +401,10 @@ end;
 
 procedure TDBReplaceForm.BtnSkipClick(Sender: TObject);
 begin
-  FSelectedMode := Result_skip;
+  if not CbForAll.Checked then
+    FSelectedMode := Result_skip
+  else
+    FSelectedMode := Result_skip_all;
   FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;

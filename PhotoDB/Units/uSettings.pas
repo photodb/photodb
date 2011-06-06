@@ -118,7 +118,7 @@ function TSettings.ReadKeys(Key: string): TStrings;
 var
   Reg : TBDRegistry;
 begin
-  Result:=TStringList.Create;
+  Result := TStringList.Create;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Reg.GetKeyNames(Result);
 end;
@@ -141,10 +141,14 @@ begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
     Result := TStringList.Create;
-    Reg.OpenKey(GetRegRootKey + Key, True);
-    Reg.GetValueNames(Result);
-    for I := 0 to Result.Count - 1 do
-      Reg.DeleteValue(Result[I]);
+    try
+      Reg.OpenKey(GetRegRootKey + Key, True);
+      Reg.GetValueNames(Result);
+      for I := 0 to Result.Count - 1 do
+        Reg.DeleteValue(Result[I]);
+    finally
+      F(Result);
+    end;
   finally
     F(Reg);
   end;
@@ -172,7 +176,7 @@ var
 begin
   Reg:=TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    Reg.DeleteKey(GetRegRootKey+Key);
+    Reg.DeleteKey(GetRegRootKey + Key);
   finally;
     F(Reg);
   end;

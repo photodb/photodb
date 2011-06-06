@@ -262,6 +262,7 @@ type
     function GetImageID: Integer;
     function GetFileName: string;
     procedure EnableEditing(Value: Boolean);
+    procedure LoadEXIFFromFile(FileName: string; ExifData: TExifData);
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -1298,7 +1299,7 @@ begin
   try
     FFileDate := 0;
     try
-      ExifData.LoadFromGraphic(FileName);
+      LoadEXIFFromFile(FileName, ExifData);
       if not ExifData.Empty then
       begin
         FFileDate := DateOf(ExifData.DateTime);
@@ -1874,6 +1875,30 @@ begin
   CommentMemo.Undo;
 end;
 
+procedure TPropertiesForm.LoadEXIFFromFile(FileName: string;
+  ExifData: TExifData);
+var
+  PassWord: string;
+  MS: TMemoryStream;
+begin
+  if not ValidCryptGraphicFile(FileName) then
+    ExifData.LoadFromGraphic(FileName)
+  else begin
+    PassWord := DBkernel.FindPasswordForCryptImageFile(FileName);
+    if PassWord <> '' then
+    begin
+      MS := TMemoryStream.Create;
+      try
+        DecryptGraphicFileToStream(FileName, Password, MS);
+        MS.Seek(0, soFromBeginning);
+        ExifData.LoadFromGraphic(MS);
+      finally
+        F(MS);
+      end;
+    end;
+  end;
+end;
+
 procedure TPropertiesForm.LoadLanguage;
 begin
   Caption := L('Properties');
@@ -2044,7 +2069,7 @@ begin
     ExifData := TExifData.Create;
     try
       try
-        ExifData.LoadFromGraphic(FileName);
+        LoadEXIFFromFile(FileName, ExifData);
         if not ExifData.Empty then
         begin
 
