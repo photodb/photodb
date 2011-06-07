@@ -572,6 +572,7 @@ type
      function GetMyComputer: string;
      function GetSecondStepHelp: string;
      property SecondStepHelp : string read GetSecondStepHelp;
+     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
    protected
      procedure ComboWNDProc(var Message: TMessage);
      procedure ZoomIn;
@@ -733,11 +734,11 @@ var
 begin
   TPrivateHelper.Instance.Init;
   DirectoryWatcher := TWachDirectoryClass.Create;
-  DefaultSort:=-1;
-  FWasDragAndDrop:=false;
-  LockDrawIcon:=false;
-  ListView:=LV_THUMBS;
-  IsReallignInfo:=false;
+  DefaultSort := -1;
+  FWasDragAndDrop:= False;
+  LockDrawIcon := False;
+  ListView := LV_THUMBS;
+  IsReallignInfo:= False;
 
   TW.I.Start('ListView1');
 
@@ -765,6 +766,7 @@ begin
   ElvMain.IncrementalSearch.Enabled := True;
   ElvMain.IncrementalSearch.ItemType := eisiInitializedOnly;
   ElvMain.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
+  ElvMain.OnItemPaintText := EasyListview1ItemPaintText;
   ElvMain.OnDblClick := EasyListview1DblClick;
   ElvMain.OnExit := ListView1Exit;
   ElvMain.OnMouseDown := ListView1MouseDown;
@@ -1980,6 +1982,7 @@ begin
         FFilesInfo[I].IsTime := Value.IsTime;
         FFilesInfo[I].Loaded := True;
         FFilesInfo[I].Links := '';
+        FFilesInfo[I].Include := Value.Include;
         FFilesInfo[I].Crypted := GraphicCrypt.ValidCryptGraphicFile(FFilesInfo[I].FileName);
         if FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap = nil then
         begin
@@ -7007,6 +7010,7 @@ begin
     try
       FileInfo.FileName := FFilesInfo[-RatingPopupMenu1.Tag].FileName;
       FileInfo.Rating := (Sender as TMenuItem).Tag;
+      FileInfo.Include := True;
       UpdaterDB.AddFileEx(FileInfo, True, True);
     finally
       F(FileInfo);
@@ -7049,7 +7053,7 @@ begin
     begin
       Index := ItemAtPos(p.X, p.Y).Index;
       Index := ItemIndexToMenuIndex(index);
-      if fFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
+      if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
       begin
         if FFilesInfo[Index].ID > 0 then
           RatingPopupMenu1.Tag := FFilesInfo[Index].ID
@@ -7068,10 +7072,10 @@ begin
     end;
   end;
 
-  FDblClicked := true;
-  FDBCanDrag := false;
-  fDBCanDragW := false;
-  SetLength(fFilesToDrag, 0);
+  FDblClicked := True;
+  FDBCanDrag := False;
+  fDBCanDragW := False;
+  SetLength(FFilesToDrag, 0);
   Application.HideHint;
   THintManager.Instance.CloseHint;
   HintTimer.Enabled := false;
@@ -7185,7 +7189,7 @@ begin
   Exists := 1;
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.ExistedFileName,
-    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Exists, True);
+    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Include, Exists, True);
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(
@@ -7236,7 +7240,7 @@ var
 begin
   if UpdatingList then
     Exit;
-  if Item=nil then
+  if Item = nil then
     Exit;
 
   Comparestr := Item.Caption;
@@ -7286,6 +7290,22 @@ procedure TExplorerForm.EasyListview1ItemImageGetSize(Sender: TCustomEasyListvie
 begin
   ImageHeight := ListViewTypeToSize(ListView);
   ImageWidth := ListViewTypeToSize(ListView);
+end;
+
+procedure TExplorerForm.EasyListview1ItemPaintText(Sender: TCustomEasyListview;
+  Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
+var
+  Include: Boolean;
+  Index: Integer;
+begin
+  Include := True;
+  if not ((Item.Data = nil) or (Item.ImageIndex < 0)) then
+  begin
+    Index := ItemIndexToMenuIndex(Item.Index);
+    Include := FFilesInfo[Index].Include or (FFilesInfo[Index].ID = 0);
+  end;
+
+  FixListViewText(ACanvas, Item, Include);
 end;
 
 procedure TExplorerForm.SmallIcons1Click(Sender: TObject);

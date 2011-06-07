@@ -332,7 +332,7 @@ begin
                         ValidCryptBlobStreamJPG(SDA.Thumb), Jpeg,
                         SDA.LongImageID, SDA.KeyWords,
                         SDA.Comment, Pass, SDA.Width,
-                        SDA.Height, Date, Time, IsDate, IsTime,
+                        SDA.Height, Date, Time, IsDate, IsTime, SDA.Include,
                         SDA.Rating, SDA.Rotation,
                         SDA.Links, SDA.Access, Groups_);
 

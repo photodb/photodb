@@ -45,7 +45,7 @@ object PropertiesForm: TPropertiesForm
     Font.Style = [fsUnderline]
     ParentFont = False
   end
-  object Image2: TImage
+  object ImgReloadInfo: TImage
     Left = 72
     Top = 72
     Width = 32

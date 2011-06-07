@@ -101,7 +101,7 @@ var
   FAutoAnswer: Integer = -1;
 
 function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
-  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Rating: Integer = 0;
+  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Include: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 
 implementation
@@ -133,7 +133,7 @@ begin
 end;
 
 function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
-  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Rating: Integer = 0;
+  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Include: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 var
   ExifData : TExifData;
@@ -225,7 +225,7 @@ begin
     SetIntParam(FQuery, 13, Db_attr_norm);
     SetIntParam(FQuery, 14, Rotated);
     SetIntParam(FQuery, 15, Rating);
-    SetBoolParam(FQuery, 17, True);
+    SetBoolParam(FQuery, 17, Include);
     SetStrParam(FQuery, 20, Links);
     SetStrParam(FQuery, 21, Groups);
 
@@ -267,7 +267,7 @@ var
   procedure AddFileToDB;
   begin
     if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
-      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, FInfo[FileNumber].Rating,
+      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, FInfo[FileNumber].Include, FInfo[FileNumber].Rating,
       FInfo[FileNumber].Rotation, FInfo[FileNumber].Links, FInfo[FileNumber].Access, FInfo[FileNumber].Groups) then
       SynchronizeEx(SetImages)
     else
@@ -638,7 +638,7 @@ procedure UpdateDBThread.SetImages;
 var
   EventInfo: TEventValues;
 begin
-  EventInfo.name := AnsiLowerCase(FInfo[FileNumber].FileName);
+  EventInfo.Name := AnsiLowerCase(FInfo[FileNumber].FileName);
   EventInfo.ID := LastInseredID;
   EventInfo.Rotate := FInfo[FileNumber].Rotation;
   EventInfo.Rating := FInfo[FileNumber].Rating;
@@ -654,7 +654,7 @@ begin
   EventInfo.Groups := FInfo[FileNumber].Groups;
   EventInfo.JPEGImage := Res.Jpeg;
   EventInfo.Crypt := Res.Crypt;
-  EventInfo.Include := True;
+  EventInfo.Include := FInfo[FileNumber].Include;
   DBKernel.DoIDEvent(FSender.Form, LastInseredID, [SetNewIDFileData], EventInfo);
   if Res.Jpeg <> nil then
     Res.Jpeg.Free;

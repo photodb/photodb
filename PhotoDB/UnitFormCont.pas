@@ -170,8 +170,10 @@ type
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
     Function SelCount : integer;
     procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
-    WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     function HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
+    procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview;
+      Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
   protected
     { Protected declarations }
     function GetFormID : string; override;
@@ -336,9 +338,8 @@ begin
 
   ElvMain.IncrementalSearch.Enabled := True;
   ElvMain.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
-
+  ElvMain.OnItemPaintText := EasyListview1ItemPaintText;
   ElvMain.OnDblClick := EasyListview1DblClick;
-
   ElvMain.OnIncrementalSearch := Listview1IncrementalSearch;
   ElvMain.OnMouseDown := ListView1MouseDown;
   ElvMain.OnMouseUp := ListView1MouseUp;
@@ -1254,13 +1255,25 @@ begin
 
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     True, Info.ID, Info.ExistedFileName,
-    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Exists, True);
+    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Include, Info.Exists, True);
 end;
 
 procedure TFormCont.EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
   ShiftState: TShiftState; var Handled: Boolean);
 begin
   ListView1DblClick(Sender);
+end;
+
+procedure TFormCont.EasyListview1ItemPaintText(Sender: TCustomEasyListview;
+  Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
+begin
+  if Item.Data = nil then
+    Exit;
+
+  if Item.ImageIndex < 0 then
+    Exit;
+
+  FixListViewText(ACanvas, Item, Data[Item.Index].Include);
 end;
 
 procedure TFormCont.EasyListview1ItemSelectionChanged(

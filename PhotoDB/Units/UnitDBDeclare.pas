@@ -109,7 +109,7 @@ type
   TEventFields = set of TEventField;
 
   TEventValues = record
-    name: string;
+    Name: string;
     NewName: string;
     ID: Integer;
     Rotate: Integer;

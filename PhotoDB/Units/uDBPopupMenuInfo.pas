@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, EasyListView, UnitDBDeclare, UnitLinksSupport, UnitGroupsWork,
-  CmpUnit, uList64;
+  CmpUnit, uList64, uMemory;
 
 type
   TDBPopupMenuInfo = class(TObject)
@@ -90,6 +90,7 @@ function TDBPopupMenuInfo.Add(FileName: string) : TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfoRecord.Create;
   Result.FileName := FileName;
+  Result.Include := True;
   Add(Result);
 end;
 
@@ -137,7 +138,7 @@ end;
 destructor TDBPopupMenuInfo.Destroy;
 begin
   Clear;
-  FData.Free;
+  F(FData);
   inherited;
 end;
 
@@ -170,7 +171,7 @@ begin
       SL.Add(Self[I].Groups);
     Result := UnitGroupsWork.GetCommonGroups(SL);
   finally
-    SL.Free;
+    F(SL);
   end;
 end;
 
@@ -185,7 +186,7 @@ begin
       KL.Add(Self[I].KeyWords);
     Result := GetCommonWordsA(KL);
   finally
-    KL.Free;
+    F(KL);
   end;
 end;
 
@@ -200,7 +201,7 @@ begin
       LL.Add(Self[I].Links);
     Result := UnitLinksSupport.GetCommonLinks(LL);
   finally
-    LL.Free;
+    F(LL);
   end;
 end;
 
@@ -276,7 +277,7 @@ begin
       List.Add(Self[I].Date);
     Result := List.MaxStatDateTime;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -291,7 +292,7 @@ begin
       List.Add(Self[I].Include);
     Result := List.MaxStatBoolean;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -306,7 +307,7 @@ begin
       List.Add(Self[I].IsDate);
     Result := List.MaxStatBoolean;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -321,7 +322,7 @@ begin
       List.Add(Self[I].IsTime);
     Result := List.MaxStatBoolean;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -336,7 +337,7 @@ begin
       List.Add(Self[I].Rating);
     Result := List.MaxStatInteger;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -351,7 +352,7 @@ begin
       List.Add(Self[I].Time);
     Result := List.MaxStatDateTime;
   finally
-    List.Free;
+    F(List);
   end;
 end;
 

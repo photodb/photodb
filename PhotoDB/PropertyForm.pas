@@ -48,7 +48,7 @@ type
     Undo1: TMenuItem;
     N4: TMenuItem;
     SelectAll1: TMenuItem;
-    Image2: TImage;
+    ImgReloadInfo: TImage;
     DropFileSource1: TDropFileSource;
     DropFileTarget1: TDropFileTarget;
     DragImageList: TImageList;
@@ -409,6 +409,8 @@ end;
 function TPropertiesForm.ReadCHInclude: Boolean;
 begin
   Result := False;
+  if FShowInfoType = SHOW_INFO_FILE_NAME then
+    Result := not CbInclude.Checked;
   if FShowInfoType = SHOW_INFO_ID then
     Result := (FFilesInfo[0].Include <> CbInclude.Checked);
   if FShowInfoType = SHOW_INFO_IDS then
@@ -495,7 +497,7 @@ begin
     ResetBold;
     if ImageID <> Id then
       PcMain.ActivePageIndex := 0;
-    Image2.Visible := False;
+    ImgReloadInfo.Visible := False;
     FShowInfoType := SHOW_INFO_ID;
 
     DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
@@ -1358,7 +1360,7 @@ begin
   LabelComment.Hide;
   CommentMemo.Hide;
   RatingEdit.Rating := 0;
-  Image2.Visible := False;
+  ImgReloadInfo.Visible := False;
   CollectionMemo.Text := L('Not available');
   CollectionMemo.readonly := True;
   IDLabel.Text := L('Not available');
@@ -1470,7 +1472,7 @@ begin
         begin
           for I := 0 to FFilesInfo.Count - 1 do
             if FFilesInfo[I].ID = ID then
-              Image2.Visible := True;
+              ImgReloadInfo.Visible := True;
         end;
       SHOW_INFO_FILE_NAME:
         begin
@@ -1591,7 +1593,7 @@ begin
     PcMain.ActivePageIndex := 0;
     if Length(IDs) = 0 then
       Exit;
-    Image2.Visible := False;
+    ImgReloadInfo.Visible := False;
     DateEdit.Enabled := True;
     TimeEdit.Enabled := True;
     DBKernel.RegisterChangesID(Self, ChangedDBDataByID);

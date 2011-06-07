@@ -389,6 +389,7 @@ type
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
     function GetRegQueryRootPath: string;
     property RegQueryRootPath: string read GetRegQueryRootPath;
+    procedure EasyListViewItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
   protected
     { Protected declarations }
     function TreeView: TShellTreeView;
@@ -641,6 +642,7 @@ begin
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   ElvMain.IncrementalSearch.Enabled := True;
   ElvMain.OnItemThumbnailDraw := EasyListViewItemThumbnailDraw;
+  ElvMain.OnItemPaintText := EasyListViewItemPaintText;
   ElvMain.OnDblClick := EasyListViewDblClick;
   ElvMain.OnIncrementalSearch := ListViewIncrementalSearch;
   ElvMain.OnExit := ListViewExit;
@@ -1110,6 +1112,21 @@ begin
     MessageBoxDB(Handle, Format(L('Cannot rename file! Error code = %d'), [GetLastError]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
+procedure TSearchForm.EasyListViewItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
+var
+  Data: TDBPopupMenuInfoRecord;
+begin
+  if FListUpdating or (Item.Data = nil) then
+    Exit;
+
+  if Item.ImageIndex < 0 then
+    Exit;
+
+  Data := GetSearchRecordFromItemData(Item);
+
+  FixListViewText(ACanvas, Item, Data.Include);
+end;
+
 procedure TSearchForm.EasyListViewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
@@ -1141,7 +1158,7 @@ begin
   DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
                      FBitmapImageList, Y,
                      True, Data.ID, Data.ExistedFileName, Data.Rating, Data.Rotation,
-                     Data.Access, Data.Crypted, Data.Exists, False, CustomInfo);
+                     Data.Access, Data.Crypted, Data.Include, Data.Exists, False, CustomInfo);
 
 end;
 {$ENDREGION}

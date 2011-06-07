@@ -126,6 +126,7 @@ begin
   Info := TDBPopupMenuInfoRecord.Create;
   try
     Info.FileName := FileName;
+    Info.Include := True;
     Result := AddFileEx(Info, Silent, False);
   finally
     F(Info);
