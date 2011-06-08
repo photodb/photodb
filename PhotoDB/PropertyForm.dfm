@@ -3,8 +3,9 @@ object PropertiesForm: TPropertiesForm
   Top = 98
   Caption = 'Property'
   ClientHeight = 529
-  ClientWidth = 324
+  ClientWidth = 314
   Color = clBtnFace
+  Constraints.MinWidth = 330
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -18,7 +19,7 @@ object PropertiesForm: TPropertiesForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    324
+    314
     529)
   PixelsPerInch = 96
   TextHeight = 13
@@ -120,7 +121,7 @@ object PropertiesForm: TPropertiesForm
     Tag = 1
     Left = 120
     Top = 32
-    Width = 190
+    Width = 180
     Height = 73
     Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
@@ -132,9 +133,10 @@ object PropertiesForm: TPropertiesForm
     TabOrder = 0
     OnChange = CommentMemoChange
     OnDblClick = CommentMemoDblClick
+    ExplicitWidth = 178
   end
   object BtDone: TButton
-    Left = 233
+    Left = 223
     Top = 496
     Width = 83
     Height = 25
@@ -142,9 +144,10 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Done'
     TabOrder = 3
     OnClick = BtDoneClick
+    ExplicitLeft = 221
   end
   object BtSave: TButton
-    Left = 136
+    Left = 126
     Top = 495
     Width = 91
     Height = 25
@@ -153,9 +156,10 @@ object PropertiesForm: TPropertiesForm
     Enabled = False
     TabOrder = 2
     OnClick = BtSaveClick
+    ExplicitLeft = 124
   end
   object BtnFind: TButton
-    Left = 48
+    Left = 38
     Top = 495
     Width = 81
     Height = 25
@@ -163,6 +167,7 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Find Target'
     TabOrder = 1
     OnClick = BtnFindClick
+    ExplicitLeft = 36
   end
   object ImageLoadingFile: TDBLoading
     Left = 27
@@ -176,7 +181,7 @@ object PropertiesForm: TPropertiesForm
   object PcMain: TPageControl
     Left = 8
     Top = 118
-    Width = 308
+    Width = 298
     Height = 372
     ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -185,10 +190,12 @@ object PropertiesForm: TPropertiesForm
     ParentDoubleBuffered = False
     TabOrder = 5
     OnChange = PcMainChange
+    ExplicitWidth = 296
     object TsGeneral: TTabSheet
       Caption = 'General'
+      ExplicitWidth = 288
       DesignSize = (
-        300
+        290
         344)
       object LabelKeywords: TLabel
         Left = 3
@@ -350,7 +357,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 3
         Top = 296
-        Width = 294
+        Width = 284
         Height = 42
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvNone
@@ -358,12 +365,13 @@ object PropertiesForm: TPropertiesForm
         ScrollBars = ssVertical
         TabOrder = 11
         OnChange = CommentMemoChange
+        ExplicitWidth = 282
       end
       object IDLabel: TMemo
         Tag = 11
         Left = 72
         Top = 261
-        Width = 225
+        Width = 215
         Height = 15
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -371,12 +379,13 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 9
+        ExplicitWidth = 213
       end
       object heightmemo: TMemo
         Tag = 11
         Left = 72
         Top = 242
-        Width = 225
+        Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -384,12 +393,13 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 8
+        ExplicitWidth = 213
       end
       object widthmemo: TMemo
         Tag = 11
         Left = 72
         Top = 224
-        Width = 225
+        Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -397,12 +407,13 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 7
+        ExplicitWidth = 213
       end
       object SizeLabel: TMemo
         Tag = 11
         Left = 72
         Top = 205
-        Width = 225
+        Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -410,11 +421,12 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 6
+        ExplicitWidth = 213
       end
       object TimeEdit: TDateTimePicker
         Left = 72
         Top = 178
-        Width = 225
+        Width = 215
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         Date = 38544.841692523150000000
@@ -426,11 +438,12 @@ object PropertiesForm: TPropertiesForm
         Kind = dtkTime
         TabOrder = 5
         OnChange = CommentMemoChange
+        ExplicitWidth = 213
       end
       object DateEdit: TDateTimePicker
         Left = 72
         Top = 151
-        Width = 225
+        Width = 215
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BevelEdges = []
@@ -443,6 +456,7 @@ object PropertiesForm: TPropertiesForm
         DateFormat = dfLong
         TabOrder = 4
         OnChange = CommentMemoChange
+        ExplicitWidth = 213
       end
       object RatingEdit: TRating
         Left = 72
@@ -466,7 +480,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 108
-        Width = 217
+        Width = 207
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -475,12 +489,13 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         TabOrder = 3
         OnChange = CommentMemoChange
+        ExplicitWidth = 205
       end
       object OwnerMemo: TMemo
         Tag = 11
         Left = 72
         Top = 88
-        Width = 217
+        Width = 207
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -489,12 +504,13 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         TabOrder = 2
         OnChange = CommentMemoChange
+        ExplicitWidth = 205
       end
       object LabelPath: TMemo
         Tag = 11
         Left = 3
         Top = 40
-        Width = 294
+        Width = 284
         Height = 41
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -509,12 +525,13 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 1
+        ExplicitWidth = 282
       end
       object LabelName: TMemo
         Tag = 11
         Left = 72
         Top = 3
-        Width = 225
+        Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -528,13 +545,15 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
         ReadOnly = True
         TabOrder = 0
+        ExplicitWidth = 213
       end
     end
     object TsGroups: TTabSheet
       Caption = 'Groups'
       ImageIndex = 1
+      OnResize = TsGroupsResize
       DesignSize = (
-        300
+        290
         344)
       object Image3: TImage
         Left = 3
@@ -783,9 +802,9 @@ object PropertiesForm: TPropertiesForm
       end
       object LstAvaliableGroups: TListBox
         Left = 3
-        Top = 90
+        Top = 91
         Width = 107
-        Height = 177
+        Height = 176
         Style = lbOwnerDrawFixed
         Anchors = [akLeft, akTop, akBottom]
         ItemHeight = 20
@@ -799,7 +818,7 @@ object PropertiesForm: TPropertiesForm
       end
       object BtnRemoveGroup: TButton
         Left = 116
-        Top = 111
+        Top = 114
         Width = 49
         Height = 17
         Caption = '<--'
@@ -808,7 +827,7 @@ object PropertiesForm: TPropertiesForm
       end
       object BtnAddGroup: TButton
         Left = 116
-        Top = 88
+        Top = 91
         Width = 49
         Height = 17
         Caption = '-->'
@@ -817,9 +836,9 @@ object PropertiesForm: TPropertiesForm
       end
       object lstCurrentGroups: TListBox
         Left = 171
-        Top = 92
+        Top = 91
         Width = 111
-        Height = 169
+        Height = 176
         Style = lbOwnerDrawFixed
         Anchors = [akLeft, akTop, akBottom]
         ItemHeight = 20
@@ -876,28 +895,37 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        300
+        290
         344)
       object VleExif: TValueListEditor
         Left = 3
         Top = 3
-        Width = 294
+        Width = 284
         Height = 338
         Anchors = [akLeft, akTop, akRight, akBottom]
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
         TabOrder = 0
         OnContextPopup = VleExifContextPopup
+        ExplicitWidth = 282
         ColWidths = (
           136
-          152)
+          140)
       end
     end
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        300
+        290
         344)
       object DgGistogramm: TDmGradient
         Left = 3
@@ -924,7 +952,7 @@ object PropertiesForm: TPropertiesForm
       object RgGistogrammChannel: TRadioGroup
         Left = 3
         Top = 183
-        Width = 294
+        Width = 284
         Height = 136
         Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Chanel'
@@ -936,6 +964,7 @@ object PropertiesForm: TPropertiesForm
           'Blue chanel')
         TabOrder = 0
         OnClick = RgGistogrammChannelClick
+        ExplicitWidth = 282
       end
       object LbEffectiveRange: TStaticText
         Left = 3
@@ -950,8 +979,12 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        300
+        290
         344)
       object LbLinks: TLabel
         Left = 3
@@ -963,21 +996,23 @@ object PropertiesForm: TPropertiesForm
       object CbInclude: TCheckBox
         Left = 3
         Top = 9
-        Width = 294
+        Width = 284
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Include in base search item'
         TabOrder = 0
         OnClick = CommentMemoChange
+        ExplicitWidth = 282
       end
       object LinksScrollBox: TScrollBox
         Left = 3
         Top = 48
-        Width = 294
+        Width = 284
         Height = 293
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PmAddLink
         TabOrder = 1
+        ExplicitWidth = 282
       end
     end
   end
@@ -1015,7 +1050,7 @@ object PropertiesForm: TPropertiesForm
     Top = 496
   end
   object SaveWindowPos1: TSaveWindowPos
-    SetOnlyPosition = True
+    SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
     Left = 48

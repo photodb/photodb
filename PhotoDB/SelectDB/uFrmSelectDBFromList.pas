@@ -55,12 +55,15 @@ var
   FileName: string;
 begin
   inherited;
-  FileName := DBKernel.DBs[CbDBList.ItemIndex].FileName;
-  if CbDefaultDB.Checked then
-    DBKernel.SetDataBase(FileName);
-  dbname := FileName;
-  IsStepComplete := True;
-  Changed;
+  if ValidateStep(False) then
+  begin
+    FileName := DBKernel.DBs[CbDBList.ItemIndex].FileName;
+    if CbDefaultDB.Checked then
+      DBKernel.SetDataBase(FileName);
+    dbname := FileName;
+    IsStepComplete := True;
+    Changed;
+  end;
 end;
 
 function TFrmSelectDBFromList.GetDBFile: TPhotoDBFile;
@@ -137,7 +140,7 @@ begin
     Exit;
 
   Result := True;
-  if not DBKernel.TestDB(DBFile.FileName) then
+  if not DBKernel.TestDB(DBKernel.DBs[CbDBList.ItemIndex].FileName) then
   begin
     if not Silent then
       MessageBoxDB(Handle, Format(TFormSelectDB(Manager.Owner).InvalidDBFileMessage,

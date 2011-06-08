@@ -578,13 +578,6 @@ end;
 
 procedure SearchThread.DoOnDone;
 begin
-  //Loading big images
-  if FPictureSize <> ThImageSize then
-    (ThreadForm as TSearchForm).ReloadBigImages
-  else
-    if Assigned(FOnDone) then
-      FOnDone(Self);
-
   (ThreadForm as TSearchForm).StopLoadingList;
   if FCurrentQueryType = QT_W_SCAN_FILE then
   begin
@@ -597,6 +590,12 @@ begin
       (ThreadForm as TSearchForm).SortbyDate1Click((ThreadForm as TSearchForm).SortbyDate1);
   end;
 
+  //Loading big images
+  if FPictureSize <> ThImageSize then
+    (ThreadForm as TSearchForm).ReloadBigImages
+  else
+    if Assigned(FOnDone) then
+      FOnDone(Self);
 end;
 
 procedure SearchThread.AddWideSearchOptions(Params : TDBQueryParams);

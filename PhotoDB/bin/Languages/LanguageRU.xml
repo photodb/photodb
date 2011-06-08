@@ -387,7 +387,8 @@
     <translate name="Height" value="Высота" />
     <translate name="All - %spx." value="Все - %sпк." />
     <translate name="Differen width" value="Различная ширина" />
-    <translate name="Differen height" value="Различная высота" />
+    <translate name="Differen height" value="Различная высота" />	
+    <translate name="Different directories" value="Различные директории" />
     <translate name="ID" value="ID" />
     <translate name="All in %s" value="Все в %s" />	
     <translate name="Keywords" value="Ключевые слова" />
@@ -1428,7 +1429,7 @@
 	<translate name="New version (%s) is available!" value="Доступна новая версия (%s)!"/>
 	<translate name="This program isn't activated." value="Эта программа не активирована."/>	
 	<translate name="Program code" value="Код вашей копии программы"/>
-	<translate name="You're using the latest version of PhotoDB!" value="Вы используете самую последнюю версию PhotoDB!" /> 
+	<translate name="You're using the latest version of PhotoDB (%s)!" value="Установлена самая последняя версия PhotoDB (%s)!" /> 
 	<translate name="Open activation form" value="Открыть форму активации"/>
 	<translate name="The program is registered to" value="Зарегистрировано на"/>
 	<translate name="Standalone database created using &quot;%s&quot;. In this program many features are disabled and these features are available in the full version." value="Автономная база данных созданная с помощью &quot;%s&quot;. В этой программе отключены многие функции, доступные в полной версии."/>

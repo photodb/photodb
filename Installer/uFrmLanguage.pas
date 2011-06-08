@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
-  StrUtils, uTranslate, uLogger, pngimage, uInstallZip, uSysUtils, uLangUtils;
+  StrUtils, uTranslate, uLogger, pngimage, uInstallZip, uSysUtils, uLangUtils,
+  Registry;
 
 type
   TLanguageItem = class(TObject)
@@ -217,7 +218,22 @@ var
   LangItem: TLanguageItem;
   ImageStream: TMemoryStream;
   PNG: TPNGImage;
+  Reg: TRegistry;
+  CurentLanguage: string;
 begin
+  CurentLanguage := '';
+  if IsApplicationInstalled then
+  begin
+    Reg := TRegistry.Create(KEY_READ);
+    try
+      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.OpenKey(RegRoot, False);
+      CurentLanguage := Reg.ReadString('Language');
+    finally
+      F(Reg);
+    end;
+  end;
+
   LbLanguages.Clear;
   MS := TMemoryStream.Create;
   try
@@ -264,13 +280,25 @@ begin
     F(MS);
   end;
   LbLanguages.Selected[0] := True;
-  LangCode := PrimaryLangID(GetUserDefaultUILanguage);
-  for I := 0 to LbLanguages.Items.Count - 1 do
-    if TLanguageItem(LbLanguages.Items.Objects[I]).LangCode = LangCode then
-    begin
-      LbLanguages.Selected[I] := True;
-      LbLanguagesClick(Self);
-    end;
+
+  if CurentLanguage = '' then
+  begin
+    LangCode := PrimaryLangID(GetUserDefaultUILanguage);
+    for I := 0 to LbLanguages.Items.Count - 1 do
+      if TLanguageItem(LbLanguages.Items.Objects[I]).LangCode = LangCode then
+      begin
+        LbLanguages.Selected[I] := True;
+        LbLanguagesClick(Self);
+      end;
+  end else
+  begin
+    for I := 0 to LbLanguages.Items.Count - 1 do
+      if AnsiLowerCase(TLanguageItem(LbLanguages.Items.Objects[I]).Code) = AnsiLowerCase(CurentLanguage) then
+      begin
+        LbLanguages.Selected[I] := True;
+        LbLanguagesClick(Self);
+      end;
+  end;
   LoadLanguage;
 end;
 

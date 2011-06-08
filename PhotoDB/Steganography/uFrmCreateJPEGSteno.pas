@@ -362,7 +362,9 @@ begin
       (EdPassword.Text <> '');
   end;
   if not Silent and (ImJpegFile.Picture.Graphic = nil) then
-    LoadOtherImageHandler(Self);
+    LoadOtherImageHandler(Self)
+  else if not Silent and not FileExistsSafe(EdDataFileName.Text) then
+    BtnChooseFileClick(Self);
 end;
 
 procedure TFrmCreateJPEGSteno.WblJpegOptionsClick(Sender: TObject);

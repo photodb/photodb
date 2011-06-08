@@ -415,12 +415,12 @@ object AboutForm: TAboutForm
     PixelsBetweenPictureAndText = 10
     FadeDelay = 10
     FadeSteps = 20
-    defaultcolor = clBtnFace
+    Defaultcolor = clBtnFace
     Animations = [ImSt_Normal, ImSt_Enter, ImSt_Click, ImSt_Disabled]
     AnimatedShow = False
-    autosetimage = True
-    usecoolfont = False
-    coolcolor = clBlack
+    Autosetimage = True
+    Usecoolfont = False
+    Coolcolor = clBlack
     CoolColorSize = 3
     VirtualDraw = False
   end

@@ -165,7 +165,7 @@ end;
 
 procedure TWizardManager.Execute;
 begin
-  if Steps[CurrentStep].ValidateStep(True) then
+  if Steps[CurrentStep].ValidateStep(False) then
     Steps[CurrentStep].Execute;
 end;
 

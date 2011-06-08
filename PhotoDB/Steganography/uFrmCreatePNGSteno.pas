@@ -427,7 +427,9 @@ begin
       (EdPassword.Text <> '');
   end;
   if not Silent and (ImImageFile.Picture.Graphic = nil) then
-    LoadOtherImageHandler(Self);
+    LoadOtherImageHandler(Self)
+  else if not Silent and not FileExistsSafe(EdDataFileName.Text) then
+    BtnChooseFileClick(Self);
 end;
 
 function TFrmCreatePNGSteno.MaxDataFileSize: Cardinal;

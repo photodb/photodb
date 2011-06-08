@@ -574,6 +574,7 @@ begin
   N04.ImageIndex := DB_IC_RATING_4;
   N05.ImageIndex := DB_IC_RATING_5;
   ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
+  ShowDateOptionsLinkClick(Self);
 
   TW.I.Start('S -> Splitter1Moved');
   Creating := False;
@@ -2417,7 +2418,6 @@ begin
     TimenotExists1.Caption := L('No time'); ;
 
     View2.Caption := L('Slide show');
-    ShowDateOptionsLink.Text := L('Date options');
 
     TbSearch.Caption := L('Search');
     TbSort.Caption := L('Sort');
@@ -3242,13 +3242,22 @@ end;
 
 procedure TSearchForm.ShowDateOptionsLinkClick(Sender: TObject);
 begin
-  dblDate.Active := True;
-  if pnDateRange.Visible then
-    pnDateRange.Hide
-  else begin
-    pnDateRange.Show;
-    LoadDateRange;
+  if Sender <> Self then
+  begin
+    dblDate.Active := True;
+    if pnDateRange.Visible then
+      pnDateRange.Hide
+    else begin
+      ShowDateOptionsLink.Text := L('Date options') + ' (-)';
+      pnDateRange.Show;
+      LoadDateRange;
+    end;
   end;
+
+  if pnDateRange.Visible then
+    ShowDateOptionsLink.Text := L('Date options') + ' (-)'
+  else
+    ShowDateOptionsLink.Text := L('Date options') + ' (+)';
 end;
 
 procedure TSearchForm.LoadSizes;

@@ -207,7 +207,7 @@ begin
   if not Info.InfoAvaliable then
     LnkGoToWebSite.Text := L('Can not check for updates!')
   else if not Info.IsNewVersion then
-    LnkGoToWebSite.Text := L('You''re using the latest version of PhotoDB!')
+    LnkGoToWebSite.Text := Format(L('You''re using the latest version of PhotoDB (%s)!'), [ProductVersion])
   else
     LnkGoToWebSite.Text := Format(L('New version (%s) is available!'), [ReleaseToString(Info.Release)]);
 

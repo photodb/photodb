@@ -242,6 +242,7 @@ type
     procedure PmImageConnectPopup(Sender: TObject);
     procedure PcMainChange(Sender: TObject);
     procedure ImageLoadingFileDrawBackground(Sender: TObject; Buffer: TBitmap);
+    procedure TsGroupsResize(Sender: TObject);
   private
     { Private declarations }
     LinkDropFiles: TStrings;
@@ -1245,6 +1246,19 @@ begin
     Application.CreateForm(TViewer, Viewer);
   Viewer.Execute(Sender, FFilesInfo);
   Viewer.Show;
+end;
+
+procedure TPropertiesForm.TsGroupsResize(Sender: TObject);
+var
+  AvaliableWidth: Integer;
+begin
+  AvaliableWidth := TsGroups.Width - 3 * 4 - BtnAddGroup.Width;
+  LstAvaliableGroups.Width := AvaliableWidth div 2;
+  BtnAddGroup.Left := LstAvaliableGroups.Width + LstAvaliableGroups.Left + 3;
+  BtnRemoveGroup.Left := BtnAddGroup.Left;
+  lstCurrentGroups.Left := BtnAddGroup.Left + BtnAddGroup.Width + 3;
+  LbCurrentGroups.Left := lstCurrentGroups.Left;
+  lstCurrentGroups.Width := AvaliableWidth - LstAvaliableGroups.Width;
 end;
 
 procedure TPropertiesForm.Searchforit1Click(Sender: TObject);
