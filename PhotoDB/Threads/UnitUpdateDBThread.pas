@@ -269,8 +269,10 @@ var
     if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
       FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, FInfo[FileNumber].Include, FInfo[FileNumber].Rating,
       FInfo[FileNumber].Rotation, FInfo[FileNumber].Links, FInfo[FileNumber].Access, FInfo[FileNumber].Groups) then
-      SynchronizeEx(SetImages)
-    else
+    begin
+      Res.Jpeg.DIBNeeded;
+      SynchronizeEx(SetImages);
+    end else
       F(ResArray[FileNumber].Jpeg);
 
   end;
@@ -329,6 +331,7 @@ begin
         if (Res.Count = 1) and ((Res.Attr[0] = Db_attr_not_exists) or (Res.FileNames[0] <> FInfo[FileNumber].FileName)) and
           (AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(FInfo[FileNumber].FileName)) then
         begin
+          Res.Jpeg.DIBNeeded;
           SynchronizeEx(FileProcessed);
           UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
           DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
@@ -637,24 +640,26 @@ end;
 procedure UpdateDBThread.SetImages;
 var
   EventInfo: TEventValues;
+  Info: TDBPopupMenuInfoRecord;
 begin
-  EventInfo.Name := AnsiLowerCase(FInfo[FileNumber].FileName);
+  Info := FInfo[FileNumber];
+  EventInfo.Name := AnsiLowerCase(Info.FileName);
   EventInfo.ID := LastInseredID;
-  EventInfo.Rotate := FInfo[FileNumber].Rotation;
-  EventInfo.Rating := FInfo[FileNumber].Rating;
-  EventInfo.Comment := FInfo[FileNumber].Comment;
-  EventInfo.KeyWords := FInfo[FileNumber].KeyWords;
-  EventInfo.Access := FInfo[FileNumber].Access;
-  EventInfo.Attr := FInfo[FileNumber].Attr;
+  EventInfo.Rotate := Info.Rotation;
+  EventInfo.Rating := Info.Rating;
+  EventInfo.Comment := Info.Comment;
+  EventInfo.KeyWords := Info.KeyWords;
+  EventInfo.Access := Info.Access;
+  EventInfo.Attr := Info.Attr;
   EventInfo.Date := Date;
   EventInfo.IsDate := True;
   EventInfo.IsTime := IsTime;
   EventInfo.Time := TimeOf(Time);
   EventInfo.Image := nil;
-  EventInfo.Groups := FInfo[FileNumber].Groups;
+  EventInfo.Groups := Info.Groups;
   EventInfo.JPEGImage := Res.Jpeg;
   EventInfo.Crypt := Res.Crypt;
-  EventInfo.Include := FInfo[FileNumber].Include;
+  EventInfo.Include := Info.Include;
   DBKernel.DoIDEvent(FSender.Form, LastInseredID, [SetNewIDFileData], EventInfo);
   if Res.Jpeg <> nil then
     Res.Jpeg.Free;
@@ -664,21 +669,23 @@ end;
 procedure UpdateDBThread.FileProcessed;
 var
   EventInfo: TEventValues;
+  Info: TDBPopupMenuInfoRecord;
 begin
-  EventInfo.name := AnsiLowerCase(FInfo[FileNumber].FileName);
+  Info := FInfo[FileNumber];
+  EventInfo.name := AnsiLowerCase(Info.FileName);
   EventInfo.ID := LastInseredID;
-  EventInfo.Rotate := FInfo[FileNumber].Rotation;
-  EventInfo.Rating := FInfo[FileNumber].Rating;
-  EventInfo.Comment := FInfo[FileNumber].Comment;
-  EventInfo.KeyWords := FInfo[FileNumber].KeyWords;
-  EventInfo.Access := FInfo[FileNumber].Access;
-  EventInfo.Attr := FInfo[FileNumber].Attr;
+  EventInfo.Rotate := Info.Rotation;
+  EventInfo.Rating := Info.Rating;
+  EventInfo.Comment := Info.Comment;
+  EventInfo.KeyWords := Info.KeyWords;
+  EventInfo.Access := Info.Access;
+  EventInfo.Attr := Info.Attr;
   EventInfo.Date := Date;
   EventInfo.IsDate := True;
   EventInfo.IsTime := IsTime;
   EventInfo.Time := TimeOf(Time);
   EventInfo.Image := nil;
-  EventInfo.Groups := FInfo[FileNumber].Groups;
+  EventInfo.Groups := Info.Groups;
   EventInfo.JPEGImage := Res.Jpeg;
   EventInfo.Crypt := Res.Crypt;
   EventInfo.Include := True;

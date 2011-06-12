@@ -279,8 +279,8 @@ begin
     LastIDImage := ID;
     Bit := TBitmap.Create;
     try
-      Bit.PixelFormat := Pf24bit;
-      Bit.Assign(Value.JPEGImage);
+      Bit.PixelFormat := pf24bit;
+      AssignJpeg(Bit, Value.JPEGImage);
       Bitmap := TBitmap.Create;
       try
         Bitmap.PixelFormat := Pf24bit;
@@ -290,8 +290,8 @@ begin
         DoResize(W, H, Bit, Bitmap);
 
         F(FCurrentImage);
-        FCurrentImage := TBitmap.Create;
-        FCurrentImage.Assign(Bitmap);
+        FCurrentImage := Bitmap;
+        Bitmap := nil;
         Repaint;
       finally
         F(Bitmap);

@@ -390,6 +390,7 @@ type
     function GetRegQueryRootPath: string;
     property RegQueryRootPath: string read GetRegQueryRootPath;
     procedure EasyListViewItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
+    procedure HelpThreadDBRecordsCountCallBack(Sender: TObject; RecordsInDB: Integer);
   protected
     { Protected declarations }
     function TreeView: TShellTreeView;
@@ -453,7 +454,8 @@ uses
   UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
   UnitGroupReplace, UnitSavingTableForm, UnitHelp,
   UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
-  UnitOpenQueryThread;
+  UnitOpenQueryThread, uSearchHelpAddPhotosThread;
+
 {$R *.dfm}
 
 procedure TSearchForm.FormCreate(Sender: TObject);
@@ -2438,32 +2440,24 @@ begin
   end;
 end;
 
-procedure TSearchForm.HelpTimerTimer(Sender: TObject);
+procedure TSearchForm.HelpThreadDBRecordsCountCallBack(Sender: TObject;
+  RecordsInDB: Integer);
 var
-  DS: TDataSet;
+  HelpHint: string;
+begin
+  HelpHint := '     ' + L('To add photos to the collection, select "Explore" from the context menu, then find your pictures and select "Add items".' + '$nl$$nl$    Click "Help" for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$', 'Help');
 
-  procedure XHint(XDS: TDataSet);
-  var
-    HelpHint: string;
-
-    function Count: Integer;
-    begin
-      Result := XDS.FieldByName('RecordsCount').AsInteger;
-    end;
-
+  if RecordsInDB < 50 then
+    DoHelpHintCallBackOnCanClose(L('Help'), HelpHint, Point(0, 0), ElvMain, HelpNextClick,
+      L('Next...'), HelpCloseClick)
+  else
   begin
-    HelpHint := '     ' + L('To add photos to the collection, select "Explore" from the context menu, then find your pictures and select "Add items".' + '$nl$$nl$    Click "Help" for further assistance.$nl$     Or click on the cross at the top to help is no longer displayed.$nl$$nl$$nl$', 'Help');
-
-    if Count < 50 then
-      DoHelpHintCallBackOnCanClose(L('Help'), HelpHint, Point(0, 0), ElvMain, HelpNextClick,
-        L('Next...'), HelpCloseClick)
-    else
-    begin
-      HelpNo := 0;
-      Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
-    end;
+    HelpNo := 0;
+    Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
   end;
+end;
 
+procedure TSearchForm.HelpTimerTimer(Sender: TObject);
 begin
   if not Active then
     Exit;
@@ -2473,14 +2467,7 @@ begin
     Exit;
   HelpTimer.Enabled := False;
 
-  DS := GetQuery(True);
-  try
-    SetSQL(DS, 'Select count(*) as RecordsCount from $DB$');
-    DS.Open;
-    XHint(DS);
-  finally
-    FreeDS(DS);
-  end;
+  TSearchHelpAddPhotosThread.Create(Self, HelpThreadDBRecordsCountCallBack);
 end;
 
 procedure TSearchForm.PmSetDatePopup(Sender: TObject);

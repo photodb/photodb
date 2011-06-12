@@ -1261,7 +1261,7 @@ var
   CRC: Cardinal;
 begin
   Result := False;
-  FQuery := GetQuery(True);
+  FQuery := GetQuery;
   try
     FileName := AnsiLowerCase(FileName);
     FileName := ExcludeTrailingBackslash(FileName);

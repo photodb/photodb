@@ -148,21 +148,71 @@ type
   end;
 
 type
+  TExplorerNotifyInfo = class
+  private
+    FExplorerViewInfo: TExplorerViewInfo;
+    FUpdaterInfo: TUpdaterInfo;
+    FOwner: TExplorerForm;
+    FState: TGUID;
+  public
+    constructor Create(Owner: TExplorerForm; State: TGUID;
+      UpdaterInfo: TUpdaterInfo; ExplorerViewInfo: TExplorerViewInfo);
+    destructor Destroy; override;
+  end;
+
+  TExplorerWindowThreads = class
+  public
+    FExplorer: TExplorerForm;
+    FCounter: Integer;
+    constructor Create(Explorer: TExplorerForm);
+  end;
+
+  TExplorerUpdateManager = class(TObject)
+  private
+    FSync: TCriticalSection;
+    FData: TList;
+    FExplorerThreads: TList;
+  protected
+    constructor Create;
+  public
+    destructor Destroy; override;
+    procedure QueueNotify(Info: TExplorerNotifyInfo);
+    function DeQueue(FOwner: TExplorerForm; FState: TGUID): TExplorerNotifyInfo;
+    procedure CleanUp(FOwner: TExplorerForm);
+    procedure RegisterThread(FOwner: TExplorerForm);
+    procedure UnRegisterThread(FOwner: TExplorerForm);
+    function GetThreadCount(FOwner: TExplorerForm): Integer;
+  end;
+
+type
   TIconType = (itSmall, itLarge);
 
 var
-  AExplorerFolders : TExplorerFolders = nil;
-  UpdaterCount : integer = 0;
-  ExplorerUpdateBigImageThreadsCount : integer = 0;
+  AExplorerFolders: TExplorerFolders = nil;
+  UpdaterCount: Integer = 0;
+  ExplorerUpdateBigImageThreadsCount: Integer = 0;
   FullFolderPicture: TPNGImage = nil;
-  FFolderPictureLock : TCriticalSection = nil;
+  FFolderPictureLock: TCriticalSection = nil;
+
+function ExplorerUpdateManager: TExplorerUpdateManager;
 
 implementation
 
 uses
   FormManegerUnit, UnitViewerThread, CommonDBSupport, uExplorerThreadPool;
 
-  { TExplorerThread }
+var
+  ExplorerUpdateManagerInstance: TExplorerUpdateManager = nil;
+
+function ExplorerUpdateManager: TExplorerUpdateManager;
+begin
+  if ExplorerUpdateManagerInstance = nil then
+    ExplorerUpdateManagerInstance := TExplorerUpdateManager.Create;
+
+  Result := ExplorerUpdateManagerInstance;
+end;
+
+{ TExplorerThread }
 
 constructor TExplorerThread.Create(Folder,
   Mask: string; ThreadType : Integer; Info: TExplorerViewInfo; Sender : TExplorerForm; UpdaterInfo: TUpdaterInfo; SID : TGUID);
@@ -176,7 +226,7 @@ begin
   FOwnerThreadType := THREAD_TYPE_NONE;
   FSender := Sender;
   FFolder := Folder;
-  Fmask := Mask;
+  FMask := Mask;
   FCID := SID;
   ExplorerInfo := Info;
   FShowFiles := True;
@@ -201,6 +251,7 @@ var
   S: string;
   P: Integer;
   IsPrivateDirectory : Boolean;
+  NotifyInfo: TExplorerNotifyInfo;
 
   procedure LoadDBContent;
   var
@@ -228,22 +279,44 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
+
   CoInitialize(nil);
   try
     LoadingAllBigImages := True;
 
     case ExplorerInfo.View of
-      LV_THUMBS     : begin FIcoSize:=48; end;
-      LV_ICONS      : begin FIcoSize:=32; end;
-      LV_SMALLICONS : begin FIcoSize:=16; end;
-      LV_TITLES     : begin FIcoSize:=16; end;
-      LV_TILE       : begin FIcoSize:=48; end;
-      LV_GRID       : begin FIcoSize:=32; end;
+      LV_THUMBS     : begin FIcoSize := 48; end;
+      LV_ICONS      : begin FIcoSize := 32; end;
+      LV_SMALLICONS : begin FIcoSize := 16; end;
+      LV_TITLES     : begin FIcoSize := 16; end;
+      LV_TILE       : begin FIcoSize := 48; end;
+      LV_GRID       : begin FIcoSize := 32; end;
     end;
 
     if FUpdaterInfo.IsUpdater then
     begin
-      AddFile;
+      NotifyInfo := nil;
+      try
+        repeat
+          F(NotifyInfo);
+          AddFile;
+          NotifyInfo := ExplorerUpdateManagerInstance.DeQueue(FSender, StateID);
+          if NotifyInfo <> nil then
+          begin
+            if FUpdaterInfo.FileInfo <> nil then
+            begin
+              FUpdaterInfo.FileInfo.Free;
+              FUpdaterInfo.FileInfo := nil;
+            end;
+            ExplorerInfo := NotifyInfo.FExplorerViewInfo;
+            FUpdaterInfo := NotifyInfo.FUpdaterInfo;
+          end;
+        until NotifyInfo = nil;
+      finally
+        ExplorerUpdateManagerInstance.UnRegisterThread(FSender);
+        //check if new info is became avliable since last check ws performed
+        ExplorerUpdateManagerInstance.QueueNotify(ExplorerUpdateManagerInstance.DeQueue(FSender, StateID));
+      end;
       Exit;
     end;
 
@@ -2168,6 +2241,163 @@ begin
   Result := FThreadType = THREAD_TYPE_THREAD_PREVIEW;
 end;
 
+{ TExplorerUpdateManager }
+
+procedure TExplorerUpdateManager.CleanUp(FOwner: TExplorerForm);
+var
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    for I := FData.Count - 1 downto 0 do
+      if TExplorerNotifyInfo(FData[I]).FOwner = FOwner then
+        FData.Delete(I);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+constructor TExplorerUpdateManager.Create;
+begin
+  FSync := TCriticalSection.Create;
+  FData := TList.Create;
+  FExplorerThreads := TList.Create;
+end;
+
+function TExplorerUpdateManager.DeQueue(FOwner: TExplorerForm; FState: TGUID): TExplorerNotifyInfo;
+begin
+  Result := nil;
+  FSync.Enter;
+  try
+    if FData.Count = 0 then
+      Exit;
+    Result := FData[0];
+    FData.Delete(0);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+destructor TExplorerUpdateManager.Destroy;
+begin
+  F(FSync);
+  FreeList(FData);
+  FreeList(FExplorerThreads);
+  inherited;
+end;
+
+procedure TExplorerUpdateManager.QueueNotify(Info: TExplorerNotifyInfo);
+begin
+  if Info = nil then
+    Exit;
+  FSync.Enter;
+  try
+
+    if GetThreadCount(Info.FOwner) = 0 then
+    begin
+      TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo, Info.FState);
+      ExplorerUpdateManagerInstance.RegisterThread(Info.FOwner);
+      F(Info);
+    end else
+      FData.Add(Info);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TExplorerUpdateManager.GetThreadCount(FOwner: TExplorerForm): Integer;
+var
+  I: Integer;
+  Info: TExplorerWindowThreads;
+begin
+  Result := 0;
+  FSync.Enter;
+  try
+    for I := 0 to FExplorerThreads.Count - 1 do
+    begin
+      Info := FExplorerThreads[I];
+      if Info.FExplorer = FOwner then
+        Result := Info.FCounter;
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TExplorerUpdateManager.RegisterThread(FOwner: TExplorerForm);
+var
+  I: Integer;
+  Info: TExplorerWindowThreads;
+begin
+  FSync.Enter;
+  try
+    Info := nil;
+    for I := 0 to FExplorerThreads.Count - 1 do
+      if TExplorerWindowThreads(FExplorerThreads[I]).FExplorer = FOwner then
+      begin
+        Info := FExplorerThreads[I];
+        Break;
+      end;
+
+    if Info = nil then
+    begin
+      Info := TExplorerWindowThreads.Create(FOwner);
+      FExplorerThreads.Add(Info);
+    end;
+
+     Info.FCounter := Info.FCounter + 1;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TExplorerUpdateManager.UnRegisterThread(FOwner: TExplorerForm);
+var
+  I: Integer;
+  Info: TExplorerWindowThreads;
+begin
+  FSync.Enter;
+  try
+    for I := 0 to FExplorerThreads.Count - 1 do
+    begin
+      Info := FExplorerThreads[I];
+      if Info.FExplorer = FOwner then
+      begin
+        Info.FCounter := Info.FCounter - 1;
+        Break;
+      end;
+    end;
+
+  finally
+    FSync.Leave;
+  end;
+end;
+
+{ TExplorerNotifyInfo }
+
+constructor TExplorerNotifyInfo.Create(Owner: TExplorerForm; State: TGUID;
+  UpdaterInfo: TUpdaterInfo; ExplorerViewInfo: TExplorerViewInfo);
+begin
+  FOwner := Owner;
+  FState := State;
+  FUpdaterInfo := UpdaterInfo;
+  FExplorerViewInfo := ExplorerViewInfo;
+end;
+
+destructor TExplorerNotifyInfo.Destroy;
+begin
+
+  inherited;
+end;
+
+{ TExplorerWindowThreads }
+
+constructor TExplorerWindowThreads.Create(Explorer: TExplorerForm);
+begin
+  FExplorer := Explorer;
+  FCounter := 0;
+end;
+
 initialization
 
   UpdaterCount := 0;
@@ -2179,5 +2409,6 @@ finalization
   F(FFolderPictureLock);
   F(AExplorerFolders);
   F(FullFolderPicture);
+  F(ExplorerUpdateManagerInstance);
 
 end.

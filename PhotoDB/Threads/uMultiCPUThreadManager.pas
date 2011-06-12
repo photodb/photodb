@@ -70,6 +70,13 @@ uses
 
 { TThreadPoolCustom }
 
+function GUIDToString(GUID: TGUID): string;
+begin
+   Result := Format('%d%d%d%d%d%d%d%d%d%d%d', [GUID.D1, GUID.D2, GUID.D3,
+    GUID.D4[0], GUID.D4[1], GUID.D4[2], GUID.D4[3], GUID.D4[4],
+    GUID.D4[5], GUID.D4[6], GUID.D4[7]]);
+end;
+
 procedure TThreadPoolCustom.AddAvaliableThread(Thread: TMultiCPUThread);
 begin
   FSync.Enter;

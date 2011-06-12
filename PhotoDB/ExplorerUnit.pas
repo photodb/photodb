@@ -2973,6 +2973,7 @@ begin
     MenuIndex := ItemIndexToMenuIndex(Index);
     TObject(ElvMain.Items[Index].Data).Free;
     ElvMain.Items.Delete(Index);
+    ElvMain.Groups.ReIndexItems(True);
     FFilesInfo.Delete(MenuIndex);
   finally
     UnLockItems;
@@ -2997,6 +2998,7 @@ var
   UpdaterInfo: TUpdaterInfo;
   FileName, FOldFileName: string;
   Info : TExplorerFileInfo;
+  NotifyInfo: TExplorerNotifyInfo;
 begin
   if not FormLoadEnd then
     Exit;
@@ -3010,28 +3012,29 @@ begin
           if FolderView then
             if GetExt(PInfo[K].FOldFileName) = 'LDB' then
               Exit;
+
+          Self.NewFileName := '';
+
+          Info := TExplorerFileInfo.Create;
+          Info.FileName := PInfo[K].FNewFileName;
+
           UpdaterInfo.IsUpdater := True;
-          begin
-            Info := TExplorerFileInfo.Create;
-            Info.FileName := PInfo[K].FNewFileName;
-            UpdaterInfo.FileInfo := Info;
-            UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
-            Self.NewFileName := '';
-            ExplorerViewInfo.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
-            ExplorerViewInfo.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-            ExplorerViewInfo.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
-            ExplorerViewInfo.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-            ExplorerViewInfo.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-            ExplorerViewInfo.ShowThumbNailsForFolders := Settings.Readbool('Options',
-              'Explorer_ShowThumbnailsForFolders', True);
-            ExplorerViewInfo.SaveThumbNailsForFolders := Settings.Readbool('Options',
-              'Explorer_SaveThumbnailsForFolders', True);
-            ExplorerViewInfo.ShowThumbNailsForImages := Settings.Readbool('Options',
-              'Explorer_ShowThumbnailsForImages', True);
-            ExplorerViewInfo.View := ListView;
-            ExplorerViewInfo.PictureSize := FPictureSize;
-            TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, ExplorerViewInfo, Self, UpdaterInfo, StateID);
-          end;
+          UpdaterInfo.FileInfo := Info;
+          UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
+
+          ExplorerViewInfo.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
+          ExplorerViewInfo.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+          ExplorerViewInfo.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+          ExplorerViewInfo.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+          ExplorerViewInfo.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+          ExplorerViewInfo.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+          ExplorerViewInfo.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+          ExplorerViewInfo.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+          ExplorerViewInfo.View := ListView;
+          ExplorerViewInfo.PictureSize := FPictureSize;
+
+          NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ExplorerViewInfo);
+          ExplorerUpdateManager.QueueNotify(NotifyInfo);
         end;
       FILE_ACTION_REMOVED:
         begin
@@ -7256,6 +7259,8 @@ procedure TExplorerForm.EasyListview1ItemImageDraw(Sender: TCustomEasyListview;
   Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
   const RectArray: TEasyRectArrayObject; AlphaBlender: TEasyAlphaBlender);
 begin
+  if GlobalLock then
+    Exit;
   if Item.Data = nil then
     Exit;
 
@@ -7298,6 +7303,8 @@ var
   Include: Boolean;
   Index: Integer;
 begin
+  if GlobalLock then
+    Exit;
   Include := True;
   if not ((Item.Data = nil) or (Item.ImageIndex < 0)) then
   begin
@@ -7873,6 +7880,7 @@ begin
   F(FHistory);
   F(FFilesInfo);
   F(RefreshIDList);
+  ExplorerUpdateManager.CleanUp(Self);
   inherited;
 end;
 
