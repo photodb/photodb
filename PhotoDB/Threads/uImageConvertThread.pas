@@ -582,7 +582,7 @@ end;
 
 procedure TImageConvertThread.ShowWriteError;
 begin
-  FDialogResult := Application.MessageBox(PWideChar(Format(TA('Error writing data on disk: %s.'), [FErrorMessage])), PWideChar(PWideChar(TA('Error'))), MB_ICONERROR or MB_ABORTRETRYIGNORE);
+  FDialogResult := Application.MessageBox(PChar(Format(TA('Error writing data on disk: %s.', 'ConvertImage'), [FErrorMessage])), PWideChar(PWideChar(TA('Error'))), MB_ICONERROR or MB_ABORTRETRYIGNORE);
 end;
 
 procedure TImageConvertThread.SyncDrawCallBack;

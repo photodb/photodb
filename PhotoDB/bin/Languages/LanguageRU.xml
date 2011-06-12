@@ -1605,7 +1605,6 @@
 	<translate name="Method" value="Метод"/>
 	<translate name="Path" value="Размещение"/>
 	<translate name="Files and folders" value="Файлы и папки"/>
-	<translate name="Delete records after finish" value="Удалить записи по окончанию"/>
 	<translate name="Drag into the list files or folders with images. You can move all these images to separeted collection" value="Перетащите в список файлы и папки, в которых содержатся изображения, которые необходимо перенести в другую БД"/>
 	<translate name="Please select any database" value="Пожалуйста, выберите сперва базу данных"/>
 	<translate name="Do you really want to split the database and use this file: $nl$&quot;%s&quot;?$nl$WARNING: $nl$During the process all other windows will not be available!" value="Вы действительно хотите разбить БД и использовать данный файл:$nl$&quot;%s&quot; ?$nl$ВНИМАНИЕ:$nl$Во время разбивки другие окна будут недоступны!"/>
@@ -1842,7 +1841,7 @@
     <translate name="Will be searched for invalid references in the collection:" value="Будет произведён поиск недействительных ссылок по БД:"/>
     <translate name="Search is executing" value="Выполняется поиск"/>
 	<translate name="Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)" value="Выполняется поиск, пожалуйста, подождите... $nl$(по завершению лог будет скопирован в буфер обмена)"/>
-	<translate name="Backing up the collection" value="Backing up the database"/>
+	<translate name="Backing up the collection" value="Резервное копирование базы"/>
 	<translate name="Performing:" value="Выполняется:"/>
 	<translate name="Optimization duplicates ... (Press Ctrl + B to break the process)" value="Оптимизация дубликатов... (Ctrl+B для прекращения)"/>
 	<translate name="Performing scanning the collection" value="Выполняется сканирование БД"/>

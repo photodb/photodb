@@ -608,6 +608,8 @@ begin
         FReadingInfo := False;
       end;
 
+      PcMain.Pages[2].TabVisible := FileExistsSafe(DataRecord.FileName);
+      PcMain.Pages[3].TabVisible := PcMain.Pages[2].TabVisible;
       Idlabel.Text := Inttostr(Id);
       Caption := L('Properties') + ' - ' + DA.Name;
       KeyWordsMemo.Text := DataRecord.KeyWords;

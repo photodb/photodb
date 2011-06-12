@@ -51,7 +51,7 @@ type
     GroupsImageList: TImageList;
     LbBackups: TListBox;
     Label11: TLabel;
-    PopupMenu5: TPopupMenu;
+    PmRestoreDB: TPopupMenu;
     Delete1: TMenuItem;
     Restore1: TMenuItem;
     Refresh1: TMenuItem;
@@ -286,7 +286,7 @@ begin
 
   WorkQuery := GetQuery;
   DBCanDrag := False;
-  PopupMenu5.Images := DBKernel.ImageList;
+  PmRestoreDB.Images := DBKernel.ImageList;
   Delete1.ImageIndex  := DB_IC_DELETE_INFO;
   Restore1.ImageIndex := DB_IC_LOADFROMFILE;
   Refresh1.ImageIndex := DB_IC_RELOAD;
@@ -689,39 +689,31 @@ begin
   if Index <> -1 then
     LbBackups.Selected[Index] := True
   else
-    PopupMenu5.Tag := 0;
-  PopupMenu5.Tag := Index;
-  PopupMenu5.Popup(LbBackups.ClientToScreen(MousePos).X, LbBackups.ClientToScreen(MousePos).Y);
+    PmRestoreDB.Tag := 0;
+  PmRestoreDB.Tag := Index;
+  PmRestoreDB.Popup(LbBackups.ClientToScreen(MousePos).X, LbBackups.ClientToScreen(MousePos).Y);
 end;
 
 procedure TManagerDB.Delete1Click(Sender: TObject);
 var
   FileName, CurrentFile : String;
 begin
-  if MessageBoxDB(Handle, Format(L('Do you really want to delete this copy of database (%s)?'), [FBackUpFiles[PopupMenu5.Tag]]), L('Warning'),
+  if MessageBoxDB(Handle, Format(L('Do you really want to delete this copy of database (%s)?'), [FBackUpFiles[PmRestoreDB.Tag]]), L('Warning'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) = ID_OK then
   begin
-    FileName := FBackUpFiles[PopupMenu5.Tag];
+    FileName := FBackUpFiles[PmRestoreDB.Tag];
     CurrentFile := FileName;
-    try
-      DeleteFile(CurrentFile);
-    except
-    end;
+    DeleteFile(CurrentFile);
+
     CurrentFile := ChangeFileExt(CurrentFile, '.mb');
-    try
-      DeleteFile(CurrentFile);
-    except
-    end;
+    DeleteFile(CurrentFile);
+
     CurrentFile := GroupsTableFileNameW(FileName);
-    try
-      DeleteFile(CurrentFile);
-    except
-    end;
+    DeleteFile(CurrentFile);
+
     CurrentFile := ChangeFileExt(CurrentFile, '.mb');
-    try
-      DeleteFile(CurrentFile);
-    except
-    end;
+    DeleteFile(CurrentFile);
+
     ReadBackUps;
   end;
 end;
@@ -737,8 +729,8 @@ var
   NewFileName: string;
   FN1, FN2, FN3, FN4, NFN1, NFN2, NFN3, NFN4: string;
 begin
-  FileName := GetFileNameWithoutExt(FBackUpFiles[PopupMenu5.Tag]);
-  Dir := IncludeTrailingBackslash(ExtractFileDir(FBackUpFiles[PopupMenu5.Tag]));
+  FileName := GetFileNameWithoutExt(FBackUpFiles[PmRestoreDB.Tag]);
+  Dir := IncludeTrailingBackslash(ExtractFileDir(FBackUpFiles[PmRestoreDB.Tag]));
   NewFileName := FileName;
   if PromtString(L('New name'), L('Please, enter a new name'), NewFileName) then
   begin
@@ -769,11 +761,11 @@ var
   Mes : string;
 begin
   Mes := L('Do you really want to restore this copy of the database (%s)? The current database will be moved to this store. Restart the application to begin the recovery process');
-  if MessageBoxDB(Handle, Format(Mes, [FBackUpFiles[PopupMenu5.Tag]]), L('Warning'),
+  if MessageBoxDB(Handle, Format(Mes, [FBackUpFiles[PmRestoreDB.Tag]]), L('Warning'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) = ID_OK then
   begin
     Settings.WriteBool('StartUp', 'Restore', True);
-    Settings.WriteString('StartUp', 'RestoreFile', FBackUpFiles[PopupMenu5.Tag]);
+    Settings.WriteString('StartUp', 'RestoreFile', FBackUpFiles[PmRestoreDB.Tag]);
   end;
 end;
 
@@ -1945,7 +1937,7 @@ procedure TManagerDB.Showfileinexplorer1Click(Sender: TObject);
 var
   Path: string;
 begin
-  Path := FBackUpFiles[PopupMenu5.Tag];
+  Path := FBackUpFiles[PmRestoreDB.Tag];
   with ExplorerManager.NewExplorer(False) do
   begin
     SetOldPath(Path);

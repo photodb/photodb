@@ -330,7 +330,8 @@ uses
   uFrmImportImagesOptions in 'ImportImages\uFrmImportImagesOptions.pas' {FrmImportImagesOptions: TFrame},
   uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame},
   uIME in 'Units\uIME.pas',
-  uGetPhotosThread in 'Threads\uGetPhotosThread.pas';
+  uGetPhotosThread in 'Threads\uGetPhotosThread.pas',
+  uSearchHelpAddPhotosThread in 'Threads\uSearchHelpAddPhotosThread.pas';
 
 {$R *.res}
 
@@ -509,6 +510,22 @@ begin
 
     TW.I.Start('CHECKS');
 
+    // SERVICES ----------------------------------------------------
+    CMDInProgress := True;
+
+    if not FolderView and not DBTerminating and GetParamStrDBBool('/install') then
+    begin
+      if not FileExistsSafe(dbname) then
+      begin
+        s1 := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
+        CreateExampleDB(s1, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
+        DBKernel.AddDB(TA('My collection'), s1, Application.ExeName + ',0');
+        DBKernel.SetDataBase(s1);
+      end;
+
+      StopApplication;
+    end;
+
     if not FolderView and not DBTerminating then
       if not GetParamStrDBBool('/NoFaultCheck') then
         if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1')
@@ -524,8 +541,6 @@ begin
             R(CMDForm);
           end;
         end;
-
-    // SERVICES ----------------------------------------------------
 
     if not FolderView and not DBTerminating then
       if GetParamStrDBBool('/CONVERT') or Settings.ReadBool('StartUp',
@@ -549,10 +564,11 @@ begin
       end;
 
     if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/BACKUP') then
+      if GetParamStrDBBool('/BACKUP') or Settings.ReadBool('StartUp', 'BackUp', False) then
       begin
         CloseSplashWindow;
         EventLog('BackUp...');
+        Settings.WriteBool('StartUp', 'BackUp', False);
         Application.CreateForm(TCMDForm, CMDForm);
         CMDForm.BackUpTable;
         R(CMDForm);
@@ -602,18 +618,7 @@ begin
         R(CMDForm);
       end;
 
-    if not FolderView and not DBTerminating and GetParamStrDBBool('/install') then
-    begin
-      if not FileExistsSafe(dbname) then
-      begin
-        s1 := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
-        CreateExampleDB(s1, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
-        DBKernel.AddDB(TA('My collection'), s1, Application.ExeName + ',0');
-        DBKernel.SetDataBase(s1);
-      end;
-
-      StopApplication;
-    end;
+    CMDInProgress := False;
 
     // PREPAIRING RUNNING DB ----------------------------------------
 

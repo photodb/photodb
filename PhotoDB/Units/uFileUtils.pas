@@ -60,7 +60,9 @@ function CreateDirA(Dir: string): Boolean;
 var
   I: Integer;
 begin
-  Result := False;
+  Result := DirectoryExistsSafe(Dir);
+  if Result then
+    Exit;
   Dir := ExcludeTrailingBackslash(Dir);
 
   if Length(Dir) < 3 then

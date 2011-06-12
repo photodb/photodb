@@ -225,7 +225,7 @@ begin
         Pass := DBkernel.FindPasswordForCryptImageFile(List[I]);
         if Pass = '' then
         begin
-          WriteLnLine(Self, Format(L('Unable to find password for file: &quot;%s&quot;'), [List[I]]), LINE_INFO_WARNING);
+          WriteLnLine(Self, Format(L('Unable to find password for file: "%s"'), [List[I]]), LINE_INFO_WARNING);
         end else
         begin
           WriteLnLine(Self, AddErrorMessage(List[I]), LINE_INFO_PLUS);

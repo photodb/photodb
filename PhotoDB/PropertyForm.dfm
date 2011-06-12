@@ -133,7 +133,6 @@ object PropertiesForm: TPropertiesForm
     TabOrder = 0
     OnChange = CommentMemoChange
     OnDblClick = CommentMemoDblClick
-    ExplicitWidth = 178
   end
   object BtDone: TButton
     Left = 223
@@ -144,7 +143,6 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Done'
     TabOrder = 3
     OnClick = BtDoneClick
-    ExplicitLeft = 221
   end
   object BtSave: TButton
     Left = 126
@@ -156,7 +154,6 @@ object PropertiesForm: TPropertiesForm
     Enabled = False
     TabOrder = 2
     OnClick = BtSaveClick
-    ExplicitLeft = 124
   end
   object BtnFind: TButton
     Left = 38
@@ -167,7 +164,6 @@ object PropertiesForm: TPropertiesForm
     Caption = 'Find Target'
     TabOrder = 1
     OnClick = BtnFindClick
-    ExplicitLeft = 36
   end
   object ImageLoadingFile: TDBLoading
     Left = 27
@@ -190,10 +186,8 @@ object PropertiesForm: TPropertiesForm
     ParentDoubleBuffered = False
     TabOrder = 5
     OnChange = PcMainChange
-    ExplicitWidth = 296
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitWidth = 288
       DesignSize = (
         290
         344)
@@ -365,7 +359,6 @@ object PropertiesForm: TPropertiesForm
         ScrollBars = ssVertical
         TabOrder = 11
         OnChange = CommentMemoChange
-        ExplicitWidth = 282
       end
       object IDLabel: TMemo
         Tag = 11
@@ -379,7 +372,6 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 9
-        ExplicitWidth = 213
       end
       object heightmemo: TMemo
         Tag = 11
@@ -393,7 +385,6 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 8
-        ExplicitWidth = 213
       end
       object widthmemo: TMemo
         Tag = 11
@@ -407,7 +398,6 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 7
-        ExplicitWidth = 213
       end
       object SizeLabel: TMemo
         Tag = 11
@@ -421,7 +411,6 @@ object PropertiesForm: TPropertiesForm
           '<data>')
         ReadOnly = True
         TabOrder = 6
-        ExplicitWidth = 213
       end
       object TimeEdit: TDateTimePicker
         Left = 72
@@ -438,7 +427,6 @@ object PropertiesForm: TPropertiesForm
         Kind = dtkTime
         TabOrder = 5
         OnChange = CommentMemoChange
-        ExplicitWidth = 213
       end
       object DateEdit: TDateTimePicker
         Left = 72
@@ -456,7 +444,6 @@ object PropertiesForm: TPropertiesForm
         DateFormat = dfLong
         TabOrder = 4
         OnChange = CommentMemoChange
-        ExplicitWidth = 213
       end
       object RatingEdit: TRating
         Left = 72
@@ -489,7 +476,6 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         TabOrder = 3
         OnChange = CommentMemoChange
-        ExplicitWidth = 205
       end
       object OwnerMemo: TMemo
         Tag = 11
@@ -504,7 +490,6 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         TabOrder = 2
         OnChange = CommentMemoChange
-        ExplicitWidth = 205
       end
       object LabelPath: TMemo
         Tag = 11
@@ -525,7 +510,6 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 1
-        ExplicitWidth = 282
       end
       object LabelName: TMemo
         Tag = 11
@@ -545,13 +529,16 @@ object PropertiesForm: TPropertiesForm
         ParentFont = False
         ReadOnly = True
         TabOrder = 0
-        ExplicitWidth = 213
       end
     end
     object TsGroups: TTabSheet
       Caption = 'Groups'
       ImageIndex = 1
       OnResize = TsGroupsResize
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         290
         344)

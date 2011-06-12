@@ -12,13 +12,9 @@ uses
 
 type
   TSplitExportForm = class(TDBForm)
-    Panel1: TPanel;
-    ListView1: TListView;
-    Image1: TImage;
-    Label1: TLabel;
+    LvMain: TListView;
     DropFileTarget1: TDropFileTarget;
-    Label2: TLabel;
-    ImageList1: TImageList;
+    ImlListView: TImageList;
     MethodImageList: TImageList;
     PmMethod: TPopupMenu;
     Copy1: TMenuItem;
@@ -27,37 +23,44 @@ type
     N1: TMenuItem;
     BtnCancel: TButton;
     BtnOk: TButton;
+    LbFoldersAndFiles: TLabel;
     EdDBName: TWatermarkedEdit;
-    BtnChooseFile: TButton;
+    lbFileName: TLabel;
+    LbInfo: TLabel;
+    Image1: TImage;
     BtnNew: TButton;
-    CbDeleteRecords: TCheckBox;
-    Label3: TLabel;
+    BtnChooseFile: TButton;
+    PmInsertMethod: TPopupMenu;
+    Copy2: TMenuItem;
+    Cut2: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
     procedure BtnChooseFileClick(Sender: TObject);
-    procedure ListView1AdvancedCustomDrawSubItem(Sender: TCustomListView;
+    procedure LvMainAdvancedCustomDrawSubItem(Sender: TCustomListView;
       Item: TListItem; SubItem: Integer; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
-    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
+    procedure LvMainContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure Copy1Click(Sender: TObject);
-    procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton;
+    procedure LvMainMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Delete1Click(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnOkClick(Sender: TObject);
     procedure BtnNewClick(Sender: TObject);
-    procedure ListView1Resize(Sender: TObject);
-    procedure ListView1KeyDown(Sender: TObject; var Key: Word;
+    procedure LvMainResize(Sender: TObject);
+    procedure LvMainKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormDestroy(Sender: TObject);
+    procedure Cut2Click(Sender: TObject);
   private
     { Private declarations }
     Items: TStrings;
     FRegGroups: TGroups;
     FGroupsFounded: TGroups;
+    FFiles: TStrings;
     procedure LoadLanguage;
   protected
     function GetFormID : string; override;
@@ -67,13 +70,17 @@ type
 
 procedure SplitDB;
 
+const
+  MethodColumnWidth = 60;
+
 var
   Split_Opened: Boolean = False;
   SplitExportForm: TSplitExportForm;
 
 implementation
 
-uses UnitDBKernel, CommCtrl, CommonDBSupport, ProgressActionUnit;
+uses
+  UnitDBKernel, CommCtrl, CommonDBSupport, ProgressActionUnit;
 
 {$R *.dfm}
 
@@ -93,24 +100,30 @@ end;
 procedure TSplitExportForm.FormCreate(Sender: TObject);
 begin
   Items := TStringList.Create;
+  FFiles := TStringList.Create;
 
-  DropFileTarget1.Register(ListView1);
+  DropFileTarget1.Register(LvMain);
   LoadLanguage;
   MethodImageList.BkColor := clWindow;
-  ImageList1.BkColor := clWindow;
+  ImlListView.BkColor := clWindow;
 
   ImageList_ReplaceIcon(MethodImageList.Handle, -1, Icons[DB_IC_COPY + 1]);
   ImageList_ReplaceIcon(MethodImageList.Handle, -1, Icons[DB_IC_CUT + 1]);
+  LvMain.Columns[0].Width := MethodColumnWidth;
 
   PmMethod.Images := DBKernel.ImageList;
+  PmInsertMethod.Images := DBKernel.ImageList;
   Copy1.ImageIndex := DB_IC_COPY;
   Cut1.ImageIndex := DB_IC_CUT;
+  Copy2.ImageIndex := DB_IC_COPY;
+  Cut2.ImageIndex := DB_IC_CUT;
   Delete1.ImageIndex := DB_IC_DELETE_INFO;
 end;
 
 procedure TSplitExportForm.FormDestroy(Sender: TObject);
 begin
   F(Items);
+  F(FFiles);
 end;
 
 function TSplitExportForm.GetFormID: string;
@@ -118,61 +131,70 @@ begin
   Result := 'SplitDatabase';
 end;
 
-procedure TSplitExportForm.DropFileTarget1Drop(Sender: TObject;
-  ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
+procedure TSplitExportForm.Cut2Click(Sender: TObject);
 var
   I, J: Integer;
   Ico: TIcon;
+  MoveFiles: Boolean;
 begin
+  MoveFiles := Sender = Cut2;
 
-  if DropFileTarget1.Files.Count > 0 then
-    for I := DropFileTarget1.Files.Count - 1 downto 0 do
+  if FFiles.Count > 0 then
+    for I := FFiles.Count - 1 downto 0 do
       for J := 0 to Items.Count - 1 do
-        if AnsiLowerCase(Items[J]) = AnsiLowerCase(DropFileTarget1.Files[I]) then
+        if AnsiLowerCase(Items[J]) = AnsiLowerCase(FFiles[I]) then
         begin
           DropFileTarget1.Files.Delete(I);
           Break;
         end;
 
-  if DropFileTarget1.Files.Count > 0 then
-    for I := 0 to DropFileTarget1.Files.Count - 1 do
+  if FFiles.Count > 0 then
+    for I := 0 to FFiles.Count - 1 do
     begin
-      if DirectoryExists(DropFileTarget1.Files[I]) then
+      if DirectoryExistsSafe(FFiles[I]) then
       begin
         Ico := TIcon.Create;
         try
-          Ico.Handle := ExtractAssociatedIconSafe(DropFileTarget1.Files[I], 0);
-          with ListView1.Items.Add do
+          Ico.Handle := ExtractAssociatedIconSafe(FFiles[I], 0);
+          with LvMain.Items.Add do
           begin
             Caption := '';
-            ImageIndex := Byte(CbDeleteRecords.Checked);
-            Data := Pointer(ImageList1.Count);
+            ImageIndex := Byte(MoveFiles);
+            Data := Pointer(ImlListView.Count);
           end;
-          Items.Add(DropFileTarget1.Files[I]);
-          ImageList1.AddIcon(Ico);
+          Items.Add(FFiles[I]);
+          ImlListView.AddIcon(Ico);
         finally
           F(Ico);
         end;
       end;
-      if FileExistsSafe(DropFileTarget1.Files[I]) then
-        if IsGraphicFile(DropFileTarget1.Files[I]) then
+      if FileExistsSafe(FFiles[I]) then
+        if IsGraphicFile(FFiles[I]) then
         begin
           Ico := TIcon.Create;
           try
-            Ico.Handle := ExtractAssociatedIconSafe(DropFileTarget1.Files[I], 0);
-            with ListView1.Items.Add do
+            Ico.Handle := ExtractAssociatedIconSafe(FFiles[I], 0);
+            with LvMain.Items.Add do
             begin
               Caption := '';
-              ImageIndex := Byte(CbDeleteRecords.Checked);
-              Data := Pointer(ImageList1.Count);
+              ImageIndex := Byte(MoveFiles);
+              Data := Pointer(ImlListView.Count);
             end;
-            Items.Add(DropFileTarget1.Files[I]);
-            ImageList1.AddIcon(Ico);
+            Items.Add(FFiles[I]);
+            ImlListView.AddIcon(Ico);
           finally
             F(Ico);
           end;
         end;
     end;
+end;
+
+procedure TSplitExportForm.DropFileTarget1Drop(Sender: TObject;
+  ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
+begin
+  FFiles.Assign(DropFileTarget1.Files);
+  Point := LvMain.ClientToScreen(Point);
+  PmInsertMethod.Popup(Point.X, Point.Y);
 end;
 
 procedure TSplitExportForm.BtnChooseFileClick(Sender: TObject);
@@ -200,14 +222,15 @@ begin
     Caption := L('Split Collection');
     BtnOk.Caption := L('Ok');
     BtnCancel.Caption := L('Cancel');
-    CbDeleteRecords.Caption := L('Delete records after finish');
-    Label2.Caption := L('Path');
-    Label3.Caption := L('Files and folders') + ':';
+    lbFileName.Caption := L('Path');
+    LbFoldersAndFiles.Caption := L('Files and folders') + ':';
     Copy1.Caption := L('Copy');
     Cut1.Caption := L('Cut');
-    ListView1.Columns[0].Caption := L('Method');
-    ListView1.Columns[1].Caption := L('Path');
-    Label1.Caption := L(
+    Copy2.Caption := L('Copy');
+    Cut2.Caption := L('Cut');
+    LvMain.Columns[0].Caption := L('Method');
+    LvMain.Columns[1].Caption := L('Path');
+    LbInfo.Caption := L(
       'Drag into the list files or folders with images. You can move all these images to separeted collection');
     Delete1.Caption := L('Delete');
     EdDBName.WatermarkText := L('Select a file to split the database');
@@ -216,23 +239,23 @@ begin
   end;
 end;
 
-procedure TSplitExportForm.ListView1AdvancedCustomDrawSubItem
+procedure TSplitExportForm.LvMainAdvancedCustomDrawSubItem
   (Sender: TCustomListView; Item: TListItem; SubItem: Integer;
   State: TCustomDrawState; Stage: TCustomDrawStage; var DefaultDraw: Boolean);
 var
   aRect: TRect;
 begin
-  ListView_GetSubItemRect(ListView1.Handle, Item.Index, SubItem, 0, @aRect);
-  ImageList1.Draw(Sender.Canvas, aRect.Left, Item.Top, Integer(Item.Data));
+  ListView_GetSubItemRect(LvMain.Handle, Item.Index, SubItem, 0, @aRect);
+  ImlListView.Draw(Sender.Canvas, aRect.Left, Item.Top, Integer(Item.Data));
   Sender.Canvas.TextOut(aRect.Left + 20, Item.Top, Items[Item.Index]);
 end;
 
-procedure TSplitExportForm.ListView1ContextPopup(Sender: TObject;
+procedure TSplitExportForm.LvMainContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
   Item: TListItem;
 begin
-  Item := ListView1.GetItemAt(10, MousePos.Y);
+  Item := LvMain.GetItemAt(10, MousePos.Y);
   if Item <> nil then
   begin
     PmMethod.Tag := Item.Index;
@@ -241,22 +264,22 @@ begin
       Copy1.Default := True
     else
       Cut1.Default := True;
-    PmMethod.Popup(ListView1.ClientToScreen(MousePos).X,
-      ListView1.ClientToScreen(MousePos).Y);
+    PmMethod.Popup(LvMain.ClientToScreen(MousePos).X,
+      LvMain.ClientToScreen(MousePos).Y);
   end;
 end;
 
 procedure TSplitExportForm.Copy1Click(Sender: TObject);
 begin
-  ListView1.Items[PmMethod.Tag].ImageIndex := Integer((Sender as TMenuItem).Tag);
+  LvMain.Items[PmMethod.Tag].ImageIndex := Integer((Sender as TMenuItem).Tag);
 end;
 
-procedure TSplitExportForm.ListView1MouseDown(Sender: TObject;
+procedure TSplitExportForm.LvMainMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   Item: TListItem;
 begin
-  Item := ListView1.GetItemAt(10, Y);
+  Item := LvMain.GetItemAt(10, Y);
   if Item <> nil then
     Item.Selected := True;
 end;
@@ -266,7 +289,7 @@ var
   Index: Integer;
 begin
   Index := PmMethod.Tag;
-  ListView1.Items.Delete(Index);
+  LvMain.Items.Delete(Index);
   Items.Delete(Index);
 end;
 
@@ -287,7 +310,7 @@ var
   I, J: Integer;
   ProgressWindow: TProgressActionForm;
   fn: string;
-  ID_Delete: array of Integer;
+  ItemIDsToDelete: TList;
   Groups: TGroups;
 
   function RecordOk: Boolean;
@@ -300,29 +323,30 @@ var
     begin
       if AnsiUpperCase(Copy(Fn, 1, Length(Items[I]))) = AnsiUpperCase(Items[I]) then
       begin
-        if ListView1.Items[I].ImageIndex = 1 then
-        begin
-          SetLength(ID_Delete, Length(ID_Delete) + 1);
-          ID_Delete[Length(ID_Delete) - 1] := S.FieldByName('ID').AsInteger;
-        end;
+        if LvMain.Items[I].ImageIndex = 1 then
+          ItemIDsToDelete.Add(Pointer(S.FieldByName('ID').AsInteger));
         Result := True;
         Exit;
       end;
     end;
   end;
 
-  function RecordDelOk: Boolean;
+  procedure DeleteDBItem(ID: Integer);
   var
-    I, Id: Integer;
+    EventInfo: TEventValues;
+    FQuery: TDataSet;
+    SQL: string;
   begin
-    Result := False;
-    Id := S.FieldByName('ID').AsInteger;
-    for I := 0 to Length(ID_Delete) - 1 do
-      if ID_Delete[I] = Id then
-      begin
-        Result := True;
-        Exit;
-      end;
+    FQuery := GetQuery;
+    try
+      SQL := 'DELETE FROM $DB$ WHERE ID = ' + IntToStr(ID);
+      SetSQL(FQuery, SQL);
+      ExecSQL(FQuery);
+    finally
+      FreeDS(FQuery);
+    end;
+    EventInfo.ID := ID;
+    DBKernel.DoIDEvent(Self, ID, [EventID_Param_Delete], EventInfo);
   end;
 
 begin
@@ -335,94 +359,91 @@ begin
     Exit;
   end
   else if ID_OK = MessageBoxDB(Handle, Format(L(
-        'Do you really want to split the database and use this file: $nl$&quot;%s&quot;?$nl$WARNING: $nl$During the process all other windows will not be available!'), [EdDBName.Text]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+        'Do you really want to split the database and use this file: $nl$"%s"?$nl$WARNING: $nl$During the process all other windows will not be available!'), [EdDBName.Text]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    SetLength(ID_Delete, 0);
-    ProgressWindow := GetProgressWindow;
+    ItemIDsToDelete := TList.Create;
     try
-      ProgressWindow.OneOperation := False;
-      ProgressWindow.OperationCount := 3;
-      ProgressWindow.OperationPosition := 1;
-      ProgressWindow.DoubleBuffered := True;
-      S := GetTable;
+      ProgressWindow := GetProgressWindow;
       try
-        S.Open;
-        ProgressWindow.xPosition := 0;
-        ProgressWindow.MaxPosCurrentOperation := S.RecordCount;
-
-        ProgressWindow.Show;
-        ProgressWindow.Repaint;
-        SetLength(FGroupsFounded, 0);
-        D := GetTable(EdDBName.Text, DB_TABLE_IMAGES);
+        ProgressWindow.OneOperation := False;
+        ProgressWindow.OperationCount := 3;
+        ProgressWindow.OperationPosition := 1;
+        ProgressWindow.DoubleBuffered := True;
+        S := GetTable;
         try
-          D.Open;
-          for I := 1 to S.RecordCount do
-          begin
-            if RecordOk then
-            begin
-              D.Append;
-              CopyRecordsW(S, D, False, False, '', Groups);
-              D.Post;
-            end;
-            S.Next;
-            if I mod 10 = 0 then
-              ProgressWindow.Repaint;
-            ProgressWindow.xPosition := I;
-            if not ProgressWindow.Visible then
-              Break;
-          end;
-
-          ProgressWindow.OperationPosition := 2;
-          ProgressWindow.xPosition := 0;
-          ProgressWindow.MaxPosCurrentOperation := Length(FGroupsFounded);
-          FRegGroups := GetRegisterGroupList(True);
-          try
-            CreateGroupsTableW(EdDBName.Text);
-            for I := 0 to Length(FGroupsFounded) - 1 do
-            begin
-              ProgressWindow.xPosition := I;
-              for J := 0 to Length(FRegGroups) - 1 do
-                if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
-                begin
-                  AddGroupW(FRegGroups[J], EdDBName.Text);
-                  Break;
-                end;
-            end;
-          finally
-            FreeGroups(FRegGroups);
-          end;
-
-          ProgressWindow.OperationPosition := 3;
+          S.Open;
           ProgressWindow.xPosition := 0;
           ProgressWindow.MaxPosCurrentOperation := S.RecordCount;
-          S.Last;
-          for I := S.RecordCount downto 1 do
-          begin
-            if RecordDelOk then
-              S.Delete;
 
-            S.Prior;
-            if S.Bof then
-              Break;
-            if I mod 10 = 0 then
-              ProgressWindow.Repaint;
-            ProgressWindow.xPosition := S.RecordCount - I;
-            if not ProgressWindow.Visible then
-              Break;
+          ProgressWindow.Show;
+          ProgressWindow.Repaint;
+          SetLength(FGroupsFounded, 0);
+          D := GetTable(EdDBName.Text, DB_TABLE_IMAGES);
+          try
+            D.Open;
+            for I := 1 to S.RecordCount do
+            begin
+              if RecordOk then
+              begin
+                D.Append;
+                CopyRecordsW(S, D, False, False, '', Groups);
+                D.Post;
+              end;
+              S.Next;
+              if I mod 10 = 0 then
+                ProgressWindow.Repaint;
+              ProgressWindow.xPosition := I;
+              if not ProgressWindow.Visible then
+                Break;
+            end;
+
+            ProgressWindow.OperationPosition := 2;
+            ProgressWindow.xPosition := 0;
+            ProgressWindow.MaxPosCurrentOperation := Length(FGroupsFounded);
+            FRegGroups := GetRegisterGroupList(True);
+            try
+              CreateGroupsTableW(EdDBName.Text);
+              for I := 0 to Length(FGroupsFounded) - 1 do
+              begin
+                ProgressWindow.xPosition := I;
+                for J := 0 to Length(FRegGroups) - 1 do
+                  if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
+                  begin
+                    AddGroupW(FRegGroups[J], EdDBName.Text);
+                    Break;
+                  end;
+              end;
+            finally
+              FreeGroups(FRegGroups);
+            end;
+
+            ProgressWindow.OperationPosition := 3;
+            ProgressWindow.xPosition := 0;
+            ProgressWindow.MaxPosCurrentOperation := ItemIDsToDelete.Count;
+
+            for I := 0 to ItemIDsToDelete.Count - 1 do
+            begin
+              DeleteDBItem(Integer(ItemIDsToDelete[I]));
+              ProgressWindow.xPosition := I;
+              if not ProgressWindow.Visible then
+                Break;
+            end;
+
+          finally
+            FreeDS(D);
           end;
         finally
-          FreeDS(D);
+          FreeDS(S);
         end;
       finally
-        FreeDS(S);
+        ProgressWindow.Release;
       end;
+
+      Close;
     finally
-      ProgressWindow.Release;
+      F(ItemIDsToDelete);
     end;
-
-    Close;
   end;
-
 end;
 
 procedure TSplitExportForm.BtnNewClick(Sender: TObject);
@@ -447,7 +468,7 @@ begin
           FileName := FileName + '.photodb';
 
       if FileExistsSafe(FileName) and (ID_OK <> MessageBoxDB(Handle,
-          Format(L('File &quot;%s&quot; already exists! $nl$Replace?'),
+          Format(L('File "%s" already exists! $nl$Replace?'),
             [FileName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING))
         then
         Exit;
@@ -461,20 +482,21 @@ begin
   end;
 end;
 
-procedure TSplitExportForm.ListView1Resize(Sender: TObject);
+procedure TSplitExportForm.LvMainResize(Sender: TObject);
 begin
-  ListView1.Columns[1].Width := ListView1.Width - ListView1.Columns[0].Width - 5;
+  LvMain.Columns[0].Width := MethodColumnWidth;
+  LvMain.Columns[1].Width := LvMain.Width - MethodColumnWidth - 5;
 end;
 
-procedure TSplitExportForm.ListView1KeyDown(Sender: TObject; var Key: Word;
+procedure TSplitExportForm.LvMainKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   Index: Integer;
 begin
-  if ListView1.Selected <> nil then
+  if LvMain.Selected <> nil then
   begin
-    Index := ListView1.Selected.Index;
-    ListView1.Items.Delete(Index);
+    Index := LvMain.Selected.Index;
+    LvMain.Items.Delete(Index);
     Items.Delete(Index);
   end;
 end;

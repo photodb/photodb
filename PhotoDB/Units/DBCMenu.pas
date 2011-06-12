@@ -738,7 +738,6 @@ begin
   begin
     FQuery := GetQuery;
     try
-      FQuery.Active := False;
       SQL_ := 'DELETE FROM $DB$ WHERE ID in (';
       FirstID := True;
       for I := 0 to Finfo.Count - 1 do

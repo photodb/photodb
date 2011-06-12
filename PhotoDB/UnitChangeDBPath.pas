@@ -13,7 +13,7 @@ type
   TFormChangeDBPath = class(TDBForm)
     Image1: TImage;
     Image2: TImage;
-    Label1: TLabel;
+    LbInfo: TLabel;
     LbOldPath: TLabel;
     CbOldPath: TComboBox;
     BtnScanFolders: TButton;
@@ -24,7 +24,7 @@ type
     BtnOk: TButton;
     BtnCancel: TButton;
     BtnChooseOldPath: TButton;
-    CheckBox1: TCheckBox;
+    CbValidPath: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnCancelClick(Sender: TObject);
@@ -79,10 +79,10 @@ begin
     BtnScanFolders.Caption := L('Show directory list');
     BtnChooseOldPath.Caption := L('Choose');
     BtnChooseNewPath.Caption := L('Choose');
-    Label1.Caption := L('Please, use this dialog if you want to update info in collection if many images was physically moved or drive name was changed.');
+    LbInfo.Caption := L('Please, use this dialog if you want to update info in collection if many images was physically moved or drive name was changed.');
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');
-    CheckBox1.Caption := L('Change path only if new file exists');
+    CbValidPath.Caption := L('Change path only if new file exists');
     DprMain.Text := L('Progress... (&%%)');
   finally
     EndTranslate;
@@ -244,7 +244,7 @@ procedure TFormChangeDBPath.DisableControls;
 begin
   CbOldPath.Enabled := False;
   EdNewPath.Enabled := False;
-  CheckBox1.Enabled := False;
+  CbValidPath.Enabled := False;
   BtnChooseOldPath.Enabled := False;
   BtnScanFolders.Enabled := False;
   BtnChooseNewPath.Enabled := False;
@@ -255,7 +255,7 @@ procedure TFormChangeDBPath.EnableControls;
 begin
   CbOldPath.Enabled := True;
   EdNewPath.Enabled := True;
-  CheckBox1.Enabled := True;
+  CbValidPath.Enabled := True;
   BtnChooseOldPath.Enabled := True;
   BtnScanFolders.Enabled := True;
   BtnChooseNewPath.Enabled := True;
@@ -268,7 +268,7 @@ var
   TempQuery: TDataSet;
   I, Len, Count: Integer;
   CRC: Cardinal;
-  _sqlexectext, Dir, NewDir: string;
+  _sqlexectext, NewDir: string;
   FileName, FromPath, NewPath, ToPath: string;
   EventInfo: TEventValues;
 
@@ -279,8 +279,8 @@ begin
   DisableControls;
   try
     Working := True;
-    FromPath := IncludeTrailingBackslash(CbOldPath.Text);
-    ToPath := IncludeTrailingBackslash(EdNewPath.Text);
+    FromPath := IncludeTrailingBackslash(AnsiLowerCase(CbOldPath.Text));
+    ToPath := IncludeTrailingBackslash(AnsiLowerCase(EdNewPath.Text));
     WorkQuery := GetQuery;
     try
       _sqlexectext := 'Select ID,FFileName from $DB$';
@@ -295,9 +295,8 @@ begin
         Inc(I);
         DprMain.Position := I;
         if I = 100 then
-        begin
           I := 0;
-        end;
+
         Delay(5);
       until not DBInOpening;
       DprMain.Position := 0;
@@ -315,36 +314,30 @@ begin
           FileName := AnsiLowerCase(WorkQuery.FieldByName('FFileName').AsString);
           if Copy(FileName, 1, Len) = FromPath then
           begin
-            Dir := ExtractFileDir(FileName);
-            if Dir <> FromPath then
+            NewPath := FileName;
+            Delete(NewPath, 1, Len);
+            NewPath := ToPath + NewPath;
+            NewDir := ExcludeTrailingBackslash(AnsiLowerCase(ExtractFileDir(NewPath)));
+
+            CRC := 0;
+            CalcStringCRC32(AnsiLowerCase(NewDir), CRC);
+            if not CbValidPath.Checked or FileExistsSafe(NewPath) then
             begin
-              ExcludeTrailingBackslash(Dir);
-
-              NewPath := FileName;
-              Delete(NewPath, 1, Len);
-              NewPath := ToPath + NewPath;
-              NewDir := ExcludeTrailingBackslash(AnsiLowerCase(ExtractFileDir(NewPath)));
-
-              CRC := 0;
-              CalcStringCRC32(AnsiLowerCase(NewDir), CRC);
-              if not CheckBox1.Checked or FileExistsSafe(NewPath) then
-              begin
-                _sqlexectext := 'UPDATE $DB$ SET FFileName=' + AnsiLowerCase(NormalizeDBString(NewPath))
-                  + ' , FolderCRC = ' + Format('%d', [Crc]) + ' where ID = ' + IntToStr
-                  (WorkQuery.FieldByName('ID').AsInteger);
-                SetSQL(TempQuery, _sqlexectext);
-                try
-                  ExecSQL(TempQuery);
-                  Inc(Count);
-                except
-                  on E: Exception do
-                  begin
-                    Working := False;
-                    MessageBoxDB(Handle, Format(L('An unexpected error occurred: %s'), [E.message]), L('Error'),
-                      TD_BUTTON_OK, TD_ICON_ERROR);
-                    EnableControls;
-                    Exit;
-                  end;
+              _sqlexectext := 'UPDATE $DB$ SET FFileName=' + AnsiLowerCase(NormalizeDBString(NewPath))
+                + ' , FolderCRC = ' + Format('%d', [Crc]) + ' where ID = ' + IntToStr
+                (WorkQuery.FieldByName('ID').AsInteger);
+              SetSQL(TempQuery, _sqlexectext);
+              try
+                ExecSQL(TempQuery);
+                Inc(Count);
+              except
+                on E: Exception do
+                begin
+                  Working := False;
+                  MessageBoxDB(Handle, Format(L('An unexpected error occurred: %s'), [E.message]), L('Error'),
+                    TD_BUTTON_OK, TD_ICON_ERROR);
+                  EnableControls;
+                  Exit;
                 end;
               end;
             end;

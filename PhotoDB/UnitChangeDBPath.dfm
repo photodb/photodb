@@ -172,14 +172,14 @@ object FormChangeDBPath: TFormChangeDBPath
       03A046626465CF04E0FDF77763CB96F5CA0106B350B96BC3FD7CCF1A3FD0366F
       5608F0BF3EBEF400FF059251E75E5A0E2F200000000049454E44AE426082}
   end
-  object Label1: TLabel
+  object LbInfo: TLabel
     Left = 112
     Top = 8
     Width = 396
     Height = 57
     Anchors = [akLeft, akTop, akRight]
     AutoSize = False
-    Caption = 'Label1'
+    Caption = 'LbInfo'
     WordWrap = True
     ExplicitWidth = 361
   end
@@ -285,7 +285,7 @@ object FormChangeDBPath: TFormChangeDBPath
     TabOrder = 1
     OnClick = BtnChooseOldPathClick
   end
-  object CheckBox1: TCheckBox
+  object CbValidPath: TCheckBox
     Left = 8
     Top = 212
     Width = 341

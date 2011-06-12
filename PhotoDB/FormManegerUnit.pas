@@ -328,6 +328,7 @@ var
   Initaproc: TInitializeAProc;
 {$ENDIF}
 begin
+  if not CMDInProgress then
   begin
     Inc(FCheckCount);
     if (FCheckCount = 10) then //after 1sec. set normal priority

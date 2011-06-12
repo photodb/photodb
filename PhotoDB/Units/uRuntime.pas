@@ -13,6 +13,7 @@ var
   LastInseredID: Integer = 0;
   DBTerminating: Boolean = False;
   DBID : string = '{E1446065-CB87-440D-9315-6FA356F921B5}';
+  CMDInProgress: Boolean = False;
 
 var
   // Image sizes

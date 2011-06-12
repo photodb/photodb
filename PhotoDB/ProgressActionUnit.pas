@@ -25,28 +25,30 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
-    FOneOperation: boolean;
-    FPosition: int64;
-    FMaxPosCurrentOperation: int64;
-    FLoading: boolean;
-    FOperationCount: int64;
-    FOperationPosition: int64;
-    FCanClosedByUser : boolean;
-    fBackground : boolean;
-    procedure SetOneOperation(const Value: boolean);
-    procedure SetPosition(const Value: int64);
-    procedure SetMaxPosCurrentOperation(const Value: int64);
-    procedure SetLoading(const Value: boolean);
-    procedure SetOperationCount(const Value: int64);
-    procedure SetOperationPosition(const Value: int64);
+    { Private declarations }
+    FOneOperation: Boolean;
+    FPosition: Int64;
+    FMaxPosCurrentOperation: Int64;
+    FLoading: Boolean;
+    FOperationCount: Int64;
+    FOperationPosition: Int64;
+    FCanClosedByUser: Boolean;
+    FBackground: Boolean;
+    procedure SetOneOperation(const Value: Boolean);
+    procedure SetPosition(const Value: Int64);
+    procedure SetMaxPosCurrentOperation(const Value: Int64);
+    procedure SetLoading(const Value: Boolean);
+    procedure SetOperationCount(const Value: Int64);
+    procedure SetOperationPosition(const Value: Int64);
     procedure SetCanClosedByUser(const Value: Boolean);
-    procedure WMActivate(var Message: TWMActivate); message WM_ACTIVATE;
-    procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
+    procedure WMActivate(var message: TWMActivate); message WM_ACTIVATE;
+    procedure WMSyscommand(var message: TWmSysCommand); message WM_SYSCOMMAND;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID : string; override;
   public
+    { Public declarations }
     WindowID: TGUID;
     Closed: Boolean;
     WindowCanClose: Boolean;
@@ -58,6 +60,7 @@ type
     procedure SetAlternativeText(Text: string);
     constructor Create(AOwner: TComponent; Background: Boolean); reintroduce;
   published
+    { Published declarations }
     property OneOperation: Boolean read FOneOperation write SetOneOperation;
     property XPosition: Int64 read FPosition write SetPosition;
     property MaxPosCurrentOperation: Int64 read FMaxPosCurrentOperation write SetMaxPosCurrentOperation;
@@ -65,7 +68,6 @@ type
     property OperationCount: Int64 read FOperationCount write SetOperationCount;
     property OperationPosition: Int64 read FOperationPosition write SetOperationPosition;
     property CanClosedByUser: Boolean read FCanClosedByUser write SetCanClosedByUser default False;
-    { Public declarations }
   end;
 
   TManagerProgresses = class(TObject)

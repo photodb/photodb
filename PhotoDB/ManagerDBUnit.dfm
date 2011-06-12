@@ -539,6 +539,8 @@ object ManagerDB: TManagerDB
       OnMouseMove = ElvMainMouseMove
       OnResize = ElvMainResize
       OnSelectItem = ElvMainSelectItem
+      ExplicitLeft = 2
+      ExplicitTop = 223
     end
     object dblData: TDBLoading
       Left = 397
@@ -620,7 +622,7 @@ object ManagerDB: TManagerDB
     Left = 249
     Top = 288
   end
-  object PopupMenu5: TPopupMenu
+  object PmRestoreDB: TPopupMenu
     Left = 722
     Top = 129
     object Restore1: TMenuItem
