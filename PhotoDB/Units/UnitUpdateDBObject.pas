@@ -5,7 +5,7 @@ interface
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
      UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
      uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM, uMemoryEx,
-     uTranslate, Dolphin_DB, uDBForm, uSettings, uAssociations;
+     uTranslate, Dolphin_DB, uDBForm, uSettings, uAssociations, win32crc;
 
 type
    TOwnerFormSetText = procedure(Text : string) of object;
@@ -81,7 +81,7 @@ type
 implementation
 
 uses
-  UnitUpdateDBThread, DBScriptFunctions,
+  UnitUpdateDBThread, DBScriptFunctions, CommonDBSupport,
   FormManegerUnit, UnitUpdateDB, ProgressActionUnit;
 
 { TUpdaterDB }
@@ -396,10 +396,12 @@ procedure TUpdaterDB.LoadWork;
 var
   I, C: Integer;
   ProgressWindow: TProgressActionForm;
+  DBPrefix: string;
 begin
+  DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
   ProgressWindow := GetProgressWindow;
   try
-    C := Settings.ReadInteger('Updater', 'Counter', 0);
+    C := Settings.ReadInteger('Updater_' + DBPrefix, 'Counter', 0);
     ProgressWindow.OneOperation := True;
     ProgressWindow.MaxPosCurrentOperation := C;
     ProgressWindow.XPosition := 0;
@@ -414,7 +416,7 @@ begin
         ProgressWindow.XPosition := I;
         Application.ProcessMessages;
       end;
-      AddFile(Settings.ReadString('Updater', 'File' + IntToStr(I)), I <> C - 1);
+      AddFile(Settings.ReadString('Updater_' + DBPrefix, 'File' + IntToStr(I)), I <> C - 1);
     end;
 
   finally
@@ -425,10 +427,12 @@ end;
 procedure TUpdaterDB.SaveWork;
 var
   I: Integer;
+  DBPrefix: string;
 begin
-  Settings.WriteInteger('Updater', 'Counter', FFilesInfo.Count);
+  DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
+  Settings.WriteInteger('Updater_' + DBPrefix, 'Counter', FFilesInfo.Count);
   for I := 0 to FFilesInfo.Count - 1 do
-    Settings.WriteString('Updater', 'File' + IntToStr(I), FFilesInfo[I].FileName);
+    Settings.WriteString('Updater_' + DBPrefix, 'File' + IntToStr(I), FFilesInfo[I].FileName);
 end;
 
 function TUpdaterDB.GetCount: Integer;

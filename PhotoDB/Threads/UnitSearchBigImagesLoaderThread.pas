@@ -15,25 +15,29 @@ type
     { Private declarations }
     FSender: TThreadForm;
     FOnDone: TNotifyEvent;
-    FPictureSize : Integer;
-    FVisibleFiles : TArStrings;
-    BoolParam : Boolean;
-    StrParam : string;
-    IntParam : Integer;
-    BitmapParam : TBitmap;
-    FI : Integer;
-    FMainThread : Boolean;
-    FData : TDBPopupMenuInfo;
-    FImageFileName : string;
-    FImageRotation : Integer;
+    FPictureSize: Integer;
+    FVisibleFiles: TArStrings;
+    BoolParam: Boolean;
+    StrParam: string;
+    IntParam: Integer;
+    BitmapParam: TBitmap;
+    FI: Integer;
+    FMainThread: Boolean;
+    FData: TDBPopupMenuInfo;
+    FImageFileName: string;
+    FImageRotation: Integer;
+    FRefresh: Boolean;
   protected
+    { Protected declarations }
     procedure Execute; override;
     function IsVirtualTerminate : Boolean; override;
     procedure DoMultiProcessorTask; override;
     procedure ExtractBigImage(PictureSize : Integer; FileName: string; Rotation : Integer);
   public
+    { Public declarations }
     constructor Create(Sender : TThreadForm; SID : TGUID;
-      OnDone : TNotifyEvent; PictureSize : Integer; Data : TDBPopupMenuInfo; MainThread : Boolean);
+      OnDone : TNotifyEvent; PictureSize : Integer; Data : TDBPopupMenuInfo;
+      MainThread : Boolean; Refresh: Boolean);
     destructor Destroy; override;
     procedure VisibleUp(TopIndex: integer);
     procedure GetVisibleFiles;
@@ -54,7 +58,7 @@ implementation
 uses Searching, uSearchThreadPool;
 
 constructor TSearchBigImagesLoaderThread.Create(Sender: TThreadForm; SID: TGUID; OnDone: TNotifyEvent; PictureSize: integer;
-  Data : TDBPopupMenuInfo; MainThread : Boolean);
+  Data : TDBPopupMenuInfo; MainThread : Boolean; Refresh: Boolean);
 begin
   inherited Create(Sender, SID);
   FSender := Sender;
@@ -62,6 +66,7 @@ begin
   FPictureSize := PictureSize;
   FData := Data;
   FMainThread := MainThread;
+  FRefresh := Refresh;
 end;
 
 procedure TSearchBigImagesLoaderThread.VisibleUp(TopIndex: integer);
@@ -107,7 +112,7 @@ begin
     for I := 0 to FData.Count - 1 do
     begin
 
-      if I mod 5 = 0 then
+      if (I + 1) mod 5 = 0 then
       begin
         SynchronizeEx(GetVisibleFiles);
         VisibleUp(I);
@@ -129,7 +134,8 @@ begin
       while TSearchThreadPool.Instance.GetBusyThreadsCountForThread(Self) > 0 do
         Sleep(100);
 
-    SynchronizeEx(EndLoading);
+    if not FRefresh then
+      SynchronizeEx(EndLoading);
 
   finally
     Dec(SearchUpdateBigImageThreadsCount);
@@ -208,10 +214,8 @@ end;
 procedure TSearchBigImagesLoaderThread.InitializeLoadingBigImages;
 begin
   with (FSender as TSearchForm) do
-  begin
     // Saving text information
     (FSender as TSearchForm).TbStopOperation.Enabled := True;
-  end;
 end;
 
 function TSearchBigImagesLoaderThread.IsVirtualTerminate: Boolean;
@@ -250,9 +254,7 @@ end;
 procedure TSearchBigImagesLoaderThread.EndLoading;
 begin
   if (FSender as TSearchForm).TbStopOperation.Enabled then
-  begin
     (FSender as TSearchForm).TbStopOperation.Click;
-  end;
 end;
 
 end.

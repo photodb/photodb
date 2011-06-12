@@ -148,6 +148,7 @@
 	<translate name="Enter password for group of files (press &quot;Show files&quot; to see list) here:" value="Введите пароль для группы файлов." />
 	<translate name="Enter password to file &quot;%s&quot; here:" value="Введите пароль для файла &quot;%s&quot; сюда:" />
 	<translate name="Password is invalid!" value="Пароль неверный!" />
+	<translate name="Passwords do not match!" value="Введённые пароли не совпадают!" />	
   </scope>
   <scope name="Groups">
     <translate name="Group not found!" value="Группа не найдена!" />

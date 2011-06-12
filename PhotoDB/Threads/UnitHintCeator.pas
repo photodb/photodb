@@ -186,7 +186,8 @@ begin
 
             Graphic := FB;
             FB := nil;
-            SynchronizeEx(DoShowHint);
+            if not SynchronizeEx(DoShowHint) then
+              F(Graphic);
           finally
             F(FB);
           end;

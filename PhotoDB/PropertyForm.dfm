@@ -535,10 +535,6 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Groups'
       ImageIndex = 1
       OnResize = TsGroupsResize
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -882,10 +878,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -898,7 +890,6 @@ object PropertiesForm: TPropertiesForm
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
         TabOrder = 0
         OnContextPopup = VleExifContextPopup
-        ExplicitWidth = 282
         ColWidths = (
           136
           140)
@@ -907,10 +898,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -951,7 +938,6 @@ object PropertiesForm: TPropertiesForm
           'Blue chanel')
         TabOrder = 0
         OnClick = RgGistogrammChannelClick
-        ExplicitWidth = 282
       end
       object LbEffectiveRange: TStaticText
         Left = 3
@@ -966,10 +952,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -989,7 +971,6 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Include in base search item'
         TabOrder = 0
         OnClick = CommentMemoChange
-        ExplicitWidth = 282
       end
       object LinksScrollBox: TScrollBox
         Left = 3
@@ -999,7 +980,6 @@ object PropertiesForm: TPropertiesForm
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PmAddLink
         TabOrder = 1
-        ExplicitWidth = 282
       end
     end
   end

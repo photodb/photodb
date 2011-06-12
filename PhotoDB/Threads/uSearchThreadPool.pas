@@ -36,7 +36,7 @@ begin
     AddAvaliableThread(TSearchBigImagesLoaderThread.Create(
       SearchThread.ThreadForm,
       SearchThread.StateID,
-      nil, 0, nil, False));
+      nil, 0, nil, False, False));
 end;
 
 procedure TSearchThreadPool.CreateBigImage(Sender: TMultiCPUThread;

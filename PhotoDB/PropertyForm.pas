@@ -448,8 +448,8 @@ begin
           (FFilesInfo[0].Date <> DateEdit.DateTime)) and DateEdit.Enabled);
 
   if FShowInfoType = SHOW_INFO_IDS then
-    Result := DateEdit.Checked and (FFilesInfo.StatDate <> DateEdit.DateTime);
-
+    Result := DateEdit.Checked and
+      ((FFilesInfo.StatDate <> DateEdit.DateTime) or FFilesInfo.IsVariousDate);
 end;
 
 function TPropertiesForm.ReadCHTime : Boolean;
@@ -465,7 +465,7 @@ begin
   if FShowInfoType = SHOW_INFO_IDS then
   begin
     VarTime := Abs(TimeOf(FFilesInfo.StatTime) - TimeOf(TimeEdit.Time)) > 1 / (24 * 60 * 60 * 3);
-    Result := TimeEdit.Checked and VarTime;
+    Result := TimeEdit.Checked and (VarTime or FFilesInfo.IsVariousTime);
   end;
 end;
 
@@ -1076,7 +1076,7 @@ begin
       end;// [END] Commnet Support
 
       // [BEGIN] Date Support
-      if DateEdit.Enabled then
+      if ReadCHDate then
       begin
         FQuery := GetQuery;
         try
@@ -1089,20 +1089,20 @@ begin
               else
                 _sqlexectext := _sqlexectext + ',' + IntToStr(FFilesInfo[I].ID);
             _sqlexectext := _sqlexectext + ')';
-            FQuery.Active := False;
+            WorkQuery.Active := False;
             SetSQL(WorkQuery, _sqlexectext);
-            SetBoolParam(FQuery, 0, False);
-            ExecSQL(FQuery);
+            SetBoolParam(WorkQuery, 0, False);
+            ExecSQL(WorkQuery);
             EventInfo.IsDate := False;
             for I := 0 to FFilesInfo.Count - 1 do
               DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
           end else
           begin
             _sqlexectext := Format('Update $DB$ Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (%s)', [GenerateIDList]);
-            FQuery.Active := False;
-            SetSQL(FQuery, _sqlexectext);
-            SetDateParam(FQuery, 'DateToAdd', DateEdit.DateTime);
-            ExecSQL(FQuery);
+            WorkQuery.Active := False;
+            SetSQL(WorkQuery, _sqlexectext);
+            SetDateParam(WorkQuery, 'DateToAdd', DateEdit.DateTime);
+            ExecSQL(WorkQuery);
             EventInfo.Date := DateEdit.DateTime;
             EventInfo.IsDate := True;
             for I := 0 to FFilesInfo.Count - 1 do
@@ -1114,7 +1114,7 @@ begin
       end; // [END] Date Support
 
       // [BEGIN] Time Support
-      if TimeEdit.Enabled then
+      if ReadCHTime then
       begin
         if not TimeEdit.Checked then
         begin
@@ -1122,7 +1122,7 @@ begin
           WorkQuery.Active := False;
           SetSQL(WorkQuery, _sqlexectext);
           SetBoolParam(WorkQuery, 0, False);
-          ExecSQL(FQuery);
+          ExecSQL(WorkQuery);
           EventInfo.IsTime := False;
           for I := 0 to FFilesInfo.Count - 1 do
             DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
@@ -1132,7 +1132,7 @@ begin
           WorkQuery.Active := False;
           SetSQL(WorkQuery, _sqlexectext);
           SetDateParam(WorkQuery, 'aTime', TimeOf(TimeEdit.Time));
-          ExecSQL(FQuery);
+          ExecSQL(WorkQuery);
           EventInfo.Time := TimeOf(TimeEdit.Time);
           EventInfo.IsTime := True;
           for I := 0 to FFilesInfo.Count - 1 do

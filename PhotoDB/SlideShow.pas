@@ -1195,6 +1195,7 @@ begin
         CurrentInfo[I].IsDate := True;
         CurrentInfo[I].IsTime := Value.IsTime;
         CurrentInfo[I].InfoLoaded := True;
+        CurrentInfo[I].Crypted := Value.Crypt;
         CurrentInfo[I].Links := '';
 
         if I = CurrentFileNumber then

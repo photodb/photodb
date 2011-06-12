@@ -147,6 +147,10 @@ type
     property ThreadType : Integer read FThreadType;
   end;
 
+const
+  UPDATE_MODE_ADD           = 1;
+  UPDATE_MODE_REFRESH_IMAGE = 2;
+
 type
   TExplorerNotifyInfo = class
   private
@@ -154,17 +158,23 @@ type
     FUpdaterInfo: TUpdaterInfo;
     FOwner: TExplorerForm;
     FState: TGUID;
+    FFileName: string;
+    FGUID: string;
+    FMode: Integer;
   public
     constructor Create(Owner: TExplorerForm; State: TGUID;
-      UpdaterInfo: TUpdaterInfo; ExplorerViewInfo: TExplorerViewInfo);
+      UpdaterInfo: TUpdaterInfo; ExplorerViewInfo: TExplorerViewInfo;
+      Mode: Integer; FileName, GUID: string);
     destructor Destroy; override;
   end;
 
+type
   TExplorerWindowThreads = class
   public
     FExplorer: TExplorerForm;
+    FMode: Integer;
     FCounter: Integer;
-    constructor Create(Explorer: TExplorerForm);
+    constructor Create(Explorer: TExplorerForm; Mode: Integer);
   end;
 
   TExplorerUpdateManager = class(TObject)
@@ -177,11 +187,11 @@ type
   public
     destructor Destroy; override;
     procedure QueueNotify(Info: TExplorerNotifyInfo);
-    function DeQueue(FOwner: TExplorerForm; FState: TGUID): TExplorerNotifyInfo;
+    function DeQueue(FOwner: TExplorerForm; FState: TGUID; Mode: Integer): TExplorerNotifyInfo;
     procedure CleanUp(FOwner: TExplorerForm);
-    procedure RegisterThread(FOwner: TExplorerForm);
-    procedure UnRegisterThread(FOwner: TExplorerForm);
-    function GetThreadCount(FOwner: TExplorerForm): Integer;
+    procedure RegisterThread(FOwner: TExplorerForm; Mode: Integer);
+    procedure UnRegisterThread(FOwner: TExplorerForm; Mode: Integer);
+    function GetThreadCount(FOwner: TExplorerForm; Mode: Integer): Integer;
   end;
 
 type
@@ -189,7 +199,6 @@ type
 
 var
   AExplorerFolders: TExplorerFolders = nil;
-  UpdaterCount: Integer = 0;
   ExplorerUpdateBigImageThreadsCount: Integer = 0;
   FullFolderPicture: TPNGImage = nil;
   FFolderPictureLock: TCriticalSection = nil;
@@ -238,6 +247,8 @@ begin
 end;
 
 procedure TExplorerThread.Execute;
+type
+  TProcessNotifyProc = procedure of object;
 var
   Found, FilesReadedCount: Integer;
   SearchRec: TSearchRec;
@@ -276,6 +287,32 @@ var
     end;
   end;
 
+  procedure ProcessNotifys(NotifyProcessProcedure: TProcessNotifyProc; UpdateMode: Integer);
+  begin
+    NotifyInfo := nil;
+    try
+      repeat
+        F(NotifyInfo);
+        NotifyProcessProcedure;
+        NotifyInfo := ExplorerUpdateManagerInstance.DeQueue(FSender, StateID, UpdateMode);
+        if NotifyInfo <> nil then
+        begin
+          if FUpdaterInfo.FileInfo <> nil then
+          begin
+            FUpdaterInfo.FileInfo.Free;
+            FUpdaterInfo.FileInfo := nil;
+          end;
+          ExplorerInfo := NotifyInfo.FExplorerViewInfo;
+          FUpdaterInfo := NotifyInfo.FUpdaterInfo;
+        end;
+      until NotifyInfo = nil;
+    finally
+      ExplorerUpdateManagerInstance.UnRegisterThread(FSender, UpdateMode);
+      //check if new info is became avliable since last check ws performed
+      ExplorerUpdateManagerInstance.QueueNotify(ExplorerUpdateManagerInstance.DeQueue(FSender, StateID, UpdateMode));
+    end;
+  end;
+
 begin
   inherited;
   FreeOnTerminate := True;
@@ -295,28 +332,7 @@ begin
 
     if FUpdaterInfo.IsUpdater then
     begin
-      NotifyInfo := nil;
-      try
-        repeat
-          F(NotifyInfo);
-          AddFile;
-          NotifyInfo := ExplorerUpdateManagerInstance.DeQueue(FSender, StateID);
-          if NotifyInfo <> nil then
-          begin
-            if FUpdaterInfo.FileInfo <> nil then
-            begin
-              FUpdaterInfo.FileInfo.Free;
-              FUpdaterInfo.FileInfo := nil;
-            end;
-            ExplorerInfo := NotifyInfo.FExplorerViewInfo;
-            FUpdaterInfo := NotifyInfo.FUpdaterInfo;
-          end;
-        until NotifyInfo = nil;
-      finally
-        ExplorerUpdateManagerInstance.UnRegisterThread(FSender);
-        //check if new info is became avliable since last check ws performed
-        ExplorerUpdateManagerInstance.QueueNotify(ExplorerUpdateManagerInstance.DeQueue(FSender, StateID));
-      end;
+      ProcessNotifys(AddFile, UPDATE_MODE_ADD);
       Exit;
     end;
 
@@ -337,18 +353,8 @@ begin
 
     if (FThreadType = THREAD_TYPE_IMAGE) then
     begin
-      if UpdaterCount > ProcessorCount then
-      begin
-        repeat
-          if UpdaterCount < ProcessorCount then
-            Break;
-          Sleep(10);
-        until False;
-      end;
-      Inc(UpdaterCount);
       LoadingAllBigImages := False; //грузятся не все файлы заново а только текущий
-      UpdateFile;
-      Dec(UpdaterCount);
+      ProcessNotifys(UpdateFile, UPDATE_MODE_REFRESH_IMAGE);
       Exit;
     end;
 
@@ -414,7 +420,7 @@ begin
 
         UnProcessPath(DBFolderToSearch);
         DBFolderToSearch := ExcludeTrailingBackslash(AnsiLowerCase(DBFolderToSearch));
-        CalcStringCRC32(AnsiLowerCase(DBFolderToSearch),crc);
+        CalcStringCRC32(AnsiLowerCase(DBFolderToSearch), crc);
         DBFolderToSearch := IncludeTrailingBackslash(DBFolderToSearch);
         FFolder := IncludeTrailingBackslash(FFolder);
         F(FFiles);
@@ -423,7 +429,7 @@ begin
         IsPrivateDirectory := TPrivateHelper.Instance.IsPrivateDirectory(DBFolderToSearch);
 
         DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
-        FQuery := GetQuery;
+        FQuery := GetQuery(True);
         try
           ReadOnlyQuery(FQuery);
           TW.I.Start('IsPrivateDirectory');
@@ -1010,8 +1016,9 @@ begin
     for I := 1 to 4 do
       FFolderImages.Images[I] := nil;
   end;
-  try
 
+  TempBitmap := nil;
+  try
     Query := nil;
     try
       Count := 0;
@@ -1021,18 +1028,17 @@ begin
       try
         if not FFastDirectoryLoading then
         begin
-          DBFolder:=NormalizeDBStringLike(NormalizeDBString(AnsiLowerCase(CurrentFile)));
-          DBFolder := ExcludeTrailingBackslash(DBFolder);
+          DBFolder := ExcludeTrailingBackslash(AnsiLowerCase(CurrentFile));
           CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
           DBFolder := IncludeTrailingBackslash(DBFolder);
 
-          Query := GetQuery(False);
+          Query := GetQuery(True);
           ReadOnlyQuery(Query);
 
           if ExplorerInfo.ShowPrivate then
-            SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
+            SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC = ' + IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
           else
-            SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC='+IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
+            SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC = ' + IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
 
           SetStrParam(Query, 0, '%' + DBFolder + '%');
           SetStrParam(Query, 1, '%' + DBFolder + '%\%');
@@ -1176,7 +1182,7 @@ begin
               Continue;
           end else
           begin
-            FJPEG:=TJpegImage.Create;
+            FJPEG := TJpegImage.Create;
             FBS:= GetBlobStream(Query.FieldByName('thum'), bmRead);
             try
               FJPEG.LoadFromStream(FBS);
@@ -1186,15 +1192,15 @@ begin
           end;
           Fbmp := TBitmap.Create;
           try
-            JPEGScale(fJpeg, SmallImageSize, SmallImageSize);
+            JPEGScale(FJpeg, SmallImageSize, SmallImageSize);
             AssignJpeg(FBmp, FJpeg);
-            F(fJpeg);
-            ApplyRotate(fbmp, Query.FieldByName('Rotated').AsInteger);
+            F(FJpeg);
+            ApplyRotate(FBmp, Query.FieldByName('Rotated').AsInteger);
 
-            W := fbmp.Width;
-            H := fbmp.Height;
+            W := FBmp.Width;
+            H := FBmp.Height;
             ProportionalSize(SmallImageSize, SmallImageSize, W, H);
-            DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+            DrawFolderImageWithXY(TempBitmap, Rect(_x div 2 - W div 2 + X,_y div 2 - H div 2 + y, _x div 2- W div 2 + X + W, _y div 2 - H div 2 + Y + H), FBmp);
           finally
             F(fbmp);
           end;
@@ -1267,19 +1273,21 @@ begin
       AExplorerFolders.SaveFolderImages(FFolderImages, SmallImageSize, SmallImageSize);
     end;
 
+    GUIDParam := DirctoryID;
+    if not SynchronizeEx(ReplaceFolderImage) then
+      F(TempBitmap)
+    else
+      TempBitmap := nil;
+
   finally
+    F(TempBitmap);
+
     for I := 1 to 4 do
       F(FFolderImages.Images[I]);
 
     for I := 1 to 4 do
       F(FFolderImagesResult.Images[I]);
   end;
-
-  GUIDParam := DirctoryID;
-  if not SynchronizeEx(ReplaceFolderImage) then
-    F(TempBitmap)
-  else
-    TempBitmap := nil;
 end;
 
 procedure TExplorerThread.DrawFolderImageBig(Bitmap: TBitmap);
@@ -1760,8 +1768,8 @@ end;
 
 procedure TExplorerThread.UpdateFile;
 var
-  Info : TExplorerFileInfo;
-  NewInfo : TExplorerFileInfo;
+  Info: TExplorerFileInfo;
+  NewInfo: TExplorerFileInfo;
 begin
   Info := FUpdaterInfo.FileInfo;
   if FUpdaterInfo.UpdateDB and (Info.ID > 0) then
@@ -2202,7 +2210,7 @@ begin
   end;
   F(Info.Image);
 
-  if not ((Info.PassTag = 0) and Info.Crypted) then
+  if not ((Info.PassTag = 0) and Info.Crypted) and (TempBitmap <> nil) then
     ApplyRotate(TempBitmap, Info.Rotation);
 
   if (FThreadType = THREAD_TYPE_IMAGE) or (FOwnerThreadType = THREAD_TYPE_IMAGE) then
@@ -2264,15 +2272,20 @@ begin
   FExplorerThreads := TList.Create;
 end;
 
-function TExplorerUpdateManager.DeQueue(FOwner: TExplorerForm; FState: TGUID): TExplorerNotifyInfo;
+function TExplorerUpdateManager.DeQueue(FOwner: TExplorerForm; FState: TGUID; Mode: Integer): TExplorerNotifyInfo;
+var
+  I: Integer;
 begin
   Result := nil;
   FSync.Enter;
   try
-    if FData.Count = 0 then
-      Exit;
-    Result := FData[0];
-    FData.Delete(0);
+    for I := 0 to FData.Count - 1 do
+      if TExplorerNotifyInfo(FData[I]).FMode = Mode then
+      begin
+        Result := FData[0];
+        FData.Delete(0);
+        Exit;
+      end;
   finally
     FSync.Leave;
   end;
@@ -2293,10 +2306,14 @@ begin
   FSync.Enter;
   try
 
-    if GetThreadCount(Info.FOwner) = 0 then
+    if GetThreadCount(Info.FOwner, Info.FMode) = 0 then
     begin
-      TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo, Info.FState);
-      ExplorerUpdateManagerInstance.RegisterThread(Info.FOwner);
+      if Info.FMode = UPDATE_MODE_ADD then
+        TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo, Info.FState)
+      else if Info.FMode = UPDATE_MODE_REFRESH_IMAGE then
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo, Info.FState);
+
+      ExplorerUpdateManagerInstance.RegisterThread(Info.FOwner, Info.FMode);
       F(Info);
     end else
       FData.Add(Info);
@@ -2305,7 +2322,7 @@ begin
   end;
 end;
 
-function TExplorerUpdateManager.GetThreadCount(FOwner: TExplorerForm): Integer;
+function TExplorerUpdateManager.GetThreadCount(FOwner: TExplorerForm; Mode: Integer): Integer;
 var
   I: Integer;
   Info: TExplorerWindowThreads;
@@ -2316,7 +2333,7 @@ begin
     for I := 0 to FExplorerThreads.Count - 1 do
     begin
       Info := FExplorerThreads[I];
-      if Info.FExplorer = FOwner then
+      if (Info.FExplorer = FOwner) and (Info.FMode = Mode) then
         Result := Info.FCounter;
     end;
   finally
@@ -2324,7 +2341,7 @@ begin
   end;
 end;
 
-procedure TExplorerUpdateManager.RegisterThread(FOwner: TExplorerForm);
+procedure TExplorerUpdateManager.RegisterThread(FOwner: TExplorerForm; Mode: Integer);
 var
   I: Integer;
   Info: TExplorerWindowThreads;
@@ -2333,7 +2350,8 @@ begin
   try
     Info := nil;
     for I := 0 to FExplorerThreads.Count - 1 do
-      if TExplorerWindowThreads(FExplorerThreads[I]).FExplorer = FOwner then
+      if (TExplorerWindowThreads(FExplorerThreads[I]).FExplorer = FOwner)
+        and (TExplorerWindowThreads(FExplorerThreads[I]).FMode = Mode) then
       begin
         Info := FExplorerThreads[I];
         Break;
@@ -2341,7 +2359,7 @@ begin
 
     if Info = nil then
     begin
-      Info := TExplorerWindowThreads.Create(FOwner);
+      Info := TExplorerWindowThreads.Create(FOwner, Mode);
       FExplorerThreads.Add(Info);
     end;
 
@@ -2351,7 +2369,7 @@ begin
   end;
 end;
 
-procedure TExplorerUpdateManager.UnRegisterThread(FOwner: TExplorerForm);
+procedure TExplorerUpdateManager.UnRegisterThread(FOwner: TExplorerForm; Mode: Integer);
 var
   I: Integer;
   Info: TExplorerWindowThreads;
@@ -2376,12 +2394,16 @@ end;
 { TExplorerNotifyInfo }
 
 constructor TExplorerNotifyInfo.Create(Owner: TExplorerForm; State: TGUID;
-  UpdaterInfo: TUpdaterInfo; ExplorerViewInfo: TExplorerViewInfo);
+  UpdaterInfo: TUpdaterInfo; ExplorerViewInfo: TExplorerViewInfo;
+  Mode: Integer; FileName, GUID: string);
 begin
   FOwner := Owner;
   FState := State;
   FUpdaterInfo := UpdaterInfo;
   FExplorerViewInfo := ExplorerViewInfo;
+  FMode := Mode;
+  FFileName := FileName;
+  FGUID := GUID;
 end;
 
 destructor TExplorerNotifyInfo.Destroy;
@@ -2392,15 +2414,16 @@ end;
 
 { TExplorerWindowThreads }
 
-constructor TExplorerWindowThreads.Create(Explorer: TExplorerForm);
+constructor TExplorerWindowThreads.Create(Explorer: TExplorerForm; Mode: Integer);
 begin
   FExplorer := Explorer;
+  FMode := Mode;
   FCounter := 0;
 end;
 
 initialization
 
-  UpdaterCount := 0;
+//  UpdaterCount := 0;
   AExplorerFolders := TExplorerFolders.Create;
   FFolderPictureLock := TCriticalSection.Create;
 

@@ -1944,9 +1944,7 @@ begin
       begin
         FilesToUpdate := TDBPopupMenuInfo.Create;
         FilesToUpdate.Add(SearchRecord.Copy);
-
-        NewFormSubState;
-        RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, FilesToUpdate, True));
+        RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, FilesToUpdate, True, True));
       end;
       ElvMain.Items[I].Invalidate(False);
     end;
@@ -3365,7 +3363,7 @@ begin
   for I := 0 to ElvMain.Items.Count - 1 do
     Data.Add(GetSearchRecordFromItemData(ElvMain.Items[I]).Copy);
 
-  RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, Data, True));
+  RegisterThreadAndStart(TSearchBigImagesLoaderThread.Create(Self, SubStateID, nil, FPictureSize, Data, True, False));
 end;
 
 function TSearchForm.GetVisibleItems: TArStrings;

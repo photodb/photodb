@@ -228,9 +228,9 @@ var
 
 implementation
 
-uses UnitImHint, UnitLoadFilesToPanel, UnitHintCeator,
+uses UnitImHint, UnitLoadFilesToPanel, UnitHintCeator, UnitUpdateDBObject,
      SlideShow, ExplorerUnit, UnitSizeResizerForm, CommonDBSupport,
-     UnitStringPromtForm, UnitBigImagesSize, FormManegerUnit;
+     UnitStringPromtForm, UnitBigImagesSize, FormManegerUnit, UnitUpdateDB;
 
 {$R *.dfm}
 
@@ -309,7 +309,6 @@ begin
   Data := TDBPopupMenuInfo.Create;
   FilesToDrag := TStringList.Create;
   FilePushedName := '';
-//  FThreadCount := 0;
   SID := GetGUID;
   BigImagesSID := GetGUID;
   FPictureSize := ThSizePanelPreview;
@@ -664,6 +663,7 @@ begin
         Data[I].Keywords := Value.Keywords;
         Data[I].Links := Value.Links;
         Data[I].Groups := Value.Groups;
+        Data[I].Crypted := Value.Crypt;
         ElvMain.Refresh;
         Break;
       end;
@@ -1127,7 +1127,7 @@ begin
   end;
 end;
 
-function TFormCont.ExistsItemById(id: integer): boolean;
+function TFormCont.ExistsItemById(ID: Integer): Boolean;
 var
   I: Integer;
 begin
@@ -1140,7 +1140,7 @@ begin
     end;
 end;
 
-function TFormCont.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
+function TFormCont.GetCurrentPopUpMenuInfo(Item: TEasyItem) : TDBPopupMenuInfo;
 var
   I: Integer;
 begin
@@ -1311,11 +1311,6 @@ begin
     end;
   end;
 end;
-   {
-procedure TFormCont.AddThread;
-begin
-  Inc(FThreadCount);
-end;  }
 
 procedure TFormCont.AddWorkerThread;
 begin
@@ -1530,15 +1525,17 @@ begin
     Item := ItemByPointStar(ElvMain, Pos, FPictureSize, FBitmapImageList[Item.ImageIndex].Graphic);
     if Item <> nil then
     begin
-      if ItemAtPos(Pos.X, Pos.Y).Tag <> 0 then
-      begin
-        RatingPopupMenu1.Tag := ItemAtPos(Pos.X, Pos.Y).Tag;
-        Application.HideHint;
-        THintManager.Instance.CloseHint;
-        LastMouseItem := nil;
-        RatingPopupMenu1.Popup(MousePos.X, MousePos.Y);
-        Exit;
-      end;
+      if Data[Item.Index].ID > 0 then
+        RatingPopupMenu1.Tag := Data[Item.Index].ID
+      else
+        RatingPopupMenu1.Tag := -Item.Index;
+
+      RatingPopupMenu1.Tag := ItemAtPos(Pos.X, Pos.Y).Tag;
+      Application.HideHint;
+      THintManager.Instance.CloseHint;
+      LastMouseItem := nil;
+      RatingPopupMenu1.Popup(MousePos.X, MousePos.Y);
+      Exit;
     end;
   end;
 
@@ -2013,17 +2010,6 @@ begin
   BigImagesSID := GetGUID;
   TbStop.Enabled := False;
 end;
-             {
-procedure TFormCont.DoStopLoading(CID: TGUID);
-begin
-  if IsEqualGUID(CID, SID) or IsEqualGUID(CID, BigImagesSID) then
-  begin
-    if IsEqualGUID(CID, SID) then
-      Dec(FThreadCount);
-    if FThreadCount = 0 then
-      TbStop.Enabled := False;
-  end;
-end;      }
 
 procedure TFormCont.TerminateTimerTimer(Sender: TObject);
 begin
@@ -2044,10 +2030,29 @@ end;
 procedure TFormCont.N05Click(Sender: TObject);
 var
   EventInfo : TEventValues;
+  FileInfo: TDBPopupMenuInfoRecord;
 begin
-  SetRating(RatingPopupMenu1.Tag,(Sender as TMenuItem).Tag);
-  EventInfo.Rating:=(Sender as TMenuItem).Tag;
-  DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag,[EventID_Param_Rating],EventInfo);
+  if RatingPopupMenu1.Tag > 0 then
+  begin
+    SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
+    EventInfo.Rating := (Sender as TMenuItem).Tag;
+    DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag, [EventID_Param_Rating],
+      EventInfo);
+  end else
+  begin
+    if UpdaterDB = nil then
+      UpdaterDB := TUpdaterDB.Create;
+
+    FileInfo:= TDBPopupMenuInfoRecord.Create;
+    try
+      FileInfo.FileName := Data[-RatingPopupMenu1.Tag].FileName;
+      FileInfo.Rating := (Sender as TMenuItem).Tag;
+      FileInfo.Include := True;
+      UpdaterDB.AddFileEx(FileInfo, True, True);
+    finally
+      F(FileInfo);
+    end;
+  end;
 end;
 
 procedure TFormCont.PopupMenuZoomDropDownPopup(Sender: TObject);
