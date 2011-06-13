@@ -188,7 +188,7 @@ begin
               begin
                 if PSDTransparent then
                 begin
-                  if (Graphic as TBitmap).PixelFormat = Pf32bit then
+                  if (Graphic as TBitmap).PixelFormat = pf32bit then
                   begin
                     FTransparent := True;
                     LoadBMPImage32bit(Graphic as TBitmap, Bitmap, TransparentColor);

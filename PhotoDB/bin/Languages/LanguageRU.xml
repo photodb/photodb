@@ -30,7 +30,7 @@
     <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
   <scope name="System">    
-    <translate name="This program is running, but isn't responding! Run new instance?" value="Получить фотографии" />
+    <translate name="This program is running, but isn't responding! Run new instance?" value="Программа уже запущена, но не отвечает на запросы. Запустить ещё одну копию?" />
     <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
     <translate name="View with PhotoDB" value="Просмотр с помощью PhotoDB" />
     <translate name="Photo Database {V} helps you to find, protect and organize your photos." value="Photo Database {V} поможет вам в поиске, защите и организации ваших фотографий." />

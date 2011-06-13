@@ -2437,13 +2437,13 @@ begin
     until not DirectoryExists(S + FolderName + ' (' + Inttostr(N) + ')');
     FolderName := FolderName + ' (' + Inttostr(N) + ')';
   end;
+  NewFileName := AnsiLowerCase(S + FolderName);
   if not CreateDir(S + FolderName) then
   begin
     MessageBoxDB(Handle, Format(L('Unable to create directory %s!'), [S + FolderName]), L('Error'), TD_BUTTON_OK,
       TD_ICON_ERROR);
     Exit;
   end;
-  NewFileName := AnsiLowerCase(S + FolderName);
 end;
 
 procedure TExplorerForm.Copy2Click(Sender: TObject);
@@ -2936,8 +2936,6 @@ begin
             if GetExt(PInfo[K].FOldFileName) = 'LDB' then
               Exit;
 
-          Self.NewFileName := '';
-
           Info := TExplorerFileInfo.Create;
           Info.FileName := PInfo[K].FNewFileName;
 
@@ -2945,6 +2943,7 @@ begin
           UpdaterInfo.FileInfo := Info;
           UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
 
+          Self.NewFileName := '';
           ExplorerViewInfo.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
           ExplorerViewInfo.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
           ExplorerViewInfo.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
@@ -5618,6 +5617,7 @@ begin
   end else
     FileName := S + FileName;
 
+  NewFileName := AnsiLowerCase(FileName);
   System.Assign(F, FileName);
 {$I-}
   System.Rewrite(F);
@@ -5636,7 +5636,6 @@ begin
   end
   else
     System.Close(F);
-  NewFileName := AnsiLowerCase(FileName);
 end;
 
 procedure TExplorerForm.GetPhotosClick(Sender: TObject);

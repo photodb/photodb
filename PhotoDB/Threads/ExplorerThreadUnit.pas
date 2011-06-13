@@ -294,7 +294,7 @@ var
       repeat
         F(NotifyInfo);
         NotifyProcessProcedure;
-        NotifyInfo := ExplorerUpdateManagerInstance.DeQueue(FSender, StateID, UpdateMode);
+        NotifyInfo := ExplorerUpdateManager.DeQueue(FSender, StateID, UpdateMode);
         if NotifyInfo <> nil then
         begin
           if FUpdaterInfo.FileInfo <> nil then
@@ -307,9 +307,9 @@ var
         end;
       until NotifyInfo = nil;
     finally
-      ExplorerUpdateManagerInstance.UnRegisterThread(FSender, UpdateMode);
+      ExplorerUpdateManager.UnRegisterThread(FSender, UpdateMode);
       //check if new info is became avliable since last check ws performed
-      ExplorerUpdateManagerInstance.QueueNotify(ExplorerUpdateManagerInstance.DeQueue(FSender, StateID, UpdateMode));
+      ExplorerUpdateManager.QueueNotify(ExplorerUpdateManager.DeQueue(FSender, StateID, UpdateMode));
     end;
   end;
 
@@ -2313,7 +2313,7 @@ begin
       else if Info.FMode = UPDATE_MODE_REFRESH_IMAGE then
         TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo, Info.FState);
 
-      ExplorerUpdateManagerInstance.RegisterThread(Info.FOwner, Info.FMode);
+      ExplorerUpdateManager.RegisterThread(Info.FOwner, Info.FMode);
       F(Info);
     end else
       FData.Add(Info);
@@ -2423,7 +2423,6 @@ end;
 
 initialization
 
-//  UpdaterCount := 0;
   AExplorerFolders := TExplorerFolders.Create;
   FFolderPictureLock := TCriticalSection.Create;
 

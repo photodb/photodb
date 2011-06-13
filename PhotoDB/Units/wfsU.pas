@@ -135,7 +135,7 @@ begin
   FOwner := Owner;
   FSync.Enter;
   try
-    StartWatch(Directory, FILE_NOTIFY_CHANGE_FILE_NAME + FILE_NOTIFY_CHANGE_DIR_NAME	+ FILE_NOTIFY_CHANGE_CREATION +
+    StartWatch(Directory, FILE_NOTIFY_CHANGE_FILE_NAME + FILE_NOTIFY_CHANGE_DIR_NAME + FILE_NOTIFY_CHANGE_CREATION +
         FILE_NOTIFY_CHANGE_LAST_WRITE, False, CallBack, CID);
   finally
     FSync.Leave;
@@ -210,9 +210,16 @@ begin
 end;
 
 function TWFS.CreateDirHandle(aDir: string): THandle;
-begin                                                                                      //TODO: IS ADMIN REQUARED???
-  Result := CreateFile(PChar(aDir), FILE_LIST_DIRECTORY, FILE_SHARE_READ+FILE_SHARE_DELETE+FILE_SHARE_WRITE,
-                   nil, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS or FILE_FLAG_OVERLAPPED, 0);
+var
+  Dir: string;
+begin
+  Dir := ExcludeTrailingBackslash(aDir);
+  //drive should be like c:\
+  if Length(Dir) = 2 then
+    Dir := IncludeTrailingBackslash(Dir);
+  Result := CreateFile(PChar(Dir),
+              FILE_LIST_DIRECTORY, FILE_SHARE_READ + FILE_SHARE_DELETE + FILE_SHARE_WRITE,
+              nil, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS or FILE_FLAG_OVERLAPPED, 0);
 end;
 
 procedure TWFS.Execute;
