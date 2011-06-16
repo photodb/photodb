@@ -9,7 +9,7 @@ uses
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
   Network, GraphicCrypt, UnitCrypting, DropSource, DragDropFile, DragDrop,
-  DropTarget, ScPanel, uGOM, UnitCDMappingSupport,
+  DropTarget, ScPanel, uGOM, UnitCDMappingSupport, StrUtils,
   ShellContextMenu, ShlObj, Clipbrd, GraphicsCool, uShellIntegration,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
   EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils,
@@ -568,8 +568,9 @@ type
      procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
      function GetMyComputer: string;
      function GetSecondStepHelp: string;
-    function GetViewInfo: TExplorerViewInfo;
+     function GetViewInfo: TExplorerViewInfo;
      property SecondStepHelp : string read GetSecondStepHelp;
+     function GetPathDescription(Path: string): string;
      procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
    protected
      procedure ComboWNDProc(var Message: TMessage);
@@ -657,6 +658,36 @@ begin
     if (Result[I] = ':') or (Result[I] = '\') then
       Result[I] := '_';
   end;
+end;
+
+function IsNetworkServer(S: string): Boolean;
+begin
+  Result := False;
+  S := ExcludeTrailingPathDelimiter(S);
+  if (Length(S) > 2) and (Copy(S, 1, 2) = '\\') and (Copy(S, 3, 1) <> '\') and (PosEx('\', S, 3) = 0) then
+    Result := True;
+end;
+
+function IsNetworkShare(S: string): Boolean;
+begin
+  Result := False;
+  S := ExcludeTrailingPathDelimiter(S);
+  if (Length(S) > 2) and (Copy(S, 1, 2) = '\\') and (Copy(S, 3, 1) <> '\') and (PosEx('\', S, PosEx('\', S, 3) + 1) = 0) then
+    Result := True;
+end;
+
+function TExplorerForm.GetPathDescription(Path: string): string;
+begin
+  if ((Length(Path) = 3) or (Length(Path) = 2)) and (Path[2] = ':') then
+     Result := Format(L('%s drive'), [GetCDVolumeLabel(Path[1])])
+  else if IsNetworkServer(Path) then
+    Result := L('Computer')
+  else if IsNetworkShare(Path) then
+    Result := L('Shared folder')
+  else if FileExists(Path) then
+    Result := GetFileDescription(Path, L('Unknown file type'))
+  else
+    Result := L('Directory');
 end;
 
 procedure TExplorerForm.ShellTreeView1Change(Sender: TObject;
@@ -5896,7 +5927,7 @@ begin
         FileSID := FFilesInfo[index].SID;
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
-          FSelectedInfo.FileTypeW := MrsGetFileType(FileName);
+          FSelectedInfo.FileTypeW := GetPathDescription(FileName);
         if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
           FSelectedInfo.FileTypeW := L('Network');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) then
@@ -5927,7 +5958,7 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) then
           NameLabel.Caption := ExtractFileName(FileName);
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
-          FSelectedInfo.FileTypeW := MrsGetFileType(FileName);
+          FSelectedInfo.FileTypeW := GetPathDescription(FileName);
         if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
           FSelectedInfo.FileTypeW := L('Network');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) then

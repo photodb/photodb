@@ -1,5 +1,5 @@
 ﻿<%@ Master Language="C#" MasterPageFile="~/masterpages/LeftNavigation.master" AutoEventWireup="true" %>
 
 <asp:Content ContentPlaceHolderID="RightContent" runat="server">
-  Please, contact us via email <a href="mailto:photodb@illusdolphin.net">photodb@illusdolphin.net</a> us to obtain information on purchasing the application.
+ 
 </asp:Content>

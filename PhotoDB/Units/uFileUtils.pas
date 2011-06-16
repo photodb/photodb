@@ -5,7 +5,7 @@ unit uFileUtils;
 interface
 
 uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl, Variants, ShlObj, ActiveX,
-     VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes, uSysUtils;
+     VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes, uSysUtils, Registry;
 
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
@@ -29,6 +29,7 @@ function Mince(PathToMince: string; InSpace: Integer): string;
 function WindowsCopyFile(FromFile, ToDir: string): Boolean;
 function WindowsCopyFileSilent(FromFile, ToDir: string): Boolean;
 function DateModify(FileName: string): TDateTime;
+function GetFileDescription(FileName: string; UnknownFileDescription: string): string;
 function MrsGetFileType(StrFilename: string): string;
 
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
@@ -449,14 +450,42 @@ begin
   Result := AnsiUpperCase(ExtractFileDrive(ShortName)) + Result;
 end;
 
+function GetFileDescription(FileName: string; UnknownFileDescription: string): string;
+var
+  Reg: TRegistry;
+  S: string;
+begin
+  Result := '';
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    if Reg.OpenKey(ExtractFileExt(FileName), False) then
+    begin
+      S := Reg.ReadString('');
+      Reg.CloseKey;
+      if Reg.OpenKey(S, False) then
+        Result := Reg.ReadString('');
+    end;
+  finally
+    F(Reg);
+  end;
+  if Result = '' then
+    Result := UnknownFileDescription;
+end;
 
 function MrsGetFileType(StrFilename: string): string;
 var
   FileInfo: TSHFileInfo;
+  OldMode: Cardinal;
 begin
-  FillChar(FileInfo, SizeOf(FileInfo), #0);
-  SHGetFileInfo(PWideChar(StrFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
-  Result := FileInfo.SzTypeName;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    FillChar(FileInfo, SizeOf(FileInfo), #0);
+    SHGetFileInfo(PWideChar(StrFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
+    Result := FileInfo.SzTypeName;
+  finally
+    SetErrorMode(oldMode);
+  end;
 end;
 
 procedure CreateBuffer(Files: TStrings; var P: TBuffer);

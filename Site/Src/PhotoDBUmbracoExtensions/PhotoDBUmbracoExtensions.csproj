@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HttpHelper.cs" />
     <Compile Include="MailData.cs" />
     <Compile Include="Mailer.cs" />
     <Compile Include="UmbracoHelper.cs" />

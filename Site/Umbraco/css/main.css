@@ -246,6 +246,7 @@ span .clearSpan10{
 
 .paymentInfo {
   margin-top: 9px;
+  float:left;
 }
 
 .donateInfo {
@@ -396,7 +397,8 @@ donate_pay_warning{
   float:left;
 }
 .donate_page .paymentInfo {
-  width:155px;
+  width:160px;
+  padding-bottom:10px;
 }
 .donate_pay_warning{
   padding-top: 12px;
@@ -425,6 +427,43 @@ donate_pay_warning{
     clear: both;
     visibility: hidden;
 }
+.home_top{
+ display:block;
+ float:left;
+}
+.home_news{
+ display:block;
+ float:left;
+ margin-top:20px;
+ margin-left:20px;
+ width: 700px;
+}
+.news_title{
+  padding-bottom:10px;
+}
+.home_news p{
+  margin-bottom: 5px;
+}
+.news_block{
+  padding: 10px 0 10px 0;
+}
+.home_news p{
+  text-indent: 10pt;
+}
+.home_news ul{
+  padding-bottom: 3px;
+  padding-left: 12px;
+}
+.home_news li{
+  list-style-type:disc;
+  padding: 2px 3px;
+}
+.news_block_title{
+  font-size: 14px;
+  text-indent: 0;
+}
+
+
 
 
 

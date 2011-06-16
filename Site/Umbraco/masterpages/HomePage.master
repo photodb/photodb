@@ -2,13 +2,19 @@
 
 <asp:Content ContentPlaceHolderID="PageContent" runat="server">
   <umbraco:Macro Alias="CountrySelection" runat="server" />
-  <span class="leftColumnHome">
-    <umbraco:Macro Alias="DownloadHomeCallout" runat="server" />
-    <div class="clearDiv10"></div>
-    <umbraco:Macro Alias="DonateHomeCallout" runat="server" />  
-  </span><!--leftColumnHome-->
-
-  <span class="pageContent">
-    <umbraco:Macro Alias="HomeSlider" runat="server" />
-  </span><!--pageContent-->
+  
+  <div class="home_top">
+    
+    <span class="leftColumnHome">
+      <umbraco:Macro Alias="DownloadHomeCallout" runat="server" />
+      <div class="clearDiv10"></div>
+      <umbraco:Macro Alias="DonateHomeCallout" runat="server" />  
+    </span><!--leftColumnHome-->
+  
+    <span class="pageContent">
+      <umbraco:Macro Alias="HomeSlider" runat="server" />
+    </span><!--pageContent-->
+  
+  </div>
+  <umbraco:Macro Alias="HomePageNewsListing" runat="server" />
 </asp:Content>

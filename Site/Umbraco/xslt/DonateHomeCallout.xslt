@@ -21,10 +21,16 @@
         <span><xsl:value-of select="$DonatePage/textDonate" disable-output-escaping="yes"/></span>
         <xsl:for-each select="$DonatePage/child::*[@isDoc]">
           <div class="paymentInfo">
-            <img class="donateWmImg" src="{umbraco.library:GetMedia(./donateImage, false)/umbracoFile}" />
+            <img class="donateWmImg" alt="{./name}" src="{umbraco.library:GetMedia(./donateImage, false)/umbracoFile}" />
               <div class="donateWmInfo">
+                <xsl:if test="string(./paddingTop)!=''"><xsl:attribute name="style">padding-top:<xsl:value-of select="./paddingTop" />px</xsl:attribute></xsl:if>
+                
                 <xsl:for-each select="./child::*[@isDoc]">
-                  <xsl:value-of select="./detailText" /><br />
+                  <span>
+                    <xsl:if test="string(./fontSize)!=''"><xsl:attribute name="style">font-size:<xsl:value-of select="./fontSize" />px</xsl:attribute></xsl:if>
+                    <xsl:value-of select="./detailText" />
+                  </span>
+                  <br />                    
                 </xsl:for-each>
               </div>
           </div><!--paymentInfo-->

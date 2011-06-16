@@ -40,6 +40,8 @@
               <div class="paymentInfo">
                 <img class="donateWmImg" src="{umbraco.library:GetMedia(./donateImage, false)/umbracoFile}" />
                   <div class="donateWmInfo">
+                    <xsl:if test="string(./paddingTop)!=''"><xsl:attribute name="style">padding-top:<xsl:value-of select="./paddingTop" />px</xsl:attribute></xsl:if>
+                
                     <xsl:for-each select="./child::*[@isDoc]">
                       <xsl:value-of select="./detailText" /><br />
                     </xsl:for-each>

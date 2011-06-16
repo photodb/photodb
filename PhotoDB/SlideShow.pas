@@ -1309,8 +1309,8 @@ begin
 
   CurrentInfo.Clear;
   FQuery := GetQuery;
-  ReadOnlyQuery(FQuery);
   try
+    ReadOnlyQuery(FQuery);
     for I := 0 to List.Count - 1 do
     begin
       FileName := List[I];

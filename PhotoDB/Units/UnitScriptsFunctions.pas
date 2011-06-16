@@ -3,9 +3,9 @@ unit UnitScriptsFunctions;
 interface
 
 uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
-  Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB,
+  Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB, uFileUtils,
   UnitDBFileDialogs, Forms, uConstants, uLogger, uShellIntegration,
-  uFileUtils, uTime, uMemory, uTranslate, uRuntime, ReplaseIconsInScript;
+  uTime, uMemory, uTranslate, uRuntime, ReplaseIconsInScript;
 
 function GetOpenFileName(InitFile, Filter : string) : string;
 function GetSaveFileName(InitFile, Filter : string) : string;
@@ -805,18 +805,8 @@ begin
 end;
 
 function MrsGetFileType(StrFilename: string): string;
-var
-  FileInfo: TSHFileInfo;
-  OldMode: Cardinal;
 begin
-  FillChar(FileInfo, SizeOf(FileInfo), #0);
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  try
-    SHGetFileInfo(PChar(strFilename), 0, FileInfo, SizeOf(FileInfo), SHGFI_TYPENAME);
-    Result := FileInfo.szTypeName;
-  finally
-    SetErrorMode(oldMode);
-  end;
+  Result := uFileUtils.MrsGetFileType(StrFilename);
 end;
 
 function GetDriveName(Drive : string; DefString : string) : string;

@@ -17,6 +17,24 @@
 <xsl:variable name="root" select="$home/parent::*" />
 <xsl:variable name="settingsNode" select="$root/descendant::*[@nodeType=$SettingsDocTypeId]/descendant::*[@nodeName=$lng]/descendant::*[@nodeType=$HomePageSettingsDocTypeId]" />
     
+<xsl:variable name="ReleasesHolderDocTypeID" select="1091" />
+<xsl:variable name="ReleasesHolder" select="$currentPage/ancestor-or-self::*[@level=1]/descendant::*[@nodeType=$ReleasesHolderDocTypeID]" />
+<xsl:variable name="DownloadHandlerDocTypeID" select="1097" />
+<xsl:variable name="DownloadHelper" select="$currentPage/ancestor::*[name()='root']/descendant::*[@nodeType=$DownloadHandlerDocTypeID]" />
+  
+<xsl:template name="downloadLink">
+  <xsl:for-each select="$ReleasesHolder/child::*[@isDoc and string(isStable)='1']">
+    <xsl:sort select="umbraco.library:FormatDateTime(dateOfRelease, 'yyyyMMddHHmmss')" data-type="number" order="descending"/>
+    <xsl:if test="position()=1">
+      
+      <xsl:variable name="fileName" select="umbraco.library:GetMedia(./installerFile, false)/installerFile" />
+      <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
+
+      <xsl:value-of select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
+    </xsl:if>
+  </xsl:for-each>
+</xsl:template>
+        
 <xsl:template match="/">
     <div class="homeSlider">
       <div id="slider">
@@ -25,12 +43,13 @@
             <xsl:if test="./image != ''">
               <xsl:variable name="image" select="umbraco.library:GetMedia(./image, false)/umbracoFile" />
               <xsl:if test="$image != ''">
-                <li>
-                  <xsl:if test="position()!=1"><xsl:attribute name="style">display:none;</xsl:attribute></xsl:if>
-                  <a href="#">
+                <a>
+                  <xsl:attribute name="href"><xsl:call-template name="downloadLink" /></xsl:attribute>
+                  <li>
+                    <xsl:if test="position()!=1"><xsl:attribute name="style">display:none;</xsl:attribute></xsl:if>
                     <img src="{$image}" alt="{./imageName}" />
-                  </a>
-                </li>
+                  </li>
+                </a>
               </xsl:if>
             </xsl:if>
           </xsl:for-each>     

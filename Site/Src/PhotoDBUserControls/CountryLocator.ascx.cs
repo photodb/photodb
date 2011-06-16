@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Web;
 using CountryLookupProj;
 using PhotoDBUserControls.Classes.MaxMind;
+using PhotoDBUmbracoExtensions;
 
 namespace PhotoDBUserControls
 {
@@ -14,6 +15,8 @@ namespace PhotoDBUserControls
         {
             if (!IsPostBack)
             {
+                if (HttpHelper.UserIsCrawler || !String.IsNullOrEmpty(Request["r"]))
+                    return;
                 if (Session[SESSION_ID] == null && Request.Url.Query.Length < 2)
                 {
                     Session[SESSION_ID] = DateTime.Now;
@@ -31,7 +34,7 @@ namespace PhotoDBUserControls
                                 if (countryCode == userCountryCode)
                                 {
                                     string path = options[0];
-                                    Response.Redirect("/" + path);
+                                    Response.Redirect("/" + path + "?r=0");
                                 }
                             }
                         }

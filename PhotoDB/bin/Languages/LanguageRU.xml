@@ -191,7 +191,6 @@
     <translate name="Open in new window" value="Открыть в новом окне" />
     <translate name="Add folder" value="Добавить каталог" />
     <translate name="Make new" value="Создать новый" />
-    <translate name="Directory" value="Каталог" />
     <translate name="Text file" value="Текстовый файл" />
     <translate name="Show update window" value="Показать окно обновления" />
     <translate name="Open in search window" value="Открыть в окне поиска" />
@@ -293,6 +292,9 @@
     <translate name="Network" value="Сеть" />
     <translate name="Workgroup" value="Рабочая группа" />
     <translate name="Shared folder" value="Общая папка" />
+    <translate name="Computer" value="Компьютер" />
+    <translate name="%s drive" value="Диск %s" />
+    <translate name="Unknown file type" value="Неизвестный тип" />
     <translate name="Add object" value="Добавить объект" />
     <translate name="Add objects" value="Добавить объекты" />
     <translate name="Add disk" value="Добавить диск" />

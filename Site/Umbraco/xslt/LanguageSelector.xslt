@@ -14,13 +14,17 @@
 <xsl:variable name="languageHolderDocTypeId" select="1045" />
 
 <xsl:variable name="languageRoot" select="$currentPage/ancestor-or-self::*[@level=1]" />
-
+<xsl:variable name="lng" select="$languageRoot/@nodeName" />
+<xsl:variable name="SettingsDocTypeId" select="1127" />
+<xsl:variable name="settingsNode" select="$root/descendant::*[@nodeType=$SettingsDocTypeId]" />
+    
 <xsl:template match="/">
 
   <div class="languages">
     <span class="changeLanguage"><xsl:value-of select="$languageRoot/changeLanguageText" /></span>
     <xsl:for-each select="$root/child::*[@isDoc and @nodeType=$languageHolderDocTypeId]">
-      <a href="{umbraco.library:NiceUrl(./@id)}"><img src="/img/lang/{./@nodeName}.png" /></a>
+      <xsl:variable name="languageHolder" select="." />
+      <a href="{umbraco.library:NiceUrl(./@id)}"><img src="/img/lang/{./@nodeName}.png" alt="{$settingsNode/child::*[@nodeName=$languageHolder/@nodeName]/languageName}" /></a>
     </xsl:for-each>
   </div>
 </xsl:template>

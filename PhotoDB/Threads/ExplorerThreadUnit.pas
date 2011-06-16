@@ -1579,36 +1579,39 @@ begin
   end;
 
   SynchronizeEx(BeginUpdate);
-  AddOneExplorerFileInfo(FFiles, L('Network'), EXPLORER_ITEM_NETWORK, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,
-    False, False, True);
-  SynchronizeEx(InfoToExplorerForm);
-  for I := 0 to FFiles.Count - 1 do
-  begin
-    if FFiles[I].FileType = EXPLORER_ITEM_DRIVE then
+  try
+    AddOneExplorerFileInfo(FFiles, L('Network'), EXPLORER_ITEM_NETWORK, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,
+      False, False, True);
+    SynchronizeEx(InfoToExplorerForm);
+    for I := 0 to FFiles.Count - 1 do
     begin
-      GUIDParam := FFiles[I].SID;
-      CurrentFile := FFiles[I].FileName;
-      MakeFolderImage(CurrentFile);
-      DS := DriveState(AnsiString(CurrentFile)[1]);
-      if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-        DriveNameParam := GetCDVolumeLabel(CurrentFile[1]) + ' (' + CurrentFile[1] + ':)'
-      else
-        DriveNameParam := MrsGetFileType(CurrentFile[1] + ':\') + ' (' + CurrentFile[1] + ':)';
-      SynchronizeEx(AddDriveToExplorer);
-    end;
-    if FFiles[I].FileType = EXPLORER_ITEM_NETWORK then
-    begin
-      GUIDParam := FFiles[I].SID;
-      CurrentFile := FFiles[I].FileName;
+      if FFiles[I].FileType = EXPLORER_ITEM_DRIVE then
+      begin
+        GUIDParam := FFiles[I].SID;
+        CurrentFile := FFiles[I].FileName;
+        MakeFolderImage(CurrentFile);
+        DS := DriveState(AnsiString(CurrentFile)[1]);
+        if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
+          DriveNameParam := GetCDVolumeLabel(CurrentFile[1]) + ' (' + CurrentFile[1] + ':)'
+        else
+          DriveNameParam := MrsGetFileType(CurrentFile[1] + ':\') + ' (' + CurrentFile[1] + ':)';
+        SynchronizeEx(AddDriveToExplorer);
+      end;
+      if FFiles[I].FileType = EXPLORER_ITEM_NETWORK then
+      begin
+        GUIDParam := FFiles[I].SID;
+        CurrentFile := FFiles[I].FileName;
 
-      IconParam := nil;
-      FindIcon(HInstance, 'NETWORK', FIcoSize, 32, IconParam);
-      FIcon := IconParam;
-      MakeImageWithIcon;
+        IconParam := nil;
+        FindIcon(HInstance, 'NETWORK', FIcoSize, 32, IconParam);
+        FIcon := IconParam;
+        MakeImageWithIcon;
+      end;
     end;
+    SetErrorMode(OldMode);
+  finally
+    SynchronizeEx(EndUpdate);
   end;
-  SetErrorMode(OldMode);
-  SynchronizeEx(EndUpdate);
   ShowInfo('', 1, 0);
 end;
 

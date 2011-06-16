@@ -1,0 +1,4 @@
+﻿<%@ Master Language="C#" MasterPageFile="~/umbraco/masterpages/default.master" AutoEventWireup="true" %>
+
+<asp:Content ContentPlaceHolderID="ContentPlaceHolderDefault" runat="server"><?xml version="1.0" encoding="UTF-8"?><umbraco:Macro Alias="GoogleSiteMap" runat="server" />
+</asp:Content>
