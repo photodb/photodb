@@ -11,7 +11,7 @@
 
 <xsl:param name="currentPage"/>
     
-<xsl:variable name="SkipDocTypeIds" select="',1056,1091,'" />
+<xsl:variable name="SkipDocTypeIds" select="',1056,1091,1245,'" />
 
 <xsl:template match="/">
 
@@ -36,6 +36,16 @@
       </xsl:for-each>
       <li class="last"></li>
     </ul>
+    
+    <!-- Place this tag in your head or just before your close body tag -->
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+    
+    <!-- Place this tag where you want the +1 button to render -->
+    <div class="plusone">
+      <xsl:text disable-output-escaping="yes">
+        <![CDATA[<g:plusone></g:plusone>]]>   
+      </xsl:text>
+    </div>
   </div><!--mainMenu-->
 
 </xsl:template>

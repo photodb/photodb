@@ -7,7 +7,7 @@
   xmlns:umbraco.library="urn:umbraco.library" xmlns:Exslt.ExsltCommon="urn:Exslt.ExsltCommon" xmlns:Exslt.ExsltDatesAndTimes="urn:Exslt.ExsltDatesAndTimes" xmlns:Exslt.ExsltMath="urn:Exslt.ExsltMath" xmlns:Exslt.ExsltRegularExpressions="urn:Exslt.ExsltRegularExpressions" xmlns:Exslt.ExsltStrings="urn:Exslt.ExsltStrings" xmlns:Exslt.ExsltSets="urn:Exslt.ExsltSets" xmlns:Plib="urn:Plib" 
   exclude-result-prefixes="msxml umbraco.library Exslt.ExsltCommon Exslt.ExsltDatesAndTimes Exslt.ExsltMath Exslt.ExsltRegularExpressions Exslt.ExsltStrings Exslt.ExsltSets Plib ">
 
-<xsl:output method="html" omit-xml-declaration="yes"/>
+<xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
 <xsl:variable name="SettingsDocTypeId" select="1127" />
@@ -43,13 +43,13 @@
             <xsl:if test="./image != ''">
               <xsl:variable name="image" select="umbraco.library:GetMedia(./image, false)/umbracoFile" />
               <xsl:if test="$image != ''">
-                <a>
-                  <xsl:attribute name="href"><xsl:call-template name="downloadLink" /></xsl:attribute>
-                  <li>
-                    <xsl:if test="position()!=1"><xsl:attribute name="style">display:none;</xsl:attribute></xsl:if>
+                <li>
+                  <xsl:if test="position()!=1"><xsl:attribute name="style">display:none;</xsl:attribute></xsl:if>
+                  <a>
+                    <xsl:attribute name="href"><xsl:call-template name="downloadLink" /></xsl:attribute>
                     <img src="{$image}" alt="{./imageName}" />
-                  </li>
-                </a>
+                  </a>
+                </li>
               </xsl:if>
             </xsl:if>
           </xsl:for-each>     

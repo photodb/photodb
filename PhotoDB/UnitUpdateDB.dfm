@@ -19,7 +19,7 @@ object UpdateDBForm: TUpdateDBForm
   FormStyle = fsStayOnTop
   KeyPreview = True
   OldCreateOrder = False
-  PopupMenu = PopupMenu1
+  PopupMenu = PmMain
   Scaled = False
   ScreenSnap = True
   OnClose = FormClose
@@ -556,7 +556,7 @@ object UpdateDBForm: TUpdateDBForm
     Layered = 255
     ImageCanRegenerate = True
   end
-  object PopupMenu1: TPopupMenu
+  object PmMain: TPopupMenu
     Left = 144
     Top = 32
     object Stayontop1: TMenuItem
@@ -661,6 +661,13 @@ object UpdateDBForm: TUpdateDBForm
     Interval = 10
     OnTimer = Timer1Timer
     Left = 352
+    Top = 104
+  end
+  object SwpWindow: TSaveWindowPos
+    SetOnlyPosition = True
+    RootKey = HKEY_CURRENT_USER
+    Key = 'Software\Positions\UpdatePos'
+    Left = 272
     Top = 104
   end
 end

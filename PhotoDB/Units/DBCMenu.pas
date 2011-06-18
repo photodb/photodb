@@ -141,45 +141,45 @@ begin
   FOwner := Form;
 
   Finfo.Assign(Info);
-  Isrecord := True;
+  IsRecord := True;
   if Finfo.Count = 1 then
     if Finfo[0].ID = 0 then
-      Isrecord := False;
+      IsRecord := False;
   for I := 0 to Item.Count - 1 do
     Item.Delete(0);
 
   if Finfo.Count > 1 then
   begin
-    Isrecord := False;
+    IsRecord := False;
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].ID <> 0 then
-        Isrecord := True;
+        IsRecord := True;
   end;
   NoDBInfoNeeded := False;
 
   OnlyCurrentDBinfoSelected := True;
-  if Finfo.Count > 1 then
-    for I := 0 to Finfo.Count - 1 do
-      if Finfo[I].ID <> 0 then
-        if Finfo[I].Selected then
-          if Finfo.Position <> I then
+  if FInfo.Count > 1 then
+    for I := 0 to FInfo.Count - 1 do
+      if FInfo[I].ID <> 0 then
+        if FInfo[I].Selected then
+          if FInfo.Position <> I then
             OnlyCurrentDBinfoSelected := False;
-  if Finfo[Finfo.Position].Selected then
-    if Finfo[Finfo.Position].ID = 0 then
+  if FInfo[FInfo.Position].Selected then
+    if FInfo[FInfo.Position].ID = 0 then
       if not OnlyCurrentDBinfoSelected then
         NoDBInfoNeeded := True;
   if not Isrecord then
     NoDBInfoNeeded := True;
-  if Finfo[Finfo.Position].ID = 0 then
+  if FInfo[FInfo.Position].ID = 0 then
     NoDBInfoNeeded := True;
 
   TW.I.Start('FileExists');
-  IsCurrentFile:=FileExistsSafe(finfo[finfo.Position].FileName);
+  IsCurrentFile:=FileExistsSafe(FInfo[FInfo.Position].FileName);
 
   IsFile := IsCurrentFile;
   if not IsFile then
-    for I := 0 to Finfo.Count - 1 do
-      if FileExistsSafe(Finfo[I].FileName) then
+    for I := 0 to FInfo.Count - 1 do
+      if FileExistsSafe(FInfo[I].FileName) then
       begin
         IsFile := True;
         Break;
@@ -193,18 +193,19 @@ begin
   SetBoolAttr(AScript, '$CanRename', Finfo.IsListItem);
   SetBoolAttr(AScript, '$IsRecord', IsRecord);
   SetBoolAttr(AScript, '$IsFile', IsFile);
+  SetIntAttr(AScript, '$SelectionCount', FInfo.SelectionCount);
   SetBoolAttr(AScript, '$NoDBInfoNeeded', NoDBInfoNeeded);
 
-  SetIntAttr(AScript, '$MenuLength', Finfo.Count);
-  SetIntAttr(AScript, '$Position', Finfo.Position);
+  SetIntAttr(AScript, '$MenuLength', FInfo.Count);
+  SetIntAttr(AScript, '$Position', FInfo.Position);
 
   // if user haven't rights to get FileName its only possible way to know
-  SetBoolAttr(AScript, '$FileExists', FileExistsSafe(Finfo[Finfo.Position].FileName));
+  SetBoolAttr(AScript, '$FileExists', FileExistsSafe(FInfo[FInfo.Position].FileName));
 
   // END Access section
-  SetBoolAttr(aScript,'$IsCurrentFile',IsCurrentFile);
+  SetBoolAttr(aScript, '$IsCurrentFile', IsCurrentFile);
 
-  LoadVariablesNo(finfo.Position);
+  LoadVariablesNo(FInfo.Position);
 
   TW.I.Start('Panels');
   PanelsTexts := TStringList.Create;
@@ -808,7 +809,7 @@ begin
   if not FBusy then
   begin
     FInfo.Assign(Info);
-    if Finfo.Count = 0 then
+    if FInfo.Count = 0 then
       Exit;
     begin
       _popupmenu.Images := DBKernel.ImageList;
@@ -824,11 +825,11 @@ begin
   end;
 end;
 
-procedure TDBPopupMenu.ExecutePlus(Owner : TDBForm; x, y: integer; info: TDBPopupMenuInfo;
+procedure TDBPopupMenu.ExecutePlus(Owner : TDBForm; X, Y: integer; Info: TDBPopupMenuInfo;
   Menus: TArMenuitem);
 var
   I: Integer;
-  _menuitem_nil: Tmenuitem;
+  _menuitem_nil: TMenuItem;
 begin
   FOwner := Owner;
   FPopUpPoint := Point(X, Y);

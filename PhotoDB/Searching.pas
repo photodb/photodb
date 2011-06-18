@@ -794,7 +794,7 @@ begin
     WindowsMenuTickCount := GetTickCount;
 
   HintTimer.Enabled := False;
-  Item:=ItemByPointImage(ElvMain, Point(MousePos.x, MousePos.y));
+  Item := ItemByPointImage(ElvMain, Point(MousePos.x, MousePos.y));
   if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ElvMain.Selection.First;
 
   if (Item <> nil) and (Item.Selected) then
@@ -2014,8 +2014,7 @@ begin
         Result.ListItem := ElvMain.Selection.First;
         Result.Position := ItemIndex(ElvMain.Selection.First);
       end;
-    end
-    else if GetSelectionCount > 1 then
+    end else if GetSelectionCount > 1 then
     begin
       Result.Position := ItemIndex(Item);
     end;
@@ -2530,7 +2529,7 @@ end;
 procedure TSearchForm.Splitter1CanResize(Sender: TObject; var NewSize: Integer;
   var Accept: Boolean);
 begin
-  Accept := (NewSize >= 150) and (NewSize <= 340)
+  Accept := (NewSize >= 180) and (NewSize <= 340)
 end;
 
 procedure TSearchForm.DeleteItemByID(ID: Integer);

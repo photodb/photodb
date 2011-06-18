@@ -25,7 +25,15 @@
       <div class="donateInfo">
         
         <h1><xsl:value-of select="$currentPage/donateCommonInfo" /></h1>
+                
+        <h2><xsl:value-of select="$currentPage/donateInfoCaption" /></h2>
         
+        <p>
+          <xsl:value-of select="$currentPage/donateInfoText" disable-output-escaping="yes" />
+        </p>
+        <div class="clearDiv"></div>
+        
+
         <h2><xsl:value-of select="$currentPage/donateMoneyCaption" /></h2>
         <p>
           <xsl:value-of select="$currentPage/donateMoneyText" />
@@ -47,6 +55,7 @@
                     </xsl:for-each>
                   </div>
               </div><!--paymentInfo-->
+              <div class="clearDiv"></div>
             </xsl:if>
           </xsl:for-each>
         </div>
@@ -59,12 +68,6 @@
           <xsl:value-of select="$currentPage/donateMoneyInfo" />
         </div>
         <div class="clearDiv"></div>
-        
-        <h2><xsl:value-of select="$currentPage/donateInfoCaption" /></h2>
-        
-        <p>
-          <xsl:value-of select="$currentPage/donateInfoText" />
-        </p>
                   
         <h3><xsl:value-of select="$currentPage/thankYouText" /></h3>
           

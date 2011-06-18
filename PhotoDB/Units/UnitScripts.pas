@@ -872,7 +872,7 @@ var
       if (C = '=') or ((C = '!') and (S[I + 1] = '=') and (I <= LS)) or (C = '<') or (C= '>') then
       begin
         if (C = '!') then
-          Result := Copy(S, I + 2, LS - I - 2)
+          Result := Copy(S, I + 2, LS - I - 1)
         else
           Result := Copy(S, I + 1, LS - I);
         Exit;

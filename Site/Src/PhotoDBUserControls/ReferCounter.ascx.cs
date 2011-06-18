@@ -20,7 +20,7 @@ namespace PhotoDBUserControls
                         StatsManager.CheckRefer();
                     }
                     int id = Node.GetCurrent().Id;
-                    StatsManager.MarkView(id, umbraco.library.NiceUrl(id), GeoIPHelper.CountryCode);
+                    StatsManager.MarkView(id, umbraco.library.NiceUrl(id) + Request.Url.Query, GeoIPHelper.CountryCode);
                 }
             }
         }

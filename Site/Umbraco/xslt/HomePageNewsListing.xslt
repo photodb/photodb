@@ -17,7 +17,8 @@
     
 <xsl:template match="/">
 
-<xsl:if test="Plib:IsLoggedIntoBackend()">
+<!-- Plib:IsLoggedIntoBackend() -->
+<xsl:if test="1">
   <div class="home_news">
     <div class="news_block_title">
       <strong><xsl:value-of select="$NewsHolder/homeLatestNewsTitle" /></strong>

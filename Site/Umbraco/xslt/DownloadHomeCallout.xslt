@@ -8,7 +8,7 @@
   xmlns:umbraco.library="urn:umbraco.library" xmlns:Exslt.ExsltCommon="urn:Exslt.ExsltCommon" xmlns:Exslt.ExsltDatesAndTimes="urn:Exslt.ExsltDatesAndTimes" xmlns:Exslt.ExsltMath="urn:Exslt.ExsltMath" xmlns:Exslt.ExsltRegularExpressions="urn:Exslt.ExsltRegularExpressions" xmlns:Exslt.ExsltStrings="urn:Exslt.ExsltStrings" xmlns:Exslt.ExsltSets="urn:Exslt.ExsltSets" 
   exclude-result-prefixes="msxml Plib umbraco.library Exslt.ExsltCommon Exslt.ExsltDatesAndTimes Exslt.ExsltMath Exslt.ExsltRegularExpressions Exslt.ExsltStrings Exslt.ExsltSets ">
 
-<xsl:output method="html" omit-xml-declaration="yes"/>
+<xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
 <xsl:variable name="ReleasesHolderDocTypeID" select="1091" />
@@ -26,7 +26,7 @@
       <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
 
       <div class="download">
-        <a href="{umbraco.library:NiceUrl($DownloadHelper/@id)}?id={./@id}"><img src="/img/download-icon-windows.png" /></a>
+        <a href="{umbraco.library:NiceUrl($DownloadHelper/@id)}?id={./@id}"><img src="/img/download-icon-windows.png" alt="download" /></a>
         <span class="phdInfo"><a href="{$downloadUrl}"><xsl:value-of select="./productName" /></a></span>
         <div class="downloadInfo">
           <h1><a href="{$downloadUrl}" ><xsl:value-of select="$ReleasesHolder/downloadText" /></a></h1>

@@ -261,7 +261,10 @@
     <translate name="Loading info" value="Загрузка информации" />
     <translate name="Loading previews" value="Загрузка предпросмотров" />
     <translate name="Initialization" value="Инициализация" />
-    <translate name="Opening computer" value="Открытие компьютера" />	
+    <translate name="Opening computer" value="Открытие компьютера" />
+    <translate name="Scaning network" value="Сканирование сети" />
+    <translate name="Scaning workgroup" value="Сканирование рабочей группы" />
+    <translate name="Error opening network &quot;%s&quot;!" value="Ошибка открытия сети &quot;%s&quot;!" />
     <translate name="Error opening computer &quot;%s&quot;!" value="Ошибка открытия компьютера &quot;%s&quot;!" />
     <translate name="Loading &quot;My computer&quot; directory" value="Загрузка папки &quot;Мой компьютер&quot;" />
     <translate name="New directory" value="Новая директория" />

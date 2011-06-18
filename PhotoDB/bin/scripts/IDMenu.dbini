@@ -30,22 +30,22 @@ initialization:
  $skd=ShiftKeyDown;
  if ($skd=false) {InVisible;};
  if ($IsFile=false) {InVisible;};
+ if ($SelectionCount!=2) {InVisible;};
+run:
+ 
  $SelCount=0;
  if ($Visible=true) {
- for($i=0;$i<$MenuLength;$i=%$i+1)
- {
-  LoadVariablesSelectedFileNo($i);
-  if ($Selected=true) 
+  for($i=0;$i<$MenuLength;$i=%$i+1)
   {
-   $SelCount=%$SelCount+1;
-   if ($SelCount=1) {$f2=$FileName;};
-   if ($SelCount=2) {$f1=$FileName;};
+   LoadVariablesSelectedFileNo($i);
+   if ($Selected=true) 
+   {
+    $SelCount=%$SelCount+1;
+    if ($SelCount=1) {$f2=$FileName;};
+    if ($SelCount=2) {$f1=$FileName;};
+   };
   };
  };
- LoadVariablesSelectedFileNo($Position);
- if ($SelCount!=2) {InVisible;};
- };
-run:
  
  $cp=Compare2Images($f1,$f2,60);
  $s=IntToStr($cp);

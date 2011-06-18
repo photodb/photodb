@@ -6,9 +6,9 @@
   <head>    
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <umbraco:Macro Alias="MetaTags" runat="server" />
-    <meta name="autor" Content="Veresov Dzmitry, E-Mail: illusdolphin@gmail.com" />
-    <meta name="copyright" Content="Studio 'Illusion Dolphin' (c) 2003-2011" />
-    <meta name="design" Content="Veresova Hanna, E-Mail: miaur@mail.ru" />
+    <meta name="autor" content="Veresov Dzmitry, E-Mail: illusdolphin@gmail.com" />
+    <meta name="copyright" content="Studio 'Illusion Dolphin' (c) 2003-2011" />
+    <meta name="design" content="Veresova Hanna, E-Mail: miaur@mail.ru" />
     <meta name='yandex-verification' content='5b1d44693c3984e1' />
     <meta name="google-site-verification" content="OPNdGcpAUGMflfFDmOXqzhMaN_VddjrdRN0Q_ltZqfo" />
     <link rel="stylesheet" type="text/css" href="/css/reset.css" />

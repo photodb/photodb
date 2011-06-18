@@ -17,7 +17,7 @@ namespace PhotoDBUserControls
             {
                 if (HttpHelper.UserIsCrawler || !String.IsNullOrEmpty(Request["r"]))
                     return;
-                if (Session[SESSION_ID] == null && Request.Url.Query.Length < 2)
+                if (Session[SESSION_ID] == null && Request.Url.AbsolutePath.Length < 2)
                 {
                     Session[SESSION_ID] = DateTime.Now;
                     string userCountryCode = GeoIPHelper.CountryCode;
@@ -34,7 +34,7 @@ namespace PhotoDBUserControls
                                 if (countryCode == userCountryCode)
                                 {
                                     string path = options[0];
-                                    Response.Redirect("/" + path + "?r=0");
+                                    Response.Redirect("/" + path + "/");
                                 }
                             }
                         }

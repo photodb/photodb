@@ -7,7 +7,7 @@
   xmlns:umbraco.library="urn:umbraco.library" xmlns:Exslt.ExsltCommon="urn:Exslt.ExsltCommon" xmlns:Exslt.ExsltDatesAndTimes="urn:Exslt.ExsltDatesAndTimes" xmlns:Exslt.ExsltMath="urn:Exslt.ExsltMath" xmlns:Exslt.ExsltRegularExpressions="urn:Exslt.ExsltRegularExpressions" xmlns:Exslt.ExsltStrings="urn:Exslt.ExsltStrings" xmlns:Exslt.ExsltSets="urn:Exslt.ExsltSets" 
   exclude-result-prefixes="msxml umbraco.library Exslt.ExsltCommon Exslt.ExsltDatesAndTimes Exslt.ExsltMath Exslt.ExsltRegularExpressions Exslt.ExsltStrings Exslt.ExsltSets ">
 
-<xsl:output method="html" omit-xml-declaration="yes"/>
+<xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
 <xsl:variable name="DonatePageDocTypeId" select="1079" />
@@ -37,7 +37,7 @@
         </xsl:for-each>
       </div><!--donateInfo-->
       <a href="{umbraco.library:NiceUrl($DonatePage/@id)}">
-        <img id="donateImg" src="/img/donate.png"/>
+        <img id="donateImg" src="/img/donate.png" alt="donate please"/>
       </a>
     </div><!--donate-->
   </xsl:if>

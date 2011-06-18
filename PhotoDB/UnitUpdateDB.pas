@@ -10,11 +10,11 @@ uses
    UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
    GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
    uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
-   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage;
+   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage, SaveWindowPos;
 
 type
   TUpdateDBForm = class(TDBForm)
-    PopupMenu1: TPopupMenu;
+    PmMain: TPopupMenu;
     Stayontop1: TMenuItem;
     Layered1: TMenuItem;
     Fill1: TMenuItem;
@@ -52,6 +52,7 @@ type
     ImageHourGlass: TImage;
     Timer1: TTimer;
     TwWindowsPos: TTwButton;
+    SwpWindow: TSaveWindowPos;
     procedure ButtonCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Stayontop1Click(Sender: TObject);
@@ -191,6 +192,9 @@ begin
       P[J].B := B;
     end;
   end;
+
+  SwpWindow.Key := RegRoot + 'UpdateDB';
+  SwpWindow.SetPosition;
 
   FImageHourGlass:= TLayeredBitmap.Create;
   FImageHourGlass.LoadFromHIcon(ImageHourGlass.Picture.Icon.Handle, 48, 48);
@@ -452,6 +456,8 @@ end;
 
 procedure TUpdateDBForm.FormDestroy(Sender: TObject);
 begin
+  SwpWindow.SavePosition;
+
   F(FImage);
   F(FImageInv);
   F(FImageHourGlass);
@@ -703,7 +709,7 @@ begin
   P.X := WebLinkOptions.Left;
   P.Y := WebLinkOptions.Top + WebLinkOptions.Height;
   P := ClientToScreen(P);
-  PopupMenu1.Popup(P.X, P.Y);
+  PmMain.Popup(P.X, P.Y);
 end;
 
 procedure TUpdateDBForm.Timer1Timer(Sender: TObject);

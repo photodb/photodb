@@ -33,6 +33,7 @@ type
     function GetCommonComments: string;
     procedure SetValueByIndex(index: Integer;
       const Value: TDBPopupMenuInfoRecord);
+    function GetSelectionCount: Integer;
   protected
     FData: TList;
   public
@@ -68,6 +69,7 @@ type
     property CommonComments: string read GetCommonComments;
     property Position: Integer read GetPosition write SetPosition;
     property ListItem: TEasyItem read FListItem write FListItem;
+    property SelectionCount: Integer read GetSelectionCount;
   end;
 
 implementation
@@ -264,6 +266,16 @@ begin
   for I := 1 to Count - 1 do
     if Self[I].IsCurrent then
       Result := I;
+end;
+
+function TDBPopupMenuInfo.GetSelectionCount: Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := 0 to Count - 1 do
+    if Self[I].Selected then
+      Inc(Result);
 end;
 
 function TDBPopupMenuInfo.GetStatDate: TDateTime;

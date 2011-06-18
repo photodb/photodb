@@ -32,9 +32,10 @@ object SearchForm: TSearchForm
     Left = 180
     Top = 25
     Height = 690
-    MinSize = 135
+    AutoSnap = False
+    MinSize = 180
     OnCanResize = Splitter1CanResize
-    ExplicitHeight = 615
+    ExplicitLeft = 170
   end
   object ImageAllGroups: TImage
     Left = 182

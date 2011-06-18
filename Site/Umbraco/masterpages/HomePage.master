@@ -5,16 +5,17 @@
   
   <div class="home_top">
     
-    <span class="leftColumnHome">
+    <div class="leftColumnHome">
       <umbraco:Macro Alias="DownloadHomeCallout" runat="server" />
       <div class="clearDiv10"></div>
       <umbraco:Macro Alias="DonateHomeCallout" runat="server" />  
-    </span><!--leftColumnHome-->
+    </div><!--leftColumnHome-->
   
-    <span class="pageContent">
+    <div class="pageContent">
       <umbraco:Macro Alias="HomeSlider" runat="server" />
-    </span><!--pageContent-->
+    </div><!--pageContent-->
   
   </div>
+  <div class="clearDiv"></div>
   <umbraco:Macro Alias="HomePageNewsListing" runat="server" />
 </asp:Content>

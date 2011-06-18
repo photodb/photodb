@@ -493,71 +493,71 @@ type
    private
      { Private declarations }
      FBitmapImageList : TBitmapImageList;
-     FWindowID : TGUID;
-     NewFileName : String;
-     NewFileNameGUID : TGUID;
-     TempFolderName : String;
-     ComboPath : string;
-     FormLoadEnd : boolean;
-     FPictureSize : integer;
-     ListView : integer;
-     ElvMain : TEasyListView;
-     aScript : TScript;
-     MainMenuScript : string;
-     RefreshIDList : TList;
-     rdown : boolean;
-     outdrag : boolean;
-     fpopupdown : boolean;
-     SelfDraging : boolean;
-     FDblClicked : Boolean;
-     FSelectedInfo : TSelectedInfo;
-     fStatusProgress : TProgressBar;
-     FFilesInfo : TExplorerFileInfos;
-     fCurrentPath : String;
-     fCurrentTypePath : Integer;
-     LockDrawIcon : boolean;
+     FWindowID: TGUID;
+     NewFileName: string;
+     NewFileNameGUID: TGUID;
+     TempFolderName: string;
+     ComboPath: string;
+     FormLoadEnd: Boolean;
+     FPictureSize: Integer;
+     ListView: Integer;
+     ElvMain: TEasyListView;
+     AScript: TScript;
+     MainMenuScript: string;
+     RefreshIDList: TList;
+     Rdown: Boolean;
+     Outdrag: Boolean;
+     Fpopupdown: Boolean;
+     SelfDraging: Boolean;
+     FDblClicked: Boolean;
+     FSelectedInfo: TSelectedInfo;
+     FStatusProgress: TProgressBar;
+     FFilesInfo: TExplorerFileInfos;
+     FCurrentPath: string;
+     FCurrentTypePath: Integer;
+     LockDrawIcon: Boolean;
 
-     MouseDowned : Boolean;
-     PopupHandled : Boolean;
-     LastMouseItem, ItemWithHint : TEasyItem;
-     LastListViewSelected : TEasyItem;
-     FListDragItems : array of TEasyItem;
+     MouseDowned: Boolean;
+     PopupHandled: Boolean;
+     LastMouseItem, ItemWithHint: TEasyItem;
+     LastListViewSelected: TEasyItem;
+     FListDragItems: array of TEasyItem;
 
-     ItemByMouseDown : Boolean;
-     ItemSelectedByMouseDown : Boolean;
+     ItemByMouseDown: Boolean;
+     ItemSelectedByMouseDown: Boolean;
 
-     NotSetOldPath : boolean;
-     fHistory : TStringsHistoryW;
-     FOldPatch : String;
-     FOldPatchType : Integer;
-     fFilesToDrag : TArStrings;
-     FDBCanDrag : Boolean;
-     fDBCanDragW : Boolean;
-     FDBDragPoint : TPoint;
-     UpdatingList : Boolean;
-     GlobalLock : Boolean;
-     FIsExplorer : Boolean;
+     NotSetOldPath: Boolean;
+     FHistory: TStringsHistoryW;
+     FOldPatch: string;
+     FOldPatchType: Integer;
+     FFilesToDrag: TArStrings;
+     FDBCanDrag: Boolean;
+     FDBCanDragW: Boolean;
+     FDBDragPoint: TPoint;
+     UpdatingList: Boolean;
+     GlobalLock: Boolean;
+     FIsExplorer: Boolean;
      LastShift: TShiftState;
-     LastListViewSelCount : Integer;
-     FReadingFolderNumber : Integer;
-     ItemsDeselected : boolean;
-     IsReallignInfo : boolean;
-     FWasDragAndDrop : boolean;
-     RenameResult : boolean;
-     FChangeHistoryOnChPath : Boolean;
-     WindowsMenuTickCount : Cardinal;
-     UserLinks : array of TWebLink;
-     FPlaces : TPlaceFolderArray;
-     DragFilesPopup : TStrings;
-     LastSelCount : Integer;
-     Lock : boolean;
+     LastListViewSelCount: Integer;
+     FReadingFolderNumber: Integer;
+     ItemsDeselected: Boolean;
+     IsReallignInfo: Boolean;
+     FWasDragAndDrop: Boolean;
+     RenameResult: Boolean;
+     FChangeHistoryOnChPath: Boolean;
+     WindowsMenuTickCount: Cardinal;
+     UserLinks: array of TWebLink;
+     FPlaces: TPlaceFolderArray;
+     DragFilesPopup: TStrings;
+     LastSelCount: Integer;
+     Lock: Boolean;
      FWndOrigin: TWndMethod;
-     SlashHandled:boolean;
-     DefaultSort : integer;
-     DirectoryWatcher : TWachDirectoryClass;
-     FShellTreeView : TShellTreeView;
-     FGoToLastSavedPath : Boolean;
-     FW7TaskBar : ITaskbarList3;
+     SlashHandled: Boolean;
+     DefaultSort: Integer;
+     DirectoryWatcher: TWachDirectoryClass;
+     FShellTreeView: TShellTreeView;
+     FGoToLastSavedPath: Boolean;
+     FW7TaskBar: ITaskbarList3;
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
@@ -584,7 +584,7 @@ type
      function GetListView : TEasyListview; override;
      function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
    public
-     NoLockListView : boolean;
+     NoLockListView: Boolean;
      procedure LoadLastPath;
      Procedure LoadLanguage;
      procedure LoadSizes;
@@ -598,7 +598,7 @@ type
 
   TManagerExplorer = class(TObject)
   private
-    FExplorers : TList;
+    FExplorers: TList;
     FForms: TList;
     FShowPrivate: Boolean;
     FShowEXIF: Boolean;
@@ -631,16 +631,17 @@ var
 
 implementation
 
-uses UnitUpdateDB, ExplorerThreadUnit, uSearchTypes,
-     SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
-     FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
-     uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
-     UnitFileRenamerForm, UnitSizeResizerForm, ImEditor,
-     UnitManageGroups, UnitInternetUpdate, UnitHelp,
-     UnitGetPhotosForm, UnitFormCont,
-     UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
-     UnitSavingTableForm, UnitUpdateDBObject, Loadingresults,
-     uFormSteganography, UnitBigImagesSize;
+uses
+  UnitUpdateDB, ExplorerThreadUnit, uSearchTypes,
+  SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
+  FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
+  uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
+  UnitFileRenamerForm, UnitSizeResizerForm, ImEditor,
+  UnitManageGroups, UnitInternetUpdate, UnitHelp,
+  UnitGetPhotosForm, UnitFormCont,
+  UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
+  UnitSavingTableForm, UnitUpdateDBObject, Loadingresults,
+  uFormSteganography, UnitBigImagesSize;
 
 {$R *.dfm}
 
@@ -699,8 +700,8 @@ end;
 
 procedure VerifyPaste(Explorer : TExplorerForm);
 var
-  Files : TStrings;
-  Effects : Integer;
+  Files: TStrings;
+  Effects: Integer;
 begin
   with Explorer do
   begin
@@ -711,7 +712,10 @@ begin
     finally
       F(Files);
     end;
-    if (FSelectedInfo.FileType=EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType=EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType=EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType=EXPLORER_ITEM_MYCOMPUTER) then
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK)
+      or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP)
+      or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER)
+      or (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) then
       TBPaste.Enabled := False;
   end;
 end;
@@ -784,7 +788,6 @@ begin
   ElvMain.BackGround.AlphaBlend := True;
   ElvMain.BackGround.OffsetTrack := True;
   ElvMain.BackGround.BlendAlpha := 220;
-
 
   ElvMain.HotTrack.Color := clWindowText;
   ElvMain.Font.Color := 0;
@@ -1396,6 +1399,9 @@ begin
   Item := ItemAtPos(ElvMain.ScreenToClient(Point).X, ElvMain.ScreenToClient(Point).Y);
   if PmItemPopup.Tag < 0 then
     Exit;
+  if Item = nil then
+    Item :=  ElvMain.Items[MenuIndexToItemIndex(PmItemPopup.Tag)];
+
   for I := DBitem1.MenuIndex + 1 to N8.MenuIndex - 1 do
     PmItemPopup.Items.Delete(DBitem1.MenuIndex + 1);
 
@@ -1415,7 +1421,7 @@ begin
     end;
   end;
 
-  if fFilesInfo[PmItemPopup.Tag].ID = 0 then
+  if FFilesInfo[PmItemPopup.Tag].ID = 0 then
   begin
     if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
       SendTo1.Visible := True;
@@ -3118,7 +3124,7 @@ var
   I, N: Integer;
 begin
   Result := 0;
-  N := ElvMain.Items[index].ImageIndex;
+  N := ElvMain.Items[Index].ImageIndex;
   for I := 0 to FFilesInfo.Count - 1 do
   begin
     if FFilesInfo[I].ImageIndex = N then
@@ -3367,7 +3373,7 @@ begin
     LastMouseItem := nil;
     Application.HideHint;
     THintManager.Instance.CloseHint;
-    PmItemPopup.Tag := ItemIndexToMenuIndex(Item.index);
+    PmItemPopup.Tag := ItemIndexToMenuIndex(Item.Index);
     PmItemPopup.Popup(ImPreview.Clienttoscreen(MousePos).X, ImPreview.Clienttoscreen(MousePos).Y);
   end else
     PmListPopup.Popup(ImPreview.Clienttoscreen(MousePos).X, ImPreview.Clienttoscreen(MousePos).Y);

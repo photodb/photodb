@@ -196,7 +196,7 @@ span .clearSpan10{
 }
 .footer {
   min-width: 1024px;
-  height: 60px;
+  height: 40px;
   text-align: center;
   vertical-align: bottom;
   margin-top: -15px;
@@ -462,6 +462,12 @@ donate_pay_warning{
   font-size: 14px;
   text-indent: 0;
 }
+.plusone{
+  float:right;
+}
+
+
+
 
 
 
