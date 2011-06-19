@@ -9,9 +9,11 @@ uses  Windows, Messages, SysUtils, Graphics, Classes, FileCtrl, GraphicEX, Forms
 type
   TRAWImage = class(TBitmap)
   protected
-    FWidth : Integer;
-    FHeight : Integer;
+    FWidth: Integer;
+    FHeight: Integer;
     FIsPreview: Boolean;
+    FRealWidth: Integer;
+    FRealHeight: Integer;
     function GetWidth : Integer; override;
     function GetHeight : Integer; override;
   private
@@ -99,8 +101,8 @@ begin
   TagData := nil;
   RawBitmap := TFreeWinBitmap.Create;
   try
-    RawBitmap.LoadU(Filename, RAW_PREVIEW);
-    for I := FIMD_NODATA to FIMD_CUSTOM do
+    RawBitmap.LoadU(Filename, FIF_LOAD_NOPIXELS);
+    for I := FIMD_NODATA to FIMD_EXIF_RAW do
     begin
       FindMetaData := FreeImage_FindFirstMetadata(I, RawBitmap.Dib, TagData);
       try
@@ -127,6 +129,8 @@ begin
     //for crypting - loading private variables width and height
     FWidth := (Source as TRAWImage).FWidth;
     FHeight := (Source as TRAWImage).FHeight;
+    FRealWidth := (Source as TRAWImage).FRealWidth;
+    FRealHeight := (Source as TRAWImage).FRealHeight;
     FIsPreview := (Source as TRAWImage).FIsPreview;
   end;
   inherited Assign(Source);
@@ -137,12 +141,14 @@ begin
   inherited;
   FreeImageInit;
   FIsPreview := False;
+  FRealWidth := 0;
+  FRealHeight := 0;
 end;
 
 function TRAWImage.GetHeight: integer;
 begin
   if FIsPreview then
-    Result := FHeight * 2
+    Result := FRealHeight
   else
     Result := FHeight;
 end;
@@ -150,25 +156,32 @@ end;
 function TRAWImage.GetWidth: integer;
 begin
   if FIsPreview then
-    Result := FWidth * 2
+    Result := FRealWidth
   else
     Result := FWidth;
 end;
 
-procedure TRAWImage.LoadFromFile(const Filename: string);
+procedure TRAWImage.LoadFromFile(const FileName: string);
 var
   RawBitmap : TFreeWinBitmap;
 begin
   RawBitmap := TFreeWinBitmap.Create;
   try
     if FIsPreview then
-      RawBitmap.LoadU(Filename, RAW_PREVIEW)
+      RawBitmap.LoadU(FileName, RAW_PREVIEW)
     else
-      RawBitmap.LoadU(Filename, RAW_DISPLAY);
-    RawBitmap.ConvertTo24Bits;
+      RawBitmap.LoadU(FileName, RAW_DISPLAY);
+    //RawBitmap.ConvertTo24Bits;
     FWidth := RawBitmap.GetWidth;
     FHeight := RawBitmap.GetHeight;
     LoadFromFreeImage(RawBitmap);
+    if FIsPreview then
+    begin
+      RawBitmap.Clear;
+      RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
+      FRealWidth := FreeImage_GetWidth(RawBitmap.Dib);
+      FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
+    end;
   finally
     RawBitmap.Free;
   end;
@@ -201,10 +214,18 @@ begin
       else
         RawBitmap.LoadFromStream(Stream, RAW_DISPLAY);
     end;
-    RawBitmap.ConvertTo24Bits;
-    fWidth := RawBitmap.GetWidth;
-    fHeight := RawBitmap.GetHeight;
+    //RawBitmap.ConvertTo24Bits;
+    FWidth := RawBitmap.GetWidth;
+    FHeight := RawBitmap.GetHeight;
     LoadFromFreeImage(RawBitmap);
+
+    if FIsPreview then
+    begin
+      RawBitmap.Clear;
+      RawBitmap.LoadFromStream(Stream, FIF_LOAD_NOPIXELS);
+      FRealWidth := FreeImage_GetWidth(RawBitmap.Dib);
+      FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
+    end;
   finally
     RawBitmap.Free;
   end;
@@ -238,21 +259,27 @@ var
   W, H : Integer;
 begin
   Result := True;
+  FIsPreview := True;
   RawBitmap := TFreeWinBitmap.Create;
   try
     RawBitmap.LoadU(Filename, RAW_PREVIEW);
     RawThumb := TFreeWinBitmap.Create;
     try
-      fWidth := RawBitmap.GetWidth;
-      fHeight := RawBitmap.GetHeight;
-      W := fWidth;
-      H := fHeight;
+      FWidth := RawBitmap.GetWidth;
+      FHeight := RawBitmap.GetHeight;
+      W := FWidth;
+      H := FHeight;
       ProportionalSize(Width, Height, W, H);
       RawBitmap.MakeThumbnail(W, H, RawThumb);
       LoadFromFreeImage(RawThumb);
     finally
       RawThumb.Free;
     end;
+
+    RawBitmap.Clear;
+    RawBitmap.LoadU(Filename, FIF_LOAD_NOPIXELS);
+    FRealWidth := FreeImage_GetWidth(RawBitmap.Dib);
+    FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
   finally
     RawBitmap.Free;
   end;

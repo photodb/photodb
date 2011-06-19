@@ -22,7 +22,9 @@ type
     DragImageList: TImageList;
     DropFileTargetMain: TDropFileTarget;
     ImageFrameTimer: TTimer;
-    procedure Execute(Sender : TForm; G : TGraphic; W, H : Integer; Info : TDBPopupMenuInfoRecord; Pos : TPoint; CheckFunction : THintCheckFunction);
+    function Execute(Sender: TForm; G: TGraphic; W, H: Integer;
+      Info: TDBPopupMenuInfoRecord; Pos: TPoint;
+      CheckFunction: THintCheckFunction): Boolean;
     procedure FormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
@@ -174,13 +176,16 @@ begin
 
 end;
 
-procedure TImHint.Execute(Sender : TForm; G : TGraphic; W, H : Integer; Info : TDBPopupMenuInfoRecord; Pos : TPoint; CheckFunction : THintCheckFunction);
+function TImHint.Execute(Sender: TForm; G: TGraphic; W, H: Integer;
+  Info: TDBPopupMenuInfoRecord; Pos: TPoint; CheckFunction: THintCheckFunction): Boolean;
 var
-  DisplayWidth, DisplayHeight, WindowHeight, WindowWidth, WindowLeft, WindowTop, TextHeight: Integer;
-  Rect : TRect;
-  R : TRect;
-  InverseHW, IsAnimated : Boolean;
+  DisplayWidth, DisplayHeight, WindowHeight,
+  WindowWidth, WindowLeft, WindowTop, TextHeight: Integer;
+  Rect: TRect;
+  R: TRect;
+  InverseHW, IsAnimated: Boolean;
 begin
+  Result := False;
   try
     FCheckFunction := CheckFunction;
     FOwner := Sender;
@@ -190,6 +195,8 @@ begin
       Exit;
     if not FCheckFunction(Info) then
       Exit;
+
+    Result := True;
 
     ImageFrameTimer.Enabled := False;
     AnimatedBuffer := nil;

@@ -127,7 +127,10 @@ end;
 procedure FreeGroup(var Group: TGroup);
 begin
   if Group.GroupImage <> nil then
+  begin
     Group.GroupImage.Free;
+    Group.GroupImage := nil;
+  end;
 end;
 
 procedure FreeGroups(var Groups : TGroups);

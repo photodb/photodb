@@ -196,8 +196,9 @@ begin
   SwpWindow.Key := RegRoot + 'UpdateDB';
   SwpWindow.SetPosition;
 
-  FImageHourGlass:= TLayeredBitmap.Create;
-  FImageHourGlass.LoadFromHIcon(ImageHourGlass.Picture.Icon.Handle, 48, 48);
+  FImageHourGlass := TLayeredBitmap.Create;
+  AssignGraphic(FImageHourGlass, ImageHourGlass.Picture.Graphic);
+  FImageHourGlass.IsLayered := True;
 
   FProgressMessage := RegisterWindowMessage('SLIDE_SHOW_PROGRESS');
   PostMessage(Handle, FProgressMessage, 0, 0);
@@ -738,7 +739,7 @@ begin
           FImage.DolayeredDraw(16 * (FImagePos + 1), 0, FImagePosStep, Bitmap);
       end else
       begin
-        Bitmap.Canvas.Font.name := 'Times New Roman';
+        Bitmap.Canvas.Font.Name := 'Times New Roman';
         Bitmap.Canvas.Font.Size := 8;
         Bitmap.Canvas.Font.Style := [FsBold];
         Bitmap.Canvas.Brush.Color := ClWhite;

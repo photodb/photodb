@@ -2327,6 +2327,7 @@ begin
   if not MemComments.ReadOnly then
     Exit;
   MemComments.Cursor := CrDefault;
+  MemComments.ReadOnly := False;
   MemComments.Text := '';
   SelectedInfo.CommonComment := '';
   CurrentItemInfo.Comment := SelectedInfo.CommonComment;
@@ -2768,33 +2769,38 @@ begin
       SmallB.PixelFormat := pf24bit;
       SmallB.Canvas.Brush.Color := ClBtnFace;
       Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
-      GroupImageValid := False;
-      if Group.GroupImage <> nil then
-        if not Group.GroupImage.Empty then
-        begin
-          B := TBitmap.Create;
-          try
-            B.PixelFormat := pf24bit;
-            GroupImageValid := True;
+      try
+        GroupImageValid := False;
+        if Group.GroupImage <> nil then
+          if not Group.GroupImage.Empty then
+          begin
+            B := TBitmap.Create;
+            try
+              B.PixelFormat := pf24bit;
+              GroupImageValid := True;
 
-            Size := Max(Group.GroupImage.Width, Group.GroupImage.Height);
-            B.Canvas.Brush.Color := clBtnFace;
-            B.Canvas.Pen.Color := clBtnFace;
-            B.Width := Size;
-            B.Height := Size;
-            B.Canvas.Rectangle(0, 0, Size, Size);
-            B.Canvas.Draw(B.Width div 2 - Group.GroupImage.Width div 2, B.Height div 2 - Group.GroupImage.Height div 2,
-              Group.GroupImage);
+              Size := Max(Group.GroupImage.Width, Group.GroupImage.Height);
+              B.Canvas.Brush.Color := clBtnFace;
+              B.Canvas.Pen.Color := clBtnFace;
+              B.Width := Size;
+              B.Height := Size;
+              B.Canvas.Rectangle(0, 0, Size, Size);
+              B.Canvas.Draw(B.Width div 2 - Group.GroupImage.Width div 2, B.Height div 2 - Group.GroupImage.Height div 2,
+                Group.GroupImage);
 
-            FreeGroup(Group);
-            DoResize(15, 15, B, SmallB);
-            SmallB.Height := 16;
-            SmallB.Width := 16;
-          finally
-            F(B);
-          end;
-        end else
-          CreteDefaultGroupImage;
+              FreeGroup(Group);
+              DoResize(15, 15, B, SmallB);
+              SmallB.Height := 16;
+              SmallB.Width := 16;
+            finally
+              F(B);
+            end;
+          end else
+            CreteDefaultGroupImage;
+
+      finally
+        FreeGroup(Group);
+      end;
       GroupsImageList.Add(SmallB, nil);
     finally
       F(SmallB);

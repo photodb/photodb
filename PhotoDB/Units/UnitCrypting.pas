@@ -233,7 +233,7 @@ begin
     TS.SaveToStream(MS);
     SetLength(X, MS.Size);
     MS.Seek(0, SoFromBeginning);
-    MS.read(GraphicHeader, SizeOf(GraphicHeader));
+    MS.Read(GraphicHeader, SizeOf(GraphicHeader));
     if GraphicHeader.ID = '.PHDBCRT' then
       Exit;
 
@@ -273,8 +273,8 @@ begin
     GraphicHeaderV1.TypeFileNameExtract := 0;
     GraphicHeaderV1.FileNameCRC := 0;
     GraphicHeaderV1.Displacement := 0;
-    MS.write(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
-    MS.write(Pointer(X)^, Length(X));
+    MS.Write(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
+    MS.Write(Pointer(X)^, Length(X));
     SetLength(Result, MS.Size);
     MS.Seek(0, SoFromBeginning);
     MS.ReadBuffer(Pointer(Result)^, MS.Size);

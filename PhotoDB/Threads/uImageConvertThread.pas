@@ -278,8 +278,8 @@ const
             MODE_PREVIEW:
               //do nothing - preview is updated automatically
           end;
-          if FProcessingParams.PreviewOptions.GeneratePreview then
-            UpdatePreviewWindow;
+
+          UpdatePreviewWindow;
 
           if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) and (GetLastError <> 87) then
             raise Exception.Create('Error code = ' + IntToStr(GetLastError));

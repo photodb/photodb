@@ -219,7 +219,8 @@ var
   ImHint : TImHint;
 begin
   Application.CreateForm(TImHint, ImHint);
-  ImHint.Execute(FOwner, Graphic, FOriginalWidth, FOriginalHeight, FInfo.Copy, FPoint, FHintCheckProc);
+  if not ImHint.Execute(FOwner, Graphic, FOriginalWidth, FOriginalHeight, FInfo.Copy, FPoint, FHintCheckProc) then
+    F(Graphic);
   Graphic := nil;
 end;
 
@@ -312,3 +313,4 @@ finalization
   THintManager.Instance.Free;
 
 end.
+

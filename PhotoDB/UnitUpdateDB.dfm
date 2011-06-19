@@ -1,7 +1,7 @@
 object UpdateDBForm: TUpdateDBForm
   Tag = 1
-  Left = 188
-  Top = 171
+  Left = 240
+  Top = 216
   AlphaBlend = True
   AlphaBlendValue = 200
   BorderIcons = [biSystemMenu, biMinimize]
@@ -20,6 +20,7 @@ object UpdateDBForm: TUpdateDBForm
   KeyPreview = True
   OldCreateOrder = False
   PopupMenu = PmMain
+  Position = poDesigned
   Scaled = False
   ScreenSnap = True
   OnClose = FormClose

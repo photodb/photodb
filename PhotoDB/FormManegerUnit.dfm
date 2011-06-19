@@ -1,6 +1,6 @@
 object FormManager: TFormManager
-  Left = 248
-  Top = 180
+  Left = 253
+  Top = 243
   Caption = 'FormManager'
   ClientHeight = 146
   ClientWidth = 229
@@ -11,6 +11,7 @@ object FormManager: TFormManager
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesigned
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13

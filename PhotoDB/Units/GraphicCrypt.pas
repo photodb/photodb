@@ -293,7 +293,7 @@ begin
       Exit;
 
     try
-      FS.read(GraphicHeader, SizeOf(GraphicHeader));
+      FS.Read(GraphicHeader, SizeOf(GraphicHeader));
       if GraphicHeader.ID = PhotoDBFileHeaderID then
         Exit;
 
