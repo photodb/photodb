@@ -103,7 +103,7 @@ procedure TDBPopupMenu.AddDBContMenu(Form: TDBForm; Item: TMenuItem;
   Info: TDBPopupMenuInfo);
 var
   I: Integer;
-  Isrecord, IsFile, IsCurrentFile: Boolean;
+  FE, Isrecord, IsFile, IsCurrentFile: Boolean;
   PanelsTexts: TStrings;
   MenuGroups: TGroups;
   GroupsList: TStringList;
@@ -174,7 +174,8 @@ begin
     NoDBInfoNeeded := True;
 
   TW.I.Start('FileExists');
-  IsCurrentFile:=FileExistsSafe(FInfo[FInfo.Position].FileName);
+  FE := (FInfo[FInfo.Position].Exists = 1) or FileExistsSafe(FInfo[FInfo.Position].FileName);
+  IsCurrentFile := FE;
 
   IsFile := IsCurrentFile;
   if not IsFile then
@@ -200,7 +201,7 @@ begin
   SetIntAttr(AScript, '$Position', FInfo.Position);
 
   // if user haven't rights to get FileName its only possible way to know
-  SetBoolAttr(AScript, '$FileExists', FileExistsSafe(FInfo[FInfo.Position].FileName));
+  SetBoolAttr(AScript, '$FileExists', FE);
 
   // END Access section
   SetBoolAttr(aScript, '$IsCurrentFile', IsCurrentFile);

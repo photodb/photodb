@@ -356,7 +356,7 @@ begin
      for I := 1 to 4 do
        FImages[L].FileDates[I] := FolderImages.FileDates[I];
      for I := 1 to 4 do
-       FImages[L].Images[i]:=nil;
+       FImages[L].Images[I] := nil;
      for I := 1 to 4 do
      begin
        if FolderImages.Images[I] = nil then
@@ -398,6 +398,7 @@ begin
   Info.Loaded := False;
   Info.Include := Include;
   Info.IsBigImage := False;
+  Info.Exists := 1;
   Infos.Add(Info);
 end;
 

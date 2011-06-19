@@ -295,7 +295,7 @@ type
     Procedure DeleteFiles(ToRecycle : Boolean);
     Procedure DirectoryChanged(Sender : TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
     Procedure LoadInfoAboutFiles(Info : TExplorerFileInfos);
-    Procedure AddInfoAboutFile(Info : TExplorerFileInfos);
+    procedure AddInfoAboutFile(Info : TExplorerFileInfos);
     function FileNeededW(FileSID : TGUID) : Boolean;  //для больших имаг
     procedure AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
     function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
@@ -424,7 +424,7 @@ type
     procedure CloseWindow(Sender: TObject);
     procedure CloseTimerTimer(Sender: TObject);
     function ExplorerType : boolean;
-    function ShowPrivate : boolean;
+    function ShowPrivate: Boolean;
     procedure ReallignToolInfo;
     procedure FileName1Click(Sender: TObject);
     procedure SetFilter1Click(Sender: TObject);
@@ -516,16 +516,13 @@ type
      FCurrentPath: string;
      FCurrentTypePath: Integer;
      LockDrawIcon: Boolean;
-
      MouseDowned: Boolean;
      PopupHandled: Boolean;
      LastMouseItem, ItemWithHint: TEasyItem;
      LastListViewSelected: TEasyItem;
      FListDragItems: array of TEasyItem;
-
      ItemByMouseDown: Boolean;
      ItemSelectedByMouseDown: Boolean;
-
      NotSetOldPath: Boolean;
      FHistory: TStringsHistoryW;
      FOldPatch: string;
@@ -570,7 +567,7 @@ type
      function GetSecondStepHelp: string;
      function GetViewInfo: TExplorerViewInfo;
      property SecondStepHelp : string read GetSecondStepHelp;
-     function GetPathDescription(Path: string): string;
+     function GetPathDescription(Path: string; FileType: Integer): string;
      procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
    protected
      procedure ComboWNDProc(var Message: TMessage);
@@ -677,7 +674,7 @@ begin
     Result := True;
 end;
 
-function TExplorerForm.GetPathDescription(Path: string): string;
+function TExplorerForm.GetPathDescription(Path: string; FileType: Integer): string;
 begin
   if ((Length(Path) = 3) or (Length(Path) = 2)) and (Path[2] = ':') then
      Result := Format(L('%s drive'), [GetCDVolumeLabel(Path[1])])
@@ -685,7 +682,7 @@ begin
     Result := L('Computer')
   else if IsNetworkShare(Path) then
     Result := L('Shared folder')
-  else if FileExists(Path) then
+  else if (FileType = EXPLORER_ITEM_FILE) or (FileType = EXPLORER_ITEM_IMAGE) then
     Result := GetFileDescription(Path, L('Unknown file type'))
   else
     Result := L('Directory');
@@ -1679,9 +1676,6 @@ begin
   if not IsGraphicFile(FFilesInfo[index].FileName) then
     Exit;
 
-  if not FileExistsSafe(FFilesInfo[index].FileName) then
-    Exit;
-
   HintTimer.Enabled := False;
 
   MenuInfo := FFilesInfo[index].Copy;
@@ -1786,7 +1780,7 @@ begin
       ItemWithHint := LastMouseItem;
     end;
     Index := ItemIndexToMenuIndex(LastMouseItem.Index);
-    if fFilesInfo.Count=0 then
+    if FFilesInfo.Count = 0 then
       Exit;
 
     ElvMain.ShowHint := False;
@@ -1896,6 +1890,7 @@ begin
     begin
       MenuRecord := FFilesInfo[ItemIndex].Copy;
       MenuRecord.Selected := ElvMain.Items[I].Selected;
+      MenuRecord.Exists := 1;
       Result.Add(MenuRecord);
       if Item <> nil then
         if (Item.Selected) and (ElvMain.Items[I] = Item) then
@@ -5927,13 +5922,13 @@ begin
           Exit;
         if index > FFilesInfo.Count - 1 then
           Exit;
-        FSelectedInfo.FileType := FFilesInfo[index].FileType;
+        FSelectedInfo.FileType := FFilesInfo[Index].FileType;
         FileName := FFilesInfo[index].FileName;
         FSelectedInfo.FileName := FileName;
         FileSID := FFilesInfo[index].SID;
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
-          FSelectedInfo.FileTypeW := GetPathDescription(FileName);
+          FSelectedInfo.FileTypeW := GetPathDescription(FileName, FSelectedInfo.FileType);
         if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
           FSelectedInfo.FileTypeW := L('Network');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) then
@@ -5943,7 +5938,7 @@ begin
         if (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
           FSelectedInfo.FileTypeW := L('Shared folder');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
-          FSelectedInfo.Size := GetFileSizeByName(FileName);
+          FSelectedInfo.Size := FFilesInfo[Index].FileSize;
       end else
       begin
         FileName := GetCurrentPath;
@@ -5964,7 +5959,7 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) then
           NameLabel.Caption := ExtractFileName(FileName);
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
-          FSelectedInfo.FileTypeW := GetPathDescription(FileName);
+          FSelectedInfo.FileTypeW := GetPathDescription(FileName, FSelectedInfo.FileType);
         if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
           FSelectedInfo.FileTypeW := L('Network');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) then

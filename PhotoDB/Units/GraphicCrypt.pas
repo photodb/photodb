@@ -246,9 +246,6 @@ var
 begin
   FS := nil;
 
-  if not FileExistsEx(FileName) then
-    Exit;
-
   for I := 1 to 20 do
   begin
     try

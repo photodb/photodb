@@ -269,7 +269,7 @@ type
     destructor Destroy; override;
     procedure ReadFromDS(DS: TDataSet);
     procedure WriteToDS(DS: TDataSet);
-    function Copy : TDBPopupMenuInfoRecord; virtual;
+    function Copy: TDBPopupMenuInfoRecord; virtual;
     function FileExists: Boolean;
     procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
     property InnerImage: Boolean read GetInnerImage;
@@ -357,6 +357,7 @@ begin
   Width := Item.Width;
   Height := Item.Height;
   IsCurrent := False;
+  Exists := Item.Exists;
   if MoveImage then
   begin
     F(Image);
