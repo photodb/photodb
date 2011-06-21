@@ -68,7 +68,6 @@ procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer
 procedure DrawShadowToImage(Dest32, Src: TBitmap; Transparenty: Byte = 0);
 procedure DrawRoundGradientVert(Dest32: TBitmap; Rect: TRect; ColorFrom, ColorTo, BorderColor: TColor;
   RoundRect: Integer; TransparentValue: Byte = 220);
-procedure InverseTransparenty(Bitmap32: TBitmap);
 
 implementation
 
@@ -926,20 +925,6 @@ begin
       pD[XD].B := pS[J].B;
       pD[XD].L := NewTransparent;
     end;
-  end;
-end;
-
-procedure InverseTransparenty(Bitmap32: TBitmap);
-var
-  I, J : Integer;
-  P : PARGB32;
-begin
-  Bitmap32.PixelFormat := pf32Bit;
-  for I := 0 to Bitmap32.Height - 1 do
-  begin
-    P := Bitmap32.ScanLine[I];
-    for J := 0 to Bitmap32.Width - 1 do
-      P[J].L := 255 - P[J].L;
   end;
 end;
 

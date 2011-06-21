@@ -466,7 +466,6 @@ begin
       LBitmap := TLayeredBitmap.Create;
       try
         LBitmap.LoadFromHIcon(TIcon(Graphic).Handle, TIcon(Graphic).Height, TIcon(Graphic).Width);
-        InverseTransparenty(LBitmap);
         DrawImageEx32(ResultImage, LBitmap, N, N);
       finally
         F(LBitmap);
@@ -591,7 +590,6 @@ begin
         LBitmap := TLayeredBitmap.Create;
         try
           LBitmap.LoadFromHIcon(TIcon(Graphic).Handle, TIcon(Graphic).Height, TIcon(Graphic).Width);
-          InverseTransparenty(LBitmap);
           DrawImageEx32(TempImage, LBitmap, N, N);
         finally
           LBitmap.Free;
