@@ -42,7 +42,8 @@
   </scope>
   <scope name="Setup">
     <translate name="Welcome to the Photo Database 2.3" value="Добро пожаловать в Photo Database 2.3" />
-    <translate name="Friends" value="Друзья" />
+	<translate name="Newer version (%s) is already installed! Do you want to install old version (%s)?" value="Более новая версия (%s) уже установлена! Вы действительно хотите установить старую версию (%s)?" />
+	<translate name="Friends" value="Друзья" />
     <translate name="Family" value="Семья" />
     <translate name="Update" value="Обновление" />
     <translate name="Program already started!" value="Программа уже запущена!" />
@@ -1201,6 +1202,7 @@
   </scope>
   <scope name="RotateTool">
 	<translate name="Сhoose action" value="Выберите действие" />
+	<translate name="Auto (EXIF)" value="Автоматически (EXIF)" />
 	<translate name="Rotate left" value="Повернуть влево" />
 	<translate name="Rotate right" value="Повернуть вправо" />
 	<translate name="Rotate on 180 degree" value="Повернуть на 180°" />

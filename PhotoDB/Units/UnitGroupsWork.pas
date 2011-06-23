@@ -108,14 +108,6 @@ implementation
 uses
   CommonDBSupport, UnitDBkernel, UnitFileCheckerDB;
 
-function FileExistsW(FileName: string): Boolean;
-begin
-  if FileName <> '' then
-    if FileName[1] = '"' then
-      FileName := Copy(FileName, 2, Length(FileName) - 2);
-  Result := FileExistsSafe(FileName);
-end;
-
 function GetNilGroup: TGroup;
 begin
   Result.GroupName := '';

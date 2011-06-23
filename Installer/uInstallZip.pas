@@ -7,21 +7,24 @@ interface
 uses
   Zlib, uInstallTypes, uMemory, Classes, SysUtils, Math;
 
-function AddFileToStream(Stream : TStream; FileName : string) : Boolean;
-function ExtractStreamFromStorage(Src : TStream; Dest : TStream; FileName : string; CallBack : TExtractFileCallBack) : Boolean;
-function ExtractFileFromStorage(Src : TStream; FileName : string; CallBack : TExtractFileCallBack) : Boolean;
-function AddDirectoryToStream(Src : TStream; DirectoryName : string) : Boolean;
-function ExtractDirectoryFromStorage(Src : TStream; DirectoryPath : string; CallBack : TExtractFileCallBack) : Boolean;
-procedure FillFileList(Src : TStream; FileList : TStrings; out OriginalFilesSize : Int64);
-function ReadFileContent(Src : TStream; FileName : string) : string;
-function ExtractFileEntry(Src : TStream; FileName : string; var Entry : TZipEntryHeader) : Boolean;
-function GetObjectSize(Src : TStream; FileName : string) : Int64;
+function AddStringToStream(Stream: TStream; S: string; FileName: string): Boolean;
+function AddFileToStream(Stream: TStream; FileName: string): Boolean;
+function AddStreamToStream(Stream: TStream; StreamToAdd: TStream; FileName: string): Boolean;
+function ExtractStreamFromStorage(Src: TStream; Dest: TStream; FileName: string;
+  CallBack: TExtractFileCallBack): Boolean;
+function ExtractFileFromStorage(Src: TStream; FileName: string; CallBack: TExtractFileCallBack): Boolean;
+function AddDirectoryToStream(Src: TStream; DirectoryName: string): Boolean;
+function ExtractDirectoryFromStorage(Src: TStream; DirectoryPath: string; CallBack: TExtractFileCallBack): Boolean;
+procedure FillFileList(Src: TStream; FileList: TStrings; out OriginalFilesSize: Int64);
+function ReadFileContent(Src: TStream; FileName: string): string;
+function ExtractFileEntry(Src: TStream; FileName: string; var Entry: TZipEntryHeader): Boolean;
+function GetObjectSize(Src: TStream; FileName: string): Int64;
 
 implementation
 
-procedure FillFileName(var Header : TZipEntryHeader; FileName : string);
+procedure FillFileName(var Header: TZipEntryHeader; FileName: string);
 var
-  I : Integer;
+  I: Integer;
 begin
   FileName := ExtractFileName(FileName);
   if Length(FileName) > MaxFileNameLength then
@@ -32,57 +35,83 @@ begin
     Header.FileName[I] := FileName[I + 1];
 end;
 
-function ExtractFileNameFromHeader(Header : TZipEntryHeader) : string;
+function ExtractFileNameFromHeader(Header: TZipEntryHeader): string;
 var
-  I : Integer;
+  I: Integer;
 begin
   SetLength(Result, Header.FileNameLength);
   for I := 0 to Header.FileNameLength - 1 do
     Result[I + 1] := Header.FileName[I];
 end;
 
-function AddFileToStream(Stream : TStream; FileName : string) : Boolean;
+function AddStringToStream(Stream: TStream; S: string; FileName: string): Boolean;
 var
-  FS : TFileStream;
-  MS : TMemoryStream;
-  Compression : TCompressionStream;
-  EntryHeader : TZipEntryHeader;
+  MS: TMemoryStream;
+  SW: TStreamWriter;
 begin
+  MS := TMemoryStream.Create;
+  try
+    SW := TStreamWriter.Create(MS, TEncoding.UTF8);
+    try
+      SW.Write(S);
+      MS.Seek(0, soFromBeginning);
+      Result := AddStreamToStream(Stream, MS, FileName);
+    finally
+      F(SW);
+    end;
+  finally
+    F(MS);
+  end;
+end;
+
+function AddStreamToStream(Stream: TStream; StreamToAdd: TStream; FileName: string): Boolean;
+var
+  MS: TMemoryStream;
+  Compression: TCompressionStream;
+  EntryHeader: TZipEntryHeader;
+begin
+  MS := TMemoryStream.Create;
+  try
+    Compression := TCompressionStream.Create(clMax, MS);
+    try
+      StreamToAdd.Seek(0, soFromBeginning);
+      Compression.CopyFrom(StreamToAdd, StreamToAdd.Size);
+      F(Compression);
+
+      FillChar(EntryHeader, SizeOf(EntryHeader), #0);
+      FillFileName(EntryHeader, FileName);
+      EntryHeader.FileOriginalSize := StreamToAdd.Size;
+      EntryHeader.FileCompressedSize := MS.Size;
+      EntryHeader.IsDirectory := False;
+      EntryHeader.ChildsCount := 0;
+      Stream.Write(EntryHeader, SizeOf(EntryHeader));
+
+      MS.Seek(0, soFromBeginning);
+      Stream.CopyFrom(MS, MS.Size);
+    finally
+      F(Compression);
+    end;
+  finally
+    F(MS);
+  end;
   Result := True;
+end;
+
+function AddFileToStream(Stream: TStream; FileName: string): Boolean;
+var
+  FS: TFileStream;
+begin
   FS := TFileStream.Create(FileName, fmOpenRead);
   try
-    MS := TMemoryStream.Create;
-    try
-      Compression := TCompressionStream.Create(clMax, MS);
-      try
-        FS.Seek(0, soFromBeginning);
-        Compression.CopyFrom(FS, FS.Size);
-        F(Compression);
-
-        FillChar(EntryHeader, SizeOf(EntryHeader), #0);
-        FillFileName(EntryHeader, FileName);
-        EntryHeader.FileOriginalSize := FS.Size;
-        EntryHeader.FileCompressedSize := MS.Size;
-        EntryHeader.IsDirectory := False;
-        EntryHeader.ChildsCount := 0;
-        Stream.Write(EntryHeader, SizeOf(EntryHeader));
-
-        MS.Seek(0, soFromBeginning);
-        Stream.CopyFrom(MS, MS.Size);
-      finally
-        F(Compression);
-      end;
-    finally
-      F(MS);
-    end;
+    Result := AddStreamToStream(Stream, FS, FileName);
   finally
     F(FS);
   end;
 end;
 
-function ExtractFileFromStorage(Src : TStream; FileName : string; CallBack : TExtractFileCallBack) : Boolean;
+function ExtractFileFromStorage(Src: TStream; FileName: string; CallBack: TExtractFileCallBack): Boolean;
 var
-  FS : TFileStream;
+  FS: TFileStream;
 begin
   Result := True;
   FS := TFileStream.Create(FileName, fmCreate);
@@ -93,15 +122,16 @@ begin
   end;
 end;
 
-function ExtractStreamFromStorage(Src : TStream; Dest : TStream; FileName : string; CallBack : TExtractFileCallBack) : Boolean;
+function ExtractStreamFromStorage(Src: TStream; Dest: TStream; FileName: string;
+  CallBack: TExtractFileCallBack): Boolean;
 var
-  EntryHeader : TZipEntryHeader;
-  Decompression : TDecompressionStream;
-  SizeToCopy, CopyedSize : Integer;
-  Terminated : Boolean;
+  EntryHeader: TZipEntryHeader;
+  Decompression: TDecompressionStream;
+  SizeToCopy, CopyedSize: Integer;
+  Terminated: Boolean;
 begin
   Result := False;
-  Src.Seek(0, soFromBeginning);
+  Src.Seek(0, SoFromBeginning);
   CopyedSize := 0;
   Terminated := False;
 
@@ -136,13 +166,13 @@ begin
   end;
 end;
 
-function AddDirectoryToStream(Src : TStream; DirectoryName : string) : Boolean;
+function AddDirectoryToStream(Src: TStream; DirectoryName: string): Boolean;
 var
-  Files : TStrings;
-  I, Found : Integer;
+  Files: TStrings;
+  I, Found: Integer;
   SearchRec: TSearchRec;
-  EntryHeader : TZipEntryHeader;
-  TotalSize : Int64;
+  EntryHeader: TZipEntryHeader;
+  TotalSize: Int64;
 begin
   Result := True;
   Files := TStringList.Create;
@@ -178,16 +208,15 @@ begin
   end;
 end;
 
-function ExtractDirectoryFromStorage(Src : TStream; DirectoryPath : string; CallBack : TExtractFileCallBack) : Boolean;
+function ExtractDirectoryFromStorage(Src: TStream; DirectoryPath: string; CallBack: TExtractFileCallBack): Boolean;
 var
-  I : Integer;
-  EntryHeader : TZipEntryHeader;
-  Decompression : TDecompressionStream;
-  Dest : TFileStream;
-  DirectoryName : string;
-  FDoneBytes,
-  FTotalBytes : Int64;
-  Terminate : Boolean;
+  I: Integer;
+  EntryHeader: TZipEntryHeader;
+  Decompression: TDecompressionStream;
+  Dest: TFileStream;
+  DirectoryName: string;
+  FDoneBytes, FTotalBytes: Int64;
+  Terminate: Boolean;
 begin
   Result := False;
   Terminate := False;
@@ -235,9 +264,9 @@ begin
   end;
 end;
 
-procedure FillFileList(Src : TStream; FileList : TStrings; out OriginalFilesSize : Int64);
+procedure FillFileList(Src: TStream; FileList: TStrings; out OriginalFilesSize: Int64);
 var
-  EntryHeader : TZipEntryHeader;
+  EntryHeader: TZipEntryHeader;
 begin
   OriginalFilesSize := 0;
   Src.Seek(0, soFromBeginning);
@@ -252,10 +281,10 @@ begin
   end;
 end;
 
-function ReadFileContent(Src : TStream; FileName : string) : string;
+function ReadFileContent(Src: TStream; FileName: string): string;
 var
-  MS : TMemoryStream;
-  SR : TStreamReader;
+  MS: TMemoryStream;
+  SR: TStreamReader;
 begin
   Result := '';
   MS := TMemoryStream.Create;
@@ -278,7 +307,7 @@ begin
   end;
 end;
 
-function ExtractFileEntry(Src : TStream; FileName : string; var Entry : TZipEntryHeader) : Boolean;
+function ExtractFileEntry(Src: TStream; FileName: string; var Entry: TZipEntryHeader): Boolean;
 begin
   Result := False;
   Src.Seek(0, soFromBeginning);
@@ -293,10 +322,10 @@ begin
   end;
 end;
 
-function GetObjectSize(Src : TStream; FileName : string) : Int64;
+function GetObjectSize(Src: TStream; FileName: string): Int64;
 var
-  EntryHeader : TZipEntryHeader;
-  I : Integer;
+  EntryHeader: TZipEntryHeader;
+  I: Integer;
 begin
   Result := 0;
   Src.Seek(0, soFromBeginning);

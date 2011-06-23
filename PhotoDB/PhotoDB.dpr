@@ -331,7 +331,8 @@ uses
   uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame},
   uIME in 'Units\uIME.pas',
   uGetPhotosThread in 'Threads\uGetPhotosThread.pas',
-  uSearchHelpAddPhotosThread in 'Threads\uSearchHelpAddPhotosThread.pas';
+  uSearchHelpAddPhotosThread in 'Threads\uSearchHelpAddPhotosThread.pas',
+  uExifUtils in 'Units\uExifUtils.pas';
 
 {$R *.res}
 

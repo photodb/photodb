@@ -3,7 +3,7 @@ unit uEditorTypes;
 interface
 
 uses
-  Windows, Classes, Graphics, Math, uDBForm;
+  Windows, Classes, Graphics, Math, uDBForm, CCR.Exif;
 
 type
   TSetPointerToNewImage = procedure(Image: TBitmap) of object;
@@ -33,14 +33,18 @@ type
 type
   TImageEditorForm = class(TDBForm)
   protected
-    function GetZoom : Extended; virtual; abstract;
+    function GetZoom: Extended; virtual; abstract;
+    function GetFileName: string; virtual; abstract;
+    function GetExifData: TExifData; virtual; abstract;
   public
     Transparency: Extended;
     VirtualBrushCursor: Boolean;
     VBrush: TVBrushType;
-    property Zoom : Extended read GetZoom;
+    property Zoom: Extended read GetZoom;
     procedure MakeImage(ResizedWindow: Boolean = False); virtual; abstract;
     procedure DoPaint; virtual; abstract;
+    property CurrentFileName: string read GetFileName;
+    property ExifData: TExifData read GetExifData;
   end;
 
 function NormalizeRect(R : TRect) : TRect;

@@ -51,7 +51,7 @@ inherited FrAdvancedOptions: TFrAdvancedOptions
   object EdPath: TEdit
     Left = 3
     Top = 300
-    Width = 394
+    Width = 400
     Height = 21
     TabOrder = 1
     Text = 'EdPath'

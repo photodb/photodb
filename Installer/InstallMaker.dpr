@@ -12,7 +12,9 @@ uses
   uInstallScope in 'uInstallScope.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uInstallZip in 'uInstallZip.pas',
-  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas';
+  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
+  uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
+  uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas';
 
 {$R ..\PhotoDB\Resources\PhotoDBInstall.res}
 
@@ -94,6 +96,7 @@ begin
         if DiskObject is TDirectoryObject then
           AddDirectory('..\PhotoDB\bin\' + DiskObject.Name);
       end;
+      AddStringToStream(FS, ReleaseToString(GetExeVersion(IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + '..\PhotoDB\bin\PhotoDB.exe')), 'VERSION.INFO');
     finally
       F(FS);
     end;

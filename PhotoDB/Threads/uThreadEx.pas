@@ -17,6 +17,7 @@ type
     FParentThread : TThreadEx;
     FSync : TCriticalSection;
     FSyncSuccessful : Boolean;
+    FPriority: TThreadPriority;
     function GetIsTerminated: Boolean;
     procedure SetTerminated(const Value: Boolean);
     procedure TestMethod;
@@ -78,11 +79,19 @@ begin
 end;
 
 procedure TThreadEx.CheckThreadPriority;
+var
+  NewPriority: TThreadPriority;
 begin
   if FThreadForm.Active then
-    Priority := tpLowest
+    NewPriority := tpLowest
   else
-    Priority := tpIdle;
+    NewPriority := tpIdle;
+
+  if FPriority <> NewPriority then
+  begin
+    FPriority := NewPriority;
+    Priority := NewPriority;
+  end;
 end;
 
 constructor TThreadEx.Create(AOwnerForm: TThreadForm; AState : TGUID);
@@ -94,6 +103,7 @@ begin
   FState := AState;
   FSubThreads := TList.Create;
   FParentThread := nil;
+  FPriority := tpNormal;
 end;
 
 destructor TThreadEx.Destroy;

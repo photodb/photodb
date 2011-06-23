@@ -1703,7 +1703,7 @@ procedure TExplorerForm.ListView1MouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
   Pos, MousePos : TPoint;
-  I, Index : Integer;
+  I : Integer;
   LButtonState, RButtonState : SmallInt;
   Item: TEasyItem;
   SpotX, SpotY : Integer;
@@ -1779,12 +1779,6 @@ begin
         HintTimer.Enabled := True;
       ItemWithHint := LastMouseItem;
     end;
-    Index := ItemIndexToMenuIndex(LastMouseItem.Index);
-    if FFilesInfo.Count = 0 then
-      Exit;
-
-    ElvMain.ShowHint := False;
-    ElvMain.Hint := FFilesInfo[Index].Comment;
   end;
 end;
 
@@ -7415,6 +7409,8 @@ begin
     SelectedVisible:=IsSelectedVisible;
     if FPictureSize > ListViewMinThumbnailSize then
       FPictureSize := FPictureSize - 10;
+    if FPictureSize < ListViewMinThumbnailSize then
+      FPictureSize := ListViewMinThumbnailSize;
     LoadSizes;
     BigImagesTimer.Enabled := False;
     BigImagesTimer.Enabled := True;

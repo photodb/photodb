@@ -8,9 +8,11 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
   uInstallTypes, uInstallUtils, uMemory, uConstants, uRuntime,
-  uVistaFuncs, uInstallScope, Registry, uShellUtils, uSteps,
+  uVistaFuncs, uInstallScope, Registry, uShellUtils, uSteps, uSysUtils,
+  uDBBaseTypes,
 {$IFDEF INSTALL}
   uInstallSteps,
+  uInstallRuntime,
 {$ENDIF}
 {$IFDEF UNINSTALL}
   uUninstallSteps,
@@ -64,7 +66,21 @@ begin
 end;
 
 procedure TFrmMain.BtnInstallClick(Sender: TObject);
+{$IFDEF INSTALL}
+var
+  InstalledVersion: TRelease;
+{$ENDIF}
 begin
+{$IFDEF INSTALL}
+  if IsApplicationInstalled then
+  begin
+    InstalledVersion := GetExeVersion(GetInstalledFileName);
+    if IsNewRelease(InstallVersion, InstalledVersion) then
+      if ID_Yes <> TaskDialogEx(Handle, Format(L('Newer version (%s) is already installed! Do you want to install old version (%s)?'), [ReleaseToString(InstalledVersion), ReleaseToString(InstallVersion)]), L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING, False) then
+        Exit;
+  end;
+{$ENDIF}
+
   FInstallType.PrepaireInstall;
   Application.CreateForm(TFrmProgress, FrmProgress);
   Hide;
@@ -133,7 +149,7 @@ begin
 {$IFDEF INSTALL}
     S := L('PhotoDB 2.3 Setup');
     if IsApplicationInstalled then
-      S := S + ' (' + L('Update') + ')';
+      S := S + ' (' + L('Update') + ' ' + ReleaseToString(InstallVersion) + ')';
     Caption := S;
 {$ENDIF}
 {$IFDEF UNINSTALL}

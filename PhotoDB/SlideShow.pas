@@ -15,7 +15,8 @@ uses
   uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
-  uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign;
+  uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
+  uExifUtils;
 
 type
   TRotatingImageInfo = record

@@ -42,7 +42,6 @@ const
   wininet = 'wininet.dll';
 
 function DownloadFile(const Url: string; Encoding: TEncoding): string;
-function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
 function InternetTimeToDateTime(const Value: string) : TDateTime;
 function EncodeBase64Url(inputData: string): string;
 
@@ -78,29 +77,6 @@ begin
     S := StrToIntDef(SS, 0);
     Result := EncodeTime(H, S, 0, 0) + EncodeDate(Y, M, D);
   end;
-end;
-
-function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
-begin
-  Result := False;
-  if CurrentRelease.Version < NewRelease.Version then
-    Result := True
-  else if CurrentRelease.Version = NewRelease.Version then
-  begin
-    if CurrentRelease.Major < NewRelease.Major then
-      Result := True
-    else if CurrentRelease.Major = NewRelease.Major then
-    begin
-      if CurrentRelease.Minor < NewRelease.Minor then
-        Result := True
-      else if CurrentRelease.Minor = NewRelease.Minor then
-      begin
-        if CurrentRelease.Build < NewRelease.Build then
-          Result := True;
-      end;
-    end;
-  end;
-
 end;
 
 function DownloadFile(const Url: string; Encoding: TEncoding): string;

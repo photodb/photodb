@@ -106,6 +106,7 @@
 			<DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uIME.pas"/>
 			<DCCReference Include="uIsAdmin.pas"/>
+			<DCCReference Include="uInstallRuntime.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

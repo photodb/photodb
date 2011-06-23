@@ -162,7 +162,7 @@ begin
 
     if GraphicCrypt.ValidCryptGraphicFile(FileName) then
     begin
-      PassWord:=DBKernel.FindPasswordForCryptImageFile(FileName);
+      PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
       if PassWord = '' then
         Exit;
 

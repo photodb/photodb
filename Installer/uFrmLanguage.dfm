@@ -29,6 +29,14 @@ object FormLanguage: TFormLanguage
     Caption = 'Please, select language of PhotoDB install:'
     WordWrap = True
   end
+  object lbVersion: TLabel
+    Left = 8
+    Top = 206
+    Width = 36
+    Height = 13
+    Caption = '2.3.0.0'
+    Enabled = False
+  end
   object LbLanguages: TListBox
     Left = 8
     Top = 47

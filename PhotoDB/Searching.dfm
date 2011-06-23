@@ -1135,7 +1135,7 @@ object SearchForm: TSearchForm
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\DolphinImagesDB\Search'
-    Left = 240
+    Left = 232
     Top = 32
   end
   object HintTimer: TTimer

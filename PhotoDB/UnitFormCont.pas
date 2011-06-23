@@ -1883,6 +1883,8 @@ begin
     SelectedVisible := IsSelectedVisible;
     if FPictureSize > ListViewMinThumbnailSize then
       FPictureSize := FPictureSize - 10;
+    if FPictureSize < ListViewMinThumbnailSize then
+      FPictureSize := ListViewMinThumbnailSize;
     LoadSizes;
     BigImagesTimer.Enabled := False;
     BigImagesTimer.Enabled := True;

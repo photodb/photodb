@@ -945,7 +945,6 @@ var
   Pos, MousePos: Tpoint;
   I: Integer;
   Item: TEasyItem;
-  Data: TDBPopupMenuInfoRecord;
   SpotX, SpotY: Integer;
 
 begin
@@ -1007,13 +1006,6 @@ begin
         HintTimer.Enabled := True;
       ItemWithHint := LastMouseItem;
     end;
-
-    Data := GetSearchRecordFromItemData(LastMouseItem);
-
-    if Settings.Readbool('Options', 'AllowPreview', True) then
-      ElvMain.ShowHint := not FileExistsSafe(Data.FileName);
-
-    ElvMain.Hint := Data.Comment;
   end;
 end;
 
@@ -3540,6 +3532,8 @@ begin
   try
     if FPictureSize > ListViewMinThumbnailSize then
       FPictureSize := FPictureSize - 10;
+    if FPictureSize < ListViewMinThumbnailSize then
+      FPictureSize := ListViewMinThumbnailSize;
 
     LoadSizes;
     BigImagesTimer.Enabled := False;
@@ -3553,6 +3547,7 @@ begin
     ElvMain.EndUpdate;
   end;
 end;
+
 {$REGION 'Tool bar'}
 
 procedure TSearchForm.LoadToolBarIcons;

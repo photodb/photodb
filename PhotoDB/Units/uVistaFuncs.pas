@@ -8,20 +8,21 @@ type
   TChangeWindowMessageFilter = function(msg: Cardinal; action: Word): BOOL; stdcall;
 
 procedure SetVistaFonts(const AForm: TCustomForm);
-procedure SetVistaContentFonts(const AFont: TFont; Increment : integer = 2);
+procedure SetVistaContentFonts(const AFont: TFont; Increment: Integer = 2);
 procedure SetDesktopIconFonts(const AFont: TFont);
-procedure ExtendGlass(const AHandle: THandle; const AMargins: TRect);  
+procedure ExtendGlass(const AHandle: THandle; const AMargins: TRect);
 function CompositingEnabled: Boolean;
-function TaskDialog(Handle: THandle; AContent, ATitle,ADescription: string; Buttons,Icon: integer): integer;
+function TaskDialog(Handle: THandle; AContent, ATitle, ADescription: string; Buttons, Icon: Integer): Integer;
 procedure SetVistaTreeView(const AHandle: THandle);
-function TaskDialogEx(Handle: THandle; AContent, ATitle,ADescription : string; Buttons,Icon: integer; NoVista : boolean): integer;
+function TaskDialogEx(Handle: THandle; AContent, ATitle, ADescription: string; Buttons, Icon: Integer;
+  NoVista: Boolean): Integer;
 procedure AllowDragAndDrop;
 
 const
-  VistaFont = 'Segoe UI'; 
+  VistaFont = 'Segoe UI';
   VistaContentFont = 'Calibri';
   XPContentFont = 'Verdana';
-  XPFont = 'Tahoma';     
+  XPFont = 'Tahoma';
 
 var
   CheckOSVerForFonts: Boolean = True;
@@ -112,7 +113,7 @@ begin
   begin
     DLLHandle := LoadLibrary(dwmapi);
 
-    if DLLHandle <> 0 then 
+    if DLLHandle <> 0 then
     begin
       @DwmIsCompositionEnabledProc := GetProcAddress(DLLHandle,
         DwmIsCompositionEnabledSig);
@@ -131,17 +132,17 @@ end;
 //from http://www.delphipraxis.net/topic93221,next.html
 procedure ExtendGlass(const AHandle: THandle; const AMargins: TRect);
 type
-  _MARGINS = packed record 
-    cxLeftWidth: Integer; 
-    cxRightWidth: Integer; 
-    cyTopHeight: Integer; 
-    cyBottomHeight: Integer; 
-  end; 
-  PMargins = ^_MARGINS; 
-  TMargins = _MARGINS; 
-var 
+  _MARGINS = packed record
+    cxLeftWidth: Integer;
+    cxRightWidth: Integer;
+    cyTopHeight: Integer;
+    cyBottomHeight: Integer;
+  end;
+  PMargins = ^_MARGINS;
+  TMargins = _MARGINS;
+var
   DLLHandle: THandle;
-  DwmExtendFrameIntoClientAreaProc: function(destWnd: HWND; const pMarInset: 
+  DwmExtendFrameIntoClientAreaProc: function(destWnd: HWND; const pMarInset:
     PMargins): HRESULT; stdcall;
   Margins: TMargins;
 begin
@@ -178,12 +179,12 @@ var
   wTitle,wDescription,wContent: array[0..1024] of widechar;
   Btns: TMsgDlgButtons;
   DlgType: TMsgDlgType;
-  
+
   TaskDialogProc: function(HWND: THandle; hInstance: THandle; cTitle, cDescription, cContent: pwidechar; Buttons: Integer; Icon: integer;
        ResButton: pinteger): integer; cdecl stdcall;
 
 begin
-  Result := 0; 
+  Result := 0;
 
   VerInfo.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
   GetVersionEx(verinfo);
@@ -194,7 +195,7 @@ begin
     if DLLHandle >= 32 then
     begin
       @TaskDialogProc := GetProcAddress(DLLHandle,'TaskDialog');
- 
+
       if Assigned(TaskDialogProc) then
       begin
         StringToWideChar(ATitle, wTitle, sizeof(wTitle));

@@ -266,6 +266,7 @@ type
     constructor Create;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromFile(FileName: string);
+    procedure ReadExists;
     destructor Destroy; override;
     procedure ReadFromDS(DS: TDataSet);
     procedure WriteToDS(DS: TDataSet);
@@ -448,6 +449,14 @@ end;
 function TDBPopupMenuInfoRecord.InitNewInstance: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfoRecord.Create;
+end;
+
+procedure TDBPopupMenuInfoRecord.ReadExists;
+begin
+  if FileExistsSafe(FileName) then
+    Exists := 1
+  else
+    Exists := -1;
 end;
 
 procedure TDBPopupMenuInfoRecord.ReadFromDS(DS: TDataSet);

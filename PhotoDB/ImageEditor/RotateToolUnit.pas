@@ -5,8 +5,8 @@ interface
 uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  Effects, Angle, Spin, Dialogs, GraphicsBaseTypes,
-  uEditorTypes, UnitDBKernel, uMemory;
+  Effects, Angle, Spin, Dialogs, GraphicsBaseTypes, uConstants,
+  uEditorTypes, UnitDBKernel, uMemory, uExifUtils;
 
 type
   TRotateToolPanelClass = class(TToolsPanelClass)
@@ -115,9 +115,10 @@ begin
   SelectChooseBox.Top := 5;
   SelectChooseBox.Left := 5;
   SelectChooseBox.Width := 180;
-  SelectChooseBox.Height := 150;
+  SelectChooseBox.Height := 180;
   SelectChooseBox.Parent := Self;
   SelectChooseBox.Items.Add(L('Ñhoose action'));
+  SelectChooseBox.Items.Add(L('Auto (EXIF)'));
   SelectChooseBox.Items.Add(L('Rotate left'));
   SelectChooseBox.Items.Add(L('Rotate right'));
   SelectChooseBox.Items.Add(L('Rotate on 180 degree'));
@@ -249,36 +250,59 @@ end;
 procedure TRotateToolPanelClass.SelectChooseBoxClick(Sender: TObject);
 var
   Proc: TBaseEffectProc;
+  RotateMode,
+  Rotation: Integer;
 begin
   Proc := nil;
-  case SelectChooseBox.ItemIndex of
+
+  RotateMode := SelectChooseBox.ItemIndex;
+
+  //EXIF mode
+  if RotateMode = 1 then
+  begin
+    //reset by default
+    RotateMode := 0;
+    if Editor.ExifData <> nil then
+    begin
+      Rotation := ExifOrientationToRatation(Ord(Editor.ExifData.Orientation));
+      case Rotation of
+        DB_IMAGE_ROTATE_180:
+          RotateMode := 4;
+        DB_IMAGE_ROTATE_90:
+          RotateMode := 3;
+        DB_IMAGE_ROTATE_270:
+          RotateMode := 2;
+      end;
+    end;
+  end;
+  case RotateMode of
     0:
       begin
         CancelTempImage(True);
         NewImage := nil;
         Exit;
       end;
-    1:
+    2:
       begin
         Proc := Effects.Rotate270;
       end;
-    2:
+    3:
       begin
         Proc := Effects.Rotate90;
       end;
-    3:
+    4:
       begin
         Proc := Effects.Rotate180;
       end;
-    4:
+    5:
       begin
         Proc := Effects.FlipHorizontal;
       end;
-    5:
+    6:
       begin
         Proc := Effects.FlipVertical;
       end;
-    6:
+    7:
       begin
         Proc := nil;
       end;

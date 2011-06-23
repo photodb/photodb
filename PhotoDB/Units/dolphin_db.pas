@@ -162,31 +162,10 @@ function EXIFDateToTime(DateTime: string): TDateTime;
 function GetActiveFormHandle: Integer;
 
 function CenterPos(W1, W2: Integer): Integer;
-function ExifOrientationToRatation(Orientation : Integer) : Integer;
 
 function SizeInText(Size: Int64): string;
 
 implementation
-
-function ExifOrientationToRatation(Orientation : Integer) : Integer;
-const
-  Orientations : array[1..9] of Integer = (
-  DB_IMAGE_ROTATE_0,
-  DB_IMAGE_ROTATE_0,
-  DB_IMAGE_ROTATE_180,
-  DB_IMAGE_ROTATE_180,
-  DB_IMAGE_ROTATE_90,
-  DB_IMAGE_ROTATE_90,
-  DB_IMAGE_ROTATE_270,
-  DB_IMAGE_ROTATE_270,
-  DB_IMAGE_ROTATE_0);
-
-begin
-  if Orientation in [1..9] then
-    Result := Orientations[Orientation]
-  else
-    Result := 0;
-end;
 
 function CenterPos(W1, W2: Integer): Integer;
 begin

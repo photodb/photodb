@@ -9,7 +9,7 @@ uses
   UnitDBCommonGraphics, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
   ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB,
-  uAssociations;
+  uAssociations, uExifUtils;
 
 type
   TJpegX = class(TJPEGImage);

@@ -59,9 +59,9 @@ begin
         if not ExifData.Empty then
         begin
           if ID = 0 then
-            DrawIconEx(HCanvas, 20 + DeltaX, DeltaY, UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL)
+            DrawIconEx(HCanvas, 20 + DeltaX, DeltaY, UnitDBKernel.Icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL)
           else
-            DrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  UnitDBKernel.icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL);
+            DrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  UnitDBKernel.Icons[DB_IC_EXIF + 1], 16, 16, 0, 0, DI_NORMAL);
         end;
       except
         //header not found, it's ok

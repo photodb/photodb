@@ -9,7 +9,7 @@ uses
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
   uTranslate, ActiveX, uActivationUtils, uSettings, uMemoryEx,
-  UnitDBKernel, uAssociations, uDBThread;
+  UnitDBKernel, uAssociations, uDBThread, uExifUtils;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;

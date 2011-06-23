@@ -7,6 +7,8 @@ object ImageEditor: TImageEditor
   ClientHeight = 475
   ClientWidth = 685
   Color = clBtnFace
+  Constraints.MinHeight = 250
+  Constraints.MinWidth = 250
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

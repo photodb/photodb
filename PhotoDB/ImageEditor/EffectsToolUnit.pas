@@ -87,6 +87,7 @@ end;
 procedure TEffectsToolPanelClass.ClosePanelEvent(Sender: TObject);
 begin
   CancelTempImage(True);
+  NewImage := nil;
   ClosePanel;
 end;
 

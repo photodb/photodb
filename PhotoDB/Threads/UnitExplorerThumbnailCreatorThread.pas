@@ -5,7 +5,7 @@ interface
 uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
      Effects, UnitDBCommonGraphics, uCDMappingTypes, uLogger, UnitDBCommon,
-     uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel,
+     uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel, uExifUtils,
      uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread;
 
 type
@@ -30,7 +30,8 @@ type
 
 implementation
 
-uses ExplorerThreadUnit;
+uses
+  ExplorerThreadUnit;
 
 { TExplorerThumbnailCreator }
 
@@ -190,6 +191,10 @@ begin
             F(FGraphic);
           end;
         end;
+        //TODO:
+        //if Info.Rating = 0 then
+        //  Info.Rating := -10 * GetExifRating(Info.FileName);
+
         SynchronizeEx(DoDrawAttributes);
         SynchronizeEx(SetInfo);
         SynchronizeEx(SetImage);

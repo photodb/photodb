@@ -25,6 +25,7 @@ function StringToRelease(const s: string) : TRelease;
 function ReleaseToString(Release : TRelease) : string;
 function ProductVersion: string;
 function IsWindowsVista: Boolean;
+function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
 
 implementation
 
@@ -99,6 +100,29 @@ end;
 function ProductVersion: string;
 begin
   Result := ReleaseToString(GetExeVersion(ParamStr(0)));
+end;
+
+function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
+begin
+  Result := False;
+  if CurrentRelease.Version < NewRelease.Version then
+    Result := True
+  else if CurrentRelease.Version = NewRelease.Version then
+  begin
+    if CurrentRelease.Major < NewRelease.Major then
+      Result := True
+    else if CurrentRelease.Major = NewRelease.Major then
+    begin
+      if CurrentRelease.Minor < NewRelease.Minor then
+        Result := True
+      else if CurrentRelease.Minor = NewRelease.Minor then
+      begin
+        if CurrentRelease.Build < NewRelease.Build then
+          Result := True;
+      end;
+    end;
+  end;
+
 end;
 
 function StripHexPrefix(const HexStr: string): string;

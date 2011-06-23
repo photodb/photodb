@@ -46,6 +46,8 @@
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
 			<DCCReference Include="uInstallZip.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uSysUtils.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

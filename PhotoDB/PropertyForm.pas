@@ -16,7 +16,7 @@ uses
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
   uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
-  uSettings, uAssociations, uDBAdapter, uMemoryEx, pngimage;
+  uSettings, uAssociations, uDBAdapter, uMemoryEx, pngimage, uExifUtils;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);

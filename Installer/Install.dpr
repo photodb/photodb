@@ -52,7 +52,8 @@ uses
   uUserUtils in 'uUserUtils.pas',
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
   uIME in '..\PhotoDB\Units\uIME.pas',
-  uIsAdmin in 'uIsAdmin.pas';
+  uIsAdmin in 'uIsAdmin.pas',
+  uInstallRuntime in 'uInstallRuntime.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

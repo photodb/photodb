@@ -764,6 +764,7 @@ begin
   SearchExtension := TSearchDataExtension.Create;
   SearchData.Data := SearchExtension;
   FData.Add(SearchData);
+  SearchData.ReadExists;
   if FQData.Count > 0 then
   begin
     for I := 0 to FQData.Count - 1 do

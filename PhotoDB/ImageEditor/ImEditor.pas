@@ -155,7 +155,7 @@ type
     procedure ReadActions(Actions : TStrings);
     procedure ReadNextAction(Sender: TObject);
     procedure ReadActionsFile(FileName : string);
-    procedure SaveImageFile(FileName : string; AfterEnd : boolean = false);
+    procedure SaveImageFile(FileName : string; AfterEnd : boolean = False);
   private
     { Private declarations }
     EXIFSection: TExifData;
@@ -190,6 +190,8 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID : string; override;
     function GetZoom : Extended; override;
+    function GetFileName: string; override;
+    function GetExifData: TExifData; override;
   public
     { Public declarations }
     FScript: string;
@@ -934,8 +936,7 @@ begin
         end;
       end;
       EXIFSection := TExifData.Create;
-      if not G.Empty then
-        EXIFSection.LoadFromGraphic(G);
+      EXIFSection.LoadFromGraphic(FileName);
 
       FilePassWord := PassWord;
       (ActionForm as TActionsForm).Reset;
@@ -2577,6 +2578,16 @@ end;
 function TImageEditor.GetCurrentImage: TBitmap;
 begin
   Result := CurrentImage;
+end;
+
+function TImageEditor.GetExifData: TExifData;
+begin
+  Result := EXIFSection;
+end;
+
+function TImageEditor.GetFileName: string;
+begin
+  Result := CurrentFileName;
 end;
 
 function TImageEditor.GetFormID: string;

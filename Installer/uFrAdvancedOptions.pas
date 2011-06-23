@@ -83,6 +83,7 @@ begin
   LoadExtensionList;
   LoadDefault;
   EdPath.Enabled := not IsApplicationInstalled;
+  BtnSelectDirectory.Enabled := not IsApplicationInstalled;
   if not EdPath.Enabled then
     EdPath.Text := ExtractFileDir(GetInstalledFileName)
   else
