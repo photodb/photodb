@@ -1261,6 +1261,7 @@ var
   CRC: Cardinal;
 begin
   Result := False;
+  Info.FileName := FileName;
   FQuery := GetQuery;
   try
     FileName := AnsiLowerCase(FileName);

@@ -266,6 +266,7 @@ var
 
   procedure AddFileToDB;
   begin
+    UpdateImageRecordFromExif(FInfo[FileNumber]);
     if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
       FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, FInfo[FileNumber].Include, FInfo[FileNumber].Rating,
       FInfo[FileNumber].Rotation, FInfo[FileNumber].Links, FInfo[FileNumber].Access, FInfo[FileNumber].Groups) then

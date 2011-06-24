@@ -9,7 +9,7 @@ uses
   Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
   GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
   EasyListview, GraphicsCool, uVistaFuncs, uResources, Effects,
-  UnitDBCommonGraphics, UnitDBCommon, uCDMappingTypes,
+  UnitDBCommonGraphics, UnitDBCommon, uCDMappingTypes, uExifUtils,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
@@ -2133,6 +2133,7 @@ var
 begin
   if Info.ID = 0 then
   begin
+    UpdateImageRecordFromExif(Info, False);
     GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
     if GraphicClass = nil then
        Exit;

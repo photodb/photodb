@@ -736,6 +736,7 @@ var
   RectArray: TEasyRectArrayObject;
   ACanvas: TCanvas;
   Metrics: TTextMetric;
+  Item: TEasyItem;
 begin
   Result := nil;
   I := 0;
@@ -747,17 +748,21 @@ begin
 
   while not Assigned(Result) and (I < EasyListview.Items.Count) do
   begin
-    ItemRectArray(EasyListview.Items[I], Metrics.TmHeight, RectArray);
-
-    if ListView = 0 then
+    Item := EasyListview.Items[I];
+    if Item.OwnerGroup.Expanded then
     begin
-      if PtInRect(RectArray.IconRect, ViewportPoint) then
-        Result := EasyListview.Items[I]
-      else if PtInRect(RectArray.TextRect, ViewportPoint) then
-        Result := EasyListview.Items[I];
-    end
-    else if PtInRect(RectArray.BoundsRect, ViewportPoint) then
-      Result := EasyListview.Items[I];
+      ItemRectArray(Item, Metrics.TmHeight, RectArray);
+
+      if ListView = 0 then
+      begin
+        if PtInRect(RectArray.IconRect, ViewportPoint) then
+          Result := Item
+        else if PtInRect(RectArray.TextRect, ViewportPoint) then
+          Result := Item;
+      end
+      else if PtInRect(RectArray.BoundsRect, ViewportPoint) then
+        Result := Item;
+    end;
 
     Inc(I);
   end
@@ -770,6 +775,7 @@ var
   RectArray: TEasyRectArrayObject;
   T, L, A, B, W, H, Y: Integer;
   ImageW, ImageH : Integer;
+  Item: TEasyItem;
 begin
   Result := nil;
   I := 0;
@@ -778,9 +784,10 @@ begin
   ViewportPoint.Y := ViewportPoint.Y + R.Top;
   while not Assigned(Result) and (I < EasyListview.Items.Count) do
   begin
-    if EasyListview.Items[I].Visible then
+    Item := EasyListview.Items[I];
+    if Item.OwnerGroup.Expanded and Item.Visible then
     begin
-      EasyListview.Items[I].ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
+      Item.ItemRectArray(EasyListview.Header.FirstColumn, EasyListview.Canvas, RectArray);
       A := EasyListview.CellSizes.Thumbnail.Width - 35;
       B := 0;
 
@@ -795,7 +802,7 @@ begin
       L := RectArray.IconRect.Left;
       R := Rect(A + L, B + T, A + 22 + L, B + T + 18);
       if PtInRect(R, ViewportPoint) then
-        Result := EasyListview.Items[I];
+        Result := Item;
     end;
     Inc(I)
   end

@@ -7,7 +7,8 @@ uses
   GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
-  uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage;
+  uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage,
+  uExifUtils;
 
 type
   TViewerThread = class(TDBThread)
@@ -15,7 +16,7 @@ type
     { Private declarations }
     FViewer: TViewerForm;
     FFileName: string;
-    FRotate: Byte;
+    FRotate: Integer;
     FFullImage: Boolean;
     FBeginZoom: Extended;
     FSID: TGUID;
@@ -47,8 +48,9 @@ type
     procedure TestThreadSynch;
     procedure UpdateRecord;
   public
-   constructor Create(Viewer: TViewerForm; FileName : String; Rotate : Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
-   destructor Destroy; override;
+    constructor Create(Viewer: TViewerForm; FileName: string; Rotate: Integer; FullImage: Boolean; BeginZoom: Extended;
+      SID: TGUID; IsForward, UpdateInfo: Boolean; Page: Word);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -57,7 +59,7 @@ uses UnitPasswordForm, SlideShow;
 
 { TViewerThread }
 
-constructor TViewerThread.Create(Viewer: TViewerForm; FileName: String; Rotate: Byte; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
+constructor TViewerThread.Create(Viewer: TViewerForm; FileName: String; Rotate: Integer; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
 begin
   inherited Create(Viewer, False);
   FPage := Page;
@@ -204,6 +206,8 @@ begin
             SetNOImageAsynch;
             Exit;
           end;
+          if FRotate = 0 then
+            FRotate := GetExifRotate(FFileName);
 
           ApplyRotate(Bitmap, FRotate);
           SetStaticImageAsynch;

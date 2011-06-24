@@ -5035,6 +5035,7 @@ begin
     FSections[esGeneral].SetWordValue(ttWindowsRating, 0, Ord(Value));
   XMPPacket.UpdateProperty(xsMicrosoftPhoto, 'Rating', MSPhotoValues[Value]);
   XMPPacket.UpdateProperty(xsXMPBasic, 'Rating', XMPBasicValues[Value]);
+  XMPPacket.UpdateProperty(xsXMPMediaManagement, 'Rating', XMPBasicValues[Value]);
 end;
 
 procedure TCustomExifData.SetWhiteBalance(const Value: TExifWhiteBalanceMode);

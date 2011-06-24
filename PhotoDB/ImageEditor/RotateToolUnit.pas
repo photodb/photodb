@@ -60,8 +60,8 @@ begin
   else
     AngleEdit.Value := Round(CustomAngle.Angle);
   AngleEdit.Tag := 0;
-  if SelectChooseBox.ItemIndex <> 6 then
-    SelectChooseBox.ItemIndex := 6
+  if SelectChooseBox.ItemIndex <> 7 then
+    SelectChooseBox.ItemIndex := 7
   else
     SelectChooseBoxClick(Sender);
 end;
@@ -164,7 +164,7 @@ begin
   ColorChooser := TColorDialog.Create(AOwner);
 
   MakeItLink := TWebLink.Create(Self);
-  MakeItLink.Top := 230;
+  MakeItLink.Top := AngleEdit.Top + AngleEdit.Width + 5;
   MakeItLink.Left := 10;
   MakeItLink.Parent := Self;
   MakeItLink.Text := L('Apply');
@@ -176,7 +176,7 @@ begin
   IcoOK.Free;
 
   CloseLink := TWebLink.Create(Self);
-  CloseLink.Top := 250;
+  CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 10;
   CloseLink.Left := 10;
   CloseLink.Parent := Self;
   CloseLink.Text := L('Close tool');

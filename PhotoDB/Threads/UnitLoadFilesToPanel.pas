@@ -7,7 +7,8 @@ uses
   CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
   UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations, uDBForm,
-  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime, uDBThread;
+  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime, uDBThread,
+  uExifUtils;
 
 type
   LoadFilesToPanel = class(TDBThread)
@@ -296,6 +297,7 @@ begin
     FInfo.Crypted := CryptFile;
     FInfo.Include := True;
     FInfo.InfoLoaded := True;
+    UpdateImageRecordFromExif(FInfo, False);
     if CryptFile then
     begin
       Password := DBKernel.FindPasswordForCryptImageFile(FileName);
@@ -377,7 +379,7 @@ begin
     ProportionalSize(FPictureSize, FPictureSize, W, H);
     FBit := TBitmap.Create;
     try
-      Fbit.PixelFormat := B.PixelFormat;
+      FBit.PixelFormat := B.PixelFormat;
       DoResize(W, H, B, Fbit);
       F(B);
       ApplyRotate(Fbit, FInfo.Rotation);

@@ -6,7 +6,7 @@ uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
      Effects, UnitDBCommonGraphics, uCDMappingTypes, uLogger, UnitDBCommon,
      uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel, uExifUtils,
-     uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread;
+     uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread, CCR.Exif;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)
@@ -47,10 +47,10 @@ end;
 
 procedure TExplorerThumbnailCreator.Execute;
 var
-  W, H : Integer;
-  Password : string;
-  GraphicClass : TGraphicClass;
-  ShadowImage : TBitmap;
+  W, H: Integer;
+  Password: string;
+  GraphicClass: TGraphicClass;
+  ShadowImage: TBitmap;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -117,6 +117,7 @@ begin
           ApplyRotate(TempBitmap, Info.Rotation);
         end else
         begin
+          UpdateImageRecordFromExif(Info, False);
           DoProcessPath(FFileName);
           if FolderView then
           if not FileExistsSafe(FFileName) then
@@ -173,6 +174,7 @@ begin
                   ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
                   DoResize(W, H, TempBit, FBit);
                 end;
+                ApplyRotate(FBit, Info.Rotation);
               finally
                 F(TempBit);
               end;
@@ -191,9 +193,6 @@ begin
             F(FGraphic);
           end;
         end;
-        //TODO:
-        //if Info.Rating = 0 then
-        //  Info.Rating := -10 * GetExifRating(Info.FileName);
 
         SynchronizeEx(DoDrawAttributes);
         SynchronizeEx(SetInfo);
@@ -237,4 +236,3 @@ begin
 end;
 
 end.
-

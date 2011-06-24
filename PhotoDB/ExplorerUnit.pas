@@ -1573,12 +1573,12 @@ begin
   SaveWindowPos1.SavePosition;
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
-  DBKernel.UnRegisterChangesID(Sender,ChangedDBDataByID);
+  DBKernel.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
-  Settings.WriteInteger('Explorer','LeftPanelWidth',MainPanel.Width);
-  Settings.WriteString('Explorer','Path',GetCurrentPathW.Path);
-  Settings.WriteInteger('Explorer','PathType',GetCurrentPathW.PType);
-  FStatusProgress.Free;
+  Settings.WriteInteger('Explorer','LeftPanelWidth', MainPanel.Width);
+  Settings.WriteString('Explorer','Path', GetCurrentPathW.Path);
+  Settings.WriteInteger('Explorer','PathType', GetCurrentPathW.PType);
+  F(FStatusProgress);
   FormManager.UnRegisterMainForm(Self);
   F(FFilesInfo);
   GOM.RemoveObj(Self);

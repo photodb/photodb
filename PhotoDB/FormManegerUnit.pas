@@ -26,20 +26,21 @@ type
     LockCleaning : Boolean;
     FSetLanguageMessage: Cardinal;
     procedure ExitApplication;
-    procedure WMCopyData(var Msg : TWMCopyData); message WM_COPYDATA;
+    procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
     function GetTimeLimitMessage: string;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
   public
     constructor Create(AOwner : TComponent);  override;
     destructor Destroy; override;
     procedure RegisterMainForm(Value: TForm);
     procedure UnRegisterMainForm(Value: TForm);
     procedure Run;
-    procedure Close(Form : TForm);
-    function MainFormsCount : Integer;
-    function IsMainForms(Form : TForm) : Boolean;
-    procedure CloseApp(Sender : TObject);
+    procedure Close(Form: TForm);
+    function MainFormsCount: Integer;
+    function IsMainForms(Form: TForm): Boolean;
+    procedure CloseApp(Sender: TObject);
     procedure Load;
-    property TimeLimitMessage : string read GetTimeLimitMessage;
+    property TimeLimitMessage: string read GetTimeLimitMessage;
   end;
 
 var
@@ -61,7 +62,7 @@ uses
   UnitCleanUpThread, ExplorerUnit, uSearchTypes, SlideShow, UnitFileCheckerDB,
   UnitInternetUpdate, uAbout, UnitConvertDBForm, UnitImportingImagesForm,
   UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel,
-  uActivation, UnitUpdateDB;
+  uActivation, UnitUpdateDB, uExifPatchThread;
 
 {$R *.dfm}
 
@@ -307,6 +308,7 @@ end;
 procedure TFormManager.FormCreate(Sender: TObject);
 begin
   FSetLanguageMessage := RegisterWindowMessage('UPDATE_APP_LANGUAGE');
+  DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
 end;
 
 function TFormManager.GetTimeLimitMessage: string;
@@ -317,6 +319,21 @@ end;
 procedure TFormManager.CalledTimerTimer(Sender: TObject);
 begin
   Application.Terminate;
+end;
+
+procedure TFormManager.ChangedDBDataByID(Sender: TObject; ID: Integer;
+  Params: TEventFields; Value: TEventValues);
+var
+  UpdateInfoParams: TEventFields;
+begin
+  if ID <= 0 then
+    Exit;
+
+  UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating,
+    EventID_Param_Comment, EventID_Param_KeyWords];
+
+  if UpdateInfoParams * Params <> [] then
+    ExifPatchManager.AddPatchInfo(ID, Params, Value);
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);

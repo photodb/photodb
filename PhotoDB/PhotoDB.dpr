@@ -332,7 +332,8 @@ uses
   uIME in 'Units\uIME.pas',
   uGetPhotosThread in 'Threads\uGetPhotosThread.pas',
   uSearchHelpAddPhotosThread in 'Threads\uSearchHelpAddPhotosThread.pas',
-  uExifUtils in 'Units\uExifUtils.pas';
+  uExifUtils in 'Units\uExifUtils.pas',
+  uExifPatchThread in 'Threads\uExifPatchThread.pas';
 
 {$R *.res}
 

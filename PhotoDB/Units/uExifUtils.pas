@@ -3,13 +3,135 @@ unit uExifUtils;
 interface
 
 uses
-  uConstants, CCR.Exif, uMemory;
+  uConstants, CCR.Exif, uMemory, UnitDBDeclare;
+
+type
+  TExifPatchInfo = class
+  public
+    ID: Integer;
+    Params: TEventFields;
+    Value: TEventValues;
+  end;
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;
 function GetExifRating(FileName: string): Integer; overload;
 function GetExifRating(ExifData: TExifData): Integer; overload;
+function GetExifRotate(FileName: string): Integer;
+procedure UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True);
+function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean;
+function CreateRating(Rating: Integer): TWindowsStarRating;
+function CreateOrientation(Rotation: Integer): TExifOrientation;
 
 implementation
+
+procedure UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True);
+var
+  ExifData: TExifData;
+  Rating, Rotation: Integer;
+begin
+  if (Info.Rating > 0) and (Info.Rotation > DB_IMAGE_ROTATE_UNKNOWN) then
+    Exit; //nothing to update
+
+  ExifData := TExifData.Create;
+  try
+    ExifData.LoadFromGraphic(Info.FileName);
+    if not ExifData.Empty then
+    begin
+      if Info.Rating <= 0 then
+      begin
+        Rating := GetExifRating(ExifData);
+        if IsDBValues then
+          Info.Rating := Rating
+        else
+          Info.Rating := - 10 * Rating;
+      end;
+
+      if Info.Rotation <= DB_IMAGE_ROTATE_0 then
+      begin
+        Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
+        if IsDBValues then
+          Info.Rotation := Rotation
+        else
+          Info.Rotation := - 10 * Rotation;
+      end;
+
+      if Info.KeyWords = '' then
+        Info.KeyWords := ExifData.Keywords;
+
+      if Info.Comment = '' then
+        Info.KeyWords := ExifData.Comments;
+    end;
+  finally
+    F(ExifData);
+  end;
+end;
+
+function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean;
+var
+  ExifData: TExifData;
+  Changed: Boolean;
+begin
+  Changed := False;
+  try
+    ExifData := TExifData.Create;
+    try
+      ExifData.LoadFromGraphic(FileName);
+      try
+        ExifData.XMPPacket.SchemaCount;
+      except
+        ExifData.XMPPacket.Clear;
+      end;
+
+      ExifData.XMPWritePolicy := xwAlwaysUpdate;
+      if EventID_Param_Rating in Info.Params then
+      begin
+        ExifData.UserRating := CreateRating(Info.Value.Rating);
+        Changed := True;
+      end;
+      if EventID_Param_Rotate in Info.Params then
+      begin
+        ExifData.Orientation := CreateOrientation(Info.Value.Rotate);
+        Changed := True;
+      end;
+
+      if EventID_Param_KeyWords in Info.Params then
+      begin
+        ExifData.Keywords := Info.Value.KeyWords;
+        Changed := True;
+      end;
+
+      if EventID_Param_Comment in Info.Params then
+      begin
+        ExifData.Comments := Info.Value.Comment;
+        Changed := True;
+      end;
+
+      if Changed then
+      begin
+        //ExifData.XMPPacket.SaveToGraphic(FileName);
+        ExifData.SaveToGraphic(FileName);
+      end;
+    finally
+      F(ExifData);
+    end;
+    Result := True;
+  except
+    Result := False;
+  end;
+end;
+
+function CreateOrientation(Rotation: Integer): TExifOrientation;
+begin
+  Result := toTopLeft;
+  case Rotation of
+    DB_IMAGE_ROTATE_180:
+      Result := toBottomRight;
+    DB_IMAGE_ROTATE_90:
+      Result := toLeftTop;
+    DB_IMAGE_ROTATE_270:
+      Result := toRightBottom;
+  end;
+end;
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;
 const
@@ -29,6 +151,38 @@ begin
     Result := Orientations[Orientation]
   else
     Result := 0;
+end;
+
+function GetExifRotate(FileName: string): Integer;
+var
+  ExifData: TExifData;
+begin
+  Result := DB_IMAGE_ROTATE_0;
+  ExifData := TExifData.Create;
+  try
+    ExifData.LoadFromGraphic(FileName);
+    if not ExifData.Empty then
+      Result := ExifOrientationToRatation(Ord(ExifData.Orientation));
+  finally
+    F(ExifData);
+  end;
+end;
+
+function CreateRating(Rating: Integer): TWindowsStarRating;
+begin
+  Result := urUndefined;
+  case Rating of
+    1:
+      Result := urOneStar;
+    2:
+      Result := urTwoStars;
+    3:
+      Result := urThreeStars;
+    4:
+      Result := urFourStars;
+    5:
+      Result := urFiveStars;
+  end;
 end;
 
 function GetExifRating(ExifData: TExifData): Integer;

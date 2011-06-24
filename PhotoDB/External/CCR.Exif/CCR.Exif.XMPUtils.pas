@@ -1855,6 +1855,7 @@ begin
       Exit;
   Prop.Kind := PropKind;
   Prop.WriteValue(TrimRight(NewValue));
+  Changed;
 end;
 
 procedure TXMPPacket.DoUpdateArrayProperty(SchemaKind: TXMPKnownNamespace;

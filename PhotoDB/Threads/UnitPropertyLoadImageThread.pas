@@ -6,7 +6,7 @@ uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
   UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics, uDBThread,
   uMemory, GraphicsCool, uGraphicUtils, uRuntime, uAssociations,
-  uConstants, uDBForm;
+  uConstants, uDBForm, uExifUtils;
 
 type
   TPropertyLoadImageThreadOptions = record
@@ -51,8 +51,9 @@ end;
 procedure TPropertyLoadImageThread.Execute;
 var
   Fb, Fb1, TempBitmap: TBitmap;
-  Graphic : TGraphic;
-  GraphicClass : TGraphicClass;
+  Graphic: TGraphic;
+  GraphicClass: TGraphicClass;
+  Rotation: Integer;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -89,6 +90,7 @@ begin
       end else
         Graphic.LoadFromFile(FOptions.FileName);
     end;
+    Rotation := GetExifRotate(FOptions.FileName);
 
     IntParamW := Graphic.Width;
     IntParamH := Graphic.Height;
@@ -115,13 +117,14 @@ begin
           FB.Height := ThSizePropertyPreview;
         end;
 
-        TempBitmap:=TBitmap.Create;
+        TempBitmap := TBitmap.Create;
         try
           AssignGraphic(TempBitmap, Graphic);
           F(Graphic);
           FB.PixelFormat := TempBitmap.PixelFormat;
           DoResize(FB.Width, FB.Height, TempBitmap, FB);
           F(TempBitmap);
+          ApplyRotate(FB, Rotation);
 
           BitmapParam := FB1;
 
@@ -153,14 +156,14 @@ procedure TPropertyLoadImageThread.GetPasswordFromUserSynch;
 begin
   if PropertyManager.IsPropertyForm(fOptions.Owner) then
     if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
-       StrParam:=GetImagePasswordFromUser(StrParam);
+       StrParam := GetImagePasswordFromUser(StrParam);
 end;
 
 procedure TPropertyLoadImageThread.SetCurrentPassword;
 begin
   if PropertyManager.IsPropertyForm(fOptions.Owner) then
     if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
-      (fOptions.Owner as TPropertiesForm).FCurrentPass:=StrParam;
+      (fOptions.Owner as TPropertiesForm).FCurrentPass := StrParam;
 end;
 
 procedure TPropertyLoadImageThread.SetImage;

@@ -317,6 +317,11 @@ const
       begin
         if not FProcessingParams.PreviewOptions.GeneratePreview then
         begin
+          if FProcessingParams.Rotate then
+          begin
+            SetRotate(FData.ID, DB_IMAGE_ROTATE_0);
+            FData.Rotation := DB_IMAGE_ROTATE_0;
+          end;
           UpdateImageRecord(ThreadForm, FData.FileName, FData.ID);
           Synchronize(NotifyDB);
           TLockFiles.Instance.RemoveLockedFile(FileName);
@@ -572,7 +577,7 @@ var
 begin
   EventInfo.Name := FData.FileName;
   EventInfo.NewName := FData.FileName;
-  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image], EventInfo);
+  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image, EventID_Param_Rotate], EventInfo);
 end;
 
 procedure TImageConvertThread.OnEnd;

@@ -538,7 +538,7 @@ begin
     Options.OwnerForm := nil;
     BackUpTableInCMD.Create(Options);
 
-    Settings.WriteBool('StartUp', 'BackUp', True);
+    Settings.WriteBool('StartUp', 'BackUp', False);
   end;
 end;
 

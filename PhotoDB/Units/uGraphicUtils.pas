@@ -50,11 +50,14 @@ end;
 procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
 begin
   case RotateValue of
-    DB_IMAGE_ROTATE_270:
+    DB_IMAGE_ROTATE_270,
+    - 10 * DB_IMAGE_ROTATE_270:
       Rotate270A(Bitmap);
-    DB_IMAGE_ROTATE_90:
+    DB_IMAGE_ROTATE_90,
+    - 10 * DB_IMAGE_ROTATE_90:
       Rotate90A(Bitmap);
-    DB_IMAGE_ROTATE_180:
+    DB_IMAGE_ROTATE_180,
+    - 10 * DB_IMAGE_ROTATE_180:
       Rotate180A(Bitmap);
   end;
 end;
