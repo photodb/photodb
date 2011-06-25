@@ -1709,6 +1709,9 @@
 	<translate name="Use small icons for toolbars" value="Использовать маленькие иконки для тулбаров"/>
 	<translate name="Viewer" value="Просмотр"/>
 	<translate name="Explorer" value="Проводник"/>
+	<translate name="Read image info from EXIF" value="Читать информацию о изображении из EXIF"/>
+	<translate name="Save info to EXIF" value="Сохранять информацию в EXIF"/>
+	<translate name="Update EXIF info in background" value="Обновлять EXIF информацию в фоне"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>

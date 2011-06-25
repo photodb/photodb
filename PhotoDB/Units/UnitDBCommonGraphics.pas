@@ -1182,6 +1182,7 @@ procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
 begin
   JPEG.Performance := jpBestSpeed;
   JPEG.DIBNeeded;
+
   AssignBitmap(Bitmap, TJPEGX(JPEG).InnerBitmap);
 end;
 

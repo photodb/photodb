@@ -39,7 +39,7 @@ var
   N: Integer;
 begin
   inherited;
-  FreeOnTerminate:=true;
+  FreeOnTerminate := True;
   CoInitialize(nil);
   try
     Info := TDBPopupMenuInfo.Create;

@@ -3,7 +3,7 @@ unit uExifUtils;
 interface
 
 uses
-  uConstants, CCR.Exif, uMemory, UnitDBDeclare;
+  uConstants, CCR.Exif, uMemory, UnitDBDeclare, uSettings;
 
 type
   TExifPatchInfo = class
@@ -18,7 +18,8 @@ function GetExifRating(FileName: string): Integer; overload;
 function GetExifRating(ExifData: TExifData): Integer; overload;
 function GetExifRotate(FileName: string): Integer;
 procedure UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True);
-function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean;
+function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean; overload;
+function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean; overload;
 function CreateRating(Rating: Integer): TWindowsStarRating;
 function CreateOrientation(Rotation: Integer): TExifOrientation;
 
@@ -31,6 +32,9 @@ var
 begin
   if (Info.Rating > 0) and (Info.Rotation > DB_IMAGE_ROTATE_UNKNOWN) then
     Exit; //nothing to update
+
+  if not Settings.Exif.ReadInfoFromExif then
+    Exit;
 
   ExifData := TExifData.Create;
   try
@@ -59,10 +63,73 @@ begin
         Info.KeyWords := ExifData.Keywords;
 
       if Info.Comment = '' then
-        Info.KeyWords := ExifData.Comments;
+        Info.Comment := ExifData.Comments;
     end;
   finally
     F(ExifData);
+  end;
+end;
+
+function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean;
+var
+  ExifData: TExifData;
+  Changed: Boolean;
+begin
+  Changed := False;
+  try
+    ExifData := TExifData.Create;
+    try
+      ExifData.LoadFromGraphic(Info.FileName);
+      try
+        ExifData.XMPPacket.SchemaCount;
+      except
+        ExifData.XMPPacket.Clear;
+      end;
+
+      ExifData.XMPWritePolicy := xwAlwaysUpdate;
+      if (Info.Rating > 0) then
+      begin
+        if ExifData.UserRating <> CreateRating(Info.Rating) then
+        begin
+          ExifData.UserRating := CreateRating(Info.Rating);
+          Changed := True;
+        end;
+      end;
+      if Info.Rotation <> DB_IMAGE_ROTATE_0 then
+      begin
+        if ExifData.Orientation <> CreateOrientation(Info.Rotation) then
+        begin
+          ExifData.Orientation := CreateOrientation(Info.Rotation);
+          Changed := True;
+        end;
+      end;
+
+      if Info.KeyWords <> '' then
+      begin
+        if ExifData.Keywords <> Info.KeyWords then
+        begin
+          ExifData.Keywords := Info.KeyWords;
+          Changed := True;
+        end;
+      end;
+
+      if Info.Comment <> '' then
+      begin
+        if ExifData.Comments <> Info.Comment then
+        begin
+          ExifData.Comments := Info.Comment;
+          Changed := True;
+        end;
+      end;
+
+      if Changed then
+        ExifData.SaveToGraphic(Info.FileName);
+    finally
+      F(ExifData);
+    end;
+    Result := True;
+  except
+    Result := False;
   end;
 end;
 
@@ -85,32 +152,41 @@ begin
       ExifData.XMPWritePolicy := xwAlwaysUpdate;
       if EventID_Param_Rating in Info.Params then
       begin
-        ExifData.UserRating := CreateRating(Info.Value.Rating);
-        Changed := True;
+        if ExifData.UserRating <> CreateRating(Info.Value.Rating) then
+        begin
+          ExifData.UserRating := CreateRating(Info.Value.Rating);
+          Changed := True;
+        end;
       end;
       if EventID_Param_Rotate in Info.Params then
       begin
-        ExifData.Orientation := CreateOrientation(Info.Value.Rotate);
-        Changed := True;
+        if ExifData.Orientation <> CreateOrientation(Info.Value.Rotate) then
+        begin
+          ExifData.Orientation := CreateOrientation(Info.Value.Rotate);
+          Changed := True;
+        end;
       end;
 
       if EventID_Param_KeyWords in Info.Params then
       begin
-        ExifData.Keywords := Info.Value.KeyWords;
-        Changed := True;
+        if ExifData.Keywords <> Info.Value.KeyWords then
+        begin
+          ExifData.Keywords := Info.Value.KeyWords;
+          Changed := True;
+        end;
       end;
 
       if EventID_Param_Comment in Info.Params then
       begin
-        ExifData.Comments := Info.Value.Comment;
-        Changed := True;
+        if ExifData.Comments <> Info.Value.Comment then
+        begin
+          ExifData.Comments := Info.Value.Comment;
+          Changed := True;
+        end;
       end;
 
       if Changed then
-      begin
-        //ExifData.XMPPacket.SaveToGraphic(FileName);
         ExifData.SaveToGraphic(FileName);
-      end;
     finally
       F(ExifData);
     end;

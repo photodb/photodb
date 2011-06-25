@@ -18,12 +18,15 @@ type
     D: TBitmap;
     FOwner: TObject;
     FEditor: TImageEditorForm;
+    FProgress: Integer;
+    FBreak: Boolean;
   protected
     procedure Execute; override;
   public
     constructor Create(AOwner: TObject; Proc: TBaseEffectProc; S: TBitmap; SID: string;
       OnExit: TBaseEffectProcThreadExit; Editor: TImageEditorForm);
     procedure CallBack(Progress: Integer; var Break: Boolean);
+    procedure CallBackSync;
     procedure SetProgress;
     procedure DoExit;
     procedure ClearText;
@@ -36,13 +39,21 @@ uses
 
 procedure TBaseEffectThread.CallBack(Progress: Integer; var Break: Boolean);
 begin
-  IntParam := Progress;
-  Synchronize(SetProgress);
+  FProgress := Progress;
+  FBreak := Break;
+  SynchronizeEx(CallBackSync);
+  Break := FBreak;
+end;
+
+procedure TBaseEffectThread.CallBackSync;
+begin
+  IntParam := FProgress;
+  SetProgress;
   if not EditorsManager.IsEditor(FEditor) then
     Exit;
   if (FEditor as TImageEditor).ToolClass = FOwner then
     if FOwner is TEffectsToolPanelClass then
-      Break := (FOwner as TEffectsToolPanelClass).FSID <> FSID;
+      FBreak := (FOwner as TEffectsToolPanelClass).FSID <> FSID;
 end;
 
 procedure TBaseEffectThread.ClearText;
@@ -53,10 +64,10 @@ begin
     (FEditor as TImageEditor).StatusBar1.Panels[0].Text := '';
 end;
 
-constructor TBaseEffectThread.Create(AOwner : TObject;
-  Proc: TBaseEffectProc; S: TBitmap; SID: string; OnExit : TBaseEffectProcThreadExit; Editor : TImageEditorForm);
+constructor TBaseEffectThread.Create(AOwner: TObject; Proc: TBaseEffectProc; S: TBitmap; SID: string;
+  OnExit: TBaseEffectProcThreadExit; Editor: TImageEditorForm);
 begin
-  inherited Create(nil, False);
+  inherited Create(Editor, False);
   FOwner := AOwner;
   FSID := SID;
   FOnExit := OnExit;
@@ -67,18 +78,14 @@ end;
 
 procedure TBaseEffectThread.DoExit;
 begin
-  if not EditorsManager.IsEditor(FEditor) then
-  begin
-    F(D);
-    Exit;
-  end;
-  if (FEditor as TImageEditor).ToolClass = FOwner then
+  if EditorsManager.IsEditor(FEditor) and ((FEditor as TImageEditor).ToolClass = FOwner) then
   begin
     Synchronize(ClearText);
     FOnExit(D, FSID);
-  end
-  else
-    F(D);
+    Exit;
+  end;
+
+  F(D);
 end;
 
 procedure TBaseEffectThread.Execute;
@@ -87,10 +94,12 @@ begin
   FreeOnTerminate := True;
   D := TBitmap.Create;
   FProc(BaseImage, D, CallBack);
-  Synchronize(DoExit);
+  if not SynchronizeEx(DoExit) then
+    F(D);
+
   F(BaseImage);
   IntParam := 0;
-  Synchronize(SetProgress);
+  SynchronizeEx(SetProgress);
 end;
 
 procedure TBaseEffectThread.SetProgress;

@@ -41,6 +41,7 @@ type
     BaseImage: TBitmap;
     FOnDone: TNotifyEvent;
     ApplyOnDone: Boolean;
+    procedure FreeNewImage;
   protected
     function LangID: string; override;
   public
@@ -166,7 +167,7 @@ begin
   F(EM);
   F(ImageList);
   F(BaseImage);
-  F(NewImage);
+  FreeNewImage;
   inherited;
 end;
 
@@ -250,6 +251,12 @@ begin
   end;
 end;
 
+procedure TEffectsToolPanelClass.FreeNewImage;
+begin
+  CancelPointerToImage(NewImage);
+  F(NewImage);
+end;
+
 function TEffectsToolPanelClass.GetProperties: string;
 begin
   Result := FilterID + '[' + OutFilterInitialString + ']';
@@ -283,7 +290,7 @@ var
   ExEffect: TExEffect;
 
 begin
-  F(NewImage);
+  FreeNewImage;
   NewImage := TBitmap.Create;
   NewImage.PixelFormat := pf24bit;
   if ApplyOnDone = True then
@@ -347,7 +354,7 @@ end;
 procedure TEffectsToolPanelClass.SetNewImage(Image: TBitmap);
 begin
   FilterID := TempFilterID;
-  F(NewImage);
+  FreeNewImage;
   Pointer(NewImage) := Pointer(Image);
   SetTempImage(Image);
 end;
@@ -368,7 +375,7 @@ begin
   if SID = FSID then
   begin
     FilterID := TempFilterID;
-    F(NewImage);
+    FreeNewImage;
     Pointer(NewImage) := Pointer(Image);
     SetTempImage(Image);
   end else

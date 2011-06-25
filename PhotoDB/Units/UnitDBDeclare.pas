@@ -104,7 +104,7 @@ type
     EventID_Param_GroupsChanged, EventID_Param_CopyPaste,
     EventID_Param_Add_Crypt_WithoutPass, SetNewIDFileData,
     EventID_Param_Links,  EventID_Param_DB_Changed, EventID_Param_Refresh_Window,
-    EventID_FileProcessed, EventID_Repaint_ImageList);
+    EventID_FileProcessed, EventID_Repaint_ImageList, EventID_No_EXIF);
 
   TEventFields = set of TEventField;
 
@@ -357,7 +357,7 @@ begin
   PassTag := Item.PassTag;
   Width := Item.Width;
   Height := Item.Height;
-  IsCurrent := False;
+  //IsCurrent := False;
   Exists := Item.Exists;
   if MoveImage then
   begin

@@ -3,20 +3,24 @@ unit UnitSlideShowUpdateInfoThread;
 interface
 
 uses
-  Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB, uThreadForm, uThreadEx, ActiveX;
+  Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB, uThreadForm, uThreadEx,
+  ActiveX, UnitDBDeclare, uMemory, uExifUtils;
 
 type
   TSlideShowUpdateInfoThread = class(TThreadEx)
   private
     { Private declarations }
-   FFileName : string;
-   DS : TDataSet;
+    FFileName : string;
+    DS : TDataSet;
+    FInfo: TDBPopupMenuInfoRecord;
   protected
     procedure Execute; override;
     procedure DoUpdateWithSlideShow;
     procedure DoSetNotDBRecord;
+    procedure SetNoInfo;
   public
     constructor Create(AOwner : TThreadForm; AState : TGUID; FileName : string);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -29,11 +33,18 @@ constructor TSlideShowUpdateInfoThread.Create(AOwner : TThreadForm; AState : TGU
 begin
   inherited Create(AOwner, AState);
   FFileName := FileName;
+  FInfo := nil;
+end;
+
+destructor TSlideShowUpdateInfoThread.Destroy;
+begin
+  F(FInfo);
+  inherited;
 end;
 
 procedure TSlideShowUpdateInfoThread.DoSetNotDBRecord;
 begin
-  Viewer.DoSetNoDBRecord(FFileName);
+  Viewer.DoSetNoDBRecord(FInfo);
 end;
 
 procedure TSlideShowUpdateInfoThread.DoUpdateWithSlideShow;
@@ -54,11 +65,11 @@ begin
       try
         DS.Active := True;
       except
-        SynchronizeEx(DoSetNotDBRecord);
+        SetNoInfo;
         Exit;
       end;
       if DS.RecordCount = 0 then
-        SynchronizeEx(DoSetNotDBRecord)
+        SetNoInfo
       else
         SynchronizeEx(DoUpdateWithSlideShow);
     finally
@@ -67,6 +78,13 @@ begin
   finally
     CoUninitialize;
   end;
+end;
+
+procedure TSlideShowUpdateInfoThread.SetNoInfo;
+begin
+  FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
+  UpdateImageRecordFromExif(FInfo, False);
+  SynchronizeEx(DoSetNotDBRecord);
 end;
 
 end.

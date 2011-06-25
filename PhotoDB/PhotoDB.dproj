@@ -569,7 +569,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">/nologo</Parameters>
+						<Parameters Name="RunParams">/nologo </Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
@@ -577,7 +577,7 @@
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">310</VersionInfo>
+						<VersionInfo Name="Build">311</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -589,7 +589,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.0.310</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.0.311</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>

@@ -6,9 +6,12 @@ uses
   Windows, Classes, SysUtils, uMemory, uConstants, UnitINI;
 
 type
+  TExifSettings = class;
+
   TSettings = class(TObject)
   private
     FRegistryCache: TDBRegistryCache;
+    FExifSettings: TExifSettings;
     function GetDataBase: string;
   public
     constructor Create;
@@ -34,6 +37,36 @@ type
     function ReadDateTime(Key, Name: string; Default: TdateTime): TDateTime;
     procedure DeleteValues(Key: string);
     property DataBase: string read GetDataBase;
+    property Exif: TExifSettings read FExifSettings;
+  end;
+
+  TSettingsNode = class(TObject)
+  private
+    FInfoAvailable: Boolean;
+    procedure Init(Force: Boolean = False);
+  protected
+    procedure ReadSettings; virtual; abstract;
+  public
+    constructor Create;
+  end;
+
+  TExifSettings = class(TSettingsNode)
+  private
+    FReadInfoFromExif: Boolean;
+    FSaveInfoToExif: Boolean;
+    FUpdateExifInfoInBackground: Boolean;
+    function GetReadInfoFromExif: Boolean;
+    procedure SetReadInfoFromExif(const Value: Boolean);
+    function GetSaveInfoToExif: Boolean;
+    procedure SetSaveInfoToExif(const Value: Boolean);
+    function GetUpdateExifInfoInBackground: Boolean;
+    procedure SetUpdateExifInfoInBackground(const Value: Boolean);
+  protected
+    procedure ReadSettings; override;
+  public
+    property ReadInfoFromExif: Boolean read GetReadInfoFromExif write SetReadInfoFromExif;
+    property SaveInfoToExif: Boolean read GetSaveInfoToExif write SetSaveInfoToExif;
+    property UpdateExifInfoInBackground: Boolean read GetUpdateExifInfoInBackground write SetUpdateExifInfoInBackground;
   end;
 
 function Settings: TSettings;
@@ -157,16 +190,19 @@ end;
 procedure TSettings.ClearCache;
 begin
   FRegistryCache.Clear;
+  FExifSettings.Init(True);
 end;
 
 constructor TSettings.Create;
 begin
   FRegistryCache := TDBRegistryCache.Create;
+  FExifSettings := TExifSettings.Create;
 end;
 
 destructor TSettings.Destroy;
 begin
   F(FRegistryCache);
+  F(FExifSettings);
   inherited;
 end;
 
@@ -270,6 +306,64 @@ var
 begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
   Result := Reg.ReadString('DBDefaultName');
+end;
+
+{ TExifSettings }
+
+function TExifSettings.GetReadInfoFromExif: Boolean;
+begin
+  Init;
+  Result := FReadInfoFromExif;
+end;
+
+procedure TExifSettings.SetReadInfoFromExif(const Value: Boolean);
+begin
+  FReadInfoFromExif := Value;
+  Settings.WriteBool('EXIF', 'ReadInfoFromExif', Value);
+end;
+
+function TExifSettings.GetSaveInfoToExif: Boolean;
+begin
+  Init;
+  Result := FSaveInfoToExif;
+end;
+
+procedure TExifSettings.SetSaveInfoToExif(const Value: Boolean);
+begin
+  FSaveInfoToExif := Value;
+  Settings.WriteBool('EXIF', 'SaveInfoToExif', Value);
+end;
+
+function TExifSettings.GetUpdateExifInfoInBackground: Boolean;
+begin
+  Init;
+  Result := FUpdateExifInfoInBackground;
+end;
+
+procedure TExifSettings.SetUpdateExifInfoInBackground(const Value: Boolean);
+begin
+  FUpdateExifInfoInBackground := Value;
+  Settings.WriteBool('EXIF', 'UpdateExifInfoInBackground', Value);
+end;
+
+procedure TExifSettings.ReadSettings;
+begin
+  FReadInfoFromExif := Settings.ReadBool('EXIF', 'ReadInfoFromExif', True);
+  FSaveInfoToExif := Settings.ReadBool('EXIF', 'SaveInfoToExif', True);
+  FUpdateExifInfoInBackground := Settings.ReadBool('EXIF', 'UpdateExifInfoInBackground', True);
+end;
+
+{ TSettingsNode }
+
+constructor TSettingsNode.Create;
+begin
+  FInfoAvailable := False;
+end;
+
+procedure TSettingsNode.Init(Force: Boolean = False);
+begin
+  if not FInfoAvailable or Force then
+    ReadSettings;
 end;
 
 initialization

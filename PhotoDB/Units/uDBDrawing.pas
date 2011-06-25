@@ -42,6 +42,8 @@ function RectInRect(const R1, R2: TRect): Boolean;
 procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer;
   Rating, Rotate, Access: Integer; FileName: string; Crypted: Boolean; var Exists: Integer; ID: Integer = 0);
 
+function Icons: TIconsEx;
+
 implementation
 
 uses

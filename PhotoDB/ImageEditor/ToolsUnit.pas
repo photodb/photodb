@@ -13,6 +13,7 @@ type
     { Private declarations }
     FOnClose: TNotifyEvent;
     FSetImagePointer: TSetPointerToNewImage;
+    FCancelPointerToImage: TSetPointerToNewImage;
     FCancelTempImage: TCancelTemporaryImage;
     FSetTempImage: TSetPointerToNewImage;
     FImageHistory: TBitmapHistory;
@@ -51,6 +52,7 @@ type
     property ImageHistory: TBitmapHistory read FImageHistory write SetImageHistory;
     property Progress: TProgressBar read FProgress write SetProgress;
     property Editor: TImageEditorForm read FEditor write FEditor;
+    property CancelPointerToImage: TSetPointerToNewImage read FCancelPointerToImage write FCancelPointerToImage;
   end;
 
 implementation

@@ -329,6 +329,12 @@ begin
   if ID <= 0 then
     Exit;
 
+  if Params * [EventID_No_EXIF] <> [] then
+    Exit;
+
+  if not Settings.Exif.SaveInfoToExif then
+    Exit;
+
   UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating,
     EventID_Param_Comment, EventID_Param_KeyWords];
 

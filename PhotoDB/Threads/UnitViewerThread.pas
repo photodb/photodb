@@ -87,8 +87,8 @@ end;
 
 procedure TViewerThread.Execute;
 var
-  PNG : TPNGImage;
-  GraphicClass : TGraphicClass;
+  PNG: TPNGImage;
+  GraphicClass: TGraphicClass;
 begin
   inherited;
   FreeOnTerminate := True;

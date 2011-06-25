@@ -8,7 +8,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, ImButton, ComCtrls, ActiveX,
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
   DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory, uDBForm,
-  UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator,
+  UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator, uDBDrawing,
   UnitDBDeclare, uConstants, uDBPopupMenuInfo, uFormUtils,
   uRuntime;
 
@@ -83,9 +83,18 @@ implementation
 
 { TImHint }
 
-procedure DrawHintInfo(Handle : THandle; Width,Height  : Integer; fInfo : TDBPopupMenuInfoRecord);
+procedure DrawHintInfo(Bitmap: TBitmap; Width, Height: Integer; FInfo: TDBPopupMenuInfoRecord);
 var
   Sm, Y: Integer;
+
+  procedure DoDrawIcon(X, Y: Integer; ImageIndex: Integer; Grayscale: Boolean = False);
+  begin
+    if not Grayscale then
+      DrawIconEx(Bitmap.Canvas.Handle, X, Y, UnitDBKernel.Icons[ImageIndex + 1], 16, 16, 0, 0, DI_NORMAL)
+    else
+      Icons.Items[ImageIndex].GrayIcon.DoDraw(X, Y, Bitmap);
+  end;
+
 begin
   Y := Height - 18;
   Sm := Width - 2;
@@ -94,38 +103,44 @@ begin
   if FInfo.Access = Db_access_private then
   begin
     Dec(Sm, 20);
-    DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_PRIVATE + 1], 16, 16, 0, 0, DI_NORMAL);
+    DoDrawIcon(Sm, Y, DB_IC_PRIVATE);
   end;
   Dec(Sm, 20);
   case FInfo.Rotation of
     DB_IMAGE_ROTATE_90:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_ROTETED_90 + 1], 16, 16, 0, 0, DI_NORMAL);
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_90);
     DB_IMAGE_ROTATE_180:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_ROTETED_180 + 1], 16, 16, 0, 0, DI_NORMAL);
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_180);
     DB_IMAGE_ROTATE_270:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_ROTETED_270 + 1], 16, 16, 0, 0, DI_NORMAL);
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_270);
+    -10 * DB_IMAGE_ROTATE_90:
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_90, True);
+    -10 * DB_IMAGE_ROTATE_180:
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_180, True);
+    -10 * DB_IMAGE_ROTATE_270:
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_270, True);
     else
       Inc(Sm, 20);
   end;
   Dec(Sm, 20);
   case FInfo.Rating of
-    1:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_1 + 1], 16, 16, 0, 0, DI_NORMAL);
-    2:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_2 + 1], 16, 16, 0, 0, DI_NORMAL);
-    3:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_3 + 1], 16, 16, 0, 0, DI_NORMAL);
-    4:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_4 + 1], 16, 16, 0, 0, DI_NORMAL);
-    5:
-      DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_RATING_5 + 1], 16, 16, 0, 0, DI_NORMAL);
+    1: DoDrawIcon(Sm, Y, DB_IC_RATING_1);
+    2: DoDrawIcon(Sm, Y, DB_IC_RATING_2);
+    3: DoDrawIcon(Sm, Y, DB_IC_RATING_3);
+    4: DoDrawIcon(Sm, Y, DB_IC_RATING_4);
+    5: DoDrawIcon(Sm, Y, DB_IC_RATING_5);
+    -10: DoDrawIcon(Sm, Y, DB_IC_RATING_1, True);
+    -20: DoDrawIcon(Sm, Y, DB_IC_RATING_2, True);
+    -30: DoDrawIcon(Sm, Y, DB_IC_RATING_3, True);
+    -40: DoDrawIcon(Sm, Y, DB_IC_RATING_4, True);
+    -50: DoDrawIcon(Sm, Y, DB_IC_RATING_5, True);
   else
     Inc(Sm, 20);
   end;
   if FInfo.Crypted then
   begin
     Dec(Sm, 20);
-    DrawIconEx(Handle, Sm, Y, UnitDBKernel.Icons[DB_IC_KEY + 1], 16, 16, 0, 0, DI_NORMAL);
+    DoDrawIcon(Sm, Y, DB_IC_KEY);
   end;
 end;
 
@@ -291,7 +306,7 @@ begin
     ClientWidth := WindowWidth;
     ClientHeight := WindowHeight;
 
-    DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
+    DrawHintInfo(ImageBuffer, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
     CreateFormImage;
     if Info.InnerImage then
       ShowWindow(Handle, SW_SHOW)
@@ -662,7 +677,7 @@ begin
       StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, ClBtnFace);
   end;
 
-  DrawHintInfo(ImageBuffer.Canvas.Handle, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
+  DrawHintInfo(ImageBuffer, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
   CreateFormImage;
   ImageFrameTimer.Enabled := False;
   Delta := Integer(GetTickCount - TickCountStart);

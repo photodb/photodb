@@ -111,7 +111,8 @@ type
     procedure ZoomOutLinkClick(Sender: TObject);
     procedure FitToSizeLinkClick(Sender: TObject);
     procedure RecteareImageProc(Sender: TObject);
-    procedure SetPointerToNewImage(Image : TBitmap);
+    procedure SetPointerToNewImage(Image: TBitmap);
+    procedure CancelPointerToNewImage(Image: TBitmap);
     procedure RotateLinkClick(Sender: TObject);
     procedure SetTemporaryImage(Image : TBitmap);
     procedure CancelTemporaryImage(Destroy : Boolean);
@@ -1881,6 +1882,12 @@ begin
   ToolClass.Show;
 end;
 
+procedure TImageEditor.CancelPointerToNewImage(Image: TBitmap);
+begin
+  if CurrentImage = Image then
+    CurrentImage := nil;
+end;
+
 procedure TImageEditor.CancelTemporaryImage(Destroy: Boolean);
 begin
   if not TempImage then
@@ -2054,6 +2061,7 @@ begin
   ToolClass.Image := CurrentImage;
   ToolClass.SetImagePointer := SetPointerToNewImage;
   ToolClass.OnClosePanel := ShowTools;
+  ToolClass.CancelPointerToImage := CancelPointerToNewImage;
   BaseImage := TBitmap.Create;
   try
     BaseImage.Assign(SampleImage.Picture.Graphic);

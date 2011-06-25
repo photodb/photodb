@@ -60,35 +60,32 @@ object OptionsForm: TOptionsForm
       object LblSkipExt: TLabel
         Left = 282
         Top = 121
-        Width = 180
+        Width = 174
         Height = 40
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '- File extension ignored'
         WordWrap = True
-        ExplicitWidth = 160
       end
       object LblAddSubmenuItem: TLabel
         Left = 282
         Top = 77
-        Width = 180
+        Width = 174
         Height = 38
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '- File option will added for this file type'
         WordWrap = True
-        ExplicitWidth = 160
       end
       object LblUseExt: TLabel
         Left = 282
         Top = 34
-        Width = 180
+        Width = 174
         Height = 40
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '- File will open with this Program'
         WordWrap = True
-        ExplicitWidth = 160
       end
       object Bevel2: TBevel
         Left = 6
@@ -1307,6 +1304,47 @@ object OptionsForm: TOptionsForm
         TabOrder = 11
         Value = 64
       end
+      object GroupBox1: TGroupBox
+        Left = 11
+        Top = 307
+        Width = 445
+        Height = 86
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'EXIF'
+        TabOrder = 13
+        DesignSize = (
+          445
+          86)
+        object CbReadInfoFromExif: TCheckBox
+          Left = 11
+          Top = 16
+          Width = 426
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'CbReadInfoFromExif'
+          TabOrder = 0
+          ExplicitWidth = 430
+        end
+        object CbSaveInfoToExif: TCheckBox
+          Left = 11
+          Top = 39
+          Width = 426
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'CbSaveInfoToExif'
+          TabOrder = 1
+          ExplicitWidth = 430
+        end
+        object CbUpdateExifInfoInBackground: TCheckBox
+          Left = 11
+          Top = 62
+          Width = 430
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'CbUpdateExifInfoInBackground'
+          TabOrder = 2
+        end
+      end
     end
   end
   object PmExtensionStatus: TPopupMenu
@@ -1331,8 +1369,19 @@ object OptionsForm: TOptionsForm
       Caption = 'Default'
       OnClick = Default1Click
     end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object SelectAll1: TMenuItem
+      Caption = 'Select All'
+      OnClick = SelectAll1Click
+    end
+    object DeselectAll1: TMenuItem
+      Caption = 'Deselect All'
+      OnClick = DeselectAll1Click
+    end
   end
-  object PopupMenu2: TPopupMenu
+  object PmUserMenu: TPopupMenu
     Left = 121
     Top = 437
     object Addnewcommand1: TMenuItem
@@ -1348,7 +1397,7 @@ object OptionsForm: TOptionsForm
     Left = 9
     Top = 437
   end
-  object PopupMenu3: TPopupMenu
+  object PmPlaces: TPopupMenu
     Left = 84
     Top = 440
     object Additem1: TMenuItem

@@ -138,6 +138,9 @@ begin
             if not StaticPath(FTable.FieldByName('FFileName').AsString) then
               Continue;
 
+            if Settings.Exif.UpdateExifInfoInBackground then
+              UpdateFileExif(Info);
+
             Folder := ExtractFileDir(Info.FileName);
             Folder := AnsiLowerCase(Folder);
             CalcStringCRC32(AnsiLowerCase(Folder), Crc);

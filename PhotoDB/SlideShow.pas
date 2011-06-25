@@ -293,7 +293,7 @@ type
     procedure PrepareNextImage;
     procedure SetFullImageState(State : Boolean; BeginZoom : Extended; Pages, Page : integer);
     procedure DoUpdateRecordWithDataSet(FileName : string; DS : TDataSet);
-    procedure DoSetNoDBRecord(FileName : string);
+    procedure DoSetNoDBRecord(Info: TDBPopupMenuInfoRecord);
     procedure MakePagesLinks;
     procedure SetProgressPosition(Position, Max : Integer);
     function GetPageCaption : String;
@@ -455,7 +455,6 @@ begin
   else
     NeedsUpdating := False;
 
-  Item.InfoLoaded := True;
   Rotate := Item.Rotation;
   Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1,
     CurrentInfo.Count]);
@@ -1665,7 +1664,7 @@ function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile 
 var
   I: Integer;
   FOldImageExists, NotifyUser: Boolean;
-  DBItem: TDBPopupMenuInfoRecord;
+  CurrentItem, DBItem: TDBPopupMenuInfoRecord;
 begin
   TW.I.Start('ExecuteW');
   Result := True;
@@ -1679,19 +1678,31 @@ begin
     ImageFrameTimer.Enabled := False;
   TW.I.Start('ToolButton1.Enabled');
 
-  CurrentInfo.Clear;
-  for I := 0 to Info.Count - 1 do
-  begin
-    DBItem := Info[I];
-    if DBItem.Selected then
+  CurrentItem := nil;
+  if LoadBaseFile <> '' then
+    CurrentItem := Item.Copy;
+
+  try
+    CurrentInfo.Clear;
+    for I := 0 to Info.Count - 1 do
     begin
-      CurrentInfo.Add(DBItem.Copy);
-      if DBItem.IsCurrent then
-        CurrentInfo.Position := CurrentInfo.Count - 1;
+      DBItem := Info[I];
+      if DBItem.Selected then
+      begin
+        CurrentInfo.Add(DBItem.Copy);
+        if DBItem.IsCurrent then
+          CurrentInfo.Position := CurrentInfo.Count - 1;
+      end;
     end;
+    if CurrentInfo.Count < 2 then
+      CurrentInfo.Assign(Info);
+
+    if (CurrentItem <> nil) and (CurrentInfo.Count > 0)
+      and (CurrentInfo[CurrentInfo.Position].ID = 0) then
+        CurrentInfo[CurrentInfo.Position].Assign(CurrentItem);
+  finally
+    F(CurrentItem);
   end;
-  if CurrentInfo.Count < 2 then
-    CurrentInfo.Assign(Info);
 
   SetProgressPosition(Info.Position + 1, Info.Count);
   if Info.Count = 0 then
@@ -2332,6 +2343,7 @@ var
   I, J: Integer;
   B: TBitmap;
   Imlists: array [0 .. 2] of TImageList;
+
 const
   Names: array [0 .. 1, 0 .. IconsCount] of string = (('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
       'Z_FULLSIZE_NORM', 'Z_FULLSCREEN_NORM', 'Z_ZOOMIN_NORM', 'Z_ZOOMOUT_NORM', 'Z_FULLSCREEN', 'Z_LEFT_NORM',
@@ -2359,6 +2371,7 @@ begin
   Imlists[0].BkColor := ClBtnFace;
   Imlists[1].BkColor := ClBtnFace;
   Imlists[2].BkColor := ClBtnFace;
+
   B := TBitmap.Create;
   try
     B.Width := 16;
@@ -2372,17 +2385,26 @@ begin
         ImageList_ReplaceIcon(Imlists[I].Handle, -1, Icons[I, J]);
         if I = 0 then
         begin
-          if J in [0, 1, 12, 14, 15, 22, 23] then
+          if J in [0, 1, 12, 14, 22, 23] then
           begin
             B.Canvas.Rectangle(0, 0, 16, 16);
             DrawIconEx(B.Canvas.Handle, 0, 0, Icons[I, J], 16, 16, 0, 0, DI_NORMAL);
             GrayScale(B);
             Imlists[2].Add(B, nil);
-          end
-          else
+          end else
             ImageList_ReplaceIcon(Imlists[2].Handle, -1, Icons[I, J]);
         end;
       end;
+
+    for I := 15 to 19 do
+    begin
+      B.Canvas.Rectangle(0, 0, 16, 16);
+      DrawIconEx(B.Canvas.Handle, 0, 0, Icons[0, I], 16, 16, 0, 0, DI_NORMAL);
+      GrayScale(B);
+      Imlists[0].Add(B, nil);
+      Imlists[1].Add(B, nil);
+    end;
+
     TW.I.Start('DestroyIcon');
     for I := 0 to 1 do
       for J := 0 to IconsCount do
@@ -2391,6 +2413,7 @@ begin
   finally
     F(B);
   end;
+
   TW.I.Start('RecreateImLists - end');
 end;
 
@@ -3209,13 +3232,16 @@ end;
 procedure TViewer.TbRatingClick(Sender: TObject);
 var
   P: TPoint;
-  I: Integer;
+  I, Rating: Integer;
 begin
+  Rating := Item.Rating;
+  if Rating < 0 then
+    Rating := - Rating div 10;
   GetCursorPos(P);
   for I := 0 to 5 do
     (FindComponent('N' + IntToStr(I) + '1') as TMenuItem).Default := False;
 
-  (FindComponent('N' + IntToStr(Item.Rating) + '1') as TMenuItem).Default := True;
+  (FindComponent('N' + IntToStr(Rating) + '1') as TMenuItem).Default := True;
 
   RatingPopupMenu.Popup(P.X, P.Y);
 end;
@@ -3344,14 +3370,15 @@ begin
   UpdateCrypted;
 end;
 
-procedure TViewer.DoSetNoDBRecord(FileName: string);
+procedure TViewer.DoSetNoDBRecord(Info: TDBPopupMenuInfoRecord);
 var
   I: integer;
 begin
   for I := 0 to CurrentInfo.Count - 1 do
-    if not CurrentInfo[I].InfoLoaded then
-      if CurrentInfo[I].FileName = FileName then
+    if (not CurrentInfo[I].InfoLoaded) or (CurrentInfo[I].ID = 0) then
+      if CurrentInfo[I].FileName = Info.FileName then
       begin
+        CurrentInfo[I].Assign(Info);
         CurrentInfo[I].InfoLoaded := True;
         Break;
       end;
@@ -3420,7 +3447,11 @@ end;
 procedure TViewer.SetDisplayRating(const Value: Integer);
 begin
   TbRating.Enabled := not (FolderView and (Item.ID = 0)) and not DBReadOnly;
-  TbRating.ImageIndex := 14 + Abs(Value);
+
+  if Value >= 0 then
+    TbRating.ImageIndex := 14 + Abs(Value)
+  else
+    TbRating.ImageIndex := - (Value div 10) + ImageList1.Count - 6;
 end;
 
 procedure TViewer.SetProgressPosition(Position, Max: Integer);

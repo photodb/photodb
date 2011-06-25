@@ -10,7 +10,7 @@ uses
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
   uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations, uDBImageUtils,
-  GraphicsBaseTypes, uDBAdapter, uCDMappingTypes;
+  GraphicsBaseTypes, uDBAdapter, uCDMappingTypes, uExifUtils;
 
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -506,6 +506,38 @@ begin
   end;
 end;
 
+procedure SetStringField(ID: Integer; FieldName, FieldValue: string);
+var
+  DS: TDataSet;
+  SQL: string;
+begin
+  DS := GetQuery;
+  try
+    SQL := 'UPDATE $DB$ SET ' + FieldName + ' = :' + FieldName;
+    SetSQL(DS, SQL);
+    SetStrParam(DS, 0, FieldValue);
+    try
+      ExecSQL(DS);
+      EventLog('::ExecuteSQLExecOnCurrentDB()/ExecSQL OK [' + SQL + ']');
+    except
+      on E: Exception do
+        EventLog(':ExecuteSQLExecOnCurrentDB()/ExecSQL throw exception: ' + E.message);
+    end;
+  finally
+    FreeDS(DS);
+  end;
+end;
+
+procedure SetComment(ID: Integer; Comment: string);
+begin
+  SetStringField(ID, 'Comment', Comment);
+end;
+
+procedure SetKeyWords(ID: Integer; KeyWords: string);
+begin
+  SetStringField(ID, 'KeyWords', KeyWords);
+end;
+
 procedure SetRotate(ID, Rotate: Integer);
 begin
   ExecuteQuery(Format('Update $DB$ Set Rotated=%d Where ID=%d', [Rotate, ID]));
@@ -611,6 +643,8 @@ var
   Crc: Cardinal;
   DateToAdd, ATime: TDateTime;
   Ms: TMemoryStream;
+  Info: TDBPopupMenuInfoRecord;
+  DA: TDBAdapter;
 
   function Next: Integer;
   begin
@@ -655,13 +689,13 @@ begin
   // ----
 
   Table := GetQuery;
+  DA := TDBAdapter.Create(Table);
   try
-    SetSQL(Table, 'Select StrTh,Attr from $DB$ where ID = ' + IntToStr(ID));
+    SetSQL(Table, 'Select StrTh,Attr,Rating,Rotated,Comment,Keywords from $DB$ where ID = ' + IntToStr(ID));
     try
       Table.Open;
-      OldImTh := Table.FieldByName('StrTh').AsString;
-      Attr := Table.FieldByName('Attr').AsInteger;
-      Table.Close;
+      OldImTh := DA.LongImageID;
+      Attr := DA.Attributes;
       _SetSql := 'FFileName=:FFileName,';
       _SetSql := _SetSql + 'Name=:Name,';
       _SetSql := _SetSql + 'StrTh=:StrTh,';
@@ -690,11 +724,11 @@ begin
       _SetSql := _SetSql + Format('FolderCRC=%d,', [Crc]);
 
       UpdateDateTime := False;
-      if Settings.ReadBool('Options', 'FixDateAndTime', True) then
-      begin
-        ExifData := TExifData.Create;
-        try
-          ExifData.LoadFromGraphic(FileName);
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(FileName);
+        if Settings.ReadBool('Options', 'FixDateAndTime', True) then
+        begin
           if YearOf(ExifData.DateTimeOriginal) > 2000 then
           begin
             UpdateDateTime := True;
@@ -713,12 +747,48 @@ begin
             _SetSql := _SetSql + 'IsDate=:IsDate,';
             _SetSql := _SetSql + 'IsTime=:IsTime,';
           end;
-        except
-          on E: Exception do
-            EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
         end;
-        F(ExifData);
+        if Settings.Exif.ReadInfoFromExif then
+        begin
+          Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+          try
+            UpdateImageRecordFromExif(Info);
+            if (Info.Rating > 0) and (DA.Rating <> Info.Rating) then
+            begin
+              SetRating(ID, Info.Rating);
+              EventInfo.Rating := Info.Rating;
+              DoDBkernelEvent(Caller, ID, [EventID_Param_Rating, EventID_No_EXIF], EventInfo);
+            end;
+
+            if (Info.Rotation > DB_IMAGE_ROTATE_0) and (DA.Rotation <> Info.Rotation) then
+            begin
+              SetRotate(ID, Info.Rotation);
+              EventInfo.Rotate := Info.Rotation;
+              DoDBkernelEvent(Caller, ID, [EventID_Param_Rotate, EventID_No_EXIF], EventInfo);
+            end;
+
+            if (Info.Comment <> '') and (DA.Comment <> Info.Comment) then
+            begin
+              SetComment(ID, Info.Comment);
+              EventInfo.Comment := Info.Comment;
+              DoDBkernelEvent(Caller, ID, [EventID_Param_Comment, EventID_No_EXIF], EventInfo);
+            end;
+
+            if (Info.Keywords <> '') and (DA.Keywords <> Info.Keywords) then
+            begin
+              EventInfo.Keywords := Info.Keywords;
+              DoDBkernelEvent(Caller, ID, [EventID_Param_KeyWords, EventID_No_EXIF], EventInfo);
+              SetKeywords(ID, Info.Keywords);
+            end;
+          finally
+            F(Info);
+          end;
+        end;
+      except
+        on E: Exception do
+          EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
       end;
+      F(ExifData);
 
       if Attr = Db_attr_dublicate then
       begin
@@ -744,6 +814,8 @@ begin
         EventInfo.Attr := Db_attr_norm;
         DoDBkernelEvent(Caller, ID, [EventID_Param_Attr], EventInfo);
       end;
+
+      Table.Close;
 
       if _SetSql[Length(_SetSql)] = ',' then
         _SetSql := Copy(_SetSql, 1, Length(_SetSql) - 1);
@@ -789,6 +861,7 @@ begin
     end;
     Res.Jpeg.Free;
   finally
+    F(DA);
     FreeDS(Table);
   end;
   UpdateImageThInLinks(OldImTh, Res.ImTh);

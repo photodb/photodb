@@ -20,11 +20,11 @@ type
     Usethisprogramasdefault1: TMenuItem;
     Usemenuitem1: TMenuItem;
     Dontusethisextension1: TMenuItem;
-    PopupMenu2: TPopupMenu;
+    PmUserMenu: TPopupMenu;
     Addnewcommand1: TMenuItem;
     Remove1: TMenuItem;
     ImageList1: TImageList;
-    PopupMenu3: TPopupMenu;
+    PmPlaces: TPopupMenu;
     Additem1: TMenuItem;
     DeleteItem1: TMenuItem;
     N1: TMenuItem;
@@ -141,6 +141,13 @@ type
     SedMinHeight: TSpinEdit;
     SedMinWidth: TSpinEdit;
     Bevel3: TBevel;
+    GroupBox1: TGroupBox;
+    CbReadInfoFromExif: TCheckBox;
+    CbSaveInfoToExif: TCheckBox;
+    CbUpdateExifInfoInBackground: TCheckBox;
+    N4: TMenuItem;
+    SelectAll1: TMenuItem;
+    DeselectAll1: TMenuItem;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -199,6 +206,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure WlDefaultJPEGOptionsClick(Sender: TObject);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+    procedure SelectAll1Click(Sender: TObject);
+    procedure DeselectAll1Click(Sender: TObject);
   private
     FThemeList : TStringList;
     FUserMenu : TUserMenuItemArray;
@@ -307,6 +316,10 @@ begin
     SedMinHeight.Value := Settings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64);
     SedMinWidth.Enabled := CbDontAddSmallFiles.Checked;
     SedMinHeight.Enabled := CbDontAddSmallFiles.Checked;
+
+    CbReadInfoFromExif.Checked := Settings.Exif.ReadInfoFromExif;
+    CbSaveInfoToExif.Checked := Settings.Exif.SaveInfoToExif;
+    CbUpdateExifInfoInBackground.Checked := Settings.Exif.UpdateExifInfoInBackground;
   end;
 
   if NewTab = 3 then
@@ -420,8 +433,8 @@ begin
     FLoadedPages[I] := False;
   LoadLanguage;
   FThemeList := nil;
-  PopupMenu3.Images := DBKernel.ImageList;
-  PopupMenu2.Images := DBKernel.ImageList;
+  PmPlaces.Images := DBKernel.ImageList;
+  PmUserMenu.Images := DBKernel.ImageList;
   Up1.ImageIndex := DB_IC_UP;
   Down1.ImageIndex := DB_IC_DOWN;
   DeleteItem1.ImageIndex := DB_IC_DELETE_INFO;
@@ -542,6 +555,9 @@ begin
     Settings.WriteInteger('Options', 'DontAddSmallImagesWidth', SedMinWidth.Value);
     Settings.WriteInteger('Options', 'DontAddSmallImagesHeight', SedMinHeight.Value);
 
+    Settings.Exif.ReadInfoFromExif := CbReadInfoFromExif.Checked;
+    Settings.Exif.SaveInfoToExif := CbSaveInfoToExif.Checked;
+    Settings.Exif.UpdateExifInfoInBackground := CbUpdateExifInfoInBackground.Checked;
   end;
   // 2 :
   if FLoadedPages[2] then
@@ -726,6 +742,13 @@ begin
     LblUseExt.Caption := L('Use PhotoDB as default association', 'Setup');
     LblAddSubmenuItem.Caption := L('Add menu item', 'Setup');
     LblSkipExt.Caption := L('Don''t use this extension', 'Setup');
+
+    SelectAll1.Caption := L('Select all', 'Setup');
+    DeselectAll1.Caption := L('Select none', 'Setup');
+
+    CbReadInfoFromExif.Caption := L('Read image info from EXIF');
+    CbSaveInfoToExif.Caption := L('Save info to EXIF');
+    CbUpdateExifInfoInBackground.Caption := L('Update EXIF info in background');
   finally
     EndTranslate;
   end;
@@ -809,14 +832,14 @@ begin
   begin
     Addnewcommand1.Visible := True;
     Remove1.Visible := False;
-    PopupMenu2.Tag := -1;
+    PmUserMenu.Tag := -1;
   end else
   begin
     Addnewcommand1.Visible := False;
     Remove1.Visible := True;
-    PopupMenu2.Tag := Item.index;
+    PmUserMenu.Tag := Item.index;
   end;
-  PopupMenu2.Popup(LvUserMenuItems.ClientToScreen(MousePos).X, LvUserMenuItems.ClientToScreen(MousePos).Y);
+  PmUserMenu.Popup(LvUserMenuItems.ClientToScreen(MousePos).X, LvUserMenuItems.ClientToScreen(MousePos).Y);
 end;
 
 procedure TOptionsForm.Addnewcommand1Click(Sender: TObject);
@@ -859,14 +882,14 @@ procedure TOptionsForm.Remove1Click(Sender: TObject);
 var
   I: Integer;
 begin
-  if PopupMenu2.Tag <> -1 then
+  if PmUserMenu.Tag <> -1 then
   begin
-    for I := PopupMenu2.Tag to Length(FUserMenu) - 2 do
+    for I := PmUserMenu.Tag to Length(FUserMenu) - 2 do
       FUserMenu[I] := FUserMenu[I + 1];
     SetLength(FUserMenu, Length(FUserMenu) - 1);
-    LvUserMenuItems.Items.Delete(PopupMenu2.Tag);
-    ImageList1.Delete(PopupMenu2.Tag);
-    for I := PopupMenu2.Tag to Length(FUserMenu) - 1 do
+    LvUserMenuItems.Items.Delete(PmUserMenu.Tag);
+    ImageList1.Delete(PmUserMenu.Tag);
+    for I := PmUserMenu.Tag to Length(FUserMenu) - 1 do
       LvUserMenuItems.Items[I].ImageIndex := LvUserMenuItems.Items[I].ImageIndex - 1;
   end;
 end;
@@ -1050,11 +1073,11 @@ begin
   begin
     Up1.Visible := Item.index <> 0;
     Down1.Visible := Item.index <> PlacesListView.Items.Count - 1;
-    PopupMenu3.Tag := Item.index;
+    PmPlaces.Tag := Item.index;
     Rename1.Visible := True;
     DeleteItem1.Visible := True;
   end;
-  PopupMenu3.Popup(PlacesListView.ClientToScreen(MousePos).X, PlacesListView.ClientToScreen(MousePos).Y);
+  PmPlaces.Popup(PlacesListView.ClientToScreen(MousePos).X, PlacesListView.ClientToScreen(MousePos).Y);
 end;
 
 procedure TOptionsForm.BtnChooseNewPlaceClick(Sender: TObject);
@@ -1279,14 +1302,14 @@ procedure TOptionsForm.DeleteItem1Click(Sender: TObject);
 var
   I: Integer;
 begin
-  if PopupMenu3.Tag <> -1 then
+  if PmPlaces.Tag <> -1 then
   begin
-    for I := PopupMenu3.Tag to Length(FPlaces) - 2 do
+    for I := PmPlaces.Tag to Length(FPlaces) - 2 do
       FPlaces[i] := FPlaces[I + 1];
     SetLength(FPlaces, Length(FPlaces) - 1);
-    PlacesListView.Items.Delete(PopupMenu3.Tag);
-    PlacesImageList.Delete(PopupMenu3.Tag);
-    for I := PopupMenu3.Tag to Length(FPlaces) - 1 do
+    PlacesListView.Items.Delete(PmPlaces.Tag);
+    PlacesImageList.Delete(PmPlaces.Tag);
+    for I := PmPlaces.Tag to Length(FPlaces) - 1 do
       PlacesListView.Items[I].ImageIndex := PlacesListView.Items[I].ImageIndex - 1;
   end;
 end;
@@ -1367,30 +1390,28 @@ begin
   FPlaces[Item.Index].Name := S;
 end;
 
-procedure TOptionsForm.Default1Click(Sender: TObject);
-{Var
-  i : Integer;
-  Reg : TRegistry;
-  S : String; }
+procedure TOptionsForm.DeselectAll1Click(Sender: TObject);
+var
+  I: Integer;
 begin
-{ Reg:=TRegistry.Create;
- Reg.RootKey:=Windows.HKEY_CLASSES_ROOT;
- For i:=1 to CheckListBox1.Items.Count do
- begin
-  Reg.OpenKey('\.'+CheckListBox1.Items[i-1],false);
-  S:=Reg.ReadString('');
-  Reg.CloseKey;
-  Reg.OpenKey('\'+S+'\shell\open\command',false);
-  If reg.ReadString('')='' then
-  CheckListBox1.State[i-1]:=cbChecked else
-  begin
-   if FileRegisteredOnInstalledApplication(reg.ReadString('')) then
-   CheckListBox1.State[i-1]:=cbChecked else
-   CheckListBox1.State[i-1]:=cbGrayed;
-  end;
-  Reg.CloseKey;
- end;
- Reg.Free; }
+  for I := 0 to CbExtensionList.Items.Count - 1 do
+    CbExtensionList.State[I] := cbUnchecked;
+end;
+
+procedure TOptionsForm.SelectAll1Click(Sender: TObject);
+var
+  I: Integer;
+begin
+  for I := 0 to CbExtensionList.Items.Count - 1 do
+    CbExtensionList.State[I] := cbChecked;
+end;
+
+procedure TOptionsForm.Default1Click(Sender: TObject);
+var
+  I: Integer;
+begin
+  for I := 0 to CbExtensionList.Items.Count - 1 do
+    CbExtensionList.State[I] := AssociationStateToCheckboxState(TFileAssociations.Instance.GetCurrentAssociationState(TFileAssociation(CbExtensionList.Items.Objects[I]).Extension), True);
 end;
 
 procedure TOptionsForm.CbStartUpExplorerClick(Sender: TObject);
