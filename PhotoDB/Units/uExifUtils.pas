@@ -3,7 +3,7 @@ unit uExifUtils;
 interface
 
 uses
-  uConstants, CCR.Exif, uMemory, UnitDBDeclare, uSettings;
+  Windows, uConstants, CCR.Exif, uMemory, UnitDBDeclare, uSettings;
 
 type
   TExifPatchInfo = class
@@ -29,113 +29,125 @@ function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boo
 var
   ExifData: TExifData;
   Rating, Rotation: Integer;
+  OldMode : Cardinal;
 begin
-  Result := False;
-  if (Info.Rating > 0) and (Info.Rotation > DB_IMAGE_ROTATE_UNKNOWN) then
-    Exit; //nothing to update
-
-  if not Settings.Exif.ReadInfoFromExif then
-    Exit;
-
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    ExifData := TExifData.Create;
-    try
-      ExifData.LoadFromGraphic(Info.FileName);
-      if not ExifData.Empty then
-      begin
-        if Info.Rating <= 0 then
-        begin
-          Rating := GetExifRating(ExifData);
-          if IsDBValues then
-            Info.Rating := Rating
-          else
-            Info.Rating := - 10 * Rating;
-        end;
-
-        if Info.Rotation <= DB_IMAGE_ROTATE_0 then
-        begin
-          Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
-          if IsDBValues then
-            Info.Rotation := Rotation
-          else
-            Info.Rotation := - 10 * Rotation;
-        end;
-
-        if Info.KeyWords = '' then
-          Info.KeyWords := ExifData.Keywords;
-
-        if Info.Comment = '' then
-          Info.Comment := ExifData.Comments;
-      end;
-    finally
-      F(ExifData);
-    end;
-  except
     Result := False;
+    if (Info.Rating > 0) and (Info.Rotation > DB_IMAGE_ROTATE_UNKNOWN) then
+      Exit; //nothing to update
+
+    if not Settings.Exif.ReadInfoFromExif then
+      Exit;
+
+    try
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(Info.FileName);
+        if not ExifData.Empty then
+        begin
+          if Info.Rating <= 0 then
+          begin
+            Rating := GetExifRating(ExifData);
+            if IsDBValues then
+              Info.Rating := Rating
+            else
+              Info.Rating := - 10 * Rating;
+          end;
+
+          if Info.Rotation <= DB_IMAGE_ROTATE_0 then
+          begin
+            Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
+            if IsDBValues then
+              Info.Rotation := Rotation
+            else
+              Info.Rotation := - 10 * Rotation;
+          end;
+
+          if Info.KeyWords = '' then
+            Info.KeyWords := ExifData.Keywords;
+
+          if Info.Comment = '' then
+            Info.Comment := ExifData.Comments;
+        end;
+      finally
+        F(ExifData);
+      end;
+    except
+      Result := False;
+    end;
+    Result := True;
+  finally
+    SetErrorMode(OldMode);
   end;
-  Result := True;
 end;
 
 function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean;
 var
   ExifData: TExifData;
   Changed: Boolean;
+  OldMode : Cardinal;
 begin
-  Changed := False;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    ExifData := TExifData.Create;
+    Changed := False;
     try
-      ExifData.LoadFromGraphic(Info.FileName);
+      ExifData := TExifData.Create;
       try
-        ExifData.XMPPacket.SchemaCount;
-      except
-        ExifData.XMPPacket.Clear;
-      end;
-
-      ExifData.XMPWritePolicy := xwAlwaysUpdate;
-      if (Info.Rating > 0) then
-      begin
-        if ExifData.UserRating <> CreateRating(Info.Rating) then
-        begin
-          ExifData.UserRating := CreateRating(Info.Rating);
-          Changed := True;
+        ExifData.LoadFromGraphic(Info.FileName);
+        try
+          ExifData.XMPPacket.SchemaCount;
+        except
+          ExifData.XMPPacket.Clear;
         end;
-      end;
-      if Info.Rotation <> DB_IMAGE_ROTATE_0 then
-      begin
-        if ExifData.Orientation <> CreateOrientation(Info.Rotation) then
-        begin
-          ExifData.Orientation := CreateOrientation(Info.Rotation);
-          Changed := True;
-        end;
-      end;
 
-      if Info.KeyWords <> '' then
-      begin
-        if ExifData.Keywords <> Info.KeyWords then
+        ExifData.XMPWritePolicy := xwAlwaysUpdate;
+        if (Info.Rating > 0) then
         begin
-          ExifData.Keywords := Info.KeyWords;
-          Changed := True;
+          if ExifData.UserRating <> CreateRating(Info.Rating) then
+          begin
+            ExifData.UserRating := CreateRating(Info.Rating);
+            Changed := True;
+          end;
         end;
-      end;
-
-      if Info.Comment <> '' then
-      begin
-        if ExifData.Comments <> Info.Comment then
+        if Info.Rotation <> DB_IMAGE_ROTATE_0 then
         begin
-          ExifData.Comments := Info.Comment;
-          Changed := True;
+          if ExifData.Orientation <> CreateOrientation(Info.Rotation) then
+          begin
+            ExifData.Orientation := CreateOrientation(Info.Rotation);
+            Changed := True;
+          end;
         end;
-      end;
 
-      if Changed then
-        ExifData.SaveToGraphic(Info.FileName);
-    finally
-      F(ExifData);
+        if Info.KeyWords <> '' then
+        begin
+          if ExifData.Keywords <> Info.KeyWords then
+          begin
+            ExifData.Keywords := Info.KeyWords;
+            Changed := True;
+          end;
+        end;
+
+        if Info.Comment <> '' then
+        begin
+          if ExifData.Comments <> Info.Comment then
+          begin
+            ExifData.Comments := Info.Comment;
+            Changed := True;
+          end;
+        end;
+
+        if Changed then
+          ExifData.SaveToGraphic(Info.FileName);
+      finally
+        F(ExifData);
+      end;
+      Result := True;
+    except
+      Result := False;
     end;
-    Result := True;
-  except
-    Result := False;
+  finally
+    SetErrorMode(OldMode);
   end;
 end;
 
@@ -143,62 +155,68 @@ function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean;
 var
   ExifData: TExifData;
   Changed: Boolean;
+  OldMode : Cardinal;
 begin
-  Changed := False;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    ExifData := TExifData.Create;
+    Changed := False;
     try
-      ExifData.LoadFromGraphic(FileName);
+      ExifData := TExifData.Create;
       try
-        ExifData.XMPPacket.SchemaCount;
-      except
-        ExifData.XMPPacket.Clear;
-      end;
-
-      ExifData.XMPWritePolicy := xwAlwaysUpdate;
-      if EventID_Param_Rating in Info.Params then
-      begin
-        if ExifData.UserRating <> CreateRating(Info.Value.Rating) then
-        begin
-          ExifData.UserRating := CreateRating(Info.Value.Rating);
-          Changed := True;
+        ExifData.LoadFromGraphic(FileName);
+        try
+          ExifData.XMPPacket.SchemaCount;
+        except
+          ExifData.XMPPacket.Clear;
         end;
-      end;
-      if EventID_Param_Rotate in Info.Params then
-      begin
-        if ExifData.Orientation <> CreateOrientation(Info.Value.Rotate) then
-        begin
-          ExifData.Orientation := CreateOrientation(Info.Value.Rotate);
-          Changed := True;
-        end;
-      end;
 
-      if EventID_Param_KeyWords in Info.Params then
-      begin
-        if ExifData.Keywords <> Info.Value.KeyWords then
+        ExifData.XMPWritePolicy := xwAlwaysUpdate;
+        if EventID_Param_Rating in Info.Params then
         begin
-          ExifData.Keywords := Info.Value.KeyWords;
-          Changed := True;
+          if ExifData.UserRating <> CreateRating(Info.Value.Rating) then
+          begin
+            ExifData.UserRating := CreateRating(Info.Value.Rating);
+            Changed := True;
+          end;
         end;
-      end;
-
-      if EventID_Param_Comment in Info.Params then
-      begin
-        if ExifData.Comments <> Info.Value.Comment then
+        if EventID_Param_Rotate in Info.Params then
         begin
-          ExifData.Comments := Info.Value.Comment;
-          Changed := True;
+          if ExifData.Orientation <> CreateOrientation(Info.Value.Rotate) then
+          begin
+            ExifData.Orientation := CreateOrientation(Info.Value.Rotate);
+            Changed := True;
+          end;
         end;
-      end;
 
-      if Changed then
-        ExifData.SaveToGraphic(FileName);
-    finally
-      F(ExifData);
+        if EventID_Param_KeyWords in Info.Params then
+        begin
+          if ExifData.Keywords <> Info.Value.KeyWords then
+          begin
+            ExifData.Keywords := Info.Value.KeyWords;
+            Changed := True;
+          end;
+        end;
+
+        if EventID_Param_Comment in Info.Params then
+        begin
+          if ExifData.Comments <> Info.Value.Comment then
+          begin
+            ExifData.Comments := Info.Value.Comment;
+            Changed := True;
+          end;
+        end;
+
+        if Changed then
+          ExifData.SaveToGraphic(FileName);
+      finally
+        F(ExifData);
+      end;
+      Result := True;
+    except
+      Result := False;
     end;
-    Result := True;
-  except
-    Result := False;
+  finally
+    SetErrorMode(OldMode);
   end;
 end;
 
@@ -238,19 +256,25 @@ end;
 function GetExifRotate(FileName: string): Integer;
 var
   ExifData: TExifData;
+  OldMode : Cardinal;
 begin
-  Result := DB_IMAGE_ROTATE_0;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    ExifData := TExifData.Create;
+    Result := DB_IMAGE_ROTATE_0;
     try
-      ExifData.LoadFromGraphic(FileName);
-      if not ExifData.Empty then
-        Result := ExifOrientationToRatation(Ord(ExifData.Orientation));
-    finally
-      F(ExifData);
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(FileName);
+        if not ExifData.Empty then
+          Result := ExifOrientationToRatation(Ord(ExifData.Orientation));
+      finally
+        F(ExifData);
+      end;
+    except
+      Exit;
     end;
-  except
-    Exit;
+  finally
+    SetErrorMode(OldMode);
   end;
 end;
 
@@ -292,17 +316,23 @@ end;
 function GetExifRating(FileName: string): Integer;
 var
   ExifData: TExifData;
+  OldMode : Cardinal;
 begin
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    ExifData := TExifData.Create;
     try
-      ExifData.LoadFromGraphic(FileName);
-      Result := GetExifRating(ExifData);
-    finally
-      F(ExifData);
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(FileName);
+        Result := GetExifRating(ExifData);
+      finally
+        F(ExifData);
+      end;
+    except
+      Result := 0;
     end;
-  except
-    Result := 0;
+  finally
+    SetErrorMode(OldMode);
   end;
 end;
 

@@ -195,6 +195,8 @@ begin
     Result := FloatToStrEx(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
   if (Size > 1024 * 1024 * 999) then
     Result := FloatToStrEx(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
+  if (Size div 1024 > 1024 * 1024 * 999) then
+    Result := FloatToStrEx((Size / (1024 * 1024)) / (1024 * 1024), 3) + ' ' + TA('Tb');
 end;
 
 procedure LoadNickJpegImage(Image: TImage);

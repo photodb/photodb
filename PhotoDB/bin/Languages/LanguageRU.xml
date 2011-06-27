@@ -10,6 +10,7 @@
     <translate name="Kb" value="Кб" />
     <translate name="Mb" value="Мб" />
     <translate name="Gb" value="Гб" />
+    <translate name="Tb" value="Тб" />
     <translate name="Bytes" value="Байт" />
     <translate name="Error" value="Ошибка" />
     <translate name="Warning" value="Внимание" />
