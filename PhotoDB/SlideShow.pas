@@ -1630,6 +1630,8 @@ begin
   end;
 end;
 
+//TODO: remove ShowFolderA and use ExecuteDirectoryWithFileOnThread instead of
+
 procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName : String);
 var
   Info: TDBPopupMenuInfo;

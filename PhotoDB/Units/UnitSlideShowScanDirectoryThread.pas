@@ -44,7 +44,7 @@ begin
   try
     Info := TDBPopupMenuInfo.Create;
     try
-      GetFileListByMask(BaseFileName, TFileAssociations.Instance.ExtensionList, Info, N, true);
+      GetFileListByMask(BaseFileName, TFileAssociations.Instance.ExtensionList, Info, N, True);
       SynchronizeEx(SynchNotify);
     finally
       F(Info);

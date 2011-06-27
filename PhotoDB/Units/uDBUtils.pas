@@ -513,7 +513,7 @@ var
 begin
   DS := GetQuery;
   try
-    SQL := 'UPDATE $DB$ SET ' + FieldName + ' = :' + FieldName;
+    SQL := 'UPDATE $DB$ SET ' + FieldName + ' = :' + FieldName + ' WHERE ID = ' +IntToStr(ID);
     SetSQL(DS, SQL);
     SetStrParam(DS, 0, FieldValue);
     try
@@ -1458,6 +1458,7 @@ begin
 
   if FileExists(BeginFile) then
     Folder := ExtractFileDir(BeginFile);
+
 
   ByDirectory := DirectoryExists(BeginFile);
   if ByDirectory then

@@ -17,7 +17,7 @@ function ExifOrientationToRatation(Orientation: Integer): Integer;
 function GetExifRating(FileName: string): Integer; overload;
 function GetExifRating(ExifData: TExifData): Integer; overload;
 function GetExifRotate(FileName: string): Integer;
-procedure UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True);
+function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True): Boolean;
 function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean; overload;
 function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean; overload;
 function CreateRating(Rating: Integer): TWindowsStarRating;
@@ -25,49 +25,55 @@ function CreateOrientation(Rotation: Integer): TExifOrientation;
 
 implementation
 
-procedure UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True);
+function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True): Boolean;
 var
   ExifData: TExifData;
   Rating, Rotation: Integer;
 begin
+  Result := False;
   if (Info.Rating > 0) and (Info.Rotation > DB_IMAGE_ROTATE_UNKNOWN) then
     Exit; //nothing to update
 
   if not Settings.Exif.ReadInfoFromExif then
     Exit;
 
-  ExifData := TExifData.Create;
   try
-    ExifData.LoadFromGraphic(Info.FileName);
-    if not ExifData.Empty then
-    begin
-      if Info.Rating <= 0 then
+    ExifData := TExifData.Create;
+    try
+      ExifData.LoadFromGraphic(Info.FileName);
+      if not ExifData.Empty then
       begin
-        Rating := GetExifRating(ExifData);
-        if IsDBValues then
-          Info.Rating := Rating
-        else
-          Info.Rating := - 10 * Rating;
+        if Info.Rating <= 0 then
+        begin
+          Rating := GetExifRating(ExifData);
+          if IsDBValues then
+            Info.Rating := Rating
+          else
+            Info.Rating := - 10 * Rating;
+        end;
+
+        if Info.Rotation <= DB_IMAGE_ROTATE_0 then
+        begin
+          Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
+          if IsDBValues then
+            Info.Rotation := Rotation
+          else
+            Info.Rotation := - 10 * Rotation;
+        end;
+
+        if Info.KeyWords = '' then
+          Info.KeyWords := ExifData.Keywords;
+
+        if Info.Comment = '' then
+          Info.Comment := ExifData.Comments;
       end;
-
-      if Info.Rotation <= DB_IMAGE_ROTATE_0 then
-      begin
-        Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
-        if IsDBValues then
-          Info.Rotation := Rotation
-        else
-          Info.Rotation := - 10 * Rotation;
-      end;
-
-      if Info.KeyWords = '' then
-        Info.KeyWords := ExifData.Keywords;
-
-      if Info.Comment = '' then
-        Info.Comment := ExifData.Comments;
+    finally
+      F(ExifData);
     end;
-  finally
-    F(ExifData);
+  except
+    Result := False;
   end;
+  Result := True;
 end;
 
 function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean;
@@ -234,13 +240,17 @@ var
   ExifData: TExifData;
 begin
   Result := DB_IMAGE_ROTATE_0;
-  ExifData := TExifData.Create;
   try
-    ExifData.LoadFromGraphic(FileName);
-    if not ExifData.Empty then
-      Result := ExifOrientationToRatation(Ord(ExifData.Orientation));
-  finally
-    F(ExifData);
+    ExifData := TExifData.Create;
+    try
+      ExifData.LoadFromGraphic(FileName);
+      if not ExifData.Empty then
+        Result := ExifOrientationToRatation(Ord(ExifData.Orientation));
+    finally
+      F(ExifData);
+    end;
+  except
+    Exit;
   end;
 end;
 
@@ -283,12 +293,16 @@ function GetExifRating(FileName: string): Integer;
 var
   ExifData: TExifData;
 begin
-  ExifData := TExifData.Create;
   try
-    ExifData.LoadFromGraphic(FileName);
-    Result := GetExifRating(ExifData);
-  finally
-    F(ExifData);
+    ExifData := TExifData.Create;
+    try
+      ExifData.LoadFromGraphic(FileName);
+      Result := GetExifRating(ExifData);
+    finally
+      F(ExifData);
+    end;
+  except
+    Result := 0;
   end;
 end;
 

@@ -800,8 +800,7 @@ begin
   if (Item <> nil) and (Item.Selected) then
   begin
     LastMouseItem := nil;
-    if Active then
-      Application.HideHint;
+
     THintManager.Instance.CloseHint;
     HintTimer.Enabled := False;
     Info := GetCurrentPopUpMenuInfo(Item);
@@ -914,8 +913,6 @@ begin
     end;
   end;
 
-  if Active then
-    Application.HideHint;
   THintManager.Instance.CloseHint;
   HintTimer.Enabled := False;
 
@@ -971,7 +968,6 @@ begin
         DropFileSource1.Files.Add(FilesToDrag[I]);
       ElvMain.Refresh;
 
-      Application.HideHint;
       THintManager.Instance.CloseHint;
 
       HintTimer.Enabled := False;
@@ -992,7 +988,6 @@ begin
   if LastMouseItem = Item then
     Exit;
 
-  Application.HideHint;
   THintManager.Instance.CloseHint;
   HintTimer.Enabled := False;
 
@@ -1205,7 +1200,7 @@ end;
 
 procedure TSearchForm.FormDeactivate(Sender: TObject);
 begin
-  Hinttimer.Enabled := False;
+  HintTimer.Enabled := False;
 end;
 
 procedure TSearchForm.HintTimerTimer(Sender: TObject);
@@ -1421,8 +1416,6 @@ begin
     ElvMain.Selection.First.Edit;
   end;
 
-  if Active then
-    Application.HideHint;
   THintManager.Instance.CloseHint;
 end;
 {$ENDREGION}
@@ -1962,8 +1955,7 @@ begin
     Exit;
 
   LastMouseItem := nil;
-  if Active then
-    Application.HideHint;
+
   THintManager.Instance.CloseHint;
   Hinttimer.Enabled := False;
 end;
@@ -2106,7 +2098,6 @@ begin
           Msg.message := 0;
         end;
 
-        Application.HideHint;
         THintManager.Instance.CloseHint;
       end;
     end;
@@ -3051,7 +3042,6 @@ begin
           RatingEdit.Rating := DA.Rating;
           CurrentItemInfo.Rating := RatingEdit.Rating;
 
-          ElvMain.Hint := DA.Comment;
           FCurrentSelectedID := DA.ID;
           CurrentItemInfo.KeyWords := DA.KeyWords;
           CurrentItemInfo.Comment := DA.Comment;
@@ -3076,7 +3066,6 @@ begin
           ReloadGroups;
           Save.Enabled := False;
           MemComments.Cursor := CrDefault;
-          Application.HintHidePause := 50 * Length(DA.Comment);
           MemKeyWordsChange(Self);
           if DBReadOnly then
             EnableEditing(False);

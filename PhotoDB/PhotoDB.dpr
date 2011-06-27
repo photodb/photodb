@@ -2,6 +2,14 @@ program PhotoDB;
 
 {$DESCRIPTION 'Photo DB v2.3'}
 
+{ Reduce EXE size by disabling as much of RTTI as possible (delphi 2009/2010) }
+{$IF CompilerVersion >= 21.0}
+  {$WEAKLINKRTTI ON}
+  {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$IFEND}
+
+{$SetPEFlags 1}// 1 = Windows.IMAGE_FILE_RELOCS_STRIPPED
+
 uses
   FastMM4,
   uInit in 'Units\uInit.pas',

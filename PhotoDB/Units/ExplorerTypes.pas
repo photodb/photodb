@@ -104,7 +104,7 @@ type
   end;
 
 procedure AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
-  SID: TGUID; ID, Rating, Rotate, Access, FileSize: Integer; Comment, KeyWords, Groups: string; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+  SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: string; Date : TDateTime; IsDate, Crypted, Include : Boolean);
 
 type
   TStringsHistoryW = class(TObject)
@@ -375,7 +375,7 @@ begin
   FSaveFoldersToDB := Value;
 end;
 
-procedure AddOneExplorerFileInfo(Infos : TExplorerFileInfos; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access, FileSize : Integer; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+procedure AddOneExplorerFileInfo(Infos : TExplorerFileInfos; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
 var
   Info : TExplorerFileInfo;
 begin

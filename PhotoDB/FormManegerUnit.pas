@@ -9,7 +9,8 @@ uses
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
   uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, uDBThread, win32crc,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
-  uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations, uActivationUtils;
+  uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations, uActivationUtils,
+  uExifUtils;
 
 type
   TFormManager = class(TDBForm)
@@ -543,10 +544,9 @@ var
   Param: TArStrings;
   Fids_: TArInteger;
   FileNameA, FileNameB, S: string;
-  N, I: Integer;
+  I: Integer;
   FormCont: TFormCont;
   B: TArBoolean;
-  Info: TDBPopupMenuInfo;
   Data: Pointer;
 begin
 
@@ -596,15 +596,9 @@ begin
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
       FileNameA := LongFileName(FileNameA);
-      Info := TDBPopupMenuInfo.Create;
-      try
-        GetFileListByMask(FileNameA, TFileAssociations.Instance.ExtensionList, Info, N, True);
-        ShowWindow(Viewer.Handle, SW_RESTORE);
-        Viewer.Execute(Self, Info);
-        Viewer.Show;
-      finally
-        F(Info);
-      end;
+      ShowWindow(Viewer.Handle, SW_RESTORE);
+      Viewer.ExecuteDirectoryWithFileOnThread(FileNameA);
+      Viewer.Show;
       ActivateBackgroundApplication(Viewer.Handle);
     end else if (AnsiUpperCase(FileNameA) <> '/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA, False) then
     begin
