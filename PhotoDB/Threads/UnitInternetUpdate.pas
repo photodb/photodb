@@ -5,7 +5,7 @@ interface
 uses
   Classes, Registry, Windows, SysUtils, UnitDBKernel, Forms,
   uVistaFuncs, uLogger, uConstants, uShellIntegration, uGOM, DateUtils,
-  uTranslate, uInternetUtils, MSXML, OmniXML_MSXML, uDBForm, ActiveX,
+  uTranslate, uInternetUtils, xmldom, uDBForm, ActiveX,
   Dolphin_DB, uActivationUtils, uSettings, uSysUtils, uDBThread;
 
 type
@@ -119,13 +119,13 @@ end;
 }
 procedure TInternetUpdate.ParceReply(Reply: string);
 var
-  XmlReply: IXMLDOMDocument;
-  DocumentNode : IXMLDOMNode;
+  XmlReply: IDOMDocument;
+  DocumentNode : IDOMNode;
   I: Integer;
   DetailName, DetailValue : string;
 begin
-  XmlReply := CreateXMLDoc;
-  XmlReply.loadXML(Reply);
+  XmlReply := GetDOM.createDocument('', '', nil);
+  (XmlReply as IDOMPersist).loadxml(Reply);
   Info.InfoAvaliable := False;
   Info.IsNewVersion := False;
   DocumentNode := XmlReply.documentElement;
@@ -136,7 +136,7 @@ begin
       for I := 0 to DocumentNode.childNodes.length - 1 do
       begin
         DetailName := DocumentNode.childNodes[I].nodeName;
-        DetailValue := DocumentNode.childNodes[I].text;
+        DetailValue := DocumentNode.childNodes[I].nodeValue;
         if DetailName = 'version' then
           Info.Version := StrToIntDef(DetailValue, 0)
         else if DetailName = 'build' then

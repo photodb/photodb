@@ -36,6 +36,7 @@ const
   WindowsMenuTime = 1000;
   ProgramMail = 'photodb@illusdolphin.net';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
+  ProgramInstallSize = 12600; //in Kb
 
   DonateURL = 'http://photodb.illusdolphin.net/{LNG}/donate';
   UnInstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/uninstall';
@@ -335,6 +336,12 @@ const
   DIRECTORY_OPTION_DATE_WITH_UP     = 1;
   DIRECTORY_OPTION_DATE_WITH_DOWN   = 2;
   DIRECTORY_OPTION_DATE_EXCLUDE     = 3;
+
+const
+  EXIF_BASE_GROUPS = 'photodb_groups';
+  EXIF_BASE_LINKS = 'photodb_links';
+  EXIF_BASE_ACCESS = 'photodb_access';
+  EXIF_BASE_INCLUDE = 'photodb_include';
 
 implementation
 

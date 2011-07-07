@@ -110,13 +110,7 @@ var
         Windows.AlphaBlend(HCanvas, xLeft, yTop, GrayIco.Width, GrayIco.Height,
           GrayIco.Canvas.Handle, 0, 0, GrayIco.Width, GrayIco.Height, bf);
 
-       { if HasMMX then
-          MPCommonUtilities.AlphaBlend(Icon.FIcon.Canvas.Handle, HCanvas,
-                  Rect(0, 0, Icon.FIcon.Width, Icon.FIcon.Height), Point(xLeft, yTop),
-                  cbmPerPixelAlpha, $FF, $FFFFFF)
-        else
-          DrawIconEx(HCanvas, xLeft, yTop, UnitDBKernel.Icons[Index + 1], 16, 16, 0, 0, DI_NORMAL)
-      }end;
+      end;
     end;
   end;
 
@@ -191,6 +185,8 @@ begin
   end;
   if Access = db_access_private then
     DoDrawIconEx(HCanvas, 40 + DeltaX, DeltaY, DB_IC_PRIVATE);
+  if Access = - 10 * db_access_private then
+    DoDrawIconEx(HCanvas, 40 + DeltaX, DeltaY, DB_IC_PRIVATE, True);
 
   if not FE then
   begin

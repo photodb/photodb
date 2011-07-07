@@ -4,6 +4,12 @@ interface
 
 uses Windows, Classes, SysUtils;
 
+
+type
+  TStringsHelper = class helper for TStrings
+    function Join(JoinString: string): string;
+  end;
+
 procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
 function JoinList(List: TStrings; JoinString: string): string;
 function ConvertUniversalFloatToLocal(s: string): string;
@@ -329,6 +335,13 @@ begin
 
     Result := Result + List[I];
   end;
+end;
+
+{ TStringsHelper }
+
+function TStringsHelper.Join(JoinString: string): string;
+begin
+  Result := JoinList(Self, JoinString);
 end;
 
 end.

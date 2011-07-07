@@ -123,7 +123,7 @@ begin
         end else
           Exit;
       end else
-        Graphic.LoadFromFile(fOptions.FileName);
+        Graphic.LoadFromFile(FOptions.FileName);
 
       if Graphic is TJPEGImage then
       begin
@@ -140,7 +140,7 @@ begin
           PRGBArr[I] := Bitmap.ScanLine[I];
         Data := Gistogramma(Bitmap.Width, Bitmap.Height, PRGBArr);
       finally
-        Bitmap.Free;
+        F(Bitmap);
       end;
       Synchronize(SetGistogrammData);
     finally
@@ -155,14 +155,14 @@ end;
 procedure TPropertyLoadGistogrammThread.GetCurrentpassword;
 begin
   if PropertyManager.IsPropertyForm(fOptions.Owner) then
-    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
+    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, FOptions.SID) then
       StrParam := (fOptions.Owner as TPropertiesForm).FCurrentPass;
 end;
 
 procedure TPropertyLoadGistogrammThread.GetPasswordFromUserSynch;
 begin
   if PropertyManager.IsPropertyForm(fOptions.Owner) then
-    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
+    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, FOptions.SID) then
       StrParam:=GetImagePasswordFromUser(StrParam);
 end;
 

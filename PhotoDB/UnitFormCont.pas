@@ -639,7 +639,6 @@ begin
   if [EventID_Param_Include,
       EventID_Param_Rotate,
       EventID_Param_Private,
-      EventID_Param_Access,
       EventID_Param_Crypt,
       EventID_Param_Rating ] * Params <> [] then
     ElvMain.Refresh;

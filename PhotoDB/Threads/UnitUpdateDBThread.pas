@@ -9,7 +9,7 @@ uses
   UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
   CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
   uTranslate, ActiveX, uActivationUtils, uSettings, uMemoryEx,
-  UnitDBKernel, uAssociations, uDBThread, uExifUtils;
+  UnitDBKernel, uAssociations, uDBThread, uExifUtils, UnitGroupsWork;
 
 type
   TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
@@ -21,7 +21,7 @@ type
     FOnDone: TNotifyEvent;
     FTerminating: PBoolean;
     FPause: PBoolean;
-    StringParam: string;
+    FStringParam: string;
     IntResult, IntIDResult: Integer;
     FCurrentImageDBRecord: TImageDBRecordA;
     FSender: TUpdaterDB;
@@ -35,6 +35,8 @@ type
     IsTime: Boolean;
     IsDate: Boolean;
     FNoLimit: Boolean;
+    FGroupsParam: TGroups;
+    FInfoParam: TDBPopupMenuInfoRecord;
   protected
     procedure Execute; override;
   public
@@ -54,6 +56,8 @@ type
       AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
       Pause: PBoolean; NoLimit : boolean = false);
     destructor Destroy; override;
+    procedure ProcessGroups(Info: TDBPopupMenuInfoRecord; ExifGroups: string);
+    procedure ProcessGroupsSync;
   end;
 
 type
@@ -105,6 +109,12 @@ function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh:
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 
 implementation
+
+uses
+   UnitGroupsReplace;
+
+var
+  GroupReplaceActions: TGroupsActionsW;
 
 { UpdateDBThread }
 
@@ -217,7 +227,7 @@ begin
     SetStrParam(FQuery, 5, ImTh);
     SetStrParam(FQuery, 6, KeyWords);
     SetStrParam(FQuery, 7, GetWindowsUserName);
-    SetStrParam(FQuery, 8, 'PhotoAlbum');
+    SetStrParam(FQuery, 8, 'DB');
     SetIntparam(FQuery, 9, Access);
     SetIntparam(FQuery, 10, OrWidth);
     SetIntparam(FQuery, 11, OrHeight);
@@ -265,11 +275,24 @@ var
   AutoAnswerSetted: Boolean;
 
   procedure AddFileToDB;
+  var
+    Info: TDBPopupMenuInfoRecord;
+    Groups, ExifGroups: string;
   begin
-    UpdateImageRecordFromExif(FInfo[FileNumber]);
-    if SQL_AddFileToDB(FInfo[FileNumber].FileName, Res.Crypt, Res.Jpeg, Res.ImTh, FInfo[FileNumber].KeyWords,
-      FInfo[FileNumber].Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, FInfo[FileNumber].Include, FInfo[FileNumber].Rating,
-      FInfo[FileNumber].Rotation, FInfo[FileNumber].Links, FInfo[FileNumber].Access, FInfo[FileNumber].Groups) then
+    Info := FInfo[FileNumber];
+
+    //save original groups and extract Exif groups
+    Groups := Info.Groups;
+    ExifGroups := '';
+    Info.Groups := '';
+    UpdateImageRecordFromExif(Info, True, True);
+    ExifGroups := Info.Groups;
+    Info.Groups := Groups;
+    ProcessGroups(Info, ExifGroups);
+
+    if SQL_AddFileToDB(Info.FileName, Res.Crypt, Res.Jpeg, Res.ImTh, Info.KeyWords,
+      Info.Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, Info.Include, Info.Rating,
+      Info.Rotation, Info.Links, Info.Access, Info.Groups) then
     begin
       Res.Jpeg.DIBNeeded;
       SynchronizeEx(SetImages);
@@ -345,7 +368,7 @@ begin
           if not((FAutoAnswer = Result_skip_all) or (FAutoAnswer = Result_add_all)) then
           begin
             FCurrentImageDBRecord := Res;
-            StringParam := Res.ImTh;
+            FStringParam := Res.ImTh;
             SynchronizeEx(ExecuteReplaceDialog);
             case IntResult of
               Result_Add_All:
@@ -443,7 +466,7 @@ begin
           if not((FAutoAnswer = Result_skip_all) or (FAutoAnswer = Result_replace_All) or (FAutoAnswer = Result_add_all)) then
           begin
             FCurrentImageDBRecord := Res;
-            StringParam := Res.ImTh;
+            FStringParam := Res.ImTh;
             SynchronizeEx(ExecuteReplaceDialog);
 
             case IntResult of
@@ -575,13 +598,48 @@ begin
     TA('Requires activation of the program', 'Activation'), TD_BUTTON_OK, TD_ICON_INFORMATION);
 end;
 
+procedure UpdateDBThread.ProcessGroups(Info: TDBPopupMenuInfoRecord;
+  ExifGroups: string);
+begin
+  if ExifGroups <> '' then
+  begin
+    FInfoParam := Info;
+    FStringParam := ExifGroups;
+
+    FGroupsParam := GetRegisterGroupList(False);
+    try
+      Synchronize(ProcessGroupsSync);
+    finally
+      FreeGroups(FGroupsParam);
+    end;
+
+    Info.Groups := FStringParam;
+  end;
+end;
+
+procedure UpdateDBThread.ProcessGroupsSync;
+var
+  Groups, GExifGroups: TGroups;
+  InRegGroups: TGroups;
+begin
+  Groups := EncodeGroups(FInfoParam.Groups);
+  GExifGroups := EncodeGroups(FStringParam);
+  //in groups are empty because in exif no additional groups information
+  SetLength(InRegGroups, 0);
+
+  FilterGroups(GExifGroups, FGroupsParam, InRegGroups, GroupReplaceActions);
+
+  AddGroupsToGroups(Groups, GExifGroups);
+  FStringParam := CodeGroups(Groups);
+end;
+
 procedure UpdateDBThread.ExecuteReplaceDialog;
 var
   DBReplaceForm: TDBReplaceForm;
 begin
   Application.CreateForm(TDBReplaceForm, DBReplaceForm);
   try
-    DBReplaceForm.ExecuteToAdd(FInfo[FileNumber].FileName, StringParam, IntResult, IntIDResult, FCurrentImageDBRecord);
+    DBReplaceForm.ExecuteToAdd(FInfo[FileNumber].FileName, FStringParam, IntResult, IntIDResult, FCurrentImageDBRecord);
   finally
     R(DBReplaceForm);
   end;
@@ -818,5 +876,13 @@ procedure TValueObject.SetTStrValue(const Value: TStrings);
 begin
   FSTStrValue.Assign(Value);
 end;
+
+initialization
+
+finalization
+  FreeGroup(GroupReplaceActions.ActionForUnKnown.OutGroup);
+  FreeGroup(GroupReplaceActions.ActionForUnKnown.InGroup);
+  FreeGroup(GroupReplaceActions.ActionForKnown.OutGroup);
+  FreeGroup(GroupReplaceActions.ActionForKnown.InGroup);
 
 end.

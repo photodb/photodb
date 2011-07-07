@@ -53,8 +53,6 @@
 			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Xml\MSXML2_TLB.pas"/>
-			<DCCReference Include="..\PhotoDB\External\Xml\OmniXML_MSXML.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uFileUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>

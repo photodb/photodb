@@ -195,12 +195,16 @@ begin
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase', True);
-    FReg.WriteString('UninstallString', '"' + IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'UnInstall.exe"');
+    FReg.WriteString('UninstallString', IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'UnInstall.exe');
+    FReg.WriteString('DisplayIcon', FileName);
     FReg.WriteString('DisplayName', 'Photo DataBase');
-    FReg.WriteString('DisplayVersion', ProductVersion);
+    FReg.WriteString('DisplayVersion', ReleaseToString(GetExeVersion(FileName)));
     FReg.WriteString('HelpLink', ResolveLanguageString(HomePageURL));
     FReg.WriteString('Publisher', CopyRightString);
-    FReg.WriteString('URLInfoAbout', 'MailTo:' + ProgramMail);
+    FReg.WriteString('URLInfoAbout', 'mailto:' + ProgramMail);
+    FReg.WriteInteger('EstimatedSize', ProgramInstallSize);
+    FReg.WriteBool('NoModify', True);
+    FReg.WriteBool('NoRepair', True);
   except
     on E: Exception do
     begin

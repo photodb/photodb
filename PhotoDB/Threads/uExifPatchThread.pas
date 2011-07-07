@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, uMemory, UnitDBDeclare, uDBThread, uExifUtils, SyncObjs, ActiveX,
-  uDBUtils;
+  uDBUtils, uFileUtils;
 
 type
   TExifPatchThread = class(TDBThread)
@@ -58,7 +58,10 @@ begin
       Info := ExifPatchManager.ExtractPatchInfo;
       while Info <> nil do
       begin
-        FileName := uDBUtils.GetFileNameById(Info.ID);
+        FileName := Info.Value.Name;
+        if not FileExistsSafe(FileName) then
+          FileName := uDBUtils.GetFileNameById(Info.ID);
+          
         UpdateFileExif(FileName, Info);
         F(Info);
         Info := ExifPatchManager.ExtractPatchInfo;

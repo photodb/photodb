@@ -2,7 +2,8 @@ unit uThreadEx;
 
 interface
 
-uses Classes, uThreadForm, Windows, SyncObjs, uDBThread, uGOM, uRuntime;
+uses
+  Classes, uThreadForm, Windows, SyncObjs, uDBThread, uGOM, uRuntime, SysUtils;
 
 type
   TThreadExNotify = procedure(Sender: TObject; StateID: TGUID) of object;
@@ -141,6 +142,8 @@ procedure TThreadEx.RegisterSubThread(SubThread: TThreadEx);
 begin       
   FSync.Enter;
   try
+    if SubThread = Self then
+      raise Exception.Create('SubThread and Self are equal');
     SubThread.FParentThread := Self;
     if FSubThreads.IndexOf(SubThread) = -1 then
       FSubThreads.Add(SubThread);
@@ -202,7 +205,7 @@ begin
   begin
     FSync.Enter;
     try
-      for I := 0 to FSubThreads.Count - 1 do
+      for I := FSubThreads.Count - 1 downto 0 do
         if not GOM.IsObj(FSubThreads[I]) then
           FSubThreads.Delete(I);
 

@@ -293,7 +293,12 @@ var
     try
       repeat
         F(NotifyInfo);
-        NotifyProcessProcedure;
+        try
+          NotifyProcessProcedure;
+        except
+          on e: Exception do
+            EventLog(e.Message);
+        end;
         NotifyInfo := ExplorerUpdateManager.DeQueue(FSender, StateID, UpdateMode);
         if NotifyInfo <> nil then
         begin
@@ -329,8 +334,8 @@ begin
       LV_TILE       : begin FIcoSize := 48; end;
       LV_GRID       : begin FIcoSize := 32; end;
     end;
-
-    if FUpdaterInfo.IsUpdater then
+                                      //if thread is valid worker - dont run updater
+    if FUpdaterInfo.IsUpdater and not Self.Valid then
     begin
       ProcessNotifys(AddFile, UPDATE_MODE_ADD);
       Exit;
@@ -701,12 +706,12 @@ end;
 
 procedure TExplorerThread.SendPacketToExplorer;
 var
-  I : Integer;
-  Icon : TIcon;
-  S1, S2 : String;
-  Info : TExplorerFileInfo;
+  I: Integer;
+  Icon: TIcon;
+  S1, S2: String;
+  Info: TExplorerFileInfo;
 begin
-  BeginUpdate;
+  BeginUpDate;
   try
     FSender.AddInfoAboutFile(FPacketInfos);
     for I := 0 to FPacketInfos.Count - 1 do

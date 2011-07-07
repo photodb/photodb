@@ -2045,7 +2045,7 @@ begin
   end;
 
   ReRotation := 0;
-  UpdateInfoParams := [EventID_Param_Crypt, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private, EventID_Param_Access,
+  UpdateInfoParams := [EventID_Param_Crypt, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private,
     EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime, EventID_Param_Groups,
     EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Include];
   if UpdateInfoParams * Params <> [] then
@@ -2062,8 +2062,6 @@ begin
           end;
 
           if EventID_Param_Private in Params then
-            FFilesInfo[I].Access := Value.Access;
-          if EventID_Param_Access in Params then
             FFilesInfo[I].Access := Value.Access;
           if EventID_Param_Crypt in Params then
             FFilesInfo[I].Crypted := Value.Crypt;
@@ -2101,7 +2099,6 @@ begin
           if [EventID_Param_Include,
               EventID_Param_Rotate,
               EventID_Param_Private,
-              EventID_Param_Access,
               EventID_Param_Crypt,
               EventID_Param_Rating ] * Params <> [] then
             ElvMain.Refresh;
@@ -2124,8 +2121,7 @@ begin
     end;
   end;
 
-  ImParams := [EventID_Param_Refresh, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private,
-    EventID_Param_Access];
+  ImParams := [EventID_Param_Refresh, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private];
   if ImParams * Params <> [] then
     ElvMain.Refresh;
 
@@ -2187,13 +2183,14 @@ end;
 
 procedure TExplorerForm.Refresh1Click(Sender: TObject);
 var
-  UpdaterInfo : TUpdaterInfo;
+  UpdaterInfo: TUpdaterInfo;
   I, Index: Integer;
   Info: TExplorerViewInfo;
 begin
   UpdaterInfo.IsUpdater := False;
   UpdaterInfo.UpdateDB := False;
   UpdaterInfo.ProcHelpAfterUpdate := nil;
+  UpdaterInfo.FileInfo := nil;
   Info := ViewInfo;
   for I := 0 to ElvMain.Items.Count - 1 do
     if ElvMain.Items[I].Selected then
@@ -2952,6 +2949,7 @@ begin
   if not FormLoadEnd then
     Exit;
   UpdaterInfo.ProcHelpAfterUpdate := nil;
+  UpdaterInfo.FileInfo := nil;
   if not IsActualState(SID) then
     Exit;
   for K := 0 to Length(PInfo) - 1 do

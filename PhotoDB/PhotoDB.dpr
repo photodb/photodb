@@ -260,8 +260,6 @@ uses
   uMemory in 'Units\uMemory.pas',
   uDBForm in 'Units\uDBForm.pas',
   uTranslate in 'Units\uTranslate.pas',
-  MSXML2_TLB in 'External\Xml\MSXML2_TLB.pas',
-  OmniXML_MSXML in 'External\Xml\OmniXML_MSXML.pas',
   uImageConvertThread in 'Threads\uImageConvertThread.pas',
   uWatermarkOptions in 'uWatermarkOptions.pas' {FrmWatermarkOptions},
   uSearchThreadPool in 'Threads\uSearchThreadPool.pas',
@@ -372,6 +370,7 @@ var
   Buf: Pointer;
   P : PByte;
 begin
+  SetLastError(0);
   HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DBID));
   if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin

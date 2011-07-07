@@ -188,10 +188,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -539,10 +535,6 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Groups'
       ImageIndex = 1
       OnResize = TsGroupsResize
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -886,10 +878,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -904,16 +892,12 @@ object PropertiesForm: TPropertiesForm
         OnContextPopup = VleExifContextPopup
         ColWidths = (
           136
-          140)
+          142)
       end
     end
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -968,10 +952,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -984,7 +964,7 @@ object PropertiesForm: TPropertiesForm
       end
       object CbInclude: TCheckBox
         Left = 3
-        Top = 9
+        Top = 5
         Width = 284
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -996,10 +976,31 @@ object PropertiesForm: TPropertiesForm
         Left = 3
         Top = 48
         Width = 284
-        Height = 293
+        Height = 273
         Anchors = [akLeft, akTop, akRight, akBottom]
         PopupMenu = PmAddLink
         TabOrder = 1
+      end
+      object WlAddLink: TWebLink
+        Left = 3
+        Top = 327
+        Width = 42
+        Height = 13
+        Cursor = crHandPoint
+        Anchors = [akLeft, akBottom]
+        ParentColor = False
+        Text = 'Add link'
+        OnClick = Addnewlink1Click
+        ImageIndex = 0
+        IconWidth = 16
+        IconHeight = 16
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
+        UseSpecIconSize = True
+        HightliteImage = False
       end
     end
   end

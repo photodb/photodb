@@ -11,7 +11,7 @@ uses
   UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
   uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm,
   uSettings, uListViewUtils, uAssociations, uDBAdapter, MPCommonObjects,
-  EasyListview, MPCommonUtilities;
+  EasyListview, MPCommonUtilities, RAWImage;
 
 type
   TDBReplaceForm = class(TDBForm)
@@ -449,6 +449,8 @@ begin
     begin
       try
         G := GraphicClass.Create;
+        if G is TRAWImage then
+          TRAWImage(G).IsPreview := True;
         G.LoadFromFile(FileName);
       except
         MessageBoxDB(Handle, Format(L('Unable to load image from file: %s'), [FileName]), L('Warning'), TD_BUTTON_OK,

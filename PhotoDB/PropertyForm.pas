@@ -16,7 +16,8 @@ uses
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
   uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
-  uSettings, uAssociations, uDBAdapter, uMemoryEx, pngimage, uExifUtils;
+  uSettings, uAssociations, uDBAdapter, uMemoryEx, pngimage, uExifUtils,
+  uStringUtils;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -144,6 +145,7 @@ type
     LinksScrollBox: TScrollBox;
     VleExif: TValueListEditor;
     LbEffectiveRange: TStaticText;
+    WlAddLink: TWebLink;
     procedure Execute(ID : integer);
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
@@ -728,6 +730,7 @@ begin
   Adding_now := False;
   DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
   TimeEdit.ParentColor := True;
+
   PmItem.Images := DBKernel.ImageList;
   PmLinks.Images := DBKernel.ImageList;
   Shell1.ImageIndex := DB_IC_SHELL;
@@ -743,8 +746,13 @@ begin
 
   Up1.ImageIndex := DB_IC_UP;
   Down1.ImageIndex := DB_IC_DOWN;
+
   SaveWindowPos1.Key := GetRegRootKey + 'Properties';
   SaveWindowPos1.SetPosition;
+
+  WlAddLink.LoadFromResource('GROUP_ADD_SMALL');
+  WlAddLink.Color := clWindow;
+
   LoadLanguage;
 
   CbRemoveKeywordsForGroups.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
@@ -1187,9 +1195,12 @@ begin
       EventInfo.Time := TimeOf(TimeEdit.Time);
       EventInfo.IsDate := DateEdit.Checked;
       EventInfo.IsTime := TimeEdit.Checked;
-      DBKernel.DoIDEvent(Self, ImageId, [EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Rating,
-        EventID_Param_Owner, EventID_Param_Collection, EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate,
-        EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include], EventInfo);
+      EventInfo.Links := CodeLinksInfo(FPropertyLinks);
+      DBKernel.DoIDEvent(Self, ImageId, [EventID_Param_Comment,
+        EventID_Param_KeyWords, EventID_Param_Rating,
+        EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate,
+        EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include,
+        EventID_Param_Links], EventInfo);
     end else
     begin
       FSaving := False;
@@ -1967,6 +1978,7 @@ begin
   CbInclude.Caption := L('Include in base search');
   LbLinks.Caption := L('Links for photo(s)') + ':';
   Addnewlink1.Caption := L('Add link');
+  WlAddLink.Text := L('Add link');
 
   Open1.Caption := L('Open');
   OpenFolder1.Caption := L('Open folder');
@@ -2032,6 +2044,7 @@ begin
     4:
       begin
         ReadLinks;
+        WlAddLink.Top := LinksScrollBox.Top + LinksScrollBox.Height + 3;
       end;
   end;
 end;
@@ -2041,6 +2054,10 @@ var
   ExifData: TExifData;
   Orientation : Integer;
   OldMode : Cardinal;
+  Groups: TGroups;
+  Links: TLinksInfo;
+  SL: TStringList;
+  I: Integer;
 
 const
   XMPBasicValues: array[TWindowsStarRating] of UnicodeString = ('', '1', '2', '3', '4', '5');
@@ -2128,6 +2145,38 @@ begin
           XInsert(L('Title'), ExifData.Title);
           if ExifData.UserRating <> urUndefined then
             XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
+
+          if not ExifData.XMPPacket.Include then
+            XInsert(L('Base search'), L('No'));
+
+          if ExifData.XMPPacket.Groups <> '' then
+          begin
+            Groups := EncodeGroups(ExifData.XMPPacket.Groups);
+            SL := TStringList.Create;
+            try
+              for I := 0 to Length(Groups) - 1 do
+                SL.Add(Groups[I].GroupName);
+              XInsert(L('Groups'), SL.Join(', '));
+            finally
+              F(SL);
+            end;
+          end;
+
+          if ExifData.XMPPacket.Links <> '' then
+          begin
+            Links := ParseLinksInfo(ExifData.XMPPacket.Links);
+            SL := TStringList.Create;
+            try
+              for I := 0 to Length(Links) - 1 do
+                SL.Add(Links[I].LinkName);
+              XInsert(L('Links'), SL.Join(', '));
+            finally
+              F(SL);
+            end;
+          end;
+
+          if ExifData.XMPPacket.Access = Db_access_private then
+            XInsert(L('Private'), L('Yes'));
 
         end else
           VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
@@ -2423,11 +2472,15 @@ begin
       IDMenu1.Visible := True;
       ID := StrToIntDef(LI[N].LinkValue, 0);
       MenuInfo := GetMenuInfoByID(ID);
-      MenuInfo.IsPlusMenu := False;
-      MenuInfo.IsListItem := False;
-      MenuInfo.AttrExists := False;
-      IDMenu1.Caption := Format(L('Collection Item [%d]'), [ID]);
-      TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
+      try
+        MenuInfo.IsPlusMenu := False;
+        MenuInfo.IsListItem := False;
+        MenuInfo.AttrExists := False;
+        IDMenu1.Caption := Format(L('Collection Item [%d]'), [ID]);
+        TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
+      finally
+        F(MenuInfo);
+      end;
       DoExit;
       Exit;
     end;
@@ -2436,16 +2489,20 @@ begin
     begin
       IDMenu1.Visible := True;
       MenuInfo := GetMenuInfoByStrTh(DeCodeExtID(LI[N].LinkValue));
-      MenuInfo.IsPlusMenu := False;
-      MenuInfo.IsListItem := False;
-      MenuInfo.AttrExists := False;
+      try
+        MenuInfo.IsPlusMenu := False;
+        MenuInfo.IsListItem := False;
+        MenuInfo.AttrExists := False;
 
-      if MenuInfo.Count > 0 then
-        IDMenu1.Caption := Format(L('Collection Item [%d]'), [MenuInfo[0].ID])
-      else
-        IDMenu1.Caption := Format(L('Collection Item [%d]'), [0]);
+        if MenuInfo.Count > 0 then
+          IDMenu1.Caption := Format(L('Collection Item [%d]'), [MenuInfo[0].ID])
+        else
+          IDMenu1.Caption := Format(L('Collection Item [%d]'), [0]);
 
-      TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
+        TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
+      finally
+        F(MenuInfo);
+      end;
       DoExit;
       Exit;
     end;
@@ -3037,7 +3094,7 @@ end;
 
 procedure TPropertiesForm.PmClearPopup(Sender: TObject);
 begin
- Clear1.Visible:=(lstCurrentGroups.Items.Count<>0) and not fSaving;
+  Clear1.Visible := (lstCurrentGroups.Items.Count <> 0) and not fSaving;
 end;
 
 procedure TPropertiesForm.DropFileTarget2Drop(Sender: TObject;
@@ -3055,7 +3112,7 @@ end;
 
 procedure TPropertiesForm.AddImThLink1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfoRecord;
+  Info: TDBPopupMenuInfoRecord;
   LinkInfo: TLinkInfo;
   I: Integer;
   B: Boolean;

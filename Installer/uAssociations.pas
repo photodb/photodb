@@ -56,7 +56,7 @@ type
     property Description: string read GetDescription write FDescription;
   end;
 
-  TInstallAssociationCallBack = procedure(Current, Total : Integer; var Terminate : Boolean) of object;
+  TInstallAssociationCallBack = procedure(Current, Total: Integer; var Terminate: Boolean) of object;
 
   TFileAssociations = class(TObject)
   private
@@ -66,7 +66,7 @@ type
     FChanged: Boolean;
     FSync: TCriticalSection;
     constructor Create;
-    procedure AddFileExtension(Extension, Description : string; Group: Integer; GraphicClass: TGraphicClass; CanSave: Boolean = False); overload;
+    procedure AddFileExtension(Extension, Description: string; Group: Integer; GraphicClass: TGraphicClass; CanSave: Boolean = False); overload;
     procedure AddFileExtension(Extension, Description, ExeParams : string; Group: Integer; GraphicClass: TGraphicClass; CanSave: Boolean = False); overload;
     procedure FillList;
     function GetAssociations(Index: Integer): TFileAssociation;
@@ -76,15 +76,16 @@ type
     function GetExtensionList: string;
     procedure UpdateCache;
   public
-    class function Instance : TFileAssociations;
+    class function Instance: TFileAssociations;
     destructor Destroy; override;
-    function GetCurrentAssociationState(Extension : string) : TAssociationState;
-    function GetFilter(ExtList: string; UseGroups: Boolean; ForOpening: Boolean) : string;
+    function GetCurrentAssociationState(Extension: string): TAssociationState;
+    function GetFilter(ExtList: string; UseGroups: Boolean; ForOpening: Boolean): string;
     function GetGraphicClass(Ext: String): TGraphicClass;
     function IsConvertableExt(Ext: String): Boolean;
-    property Associations[Index : Integer] : TFileAssociation read GetAssociations; default;
-    property Exts[Ext : string] : TFileAssociation read GetAssociationByExt;
-    property Count : Integer read GetCount;
+    function GetGraphicClassExt(GraphicClass: TGraphicClass): string;
+    property Associations[Index: Integer]: TFileAssociation read GetAssociations; default;
+    property Exts[Ext: string]: TFileAssociation read GetAssociationByExt;
+    property Count: Integer read GetCount;
     property FullFilter: string read GetFullFilter;
     property ExtensionList: string read GetExtensionList;
   end;
@@ -95,9 +96,11 @@ const
   ASSOCIATION_ADD_HANDLER_COMMAND = 'PhotoDBView';
   ASSOCIATION_PATH = '\Software\Classes\';
 
-function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
-function AssociationStateToCheckboxState(AssociationState : TAssociationState; Update: Boolean) : TCheckBoxState;
-function CheckboxStateToAssociationState(CheckBoxState : TCheckBoxState) : TAssociationState;
+function InstallGraphicFileAssociations(FileName: string;
+  CallBack: TInstallAssociationCallBack): Boolean;
+function AssociationStateToCheckboxState(AssociationState: TAssociationState;
+  Update: Boolean): TCheckBoxState;
+function CheckboxStateToAssociationState(CheckBoxState: TCheckBoxState): TAssociationState;
 function IsGraphicFile(FileName: string): Boolean;
 
 implementation
@@ -709,6 +712,43 @@ begin
         Exit;
       end;
     end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TFileAssociations.GetGraphicClassExt(
+  GraphicClass: TGraphicClass): string;
+var
+  I: Integer;
+  Association: TFileAssociation;
+begin
+  FSync.Enter;
+  try
+    Result := '';
+    for I := 0 to Count - 1 do
+    begin
+      Association := Self[I];
+      if (Association.GraphicClass = GraphicClass) and Association.CanSave then
+      begin
+        Result := Association.Extension;
+        Exit;
+      end;
+    end;
+
+    if Result = '' then
+      for I := 0 to Count - 1 do
+      begin
+        Association := Self[I];
+        if (Association.GraphicClass = GraphicClass) then
+        begin
+          Result := Association.Extension;
+          Exit;
+        end;
+      end;
+
+    if Result = '' then
+      Result := '.' + GraphicExtension(GraphicClass);
   finally
     FSync.Leave;
   end;

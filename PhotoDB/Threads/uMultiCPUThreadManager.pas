@@ -14,6 +14,7 @@ type
     FWorkingInProgress: Boolean;
     FThreadNumber: Integer;
     FOwner: TMultiCPUThread;
+    FValid: Boolean;
     procedure DoMultiProcessorWork;
   protected
     procedure DoMultiProcessorTask; virtual; abstract;
@@ -26,6 +27,7 @@ type
     property SyncEvent: Integer read FSyncEvent write FSyncEvent;
     property WorkingInProgress: Boolean read FWorkingInProgress write FWorkingInProgress;
     property Owner: TMultiCPUThread read FOwner write FOwner;
+    property Valid: Boolean read FValid write FValid;
   end;
 
 type
@@ -72,20 +74,22 @@ uses
 
 function GUIDToString(GUID: TGUID): string;
 begin
-   Result := Format('%d%d%d%d%d%d%d%d%d%d%d', [GUID.D1, GUID.D2, GUID.D3,
+  Result := Format('%d%d%d%d%d%d%d%d%d%d%d', [GUID.D1, GUID.D2, GUID.D3,
     GUID.D4[0], GUID.D4[1], GUID.D4[2], GUID.D4[3], GUID.D4[4],
     GUID.D4[5], GUID.D4[6], GUID.D4[7]]);
 end;
 
+procedure ValidateThread(Thread: TMultiCPUThread);
+begin
+  if not Thread.Valid then
+    raise Exception.Create('Thread validation failed!');
+end;
+
 procedure TThreadPoolCustom.AddAvaliableThread(Thread: TMultiCPUThread);
 begin
-  FSync.Enter;
-  try
-    FAvaliableThreadList.Add(Thread);
-    Thread.FThreadNumber := FAvaliableThreadList.Count + FBusyThreadList.Count;
-  finally
-    FSync.Leave;
-  end;
+  FAvaliableThreadList.Add(Thread);
+  Thread.FThreadNumber := FAvaliableThreadList.Count + FBusyThreadList.Count;
+  Thread.Valid := True;
 end;
 
 constructor TThreadPoolCustom.Create;
@@ -107,7 +111,7 @@ begin;
   FWaitThreads := TList.Create;
   try
     //wait for all threads
-    while true do
+    while True do
     begin
       Sleep(10);
       Application.ProcessMessages;
@@ -123,8 +127,15 @@ begin;
 
         for I := 0 to FThreads.Count - 1 do
         begin
-          TMultiCPUThread(FThreads[I]).FMode := 0;
-          TMultiCPUThread(FThreads[I]).Priority := tpTimeCritical;
+          if GOM.IsObj(FThreads[I]) then
+          begin
+            try
+              TMultiCPUThread(FThreads[I]).FMode := 0;
+              TMultiCPUThread(FThreads[I]).Priority := tpTimeCritical;
+            except
+              //thread could be finished, so SetPriority can throw an exception
+            end;
+          end;
         end;
       finally
         FSync.Leave;
@@ -180,6 +191,7 @@ begin
       if FAvaliableThreadList.Count > 0 then
       begin
         Result := FAvaliableThreadList[0];
+        ValidateThread(Result);
         Result.WorkingInProgress := True;
         FAvaliableThreadList.Remove(Result);
         FBusyThreadList.Add(Result);
@@ -220,8 +232,11 @@ begin
     CheckBusyThreads;
     Result := 0;
     for I := 0 to FBusyThreadList.Count - 1 do
+    begin
+      ValidateThread(FBusyThreadList[I]);
       if TMultiCPUThread(FBusyThreadList[I]).Owner = Thread then
         Inc(Result);
+    end;
   finally
     FSync.Leave;
   end;
@@ -234,11 +249,13 @@ end;
 
 procedure TThreadPoolCustom.StartThread(Sender, Thread: TMultiCPUThread);
 begin
+  ValidateThread(Thread);
   Thread.WorkingInProgress := True;
   Thread.FOwner := Sender;
   Sender.RegisterSubThread(Thread);
   TW.I.Start('Resume thread:' + IntToStr(Thread.ThreadID));
   SetEvent(TMultiCPUThread(Thread).SyncEvent);
+  ValidateThread(Thread);
 end;
 
 procedure TThreadPoolCustom.CheckBusyThreads;
@@ -247,6 +264,7 @@ var
 begin
   for I := FBusyThreadList.Count - 1 downto 0 do
   begin
+    ValidateThread(FBusyThreadList[I]);
     if not GOM.IsObj(FBusyThreadList[I]) then
     begin
       FBusyThreadList.Delete(I);
@@ -284,7 +302,10 @@ begin
 
       ThreadsCount := FBusyThreadList.Count;
       for I := 0 to ThreadsCount - 1 do
+      begin
+        ValidateThread(FBusyThreadList[I]);
         ThreadHandles[I] := TMultiCPUThread(FBusyThreadList[I]).FEvent;
+      end;
 
       S := 'WaitForMultipleObjects: ' + IntToStr(FBusyThreadList.Count) + ' - ';
       for I := 0 to ThreadsCount - 1 do
@@ -326,6 +347,7 @@ begin
   FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
   FWorkingInProgress := False;
   FMode := -1;
+  FValid := False;
 end;
 
 destructor TMultiCPUThread.Destroy;

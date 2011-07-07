@@ -42,6 +42,7 @@
     <translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
   </scope>
   <scope name="Setup">
+    <translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />
     <translate name="Welcome to the Photo Database 2.3" value="Добро пожаловать в Photo Database 2.3" />
 	<translate name="Newer version (%s) is already installed! Do you want to install old version (%s)?" value="Более новая версия (%s) уже установлена! Вы действительно хотите установить старую версию (%s)?" />
 	<translate name="Friends" value="Друзья" />
@@ -491,7 +492,12 @@
     <translate name="User Rating" value="Оценка" />
     <translate name="Not available" value="Не доступно" />
     <translate name="Unable to load info: item not found!" value="Невозможно отобразить информацию: запись не найдена!" />	
-    <translate name="Unable to find this image!" value="Изображение в базе не найдено!" />
+    <translate name="Unable to find this image!" value="Изображение в базе не найдено!" />	
+    <translate name="Base search" value="Базовый поиск" />
+    <translate name="Private" value="Личная" />
+    <translate name="Links" value="Ссылки" />
+    <translate name="No" value="Нет" />
+    <translate name="Yes" value="Да" />
   </scope>
   <scope name="Search">
     <translate name="More than" value="Больше чем" />

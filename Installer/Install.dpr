@@ -19,8 +19,6 @@ uses
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
-  MSXML2_TLB in '..\PhotoDB\External\Xml\MSXML2_TLB.pas',
-  OmniXML_MSXML in '..\PhotoDB\External\Xml\OmniXML_MSXML.pas',
   uFileUtils in '..\PhotoDB\Units\uFileUtils.pas',
   VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
@@ -68,12 +66,6 @@ uses
 {$R ..\PhotoDB\Resources\Install.res}
 
 begin
-  if not (IsUserAnAdmin or IsWindowsAdmin) then
-  begin
-    MessageBox(0, 'Please start this program using account with administrator rights!', 'Error', MB_OK or MB_ICONERROR);
-    Exit;
-  end;
-
   Application.Initialize;
 
   Application.MainFormOnTaskbar := True;
@@ -84,6 +76,12 @@ begin
       Exit;
   finally
     F(FormLanguage);
+  end;
+
+  if not (IsUserAnAdmin or IsWindowsAdmin) then
+  begin
+    MessageBox(0, PChar(TA('Please start this program using account with administrator rights!', 'Setup')), 'Error', MB_OK or MB_ICONERROR);
+    Exit;
   end;
 
   Application.CreateForm(TFrmMain, FrmMain);

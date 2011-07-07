@@ -45,39 +45,34 @@ begin
     AddAvaliableThread(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, ExplorerViewInfo, nil, UpdaterInfo, Thread.StateID));
 end;
 
-procedure TExplorerThreadPool.ExtractImage(Sender : TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID : TGUID);
+procedure TExplorerThreadPool.ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID : TGUID);
 var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
 begin
-  Lock;
-  try
-    Thread := Sender as TExplorerThread;
-    if Thread = nil then
-      raise Exception.Create('Sender is not TExplorerThread!');
+  Thread := Sender as TExplorerThread;
+  if Thread = nil then
+    raise Exception.Create('Sender is not TExplorerThread!');
 
-    Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
+  Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
 
-    if Avaliablethread <> nil then
-    begin
-      Avaliablethread.ThreadForm := Sender.ThreadForm;
-      Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
-      Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
-      if Thread.FUpdaterInfo.FileInfo <> nil then
-        Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
-      Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
-      Avaliablethread.StateID := Thread.StateID;
-      Avaliablethread.FInfo.Assign(Info, True);
-      Avaliablethread.IsCryptedFile := CryptedFile;
-      Avaliablethread.FFileID := FileID;
-      Avaliablethread.Mode := THREAD_PREVIEW_MODE_IMAGE;
-      Avaliablethread.OwnerThreadType := Thread.ThreadType;
-      Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
+  if Avaliablethread <> nil then
+  begin
+    Avaliablethread.ThreadForm := Sender.ThreadForm;
+    Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
+    Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
+    if Thread.FUpdaterInfo.FileInfo <> nil then
+      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
+    Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
+    Avaliablethread.StateID := Thread.StateID;
+    Avaliablethread.FInfo.Assign(Info, True);
+    Avaliablethread.IsCryptedFile := CryptedFile;
+    Avaliablethread.FFileID := FileID;
+    Avaliablethread.Mode := THREAD_PREVIEW_MODE_IMAGE;
+    Avaliablethread.OwnerThreadType := Thread.ThreadType;
+    Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
 
-      StartThread(Thread, Avaliablethread);
-    end;
-  finally
-    Unlock;
+    StartThread(Thread, Avaliablethread);
   end;
 end;
 
@@ -87,35 +82,30 @@ var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
 begin
-  Lock;
-  try
-    Thread := Sender as TExplorerThread;
-    if Thread = nil then
-      raise Exception.Create('Sender is not TExplorerThread!');
+  Thread := Sender as TExplorerThread;
+  if Thread = nil then
+    raise Exception.Create('Sender is not TExplorerThread!');
 
-    Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
+  Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
 
-    if Avaliablethread <> nil then
-    begin
-      Avaliablethread.ThreadForm := Sender.ThreadForm;
-      Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
-      Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
-      if Thread.FUpdaterInfo.FileInfo <> nil then
-        Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
-      Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
-      Avaliablethread.StateID := Thread.StateID;
-      Avaliablethread.FInfo.FileName := FileName;
-      Avaliablethread.FInfo.Rotation := Rotated;
-      Avaliablethread.IsCryptedFile := False;
-      Avaliablethread.FFileID := FileID;
-      Avaliablethread.Mode := THREAD_PREVIEW_MODE_BIG_IMAGE;
-      Avaliablethread.OwnerThreadType := Thread.ThreadType;
-      Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
+  if Avaliablethread <> nil then
+  begin
+    Avaliablethread.ThreadForm := Sender.ThreadForm;
+    Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
+    Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
+    if Thread.FUpdaterInfo.FileInfo <> nil then
+      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
+    Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
+    Avaliablethread.StateID := Thread.StateID;
+    Avaliablethread.FInfo.FileName := FileName;
+    Avaliablethread.FInfo.Rotation := Rotated;
+    Avaliablethread.IsCryptedFile := False;
+    Avaliablethread.FFileID := FileID;
+    Avaliablethread.Mode := THREAD_PREVIEW_MODE_BIG_IMAGE;
+    Avaliablethread.OwnerThreadType := Thread.ThreadType;
+    Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
 
-      StartThread(Thread, Avaliablethread);
-    end;
-  finally
-    Unlock;
+    StartThread(Thread, Avaliablethread);
   end;
 end;
 
@@ -125,34 +115,30 @@ var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
 begin
-  Lock;
-  try
-    Thread := Sender as TExplorerThread;
-    if Thread = nil then
-      raise Exception.Create('Sender is not TExplorerThread!');
 
-    Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
+  Thread := Sender as TExplorerThread;
+  if Thread = nil then
+    raise Exception.Create('Sender is not TExplorerThread!');
 
-    if Avaliablethread <> nil then
-    begin
-      Avaliablethread.ThreadForm := Sender.ThreadForm;
-      Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
-      Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
-      if Thread.FUpdaterInfo.FileInfo <> nil then
-        Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
-      Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
-      Avaliablethread.StateID := Thread.StateID;
-      Avaliablethread.FInfo.FileName := DirectoryPath;
-      Avaliablethread.IsCryptedFile := False;
-      Avaliablethread.FFileID := FileID;
-      Avaliablethread.Mode := THREAD_PREVIEW_MODE_DIRECTORY;
-      Avaliablethread.OwnerThreadType := Thread.ThreadType;
-      Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
+  Avaliablethread := TExplorerThread(GetAvaliableThread(Sender));
 
-      StartThread(Thread, Avaliablethread);
-    end;
-  finally
-    Unlock;
+  if Avaliablethread <> nil then
+  begin
+    Avaliablethread.ThreadForm := Sender.ThreadForm;
+    Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
+    Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
+    if Thread.FUpdaterInfo.FileInfo <> nil then
+      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
+    Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
+    Avaliablethread.StateID := Thread.StateID;
+    Avaliablethread.FInfo.FileName := DirectoryPath;
+    Avaliablethread.IsCryptedFile := False;
+    Avaliablethread.FFileID := FileID;
+    Avaliablethread.Mode := THREAD_PREVIEW_MODE_DIRECTORY;
+    Avaliablethread.OwnerThreadType := Thread.ThreadType;
+    Avaliablethread.LoadingAllBigImages := Thread.LoadingAllBigImages;
+
+    StartThread(Thread, Avaliablethread);
   end;
 end;
 

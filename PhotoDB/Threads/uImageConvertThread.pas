@@ -195,6 +195,11 @@ const
     begin
       if NewGraphic = nil then
         Exit;
+      if FProcessingParams.PreviewOptions.PreviewWidth = 0 then
+        Exit;
+      if FProcessingParams.PreviewOptions.PreviewHeight = 0 then
+        Exit;
+
       Bitmap := TBitmap.Create;
       try
         AssignGraphic(Bitmap, NewGraphic);
@@ -368,7 +373,7 @@ begin
     if (NewGraphicClass = GraphicClass) then
       Ext := ExtractFileExt(FData.FileName)
     else
-      Ext := '.' + GraphicExtension(NewGraphicClass);
+      Ext := '.' + TFileAssociations.Instance.GetGraphicClassExt(NewGraphicClass);
 
     FileName := IncludeTrailingPathDelimiter(FProcessingParams.WorkDirectory);
     FileName := FileName + TrimLeftString(GetFileNameWithoutExt(FData.FileName) + ClearString(FProcessingParams.Preffix), 255 - Length(Ext));

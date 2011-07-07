@@ -15,8 +15,6 @@ uses
   uFrmProgress in '..\Installer\uFrmProgress.pas' {FrmProgress},
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
-  MSXML2_TLB in '..\PhotoDB\External\Xml\MSXML2_TLB.pas',
-  OmniXML_MSXML in '..\PhotoDB\External\Xml\OmniXML_MSXML.pas',
   uLogger in '..\PhotoDB\Units\uLogger.pas',
   uFileUtils in '..\PhotoDB\Units\uFileUtils.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
@@ -76,6 +74,6 @@ begin
   begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TFrmMain, FrmMain);
-    Application.Run;
+  Application.Run;
   end;
 end.

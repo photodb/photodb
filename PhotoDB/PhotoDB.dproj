@@ -24,7 +24,7 @@
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
-			<DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\Dmitry\;C:\Program Files\Mustangpeak\Common Library\Source;C:\Program Files\Mustangpeak\EasyListview\Source;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\External\FastMM;D:\Dmitry\Delphi exe\Photo Database\DBIcons;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\Dmitry\;C:\Users\Public\Documents\Mustangpeak\Common Library\Source;C:\Users\Public\Documents\Mustangpeak\EasyListview\Source;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\External\FastMM;D:\Dmitry\Delphi exe\Photo Database\DBIcons;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_ExeOutput>bin</DCC_ExeOutput>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_DependencyCheckOutputName>bin\PhotoDB.exe</DCC_DependencyCheckOutputName>
@@ -399,8 +399,6 @@
 			<DCCReference Include="Units\uMemory.pas"/>
 			<DCCReference Include="Units\uDBForm.pas"/>
 			<DCCReference Include="Units\uTranslate.pas"/>
-			<DCCReference Include="External\Xml\MSXML2_TLB.pas"/>
-			<DCCReference Include="External\Xml\OmniXML_MSXML.pas"/>
 			<DCCReference Include="Threads\uImageConvertThread.pas"/>
 			<DCCReference Include="uWatermarkOptions.pas">
 				<Form>FrmWatermarkOptions</Form>
@@ -577,7 +575,7 @@
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">313</VersionInfo>
+						<VersionInfo Name="Build">314</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -589,7 +587,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.0.313</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.0.314</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>
