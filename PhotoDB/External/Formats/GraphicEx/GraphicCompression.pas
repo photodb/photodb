@@ -51,7 +51,7 @@ interface
 
 uses                                                
   Windows, Classes, SysUtils, Graphics,  
-  JPG,   // JPEG compression support
+ // JPG,   // JPEG compression support
   MZLib;  // general inflate/deflate and LZ77 compression support
      
 type
@@ -218,9 +218,9 @@ type
     property ZLibResult: Integer read FZLibResult;
   end;
 
-  TTIFFJPEGDecoder = class;
+  (* TTIFFJPEGDecoder = class;
         
-  TJPEGGeneral = packed record
+ TJPEGGeneral = packed record
     case byte of
       0: (common: jpeg_common_struct);
       1: (d: jpeg_decompress_struct);
@@ -261,7 +261,7 @@ type
     procedure DecodeInit; override;
     procedure DecodeEnd; override;
     procedure Encode(Source, Dest: Pointer; Count: Cardinal; var BytesStored: Cardinal); override;
-  end;
+  end;  *)
 
   TThunderDecoder = class(TDecoder)
   private
@@ -2039,7 +2039,7 @@ end;
 
 //----------------- TTIFFJPEGDecoder ---------------------------------------------------------------------------------------
 
-
+(*
 // Libjpeg interface layer needed to provide access from the JPEG coder class.
 
 // This routine is invoked only for warning messages, since error_exit does its own thing
@@ -2387,7 +2387,7 @@ procedure TTIFFJPEGDecoder.Encode(Source, Dest: Pointer; Count: Cardinal; var By
 
 begin
 end;
-
+   *)
 //----------------- TThunderDecoder ------------------------------------------------------------------------------------
 
 // ThunderScan uses an encoding scheme designed for 4-bit pixel values.  Data is encoded in bytes, with

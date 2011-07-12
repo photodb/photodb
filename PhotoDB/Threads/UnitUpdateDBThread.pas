@@ -146,7 +146,7 @@ function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh:
   OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Include: Boolean; Rating: Integer = 0;
   Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
 var
-  ExifData : TExifData;
+  ExifData: TExifData;
   Sql: string;
   FQuery: TDataSet;
   M: TMemoryStream;
@@ -189,7 +189,9 @@ begin
             Time := TimeOf(ExifData.DateTimeOriginal);
             IsDate := True;
             IsTime := True;
-            Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
+            //if rotation no==isn't set
+            if Rotated = DB_IMAGE_ROTATE_0 then
+              Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
           end;
         except
           on e : Exception do

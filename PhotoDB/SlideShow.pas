@@ -137,14 +137,14 @@ type
     procedure MTimer1Click(Sender: TObject);
     procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
-    procedure LoadListImages(List : TstringList);
-    Procedure ShowFile(FileName : String);
-    Procedure ShowFolder(Files : Tstrings; CurrentN : integer);
-    function ShowFolderA(FileName : string; ShowPrivate : Boolean): Boolean;
-    procedure UpdateRecord(FileNo: integer);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer;
+      params: TEventFields; Value: TEventValues);
+    procedure LoadListImages(List: TstringList);
+    Procedure ShowFile(FileName: String);
+    Procedure ShowFolder(Files: Tstrings; CurrentN: Integer);
+    function ShowFolderA(FileName: string; ShowPrivate: Boolean): Boolean;
+    procedure UpdateRecord(FileNo: Integer);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure DoWaitToImage(Sender: TObject);
     procedure EndWaitToImage(Sender: TObject);
     procedure Onlythisfile1Click(Sender: TObject);
@@ -204,6 +204,7 @@ type
     procedure ExtractHiddenInfo1Click(Sender: TObject);
     procedure TbEncryptMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure TbPageNumberClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount : Cardinal;
@@ -1166,16 +1167,6 @@ begin
   if Viewer = nil then
     Exit;
 
-  if [EventID_Param_Rotate, EventID_Param_Image, EventID_Param_Name] * Params <> [] then
-  begin
-    for I := 0 to LockEventRotateFileList.Count - 1 do
-      if AnsiLowerCase(Value.name) = LockEventRotateFileList[I] then
-      begin
-        LockEventRotateFileList.Delete(I);
-        Exit;
-      end;
-  end;
-
   if SetNewIDFileData in Params then
   begin
     for I := 0 to CurrentInfo.Count - 1 do
@@ -1234,6 +1225,9 @@ begin
           if I = CurrentFileNumber then
             DisplayRating := CurrentInfo[I].Rating;
         end;
+        if (EventID_Param_Rotate in Params) then
+          CurrentInfo[I].Rotation := Value.Rotate;
+
         if EventID_Param_Name in Params then
           CurrentInfo[I].FileName := Value.name;
         if EventID_Param_KeyWords in Params then
@@ -1263,6 +1257,17 @@ begin
         end;
     end;
   end;
+
+  if [EventID_Param_Rotate, EventID_Param_Image, EventID_Param_Name] * Params <> [] then
+  begin
+    for I := 0 to LockEventRotateFileList.Count - 1 do
+      if AnsiLowerCase(Value.Name) = LockEventRotateFileList[I] then
+      begin
+        LockEventRotateFileList.Delete(I);
+        Exit;
+      end;
+  end;
+
   if (EventID_Param_Name in Params) then
   begin
     if Item.FileName = Value.Name then
@@ -1827,8 +1832,6 @@ end;
 
 procedure TViewer.Onlythisfile1Click(Sender: TObject);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.AddFile(Item.FileName)
 end;
 
@@ -1839,8 +1842,6 @@ end;
 
 procedure TViewer.AllFolder1Click(Sender: TObject);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.AddDirectory(ExtractFileDir(Item.FileName), nil)
 end;
 
@@ -3231,6 +3232,14 @@ begin
   end;
 end;
 
+procedure TViewer.TbPageNumberClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  GetCursorPos(P);
+  PopupMenuPageSelecter.Popup(P.X, P.Y);
+end;
+
 procedure TViewer.TbRatingClick(Sender: TObject);
 var
   P: TPoint;
@@ -3265,10 +3274,7 @@ begin
     DBKernel.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
   end else
   begin
-    if UpdaterDB = nil then
-      UpdaterDB := TUpdaterDB.Create;
-
-    FileInfo:= TDBPopupMenuInfoRecord.Create;
+    FileInfo := TDBPopupMenuInfoRecord.Create;
     try
       FileInfo.FileName := Item.FileName;
       FileInfo.Rating := NewRating;

@@ -309,6 +309,8 @@ var
           end;
           ExplorerInfo := NotifyInfo.FExplorerViewInfo;
           FUpdaterInfo := NotifyInfo.FUpdaterInfo;
+          if FUpdaterInfo.FileInfo <> nil then
+            FUpdaterInfo.FileInfo := FUpdaterInfo.FileInfo.Copy as TExplorerFileInfo;
         end;
       until NotifyInfo = nil;
     finally
@@ -837,7 +839,9 @@ end;
 procedure TExplorerThread.AddImageFileImageToExplorer;
 begin
   if not IsTerminated then
-    FSender.AddIcon(FIcon, True, GUIDParam);
+    FSender.AddIcon(FIcon, True, GUIDParam)
+  else
+    F(FIcon);
 end;
 
 procedure TExplorerThread.AddIconFileImageToExplorer;
@@ -1610,7 +1614,10 @@ begin
         IconParam := nil;
         FindIcon(HInstance, 'NETWORK', FIcoSize, 32, IconParam);
         FIcon := IconParam;
-        MakeImageWithIcon;
+        if not SynchronizeEx(MakeImageWithIcon) then
+          F(IconParam);
+
+        FIcon := nil;
       end;
     end;
     SetErrorMode(OldMode);
@@ -1647,6 +1654,7 @@ begin
       CurrentFile := FFiles[I].FileName;
 
       IconParam := nil;
+
       FindIcon(HInstance, 'WORKGROUP', FIcoSize, 32, IconParam);
 
       FIcon := IconParam;
@@ -1806,9 +1814,10 @@ begin
       NewInfo.SID := Info.SID;
     end else
     begin
-      NewInfo := TExplorerFileInfo(Info.Copy);
+      NewInfo := TExplorerFileInfo.CreateFromFile(Info.FileName);
       NewInfo.FileSize := GetFileSizeByName(Info.FileName);
       NewInfo.Crypted := ValidCryptGraphicFile(Info.FileName);
+      NewInfo.SID := Info.SID;
     end;
     FFiles.Add(NewInfo);
 
@@ -2309,6 +2318,13 @@ begin
 end;
 
 procedure TExplorerUpdateManager.QueueNotify(Info: TExplorerNotifyInfo);
+
+function CopyInfo(UInfo: TUpdaterInfo) : TUpdaterInfo;
+begin
+  Result := UInfo;
+  Result.FileInfo := Result.FileInfo.Copy as TExplorerFileInfo;
+end;
+
 begin
   if Info = nil then
     Exit;
@@ -2317,10 +2333,11 @@ begin
 
     if GetThreadCount(Info.FOwner, Info.FMode) = 0 then
     begin
+
       if Info.FMode = UPDATE_MODE_ADD then
-        TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo, Info.FState)
+        TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_IMAGE then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo, Info.FState);
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState);
 
       ExplorerUpdateManager.RegisterThread(Info.FOwner, Info.FMode);
       F(Info);
@@ -2417,7 +2434,11 @@ end;
 
 destructor TExplorerNotifyInfo.Destroy;
 begin
-
+  if FUpdaterInfo.FileInfo <> nil then
+  begin
+    FUpdaterInfo.FileInfo.Free;
+    FUpdaterInfo.FileInfo := nil;
+  end;
   inherited;
 end;
 

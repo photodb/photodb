@@ -30,10 +30,14 @@ type
     FRect: TRect;
     FIntParam: Integer;
     FLongFont: TLogFont;
+    FDataParam: TDBPopupMenuInfoRecord;
     procedure ShowWriteError;
     procedure OnEnd;
     procedure NotifyDB;
     procedure UpdatePreview;
+    procedure UpdateDBRotation;
+    procedure AddInfoToCollection;
+    procedure RefreshItem;
   protected
     procedure Execute; override;
   public
@@ -48,9 +52,16 @@ type
 
 implementation
 
-uses UnitSizeResizerForm;
+uses
+  UnitSizeResizerForm,
+  UnitUpdateDB;
 
 { TImageConvertThread }
+
+procedure TImageConvertThread.AddInfoToCollection;
+begin
+  UpdaterDB.AddFileEx(FDataParam, True, True);
+end;
 
 procedure TImageConvertThread.AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect;
   Text: string);
@@ -87,18 +98,19 @@ end;
 
 procedure TImageConvertThread.Execute;
 var
-  Graphic, NewGraphic : TGraphic;
-  GraphicClass, NewGraphicClass : TGraphicClass;
-  Password, Ext : string;
-  FileName : string;
+  Graphic, NewGraphic: TGraphic;
+  GraphicClass, NewGraphicClass: TGraphicClass;
+  Password, Ext: string;
+  FileName: string;
   Original,
-  TmpBitmap : TBitmap;
+  TmpBitmap: TBitmap;
   ExifData: TExifData;
-  W, H, Width, Height: Integer;
-  Crypted : Boolean;
-  MS, MD : TMemoryStream;
-  FS : TFileStream;
-  IsPreviewAvalialbe: Boolean;
+  W, H, Width, Height, Rotation: Integer;
+  Crypted: Boolean;
+  MS, MD: TMemoryStream;
+  FS: TFileStream;
+  IsPreviewAvailalbe: Boolean;
+  FileInfo: TDBPopupMenuInfoRecord;
 
   procedure Exchange(var A, B: TBitmap);
   var
@@ -113,21 +125,27 @@ var
   begin
     if FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF then
     begin
-      ExifData := TExifData.Create;
-      try
-        ExifData.LoadFromGraphic(FData.FileName);
-        FProcessingParams.Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-      except
-        on e : Exception do
-          EventLog(e.Message);
+      if (FData.ID > 0) and (FData.Rotation > 0) then
+      begin
+        FProcessingParams.Rotation := FData.Rotation;
+      end else
+      begin
+        ExifData := TExifData.Create;
+        try
+          ExifData.LoadFromGraphic(FData.FileName);
+          FProcessingParams.Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+        except
+          on e : Exception do
+            EventLog(e.Message);
+        end;
+        F(ExifData);
       end;
-      F(ExifData);
     end;
   end;
 
   procedure FixJpegStreamEXIF(Stream : TStream; Width, Height : Integer);
   var
-    Jpeg : TJpegImage;
+    Jpeg: TJpegImage;
   begin
     ExifData := TExifData.Create;
     try
@@ -161,7 +179,7 @@ var
 
   procedure FixJpegFileEXIF(FileName : string; Width, Height : Integer);
   var
-    FS : TFileStream;
+    FS: TFileStream;
   begin
     FS := TFileStream.Create(FileName, fmOpenReadWrite);
     try
@@ -186,7 +204,7 @@ const
 
   procedure SaveFile(Mode : Integer);
   var
-    W, H : Integer;
+    W, H: Integer;
     RetryCounter: Integer;
 
     procedure UpdatePreviewWindow;
@@ -215,7 +233,7 @@ const
           if SynchronizeEx(UpdatePreview) then
           begin
             BitmapParam := nil;
-            IsPreviewAvalialbe := True;
+            IsPreviewAvailalbe := True;
           end;
 
         finally
@@ -351,7 +369,7 @@ begin
   FreeOnTerminate := True;
   FEndProcessing := False;
   NewGraphic := nil;
-  IsPreviewAvalialbe := False;
+  IsPreviewAvailalbe := False;
   CoInitialize(nil);
   try
     Ext := ExtractFileExt(FData.FileName);
@@ -385,46 +403,85 @@ begin
     if FProcessingParams.Rotate
       and not FProcessingParams.Resize
       and not FProcessingParams.AddWatermark
-      and not FProcessingParams.PreviewOptions.GeneratePreview
-      and (NewGraphicClass = GraphicClass)
-      and (GraphicClass = TJPEGImage)
-      and GDIPlusPresent then
+      and not FProcessingParams.PreviewOptions.GeneratePreview then
     begin
-      FixEXIFRotate;
-      if FProcessingParams.Rotation = DB_IMAGE_ROTATE_0 then
-        Exit;
-
-      MS := TMemoryStream.Create;
-      try
-        if Crypted then
+      if not TFileAssociations.Instance.IsConvertableExt(ExtractFileExt(FData.FileName))
+        and not FProcessingParams.Convert then
+      begin
+        if FData.ID > 0 then
         begin
-          if not DecryptFileToStream(FData.FileName, Password, MS) then
-            Exit;
+          //file in collection - update rotation attribute
+          if FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF then
+          begin
+            FixEXIFRotate;
+            Rotation := FProcessingParams.Rotation;
+          end else
+            Rotation := GetNeededRotation(FData.Rotation, FProcessingParams.Rotation);
 
-          MD := TMemoryStream.Create;
-          try
-            case FProcessingParams.Rotation of
-              DB_IMAGE_ROTATE_270:
-                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate270);
-              DB_IMAGE_ROTATE_90:
-                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate90);
-              DB_IMAGE_ROTATE_180:
-                RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate180);
-            end;
-
-            SaveFile(MODE_GDI_PLUS_CRYPT);
-
-          finally
-            F(MD);
+          if Rotation <> FData.Rotation then
+          begin
+            SetRotate(FData.ID, Rotation);
+            FIntParam := ROtation;
+            Synchronize(UpdateDBRotation);
           end;
         end else
-          SaveFile(MODE_GDI_PLUS);
+        begin
+          FixEXIFRotate;
+          //add file to collection and set rotation attribute
 
-      finally
-        F(MS);
+          FileInfo := FData.Copy;
+          try
+            FileInfo.Rotation := FProcessingParams.Rotation;
+            FileInfo.Include := True;
+            FDataParam := FileInfo;
+            Synchronize(AddInfoToCollection);
+          finally
+            F(FileInfo);
+          end;
+        end;
+        Exit;
       end;
 
-      Exit;
+      if (NewGraphicClass = GraphicClass)
+        and (GraphicClass = TJPEGImage)
+        and GDIPlusPresent then
+      begin
+        FixEXIFRotate;
+        if FProcessingParams.Rotation = DB_IMAGE_ROTATE_0 then
+          Exit;
+
+        MS := TMemoryStream.Create;
+        try
+          if Crypted then
+          begin
+            if not DecryptFileToStream(FData.FileName, Password, MS) then
+              Exit;
+
+            MD := TMemoryStream.Create;
+            try
+              case FProcessingParams.Rotation of
+                DB_IMAGE_ROTATE_270:
+                  RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate270);
+                DB_IMAGE_ROTATE_90:
+                  RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate90);
+                DB_IMAGE_ROTATE_180:
+                  RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate180);
+              end;
+
+              SaveFile(MODE_GDI_PLUS_CRYPT);
+
+            finally
+              F(MD);
+            end;
+          end else
+            SaveFile(MODE_GDI_PLUS);
+
+        finally
+          F(MS);
+        end;
+
+        Exit;
+      end;
     end;
 
     Graphic := GraphicClass.Create;
@@ -559,9 +616,10 @@ begin
     end;
   finally
     ProcessedFilesCollection.RemoveFile(FData.FileName);
+    Synchronize(RefreshItem);
     if FProcessingParams.PreviewOptions.GeneratePreview then
     begin
-      if not IsPreviewAvalialbe then
+      if not IsPreviewAvailalbe then
       begin
         BitmapParam := nil;
         OriginalWidth := 0;
@@ -590,6 +648,13 @@ begin
   TFormSizeResizer(ThreadForm).ThreadEnd(FData, FEndProcessing);
 end;
 
+procedure TImageConvertThread.RefreshItem;
+var
+  EventInfo: TEventValues;
+begin
+  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh], EventInfo);
+end;
+
 procedure TImageConvertThread.ShowWriteError;
 begin
   FDialogResult := Application.MessageBox(PChar(Format(TA('Error writing data on disk: %s.', 'ConvertImage'), [FErrorMessage])), PWideChar(PWideChar(TA('Error'))), MB_ICONERROR or MB_ABORTRETRYIGNORE);
@@ -610,6 +675,15 @@ begin
   BitmapParam.Canvas.Font.Handle := FFontParam;
   BitmapParam.Canvas.Font.Color := clBlack;
   FIntParam := BitmapParam.Canvas.TextHeight(FStringParam);
+end;
+
+procedure TImageConvertThread.UpdateDBRotation;
+var
+  EventInfo: TEventValues;
+begin
+  EventInfo.Name := FData.FileName;
+  EventInfo.Rotate := FIntParam;
+  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Rotate], EventInfo);
 end;
 
 procedure TImageConvertThread.UpdatePreview;

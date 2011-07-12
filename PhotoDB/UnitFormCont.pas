@@ -2041,9 +2041,6 @@ begin
       EventInfo);
   end else
   begin
-    if UpdaterDB = nil then
-      UpdaterDB := TUpdaterDB.Create;
-
     FileInfo:= TDBPopupMenuInfoRecord.Create;
     try
       FileInfo.FileName := Data[-RatingPopupMenu1.Tag].FileName;

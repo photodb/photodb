@@ -128,14 +128,30 @@ type
     property FullSize : Int64 read FFullSize write FFullSize;
   end;
 
-var
-  UpdaterDB: TUpdaterDB = nil;
+function UpdaterDB: TUpdaterDB;
+procedure DestroyUpdaterObject;
 
 implementation
 
 uses
   FormManegerUnit, UnitHistoryForm, ExplorerUnit, SlideShow, UnitScripts,
   DBScriptFunctions, UnitUpdateDBThread;
+
+var
+  FUpdaterDB: TUpdaterDB = nil;
+
+function UpdaterDB: TUpdaterDB;
+begin
+  if FUpdaterDB = nil then
+    FUpdaterDB := TUpdaterDB.Create;
+
+  Result := FUpdaterDB;
+end;
+
+procedure DestroyUpdaterObject;
+begin
+  F(FUpdaterDB);
+end;
 
 {$R *.dfm}
 
@@ -286,6 +302,7 @@ begin
     try
       Bit.PixelFormat := pf24bit;
       AssignJpeg(Bit, Value.JPEGImage);
+      ApplyRotate(Bit, Value.Rotate);
       Bitmap := TBitmap.Create;
       try
         Bitmap.PixelFormat := Pf24bit;
@@ -815,10 +832,10 @@ end;
 
 initialization
 
-  UpdaterDB := nil;
+  FUpdaterDB := nil;
 
 finalization
 
-  F(UpdaterDB);
+  F(FUpdaterDB);
 
 end.

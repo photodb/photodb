@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, uConstants, CCR.Exif, uMemory, UnitDBDeclare, uSettings, uAssociations,
-  Jpeg, GraphicEx, Graphics, SysUtils, CCR.Exif.XMPUtils;
+  Jpeg, GraphicEx, Graphics, SysUtils, CCR.Exif.XMPUtils, uTiffImage;
 
 type
   TExifPatchInfo = class
@@ -58,7 +58,7 @@ var
 begin
   GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
   if (GraphicClass = Jpeg.TJPEGImage)
-    or (GraphicClass = GraphicEx.TTIFFGraphic)
+    or (GraphicClass = TTiffImage)
     or (GraphicClass = GraphicEx.TPSDGraphic)
     then
       Result := True

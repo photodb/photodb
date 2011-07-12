@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, Math, UVistaFuncs,
   JPEG, GIFImage, GraphicEx, UnitDBkernel, GraphicCrypt, uAssociations,
-  AcDlgSelect, TiffImageUnit, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
+  AcDlgSelect, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
   UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
   DmProgress, uW7TaskBar, PngImage, uWatermarkOptions, uImageSource,
   UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
@@ -161,7 +161,7 @@ begin
   FormSizeResizer.Show;
 end;
 
-procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; BeginRotate : Integer; StartImmediately : Boolean);
+procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; BeginRotate: Integer; StartImmediately : Boolean);
 var
   FormSizeResizer: TFormSizeResizer;
 begin

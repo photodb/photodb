@@ -282,13 +282,7 @@
 			<DCCReference Include="External\Formats\GraphicEx\GraphicColor.pas"/>
 			<DCCReference Include="External\Formats\GraphicEx\GraphicCompression.pas"/>
 			<DCCReference Include="External\Formats\GraphicEx\GraphicStrings.pas"/>
-			<DCCReference Include="External\Formats\GraphicEx\JPG.pas"/>
 			<DCCReference Include="External\Formats\GraphicEx\MZLib.pas"/>
-			<DCCReference Include="External\Formats\TiffImageUnit.pas"/>
-			<DCCReference Include="External\Formats\Tiff\LibDelphi.pas"/>
-			<DCCReference Include="External\Formats\Tiff\LibJpegDelphi.pas"/>
-			<DCCReference Include="External\Formats\Tiff\LibTiffDelphi.pas"/>
-			<DCCReference Include="External\Formats\Tiff\ZLibDelphi.pas"/>
 			<DCCReference Include="External\Formats\DelphiDcraw\RAWImage.pas"/>
 			<DCCReference Include="External\Formats\GIFImage.pas"/>
 			<DCCReference Include="ImageEditor\ColorToolUnit.pas"/>
@@ -542,6 +536,7 @@
 			<DCCReference Include="Threads\uSearchHelpAddPhotosThread.pas"/>
 			<DCCReference Include="Units\uExifUtils.pas"/>
 			<DCCReference Include="Threads\uExifPatchThread.pas"/>
+			<DCCReference Include="Units\uTiffImage.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -575,7 +570,7 @@
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">314</VersionInfo>
+						<VersionInfo Name="Build">315</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -587,7 +582,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.0.314</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.0.315</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>

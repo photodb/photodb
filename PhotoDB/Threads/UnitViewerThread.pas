@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Graphics, GraphicCrypt, SysUtils, Forms,
-  GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, TiffImageUnit,
+  GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, uTiffImage,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
   uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage,
@@ -135,10 +135,10 @@ begin
             Exit;
           end else
           begin
-            if Graphic is TiffImageUnit.TTiffGraphic then
+            if Graphic is TTiffImage then
             begin
-              (Graphic as TiffImageUnit.TTiffGraphic).Page := FPage;
-              (Graphic as TiffImageUnit.TTiffGraphic).LoadFromFile(FFileName);
+              (Graphic as TTiffImage).Page := FPage;
+              (Graphic as TTiffImage).LoadFromFile(FFileName);
             end
             else
               Graphic.LoadFromFile(FFileName);
@@ -171,9 +171,9 @@ begin
         try
           try
             if PassWord = '' then
-              if Graphic is TiffImageUnit.TTiffGraphic then
+              if Graphic is TTiffImage then
               begin
-                FPages := (Graphic as TiffImageUnit.TTiffGraphic).Pages;
+                FPages := (Graphic as TTiffImage).Pages;
               end;
             if Graphic is TPNGImage then
             begin

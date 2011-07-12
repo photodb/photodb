@@ -143,13 +143,7 @@ uses
   GraphicColor in 'External\Formats\GraphicEx\GraphicColor.pas',
   GraphicCompression in 'External\Formats\GraphicEx\GraphicCompression.pas',
   GraphicStrings in 'External\Formats\GraphicEx\GraphicStrings.pas',
-  JPG in 'External\Formats\GraphicEx\JPG.pas',
   MZLib in 'External\Formats\GraphicEx\MZLib.pas',
-  TiffImageUnit in 'External\Formats\TiffImageUnit.pas',
-  LibDelphi in 'External\Formats\Tiff\LibDelphi.pas',
-  LibJpegDelphi in 'External\Formats\Tiff\LibJpegDelphi.pas',
-  LibTiffDelphi in 'External\Formats\Tiff\LibTiffDelphi.pas',
-  ZLibDelphi in 'External\Formats\Tiff\ZLibDelphi.pas',
   RAWImage in 'External\Formats\DelphiDcraw\RAWImage.pas',
   GIFImage in 'External\Formats\GIFImage.pas',
   ColorToolUnit in 'ImageEditor\ColorToolUnit.pas',
@@ -339,7 +333,8 @@ uses
   uGetPhotosThread in 'Threads\uGetPhotosThread.pas',
   uSearchHelpAddPhotosThread in 'Threads\uSearchHelpAddPhotosThread.pas',
   uExifUtils in 'Units\uExifUtils.pas',
-  uExifPatchThread in 'Threads\uExifPatchThread.pas';
+  uExifPatchThread in 'Threads\uExifPatchThread.pas',
+  uTiffImage in 'Units\uTiffImage.pas';
 
 {$R *.res}
 
@@ -675,16 +670,12 @@ begin
 
     if (s1 <> '') and FileExistsEx(s1) then
     begin
-      if UpdaterDB = nil then
-        UpdaterDB := TUpdaterDB.Create;
       FormManager.RegisterMainForm(UpdaterDB.Form);
       UpdaterDB.AddFile(s1);
     end;
 
     if (s1 <> '') and DirectoryExists(s1) then
     begin
-      if UpdaterDB = nil then
-        UpdaterDB := TUpdaterDB.Create;
       FormManager.RegisterMainForm(UpdaterDB.Form);
       UpdaterDB.AddDirectory(s1, nil);
     end;

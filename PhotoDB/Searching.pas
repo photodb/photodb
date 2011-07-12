@@ -2500,8 +2500,6 @@ end;
 
 procedure TSearchForm.AddFolder1Click(Sender: TObject);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.AddDirectory(TempFolderName, nil);
 end;
 

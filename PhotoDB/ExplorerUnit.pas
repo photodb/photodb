@@ -1525,9 +1525,6 @@ procedure TExplorerForm.AddFile1Click(Sender: TObject);
 var
   I, Index : Integer;
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
-
   if ListView1Selected <> nil then
   begin
     for I := 0 to ElvMain.Items.Count - 1 do
@@ -1989,7 +1986,7 @@ begin
   if SetNewIDFileData in Params then
   begin
     for I := 0 to FFilesInfo.Count - 1 do
-      if AnsiLowerCase(FFilesInfo[I].FileName) = Value.name then
+      if AnsiLowerCase(FFilesInfo[I].FileName) = Value.Name then
       begin
         FFilesInfo[I].SID := GetGUID;
 
@@ -2009,18 +2006,19 @@ begin
         FFilesInfo[I].Links := '';
         FFilesInfo[I].Include := Value.Include;
         FFilesInfo[I].Crypted := Value.Crypt;
-        if FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap = nil then
+        if (FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap = nil) then
         begin
           Bit := TBitmap.Create;
           Bit.PixelFormat := pf24bit;
           Bit.Assign(Value.JPEGImage);
-
+          ApplyRotate(Bit, Value.Rotate);
           if FBitmapImageList[FFilesInfo[I].ImageIndex].IsBitmap then
             FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap.Free;
 
           FBitmapImageList[FFilesInfo[I].ImageIndex].IsBitmap := True;
           FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap := Bit;
-        end;
+        end else
+          ApplyRotate(FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap, Value.Rotate);
         ElvMain.Refresh;
         if FFilesInfo[I].FileName = FSelectedInfo.FileName then
           if SelCount = 1 then
@@ -2035,7 +2033,8 @@ begin
     VerifyPaste(Self);
     Exit;
   end;
-  ImParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
+  ImParams := [EventID_Param_Crypt, EventID_Param_Image,
+    EventID_Param_Delete, EventID_Param_Critical];
   if ImParams * params<> [] then
   begin
     if ID > 0 then
@@ -2176,8 +2175,6 @@ end;
 
 procedure TExplorerForm.Addfolder1Click(Sender: TObject);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.AddDirectory(GetCurrentPath, nil)
 end;
 
@@ -2509,8 +2506,6 @@ end;
 
 procedure TExplorerForm.ShowUpdater1Click(Sender: TObject);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.ShowWindowNow;
 end;
 
@@ -3964,7 +3959,7 @@ var
   Files : TStrings;
   Effects : Integer;
 begin
-  Files:=TStringList.Create;
+  Files := TStringList.Create;
   try
     LoadFilesFromClipBoard(Effects, Files);
     if Files.Count = 0 then
@@ -4434,11 +4429,21 @@ end;
 procedure TExplorerForm.Paste3Click(Sender: TObject);
 var
   EventInfo: TEventValues;
+  CopyMoveToSelectedFolder: Boolean;
+  Index: Integer;
 begin
-  if SelCount = 0 then
-    Paste1Click(Sender)
+  CopyMoveToSelectedFolder := False;
+  if (SelCount = 1) then
+  begin
+    Index := ItemIndexToMenuIndex(ElvMain.Selection.First.Index);
+    CopyMoveToSelectedFolder := (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or
+      (FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE);
+    PmItemPopup.Tag := Index;
+  end;
+  if CopyMoveToSelectedFolder then
+    Paste2Click(Sender)
   else
-    Paste2Click(Sender);
+    Paste1Click(Sender);
   DBKernel.DoIDEvent(Self, 0, [EventID_Param_CopyPaste], EventInfo);
 end;
 
@@ -4648,8 +4653,6 @@ end;
 
 procedure TExplorerForm.AddFolder2Click(Sender: TObject);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.AddDirectory(TempFolderName, nil);
 end;
 
@@ -4739,7 +4742,6 @@ begin
   NewFormState;
   FCurrentPath := Path;
   FCurrentTypePath := WPath.PType;
-  ListView1SelectItem(nil, nil, False);
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) then
     S := IncludeTrailingBackslash(S);
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or
@@ -4757,7 +4759,6 @@ begin
   end
   else if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
     S := MyComputer;
-
 
   if FChangeHistoryOnChPath then
     if (FHistory.LastPath.Path <> S) or (FHistory.LastPath.PType <> WPath.PType) then
@@ -4778,7 +4779,8 @@ begin
     ElvMain.Groups.Add;
   end;
 
-  DoSelectItem;
+  ListView1SelectItem(nil, nil, False);
+
   FBitmapImageList.Clear;
 
   Info.OldFolderName := FOldPatch;
@@ -4843,10 +4845,11 @@ begin
           TreeView.Select(TreeView.Selected);
         except
         end;
-  DropFileTarget1.Unregister;
-  if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE)
-    then
-    DropFileTarget1.register(ElvMain);
+
+  if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE) then
+    DropFileTarget1.register(ElvMain)
+  else
+    DropFileTarget1.Unregister;
 
   if not NotSetOldPath then
   begin
@@ -6951,9 +6954,6 @@ begin
       EventInfo);
   end else
   begin
-    if UpdaterDB = nil then
-      UpdaterDB := TUpdaterDB.Create;
-
     FileInfo:= TDBPopupMenuInfoRecord.Create;
     try
       FileInfo.FileName := FFilesInfo[-RatingPopupMenu1.Tag].FileName;
@@ -7165,7 +7165,7 @@ begin
  if IsReallignInfo then
     Exit;
 
-  //to mack backgroupd image
+  //to match backgroupd image
   for I := 0 to ComponentCount - 1 do
     if Components[I] is TWebLink then
       if (Components[I] as TWebLink).Visible then

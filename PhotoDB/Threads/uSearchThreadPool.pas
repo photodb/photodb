@@ -3,7 +3,7 @@ unit uSearchThreadPool;
 interface
 
 uses
-  Classes, SysUtils, Math, uMemory, uMultiCPUThreadManager, UnitDBCommon;
+  Classes, SysUtils, Math, uMemory, uMultiCPUThreadManager, uRuntime;
 
 type
   TSearchThreadPool = class(TThreadPoolCustom)

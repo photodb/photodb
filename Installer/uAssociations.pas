@@ -8,7 +8,7 @@ uses
   jpeg,
   {$IFDEF PHOTODB}
   GraphicEx,
-  TiffImageUnit, //TiffImageUnit should be AFTER GraphicEx!!!
+  uTiffImage,
   GifImage,
   RAWImage,
   {$ENDIF}
@@ -17,7 +17,7 @@ uses
 
 {$IF DEFINED(UNINSTALL) OR DEFINED(INSTALL)}
 const
-  TTIFFGraphic = nil;
+  TTIFFImage = nil;
   TPSDGraphic = nil;
   TGIFImage = nil;
   TRAWImage = nil;
@@ -428,8 +428,8 @@ begin
     AddFileExtension('.jpeg', 'JPEG Images', 0, TJpegImage);
     AddFileExtension('.thm', 'JPEG Images', 0, TJpegImage);
 
-    AddFileExtension('.tiff', 'TIFF images', 1, TTIFFGraphic, True);
-    AddFileExtension('.tif', 'TIFF images', 1, TTIFFGraphic);
+    AddFileExtension('.tiff', 'TIFF images', 1, TTiffImage, True);
+    AddFileExtension('.tif', 'TIFF images', 1, TTiffImage);
 
     AddFileExtension('.psd', 'Photoshop Images', 2, TPSDGraphic);
     AddFileExtension('.pdd', 'Photoshop Images', 2, TPSDGraphic);
@@ -461,7 +461,7 @@ begin
     AddFileExtension('.pgm', 'Portable pixel/gray map images', 9, TPPMGraphic);
     AddFileExtension('.pbm', 'Portable pixel/gray map images', 9, TPPMGraphic);
 
-    AddFileExtension('.fax', 'GFI fax images', 10, TTIFFGraphic);
+    AddFileExtension('.fax', 'GFI fax images', 10, TTiffImage);
 
     AddFileExtension('.tga', 'Truevision images', 11, TTargaGraphic, True);
     AddFileExtension('.vst', 'Truevision images', 11, TTargaGraphic);
@@ -484,7 +484,7 @@ begin
     AddFileExtension('.cut', 'Dr. Halo images', 16, TCUTGraphic);
     AddFileExtension('.pal', 'Dr. Halo images', 16, TCUTGraphic);
 
-    AddFileExtension('.eps', 'Encapsulated Postscript images', 17, TEPSGraphic);
+    //AddFileExtension('.eps', 'Encapsulated Postscript images', 17, TEPSGraphic);
   finally
     FSync.Leave;
   end;

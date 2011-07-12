@@ -5,7 +5,7 @@ unit GraphicCrypt;
 interface
 
 uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
-  JPEG, PngImage, TiffImageUnit, uFileUtils, uAssociations,
+  JPEG, PngImage, uFileUtils, uAssociations, uTiffImage,
   GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil, DECCipher,
   GIFImage, DB, uMemoryUtils;
 
@@ -516,15 +516,15 @@ begin
       if (Result is TRAWImage) then
          (Result as TRAWImage).IsPreview := not LoadFullRAW;
 
-      if (Result is TiffImageUnit.TTIFFGraphic) then
+      if (Result is TTiffImage) then
       begin
 
         if Page = -1 then
-          (Result as TiffImageUnit.TTIFFGraphic).GetPagesCount(MS)
+          (Result as TTiffImage).GetPagesCount(MS)
         else
-          (result as TiffImageUnit.TTIFFGraphic).LoadFromStreamEx(MS, Page);
+          (result as TTiffImage).LoadFromStreamEx(MS, Page);
 
-        Pages := (result as TiffImageUnit.TTIFFGraphic).Pages;
+        Pages := (result as TTiffImage).Pages;
 
       end else
         Result.LoadFromStream(MS);

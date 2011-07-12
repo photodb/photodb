@@ -64,7 +64,7 @@ interface
 {$I GraphicConfiguration.inc}
 
 uses
-  Windows, Classes, ExtCtrls, Graphics, SysUtils, JPEG,
+  Windows, Classes, ExtCtrls, Graphics, SysUtils, //JPEG,
   GraphicCompression, GraphicStrings, GraphicColor;
 
 type
@@ -8063,10 +8063,10 @@ initialization
     RegisterFileFormat('ico', gesIcons, '', [ftRaster], False, False, TIcon);
     RegisterFileFormat('wmf', gesMetaFiles, '', [ftVector], False, False, TMetafile);
     RegisterFileFormat('emf', gesMetaFiles, gesEnhancedMetaFiles, [ftVector], False, False, TMetafile);
-    RegisterFileFormat('jfif', gesJPGImages, gesJFIFImages, [ftRaster], False, False, TJPEGImage);
+    {RegisterFileFormat('jfif', gesJPGImages, gesJFIFImages, [ftRaster], False, False, TJPEGImage);
     RegisterFileFormat('jpg', '', gesJPGImages, [ftRaster], False, False, TJPEGImage);
     RegisterFileFormat('jpe', '', gesJPEImages, [ftRaster], False, False, TJPEGImage);
-    RegisterFileFormat('jpeg', '', gesJPEGImages, [ftRaster], False, False, TJPEGImage);
+    RegisterFileFormat('jpeg', '', gesJPEGImages, [ftRaster], False, False, TJPEGImage);}
 
     // register our own formats
     RegisterFileFormat('rle', gesBitmaps, gesRLEBitmaps, [ftRaster], False, True, TBitmap);

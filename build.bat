@@ -31,11 +31,16 @@ cd PhotoDB
 cd dcu
 del *.dcu
 cd ..
-
 cd ..
+
 cd Uninstall
 "%DCC32%" UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
+
+cd Installer
+"%DCC32%" InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+cd ..
+
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe

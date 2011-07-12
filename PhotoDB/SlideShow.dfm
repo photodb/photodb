@@ -177,12 +177,13 @@ object Viewer: TViewer
         object TbPageNumber: TToolButton
           Left = 208
           Top = 0
-          AutoSize = True
           Caption = 'PageNumber'
           DropdownMenu = PopupMenuPageSelecter
+          EnableDropdown = True
           ImageIndex = 22
           Style = tbsDropDown
           Visible = False
+          OnClick = TbPageNumberClick
         end
         object TbSeparatorPageNumber: TToolButton
           Left = 252

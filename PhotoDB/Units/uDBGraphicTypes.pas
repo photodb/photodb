@@ -15,6 +15,7 @@ type
     Green: T255IntArray;
     Blue: T255IntArray;
     Loaded: Boolean;
+    Loading: Boolean;
     Max: Byte;
     LeftEffective: Byte;
     RightEffective: Byte;

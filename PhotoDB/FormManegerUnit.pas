@@ -284,7 +284,8 @@ begin
   // to allow run new copy
   Caption := '';
 
-  F(UpdaterDB);
+  //stop updating process, queue will be saved in registry
+  DestroyUpdaterObject;
 
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;

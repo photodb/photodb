@@ -988,6 +988,7 @@ object PropertiesForm: TPropertiesForm
         Height = 13
         Cursor = crHandPoint
         Anchors = [akLeft, akBottom]
+        Color = clBtnFace
         ParentColor = False
         Text = 'Add link'
         OnClick = Addnewlink1Click

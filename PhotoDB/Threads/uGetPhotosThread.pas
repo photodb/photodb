@@ -215,8 +215,6 @@ end;
 
 procedure TGetPhotosThread.AddDirectory;
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.AddDirectory(FStrParam, nil);
 end;
 

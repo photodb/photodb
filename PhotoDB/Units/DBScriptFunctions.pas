@@ -61,23 +61,17 @@ end;
 
 procedure ShowUpdateWindow;
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.ShowWindowNow;
 end;
 
 procedure AddFileInDB(FileName: string);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
   UpdaterDB.AddFile(FileName)
 end;
 
 procedure AddFolderInDB(Directory: string);
 begin
-  if UpdaterDB = nil then
-    UpdaterDB := TUpdaterDB.Create;
-  UpdaterDB.AddDirectory(Directory, nil)
+  UpdaterDB.AddDirectory(Directory, nil);
 end;
 
 function GetRegKeyListing(Key : string) : TArrayOfString;

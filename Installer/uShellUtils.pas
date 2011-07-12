@@ -164,6 +164,8 @@ begin
 end;
 
 function RegInstallApplication(FileName: string; CallBack : TRegistryInstallCallBack): Boolean;
+const
+  ActionCount = 12;
 var
   FReg: TBDRegistry;
   Terminate : Boolean;
@@ -171,7 +173,7 @@ begin
   Terminate := False;
   Result := True;
 
-  CallBack(1, 11, Terminate);
+  CallBack(1, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey(RegRoot, True);
@@ -191,7 +193,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(2, 11, Terminate);
+  CallBack(2, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase', True);
@@ -216,7 +218,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(3, 11, Terminate);
+  CallBack(3, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\.photodb', True);
@@ -236,7 +238,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(4, 11, Terminate);
+  CallBack(4, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\.ids', True);
@@ -258,7 +260,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(5, 11, Terminate);
+  CallBack(5, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\.dbl', True);
@@ -281,7 +283,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(6, 11, Terminate);
+  CallBack(6, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\.ith', True);
@@ -305,7 +307,7 @@ begin
   FReg.Free;
 
   // Adding Handler for removable drives
-  CallBack(7, 11, Terminate);
+  CallBack(7, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey
@@ -326,7 +328,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(8, 11, Terminate);
+  CallBack(8, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey(
@@ -343,7 +345,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(9, 11, Terminate);
+  CallBack(9, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey('\SOFTWARE\Classes', True);
@@ -355,7 +357,7 @@ begin
     FReg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler\Shell\Open', True);
     FReg.CloseKey;
     FReg.OpenKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler\Shell\Open\Command', True);
-    FReg.WriteString('', Format('"%s" "/GETPHOTOS" "%%1"', [Filename]));
+    FReg.WriteString('', Format('"%s" "/GETPHOTOS" "%%1"', [FileName]));
     FReg.CloseKey;
   except
     on E: Exception do
@@ -367,7 +369,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(10, 11, Terminate);
+  CallBack(10, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\Directory\Shell\PhDBBrowse', True);
@@ -385,7 +387,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(11, 11, Terminate);
+  CallBack(11, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\Drive\Shell\PhDBBrowse', True);
@@ -393,6 +395,24 @@ begin
     FReg.CloseKey;
     FReg.OpenKey('\Drive\Shell\PhDBBrowse\Command', True);
     FReg.Writestring('', Format('"%s" "/EXPLORER" "%%1"', [Filename]));
+  except
+    on E: Exception do
+    begin
+      EventLog(':ExtInstallApplication() throw exception: ' + E.message);
+      Result := False;
+      Exit;
+    end;
+  end;
+  FReg.Free;
+
+  CallBack(12, ActionCount, Terminate);
+  FReg := TBDRegistry.Create(REGISTRY_CLASSES);
+  try
+    FReg.OpenKey('\Drive\Shell\PhDBGetPhotos', True);
+    FReg.Writestring('', TA('Get photos', 'System'));
+    FReg.CloseKey;
+    FReg.OpenKey('\Drive\Shell\PhDBGetPhotos\Command', True);
+    FReg.Writestring('', Format('"%s" "/GETPHOTOS" "%%1"', [Filename]));
   except
     on E: Exception do
     begin

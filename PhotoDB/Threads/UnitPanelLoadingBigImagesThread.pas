@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt,
-  UnitDBDeclare, RAWImage, UnitDBCommonGraphics, UnitDBCommon,
+  UnitDBDeclare, RAWImage, UnitDBCommonGraphics, uRuntime, UnitDBCommon,
   uCDMappingTypes, uLogger, uMemory, UnitDBKernel, uDBThread, uDBForm,
   uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uAssociations;
 

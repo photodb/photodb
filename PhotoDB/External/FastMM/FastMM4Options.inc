@@ -60,7 +60,7 @@ Set the default options for FastMM here.
  not properly set the IsMultiThread variable. Also set this option if you are
  going to share this memory manager between a single threaded application and a
  multi-threaded DLL.}
-{.$define AssumeMultiThreaded}
+{$define AssumeMultiThreaded}
 
 {Enable this option to not call Sleep when a thread contention occurs. This
  option will improve performance if the ratio of the number of active threads
@@ -69,22 +69,22 @@ Set the default options for FastMM here.
  timeslice when a thread contention occurs, unless UseSwitchToThread is
  also defined (see below) in which case it will call SwitchToThread instead of
  Sleep.}
-{.$define NeverSleepOnThreadContention}
+{$define NeverSleepOnThreadContention}
 
   {Set this option to call SwitchToThread instead of sitting in a "busy waiting"
    loop when a thread contention occurs. This is used in conjunction with the
    NeverSleepOnThreadContention option, and has no effect unless
    NeverSleepOnThreadContention is also defined. This option may improve
    performance with many CPU cores and/or threads of different priorities. Note
-   that the SwitchToThread API call is only available on Windows 2000 and later.
-  {.$define UseSwitchToThread}
+   that the SwitchToThread API call is only available on Windows 2000 and later.}
+  {$define UseSwitchToThread}
 
 {-----------------------------Debugging Options-------------------------------}
 
 {Enable this option to suppress the generation of debug info for the
  FastMM4.pas unit. This will prevent the integrated debugger from stepping into
  the memory manager code.}
-{.$define NoDebugInfo}
+{$define NoDebugInfo}
 
 {Enable this option to suppress the display of all message dialogs. This is
  useful in service applications that should not be interrupted.}
@@ -235,7 +235,7 @@ Set the default options for FastMM here.
  AMD K5, Pentium I and earlier CPUs. MMX is currently only used in the variable
  size move routines, so if UseCustomVariableSizeMoveRoutines is not set then
  this option has no effect.}
-{.$define EnableMMX}
+{$define EnableMMX}
 
   {Set this option to force the use of MMX instructions without checking
    whether the CPU supports it. If this option is disabled then the CPU will be

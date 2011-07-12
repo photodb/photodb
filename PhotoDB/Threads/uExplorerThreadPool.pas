@@ -5,7 +5,7 @@ interface
 uses Windows, Math, Classes, SysUtils, SyncObjs,
      dolphin_db, ExplorerTypes, UnitDBDeclare, uGOM,
      uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory,
-     uConstants, UnitDBCommon;
+     uConstants, uRuntime;
 
 type
   TExplorerThreadPool = class(TThreadPoolCustom)

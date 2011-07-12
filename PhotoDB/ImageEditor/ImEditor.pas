@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, WebLink, StdCtrls, ExtCtrls, ComCtrls, ExtDlgs, Jpeg, GIFImage, Math,
   DropSource, DropTarget, ToolsUnit, CropToolUnit, SaveWindowPos,
-  ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd, TiffImageUnit,
+  ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd, uTiffImage,
   EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus,
   CustomSelectTool, TextToolUnit, BrushToolUnit, InsertImageToolUnit,
   GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm,
@@ -2171,7 +2171,7 @@ begin
             if FileExistsSafe(FileName) then
             begin
               if not ForseSave then
-                if RewriteFile(FileName) then
+                if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2223,7 +2223,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if RewriteFile(FileName) then
+                if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2253,7 +2253,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if RewriteFile(FileName) then
+                if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2282,7 +2282,7 @@ begin
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if RewriteFile(FileName) then
+                if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
@@ -2306,17 +2306,17 @@ begin
 
         5:
           begin
-            if (GetExt(FileName) <> 'TIFF') then
-              FileName := FileName + '.TIFF';
+            if (GetExt(FileName) <> 'TIFF') and (GetExt(FileName) <> 'TIF') then
+              FileName := FileName + '.tif';
             if FileExists(FileName) then
             begin
               if not ForseSave then
-                if RewriteFile(FileName) then
+                if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
               ID := GetIdByFileName(FileName);
             end;
-            Image := TTiffGraphic.Create;
+            Image := TTiffImage.Create;
             try
               Image.Assign(CurrentImage);
               try

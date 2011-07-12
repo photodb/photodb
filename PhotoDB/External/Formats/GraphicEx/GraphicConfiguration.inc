@@ -31,7 +31,7 @@
 // certain formats which are not of interest you can save some memory.
 {$define SGIGraphic}             // *.bw, *.rgb, *.rgba, *.sgi images are supported
 {$define AutodeskGraphic}        // *.cel, *.pic images
-{$define TIFFGraphic}            // *.tif, *.tiff images
+{.$define TIFFGraphic}            // *.tif, *.tiff images
 {$define TargaGraphic}           // *.tga, *.vst, *.icb, *.vda, *.win images
 {$define PCXGraphic}             // *.pcx, *.pcc, *.scr images
 {$define PCDGraphic}             // *.pcd images

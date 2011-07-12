@@ -489,7 +489,7 @@ begin
       SetFocus;
       Exit;
     end;
-
+    GistogrammData.Loading := False;
     R(EditLinkForm);
     PcMain.Pages[2].TabVisible := True;
     PcMain.Pages[3].TabVisible := True;
@@ -711,6 +711,7 @@ begin
   FFilesInfo := TDBPopupMenuInfo.Create;
   DestroyCounter := 0;
   GistogrammData.Loaded := False;
+  GistogrammData.Loading := False;
 
   LinkDropFiles := TStringList.Create;
   PropertyManager.AddProperty(Self);
@@ -1204,8 +1205,7 @@ begin
     end else
     begin
       FSaving := False;
-      if UpdaterDB = nil then
-        UpdaterDB := TUpdaterDB.Create;
+
       FileInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
       try
         FileInfo.Comment := CommentMemo.Text;
@@ -1317,6 +1317,7 @@ begin
   if not IsGraphicFile(FileName) or not FileExistsSafe(FileName) then
     Exit;
 
+  GistogrammData.Loading := False;
   PcMain.Pages[2].TabVisible := True;
   PcMain.Pages[3].TabVisible := True;
 
@@ -1606,6 +1607,7 @@ begin
     SetFocus;
     Exit;
   end;
+  GistogrammData.Loading := False;
   R(EditLinkForm);
   ResetBold;
 
@@ -2031,8 +2033,9 @@ begin
       begin
         RgGistogrammChannel.ItemIndex := 0;
 
-        if not GistogrammData.Loaded then
+        if not GistogrammData.Loaded and not not GistogrammData.Loading then
         begin
+          GistogrammData.Loaded := True;
           Options.FileName := FileName;
           Options.Owner := Self;
           Options.SID := SID;
@@ -3297,7 +3300,10 @@ var
   MinC, MaxC: Integer;
 begin
   if Sender is TPropertyLoadGistogrammThread then
-    GistogrammData.Loaded := True
+  begin
+    GistogrammData.Loaded := True;
+    GistogrammData.Loading := True;
+  end
   else if not GistogrammData.Loaded then
     FillChar(GistogrammData, SizeOf(GistogrammData), #0);
 

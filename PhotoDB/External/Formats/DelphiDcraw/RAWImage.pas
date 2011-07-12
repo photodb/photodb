@@ -2,9 +2,9 @@ unit RAWImage;
 
 interface
 
-uses  Windows, Messages, SysUtils, Graphics, Classes, FileCtrl, GraphicEX, Forms,
-      uScript, UnitScripts, uConstants, uFileUtils, uTime,
-      FreeBitmap, FreeImage, GraphicsBaseTypes;
+uses
+  Windows, SysUtils, Graphics, Classes,
+  uConstants, uFileUtils, uTime, FreeBitmap, FreeImage, GraphicsBaseTypes;
 
 type
   TRAWImage = class(TBitmap)
@@ -233,9 +233,10 @@ end;
 
 procedure TRAWImage.LoadFromFreeImage(Image: TFreeBitmap);
 var
-  I, J : Integer;
-  PS, PD : PARGB;
-  W, H : integer;
+  I, J: Integer;
+  PS, PD: PARGB;
+  W, H: Integer;
+  FreeImage: PFIBITMAP;
 begin
   PixelFormat := pf24Bit;
   W := Image.GetWidth;
@@ -243,9 +244,10 @@ begin
   Width := W;
   Height := H;
 
+  FreeImage := Image.Dib;
   for I := 0 to H - 1 do
   begin
-    PS := PARGB(Image.GetScanLine(H - I - 1));
+    PS := PARGB(FreeImage_GetScanLine(FreeImage, H - I - 1));
     PD := ScanLine[I];
     for J := 0 to W - 1 do
       PD[J] := PS[J];
