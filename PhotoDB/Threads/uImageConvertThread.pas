@@ -530,6 +530,11 @@ begin
             ProportionalSizeA(W, H, Width, Height);
           end;
 
+          //generate small image
+          if FProcessingParams.PreviewOptions.GeneratePreview then
+            ProportionalSize(FProcessingParams.PreviewOptions.PreviewWidth,
+              FProcessingParams.PreviewOptions.PreviewHeight, Width, Height);
+
           //resample image
           if Original.PixelFormat = pf32Bit then
           begin
@@ -544,7 +549,7 @@ begin
           end else
           begin
             if FProcessingParams.PreviewOptions.GeneratePreview then
-              Stretch(Width, Height, sfBox, 0, Original)
+              Stretch(Width, Height, {sfBox}sfLanczos3, 0, Original)
             else
               Stretch(Width, Height, sfLanczos3, 0, Original);
           end;

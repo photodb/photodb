@@ -545,11 +545,11 @@ begin
   FillProcessingParams;
   NewFormState;
 
-  R := Rect(5, LbInfo.Top + LbInfo.Height + 5, ClientWidth - 5, PrbMain.Top - 5);
+  R := PbImage.ClientRect;
 
   FProcessingParams.PreviewOptions.GeneratePreview := True;
-  FProcessingParams.PreviewOptions.PreviewWidth := R.Right - R.Left;
-  FProcessingParams.PreviewOptions.PreviewHeight := R.Bottom - R.Top;
+  FProcessingParams.PreviewOptions.PreviewWidth := R.Right - R.Left + 1;
+  FProcessingParams.PreviewOptions.PreviewHeight := R.Bottom - R.Top + 1;
   TImageConvertThread.Create(Self, StateID, FData[FCurrentPreviewPosition].Copy, FProcessingParams);
   LsMain.Show;
 
@@ -731,6 +731,8 @@ procedure TFormSizeResizer.DefaultResize;
 begin
   FIgnoreInput := True;
   CbResize.Checked := True;
+  CbRotate.Checked := True;
+  DdRotate.ItemIndex := 0; //rotate by EXIF by default
   FIgnoreInput := False;
   TmrPreviewTimer(Self);
 end;
@@ -842,15 +844,16 @@ begin
   if (FPreviewImage <> nil) and (FRealWidth + FRealHeight > 0) then
   begin
     R := Rect(0, 0, PbImage.Width, PbImage.Height);
-    W := R.Right - R.Left - 3;
-    H := R.Bottom - R.Top - 3;
+    W := R.Right - R.Left + 1 - 4; //4px for shadow
+    H := R.Bottom - R.Top + 1 - 4; //4px for shadow
     Width := FPreviewImage.Width;
     Height := FPreviewImage.Height;
     ProportionalSizeA(W, H, Width, Height);
     ProportionalSize(FRealWidth, FRealHeight, Width, Height);
+
     X := R.Left + W div 2 - Width div 2;
     Y := R.Top + H div 2 - Height div 2;
-    R := Rect(X, Y, X + Width, Y + Height);
+    R := Rect(X, Y, X + Width + 4, Y + Height + 4);
 
     DisplayImage := TBitmap.Create;
     ShadowImage := TBitmap.Create;

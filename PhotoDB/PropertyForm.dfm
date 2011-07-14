@@ -121,7 +121,7 @@ object PropertiesForm: TPropertiesForm
     Tag = 1
     Left = 120
     Top = 32
-    Width = 180
+    Width = 186
     Height = 73
     Anchors = [akLeft, akTop, akRight]
     BorderStyle = bsNone
@@ -179,7 +179,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 298
     Height = 372
-    ActivePage = TsGeneral
+    ActivePage = TsAdditional
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True

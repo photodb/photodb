@@ -2033,7 +2033,7 @@ begin
       begin
         RgGistogrammChannel.ItemIndex := 0;
 
-        if not GistogrammData.Loaded and not not GistogrammData.Loading then
+        if not GistogrammData.Loaded and not GistogrammData.Loading then
         begin
           GistogrammData.Loaded := True;
           Options.FileName := FileName;

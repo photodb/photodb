@@ -1924,7 +1924,7 @@ begin
         if ElvMain.Items[I].ImageIndex > -1 then
           ApplyRotate(FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap, ReRotation);
       end;
-      RefreshParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
+      RefreshParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical, EventID_Param_Refresh];
       if (ElvMain.Items[I].ImageIndex < 0) or (RefreshParams * Params <> []) then
       begin
         FilesToUpdate := TDBPopupMenuInfo.Create;
