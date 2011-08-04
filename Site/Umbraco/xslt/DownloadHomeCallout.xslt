@@ -11,11 +11,18 @@
 <xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
-<xsl:variable name="ReleasesHolderDocTypeID" select="1091" />
-<xsl:variable name="ReleasesHolder" select="$currentPage/ancestor-or-self::*[@level=1]/descendant::*[@nodeType=$ReleasesHolderDocTypeID]" />
-<xsl:variable name="DownloadHandlerDocTypeID" select="1097" />
-<xsl:variable name="DownloadHelper" select="$currentPage/ancestor::*[name()='root']/descendant::*[@nodeType=$DownloadHandlerDocTypeID]" />
+<xsl:variable name="root" select="$currentPage/ancestor::*[name()='root']" />
+<xsl:variable name="languageRoot" select="$currentPage/ancestor-or-self::*[@level=1]" />
+<xsl:variable name="lng" select="$languageRoot/@nodeName" />
     
+<xsl:variable name="ReleasesHolderDocTypeID" select="1091" />
+<xsl:variable name="ReleasesHolder" select="$languageRoot/descendant::*[@nodeType=$ReleasesHolderDocTypeID]" />
+<xsl:variable name="DownloadHandlerDocTypeID" select="1097" />
+<xsl:variable name="DownloadHelper" select="$root/descendant::*[@nodeType=$DownloadHandlerDocTypeID]" />
+    
+<xsl:variable name="SettingsDocTypeId" select="1127" />
+<xsl:variable name="settingsNode" select="$root/descendant::*[@nodeType=$SettingsDocTypeId]/descendant::*[@nodeName=$lng]" />
+
 <xsl:template match="/">
   
   <xsl:for-each select="$ReleasesHolder/child::*[@isDoc and string(isStable)='1']">
@@ -24,12 +31,19 @@
       
       <xsl:variable name="fileName" select="umbraco.library:GetMedia(./installerFile, false)/installerFile" />
       <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />
-
+      
       <div class="download">
-        <a href="{umbraco.library:NiceUrl($DownloadHelper/@id)}?id={./@id}"><img src="/img/download-icon-windows.png" alt="download" /></a>
-        <span class="phdInfo"><a href="{$downloadUrl}"><xsl:value-of select="./productName" /></a></span>
+        <a href="{$downloadUrl}" rel="nofollow"><img src="/img/download-icon-windows.png" alt="{$settingsNode/siteSlogan} - download" /></a>
+        <span class="phdInfo"><a href="{$downloadUrl}" rel="nofollow"><xsl:value-of select="./productName" /></a></span>
+        <div class="home_slogan">
+          <h1>
+            <a href="{$downloadUrl}" rel="nofollow">
+              <xsl:value-of select="$settingsNode/siteSlogan" />
+            </a>
+          </h1>
+        </div>
         <div class="downloadInfo">
-          <h1><a href="{$downloadUrl}" ><xsl:value-of select="$ReleasesHolder/downloadText" /></a></h1>
+          <h2><a href="{$downloadUrl}" rel="nofollow"><xsl:value-of select="$ReleasesHolder/downloadText" /></a></h2>
           <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />
           <br />
           <xsl:if test="string(./displayCounter)='1' or Plib:IsLoggedIntoBackend()">

@@ -12,15 +12,27 @@
 <xsl:param name="currentPage"/>
 <xsl:variable name="DownloadPageDocTypeId" select="1072" />
 <xsl:variable name="DonatePageDocTypeId" select="1079" />
+<xsl:variable name="level2Page" select="$currentPage/ancestor-or-self::*[@level=2]" />
     
 <xsl:template match="/">
 
-<ul>  
-  <li>
-    <a class="selected" href="{umbraco.library:NiceUrl($currentPage/@id)}">
-      <xsl:value-of select="$currentPage/title" />
-    </a>
-  </li>
+<ul>
+  <xsl:if test="count($level2Page)&gt;0">
+    <li>
+      <a href="{umbraco.library:NiceUrl($level2Page/@id)}">
+        <xsl:if test="$level2Page/@id=$currentPage/@id"><xsl:attribute name="class">selected</xsl:attribute></xsl:if>
+        <xsl:value-of select="$level2Page/title" />
+      </a>
+    </li>
+  </xsl:if>
+  <xsl:for-each select="$level2Page/child::*[@isDoc and string(umbracoNaviHide) != '1' and string(@template)!='0']">
+    <li>
+      <a href="{umbraco.library:NiceUrl(./@id)}">
+        <xsl:if test="./@id=$currentPage/@id"><xsl:attribute name="class">selected</xsl:attribute></xsl:if>
+        <xsl:value-of select="./title" />
+      </a>
+    </li>
+  </xsl:for-each>
   <xsl:if test="$currentPage/@nodeType!=$DownloadPageDocTypeId">
     <xsl:variable name="downloadPage" select="$currentPage/ancestor::*[@level=1]/descendant::*[@nodeType=$DownloadPageDocTypeId]" />
     <xsl:if test="count($downloadPage)!=0">

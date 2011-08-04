@@ -7,7 +7,7 @@
   xmlns:umbraco.library="urn:umbraco.library" xmlns:Exslt.ExsltCommon="urn:Exslt.ExsltCommon" xmlns:Exslt.ExsltDatesAndTimes="urn:Exslt.ExsltDatesAndTimes" xmlns:Exslt.ExsltMath="urn:Exslt.ExsltMath" xmlns:Exslt.ExsltRegularExpressions="urn:Exslt.ExsltRegularExpressions" xmlns:Exslt.ExsltStrings="urn:Exslt.ExsltStrings" xmlns:Exslt.ExsltSets="urn:Exslt.ExsltSets" xmlns:Plib="urn:Plib" 
   exclude-result-prefixes="msxml umbraco.library Exslt.ExsltCommon Exslt.ExsltDatesAndTimes Exslt.ExsltMath Exslt.ExsltRegularExpressions Exslt.ExsltStrings Exslt.ExsltSets Plib ">
 
-<xsl:output method="html" omit-xml-declaration="yes"/>
+<xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
 
@@ -19,7 +19,7 @@
       
       <div class="donateImage">
         <a href="{umbraco.library:NiceUrl($currentPage/@id)}">
-          <img id="donateImg" src="/img/donate.png"/>
+          <img id="donateImg" src="/img/donate.png" alt="help us donate photo database"/>
         </a>
       </div>
       <div class="donateInfo">
@@ -31,7 +31,7 @@
         <p>
           <xsl:value-of select="$currentPage/donateInfoText" disable-output-escaping="yes" />
         </p>
-        <div class="clearDiv"></div>
+        <div class="clearDiv"><!-- --></div>
         
 
         <h2><xsl:value-of select="$currentPage/donateMoneyCaption" /></h2>
@@ -46,28 +46,29 @@
                 <xsl:value-of select="./name" />
               </div>
               <div class="paymentInfo">
-                <img class="donateWmImg" src="{umbraco.library:GetMedia(./donateImage, false)/umbracoFile}" />
-                  <div class="donateWmInfo">
-                    <xsl:if test="string(./paddingTop)!=''"><xsl:attribute name="style">padding-top:<xsl:value-of select="./paddingTop" />px</xsl:attribute></xsl:if>
-                
-                    <xsl:for-each select="./child::*[@isDoc]">
-                      <xsl:value-of select="./detailText" /><br />
-                    </xsl:for-each>
-                  </div>
+                <img class="donateWmImg" src="{umbraco.library:GetMedia(./donateImage, false)/umbracoFile}" alt="donate with {./name}" />
+                <div class="donateWmInfo">
+                  <xsl:if test="string(./paddingTop)!=''"><xsl:attribute name="style">padding-top:<xsl:value-of select="./paddingTop" />px</xsl:attribute></xsl:if>
+              
+                  <xsl:for-each select="./child::*[@isDoc]">
+                    <xsl:value-of select="./detailText" /><br />
+                  </xsl:for-each>
+                </div>
               </div><!--paymentInfo-->
-              <div class="clearDiv"></div>
+              <div class="clearDiv"><!-- --></div>
             </xsl:if>
           </xsl:for-each>
         </div>
         
-        <div class="clearDiv"></div>
+        <div class="clearDiv"><!-- --></div>
         <div class="donate_pay_warning">
           <div class="warning_image">
-            <img src="/img/warning.gif" />
+            <img src="/img/warning.gif" alt="warning" />
           </div>
           <xsl:value-of select="$currentPage/donateMoneyInfo" />
         </div>
-        <div class="clearDiv"></div>
+        
+        <div class="clearDiv"><!-- --></div>
                   
         <h3><xsl:value-of select="$currentPage/thankYouText" /></h3>
           

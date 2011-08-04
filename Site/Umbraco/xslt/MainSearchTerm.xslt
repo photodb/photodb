@@ -16,38 +16,6 @@
 <xsl:variable name="SettingsDocTypeId" select="1127" />
 <xsl:variable name="settingsNode" select="$root/descendant::*[@nodeType=$SettingsDocTypeId]/descendant::*[@nodeName=$lng]" />
     
-<xsl:template match="/">
-
-  <xsl:variable name="keywords">
-    <xsl:choose>
-      <xsl:when test="$currentPage/mETAKeywords!=''">
-        <xsl:value-of select="$currentPage/mETAKeywords" />
-      </xsl:when>
-      <xsl:when test="$currentPage/title!=''">
-        <xsl:value-of select="'Photo Database '" />
-        <xsl:value-of select="$currentPage/title" />
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="'Photo Database '" />
-        <xsl:value-of select="$currentPage/@nodeName" />
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
-  <xsl:variable name="title">
-    <xsl:choose>
-      <xsl:when test="$currentPage/title!=''">
-        <xsl:value-of select="$currentPage/title" />
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$currentPage/@nodeName" />
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-      
-  <meta name="keywords" content="{$keywords}" />
-  <meta name="description" content="{$currentPage/mETADescription}" />
-  <title>Photo Database - <xsl:value-of select="$settingsNode/siteSlogan" /> - <xsl:value-of select="$title" /></title>
-</xsl:template>
+<xsl:template match="/"><xsl:value-of select="$settingsNode/siteSlogan" /></xsl:template>
 
 </xsl:stylesheet>

@@ -1496,13 +1496,13 @@ begin
       FButtons[0].iId := 40001;
       FButtons[0].dwFlags := THBF_ENABLED;
       FButtons[0].hIcon := LoadImage(HInstance, PChar('Z_PREVIOUS_NORM'), IMAGE_ICON, 16, 16, 0);
-	      StringToWideChar(L('Back'), FButtons[0].szTip, 260);
+	      StringToWideChar(L('Previous'), FButtons[0].szTip, 260);
 	    FButtons[0].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
 
 	    FButtons[1].iId := 40002;
 	    FButtons[1].dwFlags := THBF_ENABLED;
 	    FButtons[1].hIcon := LoadImage(HInstance, PChar('Z_NEXT_NORM'), IMAGE_ICON, 16, 16, 0);
-	      StringToWideChar(L('Forward'), FButtons[1].szTip, 260);
+	      StringToWideChar(L('Next'), FButtons[1].szTip, 260);
 	    FButtons[1].dwMask := THB_ICON or THB_FLAGS or THB_TOOLTIP;
       FW7TaskBar.ThumbBarAddButtons(Handle, 2, @FButtons);
 

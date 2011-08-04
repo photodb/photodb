@@ -7,7 +7,7 @@
   xmlns:umbraco.library="urn:umbraco.library" xmlns:Exslt.ExsltCommon="urn:Exslt.ExsltCommon" xmlns:Exslt.ExsltDatesAndTimes="urn:Exslt.ExsltDatesAndTimes" xmlns:Exslt.ExsltMath="urn:Exslt.ExsltMath" xmlns:Exslt.ExsltRegularExpressions="urn:Exslt.ExsltRegularExpressions" xmlns:Exslt.ExsltStrings="urn:Exslt.ExsltStrings" xmlns:Exslt.ExsltSets="urn:Exslt.ExsltSets" xmlns:Plib="urn:Plib" 
   exclude-result-prefixes="msxml umbraco.library Exslt.ExsltCommon Exslt.ExsltDatesAndTimes Exslt.ExsltMath Exslt.ExsltRegularExpressions Exslt.ExsltStrings Exslt.ExsltSets Plib ">
 
-<xsl:output method="html" omit-xml-declaration="yes"/>
+<xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
 <xsl:variable name="ReleasesHolderDocTypeID" select="1091" />
@@ -29,10 +29,10 @@
             <div class="download_info">
               <xsl:value-of select="$currentPage/downloadStableText" />
             </div>
-            <a href="{$downloadUrl}"><img src="/img/download-icon-windows.png" /></a>
-            <span class="phdInfo"><a href="{$downloadUrl}"><xsl:value-of select="./productName" /></a></span>
+            <a href="{$downloadUrl}" rel="nofollow"><img src="/img/download-icon-windows.png" alt="download the latest photo database installer" /></a>
+            <span class="phdInfo"><a href="{$downloadUrl}" rel="nofollow"><xsl:value-of select="./productName" /></a></span>
             <div class="downloadInfo">
-              <h1><a href="{$downloadUrl}"><xsl:value-of select="$currentPage/downloadStableLabelText" disable-output-escaping="yes" /></a></h1>
+              <h1><a href="{$downloadUrl}" rel="nofollow"><xsl:value-of select="$currentPage/downloadStableLabelText" disable-output-escaping="yes" /></a></h1>
               <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />
               <xsl:if test="string(./displayCounter)='1' or Plib:IsLoggedIntoBackend()">
                 <br />(<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)
@@ -55,10 +55,10 @@
             <div class="download_info">
               <xsl:value-of select="$currentPage/downloadNotStableText" />
             </div>
-            <a href="{$downloadUrl}"><img src="/img/download-icon-windows.png" /></a>
-            <span class="phdInfo"><a href="{$downloadUrl}"><xsl:value-of select="./productName" /></a></span>
+            <a href="{$downloadUrl}" rel="nofollow"><img src="/img/download-icon-windows.png" alt="download experemental photo database installer" /></a>
+            <span class="phdInfo"><a href="{$downloadUrl}" rel="nofollow"><xsl:value-of select="./productName" /></a></span>
             <div class="downloadInfo">
-              <h1><a href="{$downloadUrl}"><xsl:value-of select="$currentPage/downloadNotStableLabelText" disable-output-escaping="yes" /></a></h1>
+              <h1><a href="{$downloadUrl}" rel="nofollow"><xsl:value-of select="$currentPage/downloadNotStableLabelText" disable-output-escaping="yes" /></a></h1>
               <xsl:value-of select="$ReleasesHolder/buildText" />&nbsp;<xsl:value-of select="./build" />, <xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />, <xsl:value-of select="Plib:FormatFileSize(Plib:GetFileSize($fileName), 'Mb')" />
               <xsl:if test="string(./displayCounter)='1' or Plib:IsLoggedIntoBackend()">
                 <br />(<xsl:value-of select="Plib:GetDownloadCount(./installerFile)" /><xsl:value-of select="' '" /><xsl:value-of select="$ReleasesHolder/downloadsCountText" />)

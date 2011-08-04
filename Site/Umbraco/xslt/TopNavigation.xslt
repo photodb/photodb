@@ -10,6 +10,7 @@
 <xsl:output method="html" omit-xml-declaration="yes"/>
 
 <xsl:param name="currentPage"/>
+<xsl:variable name="level2Page" select="$currentPage/ancestor-or-self::*[@level=2]" />
     
 <xsl:variable name="SkipDocTypeIds" select="',1056,1091,1245,'" />
 
@@ -20,7 +21,7 @@
       <xsl:for-each select="$currentPage/ancestor-or-self::*[@level=1]/descendant-or-self::*[@level &lt;= 2 and string(umbracoNaviHide)!='1' and not(contains($SkipDocTypeIds, @nodeType))]">
         <li>
           <a href="{umbraco.library:NiceUrl(./@id)}">
-            <xsl:if test="./@id=$currentPage/@id">
+            <xsl:if test="./@id = $currentPage/@id or ./@id = $level2Page/@id">
               <xsl:attribute name="class">selected</xsl:attribute>
             </xsl:if>
             <xsl:choose>
@@ -42,9 +43,7 @@
     
     <!-- Place this tag where you want the +1 button to render -->
     <div class="plusone">
-      <xsl:text disable-output-escaping="yes">
-        <![CDATA[<g:plusone></g:plusone>]]>   
-      </xsl:text>
+      <div class="g-plusone"></div> 
     </div>
   </div><!--mainMenu-->
 

@@ -31,7 +31,7 @@
         <version><xsl:value-of select="./programVersion" /></version>
         <release_date><xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'yyyyMMddHHmm')"/></release_date>
         <release_notes><xsl:value-of select="./releaseNotes" /></release_notes>
-        <release_text><xsl:value-of select="./releaseText" /></release_text>
+        <release_text><xsl:choose><xsl:when test="./versionInfo!=''"><xsl:value-of select="./versionInfo" /></xsl:when><xsl:otherwise><xsl:value-of select="./releaseText" /></xsl:otherwise></xsl:choose></release_text>
         <download_url><xsl:value-of select="$u" /><xsl:value-of select="umbraco.library:NiceUrl($downloadPage/@id)" /></download_url>
         <is_stable><xsl:if test="string(./isStable)='1'">true</xsl:if></is_stable>
       </update>

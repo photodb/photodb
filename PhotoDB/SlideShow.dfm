@@ -186,7 +186,7 @@ object Viewer: TViewer
           OnClick = TbPageNumberClick
         end
         object TbSeparatorPageNumber: TToolButton
-          Left = 252
+          Left = 246
           Top = 0
           Width = 8
           ImageIndex = 11
@@ -194,48 +194,48 @@ object Viewer: TViewer
           Visible = False
         end
         object TbRotateCCW: TToolButton
-          Left = 260
+          Left = 254
           Top = 0
           Caption = 'RotateCCW'
           ImageIndex = 8
           OnClick = RotateCCW1Click
         end
         object TbRotateCW: TToolButton
-          Left = 283
+          Left = 277
           Top = 0
           Caption = 'RotateCW'
           ImageIndex = 9
           OnClick = RotateCW1Click
         end
         object TbSeparator4: TToolButton
-          Left = 306
+          Left = 300
           Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
         end
         object TbDelete: TToolButton
-          Left = 314
+          Left = 308
           Top = 0
           ImageIndex = 13
           OnClick = TbDeleteClick
         end
         object TbSeparator5: TToolButton
-          Left = 337
+          Left = 331
           Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
         end
         object TbPrint: TToolButton
-          Left = 345
+          Left = 339
           Top = 0
           Caption = 'Print'
           ImageIndex = 12
           OnClick = Print1Click
         end
         object TbEncrypt: TToolButton
-          Left = 368
+          Left = 362
           Top = 0
           Caption = 'Encrypt'
           ImageIndex = 23
@@ -244,35 +244,35 @@ object Viewer: TViewer
           OnMouseDown = TbEncryptMouseDown
         end
         object TbSeparator6: TToolButton
-          Left = 391
+          Left = 385
           Top = 0
           Width = 8
           ImageIndex = 11
           Style = tbsSeparator
         end
         object TbRating: TToolButton
-          Left = 399
+          Left = 393
           Top = 0
           Caption = 'Rating'
           ImageIndex = 14
           OnClick = TbRatingClick
         end
         object TbSeparator7: TToolButton
-          Left = 422
+          Left = 416
           Top = 0
           Width = 8
           ImageIndex = 12
           Style = tbsSeparator
         end
         object TbEditImage: TToolButton
-          Left = 430
+          Left = 424
           Top = 0
           Caption = 'Edit Image'
           ImageIndex = 11
           OnClick = ImageEditor1Click
         end
         object TbInfo: TToolButton
-          Left = 453
+          Left = 447
           Top = 0
           Caption = 'Info'
           ImageIndex = 10

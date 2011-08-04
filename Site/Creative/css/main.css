@@ -350,3 +350,27 @@ input.standartBtn:hover {
 	float:left;
 	padding-top: 1px;
 }
+
+.right_callout{
+    float:right;
+    width:200px;    
+    padding-top:10px;
+    padding-right:30px;
+}
+.c_top{
+    background: url("../img/box/boxtop.gif") no-repeat scroll 0 0 transparent;
+    height: 4px;
+    width: 200px;
+}
+.c_content{
+   background: url("../img/box/boxgrd.gif") no-repeat scroll 0 0 transparent;
+   height: auto;
+   overflow: hidden;
+   padding: 15px 10px;
+   width: 200px;
+}
+.c_bottom{
+    background: url("../img/box/boxbot.gif") no-repeat scroll 0 0 transparent;
+    height: 4px;
+    width: 200px;
+}

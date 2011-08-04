@@ -10,8 +10,8 @@
  <xsl:output indent="yes" method="html" omit-xml-declaration="yes"/> 
 
 <xsl:param name="currentPage"/>
-<xsl:variable name="maxLevelForSitemap" select="2"/>
-<xsl:variable name="skipTypes">,1056,1091,1245,</xsl:variable>
+<xsl:variable name="maxLevelForSitemap" select="3"/>
+<xsl:variable name="skipTypes">,1056,1091,1245,1092,1231,1233,1100,1101,</xsl:variable>
 <xsl:variable name="skipTemplates">,</xsl:variable>
 <xsl:variable name="rootUrl">http://<xsl:value-of select="umbraco.library:RequestServerVariables('SERVER_NAME')" /></xsl:variable>
     
@@ -27,7 +27,7 @@
     </url>
     <xsl:variable name="parent" select="$currentPage/ancestor-or-self::*[@level=1]"/>
 
-    <xsl:for-each select="$parent/child::*[@isDoc][not(contains($skipTemplates,@template)) and not(contains($skipTypes,@nodeType)) and (string(umbracoNaviHide) != '1') and @level &lt;= $maxLevelForSitemap]">
+    <xsl:for-each select="$parent/descendant::*[@isDoc][not(contains($skipTemplates,@template)) and not(contains($skipTypes,@nodeType)) and (string(umbracoNaviHide) != '1') and @level &lt;= $maxLevelForSitemap]">
       <url>
         <loc><xsl:value-of select="$rootUrl"/><xsl:value-of select="umbraco.library:NiceUrl(./@id)"/></loc>
         <lastmod><xsl:value-of select="umbraco.library:FormatDateTime(./@updateDate, 'yyyy-MM-dd')" /></lastmod>

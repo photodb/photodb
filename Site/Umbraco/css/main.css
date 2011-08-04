@@ -4,7 +4,7 @@ body {
   background-image: url(../img/bg.gif);
   background-repeat: repeat-x;
   font-family: Verdana,Arial,Helvetica,sans-serif;
-  FONT-SIZE: 12px;
+  font-size: 12px;
   margin: 8px;
 }
 h1,h2,h3,h4,h5,h6,strong {
@@ -25,7 +25,7 @@ ul li {
 }
 dl dd {
   /*giving UL's LIs generated numbers*/
-  margin-left:1e;
+  margin-left:1em;
 }
 th,td {
   /*borders and padding to make the table readable*/
@@ -75,7 +75,7 @@ h1 {
 
 .headName i {
   font-size: 20px;
-  font-family: Bookman Old Style;
+  font-family: "Bookman Old Style";
 }
 
 h2 {
@@ -158,7 +158,7 @@ span .clearSpan10{
 .container{
   width: 100%;
   padding: 0;
-  height: 1%;
+  /*height: 1%;*/
 }
 .container:after {
   content: '.';
@@ -219,9 +219,10 @@ span .clearSpan10{
 }
 
 .downloadInfo{ 
+  margin-left:-11px;
 }
 
-.downloadInfo h1 {
+.downloadInfo h2 {
   font-size:12px;
   margin: 0;
   text-align: left;
@@ -434,7 +435,7 @@ donate_pay_warning{
 .home_news{
  display:block;
  float:left;
- margin-top:20px;
+ margin-top:0px;
  margin-left:20px;
  width: 700px;
 }
@@ -465,7 +466,40 @@ donate_pay_warning{
 .plusone{
   float:right;
 }
-
+.home_slogan{
+ padding-bottom: 10px; 
+}
+.home_slogan h1{
+font-size: 12px; text-align: center;
+}
+#container ul li{
+  list-style-type:circle;
+}
+.right_callout{
+    float:right;
+    width:200px;        
+    padding-top: 0;
+    position: relative;
+    top: -20px;
+    padding-right:30px;
+}
+.c_top{
+    background: url("../img/box/boxtop.gif") no-repeat scroll 0 0 transparent;
+    height: 4px;
+    width: 200px;
+}
+.c_content{
+   background: url("../img/box/boxgrd.gif") no-repeat scroll 0 0 transparent;
+   height: auto;
+   overflow: hidden;
+   padding: 15px 10px;
+   width: 190px;
+}
+.c_bottom{
+    background: url("../img/box/boxbot.gif") no-repeat scroll 0 0 transparent;
+    height: 4px;
+    width: 200px;
+}
 
 
 

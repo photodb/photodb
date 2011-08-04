@@ -2405,7 +2405,7 @@ begin
     for I := 0 to FExplorerThreads.Count - 1 do
     begin
       Info := FExplorerThreads[I];
-      if Info.FExplorer = FOwner then
+      if (Info.FExplorer = FOwner) and (Info.FMode = Mode) then
       begin
         Info.FCounter := Info.FCounter - 1;
         Break;

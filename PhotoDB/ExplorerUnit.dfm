@@ -27,21 +27,36 @@ object ExplorerForm: TExplorerForm
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 135
-    Top = 47
+    Top = 74
     Width = 5
-    Height = 546
+    Height = 519
     Constraints.MaxWidth = 150
     OnCanResize = Splitter1CanResize
     ExplicitLeft = 150
+    ExplicitTop = 47
+    ExplicitHeight = 546
+  end
+  object Bevel1: TBevel
+    Left = 0
+    Top = 72
+    Width = 867
+    Height = 2
+    Align = alTop
+    Shape = bsBottomLine
+    ExplicitLeft = 239
+    ExplicitTop = 118
+    ExplicitWidth = 226
   end
   object MainPanel: TPanel
     Left = 0
-    Top = 47
+    Top = 74
     Width = 135
-    Height = 546
+    Height = 519
     Align = alLeft
     ParentColor = True
     TabOrder = 0
+    ExplicitTop = 72
+    ExplicitHeight = 521
     object CloseButtonPanel: TPanel
       Left = 1
       Top = 1
@@ -72,7 +87,7 @@ object ExplorerForm: TExplorerForm
       Left = 1
       Top = 22
       Width = 133
-      Height = 523
+      Height = 496
       Align = alClient
       BevelOuter = bvNone
       Color = clInactiveCaption
@@ -80,11 +95,12 @@ object ExplorerForm: TExplorerForm
       ParentCtl3D = False
       TabOrder = 1
       OnResize = PropertyPanelResize
+      ExplicitHeight = 498
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
         Width = 133
-        Height = 523
+        Height = 496
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -101,6 +117,7 @@ object ExplorerForm: TExplorerForm
         Caption = 'ScrollBox1'
         TabOrder = 0
         OnResize = ScrollBox1Resize
+        ExplicitHeight = 498
         object TypeLabel: TLabel
           Left = 7
           Top = 141
@@ -574,6 +591,7 @@ object ExplorerForm: TExplorerForm
     EdgeBorders = [ebLeft, ebRight, ebBottom]
     ParentShowHint = False
     ShowHint = True
+    Visible = False
     OnResize = PageScroller2Resize
     object ToolBar2: TToolBar
       Left = 11
@@ -603,7 +621,7 @@ object ExplorerForm: TExplorerForm
         Caption = 'ToolButton9'
         Style = tbsSeparator
       end
-      object CbPathEdit: TComboBoxEx
+      object CbPathEdit1: TComboBoxEx
         Left = 50
         Top = 0
         Width = 568
@@ -617,8 +635,8 @@ object ExplorerForm: TExplorerForm
         Font.Style = []
         ParentFont = False
         TabOrder = 1
-        OnKeyDown = CbPathEditKeyDown
-        OnKeyPress = CbPathEditKeyPress
+        OnKeyDown = CbPathEdit1KeyDown
+        OnKeyPress = CbPathEdit1KeyPress
       end
       object ImButton1: TImButton
         Left = 618
@@ -1020,6 +1038,62 @@ object ExplorerForm: TExplorerForm
     Anchors = [akTop, akRight]
     SignColor = clBlack
     MaxTransparencity = 255
+  end
+  object PnNavigation: TPanel
+    Left = 0
+    Top = 47
+    Width = 867
+    Height = 25
+    Align = alTop
+    AutoSize = True
+    BevelEdges = [beBottom]
+    BevelOuter = bvNone
+    TabOrder = 5
+    DesignSize = (
+      867
+      25)
+    object LbAddress: TLabel
+      Left = 3
+      Top = 5
+      Width = 43
+      Height = 13
+      Alignment = taCenter
+      Caption = 'Address:'
+      Enabled = False
+      Layout = tlCenter
+    end
+    object PePath: TPathEditor
+      Left = 52
+      Top = 0
+      Width = 814
+      Height = 25
+      Anchors = [akLeft, akTop, akRight]
+      SeparatorImage.Data = {
+        9E020000424D9E0200000000000036000000280000000B0000000E0000000100
+        2000000000006802000000000000000000000000000000000000000000000000
+        0000767676057575760500000000000000000000000000000000000000000000
+        0000000000000000000075757405757575CC757576CC75757405000000000000
+        0000000000000000000000000000000000000000000076767697767676FF7776
+        76FF757576CC7676760500000000000000000000000000000000000000000000
+        000075757503757575BC757474FF767676FF777676CC76767605000000000000
+        00000000000000000000000000000000000077767603757576BC757575FF7575
+        76FF757576CC7575760500000000000000000000000000000000000000000000
+        000076767603767676BC757576FF757575FF757575CC75757505000000000000
+        00000000000000000000000000000000000075757503767575DC767676FF7676
+        76FF757575CC7676760100000000000000000000000000000000000000007676
+        7647767676FF767676FF757474FF767676380000000000000000000000000000
+        00000000000076767647757575FF767676FF757575FF76767638000000000000
+        000000000000000000000000000075757544757575FF767576FF757574FF7676
+        763B000000000000000000000000000000000000000075757544757576FF7575
+        75FF757575FF7776763B00000000000000000000000000000000000000000000
+        00007676763E767676FF757575FF7575753E0000000000000000000000000000
+        0000000000000000000000000000000000007676763E7676763E000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000}
+      OnUserChange = PePathChange
+      OnUpdateItem = PePathUpdateItem
+    end
   end
   object SizeImageList: TImageList
     Height = 102

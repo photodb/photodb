@@ -45,7 +45,7 @@
               <xsl:if test="$image != ''">
                 <li>
                   <xsl:if test="position()!=1"><xsl:attribute name="style">display:none;</xsl:attribute></xsl:if>
-                  <a>
+                  <a rel="nofollow">
                     <xsl:attribute name="href"><xsl:call-template name="downloadLink" /></xsl:attribute>
                     <img src="{$image}" alt="{./imageName}" />
                   </a>
