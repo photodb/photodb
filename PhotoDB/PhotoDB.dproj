@@ -83,9 +83,6 @@
 			<DCCReference Include="uActivation.pas">
 				<Form>ActivateForm</Form>
 			</DCCReference>
-			<DCCReference Include="ExplorerUnit.pas">
-				<Form>ExplorerForm</Form>
-			</DCCReference>
 			<DCCReference Include="UnitUpdateDB.pas">
 				<Form>UpdateDBForm</Form>
 			</DCCReference>

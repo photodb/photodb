@@ -57,8 +57,8 @@ implementation
     while CheckFileExistsWithMessageWork do
       Application.ProcessMessages;
 
-    CheckFileExistsWithMessageWork:=true;
-    CheckFileExistsWithMessageResult:=false;
+    CheckFileExistsWithMessageWork := True;
+    CheckFileExistsWithMessageResult := False;
 
     CheckThread := TFileExistsThread.Create(FileName, IsDirectory).Handle;
     WaitForSingleObject(CheckThread, FileCheckTimeOut);

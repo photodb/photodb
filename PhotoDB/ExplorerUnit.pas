@@ -15,12 +15,12 @@ uses
   EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
-  UnitDBFileDialogs, UnitDBCommonGraphics, UnitFileExistsThread,
+  UnitDBFileDialogs, UnitDBCommonGraphics,
   UnitDBCommon, uCDMappingTypes, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
-  uDBUtils, uSettings, uAssociations, PathEditor;
+  uDBUtils, uSettings, uAssociations, PathEditor, PanelCanvas;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -46,7 +46,7 @@ type
     Directory1: TMenuItem;
     MainPanel: TPanel;
     CloseButtonPanel: TPanel;
-    Button1: TButton;
+    BtnCloseExplorer: TButton;
     PropertyPanel: TPanel;
     Refresh2: TMenuItem;
     OpenInNewWindow1: TMenuItem;
@@ -73,9 +73,6 @@ type
     OpeninExplorer1: TMenuItem;
     AddFolder2: TMenuItem;
     ToolBarNormalImageList: TImageList;
-    CoolBar1: TCoolBar;
-    ToolBar2: TToolBar;
-    Label2: TLabel;
     PopupMenuBack: TPopupMenu;
     PopupMenuForward: TPopupMenu;
     DragTimer: TTimer;
@@ -133,12 +130,8 @@ type
     Type1: TMenuItem;
     Rating1: TMenuItem;
     SetFilter1: TMenuItem;
-    ImButton1: TImButton;
-    ToolButton9: TToolButton;
     MakeFolderViewer1: TMenuItem;
     Number1: TMenuItem;
-    CbPathEdit1: TComboBoxEx;
-    AutoCompliteTimer: TTimer;
     RatingPopupMenu1: TPopupMenu;
     N00: TMenuItem;
     N01: TMenuItem;
@@ -189,7 +182,7 @@ type
     StenoGraphia1: TMenuItem;
     AddHiddenInfo1: TMenuItem;
     ExtractHiddenInfo1: TMenuItem;
-    CoolBar2: TCoolBar;
+    CoolBarTop: TCoolBar;
     ToolBar1: TToolBar;
     TbBack: TToolButton;
     TbForward: TToolButton;
@@ -218,8 +211,9 @@ type
     N3: TMenuItem;
     PnNavigation: TPanel;
     PePath: TPathEditor;
-    LbAddress: TLabel;
-    Bevel1: TBevel;
+    StAddress: TStaticText;
+    BvSeparatorAddress: TBevel;
+    BvSeparatorLeftPanel: TBevel;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -250,9 +244,7 @@ type
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
     Function ListView1Selected : TEasyItem;
     Function ItemAtPos(X,Y : integer): TEasyItem;
-    procedure CbPathEdit1KeyPress(Sender: TObject; var Key: Char);
     procedure Exit1Click(Sender: TObject);
-    procedure PageScroller2Resize(Sender: TObject);
     procedure CloseButtonPanelResize(Sender: TObject);
     procedure Splitter1CanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
@@ -318,7 +310,7 @@ type
     procedure SetProgressPosition(Value : Integer);
     procedure SetStatusText(Text : String);
     procedure SetNewFileNameGUID(FileGUID : TGUID);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnCloseExplorerClick(Sender: TObject);
     Procedure SetPanelInfo(Info : TDBPopupMenuInfoRecord; FileGUID : TGUID);
     Procedure SetPanelImage(Image : TBitmap; FileGUID : TGUID);
     procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint;
@@ -432,12 +424,7 @@ type
     procedure ReallignToolInfo;
     procedure FileName1Click(Sender: TObject);
     procedure SetFilter1Click(Sender: TObject);
-    procedure ImButton1Click(Sender: TObject);
     procedure MakeFolderViewer1Click(Sender: TObject);
-    procedure AutoCompliteTimerTimer(Sender: TObject);
-    procedure ComboBox1DropDown;
-    procedure CbPathEdit1KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure EasyListview2KeyAction(Sender: TCustomEasyListview;
         var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
     procedure EasyListview1ItemEdited(Sender: TCustomEasyListview;
@@ -503,7 +490,6 @@ type
      NewFileName: string;
      NewFileNameGUID: TGUID;
      TempFolderName: string;
-     ComboPath: string;
      FormLoadEnd: Boolean;
      FPictureSize: Integer;
      ListView: Integer;
@@ -554,7 +540,6 @@ type
      DragFilesPopup: TStrings;
      LastSelCount: Integer;
      Lock: Boolean;
-     FWndOrigin: TWndMethod;
      SlashHandled: Boolean;
      DefaultSort: Integer;
      DirectoryWatcher: TWachDirectoryClass;
@@ -576,7 +561,6 @@ type
      function GetPathDescription(Path: string; FileType: Integer): string;
      procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
    protected
-     procedure ComboWNDProc(var Message: TMessage);
      procedure ZoomIn;
      procedure ZoomOut;
      procedure LoadToolBarGrayedIcons;
@@ -856,8 +840,7 @@ begin
   MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
 
   Lock := False;
-  //FWndOrigin := CbPathEdit.WindowProc;
-  //CbPathEdit.WindowProc := ComboWNDProc;
+
   SlashHandled := False;
 
   TW.I.Start('aScript');
@@ -883,7 +866,6 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetIconsView',      F_TYPE_OBJ_PROCEDURE_TOBJECT, Icons1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetListView',       F_TYPE_OBJ_PROCEDURE_TOBJECT, List1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetList2View',      F_TYPE_OBJ_PROCEDURE_TOBJECT, SmallIcons1Click);
-
 
   AddScriptObjFunctionIsString(       aScript.PrivateEnviroment, 'GetPath',            GetPath);
   AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanBack',            fHistory.CanBack);
@@ -924,18 +906,15 @@ begin
   ToolBar1.Images := ToolBarNormalImageList;
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
-  ExplorerManager.AddExplorer(Self);
-  MainPanel.DoubleBuffered := True;
-  PropertyPanel.DoubleBuffered := True;
-  ElvMain.DoubleBuffered := True;
-  ScrollBox1.DoubleBuffered := True;
+  PePath.Width := PnNavigation.Width - (StAddress.Left + StAddress.Width + 5);
 
-  ToolBar2.ButtonHeight := 22;
+  ExplorerManager.AddExplorer(Self);
+
   TbStop.Enabled := False;
   SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
   FormLoadEnd := True;
-  LsMain.Top := CoolBar1.Top + CoolBar1.Height + 3;
+  LsMain.Top := CoolBarTop.Top + CoolBarTop.Height + 3;
   LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3;
   LsMain.BringToFront;
   LsMain.Color := clWindow;
@@ -1914,39 +1893,9 @@ begin
   Result := L('My computer');
 end;
 
-procedure TExplorerForm.CbPathEdit1KeyPress(Sender: TObject; var Key: Char);
-var
-  s : string;
-begin
-  {if Key = Char(VK_RETURN) then
-  begin
-    Key := #0;
-    SetStringPath(CbPathEdit.Text, False);
-  end;
-  if (Key = ':') or (Key = '\') then
-  begin
-    if SlashHandled then
-    begin
-      SlashHandled := False;
-      Exit;
-    end;
-    S := IncludeTrailingBackslash(CbPathEdit.Text);
-    if ComboPath <> ExtractFilePath(S) then
-    begin
-      ComboPath := ExtractFilePath(CbPathEdit.Text);
-      ComboBox1DropDown;
-    end;
-  end; }
-end;
-
 procedure TExplorerForm.Exit1Click(Sender: TObject);
 begin
   Close;
-end;
-
-procedure TExplorerForm.PageScroller2Resize(Sender: TObject);
-begin
-  //CbPathEdit.Width:= CoolBar1.Width - ImButton1.Width - Label2.Width - ToolButton9.Width - ImButton1.Width;
 end;
 
 procedure TExplorerForm.ClearList;
@@ -1960,7 +1909,7 @@ end;
 
 procedure TExplorerForm.CloseButtonPanelResize(Sender: TObject);
 begin
-  Button1.Left := CloseButtonPanel.Width - Button1.Width - 3;
+  BtnCloseExplorer.Left := CloseButtonPanel.Width - BtnCloseExplorer.Width - 3;
 end;
 
 procedure TExplorerForm.Splitter1CanResize(Sender: TObject;
@@ -2742,7 +2691,6 @@ end;
 procedure TExplorerForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
-  FEditHandle : THandle;
   InternalHandled : boolean;
   I : Integer;
 begin
@@ -2751,12 +2699,6 @@ begin
 
   if Msg.message = WM_KEYDOWN then
   begin
-    {if Msg.Wparam = VK_OEM_5 then
-      if Length(CbPathEdit.Text) > 3 then
-      begin
-        SlashHandled := True;
-        ComboBox1DropDown;
-      end; }
     if (Msg.Wparam = VK_BACK) and ElvMain.Focused then
     begin
       if TbBack.Enabled then
@@ -2769,19 +2711,6 @@ begin
             TbUp.Click
     end;
   end;
-
-  {if Msg.message = WM_MOUSEMOVE then
-  begin
-    FEditHandle := GetWindow(GetWindow(CbPathEdit.Handle, GW_CHILD), GW_CHILD);
-    if FEditHandle = GetWindow(Msg.Hwnd, GW_CHILD) then
-    begin
-      if ComboPath <> ExtractFilePath(CbPathEdit.Text) then
-      begin
-        AutoCompliteTimer.Enabled := True;
-        ComboPath := ExtractFilePath(CbPathEdit.Text);
-      end;
-    end;
-  end;     }
 
   if Msg.Hwnd = ElvMain.Handle then
   begin
@@ -3311,7 +3240,7 @@ begin
   StatusBar1.Panels[0].Text := Text;
 end;
 
-procedure TExplorerForm.Button1Click(Sender: TObject);
+procedure TExplorerForm.BtnCloseExplorerClick(Sender: TObject);
 begin
   FIsExplorer := False;
   ListView1SelectItem(Sender, ListView1Selected, True);
@@ -3869,7 +3798,6 @@ begin
     IsReallignInfo := False;
 
     ScrollBox1.UpdatingPanel := False;
-    ScrollBox1Reallign(nil);
     ScrollBox1.Realign;
 
     if HelpNO = 2 then
@@ -4161,7 +4089,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SetNewPath(Path : String; Explorer : Boolean);
+procedure TExplorerForm.SetNewPath(Path: String; Explorer: Boolean);
 var
   S, S1 : string;
   I: integer;
@@ -4398,7 +4326,7 @@ end;
 
 procedure TExplorerForm.InfoPanel1Click(Sender: TObject);
 begin
-  Button1Click(Sender);
+  BtnCloseExplorerClick(Sender);
 end;
 
 function TExplorerForm.InternalGetImage(FileName: string;
@@ -4543,7 +4471,7 @@ begin
     OpeninExplorer1.Caption := L('Open in explorer');
     AddFolder2.Caption := L('Add folder');
 
-    Label2.Caption := L('Address');
+    StAddress.Caption := L('Address') + ':';
     CryptFile1.Caption := L('Encrypt file');
     ResetPassword1.Caption := L('Decrypt file');
     EnterPassword1.Caption := L('Enter password');
@@ -4604,9 +4532,6 @@ begin
 
     MapCD1.Caption := L('Map CD with collection');
 
-    TbCut.Caption := L('Cut');
-    TbCopy.Caption := L('Copy');
-    TbPaste.Caption := L('Paste');
     TbOptions.Caption := L('Options');
     TbBack.Hint := L('Back');
     TbForward.Hint := L('Forward');
@@ -4680,7 +4605,7 @@ end;
 
 procedure TExplorerForm.ScrollBox1Resize(Sender: TObject);
 begin
-  ScrollBox1.BackgroundLeft:=ScrollBox1.Width-ScrollBox1.BackGround.Width - 3;
+  ScrollBox1.BackgroundLeft := ScrollBox1.Width-ScrollBox1.BackGround.Width - 3;
   ScrollBox1.BackgroundTop := ScrollBox1.Height - ScrollBox1.BackGround.Height - 3;
 end;
 
@@ -4721,8 +4646,7 @@ begin
     Path := GetcurrentDir;
     WPath.PType := EXPLORER_ITEM_FOLDER;
   end;
-  if WPath.PType <> EXPLORER_ITEM_MYCOMPUTER then
-    Path := LongFileName(Path);
+
   if WPath.PType = EXPLORER_ITEM_MYCOMPUTER then
   begin
     Caption := MyComputer;
@@ -4772,9 +4696,9 @@ begin
     EventLog('ExplorerThreadNotifyDirectoryChange');
     try
       TW.I.Start(' -> DirectoryWatcher.StopWatch');
-    DirectoryWatcher.StopWatch;
+      DirectoryWatcher.StopWatch;
       TW.I.Start(' -> DirectoryWatcher.Start');
-    DirectoryWatcher.Start(S, Self, StateID);
+      DirectoryWatcher.Start(S, Self, StateID);
     except
       TW.I.Start(' -> EXCEPTION!!!');
     end;
@@ -4786,7 +4710,7 @@ begin
     if (FHistory.LastPath.Path <> S) or (FHistory.LastPath.PType <> WPath.PType) then
       FHistory.Add(ExplorerPath(S, WPath.PType));
   FChangeHistoryOnChPath := True;
-  if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) { or not DirectoryExists(GetCurrentPath) } then
+  if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
     TbCut.Enabled := False
   else
     TbCut.Enabled := True;
@@ -4869,7 +4793,7 @@ begin
         end;
 
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE) then
-    DropFileTarget1.register(ElvMain)
+    DropFileTarget1.Register(ElvMain)
   else
     DropFileTarget1.Unregister;
 
@@ -5338,24 +5262,9 @@ end;
 
 procedure TExplorerForm.SetStringPath(Path: String; ChangeTreeView: Boolean);
 var
-  S, S1, ScriptString: string;
+  S, S1: string;
   I: Integer;
-  FScript: TScript;
-  C: Integer;
 begin
-  ScriptString := Include('scripts\ExplorerSetNewPath.dbini');
-  FScript := TScript.Create(Self, '');
-  try
-    FScript.Description := 'Set path script';
-    SetNamedValueStr(FScript, '$Path', Path);
-    ExecuteScript(nil, FScript, ScriptString, C, nil);
-    Path := GetNamedValueString(FScript, '$Path');
-  finally
-    F(FScript);
-  end;
-  if Path = #8 then
-    Exit;
-
   S := Path;
   if (S = '') or (AnsiLowerCase(S) = AnsiLowerCase(MyComputer)) then
   begin
@@ -5397,13 +5306,13 @@ begin
       end
     end;
   S := IncludeTrailingBackslash(Path);
-  if CheckFileExistsWithMessageEx(S, True) then
+  if DirectoryExistsSafe(S) then
   begin
     SetNewPath(S, ChangeTreeView);
   end else
   begin
     S := Path;
-    if CheckFileExistsWithMessageEx(S, False) then
+    if FileExistsSafe(S) then
     begin
       if IsGraphicFile(S) then
       begin
@@ -5907,7 +5816,6 @@ procedure TExplorerForm.DoSelectItem;
 var
   Index, I, J, X, Y, W, H: Integer;
   Ico: TIcon;
-  Ico48: TIcon48;
   S, FileName: string;
   FileSID: TGUID;
   FFolderImagesResult: TFolderImages;
@@ -6036,19 +5944,12 @@ begin
                 Ico := TAIcons.Instance.GetIconByExt(FileName, (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
                     (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER), 48, False);
                 try
-                Ico48 := TIcon48.Create;
-                  try
-                    Ico48.Assign(Ico);
-                    SetErrorMode(OldMode);
-
-                    Canvas.Draw(ThSizeExplorerPreview div 2 - Ico48.Width div 2,
-                      ThSizeExplorerPreview div 2 - Ico48.Height div 2, Ico48);
-                  finally
-                    F(Ico48);
-                  end;
+                  Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
+                    ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
                 finally
                   F(Ico);
                 end;
+                SetErrorMode(OldMode);
               end else
               begin
                 Pic := GetFolderPicture;
@@ -6075,7 +5976,7 @@ begin
                 for I := 1 to 2 do
                   for J := 1 to 2 do
                   begin
-                    index := (I - 1) * 2 + J;
+                    Index := (I - 1) * 2 + J;
                     X := (J - 1) * 42 + 5 + Dx;
                     Y := (I - 1) * 42 + 8 + Dx;
                     if FFolderImagesResult.Images[index] = nil then
@@ -6111,6 +6012,7 @@ begin
               Canvas.Brush.Color := clBtnFace;
               Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
 
+              Ico := nil;
               case FSelectedInfo.FileType of
                 EXPLORER_ITEM_NETWORK:
                   FindIcon(HInstance, 'NETWORK', 48, 32, Ico);
@@ -6123,12 +6025,12 @@ begin
                 EXPLORER_ITEM_MYCOMPUTER:
                   FindIcon(HInstance, 'COMPUTER', 48, 32, Ico);
               end;
-              Ico48 := TIcon48.Create;
-              Ico48.Assign(Ico);
-              Ico.Free;
-              Canvas.Draw(ThSizeExplorerPreview div 2 - Ico48.Width div 2,
-                ThSizeExplorerPreview div 2 - Ico48.Height div 2, Ico48);
-              Ico48.Free;
+              try
+                Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
+                  ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
+              finally
+                F(Ico);
+              end;
             end;
           end;
         end;
@@ -6801,11 +6703,6 @@ begin
 
 end;
 
-procedure TExplorerForm.ImButton1Click(Sender: TObject);
-begin
-  //SetStringPath(CbPathEdit.text, False);
-end;
-
 procedure TExplorerForm.MakeFolderViewer1Click(Sender: TObject);
 var
   Query : TDataSet;
@@ -6833,102 +6730,6 @@ begin
   finally
     F(FileList);
   end;
-end;
-
-procedure TExplorerForm.AutoCompliteTimerTimer(Sender: TObject);
-var
-  FEditHandle : THandle;
-begin
-{  AutoCompliteTimer.Enabled := False;
-  ComboBox1DropDown;
-  FEditHandle := GetWindow(GetWindow(CbPathEdit.Handle, GW_CHILD), GW_CHILD);
-  SendMessage(FEditHandle, WM_KEYDOWN, VK_RIGHT, VK_RIGHT);         }
-end;
-
-procedure TExplorerForm.ComboBox1DropDown;
-var
-  FileList : TStringList;
-  I : integer;
-  S : string;
-
-  procedure GetDirListing(Dir: string; FileList: TStringList);
-  var
-    Found: Integer;
-    SearchRec: TSearchRec;
-  begin
-    FileList.Clear;
-    if Dir = '' then
-      Exit;
-
-    Dir := IncludeTrailingBackSlash(Dir);
-    Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
-    while Found = 0 do
-    begin
-      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
-        FileList.Add(Dir + SearchRec.Name);
-
-      Found := SysUtils.FindNext(SearchRec);
-    end;
-    FindClose(SearchRec);
-  end;
-
-begin
-{  S := Trim(CbPathEdit.Text);
-  if Length(S) <4 then
-    S := ExtractFilePath(S);
-  if not CheckFileExistsWithSleep(S, True) then
-    Exit;
-
-  FileList := TStringList.Create;
-  try
-    GetDirListing(S, FileList);
-    S := CbPathEdit.Text;
-    Lock := True;
-    CbPathEdit.Items.Clear;
-    for I := 0 to FileList.Count - 1 do
-      CbPathEdit.Items.Add(FileList[I]);
-    Lock := False;
-    CbPathEdit.Text := S;
-  finally
-    F(FileList);
-  end;     }
-end;
-
-procedure TExplorerForm.CbPathEdit1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-var
-  Dir: string;
-  I, C: Integer;
-begin
- { if Key = VK_SHIFT then
-    Exit;
-  Dir := CbPathEdit.Text;
-  if Length(Dir) > 2 then
-    if Dir[1] = '\' then
-    begin
-      C := 0;
-      for I := 1 to Length(Dir) do
-        if Dir[I] = '\' then
-          Inc(C);
-      if C < 4 then
-        Exit;
-    end;
-  if Key = VK_OEM_1 then
-    Dir := Dir + ':';
-  Dir := ExtractFilePath(Dir);
-  if CheckFileExistsWithMessageEx(Dir, True) then
-    if ComboPath <> Dir then
-    begin
-      ComboPath := Dir;
-      AutoCompliteTimer.Enabled := True;
-    end; }
-end;
-
-procedure TExplorerForm.ComboWNDProc(var message: TMessage);
-begin
- { if Lock then
-    if ((message.Msg > 45000) and (message.Msg < 50000)) then
-      Exit;
-  FWndOrigin(message);   }
 end;
 
 function TExplorerForm.ListView1Selected: TEasyItem;
@@ -7184,19 +6985,17 @@ end;
 
 procedure TExplorerForm.ScrollBox1Reallign(Sender: TObject);
 var
-  i : integer;
+  I: Integer;
 begin
- if IsReallignInfo then
+  if IsReallignInfo then
     Exit;
 
   //to match backgroupd image
-  for I := 0 to ComponentCount - 1 do
-    if Components[I] is TWebLink then
-      if (Components[I] as TWebLink).Visible then
-        (Components[I] as TWebLink).RefreshBuffer;
-
-  for I := 0 to Length(UserLinks) - 1 do
-    UserLinks[I].RefreshBuffer;
+  for I := 0 to ScrollBox1.ControlCount - 1 do
+  begin
+    if ScrollBox1.Controls[I] is TWebLink then
+      TWebLink(ScrollBox1.Controls[I]).RefreshBuffer;
+  end;
 end;
 
 procedure TExplorerForm.BackGround(Sender: TObject; X, Y, W, H: integer;

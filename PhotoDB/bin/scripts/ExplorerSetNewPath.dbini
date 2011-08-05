@@ -1,4 +1,0 @@
-﻿ $Path=$Path;
- if ($Path="pic") {$Path=GetMyPicturesFolder;};
- if ($Path="my") {$Path=GetMyDocumentsFolder;};
- if ($Path="exit") {$Path=$InvalidQuery; CloseApp;};
