@@ -95,44 +95,8 @@ procedure ProportionalSizeX(aWidth, aHeight: Integer; var aWidthToSize, aHeightT
 
 procedure ThreadDraw(S, D : TBitmap; x, y : integer);
 
-procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
 
 implementation
-
-procedure AssignBitmap(Dest: TBitmap; Src: TBitmap);
-var
-  I, J: Integer;
-  PS, PD: PARGB;
-  PS32, PD32: PARGB32;
-begin
-  if Src.PixelFormat <> pf32bit then
-  begin
-    Src.PixelFormat := pf24bit;
-    Dest.PixelFormat := pf24bit;
-    Dest.SetSize(Src.Width, Src.Height);
-
-    for I := 0 to Src.Height - 1 do
-    begin
-      PD := Dest.ScanLine[I];
-      PS := Src.ScanLine[I];
-      for J := 0 to Src.Width - 1 do
-        PD[J] := PS[J];
-    end;
-  end else
-  begin
-    Src.PixelFormat := pf32bit;
-    Dest.PixelFormat := pf32bit;
-    Dest.SetSize(Src.Width, Src.Height);
-
-    for I := 0 to Src.Height - 1 do
-    begin
-      PD32 := Dest.ScanLine[I];
-      PS32 := Src.ScanLine[I];
-      for J := 0 to Src.Width - 1 do
-        PD32[J] := PS32[J];
-    end;
-  end;
-end;
 
 procedure ProportionalSizeX(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
 begin

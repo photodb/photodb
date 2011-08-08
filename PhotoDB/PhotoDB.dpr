@@ -334,7 +334,9 @@ uses
   uSearchHelpAddPhotosThread in 'Threads\uSearchHelpAddPhotosThread.pas',
   uExifUtils in 'Units\uExifUtils.pas',
   uExifPatchThread in 'Threads\uExifPatchThread.pas',
-  uTiffImage in 'Units\uTiffImage.pas';
+  uTiffImage in 'Units\uTiffImage.pas',
+  uJpegUtils in 'Units\uJpegUtils.pas',
+  uBitmapUtils in 'Units\uBitmapUtils.pas';
 
 {$R *.res}
 

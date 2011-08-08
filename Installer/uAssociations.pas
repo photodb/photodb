@@ -102,6 +102,7 @@ function AssociationStateToCheckboxState(AssociationState: TAssociationState;
   Update: Boolean): TCheckBoxState;
 function CheckboxStateToAssociationState(CheckBoxState: TCheckBoxState): TAssociationState;
 function IsGraphicFile(FileName: string): Boolean;
+function IsRAWImageFile(FileName: String): Boolean;
 
 implementation
 
@@ -752,6 +753,11 @@ begin
   finally
     FSync.Leave;
   end;
+end;
+
+function IsRAWImageFile(FileName : String) : Boolean;
+begin
+  Result := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage;
 end;
 
 initialization

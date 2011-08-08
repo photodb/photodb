@@ -76,9 +76,6 @@ begin
   try
     Result := False;
 
-    if not CanSaveFileOrientation(Info.FileName) then
-      Exit;
-
     if (Info.Rating > 0) and (Info.Rotation > DB_IMAGE_ROTATE_UNKNOWN) then
       Exit; //nothing to update
 

@@ -3,8 +3,9 @@ unit RAWImage;
 interface
 
 uses
-  Windows, SysUtils, Graphics, Classes,
-  uConstants, uFileUtils, uTime, FreeBitmap, FreeImage, GraphicsBaseTypes;
+  Windows, SysUtils, Graphics, Classes, uMemory,
+  uConstants, uFileUtils, uTime, FreeBitmap, FreeImage, GraphicsBaseTypes,
+  CCR.Exif;
 
 type
   TRAWImage = class(TBitmap)
@@ -73,7 +74,7 @@ const
 
 { TRAWImage }
 
-function ReadRAWExif(FileName : String) : TRAWExif;
+function ReadRAWExif(FileName: String) : TRAWExif;
 var
   RawBitmap : TFreeWinBitmap;
   FindMetaData : PFIMETADATA;
@@ -101,7 +102,7 @@ begin
   TagData := nil;
   RawBitmap := TFreeWinBitmap.Create;
   try
-    RawBitmap.LoadU(Filename, FIF_LOAD_NOPIXELS);
+    RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
     for I := FIMD_NODATA to FIMD_EXIF_RAW do
     begin
       FindMetaData := FreeImage_FindFirstMetadata(I, RawBitmap.Dib, TagData);
@@ -118,7 +119,7 @@ begin
       end;
     end;
   finally
-    RawBitmap.Free;
+    F(RawBitmap);
   end;
 end;
 
@@ -183,7 +184,7 @@ begin
       FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
     end;
   finally
-    RawBitmap.Free;
+    F(RawBitmap);
   end;
 end;
 
@@ -205,7 +206,7 @@ begin
         else
           RawBitmap.LoadFromMemory(MemIO, RAW_DISPLAY);
       finally
-        MemIO.Free;
+        F(MemIO);
       end;
     end else
     begin
@@ -227,7 +228,7 @@ begin
       FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
     end;
   finally
-    RawBitmap.Free;
+    F(RawBitmap);
   end;
 end;
 
@@ -254,19 +255,68 @@ begin
   end;
 end;
 
-function TRAWImage.LoadThumbnailFromFile(const FileName: string; Width, Height : Integer): boolean;
+function TRAWImage.LoadThumbnailFromFile(const FileName: string; Width, Height: Integer): Boolean;
 var
-  RawBitmap : TFreeWinBitmap;
-  RawThumb : TFreeWinBitmap;
-  W, H : Integer;
+  RawBitmap: TFreeWinBitmap;
+  RawThumb: TFreeWinBitmap;
+  W, H: Integer;
+  ExifData: TExifData;
+
+  {
+  I: Integer;
+  FindMetaData: PFIMETADATA;
+  TagData: PFITAG;
+  Orientation: Integer;
+
+  procedure AddTag;
+  var
+    Key: string;
+  begin
+    Key := FreeImage_GetTagKey(TagData);
+    if Key = 'Orientation' then
+      Orientation := 1;
+  end;    }
+
 begin
   Result := True;
   FIsPreview := True;
+
+  ExifData := TExifData.Create(nil);
+  try
+    ExifData.LoadFromGraphic(FileName);
+    if not ExifData.Empty then
+    begin
+      if ExifData.Thumbnail <> nil then
+      begin
+        //use thumbnail from file
+
+      end;
+    end;
+  finally
+    F(ExifData);
+  end;
   RawBitmap := TFreeWinBitmap.Create;
   try
-    RawBitmap.LoadU(Filename, RAW_PREVIEW);
+    RawBitmap.LoadU(FileName, RAW_PREVIEW);
     RawThumb := TFreeWinBitmap.Create;
     try
+   (*   Orientation := 0;
+      for I := FIMD_NODATA to FIMD_EXIF_RAW do
+      begin
+        FindMetaData := FreeImage_FindFirstMetadata(I, RawBitmap.Dib, TagData);
+        try
+          if FindMetaData <> nil then
+          begin
+            AddTag;
+
+            while FreeImage_FindNextMetadata(FindMetaData, TagData) do
+              AddTag;
+          end;
+        finally
+          RawBitmap.FindCloseMetadata(FindMetaData);
+        end;
+      end;
+            *)
       FWidth := RawBitmap.GetWidth;
       FHeight := RawBitmap.GetHeight;
       W := FWidth;
@@ -275,15 +325,15 @@ begin
       RawBitmap.MakeThumbnail(W, H, RawThumb);
       LoadFromFreeImage(RawThumb);
     finally
-      RawThumb.Free;
+      F(RawThumb);
     end;
 
     RawBitmap.Clear;
-    RawBitmap.LoadU(Filename, FIF_LOAD_NOPIXELS);
+    RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
     FRealWidth := FreeImage_GetWidth(RawBitmap.Dib);
     FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
   finally
-    RawBitmap.Free;
+    F(RawBitmap);
   end;
 end;
 
@@ -309,12 +359,8 @@ begin
 end;
 
 destructor TRAWExif.Destroy;
-var
-  I : Integer;
 begin
-  for I := 0 to FExifList.Count - 1 do
-    TRAWExifRecord(FExifList[I]).Free;
-  FExifList.Free;
+  FreeList(FExifList);
   inherited;
 end;
 

@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, SysUtils, Classes, Graphics, Jpeg, Math, uConstants,
-  UnitDBCommonGraphics, GraphicsBaseTypes, uDBGraphicTypes, uAssociations,
-  RAWImage, uMemory, Effects;
+  UnitDBCommonGraphics, GraphicsBaseTypes, uDBGraphicTypes,
+  uMemory, Effects;
 
 type
   TCompareArray = array [0 .. 99, 0 .. 99, 0 .. 2] of Integer;
@@ -19,17 +19,14 @@ type
   end;
 
 function MixColors(Color1, Color2: TColor; Percent: Integer): TColor;
-function MakeDarken(BaseColor : TColor; Multiply : Extended) : TColor; overload;
+function MakeDarken(BaseColor: TColor; Multiply: Extended): TColor; overload;
 function MakeDarken(Color: TColor): TColor; overload;
-procedure JPEGScale(Graphic: TGraphic; Width, Height: Integer);
-procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
 function ColorDiv2(Color1, COlor2: TColor): TColor;
 function ColorDarken(Color: TColor): TColor;
 function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
 function CompareImagesEx(Image1: TGraphic; Image2Info: TCompareImageInfo; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
-function IsRAWImageFile(FileName : String) : Boolean;
 
 implementation
 
@@ -45,43 +42,6 @@ function ColorDarken(Color: TColor): TColor;
 begin
   Color := ColorToRGB(Color);
   Result := RGB(Round(GetRValue(Color) / 1.2), (Round(GetGValue(Color) / 1.2)), (Round(GetBValue(Color) / 1.2)));
-end;
-
-procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
-begin
-  case RotateValue of
-    DB_IMAGE_ROTATE_270,
-    - 10 * DB_IMAGE_ROTATE_270:
-      Rotate270A(Bitmap);
-    DB_IMAGE_ROTATE_90,
-    - 10 * DB_IMAGE_ROTATE_90:
-      Rotate90A(Bitmap);
-    DB_IMAGE_ROTATE_180,
-    - 10 * DB_IMAGE_ROTATE_180:
-      Rotate180A(Bitmap);
-  end;
-end;
-
-procedure JPEGScale(Graphic: TGraphic; Width, Height: Integer);
-var
-  ScaleX, ScaleY, Scale: Extended;
-begin
-  if (Graphic is TJpegImage) then
-  begin
-    (Graphic as TJpegImage).Performance := jpBestSpeed;
-    (Graphic as TJpegImage).ProgressiveDisplay := False;
-    ScaleX:= Graphic.Width / Width;
-    ScaleY := Graphic.Height / Height;
-    Scale := Max(ScaleX, ScaleY);
-    if Scale < 2 then
-      (Graphic as TJpegImage).Scale := JsFullSize;
-    if (Scale >= 2) and (Scale < 4) then
-      (Graphic as TJpegImage).Scale := JsHalf;
-    if (Scale >= 4) and (Scale < 8) then
-      (Graphic as TJpegImage).Scale := JsQuarter;
-    if Scale >= 8 then
-      (Graphic as TJpegImage).Scale := JsEighth;
-  end;
 end;
 
 function MakeDarken(BaseColor : TColor; Multiply : Extended) : TColor;
@@ -599,11 +559,6 @@ begin
         Rotate := I;
       end;
     end;
-end;
-
-function IsRAWImageFile(FileName : String) : Boolean;
-begin
-  Result := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage;
 end;
 
 end.

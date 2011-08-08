@@ -24,7 +24,7 @@
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
-			<DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\Dmitry\;C:\Program Files\Mustangpeak\Common Library\Source;C:\Program Files\Mustangpeak\EasyListview\Source;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\External\FastMM;D:\Dmitry\Delphi exe\Photo Database\DBIcons;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\Dmitry\;C:\Users\Public\Documents\Mustangpeak\Common Library\Source;C:\Users\Public\Documents\Mustangpeak\EasyListview\Source;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\External\FastMM;D:\Dmitry\Delphi exe\Photo Database\DBIcons;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_ExeOutput>bin</DCC_ExeOutput>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_DependencyCheckOutputName>bin\PhotoDB.exe</DCC_DependencyCheckOutputName>
@@ -82,6 +82,9 @@
 			</DCCReference>
 			<DCCReference Include="uActivation.pas">
 				<Form>ActivateForm</Form>
+			</DCCReference>
+			<DCCReference Include="ExplorerUnit.pas">
+				<Form>ExplorerForm</Form>
 			</DCCReference>
 			<DCCReference Include="UnitUpdateDB.pas">
 				<Form>UpdateDBForm</Form>
@@ -534,6 +537,8 @@
 			<DCCReference Include="Units\uExifUtils.pas"/>
 			<DCCReference Include="Threads\uExifPatchThread.pas"/>
 			<DCCReference Include="Units\uTiffImage.pas"/>
+			<DCCReference Include="Units\uJpegUtils.pas"/>
+			<DCCReference Include="Units\uBitmapUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

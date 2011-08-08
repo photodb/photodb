@@ -28,10 +28,6 @@ procedure DoInfoListBoxDrawItem(ListBox: TListBox; index: Integer; ARect: TRect;
   ItemsData: TList; Icons: array of TIcon; FProgressEnabled: Boolean; TempProgress: TDmProgress; Infos: TStrings);
 procedure BeginScreenUpdate(Hwnd: THandle);
 procedure EndScreenUpdate(Hwnd: THandle; Erase: Boolean);
-function CalcJpegResampledSize(Jpeg: TJpegImage; Size: Integer; CompressionRate: Byte;
-  out JpegImageResampled: TJpegImage): Int64;
-function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte;
-  out JpegImageResampled: TJpegImage): Int64;
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
 procedure QuickReduce(NewWidth, NewHeight: Integer; D, S: TBitmap);
@@ -40,9 +36,7 @@ procedure StretchCool(Width, Height: Integer; S, D: TBitmap); overload;
 procedure QuickReduceWide(Width, Height: Integer; S, D: TBitmap);
 procedure DoResize(Width, Height: Integer; S, D: TBitmap);
 procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; S, D: TBitmap);
-procedure Rotate180A(Bitmap: TBitmap);
-procedure Rotate270A(Bitmap: TBitmap);
-procedure Rotate90A(Bitmap: TBitmap);
+
 procedure FillColorEx(Bitmap: TBitmap; Color: TColor);
 procedure DrawImageEx(Dest, Src: TBitmap; X, Y: Integer);
 procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
@@ -356,8 +350,8 @@ begin
   end;
 end;
 
-procedure DrawWatermark(Bitmap : TBitmap; XBlocks, YBlocks : Integer;
-  Text : string; AAngle : Integer; Color : TColor; Transparent : Byte; FontName: string;
+procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer;
+  Text: string; AAngle : Integer; Color: TColor; Transparent : Byte; FontName: string;
   SyncCallBack: TDrawTextAsyncProcedure;
   SyncTextPrepare: TTextPrepareAsyncProcedure;
   GetFontHandle: TGetAsyncCanvasFontProcedure);
@@ -782,75 +776,22 @@ begin
     ListBox.Canvas.Font.Style := [];
   end;
 
-    if ItemData = LINE_INFO_ERROR then
-    begin
-      DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexErrorRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
+  if ItemData = LINE_INFO_ERROR then
+  begin
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexErrorRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
 
-      ARect.Left := ARect.Left + 20;
-      R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
-      ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
-      InfoText := TA('Error') + ':';
-      ListBox.Canvas.Font.Style := [FsBold];
-      DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
-      ListBox.Canvas.Font.Style := [];
-    end;
-
-    DrawText(ListBox.Canvas.Handle, PWideChar(Text), Length(Text), ARect, DT_NOPREFIX + DT_LEFT + DT_WORDBREAK);
+    ARect.Left := ARect.Left + 20;
+    R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
+    ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
+    InfoText := TA('Error') + ':';
+    ListBox.Canvas.Font.Style := [FsBold];
+    DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
+    ListBox.Canvas.Font.Style := [];
   end;
 
-function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte; out JpegImageResampled: TJpegImage) : int64;
-var
-  Jpeg: TJpegImage;
-  MS: TMemoryStream;
-begin
-  Jpeg := TJpegImage.Create;
-  try
-    Jpeg.Assign(Bitmap);
-      if CompressionRate < 1 then
-      CompressionRate := 1;
-    if CompressionRate > 100 then
-      CompressionRate := 100;
-    Jpeg.CompressionQuality := CompressionRate;
-    Jpeg.Compress;
-
-    MS := TMemoryStream.Create;
-    try
-      Jpeg.SaveToStream(MS);
-      JpegImageResampled := TJpegImage.Create;
-      MS.Seek(0, soFromBeginning);
-      JpegImageResampled.LoadFromStream(MS);
-      Result := MS.Size;
-    finally
-      F(MS);
-    end;
-  finally
-    F(Jpeg);
-  end;
+  DrawText(ListBox.Canvas.Handle, PWideChar(Text), Length(Text), ARect, DT_NOPREFIX + DT_LEFT + DT_WORDBREAK);
 end;
 
-function CalcJpegResampledSize(Jpeg : TJpegImage; Size : integer; CompressionRate : byte;
-    out JpegImageResampled : TJpegImage): Int64;
-var
-  Bitmap, OutBitmap: TBitmap;
-  W, H: Integer;
-begin
-  Bitmap := TBitmap.Create;
-  try
-    Bitmap.Assign(Jpeg);
-    OutBitmap := TBitmap.Create;
-    try
-      W := Jpeg.Width;
-      H := Jpeg.Height;
-      ProportionalSize(Size, Size, W, H);
-      DoResize(W, H, Bitmap, OutBitmap);
-      Result := CalcBitmapToJPEGCompressSize(OutBitmap, CompressionRate, JpegImageResampled);
-    finally
-      F(OutBitmap);
-    end;
-  finally
-    F(Bitmap);
-  end;
-end;
 
 procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
 var
@@ -1468,130 +1409,6 @@ begin
         XD32[I + Y, J + X].L := Round(I * K + Z1 - Y1r * K);
       end;
     end;
-  end;
-end;
-
-procedure Rotate180A(Bitmap: TBitmap);
-var
-  I, J: Integer;
-  PS, PD: PARGB;
-  PS32, PD32: PARGB32;
-  Image: TBitmap;
-begin
-  Image := TBitmap.Create;
-  try
-    if Bitmap.PixelFormat <> pf32bit then
-    begin
-      Bitmap.PixelFormat := pf24bit;
-      AssignBitmap(Image, Bitmap);
-      for I := 0 to Image.Height - 1 do
-      begin
-        PS := Image.ScanLine[I];
-        PD := Bitmap.ScanLine[Image.Height - I - 1];
-        for J := 0 to Image.Width - 1 do
-          PD[J] := PS[Image.Width - 1 - J];
-      end;
-    end else
-    begin
-      AssignBitmap(Image, Bitmap);
-      for I := 0 to Image.Height - 1 do
-      begin
-        PS32 := Image.ScanLine[I];
-        PD32 := Bitmap.ScanLine[Image.Height - I - 1];
-        for J := 0 to Image.Width - 1 do
-          PD32[J] := PS32[Image.Width - 1 - J];
-      end;
-    end;
-  finally
-    F(Image);
-  end;
-end;
-
-procedure Rotate270A(Bitmap: TBitmap);
-var
-  I, J: Integer;
-  PS: PARGB;
-  PS32: PARGB32;
-  PA: array of PARGB;
-  PA32: array of PARGB32;
-  Image: TBitmap;
-begin
-  Image := TBitmap.Create;
-  try
-    if Bitmap.PixelFormat <> pf32bit then
-    begin
-      Bitmap.PixelFormat := pf24bit;
-      AssignBitmap(Image, Bitmap);
-      Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA, Bitmap.Height);
-      for I := 0 to Bitmap.Height - 1 do
-        PA[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
-      for I := 0 to Image.Height - 1 do
-      begin
-        PS := Image.ScanLine[I];
-        for J := 0 to Image.Width - 1 do
-          PA[J, I] := PS[J];
-      end;
-    end else
-    begin
-      AssignBitmap(Image, Bitmap);
-      Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA32, Bitmap.Height);
-      for I := 0 to Bitmap.Height - 1 do
-        PA32[I] := Bitmap.ScanLine[Bitmap.Height - 1 - I];
-      for I := 0 to Image.Height - 1 do
-      begin
-        PS32 := Image.ScanLine[I];
-        for J := 0 to Image.Width - 1 do
-          PA32[J, I] := PS32[J];
-      end;
-    end;
-  finally
-    F(Image);
-  end;
-end;
-
-procedure Rotate90A(Bitmap: TBitmap);
-var
-  I, J: Integer;
-  PS: PARGB;
-  PS32: PARGB32;
-  PA: array of PARGB;
-  PA32: array of PARGB32;
-  Image: TBitmap;
-begin
-  Image := TBitmap.Create;
-  try
-    if Bitmap.PixelFormat <> pf32bit then
-    begin
-      Bitmap.PixelFormat := pf24bit;
-      AssignBitmap(Image, Bitmap);
-      Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA, Bitmap.Height);
-      for I := 0 to Bitmap.Height - 1 do
-        PA[I] := Bitmap.ScanLine[I];
-      for I := 0 to Image.Height - 1 do
-      begin
-        PS := Image.ScanLine[Image.Height - I - 1];
-        for J := 0 to Image.Width - 1 do
-          PA[J, I] := PS[J];
-      end;
-    end else
-    begin
-      AssignBitmap(Image, Bitmap);
-      Bitmap.SetSize(Image.Height, Image.Width);
-      SetLength(PA32, Bitmap.Height);
-      for I := 0 to Bitmap.Height - 1 do
-        PA32[I] := Bitmap.ScanLine[I];
-      for I := 0 to Image.Height - 1 do
-      begin
-        PS32 := Image.ScanLine[Image.Height - I - 1];
-        for J := 0 to Image.Width - 1 do
-          PA32[J, I] := PS32[J];
-      end;
-    end;
-  finally
-    F(Image);
   end;
 end;
 
