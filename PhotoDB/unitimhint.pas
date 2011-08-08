@@ -7,7 +7,7 @@ uses
   Variants, Classes, Graphics, Controls, Forms, GIFImage, Math,
   Dialogs, StdCtrls, ExtCtrls, ImButton, ComCtrls, ActiveX,
   AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
-  DragDrop, UnitDBCommon, UnitDBCommonGraphics, uMemory, uDBForm,
+  DragDrop, UnitDBCommon, uBitmapUtils, uMemory, uDBForm,
   UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator, uDBDrawing,
   UnitDBDeclare, uConstants, uDBPopupMenuInfo, uFormUtils,
   uRuntime;

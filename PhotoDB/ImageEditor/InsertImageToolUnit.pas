@@ -3,12 +3,11 @@ unit InsertImageToolUnit;
 interface
 
 uses
-  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, SysUtils, ImageHistoryUnit, Effects, ComCtrls, Math,
-  GraphicsBaseTypes, CustomSelectTool, Dialogs, ExtDlgs,
-  ScanlinesFX, clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
-  UnitDBKernel, UnitDBCommon, uDBGraphicTypes, uAssociations,
-  uMemory, uSettings;
+  GraphicsBaseTypes, CustomSelectTool, Dialogs, ExtDlgs, uBitmapUtils,
+  clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
+  uDBGraphicTypes, uAssociations, uMemory, uSettings;
 
 type
   InsertImageToolPanelClass = class(TCustomSelectToolClass)
@@ -336,7 +335,7 @@ begin
         if (Image.Width / AWidth) > 1 then
           DoResize(AWidth, AHeight, Image, TempBitmap)
         else
-          Effects.Interpolate(0, 0, AWidth, AHeight, Rect(0, 0, Image.Width, Image.Height), Image, TempBitmap);
+          Interpolate(0, 0, AWidth, AHeight, Rect(0, 0, Image.Width, Image.Height), Image, TempBitmap);
         if RectBitmap.Width * RectBitmap.Height = 0 then
           Exit;
         DrawImageWithEffect(TempBitmap, RectBitmap, MethodDrawChooser.ItemIndex, TransparentEdit.Position);

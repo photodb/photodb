@@ -4,9 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, jpeg, AppEvnts, Dolphin_DB, DDraw,
-  Math, Effects, UnitDBCommonGraphics, UnitDBKernel, uSysUtils, uDBForm,
-  uDXUtils, uMemory, uSettings;
+  ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, AppEvnts, Dolphin_DB, DDraw,
+  Math, uSysUtils, uDBForm, uDXUtils, uMemory, uSettings, uBitmapUtils;
 
 type
   TDirectShowForm = class(TDBForm)
@@ -447,7 +446,7 @@ begin
      if FbImage.Width<>0 then
      Zoom:=(x2-x1)/FbImage.Width else Zoom:=1;
 
-     if (Zoom<ZoomSmoothMin) then
+     if (Zoom < ZoomSmoothMin) then
      StretchCool(x1,y1,x2-x1,y2-y1,FbImage,FirstImage)
      else begin
       TempImage := TBitmap.Create;

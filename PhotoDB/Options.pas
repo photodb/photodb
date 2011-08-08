@@ -10,7 +10,7 @@ uses
   UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
   UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
   uRuntime, uMemory, uSettings, WebLink, uAssociations, AppEvnts, Spin,
-  uCryptUtils;
+  uCryptUtils, uIconUtils;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)

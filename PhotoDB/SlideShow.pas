@@ -10,10 +10,10 @@ uses
   FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, uSearchTypes,
   ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage, uFileUtils,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
-  uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, UnitDBCommonGraphics,
+  uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, uBitmapUtils,
   uCDMappingTypes, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
-  uResources, UnitDBCommon, uW7TaskBar, uMemory, UnitBitmapImageList,
-  uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo, uPNGUtils,
+  uResources, uW7TaskBar, uMemory, UnitBitmapImageList,
+  uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
   uExifUtils;

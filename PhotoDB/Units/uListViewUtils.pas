@@ -3,10 +3,10 @@ unit uListViewUtils;
 interface
 
 uses
-  Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl, ComCtrls, Math,
-  UnitDBCommon, Dolphin_DB, UnitBitmapImageList, UnitDBCommonGraphics, uMemory,
+  Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl,
+  UnitBitmapImageList, uMemory, ComCtrls, Math,
   MPCommonUtilities, uDBDrawing, TLayered_Bitmap, uGraphicUtils, uConstants, uRuntime,
-  uSettings;
+  uSettings, uBitmapUtils;
 
 type
   TEasyCollectionItemX = class(TEasyCollectionItem)

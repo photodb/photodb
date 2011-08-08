@@ -2,9 +2,10 @@ unit UnitPrinterTypes;
 
 interface
 
-uses Windows, SysUtils, Math, Graphics, Printers, Classes, ComObj, uLogger,
-  UnitDBKernel, GraphicCrypt, GraphicsBaseTypes, UnitDBCommonGraphics,
-  ActiveX, uMemory, uAssociations;
+uses
+  Windows, SysUtils, Math, Graphics, Printers, Classes, ComObj, uLogger,
+  UnitDBKernel, GraphicCrypt, GraphicsBaseTypes,
+  ActiveX, uMemory, uAssociations, uBitmapUtils;
 
 type
   TCallBackPrinterGeneratePreviewProc = procedure(Progress: Byte; var Terminate: Boolean) of object;

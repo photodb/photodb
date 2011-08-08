@@ -3,9 +3,8 @@ unit ExplorerTypes;
 interface
 
 uses Forms, SysUtils, Windows, Graphics, UnitDBDeclare,
-  Messages, Classes, DB, GraphicsCool, JPEG, SyncObjs,
-  UnitDBCommon, UnitDBCommonGraphics, Effects, uFileUtils,
-  uMemory, uDBPopupMenuInfo;
+  Messages, Classes, JPEG, SyncObjs,
+  uBitmapUtils, Effects, uFileUtils, uMemory, uDBPopupMenuInfo;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;

@@ -3,11 +3,11 @@ unit uFrmImportImagesProgress;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, uFrameWizardBase, DmProgress, StdCtrls, pngimage, ExtCtrls,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, uFrameWizardBase, DmProgress, StdCtrls, ExtCtrls,
   Dolphin_DB, UnitDBDeclare, uGraphicUtils, uMemory, uRuntime, UnitDBkernel,
-  UnitUpdateDBObject, UnitTimeCounter, uFileUtils, uConstants, UnitDBCommon,
-  UnitDBCommonGraphics;
+  UnitUpdateDBObject, UnitTimeCounter, uFileUtils, uConstants,
+  uBitmapUtils, pngimage;
 
 type
   TFrmImportImagesProgress = class(TFrameWizardBase)

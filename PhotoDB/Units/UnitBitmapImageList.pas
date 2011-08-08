@@ -2,7 +2,7 @@ unit UnitBitmapImageList;
 
 interface
 
-uses Classes, Graphics, uMemory, Effects;
+uses Classes, Graphics, uMemory, uBitmapUtils;
 
 type
   TBitmapImageListImage = class

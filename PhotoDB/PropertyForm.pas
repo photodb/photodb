@@ -11,7 +11,7 @@ uses
   ProgressActionUnit, DmGradient, Clipbrd, WebLink, UnitLinksSupport,
   UnitSQLOptimizing, Math, CommonDBSupport, UnitUpdateDBObject, RAWImage,
   DragDropFile, DragDrop, UnitPropertyLoadImageThread, UnitINI, uLogger,
-  UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics,
+  UnitPropertyLoadGistogrammThread, uVistaFuncs, UnitDBDeclare, uBitmapUtils,
   uCDMappingTypes, uDBDrawing, uFileUtils, DBLoading, UnitDBCommon, uMemory,
   UnitBitmapImageList, uListViewUtils, uList64, uDBForm, uDBPopupMenuInfo,
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,

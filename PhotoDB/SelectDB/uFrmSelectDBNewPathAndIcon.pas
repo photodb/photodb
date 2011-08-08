@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, uFrameWizardBase, StdCtrls, ExtCtrls, uMemory, UnitDBDeclare,
   uShellIntegration, UnitDBCommonGraphics, uConstants, UnitDBFileDialogs,
-  uFileUtils, WatermarkedEdit;
+  uFileUtils, WatermarkedEdit, uIconUtils;
 
 type
   TFrmSelectDBNewPathAndIcon = class(TFrameWizardBase)

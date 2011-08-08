@@ -4,9 +4,10 @@ interface
 
 uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
-     Effects, UnitDBCommonGraphics, uCDMappingTypes, uLogger, UnitDBCommon,
+     Effects, uJpegUtils, uCDMappingTypes, uLogger, UnitDBCommon,
      uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel, uExifUtils,
-     uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread, CCR.Exif;
+     uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread, CCR.Exif,
+     uBitmapUtils;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)

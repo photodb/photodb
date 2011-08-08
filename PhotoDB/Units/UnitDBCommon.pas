@@ -5,10 +5,8 @@ interface
 uses Windows, Classes, Forms, Math, SysUtils, Messages, uMemory;
 
 function ActivateApplication(const Handle1: THandle): Boolean;
-procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
-procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
-function ProgramDir : string;
-procedure ActivateBackgroundApplication(hWnd : THandle);
+function ProgramDir: string;
+procedure ActivateBackgroundApplication(hWnd: THandle);
 
 implementation
 
@@ -132,62 +130,6 @@ begin
 
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
-end;
-  (*
-function Hash_Cos_C(S: string): Integer;
-var
-  C, I: Integer;
-begin
-  C := 0;
-{$R-}
-  for I := 1 to Length(S) do
-    C := C + Round($FFFFFFFF * Cos(I) * Ord(S[I]));
-{$R+}
-  Result := C;
-end;   *)
-
-procedure ProportionalSizeA(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
-begin
-  if (AWidthToSize = 0) or (AHeightToSize = 0) then
-  begin
-    AHeightToSize := 0;
-    AWidthToSize := 0;
-  end else
-  begin
-    if (AHeightToSize / AWidthToSize) < (AHeight / AWidth) then
-    begin
-      AHeightToSize := Round((AWidth / AWidthToSize) * AHeightToSize);
-      AWidthToSize := AWidth;
-    end else
-    begin
-      AWidthToSize := Round((AHeight / AHeightToSize) * AWidthToSize);
-      AHeightToSize := AHeight;
-    end;
-  end;
-end;
-
-procedure ProportionalSize(AWidth, AHeight: Integer; var AWidthToSize, AHeightToSize: Integer);
-begin
-  if (AWidthToSize < AWidth) and (AHeightToSize < AHeight) then
-  begin
-    Exit;
-  end;
-  if (AWidthToSize = 0) or (AHeightToSize = 0) then
-  begin
-    AHeightToSize := 0;
-    AWidthToSize := 0;
-  end else
-  begin
-    if (AHeightToSize / AWidthToSize) < (AHeight / AWidth) then
-    begin
-      AHeightToSize := Round((AWidth / AWidthToSize) * AHeightToSize);
-      AWidthToSize := AWidth;
-    end else
-    begin
-      AWidthToSize := Round((AHeight / AHeightToSize) * AWidthToSize);
-      AHeightToSize := AHeight;
-    end;
-  end;
 end;
 
 function ProgramDir : string;

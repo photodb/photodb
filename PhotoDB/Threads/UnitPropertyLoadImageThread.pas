@@ -3,8 +3,8 @@ unit UnitPropertyLoadImageThread;
 interface
 
 uses
-  Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage,
-  UnitDBKernel, GraphicCrypt, UnitDBCommonGraphics, uDBThread,
+  Windows, Classes, Messages, Graphics, SysUtils, RAWImage,
+  UnitDBKernel, GraphicCrypt, uJpegUtils, uBitmapUtils, uDBThread,
   uMemory, GraphicsCool, uGraphicUtils, uRuntime, uAssociations,
   uConstants, uDBForm, uExifUtils;
 

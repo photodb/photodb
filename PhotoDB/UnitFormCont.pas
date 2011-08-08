@@ -10,7 +10,7 @@ uses
   DropSource, DropTarget, AppEvnts, WebLink, MPCommonUtilities, uVistaFuncs,
   UnitBitmapImageList, EasyListview, DragDropFile, DragDrop, uShellIntegration,
   ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
-  UnitDBFileDialogs, UnitPropeccedFilesSupport, UnitDBCommonGraphics,
+  UnitDBFileDialogs, UnitPropeccedFilesSupport, uBitmapUtils,
   UnitDBCommon, uCDMappingTypes, uLogger, uConstants, uThreadForm,
   uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
   uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,

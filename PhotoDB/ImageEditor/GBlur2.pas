@@ -39,10 +39,10 @@ type
   // иде€ заключаетс€ в том, что при использовании TKernel мы игнорируем
   // Weights (вес), за исключением Weights в диапазоне -Size..Size.
 
-procedure GBlur(TheBitmap: TBitmap; Radius: Double; CallBack: TBaseEffectCallBackProc = nil);
-procedure GBlurW(A, B: Integer; TheBitmap: TBitmap; Radius: Double; CallBack: TBaseEffectCallBackProc = nil);
+procedure GBlur(TheBitmap: TBitmap; Radius: Double; CallBack: TProgressCallBackProc = nil);
+procedure GBlurW(A, B: Integer; TheBitmap: TBitmap; Radius: Double; CallBack: TProgressCallBackProc = nil);
 procedure GBlurWX(A, B: Integer; TheBitmap: TBitmap; ScanLines: TArPRGBArray; Radius: Double;
-  CallBack: TBaseEffectCallBackProc = nil);
+  CallBack: TProgressCallBackProc = nil);
 
 implementation
 
@@ -51,7 +51,7 @@ uses
 
 procedure MakeGaussianKernel(var K: TKernel; Radius: Double;
 
-  MaxData, DataGranularity: Double; CallBack: TBaseEffectCallBackProc = nil);
+  MaxData, DataGranularity: Double; CallBack: TProgressCallBackProc = nil);
 // ƒелаем K (гауссово зерно) со среднеквадратичным отклонением = radius.
 // ƒл€ текущего приложени€ мы устанавливаем переменные MaxData = 255,
 // DataGranularity = 1. “еперь в процедуре установим значение
@@ -166,13 +166,13 @@ begin
   Move(P[0], TheRow[0], ( high(TheRow) + 1) * Sizeof(TRGBTriple));
 end;
 
-procedure GBlur(TheBitmap: TBitmap; Radius: Double; CallBack: TBaseEffectCallBackProc = nil);
+procedure GBlur(TheBitmap: TBitmap; Radius: Double; CallBack: TProgressCallBackProc = nil);
 begin
   GBlurW(0, 100, TheBitmap, Radius, CallBack);
 end;
 
 procedure GBlurWX(A, B: Integer; TheBitmap: TBitmap; ScanLines: TArPRGBArray; Radius: Double;
-  CallBack: TBaseEffectCallBackProc = nil);
+  CallBack: TProgressCallBackProc = nil);
 var
   Row, Col: Integer;
   TheRows: PPRows;
@@ -226,7 +226,7 @@ begin
   ReAllocMem(P, 0);
 end;
 
-procedure GBlurW(A, B: Integer; TheBitmap: TBitmap; Radius: Double; CallBack: TBaseEffectCallBackProc = nil);
+procedure GBlurW(A, B: Integer; TheBitmap: TBitmap; Radius: Double; CallBack: TProgressCallBackProc = nil);
 var
   Row, Col: Integer;
   TheRows: PPRows;

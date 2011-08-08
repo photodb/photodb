@@ -3,352 +3,44 @@ unit UnitDBCommonGraphics;
 interface
 
 uses
-  Windows, Classes, Messages, Controls, Forms, StdCtrls, Graphics,
-  pngimage, ShellApi, JPEG, CommCtrl, uMemory,
-  DmProgress, GIFImage, RAWImage,
-  UnitDBDeclare, uTranslate, UnitDBCommon, SysUtils,
-  GraphicsBaseTypes, Effects, Math, uMath, uPngUtils;
+  Windows, Classes, Controls, StdCtrls, Graphics,
+  uMemory, uDBGraphicTypes, SysUtils, uGraphicUtils,
+  DmProgress, uBitmapUtils, UnitDBDeclare, uTranslate,
+  GraphicsBaseTypes, Effects, Math, uIconUtils;
 
 type
-  TJPEGX = class(TJpegImage)
-  public
-    function InnerBitmap: TBitmap;
-  end;
-
   TTextPrepareAsyncProcedure = function(Bitmap: TBitmap; Font: HFont; Text: string): Integer of object;
   TDrawTextAsyncProcedure = procedure(Bitmap: TBitmap; Rct: TRect; Text: string) of object;
   TGetAsyncCanvasFontProcedure = function(Bitmap: TBitmap): TLogFont of object;
 
 const
   PSDTransparent = True;
-  // Image processiong options
-  ZoomSmoothMin = 0.4;
+
+type
+  TCompareArray = array [0 .. 99, 0 .. 99, 0 .. 2] of Integer;
+
+  TCompareImageInfo = class
+  public
+    X2_0, X2_90, X2_180, X2_270: TCompareArray;
+    B2_0: TBitmap;
+    constructor Create(Image: TGraphic; Quick, FSpsearch_ScanFileRotate: Boolean);
+    destructor Destroy; override;
+  end;
 
 procedure DoInfoListBoxDrawItem(ListBox: TListBox; index: Integer; ARect: TRect; State: TOwnerDrawState;
   ItemsData: TList; Icons: array of TIcon; FProgressEnabled: Boolean; TempProgress: TDmProgress; Infos: TStrings);
-procedure BeginScreenUpdate(Hwnd: THandle);
-procedure EndScreenUpdate(Hwnd: THandle; Erase: Boolean);
-procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
-procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
-procedure QuickReduce(NewWidth, NewHeight: Integer; D, S: TBitmap);
-procedure StretchCool(X, Y, Width, Height: Integer; S, D: TBitmap); overload;
-procedure StretchCool(Width, Height: Integer; S, D: TBitmap); overload;
-procedure QuickReduceWide(Width, Height: Integer; S, D: TBitmap);
-procedure DoResize(Width, Height: Integer; S, D: TBitmap);
-procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; S, D: TBitmap);
-
-procedure FillColorEx(Bitmap: TBitmap; Color: TColor);
-procedure DrawImageEx(Dest, Src: TBitmap; X, Y: Integer);
-procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
-procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
-procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
-procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
-procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
-procedure GrayScale(Image: TBitmap);
-procedure SelectedColor(Image: TBitmap; Color: TColor);
-procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
-procedure AssignGraphic(Dest: TBitmap; Src: TGraphic);
-procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
-procedure RemoveBlackColor(Bitmap: TBitmap);
-function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 procedure SetIconToPictureFromPath(Picture: TPicture; IconPath: string);
 procedure AddIconToListFromPath(ImageList: TImageList; IconPath: string);
 procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer; Text: string; AAngle: Integer; Color: TColor;
   Transparent: Byte; FontName: string; SyncCallBack: TDrawTextAsyncProcedure;
   SyncTextPrepare: TTextPrepareAsyncProcedure;
   GetFontHandle: TGetAsyncCanvasFontProcedure);
-procedure DrawText32Bit(Bitmap32: TBitmap; Text: string; Font: TFont; ARect: TRect; DrawTextOptions: Cardinal);
-procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
-procedure DrawShadowToImage(Dest32, Src: TBitmap; Transparenty: Byte = 0);
-procedure DrawRoundGradientVert(Dest32: TBitmap; Rect: TRect; ColorFrom, ColorTo, BorderColor: TColor;
-  RoundRect: Integer; TransparentValue: Byte = 220);
+function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
+  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
+function CompareImagesEx(Image1: TGraphic; Image2Info: TCompareImageInfo; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
+  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
 
 implementation
-
-function MaxI8(A, B : Byte) : Byte; inline; overload;
-begin
-  if A > B then
-    Result := A
-  else
-    Result := B;
-end;
-
-function MinI8(A, B : Byte) : Byte; inline; overload;
-begin
-  if A > B then
-    Result := B
-  else
-    Result := A;
-end;
-
-function MaxI32(A, B : Integer) : Integer; inline; overload;
-begin
-  if A > B then
-    Result := A
-  else
-    Result := B;
-end;
-
-function MinI32(A, B : Integer) : Integer; inline; overload;
-begin
-  if A > B then
-    Result := B
-  else
-    Result := A;
-end;
-
-procedure DrawRoundGradientVert(Dest32 : TBitmap; Rect : TRect; ColorFrom, ColorTo, BorderColor : TColor; RoundRect : Integer; TransparentValue : Byte = 220);
-var
-  BitRound : TBitmap;
-  PR : PARGB;
-  PD : PARGB32;
-  I, J : Integer;
-  RF, GF, BF, RT, GT, BT, R, G, B, W, W1 : Byte;
-  RB, GB, BB : Byte;
-  S : Integer;
-begin
-  ColorFrom := ColorToRGB(ColorFrom);
-  ColorTo := ColorToRGB(ColorTo);
-  BorderColor := ColorToRGB(BorderColor);
-  RF := GetRValue(ColorFrom);
-  GF := GetGValue(ColorFrom);
-  BF := GetBValue(ColorFrom);
-  RT := GetRValue(ColorTo);
-  GT := GetGValue(ColorTo);
-  BT := GetBValue(ColorTo);
-  RB := GetRValue(BorderColor);
-  GB := GetGValue(BorderColor);
-  BB := GetBValue(BorderColor);
-  if BB = 255 then
-    BB := 254;
-  BorderColor := RGB(RB, GB, BB);
-  Dest32.PixelFormat := pf32Bit;
-  BitRound := TBitmap.Create;
-  try
-    BitRound.PixelFormat := pf24Bit;
-    BitRound.SetSize(Dest32.Width, Dest32.Height);
-    BitRound.Canvas.Brush.Color := clWhite;
-    BitRound.Canvas.Pen.Color := clWhite;
-    BitRound.Canvas.Rectangle(0, 0, Dest32.Width, Dest32.Height);
-    BitRound.Canvas.Brush.Color := clBlack;
-    BitRound.Canvas.Pen.Color := BorderColor;
-    Windows.RoundRect(BitRound.Canvas.Handle, Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, RoundRect, RoundRect);
-
-    for I := 0 to Dest32.Height - 1 do
-    begin
-      PR := BitRound.ScanLine[I];
-      PD := Dest32.ScanLine[I];
-      if (Rect.Top > I) or (I > Rect.Bottom) then
-         Continue;
-
-      W := Round(255 * (I + 1 - Rect.Top) / (Rect.Bottom - Rect.Top));
-      W1 := 255 - W;
-      R := (RF * W + RT * W1 + $7F) div 255;
-      G := (GF * W + GT * W1 + $7F) div 255;
-      B := (BF * W + BT * W1 + $7F) div 255;
-      for J := 0 to Dest32.Width - 1 do
-      begin
-        S := (PR[J].R + PR[J].G + PR[J].B);
-        if S <> 765 then //White
-        begin
-          PD[J].L := TransparentValue;
-          //black - gradient
-          if S = 0 then
-          begin
-            PD[J].R := R;
-            PD[J].G := G;
-            PD[J].B := B;
-          end else //border
-          begin
-            PD[J].R := RB;
-            PD[J].G := GB;
-            PD[J].B := BB;
-          end;
-        end;
-      end;
-    end;
-
-  finally
-    F(BitRound);
-  end;
-end;
-
-procedure DrawShadowToImage(Dest32, Src : TBitmap; Transparenty : Byte = 0);
-var
-  I, J : Integer;
-  PS : PARGB;
-  PS32 : PARGB32;
-  PDA : array of PARGB32;
-  SH, SW : Integer;
-  AddrLineD, DeltaD, AddrD : Integer;
-  PD : PRGB32;
-  W, W1 : Byte;
-
-const
-  SHADOW : array[0..6, 0..6] of byte =
-  ((8,14,22,26,22,14,8),
-  (14,0,0,0,52,28,14),
-  (22,0,0,0,94,52,22),
-  (26,0,0,0,124,66,26),
-  (22,52,94,{124}94,94,52,22),
-  (14,28,52,66,52,28,14),
-  (8,14,22,26,22,14,8));
-
-begin
-  //set new image size
-  Dest32.PixelFormat := pf32Bit;
-  SW := Src.Width;
-  SH := Src.Height;
-  Dest32.SetSize(SW + 4, SH + 4);
-  SetLength(PDA, Dest32.Height);
-
-  AddrLineD := Integer(Dest32.ScanLine[0]);
-  DeltaD := 0;
-  if Dest32.Height > 1 then
-    DeltaD := Integer(Dest32.ScanLine[1])- AddrLineD;
-
-  //buffer scanlines
-  for I := 0 to Dest32.Height - 1 do
-    PDA[I] := Dest32.ScanLine[I];
-
-  //min size of shadow - 5x5 px
-  //top-left
-  for I := 0 to 2 do
-    for J := 0 to 2 do
-    begin
-      PDA[I][J].R := 0;
-      PDA[I][J].G := 0;
-      PDA[I][J].B := 0;
-      PDA[I][J].L := SHADOW[I, J];
-    end;
-
-  //top-bottom
-  for I := 3 to Src.Height do
-  begin
-    PDA[I][0].R := 0;
-    PDA[I][0].G := 0;
-    PDA[I][0].B := 0;
-    PDA[I][0].L := SHADOW[3, 0];
-    for J := 0 to 2 do
-    begin
-      PDA[I][J + SW + 1].R := 0;
-      PDA[I][J + SW + 1].G := 0;
-      PDA[I][J + SW + 1].B := 0;
-      PDA[I][J + SW + 1].L := SHADOW[4, 2 - J];
-    end;
-  end;
-
-  //left-right
-  for I := 3 to Src.Width do
-  begin
-    PDA[0][I].R := 0;
-    PDA[0][I].G := 0;
-    PDA[0][I].B := 0;
-    PDA[0][I].L := SHADOW[0, 3];
-    for J := 0 to 2 do
-    begin
-      PDA[J + SH + 1][I].R := 0;
-      PDA[J + SH + 1][I].G := 0;
-      PDA[J + SH + 1][I].B := 0;
-      PDA[J + SH + 1][I].L := SHADOW[4, 2 - J];
-    end;
-  end;
-
-  //left-bottom
-  for I := 0 to 2 do
-    for J := 0 to 2 do
-    begin
-      PDA[I + SH + 1][J].R := 0;
-      PDA[I + SH + 1][J].G := 0;
-      PDA[I + SH + 1][J].B := 0;
-      PDA[I + SH + 1][J].L := SHADOW[I + 4, J];
-    end;
-
-  //top-right
-  for I := 0 to 2 do
-    for J := 0 to 2 do
-    begin
-      PDA[I][J + SW + 1].R := 0;
-      PDA[I][J + SW + 1].G := 0;
-      PDA[I][J + SW + 1].B := 0;
-      PDA[I][J + SW + 1].L := SHADOW[I, J + 4];
-    end;
-
-  //bottom-right
-  for I := 0 to 2 do
-    for J := 0 to 2 do
-    begin
-      PDA[I + SH + 1][J + SW + 1].R := 0;
-      PDA[I + SH + 1][J + SW + 1].G := 0;
-      PDA[I + SH + 1][J + SW + 1].B := 0;
-      PDA[I + SH + 1][J + SW + 1].L := SHADOW[I + 4, J + 4];
-    end;
-
-  //and draw image
-  if Src.PixelFormat <> pf32bit then
-  begin
-    Src.PixelFormat := pf24bit;
-    AddrLineD := AddrLineD + DeltaD;
-    for I := 0 to Src.Height - 1 do
-    begin
-      PS := Src.ScanLine[I];
-      AddrD := AddrLineD + 4; //from second fixel
-      for J := 0 to Src.Width - 1 do
-      begin
-        PD := PRGB32(AddrD);
-        PD.R := PS[J].R;
-        PD.G := PS[J].G;
-        PD.B := PS[J].B;
-        PD.L := 255;
-        AddrD := AddrD + 4;
-      end;
-      AddrLineD := AddrLineD + DeltaD;
-    end;
-  end else
-  begin
-    AddrLineD := AddrLineD + DeltaD;
-    for I := 0 to Src.Height - 1 do
-    begin
-      PS32 := Src.ScanLine[I];
-      AddrD := AddrLineD + 4; //from second fixel
-      for J := 0 to Src.Width - 1 do
-      begin
-        PD := PRGB32(AddrD);
-        W := PS32[J].L;
-        W1 := 255 - W;
-        PD.R := (PD.R * W1 + PS32[J].R * W + $7F) div $FF;
-        PD.G := (PD.G * W1 + PS32[J].G * W + $7F) div $FF;
-        PD.B := (PD.B * W1 + PS32[J].B * W + $7F) div $FF;
-        PD.L := W;
-        AddrD := AddrD + 4;
-      end;
-      AddrLineD := AddrLineD + DeltaD;
-    end;
-  end;
-end;
-
-procedure DrawText32Bit(Bitmap32 : TBitmap; Text : string; Font : TFont; ARect : TRect; DrawTextOptions : Cardinal);
-var
-  Bitmap: TBitmap;
-  R: TRect;
-begin
-  Bitmap32.PixelFormat := pf32bit;
-  Bitmap := TBitmap.Create;
-  try
-    Bitmap.PixelFormat := pf24Bit;
-    Bitmap.Canvas.Font.Assign(Font);
-    Bitmap.Canvas.Font.Color := ClBlack;
-    Bitmap.Canvas.Brush.Color := ClWhite;
-    Bitmap.Canvas.Pen.Color := ClWhite;
-    Bitmap.Width := ARect.Right - ARect.Left;
-    Bitmap.Height := ARect.Bottom - ARect.Top;
-    R := Rect(0, 0, Bitmap.Width, Bitmap.Height);
-    DrawText(Bitmap.Canvas.Handle, PWideChar(Text), Length(Text), R, DrawTextOptions);
-    DrawColorMaskTo32Bit(Bitmap32, Bitmap, Font.Color, ARect.Left, ARect.Top);
-  finally
-    F(Bitmap);
-  end;
-end;
 
 procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer;
   Text: string; AAngle : Integer; Color: TColor; Transparent : Byte; FontName: string;
@@ -356,15 +48,15 @@ procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer;
   SyncTextPrepare: TTextPrepareAsyncProcedure;
   GetFontHandle: TGetAsyncCanvasFontProcedure);
 var
-  lf: TLogFont;
-  I, J : Integer;
-  X, Y, Width, Height, H, TextLength : Integer;
-  Angle : Integer;
-  Mask : TBitmap;
-  PS, PD : PARGB;
+  Lf: TLogFont;
+  I, J: Integer;
+  X, Y, Width, Height, H, TextLength: Integer;
+  Angle: Integer;
+  Mask: TBitmap;
+  PS, PD: PARGB;
   PD32: PARGB32;
-  R, G, B : Byte;
-  L, L1 : Byte;
+  R, G, B: Byte;
+  L, L1: Byte;
   RealAngle: Double;
   TextHeight, TextWidth: Integer;
   Dioganal: Integer;
@@ -507,135 +199,6 @@ begin
     end;
   finally
     F(Mask);
-  end;
-end;
-
-procedure BeginScreenUpdate(hwnd: THandle);
-begin
-  if (hwnd = 0) then
-    hwnd := Application.MainForm.Handle;
-  SendMessage(Hwnd, WM_SETREDRAW, 0, 0);
-end;
-
-procedure EndScreenUpdate(Hwnd: THandle; Erase: Boolean);
-begin
-  if (Hwnd = 0) then
-    Hwnd := Application.MainForm.Handle;
-  SendMessage(Hwnd, WM_SETREDRAW, 1, 0);
-  RedrawWindow(Hwnd, nil, 0, { DW_FRAME + } RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_NOINTERNALPAINT);
-  if (Erase) then
-    Windows.InvalidateRect(Hwnd, nil, True);
-end;
-
-procedure SelectedColor(Image: TBitmap; Color: TColor);
-var
-  I, J, R, G, B: Integer;
-  P: PARGB;
-begin
-  R := GetRValue(Color);
-  G := GetGValue(Color);
-  B := GetBValue(Color);
-  if Image.PixelFormat <> Pf24bit then
-    Image.PixelFormat := Pf24bit;
-
-  for I := 0 to Image.Height - 1 do
-  begin
-    P := Image.ScanLine[I];
-    for J := 0 to Image.Width - 1 do
-      if Odd(I + J) then
-      begin
-        P[J].R := R;
-        P[J].G := G;
-        P[J].B := B;
-      end;
-  end;
-end;
-
-function MixBytes(FG, BG, TRANS: Byte): Byte;
- asm
-  push bx  // push some regs
-  push cx
-  push dx
-  mov DH,TRANS // remembering Transparency value (or Opacity - as you like)
-  mov BL,FG    // filling registers with our values
-  mov AL,DH    // BL = ForeGround (FG)
-  mov CL,BG    // CL = BackGround (BG)
-  xor AH,AH    // Clear High-order parts of regs
-  xor BH,BH
-  xor CH,CH
-  mul BL       // AL=AL*BL
-  mov BX,AX    // BX=AX
-  xor AH,AH
-  mov AL,DH
-  xor AL,$FF   // AX=(255-TRANS)
-  mul CL       // AL=AL*CL
-  add AX,BX    // AX=AX+BX
-  shr AX,8     // Fine! Here we have mixed value in AL
-  pop dx       // Hm... No rubbish after us, ok?
-  pop cx
-  pop bx       // Bye, dear Assembler - we go home to Delphi!
-end;
-
-procedure GrayScale(Image : TBitmap);
-var
-  I, J, C : integer;
-  P : PARGB;
-begin
-  Image.PixelFormat := pf24bit;
-
-  for I := 0 to Image.Height - 1 do
-  begin
-    p := Image.ScanLine[I];
-    for J := 0 to Image.Width - 1 do
-    begin
-      C := (p[J].R * 77 + p[J].G * 151 + p[J].B * 28) shr 8;
-      p[J].R := C;
-      p[J].G := C;
-      p[J].B := C;
-    end;
-  end;
-end;
-
-procedure GrayScaleImage(S, D : TBitmap; N : integer);
-var
-  I, J : integer;
-  p1, p2 : Pargb;
-  G : Byte;
-  W1, W2: Byte;
-begin
-  W1 := Round((N / 100) * 255);
-  W2 := 255 - W1;
-  for I := 0 to S.Height - 1 do
-  begin
-    P1 := S.ScanLine[I];
-    P2 := D.ScanLine[I];
-    for J := 0 to S.Width - 1 do
-    begin
-      G := (P1[J].R * 77 + P1[J].G * 151 + P1[J].B * 28) shr 8;
-      P2[J].R := (W2 * P2[J].R + W1 * G) shr 8;
-      P2[J].G := (W2 * P2[J].G + W1 * G) shr 8;
-      P2[J].B := (W2 * P2[J].B + W1 * G) shr 8;
-    end;
-  end;
-end;
-
-procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
-var
-  W1, W2, I, J: Integer;
-  PS, PD : PARGB;
-begin
-  W1 := Transparent;
-  W2 := 255 - W1;
-  for I := 0 to S.Height - 1 do
-  begin
-    PS := S.ScanLine[I];
-    pd := D.ScanLine[I];
-    for J := 0 to S.Width - 1 do
-    begin
-      PD[j].R := (PD[J].R * W2 + PS[J].R * W1 + $7F) div $FF;
-      PD[j].G := (PD[J].G * W2 + PS[J].G * W1 + $7F) div $FF;
-      PD[j].B := (PD[J].B * W2 + PS[J].B * W1 + $7F) div $FF;
-    end;
   end;
 end;
 
@@ -792,910 +355,7 @@ begin
   DrawText(ListBox.Canvas.Handle, PWideChar(Text), Length(Text), ARect, DT_NOPREFIX + DT_LEFT + DT_WORDBREAK);
 end;
 
-
-procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
-var
-  I, J,
-  XD, YD,
-  DH, DW,
-  SH, SW  : integer;
-  pS : PARGB;
-  pD : PARGB32;
-  R, G, B, W, W1 : Byte;
-begin
-  Dest.PixelFormat := pf32bit;
-  Mask.PixelFormat := pf24bit;
-  Color := ColorToRGB(Color);
-  R := GetRValue(Color);
-  G := GetGValue(Color);
-  B := GetBValue(Color);
-  DH := Dest.Height;
-  DW := Dest.Width;
-  SH := Mask.Height;
-  SW := Mask.Width;
-  for I := 0 to SH - 1 do
-  begin
-    YD := I + Y;
-    if (YD >= DH) then
-      Break;
-    pS := Mask.ScanLine[I];
-    pD := Dest.ScanLine[YD];
-    for J := 0 to SW - 1 do
-    begin
-      XD := J + X;
-      if (XD >= DW) then
-        Break;
-
-      W1 := pS[J].R;
-      W := 255 - W1;
-      pD[XD].R := (R * W + pD[XD].R * W1 + $7F) div $FF;
-      pD[XD].G := (G * W + pD[XD].G * W1 + $7F) div $FF;
-      pD[XD].B := (B * W + pD[XD].B * W1 + $7F) div $FF;
-      pD[XD].L := ($FF * W + pD[XD].L * W1 + $7F) div $FF;
-    end;
-  end;
-end;
-
-procedure DrawImageEx24To32(Dest32, Src24 : TBitmap; X, Y : Integer; NewTransparent : Byte = 0);
-var
-  I, J,
-  XD, YD,
-  DH, DW,
-  SH, SW  : integer;
-  pS : PARGB;
-  pD : PARGB32;
-begin
-  DH := Dest32.Height;
-  DW := Dest32.Width;
-  SH := Src24.Height;
-  SW := Src24.Width;
-  for I := 0 to SH - 1 do
-  begin
-    YD := I + Y;
-    if (YD >= DH) then
-      Break;
-    pS := Src24.ScanLine[I];
-    pD := Dest32.ScanLine[YD];
-    for J := 0 to SW - 1 do
-    begin
-      XD := J + X;
-      if (XD >= DW) then
-        Break;
-      pD[XD].R := pS[J].R;
-      pD[XD].G := pS[J].G;
-      pD[XD].B := pS[J].B;
-      pD[XD].L := NewTransparent;
-    end;
-  end;
-end;
-
-procedure DrawImageEx32To24(Dest24, Src32 : TBitmap; X, Y : Integer);
-var
-  I, J,
-  XD, YD,
-  DH, DW,
-  SH, SW  : Integer;
-  W1, W : Byte;
-  pD : PARGB;
-  pS : PARGB32;
-begin
-  DH := Dest24.Height;
-  DW := Dest24.Width;
-  SH := Src32.Height;
-  SW := Src32.Width;
-  for I := 0 to SH - 1 do
-  begin
-    YD := I + Y;
-    if (YD >= DH) then
-      Break;
-    pS := Src32.ScanLine[I];
-    pD := Dest24.ScanLine[YD];
-    for J := 0 to SW - 1 do
-    begin
-      XD := J + X;
-      if (XD >= DW) then
-        Break;
-
-      W := pS[J].L;
-      W1 := 255 - W;
-      pD[XD].R := (pD[XD].R * W1 + pS[J].R * W + $7F) div $FF;
-      pD[XD].G := (pD[XD].G * W1 + pS[J].G * W + $7F) div $FF;
-      pD[XD].B := (pD[XD].B * W1 + pS[J].B * W + $7F) div $FF;
-    end;
-  end;
-end;
-
-procedure DrawImageEx32(Dest32, Src32 : TBitmap; X, Y : Integer);
-var
-  I, J,
-  XD, YD,
-  DH, DW,
-  SH, SW  : Integer;
-  W1, W : Byte;
-  pD, pS : PARGB32;
-begin
-  DH := Dest32.Height;
-  DW := Dest32.Width;
-  SH := Src32.Height;
-  SW := Src32.Width;
-  InitSumLMatrix;
-  for I := 0 to SH - 1 do
-  begin
-    YD := I + Y;
-    if (YD >= DH) then
-      Break;
-    pS := Src32.ScanLine[I];
-    pD := Dest32.ScanLine[YD];
-    for J := 0 to SW - 1 do
-    begin
-      XD := J + X;
-      if (XD >= DW) then
-        Break;
-
-      W := pS[J].L;
-      W1 := 255 - W;
-      pD[XD].R := (pD[XD].R * W1 + pS[J].R * W + $7F) div $FF;
-      pD[XD].G := (pD[XD].G * W1 + pS[J].G * W + $7F) div $FF;
-      pD[XD].B := (pD[XD].B * W1 + pS[J].B * W + $7F) div $FF;
-      pD[XD].L := SumLMatrix[pD[XD].L, W];
-    end;
-  end;
-end;
-
-procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
-var
-  I, J,
-  XD, YD,
-  DH, DW,
-  SH, SW  : integer;
-  pS : PARGB;
-  pD : PARGB;
-begin
-  DH := Dest.Height;
-  DW := Dest.Width;
-  SH := Src.Height;
-  SW := Src.Width;
-  for I := 0 to SH - 1 do
-  begin
-    YD := I + Y;
-    if (YD >= DH) then
-      Break;
-    pS := Src.ScanLine[I];
-    pD := Dest.ScanLine[YD];
-    for J := 0 to SW - 1 do
-    begin
-      XD := J + X;
-      if (XD >= DW) then
-        Break;
-      pD[XD] := pS[J];
-    end;
-  end;
-end;
-
-procedure FillTransparentColor(Bitmap : TBitmap; Color : TColor; TransparentValue : Byte = 0);
-var
-  I, J : Integer;
-  p : PARGB32;
-  R, G, B : Byte;
-begin
-  Bitmap.PixelFormat := pf32Bit;
-  Color := ColorToRGB(Color);
-  R := GetRValue(Color);
-  G := GetGValue(Color);
-  B := GetBValue(Color);
-  for I := 0 to Bitmap.Height - 1 do
-  begin
-    p := Bitmap.ScanLine[I];
-    for J := 0 to Bitmap.Width - 1 do
-    begin
-      p[j].R := R;
-      p[j].G := G;
-      p[j].B := B;
-      p[j].L := TransparentValue;
-    end;
-  end;
-end;
-
-procedure FillColorEx(Bitmap : TBitmap; Color : TColor);
-var
-  I, J : Integer;
-  p : PARGB;
-  R, G, B : Byte;
-begin
-  Bitmap.PixelFormat := Pf24Bit;
-  Color := ColorToRGB(Color);
-  R := GetRValue(Color);
-  G := GetGValue(Color);
-  B := GetBValue(Color);
-  if Bitmap.PixelFormat = Pf24bit then
-  begin
-    for I := 0 to Bitmap.Height - 1 do
-    begin
-      P := Bitmap.ScanLine[I];
-      for J := 0 to Bitmap.Width - 1 do
-      begin
-        P[J].R := R;
-        P[J].G := G;
-        P[J].B := B;
-      end;
-    end;
-  end;
-end;
-
-procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
-var
-  I, J, W1, W2: integer;
-  PD : PARGB;
-  PS : PARGB32;
-  R, G, B : byte;
-begin
-  BackGroundColor := ColorToRGB(BackGroundColor);
-  R := GetRValue(BackGroundColor);
-  G := GetGValue(BackGroundColor);
-  B := GetBValue(BackGroundColor);
-  if D.PixelFormat <> pf24bit then
-    D.PixelFormat := pf24bit;
-  D.SetSize(S.Width, S.Height);
-
-  for I := 0 to S.Height - 1 do
-  begin
-    PD := D.ScanLine[I];
-    PS := S.ScanLine[I];
-    for J:=0 to S.Width - 1 do
-    begin
-      W1 := PS[J].L;
-      W2 := 255 - W1;
-      PD[J].R := (R * W2 + PS[J].R * W1 + $7F) div $FF;
-      PD[J].G := (G * W2 + PS[J].G * W1 + $7F) div $FF;
-      PD[J].B := (B * W2 + PS[J].B * W1 + $7F) div $FF;
-    end;
-  end;
-end;
-
-procedure LoadGIFImage32bit(GIF : TGIFSubImage; Bitmap : TBitmap; BackGroundColorIndex : integer;
-    BackGroundColor : TColor);
-var
-  I, J: Integer;
-  P: PARGB;
-  R, G, B: Byte;
-begin
-  BackGroundColor := ColorToRGB(BackGroundColor);
-  R := GetRValue(BackGroundColor);
-  G := GetGValue(BackGroundColor);
-  B := GetBValue(BackGroundColor);
-  Bitmap.PixelFormat := pf24bit;
-  for I := 0 to GIF.Top - 1 do
-  begin
-    P := Bitmap.ScanLine[I];
-    for J := 0 to Bitmap.Width - 1 do
-    begin
-      P[J].R := R;
-      P[J].G := G;
-      P[J].B := B;
-    end;
-  end;
-  for I := GIF.Top + GIF.Height to Bitmap.Height - 1 do
-  begin
-    P := Bitmap.ScanLine[I];
-    for J := 0 to Bitmap.Width - 1 do
-    begin
-      P[J].R := R;
-      P[J].G := G;
-      P[J].B := B;
-    end;
-  end;
-  for I := GIF.Top to GIF.Top + GIF.Height - 1 do
-  begin
-    P := Bitmap.ScanLine[I];
-    for J := 0 to GIF.Left - 1 do
-    begin
-      P[J].R := R;
-      P[J].G := G;
-      P[J].B := B;
-    end;
-  end;
-  for I := GIF.Top to GIF.Top + GIF.Height - 1 do
-  begin
-    P := Bitmap.ScanLine[I];
-    for J := GIF.Left + GIF.Width - 1 to Bitmap.Width - 2 do
-    begin
-      P[J].R := R;
-      P[J].G := G;
-      P[J].B := B;
-    end;
-  end;
-  for I := 0 to GIF.Height - 1 do
-  begin
-    P := Bitmap.ScanLine[I + GIF.Top];
-    for J := 0 to GIF.Width - 1 do
-    begin
-      if GIF.Pixels[J, I] = BackGroundColorIndex then
-      begin
-        P[J + GIF.Left].R := R;
-        P[J + GIF.Left].G := G;
-        P[J + GIF.Left].B := B;
-      end;
-    end;
-  end;
-end;
-
-procedure AssignJpeg(Bitmap : TBitmap; Jpeg : TJPEGImage);
-begin
-  JPEG.Performance := jpBestSpeed;
-  JPEG.DIBNeeded;
-
-  AssignBitmap(Bitmap, TJPEGX(JPEG).InnerBitmap);
-end;
-
-procedure AssignGraphic(Dest : TBitmap; Src : TGraphic);
-begin
-  if ((Src is TBitmap) and (TBitmap(Src).PixelFormat = pf32Bit))
-    or ((Src is TPngImage) and (TPngImage(Src).TransparencyMode <> ptmNone)) then
-    Dest.PixelFormat := pf32Bit
-  else
-    Dest.PixelFormat := pf24Bit;
-
-  if Src is TJpegImage then
-    AssignJpeg(Dest, TJpegImage(Src))
-  else if Src is TRAWImage then
-    Dest.Assign(TRAWImage(Src))
-  else if Src is TBitmap then
-    AssignBitmap(Dest, TBitmap(Src))
-  else if (Src is TPngImage) and ((TPngImage(Src).Header.BitDepth = 8) or
-    (TPngImage(Src).Header.BitDepth = 16)) then
-  begin
-    case TPngImage(Src).Header.ColorType of
-      COLOR_GRAYSCALE:
-        LoadPNGImage8BitWOTransparent(TPngImage(Src), Dest);
-      COLOR_GRAYSCALEALPHA:
-        LoadPNGImage8BitTransparent(TPngImage(Src), Dest);
-      COLOR_PALETTE:
-        LoadPNGImagePalette(TPngImage(Src), Dest);
-      COLOR_RGB:
-        LoadPNGImageWOTransparent(TPngImage(Src), Dest);
-      COLOR_RGBALPHA:
-        LoadPNGImageTransparent(TPngImage(Src), Dest);
-      else
-        Dest.Assign(Src);
-    end;
-  end else
-    Dest.Assign(Src);
-end;
-
-procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
-begin
-  if (Dest is TPngImage) and (Src.PixelFormat = pf32Bit) then
-  begin
-    SavePNGImageTransparent(TPngImage(Dest), Src);
-  end else
-    Dest.Assign(Src);
-end;
-
-procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
-begin
-  if Image is TGIFImage then
-  begin
-    if not(Image as TGIFImage).Images[0].Empty then
-      if (Image as TGIFImage).Images[0].Transparent then
-      begin
-        Bitmap.Assign(Image);
-        if (Image as TGIFImage).Images[0].GraphicControlExtension <> nil then
-          LoadGIFImage32bit((Image as TGIFImage).Images[0], Bitmap, (Image as TGIFImage).Images[0].GraphicControlExtension.TransparentColorIndex, BackGround);
-        Exit;
-      end;
-  end;
-  AssignGraphic(Bitmap, Image);
-end;
-
-procedure DoResize(Width, Height: Integer; S, D : TBitmap);
-begin
-  if (Width = 0) or (Height = 0) then
-    Exit;
-  if (S.Width = 0) or (S.Height = 0) then
-    Exit;
-
-  if ((Width / S.Width > 1) or (Height / S.Height > 1)) then
-  begin
-    if (S.Width > 2) and (S.Height > 2) then
-      Interpolate(0, 0, Width, Height, Rect(0, 0, S.Width, S.Height), S, D)
-    else
-      StretchCool(Width, Height, S, D);
-  end else
-  begin
-    if ((S.Width div Width >= 8) or (S.Height div Height >= 8)) and
-      (S.Width > 2) and (S.Height > 2) then
-      QuickReduce(Width, Height, S, D)
-    else
-    begin
-      if (Width / S.Width > ZoomSmoothMin) and (S.Width > 1) then
-        SmoothResize(Width, Height, S, D)
-      else
-        StretchCool(Width, Height, S, D);
-    end;
-  end;
-end;
-
-procedure StretchCool(x, y, Width, Height : Integer; S, D : TBitmap);
-var
-  i,j,k,p,Sheight1:integer;
-  P1: Pargb;
-  Col, R, G, B: Integer;
-  Sh, Sw: Extended;
-  Xp: array of PARGB;
-  S_h, S_w: Integer;
-  XAW : array of Integer;
-  YMin, YMax : Integer;
-begin
-  S.PixelFormat := pf24bit;
-  D.PixelFormat := pf24bit;
-  if Width + X > D.Width then
-    D.Width := Width + X;
-  if Height + Y > D.Height then
-    D.Height := Height + Y;
-  Sh := S.Height / Height;
-  Sw := S.Width / Width;
-  Sheight1 := S.Height - 1;
-  SetLength(Xp, S.Height);
-  for I := 0 to Sheight1 do
-    Xp[I] := S.ScanLine[I];
-  S_w := S.Width - 1;
-  S_h := S.Height - 1;
-  SetLength(XAW, Width + 1);
-  for I := 0 to Width do
-    XAW[I] := Round(Sw * I);
-
-  for I := Max(0, Y) to Height + Y - 1 do
-  begin
-    P1 := D.ScanLine[I];
-    YMin := Max(0, Round(Sh * (I - Y)));
-    YMax := Min(S_h, Round(Sh * (I - Y + 1 )) - 1);
-    for J := 0 to Width - 1 do
-    begin
-      Col := 0;
-      R := 0;
-      G := 0;
-      B := 0;
-      for K := YMin to YMax do
-      begin
-        for P := XAW[J] to XAW[J + 1] - 1 do
-        begin
-          if P > S_w then
-            Break;
-          Inc(Col);
-          Inc(R, Xp[K, P].R);
-          Inc(G, Xp[K, P].G);
-          Inc(B, Xp[K, P].B);
-        end;
-      end;
-      if (Col <> 0) and (J + X > 0) then
-      begin
-        P1[J + X].R := R div Col;
-        P1[J + X].G := G div Col;
-        P1[J + X].B := B div Col;
-      end;
-    end;
-  end;
-end;
-
-procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; S, D: TBitmap);
-var
-  Z1, Z2: single;
-  K: Single;
-  I, J, SW: Integer;
-  Dw, Dh, Xo, Yo: Integer;
-  Y1r: Extended;
-  XS, XD: array of PARGB;
-  XS32, XD32: array of PARGB32;
-  Dx, Dy, Dxjx1r: Extended;
-  XAW : array of Integer;
-  XAWD : array of Extended;
-begin
-  if not ((S.PixelFormat = pf32bit) and (D.PixelFormat = pf32bit)) then
-  begin
-    S.PixelFormat := pf24bit;
-    D.PixelFormat := pf24bit;
-  end;
-  D.SetSize(Math.Max(D.Width, X + Width), Math.Max(D.Height, Y + Height));
-  SW := S.Width;
-  DW := Math.Min(D.Width - X, X + Width);
-  DH := Math.Min(D.Height - y, Y + Height);
-  DX := Width / (Rect.Right - Rect.Left - 1);
-  DY := Height / (Rect.Bottom - Rect.Top - 1);
-  if (Dx < 1) and (Dy < 1) then
-    Exit;
-
-  if (S.PixelFormat = pf24Bit) then
-  begin
-    SetLength(Xs, S.Height);
-    for I := 0 to S.Height - 1 do
-      XS[I] := S.Scanline[I];
-    SetLength(Xd, D.Height);
-    for I := 0 to D.Height - 1 do
-      XD[I] := D.Scanline[I];
-  end else
-  begin
-    SetLength(XS32, S.Height);
-    for I := 0 to S.Height - 1 do
-      XS32[I] := S.Scanline[I];
-    SetLength(XD32, D.Height);
-    for I := 0 to D.Height - 1 do
-      XD32[I] := D.Scanline[I];
-  end;
-
-  SetLength(XAW, Width + 1);
-  SetLength(XAWD, Width + 1);
-  for I := 0 to Width do
-  begin
-    XAW[I] := FastTrunc(I / Dx);
-    XAWD[I] := I / Dx - XAW[I];
-  end;
-
-  if (S.PixelFormat = pf24Bit) then
-  begin
-    for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
-    begin
-      Yo := FastTrunc(I / Dy) + Rect.Top;
-      Y1r := FastTrunc(I / Dy) * Dy;
-      if Yo > S.Height then
-        Break;
-      if I + Y < 0 then
-        Continue;
-
-      for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
-      begin
-        Xo := XAW[J] + Rect.Left;
-        if Xo > SW then
-          Continue;
-        if J + X < 0 then
-          Continue;
-
-        Dxjx1r := XAWD[J];
-
-        Z1 := (Xs[Yo, Xo + 1].R - Xs[Yo, Xo].R) * Dxjx1r + Xs[Yo, Xo].R;
-        Z2 := (Xs[Yo + 1, Xo + 1].R - Xs[Yo + 1, Xo].R) * Dxjx1r + Xs[Yo + 1, Xo].R;
-        k := (z2 - Z1) / Dy;
-        Xd[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
-
-        Z1 := (Xs[Yo, Xo + 1].G - Xs[Yo, Xo].G)* Dxjx1r + Xs[Yo, Xo].G;
-        Z2 := (Xs[Yo + 1, Xo + 1].G - Xs[Yo + 1, Xo].G) * Dxjx1r + Xs[Yo + 1, Xo].G;
-        K := (Z2 - Z1) / Dy;
-        Xd[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
-
-        Z1 := (Xs[Yo, Xo + 1].B - Xs[Yo, Xo].B) * Dxjx1r + Xs[Yo, Xo].B;
-        Z2 := (Xs[Yo + 1, Xo + 1].B - Xs[Yo + 1, Xo].B)  * Dxjx1r + Xs[Yo + 1, Xo].B;
-        K := (Z2 - Z1) / Dy;
-        Xd[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
-      end;
-    end;
-  end else
-  begin
-    for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
-    begin
-      Yo := FastTrunc(I / Dy) + Rect.Top;
-      Y1r := FastTrunc(I / Dy) * Dy;
-      if Yo > S.Height then
-        Break;
-      if I + Y < 0 then
-        Continue;
-
-      for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
-      begin
-        Xo := XAW[J] + Rect.Left;
-        if Xo > SW then
-          Continue;
-        if J + X < 0 then
-          Continue;
-
-        Dxjx1r := XAWD[J];
-
-        Z1 := (XS32[Yo, Xo + 1].R - XS32[Yo, Xo].R) * Dxjx1r + XS32[Yo, Xo].R;
-        Z2 := (XS32[Yo + 1, Xo + 1].R - XS32[Yo + 1, Xo].R) * Dxjx1r + XS32[Yo + 1, Xo].R;
-        k := (z2 - Z1) / Dy;
-        XD32[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
-
-        Z1 := (XS32[Yo, Xo + 1].G - XS32[Yo, Xo].G)* Dxjx1r + XS32[Yo, Xo].G;
-        Z2 := (XS32[Yo + 1, Xo + 1].G - XS32[Yo + 1, Xo].G) * Dxjx1r + XS32[Yo + 1, Xo].G;
-        K := (Z2 - Z1) / Dy;
-        XD32[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
-
-        Z1 := (XS32[Yo, Xo + 1].B - XS32[Yo, Xo].B) * Dxjx1r + XS32[Yo, Xo].B;
-        Z2 := (XS32[Yo + 1, Xo + 1].B - XS32[Yo + 1, Xo].B)  * Dxjx1r + XS32[Yo + 1, Xo].B;
-        K := (Z2 - Z1) / Dy;
-        XD32[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
-
-        Z1 := (XS32[Yo, Xo + 1].L - XS32[Yo, Xo].L) * Dxjx1r + XS32[Yo, Xo].L;
-        Z2 := (XS32[Yo + 1, Xo + 1].L - XS32[Yo + 1, Xo].L)  * Dxjx1r + XS32[Yo + 1, Xo].L;
-        K := (Z2 - Z1) / Dy;
-        XD32[I + Y, J + X].L := Round(I * K + Z1 - Y1r * K);
-      end;
-    end;
-  end;
-end;
-
-procedure QuickReduce(NewWidth, NewHeight: Integer; D, S: TBitmap);
-var
-  x, y, xi1, yi1, xi2, yi2, xx, yy, lw1 : integer;
-  bufw, bufh, outw, outh : integer;
-  sumr, sumb, sumg, suml, Pixcnt: Dword;
-  AdrIn, AdrOut, AdrLine0, DeltaLine, DeltaLine2: Integer;
-begin
-{$R-}
-  if not ((S.PixelFormat = pf32Bit) and (D.PixelFormat = pf32Bit)) then
-  begin
-    S.PixelFormat := pf24Bit;
-    D.PixelFormat := pf24Bit;
-  end;
-  S.SetSize(NewWidth, NewHeight);
-  bufw := D.Width;
-  bufh := D.Height;
-  outw := S.Width;
-  outh := S.Height;
-  adrLine0 := Integer(D.ScanLine[0]);
-  deltaLine := 0;
-  if D.Height > 1 then
-    deltaLine := Integer(D.ScanLine[1]) - adrLine0;
-  yi2 := 0;
-
-  if S.PixelFormat = pf32Bit then
-  begin
-
-    for y := 0 to outh-1 do
-    begin
-      adrOut := DWORD(S.ScanLine[y]);
-      yi1 := yi2 {+ 1};
-      yi2 := ((y+1) * bufh) div outh - 1;
-      if yi2 > bufh-1 then yi2 := bufh;
-      xi2 := 0;
-      for x := 0 to outw-1 do
-      begin
-        xi1 := xi2 {+ 1};
-        xi2 := ((x+1) * bufw) div outw - 1;
-        if xi2 > bufw-1 then xi2 := bufw-1; //
-        lw1 := xi2-xi1+1;
-        deltaLine2 := deltaLine - lw1*4;
-        sumb := 0;
-        sumg := 0;
-        sumr := 0;
-        suml := 0;
-        adrIn := adrLine0 + yi1*deltaLine + xi1*4;
-        for yy := yi1 to yi2 do
-        begin
-          for xx := 1 to lw1 do
-          begin
-            Inc(sumb, PByte(adrIn+0)^);
-            Inc(sumg, PByte(adrIn+1)^);
-            Inc(sumr, PByte(adrIn+2)^);
-            Inc(suml, PByte(adrIn+3)^);
-            Inc(adrIn, 4);
-          end;
-          Inc (adrIn, deltaLine2);
-        end;
-        pixcnt := (yi2-yi1+1)*lw1;
-        if pixcnt<>0 then
-        begin
-         PByte(adrOut+0)^ := sumb div pixcnt;
-         PByte(adrOut+1)^ := sumg div pixcnt;
-         PByte(adrOut+2)^ := sumr div pixcnt;
-         PByte(adrOut+3)^ := suml div pixcnt;
-        end;
-        Inc(adrOut, 4);
-      end;
-    end;
-  end else
-  begin
-    for y := 0 to outh-1 do
-    begin
-      adrOut := DWORD(S.ScanLine[y]);
-      yi1 := yi2 {+ 1};
-      yi2 := ((y+1) * bufh) div outh - 1;
-      if yi2 > bufh-1 then yi2 := bufh;
-      xi2 := 0;
-      for x := 0 to outw-1 do
-      begin
-        xi1 := xi2 {+ 1};
-        xi2 := ((x+1) * bufw) div outw - 1;
-        if xi2 > bufw-1 then xi2 := bufw-1; //
-        lw1 := xi2-xi1+1;
-        deltaLine2 := deltaLine - lw1*3;
-        sumb := 0;
-        sumg := 0;
-        sumr := 0;
-        adrIn := adrLine0 + yi1*deltaLine + xi1*3;
-        for yy := yi1 to yi2 do
-        begin
-          for xx := 1 to lw1 do
-          begin
-            Inc(sumb, PByte(adrIn+0)^);
-            Inc(sumg, PByte(adrIn+1)^);
-            Inc(sumr, PByte(adrIn+2)^);
-            Inc(adrIn, 3);
-          end;
-          Inc (adrIn, deltaLine2);
-        end;
-        pixcnt := (yi2-yi1+1)*lw1;
-        if pixcnt<>0 then
-        begin
-         PByte(adrOut+0)^ := sumb div pixcnt;
-         PByte(adrOut+1)^ := sumg div pixcnt;
-         PByte(adrOut+2)^ := sumr div pixcnt;
-        end;
-        Inc(adrOut, 3);
-      end;
-    end;
-  end;
-end;
-
-procedure StretchCool(Width, Height : Integer; S, D : TBitmap);
-var
-  I, J, K, F : Integer;
-  P : PARGB;
-  XP : array of PARGB;
-  P32 : PARGB32;
-  XP32 : array of PARGB32;
-  Count, R, G, B, L, Sheight1, SHI, SWI : Integer;
-  SH, SW : Extended;
-  YMin, YMax : Integer;
-  XAW : array of Integer;
-begin
-  if Width + Height = 0 then
-    Exit;
-
-  if S.PixelFormat = pf32bit then
-    D.PixelFormat := pf32bit
-  else
-  begin
-    S.PixelFormat := pf24bit;
-    D.PixelFormat := pf24bit;
-  end;
-  D.Width := Width;
-  D.Height := Height;
-  SH := S.Height / Height;
-  SW := S.Width / Width;
-  Sheight1 := S.height - 1;
-  SHI := S.Height;
-  SWI := S.Width;
-
-  SetLength(XAW, Width + 1);
-  for I := 0 to Width do
-    XAW[I] := Ceil(SW * I);
-
-  if S.PixelFormat = pf24bit then
-  begin
-    SetLength(XP, S.height);
-    for I := 0 to Sheight1 do
-      XP[I] := S.ScanLine[I];
-
-    for I := 0 to Height - 1 do
-    begin
-      P := D.ScanLine[I];
-      YMin := Round(SH * I);
-      YMax := MinI32(SHI - 1, Ceil(SH * (I + 1)) - 1);
-      for J := 0 to Width - 1 do
-      begin
-        Count := 0;
-        R := 0;
-        G := 0;
-        B := 0;
-        for K := YMin to YMax do
-        begin
-          for F := XAW[J] to MinI32(SWI - 1, XAW[J + 1] - 1) do
-          begin
-            Inc(Count);
-            Inc(R, XP[K, F].R);
-            Inc(G, XP[K, F].G);
-            Inc(B, XP[K, F].B);
-          end;
-        end;
-        if Count <> 0 then
-        begin
-          P[J].R := R div Count;
-          P[J].G := G div Count;
-          P[J].B := B div Count;
-        end;
-      end;
-    end;
-  end else
-  begin
-    SetLength(XP32, S.height);
-    for I := 0 to Sheight1 do
-      XP32[I] := S.ScanLine[I];
-
-    for I := 0 to Height - 1 do
-    begin
-      P32 := D.ScanLine[I];
-      YMin := Round(SH * I);
-      YMax := MinI32(SHI - 1, Ceil(SH * (I + 1)) - 1);
-      for J := 0 to Width - 1 do
-      begin
-        Count := 0;
-        R := 0;
-        G := 0;
-        B := 0;
-        L := 0;
-        for K := YMin to YMax do
-        begin
-          for F := XAW[J] to MinI32(SWI - 1, XAW[J + 1] - 1) do
-          begin
-            Inc(Count);
-            Inc(R, XP32[K, F].R);
-            Inc(G, XP32[K, F].G);
-            Inc(B, XP32[K, F].B);
-            Inc(L, XP32[K, F].L);
-          end;
-        end;
-        if Count <> 0 then
-        begin
-          P32[J].R := R div Count;
-          P32[J].G := G div Count;
-          P32[J].B := B div Count;
-          P32[J].L := L div Count;
-        end;
-      end;
-    end;
-  end;
-end;
-
-procedure QuickReduceWide(Width, Height : integer; S,D : TBitmap);
-begin
-  if (Width=0) or (Height=0) then
-    Exit;
-  if ((S.Width div Width>=8) or (S.Height div Height>=8)) and (S.Width>2) and (S.Height>2) then
-    QuickReduce(Width,Height,S,D)
-  else
-    StretchCool(Width,Height,S,D)
-end;
-
-procedure RemoveBlackColor(Bitmap : TBitmap);
-var
-  I, J : integer;
-  P : PARGB;
-begin
-  for I := 0 to Bitmap.Height - 1 do
-  begin
-    P := Bitmap.ScanLine[I];
-    for J := 0 to Bitmap.Width - 1 do
-    begin
-      if (P[J].R + P[J].G + P[J].B = 0)then
-        P[J].G := 1;
-    end;
-  end;
-end;
-
-{ TJPEGX }
-
-function TJPEGX.InnerBitmap: TBitmap;
-begin
-  Result := Bitmap;
-end;
-
-function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
-var
-  Path, Icon: string;
-  IconIndex, I: Integer;
-  Ico1, Ico2: HIcon;
-begin
-  I := Pos(',', IconPath);
-  Path := Copy(IconPath, 1, I - 1);
-  Icon := Copy(IconPath, I + 1, Length(IconPath) - I);
-  IconIndex := StrToIntDef(Icon, 0);
-  Ico1 := 0;
-
-  ExtractIconEx(PWideChar(Path), IconIndex, Ico1, Ico2, 1);
-
-  if Big then
-  begin
-    Result := Ico1;
-    if Ico2 <> 0 then
-      DestroyIcon(Ico2);
-  end else
-  begin
-    Result := Ico2;
-    if Ico1 <> 0 then
-      DestroyIcon(Ico1);
-  end;
-end;
-
-procedure SetIconToPictureFromPath(Picture : TPicture; IconPath : string);
+procedure SetIconToPictureFromPath(Picture : TPicture; IconPath: string);
 var
   Icon : TIcon;
 begin
@@ -1708,7 +368,7 @@ begin
   end;
 end;
 
-procedure AddIconToListFromPath(ImageList : TImageList; IconPath : string);
+procedure AddIconToListFromPath(ImageList : TImageList; IconPath: string);
 var
   Icon : TIcon;
 begin
@@ -1719,6 +379,461 @@ begin
   finally
     Icon.Free;
   end;
+end;
+
+
+function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
+var
+  I, J, Max: Integer;
+  Ps: PARGB;
+  LGray, LR, LG, LB: Byte;
+begin
+
+  /// сканирование изображение и подведение статистики
+  for I := 0 to 255 do
+  begin
+    Result.Red[I] := 0;
+    Result.Green[I] := 0;
+    Result.Blue[I] := 0;
+    Result.Gray[I] := 0;
+  end;
+  for I := 0 to H - 1 do
+  begin
+    Ps := S[I];
+    for J := 0 to W - 1 do
+    begin
+      LR := Ps[J].R;
+      LG := Ps[J].G;
+      LB := Ps[J].B;
+      LGray :=  (LR * 77 + LG * 151 + LB * 28) shr 8;
+      Inc(Result.Gray[LGray]);
+      Inc(Result.Red[LR]);
+      Inc(Result.Green[LG]);
+      Inc(Result.Blue[LB]);
+    end;
+  end;
+
+  /// поиск максимума
+  Max := 1;
+  Result.Max := 0;
+  for I := 5 to 250 do
+  begin
+    if Max < Result.Red[I] then
+    begin
+      Max := Result.Red[I];
+      Result.Max := I;
+    end;
+  end;
+  for I := 5 to 250 do
+  begin
+    if Max < Result.Green[I] then
+    begin
+      Max := Result.Green[I];
+      Result.Max := I;
+    end;
+  end;
+  for I := 5 to 250 do
+  begin
+    if Max < Result.Blue[I] then
+    begin
+      Max := Result.Blue[I];
+      Result.Max := I;
+    end;
+  end;
+
+  /// в основном диапозоне 0..100
+  for I := 0 to 255 do
+    Result.Red[I] := Round(100 * Result.Red[I] / Max);
+
+  // max:=1;
+  for I := 0 to 255 do
+    Result.Green[I] := Round(100 * Result.Green[I] / Max);
+
+  // max:=1;
+  for I := 0 to 255 do
+    Result.Blue[I] := Round(100 * Result.Blue[I] / Max);
+
+  // max:=1;
+  for I := 0 to 255 do
+    Result.Gray[I] := Round(100 * Result.Gray[I] / Max);
+
+  /// ограничение на значение - изза нахождения максимума не во всём диапозоне
+  for I := 0 to 255 do
+    if Result.Red[I] > 255 then
+      Result.Red[I] := 255;
+
+  for I := 0 to 255 do
+    if Result.Green[I] > 255 then
+      Result.Green[I] := 255;
+
+  for I := 0 to 255 do
+    if Result.Blue[I] > 255 then
+      Result.Blue[I] := 255;
+
+  for I := 0 to 255 do
+    if Result.Gray[I] > 255 then
+      Result.Gray[I] := 255;
+
+  // получаем границы диапозона
+  Result.LeftEffective := 0;
+  Result.RightEffective := 255;
+  for I := 0 to 254 do
+  begin
+    if (Result.Gray[I] > 10) and (Result.Gray[I + 1] > 10) then
+    begin
+      Result.LeftEffective := I;
+      Break;
+    end;
+  end;
+  for I := 255 downto 1 do
+  begin
+    if (Result.Gray[I] > 10) and (Result.Gray[I - 1] > 10) then
+    begin
+      Result.RightEffective := I;
+      Break;
+    end;
+  end;
+
+end;
+
+function CompareImagesByGistogramm(Image1, Image2: TBitmap): Byte;
+var
+  PRGBArr: PARGBArray;
+  I: Integer;
+  Diff: Byte;
+  Data1, Data2, Data: TGistogrammData;
+  Mx_r, Mx_b, Mx_g: Integer;
+  ResultExt: Extended;
+
+  function AbsByte(B1, B2: Integer): Integer; inline;
+  begin
+    // if b1<b2 then Result:=b2-b1 else Result:=b1-b2;
+    Result := B2 - B1;
+  end;
+
+  procedure RemovePicks;
+  const
+    InterpolateWidth = 10;
+  var
+    I, J, R, G, B: Integer;
+    Ar, Ag, Ab: array [0 .. InterpolateWidth - 1] of Integer;
+  begin
+    Mx_r := 0;
+    Mx_g := 0;
+    Mx_b := 0;
+    /// выкидываем пики резкие и сглаживаем гистограмму
+    for J := 0 to InterpolateWidth - 1 do
+    begin
+      Ar[J] := 0;
+      Ag[J] := 0;
+      Ab[J] := 0;
+    end;
+
+    for I := 1 to 254 do
+    begin
+      Ar[I mod InterpolateWidth] := Data.Red[I];
+      Ag[I mod InterpolateWidth] := Data.Green[I];
+      Ab[I mod InterpolateWidth] := Data.Blue[I];
+
+      R := 0;
+      G := 0;
+      B := 0;
+      for J := 0 to InterpolateWidth - 1 do
+      begin
+        R := Ar[J] + R;
+        G := Ag[J] + G;
+        B := Ab[J] + B;
+      end;
+      Data.Red[I] := R div InterpolateWidth;
+      Data.Green[I] := G div InterpolateWidth;
+      Data.Blue[I] := B div InterpolateWidth;
+
+      Mx_r := Mx_r + Data.Red[I];
+      Mx_g := Mx_g + Data.Green[I];
+      Mx_b := Mx_b + Data.Blue[I];
+    end;
+
+    Mx_r := Mx_r div 254;
+    Mx_g := Mx_g div 254;
+    Mx_b := Mx_b div 254;
+  end;
+
+begin
+  Mx_r := 0;
+  Mx_g := 0;
+  Mx_b := 0;
+  SetLength(PRGBArr, Image1.Height);
+  for I := 0 to Image1.Height - 1 do
+    PRGBArr[I] := Image1.ScanLine[I];
+  Data1 := Gistogramma(Image1.Width, Image1.Height, PRGBArr);
+
+  // ???GetGistogrammBitmapX(150,0,Data1.Red,a,a).SaveToFile('c:\w1.bmp');
+
+  SetLength(PRGBArr, Image2.Height);
+  for I := 0 to Image2.Height - 1 do
+    PRGBArr[I] := Image2.ScanLine[I];
+  Data2 := Gistogramma(Image2.Width, Image2.Height, PRGBArr);
+
+  // ???GetGistogrammBitmapX(150,0,Data2.Red,a,a).SaveToFile('c:\w2.bmp');
+
+  for I := 0 to 255 do
+  begin
+    Data.Green[I] := AbsByte(Data1.Green[I], Data2.Green[I]);
+    Data.Blue[I] := AbsByte(Data1.Blue[I], Data2.Blue[I]);
+    Data.Red[I] := AbsByte(Data1.Red[I], Data2.Red[I]);
+  end;
+
+  // ???GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w.bmp');
+
+  RemovePicks;
+
+  // ???GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w_pick.bmp');
+
+  for I := 0 to 255 do
+  begin
+    Data.Green[I] := Abs(Data.Green[I] - Mx_g);
+    Data.Blue[I] := Abs(Data.Blue[I] - Mx_b);
+    Data.Red[I] := Abs(Data.Red[I] - Mx_r);
+  end;
+
+  // ?GetGistogrammBitmapX(50,25,Data.Red,a,a).SaveToFile('c:\w_mx.bmp');
+
+  ResultExt := 10000;
+  if Abs(Data2.Max - Data2.Max) > 20 then
+    ResultExt := ResultExt / (Abs(Data2.Max - Data1.Max) / 20);
+
+  if (Data2.LeftEffective > Data1.RightEffective) or (Data1.LeftEffective > Data2.RightEffective) then
+  begin
+    ResultExt := ResultExt / 10;
+  end;
+  if Abs(Data2.LeftEffective - Data1.LeftEffective) > 5 then
+    ResultExt := ResultExt / (Abs(Data2.LeftEffective - Data1.LeftEffective) / 20);
+  if Abs(Data2.RightEffective - Data1.RightEffective) > 5 then
+    ResultExt := ResultExt / (Abs(Data2.RightEffective - Data1.RightEffective) / 20);
+
+  for I := 0 to 255 do
+  begin
+    Diff := Round(Sqrt(Sqr(0.3 * Data.Red[I]) + Sqr(0.58 * Data.Green[I]) + Sqr(0.11 * Data.Blue[I])));
+    if (Diff > 5) and (Diff < 10) then
+      ResultExt := ResultExt * (1 - Diff / 1024);
+    if (Diff >= 10) and (Diff < 20) then
+      ResultExt := ResultExt * (1 - Diff / 512);
+    if (Diff >= 20) and (Diff < 100) then
+      ResultExt := ResultExt * (1 - Diff / 255);
+    if Diff >= 100 then
+      ResultExt := ResultExt * Sqr(1 - Diff / 255);
+    if Diff = 0 then
+      ResultExt := ResultExt * 1.02;
+    if Diff = 1 then
+      ResultExt := ResultExt * 1.01;
+    if Diff = 2 then
+      ResultExt := ResultExt * 1.001;
+  end;
+  // Result in 0..10000
+  if ResultExt > 10000 then
+    ResultExt := 10000;
+  Result := Round(Power(101, ResultExt / 10000) - 1); // Result in 0..100
+end;
+
+procedure FillArray(Image: TBitmap; var AArray: TCompareArray);
+var
+  I, J: Integer;
+  PC, P1, D: Integer;
+begin
+  P1 := Integer(Image.ScanLine[0]);
+  D := 0;
+  if Image.Height > 1 then
+    D := Integer(Image.ScanLine[1]) - P1;
+  for I := 0 to 99 do
+  begin
+    PC := P1;
+    for J := 0 to 99 do
+    begin
+      AArray[I, J, 0] := PRGB(PC)^.R;
+      AArray[I, J, 1] := PRGB(PC)^.G;
+      AArray[I, J, 2] := PRGB(PC)^.B;
+      Inc(PC, 3);
+    end;
+    Inc(P1, D);
+  end;
+end;
+
+function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
+  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
+var
+  CI: TCompareImageInfo;
+
+begin
+  if Image2.Empty then
+  begin
+    Result.ByGistogramm := 0;
+    Result.ByPixels := 0;
+    Exit;
+  end;
+  CI := TCompareImageInfo.Create(Image2, Quick, FSpsearch_ScanFileRotate);
+  try
+    Result := CompareImagesEx(Image1, CI, Rotate, FSpsearch_ScanFileRotate, Quick, Raz);
+  finally
+    F(CI);
+  end;
+end;
+
+{ TCompareImageInfo }
+
+constructor TCompareImageInfo.Create(Image: TGraphic; Quick, FSpsearch_ScanFileRotate: Boolean);
+var
+  B2: TBitmap;
+begin
+  B2_0 := TBitmap.Create;
+  B2_0.PixelFormat := pf24bit;
+
+  B2 := TBitmap.Create;
+  try
+    B2.PixelFormat := pf24bit;
+    AssignGraphic(B2, Image);
+
+    if Quick then
+    begin
+      if (B2.Width = 100) and (B2.Height = 100) then
+      begin
+        AssignBitmap(B2_0, B2);
+      end else
+        StretchA(100, 100, B2, B2_0);
+
+      FillArray(B2_0, X2_0);
+    end else
+    begin
+      if (B2.Width >= 100) and (B2.Height >= 100) then
+        StretchCool(100, 100, B2, B2_0)
+      else
+        Interpolate(0, 0, 100, 100, Rect(0, 0, B2.Width, B2.Height), B2, B2_0);
+
+      FillArray(B2_0, X2_0);
+    end;
+  finally
+    B2.Free;
+  end;
+
+  if FSpsearch_ScanFileRotate then
+  begin
+    Rotate90A(B2_0);
+    FillArray(B2_0, X2_90);
+    Rotate90A(B2_0);
+    FillArray(B2_0, X2_180);
+    Rotate90A(B2_0);
+    FillArray(B2_0, X2_270);
+  end;
+end;
+
+destructor TCompareImageInfo.Destroy;
+begin
+  F(B2_0);
+  inherited;
+end;
+
+function CompareImagesEx(Image1: TGraphic; Image2Info: TCompareImageInfo; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
+  Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
+var
+  B1, B1_: TBitmap;
+  X1: TCompareArray;
+  I: Integer;
+  Res: array [0 .. 3] of TImageCompareResult;
+
+  function CmpImages(Image1, Image2: TCompareArray): Byte;
+  var
+    X: TCompareArray;
+    I, J, K: Integer;
+    ResultExt: Extended;
+    Diff: Integer;
+  begin
+    ResultExt := 10000;
+    for I := 0 to 99 do
+      for J := 0 to 99 do
+        for K := 0 to 2 do
+        begin
+          X[I, J, K] := Abs(Image1[I, J, K] - Image2[I, J, K]);
+        end;
+
+    for I := 0 to 99 do
+      for J := 0 to 99 do
+      begin
+        Diff :=  (X[I, J, 0] * 77 + X[I, J, 1] * 151 + X[I, J, 2] * 28) shr 8;
+        if Diff > Raz then
+          ResultExt := ResultExt * (1 - Diff / 1024)
+        else if Diff = 0 then
+          ResultExt := ResultExt * 1.05
+        else if Diff = 1 then
+          ResultExt := ResultExt * 1.01
+        else if Diff < 10 then
+          ResultExt := ResultExt * 1.001;
+      end;
+    if ResultExt > 10000 then
+      ResultExt := 10000;
+    Result := Round(Power(101, ResultExt / 10000) - 1); // Result in 0..100
+  end;
+
+begin
+  Result.ByGistogramm := 0;
+  Result.ByPixels := 0;
+  if Image1.Empty then
+    Exit;
+
+  B1_ := TBitmap.Create;
+  try
+    B1_.PixelFormat := pf24bit;
+
+    B1 := TBitmap.Create;
+    try
+      B1.PixelFormat := pf24bit;
+      AssignGraphic(B1, Image1);
+
+      if Quick then
+      begin
+        if (B1.Width = 100) and (B1.Height = 100) then
+        begin
+          AssignBitmap(B1_, B1);
+        end else
+          StretchA(100, 100, B1, B1_);
+
+        FillArray(B1_, X1);
+
+      end else
+      begin
+        if (B1.Width >= 100) and (B1.Height >= 100) then
+          StretchA(100, 100, B1, B1_)
+        else
+          Interpolate(0, 0, 100, 100, Rect(0, 0, B1.Width, B1.Height), B1, B1_);
+
+        FillArray(B1_, X1);
+      end;
+    finally
+      F(B1);
+    end;
+    if not Quick then
+      Result.ByGistogramm := CompareImagesByGistogramm(B1_, Image2Info.B2_0);
+
+  finally
+    F(B1_);
+  end;
+
+  Res[0].ByPixels := CmpImages(X1, Image2Info.X2_0);
+  if FSpsearch_ScanFileRotate then
+  begin
+    Res[3].ByPixels := CmpImages(X1, Image2Info.X2_90);
+    Res[2].ByPixels := CmpImages(X1, Image2Info.X2_180);
+    Res[1].ByPixels := CmpImages(X1, Image2Info.X2_270);
+  end;
+  Rotate := 0;
+  Result.ByPixels := Res[0].ByPixels;
+  if FSpsearch_ScanFileRotate then
+    for I := 0 to 3 do
+    begin
+      if Res[I].ByPixels > Result.ByPixels then
+      begin
+        Result.ByPixels := Res[I].ByPixels;
+        Rotate := I;
+      end;
+    end;
 end;
 
 end.

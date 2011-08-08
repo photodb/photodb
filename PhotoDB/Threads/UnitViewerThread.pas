@@ -8,7 +8,7 @@ uses
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
   uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage,
-  uExifUtils;
+  uExifUtils, uJpegUtils, uBitmapUtils;
 
 type
   TViewerThread = class(TDBThread)

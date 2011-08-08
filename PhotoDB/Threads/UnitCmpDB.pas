@@ -6,7 +6,7 @@ uses
   UnitGroupsReplace, CmpUnit, Classes, DB, dolphin_db, SysUtils,
   UnitGroupsWork, UnitLinksSupport, GraphicCrypt, JPEG, CommonDBSupport,
   UnitDBDeclare, UnitDBKernel, uDBTypes, uDBGraphicTypes, win32crc,
-  uGraphicUtils, uDBThread, uMemory, uFileUtils, uDBForm, uDBAdapter;
+  UnitDBCommonGraphics, uDBThread, uMemory, uFileUtils, uDBForm, uDBAdapter;
 
 type
   CmpDBTh = class(TDBThread)

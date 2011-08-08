@@ -3,10 +3,10 @@ unit UnitFormChangeGroup;
 interface
 
 uses
-  UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
-  Graphics, Controls, Forms, Math, UnitGroupsTools, uVistaFuncs,
+  UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Classes,
+  Graphics, Controls, Forms, Math, UnitGroupsTools,
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
-  ComCtrls, ImgList, GraphicSelectEx, UnitDBCommonGraphics, UnitDBCommon,
+  ImgList, GraphicSelectEx, uBitmapUtils, UnitDBCommon,
   uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo, uMemoryEx,
   uShellIntegration, AppEvnts, uMemory, WebLinkList, WebLink;
 

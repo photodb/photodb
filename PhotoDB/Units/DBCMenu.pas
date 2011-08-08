@@ -10,7 +10,7 @@ uses
   ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,
   UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
-  UnitDBCommonGraphics, uScript, uLogger, uFileUtils, uMemory, uGOM,
+  uIconUtils, uScript, uLogger, uFileUtils, uMemory, uGOM, uBitmapUtils,
   uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate, uImageSource,
   uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings, uDBAdapter;
 

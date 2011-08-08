@@ -3,9 +3,9 @@ unit UnitEditorFullScreenForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Menus, uConstants, uMemory, uDBForm,
-  UnitDBKernel, uSysUtils, UnitDBCommon, UnitDBCommonGraphics;
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, Menus, uConstants, uMemory, uDBForm, uBitmapUtils,
+  UnitDBKernel, uSysUtils;
 
 type
   TEditorFullScreenForm = class(TDBForm)

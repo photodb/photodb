@@ -44,7 +44,7 @@ const
     );
 
   procedure Strecth(Src, Dst: TBitmap; filter: TFilterProc;
-  fwidth: single; CallBack : TBaseEffectCallBackProc = nil);
+  fwidth: single; CallBack : TProgressCallBackProc = nil);
 
   type
   // Contributor for a pixel
@@ -208,7 +208,7 @@ begin
 end;
 
 procedure Strecth(Src, Dst: TBitmap; filter: TFilterProc;
-  fwidth: single; CallBack : TBaseEffectCallBackProc = nil);
+  fwidth: single; CallBack : TProgressCallBackProc = nil);
 var
   xscale, yscale	: single;		// Zoom scale factors
   i, j, k		: integer;		// Loop variables

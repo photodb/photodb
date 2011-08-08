@@ -5,7 +5,7 @@ interface
 uses
   Classes, Graphics, uAssociations, uFileUtils, UnitDBKernel, SysUtils,
   uDBThread, uStrongCrypt, GraphicCrypt, uDBForm, uShellIntegration,
-  uConstants, uGraphicUtils, uMemory, UnitDBCommonGraphics, UnitDBCommon;
+  uConstants, uGraphicUtils, uMemory, uBitmapUtils;
 
 type
   TErrorLoadingImageHandler = procedure(FileName: string) of object;

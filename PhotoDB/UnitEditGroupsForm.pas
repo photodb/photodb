@@ -3,10 +3,10 @@ unit UnitEditGroupsForm;
 interface
 
 uses
-  Dolphin_DB, UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes,
+  UnitGroupsWork, Windows, Messages, SysUtils, Classes,
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
-  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, uDBForm, uShellIntegration,
+  UnitDBDeclare, uBitmapUtils, uDBForm, uShellIntegration,
   uGraphicUtils, uConstants, uMemory, uSettings, pngimage;
 
 type

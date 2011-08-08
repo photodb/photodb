@@ -5,7 +5,7 @@ interface
 uses
   SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
   CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
-  UnitDBCommonGraphics, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
+  uJpegUtils, uBitmapUtils, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations, uDBForm,
   uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime, uDBThread,
   uExifUtils;

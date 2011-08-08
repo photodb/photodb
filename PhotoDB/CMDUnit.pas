@@ -3,9 +3,9 @@ unit CMDUnit;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, UnitDBKernel, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
-  uVistaFuncs, CommonDBSupport, UnitPasswordKeeper, ImgList,
+  uVistaFuncs, CommonDBSupport, UnitPasswordKeeper, ImgList, uGraphicUtils,
   UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants,
   uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils, uDBForm,
   uMemory;

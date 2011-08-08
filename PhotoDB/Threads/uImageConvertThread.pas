@@ -6,10 +6,10 @@ uses
   Windows, Classes, Graphics, Forms, SysUtils, UnitDBKernel, GraphicCrypt,
   uLogger, GraphicEx, UnitDBCommon, uMemory, uFileUtils, GIFImage,
   PngImage, uGOM, uDBForm, Dialogs, UnitDBDeclare, JPEG, UnitJPEGOptions,
-  UnitDBCommonGraphics, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
+  uJpegUtils, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
   ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB,
-  uAssociations, uExifUtils;
+  uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics;
 
 type
   TJpegX = class(TJPEGImage);

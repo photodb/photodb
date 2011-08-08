@@ -4,16 +4,16 @@ interface
 
 uses
   Jpeg, DB, ExplorerTypes, uGraphicUtils, uShellIntegration,
-  UnitDBKernel, ExplorerUnit, Dolphin_DB, ShellAPI, Windows, ComCtrls,
-  Classes, SysUtils, Graphics, Network, Forms, GraphicCrypt, Math,
-  Controls, ComObj, ActiveX, ShlObj, CommCtrl, Registry,
+  UnitDBKernel, ExplorerUnit, ShellAPI, Windows,
+  Classes, SysUtils, Graphics, Network, GraphicCrypt, Math,
+  Controls, ActiveX, ShlObj, CommCtrl, Registry,
   GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
   EasyListview, GraphicsCool, uVistaFuncs, uResources, Effects,
-  UnitDBCommonGraphics, UnitDBCommon, uCDMappingTypes, uExifUtils,
+  uBitmapUtils, UnitDBCommon, uCDMappingTypes, uExifUtils,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
-  uSysUtils, uRuntime, uDBUtils, uAssociations;
+  uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils;
 
 type
   TExplorerThread = class(TMultiCPUThread)

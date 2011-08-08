@@ -3,12 +3,12 @@ unit UnitSizeResizerForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, Math, UVistaFuncs,
-  JPEG, GIFImage, GraphicEx, UnitDBkernel, GraphicCrypt, uAssociations,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, Math, uVistaFuncs,
+  JPEG, GraphicEx, UnitDBkernel, GraphicCrypt, uAssociations,
   AcDlgSelect, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
-  UnitDBCommon, UnitDBCommonGraphics, ComCtrls, ImgList, uDBForm, LoadingSign,
-  DmProgress, uW7TaskBar, PngImage, uWatermarkOptions, uImageSource,
+  UnitDBCommon, uBitmapUtils, ComCtrls, ImgList, uDBForm, LoadingSign,
+  DmProgress, uW7TaskBar, uWatermarkOptions, uImageSource,
   UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
   uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime, ImButton, uLogger,
   WebLink, SaveWindowPos, uDBThread;

@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Graphics, Classes, uMemory,
   uConstants, uFileUtils, uTime, FreeBitmap, FreeImage, GraphicsBaseTypes,
-  CCR.Exif;
+  CCR.Exif, uBitmapUtils;
 
 type
   TRAWImage = class(TBitmap)
@@ -289,7 +289,7 @@ begin
       if ExifData.Thumbnail <> nil then
       begin
         //use thumbnail from file
-
+        //TODO: add logic here
       end;
     end;
   finally

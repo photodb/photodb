@@ -3,9 +3,9 @@ unit SelectGroupForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Dolphin_DB, StdCtrls, ComCtrls, UnitGroupsWork, uMemoryEx,
-  ImgList, UnitDBkernel, UnitDBCommonGraphics, uDBForm, uMemory,
+  Windows, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ComCtrls, UnitGroupsWork, uMemoryEx,
+  ImgList, UnitDBkernel, uBitmapUtils, uDBForm, uMemory,
   uConstants;
 
 type

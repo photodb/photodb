@@ -4,24 +4,24 @@ interface
 
 uses
   UnitGroupsWork, DBCMenu, CmpUnit, ToolWin,
-  ShellApi, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  ShellApi, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, DB, Menus, ExtCtrls, StdCtrls, UGraphicUtils, UMemoryEx,
-  ImgList, ComCtrls, ActiveX, ShlObj, JPEG, DmProgress, ClipBrd,
+  ImgList, ComCtrls, ActiveX, ShlObj, JPEG, ClipBrd,
   SaveWindowPos, ExtDlgs, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
-  ShellContextMenu, DropSource, DropTarget, DateUtils, AcDlgSelect,
-  ProgressActionUnit, UnitSQLOptimizing, UScript, UnitScripts, DBScriptFunctions,
-  EasyListview, WebLink, MPCommonUtilities, GraphicsCool,
-  UnitSearchBigImagesLoaderThread, DragDropFile, UFileUtils,
-  DragDrop, UnitPropeccedFilesSupport, UVistaFuncs, ComboBoxExDB,
+  ShellContextMenu, DropSource, DropTarget, DateUtils,
+  ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts,
+  EasyListview, WebLink, MPCommonUtilities, DBScriptFunctions,
+  UnitSearchBigImagesLoaderThread, DragDropFile, uFileUtils,
+  DragDrop, UnitPropeccedFilesSupport, ComboBoxExDB,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  UCDMappingTypes, UThreadForm, ULogger, UConstants, UTime, CommCtrl,
-  UFastload, UListViewUtils, UDBDrawing, Pngimage, UResources, UMemory,
-  MPCommonObjects, ADODB, DBLoading, LoadingSign, UW7TaskBar,
-  UFormListView, UDBPopupMenuInfo, UPNGUtils, UTranslate, UAssociations,
-  UShellIntegration, UDBBaseTypes, UDBTypes, URuntime, USysUtils,
-  UDBUtils, UDBFileTypes, Dolphin_DB, UActivationUtils, USettings,
-  USearchTypes, WebLinkList, UDBAdapter;
+  uCDMappingTypes, uThreadForm, uLogger, UConstants, uTime, CommCtrl,
+  UFastload, uListViewUtils, UDBDrawing, Pngimage, uResources, uMemory,
+  MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar,
+  UFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate, uAssociations,
+  UShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
+  UDBUtils, UDBFileTypes, Dolphin_DB, uSettings, uSearchTypes, WebLinkList,
+  uDBAdapter, uBitmapUtils;
 
 type
   TSearchForm = class(TSearchCustomForm)

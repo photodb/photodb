@@ -3,14 +3,13 @@ unit uEditorTypes;
 interface
 
 uses
-  Windows, Classes, Graphics, Math, uDBForm, CCR.Exif;
+  Windows, Classes, Graphics, Math, uDBForm, CCR.Exif, GraphicsBaseTypes;
 
 type
   TSetPointerToNewImage = procedure(Image: TBitmap) of object;
   TCancelTemporaryImage = procedure(Destroy: Boolean) of object;
-  TBaseEffectCallBackProc = procedure(Progress: Integer; var Break: Boolean) of object;
 
-  TBaseEffectProc = procedure(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+  TBaseEffectProc = procedure(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
   TBaseEffectProcThreadExit = procedure(Image: TBitmap; SID: string) of object;
 
   TBaseEffectProcW = record
@@ -20,8 +19,8 @@ type
   end;
 
   TBaseEffectProcedures = array of TBaseEffectProcW;
-  TResizeProcedure = procedure(Width, Height: Integer; S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
-  TEffectOneIntParam = procedure(S, D: TBitmap; Int: Integer; CallBack: TBaseEffectCallBackProc = nil);
+  TResizeProcedure = procedure(Width, Height: Integer; S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
+  TEffectOneIntParam = procedure(S, D: TBitmap; Int: Integer; CallBack: TProgressCallBackProc = nil);
 
 type
   TTool = (ToolNone, ToolPen, ToolCrop, ToolRotate, ToolResize, ToolEffects, ToolColor, ToolRedEye, ToolText,

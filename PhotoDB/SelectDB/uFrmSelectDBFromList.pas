@@ -3,10 +3,10 @@ unit uFrmSelectDBFromList;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, uFrameWizardBase, StdCtrls, ComCtrls, ComboBoxExDB, uMemory,
   UnitDBKernel, ImgList, UnitDBCommonGraphics, uShellIntegration, UnitDBDeclare,
-  uConstants, CommonDBSupport;
+  uConstants, CommonDBSupport, uIconUtils;
 
 type
   TFrmSelectDBFromList = class(TFrameWizardBase)

@@ -10,11 +10,11 @@ uses
   Dialogs, Grids, DBGrids, jpeg, TwButton, Rating, Mask, uMemoryEx,
   GraphicCrypt, UnitStringPromtForm, CommonDBSupport, GraphicsCool,
   CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
-  UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics,
+  UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, uBitmapUtils,
   uCDMappingTypes, uConstants, uFileUtils, uDBDrawing, adodb,
   DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo, uGOM,
   uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
-  uSettings, uThreadForm, uDBAdapter;
+  uSettings, uThreadForm, uDBAdapter, uIconUtils;
 
 type
   TManagerDB = class(TThreadForm)

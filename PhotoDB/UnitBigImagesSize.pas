@@ -3,9 +3,9 @@ unit UnitBigImagesSize;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, WebLink, dolphin_db, UnitDBKernel,
-  UnitDBCommon, UnitDBCommonGraphics, uDBForm, uConstants, Math;
+  UnitDBCommon, uGraphicUtils, uDBForm, uConstants, Math;
 
 type
   TBigImagesSizeForm = class(TDBForm)

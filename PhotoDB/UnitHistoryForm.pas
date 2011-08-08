@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, uDBUtils, Menus, UnitDBKernel,
+  Dialogs, ExtCtrls, StdCtrls, uDBUtils, Menus, UnitDBKernel, uGraphicUtils,
   UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt, uMemory, uDBForm,
   uConstants, uDBPopupMenuInfo, uFileUtils;
 

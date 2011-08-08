@@ -7,10 +7,11 @@ uses
    Forms, Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp,
    uVistaFuncs, DB, AppEvnts, DragDrop, DragDropFile, WebLink,
    DropSource, DropTarget, UnitDBkernel, UnitDBDeclare, uShellIntegration,
-   UnitUpdateDBObject, UnitTimeCounter, UnitDBCommonGraphics, DmMemo,
+   UnitUpdateDBObject, UnitTimeCounter, uJpegUtils, uBitmapUtils,
    GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
    uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
-   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage, SaveWindowPos;
+   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage, SaveWindowPos,
+  DmMemo;
 
 type
   TUpdateDBForm = class(TDBForm)

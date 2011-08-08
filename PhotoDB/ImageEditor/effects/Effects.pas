@@ -2,28 +2,29 @@ unit Effects;
 
 interface
 
-uses Windows, Classes, Graphics, Math, SysUtils, GraphicsBaseTypes, Scanlines,
-  uEditorTypes, uDBGraphicTypes, uMemory;
+uses
+  Windows, Classes, Graphics, Math, SysUtils, GraphicsBaseTypes, Scanlines,
+  uEditorTypes, uDBGraphicTypes, uMemory, uBitmapUtils;
 
-procedure Inverse(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Inverse(S, D: TBitmap; CallBack : TProgressCallBackProc = nil);
 
-procedure ReplaceColorInImage(S,D : TBitmap; BaseColor, NewColor : TColor; Size, Level : Integer; CallBack : TBaseEffectCallBackProc = nil); overload;
+procedure ReplaceColorInImage(S,D : TBitmap; BaseColor, NewColor : TColor; Size, Level : Integer; CallBack : TProgressCallBackProc = nil); overload;
 
-procedure GrayScaleImage(S,D : TBitmap; n : integer; CallBack : TBaseEffectCallBackProc = nil); overload;
-procedure GrayScaleImage(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil); overload;
+procedure GrayScaleImage(S,D : TBitmap; n : integer; CallBack : TProgressCallBackProc = nil); overload;
+procedure GrayScaleImage(S,D : TBitmap; CallBack : TProgressCallBackProc = nil); overload;
 
-procedure Sepia(S,D : TBitmap; Depth: Integer; CallBack : TBaseEffectCallBackProc = nil); overload;
-procedure Sepia(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil); overload;
+procedure Sepia(S,D : TBitmap; Depth: Integer; CallBack : TProgressCallBackProc = nil); overload;
+procedure Sepia(S,D : TBitmap; CallBack : TProgressCallBackProc = nil); overload;
 
-procedure Dither(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Dither(S, D: TBitmap; CallBack : TProgressCallBackProc = nil);
 
 procedure ChangeBrightness(S,D : TBitmap; Brightness: Integer); overload;
 procedure ChangeBrightness(Image : TBitmap; Brightness: Integer); overload;
 procedure ChangeBrightness(Image : TArPARGB; Width, Height : integer; Brightness: Integer); overload;
 
-procedure WaveSin(S, D: TBitmap; Frequency, Length:  Integer; Hor: Boolean; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil);
-procedure PixelsEffect(S, D: TBitmap; Hor, Ver: Word; CallBack : TBaseEffectCallBackProc = nil);
-procedure Sharpen(S, D: TBitmap; alpha: Single; CallBack : TBaseEffectCallBackProc = nil);
+procedure WaveSin(S, D: TBitmap; Frequency, Length:  Integer; Hor: Boolean; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
+procedure PixelsEffect(S, D: TBitmap; Hor, Ver: Word; CallBack : TProgressCallBackProc = nil);
+procedure Sharpen(S, D: TBitmap; alpha: Single; CallBack : TProgressCallBackProc = nil);
 procedure Blocks(S, D: TBitmap; Hor, Ver, MaxOffset: Integer; BackColor: TColor);
 
 procedure Gamma(S, D: TBitmap; L: Double); overload;
@@ -33,8 +34,8 @@ procedure SetRGBChannelValue(S, D: TBitmap; Red, Green, Blue: Integer); overload
 procedure SetRGBChannelValue(Image: TBitmap; Red, Green, Blue: Integer); overload;
 procedure SetRGBChannelValue(Image: TArPARGB; Width, Height : integer; Red, Green, Blue: Integer); overload;
 
-procedure Disorder(S, D: TBitmap; Hor, Ver: Integer; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil); overload;
-procedure Disorder(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil); overload;
+procedure Disorder(S, D: TBitmap; Hor, Ver: Integer; BackColor: TColor; CallBack : TProgressCallBackProc = nil); overload;
+procedure Disorder(S, D: TBitmap; CallBack : TProgressCallBackProc = nil); overload;
 
 procedure Contrast(S, D: TBitmap; Value: Extended; Local: Boolean); overload;
 procedure Contrast(Image: TBitmap; Value: Extended; Local: Boolean); overload;
@@ -43,58 +44,47 @@ procedure SetContractBrightnessRGBChannelValue(ImageS, ImageD: TArPARGB; Width, 
 
 Procedure Colorize(S,D : TBitmap; Luma: Integer);
 
-Procedure AutoLevels(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-Procedure AutoColors(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+Procedure AutoLevels(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
+Procedure AutoColors(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
 function GistogrammRW(S : TBitmap; Rect : TRect; var CountR : int64) : T255IntArray;
 
-procedure Rotate90(S,D : tbitmap; CallBack : TBaseEffectCallBackProc = nil);
-procedure Rotate270(S,D : Tbitmap; CallBack : TBaseEffectCallBackProc = nil);
-procedure Rotate180(S,D : Tbitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Rotate90(S,D : tbitmap; CallBack : TProgressCallBackProc = nil);
+procedure Rotate270(S,D : Tbitmap; CallBack : TProgressCallBackProc = nil);
+procedure Rotate180(S,D : Tbitmap; CallBack : TProgressCallBackProc = nil);
 
-procedure FlipHorizontal(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-procedure FlipVertical(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure FlipHorizontal(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
+procedure FlipVertical(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
-procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil);
-procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-
-//-end temp resize functions
-procedure StretchCool(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-procedure SmoothResize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-procedure ThumbnailResize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-
-procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
+//procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
 procedure StrRotated(x,y : integer; arect : TRect; DC:HDC; Font:HFont; Str:string; Ang:Extended; Options : Cardinal);
 procedure CoolDrawTextEx(bitmap:Tbitmap; text:string; Font: HFont; coolcount:integer; coolcolor:Tcolor; aRect : TRect; aType : integer; Options : Cardinal);
 
-function GistogrammB(S : TBitmap; var Terminated : boolean; CallBack : TBaseEffectCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
-function GistogrammG(S : TBitmap; var Terminated : boolean; CallBack : TBaseEffectCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
-function GistogrammR(S : TBitmap; var Terminated : boolean; CallBack : TBaseEffectCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
-function Gistogramma(S : TBitmap; var Terminated : boolean; CallBack : TBaseEffectCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
+function GistogrammB(S : TBitmap; var Terminated : boolean; CallBack : TProgressCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
+function GistogrammG(S : TBitmap; var Terminated : boolean; CallBack : TProgressCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
+function GistogrammR(S : TBitmap; var Terminated : boolean; CallBack : TProgressCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
+function Gistogramma(S : TBitmap; var Terminated : boolean; CallBack : TProgressCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
 
 function GetGistogrammBitmap(Height : integer; SBitmap : TBitmap; Options : byte; var MinC, MaxC : Integer) : TBitmap;
 procedure GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer; Bitmap : TBitmap);
 function GetGistogrammBitmapX(Height,d : integer; G : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
 
 //new effects from ScineLineFX
+procedure Emboss(S, D: TBitmap; CallBack : TProgressCallBackProc = nil);
+procedure AntiAlias(S, D: TBitmap; CallBack : TProgressCallBackProc = nil);
+procedure AddColorNoise(S, D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
+procedure AddMonoNoise(S, D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
+procedure FishEye(Bmp, Dst: TBitmap; xAmount: Integer; CallBack : TProgressCallBackProc = nil);
+procedure Twist(Bmp, Dst: TBitmap; Amount: integer; CallBack : TProgressCallBackProc = nil);
 
-procedure Emboss(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-procedure AntiAlias(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-procedure AddColorNoise(S, D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
-procedure AddMonoNoise(S, D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
-procedure FishEye(Bmp, Dst: TBitmap; xAmount: Integer; CallBack : TBaseEffectCallBackProc = nil);
-procedure Twist(Bmp, Dst: TBitmap; Amount: integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure SplitBlur(S, D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
+procedure SplitBlurW(D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
 
-procedure SplitBlur(S, D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
-procedure SplitBlurW(D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
-
-procedure GaussianBlur(D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure GaussianBlur(D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
 procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 procedure ProportionalSizeX(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
-
-procedure ThreadDraw(S, D : TBitmap; x, y : integer);
-
 
 implementation
 
@@ -141,7 +131,7 @@ begin
   end;
 end;
 
-procedure Inverse(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure Inverse(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 var
   I, J: Integer;
   PS, PD: PARGB;
@@ -170,12 +160,12 @@ begin
   end;
 end;
 
-procedure GrayScaleImage(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure GrayScaleImage(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 begin
   GrayScaleImage(S, D, 100, CallBack);
 end;
 
-procedure GrayScaleImage(S,D : TBitmap; N : integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure GrayScaleImage(S,D : TBitmap; N : integer; CallBack : TProgressCallBackProc = nil);
 var
   I, J : Integer;
   p1, p2 : PARGB;
@@ -210,12 +200,12 @@ begin
   end;
 end;
 
-procedure Sepia(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Sepia(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 begin
   Sepia(S, D, 20, CallBack);
 end;
 
-procedure Sepia(S, D: TBitmap; Depth: Integer; CallBack: TBaseEffectCallBackProc = nil);
+procedure Sepia(S, D: TBitmap; Depth: Integer; CallBack: TProgressCallBackProc = nil);
 var
   Color2: Longint;
   R, G, B, Rr, Gg: Byte;
@@ -259,7 +249,7 @@ begin
   end;
 end;
 
-procedure Dither(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Dither(S, D: TBitmap; CallBack : TProgressCallBackProc = nil);
 var
   ScanlS, ScanlD: PColor3Array;
   Error1R, Error1G, Error1B, Error2R, Error2G, Error2B: PIntegerArray;
@@ -474,7 +464,7 @@ begin
 end;
 
 procedure WaveSin(S, D: TBitmap; Frequency, Length:
-  Integer; Hor: Boolean; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil);
+  Integer; Hor: Boolean; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
 
   function Min(A, B: Integer): Integer;
   begin
@@ -584,7 +574,7 @@ begin
   end;
 end;
 
-procedure PixelsEffect(S, D: TBitmap; Hor, Ver: Word; CallBack : TBaseEffectCallBackProc = nil);
+procedure PixelsEffect(S, D: TBitmap; Hor, Ver: Word; CallBack : TProgressCallBackProc = nil);
 type
   TRGB = record
     B, G, R: Byte;
@@ -663,7 +653,7 @@ begin
   end;
 end;
 
-procedure Sharpen(S, D: TBitmap; alpha: Single; CallBack : TBaseEffectCallBackProc = nil);
+procedure Sharpen(S, D: TBitmap; alpha: Single; CallBack : TProgressCallBackProc = nil);
 //to sharpen, alpha must be >1.
 //pixelformat pf24bit
 //sharpens sbm to tbm
@@ -984,12 +974,12 @@ begin
   end;
 end;
 
-procedure Disorder(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure Disorder(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 begin
   Disorder(S, D, 10, 10, $0, CallBack);
 end;
 
-procedure Disorder(S, D: TBitmap; Hor, Ver: Integer; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil);
+procedure Disorder(S, D: TBitmap; Hor, Ver: Integer; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
 
   function RandomInRadius(Num, Radius: Integer): Integer;
   begin
@@ -1304,7 +1294,7 @@ begin
   end;
 end;
 
-function Gistogramma(S: TBitmap; var Terminated: Boolean; CallBack: TBaseEffectCallBackProc = nil; X: Extended = 1;
+function Gistogramma(S: TBitmap; var Terminated: Boolean; CallBack: TProgressCallBackProc = nil; X: Extended = 1;
   Y: Extended = 0): T255IntArray;
 var
   I, J: Integer;
@@ -1336,7 +1326,7 @@ begin
   end;
 end;
 
-function GistogrammR(S: TBitmap; var Terminated: Boolean; CallBack: TBaseEffectCallBackProc = nil; X: Extended = 1;
+function GistogrammR(S: TBitmap; var Terminated: Boolean; CallBack: TProgressCallBackProc = nil; X: Extended = 1;
   Y: Extended = 0): T255IntArray;
 var
   I, J: Integer;
@@ -1366,7 +1356,7 @@ begin
   end;
 end;
 
-function GistogrammG(S: TBitmap; var Terminated: Boolean; CallBack: TBaseEffectCallBackProc = nil; X: Extended = 1;
+function GistogrammG(S: TBitmap; var Terminated: Boolean; CallBack: TProgressCallBackProc = nil; X: Extended = 1;
   Y: Extended = 0): T255IntArray;
 var
   I, J: Integer;
@@ -1396,7 +1386,7 @@ begin
   end;
 end;
 
-function GistogrammB(S: TBitmap; var Terminated: Boolean; CallBack: TBaseEffectCallBackProc = nil; X: Extended = 1;
+function GistogrammB(S: TBitmap; var Terminated: Boolean; CallBack: TProgressCallBackProc = nil; X: Extended = 1;
   Y: Extended = 0): T255IntArray;
 var
   I, J: Integer;
@@ -1426,7 +1416,7 @@ begin
   end;
 end;
 
-procedure AutoLevels(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure AutoLevels(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 var
   Ps, Pd: PARGB;
   I, J, MinCount: Integer;
@@ -1482,7 +1472,7 @@ begin
   end;
 end;
 
-procedure AutoColors(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure AutoColors(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 var
   Ps, Pd: PARGB;
   I, J, MinCount: Integer;
@@ -1592,7 +1582,7 @@ begin
   end;
 end;
 
-procedure Rotate180(S, D: Tbitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure Rotate180(S, D: Tbitmap; CallBack: TProgressCallBackProc = nil);
 var
   I, J: Integer;
   P1, P2: Pargb;
@@ -1620,7 +1610,7 @@ begin
   end;
 end;
 
-procedure Rotate270(S, D: Tbitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure Rotate270(S, D: Tbitmap; CallBack: TProgressCallBackProc = nil);
 var
   I, J: Integer;
   P1: Pargb;
@@ -1651,7 +1641,7 @@ begin
   end;
 end;
 
-procedure Rotate90(S,D : tbitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Rotate90(S,D : tbitmap; CallBack : TProgressCallBackProc = nil);
 var
  i, j : integer;
  p1 : pargb;
@@ -1682,7 +1672,7 @@ begin
  end;
 end;
 
-procedure FlipHorizontal(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure FlipHorizontal(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 var
   i,j : integer;
   ps, pd : PARGB;
@@ -1710,7 +1700,7 @@ begin
  end;
 end;
 
-procedure FlipVertical(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure FlipVertical(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 var
   i,j : integer;
   ps, pd : PARGB;
@@ -1738,7 +1728,7 @@ begin
  end;
 end;
 
-procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TBaseEffectCallBackProc = nil);
+procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
 type TRGB = record
        B, G, R: Byte;
      end;
@@ -1929,186 +1919,8 @@ begin
     F(Bmp);
   end;
 end;
-
-procedure ThumbnailResize(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-type
-  PRGB24 = ^TRGB24;
-  TRGB24 = packed record
-    B: Byte;
-    G: Byte;
-    R: Byte;
-  end;
-var
-  X, Y, Ix, Iy: Integer;
-  X1, X2, X3: Integer;
-
-  Xscale, Yscale: Single;
-  IRed, IGrn, IBlu, IRatio: Longword;
-  P, C1, C2, C3, C4, C5: TRGB24;
-  Pt, Pt1: PRGB24;
-  ISrc, IDst, S1: Integer;
-  I, J, R, G, B, TmpY: Integer;
-
-  RowDest, RowSource, RowSourceStart: Integer;
-  W, H: Integer;
-  Dxmin, Dymin: Integer;
-  Ny1, Ny2, Ny3: Integer;
-  Dx, Dy: Integer;
-  LutX, LutY: array of Integer;
-  Src, Dest: TBitmap;
-  Terminating: Boolean;
-begin
-  W := Width;
-  H := Height;
-  Pointer(Src) := Pointer(S);
-  Pointer(Dest) := Pointer(D);
-  Terminating := False;
-  if Src.PixelFormat <> Pf24bit then
-    Src.PixelFormat := Pf24bit;
-  if Dest.PixelFormat <> Pf24bit then
-    Dest.PixelFormat := Pf24bit;
-  Dest.Width := Width;
-  Dest.Height := Height;
-
-  if (Src.Width <= Dest.Width) and (Src.Height <= Dest.Height) then
-  begin
-    AssignBitmap(Dest, Src);
-    Exit;
-  end;
-
-  IDst := (W * 24 + 31) and not 31;
-  IDst := IDst div 8; // BytesPerScanline
-  ISrc := (Src.Width * 24 + 31) and not 31;
-  ISrc := ISrc div 8;
-
-  Xscale := 1 / (W / Src.Width);
-  Yscale := 1 / (H / Src.Height);
-
-  // X lookup table
-  SetLength(LutX, W);
-  X1 := 0;
-  X2 := Trunc(Xscale);
-  for X := 0 to W - 1 do
-  begin
-    LutX[X] := X2 - X1;
-    X1 := X2;
-    X2 := Trunc((X + 2) * Xscale);
-  end;
-
-  // Y lookup table
-  SetLength(LutY, H);
-  X1 := 0;
-  X2 := Trunc(Yscale);
-  for X := 0 to H - 1 do
-  begin
-    LutY[X] := X2 - X1;
-    X1 := X2;
-    X2 := Trunc((X + 2) * Yscale);
-  end;
-
-  Dec(W);
-  Dec(H);
-  RowDest := Integer(Dest.Scanline[0]);
-  RowSourceStart := Integer(Src.Scanline[0]);
-  RowSource := RowSourceStart;
-  for Y := 0 to H do
-  begin
-    Dy := LutY[Y];
-    X1 := 0;
-    X3 := 0;
-    for X := 0 to W do
-    begin
-      Dx := LutX[X];
-      IRed := 0;
-      IGrn := 0;
-      IBlu := 0;
-      RowSource := RowSourceStart;
-      for Iy := 1 to Dy do
-      begin
-        Pt := PRGB24(RowSource + X1);
-        for Ix := 1 to Dx do
-        begin
-          IRed := IRed + Pt.R;
-          IGrn := IGrn + Pt.G;
-          IBlu := IBlu + Pt.B;
-          Inc(Pt);
-        end;
-        RowSource := RowSource - ISrc;
-      end;
-      IRatio := 65535 div (Dx * Dy);
-      Pt1 := PRGB24(RowDest + X3);
-      Pt1.R := (IRed * IRatio) shr 16;
-      Pt1.G := (IGrn * IRatio) shr 16;
-      Pt1.B := (IBlu * IRatio) shr 16;
-      X1 := X1 + 3 * Dx;
-      Inc(X3, 3);
-    end;
-    RowDest := RowDest - IDst;
-    RowSourceStart := RowSource;
-  end;
-
-  if Dest.Height < 3 then
-    Exit;
-
-  // Sharpening...
-  S1 := Integer(Dest.ScanLine[0]);
-  IDst := 0;
-  if Dest.Height > 1 then
-    IDst := Integer(Dest.ScanLine[1]) - S1;
-  Ny1 := Integer(S1);
-  Ny2 := Ny1 + IDst;
-  Ny3 := Ny2 + IDst;
-  for Y := 1 to Dest.Height - 2 do
-  begin
-    for X := 0 to Dest.Width - 3 do
-    begin
-      X1 := X * 3;
-      X2 := X1 + 3;
-      X3 := X1 + 6;
-
-      C1 := PRGB24(Ny1 + X1)^;
-      C2 := PRGB24(Ny1 + X3)^;
-      C3 := PRGB24(Ny2 + X2)^;
-      C4 := PRGB24(Ny3 + X1)^;
-      C5 := PRGB24(Ny3 + X3)^;
-
-      R := (C1.R + C2.R + (C3.R * -12) + C4.R + C5.R) div -8;
-      G := (C1.G + C2.G + (C3.G * -12) + C4.G + C5.G) div -8;
-      B := (C1.B + C2.B + (C3.B * -12) + C4.B + C5.B) div -8;
-
-      if R < 0 then
-        R := 0
-      else if R > 255 then
-        R := 255;
-      if G < 0 then
-        G := 0
-      else if G > 255 then
-        G := 255;
-      if B < 0 then
-        B := 0
-      else if B > 255 then
-        B := 255;
-
-      Pt1 := PRGB24(Ny2 + X2);
-      Pt1.R := R;
-      Pt1.G := G;
-      Pt1.B := B;
-    end;
-
-    Inc(Ny1, IDst);
-    Inc(Ny2, IDst);
-    Inc(Ny3, IDst);
-
-    if Y mod 50 = 0 then
-      if Assigned(CallBack) then
-        CallBack(Round(100 * Y / D.Height), Terminating);
-    if Terminating then
-      Break;
-
-  end;
-end;
-
-procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+   (*
+procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 type
   TRGBArray = array [Word] of TRGBTriple;
   PRGBArray = ^TRGBArray;
@@ -2192,221 +2004,7 @@ begin
     end; { for }
   end; { if }
 end; { SmoothResize }
-
-procedure SmoothResize(Width, Height : integer; S, D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-type
-  TRGBArray = array[Word] of TRGBTriple;
-  pRGBArray = ^TRGBArray;
-
-var
-  X, Y: Integer;
-  XP, YP: Integer;
-  Mx, My: Integer;
-  SrcLine1, SrcLine2: PRGBArray;
-  SrcLine132, SrcLine232: PARGB32;
-  T3: Integer;
-  Z, Z2, Iz2: Integer;
-  DstLine: PRGBArray;
-  DstLine32: PARGB32;
-  DstGap: Integer;
-  W1, W2, W3, W4, DW1, SW1: Integer;
-  Terminating: Boolean;
-begin
-  Terminating := false;
-  if not ((S.PixelFormat = pf32Bit) and (D.PixelFormat = pf32Bit)) then
-  begin
-    S.PixelFormat := pf24Bit;
-    D.PixelFormat := pf24Bit;
-  end;
-
-  if Width * Height=0 then
-  begin
-    AssignBitmap(D, S);
-    Exit;
-  end;
-  D.SetSize(Width, Height);
-  if (S.Width = D.Width) and (S.Height = D.Height) then
-    AssignBitmap(D, S)
-  else
-  begin
-    DstLine := D.ScanLine[0];
-    DstLine32 := PARGB32(DstLine);
-    DstGap := 0;
-    if D.Height > 1 then
-      DstGap  := Integer(D.ScanLine[1]) - Integer(DstLine);
-    Mx := MulDiv(S.Width, $10000, D.Width);
-    My := MulDiv(S.Height, $10000, D.Height);
-    yP  := 0;
-
-    DW1 := D.Width - 1;
-    SW1 := S.Width - 1;
-
-    if S.PixelFormat = pf32Bit then
-    begin
-
-      for y := 0 to pred(D.Height) do
-      begin
-        xP := 0;
-
-        SrcLine132 := S.ScanLine[yP shr 16];
-
-        if (yP shr 16 < pred(S.Height))and(Y <> D.Height-1) then
-          SrcLine232 := S.ScanLine[succ(yP shr 16)]
-        else
-        begin
-          SrcLine132 := S.ScanLine[S.Height - 2];
-          SrcLine232 := S.ScanLine[S.Height - 1];
-        end;
-
-        z2  := succ(yP and $FFFF);
-        iz2 := succ((not yp) and $FFFF);
-        for x := 0 to pred(D.Width) do
-        begin
-          t3 := xP shr 16;
-          z  := xP and $FFFF;
-          w2 := MulDiv(z, iz2, $10000);
-          w1 := iz2 - w2;
-          w4 := MulDiv(z, z2, $10000);
-          w3 := z2 - w4;
-          if (t3 >= SW1) or (x = DW1) then
-           t3 := S.Width - 2;
-
-          DstLine32[x].R := (SrcLine132[t3].R * w1 +
-            SrcLine132[t3 + 1].R * w2 + SrcLine232[t3].R * w3 + SrcLine232[t3 + 1].R * w4) shr 16;
-
-          DstLine32[x].G := (SrcLine132[t3].G * w1 + SrcLine132[t3 + 1].G * w2 +
-            SrcLine232[t3].G * w3 + SrcLine232[t3 + 1].G * w4) shr 16;
-
-          DstLine32[x].B := (SrcLine132[t3].B * w1 +  SrcLine132[t3 + 1].B * w2 +
-            SrcLine232[t3].B * w3 +  SrcLine232[t3 + 1].B * w4) shr 16;
-
-          DstLine32[x].L := (SrcLine132[t3].L * w1 + SrcLine132[t3 + 1].L * w2 +
-            SrcLine232[t3].L * w3 +  SrcLine232[t3 + 1].L * w4) shr 16;
-
-          Inc(xP, Mx);
-        end; {for}
-        Inc(yP, My);
-        DstLine32 := PARGB32(Integer(DstLine32) + DstGap);
-        if y mod 50 = 0 then
-        if Assigned(CallBack) then CallBack(Round(100* Y / D.Height), Terminating);
-        if Terminating then Break;
-      end; {for}
-
-    end else
-    begin
-
-      for y := 0 to pred(D.Height) do
-      begin
-        xP := 0;
-
-        SrcLine1 := S.ScanLine[yP shr 16];
-
-        if (yP shr 16 < pred(S.Height))and(Y<>D.Height-1) then
-          SrcLine2 := S.ScanLine[succ(yP shr 16)]
-        else
-        begin
-          SrcLine1 := S.ScanLine[S.Height-2];
-          SrcLine2 := S.ScanLine[S.Height-1];
-        end;
-
-        z2  := succ(yP and $FFFF);
-        iz2 := succ((not yp) and $FFFF);
-        for x := 0 to pred(D.Width) do
-        begin
-          t3 := xP shr 16;
-          z  := xP and $FFFF;
-          w2 := MulDiv(z, iz2, $10000);
-          w1 := iz2 - w2;
-          w4 := MulDiv(z, z2, $10000);
-          w3 := z2 - w4;
-          if (t3 >= SW1) or (x = DW1) then
-           t3 := S.Width - 2;
-
-          DstLine[x].rgbtRed := (SrcLine1[t3].rgbtRed * w1 +
-            SrcLine1[t3 + 1].rgbtRed * w2 + SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
-
-          DstLine[x].rgbtGreen := (SrcLine1[t3].rgbtGreen * w1 + SrcLine1[t3 + 1].rgbtGreen * w2 +
-            SrcLine2[t3].rgbtGreen * w3 + SrcLine2[t3 + 1].rgbtGreen * w4) shr 16;
-
-          DstLine[x].rgbtBlue := (SrcLine1[t3].rgbtBlue * w1 +
-            SrcLine1[t3 + 1].rgbtBlue * w2 +SrcLine2[t3].rgbtBlue * w3 +  SrcLine2[t3 + 1].rgbtBlue * w4) shr 16;
-          Inc(xP, Mx);
-        end; {for}
-        Inc(yP, My);
-        DstLine := pRGBArray(Integer(DstLine) + DstGap);
-        if y mod 50=0 then
-        If Assigned(CallBack) then CallBack(Round(100*y/D.Height),Terminating);
-        if Terminating then Break;
-      end; {for}
-    end;
-  end; {if}
-end; {SmoothResize}
-
-procedure StretchCool(Width, Height : integer; S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-var
-  I, J, K, P: Integer;
-  P1: PARGB;
-  Col, R, G, B, Sheight1, SWidth1: Integer;
-  Sh, Sw: Extended;
-  Xp: array of PARGB;
-  Terminating: Boolean;
-  YMin, YMax : Integer;
-  XWA : array of Integer;
-begin
-  if Width = 0 then
-    Exit;
-  if Height = 0 then
-    Exit;
-  S.PixelFormat := Pf24bit;
-  D.PixelFormat := Pf24bit;
-  D.Width := Width;
-  D.Height := Height;
-  Sh := S.Height / Height;
-  Sw := S.Width / Width;
-  Sheight1 := S.Height - 1;
-  SWidth1 := S.Width - 1;
-  SetLength(Xp, S.Height);
-  for I := 0 to Sheight1 do
-    Xp[I] := S.ScanLine[I];
-  Terminating := False;
-  SetLength(XWA, Width + 1);
-  for I := 0 to Width do
-    XWA[I] := Round(Sw * I);
-  for I := 0 to Height - 1 do
-  begin
-    P1 := D.ScanLine[I];
-    YMin := Round(Sh * I);
-    YMax := Min(Round(Sh * (I + 1)) - 1, Sheight1);
-    for J := 0 to Width - 1 do
-    begin
-      Col := 0;
-      R := 0;
-      G := 0;
-      B := 0;
-      for K := YMin to YMax do
-      begin
-        for P := XWA[J] to Min(XWA[J + 1] - 1, SWidth1) do
-        begin
-          Inc(Col);
-          Inc(R, Xp[K, P].R);
-          Inc(G, Xp[K, P].G);
-          Inc(B, Xp[K, P].B);
-        end;
-      end;
-      if Col <> 0 then
-      begin
-        P1[J].R := R div Col;
-        P1[J].G := G div Col;
-        P1[J].B := B div Col;
-      end;
-    end;
-    if I mod 50 = 0 then
-      if Assigned(CallBack) then
-        CallBack(Round(100 * I / Height), Terminating);
-    if Terminating then
-      Break;
-  end;
-end;
+          *)
 
 procedure StrRotated(X, Y: Integer; Arect: TRect; DC: HDC; Font: HFont; Str: string; Ang: Extended; Options: Cardinal);
 var
@@ -2804,68 +2402,7 @@ begin
   Bitmap.Canvas.LineTo(MaxC, Height);
 end;
 
-procedure Interpolate(x, y, Width, Height : Integer; Rect : TRect; var S, D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
-var
-  Z1, Z2: Single;
-  K: Single;
-  I, J: Integer;
-  H, Dw, Dh, Xo, Yo: Integer;
-  X1r, Y1r: Extended;
-  Xs, Xd: array of PARGB;
-  Dx, Dy: Extended;
-  Terminating: Boolean;
-begin
-  Terminating := False;
-  S.PixelFormat := Pf24bit;
-  D.PixelFormat := Pf24bit;
-  D.Width := Math.Max(D.Width, X + Width);
-  D.Height := Math.Max(D.Height, Y + Height);
-  Dw := Math.Min(D.Width - X, X + Width);
-  Dh := Math.Min(D.Height - Y, Y + Height);
-  Dx := (Width) / (Rect.Right - Rect.Left - 1);
-  Dy := (Height) / (Rect.Bottom - Rect.Top - 1);
-  if (Dx < 1) or (Dy < 1) then
-    Exit;
-  SetLength(Xs, S.Height);
-  for I := 0 to S.Height - 1 do
-    Xs[I] := S.Scanline[I];
-  SetLength(Xd, D.Height);
-  for I := 0 to D.Height - 1 do
-    Xd[I] := D.Scanline[I];
-  H := Min(Round((Rect.Bottom - Rect.Top - 1) * Dy) - 1, Dh - 1);
-  for I := 0 to H do
-  begin
-    Yo := Trunc(I / Dy) + Rect.Top;
-    Y1r := Trunc(I / Dy) * Dy;
-    if Yo + 1 >= S.Height then
-      Break;
-    for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * Dx) - 1, Dw - 1) do
-    begin
-      xo := Trunc(j / dx)+Rect.Left;
-      x1r:= Trunc(j / dx) * dx;
-      if xo+1>=S.Width then Continue;
-      begin
-       z1 := ((Xs[yo ,xo+ 1].r - Xs[yo,xo].r)/ dx)*(j - x1r) + Xs[yo,xo].r;
-       z2 := ((Xs[yo+1,xo+1].r - Xs[yo+1,xo].r) / dx)*(j - x1r) + Xs[yo+1,xo].r;
-       k := (z2 - z1) / dy;
-       Xd[i+y,j+x].r := Round(i * k + z1 - y1r * k);
-       z1 := ((Xs[yo ,xo+ 1].g - Xs[yo,xo].g)/ dx)*(j - x1r) + Xs[yo,xo].g;
-       z2 := ((Xs[yo+1,xo+1].g - Xs[yo+1,xo].g) / dx)*(j - x1r) + Xs[yo+1,xo].g;
-       k := (z2 - z1) / dy;
-       Xd[i+y,j+x].g := Round(i * k + z1 - y1r * k);
-       z1 := ((Xs[yo ,xo+ 1].b - Xs[yo,xo].b)/ dx)*(j - x1r) + Xs[yo,xo].b;
-       z2 := ((Xs[yo+1,xo+1].b - Xs[yo+1,xo].b) / dx)*(j - x1r) + Xs[yo+1,xo].b;
-       k := (z2 - z1) / dy;
-       Xd[i+y,j+x].b := Round(i * k + z1 - y1r * k);
-      end;
-    end;
-   if i mod 50=0 then
-   If Assigned(CallBack) then CallBack(Round(100*i/h),Terminating);
-   if Terminating then Break;
-  end;
-end;
-
-procedure ReplaceColorInImage(S,D : TBitmap; BaseColor, NewColor : TColor; Size, Level : Integer; CallBack : TBaseEffectCallBackProc = nil); overload;
+procedure ReplaceColorInImage(S,D : TBitmap; BaseColor, NewColor : TColor; Size, Level : Integer; CallBack : TProgressCallBackProc = nil); overload;
 var
   I, J: Integer;
   Ps, Pd: PARGB;
@@ -2915,7 +2452,7 @@ begin
   end;
 end;
 
-procedure Emboss(S, D: TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure Emboss(S, D: TBitmap; CallBack : TProgressCallBackProc = nil);
 var
   x, y :   Integer;
   p1, p2 : Pbytearray;
@@ -2950,7 +2487,7 @@ begin
   end;
 end;
 
-procedure AntiAliasRect(clip: tbitmap; XOrigin, YOrigin, XFinal, YFinal: Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure AntiAliasRect(clip: tbitmap; XOrigin, YOrigin, XFinal, YFinal: Integer; CallBack : TProgressCallBackProc = nil);
 var
   Memo, x, y : Integer; (* Composantes primaires des points environnants *)
   p0, p1, p2 : pbytearray;
@@ -2992,7 +2529,7 @@ begin
    end;
 end;
 
-procedure AntiAlias(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure AntiAlias(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 begin
   AssignBitmap(D, S);
   D.PixelFormat := Pf24bit;
@@ -3010,7 +2547,7 @@ begin
       Result := i;
 end;
 
-procedure AddColorNoise(S, D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure AddColorNoise(S, D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
 var
   p0: pbytearray;
   x, y, r, g, b: Integer;
@@ -3046,7 +2583,7 @@ begin
   end;
 end;
 
-procedure AddMonoNoise(S, D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure AddMonoNoise(S, D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
 var
   P0: Pbytearray;
   X, Y, A, R, G, B: Integer;
@@ -3082,7 +2619,7 @@ begin
   end;
 end;
 
-procedure FishEye(Bmp, Dst: TBitmap; xAmount: Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure FishEye(Bmp, Dst: TBitmap; xAmount: Integer; CallBack : TProgressCallBackProc = nil);
 var
   xmid, ymid             : Extended;
   fx, fy                 : Extended;
@@ -3224,7 +2761,7 @@ begin
   end;
 end;
 
-procedure GaussianBlur(D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure GaussianBlur(D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
 var
   i : Integer;
 begin
@@ -3233,14 +2770,14 @@ begin
 end;
 
 
-procedure SplitBlur(S, D : TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure SplitBlur(S, D : TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
 begin
   AssignBitmap(D, S);
   D.PixelFormat := pf24Bit;
   SplitBlurW(D,Amount,CallBack);
 end;
 
-procedure SplitBlurW(D: TBitmap; Amount : Integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure SplitBlurW(D: TBitmap; Amount : Integer; CallBack : TProgressCallBackProc = nil);
 //procedure SplitBlur(var clip: tbitmap; Amount: integer);
 var
   P0, P1, P2: Pbytearray;
@@ -3312,7 +2849,7 @@ begin
   end;
 end;
 
-procedure Twist(Bmp, Dst: TBitmap; Amount: integer; CallBack : TBaseEffectCallBackProc = nil);
+procedure Twist(Bmp, Dst: TBitmap; Amount: integer; CallBack : TProgressCallBackProc = nil);
 var
   fxmid, fymid : Single;
   txmid, tymid : Single;
@@ -3562,36 +3099,6 @@ begin
       Inc(PARGBD, 1);
     end;
   end;
-end;
-
-procedure ThreadDraw(S, D: TBitmap; X, Y: Integer);
-var
-  SXp, DXp: array of PARGB;
-  Ymax, Xmax: Integer;
-  I, J: Integer;
-begin
-  if S.Width - 1 + X > D.Width - 1 then
-    Xmax := D.Width - X - 1
-  else
-    Xmax := S.Width - 1;
-
-  if S.Height - 1 + Y > D.Height - 1 then
-    Ymax := D.Height - Y - 1
-  else
-    Ymax := S.Height - 1;
-
-  S.PixelFormat := pf24bit;
-  D.PixelFormat := pf24bit;
-  SetLength(SXp, S.Height);
-  for I := 0 to S.Height - 1 do
-    SXp[I] := S.ScanLine[I];
-  SetLength(DXp, D.Height);
-  for I := 0 to D.Height - 1 do
-    DXp[I] := D.ScanLine[I];
-
-  for I := 0 to Ymax do
-    for J := 0 to Xmax do
-      DXp[I + Y, J + X] := SXp[I, J];
 end;
 
 end.

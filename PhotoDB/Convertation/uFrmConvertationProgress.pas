@@ -3,10 +3,10 @@ unit uFrmConvertationProgress;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, uFrameWizardBase, AppEvnts, StdCtrls, DmProgress, uMemory,
   UnitDBCommonGraphics, UnitDBDeclare, uDBBaseTypes, UnitPasswordKeeper,
-  ExtCtrls, uConstants, uSHellIntegration, uInterfaces;
+  ExtCtrls, uConstants, uSHellIntegration, uInterfaces, uGraphicUtils;
 
 type
   TFrmConvertationProgress = class(TFrameWizardBase)

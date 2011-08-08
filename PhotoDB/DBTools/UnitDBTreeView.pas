@@ -3,11 +3,11 @@ unit UnitDBTreeView;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ImgList, DB, ExtCtrls, JPEG, CommCtrl,
   UnitDBKernel, GraphicCrypt, DBCMenu, Menus, uListViewUtils,
   AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
-  UnitDBCommon, UnitDBCommonGraphics, uDBDrawing, uFileUtils,
+  UnitDBCommon, uBitmapUtils, uDBDrawing, uFileUtils,
   uDBPopupMenuInfo, uMemory, uDBForm, uGraphicUtils, uDBUtils,
   Dolphin_DB, uConstants;
 
@@ -161,8 +161,7 @@ begin
   for K := 1 to WorkTable.RecordCount do
   begin
     AddFile(WorkTable.FieldByName('FFileName').AsString, WorkTable.FieldByName('ID').AsInteger,
-      ValidCryptBlobStreamJPG(WorkTable.FieldByName('Thum')), False
-      { not FileExistsSafe(WorkTable.FieldByName('FFileName').AsString) } );
+      ValidCryptBlobStreamJPG(WorkTable.FieldByName('Thum')), False);
     WorkTable.Next;
     if K mod 50 = 0 then
       FStatusProgress.Position := K;

@@ -3,9 +3,9 @@ unit UnitSearchBigImagesLoaderThread;
 interface
 
 uses
-  Windows, Classes, Forms, UnitDBKernel, SysUtils, Graphics, GraphicCrypt, Math,
-  RAWImage, UnitDBDeclare, UnitDBCommonGraphics, uRuntime, UnitDBCommon,
-  uCDMappingTypes, uThreadForm, uLogger, uThreadEx, uMemory,
+  Windows, Classes, UnitDBKernel, SysUtils, Graphics, GraphicCrypt, Math,
+  RAWImage, UnitDBDeclare, uJpegUtils, uRuntime,
+  uCDMappingTypes, uThreadForm, uLogger, uThreadEx, uMemory, uBitmapUtils,
   uMultiCPUThreadManager, uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes,
   uTranslate, uAssociations;
 

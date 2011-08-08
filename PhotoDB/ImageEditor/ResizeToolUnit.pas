@@ -3,10 +3,10 @@ unit ResizeToolUnit;
 interface
 
 uses
-  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
+  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  UnitResampleFilters, uDBBaseTypes, UnitDBCommon, uSettings,
-  UnitDBKernel, Effects, uConstants, uEditorTypes, uMemory;
+  UnitResampleFilters, uDBBaseTypes, uSettings,
+  uBitmapUtils, uConstants, uEditorTypes, uMemory;
 
 type
   TResizeToolPanelClass = class(TToolsPanelClass)

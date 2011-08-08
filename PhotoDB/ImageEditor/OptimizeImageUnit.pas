@@ -18,16 +18,16 @@ type
 
   TArPRGBArray = array of PRGBArray;
 
-procedure OptimizeImage(S,D : TBitmap; CallBack : TBaseEffectCallBackProc = nil);
+procedure OptimizeImage(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
 procedure MatrixEffectsW(Fa, Fb: Integer; Tscan3, Tscan2: TArPRGBArray; W1, H1: Integer; M: TConvolutionMatrix;
-  CallBack: TBaseEffectCallBackProc = nil);
+  CallBack: TProgressCallBackProc = nil);
 function Filterchoice(Numero: Integer): TConvolutionMatrix;
 
 implementation
 
 procedure MatrixEffectsW(Fa, Fb: Integer; Tscan3, Tscan2: TArPRGBArray; W1, H1: Integer; M: TConvolutionMatrix;
-  CallBack: TBaseEffectCallBackProc = nil);
+  CallBack: TProgressCallBackProc = nil);
 
 const
   M3 : array[0..24] of integer = (1,1,1,1,1,   // to detect if matrix is 3x3
@@ -161,7 +161,7 @@ begin
   end;
 end;
 
-procedure OptimizeImage(S, D: TBitmap; CallBack: TBaseEffectCallBackProc = nil);
+procedure OptimizeImage(S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 var
   X, Y: Integer;
   R3, G3, B3, R2, G2, B2, R4: Integer;

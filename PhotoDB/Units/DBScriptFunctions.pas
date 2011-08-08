@@ -6,8 +6,9 @@ uses Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
      Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
      Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, uTranslate,
      Math, uScript, uCDMappingTypes, uFileUtils, uAssociations, uDBForm,
-     UnitDBCommon, uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
-     uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings;
+     uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
+     uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings,
+     UnitDBCommonGraphics;
 
 procedure DoActivation;
 procedure GetUpdates(IsBackground: boolean);

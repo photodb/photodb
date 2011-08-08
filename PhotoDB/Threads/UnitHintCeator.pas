@@ -3,10 +3,10 @@ unit UnitHintCeator;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, ExtCtrls, JPEG, DB,
+  Windows, Messages, SysUtils, Classes, ExtCtrls, uBitmapUtils,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
-  Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage,
-  GraphicCrypt, UnitDBCommon, uGOM, uFileUtils, uDBForm,
+  Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage, uJpegUtils,
+  GraphicCrypt, uGOM, uFileUtils, uDBForm,
   uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare,
   uGraphicUtils, uRuntime, uAssociations, uDBThread;
 

@@ -3,7 +3,7 @@ unit ResizeToolThreadUnit;
 interface
 
 uses
-  Windows, Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes,
+  Windows, Classes, uBitmapUtils, EffectsToolUnit, Graphics, GraphicsBaseTypes,
   UnitResampleFilters, uEditorTypes, uMemory, uDBThread;
 
 type

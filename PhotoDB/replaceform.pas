@@ -3,12 +3,12 @@ unit replaceform;
 interface
 
 uses
-  UnitDBKernel, DBCMenu, dolphin_db, Windows, Messages, SysUtils, Variants,
-  Classes, Graphics, Controls, Forms, GraphicCrypt, uVistaFuncs, UnitDBDeclare,
+  UnitDBKernel, DBCMenu, dolphin_db, Windows, Messages, SysUtils,
+  Classes, Graphics, Controls, Forms, GraphicCrypt, UnitDBDeclare,
   DropTarget, DragDropFile, DragDrop, DropSource, Menus, ImgList, StdCtrls,
-  ExtCtrls, ComCtrls,  Dialogs, DB, CommCtrl, JPEG, Math, uMemory,
-  ActiveX, UnitBitmapImageList, CommonDBSupport, UnitDBCommon,
-  UnitDBCommonGraphics, uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
+  ExtCtrls, ComCtrls, Dialogs, DB, JPEG, Math, uMemory,
+  ActiveX, UnitBitmapImageList, CommonDBSupport,  uJpegUtils, uBitmapUtils,
+  uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
   uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm,
   uSettings, uListViewUtils, uAssociations, uDBAdapter, MPCommonObjects,
   EasyListview, MPCommonUtilities, RAWImage;

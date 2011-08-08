@@ -336,7 +336,8 @@ uses
   uExifPatchThread in 'Threads\uExifPatchThread.pas',
   uTiffImage in 'Units\uTiffImage.pas',
   uJpegUtils in 'Units\uJpegUtils.pas',
-  uBitmapUtils in 'Units\uBitmapUtils.pas';
+  uBitmapUtils in 'Units\uBitmapUtils.pas',
+  uIconUtils in 'Units\uIconUtils.pas';
 
 {$R *.res}
 

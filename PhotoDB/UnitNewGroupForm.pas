@@ -4,9 +4,9 @@ interface
 
 uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, ExtCtrls, StdCtrls, ExtDlgs, Jpeg, Dolphin_DB,
-  Menus, GraphicEx, Gifimage, Math, ComCtrls, ImgList, GraphicSelectEx,
-  uVistaFuncs, UnitDBDeclare, UnitDBCommonGraphics, UnitDBCommon, uConstants,
+  Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Jpeg, Dolphin_DB,
+  Menus, GraphicEx, Math, ComCtrls, ImgList, GraphicSelectEx,
+  UnitDBDeclare, uBitmapUtils, uConstants,
   uFileUtils, uMemory, uDBForm, WatermarkedEdit, WatermarkedMemo, uMemoryEx,
   uShellIntegration, uRuntime, WebLinkList, WebLink, AppEvnts;
 

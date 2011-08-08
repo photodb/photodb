@@ -8,9 +8,9 @@ uses
   uDBPopupMenuInfo, UnitDBDeclare, DateUtils, win32crc, uPrivateHelper,
   uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
-  Math, CCR.Exif, ProgressActionUnit, UnitDBCommonGraphics, Forms,
+  Math, CCR.Exif, ProgressActionUnit, uJpegUtils, uBitmapUtils, Forms,
   uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations, uDBImageUtils,
-  GraphicsBaseTypes, uDBAdapter, uCDMappingTypes, uExifUtils;
+  GraphicsBaseTypes, uDBAdapter, uCDMappingTypes, uExifUtils, UnitDBCommonGraphics;
 
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;

@@ -15,7 +15,7 @@ uses
   EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
-  UnitDBFileDialogs, UnitDBCommonGraphics,
+  UnitDBFileDialogs, uIconUtils, uBitmapUtils,
   UnitDBCommon, uCDMappingTypes, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,

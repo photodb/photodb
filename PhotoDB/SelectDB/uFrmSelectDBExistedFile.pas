@@ -3,9 +3,9 @@ unit uFrmSelectDBExistedFile;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+  Windows, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, WebLink, StdCtrls, ExtCtrls, uFrameWizardBase, UnitDBKernel,
-  uShellIntegration, UnitDBCommonGraphics, uMemory, UnitDBDeclare,
+  uShellIntegration, UnitDBCommonGraphics, uMemory, UnitDBDeclare, uIconUtils,
   UnitDBFileDialogs, uFileUtils, CommonDBSupport, uConstants, WatermarkedEdit;
 
 type

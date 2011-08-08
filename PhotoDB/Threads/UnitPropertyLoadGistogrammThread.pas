@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Classes, Messages, Forms, Graphics, SysUtils, RAWImage, uDBForm,
-  Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, Effects, GraphicsBaseTypes,
+  Dolphin_DB, UnitDBKernel, GraphicCrypt, JPEG, GraphicsBaseTypes,
   uMemory, uGraphicUtils, uDBGraphicTypes, uAssociations, uDBThread,
-  UnitDBCommonGraphics;
+  uJpegUtils;
 
 type
   TPropertyLoadGistogrammThreadOptions = record

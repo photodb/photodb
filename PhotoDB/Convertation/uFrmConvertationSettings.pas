@@ -3,9 +3,9 @@ unit uFrmConvertationSettings;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, uFrameWizardBase, jpeg, ExtCtrls, StdCtrls, uMemory, Menus,
-  UnitDBDeclare, UnitDBCommonGraphics, Dolphin_DB, UnitDBCommon,
+  UnitDBDeclare, uJpegUtils, Dolphin_DB, uBItmapUtils,
   UnitDBFileDialogs, uResources, WebLink, Math, uConstants, uInterfaces;
 
 type

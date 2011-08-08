@@ -3,8 +3,15 @@ unit uJpegUtils;
 interface
 
 uses
-  jpeg, Graphics, Math, Classes, uMemory;
+  jpeg, Graphics, Math, Classes, uMemory, uBitmapUtils;
 
+type
+  TJPEGX = class(TJpegImage)
+  public
+    function InnerBitmap: TBitmap;
+  end;
+
+procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
 procedure JPEGScale(Graphic: TGraphic; Width, Height: Integer);
 function CalcJpegResampledSize(Jpeg: TJpegImage; Size: Integer; CompressionRate: Byte;
   out JpegImageResampled: TJpegImage): Int64;
@@ -12,6 +19,21 @@ function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte;
   out JpegImageResampled: TJpegImage): Int64;
 
 implementation
+
+{ TJPEGX }
+
+function TJPEGX.InnerBitmap: TBitmap;
+begin
+  Result := Bitmap;
+end;
+
+procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
+begin
+  JPEG.Performance := jpBestSpeed;
+  JPEG.DIBNeeded;
+
+  AssignBitmap(Bitmap, TJPEGX(JPEG).InnerBitmap);
+end;
 
 procedure JPEGScale(Graphic: TGraphic; Width, Height: Integer);
 var
@@ -34,7 +56,6 @@ begin
       (Graphic as TJpegImage).Scale := JsEighth;
   end;
 end;
-
 
 function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte;
   out JpegImageResampled: TJpegImage): Int64;

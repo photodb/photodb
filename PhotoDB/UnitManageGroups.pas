@@ -3,13 +3,13 @@ unit UnitManageGroups;
 interface
 
 uses
-  UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes,
+  UnitGroupsWork, Windows, Messages, SysUtils, Classes,
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
-  ComCtrls, AppEvnts, jpeg, ExtCtrls, StdCtrls, DB, Menus, Math, CommCtrl,
-  ImgList, NoVSBListView, uVistaFuncs, ToolWin, UnitDBCommonGraphics,
+  ComCtrls, AppEvnts, jpeg, ExtCtrls, Menus, Math, CommCtrl,
+  ImgList, NoVSBListView, uBitmapUtils,
   UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils, uMemoryEx,
   uShellIntegration, uConstants, Dolphin_DB, uSettings, uRuntime,
-  CommonDBSupport;
+  CommonDBSupport, ToolWin;
 
 type
   TFormManageGroups = class(TDBForm)

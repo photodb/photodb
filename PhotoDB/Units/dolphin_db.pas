@@ -2,22 +2,19 @@ unit Dolphin_db;
 
 interface
 
-uses  Registry, Windows, uVistaFuncs, CommonDBSupport,
-      Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-      Dialogs, DB, Grids, DBGrids, Menus, ExtCtrls, StdCtrls,
-      ImgList, ComCtrls, JPEG, DmProgress, win32crc,
-      SaveWindowPos, ExtDlgs, UnitDBDeclare, uDBForm,
-      acDlgSelect, GraphicCrypt, psAPI, ShellApi,
-      MAPI, DDraw, Math, DateUtils, GraphicsCool,
-      GIFImage, GraphicEx, GraphicsBaseTypes, uLogger, uFileUtils,
-      UnitDBFileDialogs, RAWImage, UnitDBCommon, uConstants,
-      UnitLinksSupport, EasyListView, uTranslate,
-      uMemory, uDBPopupMenuInfo, uAppUtils, UnitDBCommonGraphics,
-      uGraphicUtils, uShellIntegration, uRuntime, uSysUtils,
-      uAssociations, uActivationUtils;
+uses
+  Windows, uVistaFuncs, CommonDBSupport,
+  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, JPEG,
+  DmProgress, UnitDBDeclare, uDBForm, ShellApi,
+  MAPI, DDraw, DateUtils, GraphicsCool, GraphicsBaseTypes, uLogger, uFileUtils,
+  UnitDBFileDialogs, UnitDBCommon, uConstants,
+  UnitLinksSupport, uTranslate, uJpegUtils, uBitmapUtils,
+  uMemory, uDBPopupMenuInfo, uAppUtils, uGraphicUtils, uShellIntegration,
+  uRuntime, uSysUtils, uAssociations, uActivationUtils;
 
 type
-  TInitializeAProc = function(s:PChar) : boolean;
+  TInitializeAProc = function(S: PChar): Boolean;
 
 var
   LOGGING_ENABLED: Boolean = True;
