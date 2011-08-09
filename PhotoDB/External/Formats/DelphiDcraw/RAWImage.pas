@@ -260,63 +260,15 @@ var
   RawBitmap: TFreeWinBitmap;
   RawThumb: TFreeWinBitmap;
   W, H: Integer;
-  ExifData: TExifData;
-
-  {
-  I: Integer;
-  FindMetaData: PFIMETADATA;
-  TagData: PFITAG;
-  Orientation: Integer;
-
-  procedure AddTag;
-  var
-    Key: string;
-  begin
-    Key := FreeImage_GetTagKey(TagData);
-    if Key = 'Orientation' then
-      Orientation := 1;
-  end;    }
-
 begin
   Result := True;
   FIsPreview := True;
 
-  ExifData := TExifData.Create(nil);
-  try
-    ExifData.LoadFromGraphic(FileName);
-    if not ExifData.Empty then
-    begin
-      if ExifData.Thumbnail <> nil then
-      begin
-        //use thumbnail from file
-        //TODO: add logic here
-      end;
-    end;
-  finally
-    F(ExifData);
-  end;
   RawBitmap := TFreeWinBitmap.Create;
   try
     RawBitmap.LoadU(FileName, RAW_PREVIEW);
     RawThumb := TFreeWinBitmap.Create;
     try
-   (*   Orientation := 0;
-      for I := FIMD_NODATA to FIMD_EXIF_RAW do
-      begin
-        FindMetaData := FreeImage_FindFirstMetadata(I, RawBitmap.Dib, TagData);
-        try
-          if FindMetaData <> nil then
-          begin
-            AddTag;
-
-            while FreeImage_FindNextMetadata(FindMetaData, TagData) do
-              AddTag;
-          end;
-        finally
-          RawBitmap.FindCloseMetadata(FindMetaData);
-        end;
-      end;
-            *)
       FWidth := RawBitmap.GetWidth;
       FHeight := RawBitmap.GetHeight;
       W := FWidth;
@@ -327,7 +279,6 @@ begin
     finally
       F(RawThumb);
     end;
-
     RawBitmap.Clear;
     RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
     FRealWidth := FreeImage_GetWidth(RawBitmap.Dib);

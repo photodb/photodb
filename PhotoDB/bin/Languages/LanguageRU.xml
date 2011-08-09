@@ -306,6 +306,7 @@
     <translate name="Add disk" value="Добавить диск" />
     <translate name="Add directory" value="Добавить папку" />
     <translate name="Next..." value="Далее..." />
+    <translate name="Loading..." value="Загрузка..." />
     <translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />
     <translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
     <translate name="Add file" value="Добавить файл" />

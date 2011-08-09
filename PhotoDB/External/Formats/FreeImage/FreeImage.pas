@@ -18,6 +18,15 @@ unit FreeImage;
 //                   updated to 3.13.1, made RAD2010 compliant (unicode)
 // 2010-07-29  LM    Added Free Pascal / Lazarus 32 bit support
 // 2010-11-12  LM    Updated to 3.14.1
+// 2011-02-15  LM    Updated to 3.15.0
+// 2011-03-04  JMB   Modifications to compile on Free Pascal / Lazarus 64 bits (tested on Windows 7 and linux OpenSuse) :
+//                   - in 64 bits, the names of the exported function are different :
+//                      e.g. : _FreeImage_AcquireMemory@12 in 32 bits and FreeImage_AcquireMemory in 64 bits
+//                      so the define WIN32 will allow to distinguish 32 and 64 bits in the calls to the freeimage library
+//                   - in 64 bits, the Boolean type is not correctly converted to freeimage BOOL type (integer 32 bits)
+//                    ==> replace Boolean with LongBool in the calls to the freeimage library
+//                   - as linux sees the difference between uppercase and lowercase :
+//                    ==> replace FreeImage_GetMetaData with FreeImage_GetMetadata in the call to the freeimage library
 //
 // This file is part of FreeImage 3
 //
@@ -81,6 +90,11 @@ type
   LPBITMAPINFO = ^BITMAPINFO;
   PBITMAPINFO = ^BITMAPINFO;
   TBITMAPINFO = BITMAPINFO;
+// modif JMB NOVAXEL
+  HBITMAP = type LongWord;
+  HWND = type LongWord;
+  HDC = type LongWord;
+// end of modif JMB NOVAXEL
 {$ENDIF}
 
 const
@@ -90,8 +104,8 @@ const
 const
   // Version information
   FREEIMAGE_MAJOR_VERSION  = 3;
-  FREEIMAGE_MINOR_VERSION  = 14;
-  FREEIMAGE_RELEASE_SERIAL = 1;
+  FREEIMAGE_MINOR_VERSION  = 15;
+  FREEIMAGE_RELEASE_SERIAL = 0;
   // This really only affects 24 and 32 bit formats, the rest are always RGB order.
   FREEIMAGE_COLORORDER_BGR = 0;
   FREEIMAGE_COLORORDER_RGB = 1;
@@ -437,7 +451,7 @@ type
   FI_ExtensionListProc = function: PAnsiChar; stdcall;
   FI_RegExprProc = function: PAnsiChar; stdcall;
   FI_OpenProc = function(io: PFreeImageIO; handle: fi_handle;
-    read: Boolean): Pointer; stdcall;
+    read: LongBool): Pointer; stdcall;
   FI_CloseProc = procedure(io: PFreeImageIO; handle: fi_handle;
     data: Pointer); stdcall;
   FI_PageCountProc = function(io: PFreeImageIO; handle: fi_handle;
@@ -447,13 +461,13 @@ type
   FI_LoadProc = function(io: PFreeImageIO; handle: fi_handle; page, flags: Integer;
     data: Pointer): PFIBITMAP; stdcall;
   FI_SaveProc = function(io: PFreeImageIO; dib: PFIBITMAP; handle: fi_handle;
-    page, flags: Integer; data: Pointer): Boolean; stdcall;
-  FI_ValidateProc = function(io: PFreeImageIO; handle: fi_handle): Boolean; stdcall;
+    page, flags: Integer; data: Pointer): LongBool; stdcall;
+  FI_ValidateProc = function(io: PFreeImageIO; handle: fi_handle): LongBool; stdcall;
   FI_MimeProc = function: PAnsiChar; stdcall;
-  FI_SupportsExportBPPProc = function(bpp: integer): Boolean; stdcall;
-  FI_SupportsExportTypeProc = function(atype: FREE_IMAGE_TYPE): Boolean; stdcall;
-  FI_SupportsICCProfilesProc = function: Boolean; stdcall;
-  FI_SupportsNoPixelsProc = function: Boolean; stdcall;
+  FI_SupportsExportBPPProc = function(bpp: integer): LongBool; stdcall;
+  FI_SupportsExportTypeProc = function(atype: FREE_IMAGE_TYPE): LongBool; stdcall;
+  FI_SupportsICCProfilesProc = function: LongBool; stdcall;
+  FI_SupportsNoPixelsProc = function: LongBool; stdcall;
 
   Plugin = record
     format_proc: FI_FormatProc;
@@ -520,6 +534,7 @@ const
   JPEG_SUBSAMPLING_422 = $8000;  // save with low 2x1 chroma subsampling (4:2:2)
   JPEG_SUBSAMPLING_444 = $10000; // save with no chroma subsampling (4:4:4)
   JPEG_OPTIMIZE       = $20000; // on saving, compute optimal Huffman coding tables (can reduce a few percent of file size)
+  JPEG_BASELINE       = $40000; // save basic JPEG, without metadata or any markers
   KOALA_DEFAULT       = 0;
   LBM_DEFAULT         = 0;
   MNG_DEFAULT         = 0;
@@ -547,6 +562,7 @@ const
   RAW_DEFAULT         = 0; // load the file as linear RGB 48-bit
   RAW_PREVIEW         = 1; // try to load the embedded JPEG preview with included Exif Data or default to RGB 24-bit
   RAW_DISPLAY         = 2; // load the file as RGB 24-bit
+  RAW_HALFSIZE        = 4;		// output a half-size color image
   SGI_DEFAULT         = 0;
   TARGA_DEFAULT       = 0;
   TARGA_LOAD_RGB888   = 1;     // If set the loader converts RGB555 and ARGB8888 -> RGB888.

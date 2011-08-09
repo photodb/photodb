@@ -181,7 +181,6 @@ uses
   UnitGroupsWork in 'Units\UnitGroupsWork.pas',
   UnitGroupsReplace in 'Units\UnitGroupsReplace.pas',
   UnitBitmapImageList in 'Units\UnitBitmapImageList.pas',
-  Network in 'Units\Network.pas',
   GraphicCrypt in 'Units\GraphicCrypt.pas',
   UnitCrypting in 'Units\UnitCrypting.pas',
   ShellContextMenu in 'Units\ShellContextMenu.pas',

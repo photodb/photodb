@@ -198,11 +198,9 @@ type
     ToolButton11: TToolButton;
     TbZoomOut: TToolButton;
     TbZoomIn: TToolButton;
-    ToolButton12: TToolButton;
     TbSearch: TToolButton;
     ToolButton16: TToolButton;
     TbOptions: TToolButton;
-    TbStop: TToolButton;
     ToolButton20: TToolButton;
     PopupMenuZoomDropDown: TPopupMenu;
     MapCD1: TMenuItem;
@@ -483,6 +481,7 @@ type
     procedure AsEXIF1Click(Sender: TObject);
     procedure PePathChange(Sender: TObject);
     procedure PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
+    procedure PePathGetSystemIcon(Sender: TPathEditor; Path: TPathPart);
    private
      { Private declarations }
      FBitmapImageList : TBitmapImageList;
@@ -910,11 +909,10 @@ begin
 
   ExplorerManager.AddExplorer(Self);
 
-  TbStop.Enabled := False;
   SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
   FormLoadEnd := True;
-  LsMain.Top := CoolBarTop.Top + CoolBarTop.Height + 3;
+  LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
   LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3;
   LsMain.BringToFront;
   LsMain.Color := clWindow;
@@ -2769,7 +2767,7 @@ begin
     if (Msg.WParam = VK_UP) and CtrlKeyDown and TbUp.Enabled then
       SpeedButton3Click(Self);
     if (Msg.WParam = 83) and CtrlKeyDown then
-      if TbStop.Enabled then
+      if PePath.CanBreakLoading then
         TbStopClick(Self);
     if (Msg.WParam = VK_F5) then
       SetPath(GetCurrentPath);
@@ -4382,8 +4380,50 @@ begin
 end;
 
 procedure TExplorerForm.PePathChange(Sender: TObject);
+var
+  P: TPathPart;
 begin
-  SetStringPath(PePath.Path, False);
+  P := PePath.CurrentPathEx;
+
+  if (P.ID = '') then
+    SetStringPath(PePath.Path, False)
+  else if P.ID = PATH_MY_COMPUTER then
+    SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False)
+  else if P.ID = PATH_NETWORKS then
+    SetNewPathW(ExplorerPath('', EXPLORER_ITEM_NETWORK), False)
+  else if P.ID = PATH_WORKGROUP then
+    SetNewPathW(ExplorerPath(PePath.Path, EXPLORER_ITEM_WORKGROUP), False);
+end;
+
+procedure TExplorerForm.PePathGetSystemIcon(Sender: TPathEditor;
+  Path: TPathPart);
+var
+  Ico: TIcon;
+begin
+  Ico := nil;
+  try
+    if Path.ID = PATH_MY_COMPUTER then
+      FindIcon(HInstance, 'COMPUTER', 16, 32, Ico)
+    else if Path.ID = PATH_NETWORKS then
+      FindIcon(HInstance, 'NETWORK', 16, 32, Ico)
+    else if Path.ID = PATH_WORKGROUP then
+      FindIcon(HInstance, 'WORKGROUP', 16, 32, Ico)
+    else if Path.ID = PATH_SMB_PC then
+      FindIcon(HInstance, 'COMPUTER', 16, 32, Ico)
+    else if Path.ID = PATH_EMPTY then
+      FindIcon(HInstance, 'SIMPLEFILE', 16, 32, Ico)
+    else if Path.ID = PATH_LOADING then
+      FindIcon(HInstance, 'SEARCH', 16, 32, Ico)
+    else if Path.ID = PATH_RELOAD then
+      FindIcon(HInstance, 'REFRESH_THUM', 16, 32, Ico)
+    else if Path.ID = PATH_STOP then
+      FindIcon(HInstance, 'EXPLORER_BREAK_SMALL', 16, 32, Ico);
+
+    if Ico <> nil then
+      Path.Icon := CopyIcon(Ico.Handle);
+  finally
+    F(Ico);
+  end;
 end;
 
 procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
@@ -4544,10 +4584,12 @@ begin
     TbZoomOut.Hint := L('Zoom out');
     TbZoomIn.Hint := L('Zoom in');
     TbSearch.Hint := L('Go to search window');
-    TbStop.Hint := L('Stop');
     TbOptions.Hint := L('Options');
     ToolBar1.ShowCaptions := True;
     ToolBar1.AutoSize := True;
+
+    PePath.NetworksText := L('Network');
+    PePath.LoadingText := L('Loading...');
   finally
     EndTranslate;
   end;
@@ -4660,27 +4702,24 @@ begin
     S := ExcludeTrailingBackslash(Path);
     Caption := S;
     PePath.Path := Path;
-    //CbPathEdit.Text := Path;
   end;
   if WPath.PType = EXPLORER_ITEM_NETWORK then
   begin
     Caption := Path;
-    PePath.Path := Path;
-    //CbPathEdit.Text := Path;
+    PePath.SetPathEx(PATH_NETWORKS, L('Network'));
     ThreadType := THREAD_TYPE_NETWORK;
   end;
   if WPath.PType = EXPLORER_ITEM_WORKGROUP then
   begin
     Caption := Path;
-    PePath.Path := Path;
-    //CbPathEdit.Text := Path;
+    PePath.SetPathEx(PATH_WORKGROUP, Path);
     ThreadType := THREAD_TYPE_WORKGROUP;
   end;
   if WPath.PType = EXPLORER_ITEM_COMPUTER then
   begin
     Caption := Path;
     PePath.Path := Path;
-    //CbPathEdit.Text := Path;
+    PePath.SetPathEx(PATH_SMB_PC, Path);
     ThreadType := THREAD_TYPE_COMPUTER;
   end;
   S := Path;
@@ -4776,7 +4815,7 @@ begin
   EventLog('ExplorerThread');
   if ElvMain <> nil then
   begin
-    TbStop.Enabled := True;
+    PePath.CanBreakLoading := True;
     TExplorerThread.Create(Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
   if FIsExplorer then
@@ -5269,14 +5308,12 @@ begin
   if (S = '') or (AnsiLowerCase(S) = AnsiLowerCase(MyComputer)) then
   begin
     PePath.Path := '';
-    //CbPathEdit.Text := MyComputer;
     SetNewPath(S, ChangeTreeView);
     Exit;
   end;
   if (AnsiLowerCase(S) = AnsiLowerCase(L('Network'))) then
   begin
-    PePath.Path := L('Network');
-    //CbPathEdit.Text := L('Network');
+    PePath.SetPathEx(PATH_NETWORKS, L('Network'));
     SetNewPathW(ExplorerPath(L('Network'), EXPLORER_ITEM_NETWORK), False);
     Exit;
   end;
@@ -7271,7 +7308,7 @@ begin
   UpdaterInfo.FileInfo := nil;
   NewFormState;
 
-  TbStop.Enabled := True;
+  PePath.CanBreakLoading := True;
   TExplorerThread.Create('::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, Info, Self, UpdaterInfo, StateID);
   for I := 0 to FFilesInfo.Count - 1 do
   begin
@@ -7423,14 +7460,14 @@ begin
   NewFormState;
   if UpdatingList then
     EndUpdate;
-  TbStop.Enabled := False;
+  PePath.CanBreakLoading := False;
   FStatusProgress.Visible := False;
   StatusBar1.Panels[0].Text := L('Loading canceled...');
 end;
 
-procedure TExplorerForm.DoStopLoading();
+procedure TExplorerForm.DoStopLoading;
 begin
-  TbStop.Enabled := False;
+  PePath.CanBreakLoading := False;
   fStatusProgress.Visible := False;
   StatusBar1.Panels[0].Text := '';
 end;

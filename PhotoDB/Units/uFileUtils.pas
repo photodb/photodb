@@ -4,8 +4,9 @@ unit uFileUtils;
 
 interface
 
-uses Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl, Variants, ShlObj, ActiveX,
-     VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes, uSysUtils, Registry;
+uses
+  Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl, Variants, ShlObj, ActiveX,
+  VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes, uSysUtils, Registry;
 
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
@@ -46,7 +47,7 @@ procedure DelDir(Dir: string; Mask: string);
 procedure GetFileNamesFromDrive(Dir, Mask: string; Files: TStrings; var MaxFilesCount: Integer;
   MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
 function ReadTextFileInString(FileName: string): string;
-function ExtinMask(Mask: string; Ext: string): Boolean;
+function ExtInMask(Mask: string; Ext: string): Boolean;
 function GetExt(Filename: string): string;
 function ProgramDir : string;
 function GetConvertedFileName(FileName, NewEXT: string): string;
@@ -615,26 +616,28 @@ var
   Mask: string;
   SRec: TSearchRec;
   OldMode: Cardinal;
-  Retcode: Integer;
+  RetCode: Integer;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  Mask := '?:\*.*';
-  Mask[1] := Char(Driveletter);
-{$I-} { не возбуждаем исключение при неудаче }
-  Retcode := FindFirst(Mask, FaAnyfile, SRec);
-  FindClose(SRec);
-{$I+}
-  case Retcode of
-    0:
-      Result := DS_DISK_WITH_FILES; { обнаружен по крайней мере один файл }
-    -18:
-      Result := DS_EMPTY_DISK; { никаких файлов не обнаружено, но ok }
-    -21:
-      Result := DS_NO_DISK; { DOS ERROR_NOT_READY }
-  else
-    Result := DS_UNFORMATTED_DISK; { в моей системе значение равно -1785! }
+  try
+    Mask := Char(Driveletter) + ':\*.*';
+  {$I-} { without exception }
+    RetCode := FindFirst(Mask, FaAnyfile, SRec);
+    FindClose(SRec);
+  {$I+}
+    case Retcode of
+      0:
+        Result := DS_DISK_WITH_FILES; { at least one file is found }
+      -18:
+        Result := DS_EMPTY_DISK; { empty disk  }
+      -21:
+        Result := DS_NO_DISK; { DOS ERROR_NOT_READY }
+    else
+      Result := DS_UNFORMATTED_DISK; { incorrect drive }
+    end;
+  finally
+    SetErrorMode(OldMode);
   end;
-  SetErrorMode(OldMode);
 end;
 
 procedure Copy_Move(Copy: Boolean; FileList: TStrings);

@@ -320,7 +320,6 @@
 			<DCCReference Include="Units\UnitGroupsWork.pas"/>
 			<DCCReference Include="Units\UnitGroupsReplace.pas"/>
 			<DCCReference Include="Units\UnitBitmapImageList.pas"/>
-			<DCCReference Include="Units\Network.pas"/>
 			<DCCReference Include="Units\GraphicCrypt.pas"/>
 			<DCCReference Include="Units\UnitCrypting.pas"/>
 			<DCCReference Include="Units\ShellContextMenu.pas"/>
@@ -565,7 +564,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">/nologo</Parameters>
+						<Parameters Name="RunParams">/nologo /CPU1</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>

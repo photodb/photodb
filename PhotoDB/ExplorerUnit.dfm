@@ -72,9 +72,6 @@ object ExplorerForm: TExplorerForm
       TabOrder = 0
       Visible = False
       OnResize = CloseButtonPanelResize
-      ExplicitLeft = 1
-      ExplicitTop = 1
-      ExplicitWidth = 133
       object BtnCloseExplorer: TButton
         Left = 101
         Top = 3
@@ -97,10 +94,6 @@ object ExplorerForm: TExplorerForm
       ParentCtl3D = False
       TabOrder = 1
       OnResize = PropertyPanelResize
-      ExplicitLeft = 1
-      ExplicitTop = 22
-      ExplicitWidth = 133
-      ExplicitHeight = 522
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
@@ -122,8 +115,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'ScrollBox1'
         TabOrder = 0
         OnResize = ScrollBox1Resize
-        ExplicitWidth = 133
-        ExplicitHeight = 522
         object TypeLabel: TLabel
           Left = 7
           Top = 141
@@ -732,30 +723,15 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 13
         Style = tbsSeparator
       end
-      object TbStop: TToolButton
-        Left = 244
-        Top = 0
-        AutoSize = True
-        ImageIndex = 12
-        OnClick = TbStopClick
-      end
-      object ToolButton12: TToolButton
-        Left = 256
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton12'
-        ImageIndex = 7
-        Style = tbsSeparator
-      end
       object TbSearch: TToolButton
-        Left = 264
+        Left = 244
         Top = 0
         AutoSize = True
         ImageIndex = 10
         OnClick = GoToSearchWindow1Click
       end
       object ToolButton16: TToolButton
-        Left = 276
+        Left = 256
         Top = 0
         Width = 8
         Caption = 'ToolButton16'
@@ -763,7 +739,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbOptions: TToolButton
-        Left = 284
+        Left = 264
         Top = 0
         AutoSize = True
         Caption = 'Options'
@@ -839,6 +815,11 @@ object ExplorerForm: TExplorerForm
         0000}
       OnUserChange = PePathChange
       OnUpdateItem = PePathUpdateItem
+      LoadingText = 'Loading...'
+      NetworksText = 'Networks'
+      GetSystemIcon = PePathGetSystemIcon
+      CanBreakLoading = False
+      OnBreakLoading = TbStopClick
     end
     object StAddress: TStaticText
       Left = 9

@@ -135,7 +135,7 @@ begin
   ACanvas.Font.Color := clWindowText;
   Graphic := BImageList[Item.ImageIndex].Graphic;
 
-  if Graphic = nil then
+  if (Graphic = nil) or Graphic.Empty then
   begin
     Item.ImageIndex := 0;
     Exit;
