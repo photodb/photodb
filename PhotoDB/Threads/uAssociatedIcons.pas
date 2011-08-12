@@ -10,14 +10,14 @@ uses
   ComObj,
   ActiveX,
   ShlObj,
-  VirtualSystemImageLists,
   CommCtrl,
   ShellAPI,
   Forms,
   UnitDBKernel,
   SyncObjs,
   Registry,
-  uMemory;
+  uMemory,
+  uShellIcons;
 
 type
   TAssociatedIcons = record
@@ -32,7 +32,6 @@ type
     FAssociatedIcons : array of TAssociatedIcons;
     FIDesktopFolder: IShellFolder;
     UnLoadingListEXT : TStringList;
-    FVirtualSysImages : VirtualSysImages;
     FSync : TCriticalSection;
     procedure Initialize;
   public
@@ -48,7 +47,6 @@ type
     function SetPath(const Value: string) : PItemIDList;
   end;
 
-procedure FindIcon(hLib :cardinal; NameRes :string; Size, ColorDepth :Byte; var Icon :TIcon);
 function VarIco(Ext : string) : boolean;
 
 implementation
@@ -93,7 +91,7 @@ begin
   end;
 end;
 
-function TAIcons.SetPath(const Value: string) : PItemIDList;
+function TAIcons.SetPath(const Value: string): PItemIDList;
 var
   P: PWideChar;
   Flags,
@@ -104,120 +102,13 @@ begin
   Flags := 0;
   P := StringToOleStr(Value);
   if not Succeeded(FIDesktopFolder.ParseDisplayName(Application.Handle,nil,P,NumChars,Result,Flags)) then
-    result:=nil;
+    result := nil;
 end;
 
-procedure FindIcon(hLib :cardinal; NameRes :string; Size, ColorDepth :Byte; var Icon :TIcon);
-type
-  GRPICONDIRENTRY =  packed record
-    bWidth :BYTE;              // Width, in pixels, of the image
-    bHeight :BYTE;              // Height, in pixels, of the image
-    bColorCount :BYTE;          // Number of colors in image (0 if >=8bpp)
-    bReserved :BYTE;            // Reserved
-    wPlanes :WORD;              // Color Planes
-    wBitCount :WORD;            // Bits per pixel
-    dwBytesInRes :DWORD;        // how many bytes in this resource?
-    nID :WORD;                  // the ID
-  end;
-
-  GRPICONDIR =  packed record
-    idReserved :WORD;  // Reserved (must be 0)
-    idType :WORD;      // Resource type (1 for icons)
-    idCount :WORD;      // How many images?
-    idEntries :array [1..16] of GRPICONDIRENTRY ; // The entries for each image
-  end;
-
-  ICONIMAGE = record
-    icHeader :BITMAPINFOHEADER;      // DIB header
-    icColors :array of RGBQUAD;  // Color table
-    icXOR :array of BYTE;      // DIB bits for XOR mask
-    icAND :array of BYTE;      // DIB bits for AND mask
-  end;
-
-var
-  hRsrc, hGlobal :cardinal;
-
-  GRP :GRPICONDIR;
-
-  lpGrpIconDir :^GRPICONDIR;
-  lpIconImage :^ICONIMAGE;
-
-  Stream :TMemoryStream;
-  i, i0, nID :integer;
+function TAIcons.GetShellImage(Path: String; Size: integer): TIcon;
 begin
-  lpIconImage:=nil;
-  // Find the group resource which lists its images
-  hRsrc := FindResource(hLib, PWideChar(NameRes), RT_GROUP_ICON);
-  // Load and Lock to get a pointer to a GRPICONDIR
-  hGlobal := LoadResource(hLib, hRsrc);
-  lpGrpIconDir := LockResource(hGlobal);
-
-  // Using an ID from the group, Find, Load and Lock the RT_ICON
-  i0 := Low(lpGrpIconDir.idEntries);
-  for i := i0 to lpGrpIconDir.idCount do begin
-    hRsrc := FindResource(hLib, MAKEINTRESOURCE(lpGrpIconDir.idEntries[i].nID), RT_ICON);
-    hGlobal := LoadResource(hLib, hRsrc);
-    lpIconImage := LockResource(hGlobal);
-    if (lpIconImage.icHeader.biWidth = Size) and (lpIconImage.icHeader.biBitCount = ColorDepth) then
-      Break;
-  end;
-
-  if Assigned(lpIconImage) and (lpIconImage.icHeader.biWidth = Size)
-  and (lpIconImage.icHeader.biBitCount = ColorDepth) then begin
-    Stream := TMemoryStream.Create;
-    try
-      Stream.Clear;
-
-      ZeroMemory(@GRP, SizeOf(GRP));
-      GRP.idCount := 1;
-      GRP.idType := 1;
-      GRP.idReserved := 0;
-      GRP.idEntries[i0] := lpGrpIconDir.idEntries[i];
-      nID := SizeOf(WORD) * 3 + SizeOf(GRPICONDIRENTRY) + 2;  //$16
-      GRP.idEntries[i0].nID := nID;
-      Stream.WriteBuffer(GRP, nID);
-      Stream.WriteBuffer(lpIconImage^, GRP.idEntries[i0].dwBytesInRes);
-
-      Stream.Position := 0;
-      Icon := TIcon.Create;
-      Icon.LoadFromStream(Stream);
-    finally
-      Stream.Free;
-    end;
-  end;
-end;
-
-function TAIcons.GetShellImage(Path : String; Size : integer): TIcon;
-var
-  FileInfo: TSHFileInfo;
-  Flags: Integer;
-begin
-  FSync.Enter;
-  try
-    Result := nil;
-    FillChar(FileInfo, SizeOf(FileInfo), #0);
-    Flags := 0;
-    if (Size < 48) then Flags := SHGFI_SYSICONINDEX or SHGFI_ICON;
-    if (Size = 48) then Flags := SHGFI_SYSICONINDEX;
-    if (Size = 32) then Flags := Flags or SHGFI_LARGEICON;
-    if (Size = 16) then Flags := Flags or SHGFI_SMALLICON;
-
-    SHGetFileInfo(PWideChar(Path), 0, FileInfo, SizeOf(FileInfo), Flags or SHGFI_TYPENAME);
-    Result := TIcon.Create;
-    if (Size < 48) then
-    begin
-      Result.Handle:=FileInfo.hIcon;
-    end else
-    begin
-     //create this object when it needed!
-     if FVirtualSysImages=nil then
-       FVirtualSysImages:=ExtraLargeSysImages;
-
-     FVirtualSysImages.GetIcon(FileInfo.iIcon, Result);
-    end;
-  finally
-    FSync.Leave;
-  end;
+  Result := TIcon.Create;
+  Result.Handle := ExtractShellIcon(Path, Size);
 end;
 
 function TAIcons.AddIconByExt(FileName, EXT: string; Size : integer) : integer;
@@ -242,7 +133,6 @@ begin
   inherited;
   FSync := TCriticalSection.Create;
   UnLoadingListEXT := TStringList.Create;
-  FVirtualSysImages:=nil;
   Initialize;
 end;
 
@@ -259,7 +149,7 @@ begin
   inherited;
 end;
 
-function TAIcons.GetIconByExt(FileName: string; IsFolder: Boolean; Size: Integer; default: Boolean): TIcon;
+function TAIcons.GetIconByExt(FileName: string; IsFolder: Boolean; Size: Integer; Default: Boolean): TIcon;
 var
   N, I: Integer;
   Ext: string;
@@ -270,7 +160,7 @@ begin
     N := 0;
     if IsFolder then
       if Copy(FileName, 1, 2) = '\\' then
-        default := True;
+        Default := True;
     if IsFolder then
       Ext := ''
     else
@@ -289,17 +179,18 @@ begin
           Result.Assign(FAssociatedIcons[I].Icon);
         end else
           Result := GetShellImage(FileName, Size);
+        Break;
       end;
   finally
     FSync.Leave;
   end;
 end;
 
-function TAIcons.IsExt(Ext: string; Size : integer): boolean;
+function TAIcons.IsExt(Ext: string; Size: Integer): Boolean;
 var
-  i : Integer;
+  I: Integer;
 begin
-  Result:=False;
+  Result := False;
   FSync.Enter;
   try
     for i:=0 to length(FAssociatedIcons)-1 do
@@ -313,10 +204,10 @@ begin
   end;
 end;
 
-function TAIcons.IsVarIcon(FileName: string; Size : integer): Boolean;
+function TAIcons.IsVarIcon(FileName: string; Size: Integer): Boolean;
 var
-  i : Integer;
-  Ext : String;
+  I: Integer;
+  Ext: string;
 begin
   Result:=false;
   FSync.Enter;
@@ -396,32 +287,32 @@ begin
   FAssociatedIcons[5].Size := 48;
 
   FAssociatedIcons[6].Ext := '.___';
-  FindIcon(HInstance, 'SIMPLEFILE', 16, 4, FAssociatedIcons[6].Icon);
+  FindIcon(HInstance, 'SIMPLEFILE', 16, 32, FAssociatedIcons[6].Icon);
   FAssociatedIcons[6].SelfIcon := True;
   FAssociatedIcons[6].Size := 16;
 
   FAssociatedIcons[7].Ext := '.___';
-  FindIcon(HInstance, 'SIMPLEFILE', 32, 4, FAssociatedIcons[7].Icon);
+  FindIcon(HInstance, 'SIMPLEFILE', 32, 32, FAssociatedIcons[7].Icon);
   FAssociatedIcons[7].SelfIcon := True;
   FAssociatedIcons[7].Size := 32;
 
   FAssociatedIcons[8].Ext := '.___';
-  FindIcon(HInstance, 'SIMPLEFILE', 48, 4, FAssociatedIcons[8].Icon);
+  FindIcon(HInstance, 'SIMPLEFILE', 48, 32, FAssociatedIcons[8].Icon);
   FAssociatedIcons[8].SelfIcon := True;
   FAssociatedIcons[8].Size := 48;
 
   FAssociatedIcons[9].Ext := '.lnk';
-  FindIcon(HInstance, 'SIMPLEFILE', 16, 4, FAssociatedIcons[9].Icon);
+  FindIcon(HInstance, 'SIMPLEFILE', 16, 32, FAssociatedIcons[9].Icon);
   FAssociatedIcons[9].SelfIcon := True;
   FAssociatedIcons[9].Size := 48;
 
   FAssociatedIcons[10].Ext := '.lnk';
-  FindIcon(HInstance, 'SIMPLEFILE', 32, 4, FAssociatedIcons[10].Icon);
+  FindIcon(HInstance, 'SIMPLEFILE', 32, 32, FAssociatedIcons[10].Icon);
   FAssociatedIcons[10].SelfIcon := True;
   FAssociatedIcons[10].Size := 32;
 
   FAssociatedIcons[11].Ext := '.lnk';
-  FindIcon(HInstance, 'SIMPLEFILE', 48, 4, FAssociatedIcons[11].Icon); ;
+  FindIcon(HInstance, 'SIMPLEFILE', 48, 32, FAssociatedIcons[11].Icon); ;
   FAssociatedIcons[11].SelfIcon := True;
   FAssociatedIcons[11].Size := 16;
 end;

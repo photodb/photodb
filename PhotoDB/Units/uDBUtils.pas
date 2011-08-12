@@ -9,7 +9,7 @@ uses
   uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, uJpegUtils, uBitmapUtils, Forms,
-  uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations, uDBImageUtils,
+  uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations, uDBImageUtils, RAWImage,
   GraphicsBaseTypes, uDBAdapter, uCDMappingTypes, uExifUtils, UnitDBCommonGraphics;
 
 type
@@ -62,6 +62,11 @@ function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 var
   ROT: array [0 .. 3, 0 .. 3] of Integer;
 begin
+  if OldRotation >= 10 then
+  begin
+    Result := NewRotation;
+    Exit;
+  end;
 
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_0;
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_90;
@@ -753,6 +758,8 @@ begin
           Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
           try
             UpdateImageRecordFromExif(Info);
+            if IsRAWImageFile(Info.FileName) then
+              Info.Rotation := Info.Rotation * 10;
             if (Info.Rating > 0) and (DA.Rating <> Info.Rating) then
             begin
               SetRating(ID, Info.Rating);
@@ -1186,6 +1193,10 @@ begin
         Bmp := TBitmap.Create;
         try
           Bmp.PixelFormat := pf24bit;
+
+          if (G is TRAWImage) then
+            TRAWImage(G).DisplayDibSize := True;
+
           if Max(G.Width, G.Height) > AThImageSize then
           begin
             if G.Width > G.Height then

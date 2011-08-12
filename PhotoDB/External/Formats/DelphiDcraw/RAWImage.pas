@@ -18,6 +18,8 @@ type
     function GetWidth : Integer; override;
     function GetHeight : Integer; override;
   private
+    FDisplayDibSize: Boolean;
+    FHalfSizeLoad: Boolean;
     procedure SetIsPreview(const Value: boolean);
     procedure LoadFromFreeImage(Image : TFreeBitmap);
   public
@@ -29,6 +31,8 @@ type
     property IsPreview : Boolean read FIsPreview write SetIsPreview;
     property GraphicWidth: Integer read FWidth;
     property GraphicHeight: Integer read FHeight;
+    property DisplayDibSize: Boolean read FDisplayDibSize write FDisplayDibSize;
+    property HalfSizeLoad: Boolean read FHalfSizeLoad write FHalfSizeLoad;
   end;
 
   TRAWExifRecord = class(TObject)
@@ -68,11 +72,41 @@ implementation
 uses
   Dolphin_DB, UnitDBCommon;
 
-const
-  RAW_DISPLAY = 2;
-  RAW_PREVIEW = 1;
-
 { TRAWImage }
+
+function GetExifOrientation(RawBitmap: TFreeWinBitmap; Model: Integer): Integer;
+const
+  TAG_ORIENTATION = $0112;
+var
+  FindMetaData : PFIMETADATA;
+  TagData : PFITAG;
+
+  procedure ProcessTag;
+  begin
+    if FreeImage_GetTagID(TagData) = TAG_ORIENTATION then
+    begin
+      Result := PWord(FreeImage_GetTagValue(TagData))^;
+      if Result > 8 then
+        Result := 0;
+    end;
+  end;
+
+begin
+  Result := DB_IC_ROTETED_0;
+
+  FindMetaData := FreeImage_FindFirstMetadata(Model, RawBitmap.Dib, TagData);
+  try
+    if FindMetaData <> nil then
+    begin
+      ProcessTag;
+
+      while FreeImage_FindNextMetadata(FindMetaData, TagData) do
+        ProcessTag;
+    end;
+  finally
+    RawBitmap.FindCloseMetadata(FindMetaData);
+  end;
+end;
 
 function ReadRAWExif(FileName: String) : TRAWExif;
 var
@@ -144,11 +178,13 @@ begin
   FIsPreview := False;
   FRealWidth := 0;
   FRealHeight := 0;
+  FDisplayDibSize := False;
+  HalfSizeLoad := False;
 end;
 
 function TRAWImage.GetHeight: integer;
 begin
-  if FIsPreview then
+  if FIsPreview and not FDisplayDibSize then
     Result := FRealHeight
   else
     Result := FHeight;
@@ -156,10 +192,18 @@ end;
 
 function TRAWImage.GetWidth: integer;
 begin
-  if FIsPreview then
+  if FIsPreview and not FDisplayDibSize then
     Result := FRealWidth
   else
     Result := FWidth;
+end;
+
+function IIF(Condition: Boolean; A1, A2: Integer): Integer;
+begin
+  if Condition then
+    Result := A1
+  else
+    Result := A2;
 end;
 
 procedure TRAWImage.LoadFromFile(const FileName: string);
@@ -171,8 +215,7 @@ begin
     if FIsPreview then
       RawBitmap.LoadU(FileName, RAW_PREVIEW)
     else
-      RawBitmap.LoadU(FileName, RAW_DISPLAY);
-    //RawBitmap.ConvertTo24Bits;
+      RawBitmap.LoadU(FileName, IIF(FHalfSizeLoad, RAW_DISPLAY or RAW_HALFSIZE, RAW_DISPLAY));
     FWidth := RawBitmap.GetWidth;
     FHeight := RawBitmap.GetHeight;
     LoadFromFreeImage(RawBitmap);
@@ -204,7 +247,7 @@ begin
         if FIsPreview then
           RawBitmap.LoadFromMemory(MemIO, RAW_PREVIEW)
         else
-          RawBitmap.LoadFromMemory(MemIO, RAW_DISPLAY);
+          RawBitmap.LoadFromMemory(MemIO, IIF(FHalfSizeLoad, RAW_DISPLAY or RAW_HALFSIZE, RAW_DISPLAY));
       finally
         F(MemIO);
       end;
@@ -213,9 +256,8 @@ begin
       if FIsPreview then
         RawBitmap.LoadFromStream(Stream, RAW_PREVIEW)
       else
-        RawBitmap.LoadFromStream(Stream, RAW_DISPLAY);
+        RawBitmap.LoadFromStream(Stream, IIF(FHalfSizeLoad, RAW_DISPLAY or RAW_HALFSIZE, RAW_DISPLAY));
     end;
-    //RawBitmap.ConvertTo24Bits;
     FWidth := RawBitmap.GetWidth;
     FHeight := RawBitmap.GetHeight;
     LoadFromFreeImage(RawBitmap);

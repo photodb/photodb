@@ -182,20 +182,6 @@ begin
   Result := Format(TA('%dpx.'), [IntToStr(Pixels)]);
 end;
 
-function SizeInTextA(Size: Int64): string;
-begin
-  if Size <= 1024 then
-    Result := IntToStr(Size) + ' ' + TA('Bytes');
-  if (Size > 1024) and (Size <= 1024 * 999) then
-    Result := FloatToStrEx(Size / 1024, 3) + ' ' + TA('Kb');
-  if (Size > 1024 * 999) and (Size <= 1024 * 1024 * 999) then
-    Result := FloatToStrEx(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
-  if (Size > 1024 * 1024 * 999) then
-    Result := FloatToStrEx(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
-  if (Size div 1024 > 1024 * 1024 * 999) then
-    Result := FloatToStrEx((Size / (1024 * 1024)) / (1024 * 1024), 3) + ' ' + TA('Tb');
-end;
-
 procedure LoadNickJpegImage(Image: TImage);
 var
   Pic: Tpicture;
@@ -448,8 +434,10 @@ begin
     Result := FloatToStrEx(Size / 1024, 3) + ' ' + TA('Kb');
   if (Size > 1024 * 999) and (Size <= 1024 * 1024 * 999) then
     Result := FloatToStrEx(Size / (1024 * 1024), 3) + ' ' + TA('Mb');
-  if (Size > 1024 * 1024 * 999) then
+  if (Size > 1024 * 1024 * 999) and ((Size div 1024) <= 1024 * 1024 * 999) then
     Result := FloatToStrEx(Size / (1024 * 1024 * 1024), 3) + ' ' + TA('Gb');
+  if (Size div 1024 > 1024 * 1024 * 999) then
+    Result := FloatToStrEx((Size / (1024 * 1024)) / (1024 * 1024), 3) + ' ' + TA('Tb');
 end;
 
 function SendEMail(Handle: THandle; ToAddress, ToName, Subject, Body: string; Files: TStrings): Cardinal;

@@ -40,6 +40,7 @@ type
   end;
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;
+function ExifDisplayButNotRotate(Orientation: Integer): Integer;
 function GetExifRating(FileName: string): Integer; overload;
 function GetExifRating(ExifData: TExifData): Integer; overload;
 function GetExifRotate(FileName: string): Integer;
@@ -76,7 +77,7 @@ begin
   try
     Result := False;
 
-    if (Info.Rating > 0) and (Info.Rotation > DB_IMAGE_ROTATE_UNKNOWN) then
+    if (Info.Rating > 0) and (Info.Rotation <> DB_IMAGE_ROTATE_0) then
       Exit; //nothing to update
 
     if not Settings.Exif.ReadInfoFromExif then
@@ -361,6 +362,17 @@ begin
     DB_IMAGE_ROTATE_270:
       Result := toRightBottom;
   end;
+end;
+
+function ExifDisplayButNotRotate(Orientation: Integer): Integer;
+begin
+  Result := Orientation;
+  if Result < 0 then
+  begin
+    if Result > -100 then
+      Result := Result * 10;
+  end else
+    Result := Result * 10;
 end;
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;

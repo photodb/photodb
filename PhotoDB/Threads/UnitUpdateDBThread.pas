@@ -288,6 +288,11 @@ var
     ExifGroups := '';
     Info.Groups := '';
     UpdateImageRecordFromExif(Info, True, True);
+
+    //do not rotate preview, just dusplay
+    if IsRAWImageFile(Info.FileName) then
+      Info.Rotation := Info.Rotation * 10;
+
     ExifGroups := Info.Groups;
     Info.Groups := Groups;
     ProcessGroups(Info, ExifGroups);

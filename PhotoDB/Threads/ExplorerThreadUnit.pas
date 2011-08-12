@@ -13,7 +13,7 @@ uses
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
-  uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils;
+  uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -626,7 +626,6 @@ begin
           ShowInfo(L('Loading thumbnails') + '...');
           ShowInfo(FFiles.Count, 0);
           InfoPosition := 0;
-
           SynchronizeEx(HideLoadingSign);
 
           for I := 0 to FFiles.Count - 1 do
@@ -1049,8 +1048,8 @@ begin
           else
             SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC = ' + IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
 
-          SetStrParam(Query, 0, '%' + DBFolder + '%');
-          SetStrParam(Query, 1, '%' + DBFolder + '%\%');
+          SetStrParam(Query, 0, '%' + NormalizeDBStringLike(DBFolder) + '%');
+          SetStrParam(Query, 1, '%' + NormalizeDBStringLike(DBFolder) + '%\%');
 
           Query.Active := True;
 
@@ -2030,7 +2029,7 @@ begin
   end;
 end;
 
-procedure TExplorerThread.ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
+procedure TExplorerThread.ExtractBigPreview(FileName: string; Rotated: Integer; FileGUID: TGUID);
 var
   Graphic : TGraphic;
   GraphicClass : TGraphicClass;
@@ -2065,7 +2064,9 @@ begin
       if Graphic is TRAWImage then
       begin
         if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
-          Graphic.LoadFromFile(FileName);
+          Graphic.LoadFromFile(FileName)
+        else
+          Rotated := ExifDisplayButNotRotate(Rotated);
       end else
         Graphic.LoadFromFile(FileName);
     end;
@@ -2174,7 +2175,9 @@ begin
         if Graphic is TRAWImage then
         begin
           if not (Graphic as TRAWImage).LoadThumbnailFromFile(Info.FileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
-            Graphic.LoadFromFile(Info.FileName);
+            Graphic.LoadFromFile(Info.FileName)
+          else
+            Info.Rotation := ExifDisplayButNotRotate(Info.Rotation);
         end else
           Graphic.LoadFromFile(Info.FileName);
         IsBigImage := True;

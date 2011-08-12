@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, UnitDBKernel, SysUtils, Graphics, GraphicCrypt, Math,
-  RAWImage, UnitDBDeclare, uJpegUtils, uRuntime,
+  RAWImage, UnitDBDeclare, uJpegUtils, uRuntime, uExifUtils,
   uCDMappingTypes, uThreadForm, uLogger, uThreadEx, uMemory, uBitmapUtils,
   uMultiCPUThreadManager, uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes,
   uTranslate, uAssociations;
@@ -173,7 +173,9 @@ begin
       if FGraphic is TRAWImage then
       begin
         if not (FGraphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
-          (FGraphic as TRAWImage).LoadFromFile(FileName);
+          (FGraphic as TRAWImage).LoadFromFile(FileName)
+        else
+          Rotation := ExifDisplayButNotRotate(Rotation);
       end else
         FGraphic.LoadFromFile(FileName);
 

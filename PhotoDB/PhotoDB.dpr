@@ -197,7 +197,6 @@ uses
   UnitScriptsFunctions in 'Units\UnitScriptsFunctions.pas',
   UnitUpdateDBObject in 'Units\UnitUpdateDBObject.pas',
   UnitTimeCounter in 'Units\UnitTimeCounter.pas',
-  VirtualSystemImageLists in 'Units\VirtualSystemImageLists.pas',
   acWorkRes in 'Units\acWorkRes.pas',
   UnitPropeccedFilesSupport in 'Units\UnitPropeccedFilesSupport.pas',
   UnitINI in 'Units\UnitINI.pas',

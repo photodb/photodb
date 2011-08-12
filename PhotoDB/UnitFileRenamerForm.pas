@@ -130,6 +130,7 @@ begin
   if CmMaskList.Text = '' then
     CmMaskList.Text := L('Image #%3d [%date]');
   WebLinkWarning.Visible := False;
+  ValueListEditor1.ColWidths[0] := ValueListEditor1.Width div 2;
 end;
 
 procedure TFormFastFileRenamer.LoadLanguage;

@@ -7,7 +7,7 @@ uses GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
      Effects, uJpegUtils, uCDMappingTypes, uLogger, UnitDBCommon,
      uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel, uExifUtils,
      uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread, CCR.Exif,
-     uBitmapUtils;
+     uBitmapUtils, uShellIcons;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)
@@ -19,13 +19,16 @@ type
     FOwner: TExplorerForm;
     FGraphic: TGraphic;
     FBit, TempBit: TBitmap;
+    Ico: HIcon;
+    FLoadFullImage: Boolean;
   protected
     procedure Execute; override;
     procedure SetInfo;
     procedure SetImage;
     procedure DoDrawAttributes;
+    procedure UpdatePreviewIcon;
   public
-    constructor Create(FileName: string; FileSID: TGUID; Owner: TExplorerForm);
+    constructor Create(FileName: string; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
     destructor Destroy; override;
   end;
 
@@ -36,7 +39,7 @@ uses
 
 { TExplorerThumbnailCreator }
 
-constructor TExplorerThumbnailCreator.Create(FileName : string; FileSID: TGUID; Owner: TExplorerForm);
+constructor TExplorerThumbnailCreator.Create(FileName: string; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
 begin
   inherited Create(Owner, False);
   Info := TDBPopupMenuInfoRecord.Create;
@@ -44,6 +47,7 @@ begin
   FFileSID := FileSID;
   FOwner := Owner;
   Priority := tpLowest;
+  FLoadFullImage := LoadFullImage;
 end;
 
 procedure TExplorerThumbnailCreator.Execute;
@@ -57,6 +61,14 @@ begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
+    if not FLoadFullImage then
+    begin
+      //load item icon for preview
+      Ico := ExtractShellIcon(FFileName, 48);
+      if not SynchronizeEx(UpdatePreviewIcon) then
+        DestroyIcon(Ico);
+      Exit;
+    end;
     TempBitmap := TBitmap.Create;
     try
       TempBitmap.PixelFormat := pf32Bit;
@@ -149,7 +161,9 @@ begin
               if FGraphic is TRAWImage then
               begin
                 if not(FGraphic as TRAWImage).LoadThumbnailFromFile(FFileName, ThSizeExplorerPreview, ThSizeExplorerPreview) then
-                  FGraphic.LoadFromFile(FFileName);
+                  FGraphic.LoadFromFile(FFileName)
+                else
+                  Info.Rotation := ExifDisplayButNotRotate(Info.Rotation);
               end else
                 FGraphic.LoadFromFile(FFileName);
             end;
@@ -234,6 +248,12 @@ procedure TExplorerThumbnailCreator.SetInfo;
 begin
   if ExplorerManager.IsExplorer(FOwner) then
     (FOwner as TExplorerForm).SetPanelInfo(Info, FFileSID);
+end;
+
+procedure TExplorerThumbnailCreator.UpdatePreviewIcon;
+begin
+  if ExplorerManager.IsExplorer(FOwner) then
+    (FOwner as TExplorerForm).UpdatePreviewIcon(Ico, FFileSID);
 end;
 
 end.

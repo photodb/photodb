@@ -311,7 +311,9 @@ begin
       if Graphic is TRAWImage then
       begin
         if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
-          Graphic.LoadFromFile(FileName);
+          Graphic.LoadFromFile(FileName)
+        else
+          FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation);
       end else
         Graphic.LoadFromFile(FileName);
     end;

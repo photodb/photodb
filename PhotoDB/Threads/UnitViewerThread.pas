@@ -148,6 +148,7 @@ begin
         SetNOImageAsynch;
         Exit;
       end;
+
       if FUpdateInfo then
         UpdateRecord;
 
@@ -208,6 +209,9 @@ begin
           end;
           if FRotate = 0 then
             FRotate := GetExifRotate(FFileName);
+
+          if Graphic is TRAWImage then
+            FRotate := ExifDisplayButNotRotate(FRotate);
 
           ApplyRotate(Bitmap, FRotate);
           SetStaticImageAsynch;

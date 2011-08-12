@@ -107,17 +107,23 @@ begin
   end;
   Dec(Sm, 20);
   case FInfo.Rotation of
+    10 * DB_IMAGE_ROTATE_90,
     DB_IMAGE_ROTATE_90:
       DoDrawIcon(Sm, Y, DB_IC_ROTETED_90);
+    10 * DB_IMAGE_ROTATE_180,
     DB_IMAGE_ROTATE_180:
       DoDrawIcon(Sm, Y, DB_IC_ROTETED_180);
+    10 * DB_IMAGE_ROTATE_270,
     DB_IMAGE_ROTATE_270:
       DoDrawIcon(Sm, Y, DB_IC_ROTETED_270);
-    -10 * DB_IMAGE_ROTATE_90:
+    -10 * DB_IMAGE_ROTATE_90,
+    -100 * DB_IMAGE_ROTATE_90:
       DoDrawIcon(Sm, Y, DB_IC_ROTETED_90, True);
-    -10 * DB_IMAGE_ROTATE_180:
+    -10 * DB_IMAGE_ROTATE_180,
+    -100 * DB_IMAGE_ROTATE_180:
       DoDrawIcon(Sm, Y, DB_IC_ROTETED_180, True);
-    -10 * DB_IMAGE_ROTATE_270:
+    -10 * DB_IMAGE_ROTATE_270,
+    -100 * DB_IMAGE_ROTATE_270:
       DoDrawIcon(Sm, Y, DB_IC_ROTETED_270, True);
     else
       Inc(Sm, 20);

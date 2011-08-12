@@ -32,8 +32,8 @@ object FormFastFileRenamer: TFormFastFileRenamer
       'Original File Name'
       'New File Name')
     ColWidths = (
-      188
-      285)
+      221
+      252)
   end
   object Panel1: TPanel
     Left = 0

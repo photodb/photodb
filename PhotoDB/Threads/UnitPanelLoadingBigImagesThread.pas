@@ -6,7 +6,8 @@ uses
   Windows, Classes, SysUtils, Forms, Graphics, Math, GraphicCrypt,
   UnitDBDeclare, RAWImage, uJpegUtils, uRuntime, uBitmapUtils,
   uCDMappingTypes, uLogger, uMemory, UnitDBKernel, uDBThread, uDBForm,
-  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uAssociations;
+  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uAssociations,
+  uExifUtils;
 
 type
   TPanelLoadingBigImagesThread = class(TDBThread)
@@ -134,7 +135,10 @@ begin
               if Graphic is TRAWImage then
               begin
                 if not(Graphic as TRAWImage).LoadThumbnailFromFile(StrParam, FPictureSize, FPictureSize) then
-                  Graphic.LoadFromFile(ProcessPath(StrParam));
+                  Graphic.LoadFromFile(ProcessPath(StrParam))
+                else
+                  FData[I].Rotation := ExifDisplayButNotRotate(FData[I].Rotation);
+
               end else
                 Graphic.LoadFromFile(ProcessPath(StrParam));
             end;

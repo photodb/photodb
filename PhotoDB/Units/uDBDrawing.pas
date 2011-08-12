@@ -176,12 +176,18 @@ begin
   end;
 
   case Rotate of
-    DB_IMAGE_ROTATE_90:   DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90);
-    DB_IMAGE_ROTATE_180:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180);
-    DB_IMAGE_ROTATE_270:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270);
-    -10 * DB_IMAGE_ROTATE_90:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90, True);
-    -10 * DB_IMAGE_ROTATE_180: DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180, True);
-    -10 * DB_IMAGE_ROTATE_270: DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270, True);
+    DB_IMAGE_ROTATE_90,
+    10 * DB_IMAGE_ROTATE_90:   DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90);
+    DB_IMAGE_ROTATE_180,
+    10 * DB_IMAGE_ROTATE_180:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180);
+    DB_IMAGE_ROTATE_270,
+    10 * DB_IMAGE_ROTATE_270:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270);
+    -10 * DB_IMAGE_ROTATE_90,
+    -100 * DB_IMAGE_ROTATE_90:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90, True);
+    -10 * DB_IMAGE_ROTATE_180,
+    -100 * DB_IMAGE_ROTATE_180: DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180, True);
+    -10 * DB_IMAGE_ROTATE_270,
+    -100 * DB_IMAGE_ROTATE_270: DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270, True);
   end;
   if Access = db_access_private then
     DoDrawIconEx(HCanvas, 40 + DeltaX, DeltaY, DB_IC_PRIVATE);

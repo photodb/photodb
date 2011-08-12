@@ -15,12 +15,12 @@ uses
   EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
-  UnitDBFileDialogs, uIconUtils, uBitmapUtils,
+  UnitDBFileDialogs, uIconUtils, uBitmapUtils, uShellIcons,
   UnitDBCommon, uCDMappingTypes, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
-  uDBUtils, uSettings, uAssociations, PathEditor, PanelCanvas;
+  uDBUtils, uSettings, uAssociations, PathEditor;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -571,13 +571,14 @@ type
      function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
    public
      NoLockListView: Boolean;
+     procedure UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
      procedure LoadLastPath;
-     Procedure LoadLanguage;
+     procedure LoadLanguage;
      procedure LoadSizes;
-     procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
-     constructor Create(AOwner : TComponent; GoToLastSavedPath : Boolean); reintroduce; overload;
+     procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
+     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); reintroduce; overload;
      destructor Destroy; override;
-     property WindowID : TGUID read FWindowID;
+     property WindowID: TGUID read FWindowID;
      property MyComputer : string read GetMyComputer;
      property ViewInfo: TExplorerViewInfo read GetViewInfo;
    end;
@@ -2173,11 +2174,11 @@ begin
     NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_REFRESH_IMAGE,
       FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID));
     ExplorerUpdateManager.QueueNotify(NotifyInfo);
-  end;
-
-  if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
+  end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
     TExplorerThread.Create(FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID), THREAD_TYPE_FILE, ViewInfo,
-      Self, UpdaterInfo, StateID);
+      Self, UpdaterInfo, StateID)
+  else 
+    UpdaterInfo.FileInfo.Free;
 end;
 
 procedure TExplorerForm.HistoryChanged(Sender: TObject);
@@ -4385,14 +4386,16 @@ var
 begin
   P := PePath.CurrentPathEx;
 
-  if (P.ID = '') then
+  if (P.ID = '') or (P.ID = PATH_SMB_SHARE) then
     SetStringPath(PePath.Path, False)
+  else if P.ID = PATH_SMB_PC then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_COMPUTER), False)
   else if P.ID = PATH_MY_COMPUTER then
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False)
   else if P.ID = PATH_NETWORKS then
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_NETWORK), False)
   else if P.ID = PATH_WORKGROUP then
-    SetNewPathW(ExplorerPath(PePath.Path, EXPLORER_ITEM_WORKGROUP), False);
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_WORKGROUP), False);
 end;
 
 procedure TExplorerForm.PePathGetSystemIcon(Sender: TPathEditor;
@@ -4411,7 +4414,7 @@ begin
     else if Path.ID = PATH_SMB_PC then
       FindIcon(HInstance, 'COMPUTER', 16, 32, Ico)
     else if Path.ID = PATH_EMPTY then
-      FindIcon(HInstance, 'SIMPLEFILE', 16, 32, Ico)
+      FindIcon(HInstance, 'DIRECTORY', 16, 32, Ico)
     else if Path.ID = PATH_LOADING then
       FindIcon(HInstance, 'SEARCH', 16, 32, Ico)
     else if Path.ID = PATH_RELOAD then
@@ -5859,10 +5862,10 @@ var
   Dx: Integer;
   FolderImageRect: TRect;
   Fbmp: TBitmap;
-  OldMode: Cardinal;
   Pic: TPNGImage;
   Bit32: TBitmap;
   TempBitmap: TBitmap;
+  IsDirectory, LoadIconFromThread: Boolean;
 begin
   if Rdown then
     FDBCanDrag := False;
@@ -5938,7 +5941,7 @@ begin
       FSelectedInfo._GUID := FileSID;
       if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
       begin
-        TExplorerThumbnailCreator.Create(FileName, FileSID, Self);
+        TExplorerThumbnailCreator.Create(FileName, FileSID, Self, True);
         if HelpNo = 2 then
           HelpTimer.Enabled := True;
       end;
@@ -5954,6 +5957,7 @@ begin
       finally
         F(TempBitmap);
       end;
+
       try
         with ImPreview.Picture.Bitmap do
         begin
@@ -5976,17 +5980,32 @@ begin
                 if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
                   FileName := IncludeTrailingBackslash(FileName);
 
-                OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+                LoadIconFromThread := not ((FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER)
+                  or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK)
+                  or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP)
+                  or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER));
+                if not LoadIconFromThread then
+                begin
+                  Ico := TAIcons.Instance.GetIconByExt(FileName, False, 48, False);
+                end else
+                begin
+                  IsDirectory := (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER);
+                  if IsDirectory then
+                    FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico)
+                  else 
+                    FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
 
-                Ico := TAIcons.Instance.GetIconByExt(FileName, (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
-                    (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER), 48, False);
+                end;
+                                
                 try
                   Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
                     ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
                 finally
                   F(Ico);
                 end;
-                SetErrorMode(OldMode);
+
+                if LoadIconFromThread then
+                  TExplorerThumbnailCreator.Create(FileName, FSelectedInfo._GUID, Self, False);
               end else
               begin
                 Pic := GetFolderPicture;
@@ -6075,6 +6094,7 @@ begin
         on E: Exception do
           EventLog(':TExplorerForm::DoSelectItem() throw exception: ' + E.message);
       end;
+
     end else
     begin
       Bit32 := TBitmap.Create;
@@ -6128,6 +6148,31 @@ begin
       ReallignInfo;
     end;
   end;
+end;
+
+procedure TExplorerForm.UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
+var
+  Icon: TIcon;
+begin
+  if not IsEqualGUID(SID, FSelectedInfo._GUID) then
+    Exit;
+    
+  with ImPreview.Picture.Bitmap do
+  begin
+    Width := ThSizeExplorerPreview;
+    Height := ThSizeExplorerPreview;
+    Canvas.Pen.Color := clBtnFace;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);   
+    Icon := TIcon.Create;
+    try
+      Icon.Handle := Ico;
+      Canvas.Draw(ThSizeExplorerPreview div 2 - Icon.Width div 2,
+        ThSizeExplorerPreview div 2 - Icon.Height div 2, Icon);
+    finally
+      F(Icon);
+    end;
+  end;      
 end;
 
 procedure TExplorerForm.SelectTimerTimer(Sender: TObject);
@@ -6251,6 +6296,7 @@ begin
     end;
   end;
 end;
+
 
 function TExplorerForm.UpdatingNow(ID: Integer): boolean;
 begin

@@ -9,7 +9,7 @@ uses
   uJpegUtils, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
   ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB,
-  uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics;
+  uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics, RAWImage;
 
 type
   TJpegX = class(TJPEGImage);
@@ -134,6 +134,9 @@ var
         try
           ExifData.LoadFromGraphic(FData.FileName);
           FProcessingParams.Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+
+          if GraphicClass = TRAWImage then
+            FProcessingParams.Rotation := DB_IMAGE_ROTATE_0;
         except
           on e : Exception do
             EventLog(e.Message);
@@ -391,7 +394,7 @@ begin
     if (NewGraphicClass = GraphicClass) then
       Ext := ExtractFileExt(FData.FileName)
     else
-      Ext := '.' + TFileAssociations.Instance.GetGraphicClassExt(NewGraphicClass);
+      Ext := TFileAssociations.Instance.GetGraphicClassExt(NewGraphicClass);
 
     FileName := IncludeTrailingPathDelimiter(FProcessingParams.WorkDirectory);
     FileName := FileName + TrimLeftString(GetFileNameWithoutExt(FData.FileName) + ClearString(FProcessingParams.Preffix), 255 - Length(Ext));
@@ -411,7 +414,7 @@ begin
         if FData.ID > 0 then
         begin
           //file in collection - update rotation attribute
-          if FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF then
+          if (FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF) then
           begin
             FixEXIFRotate;
             Rotation := FProcessingParams.Rotation;
@@ -485,6 +488,11 @@ begin
     end;
 
     Graphic := GraphicClass.Create;
+
+    //RAW loads in hasf size for preview
+    if (Graphic is TRAWImage) and FProcessingParams.PreviewOptions.GeneratePreview then
+      TRAWImage(Graphic).HalfSizeLoad := True;
+
     try
       if Crypted then
       begin

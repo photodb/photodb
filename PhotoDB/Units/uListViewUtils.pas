@@ -664,8 +664,11 @@ begin
 
   ListView.CellSizes.Thumbnail.Width := ThWidth + AddSize div CountOfItemsX;
   ListView.CellSizes.Thumbnail.Height := ImageSize + 40;
-  ListView.Selection.RoundRect := ListView.View = elsThumbnail;
-  ListView.Selection.RoundRectRadius := Min(10, ImageSize div 10)
+  ListView.Selection.RoundRect := True;
+  if ListView.View = elsThumbnail then
+    ListView.Selection.RoundRectRadius := Min(10, ImageSize div 10)
+  else
+    ListView.Selection.RoundRectRadius := 5;
 end;
 
 function GetListViewHeaderHeight(ListView: TListView): Integer;

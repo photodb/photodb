@@ -57,6 +57,8 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
+  Rotation := - 10 * GetExifRotate(FOptions.FileName);
+
   GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FOptions.FileName));
   if GraphicClass = nil then
     Exit;
@@ -84,19 +86,20 @@ begin
     begin
       if Graphic is TRAWImage then
       begin
-        if not(Graphic as TRAWImage).LoadThumbnailFromFile(FOptions.FileName, ThSizePropertyPreview,
-          ThSizePropertyPreview) then
-          Graphic.LoadFromFile(FOptions.FileName);
+        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FOptions.FileName, ThSizePropertyPreview, ThSizePropertyPreview) then
+          Graphic.LoadFromFile(FOptions.FileName)
+        else
+          Rotation := ExifDisplayButNotRotate(Rotation);
+
       end else
         Graphic.LoadFromFile(FOptions.FileName);
     end;
-    Rotation := GetExifRotate(FOptions.FileName);
 
     IntParamW := Graphic.Width;
     IntParamH := Graphic.Height;
     Synchronize(SetSizes);
 
-    JPEGScale(Graphic,ThSizePropertyPreview, ThSizePropertyPreview);
+    JPEGScale(Graphic, ThSizePropertyPreview, ThSizePropertyPreview);
 
     FB := TBitmap.Create;
     try
@@ -106,6 +109,9 @@ begin
       try
         FB1.PixelFormat := pf24bit;
         FB1.SetSize(ThSizePropertyPreview, ThSizePropertyPreview);
+
+        if Graphic is TRAWImage then
+          TRAWImage(Graphic).DisplayDibSize := True;
 
         if Graphic.Width > Graphic.Height then
         begin

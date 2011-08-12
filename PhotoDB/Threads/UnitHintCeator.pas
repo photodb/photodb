@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, ExtCtrls, uBitmapUtils,
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage, uJpegUtils,
-  GraphicCrypt, uGOM, uFileUtils, uDBForm,
+  GraphicCrypt, uGOM, uFileUtils, uDBForm, uExifUtils,
   uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare,
   uGraphicUtils, uRuntime, uAssociations, uDBThread;
 
@@ -123,7 +123,9 @@ begin
         if Graphic is TRAWImage then
         begin
           if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
-            Graphic.LoadFromFile(FInfo.FileName);
+            Graphic.LoadFromFile(FInfo.FileName)
+          else
+            FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation)
         end else
         begin
           if not FInfo.InnerImage then
