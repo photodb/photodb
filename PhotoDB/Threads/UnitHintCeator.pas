@@ -122,9 +122,10 @@ begin
       begin
         if Graphic is TRAWImage then
         begin
+          TRAWImage(Graphic).HalfSizeLoad := True;
           if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
             Graphic.LoadFromFile(FInfo.FileName)
-          else
+          else if FInfo.ID = 0 then
             FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation)
         end else
         begin

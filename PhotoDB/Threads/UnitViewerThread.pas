@@ -15,8 +15,6 @@ type
   private
     { Private declarations }
     FViewer: TViewerForm;
-    FFileName: string;
-    FRotate: Integer;
     FFullImage: Boolean;
     FBeginZoom: Extended;
     FSID: TGUID;
@@ -30,7 +28,7 @@ type
     FTransparent: Boolean;
     FBooleanResult: Boolean;
     FInfo: TDBPopupMenuInfoRecord;
-    FUpdateInfo: Boolean;
+    FIsNewDBInfo: Boolean;
     FPage: Word;
     FPages: Word;
     TransparentColor : TColor;
@@ -48,8 +46,8 @@ type
     procedure TestThreadSynch;
     procedure UpdateRecord;
   public
-    constructor Create(Viewer: TViewerForm; FileName: string; Rotate: Integer; FullImage: Boolean; BeginZoom: Extended;
-      SID: TGUID; IsForward, UpdateInfo: Boolean; Page: Word);
+    constructor Create(Viewer: TViewerForm; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended;
+      SID: TGUID; IsForward: Boolean; Page: Word);
     destructor Destroy; override;
   end;
 
@@ -59,19 +57,17 @@ uses UnitPasswordForm, SlideShow;
 
 { TViewerThread }
 
-constructor TViewerThread.Create(Viewer: TViewerForm; FileName: String; Rotate: Integer; FullImage : Boolean; BeginZoom : Extended; SID : TGUID; IsForward, UpdateInfo : Boolean; Page : Word);
+constructor TViewerThread.Create(Viewer: TViewerForm; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended; SID : TGUID; IsForward: Boolean; Page: Word);
 begin
   inherited Create(Viewer, False);
   FPage := Page;
-  FFileName := FileName;
-  FRotate := Rotate;
+  FIsNewDBInfo := False;
   FFullImage := FullImage;
   FBeginZoom := BeginZoom;
   FSID := SID;
   FIsForward := IsForward;
-  FUpdateInfo := UpdateInfo;
   FViewer := Viewer;
-  FInfo := nil;
+  FInfo := Info.Copy;
   FIsEncrypted := False;
   if Viewer.FullScreenNow then
     TransparentColor := 0
@@ -94,10 +90,9 @@ begin
   FreeOnTerminate := True;
   FPages := 0;
   Priority := TpHigher;
-  FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
   try
     FTransparent := False;
-    if not FileExistsEx(FFileName) then
+    if not FileExistsEx(FInfo.FileName) then
     begin
       SetNOImageAsynch;
       Exit;
@@ -109,7 +104,7 @@ begin
       SetNOImageAsynch;
       Exit;
     end;
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FFileName));
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
     if GraphicClass = nil then
     begin
       SetNOImageAsynch;
@@ -126,7 +121,7 @@ begin
         if PassWord <> '' then
         begin
           F(Graphic);
-          Graphic := DeCryptGraphicFileEx(FFileName, PassWord, FPages, FFullImage, FPage);
+          Graphic := DeCryptGraphicFileEx(FInfo.FileName, PassWord, FPages, FFullImage, FPage);
         end else
         begin
           if FIsEncrypted and (PassWord = '') then
@@ -138,10 +133,10 @@ begin
             if Graphic is TTiffImage then
             begin
               (Graphic as TTiffImage).Page := FPage;
-              (Graphic as TTiffImage).LoadFromFile(FFileName);
+              (Graphic as TTiffImage).LoadFromFile(FInfo.FileName);
             end
             else
-              Graphic.LoadFromFile(FFileName);
+              Graphic.LoadFromFile(FInfo.FileName);
           end;
         end;
       except
@@ -149,7 +144,7 @@ begin
         Exit;
       end;
 
-      if FUpdateInfo then
+      if not FInfo.InfoLoaded then
         UpdateRecord;
 
       FRealWidth := Graphic.Width;
@@ -207,13 +202,17 @@ begin
             SetNOImageAsynch;
             Exit;
           end;
-          if FRotate = 0 then
-            FRotate := GetExifRotate(FFileName);
 
-          if Graphic is TRAWImage then
-            FRotate := ExifDisplayButNotRotate(FRotate);
+          if FInfo.ID = 0 then
+          begin
+            if FInfo.Rotation = 0 then
+              FInfo.Rotation := GetExifRotate(FInfo.FileName);
 
-          ApplyRotate(Bitmap, FRotate);
+            if (Graphic is TRAWImage) then
+              FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation);
+          end;
+
+          ApplyRotate(Bitmap, FInfo.Rotation);
           SetStaticImageAsynch;
         finally
           F(Bitmap);
@@ -231,11 +230,11 @@ end;
 procedure TViewerThread.GetPassword;
 begin
   PassWord := '';
-  if ValidCryptGraphicFile(FFileName) then
+  if ValidCryptGraphicFile(FInfo.FileName) then
   begin
 
     FIsEncrypted := True;
-    PassWord := DBKernel.FindPasswordForCryptImageFile(FFileName);
+    PassWord := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
     if PassWord = '' then
     begin
       if not FIsForward then
@@ -265,7 +264,7 @@ end;
 procedure TViewerThread.GetPasswordSynch;
 begin
   if not FViewer.FullScreenNow then
-    PassWord := GetImagePasswordFromUser(FFileName);
+    PassWord := GetImagePasswordFromUser(FInfo.FileName);
 end;
 
 procedure TViewerThread.SetAnimatedImage;
@@ -277,7 +276,7 @@ begin
       Viewer.RealImageHeight := FRealHeight;
       Viewer.RealImageWidth := FRealWidth;
       Viewer.RealZoomInc := FRealZoomScale;
-      if FUpdateInfo then
+      if FIsNewDBInfo then
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
       Viewer.SetAnimatedImage(Graphic);
@@ -320,11 +319,11 @@ begin
       Viewer.RealImageWidth := FRealWidth;
       Viewer.RealZoomInc := FRealZoomScale;
       Viewer.Item.Crypted := FIsEncrypted;
-      if FUpdateInfo then
+      if FIsNewDBInfo then
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.ImageExists := False;
       Viewer.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
-      Viewer.LoadingFailed(FFileName);
+      Viewer.LoadingFailed(FInfo.FileName);
     end;
 end;
 
@@ -363,7 +362,7 @@ begin
       Viewer.RealImageWidth := FRealWidth;
       Viewer.RealZoomInc := FRealZoomScale;
       Viewer.Item.Crypted := FIsEncrypted;
-      if FUpdateInfo then
+      if FIsNewDBInfo then
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.Item.Width := FRealWidth;
       Viewer.Item.Height := FRealHeight;
@@ -421,26 +420,27 @@ end;
 
 procedure TViewerThread.UpdateRecord;
 var
-  Query : TDataSet;
+  Query: TDataSet;
+  FileName: string;
 begin
   CoInitialize(nil);
   try
+    FileName := FInfo.FileName;
     F(FInfo);
-    FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
+    FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     Query := GetQuery;
     ReadOnlyQuery(Query);
     try
       Query.Active := False;
-      SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName, True))
+      SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FInfo.FileName, True))
           + ' AND FFileName LIKE :FFileName');
-      SetStrParam(Query, 0, AnsiLowerCase(FFileName));
+      SetStrParam(Query, 0, AnsiLowerCase(FInfo.FileName));
       Query.Active := True;
       if Query.RecordCount <> 0 then
       begin
         FInfo.ReadFromDS(Query);
-        FRotate := FInfo.Rotation;
-      end else
-        FUpdateInfo := False;
+        FIsNewDBInfo := True;
+      end;
       Query.Close;
     finally
       FreeDS(Query);

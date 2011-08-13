@@ -18,12 +18,12 @@ uses
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
   uExifUtils;
 
-type
+{type
   TRotatingImageInfo = record
     FileName: string;
     Rotating: Integer;
     Enabled: Boolean;
-  end;
+  end;}
 
 type
   TViewer = class(TViewerForm, IImageSource)
@@ -119,7 +119,7 @@ type
     AddHiddenInfo1: TMenuItem;
     ExtractHiddenInfo1: TMenuItem;
     procedure FormCreate(Sender: TObject);
-    function LoadImage_(Sender: TObject; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
+    function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
     procedure FormResize(Sender: TObject);
     Procedure Next_(Sender: TObject);
@@ -225,7 +225,6 @@ type
     LockEventRotateFileList : TStrings;
     LastZValue : Extended;
     FCreating : Boolean;
-    FRotatingImageInfo : TRotatingImageInfo;
     FW7TaskBar : ITaskbarList3;
     FProgressMessage : Cardinal;
     FIsWaiting: Boolean;
@@ -341,7 +340,6 @@ begin
   FCreating := True;
   FCurrentPage := 0;
   FPageCount := 1;
-  FRotatingImageInfo.Enabled := False;
   WaitingList := False;
   LastZValue := 1;
   LockEventRotateFileList := TStringList.Create;
@@ -445,7 +443,8 @@ begin
   PostMessage(Handle, FProgressMessage, 0, 0);
 end;
 
-function TViewer.LoadImage_(Sender: TObject; Rotate : integer; FullImage : Boolean; BeginZoom : Extended; RealZoom : Boolean) : boolean;
+function TViewer.LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended;
+  RealZoom: Boolean): Boolean;
 var
   NeedsUpdating: Boolean;
 begin
@@ -456,7 +455,6 @@ begin
   else
     NeedsUpdating := False;
 
-  Rotate := Item.Rotation;
   Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1,
     CurrentInfo.Count]);
 
@@ -472,9 +470,9 @@ begin
 
     Result := True;
     if not RealZoom then
-      TViewerThread.Create(Self, Item.FileName, Rotate, FullImage, 1, FSID, False, False, FCurrentPage)
+      TViewerThread.Create(Self, Item, FullImage, 1,         FSID, False, FCurrentPage)
     else
-      TViewerThread.Create(Self, Item.FileName, Rotate, FullImage, BeginZoom, FSID, False, False, FCurrentPage);
+      TViewerThread.Create(Self, Item, FullImage, BeginZoom, FSID, False, FCurrentPage);
 
     ForwardThreadExists := False;
 
@@ -790,8 +788,7 @@ begin
       if DBKernel.FindPasswordForCryptImageFile(Item.FileName) = '' then
         Exit;
   if not SlideShowNow then
-    LoadImage_(Sender, Item.Rotation, False,
-      Zoom, False)
+    LoadImage_(Sender, False, Zoom, False)
 end;
 
 procedure TViewer.Previous_(Sender: TObject);
@@ -803,8 +800,7 @@ begin
     CurrentFileNumber := CurrentInfo.Count - 1;
   FCurrentPage := 0;
   if not SlideShowNow then
-    LoadImage_(Sender, Item.Rotation, False,
-      Zoom, False);
+    LoadImage_(Sender, False, Zoom, False);
 end;
 
 procedure TViewer.NextImageClick(Sender: TObject);
@@ -904,8 +900,7 @@ begin
     SlideShowNow := False;
     Loading := True;
     ImageExists := False;
-    LoadImage_(Sender, Item.Rotation, False,
-      Zoom, False);
+    LoadImage_(Sender, False, Zoom, False);
     if DirectShowForm <> nil then
       DirectShowForm.Close;
   end;
@@ -1241,7 +1236,7 @@ begin
           CurrentInfo[I].InfoLoaded := True;
           CurrentInfo[I].ID := 0;
           if I = CurrentFileNumber then
-            LoadImage_(Sender, Item.Rotation, False, Zoom, False);
+            LoadImage_(Sender, False, Zoom, False);
           Exit;
         end;
       end;
@@ -1275,7 +1270,7 @@ begin
       if Value.NewName <> '' then
         Item.FileName := Value.NewName;
       Item.InfoLoaded := False;
-      LoadImage_(Sender, Item.Rotation, False, Zoom, False);
+      LoadImage_(Sender, False, Zoom, False);
       Exit;
     end;
 
@@ -1285,7 +1280,7 @@ begin
         begin
           CurrentInfo[I].InfoLoaded := False;
           if I = CurrentFileNumber then
-            LoadImage_(Sender, Item.Rotation, False, Zoom, False);
+            LoadImage_(Sender, False, Zoom, False);
           Exit;
         end;
 
@@ -1298,7 +1293,7 @@ begin
     if (EventID_Param_Rotate in Params) then
       Item.Rotation := Value.Rotate;
     if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) then
-      LoadImage_(Sender, Item.Rotation, False, Zoom, False);
+      LoadImage_(Sender, False, Zoom, False);
   end;
 end;
 
@@ -1341,7 +1336,7 @@ begin
     FreeDS(FQuery);
   end;
   CurrentFileNumber := 0;
-  LoadImage_(nil, Item.Rotation, False, Zoom, False);
+  LoadImage_(nil, False, Zoom, False);
   Show;
   SetFocus;
   if CurrentInfo.Count < 2 then
@@ -1763,7 +1758,7 @@ begin
       Loading := True;
       TW.I.Start('LoadImage_');
 
-      LoadImage_(Sender, Item.Rotation, False, Zoom, False);
+      LoadImage_(Sender, False, Zoom, False);
     end else
     begin
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
@@ -2122,7 +2117,7 @@ begin
     ScrollBar2.PageSize := 0;
     ScrollBar2.Max := 100;
     ScrollBar2.Position := 50;
-    LoadImage_(Sender, Item.Rotation, True, 1, True);
+    LoadImage_(Sender, True, 1, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end else
@@ -2166,7 +2161,7 @@ begin
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    LoadImage_(Sender, Item.Rotation, True, Z, True);
+    LoadImage_(Sender, True, Z, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end else
@@ -2211,7 +2206,7 @@ begin
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    LoadImage_(Sender, Item.Rotation, True, Z, True);
+    LoadImage_(Sender, True, Z, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end else
@@ -2595,7 +2590,7 @@ end;
 
 procedure TViewer.ReloadCurrent;
 begin
-  LoadImage_(Self, Item.Rotation, False, Zoom, False);
+  LoadImage_(Self, False, Zoom, False);
 end;
 
 procedure TViewer.Pause;
@@ -2651,15 +2646,10 @@ begin
   TbZoomIn.Down := False;
   EndWaitToImage(Self);
 
-  if FRotatingImageInfo.Enabled then
-    if AnsiLowerCase(FRotatingImageInfo.FileName) = AnsiLowerCase(FCurrentlyLoadedFile) then
-      ApplyRotate(FbImage, FRotatingImageInfo.Rotating);
-
   ReAllignScrolls(False, Point(0, 0));
   ValidImages := 1;
   RecreateDrawImage(Self);
   PrepareNextImage;
-  FRotatingImageInfo.Enabled := False;
 end;
 
 procedure TViewer.SetLoading(const Value: Boolean);
@@ -3014,7 +3004,6 @@ begin
   Invalidate;
   RecreateDrawImage(Self);
   PrepareNextImage;
-  FRotatingImageInfo.Enabled := False;
 end;
 
 procedure TViewer.SetCurrentlyLoadedFile(const Value: String);
@@ -3035,8 +3024,7 @@ begin
       N := 0;
     ForwardThreadExists := True;
     ForwardThreadFileName := CurrentInfo[N].FileName;
-    TViewerThread.Create(Self, CurrentInfo[N].FileName, CurrentInfo[N].Rotation, False, 1, ForwardThreadSID,
-      True, not CurrentInfo[N].InfoLoaded, 0);
+    TViewerThread.Create(Self, CurrentInfo[N], False, 1, ForwardThreadSID, True, 0);
   end;
 end;
 
@@ -3194,7 +3182,7 @@ begin
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    LoadImage_(Sender, Item.Rotation, False, 1, True);
+    LoadImage_(Sender, False, 1, True);
     TbrActions.Refresh;
     TbrActions.Realign;
   end;
@@ -3363,11 +3351,6 @@ begin
             ApplyRotate(FbImage, CurrentInfo[I].Rotation);
             RecreateDrawImage(Self);
           end;
-      end else
-      begin
-        FRotatingImageInfo.Enabled := True;
-        FRotatingImageInfo.FileName := FileName;
-        FRotatingImageInfo.Rotating := CurrentInfo[I].Rotation;
       end;
       Break;
     end;

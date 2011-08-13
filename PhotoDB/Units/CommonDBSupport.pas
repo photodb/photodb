@@ -585,6 +585,7 @@ begin
 
   FQuery := GetQuery(TableName, True);
   try
+    ReadOnlyQuery(FQuery);
     SQL := 'SELECT * FROM DBSettings';
     try
       SetSQL(FQuery, SQL);

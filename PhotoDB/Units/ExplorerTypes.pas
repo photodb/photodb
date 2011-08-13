@@ -2,9 +2,9 @@ unit ExplorerTypes;
 
 interface
 
-uses Forms, SysUtils, Windows, Graphics, UnitDBDeclare,
-  Messages, Classes, JPEG, SyncObjs,
-  uBitmapUtils, Effects, uFileUtils, uMemory, uDBPopupMenuInfo;
+uses
+  SysUtils, Windows, Graphics, UnitDBDeclare, Messages, Classes, JPEG, SyncObjs,
+  uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -585,14 +585,14 @@ begin
       FFile := TLockedFile(FFiles[I]);
       if FFile.FileName = FileName then
       begin
-        FFile.DateOfUnLock := Now + LifeTimeMs / 1000;
+        FFile.DateOfUnLock := Now + LifeTimeMs / (1000 * 60 * 60 * 24);
         Result := FFile;
         Exit;
       end;
     end;
     Result := TLockedFile.Create;
     Result.FileName := FileName;
-    Result.DateOfUnLock := Now + LifeTimeMs / 1000;
+    Result.DateOfUnLock := Now + LifeTimeMs / (1000 * 60 * 60 * 24);
     FFiles.Add(Result);
   finally
     FSync.Leave;

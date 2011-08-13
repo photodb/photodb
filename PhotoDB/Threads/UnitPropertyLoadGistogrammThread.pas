@@ -103,6 +103,8 @@ begin
       Exit;
 
     Graphic := GraphicClass.Create;
+    if Graphic is TRAWImage then
+      TRAWImage(Graphic).HalfSizeLoad := True;
     try
       if ValidCryptGraphicFile(FOptions.FileName) then
       begin

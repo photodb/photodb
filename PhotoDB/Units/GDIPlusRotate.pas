@@ -327,6 +327,7 @@ begin
       DeleteFile(PWideChar(AFileName));
       RenameFile(FileNameTemp, AFileName);
     end;
+    TLockFiles.Instance.RemoveLockedFile(FileName);
   end else
   begin
     if FileExists(OtherFile) then

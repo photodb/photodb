@@ -68,6 +68,15 @@ begin
     Exit;
   end;
 
+  if (OldRotation >= - 50) and (OldRotation < 0) then
+    OldRotation := - OldRotation div 10;
+
+  if OldRotation < 0 then
+  begin
+    Result := NewRotation;
+    Exit;
+  end;
+
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_0;
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_90;
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_180] := DB_IMAGE_ROTATE_180;

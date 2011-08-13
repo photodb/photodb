@@ -1236,6 +1236,7 @@ begin
             begin
               if Graphic is TRAWImage then
               begin
+                TRAWImage(Graphic).HalfSizeLoad := True;
                 if not (Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index], SmallImageSize, SmallImageSize) then
                   Graphic.LoadFromFile(Files[Index]);
               end else
@@ -2063,6 +2064,7 @@ begin
     begin
       if Graphic is TRAWImage then
       begin
+        TRAWImage(Graphic).HalfSizeLoad := True;
         if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
           Graphic.LoadFromFile(FileName)
         else
@@ -2174,6 +2176,7 @@ begin
       begin
         if Graphic is TRAWImage then
         begin
+          TRAWImage(Graphic).HalfSizeLoad := True;
           if not (Graphic as TRAWImage).LoadThumbnailFromFile(Info.FileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
             Graphic.LoadFromFile(Info.FileName)
           else

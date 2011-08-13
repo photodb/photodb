@@ -134,6 +134,7 @@ begin
             begin
               if Graphic is TRAWImage then
               begin
+                TRAWImage(Graphic).HalfSizeLoad := True;
                 if not(Graphic as TRAWImage).LoadThumbnailFromFile(StrParam, FPictureSize, FPictureSize) then
                   Graphic.LoadFromFile(ProcessPath(StrParam))
                 else

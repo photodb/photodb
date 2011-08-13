@@ -208,7 +208,7 @@ const
   procedure SaveFile(Mode : Integer);
   var
     W, H: Integer;
-    RetryCounter: Integer;
+    GDIRotateTo, RetryCounter: Integer;
 
     procedure UpdatePreviewWindow;
     var
@@ -273,7 +273,8 @@ const
 
             MODE_GDI_PLUS:
               begin
-                case FProcessingParams.Rotation of
+                GDIRotateTo := GetNeededRotation(FData.Rotation, FProcessingParams.Rotation);
+                case GDIRotateTo of
                   DB_IMAGE_ROTATE_270:
                     RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate270, FileName);
                   DB_IMAGE_ROTATE_90:
