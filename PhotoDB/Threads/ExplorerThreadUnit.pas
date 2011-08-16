@@ -13,7 +13,8 @@ uses
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
-  uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons;
+  uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons,
+  uShellThumbnails;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -458,8 +459,8 @@ begin
 
           TW.I.Start('Reading directory');
           ShowInfo(L('Reading directory') + '...', 1, 0);
-          FilesReadedCount:=0;
-          FilesWithoutIcons:=0;
+          FilesReadedCount := 0;
+          FilesWithoutIcons := 0;
           FE := False;
           EM := False;
           if FMask = '' then FileMask:='*.*' else
@@ -649,7 +650,7 @@ begin
               ReplaceImageItemImage(FFiles[I].FileName, FFiles[I].FileSize, FFiles[I].SID);
             end;
 
-           if ((FFiles[I].FileType = EXPLORER_ITEM_FILE) and (FFiles[I].Tag = 1)) then
+            if ((FFiles[I].FileType = EXPLORER_ITEM_FILE) and (FFiles[I].Tag = 1)) then
             begin
               FFiles[I].Tag := 1;
               GUIDParam := FFiles[I].SID;
@@ -755,7 +756,14 @@ begin
       IntIconParam := 1;
     end;
   end else
+  begin
     Ficon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
+    if IsVideoFile(CurrentFile) and ExplorerInfo.ShowThumbNailsForVideo then
+    begin
+      Inc(FilesWithoutIcons);
+      IntIconParam := 1;
+    end;
+  end;
 
   FPacketImages.AddIcon(FIcon, True);
 end;
@@ -1326,7 +1334,7 @@ begin
      end;
      StretchCoolW32(0, 0, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, Bitmap, 1);
    finally
-     Bit32.Free;
+     F(Bit32);
     end;
   end;
 end;
@@ -1862,16 +1870,28 @@ begin
     if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, True, BooleanParam) then
       F(TempBitmap);
   end else
-    if not FSender.ReplaceIcon(FIcon, GUIDParam, true) then
+    if not FSender.ReplaceIcon(FIcon, GUIDParam, True) then
       F(FIcon);
 end;
 
 procedure TExplorerThread.MakeIconForFile;
 begin
   TempBitmap := nil;
-  FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
-  if not SynchronizeEx(ReplaceImageInExplorerB) then
-    F(FIcon);
+  if not IsVideoFile(CurrentFile) then
+  begin
+    FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
+    if not SynchronizeEx(ReplaceImageInExplorerB) then
+      F(FIcon);
+  end else
+  begin
+    TempBitmap := TBitmap.Create;
+    if ExtractVideoThumbnail(CurrentFile, ExplorerInfo.PictureSize, TempBitmap) then
+    begin
+      if not SynchronizeEx(ReplaceImageInExplorerB) then
+        F(TempBitmap);
+    end else
+      F(TempBitmap);
+  end;
 end;
 
 procedure TExplorerThread.UpdateSimpleFile;

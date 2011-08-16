@@ -148,6 +148,7 @@ type
     N4: TMenuItem;
     SelectAll1: TMenuItem;
     DeselectAll1: TMenuItem;
+    CbExplorerShowThumbsForVideo: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -269,6 +270,7 @@ begin
     CbExplorerShowThumbsForFolders.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
     CbExplorerSaveThumbsForFolders.Checked := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
     CbExplorerShowThumbsForImages.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+    CbExplorerShowThumbsForVideo.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
     CbExplorerShowEXIF.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
     CbExplorerShowPlaces.Checked := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
 
@@ -488,6 +490,8 @@ begin
     Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForFolders', CbExplorerShowThumbsForFolders.Checked);
     Settings.WriteBool('Options', 'Explorer_SaveThumbnailsForFolders', CbExplorerSaveThumbsForFolders.Checked);
     Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForImages', CbExplorerShowThumbsForImages.Checked);
+    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForVideo', CbExplorerShowThumbsForVideo.Checked);
+
     Settings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
     Settings.WriteBool('Options', 'ShowOtherPlaces', CbExplorerShowPlaces.Checked);
 
@@ -667,7 +671,8 @@ begin
     CbExplorerShowAttributes.Caption := L('Display attributes');
     CbExplorerShowThumbsForFolders.Caption := L('Display previews for folders');
     CbExplorerSaveThumbsForFolders.Caption := L('Save preview for folders');
-    CbExplorerShowThumbsForImages.Caption := L('Show previews for images');
+    CbExplorerShowThumbsForImages.Caption := L('Display previews for images');
+    CbExplorerShowThumbsForVideo.Caption := L('Display previews for video');
     BtnInstallExtensions.Caption := L('Set');
     OkButton.Caption := L('Ok');
     CancelButton.Caption := L('Cancel');

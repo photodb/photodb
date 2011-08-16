@@ -48,6 +48,7 @@ type
   end;
 
 function VarIco(Ext : string) : boolean;
+function IsVideoFile(FileName: string): Boolean;
 
 implementation
 
@@ -55,6 +56,11 @@ uses ExplorerTypes;
 
 var
   AIcons : TAIcons = nil;
+
+function IsVideoFile(FileName: string): Boolean;
+begin
+  Result := Pos(AnsiLowerCase(ExtractFileExt(FileName)), '.mov,.avi,.mkv,.mp4,.mpg,.mpe,.mpeg,.m2v') > 0;
+end;
 
 { TAIcons }
 
@@ -209,7 +215,11 @@ var
   I: Integer;
   Ext: string;
 begin
-  Result:=false;
+  Result := False;
+
+  if Result then
+    Exit;
+
   FSync.Enter;
   try
     Ext := AnsiLowerCase(ExtractFileExt(FileName));

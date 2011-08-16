@@ -2869,7 +2869,6 @@ end;
 procedure TExplorerForm.DirectoryChanged(Sender: TObject; SID: TGUID; PInfo: TInfoCallBackDirectoryChangedArray);
 var
   I, K, index: Integer;
-  ExplorerViewInfo: TExplorerViewInfo;
   UpdaterInfo: TUpdaterInfo;
   FileName, FOldFileName: string;
   Info : TExplorerFileInfo;
@@ -2897,18 +2896,7 @@ begin
           UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
 
           Self.NewFileName := '';
-          ExplorerViewInfo.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
-          ExplorerViewInfo.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-          ExplorerViewInfo.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
-          ExplorerViewInfo.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-          ExplorerViewInfo.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-          ExplorerViewInfo.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-          ExplorerViewInfo.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-          ExplorerViewInfo.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-          ExplorerViewInfo.View := ListView;
-          ExplorerViewInfo.PictureSize := FPictureSize;
-
-          NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ExplorerViewInfo, UPDATE_MODE_ADD, '', '');
+          NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_ADD, '', '');
           ExplorerUpdateManager.QueueNotify(NotifyInfo);
         end;
       FILE_ACTION_REMOVED:
@@ -4656,10 +4644,10 @@ end;
 
 procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath; Explorer: Boolean; FileMask: string = '');
 var
-  Info: TExplorerViewInfo;
   OldDir, S, Path: string;
   UpdaterInfo: TUpdaterInfo;
   I, ThreadType: Integer;
+  Info: TExplorerViewInfo;
 begin
   RefreshIDList.Clear;
   UpdaterInfo.ProcHelpAfterUpdate := nil;
@@ -4695,7 +4683,6 @@ begin
   if WPath.PType = EXPLORER_ITEM_MYCOMPUTER then
   begin
     Caption := MyComputer;
-    //CbPathEdit.Text := MyComputer;
     PePath.Path := '';
     ThreadType := THREAD_TYPE_MY_COMPUTER;
   end;
@@ -4771,6 +4758,7 @@ begin
 
   FBitmapImageList.Clear;
 
+  Info := ViewInfo;
   Info.OldFolderName := FOldPatch;
   Info.ShowPrivate := ExplorerManager.ShowPrivate;
   Info.PictureSize := FPictureSize;
@@ -4806,15 +4794,6 @@ begin
   UpdaterInfo.FileInfo := nil;
   Inc(FReadingFolderNumber);
 
-  Info.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-  Info.View := ListView;
   EventLog('ExplorerThread');
   if ElvMain <> nil then
   begin
@@ -7238,6 +7217,7 @@ begin
   Result.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
   Result.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
   Result.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Result.ShowThumbNailsForVideo := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
   Result.View := ListView;
   Result.PictureSize := FPictureSize;
 end;
@@ -7341,21 +7321,12 @@ begin
   // тут начинается загрузка больших картинок
   UpdaterInfo.IsUpdater := False;
   UpdaterInfo.FileInfo := nil;
-  Info.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
-  Info.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Info.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Info.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Info.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Info.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Info.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Info.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-  Info.View := ListView;
-  Info.PictureSize := FPictureSize;
+
   UpdaterInfo.FileInfo := nil;
   NewFormState;
 
   PePath.CanBreakLoading := True;
-  TExplorerThread.Create('::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, Info, Self, UpdaterInfo, StateID);
+  TExplorerThread.Create('::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, ViewInfo, Self, UpdaterInfo, StateID);
   for I := 0 to FFilesInfo.Count - 1 do
   begin
     FFilesInfo[I].IsBigImage := False;

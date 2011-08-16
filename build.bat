@@ -20,6 +20,7 @@ cd photodb/resources
 "%BRCC32%" Activation.rc
 "%BRCC32%" PrinterPattern.rc
 "%BRCC32%" BigPattern.rc
+"%BRCC32%" Film_strip.rc
 
 cd ..
 cd ..

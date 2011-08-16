@@ -1659,7 +1659,8 @@
 	<translate name="Display attributes" value="Показывать атрибуты"/>	
 	<translate name="Display previews for folders" value="Показывать предпросмотр для папок"/>
 	<translate name="Save preview for folders" value="Сохранять предпросмотр для папок"/>
-	<translate name="Show previews for images" value="Показывать предпросмотр для изображений"/>
+	<translate name="Display previews for images" value="Показывать предпросмотр для изображений"/>
+	<translate name="Display previews for video" value="Показывать предпросмотр для видео"/>
 	<translate name="Use high-quality rendering" value="Использовать качественную прорисовку"/>
 	<translate name="Extensions" value="Текущие расширения"/>	
 	<translate name="WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!" value="ВНИМАНИЕ: Используйте возможности шифрования осторожно. Если Вы забыли пароль к каким-либо изображениям, их восстановить невозможно!"/>

@@ -54,10 +54,6 @@ object OptionsForm: TOptionsForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -184,23 +180,19 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
       object LbDisplayPlacesIn: TLabel
         Left = 223
-        Top = 136
+        Top = 157
         Width = 41
         Height = 13
         Caption = 'Show in:'
       end
       object LbPlacesList: TLabel
         Left = 3
-        Top = 136
+        Top = 157
         Width = 98
         Height = 13
         Caption = 'User defined places:'
@@ -253,9 +245,9 @@ object OptionsForm: TOptionsForm
       end
       object PlacesListView: TListView
         Left = 3
-        Top = 153
+        Top = 176
         Width = 214
-        Height = 153
+        Height = 130
         Columns = <
           item
             Caption = 'Places'
@@ -271,9 +263,9 @@ object OptionsForm: TOptionsForm
       end
       object CblPlacesDisplayIn: TCheckListBox
         Left = 223
-        Top = 155
+        Top = 176
         Width = 221
-        Height = 153
+        Height = 132
         OnClickCheck = CblPlacesDisplayInClickCheck
         Anchors = [akLeft, akTop, akRight]
         Enabled = False
@@ -287,7 +279,7 @@ object OptionsForm: TOptionsForm
       end
       object CbExplorerShowPlaces: TCheckBox
         Left = 7
-        Top = 113
+        Top = 134
         Width = 241
         Height = 17
         Caption = 'Show "Other Places"'
@@ -295,7 +287,7 @@ object OptionsForm: TOptionsForm
       end
       object CbExplorerShowEXIF: TCheckBox
         Left = 7
-        Top = 95
+        Top = 118
         Width = 241
         Height = 17
         Caption = 'Show EXIF marker'
@@ -387,14 +379,19 @@ object OptionsForm: TOptionsForm
         Caption = 'Hidden Files'
         TabOrder = 3
       end
+      object CbExplorerShowThumbsForVideo: TCheckBox
+        Left = 194
+        Top = 88
+        Width = 265
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Show Thumbnails For Video'
+        TabOrder = 18
+      end
     end
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -487,10 +484,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -747,10 +740,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1186,10 +1175,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1347,7 +1332,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbReadInfoFromExif'
           TabOrder = 0
-          ExplicitWidth = 430
         end
         object CbSaveInfoToExif: TCheckBox
           Left = 11
@@ -1357,7 +1341,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbSaveInfoToExif'
           TabOrder = 1
-          ExplicitWidth = 430
         end
         object CbUpdateExifInfoInBackground: TCheckBox
           Left = 11

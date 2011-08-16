@@ -30,6 +30,7 @@ type
     ShowThumbNailsForFolders: Boolean;
     SaveThumbNailsForFolders: Boolean;
     ShowThumbNailsForImages: Boolean;
+    ShowThumbNailsForVideo: Boolean;
     OldFolderName: string;
     View: Integer;
     PictureSize: Integer;

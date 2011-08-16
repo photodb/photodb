@@ -335,7 +335,9 @@ uses
   uTiffImage in 'Units\uTiffImage.pas',
   uJpegUtils in 'Units\uJpegUtils.pas',
   uBitmapUtils in 'Units\uBitmapUtils.pas',
-  uIconUtils in 'Units\uIconUtils.pas';
+  uIconUtils in 'Units\uIconUtils.pas',
+  uWinThumbnails in 'Units\uWinThumbnails.pas',
+  uShellThumbnails in 'Units\uShellThumbnails.pas';
 
 {$R *.res}
 

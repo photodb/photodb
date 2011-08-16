@@ -16,6 +16,7 @@ function GetLoadingImage : TPNGImage;
 function GetActivationImage : TPNGImage;
 function GetPrinterPatternImage : TJpegImage;
 function GetBigPatternImage : TJpegImage;
+function GetFilmStripImage : TPNGImage;
 
 {$R Logo.res}
 {$R Slideshow_Load.res}
@@ -29,6 +30,7 @@ function GetBigPatternImage : TJpegImage;
 {$R Activation.res}
 {$R PrinterPattern.res}
 {$R BigPattern.res}
+{$R Film_Strip.res}
 
 //Icons
 {$R icons.res}
@@ -157,6 +159,11 @@ end;
 function GetBigPatternImage : TJpegImage;
 begin
   Result := LoadJPEGFromRES('BIGPATTERN');
+end;
+
+function GetFilmStripImage : TPNGImage;
+begin
+  Result := LoadPNGFromRES('FILM_STRIP');
 end;
 
 end.
