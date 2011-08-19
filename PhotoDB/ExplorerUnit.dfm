@@ -772,24 +772,149 @@ object ExplorerForm: TExplorerForm
     ParentBackground = False
     TabOrder = 4
     object BvSeparatorAddress: TBevel
-      Left = 59
+      Left = 676
       Top = 1
       Width = 2
       Height = 25
       Align = alRight
       Shape = bsRightLine
-      ExplicitLeft = 46
-      ExplicitTop = 0
+      ExplicitLeft = 668
+      ExplicitTop = 6
+    end
+    object BvSeparatorSearch: TBevel
+      Left = 60
+      Top = 1
+      Width = 2
+      Height = 25
+      Align = alLeft
+      Shape = bsRightLine
+      ExplicitTop = 2
+    end
+    object slSearch: TSplitter
+      Left = 678
+      Top = 1
+      Height = 25
+      Align = alRight
+      ExplicitLeft = 668
+      ExplicitTop = 6
+    end
+    object PnSearch: TPanel
+      Left = 681
+      Top = 1
+      Width = 185
+      Height = 25
+      Align = alRight
+      BevelOuter = bvNone
+      DoubleBuffered = True
+      FullRepaint = False
+      ParentDoubleBuffered = False
+      TabOrder = 0
+      object SbSearchMode: TSpeedButton
+        Left = 0
+        Top = 0
+        Width = 20
+        Height = 25
+        Align = alLeft
+        Constraints.MaxWidth = 20
+        Constraints.MinWidth = 20
+        Flat = True
+        ExplicitLeft = 699
+        ExplicitTop = 1
+        ExplicitHeight = 24
+      end
+      object sbDoSearch: TSpeedButton
+        Left = 165
+        Top = 0
+        Width = 20
+        Height = 25
+        Align = alRight
+        Flat = True
+        Glyph.Data = {
+          36040000424D3604000000000000360000002800000010000000100000000100
+          2000000000000004000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          000000000000000000000032A19F0070C5FF0000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000032A19F006CC5FF3CC9FDFF0962BAF300000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          00000032A19F0068C5FF2DBEFDFF0962BAF30032A16000000000000000000000
+          000000000000545454205454549F545454BF868484FF545454BF545454800035
+          9A9F0063C5FF1DB3FDFF0962BAF30032A1600000000000000000000000000000
+          000054545460868484FFB6B5B5FFEBE7E7FFE5E1E1FFD6D2D2FFF7F4F4FF8684
+          84FF1998DCFF0962BAF30032A160000000000000000000000000000000005454
+          5430868484FFECEBEBFFDABC95FFB87116FFC28632FFB87623FFCDB193FFF7F4
+          F4FF868484FF0036977000000000000000000000000000000000000000005454
+          54AFF7F4F4FFDEBF9AFFB86800FFFDE8A3FFFFF8B9FFF8DE95FFB86800FFC8AC
+          8DFFF7F4F4FF5454548000000000000000000000000000000000000000008684
+          84FFFDFCFCFFBC7212FFFFFFDEFFFFECA6FFFFF1ADFFFFEDA6FFF8D07BFFB572
+          1EFFF7F4F4FF868484FF00000000000000000000000000000000000000008684
+          84FFFDFCFCFFBE6B00FFFFFFDEFFFFEAAFFFFFECB3FFFFEAB0FFFFDF92FFB26A
+          0FFFF7F4F4FF868484FF00000000000000000000000000000000000000008684
+          84FFFDFCFCFFB76A07FFFFFFDEFFFFEDC2FFFFEDC4FFFFEDC2FFF8D293FFB572
+          1EFFF7F4F4FF868484FF00000000000000000000000000000000000000008684
+          84FFF7F4F4FFDEBF9AFFC5832DFFFFFFDEFFFFFFDEFFFFFFDEFFC5832DFFCAB5
+          9EFFF7F4F4FF5454549F00000000000000000000000000000000000000005454
+          5450888888FFF7F4F4FFDABC95FFC28638FFCC9959FFBE8134FFCDB193FFF7F4
+          F4FF868484FF5454542000000000000000000000000000000000000000000000
+          00005454549F878686FFF7F4F4FFF7F4F4FFF7F4F4FFF7F4F4FFF7F4F4FF8684
+          84FF545454600000000000000000000000000000000000000000000000000000
+          00000000000054545450868484FF868484FF868484FF868484FF868484FF5454
+          5440000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000}
+        OnClick = sbDoSearchClick
+        ExplicitLeft = 160
+        ExplicitTop = 1
+        ExplicitHeight = 23
+      end
+      object PnSearchEditPlace: TPanel
+        Left = 20
+        Top = 0
+        Width = 145
+        Height = 25
+        Align = alClient
+        BevelOuter = bvNone
+        Ctl3D = False
+        ParentCtl3D = False
+        TabOrder = 0
+        DesignSize = (
+          145
+          25)
+        object WedSearch: TWatermarkedEdit
+          Left = 0
+          Top = 4
+          Width = 145
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BorderStyle = bsNone
+          TabOrder = 0
+          OnKeyDown = WedSearchKeyDown
+          WatermarkText = 'Search in directory'
+        end
+      end
+    end
+    object StAddress: TStaticText
+      AlignWithMargins = True
+      Left = 4
+      Top = 4
+      Width = 53
+      Height = 19
+      Align = alLeft
+      Alignment = taCenter
+      Caption = '  Address:'
+      TabOrder = 1
     end
     object PePath: TPathEditor
-      Left = 61
+      Left = 62
       Top = 1
-      Width = 805
+      Width = 614
       Height = 25
       DoubleBuffered = False
       ParentDoubleBuffered = False
-      Align = alRight
-      Anchors = [akLeft, akTop, akRight, akBottom]
+      Align = alClient
+      Path = 'c:\'
       SeparatorImage.Data = {
         9E020000424D9E0200000000000036000000280000000B0000000E0000000100
         2000000000006802000000000000000000000000000000000000000000000000
@@ -820,14 +945,6 @@ object ExplorerForm: TExplorerForm
       GetSystemIcon = PePathGetSystemIcon
       CanBreakLoading = False
       OnBreakLoading = TbStopClick
-    end
-    object StAddress: TStaticText
-      Left = 9
-      Top = 5
-      Width = 47
-      Height = 17
-      Caption = 'Address:'
-      TabOrder = 1
     end
   end
   object SizeImageList: TImageList
@@ -1158,7 +1275,7 @@ object ExplorerForm: TExplorerForm
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
     Left = 200
-    Top = 56
+    Top = 72
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
@@ -1288,7 +1405,7 @@ object ExplorerForm: TExplorerForm
   end
   object ScriptMainMenu: TMainMenu
     Left = 361
-    Top = 56
+    Top = 64
   end
   object CloseTimer: TTimer
     Enabled = False
@@ -1393,5 +1510,11 @@ object ExplorerForm: TExplorerForm
     OnPopup = PopupMenuZoomDropDownPopup
     Left = 362
     Top = 242
+  end
+  object SearchImageList: TImageList
+    Height = 18
+    Width = 18
+    Left = 201
+    Top = 112
   end
 end

@@ -59,7 +59,7 @@ var
 
 function IsVideoFile(FileName: string): Boolean;
 begin
-  Result := Pos(AnsiLowerCase(ExtractFileExt(FileName)), '.mov,.avi,.mkv,.mp4,.mpg,.mpe,.mpeg,.m2v') > 0;
+  Result := Pos(AnsiLowerCase(ExtractFileExt(FileName)), '.mov,.avi,.mkv,.mp4,.mpg,.mpe,.mpeg,.m2v,.wmv') > 0;
 end;
 
 { TAIcons }

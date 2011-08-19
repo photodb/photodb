@@ -83,9 +83,6 @@
 			<DCCReference Include="uActivation.pas">
 				<Form>ActivateForm</Form>
 			</DCCReference>
-			<DCCReference Include="ExplorerUnit.pas">
-				<Form>ExplorerForm</Form>
-			</DCCReference>
 			<DCCReference Include="UnitUpdateDB.pas">
 				<Form>UpdateDBForm</Form>
 			</DCCReference>
@@ -540,6 +537,11 @@
 			<DCCReference Include="Units\uIconUtils.pas"/>
 			<DCCReference Include="Units\uWinThumbnails.pas"/>
 			<DCCReference Include="Units\uShellThumbnails.pas"/>
+			<DCCReference Include="Units\uMachMask.pas"/>
+			<DCCReference Include="Units\VCLFlickerReduce.pas"/>
+			<DCCReference Include="ExplorerUnit.pas">
+				<Form>ExplorerForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

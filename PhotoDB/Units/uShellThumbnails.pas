@@ -44,17 +44,20 @@ begin
 end;
 
 function ExtractVideoThumbnail(FileName: string; MaxSize: Integer; Bitmap: TBitmap): Boolean;
+const
+  ImageRealWidth = 0.98;
+  ImageRealHeight = 0.76;
 var
   Thumb: TBitmap;
 begin
   Result := False;
   Thumb := TBitmap.Create;
   try
-    Thumb.Handle := ExtractThumbnail(FileName, Round(MaxSize * 0.98), Round(MaxSize * 0.76));
+    Thumb.Handle := ExtractThumbnail(FileName, Round(MaxSize * ImageRealWidth), Round(MaxSize * ImageRealHeight));
     if not Thumb.Empty then
     begin
       Bitmap.PixelFormat := pf32bit;
-      DrawVideoImageBig(Bitmap, Round(Thumb.Width / 0.98), Round(Thumb.Height / 0.76));
+      DrawVideoImageBig(Bitmap, Round(Thumb.Width / ImageRealWidth), Round(Thumb.Height / ImageRealHeight));
       StretchCoolW32(Bitmap.Width div 2 - Thumb.Width div 2, Bitmap.Height div 2 - Thumb.Height div 2, Thumb.Width, Thumb.Height,
         Rect(0, 0, Thumb.Width, Thumb.Height), Thumb, Bitmap, 1);
       Result := True;

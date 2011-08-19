@@ -278,6 +278,8 @@ const
   THREAD_TYPE_FOLDER_UPDATE  = 8;
   THREAD_TYPE_BIG_IMAGES     = 9;
   THREAD_TYPE_THREAD_PREVIEW = 10;
+  THREAD_TYPE_SEARCH_FOLDER  = 11;
+  THREAD_TYPE_SEARCH_DB      = 12;
 
   THREAD_PREVIEW_MODE_IMAGE      = 1;
   THREAD_PREVIEW_MODE_BIG_IMAGE  = 2;
@@ -342,6 +344,9 @@ const
   EXIF_BASE_LINKS = 'photodb_links';
   EXIF_BASE_ACCESS = 'photodb_access';
   EXIF_BASE_INCLUDE = 'photodb_include';
+
+const
+  MIN_PACKET_TIME = 500;
 
 implementation
 

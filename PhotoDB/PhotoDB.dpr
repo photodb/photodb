@@ -52,7 +52,6 @@ uses
   unitimhint in 'unitimhint.pas' {ImHint},
   SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
   uActivation in 'uActivation.pas' {ActivateForm},
-  ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
   UnitUpdateDB in 'UnitUpdateDB.pas' {UpdateDBForm},
   uAbout in 'uAbout.pas' {AboutForm},
   FormManegerUnit in 'FormManegerUnit.pas' {FormManager},
@@ -337,7 +336,10 @@ uses
   uBitmapUtils in 'Units\uBitmapUtils.pas',
   uIconUtils in 'Units\uIconUtils.pas',
   uWinThumbnails in 'Units\uWinThumbnails.pas',
-  uShellThumbnails in 'Units\uShellThumbnails.pas';
+  uShellThumbnails in 'Units\uShellThumbnails.pas',
+  uMachMask in 'Units\uMachMask.pas',
+  VCLFlickerReduce in 'Units\VCLFlickerReduce.pas',
+  ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm};
 
 {$R *.res}
 

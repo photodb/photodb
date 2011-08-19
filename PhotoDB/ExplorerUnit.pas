@@ -20,7 +20,8 @@ uses
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
-  uDBUtils, uSettings, uAssociations, PathEditor;
+  uDBUtils, uSettings, uAssociations, PathEditor, ComboBoxExDB, WatermarkedEdit,
+  PanelCanvas;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -211,7 +212,15 @@ type
     PePath: TPathEditor;
     StAddress: TStaticText;
     BvSeparatorAddress: TBevel;
+    BvSeparatorSearch: TBevel;
     BvSeparatorLeftPanel: TBevel;
+    SearchImageList: TImageList;
+    slSearch: TSplitter;
+    SbSearchMode: TSpeedButton;
+    WedSearch: TWatermarkedEdit;
+    sbDoSearch: TSpeedButton;
+    PnSearch: TPanel;
+    PnSearchEditPlace: TPanel;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -277,7 +286,7 @@ type
      Procedure Select(Item : TEasyItem; GUID : TGUID);
     function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : Boolean; Big : boolean = False): Boolean;
     function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : Boolean) : Boolean;
-    function AddItem(FileGUID: TGUID; LockItems : boolean = true) : TEasyItem;
+    function AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1) : TEasyItem;
     procedure ListView1KeyPress(Sender: TObject; var Key: Char);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
       var Handled: Boolean);
@@ -482,6 +491,9 @@ type
     procedure PePathChange(Sender: TObject);
     procedure PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
     procedure PePathGetSystemIcon(Sender: TPathEditor; Path: TPathPart);
+    procedure WedSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure sbDoSearchClick(Sender: TObject);
    private
      { Private declarations }
      FBitmapImageList : TBitmapImageList;
@@ -2590,7 +2602,7 @@ begin
     end;
 end;
 
-function TExplorerForm.AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
+function TExplorerForm.AddIcon(Icon: TIcon; SelfReleased: Boolean; FileGUID: TGUID): Boolean;
 var
   Index,
   I : Integer;
@@ -2613,13 +2625,70 @@ begin
       end;
 end;
 
-function TExplorerForm.AddItem(FileGUID: TGUID; LockItems : Boolean = True): TEasyItem;
+function TExplorerForm.AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1): TEasyItem;
 var
-  I: Integer;
+  I, Index, Count: Integer;
   Data: TDataObject;
+
+  function GetNewItemPos(Info: TExplorerFileInfo): Integer;
+  var
+    x: TExplorerFileInfo;
+    n, first, last, mid: Integer;
+
+    function A_0(Index: Integer): TExplorerFileInfo;
+    begin
+      Result := FFilesInfo[ItemIndexToMenuIndex(Index)];
+    end;
+
+    function Cmp(I1, I2: TExplorerFileInfo): Integer;
+    begin
+      if I1.FileType <> I2.FileType then
+      begin
+        Result := I1.FileType - I2.FileType;
+        Exit;
+      end;
+      Result := AnsiCompareStr(AnsiLowerCase(I1.FileName), AnsiLowerCase(I2.FileName));
+    end;
+
+  begin
+    Result := -1;
+    if ElvMain.Items.Count = 0 then
+      Exit;
+
+    if Sort = 0 then
+    begin
+      first := 0;
+      x := Info;
+      n := ElvMain.Items.Count;
+      last := n;
+
+      if (Cmp(A_0(0), x) > 0) then
+      begin
+        Result := 0;
+        Exit;
+      end else if (Cmp(A_0(n - 1), x) < 0) then
+      begin
+        Exit;
+      end;
+
+      while (first < last) do
+      begin
+          mid := first + (last - first) div 2;
+
+          if (Cmp(x, A_0(mid)) <= 0) then
+            last := mid
+          else
+            first := mid + 1;
+      end;
+
+      Result := last;
+    end;
+  end;
+
 begin
   Result := nil;
-  for I := FFilesInfo.Count - 1 downto 0 do
+  Count := FFilesInfo.Count;
+  for I := Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
       LockDrawIcon := True;
@@ -2627,9 +2696,24 @@ begin
       Data := TDataObject.Create;
       Data.Include := FFilesInfo[I].Include;
 
-      Result := ElvMain.Items.Add(Data);
+      //without sorting
+      if Sort = -1 then
+        Result := ElvMain.Items.Add(Data)
+      else if Sort = 0 then
+      begin
+        Index := GetNewItemPos(FFilesInfo[I]);
+        if Index = -1 then
+          Result := ElvMain.Items.Add(Data)
+        else
+        begin
+          Result := ElvMain.Items.Insert(Index);
+          Result.Data := Data;
+        end;
+      end;
+
       if not Data.Include then
         Result.BorderColor := GetListItemBorderColor(Data);
+
       Result.Tag := FFilesInfo[I].FileType;
       Result.ImageIndex := FFilesInfo[I].ImageIndex;
 
@@ -6250,6 +6334,39 @@ begin
   end;
 end;
 
+procedure TExplorerForm.sbDoSearchClick(Sender: TObject);
+var
+  UpdaterInfo: TUpdaterInfo;
+  S: string;
+begin
+  DirectoryWatcher.StopWatch;
+  NewFormState;
+
+  ClearList;
+  FBitmapImageList.Clear;
+  FFilesInfo.Clear;
+
+  ElvMain.Groups.Add;
+  ListView1SelectItem(nil, nil, False);
+
+  UpdaterInfo.IsUpdater := False;
+  UpdaterInfo.FileInfo := nil;
+  S := AnsiLowerCase(WedSearch.Text);
+  if Pos('*', S) = 0 then
+    S := '*' + S + '*';
+  TExplorerThread.Create(FCurrentPath, S, THREAD_TYPE_SEARCH_FOLDER, ViewInfo, Self, UpdaterInfo, StateID);
+end;
+
+procedure TExplorerForm.WedSearchKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+  begin
+    Key := 0;
+    sbDoSearchClick(Sender);
+  end;
+end;
+
 procedure TExplorerForm.AddUpdateID(ID: Integer);
 begin
   RefreshIDList.Add(Pointer(ID));
@@ -7310,19 +7427,16 @@ end;
 
 procedure TExplorerForm.BigImagesTimerTimer(Sender: TObject);
 var
-  Info: TExplorerViewInfo;
   UpdaterInfo: TUpdaterInfo;
   I: Integer;
 begin
   BigImagesTimer.Enabled := False;
   if ListView <> LV_THUMBS then
     Exit;
-  Info.View := ListView;
   // тут начинается загрузка больших картинок
   UpdaterInfo.IsUpdater := False;
   UpdaterInfo.FileInfo := nil;
 
-  UpdaterInfo.FileInfo := nil;
   NewFormState;
 
   PePath.CanBreakLoading := True;

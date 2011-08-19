@@ -14,7 +14,7 @@ uses
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
   uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons,
-  uShellThumbnails;
+  uShellThumbnails, uMachMask;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -129,6 +129,9 @@ type
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
     procedure SendPacketToExplorer;
+    procedure SearchFolder;
+    procedure SearchDB;
+    function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
   protected
     function IsVirtualTerminate : Boolean; override;
     function GetThreadID : string; override;
@@ -149,8 +152,9 @@ type
   end;
 
 const
-  UPDATE_MODE_ADD           = 1;
-  UPDATE_MODE_REFRESH_IMAGE = 2;
+  UPDATE_MODE_ADD             = 1;
+  UPDATE_MODE_REFRESH_IMAGE   = 2;
+  UPDATE_MODE_REFRESH_FOLDER  = 3;
 
 type
   TExplorerNotifyInfo = class
@@ -224,8 +228,8 @@ end;
 
 { TExplorerThread }
 
-constructor TExplorerThread.Create(Folder,
-  Mask: string; ThreadType : Integer; Info: TExplorerViewInfo; Sender : TExplorerForm; UpdaterInfo: TUpdaterInfo; SID : TGUID);
+constructor TExplorerThread.Create(Folder, Mask: string; ThreadType: Integer; Info: TExplorerViewInfo;
+  Sender: TExplorerForm; UpdaterInfo: TUpdaterInfo; SID: TGUID);
 begin
   inherited Create(Sender, SID);
   FInfo := TDBPopupMenuInfoRecord.Create;
@@ -257,11 +261,7 @@ var
   DBFolder, DBFolderToSearch, FileMask: string;
   InfoPosition: Integer;
   PrivateFiles: TStringList;
-  Fa: Integer;
-  FE, EM: Boolean;
   Crc: Cardinal;
-  S: string;
-  P: Integer;
   IsPrivateDirectory : Boolean;
   NotifyInfo: TExplorerNotifyInfo;
 
@@ -374,7 +374,19 @@ begin
 
     if (FThreadType = THREAD_TYPE_FOLDER_UPDATE) then
     begin
-      UpdateFolder;
+      ProcessNotifys(UpdateFolder, UPDATE_MODE_REFRESH_FOLDER);
+      Exit;
+    end;
+
+    if (FThreadType = THREAD_TYPE_SEARCH_FOLDER) then
+    begin
+      SearchFolder;
+      Exit;
+    end;
+
+    if (FThreadType = THREAD_TYPE_SEARCH_DB) then
+    begin
+      SearchDB;
       Exit;
     end;
 
@@ -461,8 +473,6 @@ begin
           ShowInfo(L('Reading directory') + '...', 1, 0);
           FilesReadedCount := 0;
           FilesWithoutIcons := 0;
-          FE := False;
-          EM := False;
           if FMask = '' then FileMask:='*.*' else
             FileMask := FMask;
           Found := FindFirst(FFolder + FileMask, FaAnyFile, SearchRec);
@@ -471,53 +481,15 @@ begin
             if IsTerminated then
               Break;
             try
-              if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
-              begin
-                FA := SearchRec.Attr and FaHidden;
-                if ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
-                begin
-                  if not ExplorerInfo.ShowPrivate then
-                    if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.name)) > -1 then
-                      Continue;
+              if not ExplorerInfo.ShowPrivate then
+                if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.name)) > -1 then
+                  Continue;
 
-                  Inc(FilesReadedCount);
-                  if FilesReadedCount mod 50 = 0 then
-                    ShowInfo(Format(L('Reading directory [%d objects found]'), [FilesReadedCount]), 1, 0);
-                  if ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
-                  begin
-                    FE := (SearchRec.Attr and FaDirectory = 0);
-                    S := ExtractFileExt(SearchRec.name);
-                    S := '|' + AnsiLowerCase(S) + '|';
-                    P := Pos(S, SupportedExt);
-                    EM := P <> 0;
-                  end;
-                  if FShowFiles then
-                    if ExplorerInfo.ShowSimpleFiles then
-                      if FE and not EM and ExplorerInfo.ShowSimpleFiles then
-                      begin
-                        if FolderView then
-                          if AnsiLowerCase(ExtractFileExt(SearchRec.name)) = '.ldb' then
-                            Continue;
+              Inc(FilesReadedCount);
+              if FilesReadedCount mod 50 = 0 then
+                ShowInfo(Format(L('Reading directory [%d objects found]'), [FilesReadedCount]), 1, 0);
 
-                        AddOneExplorerFileInfo(FFiles, FFolder + SearchRec.name, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
-                          0, 0, SearchRec.Size, '', '', '', 0, False, True, True);
-                        Continue;
-                      end;
-                  if ExplorerInfo.ShowImageFiles then
-                    if FE and EM and ExplorerInfo.ShowImageFiles then
-                    begin
-                      AddOneExplorerFileInfo(FFiles, FFolder + SearchRec.name, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0,
-                        0, 0, SearchRec.Size, '', '', '', 0, False, False, True);
-                      Continue;
-                    end;
-                  if (SearchRec.Attr and FaDirectory <> 0) and ExplorerInfo.ShowFolders then
-                  begin
-                    AddOneExplorerFileInfo(FFiles, FFolder + SearchRec.name, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
-                      0, 0, 0, '', '', '', 0, False, True, True);
-                    Continue;
-                  end;
-                end;
-              end;
+              ProcessSearchRecord(FFiles, FFolder, SearchRec);
             finally
               Found := SysUtils.FindNext(SearchRec);
             end;
@@ -706,6 +678,162 @@ begin
   end;
 end;
 
+procedure TExplorerThread.SearchDB;
+begin
+  raise Exception.Create('Not implemented yet');
+end;
+
+procedure TExplorerThread.SearchFolder;
+var
+  LastPacketTime: Cardinal;
+
+  procedure SendPacket;
+  var
+    UpdaterInfo: TUpdaterInfo;
+    NotifyInfo: TExplorerNotifyInfo;
+    I: Integer;
+    RefreshQueue: TList;
+  begin
+    RefreshQueue := TList.Create;
+    try
+      //info for refresh items
+      UpdaterInfo.IsUpdater := False;
+      UpdaterInfo.UpdateDB := False;
+      UpdaterInfo.ProcHelpAfterUpdate := nil;
+      UpdaterInfo.FileInfo := nil;
+
+      for I := 0 to FPacketInfos.Count - 1 do
+      begin
+        if FPacketInfos[I].FileType = EXPLORER_ITEM_IMAGE then
+        begin
+          UpdaterInfo.FileInfo := TExplorerFileInfo(FPacketInfos[I].Copy);
+          NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_IMAGE,
+            FPacketInfos[I].FileName, GUIDToString(FPacketInfos[I].SID));
+          RefreshQueue.Add(NotifyInfo);
+        end;
+        if FPacketInfos[I].FileType = EXPLORER_ITEM_FOLDER then
+        begin
+          UpdaterInfo.FileInfo := TExplorerFileInfo(FPacketInfos[I].Copy);
+          NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FOLDER,
+            FPacketInfos[I].FileName, GUIDToString(FPacketInfos[I].SID));
+          RefreshQueue.Add(NotifyInfo);
+        end;
+      end;
+
+      SynchronizeEx(SendPacketToExplorer);
+
+      for I := 0 to RefreshQueue.Count - 1 do
+         ExplorerUpdateManager.QueueNotify(TExplorerNotifyInfo(RefreshQueue[I]));
+
+      RefreshQueue.Clear;
+    finally
+      F(RefreshQueue);
+    end;
+
+  end;
+
+  procedure SendInfoToExplorer(Files: TExplorerFileInfos);
+  var
+    Info: TExplorerFileInfo;
+  begin
+    //add the last info
+    Info := Files[Files.Count - 1];
+    FPacketInfos.Add(Info.Copy);
+    //load icon
+    GUIDParam := Info.SID;
+    CurrentFile := Info.FileName;
+
+    if Info.FileType = EXPLORER_ITEM_FOLDER then
+    begin
+      MakeFolderImage(CurrentFile);
+      FPacketImages.AddIcon(FIcon, True);
+      FIcon := nil;
+    end else if Info.FileType = EXPLORER_ITEM_IMAGE then
+    begin
+      AddImageFileToPacket;
+    end else if Info.FileType = EXPLORER_ITEM_FILE then
+		begin
+      AddImageFileToPacket;
+      //new icon should be loaded
+      FPacketInfos[FPacketInfos.Count - 1].Tag := IntIconParam;
+    end;
+
+    if GetTickCount - LastPacketTime > MIN_PACKET_TIME then
+      SendPacket;
+  end;
+
+  procedure SearchDirectory(CurrentDirectory: string);
+  var
+    DE: Boolean;
+    Found: Integer;
+    SearchRec: TSearchRec;
+    I: Integer;
+    Files: TExplorerFileInfos;
+  begin
+    Files := TExplorerFileInfos.Create;
+    try
+      //search current level
+      CurrentDirectory := IncludeTrailingPathDelimiter(CurrentDirectory);
+      Found := FindFirst(CurrentDirectory + '*.*', FaAnyFile, SearchRec);
+      while Found = 0 do
+      begin
+        if IsTerminated then
+          Break;
+
+        try
+          DE := (SearchRec.Attr and FaDirectory <> 0);
+          if not IsMatchMask(AnsiLowerCase(SearchRec.Name), FMask, True) then
+          begin
+            if DE then
+              //save directory, but don't add to results
+              ProcessSearchRecord(Files, CurrentDirectory, SearchRec);
+            Continue;
+          end;
+          //if not ExplorerInfo.ShowPrivate then
+          //  if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.Name)) > -1 then
+          //     Continue;
+
+          if ProcessSearchRecord(Files, CurrentDirectory, SearchRec) then
+            SendInfoToExplorer(Files);
+        finally
+          Found := SysUtils.FindNext(SearchRec);
+        end;
+      end;
+      FindClose(SearchRec);
+
+      //search in sub-levels
+      for I := 0 to Files.Count - 1 do
+        if Files[I].FileType = EXPLORER_ITEM_FOLDER then
+        begin
+          if IsTerminated then
+            Break;
+          SearchDirectory(Files[I].FileName);
+        end;
+    finally
+      F(Files);
+    end;
+  end;
+
+begin
+  FPacketImages := TBitmapImageList.Create;
+  FPacketInfos := TExplorerFileInfos.Create;
+  try
+    LastPacketTime := GetTickCount;
+    SynchronizeEx(ShowLoadingSign);
+    try
+      SearchDirectory(FFolder);
+    finally
+      SynchronizeEx(HideLoadingSign);
+    end;
+
+    if FPacketInfos.Count > 0 then
+      SendPacket;
+  finally
+    F(FPacketInfos);
+    F(FPacketImages);
+  end;
+end;
+
 procedure TExplorerThread.SendPacketToExplorer;
 var
   I: Integer;
@@ -723,7 +851,10 @@ begin
       if not FSender.AddIcon(Icon, True, Info.SID) then
         FPacketImages[I].Graphic := nil;
 
-      NewItem := FSender.AddItem(Info.SID);
+      if FThreadType = THREAD_TYPE_SEARCH_FOLDER then
+        NewItem := FSender.AddItem(Info.SID, True, 0)
+      else
+        NewItem := FSender.AddItem(Info.SID);
       S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
       S2 := ExcludeTrailingBackslash(Info.FileName);
 
@@ -739,7 +870,7 @@ end;
 
 procedure TExplorerThread.AddImageFileToPacket;
 var
-  EXT : String;
+  EXT: String;
 begin
   EXT := AnsiLowerCase(ExtractFileExt(CurrentFile));
   IntIconParam := 0;
@@ -1453,6 +1584,61 @@ begin
   TempBitmap.SetSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
 end;
 
+function TExplorerThread.ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
+var
+  FE, EM: Boolean;
+  FA: Integer;
+  S: string;
+  P: Integer;
+begin
+  FE := False;
+  EM := False;
+  Result := False;
+  if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+  begin
+    FA := SearchRec.Attr and FaHidden;
+    if ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
+    begin
+      if ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
+      begin
+        FE := (SearchRec.Attr and FaDirectory = 0);
+        S := ExtractFileExt(SearchRec.name);
+        S := '|' + AnsiLowerCase(S) + '|';
+        P := Pos(S, SupportedExt);
+        EM := P <> 0;
+      end;
+      if FShowFiles then
+        if ExplorerInfo.ShowSimpleFiles then
+          if FE and not EM and ExplorerInfo.ShowSimpleFiles then
+          begin
+            if FolderView then
+              if AnsiLowerCase(ExtractFileExt(SearchRec.name)) = '.ldb' then
+                Exit;
+
+            Result := True;
+            AddOneExplorerFileInfo(FFiles, Directory + SearchRec.name, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
+              0, 0, SearchRec.Size, '', '', '', 0, False, True, True);
+            Exit;
+          end;
+      if ExplorerInfo.ShowImageFiles then
+        if FE and EM and ExplorerInfo.ShowImageFiles then
+        begin
+          Result := True;
+          AddOneExplorerFileInfo(FFiles, Directory + SearchRec.name, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0,
+            0, 0, SearchRec.Size, '', '', '', 0, False, False, True);
+          Exit;
+        end;
+      if (SearchRec.Attr and FaDirectory <> 0) and ExplorerInfo.ShowFolders then
+      begin
+        Result := True;
+        AddOneExplorerFileInfo(FFiles, Directory + SearchRec.name, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
+          0, 0, 0, '', '', '', 0, False, True, True);
+        Exit;
+      end;
+    end;
+  end;
+end;
+
 function TExplorerThread.FindInQuery(FileName: String) : Boolean;
 var
   I : Integer;
@@ -1925,7 +2111,7 @@ procedure TExplorerThread.UpdateFolder;
 begin
   F(FFiles);
   FFiles := TExplorerFileInfos.Create;
-  AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(Fmask), 0, 0, 0, 0, 0, '', '', '', 0,
+  AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(FMask), 0, 0, 0, 0, 0, '', '', '', 0,
     False, False, True);
   GUIDParam := FFiles[0].SID;
   CurrentFile := FFiles[0].FileName;
@@ -2345,11 +2531,11 @@ end;
 
 procedure TExplorerUpdateManager.QueueNotify(Info: TExplorerNotifyInfo);
 
-function CopyInfo(UInfo: TUpdaterInfo) : TUpdaterInfo;
-begin
-  Result := UInfo;
-  Result.FileInfo := Result.FileInfo.Copy as TExplorerFileInfo;
-end;
+  function CopyInfo(UInfo: TUpdaterInfo) : TUpdaterInfo;
+  begin
+    Result := UInfo;
+    Result.FileInfo := Result.FileInfo.Copy as TExplorerFileInfo;
+  end;
 
 begin
   if Info = nil then
@@ -2363,7 +2549,9 @@ begin
       if Info.FMode = UPDATE_MODE_ADD then
         TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_IMAGE then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState);
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
+       else if Info.FMode = UPDATE_MODE_REFRESH_FOLDER then
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FOLDER_UPDATE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState);
 
       ExplorerUpdateManager.RegisterThread(Info.FOwner, Info.FMode);
       F(Info);
