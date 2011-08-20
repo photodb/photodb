@@ -155,6 +155,7 @@ const
   UPDATE_MODE_ADD             = 1;
   UPDATE_MODE_REFRESH_IMAGE   = 2;
   UPDATE_MODE_REFRESH_FOLDER  = 3;
+  UPDATE_MODE_REFRESH_FILE    = 4;
 
 type
   TExplorerNotifyInfo = class
@@ -308,10 +309,14 @@ var
             FUpdaterInfo.FileInfo.Free;
             FUpdaterInfo.FileInfo := nil;
           end;
+          FMask := '';
           ExplorerInfo := NotifyInfo.FExplorerViewInfo;
           FUpdaterInfo := NotifyInfo.FUpdaterInfo;
           if FUpdaterInfo.FileInfo <> nil then
+          begin
+            FFolder := FUpdaterInfo.FileInfo.FileName;
             FUpdaterInfo.FileInfo := FUpdaterInfo.FileInfo.Copy as TExplorerFileInfo;
+          end;
         end;
       until NotifyInfo = nil;
     finally
@@ -368,7 +373,7 @@ begin
 
     if (FThreadType = THREAD_TYPE_FILE) then
     begin
-      UpdateSimpleFile;
+      ProcessNotifys(UpdateSimpleFile, UPDATE_MODE_REFRESH_FILE);
       Exit;
     end;
 
@@ -693,6 +698,7 @@ var
     NotifyInfo: TExplorerNotifyInfo;
     I: Integer;
     RefreshQueue: TList;
+    Info: TExplorerFileInfo;
   begin
     RefreshQueue := TList.Create;
     try
@@ -702,21 +708,32 @@ var
       UpdaterInfo.ProcHelpAfterUpdate := nil;
       UpdaterInfo.FileInfo := nil;
 
-      for I := 0 to FPacketInfos.Count - 1 do
+      if ExplorerInfo.View = LV_THUMBS then
       begin
-        if FPacketInfos[I].FileType = EXPLORER_ITEM_IMAGE then
+        for I := 0 to FPacketInfos.Count - 1 do
         begin
-          UpdaterInfo.FileInfo := TExplorerFileInfo(FPacketInfos[I].Copy);
-          NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_IMAGE,
-            FPacketInfos[I].FileName, GUIDToString(FPacketInfos[I].SID));
-          RefreshQueue.Add(NotifyInfo);
-        end;
-        if FPacketInfos[I].FileType = EXPLORER_ITEM_FOLDER then
-        begin
-          UpdaterInfo.FileInfo := TExplorerFileInfo(FPacketInfos[I].Copy);
-          NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FOLDER,
-            FPacketInfos[I].FileName, GUIDToString(FPacketInfos[I].SID));
-          RefreshQueue.Add(NotifyInfo);
+          Info := FPacketInfos[I];
+          if ExplorerInfo.ShowThumbNailsForImages and (Info.FileType = EXPLORER_ITEM_IMAGE) then
+          begin
+            UpdaterInfo.FileInfo := TExplorerFileInfo(Info.Copy);
+            NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_IMAGE,
+              Info.FileName, GUIDToString(Info.SID));
+            RefreshQueue.Add(NotifyInfo);
+          end;
+          if ExplorerInfo.ShowThumbNailsForFolders and (Info.FileType = EXPLORER_ITEM_FOLDER) then
+          begin
+            UpdaterInfo.FileInfo := TExplorerFileInfo(Info.Copy);
+            NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FOLDER,
+              Info.FileName, GUIDToString(Info.SID));
+            RefreshQueue.Add(NotifyInfo);
+          end;
+          if (Info.FileType = EXPLORER_ITEM_FILE) and (Info.Tag = 1) then
+          begin
+            UpdaterInfo.FileInfo := TExplorerFileInfo(Info.Copy);
+            NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FILE,
+              Info.FileName, GUIDToString(Info.SID));
+            RefreshQueue.Add(NotifyInfo);
+          end;
         end;
       end;
 
@@ -2084,6 +2101,8 @@ procedure TExplorerThread.UpdateSimpleFile;
 begin
   StringParam := Fmask;
   CurrentFile := FFolder;
+  if FUpdaterInfo.FileInfo <> nil then
+    GUIDParam := FUpdaterInfo.FileInfo.SID;
   MakeIconForFile;
 end;
 
@@ -2111,7 +2130,8 @@ procedure TExplorerThread.UpdateFolder;
 begin
   F(FFiles);
   FFiles := TExplorerFileInfos.Create;
-  AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, StringToGUID(FMask), 0, 0, 0, 0, 0, '', '', '', 0,
+
+  AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, FUpdaterInfo.FileInfo.SID, 0, 0, 0, 0, 0, '', '', '', 0,
     False, False, True);
   GUIDParam := FFiles[0].SID;
   CurrentFile := FFiles[0].FileName;
@@ -2131,7 +2151,7 @@ begin
   FVisibleFiles := FSender.GetVisibleItems;
 end;
 
-procedure TExplorerThread.VisibleUp(TopIndex: integer);
+procedure TExplorerThread.VisibleUp(TopIndex: Integer);
 var
   I, C : integer;
   J : integer;
@@ -2550,8 +2570,10 @@ begin
         TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_IMAGE then
         TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
-       else if Info.FMode = UPDATE_MODE_REFRESH_FOLDER then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FOLDER_UPDATE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState);
+      else if Info.FMode = UPDATE_MODE_REFRESH_FOLDER then
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FOLDER_UPDATE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
+      else if Info.FMode = UPDATE_MODE_REFRESH_FILE then
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FILE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState);
 
       ExplorerUpdateManager.RegisterThread(Info.FOwner, Info.FMode);
       F(Info);

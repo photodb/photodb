@@ -311,8 +311,10 @@
     <translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
     <translate name="Add file" value="Добавить файл" />
     <translate name="This folder (%s) contains %d photos in the database!. Adjust the information in the database?" value="В данной папке (%s) содержится %d фотографий из БД! Скорректировать информацию в БД?" />
-    <translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />	
+    <translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />
     <translate name="There is no images to display!" value="Нет файлов для отображения!" />
+    <translate name="Search in directory" value="Искать в папке" />
+    <translate name="Search in collection" value="Искать в базе" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

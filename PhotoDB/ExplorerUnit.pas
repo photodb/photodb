@@ -221,6 +221,10 @@ type
     sbDoSearch: TSpeedButton;
     PnSearch: TPanel;
     PnSearchEditPlace: TPanel;
+    PmSearchMode: TPopupMenu;
+    ImSearchMode: TImageList;
+    Searchfiles1: TMenuItem;
+    Searchincollection1: TMenuItem;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -494,9 +498,16 @@ type
     procedure WedSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure sbDoSearchClick(Sender: TObject);
+    procedure InitSearch;
+    procedure LoadSearchMode(Database: Boolean);
+    procedure Searchfiles1Click(Sender: TObject);
+    procedure Searchincollection1Click(Sender: TObject);
+    procedure SbSearchModeClick(Sender: TObject);
+    procedure PmSearchModePopup(Sender: TObject);
    private
      { Private declarations }
      FBitmapImageList : TBitmapImageList;
+     FSearchMode: Boolean;
      FWindowID: TGUID;
      NewFileName: string;
      NewFileNameGUID: TGUID;
@@ -765,13 +776,12 @@ procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
-  TPrivateHelper.Instance.Init;
   DirectoryWatcher := TWachDirectoryClass.Create;
   DefaultSort := -1;
   FWasDragAndDrop:= False;
   LockDrawIcon := False;
   ListView := LV_THUMBS;
-  IsReallignInfo:= False;
+  IsReallignInfo := False;
 
   TW.I.Start('ListView1');
 
@@ -779,8 +789,10 @@ begin
   ElvMain.Parent := Self;
   ElvMain.Align := AlClient;
 
-  MouseDowned:=False;
+  MouseDowned := False;
   PopupHandled := False;
+
+  InitSearch;
 
   ElvMain.BackGround.Enabled := True;
   ElvMain.BackGround.Tile := False;
@@ -2161,11 +2173,11 @@ begin
       Index := ItemIndexToMenuIndex(I);
       UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) then
-        TExplorerThread.Create(FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID), THREAD_TYPE_IMAGE,
+        TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_IMAGE,
           Info, Self, UpdaterInfo, StateID);
 
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
-        TExplorerThread.Create(FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID),
+        TExplorerThread.Create(FFilesInfo[Index].FileName, '',
           THREAD_TYPE_FOLDER_UPDATE, Info, Self, UpdaterInfo, StateID);
     end;
 end;
@@ -2187,7 +2199,7 @@ begin
       FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID));
     ExplorerUpdateManager.QueueNotify(NotifyInfo);
   end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
-    TExplorerThread.Create(FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID), THREAD_TYPE_FILE, ViewInfo,
+    TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo,
       Self, UpdaterInfo, StateID)
   else 
     UpdaterInfo.FileInfo.Free;
@@ -4400,6 +4412,93 @@ begin
   BtnCloseExplorerClick(Sender);
 end;
 
+procedure LoadSpeedButtonFromResourcePNG(SB: TSpeedButton; ResName: string);
+var
+  PNG: TPNGImage;
+  BMP: TBitmap;
+begin
+  PNG := LoadPNGFromRES(ResName);
+  try
+    BMP := TBitmap.Create;
+    try
+       LoadPNGImage32bit(PNG, BMP, clWindow);
+       SB.Glyph := BMP;
+    finally
+      F(BMP);
+    end;
+  finally
+    F(PNG);
+  end;
+end;
+
+procedure TExplorerForm.Searchfiles1Click(Sender: TObject);
+begin
+  Settings.ReadBool('Explorer', 'SearchMode', False);
+  LoadSearchMode(False);
+end;
+
+procedure TExplorerForm.Searchincollection1Click(Sender: TObject);
+begin
+  Settings.ReadBool('Explorer', 'SearchMode', True);
+  LoadSearchMode(True);
+end;
+
+procedure TExplorerForm.LoadSearchMode(Database: Boolean);
+begin
+  FSearchMode := Database;
+  if Database then
+    LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_DATABASE')
+  else
+    LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_FILES');
+end;
+
+procedure TExplorerForm.InitSearch;
+begin
+  LoadSpeedButtonFromResourcePNG(sbDoSearch, 'SEARCH');
+  LoadSearchMode(Settings.ReadBool('Explorer', 'SearchMode', False));
+end;
+
+procedure TExplorerForm.PmSearchModePopup(Sender: TObject);
+
+  procedure AddResourceImage(ResName: string);
+  var
+    PNG: TPngImage;
+    BMP: TBitmap;
+  begin
+    BMP := TBitmap.Create;
+    try
+      PNG := LoadPNGFromRES(ResName);
+      try
+        LoadPNGImageTransparent(PNG, BMP);
+      finally
+        F(PNG);
+      end;
+      ImSearchMode.Add(BMP, nil);
+    finally
+      F(BMP);
+    end;
+  end;
+
+begin
+  if ImSearchMode.Count = 0 then
+  begin
+    AddResourceImage('FILES');
+    AddResourceImage('DATABASE');
+  end;
+
+  Searchfiles1.Default := not FSearchMode;
+  Searchincollection1.Default := FSearchMode;
+end;
+
+procedure TExplorerForm.SbSearchModeClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := Point(0, SbSearchMode.Height);
+  P := SbSearchMode.ClientToScreen(P);
+  PmSearchMode.Popup(P.X, P.Y);
+end;
+
 function TExplorerForm.InternalGetImage(FileName: string;
   Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 var
@@ -4665,6 +4764,9 @@ begin
 
     PePath.NetworksText := L('Network');
     PePath.LoadingText := L('Loading...');
+
+    Searchfiles1.Caption := L('Search in directory');
+    Searchincollection1.Caption := L('Search in collection');
   finally
     EndTranslate;
   end;
@@ -6339,22 +6441,34 @@ var
   UpdaterInfo: TUpdaterInfo;
   S: string;
 begin
-  DirectoryWatcher.StopWatch;
-  NewFormState;
-
-  ClearList;
-  FBitmapImageList.Clear;
-  FFilesInfo.Clear;
-
-  ElvMain.Groups.Add;
-  ListView1SelectItem(nil, nil, False);
-
-  UpdaterInfo.IsUpdater := False;
-  UpdaterInfo.FileInfo := nil;
   S := AnsiLowerCase(WedSearch.Text);
-  if Pos('*', S) = 0 then
-    S := '*' + S + '*';
-  TExplorerThread.Create(FCurrentPath, S, THREAD_TYPE_SEARCH_FOLDER, ViewInfo, Self, UpdaterInfo, StateID);
+  try
+    if S = '' then
+      Exit;
+
+    DirectoryWatcher.StopWatch;
+    NewFormState;
+
+    ClearList;
+    FBitmapImageList.Clear;
+    FFilesInfo.Clear;
+
+    ElvMain.Groups.Add;
+    ListView1SelectItem(nil, nil, False);
+
+    UpdaterInfo.IsUpdater := False;
+    UpdaterInfo.FileInfo := nil;
+
+    if not FSearchMode then
+    begin
+      if Pos('*', S) = 0 then
+        S := '*' + S + '*';
+      TExplorerThread.Create(FCurrentPath, S, THREAD_TYPE_SEARCH_FOLDER, ViewInfo, Self, UpdaterInfo, StateID);
+    end else
+      TExplorerThread.Create(FCurrentPath, S, THREAD_TYPE_SEARCH_DB, ViewInfo, Self, UpdaterInfo, StateID);
+  finally
+    ElvMain.SetFocus;
+  end;
 end;
 
 procedure TExplorerForm.WedSearchKeyDown(Sender: TObject; var Key: Word;
@@ -7442,9 +7556,7 @@ begin
   PePath.CanBreakLoading := True;
   TExplorerThread.Create('::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, ViewInfo, Self, UpdaterInfo, StateID);
   for I := 0 to FFilesInfo.Count - 1 do
-  begin
     FFilesInfo[I].IsBigImage := False;
-  end;
 end;
 
 function TExplorerForm.GetAllItems: TExplorerFileInfos;
@@ -7694,6 +7806,7 @@ end;
 constructor TExplorerForm.Create(AOwner: TComponent;
   GoToLastSavedPath: Boolean);
 begin
+  TPrivateHelper.Instance.Init;
   FFilesInfo := TExplorerFileInfos.Create;
   FShellTreeView := nil;
   FormLoadEnd := False;

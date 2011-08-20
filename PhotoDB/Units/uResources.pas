@@ -22,7 +22,7 @@ function GetFilmStripImage : TPNGImage;
 {$R Slideshow_Load.res}
 {$R Directory_Large.res}
 {$R ExplorerBackground.res}
-{$R SearchBackground.res}   
+{$R SearchBackground.res}
 {$R DateRange.res}
 {$R Manifest.res}
 {$R ImagePanelBackground.res}
@@ -48,15 +48,19 @@ function GetFilmStripImage : TPNGImage;
 {$R MOBILE_FS.res}
 {$ENDIF}
 
-function GetRCDATAResourceStream(ResName : string) : TMemoryStream;
+{$R explorer_search.res}
+
+function GetRCDATAResourceStream(ResName: string): TMemoryStream;
+function LoadPNGFromRES(ResName: string): TPNGImage;
+function LoadJPEGFromRES(ResName: string): TJPEGImage;
 
 implementation
 
-function GetRCDATAResourceStream(ResName : string) : TMemoryStream;
+function GetRCDATAResourceStream(ResName: string): TMemoryStream;
 var
-  MyRes  : Integer;
-  MyResP : Pointer;
-  MyResS : Integer;
+  MyRes: Integer;
+  MyResP: Pointer;
+  MyResS: Integer;
 begin
   Result := nil;
   MyRes := FindResource(HInstance, PWideChar(ResName), RT_RCDATA);
@@ -78,9 +82,9 @@ begin
   end;
 end;
 
-function LoadPNGFromRES(ResName : string) : TPNGImage;
+function LoadPNGFromRES(ResName: string): TPNGImage;
 var
-  RCDataStream : TMemoryStream;
+  RCDataStream: TMemoryStream;
 begin
   Result := nil;
   RCDataStream := GetRCDATAResourceStream(ResName);
@@ -92,9 +96,9 @@ begin
   end;
 end;
 
-function LoadJPEGFromRES(ResName : string) : TJPEGImage;
+function LoadJPEGFromRES(ResName: string): TJPEGImage;
 var
-  RCDataStream : TMemoryStream;
+  RCDataStream: TMemoryStream;
 begin
   Result := nil;
   RCDataStream := GetRCDATAResourceStream(ResName);
@@ -106,62 +110,62 @@ begin
   end;
 end;
 
-function GetFolderPicture : TPNGImage;
+function GetFolderPicture: TPNGImage;
 begin
   Result := LoadPNGFromRES('DIRECTORY_LARGE');
 end;
 
-function GetSlideShowLoadPicture : TPNGImage;
+function GetSlideShowLoadPicture: TPNGImage;
 begin
   Result := LoadPNGFromRES('SLIDESHOW_LOAD');
 end;
 
-function GetExplorerBackground : TPNGImage;
+function GetExplorerBackground: TPNGImage;
 begin
   Result := LoadPNGFromRES('EXPLORERBACKGROUND');
 end;
 
-function GetSearchBackground : TPNGImage;
+function GetSearchBackground: TPNGImage;
 begin
   Result := LoadPNGFromRES('SEARCHBACKGROUND');
 end;
 
-function GetDateRangeImage : TPNGImage;
+function GetDateRangeImage: TPNGImage;
 begin
   Result := LoadPNGFromRES('DATERANGE');
 end;
 
-function GetImagePanelImage : TPNGImage;
+function GetImagePanelImage: TPNGImage;
 begin
   Result := LoadPNGFromRES('IMAGEPANELBACKGROUND');
 end;
 
-function GetLoadingImage : TPNGImage;
+function GetLoadingImage: TPNGImage;
 begin
   Result := LoadPNGFromRES('LOADING');
 end;
 
-function GetLogoPicture : TPNGImage;
+function GetLogoPicture: TPNGImage;
 begin
   Result := LoadPNGFromRES('LOGO');
 end;
 
-function GetActivationImage : TPNGImage;
+function GetActivationImage: TPNGImage;
 begin
   Result := LoadPNGFromRES('ACTIVATION');
 end;
 
-function GetPrinterPatternImage : TJpegImage;
+function GetPrinterPatternImage: TJpegImage;
 begin
   Result := LoadJPEGFromRES('PRINTERPATTERN');
 end;
 
-function GetBigPatternImage : TJpegImage;
+function GetBigPatternImage: TJpegImage;
 begin
   Result := LoadJPEGFromRES('BIGPATTERN');
 end;
 
-function GetFilmStripImage : TPNGImage;
+function GetFilmStripImage: TPNGImage;
 begin
   Result := LoadPNGFromRES('FILM_STRIP');
 end;

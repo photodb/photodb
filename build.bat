@@ -21,6 +21,7 @@ cd photodb/resources
 "%BRCC32%" PrinterPattern.rc
 "%BRCC32%" BigPattern.rc
 "%BRCC32%" Film_strip.rc
+"%BRCC32%" explorer_search.rc
 
 cd ..
 cd ..

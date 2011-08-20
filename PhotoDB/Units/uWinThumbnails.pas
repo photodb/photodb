@@ -171,11 +171,11 @@ begin
         if (GetLocationRes = NOERROR) or (GetLocationRes = E_PENDING) then
         begin
           if GetLocationRes = E_PENDING then
-            if XtractImage.QueryInterface(IRunnableTask, RunnableTask)
-              <> S_OK then
+            if XtractImage.QueryInterface(IRunnableTask, RunnableTask) <> S_OK then
               RunnableTask := nil;
           try
-            OleCheck(XtractImage.Extract(BmpHandle));
+            //do not call OleCheck for debug
+            XtractImage.Extract(BmpHandle);
             // This could consume a long time.
             Result := BmpHandle;
           except
