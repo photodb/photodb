@@ -132,7 +132,7 @@ type
     SetFilter1: TMenuItem;
     MakeFolderViewer1: TMenuItem;
     Number1: TMenuItem;
-    RatingPopupMenu1: TPopupMenu;
+    RatingPopupMenu: TPopupMenu;
     N00: TMenuItem;
     N01: TMenuItem;
     N02: TMenuItem;
@@ -217,7 +217,7 @@ type
     slSearch: TSplitter;
     SbSearchMode: TSpeedButton;
     WedSearch: TWatermarkedEdit;
-    sbDoSearch: TSpeedButton;
+    SbDoSearch: TSpeedButton;
     PnSearch: TPanel;
     PnSearchEditPlace: TPanel;
     PmSearchMode: TPopupMenu;
@@ -501,9 +501,7 @@ type
     procedure PePathChange(Sender: TObject);
     procedure PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
     procedure PePathGetSystemIcon(Sender: TPathEditor; Path: TPathPart);
-    procedure WedSearchKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure sbDoSearchClick(Sender: TObject);
+    procedure SbDoSearchClick(Sender: TObject);
     procedure InitSearch;
     procedure LoadSearchMode(Database: Boolean);
     procedure Searchfiles1Click(Sender: TObject);
@@ -512,8 +510,10 @@ type
     procedure PmSearchModePopup(Sender: TObject);
     procedure ImButton1Click(Sender: TObject);
     procedure WedFilterChange(Sender: TObject);
-    procedure WedFilterKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure WedSearchKeyPress(Sender: TObject; var Key: Char);
+    procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
+    procedure PePathImageContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
    private
      { Private declarations }
      FBitmapImageList : TBitmapImageList;
@@ -610,7 +610,7 @@ type
      procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
      constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); reintroduce; overload;
      destructor Destroy; override;
-     procedure HideFilter;
+     procedure HideFilter(ResetFilter: Boolean = True);
      procedure ShowFilter;
      property WindowID: TGUID read FWindowID;
      property MyComputer : string read GetMyComputer;
@@ -743,8 +743,8 @@ end;
 
 procedure TExplorerForm.CreateBackgrounds;
 var
-  ExplorerBackground : TPNGImage;
-  Bitmap, ExplorerBackgroundBMP : TBitmap;
+  ExplorerBackground: TPNGImage;
+  Bitmap, ExplorerBackgroundBMP: TBitmap;
 begin
   Bitmap := TBitmap.Create;
   try
@@ -1033,7 +1033,7 @@ end;
 
 procedure TExplorerForm.SlideShow1Click(Sender: TObject);
 var
-  FileName : string;
+  FileName: string;
   MenuInfo: TDBPopupMenuInfo;
 begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
@@ -1065,11 +1065,11 @@ end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
   ArInt: TArInteger;
   Files: TStrings;
   WindowsProperty: Boolean;
-  I : Integer;
+  I: Integer;
 
   procedure ShowWindowsPropertiesDialogToSelected;
   var
@@ -1092,7 +1092,7 @@ var
 begin
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
   begin
-  if SelCount> 1 then
+  if SelCount > 1 then
     begin
       Info := GetCurrentPopUpMenuInfo(ListView1Selected);
       try
@@ -1129,7 +1129,7 @@ end;
 
 procedure TExplorerForm.PmItemPopupPopup(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
   Item: TEasyItem;
   Point: TPoint;
   Files: TStrings;
@@ -1515,7 +1515,7 @@ end;
 
 procedure TExplorerForm.DeleteFiles(ToRecycle : Boolean);
 var
-  I : integer;
+  I: integer;
   Index: Integer;
   Files: TStringList;
 begin
@@ -1542,7 +1542,7 @@ end;
 
 procedure TExplorerForm.AddFile1Click(Sender: TObject);
 var
-  I, Index : Integer;
+  I, Index: Integer;
 begin
   if ListView1Selected <> nil then
   begin
@@ -4372,7 +4372,7 @@ end;
 procedure TExplorerForm.PropertiesLinkClick(Sender: TObject);
 var
   Item: TEasyItem;
-  index: Integer;
+  Index: Integer;
 begin
   if SelCount > 1 then
   begin
@@ -4381,10 +4381,10 @@ begin
       Exit;
     index := ItemIndexToMenuIndex(Item.index);
     PmItemPopup.Tag := index;
-    if index > FFilesInfo.Count - 1 then
+    if Index > FFilesInfo.Count - 1 then
       Exit;
-    if (FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) or (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or
-      (FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) then
+    if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or
+      (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) then
       Properties1Click(Sender);
     Exit;
   end;
@@ -4474,6 +4474,11 @@ begin
     LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_DATABASE')
   else
     LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_FILES');
+
+  if Database then
+    WedSearch.WatermarkText := L('Search in collection')
+  else
+    WedSearch.WatermarkText := L('Search in directory');
 end;
 
 procedure TExplorerForm.InitSearch;
@@ -4528,13 +4533,14 @@ begin
   ShowFilter;
 end;
 
-procedure TExplorerForm.HideFilter;
+procedure TExplorerForm.HideFilter(ResetFilter: Boolean = True);
 begin
   if PnFilter.Visible then
   begin
     ElvMain.SetFocus;
     PnFilter.Hide;
-    WedFilter.OnChange(Self);
+    if ResetFilter then
+      WedFilter.OnChange(Self);
   end;
 end;
 
@@ -4643,6 +4649,13 @@ begin
   finally
     F(Ico);
   end;
+end;
+
+procedure TExplorerForm.PePathImageContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+  cc
+begin
+
 end;
 
 procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
@@ -4887,7 +4900,7 @@ var
   I, ThreadType: Integer;
   Info: TExplorerViewInfo;
 begin
-  HideFilter;
+  HideFilter(False);
   RefreshIDList.Clear;
   UpdaterInfo.ProcHelpAfterUpdate := nil;
   EventLog('SetNewPathW "' + WPath.Path + '"');
@@ -6492,7 +6505,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.sbDoSearchClick(Sender: TObject);
+procedure TExplorerForm.SbDoSearchClick(Sender: TObject);
 var
   UpdaterInfo: TUpdaterInfo;
   S: string;
@@ -6514,6 +6527,7 @@ begin
 
     UpdaterInfo.IsUpdater := False;
     UpdaterInfo.FileInfo := nil;
+    PePath.CanBreakLoading := True;
 
     if not FSearchMode then
     begin
@@ -6527,13 +6541,12 @@ begin
   end;
 end;
 
-procedure TExplorerForm.WedSearchKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TExplorerForm.WedSearchKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key = VK_RETURN then
+  if Ord(Key) = VK_RETURN then
   begin
-    Key := 0;
-    sbDoSearchClick(Sender);
+    Key := #0;
+    SbDoSearchClick(Sender);
   end;
 end;
 
@@ -6600,11 +6613,13 @@ begin
   ImFilterWarning.Visible := not ResultsFound;
 end;
 
-procedure TExplorerForm.WedFilterKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TExplorerForm.WedFilterKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key = VK_ESCAPE then
+  if Ord(Key) = VK_ESCAPE then
+  begin
     HideFilter;
+    Key := #0;
+  end;
 end;
 
 procedure TExplorerForm.AddUpdateID(ID: Integer);
@@ -7177,17 +7192,17 @@ var
   EventInfo: TEventValues;
   FileInfo: TDBPopupMenuInfoRecord;
 begin
-  if RatingPopupMenu1.Tag > 0 then
+  if RatingPopupMenu.Tag > 0 then
   begin
-    SetRating(RatingPopupMenu1.Tag, (Sender as TMenuItem).Tag);
+    SetRating(RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
     EventInfo.Rating := (Sender as TMenuItem).Tag;
-    DBKernel.DoIDEvent(Self, RatingPopupMenu1.Tag, [EventID_Param_Rating],
+    DBKernel.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating],
       EventInfo);
   end else
   begin
     FileInfo := TDBPopupMenuInfoRecord.Create;
     try
-      FileInfo.FileName := FFilesInfo[-RatingPopupMenu1.Tag].FileName;
+      FileInfo.FileName := FFilesInfo[-RatingPopupMenu.Tag].FileName;
       FileInfo.Rating := (Sender as TMenuItem).Tag;
       FileInfo.Include := True;
       UpdaterDB.AddFileEx(FileInfo, True, True);
@@ -7235,16 +7250,16 @@ begin
       if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
       begin
         if FFilesInfo[Index].ID > 0 then
-          RatingPopupMenu1.Tag := FFilesInfo[Index].ID
+          RatingPopupMenu.Tag := FFilesInfo[Index].ID
         else
-          RatingPopupMenu1.Tag := -Index;
+          RatingPopupMenu.Tag := -Index;
 
-        if not ((RatingPopupMenu1.Tag < 0) and FolderView) then
+        if not ((RatingPopupMenu.Tag < 0) and FolderView) then
         begin
           Application.HideHint;
           THintManager.Instance.CloseHint;
           LastMouseItem := nil;
-          RatingPopupMenu1.Popup(p1.X, p1.Y);
+          RatingPopupMenu.Popup(p1.X, p1.Y);
           Exit;
         end;
       end;
@@ -7817,6 +7832,7 @@ begin
     EndUpdate;
   PePath.CanBreakLoading := False;
   FStatusProgress.Visible := False;
+  LsMain.Hide;
   StatusBar1.Panels[0].Text := L('Loading canceled...');
 end;
 
@@ -8018,7 +8034,7 @@ begin
   MakeFolderViewer2.ImageIndex := DB_IC_SAVE_AS_TABLE;
   Number1.ImageIndex := DB_IC_RENAME;
 
-  RatingPopupMenu1.Images := DBkernel.ImageList;
+  RatingPopupMenu.Images := DBkernel.ImageList;
 
   N00.ImageIndex := DB_IC_DELETE_INFO;
   N01.ImageIndex := DB_IC_RATING_1;

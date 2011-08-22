@@ -14,7 +14,7 @@ uses
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
   uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons,
-  uShellThumbnails, uMachMask;
+  uShellThumbnails, uMachMask, CCR.Exif, UnitGroupsWork;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -56,10 +56,10 @@ type
     FVisibleFiles: TStrings;
     IsBigImage: Boolean;
     NewItem: TEasyItem;
-    FOwnerThreadType : Integer;
-    CurrentFileInfo : TExplorerFileInfo;
-    FPacketImages : TBitmapImageList;
-    FPacketInfos : TExplorerFileInfos;
+    FOwnerThreadType: Integer;
+    CurrentFileInfo: TExplorerFileInfo;
+    FPacketImages: TBitmapImageList;
+    FPacketInfos: TExplorerFileInfos;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
@@ -129,8 +129,9 @@ type
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
     procedure SendPacketToExplorer;
-    procedure SearchFolder;
+    procedure SearchFolder(SearchContent: Boolean);
     procedure SearchDB;
+    function IsImage(SearchRec: TSearchRec): Boolean;
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
   protected
     function IsVirtualTerminate : Boolean; override;
@@ -385,7 +386,13 @@ begin
 
     if (FThreadType = THREAD_TYPE_SEARCH_FOLDER) then
     begin
-      SearchFolder;
+      SearchFolder(False);
+      Exit;
+    end;   
+    
+    if (FThreadType = THREAD_TYPE_SEARCH_IMAGES) then
+    begin
+      SearchFolder(True);
       Exit;
     end;
 
@@ -688,7 +695,7 @@ begin
   raise Exception.Create('Not implemented yet');
 end;
 
-procedure TExplorerThread.SearchFolder;
+procedure TExplorerThread.SearchFolder(SearchContent: Boolean);
 var
   LastPacketTime: Cardinal;
 
@@ -700,6 +707,9 @@ var
     RefreshQueue: TList;
     Info: TExplorerFileInfo;
   begin
+    if FPacketInfos.Count = 0 then
+      Exit;
+      
     RefreshQueue := TList.Create;
     try
       //info for refresh items
@@ -742,7 +752,6 @@ var
       for I := 0 to RefreshQueue.Count - 1 do
          ExplorerUpdateManager.QueueNotify(TExplorerNotifyInfo(RefreshQueue[I]));
 
-      RefreshQueue.Clear;
     finally
       F(RefreshQueue);
     end;
@@ -755,7 +764,7 @@ var
   begin
     //add the last info
     Info := Files[Files.Count - 1];
-    FPacketInfos.Add(Info.Copy);
+    FPacketInfos.Add(Info);
     //load icon
     GUIDParam := Info.SID;
     CurrentFile := Info.FileName;
@@ -781,51 +790,103 @@ var
 
   procedure SearchDirectory(CurrentDirectory: string);
   var
-    DE: Boolean;
     Found: Integer;
     SearchRec: TSearchRec;
-    I: Integer;
+    I, J: Integer;
     Files: TExplorerFileInfos;
+    CurrentDirectories,
+    Directories: TStringList;
+    ExifData: TExifData;
+    SearchKey: string;
+    DE: Boolean;
+    Groups: TGroups;
   begin
     Files := TExplorerFileInfos.Create;
     try
       //search current level
       CurrentDirectory := IncludeTrailingPathDelimiter(CurrentDirectory);
-      Found := FindFirst(CurrentDirectory + '*.*', FaAnyFile, SearchRec);
-      while Found = 0 do
-      begin
-        if IsTerminated then
-          Break;
 
-        try
-          DE := (SearchRec.Attr and FaDirectory <> 0);
-          if not IsMatchMask(AnsiLowerCase(SearchRec.Name), FMask, True) then
-          begin
-            if DE then
-              //save directory, but don't add to results
-              ProcessSearchRecord(Files, CurrentDirectory, SearchRec);
-            Continue;
+      Directories := TStringList.Create;
+      CurrentDirectories := TStringList.Create;
+      try
+
+        Directories.Add(CurrentDirectory);
+        Repeat
+
+          CurrentDirectories.Assign(Directories);
+          Directories.Clear;
+
+          for I := 0 to CurrentDirectories.Count - 1 do
+          begin   
+            if IsTerminated then
+              Break;
+              
+            CurrentDirectory := IncludeTrailingPathDelimiter(CurrentDirectories[I]);
+
+            Found := FindFirst(CurrentDirectory + '*.*', FaAnyFile, SearchRec);
+            while Found = 0 do
+            begin
+              if IsTerminated then
+                Break;
+
+              try
+                if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
+                  Continue;
+              
+                //if not ExplorerInfo.ShowPrivate then
+                //  if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.Name)) > -1 then
+                //     Continue;
+              
+                DE := (SearchRec.Attr and FaDirectory <> 0);
+                SearchKey := SearchRec.Name;
+
+                if SearchContent and not DE and IsImage(SearchRec) then
+                begin
+                  ExifData := TExifData.Create;
+                  try
+                    ExifData.LoadFromGraphic(CurrentDirectory + SearchRec.Name);
+                    SearchKey := SearchKey + ' ' + ExifData.Comments;              
+                    SearchKey := SearchKey + ' ' + ExifData.Keywords;
+                    if ExifData.XMPPacket.Groups <> '' then
+                    begin
+                      Groups := EncodeGroups(ExifData.XMPPacket.Groups);
+                      for J := 0 to Length(Groups) - 1 do
+                        SearchKey := SearchKey + ' ' + Groups[J].GroupName;
+                    end;
+                  finally
+                    F(ExifData);
+                  end;
+                end;
+              
+                if not IsMatchMask(AnsiLowerCase(SearchKey), FMask, True) then
+                begin
+                  if DE then
+                  begin
+                    //save directory, but don't add to results
+                    ProcessSearchRecord(Files, CurrentDirectory, SearchRec);
+                    Directories.Add(CurrentDirectory + SearchRec.Name);
+                  end;
+                  Continue;
+                end;
+
+                if ProcessSearchRecord(Files, CurrentDirectory, SearchRec) then
+                  SendInfoToExplorer(Files);
+                  
+              finally
+                Found := SysUtils.FindNext(SearchRec);
+              end;
+            end;
+            FindClose(SearchRec);
+
+            SendPacket;
           end;
-          //if not ExplorerInfo.ShowPrivate then
-          //  if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.Name)) > -1 then
-          //     Continue;
 
-          if ProcessSearchRecord(Files, CurrentDirectory, SearchRec) then
-            SendInfoToExplorer(Files);
-        finally
-          Found := SysUtils.FindNext(SearchRec);
-        end;
+        until Directories.Count = 0;
+      finally
+        F(Directories);
+        F(CurrentDirectories);
       end;
-      FindClose(SearchRec);
 
-      //search in sub-levels
-      for I := 0 to Files.Count - 1 do
-        if Files[I].FileType = EXPLORER_ITEM_FOLDER then
-        begin
-          if IsTerminated then
-            Break;
-          SearchDirectory(Files[I].FileName);
-        end;
     finally
       F(Files);
     end;
@@ -1114,7 +1175,7 @@ end;
 
 procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
 var
-  Found, Count, Dx, i, j, x, y, w, H, Ps, index: Integer;
+  Found, Count, Dx, I, J, X, Y, W, H, Ps, Index: Integer;
   SearchRec: TSearchRec;
   Files: array [1 .. 4] of string;
   Bmp: TBitmap;
@@ -1283,7 +1344,8 @@ begin
             if FThreadType = THREAD_TYPE_FOLDER_UPDATE then
             begin
               MakeFolderImage(CurrentFile);
-              SynchronizeEx(AddImageFileImageToExplorer);
+              if not SynchronizeEx(AddImageFileImageToExplorer) then
+                F(FIcon);
             end;
             Exit;
           end;
@@ -1601,29 +1663,34 @@ begin
   TempBitmap.SetSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
 end;
 
+function TExplorerThread.IsImage(SearchRec: TSearchRec): Boolean;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := False;
+  if ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
+  begin
+    S := ExtractFileExt(SearchRec.name);
+    S := '|' + AnsiLowerCase(S) + '|';
+    P := Pos(S, SupportedExt);
+    Result := P <> 0;
+  end;
+end;
+
 function TExplorerThread.ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
 var
   FE, EM: Boolean;
   FA: Integer;
-  S: string;
-  P: Integer;
 begin
-  FE := False;
-  EM := False;
   Result := False;
   if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
   begin
     FA := SearchRec.Attr and FaHidden;
     if ExplorerInfo.ShowHiddenFiles or (not ExplorerInfo.ShowHiddenFiles and (FA = 0)) then
     begin
-      if ExplorerInfo.ShowImageFiles or ExplorerInfo.ShowSimpleFiles then
-      begin
-        FE := (SearchRec.Attr and FaDirectory = 0);
-        S := ExtractFileExt(SearchRec.name);
-        S := '|' + AnsiLowerCase(S) + '|';
-        P := Pos(S, SupportedExt);
-        EM := P <> 0;
-      end;
+      FE := (SearchRec.Attr and FaDirectory = 0);
+      EM := IsImage(SearchRec);
       if FShowFiles then
         if ExplorerInfo.ShowSimpleFiles then
           if FE and not EM and ExplorerInfo.ShowSimpleFiles then
@@ -2509,7 +2576,10 @@ begin
   try
     for I := FData.Count - 1 downto 0 do
       if TExplorerNotifyInfo(FData[I]).FOwner = FOwner then
+      begin
+        TObject(FData[I]).Free;
         FData.Delete(I);
+      end;
   finally
     FSync.Leave;
   end;

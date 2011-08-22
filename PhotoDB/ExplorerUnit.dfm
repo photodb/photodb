@@ -824,14 +824,14 @@ object ExplorerForm: TExplorerForm
         ExplicitTop = 1
         ExplicitHeight = 24
       end
-      object sbDoSearch: TSpeedButton
+      object SbDoSearch: TSpeedButton
         Left = 165
         Top = 0
         Width = 20
         Height = 25
         Align = alRight
         Flat = True
-        OnClick = sbDoSearchClick
+        OnClick = SbDoSearchClick
         ExplicitLeft = 160
         ExplicitTop = 1
         ExplicitHeight = 23
@@ -857,7 +857,7 @@ object ExplorerForm: TExplorerForm
           Anchors = [akLeft, akTop, akRight]
           BorderStyle = bsNone
           TabOrder = 0
-          OnKeyDown = WedSearchKeyDown
+          OnKeyPress = WedSearchKeyPress
           WatermarkText = 'Search in directory'
         end
       end
@@ -881,7 +881,6 @@ object ExplorerForm: TExplorerForm
       DoubleBuffered = False
       ParentDoubleBuffered = False
       Align = alClient
-      Path = 'c:\'
       SeparatorImage.Data = {
         9E020000424D9E0200000000000036000000280000000B0000000E0000000100
         2000000000006802000000000000000000000000000000000000000000000000
@@ -912,6 +911,7 @@ object ExplorerForm: TExplorerForm
       GetSystemIcon = PePathGetSystemIcon
       CanBreakLoading = False
       OnBreakLoading = TbStopClick
+      OnImageContextPopup = PePathImageContextPopup
     end
   end
   object PnContent: TPanel
@@ -923,10 +923,6 @@ object ExplorerForm: TExplorerForm
     BevelOuter = bvNone
     FullRepaint = False
     TabOrder = 5
-    ExplicitLeft = 141
-    ExplicitTop = 552
-    ExplicitWidth = 185
-    ExplicitHeight = 41
     object PnFilter: TPanel
       Left = 0
       Top = 512
@@ -1002,7 +998,7 @@ object ExplorerForm: TExplorerForm
         Height = 21
         TabOrder = 0
         OnChange = WedFilterChange
-        OnKeyDown = WedFilterKeyDown
+        OnKeyPress = WedFilterKeyPress
         WatermarkText = 'Filter content'
       end
       object ImButton1: TImButton
@@ -1752,7 +1748,7 @@ object ExplorerForm: TExplorerForm
     Left = 536
     Top = 408
   end
-  object RatingPopupMenu1: TPopupMenu
+  object RatingPopupMenu: TPopupMenu
     Left = 361
     Top = 352
     object N00: TMenuItem
