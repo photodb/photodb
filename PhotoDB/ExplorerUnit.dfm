@@ -911,7 +911,6 @@ object ExplorerForm: TExplorerForm
       GetSystemIcon = PePathGetSystemIcon
       CanBreakLoading = False
       OnBreakLoading = TbStopClick
-      OnImageContextPopup = PePathImageContextPopup
     end
   end
   object PnContent: TPanel

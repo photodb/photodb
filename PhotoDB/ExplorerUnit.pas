@@ -512,8 +512,6 @@ type
     procedure WedFilterChange(Sender: TObject);
     procedure WedSearchKeyPress(Sender: TObject; var Key: Char);
     procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
-    procedure PePathImageContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
    private
      { Private declarations }
      FBitmapImageList : TBitmapImageList;
@@ -4649,13 +4647,6 @@ begin
   finally
     F(Ico);
   end;
-end;
-
-procedure TExplorerForm.PePathImageContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
-  cc
-begin
-
 end;
 
 procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
