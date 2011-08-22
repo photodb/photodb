@@ -146,7 +146,7 @@ procedure DoDonate;
 function SendEMail(Handle: THandle; ToAddress, ToName, Subject, Body: string; Files: TStrings): Cardinal;
 
 procedure Delay(Msecs: Longint);
-function CreateProgressBar(StatusBar: TStatusBar; index: Integer): TProgressBar;
+function CreateProgressBar(StatusBar: TStatusBar; Index: Integer): TProgressBar;
 
 function IsWallpaper(FileName: string): Boolean;
 function GetDBFileName(FileName, DBName: string): string;

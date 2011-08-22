@@ -20,8 +20,7 @@ uses
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
-  uDBUtils, uSettings, uAssociations, PathEditor, ComboBoxExDB, WatermarkedEdit,
-  PanelCanvas;
+  uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -225,6 +224,14 @@ type
     ImSearchMode: TImageList;
     Searchfiles1: TMenuItem;
     Searchincollection1: TMenuItem;
+    PnContent: TPanel;
+    PnFilter: TPanel;
+    WedFilter: TWatermarkedEdit;
+    LbFilter: TLabel;
+    ImButton1: TImButton;
+    LbFilterInfo: TLabel;
+    CbFilterMatchCase: TCheckBox;
+    ImFilterWarning: TImage;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -346,7 +353,6 @@ type
     procedure PropertiesLinkClick(Sender: TObject);
     procedure SlideShowLinkClick(Sender: TObject);
     procedure InfoPanel1Click(Sender: TObject);
-    function GetThreadsCount : Integer;
     procedure Paste3Click(Sender: TObject);
     procedure ShowOnlyCommon1Click(Sender: TObject);
     procedure ShowPrivate1Click(Sender: TObject);
@@ -504,6 +510,10 @@ type
     procedure Searchincollection1Click(Sender: TObject);
     procedure SbSearchModeClick(Sender: TObject);
     procedure PmSearchModePopup(Sender: TObject);
+    procedure ImButton1Click(Sender: TObject);
+    procedure WedFilterChange(Sender: TObject);
+    procedure WedFilterKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
    private
      { Private declarations }
      FBitmapImageList : TBitmapImageList;
@@ -550,7 +560,6 @@ type
      FIsExplorer: Boolean;
      LastShift: TShiftState;
      LastListViewSelCount: Integer;
-     FReadingFolderNumber: Integer;
      ItemsDeselected: Boolean;
      IsReallignInfo: Boolean;
      FWasDragAndDrop: Boolean;
@@ -601,6 +610,8 @@ type
      procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
      constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); reintroduce; overload;
      destructor Destroy; override;
+     procedure HideFilter;
+     procedure ShowFilter;
      property WindowID: TGUID read FWindowID;
      property MyComputer : string read GetMyComputer;
      property ViewInfo: TExplorerViewInfo read GetViewInfo;
@@ -647,8 +658,8 @@ uses
   FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
   uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
   UnitFileRenamerForm, UnitSizeResizerForm, ImEditor,
-  UnitManageGroups, UnitInternetUpdate, UnitHelp,
-  UnitGetPhotosForm, UnitFormCont,
+  UnitManageGroups, UnitInternetUpdate, UnitHelp, uMachMask,
+  UnitGetPhotosForm, UnitFormCont, UnitGroupsWork,
   UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
   UnitSavingTableForm, UnitUpdateDBObject, Loadingresults,
   uFormSteganography, UnitBigImagesSize;
@@ -785,8 +796,8 @@ begin
 
   TW.I.Start('ListView1');
 
-  ElvMain:=TEasyListView.Create(self);
-  ElvMain.Parent := Self;
+  ElvMain := TEasyListView.Create(self);
+  ElvMain.Parent := PnCOntent;
   ElvMain.Align := AlClient;
 
   MouseDowned := False;
@@ -2201,7 +2212,7 @@ begin
   end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
     TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo,
       Self, UpdaterInfo, StateID)
-  else 
+  else
     UpdaterInfo.FileInfo.Free;
 end;
 
@@ -2792,7 +2803,7 @@ begin
   if not Self.Active then
     Exit;
 
-  if Msg.message = WM_KEYDOWN then
+  if Msg.Message = WM_KEYDOWN then
   begin
     if (Msg.Wparam = VK_BACK) and ElvMain.Focused then
     begin
@@ -2804,6 +2815,19 @@ begin
         else
           if TbUp.Enabled then
             TbUp.Click
+    end;
+
+    //search by F3
+    if (Msg.Wparam = VK_F3) then
+      WedSearch.SetFocus;
+
+    //filter by Ctrl+F
+    if CtrlKeyDown and (Msg.Wparam = Ord('F')) then
+    begin
+      if not PnFilter.Visible then
+        ShowFilter
+      else
+        HideFilter;
     end;
   end;
 
@@ -2871,7 +2895,7 @@ begin
   end;
 
   if Msg.Hwnd = ElvMain.Handle then
-    if Msg.message= WM_KEYDOWN then
+    if Msg.message = WM_KEYDOWN then
     begin
       WindowsMenuTickCount := GetTickCount;
 
@@ -2890,7 +2914,7 @@ begin
         ZoomIn;
 
       if (Msg.WParam = VK_F2) then
-        if ((FSelectedInfo.FileType=EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
+        if ((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
         begin
           if ListView1Selected <> nil then
@@ -4499,6 +4523,32 @@ begin
   PmSearchMode.Popup(P.X, P.Y);
 end;
 
+procedure TExplorerForm.SetFilter1Click(Sender: TObject);
+begin
+  ShowFilter;
+end;
+
+procedure TExplorerForm.HideFilter;
+begin
+  if PnFilter.Visible then
+  begin
+    ElvMain.SetFocus;
+    PnFilter.Hide;
+    WedFilter.OnChange(Self);
+  end;
+end;
+
+procedure TExplorerForm.ShowFilter;
+begin
+  WedFilter.Left := LbFilter.Left + LbFilter.Width + 5;
+  CbFilterMatchCase.Left := WedFilter.Left + WedFilter.Width + 5;
+  ImFilterWarning.Left := CbFilterMatchCase.Left + CbFilterMatchCase.Width + 5;
+  LbFilterInfo.Left := ImFilterWarning.Left + ImFilterWarning.Width + 5;
+  PnFilter.Show;
+  WedFilter.SetFocus;
+  WedFilter.OnChange(Self);
+end;
+
 function TExplorerForm.InternalGetImage(FileName: string;
   Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 var
@@ -4523,11 +4573,6 @@ begin
       end;
     end;
   end;
-end;
-
-function TExplorerForm.GetThreadsCount: Integer;
-begin
-  Result := Self.FReadingFolderNumber;
 end;
 
 procedure TExplorerForm.Paste3Click(Sender: TObject);
@@ -4765,8 +4810,15 @@ begin
     PePath.NetworksText := L('Network');
     PePath.LoadingText := L('Loading...');
 
+    //search
     Searchfiles1.Caption := L('Search in directory');
     Searchincollection1.Caption := L('Search in collection');
+
+    //filter
+    WedFilter.WatermarkText := L('Filter content');
+    CbFilterMatchCase.Caption := L('Match case');
+    LbFilter.Caption := L('Filter') + ':';
+    LbFilterInfo.Caption := L('Sorry, but phrase not found!');
   finally
     EndTranslate;
   end;
@@ -4824,7 +4876,7 @@ end;
 
 procedure TExplorerForm.ScrollBox1Resize(Sender: TObject);
 begin
-  ScrollBox1.BackgroundLeft := ScrollBox1.Width-ScrollBox1.BackGround.Width - 3;
+  ScrollBox1.BackgroundLeft := ScrollBox1.Width - ScrollBox1.BackGround.Width - 3;
   ScrollBox1.BackgroundTop := ScrollBox1.Height - ScrollBox1.BackGround.Height - 3;
 end;
 
@@ -4835,6 +4887,7 @@ var
   I, ThreadType: Integer;
   Info: TExplorerViewInfo;
 begin
+  HideFilter;
   RefreshIDList.Clear;
   UpdaterInfo.ProcHelpAfterUpdate := nil;
   EventLog('SetNewPathW "' + WPath.Path + '"');
@@ -4978,7 +5031,6 @@ begin
 
   UpdaterInfo.IsUpdater := False;
   UpdaterInfo.FileInfo := nil;
-  Inc(FReadingFolderNumber);
 
   EventLog('ExplorerThread');
   if ElvMain <> nil then
@@ -5039,7 +5091,7 @@ end;
 
 procedure TExplorerForm.JumpHistoryClick(Sender: TObject);
 var
-  N : integer;
+  N : Integer;
 begin
   N := (Sender as TMenuItem).Tag;
   FChangeHistoryOnChPath := False;
@@ -5057,8 +5109,8 @@ end;
 procedure TExplorerForm.DragTimerTimer(Sender: TObject);
 var
   ListItem: TEasyItem;
-  p : TPoint;
-  Index : Integer;
+  P: TPoint;
+  Index: Integer;
   SmintL, SmintR: SmallInt;
 
   function ValidItem(Item: TEasyItem): Boolean;
@@ -5160,8 +5212,8 @@ end;
 
 procedure TExplorerForm.ResetPassword1Click(Sender: TObject);
 var
-  I, Index : integer;
-  Options : TCryptImageThreadOptions;
+  I, Index: Integer;
+  Options: TCryptImageThreadOptions;
   ItemFileNames: TArStrings;
   ItemIDs: TArInteger;
   ItemSelected: TArBoolean;
@@ -5194,12 +5246,11 @@ begin
   Options.Password := Password;
   Options.CryptOptions := 0;
   TCryptingImagesThread.Create(Self, Options);
-
 end;
 
 procedure TExplorerForm.CryptFile1Click(Sender: TObject);
 var
-  I, index : integer;
+  I, Index: Integer;
   Options : TCryptImageThreadOptions;
   Opt: TCryptImageOptions;
   CryptOptions: Integer;
@@ -5265,7 +5316,7 @@ begin
   try
     ResizeImages(Self, List);
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -5277,7 +5328,7 @@ begin
   try
     ConvertImages(Self, List);
   finally
-    List.Free;
+    F(List);
   end;
 end;
 
@@ -5307,7 +5358,7 @@ end;
 
 procedure TExplorerForm.AsEXIF1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -5319,7 +5370,7 @@ end;
 
 procedure TExplorerForm.RotateCCW1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -5331,7 +5382,7 @@ end;
 
 procedure TExplorerForm.RotateCW1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -5343,7 +5394,7 @@ end;
 
 procedure TExplorerForm.Rotateon1801Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -5355,8 +5406,8 @@ end;
 
 procedure TExplorerForm.RefreshID1Click(Sender: TObject);
 var
-  Options : TRefreshIDRecordThreadOptions;
-  Info : TDBPopupMenuInfo;
+  Options: TRefreshIDRecordThreadOptions;
+  Info: TDBPopupMenuInfo;
 begin
   Info := GetCurrentPopUpMenuInfo(nil);
   try
@@ -5639,7 +5690,7 @@ procedure TExplorerForm.ImageEditor2Click(Sender: TObject);
 var
   I, Index : integer;
 begin
-  for i:=0 to ElvMain.Items.Count - 1 do
+  for I := 0 to ElvMain.Items.Count - 1 do
     if ElvMain.Items[I].Selected then
     begin
       Index := ItemIndexToMenuIndex(I);
@@ -5667,6 +5718,11 @@ begin
   end;
 end;
 
+procedure TExplorerForm.ImButton1Click(Sender: TObject);
+begin
+  HideFilter;
+end;
+
 procedure TExplorerForm.ExportImages1Click(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
@@ -5690,7 +5746,7 @@ begin
       if ElvMain.Items[I].Selected then
       begin
         index := ItemIndexToMenuIndex(I);
-        if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
+        if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
           Files.Add(FFilesInfo[index].FileName)
       end;
     GetPrintForm(Files);
@@ -5707,7 +5763,7 @@ end;
 procedure TExplorerForm.MyPicturesLinkContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  P : TPoint;
+  P: TPoint;
 begin
   GetCursorPos(P);
   PmLinkOptions.Tag := Integer(Sender);
@@ -5722,8 +5778,8 @@ end;
 procedure TExplorerForm.OpeninNewWindow2Click(Sender: TObject);
 var
   Reg: TRegIniFile;
-  Link : TWebLink;
-  S : string;
+  Link: TWebLink;
+  S: string;
   DefLink: Boolean;
   I: Integer;
 begin
@@ -5764,9 +5820,9 @@ end;
 
 procedure TExplorerForm.TextFile2Click(Sender: TObject);
 var
-  S, FileName, FileNameTemplate : String;
-  N : Integer;
-  F : TextFile;
+  S, FileName, FileNameTemplate: String;
+  N: Integer;
+  F: TextFile;
 begin
   FileNameTemplate := L('Text document');
   FileName := FileNameTemplate + '.txt';
@@ -5805,7 +5861,7 @@ end;
 
 procedure TExplorerForm.GetPhotosClick(Sender: TObject);
 var
-  Item : TMenuItem;
+  Item: TMenuItem;
 begin
   Item := (Sender as TMenuItem);
   GetPhotosFromDrive(Char(Item.Tag));
@@ -5841,8 +5897,8 @@ end;
 
 procedure TExplorerForm.CopyWithFolder1Click(Sender: TObject);
 var
-  I, Index : integer;
-  Files : TStrings;
+  I, Index: integer;
+  Files: TStrings;
   UpDir, Dir, NewDir, Temp: string;
   L1, L2: Integer;
 begin
@@ -5876,9 +5932,9 @@ end;
 
 procedure TExplorerForm.ReadPlaces;
 var
-  Reg : TBDRegistry;
-  S : TStrings;
-  fName, FFolderName, FIcon: string;
+  Reg: TBDRegistry;
+  S: TStrings;
+  FName, FFolderName, FIcon: string;
   FMyComputer, FMyDocuments, FMyPictures, FOtherFolder: Boolean;
   I: Integer;
   Ico: TIcon;
@@ -5980,8 +6036,8 @@ end;
 
 procedure TExplorerForm.Copy4Click(Sender: TObject);
 var
-  Index : integer;
-  Str : string;
+  Index: Integer;
+  Str: string;
 begin
   if (LastListViewSelCount = 0) then
   begin
@@ -6157,11 +6213,11 @@ begin
                   IsDirectory := (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER);
                   if IsDirectory then
                     FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico)
-                  else 
+                  else
                     FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
 
                 end;
-                                
+
                 try
                   Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
                     ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
@@ -6321,14 +6377,14 @@ var
 begin
   if not IsEqualGUID(SID, FSelectedInfo._GUID) then
     Exit;
-    
+
   with ImPreview.Picture.Bitmap do
   begin
     Width := ThSizeExplorerPreview;
     Height := ThSizeExplorerPreview;
     Canvas.Pen.Color := clBtnFace;
     Canvas.Brush.Color := clBtnFace;
-    Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);   
+    Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
     Icon := TIcon.Create;
     try
       Icon.Handle := Ico;
@@ -6337,7 +6393,7 @@ begin
     finally
       F(Icon);
     end;
-  end;      
+  end;
 end;
 
 procedure TExplorerForm.SelectTimerTimer(Sender: TObject);
@@ -6366,8 +6422,8 @@ end;
 
 procedure TExplorerForm.SendToItemPopUpMenu_(Sender: TObject);
 var
-  NumberOfPanel : Integer;
-  InfoNames : TArStrings;
+  NumberOfPanel: Integer;
+  InfoNames: TArStrings;
   InfoIDs: TArInteger;
   Infoloaded: TArBoolean;
   I: Integer;
@@ -6481,6 +6537,76 @@ begin
   end;
 end;
 
+procedure TExplorerForm.WedFilterChange(Sender: TObject);
+var
+  Filter, ItemKey: string;
+  I, J, Index: Integer;
+  Info: TExplorerFileInfo;
+  Groups: TGroups;
+  MatchCase,
+  ResultsFound,
+  IsVisible,
+  IsFilter: Boolean;
+begin
+  IsFilter := PnFilter.Visible;
+  if IsFilter then
+    Filter := WedFilter.Text
+  else
+    Filter := '*';
+
+  if Pos('*', Filter) = 0 then
+    Filter := '*' + Filter + '*';
+
+  MatchCase := CbFilterMatchCase.Checked;
+  if not MatchCase then
+    Filter := AnsiLowerCase(Filter);
+
+  ResultsFound := False;
+
+  ElvMain.BeginUpdate;
+  try
+    for I := 0 to ElvMain.Items.Count - 1 do
+    begin
+      if IsFilter then
+      begin
+        Index := ItemIndexToMenuIndex(I);
+        Info := FFilesInfo[Index];
+        ItemKey := ElvMain.Items[I].Caption + ' ' + Info.Comment + ' ' + Info.KeyWords + ' ';
+        if Info.Groups <> '' then
+        begin
+          Groups := EncodeGroups(Info.Groups);
+          for J := 0 to Length(Groups) - 1 do
+            ItemKey := ItemKey + Groups[J].GroupName + ' ';
+        end;
+        if not MatchCase then
+          ItemKey := AnsiLowerCase(ItemKey);
+      end;
+
+      if IsFilter then
+        IsVisible := IsFilter and IsMatchMask(ItemKey, Filter)
+      else
+        IsVisible := True;
+
+     if IsVisible then
+       ResultsFound := True;
+
+     ElvMain.Items[I].Visible := IsVisible;
+    end;
+  finally
+    ElvMain.EndUpdate(True);
+  end;
+
+  LbFilterInfo.Visible := not ResultsFound;
+  ImFilterWarning.Visible := not ResultsFound;
+end;
+
+procedure TExplorerForm.WedFilterKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    HideFilter;
+end;
+
 procedure TExplorerForm.AddUpdateID(ID: Integer);
 begin
   RefreshIDList.Add(Pointer(ID));
@@ -6491,13 +6617,13 @@ begin
   RefreshIDList.Remove(Pointer(ID));
 end;
 
-function TExplorerForm.FileNameToID(FileName: string): integer;
+function TExplorerForm.FileNameToID(FileName: string): Integer;
 var
-  I : integer;
+  I: integer;
 begin
   Result := -1;
   FileName := AnsiLowerCase(FileName);
-  for I := 0 to fFilesInfo.Count - 1 do
+  for I := 0 to FFilesInfo.Count - 1 do
   begin
     if AnsiLowerCase(FFilesInfo[I].FileName) = FileName then
     begin
@@ -6506,7 +6632,6 @@ begin
     end;
   end;
 end;
-
 
 function TExplorerForm.UpdatingNow(ID: Integer): boolean;
 begin
@@ -6522,9 +6647,9 @@ end;
 
 function TExplorerForm.GetVisibleItems: TStrings;
 var
-  I, index : Integer;
-  r : TRect;
-  t : array of Boolean;
+  I, Index: Integer;
+  R: TRect;
+  T: array of Boolean;
   B: Boolean;
   TempResult: TStrings;
   RectArray: TEasyRectArrayObject;
@@ -6537,18 +6662,18 @@ begin
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
     ElvMain.Items[I].ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
-    r := Rect(ElvMain.ClientRect.Left+rv.Left, ElvMain.ClientRect.Top + rv.Top,ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
+    r := Rect(ElvMain.ClientRect.Left + rv.Left, ElvMain.ClientRect.Top + rv.Top, ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
 
     if RectInRect(r, RectArray.BoundsRect) then
     begin
-      index := Self.ItemIndexToMenuIndex(I);
-      Result.Add(GUIDToString(fFilesInfo[index].SID));
-      SetLength(T,Length(t) + 1);
-      t[Length(t)-1] := fFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER;
+      Index := ItemIndexToMenuIndex(I);
+      Result.Add(GUIDToString(FFilesInfo[Index].SID));
+      SetLength(T, Length(T) + 1);
+      T[Length(T)-1] := fFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER;
       if not b then
       begin
-        if fFilesInfo[index].FileType=EXPLORER_ITEM_FOLDER then
-        b := True;
+        if FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER then
+          B := True;
       end;
     end;
   end;
@@ -6559,11 +6684,11 @@ begin
     TempResult := TStringList.Create;
     try
       for I := 0 to Result.Count - 1 do
-        if not t[I] then
+        if not T[I] then
           TempResult.Add(Result[I]);
 
       for I := 0 to Result.Count - 1 do
-        if t[i] then
+        if T[I] then
           TempResult.Add(Result[I]);
 
       Result.Assign(TempResult);
@@ -6575,9 +6700,9 @@ end;
 
 procedure TExplorerForm.LoadStatusVariables(Sender: TObject);
 var
-  Files : TStrings;
-  Effects : Integer;
-  Index : Integer;
+  Files: TStrings;
+  Effects: Integer;
+  Index: Integer;
   FileEx, CanPaste: Boolean;
 begin
   Files := TStringList.Create;
@@ -6611,7 +6736,7 @@ end;
 
 function TExplorerForm.CanUp: Boolean;
 begin
-  Result:=AnsiLowerCase(GetCurrentPath)<>AnsiLowerCase(MyComputer);
+  Result := AnsiLowerCase(GetCurrentPath)<>AnsiLowerCase(MyComputer);
   if GetCurrentPath = '' then
     Result := False;
 end;
@@ -6642,9 +6767,9 @@ begin
   Result:=((FileType=EXPLORER_ITEM_FILE) or (FileType=EXPLORER_ITEM_IMAGE) or (FileType=EXPLORER_ITEM_FOLDER) or (FileType=EXPLORER_ITEM_SHARE) or (FileType=EXPLORER_ITEM_EXEFILE));
 end;
 
-function TExplorerForm.CanCopySelection: boolean;
+function TExplorerForm.CanCopySelection: Boolean;
 var
-  I, Index : integer;
+  I, Index: Integer;
 begin
  Result := True;
  for I := 0 to ElvMain.Items.Count - 1 do
@@ -6686,7 +6811,7 @@ begin
   for I := 0 to ElvMain.Items.Count - 1 do
     if ElvMain.Items[I].Selected then
     begin
-      index := ItemIndexToMenuIndex(I);
+      Index := ItemIndexToMenuIndex(I);
       if CanCopyFileByType(FFilesInfo[index].FileType) then
       begin
         SetLength(Result, Length(Result) + 1);
@@ -6697,7 +6822,7 @@ end;
 
 function TExplorerForm.CanPasteInSelection: boolean;
 var
-  index : Integer;
+  Index: Integer;
 begin
   Result := False;
   if SelCount > 1 then
@@ -6709,14 +6834,12 @@ begin
       Result := True;
 
   end else
-  begin
     Result := CanPasteFileInByType(GetCurrentPathW.PType);
-  end;
 end;
 
 procedure TExplorerForm.CloseTimerTimer(Sender: TObject);
 begin
-  CloseTimer.Enabled:=false;
+  CloseTimer.Enabled := False;
   Close;
 end;
 
@@ -6737,35 +6860,35 @@ end;
 
 function TExplorerForm.GetPathByIndex(index: integer): string;
 begin
-  if ListView1Selected=nil then
+  if ListView1Selected = nil then
     Result := ''
   else
-    Result := FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.index)].FileName;
+    Result := FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.Index)].FileName;
 end;
 
 procedure TExplorerForm.FileName1Click(Sender: TObject);
 var
-  I, L, Index, N : integer;
-  aType : byte;
+  I, L, Index, N: Integer;
+  aType: Byte;
 
 type
   Item = TExplorerFileInfo; { This defines the objects being sorted.}
-  List=array of Item; {This is an array of objects to be sorted.}
+  List = array of Item; {This is an array of objects to be sorted.}
 
   SortList = array of TEasyItem;
 
   TSortItem = record
-    ID : integer;
-    ValueInt : integer;
-    ValueStr : string;
-    ValueDouble : double;
+    ID: Integer;
+    ValueInt: Integer;
+    ValueStr: string;
+    ValueDouble: Double;
    end;
 
    aListItem = record
-    Caption : string;
-    Indent : integer;
-    Data : Pointer;
-    ImageIndex : integer;
+    Caption: string;
+    Indent: Integer;
+    Data: Pointer;
+    ImageIndex: Integer;
    end;
 
   aListItems = array of aListItem;
@@ -6773,10 +6896,10 @@ type
   TSortItems = array of TSortItem;
 
 var
-  SIs : TSortItems;
-  LI : aListItems;
+  SIs: TSortItems;
+  LI: aListItems;
 
-  function L_Less_Than_R(L,R:TSortItem; aType : byte):Boolean;
+  function L_Less_Than_R(L,R: TSortItem; aType: Byte): Boolean;
   begin
     Result := True;
     if AType = 1 then
@@ -6986,20 +7109,10 @@ var
     UpdatingList := False;
 end;
 
-procedure TExplorerForm.SetFilter1Click(Sender: TObject);
-var
-  Filter : string;
-begin
-  Filter:='*.*';
-  if PromtString(L('Filter'), L('Enter mask to filter files in this directory'), Filter) then
-    SetNewPathW(GetCurrentPathW, False, Filter);
-
-end;
-
 procedure TExplorerForm.MakeFolderViewer1Click(Sender: TObject);
 var
-  Query : TDataSet;
-  IncludeSub : Boolean;
+  Query: TDataSet;
+  IncludeSub: Boolean;
   Folder: string;
   FileList: TStrings;
 begin
@@ -7061,7 +7174,7 @@ end;
 
 procedure TExplorerForm.N05Click(Sender: TObject);
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
   FileInfo: TDBPopupMenuInfoRecord;
 begin
   if RatingPopupMenu1.Tag > 0 then
@@ -7072,7 +7185,7 @@ begin
       EventInfo);
   end else
   begin
-    FileInfo:= TDBPopupMenuInfoRecord.Create;
+    FileInfo := TDBPopupMenuInfoRecord.Create;
     try
       FileInfo.FileName := FFilesInfo[-RatingPopupMenu1.Tag].FileName;
       FileInfo.Rating := (Sender as TMenuItem).Tag;
@@ -7165,12 +7278,12 @@ begin
         SetNewPath(Dir, false);
         Exit;
       end;
-      if fFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
+      if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
       begin
         SetNewPath(fFilesInfo[Index].FileName, false);
         Exit;
       end;
-      if fFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
+      if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
       begin
         MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
         try
@@ -7186,10 +7299,10 @@ begin
       end;
       if fFilesInfo[Index].FileType = EXPLORER_ITEM_FILE then
       begin
-        if GetExt(fFilesInfo[Index].FileName) <> 'LNK' then
+        if GetExt(FFilesInfo[Index].FileName) <> 'LNK' then
         begin
-          ShellDir := ExtractFileDir(fFilesInfo[Index].FileName);
-          ShellExecute(Handle, 'open', PWideChar(fFilesInfo[Index].FileName), nil,
+          ShellDir := ExtractFileDir(FFilesInfo[Index].FileName);
+          ShellExecute(Handle, 'open', PWideChar(FFilesInfo[Index].FileName), nil,
             PWideChar(ShellDir), SW_NORMAL);
           RestoreSelected;
           Exit;
@@ -7223,7 +7336,6 @@ begin
             RestoreSelected;
             Exit;
           end;
-
         end;
       end;
 
@@ -7819,7 +7931,6 @@ begin
   GlobalLock := False;
   NotSetOldPath := True;
   FIsExplorer := False;
-  FReadingFolderNumber := 0;
   FChangeHistoryOnChPath := True;
   FGoToLastSavedPath := GoToLastSavedPath;
   inherited Create(AOwner);

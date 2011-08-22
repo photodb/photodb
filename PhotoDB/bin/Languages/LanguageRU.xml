@@ -281,9 +281,7 @@
     <translate name="ID = %d" value="ID = %d" />
     <translate name="Rating = %d" value="Оценка = %d" />
     <translate name="%d objects" value="%d объектов" />	
-    <translate name="Filter" value="Фильтр" />	
     <translate name="Include subfolders?" value="Включать подпапки?" />	
-    <translate name="Enter mask to filter files in this directory" value="Введите маску для фильтра файлов в текущей директории" />	
     <translate name="Error renaming file!" value="Ошибка переименования файла!" />
     <translate name="Loading canceled..." value="Загрузка отменена..." />	
     <translate name="Unable to find file %s by address &quot;%s&quot;" value="Не удаётся найти файл %s по адресу &quot;%s&quot;" />	
@@ -315,6 +313,10 @@
     <translate name="There is no images to display!" value="Нет файлов для отображения!" />
     <translate name="Search in directory" value="Искать в папке" />
     <translate name="Search in collection" value="Искать в базе" />
+    <translate name="Filter" value="Фильтр" />
+    <translate name="Filter content" value="Фильтр по содержимому" />
+    <translate name="Match case" value="Точное совпадение" />
+    <translate name="Sorry, but phrase not found!" value="Извините, но фраза не найдена!" />	
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

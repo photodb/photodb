@@ -318,7 +318,7 @@ begin
   if not UseOtherFile then
   begin
     FileNameTemp := AGetTempFileName(FileName);
-    TLockFiles.Instance.AddLockedFile(FileNameTemp, 5000);
+    TLockFiles.Instance.AddLockedFile(FileNameTemp, 10000);
     try
       if Ok <> GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP) then
         raise Exception.Create(Format(TA('Can''t write to file %s!'), [FileNameTemp]));
@@ -327,7 +327,7 @@ begin
       DeleteFile(PWideChar(AFileName));
       RenameFile(FileNameTemp, AFileName);
     end;
-    TLockFiles.Instance.RemoveLockedFile(FileName);
+    TLockFiles.Instance.AddLockedFile(FileName, 1000);
   end else
   begin
     if FileExists(OtherFile) then

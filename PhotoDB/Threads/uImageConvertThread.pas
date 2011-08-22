@@ -111,6 +111,7 @@ var
   FS: TFileStream;
   IsPreviewAvailalbe: Boolean;
   FileInfo: TDBPopupMenuInfoRecord;
+  FOriginalOrientation: Integer;
 
   procedure Exchange(var A, B: TBitmap);
   var
@@ -292,7 +293,12 @@ const
                   ExifData.LoadFromGraphic(FData.FileName);
                   NewGraphic.SaveToFile(FileName);
                   if not ExifData.Empty then
+                  begin
+                    if FOriginalOrientation <> DB_IMAGE_ROTATE_0 then
+                      ExifData.Orientation := toTopLeft;
+
                     ExifData.SaveToGraphic(FileName);
+                  end;
 
                 finally
                   F(ExifData);
@@ -351,8 +357,7 @@ const
           end;
           UpdateImageRecord(ThreadForm, FData.FileName, FData.ID);
           Synchronize(NotifyDB);
-          TLockFiles.Instance.RemoveLockedFile(FileName);
-          TLockFiles.Instance.AddLockedFile(FileName, 100);
+          TLockFiles.Instance.AddLockedFile(FileName, 1000);
         end;
       end;
     end;
@@ -401,6 +406,8 @@ begin
     FileName := FileName + TrimLeftString(GetFileNameWithoutExt(FData.FileName) + ClearString(FProcessingParams.Preffix), 255 - Length(Ext));
 
     FileName := FileName + Ext;
+
+    FOriginalOrientation := FProcessingParams.Rotation;
 
     //if only rotate and JPEG image -> rotate only with GDI+
     InitGDIPlus;

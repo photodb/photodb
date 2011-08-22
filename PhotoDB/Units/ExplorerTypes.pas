@@ -573,7 +573,7 @@ end;
 
 { TLockFiles }
 
-function TLockFiles.AddLockedFile(FileName: string; LifeTimeMs: Integer) : TLockedFile;
+function TLockFiles.AddLockedFile(FileName: string; LifeTimeMs: Integer): TLockedFile;
 var
   I : Integer;
   FFile : TLockedFile;
