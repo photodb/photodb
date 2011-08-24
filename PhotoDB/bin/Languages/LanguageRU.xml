@@ -312,11 +312,15 @@
     <translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />
     <translate name="There is no images to display!" value="Нет файлов для отображения!" />
     <translate name="Search in directory" value="Искать в папке" />
+    <translate name="Search in directory (with EXIF)" value="Искать в папке (включая EXIF)" />	
     <translate name="Search in collection" value="Искать в базе" />
     <translate name="Filter" value="Фильтр" />
     <translate name="Filter content" value="Фильтр по содержимому" />
     <translate name="Match case" value="Точное совпадение" />
-    <translate name="Sorry, but phrase not found!" value="Извините, но фраза не найдена!" />	
+    <translate name="Sorry, but phrase not found!" value="Извините, но фраза не найдена!" />
+    <translate name="Search in collection for: &quot;%s&quot;" value="Искать в базе: &quot;%s&quot;" />
+    <translate name="Search files for: &quot;%s&quot;" value="Искать файлы: &quot;%s&quot;" />
+    <translate name="Search files (with EXIF) for: &quot;%s&quot;" value="Искать файлы (учитывая EXIF): &quot;%s&quot;" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

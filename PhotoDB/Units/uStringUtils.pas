@@ -2,8 +2,8 @@ unit uStringUtils;
 
 interface
 
-uses Windows, Classes, SysUtils;
-
+uses
+  Windows, Classes, SysUtils;
 
 type
   TStringsHelper = class helper for TStrings
@@ -16,11 +16,35 @@ function ConvertUniversalFloatToLocal(s: string): string;
 function PosExS(SubStr: string; const Str: string; index: integer = 1): Integer;
 function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer; overload;
 function PosExW(const SubStr, S: string; Offset : Integer = 1): Integer; overload;
+function Right(Str: string; P: Integer): string;
+function Mid(Str: string; S, E: Integer): string;
 
 var
   _MaxSearchPos : Integer;
 
 implementation
+
+function Right(Str: string; P: Integer): string;
+begin
+  if P > Length(Str) then
+    Result := ''
+  else
+    Result := Copy(Str, P, Length(Str) - P + 1);
+end;
+
+function Mid(Str: string; S, E: Integer): string;
+begin
+  if (S > E) then
+  begin
+    Result := '';
+    Exit;
+  end;
+  if (S < 1) then
+    S := 1;
+  if E > Length(Str) then
+    E := Length(Str);
+  Result := Copy(Str, S, E - S + 1);
+end;
 
 procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
 var

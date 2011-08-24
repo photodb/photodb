@@ -906,6 +906,7 @@ object ExplorerForm: TExplorerForm
         0000}
       OnUserChange = PePathChange
       OnUpdateItem = PePathUpdateItem
+      OnParsePath = PePathParsePath
       LoadingText = 'Loading...'
       NetworksText = 'Networks'
       GetSystemIcon = PePathGetSystemIcon
@@ -1860,9 +1861,14 @@ object ExplorerForm: TExplorerForm
       ImageIndex = 0
       OnClick = Searchfiles1Click
     end
+    object SearchfileswithEXIF1: TMenuItem
+      Caption = 'Search files (with EXIF)'
+      ImageIndex = 1
+      OnClick = SearchfileswithEXIF1Click
+    end
     object Searchincollection1: TMenuItem
       Caption = 'Search in collection'
-      ImageIndex = 1
+      ImageIndex = 2
       OnClick = Searchincollection1Click
     end
   end

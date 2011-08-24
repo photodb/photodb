@@ -747,7 +747,8 @@ var
         end;
       end;
 
-      SynchronizeEx(SendPacketToExplorer);
+      if not SynchronizeEx(SendPacketToExplorer) then
+        FPacketInfos.ClearList;
 
       for I := 0 to RefreshQueue.Count - 1 do
          ExplorerUpdateManager.QueueNotify(TExplorerNotifyInfo(RefreshQueue[I]));
@@ -893,6 +894,9 @@ var
   end;
 
 begin
+  if Pos('*', FMask) = 0 then
+    FMask := '*' + FMask + '*';
+
   FPacketImages := TBitmapImageList.Create;
   FPacketInfos := TExplorerFileInfos.Create;
   try
@@ -1226,7 +1230,7 @@ begin
   SmallImageSize := Round(_y/1.05);
   CountFilesInFolder := 0;
   for I := 1 to 4 do
-    FilesInFolder[i] := '';
+    FilesInFolder[I] := '';
 
   CurrentFile := IncludeTrailingBackslash(CurrentFile);
   FFolderImages.Directory := CurrentFile;
@@ -2315,9 +2319,12 @@ begin
           ExtractDirectoryPreview(CurrentFile, GUIDParam);
       end;
     end;
-    SynchronizeEx(DoStopSearch);
-    HideProgress;
-    ShowInfo('');
+    if (FThreadType = THREAD_TYPE_BIG_IMAGES) then
+    begin
+      SynchronizeEx(DoStopSearch);
+      HideProgress;
+      ShowInfo('');
+    end;
   finally
     Dec(ExplorerUpdateBigImageThreadsCount);
   end;

@@ -9,7 +9,7 @@ uses
   Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
   ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
   Network, GraphicCrypt, UnitCrypting, DropSource, DragDropFile, DragDrop,
-  DropTarget, ScPanel, uGOM, UnitCDMappingSupport, StrUtils,
+  DropTarget, ScPanel, uGOM, UnitCDMappingSupport, StrUtils, Tlayered_Bitmap,
   ShellContextMenu, ShlObj, Clipbrd, GraphicsCool, uShellIntegration,
   ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport,
   EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils,
@@ -232,6 +232,7 @@ type
     LbFilterInfo: TLabel;
     CbFilterMatchCase: TCheckBox;
     ImFilterWarning: TImage;
+    SearchfileswithEXIF1: TMenuItem;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -254,7 +255,7 @@ type
     function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    Procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
+    procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
     procedure SpeedButton3Click(Sender: TObject);
     Procedure BeginUpdate;
     Procedure EndUpdate;
@@ -273,7 +274,7 @@ type
     procedure SelectAll1Click(Sender: TObject);
     procedure Refresh2Click(Sender: TObject);
     procedure Exit2Click(Sender: TObject);
-    Procedure DoExit; override;
+    procedure DoExit; override;
     procedure Addfolder1Click(Sender: TObject);
     Procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
     procedure SpeedButton1Click(Sender: TObject);
@@ -285,16 +286,16 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure ListView1Exit(Sender: TObject);
     procedure Refresh1Click(Sender: TObject);
-    procedure RefreshItemByID(ID : Integer);
+    procedure RefreshItemByID(ID: Integer);
     procedure RefreshItemByName(Name: String; UpdateDB: Boolean);
     procedure MakeNewFolder1Click(Sender: TObject);
     procedure Copy2Click(Sender: TObject);
     procedure OpenInNewWindow1Click(Sender: TObject);
-    Function GetCurrentPath : String;
-    Procedure SetPath(Path : String);
+    function GetCurrentPath: String;
+    procedure SetPath(Path: String);
     procedure ShowUpdater1Click(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
-     Procedure Select(Item : TEasyItem; GUID : TGUID);
+    procedure Select(Item: TEasyItem; GUID: TGUID);
     function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : Boolean; Big : boolean = False): Boolean;
     function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : Boolean) : Boolean;
     function AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1) : TEasyItem;
@@ -306,15 +307,15 @@ type
     procedure Up1Click(Sender: TObject);
     procedure DeleteIndex1Click(Sender: TObject);
     procedure DeleteItemWithIndex(Index : Integer);
-    Procedure DeleteFiles(ToRecycle : Boolean);
-    Procedure DirectoryChanged(Sender : TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
-    Procedure LoadInfoAboutFiles(Info : TExplorerFileInfos);
-    procedure AddInfoAboutFile(Info : TExplorerFileInfos);
-    function FileNeededW(FileSID : TGUID) : Boolean;  //для больших имаг
+    Procedure DeleteFiles(ToRecycle: Boolean);
+    Procedure DirectoryChanged(Sender: TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    Procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
+    procedure AddInfoAboutFile(Info: TExplorerFileInfos);
+    function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
     procedure AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
     function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
-    Function ItemIndexToMenuIndex(Index : Integer) : Integer;
-    Function MenuIndexToItemIndex(Index : Integer) : Integer;
+    Function ItemIndexToMenuIndex(Index: Integer): Integer;
+    Function MenuIndexToItemIndex(Index: Integer): Integer;
     Procedure SetOldPath(Path : String);
     procedure FormShow(Sender: TObject);
     procedure NewWindow1Click(Sender: TObject);
@@ -322,25 +323,25 @@ type
     procedure Paste1Click(Sender: TObject);
     procedure PmListPopupPopup(Sender: TObject);
     procedure Cut2Click(Sender: TObject);
-    procedure ShowProgress();
-    procedure HideProgress();
-    procedure SetProgressMax(Value : Integer);
-    procedure SetProgressPosition(Value : Integer);
-    procedure SetStatusText(Text : String);
-    procedure SetNewFileNameGUID(FileGUID : TGUID);
+    procedure ShowProgress;
+    procedure HideProgress;
+    procedure SetProgressMax(Value: Integer);
+    procedure SetProgressPosition(Value: Integer);
+    procedure SetStatusText(Text: String);
+    procedure SetNewFileNameGUID(FileGUID: TGUID);
     procedure BtnCloseExplorerClick(Sender: TObject);
-    Procedure SetPanelInfo(Info : TDBPopupMenuInfoRecord; FileGUID : TGUID);
-    Procedure SetPanelImage(Image : TBitmap; FileGUID : TGUID);
+    Procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
+    Procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
     procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure PropertyPanelResize(Sender: TObject);
     procedure ReallignInfo;
-    procedure ScriptExecuted(Sender : TObject);
+    procedure ScriptExecuted(Sender: TObject);
     procedure CopyToLinkClick(Sender: TObject);
     procedure MoveToLinkClick(Sender: TObject);
     procedure Paste2Click(Sender: TObject);
     procedure ExplorerPanel1Click(Sender: TObject);
-    Procedure SetNewPath(Path : String; Explorer : Boolean);
+    Procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure GoToSearchWindow1Click(Sender: TObject);
     procedure ImPreviewDblClick(Sender: TObject);
     procedure Copy3Click(Sender: TObject);
@@ -503,7 +504,7 @@ type
     procedure PePathGetSystemIcon(Sender: TPathEditor; Path: TPathPart);
     procedure SbDoSearchClick(Sender: TObject);
     procedure InitSearch;
-    procedure LoadSearchMode(Database: Boolean);
+    procedure LoadSearchMode(SearchMode: Integer);
     procedure Searchfiles1Click(Sender: TObject);
     procedure Searchincollection1Click(Sender: TObject);
     procedure SbSearchModeClick(Sender: TObject);
@@ -512,10 +513,12 @@ type
     procedure WedFilterChange(Sender: TObject);
     procedure WedSearchKeyPress(Sender: TObject; var Key: Char);
     procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
+    procedure SearchfileswithEXIF1Click(Sender: TObject);
+    procedure PePathParsePath(Sender: TObject; PathParts: TPathParts);
    private
      { Private declarations }
-     FBitmapImageList : TBitmapImageList;
-     FSearchMode: Boolean;
+     FBitmapImageList: TBitmapImageList;
+     FSearchMode: Integer;
      FWindowID: TGUID;
      NewFileName: string;
      NewFileNameGUID: TGUID;
@@ -2826,6 +2829,7 @@ begin
         ShowFilter
       else
         HideFilter;
+      Msg.Message := 0;
     end;
   end;
 
@@ -4196,9 +4200,10 @@ end;
 
 procedure TExplorerForm.SetNewPath(Path: String; Explorer: Boolean);
 var
-  S, S1 : string;
+  S, S1: string;
   I: integer;
   oldMode: Cardinal;
+  P: TPathPart;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
@@ -4206,6 +4211,21 @@ begin
       EventLog('SetNewPath "' + Path + '" <Explorer>')
     else
       EventLog('SetNewPath "' + Path + '"');
+
+    if IsPathEx(Path) then
+    begin
+      P := TPathPart.Create(Path);
+      try
+        if P.ID = PATH_EX then
+        begin
+          SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_SEARCH), False);
+          Exit;
+        end;
+      finally
+        F(P);
+      end;
+    end;
+
     S := ExcludeTrailingBackslash(Path);
     if (AnsiLowerCase(Path) = AnsiLowerCase(MyComputer)) or (Path = '') or not DirectoryExists(S) then
     begin
@@ -4453,36 +4473,65 @@ begin
   end;
 end;
 
+procedure LoadSpeedButtonFromResourceICO(SB: TSpeedButton; ResName: string);
+var
+  Ico: HIcon;
+  BMP: TLayeredBitmap;
+begin
+  BMP := TLayeredBitmap.Create;
+  try
+    Ico := LoadImage(HInstance, PChar(ResName), IMAGE_ICON, 16, 16, 0);
+    try
+      BMP.LoadFromHIcon(Ico, 16, 16);
+      SB.Glyph := BMP;
+    finally
+      DestroyIcon(Ico);
+    end;
+  finally
+    F(BMP);
+  end;
+end;
+
 procedure TExplorerForm.Searchfiles1Click(Sender: TObject);
 begin
-  Settings.ReadBool('Explorer', 'SearchMode', False);
-  LoadSearchMode(False);
+  Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES);
+  LoadSearchMode(EXPLORER_SEARCH_FILES);
+end;
+
+procedure TExplorerForm.SearchfileswithEXIF1Click(Sender: TObject);
+begin
+  Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_IMAGES);
+  LoadSearchMode(EXPLORER_SEARCH_IMAGES);
 end;
 
 procedure TExplorerForm.Searchincollection1Click(Sender: TObject);
 begin
-  Settings.ReadBool('Explorer', 'SearchMode', True);
-  LoadSearchMode(True);
+  Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_DATABASE);
+  LoadSearchMode(EXPLORER_SEARCH_DATABASE);
 end;
 
-procedure TExplorerForm.LoadSearchMode(Database: Boolean);
+procedure TExplorerForm.LoadSearchMode(SearchMode: Integer);
 begin
-  FSearchMode := Database;
-  if Database then
-    LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_DATABASE')
-  else
+  FSearchMode := SearchMode;
+  if SearchMode = EXPLORER_SEARCH_DATABASE then
+  begin
+    LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_DATABASE');
+    WedSearch.WatermarkText := L('Search in collection');
+  end else if SearchMode = EXPLORER_SEARCH_FILES then
+  begin
     LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_FILES');
-
-  if Database then
-    WedSearch.WatermarkText := L('Search in collection')
-  else
     WedSearch.WatermarkText := L('Search in directory');
+  end else
+  begin
+    LoadSpeedButtonFromResourceICO(SbSearchMode, 'PICTURE');
+    WedSearch.WatermarkText := L('Search in directory (with EXIF)');
+  end;
 end;
 
 procedure TExplorerForm.InitSearch;
 begin
   LoadSpeedButtonFromResourcePNG(sbDoSearch, 'SEARCH');
-  LoadSearchMode(Settings.ReadBool('Explorer', 'SearchMode', False));
+  LoadSearchMode(Settings.ReadInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES));
 end;
 
 procedure TExplorerForm.PmSearchModePopup(Sender: TObject);
@@ -4506,15 +4555,29 @@ procedure TExplorerForm.PmSearchModePopup(Sender: TObject);
     end;
   end;
 
+  procedure AddIcon(IcoName: string);
+  var
+    Ico: HIcon;
+  begin
+    Ico := LoadImage(HInstance, PChar(IcoName), IMAGE_ICON, 16, 16, 0);
+    try
+      ImageList_AddIcon(ImSearchMode.Handle, Ico);
+    finally
+      DestroyIcon(Ico);
+    end;
+  end;
+
 begin
   if ImSearchMode.Count = 0 then
   begin
     AddResourceImage('FILES');
+    AddIcon('PICTURE');
     AddResourceImage('DATABASE');
   end;
 
-  Searchfiles1.Default := not FSearchMode;
-  Searchincollection1.Default := FSearchMode;
+  Searchfiles1.Default := FSearchMode = EXPLORER_SEARCH_DATABASE;
+  SearchfileswithEXIF1.Default := FSearchMode = EXPLORER_SEARCH_IMAGES;
+  Searchincollection1.Default := FSearchMode = EXPLORER_SEARCH_DATABASE;
 end;
 
 procedure TExplorerForm.SbSearchModeClick(Sender: TObject);
@@ -4646,6 +4709,33 @@ begin
       Path.Icon := CopyIcon(Ico.Handle);
   finally
     F(Ico);
+  end;
+end;
+
+procedure TExplorerForm.PePathParsePath(Sender: TObject; PathParts: TPathParts);
+var
+  PP: TPathPart;
+begin
+  if PathParts.Count > 1 then
+  begin
+    PP := PathParts[PathParts.Count  -1];
+    if PP.ID = PATH_EX then
+    begin
+      if PP.Namespace = 'db' then
+      begin
+        PP.Name := Format(L('Search in collection for: "%s"'), [PP.Argument]) + '...';
+      end else if PP.Namespace = 'images' then
+      begin
+        PP.Name := Format(L('Search files (with EXIF) for: "%s"'), [PP.Argument]) + '...';
+      end else if PP.Namespace = 'files' then
+      begin
+        PP.Name := Format(L('Search files for: "%s"'), [PP.Argument]) + '...';
+      end else
+      begin
+        PathParts.Remove(PP);
+        F(PP);
+      end;
+    end;
   end;
 end;
 
@@ -4816,6 +4906,7 @@ begin
 
     //search
     Searchfiles1.Caption := L('Search in directory');
+    SearchfileswithEXIF1.Caption := L('Search in directory (with EXIF)');
     Searchincollection1.Caption := L('Search in collection');
 
     //filter
@@ -4890,6 +4981,7 @@ var
   UpdaterInfo: TUpdaterInfo;
   I, ThreadType: Integer;
   Info: TExplorerViewInfo;
+  P: TPathPart;
 begin
   HideFilter(False);
   RefreshIDList.Clear;
@@ -4897,20 +4989,25 @@ begin
   EventLog('SetNewPathW "' + WPath.Path + '"');
   FDBCanDragW := False;
   FDBCanDrag := False;
-  TbUp.Enabled := WPath.PType <> EXPLORER_ITEM_MYCOMPUTER;
+  TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
   OldDir := GetCurrentPath;
   Path := WPath.Path;
   ThreadType := THREAD_TYPE_FOLDER;
-  if Length(Path) > 2 then
-    for I := Length(Path) downto 3 do
-      if Path[I] = '/' then
-        Delete(Path, I, 1);
-  if Length(Path) > 2 then
-    for I := Length(Path) downto 3 do
-      if (Path[I] = '\') and (Path[I - 1] = '\') then
-        Delete(Path, I, 1);
 
-  Path := ExcludeTrailingBackslash(Path);
+  if WPath.PType <> EXPLORER_ITEM_SEARCH then
+  begin
+    if Length(Path) > 2 then
+      for I := Length(Path) downto 3 do
+        if Path[I] = '/' then
+          Delete(Path, I, 1);
+    if Length(Path) > 2 then
+      for I := Length(Path) downto 3 do
+        if (Path[I] = '\') and (Path[I - 1] = '\') then
+          Delete(Path, I, 1);
+
+    Path := ExcludeTrailingBackslash(Path);
+  end;
+
   if Length(Path) > 1 then
     if ((Path[1] = '\') and (Path[2] <> '\')) then
     begin
@@ -4955,15 +5052,45 @@ begin
     PePath.SetPathEx(PATH_SMB_PC, Path);
     ThreadType := THREAD_TYPE_COMPUTER;
   end;
+
   S := Path;
+  FCurrentPath := Path;
+
+  if WPath.PType = EXPLORER_ITEM_SEARCH then
+  begin
+    P := TPathPart.Create(WPath.Path);
+    try
+      FileMask := P.Argument;
+
+      Path := P.ParentPath;
+      FCurrentPath := WPath.Path;
+
+      if PePath.PathEx = nil then
+        PePath.SetPathEx(Self, P, False);
+      Caption := L(P.ParentPath + ' - ' + PePath.PathEx.Name);
+      PePath.SetPathEx(Self, P, False);
+
+      if P.Namespace = 'files' then
+        ThreadType := THREAD_TYPE_SEARCH_FOLDER
+      else if P.Namespace = 'images' then
+        ThreadType := THREAD_TYPE_SEARCH_IMAGES
+      else if P.Namespace = 'db' then
+        ThreadType := THREAD_TYPE_SEARCH_DB;
+
+      TW.I.Start(' -> DirectoryWatcher.StopWatch');
+      DirectoryWatcher.StopWatch;
+    finally
+      F(P);
+    end;
+  end;
 
   NewFormState;
-  FCurrentPath := Path;
   FCurrentTypePath := WPath.PType;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) then
     S := IncludeTrailingBackslash(S);
-  if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or
-    (WPath.PType = EXPLORER_ITEM_SHARE) then
+  if (WPath.PType = EXPLORER_ITEM_FOLDER) or
+     (WPath.PType = EXPLORER_ITEM_DRIVE) or
+     (WPath.PType = EXPLORER_ITEM_SHARE) then
   begin
     EventLog('ExplorerThreadNotifyDirectoryChange');
     try
@@ -4982,7 +5109,7 @@ begin
     if (FHistory.LastPath.Path <> S) or (FHistory.LastPath.PType <> WPath.PType) then
       FHistory.Add(ExplorerPath(S, WPath.PType));
   FChangeHistoryOnChPath := True;
-  if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
+  if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) or (WPath.PType = EXPLORER_ITEM_SEARCH) then
     TbCut.Enabled := False
   else
     TbCut.Enabled := True;
@@ -6498,35 +6625,27 @@ end;
 
 procedure TExplorerForm.SbDoSearchClick(Sender: TObject);
 var
-  UpdaterInfo: TUpdaterInfo;
-  S: string;
+  S, Path: string;
 begin
   S := AnsiLowerCase(WedSearch.Text);
   try
+    Path := ExtractPathExPath(FCurrentPath);
+
     if S = '' then
-      Exit;
-
-    DirectoryWatcher.StopWatch;
-    NewFormState;
-
-    ClearList;
-    FBitmapImageList.Clear;
-    FFilesInfo.Clear;
-
-    ElvMain.Groups.Add;
-    ListView1SelectItem(nil, nil, False);
-
-    UpdaterInfo.IsUpdater := False;
-    UpdaterInfo.FileInfo := nil;
-    PePath.CanBreakLoading := True;
-
-    if not FSearchMode then
     begin
-      if Pos('*', S) = 0 then
-        S := '*' + S + '*';
-      TExplorerThread.Create(FCurrentPath, S, THREAD_TYPE_SEARCH_FOLDER, ViewInfo, Self, UpdaterInfo, StateID);
-    end else
-      TExplorerThread.Create(FCurrentPath, S, THREAD_TYPE_SEARCH_DB, ViewInfo, Self, UpdaterInfo, StateID);
+      SetNewPath(Path, True);
+      Exit;
+    end;
+
+    if IsShortDrive(Path) then
+      Path := Path + '\';
+    if FSearchMode = EXPLORER_SEARCH_FILES then
+      SetNewPath(Path + '::files://' + S, False)
+    else  if FSearchMode = EXPLORER_SEARCH_IMAGES then
+      SetNewPath(Path + '::images://' + S, False)
+    else
+      SetNewPath('::db://' + S, False);
+
   finally
     ElvMain.SetFocus;
   end;

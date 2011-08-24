@@ -263,6 +263,7 @@ const
   EXPLORER_ITEM_SHARE      = 8;
   EXPLORER_ITEM_EXEFILE    = 9;
   EXPLORER_ITEM_OTHER      = 10;
+  EXPLORER_ITEM_SEARCH     = 11;
 
 //////////////////////////////////////////////////
 
@@ -348,6 +349,11 @@ const
 
 const
   MIN_PACKET_TIME = 500;
+
+const
+  EXPLORER_SEARCH_FILES    = 0;
+  EXPLORER_SEARCH_IMAGES   = 1;
+  EXPLORER_SEARCH_DATABASE = 2;
 
 implementation
 
