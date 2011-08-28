@@ -339,7 +339,8 @@ uses
   uShellThumbnails in 'Units\uShellThumbnails.pas',
   uMachMask in 'Units\uMachMask.pas',
   VCLFlickerReduce in 'Units\VCLFlickerReduce.pas',
-  ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm};
+  ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
+  uDatabaseSearch in 'Units\uDatabaseSearch.pas';
 
 {$R *.res}
 

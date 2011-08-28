@@ -33,7 +33,7 @@ type
     Rename1: TMenuItem;
     Delete1: TMenuItem;
     DBitem1: TMenuItem;
-    Splitter1: TSplitter;
+    SplLeftPanel: TSplitter;
     PmListPopup: TPopupMenu;
     Addfolder1: TMenuItem;
     SelectAll1: TMenuItem;
@@ -265,7 +265,7 @@ type
     Function ItemAtPos(X,Y : integer): TEasyItem;
     procedure Exit1Click(Sender: TObject);
     procedure CloseButtonPanelResize(Sender: TObject);
-    procedure Splitter1CanResize(Sender: TObject; var NewSize: Integer;
+    procedure SplLeftPanelCanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure ListView1SelectItem(Sender: TObject;
      Item: TEasyItem; Selected: Boolean);
@@ -515,6 +515,8 @@ type
     procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
     procedure SearchfileswithEXIF1Click(Sender: TObject);
     procedure PePathParsePath(Sender: TObject; PathParts: TPathParts);
+    procedure slSearchCanResize(Sender: TObject; var NewSize: Integer;
+      var Accept: Boolean);
    private
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
@@ -570,7 +572,6 @@ type
      UserLinks: array of TWebLink;
      FPlaces: TPlaceFolderArray;
      DragFilesPopup: TStrings;
-     LastSelCount: Integer;
      Lock: Boolean;
      SlashHandled: Boolean;
      DefaultSort: Integer;
@@ -602,6 +603,8 @@ type
      function GetFormID : string; override;
      function GetListView : TEasyListview; override;
      function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
+     function MakeItemVisibleByFilter(Item: TEasyItem; Filter: string): Boolean;
+     function GetFilterText: string;
    public
      NoLockListView: Boolean;
      procedure UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
@@ -745,7 +748,7 @@ end;
 procedure TExplorerForm.CreateBackgrounds;
 var
   ExplorerBackground: TPNGImage;
-  Bitmap, ExplorerBackgroundBMP: TBitmap;
+  Bitmap, ExplorerBackgroundBMP, Background: TBitmap;
 begin
   Bitmap := TBitmap.Create;
   try
@@ -764,13 +767,13 @@ begin
 
         LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, clBtnFace);
 
-        ScrollBox1.BackGround.PixelFormat := pf24bit;
-        ScrollBox1.BackGround.Width := 130;
-        ScrollBox1.BackGround.Height := 150;
-        ScrollBox1.BackGround.Canvas.Brush.Color := clBtnFace;
-        ScrollBox1.BackGround.Canvas.Pen.Color := clBtnFace;
-        ScrollBox1.BackGround.Canvas.Rectangle(0, 0, ScrollBox1.BackGround.Width, ScrollBox1.BackGround.Height);
-        DrawTransparent(ExplorerBackgroundBMP, ScrollBox1.BackGround, 40);
+        Background := ScrollBox1.BackGround;
+        BackGround.PixelFormat := pf24bit;
+        BackGround.SetSize(130, 150);
+        BackGround.Canvas.Brush.Color := clBtnFace;
+        BackGround.Canvas.Pen.Color := clBtnFace;
+        BackGround.Canvas.Rectangle(0, 0, BackGround.Width, BackGround.Height);
+        DrawTransparent(ExplorerBackgroundBMP, BackGround, 40);
         ScrollBox1Resize(Self);
       finally
         F(ExplorerBackgroundBMP);
@@ -874,6 +877,7 @@ begin
 
   NewFormState;
   MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
+  PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 185);
 
   Lock := False;
 
@@ -1935,7 +1939,7 @@ end;
 
 procedure TExplorerForm.ClearList;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to ElvMain.Items.Count - 1 do
     TObject(ElvMain.Items[I].Data).Free;
@@ -1947,7 +1951,7 @@ begin
   BtnCloseExplorer.Left := CloseButtonPanel.Width - BtnCloseExplorer.Width - 3;
 end;
 
-procedure TExplorerForm.Splitter1CanResize(Sender: TObject;
+procedure TExplorerForm.SplLeftPanelCanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
   Accept := NewSize > 100;
@@ -2139,7 +2143,8 @@ procedure TExplorerForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   THintManager.Instance.CloseHint;
-  Hinttimer.Enabled := False;
+  HintTimer.Enabled := False;
+  Settings.WriteInteger('Explorer', 'SearchPanel', PnSearch.Width);
   Release;
 end;
 
@@ -2752,7 +2757,9 @@ begin
         ElvMain.EditManager.Enabled := True;
         Result.Edit;
         NewFileNameGUID := GetGUID;
-      end;
+      end else
+        MakeItemVisibleByFilter(Result, '');
+
       LockDrawIcon := False;
       if ElvMain.Groups[0].Visible then
         Result.Invalidate(False);
@@ -2779,6 +2786,7 @@ begin
 
       Result.ImageIndex := FFilesInfo[I].ImageIndex;
       Result.Caption := Caption;
+      MakeItemVisibleByFilter(Result, '');
 
       LockDrawIcon := False;
       if ElvMain.Groups[0].Visible then
@@ -2798,8 +2806,8 @@ end;
 procedure TExplorerForm.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 var
-  InternalHandled : boolean;
-  I : Integer;
+  InternalHandled: Boolean;
+  I: Integer;
 begin
   if not Self.Active then
     Exit;
@@ -3417,14 +3425,15 @@ begin
 
   if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)) then
+      (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) then
   begin
     TbCopy.Enabled := SelCount <> 0;
   end else
     TbCopy.Enabled := False;
 
   if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
+      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) then
   begin
     TbCut.Enabled := SelCount <> 0;
   end else
@@ -3502,7 +3511,6 @@ var
         else if (Path = AnsiLowerCase(MyPicturesPath)) then
           Result := False;
       end;
-
   end;
 
 begin
@@ -3519,16 +3527,13 @@ begin
       if S[I] = '&' then
         Insert('&', S, I);
 
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
+      S := Format(L('Search for "%s"'), [PePath.PathEx.Argument]);
+
     NameLabel.Caption := S;
     NameLabel.Constraints.MaxWidth := ScrollBox1.Width - ScrollBox1.Left - otstup - ScrollBox1.VertScrollBar.ButtonSize;
     NameLabel.Constraints.MinWidth := ScrollBox1.Width - ScrollBox1.Left - Otstup - ScrollBox1.VertScrollBar.ButtonSize;
 
-    S := ExtractFileName(FSelectedInfo.FileName);
-    for I := Length(S) downto 1 do
-      if S[I] = '&' then
-        Insert('&', S, I);
-
-    NameLabel.Caption := S;
     TypeLabel.Caption := FSelectedInfo.FileTypeW;
     if FSelectedInfo.FileTypeW <> '' then
     begin
@@ -3635,7 +3640,8 @@ begin
     end;
     TasksLabel.Top := Max(AccessLabel.Top + AccessLabel.Height + H * 4, NameLabel.Top + NameLabel.Height + H * 4);
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
+      (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
+      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
     begin
       SlideShowLink.Visible := True;
       SlideShowLink.Top := TasksLabel.Top + TasksLabel.Height + H;
@@ -3818,7 +3824,7 @@ begin
     if (((FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)) and (SelCount = 0)) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
     begin
@@ -3833,7 +3839,7 @@ begin
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
     begin
       OtherPlacesLabel.Show;
       MyPicturesLink.Show;
@@ -4432,21 +4438,47 @@ begin
 end;
 
 procedure TExplorerForm.SlideShowLinkClick(Sender: TObject);
+var
+  Info: TDBPopupMenuInfo;
+
+  procedure ShowNoImagesError;
+  begin
+    MessageBoxDB(Handle, L('There are no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);;
+  end;
+
 begin
+  if Viewer = nil then
+    Application.CreateForm(TViewer, Viewer);
   if SelCount <> 0 then
   begin
     PmItemPopup.Tag := ItemIndexToMenuIndex(ListView1Selected.index);
     SlideShow1Click(Sender)
+  end else if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) and (SelCount = 0) then
+  begin
+    Info := GetCurrentPopUpMenuInfo(nil);
+    try
+      if Info.Count > 0 then
+      begin
+        Viewer.Execute(Self, Info);
+        Viewer.Show;
+      end else
+        ShowNoImagesError;
+    finally
+      F(Info);
+    end;
   end else
   begin
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
     if Viewer.ShowFolderA(GetCurrentPath, ExplorerManager.ShowPrivate) then
       Viewer.Show
     else
-      MessageBoxDB(Handle, L('There is no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
-
+      ShowNoImagesError;
   end;
+end;
+
+procedure TExplorerForm.slSearchCanResize(Sender: TObject; var NewSize: Integer;
+  var Accept: Boolean);
+begin
+  Accept := (NewSize > 100) and (PnNavigation.Width - StAddress.Width - NewSize > 300);
 end;
 
 procedure TExplorerForm.InfoPanel1Click(Sender: TObject);
@@ -4470,25 +4502,6 @@ begin
     end;
   finally
     F(PNG);
-  end;
-end;
-
-procedure LoadSpeedButtonFromResourceICO(SB: TSpeedButton; ResName: string);
-var
-  Ico: HIcon;
-  BMP: TLayeredBitmap;
-begin
-  BMP := TLayeredBitmap.Create;
-  try
-    Ico := LoadImage(HInstance, PChar(ResName), IMAGE_ICON, 16, 16, 0);
-    try
-      BMP.LoadFromHIcon(Ico, 16, 16);
-      SB.Glyph := BMP;
-    finally
-      DestroyIcon(Ico);
-    end;
-  finally
-    F(BMP);
   end;
 end;
 
@@ -4523,7 +4536,7 @@ begin
     WedSearch.WatermarkText := L('Search in directory');
   end else
   begin
-    LoadSpeedButtonFromResourceICO(SbSearchMode, 'PICTURE');
+    LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_IMAGES');
     WedSearch.WatermarkText := L('Search in directory (with EXIF)');
   end;
 end;
@@ -4555,27 +4568,15 @@ procedure TExplorerForm.PmSearchModePopup(Sender: TObject);
     end;
   end;
 
-  procedure AddIcon(IcoName: string);
-  var
-    Ico: HIcon;
-  begin
-    Ico := LoadImage(HInstance, PChar(IcoName), IMAGE_ICON, 16, 16, 0);
-    try
-      ImageList_AddIcon(ImSearchMode.Handle, Ico);
-    finally
-      DestroyIcon(Ico);
-    end;
-  end;
-
 begin
   if ImSearchMode.Count = 0 then
   begin
     AddResourceImage('FILES');
-    AddIcon('PICTURE');
+    AddResourceImage('CAMERA');
     AddResourceImage('DATABASE');
   end;
 
-  Searchfiles1.Default := FSearchMode = EXPLORER_SEARCH_DATABASE;
+  Searchfiles1.Default := FSearchMode = EXPLORER_SEARCH_FILES;
   SearchfileswithEXIF1.Default := FSearchMode = EXPLORER_SEARCH_IMAGES;
   Searchincollection1.Default := FSearchMode = EXPLORER_SEARCH_DATABASE;
 end;
@@ -5025,6 +5026,7 @@ begin
     Caption := MyComputer;
     PePath.Path := '';
     ThreadType := THREAD_TYPE_MY_COMPUTER;
+    Path := '';
   end;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE)
     then
@@ -6233,13 +6235,12 @@ begin
       FSelectedInfo.Size := 0;
       FSelectedInfo.FileTypeW := '';
       FSelectedInfo.Size := -1;
-      index := -1;
       if SelCount = 1 then
       begin
-        index := ItemIndexToMenuIndex(ListView1Selected.index);
+        Index := ItemIndexToMenuIndex(ListView1Selected.index);
         if FFilesInfo.Count = 0 then
           Exit;
-        if index > FFilesInfo.Count - 1 then
+        if Index > FFilesInfo.Count - 1 then
           Exit;
         FSelectedInfo.FileType := FFilesInfo[Index].FileType;
         FileName := FFilesInfo[index].FileName;
@@ -6258,6 +6259,7 @@ begin
           FSelectedInfo.FileTypeW := L('Shared folder');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
           FSelectedInfo.Size := FFilesInfo[Index].FileSize;
+        PmItemPopup.Tag := Index;
       end else
       begin
         FileName := GetCurrentPath;
@@ -6270,13 +6272,7 @@ begin
           FSelectedInfo.FileType := EXPLORER_ITEM_MYCOMPUTER;
           FileSID := GetGUID;
         end;
-        if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
-          NameLabel.Caption := FileName;
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) then
-          NameLabel.Caption := ExtractFileName(FileName);
+
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
           FSelectedInfo.FileTypeW := GetPathDescription(FileName, FSelectedInfo.FileType);
         if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
@@ -6287,9 +6283,18 @@ begin
           FSelectedInfo.FileTypeW := L('Computer');
         if (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
           FSelectedInfo.FileTypeW := L('Shared folder');
+
+        if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
+        begin
+          if FSearchMode = EXPLORER_SEARCH_DATABASE then
+            FSelectedInfo.FileTypeW := L('Search in collection')
+          else if FSearchMode = EXPLORER_SEARCH_FILES then
+            FSelectedInfo.FileTypeW := L('Search in directory')
+          else
+            FSelectedInfo.FileTypeW := L('Search in directory (with EXIF)');
+        end;
       end;
-      if SelCount = 1 then
-        PmItemPopup.Tag := Index;
+
       FSelectedInfo._GUID := FileSID;
       if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
       begin
@@ -6361,14 +6366,12 @@ begin
               end else
               begin
                 Pic := GetFolderPicture;
-                if Pic = nil then
-                  Exit;
 
                 TempBitmap := TBitmap.Create;
                 try
                   Bit32 := TBitmap.Create;
                   try
-                    LoadPNGImage32bit(Pic, Bit32, ClBtnFace);
+                    LoadPNGImage32bit(Pic, Bit32, clBtnFace);
                     F(Pic);
                     StretchCoolW(0, 0, 100, 100, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, TempBitmap);
                   finally
@@ -6439,6 +6442,34 @@ begin
               finally
                 F(Ico);
               end;
+            end;
+          end;
+
+          if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
+          begin
+
+            with ImPreview.Picture.Bitmap do
+            begin
+              Width := ThSizeExplorerPreview;
+              Height := ThSizeExplorerPreview;
+              Canvas.Pen.Color := clBtnFace;
+              Canvas.Brush.Color := clBtnFace;
+              Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
+
+              if FSearchMode = EXPLORER_SEARCH_DATABASE then
+                Pic := LoadPNGFromRES('SEARCH_DATABASE')
+              else if FSearchMode = EXPLORER_SEARCH_FILES then
+                Pic := LoadPNGFromRES('SEARCH_FILES')
+              else
+                Pic := LoadPNGFromRES('SEARCH_IMAGES');
+              try
+                Canvas.Draw(ThSizeExplorerPreview div 2 - Pic.Width div 2,
+                  ThSizeExplorerPreview div 2 - Pic.Height div 2, Pic);
+
+              finally
+                F(Pic);
+              end;
+
             end;
           end;
         end;
@@ -6529,21 +6560,8 @@ end;
 
 procedure TExplorerForm.SelectTimerTimer(Sender: TObject);
 begin
-  if LastSelCount < 2 then
-  begin
-    SelectTimer.Enabled := False;
-    DoSelectItem;
-    LastSelCount := 0;
-    Exit;
-  end;
-  if LastSelCount = SelCount then
-  begin
-    SelectTimer.Enabled := False;
-    DoSelectItem;
-    LastSelCount := 0;
-    Exit;
-  end;
-  LastSelCount := SelCount;
+  SelectTimer.Enabled := False;
+  DoSelectItem;
 end;
 
 procedure TExplorerForm.SendTo1Click(Sender: TObject);
@@ -6660,19 +6678,11 @@ begin
   end;
 end;
 
-procedure TExplorerForm.WedFilterChange(Sender: TObject);
+function TExplorerForm.GetFilterText: string;
 var
-  Filter, ItemKey: string;
-  I, J, Index: Integer;
-  Info: TExplorerFileInfo;
-  Groups: TGroups;
-  MatchCase,
-  ResultsFound,
-  IsVisible,
-  IsFilter: Boolean;
+  Filter: string;
 begin
-  IsFilter := PnFilter.Visible;
-  if IsFilter then
+  if PnFilter.Visible then
     Filter := WedFilter.Text
   else
     Filter := '*';
@@ -6680,41 +6690,67 @@ begin
   if Pos('*', Filter) = 0 then
     Filter := '*' + Filter + '*';
 
-  MatchCase := CbFilterMatchCase.Checked;
-  if not MatchCase then
+  if not CbFilterMatchCase.Checked then
     Filter := AnsiLowerCase(Filter);
+
+  Result := Filter;
+end;
+
+function TExplorerForm.MakeItemVisibleByFilter(Item: TEasyItem; Filter: string): Boolean;
+var
+  Index, J: Integer;
+  Info: TExplorerFileInfo;
+  IsVisible, IsFilter: Boolean;
+  ItemKey: string;
+  Groups: TGroups;
+begin
+  Result := False;
+
+  if Filter = '' then
+    Filter := GetFilterText;
+
+  IsFilter := PnFilter.Visible;
+  if IsFilter then
+  begin
+    Index := ItemIndexToMenuIndex(Item.Index);
+    Info := FFilesInfo[Index];
+    ItemKey := Item.Caption + ' ' + Info.Comment + ' ' + Info.KeyWords + ' ';
+    if Info.Groups <> '' then
+    begin
+      Groups := EncodeGroups(Info.Groups);
+      for J := 0 to Length(Groups) - 1 do
+        ItemKey := ItemKey + Groups[J].GroupName + ' ';
+    end;
+    if not CbFilterMatchCase.Checked then
+      ItemKey := AnsiLowerCase(ItemKey);
+  end;
+
+  if IsFilter then
+    IsVisible := IsFilter and IsMatchMask(ItemKey, Filter)
+  else
+    IsVisible := True;
+
+  if IsVisible then
+    Result := True;
+
+  Item.Visible := IsVisible;
+end;
+
+procedure TExplorerForm.WedFilterChange(Sender: TObject);
+var
+  Filter: string;
+  I: Integer;
+  ResultsFound: Boolean;
+begin
+  Filter := GetFilterText;
 
   ResultsFound := False;
 
   ElvMain.BeginUpdate;
   try
     for I := 0 to ElvMain.Items.Count - 1 do
-    begin
-      if IsFilter then
-      begin
-        Index := ItemIndexToMenuIndex(I);
-        Info := FFilesInfo[Index];
-        ItemKey := ElvMain.Items[I].Caption + ' ' + Info.Comment + ' ' + Info.KeyWords + ' ';
-        if Info.Groups <> '' then
-        begin
-          Groups := EncodeGroups(Info.Groups);
-          for J := 0 to Length(Groups) - 1 do
-            ItemKey := ItemKey + Groups[J].GroupName + ' ';
-        end;
-        if not MatchCase then
-          ItemKey := AnsiLowerCase(ItemKey);
-      end;
-
-      if IsFilter then
-        IsVisible := IsFilter and IsMatchMask(ItemKey, Filter)
-      else
-        IsVisible := True;
-
-     if IsVisible then
-       ResultsFound := True;
-
-     ElvMain.Items[I].Visible := IsVisible;
-    end;
+      if MakeItemVisibleByFilter(ElvMain.Items[I], Filter) then
+        ResultsFound := True;
   finally
     ElvMain.EndUpdate(True);
   end;

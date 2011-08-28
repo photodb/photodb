@@ -6,7 +6,7 @@ uses
   Jpeg, DB, ExplorerTypes, uGraphicUtils, uShellIntegration,
   UnitDBKernel, ExplorerUnit, ShellAPI, Windows,
   Classes, SysUtils, Graphics, Network, GraphicCrypt, Math,
-  Controls, ActiveX, ShlObj, CommCtrl, Registry,
+  Controls, ActiveX, ShlObj, CommCtrl, Registry, PathEditor,
   GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
   EasyListview, GraphicsCool, uVistaFuncs, uResources, Effects,
   uBitmapUtils, UnitDBCommon, uCDMappingTypes, uExifUtils,
@@ -798,20 +798,39 @@ var
     CurrentDirectories,
     Directories: TStringList;
     ExifData: TExifData;
-    SearchKey: string;
+    Drive, SearchKey: string;
     DE: Boolean;
     Groups: TGroups;
+    DriveType: Cardinal;
   begin
     Files := TExplorerFileInfos.Create;
     try
       //search current level
+
       CurrentDirectory := IncludeTrailingPathDelimiter(CurrentDirectory);
 
       Directories := TStringList.Create;
       CurrentDirectories := TStringList.Create;
       try
 
-        Directories.Add(CurrentDirectory);
+        if CurrentDirectory = '\' then
+        begin
+          //search all my computer
+          for I := Ord('C') to Ord('Z') do
+          begin
+            Drive := Chr(I) + ':\';
+            DriveType := GetDriveType(PChar(Drive));
+            if (DriveType = DRIVE_REMOVABLE) or (DriveType = DRIVE_FIXED) or
+              (DriveType = DRIVE_REMOTE) or (DriveType = DRIVE_CDROM) then
+              Directories.Add(Chr(I) + ':\');
+          end;
+        end else if IsNetworkServer(CurrentDirectory)  then
+        begin
+          // search all server
+          FindAllComputers(CurrentDirectory, Directories);
+        end else
+          Directories.Add(CurrentDirectory);
+
         Repeat
 
           CurrentDirectories.Assign(Directories);
@@ -905,6 +924,9 @@ begin
     try
       SearchDirectory(FFolder);
     finally
+      HideProgress;
+      ShowInfo('');
+      SynchronizeEx(DoStopSearch);
       SynchronizeEx(HideLoadingSign);
     end;
 
@@ -1432,7 +1454,7 @@ begin
             ProportionalSize(SmallImageSize, SmallImageSize, W, H);
             DrawFolderImageWithXY(TempBitmap, Rect(_x div 2 - W div 2 + X,_y div 2 - H div 2 + y, _x div 2- W div 2 + X + W, _y div 2 - H div 2 + Y + H), FBmp);
           finally
-            F(fbmp);
+            F(Fbmp);
           end;
         end else
         begin
@@ -1446,7 +1468,7 @@ begin
             if ValidCryptGraphicFile(Files[Index]) then
             begin
               Password := DBKernel.FindPasswordForCryptImageFile(Files[Index]);
-              if Password<>'' then
+              if Password <> '' then
               begin
                 F(Graphic);
                 Graphic := DeCryptGraphicFile(Files[Index], Password);
@@ -1569,7 +1591,8 @@ end;
 
 procedure TExplorerThread.ReplaceFolderImage;
 begin
-  FSender.ReplaceBitmap(TempBitmap, GUIDParam, True);
+  if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, True) then
+    F(TempBitmap);
 end;
 
 procedure TExplorerThread.AddFile;
@@ -1819,7 +1842,7 @@ end;
 
 procedure TExplorerThread.HideProgress;
 begin
-  ProgressVisible:=False;
+  ProgressVisible := False;
   SynchronizeEx(SetProgressVisible);
 end;
 

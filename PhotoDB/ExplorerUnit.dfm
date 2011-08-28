@@ -26,13 +26,13 @@ object ExplorerForm: TExplorerForm
     613)
   PixelsPerInch = 96
   TextHeight = 13
-  object Splitter1: TSplitter
+  object SplLeftPanel: TSplitter
     Left = 135
     Top = 48
     Width = 5
     Height = 545
     Constraints.MaxWidth = 150
-    OnCanResize = Splitter1CanResize
+    OnCanResize = SplLeftPanelCanResize
     ExplicitLeft = 150
     ExplicitTop = 47
     ExplicitHeight = 546
@@ -40,12 +40,11 @@ object ExplorerForm: TExplorerForm
   object BvSeparatorLeftPanel: TBevel
     Left = 140
     Top = 48
-    Width = 2
+    Width = 1
     Height = 545
     Align = alLeft
     Shape = bsRightLine
-    ExplicitLeft = 148
-    ExplicitTop = 53
+    Style = bsRaised
   end
   object MainPanel: TPanel
     Left = 0
@@ -795,6 +794,8 @@ object ExplorerForm: TExplorerForm
       Top = 1
       Height = 25
       Align = alRight
+      Beveled = True
+      OnCanResize = slSearchCanResize
       ExplicitLeft = 668
       ExplicitTop = 6
     end
@@ -915,9 +916,9 @@ object ExplorerForm: TExplorerForm
     end
   end
   object PnContent: TPanel
-    Left = 142
+    Left = 141
     Top = 48
-    Width = 725
+    Width = 726
     Height = 545
     Align = alClient
     BevelOuter = bvNone
@@ -926,7 +927,7 @@ object ExplorerForm: TExplorerForm
     object PnFilter: TPanel
       Left = 0
       Top = 512
-      Width = 725
+      Width = 726
       Height = 33
       Align = alBottom
       TabOrder = 0

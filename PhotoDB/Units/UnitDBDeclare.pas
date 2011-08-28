@@ -170,15 +170,15 @@ type
 
   TClonableObject = class(TObject)
   public
-    function Copy : TClonableObject; virtual; abstract;
+    function Copy: TClonableObject; virtual; abstract;
   end;
 
   TSearchDataExtension = class(TClonableObject)
   public
-    Bitmap : TBitmap;
-    Icon : TIcon;
-    CompareResult : TImageCompareResult;
-    function Copy : TClonableObject; override;
+    Bitmap: TBitmap;
+    Icon: TIcon;
+    CompareResult: TImageCompareResult;
+    function Copy: TClonableObject; override;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -186,27 +186,27 @@ type
   TDataObject = class(TObject)
   private
   public
-    Include : Boolean;
-    IsImage : Boolean;
-    Data : TObject;
+    Include: Boolean;
+    IsImage: Boolean;
+    Data: TObject;
     constructor Create;
     destructor Destroy; override;
   end;
 
   TSearchQuery = class(TObject)
   public
-    Query : string;
-    GroupName : string;
-    RatingFrom : Integer;
-    RatingTo : Integer;
-    ShowPrivate : Boolean;
-    DateFrom : TDateTime;
-    DateTo : TDateTime;
-    SortMethod : Integer;
-    SortDecrement : Boolean;
-    IsEstimate : Boolean;
-    ShowAllImages : Boolean;
-    function EqualsTo(AQuery : TSearchQuery) : Boolean;
+    Query: string;
+    GroupName: string;
+    RatingFrom: Integer;
+    RatingTo: Integer;
+    ShowPrivate: Boolean;
+    DateFrom: TDateTime;
+    DateTo: TDateTime;
+    SortMethod: Integer;
+    SortDecrement: Boolean;
+    IsEstimate: Boolean;
+    ShowAllImages: Boolean;
+    function EqualsTo(AQuery: TSearchQuery): Boolean;
   end;
 
 type

@@ -502,17 +502,29 @@ end;
 
 function DBXMPPacket.ReadBool(Name: string; DefaultValue: Boolean): Boolean;
 begin
-  Result := Schemas[xsXMPBasic].Properties[Name].ReadValue(DefaultValue);
+  try
+    Result := Schemas[xsXMPBasic].Properties[Name].ReadValue(DefaultValue);
+  except
+    Result := False;
+  end;
 end;
 
 function DBXMPPacket.ReadInteger(Name: string): Integer;
 begin
-  Result := Schemas[xsXMPBasic].Properties[Name].ReadValue(0);
+  try
+    Result := Schemas[xsXMPBasic].Properties[Name].ReadValue(0);
+  except
+    Result := 0;
+  end;
 end;
 
 function DBXMPPacket.ReadString(Name: string): string;
 begin
-  Result := Schemas[xsXMPBasic].Properties[Name].ReadValue('');
+  try
+    Result := Schemas[xsXMPBasic].Properties[Name].ReadValue('');
+  except
+    Result := '';
+  end;
 end;
 
 procedure DBXMPPacket.SetAccess(const Value: Integer);

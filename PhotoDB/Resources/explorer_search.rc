@@ -3,3 +3,8 @@ files RCDATA files.png
 s_database RCDATA s_database.png
 s_files RCDATA s_files.png
 search RCDATA search.png
+camera RCDATA camera.png
+s_images RCDATA s_images.png
+search_database RCDATA search_database.png
+search_files RCDATA search_files.png
+search_images RCDATA search_images.png

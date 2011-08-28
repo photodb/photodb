@@ -82,7 +82,8 @@ implementation
 uses
   Searching, UnitGroupsWork;
 
-constructor SearchThread.Create(Sender : TThreadForm; SID : TGUID; SearchParams : TSearchQuery; OnDone : TNotifyEvent; PictureSize : integer);
+constructor SearchThread.Create(Sender: TThreadForm; SID: TGUID; SearchParams: TSearchQuery; OnDone: TNotifyEvent;
+  PictureSize: Integer);
 begin
   inherited Create(Sender, SID);
   FCurrentQueryType := QT_TEXT;
@@ -152,7 +153,7 @@ begin
   AddWideSearchOptions(Params);
 end;
 
-function SearchThread.CreateQuery : TDBQueryParams;
+function SearchThread.CreateQuery: TDBQueryParams;
 var
   Folder, SysAction, Stemp, S1, S, Sqltext: string;
   A, B, C, N, I, J, Id, Left, L, M: Integer;
@@ -286,7 +287,7 @@ begin
         Result.Query := Result.Query + ' WHERE (Groups LIKE "' + Stemp + '")';
         ApplyFilter(Result, Db_attr_norm);
       end;
-	  
+
       if AnsiLowerCase(Copy(Sysaction, 1, 6)) = AnsiLowerCase('folder') then
       begin
         Systemquery := True;
@@ -638,8 +639,8 @@ begin
 
     case FSearchParams.SortMethod of
       SM_TITLE :     SqlParams.Query := SqlParams.Query + ' ORDER BY Name'      + SortDirection;
-      SM_DATE_TIME : SqlParams.Query := SqlParams.Query + ' ORDER BY DateToAdd' + SortDirection+', aTime' + SortDirection;
-      SM_RATING:     SqlParams.Query := SqlParams.Query + ' ORDER BY Rating'    + SortDirection;
+      SM_DATE_TIME : SqlParams.Query := SqlParams.Query + ' ORDER BY DateToAdd' + SortDirection + ', aTime' + SortDirection;
+      SM_RATING:     SqlParams.Query := SqlParams.Query + ' ORDER BY Rating'    + SortDirection + ', DateToAdd desc, aTime desc';
       SM_FILE_SIZE:  SqlParams.Query := SqlParams.Query + ' ORDER BY FileSize'  + SortDirection;
       SM_SIZE:       SqlParams.Query := SqlParams.Query + ' ORDER BY Width'     + SortDirection;
     else
