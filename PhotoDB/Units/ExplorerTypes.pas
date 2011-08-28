@@ -78,11 +78,11 @@ type
     function InitNewInstance : TDBPopupMenuInfoRecord; override;
   public
     IsBigImage: Boolean;
-    SID : TGUID;
-    FileType : Integer;
-    Tag : Integer;
-    Loaded : Boolean;
-    ImageIndex : Integer;
+    SID: TGUID;
+    FileType: Integer;
+    Tag: Integer;
+    Loaded: Boolean;
+    ImageIndex: Integer;
     function Copy : TDBPopupMenuInfoRecord; override;
   end;
 

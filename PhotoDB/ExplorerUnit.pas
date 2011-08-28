@@ -312,7 +312,7 @@ type
     Procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
-    procedure AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
+    function AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
     function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
     Function ItemIndexToMenuIndex(Index: Integer): Integer;
     Function MenuIndexToItemIndex(Index: Integer): Integer;
@@ -1642,7 +1642,7 @@ begin
             RenameResult := False;
           end;
         end else
-          RenameResult := RenamefileWithDB(KernelEventCallBack, FFilesInfo[PmItemPopup.Tag].FileName,
+          RenameResult := RenameFileWithDB(KernelEventCallBack, FFilesInfo[PmItemPopup.Tag].FileName,
             ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
       finally
         FreeDS(DS);
@@ -2618,13 +2618,15 @@ begin
     end;
 end;
 
-procedure TExplorerForm.AddBitmap(Bitmap: TBitmap; FileGUID: TGUID);
+function TExplorerForm.AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
 var
-  I : Integer;
+  I: Integer;
 begin
+  Result := False;
   for I := FFilesInfo.Count - 1 downto 0 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
+      Result := True;
       FBitmapImageList.AddBitmap(Bitmap);
       FFilesInfo[I].ImageIndex := FBitmapImageList.Count - 1;
       Break;

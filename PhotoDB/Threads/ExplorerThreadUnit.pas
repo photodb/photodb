@@ -14,7 +14,7 @@ uses
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
   uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons,
-  uShellThumbnails, uMachMask, CCR.Exif, UnitGroupsWork;
+  uShellThumbnails, uMachMask, CCR.Exif, UnitGroupsWork, uDatabaseSearch;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -67,7 +67,7 @@ type
     procedure MakeTempBitmap;
     procedure BeginUpDate;
     procedure EndUpDate;
-    Procedure MakeFolderImage(Folder : String);
+    procedure MakeFolderImage(Folder : String);
     procedure FileNeededAW;
     procedure AddDirectoryItemToExplorer;
     procedure AddDirectoryImageToExplorer;
@@ -82,27 +82,27 @@ type
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
     procedure ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
-    Procedure DrawFolderImageBig(Bitmap : TBitmap);
+    procedure DrawFolderImageBig(Bitmap : TBitmap);
     procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
     procedure ReplaceFolderImage;
     procedure AddFile;
     procedure AddImageFileToExplorerW;
     procedure AddImageFileItemToExplorerW;
     function FindInQuery(FileName : String) : Boolean;
-    Procedure ShowInfo(StatusText : String); overload;
-    Procedure ShowInfo(Max, Value : Integer); overload;
-    Procedure ShowInfo(StatusText : String; Max, Value : Integer); overload;
-    Procedure ShowInfo(Pos : Integer); overload;
-    Procedure SetInfoToStatusBar;
+    procedure ShowInfo(StatusText : String); overload;
+    procedure ShowInfo(Max, Value : Integer); overload;
+    procedure ShowInfo(StatusText : String; Max, Value : Integer); overload;
+    procedure ShowInfo(Pos : Integer); overload;
+    procedure SetInfoToStatusBar;
     procedure ShowProgress;
     procedure HideProgress;
     procedure DoStopSearch;
-    Procedure SetProgressVisible;
+    procedure SetProgressVisible;
     Procedure LoadMyComputerFolder;
     procedure AddDirectoryItemToExplorerW;
     procedure AddDriveToExplorer;
     procedure LoadNetWorkFolder;
-    Procedure MakeImageWithIcon;
+    procedure MakeImageWithIcon;
     procedure LoadWorkgroupFolder;
     procedure LoadComputerFolder;
     procedure ShowMessage_;
@@ -113,7 +113,7 @@ type
     procedure ReplaceImageInExplorerB;
     procedure MakeIconForFile;
     procedure ChangeIDImage;
-    Function ShowFileIfHidden(FileName :String) : boolean;
+    function ShowFileIfHidden(FileName :String) : boolean;
     procedure UpdateSimpleFile;
     procedure DoUpdaterHelpProc;
     procedure AddIconFileImageToExplorer;
@@ -133,6 +133,7 @@ type
     procedure SearchDB;
     function IsImage(SearchRec: TSearchRec): Boolean;
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
+    procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TDBPopupMenuInfo);
   protected
     function IsVirtualTerminate : Boolean; override;
     function GetThreadID : string; override;
@@ -236,8 +237,8 @@ begin
   inherited Create(Sender, SID);
   FInfo := TDBPopupMenuInfoRecord.Create;
   CurrentFileInfo := nil;
-  FPacketImages  := nil;
-  FPacketInfos  := nil;
+  FPacketImages := nil;
+  FPacketInfos := nil;
   FThreadType := ThreadType;
   FOwnerThreadType := THREAD_TYPE_NONE;
   FSender := Sender;
@@ -691,8 +692,84 @@ begin
 end;
 
 procedure TExplorerThread.SearchDB;
+var
+  DS: TDatabaseSearch;
+  SQ: TSearchQuery;
 begin
-  raise Exception.Create('Not implemented yet');
+  SynchronizeEx(ShowLoadingSign);
+  try
+    SQ := TSearchQuery.Create;
+    SQ.Query := FMask;
+    SQ.GroupName := '';
+    SQ.RatingFrom := 0;
+    SQ.RatingTo := 5;
+    SQ.ShowPrivate := ExplorerInfo.ShowPrivate;
+    SQ.DateFrom := EncodeDate(1900, 1, 1);
+    SQ.DateTo := EncodeDate(2100, 1, 1);
+    SQ.SortMethod := SM_RATING;
+    SQ.SortDecrement := True;
+    SQ.IsEstimate := False;
+    SQ.ShowAllImages := True;
+    DS := TDatabaseSearch.Create(Self, SQ);
+    try
+      DS.OnPacketReady := OnDatabasePacketReady;
+      DS.ExecuteSearch;
+    finally
+      F(DS);
+    end;
+  finally
+    HideProgress;
+    ShowInfo('');
+    SynchronizeEx(DoStopSearch);
+    SynchronizeEx(HideLoadingSign);
+  end;
+end;
+
+procedure TExplorerThread.OnDatabasePacketReady(Sender: TDatabaseSearch;
+  Packet: TDBPopupMenuInfo);
+var
+  I: Integer;
+  Info: TExplorerFileInfo;
+  DataRecord: TDBPopupMenuInfoRecord;
+  SearchExtraInfo: TSearchDataExtension;
+  FDataList: TList;
+begin
+  FPacketImages := TBitmapImageList.Create;
+  FPacketInfos := TExplorerFileInfos.Create;
+  FDataList := TList.Create;
+  try
+    //create internal package from search package
+
+    for I := 0 to Packet.Count - 1 do
+    begin
+      DataRecord := Packet[I];
+
+      Info := TExplorerFileInfo.Create;
+      Info.Assign(DataRecord, False);
+      Info.Loaded := True;
+      Info.FileType := EXPLORER_ITEM_IMAGE;
+      Info.SID := GetGUID;
+      Info.ImageIndex := -1;
+      FPacketInfos.Add(Info);
+      FDataList.Add(Info);
+
+      SearchExtraInfo := TSearchDataExtension(DataRecord.Data);
+
+      if SearchExtraInfo.Bitmap <> nil then
+        FPacketImages.AddBitmap(SearchExtraInfo.Bitmap)
+      else
+        FPacketImages.AddIcon(SearchExtraInfo.Icon, True);
+
+      SearchExtraInfo.Bitmap := nil;
+      SearchExtraInfo.Icon := nil;
+    end;
+
+    SynchronizeEx(SendPacketToExplorer);
+  finally
+    F(FPacketImages);
+    F(FPacketInfos);
+    FreeList(FDataList);
+  end;
 end;
 
 procedure TExplorerThread.SearchFolder(SearchContent: Boolean);
@@ -806,7 +883,6 @@ var
     Files := TExplorerFileInfos.Create;
     try
       //search current level
-
       CurrentDirectory := IncludeTrailingPathDelimiter(CurrentDirectory);
 
       Directories := TStringList.Create;
@@ -942,6 +1018,7 @@ procedure TExplorerThread.SendPacketToExplorer;
 var
   I: Integer;
   Icon: TIcon;
+  Bitmap: TBitmap;
   S1, S2: String;
   Info: TExplorerFileInfo;
 begin
@@ -952,8 +1029,15 @@ begin
     begin
       Info := FPacketInfos[I];
       Icon := FPacketImages[I].Icon;
-      if not FSender.AddIcon(Icon, True, Info.SID) then
-        FPacketImages[I].Graphic := nil;
+      Bitmap := FPacketImages[I].Bitmap;
+
+      if Icon <> nil then
+        if not FSender.AddIcon(Icon, True, Info.SID) then
+          FPacketImages[I].Graphic := nil;
+
+      if Bitmap <> nil then
+        if not FSender.AddBitmap(Bitmap, Info.SID) then
+          FPacketImages[I].Graphic := nil;
 
       if FThreadType = THREAD_TYPE_SEARCH_FOLDER then
         NewItem := FSender.AddItem(Info.SID, True, 0)

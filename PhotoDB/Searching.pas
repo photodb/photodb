@@ -454,7 +454,7 @@ uses
   UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
   UnitGroupReplace, UnitSavingTableForm, UnitHelp,
   UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
-  UnitOpenQueryThread, uSearchHelpAddPhotosThread;
+  UnitOpenQueryThread, uSearchHelpAddPhotosThread, uDatabaseSearch;
 
 {$R *.dfm}
 
@@ -4226,7 +4226,7 @@ begin
   end;
 end;
 
-procedure TSearchForm.AddItemInListViewByGroups(DataRecord : TDBPopupMenuInfoRecord; ReplaceBitmap : Boolean; CreateData: Boolean);
+procedure TSearchForm.AddItemInListViewByGroups(DataRecord: TDBPopupMenuInfoRecord; ReplaceBitmap: Boolean; CreateData: Boolean);
 var
   New: TEasyItem;
   I, I10: Integer;
@@ -4246,175 +4246,175 @@ begin
   if ShowGroups then
   begin
 
-  if SortMethod = SM_FILE_SIZE then
-  begin
-    if not SortDecrement then
+    if SortMethod = SM_FILE_SIZE then
     begin
-      if (FFillListInfo.LastSize = 0) and (DataRecord.FileSize < 100 * 1024) then
+      if not SortDecrement then
       begin
-        FFillListInfo.LastSize := Max(1, DataRecord.FileSize);
-        with ElvMain.Groups.Add do
+        if (FFillListInfo.LastSize = 0) and (DataRecord.FileSize < 100 * 1024) then
         begin
-          Caption := FLessThan + ' ' + SizeInText(1024 * 100);
-          Visible := True;
-        end;
-      end else
-      begin
-        if DataRecord.FileSize < 1000 * 1024 then
-        begin
-          i10 := Trunc(DataRecord.FileSize / (100 * 1024)) * 10 * 1024;
-          I := i10*10;
-          if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 100 * 1024) then
+          FFillListInfo.LastSize := Max(1, DataRecord.FileSize);
           with ElvMain.Groups.Add do
           begin
-            FFillListInfo.LastSize := i + i10;
-            Caption := FMoreThan + ' ' + SizeInText(I);
+            Caption := FLessThan + ' ' + SizeInText(1024 * 100);
             Visible := True;
           end;
         end else
         begin
-          if DataRecord.FileSize < 1024*1024*10 then
+          if DataRecord.FileSize < 1000 * 1024 then
           begin
-            i10 := Trunc(DataRecord.FileSize / (1024*1024))*100*1024;
-            I:= Round(i10 * 10 / (1024 * 1024)) * 1024 * 1024;
-            if I = 0 then
-              with ElvMain.Groups.Add do
-              begin
-                I := 1024 * 1024;
-                FFillListInfo.LastSize := I + i10;
-                Caption := FMoreThan + ' ' + SizeInText(I);
-                Visible := True;
-              end;
-            if (FFillListInfo.LastSize < I + i10) and (DataRecord.FileSize > 1024 * 1024) then
+            i10 := Trunc(DataRecord.FileSize / (100 * 1024)) * 10 * 1024;
+            I := i10*10;
+            if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 100 * 1024) then
             with ElvMain.Groups.Add do
             begin
-              FFillListInfo.LastSize := I + i10;
+              FFillListInfo.LastSize := i + i10;
               Caption := FMoreThan + ' ' + SizeInText(I);
               Visible := True;
             end;
           end else
           begin
-            if DataRecord.FileSize < 1024 * 1024 * 100 then
+            if DataRecord.FileSize < 1024*1024*10 then
             begin
-              i10 := Trunc(DataRecord.FileSize / (1024 * 1024 * 10)) * 1000 * 1024;
-              I := Round(i10 * 10 / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
-              if (I = 0) then
+              i10 := Trunc(DataRecord.FileSize / (1024*1024))*100*1024;
+              I:= Round(i10 * 10 / (1024 * 1024)) * 1024 * 1024;
+              if I = 0 then
+                with ElvMain.Groups.Add do
+                begin
+                  I := 1024 * 1024;
+                  FFillListInfo.LastSize := I + i10;
+                  Caption := FMoreThan + ' ' + SizeInText(I);
+                  Visible := True;
+                end;
+              if (FFillListInfo.LastSize < I + i10) and (DataRecord.FileSize > 1024 * 1024) then
               with ElvMain.Groups.Add do
               begin
-                I := 1024 * 1024 * 10;
                 FFillListInfo.LastSize := I + i10;
                 Caption := FMoreThan + ' ' + SizeInText(I);
                 Visible := True;
               end;
-              if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 1024 * 1024 * 10) then
-                with ElvMain.Groups.Add do
-                begin
-                 FFillListInfo.LastSize := I + i10;
-                 Caption := FMoreThan + ' ' + SizeInText(I);
-                 Visible := True;
-                end;
             end else
             begin
-              with ElvMain.Groups.Add do
+              if DataRecord.FileSize < 1024 * 1024 * 100 then
               begin
-                FFillListInfo.LastSize := 1024 * 1024 * 100;
-                Caption := FMoreThan + ' ' + SizeInText(1024 * 1024 * 100);
-                Visible := True;
+                i10 := Trunc(DataRecord.FileSize / (1024 * 1024 * 10)) * 1000 * 1024;
+                I := Round(i10 * 10 / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
+                if (I = 0) then
+                with ElvMain.Groups.Add do
+                begin
+                  I := 1024 * 1024 * 10;
+                  FFillListInfo.LastSize := I + i10;
+                  Caption := FMoreThan + ' ' + SizeInText(I);
+                  Visible := True;
+                end;
+                if (FFillListInfo.LastSize < i + i10) and (DataRecord.FileSize > 1024 * 1024 * 10) then
+                  with ElvMain.Groups.Add do
+                  begin
+                   FFillListInfo.LastSize := I + i10;
+                   Caption := FMoreThan + ' ' + SizeInText(I);
+                   Visible := True;
+                  end;
+              end else
+              begin
+                with ElvMain.Groups.Add do
+                begin
+                  FFillListInfo.LastSize := 1024 * 1024 * 100;
+                  Caption := FMoreThan + ' ' + SizeInText(1024 * 1024 * 100);
+                  Visible := True;
+                end;
               end;
             end;
           end;
         end;
-      end;
-    end else
-    begin
-      if DataRecord.FileSize < 901*1024 then
+      end else
       begin
-        i10:=Trunc(DataRecord.FileSize / (1024 * 100)) * 1024 * 100;
-        if (Abs(FFillListInfo.LastSize - DataRecord.FileSize)>1024*100) and (DataRecord.FileSize > 0) or (FFillListInfo.LastSize = 0) then
-          with ElvMain.Groups.Add do
-          begin
-            FFillListInfo.LastSize := i10 + 1024 * 100;
-            Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 100);
-            Visible := True;
-          end;
-       end else
-       begin
-         if DataRecord.FileSize < 1024 * 1024 * 10 then
-         begin
-           i10 := Trunc(DataRecord.FileSize / (1024 * 1024)) * 1024 * 1024;
-           if (Abs(FFillListInfo.LastSize - DataRecord.FileSize) > 1024 * 1024) and (DataRecord.FileSize > 1024 * 1024) or (FFillListInfo.LastSize = 0) then
-             with ElvMain.Groups.Add do
-             begin
-              FFillListInfo.LastSize:=i10 + 1024 * 1024;
-              Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 1024);
-              Visible := True;
-             end;
-          end else
+        if DataRecord.FileSize < 901*1024 then
         begin
-         if DataRecord.FileSize < 1024 * 1024 * 100 then
+          i10:=Trunc(DataRecord.FileSize / (1024 * 100)) * 1024 * 100;
+          if (Abs(FFillListInfo.LastSize - DataRecord.FileSize)>1024*100) and (DataRecord.FileSize > 0) or (FFillListInfo.LastSize = 0) then
+            with ElvMain.Groups.Add do
+            begin
+              FFillListInfo.LastSize := i10 + 1024 * 100;
+              Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 100);
+              Visible := True;
+            end;
+         end else
          begin
-           i10 := Trunc(DataRecord.FileSize / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
-           if (Abs(FFillListInfo.LastSize - DataRecord.FileSize) > 1024 * 1024 * 10) and (DataRecord.FileSize > 1024 * 1024 * 10) or (FFillListInfo.LastSize = 0)  then
-             with ElvMain.Groups.Add do
-             begin
-               FFillListInfo.LastSize := i10 + 1024 * 1024 * 10;
-               Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 1024 * 10);
-               Visible := True;
-             end;
-           end else
+           if DataRecord.FileSize < 1024 * 1024 * 10 then
            begin
-             with ElvMain.Groups.Add do
+             i10 := Trunc(DataRecord.FileSize / (1024 * 1024)) * 1024 * 1024;
+             if (Abs(FFillListInfo.LastSize - DataRecord.FileSize) > 1024 * 1024) and (DataRecord.FileSize > 1024 * 1024) or (FFillListInfo.LastSize = 0) then
+               with ElvMain.Groups.Add do
+               begin
+                FFillListInfo.LastSize:=i10 + 1024 * 1024;
+                Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 1024);
+                Visible := True;
+               end;
+            end else
+          begin
+           if DataRecord.FileSize < 1024 * 1024 * 100 then
+           begin
+             i10 := Trunc(DataRecord.FileSize / (1024 * 1024 * 10)) * 1024 * 1024 * 10;
+             if (Abs(FFillListInfo.LastSize - DataRecord.FileSize) > 1024 * 1024 * 10) and (DataRecord.FileSize > 1024 * 1024 * 10) or (FFillListInfo.LastSize = 0)  then
+               with ElvMain.Groups.Add do
+               begin
+                 FFillListInfo.LastSize := i10 + 1024 * 1024 * 10;
+                 Caption := FLessThan + ' ' + SizeInText(i10 + 1024 * 1024 * 10);
+                 Visible := True;
+               end;
+             end else
              begin
-               FFillListInfo.LastSize := 1024 * 1024 * 100;
-               Caption := FMoreThan + ' ' + SizeInText(1024 * 1024 * 100);
-               Visible := True;
+               with ElvMain.Groups.Add do
+               begin
+                 FFillListInfo.LastSize := 1024 * 1024 * 100;
+                 Caption := FMoreThan + ' ' + SizeInText(1024 * 1024 * 100);
+                 Visible := True;
+               end;
              end;
            end;
          end;
        end;
      end;
-   end;
 
     if SortMethod = SM_TITLE then
-    if ExtractFileName(DataRecord.FileName)<>'' then
-    begin
-     if FFillListInfo.LastChar <> ExtractFilename(DataRecord.FileName)[1] then
+      if ExtractFileName(DataRecord.FileName)<>'' then
       begin
-        FFillListInfo.LastChar := ExtractFilename(DataRecord.FileName)[1];
-        with ElvMain.Groups.Add do
+       if FFillListInfo.LastChar <> ExtractFilename(DataRecord.FileName)[1] then
         begin
-         Caption := FFillListInfo.LastChar;
-         Visible := True;
+          FFillListInfo.LastChar := ExtractFilename(DataRecord.FileName)[1];
+          with ElvMain.Groups.Add do
+          begin
+           Caption := FFillListInfo.LastChar;
+           Visible := True;
+          end;
         end;
       end;
-    end;
 
     if SortMethod = SM_RATING then
-    if FFillListInfo.LastRating <> DataRecord.Rating then
-    begin
-      FFillListInfo.LastRating := DataRecord.Rating;
-      with ElvMain.Groups.Add do
+      if FFillListInfo.LastRating <> DataRecord.Rating then
       begin
-        if DataRecord.Rating = 0 then
-          Caption := L('No rating') + ':'
-        else
-          Caption := L('Rating') + ': ' + IntToStr(DataRecord.Rating);
+        FFillListInfo.LastRating := DataRecord.Rating;
+        with ElvMain.Groups.Add do
+        begin
+          if DataRecord.Rating = 0 then
+            Caption := L('No rating') + ':'
+          else
+            Caption := L('Rating') + ': ' + IntToStr(DataRecord.Rating);
 
+            Visible := True;
+          end;
+        end;
+
+    if SortMethod = SM_DATE_TIME then
+      if (YearOf(DataRecord.Date) <> FFillListInfo.LastYear) or (MonthOf(DataRecord.Date) <> FFillListInfo.LastMonth) then
+      begin
+        FFillListInfo.LastYear := YearOf(DataRecord.Date);
+        FFillListInfo.LastMonth := MonthOf(DataRecord.Date);
+        with ElvMain.Groups.Add do
+        begin
+          Caption := FormatDateTime('yyyy, mmmm', DataRecord.Date);
           Visible := True;
         end;
       end;
-
-    if SortMethod = SM_DATE_TIME then
-    if (YearOf(DataRecord.Date) <> FFillListInfo.LastYear) or (MonthOf(DataRecord.Date) <> FFillListInfo.LastMonth) then
-    begin
-      FFillListInfo.LastYear := YearOf(DataRecord.Date);
-      FFillListInfo.LastMonth := MonthOf(DataRecord.Date);
-      with ElvMain.Groups.Add do
-      begin
-        Caption := FormatDateTime('yyyy, mmmm', DataRecord.Date);
-        Visible := True;
-      end;
-    end;
   end;
 
   DataObject := nil;
@@ -4459,6 +4459,7 @@ begin
     ElvMain.EndUpdate;
   end;
 end;
+
 {$REGION 'Properties'}
 
 function TSearchForm.GetSearchText: string;

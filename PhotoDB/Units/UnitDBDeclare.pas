@@ -2,10 +2,11 @@ unit UnitDBDeclare;
 
 interface
 
-uses DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
-     GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
-     uDBForm, DateUtils, SysUtils, uRuntime, uDBAdapter,
-     uCDMappingTypes;
+uses
+  DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
+  GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
+  uDBForm, DateUtils, SysUtils, uRuntime, uDBAdapter,
+  uCDMappingTypes;
 
 const
   BufferSize = 100*3*4*4096;

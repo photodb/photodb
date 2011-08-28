@@ -26,7 +26,6 @@ type
     function SynchronizeEx(Method: TThreadMethod) : Boolean; override;
     procedure CallMethod;
     procedure Start;
-    function CheckForm : Boolean; virtual;
     function IsVirtualTerminate : Boolean; virtual;
     procedure WaitForSubThreads;
     procedure CheckThreadPriority; virtual;
@@ -35,6 +34,7 @@ type
     FEvent : THandle;
     constructor Create(AOwnerForm : TThreadForm; AState : TGUID);
     destructor Destroy; override;
+    function CheckForm : Boolean; virtual;
     procedure RegisterSubThread(SubThread : TThreadEx);  
     procedure UnRegisterSubThread(SubThread : TThreadEx);
     procedure DoTerminateThread;
@@ -42,6 +42,7 @@ type
     property StateID : TGUID read FState write FState;
     property IsTerminated : Boolean read GetIsTerminated write SetTerminated;
     property ParentThread : TThreadEx read FParentThread;
+    property Terminated;
   end;
 
 implementation
