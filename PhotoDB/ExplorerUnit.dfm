@@ -1610,7 +1610,7 @@ object ExplorerForm: TExplorerForm
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
     Left = 200
-    Top = 72
+    Top = 64
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
@@ -1642,10 +1642,14 @@ object ExplorerForm: TExplorerForm
     Top = 404
   end
   object PopupMenuBack: TPopupMenu
+    Images = ImPathDropDownMenu
+    OnPopup = PopupMenuBackPopup
     Left = 360
     Top = 452
   end
   object PopupMenuForward: TPopupMenu
+    Images = ImPathDropDownMenu
+    OnPopup = PopupMenuForwardPopup
     Left = 360
     Top = 404
   end
@@ -1660,7 +1664,7 @@ object ExplorerForm: TExplorerForm
     Height = 32
     Width = 32
     Left = 201
-    Top = 156
+    Top = 164
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = [dtCopy, dtMove]
@@ -1877,5 +1881,10 @@ object ExplorerForm: TExplorerForm
     ColorDepth = cd32Bit
     Left = 656
     Top = 344
+  end
+  object ImPathDropDownMenu: TImageList
+    ColorDepth = cd32Bit
+    Left = 200
+    Top = 456
   end
 end

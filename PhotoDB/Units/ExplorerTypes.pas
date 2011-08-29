@@ -4,7 +4,8 @@ interface
 
 uses
   SysUtils, Windows, Graphics, UnitDBDeclare, Messages, Classes, JPEG, SyncObjs,
-  uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo;
+  uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo, uThreadEx, Menus,
+  uThreadForm, ShellApi, uConstants, PathEditor;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -71,7 +72,7 @@ type
   // callback процедура, вызываемая при изменении в файловой системе
   TWatchFileSystemCallback = procedure(PInfo: TInfoCallBackDirectoryChangedArray) of object;
 
-  TNotifyDirectoryChangeW = Procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of Object;
+  TNotifyDirectoryChangeW = Procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
 
   TExplorerFileInfo = class(TDBPopupMenuInfoRecord)
   protected
@@ -97,10 +98,10 @@ type
 type
   TUpdaterInfo = record
     IsUpdater: Boolean;
-    UpdateDB : Boolean;
+    UpdateDB: Boolean;
     ProcHelpAfterUpdate: TNotifyEvent;
     NewFileItem: Boolean;
-    FileInfo : TExplorerFileInfo;
+    FileInfo: TExplorerFileInfo;
   end;
 
 procedure AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
@@ -177,11 +178,28 @@ type
     function IsFileLocked(FileName : string) : Boolean;
   end;
 
+  TLoadPathList = class(TThreadEx)
+  private
+    FOwner: TThreadForm;
+    FPathList: TArExplorerPath;
+    FSender: TPopupMenu;
+    FIcons: TList;
+    FIconParam: HIcon;
+    FPath: TExplorerPath;
+    procedure LoadIcon;
+    procedure UpdateMenu;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(Owner: TThreadForm; PathList: TArExplorerPath; Sender: TPopupMenu);
+  end;
+
 function ExplorerPath(Path: string; PType: Integer): TExplorerPath;
 
 implementation
 
-uses ExplorerUnit;
+uses
+  ExplorerUnit;
 
 var
   LockedFiles : TLockFiles = nil;
@@ -514,7 +532,7 @@ end;
 
 function TStringsHistoryW.GetForwardHistory: TArExplorerPath;
 var
-  I : Integer;
+  I: Integer;
 begin
   SetLength(Result, 0);
   if FPosition = -1 then
@@ -697,6 +715,80 @@ end;
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;
 begin
   Result := TExplorerFileInfo.Create;
+end;
+
+{ TLoadPathList }
+
+constructor TLoadPathList.Create(Owner: TThreadForm; PathList: TArExplorerPath;
+  Sender: TPopupMenu);
+begin
+  inherited Create(Owner, Owner.StateID);
+  FOwner := Owner;
+  FPathList := Copy(PathList);
+  FSender := Sender;
+end;
+
+procedure TLoadPathList.Execute;
+var
+  I: Integer;
+  FileInfo: SHFILEINFO;
+  Icon: HIcon;
+begin
+  inherited;
+  FreeOnTerminate := True;
+
+  FIcons := TList.Create;
+  try
+    for I := 0 to Length(FPathList) - 1 do
+    begin
+      FPath := FPathList[I];
+
+      if (FPath.PType = EXPLORER_ITEM_FOLDER) or (FPath.PType = EXPLORER_ITEM_DRIVE)
+        or (FPath.PType = EXPLORER_ITEM_SHARE) then
+      begin
+        SHGetFileInfo(PChar(FPath.Path), 0, FileInfo, SizeOf(FileInfo), SHGFI_ICON or SHGFI_SMALLICON);
+        Icon := FileInfo.hIcon;
+      end else
+      begin
+        SynchronizeEx(LoadIcon);
+        Icon := FIconParam;
+      end;
+
+      FIcons.Add(Pointer(Icon));
+    end;
+
+    SynchronizeEx(UpdateMenu);
+  finally
+    F(FIcons);
+  end;
+end;
+
+procedure TLoadPathList.UpdateMenu;
+begin
+  TExplorerForm(FOwner).UpdateMenuItems(FSender, FPathList, FIcons);
+end;
+
+procedure TLoadPathList.LoadIcon;
+var
+  P: TPathPart;
+begin
+  P := TPathPart.Create(FPath.Path);
+  if FPath.PType = EXPLORER_ITEM_MYCOMPUTER then
+    P.ID := PATH_MY_COMPUTER
+  else if FPath.PType = EXPLORER_ITEM_NETWORK then
+    P.ID := PATH_NETWORKS
+  else if FPath.PType = EXPLORER_ITEM_WORKGROUP then
+    P.ID := PATH_WORKGROUP
+  else if FPath.PType = EXPLORER_ITEM_COMPUTER then
+    P.ID := PATH_SMB_PC;
+
+  try
+    TExplorerForm(FOwner).PePathGetSystemIcon(nil, P);
+    FIconParam := P.Icon;
+    P.Icon := 0;
+  finally
+    F(P);
+  end;
 end;
 
 initialization

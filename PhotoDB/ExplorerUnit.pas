@@ -233,6 +233,7 @@ type
     CbFilterMatchCase: TCheckBox;
     ImFilterWarning: TImage;
     SearchfileswithEXIF1: TMenuItem;
+    ImPathDropDownMenu: TImageList;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -515,8 +516,12 @@ type
     procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
     procedure SearchfileswithEXIF1Click(Sender: TObject);
     procedure PePathParsePath(Sender: TObject; PathParts: TPathParts);
+    function GetPathPartName(PP: TPathPart): string;
+    function MakePathName(Path: TExplorerPath): string;
     procedure slSearchCanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
+    procedure PopupMenuForwardPopup(Sender: TObject);
+    procedure PopupMenuBackPopup(Sender: TObject);
    private
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
@@ -579,6 +584,7 @@ type
      FShellTreeView: TShellTreeView;
      FGoToLastSavedPath: Boolean;
      FW7TaskBar: ITaskbarList3;
+     FHistoryPathList: TArExplorerPath;
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
@@ -598,15 +604,17 @@ type
      procedure ZoomOut;
      procedure LoadToolBarGrayedIcons;
      procedure LoadToolBarNormaIcons;
-     function TreeView : TShellTreeView;
+     function TreeView: TShellTreeView;
      procedure CreateBackgrounds;
-     function GetFormID : string; override;
-     function GetListView : TEasyListview; override;
-     function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
+     function GetFormID: string; override;
+     function GetListView: TEasyListview; override;
+     function InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
      function MakeItemVisibleByFilter(Item: TEasyItem; Filter: string): Boolean;
      function GetFilterText: string;
+     procedure SetNewHistoryPath(Sender : TObject);
    public
      NoLockListView: Boolean;
+     procedure UpdateMenuItems(Menu: TPopupMenu; PathList: TArExplorerPath; Images: TList);
      procedure UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
      procedure LoadLastPath;
      procedure LoadLanguage;
@@ -908,8 +916,8 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetList2View',      F_TYPE_OBJ_PROCEDURE_TOBJECT, SmallIcons1Click);
 
   AddScriptObjFunctionIsString(       aScript.PrivateEnviroment, 'GetPath',            GetPath);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanBack',            fHistory.CanBack);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanForward',         fHistory.CanForward);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanBack',            FHistory.CanBack);
+  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanForward',         FHistory.CanForward);
   AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanUp',              CanUp);
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'SelCount',           SelCount);
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'SelectedIndex',      SelectedIndex);
@@ -1059,7 +1067,7 @@ begin
     if Viewer.ShowFolderA(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate) then
       Viewer.Show
     else
-      MessageBoxDB(Handle, L('There is no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+      MessageBoxDB(Handle, L('There are no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   end;
 end;
 
@@ -2219,64 +2227,43 @@ begin
     TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo,
       Self, UpdaterInfo, StateID)
   else
+  begin
     UpdaterInfo.FileInfo.Free;
+    UpdaterInfo.FileInfo := nil;
+  end;
 end;
 
 procedure TExplorerForm.HistoryChanged(Sender: TObject);
 var
-  MenuBack, MenuForward : TArMenuItem;
-  MenuBackInfo, MenuForwardInfo : TArExplorerPath;
-  I : Integer;
-
-  function FormatPath(Path : string) : string;
-  begin
-    if (Path <> '') and ((Path[Length(Path)] = '/') or (Path[Length(Path)] = '\')) then
-      Result := Copy(Path, 1, Length(Path) - 1)
-    else
-      Result := Path;
-  end;
-
-  function MakeName(Path : TExplorerPath) : string;
-  begin
-    if (Path.PType = EXPLORER_ITEM_DRIVE) or (Path.PType = EXPLORER_ITEM_MYCOMPUTER) or (Path.PType = EXPLORER_ITEM_NETWORK) or (Path.PType = EXPLORER_ITEM_WORKGROUP) then
-      Result := Path.Path
-    else
-      Result := ExtractFileName(FormatPath(Path.Path));
-  end;
-
+  MenuBack, MenuForward: TMenuItem;
+  Ico: TIcon;
 begin
   TbBack.Enabled := FHistory.CanBack;
   TbForward.Enabled := FHistory.CanForward;
   PopupMenuBack.Items.Clear;
+  PopupMenuBack.Tag := 0;
   PopupMenuForward.Items.Clear;
-  if FHistory.CanBack then
-  begin
-    SetLength(MenuBackInfo, 0);
-    MenuBackInfo := Copy(FHistory.GetBackHistory);
-    SetLength(MenuBack, Length(MenuBackInfo));
-    for I := 0 to Length(MenuBack) - 1 do
-    begin
-      MenuBack[Length(MenuBack) - 1 - I] := TMenuItem.Create(PopupMenuBack.Items);
-      MenuBack[Length(MenuBack) - 1 - I].Caption := MakeName(MenuBackInfo[I]);
-      MenuBack[Length(MenuBack) - 1 - I].Tag := MenuBackInfo[I].Tag;
-      MenuBack[Length(MenuBack) - 1 - I].OnClick := JumpHistoryClick;
-    end;
-    PopupMenuBack.Items.Add(MenuBack);
+  PopupMenuForward.Tag := 0;
+
+  ImPathDropDownMenu.Clear;
+
+  Ico := nil;
+  FindIcon(HInstance, 'SEARCH', 16, 32, Ico);
+  try
+    ImPathDropDownMenu.AddIcon(Ico);
+  finally
+    F(Ico);
   end;
-  if FHistory.CanForward then
-  begin
-    SetLength(MenuForwardInfo, 0);
-    MenuForwardInfo := Copy(FHistory.GetForwardHistory);
-    SetLength(MenuForward, Length(MenuForwardInfo));
-    for I := 0 to Length(MenuForward) - 1 do
-    begin
-      MenuForward[I] := TMenuItem.Create(PopupMenuForward.Items);
-      MenuForward[I].Caption := MakeName(MenuForwardInfo[I]);
-      MenuForward[I].Tag := MenuForwardInfo[I].Tag;
-      MenuForward[I].OnClick := JumpHistoryClick;
-    end;
-    PopupMenuForward.Items.Add(MenuForward);
-  end;
+
+  MenuBack := TMenuItem.Create(PopupMenuBack.Items);
+  MenuBack.Caption := L('Loading...');
+  MenuBack.ImageIndex := 0;
+  PopupMenuBack.Items.Add(MenuBack);
+
+  MenuForward := TMenuItem.Create(PopupMenuForward.Items);
+  MenuForward.Caption := L('Loading...');
+  MenuForward.ImageIndex := 0;
+  PopupMenuForward.Items.Add(MenuForward);
 end;
 
 procedure TExplorerForm.SpeedButton1Click(Sender: TObject);
@@ -3143,7 +3130,7 @@ end;
 
 function TExplorerForm.FileNeededW(FileSID : TGUID) : Boolean;
 var
-  I : Integer;
+  I: Integer;
 begin
   Result := False;
   for I := 0 to fFilesInfo.Count - 1 do
@@ -3261,8 +3248,8 @@ end;
 
 procedure TExplorerForm.PmListPopupPopup(Sender: TObject);
 var
-  Files : TStrings;
-  Effects : Integer;
+  Files: TStrings;
+  Effects: Integer;
 begin
   OpeninSearchWindow1.Visible:=True;
   Files:=TStringList.Create;
@@ -3973,10 +3960,10 @@ end;
 
 procedure TExplorerForm.MoveToLinkClick(Sender: TObject);
 var
-  EndDir : String;
-  I, Index : integer;
-  Files : TStringList;
-  DlgCaption : String;
+  EndDir: String;
+  I, Index: integer;
+  Files: TStringList;
+  DlgCaption: String;
 begin
   Files := TStringList.Create;
   try
@@ -4007,8 +3994,8 @@ end;
 
 procedure TExplorerForm.Paste2Click(Sender: TObject);
 var
-  Files : TStrings;
-  Effects : Integer;
+  Files: TStrings;
+  Effects: Integer;
 begin
   Files := TStringList.Create;
   try
@@ -4715,25 +4702,48 @@ begin
   end;
 end;
 
+function TExplorerForm.GetPathPartName(PP: TPathPart): string;
+begin
+  Result := '';
+  if PP.Namespace = 'db' then
+    Result := Format(L('Search in collection for: "%s"'), [PP.Argument]) + '...'
+  else if PP.Namespace = 'images' then
+    Result := Format(L('Search files (with EXIF) for: "%s"'), [PP.Argument]) + '...'
+  else if PP.Namespace = 'files' then
+    Result := Format(L('Search files for: "%s"'), [PP.Argument]) + '...';
+end;
+
+function TExplorerForm.MakePathName(Path: TExplorerPath): string;
+var
+  PP: TPathPart;
+begin
+  if (Path.PType = EXPLORER_ITEM_DRIVE) or (Path.PType = EXPLORER_ITEM_MYCOMPUTER) or (Path.PType = EXPLORER_ITEM_NETWORK) or (Path.PType = EXPLORER_ITEM_WORKGROUP) then
+    Result := Path.Path
+  else if (Path.PType = EXPLORER_ITEM_SEARCH) then
+  begin
+    PP := TPathPart.Create(Path.Path);
+    try
+      Result := GetPathPartName(PP);
+    finally
+      F(PP);
+    end;
+  end else
+    Result := ExtractFileName(ExcludeTrailingPathDelimiter(Path.Path));
+end;
+
 procedure TExplorerForm.PePathParsePath(Sender: TObject; PathParts: TPathParts);
 var
   PP: TPathPart;
+  Name: string;
 begin
   if PathParts.Count > 1 then
   begin
     PP := PathParts[PathParts.Count  -1];
     if PP.ID = PATH_EX then
     begin
-      if PP.Namespace = 'db' then
-      begin
-        PP.Name := Format(L('Search in collection for: "%s"'), [PP.Argument]) + '...';
-      end else if PP.Namespace = 'images' then
-      begin
-        PP.Name := Format(L('Search files (with EXIF) for: "%s"'), [PP.Argument]) + '...';
-      end else if PP.Namespace = 'files' then
-      begin
-        PP.Name := Format(L('Search files for: "%s"'), [PP.Argument]) + '...';
-      end else
+      Name := GetPathPartName(PP);
+
+      if Name = '' then
       begin
         PathParts.Remove(PP);
         F(PP);
@@ -4950,6 +4960,18 @@ begin
     AddFolder2.Visible := False;
     View2.Visible := False;
   end;
+end;
+
+procedure TExplorerForm.PopupMenuBackPopup(Sender: TObject);
+begin
+  if TPopupMenu(Sender).Tag = 0 then
+    TLoadPathList.Create(Self, FHistory.GetBackHistory, TPopupMenu(Sender));
+end;
+
+procedure TExplorerForm.PopupMenuForwardPopup(Sender: TObject);
+begin
+  if TPopupMenu(Sender).Tag = 0 then
+    TLoadPathList.Create(Self, FHistory.GetForwardHistory, TPopupMenu(Sender));
 end;
 
 procedure TExplorerForm.OpeninExplorer1Click(Sender: TObject);
@@ -5218,8 +5240,8 @@ end;
 
 procedure TExplorerForm.DoBack;
 begin
-  if fHistory.CanBack then
-   SetNewPathW(fHistory.DoBack, False)
+  if FHistory.CanBack then
+   SetNewPathW(FHistory.DoBack, False)
   else
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False);
 end;
@@ -6533,6 +6555,47 @@ begin
       ReallignInfo;
     end;
   end;
+end;
+
+procedure TExplorerForm.UpdateMenuItems(Menu: TPopupMenu;
+  PathList: TArExplorerPath; Images: TList);
+var
+  I: Integer;
+  MI: TMenuItem;
+begin
+  FHistoryPathList := Copy(PathList);
+
+  for I := 0 to Length(PathList) - 1 do
+  begin
+    ImageList_ReplaceIcon(ImPathDropDownMenu.Handle, -1, HIcon(Images[I]));
+    MI := TMenuItem.Create(Menu);
+    MI.Caption := MakePathName(PathList[I]);
+    MI.OnClick := SetNewHistoryPath;
+    MI.ImageIndex := ImPathDropDownMenu.Count - 1;
+    MI.Tag := I;
+    AddItemToMenu(MI, Menu);
+  end;
+  if Menu.Items.Count = 1 then
+    //close popup menu
+    SendMessage(PopupList.Window, WM_CANCELMODE, 0, 0)
+  else
+    Menu.Items.Delete(0);
+
+  Menu.Tag := 1;
+end;
+
+procedure TExplorerForm.SetNewHistoryPath(Sender: TObject);
+var
+  N: Integer;
+  Path: TExplorerPath;
+begin
+  N := (Sender as TMenuItem).Tag;
+  Path := FHistoryPathList[N];
+
+  FChangeHistoryOnChPath := False;
+  FHistory.Position := Path.Tag;
+  HistoryChanged(Sender);
+  SetNewPathW(Path, False);
 end;
 
 procedure TExplorerForm.UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
