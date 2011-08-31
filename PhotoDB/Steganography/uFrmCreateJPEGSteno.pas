@@ -145,6 +145,9 @@ begin
     SavePictureDialog.SetFileName(ChangeFileExt(ImageFileName, '.jpg'));
     if SavePictureDialog.Execute then
     begin
+      if TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(SavePictureDialog.FileName)) <> TJPEGImage  then
+        SavePictureDialog.SetFileName(SavePictureDialog.FileName + '.jpg');
+
       if CbConvertImage.Checked then
       begin
         J := TJpegImage.Create;

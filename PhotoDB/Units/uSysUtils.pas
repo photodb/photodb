@@ -27,6 +27,9 @@ function ProductVersion: string;
 function IsWindowsVista: Boolean;
 function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
 
+function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: Integer): Integer; overload;
+function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: string): string; overload;
+
 implementation
 
 function IsWindowsVista: Boolean;
@@ -258,6 +261,22 @@ end;
 function GetGUID: TGUID;
 begin
   CoCreateGuid(Result);
+end;
+
+function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: Integer): Integer;
+begin
+  if Condition then
+    Result := ValueIfTrue
+  else
+    Result := ValueIfFalse;
+end;
+
+function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: string): string;
+begin
+  if Condition then
+    Result := ValueIfTrue
+  else
+    Result := ValueIfFalse;
 end;
 
 end.

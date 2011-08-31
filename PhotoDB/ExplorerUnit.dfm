@@ -169,8 +169,8 @@ object ExplorerForm: TExplorerForm
         end
         object OtherPlacesLabel: TLabel
           Tag = 1
-          Left = 8
-          Top = 425
+          Left = 11
+          Top = 441
           Width = 71
           Height = 13
           Caption = 'Other Places'
@@ -269,8 +269,8 @@ object ExplorerForm: TExplorerForm
         object SlideShowLink: TWebLink
           Left = 5
           Top = 237
-          Width = 56
-          Height = 13
+          Width = 72
+          Height = 16
           Cursor = crHandPoint
           Text = 'Slide Show'
           OnClick = SlideShowLinkClick
@@ -287,9 +287,9 @@ object ExplorerForm: TExplorerForm
         end
         object ShellLink: TWebLink
           Left = 5
-          Top = 285
-          Width = 31
-          Height = 13
+          Top = 284
+          Width = 47
+          Height = 16
           Cursor = crHandPoint
           Text = 'Open'
           OnClick = Open1Click
@@ -306,9 +306,9 @@ object ExplorerForm: TExplorerForm
         end
         object RenameLink: TWebLink
           Left = 5
-          Top = 333
-          Width = 44
-          Height = 13
+          Top = 349
+          Width = 60
+          Height = 16
           Cursor = crHandPoint
           Text = 'Rename'
           OnClick = Rename1Click
@@ -325,9 +325,9 @@ object ExplorerForm: TExplorerForm
         end
         object RefreshLink: TWebLink
           Left = 5
-          Top = 366
-          Width = 43
-          Height = 13
+          Top = 382
+          Width = 59
+          Height = 16
           Cursor = crHandPoint
           Text = 'Refresh'
           OnClick = RefreshLinkClick
@@ -344,9 +344,9 @@ object ExplorerForm: TExplorerForm
         end
         object PropertiesLink: TWebLink
           Left = 5
-          Top = 349
-          Width = 54
-          Height = 13
+          Top = 365
+          Width = 70
+          Height = 16
           Cursor = crHandPoint
           Text = 'Properties'
           OnClick = PropertiesLinkClick
@@ -364,8 +364,8 @@ object ExplorerForm: TExplorerForm
         object PrintLink: TWebLink
           Left = 5
           Top = 269
-          Width = 27
-          Height = 13
+          Width = 43
+          Height = 16
           Cursor = crHandPoint
           Text = 'Print'
           OnClick = PrintLinkClick
@@ -381,10 +381,10 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object MyPicturesLink: TWebLink
-          Left = 5
-          Top = 454
-          Width = 60
-          Height = 13
+          Left = 8
+          Top = 470
+          Width = 76
+          Height = 16
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Pictures'
@@ -401,10 +401,10 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object MyDocumentsLink: TWebLink
-          Left = 5
-          Top = 470
-          Width = 75
-          Height = 13
+          Left = 8
+          Top = 486
+          Width = 91
+          Height = 16
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Documents'
@@ -421,10 +421,10 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object MyComputerLink: TWebLink
-          Left = 5
-          Top = 438
-          Width = 69
-          Height = 13
+          Left = 8
+          Top = 454
+          Width = 85
+          Height = 16
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'My Computer'
@@ -442,9 +442,9 @@ object ExplorerForm: TExplorerForm
         end
         object MoveToLink: TWebLink
           Left = 5
-          Top = 317
-          Width = 46
-          Height = 13
+          Top = 333
+          Width = 62
+          Height = 16
           Cursor = crHandPoint
           Text = 'Move To'
           OnClick = MoveToLinkClick
@@ -462,8 +462,8 @@ object ExplorerForm: TExplorerForm
         object ImageEditorLink: TWebLink
           Left = 5
           Top = 253
-          Width = 66
-          Height = 13
+          Width = 82
+          Height = 16
           Cursor = crHandPoint
           Text = 'Image Editor'
           OnClick = ImageEditorLinkClick
@@ -479,10 +479,10 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object DesktopLink: TWebLink
-          Left = 5
-          Top = 486
-          Width = 44
-          Height = 13
+          Left = 8
+          Top = 502
+          Width = 60
+          Height = 16
           Cursor = crHandPoint
           OnContextPopup = MyPicturesLinkContextPopup
           Text = 'Desktop'
@@ -500,9 +500,9 @@ object ExplorerForm: TExplorerForm
         end
         object DeleteLink: TWebLink
           Left = 5
-          Top = 382
-          Width = 36
-          Height = 13
+          Top = 398
+          Width = 52
+          Height = 16
           Cursor = crHandPoint
           Text = 'Delete'
           OnClick = DeleteLinkClick
@@ -519,9 +519,9 @@ object ExplorerForm: TExplorerForm
         end
         object CopyToLink: TWebLink
           Left = 5
-          Top = 301
-          Width = 45
-          Height = 13
+          Top = 317
+          Width = 61
+          Height = 16
           Cursor = crHandPoint
           Text = 'Copy To'
           OnClick = CopyToLinkClick
@@ -538,12 +538,31 @@ object ExplorerForm: TExplorerForm
         end
         object AddLink: TWebLink
           Left = 5
-          Top = 398
-          Width = 59
-          Height = 13
+          Top = 414
+          Width = 75
+          Height = 16
           Cursor = crHandPoint
           Text = 'Add Object'
           OnClick = AddLinkClick
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          ImageCanRegenerate = True
+          UseSpecIconSize = True
+          HightliteImage = False
+        end
+        object EncryptLink: TWebLink
+          Left = 5
+          Top = 300
+          Width = 58
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'Encrypt'
+          OnClick = EncryptLinkClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -568,7 +587,7 @@ object ExplorerForm: TExplorerForm
         Width = 200
       end
       item
-        Width = 150
+        Width = 500
       end>
   end
   object CoolBarTop: TCoolBar
@@ -1002,7 +1021,7 @@ object ExplorerForm: TExplorerForm
         OnKeyPress = WedFilterKeyPress
         WatermarkText = 'Filter content'
       end
-      object ImButton1: TImButton
+      object ImbCloseFilter: TImButton
         Left = 4
         Top = 6
         Width = 21
@@ -1243,12 +1262,12 @@ object ExplorerForm: TExplorerForm
           7A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E397
           7A00E3977A00E3977A00E3977A00E3977A00E3977A00E3977A00E1957700DD84
           6200CB370000}
-        OnClick = ImButton1Click
+        OnClick = ImbCloseFilterClick
         Transparent = False
         View = DmIm_Close
         Enabled = True
         ShowCaption = False
-        Caption = 'ImButton1'
+        Caption = 'Close'
         FontNormal.Charset = DEFAULT_CHARSET
         FontNormal.Color = clWindowText
         FontNormal.Height = -11

@@ -32,7 +32,7 @@ type
 
   TThreadInfo = class
   public
-    Thread: TDBThread;
+    Thread: TThread;
     Handle: THandle;
   end;
 
@@ -43,11 +43,11 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure RegisterThread(Thread: TDBThread);
-    procedure UnRegisterThread(Thread: TDBThread);
+    procedure RegisterThread(Thread: TThread);
+    procedure UnRegisterThread(Thread: TThread);
     procedure WaitForAllThreads(MaxTime: Cardinal);
-    function IsThread(Thread: TDBThread): Boolean;
-    function GetThreadHandle(Thread: TDBThread): THandle;
+    function IsThread(Thread: TThread): Boolean;
+    function GetThreadHandle(Thread: TThread): THandle;
   end;
 
 function DBThreadManager: TDBThreadManager;
@@ -142,7 +142,7 @@ begin
   inherited;
 end;
 
-function TDBThreadManager.GetThreadHandle(Thread: TDBThread): THandle;
+function TDBThreadManager.GetThreadHandle(Thread: TThread): THandle;
 var
   I: Integer;
 begin
@@ -160,7 +160,7 @@ begin
   end;
 end;
 
-function TDBThreadManager.IsThread(Thread: TDBThread): Boolean;
+function TDBThreadManager.IsThread(Thread: TThread): Boolean;
 var
   I: Integer;
 begin
@@ -178,7 +178,7 @@ begin
   end;
 end;
 
-procedure TDBThreadManager.RegisterThread(Thread: TDBThread);
+procedure TDBThreadManager.RegisterThread(Thread: TThread);
 var
   Info: TThreadInfo;
 begin
@@ -193,7 +193,7 @@ begin
   end;
 end;
 
-procedure TDBThreadManager.UnRegisterThread(Thread: TDBThread);
+procedure TDBThreadManager.UnRegisterThread(Thread: TThread);
 var
   I: Integer;
 begin

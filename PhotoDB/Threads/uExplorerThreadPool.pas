@@ -13,9 +13,9 @@ type
     procedure AddNewThread(Thread : TMultiCPUThread); override;
   public
     class function Instance : TExplorerThreadPool;
-    procedure ExtractImage(Sender : TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID : TGUID);
+    procedure ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
     procedure ExtractDirectoryPreview(Sender : TMultiCPUThread; DirectoryPath: string; FileID : TGUID);
-    procedure ExtractBigImage(Sender : TMultiCPUThread; FileName: string; Rotated : Integer; FileID : TGUID);
+    procedure ExtractBigImage(Sender: TMultiCPUThread; FileName: string; ID, Rotated: Integer; FileID : TGUID);
   end;
 
 implementation
@@ -77,7 +77,7 @@ begin
 end;
 
 procedure TExplorerThreadPool.ExtractBigImage(Sender: TMultiCPUThread;
-  FileName: string; Rotated: Integer; FileID: TGUID);
+  FileName: string; ID, Rotated: Integer; FileID: TGUID);
 var
   Thread : TExplorerThread;
   Avaliablethread : TExplorerThread;
@@ -99,6 +99,7 @@ begin
     Avaliablethread.StateID := Thread.StateID;
     Avaliablethread.FInfo.FileName := FileName;
     Avaliablethread.FInfo.Rotation := Rotated;
+    Avaliablethread.FInfo.ID := ID;
     Avaliablethread.IsCryptedFile := False;
     Avaliablethread.FFileID := FileID;
     Avaliablethread.Mode := THREAD_PREVIEW_MODE_BIG_IMAGE;

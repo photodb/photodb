@@ -96,6 +96,7 @@ type
     procedure SetInfoToStatusBar;
     procedure ShowProgress;
     procedure HideProgress;
+    procedure ShowIndeterminateProgress;
     procedure DoStopSearch;
     procedure SetProgressVisible;
     Procedure LoadMyComputerFolder;
@@ -124,7 +125,7 @@ type
     procedure DoDefaultSort;
     procedure ExtractImage(Info : TDBPopupMenuInfoRecord; CryptedFile : Boolean; FileID : TGUID);
     procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
-    procedure ExtractBigPreview(FileName : string; Rotated : Integer; FileGUID : TGUID);
+    procedure ExtractBigPreview(FileName: string; ID: Integer; Rotated: Integer; FileGUID: TGUID);
     procedure DoMultiProcessorTask; override;
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
@@ -697,6 +698,7 @@ var
   SQ: TSearchQuery;
 begin
   SynchronizeEx(ShowLoadingSign);
+  SynchronizeEx(ShowIndeterminateProgress);
   try
     SQ := TSearchQuery.Create;
     SQ.Query := FMask;
@@ -764,7 +766,8 @@ begin
       SearchExtraInfo.Icon := nil;
     end;
 
-    SynchronizeEx(SendPacketToExplorer);
+    if not SynchronizeEx(SendPacketToExplorer) then
+      FPacketInfos.ClearList;
   finally
     F(FPacketImages);
     F(FPacketInfos);
@@ -972,6 +975,8 @@ var
                 Found := SysUtils.FindNext(SearchRec);
               end;
             end;
+
+            ShowInfo(CurrentDirectory);
             FindClose(SearchRec);
 
             SendPacket;
@@ -997,12 +1002,14 @@ begin
   try
     LastPacketTime := GetTickCount;
     SynchronizeEx(ShowLoadingSign);
+    SynchronizeEx(ShowIndeterminateProgress);
     try
       SearchDirectory(FFolder);
     finally
       HideProgress;
       ShowInfo('');
       SynchronizeEx(DoStopSearch);
+      HideProgress;
       SynchronizeEx(HideLoadingSign);
     end;
 
@@ -1301,7 +1308,7 @@ var
   RecCount, SmallImageSize, Deltax, Deltay, _x, _y: Integer;
   Fbs: TStream;
   FJpeg: TJpegImage;
-  Nbr: Integer;
+  Nbr, Rotation: Integer;
   C: Integer;
   FE, EM: Boolean;
   S: string;
@@ -1482,30 +1489,30 @@ begin
         // 34  68
         // 562 564
         // 600 600
-        deltax := Round(34*ps/600);
-        deltay := Round(68*ps/600);
-        _x := Round((562-34)*ps/1200);
-        _y := Round((564-68)*ps/1200);
+        deltax := Round(34 * ps/600);
+        deltay := Round(68 * ps/600);
+        _x := Round((562-34) * ps/1200);
+        _y := Round((564-68) * ps/1200);
         SmallImageSize := Round(_y/1.05);
 
         X := (J - 1) * _x + deltax;
         Y := (I - 1) * _y + deltay;
         if FFastDirectoryLoading then
         begin
-          if FFolderImagesResult.Images[Index]=nil then
+          if FFolderImagesResult.Images[Index] = nil then
             Break;
           Fbmp := FFolderImagesResult.Images[Index];
           W := Fbmp.Width;
           H := Fbmp.Height;
-          ProportionalSize(SmallImageSize,SmallImageSize, W, H);
-          DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+          ProportionalSize(SmallImageSize, SmallImageSize, W, H);
+          DrawFolderImageWithXY(TempBitmap, Rect(_x div 2 - w div 2 + x, _y div 2 - h div 2 + y, _x div 2- w div 2 + x + w, _y div 2 - h div 2 + y + h), fbmp);
           Continue;
         end;
-        if index > count + Nbr then
+        if Index > count + Nbr then
           Break;
         if index > count then
         begin
-          inc(c);
+          Inc(c);
           Query.RecNo := RecNos[c];
           if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
           begin
@@ -1543,6 +1550,8 @@ begin
         end else
         begin
 
+          Rotation := GetExifRotate(Files[Index]);
+
           GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Files[Index]));
           if GraphicClass = nil then
             Continue;
@@ -1565,17 +1574,17 @@ begin
               if Graphic is TRAWImage then
               begin
                 TRAWImage(Graphic).HalfSizeLoad := True;
-                if not (Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index], SmallImageSize, SmallImageSize) then
-                  Graphic.LoadFromFile(Files[Index]);
+                if not (Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index], SmallImageSize * 4, SmallImageSize * 4) then
+                  Graphic.LoadFromFile(Files[Index])
+                else if FInfo.ID = 0 then
+                  Rotation := ExifDisplayButNotRotate(Rotation)
               end else
                 Graphic.LoadFromFile(Files[Index]);
             end;
-            _y := Round((564-68)*ps/1200);
+            _y := Round((564 - 68) * ps / 1200);
             SmallImageSize := Round(_y / 1.05);
             JPEGScale(Graphic, SmallImageSize, SmallImageSize);
-            W := Graphic.Width;
-            H := Graphic.Height;
-            ProportionalSize(SmallImageSize, SmallImageSize, W, H);
+
             FBmp := TBitmap.Create;
             try
               Bmp := TBitmap.Create;
@@ -1584,8 +1593,13 @@ begin
                 F(Graphic);
 
                 FBMP.PixelFormat := BMP.PixelFormat;
+                ApplyRotate(BMP, Rotation);
+                W := BMP.Width;
+                H := BMP.Height;
+                ProportionalSize(SmallImageSize, SmallImageSize, W, H);
+
                 DoResize(W, H, BMP, FBMP);
-                DrawFolderImageWithXY(TempBitmap, Rect(_x div 2- w div 2+x,_y div 2-h div 2+y,_x div 2- w div 2+x+w,_y div 2-h div 2+y+h), fbmp);
+                DrawFolderImageWithXY(TempBitmap, Rect(_x div 2 - w div 2 + x, _y div 2 - h div 2 + y, _x div 2- w div 2 + x + w, _y div 2 - h div 2 + y + h), FBMP);
               finally
                 F(BMP);
               end;
@@ -1924,6 +1938,11 @@ begin
   FSender.HideLoadingSign;
 end;
 
+procedure TExplorerThread.ShowIndeterminateProgress;
+begin
+  FSender.ShowIndeterminateProgress;
+end;
+
 procedure TExplorerThread.HideProgress;
 begin
   ProgressVisible := False;
@@ -1932,13 +1951,10 @@ end;
 
 procedure TExplorerThread.SetProgressVisible;
 begin
-  if not IsTerminated then
-  begin
-   If ProgressVisible then
-     FSender.ShowProgress
-   else
-     FSender.HideProgress;
- end;
+  if ProgressVisible then
+    FSender.ShowProgress
+  else
+    FSender.HideProgress;
 end;
 
 procedure TExplorerThread.ShowProgress;
@@ -2176,61 +2192,67 @@ var
   Info: TExplorerFileInfo;
   NewInfo: TExplorerFileInfo;
 begin
-  Info := FUpdaterInfo.FileInfo;
-  if FUpdaterInfo.UpdateDB and (Info.ID > 0) then
-    UpdateImageRecord(FSender, Info.FileName, Info.ID);
-
-  FQuery := GetQuery;
-  ReadOnlyQuery(FQuery);
-  UnProcessPath(FFolder);
-
-  SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
-
-  SetIntParam(FQuery, 0, GetPathCRC(Info.FileName, True));
-  SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(Info.FileName)));
   try
-    FQuery.Active := True;
-  except
-    on e : Exception do
-      EventLog(e.Message);
-  end;
-  F(FFiles);
-  FFiles := TExplorerFileInfos.Create;
-  try
-    if FQuery.RecordCount > 0 then
-    begin
-      NewInfo := TExplorerFileInfo.CreateFromDS(FQuery);
-      NewInfo.SID := Info.SID;
-    end else
-    begin
-      NewInfo := TExplorerFileInfo.CreateFromFile(Info.FileName);
-      NewInfo.FileSize := GetFileSizeByName(Info.FileName);
-      NewInfo.Crypted := ValidCryptGraphicFile(Info.FileName);
-      NewInfo.SID := Info.SID;
+    Info := FUpdaterInfo.FileInfo;
+    if FUpdaterInfo.UpdateDB and (Info.ID > 0) then
+      UpdateImageRecord(FSender, Info.FileName, Info.ID);
+
+    FQuery := GetQuery;
+    ReadOnlyQuery(FQuery);
+    UnProcessPath(FFolder);
+
+    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
+
+    SetIntParam(FQuery, 0, GetPathCRC(Info.FileName, True));
+    SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(Info.FileName)));
+    try
+      FQuery.Active := True;
+    except
+      on e : Exception do
+        EventLog(e.Message);
     end;
-    FFiles.Add(NewInfo);
-
-    GUIDParam := FFiles[0].SID;
-    if FolderView then
-      CurrentFile := ProgramDir + FFiles[0].FileName
-    else
-      CurrentFile := FFiles[0].FileName;
-
-    if ExplorerInfo.ShowThumbNailsForImages then
-      ReplaceImageItemImage(FFiles[0].FileName, FFiles[0].FileSize, GUIDParam); // todo: filesize is undefined
-
-    IntParam := Info.ID;
-    SynchronizeEx(EndUpdateID);
-    FreeDS(FQuery);
-
-    DoLoadBigImages(False);
-
-  finally
     F(FFiles);
+    FFiles := TExplorerFileInfos.Create;
+    try
+      if FQuery.RecordCount > 0 then
+      begin
+        NewInfo := TExplorerFileInfo.CreateFromDS(FQuery);
+        NewInfo.SID := Info.SID;
+      end else
+      begin
+        NewInfo := TExplorerFileInfo.CreateFromFile(Info.FileName);
+        NewInfo.FileSize := GetFileSizeByName(Info.FileName);
+        NewInfo.Crypted := ValidCryptGraphicFile(Info.FileName);
+        NewInfo.SID := Info.SID;
+      end;
+      FFiles.Add(NewInfo);
+
+      GUIDParam := FFiles[0].SID;
+      if FolderView then
+        CurrentFile := ProgramDir + FFiles[0].FileName
+      else
+        CurrentFile := FFiles[0].FileName;
+
+      if ExplorerInfo.ShowThumbNailsForImages then
+        ReplaceImageItemImage(FFiles[0].FileName, FFiles[0].FileSize, GUIDParam);
+
+      IntParam := Info.ID;
+      SynchronizeEx(EndUpdateID);
+      FreeDS(FQuery);
+
+      FFiles[0].FileType := EXPLORER_ITEM_IMAGE;
+      DoLoadBigImages(False);
+
+    finally
+      F(FFiles);
+    end;
+    if FInfo.ID <> 0 then
+      if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
+        SynchronizeEx(DoUpdaterHelpProc);
+  except
+    on e: Exception do
+      EventLog(e);
   end;
-  if FInfo.ID <> 0 then
-    if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
-      SynchronizeEx(DoUpdaterHelpProc);
 end;
 
 function TExplorerThread.ShowFileIfHidden(FileName: string): Boolean;
@@ -2363,15 +2385,19 @@ begin
       if not SynchronizeEx(GetAllFiles) then
         Exit;
 
-    ShowInfo(L('Loading previews'));
-    ShowInfo(FFiles.Count, 0);
+    if (FThreadType = THREAD_TYPE_BIG_IMAGES) then
+    begin
+      ShowInfo(L('Loading previews'));
+      ShowInfo(FFiles.Count, 0);
+    end;
     InfoPosition := 0;
 
     for I := 0 to FFiles.Count - 1 do
     begin
 
       Inc(InfoPosition);
-      ShowInfo(InfoPosition);
+      if (FThreadType = THREAD_TYPE_BIG_IMAGES) then
+        ShowInfo(InfoPosition);
       if IsTerminated then Break;
 
       if I mod 5 = 0 then
@@ -2401,9 +2427,9 @@ begin
         if BooleanResult then
         begin
           if ProcessorCount > 1 then
-            TExplorerThreadPool.Instance.ExtractBigImage(Self, FFiles[I].FileName, FFiles[I].Rotation, GUIDParam)
+            TExplorerThreadPool.Instance.ExtractBigImage(Self, FFiles[I].FileName, FFiles[I].ID, FFiles[I].Rotation, GUIDParam)
           else
-            ExtractBigPreview(FFiles[I].FileName, FFiles[I].Rotation, GUIDParam);
+            ExtractBigPreview(FFiles[I].FileName, FFiles[I].ID, FFiles[I].Rotation, GUIDParam);
         end;
       end;
 
@@ -2437,13 +2463,13 @@ begin
   end;
 end;
 
-procedure TExplorerThread.ExtractBigPreview(FileName: string; Rotated: Integer; FileGUID: TGUID);
+procedure TExplorerThread.ExtractBigPreview(FileName: string; ID: Integer; Rotated: Integer; FileGUID: TGUID);
 var
-  Graphic : TGraphic;
-  GraphicClass : TGraphicClass;
+  Graphic: TGraphic;
+  GraphicClass: TGraphicClass;
   PassWord : String;
-  FBit : TBitmap;
-  W, H : Integer;
+  FBit: TBitmap;
+  W, H: Integer;
 begin
   FileName := ProcessPath(FileName);
   GUIDParam := FileGUID;
@@ -2461,7 +2487,7 @@ begin
   try
     if GraphicCrypt.ValidCryptGraphicFile(FileName) then
     begin
-      PassWord:=DBKernel.FindPasswordForCryptImageFile(FileName);
+      PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
       if PassWord = '' then
         Exit;
 
@@ -2472,9 +2498,9 @@ begin
       if Graphic is TRAWImage then
       begin
         TRAWImage(Graphic).HalfSizeLoad := True;
-        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize,ExplorerInfo.PictureSize) then
+        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
           Graphic.LoadFromFile(FileName)
-        else
+        else if ID = 0 then
           Rotated := ExifDisplayButNotRotate(Rotated);
       end else
         Graphic.LoadFromFile(FileName);
@@ -2586,7 +2612,7 @@ begin
           TRAWImage(Graphic).HalfSizeLoad := True;
           if not (Graphic as TRAWImage).LoadThumbnailFromFile(Info.FileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
             Graphic.LoadFromFile(Info.FileName)
-          else
+          else if Info.ID = 0 then
             Info.Rotation := ExifDisplayButNotRotate(Info.Rotation);
         end else
           Graphic.LoadFromFile(Info.FileName);
@@ -2662,7 +2688,7 @@ begin
     ReplaceThumbImageToFolder(FInfo.FileName, FFileID);
 
   if Mode = THREAD_PREVIEW_MODE_BIG_IMAGE then
-    ExtractBigPreview(FInfo.FileName, FInfo.Rotation, FFileID);
+    ExtractBigPreview(FInfo.FileName, FInfo.ID, FInfo.Rotation, FFileID);
 
   F(FUpdaterInfo.FileInfo);
 end;

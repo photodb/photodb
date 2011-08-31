@@ -26,6 +26,7 @@ type
     IsTime: Boolean;
     Time: TDateTime;
     Access: Integer;
+    Encrypted: Boolean;
     Id: Integer;
     Ids: TArInteger;
     One: Boolean;
@@ -38,6 +39,7 @@ type
     Links: string;
     IsVaruousInclude: Boolean;
     Include: Boolean;
+    PreviewID: TGUID;
   end;
 
   TImageDBRecordA = record

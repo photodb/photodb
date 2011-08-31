@@ -186,7 +186,7 @@ begin
       end else
       begin
         // Default Form
-        if Settings.ReadBool('Options', 'RunExplorerAtStartUp', False) then
+        if Settings.ReadBool('Options', 'RunExplorerAtStartUp', True) then
         begin
           TW.I.Start('RUN NewExplorer');
           with ExplorerManager.NewExplorer(False) do

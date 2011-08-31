@@ -780,7 +780,9 @@ begin
   else if FPath.PType = EXPLORER_ITEM_WORKGROUP then
     P.ID := PATH_WORKGROUP
   else if FPath.PType = EXPLORER_ITEM_COMPUTER then
-    P.ID := PATH_SMB_PC;
+    P.ID := PATH_SMB_PC
+  else if FPath.PType = EXPLORER_ITEM_SEARCH then
+    P.ID := PATH_LOADING;
 
   try
     TExplorerForm(FOwner).PePathGetSystemIcon(nil, P);

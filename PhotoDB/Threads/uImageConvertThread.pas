@@ -124,20 +124,21 @@ var
 
   procedure FixEXIFRotate;
   begin
+    Rotation := FProcessingParams.Rotation;
     if FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF then
     begin
       if (FData.ID > 0) and (FData.Rotation > 0) then
       begin
-        FProcessingParams.Rotation := FData.Rotation;
+        Rotation := FData.Rotation;
       end else
       begin
         ExifData := TExifData.Create;
         try
           ExifData.LoadFromGraphic(FData.FileName);
-          FProcessingParams.Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+          Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
 
           if GraphicClass = TRAWImage then
-            FProcessingParams.Rotation := DB_IMAGE_ROTATE_0;
+            Rotation := DB_IMAGE_ROTATE_0;
         except
           on e : Exception do
             EventLog(e.Message);
@@ -209,7 +210,7 @@ const
   procedure SaveFile(Mode : Integer);
   var
     W, H: Integer;
-    GDIRotateTo, RetryCounter: Integer;
+    RetryCounter: Integer;
 
     procedure UpdatePreviewWindow;
     var
@@ -274,8 +275,7 @@ const
 
             MODE_GDI_PLUS:
               begin
-                GDIRotateTo := GetNeededRotation(FData.Rotation, FProcessingParams.Rotation);
-                case GDIRotateTo of
+                case Rotation of
                   DB_IMAGE_ROTATE_270:
                     RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate270, FileName);
                   DB_IMAGE_ROTATE_90:
@@ -423,16 +423,14 @@ begin
         begin
           //file in collection - update rotation attribute
           if (FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF) then
-          begin
-            FixEXIFRotate;
-            Rotation := FProcessingParams.Rotation;
-          end else
-            Rotation := GetNeededRotation(FData.Rotation, FProcessingParams.Rotation);
+            FixEXIFRotate
+          else
+            Rotation := SumRotation(FData.Rotation, FProcessingParams.Rotation);
 
           if Rotation <> FData.Rotation then
           begin
             SetRotate(FData.ID, Rotation);
-            FIntParam := ROtation;
+            FIntParam := Rotation;
             Synchronize(UpdateDBRotation);
           end;
         end else
@@ -442,7 +440,7 @@ begin
 
           FileInfo := FData.Copy;
           try
-            FileInfo.Rotation := FProcessingParams.Rotation;
+            FileInfo.Rotation := Rotation;
             FileInfo.Include := True;
             FDataParam := FileInfo;
             Synchronize(AddInfoToCollection);
@@ -457,7 +455,11 @@ begin
         and (GraphicClass = TJPEGImage)
         and GDIPlusPresent then
       begin
-        FixEXIFRotate;
+        if (FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF) then
+          FixEXIFRotate
+        else
+          Rotation := SumRotation(FData.Rotation, FProcessingParams.Rotation);
+
         if FProcessingParams.Rotation = DB_IMAGE_ROTATE_0 then
           Exit;
 
@@ -470,7 +472,7 @@ begin
 
             MD := TMemoryStream.Create;
             try
-              case FProcessingParams.Rotation of
+              case Rotation of
                 DB_IMAGE_ROTATE_270:
                   RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate270);
                 DB_IMAGE_ROTATE_90:
@@ -580,7 +582,7 @@ begin
           FixEXIFRotate;
 
           if FProcessingParams.Rotation <> DB_IMAGE_ROTATE_UNKNOWN then
-            ApplyRotate(Original, FProcessingParams.Rotation);
+            ApplyRotate(Original, Rotation);
         end;
 
         if not CheckThread then
@@ -661,7 +663,7 @@ var
 begin
   EventInfo.Name := FData.FileName;
   EventInfo.NewName := FData.FileName;
-  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image, EventID_Param_Rotate], EventInfo);
+  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image], EventInfo);
 end;
 
 procedure TImageConvertThread.OnEnd;

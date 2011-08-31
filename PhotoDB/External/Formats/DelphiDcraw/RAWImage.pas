@@ -15,20 +15,20 @@ type
     FIsPreview: Boolean;
     FRealWidth: Integer;
     FRealHeight: Integer;
-    function GetWidth : Integer; override;
-    function GetHeight : Integer; override;
+    function GetWidth: Integer; override;
+    function GetHeight: Integer; override;
   private
     FDisplayDibSize: Boolean;
     FHalfSizeLoad: Boolean;
     procedure SetIsPreview(const Value: boolean);
-    procedure LoadFromFreeImage(Image : TFreeBitmap);
+    procedure LoadFromFreeImage(Image: TFreeBitmap);
   public
     constructor Create; override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure LoadFromFile(const Filename: string); override;
-    function LoadThumbnailFromFile(const FileName : string; Width, Height : Integer) : boolean;
-    procedure Assign(Source : TPersistent); override;
-    property IsPreview : Boolean read FIsPreview write SetIsPreview;
+    function LoadThumbnailFromFile(const FileName: string; Width, Height: Integer) : boolean;
+    procedure Assign(Source: TPersistent); override;
+    property IsPreview: Boolean read FIsPreview write SetIsPreview;
     property GraphicWidth: Integer read FWidth;
     property GraphicHeight: Integer read FHeight;
     property DisplayDibSize: Boolean read FDisplayDibSize write FDisplayDibSize;
@@ -38,34 +38,34 @@ type
   TRAWExifRecord = class(TObject)
   private
     FDescription : string;
-    FKey : string;
-    FValue : string;
+    FKey: string;
+    FValue: string;
   public
-    property Key : string read FKey write FKey;
-    property Value : string read FValue write FValue;
-    property Description : string read FDescription write FDescription;
+    property Key: string read FKey write FKey;
+    property Value: string read FValue write FValue;
+    property Description: string read FDescription write FDescription;
   end;
 
   TRAWExif = class(TObject)
   private
-    FExifList : TList;
+    FExifList: TList;
     function GetCount: Integer;
     function GetValueByIndex(Index: Integer): TRAWExifRecord;
     function GetTimeStamp: TDateTime;
   public
     constructor Create;
     destructor Destroy; override;
-    function Add(Description, Key, Value : string) : TRAWExifRecord;
-    function IsEXIF : Boolean;
+    function Add(Description, Key, Value: string) : TRAWExifRecord;
+    function IsEXIF: Boolean;
     property TimeStamp : TDateTime read GetTimeStamp;
-    property Count : Integer read GetCount;
+    property Count: Integer read GetCount;
     property Items[Index: Integer]: TRAWExifRecord read GetValueByIndex; default;
   end;
 
-  function ReadRAWExif(FileName : String) : TRAWExif;
+  function ReadRAWExif(FileName: String) : TRAWExif;
 
 var
-  IsRAWSupport : Boolean = True;
+  IsRAWSupport: Boolean = True;
 
 implementation
 

@@ -15,7 +15,7 @@ uses
   EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils,
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
-  UnitDBFileDialogs, uIconUtils, uBitmapUtils, uShellIcons,
+  UnitDBFileDialogs, uIconUtils, uBitmapUtils, uShellIcons, uDBThread,
   UnitDBCommon, uCDMappingTypes, SyncObjs, uResources, uListViewUtils,
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
@@ -228,12 +228,13 @@ type
     PnFilter: TPanel;
     WedFilter: TWatermarkedEdit;
     LbFilter: TLabel;
-    ImButton1: TImButton;
+    ImbCloseFilter: TImButton;
     LbFilterInfo: TLabel;
     CbFilterMatchCase: TCheckBox;
     ImFilterWarning: TImage;
     SearchfileswithEXIF1: TMenuItem;
     ImPathDropDownMenu: TImageList;
+    EncryptLink: TWebLink;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -325,6 +326,7 @@ type
     procedure PmListPopupPopup(Sender: TObject);
     procedure Cut2Click(Sender: TObject);
     procedure ShowProgress;
+    procedure ShowIndeterminateProgress;
     procedure HideProgress;
     procedure SetProgressMax(Value: Integer);
     procedure SetProgressPosition(Value: Integer);
@@ -510,7 +512,7 @@ type
     procedure Searchincollection1Click(Sender: TObject);
     procedure SbSearchModeClick(Sender: TObject);
     procedure PmSearchModePopup(Sender: TObject);
-    procedure ImButton1Click(Sender: TObject);
+    procedure ImbCloseFilterClick(Sender: TObject);
     procedure WedFilterChange(Sender: TObject);
     procedure WedSearchKeyPress(Sender: TObject; var Key: Char);
     procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
@@ -522,6 +524,7 @@ type
       var Accept: Boolean);
     procedure PopupMenuForwardPopup(Sender: TObject);
     procedure PopupMenuBackPopup(Sender: TObject);
+    procedure EncryptLinkClick(Sender: TObject);
    private
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
@@ -625,7 +628,7 @@ type
      procedure HideFilter(ResetFilter: Boolean = True);
      procedure ShowFilter;
      property WindowID: TGUID read FWindowID;
-     property MyComputer : string read GetMyComputer;
+     property MyComputer: string read GetMyComputer;
      property ViewInfo: TExplorerViewInfo read GetViewInfo;
    end;
 
@@ -677,6 +680,16 @@ uses
   uFormSteganography, UnitBigImagesSize;
 
 {$R *.dfm}
+
+procedure RegisterPathEditThread(Sender: TThread);
+begin
+  DBThreadManager.RegisterThread(Sender);
+end;     
+
+procedure UnRegisterPathEditThread(Sender: TThread);
+begin
+  DBThreadManager.UnRegisterThread(Sender);
+end;
 
 function MakeRegPath(Path : string) : string;
 var
@@ -876,7 +889,7 @@ begin
 
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   FormManager.RegisterMainForm(Self);
-  FStatusProgress := CreateProgressBar(StatusBar1, 1);
+  FStatusProgress := CreateProgressBar(StatusBar1, 0);
   FStatusProgress.Visible := False;
   FHistory.OnHistoryChange := HistoryChanged;
   TbBack.Enabled := False;
@@ -1664,7 +1677,7 @@ end;
 procedure TExplorerForm.HintTimerTimer(Sender: TObject);
 var
   P, P1: Tpoint;
-  index, I: Integer;
+  Index, I: Integer;
   MenuInfo: TDBPopupMenuInfoRecord;
 begin
   GetCursorPos(P);
@@ -1675,13 +1688,13 @@ begin
     HintTimer.Enabled := False;
     Exit;
   end;
-  if LastMouseItem= nil then
+  if LastMouseItem = nil then
     Exit;
-  index := LastMouseItem.index;
-  if index < 0 then
+  Index := LastMouseItem.index;
+  if Index < 0 then
     Exit;
-  index := ItemIndexToMenuIndex(index);
-  if index > FFilesInfo.Count - 1 then
+  Index := ItemIndexToMenuIndex(Index);
+  if Index > FFilesInfo.Count - 1 then
     Exit;
 
   if not(CtrlKeyDown or ShiftKeyDown) then
@@ -1702,20 +1715,20 @@ begin
       end;
   LastMouseItem.Focused := True;
 
-  if not IsGraphicFile(FFilesInfo[index].FileName) then
+  if not IsGraphicFile(FFilesInfo[Index].FileName) then
     Exit;
 
   HintTimer.Enabled := False;
 
-  MenuInfo := FFilesInfo[index].Copy;
+  MenuInfo := FFilesInfo[Index].Copy;
   THintManager.Instance.CreateHintWindow(Self, MenuInfo, P, HintRealA);
 end;
 
-function TExplorerForm.hintrealA(Info: TDBPopupMenuInfoRecord): Boolean;
+function TExplorerForm.HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
 var
-  P, P1 : TPoint;
-  Item : TeasyItem;
-  Index : Integer;
+  P, P1: TPoint;
+  Item: TeasyItem;
+  Index: Integer;
 begin
   Result := False;
   GetCursorPos(P);
@@ -1725,17 +1738,17 @@ begin
     Exit;
   Index := ItemIndexToMenuIndex(Item.Index);
   Result := not((not Self.Active) or (not ElvMain.Focused) or (Item <> LastMouseItem) or
-      (Item = nil) or (fFilesInfo[Index].FileName <> Info.FileName));
+      (Item = nil) or (FFilesInfo[Index].FileName <> Info.FileName));
 end;
 
 procedure TExplorerForm.ListView1MouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
-  Pos, MousePos : TPoint;
+  Pos, MousePos: TPoint;
   I : Integer;
-  LButtonState, RButtonState : SmallInt;
+  LButtonState, RButtonState: SmallInt;
   Item: TEasyItem;
-  SpotX, SpotY : Integer;
+  SpotX, SpotY: Integer;
 
 begin
   PopupHandled := False;
@@ -1811,10 +1824,10 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
+procedure TExplorerForm.SetInfoToItem(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
 var
-  I : Integer;
-  ExplorerInfo : TExplorerFileInfo;
+  I: Integer;
+  ExplorerInfo: TExplorerFileInfo;
 begin
   for I := 0 to fFilesInfo.Count - 1 do
   begin
@@ -1879,6 +1892,16 @@ begin
   end;
 end;
 
+procedure TExplorerForm.EncryptLinkClick(Sender: TObject);
+begin
+  PmItemPopup.Tag := -1;
+
+  if TControl(Sender).Tag = ACTION_CRYPT_IMAGES then
+    CryptFile1Click(Sender)
+  else
+    ResetPassword1Click(Sender);
+end;
+
 procedure TExplorerForm.EndUpdate;
 begin
   if UpdatingList then
@@ -1890,16 +1913,16 @@ end;
 
 procedure TExplorerForm.Open1Click(Sender: TObject);
 var
-  Handled : Boolean;
+  Handled: Boolean;
 begin
   EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
 function TExplorerForm.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
 var
-  I : Integer;
-  ItemIndex : Integer;
-  MenuRecord : TDBPopupMenuInfoRecord;
+  I: Integer;
+  ItemIndex: Integer;
+  MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
   Result.IsListItem := False;
@@ -1909,6 +1932,11 @@ begin
     ItemIndex := ItemIndexToMenuIndex(I);
     if ItemIndex > FFilesInfo.Count - 1 then
       Exit;
+
+    //skip filtered items
+    if not ElvMain.Items[I].Visible then
+      Continue;
+      
     if FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE then
     begin
       MenuRecord := FFilesInfo[ItemIndex].Copy;
@@ -1995,6 +2023,7 @@ begin
         if HelpNo = 3 then
           Help1NextClick(Self);
 
+        ReRotation := GetNeededRotation(FFilesInfo[I].Rotation, Value.Rotate);
         FFilesInfo[I].ID := ID;
         FFilesInfo[I].Rating := Value.Rating;
         FFilesInfo[I].Rotation := Value.Rotate;
@@ -2020,7 +2049,7 @@ begin
           FBitmapImageList[FFilesInfo[I].ImageIndex].IsBitmap := True;
           FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap := Bit;
         end else
-          ApplyRotate(FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap, Value.Rotate);
+          ApplyRotate(FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap, ReRotation);
         ElvMain.Refresh;
         if FFilesInfo[I].FileName = FSelectedInfo.FileName then
           if SelCount = 1 then
@@ -3313,6 +3342,12 @@ begin
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+end; 
+
+procedure TExplorerForm.ShowIndeterminateProgress;
+begin
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;
 
 procedure TExplorerForm.HideLoadingSign;
@@ -3343,7 +3378,7 @@ end;
 
 procedure TExplorerForm.SetStatusText(Text: string);
 begin
-  StatusBar1.Panels[0].Text := Text;
+  StatusBar1.Panels[1].Text := Text;
 end;
 
 procedure TExplorerForm.BtnCloseExplorerClick(Sender: TObject);
@@ -3360,8 +3395,10 @@ end;
 procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
+  begin
+    FSelectedInfo.PreviewID := GetGUID;
     ImPreview.Picture.Graphic := Image;
-
+  end;
 end;
 
 procedure TExplorerForm.SetPanelInfo(Info: TDBPopupMenuInfoRecord;
@@ -3374,6 +3411,7 @@ begin
     FSelectedInfo.Id := Info.ID;
     FSelectedInfo.Rating := Info.Rating;
     FSelectedInfo.Access := Info.Access;
+    FSelectedInfo.Encrypted := Info.Crypted;
     ReallignInfo;
   end;
 end;
@@ -3534,7 +3572,7 @@ begin
       TypeLabel.Visible := False;
     end;
 
-    if Min(FSelectedInfo.Width, FSelectedInfo.Height)= 0 then
+    if Min(FSelectedInfo.Width, FSelectedInfo.Height) = 0 then
     begin
       if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
       begin
@@ -3640,14 +3678,35 @@ begin
       SlideShowLink.Top := TasksLabel.Top;
     end;
 
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)  then
+    begin
+      if not FSelectedInfo.Encrypted then
+      begin
+        EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
+        EncryptLink.Text := L('Encrypt');
+        EncryptLink.Tag := ACTION_CRYPT_IMAGES;
+      end else
+      begin
+        EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]); 
+        EncryptLink.Text := L('Decrypt');  
+        EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
+      end;
+      EncryptLink.Visible := True;
+      EncryptLink.Top := SlideShowLink.Top + SlideShowLink.Height + H;   
+    end else
+    begin
+      EncryptLink.Visible := False;
+      EncryptLink.Top := SlideShowLink.Top;
+    end;
+
     if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) then
     begin
       ImageEditorLink.Visible := True;
-      ImageEditorLink.Top := SlideShowLink.Top + SlideShowLink.Height + H;
+      ImageEditorLink.Top := EncryptLink.Top + EncryptLink.Height + H;
     end else
     begin
       ImageEditorLink.Visible := False;
-      ImageEditorLink.Top := SlideShowLink.Top;
+      ImageEditorLink.Top := EncryptLink.Top;
     end;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
@@ -4734,28 +4793,19 @@ end;
 procedure TExplorerForm.PePathParsePath(Sender: TObject; PathParts: TPathParts);
 var
   PP: TPathPart;
-  Name: string;
 begin
   if PathParts.Count > 1 then
   begin
-    PP := PathParts[PathParts.Count  -1];
+    PP := PathParts[PathParts.Count - 1];
     if PP.ID = PATH_EX then
-    begin
-      Name := GetPathPartName(PP);
-
-      if Name = '' then
-      begin
-        PathParts.Remove(PP);
-        F(PP);
-      end;
-    end;
+      PP.Name := GetPathPartName(PP);
   end;
 end;
 
 procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
 begin
   if PathPart.ID = PATH_MY_COMPUTER then
-    PathPart.Name := L('My Computer');
+    PathPart.Name := MyComputer;
 end;
 
 procedure TExplorerForm.ShowLoadingSign;
@@ -5093,8 +5143,8 @@ begin
 
       if PePath.PathEx = nil then
         PePath.SetPathEx(Self, P, False);
-      Caption := L(P.ParentPath + ' - ' + PePath.PathEx.Name);
       PePath.SetPathEx(Self, P, False);
+      Caption := L(IIF(P.ParentPath = '', MyComputer, P.ParentPath) + ' - ' + GetPathPartName(PePath.PathEx));
 
       if P.Namespace = 'files' then
         ThreadType := THREAD_TYPE_SEARCH_FOLDER
@@ -5219,8 +5269,6 @@ begin
     FOldPatchType := WPath.PType;
   end;
 
-  if FileMask <> '' then
-    Caption := Caption + ' [' + FileMask + ']';
   EventLog('SetPath OK');
 end;
 
@@ -5367,86 +5415,84 @@ begin
   DoHomeContactWithAuthor;
 end;
 
-procedure TExplorerForm.ResetPassword1Click(Sender: TObject);
+procedure EncryptFiles(Owner: TListViewForm; FileList: TDBPopupMenuInfo; Password: string; IsEncrypt: Boolean; SaveCRC: Boolean);
 var
-  I, Index: Integer;
+  I: Integer;
   Options: TCryptImageThreadOptions;
   ItemFileNames: TArStrings;
   ItemIDs: TArInteger;
   ItemSelected: TArBoolean;
-  Password: string;
 begin
-  Password := DBKernel.FindPasswordForCryptImageFile(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName));
-  if Password = '' then
-    Password := GetImagePasswordFromUser(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName));
-
-  Setlength(ItemFileNames, FFilesInfo.Count);
-  Setlength(ItemIDs, FFilesInfo.Count);
-  Setlength(ItemSelected, FFilesInfo.Count);
+  Setlength(ItemFileNames, FileList.Count);
+  Setlength(ItemIDs, FileList.Count);
+  Setlength(ItemSelected, FileList.Count);
 
   // be default unchecked
-  for I := 0 to FFilesInfo.Count - 1 do
+  for I := 0 to FileList.Count - 1 do
     ItemSelected[I] := False;
 
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
+  for I := 0 to FileList.Count - 1 do
+    if FileList[I].Selected then
     begin
-      index := ItemIndexToMenuIndex(I);
-      ItemFileNames[index] := ProcessPath(FFilesInfo[index].FileName);
-      ItemIDs[index] := FFilesInfo[index].ID;
-      ItemSelected[index] := True;
+      ItemFileNames[I] := ProcessPath(FileList[I].FileName);
+      ItemIDs[I] := FileList[I].ID;
+      ItemSelected[I] := True;
     end;
   Options.Files := Copy(ItemFileNames);
   Options.IDs := Copy(ItemIDs);
   Options.Selected := Copy(ItemSelected);
-  Options.Action := ACTION_DECRYPT_IMAGES;
+  Options.Action := IIF(IsEncrypt, ACTION_CRYPT_IMAGES, ACTION_DECRYPT_IMAGES);
   Options.Password := Password;
-  Options.CryptOptions := 0;
-  TCryptingImagesThread.Create(Self, Options);
+  Options.CryptOptions := IIF(SaveCRC, CRYPT_OPTIONS_SAVE_CRC, CRYPT_OPTIONS_NORMAL);
+  
+  TCryptingImagesThread.Create(Owner, Options);
+end;
+
+procedure TExplorerForm.ResetPassword1Click(Sender: TObject);
+var
+  Info: TDBPopupMenuInfo;
+  FileName, Password: string;
+begin
+  Info := GetCurrentPopupMenuInfo(nil);
+  try
+    if PmItemPopup.Tag <> -1 then
+      FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
+    else
+      FileName := IIF(Info.Count > 0, ProcessPath(Info[0].FileName), '');
+      
+    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    if Password = '' then
+      Password := GetImagePasswordFromUser(FileName);
+    if Password = '' then
+      Exit;
+  
+    EncryptFiles(Self, Info, Password, False, False);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.CryptFile1Click(Sender: TObject);
 var
-  I, Index: Integer;
-  Options : TCryptImageThreadOptions;
   Opt: TCryptImageOptions;
-  CryptOptions: Integer;
-  ItemFileNames: TArStrings;
-  ItemIDs: TArInteger;
-  ItemSelected: TArBoolean;
-
-begin
-  Opt := GetPassForCryptImageFile(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName));
-  if Opt.SaveFileCRC then
-    CryptOptions := CRYPT_OPTIONS_SAVE_CRC
-  else
-    CryptOptions := CRYPT_OPTIONS_NORMAL;
-  if Opt.Password = '' then
-    Exit;
-
-  Setlength(ItemFileNames, FFilesInfo.Count);
-  Setlength(ItemIDs, FFilesInfo.Count);
-  Setlength(ItemSelected, FFilesInfo.Count);
-
-  // be default unchecked
-  for I := 0 to FFilesInfo.Count - 1 do
-    ItemSelected[I] := False;
-
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      Index := ItemIndexToMenuIndex(I);
-      ItemFileNames[index] := ProcessPath(FFilesInfo[index].FileName);
-      ItemIDs[index] := FFilesInfo[index].ID;
-      ItemSelected[index] := True;
-    end;
-  Options.Files := Copy(ItemFileNames);
-  Options.IDs := Copy(ItemIDs);
-  Options.Selected := Copy(ItemSelected);
-  Options.Action := ACTION_CRYPT_IMAGES;
-  Options.Password := Opt.Password;
-  Options.CryptOptions := CryptOptions;
-  TCryptingImagesThread.Create(Self, Options);
+  Info: TDBPopupMenuInfo;
+  FileName: string;
+begin             
+  Info := GetCurrentPopupMenuInfo(nil);
+  try
+    if PmItemPopup.Tag <> -1 then
+      FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
+    else
+      FileName := IIF(Info.Count > 0, ProcessPath(Info[0].FileName), '');
+      
+    Opt := GetPassForCryptImageFile(FileName);
+    if Opt.Password = '' then
+      Exit;
+  
+    EncryptFiles(Self, Info, Opt.Password, True, Opt.SaveFileCRC);
+  finally
+    F(Info);
+  end;
 end;
 
 procedure TExplorerForm.EnterPassword1Click(Sender: TObject);
@@ -5875,7 +5921,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ImButton1Click(Sender: TObject);
+procedure TExplorerForm.ImbCloseFilterClick(Sender: TObject);
 begin
   HideFilter;
 end;
@@ -6259,17 +6305,19 @@ begin
       FSelectedInfo.Size := 0;
       FSelectedInfo.FileTypeW := '';
       FSelectedInfo.Size := -1;
+      FSelectedInfo.Encrypted := False;
       if SelCount = 1 then
       begin
-        Index := ItemIndexToMenuIndex(ListView1Selected.index);
+        Index := ItemIndexToMenuIndex(ListView1Selected.Index);
         if FFilesInfo.Count = 0 then
           Exit;
         if Index > FFilesInfo.Count - 1 then
           Exit;
         FSelectedInfo.FileType := FFilesInfo[Index].FileType;
-        FileName := FFilesInfo[index].FileName;
-        FSelectedInfo.FileName := FileName;
-        FileSID := FFilesInfo[index].SID;
+        FileName := FFilesInfo[Index].FileName;
+        FSelectedInfo.FileName := FFilesInfo[Index].FileName;     
+        FSelectedInfo.Encrypted := FFilesInfo[Index].Crypted;
+        FileSID := FFilesInfo[Index].SID;
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
           FSelectedInfo.FileTypeW := GetPathDescription(FileName, FSelectedInfo.FileType);
@@ -6384,9 +6432,9 @@ begin
                 finally
                   F(Ico);
                 end;
-
+                FSelectedInfo.PreviewID := GetGUID;
                 if LoadIconFromThread then
-                  TExplorerThumbnailCreator.Create(FileName, FSelectedInfo._GUID, Self, False);
+                  TExplorerThumbnailCreator.Create(FileName, FSelectedInfo.PreviewID, Self, False);
               end else
               begin
                 Pic := GetFolderPicture;
@@ -6414,16 +6462,16 @@ begin
                     Index := (I - 1) * 2 + J;
                     X := (J - 1) * 42 + 5 + Dx;
                     Y := (I - 1) * 42 + 8 + Dx;
-                    if FFolderImagesResult.Images[index] = nil then
+                    if FFolderImagesResult.Images[Index] = nil then
                       Break;
-                    Fbmp := FFolderImagesResult.Images[index];
+                    Fbmp := FFolderImagesResult.Images[Index];
                     W := Fbmp.Width;
                     H := Fbmp.Height;
                     ProportionalSize(40, 40, W, H);
                     FolderImageRect := Rect(X + 40 div 2 - W div 2, Y + 40 div 2 - H div 2, X + 40 div 2 + W div 2,
                       Y + 40 div 2 + H div 2);
 
-                    if Fbmp.PixelFormat = pf32Bit then
+                    if FBMP.PixelFormat = pf32Bit then
                       StretchCoolW32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap)
                     else
                       StretchCoolW24To32(FolderImageRect.Left, FolderImageRect.Top, FolderImageRect.Right - FolderImageRect.Left, FolderImageRect.Bottom - FolderImageRect.Top, Rect(0,0, Fbmp.Width, Fbmp.Height), Fbmp, ImPreview.Picture.Bitmap);
@@ -6562,12 +6610,25 @@ procedure TExplorerForm.UpdateMenuItems(Menu: TPopupMenu;
 var
   I: Integer;
   MI: TMenuItem;
+  Ico: TIcon;
+  Icon: HIcon;
 begin
   FHistoryPathList := Copy(PathList);
 
   for I := 0 to Length(PathList) - 1 do
   begin
-    ImageList_ReplaceIcon(ImPathDropDownMenu.Handle, -1, HIcon(Images[I]));
+    Icon := HIcon(Images[I]);
+    if Icon = 0 then
+    begin
+      Ico := nil;    
+      try
+        FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
+        Icon := CopyIcon(Ico.Handle);
+      finally
+        F(Ico);
+      end;
+    end;
+    ImageList_ReplaceIcon(ImPathDropDownMenu.Handle, -1, Icon);
     MI := TMenuItem.Create(Menu);
     MI.Caption := MakePathName(PathList[I]);
     MI.OnClick := SetNewHistoryPath;
@@ -6602,7 +6663,7 @@ procedure TExplorerForm.UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
 var
   Icon: TIcon;
 begin
-  if not IsEqualGUID(SID, FSelectedInfo._GUID) then
+  if not IsEqualGUID(SID, FSelectedInfo.PreviewID) then
     Exit;
 
   with ImPreview.Picture.Bitmap do
@@ -8042,16 +8103,16 @@ begin
   if UpdatingList then
     EndUpdate;
   PePath.CanBreakLoading := False;
-  FStatusProgress.Visible := False;
   LsMain.Hide;
-  StatusBar1.Panels[0].Text := L('Loading canceled...');
+  HideProgress;
+  StatusBar1.Panels[1].Text := L('Loading canceled...');
 end;
 
 procedure TExplorerForm.DoStopLoading;
 begin
   PePath.CanBreakLoading := False;
   fStatusProgress.Visible := False;
-  StatusBar1.Panels[0].Text := '';
+  StatusBar1.Panels[1].Text := '';
 end;
 
 procedure TExplorerForm.LoadSizes;
@@ -8275,7 +8336,7 @@ begin
   MyPicturesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_PICTURES + 1]);
   MyDocumentsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_DOCUMENTS + 1]);
   MyComputerLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_COMPUTER + 1]);
-  DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]);
+  DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]); 
 end;
 
 destructor TExplorerForm.Destroy;
@@ -8290,6 +8351,8 @@ end;
 initialization
 
   ExplorerManager := TManagerExplorer.Create;
+  PERegisterThreadEvent := RegisterPathEditThread;
+  PEUnRegisterThreadEvent := UnRegisterPathEditThread;
 
 Finalization
 

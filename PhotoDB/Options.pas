@@ -303,7 +303,7 @@ begin
     CblEditorVirtuaCursor.Checked := Settings.ReadBool('Editor', 'VirtualCursor', False);
     CbCheckLinksOnUpdate.Checked := Settings.ReadBool('Options', 'CheckUpdateLinks', False);
 
-    CbStartUpExplorer.Checked := Settings.ReadBool('Options', 'RunExplorerAtStartUp', False);
+    CbStartUpExplorer.Checked := Settings.ReadBool('Options', 'RunExplorerAtStartUp', True);
     CbExplorerStartupLocation.Checked := Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False);
     EdExplorerStartupLocation.Text := Settings.ReadString('Options', 'SpecialStartUpFolder');
 
