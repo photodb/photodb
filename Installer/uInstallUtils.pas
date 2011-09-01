@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Messages, Registry, ShlObj, ComObj, ActiveX,
-  uConstants, uMemory, uInstallTypes, uInstallScope, VRSIShortCuts,
+  uConstants, uMemory, uInstallTypes, uInstallScope, VRSIShortCuts, Forms,
   IniFiles, uTranslate, uLogger, UnitINI, uShellUtils, uUserUtils,
   uAppUtils;
 
@@ -14,13 +14,40 @@ type
   TBooleanFunction = function: Boolean;
 
 function IsApplicationInstalled: Boolean;
-function GetRCDATAResourceStream(ResName : string; MS : TMemoryStream) : Boolean;
+function GetRCDATAResourceStream(ResName: string; MS: TMemoryStream): Boolean;
 procedure CreateShortcut(SourceFileName, ShortcutPath: string; Description: string);
-function ResolveInstallPath(Path : string) : string;
-procedure CreateInternetShortcut(const FileName, LocationURL : string);
-function GetInstalledFileName : string;
+function ResolveInstallPath(Path: string): string;
+procedure CreateInternetShortcut(const FileName, LocationURL: string);
+function GetInstalledFileName: string;
+procedure ActivateBackgroundApplication(HWnd: THandle);
 
 implementation
+
+procedure ActivateBackgroundApplication(hWnd: THandle);
+var
+  hCurWnd, dwThreadID, dwCurThreadID: THandle;
+  OldTimeOut: Cardinal;
+  AResult: Boolean;
+begin
+  Application.Restore;
+
+  hWnd := Application.Handle;
+  SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @OldTimeOut, 0);
+  SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Pointer(0), 0);
+  SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE);
+
+  hCurWnd := GetForegroundWindow;
+  AResult := False;
+  while not AResult do
+  begin
+    dwThreadID := GetCurrentThreadId;
+    dwCurThreadID := GetWindowThreadProcessId(hCurWnd);
+    AttachThreadInput(dwThreadID, dwCurThreadID, True);
+    AResult := SetForegroundWindow(hWnd);
+    AttachThreadInput(dwThreadID, dwCurThreadID, False);
+  end;
+
+end;
 
 function GetInstalledFileName : string;
 var
@@ -67,9 +94,9 @@ end;
 
 function GetRCDATAResourceStream(ResName : string; MS : TMemoryStream) : Boolean;
 var
-  MyRes  : Integer;
-  MyResP : Pointer;
-  MyResS : Integer;
+  MyResP: Pointer;
+  MyRes,
+  MyResS: Integer;
 begin
   Result := False;
   MyRes := FindResource(HInstance, PWideChar(ResName), RT_RCDATA);
@@ -93,7 +120,7 @@ end;
 
 procedure CreateShortcut(SourceFileName, ShortcutPath: string; Description: string);
 var
-  VRSIShortCut : TVRSIShortCut;
+  VRSIShortCut: TVRSIShortCut;
 begin
   VRSIShortCut := TVRSIShortCut.Create;
   try
@@ -119,8 +146,8 @@ function ResolveInstallPath(Path : string) : string;
 var
   ProgramPath,
   DesktopPath,
-  StartMenuPath : string;
-  Reg : TRegIniFile;
+  StartMenuPath: string;
+  Reg: TRegIniFile;
 begin
   Result := StringReplace(Path, '{V}', ProductMajorVersionVersion, [rfIgnoreCase]);
   Result := StringReplace(Result, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [rfIgnoreCase]);

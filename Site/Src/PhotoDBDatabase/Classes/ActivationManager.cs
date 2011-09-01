@@ -5,7 +5,7 @@ namespace PhotoDBDatabase.Classes
     public class ActivationManager : BaseManager
     {
         public static void NewFreeActivation(string firstName, string lastName, string email, string phone, string country, string city, string address,
-            string programCode, string activationCode, string programVersion)
+            string programCode, string activationCode, string programVersion, bool isFull)
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
             {
@@ -18,7 +18,7 @@ namespace PhotoDBDatabase.Classes
                     Country = country,
                     City = city,
                     Address = address,
-                    ActivationMode = "FREE",
+                    ActivationMode = isFull ? "FULL" : "FREE",
                     ProgramCode = programCode,
                     ActivationCode = activationCode,
                     ActivationDate = DateTime.Now,

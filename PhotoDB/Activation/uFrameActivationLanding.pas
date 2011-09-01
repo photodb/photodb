@@ -61,7 +61,10 @@ end;
 procedure TFrameActivationLanding.LoadLanguage;
 begin
   inherited;
-  RbActivateApplication.Caption := L('Activate new copy of application');
+  if not TActivationManager.Instance.CanUseFreeActivation then
+    RbActivateApplication.Caption := L('Activate new copy of application')
+  else
+    RbActivateApplication.Caption := L('Activate new copy of application (FREE!)');
   RbSetCode.Caption := L('Install activation code');
 end;
 

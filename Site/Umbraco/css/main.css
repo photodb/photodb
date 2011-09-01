@@ -463,6 +463,9 @@ donate_pay_warning{
   font-size: 14px;
   text-indent: 0;
 }
+.news_listing{
+  text-indent: 0;
+}
 .plusone{
   float:right;
 }

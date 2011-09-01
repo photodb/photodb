@@ -609,6 +609,7 @@ type
      procedure LoadToolBarNormaIcons;
      function TreeView: TShellTreeView;
      procedure CreateBackgrounds;
+     procedure ShowHideFilter(Sender: TObject);
      function GetFormID: string; override;
      function GetListView: TEasyListview; override;
      function InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
@@ -898,7 +899,7 @@ begin
 
   NewFormState;
   MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
-  PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 185);
+  PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 210);
 
   Lock := False;
 
@@ -927,6 +928,8 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetIconsView',      F_TYPE_OBJ_PROCEDURE_TOBJECT, Icons1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetListView',       F_TYPE_OBJ_PROCEDURE_TOBJECT, List1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetList2View',      F_TYPE_OBJ_PROCEDURE_TOBJECT, SmallIcons1Click);
+
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowHideFilter',    F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowHideFilter);
 
   AddScriptObjFunctionIsString(       aScript.PrivateEnviroment, 'GetPath',            GetPath);
   AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanBack',            FHistory.CanBack);
@@ -2851,10 +2854,7 @@ begin
     //filter by Ctrl+F
     if CtrlKeyDown and (Msg.Wparam = Ord('F')) then
     begin
-      if not PnFilter.Visible then
-        ShowFilter
-      else
-        HideFilter;
+      ShowHideFilter(Self);
       Msg.Message := 0;
     end;
   end;
@@ -3383,13 +3383,19 @@ end;
 
 procedure TExplorerForm.BtnCloseExplorerClick(Sender: TObject);
 begin
-  FIsExplorer := False;
-  ListView1SelectItem(Sender, ListView1Selected, True);
-  PropertyPanel.Show;
-  CloseButtonPanel.Hide;
-  Settings.WriteInteger('Explorer', 'LeftPanelWidthExplorer', MainPanel.Width);
-  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
-  ListView1SelectItem(Sender, ListView1Selected, False);
+  BeginScreenUpdate(Handle);
+  try
+    FIsExplorer := False;
+    ListView1SelectItem(Sender, ListView1Selected, True);
+    PropertyPanel.Show;
+    FShellTreeView.Hide;
+    CloseButtonPanel.Hide;
+    Settings.WriteInteger('Explorer', 'LeftPanelWidthExplorer', MainPanel.Width);
+    MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
+    ListView1SelectItem(Sender, ListView1Selected, False);
+  finally
+    EndScreenUpdate(Handle, False);
+  end;
 end;
 
 procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
@@ -4079,33 +4085,39 @@ procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
 var
   S: string;
 begin
-  if not TreeView.UseShellImages then
-  begin
-    TreeView.UseShellImages := True;
-    TreeView.ObjectTypes := [OtFolders, OtHidden];
-    TreeView.Refresh(TreeView.TopItem);
-  end;
-  PropertyPanel.Hide;
+  BeginScreenUpdate(Handle);
   try
-    if GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER then
-      TreeView.Path := 'C:\';
-    if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or
-      (GetCurrentPathW.PType = EXPLORER_ITEM_COMPUTER) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
+    if not TreeView.UseShellImages then
     begin
-      S := GetCurrentPath;
-      if Length(S) = 2 then
-        S := IncludeTrailingBackslash(S);
-      TreeView.Path := S;
+      TreeView.UseShellImages := True;
+      TreeView.ObjectTypes := [OtFolders, OtHidden];
+      TreeView.Refresh(TreeView.TopItem);
     end;
-    if GetCurrentPathW.PType = EXPLORER_ITEM_NETWORK then
-      TreeView.Path := 'C:\';
-    if GetCurrentPathW.PType = EXPLORER_ITEM_WORKGROUP then
-      TreeView.Path := 'C:\';
-  except
+    FShellTreeView.Show;
+    PropertyPanel.Hide;
+    try
+      if GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER then
+        TreeView.Path := 'C:\';
+      if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or
+        (GetCurrentPathW.PType = EXPLORER_ITEM_COMPUTER) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
+      begin
+        S := GetCurrentPath;
+        if Length(S) = 2 then
+          S := IncludeTrailingBackslash(S);
+        TreeView.Path := S;
+      end;
+      if GetCurrentPathW.PType = EXPLORER_ITEM_NETWORK then
+        TreeView.Path := 'C:\';
+      if GetCurrentPathW.PType = EXPLORER_ITEM_WORKGROUP then
+        TreeView.Path := 'C:\';
+    except
+    end;
+    FIsExplorer := True;
+    CloseButtonPanel.Show;
+    MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidthExplorer', 135);
+  finally
+    EndScreenUpdate(Handle, False);
   end;
-  FIsExplorer := True;
-  CloseButtonPanel.Show;
-  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidthExplorer', 135);
 end;
 
 { TManagerExplorer }
@@ -4663,6 +4675,14 @@ begin
   PnFilter.Show;
   WedFilter.SetFocus;
   WedFilter.OnChange(Self);
+end;
+
+procedure TExplorerForm.ShowHideFilter(Sender: TObject);
+begin
+  if not PnFilter.Visible then
+    ShowFilter
+  else
+    HideFilter;
 end;
 
 function TExplorerForm.InternalGetImage(FileName: string;
@@ -8193,6 +8213,7 @@ begin
     FShellTreeView := TShellTreeView.Create(Self);
     FShellTreeView.Parent := MainPanel;
     FShellTreeView.Align := alClient;
+    FShellTreeView.HideSelection := False;
     FShellTreeView.AutoRefresh := False;
     FShellTreeView.PopupMenu := PopupMenu8;
     FShellTreeView.RightClickSelect := True;

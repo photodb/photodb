@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using PhotoDBActivation;
-using PhotoDBDatabase.Classes;
-using PhotoDBUmbracoExtensions;
+using PhotoDBUserControls.Classes;
 
 namespace PhotoDBUserControls
 {
@@ -37,58 +36,53 @@ namespace PhotoDBUserControls
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            string programKey = Request["k"] ?? String.Empty;
-            if (String.IsNullOrEmpty(programKey) || programKey.Length != 16)
+            try
             {
-                ltrReply.Text = "k";
-                return;
-            }
-            string programVersion = Request["v"] ?? String.Empty;
-            if (String.IsNullOrEmpty(programKey))
-            {
-                ltrReply.Text = "v";
-                return;
-            }
-            string firstName = base64DecodeUrl(Request["fn"] ?? String.Empty);
-            if (String.IsNullOrEmpty(firstName))
-            {
-                ltrReply.Text = "fn";
-                return;
-            }
-            string lastName = base64DecodeUrl(Request["ln"] ?? String.Empty);
-            if (String.IsNullOrEmpty(lastName))
-            {
-                ltrReply.Text = "ln";
-                return;
-            }
-            string email = base64DecodeUrl(Request["e"] ?? String.Empty);
-            if (!isEmail(email))
-            {
-                ltrReply.Text = "e";
-                return;
-            }
-            string phone = base64DecodeUrl(Request["p"] ?? String.Empty);
-            string country = base64DecodeUrl(Request["co"] ?? String.Empty);
-            string city = base64DecodeUrl(Request["ci"] ?? String.Empty);
-            string address = base64DecodeUrl(Request["a"] ?? String.Empty);
-            string freeActivationKey = ActivationHelper.GenerateFreeActivationNumber(programKey);
-            ActivationManager.NewFreeActivation(firstName, lastName, email, phone,
-                country, city, address, programKey, freeActivationKey, programVersion);
+                string programKey = Request["k"] ?? String.Empty;
+                if (String.IsNullOrEmpty(programKey) || programKey.Length != 16)
+                {
+                    ltrReply.Text = "k";
+                    return;
+                }
+                string programVersion = Request["v"] ?? String.Empty;
+                if (String.IsNullOrEmpty(programKey))
+                {
+                    ltrReply.Text = "v";
+                    return;
+                }
+                string firstName = base64DecodeUrl(Request["fn"] ?? String.Empty);
+                if (String.IsNullOrEmpty(firstName))
+                {
+                    ltrReply.Text = "fn";
+                    return;
+                }
+                string lastName = base64DecodeUrl(Request["ln"] ?? String.Empty);
+                if (String.IsNullOrEmpty(lastName))
+                {
+                    ltrReply.Text = "ln";
+                    return;
+                }
+                string email = base64DecodeUrl(Request["e"] ?? String.Empty);
+                if (!isEmail(email))
+                {
+                    ltrReply.Text = "e";
+                    return;
+                }
+                string phone = base64DecodeUrl(Request["p"] ?? String.Empty);
+                string country = base64DecodeUrl(Request["co"] ?? String.Empty);
+                string city = base64DecodeUrl(Request["ci"] ?? String.Empty);
+                string address = base64DecodeUrl(Request["a"] ?? String.Empty);
+                string freeActivationKey = ActivationHelper.GenerateCommercialActivationNumber(programKey);
 
-            MailData data = new MailData();
-            data.Add("First Name", firstName);
-            data.Add("Last Name", lastName);
-            data.Add("Email", email);
-            data.Add("Phone", phone);
-            data.Add("Country", country);
-            data.Add("City", city);
-            data.Add("Address", address);
-            data.Add("Program Key", programKey);
-            data.Add("Activation Key", freeActivationKey);
-            data.Add("Program Version", programVersion);
-            Mailer.MailNotify("Activation", data);
+                Activation.NotifyActivation(firstName, lastName, email, phone,
+                    country, city, address, programKey, freeActivationKey, programVersion, false);
 
-            ltrReply.Text = freeActivationKey;
+                ltrReply.Text = freeActivationKey;
+            }
+            catch (Exception ex)
+            {
+                ltrReply.Text = ex.ToString();
+            }
         }
     }
 }

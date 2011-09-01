@@ -89,6 +89,7 @@ begin
   LanguageInitCallBack := LoadLanguageFromSetupData;
   LoadLanguageList;
   LoadLanguage;
+  ActivateBackgroundApplication(Handle);
 end;
 
 procedure TFormLanguage.FormDestroy(Sender: TObject);

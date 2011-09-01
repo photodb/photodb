@@ -18,4 +18,5 @@
   </div>
   <div class="clearDiv"></div>
   <umbraco:Macro Alias="HomePageNewsListing" runat="server" />
+  <umbraco:Macro Alias="HomeRightCallout" runat="server" />
 </asp:Content>

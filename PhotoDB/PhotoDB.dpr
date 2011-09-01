@@ -653,6 +653,9 @@ begin
       if not GetParamStrDBBool('/NoFullRun') or FolderView then
         FormManager.Run;
 
+      if GetParamStrDBBool('/SLEEP') then
+        ActivateBackgroundApplication(Application.Handle);
+
       if not DBTerminating and not FolderView then
       begin
         if AnsiUpperCase(ParamStr(1)) = '/GETPHOTOS' then

@@ -4,7 +4,7 @@ interface
 
 uses
   math, win32crc, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, jpeg, ExtCtrls, XPMan, shellapi,
+  Dialogs, StdCtrls, jpeg, ExtCtrls, XPMan, shellapi, uSysUtils,
   uActivationUtils, UnitDBCommon, TwButton;
 
 type

@@ -72,6 +72,15 @@ namespace PhotoDBUserControls
                                 int pageId = umbraco.NodeFactory.Node.GetCurrent().Id;
                                 if (!UmbracoHelper.IsLoggedIntoBackend && !HttpHelper.UserIsCrawler)
                                     DownloadManager.NewDownload(mediaId, pageId, Request.RawUrl, d.DownloadPage, GeoIPHelper.CountryCode);
+
+                                MailData data = new MailData();
+                                data.Add("MediaId", mediaId.ToString());
+                                data.Add("PageId", pageId.ToString());
+                                data.Add("Request", Request.RawUrl);
+                                data.Add("Download Page", d.DownloadPage);
+                                data.Add("ConuntryCode", GeoIPHelper.CountryCode);
+                                Mailer.MailNotify("Download", data);
+
                                 Response.Redirect(d.DownloadPage);
                                 break;
                             }

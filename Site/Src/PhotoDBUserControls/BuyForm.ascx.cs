@@ -1,4 +1,5 @@
 ﻿using System;
+using PhotoDBActivation;
 using PhotoDBUserControls.Classes;
 
 namespace PhotoDBUserControls
@@ -10,6 +11,8 @@ namespace PhotoDBUserControls
             if (!Page.IsPostBack)
             {
                 btnSubmit.Text = GetProperty("submitText");
+                txtAppCode.Text = Request[Constants.QueryString.ActivationCode] ?? String.Empty;
+                hvProgramVersion.Value = Request[Constants.QueryString.ProgramVersion] ?? String.Empty;
                 UpdateValidators();
             }
         }
@@ -23,8 +26,6 @@ namespace PhotoDBUserControls
             rfvLastName.ErrorMessage = String.Format(errorMessage, GetProperty("lastNameText"));
             rfvEmail.ErrorMessage = String.Format(errorMessage, GetProperty("emailText"));
             revEmail.ErrorMessage = String.Format(incorrectFormat, GetProperty("emailText"));
-            rfvOrganization.ErrorMessage = String.Format(errorMessage, GetProperty("organizationText"));
-            rfvMessageText.ErrorMessage = String.Format(errorMessage, GetProperty("messageText"));
         }
 
         protected void btnSubmit_Click(object sender, EventArgs e)
@@ -32,24 +33,25 @@ namespace PhotoDBUserControls
             Page.Validate();
             if (Page.IsValid)
             {
-                ContactUsManager.LeaveMessage(txtFirstName.Text,
-                    txtLastName.Text,
-                    txtEmail.Text,
-                    txtOrganization.Text,
-                    txtTheme.Text,
-                    txtMessageText.Text,
-                    "CONTACTUS");
+                string programKey = txtAppCode.Text;
+                string firstName = txtFirstName.Text;
+                string lastName = txtLastName.Text;
+                string email = txtEmail.Text;
+                string phone = txtPhone.Text;
+                string country = txtContry.Text;
+                string city = txtCity.Text;
+                string address = txtAddress.Text;
+                string programVersion = hvProgramVersion.Value;
 
-                MailData data = new MailData();
-                data.Add("First Name", txtFirstName.Text);
-                data.Add("Last Name", txtLastName.Text);
-                data.Add("Email", txtEmail.Text);
-                data.Add("Organization", txtOrganization.Text);
-                data.Add("Theme", txtTheme.Text);
-                data.Add("Text", txtMessageText.Text);
-                Mailer.MailNotify("Contact Us Form", data);
+                string freeActivationKey = ActivationHelper.GenerateCommercialActivationNumber(programKey);
 
-                ltrThankYouMessage.Text = GetProperty("thankYouMessage");
+                if (firstName.ToUpper() != "TEST")
+                {
+                    Activation.NotifyActivation(firstName, lastName, email, phone,
+                        country, city, address, programKey, freeActivationKey, programVersion, true);
+                }
+
+                ltrThankYouMessage.Text = GetProperty("thankYouMessage").Replace("{CODE}", freeActivationKey);
                 mvMain.ActiveViewIndex = 1;
             }
         }

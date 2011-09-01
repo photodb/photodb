@@ -14,12 +14,12 @@
         <div class="form">
 	        <div class="row required">
                 <div class="row_label" ><%= GetProperty("nameText") %>:</div>
-                <div class="requared_sign" >*</div>
+                <div class="requared_sign" >&nbsp;</div>
                 <asp:TextBox runat="server" ID="txtName" CssClass="standartInput" MaxLength="100" />
             </div>
             <div class="row required">
                 <div class="row_label"><%= GetProperty("emailText")%>:</div>
-                <div class="requared_sign" >*</div>
+                <div class="requared_sign" >&nbsp;</div>
                 <asp:TextBox runat="server" ID="txtEmail" CssClass="standartInput" MaxLength="100" />
             </div>
             <div class="row required">

@@ -86,6 +86,8 @@
     <Compile Include="BuyForm.ascx.designer.cs">
       <DependentUpon>BuyForm.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Classes\Activation.cs" />
+    <Compile Include="Classes\Constants.cs" />
     <Compile Include="Classes\MaxMind\CountryLookup.cs" />
     <Compile Include="Classes\MaxMind\GeoIPCountry.cs" />
     <Compile Include="Classes\MaxMind\GeoIPHelper.cs" />
@@ -171,6 +173,10 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>XCOPY "$(ProjectDir)bin\$(ProjectName)*.*" "$(ProjectDir)..\..\umbraco\bin\" /y
+XCOPY "$(ProjectDir)*.ascx" "$(ProjectDir)..\..\umbraco\usercontrols\" /y</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

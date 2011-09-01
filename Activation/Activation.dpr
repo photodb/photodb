@@ -10,8 +10,6 @@ uses
   UnitDBCommon in '..\PhotoDB\Units\UnitDBCommon.pas',
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
-  MSXML2_TLB in '..\PhotoDB\External\Xml\MSXML2_TLB.pas',
-  OmniXML_MSXML in '..\PhotoDB\External\Xml\OmniXML_MSXML.pas',
   uLogger in '..\PhotoDB\Units\uLogger.pas',
   uFileUtils in '..\PhotoDB\Units\uFileUtils.pas',
   VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',

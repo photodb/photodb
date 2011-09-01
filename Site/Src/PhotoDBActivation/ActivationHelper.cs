@@ -22,7 +22,17 @@ namespace PhotoDBActivation
             }
         }
 
+        public static string GenerateCommercialActivationNumber(string applicationKey)
+        {
+            return GenerateActivationNumber(applicationKey, true);
+        }
+
         public static string GenerateFreeActivationNumber(string applicationKey)
+        {
+            return GenerateActivationNumber(applicationKey, false);
+        }
+
+        public static string GenerateActivationNumber(string applicationKey, bool isFull)
         {
             string SSS;
             DelphiArray16 Ar = new DelphiArray16();
@@ -43,8 +53,12 @@ namespace PhotoDBActivation
             for (int i = 1; i <= 8; i++)
                 Ar[(i - 1) * 2 + 1] = Int32.Parse(new string(applicationKey[i - 1], 1), System.Globalization.NumberStyles.HexNumber);
 
-            Ar[2] = 15 - Ar[1];
-            if (Ar[2] == (Ar[1] + Ar[3] * Ar[7] * Ar[15]) % 15)
+            if (!isFull)
+                Ar[2] = 15 - Ar[1];
+            else
+                Ar[2] = (Ar[1] + Ar[3] * Ar[7] * Ar[15]) % 15;
+
+            if (!isFull && Ar[2] == (Ar[1] + Ar[3] * Ar[7] * Ar[15]) % 15)
                 Ar[2] = (Ar[2] + 1) % 15;
 
             Ar[4] = Ar[2] * (Ar[3] + 1) * 123 % 15;

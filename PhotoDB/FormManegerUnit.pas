@@ -247,7 +247,7 @@ end;
 
 procedure TFormManager.UnRegisterMainForm(Value: TForm);
 var
-  I : integer;
+  I: Integer;
 begin
   FMainForms.Remove(Value);
   try

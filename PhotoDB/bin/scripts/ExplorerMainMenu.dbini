@@ -38,8 +38,6 @@
  };
  CreateItemDefChecked("-",0,"",false,false,false,0);
 
-
- 
  InsertSelectDBMenu($IconList);
 
  CreateItemDefChecked("-",0,"",false,false,false,0);
@@ -54,18 +52,14 @@
  CreateItemDefChecked("Back",DB_IC_PREVIOUS,"GoBack;",false,$fCanBack,false,0);
  $fCanForward=CanForward;
  CreateItemDefChecked("Forward",DB_IC_NEXT,"GoForward;",false,$fCanForward,false,0);
- if ($CanShowPath=true) 
- {
-  $fCanUp=CanUp;
-  CreateItemDefChecked("Up",DB_IC_UP,"GoUp;",false,$fCanUp,false,0);
- };
+ $fCanUp=CanUp;
+ CreateItemDefChecked("Up",DB_IC_UP,"GoUp;",false,$fCanUp,false,0);
  CreateItemDefChecked("-",0,"",false,false,false,0);
  
  $CanCopy=CanCopySelection;
- if ($CanFileOperationsNormal=true) {
- CreateItemDefChecked("Copy",DB_IC_COPY,"Copy;",false,$CanCopy,false,0);};
- if ($CanFileOperationsCritical=true) {
- CreateItemDefChecked("Cut",DB_IC_CUT,"Cut;",false,$CanCopy,false,0);};
+
+ CreateItemDefChecked("Copy",DB_IC_COPY,"Copy;",false,$CanCopy,false,0);
+ CreateItemDefChecked("Cut",DB_IC_CUT,"Cut;",false,$CanCopy,false,0);
  
  $ClipBoardFiles=LoadFilesFromClipBoard;
  $l=ArrayStringLength($ClipBoardFiles);
@@ -84,16 +78,16 @@
  <->[]{}
  DeleteNoFirst;
 
+ CreateItemDefChecked("Show/Hide Filter",DB_IC_FILTER,"ShowHideFilter();",false,true,false,0);
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ 
  $explorer=ExplorerType;
  if ($explorer=true) 
  {
-  CreateItemDefChecked("Show info panel",DB_IC_INFO_PANEL,"CancelExplorerMode;",false,true,false,0);
+  CreateItemDefChecked("Hide explorer panel",DB_IC_INFO_PANEL,"CancelExplorerMode;",false,true,false,0);
  }; else 
  {
-  if ($CanShowPath=true) 
-  {
    CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"GoToExplorerMode;",false,true,false,0);
-  };
  };
 
  $State=ShowPrivateNow;

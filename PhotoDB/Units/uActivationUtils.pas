@@ -55,64 +55,6 @@ begin
   Result := RegRoot + 'Activation';
 end;
 
-(*procedure GetPeripheralDiskIdentifiers(List: TStrings);
-var
-  Reg: TRegistry;
-  DiskList,
-  AdapterList,
-  ControllerList: TStrings;
-  I, J, K: Integer;
-const
-  HARDWARE_ROOT = 'HARDWARE\DESCRIPTION\System\MultifunctionAdapter';
-begin
-  List.Clear;
-  Reg := TRegistry.Create(KEY_READ);
-  try
-    Reg.RootKey := HKEY_LOCAL_MACHINE;
-    if Reg.OpenKey(HARDWARE_ROOT, False) then
-    begin
-      AdapterList := TStringList.Create;
-      ControllerList := TStringList.Create;
-      DiskList := TStringList.Create;
-      try
-        Reg.GetKeyNames(AdapterList);
-        for I := 0 to AdapterList.Count - 1 do
-        begin
-          Reg.CloseKey;
-          if Reg.OpenKey(HARDWARE_ROOT + '\' + AdapterList[I] + '\DiskController', False) then
-          begin
-            Reg.GetKeyNames(ControllerList);
-
-            for J := 0 to ControllerList.Count - 1 do
-            begin
-              Reg.CloseKey;
-              if Reg.OpenKey(HARDWARE_ROOT + '\' + AdapterList[I] + '\DiskController\' + ControllerList[J] + '\DiskPeripheral', False) then
-              begin
-                Reg.GetKeyNames(DiskList);
-                for K := 0 to DiskList.Count - 1 do
-                begin
-                  Reg.CloseKey;
-                  if Reg.OpenKey(HARDWARE_ROOT + '\' + AdapterList[I] + '\DiskController\' + ControllerList[J] + '\DiskPeripheral\' + DiskList[K], False) then
-                  begin
-                    if Reg.ValueExists('Identifier') then
-                      List.Add(Reg.ReadString('Identifier'));
-                  end;
-                end;
-              end;
-            end;
-         end;
-        end;
-      finally
-        F(AdapterList);
-        F(ControllerList);
-        F(DiskList);
-      end;
-    end;
-  finally
-    F(Reg);
-  end;
-end;*)
-
 function FindVolumeSerial(const Drive : string) : string;
 var
    VolumeSerialNumber : DWORD;

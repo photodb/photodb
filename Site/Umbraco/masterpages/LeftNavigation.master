@@ -1,16 +1,16 @@
 ﻿<%@ Master Language="C#" MasterPageFile="~/masterpages/Master.master" AutoEventWireup="true" %>
 
 <asp:content ContentPlaceHolderId="PageContent" runat="server">
-  <span class="leftColumn">
-      <div class="menuVerticalLeft">
-        <umbraco:Macro Alias="LeftMenu" runat="server" />
-      </div><!--menuVerticalLeft-->                                    
-    </span><!--sidebar-->
-    <span class="pageContent">  
-      <umbraco:Macro Alias="Breadcrumbs" runat="server" />
-      <h1><umbraco:Item field="title" runat="server" /></h1>
-      <div id="container">
-        <asp:ContentPlaceHolder Id="RightContent" runat="server" />
-      </div>
-  </span><!--formContent-->
+  <div class="leftColumn">
+    <div class="menuVerticalLeft">
+      <umbraco:Macro Alias="LeftMenu" runat="server" />
+    </div><!--menuVerticalLeft-->                                    
+  </div><!--sidebar-->
+  <div class="pageContent">  
+    <umbraco:Macro Alias="Breadcrumbs" runat="server" />
+    <h1><umbraco:Item field="title" runat="server" /></h1>
+    <div id="container">
+      <asp:ContentPlaceHolder Id="RightContent" runat="server" />
+    </div>
+  </div><!--formContent-->
 </asp:content>

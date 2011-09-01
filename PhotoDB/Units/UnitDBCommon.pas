@@ -2,15 +2,16 @@ unit UnitDBCommon;
 
 interface
 
-uses Windows, Classes, Forms, Math, SysUtils, Messages, uMemory;
+uses
+  Windows, Classes, Forms, Math, SysUtils, Messages, uMemory;
 
-function ActivateApplication(const Handle1: THandle): Boolean;
+function ActivateApplication(const hWND: THandle): Boolean;
 function ProgramDir: string;
 procedure ActivateBackgroundApplication(hWnd: THandle);
 
 implementation
 
-function ActivateApplication(const Handle1: THandle): Boolean;
+function ActivateApplication(const hWND: THandle): Boolean;
 const
   SPI_GETFOREGROUNDLOCKTIMEOUT = $2000;
   SPI_SETFOREGROUNDLOCKTIMEOUT = $2001;
@@ -23,12 +24,12 @@ var
   AniInfo: TAnimationInfo;
   Animate: Boolean;
 begin
-  if IsIconic(Handle1) then ShowWindow(Handle1, SW_RESTORE);
-    hParent := GetWindowLong(Handle1, GWL_HWNDPARENT);
+  if IsIconic(hWND) then ShowWindow(hWND, SW_RESTORE);
+    hParent := GetWindowLong(hWND, GWL_HWNDPARENT);
   if hParent > 0 then
     if IsIconic(hParent) then ShowWindow(hParent, SW_RESTORE);
 
-  if (GetForegroundWindow = Handle1) then
+  if (GetForegroundWindow = hWND) then
     Result := true
   else
   begin
@@ -44,23 +45,23 @@ begin
     begin // OS is above win 95
       Result := false;
       ForegndThreadID := GetWindowThreadProcessID(GetForegroundWindow,nil);
-      TheThreadID := GetWindowThreadProcessId(Handle1,nil);
+      TheThreadID := GetWindowThreadProcessId(hWND,nil);
       if AttachThreadInput(TheThreadID, ForegndThreadID, true) then
       begin
-        SetForegroundWindow(Handle1);
+        SetForegroundWindow(hWND);
         AttachThreadInput(TheThreadID, ForegndThreadID, false);
-        Result := (GetForegroundWindow = Handle1);
+        Result := (GetForegroundWindow = hWND);
       end;
       if not Result then
       begin
         SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @timeout, 0);
         SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, nil, SPIF_SENDCHANGE);
-        SetForegroundWindow(Handle1);
+        SetForegroundWindow(hWND);
         SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, @timeout, SPIF_SENDCHANGE);
       end;
     end else // OS is above win 95
-      SetForegroundWindow(Handle1);
-    Result := (GetForegroundWindow = Handle1);
+      SetForegroundWindow(hWND);
+    Result := (GetForegroundWindow = hWND);
     if Result then Exit;
 
     AniInfo.cbSize := SizeOf(TAnimationInfo);
@@ -73,19 +74,19 @@ begin
       AniInfo.iMinAnimate := 0;
       SystemParametersInfo(SPI_SETANIMATION, SizeOf(AniInfo), @AniInfo, 0);
     end;
-    SendMessage(Handle1,WM_SYSCOMMAND,SC_MINIMIZE,0);
+    SendMessage(hWND,WM_SYSCOMMAND,SC_MINIMIZE,0);
     Sleep(40);
     if hParent > 0 then
       SendMessage(hParent,WM_SYSCOMMAND,SC_RESTORE,0)
     else
-      SendMessage(Handle1,WM_SYSCOMMAND,SC_RESTORE,0);
+      SendMessage(hWND,WM_SYSCOMMAND,SC_RESTORE,0);
     if Animate then
     begin
       AniInfo.iMinAnimate := 1;
       SystemParametersInfo(SPI_SETANIMATION, SizeOf(AniInfo), @AniInfo, 0);
     end;
 
-    Result := (GetForegroundWindow = Handle1);
+    Result := (GetForegroundWindow = hWND);
   end;
   ShowWindow(Application.MainForm.Handle, SW_HIDE);
   ShowWindow(Application.Handle, SW_HIDE);
