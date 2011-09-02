@@ -6,7 +6,8 @@ interface
 
 uses
   Windows, Classes, SysUtils, Forms, ACLApi, AccCtrl, Variants, ShlObj, ActiveX,
-  VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes, uSysUtils, Registry;
+  VRSIShortCuts, ShellAPI, uConstants, uMemory, uDBBaseTypes, uSysUtils, Registry,
+  Network;
 
 type
   TDriveState = (DS_NO_DISK, DS_UNFORMATTED_DISK, DS_EMPTY_DISK, DS_DISK_WITH_FILES);
@@ -35,6 +36,7 @@ function MrsGetFileType(StrFilename: string): string;
 
 function DeleteFiles(Handle: HWnd; Files: TStrings; ToRecycle: Boolean): Integer;
 function GetCDVolumeLabel(CDName: Char): string;
+function GetCDVolumeLabelEx(CDName: Char): string;
 function DriveState(Driveletter: AnsiChar): TDriveState;
 function SilentDeleteFile(Handle: HWnd; FileName: string; ToRecycle: Boolean;
   HideErrors: Boolean = False): Integer;
@@ -600,18 +602,28 @@ begin
   Src := nil;
 end;
 
+function GetCDVolumeLabelEx(CDName: Char): string;
+begin
+  if GetDriveType(PChar(CDName + ':\')) <> DRIVE_REMOTE then
+    Result := GetCDVolumeLabel(CDName)
+  else
+    Result := GetNetDrivePath(CDName);
+end;
+
 function GetCDVolumeLabel(CDName: Char): string;
 var
   VolumeName, FileSystemName: array [0 .. MAX_PATH - 1] of Char;
   VolumeSerialNo: DWord;
   MaxComponentLength, FileSystemFlags: Cardinal;
 begin
-  GetVolumeInformation(PWideChar(CDName + ':\'), VolumeName, MAX_PATH, @VolumeSerialNo, MaxComponentLength,
-    FileSystemFlags, FileSystemName, MAX_PATH);
-  Result := VolumeName;
+  if GetVolumeInformation(PWideChar(CDName + ':\'), VolumeName, MAX_PATH, @VolumeSerialNo, MaxComponentLength,
+    FileSystemFlags, FileSystemName, MAX_PATH) then
+    Result := VolumeName
+  else
+    Result := CDName + ':\';
 end;
 
-function DriveState(Driveletter: AnsiChar): TDriveState;
+function DriveState(DriveLetter: AnsiChar): TDriveState;
 var
   Mask: string;
   SRec: TSearchRec;

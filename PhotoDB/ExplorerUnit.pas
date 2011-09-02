@@ -727,7 +727,7 @@ end;
 function TExplorerForm.GetPathDescription(Path: string; FileType: Integer): string;
 begin
   if ((Length(Path) = 3) or (Length(Path) = 2)) and (Path[2] = ':') then
-     Result := Format(L('%s drive'), [GetCDVolumeLabel(Path[1])])
+     Result := Format(L('%s drive'), [GetCDVolumeLabelEx(Path[1])])
   else if IsNetworkServer(Path) then
     Result := L('Computer')
   else if IsNetworkShare(Path) then
@@ -5167,11 +5167,18 @@ begin
       Caption := L(IIF(P.ParentPath = '', MyComputer, P.ParentPath) + ' - ' + GetPathPartName(PePath.PathEx));
 
       if P.Namespace = 'files' then
-        ThreadType := THREAD_TYPE_SEARCH_FOLDER
-      else if P.Namespace = 'images' then
-        ThreadType := THREAD_TYPE_SEARCH_IMAGES
-      else if P.Namespace = 'db' then
+      begin
+        ThreadType := THREAD_TYPE_SEARCH_FOLDER;
+        FSearchMode := EXPLORER_SEARCH_FILES;
+      end else if P.Namespace = 'images' then
+      begin
+        ThreadType := THREAD_TYPE_SEARCH_IMAGES;
+        FSearchMode := EXPLORER_SEARCH_IMAGES;
+      end else if P.Namespace = 'db' then
+      begin
         ThreadType := THREAD_TYPE_SEARCH_DB;
+        FSearchMode := EXPLORER_SEARCH_DATABASE;
+      end;
 
       TW.I.Start(' -> DirectoryWatcher.StopWatch');
       DirectoryWatcher.StopWatch;

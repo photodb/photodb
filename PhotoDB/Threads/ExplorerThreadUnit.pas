@@ -1084,7 +1084,7 @@ begin
   end else
   begin
     Ficon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
-    if IsVideoFile(CurrentFile) and ExplorerInfo.ShowThumbNailsForVideo then
+    if (ExplorerInfo.View = LV_THUMBS) and IsVideoFile(CurrentFile) and ExplorerInfo.ShowThumbNailsForVideo then
     begin
       Inc(FilesWithoutIcons);
       IntIconParam := 1;
@@ -1984,7 +1984,8 @@ begin
   begin
     DriveType := GetDriveType(PChar(Chr(I) + ':\'));
     if (DriveType = DRIVE_REMOVABLE) or (DriveType = DRIVE_FIXED) or
-      (DriveType = DRIVE_REMOTE) or (DriveType = DRIVE_CDROM) then
+      (DriveType = DRIVE_REMOTE) or (DriveType = DRIVE_CDROM) or
+      (DriveType = DRIVE_RAMDISK) then
     begin
       DriveState(AnsiChar(I));
       AddOneExplorerFileInfo(FFiles, Chr(I) + ':\', EXPLORER_ITEM_DRIVE, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,
@@ -2006,7 +2007,7 @@ begin
         MakeFolderImage(CurrentFile);
         DS := DriveState(AnsiString(CurrentFile)[1]);
         if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-          DriveNameParam := GetCDVolumeLabel(CurrentFile[1]) + ' (' + CurrentFile[1] + ':)'
+          DriveNameParam := GetCDVolumeLabelEx(CurrentFile[1]) + ' (' + CurrentFile[1] + ':)'
         else
           DriveNameParam := MrsGetFileType(CurrentFile[1] + ':\') + ' (' + CurrentFile[1] + ':)';
         SynchronizeEx(AddDriveToExplorer);
