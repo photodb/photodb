@@ -13,6 +13,7 @@
 <xsl:variable name="DownloadPageDocTypeId" select="1072" />
 <xsl:variable name="DonatePageDocTypeId" select="1079" />
 <xsl:variable name="level2Page" select="$currentPage/ancestor-or-self::*[@level=2]" />
+<xsl:variable name="SkipDocTypeIds" select="',1233,'" />
     
 <xsl:template match="/">
 
@@ -25,7 +26,7 @@
       </a>
     </li>
   </xsl:if>
-  <xsl:for-each select="$level2Page/child::*[@isDoc and string(umbracoNaviHide) != '1' and string(@template)!='0']">
+  <xsl:for-each select="$level2Page/child::*[@isDoc and string(umbracoNaviHide) != '1' and string(@template)!='0' and not(contains($SkipDocTypeIds, @nodeType))]">
     <li>
       <a href="{umbraco.library:NiceUrl(./@id)}">
         <xsl:if test="./@id=$currentPage/@id"><xsl:attribute name="class">selected</xsl:attribute></xsl:if>

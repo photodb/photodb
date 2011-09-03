@@ -64,5 +64,14 @@ namespace PhotoDBXsltExtensions
                 return true;
         }
 
+        public static int GetVersionBuild(string version)
+        {
+            string[] versionParts = version.Split('.');
+            int build;
+            if (versionParts.Length == 4 && Int32.TryParse(versionParts[3], out build))
+                return build;
+
+            return 0;
+        }
     }
 }

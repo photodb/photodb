@@ -18,7 +18,7 @@
 
   <div class="mainMenuHorizontal">
     <ul>
-      <xsl:for-each select="$currentPage/ancestor-or-self::*[@level=1]/descendant-or-self::*[@level &lt;= 2 and string(umbracoNaviHide)!='1' and not(contains($SkipDocTypeIds, @nodeType))]">
+      <xsl:for-each select="$currentPage/ancestor-or-self::*[@level=1]/descendant-or-self::*[@level &lt;= 2 and (string(umbracoNaviHide)!='1' or @id=$currentPage/@id) and not(contains($SkipDocTypeIds, @nodeType))]">
         <li>
           <a href="{umbraco.library:NiceUrl(./@id)}">
             <xsl:if test="./@id = $currentPage/@id or ./@id = $level2Page/@id">

@@ -136,7 +136,9 @@ begin
       for I := 0 to DocumentNode.childNodes.length - 1 do
       begin
         DetailName := DocumentNode.childNodes[I].nodeName;
-        DetailValue := DocumentNode.childNodes[I].nodeValue;
+        DetailValue := '';
+        if DocumentNode.childNodes[I].childNodes.length = 1 then
+          DetailValue := DocumentNode.childNodes[I].childNodes[0].nodeValue;
         if DetailName = 'version' then
           Info.Version := StrToIntDef(DetailValue, 0)
         else if DetailName = 'build' then

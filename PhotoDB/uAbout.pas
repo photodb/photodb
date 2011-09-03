@@ -38,7 +38,7 @@ type
     FUpdateInfo: TUpdateInfo;
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
     procedure LoadLanguage;
-    procedure UpdateCkeckComplete(Sender : TObject; Info : TUpdateInfo);
+    procedure UpdateCkeckComplete(Sender: TObject; Info: TUpdateInfo);
   protected
     function GetFormID : string; override;
   public

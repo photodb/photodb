@@ -21,14 +21,14 @@
 <xsl:if test="1">
   <div class="home_news">
     <div class="news_block_title">
-      <strong><xsl:value-of select="$NewsHolder/homeLatestNewsTitle" /></strong>
+      <strong><a href="{umbraco.library:NiceUrl($NewsHolder/@id)}"><xsl:value-of select="$NewsHolder/homeLatestNewsTitle" /></a></strong>
     </div>
     <xsl:for-each select="$NewsHolder/child::*[@isDoc]">
       <xsl:sort select="umbraco.library:FormatDateTime(dateOfRelease, 'yyyyMMddHHmmss')" data-type="number" order="descending"/>
-      <xsl:if test="position()&lt;5"> 
+      <xsl:if test="position()&lt;8"> 
         <div class="news_block">     
           <div class="news_title">
-            <strong><xsl:value-of select="./title" /></strong> (<xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />)
+            <strong><a href="{umbraco.library:NiceUrl(./@id)}"><xsl:value-of select="./title" /></a></strong> (<xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />)
           </div>
           <div class="news_content">
             <xsl:value-of select="newsContent" disable-output-escaping="yes"/>
