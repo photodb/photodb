@@ -2,6 +2,8 @@
 using System.IO;
 using System.Web;
 using PhotoDBDatabase.Classes;
+using umbraco.NodeFactory;
+using umbraco.interfaces;
 
 namespace PhotoDBXsltExtensions
 {
@@ -72,6 +74,20 @@ namespace PhotoDBXsltExtensions
                 return build;
 
             return 0;
+        }
+
+        public static string ReplaceNewLineToHTML(int nodeId, string s)
+        {
+            Node n = new Node(nodeId);
+
+            IProperty p = n.GetProperty(s);
+
+            s = (string)p.Value ?? String.Empty;
+
+            s = s.Replace("\r\n", "<br/>");
+            s = s.Replace("\n", "<br/>");
+
+            return s;
         }
     }
 }

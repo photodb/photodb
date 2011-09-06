@@ -4,9 +4,9 @@ inherited FrameActivationLanding: TFrameActivationLanding
   ParentColor = False
   ParentFont = False
   object RbActivateApplication: TRadioButton
-    Left = 16
+    Left = 3
     Top = 16
-    Width = 281
+    Width = 314
     Height = 33
     Caption = 'RbActivateApplication'
     Checked = True
@@ -14,9 +14,9 @@ inherited FrameActivationLanding: TFrameActivationLanding
     TabStop = True
   end
   object RbSetCode: TRadioButton
-    Left = 16
+    Left = 3
     Top = 63
-    Width = 281
+    Width = 314
     Height = 33
     Caption = 'RbSetCode'
     TabOrder = 1

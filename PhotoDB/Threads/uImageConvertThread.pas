@@ -9,7 +9,8 @@ uses
   uJpegUtils, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
   ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB,
-  uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics, RAWImage;
+  uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics, RAWImage,
+  uTiffImage;
 
 type
   TJpegX = class(TJPEGImage);
@@ -292,7 +293,7 @@ const
                 try
                   ExifData.LoadFromGraphic(FData.FileName);
                   NewGraphic.SaveToFile(FileName);
-                  if not ExifData.Empty then
+                  if not ExifData.Empty and (NewGraphic is TJpegImage) or (NewGraphic is TTiffImage) then
                   begin
                     if FOriginalOrientation <> DB_IMAGE_ROTATE_0 then
                       ExifData.Orientation := toTopLeft;

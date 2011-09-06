@@ -1332,8 +1332,8 @@ begin
       LoadEXIFFromFile(FileName, ExifData);
       if not ExifData.Empty then
       begin
-        FFileDate := DateOf(ExifData.DateTime);
-        FFileTime := TimeOf(ExifData.DateTime);
+        FFileDate := DateOf(ExifData.DateTimeOriginal);
+        FFileTime := TimeOf(ExifData.DateTimeOriginal);
       end;
     except
       EventLog('Error reading EXIF in file "' + FileName + '"');

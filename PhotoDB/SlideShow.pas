@@ -18,13 +18,6 @@ uses
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
   uExifUtils;
 
-{type
-  TRotatingImageInfo = record
-    FileName: string;
-    Rotating: Integer;
-    Enabled: Boolean;
-  end;}
-
 type
   TViewer = class(TViewerForm, IImageSource)
     PmMain: TPopupMenu;
@@ -188,7 +181,7 @@ type
     procedure TbRatingClick(Sender: TObject);
     procedure N51Click(Sender: TObject);
     procedure ApplicationEvents1Hint(Sender: TObject);
-    procedure UpdateInfoAboutFileName(FileName : String; info : TDBPopupMenuInfoRecord);
+    procedure UpdateInfoAboutFileName(FileName: String; Info: TDBPopupMenuInfoRecord);
     procedure SendTo1Click(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
     procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
@@ -207,13 +200,13 @@ type
     procedure TbPageNumberClick(Sender: TObject);
   private
     { Private declarations }
-    WindowsMenuTickCount : Cardinal;
+    WindowsMenuTickCount: Cardinal;
     FImageExists: Boolean;
     FStaticImage: Boolean;
     FLoading: Boolean;
-    AnimatedImage : TGraphic;
-    SlideNO : Integer;
-    AnimatedBuffer : TBitmap;
+    AnimatedImage: TGraphic;
+    SlideNO: Integer;
+    AnimatedBuffer: TBitmap;
     FValidImages: Integer;
     FForwardThreadExists: Boolean;
     FForwardThreadSID: TGUID;
@@ -222,11 +215,11 @@ type
     FTransparentImage: Boolean;
     FCurrentlyLoadedFile: String;
     FPlay: boolean;
-    LockEventRotateFileList : TStrings;
-    LastZValue : Extended;
-    FCreating : Boolean;
-    FW7TaskBar : ITaskbarList3;
-    FProgressMessage : Cardinal;
+    LockEventRotateFileList: TStrings;
+    LastZValue: Extended;
+    FCreating: Boolean;
+    FW7TaskBar: ITaskbarList3;
+    FProgressMessage: Cardinal;
     FIsWaiting: Boolean;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
@@ -270,34 +263,34 @@ type
     FBImage: TBitmap;
     Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
     constructor Create(AOwner: TComponent); override;
-    function GetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean;
-    procedure ExecuteDirectoryWithFileOnThread(FileName : String);
-    function Execute(Sender: TObject; Info: TDBPopupMenuInfo) : boolean;
-    function ExecuteW(Sender: TObject; Info : TDBPopupMenuInfo; LoadBaseFile : String) : boolean;
+    function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
+    procedure ExecuteDirectoryWithFileOnThread(FileName: string);
+    function Execute(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
+    function ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile: string): Boolean;
     procedure LoadLanguage;
     procedure LoadPopupMenuLanguage;
-    procedure ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
-    function HeightW : Integer;
-    function GetImageRectA : TRect;
+    procedure ReAllignScrolls(IsCenter: Boolean; CenterPoint: TPoint);
+    function HeightW: Integer;
+    function GetImageRectA: TRect;
     procedure RecreateImLists;
     function GetSID : TGUID;
-    procedure SetStaticImage(Image : TBitmap; Transparent : Boolean);
-    procedure SetAnimatedImage(Image : TGraphic);
+    procedure SetStaticImage(Image: TBitmap; Transparent: Boolean);
+    procedure SetAnimatedImage(Image: TGraphic);
     procedure NextSlide;
-    function GetFirstImageNO : integer;
-    function GetNextImageNO : integer;
-    function GetPreviousImageNOX(NO : Integer) : integer;
-    function GetNextImageNOX(NO : Integer) : integer;
-    procedure LoadingFailed(FileName : String);
-    function GetPreviousImageNO : integer;
+    function GetFirstImageNO: Integer;
+    function GetNextImageNO: Integer;
+    function GetPreviousImageNOX(NO: Integer): Integer;
+    function GetNextImageNOX(NO: Integer): Integer;
+    procedure LoadingFailed(FileName: string);
+    function GetPreviousImageNO: Integer;
     procedure PrepareNextImage;
-    procedure SetFullImageState(State : Boolean; BeginZoom : Extended; Pages, Page : integer);
-    procedure DoUpdateRecordWithDataSet(FileName : string; DS : TDataSet);
+    procedure SetFullImageState(State: Boolean; BeginZoom: Extended; Pages, Page: Integer);
+    procedure DoUpdateRecordWithDataSet(FileName: string; DS: TDataSet);
     procedure DoSetNoDBRecord(Info: TDBPopupMenuInfoRecord);
     procedure MakePagesLinks;
-    procedure SetProgressPosition(Position, Max : Integer);
-    function GetPageCaption : String;
-    property DisplayRating : Integer write SetDisplayRating;
+    procedure SetProgressPosition(Position, Max: Integer);
+    function GetPageCaption: string;
+    property DisplayRating: Integer write SetDisplayRating;
   published
     property ImageExists: Boolean read FImageExists write SetImageExists;
     property StaticImage: Boolean read FStaticImage write SetPropStaticImage;
@@ -1113,10 +1106,10 @@ end;
 procedure TViewer.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
-  P : TPoint;
-  DragImage : TBitmap;
-  W, H : Integer;
-  FileName : string;
+  P: TPoint;
+  DragImage: TBitmap;
+  W, H: Integer;
+  FileName: string;
 begin
   if DBCanDrag then
   begin
@@ -1444,8 +1437,8 @@ end;
 
 procedure TViewer.UpdateRecord(FileNo: integer);
 var
-  DS : TDataSet;
-  FileName : string;
+  DS: TDataSet;
+  FileName: string;
 begin
   DS := GetQuery;
   try
@@ -3282,7 +3275,7 @@ begin
 end;
 
 procedure TViewer.UpdateInfoAboutFileName(FileName: String;
-  info: TDBPopupMenuInfoRecord);
+  Info: TDBPopupMenuInfoRecord);
 var
   I: Integer;
 begin
@@ -3396,8 +3389,8 @@ end;
 
 procedure TViewer.MakePagesLinks;
 var
-  I : Integer;
-  MenuItem : TMenuItem;
+  I: Integer;
+  MenuItem: TMenuItem;
 begin
   if not FCreating then
   begin
@@ -3429,10 +3422,10 @@ end;
 
 function TViewer.GetPageCaption: String;
 begin
-    if FPageCount > 1 then
-      Result := Format(L('Page %d from %d'), [FCurrentPage + 1, FPageCount])
-    else
-      Result := '';
+  if FPageCount > 1 then
+    Result := Format(L('Page %d from %d'), [FCurrentPage + 1, FPageCount])
+  else
+    Result := '';
 end;
 
 procedure TViewer.SetDisplayRating(const Value: Integer);

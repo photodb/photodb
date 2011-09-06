@@ -543,6 +543,7 @@
 				<Form>ExplorerForm</Form>
 			</DCCReference>
 			<DCCReference Include="Units\uDatabaseSearch.pas"/>
+			<DCCReference Include="Units\uFaceDetection.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -576,7 +577,7 @@
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">337</VersionInfo>
+						<VersionInfo Name="Build">338</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -588,7 +589,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.1.337</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.1.338</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>
@@ -601,6 +602,7 @@
 						<VersionInfoKeys Name="Home Page">http://photodb.illusdolphin.net</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dbx140.bpl">Embarcadero SQL Explorer UI Package</Excluded_Packages>
 						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k140.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
 						<Excluded_Packages Name="$(BDS)\bin\dclofficexp140.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
 					</Excluded_Packages>

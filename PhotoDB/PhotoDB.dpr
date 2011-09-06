@@ -340,7 +340,8 @@ uses
   uMachMask in 'Units\uMachMask.pas',
   VCLFlickerReduce in 'Units\VCLFlickerReduce.pas',
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
-  uDatabaseSearch in 'Units\uDatabaseSearch.pas';
+  uDatabaseSearch in 'Units\uDatabaseSearch.pas',
+  uFaceDetection in 'Units\uFaceDetection.pas';
 
 {$R *.res}
 

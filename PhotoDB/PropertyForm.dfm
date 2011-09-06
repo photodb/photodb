@@ -179,7 +179,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 298
     Height = 372
-    ActivePage = TsAdditional
+    ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -188,10 +188,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -968,10 +964,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1004,8 +996,8 @@ object PropertiesForm: TPropertiesForm
       object WlAddLink: TWebLink
         Left = 3
         Top = 327
-        Width = 42
-        Height = 13
+        Width = 58
+        Height = 16
         Cursor = crHandPoint
         Anchors = [akLeft, akBottom]
         Color = clBtnFace

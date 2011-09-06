@@ -34,6 +34,10 @@
     <Reference Include="businesslogic">
       <HintPath>..\..\Umbraco\bin\businesslogic.dll</HintPath>
     </Reference>
+    <Reference Include="interfaces, Version=1.0.4085.20549, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Umbraco\bin\interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />

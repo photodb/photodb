@@ -229,9 +229,11 @@ begin
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + 'Home page.lnk', 'http://photodb.illusdolphin.net/{LNG}');
   Files.Add(PhotoDBFile);
 
-  Files.Add(TFileObject.Create('Kernel.dll',       '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('FreeImage.dll',    '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('UnInstall.exe',    '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('Kernel.dll',                      '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('VCOpenCV.DLL',                    '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('haarcascade_frontalface.xml',     '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('UnInstall.exe',                   '%PROGRAM%', ''));
 
   {$IFDEF DBDEBUG}
   Files.Add(TFileObject.Create('FastMM_FullDebugMode.dll', '%PROGRAM%', ''));
