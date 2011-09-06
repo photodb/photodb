@@ -10,38 +10,38 @@ type
 
   TThreadEx = class(TDBThread)
   private
-    FThreadForm : TThreadForm;
-    FState : TGUID;
-    FMethod : TThreadMethod;
-    FSubThreads : TList;
-    FIsTerminated : Boolean;
-    FParentThread : TThreadEx;
-    FSync : TCriticalSection;
-    FSyncSuccessful : Boolean;
+    FThreadForm: TThreadForm;
+    FState: TGUID;
+    FMethod: TThreadMethod;
+    FSubThreads: TList;
+    FIsTerminated: Boolean;
+    FParentThread: TThreadEx;
+    FSync: TCriticalSection;
+    FSyncSuccessful: Boolean;
     FPriority: TThreadPriority;
     function GetIsTerminated: Boolean;
     procedure SetTerminated(const Value: Boolean);
     procedure TestMethod;
   protected
-    function SynchronizeEx(Method: TThreadMethod) : Boolean; override;
+    function SynchronizeEx(Method: TThreadMethod): Boolean; override;
     procedure CallMethod;
     procedure Start;
-    function IsVirtualTerminate : Boolean; virtual;
+    function IsVirtualTerminate: Boolean; virtual;
     procedure WaitForSubThreads;
     procedure CheckThreadPriority; virtual;
-    function CheckThread : Boolean;
+    function CheckThread: Boolean;
   public
-    FEvent : THandle;
-    constructor Create(AOwnerForm : TThreadForm; AState : TGUID);
+    FEvent: THandle;
+    constructor Create(AOwnerForm: TThreadForm; AState: TGUID);
     destructor Destroy; override;
-    function CheckForm : Boolean; virtual;
-    procedure RegisterSubThread(SubThread : TThreadEx);  
-    procedure UnRegisterSubThread(SubThread : TThreadEx);
+    function CheckForm: Boolean; virtual;
+    procedure RegisterSubThread(SubThread: TThreadEx);
+    procedure UnRegisterSubThread(SubThread: TThreadEx);
     procedure DoTerminateThread;
-    property ThreadForm : TThreadForm read FThreadForm write FThreadForm;
-    property StateID : TGUID read FState write FState;
-    property IsTerminated : Boolean read GetIsTerminated write SetTerminated;
-    property ParentThread : TThreadEx read FParentThread;
+    property ThreadForm: TThreadForm read FThreadForm write FThreadForm;
+    property StateID: TGUID read FState write FState;
+    property IsTerminated: Boolean read GetIsTerminated write SetTerminated;
+    property ParentThread: TThreadEx read FParentThread;
     property Terminated;
   end;
 
@@ -119,7 +119,7 @@ end;
 
 procedure TThreadEx.DoTerminateThread;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to FSubThreads.Count - 1 do
     TThreadEx(FSubThreads[I]).IsTerminated := True;
@@ -140,7 +140,7 @@ begin
 end;
 
 procedure TThreadEx.RegisterSubThread(SubThread: TThreadEx);
-begin       
+begin
   FSync.Enter;
   try
     if SubThread = Self then
@@ -197,10 +197,10 @@ end;
 procedure TThreadEx.WaitForSubThreads;
 const
   MAX = 64;
-var        
-  I : Integer;
-  Count : Integer;
-  ThreadHandles : array[0 .. MAX - 1] of THandle;
+var
+  I: Integer;
+  Count: Integer;
+  ThreadHandles: array [0 .. MAX - 1] of THandle;
 begin
   while True do
   begin
@@ -224,5 +224,3 @@ begin
 end;
 
 end.
-
-

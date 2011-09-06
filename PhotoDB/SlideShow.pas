@@ -12,7 +12,7 @@ uses
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
   uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, uBitmapUtils,
   uCDMappingTypes, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
-  uResources, uW7TaskBar, uMemory, UnitBitmapImageList,
+  uResources, uW7TaskBar, uMemory, UnitBitmapImageList, uFaceDetection,
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
@@ -242,6 +242,7 @@ type
     procedure WndProc(var Message: TMessage); override;
     function GetFormID : string; override;
     function GetItem: TDBPopupMenuInfoRecord; override;
+    procedure RefreshFaces;
   public
     { Public declarations }
     CurrentInfo: TDBPopupMenuInfo;
@@ -290,6 +291,8 @@ type
     procedure MakePagesLinks;
     procedure SetProgressPosition(Position, Max: Integer);
     function GetPageCaption: string;
+    procedure UpdateFaces(Faces: TFaceDetectionResult);
+    procedure ClearFaces;
     property DisplayRating: Integer write SetDisplayRating;
   published
     property ImageExists: Boolean read FImageExists write SetImageExists;
@@ -321,7 +324,7 @@ uses
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm,
-  uFormSteganography;
+  uFormSteganography, uFaceDetectionThread;
 
 {$R *.dfm}
 
@@ -542,8 +545,8 @@ begin
     DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
     if (FbImage.Height = 0) or (FbImage.Width = 0) then
       Exit;
-    Fw := FbImage.Width;
-    Fh := FbImage.Height;
+    FW := FBImage.Width;
+    FH := FBImage.Height;
     ProportionalSize(Screen.Width, Screen.Height, Fw, Fh);
     if ImageExists then
     begin
@@ -564,7 +567,7 @@ begin
             Z := 1;
         end;
         if (Z < ZoomSmoothMin) then
-          StretchCool(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2, Fw, Fh, FbImage, DrawImage)
+          StretchCool(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2, Fw, Fh, FBImage, DrawImage)
         else
         begin
           TempImage := TBitmap.Create;
@@ -582,7 +585,7 @@ begin
       begin
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
         DrawImage.Canvas.StretchDraw(Rect(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2,
-            Screen.Width div 2 - Fw div 2 + Fw, Screen.Height div 2 - Fh div 2 + Fh), FbImage);
+            Screen.Width div 2 - Fw div 2 + Fw, Screen.Height div 2 - Fh div 2 + Fh), FBImage);
       end;
     end else
       ShowErrorText(FileName);
@@ -741,7 +744,12 @@ begin
         CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
   end;
   LastZValue := Z;
-  InvalidateRect(Handle, ClientRect, False);
+  BeginScreenUpdate(Handle);
+  try
+    RefreshFaces;
+  finally
+    EndScreenUpdate(Handle, True);
+  end;
 end;
 
 procedure TViewer.FormResize(Sender: TObject);
@@ -1288,6 +1296,15 @@ begin
     if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) then
       LoadImage_(Sender, False, Zoom, False);
   end;
+end;
+
+procedure TViewer.ClearFaces;
+var
+  I: Integer;
+begin
+  for I := ControlCount - 1 downto 0 do
+    if (Controls[I] is TLoadingSign) and (Controls[I] <> LsLoading) then
+      TLoadingSign(Controls[I]).Free;
 end;
 
 procedure TViewer.LoadListImages(List: TStringList);
@@ -2408,6 +2425,12 @@ begin
   TW.I.Start('RecreateImLists - end');
 end;
 
+procedure TViewer.RefreshFaces;
+begin
+  ClearFaces;
+  TFaceDetectionThread.Create(Self, Self.StateID, DrawImage);
+end;
+
 procedure TViewer.RotateCCW1Click(Sender: TObject);
 var
   Info : TDBPopupMenuInfo;
@@ -2619,7 +2642,7 @@ begin
   TransparentImage := Transparent;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
-  F(FbImage);
+  F(FBImage);
   FbImage := Image;
   StaticImage := True;
   ImageExists := True;
@@ -3044,6 +3067,30 @@ begin
     TbEncrypt.ImageIndex := 24
   else
     TbEncrypt.ImageIndex := 23;
+end;
+
+procedure TViewer.UpdateFaces(Faces: TFaceDetectionResult);
+var
+  I: Integer;
+  LS: TLoadingSign;
+begin
+  BeginScreenUpdate(Handle);
+  try
+    ClearFaces;
+    for I := 0 to Faces.Count - 1 do
+    begin
+      LS := TLoadingSign.Create(Self);
+      LS.Parent := Self;
+      LS.Left := Faces[I].X;
+      LS.Top := Faces[I].Y;
+      LS.Width := Faces[I].Width;
+      LS.Height := Faces[I].Height;
+      LS.GetBackGround := LsLoadingGetBackGround;
+      LS.Active := True;
+    end;
+  finally
+    EndScreenUpdate(Handle, True);
+  end;
 end;
 
 procedure TViewer.UpdateInfo(SID: TGUID; Info: TDBPopupMenuInfoRecord);

@@ -374,10 +374,17 @@ begin
 end;
 
 procedure TViewerThread.SetStaticImageAsynch;
+
+  procedure SetImage;
+  begin
+    if not SynchronizeEx(SetStaticImage) then
+      F(Bitmap);
+  end;
+
 begin
   if not FIsForward then
   begin
-    SynchronizeEx(SetStaticImage);
+    SetImage;
     Exit;
   end else
   begin
@@ -390,8 +397,7 @@ begin
         Break;
       if Viewer.ForwardThreadNeeds then
       begin
-        if not SynchronizeEx(SetStaticImage) then
-          F(Bitmap);
+        SetImage;
         Exit;
       end;
       Sleep(10);

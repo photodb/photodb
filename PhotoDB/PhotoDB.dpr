@@ -341,7 +341,8 @@ uses
   VCLFlickerReduce in 'Units\VCLFlickerReduce.pas',
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
   uDatabaseSearch in 'Units\uDatabaseSearch.pas',
-  uFaceDetection in 'Units\uFaceDetection.pas';
+  uFaceDetection in 'Units\uFaceDetection.pas',
+  uFaceDetectionThread in 'Threads\uFaceDetectionThread.pas';
 
 {$R *.res}
 
