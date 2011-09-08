@@ -12,11 +12,18 @@ type
     { Private declarations }
   protected
     procedure Execute; override;
+    destructor Destroy; override;
   end;
 
 implementation
 
 { TLoadDBSettingsThread }
+
+destructor TLoadDBSettingsThread.Destroy;
+begin
+
+  inherited;
+end;
 
 procedure TLoadDBSettingsThread.Execute;
 begin

@@ -180,10 +180,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -396,10 +392,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -488,14 +480,19 @@ object OptionsForm: TOptionsForm
         Caption = 'Use Cool Stretch'
         TabOrder = 4
       end
+      object cbViewerFaceDetection: TCheckBox
+        Left = 8
+        Top = 214
+        Width = 430
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Use face detection'
+        TabOrder = 5
+      end
     end
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -752,10 +749,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1171,8 +1164,8 @@ object OptionsForm: TOptionsForm
         object WblMethod: TWebLink
           Left = 8
           Top = 135
-          Width = 68
-          Height = 13
+          Width = 84
+          Height = 16
           Cursor = crHandPoint
           Text = 'BlowFish - 56'
           ImageIndex = 0
@@ -1191,10 +1184,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)

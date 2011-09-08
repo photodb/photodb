@@ -802,6 +802,9 @@
  	<translate name="Delete confirmation" value="Подтверждение удаления" />
     <translate name="Hide data in image" value="Скрыть данные в изображении" />
     <translate name="Extract hidden data" value="Извлечь скрытые данные" />
+    <translate name="Detecting faces" value="Определение лиц" />
+    <translate name="Faces: %d" value="Лица: %d" />
+    <translate name="No faces found" value="Лица не найдены" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -1736,6 +1739,7 @@
 	<translate name="Read image info from EXIF" value="Читать информацию о изображении из EXIF"/>
 	<translate name="Save info to EXIF" value="Сохранять информацию в EXIF"/>
 	<translate name="Update EXIF info in background" value="Обновлять EXIF информацию в фоне"/>
+	<translate name="Enable face detection" value="Разрешить определение лиц"/>	
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>

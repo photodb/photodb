@@ -31,7 +31,7 @@ object Viewer: TViewer
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object ScrollBar1: TScrollBar
+  object SbHorisontal: TScrollBar
     Left = 0
     Top = 433
     Width = 622
@@ -39,9 +39,9 @@ object Viewer: TViewer
     PageSize = 0
     TabOrder = 0
     Visible = False
-    OnScroll = ScrollBar1Scroll
+    OnScroll = SbHorisontalScroll
   end
-  object ScrollBar2: TScrollBar
+  object SbVertical: TScrollBar
     Left = 622
     Top = 0
     Width = 17
@@ -50,7 +50,7 @@ object Viewer: TViewer
     PageSize = 0
     TabOrder = 1
     Visible = False
-    OnScroll = ScrollBar1Scroll
+    OnScroll = SbHorisontalScroll
   end
   object Panel1: TPanel
     Left = 622
@@ -61,7 +61,7 @@ object Viewer: TViewer
     TabOrder = 2
   end
   object BottomImage: TPanel
-    Left = 0
+    Left = -4
     Top = 456
     Width = 641
     Height = 25
@@ -279,6 +279,41 @@ object Viewer: TViewer
           OnClick = Properties1Click
         end
       end
+    end
+    object LsDetectingFaces: TLoadingSign
+      Left = 4
+      Top = 2
+      Width = 18
+      Height = 18
+      Visible = False
+      Active = True
+      FillPercent = 60
+      Color = clBtnFace
+      ParentColor = False
+      SignColor = clBlack
+      MaxTransparencity = 255
+    end
+    object WlFaceCount: TWebLink
+      Left = 25
+      Top = 4
+      Width = 46
+      Height = 13
+      Cursor = crHandPoint
+      PopupMenu = PmFaces
+      Text = 'Faces: 2'
+      OnClick = WlFaceCountClick
+      OnMouseEnter = WlFaceCountMouseEnter
+      OnMouseLeave = WlFaceCountMouseLeave
+      ImageIndex = -1
+      IconWidth = 0
+      IconHeight = 0
+      UseEnterColor = False
+      EnterColor = clBlack
+      EnterBould = False
+      TopIconIncrement = 0
+      ImageCanRegenerate = True
+      UseSpecIconSize = True
+      HightliteImage = True
     end
   end
   object LsLoading: TLoadingSign
@@ -550,6 +585,55 @@ object Viewer: TViewer
     object ExtractHiddenInfo1: TMenuItem
       Caption = 'Extract Hidden Info'
       OnClick = ExtractHiddenInfo1Click
+    end
+  end
+  object PmFaces: TPopupMenu
+    OnPopup = PmFacesPopup
+    Left = 120
+    Top = 376
+    object DisableFaceDetection1: TMenuItem
+      Caption = 'Disable Face Detection'
+    end
+    object DetectionMethod1: TMenuItem
+      Caption = 'Detection Method'
+    end
+  end
+  object PmFace: TPopupMenu
+    Left = 176
+    Top = 376
+    object ClearFaceZone1: TMenuItem
+      Caption = 'Clear face zone'
+    end
+    object N9: TMenuItem
+      Caption = '-'
+    end
+    object DmitryVeresov1: TMenuItem
+      Caption = 'Dmitry Veresov'
+    end
+    object N10: TMenuItem
+      Caption = '-'
+    end
+    object Previousselections1: TMenuItem
+      Caption = 'Previous selections:'
+      Enabled = False
+    end
+    object HannaVeresova1: TMenuItem
+      Caption = 'Hanna Veresova'
+    end
+    object KyncevichAnton1: TMenuItem
+      Caption = 'Kyncevich Anton'
+    end
+    object RuslanSenuk1: TMenuItem
+      Caption = 'Ruslan Senuk'
+    end
+    object N12: TMenuItem
+      Caption = '-'
+    end
+    object CreatePersone1: TMenuItem
+      Caption = 'Create Persone'
+    end
+    object OtherPersones1: TMenuItem
+      Caption = 'Other Persones'
     end
   end
 end

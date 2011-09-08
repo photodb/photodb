@@ -16,10 +16,10 @@ uses
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
-  uExifUtils;
+  uExifUtils, uInterfaces, WebLink;
 
 type
-  TViewer = class(TViewerForm, IImageSource)
+  TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
     PmMain: TPopupMenu;
     Next1: TMenuItem;
     Previous1: TMenuItem;
@@ -41,8 +41,8 @@ type
     SaveWindowPos1: TSaveWindowPos;
     SetasDesktopWallpaper1: TMenuItem;
     Copy1: TMenuItem;
-    ScrollBar1: TScrollBar;
-    ScrollBar2: TScrollBar;
+    SbHorisontal: TScrollBar;
+    SbVertical: TScrollBar;
     Panel1: TPanel;
     ImageList1: TImageList;
     ImageList2: TImageList;
@@ -111,11 +111,28 @@ type
     PmSteganography: TPopupMenu;
     AddHiddenInfo1: TMenuItem;
     ExtractHiddenInfo1: TMenuItem;
+    LsDetectingFaces: TLoadingSign;
+    WlFaceCount: TWebLink;
+    PmFaces: TPopupMenu;
+    DisableFaceDetection1: TMenuItem;
+    DetectionMethod1: TMenuItem;
+    PmFace: TPopupMenu;
+    ClearFaceZone1: TMenuItem;
+    N9: TMenuItem;
+    DmitryVeresov1: TMenuItem;
+    N10: TMenuItem;
+    Previousselections1: TMenuItem;
+    HannaVeresova1: TMenuItem;
+    KyncevichAnton1: TMenuItem;
+    RuslanSenuk1: TMenuItem;
+    N12: TMenuItem;
+    CreatePersone1: TMenuItem;
+    OtherPersones1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    Procedure Next_(Sender: TObject);
+    procedure Next_(Sender: TObject);
     Procedure Previous_(Sender: TObject);
     procedure NextImageClick(Sender: TObject);
     procedure PreviousImageClick(Sender: TObject);
@@ -150,7 +167,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure FormMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode;
+    procedure SbHorisontalScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: Integer);
     procedure RealSizeClick(Sender: TObject);
     procedure FitToWindowClick(Sender: TObject);
@@ -198,6 +215,11 @@ type
     procedure TbEncryptMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure TbPageNumberClick(Sender: TObject);
+    procedure WlFaceCountMouseEnter(Sender: TObject);
+    procedure WlFaceCountMouseLeave(Sender: TObject);
+    procedure WlFaceCountClick(Sender: TObject);
+    procedure PmFacesPopup(Sender: TObject);
+    procedure SelectCascade(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -207,6 +229,7 @@ type
     AnimatedImage: TGraphic;
     SlideNO: Integer;
     AnimatedBuffer: TBitmap;
+    FOverlayBuffer: TBitmap;
     FValidImages: Integer;
     FForwardThreadExists: Boolean;
     FForwardThreadSID: TGUID;
@@ -221,6 +244,10 @@ type
     FW7TaskBar: ITaskbarList3;
     FProgressMessage: Cardinal;
     FIsWaiting: Boolean;
+    FFaces: TFaceDetectionResult;
+    FFaceDetectionComplete: Boolean;
+    FHoverFace: TFaceDetectionResultItem;
+    FDisplayAllFaces: Boolean;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
@@ -243,6 +270,13 @@ type
     function GetFormID : string; override;
     function GetItem: TDBPopupMenuInfoRecord; override;
     procedure RefreshFaces;
+    procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
+    function GetImageRect: TRect;
+    function GetVisibleImageWidth: Integer;
+    function GetVisibleImageHeight: Integer;
+    function BufferPointToImagePoint(P: TPoint): TPoint;
+    function ImagePointToBufferPoint(P: TPoint): Tpoint;
+    function Buffer: TBitmap;
   public
     { Public declarations }
     CurrentInfo: TDBPopupMenuInfo;
@@ -291,8 +325,9 @@ type
     procedure MakePagesLinks;
     procedure SetProgressPosition(Position, Max: Integer);
     function GetPageCaption: string;
-    procedure UpdateFaces(Faces: TFaceDetectionResult);
     procedure ClearFaces;
+    procedure UpdateFaceDetectionState;
+    procedure CheckFaceIndicatorVisibility;
     property DisplayRating: Integer write SetDisplayRating;
   published
     property ImageExists: Boolean read FImageExists write SetImageExists;
@@ -324,16 +359,28 @@ uses
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm,
-  uFormSteganography, uFaceDetectionThread;
+  uFormSteganography;
 
 {$R *.dfm}
+
+function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload
+begin
+  Result.X := Round(R.X * Image.Width / OriginalSize.cx);
+  Result.Y := Round(R.Y * Image.Height / OriginalSize.cy);
+end;
+
+function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload
+begin
+  Result.X := Round(R.X * OriginalSize.cx / Image.Width);
+  Result.Y := Round(R.Y * OriginalSize.cy / Image.Height);
+end;
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin
   TW.I.Start('TViewer.FormCreate');
+  FCreating := True;
   LsLoading.Active := True;
   CurrentInfo := TDBPopupMenuInfo.Create;
-  FCreating := True;
   FCurrentPage := 0;
   FPageCount := 1;
   WaitingList := False;
@@ -364,6 +411,7 @@ begin
   SlideShowNow := False;
   Drawimage := Tbitmap.Create;
   FbImage := TBitmap.Create;
+  FOverlayBuffer := TBitmap.Create;
   FbImage.PixelFormat := pf24bit;
   Drawimage.PixelFormat := pf24bit;
   TW.I.Start('fcsrbmp');
@@ -384,6 +432,13 @@ begin
   TW.I.Start('AnimatedBuffer');
   AnimatedBuffer := TBitmap.Create;
   AnimatedBuffer.PixelFormat := pf24bit;
+
+  FFaces := TFaceDetectionResult.Create;
+  FFaceDetectionComplete := False;
+  FHoverFace := nil;
+  FDisplayAllFaces := False;
+  WlFaceCount.ImageList := DBkernel.ImageList;
+
   MTimer1.Caption := L('Stop timer');
   MTimer1.ImageIndex := DB_IC_PAUSE;
 
@@ -639,12 +694,12 @@ begin
         if Zoom <= 1 then
         begin
           if (Zoom < ZoomSmoothMin) then
-            StretchCoolW(Zx, Zy, Zw, Zh, Rect(Round(ScrollBar1.Position / Zoom), Round(ScrollBar2.Position / Zoom),
-                Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom)), FbImage, DrawImage)
+            StretchCoolW(Zx, Zy, Zw, Zh, Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
+                Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FbImage, DrawImage)
           else
           begin
-            ACopyRect := Rect(Round(ScrollBar1.Position / Zoom), Round(ScrollBar2.Position / Zoom),
-              Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom));
+            ACopyRect := Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
+              Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom));
             TempImage := TBitmap.Create;
             try
               TempImage.PixelFormat := Pf24bit;
@@ -666,8 +721,8 @@ begin
             end;
           end;
         end else
-          Interpolate(Zx, Zy, Zw, Zh, Rect(Round(ScrollBar1.Position / Zoom), Round(ScrollBar2.Position / Zoom),
-              Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom)), FbImage, DrawImage);
+          Interpolate(Zx, Zy, Zw, Zh, Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
+              Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FbImage, DrawImage);
       end else
       begin
         DrawRect(X1, Y1, X2, Y2);
@@ -705,8 +760,8 @@ begin
     begin
       if ZoomerOn and not FIsWaiting then
       begin
-        ImRect := Rect(Round(ScrollBar1.Position / Zoom), Round((ScrollBar2.Position) / Zoom),
-          Round((ScrollBar1.Position + Zw) / Zoom), Round((ScrollBar2.Position + Zh) / Zoom));
+        ImRect := Rect(Round(SbHorisontal.Position / Zoom), Round((SbVertical.Position) / Zoom),
+          Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom));
         BeginRect := GetImageRectA;
         DrawRect(BeginRect.Left, BeginRect.Top, BeginRect.Right, BeginRect.Bottom);
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
@@ -716,7 +771,7 @@ begin
       begin
         DrawRect(X1, Y1, X2, Y2);
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-        DrawImage.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
+        DrawImage.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FBImage);
       end;
     end;
   end else
@@ -761,7 +816,6 @@ begin
   DrawImage.Height := HeightW;
   if not FIsWaiting then
     ReAllignScrolls(False, Point(0, 0));
-  RecreateDrawImage(Sender);
   ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
   BottomImage.Top := ClientHeight - ToolsBar.Height;
   BottomImage.Width := ClientWidth;
@@ -769,9 +823,11 @@ begin
 
   LsLoading.Left := ClientWidth div 2 - LsLoading.Width div 2;
   LsLoading.Top := ClientHeight div 2 - LsLoading.Height div 2;
-  InvalidateRect(Handle, ClientRect, False);
+
+  RecreateDrawImage(Sender);
   TbrActions.Refresh;
   TbrActions.Realign;
+  CheckFaceIndicatorVisibility;
   TW.I.Start('TViewer.FormResize - end');
 end;
 
@@ -845,6 +901,8 @@ begin
   FormManager.UnRegisterMainForm(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 
+  F(FFaces);
+  F(FOverlayBuffer);
   F(CurrentInfo);
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
@@ -917,7 +975,7 @@ begin
   if SlideShowNow or FullScreenNow then
     Exit;
 
-  Canvas.Draw(0, 0, DrawImage);
+  Canvas.Draw(0, 0, Buffer);
 end;
 
 procedure TViewer.NewPicture(Sender: TObject);
@@ -989,6 +1047,53 @@ begin
       DirectShowForm.SetFirstImage(FNewCsrBmp)
     else
       DirectShowForm.NewImage(FNewCsrBmp);
+  end;
+end;
+
+procedure TViewer.SelectCascade(Sender: TObject);
+var
+  FileName: string;
+begin
+  FileName := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
+  Settings.WriteString('Face', 'DetectionMethod', FileName);
+  ReloadCurrent;
+end;
+
+procedure TViewer.PmFacesPopup(Sender: TObject);
+var
+  FileList: TStrings;
+  I, Found: Integer;
+  SearchRec: TSearchRec;
+  Directory, DetectionMethod: string;
+  MI: TMenuItem;
+begin
+  DetectionMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
+  FileList := TStringList.Create;
+  try
+    Directory := IncludeTrailingBackslash(ProgramDir) + CascadesDirectory;
+    Found := FindFirst(Directory + '\*.xml', FaAnyFile, SearchRec);
+    try
+      while Found = 0 do
+      begin
+        if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+          FileList.Add(Directory + '\' + SearchRec.Name);
+        Found := SysUtils.FindNext(SearchRec);
+      end;
+    finally
+      FindClose(SearchRec);
+    end;
+
+    DetectionMethod1.Clear;
+    for I := 0 to FileList.Count - 1 do
+    begin
+      MI := TMenuItem.Create(PmFaces);
+      MI.Caption := ExtractFileName(FileList[I]);
+      MI.OnClick := SelectCascade;
+      MI.Default := MI.Caption = DetectionMethod;
+      DetectionMethod1.Add(MI);
+    end;
+  finally
+    F(FileList);
   end;
 end;
 
@@ -1118,7 +1223,25 @@ var
   DragImage: TBitmap;
   W, H: Integer;
   FileName: string;
+  I: Integer;
+  OldHoverFace: TFaceDetectionResultItem;
 begin
+  P := Point(X, Y);
+  P := BufferPointToImagePoint(P);
+
+  OldHoverFace := FHoverFace;
+  FHoverFace := nil;
+
+  for I := 0 to FFaces.Count - 1 do
+    if PtInRect(FFaces[I].Rect, PxMultiply(P, FBImage, FFaces.OriginalSize)) then
+    begin
+      FHoverFace := FFaces[I];
+      Break;
+    end;
+
+  if OldHoverFace <> FHoverFace then
+    RefreshFaces;
+
   if DBCanDrag then
   begin
     GetCursorPos(P);
@@ -1406,13 +1529,15 @@ end;
 procedure TViewer.LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
   Bitmap: TBitmap);
 begin
-  if (DrawImage = nil) or DrawImage.Empty then
+  if FCreating then
+    Exit;
+  if (Buffer = nil) or Buffer.Empty then
   begin
     Bitmap.Canvas.Pen.Color := clBtnFace;
     Bitmap.Canvas.Brush.Color := clBtnFace;
     Bitmap.Canvas.Rectangle(0, 0, W, H);
   end else
-    Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), DrawImage.Canvas, Rect(X, Y, X + W, Y + H));
+    Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), Buffer.Canvas, Rect(X, Y, X + W, Y + H));
 end;
 
 procedure TViewer.ShowFile(FileName: String);
@@ -1473,6 +1598,26 @@ begin
   end;
 end;
 
+procedure TViewer.WlFaceCountClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  GetCursorPos(P);
+  PmFaces.Popup(P.X, P.Y);
+end;
+
+procedure TViewer.WlFaceCountMouseEnter(Sender: TObject);
+begin
+  FDisplayAllFaces := True;
+  RefreshFaces;
+end;
+
+procedure TViewer.WlFaceCountMouseLeave(Sender: TObject);
+begin
+  FDisplayAllFaces := False;
+  RefreshFaces;
+end;
+
 procedure TViewer.WndProc(var Message: TMessage);
 begin
   inherited;
@@ -1493,7 +1638,7 @@ var
   FButtons: array[0..1] of TThumbButton;
   P, PL: TPoint;
 begin
-  if msg.message = FProgressMessage then
+  if Msg.message = FProgressMessage then
   begin
     FW7TaskBar := CreateTaskBarInstance;
     if FW7TaskBar <> nil then
@@ -1526,6 +1671,15 @@ begin
       PmSteganography.Popup(P.X, P.Y);
   end;
 
+  if Msg.message = WM_KEYUP then
+  begin
+    if (Msg.WParam = VK_SHIFT) then
+    begin
+      RefreshFaces;
+      Handled := True;
+    end;
+  end;
+
   if Msg.message = WM_KEYDOWN then
   begin
     WindowsMenuTickCount := GetTickCount;
@@ -1542,6 +1696,12 @@ begin
 
     if (Msg.WParam = VK_DELETE) then
       TbDeleteClick(Self);
+
+    if (Msg.WParam = VK_SHIFT) then
+    begin
+      RefreshFaces;
+      Handled := True;
+    end;
 
     if (Msg.wParam = Byte(' ')) then
       Next_(Self);
@@ -1594,8 +1754,8 @@ begin
   end;
 
   if (Msg.message = WM_RBUTTONDOWN) or (Msg.message = WM_RBUTTONUP) then
-    if (Msg.Hwnd = BottomImage.Handle) or (Msg.Hwnd = TbrActions.Handle) or (Msg.Hwnd = ScrollBar1.Handle) or
-      (Msg.Hwnd = ScrollBar2.Handle) then
+    if (Msg.Hwnd = BottomImage.Handle) or (Msg.Hwnd = TbrActions.Handle) or (Msg.Hwnd = SbHorisontal.Handle) or
+      (Msg.Hwnd = SbVertical.Handle) then
       Msg.message := 0;
 
   if (Msg.message = WM_MOUSEWHEEL) then
@@ -1763,7 +1923,7 @@ begin
         DirectShowForm.Close;
 
     CurrentFileNumber := CurrentInfo.Position;
-    if not ((LoadBaseFile<>'') and (AnsiLowerCase(Item.FileName)=AnsiLowerCase(LoadBaseFile))) then
+    if not ((LoadBaseFile <> '') and (AnsiLowerCase(Item.FileName) = AnsiLowerCase(LoadBaseFile))) then
     begin
       Loading := True;
       TW.I.Start('LoadImage_');
@@ -1961,7 +2121,7 @@ begin
     TbZoomInClick(Self);
 end;
 
-procedure TViewer.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
+procedure TViewer.SbHorisontalScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
   if ScrollPos > (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize then
     ScrollPos := (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize;
@@ -1978,131 +2138,131 @@ begin
   Panel1.Visible := False;
   if not ZoomerOn then
   begin
-    ScrollBar1.Position := 0;
-    ScrollBar1.Visible := False;
-    ScrollBar2.Position := 0;
-    ScrollBar2.Visible := False;
+    SbHorisontal.Position := 0;
+    SbHorisontal.Visible := False;
+    SbVertical.Position := 0;
+    SbVertical.Visible := False;
     Exit;
   end;
-  V1 := ScrollBar1.Visible;
-  V2 := ScrollBar2.Visible;
-  if not ScrollBar1.Visible and not ScrollBar2.Visible then
+  V1 := SbHorisontal.Visible;
+  V2 := SbVertical.Visible;
+  if not SbHorisontal.Visible and not SbVertical.Visible then
   begin
-    ScrollBar1.Visible := FbImage.Width * Zoom > ClientWidth;
-    if ScrollBar1.Visible then
-      Inc_ := ScrollBar1.Height
+    SbHorisontal.Visible := FbImage.Width * Zoom > ClientWidth;
+    if SbHorisontal.Visible then
+      Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
-    ScrollBar2.Visible := FbImage.Height * Zoom > HeightW - Inc_;
+    SbVertical.Visible := FbImage.Height * Zoom > HeightW - Inc_;
   end;
   begin
-    if ScrollBar2.Visible then
-      Inc_ := ScrollBar2.Width
+    if SbVertical.Visible then
+      Inc_ := SbVertical.Width
     else
       Inc_ := 0;
-    ScrollBar1.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
-    ScrollBar1.Width := ClientWidth - Inc_;
-    if ScrollBar1.Visible then
-      Inc_ := ScrollBar1.Height
+    SbHorisontal.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
+    SbHorisontal.Width := ClientWidth - Inc_;
+    if SbHorisontal.Visible then
+      Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
-    ScrollBar1.Top := HeightW - Inc_;
+    SbHorisontal.Top := HeightW - Inc_;
   end;
   begin
-    if ScrollBar1.Visible then
-      Inc_ := ScrollBar1.Height
+    if SbHorisontal.Visible then
+      Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
-    ScrollBar2.Visible := FbImage.Height * Zoom > HeightW - Inc_;
-    ScrollBar2.Height := HeightW - Inc_;
-    if ScrollBar2.Visible then
-      Inc_ := ScrollBar2.Width
+    SbVertical.Visible := FbImage.Height * Zoom > HeightW - Inc_;
+    SbVertical.Height := HeightW - Inc_;
+    if SbVertical.Visible then
+      Inc_ := SbVertical.Width
     else
       Inc_ := 0;
-    ScrollBar2.Left := ClientWidth - Inc_;
+    SbVertical.Left := ClientWidth - Inc_;
   end;
   begin
-    if ScrollBar2.Visible then
-      Inc_ := ScrollBar2.Width
+    if SbVertical.Visible then
+      Inc_ := SbVertical.Width
     else
       Inc_ := 0;
-    ScrollBar1.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
-    ScrollBar1.Width := ClientWidth - Inc_;
-    if ScrollBar1.Visible then
-      Inc_ := ScrollBar1.Height
+    SbHorisontal.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
+    SbHorisontal.Width := ClientWidth - Inc_;
+    if SbHorisontal.Visible then
+      Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
-    ScrollBar1.Top := HeightW - Inc_;
+    SbHorisontal.Top := HeightW - Inc_;
   end;
-  if not ScrollBar1.Visible then
-    ScrollBar1.Position := 0;
-  if not ScrollBar2.Visible then
-    ScrollBar2.Position := 0;
-  if ScrollBar1.Visible and not V1 then
+  if not SbHorisontal.Visible then
+    SbHorisontal.Position := 0;
+  if not SbVertical.Visible then
+    SbVertical.Position := 0;
+  if SbHorisontal.Visible and not V1 then
   begin
-    ScrollBar1.PageSize := 0;
-    ScrollBar1.Position := 0;
-    ScrollBar1.Max := 100;
-    ScrollBar1.Position := 50;
+    SbHorisontal.PageSize := 0;
+    SbHorisontal.Position := 0;
+    SbHorisontal.Max := 100;
+    SbHorisontal.Position := 50;
   end;
-  if ScrollBar2.Visible and not V2 then
+  if SbVertical.Visible and not V2 then
   begin
-    ScrollBar2.PageSize := 0;
-    ScrollBar2.Position := 0;
-    ScrollBar2.Max := 100;
-    ScrollBar2.Position := 50;
+    SbVertical.PageSize := 0;
+    SbVertical.Position := 0;
+    SbVertical.Max := 100;
+    SbVertical.Position := 50;
   end;
-  Panel1.Width := ScrollBar2.Width;
-  Panel1.Height := ScrollBar1.Height;
+  Panel1.Width := SbVertical.Width;
+  Panel1.Height := SbHorisontal.Height;
   Panel1.Left := ClientWidth - Panel1.Width;
   Panel1.Top := HeightW - Panel1.Height;
-  Panel1.Visible := ScrollBar1.Visible and ScrollBar2.Visible;
-  if ScrollBar1.Visible then
+  Panel1.Visible := SbHorisontal.Visible and SbVertical.Visible;
+  if SbHorisontal.Visible then
   begin
-    if ScrollBar2.Visible then
-      Inc_ := ScrollBar2.Width
+    if SbVertical.Visible then
+      Inc_ := SbVertical.Width
     else
       Inc_ := 0;
     M := Round(FbImage.Width * Zoom);
     Ps := ClientWidth - Inc_;
     if Ps > M then
       Ps := 0;
-    if (ScrollBar1.Max <> ScrollBar1.PageSize) then
-      Pos := Round(ScrollBar1.Position * ((M - Ps) / (ScrollBar1.Max - ScrollBar1.PageSize)))
+    if (SbHorisontal.Max <> SbHorisontal.PageSize) then
+      Pos := Round(SbHorisontal.Position * ((M - Ps) / (SbHorisontal.Max - SbHorisontal.PageSize)))
     else
-      Pos := ScrollBar1.Position;
-    if M < ScrollBar1.PageSize then
-      ScrollBar1.PageSize := Ps;
-    ScrollBar1.Max := M;
-    ScrollBar1.PageSize := Ps;
-    ScrollBar1.LargeChange := Ps div 10;
-    ScrollBar1.Position := Math.Min(ScrollBar1.Max, Pos);
+      Pos := SbHorisontal.Position;
+    if M < SbHorisontal.PageSize then
+      SbHorisontal.PageSize := Ps;
+    SbHorisontal.Max := M;
+    SbHorisontal.PageSize := Ps;
+    SbHorisontal.LargeChange := Ps div 10;
+    SbHorisontal.Position := Math.Min(SbHorisontal.Max, Pos);
   end;
-  if ScrollBar2.Visible then
+  if SbVertical.Visible then
   begin
-    if ScrollBar1.Visible then
-      Inc_ := ScrollBar1.Height
+    if SbHorisontal.Visible then
+      Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
     M := Round(FbImage.Height * Zoom);
     Ps := HeightW - Inc_;
     if Ps > M then
       Ps := 0;
-    if ScrollBar2.Max <> ScrollBar2.PageSize then
-      Pos := Round(ScrollBar2.Position * ((M - Ps) / (ScrollBar2.Max - ScrollBar2.PageSize)))
+    if SbVertical.Max <> SbVertical.PageSize then
+      Pos := Round(SbVertical.Position * ((M - Ps) / (SbVertical.Max - SbVertical.PageSize)))
     else
-      Pos := ScrollBar2.Position;
-    if M < ScrollBar2.PageSize then
-      ScrollBar2.PageSize := Ps;
-    ScrollBar2.Max := M;
-    ScrollBar2.PageSize := Ps;
-    ScrollBar2.LargeChange := Ps div 10;
-    ScrollBar2.Position := Math.Min(ScrollBar2.Max, Pos);
+      Pos := SbVertical.Position;
+    if M < SbVertical.PageSize then
+      SbVertical.PageSize := Ps;
+    SbVertical.Max := M;
+    SbVertical.PageSize := Ps;
+    SbVertical.LargeChange := Ps div 10;
+    SbVertical.Position := Math.Min(SbVertical.Max, Pos);
   end;
-  if ScrollBar1.Position > ScrollBar1.Max - ScrollBar1.PageSize then
-    ScrollBar1.Position := ScrollBar1.Max - ScrollBar1.PageSize;
-  if ScrollBar2.Position > ScrollBar2.Max - ScrollBar2.PageSize then
-    ScrollBar2.Position := ScrollBar2.Max - ScrollBar2.PageSize;
+  if SbHorisontal.Position > SbHorisontal.Max - SbHorisontal.PageSize then
+    SbHorisontal.Position := SbHorisontal.Max - SbHorisontal.PageSize;
+  if SbVertical.Position > SbVertical.Max - SbVertical.PageSize then
+    SbVertical.Position := SbVertical.Max - SbVertical.PageSize;
 end;
 
 procedure TViewer.RealSizeClick(Sender: TObject);
@@ -2121,12 +2281,12 @@ begin
     TbZoomIn.Enabled := False;
     TbRotateCCW.Enabled := False;
     TbRotateCW.Enabled := False;
-    ScrollBar1.PageSize := 0;
-    ScrollBar1.Max := 100;
-    ScrollBar1.Position := 50;
-    ScrollBar2.PageSize := 0;
-    ScrollBar2.Max := 100;
-    ScrollBar2.Position := 50;
+    SbHorisontal.PageSize := 0;
+    SbHorisontal.Max := 100;
+    SbHorisontal.Position := 50;
+    SbVertical.PageSize := 0;
+    SbVertical.Max := 100;
+    SbVertical.Position := 50;
     LoadImage_(Sender, True, 1, True);
     TbrActions.Refresh;
     TbrActions.Realign;
@@ -2241,12 +2401,23 @@ end;
 
 procedure TViewer.FormClick(Sender: TObject);
 var
-  P: TPoint;
+  P, ScreenRect, ImagePoint: TPoint;
   ImRect: TRect;
+  I: Integer;
   Dy, Dx, X, Y, Z: Extended;
 begin
-  GetCursorPos(P);
-  P := ScreenToClient(P);
+  GetCursorPos(ScreenRect);
+  P := ScreenToClient(ScreenRect);
+
+  ImagePoint := BufferPointToImagePoint(P);
+  for I := 0 to FFaces.Count - 1 do
+    if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FBImage, FFaces.OriginalSize)) then
+    begin
+      PmFace.Tag := Integer(FFaces[I]);
+      PmFace.Popup(ScreenRect.X, ScreenRect.Y);
+      Exit;
+    end;
+
   if Cursor = CrDefault then
   begin
     if Settings.Readbool('Options', 'NextOnClick', False) then
@@ -2271,9 +2442,9 @@ begin
     X := P.X;
     Y := P.Y;
     Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
-    ScrollBar1.Position := ScrollBar1.Position + Round(ScrollBar1.PageSize * Dx);
+    SbHorisontal.Position := SbHorisontal.Position + Round(SbHorisontal.PageSize * Dx);
     Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
-    ScrollBar2.Position := ScrollBar2.Position + Round(ScrollBar2.PageSize * Dy);
+    SbVertical.Position := SbVertical.Position + Round(SbVertical.PageSize * Dy);
   end;
   if Cursor = CursorZoomOutNo then
   begin
@@ -2283,9 +2454,9 @@ begin
     X := P.X;
     Y := P.Y;
     Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
-    ScrollBar1.Position := ScrollBar1.Position + Round(ScrollBar1.PageSize * Dx);
+    SbHorisontal.Position := SbHorisontal.Position + Round(SbHorisontal.PageSize * Dx);
     Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
-    ScrollBar2.Position := ScrollBar2.Position + Round(ScrollBar2.PageSize * Dy);
+    SbVertical.Position := SbVertical.Position + Round(SbVertical.PageSize * Dy);
   end;
   FormResize(Sender);
 end;
@@ -2300,36 +2471,36 @@ var
   Increment: Integer;
   FX, FY, FH, FW: Integer;
 begin
-  if ScrollBar1.Visible then
+  if SbHorisontal.Visible then
   begin
     FX := 0;
   end else
   begin
-    if ScrollBar2.Visible then
-      Increment := ScrollBar2.width
+    if SbVertical.Visible then
+      Increment := SbVertical.width
     else
       Increment := 0;
     FX := Max(0, Round(ClientWidth / 2 - Increment - FBImage.Width * Zoom / 2));
   end;
-  if ScrollBar2.Visible then
+  if SbVertical.Visible then
   begin
     FY := 0;
   end else
   begin
-    if ScrollBar1.Visible then
-      Increment := ScrollBar1.Height
+    if SbHorisontal.Visible then
+      Increment := SbHorisontal.Height
     else
       Increment := 0;
     FY := Max(0,
       round(HeightW / 2 - Increment - FBImage.Height * Zoom / 2));
   end;
-  if ScrollBar2.Visible then
-    Increment := ScrollBar2.width
+  if SbVertical.Visible then
+    Increment := SbVertical.width
   else
     Increment := 0;
   FW := round(Min(ClientWidth - Increment, FBImage.Width * Zoom));
-  if ScrollBar1.Visible then
-    Increment := ScrollBar1.Height
+  if SbHorisontal.Visible then
+    Increment := SbHorisontal.Height
   else
     Increment := 0;
   FH := round(Min(HeightW - Increment, FBImage.Height * Zoom));
@@ -2426,9 +2597,65 @@ begin
 end;
 
 procedure TViewer.RefreshFaces;
+var
+  I: Integer;
+  P1, P2: TPoint;
+  R: TRect;
 begin
-  ClearFaces;
-  TFaceDetectionThread.Create(Self, Self.StateID, DrawImage);
+  if FFaces.Count > 0 then
+  begin
+    FOverlayBuffer.Assign(DrawImage);
+
+    if not ShiftKeyDown and not FDisplayAllFaces then
+    begin
+      if FHoverFace <> nil then
+      begin
+        FOverlayBuffer.Canvas.Brush.Style := bsClear;
+        FOverlayBuffer.Canvas.Pen.Style := psDash;
+        FOverlayBuffer.Canvas.Pen.Width := 1;
+
+        P1 := FHoverFace.Rect.TopLeft;
+        P2 := FHoverFace.Rect.BottomRight;
+
+        P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
+        P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
+
+        P1 := ImagePointToBufferPoint(P1);
+        P2 := ImagePointToBufferPoint(P2);
+        R := Rect(P1, P2);
+        FOverlayBuffer.Canvas.Pen.Color := clWhite;
+        FOverlayBuffer.Canvas.Rectangle(R);
+        InflateRect(R, -1, -1);
+        FOverlayBuffer.Canvas.Pen.Color := clGray;
+        FOverlayBuffer.Canvas.Rectangle(R);
+      end;
+    end else
+    begin
+      FOverlayBuffer.Canvas.Brush.Style := bsClear;
+      FOverlayBuffer.Canvas.Pen.Style := psDash;
+      FOverlayBuffer.Canvas.Pen.Width := 1;
+
+      for I := 0 to FFaces.Count - 1 do
+      begin
+        P1 := FFaces[I].Rect.TopLeft;
+        P2 := FFaces[I].Rect.BottomRight;
+
+        P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
+        P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
+
+        P1 := ImagePointToBufferPoint(P1);
+        P2 := ImagePointToBufferPoint(P2);
+
+        R := Rect(P1, P2);
+        FOverlayBuffer.Canvas.Pen.Color := clWhite;
+        FOverlayBuffer.Canvas.Rectangle(R);
+        InflateRect(R, -1, -1);
+        FOverlayBuffer.Canvas.Pen.Color := clGray;
+        FOverlayBuffer.Canvas.Rectangle(R);
+      end;
+    end;
+  end;
+  InvalidateRect(Handle, ClientRect, True);
 end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);
@@ -2664,6 +2891,11 @@ begin
 
   ReAllignScrolls(False, Point(0, 0));
   ValidImages := 1;
+  F(FOverlayBuffer);
+  FFaces.Clear;
+  FFaceDetectionComplete := False;
+  UpdateFaceDetectionState;
+  FOverlayBuffer := TBitmap.Create;
   RecreateDrawImage(Self);
   PrepareNextImage;
 end;
@@ -3069,27 +3301,51 @@ begin
     TbEncrypt.ImageIndex := 23;
 end;
 
-procedure TViewer.UpdateFaces(Faces: TFaceDetectionResult);
-var
-  I: Integer;
-  LS: TLoadingSign;
+procedure TViewer.CheckFaceIndicatorVisibility;
+begin
+  WlFaceCount.Visible := WlFaceCount.Left + WlFaceCount.Width + 3 < ToolsBar.Left;
+  LsDetectingFaces.Visible := (LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete;
+end;
+
+procedure TViewer.UpdateFaceDetectionState;
 begin
   BeginScreenUpdate(Handle);
   try
-    ClearFaces;
-    for I := 0 to Faces.Count - 1 do
+    LsDetectingFaces.Show;
+    if not FFaceDetectionComplete then
     begin
-      LS := TLoadingSign.Create(Self);
-      LS.Parent := Self;
-      LS.Left := Faces[I].X;
-      LS.Top := Faces[I].Y;
-      LS.Width := Faces[I].Width;
-      LS.Height := Faces[I].Height;
-      LS.GetBackGround := LsLoadingGetBackGround;
-      LS.Active := True;
+      WlFaceCount.Text := L('Detecting faces') + '...';
+      LsDetectingFaces.Show;
+      WlFaceCount.ImageIndex := -1;
+      WlFaceCount.IconWidth := 0;
+      WlFaceCount.IconHeight := 0;
+      WlFaceCount.Left := LsDetectingFaces.Left + LsDetectingFaces.Width;
+    end else
+    begin
+      LsDetectingFaces.Hide;
+      WlFaceCount.Left := 6;
+      WlFaceCount.IconWidth := 16;
+      WlFaceCount.IconHeight := 16;
+      WlFaceCount.ImageIndex := DB_IC_PEOPLE;
+      if FFaces.Count > 0 then
+        WlFaceCount.Text := Format(L('Faces: %d'), [FFaces.Count])
+      else
+        WlFaceCount.Text := L('No faces found');
     end;
+    CheckFaceIndicatorVisibility;
   finally
     EndScreenUpdate(Handle, True);
+  end;
+end;
+
+procedure TViewer.UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
+begin
+  if Item.FileName = FileName then
+  begin
+    FFaces.Assign(Faces);
+    FFaceDetectionComplete := True;
+    UpdateFaceDetectionState;
+    RecreateDrawImage(nil);
   end;
 end;
 
@@ -3497,6 +3753,163 @@ begin
       FW7TaskBar.SetProgressValue(Handle, Position, Max);
     end;
   end;
+end;
+
+function TViewer.GetImageRect: TRect;
+var
+  Increment: Integer;
+  FX, FY, FH, FW: Integer;
+begin
+  if SbHorisontal.Visible then
+  begin
+    FX := 0;
+  end else
+  begin
+    if SbVertical.Visible then
+      Increment := SbVertical.Width
+    else
+      Increment := 0;
+    FX := Max(0, Round(GetVisibleImageWidth / 2 - Increment - FBImage.Width * Zoom / 2));
+  end;
+  if SbVertical.Visible then
+  begin
+    FY := 0;
+  end else
+  begin
+    if SbHorisontal.Visible then
+      Increment := SbHorisontal.Height
+    else
+      Increment := 0;
+    FY := Max(0, Round(GetVisibleImageHeight / 2 - Increment - FBImage.Height * Zoom / 2));
+  end;
+  if SbVertical.Visible then
+    Increment := SbVertical.Width
+  else
+    Increment := 0;
+  FW := Round(Min(GetVisibleImageWidth - Increment, FBImage.Width * Zoom));
+  if SbHorisontal.Visible then
+    Increment := SbHorisontal.Height
+  else
+    Increment := 0;
+  FH := Round(Min(GetVisibleImageHeight - Increment, FBImage.Height * Zoom));
+  FH := FH;
+  Result := Rect(FX, FY, FW + FX, FH + FY);
+end;
+
+function TViewer.BufferPointToImagePoint(P: TPoint): TPoint;
+var
+  X1, Y1: Integer;
+  ImRect: TRect;
+  Fh, Fw: Integer;
+begin
+  if ZoomerOn then
+  begin
+    ImRect := GetImageRectA;
+    X1 := ImRect.Left;
+    Y1 := ImRect.Top;
+    if SbHorisontal.Visible then
+      Result.X := Round((SbHorisontal.Position + P.X) / Zoom)
+    else
+      Result.X := Round((P.X - X1) / Zoom);
+    if SbVertical.Visible then
+      Result.Y := Round((SbVertical.Position + P.Y) / Zoom)
+    else
+      Result.Y := Round((P.Y - Y1) / Zoom);
+  end else
+  begin
+    if (FBImage.Height = 0) or (FBImage.Width = 0) then
+      Exit;
+    if (FBImage.Width > GetVisibleImageWidth) or (FBImage.Height > GetVisibleImageHeight) then
+    begin
+      if FBImage.Width / FBImage.Height < Buffer.Width / Buffer.Height then
+      begin
+        Fh := Buffer.Height;
+        Fw := Round(Buffer.Height * (FBImage.Width / FBImage.Height));
+      end else
+      begin
+        Fw := Buffer.Width;
+        Fh := Round(Buffer.Width * (FBImage.Height / FBImage.Width));
+      end;
+    end else
+    begin
+      Fh := FBImage.Height;
+      Fw := FBImage.Width;
+    end;
+    X1 := GetVisibleImageWidth div 2 - Fw div 2;
+    Y1 := GetVisibleImageHeight div 2 - Fh div 2;
+    Result := Point(0, 0);
+    if Fw <> 0 then
+      Result.X := Round((P.X - X1) * (FBImage.Width / Fw));
+    if Fh <> 0 then
+      Result.Y := Round((P.Y - Y1) * (FBImage.Height / Fh));
+  end;
+end;
+
+function TViewer.ImagePointToBufferPoint(P: TPoint): Tpoint;
+var
+  X1, Y1: Integer;
+  ImRect: TRect;
+  Fh, Fw: Integer;
+begin
+  if ZoomerOn then
+  begin
+    ImRect := GetImageRectA;
+    X1 := ImRect.Left;
+    Y1 := ImRect.Top;
+    if SbHorisontal.Visible then
+      Result.X := Round(P.X * Zoom - SbHorisontal.Position)
+    else
+      Result.X := Round((P.X * Zoom + X1));
+    if SbVertical.Visible then
+      Result.Y := Round(P.Y * Zoom - SbVertical.Position)
+    else
+      Result.Y := Round((P.Y * Zoom + Y1));
+  end else
+  begin
+    if (FBImage.Height = 0) or (FBImage.Width = 0) then
+      Exit;
+    if (FBImage.Width > GetVisibleImageWidth) or (FBImage.Height > GetVisibleImageHeight) then
+    begin
+      if FBImage.Width / FBImage.Height < Buffer.Width / Buffer.Height then
+      begin
+        Fh := Buffer.Height;
+        Fw := Round(Buffer.Height * (FBImage.Width / FBImage.Height));
+      end else
+      begin
+        Fw := Buffer.Width;
+        Fh := Round(Buffer.Width * (FBImage.Height / FBImage.Width));
+      end;
+    end else
+    begin
+      Fh := FBImage.Height;
+      Fw := FBImage.Width;
+    end;
+    X1 := GetVisibleImageWidth div 2 - Fw div 2;
+    Y1 := GetVisibleImageHeight div 2 - Fh div 2;
+    Result := Point(0, 0);
+    if FBImage.Width <> 0 then
+      Result.X := Round(X1 + P.X * (Fw / FBImage.Width));
+    if FBImage.Height <> 0 then
+      Result.Y := Round(Y1 + P.Y * (Fh / FBImage.Height));
+  end;
+end;
+
+function TViewer.GetVisibleImageHeight: Integer;
+begin
+  Result := ClientHeight - BottomImage.Height;
+end;
+
+function TViewer.GetVisibleImageWidth: Integer;
+begin
+  Result := ClientWidth;
+end;
+
+function TViewer.Buffer: TBitmap;
+begin
+  if FOverlayBuffer.Empty then
+    Result := DrawImage
+  else
+    Result := FOverlayBuffer;
 end;
 
 initialization

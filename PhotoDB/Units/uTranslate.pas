@@ -8,9 +8,6 @@ uses
   Windows, Classes, SysUtils, uLogger, uMemory, xmldom, uConstants,
   SyncObjs, Registry, uRuntime;
 
-const
-  CLASS_DOMDocument: TGUID = '{88D96A05-F192-11D4-A65F-0040963251E5}';
-
 type
   TTranslate = class(TObject)
   private

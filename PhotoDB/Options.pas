@@ -149,6 +149,7 @@ type
     SelectAll1: TMenuItem;
     DeselectAll1: TMenuItem;
     CbExplorerShowThumbsForVideo: TCheckBox;
+    cbViewerFaceDetection: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -286,6 +287,8 @@ begin
     TrackBar1Change(Sender);
     TrackBar2Change(Sender);
     TrackBar4Change(Sender);
+
+    CbViewerFaceDetection.Checked := Settings.Readbool('Options', 'ViewerFaceDetection', True);
   end;
   if NewTab = 4 then
   begin
@@ -571,6 +574,8 @@ begin
     Settings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
     Settings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
     Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
+
+    Settings.WriteBool('Options', 'ViewerFaceDetection', CbViewerFaceDetection.Checked);
   end;
 
   Settings.ClearCache;
@@ -754,6 +759,8 @@ begin
     CbReadInfoFromExif.Caption := L('Read image info from EXIF');
     CbSaveInfoToExif.Caption := L('Save info to EXIF');
     CbUpdateExifInfoInBackground.Caption := L('Update EXIF info in background');
+
+    cbViewerFaceDetection.Caption := L('Enable face detection');
   finally
     EndTranslate;
   end;

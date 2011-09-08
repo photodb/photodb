@@ -1,4 +1,3 @@
-
 unit uTiffImage;
 
 interface

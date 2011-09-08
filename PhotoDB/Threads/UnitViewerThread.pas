@@ -8,7 +8,7 @@ uses
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
   uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage,
-  uExifUtils, uJpegUtils, uBitmapUtils;
+  uExifUtils, uJpegUtils, uBitmapUtils, uSettings;
 
 type
   TViewerThread = class(TDBThread)
@@ -53,7 +53,8 @@ type
 
 implementation
 
-uses UnitPasswordForm, SlideShow;
+uses
+  UnitPasswordForm, SlideShow, uFaceDetectionThread;
 
 { TViewerThread }
 
@@ -168,9 +169,8 @@ begin
           try
             if PassWord = '' then
               if Graphic is TTiffImage then
-              begin
                 FPages := (Graphic as TTiffImage).Pages;
-              end;
+
             if Graphic is TPNGImage then
             begin
               FTransparent := True;
@@ -219,6 +219,8 @@ begin
         end;
       end;
     finally
+      if Settings.Readbool('Options', 'ViewerFaceDetection', True) then
+        FaceDetectionDataManager.RequestfaceDetection(FViewer, Graphic, FInfo.FileName);
       F(Graphic);
     end;
 

@@ -201,7 +201,7 @@ type
   PCvArr = ^CvArr;
 
 const
-  FacesFileName = 'haarcascade_frontalface.xml';
+  CascadesDirectoryMask = 'Cascades';
 
 type
   TFaceDetectionResultItem = class
@@ -210,44 +210,62 @@ type
     Y: Integer;
     Width: Integer;
     Height: Integer;
+    function Rect: TRect;
   end;
 
   TFaceDetectionResult = class
   private
     FList: TList;
+    FImageWidth: Integer;
+    FImageHeight: Integer;
+    FPage: Integer;
     function GetItem(Index: Integer): TFaceDetectionResultItem;
     function GetCount: Integer;
+    function GetSize: TSize;
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Clear;
+    procedure Assign(Source: TFaceDetectionResult);
     function AddFace(X, Y, Width, Height: Integer): TFaceDetectionResultItem;
     property Items[Index: Integer]: TFaceDetectionResultItem read GetItem; default;
     property Count: Integer read GetCount;
+    property ImageWidth: Integer read FImageWidth;
+    property ImageHeight: Integer read FImageHeight;
+    property Page: Integer read FPage;
+    property OriginalSize: TSize read GetSize;
+  end;
+
+  TCascadeData = class
+    FileName: string;
+    Cascade: PCvHaarClassifierCascade;
   end;
 
   TFaceDetectionManager = class
   private
     FSync: TCriticalSection;
-    FFaceDetectionSeqFileName: string;
-    FCascadeFaces: PCvHaarClassifierCascade;
+    FCascades: TList;
     procedure Init;
     function GetIsActive: Boolean;
+    function GetCascadeByFileName(FileName: string): PCvHaarClassifierCascade;
   public
-    procedure FacesDetection(Bitmap: TBitmap; var Faces: TFaceDetectionResult);
-    constructor Create(FaceDetectionSeqFileName: string);
+    procedure FacesDetection(Bitmap: TBitmap; Page: Integer; var Faces: TFaceDetectionResult; Method: string);
+    constructor Create;
     destructor Destroy; override;
     property IsActive: Boolean read GetIsActive;
+    property Cascades[FileName: string]: PCvHaarClassifierCascade read GetCascadeByFileName;
   end;
 
 type
   TCvLoad = function(Filename: PAnsiChar; Memstorage: PCvMemStorage; name: PChar; Real_name: PAnsiChar): Pointer; cdecl;
   TCvCreateImage = function(Size: CvSize; Depth: Longint; Channels: Longint): PIplImage; cdecl;
-  TCvRectangle = procedure(Img: Pointer; Pt1: CvPoint; Pt2: CvPoint; Color: CvScalar; Thickness: Longint;Line_type: Longint; Shift: Longint); cdecl;
+  TCvRectangle = procedure(Img: Pointer; Pt1: CvPoint; Pt2: CvPoint; Color: CvScalar; Thickness: Longint; Line_type: Longint; Shift: Longint); cdecl;
   TCvCreateMemStorage = function(Block_size: Longint): PCvMemStorage; cdecl;
   TCvLoadImage = function(Filename: PAnsiChar; Iscolor: Longint): PIplImage; cdecl;
   TCvShowImage = procedure(name: PAnsiChar; Image: PIplImage); cdecl;
   TCvNamedWindow = function(name: PAnsiChar; Flags: Longint): Longint; cdecl;
-  TCvHaarDetectObjects = function(Img: PCvArr; Cascade: PCvHaarClassifierCascade; Storage: PCvMemStorage;Scale_factor: Double; Min_neighbors: Longint; Flags: Longint; Min_size: CvSize): PCvSeq; cdecl;
+  TCvHaarDetectObjects = function(Img: PCvArr; Cascade: PCvHaarClassifierCascade; Storage: PCvMemStorage;
+    Scale_factor: Double; Min_neighbors: Longint; Flags: Longint; Min_size: CvSize): PCvSeq; cdecl;
   TCvGetSeqElem = function(Seq: PCvSeq; index: Longint): Pschar; cdecl;
   TCvClearMemStorage = procedure(Storage: PCvMemStorage); cdecl;
   TCvSetImageROI = procedure(Image: PIplImage; Rect: CvRect); cdecl;
@@ -280,7 +298,7 @@ var
 function FaceDetectionManager: TFaceDetectionManager;
 begin
   if FManager = nil then
-    FManager := TFaceDetectionManager.Create(FacesFileName);
+    FManager := TFaceDetectionManager.Create;
 
   Result := FManager;
 end;
@@ -454,6 +472,24 @@ begin
   Result.Height := Height;
 end;
 
+procedure TFaceDetectionResult.Assign(Source: TFaceDetectionResult);
+var
+  I: Integer;
+begin
+  Clear;
+  for I := 0 to Source.Count - 1 do
+    AddFace(Source[I].X, Source[I].Y, Source[I].Width, Source[I].Height);
+
+  FImageWidth := Source.ImageWidth;
+  FImageHeight := Source.ImageHeight;
+  FPage := Source.Page;
+end;
+
+procedure TFaceDetectionResult.Clear;
+begin
+  FreeList(FList, False);
+end;
+
 constructor TFaceDetectionResult.Create;
 begin
   FList := TList.Create;
@@ -475,30 +511,35 @@ begin
   Result := FList[Index];
 end;
 
+function TFaceDetectionResult.GetSize: TSize;
+begin
+  Result.cx := ImageWidth;
+  Result.cy := ImageHeight;
+end;
+
 { TFaceDetectionManager }
 
 constructor TFaceDetectionManager.Create;
 begin
   FSync := TCriticalSection.Create;
-  FCascadeFaces := nil;
-  FFaceDetectionSeqFileName := ExtractFilePath(ParamStr(0)) + FaceDetectionSeqFileName;
+//  FCascadeFaces := nil;
+  FCascades := TList.Create;
   Init;
 end;
 
 destructor TFaceDetectionManager.Destroy;
 begin
   F(FSync);
+  FreeList(FCascades);
   inherited;
 end;
 
 procedure TFaceDetectionManager.Init;
 begin
   InitCVLib;
-  if FCVDLLHandle > 0 then
-    FCascadeFaces := CvLoad(PAnsiChar(AnsiString(FFaceDetectionSeqFileName)), nil, nil, nil);
 end;
 
-procedure TFaceDetectionManager.FacesDetection(Bitmap: TBitmap; var Faces: TFaceDetectionResult);
+procedure TFaceDetectionManager.FacesDetection(Bitmap: TBitmap; Page: Integer; var Faces: TFaceDetectionResult; Method: string);
 var
   StorageType: Integer;
   Img: PIplImage;
@@ -507,7 +548,10 @@ var
   ImSize: CvSize;
   R: PCvRect;
   FacesSeq: PCvSeq;
+  FCascadeFaces: PCvHaarClassifierCascade;
 begin
+  FCascadeFaces := Cascades[Method];
+
   if FCascadeFaces = nil then
     Exit;
 
@@ -521,10 +565,11 @@ begin
     Img := CvCreateImage(ImSize, 8, 3);
     try
       Bitmap2IplImage(Img, Bitmap);
+
       //* detect faces */
-      ImSize.Width := 20;
-      ImSize.Height := 20;
-      FacesSeq := cvHaarDetectObjects(PCvArr(img), FCascadeFaces, Storage, 1.2, 2, 1 , ImSize);
+      ImSize := FCascadeFaces.Orig_window_size;
+
+      FacesSeq := cvHaarDetectObjects(PCvArr(img), FCascadeFaces, Storage, 1.2, 2, 1, ImSize);
 
       if (FacesSeq = nil) or (FacesSeq.total = 0) then
         Exit;
@@ -535,7 +580,9 @@ begin
 
         Faces.AddFace(R.X, R.Y, R.Width, R.Height);
       end;
-
+      Faces.FPage := Page;
+      Faces.FImageWidth := Bitmap.Width;
+      Faces.FImageHeight := Bitmap.Height;
     finally
       cvResetImageROI(img);
     end;
@@ -544,9 +591,45 @@ begin
   end;
 end;
 
+function TFaceDetectionManager.GetCascadeByFileName(
+  FileName: string): PCvHaarClassifierCascade;
+var
+  I: Integer;
+  FaceDetectionSeqFileName: string;
+  CD: TCascadeData;
+begin
+  Result := nil;
+
+  for I := 0 to FCascades.Count - 1 do
+  begin
+    if TCascadeData(FCascades[I]).FileName = FileName then
+    begin
+      Result := TCascadeData(FCascades[I]).Cascade;
+      Exit;
+    end;
+  end;
+
+  if FCVDLLHandle > 0 then
+  begin
+    FaceDetectionSeqFileName := ExtractFilePath(ParamStr(0)) + CascadesDirectoryMask + '\' + FileName;
+    CD := TCascadeData.Create;
+    FCascades.Add(CD);
+    CD.FileName := FileName;
+    CD.Cascade := CvLoad(PAnsiChar(AnsiString(FaceDetectionSeqFileName)), nil, nil, nil);
+    Result := CD.Cascade;
+  end;
+end;
+
 function TFaceDetectionManager.GetIsActive: Boolean;
 begin
-  Result := FCascadeFaces <> nil;
+  Result := FCVDLLHandle <> 0;
+end;
+
+{ TFaceDetectionResultItem }
+
+function TFaceDetectionResultItem.Rect: TRect;
+begin
+  Result := Classes.Rect(X, Y, X + Width, Y + Height);
 end;
 
 initialization

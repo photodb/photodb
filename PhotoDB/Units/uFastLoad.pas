@@ -73,8 +73,8 @@ procedure TLoad.Stop;
 
   procedure KillThread(Thread: TDBThread);
   begin
-    if DBThreadManager.IsThread(LoadDBKernelIconsThread) then
-      TerminateThread(DBThreadManager.GetThreadHandle(LoadDBKernelIconsThread), 0);
+    if DBThreadManager.IsThread(Thread) then
+      TerminateThread(DBThreadManager.GetThreadHandle(Thread), 0);
   end;
 
 begin

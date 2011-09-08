@@ -222,6 +222,7 @@ begin
 
   Files.Add(TDirectoryObject.Create('Languages',   '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Licenses',    '%PROGRAM%', ''));
+  Files.Add(TDirectoryObject.Create('Cascades',    '%PROGRAM%', ''));
 
   PhotoDBFile := TFileObject.Create(PhotoDBFileName, '%PROGRAM%', TA('Photo Database {V} helps you to find, protect and organize your photos.', 'System'));
   PhotoDBFile.FShortCuts.Add('%DESKTOP%\Photo Database {V}.lnk');
@@ -232,7 +233,6 @@ begin
   Files.Add(TFileObject.Create('Kernel.dll',                      '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('VCOpenCV.DLL',                    '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('haarcascade_frontalface.xml',     '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('UnInstall.exe',                   '%PROGRAM%', ''));
 
   {$IFDEF DBDEBUG}

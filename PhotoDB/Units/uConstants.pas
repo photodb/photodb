@@ -13,13 +13,15 @@ const
   PlugInImagesFolder = 'PlugInsEx\';
   OldPlugInImagesFolder = 'PlugIns\';
   ThemesDirectory = 'Themes\';
-  BackUpFolder : String = '\DBBackUp\';
-  ScriptsFolder : String = 'Scripts\';
-  ActionsFolder : String = 'Actions\';  
-  ImagesFolder : String = 'Images\';
-  DBRestoreFolder : String = '\DB\';
+  BackUpFolder: string = '\DBBackUp\';
+  ScriptsFolder: string = 'Scripts\';
+  ActionsFolder: string = 'Actions\';
+  ImagesFolder: string = 'Images\';
+  FaceCacheDirectory: string = '\CVCache\Face\';
+  CascadesDirectory: string = 'Cascades';
+  DBRestoreFolder: string = '\DB\';
   PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase';
-  RegRoot : string = 'Software\Photo DataBase\';
+  RegRoot: string = 'Software\Photo DataBase\';
   TempFolderMask = '|NDX|MB|DB|NET|';
   DelayReadFileOperation = 200;
   DelayExecuteSQLOperation = 200;
@@ -49,7 +51,6 @@ const
 
 const
   MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
-  DBFilesExt: array [0 .. 1] of string = ('MDB', 'PHOTODB');
   RetryTryCountOnWrite = 10;
   RetryTryDelayOnWrite = 100;
   CurrentDBSettingVersion = 1;
@@ -185,6 +186,7 @@ const
   DB_IC_CD_MAPPING     = 117;
   DB_IC_CD_IMAGE       = 118;
   DB_IC_ROTATE_MAGIC   = 119;
+  DB_IC_PEOPLE         = 120;
 
 const
     WM_DROPFILES = $0233;
@@ -354,6 +356,12 @@ const
   EXPLORER_SEARCH_FILES    = 0;
   EXPLORER_SEARCH_IMAGES   = 1;
   EXPLORER_SEARCH_DATABASE = 2;
+
+const
+  CLASS_DOMDocument: TGUID = '{88D96A05-F192-11D4-A65F-0040963251E5}';
+
+const
+  DefaultCascadeFileName = 'haarcascade_frontalface_alt.xml';
 
 implementation
 
