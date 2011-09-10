@@ -1739,7 +1739,10 @@
 	<translate name="Read image info from EXIF" value="Читать информацию о изображении из EXIF"/>
 	<translate name="Save info to EXIF" value="Сохранять информацию в EXIF"/>
 	<translate name="Update EXIF info in background" value="Обновлять EXIF информацию в фоне"/>
-	<translate name="Enable face detection" value="Разрешить определение лиц"/>	
+	<translate name="Enable face detection" value="Разрешить определение лиц"/>
+	<translate name="Detection size" value="Размер для определения"/>
+	<translate name="Best perfomance" value="Лучшая производительность"/>
+	<translate name="Mpx" value="Мпкс"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>

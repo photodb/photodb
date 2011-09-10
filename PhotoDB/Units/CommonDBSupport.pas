@@ -160,24 +160,24 @@ procedure AssignParam(Query : TDataSet; index : integer; Value : TPersistent);
 
 function ADOCreateImageTable(TableName : string) : boolean;
 
-function ADOCreateGroupsTable(TableName : string) : boolean;
+function ADOCreateGroupsTable(TableName: string): Boolean;
 
-//ADO Only
-function ADOCreateSettingsTable(TableName : string) : boolean;
+// ADO Only
+function ADOCreateSettingsTable(TableName: string): Boolean;
 
 procedure CreateMSAccessDatabase(FileName: string);
-procedure TryRemoveConnection(dbname : string; Delete : Boolean = false);
-procedure RemoveADORef(ADOConnection : TADOConnection);
+procedure TryRemoveConnection(Dbname: string; Delete: Boolean = False);
+procedure RemoveADORef(ADOConnection: TADOConnection);
 
-function GetTableNameByFileName(FileName : string) : string;
-Procedure AssingQuery(var QueryS, QueryD : TDataSet);
+function GetTableNameByFileName(FileName: string): string;
+procedure AssingQuery(var QueryS, QueryD: TDataSet);
 
-function GetRecordsCount(Table : string) : integer;
-function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : boolean;
-function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
-procedure PackTable(FileName : string);
-function GetDefaultImageDBOptions : TImageDBOptions;
-function GetPathCRC(FileFullPath : string; IsFile: Boolean) : Integer;
+function GetRecordsCount(Table: string): Integer;
+function UpdateImageSettings(TableName: string; Settings: TImageDBOptions): Boolean;
+function GetImageSettingsFromTable(TableName: string): TImageDBOptions;
+procedure PackTable(FileName: string);
+function GetDefaultImageDBOptions: TImageDBOptions;
+function GetPathCRC(FileFullPath: string; IsFile: Boolean): Integer;
 function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
 function TryOpenCDS(DS: TDataSet): Boolean;
@@ -992,7 +992,7 @@ begin
     CompactDatabase_JRO(dbname, '', '')
   end;
 end;
-    
+
 { TADOConnections }
 
 function TADOConnections.Add: TADODBConnection;

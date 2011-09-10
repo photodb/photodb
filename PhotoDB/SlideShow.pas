@@ -128,6 +128,8 @@ type
     N12: TMenuItem;
     CreatePersone1: TMenuItem;
     OtherPersones1: TMenuItem;
+    N13: TMenuItem;
+    Findphotos1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -365,14 +367,22 @@ uses
 
 function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload
 begin
-  Result.X := Round(R.X * Image.Width / OriginalSize.cx);
-  Result.Y := Round(R.Y * Image.Height / OriginalSize.cy);
+  Result := R;
+  if (OriginalSize.cx <> 0) and (OriginalSize.cy <> 0) then
+  begin
+    Result.X := Round(R.X * Image.Width / OriginalSize.cx);
+    Result.Y := Round(R.Y * Image.Height / OriginalSize.cy);
+  end;
 end;
 
 function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload
 begin
-  Result.X := Round(R.X * OriginalSize.cx / Image.Width);
-  Result.Y := Round(R.Y * OriginalSize.cy / Image.Height);
+  Result := R;
+  if (Image.Width <> 0) and (Image.Height <> 0) then
+  begin
+    Result.X := Round(R.X * OriginalSize.cx / Image.Width);
+    Result.Y := Round(R.Y * OriginalSize.cy / Image.Height);
+  end;
 end;
 
 procedure TViewer.FormCreate(Sender: TObject);

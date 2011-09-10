@@ -40,7 +40,7 @@ type
   private
     FImages: TList;
     FSync: TCriticalSection;
-    function CreateCacheFileName(FileName: string): string;
+    function CreateCacheFileName(DetectMethod, FileName: string): string;
     function ExtractData: TFaceDetectionData;
   public
     procedure RequestFaceDetection(Caller: TThreadForm; var Image: TGraphic; FileName: string);
@@ -114,7 +114,9 @@ begin
 
           FFaces.Clear;
 
-          CacheFileName := FaceDetectionDataManager.CreateCacheFileName(ImageData.FileName);
+          FaceMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
+
+          CacheFileName := FaceDetectionDataManager.CreateCacheFileName(FaceMethod, ImageData.FileName);
           LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
           if LoadResult = FACE_DETECTION_OK then
           begin
@@ -122,7 +124,6 @@ begin
             Continue;
           end;
 
-          FaceMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
           FBitmap := TBitmap.Create;
           try
             AssignGraphic(FBitmap, ImageData.Image);
@@ -178,13 +179,13 @@ begin
   TFaceDetectionThread.Create;
 end;
 
-function TFaceDetectionDataManager.CreateCacheFileName(
-  FileName: string): string;
+function TFaceDetectionDataManager.CreateCacheFileName(DetectMethod, FileName: string): string;
 var
-  CRC: Cardinal;
+  CRC, DetectCRC: Cardinal;
 begin
   CRC := StringCRC(FileName);
-  Result := GetAppDataDirectory + FaceCacheDirectory + IntToStr(CRC and $FF) + '\' + IntToStr((CRC shr 8) and $FF) + '\' + ExtractFileName(FileName) + '.xml';
+  DetectCRC := StringCRC(DetectMethod);
+  Result := GetAppDataDirectory + FaceCacheDirectory + IntToStr(DetectCRC and $FF) + '\' + IntToStr(CRC and $FF) + '\' + IntToStr((CRC shr 8) and $FF) + '\' + ExtractFileName(FileName) + '.xml';
 end;
 
 destructor TFaceDetectionDataManager.Destroy;
@@ -213,8 +214,8 @@ function TFaceDetectionDataManager.GetFaceData(FileName: string;
   Faces: TFaceDetectionResult): Integer;
 begin
   Result := FACE_DETECTION_NOT_READY;
-  //if Faces.LoadFromFile(FileName) then
- //   Result := FACE_DETECTION_OK;
+  if Faces.LoadFromFile(FileName) then
+    Result := FACE_DETECTION_OK;
 end;
 
 procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TThreadForm;

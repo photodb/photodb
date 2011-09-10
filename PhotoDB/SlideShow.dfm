@@ -635,5 +635,11 @@ object Viewer: TViewer
     object OtherPersones1: TMenuItem
       Caption = 'Other Persones'
     end
+    object N13: TMenuItem
+      Caption = '-'
+    end
+    object Findphotos1: TMenuItem
+      Caption = 'Find photos'
+    end
   end
 end

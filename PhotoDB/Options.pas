@@ -5,7 +5,7 @@ interface
 uses
   Registry, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
-  Menus, ShellCtrls, Dolphin_DB, ImgList, Math, Mask, uFileUtils,
+  Menus, ShellCtrls, Dolphin_DB, ImgList, Math, Mask, uFileUtils, uSysUtils,
   acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
   UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
   UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
@@ -150,6 +150,9 @@ type
     DeselectAll1: TMenuItem;
     CbExplorerShowThumbsForVideo: TCheckBox;
     cbViewerFaceDetection: TCheckBox;
+    lbDetectionSize: TLabel;
+    CbDetectionSize: TComboBox;
+    BtnClearFaceDetectionCache: TButton;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -240,7 +243,7 @@ uses
 
 procedure TOptionsForm.TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
 var
-  I: Integer;
+  I, Size: Integer;
   Reg: TBDRegistry;
   S: TStrings;
   FCaption, EXEFile, Params, Icon: string;
@@ -289,6 +292,13 @@ begin
     TrackBar4Change(Sender);
 
     CbViewerFaceDetection.Checked := Settings.Readbool('Options', 'ViewerFaceDetection', True);
+
+    CbDetectionSize.ItemIndex := 0;
+    Size := Settings.ReadInteger('Options', 'FaceDetectionSize', 30);
+    for I := 0 to CbDetectionSize.Items.Count - 1 do
+      if Integer(CbDetectionSize.Items.Objects[I]) = Size then
+        CbDetectionSize.ItemIndex := I;
+
   end;
   if NewTab = 4 then
   begin
@@ -576,6 +586,7 @@ begin
     Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
 
     Settings.WriteBool('Options', 'ViewerFaceDetection', CbViewerFaceDetection.Checked);
+    Settings.WriteInteger('Options', 'FaceDetectionSize', Integer(CbDetectionSize.Items.Objects[CbDetectionSize.ItemIndex]));
   end;
 
   Settings.ClearCache;
@@ -652,6 +663,11 @@ begin
 end;
 
 procedure TOptionsForm.LoadLanguage;
+const
+  DetectSizes: array[1..5] of Integer = (30, 60, 90, 130, 200);
+var
+  I: Integer;
+  S: string;
 begin
   BeginTranslate;
   try
@@ -761,6 +777,13 @@ begin
     CbUpdateExifInfoInBackground.Caption := L('Update EXIF info in background');
 
     cbViewerFaceDetection.Caption := L('Enable face detection');
+    lbDetectionSize.Caption := L('Detection size') + ':';
+
+    for I := 1 to 5 do
+    begin
+      S := FloatToStrEx(DetectSizes[I] / 10, 2) + L('Mpx') + IIF(I = 1, ' (' + L('Best perfomance') + ')', '');
+      CbDetectionSize.Items.AddObject(S, TObject(I));
+    end;
   finally
     EndTranslate;
   end;

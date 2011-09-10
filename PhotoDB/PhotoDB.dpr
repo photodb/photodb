@@ -342,7 +342,9 @@ uses
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
   uDatabaseSearch in 'Units\uDatabaseSearch.pas',
   uFaceDetection in 'Units\uFaceDetection.pas',
-  uFaceDetectionThread in 'Threads\uFaceDetectionThread.pas';
+  uFaceDetectionThread in 'Threads\uFaceDetectionThread.pas',
+  uPeopleSupport in 'Units\uPeopleSupport.pas',
+  uFormCreatePerson in 'uFormCreatePerson.pas' {TFormCreatePerson};
 
 {$R *.res}
 
@@ -507,6 +509,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
+  Application.CreateForm(TTFormCreatePerson, TFormCreatePerson);
   Application.ShowMainForm := False;
       // This is main form of application
 

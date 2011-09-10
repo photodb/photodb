@@ -423,6 +423,13 @@ object OptionsForm: TOptionsForm
         Caption = 'Slide Speed (5000)'
         ExplicitWidth = 420
       end
+      object lbDetectionSize: TLabel
+        Left = 8
+        Top = 237
+        Width = 71
+        Height = 13
+        Caption = 'Detection size:'
+      end
       object TrackBar1: TTrackBar
         Left = 3
         Top = 19
@@ -486,8 +493,24 @@ object OptionsForm: TOptionsForm
         Width = 430
         Height = 17
         Anchors = [akLeft, akTop, akRight]
-        Caption = 'Use face detection'
+        Caption = 'Enable face detection'
         TabOrder = 5
+      end
+      object CbDetectionSize: TComboBox
+        Left = 8
+        Top = 256
+        Width = 237
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 6
+      end
+      object BtnClearFaceDetectionCache: TButton
+        Left = 8
+        Top = 283
+        Width = 237
+        Height = 25
+        Caption = 'Clear cache'
+        TabOrder = 7
       end
     end
     object TsUserMenu: TTabSheet
