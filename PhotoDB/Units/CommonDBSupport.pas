@@ -124,23 +124,23 @@ var
    //TODO: delete it
    dbname : string = '';
 
-function GetDBType : integer; overload;
-function GetDBType(dbname : string) : integer; overload;
+function GetDBType: Integer; overload;
+function GetDBType(Dbname: string): Integer; overload;
 
-procedure FreeDS(var DS : TDataSet);
-function ADOInitialize(dbname : String; ForseNewConnection : Boolean = False) : TADOConnection;
+procedure FreeDS(var DS: TDataSet);
+function ADOInitialize(Dbname: string; ForseNewConnection: Boolean = False): TADOConnection;
 
-function GetTable : TDataSet; overload;
-function GetTable(Table : String; TableID : integer = DB_TABLE_UNKNOWN) : TDataSet; overload;
+function GetTable: TDataSet; overload;
+function GetTable(Table: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet; overload;
 
-function ActiveTable(Table : TDataSet; Active : boolean) : boolean;
+function ActiveTable(Table: TDataSet; Active: Boolean): Boolean;
 
-function GetConnectionString(dbname : String) : String; overload;
-function GetConnectionString : String; overload;
+function GetConnectionString(Dbname: string): string; overload;
+function GetConnectionString: string; overload;
 
-function GetQuery(IsolateThread : Boolean = False) : TDataSet; overload;
-function GetQuery(TableName : string; IsolateThread : Boolean = False) : TDataSet; overload;
-function GetQuery(TableName : string; TableType : integer; IsolateThread : Boolean = False) : TDataSet; overload;
+function GetQuery(IsolateThread: Boolean = False): TDataSet; overload;
+function GetQuery(TableName: string; IsolateThread: Boolean = False): TDataSet; overload;
+function GetQuery(TableName: string; TableType: Integer; IsolateThread: Boolean = False): TDataSet; overload;
 
 procedure SetSQL(SQL : TDataSet; SQLText : String);
 procedure ExecSQL(SQL : TDataSet);
@@ -910,39 +910,6 @@ begin
   end;
 end;
 
-{function DataBaseConnection_Test(bMessage: Boolean): AnsiString;
-var
-  asTimeout, asUserName, asPassword, asDataSource, ConnectionString: AnsiString;
-  iReturn: Integer;
-begin
-  asTimeout     := '150';
-  asUserName    := 'NT_Server';
-  asPassword    := 'SA';
-  asDataSource  := 'SQL Server - Photo DataBase';
-
-  ConnectionString := 'Data Source = ' + asDataSource +
-    'User ID = ' + asUserName +
-    'Password = ' + asPassword +
-    'Mode = Read|Write;Connect Timeout = ' + asTimeout;
-  try
-    iReturn := OpenConnection(ConnectionString);
-
-    if (bMessage) then
-    begin
-      if (iReturn = 0) then
-        MessageBox(0,'Connection OK!', 'Information', MB_OK)
-      else if (iReturn = -1) then
-        MessageBox(0,'Connection Error!', 'Error', MB_ICONERROR + MB_OK);
-    end;
-
-    if (iReturn = 0) then
-      Result := ConnectionString
-    else if (iReturn = -1) then
-      Result := '';
-  finally
-  end;
-end; }
-
 procedure CompactDatabase_JRO(DatabaseName:string;DestDatabaseName:string='';Password:string='');
 const
    Provider = 'Provider=Microsoft.Jet.OLEDB.4.0;';
@@ -1109,7 +1076,7 @@ begin
     DBParam := FParamList[I];
     Paramert := nil;
     if DS is TADOQuery then
-      Paramert := TADOQuery(DS).Parameters.FindParam(DBParam.Name);
+      Paramert := TADOQuery(DS).Parameters.FindParam(DBParam.name);
     if Paramert <> nil then
     begin
       if DBParam is TDBDateTimeParam then

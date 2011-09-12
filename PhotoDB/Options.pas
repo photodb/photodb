@@ -294,7 +294,7 @@ begin
     CbViewerFaceDetection.Checked := Settings.Readbool('Options', 'ViewerFaceDetection', True);
 
     CbDetectionSize.ItemIndex := 0;
-    Size := Settings.ReadInteger('Options', 'FaceDetectionSize', 30);
+    Size := Settings.ReadInteger('Options', 'FaceDetectionSize', 3);
     for I := 0 to CbDetectionSize.Items.Count - 1 do
       if Integer(CbDetectionSize.Items.Objects[I]) = Size then
         CbDetectionSize.ItemIndex := I;
@@ -664,7 +664,7 @@ end;
 
 procedure TOptionsForm.LoadLanguage;
 const
-  DetectSizes: array[1..5] of Integer = (30, 60, 90, 130, 200);
+  DetectSizes: array[1..5] of Integer = (3, 6, 9, 13, 20);
 var
   I: Integer;
   S: string;

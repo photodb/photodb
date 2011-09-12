@@ -130,7 +130,7 @@ begin
             W := FBitmap.Width;
             H := FBitmap.Height;
             RMp := W * H;
-            AMp := 0.3 * 1000000;
+            AMp := Settings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
 
             if RMp > AMp then
             begin

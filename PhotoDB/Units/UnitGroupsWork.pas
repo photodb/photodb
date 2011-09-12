@@ -101,7 +101,7 @@ function CreateGroupsTableW(FileName: string): Boolean;
 function GroupsTableFileNameW(FileName: string): string;
 function GetNilGroup: TGroup;
 
-//${345d-fgtr-ergd}[#Имя группы#]
+//${345d-fgtr-ergd}[#Group name#]
 
 implementation
 

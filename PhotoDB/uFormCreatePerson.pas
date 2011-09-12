@@ -5,8 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, WatermarkedEdit, ExtCtrls, WatermarkedMemo, ComCtrls,
-  WebLinkList, uFaceDetection, uPeopleSupport, uMemory, uMemoryEx,
-  uBitmapUtils, uDBThread, uDBForm, LoadingSign, u2DUtils;
+  WebLinkList, uFaceDetection, uPeopleSupport, uMemory, uMemoryEx, jpeg,
+  uBitmapUtils, uDBThread, uDBForm, LoadingSign, u2DUtils, uSettings, Menus;
 
 type
   TFormCreatePerson = class(TDBForm)
@@ -14,18 +14,23 @@ type
     LbName: TLabel;
     BvSeparator: TBevel;
     WedName: TWatermarkedEdit;
-    Label1: TLabel;
+    LbComments: TLabel;
     WmComments: TWatermarkedMemo;
     BtnOk: TButton;
     BtnCancel: TButton;
     WllGroups: TWebLinkList;
     LbGroups: TLabel;
     LbBirthDate: TLabel;
-    DateTimePicker1: TDateTimePicker;
+    DtpBirthDay: TDateTimePicker;
     LsExtracting: TLoadingSign;
+    PmImageOptions: TPopupMenu;
+    Loadotherimage1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PbPhotoPaint(Sender: TObject);
+    procedure BtnCancelClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure BtnOkClick(Sender: TObject);
   private
     { Private declarations }
     FPicture: TBitmap;
@@ -33,6 +38,9 @@ type
     procedure Execute(Face: TFaceDetectionResultItem; Bitmap: TBitmap);
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
+    procedure LoadLanguage;
+  protected
+    function GetFormID: string; override;
   public
     { Public declarations }
   end;
@@ -71,6 +79,29 @@ end;
 
 { TFormCreatePerson }
 
+procedure TFormCreatePerson.BtnCancelClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
+var
+  Person: TPerson;
+begin
+  Person := TPerson.Create;
+  try
+    Person.Name := WedName.Text;
+    Person.Birthday := DtpBirthDay.Date;
+    //TODO: Person.Groups :=
+    Person.Comment := WmComments.Text;
+    Person.Image := TJpegImage.Create;
+    Person.Image.Assign(FPicture);
+    PersonManager.CreateNewPerson(Person);
+  finally
+    F(Person);
+  end;
+end;
+
 procedure TFormCreatePerson.Execute(Face: TFaceDetectionResultItem;
   Bitmap: TBitmap);
 begin
@@ -84,12 +115,42 @@ procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
   FPicture := TBitmap.Create;
   FDisplayImage := TBitmap.Create;
+  LoadLanguage;
+  PersonManager.InitDB;
 end;
 
 procedure TFormCreatePerson.FormDestroy(Sender: TObject);
 begin
   F(FPicture);
   F(FDisplayImage);
+end;
+
+procedure TFormCreatePerson.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close;
+end;
+
+function TFormCreatePerson.GetFormID: string;
+begin
+  Result := 'EditPerson';
+end;
+
+procedure TFormCreatePerson.LoadLanguage;
+begin
+  BeginTranslate;
+  try
+    LbName.Caption := L('Name') + ':';
+    LbBirthDate.Caption := L('Birthday') + ':';
+    LbGroups.Caption := L('Related groups') + ':';
+    LbComments.Caption := L('Comment') + ':';
+    WmComments.WatermarkText := L('Comment');
+    BtnCancel.Caption := L('Cancel');
+    BtnOk.Caption := L('Ok');
+  finally
+    EndTranslate;
+  end;
 end;
 
 procedure TFormCreatePerson.PbPhotoPaint(Sender: TObject);
@@ -162,12 +223,35 @@ begin
 end;
 
 procedure TPersonExtractor.Execute;
+var
+  W, H: Integer;
+  RMp, AMp, RR: Double;
+  SmallBitmap: TBitmap;
 begin
   inherited;
   FreeOnTerminate := True;
   FFaces := TFaceDetectionResult.Create;
   try
-    FaceDetectionManager.FacesDetection(FBitmap, 0, FFaces, 'haarcascade_head_and_shoulders.xml');
+
+    W := FBitmap.Width;
+    H := FBitmap.Height;
+    RMp := W * H;
+    AMp := Settings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
+
+    if RMp > AMp then
+    begin
+      RR := Sqrt(RMp / AMp);
+      SmallBitmap := TBitmap.Create;
+      try
+        ProportionalSize(Round(W / RR), Round(H / RR), W, H);
+        uBitmapUtils.QuickReduceWide(W, H, FBitmap, SmallBitmap);
+        FaceDetectionManager.FacesDetection(SmallBitmap, 0, FFaces, 'haarcascade_head_and_shoulders.xml');
+      finally
+        F(SmallBitmap);
+      end;
+    end else
+      FaceDetectionManager.FacesDetection(FBitmap, 0, FFaces, 'haarcascade_head_and_shoulders.xml');
+
     SynchronizeEx(UpdatePicture);
   finally
     F(FFaces);

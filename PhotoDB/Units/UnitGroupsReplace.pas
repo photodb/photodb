@@ -11,7 +11,8 @@ procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGro
 
 implementation
 
-uses UnitGroupReplace;
+uses
+  UnitGroupReplace;
 
 procedure AddGroupsAction(var Actions: TGroupsActions; Action: TGroupAction);
 var

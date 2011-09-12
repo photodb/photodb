@@ -11,12 +11,12 @@ type
   private
     FWindowID: string;
   protected
-    function GetFormID : string; virtual; abstract;
+    function GetFormID: string; virtual; abstract;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function L(StringToTranslate : string) : string; overload;
-    function L(StringToTranslate : string; Scope : string) : string; overload;
+    function L(StringToTranslate: string): string; overload;
+    function L(StringToTranslate: string; Scope: string): string; overload;
     procedure BeginTranslate;
     procedure EndTranslate;
     property FormID: string read GetFormID;
@@ -26,15 +26,16 @@ type
 type
   TFormCollection = class(TObject)
   private
-    FSync : TCriticalSection;
-    FForms : TList;
+    FSync: TCriticalSection;
+    FForms: TList;
     constructor Create;
   public
     destructor Destroy; override;
-    class function Instance : TFormCollection;
+    class function Instance: TFormCollection;
     procedure UnRegisterForm(Form: TDBForm);
     procedure RegisterForm(Form: TDBForm);
-    function GetImage(BaseForm: TDBForm; FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean;
+    function GetImage(BaseForm: TDBForm; FileName: string; Bitmap: TBitmap; var Width: Integer;
+      var Height: Integer): Boolean;
     function GetForm(WindowID: string): TDBForm;
   end;
 
@@ -67,12 +68,12 @@ begin
   TTranslateManager.Instance.EndTranslate;
 end;
 
-function TDBForm.L(StringToTranslate : string; Scope : string) : string;
+function TDBForm.L(StringToTranslate: string; Scope: string): string;
 begin
   Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope)
 end;
 
-function TDBForm.L(StringToTranslate : string) : string;
+function TDBForm.L(StringToTranslate: string): string;
 begin
   Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, GetFormID)
 end;
@@ -159,4 +160,3 @@ finalization
   F(FInstance);
 
 end.
-

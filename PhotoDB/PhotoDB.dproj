@@ -551,6 +551,7 @@
 			</DCCReference>
 			<DCCReference Include="Units\u2DUtils.pas"/>
 			<DCCReference Include="Units\uPersonDB.pas"/>
+			<DCCReference Include="Units\uDBClasses.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

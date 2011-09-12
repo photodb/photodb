@@ -1968,5 +1968,12 @@
 	<translate name="Text color" value="Цвет текста"/>
 	<translate name="Transparency" value="Прозрачность"/>
 	<translate name="Font Name" value="Имя шрифта"/>	
+  </scope>
+  <scope name="EditPerson">
+	<translate name="Name" value="Имя"/>
+	<translate name="Birthday" value="День рождения"/>
+	<translate name="Related groups" value="Связанные группы"/>
+	<translate name="Comment" value="Коментарий"/>
+	<translate name="Transparency" value="Прозрачность"/>
   </scope>  
 </language>

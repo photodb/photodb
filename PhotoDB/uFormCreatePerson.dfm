@@ -11,9 +11,11 @@ object FormCreatePerson: TFormCreatePerson
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   DesignSize = (
     556
     320)
@@ -24,6 +26,7 @@ object FormCreatePerson: TFormCreatePerson
     Top = 8
     Width = 250
     Height = 300
+    PopupMenu = PmImageOptions
     OnPaint = PbPhotoPaint
   end
   object LbName: TLabel
@@ -41,7 +44,7 @@ object FormCreatePerson: TFormCreatePerson
     Anchors = [akLeft, akTop, akBottom]
     Shape = bsLeftLine
   end
-  object Label1: TLabel
+  object LbComments: TLabel
     Left = 272
     Top = 167
     Width = 54
@@ -89,6 +92,7 @@ object FormCreatePerson: TFormCreatePerson
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
     TabOrder = 2
+    OnClick = BtnOkClick
   end
   object BtnCancel: TButton
     Left = 392
@@ -98,6 +102,7 @@ object FormCreatePerson: TFormCreatePerson
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 3
+    OnClick = BtnCancelClick
   end
   object WllGroups: TWebLinkList
     Left = 272
@@ -117,7 +122,7 @@ object FormCreatePerson: TFormCreatePerson
     PaddingTop = 2
     PaddingLeft = 2
   end
-  object DateTimePicker1: TDateTimePicker
+  object DtpBirthDay: TDateTimePicker
     Left = 272
     Top = 73
     Width = 276
@@ -135,5 +140,12 @@ object FormCreatePerson: TFormCreatePerson
     FillPercent = 60
     SignColor = clBlack
     MaxTransparencity = 255
+  end
+  object PmImageOptions: TPopupMenu
+    Left = 200
+    Top = 144
+    object Loadotherimage1: TMenuItem
+      Caption = 'Load other image'
+    end
   end
 end

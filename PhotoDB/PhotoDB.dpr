@@ -346,7 +346,8 @@ uses
   uPeopleSupport in 'Units\uPeopleSupport.pas',
   uFormCreatePerson in 'uFormCreatePerson.pas' {FormCreatePerson},
   u2DUtils in 'Units\u2DUtils.pas',
-  uPersonDB in 'Units\uPersonDB.pas';
+  uPersonDB in 'Units\uPersonDB.pas',
+  uDBClasses in 'Units\uDBClasses.pas';
 
 {$R *.res}
 
