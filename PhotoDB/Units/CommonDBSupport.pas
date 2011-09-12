@@ -9,14 +9,15 @@ uses
   uFileUtils, uRuntime;
 
 const
-
  DB_TYPE_UNKNOWN = 0;
  DB_TYPE_MDB     = 1;
 
- DB_TABLE_UNKNOWN  = 0;
- DB_TABLE_GROUPS   = 1;
- DB_TABLE_IMAGES   = 2;
- DB_TABLE_SETTINGS = 3;
+ DB_TABLE_UNKNOWN         = 0;
+ DB_TABLE_GROUPS          = 1;
+ DB_TABLE_IMAGES          = 2;
+ DB_TABLE_PERSONS         = 3;
+ DB_TABLE_PERSON_MAPPING  = 4;
+ DB_TABLE_SETTINGS        = 5;
 
 type
   TADODBConnection = class(TObject)
@@ -464,13 +465,17 @@ begin
         (Result as TADODataSet).CommandText := 'ImageTable';
       if TableID = DB_TABLE_SETTINGS then
         (Result as TADODataSet).CommandText := 'DBSettings';
+      if TableID = DB_TABLE_PERSONS then
+        (Result as TADODataSet).CommandText := 'Persons';
+      if TableID = DB_TABLE_PERSON_MAPPING then
+        (Result as TADODataSet).CommandText := 'PersonMapping';
     end;
   finally
     FSync.Leave;
   end;
 end;
 
-function GetRecordsCount(Table : string) : integer;
+function GetRecordsCount(Table: string) : integer;
 var
   FTable: TDataSet;
 begin

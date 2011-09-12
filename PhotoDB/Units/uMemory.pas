@@ -8,6 +8,8 @@ uses SysUtils, Classes;
 procedure F(var Obj); inline;
 //Free list items and then free list object
 procedure FreeList(var obj; FreeList: Boolean = True);
+//Exchange pointers
+procedure Exchange(var obj1; var obj2);
 
 implementation
 
@@ -31,6 +33,15 @@ begin
     else
       TList(obj).Clear;
   end;
+end;
+
+procedure Exchange(var obj1; var obj2);
+var
+  P: TObject;
+begin
+  P := TObject(obj1);
+  TObject(obj1) := TObject(obj2);
+  TObject(obj2) := P;
 end;
 
 end.

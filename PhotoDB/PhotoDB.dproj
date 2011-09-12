@@ -547,8 +547,10 @@
 			<DCCReference Include="Threads\uFaceDetectionThread.pas"/>
 			<DCCReference Include="Units\uPeopleSupport.pas"/>
 			<DCCReference Include="uFormCreatePerson.pas">
-				<Form>TFormCreatePerson</Form>
+				<Form>FormCreatePerson</Form>
 			</DCCReference>
+			<DCCReference Include="Units\u2DUtils.pas"/>
+			<DCCReference Include="Units\uPersonDB.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

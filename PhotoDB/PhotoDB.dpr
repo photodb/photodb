@@ -344,7 +344,9 @@ uses
   uFaceDetection in 'Units\uFaceDetection.pas',
   uFaceDetectionThread in 'Threads\uFaceDetectionThread.pas',
   uPeopleSupport in 'Units\uPeopleSupport.pas',
-  uFormCreatePerson in 'uFormCreatePerson.pas' {TFormCreatePerson};
+  uFormCreatePerson in 'uFormCreatePerson.pas' {FormCreatePerson},
+  u2DUtils in 'Units\u2DUtils.pas',
+  uPersonDB in 'Units\uPersonDB.pas';
 
 {$R *.res}
 
@@ -509,7 +511,6 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-  Application.CreateForm(TTFormCreatePerson, TFormCreatePerson);
   Application.ShowMainForm := False;
       // This is main form of application
 

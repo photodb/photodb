@@ -10,6 +10,12 @@ const
   // Image processiong options
   ZoomSmoothMin = 0.4;
 
+type
+  TBitmapHelper = class helper for TBitmap
+  public
+   function ClientRect: TRect;
+  end;
+
 procedure ThreadDraw(S, D: TBitmap; X, Y: Integer);
 procedure ApplyRotate(Bitmap: TBitmap; RotateValue: Integer);
 procedure Rotate180A(Bitmap: TBitmap);
@@ -1118,7 +1124,7 @@ begin
   begin
     PD := D.ScanLine[I];
     PS := S.ScanLine[I];
-    for J:=0 to S.Width - 1 do
+    for J := 0 to S.Width - 1 do
     begin
       W1 := PS[J].L;
       W2 := 255 - W1;
@@ -1130,10 +1136,10 @@ begin
 end;
 
 
-procedure GrayScale(Image : TBitmap);
+procedure GrayScale(Image: TBitmap);
 var
-  I, J, C : integer;
-  P : PARGB;
+  I, J, C: Integer;
+  P: PARGB;
 begin
   Image.PixelFormat := pf24bit;
 
@@ -1150,11 +1156,11 @@ begin
   end;
 end;
 
-procedure GrayScaleImage(S, D: TBitmap; N: integer);
+procedure GrayScaleImage(S, D: TBitmap; N: Integer);
 var
-  I, J : integer;
-  p1, p2 : Pargb;
-  G : Byte;
+  I, J: Integer;
+  P1, P2: Pargb;
+  G: Byte;
   W1, W2: Byte;
 begin
   W1 := Round((N / 100) * 255);
@@ -1902,6 +1908,13 @@ begin
       Break;
 
   end;
+end;
+
+{ TBitmapHelper }
+
+function TBitmapHelper.ClientRect: TRect;
+begin
+  Result := Rect(0, 0, Width, Height);
 end;
 
 end.

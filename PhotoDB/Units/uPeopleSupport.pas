@@ -257,4 +257,16 @@ begin
   Clear;
 end;
 
+{ TPersonArea }
+
+procedure TPersonArea.ReadFromDS(DS: TDataSet);
+begin
+
+end;
+
+procedure TPersonArea.SaveToDS(DS: TDataSet);
+begin
+
+end;
+
 end.

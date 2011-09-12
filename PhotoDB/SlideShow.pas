@@ -16,7 +16,7 @@ uses
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
-  uExifUtils, uInterfaces, WebLink;
+  uExifUtils, uInterfaces, WebLink, uPeopleSupport, u2DUtils;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
@@ -222,6 +222,7 @@ type
     procedure WlFaceCountClick(Sender: TObject);
     procedure PmFacesPopup(Sender: TObject);
     procedure SelectCascade(Sender: TObject);
+    procedure CreatePersone1Click(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -360,8 +361,8 @@ uses
   ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
-  UnitSlideShowUpdateInfoThread, UnitCryptImageForm,
-  uFormSteganography;
+  UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,
+  uFormCreatePerson;
 
 {$R *.dfm}
 
@@ -1990,6 +1991,64 @@ begin
   //Windows explorer window class - EEePc touch pad support
   Params.WinClassName := 'AVL_AVView';
   TW.I.Start('CreateParams - END');
+end;
+
+procedure TViewer.CreatePersone1Click(Sender: TObject);
+var
+  Face, TmpFace: TFaceDetectionResultItem;
+  R, FaceRect: TRect;
+  P1, P2: TPoint;
+  B: TBitmap;
+  P: TPerson;
+  W, H: Integer;
+begin
+  Face := TFaceDetectionResultItem(PmFace.Tag);
+  R := Face.Rect;
+  P1 := R.TopLeft;
+  P2 := R.BottomRight;
+  P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
+  P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
+
+  R := Rect(P1, P2);
+  W := RectWidth(R);
+  H := RectHeight(R);
+  InflateRect(R, W, H);
+  FaceRect := Rect(W, H, 2 * W, 2 * H);
+
+  if R.Left < 0 then
+  begin
+    FaceRect := MoveRect(FaceRect, R.Left, 0);
+    R.Left := 0;
+  end;
+  if R.Top < 0 then
+  begin
+    FaceRect := MoveRect(FaceRect, 0, R.Top);
+    R.Top := 0;
+  end;
+  if R.Bottom > FBImage.Height then
+    R.Bottom := FBImage.Height;
+  if R.Right > FBImage.Width then
+    R.Right := FBImage.Width;
+
+  B := TBitmap.Create;
+  try
+    B.PixelFormat := pf24Bit;
+    B.SetSize(RectWidth(R), RectHeight(R));
+    B.Canvas.CopyRect(B.ClientRect, FBImage.Canvas, R);
+    //b contains image of person
+    TmpFace := TFaceDetectionResultItem.Create;
+    try
+      TmpFace.X := FaceRect.Left;
+      TmpFace.Y := FaceRect.Top;
+      TmpFace.Width := RectWidth(FaceRect);
+      TmpFace.Height := RectHeight(FaceRect);
+      CreatePerson(TmpFace, B, P);
+    finally
+      F(TmpFace);
+    end;
+  finally
+    F(B);
+  end;
 end;
 
 procedure TViewer.DoWaitToImage(Sender: TObject);

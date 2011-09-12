@@ -3,7 +3,7 @@ unit uFaceDetection;
 interface
 
 uses
-  Windows, SysUtils, Classes, uMemory, Graphics, SyncObjs;
+  Windows, SysUtils, Classes, uMemory, Graphics, SyncObjs, u2DUtils;
 
 type
   CvSize = record
@@ -211,6 +211,7 @@ type
     Width: Integer;
     Height: Integer;
     function Rect: TRect;
+    function Copy: TFaceDetectionResultItem;
   end;
 
   TFaceDetectionResult = class
@@ -227,6 +228,7 @@ type
     destructor Destroy; override;
     procedure Clear;
     procedure Assign(Source: TFaceDetectionResult);
+    procedure DeleteAt(I: Integer);
     function AddFace(X, Y, Width, Height: Integer): TFaceDetectionResultItem;
     property Items[Index: Integer]: TFaceDetectionResultItem read GetItem; default;
     property Count: Integer read GetCount;
@@ -495,6 +497,12 @@ begin
   FList := TList.Create;
 end;
 
+procedure TFaceDetectionResult.DeleteAt(I: Integer);
+begin
+  Items[I].Free;
+  FList.Delete(I);
+end;
+
 destructor TFaceDetectionResult.Destroy;
 begin
   FreeList(FList);
@@ -544,10 +552,11 @@ var
   StorageType: Integer;
   Img: PIplImage;
   Storage: PCvMemStorage;
-	I: LongInt;
+	I, J: LongInt;
   ImSize: CvSize;
   R: PCvRect;
   FacesSeq: PCvSeq;
+  RctIn, RctOut: TRect;
   FCascadeFaces: PCvHaarClassifierCascade;
 begin
   FCascadeFaces := Cascades[Method];
@@ -580,6 +589,22 @@ begin
 
         Faces.AddFace(R.X, R.Y, R.Width, R.Height);
       end;
+
+      for I := Faces.Count - 1 downto 0 do
+      begin
+        for J := Faces.Count - 1 downto 0 do
+        if I <> J then
+          begin
+            RctIn := Rect(Faces[I].X, Faces[I].Y, Faces[I].X + Faces[I].Width, Faces[I].Y + Faces[I].Height);
+            RctOut := Rect(Faces[J].X, Faces[J].Y, Faces[J].X + Faces[J].Width, Faces[J].Y + Faces[J].Height);
+            if RectInRectPercent(RctOut, RctIn) > 25 then
+            begin
+              Faces.DeleteAt(I);
+              Break;
+            end;
+          end;
+      end;
+
       Faces.FPage := Page;
       Faces.FImageWidth := Bitmap.Width;
       Faces.FImageHeight := Bitmap.Height;
@@ -626,6 +651,15 @@ begin
 end;
 
 { TFaceDetectionResultItem }
+
+function TFaceDetectionResultItem.Copy: TFaceDetectionResultItem;
+begin
+  Result := TFaceDetectionResultItem.Create;
+  Result.X := X;
+  Result.Y := Y;
+  Result.Width := Width;
+  Result.Height := Height;
+end;
 
 function TFaceDetectionResultItem.Rect: TRect;
 begin

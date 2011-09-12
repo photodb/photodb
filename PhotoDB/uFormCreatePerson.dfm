@@ -1,4 +1,4 @@
-object TFormCreatePerson: TTFormCreatePerson
+object FormCreatePerson: TFormCreatePerson
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
@@ -12,6 +12,8 @@ object TFormCreatePerson: TTFormCreatePerson
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     556
     320)
@@ -22,6 +24,7 @@ object TFormCreatePerson: TTFormCreatePerson
     Top = 8
     Width = 250
     Height = 300
+    OnPaint = PbPhotoPaint
   end
   object LbName: TLabel
     Left = 272
@@ -122,5 +125,15 @@ object TFormCreatePerson: TTFormCreatePerson
     Date = 40796.048069189810000000
     Time = 40796.048069189810000000
     TabOrder = 5
+  end
+  object LsExtracting: TLoadingSign
+    Left = 272
+    Top = 287
+    Width = 25
+    Height = 25
+    Active = True
+    FillPercent = 60
+    SignColor = clBlack
+    MaxTransparencity = 255
   end
 end

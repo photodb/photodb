@@ -631,6 +631,7 @@ object Viewer: TViewer
     end
     object CreatePersone1: TMenuItem
       Caption = 'Create Persone'
+      OnClick = CreatePersone1Click
     end
     object OtherPersones1: TMenuItem
       Caption = 'Other Persones'

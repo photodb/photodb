@@ -117,12 +117,12 @@ begin
           FaceMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
 
           CacheFileName := FaceDetectionDataManager.CreateCacheFileName(FaceMethod, ImageData.FileName);
-          LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
+         { LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
           if LoadResult = FACE_DETECTION_OK then
           begin
             Synchronize(UpdateFaceList);
             Continue;
-          end;
+          end;    }
 
           FBitmap := TBitmap.Create;
           try

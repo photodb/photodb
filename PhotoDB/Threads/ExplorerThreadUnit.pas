@@ -969,7 +969,12 @@ var
                 end;
 
                 if ProcessSearchRecord(Files, CurrentDirectory, SearchRec) then
+                begin
+                  if DE then
+                    Directories.Add(CurrentDirectory + SearchRec.Name);
+
                   SendInfoToExplorer(Files);
+                end;
                   
               finally
                 Found := SysUtils.FindNext(SearchRec);
