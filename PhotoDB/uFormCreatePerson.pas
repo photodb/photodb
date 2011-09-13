@@ -35,7 +35,9 @@ type
     { Private declarations }
     FPicture: TBitmap;
     FDisplayImage: TBitmap;
-    procedure Execute(Face: TFaceDetectionResultItem; Bitmap: TBitmap);
+    FOriginalFace: TFaceDetectionResultItem;
+    FImageID: Integer;
+    procedure Execute(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
     procedure LoadLanguage;
@@ -59,19 +61,19 @@ type
     destructor Destroy; override;
   end;
 
-procedure CreatePerson(Face: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
+procedure CreatePerson(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
 
 implementation
 
 {$R *.dfm}
 
-procedure CreatePerson(Face: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
+procedure CreatePerson(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
 var
   FormCreatePerson: TFormCreatePerson;
 begin
   Application.CreateForm(TFormCreatePerson, FormCreatePerson);
   try
-    FormCreatePerson.Execute(Face, Bitmap);
+    FormCreatePerson.Execute(ImageID, OriginalFace, FaceInImage, Bitmap);
   finally
     R(FormCreatePerson);
   end;
@@ -87,6 +89,8 @@ end;
 procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
 var
   Person: TPerson;
+  PersonArea: TPersonArea;
+  J: TJpegImage;
 begin
   Person := TPerson.Create;
   try
@@ -94,19 +98,33 @@ begin
     Person.Birthday := DtpBirthDay.Date;
     //TODO: Person.Groups :=
     Person.Comment := WmComments.Text;
-    Person.Image := TJpegImage.Create;
-    Person.Image.Assign(FPicture);
+    J := TJPEGImage.Create;
+    try
+      J.Assign(FPicture);
+      Person.Image := J;
+    finally
+      F(J);
+    end;
     PersonManager.CreateNewPerson(Person);
+
+    PersonArea := TPersonArea.Create(FImageID, Person.ID, FOriginalFace);
+    try
+      PersonManager.AddPersonForPhoto(PersonArea);
+    finally
+      F(PersonArea);
+    end;
   finally
     F(Person);
   end;
 end;
 
-procedure TFormCreatePerson.Execute(Face: TFaceDetectionResultItem;
+procedure TFormCreatePerson.Execute(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem;
   Bitmap: TBitmap);
 begin
   FPicture.Assign(Bitmap);
-  TPersonExtractor.Create(Self, Face, FPicture);
+  FOriginalFace := OriginalFace;
+  FImageID := ImageID;
+  TPersonExtractor.Create(Self, FaceInImage, FPicture);
   RecreateImage;
   ShowModal;
 end;
@@ -175,6 +193,7 @@ begin
     try
       SmallB.PixelFormat := pf32Bit;
       DoResize(W, H, B, SmallB);
+      F(FDisplayImage);
       LoadBMPImage32bit(SmallB, FDisplayImage, clBtnFace);
     finally
       F(SmallB);

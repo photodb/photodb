@@ -3,9 +3,11 @@ object FormCreatePerson: TFormCreatePerson
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Person'
-  ClientHeight = 320
-  ClientWidth = 556
+  ClientHeight = 322
+  ClientWidth = 554
   Color = clBtnFace
+  Constraints.MinHeight = 360
+  Constraints.MinWidth = 570
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -17,8 +19,8 @@ object FormCreatePerson: TFormCreatePerson
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   DesignSize = (
-    556
-    320)
+    554
+    322)
   PixelsPerInch = 96
   TextHeight = 13
   object PbPhoto: TPaintBox
@@ -40,9 +42,10 @@ object FormCreatePerson: TFormCreatePerson
     Left = 264
     Top = 8
     Width = 2
-    Height = 300
+    Height = 302
     Anchors = [akLeft, akTop, akBottom]
     Shape = bsLeftLine
+    ExplicitHeight = 300
   end
   object LbComments: TLabel
     Left = 272
@@ -69,7 +72,7 @@ object FormCreatePerson: TFormCreatePerson
   object WedName: TWatermarkedEdit
     Left = 272
     Top = 27
-    Width = 276
+    Width = 274
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
@@ -78,15 +81,15 @@ object FormCreatePerson: TFormCreatePerson
   object WmComments: TWatermarkedMemo
     Left = 272
     Top = 186
-    Width = 276
-    Height = 95
+    Width = 274
+    Height = 97
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 1
     WatermarkText = 'Comments'
   end
   object BtnOk: TButton
-    Left = 473
-    Top = 287
+    Left = 471
+    Top = 289
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -95,8 +98,8 @@ object FormCreatePerson: TFormCreatePerson
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 392
-    Top = 287
+    Left = 390
+    Top = 289
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -107,7 +110,7 @@ object FormCreatePerson: TFormCreatePerson
   object WllGroups: TWebLinkList
     Left = 272
     Top = 119
-    Width = 276
+    Width = 274
     Height = 42
     HorzScrollBar.Visible = False
     Anchors = [akLeft, akTop, akRight]
@@ -125,8 +128,9 @@ object FormCreatePerson: TFormCreatePerson
   object DtpBirthDay: TDateTimePicker
     Left = 272
     Top = 73
-    Width = 276
+    Width = 274
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     Date = 40796.048069189810000000
     Time = 40796.048069189810000000
     TabOrder = 5

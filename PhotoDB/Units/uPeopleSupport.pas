@@ -3,10 +3,12 @@ unit uPeopleSupport;
 interface
 
 uses
-  SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB;
+  SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB,
+  uFaceDetection;
 
 const
   PersonTableName = 'Persons';
+  PersonMappingTableName = 'PersonMapping';
 
 type
   TPerson = class;
@@ -30,7 +32,7 @@ type
     function UpdatePerson(Person: TPerson): Boolean;
     function GetPersonsOnImage(ImageID: Integer): TPersonCollection;
     function GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
-    function AddPersonForPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
+    function AddPersonForPhoto(PersonArea: TPersonArea): Boolean;
     function RemovePersonFromPhoto(ImageID: Integer; PersonID: Integer): Boolean;
     constructor Create;
     destructor Destroy; override;
@@ -66,6 +68,7 @@ type
     FIMNumber: string;
     FEmail: string;
     FSex: Integer;
+    FCreateDate: TDateTime;
     procedure SetImage(const Value: TJpegImage);
   public
     constructor Create;
@@ -85,10 +88,12 @@ type
     property IMNumber: string read FIMNumber write FIMNumber;
     property Email: string read FEmail write FEmail;
     property Sex: Integer read FSex write FSex;
+    property CreateDate: TDateTime read FCreateDate;
   end;
 
   TPersonArea = class
   private
+    FID: Integer;
     FX: Integer;
     FY: Integer;
     FWidth: Integer;
@@ -97,9 +102,22 @@ type
     FFullHeight: Integer;
     FImageID: Integer;
     FPersonID: Integer;
+    FPage: Integer;
   public
+    constructor Create; overload;
+    constructor Create(ImageID, PersonID: Integer; Area: TFaceDetectionResultItem); overload;
     procedure ReadFromDS(DS: TDataSet);
     procedure SaveToDS(DS: TDataSet);
+    property ID: Integer read FID write FID;
+    property X: Integer read FX;
+    property Y: Integer read FY;
+    property Width: Integer read FWidth;
+    property Height: Integer read FHeight;
+    property FullWidth: Integer read FFullWidth;
+    property FullHeight: Integer read FFullHeight;
+    property ImageID: Integer read FImageID;
+    property PersonID: Integer read FPersonID;
+    property Page: Integer read FPage;
   end;
 
   TPersonAreaCollection = class(TObject)
@@ -149,12 +167,26 @@ end;
 
 procedure TPerson.ReadFromDS(DS: TDataSet);
 begin
-
+  FName := DS.FieldByName('PersonName').AsString;
+  FGroups := DS.FieldByName('RelatedGroups').AsString;
+  FBirthDay := DS.FieldByName('BirthDate').AsDateTime;
+  FPhone := DS.FieldByName('PersonPhone').AsString;
+  FAddress := DS.FieldByName('PersonAddress').AsString;
+  FCompany := DS.FieldByName('Company').AsString;
+  FJobTitle := DS.FieldByName('JobTitle').AsString;
+  FIMNumber := DS.FieldByName('IMNumber').AsString;
+  FEmail := DS.FieldByName('PersonEmail').AsString;
+  FSex := DS.FieldByName('PersonSex').AsInteger;
+  FComment := DS.FieldByName('PersonComment').AsString;
+  FCreateDate := DS.FieldByName('PersonComment').AsDateTime;
+  F(FImage);
+  FImage := TJpegImage.Create;
+  FImage.Assign(DS.FieldByName('PersonImage'));
 end;
 
 procedure TPerson.SaveToDS(DS: TDataSet);
 begin
-
+  raise Exception.Create('Not implemented');
 end;
 
 procedure TPerson.SetImage(const Value: TJpegImage);
@@ -166,10 +198,33 @@ end;
 
 { TPersonManager }
 
-function TPersonManager.AddPersonForPhoto(ImageID: Integer;
-  PersonArea: TPersonArea): Boolean;
+function TPersonManager.AddPersonForPhoto(PersonArea: TPersonArea): Boolean;
+var
+  IC: TInsertCommand;
 begin
+  Result := False;
 
+  IC := TInsertCommand.Create(PersonMappingTableName);
+  try
+    IC.AddParameter(TIntegerParameter.Create('PersonID', PersonArea.PersonID));
+    IC.AddParameter(TIntegerParameter.Create('Left', PersonArea.X));
+    IC.AddParameter(TIntegerParameter.Create('Right', PersonArea.Y));
+    IC.AddParameter(TIntegerParameter.Create('Top', PersonArea.Y + PersonArea.Height));
+    IC.AddParameter(TIntegerParameter.Create('Bottom', PersonArea.X + PersonArea.Width));
+    IC.AddParameter(TIntegerParameter.Create('ImageWidth', PersonArea.FullWidth));
+    IC.AddParameter(TIntegerParameter.Create('ImageHeight', PersonArea.FullHeight));
+    IC.AddParameter(TIntegerParameter.Create('PageNumber', PersonArea.Page));
+    IC.AddParameter(TIntegerParameter.Create('ImageID', PersonArea.ImageID));
+    try
+      PersonArea.ID := IC.Execute;
+
+      Result := True;
+    except
+      Exit;
+    end;
+  finally
+    F(IC);
+  end;
 end;
 
 constructor TPersonManager.Create;
@@ -201,7 +256,7 @@ begin
     IC.AddParameter(TDateTimeParameter.Create('CreateDate', Now));
 
     try
-      IC.Execute;
+      Person.ID := IC.Execute;
     except
       Exit;
     end;
@@ -376,14 +431,48 @@ end;
 
 { TPersonArea }
 
+constructor TPersonArea.Create(ImageID, PersonID: Integer;
+  Area: TFaceDetectionResultItem);
+begin
+  Create;
+  FID := 0;
+  FX := Area.X;
+  FY := Area.Y;
+  FWidth := Area.Width;
+  FHeight := Area.Height;
+  FFullWidth := Area.ImageWidth;
+  FFullHeight := Area.ImageHeight;
+  FPage := Area.Page;
+  FImageID := ImageID;
+  FPersonID := PersonID;
+end;
+
+constructor TPersonArea.Create;
+begin
+end;
+
 procedure TPersonArea.ReadFromDS(DS: TDataSet);
 begin
-
+  FID := DS.FieldByName('PersonMappingID').AsInteger;
+  FX := DS.FieldByName('Left').AsInteger;
+  FY := DS.FieldByName('Top').AsInteger;
+  FWidth := DS.FieldByName('Width').AsInteger;
+  FHeight := DS.FieldByName('Height').AsInteger;
+  FFullWidth := DS.FieldByName('ImageWidth').AsInteger;
+  FFullHeight := DS.FieldByName('ImageHeight').AsInteger;
+  FImageID := DS.FieldByName('ImageID').AsInteger;
+  FPersonID := DS.FieldByName('PersonID').AsInteger;
+  FPage := DS.FieldByName('PageNumber').AsInteger;
 end;
 
 procedure TPersonArea.SaveToDS(DS: TDataSet);
 begin
-
+  raise Exception.Create('Not implemented');
 end;
+
+initialization
+
+finalization
+  F(FManager);
 
 end.

@@ -347,7 +347,8 @@ uses
   uFormCreatePerson in 'uFormCreatePerson.pas' {FormCreatePerson},
   u2DUtils in 'Units\u2DUtils.pas',
   uPersonDB in 'Units\uPersonDB.pas',
-  uDBClasses in 'Units\uDBClasses.pas';
+  uDBClasses in 'Units\uDBClasses.pas',
+  uDateUtils in 'Units\uDateUtils.pas';
 
 {$R *.res}
 

@@ -134,6 +134,7 @@ begin
       + '[Bottom] INTEGER NOT NULL, '
       + '[ImageWidth] INTEGER NOT NULL, '
       + '[ImageHeight] INTEGER NOT NULL, '
+      + '[PageNumber] INTEGER NOT NULL, '
       + '[ImageID] INTEGER NOT NULL CONSTRAINT FK_ImageID REFERENCES ImageTable (ID))';
     SetSQL(FQuery, SQL);
     try

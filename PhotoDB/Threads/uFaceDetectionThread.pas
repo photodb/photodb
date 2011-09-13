@@ -5,7 +5,8 @@ interface
 uses
   Classes, Graphics, uDBThread, uThreadForm, uFaceDetection, uMemory, SyncObjs,
   xmldom, ActiveX, SysUtils, uLogger, win32crc, uFileUtils, uConstants,
-  uRuntime, uGraphicUtils, uGOM, uInterfaces, Math, uBitmapUtils, uSettings;
+  uRuntime, uGraphicUtils, uGOM, uInterfaces, Math, uBitmapUtils, uSettings,
+  uDateUtils;
 
 const
   FACE_DETECTION_OK           = 0;
@@ -267,7 +268,8 @@ var
   DocumentElement: IDOMElement;
   FacesList: IDOMNodeList;
   FaceNode: IDOMNode;
-  XAttr, YAttr, WidthAttr, HeightAttr: IDOMNode;
+  XAttr, YAttr, WidthAttr, HeightAttr,
+  ImageWidthAttr, ImageHeightAttr, PageAttr, SizeAttr, DateModifiedAttr: IDOMNode;
 begin
   Result := False;
   Doc := GetDOM.createDocument('', '', nil);
@@ -276,11 +278,22 @@ begin
     DocumentElement := Doc.documentElement;
     if DocumentElement <> nil then
     begin
-      {ImageWidthAttr := DocumentElement.getNamedItem('ImageWidth');
-      ImageHeightAttr := DocumentElement.getNamedItem('ImageHeight');
-      PageAttr := DocumentElement.getNamedItem('Page');
-      SizeAttr := DocumentElement.getNamedItem('Size');
-      DateModifiedAttr := DocumentElement.getNamedItem('DateModified');}
+      ImageWidthAttr := DocumentElement.attributes.getNamedItem('ImageWidth');
+      ImageHeightAttr := DocumentElement.attributes.getNamedItem('ImageHeight');
+      PageAttr := DocumentElement.attributes.getNamedItem('Page');
+      SizeAttr := DocumentElement.attributes.getNamedItem('Size');
+      DateModifiedAttr := DocumentElement.attributes.getNamedItem('DateModified');
+
+      if ImageWidthAttr <> nil then
+        ImageWidth := StrToIntDef(ImageWidthAttr.nodeValue, 0);
+      if ImageHeightAttr <> nil then
+        ImageHeight := StrToIntDef(ImageHeightAttr.nodeValue, 0);
+      if PageAttr <> nil then
+        Page := StrToIntDef(PageAttr.nodeValue, 0);
+      if SizeAttr <> nil then
+        Size := StrToInt64Def(SizeAttr.nodeValue, 0);
+      if DateModifiedAttr <> nil then
+        DateModified := DateTimeStrEval(DateModifiedAttr.nodeValue, 'yyyy.MM.dd mm:ss');
 
       FacesList := DocumentElement.childNodes;
       if FacesList <> nil then
@@ -296,7 +309,8 @@ begin
 
           if (XAttr <> nil) and (YAttr <> nil) and (WidthAttr <> nil) and (HeightAttr <> nil) then
             AddFace(StrToIntDef(XAttr.nodeValue, 0), StrToIntDef(YAttr.nodeValue, 0),
-              StrToIntDef(WidthAttr.nodeValue, 0), StrToIntDef(HeightAttr.nodeValue, 0));
+              StrToIntDef(WidthAttr.nodeValue, 0), StrToIntDef(HeightAttr.nodeValue, 0),
+              ImageWidth, ImageHeight, Page);
         end;
       end;
        Result := True;
@@ -329,6 +343,12 @@ begin
   try
     DocumentElement := Doc.createElement('faces');
     Doc.documentElement := DocumentElement;
+
+    FaceNode := DocumentElement;
+    AddProperty('ImageWidth', IntToStr(ImageWidth));
+    AddProperty('ImageHeight', IntToStr(ImageHeight));
+    AddProperty('Size', IntToStr(Size));
+    AddProperty('DateModified', FormatDateTime('yyyy.MM.dd mm:ss', DateModified));
 
     for I := 0 to Count - 1 do
     begin

@@ -18,6 +18,33 @@ type
     property Name: string read FName;
   end;
 
+  TAllParameter = class(TParameter)
+  protected
+    function GetValue: Variant; override;
+  public
+    constructor Create;
+  end;
+
+  TCustomFieldParameter = class(TParameter)
+  private
+    FExpression: string;
+  protected
+    function GetValue: Variant; override;
+  public
+    constructor Create(Expression: string);
+    property Expression: string read FExpression;
+  end;
+
+  TCustomConditionParameter = class(TParameter)
+  private
+    FExpression: string;
+  protected
+    function GetValue: Variant; override;
+  public
+    constructor Create(Expression: string);
+    property Expression: string read FExpression;
+  end;
+
   TIntegerParameter = class(TParameter)
   private
     FValue: Integer;
@@ -64,7 +91,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Add(Parameter: TParameter);
-    function AsInsertFields: string;
+    function AsFieldList: string;
     function AsInsertValues: string;
     function AsCondition: string;
     function AsUpdateFieldsAndValues: string;
@@ -77,18 +104,21 @@ type
     FParameters: FParameterCollection;
     FWhereParameters: FParameterCollection;
     FQuery: TDataSet;
+    function GetRecordCount: Integer;
   protected
     function GetSQL: string; virtual; abstract;
   public
     constructor Create;
     destructor Destroy; override;
     procedure UpdateParameters;
-    procedure Execute; virtual; abstract;
+    function Execute: Integer; virtual; abstract;
     procedure AddParameter(Parameter: TParameter);
     procedure AddWhereParameter(Parameter: TParameter);
     property SQL: string read GetSQL;
     property Parameters: FParameterCollection read FParameters;
     property WhereParameters: FParameterCollection read FWhereParameters;
+    property DS: TDataSet read FQuery;
+    property RecordCount: Integer read GetRecordCount;
   end;
 
   TInsertCommand = class(TSqlCommand)
@@ -97,7 +127,8 @@ type
   protected
     function GetSQL: string; override;
   public
-    procedure Execute; override;
+    function Execute: Integer; override;
+    function LastID: Integer;
     constructor Create(TableName: string);
   end;
 
@@ -107,7 +138,7 @@ type
   protected
     function GetSQL: string; override;
   public
-    procedure Execute; override;
+    function Execute: Integer; override;
     constructor Create(TableName: string);
   end;
 
@@ -117,7 +148,17 @@ type
   protected
     function GetSQL: string; override;
   public
-    procedure Execute; override;
+    function Execute: Integer; override;
+    constructor Create(TableName: string);
+  end;
+
+  TSelectCommand = class(TSqlCommand)
+  private
+    FTableName: string;
+  protected
+    function GetSQL: string; override;
+  public
+    function Execute: Integer; override;
     constructor Create(TableName: string);
   end;
 
@@ -151,16 +192,31 @@ begin
   FTableName := TableName;
 end;
 
-procedure TInsertCommand.Execute;
+function TInsertCommand.Execute: Integer;
 begin
   SetSQL(FQuery, SQL);
   UpdateParameters;
   ExecSQL(FQuery);
+  Result := LastID;
 end;
 
 function TInsertCommand.GetSQL: string;
 begin
-  Result := Format('INSERT INTO [%s] (%s) values (%s)', [FTableName, Parameters.AsInsertFields, Parameters.AsInsertValues]);
+  Result := Format('INSERT INTO [%s] (%s) values (%s)', [FTableName, Parameters.AsFieldList, Parameters.AsInsertValues]);
+end;
+
+function TInsertCommand.LastID: Integer;
+var
+  SC: TSelectCommand;
+begin
+  SC := TSelectCommand.Create(FTableName);
+  try
+    SC.AddParameter(TCustomFieldParameter.Create('@@identity as LastID'));
+    SC.Execute;
+    Result := SC.DS.FieldByName('LastID').AsInteger;
+  finally
+    F(SC);
+  end;
 end;
 
 { TSqlCommand }
@@ -188,6 +244,13 @@ begin
   F(FWhereParameters);
   FreeDS(FQuery);
   inherited;
+end;
+
+function TSqlCommand.GetRecordCount: Integer;
+begin
+  Result := 0;
+  if FQuery.Active then
+    Result := FQuery.RecordCount;
 end;
 
 procedure TSqlCommand.UpdateParameters;
@@ -234,11 +297,12 @@ begin
   FTableName := TableName;
 end;
 
-procedure TDeleteCommand.Execute;
+function TDeleteCommand.Execute: Integer;
 begin
   SetSQL(FQuery, SQL);
   UpdateParameters;
   ExecSQL(FQuery);
+  Result := -1;
 end;
 
 function TDeleteCommand.GetSQL: string;
@@ -261,7 +325,15 @@ begin
   SL := TStringList.Create;
   try
     for I := 0 to Count - 1 do
+    begin
+      if Items[I] is TCustomConditionParameter then
+      begin
+        SL.Add(TCustomConditionParameter(Items[I]).Expression);
+        Continue;
+      end;
+
       SL.Add(Format('[%s] = :%s', [Items[I].Name, Items[I].Name]));
+    end;
 
     Result := ' ' + SL.Join(' and ') + ' ';
   finally
@@ -269,7 +341,7 @@ begin
   end;
 end;
 
-function FParameterCollection.AsInsertFields: string;
+function FParameterCollection.AsFieldList: string;
 var
   I: Integer;
   SL: TStringList;
@@ -277,7 +349,19 @@ begin
   SL := TStringList.Create;
   try
     for I := 0 to Count - 1 do
+    begin
+      if Items[I] is TAllParameter then
+      begin
+        SL.Add('*');
+        Continue;
+      end;
+      if Items[I] is TCustomFieldParameter then
+      begin
+        SL.Add(TCustomFieldParameter(Items[I]).Expression);
+        Continue;
+      end;
       SL.Add(Format('[%s]', [Items[I].Name]));
+    end;
 
     Result := ' ' + SL.Join(', ') + ' ';
   finally
@@ -400,11 +484,12 @@ begin
   FTableName := TableName;
 end;
 
-procedure TUpdateCommand.Execute;
+function TUpdateCommand.Execute: Integer;
 begin
   SetSQL(FQuery, SQL);
   UpdateParameters;
   ExecSQL(FQuery);
+  Result := -1;
 end;
 
 function TUpdateCommand.GetSQL: string;
@@ -417,6 +502,67 @@ end;
 function TDatabaseManager.GetDBFile: string;
 begin
   Result := dbname;
+end;
+
+{ TAllParameter }
+
+constructor TAllParameter.Create;
+begin
+  inherited Create('*');
+end;
+
+function TAllParameter.GetValue: Variant;
+begin
+  Result := Null;
+end;
+
+{ TCustomConditionParameter }
+
+constructor TCustomConditionParameter.Create(Expression: string);
+begin
+  inherited Create('');
+  FExpression := Expression;
+end;
+
+function TCustomConditionParameter.GetValue: Variant;
+begin
+  Result := Null;
+end;
+
+{ TSelectCommand }
+
+constructor TSelectCommand.Create(TableName: string);
+begin
+  inherited Create;
+  FTableName := TableName;
+end;
+
+function TSelectCommand.Execute: Integer;
+begin
+  SetSQL(FQuery, SQL);
+  UpdateParameters;
+  FQuery.Open;
+  Result := FQuery.RecordCount;
+end;
+
+function TSelectCommand.GetSQL: string;
+begin
+  Result := Format('SELECT %s', [Parameters.AsFieldList]);
+  if WhereParameters.Count > 0 then
+    Result := Format(' FROM [%s] WHERE %s', [FTableName, WhereParameters.AsCondition]);
+end;
+
+{ TCustomFieldParameter }
+
+constructor TCustomFieldParameter.Create(Expression: string);
+begin
+  inherited Create('');
+  FExpression := Expression;
+end;
+
+function TCustomFieldParameter.GetValue: Variant;
+begin
+  Result := Null;
 end;
 
 initialization

@@ -2042,7 +2042,7 @@ begin
       TmpFace.Y := FaceRect.Top;
       TmpFace.Width := RectWidth(FaceRect);
       TmpFace.Height := RectHeight(FaceRect);
-      CreatePerson(TmpFace, B, P);
+      CreatePerson(Item.ID, Face, TmpFace, B, P);
     finally
       F(TmpFace);
     end;

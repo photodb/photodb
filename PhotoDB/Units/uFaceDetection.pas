@@ -204,12 +204,16 @@ const
   CascadesDirectoryMask = 'Cascades';
 
 type
+
   TFaceDetectionResultItem = class
   public
     X: Integer;
     Y: Integer;
     Width: Integer;
     Height: Integer;
+    ImageWidth: Integer;
+    ImageHeight: Integer;
+    Page: Integer;
     function Rect: TRect;
     function Copy: TFaceDetectionResultItem;
   end;
@@ -220,6 +224,8 @@ type
     FImageWidth: Integer;
     FImageHeight: Integer;
     FPage: Integer;
+    FSize: Int64;
+    FDateModified: TDateTime;
     function GetItem(Index: Integer): TFaceDetectionResultItem;
     function GetCount: Integer;
     function GetSize: TSize;
@@ -229,12 +235,14 @@ type
     procedure Clear;
     procedure Assign(Source: TFaceDetectionResult);
     procedure DeleteAt(I: Integer);
-    function AddFace(X, Y, Width, Height: Integer): TFaceDetectionResultItem;
+    function AddFace(X, Y, Width, Height, ImageWidth, ImageHeight, Page: Integer): TFaceDetectionResultItem;
     property Items[Index: Integer]: TFaceDetectionResultItem read GetItem; default;
     property Count: Integer read GetCount;
-    property ImageWidth: Integer read FImageWidth;
-    property ImageHeight: Integer read FImageHeight;
-    property Page: Integer read FPage;
+    property ImageWidth: Integer read FImageWidth write FImageWidth;
+    property ImageHeight: Integer read FImageHeight write FImageHeight;
+    property Page: Integer read FPage write FPage;
+    property Size: Int64 read FSize write FSize;
+    property DateModified: TDateTime read FDateModified write FDateModified;
     property OriginalSize: TSize read GetSize;
   end;
 
@@ -464,7 +472,7 @@ end; { IplImage2Bitmap }
 
 { TFaceDetectionResult }
 
-function TFaceDetectionResult.AddFace(X, Y, Width, Height: Integer): TFaceDetectionResultItem;
+function TFaceDetectionResult.AddFace(X, Y, Width, Height, ImageWidth, ImageHeight, Page: Integer): TFaceDetectionResultItem;
 begin
   Result := TFaceDetectionResultItem.Create;
   FList.Add(Result);
@@ -472,6 +480,9 @@ begin
   Result.Y := Y;
   Result.Width := Width;
   Result.Height := Height;
+  Result.ImageWidth := ImageWidth;
+  Result.ImageHeight := ImageHeight;
+  Result.Page := Page;
 end;
 
 procedure TFaceDetectionResult.Assign(Source: TFaceDetectionResult);
@@ -479,12 +490,13 @@ var
   I: Integer;
 begin
   Clear;
-  for I := 0 to Source.Count - 1 do
-    AddFace(Source[I].X, Source[I].Y, Source[I].Width, Source[I].Height);
 
   FImageWidth := Source.ImageWidth;
   FImageHeight := Source.ImageHeight;
   FPage := Source.Page;
+
+  for I := 0 to Source.Count - 1 do
+    AddFace(Source[I].X, Source[I].Y, Source[I].Width, Source[I].Height, FImageWidth, FImageHeight, FPage);
 end;
 
 procedure TFaceDetectionResult.Clear;
@@ -587,7 +599,7 @@ begin
       begin
         R := PCvRect(CvGetSeqElem(FacesSeq, I));
 
-        Faces.AddFace(R.X, R.Y, R.Width, R.Height);
+        Faces.AddFace(R.X, R.Y, R.Width, R.Height, Bitmap.Width, Bitmap.Height, Page);
       end;
 
       for I := Faces.Count - 1 downto 0 do
@@ -659,6 +671,9 @@ begin
   Result.Y := Y;
   Result.Width := Width;
   Result.Height := Height;
+  Result.ImageWidth := ImageWidth;
+  Result.ImageHeight := ImageHeight;
+  Result.Page := Page;
 end;
 
 function TFaceDetectionResultItem.Rect: TRect;
