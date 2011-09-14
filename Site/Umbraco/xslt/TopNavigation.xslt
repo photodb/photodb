@@ -12,7 +12,7 @@
 <xsl:param name="currentPage"/>
 <xsl:variable name="level2Page" select="$currentPage/ancestor-or-self::*[@level=2]" />
     
-<xsl:variable name="SkipDocTypeIds" select="',1056,1091,1245,'" />
+<xsl:variable name="SkipDocTypeIds" select="',1056,1091,1245,1327,'" />
 
 <xsl:template match="/">
 

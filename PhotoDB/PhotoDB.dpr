@@ -348,7 +348,8 @@ uses
   u2DUtils in 'Units\u2DUtils.pas',
   uPersonDB in 'Units\uPersonDB.pas',
   uDBClasses in 'Units\uDBClasses.pas',
-  uDateUtils in 'Units\uDateUtils.pas';
+  uDateUtils in 'Units\uDateUtils.pas',
+  uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson};
 
 {$R *.res}
 
@@ -513,7 +514,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+      Application.ShowMainForm := False;
       // This is main form of application
 
       TW.I.Start('SetSplashProgress 70');

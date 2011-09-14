@@ -629,12 +629,13 @@ object Viewer: TViewer
     object N12: TMenuItem
       Caption = '-'
     end
-    object CreatePersone1: TMenuItem
-      Caption = 'Create Persone'
-      OnClick = CreatePersone1Click
+    object CreatePerson1: TMenuItem
+      Caption = 'Create Person'
+      OnClick = CreatePerson1Click
     end
-    object OtherPersones1: TMenuItem
-      Caption = 'Other Persones'
+    object OtherPersons1: TMenuItem
+      Caption = 'Other Persons'
+      OnClick = OtherPersons1Click
     end
     object N13: TMenuItem
       Caption = '-'

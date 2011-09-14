@@ -39,6 +39,7 @@ procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
+procedure DrawImageEx32To32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
 procedure GrayScale(Image: TBitmap);
 
@@ -881,10 +882,10 @@ var
   I, J,
   XD, YD,
   DH, DW,
-  SH, SW  : integer;
-  pS : PARGB;
-  pD : PARGB32;
-  R, G, B, W, W1 : Byte;
+  SH, SW: Integer;
+  pS: PARGB;
+  pD: PARGB32;
+  R, G, B, W, W1: Byte;
 begin
   Dest.PixelFormat := pf32bit;
   Mask.PixelFormat := pf24bit;
@@ -924,7 +925,7 @@ var
   I, J,
   XD, YD,
   DH, DW,
-  SH, SW  : integer;
+  SH, SW: Integer;
   pS : PARGB;
   pD : PARGB32;
 begin
@@ -948,6 +949,39 @@ begin
       pD[XD].G := pS[J].G;
       pD[XD].B := pS[J].B;
       pD[XD].L := NewTransparent;
+    end;
+  end;
+end;
+
+procedure DrawImageEx32To32(Dest32, Src32: TBitmap; X, Y: Integer);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW: Integer;
+  pS,
+  pD : PARGB32;
+begin
+  DH := Dest32.Height;
+  DW := Dest32.Width;
+  SH := Src32.Height;
+  SW := Src32.Width;
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS := Src32.ScanLine[I];
+    pD := Dest32.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;
+      if (XD >= DW) then
+        Break;
+      pD[XD].R := pS[J].R;
+      pD[XD].G := pS[J].G;
+      pD[XD].B := pS[J].B;
+      pD[XD].L := pS[J].L;
     end;
   end;
 end;

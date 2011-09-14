@@ -194,6 +194,7 @@ begin
       SmallB.PixelFormat := pf32Bit;
       DoResize(W, H, B, SmallB);
       F(FDisplayImage);
+      FDisplayImage := TBitmap.Create;
       LoadBMPImage32bit(SmallB, FDisplayImage, clBtnFace);
     finally
       F(SmallB);
@@ -238,6 +239,7 @@ end;
 destructor TPersonExtractor.Destroy;
 begin
   F(FBitmap);
+  F(FFace);
   inherited;
 end;
 

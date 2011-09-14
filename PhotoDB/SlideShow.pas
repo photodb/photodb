@@ -126,8 +126,8 @@ type
     KyncevichAnton1: TMenuItem;
     RuslanSenuk1: TMenuItem;
     N12: TMenuItem;
-    CreatePersone1: TMenuItem;
-    OtherPersones1: TMenuItem;
+    CreatePerson1: TMenuItem;
+    OtherPersons1: TMenuItem;
     N13: TMenuItem;
     Findphotos1: TMenuItem;
     procedure FormCreate(Sender: TObject);
@@ -222,7 +222,8 @@ type
     procedure WlFaceCountClick(Sender: TObject);
     procedure PmFacesPopup(Sender: TObject);
     procedure SelectCascade(Sender: TObject);
-    procedure CreatePersone1Click(Sender: TObject);
+    procedure CreatePerson1Click(Sender: TObject);
+    procedure OtherPersons1Click(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -357,7 +358,7 @@ const
 implementation
 
 uses
-  UnitUpdateDB, PropertyForm, SlideShowFullScreen,
+  UnitUpdateDB, PropertyForm, SlideShowFullScreen, uFormSelectPerson,
   ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
@@ -1993,7 +1994,7 @@ begin
   TW.I.Start('CreateParams - END');
 end;
 
-procedure TViewer.CreatePersone1Click(Sender: TObject);
+procedure TViewer.CreatePerson1Click(Sender: TObject);
 var
   Face, TmpFace: TFaceDetectionResultItem;
   R, FaceRect: TRect;
@@ -3790,6 +3791,18 @@ procedure TViewer.OnPageSelecterClick(Sender: TObject);
 begin
   FCurrentPage := TMenuItem(Sender).Tag;
   ReloadCurrent;
+end;
+
+procedure TViewer.OtherPersons1Click(Sender: TObject);
+var
+  FormFindPerson: TFormFindPerson;
+begin
+  Application.CreateForm(TFormFindPerson, FormFindPerson);
+  try
+    FormFindPerson.Execute;
+  finally
+    F(FormFindPerson);
+  end;
 end;
 
 function TViewer.GetPageCaption: String;

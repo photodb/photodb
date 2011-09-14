@@ -79,6 +79,7 @@ type
     function GetValue: Variant; override;
   public
     constructor Create(Name: string; Value: TJpegImage);
+    destructor Destroy; override;
     property Image: TJpegImage read FValue;
   end;
 
@@ -209,7 +210,7 @@ function TInsertCommand.LastID: Integer;
 var
   SC: TSelectCommand;
 begin
-  SC := TSelectCommand.Create(FTableName);
+  SC := TSelectCommand.Create('');
   try
     SC.AddParameter(TCustomFieldParameter.Create('@@identity as LastID'));
     SC.Execute;
@@ -471,6 +472,12 @@ begin
   FValue.Assign(Value);
 end;
 
+destructor TJpegParameter.Destroy;
+begin
+  F(FValue);
+  inherited;
+end;
+
 function TJpegParameter.GetValue: Variant;
 begin
   Result := Null;
@@ -548,8 +555,10 @@ end;
 function TSelectCommand.GetSQL: string;
 begin
   Result := Format('SELECT %s', [Parameters.AsFieldList]);
+  if FTableName <> '' then
+    Result := Result + Format(' FROM [%s] ', [FTableName]);
   if WhereParameters.Count > 0 then
-    Result := Format(' FROM [%s] WHERE %s', [FTableName, WhereParameters.AsCondition]);
+    Result := Result + Format(' WHERE %s', [WhereParameters.AsCondition]);
 end;
 
 { TCustomFieldParameter }

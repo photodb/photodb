@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<imageIndex>
+  <image>
+    <originalFileName>stego_image_w_small.png</originalFileName>
+    <size>624401</size>
+    <dateLastModified>Sun, 17 Jul 2011 18:14:31 GMT</dateLastModified>
+    <width>512</width>
+    <height>768</height>
+    <cachedImage>
+      <fileName>zzfm4goy.png</fileName>
+      <dateCreated>Sun, 17 Jul 2011 18:36:50 GMT</dateCreated>
+      <dateLastAccessed>Tue, 13 Sep 2011 11:24:11 GMT</dateLastAccessed>
+      <imageFormat>png</imageFormat>
+      <width>133</width>
+      <height>200</height>
+      <bgColor>#FFFFFF</bgColor>
+      <transparent>True</transparent>
+      <border>0</border>
+      <borderColor>#000000</borderColor>
+      <constrain>True</constrain>
+      <pad>False</pad>
+    </cachedImage>
+  </image>
+</imageIndex>

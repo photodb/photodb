@@ -1967,7 +1967,7 @@
 	<translate name="Blocks vertically" value="Блоки по вертикали"/>
 	<translate name="Text color" value="Цвет текста"/>
 	<translate name="Transparency" value="Прозрачность"/>
-	<translate name="Font Name" value="Имя шрифта"/>	
+	<translate name="Font Name" value="Имя шрифта"/>
   </scope>
   <scope name="EditPerson">
 	<translate name="Name" value="Имя"/>
@@ -1975,5 +1975,13 @@
 	<translate name="Related groups" value="Связанные группы"/>
 	<translate name="Comment" value="Коментарий"/>
 	<translate name="Transparency" value="Прозрачность"/>
-  </scope>  
+  </scope>
+  <scope name="SelectPerson">
+	<translate name="Select person" value="Выбор персоны"/>
+	<translate name="Photo" value="Фото"/>
+	<translate name="Name" value="Имя"/>
+	<translate name="Find person" value="Найти персону"/>
+	<translate name="Filter persons" value="Фильтр по персонам"/>	
+  </scope>
+  
 </language>

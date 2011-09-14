@@ -25,7 +25,7 @@
     </div>
     <xsl:for-each select="$NewsHolder/child::*[@isDoc]">
       <xsl:sort select="umbraco.library:FormatDateTime(dateOfRelease, 'yyyyMMddHHmmss')" data-type="number" order="descending"/>
-      <xsl:if test="position()&lt;8"> 
+      <xsl:if test="position()&lt;5"> 
         <div class="news_block">     
           <div class="news_title">
             <strong><a href="{umbraco.library:NiceUrl(./@id)}"><xsl:value-of select="./title" /></a></strong> (<xsl:value-of select="umbraco.library:FormatDateTime(./dateOfRelease, 'dd.MM.yyyy')" />)

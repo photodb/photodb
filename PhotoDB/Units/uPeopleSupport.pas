@@ -21,7 +21,7 @@ type
 
   TPersonManager = class(TObject)
   private
-    FPeoples: TList;
+    FPeoples: TPersonCollection;
     FSync: TCriticalSection;
     function GetAllPersons: TPersonCollection;
   public
@@ -178,7 +178,7 @@ begin
   FEmail := DS.FieldByName('PersonEmail').AsString;
   FSex := DS.FieldByName('PersonSex').AsInteger;
   FComment := DS.FieldByName('PersonComment').AsString;
-  FCreateDate := DS.FieldByName('PersonComment').AsDateTime;
+  FCreateDate := DS.FieldByName('CreateDate').AsDateTime;
   F(FImage);
   FImage := TJpegImage.Create;
   FImage.Assign(DS.FieldByName('PersonImage'));
@@ -229,7 +229,7 @@ end;
 
 constructor TPersonManager.Create;
 begin
-  FPeoples := TList.Create;
+  FPeoples := nil;
   FSync := TCriticalSection.Create;
 end;
 
@@ -289,7 +289,7 @@ end;
 
 destructor TPersonManager.Destroy;
 begin
-  FreeList(FPeoples);
+  F(FPeoples);
   F(FSync);
   inherited;
 end;
@@ -300,8 +300,23 @@ begin
 end;
 
 function TPersonManager.GetAllPersons: TPersonCollection;
+var
+  SC: TSelectCommand;
 begin
-
+  if FPeoples = nil then
+  begin
+    FPeoples := TPersonCollection.Create;
+    SC := TSelectCommand.Create(PersonTableName);
+    try
+      SC.AddParameter(TAllParameter.Create);
+      //TODO: SC.AddOrder(TOrderColumn.Create());
+      SC.Execute;
+      FPeoples.ReadFromDS(SC.DS);
+    finally
+      F(SC);
+    end;
+  end;
+  Result := FPeoples;
 end;
 
 function TPersonManager.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
@@ -392,8 +407,21 @@ begin
 end;
 
 procedure TPersonCollection.ReadFromDS(DS: TDataSet);
+var
+  I: Integer;
+  P: TPerson;
 begin
   Clear;
+
+  for I := 0 to DS.RecordCount - 1 do
+  begin
+    if I = 0 then
+      DS.First;
+    P := TPerson.Create;
+    FList.Add(P);
+    P.ReadFromDS(DS);
+    DS.Next;
+  end;
 end;
 
 { TPersonAreaCollection }

@@ -1,0 +1,5 @@
+﻿<%@ Master Language="C#" MasterPageFile="~/masterpages/LeftNavigation.master" AutoEventWireup="true" %>
+
+<asp:Content ContentPlaceHolderID="RightContent" runat="server">
+  <umbraco:Macro Alias="VersionLog" runat="server" />
+</asp:Content>

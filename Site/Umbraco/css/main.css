@@ -503,6 +503,13 @@ font-size: 12px; text-align: center;
     height: 4px;
     width: 200px;
 }
+.version_info{
+ padding-top: 10px; 
+}
+
+.version_log .stable{
+  font-weight:bold;
+}
 
 
 
