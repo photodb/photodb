@@ -204,8 +204,14 @@ const
   CascadesDirectoryMask = 'Cascades';
 
 type
+  TClonableObject = class(TObject)
+    function Clone: TClonableObject; virtual; abstract;
+  end;
 
   TFaceDetectionResultItem = class
+  private
+    FData: TClonableObject;
+    procedure SetData(const Value: TClonableObject);
   public
     X: Integer;
     Y: Integer;
@@ -216,6 +222,9 @@ type
     Page: Integer;
     function Rect: TRect;
     function Copy: TFaceDetectionResultItem;
+    constructor Create;
+    destructor Destroy; override;
+    property Data: TClonableObject read FData write SetData;
   end;
 
   TFaceDetectionResult = class
@@ -496,7 +505,7 @@ begin
   FPage := Source.Page;
 
   for I := 0 to Source.Count - 1 do
-    AddFace(Source[I].X, Source[I].Y, Source[I].Width, Source[I].Height, FImageWidth, FImageHeight, FPage);
+    FList.Add(Source[I].Copy);
 end;
 
 procedure TFaceDetectionResult.Clear;
@@ -674,11 +683,30 @@ begin
   Result.ImageWidth := ImageWidth;
   Result.ImageHeight := ImageHeight;
   Result.Page := Page;
+  if Data <> nil then
+    Result.Data := Data.Clone;
+end;
+
+constructor TFaceDetectionResultItem.Create;
+begin
+  FData := nil;
+end;
+
+destructor TFaceDetectionResultItem.Destroy;
+begin
+  F(FData);
+  inherited;
 end;
 
 function TFaceDetectionResultItem.Rect: TRect;
 begin
   Result := Classes.Rect(X, Y, X + Width, Y + Height);
+end;
+
+procedure TFaceDetectionResultItem.SetData(const Value: TClonableObject);
+begin
+  F(FData);
+  FData := Value;
 end;
 
 initialization

@@ -37,6 +37,7 @@ type
     FDisplayImage: TBitmap;
     FOriginalFace: TFaceDetectionResultItem;
     FImageID: Integer;
+    FPerson: TPerson;
     procedure Execute(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
@@ -45,6 +46,7 @@ type
     function GetFormID: string; override;
   public
     { Public declarations }
+    property Person: TPerson read FPerson;
   end;
 
   TPersonExtractor = class(TDBThread)
@@ -74,6 +76,7 @@ begin
   Application.CreateForm(TFormCreatePerson, FormCreatePerson);
   try
     FormCreatePerson.Execute(ImageID, OriginalFace, FaceInImage, Bitmap);
+    Person := FormCreatePerson.Person;
   finally
     R(FormCreatePerson);
   end;
@@ -88,33 +91,32 @@ end;
 
 procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
 var
-  Person: TPerson;
   PersonArea: TPersonArea;
   J: TJpegImage;
 begin
-  Person := TPerson.Create;
+  F(FPerson);
+  FPerson := TPerson.Create;
+  FPerson.Name := WedName.Text;
+  FPerson.Birthday := DtpBirthDay.Date;
+  //TODO: Person.Groups :=
+  FPerson.Comment := WmComments.Text;
+  J := TJPEGImage.Create;
   try
-    Person.Name := WedName.Text;
-    Person.Birthday := DtpBirthDay.Date;
-    //TODO: Person.Groups :=
-    Person.Comment := WmComments.Text;
-    J := TJPEGImage.Create;
-    try
-      J.Assign(FPicture);
-      Person.Image := J;
-    finally
-      F(J);
-    end;
-    PersonManager.CreateNewPerson(Person);
-
+    J.Assign(FPicture);
+    Person.Image := J;
+  finally
+    F(J);
+  end;
+  PersonManager.CreateNewPerson(Person);
+  if Person.ID > 0 then
+  begin
     PersonArea := TPersonArea.Create(FImageID, Person.ID, FOriginalFace);
     try
       PersonManager.AddPersonForPhoto(PersonArea);
+      FOriginalFace.Data := PersonArea.Clone;
     finally
       F(PersonArea);
     end;
-  finally
-    F(Person);
   end;
 end;
 
@@ -131,6 +133,7 @@ end;
 
 procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
+  FPerson := nil;
   FPicture := TBitmap.Create;
   FDisplayImage := TBitmap.Create;
   LoadLanguage;

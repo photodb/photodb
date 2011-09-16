@@ -161,6 +161,7 @@ begin
   LoadList;
   TmrSearchTimer(Self);
   LoadLanguage;
+  PersonManager.InitDB;
 end;
 
 procedure TFormFindPerson.FormKeyDown(Sender: TObject; var Key: Word;

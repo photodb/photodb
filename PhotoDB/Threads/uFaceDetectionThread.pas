@@ -3,10 +3,10 @@ unit uFaceDetectionThread;
 interface
 
 uses
-  Classes, Graphics, uDBThread, uThreadForm, uFaceDetection, uMemory, SyncObjs,
-  xmldom, ActiveX, SysUtils, uLogger, win32crc, uFileUtils, uConstants,
+  Windows, Classes, Graphics, uDBThread, uThreadForm, uFaceDetection, uMemory,
+  xmldom, ActiveX, SysUtils, uLogger, win32crc, uFileUtils, uConstants, SyncObjs,
   uRuntime, uGraphicUtils, uGOM, uInterfaces, Math, uBitmapUtils, uSettings,
-  uDateUtils;
+  uDateUtils, uPeopleSupport, u2DUtils;
 
 const
   FACE_DETECTION_OK           = 0;
@@ -28,12 +28,24 @@ type
     destructor Destroy; override;
   end;
 
+  TDBFaceLoadThread = class(TDBThread)
+  private
+    FImageID: Integer;
+    FPersonAreas: TPersonAreaCollection;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(ImageID: Integer);
+    destructor Destroy; override;
+  end;
+
   TFaceDetectionData = class
   public
     Image: TGraphic;
     FileName: string;
+    ID: Integer;
     Caller: TThreadForm;
-    constructor Create(AImage: TGraphic; AFileName: string; ACaller: TThreadForm);
+    constructor Create(AImage: TGraphic; AFileName: string; AID: Integer; ACaller: TThreadForm);
     destructor Destroy; override;
   end;
 
@@ -44,7 +56,7 @@ type
     function CreateCacheFileName(DetectMethod, FileName: string): string;
     function ExtractData: TFaceDetectionData;
   public
-    procedure RequestFaceDetection(Caller: TThreadForm; var Image: TGraphic; FileName: string);
+    procedure RequestFaceDetection(Caller: TThreadForm; var Image: TGraphic; FileName: string; ID: Integer);
     function GetFaceData(FileName: string; Faces: TFaceDetectionResult): Integer;
     constructor Create;
     destructor Destroy; override;
@@ -55,6 +67,7 @@ type
   public
     function LoadFromFile(FileName: string): Boolean;
     function SaveToFile(FileName: string): Boolean;
+    procedure MergeWithDBInfo(DBInfo: TPersonAreaCollection);
   end;
 
 function FaceDetectionDataManager: TFaceDetectionDataManager;
@@ -91,12 +104,12 @@ end;
 
 procedure TFaceDetectionThread.Execute;
 var
-  LoadResult: Integer;
   FBitmap, SmallBitmap: TBitmap;
   CacheFileName: string;
   W, H: Integer;
   RMp, AMp, RR: Double;
   FaceMethod: string;
+  Thread: TDBFaceLoadThread;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -117,40 +130,58 @@ begin
 
           FaceMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
 
-          CacheFileName := FaceDetectionDataManager.CreateCacheFileName(FaceMethod, ImageData.FileName);
-         { LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
-          if LoadResult = FACE_DETECTION_OK then
-          begin
-            Synchronize(UpdateFaceList);
-            Continue;
-          end;    }
-
-          FBitmap := TBitmap.Create;
+          if ImageData.ID > 0 then
+            Thread := TDBFaceLoadThread.Create(ImageData.ID);
           try
-            AssignGraphic(FBitmap, ImageData.Image);
-            W := FBitmap.Width;
-            H := FBitmap.Height;
-            RMp := W * H;
-            AMp := Settings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
-
-            if RMp > AMp then
+            CacheFileName := FaceDetectionDataManager.CreateCacheFileName(FaceMethod, ImageData.FileName);
+           { LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
+            if LoadResult = FACE_DETECTION_OK then
             begin
-              RR := Sqrt(RMp / AMp);
-              SmallBitmap := TBitmap.Create;
-              try
-                ProportionalSize(Round(W / RR), Round(H / RR), W, H);
-                uBitmapUtils.QuickReduceWide(W, H, FBitmap, SmallBitmap);
-                FaceDetectionManager.FacesDetection(SmallBitmap, 0, FFaces, FaceMethod);
-              finally
-                F(SmallBitmap);
+              if ImageData.ID > 0 then
+              begin
+                Thread.WaitFor;
+                FFaces.MergeWithDBInfo(Thread.FPersons);
               end;
-            end else
-              FaceDetectionManager.FacesDetection(FBitmap, 0, FFaces, FaceMethod);
+              Synchronize(UpdateFaceList);
+              Continue;
+            end;    }
+
+            FBitmap := TBitmap.Create;
+            try
+              AssignGraphic(FBitmap, ImageData.Image);
+              W := FBitmap.Width;
+              H := FBitmap.Height;
+              RMp := W * H;
+              AMp := Settings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
+
+              if RMp > AMp then
+              begin
+                RR := Sqrt(RMp / AMp);
+                SmallBitmap := TBitmap.Create;
+                try
+                  ProportionalSize(Round(W / RR), Round(H / RR), W, H);
+                  uBitmapUtils.QuickReduceWide(W, H, FBitmap, SmallBitmap);
+                  FaceDetectionManager.FacesDetection(SmallBitmap, 0, FFaces, FaceMethod);
+                finally
+                  F(SmallBitmap);
+                end;
+              end else
+                FaceDetectionManager.FacesDetection(FBitmap, 0, FFaces, FaceMethod);
+            finally
+              F(FBitmap);
+            end;
+            FFaces.SaveToFile(CacheFileName);
+
+            if ImageData.ID > 0 then
+            begin
+              Thread.WaitFor;
+              FFaces.MergeWithDBInfo(Thread.FPersonAreas);
+            end;
+            Synchronize(UpdateFaceList);
           finally
-            F(FBitmap);
+            if ImageData.ID > 0 then
+              F(Thread);
           end;
-          FFaces.SaveToFile(CacheFileName);
-          Synchronize(UpdateFaceList);
         finally
           F(ImageData);
         end;
@@ -220,7 +251,7 @@ begin
 end;
 
 procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TThreadForm;
-  var Image: TGraphic; FileName: string);
+  var Image: TGraphic; FileName: string; ID: Integer);
 var
   I: Integer;
   Data: TFaceDetectionData;
@@ -230,7 +261,7 @@ begin
     if Image = nil then
       Exit;
 
-    Data := TFaceDetectionData.Create(Image, FileName, Caller);
+    Data := TFaceDetectionData.Create(Image, FileName, ID, Caller);
     FImages.Insert(0, Data);
     Image := nil;
     for I := FImages.Count - 1 downto 1 do
@@ -246,10 +277,11 @@ end;
 { TFaceDetectionData }
 
 constructor TFaceDetectionData.Create(AImage: TGraphic; AFileName: string;
-  ACaller: TThreadForm);
+  AID: Integer; ACaller: TThreadForm);
 begin
   Image := AImage;
   FileName := AFileName;
+  ID := AID;
   Caller := ACaller;
 end;
 
@@ -368,6 +400,71 @@ begin
   except
     on e: Exception do
       EventLog(e);
+  end;
+end;
+
+procedure TDBFaceDetectionResult.MergeWithDBInfo(DBInfo: TPersonAreaCollection);
+var
+  I, J: Integer;
+  PA: TPersonArea;
+  FA: TFaceDetectionResultItem;
+
+  function FaceEquals(A: TPersonArea; F: TFaceDetectionResultItem): Boolean;
+  var
+    RA, RF: TRect;
+  begin
+    RA.Left   := Round(A.X * 1000 / A.FullWidth);
+    RA.Top    := Round(A.Y * 1000 / A.FullHeight);
+    RA.Right  := Round((A.X + A.Width)  * 1000 / A.FullWidth);
+    RA.Bottom := Round((A.Y + A.Height) * 1000 / A.FullHeight);
+
+    RF.Left   := Round(F.X * 1000 / F.ImageWidth);
+    RF.Top    := Round(F.Y * 1000 / F.ImageHeight);
+    RF.Right  := Round((F.X + F.Width)  * 1000 / F.ImageWidth);
+    RF.Bottom := Round((F.Y + F.Height) * 1000 / F.ImageHeight);
+
+    Result := RectIntersectWithRectPercent(RA, RF) > 90;
+  end;
+
+begin
+  for I := DBInfo.Count - 1 downto 0 do
+  begin
+    PA := DBInfo[I];
+    for J := 0 to Count - 1 do
+    begin
+      FA := Items[J];
+      if FaceEquals(PA, FA) then
+      begin
+        FA.Data := DBInfo.Extract(I);
+        Break;
+      end;
+    end;
+  end;
+end;
+
+{ TDBFaceLoadThread }
+
+constructor TDBFaceLoadThread.Create(ImageID: Integer);
+begin
+  inherited Create(nil, False);
+  FImageID := ImageID;
+  FPersonAreas := nil;
+end;
+
+destructor TDBFaceLoadThread.Destroy;
+begin
+  F(FPersonAreas);
+  inherited;
+end;
+
+procedure TDBFaceLoadThread.Execute;
+begin
+  inherited;
+  CoInitialize(nil);
+  try
+    FPersonAreas := PersonManager.GetAreasOnImage(FImageID);
+  finally
+    CoUninitialize;
   end;
 end;
 

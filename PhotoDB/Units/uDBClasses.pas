@@ -259,10 +259,9 @@ var
   I: Integer;
   Parameter: TParameter;
   ADOParameter: ADODB.TParameter;
-begin
-  for I := 0 to FParameters.Count - 1 do
+
+  procedure UpdateParameter;
   begin
-    Parameter := FParameters[I];
     ADOParameter := nil;
     if FQuery is TADOQuery then
       ADOParameter := TADOQuery(FQuery).Parameters.FindParam(Parameter.Name);
@@ -280,6 +279,18 @@ begin
         ADOParameter.Assign(TJpegParameter(Parameter).Image);
       end;
     end;
+  end;
+
+begin
+  for I := 0 to FParameters.Count - 1 do
+  begin
+    Parameter := FParameters[I];
+    UpdateParameter;
+  end;
+  for I := 0 to FWhereParameters.Count - 1 do
+  begin
+    Parameter := FWhereParameters[I];
+    UpdateParameter;
   end;
 end;
 

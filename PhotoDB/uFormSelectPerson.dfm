@@ -81,7 +81,6 @@ object FormFindPerson: TFormFindPerson
     TabOrder = 0
     OnChange = WedPersonFilterChange
     WatermarkText = 'Find person'
-    ExplicitWidth = 414
   end
   object BtnOk: TButton
     Left = 447
@@ -92,8 +91,6 @@ object FormFindPerson: TFormFindPerson
     Caption = 'BtnOk'
     TabOrder = 1
     OnClick = BtnOkClick
-    ExplicitLeft = 369
-    ExplicitTop = 223
   end
   object BtnCancel: TButton
     Left = 366
@@ -104,8 +101,6 @@ object FormFindPerson: TFormFindPerson
     Caption = 'BtnCancel'
     TabOrder = 2
     OnClick = BtnCancelClick
-    ExplicitLeft = 288
-    ExplicitTop = 223
   end
   object LvPersons: TListView
     Left = 8

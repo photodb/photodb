@@ -805,6 +805,8 @@
     <translate name="Detecting faces" value="Определение лиц" />
     <translate name="Faces: %d" value="Лица: %d" />
     <translate name="No faces found" value="Лица не найдены" />
+    <translate name="Create person" value="Создать персону" />	
+    <translate name="Other person" value="Другая персона" />	
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />

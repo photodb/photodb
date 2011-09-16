@@ -119,15 +119,15 @@ type
     PmFace: TPopupMenu;
     ClearFaceZone1: TMenuItem;
     N9: TMenuItem;
-    DmitryVeresov1: TMenuItem;
-    N10: TMenuItem;
+    MiCurrentPerson: TMenuItem;
+    MiCurrentPersonSeparator: TMenuItem;
     Previousselections1: TMenuItem;
     HannaVeresova1: TMenuItem;
     KyncevichAnton1: TMenuItem;
     RuslanSenuk1: TMenuItem;
     N12: TMenuItem;
-    CreatePerson1: TMenuItem;
-    OtherPersons1: TMenuItem;
+    MiCreatePerson: TMenuItem;
+    MiOtherPersons: TMenuItem;
     N13: TMenuItem;
     Findphotos1: TMenuItem;
     procedure FormCreate(Sender: TObject);
@@ -222,8 +222,9 @@ type
     procedure WlFaceCountClick(Sender: TObject);
     procedure PmFacesPopup(Sender: TObject);
     procedure SelectCascade(Sender: TObject);
-    procedure CreatePerson1Click(Sender: TObject);
-    procedure OtherPersons1Click(Sender: TObject);
+    procedure MiCreatePersonClick(Sender: TObject);
+    procedure MiOtherPersonsClick(Sender: TObject);
+    procedure PmFacePopup(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -1071,6 +1072,26 @@ begin
   ReloadCurrent;
 end;
 
+procedure TViewer.PmFacePopup(Sender: TObject);
+var
+  RI: TFaceDetectionResultItem;
+  PA: TPersonArea;
+  P: TPerson;
+begin
+  RI := TFaceDetectionResultItem(PmFace.Tag);
+  MiCurrentPerson.Visible := RI.Data <> nil;
+  MiCurrentPersonSeparator.Visible := RI.Data <> nil;
+  if RI.Data <> nil then
+  begin
+    PA := TPersonArea(RI.Data);
+    P := PersonManager.FindPerson(PA.PersonID);
+    if P <> nil then
+      MiCurrentPerson.Caption := P.Name
+    else
+      MiCurrentPerson.Caption := L('Unknown Person');
+  end;
+end;
+
 procedure TViewer.PmFacesPopup(Sender: TObject);
 var
   FileList: TStrings;
@@ -1491,7 +1512,6 @@ begin
     SetProgressPosition(0, 0);
     if FloatPanel <> nil then
       FloatPanel.SetButtonsEnabled(False);
-
   end else
   begin
     SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
@@ -1994,7 +2014,7 @@ begin
   TW.I.Start('CreateParams - END');
 end;
 
-procedure TViewer.CreatePerson1Click(Sender: TObject);
+procedure TViewer.MiCreatePersonClick(Sender: TObject);
 var
   Face, TmpFace: TFaceDetectionResultItem;
   R, FaceRect: TRect;
@@ -2140,6 +2160,9 @@ begin
     TbEditImage.Hint := L('Image editor (Ctrl+E)');
     TbInfo.Hint := L('Properties (Ctrl+Z)');
     TbEncrypt.Hint := L('Encrypt/Decrypt (Ctrl+X)');
+
+    MiCreatePerson.Caption := L('Create person');
+    MiOtherPersons.Caption := L('Other person');
   finally
     EndTranslate;
   end;
@@ -2671,6 +2694,36 @@ var
   I: Integer;
   P1, P2: TPoint;
   R: TRect;
+  PA: TPersonArea;
+  P: TPerson;
+
+  procedure DrawFace(Face: TFaceDetectionResultItem);
+  begin
+    P1 := Face.Rect.TopLeft;
+    P2 := Face.Rect.BottomRight;
+
+    P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
+    P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
+
+    P1 := ImagePointToBufferPoint(P1);
+    P2 := ImagePointToBufferPoint(P2);
+    R := Rect(P1, P2);
+    FOverlayBuffer.Canvas.Pen.Color := clWhite;
+    FOverlayBuffer.Canvas.Rectangle(R);
+    InflateRect(R, -1, -1);
+    FOverlayBuffer.Canvas.Pen.Color := clGray;
+    FOverlayBuffer.Canvas.Rectangle(R);
+    if Face.Data <> nil then
+    begin
+      PA := TPersonArea(Face.Data);
+      P := PersonManager.FindPerson(PA.PersonID);
+      if P <> nil then
+      begin
+        FOverlayBuffer.Canvas.TextOut(R.Right, R.Bottom + 10, P.Name);
+      end;
+    end;
+  end;
+
 begin
   if FFaces.Count > 0 then
   begin
@@ -2684,20 +2737,7 @@ begin
         FOverlayBuffer.Canvas.Pen.Style := psDash;
         FOverlayBuffer.Canvas.Pen.Width := 1;
 
-        P1 := FHoverFace.Rect.TopLeft;
-        P2 := FHoverFace.Rect.BottomRight;
-
-        P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
-        P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
-
-        P1 := ImagePointToBufferPoint(P1);
-        P2 := ImagePointToBufferPoint(P2);
-        R := Rect(P1, P2);
-        FOverlayBuffer.Canvas.Pen.Color := clWhite;
-        FOverlayBuffer.Canvas.Rectangle(R);
-        InflateRect(R, -1, -1);
-        FOverlayBuffer.Canvas.Pen.Color := clGray;
-        FOverlayBuffer.Canvas.Rectangle(R);
+        DrawFace(FHoverFace);
       end;
     end else
     begin
@@ -2707,21 +2747,7 @@ begin
 
       for I := 0 to FFaces.Count - 1 do
       begin
-        P1 := FFaces[I].Rect.TopLeft;
-        P2 := FFaces[I].Rect.BottomRight;
-
-        P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
-        P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
-
-        P1 := ImagePointToBufferPoint(P1);
-        P2 := ImagePointToBufferPoint(P2);
-
-        R := Rect(P1, P2);
-        FOverlayBuffer.Canvas.Pen.Color := clWhite;
-        FOverlayBuffer.Canvas.Rectangle(R);
-        InflateRect(R, -1, -1);
-        FOverlayBuffer.Canvas.Pen.Color := clGray;
-        FOverlayBuffer.Canvas.Rectangle(R);
+        DrawFace(FFaces[I]);
       end;
     end;
   end;
@@ -3793,13 +3819,26 @@ begin
   ReloadCurrent;
 end;
 
-procedure TViewer.OtherPersons1Click(Sender: TObject);
+procedure TViewer.MiOtherPersonsClick(Sender: TObject);
 var
   FormFindPerson: TFormFindPerson;
+  P: TPerson;
+  PA: TPersonArea;
+  RI: TFaceDetectionResultItem;
 begin
+  RI := TFaceDetectionResultItem(PmFace.Tag);
   Application.CreateForm(TFormFindPerson, FormFindPerson);
   try
-    FormFindPerson.Execute;
+    P := FormFindPerson.Execute;
+    PA := TPersonArea.Create(Item.ID, P.ID, RI);
+    try
+      PersonManager.AddPersonForPhoto(PA);
+      RI.Data := PA.Clone;
+
+      RefreshFaces;
+    finally
+      F(PA);
+    end;
   finally
     F(FormFindPerson);
   end;

@@ -220,7 +220,7 @@ begin
       end;
     finally
       if Settings.Readbool('Options', 'ViewerFaceDetection', True) then
-        FaceDetectionDataManager.RequestfaceDetection(FViewer, Graphic, FInfo.FileName);
+        FaceDetectionDataManager.RequestfaceDetection(FViewer, Graphic, FInfo.FileName, FInfo.ID);
       F(Graphic);
     end;
 

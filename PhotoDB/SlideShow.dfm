@@ -599,6 +599,7 @@ object Viewer: TViewer
     end
   end
   object PmFace: TPopupMenu
+    OnPopup = PmFacePopup
     Left = 176
     Top = 376
     object ClearFaceZone1: TMenuItem
@@ -607,11 +608,13 @@ object Viewer: TViewer
     object N9: TMenuItem
       Caption = '-'
     end
-    object DmitryVeresov1: TMenuItem
-      Caption = 'Dmitry Veresov'
+    object MiCurrentPerson: TMenuItem
+      Caption = 'Current Person'
+      Visible = False
     end
-    object N10: TMenuItem
+    object MiCurrentPersonSeparator: TMenuItem
       Caption = '-'
+      Visible = False
     end
     object Previousselections1: TMenuItem
       Caption = 'Previous selections:'
@@ -629,13 +632,13 @@ object Viewer: TViewer
     object N12: TMenuItem
       Caption = '-'
     end
-    object CreatePerson1: TMenuItem
+    object MiCreatePerson: TMenuItem
       Caption = 'Create Person'
-      OnClick = CreatePerson1Click
+      OnClick = MiCreatePersonClick
     end
-    object OtherPersons1: TMenuItem
+    object MiOtherPersons: TMenuItem
       Caption = 'Other Persons'
-      OnClick = OtherPersons1Click
+      OnClick = MiOtherPersonsClick
     end
     object N13: TMenuItem
       Caption = '-'

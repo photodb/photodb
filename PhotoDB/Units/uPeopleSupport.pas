@@ -26,7 +26,7 @@ type
     function GetAllPersons: TPersonCollection;
   public
     procedure InitDB;
-    function FindPersone(PersonID: Integer): TPerson;
+    function FindPerson(PersonID: Integer): TPerson;
     function CreateNewPerson(Person: TPerson): Boolean;
     function DeletePerson(PersonID: Integer): Boolean;
     function UpdatePerson(Person: TPerson): Boolean;
@@ -48,12 +48,14 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
+    procedure Add(Person: TPerson);
     procedure ReadFromDS(DS: TDataSet);
+    function GetPersonByID(ID: Integer): TPerson;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TPerson read GetPersonByIndex; default;
   end;
 
-  TPerson = class(TObject)
+  TPerson = class(TClonableObject)
   private
     FID: Integer;
     FName: string;
@@ -75,6 +77,7 @@ type
     destructor Destroy; override;
     procedure ReadFromDS(DS: TDataSet);
     procedure SaveToDS(DS: TDataSet);
+    function Clone: TClonableObject; override;
     property ID: Integer read FID write FID;
     property Name: string read FName write FName;
     property BirthDay: TDateTime read FBirthDay write FBirthDay;
@@ -91,7 +94,7 @@ type
     property CreateDate: TDateTime read FCreateDate;
   end;
 
-  TPersonArea = class
+  TPersonArea = class(TClonableObject)
   private
     FID: Integer;
     FX: Integer;
@@ -108,6 +111,7 @@ type
     constructor Create(ImageID, PersonID: Integer; Area: TFaceDetectionResultItem); overload;
     procedure ReadFromDS(DS: TDataSet);
     procedure SaveToDS(DS: TDataSet);
+    function Clone: TClonableObject; override;
     property ID: Integer read FID write FID;
     property X: Integer read FX;
     property Y: Integer read FY;
@@ -130,6 +134,7 @@ type
     destructor Destroy; override;
     procedure Clear;
     procedure ReadFromDS(DS: TDataSet);
+    function Extract(Index: Integer): TPersonArea;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TPersonArea read GetAreaByIndex; default;
   end;
@@ -151,6 +156,30 @@ end;
 
 { TPerson }
 
+function TPerson.Clone: TClonableObject;
+var
+  P: TPerson;
+begin
+  P := TPerson.Create;
+
+  P.FID := ID;
+  P.FName := Name;
+  P.FImage := Image;
+  P.FGroups := Groups;
+  P.FBirthDay := BirthDay;
+  P.FComment := Comment;
+  P.FPhone := Phone;
+  P.FAddress := Address;
+  P.FCompany := Company;
+  P.FJobTitle := JobTitle;
+  P.FIMNumber := IMNumber;
+  P.FEmail := Email;
+  P.FSex := Sex;
+  P.FCreateDate := CreateDate;
+
+  Result := P;
+end;
+
 constructor TPerson.Create;
 begin
   FID := 0;
@@ -167,6 +196,7 @@ end;
 
 procedure TPerson.ReadFromDS(DS: TDataSet);
 begin
+  FID := DS.FieldByName('PersonID').AsInteger;
   FName := DS.FieldByName('PersonName').AsString;
   FGroups := DS.FieldByName('RelatedGroups').AsString;
   FBirthDay := DS.FieldByName('BirthDate').AsDateTime;
@@ -192,8 +222,11 @@ end;
 procedure TPerson.SetImage(const Value: TJpegImage);
 begin
   F(FImage);
-  FImage := TJpegImage.Create;
-  FImage.Assign(Value);
+  if Value <> nil then
+  begin
+    FImage := TJpegImage.Create;
+    FImage.Assign(Value);
+  end;
 end;
 
 { TPersonManager }
@@ -208,9 +241,9 @@ begin
   try
     IC.AddParameter(TIntegerParameter.Create('PersonID', PersonArea.PersonID));
     IC.AddParameter(TIntegerParameter.Create('Left', PersonArea.X));
-    IC.AddParameter(TIntegerParameter.Create('Right', PersonArea.Y));
-    IC.AddParameter(TIntegerParameter.Create('Top', PersonArea.Y + PersonArea.Height));
-    IC.AddParameter(TIntegerParameter.Create('Bottom', PersonArea.X + PersonArea.Width));
+    IC.AddParameter(TIntegerParameter.Create('Top', PersonArea.Y));
+    IC.AddParameter(TIntegerParameter.Create('Right', PersonArea.X + PersonArea.Width));
+    IC.AddParameter(TIntegerParameter.Create('Bottom', PersonArea.Y + PersonArea.Height));
     IC.AddParameter(TIntegerParameter.Create('ImageWidth', PersonArea.FullWidth));
     IC.AddParameter(TIntegerParameter.Create('ImageHeight', PersonArea.FullHeight));
     IC.AddParameter(TIntegerParameter.Create('PageNumber', PersonArea.Page));
@@ -257,6 +290,7 @@ begin
 
     try
       Person.ID := IC.Execute;
+      AllPersons.Add(Person);
     except
       Exit;
     end;
@@ -294,9 +328,9 @@ begin
   inherited;
 end;
 
-function TPersonManager.FindPersone(PersonID: Integer): TPerson;
+function TPersonManager.FindPerson(PersonID: Integer): TPerson;
 begin
-
+  Result := AllPersons.GetPersonByID(PersonID);
 end;
 
 function TPersonManager.GetAllPersons: TPersonCollection;
@@ -309,7 +343,6 @@ begin
     SC := TSelectCommand.Create(PersonTableName);
     try
       SC.AddParameter(TAllParameter.Create);
-      //TODO: SC.AddOrder(TOrderColumn.Create());
       SC.Execute;
       FPeoples.ReadFromDS(SC.DS);
     finally
@@ -320,13 +353,43 @@ begin
 end;
 
 function TPersonManager.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
+var
+  SC: TSelectCommand;
 begin
-
+  Result := TPersonAreaCollection.Create;
+  SC := TSelectCommand.Create(PersonMappingTableName);
+  try
+    SC.AddParameter(TAllParameter.Create);
+    SC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
+    try
+      SC.Execute;
+      Result.ReadFromDS(SC.DS);
+    except
+      Exit;
+    end;
+  finally
+    F(SC);
+  end;
 end;
 
 function TPersonManager.GetPersonsOnImage(ImageID: Integer): TPersonCollection;
+var
+  SC: TSelectCommand;
 begin
-
+  Result := TPersonCollection.Create;
+  SC := TSelectCommand.Create(PersonTableName);
+  try
+    SC.AddParameter(TAllParameter.Create);
+    SC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
+    try
+      SC.Execute;
+      Result.ReadFromDS(SC.DS);
+    except
+      Exit;
+    end;
+  finally
+    F(SC);
+  end;
 end;
 
 procedure TPersonManager.InitDB;
@@ -340,8 +403,24 @@ end;
 
 function TPersonManager.RemovePersonFromPhoto(ImageID,
   PersonID: Integer): Boolean;
+var
+  DC: TDeleteCommand;
 begin
-
+  Result := False;
+  DC := TDeleteCommand.Create(PersonMappingTableName);
+  try
+    DC.AddParameter(TAllParameter.Create);
+    DC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
+    DC.AddWhereParameter(TIntegerParameter.Create('PersonID', PersonID));
+    try
+      DC.Execute;
+      Result := True;
+    except
+      Exit;
+    end;
+  finally
+    F(DC);
+  end;
 end;
 
 function TPersonManager.UpdatePerson(Person: TPerson): Boolean;
@@ -380,6 +459,11 @@ end;
 
 { TPersonCollection }
 
+procedure TPersonCollection.Add(Person: TPerson);
+begin
+  FList.Add(Person.Clone)
+end;
+
 procedure TPersonCollection.Clear;
 begin
   FreeList(FList, False);
@@ -399,6 +483,19 @@ end;
 function TPersonCollection.GetCount: Integer;
 begin
   Result := FList.Count;
+end;
+
+function TPersonCollection.GetPersonByID(ID: Integer): TPerson;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to Count - 1 do
+    if Items[I].ID = ID then
+    begin
+      Result := Items[I];
+      Exit;
+    end;
 end;
 
 function TPersonCollection.GetPersonByIndex(Index: Integer): TPerson;
@@ -442,6 +539,12 @@ begin
   inherited;
 end;
 
+function TPersonAreaCollection.Extract(Index: Integer): TPersonArea;
+begin
+  Result := FList[Index];
+  FList.Delete(Index);
+end;
+
 function TPersonAreaCollection.GetAreaByIndex(Index: Integer): TPersonArea;
 begin
   Result := FList[Index];
@@ -453,11 +556,43 @@ begin
 end;
 
 procedure TPersonAreaCollection.ReadFromDS(DS: TDataSet);
+var
+  I: Integer;
+  PA: TPersonArea;
 begin
   Clear;
+
+  for I := 0 to DS.RecordCount - 1 do
+  begin
+    if I = 0 then
+      DS.First;
+    PA := TPersonArea.Create;
+    FList.Add(PA);
+    PA.ReadFromDS(DS);
+    DS.Next;
+  end;
 end;
 
 { TPersonArea }
+
+function TPersonArea.Clone: TClonableObject;
+var
+  P: TPersonArea;
+begin
+  P := TPersonArea.Create;
+  P.ID := ID;
+  P.FX := X;
+  P.FY := Y;
+  P.FWidth := Width;
+  P.FHeight := Height;
+  P.FFullWidth := FullWidth;
+  P.FFullHeight := FullHeight;
+  P.FImageID := ImageID;
+  P.FPersonID := PersonID;
+  P.FPage := Page;
+
+  Result := P;
+end;
 
 constructor TPersonArea.Create(ImageID, PersonID: Integer;
   Area: TFaceDetectionResultItem);
@@ -484,8 +619,8 @@ begin
   FID := DS.FieldByName('PersonMappingID').AsInteger;
   FX := DS.FieldByName('Left').AsInteger;
   FY := DS.FieldByName('Top').AsInteger;
-  FWidth := DS.FieldByName('Width').AsInteger;
-  FHeight := DS.FieldByName('Height').AsInteger;
+  FWidth := DS.FieldByName('Right').AsInteger - FX;
+  FHeight := DS.FieldByName('Bottom').AsInteger - FY;
   FFullWidth := DS.FieldByName('ImageWidth').AsInteger;
   FFullHeight := DS.FieldByName('ImageHeight').AsInteger;
   FImageID := DS.FieldByName('ImageID').AsInteger;
