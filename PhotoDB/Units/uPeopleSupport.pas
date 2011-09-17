@@ -33,7 +33,8 @@ type
     function GetPersonsOnImage(ImageID: Integer): TPersonCollection;
     function GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
     function AddPersonForPhoto(PersonArea: TPersonArea): Boolean;
-    function RemovePersonFromPhoto(ImageID: Integer; PersonID: Integer): Boolean;
+    function RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
+    function ChangePerson(PersonArea: TPersonArea; ToPersonID: Integer): Boolean;
     constructor Create;
     destructor Destroy; override;
     property AllPersons: TPersonCollection read GetAllPersons;
@@ -260,6 +261,28 @@ begin
   end;
 end;
 
+function TPersonManager.ChangePerson(PersonArea: TPersonArea;
+  ToPersonID: Integer): Boolean;
+var
+  UC: TUpdateCommand;
+begin
+  Result := False;
+  UC := TUpdateCommand.Create(PersonMappingTableName);
+  try
+    UC.AddParameter(TIntegerParameter.Create('PersonID', ToPersonID));
+    UC.AddWhereParameter(TIntegerParameter.Create('PersonMappingID', PersonArea.ID));
+    try
+      UC.Execute;
+      PersonArea.FPersonID := ToPersonID;
+      Result := True;
+    except
+      Exit;
+    end;
+  finally
+    F(UC);
+  end;
+end;
+
 constructor TPersonManager.Create;
 begin
   FPeoples := nil;
@@ -401,8 +424,7 @@ begin
   end;
 end;
 
-function TPersonManager.RemovePersonFromPhoto(ImageID,
-  PersonID: Integer): Boolean;
+function TPersonManager.RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
 var
   DC: TDeleteCommand;
 begin
@@ -411,7 +433,7 @@ begin
   try
     DC.AddParameter(TAllParameter.Create);
     DC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
-    DC.AddWhereParameter(TIntegerParameter.Create('PersonID', PersonID));
+    DC.AddWhereParameter(TIntegerParameter.Create('PersonMappingID', PersonArea.ID));
     try
       DC.Execute;
       Result := True;
@@ -599,13 +621,18 @@ constructor TPersonArea.Create(ImageID, PersonID: Integer;
 begin
   Create;
   FID := 0;
-  FX := Area.X;
-  FY := Area.Y;
-  FWidth := Area.Width;
-  FHeight := Area.Height;
-  FFullWidth := Area.ImageWidth;
-  FFullHeight := Area.ImageHeight;
-  FPage := Area.Page;
+
+  if Area <> nil then
+  begin
+    FX := Area.X;
+    FY := Area.Y;
+    FWidth := Area.Width;
+    FHeight := Area.Height;
+    FFullWidth := Area.ImageWidth;
+    FFullHeight := Area.ImageHeight;
+    FPage := Area.Page;
+  end;
+
   FImageID := ImageID;
   FPersonID := PersonID;
 end;

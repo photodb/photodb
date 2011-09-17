@@ -212,6 +212,7 @@ type
   private
     FData: TClonableObject;
     procedure SetData(const Value: TClonableObject);
+    function GetImageSize: TSize;
   public
     X: Integer;
     Y: Integer;
@@ -224,7 +225,9 @@ type
     function Copy: TFaceDetectionResultItem;
     constructor Create;
     destructor Destroy; override;
+    procedure RecalculateNewImageSize(NewSize: TSize);
     property Data: TClonableObject read FData write SetData;
+    property ImageSize: TSize read GetImageSize;
   end;
 
   TFaceDetectionResult = class
@@ -235,6 +238,7 @@ type
     FPage: Integer;
     FSize: Int64;
     FDateModified: TDateTime;
+    FPersistanceFileName: string;
     function GetItem(Index: Integer): TFaceDetectionResultItem;
     function GetCount: Integer;
     function GetSize: TSize;
@@ -244,7 +248,9 @@ type
     procedure Clear;
     procedure Assign(Source: TFaceDetectionResult);
     procedure DeleteAt(I: Integer);
+    procedure Remove(Item: TFaceDetectionResultItem);
     function AddFace(X, Y, Width, Height, ImageWidth, ImageHeight, Page: Integer): TFaceDetectionResultItem;
+    procedure Add(Face: TFaceDetectionResultItem);
     property Items[Index: Integer]: TFaceDetectionResultItem read GetItem; default;
     property Count: Integer read GetCount;
     property ImageWidth: Integer read FImageWidth write FImageWidth;
@@ -253,6 +259,7 @@ type
     property Size: Int64 read FSize write FSize;
     property DateModified: TDateTime read FDateModified write FDateModified;
     property OriginalSize: TSize read GetSize;
+    property PersistanceFileName: string read FPersistanceFileName write FPersistanceFileName;
   end;
 
   TCascadeData = class
@@ -481,6 +488,11 @@ end; { IplImage2Bitmap }
 
 { TFaceDetectionResult }
 
+procedure TFaceDetectionResult.Add(Face: TFaceDetectionResultItem);
+begin
+  FList.Add(Face);
+end;
+
 function TFaceDetectionResult.AddFace(X, Y, Width, Height, ImageWidth, ImageHeight, Page: Integer): TFaceDetectionResultItem;
 begin
   Result := TFaceDetectionResultItem.Create;
@@ -503,6 +515,7 @@ begin
   FImageWidth := Source.ImageWidth;
   FImageHeight := Source.ImageHeight;
   FPage := Source.Page;
+  FPersistanceFileName := Source.FPersistanceFileName;
 
   for I := 0 to Source.Count - 1 do
     FList.Add(Source[I].Copy);
@@ -515,6 +528,7 @@ end;
 
 constructor TFaceDetectionResult.Create;
 begin
+  FPersistanceFileName := '';
   FList := TList.Create;
 end;
 
@@ -546,12 +560,17 @@ begin
   Result.cy := ImageHeight;
 end;
 
+procedure TFaceDetectionResult.Remove(Item: TFaceDetectionResultItem);
+begin
+  FList.Remove(Item);
+  F(Item);
+end;
+
 { TFaceDetectionManager }
 
 constructor TFaceDetectionManager.Create;
 begin
   FSync := TCriticalSection.Create;
-//  FCascadeFaces := nil;
   FCascades := TList.Create;
   Init;
 end;
@@ -696,6 +715,29 @@ destructor TFaceDetectionResultItem.Destroy;
 begin
   F(FData);
   inherited;
+end;
+
+function TFaceDetectionResultItem.GetImageSize: TSize;
+begin
+  Result.cx := ImageWidth;
+  Result.cy := ImageHeight;
+end;
+
+procedure TFaceDetectionResultItem.RecalculateNewImageSize(NewSize: TSize);
+var
+  MX, MY: Double;
+begin
+  if (ImageWidth <> 0) and (ImageHeight <> 0) then
+  begin
+    MX := NewSize.cx / ImageWidth;
+    MY := NewSize.cy / ImageHeight;
+    X := Round(X * MX);
+    Y := Round(Y * MY);
+    Width := Round(Width * MX);
+    Height := Round(Height * MY);
+    ImageWidth := NewSize.cx;
+    ImageHeight := NewSize.cy;
+  end;
 end;
 
 function TFaceDetectionResultItem.Rect: TRect;

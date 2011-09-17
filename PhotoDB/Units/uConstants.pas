@@ -363,6 +363,9 @@ const
 const
   DefaultCascadeFileName = 'haarcascade_frontalface_alt.xml';
 
+const
+  cPersonsPath = '::db://person:';
+
 implementation
 
 end.

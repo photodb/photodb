@@ -68,6 +68,8 @@ type
     function LoadFromFile(FileName: string): Boolean;
     function SaveToFile(FileName: string): Boolean;
     procedure MergeWithDBInfo(DBInfo: TPersonAreaCollection);
+    procedure RemoveFaceResult(FR: TFaceDetectionResultItem);
+    procedure RemoveCache;
   end;
 
 function FaceDetectionDataManager: TFaceDetectionDataManager;
@@ -106,7 +108,7 @@ procedure TFaceDetectionThread.Execute;
 var
   FBitmap, SmallBitmap: TBitmap;
   CacheFileName: string;
-  W, H: Integer;
+  LoadResult, W, H: Integer;
   RMp, AMp, RR: Double;
   FaceMethod: string;
   Thread: TDBFaceLoadThread;
@@ -134,17 +136,17 @@ begin
             Thread := TDBFaceLoadThread.Create(ImageData.ID);
           try
             CacheFileName := FaceDetectionDataManager.CreateCacheFileName(FaceMethod, ImageData.FileName);
-           { LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
+            LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
             if LoadResult = FACE_DETECTION_OK then
             begin
               if ImageData.ID > 0 then
               begin
                 Thread.WaitFor;
-                FFaces.MergeWithDBInfo(Thread.FPersons);
+                FFaces.MergeWithDBInfo(Thread.FPersonAreas);
               end;
               Synchronize(UpdateFaceList);
               Continue;
-            end;    }
+            end;
 
             FBitmap := TBitmap.Create;
             try
@@ -345,7 +347,9 @@ begin
               ImageWidth, ImageHeight, Page);
         end;
       end;
-       Result := True;
+
+      PersistanceFileName := FileName;
+      Result := True;
     end;
   except
     on e: Exception do
@@ -396,6 +400,8 @@ begin
 
     CreateDirA(ExtractFileDir(FileName));
     (Doc as IDOMPersist).save(FileName);
+
+    PersistanceFileName := FileName;
     Result := True;
   except
     on e: Exception do
@@ -440,6 +446,17 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TDBFaceDetectionResult.RemoveCache;
+begin
+  DeleteFile(PersistanceFileName);
+end;
+
+procedure TDBFaceDetectionResult.RemoveFaceResult(FR: TFaceDetectionResultItem);
+begin
+  Remove(FR);
+  SaveToFile(PersistanceFileName);
 end;
 
 { TDBFaceLoadThread }

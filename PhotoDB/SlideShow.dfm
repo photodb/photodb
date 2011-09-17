@@ -317,7 +317,7 @@ object Viewer: TViewer
     end
   end
   object LsLoading: TLoadingSign
-    Left = 289
+    Left = 297
     Top = 192
     Width = 33
     Height = 33
@@ -331,8 +331,8 @@ object Viewer: TViewer
   end
   object PmMain: TPopupMenu
     OnPopup = PmMainPopup
-    Left = 392
-    Top = 16
+    Left = 48
+    Top = 128
     object Next1: TMenuItem
       Caption = 'Next'
       Default = True
@@ -467,77 +467,77 @@ object Viewer: TViewer
   object MouseTimer: TTimer
     Enabled = False
     Interval = 5000
-    Left = 144
-    Top = 112
+    Left = 232
+    Top = 272
   end
   object ApplicationEvents1: TApplicationEvents
     OnHint = ApplicationEvents1Hint
     OnMessage = ApplicationEvents1Message
-    Left = 312
-    Top = 16
+    Left = 48
+    Top = 8
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 464
-    Top = 16
+    Left = 144
+    Top = 8
   end
   object ImageList1: TImageList
     BlendColor = 12937777
     BkColor = 12937777
-    Left = 368
-    Top = 272
+    Left = 152
+    Top = 224
   end
   object ImageList2: TImageList
     BlendColor = 12937777
     BkColor = 12937777
-    Left = 424
+    Left = 152
     Top = 272
   end
   object ImageList3: TImageList
-    Left = 480
-    Top = 272
+    Left = 152
+    Top = 320
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = [dtCopy, dtMove, dtLink]
     OnDrop = DropFileTarget1Drop
     OptimizedMove = True
-    Left = 440
-    Top = 112
+    Left = 48
+    Top = 64
   end
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
     ShowImage = True
-    Left = 532
-    Top = 112
+    Left = 140
+    Top = 64
   end
   object DragImageList: TImageList
     ColorDepth = cd32Bit
     Height = 200
     Width = 200
-    Left = 368
-    Top = 208
+    Left = 152
+    Top = 176
   end
   object ImageFrameTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = ImageFrameTimerTimer
-    Left = 64
-    Top = 112
+    Left = 232
+    Top = 320
   end
   object SlideTimer: TTimer
     Enabled = False
     Interval = 4000
     OnTimer = SlideTimerTimer
-    Left = 200
-    Top = 112
+    Left = 232
+    Top = 224
   end
   object RatingPopupMenu: TPopupMenu
     MenuAnimation = [maBottomToTop]
-    Left = 248
-    Top = 200
+    Left = 48
+    Top = 224
     object N01: TMenuItem
       Caption = '0'
       OnClick = N51Click
@@ -567,17 +567,17 @@ object Viewer: TViewer
     Enabled = False
     Interval = 500
     OnTimer = TimerDBWorkTimer
-    Left = 320
-    Top = 112
+    Left = 232
+    Top = 176
   end
   object PopupMenuPageSelecter: TPopupMenu
-    Left = 136
-    Top = 200
+    Left = 48
+    Top = 176
   end
   object PmSteganography: TPopupMenu
     OnPopup = PmSteganographyPopup
-    Left = 40
-    Top = 376
+    Left = 48
+    Top = 272
     object AddHiddenInfo1: TMenuItem
       Caption = 'Add Hidden Info'
       OnClick = AddHiddenInfo1Click
@@ -589,23 +589,32 @@ object Viewer: TViewer
   end
   object PmFaces: TPopupMenu
     OnPopup = PmFacesPopup
-    Left = 120
-    Top = 376
-    object DisableFaceDetection1: TMenuItem
-      Caption = 'Disable Face Detection'
+    Left = 48
+    Top = 368
+    object MiRefreshFaces: TMenuItem
+      Caption = 'Refresh Faces'
+      OnClick = MiRefreshFacesClick
     end
-    object DetectionMethod1: TMenuItem
+    object N9: TMenuItem
+      Caption = '-'
+    end
+    object MiDetectionMethod: TMenuItem
       Caption = 'Detection Method'
+    end
+    object MiFaceDetectionStatus: TMenuItem
+      Caption = 'Face Detection Status'
+      OnClick = MiFaceDetectionStatusClick
     end
   end
   object PmFace: TPopupMenu
     OnPopup = PmFacePopup
-    Left = 176
-    Top = 376
-    object ClearFaceZone1: TMenuItem
+    Left = 48
+    Top = 320
+    object MiClearFaceZone: TMenuItem
       Caption = 'Clear face zone'
+      OnClick = MiClearFaceZoneClick
     end
-    object N9: TMenuItem
+    object MiClearFaceZoneSeparatpr: TMenuItem
       Caption = '-'
     end
     object MiCurrentPerson: TMenuItem
@@ -640,11 +649,12 @@ object Viewer: TViewer
       Caption = 'Other Persons'
       OnClick = MiOtherPersonsClick
     end
-    object N13: TMenuItem
+    object MiFindPhotosSeparator: TMenuItem
       Caption = '-'
     end
-    object Findphotos1: TMenuItem
+    object MiFindPhotos: TMenuItem
       Caption = 'Find photos'
+      OnClick = MiFindPhotosClick
     end
   end
 end

@@ -84,9 +84,18 @@ begin
 end;
 
 procedure TLoad.WaitForThread(Thread: TDBThread);
+var
+  H: THandle;
 begin
   if DBThreadManager.IsThread(Thread) then
-    WaitForSingleObject(DBThreadManager.GetThreadHandle(Thread), 10000);
+  begin
+    H := DBThreadManager.GetThreadHandle(Thread);
+    if H <> 0 then
+    begin
+      TW.I.Start('WaitForSingleObject: ' + IntToStr(H));
+      WaitForSingleObject(H, 10000);
+    end;
+  end;
 end;
 
 procedure TLoad.StartCRCCheckThread;
@@ -108,7 +117,7 @@ end;
 
 procedure TLoad.RequaredDBSettings;
 begin
-  TW.I.Start('TLoad.RequaredDBKernelIcons');
+  TW.I.Start('TLoad.LoadDBSettingsThread');
   WaitForThread(LoadDBSettingsThread);
 end;
 

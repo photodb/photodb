@@ -24,7 +24,7 @@
     <translate name="%dpx." value="%dпк." />
     <translate name="All formats (%s)" value="Все форматы (%s)" />
     <translate name="Unknown" value="Неизвестно" />
-    <translate name="Unregistered user" value="Незарегистрированный пользователь" />	
+    <translate name="Unregistered user" value="Незарегистрированный пользователь" />
   </scope>
   <scope name="InstallLanguage">
     <translate name="Select language" value="Выбор языка" />
@@ -805,8 +805,16 @@
     <translate name="Detecting faces" value="Определение лиц" />
     <translate name="Faces: %d" value="Лица: %d" />
     <translate name="No faces found" value="Лица не найдены" />
-    <translate name="Create person" value="Создать персону" />	
-    <translate name="Other person" value="Другая персона" />	
+    <translate name="Create person" value="Создать персону" />
+    <translate name="Other person" value="Другая персона" />
+    <translate name="Find photos" value="Найти фотографии" />
+    <translate name="Clear face zone" value="Очистить зону" />
+    <translate name="New person" value="Новая персона" />
+	
+    <translate name="Disable face detection" value="Отключить определение лиц" />
+    <translate name="Enable face detection" value="Включить определение лиц" />
+    <translate name="Detection method" value="Метод определения" />
+    <translate name="Refresh faces" value="Обновить лица" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />

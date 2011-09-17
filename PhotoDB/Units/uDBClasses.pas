@@ -319,7 +319,7 @@ end;
 
 function TDeleteCommand.GetSQL: string;
 begin
-  Result := Format('DELETE FROM [%s] WHERE (s)', [FTableName, WhereParameters.AsCondition]);
+  Result := Format('DELETE FROM [%s] WHERE (%s)', [FTableName, WhereParameters.AsCondition]);
 end;
 
 { FParameterCollection }

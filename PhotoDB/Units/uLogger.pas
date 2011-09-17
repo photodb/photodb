@@ -3,7 +3,7 @@ unit uLogger;
 interface
 
 uses
-  Windows, Classes, SysUtils, uFileUtils, SyncObjs, uMemory;
+  Windows, Classes, SysUtils, uFileUtils, SyncObjs, uMemory, uTime;
 
 {$DEFINE _EVENTLOG}
 
@@ -36,6 +36,7 @@ end;
 
 procedure EventLog(Message : string);
 begin
+  TW.I.Start(Message);
 {$IFDEF EVENTLOG}
   TLogger.Instance.Message(Message);
 {$ENDIF}

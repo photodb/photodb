@@ -3,7 +3,7 @@ unit UnitUpdateDBObject;
 interface
 
 uses Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
-     UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory,
+     UnitDBDeclare, UnitDBCommon, UnitDBCommonGraphics, uMemory, UnitDBKernel,
      uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM, uMemoryEx,
      uTranslate, Dolphin_DB, uDBForm, uSettings, uAssociations, win32crc;
 
@@ -226,8 +226,16 @@ begin
 end;
 
 procedure TUpdaterDB.DoTerminate;
+var
+  EventInfo: TEventValues;
+  I: Integer;
 begin
   FTerminate := True;
+  for I := 0 to FFilesInfo.Count - 1 do
+  begin
+    EventInfo.Name := AnsiLowerCase(FFilesInfo[I].FileName);
+    DBKernel.DoIDEvent(FForm, 0, [EventID_CancelAddingImage], EventInfo);
+  end;
   FFilesInfo.Clear;
   FPosition := 0;
   FActive := False;

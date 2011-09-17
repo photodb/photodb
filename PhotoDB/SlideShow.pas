@@ -114,11 +114,11 @@ type
     LsDetectingFaces: TLoadingSign;
     WlFaceCount: TWebLink;
     PmFaces: TPopupMenu;
-    DisableFaceDetection1: TMenuItem;
-    DetectionMethod1: TMenuItem;
+    MiFaceDetectionStatus: TMenuItem;
+    MiDetectionMethod: TMenuItem;
     PmFace: TPopupMenu;
-    ClearFaceZone1: TMenuItem;
-    N9: TMenuItem;
+    MiClearFaceZone: TMenuItem;
+    MiClearFaceZoneSeparatpr: TMenuItem;
     MiCurrentPerson: TMenuItem;
     MiCurrentPersonSeparator: TMenuItem;
     Previousselections1: TMenuItem;
@@ -128,8 +128,10 @@ type
     N12: TMenuItem;
     MiCreatePerson: TMenuItem;
     MiOtherPersons: TMenuItem;
-    N13: TMenuItem;
-    Findphotos1: TMenuItem;
+    MiFindPhotosSeparator: TMenuItem;
+    MiFindPhotos: TMenuItem;
+    N9: TMenuItem;
+    MiRefreshFaces: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -225,6 +227,10 @@ type
     procedure MiCreatePersonClick(Sender: TObject);
     procedure MiOtherPersonsClick(Sender: TObject);
     procedure PmFacePopup(Sender: TObject);
+    procedure MiFindPhotosClick(Sender: TObject);
+    procedure MiClearFaceZoneClick(Sender: TObject);
+    procedure MiRefreshFacesClick(Sender: TObject);
+    procedure MiFaceDetectionStatusClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -253,6 +259,9 @@ type
     FFaceDetectionComplete: Boolean;
     FHoverFace: TFaceDetectionResultItem;
     FDisplayAllFaces: Boolean;
+    FDrawingFace: Boolean;
+    FDrawFaceStartPoint: TPoint;
+    FDrawFace:  TFaceDetectionResultItem;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
@@ -275,6 +284,7 @@ type
     function GetFormID : string; override;
     function GetItem: TDBPopupMenuInfoRecord; override;
     procedure RefreshFaces;
+    procedure RefreshFaceDetestionState;
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
     function GetImageRect: TRect;
     function GetVisibleImageWidth: Integer;
@@ -364,7 +374,7 @@ uses
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,
-  uFormCreatePerson;
+  uFormCreatePerson, uFaceDetectionThread;
 
 {$R *.dfm}
 
@@ -391,6 +401,7 @@ end;
 procedure TViewer.FormCreate(Sender: TObject);
 begin
   TW.I.Start('TViewer.FormCreate');
+  FDrawingFace := False;
   FCreating := True;
   LsLoading.Active := True;
   CurrentInfo := TDBPopupMenuInfo.Create;
@@ -398,6 +409,7 @@ begin
   FPageCount := 1;
   WaitingList := False;
   LastZValue := 1;
+  FDrawFace := nil;
   LockEventRotateFileList := TStringList.Create;
   RatingPopupMenu.Images := DBKernel.ImageList;
   N01.ImageIndex := DB_IC_DELETE_INFO;
@@ -914,6 +926,7 @@ begin
   FormManager.UnRegisterMainForm(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 
+  F(FDrawFace);
   F(FFaces);
   F(FOverlayBuffer);
   F(CurrentInfo);
@@ -1085,11 +1098,21 @@ begin
   begin
     PA := TPersonArea(RI.Data);
     P := PersonManager.FindPerson(PA.PersonID);
+    MiCreatePerson.Visible := P = nil;
+    MiFindPhotosSeparator.Visible := P <> nil;
     if P <> nil then
       MiCurrentPerson.Caption := P.Name
     else
       MiCurrentPerson.Caption := L('Unknown Person');
   end;
+end;
+
+procedure TViewer.RefreshFaceDetestionState;
+begin
+  if Settings.ReadBool('FaceDetection', 'Enabled', True) then
+    MiFaceDetectionStatus.Caption := L('Disable face detection')
+  else
+    MiFaceDetectionStatus.Caption := L('Enable face detection');
 end;
 
 procedure TViewer.PmFacesPopup(Sender: TObject);
@@ -1100,6 +1123,11 @@ var
   Directory, DetectionMethod: string;
   MI: TMenuItem;
 begin
+  RefreshFaceDetestionState;
+
+  MiDetectionMethod.Caption := L('Detection method');
+  MiRefreshFaces.Caption := L('Refresh faces');
+
   DetectionMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
   FileList := TStringList.Create;
   try
@@ -1116,14 +1144,14 @@ begin
       FindClose(SearchRec);
     end;
 
-    DetectionMethod1.Clear;
+    MiDetectionMethod.Clear;
     for I := 0 to FileList.Count - 1 do
     begin
       MI := TMenuItem.Create(PmFaces);
       MI.Caption := ExtractFileName(FileList[I]);
       MI.OnClick := SelectCascade;
       MI.Default := MI.Caption = DetectionMethod;
-      DetectionMethod1.Add(MI);
+      MiDetectionMethod.Add(MI);
     end;
   finally
     F(FileList);
@@ -1252,15 +1280,15 @@ end;
 procedure TViewer.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
-  P: TPoint;
+  StartPoint, P: TPoint;
   DragImage: TBitmap;
   W, H: Integer;
   FileName: string;
   I: Integer;
   OldHoverFace: TFaceDetectionResultItem;
 begin
-  P := Point(X, Y);
-  P := BufferPointToImagePoint(P);
+  StartPoint := Point(X, Y);
+  P := BufferPointToImagePoint(StartPoint);
 
   OldHoverFace := FHoverFace;
   FHoverFace := nil;
@@ -1274,6 +1302,14 @@ begin
 
   if OldHoverFace <> FHoverFace then
     RefreshFaces;
+
+  if FDrawingFace then
+  begin
+    FDrawFace.Width := P.X - FDrawFace.X;
+    FDrawFace.Height := P.Y - FDrawFace.Y;
+    RefreshFaces;
+    Exit;
+  end;
 
   if DBCanDrag then
   begin
@@ -2014,6 +2050,23 @@ begin
   TW.I.Start('CreateParams - END');
 end;
 
+procedure TViewer.MiClearFaceZoneClick(Sender: TObject);
+var
+  FR: TFaceDetectionResultItem;
+  FA: TPersonArea;
+begin
+  FHoverFace := nil;
+
+  FR := TFaceDetectionResultItem(PmFace.Tag);
+  if FR.Data <> nil then
+  begin
+    FA := TPersonArea(FR.Data);
+    PersonManager.RemovePersonFromPhoto(Item.ID, FA);
+  end;
+  FFaces.RemoveFaceResult(FR);
+  RefreshFaces;
+end;
+
 procedure TViewer.MiCreatePersonClick(Sender: TObject);
 var
   Face, TmpFace: TFaceDetectionResultItem;
@@ -2027,8 +2080,8 @@ begin
   R := Face.Rect;
   P1 := R.TopLeft;
   P2 := R.BottomRight;
-  P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
-  P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
+  P1 := PxMultiply(P1, Face.ImageSize, FBImage);
+  P2 := PxMultiply(P2, Face.ImageSize, FBImage);
 
   R := Rect(P1, P2);
   W := RectWidth(R);
@@ -2063,12 +2116,39 @@ begin
       TmpFace.Y := FaceRect.Top;
       TmpFace.Width := RectWidth(FaceRect);
       TmpFace.Height := RectHeight(FaceRect);
-      CreatePerson(Item.ID, Face, TmpFace, B, P);
+      CreatePerson(Item, Face, TmpFace, B, P);
     finally
       F(TmpFace);
     end;
   finally
     F(B);
+  end;
+end;
+
+procedure TViewer.MiFaceDetectionStatusClick(Sender: TObject);
+begin
+  Settings.WriteBool('FaceDetection', 'Enabled', not Settings.ReadBool('FaceDetection', 'Enabled', True));
+  RefreshFaceDetestionState;
+end;
+
+procedure TViewer.MiFindPhotosClick(Sender: TObject);
+var
+  P: TPerson;
+  PA: TPersonArea;
+  FR: TFaceDetectionResultItem;
+begin
+  FR := TFaceDetectionResultItem(PmFace.Tag);
+  PA := TPersonArea(FR.Data);
+  if PA = nil then
+    Exit;
+  P := PersonManager.FindPerson(PA.PersonID);
+  if P = nil then
+    Exit;
+
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cPersonsPath + P.Name);
+    Show;
   end;
 end;
 
@@ -2163,6 +2243,8 @@ begin
 
     MiCreatePerson.Caption := L('Create person');
     MiOtherPersons.Caption := L('Other person');
+    MiFindPhotos.Caption := L('Find photos');
+    MiClearFaceZone.Caption := L('Clear face zone');
   finally
     EndTranslate;
   end;
@@ -2183,10 +2265,34 @@ end;
 
 procedure TViewer.FormMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
+var
+  P: TPoint;
+  PA: TPersonArea;
 begin
+  if (FHoverFace = nil) and ShiftKeyDown and not DBCanDrag then
+  begin
+    FDrawingFace := True;
+    P := Point(X, Y);
+    FDrawFaceStartPoint := P;
+    F(FDrawFace);
+    FDrawFace := TFaceDetectionResultItem.Create;
+    FDrawFace.ImageWidth := FBImage.Width;
+    FDrawFace.ImageHeight := FBImage.Height;
+    FDrawFace.Width := 0;
+    FDrawFace.Height := 0;
+    P := BufferPointToImagePoint(P);
+    FDrawFace.X :=  P.X;
+    FDrawFace.Y := P.Y;
+
+    PA := TPersonArea.Create(0, -1, nil);
+    FDrawFace.Data := PA;
+    Exit;
+  end;
+
   WindowsMenuTickCount := GetTickCount;
   if CurrentInfo.Count = 0 then
     Exit;
+
   if Button = MbLeft then
     if FileExistsSafe(Item.FileName) then
     begin
@@ -2197,6 +2303,18 @@ end;
 
 procedure TViewer.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
+  FDrawingFace := False;
+  if FDrawFace <> nil then
+  begin
+    FDrawFace.Data := nil;
+    //recalculate size
+    FDrawFace.RecalculateNewImageSize(FFaces.OriginalSize);
+    FFaces.Add(FDrawFace);
+    FDrawFace := nil;
+    FFaces.SaveToFile(FFaces.PersistanceFileName);
+    RefreshFaces;
+  end;
+  F(FDrawFace);
   DBCanDrag := False;
 end;
 
@@ -2698,12 +2816,18 @@ var
   P: TPerson;
 
   procedure DrawFace(Face: TFaceDetectionResultItem);
+  var
+    S: string;
   begin
+    FOverlayBuffer.Canvas.Brush.Style := bsClear;
+    FOverlayBuffer.Canvas.Pen.Style := psDash;
+    FOverlayBuffer.Canvas.Pen.Width := 1;
+
     P1 := Face.Rect.TopLeft;
     P2 := Face.Rect.BottomRight;
 
-    P1 := PxMultiply(P1, FFaces.OriginalSize, FBImage);
-    P2 := PxMultiply(P2, FFaces.OriginalSize, FBImage);
+    P1 := PxMultiply(P1, Face.ImageSize, FBImage);
+    P2 := PxMultiply(P2, Face.ImageSize, FBImage);
 
     P1 := ImagePointToBufferPoint(P1);
     P2 := ImagePointToBufferPoint(P2);
@@ -2716,10 +2840,16 @@ var
     if Face.Data <> nil then
     begin
       PA := TPersonArea(Face.Data);
+
       P := PersonManager.FindPerson(PA.PersonID);
-      if P <> nil then
+      if (P <> nil) or (PA.PersonID = -1) then
       begin
-        FOverlayBuffer.Canvas.TextOut(R.Right, R.Bottom + 10, P.Name);
+        if P <> nil then
+          S := P.Name
+        else
+          S := L('New person');
+
+        FOverlayBuffer.Canvas.TextOut(R.Right, R.Bottom + 10, S);
       end;
     end;
   end;
@@ -2732,24 +2862,15 @@ begin
     if not ShiftKeyDown and not FDisplayAllFaces then
     begin
       if FHoverFace <> nil then
-      begin
-        FOverlayBuffer.Canvas.Brush.Style := bsClear;
-        FOverlayBuffer.Canvas.Pen.Style := psDash;
-        FOverlayBuffer.Canvas.Pen.Width := 1;
-
         DrawFace(FHoverFace);
-      end;
     end else
     begin
-      FOverlayBuffer.Canvas.Brush.Style := bsClear;
-      FOverlayBuffer.Canvas.Pen.Style := psDash;
-      FOverlayBuffer.Canvas.Pen.Width := 1;
-
       for I := 0 to FFaces.Count - 1 do
-      begin
         DrawFace(FFaces[I]);
-      end;
     end;
+
+    if FDrawingFace then
+      DrawFace(FDrawFace);
   end;
   InvalidateRect(Handle, ClientRect, True);
 end;
@@ -3825,23 +3946,42 @@ var
   P: TPerson;
   PA: TPersonArea;
   RI: TFaceDetectionResultItem;
+
 begin
   RI := TFaceDetectionResultItem(PmFace.Tag);
   Application.CreateForm(TFormFindPerson, FormFindPerson);
   try
     P := FormFindPerson.Execute;
-    PA := TPersonArea.Create(Item.ID, P.ID, RI);
-    try
-      PersonManager.AddPersonForPhoto(PA);
-      RI.Data := PA.Clone;
+    if P <> nil then
+    begin
+      PA := TPersonArea(RI.Data);
+      if PA = nil then
+      begin
+        PA := TPersonArea.Create(Item.ID, P.ID, RI);
+        try
+          PersonManager.AddPersonForPhoto(PA);
+          RI.Data := PA.Clone;
 
-      RefreshFaces;
-    finally
-      F(PA);
+          RefreshFaces;
+        finally
+          F(PA);
+        end;
+      end else
+      begin
+        PersonManager.ChangePerson(PA, P.ID);
+        RefreshFaces;
+      end;
+
     end;
   finally
     F(FormFindPerson);
   end;
+end;
+
+procedure TViewer.MiRefreshFacesClick(Sender: TObject);
+begin
+  FFaces.RemoveCache;
+  ReloadCurrent;
 end;
 
 function TViewer.GetPageCaption: String;

@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, WatermarkedEdit, ExtCtrls, WatermarkedMemo, ComCtrls,
   WebLinkList, uFaceDetection, uPeopleSupport, uMemory, uMemoryEx, jpeg,
-  uBitmapUtils, uDBThread, uDBForm, LoadingSign, u2DUtils, uSettings, Menus;
+  uBitmapUtils, uDBThread, uDBForm, LoadingSign, u2DUtils, uSettings, Menus,
+  UnitDBDeclare, UnitDBKernel;
 
 type
   TFormCreatePerson = class(TDBForm)
@@ -25,6 +26,7 @@ type
     LsExtracting: TLoadingSign;
     PmImageOptions: TPopupMenu;
     Loadotherimage1: TMenuItem;
+    LsAdding: TLoadingSign;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PbPhotoPaint(Sender: TObject);
@@ -36,14 +38,17 @@ type
     FPicture: TBitmap;
     FDisplayImage: TBitmap;
     FOriginalFace: TFaceDetectionResultItem;
-    FImageID: Integer;
     FPerson: TPerson;
-    procedure Execute(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
+    FInfo: TDBPopupMenuInfoRecord;
+    procedure Execute(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
     procedure LoadLanguage;
   protected
     function GetFormID: string; override;
+    procedure EnableControls(IsEnabled: Boolean);
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
+    procedure AddPhoto;
   public
     { Public declarations }
     property Person: TPerson read FPerson;
@@ -63,19 +68,22 @@ type
     destructor Destroy; override;
   end;
 
-procedure CreatePerson(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
+procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
 
 implementation
 
+uses
+  UnitUpdateDB;
+
 {$R *.dfm}
 
-procedure CreatePerson(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
+procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
 var
   FormCreatePerson: TFormCreatePerson;
 begin
   Application.CreateForm(TFormCreatePerson, FormCreatePerson);
   try
-    FormCreatePerson.Execute(ImageID, OriginalFace, FaceInImage, Bitmap);
+    FormCreatePerson.Execute(Info, OriginalFace, FaceInImage, Bitmap);
     Person := FormCreatePerson.Person;
   finally
     R(FormCreatePerson);
@@ -89,11 +97,26 @@ begin
   Close;
 end;
 
-procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
+procedure TFormCreatePerson.AddPhoto;
 var
   PersonArea: TPersonArea;
-  J: TJpegImage;
 begin
+  PersonArea := TPersonArea.Create(FInfo.ID, Person.ID, FOriginalFace);
+  try
+    PersonManager.AddPersonForPhoto(PersonArea);
+    FOriginalFace.Data := PersonArea.Clone;
+  finally
+    F(PersonArea);
+  end;
+  Close;
+end;
+
+procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
+var
+  J: TJpegImage;
+  FileInfo: TDBPopupMenuInfoRecord;
+begin
+  EnableControls(False);
   F(FPerson);
   FPerson := TPerson.Create;
   FPerson.Name := WedName.Text;
@@ -108,24 +131,62 @@ begin
     F(J);
   end;
   PersonManager.CreateNewPerson(Person);
+
   if Person.ID > 0 then
   begin
-    PersonArea := TPersonArea.Create(FImageID, Person.ID, FOriginalFace);
-    try
-      PersonManager.AddPersonForPhoto(PersonArea);
-      FOriginalFace.Data := PersonArea.Clone;
-    finally
-      F(PersonArea);
+    if FInfo.ID > 0 then
+    begin
+      AddPhoto;
+    end else
+    begin
+      FileInfo := TDBPopupMenuInfoRecord.Create;
+      try
+        FileInfo.FileName := FInfo.FileName;
+        FileInfo.Include := True;
+        UpdaterDB.AddFileEx(FileInfo, True, True);
+      finally
+        F(FileInfo);
+      end;
     end;
   end;
 end;
 
-procedure TFormCreatePerson.Execute(ImageID: Integer; OriginalFace, FaceInImage: TFaceDetectionResultItem;
+procedure TFormCreatePerson.ChangedDBDataByID(Sender: TObject; ID: Integer;
+  params: TEventFields; Value: TEventValues);
+begin
+  if SetNewIDFileData in Params then
+  begin
+    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+    begin
+      FInfo.ID := Value.ID;
+      AddPhoto;
+    end;
+
+  end;
+  if EventID_CancelAddingImage in Params then
+  begin
+    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+      EnableControls(True);
+
+  end;
+end;
+
+procedure TFormCreatePerson.EnableControls(IsEnabled: Boolean);
+begin
+  BtnOk.Enabled := IsEnabled;
+  BtnCancel.Enabled := IsEnabled;
+  WedName.Enabled := IsEnabled;
+  DtpBirthDay.Enabled := IsEnabled;
+  WmComments.Enabled := IsEnabled;
+  LsAdding.Visible := not IsEnabled;
+end;
+
+procedure TFormCreatePerson.Execute(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem;
   Bitmap: TBitmap);
 begin
   FPicture.Assign(Bitmap);
   FOriginalFace := OriginalFace;
-  FImageID := ImageID;
+  FInfo := Info.Copy;
   TPersonExtractor.Create(Self, FaceInImage, FPicture);
   RecreateImage;
   ShowModal;
@@ -133,17 +194,21 @@ end;
 
 procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
+  FInfo := nil;
   FPerson := nil;
   FPicture := TBitmap.Create;
   FDisplayImage := TBitmap.Create;
   LoadLanguage;
   PersonManager.InitDB;
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TFormCreatePerson.FormDestroy(Sender: TObject);
 begin
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   F(FPicture);
   F(FDisplayImage);
+  F(FInfo);
 end;
 
 procedure TFormCreatePerson.FormKeyDown(Sender: TObject; var Key: Word;

@@ -138,9 +138,20 @@ object FormCreatePerson: TFormCreatePerson
   end
   object LsExtracting: TLoadingSign
     Left = 272
-    Top = 287
+    Top = 289
     Width = 25
     Height = 25
+    Active = True
+    FillPercent = 60
+    SignColor = clBlack
+    MaxTransparencity = 255
+  end
+  object LsAdding: TLoadingSign
+    Left = 359
+    Top = 289
+    Width = 25
+    Height = 25
+    Visible = False
     Active = True
     FillPercent = 60
     SignColor = clBlack

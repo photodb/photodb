@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, uTranslate, uAssociations, uMemory, uGOM, SyncObjs, Forms,
-  uDBForm, uIME;
+  uDBForm, uIME, uTime, SysUtils;
 
 type
   TDBThread = class(TThread)
@@ -181,6 +181,7 @@ end;
 procedure TDBThreadManager.RegisterThread(Thread: TThread);
 var
   Info: TThreadInfo;
+  I: Integer;
 begin
   FSync.Enter;
   try
@@ -188,6 +189,10 @@ begin
     Info.Thread := Thread;
     Info.Handle := Thread.Handle;
     FThreads.Add(Info);
+
+    for I := 0 to FThreads.Count - 1 do
+      TW.I.Start('UnRegisterThread: Thread - ' + IntToStr(TThreadInfo(FThreads[I]).Thread.ThreadID) + ' @ = ' + IntToStr(Integer(TThreadInfo(FThreads[I]).Thread)));
+
   finally
     FSync.Leave;
   end;
@@ -197,18 +202,25 @@ procedure TDBThreadManager.UnRegisterThread(Thread: TThread);
 var
   I: Integer;
 begin
+  TW.I.Start('UnRegisterThread: Start - ' + IntToStr(Thread.ThreadID) + ' @ = ' + IntToStr(Integer(Thread)));
   FSync.Enter;
   try
     for I := 0 to FThreads.Count - 1 do
+      TW.I.Start('UnRegisterThread: Thread - ' + IntToStr(TThreadInfo(FThreads[I]).Thread.ThreadID) + ' @ = ' + IntToStr(Integer(TThreadInfo(FThreads[I]).Thread)));
+
+    for I := 0 to FThreads.Count - 1 do
+    begin
       if TThreadInfo(FThreads[I]).Thread = Thread then
       begin
         TThreadInfo(FThreads[I]).Free;
         FThreads.Delete(I);
-        Break;
+        Exit;
       end;
+    end;
   finally
     FSync.Leave;
   end;
+  TW.I.Start('UnRegisterThread: End - ' + IntToStr(Thread.ThreadID));
 end;
 
 procedure TDBThreadManager.WaitForAllThreads(MaxTime: Cardinal);
