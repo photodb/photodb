@@ -97,6 +97,9 @@ procedure CreateMultiselectImage(ListView : TEasyListView; ResultImage : TBitmap
   GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Width, Height : Integer);
 procedure FixListViewText(ACanvas: TCanvas; Item : TEasyItem; Include : Boolean);
 
+const
+  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
+
 implementation
 
 uses UnitPropeccedFilesSupport, UnitDBKernel;
@@ -494,7 +497,6 @@ var
   EasyRect : TEasyRectArrayObject;
 
 const
-  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
   ImageMoveLength = 7;
   ImagePadding = 10;
   RoundRadius = 8;

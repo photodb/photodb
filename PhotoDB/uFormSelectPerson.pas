@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, WatermarkedEdit, ComCtrls, ImgList, uDBForm,
-  uPeopleSupport, uBitmapUtils, uMemory, uMachMask, uGraphicUtils, CommCtrl;
+  uPeopleSupport, uBitmapUtils, uMemory, uMachMask, uGraphicUtils, CommCtrl,
+  UnitDBDeclare, UnitDBKernel, LoadingSign;
 
 type
   TFormFindPerson = class(TDBForm)
@@ -17,30 +18,39 @@ type
     LvPersons: TListView;
     TmrSearch: TTimer;
     ImlPersons: TImageList;
+    LsAdding: TLoadingSign;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
     procedure WedPersonFilterChange(Sender: TObject);
     procedure TmrSearchTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure BtnOkClick(Sender: TObject);
     procedure LvPersonsDblClick(Sender: TObject);
-  protected
-    function GetFormID: string; override;
+    procedure FormDestroy(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
   private
     { Private declarations }
     FPersons: TPersonCollection;
     WndMethod: TWndMethod;
+    FInfo: TDBPopupMenuInfoRecord;
     function GetIndex(aNMHdr: pNMHdr): Integer;
     procedure CheckMsg(var aMsg: TMessage);
     procedure LoadList;
     procedure LoadLanguage;
+    procedure EnableControls(IsEnabled: Boolean);
+  protected
+    function GetFormID: string; override;
+    procedure CloseForm;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
   public
     { Public declarations }
-    function Execute: TPerson;
+    function Execute(Info: TDBPopupMenuInfoRecord): TPerson;
   end;
 
 implementation
+
+uses
+  UnitUpdateDB;
 
 {$R *.dfm}
 
@@ -99,9 +109,46 @@ begin
   end;
 end;
 
+procedure TFormFindPerson.CloseForm;
+begin
+  if (LvPersons.Selected <> nil) and (FInfo.ID = 0) then
+  begin
+    EnableControls(False);
+    UpdaterDB.AddFileEx(FInfo, True, True);
+    Exit;
+  end;
+
+  Close;
+end;
+
 procedure TFormFindPerson.BtnOkClick(Sender: TObject);
 begin
+  if LvPersons.Selected <> nil then
+  begin
+    CloseForm;
+    Exit;
+  end;
+
   Close;
+end;
+
+procedure TFormFindPerson.ChangedDBDataByID(Sender: TObject; ID: Integer;
+  params: TEventFields; Value: TEventValues);
+begin
+  if SetNewIDFileData in Params then
+  begin
+    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+    begin
+      FInfo.ID := Value.ID;
+      CloseForm;
+    end;
+
+  end;
+  if EventID_CancelAddingImage in Params then
+  begin
+    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+      EnableControls(True);
+  end;
 end;
 
 procedure TFormFindPerson.CheckMsg(var aMsg: TMessage);
@@ -135,15 +182,24 @@ begin
   end;
 end;
 
-
 procedure TFormFindPerson.BtnCancelClick(Sender: TObject);
 begin
   Close;
 end;
 
-function TFormFindPerson.Execute: TPerson;
+procedure TFormFindPerson.EnableControls(IsEnabled: Boolean);
+begin
+  BtnOk.Enabled := IsEnabled;
+  BtnCancel.Enabled := IsEnabled;
+  LvPersons.Enabled := IsEnabled;
+  WedPersonFilter.Enabled := IsEnabled;
+  LsAdding.Visible := not IsEnabled;
+end;
+
+function TFormFindPerson.Execute(Info: TDBPopupMenuInfoRecord): TPerson;
 begin
   Result := nil;
+  FInfo := Info.Copy;
   ShowModal;
   if LvPersons.Selected <> nil then
     Result := TPerson(LvPersons.Selected.Data);
@@ -156,12 +212,20 @@ end;
 
 procedure TFormFindPerson.FormCreate(Sender: TObject);
 begin
+  FInfo := nil;
   WndMethod := LvPersons.WindowProc;
   LvPersons.WindowProc := CheckMsg;
   LoadList;
   TmrSearchTimer(Self);
   LoadLanguage;
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   PersonManager.InitDB;
+end;
+
+procedure TFormFindPerson.FormDestroy(Sender: TObject);
+begin
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  F(FInfo);
 end;
 
 procedure TFormFindPerson.FormKeyDown(Sender: TObject; var Key: Word;
@@ -238,8 +302,7 @@ end;
 
 procedure TFormFindPerson.LvPersonsDblClick(Sender: TObject);
 begin
-  if LvPersons.Selected <> nil then
-    Close;
+  CloseForm;
 end;
 
 procedure TFormFindPerson.TmrSearchTimer(Sender: TObject);

@@ -46,7 +46,7 @@ procedure GrayScale(Image: TBitmap);
 procedure DrawText32Bit(Bitmap32: TBitmap; Text: string; Font: TFont; ARect: TRect; DrawTextOptions: Cardinal);
 procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
 procedure DrawShadowToImage(Dest32, Src: TBitmap; Transparenty: Byte = 0);
-procedure DrawRoundGradientVert(Dest32: TBitmap; Rect: TRect; ColorFrom, ColorTo, BorderColor: TColor;
+procedure DrawRoundGradientVert(Dest: TBitmap; Rect: TRect; ColorFrom, ColorTo, BorderColor: TColor;
   RoundRect: Integer; TransparentValue: Byte = 220);
 
 procedure StretchCool(Width, Height: Integer; S, D: TBitmap; CallBack: TProgressCallBackProc); overload;
@@ -1226,19 +1226,19 @@ begin
     pd := D.ScanLine[I];
     for J := 0 to S.Width - 1 do
     begin
-      PD[j].R := (PD[J].R * W2 + PS[J].R * W1 + $7F) div $FF;
-      PD[j].G := (PD[J].G * W2 + PS[J].G * W1 + $7F) div $FF;
-      PD[j].B := (PD[J].B * W2 + PS[J].B * W1 + $7F) div $FF;
+      PD[J].R := (PD[J].R * W2 + PS[J].R * W1 + $7F) div $FF;
+      PD[J].G := (PD[J].G * W2 + PS[J].G * W1 + $7F) div $FF;
+      PD[J].B := (PD[J].B * W2 + PS[J].B * W1 + $7F) div $FF;
     end;
   end;
 end;
 
-procedure DrawRoundGradientVert(Dest32: TBitmap; Rect: TRect; ColorFrom, ColorTo, BorderColor: TColor;
+procedure DrawRoundGradientVert(Dest: TBitmap; Rect: TRect; ColorFrom, ColorTo, BorderColor: TColor;
   RoundRect: Integer; TransparentValue: Byte = 220);
 var
   BitRound: TBitmap;
-  PR: PARGB;
-  PD: PARGB32;
+  PR, PD24: PARGB;
+  PD32: PARGB32;
   I, J: Integer;
   RF, GF, BF, RT, GT, BT, R, G, B, W, W1: Byte;
   RB, GB, BB: Byte;
@@ -1259,47 +1259,86 @@ begin
   if BB = 255 then
     BB := 254;
   BorderColor := RGB(RB, GB, BB);
-  Dest32.PixelFormat := pf32Bit;
   BitRound := TBitmap.Create;
   try
     BitRound.PixelFormat := pf24Bit;
-    BitRound.SetSize(Dest32.Width, Dest32.Height);
+    BitRound.SetSize(Dest.Width, Dest.Height);
     BitRound.Canvas.Brush.Color := clWhite;
     BitRound.Canvas.Pen.Color := clWhite;
-    BitRound.Canvas.Rectangle(0, 0, Dest32.Width, Dest32.Height);
+    BitRound.Canvas.Rectangle(0, 0, Dest.Width, Dest.Height);
     BitRound.Canvas.Brush.Color := clBlack;
     BitRound.Canvas.Pen.Color := BorderColor;
     Windows.RoundRect(BitRound.Canvas.Handle, Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, RoundRect, RoundRect);
 
-    for I := 0 to Dest32.Height - 1 do
+    if Dest.PixelFormat = pf32Bit then
     begin
-      PR := BitRound.ScanLine[I];
-      PD := Dest32.ScanLine[I];
-      if (Rect.Top > I) or (I > Rect.Bottom) then
-         Continue;
-
-      W := Round(255 * (I + 1 - Rect.Top) / (Rect.Bottom - Rect.Top));
-      W1 := 255 - W;
-      R := (RF * W + RT * W1 + $7F) div 255;
-      G := (GF * W + GT * W1 + $7F) div 255;
-      B := (BF * W + BT * W1 + $7F) div 255;
-      for J := 0 to Dest32.Width - 1 do
+      for I := 0 to Dest.Height - 1 do
       begin
-        S := (PR[J].R + PR[J].G + PR[J].B);
-        if S <> 765 then //White
+        PR := BitRound.ScanLine[I];
+        PD32 := Dest.ScanLine[I];
+        if (Rect.Top > I) or (I > Rect.Bottom) then
+           Continue;
+
+        W := Round(255 * (I + 1 - Rect.Top) / (Rect.Bottom - Rect.Top));
+        W1 := 255 - W;
+        R := (RF * W + RT * W1 + $7F) div 255;
+        G := (GF * W + GT * W1 + $7F) div 255;
+        B := (BF * W + BT * W1 + $7F) div 255;
+        for J := 0 to Dest.Width - 1 do
         begin
-          PD[J].L := TransparentValue;
-          //black - gradient
-          if S = 0 then
+          S := (PR[J].R + PR[J].G + PR[J].B);
+          if S <> 765 then //White
           begin
-            PD[J].R := R;
-            PD[J].G := G;
-            PD[J].B := B;
-          end else //border
+            PD32[J].L := TransparentValue;
+            //black - gradient
+            if S = 0 then
+            begin
+              PD32[J].R := R;
+              PD32[J].G := G;
+              PD32[J].B := B;
+            end else //border
+            begin
+              PD32[J].R := RB;
+              PD32[J].G := GB;
+              PD32[J].B := BB;
+            end;
+          end;
+        end;
+      end;
+    end else
+    begin
+      Dest.PixelFormat := pf24Bit;
+      for I := 0 to Dest.Height - 1 do
+      begin
+        PR := BitRound.ScanLine[I];
+        PD24 := Dest.ScanLine[I];
+        if (Rect.Top > I) or (I > Rect.Bottom) then
+           Continue;
+
+        W := Round(255 * (I + 1 - Rect.Top) / (Rect.Bottom - Rect.Top));
+        W1 := 255 - W;
+        R := (RF * W + RT * W1 + $7F) div 255;
+        G := (GF * W + GT * W1 + $7F) div 255;
+        B := (BF * W + BT * W1 + $7F) div 255;
+        for J := 0 to Dest.Width - 1 do
+        begin
+          S := (PR[J].R + PR[J].G + PR[J].B);
+          if S <> 765 then //White
           begin
-            PD[J].R := RB;
-            PD[J].G := GB;
-            PD[J].B := BB;
+            W1 := TransparentValue;
+            W := 255 - W1;
+            //black - gradient
+            if S = 0 then
+            begin
+              PD24[J].R := (PD24[J].R * W + R * W1 + $7F) div $FF;
+              PD24[J].G := (PD24[J].G * W + G * W1 + $7F) div $FF;
+              PD24[J].B := (PD24[J].B * W + B * W1 + $7F) div $FF;
+            end else //border
+            begin
+              PD24[J].R := (PD24[J].R * W + RB * W1 + $7F) div $FF;
+              PD24[J].G := (PD24[J].G * W + GB * W1 + $7F) div $FF;
+              PD24[J].B := (PD24[J].B * W + BB * W1 + $7F) div $FF;
+            end;
           end;
         end;
       end;

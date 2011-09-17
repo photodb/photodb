@@ -213,6 +213,8 @@ type
     FData: TClonableObject;
     procedure SetData(const Value: TClonableObject);
     function GetImageSize: TSize;
+    function GetRect: TRect;
+    procedure SetRect(const Value: TRect);
   public
     X: Integer;
     Y: Integer;
@@ -221,13 +223,13 @@ type
     ImageWidth: Integer;
     ImageHeight: Integer;
     Page: Integer;
-    function Rect: TRect;
     function Copy: TFaceDetectionResultItem;
     constructor Create;
     destructor Destroy; override;
     procedure RecalculateNewImageSize(NewSize: TSize);
     property Data: TClonableObject read FData write SetData;
     property ImageSize: TSize read GetImageSize;
+    property Rect: TRect read GetRect write SetRect;
   end;
 
   TFaceDetectionResult = class
@@ -709,6 +711,10 @@ end;
 constructor TFaceDetectionResultItem.Create;
 begin
   FData := nil;
+  X := 0;
+  Y := 0;
+  Width := 0;
+  Height := 0;
 end;
 
 destructor TFaceDetectionResultItem.Destroy;
@@ -740,7 +746,7 @@ begin
   end;
 end;
 
-function TFaceDetectionResultItem.Rect: TRect;
+function TFaceDetectionResultItem.GetRect: TRect;
 begin
   Result := Classes.Rect(X, Y, X + Width, Y + Height);
 end;
@@ -749,6 +755,14 @@ procedure TFaceDetectionResultItem.SetData(const Value: TClonableObject);
 begin
   F(FData);
   FData := Value;
+end;
+
+procedure TFaceDetectionResultItem.SetRect(const Value: TRect);
+begin
+  X := Value.Left;
+  Y := Value.Top;
+  Width := Value.Right - Value.Left;
+  Height := Value.Bottom - Value.Top;
 end;
 
 initialization

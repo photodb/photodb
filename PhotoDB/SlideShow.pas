@@ -1280,12 +1280,13 @@ end;
 procedure TViewer.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
-  StartPoint, P: TPoint;
+  StartPoint, P, DrawFaceEndPoint: TPoint;
   DragImage: TBitmap;
   W, H: Integer;
   FileName: string;
   I: Integer;
   OldHoverFace: TFaceDetectionResultItem;
+  FaceRect: TRect;
 begin
   StartPoint := Point(X, Y);
   P := BufferPointToImagePoint(StartPoint);
@@ -1305,8 +1306,10 @@ begin
 
   if FDrawingFace then
   begin
-    FDrawFace.Width := P.X - FDrawFace.X;
-    FDrawFace.Height := P.Y - FDrawFace.Y;
+    DrawFaceEndPoint := Point(P.X, P.Y);
+    FaceRect := Rect(FDrawFaceStartPoint, DrawFaceEndPoint);
+    FDrawFace.Rect := NormalizeRect(FaceRect);
+
     RefreshFaces;
     Exit;
   end;
@@ -2273,16 +2276,13 @@ begin
   begin
     FDrawingFace := True;
     P := Point(X, Y);
-    FDrawFaceStartPoint := P;
     F(FDrawFace);
     FDrawFace := TFaceDetectionResultItem.Create;
     FDrawFace.ImageWidth := FBImage.Width;
     FDrawFace.ImageHeight := FBImage.Height;
-    FDrawFace.Width := 0;
-    FDrawFace.Height := 0;
-    P := BufferPointToImagePoint(P);
-    FDrawFace.X :=  P.X;
-    FDrawFace.Y := P.Y;
+
+    FDrawFaceStartPoint := BufferPointToImagePoint(P);
+    FDrawFace.Rect := Rect(FDrawFaceStartPoint, FDrawFaceStartPoint);
 
     PA := TPersonArea.Create(0, -1, nil);
     FDrawFace.Data := PA;
@@ -2811,7 +2811,7 @@ procedure TViewer.RefreshFaces;
 var
   I: Integer;
   P1, P2: TPoint;
-  R: TRect;
+  Rct, R, FaceTextRect: TRect;
   PA: TPersonArea;
   P: TPerson;
 
@@ -2849,13 +2849,21 @@ var
         else
           S := L('New person');
 
-        FOverlayBuffer.Canvas.TextOut(R.Right, R.Bottom + 10, S);
+        R := Rect(R.Left, R.Bottom + 8, Max(R.Left + 20, R.Right), R.Bottom + 500);
+        Rct := R;
+        FOverlayBuffer.Canvas.Font := Font;
+        DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), R, DrawTextOpt or DT_CALCRECT);
+        R.Right := Max(R.Right, Rct.Right);
+        FaceTextRect := R;
+        InflateRect(R, 4, 4);
+        DrawRoundGradientVert(FOverlayBuffer, R, clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 220);
+        DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), FaceTextRect, DrawTextOpt);
       end;
     end;
   end;
 
 begin
-  if FFaces.Count > 0 then
+  if (FFaces.Count > 0) or FDrawingFace then
   begin
     FOverlayBuffer.Assign(DrawImage);
 
@@ -2871,8 +2879,10 @@ begin
 
     if FDrawingFace then
       DrawFace(FDrawFace);
-  end;
-  InvalidateRect(Handle, ClientRect, True);
+  end else
+    FOverlayBuffer.SetSize(0, 0);
+
+  Refresh;
 end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);
@@ -3951,25 +3961,28 @@ begin
   RI := TFaceDetectionResultItem(PmFace.Tag);
   Application.CreateForm(TFormFindPerson, FormFindPerson);
   try
-    P := FormFindPerson.Execute;
+    P := FormFindPerson.Execute(Item);
     if P <> nil then
     begin
       PA := TPersonArea(RI.Data);
-      if PA = nil then
+      if Item.ID <> 0 then
       begin
-        PA := TPersonArea.Create(Item.ID, P.ID, RI);
-        try
-          PersonManager.AddPersonForPhoto(PA);
-          RI.Data := PA.Clone;
+        if PA = nil then
+        begin
+          PA := TPersonArea.Create(Item.ID, P.ID, RI);
+          try
+            PersonManager.AddPersonForPhoto(PA);
+            RI.Data := PA.Clone;
 
+            RefreshFaces;
+          finally
+            F(PA);
+          end;
+        end else
+        begin
+          PersonManager.ChangePerson(PA, P.ID);
           RefreshFaces;
-        finally
-          F(PA);
         end;
-      end else
-      begin
-        PersonManager.ChangePerson(PA, P.ID);
-        RefreshFaces;
       end;
 
     end;

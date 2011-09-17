@@ -3,7 +3,7 @@ unit u2DUtils;
 interface
 
 uses
-  Windows;
+  Windows, Math;
 
 function RectInRect(ROuter: TRect; RInner: TRect): Boolean;
 function RectSquare(R: TRect): Double;
@@ -12,6 +12,7 @@ function RectIntersectWithRectPercent(ROuter: TRect; RInner: TRect): Byte;
 function MoveRect(R: TRect; Dx, Dy: Integer): TRect;
 function RectWidth(R: TRect): Integer;
 function RectHeight(R: TRect): Integer;
+function NormalizeRect(R: TRect): TRect;
 
 implementation
 
@@ -63,6 +64,14 @@ end;
 function RectHeight(R: TRect): Integer;
 begin
   Result := R.Bottom - R.Top;
+end;
+
+function NormalizeRect(R: TRect): TRect;
+begin
+  Result.Left := Min(R.Left, R.Right);
+  Result.Right := Max(R.Left, R.Right);
+  Result.Top := Min(R.Top, R.Bottom);
+  Result.Bottom := Max(R.Top, R.Bottom);
 end;
 
 end.

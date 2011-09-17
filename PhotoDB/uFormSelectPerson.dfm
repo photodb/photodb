@@ -15,6 +15,7 @@ object FormFindPerson: TFormFindPerson
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   DesignSize = (
     530
@@ -129,6 +130,17 @@ object FormFindPerson: TFormFindPerson
     TabOrder = 3
     ViewStyle = vsReport
     OnDblClick = LvPersonsDblClick
+  end
+  object LsAdding: TLoadingSign
+    Left = 336
+    Top = 348
+    Width = 24
+    Height = 24
+    Visible = False
+    Active = True
+    FillPercent = 50
+    SignColor = clBlack
+    MaxTransparencity = 255
   end
   object TmrSearch: TTimer
     Enabled = False
