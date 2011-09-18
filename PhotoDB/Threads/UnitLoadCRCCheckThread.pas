@@ -19,7 +19,7 @@ implementation
 
 procedure TLoadCRCCheckThread.Execute;
 type
-  TInitializeProc = function(s: PChar) : Integer;
+  TInitializeProc = function(s: PChar): Integer;
 var
   Initproc : TInitializeProc;
   KernelHandle : THandle;

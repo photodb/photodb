@@ -5,9 +5,9 @@ interface
 uses Classes, Windows, SysUtils, SyncObjs, uMemory;
 
 {$DEFINE _STARTUP}
-{$DEFINE PROFILER}
+{$DEFINE _PROFILER}
 {$DEFINE _MULTIFILES}
-{$DEFINE MULTITHREAD}
+{$DEFINE _MULTITHREAD}
 
 type
   TW = class(TObject)

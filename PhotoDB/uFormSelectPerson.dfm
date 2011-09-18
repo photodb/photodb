@@ -81,6 +81,7 @@ object FormFindPerson: TFormFindPerson
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
     OnChange = WedPersonFilterChange
+    OnKeyDown = WedPersonFilterKeyDown
     WatermarkText = 'Find person'
   end
   object BtnOk: TButton

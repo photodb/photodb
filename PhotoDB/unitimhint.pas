@@ -346,8 +346,8 @@ end;
 
 procedure TImHint.CMMOUSELEAVE(var Message: TWMNoParams);
 var
-  P : tpoint;
-  R : trect;
+  P: TPoint;
+  R: TRect;
 begin
   R := Rect(Self.Left, Self.Top, Self.Left + Self.Width, Self.Top + Self.Height);
   Getcursorpos(P);
@@ -358,9 +358,8 @@ end;
 procedure TImHint.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  DragImage : TBitmap;
-//  FImageList : TBitmapImageList;
-  W, H : Integer;
+  DragImage: TBitmap;
+  W, H: Integer;
 begin
   if not FDragDrop then
     Exit;

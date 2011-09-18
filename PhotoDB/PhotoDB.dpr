@@ -349,7 +349,9 @@ uses
   uPersonDB in 'Units\uPersonDB.pas',
   uDBClasses in 'Units\uDBClasses.pas',
   uDateUtils in 'Units\uDateUtils.pas',
-  uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson};
+  uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson},
+  uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
+  UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas';
 
 {$R *.res}
 
@@ -514,7 +516,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-      Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
       // This is main form of application
 
       TW.I.Start('SetSplashProgress 70');

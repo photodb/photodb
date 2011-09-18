@@ -77,6 +77,7 @@ object FormCreatePerson: TFormCreatePerson
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
+    OnKeyDown = WedNameKeyDown
     WatermarkText = 'Name of person'
   end
   object WmComments: TWatermarkedMemo
@@ -120,6 +121,7 @@ object FormCreatePerson: TFormCreatePerson
     BevelOuter = bvNone
     BorderStyle = bsNone
     TabOrder = 4
+    OnDblClick = WllGroupsDblClick
     VerticalIncrement = 5
     HorizontalIncrement = 5
     LineHeight = 0
@@ -158,10 +160,19 @@ object FormCreatePerson: TFormCreatePerson
     MaxTransparencity = 255
   end
   object PmImageOptions: TPopupMenu
-    Left = 200
-    Top = 144
+    Left = 104
+    Top = 48
     object Loadotherimage1: TMenuItem
       Caption = 'Load other image'
     end
+  end
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
+    Left = 104
+    Top = 144
+  end
+  object GroupsImageList: TImageList
+    Left = 104
+    Top = 96
   end
 end

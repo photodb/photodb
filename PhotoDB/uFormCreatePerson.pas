@@ -7,7 +7,8 @@ uses
   Dialogs, StdCtrls, WatermarkedEdit, ExtCtrls, WatermarkedMemo, ComCtrls,
   WebLinkList, uFaceDetection, uPeopleSupport, uMemory, uMemoryEx, jpeg,
   uBitmapUtils, uDBThread, uDBForm, LoadingSign, u2DUtils, uSettings, Menus,
-  UnitDBDeclare, UnitDBKernel;
+  UnitDBDeclare, UnitDBKernel, AppEvnts, WebLink, UnitGroupsWork, ImgList,
+  uConstants;
 
 type
   TFormCreatePerson = class(TDBForm)
@@ -27,12 +28,18 @@ type
     PmImageOptions: TPopupMenu;
     Loadotherimage1: TMenuItem;
     LsAdding: TLoadingSign;
+    AeMain: TApplicationEvents;
+    GroupsImageList: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PbPhotoPaint(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure BtnOkClick(Sender: TObject);
+    procedure WedNameKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure WllGroupsDblClick(Sender: TObject);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
     FPicture: TBitmap;
@@ -40,10 +47,16 @@ type
     FOriginalFace: TFaceDetectionResultItem;
     FPerson: TPerson;
     FInfo: TDBPopupMenuInfoRecord;
-    procedure Execute(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
+    FRelatedGroups: string;
+    FReloadGroupsMessage: Cardinal;
+    procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
+    procedure EditPerson(Person: TPerson);
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
     procedure LoadLanguage;
+    procedure ReloadGroups;
+    procedure FillImageList;
+    procedure GroupClick(Sender: TObject);
   protected
     function GetFormID: string; override;
     procedure EnableControls(IsEnabled: Boolean);
@@ -69,11 +82,12 @@ type
   end;
 
 procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
+function EditPerson(Person: TPerson): Boolean;
 
 implementation
 
 uses
-  UnitUpdateDB;
+  UnitUpdateDB, UnitEditGroupsForm, UnitQuickGroupInfo;
 
 {$R *.dfm}
 
@@ -83,7 +97,20 @@ var
 begin
   Application.CreateForm(TFormCreatePerson, FormCreatePerson);
   try
-    FormCreatePerson.Execute(Info, OriginalFace, FaceInImage, Bitmap);
+    FormCreatePerson.CreatePerson(Info, OriginalFace, FaceInImage, Bitmap);
+    Person := FormCreatePerson.Person;
+  finally
+    R(FormCreatePerson);
+  end;
+end;
+
+function EditPerson(Person: TPerson): Boolean;
+var
+  FormCreatePerson: TFormCreatePerson;
+begin
+  Application.CreateForm(TFormCreatePerson, FormCreatePerson);
+  try
+    FormCreatePerson.EditPerson(Person);
     Person := FormCreatePerson.Person;
   finally
     R(FormCreatePerson);
@@ -91,6 +118,16 @@ begin
 end;
 
 { TFormCreatePerson }
+
+procedure TFormCreatePerson.AeMainMessage(var Msg: tagMSG;
+  var Handled: Boolean);
+begin
+  if msg.message = FReloadGroupsMessage then
+    ReloadGroups;
+
+  if (Msg.message = WM_MOUSEWHEEL) then
+    WllGroups.PerformMouseWheel(Msg.wParam, Handled);
+end;
 
 procedure TFormCreatePerson.BtnCancelClick(Sender: TObject);
 begin
@@ -115,18 +152,29 @@ procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
 var
   J: TJpegImage;
   FileInfo: TDBPopupMenuInfoRecord;
+  W, H: Integer;
+  B: TBitmap;
 begin
   EnableControls(False);
   F(FPerson);
   FPerson := TPerson.Create;
   FPerson.Name := WedName.Text;
   FPerson.Birthday := DtpBirthDay.Date;
-  //TODO: Person.Groups :=
+  FPerson.Groups := FRelatedGroups;
   FPerson.Comment := WmComments.Text;
   J := TJPEGImage.Create;
   try
-    J.Assign(FPicture);
-    Person.Image := J;
+    B := TBitmap.Create;
+    try
+      W := FPicture.Width;
+      H := FPicture.Height;
+      ProportionalSize(200, 200, W, H);
+      DoResize(W, H, FPicture, B);
+      J.Assign(B);
+      Person.Image := J;
+    finally
+      F(B);
+    end;
   finally
     F(J);
   end;
@@ -171,6 +219,11 @@ begin
   end;
 end;
 
+procedure TFormCreatePerson.EditPerson(Person: TPerson);
+begin
+  //TODO: edit image
+end;
+
 procedure TFormCreatePerson.EnableControls(IsEnabled: Boolean);
 begin
   BtnOk.Enabled := IsEnabled;
@@ -181,7 +234,7 @@ begin
   LsAdding.Visible := not IsEnabled;
 end;
 
-procedure TFormCreatePerson.Execute(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem;
+procedure TFormCreatePerson.CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem;
   Bitmap: TBitmap);
 begin
   FPicture.Assign(Bitmap);
@@ -189,6 +242,7 @@ begin
   FInfo := Info.Copy;
   TPersonExtractor.Create(Self, FaceInImage, FPicture);
   RecreateImage;
+  ReloadGroups;
   ShowModal;
 end;
 
@@ -201,6 +255,7 @@ begin
   LoadLanguage;
   PersonManager.InitDB;
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  FReloadGroupsMessage := RegisterWindowMessage('CREATE_PERSON_RELOAD_GROUPS');
 end;
 
 procedure TFormCreatePerson.FormDestroy(Sender: TObject);
@@ -293,6 +348,130 @@ begin
   end;
 end;
 
+procedure TFormCreatePerson.WedNameKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+  begin
+    Key := 0;
+    BtnOkClick(Sender);
+  end;
+end;
+
+procedure TFormCreatePerson.WllGroupsDblClick(Sender: TObject);
+var
+  KeyWords : string;
+begin
+  DBChangeGroups(FRelatedGroups, KeyWords, True);
+end;
+
+procedure TFormCreatePerson.ReloadGroups;
+var
+  I: Integer;
+  FCurrentGroups: TGroups;
+  WL: TWebLink;
+  LblInfo: TStaticText;
+begin
+  FCurrentGroups := EncodeGroups(FRelatedGroups);
+  FillImageList;
+  WllGroups.Clear;
+
+  if Length(FCurrentGroups) = 0 then
+  begin
+    LblInfo := TStaticText.Create(WllGroups);
+    LblInfo.Parent := WllGroups;
+    WllGroups.AddControl(LblInfo, True);
+    LblInfo.Caption := L('There are no related groups');
+  end;
+
+  WL := WllGroups.AddLink(True);
+  WL.Text := L('Edit related groups');
+  WL.ImageList := GroupsImageList;
+  WL.ImageIndex := 0;
+  WL.ImageCanRegenerate := True;
+  WL.Tag := -1;
+  WL.OnClick := GroupClick;
+
+  for I := 0 to Length(FCurrentGroups) - 1 do
+  begin
+    WL := WllGroups.AddLink;
+    WL.Text := FCurrentGroups[I].GroupName;
+    WL.ImageList := GroupsImageList;
+    WL.ImageIndex := I + 1;
+    WL.ImageCanRegenerate := True;
+    WL.Tag := I;
+    WL.OnClick := GroupClick;
+  end;
+  WllGroups.ReallignList;
+end;
+
+procedure TFormCreatePerson.GroupClick(Sender: TObject);
+var
+  KeyWords : string;
+  WL: TWebLink;
+begin
+  WL := TWebLink(Sender);
+  if WL.Tag > -1 then
+  begin
+    ShowGroupInfo(WL.Text, False, nil);
+  end else
+  begin
+    DBChangeGroups(FRelatedGroups, KeyWords, False);
+    PostMessage(Handle, FReloadGroupsMessage, 0, 0);
+  end;
+end;
+
+procedure TFormCreatePerson.FillImageList;
+var
+  I: Integer;
+  Group: TGroup;
+  SmallB, B: TBitmap;
+  FCurrentGroups: TGroups;
+begin
+  GroupsImageList.Clear;
+  SmallB := TBitmap.Create;
+  try
+    SmallB.PixelFormat := pf24bit;
+    SmallB.Width := 16;
+    SmallB.Height := 16;
+    SmallB.Canvas.Pen.Color := clBtnFace;
+    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Rectangle(0, 0, 16, 16);
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+    GroupsImageList.Add(SmallB, nil);
+  finally
+    F(SmallB);
+  end;
+  FCurrentGroups := EncodeGroups(FRelatedGroups);
+  for I := 0 to Length(FCurrentGroups) - 1 do
+  begin
+    SmallB := TBitmap.Create;
+    try
+      SmallB.PixelFormat := pf24bit;
+      SmallB.Canvas.Brush.Color := clBtnFace;
+      Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
+      if Group.GroupImage <> nil then
+        if not Group.GroupImage.Empty then
+        begin
+          B := TBitmap.Create;
+          try
+            B.PixelFormat := pf24bit;
+            B.Assign(Group.GroupImage);
+            FreeGroup(Group);
+            DoResize(15, 15, B, SmallB);
+            SmallB.Height := 16;
+            SmallB.Width := 16;
+          finally
+            F(B);
+          end;
+        end;
+      GroupsImageList.Add(SmallB, nil);
+    finally
+      F(SmallB);
+    end;
+  end;
+end;
+
 { TPersonExtractor }
 
 constructor TPersonExtractor.Create(AOwner: TFormCreatePerson; AFace: TFaceDetectionResultItem; Src: TBitmap);
@@ -352,7 +531,7 @@ var
   I: Integer;
 begin
   for I := 0 to FFaces.Count - 1 do
-    if RectIntersectWithRectPercent(FFaces[I].Rect, FFace.Rect) > 60 then
+    if RectIntersectWithRectPercent(FFaces[I].Rect, FFace.Rect) > 80 then
     begin
       FOwner.UpdateFaceArea(FFaces[I]);
       Exit;

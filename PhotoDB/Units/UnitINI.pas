@@ -115,7 +115,7 @@ begin
   end;
 end;
 
-function TBDRegistry.DeleteValue(name: string): Boolean;
+function TBDRegistry.DeleteValue(Name: string): Boolean;
 var
   Key: string;
 begin
@@ -203,15 +203,16 @@ function TBDRegistry.OpenKey(Key: String; CreateInNotExists: Boolean) : boolean;
 begin
   FKey := Key;
   Result:=false;
-  if Registry is TRegistry then Result:=(Registry as TRegistry).OpenKey(Key, not FReadOnly);
+  if Registry is TRegistry then
+    Result := (Registry as TRegistry).OpenKey(Key, not FReadOnly);
   if Registry is TMyRegistryINIFile then
   begin
-   (Registry as TMyRegistryINIFile).Key:=Key;
+   (Registry as TMyRegistryINIFile).Key := Key;
     Result:=true;
   end;
 end;
 
-function TBDRegistry.ReadBool(name: string; default: Boolean): Boolean;
+function TBDRegistry.ReadBool(Name: string; Default: Boolean): Boolean;
 var
   Key: string;
 begin
@@ -250,7 +251,7 @@ begin
   end;
 end;
 
-function TBDRegistry.ReadInteger(name: string; default: Integer): Integer;
+function TBDRegistry.ReadInteger(Name: string; Default: Integer): Integer;
 var
   Key: string;
 begin
@@ -269,7 +270,7 @@ begin
   end;
 end;
 
-function TBDRegistry.ReadString(name, default: string): string;
+function TBDRegistry.ReadString(Name, Default: string): string;
 var
   Key: string;
 begin
@@ -288,7 +289,7 @@ begin
   end;
 end;
 
-function TBDRegistry.ValueExists(name: string): Boolean;
+function TBDRegistry.ValueExists(Name: string): Boolean;
 var
   Key: string;
 begin
@@ -302,12 +303,12 @@ begin
   end;
 end;
 
-procedure TBDRegistry.WriteBool(name: string; Value: Boolean);
+procedure TBDRegistry.WriteBool(Name: string; Value: Boolean);
 var
   Key: string;
 begin
-  if Registry is TRegistry then (Registry as TRegistry)
-    .WriteBool(name, Value);
+  if Registry is TRegistry then
+    (Registry as TRegistry).WriteBool(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
     Key := (Registry as TMyRegistryINIFile).Key;
@@ -315,12 +316,12 @@ begin
   end;
 end;
 
-procedure TBDRegistry.WriteDateTime(name: string; Value: TDateTime);
+procedure TBDRegistry.WriteDateTime(Name: string; Value: TDateTime);
 var
   Key: string;
 begin
-  if Registry is TRegistry then (Registry as TRegistry)
-    .WriteDateTime(name, Value);
+  if Registry is TRegistry then
+    (Registry as TRegistry).WriteDateTime(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
     Key := (Registry as TMyRegistryINIFile).Key;
@@ -328,12 +329,12 @@ begin
   end;
 end;
 
-procedure TBDRegistry.WriteInteger(name: string; Value: Integer);
+procedure TBDRegistry.WriteInteger(Name: string; Value: Integer);
 var
   Key: string;
 begin
-  if Registry is TRegistry then (Registry as TRegistry)
-    .WriteInteger(name, Value);
+  if Registry is TRegistry then
+    (Registry as TRegistry).WriteInteger(name, Value);
   if Registry is TMyRegistryINIFile then
   begin
     Key := (Registry as TMyRegistryINIFile).Key;
@@ -341,14 +342,13 @@ begin
   end;
 end;
 
-procedure TBDRegistry.WriteString(name, Value: string);
+procedure TBDRegistry.WriteString(Name, Value: string);
 var
   Key: string;
 begin
   if Registry is TRegistry then
-  begin
     (Registry as TRegistry).WriteString(name, Value);
-  end;
+
   if Registry is TMyRegistryINIFile then
   begin
     Key := (Registry as TMyRegistryINIFile).Key;
@@ -385,10 +385,10 @@ begin
   inherited;
 end;
 
-function TDBRegistryCache.GetSection(ASection : Integer; AKey : string): TBDRegistry;
+function TDBRegistryCache.GetSection(ASection: Integer; AKey: string): TBDRegistry;
 var
-  I : Integer;
-  Reg : TBDRegistry;
+  I: Integer;
+  Reg: TBDRegistry;
 begin
   FSync.Enter;
   try

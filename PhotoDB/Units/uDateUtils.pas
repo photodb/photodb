@@ -88,7 +88,7 @@ begin
   AmPm := 0;
 
   while i < length(Fmt) do begin
-    if Fmt[i] in ['A','P','D','M','Y','H','N','S','Z'] then begin
+    if CharInSet(Fmt[i], ['A','P','D','M','Y','H','N','S','Z']) then begin
       // Start of a date specifier
       Mask  := Fmt[i];
       ii := i + 1;

@@ -66,7 +66,8 @@ procedure CreateNewGroupDialogB(GroupCode: string; Image: TJpegImage; out Create
 
 implementation
 
-uses UnitDBKernel, UnitEditGroupsForm, UnitQuickGroupInfo;
+uses
+  UnitDBKernel, UnitEditGroupsForm, UnitQuickGroupInfo;
 
 {$R *.dfm}
 
@@ -190,7 +191,7 @@ end;
 procedure TNewGroupForm.ExecuteA(GroupName, GroupCode: string);
 begin
   EdName.Text := GroupName;
-  EdName.readonly := True;
+  EdName.ReadOnly := True;
   FExecuteA := True;
   FExecuteW := False;
   FGroupCode := GroupCode;

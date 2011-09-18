@@ -4,7 +4,7 @@ interface
 
 uses
   SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB,
-  uFaceDetection;
+  uFaceDetection, uSettings, Math, uFastLoad;
 
 const
   PersonTableName = 'Persons';
@@ -24,6 +24,7 @@ type
     FPeoples: TPersonCollection;
     FSync: TCriticalSection;
     function GetAllPersons: TPersonCollection;
+    procedure MarkLatestPerson(PersonID: Integer);
   public
     procedure InitDB;
     function FindPerson(PersonID: Integer): TPerson;
@@ -35,6 +36,7 @@ type
     function AddPersonForPhoto(PersonArea: TPersonArea): Boolean;
     function RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
     function ChangePerson(PersonArea: TPersonArea; ToPersonID: Integer): Boolean;
+    procedure FillLatestSelections(Persons: TPersonCollection);
     constructor Create;
     destructor Destroy; override;
     property AllPersons: TPersonCollection read GetAllPersons;
@@ -43,15 +45,18 @@ type
   TPersonCollection = class(TObject)
   private
     FList: TList;
+    FFreeCollectionItems: Boolean;
     function GetCount: Integer;
     function GetPersonByIndex(Index: Integer): TPerson;
   public
-    constructor Create;
+    constructor Create(FreeCollectionItems: Boolean = True);
     destructor Destroy; override;
     procedure Clear;
     procedure Add(Person: TPerson);
     procedure ReadFromDS(DS: TDataSet);
     function GetPersonByID(ID: Integer): TPerson;
+    procedure DeleteAt(I: Integer);
+    procedure RemoveByID(PersonID: Integer);
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TPerson read GetPersonByIndex; default;
   end;
@@ -165,7 +170,7 @@ begin
 
   P.FID := ID;
   P.FName := Name;
-  P.FImage := Image;
+  P.Image := Image;
   P.FGroups := Groups;
   P.FBirthDay := BirthDay;
   P.FComment := Comment;
@@ -213,6 +218,7 @@ begin
   F(FImage);
   FImage := TJpegImage.Create;
   FImage.Assign(DS.FieldByName('PersonImage'));
+  FImage.DIBNeeded;
 end;
 
 procedure TPerson.SaveToDS(DS: TDataSet);
@@ -252,6 +258,8 @@ begin
     try
       PersonArea.ID := IC.Execute;
 
+      MarkLatestPerson(PersonArea.PersonID);
+
       Result := True;
     except
       Exit;
@@ -274,6 +282,9 @@ begin
     try
       UC.Execute;
       PersonArea.FPersonID := ToPersonID;
+
+      MarkLatestPerson(ToPersonID);
+
       Result := True;
     except
       Exit;
@@ -334,6 +345,8 @@ begin
     DC.AddWhereParameter(TIntegerParameter.Create('PersonId', PersonID));
     try
       DC.Execute;
+
+      AllPersons.RemoveByID(PersonID);
     except
       Exit;
     end;
@@ -351,6 +364,27 @@ begin
   inherited;
 end;
 
+procedure TPersonManager.FillLatestSelections(Persons: TPersonCollection);
+var
+  I, Count, PersonID: Integer;
+  P: TPerson;
+begin
+
+  Persons.Clear;
+
+  Count := Settings.ReadInteger('FaceDetection', 'LatestCount', 0);
+  for I := 1 to Count do
+  begin
+    PersonID := Settings.ReadInteger('FaceDetection\LatestPersons', 'Person' + IntToStr(I), 0);
+    if PersonID <> 0 then
+    begin
+      P := FindPerson(PersonID);
+      if P <> nil then
+        Persons.Add(P);
+    end;
+  end;
+end;
+
 function TPersonManager.FindPerson(PersonID: Integer): TPerson;
 begin
   Result := AllPersons.GetPersonByID(PersonID);
@@ -360,19 +394,24 @@ function TPersonManager.GetAllPersons: TPersonCollection;
 var
   SC: TSelectCommand;
 begin
-  if FPeoples = nil then
-  begin
-    FPeoples := TPersonCollection.Create;
-    SC := TSelectCommand.Create(PersonTableName);
-    try
-      SC.AddParameter(TAllParameter.Create);
-      SC.Execute;
-      FPeoples.ReadFromDS(SC.DS);
-    finally
-      F(SC);
+  FSync.Enter;
+  try
+    if FPeoples = nil then
+    begin
+      FPeoples := TPersonCollection.Create;
+      SC := TSelectCommand.Create(PersonTableName);
+      try
+        SC.AddParameter(TAllParameter.Create);
+        SC.Execute;
+        FPeoples.ReadFromDS(SC.DS);
+      finally
+        F(SC);
+      end;
     end;
+    Result := FPeoples;
+  finally
+    FSync.Leave;
   end;
-  Result := FPeoples;
 end;
 
 function TPersonManager.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
@@ -424,6 +463,41 @@ begin
   end;
 end;
 
+procedure TPersonManager.MarkLatestPerson(PersonID: Integer);
+var
+  I, Count, MaxCount, ItemCount, ID: Integer;
+  List: TList;
+begin
+  List := TList.Create;
+  try
+    Count := Settings.ReadInteger('FaceDetection', 'LatestCount', 0);
+    for I := 1 to Count do
+    begin
+      ID := Settings.ReadInteger('FaceDetection\LatestPersons', 'Person' + IntToStr(I), 0);
+      if ID > 0 then
+        List.Add(Pointer(ID));
+    end;
+
+    for I := 0 to List.Count - 1 do
+      if Integer(List[I]) = PersonID then
+      begin
+        List.Delete(I);
+        Break;
+      end;
+
+    List.Insert(0, Pointer(PersonID));
+
+    MaxCount := Settings.ReadInteger('FaceDetection', 'LatestMaxCount', 10);
+
+    ItemCount := Min(List.Count, MaxCount);
+    Settings.WriteInteger('FaceDetection', 'LatestCount', ItemCount);
+    for I := 0 to ItemCount - 1 do
+      Settings.WriteInteger('FaceDetection\LatestPersons', 'Person' + IntToStr(I + 1), Integer(List[I]));
+  finally
+    F(List);
+  end;
+end;
+
 function TPersonManager.RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
 var
   DC: TDeleteCommand;
@@ -436,6 +510,7 @@ begin
     DC.AddWhereParameter(TIntegerParameter.Create('PersonMappingID', PersonArea.ID));
     try
       DC.Execute;
+
       Result := True;
     except
       Exit;
@@ -483,22 +558,40 @@ end;
 
 procedure TPersonCollection.Add(Person: TPerson);
 begin
-  FList.Add(Person.Clone)
+  if FFreeCollectionItems then
+    FList.Add(Person.Clone)
+  else
+    FList.Add(Person);
 end;
 
 procedure TPersonCollection.Clear;
 begin
-  FreeList(FList, False);
+  if FFreeCollectionItems then
+    FreeList(FList, False)
+  else
+    FList.Clear;
 end;
 
-constructor TPersonCollection.Create;
+constructor TPersonCollection.Create(FreeCollectionItems: Boolean = True);
 begin
+  FFreeCollectionItems := FreeCollectionItems;
   FList := TList.Create;
+end;
+
+procedure TPersonCollection.DeleteAt(I: Integer);
+begin
+  if FFreeCollectionItems then
+    TObject(FList[I]).Free;
+
+  FList.Delete(I);
 end;
 
 destructor TPersonCollection.Destroy;
 begin
-  FreeList(FList);
+  if FFreeCollectionItems then
+    FreeList(FList)
+  else
+    F(FList);
   inherited;
 end;
 
@@ -541,6 +634,18 @@ begin
     P.ReadFromDS(DS);
     DS.Next;
   end;
+end;
+
+procedure TPersonCollection.RemoveByID(PersonID: Integer);
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    if Items[I].ID = PersonID then
+    begin
+      DeleteAt(I);
+      Exit;
+    end;
 end;
 
 { TPersonAreaCollection }

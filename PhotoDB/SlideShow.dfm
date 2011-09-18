@@ -620,25 +620,17 @@ object Viewer: TViewer
     object MiCurrentPerson: TMenuItem
       Caption = 'Current Person'
       Visible = False
+      OnClick = MiCurrentPersonClick
     end
     object MiCurrentPersonSeparator: TMenuItem
       Caption = '-'
       Visible = False
     end
-    object Previousselections1: TMenuItem
+    object MiPreviousSelections: TMenuItem
       Caption = 'Previous selections:'
       Enabled = False
     end
-    object HannaVeresova1: TMenuItem
-      Caption = 'Hanna Veresova'
-    end
-    object KyncevichAnton1: TMenuItem
-      Caption = 'Kyncevich Anton'
-    end
-    object RuslanSenuk1: TMenuItem
-      Caption = 'Ruslan Senuk'
-    end
-    object N12: TMenuItem
+    object MiPreviousSelectionsSeparator: TMenuItem
       Caption = '-'
     end
     object MiCreatePerson: TMenuItem

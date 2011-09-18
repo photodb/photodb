@@ -15,7 +15,7 @@
     <translate name="Error" value="Ошибка" />
     <translate name="Warning" value="Внимание" />
     <translate name="Question" value="Вопрос" />
-    <translate name="Confirm" value="Подтверждение" />	
+    <translate name="Confirm" value="Подтверждение" />
     <translate name="Information" value="Информация" />
     <translate name="An unexpected error occurred: %s" value="Произошла неожиданная ошибка: %s" />
     <translate name="Progress... (&amp;%%)" value="Прогресс... (&amp;%%)" />
@@ -809,12 +809,12 @@
     <translate name="Other person" value="Другая персона" />
     <translate name="Find photos" value="Найти фотографии" />
     <translate name="Clear face zone" value="Очистить зону" />
-    <translate name="New person" value="Новая персона" />
-	
+    <translate name="New person" value="Новая персона" />	
     <translate name="Disable face detection" value="Отключить определение лиц" />
     <translate name="Enable face detection" value="Включить определение лиц" />
     <translate name="Detection method" value="Метод определения" />
     <translate name="Refresh faces" value="Обновить лица" />
+    <translate name="Previous selections" value="Предыдущие выборы" />	
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -1982,9 +1982,11 @@
   <scope name="EditPerson">
 	<translate name="Name" value="Имя"/>
 	<translate name="Birthday" value="День рождения"/>
-	<translate name="Related groups" value="Связанные группы"/>
 	<translate name="Comment" value="Коментарий"/>
 	<translate name="Transparency" value="Прозрачность"/>
+	<translate name="Related groups" value="Связанные группы"/>
+	<translate name="Edit related groups" value="Редактировать связанные группы" />
+	<translate name="There are no related groups" value="Нет связанных групп" />
   </scope>
   <scope name="SelectPerson">
 	<translate name="Select person" value="Выбор персоны"/>
@@ -1993,5 +1995,7 @@
 	<translate name="Find person" value="Найти персону"/>
 	<translate name="Filter persons" value="Фильтр по персонам"/>	
   </scope>
-  
+  <scope name="AddImage">
+	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
+  </scope>  
 </language>

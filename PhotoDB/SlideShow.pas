@@ -121,11 +121,8 @@ type
     MiClearFaceZoneSeparatpr: TMenuItem;
     MiCurrentPerson: TMenuItem;
     MiCurrentPersonSeparator: TMenuItem;
-    Previousselections1: TMenuItem;
-    HannaVeresova1: TMenuItem;
-    KyncevichAnton1: TMenuItem;
-    RuslanSenuk1: TMenuItem;
-    N12: TMenuItem;
+    MiPreviousSelections: TMenuItem;
+    MiPreviousSelectionsSeparator: TMenuItem;
     MiCreatePerson: TMenuItem;
     MiOtherPersons: TMenuItem;
     MiFindPhotosSeparator: TMenuItem;
@@ -231,6 +228,7 @@ type
     procedure MiClearFaceZoneClick(Sender: TObject);
     procedure MiRefreshFacesClick(Sender: TObject);
     procedure MiFaceDetectionStatusClick(Sender: TObject);
+    procedure MiCurrentPersonClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -275,8 +273,10 @@ type
     procedure SetPlay(const Value: boolean);
     procedure SendToItemPopUpMenu(Sender: TObject);
     procedure OnPageSelecterClick(Sender: TObject);
+    procedure SelectPreviousPerson(Sender: TObject);
     procedure SetDisplayRating(const Value: Integer);
     procedure UpdateCrypted;
+    procedure SelectPerson(P: TPerson);
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -370,7 +370,7 @@ implementation
 
 uses
   UnitUpdateDB, PropertyForm, SlideShowFullScreen, uFormSelectPerson,
-  ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm,
+  ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm, uFormAddImage,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,
@@ -400,6 +400,7 @@ end;
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin
+  TLoad.Instance.StartPersonsThread;
   TW.I.Start('TViewer.FormCreate');
   FDrawingFace := False;
   FCreating := True;
@@ -1085,18 +1086,32 @@ begin
   ReloadCurrent;
 end;
 
+procedure TViewer.SelectPreviousPerson(Sender: TObject);
+var
+  P: TPerson;
+begin
+  P := TPerson(TMenuItem(Sender).Tag);
+  SelectPerson(P);
+end;
+
 procedure TViewer.PmFacePopup(Sender: TObject);
 var
+  I, LatestPersonsIndex: Integer;
   RI: TFaceDetectionResultItem;
   PA: TPersonArea;
   P: TPerson;
+  SelectedPersons: TPersonCollection;
+  LatestPersons: Boolean;
+  MI: TMenuItem;
 begin
   RI := TFaceDetectionResultItem(PmFace.Tag);
-  MiCurrentPerson.Visible := RI.Data <> nil;
-  MiCurrentPersonSeparator.Visible := RI.Data <> nil;
-  if RI.Data <> nil then
+  PA := TPersonArea(RI.Data);
+
+  MiCurrentPerson.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
+  MiCurrentPersonSeparator.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
+  P := nil;
+  if (PA <> nil) and (PA.PersonID > 0) then
   begin
-    PA := TPersonArea(RI.Data);
     P := PersonManager.FindPerson(PA.PersonID);
     MiCreatePerson.Visible := P = nil;
     MiFindPhotosSeparator.Visible := P <> nil;
@@ -1104,6 +1119,66 @@ begin
       MiCurrentPerson.Caption := P.Name
     else
       MiCurrentPerson.Caption := L('Unknown Person');
+  end else
+  begin
+    MiCreatePerson.Visible := True;
+  end;
+
+  SelectedPersons := TPersonCollection.Create(False);
+  try
+    //remove last persons
+    LatestPersons := False;
+    LatestPersonsIndex := 0;
+    for I := PmFace.Items.Count - 1 downto 0 do
+    begin
+      if PmFace.Items[I] = MiPreviousSelections then
+      begin
+        LatestPersons := False;
+        LatestPersonsIndex := I;
+      end;
+
+      if LatestPersons then
+        PmFace.Items.Remove(PmFace.Items[I]);
+
+      if PmFace.Items[I] = MiPreviousSelectionsSeparator then
+        LatestPersons := True;
+    end;
+
+    //add current persons
+    PersonManager.FillLatestSelections(SelectedPersons);
+
+    if P <> nil then
+      for I := 0 to SelectedPersons.Count - 1 do
+      begin
+        if SelectedPersons[I].ID = P.ID then
+        begin
+          SelectedPersons.DeleteAt(I);
+          Break;
+        end;
+      end;
+
+    for I := 0 to SelectedPersons.Count - 1 do
+    begin
+      MI := TMenuItem.Create(PmFace);
+      MI.Tag := Integer(SelectedPersons[I]);
+      MI.Caption := SelectedPersons[I].Name;
+      MI.OnClick := SelectPreviousPerson;
+      PmFace.Items.Insert(LatestPersonsIndex + 1, MI);
+      Inc(LatestPersonsIndex);
+    end;
+
+    if SelectedPersons.Count = 0 then
+    begin
+      MiPreviousSelections.Visible := False;
+      MiPreviousSelectionsSeparator.Visible := False;
+    end else
+    begin
+      MiPreviousSelections.Visible := True;
+      MiPreviousSelectionsSeparator.Visible := True;
+    end;
+
+  finally
+    F(SelectedPersons);
   end;
 end;
 
@@ -2067,6 +2142,7 @@ begin
     PersonManager.RemovePersonFromPhoto(Item.ID, FA);
   end;
   FFaces.RemoveFaceResult(FR);
+  UpdateFaceDetectionState;
   RefreshFaces;
 end;
 
@@ -2120,11 +2196,31 @@ begin
       TmpFace.Width := RectWidth(FaceRect);
       TmpFace.Height := RectHeight(FaceRect);
       CreatePerson(Item, Face, TmpFace, B, P);
+      F(P);
     finally
       F(TmpFace);
     end;
   finally
     F(B);
+  end;
+end;
+
+procedure TViewer.MiCurrentPersonClick(Sender: TObject);
+var
+  FR: TFaceDetectionResultItem;
+  PA: TPersonArea;
+  P: TPerson;
+begin
+  FR := TFaceDetectionResultItem(PmFace.Tag);
+  PA := TPersonArea(FR.Data);
+  if (PA <> nil) then
+  begin
+    P := PersonManager.FindPerson(PA.PersonID);
+    if P <> nil then
+    begin
+      if EditPerson(P) then
+        RefreshFaces;
+    end;
   end;
 end;
 
@@ -2248,6 +2344,7 @@ begin
     MiOtherPersons.Caption := L('Other person');
     MiFindPhotos.Caption := L('Find photos');
     MiClearFaceZone.Caption := L('Clear face zone');
+    MiPreviousSelections.Caption := L('Previous selections') + ':';
   finally
     EndTranslate;
   end;
@@ -2272,7 +2369,7 @@ var
   P: TPoint;
   PA: TPersonArea;
 begin
-  if (FHoverFace = nil) and ShiftKeyDown and not DBCanDrag then
+  if (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle)) and not DBCanDrag then
   begin
     FDrawingFace := True;
     P := Point(X, Y);
@@ -2302,17 +2399,25 @@ begin
 end;
 
 procedure TViewer.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  P: TPoint;
 begin
   FDrawingFace := False;
   if FDrawFace <> nil then
   begin
-    FDrawFace.Data := nil;
     //recalculate size
     FDrawFace.RecalculateNewImageSize(FFaces.OriginalSize);
     FFaces.Add(FDrawFace);
+    PmFace.Tag := Integer(FDrawFace);
+    FHoverFace := FDrawFace;
     FDrawFace := nil;
     FFaces.SaveToFile(FFaces.PersistanceFileName);
+    UpdateFaceDetectionState;
     RefreshFaces;
+
+    P := Point(X, Y);
+    P := ClientToScreen(P);
+    PmFace.Popup(P.X, P.Y);
   end;
   F(FDrawFace);
   DBCanDrag := False;
@@ -3950,42 +4055,52 @@ begin
   ReloadCurrent;
 end;
 
+procedure TViewer.SelectPerson(P: TPerson);
+var
+  PA: TPersonArea;
+  RI: TFaceDetectionResultItem;
+begin
+  RI := TFaceDetectionResultItem(PmFace.Tag);
+  if P <> nil then
+  begin
+    PA := TPersonArea(RI.Data);
+    if Item.ID = 0 then
+    begin
+      Item.Include := True;
+      AddImage(Item);
+    end;
+
+    if Item.ID <> 0 then
+    begin
+      if PA = nil then
+      begin
+        PA := TPersonArea.Create(Item.ID, P.ID, RI);
+        try
+          PersonManager.AddPersonForPhoto(PA);
+          RI.Data := PA.Clone;
+
+          RefreshFaces;
+        finally
+          F(PA);
+        end;
+      end else
+      begin
+        PersonManager.ChangePerson(PA, P.ID);
+        RefreshFaces;
+      end;
+    end;
+  end;
+end;
+
 procedure TViewer.MiOtherPersonsClick(Sender: TObject);
 var
   FormFindPerson: TFormFindPerson;
   P: TPerson;
-  PA: TPersonArea;
-  RI: TFaceDetectionResultItem;
-
 begin
-  RI := TFaceDetectionResultItem(PmFace.Tag);
   Application.CreateForm(TFormFindPerson, FormFindPerson);
   try
     P := FormFindPerson.Execute(Item);
-    if P <> nil then
-    begin
-      PA := TPersonArea(RI.Data);
-      if Item.ID <> 0 then
-      begin
-        if PA = nil then
-        begin
-          PA := TPersonArea.Create(Item.ID, P.ID, RI);
-          try
-            PersonManager.AddPersonForPhoto(PA);
-            RI.Data := PA.Clone;
-
-            RefreshFaces;
-          finally
-            F(PA);
-          end;
-        end else
-        begin
-          PersonManager.ChangePerson(PA, P.ID);
-          RefreshFaces;
-        end;
-      end;
-
-    end;
+    SelectPerson(P);
   finally
     F(FormFindPerson);
   end;

@@ -2,16 +2,18 @@ unit uFastLoad;
 
 interface
 
-uses WIndows, SysUtils, uDBThread, uTime, uMemory;
+uses
+  WIndows, SysUtils, uDBThread, uTime, uMemory, uSysUtils;
 
 type
   TLoad = class(TObject)
   private
     //FAST LOAD
-    LoadDBKernelIconsThread,
-    LoadDBSettingsThread,
-    LoadCRCCheckThread : TDBThread;
-    procedure WaitForThread(Thread: TDBThread);
+    LoadDBKernelIconsThreadID,
+    LoadDBSettingsThreadID,
+    LoadCRCCheckThreadID,
+    LoadPersonsThreadID: TGUID;
+    procedure WaitForThread(Thread: TGUID);
   public
     constructor Create;
     destructor Destroy; override;
@@ -20,10 +22,12 @@ type
     procedure StartDBKernelIconsThread;
     procedure StartDBSettingsThread;
     procedure StartCRCCheckThread;
+    procedure StartPersonsThread;
     //Requareds
     procedure RequaredCRCCheck;
     procedure RequaredDBKernelIcons;
     procedure RequaredDBSettings;
+    procedure RequaredPersons;
     procedure Stop;
   end;
 
@@ -32,7 +36,8 @@ implementation
 uses
   UnitLoadDBSettingsThread,
   UnitLoadDBKernelIconsThread,
-  UnitLoadCRCCheckThread;
+  UnitLoadCRCCheckThread,
+  UnitLoadPersonsThread;
 
 var
   SLoadInstance : TLoad = nil;
@@ -41,19 +46,15 @@ var
 
 constructor TLoad.Create;
 begin
-  LoadDBKernelIconsThread := nil;
-  LoadDBSettingsThread := nil;
-  LoadCRCCheckThread := nil;
+  LoadDBKernelIconsThreadID := GetEmptyGUID;
+  LoadDBSettingsThreadID := GetEmptyGUID;
+  LoadCRCCheckThreadID := GetEmptyGUID;
+  LoadPersonsThreadID := GetEmptyGUID;
 end;
 
 destructor TLoad.Destroy;
 begin
   inherited;
-end;
-
-procedure TLoad.StartDBKernelIconsThread;
-begin
-  LoadDBKernelIconsThread := TLoadDBKernelIconsThread.Create(nil, False);
 end;
 
 class function TLoad.Instance: TLoad;
@@ -65,25 +66,57 @@ begin
 end;
 
 procedure TLoad.StartDBSettingsThread;
+var
+  T: TDBThread;
 begin
-  LoadDBSettingsThread := TLoadDBSettingsThread.Create(nil, False);
+  T := TLoadDBSettingsThread.Create(nil, True);
+  LoadDBSettingsThreadID := T.UniqID;
+  T.Start;
+end;
+
+procedure TLoad.StartDBKernelIconsThread;
+var
+  T: TDBThread;
+begin
+  T := TLoadDBKernelIconsThread.Create(nil, True);
+  LoadDBKernelIconsThreadID := T.UniqID;
+  T.Start;
+end;
+
+procedure TLoad.StartPersonsThread;
+var
+  T: TDBThread;
+begin
+  T := TLoadPersonsThread.Create(nil, True);
+  LoadPersonsThreadID := T.UniqID;
+  T.Start;
+end;
+
+procedure TLoad.StartCRCCheckThread;
+var
+  T: TDBThread;
+begin
+  T := TLoadCRCCheckThread.Create(nil, True);
+  LoadCRCCheckThreadID := T.UniqID;
+  T.Start;
 end;
 
 procedure TLoad.Stop;
 
-  procedure KillThread(Thread: TDBThread);
+  procedure KillThread(Thread: TGUID);
   begin
     if DBThreadManager.IsThread(Thread) then
       TerminateThread(DBThreadManager.GetThreadHandle(Thread), 0);
   end;
 
 begin
-  KillThread(LoadDBKernelIconsThread);
-  KillThread(LoadDBSettingsThread);
-  KillThread(LoadCRCCheckThread);
+  KillThread(LoadDBKernelIconsThreadID);
+  KillThread(LoadDBSettingsThreadID);
+  KillThread(LoadCRCCheckThreadID);
+  KillThread(LoadPersonsThreadID);
 end;
 
-procedure TLoad.WaitForThread(Thread: TDBThread);
+procedure TLoad.WaitForThread(Thread: TGUID);
 var
   H: THandle;
 begin
@@ -98,27 +131,28 @@ begin
   end;
 end;
 
-procedure TLoad.StartCRCCheckThread;
-begin
-  LoadCRCCheckThread := TLoadCRCCheckThread.Create(nil, False);
-end;
-
 procedure TLoad.RequaredCRCCheck;
 begin
   TW.I.Start('TLoad.RequaredCRCCheck');
-  WaitForThread(LoadCRCCheckThread);
+  WaitForThread(LoadCRCCheckThreadID);
 end;
 
 procedure TLoad.RequaredDBKernelIcons;
 begin
   TW.I.Start('TLoad.RequaredDBKernelIcons');
-  WaitForThread(LoadDBKernelIconsThread);
+  WaitForThread(LoadDBKernelIconsThreadID);
 end;
 
 procedure TLoad.RequaredDBSettings;
 begin
   TW.I.Start('TLoad.LoadDBSettingsThread');
-  WaitForThread(LoadDBSettingsThread);
+  WaitForThread(LoadDBSettingsThreadID);
+end;
+
+procedure TLoad.RequaredPersons;
+begin
+  TW.I.Start('TLoad.RequaredPersons');
+  WaitForThread(LoadPersonsThreadID);
 end;
 
 initialization

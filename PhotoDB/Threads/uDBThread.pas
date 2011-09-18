@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, uTranslate, uAssociations, uMemory, uGOM, SyncObjs, Forms,
-  uDBForm, uIME, uTime, SysUtils;
+  uDBForm, uIME, uTime, SysUtils, uSysUtils;
 
 type
   TDBThread = class(TThread)
@@ -13,6 +13,7 @@ type
     FMethod: TThreadMethod;
     FCallResult: Boolean;
     FOwnerForm: TDBForm;
+    FID: TGUID;
     function GetSupportedExt: string;
     procedure CallMethod;
   protected
@@ -26,6 +27,7 @@ type
   public
     constructor Create(OwnerForm: TDBForm; CreateSuspended: Boolean);
     destructor Destroy; override;
+    property UniqID: TGuid read FID;
   end;
 
   TTDBThreadClass = class of TDBThread;
@@ -34,6 +36,7 @@ type
   public
     Thread: TThread;
     Handle: THandle;
+    ID: TGUID;
   end;
 
   TDBThreadManager = class
@@ -46,8 +49,10 @@ type
     procedure RegisterThread(Thread: TThread);
     procedure UnRegisterThread(Thread: TThread);
     procedure WaitForAllThreads(MaxTime: Cardinal);
-    function IsThread(Thread: TThread): Boolean;
-    function GetThreadHandle(Thread: TThread): THandle;
+    function IsThread(Thread: TThread): Boolean; overload;
+    function IsThread(Thread: TGUID): Boolean; overload;
+    function GetThreadHandle(Thread: TThread): THandle; overload;
+    function GetThreadHandle(Thread: TGUID): THandle; overload;
   end;
 
 function DBThreadManager: TDBThreadManager;
@@ -84,6 +89,7 @@ end;
 constructor TDBThread.Create(OwnerForm: TDBForm; CreateSuspended: Boolean);
 begin
   inherited Create(CreateSuspended);
+  FID := SafeCreateGUID;
   DBThreadManager.RegisterThread(Self);
   FOwnerForm := OwnerForm;
   GOM.AddObj(Self);
@@ -142,6 +148,24 @@ begin
   inherited;
 end;
 
+function TDBThreadManager.GetThreadHandle(Thread: TGUID): THandle;
+var
+  I: Integer;
+begin
+  Result := 0;
+  FSync.Enter;
+  try
+    for I := 0 to FThreads.Count - 1 do
+      if SafeIsEqualGUID(TThreadInfo(FThreads[I]).ID, Thread) then
+      begin
+        Result := TThreadInfo(FThreads[I]).Handle;
+        Break;
+      end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
 function TDBThreadManager.GetThreadHandle(Thread: TThread): THandle;
 var
   I: Integer;
@@ -153,6 +177,24 @@ begin
       if TThreadInfo(FThreads[I]).Thread = Thread then
       begin
         Result := TThreadInfo(FThreads[I]).Handle;
+        Break;
+      end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TDBThreadManager.IsThread(Thread: TGUID): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  FSync.Enter;
+  try
+    for I := 0 to FThreads.Count - 1 do
+      if SafeIsEqualGUID(TThreadInfo(FThreads[I]).ID, Thread) then
+      begin
+        Result := True;
         Break;
       end;
   finally
@@ -181,17 +223,18 @@ end;
 procedure TDBThreadManager.RegisterThread(Thread: TThread);
 var
   Info: TThreadInfo;
-  I: Integer;
 begin
   FSync.Enter;
   try
     Info := TThreadInfo.Create;
     Info.Thread := Thread;
     Info.Handle := Thread.Handle;
-    FThreads.Add(Info);
+    if Thread is TDBThread then
+      Info.ID := TDBThread(Thread).FID
+    else
+      Info.ID := GetEmptyGUID;
 
-    for I := 0 to FThreads.Count - 1 do
-      TW.I.Start('UnRegisterThread: Thread - ' + IntToStr(TThreadInfo(FThreads[I]).Thread.ThreadID) + ' @ = ' + IntToStr(Integer(TThreadInfo(FThreads[I]).Thread)));
+    FThreads.Add(Info);
 
   finally
     FSync.Leave;
@@ -202,25 +245,35 @@ procedure TDBThreadManager.UnRegisterThread(Thread: TThread);
 var
   I: Integer;
 begin
-  TW.I.Start('UnRegisterThread: Start - ' + IntToStr(Thread.ThreadID) + ' @ = ' + IntToStr(Integer(Thread)));
   FSync.Enter;
   try
-    for I := 0 to FThreads.Count - 1 do
-      TW.I.Start('UnRegisterThread: Thread - ' + IntToStr(TThreadInfo(FThreads[I]).Thread.ThreadID) + ' @ = ' + IntToStr(Integer(TThreadInfo(FThreads[I]).Thread)));
-
-    for I := 0 to FThreads.Count - 1 do
+    if Thread is TDBThread then
     begin
-      if TThreadInfo(FThreads[I]).Thread = Thread then
+      for I := 0 to FThreads.Count - 1 do
       begin
-        TThreadInfo(FThreads[I]).Free;
-        FThreads.Delete(I);
-        Exit;
+        if SafeIsEqualGUID(TThreadInfo(FThreads[I]).ID, TDBThread(Thread).FID) then
+        begin
+          TThreadInfo(FThreads[I]).Free;
+          FThreads.Delete(I);
+          Exit;
+        end;
+      end;
+    end else
+    begin
+      for I := 0 to FThreads.Count - 1 do
+      begin
+        if TThreadInfo(FThreads[I]).Thread = Thread then
+        begin
+          TThreadInfo(FThreads[I]).Free;
+          FThreads.Delete(I);
+          Exit;
+        end;
       end;
     end;
+
   finally
     FSync.Leave;
   end;
-  TW.I.Start('UnRegisterThread: End - ' + IntToStr(Thread.ThreadID));
 end;
 
 procedure TDBThreadManager.WaitForAllThreads(MaxTime: Cardinal);

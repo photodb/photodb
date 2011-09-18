@@ -28,6 +28,8 @@ type
     procedure LvPersonsDblClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
+    procedure WedPersonFilterKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
     FPersons: TPersonCollection;
@@ -335,7 +337,7 @@ begin
       begin
         LI := LvPersons.Items.Add;
         LI.Caption := P.Name;
-        LI.ImageIndex := LvPersons.Items.Count - 1;
+        LI.ImageIndex := I;
         LI.SubItems.Add(P.Name + #13 + P.Comment);
         LI.Data := Pointer(P);
       end;
@@ -352,6 +354,17 @@ procedure TFormFindPerson.WedPersonFilterChange(Sender: TObject);
 begin
   TmrSearch.Enabled := False;
   TmrSearch.Enabled := True;
+end;
+
+procedure TFormFindPerson.WedPersonFilterKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and (LvPersons.Items.Count = 1) then
+  begin
+    Key := 0;
+    LvPersons.Items[0].Selected := True;
+    BtnOkClick(Sender);
+  end;
 end;
 
 end.

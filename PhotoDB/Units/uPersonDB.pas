@@ -127,7 +127,7 @@ begin
   try
     SQL := 'CREATE TABLE PersonMapping ( '
       + '[PersonMappingID] AutoIncrement PRIMARY KEY, '
-      + '[PersonID] INTEGER NOT NULL CONSTRAINT FK_PersonID REFERENCES Persons (PersonID), '
+      + '[PersonID] INTEGER NOT NULL CONSTRAINT FK_PersonID REFERENCES Persons (PersonID) ON DELETE CASCADE, '
       + '[Left] INTEGER NOT NULL, '
       + '[Right] INTEGER NOT NULL, '
       + '[Top] INTEGER NOT NULL, '
@@ -135,7 +135,7 @@ begin
       + '[ImageWidth] INTEGER NOT NULL, '
       + '[ImageHeight] INTEGER NOT NULL, '
       + '[PageNumber] INTEGER NOT NULL, '
-      + '[ImageID] INTEGER NOT NULL CONSTRAINT FK_ImageID REFERENCES ImageTable (ID))';
+      + '[ImageID] INTEGER NOT NULL CONSTRAINT FK_ImageID REFERENCES ImageTable (ID) ON DELETE CASCADE)';
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);

@@ -29,6 +29,9 @@ function IsNewRelease(CurrentRelease, NewRelease : TRelease) : Boolean;
 
 function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: Integer): Integer; overload;
 function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: string): string; overload;
+function SafeCreateGUID: TGUID;
+function GetEmptyGUID: TGUID;
+function SafeIsEqualGUID(GUID1, GUID2: TGUID): Boolean;
 
 implementation
 
@@ -261,6 +264,36 @@ end;
 function GetGUID: TGUID;
 begin
   CoCreateGuid(Result);
+end;
+
+function SafeCreateGUID: TGUID;
+begin
+  Result.D1 := Cardinal(Random(High(Integer)));
+  Result.D2 := Random(High(Word));
+  Result.D3 := Random(High(Word));
+
+  Result.D4[0] := Random(High(Byte));
+  Result.D4[1] := Random(High(Byte));
+  Result.D4[2] := Random(High(Byte));
+  Result.D4[3] := Random(High(Byte));
+  Result.D4[4] := Random(High(Byte));
+  Result.D4[5] := Random(High(Byte));
+  Result.D4[6] := Random(High(Byte));
+  Result.D4[7] := Random(High(Byte));
+end;
+
+function GetEmptyGUID: TGUID;
+begin
+  FillChar(Result, SizeOf(Result), #0);
+end;
+
+function SafeIsEqualGUID(GUID1, GUID2: TGUID): Boolean;
+begin
+  Result := (GUID1.D1 = GUID2.D1) and (GUID1.D2 = GUID2.D2) and (GUID1.D3 = GUID2.D3)
+    and (GUID1.D4[0] = GUID2.D4[0]) and (GUID1.D4[1] = GUID2.D4[1])
+    and (GUID1.D4[2] = GUID2.D4[2]) and (GUID1.D4[3] = GUID2.D4[3])
+    and (GUID1.D4[4] = GUID2.D4[4]) and (GUID1.D4[5] = GUID2.D4[5])
+    and (GUID1.D4[6] = GUID2.D4[6]) and (GUID1.D4[7] = GUID2.D4[7]);
 end;
 
 function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: Integer): Integer;
