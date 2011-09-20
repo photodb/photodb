@@ -4,7 +4,8 @@ unit GraphicCrypt;
 
 interface
 
-uses win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
+uses
+  win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
   JPEG, PngImage, uFileUtils, uAssociations, uTiffImage,
   GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil, DECCipher,
   GIFImage, DB, uMemoryUtils;

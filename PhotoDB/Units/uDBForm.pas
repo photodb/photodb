@@ -17,6 +17,7 @@ type
     destructor Destroy; override;
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate: string; Scope: string): string; overload;
+    function LF(StringToTranslate: string; args: array of const): string;
     procedure BeginTranslate;
     procedure EndTranslate;
     property FormID: string read GetFormID;
@@ -71,6 +72,11 @@ end;
 function TDBForm.L(StringToTranslate: string; Scope: string): string;
 begin
   Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope)
+end;
+
+function TDBForm.LF(StringToTranslate: string; args: array of const): string;
+begin
+  Result := FormatEx(L(StringToTranslate), args);
 end;
 
 function TDBForm.L(StringToTranslate: string): string;

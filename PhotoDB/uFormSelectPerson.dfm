@@ -91,6 +91,7 @@ object FormFindPerson: TFormFindPerson
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
+    Enabled = False
     TabOrder = 1
     OnClick = BtnOkClick
   end
@@ -131,6 +132,7 @@ object FormFindPerson: TFormFindPerson
     TabOrder = 3
     ViewStyle = vsReport
     OnDblClick = LvPersonsDblClick
+    OnSelectItem = LvPersonsSelectItem
   end
   object LsAdding: TLoadingSign
     Left = 336

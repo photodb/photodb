@@ -1139,7 +1139,7 @@ begin
   icons[118] := LoadIcon(HInstance,'CD_MAPPING');
   icons[119] := LoadIcon(HInstance,'CD_IMAGE');
   icons[120] := LoadIcon(HInstance,'MAGIC_ROTATE');
-  icons[121] := LoadIcon(HInstance,'PEOPLE');
+  icons[121] := LoadIcon(HInstance,'PERSONS');
 
   //disabled items are bad
   for I := 1 to IconsCount do

@@ -83,6 +83,7 @@ type
     destructor Destroy; override;
     procedure ReadFromDS(DS: TDataSet);
     procedure SaveToDS(DS: TDataSet);
+    procedure Assign(Source: TPerson);
     function Clone: TClonableObject; override;
     property ID: Integer read FID write FID;
     property Name: string read FName write FName;
@@ -162,27 +163,30 @@ end;
 
 { TPerson }
 
+procedure TPerson.Assign(Source: TPerson);
+begin
+  FID := Source.ID;
+  FName := Source.Name;
+  Image := Source.Image;
+  FGroups := Source.Groups;
+  FBirthDay := Source.BirthDay;
+  FComment := Source.Comment;
+  FPhone := Source.Phone;
+  FAddress := Source.Address;
+  FCompany := Source.Company;
+  FJobTitle := Source.JobTitle;
+  FIMNumber := Source.IMNumber;
+  FEmail := Source.Email;
+  FSex := Source.Sex;
+  FCreateDate := Source.CreateDate;
+end;
+
 function TPerson.Clone: TClonableObject;
 var
   P: TPerson;
 begin
   P := TPerson.Create;
-
-  P.FID := ID;
-  P.FName := Name;
-  P.Image := Image;
-  P.FGroups := Groups;
-  P.FBirthDay := BirthDay;
-  P.FComment := Comment;
-  P.FPhone := Phone;
-  P.FAddress := Address;
-  P.FCompany := Company;
-  P.FJobTitle := JobTitle;
-  P.FIMNumber := IMNumber;
-  P.FEmail := Email;
-  P.FSex := Sex;
-  P.FCreateDate := CreateDate;
-
+  P.Assign(Self);
   Result := P;
 end;
 
@@ -259,7 +263,6 @@ begin
       PersonArea.ID := IC.Execute;
 
       MarkLatestPerson(PersonArea.PersonID);
-
       Result := True;
     except
       Exit;

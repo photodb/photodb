@@ -39,6 +39,7 @@ type
     Transparency: Extended;
     VirtualBrushCursor: Boolean;
     VBrush: TVBrushType;
+    function EditImage(Image: TBitmap): Boolean; virtual; abstract;
     property Zoom: Extended read GetZoom;
     procedure MakeImage(ResizedWindow: Boolean = False); virtual; abstract;
     procedure DoPaint; virtual; abstract;
@@ -51,7 +52,6 @@ procedure ClearBrush(var Brush : TVBrushType);
 procedure MakeRadialBrush(var Brush : TVBrushType; Size : Integer);
 
 implementation
-
 
 procedure ClearBrush(var Brush : TVBrushType);
 begin

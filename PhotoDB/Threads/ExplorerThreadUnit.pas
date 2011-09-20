@@ -390,8 +390,8 @@ begin
     begin
       SearchFolder(False);
       Exit;
-    end;   
-    
+    end;
+
     if (FThreadType = THREAD_TYPE_SEARCH_IMAGES) then
     begin
       SearchFolder(True);
@@ -789,7 +789,7 @@ var
   begin
     if FPacketInfos.Count = 0 then
       Exit;
-      
+
     RefreshQueue := TList.Create;
     try
       //info for refresh items
@@ -916,10 +916,10 @@ var
           Directories.Clear;
 
           for I := 0 to CurrentDirectories.Count - 1 do
-          begin   
+          begin
             if IsTerminated then
               Break;
-              
+
             CurrentDirectory := IncludeTrailingPathDelimiter(CurrentDirectories[I]);
 
             Found := FindFirst(CurrentDirectory + '*.*', FaAnyFile, SearchRec);
@@ -931,11 +931,11 @@ var
               try
                 if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
                   Continue;
-              
+
                 //if not ExplorerInfo.ShowPrivate then
                 //  if PrivateFiles.IndexOf(AnsiLowerCase(SearchRec.Name)) > -1 then
                 //     Continue;
-              
+
                 DE := (SearchRec.Attr and FaDirectory <> 0);
                 SearchKey := SearchRec.Name;
 
@@ -944,7 +944,7 @@ var
                   ExifData := TExifData.Create;
                   try
                     ExifData.LoadFromGraphic(CurrentDirectory + SearchRec.Name);
-                    SearchKey := SearchKey + ' ' + ExifData.Comments;              
+                    SearchKey := SearchKey + ' ' + ExifData.Comments;
                     SearchKey := SearchKey + ' ' + ExifData.Keywords;
                     if ExifData.XMPPacket.Groups <> '' then
                     begin
@@ -956,7 +956,7 @@ var
                     F(ExifData);
                   end;
                 end;
-              
+
                 if not IsMatchMask(AnsiLowerCase(SearchKey), FMask, True) then
                 begin
                   if DE then
@@ -975,7 +975,7 @@ var
 
                   SendInfoToExplorer(Files);
                 end;
-                  
+
               finally
                 Found := SysUtils.FindNext(SearchRec);
               end;
@@ -2000,8 +2000,10 @@ begin
 
   SynchronizeEx(BeginUpdate);
   try
-    AddOneExplorerFileInfo(FFiles, L('Network'), EXPLORER_ITEM_NETWORK, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,
-      False, False, True);
+    AddOneExplorerFileInfo(FFiles, L('Network'), EXPLORER_ITEM_NETWORK,     -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0, False, False, True);
+    AddOneExplorerFileInfo(FFiles, L('Persons'), EXPLORER_ITEM_PERSON_LIST, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0, False, False, True);
+    AddOneExplorerFileInfo(FFiles, L('Groups'),  EXPLORER_ITEM_GROUP_LIST,  -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0, False, False, True);
+
     SynchronizeEx(InfoToExplorerForm);
     for I := 0 to FFiles.Count - 1 do
     begin
@@ -2024,6 +2026,32 @@ begin
 
         IconParam := nil;
         FindIcon(HInstance, 'NETWORK', FIcoSize, 32, IconParam);
+        FIcon := IconParam;
+        if not SynchronizeEx(MakeImageWithIcon) then
+          F(IconParam);
+
+        FIcon := nil;
+      end;
+      if FFiles[I].FileType = EXPLORER_ITEM_PERSON_LIST then
+      begin
+        GUIDParam := FFiles[I].SID;
+        CurrentFile := FFiles[I].FileName;
+
+        IconParam := nil;
+        FindIcon(HInstance, 'PERSONS', FIcoSize, 32, IconParam);
+        FIcon := IconParam;
+        if not SynchronizeEx(MakeImageWithIcon) then
+          F(IconParam);
+
+        FIcon := nil;
+      end;
+      if FFiles[I].FileType = EXPLORER_ITEM_GROUP_LIST then
+      begin
+        GUIDParam := FFiles[I].SID;
+        CurrentFile := FFiles[I].FileName;
+
+        IconParam := nil;
+        FindIcon(HInstance, 'GROUPS', FIcoSize, 32, IconParam);
         FIcon := IconParam;
         if not SynchronizeEx(MakeImageWithIcon) then
           F(IconParam);
@@ -2581,18 +2609,18 @@ end;
 
 procedure TExplorerThread.ExtractImage(Info: TDBPopupMenuInfoRecord; CryptedFile : Boolean; FileID : TGUID);
 var
-  W, H : integer;
-  Graphic : TGraphic;
-  GraphicClass : TGraphicClass;
-  Password : string;
-  TempBit : TBitmap;
+  W, H: Integer;
+  Graphic: TGraphic;
+  GraphicClass: TGraphicClass;
+  Password: string;
+  TempBit: TBitmap;
 begin
   if Info.ID = 0 then
   begin
     UpdateImageRecordFromExif(Info, False);
     GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
     if GraphicClass = nil then
-       Exit;
+      Exit;
 
     Graphic := GraphicClass.Create;
     try

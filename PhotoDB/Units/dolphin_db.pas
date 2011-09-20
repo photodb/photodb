@@ -4,14 +4,14 @@ interface
 
 uses
   Windows, uVistaFuncs, CommonDBSupport,
-  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, JPEG,
   DmProgress, UnitDBDeclare, uDBForm, ShellApi,
   MAPI, DDraw, DateUtils, GraphicsCool, GraphicsBaseTypes, uLogger, uFileUtils,
-  UnitDBFileDialogs, UnitDBCommon, uConstants,
-  UnitLinksSupport, uTranslate, uJpegUtils, uBitmapUtils,
-  uMemory, uDBPopupMenuInfo, uAppUtils, uGraphicUtils, uShellIntegration,
-  uRuntime, uSysUtils, uAssociations, uActivationUtils;
+  UnitDBFileDialogs, UnitDBCommon, uConstants, uGraphicUtils, uShellIntegration,
+  uTranslate, uJpegUtils, uBitmapUtils, uMemory, uDBPopupMenuInfo, uAppUtils,
+  uRuntime, uSysUtils, uAssociations, uActivationUtils, GraphicCrypt, RAWImage,
+  UnitDBKernel;
 
 type
   TInitializeAProc = function(S: PChar): Boolean;
@@ -93,7 +93,6 @@ type
 
 type
   // Added in 2.2 version
-
   TCallBackBigSizeProc = procedure(Sender: TObject; SizeX, SizeY: Integer) of object;
 
   TWatermarkOptions = record
@@ -116,26 +115,25 @@ type
   TProcessingParams = record
     Rotation: Integer;
     ResizeToSize: Boolean;
-    Width : Integer;
-    Height : Integer;
-    Resize : Boolean;
-    Rotate : Boolean;
-    PercentResize : Integer;
+    Width: Integer;
+    Height: Integer;
+    Resize: Boolean;
+    Rotate: Boolean;
+    PercentResize: Integer;
     Convert: Boolean;
-    GraphicClass : TGraphicClass;
-    SaveAspectRation : Boolean;
-    Preffix : string;
-    WorkDirectory : string;
-    AddWatermark : Boolean;
-    WatermarkOptions : TWatermarkOptions;
-    PreviewOptions : TPreviewOptions;
+    GraphicClass: TGraphicClass;
+    SaveAspectRation: Boolean;
+    Preffix: string;
+    WorkDirectory: string;
+    AddWatermark: Boolean;
+    WatermarkOptions: TWatermarkOptions;
+    PreviewOptions: TPreviewOptions;
   end;
 
 var
   HelpNO: Integer = 0;
   HelpActivationNO: Integer = 0;
   FExtImagesInImageList: Integer;
-  GraphicFilterString: string;
 
 procedure LoadNickJpegImage(Image: TImage);
 procedure DoHelp;
@@ -162,6 +160,9 @@ function CenterPos(W1, W2: Integer): Integer;
 
 function SizeInText(Size: Int64): string;
 
+function GetImageFromUser(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
+function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
+
 implementation
 
 function CenterPos(W1, W2: Integer): Integer;
@@ -182,72 +183,113 @@ begin
   Result := Format(TA('%dpx.'), [IntToStr(Pixels)]);
 end;
 
-procedure LoadNickJpegImage(Image: TImage);
+function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 var
-  Pic: Tpicture;
-  Bmp, Bitmap: Tbitmap;
-  FJPG: TJpegImage;
-  OpenPictureDialog: DBOpenPictureDialog;
+  GC: TGraphicClass;
+  G: TGraphic;
+  IsEncrypted: Boolean;
+  PassWord: string;
+  W, H: Integer;
+  SmallBitmap: TBitmap;
 begin
+  Result := False;
+  GC := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+  if GC <> nil then
+  begin
+    G := GC.Create;
+    try
+      IsEncrypted := ValidCryptGraphicFile(FileName);
+
+      if G is TRAWImage then
+        TRAWImage(G).IsPreview := True;
+
+      try
+        if IsEncrypted then
+        begin
+          F(G);
+          PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
+          if FileName <> '' then
+            G := DeCryptGraphicFile(FileName, PassWord)
+          else
+            Exit;
+        end else
+          G.LoadFromFile(FileName);
+
+        if (MaxWidth > 0) and (MaxHeight > 0) then
+          JPEGScale(G, MaxWidth, MaxHeight);
+
+      except
+        on e: Exception do
+          EventLog(e);
+      end;
+      if (G <> nil) and not G.Empty then
+      begin
+        Bitmap.Assign(G);
+        Bitmap.PixelFormat := pf24bit;
+        if (MaxWidth > 0) and (MaxHeight > 0) then
+        begin
+          W := Bitmap.Width;
+          H := Bitmap.Height;
+          ProportionalSize(MaxWidth, MaxHeight, W, H);
+          if (W + H < Bitmap.Width + Bitmap.Height) then
+          begin
+            SmallBitmap := TBitmap.Create;
+            try
+              DoResize(W, H, Bitmap, SmallBitmap);
+              Exchange(SmallBitmap, Bitmap);
+              Result := True;
+            finally
+              F(SmallBitmap);
+            end;
+          end;
+        end;
+      end;
+    finally
+      F(G);
+    end;
+  end;
+end;
+
+function GetImageFromUser(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
+var
+  OpenPictureDialog: DBOpenPictureDialog;
+  FileName: string;
+begin
+  Result := False;
   OpenPictureDialog := DBOpenPictureDialog.Create;
   try
     OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
     if OpenPictureDialog.Execute then
     begin
-      Pic := TPicture.Create;
-      try
-        try
-          Pic.LoadFromFile(OpenPictureDialog.FileName);
-        except
-          Exit;
-        end;
-        JpegScale(Pic.Graphic, 48, 48);
-        Bitmap := TBitmap.Create;
-        try
-          Bitmap.PixelFormat := pf24Bit;
-          Bitmap.Assign(Pic.Graphic);
-
-          Bmp := Tbitmap.Create;
-          try
-            Bmp.PixelFormat := pf24bit;
-            if Bitmap.Width > Bitmap.Height then
-            begin
-              if Bitmap.Width > 48 then
-                Bmp.Width := 48
-              else
-                Bmp.Width := Bitmap.Width;
-              Bmp.Height := Round(Bmp.Width * (Bitmap.Height / Bitmap.Width));
-            end else
-            begin
-              if Bitmap.Height > 48 then
-                Bmp.Height := 48
-              else
-                Bmp.Height := Bitmap.Height;
-              Bmp.Width := Round(Bmp.Height * (Bitmap.Width / Bitmap.Height));
-            end;
-            DoResize(Bmp.Width, Bmp.Height, Bitmap, Bmp);
-            F(Bitmap);
-            Fjpg := TJPegImage.Create;
-            try
-              Fjpg.CompressionQuality := DBJpegCompressionQuality;
-              Fjpg.Assign(Bmp);
-              Fjpg.JPEGNeeded;
-              Image.Picture.Graphic := Fjpg;
-            finally
-              F(Fjpg);
-            end;
-          finally
-            F(Bmp);
-          end;
-        finally
-          F(Bitmap);
-        end;
-      finally
-        F(Pic);
-      end;
+      FileName := OpenPictureDialog.FileName;
+      Result := DBLoadImage(FileName, Bitmap, MaxWidth, MaxHeight);
     end;
   finally
     F(OpenPictureDialog);
+  end;
+end;
+
+procedure LoadNickJpegImage(Image: TImage);
+var
+  Bitmap: TBitmap;
+  FJPG: TJpegImage;
+begin
+  Bitmap := TBitmap.Create;
+  try
+    if GetImageFromUser(Bitmap, 48, 48) then
+    begin
+      FJPG := TJPegImage.Create;
+      try
+        FJPG.CompressionQuality := DBJpegCompressionQuality;
+        FJPG.Assign(Bitmap);
+        FJPG.JPEGNeeded;
+        Image.Picture.Graphic := FJPG;
+      finally
+        F(FJPG);
+      end;
+    end;
+  finally
+    F(Bitmap);
   end;
 end;
 
@@ -537,7 +579,6 @@ initialization
 
   FExtImagesInImageList := 0;
   LastInseredID := 0;
-  GraphicFilterString := '';
 
 finalization
 

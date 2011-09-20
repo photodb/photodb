@@ -8,7 +8,8 @@ uses
   WebLinkList, uFaceDetection, uPeopleSupport, uMemory, uMemoryEx, jpeg,
   uBitmapUtils, uDBThread, uDBForm, LoadingSign, u2DUtils, uSettings, Menus,
   UnitDBDeclare, UnitDBKernel, AppEvnts, WebLink, UnitGroupsWork, ImgList,
-  uConstants;
+  uConstants, uEditorTypes, Dolphin_db, uLogger, RAWImage, uJpegUtils,
+  uFastLoad;
 
 type
   TFormCreatePerson = class(TDBForm)
@@ -26,10 +27,11 @@ type
     DtpBirthDay: TDateTimePicker;
     LsExtracting: TLoadingSign;
     PmImageOptions: TPopupMenu;
-    Loadotherimage1: TMenuItem;
+    MiLoadOtherImage: TMenuItem;
     LsAdding: TLoadingSign;
     AeMain: TApplicationEvents;
     GroupsImageList: TImageList;
+    MiEditImage: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PbPhotoPaint(Sender: TObject);
@@ -40,6 +42,8 @@ type
       Shift: TShiftState);
     procedure WllGroupsDblClick(Sender: TObject);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+    procedure MiEditImageClick(Sender: TObject);
+    procedure MiLoadOtherImageClick(Sender: TObject);
   private
     { Private declarations }
     FPicture: TBitmap;
@@ -49,8 +53,10 @@ type
     FInfo: TDBPopupMenuInfoRecord;
     FRelatedGroups: string;
     FReloadGroupsMessage: Cardinal;
+    FIsImageChanged: Boolean;
+    FIsEditMode: Boolean;
     procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
-    procedure EditPerson(Person: TPerson);
+    function EditPerson(PersonID: Integer): Boolean;
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
     procedure LoadLanguage;
@@ -82,12 +88,12 @@ type
   end;
 
 procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
-function EditPerson(Person: TPerson): Boolean;
+function EditPerson(PersonID: Integer): Boolean;
 
 implementation
 
 uses
-  UnitUpdateDB, UnitEditGroupsForm, UnitQuickGroupInfo;
+  UnitUpdateDB, UnitEditGroupsForm, UnitQuickGroupInfo, ImEditor;
 
 {$R *.dfm}
 
@@ -104,14 +110,13 @@ begin
   end;
 end;
 
-function EditPerson(Person: TPerson): Boolean;
+function EditPerson(PersonID: Integer): Boolean;
 var
   FormCreatePerson: TFormCreatePerson;
 begin
   Application.CreateForm(TFormCreatePerson, FormCreatePerson);
   try
-    FormCreatePerson.EditPerson(Person);
-    Person := FormCreatePerson.Person;
+    Result := FormCreatePerson.EditPerson(PersonID);
   finally
     R(FormCreatePerson);
   end;
@@ -131,6 +136,7 @@ end;
 
 procedure TFormCreatePerson.BtnCancelClick(Sender: TObject);
 begin
+  ModalResult := MB_OKCANCEL;
   Close;
 end;
 
@@ -150,50 +156,76 @@ end;
 
 procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
 var
-  J: TJpegImage;
   FileInfo: TDBPopupMenuInfoRecord;
-  W, H: Integer;
-  B: TBitmap;
+
+  procedure UpdateImage;
+  var
+    J: TJpegImage;
+    B: TBitmap;
+    W, H: Integer;
+  begin
+    J := TJPEGImage.Create;
+    try
+      B := TBitmap.Create;
+      try
+        W := FPicture.Width;
+        H := FPicture.Height;
+        ProportionalSize(250, 300, W, H);
+        DoResize(W, H, FPicture, B);
+        J.Assign(B);
+        Person.Image := J;
+      finally
+        F(B);
+      end;
+    finally
+      F(J);
+    end;
+  end;
+
+  procedure UpdatePersonFields;
+  begin
+    FPerson.Name := WedName.Text;
+    FPerson.Birthday := DtpBirthDay.Date;
+    FPerson.Groups := FRelatedGroups;
+    FPerson.Comment := WmComments.Text;
+  end;
+
 begin
   EnableControls(False);
-  F(FPerson);
-  FPerson := TPerson.Create;
-  FPerson.Name := WedName.Text;
-  FPerson.Birthday := DtpBirthDay.Date;
-  FPerson.Groups := FRelatedGroups;
-  FPerson.Comment := WmComments.Text;
-  J := TJPEGImage.Create;
-  try
-    B := TBitmap.Create;
-    try
-      W := FPicture.Width;
-      H := FPicture.Height;
-      ProportionalSize(200, 200, W, H);
-      DoResize(W, H, FPicture, B);
-      J.Assign(B);
-      Person.Image := J;
-    finally
-      F(B);
-    end;
-  finally
-    F(J);
-  end;
-  PersonManager.CreateNewPerson(Person);
 
-  if Person.ID > 0 then
+  if FIsEditMode then
   begin
-    if FInfo.ID > 0 then
+    UpdatePersonFields;
+    if FIsImageChanged then
+      UpdateImage;
+    PersonManager.UpdatePerson(FPerson);
+    ModalResult := MB_OK;
+    Close;
+  end else
+  begin
+    F(FPerson);
+    FPerson := TPerson.Create;
+    UpdatePersonFields;
+    UpdateImage;
+    PersonManager.CreateNewPerson(Person);
+
+    if Person.ID > 0 then
     begin
-      AddPhoto;
-    end else
-    begin
-      FileInfo := TDBPopupMenuInfoRecord.Create;
-      try
-        FileInfo.FileName := FInfo.FileName;
-        FileInfo.Include := True;
-        UpdaterDB.AddFileEx(FileInfo, True, True);
-      finally
-        F(FileInfo);
+      if FInfo.ID > 0 then
+      begin
+        AddPhoto;
+      end else
+      begin
+        FileInfo := TDBPopupMenuInfoRecord.Create;
+        try
+          FileInfo.FileName := FInfo.FileName;
+          FileInfo.Include := True;
+          FileInfo.Groups := FRelatedGroups;
+          UpdaterDB.AddFileEx(FileInfo, True, True);
+          Exit;
+        finally
+          F(FileInfo);
+        end;
       end;
     end;
   end;
@@ -219,9 +251,46 @@ begin
   end;
 end;
 
-procedure TFormCreatePerson.EditPerson(Person: TPerson);
+procedure TFormCreatePerson.MiEditImageClick(Sender: TObject);
+var
+  Editor: TImageEditorForm;
 begin
-  //TODO: edit image
+  Editor := TImageEditor.Create(nil);
+  try
+    if Editor.EditImage(FPicture) then
+    begin
+      FIsImageChanged := True;
+      RecreateImage;
+    end;
+  finally
+    R(Editor);
+  end;
+end;
+
+function TFormCreatePerson.EditPerson(PersonID: Integer): Boolean;
+begin
+  Result := False;
+  FPerson := PersonManager.FindPerson(PersonID);
+  if FPerson = nil then
+    Exit;
+
+  try
+    FRelatedGroups := Person.Groups;
+    WedName.Text := Person.Name;
+    DtpBirthDay.Date := Person.BirthDay;
+    WmComments.Text := Person.Comment;
+    FIsImageChanged := False;
+    FIsEditMode := True;
+
+    FPicture.Assign(Person.Image);
+    RecreateImage;
+    ReloadGroups;
+    Caption := LF('Edit person: {0}', [FPerson.Name]);
+    ShowModal;
+  finally
+    FPerson := nil;
+  end;
+  Result := ModalResult = MB_OK;
 end;
 
 procedure TFormCreatePerson.EnableControls(IsEnabled: Boolean);
@@ -237,12 +306,15 @@ end;
 procedure TFormCreatePerson.CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem;
   Bitmap: TBitmap);
 begin
+  FIsEditMode := False;
   FPicture.Assign(Bitmap);
   FOriginalFace := OriginalFace;
   FInfo := Info.Copy;
   TPersonExtractor.Create(Self, FaceInImage, FPicture);
   RecreateImage;
   ReloadGroups;
+  LsExtracting.Show;
+  Caption := L('Create new person');
   ShowModal;
 end;
 
@@ -250,10 +322,16 @@ procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
   FInfo := nil;
   FPerson := nil;
+  FIsImageChanged := False;
+  FIsEditMode := False;
   FPicture := TBitmap.Create;
   FDisplayImage := TBitmap.Create;
   LoadLanguage;
   PersonManager.InitDB;
+  TLoad.Instance.RequaredDBSettings;
+  PmImageOptions.Images := DBKernel.ImageList;
+  MiLoadotherimage.ImageIndex := DB_IC_LOADFROMFILE;
+  MiEditImage.ImageIndex := DB_IC_IMEDITOR;
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_PERSON_RELOAD_GROUPS');
 end;
@@ -289,8 +367,27 @@ begin
     WmComments.WatermarkText := L('Comment');
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');
+    MiLoadOtherImage.Caption := L('Load other image');
+    MiEditImage.Caption := L('Edit image');
   finally
     EndTranslate;
+  end;
+end;
+
+procedure TFormCreatePerson.MiLoadOtherImageClick(Sender: TObject);
+var
+  Bitmap: TBitmap;
+begin
+  Bitmap := TBitmap.Create;
+  try
+    if GetImageFromUser(Bitmap, 250, 300) then
+    begin
+      FPicture.Assign(Bitmap);
+      RecreateImage;
+      FIsImageChanged := True;
+    end;
+  finally
+    F(Bitmap);
   end;
 end;
 

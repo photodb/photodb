@@ -301,6 +301,7 @@ object Viewer: TViewer
       Cursor = crHandPoint
       PopupMenu = PmFaces
       Text = 'Faces: 2'
+      Visible = False
       OnClick = WlFaceCountClick
       OnMouseEnter = WlFaceCountMouseEnter
       OnMouseLeave = WlFaceCountMouseLeave

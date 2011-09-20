@@ -2,10 +2,11 @@ unit uExplorerThreadPool;
 
 interface
 
-uses Windows, Math, Classes, SysUtils, SyncObjs,
-     dolphin_db, ExplorerTypes, UnitDBDeclare, uGOM,
-     uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory,
-     uConstants, uRuntime;
+uses
+  Windows, Math, Classes, SysUtils, SyncObjs,
+  dolphin_db, ExplorerTypes, UnitDBDeclare, uGOM,
+  uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory,
+  uConstants, uRuntime;
 
 type
   TExplorerThreadPool = class(TThreadPoolCustom)

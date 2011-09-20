@@ -177,6 +177,8 @@
     <translate name="My documents" value="Мои документы" />
     <translate name="Desktop" value="Рабочий стол" />
     <translate name="My Computer" value="Мой компьютер" />
+    <translate name="Persons" value="Персоны" />
+    <translate name="Groups" value="Группы" />
     <translate name="Add to collection" value="Добавить в базу" />
     <translate name="Preview" value="Предпросмотр" />
     <translate name="Tasks" value="Задачи" />
@@ -1986,7 +1988,11 @@
 	<translate name="Transparency" value="Прозрачность"/>
 	<translate name="Related groups" value="Связанные группы"/>
 	<translate name="Edit related groups" value="Редактировать связанные группы" />
-	<translate name="There are no related groups" value="Нет связанных групп" />
+	<translate name="There are no related groups" value="Нет связанных групп" />	
+	<translate name="Load other image" value="Загрузить другое изображение"/>
+	<translate name="Edit image" value="Редактировать изображение"/>
+	<translate name="Create new person" value="Создание новой персоны"/>
+	<translate name="Edit person: {0}" value="Редактирование персоны: {0}"/>
   </scope>
   <scope name="SelectPerson">
 	<translate name="Select person" value="Выбор персоны"/>

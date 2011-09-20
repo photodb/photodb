@@ -259,7 +259,8 @@ type
     FDisplayAllFaces: Boolean;
     FDrawingFace: Boolean;
     FDrawFaceStartPoint: TPoint;
-    FDrawFace:  TFaceDetectionResultItem;
+    FDrawFace: TFaceDetectionResultItem;
+    FPersonMouseMoveLock: Boolean;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
@@ -403,6 +404,7 @@ begin
   TLoad.Instance.StartPersonsThread;
   TW.I.Start('TViewer.FormCreate');
   FDrawingFace := False;
+  FPersonMouseMoveLock := False;
   FCreating := True;
   LsLoading.Active := True;
   CurrentInfo := TDBPopupMenuInfo.Create;
@@ -1176,7 +1178,7 @@ begin
       MiPreviousSelections.Visible := True;
       MiPreviousSelectionsSeparator.Visible := True;
     end;
-
+    FPersonMouseMoveLock := True;
   finally
     F(SelectedPersons);
   end;
@@ -1364,30 +1366,34 @@ var
   FaceRect: TRect;
 begin
   StartPoint := Point(X, Y);
-  P := BufferPointToImagePoint(StartPoint);
 
-  OldHoverFace := FHoverFace;
-  FHoverFace := nil;
-
-  for I := 0 to FFaces.Count - 1 do
-    if PtInRect(FFaces[I].Rect, PxMultiply(P, FBImage, FFaces.OriginalSize)) then
-    begin
-      FHoverFace := FFaces[I];
-      Break;
-    end;
-
-  if OldHoverFace <> FHoverFace then
-    RefreshFaces;
-
-  if FDrawingFace then
+  if not FPersonMouseMoveLock then
   begin
-    DrawFaceEndPoint := Point(P.X, P.Y);
-    FaceRect := Rect(FDrawFaceStartPoint, DrawFaceEndPoint);
-    FDrawFace.Rect := NormalizeRect(FaceRect);
+    P := BufferPointToImagePoint(StartPoint);
+    OldHoverFace := FHoverFace;
+    FHoverFace := nil;
 
-    RefreshFaces;
-    Exit;
+    for I := 0 to FFaces.Count - 1 do
+      if PtInRect(FFaces[I].Rect, PxMultiply(P, FBImage, FFaces.OriginalSize)) then
+      begin
+        FHoverFace := FFaces[I];
+        Break;
+      end;
+
+    if OldHoverFace <> FHoverFace then
+      RefreshFaces;
+
+    if FDrawingFace then
+    begin
+      DrawFaceEndPoint := Point(P.X, P.Y);
+      FaceRect := Rect(FDrawFaceStartPoint, DrawFaceEndPoint);
+      FDrawFace.Rect := NormalizeRect(FaceRect);
+
+      RefreshFaces;
+      Exit;
+    end;
   end;
+  FPersonMouseMoveLock := False;
 
   if DBCanDrag then
   begin
@@ -2209,18 +2215,13 @@ procedure TViewer.MiCurrentPersonClick(Sender: TObject);
 var
   FR: TFaceDetectionResultItem;
   PA: TPersonArea;
-  P: TPerson;
 begin
   FR := TFaceDetectionResultItem(PmFace.Tag);
   PA := TPersonArea(FR.Data);
   if (PA <> nil) then
   begin
-    P := PersonManager.FindPerson(PA.PersonID);
-    if P <> nil then
-    begin
-      if EditPerson(P) then
-        RefreshFaces;
-    end;
+    if EditPerson(PA.PersonID) then
+      RefreshFaces;
   end;
 end;
 
@@ -3635,12 +3636,15 @@ end;
 
 procedure TViewer.CheckFaceIndicatorVisibility;
 begin
-  WlFaceCount.Visible := WlFaceCount.Left + WlFaceCount.Width + 3 < ToolsBar.Left;
-  LsDetectingFaces.Visible := (LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete;
+  WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < ToolsBar.Left) and StaticImage;
+  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete) and StaticImage;
 end;
 
 procedure TViewer.UpdateFaceDetectionState;
 begin
+  if not HandleAllocated then
+    Exit;
+
   BeginScreenUpdate(Handle);
   try
     LsDetectingFaces.Show;

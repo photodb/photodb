@@ -184,10 +184,15 @@ type
     FCloseOnFailture: Boolean;
     FSaved: Boolean;
     EState: TWindowEnableStates;
+    FIsEditImage: Boolean;
+    FIsEditImageDone: Boolean;
+    FEditImage: TBitmap;
     procedure SetCloseOnFailture(const Value: boolean);
     function CheckEditingMode : Boolean;
     procedure LoadLanguage;
+    procedure InitEditor(FileName: string);
   protected
+    procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID : string; override;
     function GetZoom : Extended; override;
@@ -201,9 +206,9 @@ type
     FStatusProgress: TProgressBar;
     WindowID: TGUID;
     ToolClass: TToolsPanelClass;
+    function EditImage(Image: TBitmap): Boolean; override;
     procedure MakeImage(ResizedWindow: Boolean = False); override;
     procedure DoPaint; override;
-    procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     property CloseOnFailture: Boolean read FCloseOnFailture write SetCloseOnFailture;
   end;
 
@@ -304,6 +309,8 @@ end;
 
 procedure TImageEditor.FormCreate(Sender: TObject);
 begin
+  FIsEditImage := False;
+  FEditImage := nil;
   NewActions := TStringList.Create;
   EXIFSection := nil;
   NewActionsCounter := -1;
@@ -951,7 +958,12 @@ begin
       if FCloseOnFailture then
         Close;
   end;
+  InitEditor(FileName);
+  Result := True;
+end;
 
+procedure TImageEditor.InitEditor(FileName: string);
+begin
   ImageHistory.Clear;
   CurrentImage.PixelFormat := pf24bit;
   MakePCurrentImage;
@@ -982,7 +994,6 @@ begin
   SaveLink.SetDefault;
   BrushLink.SetDefault;
   InsertImageLink.SetDefault;
-  Result := True;
 end;
 
 procedure TImageEditor.ScrollBarHScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
@@ -2046,6 +2057,17 @@ begin
   MakeCaption;
 end;
 
+function TImageEditor.EditImage(Image: TBitmap): Boolean;
+begin
+  FIsEditImageDone := False;
+  FIsEditImage := True;
+  FEditImage := Image;
+  LoadBMPImage(Image);
+  InitEditor('');
+  ShowModal;
+  Result := FIsEditImageDone;
+end;
+
 procedure TImageEditor.EffectsLinkClick(Sender: TObject);
 var
   BaseImage: TBitmap;
@@ -2123,6 +2145,14 @@ var
   end;
 
 begin
+  if FIsEditImage then
+  begin
+    FEditImage.Assign(CurrentImage);
+    FIsEditImageDone := True;
+    Close;
+    Exit;
+  end;
+
   SavePictureDialog := DBSavePictureDialog.Create;
   try
     SavePictureDialog.Filter := TFileAssociations.Instance.GetFilter('.jpg|.gif|.bmp|.png|.tiff', False, False);
@@ -2670,7 +2700,7 @@ procedure TImageEditor.FormCloseQuery(Sender: TObject;
 var
   Result: Integer;
 begin
-  if ForseSave then
+  if ForseSave or FIsEditImage then
   begin
     CanClose := True;
     Exit;

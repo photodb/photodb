@@ -1412,6 +1412,64 @@ begin
     Shell1.Visible := False;
   end;
 
+  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_PERSON_LIST then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    SlideShow1.Visible := False;
+    Properties1.Visible := False;
+    Delete1.Visible := False;
+    Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
+  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_GROUP_LIST then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    SlideShow1.Visible := False;
+    Properties1.Visible := False;
+    Delete1.Visible := False;
+    Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_SHARE then
   begin
     DBitem1.Visible := False;
@@ -3292,7 +3350,7 @@ begin
   Addfolder1.Visible := not FolderView;
   MakeFolderViewer1.Visible := ((GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
 
-  if GetCurrentPathW.PType=EXPLORER_ITEM_MYCOMPUTER then
+  if GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER then
   begin
     Paste1.Visible := False;
     Cut1.Visible := False;
@@ -3729,7 +3787,8 @@ begin
               (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
               (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE))) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)) and (SelCount = 1)) then
+          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST)) and (SelCount = 1)) then
     begin
       ShellLink.Visible := True;
       ShellLink.Top := PrintLink.Top + PrintLink.Height + H;
@@ -5148,6 +5207,18 @@ begin
     PePath.SetPathEx(PATH_SMB_PC, Path);
     ThreadType := THREAD_TYPE_COMPUTER;
   end;
+  if WPath.PType = EXPLORER_ITEM_PERSON_LIST then
+  begin
+    Caption := Path;
+    //TODO: PePath.SetPathEx(PATH_PERSON_LIST, Path);
+    ThreadType := THREAD_TYPE_PERSONS;
+  end;
+  if WPath.PType = EXPLORER_ITEM_GROUP_LIST then
+  begin
+    Caption := Path;
+    //TODO: PePath.SetPathEx(PATH_GROUP_LIST, Path);
+    ThreadType := THREAD_TYPE_GROUPS;
+  end;
 
   S := Path;
   FCurrentPath := Path;
@@ -5316,7 +5387,7 @@ end;
 procedure TExplorerForm.DoBack;
 begin
   if FHistory.CanBack then
-   SetNewPathW(FHistory.DoBack, False)
+    SetNewPathW(FHistory.DoBack, False)
   else
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False);
 end;
@@ -6450,7 +6521,6 @@ begin
                     FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico)
                   else
                     FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
-
                 end;
 
                 try
@@ -6512,7 +6582,8 @@ begin
           end;
           if (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -6534,6 +6605,10 @@ begin
                   FindIcon(HInstance, 'SHARE', 48, 32, Ico);
                 EXPLORER_ITEM_MYCOMPUTER:
                   FindIcon(HInstance, 'COMPUTER', 48, 32, Ico);
+                EXPLORER_ITEM_PERSON_LIST:
+                  FindIcon(HInstance, 'PERSONS', 48, 32, Ico);
+                EXPLORER_ITEM_GROUP_LIST:
+                  FindIcon(HInstance, 'GROUPS', 48, 32, Ico);
               end;
               try
                 Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,

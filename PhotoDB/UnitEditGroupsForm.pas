@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
   UnitDBDeclare, uBitmapUtils, uDBForm, uShellIntegration,
-  uGraphicUtils, uConstants, uMemory, uSettings, pngimage;
+  uGraphicUtils, uConstants, uMemory, uSettings, pngimage, WatermarkedEdit;
 
 type
   TEditGroupsForm = class(TDBForm)
@@ -40,6 +40,8 @@ type
     CbShowAllGroups: TCheckBox;
     MoveToGroup1: TMenuItem;
     LbInfo: TLabel;
+    WedPersonFilter: TWatermarkedEdit;
+    ImSearch: TImage;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtnCreateGroupClick(Sender: TObject);

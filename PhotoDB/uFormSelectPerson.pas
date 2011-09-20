@@ -30,6 +30,8 @@ type
     procedure BtnOkClick(Sender: TObject);
     procedure WedPersonFilterKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure LvPersonsSelectItem(Sender: TObject; Item: TListItem;
+      Selected: Boolean);
   private
     { Private declarations }
     FPersons: TPersonCollection;
@@ -307,6 +309,12 @@ begin
   CloseForm;
 end;
 
+procedure TFormFindPerson.LvPersonsSelectItem(Sender: TObject; Item: TListItem;
+  Selected: Boolean);
+begin
+  BtnOk.Enabled := (Item <> nil) and Selected;
+end;
+
 procedure TFormFindPerson.TmrSearchTimer(Sender: TObject);
 var
   I: Integer;
@@ -316,6 +324,7 @@ var
   P: TPerson;
 begin
   TmrSearch.Enabled := False;
+  BtnOk.Enabled := False;
 
   if Sender <> Self then
     BeginScreenUpdate(Handle);

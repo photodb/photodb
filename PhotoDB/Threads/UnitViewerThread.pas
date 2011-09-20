@@ -26,7 +26,6 @@ type
     Bitmap: TBitmap;
     FIsForward: Boolean;
     FTransparent: Boolean;
-    FBooleanResult: Boolean;
     FInfo: TDBPopupMenuInfoRecord;
     FIsNewDBInfo: Boolean;
     FPage: Word;
@@ -42,9 +41,8 @@ type
     procedure SetNOImageAsynch;
     procedure SetStaticImageAsynch;
     procedure SetAnimatedImageAsynch;
-    function TestThread : Boolean;
-    procedure TestThreadSynch;
     procedure UpdateRecord;
+    procedure ShowLoadingSign;
   public
     constructor Create(Viewer: TViewerForm; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended;
       SID: TGUID; IsForward: Boolean; Page: Word);
@@ -220,7 +218,13 @@ begin
       end;
     finally
       if Settings.Readbool('FaceDetection', 'Enabled', True) then
-        FaceDetectionDataManager.RequestFaceDetection(FViewer, Graphic, FInfo.FileName, FInfo.ID);
+      begin
+        if not (Graphic is TGIFImage) then
+        begin
+          SynchronizeEx(ShowLoadingSign);
+          FaceDetectionDataManager.RequestFaceDetection(FViewer, Graphic, FInfo.FileName, FInfo.ID);
+        end;
+      end;
       F(Graphic);
     end;
 
@@ -408,22 +412,9 @@ begin
   end;
 end;
 
-function TViewerThread.TestThread: Boolean;
+procedure TViewerThread.ShowLoadingSign;
 begin
-  FBooleanResult := False;
-  SynchronizeEx(TestThreadSynch);
-  Result := FBooleanResult;
-end;
-
-procedure TViewerThread.TestThreadSynch;
-begin
-  if Viewer = nil then
-  begin
-    FBooleanResult := False;
-    Exit;
-  end;
-  FBooleanResult := (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or (IsEqualGUID(Viewer.ForwardThreadSID,
-      FSID) and FIsForward) and (Viewer <> nil);
+  Viewer.UpdateFaceDetectionState;
 end;
 
 procedure TViewerThread.UpdateRecord;

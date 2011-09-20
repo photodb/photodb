@@ -672,8 +672,8 @@ end;
 
 function TLockFiles.RemoveLockedFile(FileName: string): Boolean;
 var
-  I : Integer;
-  FFile : TLockedFile;
+  I: Integer;
+  FFile: TLockedFile;
 begin
   Result := False;
   FileName := AnsiLowerCase(FileName);
@@ -699,7 +699,7 @@ end;
 
 function TExplorerFileInfo.Copy: TDBPopupMenuInfoRecord;
 var
-  Info : TExplorerFileInfo;
+  Info: TExplorerFileInfo;
 begin
   Result := inherited Copy;
   Info := Result as TExplorerFileInfo;

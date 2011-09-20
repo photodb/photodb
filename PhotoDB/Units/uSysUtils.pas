@@ -32,8 +32,34 @@ function IIF(Condition: Boolean; ValueIfTrue, ValueIfFalse: string): string; ove
 function SafeCreateGUID: TGUID;
 function GetEmptyGUID: TGUID;
 function SafeIsEqualGUID(GUID1, GUID2: TGUID): Boolean;
+function FormatEx(FormatString: string; Args: array of const): string;
 
 implementation
+
+function FormatEx(FormatString: string; Args: array of const): string;
+var
+  I: Integer;
+  S: string;
+begin
+  Result := FormatString;
+  for I := Low(Args) to High(Args) do
+  begin
+    S := '';
+    case Args[I].VType of
+      vtInteger: S := IntToStr(Args[i].VInteger);
+      vtPChar: S := string(Args[i].VPChar);
+      vtExtended: S := FloatToStr(Args[i].VExtended^);
+      vtAnsiString: S := string(PAnsiChar(Args[i].VAnsiString));
+      vtWideString: S := string(PWideChar(Args[i].VWideString));
+      vtUnicodeString: S := string(PWideChar(Args[i].VUnicodeString));
+      vtBoolean: S := IntToStr(IIF(Args[i].VBoolean, 1, 0));
+      vtInt64: S := IntToStr(Args[i].VInteger);
+    else
+      raise Exception.Create('Unknown type');
+    end;
+    Result := StringReplace(Result, '{' + IntToStr(I) + '}', S, [rfReplaceAll])
+  end;
+end;
 
 function IsWindowsVista: Boolean;
 var
@@ -68,7 +94,6 @@ begin
     FreeMem(VerInfo, VerInfoSize);
   end;
 end;
-
 
 function ReleaseToString(Release : TRelease) : string;
 begin
@@ -128,7 +153,6 @@ begin
       end;
     end;
   end;
-
 end;
 
 function StripHexPrefix(const HexStr: string): string;

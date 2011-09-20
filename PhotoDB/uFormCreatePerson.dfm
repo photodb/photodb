@@ -27,8 +27,8 @@ object FormCreatePerson: TFormCreatePerson
   object PbPhoto: TPaintBox
     Left = 8
     Top = 8
-    Width = 250
-    Height = 300
+    Width = 254
+    Height = 304
     PopupMenu = PmImageOptions
     OnPaint = PbPhotoPaint
   end
@@ -43,10 +43,10 @@ object FormCreatePerson: TFormCreatePerson
     Left = 264
     Top = 8
     Width = 2
-    Height = 302
+    Height = 306
     Anchors = [akLeft, akTop, akBottom]
     Shape = bsLeftLine
-    ExplicitHeight = 300
+    ExplicitHeight = 321
   end
   object LbComments: TLabel
     Left = 272
@@ -143,8 +143,10 @@ object FormCreatePerson: TFormCreatePerson
     Top = 289
     Width = 25
     Height = 25
+    Visible = False
     Active = True
     FillPercent = 60
+    Anchors = [akLeft, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
   end
@@ -156,14 +158,21 @@ object FormCreatePerson: TFormCreatePerson
     Visible = False
     Active = True
     FillPercent = 60
+    Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
+    ExplicitTop = 304
   end
   object PmImageOptions: TPopupMenu
     Left = 104
     Top = 48
-    object Loadotherimage1: TMenuItem
+    object MiLoadOtherImage: TMenuItem
       Caption = 'Load other image'
+      OnClick = MiLoadOtherImageClick
+    end
+    object MiEditImage: TMenuItem
+      Caption = 'Edit image'
+      OnClick = MiEditImageClick
     end
   end
   object AeMain: TApplicationEvents
