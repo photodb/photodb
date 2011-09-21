@@ -4,7 +4,7 @@ interface
 
 uses
   SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB,
-  uFaceDetection, uSettings, Math, uFastLoad;
+  uFaceDetection, uSettings, Math, uFastLoad, UnitDBKernel;
 
 const
   PersonTableName = 'Persons';
@@ -27,6 +27,7 @@ type
     procedure MarkLatestPerson(PersonID: Integer);
   public
     procedure InitDB;
+    procedure LoadPersonList(Persons: TPersonCollection);
     function FindPerson(PersonID: Integer): TPerson;
     function CreateNewPerson(Person: TPerson): Boolean;
     function DeletePerson(PersonID: Integer): Boolean;
@@ -328,6 +329,7 @@ begin
     try
       Person.ID := IC.Execute;
       AllPersons.Add(Person);
+
     except
       Exit;
     end;
@@ -394,22 +396,13 @@ begin
 end;
 
 function TPersonManager.GetAllPersons: TPersonCollection;
-var
-  SC: TSelectCommand;
 begin
   FSync.Enter;
   try
     if FPeoples = nil then
     begin
       FPeoples := TPersonCollection.Create;
-      SC := TSelectCommand.Create(PersonTableName);
-      try
-        SC.AddParameter(TAllParameter.Create);
-        SC.Execute;
-        FPeoples.ReadFromDS(SC.DS);
-      finally
-        F(SC);
-      end;
+      LoadPersonList(FPeoples);
     end;
     Result := FPeoples;
   finally
@@ -463,6 +456,20 @@ begin
   begin
     ADOCreatePersonsTable(DatabaseManager.DBFile);
     ADOCreatePersonMappingTable(DatabaseManager.DBFile);
+  end;
+end;
+
+procedure TPersonManager.LoadPersonList(Persons: TPersonCollection);
+var
+  SC: TSelectCommand;
+begin
+  SC := TSelectCommand.Create(PersonTableName);
+  try
+    SC.AddParameter(TAllParameter.Create);
+    SC.Execute;
+    Persons.ReadFromDS(SC.DS);
+  finally
+    F(SC);
   end;
 end;
 

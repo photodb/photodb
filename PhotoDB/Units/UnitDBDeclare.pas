@@ -104,7 +104,8 @@ type
     EventID_Param_GroupsChanged, EventID_Param_CopyPaste,
     EventID_Param_Add_Crypt_WithoutPass, SetNewIDFileData, EventID_CancelAddingImage,
     EventID_Param_Links,  EventID_Param_DB_Changed, EventID_Param_Refresh_Window,
-    EventID_FileProcessed, EventID_Repaint_ImageList, EventID_No_EXIF);
+    EventID_FileProcessed, EventID_Repaint_ImageList, EventID_No_EXIF,
+    EventID_PersonAdded, EventID_PersonChanged, EventID_PersonRemoved);
 
   TEventFields = set of TEventField;
 
@@ -130,6 +131,7 @@ type
     Crypt: Boolean;
     Include: Boolean;
     Links: string;
+    Data: TObject;
   end;
 
   TOnDBKernelEventProcedure = procedure(Sender : TDBForm; ID : integer; params : TEventFields; Value : TEventValues) of object;

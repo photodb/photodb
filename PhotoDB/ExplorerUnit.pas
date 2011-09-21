@@ -678,14 +678,14 @@ uses
   UnitGetPhotosForm, UnitFormCont, UnitGroupsWork,
   UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
   UnitSavingTableForm, UnitUpdateDBObject, Loadingresults,
-  uFormSteganography, UnitBigImagesSize;
+  uFormSteganography, UnitBigImagesSize, UnitQuickGroupInfo, uFormCreatePerson;
 
 {$R *.dfm}
 
 procedure RegisterPathEditThread(Sender: TThread);
 begin
   DBThreadManager.RegisterThread(Sender);
-end;     
+end;
 
 procedure UnRegisterPathEditThread(Sender: TThread);
 begin
@@ -1092,70 +1092,6 @@ begin
   ShellExecute(Handle, 'open', PChar(ProcessPath(fFilesInfo[PmItemPopup.Tag].FileName)), nil, nil, SW_NORMAL);
 end;
 
-procedure TExplorerForm.Properties1Click(Sender: TObject);
-var
-  Info: TDBPopupMenuInfo;
-  ArInt: TArInteger;
-  Files: TStrings;
-  WindowsProperty: Boolean;
-  I: Integer;
-
-  procedure ShowWindowsPropertiesDialogToSelected;
-  var
-    I, Index: Integer;
-  begin
-    Files := TStringList.Create;
-    try
-      for I := 0 to ElvMain.Items.Count - 1 do
-        if ElvMain.Items[I].Selected then
-        begin
-          Index := ItemIndexToMenuIndex(I);
-          Files.Add(FFilesInfo[index].FileName);
-        end;
-      GetPropertiesWindows(Files, ElvMain);
-    finally
-      F(Files);
-    end;
-  end;
-
-begin
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
-  begin
-  if SelCount > 1 then
-    begin
-      Info := GetCurrentPopUpMenuInfo(ListView1Selected);
-      try
-        SetLength(ArInt, 0);
-        WindowsProperty := True;
-        for I := 0 to Info.Count - 1 do
-          if Info[I].Selected then
-          begin
-            SetLength(ArInt, Length(ArInt) + 1);
-            ArInt[Length(ArInt) - 1] := Info[I].ID;
-            if Info[I].ID <> 0 then
-              WindowsProperty := False;
-          end;
-        if not WindowsProperty then
-          PropertyManager.NewSimpleProperty.ExecuteEx(ArInt)
-        else
-          ShowWindowsPropertiesDialogToSelected;
-      finally
-        F(Info);
-      end;
-    end else
-    begin
-      if not FFilesInfo[PmItemPopup.Tag].Loaded then
-        FFilesInfo[PmItemPopup.Tag].ID := GetIdByFileName(FFilesInfo[PmItemPopup.Tag].FileName);
-      if FFilesInfo[PmItemPopup.Tag].ID = 0 then
-        PropertyManager.NewFileProperty(FFilesInfo[PmItemPopup.Tag].FileName).ExecuteFileNoEx
-          (FFilesInfo[PmItemPopup.Tag].FileName)
-      else
-        PropertyManager.NewIDProperty(FFilesInfo[PmItemPopup.Tag].ID).Execute(FFilesInfo[PmItemPopup.Tag].ID);
-    end;
-  end else
-    ShowWindowsPropertiesDialogToSelected;
-end;
-
 procedure TExplorerForm.PmItemPopupPopup(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
@@ -1441,6 +1377,35 @@ begin
     Shell1.Visible := False;
   end;
 
+  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_PERSON then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    SlideShow1.Visible := False;
+    Properties1.Visible := True;
+    Delete1.Visible := True;
+    Rename1.Visible := True;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_GROUP_LIST then
   begin
     DBitem1.Visible := False;
@@ -1463,6 +1428,35 @@ begin
     Properties1.Visible := False;
     Delete1.Visible := False;
     Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
+  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_GROUP then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    SlideShow1.Visible := False;
+    Properties1.Visible := True;
+    Delete1.Visible := True;
+    Rename1.Visible := True;
     AddFile1.Visible := False;
     Cut2.Visible := False;
     Copy1.Visible := False;
@@ -1997,7 +1991,7 @@ begin
     //skip filtered items
     if not ElvMain.Items[I].Visible then
       Continue;
-      
+
     if FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE then
     begin
       MenuRecord := FFilesInfo[ItemIndex].Copy;
@@ -2469,11 +2463,11 @@ end;
 
 procedure TExplorerForm.ListView1Exit(Sender: TObject);
 begin
- rdown:=false;
- FDblClicked:=false;
- FDBCanDrag:=false;
- fDBCanDragW:=false;
- SetLength(fFilesToDrag,0);
+  RDown := False;
+  FDblClicked := False;
+  FDBCanDrag := False;
+  FDBCanDragW := False;
+  SetLength(FFilesToDrag, 0);
 end;
 
 procedure TExplorerForm.RefreshItemByID(ID: Integer);
@@ -2516,8 +2510,8 @@ end;
 
 procedure TExplorerForm.MakeNewFolder1Click(Sender: TObject);
 var
-  S, FolderName : String;
-  N : Integer;
+  S, FolderName: String;
+  N: Integer;
 begin
   FolderName:= L('New directory');
   S := IncludeTrailingBackslash(GetCurrentPath);
@@ -2540,7 +2534,7 @@ end;
 
 procedure TExplorerForm.Copy2Click(Sender: TObject);
 var
-  FileList : TStrings;
+  FileList: TStrings;
 begin
   FileList := TStringList.Create;
   try
@@ -2663,7 +2657,7 @@ end;
 
 function TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean): Boolean;
 var
-  I, Index, C : Integer;
+  I, Index, C: Integer;
 begin
   Result := False;
   for I := 0 to FFilesInfo.Count - 1 do
@@ -2712,8 +2706,7 @@ end;
 
 function TExplorerForm.AddIcon(Icon: TIcon; SelfReleased: Boolean; FileGUID: TGUID): Boolean;
 var
-  Index,
-  I : Integer;
+  Index, I: Integer;
 begin
   Result := False;
   for I := FFilesInfo.Count - 1 downto 0 do
@@ -3047,7 +3040,7 @@ end;
 
 procedure TExplorerForm.DeleteItemWithIndex(Index: Integer);
 var
-  MenuIndex : Integer;
+  MenuIndex: Integer;
 begin
   LockItems;
   try
@@ -3074,7 +3067,7 @@ end;
 
 procedure TExplorerForm.DirectoryChanged(Sender: TObject; SID: TGUID; PInfo: TInfoCallBackDirectoryChangedArray);
 var
-  I, K, index: Integer;
+  I, K, Index: Integer;
   UpdaterInfo: TUpdaterInfo;
   FileName, FOldFileName: string;
   Info : TExplorerFileInfo;
@@ -3191,9 +3184,9 @@ end;
 
 procedure TExplorerForm.AddInfoAboutFile(Info: TExplorerFileInfos);
 var
-  I, J : Integer;
-  IsContinue : Boolean;
-  InfoCount : Integer;
+  I, J: Integer;
+  IsContinue: Boolean;
+  InfoCount: Integer;
 begin
   InfoCount := FFilesInfo.Count;
   for I := 0 to Info.Count - 1 do
@@ -3297,7 +3290,7 @@ end;
 
 procedure TExplorerForm.Cut1Click(Sender: TObject);
 var
-  FileList : TStrings;
+  FileList: TStrings;
 begin
   FileList := TStringList.Create;
   try
@@ -3310,8 +3303,8 @@ end;
 
 procedure TExplorerForm.Paste1Click(Sender: TObject);
 var
-  Files : TStrings;
-  Effects : Integer;
+  Files: TStrings;
+  Effects: Integer;
 begin
   Files := TStringList.Create;
   try
@@ -3377,8 +3370,8 @@ end;
 
 procedure TExplorerForm.Cut2Click(Sender: TObject);
 var
-  I, Index : integer;
-  FileList : TStrings;
+  I, Index: Integer;
+  FileList: TStrings;
 begin
   FileList := TStringList.Create;
   try
@@ -3400,7 +3393,7 @@ begin
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
-end; 
+end;
 
 procedure TExplorerForm.ShowIndeterminateProgress;
 begin
@@ -3751,12 +3744,12 @@ begin
         EncryptLink.Tag := ACTION_CRYPT_IMAGES;
       end else
       begin
-        EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]); 
-        EncryptLink.Text := L('Decrypt');  
+        EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
+        EncryptLink.Text := L('Decrypt');
         EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
       end;
       EncryptLink.Visible := True;
-      EncryptLink.Top := SlideShowLink.Top + SlideShowLink.Height + H;   
+      EncryptLink.Top := SlideShowLink.Top + SlideShowLink.Height + H;
     end else
     begin
       EncryptLink.Visible := False;
@@ -3788,7 +3781,7 @@ begin
               (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE))) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST)) and (SelCount = 1)) then
+          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP)) and (SelCount = 1)) then
     begin
       ShellLink.Visible := True;
       ShellLink.Top := PrintLink.Top + PrintLink.Height + H;
@@ -3834,7 +3827,8 @@ begin
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) and
+        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) and
       (SelCount <> 0) then
     begin
       RenameLink.Visible := True;
@@ -3848,6 +3842,7 @@ begin
     if (((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER)) and (SelCount = 1)) or
       ((SelCount = 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
@@ -3865,7 +3860,8 @@ begin
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) then
     begin
       if SelCount <> 0 then
       begin
@@ -3937,7 +3933,9 @@ begin
     if (((FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) and (SelCount = 0)) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
+		  (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST)) 
+		  and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
     begin
@@ -3952,7 +3950,9 @@ begin
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
     begin
       OtherPlacesLabel.Show;
       MyPicturesLink.Show;
@@ -4512,6 +4512,70 @@ begin
   end;
 end;
 
+procedure TExplorerForm.Properties1Click(Sender: TObject);
+var
+  Info: TDBPopupMenuInfo;
+  ArInt: TArInteger;
+  Files: TStrings;
+  WindowsProperty: Boolean;
+  I: Integer;
+
+  procedure ShowWindowsPropertiesDialogToSelected;
+  var
+    I, Index: Integer;
+  begin
+    Files := TStringList.Create;
+    try
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          Files.Add(FFilesInfo[index].FileName);
+        end;
+      GetPropertiesWindows(Files, ElvMain);
+    finally
+      F(Files);
+    end;
+  end;
+
+begin
+  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+  begin
+  if SelCount > 1 then
+    begin
+      Info := GetCurrentPopUpMenuInfo(ListView1Selected);
+      try
+        SetLength(ArInt, 0);
+        WindowsProperty := True;
+        for I := 0 to Info.Count - 1 do
+          if Info[I].Selected then
+          begin
+            SetLength(ArInt, Length(ArInt) + 1);
+            ArInt[Length(ArInt) - 1] := Info[I].ID;
+            if Info[I].ID <> 0 then
+              WindowsProperty := False;
+          end;
+        if not WindowsProperty then
+          PropertyManager.NewSimpleProperty.ExecuteEx(ArInt)
+        else
+          ShowWindowsPropertiesDialogToSelected;
+      finally
+        F(Info);
+      end;
+    end else
+    begin
+      if not FFilesInfo[PmItemPopup.Tag].Loaded then
+        FFilesInfo[PmItemPopup.Tag].ID := GetIdByFileName(FFilesInfo[PmItemPopup.Tag].FileName);
+      if FFilesInfo[PmItemPopup.Tag].ID = 0 then
+        PropertyManager.NewFileProperty(FFilesInfo[PmItemPopup.Tag].FileName).ExecuteFileNoEx
+          (FFilesInfo[PmItemPopup.Tag].FileName)
+      else
+        PropertyManager.NewIDProperty(FFilesInfo[PmItemPopup.Tag].ID).Execute(FFilesInfo[PmItemPopup.Tag].ID);
+    end;
+  end else
+    ShowWindowsPropertiesDialogToSelected;
+end;
+
 procedure TExplorerForm.PropertiesLinkClick(Sender: TObject);
 var
   Item: TEasyItem;
@@ -4522,7 +4586,7 @@ begin
     Item := ListView1Selected;
     if Item = nil then
       Exit;
-    index := ItemIndexToMenuIndex(Item.index);
+    Index := ItemIndexToMenuIndex(Item.index);
     PmItemPopup.Tag := index;
     if Index > FFilesInfo.Count - 1 then
       Exit;
@@ -4541,7 +4605,13 @@ begin
   begin
     if FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER then
       ShowMyComputerProperties(Handle)
-    else
+    else if FSelectedInfo.FileType = EXPLORER_ITEM_GROUP then
+    begin
+      ShowGroupInfo(FSelectedInfo.FileName, False, nil);
+    end else if FSelectedInfo.FileType = EXPLORER_ITEM_GROUP then
+    begin
+      EditPerson(FSelectedInfo.ID);
+    end else
     begin
       if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
       begin
@@ -5542,7 +5612,7 @@ begin
   Options.Action := IIF(IsEncrypt, ACTION_CRYPT_IMAGES, ACTION_DECRYPT_IMAGES);
   Options.Password := Password;
   Options.CryptOptions := IIF(SaveCRC, CRYPT_OPTIONS_SAVE_CRC, CRYPT_OPTIONS_NORMAL);
-  
+
   TCryptingImagesThread.Create(Owner, Options);
 end;
 
@@ -5557,13 +5627,13 @@ begin
       FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
     else
       FileName := IIF(Info.Count > 0, ProcessPath(Info[0].FileName), '');
-      
+
     Password := DBKernel.FindPasswordForCryptImageFile(FileName);
     if Password = '' then
       Password := GetImagePasswordFromUser(FileName);
     if Password = '' then
       Exit;
-  
+
     EncryptFiles(Self, Info, Password, False, False);
   finally
     F(Info);
@@ -5575,18 +5645,18 @@ var
   Opt: TCryptImageOptions;
   Info: TDBPopupMenuInfo;
   FileName: string;
-begin             
+begin
   Info := GetCurrentPopupMenuInfo(nil);
   try
     if PmItemPopup.Tag <> -1 then
       FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
     else
       FileName := IIF(Info.Count > 0, ProcessPath(Info[0].FileName), '');
-      
+
     Opt := GetPassForCryptImageFile(FileName);
     if Opt.Password = '' then
       Exit;
-  
+
     EncryptFiles(Self, Info, Opt.Password, True, Opt.SaveFileCRC);
   finally
     F(Info);
@@ -6387,7 +6457,7 @@ var
   Pic: TPNGImage;
   Bit32: TBitmap;
   TempBitmap: TBitmap;
-  IsDirectory, LoadIconFromThread: Boolean;
+  IsDirectory: Boolean;
 begin
   if Rdown then
     FDBCanDrag := False;
@@ -6411,9 +6481,10 @@ begin
           Exit;
         if Index > FFilesInfo.Count - 1 then
           Exit;
+
         FSelectedInfo.FileType := FFilesInfo[Index].FileType;
         FileName := FFilesInfo[Index].FileName;
-        FSelectedInfo.FileName := FFilesInfo[Index].FileName;     
+        FSelectedInfo.FileName := FFilesInfo[Index].FileName;
         FSelectedInfo.Encrypted := FFilesInfo[Index].Crypted;
         FileSID := FFilesInfo[Index].SID;
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -6493,7 +6564,8 @@ begin
           Canvas.Pen.Color := clBtnFace;
           Canvas.Brush.Color := clBtnFace;
           if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) then
           begin
             Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
             FFolderImagesResult.Directory := '';
@@ -6507,21 +6579,11 @@ begin
                 if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
                   FileName := IncludeTrailingBackslash(FileName);
 
-                LoadIconFromThread := not ((FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER)
-                  or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK)
-                  or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP)
-                  or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER));
-                if not LoadIconFromThread then
-                begin
-                  Ico := TAIcons.Instance.GetIconByExt(FileName, False, 48, False);
-                end else
-                begin
-                  IsDirectory := (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER);
-                  if IsDirectory then
-                    FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico)
-                  else
-                    FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
-                end;
+                IsDirectory := (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER);
+                if IsDirectory then
+                  FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico)
+                else
+                  FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
 
                 try
                   Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
@@ -6530,8 +6592,7 @@ begin
                   F(Ico);
                 end;
                 FSelectedInfo.PreviewID := GetGUID;
-                if LoadIconFromThread then
-                  TExplorerThumbnailCreator.Create(FileName, FSelectedInfo.PreviewID, Self, False);
+                TExplorerThumbnailCreator.Create(FileName, FSelectedInfo.PreviewID, Self, False);
               end else
               begin
                 Pic := GetFolderPicture;
@@ -6722,7 +6783,7 @@ begin
     Icon := HIcon(Images[I]);
     if Icon = 0 then
     begin
-      Ico := nil;    
+      Ico := nil;
       try
         FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
         Icon := CopyIcon(Ico.Handle);
@@ -7642,7 +7703,7 @@ begin
 
   FDblClicked := True;
   FDBCanDrag := False;
-  fDBCanDragW := False;
+  FDBCanDragW := False;
   SetLength(FFilesToDrag, 0);
   Application.HideHint;
   THintManager.Instance.CloseHint;
@@ -7686,7 +7747,7 @@ begin
         end;
         Exit;
       end;
-      if fFilesInfo[Index].FileType = EXPLORER_ITEM_FILE then
+      if FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE then
       begin
         if GetExt(FFilesInfo[Index].FileName) <> 'LNK' then
         begin
@@ -7697,7 +7758,7 @@ begin
           Exit;
         end else
         begin
-          LinkPath := ResolveShortcut(Handle, fFilesInfo[Index].FileName);
+          LinkPath := ResolveShortcut(Handle, FFilesInfo[Index].FileName);
           if LinkPath = '' then
             Exit;
           if DirectoryExists(LinkPath) then
@@ -7730,9 +7791,9 @@ begin
 
       case fFilesInfo[Index].FileType of
         EXPLORER_ITEM_NETWORK, EXPLORER_ITEM_WORKGROUP, EXPLORER_ITEM_COMPUTER,
-          EXPLORER_ITEM_SHARE:
-          SetNewPathW(ExplorerPath(fFilesInfo[Index].FileName,
-              fFilesInfo[Index].FileType), false);
+          EXPLORER_ITEM_SHARE, EXPLORER_ITEM_PERSON_LIST, EXPLORER_ITEM_GROUP_LIST:
+          SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
+              FFilesInfo[Index].FileType), false);
       end;
     end;
 end;
@@ -8439,7 +8500,7 @@ begin
   MyPicturesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_PICTURES + 1]);
   MyDocumentsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_DOCUMENTS + 1]);
   MyComputerLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_COMPUTER + 1]);
-  DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]); 
+  DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]);
 end;
 
 destructor TExplorerForm.Destroy;

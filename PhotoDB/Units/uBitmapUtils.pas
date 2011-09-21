@@ -57,6 +57,8 @@ procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; var S, D: TBitm
 procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 
+procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
+
 implementation
 
 procedure ThreadDraw(S, D: TBitmap; X, Y: Integer);
@@ -1980,6 +1982,26 @@ begin
     if Terminating then
       Break;
 
+  end;
+end;
+
+procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
+var
+  B: TBitmap;
+  W, H: Integer;
+begin
+  W := Bitmap.Width;
+  H := Bitmap.Height;
+  if (W > MaxWidth) or (H > MaxHeight) then
+  begin
+    B := TBitmap.Create;
+    try
+      ProportionalSize(MaxWidth, MaxHeight, W, H);
+      DoResize(W, H, Bitmap, B);
+      Exchange(Bitmap, B);
+    finally
+      F(B);
+    end;
   end;
 end;
 

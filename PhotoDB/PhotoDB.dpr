@@ -351,7 +351,8 @@ uses
   uDateUtils in 'Units\uDateUtils.pas',
   uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson},
   uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
-  UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas';
+  UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas',
+  uPathProviders in 'Units\uPathProviders.pas';
 
 {$R *.res}
 

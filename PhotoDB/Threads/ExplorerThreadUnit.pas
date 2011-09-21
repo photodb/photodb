@@ -4,7 +4,7 @@ interface
 
 uses
   Jpeg, DB, ExplorerTypes, uGraphicUtils, uShellIntegration,
-  UnitDBKernel, ExplorerUnit, ShellAPI, Windows,
+  UnitDBKernel, ExplorerUnit, ShellAPI, Windows, uPeopleSupport,
   Classes, SysUtils, Graphics, Network, GraphicCrypt, Math,
   Controls, ActiveX, ShlObj, CommCtrl, Registry, PathEditor,
   GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
@@ -106,6 +106,8 @@ type
     procedure MakeImageWithIcon;
     procedure LoadWorkgroupFolder;
     procedure LoadComputerFolder;
+    procedure LoadGroups;
+    procedure LoadPersons;
     procedure ShowMessage_;
     procedure ExplorerBack;
     procedure UpdateFile;
@@ -117,7 +119,6 @@ type
     function ShowFileIfHidden(FileName :String) : boolean;
     procedure UpdateSimpleFile;
     procedure DoUpdaterHelpProc;
-    procedure AddIconFileImageToExplorer;
     procedure EndUpdateID;
     procedure VisibleUp(TopIndex : integer);
     procedure DoLoadBigImages(LoadOnlyDBItems: Boolean);
@@ -435,6 +436,18 @@ begin
         SynchronizeEx(DoStopSearch);
         Exit;
       end;
+      if (FThreadType = THREAD_TYPE_GROUPS) then
+      begin
+       LoadGroups;
+       SynchronizeEx(DoStopSearch);
+       Exit;
+      end;
+      if (FThreadType = THREAD_TYPE_PERSONS) then
+      begin
+       LoadPersons;
+       SynchronizeEx(DoStopSearch);
+       Exit;
+      end;
 
       FFolder := ExcludeTrailingBackslash(FFolder);
       if not DirectoryExists(FFolder) then
@@ -598,7 +611,7 @@ begin
 
           finally
             F(FPacketImages);
-            //FPacketInfos hasn't own items - it pointers from FFiles
+            //FPacketInfos doesn't have own items - it pointers from FFiles
             FPacketInfos.ClearList;
             F(FPacketInfos);
           end;
@@ -1182,12 +1195,6 @@ begin
     F(FIcon);
 end;
 
-procedure TExplorerThread.AddIconFileImageToExplorer;
-begin
-  If not IsTerminated then
-   FSender.AddIcon(FIcon, True, GUIDParam);
-end;
-
 procedure TExplorerThread.AddImageFileItemToExplorer;
 var
   NewItem : TEasyItem;
@@ -1202,8 +1209,8 @@ end;
 
 procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
 var
-  FBS : TStream;
-  CryptedFile : Boolean;
+  FBS: TStream;
+  CryptedFile: Boolean;
   JPEG: TJpegImage;
 begin
   TempBitmap := nil;
@@ -2162,11 +2169,123 @@ begin
   end;
 end;
 
+procedure TExplorerThread.LoadPersons;
+var
+  I: Integer;
+  Persons: TPersonCollection;
+begin
+  HideProgress;
+  SynchronizeEx(BeginUpdate);
+  try
+    ShowInfo(L('Loading persons'), 1, 0);
+    F(FFiles);
+    FFiles := TExplorerFileInfos.Create;
+    F(FIcon);
+    try
+      Persons := TPersonCollection.Create;
+      try
+        PersonManager.LoadPersonList(Persons);
+        for I := 0 to Persons.Count - 1 do
+        begin
+          AddOneExplorerFileInfo(FFiles, Persons[I].Name, EXPLORER_ITEM_GROUP, -1, GetGUID, Persons[I].ID, 0, 0, 0, 0, Persons[I].Comment, '', '', 0,
+            False, False, True);
+        end;
+
+        FPacketImages := TBitmapImageList.Create;
+        FPacketInfos := TExplorerFileInfos.Create;
+        try
+          for I := 0 to FFiles.Count - 1 do
+          begin
+            GUIDParam := FFiles[I].SID;
+            CurrentFile := FFiles[I].FileName;
+
+            F(TempBitmap);
+            TempBitmap := TBitmap.Create;
+            TempBitmap.Assign(Persons[I].Image);
+            KeepProportions(TempBitmap, 200, 250);
+
+            FPacketImages.AddBitmap(TempBitmap);
+            TempBitmap := nil;
+            FPacketInfos.Add(FFiles[I]);
+          end;
+          SynchronizeEx(SendPacketToExplorer);
+			  finally
+          F(FPacketImages);
+          //FPacketInfos doesn't have own items - it pointers from FFiles
+          FPacketInfos.ClearList;
+          F(FPacketInfos);
+        end;
+      finally
+        F(Persons);
+      end;
+    finally
+      F(FFiles);
+    end;
+  finally
+    SynchronizeEx(EndUpdate);
+    ShowInfo('', 1, 0);
+  end;
+end;
+
+procedure TExplorerThread.LoadGroups;
+var
+  I: Integer;
+  Groups: TGroups;
+begin
+  HideProgress;
+  SynchronizeEx(BeginUpdate);
+  try
+    ShowInfo(L('Loading groups'), 1, 0);
+    F(FFiles);
+    FFiles := TExplorerFileInfos.Create;
+    F(FIcon);
+    try
+      Groups :=  GetRegisterGroupList(True);
+      try
+        for I := 0 to Length(Groups) - 1 do
+        begin
+          AddOneExplorerFileInfo(FFiles, Groups[I].GroupName, EXPLORER_ITEM_GROUP, -1, GetGUID, 0, 0, 0, 0, 0, Groups[I].GroupComment, Groups[I].GroupKeyWords, '', 0,
+            False, False, True);
+        end;
+
+        FPacketImages := TBitmapImageList.Create;
+        FPacketInfos := TExplorerFileInfos.Create;
+        try
+          for I := 0 to FFiles.Count - 1 do
+          begin
+            GUIDParam := FFiles[I].SID;
+            CurrentFile := FFiles[I].FileName;
+
+            F(TempBitmap);
+            TempBitmap := TBitmap.Create;
+            TempBitmap.Assign(Groups[I].GroupImage);
+            FPacketImages.AddBitmap(TempBitmap);
+            TempBitmap := nil;
+            FPacketInfos.Add(FFiles[I]);
+          end;
+          SynchronizeEx(SendPacketToExplorer);
+			  finally
+          F(FPacketImages);
+          //FPacketInfos doesn't have own items - it pointers from FFiles
+          FPacketInfos.ClearList;
+          F(FPacketInfos);
+        end;
+      finally
+        FreeGroups(Groups);
+      end;
+    finally
+      F(FFiles);
+    end;
+  finally
+    SynchronizeEx(EndUpdate);
+    ShowInfo('', 1, 0);
+  end;
+end;
+
 procedure TExplorerThread.LoadComputerFolder;
 var
-  ShareList : TStrings;
-  I,
-  Res: Integer;
+  ShareList: TStrings;
+  I, Res: Integer;
 begin
   HideProgress;
   try

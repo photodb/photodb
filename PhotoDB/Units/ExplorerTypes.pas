@@ -104,8 +104,8 @@ type
     FileInfo: TExplorerFileInfo;
   end;
 
-procedure AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
-  SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: string; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+function AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
+  SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: string; Date: TDateTime; IsDate, Crypted, Include: Boolean): TExplorerFileInfo;
 
 type
   TStringsHistoryW = class(TObject)
@@ -393,9 +393,9 @@ begin
   FSaveFoldersToDB := Value;
 end;
 
-procedure AddOneExplorerFileInfo(Infos : TExplorerFileInfos; FileName : String; FileType, ImageIndex : Integer; SID : TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups : String; Date : TDateTime; IsDate, Crypted, Include : Boolean);
+function AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: String; FileType, ImageIndex: Integer; SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: String; Date: TDateTime; IsDate, Crypted, Include: Boolean): TExplorerFileInfo;
 var
-  Info : TExplorerFileInfo;
+  Info: TExplorerFileInfo;
 begin
   Info := TExplorerFileInfo.Create;
   Info.FileName := FileName;
@@ -418,6 +418,7 @@ begin
   Info.IsBigImage := False;
   Info.Exists := 1;
   Infos.Add(Info);
+  Result := Info;
 end;
 
 { TStringsHistoryW }
