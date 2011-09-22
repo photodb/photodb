@@ -351,7 +351,6 @@ type
     procedure Cut3Click(Sender: TObject);
     procedure Options1Click(Sender: TObject);
     procedure DBManager1Click(Sender: TObject);
-    procedure DeleteLinkClick(Sender: TObject);
     function AddItemW(Caption : string; FileGUID: TGUID) : TEasyItem;
     procedure SetSelected(NewSelected: TEasyItem);
     procedure PropertiesLinkClick(Sender: TObject);
@@ -1594,11 +1593,12 @@ begin
   end;
 end;
 
-procedure TExplorerForm.DeleteFiles(ToRecycle : Boolean);
+procedure TExplorerForm.DeleteFiles(ToRecycle: Boolean);
 var
-  I: integer;
+  I: Integer;
   Index: Integer;
   Files: TStringList;
+  Info: TExplorerFileInfo;
 begin
   if SelCount = 0 then
     Exit;
@@ -1607,8 +1607,20 @@ begin
     for I := 0 to ElvMain.Items.Count - 1 do
       if ElvMain.Items[I].Selected then
       begin
-        index := ItemIndexToMenuIndex(I);
-        Files.Add(FFilesInfo[index].FileName);
+        Index := ItemIndexToMenuIndex(I);
+        Info := FFilesInfo[index];
+        if (Info.FileType = EXPLORER_ITEM_FOLDER) or (Info.FileType = EXPLORER_ITEM_IMAGE)
+          or (Info.FileType = EXPLORER_ITEM_FILE) or (Info.FileType = EXPLORER_ITEM_EXEFILE) then
+          Files.Add(Info.FileName);
+
+        if (Info.FileType =  EXPLORER_ITEM_PERSON) or (Info.FileType =  EXPLORER_ITEM_GROUP) then
+        begin
+          if Info.Provider.SupportsFeature(PATH_FEATURE_DELETE) then
+          begin
+            if Info.Provider.ExecuteFeature(Info, PATH_FEATURE_DELETE) then
+              Exit;
+          end;
+        end;
       end;
     uFileUtils.DeleteFiles(Handle, Files, ToRecycle);
   finally
@@ -4494,24 +4506,6 @@ begin
   ManagerDB.Show;
 end;
 
-procedure TExplorerForm.DeleteLinkClick(Sender: TObject);
-var
-  Files : TStringList;
-begin
-  if SelCount<>0 then
-    Delete1Click(Sender)
-  else
-  begin
-    Files := TStringList.Create;
-    try
-      Files.Add(GetCurrentPath);
-      uFileUtils.DeleteFiles(Handle, Files, True);
-    finally
-      F(Files);
-    end;
-  end;
-end;
-
 procedure TExplorerForm.Properties1Click(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
@@ -4519,6 +4513,7 @@ var
   Files: TStrings;
   WindowsProperty: Boolean;
   I: Integer;
+  EInfo: TExplorerFileInfo;
 
   procedure ShowWindowsPropertiesDialogToSelected;
   var
@@ -4539,9 +4534,10 @@ var
   end;
 
 begin
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+  EInfo := FFilesInfo[PmItemPopup.Tag];
+  if EInfo.FileType = EXPLORER_ITEM_IMAGE then
   begin
-  if SelCount > 1 then
+    if SelCount > 1 then
     begin
       Info := GetCurrentPopUpMenuInfo(ListView1Selected);
       try
@@ -4564,15 +4560,21 @@ begin
       end;
     end else
     begin
-      if not FFilesInfo[PmItemPopup.Tag].Loaded then
-        FFilesInfo[PmItemPopup.Tag].ID := GetIdByFileName(FFilesInfo[PmItemPopup.Tag].FileName);
-      if FFilesInfo[PmItemPopup.Tag].ID = 0 then
-        PropertyManager.NewFileProperty(FFilesInfo[PmItemPopup.Tag].FileName).ExecuteFileNoEx
-          (FFilesInfo[PmItemPopup.Tag].FileName)
-      else
-        PropertyManager.NewIDProperty(FFilesInfo[PmItemPopup.Tag].ID).Execute(FFilesInfo[PmItemPopup.Tag].ID);
+      if EInfo.FileType = EXPLORER_ITEM_IMAGE then
+      begin
+        if not EInfo.Loaded then
+          EInfo.ID := GetIdByFileName(EInfo.FileName);
+        if EInfo.ID = 0 then
+          PropertyManager.NewFileProperty(EInfo.FileName).ExecuteFileNoEx(EInfo.FileName)
+        else
+          PropertyManager.NewIDProperty(EInfo.ID).Execute(EInfo.ID);
+      end;
     end;
-  end else
+  end else if EInfo.FileType = EXPLORER_ITEM_GROUP then
+    ShowGroupInfo(EInfo.FileName, False, nil)
+  else if EInfo.FileType = EXPLORER_ITEM_PERSON then
+    EditPerson(EInfo.ID)
+  else
     ShowWindowsPropertiesDialogToSelected;
 end;
 
@@ -4608,7 +4610,7 @@ begin
     else if FSelectedInfo.FileType = EXPLORER_ITEM_GROUP then
     begin
       ShowGroupInfo(FSelectedInfo.FileName, False, nil);
-    end else if FSelectedInfo.FileType = EXPLORER_ITEM_GROUP then
+    end else if FSelectedInfo.FileType = EXPLORER_ITEM_PERSON then
     begin
       EditPerson(FSelectedInfo.ID);
     end else
@@ -6458,6 +6460,7 @@ var
   Bit32: TBitmap;
   TempBitmap: TBitmap;
   IsDirectory: Boolean;
+  Info: TExplorerFileInfo;
 begin
   if Rdown then
     FDBCanDrag := False;
@@ -6482,6 +6485,7 @@ begin
         if Index > FFilesInfo.Count - 1 then
           Exit;
 
+        FSelectedInfo.Id := FFilesInfo[Index].ID;
         FSelectedInfo.FileType := FFilesInfo[Index].FileType;
         FileName := FFilesInfo[Index].FileName;
         FSelectedInfo.FileName := FFilesInfo[Index].FileName;
@@ -6539,7 +6543,14 @@ begin
       FSelectedInfo._GUID := FileSID;
       if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
       begin
-        TExplorerThumbnailCreator.Create(FileName, FileSID, Self, True);
+        Info := TExplorerFileInfo.CreateFromFile(FileName);
+        try
+          Info.FileType := FSelectedInfo.FileType;
+          Info.ID := FSelectedInfo.Id;
+          TExplorerThumbnailCreator.Create(Info, FileSID, Self, True);
+        finally
+          F(Info);
+        end;
         if HelpNo = 2 then
           HelpTimer.Enabled := True;
       end;
@@ -6592,7 +6603,21 @@ begin
                   F(Ico);
                 end;
                 FSelectedInfo.PreviewID := GetGUID;
-                TExplorerThumbnailCreator.Create(FileName, FSelectedInfo.PreviewID, Self, False);
+
+                Info := TExplorerFileInfo.CreateFromFile(FileName);
+                try
+                  Info.FileType := FSelectedInfo.FileType;
+                  Info.ID := FSelectedInfo.Id;
+                  if (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) then
+                  begin
+                    TExplorerThumbnailCreator.Create(Info, FSelectedInfo._GUID, Self, True);
+                  end else
+                  begin
+                    TExplorerThumbnailCreator.Create(Info, FSelectedInfo.PreviewID, Self, False);
+                  end;
+                finally
+                  F(Info);
+                end;
               end else
               begin
                 Pic := GetFolderPicture;

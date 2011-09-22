@@ -326,6 +326,9 @@
     <translate name="Search in collection for: &quot;%s&quot;" value="Искать в базе: &quot;%s&quot;" />
     <translate name="Search files for: &quot;%s&quot;" value="Искать файлы: &quot;%s&quot;" />
     <translate name="Search files (with EXIF) for: &quot;%s&quot;" value="Искать файлы (учитывая EXIF): &quot;%s&quot;" />
+    <translate name="Loading persons" value="Загрузка персон" />
+    <translate name="Loading groups" value="Загрузка групп" />	
+	
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

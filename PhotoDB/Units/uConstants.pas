@@ -269,7 +269,7 @@ const
   EXPLORER_ITEM_PERSON_LIST = 12;
   EXPLORER_ITEM_PERSON      = 13;
   EXPLORER_ITEM_GROUP_LIST  = 14;
-  EXPLORER_ITEM_GROUP       = 13;
+  EXPLORER_ITEM_GROUP       = 15;
 
 //////////////////////////////////////////////////
 
@@ -371,6 +371,10 @@ const
 
 const
   cPersonsPath = '::db://person:';
+
+const
+  PATH_FEATURE_PROPERTIES = 'properties';
+  PATH_FEATURE_DELETE = 'delete';
 
 implementation
 

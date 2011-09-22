@@ -561,6 +561,9 @@
 			</DCCReference>
 			<DCCReference Include="Threads\UnitLoadPersonsThread.pas"/>
 			<DCCReference Include="Units\uPathProviders.pas"/>
+			<DCCReference Include="Units\uExplorerGroupsProvider.pas"/>
+			<DCCReference Include="Units\uExplorerPathProvider.pas"/>
+			<DCCReference Include="Units\uExplorerPersonsProvider.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -594,7 +597,7 @@
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">2</VersionInfo>
-						<VersionInfo Name="Build">351</VersionInfo>
+						<VersionInfo Name="Build">352</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -606,7 +609,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.2.351</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.2.352</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>

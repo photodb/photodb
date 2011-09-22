@@ -236,30 +236,32 @@ end;
 
 procedure TFormManageGroups.DeleteGroup(Sender: TObject);
 var
-  EventInfo : TEventValues;
-  Index : integer;
+  EventInfo: TEventValues;
+  Index: integer;
 begin
   if (Sender is TmenuItem) then
     Index := (Sender as TMenuItem).Owner.Tag
   else
     Index := (Sender as TComponent).Tag;
 
-  if ID_OK = MessageBoxDB(Handle, Format(L('Do you really want to delete group "%s"?'), [Groups[index].GroupName]), L('Warning'),
-    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-    if UnitGroupsWork.DeleteGroup(Groups[index]) then
-    begin
-      if ID_OK = MessageBoxDB(Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Groups[index].GroupName]),
-        L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+  FSaving := True;
+  try
+    if ID_OK = MessageBoxDB(Handle, Format(L('Do you really want to delete group "%s"?'), [Groups[index].GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      if UnitGroupsWork.DeleteGroup(Groups[Index]) then
       begin
-        FSaving := True;
-        UnitGroupsTools.DeleteGroup(Groups[index]);
-        MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
-        FSaving := False;
+        if ID_OK = MessageBoxDB(Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Groups[index].GroupName]),
+          L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+        begin
+          UnitGroupsTools.DeleteGroup(Groups[Index]);
+          MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
+          DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
+          Exit;
+        end;
         DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
-        Exit;
       end;
-      DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
-    end;
+  finally
+    FSaving := False;
+  end;
 end;
 
 procedure TFormManageGroups.MenuActionAddGroup(Sender: TObject);

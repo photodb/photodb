@@ -261,6 +261,7 @@ begin
     begin
       FIsImageChanged := True;
       RecreateImage;
+      Invalidate;
     end;
   finally
     R(Editor);
@@ -384,6 +385,7 @@ begin
     begin
       FPicture.Assign(Bitmap);
       RecreateImage;
+      Invalidate;
       FIsImageChanged := True;
     end;
   finally

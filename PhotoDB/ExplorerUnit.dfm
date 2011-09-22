@@ -505,7 +505,7 @@ object ExplorerForm: TExplorerForm
           Height = 16
           Cursor = crHandPoint
           Text = 'Delete'
-          OnClick = DeleteLinkClick
+          OnClick = Delete1Click
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -690,7 +690,6 @@ object ExplorerForm: TExplorerForm
         Top = 0
         AutoSize = True
         ImageIndex = 6
-        OnClick = DeleteLinkClick
       end
       object ToolButton10: TToolButton
         Left = 142

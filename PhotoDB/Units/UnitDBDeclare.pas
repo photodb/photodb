@@ -6,7 +6,7 @@ uses
   DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
   GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
   uDBForm, DateUtils, SysUtils, uRuntime, uDBAdapter,
-  uCDMappingTypes;
+  uCDMappingTypes, uPathProviders;
 
 const
   BufferSize = 100*3*4*4096;
@@ -229,7 +229,7 @@ type
   end;
 
 type
-  TDBPopupMenuInfoRecord = class(TObject)
+  TDBPopupMenuInfoRecord = class(TPathItem)
   private
     FOriginalFileName: string;
     function GetInnerImage: Boolean;

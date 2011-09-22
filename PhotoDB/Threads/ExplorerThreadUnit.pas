@@ -2187,7 +2187,7 @@ begin
         PersonManager.LoadPersonList(Persons);
         for I := 0 to Persons.Count - 1 do
         begin
-          AddOneExplorerFileInfo(FFiles, Persons[I].Name, EXPLORER_ITEM_GROUP, -1, GetGUID, Persons[I].ID, 0, 0, 0, 0, Persons[I].Comment, '', '', 0,
+          AddOneExplorerFileInfo(FFiles, Persons[I].Name, EXPLORER_ITEM_PERSON, -1, GetGUID, Persons[I].ID, 0, 0, 0, 0, Persons[I].Comment, '', '', 0,
             False, False, True);
         end;
 
@@ -2207,8 +2207,15 @@ begin
             FPacketImages.AddBitmap(TempBitmap);
             TempBitmap := nil;
             FPacketInfos.Add(FFiles[I]);
+
+            if I mod 10 = 0 then
+            begin
+              if not SynchronizeEx(SendPacketToExplorer) then
+                FPacketInfos.ClearList;
+            end;
           end;
-          SynchronizeEx(SendPacketToExplorer);
+          if not SynchronizeEx(SendPacketToExplorer) then
+            FPacketInfos.ClearList;
 			  finally
           F(FPacketImages);
           //FPacketInfos doesn't have own items - it pointers from FFiles
@@ -2262,8 +2269,14 @@ begin
             FPacketImages.AddBitmap(TempBitmap);
             TempBitmap := nil;
             FPacketInfos.Add(FFiles[I]);
+            if I mod 10 = 0 then
+            begin
+              if not SynchronizeEx(SendPacketToExplorer) then
+                FPacketInfos.ClearList;
+            end;
           end;
-          SynchronizeEx(SendPacketToExplorer);
+          if not SynchronizeEx(SendPacketToExplorer) then
+            FPacketInfos.ClearList;
 			  finally
           F(FPacketImages);
           //FPacketInfos doesn't have own items - it pointers from FFiles

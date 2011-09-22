@@ -161,7 +161,6 @@ object FormCreatePerson: TFormCreatePerson
     Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
-    ExplicitTop = 304
   end
   object PmImageOptions: TPopupMenu
     Left = 104
