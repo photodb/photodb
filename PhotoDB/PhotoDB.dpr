@@ -353,9 +353,12 @@ uses
   uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
   UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas',
   uPathProviders in 'Units\uPathProviders.pas',
-  uExplorerGroupsProvider in 'Units\uExplorerGroupsProvider.pas',
   uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
-  uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas';
+  uExplorerMyComputerProvider in 'Units\uExplorerMyComputerProvider.pas',
+  uExplorerGroupsProvider in 'Units\uExplorerGroupsProvider.pas',
+  uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas',
+  uExplorerNetworkProviders in 'Units\uExplorerNetworkProviders.pas',
+  uExplorerFSProviders in 'Units\uExplorerFSProviders.pas';
 
 {$R *.res}
 

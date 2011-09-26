@@ -14,7 +14,8 @@ uses
   uConstants, uMemory, SyncObjs, uDBPopupMenuInfo, pngImage, uPNGUtils,
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
   uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons,
-  uShellThumbnails, uMachMask, CCR.Exif, UnitGroupsWork, uDatabaseSearch;
+  uShellThumbnails, uMachMask, CCR.Exif, UnitGroupsWork, uDatabaseSearch,
+  uPathProviders, uExplorerMyComputerProvider, uExplorerGroupsProvider;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -99,7 +100,8 @@ type
     procedure ShowIndeterminateProgress;
     procedure DoStopSearch;
     procedure SetProgressVisible;
-    Procedure LoadMyComputerFolder;
+    procedure PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean);
+    procedure LoadMyComputerFolder;
     procedure AddDirectoryItemToExplorerW;
     procedure AddDriveToExplorer;
     procedure LoadNetWorkFolder;
@@ -1145,7 +1147,7 @@ end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorer;
 var
-  S1, S2 : String;
+  S1, S2: String;
 begin
   NewItem := FSender.AddItem(GUIDParam);
   S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
@@ -1163,8 +1165,8 @@ end;
 
 procedure TExplorerThread.AddDirectoryItemToExplorerW;
 var
-  NewItem : TEasyItem;
-  S1, S2 : String;
+  NewItem: TEasyItem;
+  S1, S2: String;
 begin
   NewItem := FSender.AddItemW(DriveNameParam, GUIDParam);
 
@@ -1197,7 +1199,7 @@ end;
 
 procedure TExplorerThread.AddImageFileItemToExplorer;
 var
-  NewItem : TEasyItem;
+  NewItem: TEasyItem;
 begin
   if not IsTerminated then
   begin
@@ -1975,98 +1977,74 @@ begin
   SynchronizeEx(SetProgressVisible);
 end;
 
-procedure TExplorerThread.LoadMyComputerFolder;
-const
-  DRIVE_REMOVABLE = 2;
-  DRIVE_FIXED     = 3;
-  DRIVE_REMOTE    = 4;
-  DRIVE_CDROM     = 5;
+procedure TExplorerThread.PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean);
 var
   I: Integer;
-  DS: TDriveState;
-  OldMode: Cardinal;
-  DriveType : UINT;
+  CI: TPathItem;
+  Icon: TIcon;
+  Info: TExplorerFileInfo;
+begin
+  F(FFiles);
+  FFiles := TExplorerFileInfos.Create;
+  FPacketImages := TBitmapImageList.Create;
+  FPacketInfos := TExplorerFileInfos.Create;
+  try
+    for I := 0 to CurrentItems.Count - 1 do
+    begin
+      CI := CurrentItems[I];
+      Info := TExplorerFileInfo.CreateFromPathItem(CI);
+      FFiles.Add(Info);
+      FPacketInfos.Add(Info);
+
+      if CI.Image <> nil then
+      begin
+        if CI.Image.HIcon <> 0 then
+        begin
+          Icon := TIcon.Create;
+          Icon.Handle := CI.Image.HIcon;
+          FPacketImages.AddIcon(Icon, True);
+          CI.Image.DetachImage;
+        end else  if CI.Image.Icon <> nil then
+        begin
+          FPacketImages.AddIcon(CI.Image.Icon, True);
+          CI.Image.DetachImage;
+        end else if CI.Image.Bitmap <> nil then
+        begin
+          FPacketImages.AddBitmap(CI.Image.Bitmap, True);
+          CI.Image.DetachImage;
+        end else
+          raise Exception.Create('Image is empty!');
+      end else
+        raise Exception.Create('Image is null!');
+    end;
+    Break := not SynchronizeEx(SendPacketToExplorer);
+  finally
+    F(FPacketImages);
+    F(FPacketInfos);
+  end;
+  CurrentItems.Clear;
+end;
+
+procedure TExplorerThread.LoadMyComputerFolder;
+var
+  HomeItem: THomeItem;
+  List: TPathItemCollection;
 begin
   HideProgress;
   ShowInfo(L('Loading "My computer" directory') + '...', 1, 0);
-  F(FFiles);
-  FFiles := TExplorerFileInfos.Create;
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  for I := Ord('C') to Ord('Z') do
-  begin
-    DriveType := GetDriveType(PChar(Chr(I) + ':\'));
-    if (DriveType = DRIVE_REMOVABLE) or (DriveType = DRIVE_FIXED) or
-      (DriveType = DRIVE_REMOTE) or (DriveType = DRIVE_CDROM) or
-      (DriveType = DRIVE_RAMDISK) then
-    begin
-      DriveState(AnsiChar(I));
-      AddOneExplorerFileInfo(FFiles, Chr(I) + ':\', EXPLORER_ITEM_DRIVE, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,
-        False, False, True);
-    end;
-  end;
-
   SynchronizeEx(BeginUpdate);
   try
-    AddOneExplorerFileInfo(FFiles, L('Network'), EXPLORER_ITEM_NETWORK,     -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0, False, False, True);
-    AddOneExplorerFileInfo(FFiles, L('Persons'), EXPLORER_ITEM_PERSON_LIST, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0, False, False, True);
-    AddOneExplorerFileInfo(FFiles, L('Groups'),  EXPLORER_ITEM_GROUP_LIST,  -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0, False, False, True);
-
-    SynchronizeEx(InfoToExplorerForm);
-    for I := 0 to FFiles.Count - 1 do
-    begin
-      if FFiles[I].FileType = EXPLORER_ITEM_DRIVE then
-      begin
-        GUIDParam := FFiles[I].SID;
-        CurrentFile := FFiles[I].FileName;
-        MakeFolderImage(CurrentFile);
-        DS := DriveState(AnsiString(CurrentFile)[1]);
-        if (DS = DS_DISK_WITH_FILES) or (DS = DS_EMPTY_DISK) then
-          DriveNameParam := GetCDVolumeLabelEx(CurrentFile[1]) + ' (' + CurrentFile[1] + ':)'
-        else
-          DriveNameParam := MrsGetFileType(CurrentFile[1] + ':\') + ' (' + CurrentFile[1] + ':)';
-        SynchronizeEx(AddDriveToExplorer);
+    HomeItem := THomeItem.Create;
+    try
+      List := TPathItemCollection.Create;
+      try
+        HomeItem.Provider.FillChildList(Self, HomeItem, List, PATH_LOAD_ICON_32, FIcoSize, 5, PathProviderCallBack);
+      finally
+        F(List);
       end;
-      if FFiles[I].FileType = EXPLORER_ITEM_NETWORK then
-      begin
-        GUIDParam := FFiles[I].SID;
-        CurrentFile := FFiles[I].FileName;
-
-        IconParam := nil;
-        FindIcon(HInstance, 'NETWORK', FIcoSize, 32, IconParam);
-        FIcon := IconParam;
-        if not SynchronizeEx(MakeImageWithIcon) then
-          F(IconParam);
-
-        FIcon := nil;
-      end;
-      if FFiles[I].FileType = EXPLORER_ITEM_PERSON_LIST then
-      begin
-        GUIDParam := FFiles[I].SID;
-        CurrentFile := FFiles[I].FileName;
-
-        IconParam := nil;
-        FindIcon(HInstance, 'PERSONS', FIcoSize, 32, IconParam);
-        FIcon := IconParam;
-        if not SynchronizeEx(MakeImageWithIcon) then
-          F(IconParam);
-
-        FIcon := nil;
-      end;
-      if FFiles[I].FileType = EXPLORER_ITEM_GROUP_LIST then
-      begin
-        GUIDParam := FFiles[I].SID;
-        CurrentFile := FFiles[I].FileName;
-
-        IconParam := nil;
-        FindIcon(HInstance, 'GROUPS', FIcoSize, 32, IconParam);
-        FIcon := IconParam;
-        if not SynchronizeEx(MakeImageWithIcon) then
-          F(IconParam);
-
-        FIcon := nil;
-      end;
+    finally
+      F(HomeItem);
     end;
-    SetErrorMode(OldMode);
   finally
     SynchronizeEx(EndUpdate);
   end;
@@ -2105,7 +2083,6 @@ begin
 
       FIcon := IconParam;
       MakeImageWithIcon;
-
     end;
   finally
     F(FFiles);
@@ -2252,7 +2229,7 @@ begin
         for I := 0 to Length(Groups) - 1 do
         begin
           AddOneExplorerFileInfo(FFiles, Groups[I].GroupName, EXPLORER_ITEM_GROUP, -1, GetGUID, 0, 0, 0, 0, 0, Groups[I].GroupComment, Groups[I].GroupKeyWords, '', 0,
-            False, False, True);
+            False, False, True).Name := Groups[I].GroupName;
         end;
 
         FPacketImages := TBitmapImageList.Create;

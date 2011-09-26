@@ -20,7 +20,8 @@ uses
   uFormListView, uAssociatedIcons, uLogger, uConstants, uTime, uFastLoad,
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
-  uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit;
+  uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit,
+  uPathProviders;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -1093,7 +1094,8 @@ end;
 
 procedure TExplorerForm.PmItemPopupPopup(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Infos: TDBPopupMenuInfo;
+  Info: TExplorerFileInfo;
   Item: TEasyItem;
   Point: TPoint;
   Files: TStrings;
@@ -1105,8 +1107,9 @@ begin
   SendTo1.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
+  Info := FFilesInfo[PmItemPopup.Tag];
 
-  if fFilesInfo[PmItemPopup.tag].FileType = EXPLORER_ITEM_DRIVE then
+  if Info.FileType = EXPLORER_ITEM_DRIVE then
   begin
     DBitem1.Visible := False;
     Print1.Visible := False;
@@ -1132,7 +1135,7 @@ begin
     Delete1.Visible := False;
     Files := TStringList.Create;
     try
-      LoadFIlesFromClipBoard(Effects, Files);
+      LoadFilesFromClipBoard(Effects, Files);
       if Files.Count <> 0 then
         Paste2.Enabled := True
       else
@@ -1145,7 +1148,7 @@ begin
     Paste2.Visible := True;
     Shell1.Visible := True;
   end;
-  if fFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
+  if Info.FileType = EXPLORER_ITEM_FOLDER then
   begin
     DBitem1.Visible := False;
     MakeFolderViewer2.Visible := not FolderView;
@@ -1188,27 +1191,27 @@ begin
     Paste2.Visible := True;
     Shell1.Visible := True;
   end;
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+  if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
     AddHiddenInfo1.Visible := (SelCount = 1);
-    ExtractHiddenInfo1.Visible := ExtInMask('|PNG|BMP|JPG|JPEG|', GetExt(FFilesInfo[PmItemPopup.Tag].FileName));
+    ExtractHiddenInfo1.Visible := ExtInMask('|PNG|BMP|JPG|JPEG|', GetExt(Info.FileName));
 
     MakeFolderViewer2.Visible := not FolderView;
     Print1.Visible := True;
     Othertasks1.Visible := True;
     ImageEditor2.Visible := True;
-    CryptFile1.Visible := not ValidCryptGraphicFile(FFilesInfo[PmItemPopup.Tag].FileName);
+    CryptFile1.Visible := not ValidCryptGraphicFile(Info.FileName);
     ResetPassword1.Visible := not CryptFile1.Visible;
     EnterPassword1.Visible := not CryptFile1.Visible and
-      (DBkernel.FindPasswordForCryptImageFile(FFilesInfo[PmItemPopup.Tag].FileName) = '');
+      (DBkernel.FindPasswordForCryptImageFile(Info.FileName) = '');
 
     Convert1.Visible := not EnterPassword1.Visible;
     Resize1.Visible := not EnterPassword1.Visible;
     Rotate1.Visible := not EnterPassword1.Visible;
-    RefreshID1.Visible := (not EnterPassword1.Visible) and (FFilesInfo[PmItemPopup.Tag].ID <> 0);
-    SetasDesktopWallpaper1.Visible := CryptFile1.Visible and IsWallpaper(FFilesInfo[PmItemPopup.Tag].FileName);
+    RefreshID1.Visible := (not EnterPassword1.Visible) and (Info.ID <> 0);
+    SetasDesktopWallpaper1.Visible := CryptFile1.Visible and IsWallpaper(Info.FileName);
     Refresh1.Visible := True;
     Open1.Visible := False;
     Shell1.Visible := False;
@@ -1226,13 +1229,11 @@ begin
     Copy1.Visible := True;
     Paste2.Visible := False;
   end;
-  if (fFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FILE) or
-    (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_EXEFILE) then
+  if (Info.FileType = EXPLORER_ITEM_FILE) or (Info.FileType = EXPLORER_ITEM_EXEFILE) then
   begin
-    if AnsiLowerCase(ExtractFileName(FFilesInfo[PmItemPopup.Tag].FileName)) = AnsiLowerCase(C_CD_MAP_FILE) then
-    begin
+    if AnsiLowerCase(ExtractFileName(Info.FileName)) = AnsiLowerCase(C_CD_MAP_FILE) then
       MapCD1.Visible := not FolderView;
-    end;
+
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
     Print1.Visible := False;
@@ -1260,7 +1261,7 @@ begin
     Shell1.Visible := True;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_NETWORK then
+  if Info.FileType = EXPLORER_ITEM_NETWORK then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1289,7 +1290,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_WORKGROUP then
+  if Info.FileType = EXPLORER_ITEM_WORKGROUP then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1318,7 +1319,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_COMPUTER then
+  if Info.FileType = EXPLORER_ITEM_COMPUTER then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1347,7 +1348,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_PERSON_LIST then
+  if Info.FileType = EXPLORER_ITEM_PERSON_LIST then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1376,7 +1377,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_PERSON then
+  if Info.FileType = EXPLORER_ITEM_PERSON then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1405,7 +1406,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_GROUP_LIST then
+  if Info.FileType = EXPLORER_ITEM_GROUP_LIST then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1434,7 +1435,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_GROUP then
+  if Info.FileType = EXPLORER_ITEM_GROUP then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1463,7 +1464,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_SHARE then
+  if Info.FileType = EXPLORER_ITEM_SHARE then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1503,33 +1504,33 @@ begin
 
   if DBitem1.Visible then
   begin
-    Info := GetCurrentPopUpMenuInfo(Item);
+    Infos := GetCurrentPopUpMenuInfo(Item);
     try
       if Item <> nil then
       begin
-        Info.IsListItem := True;
-        Info.ListItem := Item;
+        Infos.IsListItem := True;
+        Infos.ListItem := Item;
       end;
-      Info.AttrExists := False;
-      TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Info);
+      Infos.AttrExists := False;
+      TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Infos);
     finally
-      F(Info);
+      F(Infos);
     end;
   end;
 
-  if FFilesInfo[PmItemPopup.Tag].ID = 0 then
+  if Info.ID = 0 then
   begin
-    if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+    if Info.FileType = EXPLORER_ITEM_IMAGE then
       SendTo1.Visible := True;
     if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
-      if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+      if Info.FileType = EXPLORER_ITEM_IMAGE then
       begin
-        Info := GetCurrentPopUpMenuInfo(Item);
+        Infos := GetCurrentPopUpMenuInfo(Item);
         try
-          TDBPopupMenu.Instance.SetInfo(Self, Info);
+          TDBPopupMenu.Instance.SetInfo(Self, Infos);
           TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
         finally
-          F(Info);
+          F(Infos);
         end;
       end;
   end;
@@ -1537,7 +1538,7 @@ end;
 
 procedure TExplorerForm.Copy1Click(Sender: TObject);
 var
-  I, Index : Integer;
+  I, Index: Integer;
   FileList: TStrings;
 begin
   FileList := TStringList.Create;
@@ -1557,7 +1558,7 @@ end;
 
 procedure TExplorerForm.Rename1Click(Sender: TObject);
 var
-  i, ItemIndex : Integer;
+  I, ItemIndex: Integer;
   Files: TStrings;
   X: TArInteger;
 begin
@@ -1617,7 +1618,7 @@ begin
         begin
           if Info.Provider.SupportsFeature(PATH_FEATURE_DELETE) then
           begin
-            if Info.Provider.ExecuteFeature(Info, PATH_FEATURE_DELETE) then
+            if Info.Provider.ExecuteFeature(Self, Info, PATH_FEATURE_DELETE, 0) then
               Exit;
           end;
         end;
@@ -1693,51 +1694,51 @@ begin
   GOM.RemoveObj(Self);
 end;
 
-procedure TExplorerForm.ListView1Edited(Sender: TObject; Item: TEasyItem;
-      var S: String);
+procedure TExplorerForm.ListView1Edited(Sender: TObject; Item: TEasyItem; var S: String);
 var
-  DS : TDataSet;
+  DS: TDataSet;
   Folder: string;
+  Info: TExplorerFileInfo;
 begin
+  Info := FFilesInfo[PmItemPopup.Tag];
   FDblClicked := False;
   S := Copy(S, 1, Min(Length(S), 255));
-  if AnsiLowerCase(S) = AnsiLowerCase(ExtractFileName(FFilesInfo[PmItemPopup.Tag].FileName)) then
+  if AnsiLowerCase(S) = AnsiLowerCase(ExtractFileName(Info.FileName)) then
     Exit;
   begin
-    if GetExt(S) <> GetExt(FFilesInfo[PmItemPopup.Tag].FileName) then
-      if FileExistsSafe(FFilesInfo[PmItemPopup.Tag].FileName) then
+    if GetExt(S) <> GetExt(Info.FileName) then
+      if FileExistsSafe(Info.FileName) then
       begin
         if ID_OK <> MessageBoxDB(Handle, L('Do you really want to replace extension to selected object?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         begin
-          S := ExtractFileName(FFilesInfo[PmItemPopup.Tag].FileName);
+          S := ExtractFileName(Info.FileName);
           Exit;
         end;
       end;
-    if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
+    if Info.FileType = EXPLORER_ITEM_FOLDER then
     begin
       DS := GetQuery;
       try
-        Folder := IncludeTrailingBackslash(FFilesInfo[PmItemPopup.Tag].FileName);
+        Folder := IncludeTrailingBackslash(Info.FileName);
         SetSQL(DS, 'Select count(*) as CountField from $DB$ where (FFileName Like :FolderA)');
         SetStrParam(DS, 0, NormalizeDBStringLike('%' + Folder + '%'));
         DS.Open;
         if DS.FieldByName('CountField').AsInteger = 0 then
         begin
           try
-            RenameResult := RenameFile(FFilesInfo[PmItemPopup.Tag].FileName,
-              ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S);
+            RenameResult := RenameFile(Info.FileName, ExtractFilePath(Info.FileName) + S);
           except
             RenameResult := False;
           end;
         end else
-          RenameResult := RenameFileWithDB(KernelEventCallBack, FFilesInfo[PmItemPopup.Tag].FileName,
-            ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
+          RenameResult := RenameFileWithDB(KernelEventCallBack, Info.FileName,
+            ExtractFilePath(Info.FileName) + S, Info.ID, False);
       finally
         FreeDS(DS);
       end;
     end else
-      RenameResult := RenamefileWithDB(KernelEventCallBack, FFilesInfo[PmItemPopup.Tag].FileName,
-        ExtractFilePath(FFilesInfo[PmItemPopup.Tag].FileName) + S, FFilesInfo[PmItemPopup.Tag].ID, False);
+      RenameResult := RenamefileWithDB(KernelEventCallBack, Info.FileName,
+        ExtractFilePath(Info.FileName) + S, Info.ID, False);
   end;
 end;
 
@@ -2742,6 +2743,7 @@ function TExplorerForm.AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort:
 var
   I, Index, Count: Integer;
   Data: TDataObject;
+  FI: TExplorerFileInfo;
 
   function GetNewItemPos(Info: TExplorerFileInfo): Integer;
   var
@@ -2802,19 +2804,21 @@ begin
   Result := nil;
   Count := FFilesInfo.Count;
   for I := Count - 1 downto 0 do
-    if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
+  begin
+    FI := FFilesInfo[I];
+    if IsEqualGUID(FI.SID, FileGUID) then
     begin
       LockDrawIcon := True;
 
       Data := TDataObject.Create;
-      Data.Include := FFilesInfo[I].Include;
+      Data.Include := FI.Include;
 
       //without sorting
       if Sort = -1 then
         Result := ElvMain.Items.Add(Data)
       else if Sort = 0 then
       begin
-        Index := GetNewItemPos(FFilesInfo[I]);
+        Index := GetNewItemPos(FI);
         if Index = -1 then
           Result := ElvMain.Items.Add(Data)
         else
@@ -2827,13 +2831,14 @@ begin
       if not Data.Include then
         Result.BorderColor := GetListItemBorderColor(Data);
 
-      Result.Tag := FFilesInfo[I].FileType;
-      Result.ImageIndex := FFilesInfo[I].ImageIndex;
+      Result.Tag := FI.FileType;
+      Result.ImageIndex := FI.ImageIndex;
 
-      if FFilesInfo[I].FileType <> EXPLORER_ITEM_DRIVE then
-        Result.Caption := ExtractFileName(FFilesInfo[I].FileName)
+      if FI.Name = '' then
+        Result.Caption := ExtractFileName(FI.FileName)
       else
-        Result.Caption := FFilesInfo[I].FileName;
+        Result.Caption := FI.Name;
+
       if IsEqualGUID(FileGUID, NewFileNameGUID) then
       begin
         Result.Selected := True;
@@ -2849,6 +2854,7 @@ begin
         Result.Invalidate(False);
       Break;
     end;
+  end;
 end;
 
 function TExplorerForm.AddItemW(Caption: string; FileGUID: TGUID): TEasyItem;
@@ -2867,7 +2873,6 @@ begin
       if not Data.Include then
         Result.BorderColor := GetListItemBorderColor(Data);
       Result.Tag := FFilesInfo[I].FileType;
-
       Result.ImageIndex := FFilesInfo[I].ImageIndex;
       Result.Caption := Caption;
       MakeItemVisibleByFilter(Result, '');
@@ -2881,7 +2886,7 @@ end;
 
 procedure TExplorerForm.ListView1KeyPress(Sender: TObject; var Key: Char);
 var
-  Handled : Boolean;
+  Handled: Boolean;
 begin
   if Key = Chr(VK_RETURN) then
     EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
@@ -3082,7 +3087,7 @@ var
   I, K, Index: Integer;
   UpdaterInfo: TUpdaterInfo;
   FileName, FOldFileName: string;
-  Info : TExplorerFileInfo;
+  Info: TExplorerFileInfo;
   NotifyInfo: TExplorerNotifyInfo;
 begin
   if not FormLoadEnd then
@@ -3643,7 +3648,7 @@ begin
 
     if Min(FSelectedInfo.Width, FSelectedInfo.Height) = 0 then
     begin
-      if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) and (Length(FSelectedInfo.FileName) > 0) then
       begin
         OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
         if DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1) <> -1 then
@@ -3671,7 +3676,7 @@ begin
 
     if (FSelectedInfo.Size <> -1) or (FSelectedInfo.FileType= EXPLORER_ITEM_DRIVE) then
     begin
-      if FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE then
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) and (Length(FSelectedInfo.FileName) > 0) then
       begin
         OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
         if DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1) <> -1 then
@@ -4260,8 +4265,7 @@ begin
   end;
 end;
 
-function TManagerExplorer.GetExplorerNumber(
-  Explorer: TExplorerForm): Integer;
+function TManagerExplorer.GetExplorerNumber(Explorer: TExplorerForm): Integer;
 begin
   FSync.Enter;
   try
@@ -4439,7 +4443,7 @@ end;
 
 procedure TExplorerForm.ImPreviewDblClick(Sender: TObject);
 var
-  MenuInfo : TDBPopupMenuInfo;
+  MenuInfo: TDBPopupMenuInfo;
 begin
   if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
   begin
@@ -4458,7 +4462,7 @@ end;
 
 procedure TExplorerForm.CMMOUSELEAVE(var Message: TWMNoParams);
 var
-  P : TPoint;
+  P: TPoint;
 begin
   GetCursorPos(p);
   if THintManager.Instance.HintAtPoint(P) <> nil then
@@ -4472,7 +4476,7 @@ end;
 
 procedure TExplorerForm.Copy3Click(Sender: TObject);
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
   if SelCount= 0 then
     Copy2Click(Sender)
@@ -4483,9 +4487,9 @@ end;
 
 procedure TExplorerForm.Cut3Click(Sender: TObject);
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
-  if SelCount= 0 then
+  if SelCount = 0 then
     Cut1Click(Sender)
   else
     Cut2Click(Sender);
@@ -6098,7 +6102,7 @@ end;
 
 procedure TExplorerForm.ExportImages1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -6110,8 +6114,8 @@ end;
 
 procedure TExplorerForm.PrintLinkClick(Sender: TObject);
 var
-  I, Index : Integer;
-  Files : TStrings;
+  I, Index: Integer;
+  Files: TStrings;
 begin
   Files := TStringList.Create;
   try
@@ -7094,7 +7098,7 @@ end;
 
 function TExplorerForm.FileNameToID(FileName: string): Integer;
 var
-  I: integer;
+  I: Integer;
 begin
   Result := -1;
   FileName := AnsiLowerCase(FileName);
@@ -7239,7 +7243,8 @@ end;
 
 function CanCopyFileByType(FileType: Integer): boolean;
 begin
-  Result:=((FileType=EXPLORER_ITEM_FILE) or (FileType=EXPLORER_ITEM_IMAGE) or (FileType=EXPLORER_ITEM_FOLDER) or (FileType=EXPLORER_ITEM_SHARE) or (FileType=EXPLORER_ITEM_EXEFILE));
+  Result := ((FileType = EXPLORER_ITEM_FILE) or (FileType = EXPLORER_ITEM_IMAGE) or
+   (FileType = EXPLORER_ITEM_FOLDER) or (FileType = EXPLORER_ITEM_SHARE) or (FileType = EXPLORER_ITEM_EXEFILE));
 end;
 
 function TExplorerForm.CanCopySelection: Boolean;
@@ -7688,7 +7693,7 @@ var
   index: Integer;
   P, P1: TPoint;
   Item: TObject;
-  EasyItem : TEasyItem;
+  EasyItem: TEasyItem;
 
   procedure RestoreSelected;
   begin
@@ -7848,7 +7853,7 @@ end;
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(
   Sender: TCustomEasyListview; Item: TEasyItem);
 begin
- ListView1SelectItem(Sender,Item,false);
+  ListView1SelectItem(Sender, Item, False);
 end;
 
 procedure TExplorerForm.SetSelected(NewSelected: TEasyItem);
@@ -8042,8 +8047,8 @@ end;
 
 procedure TExplorerForm.MakeFolderViewer2Click(Sender: TObject);
 var
-  FileList : TStrings;
-  I, Index : integer;
+  FileList: TStrings;
+  I, Index: integer;
 begin
   if ListView1Selected <> nil then
   begin
@@ -8081,7 +8086,7 @@ end;
 
 procedure TExplorerForm.ZoomIn;
 var
-  SelectedVisible : boolean;
+  SelectedVisible: Boolean;
 begin
   ElvMain.BeginUpdate;
   try

@@ -5,7 +5,9 @@ interface
 uses
   SysUtils, Windows, Graphics, UnitDBDeclare, Messages, Classes, JPEG, SyncObjs,
   uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo, uThreadEx, Menus,
-  uThreadForm, ShellApi, uConstants, PathEditor;
+  uThreadForm, ShellApi, uConstants, PathEditor, uSysUtils,
+  uPathProviders, uExplorerMyComputerProvider, uExplorerGroupsProvider,
+  uExplorerPersonsProvider;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -84,7 +86,8 @@ type
     Tag: Integer;
     Loaded: Boolean;
     ImageIndex: Integer;
-    function Copy : TDBPopupMenuInfoRecord; override;
+    constructor CreateFromPathItem(PI: TPathItem);
+    function Copy: TDBPopupMenuInfoRecord; override;
   end;
 
   TExplorerFileInfos = class(TDBPopupMenuInfo)
@@ -131,8 +134,8 @@ type
     function GetForwardHistory: TArExplorerPath;
     procedure Clear;
     property OnHistoryChange: TNotifyEvent read FOnChange write SetOnChange;
-    property Position : Integer read FPosition write FPosition;
-    property Items[Index : Integer] : TExplorerPath read GetItem; default;
+    property Position: Integer read FPosition write FPosition;
+    property Items[Index: Integer] : TExplorerPath read GetItem; default;
   end;
 
 type
@@ -161,21 +164,21 @@ type
 
   TLockedFile = class(TObject)
   public
-    DateOfUnLock : TDateTime;
-    FileName : string;
+    DateOfUnLock: TDateTime;
+    FileName: string;
   end;
 
   TLockFiles = class(TObject)
   private
-    FFiles : TList;
-    FSync : TCriticalSection;
+    FFiles: TList;
+    FSync: TCriticalSection;
   public
     constructor Create;
     class function Instance : TLockFiles;
     destructor Destroy; override;
-    function AddLockedFile(FileName : string; LifeTimeMs : Integer) : TLockedFile;
-    function RemoveLockedFile(FileName : string) : Boolean;
-    function IsFileLocked(FileName : string) : Boolean;
+    function AddLockedFile(FileName: string; LifeTimeMs: Integer): TLockedFile;
+    function RemoveLockedFile(FileName: string): Boolean;
+    function IsFileLocked(FileName: string): Boolean;
   end;
 
   TLoadPathList = class(TThreadEx)
@@ -711,6 +714,27 @@ begin
   Info.Tag := Tag;
   Info.Loaded := Loaded;
   Info.ImageIndex := ImageIndex;
+end;
+
+constructor TExplorerFileInfo.CreateFromPathItem(PI: TPathItem);
+begin
+  inherited Create;
+  FileName := PI.Path;
+  Name := PI.DisplayName;
+  SID := GetGUID;
+  Loaded := False;
+  Include := True;
+  IsBigImage := False;
+  ImageIndex := -1;
+  Exists := 1;
+  if PI is TDriveItem then
+    FileType := EXPLORER_ITEM_DRIVE
+  else if PI is THomeItem then
+    FileType := EXPLORER_ITEM_MYCOMPUTER
+  else if PI is TGroupsItem then
+    FileType := EXPLORER_ITEM_GROUP_LIST
+  else if PI is TPersonsItem then
+    FileType := EXPLORER_ITEM_PERSON_LIST;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;

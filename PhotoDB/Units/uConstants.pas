@@ -370,11 +370,8 @@ const
   DefaultCascadeFileName = 'haarcascade_frontalface_alt.xml';
 
 const
-  cPersonsPath = '::db://person:';
-
-const
-  PATH_FEATURE_PROPERTIES = 'properties';
-  PATH_FEATURE_DELETE = 'delete';
+  cPersonsPath = 'Persons';
+  cGroupsPath = 'Groups';
 
 implementation
 

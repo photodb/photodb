@@ -941,9 +941,6 @@
 	<translate name="Select font" value="Выбрать шрифт" />
 	<translate name="Groups" value="Группы" />
 	<translate name="Keywords" value="Ключевые слова" />
-	<translate name="Do you really want to delete group &quot;%s&quot;?" value="Вы действительно хотите удалить группу &quot;%s&quot;?" />
-	<translate name="Scan collection and remove all pointers to group &quot;%s&quot;?" value="Сканировать базу и удалить все указатели на группу &quot;%s&quot;?" />
-    <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
 	<translate name="Group info" value="Информация о группе" />
 	<translate name="Search images of group" value="Искать фотографии группы" />
 	<translate name="Create group" value="Удалить группу" />
@@ -1991,7 +1988,7 @@
 	<translate name="Transparency" value="Прозрачность"/>
 	<translate name="Related groups" value="Связанные группы"/>
 	<translate name="Edit related groups" value="Редактировать связанные группы" />
-	<translate name="There are no related groups" value="Нет связанных групп" />	
+	<translate name="There are no related groups" value="Нет связанных групп" />
 	<translate name="Load other image" value="Загрузить другое изображение"/>
 	<translate name="Edit image" value="Редактировать изображение"/>
 	<translate name="Create new person" value="Создание новой персоны"/>
@@ -2002,9 +1999,18 @@
 	<translate name="Photo" value="Фото"/>
 	<translate name="Name" value="Имя"/>
 	<translate name="Find person" value="Найти персону"/>
-	<translate name="Filter persons" value="Фильтр по персонам"/>	
+	<translate name="Filter persons" value="Фильтр по персонам"/>
   </scope>
   <scope name="AddImage">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
-  </scope>  
+  </scope>
+  <scope name="GroupsProvider">
+	<translate name="Do you really want to delete group &quot;%s&quot;?" value="Вы действительно хотите удалить группу &quot;%s&quot;?" />
+	<translate name="Scan collection and remove all pointers to group &quot;%s&quot;?" value="Сканировать базу и удалить все указатели на группу &quot;%s&quot;?" />
+    <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
+  </scope>
+  <scope name="Path">
+	<translate name="Groups" value="Группы"/>
+	<translate name="Persons" value="Персоны"/>
+  </scope> 
 </language>

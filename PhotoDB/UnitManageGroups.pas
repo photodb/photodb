@@ -6,10 +6,10 @@ uses
   UnitGroupsWork, Windows, Messages, SysUtils, Classes,
   Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
   ComCtrls, AppEvnts, jpeg, ExtCtrls, Menus, Math, CommCtrl,
-  ImgList, NoVSBListView, uBitmapUtils,
+  ImgList, NoVSBListView, uBitmapUtils, ExplorerTypes,
   UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils, uMemoryEx,
   uShellIntegration, uConstants, Dolphin_DB, uSettings, uRuntime,
-  CommonDBSupport, ToolWin;
+  CommonDBSupport, ToolWin, uPathProviders;
 
 type
   TFormManageGroups = class(TDBForm)
@@ -236,8 +236,8 @@ end;
 
 procedure TFormManageGroups.DeleteGroup(Sender: TObject);
 var
-  EventInfo: TEventValues;
-  Index: integer;
+  Index: Integer;
+  Info: TExplorerFileInfo;
 begin
   if (Sender is TmenuItem) then
     Index := (Sender as TMenuItem).Owner.Tag
@@ -246,19 +246,14 @@ begin
 
   FSaving := True;
   try
-    if ID_OK = MessageBoxDB(Handle, Format(L('Do you really want to delete group "%s"?'), [Groups[index].GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-      if UnitGroupsWork.DeleteGroup(Groups[Index]) then
-      begin
-        if ID_OK = MessageBoxDB(Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Groups[index].GroupName]),
-          L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-        begin
-          UnitGroupsTools.DeleteGroup(Groups[Index]);
-          MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
-          DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
-          Exit;
-        end;
-        DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
-      end;
+    Info := TExplorerFileInfo.Create;
+    try
+      Info.FileType := EXPLORER_ITEM_GROUP;
+      Info.Name := Groups[Index].GroupName;
+      Info.Provider.ExecuteFeature(Self, Info, PATH_FEATURE_DELETE, 0);
+    finally
+      F(Info);
+    end;
   finally
     FSaving := False;
   end;

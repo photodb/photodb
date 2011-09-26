@@ -1105,7 +1105,7 @@ var
   SelectedPersons: TPersonCollection;
   LatestPersons: Boolean;
   MI: TMenuItem;
-begin
+begin  
   RI := TFaceDetectionResultItem(PmFace.Tag);
   PA := TPersonArea(RI.Data);
 
@@ -2414,7 +2414,9 @@ begin
     FDrawFace := nil;
     FFaces.SaveToFile(FFaces.PersistanceFileName);
     UpdateFaceDetectionState;
+    Invalidate;
     RefreshFaces;
+    Application.ProcessMessages;
 
     P := Point(X, Y);
     P := ClientToScreen(P);
@@ -2730,6 +2732,8 @@ begin
   for I := 0 to FFaces.Count - 1 do
     if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FBImage, FFaces.OriginalSize)) then
     begin
+      FHoverFace := FFaces[I];   
+      RefreshFaces;
       PmFace.Tag := Integer(FFaces[I]);
       PmFace.Popup(ScreenRect.X, ScreenRect.Y);
       Exit;

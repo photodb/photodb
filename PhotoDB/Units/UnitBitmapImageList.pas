@@ -43,9 +43,9 @@ implementation
 
 { BitmapImageList }
 
-function TBitmapImageList.AddBitmap(Bitmap: TBitmap; CopyPointer : Boolean = True) : Integer;
+function TBitmapImageList.AddBitmap(Bitmap: TBitmap; CopyPointer: Boolean = True): Integer;
 var
-  Item : TBitmapImageListImage;
+  Item: TBitmapImageListImage;
 begin    
   Item := TBitmapImageListImage.Create;
   Item.IsBitmap := True;
@@ -68,9 +68,9 @@ begin
   Result := FImages.Add(Item);
 end;
 
-function TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased : Boolean; Ext : string = '') : Integer;
+function TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased: Boolean; Ext: string = ''): Integer;
 var
-  Item : TBitmapImageListImage;
+  Item: TBitmapImageListImage;
 begin
   Item := TBitmapImageListImage.Create;
   Item.Graphic := Icon;
@@ -81,8 +81,8 @@ end;
 
 procedure TBitmapImageList.Clear;
 var
-  I : Integer;
-  Item : TBitmapImageListImage;
+  I: Integer;
+  Item: TBitmapImageListImage;
 begin
   for I := 0 to FImages.Count - 1 do
   begin
