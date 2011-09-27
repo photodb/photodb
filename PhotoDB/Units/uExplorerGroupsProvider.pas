@@ -4,23 +4,23 @@ interface
 
 uses
   Windows, Graphics, uExplorerPathProvider, uPathProviders, UnitGroupsWork,
-  uBitmapUtils, UnitDBDeclare, uConstants, UnitDBKernel,
+  uBitmapUtils, UnitDBDeclare, uConstants, UnitDBKernel, StrUtils,
   uShellIntegration, SysUtils, uDBForm, uExplorerMyComputerProvider,
-  uMemory, uTranslate, uShellIcons;
+  uMemory, uTranslate, uShellIcons, uStringUtils;
 
 type
   TGroupsItem = class(TPathItem)
-  private
-    FImage: TPathImage;
-    FDisplayName: string;
-    FParent: TPathItem;
   protected
-    function GetPathImage: TPathImage; override;
-    function GetDisplayName: string; override;
-    function GetParent: TPathItem; override;
+    function InternalGetParent: TPathItem; override;
   public
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
-    destructor Destroy; override;
+  end;
+
+  TGroupItem = class(TPathItem)
+  protected
+    function InternalGetParent: TPathItem; override;
+  public
+    procedure ReadFromGroup(Group: TGroup);
   end;
 
 type
@@ -32,8 +32,10 @@ type
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; override;
+    function Supports(Path: string): Boolean; override;
     function SupportsFeature(Feature: string): Boolean; override;
     function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: Integer): Boolean; override;
+    function CreateFromPath(Path: string): TPathItem; override;
   end;
 
 implementation
@@ -42,6 +44,23 @@ uses
   UnitGroupsTools;
 
 { TGroupProvider }
+
+function ExtractGroupName(Path: string): string;
+var
+  P: Integer;
+begin
+  Result := '';
+  P := Pos('\', Path);
+  if P > 0 then
+    Result := Right(Path, P + 1);;
+end;
+
+function TGroupProvider.CreateFromPath(Path: string): TPathItem;
+begin
+  Result := nil;
+  if Path = cGroupsPath then
+    Result := TGroupsItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+end;
 
 function TGroupProvider.Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: Integer): Boolean;
 var
@@ -85,11 +104,9 @@ function TGroupProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
 var
   Group: TGroup;
-  Info: TDBPopupMenuInfoRecord;
 begin
   Result := False;
-  Info := TDBPopupMenuInfoRecord(Item);
-  Group := GetGroupByGroupName(Info.FileName, True);
+  Group := GetGroupByGroupName(ExtractGroupName(Item.Path), True);
 
   if Group.GroupImage = nil then
     Exit;
@@ -112,24 +129,59 @@ function TGroupProvider.InternalFillChildList(Sender: TObject; Item: TPathItem;
   List: TPathItemCollection; Options, ImageSize, PacketSize: Integer;
   CallBack: TLoadListCallBack): Boolean;
 var
+  I: Integer;
   GI: TGroupsItem;
+  G: TGroupItem;
   Cancel: Boolean;
+  Groups: TGroups;
 begin
   inherited;
   Result := True;
   Cancel := False;
+
   if Item is THomeItem then
   begin
     GI := TGroupsItem.CreateFromPath(cGroupsPath, Options, ImageSize);
     List.Add(GI);
-
-    CallBack(Sender, Item, List, Cancel);
   end;
+
+  if Item is TGroupsItem then
+  begin
+    Groups := GetRegisterGroupList(True);
+    try
+      for I := 0 to Length(Groups) - 1 do
+      begin
+        G := TGroupItem.CreateFromPath(cGroupsPath + '\' + Groups[I].GroupName, PATH_LOAD_NO_IMAGE, 0);
+        G.ReadFromGroup(Groups[I]);
+        List.Add(G);
+
+        if List.Count mod PacketSize = 0 then
+        begin
+          if Assigned(CallBack) then
+            CallBack(Sender, Item, List, Cancel);
+          if Cancel then
+            Break;
+        end;
+      end;
+    finally
+      FreeGroups(Groups);
+    end;
+  end;
+
+  if Assigned(CallBack) then
+    CallBack(Sender, Item, List, Cancel);
 end;
 
 function TGroupProvider.Supports(Item: TPathItem): Boolean;
 begin
-  Result := Item.Parent.Path = cGroupsPath;
+  Result := Item is TGroupsItem;
+  Result := Item is TGroupItem or Result;
+  Result := Result or Supports(Item.Path);
+end;
+
+function TGroupProvider.Supports(Path: string): Boolean;
+begin
+  Result := StrUtils.StartsText(cGroupsPath, Path);
 end;
 
 function TGroupProvider.SupportsFeature(Feature: string): Boolean;
@@ -145,36 +197,40 @@ var
   Icon: TIcon;
 begin
   inherited;
-  FParent := nil;
   FPath := cGroupsPath;
   FDisplayName := TA('Groups', 'Path');
-  FindIcon(HInstance, 'GROUPS', ImageSize, 32, Icon);
-  FImage := TPathImage.Create(Icon);
+  if Options and PATH_LOAD_NO_IMAGE = 0 then
+  begin
+    FindIcon(HInstance, 'GROUPS', ImageSize, 32, Icon);
+    FImage := TPathImage.Create(Icon);
+  end;
 end;
 
-destructor TGroupsItem.Destroy;
+function TGroupsItem.InternalGetParent: TPathItem;
 begin
-  F(FParent);
-  F(FImage);
-  inherited;
+  Result := THomeItem.Create;
 end;
 
-function TGroupsItem.GetDisplayName: string;
+{ TGroupItem }
+
+function TGroupItem.InternalGetParent: TPathItem;
 begin
-  Result := FDisplayName;
+  Result := TGroupsItem.CreateFromPath(cGroupsPath, PATH_LOAD_NORMAL, 0);
 end;
 
-function TGroupsItem.GetParent: TPathItem;
+procedure TGroupItem.ReadFromGroup(Group: TGroup);
+var
+  Bitmap: TBitmap;
 begin
-  if FParent = nil then
-    FParent := THomeItem.Create;
-
-  Result := FParent;
-end;
-
-function TGroupsItem.GetPathImage: TPathImage;
-begin
-  Result := FImage;
+  FDisplayName := Group.GroupName;
+  Bitmap := TBitmap.Create;
+  try
+    Bitmap.Assign(Group.GroupImage);
+    FImage := TPathImage.Create(Bitmap);
+    Bitmap := nil;
+  finally
+    F(Bitmap);
+  end;
 end;
 
 initialization

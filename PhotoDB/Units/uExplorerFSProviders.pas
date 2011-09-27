@@ -8,17 +8,10 @@ uses
 
 type
   TFSItem = class(TPathItem)
-  private
-    FImage: TPathImage;
-    FDisplayName: string;
-    FParent: TPathItem;
   protected
-    function GetPathImage: TPathImage; override;
-    function GetDisplayName: string; override;
-    function GetParent: TPathItem; override;
+    function InternalGetParent: TPathItem; override;
   public
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
-    destructor Destroy; override;
   end;
 
   TFileItem = class(TFSItem);
@@ -110,44 +103,18 @@ var
   Icon: HIcon;
 begin
   inherited;
-  FImage := nil;
-  FParent := nil;
   FDisplayName := ExtractFileName(APath);
-  if Options and PATH_DONT_LOAD_IMAGE = 0 then
+  if Options and PATH_LOAD_NO_IMAGE = 0 then
   begin
     Icon := ExtractShellIcon(APath, ImageSize);
     FImage := TPathImage.Create(Icon);
   end;
 end;
 
-destructor TFSItem.Destroy;
+function TFSItem.InternalGetParent: TPathItem;
 begin
-  F(FImage);
-  F(FParent);
-  inherited;
-end;
-
-function TFSItem.GetDisplayName: string;
-begin
-  Result := FDisplayName;
-end;
-
-function TFSItem.GetParent: TPathItem;
-var
-  Path: string;
-begin
-  if FParent = nil then
-  begin
-    Path := ExcludeTrailingPathDelimiter(Path);
-    Path := ExtractFileDir(Path);
-    //TODO:!!!
-  end;
-  Result := FParent;
-end;
-
-function TFSItem.GetPathImage: TPathImage;
-begin
-  Result := FImage;
+  //TODO:!!!
+  Result := nil;
 end;
 
 end.

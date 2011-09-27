@@ -370,8 +370,9 @@ const
   DefaultCascadeFileName = 'haarcascade_frontalface_alt.xml';
 
 const
-  cPersonsPath = 'Persons';
+  cNetworkPath = 'Network';
   cGroupsPath = 'Groups';
+  cPersonsPath = 'Persons';
 
 implementation
 

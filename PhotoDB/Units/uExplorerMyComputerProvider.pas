@@ -13,17 +13,10 @@ type
   end;
 
   TDriveItem = class(TPathItem)
-  private
-    FImage: TPathImage;
-    FDisplayName: string;
-    FParent: TPathItem;
   protected
-    function GetPathImage: TPathImage; override;
-    function GetDisplayName: string; override;
-    function GetParent: TPathItem; override;
+    function InternalGetParent: TPathItem; override;
   public
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
-    destructor Destroy; override;
   end;
 
 type
@@ -115,7 +108,7 @@ begin
     else
       FDisplayName := MrsGetFileType(APath[1] + ':\') + ' (' + APath[1] + ':)';
 
-    if Options and PATH_DONT_LOAD_IMAGE = 0 then
+    if Options and PATH_LOAD_NO_IMAGE = 0 then
     begin
       Icon := ExtractShellIcon(APath, ImageSize);
       FImage := TPathImage.Create(Icon);
@@ -123,29 +116,9 @@ begin
   end;
 end;
 
-destructor TDriveItem.Destroy;
+function TDriveItem.InternalGetParent: TPathItem;
 begin
-  F(FParent);
-  F(FImage);
-  inherited;
-end;
-
-function TDriveItem.GetDisplayName: string;
-begin
-  Result := FDisplayName;
-end;
-
-function TDriveItem.GetParent: TPathItem;
-begin
-  if FParent = nil then
-    FParent := THomeItem.Create;
-
-  Result := FParent;
-end;
-
-function TDriveItem.GetPathImage: TPathImage;
-begin
-  Result := FImage;
+  Result := THomeItem.Create;
 end;
 
 { THomeItem }

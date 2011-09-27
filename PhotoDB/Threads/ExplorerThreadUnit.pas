@@ -15,7 +15,7 @@ uses
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
   uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons,
   uShellThumbnails, uMachMask, CCR.Exif, UnitGroupsWork, uDatabaseSearch,
-  uPathProviders, uExplorerMyComputerProvider, uExplorerGroupsProvider;
+  uPathProviders, uExplorerMyComputerProvider, uExplorerNetworkProviders;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -39,7 +39,6 @@ type
     StringParam: string;
     GUIDParam: TGUID;
     CurrentFile: string;
-    IconParam: TIcon;
     GraphicParam: TGraphic;
     FShowFiles: Boolean;
     FQuery: TDataSet;
@@ -48,7 +47,6 @@ type
     FInfoPosition: Integer;
     SetText, Setmax, SetPos: Boolean;
     ProgressVisible: Boolean;
-    DriveNameParam: string;
     FThreadType: Integer;
     StrParam: string;
     FIcoSize: Integer;
@@ -70,12 +68,8 @@ type
     procedure EndUpDate;
     procedure MakeFolderImage(Folder : String);
     procedure FileNeededAW;
-    procedure AddDirectoryItemToExplorer;
-    procedure AddDirectoryImageToExplorer;
     procedure AddDirectoryIconToExplorer;
     procedure AddImageFileToPacket;
-    procedure DrawImageIcon;
-    procedure DrawImageIconSmall;
     procedure AddImageFileImageToExplorer;
     procedure AddImageFileItemToExplorer;
     procedure ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
@@ -101,9 +95,8 @@ type
     procedure DoStopSearch;
     procedure SetProgressVisible;
     procedure PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean);
+    function LoadProviderItem(Item: TPathItem): Boolean;
     procedure LoadMyComputerFolder;
-    procedure AddDirectoryItemToExplorerW;
-    procedure AddDriveToExplorer;
     procedure LoadNetWorkFolder;
     procedure MakeImageWithIcon;
     procedure LoadWorkgroupFolder;
@@ -114,10 +107,8 @@ type
     procedure ExplorerBack;
     procedure UpdateFile;
     procedure UpdateFolder;
-    procedure ReplaceImageInExplorerA;
     procedure ReplaceImageInExplorerB;
     procedure MakeIconForFile;
-    procedure ChangeIDImage;
     function ShowFileIfHidden(FileName :String) : boolean;
     procedure UpdateSimpleFile;
     procedure DoUpdaterHelpProc;
@@ -220,7 +211,7 @@ function ExplorerUpdateManager: TExplorerUpdateManager;
 implementation
 
 uses
-  FormManegerUnit, UnitViewerThread, CommonDBSupport, uExplorerThreadPool;
+  CommonDBSupport, uExplorerThreadPool;
 
 var
   ExplorerUpdateManagerInstance: TExplorerUpdateManager = nil;
@@ -1139,54 +1130,10 @@ begin
     BooleanResult := FSender.FileNeededW(GUIDParam);
 end;
 
-procedure TExplorerThread.AddDriveToExplorer;
+procedure TExplorerThread.MakeImageWithIcon;
 begin
-  AddDirectoryImageToExplorer;
-  AddDirectoryItemToExplorerW;
-end;
-
-procedure TExplorerThread.AddDirectoryItemToExplorer;
-var
-  S1, S2: String;
-begin
-  NewItem := FSender.AddItem(GUIDParam);
-  S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
-  S2 := ExcludeTrailingBackslash(CurrentFile);
-
-  if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
-    FSelected := NewItem;
-end;
-
-procedure TExplorerThread.AddDirectoryImageToExplorer;
-begin
-  if not IsTerminated then
-    FSender.AddIcon(FIcon, True, GUIDParam);
-end;
-
-procedure TExplorerThread.AddDirectoryItemToExplorerW;
-var
-  NewItem: TEasyItem;
-  S1, S2: String;
-begin
-  NewItem := FSender.AddItemW(DriveNameParam, GUIDParam);
-
-  S1 := ExcludeTrailingBackslash(ExplorerInfo.OldFolderName);
-  S2 := ExcludeTrailingBackslash(CurrentFile);
-
-  if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
-    FSelected := NewItem;
-end;
-
-procedure TExplorerThread.DrawImageIcon;
-begin
-if IconParam <> nil then
-    TempBitmap.Canvas.Draw(ExplorerInfo.PictureSize div 2-FIcoSize div 2,ExplorerInfo.PictureSize div 2-FIcoSize div 2,IconParam);
-end;
-
-procedure TExplorerThread.DrawImageIconSmall;
-begin
-  if IconParam <> nil then
-    TempBitmap.Canvas.Draw(0, 0, IconParam);
+  AddImageFileImageToExplorer;
+  AddImageFileItemToExplorer;
 end;
 
 procedure TExplorerThread.AddImageFileImageToExplorer;
@@ -1296,12 +1243,6 @@ procedure TExplorerThread.ReplaceInfoInExplorer;
 begin
   if not IsTerminated then
     FSender.SetInfoToItem(FInfo, GUIDParam);
-end;
-
-procedure TExplorerThread.ReplaceImageInExplorerA;
-begin
-  if not IsTerminated then
-     FSender.SetInfoToItem(FInfo, GUIDParam);
 end;
 
 procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
@@ -2025,10 +1966,21 @@ begin
   CurrentItems.Clear;
 end;
 
+function TExplorerThread.LoadProviderItem(Item: TPathItem): Boolean;
+var
+  List: TPathItemCollection;
+begin
+  List := TPathItemCollection.Create;
+  try
+    Result := Item.Provider.FillChildList(Self, Item, List, PATH_LOAD_NORMAL, FIcoSize, 5, PathProviderCallBack);
+  finally
+    F(List);
+  end;
+end;
+
 procedure TExplorerThread.LoadMyComputerFolder;
 var
   HomeItem: THomeItem;
-  List: TPathItemCollection;
 begin
   HideProgress;
   ShowInfo(L('Loading "My computer" directory') + '...', 1, 0);
@@ -2036,12 +1988,7 @@ begin
   try
     HomeItem := THomeItem.Create;
     try
-      List := TPathItemCollection.Create;
-      try
-        HomeItem.Provider.FillChildList(Self, HomeItem, List, PATH_LOAD_ICON_32, FIcoSize, 5, PathProviderCallBack);
-      finally
-        F(List);
-      end;
+      LoadProviderItem(HomeItem);
     finally
       F(HomeItem);
     end;
@@ -2053,271 +2000,114 @@ end;
 
 procedure TExplorerThread.LoadNetWorkFolder;
 var
-  NetworkList: TStrings;
-  I: Integer;
+  NetworkItem: TNetworkItem;
 begin
   HideProgress;
   ShowInfo(L('Scaning network') + '...', 1, 0);
-  F(FFiles);
-  FFiles := TExplorerFileInfos.Create;
+  SynchronizeEx(BeginUpdate);
   try
-    NetworkList := TStringList.Create;
+    NetworkItem := TNetworkItem.CreateFromPath(cNetworkPath, PATH_LOAD_NO_IMAGE, 0);
     try
-      FillNetLevel(nil, NetWorkList);
-      SynchronizeEx(BeginUpdate);
-      for I := 0 to NetworkList.Count - 1 do
-        AddOneExplorerFileInfo(FFiles, NetworkList[I], EXPLORER_ITEM_WORKGROUP, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '',
-          0, False, False, True);
-      SynchronizeEx(InfoToExplorerForm);
+      LoadProviderItem(NetworkItem);
     finally
-      F(NetworkList);
-    end;
-    for I := 0 to FFiles.Count - 1 do
-    begin
-      GUIDParam := FFiles[I].SID;
-      CurrentFile := FFiles[I].FileName;
-
-      IconParam := nil;
-
-      FindIcon(HInstance, 'WORKGROUP', FIcoSize, 32, IconParam);
-
-      FIcon := IconParam;
-      MakeImageWithIcon;
-    end;
-  finally
-    F(FFiles);
-  end;
-  SynchronizeEx(EndUpdate);
-  ShowInfo('', 1, 0);
-end;
-
-procedure TExplorerThread.MakeImageWithIcon;
-begin
-  AddImageFileImageToExplorer;
-  AddImageFileItemToExplorer;
-end;
-
-procedure TExplorerThread.LoadWorkgroupFolder;
-var
-  ComputerList: TStrings;
-  I: Integer;
-begin
-  HideProgress;
-  try
-    ShowInfo(L('Scaning workgroup') + '...', 1, 0);
-    F(FFiles);
-    FFiles := TExplorerFileInfos.Create;
-    try
-      ComputerList := TStringList.Create;
-      try
-        if (FindAllComputers(FFolder, ComputerList) <> 0) and (ComputerList.Count = 0) then
-        begin
-          StrParam := Format(L('Error opening network "%s"!'), [FFolder]);
-          SynchronizeEx(ShowMessage_);
-          SynchronizeEx(ExplorerBack);
-          Exit;
-        end;
-
-        SynchronizeEx(BeginUpdate);
-        for I := 0 to ComputerList.Count - 1 do
-          AddOneExplorerFileInfo(FFiles, ComputerList[I], EXPLORER_ITEM_COMPUTER, -1, GetGUID, 0, 0, 0, 0, 0, '', '',
-            '', 0, False, False, True);
-        SynchronizeEx(InfoToExplorerForm);
-      finally
-        ComputerList.Free;
-      end;
-      for I := 0 to FFiles.Count - 1 do
-      begin
-        GUIDParam := FFiles[I].SID;
-        CurrentFile := FFiles[I].FileName;
-
-        IconParam := nil;
-        FindIcon(HInstance, 'COMPUTER', FIcoSize, 32, IconParam);
-
-        FIcon := IconParam;
-        SynchronizeEx(MakeImageWithIcon);
-      end;
-    finally
-      F(FFiles);
+      F(NetworkItem);
     end;
   finally
     SynchronizeEx(EndUpdate);
-    ShowInfo('', 1, 0);
   end;
+  ShowInfo('', 1, 0);
 end;
 
 procedure TExplorerThread.LoadPersons;
 var
-  I: Integer;
-  Persons: TPersonCollection;
+  PersonsItem: TPathItem;
 begin
   HideProgress;
+  ShowInfo(L('Loading persons'), 1, 0);
   SynchronizeEx(BeginUpdate);
   try
-    ShowInfo(L('Loading persons'), 1, 0);
-    F(FFiles);
-    FFiles := TExplorerFileInfos.Create;
-    F(FIcon);
+    PersonsItem := PathProviderManager.CreatePathItem(cPersonsPath);
     try
-      Persons := TPersonCollection.Create;
-      try
-        PersonManager.LoadPersonList(Persons);
-        for I := 0 to Persons.Count - 1 do
-        begin
-          AddOneExplorerFileInfo(FFiles, Persons[I].Name, EXPLORER_ITEM_PERSON, -1, GetGUID, Persons[I].ID, 0, 0, 0, 0, Persons[I].Comment, '', '', 0,
-            False, False, True);
-        end;
-
-        FPacketImages := TBitmapImageList.Create;
-        FPacketInfos := TExplorerFileInfos.Create;
-        try
-          for I := 0 to FFiles.Count - 1 do
-          begin
-            GUIDParam := FFiles[I].SID;
-            CurrentFile := FFiles[I].FileName;
-
-            F(TempBitmap);
-            TempBitmap := TBitmap.Create;
-            TempBitmap.Assign(Persons[I].Image);
-            KeepProportions(TempBitmap, 200, 250);
-
-            FPacketImages.AddBitmap(TempBitmap);
-            TempBitmap := nil;
-            FPacketInfos.Add(FFiles[I]);
-
-            if I mod 10 = 0 then
-            begin
-              if not SynchronizeEx(SendPacketToExplorer) then
-                FPacketInfos.ClearList;
-            end;
-          end;
-          if not SynchronizeEx(SendPacketToExplorer) then
-            FPacketInfos.ClearList;
-			  finally
-          F(FPacketImages);
-          //FPacketInfos doesn't have own items - it pointers from FFiles
-          FPacketInfos.ClearList;
-          F(FPacketInfos);
-        end;
-      finally
-        F(Persons);
-      end;
+      LoadProviderItem(PersonsItem);
     finally
-      F(FFiles);
+      F(PersonsItem);
     end;
   finally
     SynchronizeEx(EndUpdate);
-    ShowInfo('', 1, 0);
   end;
+  ShowInfo('', 1, 0);
 end;
 
 procedure TExplorerThread.LoadGroups;
 var
-  I: Integer;
-  Groups: TGroups;
+  GroupsItem: TPathItem;
 begin
   HideProgress;
+  ShowInfo(L('Loading groups'), 1, 0);
   SynchronizeEx(BeginUpdate);
   try
-    ShowInfo(L('Loading groups'), 1, 0);
-    F(FFiles);
-    FFiles := TExplorerFileInfos.Create;
-    F(FIcon);
+    GroupsItem := PathProviderManager.CreatePathItem(cGroupsPath);
     try
-      Groups :=  GetRegisterGroupList(True);
-      try
-        for I := 0 to Length(Groups) - 1 do
-        begin
-          AddOneExplorerFileInfo(FFiles, Groups[I].GroupName, EXPLORER_ITEM_GROUP, -1, GetGUID, 0, 0, 0, 0, 0, Groups[I].GroupComment, Groups[I].GroupKeyWords, '', 0,
-            False, False, True).Name := Groups[I].GroupName;
-        end;
-
-        FPacketImages := TBitmapImageList.Create;
-        FPacketInfos := TExplorerFileInfos.Create;
-        try
-          for I := 0 to FFiles.Count - 1 do
-          begin
-            GUIDParam := FFiles[I].SID;
-            CurrentFile := FFiles[I].FileName;
-
-            F(TempBitmap);
-            TempBitmap := TBitmap.Create;
-            TempBitmap.Assign(Groups[I].GroupImage);
-            FPacketImages.AddBitmap(TempBitmap);
-            TempBitmap := nil;
-            FPacketInfos.Add(FFiles[I]);
-            if I mod 10 = 0 then
-            begin
-              if not SynchronizeEx(SendPacketToExplorer) then
-                FPacketInfos.ClearList;
-            end;
-          end;
-          if not SynchronizeEx(SendPacketToExplorer) then
-            FPacketInfos.ClearList;
-			  finally
-          F(FPacketImages);
-          //FPacketInfos doesn't have own items - it pointers from FFiles
-          FPacketInfos.ClearList;
-          F(FPacketInfos);
-        end;
-      finally
-        FreeGroups(Groups);
-      end;
+      LoadProviderItem(GroupsItem);
     finally
-      F(FFiles);
+      F(GroupsItem);
     end;
   finally
     SynchronizeEx(EndUpdate);
-    ShowInfo('', 1, 0);
   end;
+  ShowInfo('', 1, 0);
+end;
+
+procedure TExplorerThread.LoadWorkgroupFolder;
+var
+  WorkgroupItem: TPathItem;
+begin
+  HideProgress;
+  ShowInfo(L('Scaning workgroup'), 1, 0);
+  SynchronizeEx(BeginUpdate);
+  try
+    WorkgroupItem := TWorkgroupItem.CreateFromPath(FFolder, PATH_LOAD_NORMAL, 0);
+    try
+      if not LoadProviderItem(WorkgroupItem) then
+      begin
+        StrParam := Format(L('Error opening network "%s"!'), [FFolder]);
+        SynchronizeEx(ShowMessage_);
+        SynchronizeEx(ExplorerBack);
+        Exit;
+      end;
+    finally
+      F(WorkgroupItem);
+    end;
+  finally
+    SynchronizeEx(EndUpdate);
+  end;
+  ShowInfo('', 1, 0);
 end;
 
 procedure TExplorerThread.LoadComputerFolder;
 var
-  ShareList: TStrings;
-  I, Res: Integer;
+  ComputerItem: TPathItem;
 begin
   HideProgress;
+  ShowInfo(L('Opening computer'), 1, 0);
+  SynchronizeEx(BeginUpdate);
   try
-    ShowInfo(L('Opening computer'), 1, 0);
-    F(FFiles);
-    FFiles := TExplorerFileInfos.Create;
+    ComputerItem := TComputerItem.CreateFromPath(FFolder, PATH_LOAD_NORMAL, 0);
     try
-      ShareList := TStringList.Create;
-      try
-        Res := FindAllComputers(FFolder, ShareList);
-        if (Res <> 0) and (ShareList.Count = 0) then
-        begin
-          StrParam := Format(L('Error opening computer "%s"!'), [FFolder]);
-          SynchronizeEx(ShowMessage_);
-          SynchronizeEx(ExplorerBack);
-          Exit;
-        end;
-        SynchronizeEx(BeginUpdate);
-        for I := 0 to ShareList.Count - 1 do
-          AddOneExplorerFileInfo(FFiles, ShareList[I], EXPLORER_ITEM_SHARE, -1, GetGUID, 0, 0, 0, 0, 0, '', '', '', 0,
-            False, False, True);
-        SynchronizeEx(InfoToExplorerForm);
-      finally
-        F(ShareList);
-      end;
-      for I := 0 to FFiles.Count - 1 do
+      if not LoadProviderItem(ComputerItem) then
       begin
-        GUIDParam := FFiles[I].SID;
-        CurrentFile := FFiles[I].FileName;
-
-        IconParam := nil;
-        FindIcon(HInstance, 'SHARE', FIcoSize, 32, IconParam);
-        FIcon := IconParam;
-        SynchronizeEx(MakeImageWithIcon);
+        StrParam := Format(L('Error opening computer "%s"!'), [FFolder]);
+        SynchronizeEx(ShowMessage_);
+        SynchronizeEx(ExplorerBack);
+        Exit;
       end;
     finally
-      F(FFiles);
+      F(ComputerItem);
     end;
   finally
     SynchronizeEx(EndUpdate);
-    ShowInfo('', 1, 0);
   end;
+  ShowInfo('', 1, 0);
 end;
 
 procedure TExplorerThread.ShowMessage_;
@@ -2449,14 +2239,6 @@ begin
   MakeIconForFile;
 end;
 
-procedure TExplorerThread.ChangeIDImage;
-var
-  EventInfo : TEventValues;
-begin
-  EventInfo.Image := nil;
-  DBKernel.DoIDEvent(FSender, FUpdaterInfo.FileInfo.ID, [EventID_Param_Image],EventInfo);
-end;
-
 procedure TExplorerThread.DoUpdaterHelpProc;
 begin
   if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
@@ -2496,8 +2278,8 @@ end;
 
 procedure TExplorerThread.VisibleUp(TopIndex: Integer);
 var
-  I, C : integer;
-  J : integer;
+  I, C: Integer;
+  J: Integer;
 begin
   C := TopIndex;
   for I := 0 to FVisibleFiles.Count - 1 do
@@ -2516,7 +2298,7 @@ end;
 
 procedure TExplorerThread.DoLoadBigImages(LoadOnlyDBItems: Boolean);
 var
-  I, InfoPosition : integer;
+  I, InfoPosition: Integer;
 begin
   while ExplorerUpdateBigImageThreadsCount > ProcessorCount do
     Sleep(10);

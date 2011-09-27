@@ -355,9 +355,9 @@ uses
   uPathProviders in 'Units\uPathProviders.pas',
   uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
   uExplorerMyComputerProvider in 'Units\uExplorerMyComputerProvider.pas',
+  uExplorerNetworkProviders in 'Units\uExplorerNetworkProviders.pas',
   uExplorerGroupsProvider in 'Units\uExplorerGroupsProvider.pas',
   uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas',
-  uExplorerNetworkProviders in 'Units\uExplorerNetworkProviders.pas',
   uExplorerFSProviders in 'Units\uExplorerFSProviders.pas';
 
 {$R *.res}

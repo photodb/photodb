@@ -12,12 +12,10 @@ const
   PATH_FEATURE_RENAME = 'rename';
 
 const
-  PATH_LOAD_ICON_SMALL        = 0;
-  PATH_DONT_LOAD_IMAGE        = 1;
+  PATH_LOAD_NORMAL            = 0;
+  PATH_LOAD_NO_IMAGE          = 1;
   PATH_LOAD_DIRECTORIES_ONLY  = 2;
-  PATH_LOAD_ICON_32           = 4;
-  PATH_LOAD_ICON_48           = 5;
-  PATH_DONT_LOAD_HIDDEN       = 6;
+  PATH_LOAD_NO_HIDDEN         = 3;
 
 type
   TPathItem = class;
@@ -64,27 +62,33 @@ type
     constructor Create;
     destructor Destroy; override;
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; virtual;
-    function Supports(Item: TPathItem): Boolean; virtual; abstract;
+    function Supports(Path: string): Boolean; overload; virtual;
+    function Supports(PathItem: TPathItem): Boolean; overload; virtual;
     function SupportsFeature(Feature: string): Boolean; virtual;
     function ExecuteFeature(Sender: TObject; Items: TPathItemCollection; Feature: string; Options: Integer): Boolean; overload; virtual;
     function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: Integer): Boolean; overload; virtual;
     function FillChildList(Sender: TObject; Item: TPathItem; List: TPathItemCollection; Options, ImageSize: Integer; PacketSize: Integer; CallBack: TLoadListCallBack): Boolean;
     procedure RegisterExtension(ExtProvider: TPathProvider);
+    function CreateFromPath(Path: string): TPathItem; virtual;
   end;
 
   TPathProviderClass = class of TPathProvider;
 
   TPathItem = class(TObject)
-  private
-    function GetProvider: TPathProvider;
   protected
     FPath: string;
+    FParent: TPathItem;
+    FImage: TPathImage;
+    FDisplayName: string;
     function GetPath: string; virtual;
     function GetDisplayName: string; virtual;
     function GetPathImage: TPathImage; virtual;
+    function InternalGetParent: TPathItem; virtual;
     function GetParent: TPathItem; virtual;
+    function GetProvider: TPathProvider; virtual;
   public
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); virtual;
+    destructor Destroy; override;
     property Provider: TPathProvider read GetProvider;
     property Path: string read GetPath;
     property DisplayName: string read GetDisplayName;
@@ -104,6 +108,8 @@ type
     destructor Destroy; override;
     procedure RegisterProvider(Provider: TPathProvider);
     procedure RegisterSubProvider(ProviderClass, ProviderSubClass: TPathProviderClass);
+    function CreatePathItem(Path: string): TPathItem;
+    function Find(ProviderClass: TPathProviderClass): TPathProvider;
     property Count: Integer read GetCount;
     property Providers[Index: Integer]: TPathProvider read GetProviderByIndex;
   end;
@@ -144,11 +150,48 @@ begin
   FProviders := TList.Create;
 end;
 
+function TPathProviderManager.CreatePathItem(Path: string): TPathItem;
+var
+  I: Integer;
+begin
+  Result := nil;
+  FSync.Enter;
+  try
+    for I := 0 to FProviders.Count - 1 do
+      if TPathProvider(FProviders[I]).Supports(Path) then
+      begin
+        Result := TPathProvider(FProviders[I]).CreateFromPath(Path);
+        Exit;
+      end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
 destructor TPathProviderManager.Destroy;
 begin
   F(FSync);
   FreeList(FProviders);
   inherited;
+end;
+
+function TPathProviderManager.Find(
+  ProviderClass: TPathProviderClass): TPathProvider;
+var
+  I: Integer;
+begin
+  Result := nil;
+  FSync.Enter;
+  try
+    for I := 0 to FProviders.COunt - 1 do
+      if TPathProvider(FProviders[I]) is ProviderClass then
+      begin
+        Result := FProviders[I];
+        Exit;
+      end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TPathProviderManager.GetCount: Integer;
@@ -169,10 +212,10 @@ begin
   Result := nil;
   FSync.Enter;
   try
-    for I := 0 to Count - 1 do
-      if Providers[I].Supports(PathItem) then
+    for I := 0 to FProviders.COunt - 1 do
+      if TPathProvider(FProviders[I]).Supports(PathItem) then
       begin
-        Result := Providers[I];
+        Result := FProviders[I];
         Exit;
       end;
   finally
@@ -206,11 +249,11 @@ var
   I, J: Integer;
 begin
   for I := 0 to Count - 1 do
-    if Providers[I] is ProviderClass then
+    if TPathProvider(FProviders[I]) is ProviderClass then
     begin
-      for J := 0 to Count - 1 do
-        if Providers[J] is ProviderSubClass then
-          Providers[I].RegisterExtension(Providers[J]);
+      for J := 0 to FProviders.Count - 1 do
+        if TPathProvider(FProviders[J]) is ProviderSubClass then
+          TPathProvider(FProviders[I]).RegisterExtension(TPathProvider(FProviders[J]));
 
       Break;
     end;
@@ -221,16 +264,29 @@ end;
 constructor TPathItem.CreateFromPath(APath: string; Options, ImageSize: Integer);
 begin
   FPath := APath;
+  FImage := nil;
+  FParent := nil;
+  FDisplayName := APath;
+end;
+
+destructor TPathItem.Destroy;
+begin
+  F(FImage);
+  F(FParent);
+  inherited;
 end;
 
 function TPathItem.GetDisplayName: string;
 begin
-  Result := '';
+  Result := FDisplayName;
 end;
 
 function TPathItem.GetParent: TPathItem;
 begin
-  Result := nil;
+  if FParent = nil then
+    FParent := InternalGetParent;
+
+  Result := FParent;
 end;
 
 function TPathItem.GetPath: string;
@@ -240,12 +296,17 @@ end;
 
 function TPathItem.GetPathImage: TPathImage;
 begin
-  Result := nil;
+  Result := FImage;
 end;
 
 function TPathItem.GetProvider: TPathProvider;
 begin
   Result := PathProviderManager.GetPathProvider(Self);
+end;
+
+function TPathItem.InternalGetParent: TPathItem;
+begin
+  Result := nil;
 end;
 
 { TPathItemCollection }
@@ -294,6 +355,11 @@ begin
   FExtProviders := TList.Create;
 end;
 
+function TPathProvider.CreateFromPath(Path: string): TPathItem;
+begin
+  Result := nil;
+end;
+
 destructor TPathProvider.Destroy;
 begin
   F(FExtProviders);
@@ -333,6 +399,16 @@ end;
 procedure TPathProvider.RegisterExtension(ExtProvider: TPathProvider);
 begin
   FExtProviders.Add(ExtProvider);
+end;
+
+function TPathProvider.Supports(Path: string): Boolean;
+begin
+  Result := False;
+end;
+
+function TPathProvider.Supports(PathItem: TPathItem): Boolean;
+begin
+  Result := False;
 end;
 
 function TPathProvider.SupportsFeature(Feature: string): Boolean;

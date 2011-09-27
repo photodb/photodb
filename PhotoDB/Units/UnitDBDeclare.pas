@@ -335,6 +335,7 @@ end;
 
 procedure TDBPopupMenuInfoRecord.Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
 begin
+  FPath := Item.Path;
   ID := Item.ID;
   Name := Item.Name;
   FileName := Item.FileName;
@@ -359,7 +360,6 @@ begin
   PassTag := Item.PassTag;
   Width := Item.Width;
   Height := Item.Height;
-  //IsCurrent := False;
   Exists := Item.Exists;
   if MoveImage then
   begin
@@ -420,6 +420,7 @@ begin
   Create;
   Self.FOriginalFileName := FileName;
   Self.FileName := FileName;
+  Self.FPath := FileName;
   Self.Name := ExtractFileName(FileName);
 end;
 

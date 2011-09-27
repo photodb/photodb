@@ -5,21 +5,24 @@ interface
 uses
   Graphics, uPathProviders, uPeopleSupport, uBitmapUtils, UnitDBDeclare,
   uMemory, uConstants, uTranslate, uShellIcons, uExplorerMyComputerProvider,
-  uExplorerPathProvider;
+  uExplorerPathProvider, StrUtils, uStringUtils, SysUtils;
 
 type
   TPersonsItem = class(TPathItem)
-  private
-    FImage: TPathImage;
-    FDisplayName: string;
-    FParent: TPathItem;
   protected
-    function GetPathImage: TPathImage; override;
-    function GetDisplayName: string; override;
-    function GetParent: TPathItem; override;
+    function InternalGetParent: TPathItem; override;
   public
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
-    destructor Destroy; override;
+  end;
+
+  TPersonItem = class(TPathItem)
+  private
+    FPersonID: Integer;
+  protected
+    function InternalGetParent: TPathItem; override;
+  public
+    procedure ReadFromPerson(Person: TPerson);
+    property PersonID: Integer read FPersonID;
   end;
 
 type
@@ -30,12 +33,31 @@ type
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; override;
+    function Supports(Path: string): Boolean; override;
     function SupportsFeature(Feature: string): Boolean; override;
+    function CreateFromPath(Path: string): TPathItem; override;
   end;
 
 implementation
 
+function ExtractPersonName(Path: string): string;
+var
+  P: Integer;
+begin
+  Result := '';
+  P := Pos('\', Path);
+  if P > 0 then
+    Result := Right(Path, P + 1);;
+end;
+
 { TPersonProvider }
+
+function TPersonProvider.CreateFromPath(Path: string): TPathItem;
+begin
+  Result := nil;
+  if Path = cPersonsPath then
+    Result := TPersonsItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+end;
 
 function TPersonProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
@@ -66,24 +88,62 @@ function TPersonProvider.InternalFillChildList(Sender: TObject; Item: TPathItem;
   List: TPathItemCollection; Options, ImageSize, PacketSize: Integer;
   CallBack: TLoadListCallBack): Boolean;
 var
+  I: Integer;
   PI: TPersonsItem;
+  P: TPersonItem;
   Cancel: Boolean;
+  Persons: TPersonCollection;
 begin
   inherited;
   Result := True;
   Cancel := False;
   if Item is THomeItem then
   begin
-    PI := TPersonsItem.CreateFromPath(cGroupsPath, Options, ImageSize);
+    PI := TPersonsItem.CreateFromPath(cPersonsPath, Options, ImageSize);
     List.Add(PI);
 
     CallBack(Sender, Item, List, Cancel);
   end;
+  if Item is TPersonsItem then
+  begin
+    Persons := TPersonCollection.Create;
+    try
+      PersonManager.LoadPersonList(Persons);
+      for I := 0 to Persons.Count - 1 do
+      begin
+        P := TPersonItem.CreateFromPath(cPersonsPath + '\' + IntToStr(Persons[I].ID), PATH_LOAD_NO_IMAGE, 0);
+        P.ReadFromPerson(Persons[I]);
+        List.Add(P);
+
+        if List.Count mod PacketSize = 0 then
+        begin
+          if Assigned(CallBack) then
+            CallBack(Sender, Item, List, Cancel);
+          if Cancel then
+            Break;
+        end;
+      end;
+
+      if (List.Count mod PacketSize = 0) and Assigned(CallBack) then
+        CallBack(Sender, Item, List, Cancel);
+
+    finally
+      F(Persons);
+    end;
+  end;
+
 end;
 
 function TPersonProvider.Supports(Item: TPathItem): Boolean;
 begin
-  Result := Item.Parent.Path = cPersonsPath;
+  Result := Item is TPersonsItem;
+  Result := Item is TPersonItem or Result;
+  Result := Result or Supports(Item.Path);
+end;
+
+function TPersonProvider.Supports(Path: string): Boolean;
+begin
+  Result := StrUtils.StartsText(cPersonsPath, Path);
 end;
 
 function TPersonProvider.SupportsFeature(Feature: string): Boolean;
@@ -99,36 +159,41 @@ var
   Icon: TIcon;
 begin
   inherited;
-  FParent := nil;
   FPath := cPersonsPath;
   FDisplayName := TA('Persons', 'Path');
-  FindIcon(HInstance, 'PERSONS', ImageSize, 32, Icon);
-  FImage := TPathImage.Create(Icon);
+  if Options and PATH_LOAD_NO_IMAGE = 0 then
+  begin
+    FindIcon(HInstance, 'PERSONS', ImageSize, 32, Icon);
+    FImage := TPathImage.Create(Icon);
+  end;
 end;
 
-destructor TPersonsItem.Destroy;
+function TPersonsItem.InternalGetParent: TPathItem;
 begin
-  F(FImage);
-  F(FParent);
-  inherited;
+  Result := THomeItem.Create;
 end;
 
-function TPersonsItem.GetDisplayName: string;
+{ TPersonItem }
+
+function TPersonItem.InternalGetParent: TPathItem;
 begin
-  Result := FDisplayName;
+  Result := TPersonsItem.CreateFromPath(cPersonsPath, PATH_LOAD_NORMAL, 0);
 end;
 
-function TPersonsItem.GetParent: TPathItem;
+procedure TPersonItem.ReadFromPerson(Person: TPerson);
+var
+  Bitmap: TBitmap;
 begin
-  if FParent = nil then
-    FParent := THomeItem.Create;
-
-  Result := FParent;
-end;
-
-function TPersonsItem.GetPathImage: TPathImage;
-begin
-  Result := FImage;
+  FPersonID := Person.ID;
+  FDisplayName := Person.Name;
+  Bitmap := TBitmap.Create;
+  try
+    Bitmap.Assign(Person.Image);
+    FImage := TPathImage.Create(Bitmap);
+    Bitmap := nil;
+  finally
+    F(Bitmap);
+  end;
 end;
 
 initialization

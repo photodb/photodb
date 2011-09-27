@@ -486,7 +486,7 @@ type
     procedure BigImagesTimerTimer(Sender: TObject);
     procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
     WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-    function GetAllItems : TExplorerFileInfos;
+    function GetAllItems: TExplorerFileInfos;
     procedure DoDefaultSort(GUID : TGUID);
     procedure DoStopLoading;
     procedure AddHiddenInfo1Click(Sender: TObject);

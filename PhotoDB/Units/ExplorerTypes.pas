@@ -7,7 +7,7 @@ uses
   uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo, uThreadEx, Menus,
   uThreadForm, ShellApi, uConstants, PathEditor, uSysUtils,
   uPathProviders, uExplorerMyComputerProvider, uExplorerGroupsProvider,
-  uExplorerPersonsProvider;
+  uExplorerPersonsProvider, uExplorerNetworkProviders;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -60,7 +60,6 @@ type
 
 type
   // Структура с информацией об изменении в файловой системе (передается в callback процедуру)
-
   PInfoCallback = ^TInfoCallback;
 
   TInfoCallback = record
@@ -74,7 +73,7 @@ type
   // callback процедура, вызываемая при изменении в файловой системе
   TWatchFileSystemCallback = procedure(PInfo: TInfoCallBackDirectoryChangedArray) of object;
 
-  TNotifyDirectoryChangeW = Procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
+  TNotifyDirectoryChangeW = procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
 
   TExplorerFileInfo = class(TDBPopupMenuInfoRecord)
   protected
@@ -719,6 +718,7 @@ end;
 constructor TExplorerFileInfo.CreateFromPathItem(PI: TPathItem);
 begin
   inherited Create;
+  FPath := PI.Path;
   FileName := PI.Path;
   Name := PI.DisplayName;
   SID := GetGUID;
@@ -733,8 +733,20 @@ begin
     FileType := EXPLORER_ITEM_MYCOMPUTER
   else if PI is TGroupsItem then
     FileType := EXPLORER_ITEM_GROUP_LIST
+  else if PI is TGroupItem then
+    FileType := EXPLORER_ITEM_GROUP
   else if PI is TPersonsItem then
-    FileType := EXPLORER_ITEM_PERSON_LIST;
+    FileType := EXPLORER_ITEM_PERSON_LIST
+  else if PI is TPersonItem then
+    FileType := EXPLORER_ITEM_PERSON
+  else if PI is TNetworkItem then
+    FileType := EXPLORER_ITEM_NETWORK
+  else if PI is TWorkgroupItem then
+    FileType := EXPLORER_ITEM_WORKGROUP
+  else if PI is TComputerItem then
+    FileType := EXPLORER_ITEM_COMPUTER
+  else if PI is TShareItem then
+    FileType := EXPLORER_ITEM_SHARE;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;

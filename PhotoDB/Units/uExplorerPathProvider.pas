@@ -8,7 +8,7 @@ uses
 type
   TExplorerPathProvider = class(TPathProvider)
   protected
-    function GetTranslateID: string; virtual; abstract;
+    function GetTranslateID: string; virtual;
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate, ScopeName: string): string; overload;
   public
@@ -22,6 +22,11 @@ implementation
 function TExplorerPathProvider.L(StringToTranslate: string): string;
 begin
   Result := TA(StringToTranslate, TranslateID);
+end;
+
+function TExplorerPathProvider.GetTranslateID: string;
+begin
+  Result := 'Path';
 end;
 
 function TExplorerPathProvider.L(StringToTranslate, ScopeName: string): string;

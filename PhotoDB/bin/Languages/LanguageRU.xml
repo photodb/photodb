@@ -2010,6 +2010,7 @@
     <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
   </scope>
   <scope name="Path">
+	<translate name="Network" value="Сеть"/>
 	<translate name="Groups" value="Группы"/>
 	<translate name="Persons" value="Персоны"/>
   </scope> 
