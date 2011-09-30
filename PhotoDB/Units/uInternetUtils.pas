@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, uMemory, uConstants,
-  EncdDecd, uDBBaseTypes;
+  EncdDecd, uDBBaseTypes, uSysUtils;
 
 type
   TUpdateInfo = record

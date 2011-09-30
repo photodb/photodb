@@ -347,14 +347,12 @@
 			<DCCReference Include="Units\VistaFileDialogs.pas"/>
 			<DCCReference Include="Units\UnitDBFileDialogs.pas"/>
 			<DCCReference Include="Units\UnitSendMessageWithTimeoutThread.pas"/>
-			<DCCReference Include="Units\VRSIShortCuts.pas"/>
 			<DCCReference Include="Units\UnitCDMappingSupport.pas"/>
 			<DCCReference Include="Units\uThreadForm.pas"/>
 			<DCCReference Include="Threads\uThreadEx.pas"/>
 			<DCCReference Include="Threads\uAssociatedIcons.pas"/>
 			<DCCReference Include="Units\uLogger.pas"/>
 			<DCCReference Include="Units\uConstants.pas"/>
-			<DCCReference Include="Units\uFileUtils.pas"/>
 			<DCCReference Include="Units\uScript.pas"/>
 			<DCCReference Include="Units\uStringUtils.pas"/>
 			<DCCReference Include="Threads\UnitLoadDBKernelIconsThread.pas"/>
@@ -418,7 +416,6 @@
 			<DCCReference Include="Units\uAppUtils.pas"/>
 			<DCCReference Include="ImageEditor\uEditorTypes.pas"/>
 			<DCCReference Include="Units\uShellIntegration.pas"/>
-			<DCCReference Include="Units\uSysUtils.pas"/>
 			<DCCReference Include="Units\uDBTypes.pas"/>
 			<DCCReference Include="Units\uActivationUtils.pas"/>
 			<DCCReference Include="Units\uDBFileTypes.pas"/>
@@ -560,13 +557,11 @@
 				<Form>FormAddingImage</Form>
 			</DCCReference>
 			<DCCReference Include="Threads\UnitLoadPersonsThread.pas"/>
-			<DCCReference Include="Units\uPathProviders.pas"/>
 			<DCCReference Include="Units\uExplorerPathProvider.pas"/>
-			<DCCReference Include="Units\uExplorerMyComputerProvider.pas"/>
 			<DCCReference Include="Units\uExplorerNetworkProviders.pas"/>
 			<DCCReference Include="Units\uExplorerGroupsProvider.pas"/>
 			<DCCReference Include="Units\uExplorerPersonsProvider.pas"/>
-			<DCCReference Include="Units\uExplorerFSProviders.pas"/>
+			<DCCReference Include="Units\uConfiguration.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

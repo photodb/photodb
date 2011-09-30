@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, UnitDBKernel, Forms, UnitGroupsWork, SysUtils,
   CommonDBSupport, UnitDBDeclare, uFileUtils, uConstants, ActiveX,
-  uDBThread;
+  uDBThread, uConfiguration;
 
 type
   ThreadRestoreTable = class(TDBThread)

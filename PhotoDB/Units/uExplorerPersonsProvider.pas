@@ -11,7 +11,9 @@ type
   TPersonsItem = class(TPathItem)
   protected
     function InternalGetParent: TPathItem; override;
+    function InternalCreateNewInstance: TPathItem; override;
   public
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
   end;
 
@@ -20,8 +22,11 @@ type
     FPersonID: Integer;
   protected
     function InternalGetParent: TPathItem; override;
+    function InternalCreateNewInstance: TPathItem; override;
   public
-    procedure ReadFromPerson(Person: TPerson);
+    procedure Assign(Item: TPathItem); override;
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
+    procedure ReadFromPerson(Person: TPerson; Options, ImageSize: Integer);
     property PersonID: Integer read FPersonID;
   end;
 
@@ -97,13 +102,13 @@ begin
   inherited;
   Result := True;
   Cancel := False;
+
   if Item is THomeItem then
   begin
     PI := TPersonsItem.CreateFromPath(cPersonsPath, Options, ImageSize);
     List.Add(PI);
-
-    CallBack(Sender, Item, List, Cancel);
   end;
+
   if Item is TPersonsItem then
   begin
     Persons := TPersonCollection.Create;
@@ -111,8 +116,8 @@ begin
       PersonManager.LoadPersonList(Persons);
       for I := 0 to Persons.Count - 1 do
       begin
-        P := TPersonItem.CreateFromPath(cPersonsPath + '\' + IntToStr(Persons[I].ID), PATH_LOAD_NO_IMAGE, 0);
-        P.ReadFromPerson(Persons[I]);
+        P := TPersonItem.CreateFromPath(cPersonsPath + '\' + IntToStr(Persons[I].ID), Options, ImageSize);
+        P.ReadFromPerson(Persons[I], Options, ImageSize);
         List.Add(P);
 
         if List.Count mod PacketSize = 0 then
@@ -124,14 +129,13 @@ begin
         end;
       end;
 
-      if (List.Count mod PacketSize = 0) and Assigned(CallBack) then
-        CallBack(Sender, Item, List, Cancel);
-
     finally
       F(Persons);
     end;
   end;
 
+  if Assigned(CallBack) then
+    CallBack(Sender, Item, List, Cancel);
 end;
 
 function TPersonProvider.Supports(Item: TPathItem): Boolean;
@@ -155,17 +159,17 @@ end;
 
 constructor TPersonsItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
-var
-  Icon: TIcon;
 begin
   inherited;
   FPath := cPersonsPath;
   FDisplayName := TA('Persons', 'Path');
   if Options and PATH_LOAD_NO_IMAGE = 0 then
-  begin
-    FindIcon(HInstance, 'PERSONS', ImageSize, 32, Icon);
-    FImage := TPathImage.Create(Icon);
-  end;
+    LoadImage(Options, ImageSize);
+end;
+
+function TPersonsItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TPersonsItem.Create;
 end;
 
 function TPersonsItem.InternalGetParent: TPathItem;
@@ -173,14 +177,47 @@ begin
   Result := THomeItem.Create;
 end;
 
+function TPersonsItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Icon: TIcon;
+begin
+  FindIcon(HInstance, 'PERSONS', ImageSize, 32, Icon);
+  FImage := TPathImage.Create(Icon);
+  Result := True;
+end;
+
 { TPersonItem }
+
+procedure TPersonItem.Assign(Item: TPathItem);
+begin
+  inherited;
+  FPersonID := TPersonItem(Item).FPersonID;
+end;
+
+function TPersonItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TPersonItem.Create;
+end;
 
 function TPersonItem.InternalGetParent: TPathItem;
 begin
   Result := TPersonsItem.CreateFromPath(cPersonsPath, PATH_LOAD_NORMAL, 0);
 end;
 
-procedure TPersonItem.ReadFromPerson(Person: TPerson);
+function TPersonItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Person: TPerson;
+begin
+  Person := PersonManager.GetPerson(PersonID);
+  try
+    ReadFromPerson(Person, Options, ImageSize);
+    Result := True;
+  finally
+    F(Person);
+  end;
+end;
+
+procedure TPersonItem.ReadFromPerson(Person: TPerson; Options, ImageSize: Integer);
 var
   Bitmap: TBitmap;
 begin
@@ -189,6 +226,9 @@ begin
   Bitmap := TBitmap.Create;
   try
     Bitmap.Assign(Person.Image);
+    KeepProportions(Bitmap, ImageSize, ImageSize);
+    if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
+      CenterBitmap24To32ImageList(Bitmap, ImageSize);
     FImage := TPathImage.Create(Bitmap);
     Bitmap := nil;
   finally

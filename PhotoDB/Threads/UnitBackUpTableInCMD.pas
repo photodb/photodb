@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SysUtils, UnitDBKernel, Forms, CommonDBSupport, uDBThread,
-  UnitDBDeclare, uConstants, uFileUtils, uTranslate, uSettings;
+  UnitDBDeclare, uConstants, uFileUtils, uTranslate, uSettings, uConfiguration;
 
 type
   BackUpTableInCMD = class(TDBThread)

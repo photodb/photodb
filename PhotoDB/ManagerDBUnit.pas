@@ -14,7 +14,7 @@ uses
   uCDMappingTypes, uConstants, uFileUtils, uDBDrawing, adodb,
   DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo, uGOM,
   uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
-  uSettings, uThreadForm, uDBAdapter, uIconUtils;
+  uSettings, uThreadForm, uDBAdapter, uIconUtils, uConfiguration;
 
 type
   TManagerDB = class(TThreadForm)

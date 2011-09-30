@@ -52,7 +52,7 @@ type
     procedure GroupClick(Sender: TObject);
     procedure FillImageList;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     procedure Execute(Group: TGroup; CloseOwner: Boolean; Owner_: TForm);
@@ -119,51 +119,57 @@ begin
   FCloseOwner := CloseOwner;
   FOwner := Owner_;
   FGroup := GetGroupByGroupCode(Group.GroupCode, True);
-  if FGroup.GroupName = '' then
-  begin
-    MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
-    Exit;
+  try
+    if FGroup.GroupName = '' then
+    begin
+      MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Exit;
+    end;
+    FPrGroup := CopyGroup(FGroup);
+    try
+      GroupNameEdit.Text := FGroup.GroupName;
+      FNewRelatedGroups := FGroup.RelatedGroups;
+      CbInclude.Checked := FGroup.IncludeInQuickList;
+      if FPrGroup.GroupImage <> nil then
+        GroupImage.Picture.Graphic := FPrGroup.GroupImage;
+
+      CommentLabel.Top := Max(GroupImage.Top + GroupImage.Height, GroupNameEdit.Top + GroupNameEdit.Height) + 3;
+      CommentMemo.Top := CommentLabel.Top + CommentLabel.Height + 3;
+      CommentMemo.Text := FPrGroup.GroupComment;
+      CommentMemo.Height := (CommentMemo.Lines.Count + 1) * (Abs(CommentMemo.Font.Height) + 2) + Otstup;
+      KeyWordsLabel.Top := CommentMemo.Top + CommentMemo.Height + Otstup;
+      KeyWordsMemo.Top := KeyWordsLabel.Top + KeyWordsLabel.Height + Otstup;
+      KeyWordsMemo.Text := FPrGroup.GroupKeyWords;
+      CbAddKeywords.Top := KeyWordsMemo.Top + KeyWordsMemo.Height + Otstup;
+      CbAddKeywords.Checked := FPrGroup.AutoAddKeyWords;
+
+      Label3.Top := CbAddKeywords.Top + CbAddKeywords.Height + Otstup;
+      WllGroups.Top := Label3.Top + Label3.Height + Otstup;
+      CbInclude.Top := WllGroups.Top + WllGroups.Height + Otstup;
+
+      DateLabel.Top := CbInclude.Top + CbInclude.Height + Otstup;
+      DateEdit.Top := DateLabel.Top + DateLabel.Height + Otstupa;
+      AccessLabel.Top := DateEdit.Top + DateEdit.Height + Otstupa;
+      AccessEdit.Top := AccessLabel.Top + AccessLabel.Height + Otstup;
+      BtnOk.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
+      ClientHeight := BtnOk.Top + BtnOk.Height + Otstup;
+      DateTimeToSystemTime(FPrGroup.GroupDate, TempSysTime);
+      GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM yyyy ', @FineDate, 255);
+
+      DateEdit.Text := Format(L('Created %s'), [FineDate]);
+      if FPrGroup.GroupAccess = GROUP_ACCESS_COMMON then
+        AccessEdit.Text := L('Public group');
+      if FPrGroup.GroupAccess = GROUP_ACCESS_PRIVATE then
+        AccessEdit.Text := L('Private group');
+
+      ReloadGroups;
+      ShowModal;
+    finally
+      FreeGroup(FPrGroup);
+    end;
+  finally
+    FreeGroup(FGroup);
   end;
-  FPrGroup := CopyGroup(FGroup);
-  GroupNameEdit.Text := FGroup.GroupName;
-  FNewRelatedGroups := FGroup.RelatedGroups;
-  CbInclude.Checked := FGroup.IncludeInQuickList;
-  if FPrGroup.GroupImage <> nil then
-    GroupImage.Picture.Graphic := FPrGroup.GroupImage;
-
-  CommentLabel.Top := Max(GroupImage.Top + GroupImage.Height, GroupNameEdit.Top + GroupNameEdit.Height) + 3;
-  CommentMemo.Top := CommentLabel.Top + CommentLabel.Height + 3;
-  CommentMemo.Text := FPrGroup.GroupComment;
-  CommentMemo.Height := (CommentMemo.Lines.Count + 1) * (Abs(CommentMemo.Font.Height) + 2) + Otstup;
-  KeyWordsLabel.Top := CommentMemo.Top + CommentMemo.Height + Otstup;
-  KeyWordsMemo.Top := KeyWordsLabel.Top + KeyWordsLabel.Height + Otstup;
-  KeyWordsMemo.Text := FPrGroup.GroupKeyWords;
-  CbAddKeywords.Top := KeyWordsMemo.Top + KeyWordsMemo.Height + Otstup;
-  CbAddKeywords.Checked := FPrGroup.AutoAddKeyWords;
-
-  Label3.Top := CbAddKeywords.Top + CbAddKeywords.Height + Otstup;
-  WllGroups.Top := Label3.Top + Label3.Height + Otstup;
-  CbInclude.Top := WllGroups.Top + WllGroups.Height + Otstup;
-
-  DateLabel.Top := CbInclude.Top + CbInclude.Height + Otstup;
-  DateEdit.Top := DateLabel.Top + DateLabel.Height + Otstupa;
-  AccessLabel.Top := DateEdit.Top + DateEdit.Height + Otstupa;
-  AccessEdit.Top := AccessLabel.Top + AccessLabel.Height + Otstup;
-  BtnOk.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
-  ClientHeight := BtnOk.Top + BtnOk.Height + Otstup;
-  DateTimeToSystemTime(FPrGroup.GroupDate, TempSysTime);
-  GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM yyyy ', @FineDate, 255);
-
-  DateEdit.Text := Format(L('Created %s'), [FineDate]);
-  if FPrGroup.GroupAccess = GROUP_ACCESS_COMMON then
-    AccessEdit.Text := L('Public group');
-  if FPrGroup.GroupAccess = GROUP_ACCESS_PRIVATE then
-    AccessEdit.Text := L('Private group');
-
-  ReloadGroups;
-  ShowModal;
-  FreeGroup(FGroup);
-  FreeGroup(FPrGroup);
 end;
 
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);

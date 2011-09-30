@@ -6,7 +6,7 @@ uses
   Windows, Classes, Graphics, uDBThread, uThreadForm, uFaceDetection, uMemory,
   xmldom, ActiveX, SysUtils, uLogger, win32crc, uFileUtils, uConstants, SyncObjs,
   uRuntime, uGraphicUtils, uGOM, uInterfaces, Math, uBitmapUtils, uSettings,
-  uDateUtils, uPeopleSupport, u2DUtils;
+  uDateUtils, uPeopleSupport, u2DUtils, uConfiguration;
 
 const
   FACE_DETECTION_OK           = 0;

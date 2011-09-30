@@ -1242,7 +1242,7 @@ begin
         if FileExistsSafe(FFilesInfo[I].FileName) then
           FileList.Add(FFilesInfo[I].FileName);
     end;
-    Copy_Move(True, FileList);
+    Copy_Move(Application.Handle, True, FileList);
   finally
     FileList.Free;
   end;

@@ -58,6 +58,7 @@ procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightTo
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 
 procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
+procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
 
 implementation
 
@@ -2002,6 +2003,22 @@ begin
     finally
       F(B);
     end;
+  end;
+end;
+
+procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
+var
+  B: TBitmap;
+begin
+  B := TBitmap.Create;
+  try
+    B.PixelFormat := pf32Bit;
+    B.SetSize(ImageSize, ImageSize);
+    FillTransparentColor(B, clWhite);
+    DrawImageEx24To32(B, Bitmap, B.Width div 2 - Bitmap.Width div 2, B.Height div 2 - Bitmap.Height div 2);
+    Exchange(B, Bitmap);
+  finally
+    F(B);
   end;
 end;
 

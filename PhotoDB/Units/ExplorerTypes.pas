@@ -186,7 +186,7 @@ type
     FPathList: TArExplorerPath;
     FSender: TPopupMenu;
     FIcons: TList;
-    FIconParam: HIcon;
+    FImageParam: TPathImage;
     FPath: TExplorerPath;
     procedure LoadIcon;
     procedure UpdateMenu;
@@ -769,11 +769,10 @@ procedure TLoadPathList.Execute;
 var
   I: Integer;
   FileInfo: SHFILEINFO;
-  Icon: HIcon;
+  Image: TPathImage;
 begin
   inherited;
   FreeOnTerminate := True;
-
   FIcons := TList.Create;
   try
     for I := 0 to Length(FPathList) - 1 do
@@ -784,14 +783,14 @@ begin
         or (FPath.PType = EXPLORER_ITEM_SHARE) then
       begin
         SHGetFileInfo(PChar(FPath.Path), 0, FileInfo, SizeOf(FileInfo), SHGFI_ICON or SHGFI_SMALLICON);
-        Icon := FileInfo.hIcon;
+        Image := TPathImage.Create(FileInfo.hIcon);
       end else
       begin
         SynchronizeEx(LoadIcon);
-        Icon := FIconParam;
+        Image := FImageParam;
       end;
 
-      FIcons.Add(Pointer(Icon));
+      FIcons.Add(Pointer(Image));
     end;
 
     SynchronizeEx(UpdateMenu);
@@ -807,24 +806,17 @@ end;
 
 procedure TLoadPathList.LoadIcon;
 var
-  P: TPathPart;
+  P: TPathItem;
 begin
-  P := TPathPart.Create(FPath.Path);
-  if FPath.PType = EXPLORER_ITEM_MYCOMPUTER then
-    P.ID := PATH_MY_COMPUTER
-  else if FPath.PType = EXPLORER_ITEM_NETWORK then
-    P.ID := PATH_NETWORKS
-  else if FPath.PType = EXPLORER_ITEM_WORKGROUP then
-    P.ID := PATH_WORKGROUP
-  else if FPath.PType = EXPLORER_ITEM_COMPUTER then
-    P.ID := PATH_SMB_PC
-  else if FPath.PType = EXPLORER_ITEM_SEARCH then
-    P.ID := PATH_LOADING;
-
+  FImageParam := nil;
+  P :=  PathProviderManager.CreatePathItem(FPath.Path);
   try
-    TExplorerForm(FOwner).PePathGetSystemIcon(nil, P);
-    FIconParam := P.Icon;
-    P.Icon := 0;
+    if P <> nil then
+    begin
+      FImageParam := P.Image;
+      if P.Image <> nil then
+        P.Image.DetachImage;
+    end;
   finally
     F(P);
   end;

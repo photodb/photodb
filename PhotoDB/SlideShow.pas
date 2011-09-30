@@ -2358,7 +2358,7 @@ begin
   FileList := TStringList.Create;
   try
     FileList.Add(Item.FileName);
-    Copy_Move(True, FileList);
+    Copy_Move(Application.Handle, True, FileList);
   finally
      F(FileList);
   end;

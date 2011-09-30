@@ -3,7 +3,7 @@ unit uLogger;
 interface
 
 uses
-  Windows, Classes, SysUtils, uFileUtils, SyncObjs, uMemory;
+  Windows, Classes, SysUtils, uConfiguration, SyncObjs, uMemory;
 
 {$DEFINE _EVENTLOG}
 

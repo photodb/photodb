@@ -394,7 +394,7 @@ end;
 
 procedure TDBPopupMenu.CopyItemPopUpMenu_(Sender: TObject);
 var
-  I: integer;
+  I: Integer;
   FileList: TStrings;
   EventInfo: TEventValues;
 begin
@@ -405,7 +405,7 @@ begin
         if FileExistsSafe(FInfo[I].FileName) then
           FileList.Add(FInfo[I].FileName);
 
-    Copy_Move(True, FileList);
+    Copy_Move(Application.Handle, True, FileList);
 
     DBKernel.DoIDEvent(FOwner, 0, [EventID_Param_CopyPaste], EventInfo);
   finally

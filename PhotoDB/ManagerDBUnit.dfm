@@ -250,8 +250,8 @@ object ManagerDB: TManagerDB
       object PackTabelLink: TWebLink
         Left = 8
         Top = 8
-        Width = 56
-        Height = 13
+        Width = 72
+        Height = 16
         Cursor = crHandPoint
         Text = 'Pack Table'
         OnClick = PackTabelLinkClick
@@ -269,8 +269,8 @@ object ManagerDB: TManagerDB
       object ExportTableLink: TWebLink
         Left = 8
         Top = 28
-        Width = 66
-        Height = 13
+        Width = 82
+        Height = 16
         Cursor = crHandPoint
         Text = 'Export Table'
         OnClick = ExportTableLinkClick
@@ -288,8 +288,8 @@ object ManagerDB: TManagerDB
       object ImportTableLink: TWebLink
         Left = 8
         Top = 48
-        Width = 66
-        Height = 13
+        Width = 82
+        Height = 16
         Cursor = crHandPoint
         Text = 'Import Table'
         OnClick = ImportTableLinkClick
@@ -307,8 +307,8 @@ object ManagerDB: TManagerDB
       object RecreateIDExLink: TWebLink
         Left = 8
         Top = 68
-        Width = 75
-        Height = 13
+        Width = 91
+        Height = 16
         Cursor = crHandPoint
         Text = 'Recreate IDEx'
         OnClick = RecreateIDExLinkClick
@@ -326,8 +326,8 @@ object ManagerDB: TManagerDB
       object ScanforBadLinksLink: TWebLink
         Left = 8
         Top = 88
-        Width = 92
-        Height = 13
+        Width = 108
+        Height = 16
         Cursor = crHandPoint
         Text = 'Scan for Bad Links'
         OnClick = ScanforBadLinksLinkClick
@@ -345,8 +345,8 @@ object ManagerDB: TManagerDB
       object BackUpDBLink: TWebLink
         Left = 8
         Top = 108
-        Width = 56
-        Height = 13
+        Width = 72
+        Height = 16
         Cursor = crHandPoint
         Text = 'BackUp DB'
         OnClick = BackUpDBLinkClick
@@ -364,8 +364,8 @@ object ManagerDB: TManagerDB
       object CleaningLink: TWebLink
         Left = 8
         Top = 128
-        Width = 46
-        Height = 13
+        Width = 62
+        Height = 16
         Cursor = crHandPoint
         Text = 'Cleaning'
         OnClick = CleaningLinkClick
@@ -404,8 +404,8 @@ object ManagerDB: TManagerDB
       object DublicatesLink: TWebLink
         Left = 8
         Top = 168
-        Width = 106
-        Height = 13
+        Width = 122
+        Height = 16
         Cursor = crHandPoint
         Text = 'Optimizing Dublicates'
         OnClick = DublicatesLinkClick
@@ -423,8 +423,8 @@ object ManagerDB: TManagerDB
       object ConvertLink: TWebLink
         Left = 8
         Top = 148
-        Width = 60
-        Height = 13
+        Width = 76
+        Height = 16
         Cursor = crHandPoint
         Text = 'Convert DB'
         OnClick = ConvertLinkClick
@@ -442,8 +442,8 @@ object ManagerDB: TManagerDB
       object ChangePathLink: TWebLink
         Left = 8
         Top = 188
-        Width = 190
-        Height = 13
+        Width = 206
+        Height = 16
         Cursor = crHandPoint
         Text = 'Change Path in DB (if files was moved)'
         OnClick = ChangePathLinkClick

@@ -43,6 +43,7 @@ uses
   ExtDlgs,
   ToolWin,
   Rating,
+  uFileUtils,
   Searching in 'Searching.pas' {SearchForm},
   SlideShow in 'SlideShow.pas' {Viewer},
   Options in 'Options.pas' {OptionsForm},
@@ -210,14 +211,12 @@ uses
   VistaFileDialogs in 'Units\VistaFileDialogs.pas',
   UnitDBFileDialogs in 'Units\UnitDBFileDialogs.pas',
   UnitSendMessageWithTimeoutThread in 'Units\UnitSendMessageWithTimeoutThread.pas',
-  VRSIShortCuts in 'Units\VRSIShortCuts.pas',
   UnitCDMappingSupport in 'Units\UnitCDMappingSupport.pas',
   uThreadForm in 'Units\uThreadForm.pas',
   uThreadEx in 'Threads\uThreadEx.pas',
   uAssociatedIcons in 'Threads\uAssociatedIcons.pas',
   uLogger in 'Units\uLogger.pas',
   uConstants in 'Units\uConstants.pas',
-  uFileUtils in 'Units\uFileUtils.pas',
   uScript in 'Units\uScript.pas',
   uStringUtils in 'Units\uStringUtils.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
@@ -279,7 +278,6 @@ uses
   uAppUtils in 'Units\uAppUtils.pas',
   uEditorTypes in 'ImageEditor\uEditorTypes.pas',
   uShellIntegration in 'Units\uShellIntegration.pas',
-  uSysUtils in 'Units\uSysUtils.pas',
   uDBTypes in 'Units\uDBTypes.pas',
   uActivationUtils in 'Units\uActivationUtils.pas',
   uDBFileTypes in 'Units\uDBFileTypes.pas',
@@ -352,13 +350,11 @@ uses
   uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson},
   uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
   UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas',
-  uPathProviders in 'Units\uPathProviders.pas',
   uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
-  uExplorerMyComputerProvider in 'Units\uExplorerMyComputerProvider.pas',
   uExplorerNetworkProviders in 'Units\uExplorerNetworkProviders.pas',
   uExplorerGroupsProvider in 'Units\uExplorerGroupsProvider.pas',
   uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas',
-  uExplorerFSProviders in 'Units\uExplorerFSProviders.pas';
+  uConfiguration in 'Units\uConfiguration.pas';
 
 {$R *.res}
 

@@ -401,55 +401,38 @@ begin
   Result := StringReplace(APath, '%1', AFile, [RfReplaceAll, RfIgnoreCase]);
 end;
 
-procedure CopyFileSynch(S,D : string);
+procedure CopyFileSynch(S,D: string);
 begin
   Windows.CopyFile(PChar(S),PChar(D),true);
 end;
 
-procedure CopyFile(aFile : string);
+procedure CopyFile(aFile: string);
 var
   AFiles: TStrings;
 begin
   AFiles := TStringList.Create;
   try
     AFiles.Add(AFile);
-    Copy_Move(True, AFiles);
+    Copy_Move(Application.Handle, True, AFiles);
   finally
     F(AFiles);
   end;
 end;
 
-procedure CutFile(aFile : string);
+procedure CutFile(aFile: string);
 var
   AFiles: TStrings;
 begin
   AFiles := TStringList.Create;
   try
     AFiles.Add(AFile);
-    Copy_Move(False, AFiles);
+    Copy_Move(Application.Handle, False, AFiles);
   finally
     F(AFiles);
   end;
 end;
 
-procedure CopyFiles(Files : TArrayOfString);
-var
-  I: Integer;
-  AFiles: TStrings;
-begin
-  AFiles := TStringList.Create;
-  try
-    for I := 0 to Length(Files) - 1 do
-    begin
-      AFiles.Add(Files[I])
-    end;
-    Copy_Move(True, AFiles);
-  finally
-    F(AFiles);
-  end;
-end;
-
-procedure CutFiles(Files : TArrayOfString);
+procedure CopyFiles(Files: TArrayOfString);
 var
   I: Integer;
   AFiles: TStrings;
@@ -459,16 +442,32 @@ begin
     for I := 0 to Length(Files) - 1 do
       AFiles.Add(Files[I]);
 
-    Copy_Move(False, AFiles);
+    Copy_Move(Application.Handle, True, AFiles);
   finally
     F(AFiles);
   end;
 end;
 
-function LoadFilesFromClipBoardA : TArrayOfString;
+procedure CutFiles(Files: TArrayOfString);
 var
-  I, Effects : Integer;
-  Files : TStrings;
+  I: Integer;
+  AFiles: TStrings;
+begin
+  AFiles := TStringList.Create;
+  try
+    for I := 0 to Length(Files) - 1 do
+      AFiles.Add(Files[I]);
+
+    Copy_Move(Application.Handle,False, AFiles);
+  finally
+    F(AFiles);
+  end;
+end;
+
+function LoadFilesFromClipBoardA: TArrayOfString;
+var
+  I, Effects: Integer;
+  Files: TStrings;
 begin
   Files := TStringList.Create;
   try

@@ -868,6 +868,11 @@ begin
     SelectDB(Form, DbName);
 end;
 
+function GetProgramPath: string;
+begin
+  Result := Application.ExeName;
+end;
+
 Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);
 begin
  //Crypt

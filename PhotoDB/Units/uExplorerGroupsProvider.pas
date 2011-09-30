@@ -12,7 +12,9 @@ type
   TGroupsItem = class(TPathItem)
   protected
     function InternalGetParent: TPathItem; override;
+    function InternalCreateNewInstance: TPathItem; override;
   public
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
   end;
 
@@ -20,7 +22,9 @@ type
   protected
     function InternalGetParent: TPathItem; override;
   public
-    procedure ReadFromGroup(Group: TGroup);
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
+    procedure ReadFromGroup(Group: TGroup; Options, ImageSize: Integer);
+    function InternalCreateNewInstance: TPathItem; override;
   end;
 
 type
@@ -151,8 +155,8 @@ begin
     try
       for I := 0 to Length(Groups) - 1 do
       begin
-        G := TGroupItem.CreateFromPath(cGroupsPath + '\' + Groups[I].GroupName, PATH_LOAD_NO_IMAGE, 0);
-        G.ReadFromGroup(Groups[I]);
+        G := TGroupItem.CreateFromPath(cGroupsPath + '\' + Groups[I].GroupName, Options, ImageSize);
+        G.ReadFromGroup(Groups[I], Options, ImageSize);
         List.Add(G);
 
         if List.Count mod PacketSize = 0 then
@@ -191,19 +195,18 @@ end;
 
 { TGroupItem }
 
-constructor TGroupsItem.CreateFromPath(APath: string; Options,
-  ImageSize: Integer);
-var
-  Icon: TIcon;
+constructor TGroupsItem.CreateFromPath(APath: string; Options, ImageSize: Integer);
 begin
   inherited;
   FPath := cGroupsPath;
   FDisplayName := TA('Groups', 'Path');
   if Options and PATH_LOAD_NO_IMAGE = 0 then
-  begin
-    FindIcon(HInstance, 'GROUPS', ImageSize, 32, Icon);
-    FImage := TPathImage.Create(Icon);
-  end;
+    LoadImage(Options, ImageSize);
+end;
+
+function TGroupsItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TGroupsItem.Create;
 end;
 
 function TGroupsItem.InternalGetParent: TPathItem;
@@ -211,14 +214,42 @@ begin
   Result := THomeItem.Create;
 end;
 
+function TGroupsItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Icon: TIcon;
+begin
+  F(FImage);
+  FindIcon(HInstance, 'GROUPS', ImageSize, 32, Icon);
+  FImage := TPathImage.Create(Icon);
+  Result := True;
+end;
+
 { TGroupItem }
+
+function TGroupItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TGroupItem.Create;
+end;
 
 function TGroupItem.InternalGetParent: TPathItem;
 begin
   Result := TGroupsItem.CreateFromPath(cGroupsPath, PATH_LOAD_NORMAL, 0);
 end;
 
-procedure TGroupItem.ReadFromGroup(Group: TGroup);
+function TGroupItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Group: TGroup;
+begin
+  Group := GetGroupByGroupName(FDisplayName, True);
+  try
+    ReadFromGroup(Group, Options, ImageSize);
+    Result := True;
+  finally
+    FreeGroup(Group);
+  end;
+end;
+
+procedure TGroupItem.ReadFromGroup(Group: TGroup; Options, ImageSize: Integer);
 var
   Bitmap: TBitmap;
 begin
@@ -226,6 +257,10 @@ begin
   Bitmap := TBitmap.Create;
   try
     Bitmap.Assign(Group.GroupImage);
+    KeepProportions(Bitmap, ImageSize, ImageSize);
+    if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
+      CenterBitmap24To32ImageList(Bitmap, ImageSize);
+    F(FImage);
     FImage := TPathImage.Create(Bitmap);
     Bitmap := nil;
   finally

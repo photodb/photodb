@@ -4,7 +4,8 @@ interface
 
 uses
   Classes, SysUtils, uDBThread, uMemory, uFileUtils, uAssociations,
-  uShellIntegration, uConstants, uDBForm, uDBTypes, Windows, uTranslate;
+  uShellIntegration, uConstants, uDBForm, uDBTypes, Windows, uTranslate,
+  Dolphin_DB;
 
 type
   TGetPhotosThreadOptions = record

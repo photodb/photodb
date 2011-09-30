@@ -21,7 +21,8 @@ uses
   uFileUtils, uDBPopupMenuInfo, uDBDrawing, uW7TaskBar, uMemory, LoadingSign,
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
   uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit,
-  uPathProviders;
+  uPathProviders, uExplorerMyComputerProvider, uExplorerFSProviders,
+  uExplorerNetworkProviders, uExplorerPersonsProvider, uExplorerGroupsProvider;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -503,8 +504,8 @@ type
     procedure HideLoadingSign;
     procedure AsEXIF1Click(Sender: TObject);
     procedure PePathChange(Sender: TObject);
-    procedure PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
-    procedure PePathGetSystemIcon(Sender: TPathEditor; Path: TPathPart);
+    procedure PePathUpdateItem(Sender: TObject; PathPart: TPathItem);
+    procedure PePathGetSystemIcon(Sender: TPathEditor; IconType: string; var Image: TPathImage);
     procedure SbDoSearchClick(Sender: TObject);
     procedure InitSearch;
     procedure LoadSearchMode(SearchMode: Integer);
@@ -517,14 +518,15 @@ type
     procedure WedSearchKeyPress(Sender: TObject; var Key: Char);
     procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
     procedure SearchfileswithEXIF1Click(Sender: TObject);
-    procedure PePathParsePath(Sender: TObject; PathParts: TPathParts);
-    function GetPathPartName(PP: TPathPart): string;
+    procedure PePathParsePath(Sender: TObject; PathParts: TPathItemCollection);
+    function GetPathPartName(PP: TPathItem): string;
     function MakePathName(Path: TExplorerPath): string;
     procedure slSearchCanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure PopupMenuForwardPopup(Sender: TObject);
     procedure PopupMenuBackPopup(Sender: TObject);
     procedure EncryptLinkClick(Sender: TObject);
+    procedure PePathGetItemIconEvent(Sender: TPathEditor; Item: TPathItem);
    private
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
@@ -706,22 +708,6 @@ begin
     if (Result[I] = ':') or (Result[I] = '\') then
       Result[I] := '_';
   end;
-end;
-
-function IsNetworkServer(S: string): Boolean;
-begin
-  Result := False;
-  S := ExcludeTrailingPathDelimiter(S);
-  if (Length(S) > 2) and (Copy(S, 1, 2) = '\\') and (Copy(S, 3, 1) <> '\') and (PosEx('\', S, 3) = 0) then
-    Result := True;
-end;
-
-function IsNetworkShare(S: string): Boolean;
-begin
-  Result := False;
-  S := ExcludeTrailingPathDelimiter(S);
-  if (Length(S) > 2) and (Copy(S, 1, 2) = '\\') and (Copy(S, 3, 1) <> '\') and (PosEx('\', S, PosEx('\', S, 3) + 1) = 0) then
-    Result := True;
 end;
 
 function TExplorerForm.GetPathDescription(Path: string; FileType: Integer): string;
@@ -1550,7 +1536,7 @@ begin
       FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
     end;
   if FileList.Count > 0 then
-    Copy_Move(True, FileList);
+    Copy_Move(Application.Handle, True, FileList);
   finally
       FileList.Free;
   end;
@@ -2552,7 +2538,7 @@ begin
   FileList := TStringList.Create;
   try
     FileList.Add(GetCurrentPath);
-    Copy_Move(True, FileList);
+    Copy_Move(Application.Handle, True, FileList);
   finally
     FileList.Free;
   end;
@@ -3312,7 +3298,7 @@ begin
   FileList := TStringList.Create;
   try
     FileList.Add(GetCurrentPath);
-    Copy_Move(False, FileList);
+    Copy_Move(Application.Handle, False, FileList);
   finally
     F(FileList);
   end;
@@ -3398,7 +3384,7 @@ begin
       Index := ItemIndexToMenuIndex(I);
       FileList.Add(ProcessPath(fFilesInfo[Index].FileName));
     end;
-    Copy_Move(False, FileList);
+    Copy_Move(Application.Handle, False, FileList);
   finally
     FileList.Free;
   end;
@@ -3628,8 +3614,8 @@ begin
       if S[I] = '&' then
         Insert('&', S, I);
 
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
-      S := Format(L('Search for "%s"'), [PePath.PathEx.Argument]);
+{    if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
+      S := Format(L('Search for "%s"'), [PePath.PathEx.Argument]);    }
 
     NameLabel.Caption := S;
     NameLabel.Constraints.MaxWidth := ScrollBox1.Width - ScrollBox1.Left - otstup - ScrollBox1.VertScrollBar.ButtonSize;
@@ -4344,18 +4330,15 @@ var
   S, S1: string;
   I: integer;
   oldMode: Cardinal;
-  P: TPathPart;
+  P: TPathItem;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    if Explorer then
-      EventLog('SetNewPath "' + Path + '" <Explorer>')
-    else
-      EventLog('SetNewPath "' + Path + '"');
+    EventLog('SetNewPath "' + Path + '"' + IIF(Explorer, ' <Explorer>', ''));
 
     if IsPathEx(Path) then
     begin
-      P := TPathPart.Create(Path);
+      {P := TPathPart.Create(Path);
       try
         if P.ID = PATH_EX then
         begin
@@ -4364,7 +4347,7 @@ begin
         end;
       finally
         F(P);
-      end;
+      end; }
     end;
 
     S := ExcludeTrailingBackslash(Path);
@@ -4869,98 +4852,105 @@ end;
 
 procedure TExplorerForm.PePathChange(Sender: TObject);
 var
-  P: TPathPart;
+  P: TPathItem;
 begin
   P := PePath.CurrentPathEx;
 
-  if (P.ID = '') or (P.ID = PATH_SMB_SHARE) then
+  if (P is TDirectoryItem) or (P is TDriveItem) or (P is TShareItem)  then
     SetStringPath(PePath.Path, False)
-  else if P.ID = PATH_SMB_PC then
+  else if P is TComputerItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_COMPUTER), False)
-  else if P.ID = PATH_MY_COMPUTER then
+  else if P is THomeItem then
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False)
-  else if P.ID = PATH_NETWORKS then
+  else if P is TNetworkItem then
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_NETWORK), False)
-  else if P.ID = PATH_WORKGROUP then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_WORKGROUP), False);
+  else if P is TWorkgroupItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_WORKGROUP), False)
+  else if P is TPersonsItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON_LIST), False)
+  else if P is TGroupsItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP_LIST), False);
 end;
 
-procedure TExplorerForm.PePathGetSystemIcon(Sender: TPathEditor;
-  Path: TPathPart);
+procedure TExplorerForm.PePathGetItemIconEvent(Sender: TPathEditor;
+  Item: TPathItem);
+var
+  Ico: TIcon;
+begin
+  if Item is THomeItem then
+  begin
+    FindIcon(HInstance, 'COMPUTER', 16, 32, Ico);
+    Item.Image := TPathImage.Create(Ico);
+  end;
+end;
+
+procedure TExplorerForm.PePathGetSystemIcon(Sender: TPathEditor; IconType: string; var Image: TPathImage);
 var
   Ico: TIcon;
 begin
   Ico := nil;
   try
-    if Path.ID = PATH_MY_COMPUTER then
-      FindIcon(HInstance, 'COMPUTER', 16, 32, Ico)
-    else if Path.ID = PATH_NETWORKS then
-      FindIcon(HInstance, 'NETWORK', 16, 32, Ico)
-    else if Path.ID = PATH_WORKGROUP then
-      FindIcon(HInstance, 'WORKGROUP', 16, 32, Ico)
-    else if Path.ID = PATH_SMB_PC then
-      FindIcon(HInstance, 'COMPUTER', 16, 32, Ico)
-    else if Path.ID = PATH_EMPTY then
+    if IconType = PATH_EMPTY then
       FindIcon(HInstance, 'DIRECTORY', 16, 32, Ico)
-    else if Path.ID = PATH_LOADING then
+    else if IconType = PATH_LOADING then
       FindIcon(HInstance, 'SEARCH', 16, 32, Ico)
-    else if Path.ID = PATH_RELOAD then
+    else if IconType = PATH_RELOAD then
       FindIcon(HInstance, 'REFRESH_THUM', 16, 32, Ico)
-    else if Path.ID = PATH_STOP then
+    else if IconType = PATH_STOP then
       FindIcon(HInstance, 'EXPLORER_BREAK_SMALL', 16, 32, Ico);
 
     if Ico <> nil then
-      Path.Icon := CopyIcon(Ico.Handle);
+      Image := TPathImage.Create(Ico.Handle);
   finally
     F(Ico);
   end;
 end;
 
-function TExplorerForm.GetPathPartName(PP: TPathPart): string;
+function TExplorerForm.GetPathPartName(PP: TPathItem): string;
 begin
   Result := '';
-  if PP.Namespace = 'db' then
+{  if PP.Namespace = 'db' then
     Result := Format(L('Search in collection for: "%s"'), [PP.Argument]) + '...'
   else if PP.Namespace = 'images' then
     Result := Format(L('Search files (with EXIF) for: "%s"'), [PP.Argument]) + '...'
   else if PP.Namespace = 'files' then
-    Result := Format(L('Search files for: "%s"'), [PP.Argument]) + '...';
+    Result := Format(L('Search files for: "%s"'), [PP.Argument]) + '...';   }
 end;
 
 function TExplorerForm.MakePathName(Path: TExplorerPath): string;
 var
-  PP: TPathPart;
+  PP: TPathItem;
 begin
   if (Path.PType = EXPLORER_ITEM_DRIVE) or (Path.PType = EXPLORER_ITEM_MYCOMPUTER) or (Path.PType = EXPLORER_ITEM_NETWORK) or (Path.PType = EXPLORER_ITEM_WORKGROUP) then
     Result := Path.Path
   else if (Path.PType = EXPLORER_ITEM_SEARCH) then
   begin
-    PP := TPathPart.Create(Path.Path);
+    {PP := TPathPart.Create(Path.Path);
     try
       Result := GetPathPartName(PP);
     finally
       F(PP);
-    end;
+    end;}
   end else
     Result := ExtractFileName(ExcludeTrailingPathDelimiter(Path.Path));
 end;
 
-procedure TExplorerForm.PePathParsePath(Sender: TObject; PathParts: TPathParts);
+procedure TExplorerForm.PePathParsePath(Sender: TObject; PathParts: TPathItemCollection);
 var
-  PP: TPathPart;
+  PP: TPathItem;
 begin
   if PathParts.Count > 1 then
   begin
     PP := PathParts[PathParts.Count - 1];
-    if PP.ID = PATH_EX then
-      PP.Name := GetPathPartName(PP);
+    //if PP.ID = PATH_EX then
+    //  PP.DisplayName := GetPathPartName(PP);
   end;
 end;
 
-procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathPart);
+procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathItem);
 begin
-  if PathPart.ID = PATH_MY_COMPUTER then
-    PathPart.Name := MyComputer;
+  //if PathPart.ID = PATH_MY_COMPUTER then
+  //  PathPart.Name := MyComputer;
 end;
 
 procedure TExplorerForm.ShowLoadingSign;
@@ -5119,7 +5109,6 @@ begin
     ToolBar1.ShowCaptions := True;
     ToolBar1.AutoSize := True;
 
-    PePath.NetworksText := L('Network');
     PePath.LoadingText := L('Loading...');
 
     //search
@@ -5211,7 +5200,7 @@ var
   UpdaterInfo: TUpdaterInfo;
   I, ThreadType: Integer;
   Info: TExplorerViewInfo;
-  P: TPathPart;
+  P: TPathItem;
 begin
   HideFilter(False);
   RefreshIDList.Clear;
@@ -5267,39 +5256,51 @@ begin
   if WPath.PType = EXPLORER_ITEM_NETWORK then
   begin
     Caption := Path;
-    PePath.SetPathEx(PATH_NETWORKS, L('Network'));
+    PePath.SetPathEx(TNetworkItem, cNetworkPath);
     ThreadType := THREAD_TYPE_NETWORK;
   end;
   if WPath.PType = EXPLORER_ITEM_WORKGROUP then
   begin
     Caption := Path;
-    PePath.SetPathEx(PATH_WORKGROUP, Path);
+    PePath.SetPathEx(TWorkGroupItem, Path);
     ThreadType := THREAD_TYPE_WORKGROUP;
   end;
   if WPath.PType = EXPLORER_ITEM_COMPUTER then
   begin
     Caption := Path;
     PePath.Path := Path;
-    PePath.SetPathEx(PATH_SMB_PC, Path);
+    PePath.SetPathEx(TComputerItem, Path);
     ThreadType := THREAD_TYPE_COMPUTER;
   end;
   if WPath.PType = EXPLORER_ITEM_PERSON_LIST then
   begin
     Caption := Path;
-    //TODO: PePath.SetPathEx(PATH_PERSON_LIST, Path);
+    PePath.SetPathEx(TPersonsItem, Path);
     ThreadType := THREAD_TYPE_PERSONS;
   end;
+ { if WPath.PType = EXPLORER_ITEM_PERSON then
+  begin
+    Caption := Path;
+    PePath.SetPathEx(TPersonItem, Path);
+    ThreadType := THREAD_TYPE_PERSON;
+  end; }
   if WPath.PType = EXPLORER_ITEM_GROUP_LIST then
   begin
     Caption := Path;
-    //TODO: PePath.SetPathEx(PATH_GROUP_LIST, Path);
+    PePath.SetPathEx(TGroupsItem, Path);
     ThreadType := THREAD_TYPE_GROUPS;
   end;
+ { if WPath.PType = EXPLORER_ITEM_GROUP then
+  begin
+    Caption := Path;
+    PePath.SetPathEx(TGroupItem, Path);
+    ThreadType := THREAD_TYPE_GROUP;
+  end; }
 
   S := Path;
   FCurrentPath := Path;
 
-  if WPath.PType = EXPLORER_ITEM_SEARCH then
+  {if WPath.PType = EXPLORER_ITEM_SEARCH then
   begin
     P := TPathPart.Create(WPath.Path);
     try
@@ -5332,7 +5333,7 @@ begin
     finally
       F(P);
     end;
-  end;
+  end; }
 
   NewFormState;
   FCurrentTypePath := WPath.PType;
@@ -5909,7 +5910,7 @@ begin
   end;
   if (AnsiLowerCase(S) = AnsiLowerCase(L('Network'))) then
   begin
-    PePath.SetPathEx(PATH_NETWORKS, L('Network'));
+    //PePath.SetPathEx(PATH_NETWORKS, L('Network'));
     SetNewPathW(ExplorerPath(L('Network'), EXPLORER_ITEM_NETWORK), False);
     Exit;
   end;
@@ -6803,24 +6804,24 @@ var
   I: Integer;
   MI: TMenuItem;
   Ico: TIcon;
-  Icon: HIcon;
+  Image: TPathImage;
 begin
   FHistoryPathList := Copy(PathList);
 
   for I := 0 to Length(PathList) - 1 do
   begin
-    Icon := HIcon(Images[I]);
-    if Icon = 0 then
+    Image := TPathImage(Images[I]);
+    if Image = nil then
     begin
       Ico := nil;
       try
         FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
-        Icon := CopyIcon(Ico.Handle);
+        Image := TPathImage.Create(CopyIcon(Ico.Handle));
       finally
         F(Ico);
       end;
     end;
-    ImageList_ReplaceIcon(ImPathDropDownMenu.Handle, -1, Icon);
+    Image.AddToImageList(ImPathDropDownMenu);
     MI := TMenuItem.Create(Menu);
     MI.Caption := MakePathName(PathList[I]);
     MI.OnClick := SetNewHistoryPath;
