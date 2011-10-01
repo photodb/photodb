@@ -18,11 +18,20 @@ function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer; overloa
 function PosExW(const SubStr, S: string; Offset : Integer = 1): Integer; overload;
 function Right(Str: string; P: Integer): string;
 function Mid(Str: string; S, E: Integer): string;
+function Left(Str: string; P: Integer): string;
 
 var
   _MaxSearchPos : Integer;
 
 implementation
+
+function Left(Str: string; P: Integer): string;
+begin
+  if P > Length(Str) then
+    Result := Str
+  else
+    Result := Copy(Str, 1, P);
+end;
 
 function Right(Str: string; P: Integer): string;
 begin

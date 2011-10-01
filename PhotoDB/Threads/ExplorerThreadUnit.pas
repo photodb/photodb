@@ -15,7 +15,8 @@ uses
   uMultiCPUThreadManager, uPrivateHelper, UnitBitmapImageList,
   uSysUtils, uRuntime, uDBUtils, uAssociations, uJpegUtils, uShellIcons,
   uShellThumbnails, uMachMask, CCR.Exif, UnitGroupsWork, uDatabaseSearch,
-  uPathProviders, uExplorerMyComputerProvider, uExplorerNetworkProviders;
+  uPathProviders, uExplorerMyComputerProvider, uExplorerNetworkProviders,
+  uExplorerSearchProviders, uExplorerGroupsProvider, uExplorerPersonsProvider;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -262,6 +263,7 @@ var
   Crc: Cardinal;
   IsPrivateDirectory : Boolean;
   NotifyInfo: TExplorerNotifyInfo;
+  P: TPathItem;
 
   procedure LoadDBContent;
   var
@@ -390,6 +392,36 @@ begin
     begin
       SearchFolder(True);
       Exit;
+    end;
+
+    if (FThreadType = THREAD_TYPE_GROUP) then
+    begin
+      P := PathProviderManager.CreatePathItem(FFolder);
+      try
+        if P is TGroupItem then
+        begin
+          FMask := Format(':Group(%s):', [TGroupItem(P).GroupName]);
+          SearchDB;
+          Exit;
+        end;
+      finally
+        F(P);
+      end;
+    end;
+
+    if (FThreadType = THREAD_TYPE_PERSON) then
+    begin
+      P := PathProviderManager.CreatePathItem(FFolder);
+      try
+        if P is TPersonItem then
+        begin
+          FMask := Format(':Person(%s):', [TPersonItem(P).PersonName]);
+          SearchDB;
+          Exit;
+        end;
+      finally
+        F(P);
+      end;
     end;
 
     if (FThreadType = THREAD_TYPE_SEARCH_DB) then
@@ -1805,8 +1837,8 @@ end;
 
 function TExplorerThread.FindInQuery(FileName: String) : Boolean;
 var
-  I : Integer;
-  AddPathStr : string;
+  I: Integer;
+  AddPathStr: string;
 begin
   Result := False;
   if (not FQuery.IsEmpty) then

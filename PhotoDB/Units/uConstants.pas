@@ -290,6 +290,8 @@ const
   THREAD_TYPE_SEARCH_IMAGES  = 13;
   THREAD_TYPE_PERSONS        = 14;
   THREAD_TYPE_GROUPS         = 15;
+  THREAD_TYPE_GROUP          = 16;
+  THREAD_TYPE_PERSON         = 17;
 
   THREAD_PREVIEW_MODE_IMAGE      = 1;
   THREAD_PREVIEW_MODE_BIG_IMAGE  = 2;
@@ -370,9 +372,11 @@ const
   DefaultCascadeFileName = 'haarcascade_frontalface_alt.xml';
 
 const
-  cNetworkPath = 'Network';
   cGroupsPath = 'Groups';
   cPersonsPath = 'Persons';
+  cDBSearchPath = '::db://';
+  cImagesSearchPath = '::images://';
+  cFilesSearchPath = '::files://';
 
 implementation
 

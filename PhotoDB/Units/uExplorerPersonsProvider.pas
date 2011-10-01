@@ -3,9 +3,9 @@ unit uExplorerPersonsProvider;
 interface
 
 uses
-  Graphics, uPathProviders, uPeopleSupport, uBitmapUtils, UnitDBDeclare,
+  Graphics, uPathProviders, uPeopleSupport, uBitmapUtils,
   uMemory, uConstants, uTranslate, uShellIcons, uExplorerMyComputerProvider,
-  uExplorerPathProvider, StrUtils, uStringUtils, SysUtils;
+  uExplorerPathProvider, StrUtils, uStringUtils, SysUtils, uJpegUtils;
 
 type
   TPersonsItem = class(TPathItem)
@@ -19,15 +19,16 @@ type
 
   TPersonItem = class(TPathItem)
   private
-    FPersonID: Integer;
+    FPersonName: string;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
   public
+    constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     procedure ReadFromPerson(Person: TPerson; Options, ImageSize: Integer);
-    property PersonID: Integer read FPersonID;
+    property PersonName: string read FPersonName;
   end;
 
 type
@@ -62,17 +63,17 @@ begin
   Result := nil;
   if Path = cPersonsPath then
     Result := TPersonsItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+  if StartsText(cPersonsPath + '\', Path) then
+    Result := TPersonItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
 function TPersonProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
 var
   Person: TPerson;
-  Info: TDBPopupMenuInfoRecord;
 begin
   Result := False;
-  Info := TDBPopupMenuInfoRecord(Item);
-  Person := PersonManager.GetPerson(Info.ID);
+  Person := PersonManager.GetPersonByName(ExtractPersonName(Item.Path));
   try
     if Person.Image = nil then
       Exit;
@@ -116,7 +117,7 @@ begin
       PersonManager.LoadPersonList(Persons);
       for I := 0 to Persons.Count - 1 do
       begin
-        P := TPersonItem.CreateFromPath(cPersonsPath + '\' + IntToStr(Persons[I].ID), Options, ImageSize);
+        P := TPersonItem.CreateFromPath(cPersonsPath + '\' + Persons[I].Name, PATH_LOAD_NO_IMAGE, 0);
         P.ReadFromPerson(Persons[I], Options, ImageSize);
         List.Add(P);
 
@@ -181,6 +182,7 @@ function TPersonsItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Icon: TIcon;
 begin
+  F(FImage);
   FindIcon(HInstance, 'PERSONS', ImageSize, 32, Icon);
   FImage := TPathImage.Create(Icon);
   Result := True;
@@ -191,7 +193,18 @@ end;
 procedure TPersonItem.Assign(Item: TPathItem);
 begin
   inherited;
-  FPersonID := TPersonItem(Item).FPersonID;
+  FPersonName := TPersonItem(Item).FPersonName;
+end;
+
+constructor TPersonItem.CreateFromPath(APath: string; Options,
+  ImageSize: Integer);
+begin
+  inherited;
+  FPersonName := APath;
+  Delete(FPersonName, 1, Length(cPersonsPath) + 1);
+  FDisplayName := FPersonName;
+  if Options and PATH_LOAD_NO_IMAGE = 0 then
+    LoadImage(Options, ImageSize);
 end;
 
 function TPersonItem.InternalCreateNewInstance: TPathItem;
@@ -208,7 +221,8 @@ function TPersonItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Person: TPerson;
 begin
-  Person := PersonManager.GetPerson(PersonID);
+  F(FImage);
+  Person := PersonManager.GetPersonByName(FPersonName);
   try
     ReadFromPerson(Person, Options, ImageSize);
     Result := True;
@@ -221,11 +235,11 @@ procedure TPersonItem.ReadFromPerson(Person: TPerson; Options, ImageSize: Intege
 var
   Bitmap: TBitmap;
 begin
-  FPersonID := Person.ID;
+  FPersonName := Person.Name;
   FDisplayName := Person.Name;
   Bitmap := TBitmap.Create;
   try
-    Bitmap.Assign(Person.Image);
+    AssignJpeg(Bitmap, Person.Image);
     KeepProportions(Bitmap, ImageSize, ImageSize);
     if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
       CenterBitmap24To32ImageList(Bitmap, ImageSize);

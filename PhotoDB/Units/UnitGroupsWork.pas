@@ -774,31 +774,34 @@ begin
       Result := GetNilGroup;
       Exit;
     end;
-    Query.First;
-    Result.GroupName := Trim(Query.FieldByName('GroupName').AsString);
-    Result.GroupCode := Trim(Query.FieldByName('GroupCode').AsString);
-    Result.GroupImage := nil;
-    if LoadImage then
+    if Query.RecordCount > 0 then
     begin
-      if TBlobField(Query.FieldByName('GroupImage')) <> nil then
+      Query.First;
+      Result.GroupName := Trim(Query.FieldByName('GroupName').AsString);
+      Result.GroupCode := Trim(Query.FieldByName('GroupCode').AsString);
+      Result.GroupImage := nil;
+      if LoadImage then
       begin
-        BS := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
-        try
-          Result.GroupImage := TJpegImage.Create;
-          Result.GroupImage.LoadfromStream(BS);
-        finally
-          F(BS);
+        if TBlobField(Query.FieldByName('GroupImage')) <> nil then
+        begin
+          BS := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
+          try
+            Result.GroupImage := TJpegImage.Create;
+            Result.GroupImage.LoadfromStream(BS);
+          finally
+            F(BS);
+          end;
         end;
       end;
+      Result.GroupComment := Query.FieldByName('GroupComment').AsString;
+      Result.GroupDate := Query.FieldByName('GroupDate').AsDateTime;
+      Result.GroupFaces := Query.FieldByName('GroupFaces').AsString;
+      Result.GroupAccess := Query.FieldByName('GroupAccess').AsInteger;
+      Result.GroupKeyWords := Query.FieldByName('GroupKW').AsString;
+      Result.AutoAddKeyWords := Query.FieldByName('GroupAddKW').AsBoolean;
+      Result.RelatedGroups := Query.FieldByName('RelatedGroups').AsString;
+      Result.IncludeInQuickList := Query.FieldByName('IncludeInQuickList').AsBoolean;
     end;
-    Result.GroupComment := Query.FieldByName('GroupComment').AsString;
-    Result.GroupDate := Query.FieldByName('GroupDate').AsDateTime;
-    Result.GroupFaces := Query.FieldByName('GroupFaces').AsString;
-    Result.GroupAccess := Query.FieldByName('GroupAccess').AsInteger;
-    Result.GroupKeyWords := Query.FieldByName('GroupKW').AsString;
-    Result.AutoAddKeyWords := Query.FieldByName('GroupAddKW').AsBoolean;
-    Result.RelatedGroups := Query.FieldByName('RelatedGroups').AsString;
-    Result.IncludeInQuickList := Query.FieldByName('IncludeInQuickList').AsBoolean;
   finally
     FreeDS(Query);
   end;

@@ -19,7 +19,6 @@ uses
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
-  uFileUtils in '..\PhotoDB\Units\uFileUtils.pas',
   VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uFrmProgress in 'uFrmProgress.pas' {FrmProgress},
@@ -49,7 +48,6 @@ uses
   uAssociationActions in 'uAssociationActions.pas',
   uUpdatingWindowsActions in 'uUpdatingWindowsActions.pas',
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
-  uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
   uInstallProcess in 'uInstallProcess.pas',
   uSetupDatabaseActions in 'uSetupDatabaseActions.pas',
   uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
@@ -59,7 +57,8 @@ uses
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
   uIME in '..\PhotoDB\Units\uIME.pas',
   uIsAdmin in 'uIsAdmin.pas',
-  uInstallRuntime in 'uInstallRuntime.pas';
+  uInstallRuntime in 'uInstallRuntime.pas',
+  uConfiguration in '..\PhotoDB\Units\uConfiguration.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

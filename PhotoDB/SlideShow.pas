@@ -2247,7 +2247,7 @@ begin
 
   with ExplorerManager.NewExplorer(False) do
   begin
-    SetPath(cPersonsPath + P.Name);
+    SetPath(cPersonsPath + '\' + P.Name);
     Show;
   end;
 end;
@@ -2416,7 +2416,6 @@ begin
     UpdateFaceDetectionState;
     Invalidate;
     RefreshFaces;
-    Application.ProcessMessages;
 
     P := Point(X, Y);
     P := ClientToScreen(P);
@@ -2987,7 +2986,7 @@ begin
         DrawFace(FFaces[I]);
     end;
 
-    if FDrawingFace then
+    if FDrawingFace and (FDrawFace <> nil) then
       DrawFace(FDrawFace);
   end else
     FOverlayBuffer.SetSize(0, 0);

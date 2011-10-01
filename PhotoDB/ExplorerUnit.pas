@@ -22,7 +22,8 @@ uses
   uPNGUtils, uGraphicUtils, uDBBaseTypes, uDBTypes, uSysUtils, uRuntime,
   uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit,
   uPathProviders, uExplorerMyComputerProvider, uExplorerFSProviders,
-  uExplorerNetworkProviders, uExplorerPersonsProvider, uExplorerGroupsProvider;
+  uExplorerNetworkProviders, uExplorerPersonsProvider, uExplorerGroupsProvider,
+  uExplorerSearchProviders;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -4336,18 +4337,25 @@ begin
   try
     EventLog('SetNewPath "' + Path + '"' + IIF(Explorer, ' <Explorer>', ''));
 
-    if IsPathEx(Path) then
-    begin
-      {P := TPathPart.Create(Path);
-      try
-        if P.ID = PATH_EX then
-        begin
-          SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_SEARCH), False);
-          Exit;
-        end;
-      finally
-        F(P);
-      end; }
+    P := PathProviderManager.CreatePathItem(Path);
+    try
+      if P is TSearchItem then
+      begin
+        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_SEARCH), False);
+        Exit;
+      end;
+      if P is TGroupItem then
+      begin
+        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_GROUP), False);
+        Exit;
+      end;
+      if P is TPersonItem then
+      begin
+        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_PERSON), False);
+        Exit;
+      end;
+    finally
+      F(P);
     end;
 
     S := ExcludeTrailingBackslash(Path);
@@ -4869,7 +4877,11 @@ begin
   else if P is TPersonsItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON_LIST), False)
   else if P is TGroupsItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP_LIST), False);
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP_LIST), False)
+  else if P is TGroupItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP), False)
+  else if P is TPersonItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON), False);
 end;
 
 procedure TExplorerForm.PePathGetItemIconEvent(Sender: TPathEditor;
@@ -4908,13 +4920,7 @@ end;
 
 function TExplorerForm.GetPathPartName(PP: TPathItem): string;
 begin
-  Result := '';
-{  if PP.Namespace = 'db' then
-    Result := Format(L('Search in collection for: "%s"'), [PP.Argument]) + '...'
-  else if PP.Namespace = 'images' then
-    Result := Format(L('Search files (with EXIF) for: "%s"'), [PP.Argument]) + '...'
-  else if PP.Namespace = 'files' then
-    Result := Format(L('Search files for: "%s"'), [PP.Argument]) + '...';   }
+  Result := PP.DisplayName;
 end;
 
 function TExplorerForm.MakePathName(Path: TExplorerPath): string;
@@ -4925,12 +4931,12 @@ begin
     Result := Path.Path
   else if (Path.PType = EXPLORER_ITEM_SEARCH) then
   begin
-    {PP := TPathPart.Create(Path.Path);
+    PP := PathProviderManager.CreatePathItem(Path.Path);
     try
       Result := GetPathPartName(PP);
     finally
       F(PP);
-    end;}
+    end;
   end else
     Result := ExtractFileName(ExcludeTrailingPathDelimiter(Path.Path));
 end;
@@ -4949,8 +4955,8 @@ end;
 
 procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathItem);
 begin
-  //if PathPart.ID = PATH_MY_COMPUTER then
-  //  PathPart.Name := MyComputer;
+  if PathPart is THomeItem then
+    PathPart.DisplayName := MyComputer;
 end;
 
 procedure TExplorerForm.ShowLoadingSign;
@@ -5200,7 +5206,7 @@ var
   UpdaterInfo: TUpdaterInfo;
   I, ThreadType: Integer;
   Info: TExplorerViewInfo;
-  P: TPathItem;
+  P: TSearchItem;
 begin
   HideFilter(False);
   RefreshIDList.Clear;
@@ -5278,51 +5284,51 @@ begin
     PePath.SetPathEx(TPersonsItem, Path);
     ThreadType := THREAD_TYPE_PERSONS;
   end;
- { if WPath.PType = EXPLORER_ITEM_PERSON then
+  if WPath.PType = EXPLORER_ITEM_PERSON then
   begin
     Caption := Path;
     PePath.SetPathEx(TPersonItem, Path);
     ThreadType := THREAD_TYPE_PERSON;
-  end; }
+  end;
   if WPath.PType = EXPLORER_ITEM_GROUP_LIST then
   begin
     Caption := Path;
     PePath.SetPathEx(TGroupsItem, Path);
     ThreadType := THREAD_TYPE_GROUPS;
   end;
- { if WPath.PType = EXPLORER_ITEM_GROUP then
+  if WPath.PType = EXPLORER_ITEM_GROUP then
   begin
     Caption := Path;
     PePath.SetPathEx(TGroupItem, Path);
     ThreadType := THREAD_TYPE_GROUP;
-  end; }
+  end;
 
   S := Path;
   FCurrentPath := Path;
 
-  {if WPath.PType = EXPLORER_ITEM_SEARCH then
+  if WPath.PType = EXPLORER_ITEM_SEARCH then
   begin
-    P := TPathPart.Create(WPath.Path);
+    P := PathProviderManager.CreatePathItem(WPath.Path) as TSearchItem;
     try
-      FileMask := P.Argument;
+      FileMask := P.SearchTerm;
 
-      Path := P.ParentPath;
+      Path := P.SearchPath;
       FCurrentPath := WPath.Path;
 
       if PePath.PathEx = nil then
         PePath.SetPathEx(Self, P, False);
       PePath.SetPathEx(Self, P, False);
-      Caption := L(IIF(P.ParentPath = '', MyComputer, P.ParentPath) + ' - ' + GetPathPartName(PePath.PathEx));
+      Caption := L(IIF(P.SearchPath = '', MyComputer, P.SearchPath) + ' - ' + GetPathPartName(PePath.PathEx));
 
-      if P.Namespace = 'files' then
-      begin
-        ThreadType := THREAD_TYPE_SEARCH_FOLDER;
-        FSearchMode := EXPLORER_SEARCH_FILES;
-      end else if P.Namespace = 'images' then
+      if P is TImageSearchItem then
       begin
         ThreadType := THREAD_TYPE_SEARCH_IMAGES;
         FSearchMode := EXPLORER_SEARCH_IMAGES;
-      end else if P.Namespace = 'db' then
+      end else if P is TFileSearchItem then
+      begin
+        ThreadType := THREAD_TYPE_SEARCH_FOLDER;
+        FSearchMode := EXPLORER_SEARCH_FILES;
+      end else if P is TDBSearchItem then
       begin
         ThreadType := THREAD_TYPE_SEARCH_DB;
         FSearchMode := EXPLORER_SEARCH_DATABASE;
@@ -5333,7 +5339,7 @@ begin
     finally
       F(P);
     end;
-  end; }
+  end;
 
   NewFormState;
   FCurrentTypePath := WPath.PType;
@@ -6977,11 +6983,11 @@ begin
     if IsShortDrive(Path) then
       Path := Path + '\';
     if FSearchMode = EXPLORER_SEARCH_FILES then
-      SetNewPath(Path + '::files://' + S, False)
+      SetNewPath(Path + cFilesSearchPath + S, False)
     else  if FSearchMode = EXPLORER_SEARCH_IMAGES then
-      SetNewPath(Path + '::images://' + S, False)
+      SetNewPath(Path + cImagesSearchPath + S, False)
     else
-      SetNewPath('::db://' + S, False);
+      SetNewPath(cDBSearchPath + S, False);
 
   finally
     ElvMain.SetFocus;
@@ -7761,7 +7767,7 @@ begin
       end;
       if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
       begin
-        SetNewPath(fFilesInfo[Index].FileName, false);
+        SetNewPath(FFilesInfo[Index].FileName, false);
         Exit;
       end;
       if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
@@ -7820,9 +7826,10 @@ begin
         end;
       end;
 
-      case fFilesInfo[Index].FileType of
+      case FFilesInfo[Index].FileType of
         EXPLORER_ITEM_NETWORK, EXPLORER_ITEM_WORKGROUP, EXPLORER_ITEM_COMPUTER,
-          EXPLORER_ITEM_SHARE, EXPLORER_ITEM_PERSON_LIST, EXPLORER_ITEM_GROUP_LIST:
+          EXPLORER_ITEM_SHARE, EXPLORER_ITEM_PERSON_LIST, EXPLORER_ITEM_GROUP_LIST,
+          EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON:
           SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
               FFilesInfo[Index].FileType), false);
       end;

@@ -2013,5 +2013,8 @@
 	<translate name="Network" value="Сеть"/>
 	<translate name="Groups" value="Группы"/>
 	<translate name="Persons" value="Персоны"/>
+    <translate name="Search in directory" value="Искать в папке" />
+    <translate name="Search in directory (with EXIF)" value="Искать в папке (включая EXIF)" />	
+    <translate name="Search in collection" value="Искать в базе" />
   </scope> 
 </language>

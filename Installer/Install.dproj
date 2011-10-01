@@ -53,7 +53,6 @@
 			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uFileUtils.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
 			<DCCReference Include="uFrmProgress.pas">
@@ -94,7 +93,6 @@
 			<DCCReference Include="uAssociationActions.pas"/>
 			<DCCReference Include="uUpdatingWindowsActions.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uRuntime.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uSysUtils.pas"/>
 			<DCCReference Include="uInstallProcess.pas"/>
 			<DCCReference Include="uSetupDatabaseActions.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uStringUtils.pas"/>
@@ -105,6 +103,7 @@
 			<DCCReference Include="..\PhotoDB\Units\uIME.pas"/>
 			<DCCReference Include="uIsAdmin.pas"/>
 			<DCCReference Include="uInstallRuntime.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uConfiguration.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

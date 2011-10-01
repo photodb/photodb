@@ -7,7 +7,8 @@ uses
   uConstants, uDBUtils, UnitGroupsWork, UnitDBDeclare, uMemory, uDBFileTypes,
   Graphics, uTranslate, jpeg, uJpegUtils, GraphicCrypt, UnitDBKernel,
   uGraphicUtils, uBitmapUtils, DateUtils, uDBPopupMenuInfo, uAssociatedIcons,
-  uThreadEx, UnitDBCommonGraphics, uDBGraphicTypes;
+  uThreadEx, UnitDBCommonGraphics, uDBGraphicTypes, uPeopleSupport,
+  uSysUtils;
 
 const
   SM_ID         = 0;
@@ -99,7 +100,7 @@ var
   ScanParams: TScanFileParams;
   ImThs: TArStrings;
   IthIds: TArInteger;
-  TempString: string;
+  PersonsJoin, TempString: string;
 const
   AllocImThBy = 5;
 
@@ -218,6 +219,17 @@ begin
         Stemp := GroupSearchByGroupName(Copy(Sysaction, 7, Length(Sysaction) - 7));
         Result.Query := Format('SELECT %s FROM $DB$', [FIELDS]);
         Result.Query := Result.Query + ' WHERE (Groups LIKE "' + Stemp + '")';
+        ApplyFilter(Result, Db_attr_norm);
+      end;
+
+      if AnsiLowerCase(Copy(Sysaction, 1, 6)) = AnsiLowerCase('Person') then
+      begin
+        SystemQuery := True;
+        Stemp := Copy(Sysaction, 8, Length(Sysaction) - 8);
+        PersonsJoin := FormatEx(' INNER JOIN {1} PM on PM.ImageID = IM.ID) INNER JOIN {0} P on P.PersonID = PM.PersonID', [PersonTableName, PersonMappingTableName]);
+
+        Result.Query := Format('SELECT %s FROM ($DB$ IM %s', [FIELDS, PersonsJoin]);
+        Result.Query := Result.Query + ' WHERE (P.PersonName LIKE ' + NormalizeDBString(NormalizeDBStringLike(Stemp)) + ')';
         ApplyFilter(Result, Db_attr_norm);
       end;
 

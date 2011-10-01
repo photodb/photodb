@@ -351,10 +351,10 @@ uses
   uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
   UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas',
   uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
-  uExplorerNetworkProviders in 'Units\uExplorerNetworkProviders.pas',
   uExplorerGroupsProvider in 'Units\uExplorerGroupsProvider.pas',
   uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas',
-  uConfiguration in 'Units\uConfiguration.pas';
+  uConfiguration in 'Units\uConfiguration.pas',
+  uExplorerSearchProviders in 'Units\uExplorerSearchProviders.pas';
 
 {$R *.res}
 

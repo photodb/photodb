@@ -6,7 +6,7 @@ uses
   Windows, Graphics, uExplorerPathProvider, uPathProviders, UnitGroupsWork,
   uBitmapUtils, UnitDBDeclare, uConstants, UnitDBKernel, StrUtils,
   uShellIntegration, SysUtils, uDBForm, uExplorerMyComputerProvider,
-  uMemory, uTranslate, uShellIcons, uStringUtils;
+  uMemory, uTranslate, uShellIcons, uStringUtils, uJpegUtils;
 
 type
   TGroupsItem = class(TPathItem)
@@ -19,12 +19,17 @@ type
   end;
 
   TGroupItem = class(TPathItem)
+  private
+    FGroupName: string;
   protected
     function InternalGetParent: TPathItem; override;
+    function InternalCreateNewInstance: TPathItem; override;
   public
+    procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     procedure ReadFromGroup(Group: TGroup; Options, ImageSize: Integer);
-    function InternalCreateNewInstance: TPathItem; override;
+    constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
+    property GroupName: string read FGroupName;
   end;
 
 type
@@ -64,6 +69,8 @@ begin
   Result := nil;
   if Path = cGroupsPath then
     Result := TGroupsItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+  if StartsText(cGroupsPath + '\', Path) then
+    Result := TGroupItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
 function TGroupProvider.Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: Integer): Boolean;
@@ -155,7 +162,7 @@ begin
     try
       for I := 0 to Length(Groups) - 1 do
       begin
-        G := TGroupItem.CreateFromPath(cGroupsPath + '\' + Groups[I].GroupName, Options, ImageSize);
+        G := TGroupItem.CreateFromPath(cGroupsPath + '\' + Groups[I].GroupName, PATH_LOAD_NO_IMAGE, 0);
         G.ReadFromGroup(Groups[I], Options, ImageSize);
         List.Add(G);
 
@@ -226,6 +233,23 @@ end;
 
 { TGroupItem }
 
+procedure TGroupItem.Assign(Item: TPathItem);
+begin
+  inherited;
+  FGroupName := TGroupItem(Item).FGroupName;
+end;
+
+constructor TGroupItem.CreateFromPath(APath: string; Options,
+  ImageSize: Integer);
+begin
+  inherited;
+  FGroupName := APath;
+  Delete(FGroupName, 1, Length(cGroupsPath) + 1);
+  FDisplayName := FGroupName;
+  if Options and PATH_LOAD_NO_IMAGE = 0 then
+    LoadImage(Options, ImageSize);
+end;
+
 function TGroupItem.InternalCreateNewInstance: TPathItem;
 begin
   Result := TGroupItem.Create;
@@ -240,7 +264,8 @@ function TGroupItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Group: TGroup;
 begin
-  Group := GetGroupByGroupName(FDisplayName, True);
+  F(FImage);
+  Group := GetGroupByGroupName(GroupName, True);
   try
     ReadFromGroup(Group, Options, ImageSize);
     Result := True;
@@ -256,7 +281,7 @@ begin
   FDisplayName := Group.GroupName;
   Bitmap := TBitmap.Create;
   try
-    Bitmap.Assign(Group.GroupImage);
+    AssignJpeg(Bitmap, Group.GroupImage);
     KeepProportions(Bitmap, ImageSize, ImageSize);
     if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
       CenterBitmap24To32ImageList(Bitmap, ImageSize);

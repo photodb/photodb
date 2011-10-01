@@ -30,6 +30,7 @@ type
     procedure LoadPersonList(Persons: TPersonCollection);
     function FindPerson(PersonID: Integer): TPerson;
     function GetPerson(PersonID: Integer): TPerson;
+    function GetPersonByName(PersonName: string): TPerson;
     function CreateNewPerson(Person: TPerson): Boolean;
     function DeletePerson(PersonID: Integer): Boolean;
     function UpdatePerson(Person: TPerson): Boolean;
@@ -440,6 +441,30 @@ begin
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TIntegerParameter.Create('PersonID', PersonID));
+    try
+      SC.Execute;
+      if SC.RecordCount > 0 then
+      begin
+        SC.DS.First;
+        Result.ReadFromDS(SC.DS);
+      end;
+    except
+      Exit;
+    end;
+  finally
+    F(SC);
+  end;
+end;
+
+function TPersonManager.GetPersonByName(PersonName: string): TPerson;
+var
+  SC: TSelectCommand;
+begin
+  Result := TPerson.Create;
+  SC := TSelectCommand.Create(PersonTableName);
+  try
+    SC.AddParameter(TAllParameter.Create);
+    SC.AddWhereParameter(TStringParameter.Create('PersonName', PersonName));
     try
       SC.Execute;
       if SC.RecordCount > 0 then

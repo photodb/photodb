@@ -16,7 +16,6 @@ uses
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
   uLogger in '..\PhotoDB\Units\uLogger.pas',
-  uFileUtils in '..\PhotoDB\Units\uFileUtils.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas',
@@ -39,7 +38,6 @@ uses
   uUpdatingWindowsActions in '..\Installer\uUpdatingWindowsActions.pas',
   uSelfDeleteAction in 'uSelfDeleteAction.pas',
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
-  uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
   uGOM in '..\PhotoDB\Units\uGOM.pas',
   uUninstallProcess in 'uUninstallProcess.pas',
   uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
@@ -49,7 +47,8 @@ uses
   uInstallUtils in '..\Installer\uInstallUtils.pas',
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
   uIME in '..\PhotoDB\Units\uIME.pas',
-  uUserUtils in '..\Installer\uUserUtils.pas';
+  uUserUtils in '..\Installer\uUserUtils.pas',
+  uConfiguration in '..\PhotoDB\Units\uConfiguration.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}
