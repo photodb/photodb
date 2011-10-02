@@ -163,7 +163,7 @@
   </scope>
   <scope name="Explorer">
     <translate name="Slide show" value="Просмотр" />
-    <translate name="Execute" value="Выполнить" />
+    <translate name="Execute" value="Открыть" />
     <translate name="Copy to" value="Скопировать в" />
     <translate name="Move to" value="Переместить в" />
     <translate name="Send to" value="Отправить в" />
@@ -323,9 +323,6 @@
     <translate name="Filter content" value="Фильтр по содержимому" />
     <translate name="Match case" value="Точное совпадение" />
     <translate name="Sorry, but phrase not found!" value="Извините, но фраза не найдена!" />
-    <translate name="Search in collection for: &quot;%s&quot;" value="Искать в базе: &quot;%s&quot;" />
-    <translate name="Search files for: &quot;%s&quot;" value="Искать файлы: &quot;%s&quot;" />
-    <translate name="Search files (with EXIF) for: &quot;%s&quot;" value="Искать файлы (учитывая EXIF): &quot;%s&quot;" />
     <translate name="Loading persons" value="Загрузка персон" />
     <translate name="Loading groups" value="Загрузка групп" />	
 	
@@ -2013,8 +2010,9 @@
 	<translate name="Network" value="Сеть"/>
 	<translate name="Groups" value="Группы"/>
 	<translate name="Persons" value="Персоны"/>
-    <translate name="Search in directory" value="Искать в папке" />
-    <translate name="Search in directory (with EXIF)" value="Искать в папке (включая EXIF)" />	
-    <translate name="Search in collection" value="Искать в базе" />
+	<translate name="My computer" value="Мой компьютер"/>
+    <translate name="Search in collection for: &quot;%s&quot;" value="Искать в базе: &quot;%s&quot;" />
+    <translate name="Search files for: &quot;%s&quot;" value="Искать файлы: &quot;%s&quot;" />
+    <translate name="Search files (with EXIF) for: &quot;%s&quot;" value="Искать файлы (учитывая EXIF): &quot;%s&quot;" />
   </scope> 
 </language>

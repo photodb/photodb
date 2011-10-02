@@ -761,6 +761,7 @@ var
   Query: TDataSet;
   BS: TStream;
 begin
+  Result := GetNilGroup;
   Query := GetQuery(FileName);
   try
     if LoadImage then
@@ -771,7 +772,6 @@ begin
     try
       Query.Active := True;
     except
-      Result := GetNilGroup;
       Exit;
     end;
     if Query.RecordCount > 0 then

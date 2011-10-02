@@ -219,7 +219,7 @@ var
 begin
   CRC := StringCRC(FileName);
   DetectCRC := StringCRC(DetectMethod);
-  Result := GetAppDataDirectory + FaceCacheDirectory + IntToStr(DetectCRC and $FF) + '\' + IntToStr(CRC and $FF) + '\' + IntToStr((CRC shr 8) and $FF) + '\' + ExtractFileName(FileName) + '.xml';
+  Result := GetAppDataDirectory + FaceCacheDirectory + IntToStr(DetectCRC and $FF) + '\' + IntToStr(CRC and $FF) + '\' + IntToStr((CRC shr 8) and $FF) + '\' + IntToStr(CRC) + '\' + ExtractFileName(FileName) + '.xml';
 end;
 
 destructor TFaceDetectionDataManager.Destroy;
@@ -312,16 +312,12 @@ begin
     DocumentElement := Doc.documentElement;
     if DocumentElement <> nil then
     begin
-      ImageWidthAttr := DocumentElement.attributes.getNamedItem('ImageWidth');
-      ImageHeightAttr := DocumentElement.attributes.getNamedItem('ImageHeight');
       PageAttr := DocumentElement.attributes.getNamedItem('Page');
       SizeAttr := DocumentElement.attributes.getNamedItem('Size');
       DateModifiedAttr := DocumentElement.attributes.getNamedItem('DateModified');
 
       if ImageWidthAttr <> nil then
-        ImageWidth := StrToIntDef(ImageWidthAttr.nodeValue, 0);
       if ImageHeightAttr <> nil then
-        ImageHeight := StrToIntDef(ImageHeightAttr.nodeValue, 0);
       if PageAttr <> nil then
         Page := StrToIntDef(PageAttr.nodeValue, 0);
       if SizeAttr <> nil then
@@ -340,11 +336,13 @@ begin
           YAttr := FaceNode.attributes.getNamedItem('Y');
           WidthAttr := FaceNode.attributes.getNamedItem('Width');
           HeightAttr := FaceNode.attributes.getNamedItem('Height');
+          ImageWidthAttr := FaceNode.attributes.getNamedItem('ImageWidth');
+          ImageHeightAttr := FaceNode.attributes.getNamedItem('ImageHeight');
 
-          if (XAttr <> nil) and (YAttr <> nil) and (WidthAttr <> nil) and (HeightAttr <> nil) then
+          if (XAttr <> nil) and (YAttr <> nil) and (WidthAttr <> nil) and (HeightAttr <> nil) and (ImageWidthAttr <> nil) and (ImageHeightAttr <> nil) then
             AddFace(StrToIntDef(XAttr.nodeValue, 0), StrToIntDef(YAttr.nodeValue, 0),
               StrToIntDef(WidthAttr.nodeValue, 0), StrToIntDef(HeightAttr.nodeValue, 0),
-              ImageWidth, ImageHeight, Page);
+              StrToIntDef(ImageWidthAttr.nodeValue, 0), StrToIntDef(ImageHeightAttr.nodeValue, 0), Page);
         end;
       end;
 
@@ -381,8 +379,6 @@ begin
     Doc.documentElement := DocumentElement;
 
     FaceNode := DocumentElement;
-    AddProperty('ImageWidth', IntToStr(ImageWidth));
-    AddProperty('ImageHeight', IntToStr(ImageHeight));
     AddProperty('Size', IntToStr(Size));
     AddProperty('DateModified', FormatDateTime('yyyy.MM.dd mm:ss', DateModified));
 
@@ -394,6 +390,8 @@ begin
       AddProperty('Y', IntToStr(Items[I].Y));
       AddProperty('Width', IntToStr(Items[I].Width));
       AddProperty('Height', IntToStr(Items[I].Height));
+      AddProperty('ImageWidth', IntToStr(Items[I].ImageWidth));
+      AddProperty('ImageHeight', IntToStr(Items[I].ImageHeight));
 
       Doc.documentElement.appendChild(FaceNode);
     end;
@@ -445,6 +443,24 @@ begin
         Break;
       end;
     end;
+  end;
+
+
+  for I := DBInfo.Count - 1 downto 0 do
+  begin       
+    PA := DBInfo[I];
+
+    FA := TFaceDetectionResultItem.Create;
+    FA.X := PA.X;
+    FA.Y := PA.Y;
+    FA.Width := PA.Width;
+    FA.Height := PA.Height;
+    FA.ImageWidth := PA.FullWidth;
+    FA.ImageHeight := PA.FullHeight;
+    FA.Page := PA.Page;
+    FA.Data := DBInfo.Extract(I);
+    Add(FA);
+
   end;
 end;
 

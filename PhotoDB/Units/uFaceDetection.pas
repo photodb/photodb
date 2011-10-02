@@ -235,15 +235,12 @@ type
   TFaceDetectionResult = class
   private
     FList: TList;
-    FImageWidth: Integer;
-    FImageHeight: Integer;
     FPage: Integer;
     FSize: Int64;
     FDateModified: TDateTime;
     FPersistanceFileName: string;
     function GetItem(Index: Integer): TFaceDetectionResultItem;
     function GetCount: Integer;
-    function GetSize: TSize;
   public
     constructor Create;
     destructor Destroy; override;
@@ -255,12 +252,9 @@ type
     procedure Add(Face: TFaceDetectionResultItem);
     property Items[Index: Integer]: TFaceDetectionResultItem read GetItem; default;
     property Count: Integer read GetCount;
-    property ImageWidth: Integer read FImageWidth write FImageWidth;
-    property ImageHeight: Integer read FImageHeight write FImageHeight;
     property Page: Integer read FPage write FPage;
     property Size: Int64 read FSize write FSize;
     property DateModified: TDateTime read FDateModified write FDateModified;
-    property OriginalSize: TSize read GetSize;
     property PersistanceFileName: string read FPersistanceFileName write FPersistanceFileName;
   end;
 
@@ -514,8 +508,6 @@ var
 begin
   Clear;
 
-  FImageWidth := Source.ImageWidth;
-  FImageHeight := Source.ImageHeight;
   FPage := Source.Page;
   FPersistanceFileName := Source.FPersistanceFileName;
 
@@ -554,12 +546,6 @@ end;
 function TFaceDetectionResult.GetItem(Index: Integer): TFaceDetectionResultItem;
 begin
   Result := FList[Index];
-end;
-
-function TFaceDetectionResult.GetSize: TSize;
-begin
-  Result.cx := ImageWidth;
-  Result.cy := ImageHeight;
 end;
 
 procedure TFaceDetectionResult.Remove(Item: TFaceDetectionResultItem);
@@ -648,8 +634,6 @@ begin
       end;
 
       Faces.FPage := Page;
-      Faces.FImageWidth := Bitmap.Width;
-      Faces.FImageHeight := Bitmap.Height;
     finally
       cvResetImageROI(img);
     end;

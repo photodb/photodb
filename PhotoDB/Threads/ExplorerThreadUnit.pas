@@ -60,13 +60,15 @@ type
     CurrentFileInfo: TExplorerFileInfo;
     FPacketImages: TBitmapImageList;
     FPacketInfos: TExplorerFileInfos;
+    FInvalidate: Boolean;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
     procedure InfoToExplorerForm;
     procedure MakeTempBitmap;
     procedure BeginUpDate;
-    procedure EndUpDate;
+    procedure EndUpDate(Invalidate: Boolean = True);
+    procedure EndUpDateSync;
     procedure MakeFolderImage(Folder : String);
     procedure FileNeededAW;
     procedure AddDirectoryIconToExplorer;
@@ -96,7 +98,7 @@ type
     procedure DoStopSearch;
     procedure SetProgressVisible;
     procedure PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean);
-    function LoadProviderItem(Item: TPathItem; ImageSize: Integer): Boolean;
+    function LoadProviderItem(Item: TPathItem; PacketSize, ImageSize: Integer): Boolean;
     procedure LoadMyComputerFolder;
     procedure LoadNetWorkFolder;
     procedure MakeImageWithIcon;
@@ -1072,8 +1074,10 @@ var
   S1, S2: String;
   Info: TExplorerFileInfo;
 begin
+  TW.I.Start('BeginUpDate');
   BeginUpDate;
   try
+    TW.I.Start('AddInfoAboutFile');
     FSender.AddInfoAboutFile(FPacketInfos);
     for I := 0 to FPacketInfos.Count - 1 do
     begin
@@ -1089,6 +1093,7 @@ begin
         if not FSender.AddBitmap(Bitmap, Info.SID) then
           FPacketImages[I].Graphic := nil;
 
+      TW.I.Start('AddItem');
       if FThreadType = THREAD_TYPE_SEARCH_FOLDER then
         NewItem := FSender.AddItem(Info.SID, True, 0)
       else
@@ -1099,10 +1104,12 @@ begin
       if AnsiLowerCase(S1) = AnsiLowerCase(S2) then
         FSelected := NewItem;
     end;
+    TW.I.Start('ClearList');
     FPacketImages.ClearImagesList;
     FPacketInfos.ClearList;
   finally
-    EndUpdate;
+    TW.I.Start('EndUpdate');
+    EndUpdate(True);
   end;
 end;
 
@@ -1142,11 +1149,21 @@ begin
   FSender.BeginUpdate;
 end;
 
-procedure TExplorerThread.EndUpdate;
+
+procedure TExplorerThread.EndUpDateSync;
 begin
-  FSender.EndUpdate;
+  TW.I.Start('EndUpdate START');
+  FSender.EndUpdate(FInvalidate);
+  TW.I.Start('EndUpdate Select');
   FSender.Select(FSelected, FCID);
+  TW.I.Start('EndUpdate CheckFolder');
   AExplorerFolders.CheckFolder(FFolder);
+end;
+
+procedure TExplorerThread.EndUpdate(Invalidate: Boolean = True);
+begin
+  FInvalidate := Invalidate;
+  SynchronizeEx(EndUpDateSync);
 end;
 
 procedure TExplorerThread.InfoToExplorerForm;
@@ -1958,6 +1975,7 @@ var
   Info: TExplorerFileInfo;
 begin
   F(FFiles);
+  TW.I.Start('Packet - start');
   FFiles := TExplorerFileInfos.Create;
   try
     FPacketImages := TBitmapImageList.Create;
@@ -1966,10 +1984,12 @@ begin
       for I := 0 to CurrentItems.Count - 1 do
       begin
         CI := CurrentItems[I];
+        TW.I.Start('Packet - CreateFromPathItem');
         Info := TExplorerFileInfo.CreateFromPathItem(CI);
         FFiles.Add(Info);
         FPacketInfos.Add(Info);
 
+        TW.I.Start('Packet - before image');
         if CI.Image <> nil then
         begin
           if CI.Image.HIcon <> 0 then
@@ -1978,7 +1998,7 @@ begin
             Icon.Handle := CI.Image.HIcon;
             FPacketImages.AddIcon(Icon, True);
             CI.Image.DetachImage;
-          end else  if CI.Image.Icon <> nil then
+          end else if CI.Image.Icon <> nil then
           begin
             FPacketImages.AddIcon(CI.Image.Icon, True);
             CI.Image.DetachImage;
@@ -1991,7 +2011,9 @@ begin
         end else
           raise Exception.Create('Image is null!');
       end;
+      TW.I.Start('Packet - send');
       Break := not SynchronizeEx(SendPacketToExplorer);
+      TW.I.Start('Packet - after send');
     finally
       F(FPacketImages);
       FPacketInfos.ClearList;
@@ -2001,15 +2023,16 @@ begin
     F(FFiles);
   end;
   CurrentItems.Clear;
+  TW.I.Start('Packet - end');
 end;
 
-function TExplorerThread.LoadProviderItem(Item: TPathItem; ImageSize: Integer): Boolean;
+function TExplorerThread.LoadProviderItem(Item: TPathItem; PacketSize, ImageSize: Integer): Boolean;
 var
   List: TPathItemCollection;
 begin
   List := TPathItemCollection.Create;
   try
-    Result := Item.Provider.FillChildList(Self, Item, List, PATH_LOAD_NORMAL, ImageSize, 5, PathProviderCallBack);
+    Result := Item.Provider.FillChildList(Self, Item, List, PATH_LOAD_NORMAL, ImageSize, PacketSize, PathProviderCallBack);
   finally
     F(List);
   end;
@@ -2025,12 +2048,12 @@ begin
   try
     HomeItem := THomeItem.Create;
     try
-      LoadProviderItem(HomeItem, FIcoSize);
+      LoadProviderItem(HomeItem, 1, FIcoSize);
     finally
       F(HomeItem);
     end;
   finally
-    SynchronizeEx(EndUpdate);
+    EndUpdate;
   end;
   ShowInfo('', 1, 0);
 end;
@@ -2045,12 +2068,12 @@ begin
   try
     NetworkItem := TNetworkItem.CreateFromPath(cNetworkPath, PATH_LOAD_NO_IMAGE, 0);
     try
-      LoadProviderItem(NetworkItem, FIcoSize);
+      LoadProviderItem(NetworkItem, 5, FIcoSize);
     finally
       F(NetworkItem);
     end;
   finally
-    SynchronizeEx(EndUpdate);
+    EndUpdate;
   end;
   ShowInfo('', 1, 0);
 end;
@@ -2065,12 +2088,12 @@ begin
   try
     PersonsItem := PathProviderManager.CreatePathItem(cPersonsPath);
     try
-      LoadProviderItem(PersonsItem, ExplorerInfo.PictureSize);
+      LoadProviderItem(PersonsItem, 10, ExplorerInfo.PictureSize);
     finally
       F(PersonsItem);
     end;
   finally
-    SynchronizeEx(EndUpdate);
+    EndUpdate;
   end;
   ShowInfo('', 1, 0);
 end;
@@ -2085,12 +2108,12 @@ begin
   try
     GroupsItem := PathProviderManager.CreatePathItem(cGroupsPath);
     try
-      LoadProviderItem(GroupsItem, ExplorerInfo.PictureSize);
+      LoadProviderItem(GroupsItem, 10, ExplorerInfo.PictureSize);
     finally
       F(GroupsItem);
     end;
   finally
-    SynchronizeEx(EndUpdate);
+    EndUpdate;
   end;
   ShowInfo('', 1, 0);
 end;
@@ -2105,7 +2128,7 @@ begin
   try
     WorkgroupItem := TWorkgroupItem.CreateFromPath(FFolder, PATH_LOAD_NORMAL, 0);
     try
-      if not LoadProviderItem(WorkgroupItem, FIcoSize) then
+      if not LoadProviderItem(WorkgroupItem, 5, FIcoSize) then
       begin
         StrParam := Format(L('Error opening network "%s"!'), [FFolder]);
         SynchronizeEx(ShowMessage_);
@@ -2116,7 +2139,7 @@ begin
       F(WorkgroupItem);
     end;
   finally
-    SynchronizeEx(EndUpdate);
+    EndUpdate;
   end;
   ShowInfo('', 1, 0);
 end;
@@ -2131,7 +2154,7 @@ begin
   try
     ComputerItem := TComputerItem.CreateFromPath(FFolder, PATH_LOAD_NORMAL, 0);
     try
-      if not LoadProviderItem(ComputerItem, FIcoSize) then
+      if not LoadProviderItem(ComputerItem, 10, FIcoSize) then
       begin
         StrParam := Format(L('Error opening computer "%s"!'), [FFolder]);
         SynchronizeEx(ShowMessage_);
@@ -2142,7 +2165,7 @@ begin
       F(ComputerItem);
     end;
   finally
-    SynchronizeEx(EndUpdate);
+    EndUpdate;
   end;
   ShowInfo('', 1, 0);
 end;
@@ -2321,7 +2344,7 @@ begin
   C := TopIndex;
   for I := 0 to FVisibleFiles.Count - 1 do
     for J := TopIndex to FFiles.Count - 1 do
-      if FFiles[J].Tag = 0 then
+      //if FFiles[J].Tag = 0 then
       begin
         if IsEqualGUID(StringToGUID(FVisibleFiles[I]), FFiles[J].SID) then
         begin

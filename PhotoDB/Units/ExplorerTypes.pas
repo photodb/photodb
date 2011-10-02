@@ -185,10 +185,7 @@ type
     FOwner: TThreadForm;
     FPathList: TArExplorerPath;
     FSender: TPopupMenu;
-    FIcons: TList;
-    FImageParam: TPathImage;
-    FPath: TExplorerPath;
-    procedure LoadIcon;
+    FIcons: TPathItemCollection;
     procedure UpdateMenu;
   protected
     procedure Execute; override;
@@ -716,6 +713,8 @@ begin
 end;
 
 constructor TExplorerFileInfo.CreateFromPathItem(PI: TPathItem);
+var
+  CN: string;
 begin
   inherited Create;
   FPath := PI.Path;
@@ -727,6 +726,8 @@ begin
   IsBigImage := False;
   ImageIndex := -1;
   Exists := 1;
+  CN := PI.ClassName;
+
   if PI is TDriveItem then
     FileType := EXPLORER_ITEM_DRIVE
   else if PI is THomeItem then
@@ -734,12 +735,17 @@ begin
   else if PI is TGroupsItem then
     FileType := EXPLORER_ITEM_GROUP_LIST
   else if PI is TGroupItem then
-    FileType := EXPLORER_ITEM_GROUP
-  else if PI is TPersonsItem then
+  begin
+    Comment := TGroupItem(PI).Comment;
+    KeyWords := TGroupItem(PI).KeyWords;
+    FileType := EXPLORER_ITEM_GROUP;
+  end else if PI is TPersonsItem then
     FileType := EXPLORER_ITEM_PERSON_LIST
   else if PI is TPersonItem then
-    FileType := EXPLORER_ITEM_PERSON
-  else if PI is TNetworkItem then
+  begin
+    Comment := TPersonItem(PI).Comment;
+    FileType := EXPLORER_ITEM_PERSON;
+  end else if PI is TNetworkItem then
     FileType := EXPLORER_ITEM_NETWORK
   else if PI is TWorkgroupItem then
     FileType := EXPLORER_ITEM_WORKGROUP
@@ -768,29 +774,20 @@ end;
 procedure TLoadPathList.Execute;
 var
   I: Integer;
-  FileInfo: SHFILEINFO;
-  Image: TPathImage;
+  PI: TPathItem;
 begin
   inherited;
   FreeOnTerminate := True;
-  FIcons := TList.Create;
+  FIcons := TPathItemCollection.Create;
   try
     for I := 0 to Length(FPathList) - 1 do
     begin
-      FPath := FPathList[I];
-
-      if (FPath.PType = EXPLORER_ITEM_FOLDER) or (FPath.PType = EXPLORER_ITEM_DRIVE)
-        or (FPath.PType = EXPLORER_ITEM_SHARE) then
+      PI := PathProviderManager.CreatePathItem(FPathList[I].Path);
+      if PI <> nil then
       begin
-        SHGetFileInfo(PChar(FPath.Path), 0, FileInfo, SizeOf(FileInfo), SHGFI_ICON or SHGFI_SMALLICON);
-        Image := TPathImage.Create(FileInfo.hIcon);
-      end else
-      begin
-        SynchronizeEx(LoadIcon);
-        Image := FImageParam;
+        PI.LoadImage(PATH_LOAD_NORMAL, 16);
+        FIcons.Add(PI);
       end;
-
-      FIcons.Add(Pointer(Image));
     end;
 
     SynchronizeEx(UpdateMenu);
@@ -802,24 +799,6 @@ end;
 procedure TLoadPathList.UpdateMenu;
 begin
   TExplorerForm(FOwner).UpdateMenuItems(FSender, FPathList, FIcons);
-end;
-
-procedure TLoadPathList.LoadIcon;
-var
-  P: TPathItem;
-begin
-  FImageParam := nil;
-  P :=  PathProviderManager.CreatePathItem(FPath.Path);
-  try
-    if P <> nil then
-    begin
-      FImageParam := P.Image;
-      if P.Image <> nil then
-        P.Image.DetachImage;
-    end;
-  finally
-    F(P);
-  end;
 end;
 
 initialization

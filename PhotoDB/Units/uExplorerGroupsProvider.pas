@@ -21,6 +21,8 @@ type
   TGroupItem = class(TPathItem)
   private
     FGroupName: string;
+    FKeywords: string;
+    FComment: string;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
@@ -30,6 +32,8 @@ type
     procedure ReadFromGroup(Group: TGroup; Options, ImageSize: Integer);
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     property GroupName: string read FGroupName;
+    property Keywords: string read FKeywords;
+    property Comment: string read FComment;
   end;
 
 type
@@ -38,6 +42,7 @@ type
     function InternalFillChildList(Sender: TObject; Item: TPathItem; List: TPathItemCollection; Options, ImageSize: Integer; PacketSize: Integer; CallBack: TLoadListCallBack): Boolean; override;
     function GetTranslateID: string; override;
     function Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: Integer): Boolean;
+    function ShowProperties(Sender: TObject; Item: TGroupItem): Boolean;
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; override;
@@ -50,7 +55,7 @@ type
 implementation
 
 uses
-  UnitGroupsTools;
+  UnitQuickGroupInfo, UnitGroupsTools;
 
 { TGroupProvider }
 
@@ -77,28 +82,37 @@ function TGroupProvider.Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Op
 var
   EventInfo: TEventValues;
   Group: TGroup;
+  GroupItem: TGroupItem;
   Form: TDBForm;
 begin
   Result := False;
   Form := TDBForm(Sender);
-  Group := GetGroupByGroupName(Item.Name, False);
+  GroupItem := PathProviderManager.CreatePathItem(Item.FileName) as TGroupItem;
   try
-    if ID_OK = MessageBoxDB(Form.Handle, Format(L('Do you really want to delete group "%s"?'), [Group.GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-      if UnitGroupsWork.DeleteGroup(Group) then
-      begin
-        if ID_OK = MessageBoxDB(Form.Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Group.GroupName]),
-          L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    if GroupItem = nil then
+      Exit;
+
+    Group := GetGroupByGroupName(GroupItem.GroupName, False);
+    try
+      if ID_OK = MessageBoxDB(Form.Handle, Format(L('Do you really want to delete group "%s"?'), [Group.GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+        if UnitGroupsWork.DeleteGroup(Group) then
         begin
-          UnitGroupsTools.DeleteGroup(Group);
-          MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
+          if ID_OK = MessageBoxDB(Form.Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Group.GroupName]),
+            L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+          begin
+            UnitGroupsTools.DeleteGroup(Group);
+            MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
+            DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
+            Result := True;
+            Exit;
+          end;
           DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
-          Result := True;
-          Exit;
         end;
-        DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
-      end;
+    finally
+      FreeGroup(Group);
+    end;
   finally
-    FreeGroup(Group);
+    F(GroupItem);
   end;
 end;
 
@@ -109,6 +123,9 @@ begin
 
   if Feature = PATH_FEATURE_DELETE then
     Result := Delete(Sender, TDBPopupMenuInfoRecord(Item), Options);
+
+  if Feature = PATH_FEATURE_PROPERTIES then
+    Result := ShowProperties(Sender, Item as TGroupItem);
 end;
 
 function TGroupProvider.ExtractPreview(Item: TPathItem; MaxWidth,
@@ -190,6 +207,13 @@ begin
   Result := Result or Supports(Item.Path);
 end;
 
+function TGroupProvider.ShowProperties(Sender: TObject;
+  Item: TGroupItem): Boolean;
+begin
+  ShowGroupInfo(Item.GroupName, False, nil);
+  Result := True;
+end;
+
 function TGroupProvider.Supports(Path: string): Boolean;
 begin
   Result := StrUtils.StartsText(cGroupsPath, Path);
@@ -198,6 +222,7 @@ end;
 function TGroupProvider.SupportsFeature(Feature: string): Boolean;
 begin
   Result := Feature = PATH_FEATURE_DELETE;
+  Result := Result or (Feature = PATH_FEATURE_PROPERTIES);
 end;
 
 { TGroupItem }
@@ -237,6 +262,8 @@ procedure TGroupItem.Assign(Item: TPathItem);
 begin
   inherited;
   FGroupName := TGroupItem(Item).FGroupName;
+  FKeywords := TGroupItem(Item).FKeywords;
+  FComment := TGroupItem(Item).FComment;
 end;
 
 constructor TGroupItem.CreateFromPath(APath: string; Options,
@@ -279,17 +306,23 @@ var
   Bitmap: TBitmap;
 begin
   FDisplayName := Group.GroupName;
-  Bitmap := TBitmap.Create;
-  try
-    AssignJpeg(Bitmap, Group.GroupImage);
-    KeepProportions(Bitmap, ImageSize, ImageSize);
-    if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
-      CenterBitmap24To32ImageList(Bitmap, ImageSize);
-    F(FImage);
-    FImage := TPathImage.Create(Bitmap);
-    Bitmap := nil;
-  finally
-    F(Bitmap);
+  FComment := Group.GroupComment;
+  FKeywords := Group.GroupKeyWords;
+  if Group.GroupImage <> nil then
+  begin
+    Bitmap := TBitmap.Create;
+    try
+      JPEGScale(Group.GroupImage, ImageSize, ImageSize);
+      AssignJpeg(Bitmap, Group.GroupImage);
+      KeepProportions(Bitmap, ImageSize, ImageSize);
+      if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
+        CenterBitmap24To32ImageList(Bitmap, ImageSize);
+      F(FImage);
+      FImage := TPathImage.Create(Bitmap);
+      Bitmap := nil;
+    finally
+      F(Bitmap);
+    end;
   end;
 end;
 

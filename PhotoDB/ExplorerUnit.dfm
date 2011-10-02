@@ -891,7 +891,6 @@ object ExplorerForm: TExplorerForm
       Alignment = taCenter
       Caption = '  Address:'
       TabOrder = 1
-      ExplicitHeight = 17
     end
     object PePath: TPathEditor
       Left = 62
@@ -926,7 +925,6 @@ object ExplorerForm: TExplorerForm
         0000}
       OnUserChange = PePathChange
       OnUpdateItem = PePathUpdateItem
-      OnParsePath = PePathParsePath
       LoadingText = 'Loading...'
       GetSystemIcon = PePathGetSystemIcon
       CanBreakLoading = False

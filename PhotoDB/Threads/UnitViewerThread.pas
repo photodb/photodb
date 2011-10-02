@@ -30,7 +30,7 @@ type
     FIsNewDBInfo: Boolean;
     FPage: Word;
     FPages: Word;
-    TransparentColor : TColor;
+    TransparentColor: TColor;
   protected
     procedure Execute; override;
     procedure GetPassword;
@@ -414,7 +414,8 @@ end;
 
 procedure TViewerThread.ShowLoadingSign;
 begin
-  Viewer.UpdateFaceDetectionState;
+  if Viewer <> nil then
+    Viewer.UpdateFaceDetectionState;
 end;
 
 procedure TViewerThread.UpdateRecord;

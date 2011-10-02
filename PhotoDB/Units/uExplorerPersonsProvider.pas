@@ -3,7 +3,7 @@ unit uExplorerPersonsProvider;
 interface
 
 uses
-  Graphics, uPathProviders, uPeopleSupport, uBitmapUtils,
+  Graphics, uPathProviders, uPeopleSupport, uBitmapUtils, uTime,
   uMemory, uConstants, uTranslate, uShellIcons, uExplorerMyComputerProvider,
   uExplorerPathProvider, StrUtils, uStringUtils, SysUtils, uJpegUtils;
 
@@ -20,6 +20,7 @@ type
   TPersonItem = class(TPathItem)
   private
     FPersonName: string;
+    FComment: string;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
@@ -29,6 +30,7 @@ type
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     procedure ReadFromPerson(Person: TPerson; Options, ImageSize: Integer);
     property PersonName: string read FPersonName;
+    property Comment: string read FComment;
   end;
 
 type
@@ -36,15 +38,20 @@ type
   protected
     function InternalFillChildList(Sender: TObject; Item: TPathItem; List: TPathItemCollection; Options, ImageSize: Integer; PacketSize: Integer; CallBack: TLoadListCallBack): Boolean; override;
     function GetTranslateID: string; override;
+    function ShowProperties(Sender: TObject; Item: TPersonItem): Boolean;
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; override;
     function Supports(Path: string): Boolean; override;
     function SupportsFeature(Feature: string): Boolean; override;
+    function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: Integer): Boolean; override;
     function CreateFromPath(Path: string): TPathItem; override;
   end;
 
 implementation
+
+uses
+  uFormCreatePerson;
 
 function ExtractPersonName(Path: string): string;
 var
@@ -65,6 +72,15 @@ begin
     Result := TPersonsItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
   if StartsText(cPersonsPath + '\', Path) then
     Result := TPersonItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+end;
+
+function TPersonProvider.ExecuteFeature(Sender: TObject; Item: TPathItem;
+  Feature: string; Options: Integer): Boolean;
+begin
+  Result := inherited ExecuteFeature(Sender, Item, Feature, Options);
+
+  if Feature = PATH_FEATURE_PROPERTIES then
+    Result := ShowProperties(Sender, Item as TPersonItem);
 end;
 
 function TPersonProvider.ExtractPreview(Item: TPathItem; MaxWidth,
@@ -117,8 +133,11 @@ begin
       PersonManager.LoadPersonList(Persons);
       for I := 0 to Persons.Count - 1 do
       begin
+        TW.I.Start('Person - create');
         P := TPersonItem.CreateFromPath(cPersonsPath + '\' + Persons[I].Name, PATH_LOAD_NO_IMAGE, 0);
+        TW.I.Start('Person - load');
         P.ReadFromPerson(Persons[I], Options, ImageSize);
+        TW.I.Start('Person - load - end');
         List.Add(P);
 
         if List.Count mod PacketSize = 0 then
@@ -146,6 +165,21 @@ begin
   Result := Result or Supports(Item.Path);
 end;
 
+function TPersonProvider.ShowProperties(Sender: TObject;
+  Item: TPersonItem): Boolean;
+var
+  P: TPerson;
+begin
+  P := PersonManager.GetPersonByName(Item.PersonName);
+  try
+    Result := P.ID > 0;
+    if Result then
+      EditPerson(P.ID);
+  finally
+    F(P);
+  end;
+end;
+
 function TPersonProvider.Supports(Path: string): Boolean;
 begin
   Result := StrUtils.StartsText(cPersonsPath, Path);
@@ -154,6 +188,7 @@ end;
 function TPersonProvider.SupportsFeature(Feature: string): Boolean;
 begin
   Result := Feature = PATH_FEATURE_PROPERTIES;
+  Result := Result or (Feature = PATH_FEATURE_PROPERTIES);
 end;
 
 { TPersonsItem }
@@ -194,6 +229,7 @@ procedure TPersonItem.Assign(Item: TPathItem);
 begin
   inherited;
   FPersonName := TPersonItem(Item).FPersonName;
+  FComment := TPersonItem(Item).FComment;
 end;
 
 constructor TPersonItem.CreateFromPath(APath: string; Options,
@@ -237,8 +273,10 @@ var
 begin
   FPersonName := Person.Name;
   FDisplayName := Person.Name;
+  FComment := Person.Comment;
   Bitmap := TBitmap.Create;
   try
+    JPEGScale(Person.Image, ImageSize, ImageSize);
     AssignJpeg(Bitmap, Person.Image);
     KeepProportions(Bitmap, ImageSize, ImageSize);
     if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then

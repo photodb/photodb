@@ -225,7 +225,6 @@ begin
   F(FImage);
   FImage := TJpegImage.Create;
   FImage.Assign(DS.FieldByName('PersonImage'));
-  FImage.DIBNeeded;
 end;
 
 procedure TPerson.SaveToDS(DS: TDataSet);

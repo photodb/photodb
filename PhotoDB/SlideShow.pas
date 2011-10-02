@@ -1374,7 +1374,7 @@ begin
     FHoverFace := nil;
 
     for I := 0 to FFaces.Count - 1 do
-      if PtInRect(FFaces[I].Rect, PxMultiply(P, FBImage, FFaces.OriginalSize)) then
+      if PtInRect(NormalizeRect(FFaces[I].Rect), PxMultiply(P, FBImage, FFaces[I].ImageSize)) then
       begin
         FHoverFace := FFaces[I];
         Break;
@@ -2407,7 +2407,7 @@ begin
   if FDrawFace <> nil then
   begin
     //recalculate size
-    FDrawFace.RecalculateNewImageSize(FFaces.OriginalSize);
+    //FDrawFace.RecalculateNewImageSize(FFaces.OriginalSize);
     FFaces.Add(FDrawFace);
     PmFace.Tag := Integer(FDrawFace);
     FHoverFace := FDrawFace;
@@ -2729,7 +2729,7 @@ begin
 
   ImagePoint := BufferPointToImagePoint(P);
   for I := 0 to FFaces.Count - 1 do
-    if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FBImage, FFaces.OriginalSize)) then
+    if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FBImage, FFaces[I].ImageSize)) then
     begin
       FHoverFace := FFaces[I];   
       RefreshFaces;
@@ -3645,7 +3645,7 @@ end;
 
 procedure TViewer.UpdateFaceDetectionState;
 begin
-  if not HandleAllocated then
+  if Visible and not HandleAllocated then
     Exit;
 
   BeginScreenUpdate(Handle);

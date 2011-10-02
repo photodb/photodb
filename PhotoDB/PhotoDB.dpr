@@ -350,11 +350,11 @@ uses
   uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson},
   uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
   UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas',
-  uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
   uExplorerGroupsProvider in 'Units\uExplorerGroupsProvider.pas',
   uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas',
   uConfiguration in 'Units\uConfiguration.pas',
-  uExplorerSearchProviders in 'Units\uExplorerSearchProviders.pas';
+  uExplorerSearchProviders in 'Units\uExplorerSearchProviders.pas',
+  uExplorerPathProvider in 'Units\uExplorerPathProvider.pas';
 
 {$R *.res}
 
