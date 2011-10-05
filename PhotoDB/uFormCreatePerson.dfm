@@ -50,7 +50,7 @@ object FormCreatePerson: TFormCreatePerson
   end
   object LbComments: TLabel
     Left = 272
-    Top = 167
+    Top = 189
     Width = 54
     Height = 13
     Caption = 'Comments:'
@@ -58,14 +58,14 @@ object FormCreatePerson: TFormCreatePerson
   object LbGroups: TLabel
     Tag = 2
     Left = 272
-    Top = 100
+    Top = 122
     Width = 78
     Height = 13
     Caption = 'Related Groups:'
   end
   object LbBirthDate: TLabel
     Left = 272
-    Top = 54
+    Top = 76
     Width = 60
     Height = 13
     Caption = 'LbBirthDate:'
@@ -77,14 +77,15 @@ object FormCreatePerson: TFormCreatePerson
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
+    OnChange = WedNameChange
     OnKeyDown = WedNameKeyDown
     WatermarkText = 'Name of person'
   end
   object WmComments: TWatermarkedMemo
     Left = 272
-    Top = 186
+    Top = 208
     Width = 274
-    Height = 97
+    Height = 75
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 1
     WatermarkText = 'Comments'
@@ -96,6 +97,7 @@ object FormCreatePerson: TFormCreatePerson
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
+    Enabled = False
     TabOrder = 2
     OnClick = BtnOkClick
   end
@@ -111,7 +113,7 @@ object FormCreatePerson: TFormCreatePerson
   end
   object WllGroups: TWebLinkList
     Left = 272
-    Top = 119
+    Top = 141
     Width = 274
     Height = 42
     HorzScrollBar.Visible = False
@@ -130,7 +132,7 @@ object FormCreatePerson: TFormCreatePerson
   end
   object DtpBirthDay: TDateTimePicker
     Left = 272
-    Top = 73
+    Top = 95
     Width = 274
     Height = 21
     Anchors = [akLeft, akTop, akRight]
@@ -162,6 +164,34 @@ object FormCreatePerson: TFormCreatePerson
     SignColor = clBlack
     MaxTransparencity = 255
   end
+  object LsNameCheck: TLoadingSign
+    Left = 272
+    Top = 54
+    Width = 16
+    Height = 16
+    Active = True
+    FillPercent = 50
+    SignColor = clBlack
+    MaxTransparencity = 255
+  end
+  object WlPersonNameStatus: TWebLink
+    Left = 294
+    Top = 54
+    Width = 183
+    Height = 16
+    Cursor = crHandPoint
+    Text = 'Found {0} persons with similar name!'
+    ImageIndex = 0
+    IconWidth = 0
+    IconHeight = 16
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = False
+    TopIconIncrement = 0
+    ImageCanRegenerate = True
+    UseSpecIconSize = True
+    HightliteImage = False
+  end
   object PmImageOptions: TPopupMenu
     Left = 104
     Top = 48
@@ -182,5 +212,12 @@ object FormCreatePerson: TFormCreatePerson
   object GroupsImageList: TImageList
     Left = 104
     Top = 96
+  end
+  object TmrCkeckName: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = TmrCkeckNameTimer
+    Left = 488
+    Top = 48
   end
 end

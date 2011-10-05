@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, WatermarkedEdit, ComCtrls, ImgList, uDBForm,
   uPeopleSupport, uBitmapUtils, uMemory, uMachMask, uGraphicUtils, CommCtrl,
-  UnitDBDeclare, UnitDBKernel, LoadingSign;
+  UnitDBDeclare, UnitDBKernel, LoadingSign, WebLink;
 
 type
   TFormFindPerson = class(TDBForm)
@@ -19,6 +19,7 @@ type
     TmrSearch: TTimer;
     ImlPersons: TImageList;
     LsAdding: TLoadingSign;
+    WlCreatePerson: TWebLink;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
@@ -32,6 +33,7 @@ type
       Shift: TShiftState);
     procedure LvPersonsSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
+    procedure WlCreatePersonClick(Sender: TObject);
   private
     { Private declarations }
     FPersons: TPersonCollection;
@@ -48,8 +50,13 @@ type
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
   public
     { Public declarations }
-    function Execute(Info: TDBPopupMenuInfoRecord): TPerson;
+    function Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
   end;
+
+const
+  SELECT_PERSON_CANCEL     = 0;
+  SELECT_PERSON_OK         = 1;
+  SELECT_PERSON_CREATE_NEW = 2;
 
 implementation
 
@@ -122,6 +129,7 @@ begin
     Exit;
   end;
 
+  ModalResult := SELECT_PERSON_OK;
   Close;
 end;
 
@@ -200,13 +208,15 @@ begin
   LsAdding.Visible := not IsEnabled;
 end;
 
-function TFormFindPerson.Execute(Info: TDBPopupMenuInfoRecord): TPerson;
+function TFormFindPerson.Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
 begin
-  Result := nil;
+  ModalResult := SELECT_PERSON_CANCEL;
   FInfo := Info.Copy;
   ShowModal;
   if LvPersons.Selected <> nil then
-    Result := TPerson(LvPersons.Selected.Data);
+    Person := TPerson(LvPersons.Selected.Data);
+
+  Result := ModalResult;
 end;
 
 procedure TFormFindPerson.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -250,6 +260,7 @@ begin
     LvPersons.Column[1].Caption := L('Name');
     LbFindPerson.Caption := L('Find person');
     WedPersonFilter.WatermarkText := L('Filter persons');
+    WlCreatePerson.Text := L('Close window and create new person');
   finally
     EndTranslate;
   end;
@@ -374,6 +385,12 @@ begin
     LvPersons.Items[0].Selected := True;
     BtnOkClick(Sender);
   end;
+end;
+
+procedure TFormFindPerson.WlCreatePersonClick(Sender: TObject);
+begin
+  ModalResult := SELECT_PERSON_CREATE_NEW;
+  Close;
 end;
 
 end.

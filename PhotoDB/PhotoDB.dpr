@@ -354,7 +354,9 @@ uses
   uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas',
   uConfiguration in 'Units\uConfiguration.pas',
   uExplorerSearchProviders in 'Units\uExplorerSearchProviders.pas',
-  uExplorerPathProvider in 'Units\uExplorerPathProvider.pas';
+  uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
+  uVCLHelpers in 'Units\uVCLHelpers.pas',
+  uFormPersonSuggest in 'uFormPersonSuggest.pas' {FormPersonSuggest};
 
 {$R *.res}
 
@@ -519,6 +521,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
+  Application.CreateForm(TFormPersonSuggest, FormPersonSuggest);
   Application.ShowMainForm := False;
       // This is main form of application
 

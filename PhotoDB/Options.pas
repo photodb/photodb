@@ -10,7 +10,7 @@ uses
   UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
   UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
   uRuntime, uMemory, uSettings, WebLink, uAssociations, AppEvnts, Spin,
-  uCryptUtils, uIconUtils;
+  uCryptUtils, uIconUtils, LoadingSign, uDBThread, uConfiguration;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)
@@ -153,6 +153,7 @@ type
     lbDetectionSize: TLabel;
     CbDetectionSize: TComboBox;
     BtnClearFaceDetectionCache: TButton;
+    LsFaceDetectionClearCache: TLoadingSign;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -213,6 +214,7 @@ type
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure SelectAll1Click(Sender: TObject);
     procedure DeselectAll1Click(Sender: TObject);
+    procedure BtnClearFaceDetectionCacheClick(Sender: TObject);
   private
     FThemeList : TStringList;
     FUserMenu : TUserMenuItemArray;
@@ -228,6 +230,16 @@ type
     procedure LoadLanguage;
     function GetPasswordSettingsPopupMenu: TPopupMenu; override;
     function GetPaswordLink: TWebLink; override;
+  end;
+
+  TFaceDetectionClearCacheThread = class(TDBThread)
+  private
+    FOwner: TOptionsForm;
+    procedure HideLoadingSign;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(AOwner: TOptionsForm);
   end;
 
 var
@@ -784,6 +796,7 @@ begin
       S := FloatToStrEx(DetectSizes[I] / 10, 2) + L('Mpx') + IIF(I = 1, ' (' + L('Best perfomance') + ')', '');
       CbDetectionSize.Items.AddObject(S, TObject(I));
     end;
+    BtnClearFaceDetectionCache.Caption := L('Clear cache');
   finally
     EndTranslate;
   end;
@@ -1065,6 +1078,13 @@ begin
     F(Icon1);
     F(Icon2);
   end;
+end;
+
+procedure TOptionsForm.BtnClearFaceDetectionCacheClick(Sender: TObject);
+begin
+  BtnClearFaceDetectionCache.Enabled := False;
+  LsFaceDetectionClearCache.Show;
+  TFaceDetectionClearCacheThread.Create(Self);
 end;
 
 procedure TOptionsForm.BtnClearIconCacheClick(Sender: TObject);
@@ -1473,6 +1493,30 @@ procedure TOptionsForm.CbDontAddSmallFilesClick(Sender: TObject);
 begin
   SedMinWidth.Enabled := CbDontAddSmallFiles.Checked;
   SedMinHeight.Enabled := CbDontAddSmallFiles.Checked;
+end;
+
+{ TFaceDetectionClearCacheThread }
+
+constructor TFaceDetectionClearCacheThread.Create(AOwner: TOptionsForm);
+begin
+  inherited Create(AOwner, False);
+  FOwner := AOwner;
+end;
+
+procedure TFaceDetectionClearCacheThread.Execute;
+begin
+  inherited;
+  FreeOnTerminate := True;
+  try
+    DelDir(GetAppDataDirectory + FaceCacheDirectory, '||');
+  finally
+    SynchronizeEx(HideLoadingSign);
+  end;
+end;
+
+procedure TFaceDetectionClearCacheThread.HideLoadingSign;
+begin
+  FOwner.LsFaceDetectionClearCache.Hide;
 end;
 
 end.

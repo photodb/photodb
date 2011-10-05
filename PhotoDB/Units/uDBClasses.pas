@@ -156,11 +156,13 @@ type
   TSelectCommand = class(TSqlCommand)
   private
     FTableName: string;
+    FTopRecords: Integer;
   protected
     function GetSQL: string; override;
   public
     function Execute: Integer; override;
     constructor Create(TableName: string);
+    property TopRecords: Integer read FTopRecords write FTopRecords;
   end;
 
   TDatabaseManager = class(TObject)
@@ -552,6 +554,7 @@ end;
 constructor TSelectCommand.Create(TableName: string);
 begin
   inherited Create;
+  FTopRecords := 0;
   FTableName := TableName;
 end;
 
@@ -561,11 +564,16 @@ begin
   UpdateParameters;
   FQuery.Open;
   Result := FQuery.RecordCount;
+  if Result > 0 then
+    FQuery.First;
 end;
 
 function TSelectCommand.GetSQL: string;
 begin
-  Result := Format('SELECT %s', [Parameters.AsFieldList]);
+  Result := 'SELECT';
+  if TopRecords > 0 then
+    Result := Result + Format(' TOP %d ', [TopRecords]);
+  Result := Result + Format(' %s', [Parameters.AsFieldList]);
   if FTableName <> '' then
     Result := Result + Format(' FROM [%s] ', [FTableName]);
   if WhereParameters.Count > 0 then

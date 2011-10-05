@@ -177,8 +177,7 @@
     <translate name="My documents" value="Мои документы" />
     <translate name="Desktop" value="Рабочий стол" />
     <translate name="My Computer" value="Мой компьютер" />
-    <translate name="Persons" value="Персоны" />
-    <translate name="Groups" value="Группы" />
+    <translate name="New group" value="Создать группу" />
     <translate name="Add to collection" value="Добавить в базу" />
     <translate name="Preview" value="Предпросмотр" />
     <translate name="Tasks" value="Задачи" />
@@ -1752,6 +1751,7 @@
 	<translate name="Detection size" value="Размер для определения"/>
 	<translate name="Best perfomance" value="Лучшая производительность"/>
 	<translate name="Mpx" value="Мпкс"/>
+	<translate name="Clear cache" value="Очистить кэш"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>
@@ -1997,6 +1997,7 @@
 	<translate name="Name" value="Имя"/>
 	<translate name="Find person" value="Найти персону"/>
 	<translate name="Filter persons" value="Фильтр по персонам"/>
+	<translate name="Close window and create new person" value="Закрыть окно и создать новую персону"/>	
   </scope>
   <scope name="AddImage">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
@@ -2006,6 +2007,9 @@
 	<translate name="Scan collection and remove all pointers to group &quot;%s&quot;?" value="Сканировать базу и удалить все указатели на группу &quot;%s&quot;?" />
     <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
   </scope>
+  <scope name="PersonsProvider">
+	<translate name="Do you really want to delete person &quot;{0}&quot; (Has {1} reference(s) on photo(s))?" value="Вы действительно хотите удалить персону &quot;{0}&quot; (Даная персона отмечена на {1} фотографиях)?"/>
+  </scope>  
   <scope name="Path">
 	<translate name="Network" value="Сеть"/>
 	<translate name="Groups" value="Группы"/>

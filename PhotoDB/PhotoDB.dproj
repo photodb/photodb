@@ -562,6 +562,10 @@
 			<DCCReference Include="Units\uConfiguration.pas"/>
 			<DCCReference Include="Units\uExplorerSearchProviders.pas"/>
 			<DCCReference Include="Units\uExplorerPathProvider.pas"/>
+			<DCCReference Include="Units\uVCLHelpers.pas"/>
+			<DCCReference Include="uFormPersonSuggest.pas">
+				<Form>FormPersonSuggest</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

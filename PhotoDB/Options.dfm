@@ -180,10 +180,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -396,10 +392,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -519,15 +511,24 @@ object OptionsForm: TOptionsForm
         Height = 25
         Caption = 'Clear cache'
         TabOrder = 7
+        OnClick = BtnClearFaceDetectionCacheClick
+      end
+      object LsFaceDetectionClearCache: TLoadingSign
+        Left = 251
+        Top = 283
+        Width = 25
+        Height = 25
+        Visible = False
+        Active = True
+        FillPercent = 50
+        ParentColor = False
+        SignColor = clBlack
+        MaxTransparencity = 255
       end
     end
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -784,10 +785,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1223,10 +1220,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)

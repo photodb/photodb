@@ -6,13 +6,14 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, WatermarkedEdit, ExtCtrls, WatermarkedMemo, ComCtrls,
   WebLinkList, uFaceDetection, uPeopleSupport, uMemory, uMemoryEx, jpeg,
-  uBitmapUtils, uDBThread, uDBForm, LoadingSign, u2DUtils, uSettings, Menus,
+  uBitmapUtils, uThreadEx, uDBThread, uThreadForm, LoadingSign, u2DUtils,
   UnitDBDeclare, UnitDBKernel, AppEvnts, WebLink, UnitGroupsWork, ImgList,
   uConstants, uEditorTypes, Dolphin_db, uLogger, RAWImage, uJpegUtils,
-  uFastLoad;
+  uFastLoad, uVCLHelpers, ActiveX, uDBClasses, uPathProviders, uDBForm,
+  uSettings, Menus, uExplorerPersonsProvider, uSysUtils, CommonDBSupport;
 
 type
-  TFormCreatePerson = class(TDBForm)
+  TFormCreatePerson = class(TThreadForm)
     PbPhoto: TPaintBox;
     LbName: TLabel;
     BvSeparator: TBevel;
@@ -32,6 +33,9 @@ type
     AeMain: TApplicationEvents;
     GroupsImageList: TImageList;
     MiEditImage: TMenuItem;
+    LsNameCheck: TLoadingSign;
+    WlPersonNameStatus: TWebLink;
+    TmrCkeckName: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PbPhotoPaint(Sender: TObject);
@@ -44,6 +48,8 @@ type
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure MiEditImageClick(Sender: TObject);
     procedure MiLoadOtherImageClick(Sender: TObject);
+    procedure WedNameChange(Sender: TObject);
+    procedure TmrCkeckNameTimer(Sender: TObject);
   private
     { Private declarations }
     FPicture: TBitmap;
@@ -55,6 +61,7 @@ type
     FReloadGroupsMessage: Cardinal;
     FIsImageChanged: Boolean;
     FIsEditMode: Boolean;
+    FFormPersonSuggest: TDBForm;
     procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
     function EditPerson(PersonID: Integer): Boolean;
     procedure RecreateImage;
@@ -68,8 +75,10 @@ type
     procedure EnableControls(IsEnabled: Boolean);
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
     procedure AddPhoto;
+    procedure OnMoving(var Msg: TWMMoving); message WM_MOVING;
   public
     { Public declarations }
+    procedure UpdateNameStatus(PersonList: TPathItemCollection);
     property Person: TPerson read FPerson;
   end;
 
@@ -87,13 +96,26 @@ type
     destructor Destroy; override;
   end;
 
+  TCheckNameThread = class(TThreadEx)
+  private
+    FName: string;
+    FPersons: TPathItemCollection;
+  protected
+    procedure Execute; override;
+    procedure UpdateNameData;
+  public
+    constructor Create(AOwner: TFormCreatePerson; State: TGuid; Name: string);
+    destructor Destroy; override;
+  end;
+
 procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
 function EditPerson(PersonID: Integer): Boolean;
 
 implementation
 
 uses
-  UnitUpdateDB, UnitEditGroupsForm, UnitQuickGroupInfo, ImEditor;
+  UnitUpdateDB, UnitEditGroupsForm, UnitQuickGroupInfo, ImEditor,
+  uFormPersonSuggest;
 
 {$R *.dfm}
 
@@ -323,6 +345,7 @@ procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
   FInfo := nil;
   FPerson := nil;
+  FFormPersonSuggest := nil;
   FIsImageChanged := False;
   FIsEditMode := False;
   FPicture := TBitmap.Create;
@@ -341,6 +364,7 @@ procedure TFormCreatePerson.FormDestroy(Sender: TObject);
 begin
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   F(FPicture);
+  F(FFormPersonSuggest);
   F(FDisplayImage);
   F(FInfo);
 end;
@@ -391,6 +415,16 @@ begin
   finally
     F(Bitmap);
   end;
+end;
+
+procedure TFormCreatePerson.OnMoving(var Msg: TWMMoving);
+var
+  P: TPoint;
+begin
+  P := Point(WedName.Left, WedName.Top + WedName.Height);
+  P := ClientToScreen(P);
+  if FFormPersonSuggest <> nil then
+    TFormPersonSuggest(FFormPersonSuggest).UpdatePos(P);
 end;
 
 procedure TFormCreatePerson.PbPhotoPaint(Sender: TObject);
@@ -445,6 +479,26 @@ begin
     RecreateImage;
     PbPhoto.Refresh;
   end;
+end;
+
+procedure TFormCreatePerson.UpdateNameStatus(PersonList: TPathItemCollection);
+var
+  P: TPoint;
+begin
+  LsNameCheck.Hide;
+  WlPersonNameStatus.Left := LsNameCheck.Left;
+  WlPersonNameStatus.Text := FormatEx('Found {0} persons with similar name!', [PersonList.Count]);
+  if FFormPersonSuggest = nil then
+    FFormPersonSuggest := TFormPersonSuggest.Create(Self);
+  FFormPersonSuggest.Width := WedName.Width;
+  P := Point(WedName.Left, WedName.Top + WedName.Height);
+  P := ClientToScreen(P);
+  TFormPersonSuggest(FFormPersonSuggest).LoadPersons(P, PersonList);
+end;
+
+procedure TFormCreatePerson.WedNameChange(Sender: TObject);
+begin
+  TmrCkeckName.Restart;
 end;
 
 procedure TFormCreatePerson.WedNameKeyDown(Sender: TObject; var Key: Word;
@@ -502,6 +556,19 @@ begin
     WL.OnClick := GroupClick;
   end;
   WllGroups.ReallignList;
+end;
+
+procedure TFormCreatePerson.TmrCkeckNameTimer(Sender: TObject);
+begin
+  TmrCkeckName.Enabled := False;
+  NewFormState;
+  if WedName.Text <> '' then
+  begin
+    TCheckNameThread.Create(Self, StateID, WedName.Text);
+    LsNameCheck.Show;
+    WlPersonNameStatus.IconWidth := 0;
+    WlPersonNameStatus.Left := LsNameCheck.Left + LsNameCheck.Width + 3;
+  end;
 end;
 
 procedure TFormCreatePerson.GroupClick(Sender: TObject);
@@ -637,6 +704,65 @@ begin
     end;
 
   FOwner.UpdateFaceArea(nil);
+end;
+
+{ TCheckNameThread }
+
+constructor TCheckNameThread.Create(AOwner: TFormCreatePerson; State: TGuid; Name: string);
+begin
+  inherited Create(AOwner, State);
+  FName := Name;
+  FPersons := TPathItemCollection.Create;
+end;
+
+destructor TCheckNameThread.Destroy;
+begin
+  F(FPersons);
+  inherited;
+end;
+
+procedure TCheckNameThread.Execute;
+var
+  I: Integer;
+  SC: TSelectCommand;
+  PC: TPersonCollection;
+  PI: TPersonItem;
+begin
+  inherited;
+  FreeOnTerminate := True;
+  CoInitialize(nil);
+  try
+    SC := TSelectCommand.Create(PersonTableName);
+    try
+      SC.AddParameter(TAllParameter.Create);
+      SC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('PersonName like "%{0}%"', [NormalizeDBStringLike(FName)])));
+      SC.TopRecords := 6;
+      SC.Execute;
+
+      PC := TPersonCollection.Create;
+      try
+        PC.ReadFromDS(SC.DS);
+        for I := 0 to PC.Count - 1 do
+        begin
+          PI := TPersonItem.CreateFromPath(cPersonsPath + '\' + PC[I].Name, PATH_LOAD_NO_IMAGE, 0);
+          FPersons.Add(PI);
+          PI.ReadFromPerson(PC[I], 0, 16);
+        end;
+        SynchronizeEx(UpdateNameData);
+      finally
+        F(PC);
+      end;
+    finally
+      F(SC);
+    end;
+  finally
+    CoUninitialize;
+  end;
+end;
+
+procedure TCheckNameThread.UpdateNameData;
+begin
+  TFormCreatePerson(OwnerForm).UpdateNameStatus(FPersons);
 end;
 
 end.

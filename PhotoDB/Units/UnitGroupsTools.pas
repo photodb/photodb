@@ -78,8 +78,12 @@ begin
 end;
 
 procedure RenameGroup(GroupToRename, NewName: string);
+var
+  Groups: TGroups;
 begin
-  RenameGroup(EncodeGroups(GroupToRename)[0], NewName);
+  Groups := EncodeGroups(GroupToRename);
+  if Length(Groups) > 0 then
+    RenameGroup(Groups[0], NewName);
 end;
 
 procedure RenameGroup(GroupToRename: TGroup; NewName: string);

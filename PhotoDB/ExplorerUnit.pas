@@ -238,6 +238,7 @@ type
     SearchfileswithEXIF1: TMenuItem;
     ImPathDropDownMenu: TImageList;
     EncryptLink: TWebLink;
+    WlCreateObject: TWebLink;
     Procedure LockItems;
     Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
@@ -527,6 +528,7 @@ type
     procedure PopupMenuBackPopup(Sender: TObject);
     procedure EncryptLinkClick(Sender: TObject);
     procedure PePathGetItemIconEvent(Sender: TPathEditor; Item: TPathItem);
+    procedure WlCreateObjectClick(Sender: TObject);
    private
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
@@ -675,11 +677,11 @@ uses
   FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
   uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
   UnitFileRenamerForm, UnitSizeResizerForm, ImEditor,
-  UnitManageGroups, UnitInternetUpdate, UnitHelp, uMachMask,
+  UnitManageGroups, UnitHelp, uMachMask,
   UnitGetPhotosForm, UnitFormCont, UnitGroupsWork,
   UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
-  UnitSavingTableForm, UnitUpdateDBObject, Loadingresults,
-  uFormSteganography, UnitBigImagesSize;
+  UnitSavingTableForm, UnitUpdateDBObject, 
+  uFormSteganography, UnitBigImagesSize, UnitNewGroupForm;
 
 {$R *.dfm}
 
@@ -1621,7 +1623,8 @@ begin
           end
         end;
       end;
-      FastRenameManyFiles(Files, X);
+      if Files.Count > 0 then
+        FastRenameManyFiles(Files, X);
     finally
       F(Files);
     end;
@@ -1634,6 +1637,7 @@ var
   Index: Integer;
   Files: TStringList;
   Info: TExplorerFileInfo;
+  PI: TPathItem;
 begin
   if SelCount = 0 then
     Exit;
@@ -1650,10 +1654,18 @@ begin
 
         if (Info.FileType =  EXPLORER_ITEM_PERSON) or (Info.FileType =  EXPLORER_ITEM_GROUP) then
         begin
-          if Info.Provider.SupportsFeature(PATH_FEATURE_DELETE) then
-          begin
-            if Info.Provider.ExecuteFeature(Self, Info, PATH_FEATURE_DELETE, 0) then
-              Exit;
+          PI := PathProviderManager.CreatePathItem(Info.FileName);
+          try
+            if (PI <> nil) and PI.Provider.SupportsFeature(PATH_FEATURE_DELETE) then
+            begin
+              if PI.Provider.ExecuteFeature(Self, PI, PATH_FEATURE_DELETE, nil) then
+              begin
+                ElvMain.Items.Delete(I);
+                Exit;
+              end;
+            end;
+          finally
+            F(PI);
           end;
         end;
       end;
@@ -1733,9 +1745,29 @@ var
   DS: TDataSet;
   Folder: string;
   Info: TExplorerFileInfo;
+  PI: TPathItem;
+  EO: TPathFeatureOptions;
 begin
   Info := FFilesInfo[PmItemPopup.Tag];
   FDblClicked := False;
+
+  PI := PathProviderManager.CreatePathItem(Info.FileName);
+  try
+    if (PI <> nil) and (PI.Provider.SupportsFeature(PATH_FEATURE_RENAME)) then
+    begin
+      EO := TPathFeatureEditOptions.Create(S);
+      try
+        if not PI.Provider.ExecuteFeature(Self, PI, PATH_FEATURE_RENAME, EO) then
+          S := Item.Caption;
+      finally
+        F(EO);
+      end;
+      Exit;
+    end;
+  finally
+    F(PI);
+  end;
+
   S := Copy(S, 1, Min(Length(S), 255));
   if AnsiLowerCase(S) = AnsiLowerCase(ExtractFileName(Info.FileName)) then
     Exit;
@@ -3785,7 +3817,7 @@ begin
       SlideShowLink.Top := TasksLabel.Top;
     end;
 
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)  then
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
     begin
       if not FSelectedInfo.Encrypted then
       begin
@@ -3840,6 +3872,17 @@ begin
       ShellLink.Visible := False;
       ShellLink.Top := PrintLink.Top;
     end;
+    
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
+    begin
+      WlCreateObject.Text := L('New group'); 
+      WlCreateObject.Visible := True;
+      WlCreateObject.Top := ShellLink.Top + ShellLink.Height + H;
+    end else
+    begin
+      WlCreateObject.Visible := False;
+      WlCreateObject.Top := ShellLink.Top;
+    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -3847,12 +3890,12 @@ begin
     begin
       CopyToLink.Visible := True;
       TbCopy.Enabled := SelCount <> 0;
-      CopyToLink.Top := ShellLink.Top + ShellLink.Height + H;
+      CopyToLink.Top := WlCreateObject.Top + WlCreateObject.Height + H;
     end else
     begin
       CopyToLink.Visible := False;
       TbCopy.Enabled := False;
-      CopyToLink.Top := ShellLink.Top;
+      CopyToLink.Top := WlCreateObject.Top;
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
@@ -4621,7 +4664,7 @@ begin
     begin
       if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
       begin
-        P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, 0);
+        P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, nil);
         Exit;
       end;
     end;
@@ -4666,7 +4709,7 @@ begin
       begin
         if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
         begin
-          P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, 0);
+          P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, nil);
           Exit;
         end;
       end;
@@ -7068,6 +7111,11 @@ begin
   end;
 end;
 
+procedure TExplorerForm.WlCreateObjectClick(Sender: TObject);
+begin
+  CreateNewGroupDialog;
+end;
+
 function TExplorerForm.GetFilterText: string;
 var
   Filter: string;
@@ -8605,6 +8653,7 @@ begin
   MyDocumentsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_DOCUMENTS + 1]);
   MyComputerLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_COMPUTER + 1]);
   DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]);
+  WlCreateObject.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW_SHELL + 1]);
 end;
 
 destructor TExplorerForm.Destroy;

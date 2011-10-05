@@ -9,7 +9,7 @@ uses
   ImgList, NoVSBListView, uBitmapUtils, ExplorerTypes,
   UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils, uMemoryEx,
   uShellIntegration, uConstants, Dolphin_DB, uSettings, uRuntime,
-  CommonDBSupport, ToolWin, uPathProviders;
+  CommonDBSupport, ToolWin, uPathProviders, uExplorerGroupsProvider;
 
 type
   TFormManageGroups = class(TDBForm)
@@ -237,7 +237,7 @@ end;
 procedure TFormManageGroups.DeleteGroup(Sender: TObject);
 var
   Index: Integer;
-  Info: TExplorerFileInfo;
+  GI: TGroupItem;
 begin
   if (Sender is TmenuItem) then
     Index := (Sender as TMenuItem).Owner.Tag
@@ -246,13 +246,12 @@ begin
 
   FSaving := True;
   try
-    Info := TExplorerFileInfo.Create;
+    GI := TGroupItem.Create;
     try
-      Info.FileType := EXPLORER_ITEM_GROUP;
-      Info.Name := Groups[Index].GroupName;
-      Info.Provider.ExecuteFeature(Self, Info, PATH_FEATURE_DELETE, 0);
+      GI.ReadFromGroup(Groups[Index], PATH_LOAD_NO_IMAGE, 0);
+      GI.Provider.ExecuteFeature(Self, GI, PATH_FEATURE_DELETE, nil);
     finally
-      F(Info);
+      F(GI);
     end;
   finally
     FSaving := False;

@@ -41,14 +41,15 @@ type
   protected
     function InternalFillChildList(Sender: TObject; Item: TPathItem; List: TPathItemCollection; Options, ImageSize: Integer; PacketSize: Integer; CallBack: TLoadListCallBack): Boolean; override;
     function GetTranslateID: string; override;
-    function Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: Integer): Boolean;
+    function Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: TPathFeatureOptions): Boolean;
     function ShowProperties(Sender: TObject; Item: TGroupItem): Boolean;
+    function Rename(Sender: TObject; Item: TGroupItem; Options: TPathFeatureEditOptions): Boolean;
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; override;
     function Supports(Path: string): Boolean; override;
     function SupportsFeature(Feature: string): Boolean; override;
-    function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: Integer): Boolean; override;
+    function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: TPathFeatureOptions): Boolean; override;
     function CreateFromPath(Path: string): TPathItem; override;
   end;
 
@@ -78,7 +79,7 @@ begin
     Result := TGroupItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
-function TGroupProvider.Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: Integer): Boolean;
+function TGroupProvider.Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: TPathFeatureOptions): Boolean;
 var
   EventInfo: TEventValues;
   Group: TGroup;
@@ -117,7 +118,7 @@ begin
 end;
 
 function TGroupProvider.ExecuteFeature(Sender: TObject; Item: TPathItem;
-  Feature: string; Options: Integer): Boolean;
+  Feature: string; Options: TPathFeatureOptions): Boolean;
 begin
   Result := inherited ExecuteFeature(Sender, Item, Feature, Options);
 
@@ -126,6 +127,9 @@ begin
 
   if Feature = PATH_FEATURE_PROPERTIES then
     Result := ShowProperties(Sender, Item as TGroupItem);
+
+  if Feature = PATH_FEATURE_RENAME then
+    Result := Rename(Sender, Item as TGroupItem, Options as TPathFeatureEditOptions);
 end;
 
 function TGroupProvider.ExtractPreview(Item: TPathItem; MaxWidth,
@@ -200,6 +204,20 @@ begin
     CallBack(Sender, Item, List, Cancel);
 end;
 
+function TGroupProvider.Rename(Sender: TObject; Item: TGroupItem;
+  Options: TPathFeatureEditOptions): Boolean;
+var
+  Group: TGroup;
+begin
+  Group := GetGroupByGroupName(Item.GroupName, False);
+  try
+    RenameGroup(Group, Options.NewName);
+    Result := True;
+  finally
+    FreeGroup(Group);
+  end;
+end;
+
 function TGroupProvider.Supports(Item: TPathItem): Boolean;
 begin
   Result := Item is TGroupsItem;
@@ -223,6 +241,7 @@ function TGroupProvider.SupportsFeature(Feature: string): Boolean;
 begin
   Result := Feature = PATH_FEATURE_DELETE;
   Result := Result or (Feature = PATH_FEATURE_PROPERTIES);
+  Result := Result or (Feature = PATH_FEATURE_RENAME);
 end;
 
 { TGroupItem }

@@ -2157,7 +2157,7 @@ var
   Face, TmpFace: TFaceDetectionResultItem;
   R, FaceRect: TRect;
   P1, P2: TPoint;
-  B: TBitmap;
+  BmpFace3X: TBitmap;
   P: TPerson;
   W, H: Integer;
 begin
@@ -2189,25 +2189,81 @@ begin
   if R.Right > FBImage.Width then
     R.Right := FBImage.Width;
 
-  B := TBitmap.Create;
+  BmpFace3X := TBitmap.Create;
   try
-    B.PixelFormat := pf24Bit;
-    B.SetSize(RectWidth(R), RectHeight(R));
-    B.Canvas.CopyRect(B.ClientRect, FBImage.Canvas, R);
-    //b contains image of person
+    BmpFace3X.PixelFormat := pf24Bit;
+    BmpFace3X.SetSize(RectWidth(R), RectHeight(R));
+    BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FBImage.Canvas, R);
+    //BmpFace3X contains image of person
     TmpFace := TFaceDetectionResultItem.Create;
     try
       TmpFace.X := FaceRect.Left;
       TmpFace.Y := FaceRect.Top;
       TmpFace.Width := RectWidth(FaceRect);
       TmpFace.Height := RectHeight(FaceRect);
-      CreatePerson(Item, Face, TmpFace, B, P);
+      CreatePerson(Item, Face, TmpFace, BmpFace3X, P);
       F(P);
     finally
       F(TmpFace);
     end;
   finally
-    F(B);
+    F(BmpFace3X);
+  end;
+end;
+
+procedure TViewer.MiOtherPersonsClick(Sender: TObject);
+var
+  FormFindPerson: TFormFindPerson;
+  P: TPerson;
+  Result: Integer;
+begin
+  Application.CreateForm(TFormFindPerson, FormFindPerson);
+  try
+    P := nil;
+    Result := FormFindPerson.Execute(Item, P);
+    if (P <> nil) and (Result = SELECT_PERSON_OK) then
+      SelectPerson(P);
+    if Result = SELECT_PERSON_CREATE_NEW then
+      MiCreatePersonClick(Sender);
+  finally
+    F(FormFindPerson);
+  end;
+end;
+
+procedure TViewer.SelectPerson(P: TPerson);
+var
+  PA: TPersonArea;
+  RI: TFaceDetectionResultItem;
+begin
+  RI := TFaceDetectionResultItem(PmFace.Tag);
+  if P <> nil then
+  begin
+    PA := TPersonArea(RI.Data);
+    if Item.ID = 0 then
+    begin
+      Item.Include := True;
+      AddImage(Item);
+    end;
+
+    if Item.ID <> 0 then
+    begin
+      if PA = nil then
+      begin
+        PA := TPersonArea.Create(Item.ID, P.ID, RI);
+        try
+          PersonManager.AddPersonForPhoto(PA);
+          RI.Data := PA.Clone;
+
+          RefreshFaces;
+        finally
+          F(PA);
+        end;
+      end else
+      begin
+        PersonManager.ChangePerson(PA, P.ID);
+        RefreshFaces;
+      end;
+    end;
   end;
 end;
 
@@ -4060,57 +4116,6 @@ procedure TViewer.OnPageSelecterClick(Sender: TObject);
 begin
   FCurrentPage := TMenuItem(Sender).Tag;
   ReloadCurrent;
-end;
-
-procedure TViewer.SelectPerson(P: TPerson);
-var
-  PA: TPersonArea;
-  RI: TFaceDetectionResultItem;
-begin
-  RI := TFaceDetectionResultItem(PmFace.Tag);
-  if P <> nil then
-  begin
-    PA := TPersonArea(RI.Data);
-    if Item.ID = 0 then
-    begin
-      Item.Include := True;
-      AddImage(Item);
-    end;
-
-    if Item.ID <> 0 then
-    begin
-      if PA = nil then
-      begin
-        PA := TPersonArea.Create(Item.ID, P.ID, RI);
-        try
-          PersonManager.AddPersonForPhoto(PA);
-          RI.Data := PA.Clone;
-
-          RefreshFaces;
-        finally
-          F(PA);
-        end;
-      end else
-      begin
-        PersonManager.ChangePerson(PA, P.ID);
-        RefreshFaces;
-      end;
-    end;
-  end;
-end;
-
-procedure TViewer.MiOtherPersonsClick(Sender: TObject);
-var
-  FormFindPerson: TFormFindPerson;
-  P: TPerson;
-begin
-  Application.CreateForm(TFormFindPerson, FormFindPerson);
-  try
-    P := FormFindPerson.Execute(Item);
-    SelectPerson(P);
-  finally
-    F(FormFindPerson);
-  end;
 end;
 
 procedure TViewer.MiRefreshFacesClick(Sender: TObject);

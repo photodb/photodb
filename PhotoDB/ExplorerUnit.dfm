@@ -3,7 +3,7 @@ object ExplorerForm: TExplorerForm
   Top = 101
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
-  ClientHeight = 613
+  ClientHeight = 627
   ClientWidth = 867
   Color = clBtnFace
   Constraints.MinHeight = 200
@@ -23,14 +23,14 @@ object ExplorerForm: TExplorerForm
   OnShow = FormShow
   DesignSize = (
     867
-    613)
+    627)
   PixelsPerInch = 96
   TextHeight = 13
   object SplLeftPanel: TSplitter
     Left = 135
     Top = 48
     Width = 5
-    Height = 545
+    Height = 559
     Constraints.MaxWidth = 150
     OnCanResize = SplLeftPanelCanResize
     ExplicitLeft = 150
@@ -41,16 +41,17 @@ object ExplorerForm: TExplorerForm
     Left = 140
     Top = 48
     Width = 1
-    Height = 545
+    Height = 559
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
+    ExplicitHeight = 545
   end
   object MainPanel: TPanel
     Left = 0
     Top = 48
     Width = 135
-    Height = 545
+    Height = 559
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
@@ -85,7 +86,7 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 21
       Width = 135
-      Height = 524
+      Height = 538
       Align = alClient
       BevelOuter = bvNone
       Color = clInactiveCaption
@@ -97,7 +98,7 @@ object ExplorerForm: TExplorerForm
         Left = 0
         Top = 0
         Width = 135
-        Height = 524
+        Height = 538
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -169,8 +170,8 @@ object ExplorerForm: TExplorerForm
         end
         object OtherPlacesLabel: TLabel
           Tag = 1
-          Left = 11
-          Top = 441
+          Left = 8
+          Top = 455
           Width = 71
           Height = 13
           Caption = 'Other Places'
@@ -306,7 +307,7 @@ object ExplorerForm: TExplorerForm
         end
         object RenameLink: TWebLink
           Left = 5
-          Top = 349
+          Top = 365
           Width = 60
           Height = 16
           Cursor = crHandPoint
@@ -325,7 +326,7 @@ object ExplorerForm: TExplorerForm
         end
         object RefreshLink: TWebLink
           Left = 5
-          Top = 382
+          Top = 398
           Width = 59
           Height = 16
           Cursor = crHandPoint
@@ -344,7 +345,7 @@ object ExplorerForm: TExplorerForm
         end
         object PropertiesLink: TWebLink
           Left = 5
-          Top = 365
+          Top = 381
           Width = 70
           Height = 16
           Cursor = crHandPoint
@@ -381,8 +382,8 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object MyPicturesLink: TWebLink
-          Left = 8
-          Top = 470
+          Left = 3
+          Top = 484
           Width = 76
           Height = 16
           Cursor = crHandPoint
@@ -401,8 +402,8 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object MyDocumentsLink: TWebLink
-          Left = 8
-          Top = 486
+          Left = 3
+          Top = 500
           Width = 91
           Height = 16
           Cursor = crHandPoint
@@ -421,8 +422,8 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object MyComputerLink: TWebLink
-          Left = 8
-          Top = 454
+          Left = 3
+          Top = 468
           Width = 85
           Height = 16
           Cursor = crHandPoint
@@ -442,7 +443,7 @@ object ExplorerForm: TExplorerForm
         end
         object MoveToLink: TWebLink
           Left = 5
-          Top = 333
+          Top = 349
           Width = 62
           Height = 16
           Cursor = crHandPoint
@@ -479,8 +480,8 @@ object ExplorerForm: TExplorerForm
           HightliteImage = False
         end
         object DesktopLink: TWebLink
-          Left = 8
-          Top = 502
+          Left = 3
+          Top = 516
           Width = 60
           Height = 16
           Cursor = crHandPoint
@@ -500,7 +501,7 @@ object ExplorerForm: TExplorerForm
         end
         object DeleteLink: TWebLink
           Left = 5
-          Top = 398
+          Top = 414
           Width = 52
           Height = 16
           Cursor = crHandPoint
@@ -519,7 +520,7 @@ object ExplorerForm: TExplorerForm
         end
         object CopyToLink: TWebLink
           Left = 5
-          Top = 317
+          Top = 333
           Width = 61
           Height = 16
           Cursor = crHandPoint
@@ -538,7 +539,7 @@ object ExplorerForm: TExplorerForm
         end
         object AddLink: TWebLink
           Left = 5
-          Top = 414
+          Top = 430
           Width = 75
           Height = 16
           Cursor = crHandPoint
@@ -574,12 +575,32 @@ object ExplorerForm: TExplorerForm
           UseSpecIconSize = True
           HightliteImage = False
         end
+        object WlCreateObject: TWebLink
+          Left = 5
+          Top = 315
+          Width = 54
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'Create'
+          Visible = False
+          OnClick = WlCreateObjectClick
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          ImageCanRegenerate = True
+          UseSpecIconSize = True
+          HightliteImage = False
+        end
       end
     end
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 593
+    Top = 607
     Width = 867
     Height = 20
     Panels = <
@@ -936,14 +957,14 @@ object ExplorerForm: TExplorerForm
     Left = 141
     Top = 48
     Width = 726
-    Height = 545
+    Height = 559
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
     TabOrder = 5
     object PnFilter: TPanel
       Left = 0
-      Top = 512
+      Top = 526
       Width = 726
       Height = 33
       Align = alBottom

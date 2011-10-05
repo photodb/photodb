@@ -28,11 +28,14 @@ type
   public
     procedure InitDB;
     procedure LoadPersonList(Persons: TPersonCollection);
-    function FindPerson(PersonID: Integer): TPerson;
+    function FindPerson(PersonID: Integer): TPerson; overload;
+    function FindPerson(PersonName: string): TPerson; overload;
     function GetPerson(PersonID: Integer): TPerson;
     function GetPersonByName(PersonName: string): TPerson;
+    function RenamePerson(PersonName, NewName: string): Boolean;
     function CreateNewPerson(Person: TPerson): Boolean;
-    function DeletePerson(PersonID: Integer): Boolean;
+    function DeletePerson(PersonID: Integer): Boolean; overload;
+    function DeletePerson(PersonName: string): Boolean; overload;
     function UpdatePerson(Person: TPerson): Boolean;
     function GetPersonsOnImage(ImageID: Integer): TPersonCollection;
     function GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
@@ -52,6 +55,7 @@ type
     function GetCount: Integer;
     function GetPersonByIndex(Index: Integer): TPerson;
   public
+    function GetPersonByName(PersonName: string): TPerson;
     constructor Create(FreeCollectionItems: Boolean = True);
     destructor Destroy; override;
     procedure Clear;
@@ -66,6 +70,7 @@ type
 
   TPerson = class(TClonableObject)
   private
+    FEmpty: Boolean;
     FID: Integer;
     FName: string;
     FImage: TJpegImage;
@@ -102,6 +107,7 @@ type
     property Email: string read FEmail write FEmail;
     property Sex: Integer read FSex write FSex;
     property CreateDate: TDateTime read FCreateDate;
+    property Empty: Boolean read FEmpty;
   end;
 
   TPersonArea = class(TClonableObject)
@@ -195,6 +201,7 @@ end;
 
 constructor TPerson.Create;
 begin
+  FEmpty := True;
   FID := 0;
   FName := '';
   FImage := nil;
@@ -225,6 +232,7 @@ begin
   F(FImage);
   FImage := TJpegImage.Create;
   FImage.Assign(DS.FieldByName('PersonImage'));
+  FEmpty := False;
 end;
 
 procedure TPerson.SaveToDS(DS: TDataSet);
@@ -363,6 +371,20 @@ begin
   end;
 end;
 
+function TPersonManager.DeletePerson(PersonName: string): Boolean;
+var
+  P: TPerson;
+begin
+  Result := False;
+  P := GetPersonByName(PersonName);
+  try
+    if P <> nil then
+      Result := DeletePerson(P.ID);
+  finally
+    F(P);
+  end;
+end;
+
 destructor TPersonManager.Destroy;
 begin
   F(FPeoples);
@@ -389,6 +411,11 @@ begin
         Persons.Add(P);
     end;
   end;
+end;
+
+function TPersonManager.FindPerson(PersonName: string): TPerson;
+begin
+  Result := AllPersons.GetPersonByName(PersonName);
 end;
 
 function TPersonManager.FindPerson(PersonID: Integer): TPerson;
@@ -579,6 +606,41 @@ begin
   end;
 end;
 
+function TPersonManager.RenamePerson(PersonName, NewName: string): Boolean;
+var
+  P, PTest: TPerson;
+  UC: TUpdateCommand;
+begin
+  Result := False;
+  FSync.Enter;
+  try
+    P := FindPerson(PersonName);
+    if P <> nil then
+    begin
+      PTest := GetPersonByName(NewName);
+      try
+        if PTest.Empty then
+        begin
+          UC := TUpdateCommand.Create(PersonTableName);
+          try
+            UC.AddParameter(TStringParameter.Create('PersonName', NewName));
+            UC.AddWhereParameter(TIntegerParameter.Create('PersonID', P.ID));
+            UC.Execute;
+            Result := True;
+            P.Name := NewName;
+          finally
+            F(UC);
+          end;
+        end;
+      finally
+        F(PTest);
+      end;
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
 function TPersonManager.UpdatePerson(Person: TPerson): Boolean;
 var
   UC: TUpdateCommand;
@@ -675,6 +737,19 @@ end;
 function TPersonCollection.GetPersonByIndex(Index: Integer): TPerson;
 begin
   Result := FList[Index];
+end;
+
+function TPersonCollection.GetPersonByName(PersonName: string): TPerson;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to Count - 1 do
+    if Items[I].Name = PersonName then
+    begin
+      Result := Items[I];
+      Exit;
+    end;
 end;
 
 procedure TPersonCollection.ReadFromDS(DS: TDataSet);
