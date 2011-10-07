@@ -438,6 +438,7 @@ object EditGroupsForm: TEditGroupsForm
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 10
+    OnChange = WedPersonFilterChange
     WatermarkText = 'Find person'
   end
   object PmGroup: TPopupMenu
@@ -502,5 +503,12 @@ object EditGroupsForm: TEditGroupsForm
     Width = 32
     Left = 240
     Top = 48
+  end
+  object TmrFilter: TTimer
+    Enabled = False
+    Interval = 200
+    OnTimer = TmrFilterTimer
+    Left = 136
+    Top = 168
   end
 end

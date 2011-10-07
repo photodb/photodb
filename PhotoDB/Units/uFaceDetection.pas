@@ -3,7 +3,8 @@ unit uFaceDetection;
 interface
 
 uses
-  Windows, SysUtils, Classes, uMemory, Graphics, SyncObjs, u2DUtils;
+  Windows, SysUtils, Classes, uMemory, Graphics, SyncObjs, u2DUtils,
+  UnitDBDeclare;
 
 type
   CvSize = record
@@ -204,9 +205,9 @@ const
   CascadesDirectoryMask = 'Cascades';
 
 type
-  TClonableObject = class(TObject)
+{  TClonableObject = class(TObject)
     function Clone: TClonableObject; virtual; abstract;
-  end;
+  end;   }
 
   TFaceDetectionResultItem = class
   private

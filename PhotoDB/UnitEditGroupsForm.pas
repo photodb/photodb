@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Windows, Messages, SysUtils, Classes,
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
-  UnitDBDeclare, uBitmapUtils, uDBForm, uShellIntegration,
+  UnitDBDeclare, uBitmapUtils, uDBForm, uShellIntegration, uVCLHelpers,
   uGraphicUtils, uConstants, uMemory, uSettings, pngimage, WatermarkedEdit;
 
 type
@@ -42,6 +42,7 @@ type
     LbInfo: TLabel;
     WedPersonFilter: TWatermarkedEdit;
     ImSearch: TImage;
+    TmrFilter: TTimer;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtnCreateGroupClick(Sender: TObject);
@@ -72,6 +73,8 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormDestroy(Sender: TObject);
+    procedure WedPersonFilterChange(Sender: TObject);
+    procedure TmrFilterTimer(Sender: TObject);
   private
     { Private declarations }
     FGroups: TGroups;
@@ -480,6 +483,16 @@ end;
 procedure TEditGroupsForm.SearchForGroup1Click(Sender: TObject);
 begin
   SearchManager.NewSearch.StartSearch(':Group(' + FGroups[PmGroup.Tag].GroupName+'):');
+end;
+
+procedure TEditGroupsForm.TmrFilterTimer(Sender: TObject);
+begin
+  TmrFilter.Enabled := False;
+end;
+
+procedure TEditGroupsForm.WedPersonFilterChange(Sender: TObject);
+begin
+  TmrFilter.Restart;
 end;
 
 procedure TEditGroupsForm.CbShowAllGroupsClick(Sender: TObject);

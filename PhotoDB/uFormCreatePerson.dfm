@@ -247,7 +247,7 @@ object FormCreatePerson: TFormCreatePerson
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = BtnCancelClick
   end
   object WllGroups: TWebLinkList
@@ -333,6 +333,8 @@ object FormCreatePerson: TFormCreatePerson
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object PmImageOptions: TPopupMenu
     Left = 104

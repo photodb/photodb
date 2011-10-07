@@ -2251,11 +2251,11 @@ begin
 
     if Item.ID <> 0 then
     begin
-      if PA = nil then
+      if (PA = nil) or (PA.PersonID <= 0) then
       begin
         PA := TPersonArea.Create(Item.ID, P.ID, RI);
         try
-          PersonManager.AddPersonForPhoto(PA);
+          PersonManager.AddPersonForPhoto(Self, PA);
           RI.Data := PA.Clone;
 
           RefreshFaces;

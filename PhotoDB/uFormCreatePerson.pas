@@ -179,7 +179,7 @@ begin
   begin
     PersonArea := TPersonArea.Create(FInfo.ID, Person.ID, FOriginalFace);
     try
-      PersonManager.AddPersonForPhoto(PersonArea);
+      PersonManager.AddPersonForPhoto(Self, PersonArea);
       FOriginalFace.Data := PersonArea.Clone;
     finally
       F(PersonArea);

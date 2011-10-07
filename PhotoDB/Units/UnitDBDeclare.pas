@@ -173,7 +173,7 @@ type
 
   TClonableObject = class(TObject)
   public
-    function Copy: TClonableObject; virtual; abstract;
+    function Clone: TClonableObject; virtual; abstract;
   end;
 
   TSearchDataExtension = class(TClonableObject)
@@ -181,7 +181,7 @@ type
     Bitmap: TBitmap;
     Icon: TIcon;
     CompareResult: TImageCompareResult;
-    function Copy: TClonableObject; override;
+    function Clone: TClonableObject; override;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -374,7 +374,7 @@ begin
   Result := InitNewInstance;
   Result.Assign(Self, False);
   if Data <> nil then
-    Result.Data := Data.Copy
+    Result.Data := Data.Clone
   else
     Result.Data := nil;
 end;
@@ -547,7 +547,7 @@ end;
 
 { TSearchDataExtension }
 
-function TSearchDataExtension.Copy: TClonableObject;
+function TSearchDataExtension.Clone: TClonableObject;
 begin
   Result := TSearchDataExtension.Create;
   TSearchDataExtension(Result).CompareResult := CompareResult;

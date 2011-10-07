@@ -315,6 +315,8 @@ object Viewer: TViewer
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = True
+      StretchImage = True
+      CanClick = True
     end
   end
   object LsLoading: TLoadingSign

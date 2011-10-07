@@ -4,11 +4,13 @@ interface
 
 uses
   SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB,
-  uFaceDetection, uSettings, Math, uFastLoad, UnitDBKernel;
+  uFaceDetection, uSettings, Math, uFastLoad, UnitDBKernel, uDBForm, UnitDBDeclare,
+  UnitGroupsWork;
 
 const
   PersonTableName = 'Persons';
   PersonMappingTableName = 'PersonMapping';
+  ImageTable = 'ImageTable';
 
 type
   TPerson = class;
@@ -39,7 +41,7 @@ type
     function UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
     function GetPersonsOnImage(ImageID: Integer): TPersonCollection;
     function GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
-    function AddPersonForPhoto(PersonArea: TPersonArea): Boolean;
+    function AddPersonForPhoto(Sender: TDBForm; PersonArea: TPersonArea): Boolean;
     function RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
     function ChangePerson(PersonArea: TPersonArea; ToPersonID: Integer): Boolean;
     procedure FillLatestSelections(Persons: TPersonCollection);
@@ -252,11 +254,21 @@ end;
 
 { TPersonManager }
 
-function TPersonManager.AddPersonForPhoto(PersonArea: TPersonArea): Boolean;
+function TPersonManager.AddPersonForPhoto(Sender: TDBForm; PersonArea: TPersonArea): Boolean;
 var
+  P: TPerson;
   IC: TInsertCommand;
+  SC: TSelectCommand;
+  UC: TUpdateCommand;
+  Groups: string;
+  Values: TEventValues;
+
 begin
   Result := False;
+
+  P := FindPerson(PersonArea.PersonID);
+  if P = nil then
+    Exit;
 
   IC := TInsertCommand.Create(PersonMappingTableName);
   try
@@ -271,6 +283,36 @@ begin
     IC.AddParameter(TIntegerParameter.Create('ImageID', PersonArea.ImageID));
     try
       PersonArea.ID := IC.Execute;
+
+      if P.Groups <> '' then
+      begin
+        SC := TSelectCommand.Create(ImageTable);
+        try
+          SC.AddParameter(TStringParameter.Create('Groups', ''));
+          SC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
+          if SC.Execute > 0 then
+          begin
+            Groups := SC.DS.FieldByName('Groups').AsString;
+            AddGroupsToGroups(Groups, P.Groups);
+
+            UC := TUpdateCommand.Create(ImageTable);
+            try
+              UC.AddParameter(TStringParameter.Create('Groups', Groups));
+              UC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
+              UC.Execute;
+
+              Values.Groups := Groups;
+              DBKernel.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups], Values);
+
+            finally
+              F(UC);
+            end;
+
+          end;
+        finally
+          F(SC);
+        end;
+      end;
 
       MarkLatestPerson(PersonArea.PersonID);
       Result := True;
@@ -542,6 +584,7 @@ begin
   SC := TSelectCommand.Create(PersonTableName);
   try
     SC.AddParameter(TAllParameter.Create);
+    SC.Order.Add(TOrderParameter.Create('PersonName', False));
     SC.Execute;
     Persons.ReadFromDS(SC.DS);
   finally
