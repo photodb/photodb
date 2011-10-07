@@ -39,6 +39,7 @@ type
     FPersons: TPersonCollection;
     WndMethod: TWndMethod;
     FInfo: TDBPopupMenuInfoRecord;
+    FFormResult: Integer;
     function GetIndex(aNMHdr: pNMHdr): Integer;
     procedure CheckMsg(var aMsg: TMessage);
     procedure LoadList;
@@ -129,7 +130,7 @@ begin
     Exit;
   end;
 
-  ModalResult := SELECT_PERSON_OK;
+  FFormResult := SELECT_PERSON_OK;
   Close;
 end;
 
@@ -210,13 +211,13 @@ end;
 
 function TFormFindPerson.Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
 begin
-  ModalResult := SELECT_PERSON_CANCEL;
+  FFormResult := SELECT_PERSON_CANCEL;
   FInfo := Info.Copy;
   ShowModal;
   if LvPersons.Selected <> nil then
     Person := TPerson(LvPersons.Selected.Data);
 
-  Result := ModalResult;
+  Result := FFormResult;
 end;
 
 procedure TFormFindPerson.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -227,6 +228,7 @@ end;
 procedure TFormFindPerson.FormCreate(Sender: TObject);
 begin
   FInfo := nil;
+  FFormResult := SELECT_PERSON_CANCEL;
   WndMethod := LvPersons.WindowProc;
   LvPersons.WindowProc := CheckMsg;
   LoadList;
@@ -389,7 +391,7 @@ end;
 
 procedure TFormFindPerson.WlCreatePersonClick(Sender: TObject);
 begin
-  ModalResult := SELECT_PERSON_CREATE_NEW;
+  FFormResult := SELECT_PERSON_CREATE_NEW;
   Close;
 end;
 

@@ -507,6 +507,9 @@ begin
   TW.I.Start('LoadLanguage');
   LoadLanguage;
 
+  WlFaceCount.Visible := FaceDetectionManager.IsActive;
+  LsDetectingFaces.Visible := FaceDetectionManager.IsActive;
+
   TW.I.Start('LoadCursor');
   CursorZoomIn := LoadCursor(HInstance,'ZOOMIN');
   CursorZoomOut := LoadCursor(HInstance,'ZOOMOUT');
@@ -2202,6 +2205,7 @@ begin
       TmpFace.Width := RectWidth(FaceRect);
       TmpFace.Height := RectHeight(FaceRect);
       CreatePerson(Item, Face, TmpFace, BmpFace3X, P);
+      RefreshFaces;
       F(P);
     finally
       F(TmpFace);

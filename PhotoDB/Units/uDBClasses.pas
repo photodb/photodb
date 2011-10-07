@@ -4,18 +4,23 @@ interface
 
 uses
   DB, SysUtils, Classes, jpeg, uMemory, CommonDBSupport, uStringUtils, ADODB,
-  Variants;
+  Variants, uSysUtils;
 
 type
+  TParameterAction = (paNone, paGrateThan, paGrateOrEq, paLessThan, paLessOrEq, paEquals, paNotEquals);
+
   TParameter = class
   private
     FName: string;
+    FAction: TParameterAction;
+    function GetAction: string;
   protected
     function GetValue: Variant; virtual; abstract;
   public
-    constructor Create(Name: string);
+    constructor Create(Name: string; Action: TParameterAction);
     property Value: Variant read GetValue;
     property Name: string read FName;
+    property Action: string read GetAction;
   end;
 
   TAllParameter = class(TParameter)
@@ -51,7 +56,7 @@ type
   protected
     function GetValue: Variant; override;
   public
-    constructor Create(Name: string; Value: Integer);
+    constructor Create(Name: string; Value: Integer; Action: TParameterAction = paEquals);
   end;
 
   TDateTimeParameter = class(TParameter)
@@ -60,7 +65,7 @@ type
   protected
     function GetValue: Variant; override;
   public
-    constructor Create(Name: string; Value: TDateTime);
+    constructor Create(Name: string; Value: TDateTime; Action: TParameterAction = paEquals);
   end;
 
   TStringParameter = class(TParameter)
@@ -69,7 +74,7 @@ type
   protected
     function GetValue: Variant; override;
   public
-    constructor Create(Name: string; Value: string);
+    constructor Create(Name: string; Value: string; Action: TParameterAction = paEquals);
   end;
 
   TJpegParameter = class(TParameter)
@@ -104,17 +109,19 @@ type
   private
     FParameters: FParameterCollection;
     FWhereParameters: FParameterCollection;
+    FCustomParameters: FParameterCollection;
     FQuery: TDataSet;
     function GetRecordCount: Integer;
   protected
     function GetSQL: string; virtual; abstract;
   public
-    constructor Create;
+    constructor Create(Async: Boolean = False);
     destructor Destroy; override;
     procedure UpdateParameters;
     function Execute: Integer; virtual; abstract;
     procedure AddParameter(Parameter: TParameter);
     procedure AddWhereParameter(Parameter: TParameter);
+    procedure AddCustomeParameter(Parameter: TParameter);
     property SQL: string read GetSQL;
     property Parameters: FParameterCollection read FParameters;
     property WhereParameters: FParameterCollection read FWhereParameters;
@@ -153,16 +160,43 @@ type
     constructor Create(TableName: string);
   end;
 
+  TOrderParameter = class
+  private
+    FColumnName: string;
+    FDesc: Boolean;
+  public
+    constructor Create(AColumnName: string; ADesc: Boolean);
+    property ColumnName: string read FColumnName;
+    property ColumnDesc: Boolean read FDesc;
+  end;
+
+  TOrderParameterCollection = class
+  private
+    FList: TList;
+    function GetCount: Integer;
+    function GetItemByID(Index: Integer): TOrderParameter;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Add(Order: TOrderParameter);
+    function AsOrderSQL: string;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: TOrderParameter read GetItemByID; default;
+  end;
+
   TSelectCommand = class(TSqlCommand)
   private
     FTableName: string;
     FTopRecords: Integer;
+    FOrderParameterCollection: TOrderParameterCollection;
   protected
     function GetSQL: string; override;
   public
     function Execute: Integer; override;
-    constructor Create(TableName: string);
+    constructor Create(TableName: string; Async: Boolean = False);
+    destructor Destroy; override;
     property TopRecords: Integer read FTopRecords write FTopRecords;
+    property Order: TOrderParameterCollection read FOrderParameterCollection;
   end;
 
   TDatabaseManager = class(TObject)
@@ -224,6 +258,11 @@ end;
 
 { TSqlCommand }
 
+procedure TSqlCommand.AddCustomeParameter(Parameter: TParameter);
+begin
+  FCustomParameters.Add(Parameter);
+end;
+
 procedure TSqlCommand.AddParameter(Parameter: TParameter);
 begin
   FParameters.Add(Parameter);
@@ -234,17 +273,19 @@ begin
   FWhereParameters.Add(Parameter);
 end;
 
-constructor TSqlCommand.Create;
+constructor TSqlCommand.Create(Async: Boolean = False);
 begin
   FParameters := FParameterCollection.Create;
   FWhereParameters := FParameterCollection.Create;
-  FQuery := GetQuery;
+  FCustomParameters := FParameterCollection.Create;
+  FQuery := GetQuery(Async);
 end;
 
 destructor TSqlCommand.Destroy;
 begin
   F(FParameters);
   F(FWhereParameters);
+  F(FCustomParameters);
   FreeDS(FQuery);
   inherited;
 end;
@@ -294,13 +335,40 @@ begin
     Parameter := FWhereParameters[I];
     UpdateParameter;
   end;
+  for I := 0 to FCustomParameters.Count - 1 do
+  begin
+    Parameter := FCustomParameters[I];
+    UpdateParameter;
+  end;
 end;
 
 { TParameter }
 
-constructor TParameter.Create(Name: string);
+constructor TParameter.Create(Name: string; Action: TParameterAction);
 begin
   FName := Name;
+  FAction := Action;
+end;
+
+function TParameter.GetAction: string;
+begin
+  Result := '';
+  case FAction of
+    //paNone:
+    paGrateThan:
+      Result := '>';
+     paGrateOrEq:
+      Result := '>=';
+     paLessThan:
+      Result := '<';
+     paLessOrEq:
+      Result := '<=';
+     paEquals:
+      Result := '=';
+     paNotEquals:
+      Result := '<>';
+  end;
+
 end;
 
 { TDeleteCommand }
@@ -346,7 +414,7 @@ begin
         Continue;
       end;
 
-      SL.Add(Format('[%s] = :%s', [Items[I].Name, Items[I].Name]));
+      SL.Add(Format('[%s] %s :%s', [Items[I].Name, Items[I].Action, Items[I].Name]));
     end;
 
     Result := ' ' + SL.Join(' and ') + ' ';
@@ -439,9 +507,9 @@ end;
 
 { TStringParameter }
 
-constructor TStringParameter.Create(Name, Value: string);
+constructor TStringParameter.Create(Name, Value: string; Action: TParameterAction = paEquals);
 begin
-  inherited Create(Name);
+  inherited Create(Name, Action);
   FValue := Value;
 end;
 
@@ -452,9 +520,9 @@ end;
 
 { TIntegerParameter }
 
-constructor TIntegerParameter.Create(Name: string; Value: Integer);
+constructor TIntegerParameter.Create(Name: string; Value: Integer; Action: TParameterAction = paEquals);
 begin
-  inherited Create(Name);
+  inherited Create(Name, Action);
   FValue := Value;
 end;
 
@@ -465,9 +533,9 @@ end;
 
 { TDateTimeParameter }
 
-constructor TDateTimeParameter.Create(Name: string; Value: TDateTime);
+constructor TDateTimeParameter.Create(Name: string; Value: TDateTime; Action: TParameterAction = paEquals);
 begin
-  inherited Create(Name);
+  inherited Create(Name, Action);
   FValue := Value;
 end;
 
@@ -480,7 +548,7 @@ end;
 
 constructor TJpegParameter.Create(Name: string; Value: TJpegImage);
 begin
-  inherited Create(Name);
+  inherited Create(Name, paNone);
   FValue := TJPEGImage.Create;
   FValue.Assign(Value);
 end;
@@ -528,7 +596,7 @@ end;
 
 constructor TAllParameter.Create;
 begin
-  inherited Create('*');
+  inherited Create('*', paNone);
 end;
 
 function TAllParameter.GetValue: Variant;
@@ -540,7 +608,7 @@ end;
 
 constructor TCustomConditionParameter.Create(Expression: string);
 begin
-  inherited Create('');
+  inherited Create('', paNone);
   FExpression := Expression;
 end;
 
@@ -551,11 +619,18 @@ end;
 
 { TSelectCommand }
 
-constructor TSelectCommand.Create(TableName: string);
+constructor TSelectCommand.Create(TableName: string; Async: Boolean = False);
 begin
-  inherited Create;
+  inherited Create(Async);
+  FOrderParameterCollection := TOrderParameterCollection.Create;
   FTopRecords := 0;
   FTableName := TableName;
+end;
+
+destructor TSelectCommand.Destroy;
+begin
+  F(FOrderParameterCollection);
+  inherited;
 end;
 
 function TSelectCommand.Execute: Integer;
@@ -575,22 +650,79 @@ begin
     Result := Result + Format(' TOP %d ', [TopRecords]);
   Result := Result + Format(' %s', [Parameters.AsFieldList]);
   if FTableName <> '' then
-    Result := Result + Format(' FROM [%s] ', [FTableName]);
+    Result := Result + Format(IIF(Pos(' ', FTableName)> 0, ' FROM %s', ' FROM [%s] '), [FTableName]);
   if WhereParameters.Count > 0 then
     Result := Result + Format(' WHERE %s', [WhereParameters.AsCondition]);
+  Result := Result + FOrderParameterCollection.AsOrderSQL;
 end;
 
 { TCustomFieldParameter }
 
 constructor TCustomFieldParameter.Create(Expression: string);
 begin
-  inherited Create('');
+  inherited Create('', paNone);
   FExpression := Expression;
 end;
 
 function TCustomFieldParameter.GetValue: Variant;
 begin
   Result := Null;
+end;
+
+{ TOrderParameter }
+
+constructor TOrderParameter.Create(AColumnName: string; ADesc: Boolean);
+begin
+  FColumnName := AColumnName;
+  FDesc := ADesc;
+end;
+
+{ TOrderParameterCollection }
+
+procedure TOrderParameterCollection.Add(Order: TOrderParameter);
+begin
+  FList.Add(Order);
+end;
+
+function TOrderParameterCollection.AsOrderSQL: string;
+var
+  I: Integer;
+  OrderParams: TStrings;
+begin
+  Result := '';
+  if Count > 0 then
+  begin
+    Result := 'ORDER BY ';
+    OrderParams := TStringList.Create;
+    try
+      for I := 0 to Count - 1 do
+        OrderParams.Add(FormatEx('{0}{1}', [Items[I].ColumnName, IIF(Items[I].ColumnDesc, ' DESC', '')]));
+      Result := Result + OrderParams.Join(', ');
+    finally
+      F(OrderParams);
+    end;
+  end;
+end;
+
+constructor TOrderParameterCollection.Create;
+begin
+  FList := TList.Create;
+end;
+
+destructor TOrderParameterCollection.Destroy;
+begin
+  FreeList(FList);
+  inherited;
+end;
+
+function TOrderParameterCollection.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function TOrderParameterCollection.GetItemByID(Index: Integer): TOrderParameter;
+begin
+  Result := FList[Index];
 end;
 
 initialization

@@ -8,7 +8,7 @@ uses
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
   uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage,
-  uExifUtils, uJpegUtils, uBitmapUtils, uSettings;
+  uExifUtils, uJpegUtils, uBitmapUtils, uSettings, uFaceDetection;
 
 type
   TViewerThread = class(TDBThread)
@@ -217,7 +217,7 @@ begin
         end;
       end;
     finally
-      if Settings.Readbool('FaceDetection', 'Enabled', True) then
+      if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
       begin
         if not (Graphic is TGIFImage) then
         begin

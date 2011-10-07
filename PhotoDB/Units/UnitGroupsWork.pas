@@ -762,7 +762,7 @@ var
   BS: TStream;
 begin
   Result := GetNilGroup;
-  Query := GetQuery(FileName);
+  Query := GetQuery(FileName, True);
   try
     if LoadImage then
       SetSQL(Query, 'Select * From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"')

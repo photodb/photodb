@@ -1990,6 +1990,10 @@
 	<translate name="Edit image" value="Редактировать изображение"/>
 	<translate name="Create new person" value="Создание новой персоны"/>
 	<translate name="Edit person: {0}" value="Редактирование персоны: {0}"/>
+	<translate name="{0} person(s) are found with similar name!" value="Найдено {0} персон(ы) с похожими именами!"/>
+	<translate name="Person name is valid!" value="Имя персоны - корректное!"/>
+	<translate name="Person name already in use!" value="Данное имя уже используется!"/>
+	<translate name="Person name is required!" value="Имя персоны - обязательное поле!"/>	
   </scope>
   <scope name="SelectPerson">
 	<translate name="Select person" value="Выбор персоны"/>
@@ -1999,6 +2003,9 @@
 	<translate name="Filter persons" value="Фильтр по персонам"/>
 	<translate name="Close window and create new person" value="Закрыть окно и создать новую персону"/>	
   </scope>
+  <scope name="FormPersonSuggest">
+	<translate name="Select other person" value="Выбрать другую персону"/>
+  </scope>  
   <scope name="AddImage">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
   </scope>

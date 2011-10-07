@@ -320,21 +320,25 @@ procedure TPersonItem.ReadFromPerson(Person: TPerson; Options, ImageSize: Intege
 var
   Bitmap: TBitmap;
 begin
+  F(FImage);
   FPersonName := Person.Name;
   FDisplayName := Person.Name;
   FComment := Person.Comment;
   FPersonID := Person.ID;
-  Bitmap := TBitmap.Create;
-  try
-    JPEGScale(Person.Image, ImageSize, ImageSize);
-    AssignJpeg(Bitmap, Person.Image);
-    KeepProportions(Bitmap, ImageSize, ImageSize);
-    if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
-      CenterBitmap24To32ImageList(Bitmap, ImageSize);
-    FImage := TPathImage.Create(Bitmap);
-    Bitmap := nil;
-  finally
-    F(Bitmap);
+  if Person.Image <> nil then
+  begin
+    Bitmap := TBitmap.Create;
+    try
+      JPEGScale(Person.Image, ImageSize, ImageSize);
+      AssignJpeg(Bitmap, Person.Image);
+      KeepProportions(Bitmap, ImageSize, ImageSize);
+      if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
+        CenterBitmap24To32ImageList(Bitmap, ImageSize);
+      FImage := TPathImage.Create(Bitmap);
+      Bitmap := nil;
+    finally
+      F(Bitmap);
+    end;
   end;
 end;
 

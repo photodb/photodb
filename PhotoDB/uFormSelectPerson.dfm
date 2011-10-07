@@ -92,7 +92,7 @@ object FormFindPerson: TFormFindPerson
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
     Enabled = False
-    TabOrder = 1
+    TabOrder = 2
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
@@ -102,7 +102,7 @@ object FormFindPerson: TFormFindPerson
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
-    TabOrder = 2
+    TabOrder = 3
     OnClick = BtnCancelClick
   end
   object LvPersons: TListView
@@ -129,7 +129,7 @@ object FormFindPerson: TFormFindPerson
     RowSelect = True
     ParentDoubleBuffered = False
     SmallImages = ImlPersons
-    TabOrder = 3
+    TabOrder = 1
     ViewStyle = vsReport
     OnDblClick = LvPersonsDblClick
     OnSelectItem = LvPersonsSelectItem

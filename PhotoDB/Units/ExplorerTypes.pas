@@ -785,7 +785,7 @@ begin
       PI := PathProviderManager.CreatePathItem(FPathList[I].Path);
       if PI <> nil then
       begin
-        PI.LoadImage(PATH_LOAD_NORMAL, 16);
+        PI.LoadImage(PATH_LOAD_NORMAL or PATH_LOAD_FOR_IMAGE_LIST, 16);
         FIcons.Add(PI);
       end;
     end;

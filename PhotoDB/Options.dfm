@@ -212,7 +212,7 @@ object OptionsForm: TOptionsForm
         Width = 278
         Height = 24
         Caption = 'Clear Icon Cache'
-        TabOrder = 17
+        TabOrder = 18
         OnClick = BtnClearIconCacheClick
       end
       object BtnClearThumbnailCache: TButton
@@ -221,7 +221,7 @@ object OptionsForm: TOptionsForm
         Width = 278
         Height = 24
         Caption = 'Clear Folder Thumbnails Cache'
-        TabOrder = 16
+        TabOrder = 17
         OnClick = BtnClearThumbnailCacheClick
       end
       object BtnChooseNewPlace: TButton
@@ -230,7 +230,7 @@ object OptionsForm: TOptionsForm
         Width = 89
         Height = 25
         Caption = 'Select Folder'
-        TabOrder = 14
+        TabOrder = 15
         OnClick = BtnChooseNewPlaceClick
       end
       object BtnChoosePlaceIcon: TButton
@@ -240,7 +240,7 @@ object OptionsForm: TOptionsForm
         Height = 25
         Caption = 'Icon'
         Enabled = False
-        TabOrder = 15
+        TabOrder = 16
         OnClick = BtnChoosePlaceIconClick
       end
       object PlacesListView: TListView
@@ -255,7 +255,7 @@ object OptionsForm: TOptionsForm
           end>
         HideSelection = False
         SmallImages = PlacesImageList
-        TabOrder = 10
+        TabOrder = 11
         ViewStyle = vsReport
         OnContextPopup = PlacesListViewContextPopup
         OnEdited = PlacesListViewEdited
@@ -275,7 +275,7 @@ object OptionsForm: TOptionsForm
           'My Picures'
           'My Documents'
           'Other folders')
-        TabOrder = 11
+        TabOrder = 12
       end
       object CbExplorerShowPlaces: TCheckBox
         Left = 7
@@ -336,7 +336,7 @@ object OptionsForm: TOptionsForm
         Height = 17
         AutoSize = False
         Caption = 'Thumbnails options:'
-        TabOrder = 12
+        TabOrder = 13
       end
       object Label12: TStaticText
         Left = 3
@@ -345,7 +345,7 @@ object OptionsForm: TOptionsForm
         Height = 17
         AutoSize = False
         Caption = 'Show current objects:'
-        TabOrder = 13
+        TabOrder = 14
       end
       object CbExplorerShowFolders: TCheckBox
         Left = 7
@@ -386,7 +386,7 @@ object OptionsForm: TOptionsForm
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Thumbnails For Video'
-        TabOrder = 18
+        TabOrder = 10
       end
     end
     object TsView: TTabSheet
@@ -521,6 +521,7 @@ object OptionsForm: TOptionsForm
         Visible = False
         Active = True
         FillPercent = 50
+        Color = clBtnFace
         ParentColor = False
         SignColor = clBlack
         MaxTransparencity = 255

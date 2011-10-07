@@ -120,6 +120,8 @@ begin
     Result := THomeItem.Create
   else if IsNetworkShare(SearchPath) then
     Result := TShareItem.CreateFromPath(SearchPath, PATH_LOAD_NO_IMAGE, 0)
+  else if IsDrive(SearchPath) then
+    Result := TDriveItem.CreateFromPath(SearchPath, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0)
   else
     Result := TDirectoryItem.CreateFromPath(SearchPath, PATH_LOAD_NO_IMAGE, 0);
 end;

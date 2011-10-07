@@ -36,7 +36,7 @@ type
     function CreateNewPerson(Person: TPerson): Boolean;
     function DeletePerson(PersonID: Integer): Boolean; overload;
     function DeletePerson(PersonName: string): Boolean; overload;
-    function UpdatePerson(Person: TPerson): Boolean;
+    function UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
     function GetPersonsOnImage(ImageID: Integer): TPersonCollection;
     function GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
     function AddPersonForPhoto(PersonArea: TPersonArea): Boolean;
@@ -487,7 +487,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPerson.Create;
-  SC := TSelectCommand.Create(PersonTableName);
+  SC := TSelectCommand.Create(PersonTableName, True);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TStringParameter.Create('PersonName', PersonName));
@@ -641,7 +641,7 @@ begin
   end;
 end;
 
-function TPersonManager.UpdatePerson(Person: TPerson): Boolean;
+function TPersonManager.UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
 var
   UC: TUpdateCommand;
 begin
@@ -660,7 +660,8 @@ begin
     UC.AddParameter(TStringParameter.Create('PersonEmail', Person.Email));
     UC.AddParameter(TIntegerParameter.Create('PersonSex', Person.Sex));
     UC.AddParameter(TStringParameter.Create('PersonComment', Person.Comment));
-    UC.AddParameter(TJpegParameter.Create('PersonImage', Person.Image));
+    if UpdateImage then
+      UC.AddParameter(TJpegParameter.Create('PersonImage', Person.Image));
 
     UC.AddWhereParameter(TIntegerParameter.Create('PersonID', Person.ID));
     try

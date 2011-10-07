@@ -267,8 +267,8 @@ type
     procedure EndUpdate(Invalidate: Boolean);
     procedure Open1Click(Sender: TObject);
     function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
-    Function ListView1Selected : TEasyItem;
-    Function ItemAtPos(X,Y : integer): TEasyItem;
+    function ListView1Selected : TEasyItem;
+    function ItemAtPos(X,Y : integer): TEasyItem;
     procedure Exit1Click(Sender: TObject);
     procedure CloseButtonPanelResize(Sender: TObject);
     procedure SplLeftPanelCanResize(Sender: TObject; var NewSize: Integer;
@@ -282,10 +282,10 @@ type
     procedure Exit2Click(Sender: TObject);
     procedure DoExit; override;
     procedure Addfolder1Click(Sender: TObject);
-    Procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
+    procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
-    Procedure HistoryChanged(Sender: TObject);
+    procedure HistoryChanged(Sender: TObject);
     procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -313,15 +313,15 @@ type
     procedure Up1Click(Sender: TObject);
     procedure DeleteIndex1Click(Sender: TObject);
     procedure DeleteItemWithIndex(Index : Integer);
-    Procedure DeleteFiles(ToRecycle: Boolean);
-    Procedure DirectoryChanged(Sender: TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
-    Procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
+    procedure DeleteFiles(ToRecycle: Boolean);
+    procedure DirectoryChanged(Sender: TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
     function AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
     function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
-    Function ItemIndexToMenuIndex(Index: Integer): Integer;
-    Function MenuIndexToItemIndex(Index: Integer): Integer;
+    function ItemIndexToMenuIndex(Index: Integer): Integer;
+    function MenuIndexToItemIndex(Index: Integer): Integer;
     Procedure SetOldPath(Path : String);
     procedure FormShow(Sender: TObject);
     procedure NewWindow1Click(Sender: TObject);
@@ -337,7 +337,7 @@ type
     procedure SetStatusText(Text: String);
     procedure SetNewFileNameGUID(FileGUID: TGUID);
     procedure BtnCloseExplorerClick(Sender: TObject);
-    Procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
+    procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
     Procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
     procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
@@ -348,7 +348,7 @@ type
     procedure MoveToLinkClick(Sender: TObject);
     procedure Paste2Click(Sender: TObject);
     procedure ExplorerPanel1Click(Sender: TObject);
-    Procedure SetNewPath(Path: String; Explorer: Boolean);
+    procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure GoToSearchWindow1Click(Sender: TObject);
     procedure ImPreviewDblClick(Sender: TObject);
     procedure Copy3Click(Sender: TObject);
@@ -377,7 +377,7 @@ type
     procedure JumpHistoryClick(Sender: TObject);
     procedure DragTimerTimer(Sender: TObject);
     procedure DragEnter(Sender: TObject);
-    Procedure DragLeave(Sender: TObject);
+    procedure DragLeave(Sender: TObject);
     procedure Activation1Click(Sender: TObject);
     procedure Help2Click(Sender: TObject);
     procedure HomePage1Click(Sender: TObject);
@@ -1748,6 +1748,9 @@ var
   PI: TPathItem;
   EO: TPathFeatureOptions;
 begin
+  if PmItemPopup.Tag <= 0 then
+    Exit;
+
   Info := FFilesInfo[PmItemPopup.Tag];
   FDblClicked := False;
 
