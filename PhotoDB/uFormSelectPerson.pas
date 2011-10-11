@@ -126,6 +126,7 @@ begin
   if (LvPersons.Selected <> nil) and (FInfo.ID = 0) then
   begin
     EnableControls(False);
+    FInfo.Include := True;
     UpdaterDB.AddFileEx(FInfo, True, True);
     Exit;
   end;

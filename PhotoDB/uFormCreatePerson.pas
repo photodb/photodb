@@ -637,7 +637,7 @@ begin
     PName := '';
     if FPerson <> nil then
       PName := FPerson.Name;
-    TCheckNameThread.Create(Self, StateID, PName, WedName.Text, FIsEditMode);
+    TCheckNameThread.Create(Self, StateID, PName, Trim(WedName.Text), FIsEditMode);
     LsNameCheck.Show;
     WlPersonNameStatus.IconWidth := 0;
     WlPersonNameStatus.Left := LsNameCheck.Left + LsNameCheck.Width + 3;

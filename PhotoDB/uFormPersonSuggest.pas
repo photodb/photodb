@@ -28,9 +28,6 @@ type
     property PersonID: Integer read FPersonID;
   end;
 
-var
-  FormPersonSuggest: TFormPersonSuggest;
-
 implementation
 
 uses

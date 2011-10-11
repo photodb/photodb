@@ -17,7 +17,7 @@ uses
   CCR.Exif, uConstants, uShellIntegration, uGraphicUtils, uDBBaseTypes,
   uDBGraphicTypes, uRuntime, uSysUtils, uDBUtils, uDBTypes, uActivationUtils,
   uSettings, uAssociations, uDBAdapter, uMemoryEx, pngimage, uExifUtils,
-  uStringUtils;
+  uStringUtils, WatermarkedEdit, uVCLHelpers, uMachMask;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -146,6 +146,9 @@ type
     VleExif: TValueListEditor;
     LbEffectiveRange: TStaticText;
     WlAddLink: TWebLink;
+    ImSearch: TImage;
+    WedGroupsFilter: TWatermarkedEdit;
+    TmrFilter: TTimer;
     procedure Execute(ID : integer);
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
@@ -210,7 +213,8 @@ type
     procedure Down1Click(Sender: TObject);
     procedure BtnManageGroupsClick(Sender: TObject);
     procedure BtnNewGroupClick(Sender: TObject);
-    Procedure RecreateGroupsList;
+    procedure RecreateGroupsList;
+    procedure FillGroupList;
     procedure LstAvaliableGroupsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure lstCurrentGroupsDblClick(Sender: TObject);
@@ -245,6 +249,8 @@ type
     procedure PcMainChange(Sender: TObject);
     procedure ImageLoadingFileDrawBackground(Sender: TObject; Buffer: TBitmap);
     procedure TsGroupsResize(Sender: TObject);
+    procedure WedGroupsFilterChange(Sender: TObject);
+    procedure TmrFilterTimer(Sender: TObject);
   private
     { Private declarations }
     LinkDropFiles: TStrings;
@@ -1261,12 +1267,19 @@ begin
   Viewer.Show;
 end;
 
+procedure TPropertiesForm.TmrFilterTimer(Sender: TObject);
+begin
+  TmrFilter.Enabled := False;
+  FillGroupList;
+end;
+
 procedure TPropertiesForm.TsGroupsResize(Sender: TObject);
 var
   AvaliableWidth: Integer;
 begin
   AvaliableWidth := TsGroups.Width - 3 * 4 - BtnAddGroup.Width;
   LstAvaliableGroups.Width := AvaliableWidth div 2;
+  WedGroupsFilter.Width := LstAvaliableGroups.Width - (WedGroupsFilter.Left - ImSearch.Left);
   BtnAddGroup.Left := LstAvaliableGroups.Width + LstAvaliableGroups.Left + 3;
   BtnRemoveGroup.Left := BtnAddGroup.Left;
   lstCurrentGroups.Left := BtnAddGroup.Left + BtnAddGroup.Width + 3;
@@ -2012,6 +2025,8 @@ begin
 
   VleExif.TitleCaptions[0] := L('Key');
   VleExif.TitleCaptions[01] := L('Value');
+
+  WedGroupsFilter.WatermarkText := L('Filter groups');
 end;
 
 procedure TPropertiesForm.PcMainChange(Sender: TObject);
@@ -2246,6 +2261,11 @@ begin
   MousePos := VleExif.ClientToScreen(MousePos);
   CopyEXIFPopupMenu.Tag := ARow;
   CopyEXIFPopupMenu.Popup(MousePos.X, MousePos.Y);
+end;
+
+procedure TPropertiesForm.WedGroupsFilterChange(Sender: TObject);
+begin
+  TmrFilter.Restart;
 end;
 
 procedure TPropertiesForm.CopyCurrent1Click(Sender: TObject);
@@ -2653,7 +2673,6 @@ var
   SmallB, B: TBitmap;
 begin
   FreeGroups(RegGroups);
-  FreeGroups(FShowenRegGroups);
   RegGroups := GetRegisterGroupList(True);
   RegGroupsImageList.Clear;
   SmallB := TBitmap.Create;
@@ -2670,48 +2689,67 @@ begin
     F(SmallB);
   end;
 
+  for I := 0 to Length(RegGroups) - 1 do
+  begin
+    SmallB := TBitmap.Create;
+    try
+      SmallB.PixelFormat := pf24bit;
+      SmallB.Canvas.Brush.Color := ClBtnFace;
+      if RegGroups[I].GroupImage <> nil then
+        if not RegGroups[I].GroupImage.Empty then
+        begin
+          B := TBitmap.Create;
+          try
+            B.PixelFormat := pf24bit;
+            Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
+            B.Canvas.Brush.Color := ClBtnFace;
+            B.Canvas.Pen.Color := ClBtnFace;
+            B.Width := Size;
+            B.Height := Size;
+            B.Canvas.Rectangle(0, 0, Size, Size);
+            B.Canvas.Draw(B.Width div 2 - RegGroups[I].GroupImage.Width div 2,
+              B.Height div 2 - RegGroups[I].GroupImage.Height div 2, RegGroups[I].GroupImage);
+            DoResize(16, 16, B, SmallB);
+          finally
+            F(B);
+          end;
+          SmallB.Height := 18;
+        end;
+      RegGroupsImageList.Add(SmallB, nil);
+    finally
+      F(SmallB);
+    end;
+  end;
+  FillGroupList;
+end;
+
+procedure TPropertiesForm.FillGroupList;
+var
+  I: Integer;
+  Filter, Key: string;
+begin
+  FreeGroups(FShowenRegGroups);
   LstAvaliableGroups.Items.BeginUpdate;
   try
     LstAvaliableGroups.Clear;
+    Filter := AnsiLowerCase(WedGroupsFilter.Text);
+
+    if Pos('*', Filter) = 0 then
+      Filter := '*' + Filter + '*';
+
     for I := 0 to Length(RegGroups) - 1 do
     begin
-      SmallB := TBitmap.Create;
-      try
-        SmallB.PixelFormat := pf24bit;
-        SmallB.Canvas.Brush.Color := ClBtnFace;
-        if RegGroups[I].GroupImage <> nil then
-          if not RegGroups[I].GroupImage.Empty then
-          begin
-            B := TBitmap.Create;
-            try
-              B.PixelFormat := pf24bit;
-              Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
-              B.Canvas.Brush.Color := ClBtnFace;
-              B.Canvas.Pen.Color := ClBtnFace;
-              B.Width := Size;
-              B.Height := Size;
-              B.Canvas.Rectangle(0, 0, Size, Size);
-              B.Canvas.Draw(B.Width div 2 - RegGroups[I].GroupImage.Width div 2,
-                B.Height div 2 - RegGroups[I].GroupImage.Height div 2, RegGroups[I].GroupImage);
-              DoResize(16, 16, B, SmallB);
-            finally
-              F(B);
-            end;
-            SmallB.Height := 18;
-          end;
-        RegGroupsImageList.Add(SmallB, nil);
-        if RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
-        begin
-          UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
-          LstAvaliableGroups.Items.Add(RegGroups[I].GroupName);
-        end;
-      finally
-        F(SmallB);
+      Key := AnsiLowerCase(RegGroups[I].GroupName + ' ' + RegGroups[I].GroupComment + ' ' + RegGroups[I].GroupKeyWords);
+      if (RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
+      begin
+        UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
+        LstAvaliableGroups.Items.AddObject(RegGroups[I].GroupName, TObject(I));
       end;
     end;
   finally
     LstAvaliableGroups.Items.EndUpdate;
   end;
+
   LstCurrentGroups.Refresh;
 end;
 

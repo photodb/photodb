@@ -100,6 +100,7 @@ end;
 procedure TFormAddingImage.Execute(Info: TDBPopupMenuInfoRecord);
 begin
   FInfo := Info;
+  FInfo.Include := True;
   UpdaterDB.AddFileEx(FInfo, True, True);
   DrawForm;
   ShowModal;

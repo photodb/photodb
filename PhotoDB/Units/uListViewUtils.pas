@@ -123,14 +123,14 @@ const
   RoundRadius = 5;
 
 var
-  Graphic : TGraphic;
-  W, H : Integer;
+  Graphic: TGraphic;
+  W, H: Integer;
   ImageW, ImageH : Integer;
-  X : Integer;
-  TempBmp : TBitmap;
-  TempBmpShadow : TBitmap;
-  CTD, CBD, DY : Integer;
-  ClientRect : TRect;
+  X: Integer;
+  TempBmp: TBitmap;
+  TempBmpShadow: TBitmap;
+  CTD, CBD, DY: Integer;
+  ClientRect: TRect;
   RectArray: TEasyRectArrayObject;
   ColorFrom, ColorTo, ColorFromOriginal, ColorToOriginal: TColor;
   SelectionRect, R: TRect;

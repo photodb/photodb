@@ -7969,7 +7969,10 @@ begin
   Index := ItemIndexToMenuIndex(Item.Index);
   Info := FFilesInfo[Index];
 
-  Exists := 1;
+  Exists := Info.Exists;
+  if Exists = 0 then
+    Exists := 1;
+
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.ExistedFileName,
     Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Include, Exists, True);

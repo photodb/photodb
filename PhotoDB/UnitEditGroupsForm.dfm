@@ -431,15 +431,15 @@ object EditGroupsForm: TEditGroupsForm
     TabOrder = 4
     OnClick = CbShowAllGroupsClick
   end
-  object WedPersonFilter: TWatermarkedEdit
+  object WedGroupsFilter: TWatermarkedEdit
     Left = 30
     Top = 95
     Width = 188
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 10
-    OnChange = WedPersonFilterChange
-    WatermarkText = 'Find person'
+    OnChange = WedGroupsFilterChange
+    WatermarkText = 'Filter groups'
   end
   object PmGroup: TPopupMenu
     OnPopup = PmGroupPopup

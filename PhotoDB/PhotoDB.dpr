@@ -521,8 +521,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-  Application.CreateForm(TFormPersonSuggest, FormPersonSuggest);
-  Application.ShowMainForm := False;
+      Application.ShowMainForm := False;
       // This is main form of application
 
       TW.I.Start('SetSplashProgress 70');
@@ -559,9 +558,9 @@ begin
           and not DBInDebug then
         begin
           EventLog('Application terminated...');
+          CloseSplashWindow;
           if ID_OK = MessageBoxDB(FormManager.Handle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
           begin
-            CloseSplashWindow;
             Settings.WriteBool('StartUp', 'Pack', False);
             Application.CreateForm(TCMDForm, CMDForm);
             CMDForm.PackPhotoTable;
@@ -570,8 +569,7 @@ begin
         end;
 
     if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/CONVERT') or Settings.ReadBool('StartUp',
-        'ConvertDB', False) then
+      if GetParamStrDBBool('/CONVERT') or Settings.ReadBool('StartUp', 'ConvertDB', False) then
       begin
         CloseSplashWindow;
         EventLog('Converting...');
@@ -739,6 +737,7 @@ begin
   except
     on e : Exception do
     begin
+      CloseSplashWindow;
       ShowMessage('Fatal error: ' + e.Message);
     end;
   end;

@@ -2286,9 +2286,12 @@ begin
 end;
 
 procedure TViewer.MiFaceDetectionStatusClick(Sender: TObject);
+var
+  IsActive: Boolean;
 begin
-  Settings.WriteBool('FaceDetection', 'Enabled', not Settings.ReadBool('FaceDetection', 'Enabled', True));
-  RefreshFaceDetestionState;
+  IsActive := Settings.ReadBool('FaceDetection', 'Enabled', True);
+  Settings.WriteBool('FaceDetection', 'Enabled', not IsActive);
+  ReloadCurrent;
 end;
 
 procedure TViewer.MiFindPhotosClick(Sender: TObject);
@@ -3700,18 +3703,20 @@ end;
 procedure TViewer.CheckFaceIndicatorVisibility;
 begin
   WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < ToolsBar.Left) and StaticImage;
-  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete) and StaticImage;
+  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete) and StaticImage and Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive;
 end;
 
 procedure TViewer.UpdateFaceDetectionState;
+var
+  IsDetectionActive: Boolean;
 begin
   if Visible and not HandleAllocated then
     Exit;
 
   BeginScreenUpdate(Handle);
   try
-    LsDetectingFaces.Show;
-    if not FFaceDetectionComplete then
+    IsDetectionActive := Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive;
+    if not FFaceDetectionComplete and IsDetectionActive then
     begin
       WlFaceCount.Text := L('Detecting faces') + '...';
       LsDetectingFaces.Show;
@@ -3726,10 +3731,16 @@ begin
       WlFaceCount.IconWidth := 16;
       WlFaceCount.IconHeight := 16;
       WlFaceCount.ImageIndex := DB_IC_PEOPLE;
-      if FFaces.Count > 0 then
-        WlFaceCount.Text := Format(L('Faces: %d'), [FFaces.Count])
-      else
-        WlFaceCount.Text := L('No faces found');
+      if IsDetectionActive then
+      begin
+        if FFaces.Count > 0 then
+          WlFaceCount.Text := Format(L('Faces: %d'), [FFaces.Count])
+        else
+          WlFaceCount.Text := L('No faces found');
+      end else
+      begin
+        WlFaceCount.Text := L('Face detection disabled');
+      end;
     end;
     CheckFaceIndicatorVisibility;
   finally

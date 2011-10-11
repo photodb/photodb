@@ -513,7 +513,7 @@ object Viewer: TViewer
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
     ShowImage = True
-    Left = 140
+    Left = 148
     Top = 64
   end
   object DragImageList: TImageList

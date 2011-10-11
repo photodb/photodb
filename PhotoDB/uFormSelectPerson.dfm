@@ -200,6 +200,8 @@ object FormFindPerson: TFormFindPerson
       000000000000000000000000000000000000000000000000000000000000}
     UseSpecIconSize = True
     HightliteImage = True
+    StretchImage = True
+    CanClick = True
   end
   object TmrSearch: TTimer
     Enabled = False

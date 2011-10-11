@@ -253,12 +253,15 @@ begin
       FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
       Break;
     except
+      //2 - file doesn't exist
+      if GetLastError = 2 then
+        Exit;
       Sleep(DelayReadFileOperation);
     end;
   end;
 end;
 
-procedure ResetFileattributes(FileName : string; FA : Integer);
+procedure ResetFileAttributes(FileName : string; FA : Integer);
 begin
   if (FA and SysUtils.fahidden) <> 0 then
     FA := FA - SysUtils.fahidden;

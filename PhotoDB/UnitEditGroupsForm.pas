@@ -7,7 +7,8 @@ uses
   Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
   Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
   UnitDBDeclare, uBitmapUtils, uDBForm, uShellIntegration, uVCLHelpers,
-  uGraphicUtils, uConstants, uMemory, uSettings, pngimage, WatermarkedEdit;
+  uGraphicUtils, uConstants, uMemory, uSettings, pngimage, WatermarkedEdit,
+  uMachMask;
 
 type
   TEditGroupsForm = class(TDBForm)
@@ -40,7 +41,7 @@ type
     CbShowAllGroups: TCheckBox;
     MoveToGroup1: TMenuItem;
     LbInfo: TLabel;
-    WedPersonFilter: TWatermarkedEdit;
+    WedGroupsFilter: TWatermarkedEdit;
     ImSearch: TImage;
     TmrFilter: TTimer;
     procedure BtnCancelClick(Sender: TObject);
@@ -73,7 +74,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormDestroy(Sender: TObject);
-    procedure WedPersonFilterChange(Sender: TObject);
+    procedure WedGroupsFilterChange(Sender: TObject);
     procedure TmrFilterTimer(Sender: TObject);
   private
     { Private declarations }
@@ -86,6 +87,7 @@ type
     FOldGroups: TGroups;
     FOldKeyWords: string;
     function AGetGroupByCode(GroupCode: string): Integer;
+    procedure FillGroupList;
     procedure ChangedDBDataGroups(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
   protected
     function GetFormID : string; override;
@@ -332,14 +334,37 @@ begin
   CreateNewGroupDialogA(FGroups[PmGroup.Tag].GroupName, FGroups[PmGroup.Tag].GroupCode);
 end;
 
+procedure TEditGroupsForm.FillGroupList;
+var
+  I: Integer;
+  Filter, Key: string;
+begin
+  FreeGroups(FShowenRegGroups);
+  LstAvaliableGroups.Clear;
+  Filter := AnsiLowerCase(WedGroupsFilter.Text);
+
+  if Pos('*', Filter) = 0 then
+    Filter := '*' + Filter + '*';
+
+  for I := 0 to Length(FRegGroups) - 1 do
+  begin
+    Key := AnsiLowerCase(FRegGroups[I].GroupName + ' ' + FRegGroups[I].GroupComment + ' ' + FRegGroups[I].GroupKeyWords);
+    if (FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
+    begin
+      UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
+      LstAvaliableGroups.Items.AddObject(FRegGroups[I].GroupName, TObject(I));
+    end;
+  end;
+end;
+
 procedure TEditGroupsForm.RecreateGroupsList;
 var
   I, Size: Integer;
   SmallB, B: TBitmap;
 begin
   FreeGroups(FRegGroups);
-  FreeGroups(FShowenRegGroups);
   FRegGroups := GetRegisterGroupList(True);
+
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
   try
@@ -355,7 +380,6 @@ begin
   finally
     F(SmallB);
   end;
-  LstAvaliableGroups.Clear;
   for I := 0 to Length(FRegGroups) - 1 do
   begin
     SmallB := TBitmap.Create;
@@ -382,15 +406,12 @@ begin
           end;
         end;
       GroupsImageList.Add(SmallB, nil);
-      if FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked then
-      begin
-        UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
-        LstAvaliableGroups.Items.Add(FRegGroups[I].GroupName);
-      end;
     finally
       F(SmallB);
     end;
   end;
+
+  FillGroupList;
 end;
 
 procedure TEditGroupsForm.PmGroupPopup(Sender: TObject);
@@ -467,6 +488,7 @@ begin
     CbRemoveKeywords.Caption := L('Delete group comments');
     MoveToGroup1.Caption := L('Move to group');
     LbInfo.Caption := L('Use button "-->" to add new groups or button "<--" to remove them');
+    WedGroupsFilter.WatermarkText := L('Filter groups');
   finally
     EndTranslate;
   end;
@@ -482,15 +504,16 @@ end;
 
 procedure TEditGroupsForm.SearchForGroup1Click(Sender: TObject);
 begin
-  SearchManager.NewSearch.StartSearch(':Group(' + FGroups[PmGroup.Tag].GroupName+'):');
+  SearchManager.NewSearch.StartSearch(':Group(' + FSetGroups[PmGroup.Tag].GroupName+'):');
 end;
 
 procedure TEditGroupsForm.TmrFilterTimer(Sender: TObject);
 begin
   TmrFilter.Enabled := False;
+  FillGroupList;
 end;
 
-procedure TEditGroupsForm.WedPersonFilterChange(Sender: TObject);
+procedure TEditGroupsForm.WedGroupsFilterChange(Sender: TObject);
 begin
   TmrFilter.Restart;
 end;
@@ -560,7 +583,7 @@ begin
       begin
         for I := 0 to Length(FRegGroups)-1 do
         begin
-          if FRegGroups[I].GroupCode = FSetGroups[index].GroupCode then
+          if FRegGroups[I].GroupCode = FSetGroups[Index].GroupCode then
           begin
             N := I + 1;
             Break;
@@ -570,7 +593,7 @@ begin
       begin
         for I := 0 to Length(FRegGroups) - 1 do
         begin
-          if FRegGroups[I].GroupName = (Control as TListBox).Items[index] then
+          if FRegGroups[I].GroupName = (Control as TListBox).Items[Index] then
           begin
             N := I + 1;
             Break;
@@ -592,8 +615,7 @@ begin
 
       if Control = LstAvaliableGroups then
         if N > -1 then
-          if NewGroup(FRegGroups[N - 1].GroupCode) then (Control as TListBox)
-            .Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
+          if NewGroup(FRegGroups[N - 1].GroupCode) then (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
           else
           begin
             if GroupExists(FShowenRegGroups[index].GroupCode) then

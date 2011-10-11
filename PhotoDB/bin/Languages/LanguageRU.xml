@@ -511,6 +511,7 @@
     <translate name="Links" value="Ссылки" />
     <translate name="No" value="Нет" />
     <translate name="Yes" value="Да" />
+    <translate name="Filter groups" value="Фильтр по группам" />	
   </scope>
   <scope name="Search">
     <translate name="More than" value="Больше чем" />
@@ -815,7 +816,9 @@
     <translate name="Enable face detection" value="Включить определение лиц" />
     <translate name="Detection method" value="Метод определения" />
     <translate name="Refresh faces" value="Обновить лица" />
-    <translate name="Previous selections" value="Предыдущие выборы" />	
+    <translate name="Previous selections" value="Предыдущие выборы" />
+    <translate name="Face detection disabled" value="Определение лиц отключено" />
+
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -850,6 +853,7 @@
 	<translate name="Delete group comments" value="Удалять коментарии группы" />
 	<translate name="Move to group" value="Переместить в группу" />
     <translate name="Use button &quot;--&gt;&quot; to add new groups or button &quot;&lt;--&quot; to remove them" value="Используйте кнопку &quot;--&gt;&quot; для выбора групп или кнопку &quot;&lt;--&quot; для отмены выбранных групп" />
+	<translate name="Filter groups" value="Фильтр по группам" />
   </scope>
   <scope name="EditLinks">
 	<translate name="Edit link" value="Редактировать ссылку" />

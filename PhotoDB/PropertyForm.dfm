@@ -188,10 +188,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -539,10 +535,6 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Groups'
       ImageIndex = 1
       OnResize = TsGroupsResize
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -791,11 +783,55 @@ object PropertiesForm: TPropertiesForm
         Height = 13
         Caption = 'Current Groups:'
       end
+      object ImSearch: TImage
+        Left = 3
+        Top = 94
+        Width = 16
+        Height = 16
+        Picture.Data = {
+          055449636F6E0000010001001010000001002000680400001600000028000000
+          1000000020000000010020000000000040040000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          00000000000000000000000000000000000000000032A19F0070C5FF00000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          000000000000000000000000000000000032A19F006CC5FF3CC9FDFF0962BAF3
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000032A19F0068C5FF2DBEFDFF0962BAF30032A160
+          00000000000000000000000000000000545454205454549F545454BF868484FF
+          545454BF5454548000359A9F0063C5FF1DB3FDFF0962BAF30032A16000000000
+          00000000000000000000000054545460868484FFB6B5B5FFEBE7E7FFE5E1E1FF
+          D6D2D2FFF7F4F4FF868484FF1998DCFF0962BAF30032A1600000000000000000
+          000000000000000054545430868484FFECEBEBFFDABC95FFB87116FFC28632FF
+          B87623FFCDB193FFF7F4F4FF868484FF00369770000000000000000000000000
+          0000000000000000545454AFF7F4F4FFDEBF9AFFB86800FFFDE8A3FFFFF8B9FF
+          F8DE95FFB86800FFC8AC8DFFF7F4F4FF54545480000000000000000000000000
+          0000000000000000868484FFFDFCFCFFBC7212FFFFFFDEFFFFECA6FFFFF1ADFF
+          FFEDA6FFF8D07BFFB5721EFFF7F4F4FF868484FF000000000000000000000000
+          0000000000000000868484FFFDFCFCFFBE6B00FFFFFFDEFFFFEAAFFFFFECB3FF
+          FFEAB0FFFFDF92FFB26A0FFFF7F4F4FF868484FF000000000000000000000000
+          0000000000000000868484FFFDFCFCFFB76A07FFFFFFDEFFFFEDC2FFFFEDC4FF
+          FFEDC2FFF8D293FFB5721EFFF7F4F4FF868484FF000000000000000000000000
+          0000000000000000868484FFF7F4F4FFDEBF9AFFC5832DFFFFFFDEFFFFFFDEFF
+          FFFFDEFFC5832DFFCAB59EFFF7F4F4FF5454549F000000000000000000000000
+          000000000000000054545450888888FFF7F4F4FFDABC95FFC28638FFCC9959FF
+          BE8134FFCDB193FFF7F4F4FF868484FF54545420000000000000000000000000
+          0000000000000000000000005454549F878686FFF7F4F4FFF7F4F4FFF7F4F4FF
+          F7F4F4FFF7F4F4FF868484FF5454546000000000000000000000000000000000
+          0000000000000000000000000000000054545450868484FF868484FF868484FF
+          868484FF868484FF545454400000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          00000000FFFF0000FFF30000FFE10000FFC10000E0030000C0070000800F0000
+          800F0000800F0000800F0000800F0000800F0000800F0000C01F0000E03F0000
+          FFFF0000}
+      end
       object LstAvaliableGroups: TListBox
         Left = 3
-        Top = 91
+        Top = 119
         Width = 107
-        Height = 176
+        Height = 148
         Style = lbOwnerDrawFixed
         Anchors = [akLeft, akTop, akBottom]
         ItemHeight = 20
@@ -882,14 +918,20 @@ object PropertiesForm: TPropertiesForm
         TabOrder = 7
         OnClick = BtnManageGroupsClick
       end
+      object WedGroupsFilter: TWatermarkedEdit
+        Left = 25
+        Top = 92
+        Width = 85
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 8
+        OnChange = WedGroupsFilterChange
+        WatermarkText = 'Filter groups'
+      end
     end
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -910,10 +952,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -968,10 +1006,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1022,6 +1056,8 @@ object PropertiesForm: TPropertiesForm
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
     end
   end
@@ -1285,5 +1321,12 @@ object PropertiesForm: TPropertiesForm
     object Cancel1: TMenuItem
       Caption = 'Cancel'
     end
+  end
+  object TmrFilter: TTimer
+    Enabled = False
+    Interval = 200
+    OnTimer = TmrFilterTimer
+    Left = 176
+    Top = 496
   end
 end
