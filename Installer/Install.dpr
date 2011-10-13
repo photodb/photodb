@@ -19,7 +19,6 @@ uses
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
-  VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uFrmProgress in 'uFrmProgress.pas' {FrmProgress},
   uInstallFrame in 'uInstallFrame.pas' {InstallFrame: TFrame},
@@ -58,7 +57,8 @@ uses
   uIME in '..\PhotoDB\Units\uIME.pas',
   uIsAdmin in 'uIsAdmin.pas',
   uInstallRuntime in 'uInstallRuntime.pas',
-  uConfiguration in '..\PhotoDB\Units\uConfiguration.pas';
+  uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
+  uTime in '..\PhotoDB\Units\uTime.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

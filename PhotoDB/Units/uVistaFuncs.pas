@@ -56,6 +56,7 @@ begin
     ChangeWindowMessageFilter (WM_COPYDATA, MSGFLT_ALLOW);
     ChangeWindowMessageFilter ($0049, MSGFLT_ALLOW);
   end;
+  FreeLibrary(User32Handle);
 end;
 
 procedure SetVistaFonts(const AForm: TCustomForm);

@@ -363,12 +363,12 @@ uses
 var
   S1: string;
 
-function IsFalidDBFile : boolean;
+function IsFalidDBFile: Boolean;
 begin
   Result := True;
 end;
 
-function FileVersion : integer;
+function FileVersion: Integer;
 begin
   Result := ReleaseNumber;
 end;
@@ -381,11 +381,11 @@ end;
 
 procedure FindRunningVersion;
 var
-  HSemaphore : THandle;
-  MessageToSent : string;
-  CD : TCopyDataStruct;
+  HSemaphore: THandle;
+  MessageToSent: string;
+  CD: TCopyDataStruct;
   Buf: Pointer;
-  P : PByte;
+  P: PByte;
 begin
   SetLastError(0);
   HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DBID));
@@ -437,6 +437,8 @@ begin
   try
     //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
     //ReportMemoryLeaksOnShutdown := True;
+    //if not GetParamStrDBBool('/install') then
+    //  Sleep(10000);
   {
    //Command line
 
@@ -493,7 +495,8 @@ begin
       Sleep(1000);
 
     SetSplashProgress(15);
-    TW.i.Start('Application.Initialize');
+    TW.I.Start('Application.Initialize');
+    CoInitFlags := COINIT_MULTITHREADED;
     Application.Initialize;
     SetSplashProgress(30);
 
@@ -503,7 +506,7 @@ begin
     if not GetParamStrDBBool('/NoPrevVersion') then
       FindRunningVersion;
 
-    TW.i.Start('InitializeDBLoadScript');
+    TW.I.Start('InitializeDBLoadScript');
     if not DBTerminating then
     begin
       EventLog('TDBKernel.Create');
@@ -514,8 +517,11 @@ begin
       TW.I.Start('SetSplashProgress 35');
       SetSplashProgress(45);
 
-      TLoad.Instance.StartDBKernelIconsThread;
-      TLoad.Instance.StartDBSettingsThread;
+      if not GetParamStrDBBool('/install') then
+      begin
+        TLoad.Instance.StartDBKernelIconsThread;
+        TLoad.Instance.StartDBSettingsThread;
+      end;
 
       SetSplashProgress(60);
 
@@ -727,7 +733,7 @@ begin
     if not DBTerminating then
       Application.Run;
 
-    if DBTerminating then
+    if DBTerminating and not GetParamStrDBBool('/install') then
       begin
         TLoad.Instance.RequaredDBKernelIcons;
         TLoad.Instance.RequaredCRCCheck;
@@ -735,7 +741,7 @@ begin
       end;
 
   except
-    on e : Exception do
+    on e: Exception do
     begin
       CloseSplashWindow;
       ShowMessage('Fatal error: ' + e.Message);

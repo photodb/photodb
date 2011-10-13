@@ -20,17 +20,20 @@ type
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
-    FMainForms : TList;
-    FCheckCount : Integer;
-    WasIde : Boolean;
-    ExitAppl : Boolean;
-    LockCleaning : Boolean;
+    FMainForms: TList;
+    FCheckCount: Integer;
+    WasIde: Boolean;
+    ExitAppl: Boolean;
+    LockCleaning: Boolean;
     FSetLanguageMessage: Cardinal;
     procedure ExitApplication;
     procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
     function GetTimeLimitMessage: string;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+  protected
+    function GetFormID: string; override;
   public
+    procedure CloseManager;
     constructor Create(AOwner : TComponent);  override;
     destructor Destroy; override;
     procedure RegisterMainForm(Value: TForm);
@@ -313,6 +316,11 @@ begin
   DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
 end;
 
+function TFormManager.GetFormID: string;
+begin
+  Result := 'System';
+end;
+
 function TFormManager.GetTimeLimitMessage: string;
 begin
   Result := L('After the 30 days has expired, you must activate your copy!');
@@ -350,10 +358,6 @@ procedure TFormManager.CheckTimerTimer(Sender: TObject);
 var
   FReg: TBDRegistry;
   InstallDate: TDateTime;
-{$IFDEF LICENCE}
-  KernelHandle : THandle;
-  Initaproc: TInitializeAProc;
-{$ENDIF}
 begin
   if not CMDInProgress then
   begin
@@ -391,27 +395,6 @@ begin
       if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
         CleanUpThread.Create(Self, False);
     end;
-    if (FCheckCount = 50) and not FolderView then //after 5 sec.
-    begin
-      {$IFDEF LICENCE}
-      EventLog('Verifyng....');
-
-      TLoad.Instance.RequaredCRCCheck;
-      KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
-      try
-        @Initaproc := GetProcAddress(KernelHandle, 'InitializeA');
-        if not Initaproc(PChar(Application.ExeName)) then
-        begin
-          CloseSplashWindow;
-          MessageBoxDB(GetActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-          DBTerminating := True;
-          Application.Terminate;
-        end;
-      finally
-        FreeLibrary(KernelHandle);
-      end;
-      {$ENDIF}
-    end;
     if (FCheckCount = 100) and not FolderView then //after 10 sec. check for updates
     begin
       TW.I.Start('TInternetUpdate - Create');
@@ -441,6 +424,12 @@ var
 begin
   for I := 0 to FMainForms.Count - 1 do
     TForm(FMainForms[I]).Close;
+end;
+
+procedure TFormManager.CloseManager;
+begin
+  ExitApplication;
+  Free;
 end;
 
 procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(

@@ -104,7 +104,13 @@ uses
 { TDBKernel }
 
 constructor TDBKernel.Create;
+var
+  I: Integer;
 begin
+  for I := 0 to 10 do
+    if ParamStr(I) <> '' then
+      TW.I.Start('Parameter: ' + ParamStr(I));
+
   inherited;
   FDBs := nil;
   FImageOptions := nil;

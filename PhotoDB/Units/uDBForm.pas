@@ -81,7 +81,7 @@ end;
 
 function TDBForm.L(StringToTranslate: string): string;
 begin
-  Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, GetFormID)
+  Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, GetFormID);
 end;
 
 var

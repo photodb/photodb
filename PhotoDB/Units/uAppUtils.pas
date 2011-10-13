@@ -46,7 +46,7 @@ begin
       SetLength(ProgramParams, L + 1);
       ProgramParams[L] := S;
       Inc(I);
-    until S = '';
+    until (S = '') or (I > 10);
 
   end;
 end;

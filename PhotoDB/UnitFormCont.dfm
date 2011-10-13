@@ -45,8 +45,8 @@ object FormCont: TFormCont
       object WlConvert: TWebLink
         Left = 9
         Top = 181
-        Width = 29
-        Height = 13
+        Width = 45
+        Height = 16
         Cursor = crHandPoint
         Text = 'Type'
         OnClick = WlConvertClick
@@ -60,6 +60,8 @@ object FormCont: TFormCont
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object GbImageInfo: TGroupBox
         Left = 8
@@ -108,8 +110,8 @@ object FormCont: TFormCont
       object ExportLink: TWebLink
         Left = 9
         Top = 204
-        Width = 37
-        Height = 13
+        Width = 53
+        Height = 16
         Cursor = crHandPoint
         Text = 'Export'
         OnClick = ExportLinkClick
@@ -123,12 +125,14 @@ object FormCont: TFormCont
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object ExCopyLink: TWebLink
         Left = 9
         Top = 228
-        Width = 30
-        Height = 13
+        Width = 46
+        Height = 16
         Cursor = crHandPoint
         Text = 'Copy'
         OnClick = ExCopyLinkClick
@@ -142,12 +146,14 @@ object FormCont: TFormCont
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object WlResize: TWebLink
         Left = 8
         Top = 160
-        Width = 24
-        Height = 13
+        Width = 40
+        Height = 16
         Cursor = crHandPoint
         Text = 'Size'
         OnClick = WlResizeClick
@@ -161,6 +167,8 @@ object FormCont: TFormCont
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
     end
     object TwWindowsPos: TTwButton

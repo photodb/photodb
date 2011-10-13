@@ -20,6 +20,11 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<ImageDebugInfo>true</ImageDebugInfo>
+			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+			<DCC_RemoteDebug>true</DCC_RemoteDebug>
+			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<DCC_Optimize>false</DCC_Optimize>
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>

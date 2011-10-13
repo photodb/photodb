@@ -127,7 +127,7 @@ var
   NotifyUrl: string;
 begin
   NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + ProductMajorVersionVersion + '&ac=' + TActivationManager.Instance.ApplicationCode;
-  RunAsUser(NotifyUrl, NotifyUrl, NotifyUrl);
+  RunAsUser(NotifyUrl, NotifyUrl, NotifyUrl, False);
 end;
 
 { TUninstallRegistry }

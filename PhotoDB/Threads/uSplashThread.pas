@@ -24,14 +24,14 @@ const
   SplHeight = 450;
 
 var
-  SplashWindowClass : TWndClass;
-  hSplashWnd : HWND;
-  hSplashProgress : Byte = 0;
-  IsFirstDraw : Boolean = True;
-  MouseCaptured : Boolean = False;
-  LoadingImage : TBitmap = nil;  
-  SplashThread : TThread = nil;
-               
+  SplashWindowClass: TWndClass;
+  HSplashWnd: HWND;
+  HSplashProgress: Byte = 0;
+  IsFirstDraw: Boolean = True;
+  MouseCaptured: Boolean = False;
+  LoadingImage: TBitmap = nil;
+  SplashThread: TThread = nil;
+
 procedure CloseSplashWindow;
 begin
   if SplashThread <> nil then
@@ -45,7 +45,7 @@ end;
 
 procedure UpdateFormImage;
 begin
-  RenderForm(hSplashWnd, LoadingImage, 255);
+  RenderForm(hSplashWnd, LoadingImage, 200);
 end;
 
 function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;
@@ -92,7 +92,7 @@ begin
   end;
   Result := DefWindowProc(hWnd, uMsg, wParam, lParam);
 end; // SplashWindowProc
-               
+
 procedure TSplashThread.Execute;
 const
   ClassName = 'PhotoDB Splash';

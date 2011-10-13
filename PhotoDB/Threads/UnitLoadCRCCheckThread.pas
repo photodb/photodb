@@ -3,7 +3,8 @@ unit UnitLoadCRCCheckThread;
 interface
 
 uses
-  Windows, Classes, Dolphin_DB, uDBThread, UnitDBCommon;
+  Windows, Classes, Dolphin_DB, uDBThread, UnitDBCommon, uLogger,
+  uShellIntegration, uSplashThread, uRuntime, uConstants;
 
 type
   TLoadCRCCheckThread = class(TDBThread)
@@ -19,17 +20,25 @@ implementation
 
 procedure TLoadCRCCheckThread.Execute;
 type
-  TInitializeProc = function(s: PChar): Integer;
+  ValidateApplicationProc = function(s: PChar): Boolean;
 var
-  Initproc : TInitializeProc;
-  KernelHandle : THandle;
+  ValidateProc: ValidateApplicationProc;
+  KernelHandle: THandle;
 begin
   FreeOnTerminate := True;
   KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
   if KernelHandle <> 0 then
   begin
-    @initproc := GetProcAddress(KernelHandle ,'Initialize');
-    initproc(PChar(ParamStr(0)));
+    @ValidateProc := GetProcAddress(KernelHandle, 'ValidateApplication');
+    EventLog('Verifyng....');
+    {$IFDEF LICENCE}
+    if not Assigned(ValidateProc) or not ValidateProc(PChar(ParamStr(0))) then
+    begin
+      CloseSplashWindow;
+      MessageBoxDB(GetActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!', 'System'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      DBTerminating := True;
+    end;
+    {$ENDIF}
     FreeLibrary(KernelHandle);
   end;
 end;

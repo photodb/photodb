@@ -41,7 +41,6 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="win32crc.pas"/>
-			<DCCReference Include="SystemUnit.pas"/>
 			<DCCReference Include="FileCRC.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

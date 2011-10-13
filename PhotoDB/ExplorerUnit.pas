@@ -859,13 +859,11 @@ begin
   TW.I.Start('ListView1');
 
   ElvMain := TEasyListView.Create(self);
-  ElvMain.Parent := PnCOntent;
+  ElvMain.Parent := PnContent;
   ElvMain.Align := AlClient;
 
   MouseDowned := False;
   PopupHandled := False;
-
-  InitSearch;
 
   ElvMain.BackGround.Enabled := True;
   ElvMain.BackGround.Tile := False;
@@ -904,10 +902,6 @@ begin
   ElvMain.Groups.Add;
   ElvMain.Groups[0].Visible := True;
 
-  TLoad.Instance.RequaredDBSettings;
-  FPictureSize := ThImageSize;
-  LoadSizes;
-
   FWindowID := GetGUID;
   RefreshIDList := TList.Create;
 
@@ -940,6 +934,15 @@ begin
   Lock := False;
 
   SlashHandled := False;
+
+  TW.I.Start('ReadPlaces');
+  ReadPlaces;
+  TW.I.Start('LoadToolBarNormaIcons');
+  LoadToolBarNormaIcons;
+  TW.I.Start('LoadToolBarGrayedIcons');
+  LoadToolBarGrayedIcons;
+
+  CreateBackgrounds;
 
   TW.I.Start('aScript');
   aScript := TScript.Create(Self, '');
@@ -992,19 +995,13 @@ begin
   Menu := ScriptMainMenu;
   ScriptMainMenu.Images := DBkernel.ImageList;
 
-  TW.I.Start('ReadPlaces');
-  ReadPlaces;
   TW.I.Start('LoadLanguage');
   LoadLanguage;
-  TW.I.Start('LoadIcons');
-  LoadIcons;
-  TW.I.Start('LoadToolBarNormaIcons');
-  LoadToolBarNormaIcons;
-  TW.I.Start('LoadToolBarGrayedIcons');
-  LoadToolBarGrayedIcons;
   TW.I.Start('LoadToolBarGrayedIcons - end');
   ToolBar1.Images := ToolBarNormalImageList;
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
+
+  InitSearch;
 
   PePath.Width := PnNavigation.Width - (StAddress.Left + StAddress.Width + 5);
 
@@ -1022,8 +1019,6 @@ begin
   if FGoToLastSavedPath then
     LoadLastPath;
 
-  CreateBackgrounds;
-
   for I := 0 to ComponentCount - 1 do
     if Components[I] is TWebLink then
       (Components[I] as TWebLink).GetBackGround := BackGround;
@@ -1032,6 +1027,13 @@ begin
     UserLinks[I].GetBackGround := BackGround;
 
   FW7TaskBar := CreateTaskBarInstance;
+
+  TW.I.Start('LoadIcons');
+  LoadIcons;
+
+  TLoad.Instance.RequaredDBSettings;
+  FPictureSize := ThImageSize;
+  LoadSizes;
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
@@ -2642,7 +2644,7 @@ end;
 
 procedure TExplorerForm.SetPath(Path: String);
 begin
- If not Self.Visible then
+  if not Self.Visible then
   begin
     SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(Path);
     SaveWindowPos1.SetPosition;
@@ -4825,6 +4827,7 @@ end;
 
 procedure TExplorerForm.LoadSearchMode(SearchMode: Integer);
 begin
+  TW.I.Start('LoadSearchMode');
   FSearchMode := SearchMode;
   if SearchMode = EXPLORER_SEARCH_DATABASE then
   begin
@@ -4839,10 +4842,12 @@ begin
     LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_IMAGES');
     WedSearch.WatermarkText := L('Search in directory (with EXIF)');
   end;
+  TW.I.Start('LoadSearchMode - END');
 end;
 
 procedure TExplorerForm.InitSearch;
 begin
+  TW.I.Start('LoadSpeedButtonFromResourcePNG - SEARCH');
   LoadSpeedButtonFromResourcePNG(sbDoSearch, 'SEARCH');
   LoadSearchMode(Settings.ReadInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES));
 end;
@@ -5312,14 +5317,17 @@ var
   Info: TExplorerViewInfo;
   P: TSearchItem;
 begin
+  EventLog('SetNewPathW "' + WPath.Path + '"');
+  TW.I.Start('SetNewPathW');
   if (WPath.PType = EXPLORER_ITEM_PERSON_LIST) or (WPath.PType = EXPLORER_ITEM_GROUP_LIST) then
     ShowFilter(False)
   else
     HideFilter(False);
 
+  TW.I.Start('HideFilter - END');
+
   RefreshIDList.Clear;
   UpdaterInfo.ProcHelpAfterUpdate := nil;
-  EventLog('SetNewPathW "' + WPath.Path + '"');
   FDBCanDragW := False;
   FDBCanDrag := False;
   TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
@@ -5341,6 +5349,8 @@ begin
     Path := ExcludeTrailingBackslash(Path);
   end;
 
+  TW.I.Start('PATH parsing');
+
   if Length(Path) > 1 then
     if ((Path[1] = '\') and (Path[2] <> '\')) then
     begin
@@ -5353,6 +5363,7 @@ begin
     WPath.PType := EXPLORER_ITEM_FOLDER;
   end;
 
+  TW.I.Start('PATH parsing EXPLORER_ITEM_MYCOMPUTER');
   if WPath.PType = EXPLORER_ITEM_MYCOMPUTER then
   begin
     PePath.Path := '';
@@ -5367,6 +5378,7 @@ begin
     Caption := S;
     PePath.Path := Path;
   end;
+  TW.I.Start('PATH parsing EXPLORER_ITEM_NETWORK');
   if WPath.PType = EXPLORER_ITEM_NETWORK then
   begin
     PePath.SetPathEx(TNetworkItem, cNetworkPath);
@@ -5413,20 +5425,26 @@ begin
   S := Path;
   FCurrentPath := Path;
 
+  TW.I.Start('PATH parsing EXPLORER_ITEM_SEARCH');
   if WPath.PType = EXPLORER_ITEM_SEARCH then
   begin
+    TW.I.Start('PATH parsing CreatePathItem');
     P := PathProviderManager.CreatePathItem(WPath.Path) as TSearchItem;
     try
+      TW.I.Start('PATH parsing FileMask');
       FileMask := P.SearchTerm;
 
       Path := P.SearchPath;
       FCurrentPath := WPath.Path;
 
+      TW.I.Start('PATH parsing PePath.PathEx = ' + IIF(PePath.PathEx = nil, 'nil', 'not nil'));
       if PePath.PathEx = nil then
         PePath.SetPathEx(Self, P, False);
       PePath.SetPathEx(Self, P, False);
+      TW.I.Start('PATH parsing SetPathEx END');
       Caption := L(IIF(P.SearchPath = '', MyComputer, P.SearchPath) + ' - ' + GetPathPartName(PePath.PathEx));
 
+      TW.I.Start('PATH parsing P is TImageSearchItem');
       if P is TImageSearchItem then
       begin
         ThreadType := THREAD_TYPE_SEARCH_IMAGES;
@@ -5448,6 +5466,7 @@ begin
     end;
   end;
 
+  TW.I.Start('PATH parsing NewFormState');
   NewFormState;
   FCurrentTypePath := WPath.PType;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) then
@@ -5488,6 +5507,7 @@ begin
     ElvMain.Groups.Add;
   end;
 
+  TW.I.Start('PATH parsing NewFormState');
   ListView1SelectItem(nil, nil, False);
 
   FBitmapImageList.Clear;
@@ -6496,6 +6516,7 @@ begin
           FPlaces[Length(FPlaces) - 1].OtherFolder := FOtherFolder;
           Ico := TIcon.Create;
           try
+            //TODO: optimize code
             Ico.Handle := ExtractSmallIconByPath(FIcon, True);
             UserLinks[Length(UserLinks) - 1].Icon := Ico;
           finally
@@ -8345,7 +8366,7 @@ var
     if UseSmallIcons then
       Name:=Name + '_SMALL';
 
-    Icon :=  LoadIcon(HInstance, PWideChar(Name));
+    Icon := LoadIcon(HInstance, PWideChar(Name));
     ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, Icon);
     DestroyIcon(Icon);
   end;
@@ -8376,7 +8397,7 @@ begin
 
 end;
 
-procedure TExplorerForm.LoadToolBarGrayedIcons();
+procedure TExplorerForm.LoadToolBarGrayedIcons;
 var
   UseSmallIcons : Boolean;
 

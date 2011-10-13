@@ -17,7 +17,6 @@ uses
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
   uLogger in '..\PhotoDB\Units\uLogger.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
-  VRSIShortCuts in '..\PhotoDB\Units\VRSIShortCuts.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   uFormUtils in '..\PhotoDB\Units\uFormUtils.pas',
   uInstallTypes in '..\Installer\uInstallTypes.pas',
@@ -48,7 +47,8 @@ uses
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
   uIME in '..\PhotoDB\Units\uIME.pas',
   uUserUtils in '..\Installer\uUserUtils.pas',
-  uConfiguration in '..\PhotoDB\Units\uConfiguration.pas';
+  uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
+  uTime in '..\PhotoDB\Units\uTime.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}

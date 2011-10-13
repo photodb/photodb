@@ -5,16 +5,19 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, pngimage, ExtCtrls, uFormUtils, uMemory, GraphicsBaseTypes,
-  uInstallUtils, uDBForm, uInstallScope;
+  uInstallUtils, uDBForm, uInstallScope, AppEvnts;
 
 type
   TFrmProgress = class(TDBForm)
+    AeMain: TApplicationEvents;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
     FProgress: Byte;
     FBackgroundImage : TBitmap;
+    FProgressMessage: Cardinal;
     procedure RenderFormImage;
     procedure LoadLanguage;
     procedure SetProgress(const Value: Byte);
@@ -31,6 +34,12 @@ implementation
 
 {$R *.dfm}
 
+procedure TFrmProgress.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+begin
+  if Msg.message = FProgressMessage then
+    RenderFormImage;
+end;
+
 procedure TFrmProgress.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
@@ -41,8 +50,8 @@ end;
 
 procedure TFrmProgress.FormCreate(Sender: TObject);
 var
-  MS : TMemoryStream;
-  Png : TPngImage;
+  MS: TMemoryStream;
+  Png: TPngImage;
 begin
   LoadLanguage;
   FProgress := 0;
@@ -63,13 +72,14 @@ begin
     F(MS);
   end;
   RenderFormImage;
+  FProgressMessage := RegisterWindowMessage('UPDATE_PROGRESS');
 end;
 
 procedure TFrmProgress.RenderFormImage;
 var
-  FCurrentImage : TBitmap;
+  FCurrentImage: TBitmap;
   I, J, L, C: Integer;
-  P : PARGB32;
+  P: PARGB32;
 begin
   FCurrentImage := TBitmap.Create;
   try
@@ -133,13 +143,13 @@ end;
 
 procedure TFrmProgress.SetProgress(const Value: Byte);
 var
-  OldProgress : Byte;
+  OldProgress: Byte;
 begin
   OldProgress := FProgress;
   FProgress := Value;
 
   if OldProgress <> FProgress then
-    RenderFormImage;
+    PostMessage(Handle, FProgressMessage, 0, 0);
 end;
 
 procedure TFrmProgress.WMMouseDown(var s: Tmessage);

@@ -2,7 +2,7 @@ unit win32crc;
 
 interface
 
-uses Classes,windows, SysUtils;
+uses Classes, Windows, SysUtils;
 
 const  
   Table: array[0..255] of DWORD =

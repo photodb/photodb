@@ -101,7 +101,7 @@ function AddFileToStream(Stream: TStream; FileName: string): Boolean;
 var
   FS: TFileStream;
 begin
-  FS := TFileStream.Create(FileName, fmOpenRead);
+  FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
   try
     Result := AddStreamToStream(Stream, FS, FileName);
   finally

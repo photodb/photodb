@@ -655,20 +655,20 @@ begin
   end;
 end;
 
-function PosExK(const SubStr : string; const Str : string; index : integer = 1) : integer;
+function PosExK(const SubStr: string; const Str: string; Index: Integer = 1): Integer;
 var
   I: Integer;
   N: Boolean;
   Ls: Integer;
-  C, FS : Char;
-  OneChar : Boolean;
-  PS, PSup : PChar;
+  C, FS: Char;
+  OneChar: Boolean;
+  PS, PSup: PChar;
 
-  function IsSubStr() : Boolean;
+  function IsSubStr: Boolean;
   var
-    K : Integer;
-    APS : PChar;
-    APSub : PChar;
+    K: Integer;
+    APS: PChar;
+    APSub: PChar;
   begin
     Integer(APS) := Integer(PS);
     Integer(APSub) := Integer(PSup);
@@ -686,9 +686,14 @@ var
   end;
 
 begin
-  if index < 1 then
+  if (Index < 1) or (Length(Str) = 0) then
   begin
     Result := 0;
+    Exit;
+  end;
+  if Length(SubStr) = 0 then
+  begin
+    Result := Index;
     Exit;
   end;
 

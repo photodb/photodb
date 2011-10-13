@@ -53,7 +53,6 @@
 			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\VRSIShortCuts.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
 			<DCCReference Include="uFrmProgress.pas">
 				<Form>FrmProgress</Form>
@@ -104,6 +103,7 @@
 			<DCCReference Include="uIsAdmin.pas"/>
 			<DCCReference Include="uInstallRuntime.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uConfiguration.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uTime.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -129,6 +129,7 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+						<Parameters Name="RunParams">/commands &quot;c:\1.txt&quot;</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>

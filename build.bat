@@ -36,17 +36,17 @@ cd ..
 cd ..
 
 cd Uninstall
-"%DCC32%" UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd Installer
-"%DCC32%" InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe
-"%DCC32%" photodb -D"PHOTODB,LICENCE" -Ebin -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" photodb -D"PHOTODB,LICENCE" -Ebin -V -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 move photodb.cfg.safe photodb.cfg 
 
 cd ..
@@ -61,7 +61,7 @@ CRCCalculator.exe "..\bin\PhotoDB.exe" "..\KernelDLL\FileCRC.pas"
 cd ..
 
 cd KernelDLL
-"%DCC32%" Kernel -E"..\bin" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" Kernel -E"..\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd dcu
@@ -72,11 +72,11 @@ cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
 "%BRCC32%" SETUP_ZIP.rc
-"%DCC32%" Install -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" Install -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 InstallMaker /setup Install.exe
 "%BRCC32%" Install_Package.rc
-"%DCC32%" PhotoDBInstall -E".." -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" PhotoDBInstall -E".." -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 cd ..
 cd PhotoDB

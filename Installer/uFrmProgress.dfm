@@ -16,4 +16,9 @@ object FrmProgress: TFrmProgress
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
+    Left = 184
+    Top = 64
+  end
 end

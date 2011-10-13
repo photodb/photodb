@@ -32,23 +32,11 @@ procedure TSetupDatabaseActions.Execute(Callback: TActionCallback);
 var
   PhotoDBExeFile: string;
   Terminate: Boolean;
-  HProcess: THandle;
-  ExitCode,
-  StartTime: Cardinal;
 begin
   inherited;
   PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
 
-  HProcess := RunAsUser(PhotoDBExeFile, PhotoDBExeFile + ' /install /NoLogo', CurrentInstall.DestinationPath);
-
-  Callback(Self, InstallPoints_StartProgram, CalculateTotalPoints, Terminate);
-
-  StartTime := GetTickCount;
-  repeat
-    Sleep(100);
-
-    GetExitCodeProcess(HProcess, ExitCode);
-  until (ExitCode <> STILL_ACTIVE) or (GetTickCount - StartTime > 10 * 1000);
+  RunAsUser(PhotoDBExeFile, '/install /NoLogo', CurrentInstall.DestinationPath, True);
 
   Callback(Self, InstallPoints_StartProgram + InstallPoints_SetUpDatabaseProgram, CalculateTotalPoints, Terminate);
 end;

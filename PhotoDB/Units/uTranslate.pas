@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, uLogger, uMemory, xmldom, uConstants,
-  SyncObjs, Registry, uRuntime;
+  SyncObjs, Registry, uRuntime, uTime;
 
 type
   TTranslate = class(TObject)
@@ -111,6 +111,7 @@ var
   LanguagePath : string;
   Reg : TRegistry;
 begin
+  TW.I.Start('LoadLanguageFromFile - START');
   if LanguageCode = '--' then
   begin
     Reg := TRegistry.Create(KEY_READ);
@@ -125,7 +126,9 @@ begin
 
   LanguagePath := ExtractFilePath(ParamStr(0)) + Format('Languages\%s%s.xml', [LanguageFileMask, LanguageCode]);
   try
+    TW.I.Start(' TLanguage.Create - START');
     Language := TLanguage.Create(LanguagePath);
+    TW.I.Start(' TLanguage.Create - END');
   except
     on e : Exception do
       EventLog(e.Message);
@@ -152,16 +155,19 @@ end;
 
 constructor TTranslateManager.Create;
 begin
+  TW.I.Start('TTranslateManager.Create - START');
   FIsTranslating := True;
   FLanguageCode := '--';
-  FSync:= TCriticalSection.Create;
+  FSync := TCriticalSection.Create;
   FSync.Enter;
   try
     FLanguage := nil;
+    TW.I.Start('TTranslateManager.Create - LOAD');
     LanguageInitCallBack(FLanguage, FLanguageCode);
   finally
     FSync.Leave;
   end;
+  TW.I.Start('TTranslateManager.Create - END');
 end;
 
 destructor TTranslateManager.Destroy;

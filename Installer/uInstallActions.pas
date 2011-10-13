@@ -197,7 +197,7 @@ var
 begin
   PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
 
-  RunAsUser(PhotoDBExeFile, PhotoDBExeFile + ' /sleep', CurrentInstall.DestinationPath);
+  RunAsUser(PhotoDBExeFile, ' /start', CurrentInstall.DestinationPath, False);
 
   Callback(Self, InstallPoints_RunProgram, InstallPoints_RunProgram, Terminate);
 end;

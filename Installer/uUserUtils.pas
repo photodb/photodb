@@ -8,10 +8,11 @@ uses
   Classes,
   uMemory,
   uAppUtils,
+  uSysUtils,
   ShellApi;
 
 function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string; IsCurrentUserAdmin: Boolean): THandle;
-function RunAsUser(ExeName, ParameterString, WorkDirectory: string): THandle;
+function RunAsUser(ExeName, ParameterString, WorkDirectory: string; Wait: Boolean): THandle;
 procedure ProcessCommands(FileName: string);
 procedure UserAccountService(FileName: string; IsCurrentUserAdmin : Boolean);
 
@@ -34,7 +35,7 @@ begin
   Result := TempFileName;
 end;
 
-procedure UserAccountService(FileName: string; IsCurrentUserAdmin : Boolean);
+procedure UserAccountService(FileName: string; IsCurrentUserAdmin: Boolean);
 var
   InstallHandle: THandle;
   CommandsFileName: string;
@@ -93,7 +94,7 @@ begin
     Result := sei.hProcess;
 end;
 
-function RunAsUser(ExeName, ParameterString, WorkDirectory: string): THandle;
+function RunAsUser(ExeName, ParameterString, WorkDirectory: string; Wait: Boolean): THandle;
 var
   FS: TFileStream;
   SW: TStreamWriter;
@@ -115,6 +116,8 @@ begin
         SW.Write(ParameterString);
         SW.WriteLine;
         SW.Write(WorkDirectory);
+        SW.WriteLine;
+        SW.Write(IIF(Wait, '1', '0'));
         SW.WriteLine;
       finally
         F(SW);
@@ -160,6 +163,7 @@ var
   SR: TStreamReader;
   SW: TStreamWriter;
   ExeFileName, ExeParams, ExeDirectory: string;
+  WaitProgram: Boolean;
 
   procedure WritePID(PID: Integer);
   begin
@@ -189,6 +193,7 @@ begin
         ExeFileName := SR.ReadLine;
         ExeParams := SR.ReadLine;
         ExeDirectory := SR.ReadLine;
+        WaitProgram := SR.ReadLine = '1';
       finally
         F(SR);
       end;
@@ -210,13 +215,25 @@ begin
     { fill with known state }
     FillChar(StartInfo, SizeOf(TStartupInfo), #0);
     FillChar(ProcInfo, SizeOf(TProcessInformation), #0);
-    StartInfo.Cb := SizeOf(TStartupInfo);
+    try
+      with StartInfo do begin
+        cb := SizeOf(StartInfo);
+        dwFlags := STARTF_USESHOWWINDOW;
+        wShowWindow := SW_NORMAL;
+      end;
 
-    CreateProcess(PChar(ExeFileName), PChar(ExeParams), nil, nil, False,
-                CREATE_NEW_PROCESS_GROUP + NORMAL_PRIORITY_CLASS,
-                nil, PChar(ExeDirectory), StartInfo, ProcInfo);
+      CreateProcess(nil, PChar('"' + ExeFileName + '"' + ' ' + ExeParams), nil, nil, False,
+                  CREATE_DEFAULT_ERROR_MODE or NORMAL_PRIORITY_CLASS,
+                  nil, PChar(ExcludeTrailingPathDelimiter(ExeDirectory)), StartInfo, ProcInfo);
 
-    WritePID(ProcInfo.hProcess);
+      if WaitProgram then
+        WaitForSingleObject(ProcInfo.hProcess, 30000);
+
+      WritePID(ProcInfo.hProcess);
+    finally
+      CloseHandle(ProcInfo.hProcess);
+      CloseHandle(ProcInfo.hThread);
+    end;
   end;
 end;
 

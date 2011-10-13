@@ -6,6 +6,7 @@ uses
   Classes,
   SysUtils,
   Zlib,
+  uSysUtils,
   uInstallTypes in 'uInstallTypes.pas',
   acWorkRes in '..\PhotoDB\Units\acWorkRes.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas',
@@ -13,7 +14,6 @@ uses
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uInstallZip in 'uInstallZip.pas',
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
-  uSysUtils in '..\PhotoDB\Units\uSysUtils.pas',
   uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas';
 
 {$R ..\PhotoDB\Resources\PhotoDBInstall.res}
