@@ -19,7 +19,7 @@ procedure TLanguageThread.Execute;
 begin
   FreeOnTerminate := True;
   TW.I.Start('TLanguageThread.Execute - CoInitialize');
-  CoInitializeEx(COINIT_MULTITHREADED, nil);
+  CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
     //Call translate manager to load XML with language in separate thead
     TW.I.Start('TLanguageThread.Execute - PhotoDB');

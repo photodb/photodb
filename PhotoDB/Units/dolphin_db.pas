@@ -637,6 +637,4 @@ initialization
   FExtImagesInImageList := 0;
   LastInseredID := 0;
 
-finalization
-
 end.

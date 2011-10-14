@@ -231,7 +231,7 @@ end;
 
 procedure THintManager.CloseHint;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := FHints.Count - 1 downto 0 do
     TForm(FHints[I]).Close;
@@ -313,7 +313,7 @@ initialization
 
 finalization
 
-  THintManager.Instance.Free;
+  F(HintManager);
 
 end.
 

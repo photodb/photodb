@@ -2,7 +2,8 @@ unit UnitFileCheckerDB;
 
 interface
 
-uses Windows, SysUtils, UFIleUtils, UnitINI;
+uses
+  Windows, SysUtils, UFIleUtils, UnitINI, uMemory;
 
 type
   FileCheckedDB = class(TObject)
@@ -50,7 +51,7 @@ begin
     Reg.WriteDateTime(FileName, DateModifyOfFile);
     Result := CHECK_RESULT_FAILED;
   finally
-    Reg.Free;
+    F(Reg);
   end;
 end;
 
@@ -59,7 +60,7 @@ var
   DateModifyOfFile: Double;
   Reg: TBDRegistry;
 begin
-  if not FileExists(FileName) then
+  if not FileExistsSafe(FileName) then
   begin
     Exit;
   end;
@@ -70,7 +71,7 @@ begin
     Reg.OpenKey(GetRegRootKey + 'FileChecker', True);
     Reg.WriteDateTime(FileName, DateModifyOfFile);
   finally
-    Reg.Free;
+    F(Reg);
   end;
 end;
 

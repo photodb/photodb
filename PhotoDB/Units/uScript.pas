@@ -591,6 +591,5 @@ initialization
 
 finalization
 
-  TScriptEnviroments.Instance.Free;
-
+  F(ScriptEnviroments)
 end.

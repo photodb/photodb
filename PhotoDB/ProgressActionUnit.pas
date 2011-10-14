@@ -360,6 +360,6 @@ initialization
 
 finalization
 
-  ManagerProgresses.Free;
+  F(ManagerProgresses);
 
 end.

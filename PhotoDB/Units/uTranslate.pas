@@ -11,12 +11,12 @@ uses
 type
   TTranslate = class(TObject)
   private
-    FOriginal : string;
-    FTranslate : string;
+    FOriginal: string;
+    FTranslate: string;
   public
-    constructor Create(Node : IDOMNode);
-    property Original : string read FOriginal write FOriginal;
-    property Translate : string read FTranslate write FTranslate;
+    constructor Create(Node: IDOMNode);
+    property Original: string read FOriginal write FOriginal;
+    property Translate: string read FTranslate write FTranslate;
   end;
 
   TLanguageScope = class(TObject)
@@ -25,15 +25,15 @@ type
     FTranslateList: TList;
     FParced: Boolean;
     FScopeNode: IDOMNode;
-    function GetTranslate(Index: Integer): TTranslate;
+    function GetTranslate(index: Integer): TTranslate;
   protected
-    procedure LoadTranslateList(ScopeNode : IDOMNode);
+    procedure LoadTranslateList(ScopeNode: IDOMNode);
   public
-    constructor Create(ScopeNode : IDOMNode);
+    constructor Create(ScopeNode: IDOMNode);
     destructor Destroy; override;
-    function Translate(Original: string; out ATranslate : string): Boolean;
-    property Scope : string read FScope write FScope;
-    property Items[Index : Integer] : TTranslate read GetTranslate; default;
+    function Translate(Original: string; out ATranslate: string): Boolean;
+    property Scope: string read FScope write FScope;
+    property Items[index: Integer]: TTranslate read GetTranslate; default;
   end;
 
 type
@@ -48,13 +48,13 @@ type
     FLangCode: Integer;
     FLastScope: TLanguageScope;
   public
-    constructor Create(FileName : string);
-    constructor CreateFromXML(XML : string);
+    constructor Create(FileName: string);
+    constructor CreateFromXML(XML: string);
     procedure Init;
     destructor Destroy; override;
     procedure LoadTranslationList;
     function LocateString(Original, Scope: string): string;
-    property Name: string read FName;
+    property name: string read FName;
     property ImageName: string read FImageName;
     property Autor: string read FAutor;
     property Code: string read FCode;
@@ -64,52 +64,52 @@ type
   TTranslateManager = class(TObject)
   private
     FSync: TCriticalSection;
-    FLanguage : TLanguage;
-    FLanguageCode : string;
-    FIsTranslating : Boolean;
+    FLanguage: TLanguage;
+    FLanguageCode: string;
+    FIsTranslating: Boolean;
     constructor Create;
     function GetLanguage: string;
     procedure SetLanguage(const Value: string);
   protected
-    function LocateString(const Original, Scope : string) : string;
+    function LocateString(const Original, Scope: string): string;
   public
     destructor Destroy; override;
-    class function Instance : TTranslateManager;
+    class function Instance: TTranslateManager;
     procedure BeginTranslate;
     procedure EndTranslate;
-    function TA(const StringToTranslate, Scope: string) : string; overload;
-    function TA(const StringToTranslate: string) : string; overload;
-    function Translate(const StringToTranslate: string) : string; overload;
-    function Translate(const StringToTranslate, Scope: string) : string; overload;
-    function SmartTranslate(const StringToTranslate, Scope: string) : string;
-    property Language : string read GetLanguage write SetLanguage;
-    property IsTranslating : Boolean read FIsTranslating write FIsTranslating;
+    function TA(const StringToTranslate, Scope: string): string; overload;
+    function TA(const StringToTranslate: string): string; overload;
+    function Translate(const StringToTranslate: string): string; overload;
+    function Translate(const StringToTranslate, Scope: string): string; overload;
+    function SmartTranslate(const StringToTranslate, Scope: string): string;
+    property Language: string read GetLanguage write SetLanguage;
+    property IsTranslating: Boolean read FIsTranslating write FIsTranslating;
   end;
 
-  TLanguageInitCallBack = procedure(var Language : TLanguage; var LanguageCode : string);
+  TLanguageInitCallBack = procedure(var Language: TLanguage; var LanguageCode: string);
 
-function TA(const StringToTranslate, Scope: string) : string; overload;
-function TA(const StringToTranslate: string) : string; overload;
-procedure LoadLanguageFromFile(var Language : TLanguage; var LanguageCode : string);
-function ResolveLanguageString(s: string) : string;
+function TA(const StringToTranslate, Scope: string): string; overload;
+function TA(const StringToTranslate: string): string; overload;
+procedure LoadLanguageFromFile(var Language: TLanguage; var LanguageCode: string);
+function ResolveLanguageString(S: string): string;
 
 var
-  LanguageInitCallBack : TLanguageInitCallBack = LoadLanguageFromFile;
+  LanguageInitCallBack: TLanguageInitCallBack = LoadLanguageFromFile;
 
 implementation
 
 var
-  TranslateManager : TTranslateManager = nil;
+  TranslateManager: TTranslateManager = nil;
 
-function ResolveLanguageString(s: string) : string;
+function ResolveLanguageString(S: string): string;
 begin
-  Result := StringReplace(s, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [rfReplaceAll, rfIgnoreCase]);
+  Result := StringReplace(S, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [RfReplaceAll, RfIgnoreCase]);
 end;
 
-procedure LoadLanguageFromFile(var Language : TLanguage; var LanguageCode : string);
+procedure LoadLanguageFromFile(var Language: TLanguage; var LanguageCode: string);
 var
-  LanguagePath : string;
-  Reg : TRegistry;
+  LanguagePath: string;
+  Reg: TRegistry;
 begin
   TW.I.Start('LoadLanguageFromFile - START');
   if LanguageCode = '--' then
@@ -135,12 +135,12 @@ begin
   end;
 end;
 
-function TA(const StringToTranslate, Scope: string) : string; overload;
+function TA(const StringToTranslate, Scope: string): string; overload;
 begin
   Result := TTranslateManager.Instance.TA(StringToTranslate, Scope);
 end;
 
-function TA(const StringToTranslate: string) : string; overload;
+function TA(const StringToTranslate: string): string; overload;
 begin
   Result := TTranslateManager.Instance.TA(StringToTranslate);
 end;
@@ -249,7 +249,7 @@ end;
 
 { TLanguageScope }
 
-constructor TLanguageScope.Create(ScopeNode : IDOMNode);
+constructor TLanguageScope.Create(ScopeNode: IDOMNode);
 var
   NameAttr : IDOMNode;
 begin
@@ -264,7 +264,6 @@ end;
 destructor TLanguageScope.Destroy;
 begin
   FreeList(FTranslateList);
-  F(FTranslateList);
   inherited;
 end;
 
@@ -281,8 +280,8 @@ end;
 
 function TLanguageScope.Translate(Original: string; out ATranslate : string): Boolean;
 var
-  I : Integer;
-  Translate : TTranslate;
+  I: Integer;
+  Translate: TTranslate;
 begin
   Result := False;
   ATranslate := Original;
@@ -307,10 +306,10 @@ end;
 
 procedure TLanguageScope.LoadTranslateList(ScopeNode: IDOMNode);
 var
-  I : Integer;
-  TranslateList : IDOMNodeList;
-  TranslateNode : IDOMNode;
-  Translate : TTranslate;
+  I: Integer;
+  TranslateList: IDOMNodeList;
+  TranslateNode: IDOMNode;
+  Translate: TTranslate;
 begin
   TranslateList := ScopeNode.childNodes;
   if TranslateList <> nil then
@@ -358,6 +357,7 @@ end;
 
 destructor TLanguage.Destroy;
 begin
+  FTranslate := nil;
   FreeList(FTranslateList);
   inherited;
 end;
