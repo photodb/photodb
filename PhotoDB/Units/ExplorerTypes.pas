@@ -5,7 +5,7 @@ interface
 uses
   SysUtils, Windows, Graphics, UnitDBDeclare, Messages, Classes, JPEG, SyncObjs,
   uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo, uThreadEx, Menus,
-  uThreadForm, ShellApi, uConstants, PathEditor, uSysUtils,
+  uThreadForm, ShellApi, uConstants, PathEditor, uSysUtils, uGUIDUtils,
   uPathProviders, uExplorerMyComputerProvider, uExplorerGroupsProvider,
   uExplorerPersonsProvider, uExplorerNetworkProviders;
 

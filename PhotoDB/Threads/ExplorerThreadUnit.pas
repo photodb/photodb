@@ -7,7 +7,7 @@ uses
   UnitDBKernel, ExplorerUnit, ShellAPI, Windows, uPeopleSupport,
   Classes, SysUtils, Graphics, Network, GraphicCrypt, Math,
   Controls, ActiveX, ShlObj, CommCtrl, Registry, PathEditor,
-  GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare,
+  GraphicsBaseTypes, Win32crc, RAWImage, UnitDBDeclare, uGUIDUtils,
   EasyListview, GraphicsCool, uVistaFuncs, uResources, Effects,
   uBitmapUtils, UnitDBCommon, uCDMappingTypes, uExifUtils,
   uThreadEx, uAssociatedIcons, uLogger, uTime, uGOM, uFileUtils,

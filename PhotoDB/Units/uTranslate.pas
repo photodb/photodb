@@ -172,8 +172,14 @@ end;
 
 destructor TTranslateManager.Destroy;
 begin
+  FSync.Enter;
+  try
+    F(FLanguage);
+    TranslateManager := nil;
+  finally
+    FSync.Leave;
+  end;
   F(FSync);
-  F(FLanguage);
   inherited;
 end;
 

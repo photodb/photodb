@@ -7,7 +7,7 @@ uses
   Dialogs, WebLink, StdCtrls, ExtCtrls, ComCtrls, ExtDlgs, Jpeg, GIFImage, Math,
   DropSource, DropTarget, ToolsUnit, CropToolUnit, SaveWindowPos,
   ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd, uTiffImage,
-  EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus,
+  EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus, uGUIDUtils,
   CustomSelectTool, TextToolUnit, BrushToolUnit, InsertImageToolUnit,
   GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm,
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,

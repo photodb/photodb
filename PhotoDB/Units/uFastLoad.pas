@@ -3,7 +3,7 @@ unit uFastLoad;
 interface
 
 uses
-  WIndows, SysUtils, uDBThread, uTime, uMemory, uSysUtils;
+  WIndows, SysUtils, uDBCustomThread, uDBThread, uTime, uMemory, uSysUtils;
 
 type
   TLoad = class(TObject)

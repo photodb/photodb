@@ -18,7 +18,8 @@ interface
 uses
   Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs, uMemoryEx,
   Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-  uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils, uSysUtils;
+  uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils, uSysUtils,
+  uGUIDUtils;
 
 type
   TMenuItemW = class(TMenuItem)

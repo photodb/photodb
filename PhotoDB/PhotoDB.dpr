@@ -356,7 +356,9 @@ uses
   uExplorerSearchProviders in 'Units\uExplorerSearchProviders.pas',
   uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
   uVCLHelpers in 'Units\uVCLHelpers.pas',
-  uFormPersonSuggest in 'uFormPersonSuggest.pas' {FormPersonSuggest};
+  uFormPersonSuggest in 'uFormPersonSuggest.pas' {FormPersonSuggest},
+  uDBCustomThread in 'Threads\uDBCustomThread.pas',
+  uGUIDUtils in 'Units\uGUIDUtils.pas';
 
 {$R *.res}
 
@@ -470,6 +472,7 @@ begin
    /SQLExec
    /SQLExecFile
   }
+   // uShellUtils.RefreshSystemIconCache;
     TW.I.Start('START');
 
     EventLog('');
@@ -496,7 +499,6 @@ begin
 
     SetSplashProgress(15);
     TW.I.Start('Application.Initialize');
-    CoInitFlags := COINIT_MULTITHREADED;
     Application.Initialize;
     SetSplashProgress(30);
 
@@ -527,7 +529,7 @@ begin
 
       TW.I.Start('TFormManager Create');
       Application.CreateForm(TFormManager, FormManager);
-      Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
       // This is main form of application
 
       TW.I.Start('SetSplashProgress 70');
@@ -683,7 +685,8 @@ begin
           if ParamStr(2) <> '' then
             GetPhotosFromDrive(ParamStr(2)[1]);
       end;
-    end;
+    end else
+      FormManager.RunInBackground;
     EventLog('Application Started!...');
 
     if GetParamStrDBBool('/Execute') then
@@ -730,15 +733,17 @@ begin
 
     TW.I.Start('Application.Run');
 
-    if not DBTerminating then
-      Application.Run;
+    Application.Run;
 
-    if DBTerminating and not GetParamStrDBBool('/install') then
+    if DBTerminating then
       begin
         TLoad.Instance.RequaredDBKernelIcons;
         TLoad.Instance.RequaredCRCCheck;
         TLoad.Instance.RequaredDBSettings;
       end;
+
+    if FormManager <> nil then
+      FormManager.CloseManager;
 
   except
     on e: Exception do

@@ -3,7 +3,7 @@ unit uMultiCPUThreadManager;
 interface
 
 uses
-  Windows, Math, SysUtils, Forms, uTime, uGOM, uLogger,
+  Windows, Math, SysUtils, Forms, uTime, uGOM, uLogger, uGUIDUtils,
   uThreadEx, uThreadForm, Classes, SyncObjs, uMemory, uSysUtils;
 
 type

@@ -3,7 +3,7 @@ unit uMobileUtils;
 interface
 
 uses
-  Windows, Graphics, SysUtils, uResourceUtils, uFileUtils, uMemory,
+  Windows, Graphics, SysUtils, uResourceUtils, uFileUtils, uMemory, uGUIDUtils,
   uTranslate, uConstants, acWorkRes, uTime, Classes, uSysUtils, uResources;
 
 const

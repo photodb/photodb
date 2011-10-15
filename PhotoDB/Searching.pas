@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, DBCMenu, CmpUnit, ToolWin,
   ShellApi, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, DB, Menus, ExtCtrls, StdCtrls, UGraphicUtils, UMemoryEx,
-  ImgList, ComCtrls, ActiveX, ShlObj, JPEG, ClipBrd,
+  ImgList, ComCtrls, ActiveX, ShlObj, JPEG, ClipBrd, uGUIDUtils,
   SaveWindowPos, ExtDlgs, UnitDBKernel, Rating, Math, CommonDBSupport,
   AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
   ShellContextMenu, DropSource, DropTarget, DateUtils,

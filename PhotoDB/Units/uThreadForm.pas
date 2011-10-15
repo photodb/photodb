@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Forms, SyncObjs, Dolphin_DB, uDBForm, uImageSource,
-  Graphics, uSysUtils, uMemory;
+  Graphics, uSysUtils, uMemory, uGUIDUtils;
 
 type
   TThreadForm = class(TDBForm)

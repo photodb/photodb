@@ -10950,14 +10950,14 @@ var
   PIDL: PItemIDList = nil;
 
 initialization
-  CoInitialize(nil);
+  //CoInitialize(nil);
   //PHOTODB: Icons cache isn't needed! initialization takes 250 ms!!!!
   //FileIconInit(True);  // This MUST be before the Namespaces are created or it won't work because the IconCache may have an icon in from the namespace
   VET_ColumnWidths := VET_DEFAULT_COLUMNWIDTHS;
   if not LoadShell32Functions then
     Halt(0);
   LoadWideFunctions;
-  PIDLMgr := TCommonPIDLManager.Create;
+ { PIDLMgr := TCommonPIDLManager.Create;
   if IsWinVista then
   begin
     DesktopFolder := CreateKnownFolderNamespace(FOLDERID_Desktop, False, False);
@@ -10996,11 +10996,11 @@ initialization
     FavoritesFolder := CreateSpecialNamespace(CSIDL_FAVORITES);
     UserDocumentsFolder := CreateSpecialNamespace(CSIDL_APPDATA);
     ProgramFilesFolder := CreateSpecialNamespace(CSIDL_PROGRAMS);
-  end;
+  end;        }
   ExplorerThreadInstance := TExplorerThreadInstance.Create;
 
 finalization
-  FreeAndNil(GamesFolder);
+  {FreeAndNil(GamesFolder);
   FreeAndNil(DesktopFolder);
   FreeAndNil(RecycleBinFolder);
   FreeAndNil(PhysicalDesktopFolder);
@@ -11016,7 +11016,7 @@ finalization
   FreeAndNil(ProgramFilesFolder);
   FreeAndNil(UserLibraryFolder);
   FreeAndNil(ControlPanelFolderEx);
-  FreeAndNil(PIDLMgr);
+  FreeAndNil(PIDLMgr); }
   {$IFDEF GXDEBUG_EXPLORERTHREADINSTANCE_REFCOUNT}
   StringList := TStringList.Create;
   if Assigned(MP_SHSetInstanceExplorer) then
@@ -11052,12 +11052,12 @@ finalization
   StringList.Add('ReferenceCount = ' + IntToStr(ExplorerThreadInstance.RefCount));
   StringList.SaveToFile('ExplorerInstance.txt');
   StringList.Free;
-  ShellExecute(0, 'open', 'ExplorerInstance.txt', nil, nil, SW_NORMAL);
+  //ShellExecute(0, 'open', 'ExplorerInstance.txt', nil, nil, SW_NORMAL);
   {$ENDIF}
 
   FreeAndNil(ExplorerThreadInstance);
   CommonUnloadLibrary(Mpr);
-  CoUninitialize;
+  //CoUninitialize;
 end.
 
 

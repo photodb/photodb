@@ -5,7 +5,7 @@ interface
 uses
   Registry, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, DateUtils, uShellIntegration,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Dolphin_DB, uGUIDUtils,
   acDlgSelect, Math, UnitUpdateDBObject, UnitScanImportPhotosThread,
   DmProgress, ImgList, CommCtrl, UnitDBKernel, Menus, uVistaFuncs, uFileUtils,
   UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, uConstants,

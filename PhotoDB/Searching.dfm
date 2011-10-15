@@ -771,8 +771,8 @@ object SearchForm: TSearchForm
       object ShowDateOptionsLink: TWebLink
         Left = 8
         Top = 156
-        Width = 97
-        Height = 13
+        Width = 113
+        Height = 16
         Cursor = crHandPoint
         Text = 'Show Date Options'
         OnClick = ShowDateOptionsLinkClick
@@ -786,12 +786,14 @@ object SearchForm: TSearchForm
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object SortLink: TWebLink
         Left = 8
         Top = 138
-        Width = 54
-        Height = 13
+        Width = 70
+        Height = 16
         Cursor = crHandPoint
         PopupMenu = SortingPopupMenu
         Text = 'Sort by ID'
@@ -806,6 +808,8 @@ object SearchForm: TSearchForm
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object ComboBoxSearchGroups: TComboBoxExDB
         Left = 8
@@ -888,8 +892,8 @@ object SearchForm: TSearchForm
       object WlStartStop: TWebLink
         Left = 8
         Top = 53
-        Width = 114
-        Height = 13
+        Width = 130
+        Height = 16
         Cursor = crHandPoint
         Color = clBtnFace
         ParentColor = False
@@ -904,6 +908,8 @@ object SearchForm: TSearchForm
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object LsSearchResults: TLoadingSign
         Left = 157

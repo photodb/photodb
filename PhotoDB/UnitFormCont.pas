@@ -4,7 +4,7 @@ interface
 
 uses
   Clipbrd, DBCMenu, ComCtrls, CommCtrl, ImgList, ExtCtrls, StdCtrls,
-  UnitDBKernel, db, Windows, Messages, SysUtils, Classes,
+  UnitDBKernel, db, Windows, Messages, SysUtils, Classes, uGUIDUtils,
   Graphics, Controls, Forms, GraphicCrypt, ShellContextMenu, GraphicsCool,
   Dialogs, Activex, jpeg, Menus, Buttons, acDlgSelect,  Math,
   DropSource, DropTarget, AppEvnts, WebLink, MPCommonUtilities, uVistaFuncs,

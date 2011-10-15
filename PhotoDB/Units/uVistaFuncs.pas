@@ -2,7 +2,8 @@ unit uVistaFuncs;
 
 interface
 
-uses Forms, Windows, Graphics, uConstants, Messages, uSysUtils;
+uses
+  Forms, Windows, Graphics, uConstants, Messages, uSysUtils;
 
 type
   TChangeWindowMessageFilter = function(msg: Cardinal; action: Word): BOOL; stdcall;

@@ -3,7 +3,7 @@ unit uDBForm;
 interface
 
 uses
-  Forms, Classes, uTranslate, Graphics, SyncObjs, Messages,
+  Forms, Classes, uTranslate, Graphics, SyncObjs, Messages, ActiveX,
   uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils, uSysUtils;
 
 type
@@ -41,6 +41,11 @@ type
   end;
 
 implementation
+
+function GetGUID: TGUID;
+begin
+  CoCreateGuid(Result);
+end;
 
 { TDBForm }
 

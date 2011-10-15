@@ -7,10 +7,10 @@ uses
   Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls, UnitINI, uAppUtils,
   Dialogs, UnitDBKernel, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
   UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
-  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, uDBThread, win32crc,
+  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, win32crc,
   uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
   uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations, uActivationUtils,
-  uExifUtils;
+  uExifUtils, uDBCustomThread;
 
 type
   TFormManager = class(TDBForm)
@@ -39,6 +39,7 @@ type
     procedure RegisterMainForm(Value: TForm);
     procedure UnRegisterMainForm(Value: TForm);
     procedure Run;
+    procedure RunInBackground;
     procedure Close(Form: TForm);
     function MainFormsCount: Integer;
     function IsMainForms(Form: TForm): Boolean;
@@ -238,6 +239,12 @@ begin
   end;
 end;
 
+procedure TFormManager.RunInBackground;
+begin
+  FCheckCount := 0;
+  TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 55, @TimerProc);
+end;
+
 procedure TFormManager.Close(Form: TForm);
 begin
   UnRegisterMainForm(Self);
@@ -361,6 +368,12 @@ var
 begin
   if not CMDInProgress then
   begin
+    if DBTerminating then
+    begin
+      ExitApplication;
+      Exit;
+    end;
+
     Inc(FCheckCount);
     if (FCheckCount = 10) then //after 1sec. set normal priority
     begin
