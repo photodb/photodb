@@ -594,6 +594,13 @@ object Viewer: TViewer
     OnPopup = PmFacesPopup
     Left = 48
     Top = 368
+    object MiDrawFace: TMenuItem
+      Caption = 'Draw face'
+      OnClick = MiDrawFaceClick
+    end
+    object N10: TMenuItem
+      Caption = '-'
+    end
     object MiRefreshFaces: TMenuItem
       Caption = 'Refresh Faces'
       OnClick = MiRefreshFacesClick

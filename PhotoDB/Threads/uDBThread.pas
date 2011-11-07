@@ -28,7 +28,6 @@ type
     destructor Destroy; override;
   end;
 
-
 implementation
 
 { TThreadEx }
@@ -90,5 +89,13 @@ begin
   Synchronize(CallMethod);
   Result := FCallResult;
 end;
+
+procedure FormsWaitProc;
+begin
+  Application.ProcessMessages;
+end;
+
+initialization
+   CustomWaitProc := FormsWaitProc;
 
 end.

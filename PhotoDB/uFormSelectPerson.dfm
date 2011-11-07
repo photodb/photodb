@@ -151,6 +151,7 @@ object FormFindPerson: TFormFindPerson
     Width = 186
     Height = 16
     Cursor = crHandPoint
+    Anchors = [akLeft, akBottom]
     Text = 'Close form and create new person'
     OnClick = WlCreatePersonClick
     ImageIndex = 0

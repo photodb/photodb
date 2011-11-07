@@ -117,6 +117,8 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object EdInternalName: TWatermarkedEdit
       Left = 8

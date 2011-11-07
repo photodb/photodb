@@ -4,7 +4,7 @@ interface
 
 uses
   UnitGroupsWork, Classes, DB, UnitDBKernel, SysUtils, GraphicCrypt, ActiveX,
-  UnitDBDeclare, uFileUtils, uConstants, uDBUtils, uDBForm, uMemory,
+  UnitDBDeclare, uFileUtils, uConstants, uDBUtils, uDBForm, uMemory, uRuntime,
   uTranslate, uDBThread;
 
 Type

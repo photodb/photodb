@@ -228,6 +228,8 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure RecalculateNewImageSize(NewSize: TSize);
+    procedure RotateLeft;                                
+    procedure RotateRight;
     property Data: TClonableObject read FData write SetData;
     property ImageSize: TSize read GetImageSize;
     property Rect: TRect read GetRect write SetRect;
@@ -251,6 +253,8 @@ type
     procedure Remove(Item: TFaceDetectionResultItem);
     function AddFace(X, Y, Width, Height, ImageWidth, ImageHeight, Page: Integer): TFaceDetectionResultItem;
     procedure Add(Face: TFaceDetectionResultItem);
+    procedure RotateLeft;
+    procedure RotateRight;
     property Items[Index: Integer]: TFaceDetectionResultItem read GetItem; default;
     property Count: Integer read GetCount;
     property Page: Integer read FPage write FPage;
@@ -555,6 +559,22 @@ begin
   F(Item);
 end;
 
+procedure TFaceDetectionResult.RotateLeft;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TFaceDetectionResultItem(FList[I]).RotateLeft;
+end;
+
+procedure TFaceDetectionResult.RotateRight;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TFaceDetectionResultItem(FList[I]).RotateRight;
+end;
+
 { TFaceDetectionManager }
 
 constructor TFaceDetectionManager.Create;
@@ -729,6 +749,52 @@ begin
     ImageWidth := NewSize.cx;
     ImageHeight := NewSize.cy;
   end;
+end;
+
+procedure TFaceDetectionResultItem.RotateRight;
+var 
+  NW, NH, NImageW, NImageH, NX, NY: Integer;
+begin
+  NImageH := ImageWidth;
+  NImageW := ImageHeight;
+
+  NW := Height;
+  NH := Width;
+
+  NX := ImageHeight - Y - Height;
+  NY := X;
+
+  ImageWidth := NImageW;
+  ImageHeight := NImageH;
+
+  Width := NW;
+  Height := NH;
+
+  X := NX;
+  Y := NY;
+end;
+
+procedure TFaceDetectionResultItem.RotateLeft;
+var 
+  NW, NH, NImageW, NImageH, NX, NY: Integer;
+begin
+  NImageH := ImageWidth;
+  NImageW := ImageHeight;
+
+  NW := Height;
+  NH := Width;
+
+  NX := Y;
+  NY := ImageWidth - X - Width;
+   
+  ImageWidth := NImageW;
+  ImageHeight := NImageH;
+
+  Width := NW;
+  Height := NH;
+
+  X := NX;
+  Y := NY;
 end;
 
 function TFaceDetectionResultItem.GetRect: TRect;

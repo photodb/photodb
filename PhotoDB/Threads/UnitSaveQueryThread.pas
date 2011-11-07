@@ -8,7 +8,7 @@ uses
   acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants, uDBUtils,
   uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate, ExplorerTypes,
   uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils, uTime,
-  uDBShellUtils;
+  uDBShellUtils, uRuntime;
 
 type
   TSaveQueryThread = class(TThreadEx)

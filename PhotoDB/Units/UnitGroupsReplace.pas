@@ -2,8 +2,9 @@ unit UnitGroupsReplace;
 
 interface
 
-uses UnitGroupsWork, Forms, SysUtils, Dialogs, Windows, UnitDBKernel,
-  uTranslate, uConstants, uShellIntegration, Dolphin_DB, CommonDBSupport;
+uses
+  UnitGroupsWork, Forms, SysUtils, Dialogs, Windows, UnitDBKernel,
+  uTranslate, uConstants, uShellIntegration, Dolphin_DB, uRuntime;
 
 procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW;

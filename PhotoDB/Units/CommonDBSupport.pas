@@ -120,10 +120,6 @@ var
 
   MDBProvider : string = 'Microsoft.Jet.OLEDB.4.0';
 
-var
-   //TODO: delete it
-   dbname : string = '';
-
 function GetDBType: Integer; overload;
 function GetDBType(Dbname: string): Integer; overload;
 

@@ -4,13 +4,13 @@ interface
 
 uses
   GraphicCrypt, DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms,  uVistaFuncs, AppEvnts, ExtCtrls, UnitINI, uAppUtils,
+  Controls, Forms, UVistaFuncs, AppEvnts, ExtCtrls, UnitINI, UAppUtils,
   Dialogs, UnitDBKernel, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
-  UnitDBCommon, uLogger, uConstants, uFileUtils, uTime, uSplashThread,
-  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, win32crc,
-  uShellIntegration, uRuntime, Dolphin_DB, uDBBaseTypes, uDBFileTypes,
-  uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations, uActivationUtils,
-  uExifUtils, uDBCustomThread;
+  UnitDBCommon, ULogger, UConstants, UFileUtils, UTime, USplashThread,
+  UDBForm, UFastLoad, UMemory, UMultiCPUThreadManager, Win32crc,
+  UShellIntegration, URuntime, Dolphin_DB, UDBBaseTypes, UDBFileTypes,
+  UDBUtils, UDBPopupMenuInfo, USettings, UAssociations, UActivationUtils,
+  UExifUtils, UDBCustomThread;
 
 type
   TFormManager = class(TDBForm)
@@ -33,8 +33,7 @@ type
   protected
     function GetFormID: string; override;
   public
-    procedure CloseManager;
-    constructor Create(AOwner : TComponent);  override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure RegisterMainForm(Value: TForm);
     procedure UnRegisterMainForm(Value: TForm);
@@ -50,10 +49,10 @@ type
 
 var
   FormManager: TFormManager;
-  TimerTerminateHandle : THandle;
-  TimerCheckMainFormsHandle : THandle;
-  TimerTerminateAppHandle : THandle;
-  TimerCloseHandle : THandle;
+  TimerTerminateHandle: THandle;
+  TimerCheckMainFormsHandle: THandle;
+  TimerTerminateAppHandle: THandle;
+  TimerCloseHandle: THandle;
 
 const
   TIMER_TERMINATE = 1;
@@ -64,37 +63,39 @@ const
 implementation
 
 uses
-  UnitCleanUpThread, ExplorerUnit, uSearchTypes, SlideShow, UnitFileCheckerDB,
-  UnitInternetUpdate, uAbout, UnitConvertDBForm, UnitImportingImagesForm,
+  UnitCleanUpThread, ExplorerUnit, USearchTypes, SlideShow, UnitFileCheckerDB,
+  UnitInternetUpdate, UAbout, UnitConvertDBForm, UnitImportingImagesForm,
   UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel,
-  uActivation, UnitUpdateDB, uExifPatchThread;
-
+  UActivation, UnitUpdateDB, UExifPatchThread;
 {$R *.dfm}
 
 // callback function for Timer
-procedure TimerProc(wnd :HWND; // handle of window for timer messages
-                    uMsg :UINT; // WM_TIMER message
-                    idEvent :UINT; // timer identifier
-                    dwTime :DWORD // current system time
-                    ); stdcall; // use stdcall when declare callback functions
+procedure TimerProc(Wnd: HWND; // handle of window for timer messages
+  UMsg: UINT; // WM_TIMER message
+  IdEvent: UINT; // timer identifier
+  DwTime: DWORD // current system time
+  ); stdcall; // use stdcall when declare callback functions
 begin
-  if idEvent = TimerTerminateHandle then
+  if IdEvent = TimerTerminateHandle then
   begin
     KillTimer(0, TimerTerminateHandle);
     EventLog('TFormManager::TerminateTimerTimer()!');
     Halt;
-  end else if idEvent = TimerCheckMainFormsHandle then
+  end
+  else if IdEvent = TimerCheckMainFormsHandle then
   begin
-    //to avoid deadlock in delphi 2010
+    // to avoid deadlock in delphi 2010
     PostThreadMessage(GetCurrentThreadID, WM_NULL, 0, 0);
 
     if FormManager <> nil then
       FormManager.CheckTimerTimer(nil);
-  end else if idEvent = TimerTerminateAppHandle then
+  end
+  else if IdEvent = TimerTerminateAppHandle then
   begin
     if FormManager <> nil then
       FormManager.CalledTimerTimer(nil);
-  end else if idEvent = TimerCloseHandle then
+  end
+  else if IdEvent = TimerCloseHandle then
   begin
     if FormManager <> nil then
       FormManager.TimerCloseApplicationByDBTerminateTimer(nil);
@@ -175,7 +176,8 @@ begin
           end;
           CloseSplashWindow;
           NewSearch.Show;
-        end else
+        end
+        else
         begin
           TW.I.Start('RUN TViewer');
           if Viewer = nil then
@@ -187,7 +189,8 @@ begin
           CloseSplashWindow;
           Viewer.Show;
         end;
-      end else
+      end
+      else
       begin
         // Default Form
         if Settings.ReadBool('Options', 'RunExplorerAtStartUp', True) then
@@ -202,7 +205,8 @@ begin
             CloseSplashWindow;
             Show;
           end;
-        end else
+        end
+        else
         begin
           TW.I.Start('SearchManager.NewSearch');
           NewSearch := SearchManager.NewSearch;
@@ -211,7 +215,8 @@ begin
           NewSearch.Show;
         end;
       end;
-    end else
+    end
+    else
     begin
       if DirectoryExists(Directory) then
       begin
@@ -221,7 +226,8 @@ begin
           CloseSplashWindow;
           Show;
         end;
-      end else
+      end
+      else
       begin
         Application.Restore;
         with SearchManager.NewSearch do
@@ -265,7 +271,8 @@ begin
       if not TForm(FMainForms[I]).Visible then
         TForm(FMainForms[I]).Close;
   except
-    on e : Exception do EventLog(':TFormManager::UnRegisterMainForm() throw exception: ' + e.Message);
+    on E: Exception do
+      EventLog(':TFormManager::UnRegisterMainForm() throw exception: ' + E.message);
   end;
 end;
 
@@ -294,7 +301,7 @@ begin
   // to allow run new copy
   Caption := '';
 
-  //stop updating process, queue will be saved in registry
+  // stop updating process, queue will be saved in registry
   DestroyUpdaterObject;
 
   for I := 0 to MultiThreadManagers.Count - 1 do
@@ -338,8 +345,7 @@ begin
   Application.Terminate;
 end;
 
-procedure TFormManager.ChangedDBDataByID(Sender: TObject; ID: Integer;
-  Params: TEventFields; Value: TEventValues);
+procedure TFormManager.ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
 var
   UpdateInfoParams: TEventFields;
 begin
@@ -352,10 +358,9 @@ begin
   if not Settings.Exif.SaveInfoToExif then
     Exit;
 
-  UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating,
-    EventID_Param_Groups, EventID_Param_Links,
-    EventID_Param_Include, EventID_Param_Private, EventID_Param_Attr,
-    EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Add];
+  UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Groups, EventID_Param_Links,
+    EventID_Param_Include, EventID_Param_Private, EventID_Param_Attr, EventID_Param_Comment, EventID_Param_KeyWords,
+    EventID_Param_Add];
 
   if UpdateInfoParams * Params <> [] then
     ExifPatchManager.AddPatchInfo(ID, Params, Value);
@@ -375,18 +380,18 @@ begin
     end;
 
     Inc(FCheckCount);
-    if (FCheckCount = 10) then //after 1sec. set normal priority
+    if (FCheckCount = 10) then // after 1sec. set normal priority
     begin
       SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
       SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
     end;
-    if (FCheckCount = 20) and not FolderView then //after 2 sec.
+    if (FCheckCount = 20) and not FolderView then // after 2 sec.
     begin
       EventLog('Loading Kernel.dll');
       TW.I.Start('StartCRCCheckThread');
       TLoad.Instance.StartCRCCheckThread;
     end;
-    if (FCheckCount = 30) and not FolderView then //after 4 sec.
+    if (FCheckCount = 30) and not FolderView then // after 4 sec.
     begin
       if TActivationManager.Instance.IsDemoMode then
       begin
@@ -394,7 +399,7 @@ begin
         try
           FReg.OpenKey(RegRoot, True);
           InstallDate := FReg.ReadDateTime('InstallDate', 0);
-          //if more than 30 days
+          // if more than 30 days
           if (Now - InstallDate) > DemoDays then
             ShowActivationDialog;
 
@@ -403,17 +408,17 @@ begin
         end;
       end;
     end;
-    if (FCheckCount = 40) and not FolderView then //after 4 sec.
+    if (FCheckCount = 40) and not FolderView then // after 4 sec.
     begin
       if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
         CleanUpThread.Create(Self, False);
     end;
-    if (FCheckCount = 100) and not FolderView then //after 10 sec. check for updates
+    if (FCheckCount = 100) and not FolderView then // after 10 sec. check for updates
     begin
       TW.I.Start('TInternetUpdate - Create');
       TInternetUpdate.Create(nil, True, nil);
     end;
-    if (FCheckCount = 600) and not FolderView then //after 1.min. backup database
+    if (FCheckCount = 600) and not FolderView then // after 1.min. backup database
       DBKernel.BackUpTable;
 
     if FMainForms.Count = 0 then
@@ -439,14 +444,7 @@ begin
     TForm(FMainForms[I]).Close;
 end;
 
-procedure TFormManager.CloseManager;
-begin
-  ExitApplication;
-  Free;
-end;
-
-procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(
-  Sender: TObject);
+procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
 begin
   inherited Close;
 end;
@@ -469,8 +467,10 @@ begin
       begin
         Dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
 
-        if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
-          Dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
+        if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase
+            (GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
+          Dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName))
+            + '.photodb';
       end;
     except
       on E: Exception do
@@ -491,8 +491,8 @@ begin
             DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
           DBKernel.SetDataBase(DBFile.FileName);
 
-          DBVersion := DBKernel.TestDBEx(dbname, True);
-          if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+          DBVersion := DBKernel.TestDBEx(Dbname, True);
+          if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
           begin
             Application.Terminate;
             Exit;
@@ -503,17 +503,17 @@ begin
         end;
       end;
 
-      //check valid db version
-      StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(dbname)), DB_VER_2_3]);
+      // check valid db version
+      StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(Dbname)), DB_VER_2_3]);
       if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
       begin
-        DBVersion := DBKernel.TestDBEx(dbname, False);
-        if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+        DBVersion := DBKernel.TestDBEx(Dbname, False);
+        if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
         begin
           CloseSplashWindow;
-          ConvertDB(dbname);
-          DBVersion := DBKernel.TestDBEx(dbname, False);
-          if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+          ConvertDB(Dbname);
+          DBVersion := DBKernel.TestDBEx(Dbname, False);
+          if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
           begin
             Application.Terminate;
             Exit;
@@ -523,15 +523,16 @@ begin
       end;
 
       // checking RecordCount
-      if Settings.ReadboolW('DBCheck', ExtractFileName(dbname), True) = True then
+      if Settings.ReadboolW('DBCheck', ExtractFileName(Dbname), True) = True then
       begin
-        Settings.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
+        Settings.WriteBoolW('DBCheck', ExtractFileName(Dbname), False);
         if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
         begin
           CloseSplashWindow;
-          ImportImages(dbname);
-        end else
-          Settings.WriteBoolW('DBCheck', ExtractFileName(dbname), False);
+          ImportImages(Dbname);
+        end
+        else
+          Settings.WriteBoolW('DBCheck', ExtractFileName(Dbname), False);
 
       end;
     end;
@@ -580,7 +581,8 @@ begin
             ActivateBackgroundApplication(Handle);
           end;
         end;
-      end else
+      end
+      else
       begin
         if AnsiUpperCase(FilenameA) = '/GETPHOTOS' then
           if FileNameB <> '' then
@@ -605,7 +607,8 @@ begin
       Viewer.ExecuteDirectoryWithFileOnThread(FileNameA);
       Viewer.Show;
       ActivateBackgroundApplication(Viewer.Handle);
-    end else if (AnsiUpperCase(FileNameA) <> '/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA, False) then
+    end
+    else if (AnsiUpperCase(FileNameA) <> '/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA, False) then
     begin
       if GetExt(FileNameA) = 'DBL' then
       begin
@@ -626,7 +629,8 @@ begin
         LoadFilesToPanel.Create(Param, Fids_, B, False, True, FormCont);
         FormCont.Show;
         ActivateBackgroundApplication(FormCont.Handle);
-      end else
+      end
+      else
       begin
         if GetExt(FileNameA) = 'ITH' then
         begin
@@ -636,7 +640,8 @@ begin
             ActivateBackgroundApplication(Handle);
           end;
           Exit;
-        end else
+        end
+        else
         begin
           with SearchManager.GetAnySearch do
           begin
@@ -646,7 +651,8 @@ begin
         end;
       end;
     end;
-  end else
+  end
+  else
     Dispatch(Msg);
 
 end;
@@ -668,6 +674,6 @@ end;
 
 initialization
 
-  FormManager := nil;
+FormManager := nil;
 
 end.

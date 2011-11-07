@@ -744,6 +744,7 @@ begin
   else if PI is TPersonItem then
   begin
     Comment := TPersonItem(PI).Comment;
+    ID := TPersonItem(PI).PersonID;
     FileType := EXPLORER_ITEM_PERSON;
   end else if PI is TNetworkItem then
     FileType := EXPLORER_ITEM_NETWORK

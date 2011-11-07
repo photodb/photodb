@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, UnitDBKernel, Forms, UnitGroupsWork, SysUtils,
-  CommonDBSupport, UnitDBDeclare, uFileUtils, uConstants, ActiveX,
+  UnitDBDeclare, uFileUtils, uConstants, ActiveX, uRuntime,
   uDBThread, uConfiguration;
 
 type

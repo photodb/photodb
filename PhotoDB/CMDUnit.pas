@@ -5,8 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, UnitDBKernel, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
-  uVistaFuncs, CommonDBSupport, UnitPasswordKeeper, ImgList, uGraphicUtils,
-  UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants,
+  uVistaFuncs, UnitPasswordKeeper, ImgList, uGraphicUtils,
+  UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants, uRuntime,
   uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils, uDBForm,
   uMemory;
 

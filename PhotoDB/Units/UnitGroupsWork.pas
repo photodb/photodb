@@ -5,10 +5,11 @@ interface
 
 uses
   Windows, SysUtils, Graphics, UnitDBDeclare, JPEG, DB, Classes,
-  uMemory, uConstants, uFileUtils;
+  uMemory, uConstants, uFileUtils, uRuntime, uDBClasses;
 
 type
   TGroup = record
+    GroupID: Integer;
     GroupName: string;
     GroupCode: string;
     GroupImage: TJpegImage;
@@ -101,12 +102,68 @@ function CreateGroupsTableW(FileName: string): Boolean;
 function GroupsTableFileNameW(FileName: string): string;
 function GetNilGroup: TGroup;
 
+function ReadGroupFromDS(DS: TDataSet; var Group: TGroup): Boolean;
 //${345d-fgtr-ergd}[#Group name#]
 
 implementation
 
 uses
   CommonDBSupport, UnitDBkernel, UnitFileCheckerDB;
+
+function ReadGroupFromDS(DS: TDataSet; var Group: TGroup): Boolean;
+var
+  BS: TStream;
+begin
+  Group.GroupID := 0;
+  if DS.FindField('ID') <> nil then
+    Group.GroupID := DS.FieldByName('ID').AsInteger;
+
+  if DS.FindField('GroupName') <> nil then
+    Group.GroupName := Trim(DS.FieldByName('GroupName').AsString);
+
+  if DS.FindField('GroupCode') <> nil then
+    Group.GroupCode := Trim(DS.FieldByName('GroupCode').AsString);
+
+  Group.GroupImage := nil;
+  if DS.FindField('GroupImage') <> nil then
+  begin
+    BS := GetBlobStream(DS.FieldByName('GroupImage'), bmRead);
+    try
+      Group.GroupImage := TJpegImage.Create;
+      if BS.Size <> 0 then
+        Group.GroupImage.LoadfromStream(Bs);
+
+    finally
+      F(BS);
+    end;
+  end;
+
+  if DS.FindField('GroupComment') <> nil then
+    Group.GroupComment := DS.FieldByName('GroupComment').AsString;
+
+  if DS.FindField('GroupDate') <> nil then
+    Group.GroupDate := DS.FieldByName('GroupDate').AsDateTime;
+
+  if DS.FindField('GroupFaces') <> nil then
+    Group.GroupFaces := DS.FieldByName('GroupFaces').AsString;
+
+  if DS.FindField('GroupAccess') <> nil then
+    Group.GroupAccess := DS.FieldByName('GroupAccess').AsInteger;
+
+  if DS.FindField('GroupKW') <> nil then
+    Group.GroupKeyWords := DS.FieldByName('GroupKW').AsString;
+
+  if DS.FindField('GroupAddKW') <> nil then
+    Group.AutoAddKeyWords := DS.FieldByName('GroupAddKW').AsBoolean;
+
+  if DS.FindField('RelatedGroups') <> nil then
+    Group.RelatedGroups := DS.FieldByName('RelatedGroups').AsString;
+
+  if DS.FindField('IncludeInQuickList') <> nil then
+    Group.IncludeInQuickList := DS.FieldByName('IncludeInQuickList').AsBoolean;
+
+  Result := True;
+end;
 
 function GetNilGroup: TGroup;
 begin
@@ -441,43 +498,56 @@ end;
 
 function UpdateGroup(Group: TGroup): Boolean;
 var
-  Query: TDataSet;
-  ID: Integer;
+  SC: TSelectCommand;
+  UC: TUpdateCommand;
+  G: TGroup;
+  GroupDate: TDateTime;
 begin
   Result := False;
-  Query := GetQuery;
+  SC := TSelectCommand.Create(GroupsTableName);
   try
-    SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupCode like "' + Group.GroupCode + '"');
+    SC.AddParameter(TCustomFieldParameter.Create('[ID]'));
+    SC.AddWhereParameter(TStringParameter.Create('GroupCode', Group.GroupCode));
     try
-      Query.Active := True;
+      SC.Execute;
     except
       Exit;
     end;
-    if Query.RecordCount = 0 then
-      Exit;
+    if SC.RecordCount = 1 then
+    begin
+      if ReadGroupFromDS(SC.DS, G) then
+      begin
+        UC := TUpdateCommand.Create(GroupsTableName);
+        try
+          UC.AddParameter(TStringParameter.Create('GroupName', Group.GroupName));
+          UC.AddParameter(TIntegerParameter.Create('GroupAccess', Group.GroupAccess));
+          if Group.GroupImage <> nil then
+            UC.AddParameter(TJpegParameter.Create('GroupImage', Group.GroupImage));
+          UC.AddParameter(TStringParameter.Create('GroupComment', Group.GroupComment));
+          UC.AddParameter(TStringParameter.Create('GroupFaces', Group.GroupFaces));
 
-    Query.First;
-    ID := Query.FieldByName('ID').AsInteger;
-    Query.Active := False;
-    SetSQL(Query, 'Update ' + GroupsTableName + ' Set GroupName=' + NormalizeDBString(Group.GroupName) +
-        ', GroupAccess=:GroupAccess, GroupImage=:GroupImage, GroupComment=' + NormalizeDBString(Group.GroupComment)
-        + ', GroupFaces=' + NormalizeDBString(Group.GroupFaces) +
-        ', GroupDate = :GroupDate, GroupAddKW=:GroupAddKW, GroupKW=' + NormalizeDBString(Group.GroupKeyWords)
-        + ', RelatedGroups = ' + NormalizeDBString(Group.RelatedGroups) +
-        ', IncludeInQuickList = :IncludeInQuickList Where ID=' + IntToStr(ID));
-    SetIntParam(Query, 0, Group.GroupAccess);
-    AssignParam(Query, 1, Group.GroupImage);
-    if Group.GroupDate = 0 then
-      SetDateParam(Query, 'GroupDate', Now)
-    else
-      SetDateParam(Query, 'GroupDate', Group.GroupDate);
-    SetBoolParam(Query, 3, Group.AutoAddKeyWords);
-    SetBoolParam(Query, 4, Group.IncludeInQuickList);
-    ExecSQL(Query);
+          if Group.GroupDate = 0 then
+            GroupDate := Now
+          else
+            GroupDate := Group.GroupDate;
+          UC.AddParameter(TDateTimeParameter.Create('GroupDate', GroupDate));
+
+          UC.AddParameter(TBooleanParameter.Create('GroupAddKW', Group.AutoAddKeyWords));
+          UC.AddParameter(TStringParameter.Create('GroupKW', Group.GroupKeyWords));
+          UC.AddParameter(TStringParameter.Create('RelatedGroups', Group.RelatedGroups));
+          UC.AddParameter(TBooleanParameter.Create('IncludeInQuickList', Group.IncludeInQuickList));
+          UC.AddWhereParameter(TIntegerParameter.Create('ID', G.GroupID));
+
+          UC.Execute;
+          Result := True;
+        finally
+          F(UC);
+        end;
+      end;
+    end;
   finally
-    FreeDS(Query);
+    F(SC);
   end;
-  Result := True;
 end;
 
 function AddGroupW(Group: TGroup; FileName: string): Boolean;
@@ -700,8 +770,7 @@ end;
 
 Function GetGroupByGroupCode(GroupCode : String; LoadImage : Boolean) : TGroup;
 var
-  Query : TDataSet;
-  BS : TStream;
+  Query: TDataSet;
 begin
   Query := GetQuery;
   try
@@ -718,34 +787,8 @@ begin
       Exit;
     end;
     Query.First;
-    Result.GroupName := Trim(Query.FieldByName('GroupName').AsString);
-    Result.GroupCode := Trim(Query.FieldByName('GroupCode').AsString);
-    Result.GroupImage := nil;
-    if LoadImage then
-    begin
-      if TBlobField(Query.FieldByName('GroupImage')) <> nil then
-      begin
-        BS := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
-        try
-          Result.GroupImage := TJpegImage.Create;
-          if Bs.Size <> 0 then
-            Result.GroupImage.LoadfromStream(Bs);
 
-        finally
-          F(BS);
-        end;
-      end;
-    end;
-    Result.GroupComment := Query.FieldByName('GroupComment').AsString;
-    Result.GroupDate := Query.FieldByName('GroupDate').AsDateTime;
-    Result.GroupFaces := Query.FieldByName('GroupFaces').AsString;
-    Result.GroupAccess := Query.FieldByName('GroupAccess').AsInteger;
-    Result.GroupKeyWords := Query.FieldByName('GroupKW').AsString;
-    Result.AutoAddKeyWords := Query.FieldByName('GroupAddKW').AsBoolean;
-    Result.RelatedGroups := Query.FieldByName('RelatedGroups').AsString;
-    Result.IncludeInQuickList := Query.FieldByName('IncludeInQuickList').AsBoolean;
-
-    Query.Close;
+    ReadGroupFromDS(Query, Result);
   finally
     FreeDS(Query);
   end;
@@ -759,7 +802,6 @@ end;
 function GetGroupByGroupNameW(GroupName: string; LoadImage: Boolean; FileName: string): TGroup;
 var
   Query: TDataSet;
-  BS: TStream;
 begin
   Result := GetNilGroup;
   Query := GetQuery(FileName, True);
@@ -777,30 +819,8 @@ begin
     if Query.RecordCount > 0 then
     begin
       Query.First;
-      Result.GroupName := Trim(Query.FieldByName('GroupName').AsString);
-      Result.GroupCode := Trim(Query.FieldByName('GroupCode').AsString);
-      Result.GroupImage := nil;
-      if LoadImage then
-      begin
-        if TBlobField(Query.FieldByName('GroupImage')) <> nil then
-        begin
-          BS := GetBlobStream(Query.FieldByName('GroupImage'), bmRead);
-          try
-            Result.GroupImage := TJpegImage.Create;
-            Result.GroupImage.LoadfromStream(BS);
-          finally
-            F(BS);
-          end;
-        end;
-      end;
-      Result.GroupComment := Query.FieldByName('GroupComment').AsString;
-      Result.GroupDate := Query.FieldByName('GroupDate').AsDateTime;
-      Result.GroupFaces := Query.FieldByName('GroupFaces').AsString;
-      Result.GroupAccess := Query.FieldByName('GroupAccess').AsInteger;
-      Result.GroupKeyWords := Query.FieldByName('GroupKW').AsString;
-      Result.AutoAddKeyWords := Query.FieldByName('GroupAddKW').AsBoolean;
-      Result.RelatedGroups := Query.FieldByName('RelatedGroups').AsString;
-      Result.IncludeInQuickList := Query.FieldByName('IncludeInQuickList').AsBoolean;
+
+      ReadGroupFromDS(Query, Result);
     end;
   finally
     FreeDS(Query);
@@ -811,7 +831,6 @@ function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; SortByNa
 var
   Table : TDataSet;
   N: Integer;
-  BS: TStream;
   I, J: Integer;
   Temp: TGroup;
   B: Boolean;
@@ -838,30 +857,9 @@ begin
           end;
         N := Length(Result);
         Setlength(Result, N + 1);
-        Result[N].GroupName := Trim(Table.FieldByName('GroupName').AsString);
-        Result[N].GroupCode := Trim(Table.FieldByName('GroupCode').AsString);
-        Result[N].GroupImage := nil;
-        if LoadImages then
-        begin
-          if TBlobField(Table.FieldByName('GroupImage')) <> nil then
-          begin
-            BS := GetBlobStream(Table.FieldByName('GroupImage'), Bmread);
-            try
-              Result[N].GroupImage := TJpegImage.Create;
-              Result[N].GroupImage.LoadfromStream(BS);
-            finally
-              F(BS);
-            end;
-          end;
-        end;
-        Result[N].GroupComment := Table.FieldByName('GroupComment').AsString;
-        Result[N].GroupDate := Table.FieldByName('GroupDate').AsDateTime;
-        Result[N].GroupFaces := Table.FieldByName('GroupFaces').AsString;
-        Result[N].GroupAccess := Table.FieldByName('GroupAccess').AsInteger;
-        Result[N].GroupKeyWords := Table.FieldByName('GroupKW').AsString;
-        Result[N].AutoAddKeyWords := Table.FieldByName('GroupAddKW').AsBoolean;
-        Result[N].RelatedGroups := Table.FieldByName('RelatedGroups').AsString;
-        Result[N].IncludeInQuickList := Table.FieldByName('IncludeInQuickList').AsBoolean;
+
+        ReadGroupFromDS(Table, Result[N]);
+
         Table.Next;
       until Table.Eof;
     end;

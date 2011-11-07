@@ -5,7 +5,7 @@ interface
 uses
   CmpUnit, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, StdCtrls, CheckLst, DB, CommonDBSupport, ExtCtrls,
-  uConstants, UnitDBKernel, uShellIntegration, uSysUtils, uDBForm,
+  uConstants, UnitDBKernel, uShellIntegration, uSysUtils, uDBForm, uRuntime,
   WatermarkedEdit;
 
 type

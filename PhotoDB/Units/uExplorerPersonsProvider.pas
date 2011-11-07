@@ -6,7 +6,7 @@ uses
   Windows, Graphics, uPathProviders, uPeopleSupport, uBitmapUtils, uTime,
   uMemory, uConstants, uTranslate, uShellIcons, uExplorerMyComputerProvider,
   uExplorerPathProvider, StrUtils, uStringUtils, SysUtils, uJpegUtils,
-  uShellIntegration, uDBForm, uDBClasses, uSysUtils;
+  uShellIntegration, uDBForm, uDBClasses, uSysUtils, UnitDBKernel, UnitDBDeclare;
 
 type
   TPersonsItem = class(TPathItem)
@@ -84,21 +84,29 @@ var
   P: TPerson;
   SC: TSelectCommand;
   Count: Integer;
+  EventValues: TEventValues;
 begin
   Result := False;
   P := PersonManager.GetPersonByName(Item.PersonName);
   try
     if not P.Empty then
     begin
-      SC := TSelectCommand.Create(PersonMappingTableName);
+      SC := TSelectCommand.Create(ObjectMappingTableName);
       try
         SC.AddParameter(TCustomFieldParameter.Create('Count(1) as RecordCount'));
-        SC.AddWhereParameter(TIntegerParameter.Create('PersonID', P.ID));
+        SC.AddWhereParameter(TIntegerParameter.Create('ObjectID', P.ID));
         if SC.Execute > 0 then
         begin
           Count := SC.DS.FieldByName('RecordCount').AsInteger;
           if ID_OK = MessageBoxDB(TDBForm(Sender).Handle, FormatEx(L('Do you really want to delete person "{0}" (Has {1} reference(s) on photo(s))?'), [P.Name, Count]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+          begin
             Result := PersonManager.DeletePerson(Item.PersonName);
+            if Result then
+            begin
+              EventValues.ID := Item.PersonID;
+              DBKernel.DoIDEvent(TDBForm(Sender), Item.PersonID, [EventID_PersonRemoved], EventValues);
+            end;
+          end;
         end;
       finally
         F(SC);
@@ -130,8 +138,9 @@ var
   Person: TPerson;
 begin
   Result := False;
-  Person := PersonManager.GetPersonByName(ExtractPersonName(Item.Path));
+  Person := TPerson.Create;
   try
+    PersonManager.FindPerson(ExtractPersonName(Item.Path), Person);
     if Person.Image = nil then
       Exit;
     Bitmap.Assign(Person.Image);
@@ -201,8 +210,17 @@ end;
 
 function TPersonProvider.Rename(Sender: TObject; Item: TPersonItem;
   Options: TPathFeatureEditOptions): Boolean;
+var
+  EventValues: TEventValues;
 begin
   Result := PersonManager.RenamePerson(Item.PersonName, Options.NewName);
+  if Result then
+  begin
+    EventValues.ID := Item.PersonID;
+    EventValues.Name := Options.NewName;
+    EventValues.NewName := Options.NewName;
+    DBKernel.DoIDEvent(TDBForm(Sender), Item.PersonID, [EventID_PersonChanged], EventValues);
+  end;
 end;
 
 function TPersonProvider.Supports(Item: TPathItem): Boolean;
@@ -325,7 +343,7 @@ begin
   FDisplayName := Person.Name;
   FComment := Person.Comment;
   FPersonID := Person.ID;
-  if Person.Image <> nil then
+  if (Person.Image <> nil) and (ImageSize > 0) then
   begin
     Bitmap := TBitmap.Create;
     try

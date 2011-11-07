@@ -5,13 +5,13 @@ interface
 uses
   SysUtils, Classes, DB, CommonDBSupport, uLogger, uMemory, ADODB;
 
-function CheckPersonTables(TableName: string): Boolean;
-function ADOCreatePersonMappingTable(TableName: string): Boolean;
-function ADOCreatePersonsTable(TableName: string): Boolean;
+function CheckObjectTables(TableName: string): Boolean;
+function ADOCreateObjectMappingTable(TableName: string): Boolean;
+function ADOCreateObjectsTable(TableName: string): Boolean;
 
 implementation
 
-function CheckPersonTables(TableName: string): Boolean;
+function CheckObjectTables(TableName: string): Boolean;
 var
   FQuery: TDataSet;
   TL: TStringList;
@@ -28,9 +28,9 @@ begin
       PME := False;
       for I := 0 to TL.Count - 1 do
       begin
-        if AnsiLowerCase(TL[I]) = 'persons' then
+        if AnsiLowerCase(TL[I]) = 'objects' then
           PE := True;
-        if AnsiLowerCase(TL[I]) = 'personmapping' then
+        if AnsiLowerCase(TL[I]) = 'objectmapping' then
           PME := True;
 
       end;
@@ -44,7 +44,7 @@ begin
   end;
 end;
 
-function ADOCreatePersonsTable(TableName: string): Boolean;
+function ADOCreateObjectsTable(TableName: string): Boolean;
 var
   SQL: string;
   FQuery: TDataSet;
@@ -52,28 +52,30 @@ begin
   Result := True;
   FQuery := GetQuery(TableName);
   try
-    SQL := 'CREATE TABLE Persons ( '
-      + '[PersonID] AutoIncrement PRIMARY KEY, '
-      + '[PersonName] Memo NOT NULL, '
+    SQL := 'CREATE TABLE Objects ( '
+      + '[ObjectID] AutoIncrement PRIMARY KEY, '
+      + '[ObjectType] INTEGER NOT NULL, '
+      + '[ObjectUniqID] Character(40) NOT NULL, '
+      + '[ObjectName] Character(255) NOT NULL, '
       + '[RelatedGroups] Memo NOT NULL, '
       + '[BirthDate] Date NOT NULL, '
-      + '[PersonPhone] Memo NOT NULL, '
-      + '[PersonAddress] Memo NOT NULL, '
-      + '[Company] Memo NOT NULL, '
-      + '[JobTitle] Memo NOT NULL, '
-      + '[IMNumber] Memo NOT NULL, '
-      + '[PersonEmail] Memo NOT NULL, '
-      + '[PersonSex] INTEGER NOT NULL, '
-      + '[PersonComment] Memo NOT NULL, '
+      + '[Phone] Character(40) NOT NULL, '
+      + '[Address] Character(255) NOT NULL, '
+      + '[Company] Character(100) NOT NULL, '
+      + '[JobTitle] Character(100) NOT NULL, '
+      + '[IMNumber] Character(255) NOT NULL, '
+      + '[Email] Character(255) NOT NULL, '
+      + '[Sex] INTEGER NOT NULL, '
+      + '[ObjectComment] Memo NOT NULL, '
       + '[CreateDate] Date NOT NULL, '
-      + '[PersonImage] LONGBINARY)';
+      + '[Image] LONGBINARY)';
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);
     except
       on E: Exception do
       begin
-        EventLog(':ADOCreatePersonsTable() throws exception: ' + E.message);
+        EventLog(':ADOCreateObjectsTable() throws exception: ' + E.message);
         Result := False;
       end;
     end;
@@ -83,14 +85,14 @@ begin
 
   FQuery := GetQuery(TableName);
   try
-    SQL := 'CREATE INDEX aPersonID ON Persons(PersonID)';
+    SQL := 'CREATE INDEX aObjectID ON Objects(ObjectID)';
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);
     except
       on E: Exception do
       begin
-        EventLog(':ADOCreatePersonsTable() throws exception: ' + E.message);
+        EventLog(':ADOCreateObjectsTable() throws exception: ' + E.message);
         Result := False;
       end;
     end;
@@ -99,7 +101,7 @@ begin
   end;
 end;
 
-function ADOCreatePersonMappingTable(TableName: string): Boolean;
+function ADOCreateObjectMappingTable(TableName: string): Boolean;
 var
   SQL: string;
   FQuery: TDataSet;
@@ -115,7 +117,7 @@ begin
     except
       on E: Exception do
       begin
-        EventLog(':ADOCreateGroupsTable() throws exception: ' + E.message);
+        EventLog(':ADOCreateObjectMappingTable() throws exception: ' + E.message);
         Result := False;
       end;
     end;
@@ -125,9 +127,9 @@ begin
 
   FQuery := GetQuery(TableName);
   try
-    SQL := 'CREATE TABLE PersonMapping ( '
-      + '[PersonMappingID] AutoIncrement PRIMARY KEY, '
-      + '[PersonID] INTEGER NOT NULL CONSTRAINT FK_PersonID REFERENCES Persons (PersonID) ON DELETE CASCADE, '
+    SQL := 'CREATE TABLE ObjectMapping ( '
+      + '[ObjectMappingID] AutoIncrement PRIMARY KEY, '
+      + '[ObjectID] INTEGER NOT NULL CONSTRAINT FK_ObjectID REFERENCES Objects (ObjectID) ON DELETE CASCADE, '
       + '[Left] INTEGER NOT NULL, '
       + '[Right] INTEGER NOT NULL, '
       + '[Top] INTEGER NOT NULL, '
@@ -142,7 +144,7 @@ begin
     except
       on E: Exception do
       begin
-        EventLog(':ADOCreateGroupsTable() throws exception: ' + E.message);
+        EventLog(':ADOCreateObjectMappingTable() throws exception: ' + E.message);
         Result := False;
       end;
     end;
@@ -152,14 +154,14 @@ begin
 
   FQuery := GetQuery(TableName);
   try
-    SQL := 'CREATE INDEX aPersonMappingID ON PersonMapping(PersonMappingID)';
+    SQL := 'CREATE INDEX aObjectMappingID ON ObjectMapping(ObjectMappingID)';
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);
     except
       on E: Exception do
       begin
-        EventLog(':ADOCreateGroupsTable() throws exception: ' + E.message);
+        EventLog(':ADOCreateObjectMappingTable() throws exception: ' + E.message);
         Result := False;
       end;
     end;

@@ -76,12 +76,14 @@ type
     procedure FillImageList;
     procedure MarkPersonOnPhoto;
     procedure GroupClick(Sender: TObject);
+    procedure CloseSuggestForm;
   protected
     function GetFormID: string; override;
     procedure EnableControls(IsEnabled: Boolean);
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
     procedure AddPhoto;
     procedure OnMoving(var Msg: TWMMoving); message WM_MOVING;
+    procedure WMActivateApp(var Msg: TMessage); message WM_ACTIVATEAPP;
   public
     { Public declarations }
     procedure UpdateNameStatus(PersonList: TPathItemCollection);
@@ -189,6 +191,9 @@ begin
 end;
 
 procedure TFormCreatePerson.BtnOkClick(Sender: TObject);
+var
+  EventValues: TEventValues;
+  PersonID: Integer;
 
   procedure UpdateImage;
   var
@@ -234,16 +239,35 @@ begin
     if FIsImageChanged then
       UpdateImage;
     PersonManager.UpdatePerson(FPerson, FIsImageChanged);
+
+    EventValues.ID := FPerson.ID;
+    EventValues.Name := FPerson.Name;
+    EventValues.NewName := FPerson.Name;
+    DBKernel.DoIDEvent(Self, FPerson.ID, [EventID_PersonChanged], EventValues);
+
     ModalResult := MB_OK;
     Close;
   end else
   begin
     F(FPerson);
+
     FPerson := TPerson.Create;
     UpdatePersonFields;
     UpdateImage;
-    PersonManager.CreateNewPerson(Person);
-    MarkPersonOnPhoto;
+    PersonID := PersonManager.CreateNewPerson(Person);
+    F(FPerson);
+    FPerson := TPerson.Create;
+    PersonManager.FindPerson(PersonID, FPerson);
+
+    if not FPerson.Empty then
+    begin
+      MarkPersonOnPhoto;
+
+      EventValues.ID := FPerson.ID;
+      EventValues.Name := FPerson.Name;
+      EventValues.NewName := FPerson.Name;
+      DBKernel.DoIDEvent(Self, FPerson.ID, [EventID_PersonAdded], EventValues);
+    end;
   end;
 end;
 
@@ -299,6 +323,12 @@ begin
   end;
 end;
 
+procedure TFormCreatePerson.CloseSuggestForm;
+begin
+  if FFormPersonSuggest <> nil then
+    FFormPersonSuggest.Close;
+end;
+
 procedure TFormCreatePerson.MiEditImageClick(Sender: TObject);
 var
   Editor: TImageEditorForm;
@@ -319,11 +349,13 @@ end;
 function TFormCreatePerson.EditPerson(PersonID: Integer): Boolean;
 begin
   Result := False;
-  FPerson := PersonManager.FindPerson(PersonID);
-  if FPerson = nil then
-    Exit;
-
+  FPerson := TPerson.Create;
   try
+    PersonManager.FindPerson(PersonID, FPerson);
+
+    if FPerson.Empty then
+      Exit;
+
     FRelatedGroups := Person.Groups;
     WedName.Text := Person.Name;
     DtpBirthDay.Date := Person.BirthDay;
@@ -337,7 +369,7 @@ begin
     Caption := LF('Edit person: {0}', [FPerson.Name]);
     ShowModal;
   finally
-    FPerson := nil;
+    F(FPerson);
   end;
   Result := ModalResult = MB_OK;
 end;
@@ -576,14 +608,21 @@ end;
 
 procedure TFormCreatePerson.WllGroupsDblClick(Sender: TObject);
 var
-  KeyWords : string;
+  KeyWords: string;
 begin
+  CloseSuggestForm;
   DBChangeGroups(FRelatedGroups, KeyWords, True);
 end;
 
 procedure TFormCreatePerson.WlPersonNameStatusClick(Sender: TObject);
 begin
   TmrCkeckNameTimer(Sender);
+end;
+
+procedure TFormCreatePerson.WMActivateApp(var Msg: TMessage);
+begin
+  if Msg.wParam = 0 then
+    CloseSuggestForm;
 end;
 
 procedure TFormCreatePerson.ReloadGroups;
@@ -648,8 +687,7 @@ begin
     WlPersonNameStatus.Text := L('Person name is required!');
     WlPersonNameStatus.CanClick := False;
     WlPersonNameStatus.Refresh;
-    if FFormPersonSuggest <> nil then
-      FFormPersonSuggest.Close;
+    CloseSuggestForm;
   end;
 end;
 
@@ -658,6 +696,7 @@ var
   KeyWords: string;
   WL: TWebLink;
 begin
+  CloseSuggestForm;
   WL := TWebLink(Sender);
   if WL.Tag > -1 then
   begin
@@ -816,16 +855,16 @@ begin
   FreeOnTerminate := True;
   CoInitialize(nil);
   try
-    SC := TSelectCommand.Create(FormatEx('(SELECT *, (UCase(PersonName) = UCase(:PersonNameCheck)) AS NameCheck FROM {0})', [PersonTableName]));
+    SC := TSelectCommand.Create(FormatEx('(SELECT *, (UCase(ObjectName) = UCase(:ObjectNameCheck)) AS NameCheck FROM {0})', [ObjectTableName]));
     try
-      SC.AddCustomeParameter(TStringParameter.Create('PersonNameCheck', FNewName));
+      SC.AddCustomeParameter(TStringParameter.Create('ObjectNameCheck', FNewName));
       SC.AddParameter(TAllParameter.Create);
-      SC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('PersonName like "%{0}%"', [NormalizeDBStringLike(FNewName)])));
+      SC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('ObjectName like "%{0}%"', [NormalizeDBStringLike(FNewName)])));
       if FEditPerson then
-        SC.AddWhereParameter(TStringParameter.Create('PersonName', FName, paNotEquals));
+        SC.AddWhereParameter(TStringParameter.Create('ObjectName', FName, paNotEquals));
       
       SC.Order.Add(TOrderParameter.Create('NameCheck', False));
-      SC.Order.Add(TOrderParameter.Create('PersonName', False));
+      SC.Order.Add(TOrderParameter.Create('ObjectName', False));
       SC.TopRecords := 5;
       SC.Execute;
 

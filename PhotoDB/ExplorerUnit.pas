@@ -891,7 +891,7 @@ begin
   ElvMain.OnIncrementalSearch := Listview1IncrementalSearch;
   ElvMain.OnMouseWheel := ListView1MouseWheel;
   ElvMain.OnKeyAction := EasyListview2KeyAction;
-  ElvMain.OnItemEdited := self.EasyListview1ItemEdited;
+  ElvMain.OnItemEdited := EasyListview1ItemEdited;
   ElvMain.OnResize := ListView1Resize;
   ElvMain.OnItemImageDraw := EasyListview1ItemImageDraw;
   ElvMain.OnItemImageDrawIsCustom := EasyListview1ItemImageDrawIsCustom;
@@ -1662,7 +1662,7 @@ begin
             begin
               if PI.Provider.ExecuteFeature(Self, PI, PATH_FEATURE_DELETE, nil) then
               begin
-                ElvMain.Items.Delete(I);
+                DeleteItemWithIndex(Index);
                 Exit;
               end;
             end;
@@ -1750,7 +1750,8 @@ var
   PI: TPathItem;
   EO: TPathFeatureOptions;
 begin
-  if PmItemPopup.Tag <= 0 then
+  //.Tag is index of item
+  if PmItemPopup.Tag < 0 then
     Exit;
 
   Info := FFilesInfo[PmItemPopup.Tag];
@@ -1758,6 +1759,8 @@ begin
 
   PI := PathProviderManager.CreatePathItem(Info.FileName);
   try
+    PI.LoadImage(PATH_LOAD_NO_IMAGE, 0);
+
     if (PI <> nil) and (PI.Provider.SupportsFeature(PATH_FEATURE_RENAME)) then
     begin
       EO := TPathFeatureEditOptions.Create(S);
@@ -2144,13 +2147,49 @@ var
   I, Index, ReRotation: Integer;
   Bit: TBitmap;
 begin
+
+  if FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST then
+  begin
+    if EventID_PersonAdded in Params then
+    begin
+      ElvMain.Selection.ClearAll;
+      RefreshLinkClick(RefreshLink);
+    end;
+    if EventID_PersonChanged in Params then
+    begin
+      for I := 0 to FFilesInfo.Count - 1 do
+        if FFilesInfo[I].ID = Value.ID then
+        begin
+          FFilesInfo[I].Name := Value.NewName;
+          Index := MenuIndexToItemIndex(I);
+          ElvMain.Items[Index].Caption := Value.NewName;
+          FFilesInfo[I].UpdatePath(cPersonsPath + '\' + Value.NewName);
+          FFilesInfo[I].FileName := FFilesInfo[I].Path;
+          ListView1SelectItem(nil, ListView1Selected, True);
+        end;
+    end;
+    if EventID_PersonRemoved in Params then
+    begin
+      for I := 0 to FFilesInfo.Count - 1 do
+        if FFilesInfo[I].ID = Value.ID then
+        begin
+          Index := MenuIndexToItemIndex(I);
+          DeleteItemWithIndex(Index);
+          Break;
+        end;
+    end;
+  end;
+
   if EventID_Repaint_ImageList in Params then
   begin
     ElvMain.Refresh;
     Exit;
   end;
+
+  //TODO: remove or update next 2 lines
   if ID = -2 then
     Exit;
+
   if SetNewIDFileData in Params then
   begin
     for I := 0 to FFilesInfo.Count - 1 do
@@ -3081,7 +3120,8 @@ begin
 
       if (Msg.WParam = VK_F2) then
         if ((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP)) then
         begin
           if ListView1Selected <> nil then
           begin
@@ -3698,9 +3738,6 @@ begin
       if S[I] = '&' then
         Insert('&', S, I);
 
-{    if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
-      S := Format(L('Search for "%s"'), [PePath.PathEx.Argument]);    }
-
     NameLabel.Caption := S;
     NameLabel.Constraints.MaxWidth := ScrollBox1.Width - ScrollBox1.Left - otstup - ScrollBox1.VertScrollBar.ButtonSize;
     NameLabel.Constraints.MinWidth := ScrollBox1.Width - ScrollBox1.Left - Otstup - ScrollBox1.VertScrollBar.ButtonSize;
@@ -3944,8 +3981,9 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER)) and (SelCount = 1)) or
       ((SelCount = 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER))) or
-      (((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON))) or
+          (((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE)) and
         (SelCount > 1)) then
     begin
@@ -4702,6 +4740,21 @@ begin
   end;
   if SelCount = 0 then
   begin
+
+    P := PathProviderManager.CreatePathItem(GetCurrentPath);
+    try
+      if P <> nil then
+      begin
+        if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
+        begin
+          P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, nil);
+          Exit;
+        end;
+      end;
+    finally
+      F(P);
+    end;
+
     if FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER then
       ShowMyComputerProperties(Handle)
     else
@@ -7790,11 +7843,11 @@ begin
   S := NewValue;
   RenameResult := True;
   ListView1Edited(Sender, Item, S);
+  Accept := S = NewValue;
   ElvMain.EditManager.Enabled := False;
   Accept := RenameResult;
   if not Accept then
     MessageBoxDB(Handle, L('Error renaming file!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-
 end;
 
 procedure TExplorerForm.N05Click(Sender: TObject);

@@ -40,7 +40,12 @@ type
     function GetThreadHandle(Thread: TGUID): THandle; overload;
   end;
 
+  TCustomWaitProc = procedure;
+
 function DBThreadManager: TDBThreadManager;
+
+var
+  CustomWaitProc: TCustomWaitProc = nil;
 
 implementation
 
@@ -54,7 +59,6 @@ begin
 
   Result := FDBThreadManager;
 end;
-
 
 { TDBThreadManager }
 
@@ -213,7 +217,8 @@ begin
       FSync.Leave;
     end;
     Sleep(1);
-    //Application.ProcessMessages;
+    if Assigned(CustomWaitProc) then
+      CustomWaitProc;
     CheckSynchronize;
 
   until (Count = 0) or (GetTickCount - StartTime > MaxTime);

@@ -3,14 +3,12 @@ unit uPeopleSupport;
 interface
 
 uses
-  SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB,
+  SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB, uGUIDUtils,
   uFaceDetection, uSettings, Math, uFastLoad, UnitDBKernel, uDBForm, UnitDBDeclare,
-  UnitGroupsWork;
+  UnitGroupsWork, uSysUtils, uRuntime, uConstants;
 
 const
-  PersonTableName = 'Persons';
-  PersonMappingTableName = 'PersonMapping';
-  ImageTable = 'ImageTable';
+  PERSON_TYPE = 1;
 
 type
   TPerson = class;
@@ -30,12 +28,12 @@ type
   public
     procedure InitDB;
     procedure LoadPersonList(Persons: TPersonCollection);
-    function FindPerson(PersonID: Integer): TPerson; overload;
-    function FindPerson(PersonName: string): TPerson; overload;
+    function FindPerson(PersonID: Integer; Person: TPerson): Boolean; overload;
+    function FindPerson(PersonName: string; Person: TPerson): Boolean; overload;
     function GetPerson(PersonID: Integer): TPerson;
     function GetPersonByName(PersonName: string): TPerson;
     function RenamePerson(PersonName, NewName: string): Boolean;
-    function CreateNewPerson(Person: TPerson): Boolean;
+    function CreateNewPerson(Person: TPerson): Integer;
     function DeletePerson(PersonID: Integer): Boolean; overload;
     function DeletePerson(PersonName: string): Boolean; overload;
     function UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
@@ -47,6 +45,10 @@ type
     procedure FillLatestSelections(Persons: TPersonCollection);
     constructor Create;
     destructor Destroy; override;
+    procedure RegisterManager;
+    procedure Unregister;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer;
+                                params: TEventFields; Value: TEventValues);
     property AllPersons: TPersonCollection read GetAllPersons;
   end;
 
@@ -58,12 +60,12 @@ type
     function GetPersonByIndex(Index: Integer): TPerson;
   public
     function GetPersonByName(PersonName: string): TPerson;
+    function GetPersonByID(ID: Integer): TPerson;
     constructor Create(FreeCollectionItems: Boolean = True);
     destructor Destroy; override;
     procedure Clear;
     procedure Add(Person: TPerson);
     procedure ReadFromDS(DS: TDataSet);
-    function GetPersonByID(ID: Integer): TPerson;
     procedure DeleteAt(I: Integer);
     procedure RemoveByID(PersonID: Integer);
     property Count: Integer read GetCount;
@@ -87,7 +89,9 @@ type
     FEmail: string;
     FSex: Integer;
     FCreateDate: TDateTime;
+    FUniqID: string;
     procedure SetImage(const Value: TJpegImage);
+    procedure SetID(const Value: Integer);
   public
     constructor Create;
     destructor Destroy; override;
@@ -95,7 +99,7 @@ type
     procedure SaveToDS(DS: TDataSet);
     procedure Assign(Source: TPerson);
     function Clone: TClonableObject; override;
-    property ID: Integer read FID write FID;
+    property ID: Integer read FID write SetID;
     property Name: string read FName write FName;
     property BirthDay: TDateTime read FBirthDay write FBirthDay;
     property Image: TJpegImage read FImage write SetImage;
@@ -109,6 +113,7 @@ type
     property Email: string read FEmail write FEmail;
     property Sex: Integer read FSex write FSex;
     property CreateDate: TDateTime read FCreateDate;
+    property UniqID: string read FUniqID write FUniqID;
     property Empty: Boolean read FEmpty;
   end;
 
@@ -159,6 +164,8 @@ type
 
 function PersonManager: TPersonManager;
 
+procedure UnReigisterPersonManager;
+
 implementation
 
 var
@@ -172,12 +179,19 @@ begin
   Result := FManager;
 end;
 
+procedure UnReigisterPersonManager;
+begin
+  if FManager <> nil then
+    FManager.Unregister;
+end;
+
 { TPerson }
 
 procedure TPerson.Assign(Source: TPerson);
 begin
   FID := Source.ID;
   FName := Source.Name;
+  F(FImage);
   Image := Source.Image;
   FGroups := Source.Groups;
   FBirthDay := Source.BirthDay;
@@ -190,6 +204,7 @@ begin
   FEmail := Source.Email;
   FSex := Source.Sex;
   FCreateDate := Source.CreateDate;
+  FEmpty := Source.Empty;
 end;
 
 function TPerson.Clone: TClonableObject;
@@ -218,28 +233,35 @@ end;
 
 procedure TPerson.ReadFromDS(DS: TDataSet);
 begin
-  FID := DS.FieldByName('PersonID').AsInteger;
-  FName := DS.FieldByName('PersonName').AsString;
+  FID := DS.FieldByName('ObjectID').AsInteger;
+  FName := Trim(DS.FieldByName('ObjectName').AsString);
   FGroups := DS.FieldByName('RelatedGroups').AsString;
   FBirthDay := DS.FieldByName('BirthDate').AsDateTime;
-  FPhone := DS.FieldByName('PersonPhone').AsString;
-  FAddress := DS.FieldByName('PersonAddress').AsString;
-  FCompany := DS.FieldByName('Company').AsString;
-  FJobTitle := DS.FieldByName('JobTitle').AsString;
-  FIMNumber := DS.FieldByName('IMNumber').AsString;
-  FEmail := DS.FieldByName('PersonEmail').AsString;
-  FSex := DS.FieldByName('PersonSex').AsInteger;
-  FComment := DS.FieldByName('PersonComment').AsString;
+  FPhone := Trim(DS.FieldByName('Phone').AsString);
+  FAddress := Trim(DS.FieldByName('Address').AsString);
+  FCompany := Trim(DS.FieldByName('Company').AsString);
+  FJobTitle := Trim(DS.FieldByName('JobTitle').AsString);
+  FIMNumber := Trim(DS.FieldByName('IMNumber').AsString);
+  FEmail := Trim(DS.FieldByName('Email').AsString);
+  FSex := DS.FieldByName('Sex').AsInteger;
+  FComment := DS.FieldByName('ObjectComment').AsString;
   FCreateDate := DS.FieldByName('CreateDate').AsDateTime;
+  FUniqID := Trim(DS.FieldByName('ObjectUniqID').AsString);
   F(FImage);
   FImage := TJpegImage.Create;
-  FImage.Assign(DS.FieldByName('PersonImage'));
+  FImage.Assign(DS.FieldByName('Image'));
   FEmpty := False;
 end;
 
 procedure TPerson.SaveToDS(DS: TDataSet);
 begin
   raise Exception.Create('Not implemented');
+end;
+
+procedure TPerson.SetID(const Value: Integer);
+begin
+  FID := Value;
+  FEmpty := False;
 end;
 
 procedure TPerson.SetImage(const Value: TJpegImage);
@@ -266,61 +288,66 @@ var
 begin
   Result := False;
 
-  P := FindPerson(PersonArea.PersonID);
-  if P = nil then
-    Exit;
-
-  IC := TInsertCommand.Create(PersonMappingTableName);
+  P := TPerson.Create;
   try
-    IC.AddParameter(TIntegerParameter.Create('PersonID', PersonArea.PersonID));
-    IC.AddParameter(TIntegerParameter.Create('Left', PersonArea.X));
-    IC.AddParameter(TIntegerParameter.Create('Top', PersonArea.Y));
-    IC.AddParameter(TIntegerParameter.Create('Right', PersonArea.X + PersonArea.Width));
-    IC.AddParameter(TIntegerParameter.Create('Bottom', PersonArea.Y + PersonArea.Height));
-    IC.AddParameter(TIntegerParameter.Create('ImageWidth', PersonArea.FullWidth));
-    IC.AddParameter(TIntegerParameter.Create('ImageHeight', PersonArea.FullHeight));
-    IC.AddParameter(TIntegerParameter.Create('PageNumber', PersonArea.Page));
-    IC.AddParameter(TIntegerParameter.Create('ImageID', PersonArea.ImageID));
-    try
-      PersonArea.ID := IC.Execute;
-
-      if P.Groups <> '' then
-      begin
-        SC := TSelectCommand.Create(ImageTable);
-        try
-          SC.AddParameter(TStringParameter.Create('Groups', ''));
-          SC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
-          if SC.Execute > 0 then
-          begin
-            Groups := SC.DS.FieldByName('Groups').AsString;
-            AddGroupsToGroups(Groups, P.Groups);
-
-            UC := TUpdateCommand.Create(ImageTable);
-            try
-              UC.AddParameter(TStringParameter.Create('Groups', Groups));
-              UC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
-              UC.Execute;
-
-              Values.Groups := Groups;
-              DBKernel.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups], Values);
-
-            finally
-              F(UC);
-            end;
-
-          end;
-        finally
-          F(SC);
-        end;
-      end;
-
-      MarkLatestPerson(PersonArea.PersonID);
-      Result := True;
-    except
+    FindPerson(PersonArea.PersonID, P);
+    if P.Empty then
       Exit;
+
+    IC := TInsertCommand.Create(ObjectMappingTableName);
+    try
+      IC.AddParameter(TIntegerParameter.Create('ObjectID', PersonArea.PersonID));
+      IC.AddParameter(TIntegerParameter.Create('Left', PersonArea.X));
+      IC.AddParameter(TIntegerParameter.Create('Top', PersonArea.Y));
+      IC.AddParameter(TIntegerParameter.Create('Right', PersonArea.X + PersonArea.Width));
+      IC.AddParameter(TIntegerParameter.Create('Bottom', PersonArea.Y + PersonArea.Height));
+      IC.AddParameter(TIntegerParameter.Create('ImageWidth', PersonArea.FullWidth));
+      IC.AddParameter(TIntegerParameter.Create('ImageHeight', PersonArea.FullHeight));
+      IC.AddParameter(TIntegerParameter.Create('PageNumber', PersonArea.Page));
+      IC.AddParameter(TIntegerParameter.Create('ImageID', PersonArea.ImageID));
+      try
+        PersonArea.ID := IC.Execute;
+
+        if P.Groups <> '' then
+        begin
+          SC := TSelectCommand.Create(ImageTable);
+          try
+            SC.AddParameter(TStringParameter.Create('Groups', ''));
+            SC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
+            if SC.Execute > 0 then
+            begin
+              Groups := SC.DS.FieldByName('Groups').AsString;
+              AddGroupsToGroups(Groups, P.Groups);
+
+              UC := TUpdateCommand.Create(ImageTable);
+              try
+                UC.AddParameter(TStringParameter.Create('Groups', Groups));
+                UC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
+                UC.Execute;
+
+                Values.Groups := Groups;
+                DBKernel.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups], Values);
+
+              finally
+                F(UC);
+              end;
+
+            end;
+          finally
+            F(SC);
+          end;
+        end;
+
+        MarkLatestPerson(PersonArea.PersonID);
+        Result := True;
+      except
+        Exit;
+      end;
+    finally
+      F(IC);
     end;
   finally
-    F(IC);
+    F(P);
   end;
 end;
 
@@ -330,10 +357,10 @@ var
   UC: TUpdateCommand;
 begin
   Result := False;
-  UC := TUpdateCommand.Create(PersonMappingTableName);
+  UC := TUpdateCommand.Create(ObjectMappingTableName);
   try
-    UC.AddParameter(TIntegerParameter.Create('PersonID', ToPersonID));
-    UC.AddWhereParameter(TIntegerParameter.Create('PersonMappingID', PersonArea.ID));
+    UC.AddParameter(TIntegerParameter.Create('ObjectID', ToPersonID));
+    UC.AddWhereParameter(TIntegerParameter.Create('ObjectMappingID', PersonArea.ID));
     try
       UC.Execute;
       PersonArea.FPersonID := ToPersonID;
@@ -353,39 +380,48 @@ constructor TPersonManager.Create;
 begin
   FPeoples := nil;
   FSync := TCriticalSection.Create;
+  RegisterManager;
 end;
 
-function TPersonManager.CreateNewPerson(Person: TPerson): Boolean;
+function TPersonManager.CreateNewPerson(Person: TPerson): Integer;
 var
   IC: TInsertCommand;
 begin
-  Result := False;
+  Result := 0;
 
-  IC := TInsertCommand.Create(PersonTableName);
+  IC := TInsertCommand.Create(ObjectTableName);
   try
-    IC.AddParameter(TStringParameter.Create('PersonName', Person.Name));
+    IC.AddParameter(TStringParameter.Create('ObjectName', Person.Name));
     IC.AddParameter(TStringParameter.Create('RelatedGroups', Person.Groups));
     IC.AddParameter(TDateTimeParameter.Create('BirthDate', Person.BirthDay));
-    IC.AddParameter(TStringParameter.Create('PersonPhone', Person.Phone));
-    IC.AddParameter(TStringParameter.Create('PersonAddress', Person.Address));
+    IC.AddParameter(TStringParameter.Create('Phone', Person.Phone));
+    IC.AddParameter(TStringParameter.Create('Address', Person.Address));
     IC.AddParameter(TStringParameter.Create('Company', Person.Company));
     IC.AddParameter(TStringParameter.Create('JobTitle', Person.JobTitle));
     IC.AddParameter(TStringParameter.Create('IMNumber', Person.IMNumber));
-    IC.AddParameter(TStringParameter.Create('PersonEmail', Person.Email));
-    IC.AddParameter(TIntegerParameter.Create('PersonSex', Person.Sex));
-    IC.AddParameter(TStringParameter.Create('PersonComment', Person.Comment));
-    IC.AddParameter(TJpegParameter.Create('PersonImage', Person.Image));
+    IC.AddParameter(TStringParameter.Create('Email', Person.Email));
+    IC.AddParameter(TIntegerParameter.Create('Sex', Person.Sex));
+    IC.AddParameter(TStringParameter.Create('ObjectComment', Person.Comment));
+    IC.AddParameter(TJpegParameter.Create('Image', Person.Image));
     IC.AddParameter(TDateTimeParameter.Create('CreateDate', Now));
+    IC.AddParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
+    IC.AddParameter(TStringParameter.Create('ObjectUniqID', GUIDToString(GetGUID)));
 
     try
       Person.ID := IC.Execute;
-      AllPersons.Add(Person);
+      Result := Person.ID;
+      FSync.Enter;
+      try
+        AllPersons.Add(Person);
+      finally
+        FSync.Leave;
+      end;
 
     except
       Exit;
     end;
 
-    Result := True;
+    Result := Person.ID;
   finally
     F(IC);
   end;
@@ -396,13 +432,19 @@ var
   DC: TDeleteCommand;
 begin
   Result := False;
-  DC := TDeleteCommand.Create(PersonTableName);
+  DC := TDeleteCommand.Create(ObjectTableName);
   try
-    DC.AddWhereParameter(TIntegerParameter.Create('PersonId', PersonID));
+    DC.AddWhereParameter(TIntegerParameter.Create('ObjectId', PersonID));
+    DC.AddWhereParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
     try
       DC.Execute;
 
-      AllPersons.RemoveByID(PersonID);
+      FSync.Enter;
+      try
+        AllPersons.RemoveByID(PersonID);
+      finally
+        FSync.Leave;
+      end;
     except
       Exit;
     end;
@@ -438,46 +480,74 @@ procedure TPersonManager.FillLatestSelections(Persons: TPersonCollection);
 var
   I, Count, PersonID: Integer;
   P: TPerson;
+  Key: string;
 begin
+  Key := FormatEx('FaceDetection\{0}', [ExtractFileName(dbname)]);
 
   Persons.Clear;
 
-  Count := Settings.ReadInteger('FaceDetection', 'LatestCount', 0);
+  Count := Settings.ReadInteger(Key, 'LatestCount', 0);
   for I := 1 to Count do
   begin
-    PersonID := Settings.ReadInteger('FaceDetection\LatestPersons', 'Person' + IntToStr(I), 0);
+    PersonID := Settings.ReadInteger(Key + '\LatestPersons', 'Person' + IntToStr(I), 0);
     if PersonID <> 0 then
     begin
-      P := FindPerson(PersonID);
-      if P <> nil then
-        Persons.Add(P);
+      P := TPerson.Create;
+      try
+        FindPerson(PersonID, P);
+        if not P.Empty then
+          Persons.Add(P);
+      finally
+        F(P);
+      end;
     end;
   end;
 end;
 
-function TPersonManager.FindPerson(PersonName: string): TPerson;
+function TPersonManager.FindPerson(PersonName: string; Person: TPerson): Boolean;
+var
+  P: TPerson;
 begin
-  Result := AllPersons.GetPersonByName(PersonName);
+  Result := False;
+  FSync.Enter;
+  try
+    P := AllPersons.GetPersonByName(PersonName);
+    if P <> nil then
+    begin
+      Person.Assign(P);
+      Result := True;
+    end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
-function TPersonManager.FindPerson(PersonID: Integer): TPerson;
+function TPersonManager.FindPerson(PersonID: Integer; Person: TPerson): Boolean;
+var
+  P: TPerson;
 begin
-  Result := AllPersons.GetPersonByID(PersonID);
+  Result := False;
+  FSync.Enter;
+  try
+    P := AllPersons.GetPersonByID(PersonID);
+    if P <> nil then
+    begin
+      Person.Assign(P);
+      Result := True;
+    end;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TPersonManager.GetAllPersons: TPersonCollection;
 begin
-  FSync.Enter;
-  try
-    if FPeoples = nil then
-    begin
-      FPeoples := TPersonCollection.Create;
-      LoadPersonList(FPeoples);
-    end;
-    Result := FPeoples;
-  finally
-    FSync.Leave;
+  if FPeoples = nil then
+  begin
+    FPeoples := TPersonCollection.Create;
+    LoadPersonList(FPeoples);
   end;
+  Result := FPeoples;
 end;
 
 function TPersonManager.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
@@ -485,7 +555,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPersonAreaCollection.Create;
-  SC := TSelectCommand.Create(PersonMappingTableName);
+  SC := TSelectCommand.Create(ObjectMappingTableName);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
@@ -505,10 +575,11 @@ var
   SC: TSelectCommand;
 begin
   Result := TPerson.Create;
-  SC := TSelectCommand.Create(PersonTableName);
+  SC := TSelectCommand.Create(ObjectTableName);
   try
     SC.AddParameter(TAllParameter.Create);
-    SC.AddWhereParameter(TIntegerParameter.Create('PersonID', PersonID));
+    SC.AddWhereParameter(TIntegerParameter.Create('ObjectID', PersonID));
+    SC.AddWhereParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
     try
       SC.Execute;
       if SC.RecordCount > 0 then
@@ -529,10 +600,11 @@ var
   SC: TSelectCommand;
 begin
   Result := TPerson.Create;
-  SC := TSelectCommand.Create(PersonTableName, True);
+  SC := TSelectCommand.Create(ObjectTableName, True);
   try
     SC.AddParameter(TAllParameter.Create);
-    SC.AddWhereParameter(TStringParameter.Create('PersonName', PersonName));
+    SC.AddWhereParameter(TStringParameter.Create('ObjectName', PersonName));
+    SC.AddWhereParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
     try
       SC.Execute;
       if SC.RecordCount > 0 then
@@ -553,7 +625,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPersonCollection.Create;
-  SC := TSelectCommand.Create(PersonTableName);
+  SC := TSelectCommand.Create(ObjectTableName);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
@@ -570,10 +642,10 @@ end;
 
 procedure TPersonManager.InitDB;
 begin
-  if not CheckPersonTables(DatabaseManager.DBFile) then
+  if not CheckObjectTables(DatabaseManager.DBFile) then
   begin
-    ADOCreatePersonsTable(DatabaseManager.DBFile);
-    ADOCreatePersonMappingTable(DatabaseManager.DBFile);
+    ADOCreateObjectsTable(DatabaseManager.DBFile);
+    ADOCreateObjectMappingTable(DatabaseManager.DBFile);
   end;
 end;
 
@@ -581,10 +653,10 @@ procedure TPersonManager.LoadPersonList(Persons: TPersonCollection);
 var
   SC: TSelectCommand;
 begin
-  SC := TSelectCommand.Create(PersonTableName);
+  SC := TSelectCommand.Create(ObjectTableName);
   try
     SC.AddParameter(TAllParameter.Create);
-    SC.Order.Add(TOrderParameter.Create('PersonName', False));
+    SC.Order.Add(TOrderParameter.Create('ObjectName', False));
     SC.Execute;
     Persons.ReadFromDS(SC.DS);
   finally
@@ -596,13 +668,16 @@ procedure TPersonManager.MarkLatestPerson(PersonID: Integer);
 var
   I, Count, MaxCount, ItemCount, ID: Integer;
   List: TList;
+  Key: string;
 begin
+  Key := FormatEx('FaceDetection\{0}', [ExtractFileName(dbname)]);
+
   List := TList.Create;
   try
-    Count := Settings.ReadInteger('FaceDetection', 'LatestCount', 0);
+    Count := Settings.ReadInteger(Key, 'LatestCount', 0);
     for I := 1 to Count do
     begin
-      ID := Settings.ReadInteger('FaceDetection\LatestPersons', 'Person' + IntToStr(I), 0);
+      ID := Settings.ReadInteger(Key + '\LatestPersons', 'Person' + IntToStr(I), 0);
       if ID > 0 then
         List.Add(Pointer(ID));
     end;
@@ -616,12 +691,12 @@ begin
 
     List.Insert(0, Pointer(PersonID));
 
-    MaxCount := Settings.ReadInteger('FaceDetection', 'LatestMaxCount', 10);
+    MaxCount := Settings.ReadInteger(Key, 'LatestMaxCount', 10);
 
     ItemCount := Min(List.Count, MaxCount);
-    Settings.WriteInteger('FaceDetection', 'LatestCount', ItemCount);
+    Settings.WriteInteger(Key, 'LatestCount', ItemCount);
     for I := 0 to ItemCount - 1 do
-      Settings.WriteInteger('FaceDetection\LatestPersons', 'Person' + IntToStr(I + 1), Integer(List[I]));
+      Settings.WriteInteger(Key + '\LatestPersons', 'Person' + IntToStr(I + 1), Integer(List[I]));
   finally
     F(List);
   end;
@@ -632,11 +707,11 @@ var
   DC: TDeleteCommand;
 begin
   Result := False;
-  DC := TDeleteCommand.Create(PersonMappingTableName);
+  DC := TDeleteCommand.Create(ObjectMappingTableName);
   try
     DC.AddParameter(TAllParameter.Create);
     DC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
-    DC.AddWhereParameter(TIntegerParameter.Create('PersonMappingID', PersonArea.ID));
+    DC.AddWhereParameter(TIntegerParameter.Create('ObjectMappingID', PersonArea.ID));
     try
       DC.Execute;
 
@@ -651,66 +726,121 @@ end;
 
 function TPersonManager.RenamePerson(PersonName, NewName: string): Boolean;
 var
-  P, PTest: TPerson;
+  P, PTest, CachePerson: TPerson;
   UC: TUpdateCommand;
 begin
   Result := False;
   FSync.Enter;
   try
-    P := FindPerson(PersonName);
-    if P <> nil then
-    begin
-      PTest := GetPersonByName(NewName);
-      try
-        if PTest.Empty then
-        begin
-          UC := TUpdateCommand.Create(PersonTableName);
-          try
-            UC.AddParameter(TStringParameter.Create('PersonName', NewName));
-            UC.AddWhereParameter(TIntegerParameter.Create('PersonID', P.ID));
-            UC.Execute;
-            Result := True;
-            P.Name := NewName;
-          finally
-            F(UC);
+    P := TPerson.Create;
+    try
+      FindPerson(PersonName, P);
+      if not P.Empty then
+      begin
+        PTest := GetPersonByName(NewName);
+        try
+          if PTest.Empty then
+          begin
+            UC := TUpdateCommand.Create(ObjectTableName);
+            try
+              UC.AddParameter(TStringParameter.Create('ObjectName', NewName));
+              UC.AddWhereParameter(TIntegerParameter.Create('ObjectID', P.ID));
+              UC.Execute;
+              Result := True;
+
+              //update cache
+              FSync.Enter;
+              try
+                CachePerson := AllPersons.GetPersonByID(P.ID);
+                if CachePerson <> nil then
+                  CachePerson.Name := NewName;
+              finally
+                FSync.Leave;
+              end;
+            finally
+              F(UC);
+            end;
           end;
+        finally
+          F(PTest);
         end;
-      finally
-        F(PTest);
       end;
+    finally
+      F(P);
     end;
   finally
     FSync.Leave;
   end;
 end;
 
+procedure TPersonManager.RegisterManager;
+begin
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+end;
+
+procedure TPersonManager.Unregister;
+begin
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+end;
+
+procedure TPersonManager.ChangedDBDataByID(Sender: TObject; ID: Integer;
+  params: TEventFields; Value: TEventValues);
+begin
+  if EventID_Param_DB_Changed in Params then
+  begin
+    FSync.Enter;
+    try
+      F(FPeoples);
+    finally
+      FSync.Leave;
+    end;
+  end;
+end;
+
 function TPersonManager.UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
 var
   UC: TUpdateCommand;
+  P: TPerson;
 begin
   Result := False;
 
-  UC := TUpdateCommand.Create(PersonTableName);
+  UC := TUpdateCommand.Create(ObjectTableName);
   try
-    UC.AddParameter(TStringParameter.Create('PersonName', Person.Name));
+    UC.AddParameter(TStringParameter.Create('ObjectName', Person.Name));
     UC.AddParameter(TStringParameter.Create('RelatedGroups', Person.Groups));
     UC.AddParameter(TDateTimeParameter.Create('BirthDate', Person.BirthDay));
-    UC.AddParameter(TStringParameter.Create('PersonPhone', Person.Phone));
-    UC.AddParameter(TStringParameter.Create('PersonAddress', Person.Address));
+    UC.AddParameter(TStringParameter.Create('Phone', Person.Phone));
+    UC.AddParameter(TStringParameter.Create('Address', Person.Address));
     UC.AddParameter(TStringParameter.Create('Company', Person.Company));
     UC.AddParameter(TStringParameter.Create('JobTitle', Person.JobTitle));
     UC.AddParameter(TStringParameter.Create('IMNumber', Person.IMNumber));
-    UC.AddParameter(TStringParameter.Create('PersonEmail', Person.Email));
-    UC.AddParameter(TIntegerParameter.Create('PersonSex', Person.Sex));
-    UC.AddParameter(TStringParameter.Create('PersonComment', Person.Comment));
+    UC.AddParameter(TStringParameter.Create('Email', Person.Email));
+    UC.AddParameter(TIntegerParameter.Create('Sex', Person.Sex));
+    UC.AddParameter(TStringParameter.Create('ObjectComment', Person.Comment));
     if UpdateImage then
-      UC.AddParameter(TJpegParameter.Create('PersonImage', Person.Image));
+      UC.AddParameter(TJpegParameter.Create('Image', Person.Image));
+    if Person.UniqID = '' then
+    begin
+      Person.UniqID := GUIDToString(GetGUID);
+      UC.AddParameter(TStringParameter.Create('ObjectUniqID', Person.UniqID));
+    end;
 
-    UC.AddWhereParameter(TIntegerParameter.Create('PersonID', Person.ID));
+    UC.AddWhereParameter(TIntegerParameter.Create('ObjectID', Person.ID));
+    UC.AddWhereParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
     try
       UC.Execute;
     except
       Exit;
+    end;
+
+    //update internal cache
+    FSync.Enter;
+    try
+      P := AllPersons.GetPersonByID(Person.ID);
+      if P <> nil then
+        P.Assign(Person);
+    finally
+      FSync.Leave;
     end;
 
     Result := True;
@@ -765,19 +895,6 @@ begin
   Result := FList.Count;
 end;
 
-function TPersonCollection.GetPersonByID(ID: Integer): TPerson;
-var
-  I: Integer;
-begin
-  Result := nil;
-  for I := 0 to Count - 1 do
-    if Items[I].ID = ID then
-    begin
-      Result := Items[I];
-      Exit;
-    end;
-end;
-
 function TPersonCollection.GetPersonByIndex(Index: Integer): TPerson;
 begin
   Result := FList[Index];
@@ -790,6 +907,19 @@ begin
   Result := nil;
   for I := 0 to Count - 1 do
     if Items[I].Name = PersonName then
+    begin
+      Result := Items[I];
+      Exit;
+    end;
+end;
+
+function TPersonCollection.GetPersonByID(ID: Integer): TPerson;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to Count - 1 do
+    if Items[I].ID = ID then
     begin
       Result := Items[I];
       Exit;
@@ -866,11 +996,10 @@ var
   PA: TPersonArea;
 begin
   Clear;
-
+  if DS.RecordCount > 0 then
+    DS.First;
   for I := 0 to DS.RecordCount - 1 do
   begin
-    if I = 0 then
-      DS.First;
     PA := TPersonArea.Create;
     FList.Add(PA);
     PA.ReadFromDS(DS);
@@ -926,7 +1055,7 @@ end;
 
 procedure TPersonArea.ReadFromDS(DS: TDataSet);
 begin
-  FID := DS.FieldByName('PersonMappingID').AsInteger;
+  FID := DS.FieldByName('ObjectMappingID').AsInteger;
   FX := DS.FieldByName('Left').AsInteger;
   FY := DS.FieldByName('Top').AsInteger;
   FWidth := DS.FieldByName('Right').AsInteger - FX;
@@ -934,7 +1063,7 @@ begin
   FFullWidth := DS.FieldByName('ImageWidth').AsInteger;
   FFullHeight := DS.FieldByName('ImageHeight').AsInteger;
   FImageID := DS.FieldByName('ImageID').AsInteger;
-  FPersonID := DS.FieldByName('PersonID').AsInteger;
+  FPersonID := DS.FieldByName('ObjectID').AsInteger;
   FPage := DS.FieldByName('PageNumber').AsInteger;
 end;
 

@@ -3,10 +3,10 @@ unit uFrmSelectDBExistedFile;
 interface
 
 uses
-  Windows, SysUtils, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Classes, Graphics, Controls, Forms, uRuntime,
   Dialogs, WebLink, StdCtrls, ExtCtrls, uFrameWizardBase, UnitDBKernel,
   uShellIntegration, UnitDBCommonGraphics, uMemory, UnitDBDeclare, uIconUtils,
-  UnitDBFileDialogs, uFileUtils, CommonDBSupport, uConstants, WatermarkedEdit;
+  UnitDBFileDialogs, uFileUtils, uConstants, WatermarkedEdit;
 
 type
   TFrmSelectDBExistedFile = class(TFrameWizardBase)

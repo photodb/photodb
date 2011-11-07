@@ -6,9 +6,10 @@ uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Jpeg, Dolphin_DB,
   Menus, GraphicEx, Math, ComCtrls, ImgList, GraphicSelectEx,
-  UnitDBDeclare, uBitmapUtils, uConstants,
+  UnitDBDeclare, uBitmapUtils, uConstants, uExplorerGroupsProvider,
   uFileUtils, uMemory, uDBForm, WatermarkedEdit, WatermarkedMemo, uMemoryEx,
-  uShellIntegration, uRuntime, WebLinkList, WebLink, AppEvnts;
+  uShellIntegration, uRuntime, WebLinkList, WebLink, AppEvnts,
+  uPathProviders;
 
 type
   TNewGroupForm = class(TDBForm)
@@ -146,6 +147,7 @@ procedure TNewGroupForm.BtnOkClick(Sender: TObject);
 var
   Group: TGroup;
   EventInfo: TEventValues;
+  GroupItem: TGroupItem;
 begin
   if GroupNameExists(EdName.Text) then
   begin
@@ -176,8 +178,15 @@ begin
     FCreated := True;
     FNewGroupName := EdName.Text;
   end;
+  GroupItem := TGroupItem.Create;
+  try
+    GroupItem.ReadFromGroup(Group, PATH_LOAD_NORMAL, 48);
+    EventInfo.Data := GroupItem;
+    DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
+  finally
+    F(GroupItem);
+  end;
   FreeGroup(Group);
-  DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
   Close;
 end;
 

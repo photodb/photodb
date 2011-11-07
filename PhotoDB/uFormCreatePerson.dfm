@@ -247,7 +247,7 @@ object FormCreatePerson: TFormCreatePerson
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
-    TabOrder = 6
+    TabOrder = 4
     OnClick = BtnCancelClick
   end
   object WllGroups: TWebLinkList

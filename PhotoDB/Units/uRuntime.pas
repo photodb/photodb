@@ -11,6 +11,10 @@ const
   UseSimpleSelectFolderDialog = False;
 
 var
+   //TODO: delete it
+   dbname: string = '';
+
+var
   PortableWork : Boolean = False;
   FolderView: Boolean = False;
   LastInseredID: Integer = 0;

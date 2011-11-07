@@ -28,6 +28,7 @@ type
     procedure FormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
+    procedure WMActivateApp(var Msg: TMessage); message WM_ACTIVATEAPP;
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure TimerShowTimer(Sender: TObject);
@@ -397,6 +398,12 @@ begin
   if FAlphaBlend >= 255 then
     TimerShow.Enabled := False;
   CreateFormImage;
+end;
+
+procedure TImHint.WMActivateApp(var Msg: TMessage);
+begin
+  if Msg.wParam = 0 then
+    TimerHide.Enabled := True;
 end;
 
 procedure TImHint.TimerHideTimer(Sender: TObject);

@@ -4,7 +4,7 @@ interface
 
 uses
   DB, SysUtils, Classes, jpeg, uMemory, CommonDBSupport, uStringUtils, ADODB,
-  Variants, uSysUtils;
+  Variants, uSysUtils, uRuntime;
 
 type
   TParameterAction = (paNone, paGrateThan, paGrateOrEq, paLessThan, paLessOrEq, paEquals, paNotEquals);
@@ -75,6 +75,15 @@ type
     function GetValue: Variant; override;
   public
     constructor Create(Name: string; Value: string; Action: TParameterAction = paEquals);
+  end;
+
+  TBooleanParameter = class(TParameter)
+  private
+    FValue: Boolean;
+  protected
+    function GetValue: Variant; override;
+  public
+    constructor Create(Name: string; Value: Boolean; Action: TParameterAction = paEquals);
   end;
 
   TJpegParameter = class(TParameter)
@@ -316,6 +325,8 @@ var
         ADOParameter.Value := TIntegerParameter(Parameter).Value;
       if Parameter is TStringParameter then
         ADOParameter.Value := TStringParameter(Parameter).Value;
+      if Parameter is TBooleanParameter then
+        ADOParameter.Value := TBooleanParameter(Parameter).Value;
       if Parameter is TJpegParameter then
       begin
         TJpegParameter(Parameter).Image.Compress;
@@ -544,6 +555,20 @@ begin
   Result := FValue;
 end;
 
+{ TBooleanParameter }
+
+constructor TBooleanParameter.Create(Name: string; Value: Boolean;
+  Action: TParameterAction);
+begin
+  inherited Create(Name, Action);
+  FValue := Value;
+end;
+
+function TBooleanParameter.GetValue: Variant;
+begin
+  Result := FValue;
+end;
+
 { TJpegParameter }
 
 constructor TJpegParameter.Create(Name: string; Value: TJpegImage);
@@ -724,6 +749,7 @@ function TOrderParameterCollection.GetItemByID(Index: Integer): TOrderParameter;
 begin
   Result := FList[Index];
 end;
+
 
 initialization
 

@@ -274,7 +274,7 @@ type
     procedure WriteToDS(DS: TDataSet);
     function Copy: TDBPopupMenuInfoRecord; virtual;
     function FileExists: Boolean;
-    procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
+    procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False); reintroduce;
     property InnerImage: Boolean read GetInnerImage;
     property ExistedFileName: string read GetExistedFileName;
   end;

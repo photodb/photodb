@@ -3,7 +3,7 @@ unit UnitCmpDB;
 interface
 
 uses
-  UnitGroupsReplace, CmpUnit, Classes, DB, dolphin_db, SysUtils,
+  UnitGroupsReplace, CmpUnit, Classes, DB, dolphin_db, SysUtils, uRuntime,
   UnitGroupsWork, UnitLinksSupport, GraphicCrypt, JPEG, CommonDBSupport,
   UnitDBDeclare, UnitDBKernel, uDBTypes, uDBGraphicTypes, win32crc,
   UnitDBCommonGraphics, uDBThread, uMemory, uFileUtils, uDBForm, uDBAdapter;

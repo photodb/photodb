@@ -139,8 +139,8 @@ end;
 
 procedure TFormChangeGroup.BtnOkClick(Sender: TObject);
 var
-  Group : TGroup;
-  EventInfo : TEventValues;
+  Group: TGroup;
+  EventInfo: TEventValues;
 begin
   if GroupNameExists(EdName.Text) and (FGroup.GroupName <> EdName.Text) then
   begin

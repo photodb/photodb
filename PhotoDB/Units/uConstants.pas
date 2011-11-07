@@ -378,6 +378,12 @@ const
   cImagesSearchPath = '::images://';
   cFilesSearchPath = '::files://';
 
+const
+  ObjectTableName = 'Objects';
+  ObjectMappingTableName = 'ObjectMapping';
+  ImageTable = 'ImageTable';
+  GroupsTableName = 'Groups';
+
 implementation
 
 end.

@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Menus, UnitDBKernel, jpeg,
   uConstants, uMemory, uDBForm, uShellIntegration, Dolphin_DB, uMemoryEx,
-  CommonDBSupport, WatermarkedEdit, pngimage;
+  WatermarkedEdit, uRuntime, pngimage;
 
 type
   GroupReplaceOptions = record

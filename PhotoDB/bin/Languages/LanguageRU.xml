@@ -215,7 +215,7 @@
     <translate name="Rotate right" value="Вправо" />
     <translate name="Rotate 180°" value="180 градусов" />
     <translate name="By EXIF" value="Согласно ориентации фотоаппарата" />
-    <translate name="Set as desktop wallpaper" value="Установить как рабочий стол" />
+    <translate name="Set as desktop wallpaper" value="Установить на рабочий стол" />
     <translate name="Stretch" value="Растянуть" />
     <translate name="Center" value="По центру" />
     <translate name="Tile" value="Замостить" />
@@ -818,7 +818,7 @@
     <translate name="Refresh faces" value="Обновить лица" />
     <translate name="Previous selections" value="Предыдущие выборы" />
     <translate name="Face detection disabled" value="Определение лиц отключено" />
-
+    <translate name="Select person" value="Указать персону" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -2017,6 +2017,9 @@
 	<translate name="Do you really want to delete group &quot;%s&quot;?" value="Вы действительно хотите удалить группу &quot;%s&quot;?" />
 	<translate name="Scan collection and remove all pointers to group &quot;%s&quot;?" value="Сканировать базу и удалить все указатели на группу &quot;%s&quot;?" />
     <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
+	<translate name="Group with this name already exists!" value="Группа с таким именем уже существует!" />
+	<translate name="Do you really want to change name of this group?" value="Вы действительно хотите изменить имя этой группы?" />	
+    <translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах чтобы видеть изменения!" />
   </scope>
   <scope name="PersonsProvider">
 	<translate name="Do you really want to delete person &quot;{0}&quot; (Has {1} reference(s) on photo(s))?" value="Вы действительно хотите удалить персону &quot;{0}&quot; (Даная персона отмечена на {1} фотографиях)?"/>

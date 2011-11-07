@@ -3,7 +3,7 @@ unit UnitBackUpTableInCMD;
 interface
 
 uses
-  Classes, SysUtils, UnitDBKernel, Forms, CommonDBSupport, uDBThread,
+  Classes, SysUtils, UnitDBKernel, Forms, uDBThread, uRuntime,
   UnitDBDeclare, uConstants, uFileUtils, uTranslate, uSettings, uConfiguration;
 
 type

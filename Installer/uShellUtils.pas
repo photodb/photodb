@@ -486,8 +486,8 @@ end;
 
 procedure RefreshSystemIconCache;
 begin
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
-  SHChangeNotify(SHCNE_UPDATEIMAGE, SHCNF_FLUSHNOWAIT or SHCNF_FLUSH or SHCNF_PATH, nil, nil);
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH or SHCNF_PATH, nil, nil);
+  SHChangeNotify(SHCNE_UPDATEIMAGE, SHCNF_FLUSH or SHCNF_PATH, nil, nil);
 end;
 
 end.

@@ -129,6 +129,8 @@ type
     MiFindPhotos: TMenuItem;
     N9: TMenuItem;
     MiRefreshFaces: TMenuItem;
+    MiDrawFace: TMenuItem;
+    N10: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -229,6 +231,7 @@ type
     procedure MiRefreshFacesClick(Sender: TObject);
     procedure MiFaceDetectionStatusClick(Sender: TObject);
     procedure MiCurrentPersonClick(Sender: TObject);
+    procedure MiDrawFaceClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -261,6 +264,8 @@ type
     FDrawFaceStartPoint: TPoint;
     FDrawFace: TFaceDetectionResultItem;
     FPersonMouseMoveLock: Boolean;
+    FIsSelectingFace: Boolean;
+    FIsClosing: Boolean;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
@@ -344,6 +349,7 @@ type
     procedure ClearFaces;
     procedure UpdateFaceDetectionState;
     procedure CheckFaceIndicatorVisibility;
+    procedure UpdateCursor;
     property DisplayRating: Integer write SetDisplayRating;
   published
     property ImageExists: Boolean read FImageExists write SetImageExists;
@@ -401,10 +407,12 @@ end;
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin
+  FIsClosing := False;
   TLoad.Instance.StartPersonsThread;
   TW.I.Start('TViewer.FormCreate');
   FDrawingFace := False;
   FPersonMouseMoveLock := False;
+  FIsSelectingFace := False;
   FCreating := True;
   LsLoading.Active := True;
   CurrentInfo := TDBPopupMenuInfo.Create;
@@ -841,7 +849,7 @@ end;
 procedure TViewer.FormResize(Sender: TObject);
 begin
   TW.I.Start('TViewer.FormResize');
-  if FCreating then
+  if FCreating or FIsClosing then
     Exit;
   DrawImage.Width := ClientWidth;
   DrawImage.Height := HeightW;
@@ -1094,9 +1102,17 @@ end;
 procedure TViewer.SelectPreviousPerson(Sender: TObject);
 var
   P: TPerson;
+  PersonID: Integer;
 begin
-  P := TPerson(TMenuItem(Sender).Tag);
-  SelectPerson(P);
+  P := TPerson.Create;
+  try
+    PersonID := TMenuItem(Sender).Tag;
+    PersonManager.FindPerson(PersonID, P);
+    if not P.Empty then
+      SelectPerson(P);
+  finally
+    F(P);
+  end;
 end;
 
 procedure TViewer.PmFacePopup(Sender: TObject);
@@ -1114,76 +1130,80 @@ begin
 
   MiCurrentPerson.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
   MiCurrentPersonSeparator.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
-  P := nil;
-  if (PA <> nil) and (PA.PersonID > 0) then
-  begin
-    P := PersonManager.FindPerson(PA.PersonID);
-    MiCreatePerson.Visible := P = nil;
-    MiFindPhotosSeparator.Visible := P <> nil;
-    if P <> nil then
-      MiCurrentPerson.Caption := P.Name
-    else
-      MiCurrentPerson.Caption := L('Unknown Person');
-  end else
-  begin
-    MiCreatePerson.Visible := True;
-  end;
-
-  SelectedPersons := TPersonCollection.Create(False);
+  P := TPerson.Create;
   try
-    //remove last persons
-    LatestPersons := False;
-    LatestPersonsIndex := 0;
-    for I := PmFace.Items.Count - 1 downto 0 do
+    if (PA <> nil) and (PA.PersonID > 0) then
     begin
-      if PmFace.Items[I] = MiPreviousSelections then
-      begin
-        LatestPersons := False;
-        LatestPersonsIndex := I;
-      end;
-
-      if LatestPersons then
-        PmFace.Items.Remove(PmFace.Items[I]);
-
-      if PmFace.Items[I] = MiPreviousSelectionsSeparator then
-        LatestPersons := True;
-    end;
-
-    //add current persons
-    PersonManager.FillLatestSelections(SelectedPersons);
-
-    if P <> nil then
-      for I := 0 to SelectedPersons.Count - 1 do
-      begin
-        if SelectedPersons[I].ID = P.ID then
-        begin
-          SelectedPersons.DeleteAt(I);
-          Break;
-        end;
-      end;
-
-    for I := 0 to SelectedPersons.Count - 1 do
-    begin
-      MI := TMenuItem.Create(PmFace);
-      MI.Tag := Integer(SelectedPersons[I]);
-      MI.Caption := SelectedPersons[I].Name;
-      MI.OnClick := SelectPreviousPerson;
-      PmFace.Items.Insert(LatestPersonsIndex + 1, MI);
-      Inc(LatestPersonsIndex);
-    end;
-
-    if SelectedPersons.Count = 0 then
-    begin
-      MiPreviousSelections.Visible := False;
-      MiPreviousSelectionsSeparator.Visible := False;
+      PersonManager.FindPerson(PA.PersonID, P);
+      MiCreatePerson.Visible := P.Empty;
+      MiFindPhotosSeparator.Visible := not P.Empty;
+      if not P.Empty then
+        MiCurrentPerson.Caption := P.Name
+      else
+        MiCurrentPerson.Caption := L('Unknown Person');
     end else
     begin
-      MiPreviousSelections.Visible := True;
-      MiPreviousSelectionsSeparator.Visible := True;
+      MiCreatePerson.Visible := True;
     end;
-    FPersonMouseMoveLock := True;
+
+    SelectedPersons := TPersonCollection.Create;
+    try
+      //remove last persons
+      LatestPersons := False;
+      LatestPersonsIndex := 0;
+      for I := PmFace.Items.Count - 1 downto 0 do
+      begin
+        if PmFace.Items[I] = MiPreviousSelections then
+        begin
+          LatestPersons := False;
+          LatestPersonsIndex := I;
+        end;
+
+        if LatestPersons then
+          PmFace.Items.Remove(PmFace.Items[I]);
+
+        if PmFace.Items[I] = MiPreviousSelectionsSeparator then
+          LatestPersons := True;
+      end;
+
+      //add current persons
+      PersonManager.FillLatestSelections(SelectedPersons);
+
+      if not P.Empty then
+        for I := 0 to SelectedPersons.Count - 1 do
+        begin
+          if SelectedPersons[I].ID = P.ID then
+          begin
+            SelectedPersons.DeleteAt(I);
+            Break;
+          end;
+        end;
+
+      for I := 0 to SelectedPersons.Count - 1 do
+      begin
+        MI := TMenuItem.Create(PmFace);
+        MI.Tag := SelectedPersons[I].ID;
+        MI.Caption := SelectedPersons[I].Name;
+        MI.OnClick := SelectPreviousPerson;
+        PmFace.Items.Insert(LatestPersonsIndex + 1, MI);
+        Inc(LatestPersonsIndex);
+      end;
+
+      if SelectedPersons.Count = 0 then
+      begin
+        MiPreviousSelections.Visible := False;
+        MiPreviousSelectionsSeparator.Visible := False;
+      end else
+      begin
+        MiPreviousSelections.Visible := True;
+        MiPreviousSelectionsSeparator.Visible := True;
+      end;
+      FPersonMouseMoveLock := True;
+    finally
+      F(SelectedPersons);
+    end;
   finally
-    F(SelectedPersons);
+    F(P);
   end;
 end;
 
@@ -1831,6 +1851,7 @@ begin
     if (Msg.WParam = VK_SHIFT) then
     begin
       RefreshFaces;
+      UpdateCursor;
       Handled := True;
     end;
   end;
@@ -1855,6 +1876,7 @@ begin
     if (Msg.WParam = VK_SHIFT) then
     begin
       RefreshFaces;
+      UpdateCursor;
       Handled := True;
     end;
 
@@ -2285,6 +2307,12 @@ begin
   end;
 end;
 
+procedure TViewer.MiDrawFaceClick(Sender: TObject);
+begin
+  FIsSelectingFace := True;
+  UpdateCursor;
+end;
+
 procedure TViewer.MiFaceDetectionStatusClick(Sender: TObject);
 var
   IsActive: Boolean;
@@ -2304,14 +2332,19 @@ begin
   PA := TPersonArea(FR.Data);
   if PA = nil then
     Exit;
-  P := PersonManager.FindPerson(PA.PersonID);
-  if P = nil then
-    Exit;
+  P := TPerson.Create;
+  try
+    PersonManager.FindPerson(PA.PersonID, P);
+    if P.Empty then
+      Exit;
 
-  with ExplorerManager.NewExplorer(False) do
-  begin
-    SetPath(cPersonsPath + '\' + P.Name);
-    Show;
+    with ExplorerManager.NewExplorer(False) do
+    begin
+      SetPath(cPersonsPath + '\' + P.Name);
+      Show;
+    end;
+  finally
+    F(P);
   end;
 end;
 
@@ -2378,6 +2411,7 @@ begin
     Exit1Click(nil);
   if DirectShowForm <> nil then
     DirectShowForm.Close;
+  FIsClosing := True;
   Release;
 end;
 
@@ -2409,6 +2443,7 @@ begin
     MiFindPhotos.Caption := L('Find photos');
     MiClearFaceZone.Caption := L('Clear face zone');
     MiPreviousSelections.Caption := L('Previous selections') + ':';
+    MiDrawFace.Caption := L('Select person');
   finally
     EndTranslate;
   end;
@@ -2433,8 +2468,9 @@ var
   P: TPoint;
   PA: TPersonArea;
 begin
-  if (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle)) and not DBCanDrag then
+  if (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not DBCanDrag then
   begin
+    FIsSelectingFace := False;
     FDrawingFace := True;
     P := Point(X, Y);
     F(FDrawFace);
@@ -2447,6 +2483,7 @@ begin
 
     PA := TPersonArea.Create(0, -1, nil);
     FDrawFace.Data := PA;
+    UpdateCursor;
     Exit;
   end;
 
@@ -2469,8 +2506,6 @@ begin
   FDrawingFace := False;
   if FDrawFace <> nil then
   begin
-    //recalculate size
-    //FDrawFace.RecalculateNewImageSize(FFaces.OriginalSize);
     FFaces.Add(FDrawFace);
     PmFace.Tag := Integer(FDrawFace);
     FHoverFace := FDrawFace;
@@ -2483,6 +2518,7 @@ begin
     P := Point(X, Y);
     P := ClientToScreen(P);
     PmFace.Popup(P.X, P.Y);
+    UpdateCursor;
   end;
   F(FDrawFace);
   DBCanDrag := False;
@@ -3013,23 +3049,28 @@ var
     begin
       PA := TPersonArea(Face.Data);
 
-      P := PersonManager.FindPerson(PA.PersonID);
-      if (P <> nil) or (PA.PersonID = -1) then
-      begin
-        if P <> nil then
-          S := P.Name
-        else
-          S := L('New person');
+      P := TPerson.Create;
+      try
+        PersonManager.FindPerson(PA.PersonID, P);
+        if not P.Empty or (PA.PersonID = -1) then
+        begin
+          if not P.Empty then
+            S := P.Name
+          else
+            S := L('New person');
 
-        R := Rect(R.Left, R.Bottom + 8, Max(R.Left + 20, R.Right), R.Bottom + 500);
-        Rct := R;
-        FOverlayBuffer.Canvas.Font := Font;
-        DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), R, DrawTextOpt or DT_CALCRECT);
-        R.Right := Max(R.Right, Rct.Right);
-        FaceTextRect := R;
-        InflateRect(R, 4, 4);
-        DrawRoundGradientVert(FOverlayBuffer, R, clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 220);
-        DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), FaceTextRect, DrawTextOpt);
+          R := Rect(R.Left, R.Bottom + 8, Max(R.Left + 20, R.Right), R.Bottom + 500);
+          Rct := R;
+          FOverlayBuffer.Canvas.Font := Font;
+          DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), R, DrawTextOpt or DT_CALCRECT);
+          R.Right := Max(R.Right, Rct.Right);
+          FaceTextRect := R;
+          InflateRect(R, 4, 4);
+          DrawRoundGradientVert(FOverlayBuffer, R, clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 220);
+          DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), FaceTextRect, DrawTextOpt);
+        end;
+      finally
+        F(P);
       end;
     end;
   end;
@@ -3070,7 +3111,9 @@ begin
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
     Rotate270A(FbImage);
-    FitToWindowClick(Sender);
+    FFaces.RotateLeft;
+    if ZoomerOn then
+      FitToWindowClick(Sender);
 
     RecreateDrawImage(Self);
   finally
@@ -3092,6 +3135,7 @@ begin
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
 
     Rotate90A(FbImage);
+    FFaces.RotateRight;
     if ZoomerOn then
       FitToWindowClick(Sender);
 
@@ -3698,6 +3742,14 @@ begin
     TbEncrypt.ImageIndex := 24
   else
     TbEncrypt.ImageIndex := 23;
+end;
+
+procedure TViewer.UpdateCursor;
+begin
+  if FDrawingFace or ShiftKeyDown or FIsSelectingFace then
+    Cursor := crCross
+  else
+    Cursor := crDefault;
 end;
 
 procedure TViewer.CheckFaceIndicatorVisibility;

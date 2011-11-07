@@ -41,7 +41,7 @@ type
   protected
     function InternalFillChildList(Sender: TObject; Item: TPathItem; List: TPathItemCollection; Options, ImageSize: Integer; PacketSize: Integer; CallBack: TLoadListCallBack): Boolean; override;
     function GetTranslateID: string; override;
-    function Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: TPathFeatureOptions): Boolean;
+    function Delete(Sender: TObject; Item: TPathItem; Options: TPathFeatureOptions): Boolean;
     function ShowProperties(Sender: TObject; Item: TGroupItem): Boolean;
     function Rename(Sender: TObject; Item: TGroupItem; Options: TPathFeatureEditOptions): Boolean;
   public
@@ -79,7 +79,7 @@ begin
     Result := TGroupItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
-function TGroupProvider.Delete(Sender: TObject; Item: TDBPopupMenuInfoRecord; Options: TPathFeatureOptions): Boolean;
+function TGroupProvider.Delete(Sender: TObject; Item: TPathItem; Options: TPathFeatureOptions): Boolean;
 var
   EventInfo: TEventValues;
   Group: TGroup;
@@ -88,32 +88,29 @@ var
 begin
   Result := False;
   Form := TDBForm(Sender);
-  GroupItem := PathProviderManager.CreatePathItem(Item.FileName) as TGroupItem;
-  try
-    if GroupItem = nil then
-      Exit;
+  GroupItem := Item as TGroupItem;
 
-    Group := GetGroupByGroupName(GroupItem.GroupName, False);
-    try
-      if ID_OK = MessageBoxDB(Form.Handle, Format(L('Do you really want to delete group "%s"?'), [Group.GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-        if UnitGroupsWork.DeleteGroup(Group) then
+  if GroupItem = nil then
+    Exit;
+
+  Group := GetGroupByGroupName(GroupItem.GroupName, False);
+  try
+    if ID_OK = MessageBoxDB(Form.Handle, Format(L('Do you really want to delete group "%s"?'), [Group.GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      if UnitGroupsWork.DeleteGroup(Group) then
+      begin
+        if ID_OK = MessageBoxDB(Form.Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Group.GroupName]),
+          L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         begin
-          if ID_OK = MessageBoxDB(Form.Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Group.GroupName]),
-            L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-          begin
-            UnitGroupsTools.DeleteGroup(Group);
-            MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
-            DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
-            Result := True;
-            Exit;
-          end;
+          UnitGroupsTools.DeleteGroup(Group);
+          MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
           DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
+          Result := True;
+          Exit;
         end;
-    finally
-      FreeGroup(Group);
-    end;
+        DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
+      end;
   finally
-    F(GroupItem);
+    FreeGroup(Group);
   end;
 end;
 
@@ -123,7 +120,7 @@ begin
   Result := inherited ExecuteFeature(Sender, Item, Feature, Options);
 
   if Feature = PATH_FEATURE_DELETE then
-    Result := Delete(Sender, TDBPopupMenuInfoRecord(Item), Options);
+    Result := Delete(Sender, Item, Options);
 
   if Feature = PATH_FEATURE_PROPERTIES then
     Result := ShowProperties(Sender, Item as TGroupItem);
@@ -208,11 +205,34 @@ function TGroupProvider.Rename(Sender: TObject; Item: TGroupItem;
   Options: TPathFeatureEditOptions): Boolean;
 var
   Group: TGroup;
+  Form: TDBForm;
 begin
+  Result := False;
+
   Group := GetGroupByGroupName(Item.GroupName, False);
   try
-    RenameGroup(Group, Options.NewName);
-    Result := True;
+    Form := TDBForm(Sender);
+
+    if Group.GroupName <> Options.NewName then
+    begin
+      if GroupNameExists(Options.NewName) then
+      begin
+        MessageBoxDB(Form.Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+        Exit;
+      end;
+
+      if ID_OK <> MessageBoxDB(Form.Handle, L('Do you really want to change name of this group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+        Exit;
+
+      Group.GroupName := Options.NewName;
+      if UpdateGroup(Group) then
+      begin
+        RenameGroup(Group, Options.NewName);
+        MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+        Result := True;
+      end;
+
+    end;
   finally
     FreeGroup(Group);
   end;
@@ -327,7 +347,7 @@ begin
   FDisplayName := Group.GroupName;
   FComment := Group.GroupComment;
   FKeywords := Group.GroupKeyWords;
-  if Group.GroupImage <> nil then
+  if (Group.GroupImage <> nil) and (ImageSize > 0) then
   begin
     Bitmap := TBitmap.Create;
     try

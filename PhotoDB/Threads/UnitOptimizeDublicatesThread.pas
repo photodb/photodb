@@ -3,7 +3,7 @@ unit UnitOptimizeDublicatesThread;
 interface
 
 uses
-  Classes, UnitLinksSupport, DB, SysUtils,
+  Classes, UnitLinksSupport, DB, SysUtils, uRuntime,
   CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc, uFileUtils,
   UnitDBDeclare, uMemory, uConstants, uDBTypes, uDBBaseTypes,
   uTranslate, uDBThread;

@@ -3,7 +3,7 @@ unit ConvertDBThreadUnit;
 interface
 
 uses
-  Windows, Classes, SysUtils, ActiveX, CommonDBSupport, DB, Forms,
+  Windows, Classes, SysUtils, ActiveX, CommonDBSupport, DB, Forms, uRuntime,
   UnitGroupsWork, uConstants, uShellIntegration, UnitDBDeclare, uFileUtils,
   uMemory, uTranslate, uThreadEx, uFrameWizardBase, uDBUtils, uThreadForm;
 

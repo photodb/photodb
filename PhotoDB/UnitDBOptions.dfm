@@ -167,6 +167,8 @@ object FormDBOptions: TFormDBOptions
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object EdPath: TEdit
     Left = 8

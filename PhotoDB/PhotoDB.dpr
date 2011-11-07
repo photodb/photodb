@@ -439,8 +439,7 @@ begin
   try
     //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
     //ReportMemoryLeaksOnShutdown := True;
-    //if not GetParamStrDBBool('/install') then
-    //  Sleep(10000);
+
   {
    //Command line
 
@@ -472,7 +471,6 @@ begin
    /SQLExec
    /SQLExecFile
   }
-   // uShellUtils.RefreshSystemIconCache;
     TW.I.Start('START');
 
     EventLog('');
@@ -508,11 +506,12 @@ begin
     if not GetParamStrDBBool('/NoPrevVersion') then
       FindRunningVersion;
 
+    EventLog('TDBKernel.Create');
+    DBKernel := TDBKernel.Create;
+
     TW.I.Start('InitializeDBLoadScript');
     if not DBTerminating then
     begin
-      EventLog('TDBKernel.Create');
-      DBKernel := TDBKernel.Create;
       TW.I.Start('DBKernel.DBInit');
       DBKernel.DBInit;
 
@@ -525,16 +524,17 @@ begin
         TLoad.Instance.StartDBSettingsThread;
       end;
 
-      SetSplashProgress(60);
-
-      TW.I.Start('TFormManager Create');
-      Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
-      // This is main form of application
-
-      TW.I.Start('SetSplashProgress 70');
-      SetSplashProgress(70);
     end;
+
+    SetSplashProgress(60);
+
+    TW.I.Start('TFormManager Create');
+    Application.CreateForm(TFormManager, FormManager);
+    Application.ShowMainForm := False;
+    // This is main form of application
+
+    TW.I.Start('SetSplashProgress 70');
+    SetSplashProgress(70);
 
     TW.I.Start('GetCIDA');
     SetSplashProgress(90);
@@ -685,7 +685,7 @@ begin
           if ParamStr(2) <> '' then
             GetPhotosFromDrive(ParamStr(2)[1]);
       end;
-    end else
+    end else if FormManager <> nil then
       FormManager.RunInBackground;
     EventLog('Application Started!...');
 
@@ -742,8 +742,7 @@ begin
         TLoad.Instance.RequaredDBSettings;
       end;
 
-    if FormManager <> nil then
-      FormManager.CloseManager;
+    UnReigisterPersonManager;
 
   except
     on e: Exception do
