@@ -182,7 +182,7 @@ begin
   try
     GroupItem.ReadFromGroup(Group, PATH_LOAD_NORMAL, 48);
     EventInfo.Data := GroupItem;
-    DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
+    DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupAdded], EventInfo);
   finally
     F(GroupItem);
   end;

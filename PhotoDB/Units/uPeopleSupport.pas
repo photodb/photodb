@@ -775,12 +775,12 @@ end;
 
 procedure TPersonManager.RegisterManager;
 begin
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TPersonManager.Unregister;
 begin
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TPersonManager.ChangedDBDataByID(Sender: TObject; ID: Integer;

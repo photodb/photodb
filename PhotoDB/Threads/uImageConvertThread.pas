@@ -39,6 +39,7 @@ type
     procedure UpdateDBRotation;
     procedure AddInfoToCollection;
     procedure RefreshItem;
+    procedure RotateFaces;
   protected
     procedure Execute; override;
   public
@@ -353,6 +354,7 @@ const
         begin
           if FProcessingParams.Rotate then
           begin
+            RotateFaces;
             SetRotate(FData.ID, DB_IMAGE_ROTATE_0);
             FData.Rotation := DB_IMAGE_ROTATE_0;
           end;
@@ -677,6 +679,11 @@ var
   EventInfo: TEventValues;
 begin
   DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh], EventInfo);
+end;
+
+procedure TImageConvertThread.RotateFaces;
+begin
+  //
 end;
 
 procedure TImageConvertThread.ShowWriteError;

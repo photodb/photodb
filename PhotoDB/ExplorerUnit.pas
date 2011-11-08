@@ -25,6 +25,9 @@ uses
   uExplorerNetworkProviders, uExplorerPersonsProvider, uExplorerGroupsProvider,
   uExplorerSearchProviders, uTranslate;
 
+const
+  RefreshListViewInterval = 40;
+
 type
   TExplorerForm = class(TListViewForm)
     SizeImageList: TImageList;
@@ -529,7 +532,7 @@ type
     procedure EncryptLinkClick(Sender: TObject);
     procedure PePathGetItemIconEvent(Sender: TPathEditor; Item: TPathItem);
     procedure WlCreateObjectClick(Sender: TObject);
-   private
+  private
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
      FSearchMode: Integer;
@@ -592,6 +595,11 @@ type
      FGoToLastSavedPath: Boolean;
      FW7TaskBar: ITaskbarList3;
      FHistoryPathList: TArExplorerPath;
+
+     FUpdateItemList: TList;
+     FItemUpdateTimer: TTimer;
+     FItemUpdateLastTime: Cardinal;
+
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
@@ -620,6 +628,10 @@ type
      function MakeItemVisibleByFilter(Item: TEasyItem; Filter: string): Boolean;
      function GetFilterText: string;
      procedure SetNewHistoryPath(Sender: TObject);
+     procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
+     procedure AddItemToUpdate(Item: TEasyItem);
+     procedure ItemUpdateTimer(Sender: TObject);
+     procedure UpdateItems;
    public
      NoLockListView: Boolean;
      procedure UpdateMenuItems(Menu: TPopupMenu;  PathList: TArExplorerPath; PathIcons: TPathItemCollection);
@@ -680,7 +692,7 @@ uses
   UnitManageGroups, UnitHelp, uMachMask,
   UnitGetPhotosForm, UnitFormCont, UnitGroupsWork,
   UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
-  UnitSavingTableForm, UnitUpdateDBObject, 
+  UnitSavingTableForm, UnitUpdateDBObject,
   uFormSteganography, UnitBigImagesSize, UnitNewGroupForm;
 
 {$R *.dfm}
@@ -1030,6 +1042,14 @@ begin
 
   TW.I.Start('LoadIcons');
   LoadIcons;
+
+  FUpdateItemList := TList.Create;
+  FItemUpdateTimer := TTimer.Create(nil);
+  FItemUpdateTimer.Enabled := False;
+  FItemUpdateTimer.Interval := RefreshListViewInterval;
+  FItemUpdateTimer.OnTimer := ItemUpdateTimer;
+
+  FItemUpdateLastTime := 0;
 
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
@@ -1728,6 +1748,9 @@ begin
   F(DragFilesPopup);
   F(FBitmapImageList);
 
+  F(FUpdateItemList);
+  F(FItemUpdateTimer);
+
   SaveWindowPos1.SavePosition;
   DropFileTarget2.Unregister;
   DropFileTarget1.Unregister;
@@ -2030,6 +2053,7 @@ begin
   begin
     UpdatingList := True;
     ElvMain.BeginUpdate;
+    FItemUpdateLastTime := GetTickCount;
   end;
 end;
 
@@ -2047,7 +2071,7 @@ procedure TExplorerForm.EndUpdate(Invalidate: Boolean);
 begin
   if UpdatingList then
   begin
-    ElvMain.EndUpdate(Invalidate);
+    AddItemToUpdate(nil);
     UpdatingList := False;
   end;
 end;
@@ -2146,6 +2170,8 @@ var
   ImParams, UpdateInfoParams: TEventFields;
   I, Index, ReRotation: Integer;
   Bit: TBitmap;
+  GI: TGroupItem;
+  S: string;
 begin
 
   if FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST then
@@ -2172,6 +2198,41 @@ begin
     begin
       for I := 0 to FFilesInfo.Count - 1 do
         if FFilesInfo[I].ID = Value.ID then
+        begin
+          Index := MenuIndexToItemIndex(I);
+          DeleteItemWithIndex(Index);
+          Break;
+        end;
+    end;
+  end;
+
+  if FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST then
+  begin
+    if EventID_GroupAdded in Params then
+    begin
+      ElvMain.Selection.ClearAll;
+      RefreshLinkClick(RefreshLink);
+    end;
+    if EventID_GroupChanged in Params then
+    begin
+      GI := TGroupItem(Value.Data);
+      S := cGroupsPath + '\' + Value.Name;
+      for I := 0 to FFilesInfo.Count - 1 do
+        if FFilesInfo[I].Path = S then
+        begin
+          FFilesInfo[I].Name := GI.GroupName;
+          Index := MenuIndexToItemIndex(I);
+          ElvMain.Items[Index].Caption := GI.GroupName;
+          FFilesInfo[I].UpdatePath(GI.Path);
+          FFilesInfo[I].FileName := FFilesInfo[I].Path;
+          ListView1SelectItem(nil, ListView1Selected, True);
+        end;
+    end;
+    if EventID_GroupRemoved in Params then
+    begin
+      GI := TGroupItem(Value.Data);
+      for I := 0 to FFilesInfo.Count - 1 do
+        if FFilesInfo[I].Path = GI.Path then
         begin
           Index := MenuIndexToItemIndex(I);
           DeleteItemWithIndex(Index);
@@ -2733,7 +2794,7 @@ begin
       Item := ElvMain.Items[Index];
       if Bitmap = nil then
       begin
-        Item.Invalidate(False);
+        AddItemToUpdate(Item);
         Exit;
       end;
 
@@ -2766,7 +2827,7 @@ begin
       FBitmapImageList[C].SelfReleased := True;
       Result := True;
 
-      Item.Invalidate(False);
+      AddItemToUpdate(Item);
 
       if Info.FileType = EXPLORER_ITEM_FOLDER then
         if Info.FileName = FSelectedInfo.FileName then
@@ -2801,7 +2862,7 @@ begin
       FBitmapImageList[C].SelfReleased := True;
       Result := True;
 
-      ElvMain.Items[Index].Invalidate(False);
+      AddItemToUpdate(ElvMain.Items[Index]);
 
       if FFilesInfo[I].FileType = EXPLORER_ITEM_FOLDER then
         if FFilesInfo[I].FileName = FSelectedInfo.FileName then
@@ -2960,7 +3021,7 @@ begin
 
       LockDrawIcon := False;
       if not UpdatingList and ElvMain.Groups[0].Visible then
-        Result.Invalidate(False);
+        AddItemToUpdate(Result);
       Break;
     end;
   end;
@@ -2988,7 +3049,7 @@ begin
 
       LockDrawIcon := False;
       if ElvMain.Groups[0].Visible then
-        Result.Invalidate(False);
+        AddItemToUpdate(Result);
       Break;
     end;
 end;
@@ -3365,6 +3426,57 @@ begin
   end;
 end;
 
+procedure TExplorerForm.ItemUpdateTimer(Sender: TObject);
+begin
+  FItemUpdateTimer.Enabled := False;
+  UpdateItems;
+end;
+
+procedure TExplorerForm.AddItemToUpdate(Item: TEasyItem);
+begin
+  FUpdateItemList.Add(Item);
+  if GetTickCount - FItemUpdateLastTime < RefreshListViewInterval then
+  begin
+    FItemUpdateTimer.Enabled := True;
+  end else
+  begin
+    FItemUpdateTimer.Enabled := False;
+    UpdateItems;
+  end;
+end;
+
+procedure TExplorerForm.UpdateItems;
+var
+  Item: TEasyItem;
+  I: Integer;
+begin
+  FItemUpdateLastTime := GetTickCount;
+  try
+    if FUpdateItemList.Count = 1 then
+    begin
+      Item := FUpdateItemList[0];
+      if Item = nil then
+      begin
+        ElvMain.EndUpdate(True);
+        Exit;
+      end;
+      if ElvMain.Items.IndexOf(Item) > -1 then
+        Item.Invalidate(True);
+    end else if FUpdateItemList.Count > 1 then
+    begin
+      for I := 0 to FUpdateItemList.Count - 1 do
+      begin
+        Item := FUpdateItemList[I];
+        if Item = nil then
+          ElvMain.EndUpdate(False);
+      end;
+      ElvMain.Invalidate;
+    end;
+  finally
+    FUpdateItemList.Clear;
+  end;
+end;
+
 function TExplorerForm.MenuIndexToItemIndex(Index: Integer): Integer;
 var
   I, N: Integer;
@@ -3665,7 +3777,7 @@ const
   H = 3;
 
 var
-  Index, I : Integer;
+  Index, I: Integer;
   B: Boolean;
   S: string;
   PersonalPath, MyPicturesPath: string;
@@ -3914,10 +4026,10 @@ begin
       ShellLink.Visible := False;
       ShellLink.Top := PrintLink.Top;
     end;
-    
+
     if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
     begin
-      WlCreateObject.Text := L('New group'); 
+      WlCreateObject.Text := L('New group');
       WlCreateObject.Visible := True;
       WlCreateObject.Top := ShellLink.Top + ShellLink.Height + H;
     end else
@@ -4070,7 +4182,7 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
-		  (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST)) 
+		  (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST))
 		  and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
@@ -4181,9 +4293,9 @@ end;
 
 procedure TExplorerForm.CopyToLinkClick(Sender: TObject);
 var
-  EndDir : String;
-  I, Index : integer;
-  Files : TStringList;
+  EndDir: String;
+  I, Index: integer;
+  Files: TStringList;
   DlgCaption: string;
 begin
   Files := TStringList.Create;
@@ -4557,7 +4669,7 @@ end;
 
 procedure TExplorerForm.GoToSearchWindow1Click(Sender: TObject);
 var
-  NewSearch : TSearchCustomForm;
+  NewSearch: TSearchCustomForm;
 begin
   NewSearch := SearchManager.GetAnySearch;
   NewSearch.Show;
@@ -4738,6 +4850,7 @@ begin
       Properties1Click(Sender);
     Exit;
   end;
+
   if SelCount = 0 then
   begin
 
@@ -4754,7 +4867,6 @@ begin
     finally
       F(P);
     end;
-
     if FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER then
       ShowMyComputerProperties(Handle)
     else
@@ -6096,7 +6208,6 @@ begin
   end;
   if (AnsiLowerCase(S) = AnsiLowerCase(L('Network'))) then
   begin
-    //PePath.SetPathEx(PATH_NETWORKS, L('Network'));
     SetNewPathW(ExplorerPath(L('Network'), EXPLORER_ITEM_NETWORK), False);
     Exit;
   end;
@@ -7087,7 +7198,7 @@ var
   Infoloaded: TArBoolean;
   I: Integer;
   Panel: TFormCont;
-  index: Integer;
+  Index: Integer;
 begin
   NumberOfPanel := (Sender as TMenuItem).Tag;
   Setlength(InfoNames, 0);
@@ -7095,7 +7206,7 @@ begin
   Setlength(Infoloaded, 0);
   for I := 0 to FFilesInfo.Count - 1 do
   begin
-    index := MenuIndexToItemIndex(I);
+    Index := MenuIndexToItemIndex(I);
     if ElvMain.Items[index].Selected then
     begin
       if FFilesInfo[I].ID = 0 then
@@ -7191,6 +7302,54 @@ end;
 procedure TExplorerForm.WlCreateObjectClick(Sender: TObject);
 begin
   CreateNewGroupDialog;
+end;
+
+procedure TExplorerForm.WMDeviceChange(var Msg: TMessage);
+var
+  Drive: string;
+  I, Index: Integer;
+
+  function GetDrive(pDBVol: PDevBroadcastVolume): string;
+  var
+    I: Byte;
+    Maske: DWORD;
+  begin
+    Maske := pDBVol^.dbcv_unitmask;
+    for i := 0 to 25 do
+    begin
+      if (Maske and 1) = 1 then
+        Result := Char(i + Ord('A')) + ':';
+      Maske := Maske shr 1;
+    end;
+  end;
+
+begin
+  if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
+  begin
+    case Msg.wParam of
+      DBT_DeviceArrival:
+        if PDevBroadcastHdr(Msg.lParam)^.dbcd_devicetype = DBT_DevTyp_Volume then
+        begin
+          //Drive := GetDrive(PDevBroadcastVolume(Msg.lParam));
+          ElvMain.Selection.ClearAll;
+          RefreshLinkClick(RefreshLink);
+        end;
+      DBT_DeviceRemoveComplete:
+        if PDevBroadcastHdr(Msg.lParam)^.dbcd_devicetype = DBT_DevTyp_Volume then
+        begin
+          Drive := AnsiLowerCase(GetDrive(PDevBroadcastVolume(Msg.lParam)));
+          for I := 0 to ElvMain.Items.Count - 1 do
+          begin
+            Index := ItemIndexToMenuIndex(I);
+            if AnsiLowerCase(ExcludeTrailingPathDelimiter(FFilesInfo[Index].FileName)) = Drive then
+            begin
+              DeleteItemWithIndex(Index);
+              Break;
+            end;
+          end;
+        end;
+    end;
+  end;
 end;
 
 function TExplorerForm.GetFilterText: string;
@@ -8746,8 +8905,9 @@ begin
 end;
 
 initialization
-  PERegisterThreadEvent := RegisterPathEditThread;
-  PEUnRegisterThreadEvent := UnRegisterPathEditThread;
+
+PERegisterThreadEvent := RegisterPathEditThread;
+PEUnRegisterThreadEvent := UnRegisterPathEditThread;
   PathProvider_UpdateText := PE_PathProvider_UpdateText;
   PathProvider_UpdateImage := PEPathProvider_UpdateImage;
 

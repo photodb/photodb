@@ -23,6 +23,7 @@ type
   private
     { Private declarations }
     FFolder: string;
+    FLastFolderCheck: string;
     FMask: string;
     FIcon: Ticon;
     FCID: TGUID;
@@ -1157,7 +1158,11 @@ begin
   TW.I.Start('EndUpdate Select');
   FSender.Select(FSelected, FCID);
   TW.I.Start('EndUpdate CheckFolder');
-  AExplorerFolders.CheckFolder(FFolder);
+  if FLastFolderCheck <> FFolder then
+  begin
+    AExplorerFolders.CheckFolder(FFolder);
+    FLastFolderCheck := FFolder;
+  end;
 end;
 
 procedure TExplorerThread.EndUpdate(Invalidate: Boolean = True);

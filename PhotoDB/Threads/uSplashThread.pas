@@ -45,7 +45,7 @@ end;
 
 procedure UpdateFormImage;
 begin
-  RenderForm(hSplashWnd, LoadingImage, 200);
+  RenderForm(hSplashWnd, LoadingImage, 220);
 end;
 
 function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;

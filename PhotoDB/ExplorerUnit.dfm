@@ -1,6 +1,6 @@
 object ExplorerForm: TExplorerForm
-  Left = 148
-  Top = 101
+  Left = 137
+  Top = 225
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
   ClientHeight = 627
@@ -16,6 +16,7 @@ object ExplorerForm: TExplorerForm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  Position = poDesigned
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy

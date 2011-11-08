@@ -75,6 +75,30 @@ type
 
   TNotifyDirectoryChangeW = procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
 
+const
+  DBT_DeviceArrival        = $8000;
+  DBT_DeviceRemoveComplete = $8004;
+  DBTF_Media               = $0001;
+  DBT_DevTyp_Volume        = $0002;
+
+type
+  PDevBroadcastHdr = ^TDevBroadcastHdr;
+  TDevBroadcastHdr = packed record
+    dbcd_size: DWORD;
+    dbcd_devicetype: DWORD;
+    dbcd_reserved: DWORD;
+  end;
+
+type
+  PDevBroadcastVolume = ^TDevBroadcastVolume;
+  TDevBroadcastVolume = packed record
+    dbcv_size: DWORD;
+    dbcv_devicetype: DWORD;
+    dbcv_reserved: DWORD;
+    dbcv_unitmask: DWORD;
+    dbcv_flags: Word;
+  end;
+
   TExplorerFileInfo = class(TDBPopupMenuInfoRecord)
   protected
     function InitNewInstance : TDBPopupMenuInfoRecord; override;

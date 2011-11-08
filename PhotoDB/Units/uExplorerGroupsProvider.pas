@@ -23,6 +23,7 @@ type
     FGroupName: string;
     FKeywords: string;
     FComment: string;
+    procedure SetGroupName(const Value: string);
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
@@ -31,7 +32,7 @@ type
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     procedure ReadFromGroup(Group: TGroup; Options, ImageSize: Integer);
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
-    property GroupName: string read FGroupName;
+    property GroupName: string read FGroupName write SetGroupName;
     property Keywords: string read FKeywords;
     property Comment: string read FComment;
   end;
@@ -95,6 +96,7 @@ begin
 
   Group := GetGroupByGroupName(GroupItem.GroupName, False);
   try
+    EventInfo.Data := GroupItem;
     if ID_OK = MessageBoxDB(Form.Handle, Format(L('Do you really want to delete group "%s"?'), [Group.GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       if UnitGroupsWork.DeleteGroup(Group) then
       begin
@@ -103,11 +105,11 @@ begin
         begin
           UnitGroupsTools.DeleteGroup(Group);
           MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
-          DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
+          DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
           Result := True;
           Exit;
         end;
-        DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged], EventInfo);
+        DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
       end;
   finally
     FreeGroup(Group);
@@ -206,6 +208,7 @@ function TGroupProvider.Rename(Sender: TObject; Item: TGroupItem;
 var
   Group: TGroup;
   Form: TDBForm;
+  EventInfo: TEventValues;
 begin
   Result := False;
 
@@ -231,6 +234,13 @@ begin
         MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
         Result := True;
       end;
+
+      EventInfo.Name := Item.GroupName;
+      EventInfo.NewName := Options.NewName;
+
+      Item.GroupName := Options.NewName;
+      EventInfo.Data := Item;
+      DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
 
     end;
   finally
@@ -363,6 +373,12 @@ begin
       F(Bitmap);
     end;
   end;
+end;
+
+procedure TGroupItem.SetGroupName(const Value: string);
+begin
+  FGroupName := Value;
+  FPath := cGroupsPath + '\' + FGroupName;
 end;
 
 initialization

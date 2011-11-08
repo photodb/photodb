@@ -6,9 +6,9 @@ uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Classes,
   Graphics, Controls, Forms, Math, UnitGroupsTools,
   Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
-  ImgList, GraphicSelectEx, uBitmapUtils, UnitDBCommon,
+  ImgList, GraphicSelectEx, uBitmapUtils, UnitDBCommon, uExplorerGroupsProvider,
   uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo, uMemoryEx,
-  uShellIntegration, AppEvnts, uMemory, WebLinkList, WebLink;
+  uShellIntegration, AppEvnts, uMemory, WebLinkList, WebLink, uPathProviders;
 
 type
   TFormChangeGroup = class(TDBForm)
@@ -141,6 +141,7 @@ procedure TFormChangeGroup.BtnOkClick(Sender: TObject);
 var
   Group: TGroup;
   EventInfo: TEventValues;
+  GroupItem: TGroupItem;
 begin
   if GroupNameExists(EdName.Text) and (FGroup.GroupName <> EdName.Text) then
   begin
@@ -163,29 +164,43 @@ begin
   BtnOk.Enabled := False;
   BtnCancel.Enabled := False;
 
-  Group.GroupName := EdName.Text;
-  Group.GroupImage := TJpegImage.Create;
-  Group.GroupCode := FGroup.GroupCode;
-  Group.GroupDate := FGroupDate;
-  Group.GroupImage.Assign(ImgMain.Picture.Graphic);
-  Group.GroupImage.JPEGNeeded;
-  Group.GroupComment := MemComments.Text;
-  Group.GroupKeyWords := MemKeywords.Text;
-  Group.AutoAddKeyWords := CbAddkeywords.Checked;
-  Group.IncludeInQuickList := CbInclude.Checked;
-  Group.RelatedGroups := FNewRelatedGroups;
-  if CbPrivateGroup.Checked then
-    Group.GroupAccess := GROUP_ACCESS_PRIVATE
-  else
-    Group.GroupAccess := GROUP_ACCESS_COMMON;
-  if UpdateGroup(Group) then
-    if FGroup.GroupName <> EdName.Text then
-    begin
-      RenameGroup(FGroup, EdName.Text);
-      MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+  try
+    Group.GroupName := EdName.Text;
+    Group.GroupImage := TJpegImage.Create;
+    Group.GroupCode := FGroup.GroupCode;
+    Group.GroupDate := FGroupDate;
+    Group.GroupImage.Assign(ImgMain.Picture.Graphic);
+    Group.GroupImage.JPEGNeeded;
+    Group.GroupComment := MemComments.Text;
+    Group.GroupKeyWords := MemKeywords.Text;
+    Group.AutoAddKeyWords := CbAddkeywords.Checked;
+    Group.IncludeInQuickList := CbInclude.Checked;
+    Group.RelatedGroups := FNewRelatedGroups;
+    if CbPrivateGroup.Checked then
+      Group.GroupAccess := GROUP_ACCESS_PRIVATE
+    else
+      Group.GroupAccess := GROUP_ACCESS_COMMON;
+    if UpdateGroup(Group) then
+      if FGroup.GroupName <> EdName.Text then
+      begin
+        RenameGroup(FGroup, EdName.Text);
+        MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+      end;
+
+    GroupItem := TGroupItem.Create;
+    try
+      GroupItem.ReadFromGroup(Group, PATH_LOAD_NORMAL, 48);
+      EventInfo.Data := GroupItem;
+      EventInfo.Name := FGroup.GroupName;
+      EventInfo.NewName := GroupItem.GroupName;
+      DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
+    finally
+      F(GroupItem);
     end;
-  FreeGroup(Group);
-  DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged], EventInfo);
+
+  finally
+    FreeGroup(Group);
+  end;
   Close;
 end;
 
