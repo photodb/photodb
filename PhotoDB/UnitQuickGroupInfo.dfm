@@ -207,7 +207,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     TabOrder = 1
   end
   object BtnOk: TButton
-    Left = 193
+    Left = 190
     Top = 301
     Width = 75
     Height = 21
@@ -292,6 +292,16 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     LineHeight = 0
     PaddingTop = 2
     PaddingLeft = 2
+  end
+  object BtnEdit: TButton
+    Left = 3
+    Top = 301
+    Width = 79
+    Height = 21
+    Anchors = [akTop, akRight]
+    Caption = 'Edit group'
+    TabOrder = 9
+    OnClick = EditGroup1Click
   end
   object PopupMenu1: TPopupMenu
     Left = 120

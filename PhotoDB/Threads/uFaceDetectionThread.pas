@@ -6,7 +6,7 @@ uses
   Windows, Classes, Graphics, uDBThread, uThreadForm, uFaceDetection, uMemory,
   xmldom, ActiveX, SysUtils, uLogger, win32crc, uFileUtils, uConstants, SyncObjs,
   uRuntime, uGraphicUtils, uGOM, uInterfaces, Math, uBitmapUtils, uSettings,
-  uDateUtils, uPeopleSupport, u2DUtils, uConfiguration;
+  uDateUtils, uPeopleSupport, u2DUtils, uConfiguration, uStringUtils;
 
 const
   FACE_DETECTION_OK           = 0;
@@ -54,12 +54,18 @@ type
     FImages: TList;
     FSync: TCriticalSection;
     function CreateCacheFileName(DetectMethod, FileName: string): string;
+    function CreateCacheFileDirectory(FileName: string): string;
+    function CreateCacheFileXMLName(FileName: string): string;
     function ExtractData: TFaceDetectionData;
+    function GetDetectionMethod: string;
   public
     procedure RequestFaceDetection(Caller: TThreadForm; var Image: TGraphic; FileName: string; ID: Integer);
-    function GetFaceData(FileName: string; Faces: TFaceDetectionResult): Integer;
+    function GetFaceDataFromCache(CacheFileName: string; Faces: TFaceDetectionResult): Integer;
+    function RotateCacheData(ImageFileName: string; Rotate: Integer): Boolean;
+    function RotateDBData(ID: Integer; Rotate: Integer): Boolean;
     constructor Create;
     destructor Destroy; override;
+    property DetectionMethod: string read GetDetectionMethod;
   end;
 
 type
@@ -130,13 +136,13 @@ begin
 
           FFaces.Clear;
 
-          FaceMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
+          FaceMethod := FaceDetectionDataManager.DetectionMethod;
 
           if ImageData.ID > 0 then
             Thread := TDBFaceLoadThread.Create(ImageData.ID);
           try
             CacheFileName := FaceDetectionDataManager.CreateCacheFileName(FaceMethod, ImageData.FileName);
-            LoadResult := FaceDetectionDataManager.GetFaceData(CacheFileName, FFaces);
+            LoadResult := FaceDetectionDataManager.GetFaceDataFromCache(CacheFileName, FFaces);
             if LoadResult = FACE_DETECTION_OK then
             begin
               if ImageData.ID > 0 then
@@ -213,13 +219,33 @@ begin
   TFaceDetectionThread.Create;
 end;
 
-function TFaceDetectionDataManager.CreateCacheFileName(DetectMethod, FileName: string): string;
+function TFaceDetectionDataManager.CreateCacheFileDirectory(
+  FileName: string): string;
 var
-  CRC, DetectCRC: Cardinal;
+  CRC: Cardinal;
+  Directory: string;
+  I: Integer;
 begin
-  CRC := StringCRC(FileName);
-  DetectCRC := StringCRC(DetectMethod);
-  Result := GetAppDataDirectory + FaceCacheDirectory + IntToStr(DetectCRC and $FF) + '\' + IntToStr(CRC and $FF) + '\' + IntToStr((CRC shr 8) and $FF) + '\' + IntToStr(CRC) + '\' + ExtractFileName(FileName) + '.xml';
+  Directory := ExtractFileDir(FileName);
+  for I := 1 to Length(Directory) do
+    if CharInSet(Directory[I], ['/', '\', ':']) then
+      Directory[I] := '_';
+
+  CRC := StringCRC(Directory);
+  Directory := Left(Directory, 250);
+
+  Result := GetAppDataDirectory + FaceCacheDirectory + IntToStr(CRC and $FF) + '\' + IntToStr((CRC shr 8) and $FF) + '\' + IntToStr(CRC) + '\' + Directory;
+end;
+
+function TFaceDetectionDataManager.CreateCacheFileName(DetectMethod, FileName: string): string;
+begin
+  Result := CreateCacheFileDirectory(FileName) + '\' + DetectMethod + '\' + CreateCacheFileXMLName(FileName);
+end;
+
+function TFaceDetectionDataManager.CreateCacheFileXMLName(
+  FileName: string): string;
+begin
+  Result := Left(ExtractFileName(FileName), 250) + '.xml';
 end;
 
 destructor TFaceDetectionDataManager.Destroy;
@@ -244,11 +270,16 @@ begin
   end;
 end;
 
-function TFaceDetectionDataManager.GetFaceData(FileName: string;
+function TFaceDetectionDataManager.GetDetectionMethod: string;
+begin
+  Result := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
+end;
+
+function TFaceDetectionDataManager.GetFaceDataFromCache(CacheFileName: string;
   Faces: TFaceDetectionResult): Integer;
 begin
   Result := FACE_DETECTION_NOT_READY;
-  if Faces.LoadFromFile(FileName) then
+  if Faces.LoadFromFile(CacheFileName) then
     Result := FACE_DETECTION_OK;
 end;
 
@@ -273,6 +304,81 @@ begin
     end;
   finally
     FSync.Leave;
+  end;
+end;
+
+function TFaceDetectionDataManager.RotateCacheData(ImageFileName: string;
+  Rotate: Integer): Boolean;
+var
+  Directory, FileName: string;
+  SearchRec: TSearchRec;
+  Found: Integer;
+  Faces: TFaceDetectionResult;
+begin
+  Result := False;
+  Directory := CreateCacheFileDirectory(ImageFileName);
+
+  Found := FindFirst(Directory + '\*', faDirectory, SearchRec);
+  try
+    while Found = 0 do
+    begin
+      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+      begin
+        FileName := Directory + '\' + SearchRec.Name + '\' + CreateCacheFileXMLName(ImageFileName);
+        if FileExistsSafe(FileName) then
+        begin
+          Faces := TFaceDetectionResult.Create;
+          try
+            if Faces.LoadFromFile(FileName) and (Faces.Count > 0) then
+            begin
+              case Rotate of
+                DB_IMAGE_ROTATE_270:
+                  Faces.RotateLeft;
+                DB_IMAGE_ROTATE_90:
+                  Faces.RotateRight;
+                DB_IMAGE_ROTATE_180:
+                  begin
+                    Faces.RotateRight;
+                    Faces.RotateRight;
+                  end;
+              end;
+
+              Faces.SaveToFile(FileName);
+            end;
+          finally
+            F(Faces);
+          end;
+        end;
+      end;
+      Found := SysUtils.FindNext(SearchRec);
+    end;
+  finally
+    FindClose(SearchRec);
+  end;
+
+end;
+
+function TFaceDetectionDataManager.RotateDBData(ID, Rotate: Integer): Boolean;
+var
+  PersonAreas: TPersonAreaCollection;
+begin
+  PersonAreas := PersonManager.GetAreasOnImage(ID);
+  try
+    case Rotate of
+      DB_IMAGE_ROTATE_270:
+        PersonAreas.RotateLeft;
+      DB_IMAGE_ROTATE_90:
+        PersonAreas.RotateRight;
+      DB_IMAGE_ROTATE_180:
+        begin
+          PersonAreas.RotateRight;
+          PersonAreas.RotateRight;
+        end;
+    end;
+    PersonAreas.UpdateDB;
+    Result := True;
+  finally
+    F(PersonAreas);
   end;
 end;
 

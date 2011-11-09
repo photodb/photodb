@@ -324,7 +324,10 @@
     <translate name="Sorry, but phrase not found!" value="Извините, но фраза не найдена!" />
     <translate name="Loading persons" value="Загрузка персон" />
     <translate name="Loading groups" value="Загрузка групп" />	
-	
+    <translate name="Groups" value="Группы" />
+    <translate name="Persons" value="Персоны" />
+    <translate name="List of persons, search for person photos" value="Список персон, поиск фотографий персоны" />
+    <translate name="List of groups, search for group photos" value="Список групп, поиск фотографий группы" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

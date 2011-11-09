@@ -26,7 +26,7 @@ uses
   uExplorerSearchProviders, uTranslate;
 
 const
-  RefreshListViewInterval = 40;
+  RefreshListViewInterval = 50;
 
 type
   TExplorerForm = class(TListViewForm)
@@ -2266,7 +2266,7 @@ begin
         FFilesInfo[I].Rating := Value.Rating;
         FFilesInfo[I].Rotation := Value.Rotate;
         FFilesInfo[I].Comment := Value.Comment;
-        FFilesInfo[I].KeyWords := Value.Comment;
+        FFilesInfo[I].KeyWords := Value.KeyWords;
         FFilesInfo[I].Links := Value.Links;
         FFilesInfo[I].Groups := Value.Groups;
         FFilesInfo[I].IsDate := True;
@@ -3777,7 +3777,7 @@ const
   H = 3;
 
 var
-  Index, I: Integer;
+  Index, I, HIncrement: Integer;
   B: Boolean;
   S: string;
   PersonalPath, MyPicturesPath: string;
@@ -3853,12 +3853,16 @@ begin
     NameLabel.Caption := S;
     NameLabel.Constraints.MaxWidth := ScrollBox1.Width - ScrollBox1.Left - otstup - ScrollBox1.VertScrollBar.ButtonSize;
     NameLabel.Constraints.MinWidth := ScrollBox1.Width - ScrollBox1.Left - Otstup - ScrollBox1.VertScrollBar.ButtonSize;
+    HIncrement := NameLabel.Height;
 
     TypeLabel.Caption := FSelectedInfo.FileTypeW;
     if FSelectedInfo.FileTypeW <> '' then
     begin
       TypeLabel.Top := NameLabel.Top + NameLabel.Height + H;
       TypeLabel.Visible := True;
+      TypeLabel.Constraints.MaxWidth := NameLabel.Constraints.MaxWidth;
+      TypeLabel.Constraints.MinWidth := NameLabel.Constraints.MinWidth;
+      HIncrement := TypeLabel.Height;
     end else
     begin
       TypeLabel.Top := NameLabel.Top;
@@ -3872,9 +3876,10 @@ begin
         OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
         if DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1) <> -1 then
         begin
-          DimensionsLabel.Top := TypeLabel.Top + TypeLabel.Height + H;
+          DimensionsLabel.Top := TypeLabel.Top + HIncrement + H;
           DimensionsLabel.Visible := True;
           DimensionsLabel.Caption := L('Free space') + ':';
+          HIncrement := DimensionsLabel.Height;
         end else
         begin
           DimensionsLabel.Top := TypeLabel.Top;
@@ -3891,6 +3896,7 @@ begin
       DimensionsLabel.Top := TypeLabel.Top + TypeLabel.Height + H;
       DimensionsLabel.Visible := True;
       DimensionsLabel.Caption := IntToStr(FSelectedInfo.Width) + 'x' + IntToStr(FSelectedInfo.Height);
+      HIncrement := DimensionsLabel.Height;
     end;
 
     if (FSelectedInfo.Size <> -1) or (FSelectedInfo.FileType= EXPLORER_ITEM_DRIVE) then
@@ -3904,7 +3910,8 @@ begin
             [SizeInText(DiskFree(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1)),
             SizeInText(DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1))]);
           SizeLabel.Visible := True;
-          SizeLabel.Top := DimensionsLabel.Top + DimensionsLabel.Height + H;
+          SizeLabel.Top := DimensionsLabel.Top + HIncrement + H;
+          HIncrement := SizeLabel.Height;
         end else
         begin
           SizeLabel.Visible := False;
@@ -3916,6 +3923,7 @@ begin
         SizeLabel.Caption := Format(L('Size = %s'), [SizeInText(FSelectedInfo.Size)]);
         SizeLabel.Visible := True;
         SizeLabel.Top := DimensionsLabel.Top + DimensionsLabel.Height + H;
+        HIncrement := SizeLabel.Height;
       end;
     end else
     begin
@@ -3925,7 +3933,7 @@ begin
 
     if FSelectedInfo.ID <> 0 then
     begin
-      DBInfoLabel.Top := SizeLabel.Top + SizeLabel.Height + H;
+      DBInfoLabel.Top := SizeLabel.Top + HIncrement + H;
       IDLabel.Caption := Format(L('ID = %d'), [FSelectedInfo.ID]);
       IDLabel.Top := DBInfoLabel.Top + DBInfoLabel.Height + H;
       if FSelectedInfo.Rating <> 0 then
@@ -3940,6 +3948,7 @@ begin
       begin
         AccessLabel.Caption := L('Private image');
         AccessLabel.Top := RatingLabel.Top + RatingLabel.Height + H;
+        HIncrement := AccessLabel.Height;
       end else
       begin
         AccessLabel.Top := RatingLabel.Top;
@@ -3958,7 +3967,7 @@ begin
       RatingLabel.Hide;
       AccessLabel.Hide;
     end;
-    TasksLabel.Top := Max(AccessLabel.Top + AccessLabel.Height + H * 4, NameLabel.Top + NameLabel.Height + H * 4);
+    TasksLabel.Top := Max(AccessLabel.Top + HIncrement + H * 4, NameLabel.Top + NameLabel.Height + H * 4);
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
@@ -5478,7 +5487,7 @@ procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath; Explorer: Boolean; Fil
 var
   OldDir, S, Path: string;
   UpdaterInfo: TUpdaterInfo;
-  I, ThreadType: Integer;
+  ThreadType: Integer;
   Info: TExplorerViewInfo;
   P: TSearchItem;
 begin
@@ -5499,20 +5508,6 @@ begin
   OldDir := GetCurrentPath;
   Path := WPath.Path;
   ThreadType := THREAD_TYPE_FOLDER;
-
-  if WPath.PType <> EXPLORER_ITEM_SEARCH then
-  begin
-    if Length(Path) > 2 then
-      for I := Length(Path) downto 3 do
-        if Path[I] = '/' then
-          Delete(Path, I, 1);
-    if Length(Path) > 2 then
-      for I := Length(Path) downto 3 do
-        if (Path[I] = '\') and (Path[I - 1] = '\') then
-          Delete(Path, I, 1);
-
-    Path := ExcludeTrailingBackslash(Path);
-  end;
 
   TW.I.Start('PATH parsing');
 
@@ -6794,20 +6789,13 @@ begin
         FSelectedInfo.FileName := FFilesInfo[Index].FileName;
         FSelectedInfo.Encrypted := FFilesInfo[Index].Crypted;
         FileSID := FFilesInfo[Index].SID;
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
-          FSelectedInfo.FileTypeW := GetPathDescription(FileName, FSelectedInfo.FileType);
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
-          FSelectedInfo.FileTypeW := L('Network');
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) then
-          FSelectedInfo.FileTypeW := L('Workgroup');
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) then
-          FSelectedInfo.FileTypeW := L('Computer');
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
-          FSelectedInfo.FileTypeW := L('Shared folder');
+
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
           FSelectedInfo.Size := FFilesInfo[Index].FileSize;
         PmItemPopup.Tag := Index;
+
+        if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) then
+          FSelectedInfo.FileTypeW := FFilesInfo[Index].Comment;
       end else
       begin
         FileName := GetCurrentPath;
@@ -6821,17 +6809,6 @@ begin
           FileSID := GetGUID;
         end;
 
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
-          FSelectedInfo.FileTypeW := GetPathDescription(FileName, FSelectedInfo.FileType);
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
-          FSelectedInfo.FileTypeW := L('Network');
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) then
-          FSelectedInfo.FileTypeW := L('Workgroup');
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) then
-          FSelectedInfo.FileTypeW := L('Computer');
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
-          FSelectedInfo.FileTypeW := L('Shared folder');
-
         if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
         begin
           if FSearchMode = EXPLORER_SEARCH_DATABASE then
@@ -6841,6 +6818,28 @@ begin
           else
             FSelectedInfo.FileTypeW := L('Search in directory (with EXIF)');
         end;
+      end;
+
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
+        FSelectedInfo.FileTypeW := GetPathDescription(FileName, FSelectedInfo.FileType);
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) then
+        FSelectedInfo.FileTypeW := L('Network');
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) then
+        FSelectedInfo.FileTypeW := L('Workgroup');
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) then
+        FSelectedInfo.FileTypeW := L('Computer');
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) then
+        FSelectedInfo.FileTypeW := L('Shared folder');
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) then
+      begin
+        FSelectedInfo.FileName := L('Persons');
+        FSelectedInfo.FileTypeW := L('List of persons, search for person photos');
+      end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
+      begin
+        FSelectedInfo.FileName := L('Groups');
+        FSelectedInfo.FileTypeW := L('List of groups, search for group photos');
       end;
 
       FSelectedInfo._GUID := FileSID;

@@ -210,6 +210,7 @@ begin
         TempBmpShadow := TBitmap.Create;
         DrawShadowToImage(TempBmpShadow, TBitmap(Graphic));
         Graphic := TempBmpShadow;
+        TBitmap(Graphic).Handle;
       end;
       if (CustomInfo <> '') and (Graphic is TBitmap) then
       begin
@@ -225,6 +226,7 @@ begin
             ListView.Selection.GradientColorBottom, ListView.Selection.GradientColorTop,
             ListView.Selection.Color, RoundRadius);
           DrawText32Bit(TBitmap(Graphic), CustomInfo, ListView.Font, R, DrawTextOpt);
+          TBitmap(Graphic).Handle;
         end;
       end;
       if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) and HasMMX then
@@ -246,7 +248,9 @@ begin
 
         MPCommonUtilities.AlphaBlend(TBitmap(Graphic).Canvas.Handle, ACanvas.Handle,
                 Rect(0, CTD, Graphic.Width, Graphic.Height + CBD), Point(X, Y - DY),
-                cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color))
+                cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color));
+
+        TBitmap(Graphic).Handle;
       end else
         ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), Graphic);
 

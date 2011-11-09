@@ -13,7 +13,7 @@ const
 type
   TBitmapHelper = class helper for TBitmap
   public
-   function ClientRect: TRect;
+    function ClientRect: TRect;
   end;
 
 procedure ThreadDraw(S, D: TBitmap; X, Y: Integer);

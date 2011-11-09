@@ -128,6 +128,7 @@ object ExplorerForm: TExplorerForm
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
+          WordWrap = True
         end
         object TasksLabel: TLabel
           Tag = 1

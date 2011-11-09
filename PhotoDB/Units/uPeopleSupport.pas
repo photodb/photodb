@@ -133,7 +133,9 @@ type
     constructor Create; overload;
     constructor Create(ImageID, PersonID: Integer; Area: TFaceDetectionResultItem); overload;
     procedure ReadFromDS(DS: TDataSet);
-    procedure SaveToDS(DS: TDataSet);
+    function UpdateDB: Boolean;
+    procedure RotateLeft;
+    procedure RotateRight;
     function Clone: TClonableObject; override;
     property ID: Integer read FID write FID;
     property X: Integer read FX;
@@ -158,6 +160,9 @@ type
     procedure Clear;
     procedure ReadFromDS(DS: TDataSet);
     function Extract(Index: Integer): TPersonArea;
+    procedure RotateLeft;
+    procedure RotateRight;
+    procedure UpdateDB;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TPersonArea read GetAreaByIndex; default;
   end;
@@ -1007,6 +1012,30 @@ begin
   end;
 end;
 
+procedure TPersonAreaCollection.RotateLeft;
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+    Self[I].RotateLeft;
+end;
+
+procedure TPersonAreaCollection.RotateRight;
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+    Self[I].RotateRight;
+end;
+
+procedure TPersonAreaCollection.UpdateDB;
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+    Self[I].UpdateDB;
+end;
+
 { TPersonArea }
 
 function TPersonArea.Clone: TClonableObject;
@@ -1067,9 +1096,80 @@ begin
   FPage := DS.FieldByName('PageNumber').AsInteger;
 end;
 
-procedure TPersonArea.SaveToDS(DS: TDataSet);
+procedure TPersonArea.RotateLeft;
+var
+  NW, NH, NImageW, NImageH, NX, NY: Integer;
 begin
-  raise Exception.Create('Not implemented');
+  NImageH := FFullWidth;
+  NImageW := FFullHeight;
+
+  NW := FHeight;
+  NH := FWidth;
+
+  NX := FY;
+  NY := FFullWidth - FX - Width;
+
+  FFullWidth := NImageW;
+  FFullHeight := NImageH;
+
+  FWidth := NW;
+  FHeight := NH;
+
+  FX := NX;
+  FY := NY;
+end;
+
+procedure TPersonArea.RotateRight;
+var
+  NW, NH, NImageW, NImageH, NX, NY: Integer;
+begin
+  NImageH := FFullWidth;
+  NImageW := FFullHeight;
+
+  NW := FHeight;
+  NH := FWidth;
+
+  NX := FFullHeight - FY - Height;
+  NY := FX;
+
+  FFullWidth := NImageW;
+  FFullHeight := NImageH;
+
+  FWidth := NW;
+  FHeight := NH;
+
+  FX := NX;
+  FY := NY;
+end;
+
+function TPersonArea.UpdateDB: Boolean;
+var
+  UC: TUpdateCommand;
+begin
+  Result := False;
+  if FID = 0 then
+    Exit;
+
+  UC := TUpdateCommand.Create(ObjectMappingTableName);
+  try
+    UC.AddParameter(TIntegerParameter.Create('Left', FX));
+    UC.AddParameter(TIntegerParameter.Create('Top', FY));
+    UC.AddParameter(TIntegerParameter.Create('Right', FX + FWidth));
+    UC.AddParameter(TIntegerParameter.Create('Bottom', FY + FHeight));
+    UC.AddParameter(TIntegerParameter.Create('ImageWidth', FFullWidth));
+    UC.AddParameter(TIntegerParameter.Create('ImageHeight', FFullHeight));
+    UC.AddParameter(TIntegerParameter.Create('PageNumber', FPage));
+
+    UC.AddWhereParameter(TIntegerParameter.Create('ObjectMappingID', FID));
+
+    try
+      UC.Execute;
+    except
+      Exit;
+    end;
+  finally
+    F(UC);
+  end;
 end;
 
 initialization

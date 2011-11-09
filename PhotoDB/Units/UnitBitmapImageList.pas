@@ -2,7 +2,8 @@ unit UnitBitmapImageList;
 
 interface
 
-uses Classes, Graphics, uMemory, uBitmapUtils;
+uses
+  Windows, Classes, Graphics, uMemory, uBitmapUtils;
 
 type
   TBitmapImageListImage = class
@@ -10,11 +11,11 @@ type
     function GetGraphic: TGraphic;
     procedure SetGraphic(const Value: TGraphic);
   public
-    Bitmap : TBitmap;
-    IsBitmap : Boolean;
-    Icon : TIcon;
-    SelfReleased : Boolean;
-    Ext : string;
+    Bitmap: TBitmap;
+    IsBitmap: Boolean;
+    Icon: TIcon;
+    SelfReleased: Boolean;
+    Ext: string;
     procedure UpdateIcon(Icon: TIcon; IsSelfReleased: Boolean);
     constructor Create;
     destructor Destroy; override;

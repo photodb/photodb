@@ -10,7 +10,7 @@ uses
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
   ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB,
   uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics, RAWImage,
-  uTiffImage;
+  uTiffImage, uFaceDetectionThread;
 
 type
   TJpegX = class(TJPEGImage);
@@ -39,7 +39,7 @@ type
     procedure UpdateDBRotation;
     procedure AddInfoToCollection;
     procedure RefreshItem;
-    procedure RotateFaces;
+    procedure RotateFaces(Rotation: Integer);
   protected
     procedure Execute; override;
   public
@@ -354,9 +354,10 @@ const
         begin
           if FProcessingParams.Rotate then
           begin
-            RotateFaces;
             SetRotate(FData.ID, DB_IMAGE_ROTATE_0);
             FData.Rotation := DB_IMAGE_ROTATE_0;
+
+            RotateFaces(Rotation);
           end;
           UpdateImageRecord(ThreadForm, FData.FileName, FData.ID);
           Synchronize(NotifyDB);
@@ -681,9 +682,11 @@ begin
   DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh], EventInfo);
 end;
 
-procedure TImageConvertThread.RotateFaces;
+procedure TImageConvertThread.RotateFaces(Rotation: Integer);
 begin
-  //
+  FaceDetectionDataManager.RotateCacheData(FData.FileName, Rotation);
+  if (FData.ID > 0) then
+    FaceDetectionDataManager.RotateDBData(FData.ID, Rotation);
 end;
 
 procedure TImageConvertThread.ShowWriteError;

@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
   ComCtrls, jpeg, ExtCtrls, Dialogs, uBitmapUtils, uDBForm, uMemory,
   uShellIntegration, uConstants, uSearchTypes, WebLinkList, WebLink, AppEvnts,
-  uMemoryEx;
+  uMemoryEx, uVCLHelpers;
 
 type
   TFormQuickGroupInfo = class(TDBForm)
@@ -34,6 +34,7 @@ type
     PopupMenu2: TPopupMenu;
     WllGroups: TWebLinkList;
     ApplicationEvents1: TApplicationEvents;
+    BtnEdit: TButton;
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure EditGroup1Click(Sender: TObject);
@@ -175,6 +176,7 @@ end;
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);
 begin
   Loadlanguage;
+  BtnEdit.AdjustButtonWidth;
 end;
 
 procedure TFormQuickGroupInfo.EditGroup1Click(Sender: TObject);
@@ -230,6 +232,7 @@ begin
     CommentLabel.Caption := L('Comment for group') + ':';
     CbInclude.Caption := L('Include in quick access list');
     Label3.Caption := L('Related groups') + ':';
+    BtnEdit.Caption := L('Edit group');
   finally
     EndTranslate;
   end;
