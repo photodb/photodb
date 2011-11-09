@@ -489,6 +489,7 @@
     <translate name="ISO" value="ISO" />
     <translate name="Focal length" value="Фокусное расстояние" />
     <translate name="F number" value="Диафрагма" />
+    <translate name="Lens" value="Объектив" />
     <translate name="Orientation" value="Ориентация" />
     <translate name="Normal" value="Обычная" />
     <translate name="Right" value="Вправо" />

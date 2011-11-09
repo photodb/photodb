@@ -31,12 +31,12 @@ type
     constructor Create;
     destructor Destroy; override;
   public
-    function AddBitmap(Bitmap : TBitmap; CopyPointer : Boolean = True) : Integer;
-    function AddIcon(Icon : TIcon; SelfReleased : Boolean; Ext : string = '') : Integer;
+    function AddBitmap(Bitmap : TBitmap; CopyPointer: Boolean = True) : Integer;
+    function AddIcon(Icon : TIcon; SelfReleased: Boolean; Ext : string = '') : Integer;
     procedure Clear;
     procedure ClearImagesList;
-    function Count : Integer;
-    procedure Delete(Index : Integer);
+    function Count: Integer;
+    procedure Delete(Index: Integer);
     property Items[Index: Integer]: TBitmapImageListImage read GetBitmapByIndex; default;
  end;
 

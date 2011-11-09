@@ -25,8 +25,9 @@ type
     procedure SetAccess(const Value: Integer);
     function GetInclude: Boolean;
     procedure SetInclude(const Value: Boolean);
+    function GetLens: string;
   published
-    function ReadString(Name: string): string;
+    function ReadString(Name: string; NS: TXMPKnownNamespace = xsXMPBasic): string;
     procedure WriteString(Name, Value: string);
     function ReadInteger(Name: string): Integer;
     procedure WriteInteger(Name: string; Value: Integer);
@@ -37,6 +38,7 @@ type
     property Links: string read GetLinks write SetLinks;
     property Access: Integer read GetAccess write SetAccess;
     property Include: Boolean read GetInclude write SetInclude;
+    property Lens: string read GetLens;
   end;
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;
@@ -265,7 +267,7 @@ begin
 
         ExifData.XMPWritePolicy := xwAlwaysUpdate;
 
-        if EventID_Param_Rating in Info.Params then
+        if [EventID_Param_Rating, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.UserRating <> CreateRating(Info.Value.Rating) then
           begin
@@ -274,7 +276,7 @@ begin
           end;
         end;
 
-        if EventID_Param_Rotate in Info.Params then
+        if [EventID_Param_Rotate, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.Orientation <> CreateOrientation(Info.Value.Rotate) then
           begin
@@ -283,7 +285,7 @@ begin
           end;
         end;
 
-        if EventID_Param_KeyWords in Info.Params then
+        if [EventID_Param_KeyWords, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.Keywords <> Trim(Info.Value.KeyWords) then
           begin
@@ -292,7 +294,7 @@ begin
           end;
         end;
 
-        if EventID_Param_Comment in Info.Params then
+        if [EventID_Param_Comment, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.Comments <> Info.Value.Comment then
           begin
@@ -301,7 +303,7 @@ begin
           end;
         end;
 
-        if EventID_Param_Groups in Info.Params then
+        if [EventID_Param_Groups, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.XMPPacket.Groups <> Info.Value.Groups then
           begin
@@ -310,7 +312,7 @@ begin
           end;
         end;
 
-        if EventID_Param_Links in Info.Params then
+        if [EventID_Param_Links, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.XMPPacket.Links <> Info.Value.Links then
           begin
@@ -319,7 +321,7 @@ begin
           end;
         end;
 
-        if EventID_Param_Private in Info.Params then
+        if [EventID_Param_Private, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.XMPPacket.Access <> Info.Value.Access then
           begin
@@ -328,7 +330,7 @@ begin
           end;
         end;
 
-        if EventID_Param_Include in Info.Params then
+        if [EventID_Param_Include, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.XMPPacket.Include <> Info.Value.Include then
           begin
@@ -495,6 +497,11 @@ begin
   Result := ReadBool(uConstants.EXIF_BASE_INCLUDE, True);
 end;
 
+function DBXMPPacket.GetLens: string;
+begin
+  Result := ReadString('Lens', xsExifAux);
+end;
+
 function DBXMPPacket.GetLinks: string;
 begin
   Result := ReadString(uConstants.EXIF_BASE_LINKS);
@@ -518,10 +525,10 @@ begin
   end;
 end;
 
-function DBXMPPacket.ReadString(Name: string): string;
+function DBXMPPacket.ReadString(Name: string; NS: TXMPKnownNamespace = xsXMPBasic): string;
 begin
   try
-    Result := Schemas[xsXMPBasic].Properties[Name].ReadValue('');
+    Result := Schemas[NS].Properties[Name].ReadValue('');
   except
     Result := '';
   end;

@@ -2399,7 +2399,7 @@ begin
     LoadSizes;
   end;
 
-  if (EventID_Param_Add in Params) or (EventID_Param_Name in Params) then
+  if (EventID_Param_Name in Params) then
     if not(FileExistsSafe(Value.NewName) or DirectoryExists(Value.NewName)) and not
       (FileExistsSafe(Value.Name) or DirectoryExists(Value.Name)) then
       RefreshItemByName(Value.Name, False)

@@ -360,7 +360,7 @@ begin
 
   UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Groups, EventID_Param_Links,
     EventID_Param_Include, EventID_Param_Private, EventID_Param_Attr, EventID_Param_Comment, EventID_Param_KeyWords,
-    EventID_Param_Add];
+    SetNewIDFileData];
 
   if UpdateInfoParams * Params <> [] then
     ExifPatchManager.AddPatchInfo(ID, Params, Value);

@@ -98,7 +98,7 @@ type
     EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
     EventID_Param_KeyWords, EventID_Param_Attr,
     EventID_Param_Image, EventID_Param_Refresh, EventID_Param_Critical,
-    EventID_Param_Add, EventID_Param_Delete, EventID_Param_Date,
+    EventID_Param_Delete, EventID_Param_Date,
     EventID_Param_Time, EventID_Param_IsDate , EventID_Param_IsTime,
     EventID_Param_Groups, EventID_Param_Crypt, EventID_Param_Include,
     EventID_Param_GroupsChanged, EventID_Param_CopyPaste,

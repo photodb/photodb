@@ -2076,6 +2076,7 @@ var
   Links: TLinksInfo;
   SL: TStringList;
   I: Integer;
+  CameraModel: WORD;
 
 const
   XMPBasicValues: array[TWindowsStarRating] of UnicodeString = ('', '1', '2', '3', '4', '5');
@@ -2148,6 +2149,10 @@ begin
           XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
           XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
           XInsert(L('F number'), FractionToString(ExifData.FNumber));
+
+          if ExifData.XMPPacket.Lens <> '' then
+            XInsert(L('Lens'), ExifData.XMPPacket.Lens);
+
           if ExifData.Flash.Fired then
             XInsert(L('Flash'), L('On'))
           else
