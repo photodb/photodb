@@ -145,7 +145,7 @@ begin
   end;
 
   W := ARect.Right - ARect.Left;
-  H := ARect.Bottom - ARect.Top;
+  H := ARect.Bottom - ARect.Top + 4;
   ImageW := Graphic.Width;
   ImageH := Graphic.Height;
   ProportionalSize(W, H, ImageW, ImageH);
@@ -196,7 +196,7 @@ begin
     TempBmp := nil;
     TempBmpShadow := nil;
     try
-    if (Graphic is TBitmap) and
+      if (Graphic is TBitmap) and
         ((TBitmap(Graphic).Width > W) or (TBitmap(Graphic).Height > H)) then
       begin
         TempBmp := TBitmap.Create;

@@ -2142,6 +2142,7 @@ procedure TExplorerForm.ClearList;
 var
   I: Integer;
 begin
+  FItemUpdateTimer.Enabled := False;
   for I := 0 to ElvMain.Items.Count - 1 do
     TObject(ElvMain.Items[I].Data).Free;
   ElvMain.Items.Clear;
@@ -3460,8 +3461,14 @@ begin
         ElvMain.EndUpdate(True);
         Exit;
       end;
-      if ElvMain.Items.IndexOf(Item) > -1 then
-        Item.Invalidate(True);
+
+      if ElvMain.Groups.Count > 0 then
+      begin
+        for I := 0 to ElvMain.Groups[0].ItemCount - 1 do
+          if ElvMain.Groups[0].Item[I] = Item then
+            Item.Invalidate(True);
+      end;
+
     end else if FUpdateItemList.Count > 1 then
     begin
       for I := 0 to FUpdateItemList.Count - 1 do
@@ -6759,6 +6766,7 @@ var
   TempBitmap: TBitmap;
   IsDirectory: Boolean;
   Info: TExplorerFileInfo;
+  PI: TPathItem;
 begin
   if Rdown then
     FDBCanDrag := False;
@@ -6811,12 +6819,19 @@ begin
 
         if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
         begin
+          PI := PathProviderManager.CreatePathItem(FSelectedInfo.FileName);
+          try
+            FSelectedInfo.FileTypeW := PI.DisplayName;
+          finally
+            F(PI);
+          end;
+
           if FSearchMode = EXPLORER_SEARCH_DATABASE then
-            FSelectedInfo.FileTypeW := L('Search in collection')
+            FSelectedInfo.FileName := L('Search in collection')
           else if FSearchMode = EXPLORER_SEARCH_FILES then
-            FSelectedInfo.FileTypeW := L('Search in directory')
+            FSelectedInfo.FileName := L('Search in directory')
           else
-            FSelectedInfo.FileTypeW := L('Search in directory (with EXIF)');
+            FSelectedInfo.FileName := L('Search in directory (with EXIF)');
         end;
       end;
 
@@ -7267,6 +7282,18 @@ var
 begin
   S := AnsiLowerCase(WedSearch.Text);
   try
+    if (FSearchMode = EXPLORER_SEARCH_FILES) or (FSearchMode = EXPLORER_SEARCH_IMAGES) then
+    begin
+      if (FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST) or (FCurrentTypePath = EXPLORER_ITEM_PERSON)
+        or (FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST) or (FCurrentTypePath = EXPLORER_ITEM_GROUP)
+        or (FCurrentTypePath = EXPLORER_ITEM_NETWORK) or (FCurrentTypePath = EXPLORER_ITEM_WORKGROUP) then
+      begin
+        ShowFilter(False);
+        WedFilter.Text := WedSearch.Text;
+        Exit;
+      end;
+    end;
+
     Path := ExtractPathExPath(FCurrentPath);
 
     if S = '' then
@@ -7489,28 +7516,60 @@ var
   TempResult: TStrings;
   RectArray: TEasyRectArrayObject;
   Rv: TRect;
+  U, L, M, N, P: Integer;
+  FoundVisible: Boolean;
+
+  function IsItemVisible(Index: Integer): Boolean;
+  begin
+    ElvMain.Items[Index].ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
+    R := Rect(ElvMain.ClientRect.Left + rv.Left, ElvMain.ClientRect.Top + rv.Top, ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
+
+    Result := RectInRect(R, RectArray.BoundsRect);
+  end;
+
 begin
   Result := TStringList.Create;
   B := False;
   rv :=  ElvMain.Scrollbars.ViewableViewportRect;
+  R := Rect(ElvMain.ClientRect.Left + rv.Left, ElvMain.ClientRect.Top + rv.Top, ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
 
-  for I := 0 to ElvMain.Items.Count - 1 do
+  //binary search - gets fist visible element
+  N := ElvMain.Items.Count;
+  L := -1;
+  U := N;
+  while (L + 1 <> U) do
   begin
-    ElvMain.Items[I].ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
-    r := Rect(ElvMain.ClientRect.Left + rv.Left, ElvMain.ClientRect.Top + rv.Top, ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
+    // invariant: x[l] < t && x[u] >= t && l < u
+    M := (L + U) div 2;
 
-    if RectInRect(r, RectArray.BoundsRect) then
+    ElvMain.Items[M].ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
+    if RectArray.BoundsRect.Top < R.Top then
+      L := M
+    else
+      U := M;
+  end;
+
+  P := U;
+  if (P >= N) or not IsItemVisible(P) then
+    P := 0;
+
+  FoundVisible := False;
+  for I := P to ElvMain.Items.Count - 1 do
+  begin
+    if IsItemVisible(I) then
     begin
+      FoundVisible := True;
       Index := ItemIndexToMenuIndex(I);
       Result.Add(GUIDToString(FFilesInfo[Index].SID));
       SetLength(T, Length(T) + 1);
-      T[Length(T)-1] := fFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER;
+      T[Length(T) - 1] := FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER;
       if not b then
       begin
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER then
           B := True;
       end;
-    end;
+    end else if FoundVisible then
+      Break;       
   end;
 
   //order by TYPE
