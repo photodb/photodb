@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, uMemory, Graphics, SyncObjs, u2DUtils,
-  UnitDBDeclare;
+  UnitDBDeclare, uSettings;
 
 type
   CvSize = record
@@ -694,7 +694,7 @@ end;
 
 function TFaceDetectionManager.GetIsActive: Boolean;
 begin
-  Result := FCVDLLHandle <> 0;
+  Result := (FCVDLLHandle <> 0) and Settings.Readbool('Options', 'ViewerFaceDetection', True);
 end;
 
 { TFaceDetectionResultItem }

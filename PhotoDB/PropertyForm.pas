@@ -2123,50 +2123,56 @@ begin
     try
       try
         LoadEXIFFromFile(FileName, ExifData);
-        if not ExifData.Empty then
+        if not ExifData.Empty or not ExifData.XMPPacket.Empty then
         begin
 
-          XInsert(L('Make'), ExifData.CameraMake);
-          XInsert(L('Model'), ExifData.CameraModel);
-          XInsert(L('Copyright'), ExifData.Copyright);
-          XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTimeOriginal));
-          XInsert(L('Description'), ExifData.ImageDescription);
-          XInsert(L('Software'), ExifData.Software);
-          Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-          case Orientation of
-            DB_IMAGE_ROTATE_0:
-              XInsert(L('Orientation'), L('Normal'));
-            DB_IMAGE_ROTATE_90:
-              XInsert(L('Orientation'), L('Right'));
-            DB_IMAGE_ROTATE_270:
-              XInsert(L('Orientation'), L('Left'));
-            DB_IMAGE_ROTATE_180:
-              XInsert(L('Orientation'), L('180 grad.'));
-          end;
+          if not ExifData.Empty then
+          begin
+            XInsert(L('Make'), ExifData.CameraMake);
+            XInsert(L('Model'), ExifData.CameraModel);
+            XInsert(L('Copyright'), ExifData.Copyright);
+            XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTimeOriginal));
+            XInsert(L('Description'), ExifData.ImageDescription);
+            XInsert(L('Software'), ExifData.Software);
+            Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+            case Orientation of
+              DB_IMAGE_ROTATE_0:
+                XInsert(L('Orientation'), L('Normal'));
+              DB_IMAGE_ROTATE_90:
+                XInsert(L('Orientation'), L('Right'));
+              DB_IMAGE_ROTATE_270:
+                XInsert(L('Orientation'), L('Left'));
+              DB_IMAGE_ROTATE_180:
+                XInsert(L('Orientation'), L('180 grad.'));
+            end;
 
-          XInsert(L('Exposure'), ExposureFractionToString(ExifData.ExposureTime));
-          XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
-          XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
-          XInsert(L('F number'), FractionToString(ExifData.FNumber));
+            XInsert(L('Exposure'), ExposureFractionToString(ExifData.ExposureTime));
+            XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
+            XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
+            XInsert(L('F number'), FractionToString(ExifData.FNumber));
+          end;
 
           if ExifData.XMPPacket.Lens <> '' then
             XInsert(L('Lens'), ExifData.XMPPacket.Lens);
 
-          if ExifData.Flash.Fired then
-            XInsert(L('Flash'), L('On'))
-          else
-            XInsert(L('Flash'), L('Off'));
+          if not ExifData.Empty then
+          begin
+            if ExifData.Flash.Fired then
+              XInsert(L('Flash'), L('On'))
+            else
+              XInsert(L('Flash'), L('Off'));
 
-          XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
-          XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
+            XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
+            XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
 
-          XInsert(L('Author'), ExifData.Author);
-          XInsert(L('Comments'), ExifData.Comments);
-          XInsert(L('Keywords'), ExifData.Keywords);
-          XInsert(L('Subject'), ExifData.Subject);
-          XInsert(L('Title'), ExifData.Title);
-          if ExifData.UserRating <> urUndefined then
-            XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
+            XInsert(L('Author'), ExifData.Author);
+            XInsert(L('Comments'), ExifData.Comments);
+            XInsert(L('Keywords'), ExifData.Keywords);
+            XInsert(L('Subject'), ExifData.Subject);
+            XInsert(L('Title'), ExifData.Title);
+            if ExifData.UserRating <> urUndefined then
+              XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
+          end;
 
           if not ExifData.XMPPacket.Include then
             XInsert(L('Base search'), L('No'));

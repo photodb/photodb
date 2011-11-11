@@ -600,6 +600,8 @@ type
      FItemUpdateTimer: TTimer;
      FItemUpdateLastTime: Cardinal;
 
+     FSelectedItem: TEasyItem;
+
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
@@ -2765,14 +2767,7 @@ end;
 procedure TExplorerForm.Select(Item: TEasyItem; GUID: TGUID);
 begin
   if (Item <> nil) then
-  begin
-    if ElvMain.Selection.Count = 0 then
-    begin
-      Item.Selected := True;
-      Item.Focused := True;
-      Item.MakeVisible(EmvTop);
-    end;
-  end;
+    FSelectedItem := Item;
 end;
 
 function TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: Boolean; Big: Boolean = False): Boolean;
@@ -3449,6 +3444,20 @@ procedure TExplorerForm.UpdateItems;
 var
   Item: TEasyItem;
   I: Integer;
+
+  function ItemExists(AItem: TEasyItem): Boolean;
+  var
+    J: Integer;
+  begin
+    Result := False;
+    for J := 0 to ElvMain.Groups[0].ItemCount - 1 do
+      if ElvMain.Groups[0].Item[J] = AItem then
+      begin
+        Result := True;
+        Exit;
+      end;
+  end;
+
 begin
   FItemUpdateLastTime := GetTickCount;
   try
@@ -3479,6 +3488,15 @@ begin
       ElvMain.Invalidate;
     end;
   finally
+
+    if (ElvMain.Selection.Count = 0) and (FSelectedItem <> nil) and ItemExists(FSelectedItem) then
+    begin
+      FSelectedItem.Selected := True;
+      FSelectedItem.Focused := True;
+      FSelectedItem.MakeVisible(EmvTop);
+    end;
+    FSelectedItem := nil;
+
     FUpdateItemList.Clear;
   end;
 end;
@@ -5497,6 +5515,7 @@ var
   Info: TExplorerViewInfo;
   P: TSearchItem;
 begin
+  FSelectedItem := nil;
   EventLog('SetNewPathW "' + WPath.Path + '"');
   TW.I.Start('SetNewPathW');
   if (WPath.PType = EXPLORER_ITEM_PERSON_LIST) or (WPath.PType = EXPLORER_ITEM_GROUP_LIST) then
@@ -8833,6 +8852,7 @@ begin
   FIsExplorer := False;
   FChangeHistoryOnChPath := True;
   FGoToLastSavedPath := GoToLastSavedPath;
+  FSelectedItem := nil;
   inherited Create(AOwner);
 end;
 

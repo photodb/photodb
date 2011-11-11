@@ -3754,8 +3754,8 @@ end;
 
 procedure TViewer.CheckFaceIndicatorVisibility;
 begin
-  WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < ToolsBar.Left) and StaticImage;
-  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete) and StaticImage and Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive;
+  WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < ToolsBar.Left) and StaticImage and FaceDetectionManager.IsActive;
+  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete) and StaticImage and Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and FaceDetectionManager.IsActive;
 end;
 
 procedure TViewer.UpdateFaceDetectionState;

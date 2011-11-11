@@ -89,7 +89,7 @@ var
   Reg: TBDRegistry;
   Value: string;
 begin
-  Result := default;
+  Result := Default;
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
   Value := AnsiLowerCase(Reg.ReadString(Name));
   if Value = 'true' then

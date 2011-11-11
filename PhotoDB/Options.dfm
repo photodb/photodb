@@ -175,6 +175,8 @@ object OptionsForm: TOptionsForm
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
     end
     object TsExplorer: TTabSheet
@@ -1215,6 +1217,8 @@ object OptionsForm: TOptionsForm
           ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
+          StretchImage = True
+          CanClick = True
         end
       end
     end
