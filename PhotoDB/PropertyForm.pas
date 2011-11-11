@@ -2076,7 +2076,6 @@ var
   Links: TLinksInfo;
   SL: TStringList;
   I: Integer;
-  CameraModel: WORD;
 
 const
   XMPBasicValues: array[TWindowsStarRating] of UnicodeString = ('', '1', '2', '3', '4', '5');

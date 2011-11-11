@@ -1085,6 +1085,7 @@ begin
       Info := FPacketInfos[I];
       Icon := FPacketImages[I].Icon;
       Bitmap := FPacketImages[I].Bitmap;
+      FPacketImages[I].DetachImage;
 
       if Icon <> nil then
         if not FSender.AddIcon(Icon, True, Info.SID) then

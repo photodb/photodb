@@ -2282,11 +2282,7 @@ begin
           Bit.PixelFormat := pf24bit;
           Bit.Assign(Value.JPEGImage);
           ApplyRotate(Bit, Value.Rotate);
-          if FBitmapImageList[FFilesInfo[I].ImageIndex].IsBitmap then
-            FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap.Free;
-
-          FBitmapImageList[FFilesInfo[I].ImageIndex].IsBitmap := True;
-          FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap := Bit;
+          FBitmapImageList[FFilesInfo[I].ImageIndex].Graphic := Bit;
         end else
           ApplyRotate(FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap, ReRotation);
         ElvMain.Refresh;
@@ -2842,6 +2838,7 @@ end;
 function TExplorerForm.ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : boolean): Boolean;
 var
   I, Index, C: Integer;
+  Item: TEasyItem;
 begin
   Result := False;
   for I := 0 to FFilesInfo.Count - 1 do
@@ -2850,20 +2847,22 @@ begin
       index := MenuIndexToItemIndex(I);
       if index > ElvMain.Items.Count - 1 then
         Exit;
-      C := ElvMain.Items[index].ImageIndex;
-      if ElvMain.Items[index].Data <> nil then
+
+      Item := ElvMain.Items[Index];
+      C := Item.ImageIndex;
+      if Item.Data <> nil then
       begin
-        TDataObject(ElvMain.Items[index].Data).Include := Include;
+        TDataObject(Item.Data).Include := Include;
       end else
       begin
-        ElvMain.Items[index].Data := TDataObject.Create;
-        TDataObject(ElvMain.Items[index].Data).Include := Include;
+        Item.Data := TDataObject.Create;
+        TDataObject(Item.Data).Include := Include;
       end;
       FBitmapImageList[C].Graphic := Icon;
       FBitmapImageList[C].SelfReleased := True;
       Result := True;
 
-      AddItemToUpdate(ElvMain.Items[Index]);
+      AddItemToUpdate(Item);
 
       if FFilesInfo[I].FileType = EXPLORER_ITEM_FOLDER then
         if FFilesInfo[I].FileName = FSelectedInfo.FileName then
@@ -6806,7 +6805,7 @@ begin
           FSelectedInfo.FileTypeW := FFilesInfo[Index].Comment;
       end else
       begin
-        FileName := GetCurrentPath;
+        FileName := ExcludeTrailingPathDelimiter(GetCurrentPath);
         FSelectedInfo.FileName := FileName;
         if GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER then
         begin
