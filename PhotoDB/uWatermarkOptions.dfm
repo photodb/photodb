@@ -14,7 +14,7 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
-  Position = poDesktopCenter
+  Position = poScreenCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   DesignSize = (

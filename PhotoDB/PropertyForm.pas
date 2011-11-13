@@ -756,6 +756,7 @@ begin
 
   SaveWindowPos1.Key := GetRegRootKey + 'Properties';
   SaveWindowPos1.SetPosition;
+  FixFormPosition;
 
   WlAddLink.LoadFromResource('GROUP_ADD_SMALL');
   WlAddLink.Color := clWindow;

@@ -484,12 +484,6 @@ begin
     TW.i.Start('TScriptEnviroments');
     TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
 
-    LOGGING_ENABLED := GetParamStrDBBool('/Logging');
-    if LOGGING_ENABLED then
-      EventLog(Format('Program logging enabled!! [%s]', [ProductName]))
-    else
-      EventLog('Program logging DISABLED! Run program with param "/Logging"');
-
     // PREPAIRING ----------------------------------------------------
 
     if GetParamStrDBBool('/SLEEP') then

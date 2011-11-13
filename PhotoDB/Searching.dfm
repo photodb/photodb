@@ -1140,7 +1140,7 @@ object SearchForm: TSearchForm
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
-    Key = 'Software\DolphinImagesDB\Search'
+    Key = 'Software\DolphinImagesDB\Container'
     Left = 232
     Top = 32
   end

@@ -5463,7 +5463,6 @@ type
     property OldWndProc: TWndMethod read FOldWndProc write FOldWndProc;
     property RectArray: TEasyRectArrayObject read FRectArray write FRectArray;
   public
-    constructor Create;
     function AcceptEdit: Boolean;                         {IEasyCellEditor}
     procedure ControlWndHookProc(var Message: TMessage);  {IEasyCellEditor}
     function GetHandle: HWnd;                             {IEasyCellEditor}
@@ -25917,12 +25916,6 @@ begin
   FOldWndProc(Message)
 end;
 
-constructor TEasyBaseEditor.Create;
-begin
-  inherited;
-  FSetLanguageMessage := RegisterWindowMessage(PChar(IntToStr(Integer(Self))));
-end;
-
 function TEasyBaseEditor.EditText(Item: TEasyItem; Column: TEasyColumn): WideString;
 begin
   Result := '';
@@ -28786,7 +28779,7 @@ begin
     if ((Shift * [ssAlt, ssCtrl]) = []) and (Msg.CharCode > 31) then
     begin
       CompareResult := 0;
-      SearchBuffer := SearchBuffer + KeyUnicode(Char( Msg.CharCode));
+      SearchBuffer := SearchBuffer + Char( Msg.CharCode);
 
       if not Assigned(NextSearchItem) then
         LoadFutureItem;

@@ -68,7 +68,7 @@ type
     FIsEditMode: Boolean;
     FFormPersonSuggest: TDBForm;
     procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
-    function EditPerson(PersonID: Integer): Boolean;
+    function DoEditPerson(PersonID: Integer): Boolean;
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
     procedure LoadLanguage;
@@ -149,7 +149,7 @@ var
 begin
   Application.CreateForm(TFormCreatePerson, FormCreatePerson);
   try
-    Result := FormCreatePerson.EditPerson(PersonID);
+    Result := FormCreatePerson.DoEditPerson(PersonID);
   finally
     R(FormCreatePerson);
   end;
@@ -298,9 +298,15 @@ end;
 
 procedure TFormCreatePerson.SelectOtherPerson(PersonID: Integer);
 begin
-  EnableControls(False);
-  FPerson := PersonManager.GetPerson(PersonID);
-  MarkPersonOnPhoto;
+  if not FIsEditMode then
+  begin
+    EnableControls(False);
+    FPerson := PersonManager.GetPerson(PersonID);
+    MarkPersonOnPhoto;
+  end else
+  begin
+    EditPerson(PersonID);
+  end;
 end;
 
 procedure TFormCreatePerson.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -346,7 +352,7 @@ begin
   end;
 end;
 
-function TFormCreatePerson.EditPerson(PersonID: Integer): Boolean;
+function TFormCreatePerson.DoEditPerson(PersonID: Integer): Boolean;
 begin
   Result := False;
   FPerson := TPerson.Create;
@@ -416,6 +422,7 @@ begin
   MiEditImage.ImageIndex := DB_IC_IMEDITOR;
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_PERSON_RELOAD_GROUPS');
+  FixFormPosition;
 
   WlPersonNameStatus.Left := LsNameCheck.Left;
 end;

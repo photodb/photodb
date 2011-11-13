@@ -91,7 +91,7 @@ var
 begin
   W := CurrentImage.Width;
   H := CurrentImage.Height;
-  ProportionalSize(Screen.Width, Screen.Height, W, H);
+  ProportionalSize(Monitor.Width, Monitor.Height, W, H);
   DoResize(W, H, CurrentImage, DrawImage);
 end;
 

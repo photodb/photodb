@@ -16,6 +16,7 @@ object Viewer: TViewer
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  Position = poScreenCenter
   ShowHint = True
   OnClick = FormClick
   OnClose = FormClose

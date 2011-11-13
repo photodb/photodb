@@ -18,7 +18,6 @@ object FullScreenView: TFullScreenView
   OnClose = FormClose
   OnContextPopup = FormContextPopup
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
   OnKeyPress = FormKeyPress
   OnMouseDown = FormMouseDown

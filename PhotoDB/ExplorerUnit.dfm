@@ -16,7 +16,7 @@ object ExplorerForm: TExplorerForm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
-  Position = poDesigned
+  Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy

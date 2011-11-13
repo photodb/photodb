@@ -66,7 +66,7 @@ type
   end;
   {$HINTS ON}
 
-function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
+function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView: Integer = 0): TEasyItem;
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
@@ -738,7 +738,7 @@ begin
   end
 end;
 
-function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView : Integer = 0): TEasyItem;
+function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView: Integer = 0): TEasyItem;
 var
   I: Integer;
   R: TRect;
@@ -853,7 +853,7 @@ end;
 
 procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item : TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
 var
-  I : Integer;
+  I: Integer;
 begin
   if Item <> nil then
     if Item.Selected and (Button = MbLeft) then

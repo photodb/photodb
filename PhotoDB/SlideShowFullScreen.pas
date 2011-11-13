@@ -32,7 +32,6 @@ type
       var Handled: Boolean);
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
   private
     { Private declarations }
@@ -46,15 +45,15 @@ var
 
 implementation
 
-
-uses SlideShow, FloatPanelFullScreen;
+uses
+  SlideShow, FloatPanelFullScreen;
 
 {$R *.dfm}
 
 procedure TFullScreenView.FormPaint(Sender: TObject);
 begin
   if Viewer <> nil then
-  Canvas.Draw(0, 0, Viewer.DrawImage);
+    Canvas.Draw(0, 0, Viewer.DrawImage);
 end;
 
 procedure TFullScreenView.FormKeyPress(Sender: TObject; var Key: Char);
@@ -179,16 +178,16 @@ begin
   if Viewer.FullScreenNow then
     if Msg.message = 256 then
     begin
-      if Msg.WParam = 37 then
+      if Msg.WParam = VK_LEFT then
         if Viewer <> nil then
           Viewer.Previous_(nil);
-      if Msg.WParam = 39 then
+      if Msg.WParam = VK_RIGHT then
         if Viewer <> nil then
           Viewer.Next_(nil);
-      if Msg.WParam = 32 then
+      if Msg.WParam = VK_SPACE then
         if Viewer <> nil then
           Viewer.Next_(nil);
-      if Msg.WParam = 27 then
+      if Msg.WParam = VK_ESCAPE then
         if Viewer <> nil then
           Viewer.Exit1Click(nil);
       if (Msg.WParam = VK_F4) then
@@ -215,7 +214,7 @@ begin
   if FloatPanel <> nil then
   begin
     FloatPanel.Top := 0;
-    FloatPanel.Left := ClientWidth - FloatPanel.Width;
+    FloatPanel.Left := Left + ClientWidth - FloatPanel.Width;
   end;
 end;
 
@@ -224,13 +223,6 @@ begin
   if FloatPanel = nil then
     Application.CreateForm(TFloatPanel, FloatPanel);
   FloatPanel.Show;
-end;
-
-procedure TFullScreenView.FormDestroy(Sender: TObject);
-begin
-{ FloatPanel.Release;
- FloatPanel.Free;
- FloatPanel:=nil;  }
 end;
 
 procedure TFullScreenView.DestroyTimerTimer(Sender: TObject);
@@ -242,7 +234,7 @@ end;
 
 initialization
 
-FullScreenView := nil;
-FloatPanel := nil;
+  FullScreenView := nil;
+  FloatPanel := nil;
 
 end.

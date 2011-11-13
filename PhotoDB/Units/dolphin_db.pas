@@ -16,55 +16,11 @@ uses
 type
   TInitializeAProc = function(S: PChar): Boolean;
 
-var
-  LOGGING_ENABLED: Boolean = True;
-
 type
   THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
   TPCharFunctionA = function(S: Pchar): PChar;
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
-
-type
-  TCallbackInfo = record
-    Action: Byte;
-    ForwardThread: Boolean;
-    Direction: Boolean;
-  end;
-
-type
-  TDirectXSlideShowCreatorCallBackResult = record
-    Action: Byte;
-    FileName: string;
-    Result: Integer;
-  end;
-
-type
-  TDirectXSlideShowCreatorCallBack = function(CallbackInfo: TCallbackInfo)
-    : TDirectXSlideShowCreatorCallBackResult of object;
-
-type
-  TByteArr = array [0 .. 0] of Byte;
-  PByteArr = ^TByteArr;
-
-type
-  TDirectXSlideShowCreatorInfo = record
-    FileName: string;
-    Rotate: Integer;
-    CallBack: TDirectXSlideShowCreatorCallBack;
-    FDirectXSlideShowReady: PBoolean;
-    FDirectXSlideShowTerminate: PBoolean;
-    DirectDraw4: IDirectDraw4;
-    PrimarySurface: IDirectDrawSurface4;
-    Offscreen: IDirectDrawSurface4;
-    Buffer: IDirectDrawSurface4;
-    Clpr: IDirectDrawClipper;
-    BPP, RBM, GBM, BBM: Integer;
-    TransSrc1, TransSrc2, TempSrc: PByteArr;
-    SID: TGUID;
-    Manager: TObject;
-    Form: TDBForm;
-  end;
 
 type
   TUserMenuItem = record
@@ -77,7 +33,7 @@ type
 
   TUserMenuItemArray = array of TUserMenuItem;
 
-  // Added in v2.0
+// Added in v2.0
 type
   TPlaceFolder = record
     name: string;

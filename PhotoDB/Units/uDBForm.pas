@@ -3,8 +3,8 @@ unit uDBForm;
 interface
 
 uses
-  Forms, Classes, uTranslate, Graphics, SyncObjs, Messages, ActiveX,
-  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils, uSysUtils;
+  Windows, Forms, Types, Classes, uTranslate, Graphics, SyncObjs, Messages, ActiveX,
+  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils, uSysUtils, MultiMon;
 
 type
   TDBForm = class(TForm)
@@ -20,6 +20,7 @@ type
     function LF(StringToTranslate: string; args: array of const): string;
     procedure BeginTranslate;
     procedure EndTranslate;
+    procedure FixFormPosition;
     property FormID: string read GetFormID;
     property WindowID: string read FWindowID;
   end;
@@ -30,6 +31,7 @@ type
     FSync: TCriticalSection;
     FForms: TList;
     constructor Create;
+    function GetFormByIndex(Index: Integer): TDBForm;
   public
     destructor Destroy; override;
     class function Instance: TFormCollection;
@@ -38,6 +40,8 @@ type
     function GetImage(BaseForm: TDBForm; FileName: string; Bitmap: TBitmap; var Width: Integer;
       var Height: Integer): Boolean;
     function GetForm(WindowID: string): TDBForm;
+    function Count: Integer;
+    property Forms[Index: Integer]: TDBForm read GetFormByIndex; default;
   end;
 
 implementation
@@ -74,6 +78,106 @@ begin
   TTranslateManager.Instance.EndTranslate;
 end;
 
+procedure TDBForm.FixFormPosition;
+var
+  I: Integer;
+  Form: TDBForm;
+  X, Y: Integer;
+  R: TRect;
+
+  function BRect(X, Y, Width, Height: Integer): TRect;
+  begin
+    Result := Rect(X, Y, X + Width, Y + Height);
+  end;
+
+  function CalculateFormRect: TRect;
+  var
+    AppMon, WinMon: HMONITOR;
+    I, J: Integer;
+    ALeft, ATop: Integer;
+    LRect: TRect;
+  begin
+    Result := BRect(Left, Top, Width, Height);
+    if (DefaultMonitor <> dmDesktop) and (Application.MainForm <> nil) then
+    begin
+      AppMon := 0;
+      if DefaultMonitor = dmMainForm then
+        AppMon := Application.MainForm.Monitor.Handle
+      else if (DefaultMonitor = dmActiveForm) and (Screen.ActiveCustomForm <> nil) then
+        AppMon := Screen.ActiveCustomForm.Monitor.Handle
+      else if DefaultMonitor = dmPrimary then
+        AppMon := Screen.PrimaryMonitor.Handle;
+      WinMon := Monitor.Handle;
+      for I := 0 to Screen.MonitorCount - 1 do
+        if (Screen.Monitors[I].Handle = AppMon) then
+          if (AppMon <> WinMon) then
+          begin
+            for J := 0 to Screen.MonitorCount - 1 do
+            begin
+              if (Screen.Monitors[J].Handle = WinMon) then
+              begin
+                if Position = poScreenCenter then
+                begin
+                  LRect := Screen.Monitors[I].WorkareaRect;
+                  Result := BRect(LRect.Left + ((RectWidth(LRect) - Width) div 2),
+                    LRect.Top + ((RectHeight(LRect) - Height) div 2), Width, Height);
+                end
+                else
+                if Position = poMainFormCenter then
+                begin
+                  Result := BRect(Screen.Monitors[I].Left + ((Screen.Monitors[I].Width - Width) div 2),
+                    Screen.Monitors[I].Top + ((Screen.Monitors[I].Height - Height) div 2),
+                     Width, Height)
+                end
+                else
+                begin
+                  ALeft := Screen.Monitors[I].Left + Left - Screen.Monitors[J].Left;
+                  if ALeft + Width > Screen.Monitors[I].Left + Screen.Monitors[I].Width then
+                    ALeft := Screen.Monitors[I].Left + Screen.Monitors[I].Width - Width;
+                  ATop := Screen.Monitors[I].Top + Top - Screen.Monitors[J].Top;
+                  if ATop + Height > Screen.Monitors[I].Top + Screen.Monitors[I].Height then
+                    ATop := Screen.Monitors[I].Top + Screen.Monitors[I].Height - Height;
+                  Result := BRect(ALeft, ATop, Width, Height);
+                end;
+              end;
+            end;
+          end else
+          begin
+            if Position = poScreenCenter then
+            begin
+              LRect := Screen.Monitors[I].WorkareaRect;
+              Result := BRect(LRect.Left + ((RectWidth(LRect) - Width) div 2),
+                LRect.Top + ((RectHeight(LRect) - Height) div 2), Width, Height);
+            end;
+          end;
+    end;
+  end;
+
+
+begin
+  R := CalculateFormRect;
+  for I := 0 to TFormCollection.Instance.Count - 1 do
+  begin
+    Form := TFormCollection.Instance[I];
+    if Windows.EqualRect(Form.BoundsRect, R) and Form.Visible and (Form <> Self) then
+    begin
+      X := R.Left + 20;
+      Y := R.Top + 20;
+      if (X + Width < Form.Monitor.BoundsRect.Right) and (Y + Height < Form.Monitor.BoundsRect.Bottom) then
+      begin
+        Position := poDesigned;
+        Left := X;
+        Top := Y;
+      end;
+    end;
+  end;
+  if Position <> poDesigned then
+  begin
+    SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
+    Position := poDesigned;
+  end;
+end;
+
 function TDBForm.L(StringToTranslate: string; Scope: string): string;
 begin
   Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope)
@@ -93,6 +197,11 @@ var
   FInstance : TFormCollection = nil;
 
 { TFormManager }
+
+function TFormCollection.Count: Integer;
+begin
+  Result := FForms.Count;
+end;
 
 constructor TFormCollection.Create;
 begin
@@ -117,6 +226,11 @@ begin
     if TDBForm(FForms[I]).WindowID = WindowID then
       Result := TDBForm(FForms[I]);
   end;
+end;
+
+function TFormCollection.GetFormByIndex(Index: Integer): TDBForm;
+begin
+  Result := FForms[Index];
 end;
 
 function TFormCollection.GetImage(BaseForm: TDBForm; FileName: string;

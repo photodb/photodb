@@ -2,9 +2,9 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   Left = 707
   Top = 114
   BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsToolWindow
+  BorderStyle = bsSingle
   Caption = 'Quick Group Info'
-  ClientHeight = 327
+  ClientHeight = 328
   ClientWidth = 273
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   OnShow = FormShow
   DesignSize = (
     273
-    327)
+    328)
   PixelsPerInch = 96
   TextHeight = 13
   object GroupImage: TImage
@@ -298,7 +298,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Top = 301
     Width = 79
     Height = 21
-    Anchors = [akTop, akRight]
     Caption = 'Edit group'
     TabOrder = 9
     OnClick = EditGroup1Click

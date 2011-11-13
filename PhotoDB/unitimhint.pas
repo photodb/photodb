@@ -294,9 +294,9 @@ begin
     if GOM.IsObj(Sender) then
     begin
       if WindowTop < Sender.Monitor.Top then
-        WindowTop := 100;
+        WindowTop := Sender.Monitor.Top + 100;
       if WindowLeft < Sender.Monitor.Left then
-        WindowLeft := 100;
+        WindowLeft := Sender.Monitor.Left + 100;
     end;
 
     Top := WindowTop;

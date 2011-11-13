@@ -188,6 +188,8 @@ begin
   LoadLanguage;
   CbRemoveKeywords.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
   CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
+
+  FixFormPosition;
 end;
 
 procedure TEditGroupsForm.FormDestroy(Sender: TObject);

@@ -153,6 +153,7 @@ begin
       AccessLabel.Top := DateEdit.Top + DateEdit.Height + Otstupa;
       AccessEdit.Top := AccessLabel.Top + AccessLabel.Height + Otstup;
       BtnOk.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
+      BtnEdit.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
       ClientHeight := BtnOk.Top + BtnOk.Height + Otstup;
       DateTimeToSystemTime(FPrGroup.GroupDate, TempSysTime);
       GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM yyyy ', @FineDate, 255);
@@ -164,6 +165,7 @@ begin
         AccessEdit.Text := L('Private group');
 
       ReloadGroups;
+      FixFormPosition;
       ShowModal;
     finally
       FreeGroup(FPrGroup);

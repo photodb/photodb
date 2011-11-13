@@ -145,7 +145,6 @@ type
     procedure Exit1Click(Sender: TObject);
     procedure PaintBox1DblClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
-    procedure newpicture(Sender: TObject);
     procedure PmMainPopup(Sender: TObject);
     procedure MTimer1Click(Sender: TObject);
     procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -317,7 +316,6 @@ type
     RealZoomInc: Extended;
     DrawImage: TBitmap;
     FBImage: TBitmap;
-    Fcsrbmp, FNewCsrBmp, Fnowcsrbmp: TBitmap;
     constructor Create(AOwner: TComponent); override;
     function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
     procedure ExecuteDirectoryWithFileOnThread(FileName: string);
@@ -449,21 +447,7 @@ begin
   FbImage := TBitmap.Create;
   FOverlayBuffer := TBitmap.Create;
   FbImage.PixelFormat := pf24bit;
-  Drawimage.PixelFormat := pf24bit;
-  TW.I.Start('fcsrbmp');
-  Fcsrbmp := TBitmap.Create;
-  Fcsrbmp.PixelFormat := pf24bit;
-  Fcsrbmp.Canvas.Brush.Color := 0;
-  Fcsrbmp.Canvas.Pen.Color := 0;
-  TW.I.Start('fnewcsrbmp');
-
-  FNewCsrBmp := TBitmap.Create;
-  FNewCsrBmp.PixelFormat := pf24bit;
-  FNewCsrBmp.Canvas.Brush.Color := 0;
-  FNewCsrBmp.Canvas.Pen.Color := 0;
-  Fnowcsrbmp := TBitmap.Create;
-  Fnowcsrbmp.PixelFormat := pf24bit;
-  Fnowcsrbmp.Assign(FNewCsrBmp);
+  DrawImage.PixelFormat := pf24bit;
 
   TW.I.Start('AnimatedBuffer');
   AnimatedBuffer := TBitmap.Create;
@@ -632,8 +616,8 @@ begin
   FileName := FCurrentlyLoadedFile;
   if FullScreenNow then
   begin
-    DrawImage.Width := Screen.Width;
-    DrawImage.Height := Screen.Height;
+    DrawImage.Width := Monitor.Width;
+    DrawImage.Height := Monitor.Height;
     DrawImage.Canvas.Brush.Color := 0;
     DrawImage.Canvas.Pen.Color := 0;
     DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
@@ -641,7 +625,7 @@ begin
       Exit;
     FW := FBImage.Width;
     FH := FBImage.Height;
-    ProportionalSize(Screen.Width, Screen.Height, Fw, Fh);
+    ProportionalSize(Monitor.Width, Monitor.Height, FW, FH);
     if ImageExists then
     begin
       if Settings.ReadboolW('Options','SlideShow_UseCoolStretch', True) then
@@ -654,23 +638,23 @@ begin
           begin
             if (Item.Rotation = DB_IMAGE_ROTATE_90) or
               (Item.Rotation = DB_IMAGE_ROTATE_270) then
-              Z := Min(Fw / RealImageHeight, Fh / RealImageWidth)
+              Z := Min(FW / RealImageHeight, FH / RealImageWidth)
             else
-              Z := Min(Fw / RealImageWidth, Fh / RealImageHeight);
+              Z := Min(FW / RealImageWidth, FH / RealImageHeight);
           end else
             Z := 1;
         end;
         if (Z < ZoomSmoothMin) then
-          StretchCool(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2, Fw, Fh, FBImage, DrawImage)
+          StretchCool(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, FW, FH, FBImage, DrawImage)
         else
         begin
           TempImage := TBitmap.Create;
           try
             TempImage.PixelFormat := pf24bit;
-            TempImage.Width := Fw;
-            TempImage.Height := Fh;
+            TempImage.Width := FW;
+            TempImage.Height := FH;
             SmoothResize(Fw, Fh, FbImage, TempImage);
-            DrawImage.Canvas.Draw(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2, TempImage);
+            DrawImage.Canvas.Draw(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, TempImage);
           finally
             F(TempImage);
           end;
@@ -678,8 +662,8 @@ begin
       end else
       begin
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-        DrawImage.Canvas.StretchDraw(Rect(Screen.Width div 2 - Fw div 2, Screen.Height div 2 - Fh div 2,
-            Screen.Width div 2 - Fw div 2 + Fw, Screen.Height div 2 - Fh div 2 + Fh), FBImage);
+        DrawImage.Canvas.StretchDraw(Rect(Monitor.Width div 2 - Fw div 2, Monitor.Height div 2 - Fh div 2,
+            Monitor.Width div 2 - Fw div 2 + Fw, Monitor.Height div 2 - Fh div 2 + Fh), FBImage);
       end;
     end else
       ShowErrorText(FileName);
@@ -913,7 +897,7 @@ begin
   end else
   begin
     if DirectShowForm <> nil then
-      DirectShowForm.Next(False);
+      DirectShowForm.Next(True);
   end;
 end;
 
@@ -948,9 +932,6 @@ begin
   SaveWindowPos1.SavePosition;
   F(FbImage);
   F(DrawImage);
-  F(Fcsrbmp);
-  F(FNewCsrBmp);
-  F(Fnowcsrbmp);
   F(AnimatedBuffer);
   F(AnimatedImage);
   F(LockEventRotateFileList);
@@ -1016,78 +997,6 @@ begin
     Exit;
 
   Canvas.Draw(0, 0, Buffer);
-end;
-
-procedure TViewer.NewPicture(Sender: TObject);
-var
-  Fh, Fw, X1, X2, Y1, Y2: Integer;
-begin
-  if not SlideShowNow then
-  begin
-    Fcsrbmp.Assign(Fnowcsrbmp);
-    FNewCsrBmp.Canvas.Rectangle(0, 0, FNewCsrBmp.Width, FNewCsrBmp.Height);
-    if (FbImage.Height = 0) or (FbImage.Width = 0) then
-      Exit;
-    if (FbImage.Width > FNewCsrBmp.Width) or (FbImage.Height > FNewCsrBmp.Height) then
-    begin
-      if FbImage.Width / FbImage.Height < FNewCsrBmp.Width / FNewCsrBmp.Height then
-      begin
-        Fh := FNewCsrBmp.Height;
-        Fw := Round(FNewCsrBmp.Height * (FbImage.Width / FbImage.Height));
-      end else
-      begin
-        Fw := FNewCsrBmp.Width;
-        Fh := Round(FNewCsrBmp.Width * (FbImage.Height / FbImage.Width));
-      end;
-    end else
-    begin
-      Fh := FbImage.Height;
-      Fw := FbImage.Width;
-    end;
-    X1 := Screen.Width div 2 - Fw div 2;
-    Y1 := Screen.Height div 2 - Fh div 2;
-    X2 := Screen.Width div 2 + Fw div 2;
-    Y2 := Screen.Height div 2 + Fh div 2;
-    if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
-      StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, FNewCsrBmp)
-    else
-      FNewCsrBmp.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
-  end else
-  begin
-    if DirectShowForm = nil then
-      Exit;
-    FNewCsrBmp.Canvas.Rectangle(0, 0, FNewCsrBmp.Width, FNewCsrBmp.Height);
-    if (FbImage.Height = 0) or (FbImage.Width = 0) then
-      Exit;
-    if (FbImage.Width > FNewCsrBmp.Width) or (FbImage.Height > FNewCsrBmp.Height) then
-    begin
-      if FbImage.Width / FbImage.Height < FNewCsrBmp.Width / FNewCsrBmp.Height then
-      begin
-        Fh := FNewCsrBmp.Height;
-        Fw := Round(FNewCsrBmp.Height * (FbImage.Width / FbImage.Height));
-      end else
-      begin
-        Fw := FNewCsrBmp.Width;
-        Fh := Round(FNewCsrBmp.Width * (FbImage.Height / FbImage.Width));
-      end;
-    end else
-    begin
-      Fh := FbImage.Height;
-      Fw := FbImage.Width;
-    end;
-    X1 := Screen.Width div 2 - Fw div 2;
-    Y1 := Screen.Height div 2 - Fh div 2;
-    X2 := Screen.Width div 2 + Fw div 2;
-    Y2 := Screen.Height div 2 + Fh div 2;
-    if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
-      StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, FNewCsrBmp)
-    else
-      FNewCsrBmp.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FbImage);
-    if DirectShowForm.FirstLoad then
-      DirectShowForm.SetFirstImage(FNewCsrBmp)
-    else
-      DirectShowForm.NewImage(FNewCsrBmp);
-  end;
 end;
 
 procedure TViewer.SelectCascade(Sender: TObject);

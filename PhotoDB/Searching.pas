@@ -560,6 +560,7 @@ begin
   WlStartStop.Text := L('Search');
   SaveWindowPos1.Key := RegRoot + 'Searching';
   SaveWindowPos1.SetPosition;
+  FixFormPosition;
 
   TW.I.Start('S -> Images');
   SortLink.UseSpecIconSize := True;

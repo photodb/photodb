@@ -15,7 +15,7 @@ uses
   uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
   uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uDBBaseTypes, uSysUtils, uDBUtils, uDBFileTypes,
-  uRuntime, uSettings, uAssociations;
+  uRuntime, uSettings, uAssociations, SaveWindowPos;
 
 type
   TDestDype = class(TObject)
@@ -86,6 +86,7 @@ type
     N05: TMenuItem;
     PopupMenuZoomDropDown: TPopupMenu;
     TwWindowsPos: TTwButton;
+    SaveWindowPos1: TSaveWindowPos;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefreshItemByID( ID: integer);
@@ -396,6 +397,10 @@ begin
   ExCopyLink.Top := ExportLink.Top + ExportLink.Height + 5;
   LoadToolBarIcons;
   FormManager.RegisterMainForm(Self);
+
+  SaveWindowPos1.Key := RegRoot + 'Container';
+  SaveWindowPos1.SetPosition;
+  FixFormPosition;
 end;
 
 procedure TFormCont.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -2061,7 +2066,7 @@ end;
 
 procedure TFormCont.ClearList;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to ElvMain.Items.Count - 1 do
     TDataObject(ElvMain.Items[I].Data).Free;

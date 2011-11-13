@@ -14,6 +14,7 @@ object DirectShowForm: TDirectShowForm
   FormStyle = fsStayOnTop
   KeyPreview = True
   OldCreateOrder = False
+  WindowState = wsMaximized
   OnClick = FormClick
   OnClose = FormClose
   OnContextPopup = FormContextPopup
@@ -46,16 +47,9 @@ object DirectShowForm: TDirectShowForm
   end
   object FadeTimer: TTimer
     Enabled = False
-    Interval = 1
+    Interval = 10
     OnTimer = FadeTimerTimer
     Left = 40
-    Top = 80
-  end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = DestroyTimerTimer
-    Left = 88
     Top = 80
   end
 end

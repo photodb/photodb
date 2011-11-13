@@ -1023,6 +1023,8 @@ begin
 
   SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
+  FixFormPosition;
+
   FormLoadEnd := True;
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
   LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3;
@@ -2553,7 +2555,7 @@ begin
   ItemsDeselected := False;
   FWasDragAndDrop := False;
 
-  Item := ItemAtPos(x, y);
+  Item := ItemAtPos(X, Y);
 
   MouseDowned := Button = mbRight;
   if (Item = nil) and not CtrlKeyDown then
@@ -2747,6 +2749,7 @@ begin
   begin
     SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(Path);
     SaveWindowPos1.SetPosition;
+    FixFormPosition;
   end;
   FCurrentPath := Path;
   SetNewPath(Path, False);

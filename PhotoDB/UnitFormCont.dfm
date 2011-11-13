@@ -537,4 +537,11 @@ object FormCont: TFormCont
     Left = 360
     Top = 232
   end
+  object SaveWindowPos1: TSaveWindowPos
+    SetOnlyPosition = False
+    RootKey = HKEY_CURRENT_USER
+    Key = 'Software\DolphinImagesDB\Search'
+    Left = 336
+    Top = 32
+  end
 end
