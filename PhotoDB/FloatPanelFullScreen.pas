@@ -30,7 +30,6 @@ type
     { Private declarations }
   public
     { Public declarations }
-    FClosed : Boolean;
     procedure SetButtonsEnabled(Enabled: Boolean);
   end;
 
@@ -134,14 +133,12 @@ end;
 
 procedure TFloatPanel.FormCreate(Sender: TObject);
 begin
-  FClosed := False;
   RecreateImLists;
   SetButtonsEnabled(Viewer.CurrentInfo.Count > 1);
 end;
 
 procedure TFloatPanel.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  FClosed := True;
   Viewer.Exit1Click(Sender);
 end;
 

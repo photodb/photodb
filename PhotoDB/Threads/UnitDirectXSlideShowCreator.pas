@@ -9,39 +9,23 @@ uses
   uAssociations, uJpegUtils, uBitmapUtils, RAWImage;
 
 type
-  TDirectXSlideShowCreator = class(TDBThread)
+  TDirectXSlideShowCreator = class(TDirectXSlideShowCreatorCustomThread)
   private
     { Private declarations }
     FInfo: TDirectXSlideShowCreatorInfo;
-    Graphic: TGraphic;
-    Image: TBitmap;
-    ScreenImage: TBitmap;
-    FilePassword: string;
-    FCallBackAction: Byte;
     FSynchBitmap: TBitmap;
-    Rct: TRect;
-    Fx: TDDBltFx;
-    FXForward: Boolean;
-    FNext: Boolean;
-    BooleanParam: Boolean;
-    Paused: Boolean;
+    FBooleanParam: Boolean;
     FMonWidth, FMonHeight: Integer;
   protected
     function GetThreadID: string; override;
-    procedure DoCallBack(Action: Byte);
-    procedure DoCallBackSynch;
     procedure Execute; override;
-    function CenterBmp(Buffer: IDirectDrawSurface4; Bitmap: TBitmap; Rect: TRect): TRect;
-    procedure ReplaceTransform;
-    procedure DoExit;
-    procedure DoExitSynch;
-    procedure CenterBmpSynch;
-    procedure Btl;
-    function Ready: Boolean;
-    function ExitReady: Boolean;
-    procedure IFPause;
+    procedure ValidThread;
+    procedure ActualThread;
+    procedure SendImage(ImageToSend: TBitmap);
+    procedure SendImageSynch;
+    procedure ShowError(ErrorText: string);
   public
-    constructor Create(Info: TDirectXSlideShowCreatorInfo; XForward, Next: Boolean);
+    constructor Create(Info: TDirectXSlideShowCreatorInfo);
     destructor Destroy; override;
   end;
 
@@ -50,98 +34,88 @@ implementation
 uses
   DX_Alpha;
 
-{ TDirectXSlideShowCreator }
-
-function TDirectXSlideShowCreator.CenterBmp(Buffer: IDirectDrawSurface4;
-  Bitmap: TBitmap; Rect: TRect): TRect;
+constructor TDirectXSlideShowCreator.Create(Info: TDirectXSlideShowCreatorInfo);
 begin
-  FSynchBitmap := Bitmap;
-  SynchronizeEx(CenterBmpSynch);
-end;
-
-procedure TDirectXSlideShowCreator.CenterBmpSynch;
-var
-  DC: HDC;
-begin
-  if (FSynchBitmap = nil) or (FInfo.Buffer = nil) then
-    Exit;
-
-  FInfo.Buffer.GetDC(DC);
-  BitBlt(Dc, 0, 0, FInfo.Form.Monitor.Width, FInfo.Form.Monitor.Height, FSynchBitmap.Canvas.Handle, 0, 0, SRCCOPY);
-  FInfo.Buffer.ReleaseDC(DC);
-end;
-
-constructor TDirectXSlideShowCreator.Create(Info: TDirectXSlideShowCreatorInfo; XForward, Next: Boolean);
-begin
-  inherited Create(Info.Form, False);
-  FMonWidth := Info.Form.Monitor.Width;
-  FMonHeight := Info.Form.Monitor.Height;
+  inherited Create(Info);
+  FMonWidth := Info.Form.Width;
+  FMonHeight := Info.Form.Height;
   FInfo := Info;
-  FXForward := XForward;
-  FNext := Next;
-  FreeOnTerminate := True;
   FInfo.Manager.AddThread(Self);
 end;
 
-procedure TDirectXSlideShowCreator.DoCallBack(Action: Byte);
+procedure TDirectXSlideShowCreator.ValidThread;
 begin
-  FCallBackAction := Action;
-  SynchronizeEx(DoCallBackSynch)
+  FBooleanParam := TDirectShowForm(OwnerForm).IsValidThread(FInfo.SID);
 end;
 
-procedure TDirectXSlideShowCreator.DoCallBackSynch;
+procedure TDirectXSlideShowCreator.ActualThread;
+begin
+  FBooleanParam := TDirectShowForm(OwnerForm).IsActualThread(FInfo.SID);
+end;
+
+procedure TDirectXSlideShowCreator.SendImage(ImageToSend: TBitmap);
 var
-  CallbackInfo: TCallbackInfo;
+  IsValid, IsActual: Boolean;
 begin
-  CallbackInfo.Action := FCallBackAction;
-  CallbackInfo.ForwardThread := False;
-  if FXForward then
-  begin
-    DirectShowForm.ForwardThreadExists := False;
-    CallbackInfo.ForwardThread := True;
-  end;
-  CallbackInfo.Direction := FNext;
-  FInfo.CallBack(CallbackInfo);
+
+  repeat
+    SynchronizeEx(ValidThread);
+    IsValid := FBooleanParam;
+
+    SynchronizeEx(ActualThread);
+    IsActual := FBooleanParam;
+
+    if not IsValid then
+      Exit;
+
+    if IsActual then
+      Break;
+
+    Sleep(10);
+  until False;
+
+  FSynchBitmap := ImageToSend;
+  SynchronizeEx(SendImageSynch);
 end;
 
-procedure TDirectXSlideShowCreator.DoExit;
+procedure TDirectXSlideShowCreator.SendImageSynch;
 begin
-  SynchronizeEx(IFPause);
-  Paused := BooleanParam;
-  if FXForward or Paused then
-  begin
-    repeat
-      if ExitReady or Ready then
-        Break;
-
-      Sleep(10);
-    until False;
-  end;
-  SynchronizeEx(DoExitSynch);
-  R(FInfo.Buffer);
-  FreeMem(FInfo.TempSrc)
+  TDirectShowForm(OwnerForm).NewImage(FSynchBitmap);
 end;
 
-procedure TDirectXSlideShowCreator.DoExitSynch;
+procedure TDirectXSlideShowCreator.ShowError(ErrorText: string);
+var
+  ScreenImage: TBitmap;
+  Text: string;
+  R: TRect;
 begin
-  if DirectShowForm <> nil then
-    if IsEqualGUID(DirectShowForm.SID, FInfo.SID) or (Ready and FXForward) or (Paused and Ready) then
-    begin
-      DirectShowForm.SetThreadImage(FInfo.TempSrc);
-      DirectShowForm.BeginFade;
-      DirectShowForm.ForwardThreadExists := False;
-    end;
+  ScreenImage := TBitmap.Create;
+  try
+    ScreenImage.Canvas.Pen.Color := 0;
+    ScreenImage.Canvas.Brush.Color := 0;
+    ScreenImage.Canvas.Font.Color := clWhite;
+    ScreenImage.SetSize(FMonWidth, FMonHeight);
+    Text := ErrorText;
+    R := Rect(0, 0, FMonWidth, FMonHeight);
+    ScreenImage.Canvas.TextRect(R, Text, [tfVerticalCenter, tfCenter]);
+    FSynchBitmap := ScreenImage;
+    SendImageSynch;
+  finally
+    F(ScreenImage);
+  end;
 end;
 
 procedure TDirectXSlideShowCreator.Execute;
 var
   W, H: Integer;
   Zoom: Extended;
-  TempImage: TBitmap;
+  Image, TempImage, ScreenImage: TBitmap;
   GraphicClass: TGraphicClass;
+  FilePassword: string;
   Text_error_out: string;
+  Graphic: TGraphic;
 begin
-  inherited;
+  FreeOnTerminate := True;
 
   Text_error_out := L('Unable to show file:');
   try
@@ -185,7 +159,7 @@ begin
           W := Image.Width;
           H := Image.Height;
           case FInfo.Rotate of
-            DB_IMAGE_ROTATE_0 :
+            DB_IMAGE_ROTATE_0:
             begin
               ProportionalSize(FMonWidth, FMonHeight, W, H);
               if Image.Width <> 0 then
@@ -193,7 +167,7 @@ begin
               else
                 Zoom := 1;
 
-              if (Zoom<ZoomSmoothMin) then
+              if (Zoom < ZoomSmoothMin) then
                 StretchCoolEx0(FMonWidth div 2 - W div 2, FMonHeight div 2 - H div 2, W, H, Image, ScreenImage, $000000)
               else
               begin
@@ -209,32 +183,25 @@ begin
                 end;
               end;
             end;
-            DB_IMAGE_ROTATE_270 :
+            DB_IMAGE_ROTATE_270:
             begin
               ProportionalSize(FMonWidth, FMonHeight, W, H);
               StretchCoolEx270(FMonWidth div 2 - H div 2, FMonHeight div 2 - W div 2, W, H, Image, ScreenImage, $000000)
             end;
-            DB_IMAGE_ROTATE_90 :
+            DB_IMAGE_ROTATE_90:
             begin
               ProportionalSize(FMonWidth, FMonHeight, W, H);
               StretchCoolEx90(FMonWidth div 2 - H div 2, FMonHeight div 2 - W div 2, W, H, Image, ScreenImage, $000000)
             end;
-            DB_IMAGE_ROTATE_180 :
+            DB_IMAGE_ROTATE_180:
             begin
               ProportionalSize(FMonWidth, FMonHeight, W, H);
-              StretchCoolEx180(FMonWidth div 2 - W div 2, FMonHeight div 2 - H div 2, W, H, Image, ScreenImage,$000000)
+              StretchCoolEx180(FMonWidth div 2 - W div 2, FMonHeight div 2 - H div 2, W, H, Image, ScreenImage, $000000)
             end;
           end;
           F(Image);
 
-          FillChar(fx, SizeOf (fx), 0);
-          fx.dwSize := SizeOf(fx);
-          fx.dwFillColor := PackColor (0, FInfo.BPP, FInfo.RBM, FInfo.GBM, FInfo.BBM);
-          Rct := Rect(0, 0, ScreenImage.Width, ScreenImage.Height);
-          SynchronizeEx(Btl);
-          CenterBmp (FInfo.Buffer, ScreenImage, Rect(0, 0, ScreenImage.Width, ScreenImage.Height));
-          F(ScreenImage);
-          ReplaceTransform;
+          SendImage(ScreenImage);
 
         finally
           F(ScreenImage);
@@ -248,57 +215,9 @@ begin
       F(Graphic);
     end;
 
-  finally
-    DoExit;
-  end;
-end;
-
-procedure UnLock (Buffer: IDirectDrawSurface4);
-begin
-  if Buffer = nil then
-    Exit;
-  Buffer.UnLock(nil);
-end;
-
-procedure LockRead (Buffer: IDirectDrawSurface4; var SurfaceDesc: TDDSurfaceDesc2);
-begin
-  if Buffer = nil then
-    Exit;
-  ZeroMemory (@SurfaceDesc, sizeof (TDDSurfaceDesc2));
-  SurfaceDesc.dwSize := sizeof (TDDSurfaceDesc2);
-  Buffer.Lock (nil, SurfaceDesc, DDLOCK_WAIT or DDLOCK_SURFACEMEMORYPTR or DDLOCK_READONLY or DDLOCK_NOSYSLOCK, 0);
-  if SurfaceDesc.lpSurface = nil then
-     UnLock (Buffer);
-end;
-
-procedure LockWrite (Buffer: IDirectDrawSurface4; var SurfaceDesc: TDDSurfaceDesc2);
-begin
-  if Buffer = nil then
-    Exit;
-  ZeroMemory (@SurfaceDesc, sizeof (TDDSurfaceDesc2));
-  SurfaceDesc.dwSize := sizeof (TDDSurfaceDesc2);
-  Buffer.Lock (nil, SurfaceDesc, DDLOCK_WAIT or DDLOCK_SURFACEMEMORYPTR or DDLOCK_WRITEONLY, 0);
-  if SurfaceDesc.lpSurface = nil then
-     UnLock (Buffer);
-end;
-
-procedure TDirectXSlideShowCreator.ReplaceTransform;
-var
-  Dd: TDDSurfaceDesc2;
-  TransSize, TransPitch, TransHeight: Integer;
-begin
-  if FInfo.Buffer = nil then
-    Exit;
-  LockRead(FInfo.Buffer, Dd);
-  try
-    TransPitch := Dd.LPitch;
-    TransHeight := Dd.DwHeight;
-    TransSize := TransHeight * TransPitch;
-    if FInfo.TempSrc = nil then
-      GetMem(FInfo.TempSrc, TransSize);
-    CopyMemory(FInfo.TempSrc, Dd.LpSurface, TransSize - 1);
-  finally
-    UnLock(FInfo.Buffer);
+  except
+    on e: Exception do
+      ShowError(e.Message);
   end;
 end;
 
@@ -308,56 +227,9 @@ begin
   inherited;
 end;
 
-procedure TDirectXSlideShowCreator.Btl;
-begin
-  if FInfo.Buffer <> nil then
-    FInfo.Buffer.Blt(@Rct, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @Fx);
-end;
-
-function TDirectXSlideShowCreator.Ready: boolean;
-begin
-  Result := False;
-  if Paused then
-  begin
-    Result := DirectShowForm.FReadyAfterPause;
-    Exit;
-  end;
-  if DirectShowForm <> nil then
-    if IsEqualGUID(DirectShowForm.ForwardSID, FInfo.SID) then
-      Result := DirectShowForm.Ready;
-end;
-
-function TDirectXSlideShowCreator.ExitReady: boolean;
-begin
-  if DirectShowForm = nil then
-  begin
-    Result := True;
-    Exit;
-  end;
-  if Paused then
-  begin
-    Result := not DirectShowForm.FNowPaused;
-    Exit;
-  end;
-  if (not IsEqualGUID(DirectShowForm.ForwardSID, FInfo.SID) and FXForward) or (DirectShowForm = nil) then
-    Result := True
-  else
-    Result := False;
-end;
-
 function TDirectXSlideShowCreator.GetThreadID: string;
 begin
   Result := 'Viewer';
-end;
-
-procedure TDirectXSlideShowCreator.IFPause;
-begin
-  if DirectShowForm = nil then
-  begin
-    BooleanParam := True;
-    Exit;
-  end;
-  BooleanParam := DirectShowForm.FNowPaused;
 end;
 
 end.

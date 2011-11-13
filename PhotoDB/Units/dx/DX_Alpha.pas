@@ -9,6 +9,8 @@ uses
   uVCLHelpers;
 
 type
+  TForwardDirection = (fdNext, fdPrevious, fdCurrent);
+
   TDirectShowForm = class(TDBForm)
     MouseTimer: TTimer;
     ApplicationEvents1: TApplicationEvents;
@@ -36,15 +38,24 @@ type
     procedure BeginFade;
     procedure FadeTimerTimer(Sender: TObject);
     procedure SetThreadImage(var Image: PByteArr);
-    procedure LoadCurrentImage(XForward, Next: Boolean);
+    procedure StartLoadingThread(FileIndex: Integer; ID: TGUID);
     procedure Pause;
     procedure Play;
-    procedure Next(Force: Boolean);
+    procedure Next;
     procedure Previous;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    function CallBack(CallbackInfo: TCallbackInfo): TDirectXSlideShowCreatorCallBackResult;
   private
     { Private declarations }
+    FManager: TDirectXSlideShowCreatorManager;
+
+    AlphaCount: Byte;
+    XAlphaCount: Extended;
+    FIsFadeEffect: Boolean;
+
+    FID, FNextID: TGUID;
+    FForwardDirection: TForwardDirection;
+    FIsPaused: Boolean;
+
     FOldPoint: TPoint;
     // Main structure DirectDraw
     DirectDraw4: IDirectDraw4;
@@ -62,37 +73,25 @@ type
     TransHeight, TransPitch, TransSize: Integer;
     SurfaceDesc: TDDSurfaceDesc2;
     Clpr: IDirectDrawClipper;
-
-    FReady: Boolean;
-    FForwardThreadExists: Boolean;
-    FForwardFileName: string;
-    AlphaCount: Byte;
-    XAlphaCount: Extended;
-    FileLoaded: Boolean;
-    procedure SetReady(const Value: Boolean);
-    procedure SetForwardThreadExists(const Value: Boolean);
-    procedure SetForwardFileName(const Value: string);
-    function GetAlphaSteeps: Integer;
-  protected
-    { Protected declarations }
-    function GetFormID: string; override;
-    procedure LoadDirectX;
-  public
-    { Public declarations }
-    SID: TGUID;
-    ForwardSID: TGUID;
-    FManager: TDirectXSlideShowCreatorManager;
-    FNowPaused: Boolean;
-    FReadyAfterPause: Boolean;
     procedure UpdateSurface(ParentControl: TControl);
     procedure PrepareTransform(Buffer1, Buffer2: IDirectDrawSurface4);
     procedure UnPrepareTransform;
     procedure ReplaseTransform(Buffer: IDirectDrawSurface4);
     procedure TransformAlpha(Buffer: IDirectDrawSurface4; Alpha: Integer);
-    property Ready: Boolean read FReady write SetReady;
-    property ForwardThreadExists: Boolean read FForwardThreadExists write SetForwardThreadExists;
-    property ForwardFileName: string read FForwardFileName write SetForwardFileName;
-    property AlphaSteeps: Integer read GetAlphaSteeps;
+    function GetAlphaSteps: Integer;
+    procedure PrepaireImage(Directon: TForwardDirection);
+  protected
+    { Protected declarations }
+    function GetFormID: string; override;
+    procedure LoadDirectX;
+    procedure NextID;
+    procedure NewID;
+    property AlphaSteps: Integer read GetAlphaSteps;
+  public
+    { Public declarations }
+    function IsValidThread(ID: TGUID): Boolean;
+    function IsActualThread(ID: TGUID): Boolean;
+    property IsPaused: Boolean read FIsPaused write FIsPaused;
   end;
 
 var
@@ -267,24 +266,24 @@ begin
   {$R+}
 end;
 
-// По Create создаем DirectDraw и все провехности. Надо бы это делать по Resize
-// и после каждого IDirectDrawSurface4.IsLost, но я забил болт.
 procedure TDirectShowForm.FormCreate(Sender: TObject);
 begin
+  NewID;
+  FForwardDirection := fdNext;
+  FIsPaused := False;
+  FIsFadeEffect := False;
+
   AlphaCount := 0;
   XAlphaCount := PI / 2;
   DelayTimer.Interval := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100) * 50;
-  FNowPaused := False;
-  FReadyAfterPause := False;
-  Ready := False;
-  FForwardThreadExists := False;
-  if FloatPanel = nil then
-    Application.CreateForm(TFloatPanel, FloatPanel);
-  SID := GetGUID;
 
   // show before creating surface because of DDSCL_SETFOCUSWINDOW flsg
   Show;
   LoadDirectX;
+
+  if FloatPanel = nil then
+    Application.CreateForm(TFloatPanel, FloatPanel);
+  FormResize(Sender);
 end;
 
 procedure TDirectShowForm.LoadDirectX;
@@ -294,8 +293,9 @@ var
   Fx: TDDBltFx;
   R: TRect;
   PixelFormat: TDDPixelFormat;
-  Objects: TThreadDestroyDXObjects;
 begin
+  // По Create создаем DirectDraw и все провехности. Надо бы это делать по Resize
+  // и после каждого IDirectDrawSurface4.IsLost, но я забил болт.
   DDrawInit;
   try
     // Создаем DirectDraw.
@@ -360,18 +360,7 @@ begin
       ShowMessage(L('Error initializing graphics mode: %s', e.Message));
   end;
 
-  FileLoaded := False;
-
   FManager := TDirectXSlideShowCreatorManager.Create;
-  Objects.DirectDraw4 := DirectDraw4;
-  Objects.PrimarySurface := PrimarySurface;
-  Objects.Offscreen := OffScreen;
-  Objects.Buffer := Buffer;
-  Objects.Clpr := Clpr;
-  Objects.TransSrc1 := TransSrc1;
-  Objects.TransSrc2 := TransSrc2;
-  Objects.Form := Self;
-  FManager.SetDXObjects(Objects);
 end;
 
 procedure TDirectShowForm.FormDestroy(Sender: TObject);
@@ -438,7 +427,10 @@ begin
   finally
     F(FirstImage);
   end;
+  PrepaireImage(FForwardDirection);
+
   DelayTimer.Enabled := True;
+  DelayTimer.Tag := 1;
 end;
 
 procedure TDirectShowForm.FormDeactivate(Sender: TObject);
@@ -472,8 +464,7 @@ begin
   end;
 end;
 
-procedure TDirectShowForm.FormMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
+procedure TDirectShowForm.FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 begin
   MouseTimer.Enabled := True;
   if (Abs(FOldPoint.X - X) > 5) or (Abs(FOldPoint.Y - Y) > 5) then
@@ -484,8 +475,7 @@ begin
   end;
 end;
 
-procedure TDirectShowForm.FormContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
+procedure TDirectShowForm.FormContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
 begin
   ShowMouse;
   MouseTimer.Enabled := False;
@@ -501,8 +491,7 @@ begin
   Viewer.NextImageClick(nil);
 end;
 
-procedure TDirectShowForm.FormMouseUp(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TDirectShowForm.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   ShowMouse;
   MouseTimer.Restart;
@@ -515,8 +504,8 @@ begin
   CState := ShowCursor(True);
   while Cstate >= 0 do
     Cstate := ShowCursor(False);
-  if FloatPanel<>nil then
-  FloatPanel.Hide;
+  if FloatPanel <> nil then
+    FloatPanel.Hide;
 end;
 
 procedure TDirectShowForm.ShowMouse;
@@ -526,7 +515,7 @@ begin
   Cstate := ShowCursor(True);
   while CState < 0 do
     CState := ShowCursor(True);
-  if Viewer.SlideShowNow then
+  if (Viewer <> nil) and Viewer.SlideShowNow then
     if FloatPanel <> nil then
       FloatPanel.Show;
 end;
@@ -568,6 +557,22 @@ begin
   end;
 end;
 
+procedure TDirectShowForm.DelayTimerTimer(Sender: TObject);
+begin
+  DelayTimer.Enabled := False;
+  if DelayTimer.Tag = 1 then
+  begin
+    DelayTimer.Tag := 0;
+    Inc(Viewer.CurrentFileNumber);
+    if Viewer.CurrentFileNumber >= Viewer.CurrentInfo.Count then
+      Viewer.CurrentFileNumber := 0;
+    NextID;
+    Exit;
+  end;
+  if Viewer <> nil then
+    Viewer.NextImageClick(Sender);
+end;
+
 procedure TDirectShowForm.FormResize(Sender: TObject);
 begin
   if FloatPanel = nil then
@@ -576,7 +581,7 @@ begin
   FloatPanel.Left := Left + ClientWidth - FloatPanel.Width;
 end;
 
-function TDirectShowForm.GetAlphaSteeps: Integer;
+function TDirectShowForm.GetAlphaSteps: Integer;
 begin
   Result := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
 end;
@@ -595,13 +600,11 @@ begin
   FX.DwSize := SizeOf(FX);
   FX.DwFillColor := PackColor(0, BPP, RBM, GBM, BBM);
   R := ClientRect;
-  FileLoaded := True;
   Buffer.Blt(@R, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @Fx);
   CenterBmp(Buffer, Image, ClientRect);
   PrepareTransform(Buffer, Buffer);
   TransformAlpha(Offscreen, 0);
   UpdateSurface(Self);
-  FForwardThreadExists := False;
 end;
 
 procedure TDirectShowForm.NewImage(Image: TBitmap);
@@ -613,27 +616,15 @@ begin
   FX.dwSize := SizeOf(FX);
   FX.dwFillColor := PackColor(0, BPP, RBM, GBM, BBM);
   R := ClientRect;
-  FileLoaded := True;
   Buffer.Blt(@R, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @fx);
   CenterBmp(Buffer, Image, ClientRect);
   ReplaseTransform(Buffer);
-  TransformAlpha(OffScreen, 0);
-  UpdateSurface(self);
-end;
-
-procedure TDirectShowForm.DelayTimerTimer(Sender: TObject);
-begin
-  if FNowPaused then
-    Exit;
-  DelayTimer.Enabled := False;
-  if Viewer <> nil then
-    Viewer.Next_(Sender);
-  LoadCurrentImage(False, True);
+  BeginFade;
 end;
 
 procedure TDirectShowForm.BeginFade;
 begin
-  TransformAlpha(Offscreen, 0);
+  TransformAlpha(OffScreen, 0);
   UpdateSurface(Self);
   DelayTimer.Enabled := False;
   FadeTimer.Enabled := True;
@@ -645,24 +636,21 @@ procedure TDirectShowForm.FadeTimerTimer(Sender: TObject);
 begin
   if not Visible then
     Exit;
-  XAlphaCount := XAlphaCount + (PI / 2) / AlphaSteeps;
+  XAlphaCount := XAlphaCount + (PI / 2) / AlphaSteps;
   AlphaCount := 255 - Round(255 * Sqr(Cos(XAlphaCount)));
+
   if XAlphaCount > PI / 2 then
   begin
-    FNowPaused := False;
-    FReadyAfterPause := False;
-    DelayTimer.Enabled := True;
     FadeTimer.Enabled := False;
-    FReady := False;
-    if FNowPaused then
-    begin
-      FForwardThreadExists := True;
-      Next(True);
-    end;
+
+    PrepaireImage(FForwardDirection);
+    if not FIsPaused then
+      DelayTimer.Enabled := True;
+
     Exit;
   end else
   begin
-    TransformAlpha(Offscreen, AlphaCount);
+    TransformAlpha(OffScreen, AlphaCount);
     UpdateSurface(Self);
   end;
 end;
@@ -677,180 +665,122 @@ begin
   Image := T;
 end;
 
+procedure TDirectShowForm.NewID;
+begin
+  FID := GetGUID;
+  FNextID := GetGUID;
+end;
+
+procedure TDirectShowForm.NextID;
+begin
+  FID := FNextID;
+  FNextID := GetGUID;
+end;
+
 procedure TDirectShowForm.Pause;
 begin
-  if FNowPaused then
-    Exit;
-  FNowPaused := True;
-  SID := GetGUID;
   DelayTimer.Enabled := False;
-  FReadyAfterPause := False;
+  FIsPaused := True;
 end;
 
 procedure TDirectShowForm.Play;
 begin
-  if FNowPaused then
-  begin
-    FReadyAfterPause := True;
-    FNowPaused := False;
-    Exit;
-  end;
-  DelayTimer.Enabled := True;
+  Next;
+  FIsPaused := False;
 end;
 
-procedure TDirectShowForm.Next(Force: Boolean);
+procedure TDirectShowForm.Next;
 begin
-  if FNowPaused then
-  begin
-    FReadyAfterPause := True;
-    FNowPaused := False;
-    if not Force then
-      Exit;
-  end;
-
-  FReadyAfterPause := False;
-  if not Force then
-    SID := GetGUID;
-
-  AlphaCount := 255 - Round(255 * Sqr(Cos(XAlphaCount)));
-  if AlphaCount < 30 then
-    Exit;
-
   Inc(Viewer.CurrentFileNumber);
   if Viewer.CurrentFileNumber >= Viewer.CurrentInfo.Count then
     Viewer.CurrentFileNumber := 0;
 
-  LoadCurrentImage(Force, True);
+  if FForwardDirection <> fdNext then
+  begin
+    NewID;
+    FForwardDirection := fdNext;
+    PrepaireImage(fdCurrent);
+  end else
+  begin
+    NextId;
+    PrepaireImage(FForwardDirection);
+  end;
+
 end;
 
 procedure TDirectShowForm.Previous;
 begin
-  FNowPaused := False;
-  FReadyAfterPause := False;
-  SID := GetGUID;
   Dec(Viewer.CurrentFileNumber);
   if Viewer.CurrentFileNumber < 0 then
     Viewer.CurrentFileNumber := Viewer.CurrentInfo.Count - 1;
-  LoadCurrentImage(False, False);
-end;
 
-procedure TDirectShowForm.LoadCurrentImage(XForward, Next: Boolean);
-var
-  Info: TDirectXSlideShowCreatorInfo;
-  N: Integer;
-begin
-  if not XForward then
+  if FForwardDirection <> fdPrevious then
   begin
-    if FForwardThreadExists and (ForwardFileName = Viewer.Item.FileName) then
-    begin
-      Ready := True;
-      Exit;
-    end else
-    begin
-      FForwardThreadExists := False;
-    end;
-  end;
-  if XForward then
-  begin
-    N := Viewer.CurrentFileNumber;
-    ForwardSID := GetGUID;
-    if Next then
-    begin
-      Inc(N);
-      if N >= Viewer.CurrentInfo.Count then
-      N := 0;
-    end else
-    begin
-      Dec(N);
-      if N < 0 then
-        N := Viewer.CurrentInfo.Count - 1;
-    end;
-    Info.FileName := Viewer.CurrentInfo[N].FileName;
-    Info.Rotate := Viewer.CurrentInfo[N].Rotation;
-    ForwardFileName := Info.FileName
+    NewID;
+    FForwardDirection := fdPrevious;
+    PrepaireImage(fdCurrent);
   end else
   begin
-    Info.FileName := Viewer.Item.FileName;
-    Info.Rotate := Viewer.Item.Rotation;
+    NextId;
+    PrepaireImage(FForwardDirection);
   end;
-  Info.CallBack := CallBack;
-  Info.DirectDraw4 := DirectDraw4;
-  Info.PrimarySurface := PrimarySurface;
-  Info.Offscreen := Offscreen;
-  Info.Clpr := Clpr;
-  Info.BPP := BPP;
-  Info.RBM := RBM;
-  Info.GBM := GBM;
-  Info.BBM := BBM;
-  Info.TransSrc1 := TransSrc1;
-  Info.TransSrc2 := TransSrc2;
-  Info.TempSrc := nil;
-  if XForward then
-    Info.SID := ForwardSID
-  else
-    Info.SID := SID;
 
-  Info.Manager := FManager;
-  Info.Form := Self;
-  DirectDraw4.CreateSurface (SurfaceDesc, Info.Buffer, nil);
-  TDirectXSlideShowCreator.Create(Info, XForward, Next);
+end;
+
+procedure TDirectShowForm.PrepaireImage(Directon: TForwardDirection);
+var
+  N: Integer;
+begin
+  N := Viewer.CurrentFileNumber;
+  if Directon = fdNext then
+  begin
+    Inc(N);
+    if N >= Viewer.CurrentInfo.Count then
+      N := 0;
+  end;
+  if Directon = fdPrevious then
+  begin
+    Dec(N);
+    if N < 0 then
+      N := Viewer.CurrentInfo.Count - 1;
+  end;
+  if Directon = fdCurrent then
+    StartLoadingThread(N, FID)
+  else
+    StartLoadingThread(N, FNextID);
+end;
+
+procedure TDirectShowForm.StartLoadingThread(FileIndex: Integer; ID: TGUID);
+var
+  Info: TDirectXSlideShowCreatorInfo;
+begin
+  Info.FileName := Viewer.CurrentInfo[FileIndex].FileName;
+  Info.Rotate := Viewer.CurrentInfo[FileIndex].Rotation;
+
+  if not FManager.ThreadExists(ID) then
+  begin
+    Info.SID := ID;
+    Info.Manager := FManager;
+    Info.Form := Self;
+    TDirectXSlideShowCreator.Create(Info);
+  end;
 end;
 
 procedure TDirectShowForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  Release;
   DirectShowForm := nil;
+  Release;
 end;
 
-function TDirectShowForm.CallBack(CallbackInfo: TCallbackInfo): TDirectXSlideShowCreatorCallBackResult;
+function TDirectShowForm.IsActualThread(ID: TGUID): Boolean;
 begin
-  if Visible and Viewer.SlideShowNow then
-  begin
-    if not CallbackInfo.ForwardThread then
-    begin
-      if FNowPaused then
-        Exit;
-      DelayTimer.Enabled := False;
-      if CallbackInfo.Direction then
-      begin
-        if Viewer <> nil then
-          Viewer.Next_(nil)
-      end else
-      begin
-        if Viewer <> nil then
-          Viewer.Previous_(nil);
-      end;
-      LoadCurrentImage(false,CallbackInfo.Direction);
-    end else
-    begin
-      if CallbackInfo.Direction then
-      begin
-        if Viewer <> nil then
-          Viewer.Next_(nil)
-      end else
-      begin
-        if Viewer <> nil then
-          Viewer.Previous_(nil);
-      end;
-      LoadCurrentImage(true,CallbackInfo.Direction);
-    end;
-  end;
+  Result := IsEqualGUID(FID, ID);
 end;
 
-procedure TDirectShowForm.SetReady(const Value: boolean);
+function TDirectShowForm.IsValidThread(ID: TGUID): Boolean;
 begin
-  FReady := Value;
-end;
-
-procedure TDirectShowForm.SetForwardThreadExists(const Value: boolean);
-begin
-  FForwardThreadExists := Value;
-end;
-
-procedure TDirectShowForm.SetForwardFileName(const Value: String);
-begin
-  FForwardFileName := Value;
+  Result := IsActualThread(ID) or IsEqualGUID(FNextID, ID);
 end;
 
 end.

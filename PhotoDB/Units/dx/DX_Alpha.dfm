@@ -3,8 +3,8 @@ object DirectShowForm: TDirectShowForm
   Top = 341
   BorderStyle = bsNone
   Caption = 'DirectX SlideShow'
-  ClientHeight = 363
-  ClientWidth = 688
+  ClientHeight = 647
+  ClientWidth = 869
   Color = clBlack
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,6 +40,7 @@ object DirectShowForm: TDirectShowForm
     Top = 8
   end
   object DelayTimer: TTimer
+    Enabled = False
     Interval = 100
     OnTimer = DelayTimerTimer
     Left = 8

@@ -60,6 +60,7 @@ object Viewer: TViewer
     Height = 17
     BevelOuter = bvNone
     TabOrder = 2
+    Visible = False
   end
   object BottomImage: TPanel
     Left = -4
@@ -68,6 +69,7 @@ object Viewer: TViewer
     Height = 25
     BevelOuter = bvNone
     TabOrder = 3
+    Visible = False
     object ToolsBar: TPanel
       Left = 95
       Top = 0

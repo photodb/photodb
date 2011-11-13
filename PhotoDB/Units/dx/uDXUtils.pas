@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Graphics, Classes, Forms, SyncObjs, DDraw, uDBForm, uDBThread,
-  uMemory, uMemoryEx;
+  uMemory, uMemoryEx, SysUtils;
 
 type
   TByteArr = array [0 .. 0] of Byte;
@@ -34,14 +34,6 @@ type
   TDirectXSlideShowCreatorInfo = record
     FileName: string;
     Rotate: Integer;
-    CallBack: TDirectXSlideShowCreatorCallBack;
-    DirectDraw4: IDirectDraw4;
-    PrimarySurface: IDirectDrawSurface4;
-    Offscreen: IDirectDrawSurface4;
-    Buffer: IDirectDrawSurface4;
-    Clpr: IDirectDrawClipper;
-    BPP, RBM, GBM, BBM: Integer;
-    TransSrc1, TransSrc2, TempSrc: PByteArr;
     SID: TGUID;
     Manager: TDirectXSlideShowCreatorManager;
     Form: TDBForm;
@@ -53,24 +45,31 @@ type
     Offscreen: IDirectDrawSurface4;
     Buffer: IDirectDrawSurface4;
     Clpr: IDirectDrawClipper;
-    TransSrc1, TransSrc2: PByteArr;
     Form: TDBForm;
+  end;
+
+  TDirectXSlideShowCreatorCustomThread = class(TDBThread)
+  private
+    FID: TGUID;
+  public
+    constructor Create(Info: TDirectXSlideShowCreatorInfo);
+    property ID: TGUID read FID;
   end;
 
   TDirectXSlideShowCreatorManager = class(TObject)
   private
     FThreads: TList;
-    FObjects: TThreadDestroyDXObjects;
+    FIDList: TStrings;
     FFreeOnExit: Boolean;
     FSync: TCriticalSection;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure AddThread(Thread: TDBThread);
-    procedure RemoveThread(Thread: TDBThread);
-    function IsThread(Thread: TDBThread): Boolean;
+    procedure AddThread(Thread: TDirectXSlideShowCreatorCustomThread);
+    procedure RemoveThread(Thread: TDirectXSlideShowCreatorCustomThread);
+    function ThreadExists(ID: TGUID): Boolean;
+    function IsThread(Thread: TDirectXSlideShowCreatorCustomThread): Boolean;
     function ThreadCount: Integer;
-    procedure SetDXObjects(Objects: TThreadDestroyDXObjects);
     procedure FreeOnExit;
   end;
 
@@ -84,7 +83,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure DestroyManager(Manager: TDirectXSlideShowCreatorManager);
-    procedure RemoveThread(Manager: TDirectXSlideShowCreatorManager; Thread: TDBThread);
+    procedure RemoveThread(Manager: TDirectXSlideShowCreatorManager; Thread: TDirectXSlideShowCreatorCustomThread);
     procedure Lock;
     procedure Unlock;
   end;
@@ -205,12 +204,15 @@ end;
 
 { TDirectXSlideShowCreatorManager }
 
-procedure TDirectXSlideShowCreatorManager.AddThread(Thread: TDBThread);
+procedure TDirectXSlideShowCreatorManager.AddThread(Thread: TDirectXSlideShowCreatorCustomThread);
 begin
   FSync.Enter;
   try
     if FThreads.IndexOf(Thread) < 0 then
+    begin
       FThreads.Add(Thread);
+      FIDList.Add(GUIDToString(Thread.ID));
+    end;
   finally
     FSync.Leave;
   end;
@@ -221,6 +223,7 @@ begin
   FSync := TCriticalSection.Create;
   FThreads := TList.Create;
   FFreeOnExit := False;
+  FIDList := TStringList.Create;
   DirectXSlideShowCreatorManagers.RegisterManager(Self);
 end;
 
@@ -229,6 +232,7 @@ begin
   DirectXSlideShowCreatorManagers.UnregisterManager(Self);
   F(FThreads);
   F(FSync);
+  F(FIDList);
   inherited;
 end;
 
@@ -237,7 +241,7 @@ begin
   FFreeOnExit := True;
 end;
 
-function TDirectXSlideShowCreatorManager.IsThread(Thread: TDBThread): Boolean;
+function TDirectXSlideShowCreatorManager.IsThread(Thread: TDirectXSlideShowCreatorCustomThread): Boolean;
 begin
   FSync.Enter;
   try
@@ -247,11 +251,18 @@ begin
   end;
 end;
 
-procedure TDirectXSlideShowCreatorManager.RemoveThread(Thread: TDBThread);
+procedure TDirectXSlideShowCreatorManager.RemoveThread(Thread: TDirectXSlideShowCreatorCustomThread);
+var
+  P: Integer;
 begin
   FSync.Enter;
   try
     FThreads.Remove(Thread);
+
+    P := FIDList.IndexOf(GUIDToString(Thread.ID));
+    if (P > -1) then
+      FIDList.Delete(P);
+
     if (FThreads.Count = 0) and FFreeOnExit then
       Free;
   finally
@@ -260,16 +271,21 @@ begin
   end;
 end;
 
-procedure TDirectXSlideShowCreatorManager.SetDXObjects(Objects: TThreadDestroyDXObjects);
-begin
-  FObjects := Objects;
-end;
-
 function TDirectXSlideShowCreatorManager.ThreadCount: Integer;
 begin
   FSync.Enter;
   try
     Result := FThreads.Count;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TDirectXSlideShowCreatorManager.ThreadExists(ID: TGUID): Boolean;
+begin
+  FSync.Enter;
+  try
+    Result := FIDList.IndexOf(GUIDToString(ID)) > -1;
   finally
     FSync.Leave;
   end;
@@ -328,7 +344,7 @@ begin
 end;
 
 procedure TDirectXSlideShowCreatorManagers.RemoveThread(
-  Manager: TDirectXSlideShowCreatorManager; Thread: TDBThread);
+  Manager: TDirectXSlideShowCreatorManager; Thread: TDirectXSlideShowCreatorCustomThread);
 begin
   FSync.Enter;
   try
@@ -353,6 +369,15 @@ begin
   finally
     FSync.Leave;
   end;
+end;
+
+{ TDirectXSlideShowCreatorCustomThread }
+
+constructor TDirectXSlideShowCreatorCustomThread.Create(
+  Info: TDirectXSlideShowCreatorInfo);
+begin
+  inherited Create(Info.Form, False);
+  FID := Info.SID;
 end;
 
 initialization

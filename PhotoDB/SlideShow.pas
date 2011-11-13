@@ -16,7 +16,7 @@ uses
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
-  uExifUtils, uInterfaces, WebLink, uPeopleSupport, u2DUtils;
+  uExifUtils, uInterfaces, WebLink, uPeopleSupport, u2DUtils, uVCLHelpers;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
@@ -843,6 +843,7 @@ begin
   BottomImage.Top := ClientHeight - ToolsBar.Height;
   BottomImage.Width := ClientWidth;
   BottomImage.Height := ToolsBar.Height;
+  BottomImage.Show;
 
   LsLoading.Left := ClientWidth div 2 - LsLoading.Width div 2;
   LsLoading.Top := ClientHeight div 2 - LsLoading.Height div 2;
@@ -889,15 +890,13 @@ begin
   begin
     if FullScreenNow then
       if Play then
-      begin
-        SlideTimer.Enabled := False;
-        SlideTimer.Enabled := True;
-      end;
+        SlideTimer.Restart;
+
     Next_(Sender);
   end else
   begin
     if DirectShowForm <> nil then
-      DirectShowForm.Next(True);
+      DirectShowForm.Next;
   end;
 end;
 
@@ -907,10 +906,8 @@ begin
   begin
     if FullScreenNow then
       if Play then
-      begin
-        SlideTimer.Enabled := False;
-        SlideTimer.Enabled := True;
-      end;
+        SlideTimer.Restart;
+
     Previous_(Sender);
   end else
   begin
@@ -956,6 +953,7 @@ begin
   MTimer1.ImageIndex := DB_IC_PAUSE;
   MTimer1Click(Sender);
   FullScreenView.Show;
+  Hide;
 end;
 
 procedure TViewer.Exit1Click(Sender: TObject);
@@ -973,6 +971,7 @@ begin
     Play := False;
     if FullScreenView <> nil then
       FullScreenView.Close;
+    Show;
   end;
   if SlideShowNow then
   begin
@@ -983,6 +982,7 @@ begin
     LoadImage_(Sender, False, Zoom, False);
     if DirectShowForm <> nil then
       DirectShowForm.Close;
+    Show;
   end;
 end;
 
@@ -3741,6 +3741,7 @@ begin
   MTimer1.ImageIndex := DB_IC_PLAY;
   MTimer1Click(Sender);
   DirectShowForm.Execute(Sender);
+  Hide;
 end;
 
 procedure TViewer.SlideTimerTimer(Sender: TObject);
