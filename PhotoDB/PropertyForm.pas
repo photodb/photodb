@@ -165,10 +165,8 @@ type
     procedure ExecuteFileNoEx(FileName : string);
     procedure BeginAdding(Sender: TObject);
     procedure EndAdding(Sender: TObject);
-    procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
-
-    procedure ChangedDBDataGroups(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
-
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure ChangedDBDataGroups(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure PmItemPopup(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG;
@@ -1487,7 +1485,7 @@ begin
     MessageBoxDB(Handle, L('Unable to add this image!'), L('Warning'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
-procedure TPropertiesForm.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
+procedure TPropertiesForm.ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
 var
   I, NewFileID: Integer;
   EventFileName: string;
@@ -3086,7 +3084,7 @@ end;
 
 procedure TPropertiesForm.CbRemoveKeywordsForGroupsClick(Sender: TObject);
 begin
-  Settings.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywordsForGroups.Checked);
+  Settings.WriteBool('Propetry', 'DeleteKeyWords', CbRemoveKeywordsForGroups.Checked);
 end;
 
 procedure TPropertiesForm.MoveToGroup1Click(Sender: TObject);
@@ -3103,6 +3101,11 @@ end;
 procedure TPropertiesForm.ChangedDBDataGroups(Sender: TObject; ID: integer;
   params: TEventFields; Value: TEventValues);
 begin
+  if EventID_Param_DB_Changed in Params then
+  begin
+    Close;
+    Exit;
+  end;
   if EventID_Param_GroupsChanged in Params then
   begin
     RecreateGroupsList;

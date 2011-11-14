@@ -661,7 +661,7 @@ end;
 procedure TDatabaseSearch.LoadTextQuery(QueryParams: TDBQueryParams);
 var
   FWorkQuery: TDataSet;
-  Counter, EstimateCount: Integer;
+  EstimateCount: Integer;
   FLastPacketTime: Cardinal;
 begin
   if Assigned(OnProgress) then
@@ -692,14 +692,9 @@ begin
     if not FWorkQuery.IsEmpty and not FSearchParams.IsEstimate then
     begin
       FLastPacketTime := GetTickCount;
-      Counter := 0;
       while not FWorkQuery.Eof do
       begin
         if FOwner.Terminated then
-          Break;
-
-        Inc(Counter);
-        if (Counter > 1000) then
           Break;
 
         AddItem(FWorkQuery);

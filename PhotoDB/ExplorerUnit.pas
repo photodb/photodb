@@ -924,13 +924,14 @@ begin
   DragFilesPopup := TStringList.Create;
 
   SelfDraging := False;
+  OutDrag := False;
   FDblClicked := False;
   FIsExplorer := False;
   SetLength(FListDragItems, 0);
   FDBCanDragW := False;
   ImPreview.Picture.Bitmap := nil;
-  DropFileTarget2.register(Self);
-  DropFileTarget1.register(ElvMain);
+  DropFileTarget2.Register(Self);
+  DropFileTarget1.Register(ElvMain);
 
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   FormManager.RegisterMainForm(Self);
@@ -5754,10 +5755,9 @@ begin
         except
         end;
 
+  DropFileTarget1.Unregister;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE) then
-    DropFileTarget1.Register(ElvMain)
-  else
-    DropFileTarget1.Unregister;
+    DropFileTarget1.Register(ElvMain);
 
   if not NotSetOldPath then
   begin

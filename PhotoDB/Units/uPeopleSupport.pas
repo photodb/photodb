@@ -3,9 +3,10 @@ unit uPeopleSupport;
 interface
 
 uses
-  SysUtils, Classes, DB, jpeg, uMemory, SyncObjs, uDBClasses, uPersonDB, uGUIDUtils,
-  uFaceDetection, uSettings, Math, uFastLoad, UnitDBKernel, uDBForm, UnitDBDeclare,
-  UnitGroupsWork, uSysUtils, uRuntime, uConstants;
+  SysUtils, Windows, Classes, DB, Graphics, jpeg, uMemory, SyncObjs, uDBClasses,
+  uGUIDUtils, uFaceDetection, uSettings, Math, uFastLoad, UnitDBKernel, uDBForm,
+  uPersonDB, UnitDBDeclare, UnitGroupsWork, uSysUtils, uRuntime, uConstants,
+  uBitmapUtils;
 
 const
   PERSON_TYPE = 1;
@@ -90,11 +91,14 @@ type
     FSex: Integer;
     FCreateDate: TDateTime;
     FUniqID: string;
+    FPreview: TBitmap;
+    FPreviewSize: TSize;
     procedure SetImage(const Value: TJpegImage);
     procedure SetID(const Value: Integer);
   public
     constructor Create;
     destructor Destroy; override;
+    function CreatePreview(Width, Height: Integer): TBitmap;
     procedure ReadFromDS(DS: TDataSet);
     procedure SaveToDS(DS: TDataSet);
     procedure Assign(Source: TPerson);
@@ -228,11 +232,39 @@ begin
   FName := '';
   FImage := nil;
   FGroups := '';
+  FPreview := nil;
+  FPreviewSize.cx := 0;
+  FPreviewSize.cy := 0;
+end;
+
+function TPerson.CreatePreview(Width, Height: Integer): TBitmap;
+var
+  B: TBitmap;
+  W, H: Integer;
+begin
+  if (FPreview = nil) or (FPreviewSize.cx <> Width) or (FPreviewSize.cy <> Height) then
+  begin
+    F(FPreview);
+    B := TBitmap.Create;
+    try
+      B.Assign(FImage);
+      W := B.Width;
+      H := B.Height;
+      ProportionalSizeA(Width, Height, W, H);
+      FPreview := TBitmap.Create;
+      DoResize(W, H, B, FPreview);
+      CenterBitmap24To32ImageList(FPreview, Width);
+    finally
+      F(B);
+    end;
+  end;
+  Result := FPreview;
 end;
 
 destructor TPerson.Destroy;
 begin
   F(FImage);
+  F(FPreview);
   inherited;
 end;
 

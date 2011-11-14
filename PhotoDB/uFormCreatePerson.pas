@@ -453,6 +453,7 @@ begin
   BeginTranslate;
   try
     LbName.Caption := L('Name') + ':';
+    WedName.WatermarkText := L('Name of person');
     LbBirthDate.Caption := L('Birthday') + ':';
     LbGroups.Caption := L('Related groups') + ':';
     LbComments.Caption := L('Comment') + ':';

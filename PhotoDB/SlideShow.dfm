@@ -620,11 +620,13 @@ object Viewer: TViewer
     end
   end
   object PmFace: TPopupMenu
+    Images = ImFacePopup
     OnPopup = PmFacePopup
     Left = 48
     Top = 320
     object MiClearFaceZone: TMenuItem
       Caption = 'Clear face zone'
+      ImageIndex = 0
       OnClick = MiClearFaceZoneClick
     end
     object MiClearFaceZoneSeparatpr: TMenuItem
@@ -648,10 +650,12 @@ object Viewer: TViewer
     end
     object MiCreatePerson: TMenuItem
       Caption = 'Create Person'
+      ImageIndex = 1
       OnClick = MiCreatePersonClick
     end
     object MiOtherPersons: TMenuItem
       Caption = 'Other Persons'
+      ImageIndex = 1
       OnClick = MiOtherPersonsClick
     end
     object MiFindPhotosSeparator: TMenuItem
@@ -659,7 +663,13 @@ object Viewer: TViewer
     end
     object MiFindPhotos: TMenuItem
       Caption = 'Find photos'
+      ImageIndex = 2
       OnClick = MiFindPhotosClick
     end
+  end
+  object ImFacePopup: TImageList
+    ColorDepth = cd32Bit
+    Left = 152
+    Top = 368
   end
 end

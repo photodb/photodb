@@ -1988,6 +1988,7 @@
   </scope>
   <scope name="EditPerson">
 	<translate name="Name" value="Имя"/>
+	<translate name="Name of person" value="Имя персоны"/>
 	<translate name="Birthday" value="День рождения"/>
 	<translate name="Comment" value="Коментарий"/>
 	<translate name="Transparency" value="Прозрачность"/>

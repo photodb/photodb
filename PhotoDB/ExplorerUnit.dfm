@@ -1768,7 +1768,6 @@ object ExplorerForm: TExplorerForm
   end
   object DropFileTarget2: TDropFileTarget
     DragTypes = []
-    AutoRegister = False
     OptimizedMove = True
     Left = 648
     Top = 72

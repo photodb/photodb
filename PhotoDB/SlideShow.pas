@@ -131,6 +131,7 @@ type
     MiRefreshFaces: TMenuItem;
     MiDrawFace: TMenuItem;
     N10: TMenuItem;
+    ImFacePopup: TImageList;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -1037,6 +1038,11 @@ begin
   RI := TFaceDetectionResultItem(PmFace.Tag);
   PA := TPersonArea(RI.Data);
 
+  ImFacePopup.Clear;
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_DELETE_INFO + 1]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_PEOPLE + 1]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_SEARCH + 1]);
+
   MiCurrentPerson.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
   MiCurrentPersonSeparator.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
   P := TPerson.Create;
@@ -1045,14 +1051,19 @@ begin
     begin
       PersonManager.FindPerson(PA.PersonID, P);
       MiCreatePerson.Visible := P.Empty;
-      MiFindPhotosSeparator.Visible := not P.Empty;
       if not P.Empty then
+      begin
+        MiFindPhotosSeparator.Visible := True;
+        MiFindPhotos.Visible := True;
+        MiCurrentPerson.ImageIndex := ImFacePopup.Add(P.CreatePreview(16, 16), nil);
         MiCurrentPerson.Caption := P.Name
-      else
+      end else
         MiCurrentPerson.Caption := L('Unknown Person');
     end else
     begin
       MiCreatePerson.Visible := True;
+      MiFindPhotosSeparator.Visible := False;
+      MiFindPhotos.Visible := False;
     end;
 
     SelectedPersons := TPersonCollection.Create;
@@ -1094,6 +1105,7 @@ begin
         MI.Tag := SelectedPersons[I].ID;
         MI.Caption := SelectedPersons[I].Name;
         MI.OnClick := SelectPreviousPerson;
+        MI.ImageIndex := ImFacePopup.Add(SelectedPersons[I].CreatePreview(16, 16), nil);
         PmFace.Items.Insert(LatestPersonsIndex + 1, MI);
         Inc(LatestPersonsIndex);
       end;
