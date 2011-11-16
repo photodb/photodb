@@ -872,6 +872,12 @@ begin
 
   TW.I.Start('ListView1');
 
+  FUpdateItemList := TList.Create;
+  FItemUpdateTimer := TTimer.Create(nil);
+  FItemUpdateTimer.Enabled := False;
+  FItemUpdateTimer.Interval := RefreshListViewInterval;
+  FItemUpdateTimer.OnTimer := ItemUpdateTimer;
+
   ElvMain := TEasyListView.Create(self);
   ElvMain.Parent := PnContent;
   ElvMain.Align := AlClient;
@@ -1047,12 +1053,6 @@ begin
 
   TW.I.Start('LoadIcons');
   LoadIcons;
-
-  FUpdateItemList := TList.Create;
-  FItemUpdateTimer := TTimer.Create(nil);
-  FItemUpdateTimer.Enabled := False;
-  FItemUpdateTimer.Interval := RefreshListViewInterval;
-  FItemUpdateTimer.OnTimer := ItemUpdateTimer;
 
   FItemUpdateLastTime := 0;
 

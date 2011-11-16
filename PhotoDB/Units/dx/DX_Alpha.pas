@@ -305,7 +305,7 @@ begin
     DirectDraw2.Release;
     DirectDraw2 := nil;
 
-    DirectDraw4.SetCooperativeLevel(Handle, DDSCL_SETFOCUSWINDOW or DDSCL_EXCLUSIVE or DDSCL_FULLSCREEN or DDSCL_MULTITHREADED);
+    DirectDraw4.SetCooperativeLevel(Handle, DDSCL_SETFOCUSWINDOW or DDSCL_EXCLUSIVE);
     // Основная (видимая) поверхность...
     FillChar(SurfaceDesc, Sizeof(SurfaceDesc), 0);
 
@@ -357,7 +357,7 @@ begin
     DirectDraw4.CreateSurface (SurfaceDesc, Buffer, nil);
   except
     on e: Exception do
-      ShowMessage(L('Error initializing graphics mode: %s', e.Message));
+      ShowMessage(Format(L('Error initializing graphics mode: %s'), [e.Message]));
   end;
 
   FManager := TDirectXSlideShowCreatorManager.Create;
