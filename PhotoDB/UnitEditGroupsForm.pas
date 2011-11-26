@@ -104,7 +104,7 @@ implementation
 
 uses
   UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
-  UnitQuickGroupInfo, uSearchTypes, SelectGroupForm;
+  UnitQuickGroupInfo, SelectGroupForm, ExplorerUnit;
 
 {$R *.dfm}
 
@@ -506,7 +506,11 @@ end;
 
 procedure TEditGroupsForm.SearchForGroup1Click(Sender: TObject);
 begin
-  SearchManager.NewSearch.StartSearch(':Group(' + FSetGroups[PmGroup.Tag].GroupName+'):');
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cGroupsPath + '\' + FSetGroups[PmGroup.Tag].GroupName);
+    Show;
+  end;
 end;
 
 procedure TEditGroupsForm.TmrFilterTimer(Sender: TObject);

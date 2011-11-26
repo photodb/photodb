@@ -3059,7 +3059,11 @@ end;
 
 procedure TPropertiesForm.SearchForGroup1Click(Sender: TObject);
 begin
-  SearchManager.NewSearch.StartSearch(':Group(' + FNowGroups[PopupMenuGroups.Tag].GroupName + '):');
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cGroupsPath + '\' + FNowGroups[PopupMenuGroups.Tag].GroupName);
+    Show;
+  end;
 end;
 
 procedure TPropertiesForm.QuickInfo1Click(Sender: TObject);

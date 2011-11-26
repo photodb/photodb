@@ -338,7 +338,7 @@ object Viewer: TViewer
   object PmMain: TPopupMenu
     OnPopup = PmMainPopup
     Left = 48
-    Top = 128
+    Top = 96
     object Next1: TMenuItem
       Caption = 'Next'
       Default = True
@@ -480,14 +480,12 @@ object Viewer: TViewer
     OnHint = ApplicationEvents1Hint
     OnMessage = ApplicationEvents1Message
     Left = 48
-    Top = 8
   end
   object SaveWindowPos1: TSaveWindowPos
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 144
-    Top = 8
+    Left = 152
   end
   object ImageList1: TImageList
     BlendColor = 12937777
@@ -510,14 +508,14 @@ object Viewer: TViewer
     OnDrop = DropFileTarget1Drop
     OptimizedMove = True
     Left = 48
-    Top = 64
+    Top = 48
   end
   object DropFileSource1: TDropFileSource
     DragTypes = [dtCopy, dtLink]
     Images = DragImageList
     ShowImage = True
     Left = 148
-    Top = 64
+    Top = 48
   end
   object DragImageList: TImageList
     ColorDepth = cd32Bit
@@ -543,7 +541,7 @@ object Viewer: TViewer
   object RatingPopupMenu: TPopupMenu
     MenuAnimation = [maBottomToTop]
     Left = 48
-    Top = 224
+    Top = 192
     object N01: TMenuItem
       Caption = '0'
       OnClick = N51Click
@@ -578,12 +576,12 @@ object Viewer: TViewer
   end
   object PopupMenuPageSelecter: TPopupMenu
     Left = 48
-    Top = 176
+    Top = 144
   end
   object PmSteganography: TPopupMenu
     OnPopup = PmSteganographyPopup
     Left = 48
-    Top = 272
+    Top = 240
     object AddHiddenInfo1: TMenuItem
       Caption = 'Add Hidden Info'
       OnClick = AddHiddenInfo1Click
@@ -596,7 +594,7 @@ object Viewer: TViewer
   object PmFaces: TPopupMenu
     OnPopup = PmFacesPopup
     Left = 48
-    Top = 368
+    Top = 336
     object MiDrawFace: TMenuItem
       Caption = 'Draw face'
       OnClick = MiDrawFaceClick
@@ -623,7 +621,7 @@ object Viewer: TViewer
     Images = ImFacePopup
     OnPopup = PmFacePopup
     Left = 48
-    Top = 320
+    Top = 288
     object MiClearFaceZone: TMenuItem
       Caption = 'Clear face zone'
       ImageIndex = 0
@@ -658,6 +656,12 @@ object Viewer: TViewer
       ImageIndex = 1
       OnClick = MiOtherPersonsClick
     end
+    object N12: TMenuItem
+      Caption = '-'
+    end
+    object Createnote1: TMenuItem
+      Caption = 'Create note'
+    end
     object MiFindPhotosSeparator: TMenuItem
       Caption = '-'
     end
@@ -671,5 +675,9 @@ object Viewer: TViewer
     ColorDepth = cd32Bit
     Left = 152
     Top = 368
+  end
+  object PmObject: TPopupMenu
+    Left = 48
+    Top = 384
   end
 end

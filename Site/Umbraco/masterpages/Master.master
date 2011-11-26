@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="/css/menu.css" />
     <link rel="stylesheet" type="text/css" href="/css/slider.css" />  
     <script type="text/javascript" src="/scripts/jquery-1.4.4.min.js"></script>
-    <script type="text/javascript" src="/scripts/easySlider1.5.js"></script>
+    <script type="text/javascript" src="/scripts/easySlider1.7.js"></script>
   </head>
   <body>
     <umbraco:Macro Alias="ReferCounter" runat="server" />

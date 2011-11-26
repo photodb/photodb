@@ -19,7 +19,7 @@ namespace PhotoDBUserControls
                         Session["REFER_CHECK"] = new object();
                         StatsManager.CheckRefer();
                     }
-                    int id = Node.GetCurrent().Id;
+                    int id = Node.getCurrentNodeId();
                     StatsManager.MarkView(id, umbraco.library.NiceUrl(id) + Request.Url.Query, GeoIPHelper.CountryCode);
                 }
             }

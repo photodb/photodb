@@ -7,6 +7,7 @@ namespace PhotoDBUserControls.Classes
         {
             public static string ActivationCode = "ac";
             public static string ProgramVersion = "v";
+            public static string ModeParam = "mode";
         }
     }
 }

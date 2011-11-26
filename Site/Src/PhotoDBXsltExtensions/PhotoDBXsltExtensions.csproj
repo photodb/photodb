@@ -59,6 +59,10 @@
       <Project>{CA0C90D6-79A6-42F6-97D6-715819E0AED1}</Project>
       <Name>PhotoDBDatabase</Name>
     </ProjectReference>
+    <ProjectReference Include="..\UmbracoXmlModel\UmbracoXmlModel.csproj">
+      <Project>{0751D689-D010-4831-8CA5-E2796357D501}</Project>
+      <Name>UmbracoXmlModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

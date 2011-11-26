@@ -58,6 +58,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UmbracoSettings.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UmbracoXmlModel\UmbracoXmlModel.csproj">
+      <Project>{0751D689-D010-4831-8CA5-E2796357D501}</Project>
+      <Name>UmbracoXmlModel</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>XCOPY "$(ProjectDir)bin\$(ProjectName)*.*" "$(ProjectDir)..\..\umbraco\bin\" /y</PostBuildEvent>

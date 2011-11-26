@@ -26,6 +26,22 @@
     <translate name="Unknown" value="Неизвестно" />
     <translate name="Unregistered user" value="Незарегистрированный пользователь" />
   </scope>
+  <scope name="Errors">
+    <translate name="Result is undefined!" value="Результат не определён!" />
+    <translate name="Error code is: {0}" value="КОд ошибки: {0}" />
+    <translate name="No errors" value="Нет ошибок" />
+    <translate name="Failed to encrypt object!" value="Произошла ошибка во время шифрования файла!" />
+    <translate name="Failed to encrypt file!" value="Произошла ошибка во время шифрования файла!" />
+    <translate name="Failed to encrypt collection item!" value="Произошла ошибка во время шифрования пункта в базе" />
+    <translate name="Password is incorrect!" value="Пароль неверный!" />
+    <translate name="Passwords are different" value="Указаны различные пароли!" />
+    <translate name="Object is already encrypted!" value="Объект уже зашифрован!" />
+    <translate name="Object is already decrypted!" value="Объект уже расшифрован!" />
+    <translate name="Error reading from file!" value="Ошибка чтения файла!" />
+    <translate name="Error writing to file!" value="Ошибка записи в файл!" />
+    <translate name="Executing" value="Выполнение" />
+    <translate name="Executing" value="Выполнение" />
+  </scope>
   <scope name="InstallLanguage">
     <translate name="Select language" value="Выбор языка" />
     <translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />

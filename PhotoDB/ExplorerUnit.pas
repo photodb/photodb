@@ -325,7 +325,8 @@ type
     function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
     function ItemIndexToMenuIndex(Index: Integer): Integer;
     function MenuIndexToItemIndex(Index: Integer): Integer;
-    Procedure SetOldPath(Path : String);
+    procedure SetOldPath(Path: String);
+    procedure NavigateToFile(FileName: string);
     procedure FormShow(Sender: TObject);
     procedure NewWindow1Click(Sender: TObject);
     procedure Cut1Click(Sender: TObject);
@@ -3805,7 +3806,7 @@ const
   H = 3;
 
 var
-  Index, I, HIncrement: Integer;
+  Index, I, NewTop: Integer;
   B: Boolean;
   S: string;
   PersonalPath, MyPicturesPath: string;
@@ -3881,21 +3882,18 @@ begin
     NameLabel.Caption := S;
     NameLabel.Constraints.MaxWidth := ScrollBox1.Width - ScrollBox1.Left - otstup - ScrollBox1.VertScrollBar.ButtonSize;
     NameLabel.Constraints.MinWidth := ScrollBox1.Width - ScrollBox1.Left - Otstup - ScrollBox1.VertScrollBar.ButtonSize;
-    HIncrement := NameLabel.Height;
+    NewTop := NameLabel.BoundsRect.Bottom;
 
     TypeLabel.Caption := FSelectedInfo.FileTypeW;
     if FSelectedInfo.FileTypeW <> '' then
     begin
-      TypeLabel.Top := NameLabel.Top + NameLabel.Height + H;
+      TypeLabel.Top := NewTop + H;
       TypeLabel.Visible := True;
       TypeLabel.Constraints.MaxWidth := NameLabel.Constraints.MaxWidth;
       TypeLabel.Constraints.MinWidth := NameLabel.Constraints.MinWidth;
-      HIncrement := TypeLabel.Height;
+      NewTop := TypeLabel.BoundsRect.Bottom;
     end else
-    begin
-      TypeLabel.Top := NameLabel.Top;
       TypeLabel.Visible := False;
-    end;
 
     if Min(FSelectedInfo.Width, FSelectedInfo.Height) = 0 then
     begin
@@ -3904,27 +3902,23 @@ begin
         OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
         if DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1) <> -1 then
         begin
-          DimensionsLabel.Top := TypeLabel.Top + HIncrement + H;
+          DimensionsLabel.Top := NewTop + H;
           DimensionsLabel.Visible := True;
           DimensionsLabel.Caption := L('Free space') + ':';
-          HIncrement := DimensionsLabel.Height;
+          NewTop := DimensionsLabel.BoundsRect.Bottom;
         end else
-        begin
-          DimensionsLabel.Top := TypeLabel.Top;
           DimensionsLabel.Visible := False;
-        end;
+
         SetErrorMode(OldMode);
       end else
-      begin
-        DimensionsLabel.Top := TypeLabel.Top;
         DimensionsLabel.Visible := False;
-      end;
+
     end else
     begin
-      DimensionsLabel.Top := TypeLabel.Top + TypeLabel.Height + H;
+      DimensionsLabel.Top := NewTop + H;
       DimensionsLabel.Visible := True;
       DimensionsLabel.Caption := IntToStr(FSelectedInfo.Width) + 'x' + IntToStr(FSelectedInfo.Height);
-      HIncrement := DimensionsLabel.Height;
+      NewTop := DimensionsLabel.BoundsRect.Bottom;
     end;
 
     if (FSelectedInfo.Size <> -1) or (FSelectedInfo.FileType= EXPLORER_ITEM_DRIVE) then
@@ -3938,75 +3932,72 @@ begin
             [SizeInText(DiskFree(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1)),
             SizeInText(DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1))]);
           SizeLabel.Visible := True;
-          SizeLabel.Top := DimensionsLabel.Top + HIncrement + H;
-          HIncrement := SizeLabel.Height;
+          SizeLabel.Top := NewTop + H;
+          NewTop := SizeLabel.BoundsRect.Bottom;
         end else
-        begin
           SizeLabel.Visible := False;
-          SizeLabel.Top := DimensionsLabel.Top;
-        end;
+
         SetErrorMode(OldMode);
       end else
       begin
         SizeLabel.Caption := Format(L('Size = %s'), [SizeInText(FSelectedInfo.Size)]);
         SizeLabel.Visible := True;
-        SizeLabel.Top := DimensionsLabel.Top + DimensionsLabel.Height + H;
-        HIncrement := SizeLabel.Height;
+        SizeLabel.Top := NewTop + H;
+        NewTop := SizeLabel.BoundsRect.Bottom;
       end;
     end else
-    begin
       SizeLabel.Visible := False;
-      SizeLabel.Top := DimensionsLabel.Top;
-    end;
+
 
     if FSelectedInfo.ID <> 0 then
     begin
-      DBInfoLabel.Top := SizeLabel.Top + HIncrement + H;
+      IDLabel.Show;
+      IDLabel.Show;
+
+      DBInfoLabel.Top := NewTop + H;
+
       IDLabel.Caption := Format(L('ID = %d'), [FSelectedInfo.ID]);
       IDLabel.Top := DBInfoLabel.Top + DBInfoLabel.Height + H;
+      NewTop := IDLabel.BoundsRect.Bottom;
+
       if FSelectedInfo.Rating <> 0 then
       begin
         RatingLabel.Caption := Format(L('Rating = %d'), [FSelectedInfo.Rating]);
-        RatingLabel.Top := IDLabel.Top + IDLabel.Height + H;
+        RatingLabel.Top := NewTop + H;
+        NewTop := RatingLabel.BoundsRect.Bottom;
+        RatingLabel.Show;
       end else
-      begin
-        RatingLabel.Top := IDLabel.Top;
-      end;
+        RatingLabel.Hide;
+
       if FSelectedInfo.Access = Db_access_private then
       begin
         AccessLabel.Caption := L('Private image');
-        AccessLabel.Top := RatingLabel.Top + RatingLabel.Height + H;
-        HIncrement := AccessLabel.Height;
-      end else
-      begin
-        AccessLabel.Top := RatingLabel.Top;
-      end;
-      DBInfoLabel.Show;
-      IDLabel.Show;
-      if FSelectedInfo.Rating <> 0 then
-        RatingLabel.Show;
-      if FSelectedInfo.Access = Db_access_private then
+        AccessLabel.Top := NewTop + H;
+        NewTop := AccessLabel.BoundsRect.Bottom;
         AccessLabel.Show;
+      end else
+        AccessLabel.Hide;
+
     end else
     begin
-      AccessLabel.Top := SizeLabel.Top;
       DBInfoLabel.Hide;
       IDLabel.Hide;
       RatingLabel.Hide;
       AccessLabel.Hide;
     end;
-    TasksLabel.Top := Max(AccessLabel.Top + HIncrement + H * 4, NameLabel.Top + NameLabel.Height + H * 4);
+
+    NewTop := NewTop + H * 4;
+    TasksLabel.Top := NewTop;
+    NewTop := TasksLabel.BoundsRect.Bottom;
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
     begin
       SlideShowLink.Visible := True;
-      SlideShowLink.Top := TasksLabel.Top + TasksLabel.Height + H;
+      SlideShowLink.Top := NewTop + H;
+      NewTop := SlideShowLink.BoundsRect.Bottom;
     end else
-    begin
       SlideShowLink.Visible := False;
-      SlideShowLink.Top := TasksLabel.Top;
-    end;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
     begin
@@ -4022,32 +4013,26 @@ begin
         EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
       end;
       EncryptLink.Visible := True;
-      EncryptLink.Top := SlideShowLink.Top + SlideShowLink.Height + H;
+      EncryptLink.Top := NewTop + H;
+      NewTop := EncryptLink.BoundsRect.Bottom;
     end else
-    begin
       EncryptLink.Visible := False;
-      EncryptLink.Top := SlideShowLink.Top;
-    end;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) then
     begin
       ImageEditorLink.Visible := True;
-      ImageEditorLink.Top := EncryptLink.Top + EncryptLink.Height + H;
+      ImageEditorLink.Top := NewTop + H;
+      NewTop := ImageEditorLink.BoundsRect.Bottom;
     end else
-    begin
       ImageEditorLink.Visible := False;
-      ImageEditorLink.Top := EncryptLink.Top;
-    end;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
     begin
       PrintLink.Visible := True;
-      PrintLink.Top := ImageEditorLink.Top + ImageEditorLink.Height + H;
+      PrintLink.Top := NewTop + H;
+      NewTop := PrintLink.BoundsRect.Bottom;
     end else
-    begin
       PrintLink.Visible := False;
-      PrintLink.Top := ImageEditorLink.Top;
-    end;
 
     if (((((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
               (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
@@ -4057,23 +4042,19 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP)) and (SelCount = 1)) then
     begin
       ShellLink.Visible := True;
-      ShellLink.Top := PrintLink.Top + PrintLink.Height + H;
+      ShellLink.Top := NewTop + H;
+      NewTop := ShellLink.BoundsRect.Bottom;
     end else
-    begin
       ShellLink.Visible := False;
-      ShellLink.Top := PrintLink.Top;
-    end;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
     begin
       WlCreateObject.Text := L('New group');
       WlCreateObject.Visible := True;
-      WlCreateObject.Top := ShellLink.Top + ShellLink.Height + H;
+      WlCreateObject.Top := NewTop + H;
+      NewTop := WlCreateObject.BoundsRect.Bottom;
     end else
-    begin
       WlCreateObject.Visible := False;
-      WlCreateObject.Top := ShellLink.Top;
-    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -4081,12 +4062,12 @@ begin
     begin
       CopyToLink.Visible := True;
       TbCopy.Enabled := SelCount <> 0;
-      CopyToLink.Top := WlCreateObject.Top + WlCreateObject.Height + H;
+      CopyToLink.Top := NewTop + H;
+      NewTop := CopyToLink.BoundsRect.Bottom;
     end else
     begin
       CopyToLink.Visible := False;
       TbCopy.Enabled := False;
-      CopyToLink.Top := WlCreateObject.Top;
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
@@ -4094,20 +4075,19 @@ begin
     begin
       if SelCount <> 0 then
       begin
-        MoveToLink.Top := CopyToLink.Top + CopyToLink.Height + H;
+        MoveToLink.Top := NewTop + H;
+        NewTop := MoveToLink.BoundsRect.Bottom;
         MoveToLink.Visible := True;
         TbCut.Enabled := True;
       end else
       begin
         TbCut.Enabled := False;
-        MoveToLink.Top := CopyToLink.Top;
         MoveToLink.Visible := False;
       end;
     end else
     begin
       MoveToLink.Visible := False;
       TbCut.Enabled := False;
-      MoveToLink.Top := CopyToLink.Top;
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
@@ -4116,12 +4096,10 @@ begin
       (SelCount <> 0) then
     begin
       RenameLink.Visible := True;
-      RenameLink.Top := MoveToLink.Top + MoveToLink.Height + H;
-    end
-    else begin
+      RenameLink.Top := NewTop + H;
+      NewTop := RenameLink.BoundsRect.Bottom;
+    end else
       RenameLink.Visible := False;
-      RenameLink.Top := MoveToLink.Top;
-    end;
 
     if (((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -4137,12 +4115,10 @@ begin
         (SelCount > 1)) then
     begin
       PropertiesLink.Visible := True;
-      PropertiesLink.Top := RenameLink.Top + RenameLink.Height + H;
+      PropertiesLink.Top := NewTop + H;
+      NewTop := PropertiesLink.BoundsRect.Bottom;
     end else
-    begin
       PropertiesLink.Visible := False;
-      PropertiesLink.Top := RenameLink.Top;
-    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -4152,18 +4128,17 @@ begin
       begin
         TbDelete.Enabled := True;
         DeleteLink.Visible := True;
-        DeleteLink.Top := PropertiesLink.Top + PropertiesLink.Height + H;
+        DeleteLink.Top := NewTop + H;
+        NewTop := DeleteLink.BoundsRect.Bottom;
       end else
       begin
         TbDelete.Enabled := False;
         DeleteLink.Visible := False;
-        DeleteLink.Top := PropertiesLink.Top;
       end;
     end else
     begin
       TbDelete.Enabled := False;
       DeleteLink.Visible := False;
-      DeleteLink.Top := PropertiesLink.Top;
     end;
 
     if ElvMain.Items.Count < 400 then
@@ -4208,12 +4183,10 @@ begin
         AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_ADD_SINGLE_FILE + 1]);
 
       AddLink.Visible := True;
-      AddLink.Top := DeleteLink.Top + DeleteLink.Height + H;
+      AddLink.Top := NewTop + H;
+      NewTop := AddLink.BoundsRect.Bottom;
     end else
-    begin
       AddLink.Visible := False;
-      AddLink.Top := DeleteLink.Top;
-    end;
 
     if (((FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
@@ -4225,12 +4198,10 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
     begin
       RefreshLink.Visible := True;
-      RefreshLink.Top := AddLink.Top + AddLink.Height + H;
+      RefreshLink.Top := NewTop + H;
+      NewTop := RefreshLink.BoundsRect.Bottom;
     end else
-    begin
       RefreshLink.Visible := False;
-      RefreshLink.Top := AddLink.Top;
-    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or
@@ -4245,7 +4216,7 @@ begin
       MyComputerLink.Show;
       DesktopLink.Show;
 
-      OtherPlacesLabel.Top := RefreshLink.Top + RefreshLink.Height + H * 4;
+      OtherPlacesLabel.Top := NewTop + H * 4;
       if AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(GetShellPath('My Pictures')) then
         MyPicturesLink.Top := OtherPlacesLabel.Top + OtherPlacesLabel.Height + H
       else
@@ -8111,6 +8082,12 @@ begin
       F(FileInfo);
     end;
   end;
+end;
+
+procedure TExplorerForm.NavigateToFile(FileName: string);
+begin
+  SetOldPath(FileName);
+  SetPath(ExtractFilePath(FileName));
 end;
 
 procedure TExplorerForm.ListView1Resize(Sender: TObject);

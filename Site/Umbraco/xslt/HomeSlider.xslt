@@ -46,7 +46,15 @@
                 <li>
                   <xsl:if test="position()!=1"><xsl:attribute name="style">display:none;</xsl:attribute></xsl:if>
                   <a rel="nofollow">
-                    <xsl:attribute name="href"><xsl:call-template name="downloadLink" /></xsl:attribute>
+                    <xsl:choose>
+                      <xsl:when test="./link!=''">
+                        <xsl:attribute name="href"><xsl:value-of select="umbraco.library:NiceUrl(./link)" /></xsl:attribute>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:attribute name="href"><xsl:call-template name="downloadLink" /></xsl:attribute>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                    
                     <img src="{$image}" alt="{./imageName}" />
                   </a>
                 </li>
@@ -60,7 +68,10 @@
       $(document).ready(function(){  
         $("#slider").easySlider({
           prevText:   '',
-          nextText:   ''
+          nextText:   '',
+          auto: true,
+          pause: 4000,
+          continuous: true
         });
         $("#slider li").show();
       });

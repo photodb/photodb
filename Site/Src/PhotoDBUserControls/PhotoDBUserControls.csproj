@@ -68,6 +68,7 @@
     <Content Include="CountryLocator.ascx" />
     <Content Include="DownloadHandler.ascx" />
     <Content Include="FreeActivationHandler.ascx" />
+    <Content Include="HomePageRedirect.ascx" />
     <Content Include="ReferCounter.ascx" />
     <Content Include="UnInstallReason.ascx" />
     <Content Include="Web.config" />
@@ -122,6 +123,13 @@
     <Compile Include="FreeActivationHandler.ascx.designer.cs">
       <DependentUpon>FreeActivationHandler.ascx</DependentUpon>
     </Compile>
+    <Compile Include="HomePageRedirect.ascx.cs">
+      <DependentUpon>HomePageRedirect.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="HomePageRedirect.ascx.designer.cs">
+      <DependentUpon>HomePageRedirect.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReferCounter.ascx.cs">
       <DependentUpon>ReferCounter.ascx</DependentUpon>
@@ -150,6 +158,10 @@
     <ProjectReference Include="..\PhotoDBUmbracoExtensions\PhotoDBUmbracoExtensions.csproj">
       <Project>{A6BA60D7-AB3A-47C5-92FB-5ADC3EB13D6C}</Project>
       <Name>PhotoDBUmbracoExtensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UmbracoXmlModel\UmbracoXmlModel.csproj">
+      <Project>{0751D689-D010-4831-8CA5-E2796357D501}</Project>
+      <Name>UmbracoXmlModel</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

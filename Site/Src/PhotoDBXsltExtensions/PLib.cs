@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Web;
+using System.Xml.XPath;
 using PhotoDBDatabase.Classes;
-using umbraco.NodeFactory;
-using umbraco.interfaces;
+using UmbracoXmlModel;
 
 namespace PhotoDBXsltExtensions
 {
@@ -22,8 +22,10 @@ namespace PhotoDBXsltExtensions
                 FileInfo fileInfo = new FileInfo(filePath);
                 return (int)fileInfo.Length;
             }
-            catch
+            catch(Exception ex)
             {
+                if (!String.IsNullOrEmpty(HttpContext.Current.Request["umbDebugShowTrace"]))
+                    throw new InvalidProgramException(ex.ToString() + Environment.NewLine + filePath + Environment.NewLine + fileName);
                 return -1;
             }
         }
@@ -78,11 +80,9 @@ namespace PhotoDBXsltExtensions
 
         public static string ReplaceNewLineToHTML(int nodeId, string s)
         {
-            Node n = new Node(nodeId);
-
-            IProperty p = n.GetProperty(s);
-
-            s = (string)p.Value ?? String.Empty;
+            UmbracoXmlEntry node = new UmbracoXmlEntry(nodeId);
+   
+            s = node[s];
 
             s = s.Replace("\r\n", "<br/>");
             s = s.Replace("\n", "<br/>");

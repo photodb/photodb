@@ -19,7 +19,6 @@ object FormSizeResizer: TFormSizeResizer
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  OnMouseWheel = FormMouseWheel
   OnResize = FormResize
   DesignSize = (
     394
@@ -412,6 +411,8 @@ object FormSizeResizer: TFormSizeResizer
       0700FE000700FF000700FF87FF00FF87FF00FFC7FF00FFE7FF00FFFFFF00}
     UseSpecIconSize = True
     HightliteImage = True
+    StretchImage = True
+    CanClick = True
   end
   object WlNext: TWebLink
     Left = 357
@@ -510,6 +511,8 @@ object FormSizeResizer: TFormSizeResizer
       3F00E0007F00E000FF00FFE1FF00FFE1FF00FFE3FF00FFE7FF00FFFFFF00}
     UseSpecIconSize = True
     HightliteImage = True
+    StretchImage = True
+    CanClick = True
   end
   object ImlWatermarkPatterns: TImageList
     Left = 48
@@ -526,6 +529,11 @@ object FormSizeResizer: TFormSizeResizer
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
     Left = 192
+    Top = 192
+  end
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
+    Left = 272
     Top = 192
   end
 end

@@ -8,10 +8,9 @@ uses
   win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
   JPEG, PngImage, uFileUtils, uAssociations, uTiffImage,
   GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil, DECCipher,
-  GIFImage, DB, uMemoryUtils;
+  GIFImage, DB, uMemoryUtils, uErrors, uShellUtils;
 
 type
-
   TCryptImageOptions = record
     Password: String;
     CryptFileName: Boolean;
@@ -55,13 +54,13 @@ type
     CRCFile: Cardinal;
     TypeExtract: Byte;
     CryptFileName: Boolean;
-    FileNameLength : Byte;
+    FileNameLength: Byte;
     CFileName: TFileNameUnicode;
     TypeFileNameExtract: Byte;
     FileNameCRC: Cardinal;
     Displacement: Cardinal;
-    Reserved : Cardinal;
-    Reserved2 : Cardinal;
+    Reserved: Cardinal;
+    Reserved2: Cardinal;
   end;
 
   TDBInfoInGraphicFile = record
@@ -69,19 +68,18 @@ type
   end;
 
 const
-
   CRYPT_OPTIONS_NORMAL = 0;
   CRYPT_OPTIONS_SAVE_CRC = 1;
   PhotoDBFileHeaderID = '.PHDBCRT';
 
-function CryptGraphicFileV2(FileName: string; Password: string; Options: Integer): Boolean;
+function CryptGraphicFileV2(FileName: string; Password: string; Options: Integer): Integer;
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
   LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function DeCryptGraphicFile(FileName: string; Password: string;
   LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function DecryptGraphicFileToStream(FileName, Password: string; S: TStream): Boolean;
 function ValidPassInCryptGraphicFile(FileName, Password: string): Boolean;
-function ResetPasswordInGraphicFile(FileName, Password: string): Boolean;
+function ResetPasswordInGraphicFile(FileName, Password: string): Integer;
 function ChangePasswordInGraphicFile(FileName: string; OldPass, NewPass: string): Boolean;
 function ValidCryptGraphicFile(FileName: string): Boolean;
 function GetPasswordCRCFromCryptGraphicFile(FileName: string): Cardinal;
@@ -99,9 +97,38 @@ implementation
 
 uses CommonDBSupport, Dolphin_DB;
 
-procedure FillCharArray(var CharAray : TFileNameUnicode; Str : String);
+procedure FatalSaveStream(S: TStream; OriginalFileName: string);
 var
-  I : Integer;
+  FileName: string;
+
+  function SaveToFile(FileName: string): Boolean;
+  var
+    FS: TFileStream;
+  begin
+    Result := False;
+    try
+      FS := TFileStream.Create(FileName, fmCreate);
+      try
+        S.Seek(0, soFromBeginning);
+        FS.CopyFrom(S, S.Size);
+        Result := True;
+      finally
+        F(FS);
+      end;
+    except
+      Exit;
+    end;
+  end;
+
+begin
+  FileName := ExtractFilePath(OriginalFileName) + ExtractFileName(OriginalFileName) + '.dump';
+  if not SaveToFile(FileName) then
+    SaveToFile(GetTempFileName + '.crypt_dump');
+end;
+
+procedure FillCharArray(var CharAray: TFileNameUnicode; Str: string);
+var
+  I: Integer;
 begin
   for I := 1 to Length(Str) do
     CharAray[I - 1] := Str[I];
@@ -207,9 +234,10 @@ begin
   Stream.Write(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
 end;*)
 
-procedure WriteCryptHeaderV2(Stream : TStream; Src : TStream; FileName : string; Password : string; Options: Integer; var Seed : Binary);
+procedure WriteCryptHeaderV2(Stream: TStream; Src: TStream; FileName: string; Password: string; Options: Integer;
+  var Seed: Binary);
 var
-  FileCRC : Cardinal;
+  FileCRC: Cardinal;
   GraphicHeader: TGraphicCryptFileHeader;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
 begin
@@ -241,9 +269,9 @@ begin
   Stream.Write(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
 end;
 
-procedure TryOpenFSForRead(var FS: TFileStream; FileName : string);
+procedure TryOpenFSForRead(var FS: TFileStream; FileName: string);
 var
-  I : Integer;
+  I: Integer;
 begin
   FS := nil;
 
@@ -253,15 +281,15 @@ begin
       FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
       Break;
     except
-      //2 - file doesn't exist
-      if GetLastError = 2 then
+      if GetLastError in [ERROR_PATH_NOT_FOUND, ERROR_INVALID_DRIVE, ERROR_NOT_READY,
+                          ERROR_FILE_NOT_FOUND, ERROR_GEN_FAILURE] then
         Exit;
       Sleep(DelayReadFileOperation);
     end;
   end;
 end;
 
-procedure ResetFileAttributes(FileName : string; FA : Integer);
+procedure ResetFileAttributes(FileName: string; FA: Integer);
 begin
   if (FA and SysUtils.fahidden) <> 0 then
     FA := FA - SysUtils.fahidden;
@@ -272,56 +300,76 @@ begin
   FileSetAttr(FileName, FA);
 end;
 
-procedure CryptStream(S, D : TStream; Password : string; Options: Integer; FileName : string);
+procedure CryptStream(S, D: TStream; Password: string; Options: Integer; FileName: string);
 var
-  Seed : Binary;
+  Seed: Binary;
 begin
   WriteCryptHeaderV2(D, S, FileName, Password, Options, Seed);
   CryptStreamV2(S, D, Password, Seed);
 end;
 
-function CryptGraphicFileV2W(FileName: string; Password: string; Options: Integer): Boolean;
+function CryptGraphicFileV2W(FileName: string; Password: string; Options: Integer): Integer;
 var
   FS: TFileStream;
   MS: TMemoryStream;
   FA: Integer;
   GraphicHeader: TGraphicCryptFileHeader;
 begin
-  Result := False;
-
   MS := TMemoryStream.Create;
   try
 
-    TryOpenFSForRead(FS, FileName);
-    if FS = nil then
-      Exit;
-
     try
-      FS.Read(GraphicHeader, SizeOf(GraphicHeader));
-      if GraphicHeader.ID = PhotoDBFileHeaderID then
+      TryOpenFSForRead(FS, FileName);
+      if FS = nil then
+      begin
+        Result := CRYPT_RESULT_ERROR_READING_FILE;
         Exit;
+      end;
 
-      FS.Seek(0, SoFromBeginning);
-      MS.CopyFrom(Fs, FS.Size);
-      MS.Position := 0;
-    finally
-      F(FS);
+      try
+        FS.Read(GraphicHeader, SizeOf(GraphicHeader));
+        if GraphicHeader.ID = PhotoDBFileHeaderID then
+        begin
+          Result := CRYPT_RESULT_ALREADY_CRYPT;
+          Exit;
+        end;
+
+        FS.Seek(0, SoFromBeginning);
+        MS.CopyFrom(Fs, FS.Size);
+        MS.Position := 0;
+      finally
+        F(FS);
+      end;
+    except
+      Result := CRYPT_RESULT_ERROR_READING_FILE;
+      Exit;
     end;
 
     FA := FileGetAttr(FileName);
     ResetFileAttributes(FileName, FA);
 
-    FS := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
     try
-      CryptStream(MS, FS, Password, Options, FileName);
-    finally
-      F(FS);
+      FS := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
+      try
+        try
+          CryptStream(MS, FS, Password, Options, FileName);
+        except
+          //if any error in this block - user can lost original data, so we had to save it in any case
+          FatalSaveStream(MS, FileName);
+          raise;
+        end;
+      finally
+        F(FS);
+      end;
+    except
+      Result := CRYPT_RESULT_ERROR_WRITING_FILE;
+      Exit;
     end;
   finally
-    MS.Free;
+    F(MS);
   end;
   FileSetAttr(FileName, FA);
-  Result := True;
+  Result := CRYPT_RESULT_OK;
 end;
 
 procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest : TMemoryStream);
@@ -342,7 +390,7 @@ begin
 end;
 
 function CryptGraphicFileV2(FileName: string; Password: string;
-  Options: Integer): Boolean;
+  Options: Integer): Integer;
 begin
   Result := CryptGraphicFileV2W(FileName, Password, Options);
 end;
@@ -526,9 +574,9 @@ begin
         if Page = -1 then
           (Result as TTiffImage).GetPagesCount(MS)
         else
-          (result as TTiffImage).LoadFromStreamEx(MS, Page);
+          (Result as TTiffImage).LoadFromStreamEx(MS, Page);
 
-        Pages := (result as TTiffImage).Pages;
+        Pages := (Result as TTiffImage).Pages;
 
       end else
         Result.LoadFromStream(MS);
@@ -541,14 +589,14 @@ begin
   end;
 end;
 
-function ResetPasswordInGraphicFile(FileName, Password: String): Boolean;
+function ResetPasswordInGraphicFile(FileName, Password: String): Integer;
 var
   FS: TFileStream;
   MS: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
   FA: Integer;
 begin
-  Result := false;
+  Result := CRYPT_RESULT_UNDEFINED;
 
   MS := TMemoryStream.Create;
   try
@@ -571,7 +619,7 @@ begin
     end;
 
     FA := FileGetAttr(FileName);
-    ResetFileattributes(FileName, FA);
+    ResetFileAttributes(FileName, FA);
 
     FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
     try

@@ -31,13 +31,13 @@ namespace PhotoDBUserControls {
         protected global::System.Web.UI.WebControls.View vForm;
         
         /// <summary>
-        /// vsContactUs control.
+        /// vsUninstall control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ValidationSummary vsContactUs;
+        protected global::System.Web.UI.WebControls.ValidationSummary vsUninstall;
         
         /// <summary>
         /// rfvMessageText control.

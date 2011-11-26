@@ -131,12 +131,12 @@ begin
   FWebLink.Tag := TMenuItem(Sender).Tag;
 
   Settings.WriteInteger('Options', 'DefaultCryptClass', TMenuItem(Sender).Tag);
-  SetDefaultCipherClass(CipherByIdentity(TMenuItem(Sender).Tag));
+  SetDefaultCipherClass(CipherByIdentity(Cardinal(TMenuItem(Sender).Tag)));
 end;
 
 procedure TPasswordMethodChanger.WblMethodClick(Sender: TObject);
 var
-  P : TPoint;
+  P: TPoint;
 begin
   GetCursorPos(P);
   FPopupMenu.Popup(P.X, P.Y);

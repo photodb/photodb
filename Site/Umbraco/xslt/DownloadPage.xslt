@@ -44,9 +44,9 @@
     </xsl:for-each>
   
 
-    <xsl:for-each select="$ReleasesHolder/child::*[@isDoc and string(isStable)!='1']">
+    <xsl:for-each select="$ReleasesHolder/child::*[@isDoc]">
       <xsl:sort select="umbraco.library:FormatDateTime(dateOfRelease, 'yyyyMMddHHmmss')" data-type="number" order="descending"/>
-      <xsl:if test="position()=1">
+      <xsl:if test="position()=1 and string(isStable)!='1'">
         
         <xsl:variable name="fileName" select="umbraco.library:GetMedia(./installerFile, false)/installerFile" />
         <xsl:variable name="downloadUrl" select="concat(umbraco.library:NiceUrl($DownloadHelper/@id),'?id=',./@id)" />

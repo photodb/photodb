@@ -11,7 +11,7 @@ uses
   DmProgress, uW7TaskBar, uWatermarkOptions, uImageSource,
   UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
   uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime, ImButton, uLogger,
-  WebLink, SaveWindowPos, uDBThread;
+  WebLink, SaveWindowPos, uDBThread, AppEvnts;
 
 const
   Settings_ConvertForm = 'Convert settings';
@@ -48,6 +48,7 @@ type
     WlNext: TWebLink;
     PbImage: TPaintBox;
     SwpMain: TSaveWindowPos;
+    AeMain: TApplicationEvents;
     procedure BtCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtJPEGOptionsClick(Sender: TObject);
@@ -77,8 +78,7 @@ type
     procedure PbImageContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
     FData: TDBPopupMenuInfo;
@@ -170,6 +170,29 @@ begin
   FormSizeResizer.DefaultRotate(BeginRotate, StartImmediately);
   if not StartImmediately then
     FormSizeResizer.Show
+end;
+
+procedure TFormSizeResizer.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+var
+  P: TPoint;
+begin
+  if Msg.message = WM_MOUSEWHEEL then
+  begin
+    if PrbMain.Visible then
+      Exit;
+
+    GetCursorPos(P);
+    if PtInRect(PbImage.BoundsRect, Self.ScreenToClient(P)) then
+    begin
+      if Msg.WParam < 0 then
+        WlNextClick(Self)
+      else
+        WlBackClick(Self);
+
+      Msg.message := 0;
+      Handled := True;
+    end;
+  end;
 end;
 
 procedure TFormSizeResizer.BtCancelClick(Sender: TObject);
@@ -350,21 +373,6 @@ begin
     Close;
   if Key = VK_RETURN then
     BtOkClick(Sender);
-end;
-
-procedure TFormSizeResizer.FormMouseWheel(Sender: TObject; Shift: TShiftState;
-  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-begin
-  if PrbMain.Visible then
-    Exit;
-  if PtInRect(PbImage.BoundsRect, Self.ScreenToClient(Mouse.Cursorpos)) then
-  begin
-    if WheelDelta < 0 then
-      WlNextClick(Self)
-    else
-      WlBackClick(Self);
-    Handled := True;
-  end;
 end;
 
 procedure TFormSizeResizer.FormResize(Sender: TObject);

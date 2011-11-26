@@ -132,6 +132,9 @@ type
     MiDrawFace: TMenuItem;
     N10: TMenuItem;
     ImFacePopup: TImageList;
+    PmObject: TPopupMenu;
+    N12: TMenuItem;
+    Createnote1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -681,6 +684,7 @@ begin
   if (FbImage.Height = 0) or (FbImage.Width = 0) then
     begin
       ShowErrorText(FileName);
+      Refresh;
       Exit;
     end;
   if (FbImage.Width > ClientWidth) or (FbImage.Height > HeightW) then

@@ -5,24 +5,14 @@ interface
 uses
   dolphin_db, GraphicCrypt, DB, Windows, SysUtils,
   UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils,
-  uDBForm, uMemory, uDBAdapter;
+  uDBForm, uMemory, uDBAdapter, uErrors;
 
-const
-  CRYPT_RESULT_UNDEFINED         = 0;
-  CRYPT_RESULT_OK                = 1;
-  CRYPT_RESULT_FAILED_CRYPT      = 2;
-  CRYPT_RESULT_FAILED_CRYPT_FILE = 3;
-  CRYPT_RESULT_FAILED_CRYPT_DB   = 4;
-  CRYPT_RESULT_PASS_INCORRECT    = 5;
-  CRYPT_RESULT_PASS_DIFFERENT    = 6;
-  CRYPT_RESULT_ALREADY_CRYPT     = 7;
-  CRYPT_RESULT_ALREADY_DECRYPT   = 8;
-
-function CryptImageByFileName(Caller : TDBForm; FileName: String; ID: integer; Password : String; Options : Integer; DoEvent : boolean = true) : integer;
-function ResetPasswordImageByFileName(Caller : TObject; FileName: String; ID: integer; Password : String) : integer;
-function CryptTStrings(TS : TStrings; Pass : String) : String;
-function DeCryptTStrings(S : String; Pass : String) : TStrings;
-function CryptDBRecordByID(ID : integer; Password : String) : integer;
+function CryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
+  DoEvent: Boolean = True): Integer;
+function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string): Integer;
+function CryptTStrings(TS: TStrings; Pass: string): string;
+function DeCryptTStrings(S: string; Pass: string): TStrings;
+function CryptDBRecordByID(ID: Integer; Password: string): Integer;
 
 implementation
 
@@ -105,6 +95,7 @@ function CryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Pa
   DoEvent: Boolean = True): Integer;
 var
   Info: TEventValues;
+  ErrorCode: Integer;
 begin
   Info.Crypt := True;
   Result := CRYPT_RESULT_UNDEFINED;
@@ -115,11 +106,14 @@ begin
   end;
 
   if FileExistsSafe(FileName) then
-    if not CryptGraphicFileV2(FileName, Password, Options) then
+  begin
+    ErrorCode := CryptGraphicFileV2(FileName, Password, Options);
+    if ErrorCode <> CRYPT_RESULT_OK then
     begin
-      Result := CRYPT_RESULT_FAILED_CRYPT_FILE;
+      Result := ErrorCode;
       Exit;
     end;
+  end;
   if ID <> 0 then
     if CryptDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
     begin

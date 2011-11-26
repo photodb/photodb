@@ -4,7 +4,7 @@
     <asp:View runat="server" ID="vForm">
 
         <div class="validation_summary">
-            <asp:ValidationSummary runat="server" ID="vsContactUs" ShowMessageBox="false" ShowSummary="true"
+            <asp:ValidationSummary runat="server" ID="vsUninstall" ShowMessageBox="false" ShowSummary="true"
                         DisplayMode="List" CssClass="red" ValidationGroup="vgUninstall" />
             <asp:RequiredFieldValidator runat="server" 
                         ID="rfvMessageText" ControlToValidate="txtMessageText" 

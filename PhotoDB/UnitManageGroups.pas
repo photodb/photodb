@@ -90,7 +90,7 @@ implementation
 
 uses
   UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo,
-  uSearchTypes, UnitSelectFontForm;
+  ExplorerUnit, UnitSelectFontForm;
 
 {$R *.dfm}
 
@@ -270,7 +270,12 @@ end;
 
 procedure TFormManageGroups.MenuActionSearchForGroup(Sender: TObject);
 begin
-  SearchManager.NewSearch.StartSearch(':Group(' + Groups[(Sender as TmenuItem).Owner.Tag].GroupName + '):');
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cGroupsPath + '\' + Groups[(Sender as TmenuItem).Owner.Tag].GroupName);
+    Show;
+  end;
+
   Close;
 end;
 

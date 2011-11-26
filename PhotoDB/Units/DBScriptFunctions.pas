@@ -796,7 +796,7 @@ begin
   Result := GetPassForCryptImageFile(FileName).Password;
 end;
 
-function CryptGraphicFile(FileName, Password: string): Boolean;
+function CryptGraphicFile(FileName, Password: string): Integer;
 begin
   Result := CryptGraphicFileV2(FileName, Password, 0);
 end;

@@ -6,7 +6,7 @@ uses
   Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
   UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB, uFileUtils,
   UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX, uDBThread,
-  uConstants;
+  uConstants, uErrors, uShellIntegration;
 
 type
   TCryptingImagesThread = class(TDBThread)
@@ -25,6 +25,8 @@ type
     Position: Integer;
     CryptResult: Integer;
     FSender: TDBForm;
+    procedure ShowError(ErrorText: string);
+    procedure ShowErrorSync;
   public
     constructor Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
   protected
@@ -90,7 +92,7 @@ end;
 
 procedure TCryptingImagesThread.DoDBkernelEventRefreshList;
 var
-  EventInfo : TEventValues;
+  EventInfo: TEventValues;
 begin
   DBKernel.DoIDEvent(FSender, 0, [EventID_Repaint_ImageList], EventInfo);
 end;
@@ -137,6 +139,9 @@ begin
             try
               CryptResult := CryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
                 FOptions.CryptOptions, False);
+
+              if CryptResult <> CRYPT_RESULT_OK then
+                ShowError(DBErrorToString(CryptResult));
             except
               on e: Exception do
                 EventLog(e);
@@ -268,6 +273,17 @@ begin
     Exit;
 
   (ProgressWindow as TProgressActionForm).XPosition := IntParam;
+end;
+
+procedure TCryptingImagesThread.ShowError(ErrorText: string);
+begin
+  StrParam := ErrorText;
+  SynchronizeEx(ShowErrorSync);
+end;
+
+procedure TCryptingImagesThread.ShowErrorSync;
+begin
+  MessageBoxDB(0, StrParam, L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 end.

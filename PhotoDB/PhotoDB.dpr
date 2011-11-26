@@ -358,7 +358,9 @@ uses
   uVCLHelpers in 'Units\uVCLHelpers.pas',
   uFormPersonSuggest in 'uFormPersonSuggest.pas' {FormPersonSuggest},
   uDBCustomThread in 'Threads\uDBCustomThread.pas',
-  uGUIDUtils in 'Units\uGUIDUtils.pas';
+  uGUIDUtils in 'Units\uGUIDUtils.pas',
+  uErrors in 'Units\uErrors.pas',
+  uFormEditObject in 'uFormEditObject.pas' {FormEditObject};
 
 {$R *.res}
 
@@ -524,7 +526,8 @@ begin
 
     TW.I.Start('TFormManager Create');
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.CreateForm(TFormEditObject, FormEditObject);
+  Application.ShowMainForm := False;
     // This is main form of application
 
     TW.I.Start('SetSplashProgress 70');

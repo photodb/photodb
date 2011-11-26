@@ -573,6 +573,10 @@
 			</DCCReference>
 			<DCCReference Include="Threads\uDBCustomThread.pas"/>
 			<DCCReference Include="Units\uGUIDUtils.pas"/>
+			<DCCReference Include="Units\uErrors.pas"/>
+			<DCCReference Include="uFormEditObject.pas">
+				<Form>FormEditObject</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -598,7 +602,6 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="RunParams">/nologo</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>

@@ -1,6 +1,7 @@
 ﻿<%@ Master Language="C#" MasterPageFile="~/masterpages/Master.master" AutoEventWireup="true" %>
 
 <asp:Content ContentPlaceHolderID="PageContent" runat="server">
+  <umbraco:Macro Alias="HomeRedirect" runat="server" />
   <umbraco:Macro Alias="CountrySelection" runat="server" />
   
   <div class="home_top">

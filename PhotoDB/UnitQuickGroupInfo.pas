@@ -6,7 +6,7 @@ uses
   UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
   ComCtrls, jpeg, ExtCtrls, Dialogs, uBitmapUtils, uDBForm, uMemory,
-  uShellIntegration, uConstants, uSearchTypes, WebLinkList, WebLink, AppEvnts,
+  uShellIntegration, uConstants, WebLinkList, WebLink, AppEvnts,
   uMemoryEx, uVCLHelpers;
 
 type
@@ -68,7 +68,8 @@ implementation
 
 {$R *.dfm}
 
-uses UnitDBKernel, UnitFormChangeGroup, UnitManageGroups;
+uses
+  UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, ExplorerUnit;
 
 procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm);
 var
@@ -242,7 +243,12 @@ end;
 
 procedure TFormQuickGroupInfo.SearchForGroup1Click(Sender: TObject);
 begin
-  SearchManager.NewSearch.StartSearch(':Group(' + FGroup.GroupName + '):');
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cGroupsPath + '\' + FGroup.GroupName);
+    Show;
+  end;
+
   BtnOk.OnClick(Sender);
   Close;
   if FCloseOwner then

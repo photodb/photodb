@@ -861,8 +861,7 @@ procedure TDBPopupMenu.ExplorerPopUpMenu_(Sender: TObject);
 begin
   with ExplorerManager.NewExplorer(False) do
   begin
-    SetOldPath(FInfo[FInfo.Position].FileName);
-    SetPath(ExtractFilePath(FInfo[FInfo.Position].FileName));
+    NavigateToFile(FInfo[FInfo.Position].FileName);
     Show;
   end;
 end;

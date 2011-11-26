@@ -21,6 +21,10 @@ namespace PhotoDBDatabase.Classes
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
             {
+                Download lastDownload = db.Downloads.OrderBy(x => -x.DownloadId).FirstOrDefault();
+                if (lastDownload != null && lastDownload.HostId == StatsManager.HostId)
+                    return;
+
                 Download d = new Download()
                 {
                     DownloadDate = DateTime.Now,
