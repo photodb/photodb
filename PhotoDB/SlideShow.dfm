@@ -661,6 +661,7 @@ object Viewer: TViewer
     end
     object Createnote1: TMenuItem
       Caption = 'Create note'
+      OnClick = Createnote1Click
     end
     object MiFindPhotosSeparator: TMenuItem
       Caption = '-'

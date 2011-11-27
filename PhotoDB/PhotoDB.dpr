@@ -360,7 +360,11 @@ uses
   uDBCustomThread in 'Threads\uDBCustomThread.pas',
   uGUIDUtils in 'Units\uGUIDUtils.pas',
   uErrors in 'Units\uErrors.pas',
-  uFormEditObject in 'uFormEditObject.pas' {FormEditObject};
+  uFormEditObject in 'uFormEditObject.pas' {FormEditObject},
+  uImageObjectManager in 'Units\uImageObjectManager.pas',
+  uExplorerWIAProvider in 'Units\uExplorerWIAProvider.pas',
+  WIA2_TLB in 'Interfaces\WIA2_TLB.pas',
+  uWIAManager in 'Units\uWIAManager.pas';
 
 {$R *.res}
 
@@ -526,7 +530,6 @@ begin
 
     TW.I.Start('TFormManager Create');
     Application.CreateForm(TFormManager, FormManager);
-  Application.CreateForm(TFormEditObject, FormEditObject);
   Application.ShowMainForm := False;
     // This is main form of application
 

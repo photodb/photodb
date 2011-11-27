@@ -21,9 +21,9 @@ uses
 
 function CryptDBRecordByID(ID : integer; Password : String) : integer;
 var
-  Query : TDataSet;
-  JPEG : TJPEGImage;
-  MS : TMemoryStream;
+  Query: TDataSet;
+  JPEG: TJPEGImage;
+  MS: TMemoryStream;
   DA: TDBAdapter;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
@@ -59,8 +59,8 @@ end;
 
 function ResetPasswordDBRecordByID(ID : integer; Password : String) : integer;
 var
-  Query : TDataSet;
-  JPEG : TJPEGImage;
+  Query: TDataSet;
+  JPEG: TJPEGImage;
   DA: TDBAdapter;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
@@ -139,7 +139,6 @@ begin
 end;
 
 function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string): Integer;
-
 begin
   Result := CRYPT_RESULT_OK;
   if not ValidCryptGraphicFile(FileName) and FileExistsSafe(FileName) then
@@ -149,11 +148,11 @@ begin
   end;
 
   if FileExistsSafe(FileName) then
-    if not ResetPasswordInGraphicFile(FileName, Password) then
-    begin
-      Result := CRYPT_RESULT_FAILED_CRYPT_FILE;
+  begin
+    Result := ResetPasswordInGraphicFile(FileName, Password);
+    if Result <> CRYPT_RESULT_OK then
       Exit;
-    end;
+  end;
 
   if ID <> 0 then
     if ResetPasswordDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
@@ -161,7 +160,7 @@ begin
 
 end;
 
-function DeCryptTStrings(S : String; Pass : String) : TStrings;
+function DeCryptTStrings(S: string; Pass: string): TStrings;
 var
   X: array of Byte;
   I, Lpass: Integer;

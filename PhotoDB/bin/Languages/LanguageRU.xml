@@ -282,7 +282,8 @@
     <translate name="Loading directories" value="Загрузка директорий" />
     <translate name="Loading info" value="Загрузка информации" />
     <translate name="Loading previews" value="Загрузка предпросмотров" />
-    <translate name="Initialization" value="Инициализация" />
+    <translate name="Loading camera images" value="Загрузка фотографий" />
+	<translate name="Initialization" value="Инициализация" />
     <translate name="Opening computer" value="Открытие компьютера" />
     <translate name="Scaning network" value="Сканирование сети" />
     <translate name="Scaning workgroup" value="Сканирование рабочей группы" />
@@ -2053,5 +2054,20 @@
     <translate name="Search in collection for: &quot;%s&quot;" value="Искать в базе: &quot;%s&quot;" />
     <translate name="Search files for: &quot;%s&quot;" value="Искать файлы: &quot;%s&quot;" />
     <translate name="Search files (with EXIF) for: &quot;%s&quot;" value="Искать файлы (учитывая EXIF): &quot;%s&quot;" />
-  </scope> 
+  </scope>
+  <scope name="EditObject">
+	<translate name="Edit text" value="Редактировать текст"/>
+	<translate name="Create note" value="Создать заметку"/>
+	<translate name="Green" value="Зелёный"/>
+	<translate name="Red" value="Красный"/>
+	<translate name="Blue" value="Голубой"/>
+	<translate name="Gray" value="Серый"/>
+	<translate name="Yellow" value="Жёлтый"/>
+	<translate name="Text" value="Текст"/>
+	<translate name="Please enter your text" value="Пожалуста, введите текст"/>
+	<translate name="Color" value="Цвет"/>
+	<translate name="Note type" value="Тип заметки"/>
+	<translate name="Object rect" value="Выделенный объект"/>
+	<translate name="Text" value="Текст"/>
+  </scope>
 </language>

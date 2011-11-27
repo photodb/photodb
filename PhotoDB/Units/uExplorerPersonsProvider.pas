@@ -194,9 +194,9 @@ begin
         begin
           if Assigned(CallBack) then
             CallBack(Sender, Item, List, Cancel);
-          if Cancel then
-            Break;
         end;
+        if Cancel then
+          Break;
       end;
 
     finally

@@ -254,22 +254,24 @@ const
 //////////////////////////////////
 
 const
-  EXPLORER_ITEM_FOLDER      = 0;
-  EXPLORER_ITEM_IMAGE       = 1;
-  EXPLORER_ITEM_FILE        = 2;
-  EXPLORER_ITEM_DRIVE       = 3;
-  EXPLORER_ITEM_MYCOMPUTER  = 4;
-  EXPLORER_ITEM_NETWORK     = 5;
-  EXPLORER_ITEM_WORKGROUP   = 6;
-  EXPLORER_ITEM_COMPUTER    = 7;
-  EXPLORER_ITEM_SHARE       = 8;
-  EXPLORER_ITEM_EXEFILE     = 9;
-  EXPLORER_ITEM_OTHER       = 10;
-  EXPLORER_ITEM_SEARCH      = 11;
-  EXPLORER_ITEM_PERSON_LIST = 12;
-  EXPLORER_ITEM_PERSON      = 13;
-  EXPLORER_ITEM_GROUP_LIST  = 14;
-  EXPLORER_ITEM_GROUP       = 15;
+  EXPLORER_ITEM_FOLDER       = 0;
+  EXPLORER_ITEM_IMAGE        = 1;
+  EXPLORER_ITEM_FILE         = 2;
+  EXPLORER_ITEM_DRIVE        = 3;
+  EXPLORER_ITEM_MYCOMPUTER   = 4;
+  EXPLORER_ITEM_NETWORK      = 5;
+  EXPLORER_ITEM_WORKGROUP    = 6;
+  EXPLORER_ITEM_COMPUTER     = 7;
+  EXPLORER_ITEM_SHARE        = 8;
+  EXPLORER_ITEM_EXEFILE      = 9;
+  EXPLORER_ITEM_OTHER        = 10;
+  EXPLORER_ITEM_SEARCH       = 11;
+  EXPLORER_ITEM_PERSON_LIST  = 12;
+  EXPLORER_ITEM_PERSON       = 13;
+  EXPLORER_ITEM_GROUP_LIST   = 14;
+  EXPLORER_ITEM_GROUP        = 15;
+  EXPLORER_ITEM_CAMERA       = 16;
+  EXPLORER_ITEM_CAMERA_IMAGE = 17;
 
 //////////////////////////////////////////////////
 
@@ -292,6 +294,7 @@ const
   THREAD_TYPE_GROUPS         = 15;
   THREAD_TYPE_GROUP          = 16;
   THREAD_TYPE_PERSON         = 17;
+  THREAD_TYPE_CAMERA         = 18;
 
   THREAD_PREVIEW_MODE_IMAGE      = 1;
   THREAD_PREVIEW_MODE_BIG_IMAGE  = 2;
@@ -374,6 +377,7 @@ const
 const
   cGroupsPath = 'Groups';
   cPersonsPath = 'Persons';
+  cCamerasPath = 'Cameras';
   cDBSearchPath = '::db://';
   cImagesSearchPath = '::images://';
   cFilesSearchPath = '::files://';

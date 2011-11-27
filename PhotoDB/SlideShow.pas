@@ -235,6 +235,7 @@ type
     procedure MiFaceDetectionStatusClick(Sender: TObject);
     procedure MiCurrentPersonClick(Sender: TObject);
     procedure MiDrawFaceClick(Sender: TObject);
+    procedure Createnote1Click(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -383,7 +384,7 @@ uses
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,
-  uFormCreatePerson, uFaceDetectionThread;
+  uFormCreatePerson, uFaceDetectionThread, uFormEditObject;
 
 {$R *.dfm}
 
@@ -2068,6 +2069,22 @@ begin
   Zoom := 1;
   FIsWaiting := False;
   RealZoomInc := 1;
+end;
+
+procedure TViewer.Createnote1Click(Sender: TObject);
+var
+  Area: TFaceDetectionResultItem;
+  O: TImageObject;
+begin
+  Area := TFaceDetectionResultItem(PmFace.Tag);
+
+  O := nil;
+  try
+    CreateObject(Item.ID, Area, O);
+    RefreshFaces;
+  finally
+    F(O);
+  end;
 end;
 
 procedure TViewer.CreateParams(var Params: TCreateParams);

@@ -23,7 +23,7 @@ uses
   uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit,
   uPathProviders, uExplorerMyComputerProvider, uExplorerFSProviders,
   uExplorerNetworkProviders, uExplorerPersonsProvider, uExplorerGroupsProvider,
-  uExplorerSearchProviders, uTranslate;
+  uExplorerSearchProviders, uExplorerWIAProvider, uTranslate;
 
 const
   RefreshListViewInterval = 50;
@@ -796,7 +796,7 @@ begin
     SetStringPath(TreeView.Path, True);
 end;
 
-procedure VerifyPaste(Explorer : TExplorerForm);
+procedure VerifyPaste(Explorer: TExplorerForm);
 var
   Files: TStrings;
   Effects: Integer;
@@ -810,11 +810,9 @@ begin
     finally
       F(Files);
     end;
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK)
-      or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP)
-      or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER)
-      or (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) then
-      TBPaste.Enabled := False;
+    TBPaste.Enabled := TBPaste.Enabled and (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER)
+      or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE)
+      or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE);
   end;
 end;
 
@@ -1384,6 +1382,35 @@ begin
   end;
 
   if Info.FileType = EXPLORER_ITEM_COMPUTER then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    SlideShow1.Visible := False;
+    Properties1.Visible := False;
+    Delete1.Visible := False;
+    Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
+  if Info.FileType = EXPLORER_ITEM_CAMERA then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -3952,7 +3979,7 @@ begin
     if FSelectedInfo.ID <> 0 then
     begin
       IDLabel.Show;
-      IDLabel.Show;
+      DBInfoLabel.Show;
 
       DBInfoLabel.Top := NewTop + H;
 
@@ -4039,7 +4066,8 @@ begin
               (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE))) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP)) and (SelCount = 1)) then
+          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA)) and (SelCount = 1)) then
     begin
       ShellLink.Visible := True;
       ShellLink.Top := NewTop + H;
@@ -4192,7 +4220,8 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
-		  (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST))
+          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA))
 		  and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
@@ -4208,7 +4237,8 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
     begin
       OtherPlacesLabel.Show;
       MyPicturesLink.Show;
@@ -4604,6 +4634,11 @@ begin
       if P is TPersonItem then
       begin
         SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_PERSON), False);
+        Exit;
+      end;
+      if P is TCameraItem then
+      begin
+        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_CAMERA), False);
         Exit;
       end;
     finally
@@ -5175,7 +5210,9 @@ begin
   else if P is TGroupItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP), False)
   else if P is TPersonItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON), False);
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON), False)
+  else if P is TCameraItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_CAMERA), False);
 end;
 
 procedure TExplorerForm.PePathGetItemIconEvent(Sender: TPathEditor;
@@ -5580,6 +5617,12 @@ begin
     PePath.SetPathEx(TGroupItem, Path);
     Caption := PePath.CurrentPathEx.DisplayName;
     ThreadType := THREAD_TYPE_GROUP;
+  end;
+  if WPath.PType = EXPLORER_ITEM_CAMERA then
+  begin
+    Caption := Path;
+    PePath.SetPathEx(TCameraItem, Path);
+    ThreadType := THREAD_TYPE_CAMERA;
   end;
 
   S := Path;
@@ -6978,7 +7021,7 @@ begin
           if (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -7004,6 +7047,8 @@ begin
                   FindIcon(HInstance, 'PERSONS', 48, 32, Ico);
                 EXPLORER_ITEM_GROUP_LIST:
                   FindIcon(HInstance, 'GROUPS', 48, 32, Ico);
+                EXPLORER_ITEM_CAMERA:
+                  FindIcon(HInstance, 'CAMERA', 48, 32, Ico);
               end;
               try
                 Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
@@ -7366,6 +7411,12 @@ begin
             end;
           end;
         end;
+      DBT_DEVNODES_CHANGED:
+      begin
+        //just refresh list
+        ElvMain.Selection.ClearAll;
+        RefreshLinkClick(RefreshLink);
+      end;
     end;
   end;
 end;
@@ -8235,7 +8286,7 @@ begin
       case FFilesInfo[Index].FileType of
         EXPLORER_ITEM_NETWORK, EXPLORER_ITEM_WORKGROUP, EXPLORER_ITEM_COMPUTER,
           EXPLORER_ITEM_SHARE, EXPLORER_ITEM_PERSON_LIST, EXPLORER_ITEM_GROUP_LIST,
-          EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON:
+          EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_CAMERA:
           SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
               FFilesInfo[Index].FileType), false);
       end;

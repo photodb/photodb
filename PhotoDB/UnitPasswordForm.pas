@@ -68,15 +68,15 @@ type
   public
     { Public declarations }
     procedure ReallignControlsEx;
-    procedure LoadFileList(FileList : TStrings);
+    procedure LoadFileList(FileList: TStrings);
     property Password : string read FPassword write FPassword;
   end;
 
-function GetImagePasswordFromUser(FileName : String) : String;
-function GetImagePasswordFromUserBlob(DF : TField; FileName : String) : String;
-function GetImagePasswordFromUserEx(FileName : String; out AskAgain : boolean) : String;
-function GetImagePasswordFromUserStenoraphy(FileName : string; CRC : Cardinal) : String;
-function GetImagePasswordFromUserForManyFiles(FileList : TStrings; CRC : Cardinal; var Skip : boolean) : String;
+function GetImagePasswordFromUser(FileName: String): String;
+function GetImagePasswordFromUserBlob(DF: TField; FileName: String): String;
+function GetImagePasswordFromUserEx(FileName: String; out AskAgain: Boolean) : String;
+function GetImagePasswordFromUserStenoraphy(FileName: string; CRC: Cardinal) : String;
+function GetImagePasswordFromUserForManyFiles(FileList: TStrings; CRC: Cardinal; var Skip: Boolean): String;
 
 implementation
 

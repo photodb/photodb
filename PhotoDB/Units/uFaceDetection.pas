@@ -205,10 +205,6 @@ const
   CascadesDirectoryMask = 'Cascades';
 
 type
-{  TClonableObject = class(TObject)
-    function Clone: TClonableObject; virtual; abstract;
-  end;   }
-
   TFaceDetectionResultItem = class
   private
     FData: TClonableObject;
@@ -227,8 +223,7 @@ type
     function Copy: TFaceDetectionResultItem;
     constructor Create;
     destructor Destroy; override;
-    procedure RecalculateNewImageSize(NewSize: TSize);
-    procedure RotateLeft;                                
+    procedure RotateLeft;
     procedure RotateRight;
     property Data: TClonableObject read FData write SetData;
     property ImageSize: TSize read GetImageSize;
@@ -732,23 +727,6 @@ function TFaceDetectionResultItem.GetImageSize: TSize;
 begin
   Result.cx := ImageWidth;
   Result.cy := ImageHeight;
-end;
-
-procedure TFaceDetectionResultItem.RecalculateNewImageSize(NewSize: TSize);
-var
-  MX, MY: Double;
-begin
-  if (ImageWidth <> 0) and (ImageHeight <> 0) then
-  begin
-    MX := NewSize.cx / ImageWidth;
-    MY := NewSize.cy / ImageHeight;
-    X := Round(X * MX);
-    Y := Round(Y * MY);
-    Width := Round(Width * MX);
-    Height := Round(Height * MY);
-    ImageWidth := NewSize.cx;
-    ImageHeight := NewSize.cy;
-  end;
 end;
 
 procedure TFaceDetectionResultItem.RotateRight;

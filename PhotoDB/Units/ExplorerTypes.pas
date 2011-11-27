@@ -7,7 +7,7 @@ uses
   uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo, uThreadEx, Menus,
   uThreadForm, ShellApi, uConstants, PathEditor, uSysUtils, uGUIDUtils,
   uPathProviders, uExplorerMyComputerProvider, uExplorerGroupsProvider,
-  uExplorerPersonsProvider, uExplorerNetworkProviders;
+  uExplorerPersonsProvider, uExplorerNetworkProviders, uExplorerWIAProvider;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -80,6 +80,8 @@ const
   DBT_DeviceRemoveComplete = $8004;
   DBTF_Media               = $0001;
   DBT_DevTyp_Volume        = $0002;
+  DBT_DEVNODES_CHANGED     = $0007;
+
 
 type
   PDevBroadcastHdr = ^TDevBroadcastHdr;
@@ -777,7 +779,11 @@ begin
   else if PI is TComputerItem then
     FileType := EXPLORER_ITEM_COMPUTER
   else if PI is TShareItem then
-    FileType := EXPLORER_ITEM_SHARE;
+    FileType := EXPLORER_ITEM_SHARE
+  else if PI is TCameraItem then
+    FileType := EXPLORER_ITEM_CAMERA
+  else if PI is TCameraImageItem then
+    FileType := EXPLORER_ITEM_CAMERA_IMAGE;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;

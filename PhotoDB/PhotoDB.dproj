@@ -577,6 +577,10 @@
 			<DCCReference Include="uFormEditObject.pas">
 				<Form>FormEditObject</Form>
 			</DCCReference>
+			<DCCReference Include="Units\uImageObjectManager.pas"/>
+			<DCCReference Include="Units\uExplorerWIAProvider.pas"/>
+			<DCCReference Include="Interfaces\WIA2_TLB.pas"/>
+			<DCCReference Include="Units\uWIAManager.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

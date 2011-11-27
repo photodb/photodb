@@ -620,10 +620,7 @@ begin
     try
       SC.Execute;
       if SC.RecordCount > 0 then
-      begin
-        SC.DS.First;
         Result.ReadFromDS(SC.DS);
-      end;
     except
       Exit;
     end;
@@ -645,10 +642,7 @@ begin
     try
       SC.Execute;
       if SC.RecordCount > 0 then
-      begin
-        SC.DS.First;
         Result.ReadFromDS(SC.DS);
-      end;
     except
       Exit;
     end;

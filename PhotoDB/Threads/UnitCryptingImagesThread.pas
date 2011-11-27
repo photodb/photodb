@@ -156,6 +156,9 @@ begin
             GetPassword;
             // DEcrypting images
             CryptResult := ResetPasswordImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FPassword);
+
+            if CryptResult <> CRYPT_RESULT_OK then
+              ShowError(DBErrorToString(CryptResult));
           end;
           StrParam := FOptions.Files[I];
           IntParam := FOptions.IDs[I];

@@ -80,7 +80,7 @@ function DeCryptGraphicFile(FileName: string; Password: string;
 function DecryptGraphicFileToStream(FileName, Password: string; S: TStream): Boolean;
 function ValidPassInCryptGraphicFile(FileName, Password: string): Boolean;
 function ResetPasswordInGraphicFile(FileName, Password: string): Integer;
-function ChangePasswordInGraphicFile(FileName: string; OldPass, NewPass: string): Boolean;
+function ChangePasswordInGraphicFile(FileName: string; OldPass, NewPass: string): Integer;
 function ValidCryptGraphicFile(FileName: string): Boolean;
 function GetPasswordCRCFromCryptGraphicFile(FileName: string): Cardinal;
 
@@ -601,86 +601,115 @@ begin
   MS := TMemoryStream.Create;
   try
 
-    TryOpenFSForRead(FS, FileName);
-
-    if FS = nil then
-      Exit;
-
     try
-      FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
-      if GraphicHeader.ID <> PhotoDBFileHeaderID then
+      TryOpenFSForRead(FS, FileName);
+      if FS = nil then
         Exit;
 
-      if not DecryptStream(FS, GraphicHeader, Password, MS) then
-        Exit;
+      try
+        FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+        if GraphicHeader.ID <> PhotoDBFileHeaderID then
+          Exit;
 
-    finally
-      F(FS);
+        if not DecryptStream(FS, GraphicHeader, Password, MS) then
+          Exit;
+
+      finally
+        F(FS);
+      end;
+    except
+      Result := CRYPT_RESULT_ERROR_READING_FILE;
+      Exit;
     end;
 
     FA := FileGetAttr(FileName);
     ResetFileAttributes(FileName, FA);
 
-    FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
     try
-      MS.Seek(0, soFromBeginning);
-      FS.CopyFrom(MS, MS.Size);
-    finally
-      F(FS);
+      FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
+      try
+        try
+          MS.Seek(0, soFromBeginning);
+          FS.CopyFrom(MS, MS.Size);
+        except
+          //if any error in this block - user can lost original data, so we had to save it in any case
+          FatalSaveStream(MS, FileName);
+          raise;
+        end;
+      finally
+        F(FS);
+      end;
+    except
+      Result := CRYPT_RESULT_ERROR_WRITING_FILE;
+      Exit;
     end;
   finally
     F(MS);
   end;
   FileSetAttr(FileName, FA);
-  Result := True;
+  Result := CRYPT_RESULT_OK;
 end;
 
-function ChangePasswordInGraphicFile(FileName: String;
-  OldPass, NewPass: String): Boolean;
+function ChangePasswordInGraphicFile(FileName: String; OldPass, NewPass: String): Integer;
 var
   FS: TFileStream;
   MS: TMemoryStream;
   GraphicHeader: TGraphicCryptFileHeader;
-  FA : Cardinal;
-  Seed : Binary;
+  FA: Cardinal;
+  Seed: Binary;
 begin
-  Result := false;
-
-  TryOpenFSForRead(FS, FileName);
+  Result := CRYPT_RESULT_UNDEFINED;
 
   MS := TMemoryStream.Create;
   try
-
-    if FS = nil then
-      Exit;
-
     try
-      FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
-      if GraphicHeader.ID <> PhotoDBFileHeaderID then
+      TryOpenFSForRead(FS, FileName);
+      if FS = nil then
         Exit;
 
-      if not DecryptStream(FS, GraphicHeader, OldPass, MS) then
-        Exit;
+      try
+        FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+        if GraphicHeader.ID <> PhotoDBFileHeaderID then
+          Exit;
 
-    finally
-      F(FS);
+        if not DecryptStream(FS, GraphicHeader, OldPass, MS) then
+          Exit;
+
+      finally
+        F(FS);
+      end;
+    except
+      Result := CRYPT_RESULT_ERROR_READING_FILE;
+      Exit;
     end;
     FA := FileGetAttr(FileName);
     ResetFileattributes(FileName, FA);
 
-    FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
     try
-      WriteCryptHeaderV2(FS, MS, FileName, NewPass, CRYPT_OPTIONS_SAVE_CRC, Seed);
-      CryptStreamV2(MS, FS, NewPass, Seed);
-    finally
-      F(FS);
+      FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
+      try
+        try
+          WriteCryptHeaderV2(FS, MS, FileName, NewPass, CRYPT_OPTIONS_SAVE_CRC, Seed);
+          CryptStreamV2(MS, FS, NewPass, Seed);
+        except
+          //if any error in this block - user can lost original data, so we had to save it in any case
+          FatalSaveStream(MS, FileName);
+          raise;
+        end;
+      finally
+        F(FS);
+      end;
+
+    except
+      Result := CRYPT_RESULT_ERROR_WRITING_FILE;
+      Exit;
     end;
 
   finally
     F(MS);
   end;
   FileSetAttr(FileName, FA);
-  Result := True;
+  Result := CRYPT_RESULT_OK;
 end;
 
 function ValidPassInCryptGraphicFile(FileName, Password: String): Boolean;
@@ -728,7 +757,6 @@ begin
   Result := False;
 
   TryOpenFSForRead(FS, FileName);
-
   if FS = nil then
    Exit;
 

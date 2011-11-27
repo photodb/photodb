@@ -60,6 +60,7 @@ begin
 
       if not (Now - LastCheckDate > 7) then
         Exit;
+
     end;
 
     try
@@ -72,6 +73,8 @@ begin
     end;
 
     ParceReply(UpdateText);
+    if not Terminated and FIsBackground then
+      Settings.WriteDateTime('Updater', 'LastTime', Now);
 
   finally
     CoUninitialize;

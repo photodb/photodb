@@ -107,6 +107,7 @@ type
     procedure LoadComputerFolder;
     procedure LoadGroups;
     procedure LoadPersons;
+    procedure LoadCameraImages;
     procedure ShowMessage_;
     procedure ExplorerBack;
     procedure UpdateFile;
@@ -473,6 +474,12 @@ begin
       if (FThreadType = THREAD_TYPE_PERSONS) then
       begin
        LoadPersons;
+       SynchronizeEx(DoStopSearch);
+       Exit;
+      end;
+      if (FThreadType = THREAD_TYPE_CAMERA) then
+      begin
+       LoadCameraImages;
        SynchronizeEx(DoStopSearch);
        Exit;
       end;
@@ -2097,6 +2104,26 @@ begin
       LoadProviderItem(PersonsItem, 10, ExplorerInfo.PictureSize);
     finally
       F(PersonsItem);
+    end;
+  finally
+    EndUpdate;
+  end;
+  ShowInfo('', 1, 0);
+end;
+
+procedure TExplorerThread.LoadCameraImages;
+var
+  CameraItem: TPathItem;
+begin
+  HideProgress;
+  ShowInfo(L('Loading camera images'), 1, 0);
+  SynchronizeEx(BeginUpdate);
+  try
+    CameraItem := PathProviderManager.CreatePathItem(FFolder);
+    try
+      LoadProviderItem(CameraItem, 5, ExplorerInfo.PictureSize);
+    finally
+      F(CameraItem);
     end;
   finally
     EndUpdate;
