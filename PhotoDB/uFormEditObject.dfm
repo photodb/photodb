@@ -2,8 +2,8 @@ object FormEditObject: TFormEditObject
   Left = 0
   Top = 0
   Caption = 'FormEditObject'
-  ClientHeight = 276
-  ClientWidth = 408
+  ClientHeight = 224
+  ClientWidth = 345
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,20 +11,21 @@ object FormEditObject: TFormEditObject
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
-    408
-    276)
+    345
+    224)
   PixelsPerInch = 96
   TextHeight = 13
-  object LbColor: TLabel
+  object lbColor: TLabel
     Left = 8
-    Top = 117
-    Width = 36
+    Top = 145
+    Width = 98
     Height = 13
-    Anchors = [akLeft, akBottom]
-    Caption = 'LbColor'
+    Anchors = [akLeft, akRight, akBottom]
+    Caption = 'lbColor'
+    ExplicitTop = 122
+    ExplicitWidth = 33
   end
   object LbNoteText: TLabel
     Left = 8
@@ -35,62 +36,49 @@ object FormEditObject: TFormEditObject
   end
   object CbColor: TColorBox
     Left = 8
-    Top = 136
-    Width = 392
+    Top = 164
+    Width = 329
     Height = 22
     NoneColorColor = clRed
     Selected = clScrollBar
     Style = [cbCustomColors]
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 0
-    ExplicitTop = 118
-    ExplicitWidth = 332
+    ExplicitTop = 141
+    ExplicitWidth = 185
+  end
+  object MemText: TMemo
+    Left = 8
+    Top = 27
+    Width = 329
+    Height = 112
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Lines.Strings = (
+      'MemText')
+    TabOrder = 1
+    ExplicitWidth = 185
+    ExplicitHeight = 89
   end
   object BtnOk: TButton
-    Left = 323
-    Top = 244
+    Left = 260
+    Top = 192
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
-    TabOrder = 1
-    ExplicitLeft = 260
-    ExplicitTop = 192
+    TabOrder = 2
+    ExplicitLeft = 197
+    ExplicitTop = 169
   end
   object BtnCancel: TButton
-    Left = 242
-    Top = 244
+    Left = 179
+    Top = 192
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
-    TabOrder = 2
-    ExplicitLeft = 179
-    ExplicitTop = 192
-  end
-  object RgType: TRadioGroup
-    Left = 8
-    Top = 164
-    Width = 392
-    Height = 74
-    Anchors = [akLeft, akRight, akBottom]
-    Caption = 'RgType'
-    Items.Strings = (
-      'Object rect'
-      'Text')
     TabOrder = 3
-    ExplicitTop = 146
-    ExplicitWidth = 332
-  end
-  object WemText: TWatermarkedMemo
-    Left = 8
-    Top = 27
-    Width = 392
-    Height = 84
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    TabOrder = 4
-    WatermarkText = 'Please enter any text'
-    ExplicitWidth = 332
-    ExplicitHeight = 61
+    ExplicitLeft = 116
+    ExplicitTop = 169
   end
 end

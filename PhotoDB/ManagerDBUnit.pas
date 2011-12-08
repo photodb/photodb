@@ -3,7 +3,7 @@ unit ManagerDBUnit;
 interface
 
 uses
-  UnitGroupsWork, DBCMenu, Dolphin_DB, UnitDBkernel, Windows, Messages,
+  UnitGroupsWork, DBCMenu, Dolphin_DB, UnitDBkernel, Windows, Messages, Types,
   SysUtils, Variants, Classes, Graphics, Controls, Forms, Math, uVistaFuncs,
   ExtCtrls, AppEvnts, ImgList, DropTarget, DragDropFile, DragDrop,
   DropSource, Menus, SaveWindowPos, DB, ComCtrls, WebLink, StdCtrls,

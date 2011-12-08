@@ -265,6 +265,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object ExportTableLink: TWebLink
         Left = 8
@@ -284,6 +286,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object ImportTableLink: TWebLink
         Left = 8
@@ -303,6 +307,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object RecreateIDExLink: TWebLink
         Left = 8
@@ -322,6 +328,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object ScanforBadLinksLink: TWebLink
         Left = 8
@@ -341,6 +349,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object BackUpDBLink: TWebLink
         Left = 8
@@ -360,6 +370,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object CleaningLink: TWebLink
         Left = 8
@@ -379,6 +391,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object LbDatabases: TListBox
         Left = 456
@@ -419,6 +433,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object ConvertLink: TWebLink
         Left = 8
@@ -438,6 +454,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
       object ChangePathLink: TWebLink
         Left = 8
@@ -457,6 +475,8 @@ object ManagerDB: TManagerDB
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
     end
     object ElvMain: TListView

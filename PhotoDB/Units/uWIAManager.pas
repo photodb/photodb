@@ -3,7 +3,7 @@ unit uWIAManager;
 interface
 
 uses
-  Classes, Graphics, ComObj, WIA2_TLB, uMemory;
+  Classes, Graphics, ComObj, WIA2_TLB, uMemory, uBitmapUtils;
 
 type
   TWIACamera = class;
@@ -26,8 +26,6 @@ type
   private
     FDeviceInfo: IDeviceInfo;
     FDevice: IDevice;
-    FProp: IProperty;
-    FItem: IItem;
     FCameraName: string;
     FImages: TList;
     procedure InitImages;
@@ -46,19 +44,18 @@ type
   TWIACameraImage = class(TObject)
   private
     FItem: IItem;
-    Preivew: IVector;
-    ImagePreview: IImageFile;
-    W, H, ImageWidth, ImageHeight, ItemFlags: Integer;
-    PreviewWidth, PreviewHeight: Integer;
-    BinaryPreview: TBinaryArray;
-    MS: TMemoryStream;
-    BitmapPreview, FinePreview: TBitmap;
-    ItemName, FileNameExtension: string;
+    FFileName: string;
+    FItemID: string;
+    FPreview: TBitmap;
+    FIsInitialized: Boolean;
+    procedure InitItem;
     function GetFileName: string;
     function GetItemID: string;
     function GetPreview: TBitmap;
   public
     constructor Create(Item: IItem);
+    destructor Destroy; override;
+    function ExtractPreview: TBitmap;
     property FileName: string read GetFileName;
     property Preview: TBitmap read GetPreview;
     property ItemID: string read GetItemID;
@@ -166,6 +163,58 @@ end;
 constructor TWIACameraImage.Create(Item: IItem);
 begin
   FItem := Item;
+  FPreview := nil;
+  FIsInitialized := False;
+end;
+
+destructor TWIACameraImage.Destroy;
+begin
+  F(FPreview);
+  inherited;
+end;
+
+function TWIACameraImage.ExtractPreview: TBitmap;
+begin
+  InitItem;
+  Result := FPreview;
+  FPreview := nil;
+end;
+
+function TWIACameraImage.GetFileName: string;
+begin
+  InitItem;
+  Result := FFileName;
+end;
+
+function TWIACameraImage.GetItemID: string;
+begin
+  InitItem;
+  Result := FItemID;
+end;
+
+function TWIACameraImage.GetPreview: TBitmap;
+begin
+  InitItem;
+  Result := FPreview;
+end;
+
+procedure TWIACameraImage.InitItem;
+var
+  Prop: IProperty;
+  Index: OleVariant;
+  Preivew: IVector;
+  ImagePreview: IImageFile;
+  I, W, H, ImageWidth, ImageHeight, ItemFlags: Integer;
+  PreviewWidth, PreviewHeight: Integer;
+  BinaryPreview: TBinaryArray;
+  MS: TMemoryStream;
+  BitmapPreview, FinePreview: TBitmap;
+  ItemName, FileNameExtension: string;
+begin
+  if FIsInitialized then
+    Exit;
+
+  FIsInitialized := True;
   Preivew := nil;
   ItemFlags := 0;
   PreviewWidth := 0;
@@ -173,98 +222,80 @@ begin
   ImageWidth := 0;
   ImageHeight := 0;
   FileNameExtension := '';
-  (*
-    L(CItem.ItemID, 2);
 
-    for K := 1 to CItem.Properties.Count do
+  FItemID := FItem.ItemID;
+
+  for I := 1 to FItem.Properties.Count do
+  begin
+    Index := I;
+    Prop := FItem.Properties[Index];
+
+    if Prop.Name = 'Filename extension' then
+      FileNameExtension := string(Prop.Get_Value())
+    else if Prop.Name = 'Item Flags' then
+      ItemFlags := Integer(Prop.Get_Value())
+    else if Prop.Name = 'Pixels Per Line' then
+      ImageWidth := Integer(Prop.Get_Value())
+    else if Prop.Name = 'Number of Lines' then
+      ImageHeight := Integer(Prop.Get_Value())
+    else if Prop.Name = 'Item Name' then
+      ItemName := string(Prop.Get_Value())
+    else if Prop.Name = 'Thumbnail Data' then
+      Preivew := IUnknown(Prop.Get_Value()) as IVector
+    else if Prop.Name = 'Thumbnail Width' then
+      PreviewWidth := Integer(Prop.Get_Value())
+    else if Prop.Name = 'Thumbnail Height' then
+      PreviewHeight := Integer(Prop.Get_Value());
+  end;
+
+  if ItemFlags and (ImageItemFlag or FileItemFlag) > 0 then
+  begin
+    if (Preivew <> nil) then
     begin
-      Index := K;
-      Prop := CItem.Properties[Index];
-
-      if Prop.Name = 'Filename extension' then
-        FileNameExtension := string(Prop.Get_Value())
-      else if Prop.Name = 'Item Flags' then
-        ItemFlags := Integer(Prop.Get_Value())
-      else if Prop.Name = 'Pixels Per Line' then
-        ImageWidth := Integer(Prop.Get_Value())
-      else if Prop.Name = 'Number of Lines' then
-        ImageHeight := Integer(Prop.Get_Value())
-      else if Prop.Name = 'Item Name' then
-        ItemName := string(Prop.Get_Value())
-      else if Prop.Name = 'Thumbnail Data' then
-        Preivew := IUnknown(Prop.Get_Value()) as IVector
-      else if Prop.Name = 'Thumbnail Width' then
-        PreviewWidth := Integer(Prop.Get_Value())
-      else if Prop.Name = 'Thumbnail Height' then
-        PreviewHeight := Integer(Prop.Get_Value());
-
-    end;
-    L('------', 2);
-
-    if ItemFlags and (ImageItemFlag or FileItemFlag) > 0 then
-    begin
-      if (Preivew <> nil) then
-      begin
-        ImagePreview := Preivew.ImageFile[PreviewWidth, PreviewHeight];
-        BinaryPreview := TBinaryArray(ImagePreview.FileData.Get_BinaryData());
-        MS := TMemoryStream.Create;
+      ImagePreview := Preivew.ImageFile[PreviewWidth, PreviewHeight];
+      BinaryPreview := TBinaryArray(ImagePreview.FileData.Get_BinaryData());
+      MS := TMemoryStream.Create;
+      try
+        MS.WriteBuffer(Pointer(BinaryPreview)^, Length(BinaryPreview));
+        MS.Seek(0, soFromBeginning);
+        BitmapPreview := TBitmap.Create;
         try
-          MS.WriteBuffer(Pointer(BinaryPreview)^, Length(BinaryPreview));
-          MS.Seek(0, soFromBeginning);
-          BitmapPreview := TBitmap.Create;
-          try
-            BitmapPreview.LoadFromStream(MS);
-            BitmapPreview.PixelFormat := pf24Bit;
-            W := ImageWidth;
-            H := ImageHeight;
-            ProportionalSize(PreviewWidth, PreviewHeight, W, H);
-            if (W <> PreviewWidth) or (H <> PreviewHeight) then
-            begin
-              FinePreview := TBitmap.Create;
-              try
-                FinePreview.SetSize(W, H);
+          BitmapPreview.LoadFromStream(MS);
+          BitmapPreview.PixelFormat := pf24Bit;
+          W := ImageWidth;
+          H := ImageHeight;
+          ProportionalSize(PreviewWidth, PreviewHeight, W, H);
+          if (W <> PreviewWidth) or (H <> PreviewHeight) then
+          begin
+            FinePreview := TBitmap.Create;
+            try
+              FinePreview.PixelFormat := pf24bit;
+              FinePreview.SetSize(W, H);
 
-                DrawImageEx(FinePreview, BitmapPreview, PreviewWidth div 2 - W div 2, PreviewHeight div 2 - H div 2);
-                //FinePreview.Canvas.CopyRect(Rect(0, 0, W, H), BitmapPreview.Canvas, Rect(PreviewWidth div 2 - W div 2,
-                //  PreviewHeight div 2 - H div 2, PreviewWidth div 2 + W div 2, PreviewHeight div 2 + H div 2));
+              DrawImageExRect(FinePreview, BitmapPreview, PreviewWidth div 2 - W div 2, PreviewHeight div 2 - H div 2, W, H, 0, 0);
 
-                //FinePreview.SaveToFile('c:\' + ItemName + '.' + FileNameExtension + '.bmp');
-
-              finally
-                FinePreview.Free;
-              end;
-            end else
-            begin
-              Result := TCameraImageItem.CreateFromPath(cCamerasPath + '\' + CameraName + '\' + ItemName + '.' + FileNameExtension);
-              Result.UpdateImageInfo(CItem.ItemID, BitmapPreview);
+              FPreview := FinePreview;
+              FinePreview := nil;
+            finally
+              F(FinePreview);
             end;
-
-          finally
-            BitmapPreview.Free;
+          end else
+          begin
+            FPreview := BitmapPreview;
+            BitmapPreview := nil;
           end;
+
         finally
-          MS.Free;
+          F(BitmapPreview);
         end;
+      finally
+        F(MS);
       end;
-      //Image := IUnknown(Item.Transfer('{00000000-0000-0000-0000-000000000000}')) as IImageFile;
-      //Image.SaveFile('c:\' + ItemName + '.' + FileNameExtension);
     end;
-  end; *)
-end;
-
-function TWIACameraImage.GetFileName: string;
-begin
-
-end;
-
-function TWIACameraImage.GetItemID: string;
-begin
-
-end;
-
-function TWIACameraImage.GetPreview: TBitmap;
-begin
-
+    //Image := IUnknown(Item.Transfer('{00000000-0000-0000-0000-000000000000}')) as IImageFile;
+    //Image.SaveFile('c:\' + ItemName + '.' + FileNameExtension);
+  end;
+  FFileName := ItemName + '.' + FileNameExtension;
 end;
 
 end.

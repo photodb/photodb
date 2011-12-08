@@ -2074,16 +2074,16 @@ end;
 procedure TViewer.Createnote1Click(Sender: TObject);
 var
   Area: TFaceDetectionResultItem;
-  O: TImageObject;
+ // O: TImageObject;
 begin
   Area := TFaceDetectionResultItem(PmFace.Tag);
 
-  O := nil;
+//  O := nil;
   try
-    CreateObject(Item.ID, Area, O);
+//    CreateObject(Item.ID, Area, O);
     RefreshFaces;
   finally
-    F(O);
+ //   F(O);
   end;
 end;
 

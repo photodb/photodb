@@ -35,6 +35,7 @@ procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
 procedure SelectedColor(Image: TBitmap; Color: TColor);
 procedure FillColorEx(Bitmap: TBitmap; Color: TColor);
 procedure DrawImageEx(Dest, Src: TBitmap; X, Y: Integer);
+procedure DrawImageExRect(Dest, Src: TBitmap; SX, SY, SW, SH: Integer; DX, DY: Integer);
 procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
@@ -449,7 +450,7 @@ begin
 end;
 
 
-procedure StretchCool(x, y, Width, Height : Integer; S, D : TBitmap);
+procedure StretchCool(X, Y, Width, Height: Integer; S, D: TBitmap);
 var
   i,j,k,p,Sheight1:integer;
   P1: Pargb;
@@ -879,7 +880,6 @@ begin
     StretchCool(Width,Height,S,D)
 end;
 
-
 procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);
 var
   I, J,
@@ -929,8 +929,8 @@ var
   XD, YD,
   DH, DW,
   SH, SW: Integer;
-  pS : PARGB;
-  pD : PARGB32;
+  pS: PARGB;
+  pD: PARGB32;
 begin
   DH := Dest32.Height;
   DW := Dest32.Width;
@@ -963,7 +963,7 @@ var
   DH, DW,
   SH, SW: Integer;
   pS,
-  pD : PARGB32;
+  pD: PARGB32;
 begin
   DH := Dest32.Height;
   DW := Dest32.Width;
@@ -989,15 +989,15 @@ begin
   end;
 end;
 
-procedure DrawImageEx32To24(Dest24, Src32 : TBitmap; X, Y : Integer);
+procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
 var
   I, J,
   XD, YD,
   DH, DW,
-  SH, SW  : Integer;
-  W1, W : Byte;
-  pD : PARGB;
-  pS : PARGB32;
+  SH, SW : Integer;
+  W1, W: Byte;
+  pD: PARGB;
+  pS: PARGB32;
 begin
   DH := Dest24.Height;
   DW := Dest24.Width;
@@ -1025,14 +1025,14 @@ begin
   end;
 end;
 
-procedure DrawImageEx32(Dest32, Src32 : TBitmap; X, Y : Integer);
+procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 var
   I, J,
   XD, YD,
   DH, DW,
-  SH, SW  : Integer;
-  W1, W : Byte;
-  pD, pS : PARGB32;
+  SH, SW : Integer;
+  W1, W: Byte;
+  pD, pS: PARGB32;
 begin
   DH := Dest32.Height;
   DW := Dest32.Width;
@@ -1062,14 +1062,14 @@ begin
   end;
 end;
 
-procedure DrawImageEx(Dest, Src : TBitmap; X, Y : Integer);
+procedure DrawImageEx(Dest, Src: TBitmap; X, Y: Integer);
 var
   I, J,
   XD, YD,
   DH, DW,
-  SH, SW  : integer;
-  pS : PARGB;
-  pD : PARGB;
+  SH, SW: Integer;
+  pS: PARGB;
+  pD: PARGB;
 begin
   DH := Dest.Height;
   DW := Dest.Width;
@@ -1088,6 +1088,45 @@ begin
       if (XD >= DW) then
         Break;
       pD[XD] := pS[J];
+    end;
+  end;
+end;
+
+procedure DrawImageExRect(Dest, Src: TBitmap; SX, SY, SW, SH: Integer; DX, DY: Integer);
+var
+  I, J,
+  XD, YD, YS, XS,
+  DHeight, DWidth, SHeight, SWidth : integer;
+  pS: PARGB;
+  pD: PARGB;
+begin
+  DHeight := Dest.Height;
+  DWidth := Dest.Width;
+  SHeight := Src.Height;
+  SWidth := Src.Width;
+  for I := 0 to SW - 1 do
+  begin
+
+    YD := I + DY;
+    if (YD >= DHeight) then
+      Break;
+    YS := I + SY;
+    if (YD >= SHeight) then
+      Break;
+
+    pS := Src.ScanLine[YS];
+    pD := Dest.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+
+      XD := J + DX;
+      if (XD >= DWidth) then
+        Break;
+      XS := J + DY;
+      if (XS >= SWidth) then
+        Break;
+
+      pD[XD] := pS[XS];
     end;
   end;
 end;

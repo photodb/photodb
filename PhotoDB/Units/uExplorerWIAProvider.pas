@@ -27,8 +27,8 @@ type
   public
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     procedure Assign(Item: TPathItem); override;
-    //function LoadImage(Options, ImageSize: Integer): Boolean; override;
-    //procedure ReadFromPerson(Person: TPerson; Options, ImageSize: Integer);
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
+    procedure ReadFromCameraImage(CI: TWIACameraImage);
     property ImageName: string read FImageName;
     property ItemID: string read FItemID;
   end;
@@ -117,10 +117,13 @@ function TCameraProvider.InternalFillChildList(Sender: TObject; Item: TPathItem;
   List: TPathItemCollection; Options, ImageSize, PacketSize: Integer;
   CallBack: TLoadListCallBack): Boolean;
 var
-  I: Integer;
+  I, J: Integer;
   Cancel: Boolean;
   CI: TCameraItem;
   Manager: TWIAManager;
+  C: TWIACamera;
+  WCI: TWIACameraImage;
+  CII: TCameraImageItem;
 begin
   Result := True;
   Cancel := False;
@@ -152,7 +155,16 @@ begin
       for I := 0 to Manager.Count - 1 do
         if Manager[I].CameraName = CI.DisplayName then
         begin
-
+          C := Manager[I];
+          for J := 0 to C.Count - 1 do
+          begin
+            WCI := C[J];
+            CII := TCameraImageItem.CreateFromPath(cCamerasPath + '\' + Manager[I].CameraName + '\' + WCI.FileName, Options, ImageSize);
+            CII.ReadFromCameraImage(WCI);
+            List.Add(CII);
+            if Assigned(CallBack) then
+              CallBack(Sender, Item, List, Cancel);
+          end;
         end;
     finally
       F(Manager);
@@ -225,18 +237,29 @@ end;
 constructor TCameraImageItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
 begin
-  inherited;
-
+  inherited CreateFromPath(APath, Options, ImageSize);
+  FDisplayName := ExtractFileName(APath)
 end;
 
 function TCameraImageItem.InternalCreateNewInstance: TPathItem;
 begin
-
+  Result := TCameraImageItem.Create;
 end;
 
 function TCameraImageItem.InternalGetParent: TPathItem;
 begin
+  Result := TCameraItem.CreateFromPath(ExtractCameraName(FPath), PATH_LOAD_NO_IMAGE, 0);
+end;
 
+function TCameraImageItem.LoadImage(Options, ImageSize: Integer): Boolean;
+begin
+  Result := False;
+end;
+
+procedure TCameraImageItem.ReadFromCameraImage(CI: TWIACameraImage);
+begin
+  F(FImage);
+  FImage := TPathImage.Create(CI.ExtractPreview);
 end;
 
 initialization

@@ -1,8 +1,8 @@
 d:
 cd "D:\Dmitry\Delphi exe\Photo Database"
 
-SET DELPHI=C:\Program Files\Embarcadero\RAD Studio\7.0
-SET PROGS=C:\Program Files
+SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\8.0
+SET PROGS=C:\Users\Public\Documents
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
 SET BRCC32=%DELPHI%\BIN\BRCC32.EXE
 SET DM=D:\dmitry\Dmitry
