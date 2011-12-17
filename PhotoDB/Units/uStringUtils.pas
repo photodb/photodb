@@ -3,7 +3,7 @@ unit uStringUtils;
 interface
 
 uses
-  Windows, Classes, SysUtils;
+  Windows, Classes, SysUtils, StrUtils;
 
 type
   TStringsHelper = class helper for TStrings
@@ -77,12 +77,14 @@ end;
 
 function ConvertUniversalFloatToLocal(s: string): string;
 var
-  I: integer;
+  I: Integer;
 begin
   Result := s;
   for I := 1 to Length(Result) do
     if Result[I] = '.' then
-      Result[I] := DecimalSeparator;
+      Result[I] := FormatSettings.DecimalSeparator;
+
+
 end;
 
 function PosExW(const SubStr, S: string; Offset : Integer = 1): Integer;

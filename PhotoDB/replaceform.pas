@@ -8,7 +8,7 @@ uses
   DropTarget, DragDropFile, DragDrop, DropSource, Menus, ImgList, StdCtrls,
   ExtCtrls, ComCtrls, Dialogs, DB, JPEG, Math, uMemory,
   ActiveX, UnitBitmapImageList, CommonDBSupport,  uJpegUtils, uBitmapUtils,
-  uLogger, uDBDrawing, uFileUtils, uGraphicUtils,
+  uLogger, uDBDrawing, uFileUtils, uGraphicUtils, Types,
   uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm,
   uSettings, uListViewUtils, uAssociations, uDBAdapter, MPCommonObjects,
   EasyListview, MPCommonUtilities, RAWImage;

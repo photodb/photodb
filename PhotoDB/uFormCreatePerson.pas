@@ -9,7 +9,7 @@ uses
   uBitmapUtils, uThreadEx, uDBThread, uThreadForm, LoadingSign, u2DUtils,
   UnitDBDeclare, UnitDBKernel, AppEvnts, WebLink, UnitGroupsWork, ImgList,
   uConstants, uEditorTypes, Dolphin_db, uLogger, RAWImage, uJpegUtils,
-  uFastLoad, uVCLHelpers, ActiveX, uDBClasses, uPathProviders, uDBForm,
+  uFastLoad, uVCLHelpers, ActiveX, uDBClasses, uPathProviders, uDBForm, Types,
   uSettings, Menus, uExplorerPersonsProvider, uSysUtils, CommonDBSupport;
 
 type

@@ -5,7 +5,7 @@ interface
 uses
   uPathProviders, Graphics, uMemory, uExplorerPathProvider, Classes,
   uExplorerMyComputerProvider, uConstants, uShellIcons, uTranslate,
-  StrUtils, SysUtils, uBitmapUtils, uWIAManager;
+  StrUtils, SysUtils, uBitmapUtils, uWIAManager, Math;
 
 type
   TCameraItem = class(TPathItem)
@@ -21,6 +21,7 @@ type
   private
     FImageName: string;
     FItemID: string;
+    function GetCameraName: string;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
@@ -31,6 +32,7 @@ type
     procedure ReadFromCameraImage(CI: TWIACameraImage);
     property ImageName: string read FImageName;
     property ItemID: string read FItemID;
+    property CameraName: string read GetCameraName;
   end;
 
 type
@@ -104,8 +106,15 @@ end;
 
 function TCameraProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
+var
+  CII: TCameraImageItem;
 begin
-  Result := False;
+  CII := TCameraImageItem(Item);
+  CII.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
+  Result := CII.Image <> nil;
+
+  if Result then
+    Bitmap.Assign(CII.Image.Bitmap);
 end;
 
 function TCameraProvider.GetTranslateID: string;
@@ -239,6 +248,11 @@ constructor TCameraImageItem.CreateFromPath(APath: string; Options,
 begin
   inherited CreateFromPath(APath, Options, ImageSize);
   FDisplayName := ExtractFileName(APath)
+end;
+
+function TCameraImageItem.GetCameraName: string;
+begin
+  Result := ExtractCameraName(FPath);
 end;
 
 function TCameraImageItem.InternalCreateNewInstance: TPathItem;

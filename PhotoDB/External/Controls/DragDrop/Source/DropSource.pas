@@ -28,6 +28,7 @@ uses
   ActiveX,
   Controls,
   Windows,
+  Types,
   Classes;
 
 {$include DragDrop.inc}

@@ -747,6 +747,7 @@ object ExplorerForm: TExplorerForm
         Top = 0
         AutoSize = True
         ImageIndex = 6
+        OnClick = TbDeleteClick
       end
       object ToolButton10: TToolButton
         Left = 142

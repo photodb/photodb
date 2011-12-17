@@ -29,7 +29,7 @@ object HelpPopup: THelpPopup
   object Label1: TLabel
     Left = 59
     Top = 61
-    Width = 44
+    Width = 43
     Height = 13
     Caption = 'Caption'
     Font.Charset = DEFAULT_CHARSET
@@ -440,12 +440,12 @@ object HelpPopup: THelpPopup
     PixelsBetweenPictureAndText = 10
     FadeDelay = 10
     FadeSteps = 20
-    defaultcolor = clBtnFace
+    Defaultcolor = clBtnFace
     Animations = [ImSt_Normal, ImSt_Enter, ImSt_Click, ImSt_Disabled]
     AnimatedShow = False
-    autosetimage = True
-    usecoolfont = False
-    coolcolor = clBlack
+    Autosetimage = True
+    Usecoolfont = False
+    Coolcolor = clBlack
     CoolColorSize = 3
     VirtualDraw = False
   end
@@ -905,12 +905,12 @@ object HelpPopup: THelpPopup
     PixelsBetweenPictureAndText = 10
     FadeDelay = 10
     FadeSteps = 20
-    defaultcolor = clYellow
+    Defaultcolor = clYellow
     Animations = [ImSt_Normal, ImSt_Enter, ImSt_Click, ImSt_Disabled]
     AnimatedShow = False
-    autosetimage = True
-    usecoolfont = False
-    coolcolor = clBlack
+    Autosetimage = True
+    Usecoolfont = False
+    Coolcolor = clBlack
     CoolColorSize = 3
     VirtualDraw = False
   end

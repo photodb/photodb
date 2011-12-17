@@ -12,7 +12,8 @@ uses
   EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
   uIconUtils, uScript, uLogger, uFileUtils, uMemory, uGOM, uBitmapUtils,
   uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate, uImageSource,
-  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings, uDBAdapter;
+  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings, uDBAdapter,
+  Types;
 
 type TDBPopupMenu = class
    private

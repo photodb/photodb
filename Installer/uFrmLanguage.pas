@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
   StrUtils, uTranslate, uLogger, pngimage, uInstallZip, uSysUtils, uLangUtils,
-  Registry, uInstallRuntime;
+  Registry, uInstallRuntime, uRuntime;
 
 type
   TLanguageItem = class(TObject)
@@ -240,7 +240,8 @@ begin
   MS := TMemoryStream.Create;
   try
     GetRCDATAResourceStream(SetupDataName, MS);
-    InstallVersion := StringToRelease(ReadFileContent(MS, 'VERSION.INFO'));
+    ProgramVersionString := ReadFileContent(MS, 'VERSION.INFO');
+    InstallVersion := StringToRelease(ProgramVersionString);
     lbVersion.Caption := ReleaseToString(InstallVersion);
     FileList := TStringList.Create;
     try

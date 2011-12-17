@@ -41,7 +41,7 @@ unit CCR.Exif.XMPUtils;
 interface
 
 uses
-  Types, SysUtils, Classes, Graphics, xmldom, CCR.Exif.BaseUtils, CCR.Exif.TiffUtils;
+  Types, SysUtils, Classes, Graphics, xmldom, CCR.Exif.BaseUtils, CCR.Exif.TiffUtils, SyncObjs;
 
 type
   EInvalidXMPPacket = class(Exception);
@@ -334,6 +334,9 @@ uses
   {$IFNDEF HasTTimeZone}Windows,{$ENDIF} Math, RTLConsts, Contnrs, DateUtils, StrUtils,
   CCR.Exif.Consts, CCR.Exif.TagIDs, CCR.Exif.StreamHelper;
 
+var
+  GSync: TCriticalSection = nil;
+
 const
   XMLLangAttrName = 'xml:lang';
   DefaultLangIdent = 'x-default';
@@ -509,37 +512,42 @@ class procedure TKnownXMPNamespaces.NeedKnownURIs;
 var
   I: Integer;
 begin
-  if FKnownURIs <> nil then Exit;
-  FKnownURIs := TUnicodeStringList.Create;
-  with FKnownURIs do
-  begin
-    AddObject(RDF.URI, TObject(xsRDF));
-    AddObject('http://ns.adobe.com/camera-raw-settings/1.0/', TObject(xsCameraRaw));
-    AddObject('http://ns.adobe.com/xap/1.0/g', TObject(xsColorant));
-    AddObject('http://ns.adobe.com/xap/1.0/sType/Dimensions#', TObject(xsDimensions));
-    AddObject('http://purl.org/dc/elements/1.1/', TObject(xsDublinCore));
-    AddObject('http://ns.adobe.com/xap/1.0/sType/Font#', TObject(xsFont));
-    AddObject('http://ns.adobe.com/exif/1.0/', TObject(xsExif));
-    AddObject('http://ns.adobe.com/exif/1.0/aux/', TObject(xsExifAux));
-    AddObject('http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/', TObject(xsIPTC));
-    AddObject('http://ns.adobe.com/xap/1.0/sType/Job#', TObject(xsJob));
-    AddObject('http://ns.microsoft.com/photo/1.0', TObject(xsMicrosoftPhoto));
-    AddObject('http://ns.adobe.com/pdf/1.3/', TObject(xsPDF));
-    AddObject('http://ns.adobe.com/photoshop/1.0/', TObject(xsPhotoshop));
-    AddObject('http://ns.adobe.com/xap/1.0/sType/ResourceEvent#', TObject(xsResourceEvent));
-    AddObject('http://ns.adobe.com/xap/1.0/sType/ResourceRef#', TObject(xsResourceRef));
-    AddObject('http://ns.adobe.com/xap/1.0/g/img/', TObject(xsThumbnail));
-    AddObject('http://ns.adobe.com/tiff/1.0/', TObject(xsTIFF));
-    AddObject('http://ns.adobe.com/xap/1.0/sType/Version#', TObject(xsVersion));
-    AddObject('http://ns.adobe.com/xap/1.0/', TObject(xsXMPBasic));
-    AddObject('http://ns.adobe.com/xap/1.0/bj/', TObject(xsXMPBasicJobTicket));
-    AddObject('http://ns.adobe.com/xmp/1.0/DynamicMedia/', TObject(xsXMPDynamicMedia));
-    AddObject('http://ns.adobe.com/xap/1.0/mm/', TObject(xsXMPMediaManagement));
-    AddObject('http://ns.adobe.com/xap/1.0/t/pg/', TObject(xsXMPPagedText));
-    AddObject('http://ns.adobe.com/xap/1.0/rights/', TObject(xsXMPRights));
-    Sorted := True;
-    for I := Count - 1 downto 0 do
-      FKnownIndices[TXMPKnownNamespace(Objects[I])] := I;
+  GSync.Enter;
+  try
+    if FKnownURIs <> nil then Exit;
+    FKnownURIs := TUnicodeStringList.Create;
+    with FKnownURIs do
+    begin
+      AddObject(RDF.URI, TObject(xsRDF));
+      AddObject('http://ns.adobe.com/camera-raw-settings/1.0/', TObject(xsCameraRaw));
+      AddObject('http://ns.adobe.com/xap/1.0/g', TObject(xsColorant));
+      AddObject('http://ns.adobe.com/xap/1.0/sType/Dimensions#', TObject(xsDimensions));
+      AddObject('http://purl.org/dc/elements/1.1/', TObject(xsDublinCore));
+      AddObject('http://ns.adobe.com/xap/1.0/sType/Font#', TObject(xsFont));
+      AddObject('http://ns.adobe.com/exif/1.0/', TObject(xsExif));
+      AddObject('http://ns.adobe.com/exif/1.0/aux/', TObject(xsExifAux));
+      AddObject('http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/', TObject(xsIPTC));
+      AddObject('http://ns.adobe.com/xap/1.0/sType/Job#', TObject(xsJob));
+      AddObject('http://ns.microsoft.com/photo/1.0', TObject(xsMicrosoftPhoto));
+      AddObject('http://ns.adobe.com/pdf/1.3/', TObject(xsPDF));
+      AddObject('http://ns.adobe.com/photoshop/1.0/', TObject(xsPhotoshop));
+      AddObject('http://ns.adobe.com/xap/1.0/sType/ResourceEvent#', TObject(xsResourceEvent));
+      AddObject('http://ns.adobe.com/xap/1.0/sType/ResourceRef#', TObject(xsResourceRef));
+      AddObject('http://ns.adobe.com/xap/1.0/g/img/', TObject(xsThumbnail));
+      AddObject('http://ns.adobe.com/tiff/1.0/', TObject(xsTIFF));
+      AddObject('http://ns.adobe.com/xap/1.0/sType/Version#', TObject(xsVersion));
+      AddObject('http://ns.adobe.com/xap/1.0/', TObject(xsXMPBasic));
+      AddObject('http://ns.adobe.com/xap/1.0/bj/', TObject(xsXMPBasicJobTicket));
+      AddObject('http://ns.adobe.com/xmp/1.0/DynamicMedia/', TObject(xsXMPDynamicMedia));
+      AddObject('http://ns.adobe.com/xap/1.0/mm/', TObject(xsXMPMediaManagement));
+      AddObject('http://ns.adobe.com/xap/1.0/t/pg/', TObject(xsXMPPagedText));
+      AddObject('http://ns.adobe.com/xap/1.0/rights/', TObject(xsXMPRights));
+      Sorted := True;
+      for I := Count - 1 downto 0 do
+        FKnownIndices[TXMPKnownNamespace(Objects[I])] := I;
+    end;
+  finally
+    GSync.Leave;
   end;
 end;
 
@@ -1986,6 +1994,8 @@ initialization
     InitProc := nil;      //automatically with a VCL app (the RTL's MSXML wrapper uses
   end;                    //ComObj.pas, which assigns InitProc, which is called by
 {$ENDIF}                  //Application.Initialize), but not in a console one.
+  GSync := TCriticalSection.Create;
 finalization
   TKnownXMPNamespaces.FKnownURIs.Free;
+  FreeAndNil(GSync);
 end.

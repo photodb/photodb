@@ -8,49 +8,49 @@
   resources were bound to the produced executable.
 */
 
-#define DECCipher_sKeyMaterialToLarge 64880
-#define DECCipher_sIVMaterialToLarge 64881
-#define DECCipher_sCipherNoDefault 64882
-#define ShellConsts_SShellDefaultNameStr 64883
-#define ShellConsts_SShellDefaultSizeStr 64884
-#define ShellConsts_SShellDefaultTypeStr 64885
-#define ShellConsts_SShellDefaultModifiedStr 64886
-#define ShellConsts_SShellNoDetails 64887
-#define ShellConsts_SCallLoadDetails 64888
-#define ShellConsts_SRenamedFailedError 64889
-#define OleConst_sNoRunningObject 64890
-#define DropTarget_sTargetAsyncBusy 64896
-#define DropTarget_sRichEditWarning 64897
-#define DragDrop_sImplementationRequired 64898
-#define DragDrop_sFormatNameReadOnly 64899
-#define DragDrop_sNoCopyStgMedium 64900
-#define DragDrop_sBadConstructor 64901
-#define DragDropPIDL_sBadDesktop 64902
-#define DragDropPIDL_sBadFilename 64903
-#define DECUtil_sClassNotRegistered 64904
-#define DECUtil_sWrongIdentity 64905
-#define DECHash_sHashingOverflowError 64906
-#define DECHash_sHashNotInitialized 64907
-#define DECHash_sHashNoDefault 64908
-#define DECCipher_sAlreadyPadded 64909
-#define DECCipher_sInvalidState 64910
-#define DECCipher_sInvalidMessageLength 64911
+#define DECCipher_sInvalidMessageLength 64880
+#define DECCipher_sKeyMaterialToLarge 64881
+#define DECCipher_sIVMaterialToLarge 64882
+#define DECCipher_sCipherNoDefault 64883
+#define ShellConsts_SShellDefaultNameStr 64884
+#define ShellConsts_SShellDefaultSizeStr 64885
+#define ShellConsts_SShellDefaultTypeStr 64886
+#define ShellConsts_SShellDefaultModifiedStr 64887
+#define ShellConsts_SShellNoDetails 64888
+#define ShellConsts_SCallLoadDetails 64889
+#define ShellConsts_SRenamedFailedError 64890
+#define DropSource_sDropSourceAsyncBusy 64896
+#define DropTarget_sTargetAsyncBusy 64897
+#define DropTarget_sRichEditWarning 64898
+#define DragDrop_sImplementationRequired 64899
+#define DragDrop_sFormatNameReadOnly 64900
+#define DragDrop_sNoCopyStgMedium 64901
+#define DragDrop_sBadConstructor 64902
+#define DragDropPIDL_sBadDesktop 64903
+#define DragDropPIDL_sBadFilename 64904
+#define DECUtil_sClassNotRegistered 64905
+#define DECUtil_sWrongIdentity 64906
+#define DECHash_sHashingOverflowError 64907
+#define DECHash_sHashNotInitialized 64908
+#define DECHash_sHashNoDefault 64909
+#define DECCipher_sAlreadyPadded 64910
+#define DECCipher_sInvalidState 64911
 #define CCR_Exif_Consts_SPreferredPrefixMustBeSet 64912
 #define uShellIntegration_SNotSupported 64913
-#define VDBConsts_SFirstRecord 64914
-#define VDBConsts_SPriorRecord 64915
-#define VDBConsts_SNextRecord 64916
-#define VDBConsts_SLastRecord 64917
-#define VDBConsts_SInsertRecord 64918
-#define VDBConsts_SDeleteRecord 64919
-#define VDBConsts_SEditRecord 64920
-#define VDBConsts_SPostEdit 64921
-#define VDBConsts_SCancelEdit 64922
-#define VDBConsts_SRefreshRecord 64923
-#define VDBConsts_SRemoteLogin 64924
-#define DropSource_sDropSourceBusy 64925
-#define DropSource_sDropSourceAsyncFailed 64926
-#define DropSource_sDropSourceAsyncBusy 64927
+#define OleConst_sNoRunningObject 64914
+#define VDBConsts_SFirstRecord 64915
+#define VDBConsts_SPriorRecord 64916
+#define VDBConsts_SNextRecord 64917
+#define VDBConsts_SLastRecord 64918
+#define VDBConsts_SInsertRecord 64919
+#define VDBConsts_SDeleteRecord 64920
+#define VDBConsts_SEditRecord 64921
+#define VDBConsts_SPostEdit 64922
+#define VDBConsts_SCancelEdit 64923
+#define VDBConsts_SRefreshRecord 64924
+#define VDBConsts_SRemoteLogin 64925
+#define DropSource_sDropSourceBusy 64926
+#define DropSource_sDropSourceAsyncFailed 64927
 #define GIFImage_sProgressRendering 64928
 #define GIFImage_sProgressCopying 64929
 #define GIFImage_sProgressOptimizing 64930
@@ -661,6 +661,7 @@
 #define SysConst_SInvalidOp 65535
 STRINGTABLE
 BEGIN
+	DECCipher_sInvalidMessageLength,	"Message length for %s must be a multiple of %d bytes"
 	DECCipher_sKeyMaterialToLarge,	"Keymaterial is too large for use (Security Issue)"
 	DECCipher_sIVMaterialToLarge,	"Initvector is too large for use (Security Issue)"
 	DECCipher_sCipherNoDefault,	"No default cipher has been registered"
@@ -671,7 +672,7 @@ BEGIN
 	ShellConsts_SShellNoDetails,	"Unable to retrieve folder details for \"%s\". Error code $%x"
 	ShellConsts_SCallLoadDetails,	"%s: Missing call to LoadColumnDetails"
 	ShellConsts_SRenamedFailedError,	"Rename to %s failed"
-	OleConst_sNoRunningObject,	"Unable to retrieve a pointer to a running object registered with OLE for %s/%s"
+	DropSource_sDropSourceAsyncBusy,	"An asynchronous drag and drop operation is in progress"
 	DropTarget_sTargetAsyncBusy,	"Can't clear data while async data transfer is in progress"
 	DropTarget_sRichEditWarning,	"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
 	DragDrop_sImplementationRequired,	"Internal error: %s.%s needs implementation"
@@ -687,9 +688,9 @@ BEGIN
 	DECHash_sHashNoDefault,	"No default hash are registered"
 	DECCipher_sAlreadyPadded,	"Cipher has already been padded, cannot process message"
 	DECCipher_sInvalidState,	"Cipher is not in valid state for this action"
-	DECCipher_sInvalidMessageLength,	"Message length for %s must be a multiple of %d bytes"
 	CCR_Exif_Consts_SPreferredPrefixMustBeSet,	"The schema's PreferredPrefix property must be set before a new item can be added"
 	uShellIntegration_SNotSupported,	"This function is not supported by your version of Windows"
+	OleConst_sNoRunningObject,	"Unable to retrieve a pointer to a running object registered with OLE for %s/%s"
 	VDBConsts_SFirstRecord,	"First record"
 	VDBConsts_SPriorRecord,	"Prior record"
 	VDBConsts_SNextRecord,	"Next record"
@@ -703,7 +704,6 @@ BEGIN
 	VDBConsts_SRemoteLogin,	"Remote Login"
 	DropSource_sDropSourceBusy,	"A drag and drop operation is already in progress"
 	DropSource_sDropSourceAsyncFailed,	"Failed to initiate asynchronouse drag and drop operation"
-	DropSource_sDropSourceAsyncBusy,	"An asynchronous drag and drop operation is in progress"
 	GIFImage_sProgressRendering,	"Rendering..."
 	GIFImage_sProgressCopying,	"Copying..."
 	GIFImage_sProgressOptimizing,	"Optimizing..."

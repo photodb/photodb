@@ -208,14 +208,19 @@ end;
 
 procedure TRAWImage.LoadFromFile(const FileName: string);
 var
-  RawBitmap : TFreeWinBitmap;
+  RawBitmap: TFreeWinBitmap;
+  IsValidImage: Boolean;
 begin
   RawBitmap := TFreeWinBitmap.Create;
   try
     if FIsPreview then
-      RawBitmap.LoadU(FileName, RAW_PREVIEW)
+      IsValidImage := RawBitmap.LoadU(FileName, RAW_PREVIEW)
     else
-      RawBitmap.LoadU(FileName, IIF(FHalfSizeLoad, RAW_DISPLAY or RAW_HALFSIZE, RAW_DISPLAY));
+      IsValidImage := RawBitmap.LoadU(FileName, IIF(FHalfSizeLoad, RAW_DISPLAY or RAW_HALFSIZE, RAW_DISPLAY));
+
+    if not IsValidImage then
+      raise Exception.Create('Invalid RAW File format!');
+
     FWidth := RawBitmap.GetWidth;
     FHeight := RawBitmap.GetHeight;
     LoadFromFreeImage(RawBitmap);

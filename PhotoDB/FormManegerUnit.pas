@@ -10,7 +10,7 @@ uses
   UDBForm, UFastLoad, UMemory, UMultiCPUThreadManager, Win32crc,
   UShellIntegration, URuntime, Dolphin_DB, UDBBaseTypes, UDBFileTypes,
   UDBUtils, UDBPopupMenuInfo, USettings, UAssociations, UActivationUtils,
-  UExifUtils, UDBCustomThread;
+  UExifUtils, UDBCustomThread, uWIAManager;
 
 type
   TFormManager = class(TDBForm)
@@ -108,6 +108,7 @@ procedure TFormManager.Run;
 var
   Directory, S: string;
   ParamStr1, ParamStr2: string;
+  WIAParam: string;
   NewSearch: TSearchCustomForm;
   IDList: TArInteger;
   FileList: TArStrings;
@@ -198,10 +199,19 @@ begin
           TW.I.Start('RUN NewExplorer');
           with ExplorerManager.NewExplorer(False) do
           begin
-            if Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
-              SetPath(Settings.ReadString('Options', 'SpecialStartUpFolder'))
-            else
-              LoadLastPath;
+
+            WIAParam := GetParamStrDBValue('/IMG_WIA');
+            if WIAParam = '' then
+            begin
+              if Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
+                SetPath(Settings.ReadString('Options', 'SpecialStartUpFolder'))
+              else
+                LoadLastPath;
+            end else
+            begin
+              //TODO:
+              SetPath('');
+            end;
             CloseSplashWindow;
             Show;
           end;

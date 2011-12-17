@@ -452,7 +452,7 @@ var
 begin
   B := True;
   for J := 1 to Length(S) do
-    if S[J] = DecimalSeparator then
+    if S[J] = FormatSettings.DecimalSeparator then
     begin
       S[J] := '.';
       B := False;

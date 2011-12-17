@@ -21,6 +21,7 @@ var
   DBTerminating: Boolean = False;
   DBID : string = '{E1446065-CB87-440D-9315-6FA356F921B5}';
   CMDInProgress: Boolean = False;
+  ProgramVersionString: string = '';
 
 var
   ProcessorCount: Integer = 0;

@@ -64,15 +64,14 @@ implementation
 //
 // =============================================================================
 
-function DateTimeStrEval(const DateTimeFormat : string;
-                         const DateTimeStr : string) : TDateTime;
-var i,ii,iii : integer;
-    Retvar : TDateTime;
-    Tmp,
-    Fmt,Data,Mask,Spec : string;
-    Year,Month,Day,Hour,
-    Minute,Second,MSec : word;
-    AmPm : integer;
+function DateTimeStrEval(const DateTimeFormat: string;
+  const DateTimeStr: string): TDateTime;
+var
+  I, Ii, Iii: Integer;
+  Retvar: TDateTime;
+  Tmp, Fmt, Data, Mask, Spec: string;
+  Year, Month, Day, Hour, Minute, Second, MSec: Word;
+  AmPm: Integer;
 begin
   Year := 1;
   Month := 1;
@@ -83,162 +82,191 @@ begin
   MSec := 0;
   Fmt := UpperCase(DateTimeFormat);
   Data := UpperCase(DateTimeStr);
-  i := 1;
+  I := 1;
   Mask := '';
   AmPm := 0;
 
-  while i < length(Fmt) do begin
-    if CharInSet(Fmt[i], ['A','P','D','M','Y','H','N','S','Z']) then begin
+  while I < Length(Fmt) do
+  begin
+    if CharInSet(Fmt[I], ['A', 'P', 'D', 'M', 'Y', 'H', 'N', 'S', 'Z']) then
+    begin
       // Start of a date specifier
-      Mask  := Fmt[i];
-      ii := i + 1;
+      Mask := Fmt[I];
+      Ii := I + 1;
 
       // Keep going till not valid specifier
-      while true do begin
-        if ii > length(Fmt) then Break; // End of specifier string
-        Spec := Mask + Fmt[ii];
+      while True do
+      begin
+        if Ii > Length(Fmt) then
+          Break; // End of specifier string
+        Spec := Mask + Fmt[Ii];
 
-        if (Spec = 'DD') or (Spec = 'DDD') or (Spec = 'DDDD') or
-           (Spec = 'MM') or (Spec = 'MMM') or (Spec = 'MMMM') or
-           (Spec = 'YY') or (Spec = 'YYY') or (Spec = 'YYYY') or
-           (Spec = 'HH') or (Spec = 'NN') or (Spec = 'SS') or
-           (Spec = 'ZZ') or (Spec = 'ZZZ') or
-           (Spec = 'AP') or (Spec = 'AM') or (Spec = 'AMP') or
-           (Spec = 'AMPM') then begin
+        if (Spec = 'DD') or (Spec = 'DDD') or (Spec = 'DDDD') or (Spec = 'MM')
+          or (Spec = 'MMM') or (Spec = 'MMMM') or (Spec = 'YY') or
+          (Spec = 'YYY') or (Spec = 'YYYY') or (Spec = 'HH') or (Spec = 'NN') or
+          (Spec = 'SS') or (Spec = 'ZZ') or (Spec = 'ZZZ') or (Spec = 'AP') or
+          (Spec = 'AM') or (Spec = 'AMP') or (Spec = 'AMPM') then
+        begin
           Mask := Spec;
-          inc(ii);
+          Inc(Ii);
         end
-        else begin
+        else
+        begin
           // End of or Invalid specifier
           Break;
         end;
       end;
 
       // Got a valid specifier ? - evaluate it from data string
-      if (Mask <> '') and (length(Data) > 0) then begin
+      if (Mask <> '') and (Length(Data) > 0) then
+      begin
         // Day 1..31
-        if (Mask = 'DD') then begin
-           Day := StrToIntDef(trim(copy(Data,1,2)),0);
-           delete(Data,1,2);
+        if (Mask = 'DD') then
+        begin
+          Day := StrToIntDef(Trim(Copy(Data, 1, 2)), 0);
+          Delete(Data, 1, 2);
         end;
 
         // Day Sun..Sat (Just remove from data string)
-        if Mask = 'DDD' then delete(Data,1,3);
+        if Mask = 'DDD' then
+          Delete(Data, 1, 3);
 
         // Day Sunday..Saturday (Just remove from data string LEN)
-        if Mask = 'DDDD' then begin
-          Tmp := copy(Data,1,3);
-          for iii := 1 to 7 do begin
-            if Tmp = Uppercase(copy(LongDayNames[iii],1,3)) then begin
-              delete(Data,1,length(LongDayNames[iii]));
+        if Mask = 'DDDD' then
+        begin
+          Tmp := Copy(Data, 1, 3);
+          for Iii := 1 to 7 do
+          begin
+            if Tmp = UpperCase(Copy(FormatSettings.LongDayNames[Iii],
+              1, 3)) then
+            begin
+              Delete(Data, 1, Length(FormatSettings.LongDayNames[Iii]));
               Break;
             end;
           end;
         end;
 
         // Month 1..12
-        if (Mask = 'MM') then begin
-           Month := StrToIntDef(trim(copy(Data,1,2)),0);
-           delete(Data,1,2);
+        if (Mask = 'MM') then
+        begin
+          Month := StrToIntDef(Trim(Copy(Data, 1, 2)), 0);
+          Delete(Data, 1, 2);
         end;
 
         // Month Jan..Dec
-        if Mask = 'MMM' then begin
-          Tmp := copy(Data,1,3);
-          for iii := 1 to 12 do begin
-            if Tmp = Uppercase(copy(LongMonthNames[iii],1,3)) then begin
-              Month := iii;
-              delete(Data,1,3);
+        if Mask = 'MMM' then
+        begin
+          Tmp := Copy(Data, 1, 3);
+          for Iii := 1 to 12 do
+          begin
+            if Tmp = UpperCase(Copy(FormatSettings.LongMonthNames[Iii],
+              1, 3)) then
+            begin
+              Month := Iii;
+              Delete(Data, 1, 3);
               Break;
             end;
           end;
         end;
 
-
         // Month January..December
-        if Mask = 'MMMM' then begin
-          Tmp := copy(Data,1,3);
-          for iii := 1 to 12 do begin
-            if Tmp = Uppercase(copy(LongMonthNames[iii],1,3)) then begin
-              Month := iii;
-              delete(Data,1,length(LongMonthNames[iii]));
+        if Mask = 'MMMM' then
+        begin
+          Tmp := Copy(Data, 1, 3);
+          for Iii := 1 to 12 do
+          begin
+            if Tmp = UpperCase(Copy(FormatSettings.LongMonthNames[Iii],
+              1, 3)) then
+            begin
+              Month := Iii;
+              Delete(Data, 1, Length(FormatSettings.LongMonthNames[Iii]));
               Break;
             end;
           end;
         end;
 
         // Year 2 Digit
-        if Mask = 'YY' then begin
-          Year := StrToIntDef(copy(Data,1,2),0);
-          delete(Data,1,2);
-          if Year < TwoDigitYearCenturyWindow then
+        if Mask = 'YY' then
+        begin
+          Year := StrToIntDef(Copy(Data, 1, 2), 0);
+          Delete(Data, 1, 2);
+          if Year < FormatSettings.TwoDigitYearCenturyWindow then
             Year := (YearOf(Date) div 100) * 100 + Year
           else
             Year := (YearOf(Date) div 100 - 1) * 100 + Year;
         end;
 
         // Year 4 Digit
-        if Mask = 'YYYY' then begin
-          Year := StrToIntDef(copy(Data,1,4),0);
-          delete(Data,1,4);
+        if Mask = 'YYYY' then
+        begin
+          Year := StrToIntDef(Copy(Data, 1, 4), 0);
+          Delete(Data, 1, 4);
         end;
 
         // Hours
-        if Mask = 'HH' then begin
-           Hour := StrToIntDef(trim(copy(Data,1,2)),0);
-           delete(Data,1,2);
+        if Mask = 'HH' then
+        begin
+          Hour := StrToIntDef(Trim(Copy(Data, 1, 2)), 0);
+          Delete(Data, 1, 2);
         end;
 
         // Minutes
-        if Mask = 'NN' then begin
-           Minute := StrToIntDef(trim(copy(Data,1,2)),0);
-           delete(Data,1,2);
+        if Mask = 'NN' then
+        begin
+          Minute := StrToIntDef(Trim(Copy(Data, 1, 2)), 0);
+          Delete(Data, 1, 2);
         end;
 
         // Seconds
-        if Mask = 'SS' then begin
-           Second := StrToIntDef(trim(copy(Data,1,2)),0);
-           delete(Data,1,2);
+        if Mask = 'SS' then
+        begin
+          Second := StrToIntDef(Trim(Copy(Data, 1, 2)), 0);
+          Delete(Data, 1, 2);
         end;
 
         // Milliseconds
-        if (Mask = 'ZZ') or (Mask = 'ZZZ') then begin
-           MSec := StrToIntDef(trim(copy(Data,1,3)),0);
-           delete(Data,1,3);
+        if (Mask = 'ZZ') or (Mask = 'ZZZ') then
+        begin
+          MSec := StrToIntDef(Trim(Copy(Data, 1, 3)), 0);
+          Delete(Data, 1, 3);
         end;
 
-
         // AmPm A or P flag
-        if (Mask = 'AP') then begin
-           if Data[1] = 'A' then
-             AmPm := -1
-           else
-             AmPm := 1;
-           delete(Data,1,1);
+        if (Mask = 'AP') then
+        begin
+          if Data[1] = 'A' then
+            AmPm := -1
+          else
+            AmPm := 1;
+          Delete(Data, 1, 1);
         end;
 
         // AmPm AM or PM flag
-        if (Mask = 'AM') or (Mask = 'AMP') or (Mask = 'AMPM') then begin
-           if copy(Data,1,2) = 'AM' then
-             AmPm := -1
-           else
-             AmPm := 1;
-           delete(Data,1,2);
+        if (Mask = 'AM') or (Mask = 'AMP') or (Mask = 'AMPM') then
+        begin
+          if Copy(Data, 1, 2) = 'AM' then
+            AmPm := -1
+          else
+            AmPm := 1;
+          Delete(Data, 1, 2);
         end;
 
         Mask := '';
-        i := ii;
+        I := Ii;
       end;
-    end
-    else begin
+    end else
+    begin
       // Remove delimiter from data string
-      if length(Data) > 1 then delete(Data,1,1);
-      inc(i);
+      if Length(Data) > 1 then
+        Delete(Data, 1, 1);
+      Inc(I);
     end;
   end;
 
-  if AmPm = 1 then Hour := Hour + 12;
-  if not TryEncodeDateTime(Year,Month,Day,Hour,Minute,Second,MSec,Retvar) then
+  if AmPm = 1 then
+    Hour := Hour + 12;
+  if not TryEncodeDateTime(Year, Month, Day, Hour, Minute, Second, MSec,
+    Retvar) then
     Retvar := 0.0;
   Result := Retvar;
 end;

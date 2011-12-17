@@ -25,32 +25,32 @@ type
 
   TInstallFiles = class(TInstallAction)
   private
-    FTotal : Int64;
-    FCurrentlyDone : Int64;
-    FCallBack : TActionCallback;
-    procedure InternalCallBack(BytesRead, BytesTotal : int64; var Terminate : Boolean);
+    FTotal: Int64;
+    FCurrentlyDone: Int64;
+    FCallBack: TActionCallback;
+    procedure InternalCallBack(BytesRead, BytesTotal: Int64; var Terminate: Boolean);
   public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TInstallRegistry = class(TInstallAction)
   private
-    FCallback : TActionCallback;
-    procedure OnInstallRegistryCallBack(Current, Total : Integer; var Terminate : Boolean);
+    FCallback: TActionCallback;
+    procedure OnInstallRegistryCallBack(Current, Total: Integer; var Terminate: Boolean);
   public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TInstallShortcuts = class(TInstallAction)
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TInstallRunProgram = class(TInstallAction)
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
 implementation

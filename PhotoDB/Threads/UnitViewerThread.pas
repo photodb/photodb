@@ -219,7 +219,7 @@ begin
     finally
       if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
       begin
-        if not (Graphic is TGIFImage) then
+        if not (Graphic is TGIFImage) and not Graphic.Empty then
         begin
           SynchronizeEx(ShowLoadingSign);
           FaceDetectionDataManager.RequestFaceDetection(FViewer, Graphic, FInfo.FileName, FInfo.ID);

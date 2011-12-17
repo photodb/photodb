@@ -141,8 +141,8 @@ object PrintForm: TPrintForm
       object WlGeneratePreview: TWebLink
         Left = 8
         Top = 80
-        Width = 63
-        Height = 13
+        Width = 79
+        Height = 16
         Cursor = crHandPoint
         Text = 'Make Image'
         ImageIndex = 0
@@ -155,6 +155,8 @@ object PrintForm: TPrintForm
         ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
+        StretchImage = True
+        CanClick = True
       end
     end
     object LvMain: TEasyListview
@@ -328,6 +330,8 @@ object PrintForm: TPrintForm
         FFFFF000FFFFF000FFFFF000FFFFF800FFFFF801FFFFFC03FFFFFFFFFFFF}
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object ZoomOutLink: TWebLink
       Left = 8
@@ -385,6 +389,8 @@ object PrintForm: TPrintForm
         FFFFF800FFFFF800FFFFF800FFFFF800FFFFFC01FFFFFE03FFFFFFFFFFFF}
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object FullSizeLink: TWebLink
       Left = 8
@@ -442,6 +448,8 @@ object PrintForm: TPrintForm
         FFFFF000FFFFF000FFFFF000FFFFF000FFFFF800FFFFFC01FFFFFE07FFFF}
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object FitToSizeLink: TWebLink
       Left = 6
@@ -499,6 +507,8 @@ object PrintForm: TPrintForm
         FFFFF000FFFFF000FFFFF000FFFFF000FFFFF800FFFFFC01FFFFFE07FFFF}
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object CbPageNumber: TComboBox
       Left = 8

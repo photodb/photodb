@@ -829,7 +829,7 @@ begin
     Exit;
   EdWidth.Tag := 1;
   Text := EdWidth.Text;
-  if EdWidth.Text[Length(EdWidth.Text)] = DecimalSeparator then
+  if EdWidth.Text[Length(EdWidth.Text)] = FormatSettings.DecimalSeparator then
     Text := Text + '0';
   Size := SizeToPixels(XSize(StrToFloatDef(Text, 1), 0));
   Size := PixelsToSize(Size);
@@ -846,7 +846,7 @@ begin
     Exit;
   EdHeight.Tag := 1;
   Text := EdHeight.Text;
-  if EdHeight.Text[Length(EdHeight.Text)] = DecimalSeparator then
+  if EdHeight.Text[Length(EdHeight.Text)] = FormatSettings.DecimalSeparator then
     Text := Text + '0';
   Size := SizeToPixels(XSize(0, StrToFloatDef(Text, 1)));
   Size := PixelsToSize(Size);

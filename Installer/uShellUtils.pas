@@ -161,11 +161,25 @@ begin
       EventLog(':DeleteRegistryEntries() throw exception: ' + E.message);
   end;
   FReg.Free;
+
+  FReg := TRegistry.Create;
+  try
+    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    FReg.DeleteKey(
+      '\SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\AutoplayHandlers\EventHandlers\WPD\Compat\WiaDeviceConnected');
+    FReg.DeleteKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\AutoplayHandlers\Handlers\WIA_{6288D3A0-3E70-481A-8037-378532BED8C6}');
+    Result := True;
+  except
+    on E: Exception do
+      EventLog(':DeleteRegistryEntries() throw exception: ' + E.message);
+  end;
+  FReg.Free;
+
 end;
 
 function RegInstallApplication(FileName: string; CallBack : TRegistryInstallCallBack): Boolean;
 const
-  ActionCount = 12;
+  ActionCount = 14;
 var
   FReg: TBDRegistry;
   Terminate : Boolean;
@@ -316,7 +330,7 @@ begin
     FReg.WriteString('DefaultIcon', FileName + ',0');
     FReg.WriteString('InvokeProgID', 'PhotoDB.AutoPlayHandler');
     FReg.WriteString('InvokeVerb', 'Open');
-    FReg.WriteString('Provider', 'Photo DataBase ' + ProductVersion);
+    FReg.WriteString('Provider', 'Photo DataBase ' + IIF(ProgramVersionString = '', ProductVersion, ProgramVersionString));
     FReg.CloseKey;
   except
     on E: Exception do
@@ -345,7 +359,51 @@ begin
   end;
   FReg.Free;
 
+//WIA SECTION START
+
   CallBack(9, ActionCount, Terminate);
+  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
+  try
+    FReg.OpenKey(
+      '\SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\AutoplayHandlers\EventHandlers\WPD\Compat\WiaDeviceConnected', True);
+    FReg.WriteString('WIA_{6288D3A0-3E70-481A-8037-378532BED8C6}', '');
+    FReg.CloseKey;
+  except
+    on E: Exception do
+    begin
+      EventLog(':RegInstallApplication() throw exception: ' + E.message);
+      Result := False;
+      Exit;
+    end;
+  end;
+  FReg.Free;
+
+  CallBack(10, ActionCount, Terminate);
+  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
+  try
+    FReg.OpenKey(
+      '\SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\AutoplayHandlers\Handlers\WIA_{6288D3A0-3E70-481A-8037-378532BED8C6}', True);
+
+    FReg.WriteString('Action', TA('Get photos', 'System'));
+    FReg.WriteString('DefaultIcon', FileName + ',0');
+    FReg.WriteString('InitCmdLine', FormatEx('/WiaCmd;{0} /IMG_WIA;', [FileName]));
+    FReg.WriteString('Provider', 'Photo DataBase ' + IIF(ProgramVersionString = '', ProductVersion, ProgramVersionString));
+    FReg.WriteString('CLSID', '{A55803CC-4D53-404c-8557-FD63DBA95D24}');
+
+    FReg.CloseKey;
+  except
+    on E: Exception do
+    begin
+      EventLog(':RegInstallApplication() throw exception: ' + E.message);
+      Result := False;
+      Exit;
+    end;
+  end;
+  FReg.Free;
+
+//WIA SECTION END
+
+  CallBack(11, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey('\SOFTWARE\Classes', True);
@@ -369,7 +427,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(10, ActionCount, Terminate);
+  CallBack(12, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\Directory\Shell\PhDBBrowse', True);
@@ -387,7 +445,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(11, ActionCount, Terminate);
+  CallBack(13, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\Drive\Shell\PhDBBrowse', True);
@@ -405,7 +463,7 @@ begin
   end;
   FReg.Free;
 
-  CallBack(12, ActionCount, Terminate);
+  CallBack(14, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
   try
     FReg.OpenKey('\Drive\Shell\PhDBGetPhotos', True);

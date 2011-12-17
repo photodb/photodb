@@ -70,7 +70,7 @@ function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; Li
 procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
-procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
+procedure SetLVThumbnailSize(ListView: TEasyListView; ImageSize: Integer);
 procedure SetLVSelection(ListView : TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
@@ -665,7 +665,7 @@ begin
   ListView.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
 end;
 
-procedure SetLVThumbnailSize(ListView : TEasyListView; ImageSize : Integer);
+procedure SetLVThumbnailSize(ListView: TEasyListView; ImageSize: Integer);
 const
   LVWidthBetweenItems = 20;
 var

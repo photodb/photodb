@@ -23,7 +23,7 @@ uses
   uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit,
   uPathProviders, uExplorerMyComputerProvider, uExplorerFSProviders,
   uExplorerNetworkProviders, uExplorerPersonsProvider, uExplorerGroupsProvider,
-  uExplorerSearchProviders, uExplorerWIAProvider, uTranslate;
+  uExplorerSearchProviders, uExplorerWIAProvider, uTranslate, uVCLHelpers;
 
 const
   RefreshListViewInterval = 50;
@@ -269,9 +269,9 @@ type
     Procedure BeginUpdate;
     procedure EndUpdate(Invalidate: Boolean);
     procedure Open1Click(Sender: TObject);
-    function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
-    function ListView1Selected : TEasyItem;
-    function ItemAtPos(X,Y : integer): TEasyItem;
+    function GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
+    function ListView1Selected: TEasyItem;
+    function ItemAtPos(X, Y: Integer): TEasyItem;
     procedure Exit1Click(Sender: TObject);
     procedure CloseButtonPanelResize(Sender: TObject);
     procedure SplLeftPanelCanResize(Sender: TObject; var NewSize: Integer;
@@ -488,7 +488,7 @@ type
     procedure Grid1Click(Sender: TObject);
     procedure ToolButtonViewClick(Sender: TObject);
     procedure Thumbnails1Click(Sender: TObject);
-    function GetView : integer;
+    function GetView: Integer;
     procedure MakeFolderViewer2Click(Sender: TObject);
     procedure BigImagesTimerTimer(Sender: TObject);
     procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
@@ -533,6 +533,7 @@ type
     procedure EncryptLinkClick(Sender: TObject);
     procedure PePathGetItemIconEvent(Sender: TPathEditor; Item: TPathItem);
     procedure WlCreateObjectClick(Sender: TObject);
+    procedure TbDeleteClick(Sender: TObject);
   private
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
@@ -614,6 +615,7 @@ type
      function GetMyComputer: string;
      function GetSecondStepHelp: string;
      function GetViewInfo: TExplorerViewInfo;
+    procedure SetView(const Value: Integer);
      property SecondStepHelp : string read GetSecondStepHelp;
      function GetPathDescription(Path: string; FileType: Integer): string;
      procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
@@ -650,6 +652,7 @@ type
      property WindowID: TGUID read FWindowID;
      property MyComputer: string read GetMyComputer;
      property ViewInfo: TExplorerViewInfo read GetViewInfo;
+     property View: Integer read GetView write SetView;
    end;
 
   TManagerExplorer = class(TObject)
@@ -1126,13 +1129,15 @@ procedure TExplorerForm.SlideShow1Click(Sender: TObject);
 var
   FileName: string;
   MenuInfo: TDBPopupMenuInfo;
+  Index: Integer;
 begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
   begin
-    MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
+    Index := MenuIndexToItemIndex(PmItemPopup.Tag);
+    MenuInfo := GetCurrentPopUpMenuInfo(ElvMain.Items[Index]);
     try
       Viewer.Execute(Sender, MenuInfo);
       Viewer.Show;
@@ -2116,7 +2121,7 @@ begin
   EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
-function TExplorerForm.GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
+function TExplorerForm.GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
 var
   I: Integer;
   ItemIndex: Integer;
@@ -2127,7 +2132,7 @@ begin
   Result.IsPlusMenu := False;
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    ItemIndex := ItemIndexToMenuIndex(I);
+    ItemIndex := MenuIndexToItemIndex(I);
     if ItemIndex > FFilesInfo.Count - 1 then
       Exit;
 
@@ -5722,29 +5727,17 @@ begin
 
   case ListView of
     LV_THUMBS:
-      begin
         ElvMain.View := ElsThumbnail;
-      end;
     LV_ICONS:
-      begin
         ElvMain.View := ElsIcon;
-      end;
     LV_SMALLICONS:
-      begin
         ElvMain.View := ElsSmallIcon;
-      end;
     LV_TITLES:
-      begin
         ElvMain.View := ElsList;
-      end;
     LV_TILE:
-      begin
         ElvMain.View := ElsTile;
-      end;
     LV_GRID:
-      begin
         ElvMain.View := ElsGrid;
-      end;
   end;
 
   UpdaterInfo.IsUpdater := False;
@@ -7458,7 +7451,7 @@ begin
   begin
     Index := ItemIndexToMenuIndex(Item.Index);
     Info := FFilesInfo[Index];
-    ItemKey := Item.Caption + ' ' + Info.Comment + ' ' + Info.KeyWords + ' ';
+    ItemKey := Info.Comment + ' ' + Info.KeyWords;
     if Info.Groups <> '' then
     begin
       Groups := EncodeGroups(Info.Groups);
@@ -7470,7 +7463,7 @@ begin
   end;
 
   if IsFilter then
-    IsVisible := IsFilter and IsMatchMask(ItemKey, Filter)
+    IsVisible := IsFilter and (IsMatchMask(AnsiLowerCase(Item.Caption), Filter) or IsMatchMask(ItemKey, Filter))
   else
     IsVisible := True;
 
@@ -8403,7 +8396,7 @@ begin
   IsCustom := ListView <> LV_THUMBS;
 end;
 
-function TExplorerForm.ListViewTypeToSize(ListViewType : Integer) : Integer;
+function TExplorerForm.ListViewTypeToSize(ListViewType: Integer): Integer;
 begin
   case ListViewType of
     LV_THUMBS     : Result := ThSize;
@@ -8443,45 +8436,65 @@ begin
   FixListViewText(ACanvas, Item, Include);
 end;
 
-procedure TExplorerForm.SmallIcons1Click(Sender: TObject);
-begin
-  ListView := LV_SMALLICONS;
-  SmallIcons1.Checked := True;
-  Reload;
-end;
-
 procedure TExplorerForm.Reload;
 begin
   SetNewPathW(GetCurrentPathW, False);
   LoadSizes;
 end;
 
+function TExplorerForm.GetView: Integer;
+begin
+  Result := ListView;
+end;
+
+procedure TExplorerForm.SetView(const Value: Integer);
+begin
+  ListView := Value;
+  case ListView of
+    LV_SMALLICONS:
+      SmallIcons1.Checked := True;
+    LV_ICONS:
+      Icons1.Checked := True;
+    LV_TITLES:
+      List1.Checked := True;
+    LV_TILE:
+      Tile2.Checked := True;
+    LV_GRID:
+      Grid1.Checked := True;
+    LV_THUMBS:
+      Thumbnails1.Checked := True;
+  end;
+  Reload;
+end;
+
+procedure TExplorerForm.SmallIcons1Click(Sender: TObject);
+begin
+  View := LV_SMALLICONS;
+end;
+
 procedure TExplorerForm.Icons1Click(Sender: TObject);
 begin
-  Icons1.Checked := True;
-  ListView := LV_ICONS;
-  Reload;
+  View := LV_ICONS;
 end;
 
 procedure TExplorerForm.List1Click(Sender: TObject);
 begin
-  List1.Checked := True;
-  ListView := LV_TITLES;
-  Reload;
+  View := LV_TITLES;
 end;
 
 procedure TExplorerForm.Tile2Click(Sender: TObject);
 begin
-  Tile2.Checked := True;
-  ListView := LV_TILE;
-  Reload;
+  View := LV_TILE;
 end;
 
 procedure TExplorerForm.Grid1Click(Sender: TObject);
 begin
-  Grid1.Checked := True;
-  ListView := LV_GRID;
-  Reload;
+  View := LV_GRID;
+end;
+
+procedure TExplorerForm.Thumbnails1Click(Sender: TObject);
+begin
+  View := LV_THUMBS;
 end;
 
 procedure TExplorerForm.ToolButtonViewClick(Sender: TObject);
@@ -8491,18 +8504,6 @@ begin
   APoint := Point(ToolButtonView.Left, ToolButtonView.Top + ToolButtonView.Height);
   APoint := ToolBar1.ClientToScreen(APoint);
   PmListViewType.Popup(APoint.X, APoint.Y);
-end;
-
-procedure TExplorerForm.Thumbnails1Click(Sender: TObject);
-begin
-  Thumbnails1.Checked := True;
-  ListView := LV_THUMBS;
-  Reload;
-end;
-
-function TExplorerForm.GetView: Integer;
-begin
-  Result := ListView;
 end;
 
 function TExplorerForm.GetViewInfo: TExplorerViewInfo;
@@ -8565,18 +8566,36 @@ var
 begin
   ElvMain.BeginUpdate;
   try
-     SelectedVisible := IsSelectedVisible;
-    if FPictureSize < ListViewMaxThumbnailSize then
-      FPictureSize := FPictureSize + 10;
-     LoadSizes;
-     BigImagesTimer.Enabled:=false;
-     BigImagesTimer.Enabled:=true;
-     ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
-     ElvMain.Groups.ReIndexItems;
-     ElvMain.Groups.Rebuild(true);
+    SelectedVisible := IsSelectedVisible;
 
-    if SelectedVisible and not IsSelectedVisible then
-      ElvMain.Selection.First.MakeVisible(emvTop);
+    if (View = LV_THUMBS) and (FPictureSize < ListViewMaxThumbnailSize) then
+    begin
+      FPictureSize := FPictureSize + 10;
+      LoadSizes;
+      BigImagesTimer.Restart;
+      ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+      ElvMain.Groups.ReIndexItems;
+      ElvMain.Groups.Rebuild(true);
+
+     if SelectedVisible and not IsSelectedVisible then
+       ElvMain.Selection.First.MakeVisible(emvTop);
+    end else
+    begin
+      case View of
+        LV_GRID:
+          View := LV_TITLES;
+        LV_TITLES:
+          View := LV_SMALLICONS;
+        LV_SMALLICONS:
+          View := LV_ICONS;
+        LV_ICONS:
+          View := LV_TILE;
+        LV_TILE:
+          View := LV_THUMBS;
+        LV_THUMBS:
+      end;
+    end;
+
   finally
     ElvMain.EndUpdate;
   end;
@@ -8584,23 +8603,40 @@ end;
 
 procedure TExplorerForm.ZoomOut;
 var
-  SelectedVisible : boolean;
+  SelectedVisible: Boolean;
 begin
   ElvMain.BeginUpdate;
   try
-    SelectedVisible:=IsSelectedVisible;
+    SelectedVisible := IsSelectedVisible;
+
     if FPictureSize > ListViewMinThumbnailSize then
+    begin
       FPictureSize := FPictureSize - 10;
-    if FPictureSize < ListViewMinThumbnailSize then
+      LoadSizes;
+      BigImagesTimer.Enabled := False;
+      BigImagesTimer.Enabled := True;
+      ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
+      ElvMain.Groups.ReIndexItems;
+      ElvMain.Groups.Rebuild(True);
+      if SelectedVisible and not IsSelectedVisible then
+        ElvMain.Selection.First.MakeVisible(EmvTop);
+    end else
+    begin
       FPictureSize := ListViewMinThumbnailSize;
-    LoadSizes;
-    BigImagesTimer.Enabled := False;
-    BigImagesTimer.Enabled := True;
-    ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
-    ElvMain.Groups.ReIndexItems;
-    ElvMain.Groups.Rebuild(True);
-    if SelectedVisible and not IsSelectedVisible then
-      ElvMain.Selection.First.MakeVisible(EmvTop);
+      case View of
+        LV_THUMBS:
+          View := LV_TILE;
+        LV_TILE:
+          View := LV_ICONS;
+        LV_ICONS:
+          View := LV_SMALLICONS;
+        LV_SMALLICONS:
+          View := LV_TITLES;
+        LV_TITLES:
+        //  View := LV_GRID;
+        //LV_GRID:
+      end;
+    end;
   finally
     ElvMain.EndUpdate;
   end;
@@ -8763,6 +8799,11 @@ begin
   AddIcon('EXPLORER_OPTIONS_GRAY');
   AddIcon('EXPLORER_BREAK_GRAY');
 
+end;
+
+procedure TExplorerForm.TbDeleteClick(Sender: TObject);
+begin
+  DeleteFiles(True);
 end;
 
 procedure TExplorerForm.TbStopClick(Sender: TObject);

@@ -27,16 +27,19 @@ type
     FDeviceInfo: IDeviceInfo;
     FDevice: IDevice;
     FCameraName: string;
+    FUniqueDeviceID: string;
     FImages: TList;
     procedure InitImages;
     function GetImageByIndex(Index: Integer): TWIACameraImage;
     function GetCount: Integer;
+    function GetUniqueDeviceID: string;
   public
     constructor Create(DeviceInfo: IDeviceInfo);
     destructor Destroy; override;
     property CameraName: string read FCameraName;
     property Images[Index: Integer]: TWIACameraImage read GetImageByIndex; default;
     property Count: Integer read GetCount;
+    property UniqueDeviceID: string read GetUniqueDeviceID;
   end;
 
   TBinaryArray = array of Byte;
@@ -120,6 +123,9 @@ begin
     Prop := FDeviceInfo.Properties[Index];
     if Prop.Name = 'Name' then
       FCameraName := Prop.Get_Value();
+
+    if Prop.Name = 'Unique Device ID' then
+      FUniqueDeviceID := Prop.Get_Value();
   end;
 end;
 
@@ -144,6 +150,11 @@ begin
     Result := TWIACameraImage.Create(FDevice.Items[Index + 1]);
     FImages[Index] := Result;
   end;
+end;
+
+function TWIACamera.GetUniqueDeviceID: string;
+begin
+  Result := FUniqueDeviceID;
 end;
 
 procedure TWIACamera.InitImages;
@@ -178,6 +189,7 @@ begin
   InitItem;
   Result := FPreview;
   FPreview := nil;
+  FIsInitialized := False;
 end;
 
 function TWIACameraImage.GetFileName: string;
@@ -248,7 +260,7 @@ begin
       PreviewHeight := Integer(Prop.Get_Value());
   end;
 
-  if ItemFlags and (ImageItemFlag or FileItemFlag) > 0 then
+  if ItemFlags and (ImageItemFlag or FileItemFlag or VideoItemFlag) > 0 then
   begin
     if (Preivew <> nil) then
     begin
@@ -294,7 +306,12 @@ begin
     end;
     //Image := IUnknown(Item.Transfer('{00000000-0000-0000-0000-000000000000}')) as IImageFile;
     //Image.SaveFile('c:\' + ItemName + '.' + FileNameExtension);
-  end;
+  end else if ItemFlags and FolderItemFlag <> 0 then
+  begin
+    FPreview := TBitmap.Create;
+    //TODO: create foldr image
+  end else
+    FPreview := TBitmap.Create;
   FFileName := ItemName + '.' + FileNameExtension;
 end;
 

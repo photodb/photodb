@@ -9,8 +9,13 @@ uses
   {$ENDIF}
   ;
 
-function GetParamStrDBValue(ParamName : string) : string;
-function GetParamStrDBBool(ParamName : string) : Boolean;
+//uses specification:
+// /key /value
+function GetParamStrDBValue(ParamName: string): string;
+//uses specification:
+// /key:value
+function GetParamStrDBValueV2(ParamName: string): string;
+function GetParamStrDBBool(ParamName: string): Boolean;
 
 implementation
 
@@ -94,6 +99,40 @@ begin
         Result := ProgramParams[I + 1];
         Break;
       end;
+
+  finally
+    {$IFNDEF ONECPU}
+    FSync.Leave;
+    {$ENDIF}
+  end;
+end;
+
+function GetParamStrDBValueV2(ParamName: string): string;
+var
+  I: Integer;
+  S: string;
+begin
+  {$IFNDEF ONECPU}
+  FSync.Enter;
+  {$ENDIF}
+  try
+    Result := '';
+    if ParamName = '' then
+      Exit;
+    CheckParams;
+    ParamName := UpperCase(ParamName);
+    for I := 0 to Length(ProgramParams) - 2 do
+    begin
+      S := ProgramParams[I];
+      if Length(S) > Length(ParamName) then
+      begin
+        if Copy(ParamName, 1, Length(ParamName) + 1) = ParamName + ':' then
+        begin
+          Result := Copy(S, Length(ParamName) + 2, Length(S) - Length(ParamName) - 2);
+          Break;
+        end;
+      end;
+    end;
 
   finally
     {$IFNDEF ONECPU}

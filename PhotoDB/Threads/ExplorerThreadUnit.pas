@@ -339,11 +339,11 @@ begin
 
     case ExplorerInfo.View of
       LV_THUMBS     : begin FIcoSize := 48; end;
+      LV_TILE       : begin FIcoSize := 48; end;
       LV_ICONS      : begin FIcoSize := 32; end;
       LV_SMALLICONS : begin FIcoSize := 16; end;
       LV_TITLES     : begin FIcoSize := 16; end;
-      LV_TILE       : begin FIcoSize := 48; end;
-      LV_GRID       : begin FIcoSize := 32; end;
+      LV_GRID       : begin FIcoSize := 16; end;
     end;
                                       //if thread is valid worker - dont run updater
     if FUpdaterInfo.IsUpdater and not Self.Valid then

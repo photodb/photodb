@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, DmMemo, ImButton, ExtCtrls, Menus, clipbrd, Dolphin_DB,
-  GraphicsBaseTypes, uMemory, uTranslate;
+  GraphicsBaseTypes, uMemory, uTranslate, Types;
 
 type
   TCanHelpCloseProcedure = procedure(Sender: TObject; var CanClose: Boolean) of object;
