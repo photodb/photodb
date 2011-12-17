@@ -366,6 +366,7 @@ begin
       KeepProportions(Bitmap, ImageSize, ImageSize);
       if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
         CenterBitmap24To32ImageList(Bitmap, ImageSize);
+
       F(FImage);
       FImage := TPathImage.Create(Bitmap);
       Bitmap := nil;

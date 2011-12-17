@@ -1902,12 +1902,14 @@ object ExplorerForm: TExplorerForm
     end
   end
   object BigIconsImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 32
     Width = 32
     Left = 200
     Top = 304
   end
   object SmallIconsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 200
     Top = 352
   end

@@ -203,6 +203,9 @@ begin
                   FGraphic.LoadFromFile(FInfo.FileName);
               end;
 
+              if (FGraphic = nil) or FGraphic.Empty then
+                Exit;
+
               FBit := TBitmap.Create;
               try
                 FBit.PixelFormat := pf24bit;
@@ -228,6 +231,7 @@ begin
                 finally
                   F(TempBit);
                 end;
+
                 ShadowImage := TBitmap.Create;
                 try
                   DrawShadowToImage(ShadowImage, FBit);

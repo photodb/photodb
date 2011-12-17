@@ -82,20 +82,21 @@ procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TE
                              CustomInfo: string = '');
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string); overload;
-procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList; Caption : string;
-                          DragPoint : TPoint; var SpotX, SpotY : Integer); overload;
-procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string); overload;
-procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string;
-  DragPoint : TPoint; var SpotX, SpotY : Integer); overload;
+procedure CreateDragImage(ListView: TEasyListView; DImageList: TImageList; SImageList: TBitmapImageList; Caption : string;
+                          DragPoint: TPoint; var SpotX, SpotY: Integer); overload;
+procedure CreateDragImageEx(ListView: TEasyListView; DImageList: TImageList; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font: TFont; Caption : string); overload;
+procedure CreateDragImageEx(ListView: TEasyListView; DImageList: TImageList; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font: TFont; Caption : string;
+  DragPoint: TPoint; var SpotX, SpotY: Integer); overload;
 procedure EnsureSelectionInListView(EasyListview: TEasyListview; ListItem : TEasyItem;
   Shift: TShiftState; X, Y: Integer; var ItemSelectedByMouseDown : Boolean;
-  var ItemByMouseDown : Boolean);
+  var ItemByMouseDown: Boolean);
 procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item : TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
-procedure CreateMultiselectImage(ListView : TEasyListView; ResultImage : TBitmap; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Width, Height : Integer);
+procedure CreateMultiselectImage(ListView: TEasyListView; ResultImage : TBitmap; SImageList : TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer);
 procedure FixListViewText(ACanvas: TCanvas; Item : TEasyItem; Include : Boolean);
+procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
 
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
@@ -112,6 +113,34 @@ begin
     ACanvas.Font.Color := clWindowText;
 end;
 
+procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
+var
+  ClientRect: TRect;
+  CTD, CBD, DY: Integer;
+begin
+  ClientRect := ListView.Scrollbars.ViewableViewportRect;
+
+  CTD := 0;
+  CBD := 0;
+  if Y < ClientRect.Top then
+    CTD := ClientRect.Top - Y;
+
+  DY := ClientRect.Top;
+
+  if Y + Graphic.Height > ClientRect.Bottom then
+    CBD := ClientRect.Bottom - (Y + Graphic.Height);
+
+  if Y - DY < 0 then
+    DY := Y;
+
+  MPCommonUtilities.AlphaBlend(Graphic.Canvas.Handle, ACanvas.Handle,
+          Rect(0, CTD, Graphic.Width, Graphic.Height + CBD), Point(X, Y - DY),
+          cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color));
+
+  TBitmap(Graphic).Handle;
+end;
+
+
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
                              ShowInfo: Boolean; ID: Integer;
@@ -125,7 +154,7 @@ const
 var
   Graphic: TGraphic;
   W, H: Integer;
-  ImageW, ImageH : Integer;
+  ImageW, ImageH: Integer;
   X: Integer;
   TempBmp: TBitmap;
   TempBmpShadow: TBitmap;
@@ -139,10 +168,7 @@ begin
   Graphic := BImageList[Item.ImageIndex].Graphic;
 
   if (Graphic = nil) or Graphic.Empty then
-  begin
-    Item.ImageIndex := 0;
     Exit;
-  end;
 
   W := ARect.Right - ARect.Left;
   H := ARect.Bottom - ARect.Top + 4;
@@ -231,26 +257,7 @@ begin
       end;
       if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) and HasMMX then
       begin
-        ClientRect := ListView.Scrollbars.ViewableViewportRect;
-
-        CTD := 0;
-        CBD := 0;
-        if Y < ClientRect.Top then
-          CTD := ClientRect.Top - Y;
-
-        DY := ClientRect.Top;
-
-        if Y + Graphic.Height > ClientRect.Bottom then
-          CBD := ClientRect.Bottom - (Y + Graphic.Height);
-
-        if Y - DY < 0 then
-          DY := Y;
-
-        MPCommonUtilities.AlphaBlend(TBitmap(Graphic).Canvas.Handle, ACanvas.Handle,
-                Rect(0, CTD, Graphic.Width, Graphic.Height + CBD), Point(X, Y - DY),
-                cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color));
-
-        TBitmap(Graphic).Handle;
+        DrawLVBitmap32MMX(ListView, ACanvas, TBitmap(Graphic), X, Y);
       end else
         ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), Graphic);
 

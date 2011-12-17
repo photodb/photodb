@@ -198,6 +198,8 @@ type
   end;
 
   TSearchQuery = class(TObject)
+  private
+    FPictureSize: Integer;
   public
     Query: string;
     GroupName: string;
@@ -211,6 +213,8 @@ type
     IsEstimate: Boolean;
     ShowAllImages: Boolean;
     function EqualsTo(AQuery: TSearchQuery): Boolean;
+    constructor Create(PictureSize: Integer = 0);
+    property PictureSize: Integer read FPictureSize;
   end;
 
 type
@@ -323,6 +327,11 @@ begin
 end;
 
 { TSearchQuery }
+
+constructor TSearchQuery.Create(PictureSize: Integer);
+begin
+  FPictureSize := PictureSize;
+end;
 
 function TSearchQuery.EqualsTo(AQuery: TSearchQuery): Boolean;
 begin

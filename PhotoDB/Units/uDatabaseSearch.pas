@@ -651,6 +651,8 @@ begin
       SearchExtension.Bitmap.PixelFormat := pf24bit;
       AssignJpeg(SearchExtension.Bitmap, JPEG);
       ApplyRotate(SearchExtension.Bitmap, SearchData.Rotation);
+      if FSearchParams.PictureSize <> 0 then
+        CenterBitmap24To32ImageList(SearchExtension.Bitmap, FSearchParams.PictureSize);
     end else
       SearchExtension.Icon := TAIcons.Instance.GetIconByExt(SearchData.FileName, False, 48, False);
   finally

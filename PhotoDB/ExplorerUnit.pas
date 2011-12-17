@@ -8297,9 +8297,9 @@ procedure TExplorerForm.EasyListview1ItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  Index, Y : Integer;
-  Exists : Integer;
-  Info : TExplorerFileInfo;
+  Index, Y: Integer;
+  Exists: Integer;
+  Info: TExplorerFileInfo;
 begin
   if Item.Data = nil then
     Exit;
@@ -8379,6 +8379,8 @@ end;
 procedure TExplorerForm.EasyListview1ItemImageDraw(Sender: TCustomEasyListview;
   Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
   const RectArray: TEasyRectArrayObject; AlphaBlender: TEasyAlphaBlender);
+var
+  Bitmap: TBitmap;
 begin
   if GlobalLock then
     Exit;
@@ -8387,6 +8389,11 @@ begin
 
   if FBitmapImageList[Item.ImageIndex].Icon <> nil then
     ACanvas.Draw(RectArray.IconRect.Left, RectArray.IconRect.Top, FBitmapImageList[Item.ImageIndex].Icon);
+
+  Bitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
+  if Bitmap <> nil then
+    AlphaBlender.Blend(Sender, Item, ACanvas, RectArray.IconRect, Bitmap);
+
 end;
 
 procedure TExplorerForm.EasyListview1ItemImageDrawIsCustom(

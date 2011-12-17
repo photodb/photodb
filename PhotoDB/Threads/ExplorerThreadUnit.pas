@@ -748,7 +748,7 @@ begin
   SynchronizeEx(ShowLoadingSign);
   SynchronizeEx(ShowIndeterminateProgress);
   try
-    SQ := TSearchQuery.Create;
+    SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
     SQ.Query := FMask;
     SQ.GroupName := '';
     SQ.RatingFrom := 0;
@@ -1416,25 +1416,25 @@ begin
                 FPrivateFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
 
               if (Query.FieldByName('Access').AsInteger<>db_access_private) or ExplorerInfo.ShowPrivate then
-              if FileExistsSafe(Query.FieldByName('FFileName').AsString) then
-              if ShowFileIfHidden(Query.FieldByName('FFileName').AsString) then
-              begin
-                OK := true;
-                if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
-                if DBkernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'))='' then
-                  OK := false;
-                if OK then
-                begin
-                  if Nbr < 4 then
+                if FileExistsSafe(Query.FieldByName('FFileName').AsString) then
+                  if ShowFileIfHidden(Query.FieldByName('FFileName').AsString) then
                   begin
-                    Inc(Nbr);
-                    RecNos[Nbr] := Query.RecNo;
-                    FilesInFolder[Nbr] := Query.FieldByName('FFileName').AsString;
-                    FFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
-                    AddFileInFolder(Query.FieldByName('FFileName').AsString);
+                    OK := True;
+                    if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
+                    if DBkernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'))='' then
+                      OK := False;
+                    if OK then
+                    begin
+                      if Nbr < 4 then
+                      begin
+                        Inc(Nbr);
+                        RecNos[Nbr] := Query.RecNo;
+                        FilesInFolder[Nbr] := Query.FieldByName('FFileName').AsString;
+                        FFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
+                        AddFileInFolder(Query.FieldByName('FFileName').AsString);
+                      end;
+                    end;
                   end;
-                end;
-              end;
               Query.Next;
             end;
           end;
@@ -1456,17 +1456,17 @@ begin
                 begin
                   OK := True;
                   if ValidCryptGraphicFile(CurrentFile + SearchRec.Name) then
-                  if DBKernel.FindPasswordForCryptImageFile(CurrentFile + SearchRec.Name) = '' then
-                  OK := False;
-                  if OK then
-                  begin
-                    Inc(Count);
-                    Files[Count] := CurrentFile + SearchRec.Name;
-                    AddFileInFolder(CurrentFile + SearchRec.Name);
-                    FilesInFolder[Count+Nbr] := CurrentFile + SearchRec.Name;
-                    if Count + Nbr >= 4 then
-                      Break;
-                  end;
+                    if DBKernel.FindPasswordForCryptImageFile(CurrentFile + SearchRec.Name) = '' then
+                      OK := False;
+                    if OK then
+                    begin
+                      Inc(Count);
+                      Files[Count] := CurrentFile + SearchRec.Name;
+                      AddFileInFolder(CurrentFile + SearchRec.Name);
+                      FilesInFolder[Count+Nbr] := CurrentFile + SearchRec.Name;
+                      if Count + Nbr >= 4 then
+                        Break;
+                    end;
                 end;
               end;
               Found := SysUtils.FindNext(SearchRec);
@@ -2042,10 +2042,17 @@ end;
 function TExplorerThread.LoadProviderItem(Item: TPathItem; PacketSize, ImageSize: Integer): Boolean;
 var
   List: TPathItemCollection;
+  Flags: Integer;
 begin
   List := TPathItemCollection.Create;
   try
-    Result := Item.Provider.FillChildList(Self, Item, List, PATH_LOAD_NORMAL, ImageSize, PacketSize, PathProviderCallBack);
+    Flags := PATH_LOAD_NORMAL;
+    if ExplorerInfo.View <> LV_THUMBS then
+    begin
+      Flags := Flags or PATH_LOAD_FOR_IMAGE_LIST;
+      ImageSize := FIcoSize;
+    end;
+    Result := Item.Provider.FillChildList(Self, Item, List, Flags, ImageSize, PacketSize, PathProviderCallBack);
   finally
     F(List);
   end;
@@ -2636,7 +2643,7 @@ begin
           Graphic.LoadFromFile(Info.FileName);
         IsBigImage := True;
       end;
-      if not ((Info.PassTag = 0) and Info.Crypted) then
+      if not ((Info.PassTag = 0) and Info.Crypted) and not Graphic.Empty then
       begin
         Info.Width := Graphic.Width;
         Info.Height := Graphic.Height;

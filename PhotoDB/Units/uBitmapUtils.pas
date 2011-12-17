@@ -2054,6 +2054,8 @@ begin
     B.PixelFormat := pf32Bit;
     B.SetSize(ImageSize, ImageSize);
     FillTransparentColor(B, clWhite);
+    if (Bitmap.Width > ImageSize) or (Bitmap.Height > ImageSize) then
+      KeepProportions(Bitmap, ImageSize, ImageSize);
     DrawImageEx24To32(B, Bitmap, B.Width div 2 - Bitmap.Width div 2, B.Height div 2 - Bitmap.Height div 2);
     Exchange(B, Bitmap);
   finally

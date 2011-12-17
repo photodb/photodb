@@ -10,21 +10,21 @@ type
   TPrivateHelper = class(TObject)
   private
     FPrivateDirectoryList: TList;
-    FListReady : Boolean;
-    FSync : TCriticalSection;
-    FInitialized : Boolean;
-    procedure Add(DirectoryCRC : Integer);
+    FListReady: Boolean;
+    FSync: TCriticalSection;
+    FInitialized: Boolean;
+    procedure Add(DirectoryCRC: Integer);
     procedure BeginUpdate;
     procedure EndUpdate;
-    function MakeFolderCRC(Folder : string) : Integer;
+    function MakeFolderCRC(Folder: string) : Integer;
   public
     constructor Create;
     destructor Destroy; override;
-    class function Instance : TPrivateHelper;
-    function IsPrivateDirectory(Directory : string) : Boolean;
+    class function Instance: TPrivateHelper;
+    function IsPrivateDirectory(Directory: string) : Boolean;
     procedure Reset;
     procedure Init;
-    procedure AddToPrivateList(Directory : string);
+    procedure AddToPrivateList(Directory: string);
   end;
 
   TPrivateHelperThread = class(TDBThread)
