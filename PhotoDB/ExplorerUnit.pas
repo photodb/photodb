@@ -6921,7 +6921,8 @@ begin
           Canvas.Brush.Color := clBtnFace;
           if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
           begin
             Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
             FFolderImagesResult.Directory := '';
@@ -6953,7 +6954,7 @@ begin
                 try
                   Info.FileType := FSelectedInfo.FileType;
                   Info.ID := FSelectedInfo.Id;
-                  if (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) then
+                  if (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
                   begin
                     TExplorerThumbnailCreator.Create(Info, FSelectedInfo._GUID, Self, True);
                   end else

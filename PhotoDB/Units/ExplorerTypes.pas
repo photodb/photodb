@@ -75,14 +75,6 @@ type
 
   TNotifyDirectoryChangeW = procedure(Sender : TObject; SID : string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
 
-const
-  DBT_DeviceArrival        = $8000;
-  DBT_DeviceRemoveComplete = $8004;
-  DBTF_Media               = $0001;
-  DBT_DevTyp_Volume        = $0002;
-  DBT_DEVNODES_CHANGED     = $0007;
-
-
 type
   PDevBroadcastHdr = ^TDevBroadcastHdr;
   TDevBroadcastHdr = packed record
@@ -289,15 +281,15 @@ end;
 destructor TExplorerFolders.Destroy;
 begin
   Clear;
-  FSync.Free;
+  F(FSync);
   inherited;
 end;
 
 function TExplorerFolders.GetFolderImages(
-  Directory: String; Width : integer; Height : integer): TFolderImages;
+  Directory: String; Width: Integer; Height: Integer): TFolderImages;
 var
-  i, j, k, w, h : integer;
-  b : Boolean;
+  I, J, K, W, H: Integer;
+  B: Boolean;
 begin
   FSync.Enter;
   try
@@ -351,11 +343,11 @@ begin
 end;
 
 procedure TExplorerFolders.SaveFolderImages(FolderImages: TFolderImages;
-  Width : Integer; Height : Integer);
+  Width: Integer; Height: Integer);
 var
-  I, J : integer;
-  B : Boolean;
-  L : Integer;
+  I, J: Integer;
+  B: Boolean;
+  L: Integer;
 begin
   FSync.Enter;
   try

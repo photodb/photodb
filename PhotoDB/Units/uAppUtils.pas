@@ -126,9 +126,9 @@ begin
       S := ProgramParams[I];
       if Length(S) > Length(ParamName) then
       begin
-        if Copy(ParamName, 1, Length(ParamName) + 1) = ParamName + ':' then
+        if Copy(S, 1, Length(ParamName) + 1) = ParamName + ':' then
         begin
-          Result := Copy(S, Length(ParamName) + 2, Length(S) - Length(ParamName) - 2);
+          Result := Copy(S, Length(ParamName) + 2, Length(S) - Length(ParamName) - 1);
           Break;
         end;
       end;

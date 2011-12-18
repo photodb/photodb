@@ -70,7 +70,7 @@ begin
       Exit;
     end;
 
-    if (FInfo.FileType = EXPLORER_ITEM_GROUP) or (FInfo.FileType = EXPLORER_ITEM_PERSON) then
+    if (FInfo.FileType = EXPLORER_ITEM_GROUP) or (FInfo.FileType = EXPLORER_ITEM_PERSON) or (FInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
     begin
       FBit := TBitmap.Create;
       try

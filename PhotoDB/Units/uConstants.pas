@@ -388,6 +388,13 @@ const
   ImageTable = 'ImageTable';
   GroupsTableName = 'Groups';
 
+const
+  DBT_DeviceArrival        = $8000;
+  DBT_DeviceRemoveComplete = $8004;
+  DBTF_Media               = $0001;
+  DBT_DevTyp_Volume        = $0002;
+  DBT_DEVNODES_CHANGED     = $0007;
+
 implementation
 
 end.

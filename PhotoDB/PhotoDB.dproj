@@ -608,7 +608,7 @@
 						<Source Name="MainSource">PhotoDB.dpr</Source>
 					</Source>
 					<Parameters>
-						<Parameters Name="RunParams">/IMG_WIA /StiDevice:{EEC5AD98-8080-425f-922A-DABF3DE3F69A}\0003 /StiEvent:{A28BBADE-64B6-11d2-A231-00C04FA31809}</Parameters>
+						<Parameters Name="RunParams"> /IMG_WIA /StiDevice:{EEC5AD98-8080-425f-922A-DABF3DE3F69A}\0003 /StiEvent:{A28BBADE-64B6-11d2-A231-00C04FA31809}</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>

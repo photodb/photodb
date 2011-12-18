@@ -29,7 +29,7 @@ type
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
-    procedure ReadFromCameraImage(CI: TWIACameraImage);
+    procedure ReadFromCameraImage(CI: TWIACameraImage; Options, ImageSize: Integer);
     property ImageName: string read FImageName;
     property ItemID: string read FItemID;
     property CameraName: string read GetCameraName;
@@ -83,7 +83,7 @@ begin
     if P = 0 then
       P := Length(Path);
 
-    Result := Copy(Path, 1, P);
+    Result := Copy(Path, 1, P - 1);
   end;
 end;
 
@@ -109,12 +109,16 @@ function TCameraProvider.ExtractPreview(Item: TPathItem; MaxWidth,
 var
   CII: TCameraImageItem;
 begin
-  CII := TCameraImageItem(Item);
-  CII.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
-  Result := CII.Image <> nil;
+  CII := TCameraImageItem.CreateFromPath(Item.Path, PATH_LOAD_NORMAL, 0);
+  try
+    CII.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
+    Result := CII.Image <> nil;
 
-  if Result then
-    Bitmap.Assign(CII.Image.Bitmap);
+    if Result then
+      Bitmap.Assign(CII.Image.Bitmap);
+  finally
+    F(CII);
+  end;
 end;
 
 function TCameraProvider.GetTranslateID: string;
@@ -168,11 +172,17 @@ begin
           for J := 0 to C.Count - 1 do
           begin
             WCI := C[J];
-            CII := TCameraImageItem.CreateFromPath(cCamerasPath + '\' + Manager[I].CameraName + '\' + WCI.FileName, Options, ImageSize);
-            CII.ReadFromCameraImage(WCI);
-            List.Add(CII);
-            if Assigned(CallBack) then
-              CallBack(Sender, Item, List, Cancel);
+            if ExtractFileExt(WCI.FileName) <> '.' then
+            begin
+              CII := TCameraImageItem.CreateFromPath(cCamerasPath + '\' + Manager[I].CameraName + '\' + WCI.FileName, Options, ImageSize);
+              CII.ReadFromCameraImage(WCI, Options, ImageSize);
+              List.Add(CII);
+              if Assigned(CallBack) then
+                CallBack(Sender, Item, List, Cancel);
+
+              if Cancel then
+                Break;
+            end;
           end;
         end;
     finally
@@ -266,14 +276,43 @@ begin
 end;
 
 function TCameraImageItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Bitmap: TBitmap;
+  Manager: TWIAManager;
+  CameraName, ItemName: string;
 begin
-  Result := False;
+  Manager := TWIAManager.Create;
+  try
+    CameraName := ExtractCameraName(Path);
+    ItemName := ExtractFileName(Path);
+    Bitmap := TBitmap.Create;
+    try
+      Result := Manager.GetImagePreview(CameraName, ItemName, Bitmap);
+      if Result then
+      begin
+        FImage := TPathImage.Create(Bitmap);
+        Bitmap := nil;
+      end;
+    finally
+      F(Bitmap);
+    end;
+
+  finally
+    F(Manager);
+  end;
 end;
 
-procedure TCameraImageItem.ReadFromCameraImage(CI: TWIACameraImage);
+procedure TCameraImageItem.ReadFromCameraImage(CI: TWIACameraImage; Options, ImageSize: Integer);
+var
+  Bitmap: TBitmap;
 begin
   F(FImage);
-  FImage := TPathImage.Create(CI.ExtractPreview);
+  Bitmap := CI.ExtractPreview;
+
+  if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
+    CenterBitmap24To32ImageList(Bitmap, ImageSize);
+
+  FImage := TPathImage.Create(Bitmap);
 end;
 
 initialization

@@ -28,6 +28,7 @@ type
     FSetLanguageMessage: Cardinal;
     procedure ExitApplication;
     procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
+    procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
     function GetTimeLimitMessage: string;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
   protected
@@ -113,6 +114,7 @@ var
   IDList: TArInteger;
   FileList: TArStrings;
   I: Integer;
+  WIAManager: TWIAManager;
 
   function IsFile(S: string): Boolean;
   var
@@ -209,8 +211,15 @@ begin
                 LoadLastPath;
             end else
             begin
-              //TODO:
-              SetPath('');
+              S := GetParamStrDBValueV2('/StiDevice');
+
+              WIAManager := TWIAManager.Create;
+              try
+                Directory := WIAManager.GetCameraPathByID(S);
+                SetPath(Directory);
+              finally
+                F(WIAManager);
+              end;
             end;
             CloseSplashWindow;
             Show;
@@ -665,6 +674,14 @@ begin
   else
     Dispatch(Msg);
 
+end;
+
+procedure TFormManager.WMDeviceChange(var Msg: TMessage);
+begin
+  case Msg.wParam of
+    DBT_DEVNODES_CHANGED:
+      //device configuration was changed
+  end;
 end;
 
 constructor TFormManager.Create(AOwner: TComponent);
