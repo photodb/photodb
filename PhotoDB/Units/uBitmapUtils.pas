@@ -923,7 +923,7 @@ begin
   end;
 end;
 
-procedure DrawImageEx24To32(Dest32, Src24 : TBitmap; X, Y : Integer; NewTransparent : Byte = 0);
+procedure DrawImageEx24To32(Dest32, Src24 : TBitmap; X, Y : Integer; NewTransparent: Byte = 0);
 var
   I, J,
   XD, YD,
@@ -2053,10 +2053,10 @@ begin
   try
     B.PixelFormat := pf32Bit;
     B.SetSize(ImageSize, ImageSize);
-    FillTransparentColor(B, clWhite);
+    FillTransparentColor(B, clWhite, 0);
     if (Bitmap.Width > ImageSize) or (Bitmap.Height > ImageSize) then
       KeepProportions(Bitmap, ImageSize, ImageSize);
-    DrawImageEx24To32(B, Bitmap, B.Width div 2 - Bitmap.Width div 2, B.Height div 2 - Bitmap.Height div 2);
+    DrawImageEx24To32(B, Bitmap, B.Width div 2 - Bitmap.Width div 2, B.Height div 2 - Bitmap.Height div 2, 255);
     Exchange(B, Bitmap);
   finally
     F(B);

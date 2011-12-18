@@ -364,7 +364,8 @@ uses
   uImageObjectManager in 'Units\uImageObjectManager.pas',
   uExplorerWIAProvider in 'Units\uExplorerWIAProvider.pas',
   WIA2_TLB in 'Interfaces\WIA2_TLB.pas',
-  uWIAManager in 'Units\uWIAManager.pas';
+  uWIAManager in 'Units\uWIAManager.pas',
+  uWIAInterfaces in 'Units\uWIAInterfaces.pas';
 
 {$R *.res}
 

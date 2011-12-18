@@ -1444,6 +1444,35 @@ begin
     Shell1.Visible := False;
   end;
 
+  if Info.FileType = EXPLORER_ITEM_CAMERA_IMAGE then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := True;
+    Resize1.Visible := True;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := False;
+    Open1.Visible := False;
+    SlideShow1.Visible := True;
+    Properties1.Visible := False;
+    Delete1.Visible := True;
+    Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
   if Info.FileType = EXPLORER_ITEM_PERSON_LIST then
   begin
     DBitem1.Visible := False;
@@ -4023,7 +4052,8 @@ begin
     NewTop := TasksLabel.BoundsRect.Bottom;
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
+      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA) or
+      (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
     begin
       SlideShowLink.Visible := True;
       SlideShowLink.Top := NewTop + H;
@@ -4058,7 +4088,7 @@ begin
     end else
       ImageEditorLink.Visible := False;
 
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
     begin
       PrintLink.Visible := True;
       PrintLink.Top := NewTop + H;
@@ -4155,7 +4185,8 @@ begin
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE)) then
     begin
       if SelCount <> 0 then
       begin
@@ -6602,7 +6633,7 @@ end;
 
 procedure TExplorerForm.CopyWithFolder1Click(Sender: TObject);
 var
-  I, Index: integer;
+  I, Index: Integer;
   Files: TStrings;
   UpDir, Dir, NewDir, Temp: string;
   L1, L2: Integer;

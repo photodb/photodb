@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Graphics, ComObj, WIA2_TLB, uMemory, uBitmapUtils, SysUtils,
-  uConstants, SyncObjs;
+  uConstants, SyncObjs, uWIAInterfaces, ActiveX;
 
 type
   TWIACamera = class;
@@ -68,7 +68,9 @@ type
   public
     constructor Create(Camera: TWIACamera; Item: IItem; AItemIndex: Integer);
     destructor Destroy; override;
+    function Delete: Boolean;
     function SaveToFile(FileName: string): Boolean;
+    function SaveToStream(Stream: TStream): Boolean;
     function ExtractPreview: TBitmap;
     property FileName: string read GetFileName;
     property Preview: TBitmap read GetPreview;
@@ -110,6 +112,7 @@ type
     destructor Destroy; override;
     procedure Clear;
     function AddItemToCache(Item: TWIACameraImage): TWIACacheItem;
+    function GetIndexByName(CameraName, ItemName : string): Integer;
     property ItemsByName[CameraName: string; ItemName: string]: TWIACacheItem read GetCacheItem;
     property ItemsByIndex[CameraName: string; ItemIndex: Integer]: TWIACacheItem read GetCacheItemByIndex;
   end;
@@ -188,7 +191,7 @@ end;
 function TWIAManager.GetImagePreview(CameraName, ItemName: string;
   Bitmap: TBitmap): Boolean;
 var
-  I, J: Integer;
+  I, J, Index: Integer;
   C: TWIACamera;
 begin
   Result := False;
@@ -198,15 +201,23 @@ begin
     C := Self[I];
     if AnsiLowerCase(C.CameraName) = AnsiLowerCase(CameraName) then
     begin
-      for J := 0 to C.Count - 1 do
-      begin
-        if C[J].FileName = ItemName then
+      Index := WIACache.GetIndexByName(C.CameraName, ItemName);
+      if Index = 0 then
+        for J := 0 to C.Count - 1 do
         begin
-          Result := True;
-          Bitmap.Assign(C[J].Preview);
-          Break;
+          if C[J].FileName = ItemName then
+          begin
+            Index := J + 1;
+            Break;
+          end;
         end;
-      end;
+
+       if Index > 0 then
+       begin
+         Result := True;
+         Bitmap.Assign(C[Index - 1].Preview);
+       end;
+
     end;
   end;
 end;
@@ -283,6 +294,16 @@ begin
   FItemIndex := AItemIndex;
   FPreview := nil;
   FIsInitialized := False;
+end;
+
+function TWIACameraImage.Delete: Boolean;
+var
+  WI: IWiaItem;
+begin
+  Result := False;
+  WI := FItem.WiaItem as IWiaItem;
+  if WI <> nil then
+    Result := Succeeded(WI.DeleteItem(0))
 end;
 
 destructor TWIACameraImage.Destroy;
@@ -501,6 +522,19 @@ begin
     Image.SaveFile(FileName);
 end;
 
+function TWIACameraImage.SaveToStream(Stream: TStream): Boolean;
+var
+  Image: IImageFile;
+  ImageData: TBinaryArray;
+begin
+  Image := IUnknown(FItem.Transfer('{00000000-0000-0000-0000-000000000000}')) as IImageFile;
+
+  Result := Image <> nil;
+
+  ImageData := TBinaryArray(Image.FileData.Get_BinaryData());
+  Stream.WriteBuffer(Pointer(ImageData)^, Length(ImageData));
+end;
+
 { TWIACache }
 
 function TWIACache.AddItemToCache(Item: TWIACameraImage): TWIACacheItem;
@@ -574,6 +608,28 @@ begin
       if (CI.CameraName = CameraName) and (CI.ItemIndex = ItemIndex) then
       begin
         Result := CI;
+        Break;
+      end;
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TWIACache.GetIndexByName(CameraName, ItemName: string): Integer;
+var
+  I: Integer;
+  CI: TWIACacheItem;
+begin
+  Result := 0;
+  FSync.Enter;
+  try
+    for I := 0 to FList.Count - 1 do
+    begin
+      CI := TWIACacheItem(FList[I]);
+      if (CI.CameraName = CameraName) and (CI.FullName = ItemName) then
+      begin
+        Result := CI.FItemIndex;
         Break;
       end;
     end;

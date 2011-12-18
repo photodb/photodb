@@ -345,8 +345,8 @@ begin
   end;
 end;
 
-procedure  CreateMultiselectImage(ListView : TEasyListView; ResultImage : TBitmap; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Width, Height : Integer);
+procedure  CreateMultiselectImage(ListView : TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer);
 var
   SelCount : Integer;
   SelectedItem : TEasyItem;

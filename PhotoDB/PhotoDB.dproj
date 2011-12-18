@@ -585,6 +585,7 @@
 			<DCCReference Include="Units\uExplorerWIAProvider.pas"/>
 			<DCCReference Include="Interfaces\WIA2_TLB.pas"/>
 			<DCCReference Include="Units\uWIAManager.pas"/>
+			<DCCReference Include="Units\uWIAInterfaces.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
@@ -608,7 +609,7 @@
 						<Source Name="MainSource">PhotoDB.dpr</Source>
 					</Source>
 					<Parameters>
-						<Parameters Name="RunParams"> /IMG_WIA /StiDevice:{EEC5AD98-8080-425f-922A-DABF3DE3F69A}\0003 /StiEvent:{A28BBADE-64B6-11d2-A231-00C04FA31809}</Parameters>
+						<Parameters Name="RunParams">/IMG_WIA /StiDevice:{EEC5AD98-8080-425f-922A-DABF3DE3F69A}\0003 /StiEvent:{A28BBADE-64B6-11d2-A231-00C04FA31809}</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
@@ -616,7 +617,7 @@
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">2</VersionInfo>
-						<VersionInfo Name="Build">380</VersionInfo>
+						<VersionInfo Name="Build">382</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -628,7 +629,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.2.380</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.2.382</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>

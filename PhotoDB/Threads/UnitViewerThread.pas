@@ -88,7 +88,7 @@ begin
   inherited;
   FreeOnTerminate := True;
   FPages := 0;
-  Priority := TpHigher;
+  Priority := tpHigher;
   try
     FTransparent := False;
     if not FileExistsEx(FInfo.FileName) then
