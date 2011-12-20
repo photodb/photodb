@@ -2,7 +2,7 @@ object FormEditObject: TFormEditObject
   Left = 0
   Top = 0
   Caption = 'FormEditObject'
-  ClientHeight = 224
+  ClientHeight = 220
   ClientWidth = 345
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -14,18 +14,17 @@ object FormEditObject: TFormEditObject
   OnCreate = FormCreate
   DesignSize = (
     345
-    224)
+    220)
   PixelsPerInch = 96
   TextHeight = 13
   object lbColor: TLabel
     Left = 8
-    Top = 145
-    Width = 98
+    Top = 141
+    Width = 33
     Height = 13
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'lbColor'
-    ExplicitTop = 122
-    ExplicitWidth = 33
+    ExplicitTop = 145
   end
   object LbNoteText: TLabel
     Left = 8
@@ -36,7 +35,7 @@ object FormEditObject: TFormEditObject
   end
   object CbColor: TColorBox
     Left = 8
-    Top = 164
+    Top = 160
     Width = 329
     Height = 22
     NoneColorColor = clRed
@@ -44,41 +43,37 @@ object FormEditObject: TFormEditObject
     Style = [cbCustomColors]
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 0
-    ExplicitTop = 141
-    ExplicitWidth = 185
+    ExplicitTop = 164
   end
   object MemText: TMemo
     Left = 8
     Top = 27
     Width = 329
-    Height = 112
+    Height = 108
     Anchors = [akLeft, akTop, akRight, akBottom]
     Lines.Strings = (
       'MemText')
     TabOrder = 1
-    ExplicitWidth = 185
-    ExplicitHeight = 89
+    ExplicitHeight = 112
   end
   object BtnOk: TButton
     Left = 260
-    Top = 192
+    Top = 188
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
     TabOrder = 2
-    ExplicitLeft = 197
-    ExplicitTop = 169
+    ExplicitTop = 192
   end
   object BtnCancel: TButton
     Left = 179
-    Top = 192
+    Top = 188
     Width = 77
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 3
-    ExplicitLeft = 116
-    ExplicitTop = 169
+    ExplicitTop = 192
   end
 end
