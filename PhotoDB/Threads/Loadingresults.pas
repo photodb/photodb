@@ -79,7 +79,7 @@ procedure SearchThread.Execute;
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     if FDS.SearchParams.IsEstimate then
       SynchronizeEx(NitifyEstimateStart)

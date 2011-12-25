@@ -174,7 +174,7 @@ begin
   inherited;
   FreeOnTerminate := True;
   try
-    CoInitialize(nil);
+    CoInitializeEx(nil, COM_MODE);
     try
       IntParam := Mapping.GetCDSize;
       Synchronize(InitializeProgress);

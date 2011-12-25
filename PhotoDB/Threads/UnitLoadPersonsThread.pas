@@ -3,7 +3,7 @@ unit UnitLoadPersonsThread;
 interface
 
 uses
-  Classes, uDBThread, uPeopleSupport, ActiveX;
+  Classes, uDBThread, uPeopleSupport, ActiveX, uConstants;
 
 type
   TLoadPersonsThread = class(TDBThread)
@@ -20,7 +20,7 @@ begin
   inherited;
   FreeOnTerminate := True;
 
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     PersonManager.AllPersons;
   finally

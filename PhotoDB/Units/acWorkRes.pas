@@ -417,7 +417,7 @@ begin
 end;
 
 // get a pointer tree of all available resources
-function GetResTree(module, resOfs, virtResOfs: dword) : TPResItem;
+function GetResTree(module, resOfs, virtResOfs: NativeUInt) : TPResItem;
 
   function ParseResEntry(nameOrID, offsetToData: dword) : TPResItem;
 
@@ -444,7 +444,7 @@ function GetResTree(module, resOfs, virtResOfs: dword) : TPResItem;
            name := GetResourceNameFromId(nameOrID and (not $80000000))
       else id   := nameOrID;
       if isDir then begin
-        dword(irs) := module + resOfs + offsetToData and (not $80000000);
+        NativeUInt(irs) := module + resOfs + offsetToData and (not $80000000);
         attr       := irs^.Characteristics;
         time       := irs^.timeDateStamp;
         majorVer   := irs^.majorVersion;
@@ -457,7 +457,7 @@ function GetResTree(module, resOfs, virtResOfs: dword) : TPResItem;
           ppri := @ppri^^.next;
         end;
       end else begin
-        dword(irde) := module + resOfs + offsetToData;
+        NativeUInt(irde) := module + resOfs + offsetToData;
         size     := irde^.Size;
         codePage := irde^.CodePage;
         reserved := irde^.Reserved;
@@ -678,7 +678,7 @@ begin
           nh := GetImageNtHeaders(dword(buf));
           if nh <> nil then begin
             SetLastError(ERROR_FILE_NOT_FOUND);
-            dword(ash) := dword(nh) + sizeOf(nh^);
+            NativeUInt(ash) := NativeUInt(nh) + sizeOf(nh^);
             for i1 := 0 to nh^.FileHeader.NumberOfSections - 1 do
               if ash[i1].VirtualAddress = nh^.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress then begin
                 if delExistingRes then begin
@@ -714,7 +714,7 @@ begin
   	c1 := c1 + word(baseAddress^);
     if c1 and $ffff0000 <> 0 then
       c1 := c1 and $ffff + c1 shr 16;
-    inc(dword(baseAddress), 2);
+    inc(NativeUInt(baseAddress), 2);
   end;
   c1 := word(c1 and $ffff + c1 shr 16);
   nh^.OptionalHeader.CheckSum := c1 + size;
@@ -734,7 +734,7 @@ begin
       with rh^ do begin
         if not discard then begin
           result := false;
-          dword(ash) := dword(nh) + sizeOf(nh^);
+          NativeUInt(ash) := NativeUInt(nh) + sizeOf(nh^);
           for i1 := 0 to nh^.FileHeader.NumberOfSections - 1 do
             if ash[i1].VirtualAddress = nh^.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress then begin
               ss := 0;
@@ -748,7 +748,7 @@ begin
               if (i2 <> 0) and (not MoveFileContents(fh, ash[i1].PointerToRawData + ash[i1].SizeOfRawData, i2, map, buf)) then
                 break;
               nh := GetImageNtHeaders(dword(buf));
-              dword(ash) := dword(nh) + sizeOf(nh^);
+              NativeUInt(ash) := NativeUInt(nh) + sizeOf(nh^);
               with nh^.OptionalHeader, DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE] do begin
                 inc(nh^.OptionalHeader.SizeOfInitializedData, i2);
                 i3 := int64(Align(Align(ss + ns, 4) + ds, SectionAlignment)) - Align(Size, SectionAlignment);

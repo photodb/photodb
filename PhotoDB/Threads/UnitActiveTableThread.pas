@@ -3,7 +3,7 @@ unit UnitActiveTableThread;
 interface
 
 uses
-  ActiveX, Classes, DB, uDBThread;
+  ActiveX, Classes, DB, uDBThread, uConstants;
 
 type
   TNotifyBoolEvent = procedure(Result: boolean) of object;
@@ -48,7 +48,7 @@ begin
   inherited;
   ActiveOk := False;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     try
       ActiveOk := ActiveTable(FTable, FActive);

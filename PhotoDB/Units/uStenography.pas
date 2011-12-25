@@ -269,7 +269,7 @@ begin
   Result := Max(0, Result);
 end;
 
-procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TStream; HeaderInTheEnd: Boolean);
+procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest: TStream; HeaderInTheEnd: Boolean);
 var
   FS: TFileStream;
   I: Integer;
@@ -293,8 +293,12 @@ begin
       Header.ID := StenoHeaderId;
       Header.Version := 1;
       FileName := ExtractFileName(FileName);
-      for I := 0 to Min(254, Length(FileName)) do
+      for I := 0 to SizeOf(Header.FileName) div SizeOf(Header.FileName[0]) - 1 do
+        Header.FileName[I] := #0;
+
+      for I := 0 to Min(SizeOf(Header.FileName) div SizeOf(Header.FileName[0]) - 1, Length(FileName) - 1) do
         Header.FileName[I] := FileName[I + 1];
+
       CalcBufferCRC32(TMemoryStream(MS).Memory, MS.Size, Header.DataCRC);
       Header.FileSize := Integer(MS.Size);
       Header.IsCrypted := Length(Password) > 0;

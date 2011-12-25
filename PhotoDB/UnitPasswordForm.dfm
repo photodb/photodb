@@ -120,7 +120,7 @@ object PassWordForm: TPassWordForm
     Left = 8
     Top = 42
     Width = 305
-    Height = 32
+    Height = 31
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -19

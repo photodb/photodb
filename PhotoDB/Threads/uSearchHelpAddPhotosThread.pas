@@ -3,7 +3,7 @@ unit uSearchHelpAddPhotosThread;
 interface
 
 uses
-  Classes, uDBThread, uDBForm, DB, ActiveX, CommonDBSupport;
+  Classes, uDBThread, uDBForm, DB, ActiveX, CommonDBSupport, uConstants;
 
 type
   TSearchHelpAddPhotosThreadCallBack = procedure(Sender: TObject; RecordsInDB: Integer) of object;
@@ -40,7 +40,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     DS := GetQuery(True);
     try

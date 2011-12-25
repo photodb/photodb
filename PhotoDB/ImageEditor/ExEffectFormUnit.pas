@@ -271,7 +271,7 @@ begin
     Exit;
   if Msg.message = WM_MOUSEWHEEL then
   begin
-    if Msg.WParam < 0 then
+    if NativeInt(Msg.WParam) < 0 then
       SpeedButton1Click(Self)
     else
       SpeedButton2Click(Self);

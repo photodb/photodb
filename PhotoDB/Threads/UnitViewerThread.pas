@@ -8,7 +8,8 @@ uses
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
   uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
   uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage,
-  uExifUtils, uJpegUtils, uBitmapUtils, uSettings, uFaceDetection;
+  uExifUtils, uJpegUtils, uBitmapUtils, uSettings, uFaceDetection,
+  uConstants;
 
 type
   TViewerThread = class(TDBThread)
@@ -423,7 +424,7 @@ var
   Query: TDataSet;
   FileName: string;
 begin
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     FileName := FInfo.FileName;
     F(FInfo);

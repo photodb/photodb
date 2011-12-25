@@ -184,7 +184,7 @@ begin
     GetCursorPos(P);
     if PtInRect(PbImage.BoundsRect, Self.ScreenToClient(P)) then
     begin
-      if Msg.WParam < 0 then
+      if NativeInt(Msg.WParam) < 0 then
         WlNextClick(Self)
       else
         WlBackClick(Self);
@@ -311,7 +311,7 @@ begin
   FIgnoreInput := False;
   FPreviewImage := nil;
   DoubleBuffered := True;
-  FormManager.RegisterMainForm(Self);
+  RegisterMainForm(Self);
   LoadLanguage;
   FData := TDBPopupMenuInfo.Create;
   FProcessingList := TStringList.Create;
@@ -362,7 +362,7 @@ begin
     DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
   end;
   F(FPreviewImage);
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
   SwpMain.SavePosition;
 end;
 

@@ -443,6 +443,7 @@ exports
   FileVersion name 'FileVersion';
 
 begin
+  CoInitFlags := COM_MODE;
   try
     //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
     //ReportMemoryLeaksOnShutdown := True;
@@ -531,7 +532,7 @@ begin
 
     TW.I.Start('TFormManager Create');
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
     // This is main form of application
 
     TW.I.Start('SetSplashProgress 70');
@@ -704,13 +705,13 @@ begin
 
     if (s1 <> '') and FileExistsEx(s1) then
     begin
-      FormManager.RegisterMainForm(UpdaterDB.Form);
+      RegisterMainForm(UpdaterDB.Form);
       UpdaterDB.AddFile(s1);
     end;
 
     if (s1 <> '') and DirectoryExists(s1) then
     begin
-      FormManager.RegisterMainForm(UpdaterDB.Form);
+      RegisterMainForm(UpdaterDB.Form);
       UpdaterDB.AddDirectory(s1, nil);
     end;
 
@@ -744,7 +745,7 @@ begin
       end;
 
     UnReigisterPersonManager;
-
+    UnloadTranslateModule;
   except
     on e: Exception do
     begin

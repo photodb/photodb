@@ -138,7 +138,7 @@ begin
   inherited;
   FreeOnTerminate := True;
   try
-    CoInitialize(nil);
+    CoInitializeEx(nil, COM_MODE);
     try
       SaveToDBName := GetFileNameWithoutExt(FDestinationPath);
       if SaveToDBName <> '' then

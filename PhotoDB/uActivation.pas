@@ -194,7 +194,7 @@ end;
 
 procedure TActivateForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
 end;
 
 procedure TActivateForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

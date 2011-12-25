@@ -4,6 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  System.UITypes,
   ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, AppEvnts, Dolphin_DB, DDraw, uGUIDUtils,
   Math, uSysUtils, uDBForm, uDXUtils, uMemory, uSettings, uBitmapUtils, uMemoryEx,
   uVCLHelpers;
@@ -549,7 +550,7 @@ begin
     if Msg.message = WM_MOUSEWHEEL then
     begin
       Viewer.Pause;
-      if Msg.wParam > 0 then
+      if NativeInt(Msg.wParam) > 0 then
         Viewer.PreviousImageClick(nil)
       else
         Viewer.NextImageClick(nil);

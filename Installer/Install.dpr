@@ -63,6 +63,7 @@ uses
 {$R SETUP_ZIP.res}
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}
+{$R InstallMain.res}
 
 begin
   Application.Initialize;

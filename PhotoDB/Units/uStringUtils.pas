@@ -84,10 +84,10 @@ begin
     if Result[I] = '.' then
       Result[I] := FormatSettings.DecimalSeparator;
 
-
 end;
 
 function PosExW(const SubStr, S: string; Offset : Integer = 1): Integer;
+{$IFDEF CPUX86}
 asm
        test  eax, eax
        jz    @Nil
@@ -229,6 +229,11 @@ asm
        add   esp, 8
        pop   ebx
        pop   esi
+{$ENDIF CPUX86}
+{$IFDEF CPUX64}
+begin
+  Result := PosEx(SubStr, S, Offset);
+{$ENDIF CPUX64}
 end;
 
 function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer;
@@ -251,8 +256,8 @@ var
       APS: PChar;
       APSub: PChar;
   begin
-    Integer(APS) := Integer(PS);
-    Integer(APSub) := Integer(PSup);
+    NativeUInt(APS) := NativeUInt(PS);
+    NativeUInt(APSub) := NativeUInt(PSup);
     for K := 1 to LS do
     begin
       if APS^ <> APSub^ then

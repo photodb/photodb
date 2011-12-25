@@ -75,7 +75,7 @@ end;
 
 procedure TImportProgressForm.FormCreate(Sender: TObject);
 begin
-  FormManager.RegisterMainForm(self);
+  RegisterMainForm(self);
   PbMain.MaxValue := 1;
   PbItemsAdded.MaxValue := 1;
   PbItemsUpdated.MaxValue := 1;
@@ -102,7 +102,7 @@ end;
 
 procedure TImportProgressForm.FormDestroy(Sender: TObject);
 begin
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
 end;
 
 function TImportProgressForm.GetFormID: string;

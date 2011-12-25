@@ -98,15 +98,30 @@ type
     function QueryContextMenu(Menu: HMENU; indexMenu, idCmdFirst, idCmdLast,
       uFlags: UINT): HResult; stdcall;
     function InvokeCommand(var lpici: TCMInvokeCommandInfo): HResult; stdcall;
-    function GetCommandString(idCmd, uType: UINT; pwReserved: PUINT;
-      pszName: LPSTR; cchMax: UINT): HResult; stdcall;
+
+    {$IFDEF VER230}
+      function GetCommandString(idCmd: UINT_PTR; uFlags: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult; stdcall;
+    {$ELSE}
+      function GetCommandString(idCmd, uType: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult; stdcall;
+    {$ENDIF}
+
+
 
     { IContextMenu2 }
-    function HandleMenuMsg(uMsg: UINT; WParam, LParam: Integer): HResult; stdcall;
+    {$IFDEF VER230}
+      function HandleMenuMsg(uMsg: UINT; WParam: WPARAM; LParam: LPARAM): HResult; stdcall;
+    {$ELSE}
+      function HandleMenuMsg(uMsg: UINT; WParam, LParam: Integer): HResult; stdcall;
+    {$ENDIF}
 
     { IContextMenu3 }
-    function HandleMenuMsg2(uMsg: UINT; wParam, lParam: Integer;
-      var lpResult: Integer): HResult; stdcall;
+    {$IFDEF VER230}
+      function HandleMenuMsg2(uMsg: UINT; wParam: WPARAM; lParam: LPARAM; var lpResult: LRESULT): HResult; stdcall;
+    {$ELSE}
+      function HandleMenuMsg2(uMsg: UINT; wParam, lParam: Integer;  var lpResult: Integer): HResult; stdcall;
+    {$ENDIF}
+
+
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -199,12 +214,18 @@ begin
   inherited Destroy;
 end;
 
-function TDropContextMenu.GetCommandString(idCmd, uType: UINT;
-  pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult;
+{$IFDEF VER230}
+function TDropContextMenu.GetCommandString(idCmd: UINT_PTR; uFlags: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult;
+{$ELSE}
+function TDropContextMenu.GetCommandString(idCmd, uType: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult;
+{$ENDIF}
 var
   ItemIndex: integer;
   MenuItem: TMenuItem;
   sAnsi: AnsiString;
+  {$IFDEF VER230}
+  uType : UINT absolute uFlags;
+  {$ENDIF}
 begin
 {$ifopt D+}
   OutputDebugString('IContextMenu.GetCommandString');
@@ -520,20 +541,29 @@ begin
     NextMenuID-FMenuOffset);
 end;
 
-function TDropContextMenu.HandleMenuMsg(uMsg: UINT; WParam,
-  LParam: Integer): HResult;
+{$IFDEF VER230}
+function TDropContextMenu.HandleMenuMsg(uMsg: UINT; WParam: WPARAM; LParam: LPARAM): HResult;
+{$ELSE}
+function TDropContextMenu.HandleMenuMsg(uMsg: UINT; WParam, LParam: Integer): HResult;
+{$ENDIF}
 var
-  lpResult: Integer;
+  {$IFDEF VER230}
+  lpResult : NativeInt;
+  {$ELSE}
+  lpResult : Integer;
+  {$ENDIF}
 begin
 {$ifopt D+}
   OutputDebugString('IContextMenu2.HandleMenuMsg');
 {$endif}
-
   Result := HandleMenuMsg2(uMsg, WParam, LParam, lpResult);
 end;
 
-function TDropContextMenu.HandleMenuMsg2(uMsg: UINT; wParam,
-  lParam: Integer; var lpResult: Integer): HResult;
+{$IFDEF VER230}
+function TDropContextMenu.HandleMenuMsg2(uMsg: UINT; wParam: WPARAM; lParam: LPARAM; var lpResult: LRESULT): HResult;
+{$ELSE}
+function TDropContextMenu.HandleMenuMsg2(uMsg: UINT; wParam, lParam: Integer; var lpResult: Integer): HResult;
+{$ENDIF}
 begin
   Result := S_OK;
 

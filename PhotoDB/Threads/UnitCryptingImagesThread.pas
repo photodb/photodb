@@ -104,7 +104,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     Count := 0;
     for I := 0 to Length(FOptions.IDs) - 1 do

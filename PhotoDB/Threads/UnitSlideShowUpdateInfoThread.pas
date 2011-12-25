@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB, uThreadForm, uThreadEx,
-  ActiveX, UnitDBDeclare, uMemory, uExifUtils;
+  ActiveX, UnitDBDeclare, uMemory, uExifUtils, uConstants;
 
 type
   TSlideShowUpdateInfoThread = class(TThreadEx)
@@ -56,7 +56,7 @@ procedure TSlideShowUpdateInfoThread.Execute;
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     DS := GetQuery(True);
     try

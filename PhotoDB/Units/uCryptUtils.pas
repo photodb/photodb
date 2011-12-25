@@ -44,18 +44,6 @@ begin
   inherited;
 end;
 
-{procedure TPasswordSettingsDBForm.FillChiperList;
-begin
-end;
-
-procedure TPasswordSettingsDBForm.OnChiperSelected(Sender: TObject);
-begin
-end;
-
-procedure TPasswordSettingsDBForm.WblMethodClick(Sender: TObject);
-begin
-end;}
-
 { TPasswordMethodChanger }
 
 constructor TPasswordMethodChanger.Create(WebLink: TWebLink;

@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, DB, CommonDBSupport, ComObj, ActiveX, ShlObj, CommCtrl,
-  SysUtils, uLogger, uDBThread, uGOM, uDBForm;
+  SysUtils, uLogger, uDBThread, uGOM, uDBForm, uConstants;
 
 type
   TNotifyDBOpenedEvent = procedure(Sender : TObject; DS : TDataSet) of object;
@@ -52,7 +52,7 @@ begin
   inherited;
   FreeOnTerminate := True;
   try
-    CoInitialize(nil);
+    CoInitializeEx(nil, COM_MODE);
     try
       try
         FQuery.Open;

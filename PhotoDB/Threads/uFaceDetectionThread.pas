@@ -121,7 +121,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     Priority := tpNormal;
 
@@ -599,7 +599,7 @@ end;
 procedure TDBFaceLoadThread.Execute;
 begin
   inherited;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     FPersonAreas := PersonManager.GetAreasOnImage(FImageID);
   finally

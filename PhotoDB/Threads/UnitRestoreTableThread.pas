@@ -47,7 +47,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     S := ExtractFilePath(Application.ExeName);
     try

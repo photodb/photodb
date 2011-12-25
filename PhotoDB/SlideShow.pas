@@ -924,7 +924,7 @@ end;
 
 procedure TViewer.FormDestroy(Sender: TObject);
 begin
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 
   F(FDrawFace);
@@ -1865,14 +1865,14 @@ begin
   begin
     if ZoomerOn or CtrlKeyDown or ShiftKeyDown then
     begin
-      if Msg.WParam > 0 then
+      if NativeInt(Msg.WParam) > 0 then
         TbZoomOutClick(Self)
       else
         TbZoomInClick(Self);
       Msg.message := 0;
     end else
     begin
-      if Msg.WParam > 0 then
+      if NativeInt(Msg.WParam) > 0 then
         Previous_(Self)
       else
         Next_(Self);

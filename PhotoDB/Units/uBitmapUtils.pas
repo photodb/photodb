@@ -161,7 +161,7 @@ begin
   end;
 end;
 
-function MixBytes(FG, BG, TRANS: Byte): Byte;
+{function MixBytes(FG, BG, TRANS: Byte): Byte;
  asm
   push bx  // push some regs
   push cx
@@ -184,7 +184,7 @@ function MixBytes(FG, BG, TRANS: Byte): Byte;
   pop dx       // Hm... No rubbish after us, ok?
   pop cx
   pop bx       // Bye, dear Assembler - we go home to Delphi!
-end;
+end;}
 
 function MaxI8(A, B : Byte) : Byte; inline; overload;
 begin
@@ -224,6 +224,8 @@ var
   PS, PD: PARGB;
   PS32, PD32: PARGB32;
 begin
+  if Src = nil then
+    Exit;
   if Src.PixelFormat <> pf32bit then
   begin
     Src.PixelFormat := pf24bit;

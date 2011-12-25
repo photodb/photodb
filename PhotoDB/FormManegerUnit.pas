@@ -31,13 +31,13 @@ type
     procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
     function GetTimeLimitMessage: string;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure RegisterMainForm(Value: TForm);
+    procedure UnRegisterMainForm(Value: TForm);
   protected
     function GetFormID: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure RegisterMainForm(Value: TForm);
-    procedure UnRegisterMainForm(Value: TForm);
     procedure Run;
     procedure RunInBackground;
     procedure Close(Form: TForm);
@@ -61,6 +61,9 @@ const
   TIMER_CHECK_MAIN_FORMS = 3;
   TIMER_CLOSE = 4;
 
+procedure RegisterMainForm(Value: TForm);
+procedure UnRegisterMainForm(Value: TForm);
+
 implementation
 
 uses
@@ -68,7 +71,20 @@ uses
   UnitInternetUpdate, UAbout, UnitConvertDBForm, UnitImportingImagesForm,
   UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel,
   UActivation, UnitUpdateDB, UExifPatchThread;
+
 {$R *.dfm}
+
+procedure RegisterMainForm(Value: TForm);
+begin
+  if FormManager <> nil then
+    FormManager.RegisterMainForm(Value);
+end;
+
+procedure UnRegisterMainForm(Value: TForm);
+begin
+  if FormManager <> nil then
+    FormManager.UnRegisterMainForm(Value);
+end;
 
 // callback function for Timer
 procedure TimerProc(Wnd: HWND; // handle of window for timer messages

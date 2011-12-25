@@ -396,7 +396,7 @@ begin
   ExportLink.Top := WlConvert.Top + WlConvert.Height + 5;
   ExCopyLink.Top := ExportLink.Top + ExportLink.Height + 5;
   LoadToolBarIcons;
-  FormManager.RegisterMainForm(Self);
+  RegisterMainForm(Self);
 
   SaveWindowPos1.Key := RegRoot + 'Container';
   SaveWindowPos1.SetPosition;
@@ -1029,7 +1029,7 @@ end;
 
 procedure TFormCont.FormDestroy(Sender: TObject);
 begin
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
   ClearList;
   DropFileTarget2.Unregister;
   F(Data);
@@ -1587,7 +1587,7 @@ begin
     begin
       if CtrlKeyDown then
       begin
-        if Msg.WParam > 0 then
+        if NativeInt(Msg.WParam) > 0 then
           I := 1
         else
           I := -1;

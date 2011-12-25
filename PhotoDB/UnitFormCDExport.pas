@@ -125,7 +125,7 @@ begin
 
   DropFileTarget1.Register(CDListView);
   PopupMenuListView.Images := DBKernel.ImageList;
-  FormManager.RegisterMainForm(Self);
+  RegisterMainForm(Self);
   ComboBoxPathList.ItemIndex := 0;
   LoadLanguage;
   Open1.ImageIndex := DB_IC_SHELL;
@@ -173,7 +173,7 @@ end;
 
 procedure TFormCDExport.FormDestroy(Sender: TObject);
 begin
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
   F(Mapping);
 end;
 

@@ -5,11 +5,11 @@ interface
 uses
   Classes, uDBPopupMenuInfo, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
   UnitDBDeclare, SysUtils, uLogger, uMemory, uDBUtils, ActiveX, uDBForm,
-  uDBThread;
+  uDBThread, uConstants;
 
 type
   TRefreshIDRecordThreadOptions = record
-    Info : TDBPopupMenuInfo;
+    Info: TDBPopupMenuInfo;
   end;
 
 type
@@ -70,7 +70,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     Count := 0;
     for I := 0 to FInfo.Count - 1 do

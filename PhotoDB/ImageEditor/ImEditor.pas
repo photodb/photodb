@@ -355,7 +355,7 @@ begin
   SaveWindowPos1.SetPosition;
 
   VirtualBrushCursor := Settings.ReadBool('Editor', 'VirtualCursor', False);
-  FormManager.RegisterMainForm(Self);
+  RegisterMainForm(Self);
   PmMain.Images := DBKernel.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;
   Search1.ImageIndex := DB_IC_ADDTODB;
@@ -1822,7 +1822,7 @@ end;
 
 procedure TImageEditor.FormDestroy(Sender: TObject);
 begin
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
   ActionForm.Release;
   SaveWindowPos1.SavePosition;
   F(CurrentImage);

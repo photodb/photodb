@@ -3,7 +3,7 @@ unit uLanguageLoadThread;
 interface
 
 uses
-  uTranslate, Classes, ActiveX, uRuntime, uMobileUtils, uTime;
+  uTranslate, Classes, ActiveX, uRuntime, uMobileUtils, uTime, uConstants;
 
 type
   TLanguageThread = class(TThread)
@@ -19,7 +19,7 @@ procedure TLanguageThread.Execute;
 begin
   FreeOnTerminate := True;
   TW.I.Start('TLanguageThread.Execute - CoInitialize');
-  CoInitializeEx(nil, COINIT_MULTITHREADED);
+  CoInitializeEx(nil, COM_MODE);
   try
     //Call translate manager to load XML with language in separate thead
     TW.I.Start('TLanguageThread.Execute - PhotoDB');

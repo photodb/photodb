@@ -80,7 +80,7 @@ begin
   inherited;
   FreeOnTerminate := True;
   ConvertationResult := False;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     ToFileName := IncludeTrailingBackslash(ExtractFileDir(FFileName)) + GetFileNameWithoutExt(FFileName) + '$';
 

@@ -144,7 +144,7 @@ var
   IsDemo, IsFull: Boolean;
   I : Integer;
 const
-  ActivetionModes: array [0 .. 1] of DWORD = (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE);
+  ActivetionModes: array [0 .. 1] of NativeUInt = (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE);
 begin
   AppKey := ApplicationCode;
   IsDemo := True;

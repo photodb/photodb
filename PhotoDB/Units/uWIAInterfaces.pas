@@ -5,6 +5,16 @@ interface
 uses
   Windows, ActiveX;
 
+
+const
+  CLSID_WiaDevMgr: TGUID = '{a1f4e726-8cf1-11d1-bf92-0060081ed811}';
+  IID_IWiaDevMgr: TGUID  = '{5eb2502a-8cf1-11d1-bf92-0060081ed811}';
+
+  CLSID_WiaDevMgr2: TGUID = '{B6C292BC-7C88-41ee-8B54-8EC92617E599}';
+  IID_IWiaDevMgr2: TGUID  = '{79C07CF1-CBDD-41ee-8EC3-F00080CADA7A}';
+
+  WIA_DEVINFO_ENUM_LOCAL = $00000010;
+
 type
   _WIA_DATA_CALLBACK_HEADER = record
     lSize: LongInt;
@@ -84,7 +94,7 @@ typedef struct _WIA_DEV_CAP {
     ['{4DB1AD10-3391-11D2-9A33-00C04FA36145}']
     function GetItemType(var itemType: Integer): HRESULT; safecall;
     function AnalyzeItem(var lTags: Integer): HRESULT; safecall;
-    function EnumChildItems(EnumWiaItem: IEnumWiaItem): HRESULT; safecall;
+    function EnumChildItems(out EnumWiaItem: IEnumWiaItem): HRESULT; safecall;
     function DeleteItem(const lTags: Integer): HRESULT; safecall;
     function CreateChildItem(lFlags: Integer;
       bstrItemName: string;
@@ -179,7 +189,7 @@ typedef struct _WIA_DEV_CAP {
   IWiaDevMgr = interface(IUnknown)
     ['{5EB2502A-8CF1-11D1-BF92-0060081ED811}']
       function EnumDeviceInfo(lFlag: Integer; out ppIEnum: IEnumWIA_DEV_INFO): HRESULT; safecall;
-      function CreateDevice(bstrDeviceID: string; out ppWiaItemRoot: IWiaItem): HRESULT; safecall;
+      function CreateDevice(bstrDeviceID: PChar; out ppWiaItemRoot: IWiaItem): HRESULT; safecall;
       function SelectDeviceDlg(hwndParent: HWND; lDeviceType: Integer; lFlags: Integer;
         var pbstrDeviceID: string; ppItemRoot: IWiaItem): HRESULT; safecall;
       function SelectDeviceDlgID(hwndParent: HWND;
@@ -219,21 +229,115 @@ typedef struct _WIA_DEV_CAP {
   ///  WIA 2 Interfaces
   //////////////////////////////////////////////////////////////////////////////
 
-  IWiaDevMgr2 = interface(IUnknown)
-    ['{79C07CF1-CBDD-41EE-8EC3-F00080CADA7A}']
+type
+  IWiaItem2 = interface;
+
+  IWiaPreview = interface(IUnknown)
+   ['{95C2B4FD-33F2-4D86-AD40-9431F0DF08F7}']
   end;
 
   IEnumWiaItem2 = interface(IUnknown)
     ['{59970AF4-CD0D-44D9-AB24-52295630E582}']
+    function Next(celt: ULONG; out ppIWiaItem: IWiaItem2; var pceltFetched: ULONG): HRESULT; safecall;
+    function Skip(celt: ULONG): HRESULT; safecall;
+    function Reset: HRESULT; safecall;
+    function Clone(out ppIEnum: IEnumWiaItem2): HRESULT; safecall;
+    function GetCount(out pcelt: ULONG): HRESULT; safecall;
   end;
 
   IWiaItem2 = interface(IUnknown)
     ['{6CBA0075-1287-407D-9B77-CF0E030435CC}']
-    //function GetItemType(var itemType: Integer): HRESULT; safecall;
-    //procedure AnalyzeItem(var lTags: Integer); safecall;
-    //procedure EnumChildItems(EnumWiaItem: IEnumWiaItem2); safecall;
+    function CreateChildItem(lFlags: Integer;
+      lCreationFlags: Integer;
+      bstrItemName: string;
+      var ppIWiaItem2: IWiaItem2): HRESULT; safecall;
     function DeleteItem(const lTags: Integer): HRESULT; safecall;
+    function EnumChildItems(pCategoryGUID: PGUID;
+      out EnumWiaItem2: IEnumWiaItem2): HRESULT; safecall;
+    function FindItemByName(lFlags: Integer;
+      bstrFullItemName: string;
+      var ppIWiaItem2: IWiaItem2): HRESULT; safecall;
+    function GetItemCategory(out pItemCategoryGUID: TGUID): HRESULT; safecall;
+    function GetItemType(out pItemType: Integer): HRESULT; safecall;
+    function DeviceDlg(lFlags: Integer;
+      hwndParent: HWND;
+      bstrFolderName: string;
+      bstrFilename: string;
+      plNumFiles: Integer;
+      ppbstrFilePaths: string;
+      var ppIWiaItem2: IWiaItem2): HRESULT; safecall;
+    function DeviceCommand(lFlags: Integer;
+      pCmdGUID: TGUID;
+      var pIWiaItem2: IWiaItem2): HRESULT; safecall;
+    function EnumDeviceCapabilities(lFlags: Integer;
+      out ppIEnumWIA_DEV_CAPS: IEnumWIA_DEV_CAPS): HRESULT; safecall;
+    function CheckExtension(lFlags: Integer;
+      bstrName: string;
+      riidExtensionInterface: {REFIID}Pointer;
+      out pbExtensionExists: BOOL): HRESULT; safecall;
+    function GetExtension(lFlags: Integer;
+      bstrName: string;
+      riidExtensionInterface: {REFIID}Pointer;
+      out ppOut): HRESULT; safecall;
+    function GetParentItem(out ppIWiaItem2: IWiaItem2): HRESULT; safecall;
+    function GetRootItem(out ppIWiaItem: IWiaItem): HRESULT; safecall;
+    function GetPreviewComponent(lFlags: Integer;
+      ppWiaPreview: IWiaPreview): HRESULT; safecall;
+    function EnumRegisterEventInfo(lFlags: Integer;
+      const pEventGUID: TGUID;
+      out ppIEnum: IEnumWIA_DEV_CAPS): HRESULT;
+    function Diagnostic(ulSize: ULONG; pBuffer: PByte): HRESULT; safecall;
   end;
+
+  IWiaTransferCallback = interface(IUnknown)
+    ['{27D4EAAF-28A6-4CA5-9AAB-E678168B9527}']
+  end;
+
+  IWiaTransfer = interface(IUnknown)
+    ['{C39D6942-2F4E-4D04-92FE-4EF4D3A1DE5A}']
+  end;
+
+  IWiaDevMgr2 = interface(IUnknown)
+    ['{79C07CF1-CBDD-41EE-8EC3-F00080CADA7A}']
+      function EnumDeviceInfo(lFlag: Integer; out ppIEnum: IEnumWIA_DEV_INFO): HRESULT; safecall;
+      function CreateDevice(lFlags: Integer; bstrDeviceID: PChar; out ppWiaItem2Root: IWiaItem2): HRESULT; safecall;
+      function SelectDeviceDlg(hwndParent: HWND; lDeviceType: Integer; lFlags: Integer;
+        var pbstrDeviceID: PChar; out ppItemRoot: IWiaItem2): HRESULT; safecall;
+      function SelectDeviceDlgID(hwndParent: HWND;
+        lDeviceType: Integer;
+        lFlags: Integer;
+        out pbstrDeviceID: string): HRESULT; safecall;
+      function RegisterEventCallbackInterface(lFlags: Integer;
+        bstrDeviceID: string;
+        pEventGUID: TGUID;
+        pIWiaEventCallback: IWiaEventCallback;
+        out pEventObject: IUnknown): HRESULT; safecall;
+      function RegisterEventCallbackProgram(lFlags: Integer;
+        bstrDeviceID: string;
+        pEventGUID: TGUID;
+        bstrCommandline: string;
+        bstrName: string;
+        bstrDescription: string;
+        bstrIcon: string): HRESULT; safecall;
+      function RegisterEventCallbackCLSID(lFlags: Integer;
+        bstrDeviceID: string;
+        pEventGUID: TGUID;
+        pClsID: TGUID;
+        bstrName: string;
+        bstrDescription: string;
+        bstrIcon: string): HRESULT; safecall;
+      function GetImageDlg(lFlags: Integer;
+        bstrDeviceID: string;
+        hwndParent: HWND;
+        lDeviceType: Integer;
+        bstrFolderName: string;
+        bstrFilename: string;
+        plNumFiles: Integer;
+        pItemRoot: IWiaItem;
+        ppbstrFilePaths: string;
+        var ppItem: IWiaItem2): HRESULT; safecall;
+  end;
+
 
 
 
@@ -812,6 +916,25 @@ const
   TYMED_CALLBACK           = 128;
   TYMED_MULTIPAGE_FILE     = 256;
   TYMED_MULTIPAGE_CALLBACK = 512;
+
+  WiaItemTypeFree                        = $00000000;
+  WiaItemTypeImage                       = $00000001;
+  WiaItemTypeFile                        = $00000002;
+  WiaItemTypeFolder                      = $00000004;
+  WiaItemTypeRoot                        = $00000008;
+  WiaItemTypeAnalyze                     = $00000010;
+  WiaItemTypeAudio                       = $00000020;
+  WiaItemTypeDevice                      = $00000040;
+  WiaItemTypeDeleted                     = $00000080;
+  WiaItemTypeDisconnected                = $00000100;
+  WiaItemTypeHPanorama                   = $00000200;
+  WiaItemTypeVPanorama                   = $00000400;
+  WiaItemTypeBurst                       = $00000800;
+  WiaItemTypeStorage                     = $00001000;
+  WiaItemTypeTransfer                    = $00002000;
+  WiaItemTypeGenerated                   = $00004000;
+  WiaItemTypeHasAttachments               = $00008000;
+  WiaItemTypeVideo                       = $00010000;
 
 implementation
 

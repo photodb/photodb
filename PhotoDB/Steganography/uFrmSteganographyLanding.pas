@@ -233,6 +233,7 @@ var
   end;
 
 begin
+  StrongCryptInit;
   RbExtractDataFromImage.Checked := True;
   Result := False;
 

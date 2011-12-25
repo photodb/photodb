@@ -3373,14 +3373,14 @@ begin
   // Move on to next column
   if (Direction = 1) then
   begin
-    inc(longInt(ErrorR), sizeof(TErrorTerm));
-    inc(longInt(ErrorG), sizeof(TErrorTerm));
-    inc(longInt(ErrorB), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB), sizeof(TErrorTerm));
   end else
   begin
-    dec(longInt(ErrorR), sizeof(TErrorTerm));
-    dec(longInt(ErrorG), sizeof(TErrorTerm));
-    dec(longInt(ErrorB), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB), sizeof(TErrorTerm));
   end;
 end;
 {$IFDEF R_PLUS}
@@ -3527,26 +3527,26 @@ begin
   // Move on to next column
   if (Direction = 1) then
   begin
-    inc(longInt(ErrorR0), sizeof(TErrorTerm));
-    inc(longInt(ErrorG0), sizeof(TErrorTerm));
-    inc(longInt(ErrorB0), sizeof(TErrorTerm));
-    inc(longInt(ErrorR1), sizeof(TErrorTerm));
-    inc(longInt(ErrorG1), sizeof(TErrorTerm));
-    inc(longInt(ErrorB1), sizeof(TErrorTerm));
-    inc(longInt(ErrorR2), sizeof(TErrorTerm));
-    inc(longInt(ErrorG2), sizeof(TErrorTerm));
-    inc(longInt(ErrorB2), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR2), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG2), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB2), sizeof(TErrorTerm));
   end else
   begin
-    dec(longInt(ErrorR0), sizeof(TErrorTerm));
-    dec(longInt(ErrorG0), sizeof(TErrorTerm));
-    dec(longInt(ErrorB0), sizeof(TErrorTerm));
-    dec(longInt(ErrorR1), sizeof(TErrorTerm));
-    dec(longInt(ErrorG1), sizeof(TErrorTerm));
-    dec(longInt(ErrorB1), sizeof(TErrorTerm));
-    dec(longInt(ErrorR2), sizeof(TErrorTerm));
-    dec(longInt(ErrorG2), sizeof(TErrorTerm));
-    dec(longInt(ErrorB2), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR2), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG2), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB2), sizeof(TErrorTerm));
   end;
 end;
 {$IFDEF R_PLUS}
@@ -3895,32 +3895,32 @@ begin
   // Move on to next column
   if (Direction = 1) then
   begin
-    inc(longInt(ErrorR0), sizeof(TErrorTerm));
-    inc(longInt(ErrorG0), sizeof(TErrorTerm));
-    inc(longInt(ErrorB0), sizeof(TErrorTerm));
-    inc(longInt(ErrorR1), sizeof(TErrorTerm));
-    inc(longInt(ErrorG1), sizeof(TErrorTerm));
-    inc(longInt(ErrorB1), sizeof(TErrorTerm));
-    inc(longInt(ErrorR2), sizeof(TErrorTerm));
-    inc(longInt(ErrorG2), sizeof(TErrorTerm));
-    inc(longInt(ErrorB2), sizeof(TErrorTerm));
-    inc(longInt(ErrorR3), sizeof(TErrorTerm));
-    inc(longInt(ErrorG3), sizeof(TErrorTerm));
-    inc(longInt(ErrorB3), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR2), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG2), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB2), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR3), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG3), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB3), sizeof(TErrorTerm));
   end else
   begin
-    dec(longInt(ErrorR0), sizeof(TErrorTerm));
-    dec(longInt(ErrorG0), sizeof(TErrorTerm));
-    dec(longInt(ErrorB0), sizeof(TErrorTerm));
-    dec(longInt(ErrorR1), sizeof(TErrorTerm));
-    dec(longInt(ErrorG1), sizeof(TErrorTerm));
-    dec(longInt(ErrorB1), sizeof(TErrorTerm));
-    dec(longInt(ErrorR2), sizeof(TErrorTerm));
-    dec(longInt(ErrorG2), sizeof(TErrorTerm));
-    dec(longInt(ErrorB2), sizeof(TErrorTerm));
-    dec(longInt(ErrorR3), sizeof(TErrorTerm));
-    dec(longInt(ErrorG3), sizeof(TErrorTerm));
-    dec(longInt(ErrorB3), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR2), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG2), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB2), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR3), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG3), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB3), sizeof(TErrorTerm));
   end;
 end;
 {$IFDEF R_PLUS}
@@ -4106,20 +4106,20 @@ begin
   // Move on to next column
   if (Direction = 1) then
   begin
-    inc(longInt(ErrorR0), sizeof(TErrorTerm));
-    inc(longInt(ErrorG0), sizeof(TErrorTerm));
-    inc(longInt(ErrorB0), sizeof(TErrorTerm));
-    inc(longInt(ErrorR1), sizeof(TErrorTerm));
-    inc(longInt(ErrorG1), sizeof(TErrorTerm));
-    inc(longInt(ErrorB1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB0), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorR1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorG1), sizeof(TErrorTerm));
+    inc(NativeUInt(ErrorB1), sizeof(TErrorTerm));
   end else
   begin
-    dec(longInt(ErrorR0), sizeof(TErrorTerm));
-    dec(longInt(ErrorG0), sizeof(TErrorTerm));
-    dec(longInt(ErrorB0), sizeof(TErrorTerm));
-    dec(longInt(ErrorR1), sizeof(TErrorTerm));
-    dec(longInt(ErrorG1), sizeof(TErrorTerm));
-    dec(longInt(ErrorB1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB0), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorR1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorG1), sizeof(TErrorTerm));
+    dec(NativeUInt(ErrorB1), sizeof(TErrorTerm));
   end;
 end;
 {$IFDEF R_PLUS}
@@ -4159,12 +4159,12 @@ begin
   begin
     // ErrorsR0[1] gives compiler error, so we
     // use PErrors(longInt(ErrorsR0)+sizeof(TErrorTerm)) instead...
-    ErrorR0 := PErrors(longInt(ErrorsR0)+2*sizeof(TErrorTerm));
-    ErrorG0 := PErrors(longInt(ErrorsG0)+2*sizeof(TErrorTerm));
-    ErrorB0 := PErrors(longInt(ErrorsB0)+2*sizeof(TErrorTerm));
-    ErrorR1 := PErrors(longInt(ErrorsR1)+2*sizeof(TErrorTerm));
-    ErrorG1 := PErrors(longInt(ErrorsG1)+2*sizeof(TErrorTerm));
-    ErrorB1 := PErrors(longInt(ErrorsB1)+2*sizeof(TErrorTerm));
+    ErrorR0 := PErrors(NativeUInt(ErrorsR0)+2*sizeof(TErrorTerm));
+    ErrorG0 := PErrors(NativeUInt(ErrorsG0)+2*sizeof(TErrorTerm));
+    ErrorB0 := PErrors(NativeUInt(ErrorsB0)+2*sizeof(TErrorTerm));
+    ErrorR1 := PErrors(NativeUInt(ErrorsR1)+2*sizeof(TErrorTerm));
+    ErrorG1 := PErrors(NativeUInt(ErrorsG1)+2*sizeof(TErrorTerm));
+    ErrorB1 := PErrors(NativeUInt(ErrorsB1)+2*sizeof(TErrorTerm));
   end else
   begin
     ErrorR0 := @ErrorsR0[Width+1];
@@ -8252,7 +8252,7 @@ var
       t := ColorMap^[0].Red;
       ColorMap^[0].Red := ColorMap^[0].Blue;
       ColorMap^[0].Blue := t;
-      inc(integer(ColorMap), sizeof(TGIFColor));
+      inc(NativeUInt(ColorMap), sizeof(TGIFColor));
       dec(i);
     end;
   end;
@@ -11480,8 +11480,9 @@ var
   Prog			,
   MaxProg		: integer;
 
-  function Scan(Buf: PByte; Value: Byte; Count: integer): boolean; assembler;
+  function Scan(Buf: PByte; Value: Byte; Count: NativeUInt): boolean; assembler;
   asm
+{$IFDEF CPUX86}
     PUSH	EDI
     MOV		EDI, Buf
     MOV		ECX, Count
@@ -11491,6 +11492,18 @@ var
     JNE		@@1
     MOV		EAX, True
 @@1:POP		EDI
+{$ENDIF CPUX86}
+{$IFDEF CPUX64}
+    PUSH	RDI
+    MOV		RDI, Buf
+    MOV		RCX, Count
+    MOV		AL, Value
+    REPNE	SCASB
+    MOV		RAX, False
+    JNE		@@1
+    MOV		RAX, True
+@@1:POP		RDI
+{$ENDIF CPUX64}
   end;
 
 begin

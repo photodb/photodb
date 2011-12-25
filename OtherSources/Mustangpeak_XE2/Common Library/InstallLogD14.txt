@@ -1,0 +1,16 @@
+***************************************
+Unregistering Component Package
+***************************************
+
+
+***************************************
+Delphi version14 not detected
+***************************************
+
+
+***************************************
+BEGIN: Compiling Component Package
+***************************************
+Validating Output Folders
+>>> BPL Output Directory is not defined in "Environment Options"
+>>> DCP Output Directory is not defined in "Environment Options"

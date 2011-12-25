@@ -74,7 +74,7 @@ begin
   FreeOnTerminate := True;
   try
     SetText(L('Initialization') + '...');
-    CoInitialize(nil);
+    CoInitializeEx(nil, COM_MODE);
     try
       TableOut := GetTable;
 

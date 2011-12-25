@@ -18,6 +18,7 @@ function GetPrinterPatternImage : TJpegImage;
 function GetBigPatternImage : TJpegImage;
 function GetFilmStripImage : TPNGImage;
 
+{$R MAIN.res}
 {$R Logo.res}
 {$R Slideshow_Load.res}
 {$R Directory_Large.res}

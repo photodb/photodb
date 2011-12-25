@@ -544,7 +544,7 @@ begin
   PnLeft.Width := Settings.ReadInteger('Search', 'LeftPanelWidth', 180);
   FBitmapImageList := TBitmapImageList.Create;
   TW.I.Start('S -> RegisterMainForm');
-  FormManager.RegisterMainForm(Self);
+  RegisterMainForm(Self);
 
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   Caption := ProductName + ' - [' + DBkernel.GetDataBaseName + ']';
@@ -677,7 +677,7 @@ begin
     Exit;
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   SaveWindowPos1.SavePosition;
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
   Creating := True;
 
   F(AScript);

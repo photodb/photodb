@@ -5,7 +5,7 @@ interface
 uses
   Classes, Windows, DBCommon, SysUtils, Forms, Dolphin_DB, uFileUtils, uMemory,
   uLogger, uDBUtils, uDBForm, UnitDBDeclare, UnitDBKernel, uDBThread, ActiveX,
-  ProgressActionUnit;
+  ProgressActionUnit, uConstants;
 
 type
   TWindowsCopyFilesThread = class(TDBThread)
@@ -104,7 +104,7 @@ begin
   inherited;
   FreeOnTerminate := True;
   try
-    CoInitialize(nil);
+    CoInitializeEx(nil, COM_MODE);
     try
       Res := CopyFilesSynch(FHandle, FSrc, FDest, FMove, FAutoRename) = 0;
 

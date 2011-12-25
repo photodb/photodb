@@ -85,8 +85,8 @@ type
       1: (Code2: Int64);
   end;
 
-function WriteProtectedMemory(BaseAddress, Buffer: Pointer; Size: Cardinal;
-  out WrittenBytes: Cardinal): Boolean;
+function WriteProtectedMemory(BaseAddress, Buffer: Pointer; Size: NativeUInt;
+  out WrittenBytes: NativeUInt): Boolean;
 var
   OldProt: Cardinal;
 begin
@@ -96,8 +96,8 @@ begin
   FlushInstructionCache(GetCurrentProcess, BaseAddress, WrittenBytes);
 end;
 
-function ReadProtectedMemory(BaseAddress, Buffer: Pointer; Size: Cardinal;
-  out ReadBytes: Cardinal): Boolean;
+function ReadProtectedMemory(BaseAddress, Buffer: Pointer; Size: NativeUInt;
+  out ReadBytes: NativeUInt): Boolean;
 begin
   Result := ReadProcessMemory(GetCurrentProcess, BaseAddress, Buffer, Size, ReadBytes);
 end;
@@ -177,10 +177,10 @@ end;
 
 procedure CodeRestore(var Data: TRedirectCode);
 var
-  n: Cardinal;
+  N: NativeUInt;
 begin
   if (Data.RealProc <> nil) and (Data.Count = 1) then
-    WriteProtectedMemory(Data.RealProc, @Data.Code, SizeOf(Data.Code), n);
+    WriteProtectedMemory(Data.RealProc, @Data.Code, SizeOf(Data.Code), N);
   Dec(Data.Count);
 end;
 

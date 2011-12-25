@@ -6,6 +6,9 @@ uses
   Windows;
 
 const
+  //Runtime options
+  COM_MODE = 0;      // OLE calls objects on any thread. COINIT_MULTITHREADED;
+
   //envoirements
   TempFolder = '\Temp\';
   HKEY_INSTALL = Windows.HKEY_LOCAL_MACHINE;

@@ -942,7 +942,7 @@ begin
   DropFileTarget1.Register(ElvMain);
 
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
-  FormManager.RegisterMainForm(Self);
+  RegisterMainForm(Self);
   FStatusProgress := CreateProgressBar(StatusBar1, 0);
   FStatusProgress.Visible := False;
   FHistory.OnHistoryChange := HistoryChanged;
@@ -1827,7 +1827,7 @@ begin
   Settings.WriteString('Explorer','Path', GetCurrentPathW.Path);
   Settings.WriteInteger('Explorer','PathType', GetCurrentPathW.PType);
   F(FStatusProgress);
-  FormManager.UnRegisterMainForm(Self);
+  UnRegisterMainForm(Self);
   F(FFilesInfo);
   GOM.RemoveObj(Self);
 end;
@@ -3183,7 +3183,7 @@ begin
     begin
       if CtrlKeyDown then
       begin
-        if Msg.WParam > 0 then
+        if NativeInt(Msg.WParam) > 0 then
           I := 1
         else
           I := -1;

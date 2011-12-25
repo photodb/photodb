@@ -8,7 +8,7 @@ uses
   uJpegUtils, uBitmapUtils, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
   UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations, uDBForm,
   uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime, uDBThread,
-  uExifUtils;
+  uExifUtils, uConstants;
 
 type
   LoadFilesToPanel = class(TDBThread)
@@ -186,7 +186,7 @@ begin
   inherited;
   FreeOnTerminate := True;
   Graphic := nil;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
 
     if Fbyid then

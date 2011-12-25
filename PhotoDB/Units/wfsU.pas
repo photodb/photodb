@@ -25,7 +25,7 @@ type
     FPOverLapp: POverlapped;
     FBytesWrite: DWORD;
     FCompletionPort: THandle;
-    FNumBytes: Cardinal;
+    FNumBytes: NativeUInt;
     FOldFileName: string;
     InfoCallback: TInfoCallBackDirectoryChangedArray;
     FOnNeedClosing: TThreadExNotify;
@@ -80,10 +80,10 @@ type
     constructor Create;
     destructor Destroy; override;
     class function Instance : TIoCompletionManager;
-    function CreateIoCompletion(Handle : THandle; var CompletionKey : Cardinal) : THandle;
-    procedure FinishIoCompletion(CompletionPort : THandle);
+    function CreateIoCompletion(Handle: THandle; var CompletionKey: NativeUInt) : THandle;
+    procedure FinishIoCompletion(CompletionPort: THandle);
     procedure GetQueuedCompletionStatus(CompletionPort: THandle;
-      var lpNumberOfBytesTransferred, lpCompletionKey: DWORD;
+      var lpNumberOfBytesTransferred, lpCompletionKey: NativeUInt;
       var lpOverlapped: POverlapped);
   end;
 
@@ -309,7 +309,7 @@ end;
 
 procedure TWFS.WatchEvent;
 var
-  CompletionKey: Cardinal;
+  CompletionKey: NativeUInt;
 begin
   FCompletionPort := TIoCompletionManager.Instance.CreateIoCompletion(FWatchHandle, CompletionKey);
   TW.I.Start('FCompletionPort = ' + IntToStr(FCompletionPort));
@@ -377,7 +377,7 @@ begin
   FCounter := 0;
 end;
 
-function TIoCompletionManager.CreateIoCompletion(Handle: THandle; var CompletionKey : Cardinal): THandle;
+function TIoCompletionManager.CreateIoCompletion(Handle: THandle; var CompletionKey: NativeUInt): THandle;
 begin
   FSync.Enter;
   try
@@ -412,7 +412,7 @@ end;
 
 procedure TIoCompletionManager.GetQueuedCompletionStatus(
   CompletionPort: THandle; var lpNumberOfBytesTransferred,
-  lpCompletionKey: DWORD; var lpOverlapped: POverlapped);
+  lpCompletionKey: NativeUInt; var lpOverlapped: POverlapped);
 begin
   Windows.GetQueuedCompletionStatus(CompletionPort,
     lpNumberOfBytesTransferred,

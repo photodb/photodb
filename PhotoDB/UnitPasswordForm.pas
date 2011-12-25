@@ -69,7 +69,7 @@ type
     { Public declarations }
     procedure ReallignControlsEx;
     procedure LoadFileList(FileList: TStrings);
-    property Password : string read FPassword write FPassword;
+    property Password: string read FPassword write FPassword;
   end;
 
 function GetImagePasswordFromUser(FileName: String): String;

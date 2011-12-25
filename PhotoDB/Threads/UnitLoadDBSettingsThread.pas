@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, DB, UnitDBKernel, CommonDBSupport, ActiveX, uDBThread,
-  SysUtils, uTime, uLogger;
+  SysUtils, uTime, uLogger, uConstants;
 
 type
   TLoadDBSettingsThread = class(TDBThread)
@@ -31,7 +31,7 @@ begin
   TW.I.Start('TLoadDBSettingsThread: START');
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     try
       TW.I.Start('TLoadDBSettingsThread: ReadDBOptions - START');

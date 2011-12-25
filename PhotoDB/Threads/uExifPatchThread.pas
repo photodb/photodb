@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, uMemory, UnitDBDeclare, uDBThread, uExifUtils, SyncObjs, ActiveX,
-  uDBUtils, uFileUtils;
+  uDBUtils, uFileUtils, uConstants;
 
 type
   TExifPatchThread = class(TDBThread)
@@ -51,7 +51,7 @@ var
   FileName: string;
 begin
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     ExifPatchManager.RegisterThread;
     try

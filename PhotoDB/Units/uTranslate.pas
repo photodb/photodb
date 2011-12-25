@@ -96,10 +96,17 @@ function ResolveLanguageString(S: string): string;
 var
   LanguageInitCallBack: TLanguageInitCallBack = LoadLanguageFromFile;
 
+procedure UnloadTranslateModule;
+
 implementation
 
 var
   TranslateManager: TTranslateManager = nil;
+
+procedure UnloadTranslateModule;
+begin
+  F(TranslateManager);
+end;
 
 function ResolveLanguageString(S: string): string;
 begin
@@ -465,6 +472,6 @@ end;
 initialization
 
 finalization
-  F(TranslateManager);
+  UnloadTranslateModule;
 
 end.

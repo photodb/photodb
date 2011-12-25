@@ -3,7 +3,7 @@ unit UnitSlideShowScanDirectoryThread;
 interface
 
 uses
-  Classes, Forms, uThreadForm, uThreadEx, ActiveX, uMemory,
+  Classes, Forms, uThreadForm, uThreadEx, ActiveX, uMemory, uConstants,
   UnitDBCommon, UnitDBDeclare, uDBUtils, uDBPopupMenuInfo, uAssociations;
 
 type
@@ -40,7 +40,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     Info := TDBPopupMenuInfo.Create;
     try

@@ -97,7 +97,7 @@ var
                             'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;'+
                             'Jet OLEDB:Database Locking Mode=1;'+
                             'Jet OLEDB:Global Partial Bulk Ops=2;'+
-                            'Jet OLEDB:Global Bulk Transactions=1;'+
+                            'Jet OLEDB:Global Bulk Transactions=2;'+
                             'Jet OLEDB:New Database Password="";'+
                             'Jet OLEDB:Create System Database=False;'+
                             'Jet OLEDB:Encrypt Database=False;'+
@@ -112,7 +112,7 @@ var
   'Mode=Share Deny Write;Extended Properties="";'+
   'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
   'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=0;'+
-  'Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;'+
+  'Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=1;'+
   'Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";'+
   'Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;'+
   'Jet OLEDB:Don''t Copy Locale on Compact=False;Jet OLEDB:'+
@@ -839,7 +839,7 @@ end;
 
 function ADOInitialize(dbname : String; ForseNewConnection : Boolean = False) : TADOConnection;
 var
-  I : Integer;
+  I: Integer;
   DBConnection : TADODBConnection;
 begin
   dbname := AnsiLowerCase(dbname);
@@ -861,6 +861,11 @@ begin
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname);
   DBConnection.ADOConnection.LoginPrompt := False;
   DBConnection.ADOConnection.Provider := MDBProvider;
+
+{  DBConnection.ADOConnection.IsolationLevel := ilReadUncommitted;
+  DBConnection.ADOConnection.Mode := cmRead;
+  DBConnection.ADOConnection.KeepConnection := True; }
+
   Result := DBConnection.ADOConnection;
 end;
 

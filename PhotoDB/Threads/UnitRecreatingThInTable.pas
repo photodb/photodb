@@ -6,7 +6,7 @@ uses
   Classes, Graphics, Jpeg, DB, CommonDBSupport, UnitDBKernel, SysUtils,
   GraphicCrypt, GraphicsCool, UnitDBDeclare, uCDMappingTypes,
   ActiveX, Dolphin_DB, uMemory, uDBBaseTypes, uDBTypes, uDBUtils,
-  win32crc, uDBThread, uFileUtils, uGOM;
+  win32crc, uDBThread, uFileUtils, uGOM, uConstants;
 
 type
   RecreatingThInTable = class(TDBThread)
@@ -173,7 +173,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     RecreatingThInTableTerminating := False;
     FBoolParam := True;

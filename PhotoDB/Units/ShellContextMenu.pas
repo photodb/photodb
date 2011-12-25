@@ -92,7 +92,8 @@ end;
 
 function SetErrorShell(Cmd: Byte): Byte;
 var
-  ErrOld, Shell32, OP, I: Cardinal;
+  ErrOld, Shell32: Cardinal;
+  OP, I: NativeUInt;
   SMB_W: Pointer;
   R: Byte;
 begin

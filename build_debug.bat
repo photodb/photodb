@@ -1,11 +1,12 @@
 d:
 cd "D:\Dmitry\Delphi exe\Photo Database"
 
-SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\8.0
+SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\9.0
 SET PROGS=C:\Users\Public\Documents
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
 SET BRCC32=%DELPHI%\BIN\BRCC32.EXE
 SET DM=D:\dmitry\Dmitry
+SET NS=-NSSystem;System.Win;WinAPI;Vcl;Vcl.Imaging;Data;Xml;Data.Win;Vcl.Shell;Vcl.Samples;Soap
 cd photodb/resources
 "%BRCC32%" logo.rc
 "%BRCC32%" slideshow_load.rc
@@ -26,7 +27,7 @@ cd photodb/resources
 cd ..
 cd ..
 cd ExecCommand
-"%DCC32%" ExecCommand -N0"..\PhotoDB\dcu" -$I+ -$O+ 
+"%DCC32%" %NS% ExecCommand -N0"..\PhotoDB\dcu" -$I+ -$O+ 
 cd ..
 cd PhotoDB
 
@@ -36,17 +37,17 @@ cd ..
 cd ..
 
 cd Uninstall
-"%DCC32%" UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd Installer
-"%DCC32%" InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe
-"%DCC32%" photodb -D"PHOTODB,LICENCE" -Ebin -V -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% photodb -D"PHOTODB,LICENCE" -Ebin -V -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 move photodb.cfg.safe photodb.cfg 
 
 cd ..
@@ -56,12 +57,12 @@ cd ..
 cd PhotoDB
 
 cd CRCCalculator
-"%DCC32%" CRCCalculator -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% CRCCalculator -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 CRCCalculator.exe "..\bin\PhotoDB.exe" "..\KernelDLL\FileCRC.pas"
 cd ..
 
 cd KernelDLL
-"%DCC32%" Kernel -E"..\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% Kernel -E"..\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd dcu
@@ -72,11 +73,11 @@ cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
 "%BRCC32%" SETUP_ZIP.rc
-"%DCC32%" Install -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% Install -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 InstallMaker /setup Install.exe
 "%BRCC32%" Install_Package.rc
-"%DCC32%" PhotoDBInstall -E".." -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% PhotoDBInstall -E".." -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 cd ..
 cd PhotoDB

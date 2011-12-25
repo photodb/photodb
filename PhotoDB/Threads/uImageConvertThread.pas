@@ -383,7 +383,7 @@ begin
   FEndProcessing := False;
   NewGraphic := nil;
   IsPreviewAvailalbe := False;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COM_MODE);
   try
     Ext := ExtractFileExt(FData.FileName);
     GraphicClass := TFileAssociations.Instance.GetGraphicClass(Ext);
