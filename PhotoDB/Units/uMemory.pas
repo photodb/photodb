@@ -2,7 +2,9 @@ unit uMemory;
 
 interface
 
-uses SysUtils, Classes;
+uses
+  System.SysUtils,
+  System.Classes;
 
 //Free object instance with check
 procedure F(var Obj); inline;

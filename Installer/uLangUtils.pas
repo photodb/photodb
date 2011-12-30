@@ -6,7 +6,7 @@ uses
   Windows;
 
 type
-  TGetUserDefaultUILanguage  =  function: LANGID; stdcall;
+  TGetUserDefaultUILanguage = function: LANGID; stdcall;
 
 function PrimaryLangID(lgid: Word): Integer;
 function GetUserDefaultUILanguage: LANGID;
@@ -192,7 +192,7 @@ The sublanguage codes are:
 
 function PrimaryLangID(lgid: Word): Integer;
 begin
-  result := lgid and $3FF;
+  Result := lgid and $3FF;
 end;
 
 var
@@ -204,12 +204,12 @@ begin
   // Check function assignment
   if Assigned(_GetUserDefaultUILanguage) then
      // Call function
-     result:=_GetUserDefaultUILanguage
+     Result := _GetUserDefaultUILanguage
   else
   begin
      // Fail the call and set the last error
      SetLastError(ERROR_INVALID_HANDLE);
-     result:=0;
+     Result := 0;
   end;
 end;
 
@@ -221,9 +221,9 @@ initialization
   // Check handle
   if (hKernel <> 0) then
      // Get function address
-     @_GetUserDefaultUILanguage:=GetProcAddress(hKernel, 'GetUserDefaultUILanguage')
+     @_GetUserDefaultUILanguage := GetProcAddress(hKernel, 'GetUserDefaultUILanguage')
   else
      // Set function address to nil
-     @_GetUserDefaultUILanguage:=nil;
+     @_GetUserDefaultUILanguage := nil;
 
 end.

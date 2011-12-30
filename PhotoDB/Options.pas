@@ -453,7 +453,7 @@ var
   FPassIcon : HIcon;
 begin
   ReloadData := False;
-
+  SetElevationRequiredState(BtnInstallExtensions, True);
   SaveWindowPos1.Key := GetRegRootKey + 'Options';
   SaveWindowPos1.SetPosition;
   for I := 0 to 5 do
@@ -666,6 +666,22 @@ procedure TOptionsForm.BtnInstallExtensionsClick(Sender: TObject);
 var
   I: Integer;
 begin
+  //TODO:
+{ShellExecuteInfo: TShellExecuteInfo;
+begin
+ Hide;
+ ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);
+ ShellExecuteInfo.fMask:= 0;
+ ShellExecuteInfo.Wnd:= 0;
+ ShellExecuteInfo.lpVerb:= 'runas';
+ ShellExecuteInfo.lpFile:= PAnsiChar(Application.ExeName);
+ ShellExecuteInfo.lpParameters:= nil;
+ ShellExecuteInfo.lpDirectory:= nil;
+ ShellExecuteInfo.nShow:= SW_SHOWNORMAL;
+ if ShellExecuteEx(@ShellExecuteInfo) then
+   Close;
+ Show;}
+
   for I := 0 to CbExtensionList.Items.Count - 1 do
     TFileAssociations.Instance.Exts[TFileAssociation(CbExtensionList.Items.Objects[I]).Extension].State := CheckboxStateToAssociationState(CbExtensionList.State[I]);
 

@@ -6,7 +6,7 @@ uses
   Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
   UnitINI, uConstants, ReplaseIconsInScript, uScript, UnitScripts,
   UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory,
-  uFileUtils, uRuntime;
+  uFileUtils, uRuntime, uSysUtils;
 
 const
  DB_TYPE_UNKNOWN = 0;
@@ -90,9 +90,9 @@ type
 var
   ADOConnections : TADOConnections = nil;
   DBLoadInitialized: Boolean = False;
-  FSync : TCriticalSection = nil;
-  DBFConnectionString : string = 'Provider=Microsoft.Jet.OLEDB.4.0;Password="";User ID=Admin;'+
-                            'Data Source=%s;Mode=Share Deny None;Extended Properties="";'+
+  FSync: TCriticalSection = nil;
+  DBFConnectionString: string = 'Provider=Microsoft.Jet.OLEDB.4.0;Password="";User ID=Admin;'+
+                            'Data Source=%s;Mode=%MODE%;Extended Properties="";'+
                             'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
                             'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;'+
                             'Jet OLEDB:Database Locking Mode=1;'+
@@ -131,7 +131,7 @@ function GetTable(Table: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
 
 function ActiveTable(Table: TDataSet; Active: Boolean): Boolean;
 
-function GetConnectionString(Dbname: string): string; overload;
+function GetConnectionString(Dbname: string; ReadOnly: Boolean): string; overload;
 function GetConnectionString: string; overload;
 
 function GetQuery(IsolateThread: Boolean = False): TDataSet; overload;
@@ -326,9 +326,10 @@ begin
   Result := Format(DBFConnectionString, [Dbname]);
 end;
 
-function GetConnectionString(Dbname: string): string;
+function GetConnectionString(Dbname: string; ReadOnly: Boolean): string;
 begin
-  Result := Format(DBFConnectionString, [Dbname]);
+  Result := StringReplace(DBFConnectionString, '%MODE%', IIF(ReadOnly, 'Read', 'Share Deny None'), [rfReplaceAll, rfIgnoreCase]);
+  Result := Format(Result, [Dbname]);
 end;
 
 procedure ExecSQL(SQL: TDataSet);
@@ -406,7 +407,7 @@ begin
 
 end;
 
-procedure AssingQuery(var QueryS, QueryD : TDataSet);
+procedure AssingQuery(var QueryS, QueryD: TDataSet);
 begin
   if (QueryS is TADOQuery) then
   begin
@@ -420,7 +421,7 @@ begin
   Result := GetQuery(TableName, GetDBType(TableName), IsolateThread);
 end;
 
-function GetQuery(TableName : string; TableType : integer; IsolateThread : Boolean = False) : TDataSet;
+function GetQuery(TableName: string; TableType: Integer; IsolateThread: Boolean = False) : TDataSet;
 begin
   FSync.Enter;
   try
@@ -444,7 +445,7 @@ begin
   Result:=GetTable(dbname,DB_TABLE_IMAGES);
 end;
 
-function GetTable(Table : String; TableID : integer = DB_TABLE_UNKNOWN) : TDataSet;
+function GetTable(Table: String; TableID: Integer = DB_TABLE_UNKNOWN) : TDataSet;
 begin
   FSync.Enter;
   try
@@ -837,7 +838,7 @@ begin
   end;
 end;
 
-function ADOInitialize(dbname : String; ForseNewConnection : Boolean = False) : TADOConnection;
+function ADOInitialize(dbname: String; ForseNewConnection: Boolean = False) : TADOConnection;
 var
   I: Integer;
   DBConnection : TADODBConnection;
@@ -858,13 +859,12 @@ begin
   DBConnection.RefCount := 1;
   DBConnection.Isolated := ForseNewConnection;
   DBConnection.ADOConnection := TADOConnection.Create(nil);
-  DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname);
+  DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname, ForseNewConnection);
   DBConnection.ADOConnection.LoginPrompt := False;
   DBConnection.ADOConnection.Provider := MDBProvider;
-
-{  DBConnection.ADOConnection.IsolationLevel := ilReadUncommitted;
-  DBConnection.ADOConnection.Mode := cmRead;
-  DBConnection.ADOConnection.KeepConnection := True; }
+  DBConnection.ADOConnection.ConnectOptions := coAsyncConnect;
+  if ForseNewConnection then
+    DBConnection.ADOConnection.IsolationLevel := ilReadUncommitted;
 
   Result := DBConnection.ADOConnection;
 end;

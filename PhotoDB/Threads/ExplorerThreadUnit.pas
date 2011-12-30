@@ -333,7 +333,7 @@ begin
   inherited;
   FreeOnTerminate := True;
 
-  CoInitializeEx(nil, COM_MODE);
+  CoInitialize(nil);
   try
     LoadingAllBigImages := True;
 

@@ -31,6 +31,11 @@ const
   LanguageFileMask = 'Language';
   SetupDataName = 'SETUP_DATA';
 
+  //Bridge
+  BridgeName = 'PhotoDBBridge';
+  BridgeClassName = 'PhotoDBAutoplayHandler';
+  BringeComSlass = BridgeName + '.' + BridgeClassName;
+
   //Information
   PhotoDBFileName = 'PhotoDB.exe';
   ProductName = 'Photo DataBase 2.3';

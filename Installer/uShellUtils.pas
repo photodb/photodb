@@ -6,8 +6,12 @@ interface
 
 uses
   Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
-  uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations,
-  ShellApi, ShlObj, uFileUtils, uRuntime, win32crc, uSysUtils;
+  uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations, Controls,
+  ShellApi, ShlObj, uFileUtils, uRuntime, win32crc, uSysUtils, Messages;
+
+const
+  BCM_FIRST = $1600; //Button control messages
+  BCM_SETSHIELD = BCM_FIRST + $000C;
 
 type
   TRegistryInstallCallBack = procedure(Current, Total: Integer; var Terminate : Boolean) of object;
@@ -26,8 +30,18 @@ function GetAppDataPath: string;
 function GetTempDirectory: string;
 function GetTempFileName: TFileName;
 procedure RefreshSystemIconCache;
+procedure SetElevationRequiredState(Control: TWinControl; Required: Boolean);
 
 implementation
+
+procedure SetElevationRequiredState(Control: TWinControl; Required: Boolean);
+var
+  LRequired: NativeInt;
+begin
+  LRequired := NativeInt(Required);
+  if IsWindowsVista then
+    SendMessage(Control.Handle, BCM_SETSHIELD, 0, LRequired);
+end;
 
 function InstalledDirectory: string;
 begin
@@ -41,7 +55,7 @@ begin
   Result := '';
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS, True);
   try
-    FReg.OpenKey(RegRoot, True);
+    FReg.OpenKey(RegRoot, False);
     Result := FReg.ReadString('DataBase');
     if PortableWork then
       if Result <> '' then
@@ -360,7 +374,6 @@ begin
   FReg.Free;
 
 //WIA SECTION START
-
   CallBack(9, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
