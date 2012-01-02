@@ -363,9 +363,12 @@ uses
   uFormEditObject in 'uFormEditObject.pas' {FormEditObject},
   uImageObjectManager in 'Units\uImageObjectManager.pas',
   uExplorerWIAProvider in 'Units\uExplorerWIAProvider.pas',
-  WIA2_TLB in 'Interfaces\WIA2_TLB.pas',
-  uWIAManager in 'Units\uWIAManager.pas',
-  uWIAInterfaces in 'Units\uWIAInterfaces.pas';
+  uPortableClasses in 'Units\PortableDevices\uPortableClasses.pas',
+  uWIAClasses in 'Units\PortableDevices\uWIAClasses.pas',
+  uWIAInterfaces in 'Units\PortableDevices\uWIAInterfaces.pas',
+  uWPDClasses in 'Units\PortableDevices\uWPDClasses.pas',
+  uWPDInterfaces in 'Units\PortableDevices\uWPDInterfaces.pas',
+  uPortableDeviceManager in 'Units\PortableDevices\uPortableDeviceManager.pas';
 
 {$R *.res}
 
@@ -532,7 +535,7 @@ begin
 
     TW.I.Start('TFormManager Create');
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
     // This is main form of application
 
     TW.I.Start('SetSplashProgress 70');

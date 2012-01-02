@@ -1,12 +1,12 @@
-unit uWIAManager;
+unit uPortableDeviceManager;
 
 interface
 
 uses
-  Classes, Graphics, ComObj, WIA2_TLB, uMemory, uBitmapUtils, SysUtils,
-  uConstants, SyncObjs, uWIAInterfaces, ActiveX;
+  Classes, Graphics, ComObj, uMemory, uBitmapUtils, SysUtils,
+  uConstants, SyncObjs, uPortableClasses, uWIAClasses, uWPDClasses;
 
-type
+{type
   TWIACamera = class;
   TWIACameraImage = class;
 
@@ -115,10 +115,21 @@ type
     function GetIndexByName(CameraName, ItemName : string): Integer;
     property ItemsByName[CameraName: string; ItemName: string]: TWIACacheItem read GetCacheItem;
     property ItemsByIndex[CameraName: string; ItemIndex: Integer]: TWIACacheItem read GetCacheItemByIndex;
-  end;
+  end;    }
+
+function CreateDeviceManagerInstance: IPManager;
 
 implementation
 
+function CreateDeviceManagerInstance: IPManager;
+begin
+  if False then
+    Result := TWPDDeviceManager.Create
+  else
+    Result := TWIADeviceManager.Create;
+end;
+
+  (*
 var
   FWIACache: TWIACache = nil;
 
@@ -667,10 +678,10 @@ begin
   FDateTime := Image.DateTime;
   FItemIndex := Image.ItemIndex;
 end;
-
-initialization
+    *)
+{initialization
 
 finalization
-  F(FWIACache);
+  F(FWIACache);   }
 
 end.

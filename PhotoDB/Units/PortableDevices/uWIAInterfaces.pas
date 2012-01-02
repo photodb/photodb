@@ -5,6 +5,32 @@ interface
 uses
   Windows, ActiveX;
 
+const
+  UnspecifiedDeviceType = $00000000;
+  ScannerDeviceType = $00000001;
+  CameraDeviceType = $00000002;
+  VideoDeviceType = $00000003;
+
+const
+  FreeItemFlag = $00000000;
+  ImageItemFlag = $00000001;
+  FileItemFlag = $00000002;
+  FolderItemFlag = $00000004;
+  RootItemFlag = $00000008;
+  AnalyzeItemFlag = $00000010;
+  AudioItemFlag = $00000020;
+  DeviceItemFlag = $00000040;
+  DeletedItemFlag = $00000080;
+  DisconnectedItemFlag = $00000100;
+  HPanoramaItemFlag = $00000200;
+  VPanoramaItemFlag = $00000400;
+  BurstItemFlag = $00000800;
+  StorageItemFlag = $00001000;
+  TransferItemFlag = $00002000;
+  GeneratedItemFlag = $00004000;
+  HasAttachmentsItemFlag = $00008000;
+  VideoItemFlag = $00010000;
+  RemovedItemFlag = $80000000;
 
 const
   CLSID_WiaDevMgr: TGUID = '{a1f4e726-8cf1-11d1-bf92-0060081ed811}';
@@ -337,9 +363,6 @@ type
         ppbstrFilePaths: string;
         var ppItem: IWiaItem2): HRESULT; safecall;
   end;
-
-
-
 
 const WIA_PROP_READ           = $01;
 const WIA_PROP_WRITE         = $02;

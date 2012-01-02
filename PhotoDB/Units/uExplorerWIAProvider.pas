@@ -5,7 +5,7 @@ interface
 uses
   uPathProviders, Graphics, uMemory, uExplorerPathProvider, Classes,
   uExplorerMyComputerProvider, uConstants, uShellIcons, uTranslate,
-  StrUtils, SysUtils, uBitmapUtils, uWIAManager, Math;
+  StrUtils, SysUtils, uBitmapUtils, uPortableClasses, Math, uPortableDeviceManager;
 
 type
   TCameraItem = class(TPathItem)
@@ -29,7 +29,7 @@ type
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
-    procedure ReadFromCameraImage(CI: TWIACameraImage; Options, ImageSize: Integer);
+    procedure ReadFromCameraImage(CI: IPDItem; Options, ImageSize: Integer);
     property ImageName: string read FImageName;
     property ItemID: string read FItemID;
     property CameraName: string read GetCameraName;
@@ -133,17 +133,17 @@ var
   I, J: Integer;
   Cancel: Boolean;
   CI: TCameraItem;
-  Manager: TWIAManager;
-  C: TWIACamera;
-  WCI: TWIACameraImage;
+  Manager: IPManager;
+//  C: TWIACamera;
+//  WCI: TWIACameraImage;
   CII: TCameraImageItem;
 begin
   Result := True;
   Cancel := False;
-  if Item is THomeItem then
+{  if Item is THomeItem then
   begin
 
-    Manager := TWIAManager.Create;
+    Manager := CreateDeviceManagerInstance;
     try
       for I := 0 to Manager.Count - 1 do
       begin
@@ -189,7 +189,7 @@ begin
       F(Manager);
     end;
 
-  end;
+  end;     }
 end;
 
 function TCameraProvider.Supports(Item: TPathItem): Boolean;
@@ -278,10 +278,10 @@ end;
 function TCameraImageItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Bitmap: TBitmap;
-  Manager: TWIAManager;
+//  Manager: TWIAManager;
   CameraName, ItemName: string;
 begin
-  Manager := TWIAManager.Create;
+{  Manager := TWIAManager.Create;
   try
     CameraName := ExtractCameraName(Path);
     ItemName := ExtractFileName(Path);
@@ -299,20 +299,20 @@ begin
 
   finally
     F(Manager);
-  end;
+  end;    }
 end;
 
-procedure TCameraImageItem.ReadFromCameraImage(CI: TWIACameraImage; Options, ImageSize: Integer);
+procedure TCameraImageItem.ReadFromCameraImage(CI: IPDItem; Options, ImageSize: Integer);
 var
   Bitmap: TBitmap;
 begin
-  F(FImage);
+{  F(FImage);
   Bitmap := CI.ExtractPreview;
 
   if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
     CenterBitmap24To32ImageList(Bitmap, ImageSize);
 
-  FImage := TPathImage.Create(Bitmap);
+  FImage := TPathImage.Create(Bitmap);  }
 end;
 
 initialization

@@ -2,10 +2,12 @@ unit BrushToolUnit;
 
 interface
 
-uses Windows, ToolsUnit, WebLink, Classes, Controls, Graphics,
-     Math, Forms, ComCtrls, StdCtrls, SysUtils,
-     Dialogs, GraphicsCool, GraphicsBaseTypes, uSettings,
-     ExtCtrls, uEditorTypes, uMemory, UnitDBKernel;
+uses
+  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics,
+  Math, Forms, ComCtrls, StdCtrls, SysUtils,
+  Dialogs, GraphicsCool, GraphicsBaseTypes, uSettings,
+  ExtCtrls, uEditorTypes, uMemory, UnitDBKernel,
+  System.UITypes;
 
 type
   TBrushToolClass = class(TToolsPanelClass)

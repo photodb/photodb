@@ -98,10 +98,10 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-			<VerInfo_Build>385</VerInfo_Build>
+			<VerInfo_Build>386</VerInfo_Build>
 			<Manifest_File>None</Manifest_File>
 			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.2.385;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.2.386;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -629,9 +629,12 @@
 			</DCCReference>
 			<DCCReference Include="Units\uImageObjectManager.pas"/>
 			<DCCReference Include="Units\uExplorerWIAProvider.pas"/>
-			<DCCReference Include="Interfaces\WIA2_TLB.pas"/>
-			<DCCReference Include="Units\uWIAManager.pas"/>
-			<DCCReference Include="Units\uWIAInterfaces.pas"/>
+			<DCCReference Include="Units\PortableDevices\uPortableClasses.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWIAClasses.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWIAInterfaces.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWPDClasses.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWPDInterfaces.pas"/>
+			<DCCReference Include="Units\PortableDevices\uPortableDeviceManager.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

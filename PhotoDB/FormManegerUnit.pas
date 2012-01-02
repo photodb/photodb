@@ -10,7 +10,7 @@ uses
   UDBForm, UFastLoad, UMemory, UMultiCPUThreadManager, Win32crc,
   UShellIntegration, URuntime, Dolphin_DB, UDBBaseTypes, UDBFileTypes,
   UDBUtils, UDBPopupMenuInfo, USettings, UAssociations, UActivationUtils,
-  UExifUtils, UDBCustomThread, uWIAManager;
+  UExifUtils, UDBCustomThread, uPortableDeviceManager, uPortableClasses;
 
 type
   TFormManager = class(TDBForm)
@@ -130,7 +130,7 @@ var
   IDList: TArInteger;
   FileList: TArStrings;
   I: Integer;
-  WIAManager: TWIAManager;
+  PDManager: IPManager;
 
   function IsFile(S: string): Boolean;
   var
@@ -229,12 +229,13 @@ begin
             begin
               S := GetParamStrDBValueV2('/StiDevice');
 
-              WIAManager := TWIAManager.Create;
+              PDManager := CreateDeviceManagerInstance;
               try
-                Directory := WIAManager.GetCameraPathByID(S);
+                //Directory := PDManager.GetCameraPathByID(S);
+                //PDManager.
                 SetPath(Directory);
               finally
-                F(WIAManager);
+                F(PDManager);
               end;
             end;
             CloseSplashWindow;
