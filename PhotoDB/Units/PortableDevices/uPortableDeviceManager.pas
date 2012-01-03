@@ -123,7 +123,7 @@ implementation
 
 function CreateDeviceManagerInstance: IPManager;
 begin
-  if False then
+  if True then
     Result := TWPDDeviceManager.Create
   else
     Result := TWIADeviceManager.Create;

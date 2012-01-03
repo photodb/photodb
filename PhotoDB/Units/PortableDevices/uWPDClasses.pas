@@ -38,6 +38,7 @@ type
     function GetFullSize: Int64;
     function GetFreeSize: Int64;
     function GetItemDate: TDateTime;
+    function GetInnerInterface: IUnknown;
     function ExtractPreview(PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
   end;
@@ -67,6 +68,7 @@ type
     procedure FillItems(ItemKey: string; Items: TList<IPDItem>);
     procedure FillItemsWithCallBack(ItemKey: string; CallBack: TFillItemsCallBack; Context: Pointer);
     function GetItemByKey(ItemKey: string): IPDItem;
+    function GetItemByPath(Path: string): IPDItem;
     function Delete(ItemKey: string): Boolean;
     property Manager: TWPDDeviceManager read FManager;
     property Content: IPortableDeviceContent read GetContent;
@@ -78,6 +80,7 @@ type
     FErrorCode: HRESULT;
     procedure ErrorCheck(Code: HRESULT);
     procedure FillDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
+    procedure FindDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
   public
     constructor Create;
     function GetErrorCode: HRESULT;
@@ -85,6 +88,12 @@ type
     procedure FillDevicesWithCallBack(CallBack: TFillDevicesCallBack; Context: Pointer);
     function GetDeviceByName(DeviceName: string): IPDevice;
     property Manager: IPortableDeviceManager read FManager;
+  end;
+
+  TFindDeviceContext = class(TObject)
+  public
+    Name: string;
+    Device: IPDevice;
   end;
 
 implementation
@@ -140,8 +149,8 @@ begin
   Cancel := False;
   DevList := TList<IPDevice>.Create;
   try
-
-    if SUCCEEDED(FErrorCode) then
+    HR := FManager.GetDevices(nil, @DeviceIDCount);
+    if SUCCEEDED(HR) then
     begin
       SetLength(PDISs, DeviceIDCount);
 
@@ -194,7 +203,7 @@ begin
                 if Succeeded(HR) then
                 begin
                   Device := TWPDDevice.Create(Self, FDevice);
-                  FreeList(DevList, False);
+                  DevList.Clear;
                   DevList.Add(Device);
                   CallBack(DevList, Cancel, Context);
                   if Cancel then
@@ -211,9 +220,37 @@ begin
   end;
 end;
 
-function TWPDDeviceManager.GetDeviceByName(DeviceName: string): IPDevice;
+procedure TWPDDeviceManager.FindDeviceCallBack(Packet: TList<IPDevice>;
+  var Cancel: Boolean; Context: Pointer);
+var
+  Device: IPDevice;
+  C: TFindDeviceContext;
 begin
+  C := TFindDeviceContext(Context);
 
+  for Device in Packet do
+    if Device.Name = C.Name then
+    begin
+      C.Device := Device;
+      Cancel := True;
+    end;
+end;
+
+function TWPDDeviceManager.GetDeviceByName(DeviceName: string): IPDevice;
+var
+  Context: TFindDeviceContext;
+begin
+  Context := TFindDeviceContext.Create;
+  try
+    Context.Name := DeviceName;
+    try
+      FillDevicesWithCallBack(FindDeviceCallBack, Context);
+    finally
+      Result := Context.Device;
+    end;
+  finally
+    F(Context);
+  end;
 end;
 
 function TWPDDeviceManager.GetErrorCode: HRESULT;
@@ -235,6 +272,7 @@ begin
   FDeviceType := dtOther;
   FPropertiesReaded := False;
   FContent := nil;
+  FName := DEFAULT_PORTABLE_DEVICE_NAME;
 
   if FDevice = nil then
     raise EInvalidOperation.Create('Device is null!');
@@ -248,7 +286,6 @@ begin
   // of characters to allocate for the string value.
 
   cchFriendlyName := 0;
-  pszFriendlyName := '';
   HR := FManager.Manager.GetDeviceFriendlyName(PChar(FDeviceID), nil, @cchFriendlyName);
 
   // Second allocate the number of characters needed and retrieve the string value.
@@ -259,15 +296,16 @@ begin
     begin
       HR := FManager.Manager.GetDeviceFriendlyName(PChar(FDeviceID), pszFriendlyName, @cchFriendlyName);
       if (Failed(HR)) then
-        pszFriendlyName := DEFAULT_PORTABLE_DEVICE_NAME;
+        FName := DEFAULT_PORTABLE_DEVICE_NAME
+      else
+        FName := pszFriendlyName;
 
       FreeMem(pszFriendlyName);
     end else
-      pszFriendlyName := DEFAULT_PORTABLE_DEVICE_NAME;
+      FName := DEFAULT_PORTABLE_DEVICE_NAME;
   end else
     ErrorCheck(HR);
 
-  FName := pszFriendlyName;
 end;
 
 function TWPDDevice.Delete(ItemKey: string): Boolean;
@@ -306,11 +344,14 @@ var
   ObjectKey: string;
   ItemList: TList<IPDItem>;
   Item: IPDItem;
+  ParentPath: string;
 begin
   Cancel := False;
 
   if ItemKey = '' then
     ItemKey := WPD_DEVICE_OBJECT_ID;
+
+  ParentPath := PortableItemNameCache.GetPathByKey(FDeviceID, ItemKey);
 
   ItemList := TList<IPDItem>.Create;
   try
@@ -342,6 +383,9 @@ begin
 
           Item := TWPDItem.Create(Self, ObjectKey);
           ItemList.Add(Item);
+
+          PortableItemNameCache.AddName(FDeviceID, Item.ItemKey, ParentPath + '\' + Item.Name);
+
           CallBack(ItemKey, ItemList, Cancel, Context);
           if Cancel then
             Break;
@@ -380,7 +424,15 @@ end;
 
 function TWPDDevice.GetItemByKey(ItemKey: string): IPDItem;
 begin
+  Result := TWPDItem.Create(Self, ItemKey);
+end;
 
+function TWPDDevice.GetItemByPath(Path: string): IPDItem;
+var
+  ItemKey: string;
+begin
+  ItemKey := PortableItemNameCache.GetKeyByPath(FDeviceID, Path);
+  Result := GetItemByKey(ItemKey);
 end;
 
 function TWPDDevice.GetName: string;
@@ -441,11 +493,11 @@ begin
       case V of
         WPD_DEVICE_TYPE_CAMERA:
           FDeviceType := dtCamera;
+        WPD_DEVICE_TYPE_MEDIA_PLAYER,
         WPD_DEVICE_TYPE_PHONE:
           FDeviceType := dtPhone;
         WPD_DEVICE_TYPE_VIDEO:
           FDeviceType := dtVideo;
-        WPD_DEVICE_TYPE_MEDIA_PLAYER,
         WPD_DEVICE_TYPE_PERSONAL_INFORMATION_MANAGER,
         WPD_DEVICE_TYPE_AUDIO_RECORDER,
         WPD_DEVICE_TYPE_GENERIC:
@@ -513,6 +565,11 @@ end;
 function TWPDItem.GetFullSize: Int64;
 begin
   Result := FFullSize;
+end;
+
+function TWPDItem.GetInnerInterface: IUnknown;
+begin
+  Result := nil;
 end;
 
 function TWPDItem.GetItemDate: TDateTime;

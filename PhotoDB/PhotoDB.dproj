@@ -98,6 +98,7 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<Debugger_RunParams>/nologo</Debugger_RunParams>
 			<VerInfo_Build>386</VerInfo_Build>
 			<Manifest_File>None</Manifest_File>
 			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
@@ -627,8 +628,7 @@
 			<DCCReference Include="uFormEditObject.pas">
 				<Form>FormEditObject</Form>
 			</DCCReference>
-			<DCCReference Include="Units\uImageObjectManager.pas"/>
-			<DCCReference Include="Units\uExplorerWIAProvider.pas"/>
+			<DCCReference Include="Units\uExplorerPortableDeviceProvider.pas"/>
 			<DCCReference Include="Units\PortableDevices\uPortableClasses.pas"/>
 			<DCCReference Include="Units\PortableDevices\uWIAClasses.pas"/>
 			<DCCReference Include="Units\PortableDevices\uWIAInterfaces.pas"/>

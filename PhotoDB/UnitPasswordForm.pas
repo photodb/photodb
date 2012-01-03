@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, UnitDBKernel, FormManegerUnit, GraphicCrypt, DB,
   uConstants, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
   uDBForm, uTranslate, uFileUtils, uShellIntegration, uSettings,
-  uSysUtils, uMemory;
+  uSysUtils, uMemory, Types, System.UITypes;
 
 type
   PasswordType = Integer;

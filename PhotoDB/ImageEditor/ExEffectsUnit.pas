@@ -6,7 +6,7 @@ uses
   Windows, ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
   Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs,
   Forms, OptimizeImageUnit, uEditorTypes, uGOM, uDBThread,
-  UnitDBKernel, uMemory, uSettings;
+  UnitDBKernel, uMemory, uSettings, System.UITypes;
 
 type
   TGausBlur = class(TExEffect)

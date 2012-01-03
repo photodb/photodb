@@ -41,6 +41,12 @@ const
 
   WIA_DEVINFO_ENUM_LOCAL = $00000010;
 
+  WIA_EVENT_ITEM_CREATED: TGUID = '{4C8F4EF5-E14F-11D2-B326-00C04F68CE61}';
+  WIA_EVENT_ITEM_DELETED: TGUID = '{1D22A559-E14F-11D2-B326-00C04F68CE61}';
+
+  WIA_EVENT_DEVICE_CONNECTED: TGUID = '{A28BBADE-64B6-11D2-A231-00C04FA31809}';
+  WIA_EVENT_DEVICE_DISCONNECTED: TGUID = '{143E4E83-6497-11D2-A231-00C04FA31809}';
+
 type
   _WIA_DATA_CALLBACK_HEADER = record
     lSize: LongInt;
@@ -129,9 +135,9 @@ typedef struct _WIA_DEV_CAP {
     function EnumRegisterEventInfo(lFlags: Integer;
       const pEventGUID: TGUID;
       var ppIEnum: IEnumWIA_DEV_CAPS): HRESULT;
-    function FindItemByName(lFlags: Integer;
-      bstrFullItemName: string;
-      var ppIWiaItem: IWiaItem): HRESULT; safecall;
+    function FindItemByName(lFlags: LONG;
+      bstrFullItemName: PChar;
+      out ppIWiaItem: IWiaItem): HRESULT; safecall;
     function DeviceDlg(hwndParent: HWND;
       lFlags: Integer;
       lIntent: Integer;
@@ -192,22 +198,22 @@ typedef struct _WIA_DEV_CAP {
 
   IEnumWIA_DEV_INFO = interface(IUnknown)
     ['{5E38B83C-8CF1-11D1-BF92-0060081ED811}']
-    function Next(celt: ULONG; out rgelt: IWiaPropertyStorage; var pceltFetched: ULONG): HRESULT; safecall;
-    function Skip(celt: ULONG): HRESULT; safecall;
-    function Reset: HRESULT; safecall;
-    function Clone(out ppIEnum: IEnumWiaItem): HRESULT; safecall;
-    function GetCount(out pcelt: ULONG): HRESULT; safecall;
+    function Next(celt: ULONG; out rgelt: IWiaPropertyStorage; pceltFetched: PULONG): HRESULT; stdcall;
+    function Skip(celt: ULONG): HRESULT; stdcall;
+    function Reset: HRESULT; stdcall;
+    function Clone(out ppIEnum: IEnumWIA_DEV_INFO): HRESULT; stdcall;
+    function GetCount(out pcelt: ULONG): HRESULT; stdcall;
   end;
 
   IWiaEventCallback = interface(IUnknown)
     ['{AE6287B0-0084-11D2-973B-00A0C9068F2E}']
     function ImageEventCallback(
             pEventGUID: PGUID;
-            bstrEventDescription: string;
-            bstrDeviceID: string;
-            bstrDeviceDescription: string;
+            bstrEventDescription: PChar;
+            bstrDeviceID: PChar;
+            bstrDeviceDescription: PChar;
             dwDeviceType: DWORD;
-            bstrFullItemName: string;
+            bstrFullItemName: PChar;
             var pulEventType: PULONG;
             ulReserved: ULONG) : HRESULT; stdcall;
   end;
@@ -237,8 +243,8 @@ typedef struct _WIA_DEV_CAP {
         bstrDescription: string;
         bstrIcon: string): HRESULT; safecall;
       function RegisterEventCallbackInterface(lFlags: Integer;
-        bstrDeviceID: string;
-        pEventGUID: TGUID;
+        bstrDeviceID: PChar;
+        pEventGUID: PGUID;
         pIWiaEventCallback: IWiaEventCallback;
         out pEventObject: IUnknown): HRESULT; safecall;
       function RegisterEventCallbackCLSID(lFlags: Integer;

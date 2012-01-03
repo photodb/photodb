@@ -23,7 +23,8 @@ uses
   uDBUtils, uSettings, uAssociations, PathEditor, WatermarkedEdit,
   uPathProviders, uExplorerMyComputerProvider, uExplorerFSProviders,
   uExplorerNetworkProviders, uExplorerPersonsProvider, uExplorerGroupsProvider,
-  uExplorerSearchProviders, uExplorerWIAProvider, uTranslate, uVCLHelpers;
+  uExplorerSearchProviders, uExplorerPortableDeviceProvider, uTranslate,
+  uVCLHelpers;
 
 const
   RefreshListViewInterval = 50;
@@ -4672,7 +4673,7 @@ begin
         SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_PERSON), False);
         Exit;
       end;
-      if P is TCameraItem then
+      if P is TPortableDeviceItem then
       begin
         SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_CAMERA), False);
         Exit;
@@ -5247,7 +5248,7 @@ begin
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP), False)
   else if P is TPersonItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON), False)
-  else if P is TCameraItem then
+  else if P is TPortableDeviceItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_CAMERA), False);
 end;
 
@@ -5657,7 +5658,7 @@ begin
   if WPath.PType = EXPLORER_ITEM_CAMERA then
   begin
     Caption := Path;
-    PePath.SetPathEx(TCameraItem, Path);
+    PePath.SetPathEx(TPortableDeviceItem, Path);
     ThreadType := THREAD_TYPE_CAMERA;
   end;
 

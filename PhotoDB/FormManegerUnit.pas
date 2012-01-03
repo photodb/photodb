@@ -230,13 +230,10 @@ begin
               S := GetParamStrDBValueV2('/StiDevice');
 
               PDManager := CreateDeviceManagerInstance;
-              try
-                //Directory := PDManager.GetCameraPathByID(S);
-                //PDManager.
-                SetPath(Directory);
-              finally
-                F(PDManager);
-              end;
+
+              //Directory := PDManager.GetCameraPathByID(S);
+              //PDManager.
+              SetPath(Directory);
             end;
             CloseSplashWindow;
             Show;

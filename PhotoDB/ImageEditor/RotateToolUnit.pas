@@ -6,7 +6,8 @@ uses
   Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
   GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
   Effects, Angle, Spin, Dialogs, GraphicsBaseTypes, uConstants,
-  uEditorTypes, UnitDBKernel, uMemory, uExifUtils;
+  uEditorTypes, UnitDBKernel, uMemory, uExifUtils,
+  System.UITypes;
 
 type
   TRotateToolPanelClass = class(TToolsPanelClass)

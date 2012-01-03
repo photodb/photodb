@@ -13,11 +13,13 @@ uses
   Winapi.ActiveX,
   System.SysUtils,
   GraphicsBaseTypes,
+  System.Win.ComObj,
   uBitmapUtils;
 
 type
   TWIADeviceManager = class;
   TWIADevice = class;
+  TWIAEventCallBack = class;
 
   TWIAItem = class(TInterfacedObject, IPDItem)
   private
@@ -40,6 +42,7 @@ type
     function GetFullSize: Int64;
     function GetFreeSize: Int64;
     function GetItemDate: TDateTime;
+    function GetInnerInterface: IUnknown;
     function ExtractPreview(PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
   end;
@@ -52,9 +55,10 @@ type
     FDeviceName: string;
     FDeviceType: TDeviceType;
     FBatteryStatus: Byte;
-    FRoot: IWIAItem;
+    FRoot: TWIAItem;
     function InternalGetItemByKey(ItemKey: string): IWiaItem;
     procedure ErrorCheck(Code: HRESULT);
+    procedure FindItemByKeyCallBack(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
     procedure FillItemsCallBack(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
   public
     constructor Create(AManager: TWIADeviceManager; PropList: IWiaPropertyStorage);
@@ -66,6 +70,7 @@ type
     procedure FillItems(ItemKey: string; Items: TList<IPDItem>);
     procedure FillItemsWithCallBack(ItemKey: string; CallBack: TFillItemsCallBack; Context: Pointer);
     function GetItemByKey(ItemKey: string): IPDItem;
+    function GetItemByPath(Path: string): IPDItem;
     function Delete(ItemKey: string): Boolean;
     property Manager: TWIADeviceManager read FManager;
   end;
@@ -74,8 +79,14 @@ type
   private
     FErrorCode: HRESULT;
     FManager: IWiaDevMgr;
+    FEventCallBack: TWIAEventCallBack;
+    FObjEventDeviceConnected: IUnknown;
+    FObjEventDeviceDisconnected: IUnknown;
+    FObjEventCallBackCreated: IUnknown;
+    FObjEventCallBackDeleted: IUnknown;
     procedure ErrorCheck(Code: HRESULT);
     procedure FillDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
+    procedure FindDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
   public
     constructor Create;
     function GetErrorCode: HRESULT;
@@ -100,6 +111,30 @@ type
       pbBuffer: Pointer): HRESULT; stdcall;
   end;
 
+  TFindDeviceContext = class(TObject)
+  public
+    Name: string;
+    Device: IPDevice;
+  end;
+
+  TFindItemContext = class(TObject)
+  public
+    ItemKey: string;
+    Item: IPDItem;
+  end;
+
+  TWIAEventCallBack = class(TInterfacedObject, IWiaEventCallback)
+    function ImageEventCallback(
+            pEventGUID: PGUID;
+            bstrEventDescription: PChar;
+            bstrDeviceID: PChar;
+            bstrDeviceDescription: PChar;
+            dwDeviceType: DWORD;
+            bstrFullItemName: PChar;
+            var pulEventType: PULONG;
+            ulReserved: ULONG) : HRESULT; stdcall;
+  end;
+
 implementation
 
 { TWDManager }
@@ -108,7 +143,18 @@ constructor TWIADeviceManager.Create;
 begin
   FErrorCode := S_OK;
   FManager := nil;
+  FEventCallBack := TWIAEventCallBack.Create;
+  FObjEventCallBackCreated := nil;
+  FObjEventCallBackDeleted := nil;
   ErrorCheck(CoCreateInstance(CLSID_WiaDevMgr, nil, CLSCTX_LOCAL_SERVER, IID_IWiaDevMgr, FManager));
+
+  if FManager <> nil then
+  begin
+    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_CONNECTED, FEventCallBack, FObjEventDeviceConnected);
+    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_DISCONNECTED, FEventCallBack, FObjEventDeviceDisconnected);
+    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
+    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
+  end;
 end;
 
 procedure TWIADeviceManager.ErrorCheck(Code: HRESULT);
@@ -158,7 +204,7 @@ begin
       //
       pWiaPropertyStorage := nil;
 
-      HR := pWiaEnumDevInfo.Next(1, pWiaPropertyStorage, pceltFetched);
+      HR := pWiaEnumDevInfo.Next(1, pWiaPropertyStorage, @pceltFetched);
       //
       // pWiaEnumDevInfo->Next will return S_FALSE when the list is
       // exhausted, so check for S_OK before using the returned
@@ -169,7 +215,7 @@ begin
 
       if SUCCEEDED(HR) and (pWiaPropertyStorage <> nil) then
       begin
-        FreeList(DevList, False);
+        DevList.Clear;
         Device := TWIADevice.Create(Self, pWiaPropertyStorage);
         DevList.Add(Device);
         CallBack(DevList, Cancel, Context);
@@ -182,10 +228,37 @@ begin
   end;
 end;
 
+procedure TWIADeviceManager.FindDeviceCallBack(Packet: TList<IPDevice>;
+  var Cancel: Boolean; Context: Pointer);
+var
+  Device: IPDevice;
+  C: TFindDeviceContext;
+begin
+  C := TFindDeviceContext(Context);
+
+  for Device in Packet do
+    if Device.Name = C.Name then
+    begin
+      C.Device := Device;
+      Cancel := True;
+    end;
+end;
 
 function TWIADeviceManager.GetDeviceByName(DeviceName: string): IPDevice;
+var
+  Context: TFindDeviceContext;
 begin
-
+  Context := TFindDeviceContext.Create;
+  try
+    Context.Name := DeviceName;
+    try
+      FillDevicesWithCallBack(FindDeviceCallBack, Context);
+    finally
+      Result := Context.Device;
+    end;
+  finally
+    F(Context);
+  end;
 end;
 
 function TWIADeviceManager.GetErrorCode: HRESULT;
@@ -201,6 +274,7 @@ var
   PropSpec: array of TPropSpec;
   PropVariant: array of TPropVariant;
   bstrDeviceID: PChar;
+  Root: IWiaItem;
 begin
   FManager := AManager;
   FDeviceID := '';
@@ -241,14 +315,17 @@ begin
 
     bstrDeviceID := SysAllocString(PChar(FDeviceID));
     try
-      HR := Manager.FManager.CreateDevice(bstrDeviceID, FRoot);
+      Root := nil;
+      HR := Manager.FManager.CreateDevice(bstrDeviceID, Root);
+      if SUCCEEDED(HR) and (Root <> nil) then
+        FRoot := TWIAItem.Create(Self, Root);
     finally
       SysFreeString(bstrDeviceID);
     end;
-    if SUCCEEDED(HR) and (FRoot <> nil) then
-    begin
 
-      HR := FRoot.QueryInterface(IWIAPropertyStorage, PropList);
+    if FRoot <> nil then
+    begin
+      HR := FRoot.FItem.QueryInterface(IWIAPropertyStorage, PropList);
       if SUCCEEDED(HR) then
       begin
         Setlength(PropSpec, 1);
@@ -259,14 +336,20 @@ begin
         if SUCCEEDED(HR) then
           FBatteryStatus := PropVariant[0].iVal;
 
-      end;
+      end else
+        ErrorCheck(HR);
     end;
   end;
 end;
 
 function TWIADevice.Delete(ItemKey: string): Boolean;
+var
+  Item: IPDItem;
 begin
   Result := False;
+  Item := GetItemByKey(ItemKey);
+  if Item <> nil then
+    Result := Succeeded(IWIAItem(Item.InnerInterface).DeleteItem(0));
 end;
 
 procedure TWIADevice.ErrorCheck(Code: HRESULT);
@@ -298,13 +381,16 @@ var
   Cancel: Boolean;
   ItemList: TList<IPDItem>;
   Item: IPDItem;
+  ParentPath: string;
 begin
   Cancel := False;
 
-  if ItemKey = '' then
-    pWiaItem := FRoot
+  if (ItemKey = '') and (FRoot <> nil) then
+    pWiaItem := FRoot.FItem
   else
     pWiaItem := InternalGetItemByKey(ItemKey);
+
+  ParentPath := PortableItemNameCache.GetPathByKey(FDeviceID, ItemKey);
 
   HR := S_OK;
 
@@ -313,7 +399,6 @@ begin
 
     ItemList := TList<IPDItem>.Create;
     try
-
       //
       // Get the item type for this item.
       //
@@ -351,6 +436,7 @@ begin
             begin
               Item := TWIAItem.Create(Self, pChildWiaItem);
               ItemList.Add(Item);
+              PortableItemNameCache.AddName(FDeviceID, Item.ItemKey, ParentPath + '\' + Item.Name);
               CallBack(ItemKey, ItemList, Cancel, Context);
               if Cancel then
                 Break;
@@ -377,6 +463,22 @@ begin
   ErrorCheck(HR);
 end;
 
+procedure TWIADevice.FindItemByKeyCallBack(ParentKey: string;
+  Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
+var
+  Item: IPDItem;
+  C: TFindItemContext;
+begin
+  C := TFindItemContext(Context);
+  for Item in Packet do
+    if C.ItemKey = Item.ItemKey then
+    begin
+      Cancel := True;
+      C.Item := Item;
+      Break;
+    end;
+end;
+
 function TWIADevice.GetBatteryStatus: Byte;
 begin
   Result := FBatteryStatus;
@@ -398,8 +500,21 @@ begin
 end;
 
 function TWIADevice.GetItemByKey(ItemKey: string): IPDItem;
+var
+  Item: IWiaItem;
 begin
-  Result := nil; //InternalGetItemByKey(ItemKey);
+  Result := nil;
+  Item := InternalGetItemByKey(ItemKey);
+  if Item <> nil then
+    Result := TWiaItem.Create(Self, Item);
+end;
+
+function TWIADevice.GetItemByPath(Path: string): IPDItem;
+var
+  ItemKey: string;
+begin
+  ItemKey := PortableItemNameCache.GetKeyByPath(FDeviceID, Path);
+  Result := GetItemByKey(ItemKey);
 end;
 
 function TWIADevice.GetName: string;
@@ -408,8 +523,28 @@ begin
 end;
 
 function TWIADevice.InternalGetItemByKey(ItemKey: string): IWiaItem;
+var
+  Context: TFindItemContext;
 begin
-   Result := nil;
+  Result := nil;
+
+  if (FRoot <> nil) and (Result = nil) then
+  begin
+    FRoot.FItem.FindItemByName(0, PChar(ItemKey), Result);
+
+    if Result = nil then
+    begin
+      Context := TFindItemContext.Create;
+      try
+        Context.ItemKey := ItemKey;
+        FillItemsWithCallBack('', FindItemByKeyCallBack, Context);
+        if Context.Item <> nil then
+          Result := IWiaItem(Context.Item.InnerInterface);
+      finally
+        F(Context);
+      end;
+    end;
+  end;
 end;
 
 { TWIAItem }
@@ -534,6 +669,11 @@ begin
   Result := FFullSize;
 end;
 
+function TWIAItem.GetInnerInterface: IUnknown;
+begin
+  Result := FItem;
+end;
+
 function TWIAItem.GetItemDate: TDateTime;
 begin
   Result := FItemDate;
@@ -564,42 +704,45 @@ begin
   HR := FItem.QueryInterface(IWIAPropertyStorage, PropList);
   if SUCCEEDED(HR) then
   begin
-    Setlength(PropSpec, 5);
+    Setlength(PropSpec, 6);
     PropSpec[0].ulKind := PRSPEC_PROPID;
-    PropSpec[0].propid := WIA_IPA_ITEM_NAME;
+    PropSpec[0].propid := WIA_IPA_FULL_ITEM_NAME;
 
     PropSpec[1].ulKind := PRSPEC_PROPID;
-    PropSpec[1].propid := WIA_IPA_FILENAME_EXTENSION;
+    PropSpec[1].propid := WIA_IPA_ITEM_NAME;
 
     PropSpec[2].ulKind := PRSPEC_PROPID;
-    PropSpec[2].propid := WIA_IPA_ITEM_FLAGS;
+    PropSpec[2].propid := WIA_IPA_FILENAME_EXTENSION;
 
     PropSpec[3].ulKind := PRSPEC_PROPID;
-    PropSpec[3].propid := WIA_IPA_ITEM_TIME;
+    PropSpec[3].propid := WIA_IPA_ITEM_FLAGS;
 
     PropSpec[4].ulKind := PRSPEC_PROPID;
-    PropSpec[4].propid := WIA_IPA_ITEM_SIZE;
+    PropSpec[4].propid := WIA_IPA_ITEM_TIME;
 
-    Setlength(PropVariant, 5);
+    PropSpec[5].ulKind := PRSPEC_PROPID;
+    PropSpec[5].propid := WIA_IPA_ITEM_SIZE;
+
+    Setlength(PropVariant, 6);
     HR := PropList.ReadMultiple(5, @PropSpec[0], @PropVariant[0]);
     if SUCCEEDED(HR) then
     begin
-      FName := PropVariant[0].bstrVal;
-      if PropVariant[1].bstrVal <> '' then
-        FName := FName + '.' + PropVariant[1].bstrVal;
-      FFullSize := PropVariant[4].hVal.QuadPart;
-      FItemKey := FName;
+      FName := PropVariant[1].bstrVal;
+      if PropVariant[2].bstrVal <> '' then
+        FName := FName + '.' + PropVariant[2].bstrVal;
+      FFullSize := PropVariant[5].hVal.QuadPart;
+      FItemKey := PropVariant[0].bstrVal;
 
-      if PSystemTime(PropVariant[3].cadate.pElems) <> nil then
-        FItemDate := SystemTimeToDateTime(PSystemTime(PropVariant[3].cadate.pElems)^);
+      if PSystemTime(PropVariant[4].cadate.pElems) <> nil then
+        FItemDate := SystemTimeToDateTime(PSystemTime(PropVariant[4].cadate.pElems)^);
 
-      if PropVariant[2].ulVal and ImageItemFlag > 0 then
+      if PropVariant[3].ulVal and ImageItemFlag > 0 then
         FItemType := piImage
-      else if PropVariant[2].ulVal and FolderItemFlag > 0 then
+      else if PropVariant[3].ulVal and FolderItemFlag > 0 then
         FItemType := piDirectory
-      else if PropVariant[2].ulVal and StorageItemFlag > 0 then
+      else if PropVariant[3].ulVal and StorageItemFlag > 0 then
         FItemType := piStorage
-      else if PropVariant[2].ulVal and VideoItemFlag > 0 then
+      else if PropVariant[3].ulVal and VideoItemFlag > 0 then
         FItemType := piVideo;
     end else
       ErrorCheck(HR);
@@ -692,6 +835,19 @@ end;
 constructor TWiaDataCallback.Create(Stream: TStream);
 begin
   FStream := Stream;
+end;
+
+{ TWIACallBack }
+
+function TWIAEventCallBack.ImageEventCallback(pEventGUID: PGUID;
+  bstrEventDescription, bstrDeviceID, bstrDeviceDescription: PChar;
+  dwDeviceType: DWORD; bstrFullItemName: PChar; var pulEventType: PULONG;
+  ulReserved: ULONG): HRESULT;
+begin
+  if pEventGUID^ = WIA_EVENT_DEVICE_DISCONNECTED then
+    PortableItemNameCache.ClearDeviceCache(bstrDeviceID);
+
+  Result := S_OK;
 end;
 
 initialization

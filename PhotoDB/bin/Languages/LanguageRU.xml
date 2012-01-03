@@ -2070,4 +2070,6 @@
 	<translate name="Object rect" value="Выделенный объект"/>
 	<translate name="Text" value="Текст"/>
   </scope>
+  <scope name="PortableDevicesProvider">
+  </scope>  
 </language>

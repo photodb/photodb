@@ -6,8 +6,12 @@ uses
   SysUtils, Windows, Graphics, UnitDBDeclare, Messages, Classes, JPEG, SyncObjs,
   uBitmapUtils, uFileUtils, uMemory, uDBPopupMenuInfo, uThreadEx, Menus,
   uThreadForm, ShellApi, uConstants, PathEditor, uSysUtils, uGUIDUtils,
-  uPathProviders, uExplorerMyComputerProvider, uExplorerGroupsProvider,
-  uExplorerPersonsProvider, uExplorerNetworkProviders, uExplorerWIAProvider;
+  uPathProviders,
+  uExplorerMyComputerProvider,
+  uExplorerGroupsProvider,
+  uExplorerPersonsProvider,
+  uExplorerNetworkProviders,
+  uExplorerPortableDeviceProvider;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -772,7 +776,7 @@ begin
     FileType := EXPLORER_ITEM_COMPUTER
   else if PI is TShareItem then
     FileType := EXPLORER_ITEM_SHARE
-  else if PI is TCameraItem then
+  else if PI is TPortableDeviceItem then
     FileType := EXPLORER_ITEM_CAMERA
   else if PI is TCameraImageItem then
     FileType := EXPLORER_ITEM_CAMERA_IMAGE;

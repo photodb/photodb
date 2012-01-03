@@ -45,15 +45,16 @@ const
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;
   ProgramMail = 'photodb@illusdolphin.net';
-  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2011';
+  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2012';
   ProgramInstallSize = 12600; //in Kb
 
-  DonateURL = 'http://photodb.illusdolphin.net/{LNG}/donate';
-  UnInstallNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/uninstall';
-  UpdateNotifyURL = 'http://photodb.illusdolphin.net/{LNG}/update';
-  HomePageURL = 'http://photodb.illusdolphin.net/{LNG}';
-  BuyPageURL = 'http://photodb.illusdolphin.net/{LNG}/buy';
-  FreeActivationURL = 'http://photodb.illusdolphin.net/FreeActivationHandler';
+  SiteLocation = 'http://photodb.illusdolphin.net';
+  DonateURL = SiteLocation + '/{LNG}/donate';
+  UnInstallNotifyURL = SiteLocation + '/{LNG}/uninstall';
+  UpdateNotifyURL = SiteLocation + '/{LNG}/update';
+  HomePageURL = SiteLocation + '/{LNG}';
+  BuyPageURL = SiteLocation + '/{LNG}/buy';
+  FreeActivationURL = SiteLocation + '/FreeActivationHandler';
 
   ReleaseNumber = 12;
 
@@ -385,7 +386,7 @@ const
 const
   cGroupsPath = 'Groups';
   cPersonsPath = 'Persons';
-  cCamerasPath = 'Cameras';
+  cDevicesPath = 'Devices';
   cDBSearchPath = '::db://';
   cImagesSearchPath = '::images://';
   cFilesSearchPath = '::files://';

@@ -4,8 +4,10 @@ interface
 
 uses
   Generics.Collections,
-  Classes,
-  Graphics;
+  System.Classes,
+  System.SyncObjs,
+  VCL.Graphics,
+  uMemory;
 
 const
   DEFAULT_PORTABLE_DEVICE_NAME = 'Unknown Device';
@@ -34,12 +36,14 @@ type
     function GetItemDate: TDateTime;
     function ExtractPreview(PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
+    function GetInnerInterface: IUnknown;
     property ItemType: TPortableItemType read GetItemType;
     property Name: string read GetName;
     property ItemKey: string read GetItemKey;
     property FullSize: Int64 read GetFullSize;
     property FreeSize: Int64 read GetFreeSize;
     property ItemDate: TDateTime read GetItemDate;
+    property InnerInterface: IUnknown read GetInnerInterface;
   end;
 
   IPDevice = interface(IPBaseInterface)
@@ -50,6 +54,7 @@ type
     procedure FillItems(ItemKey: string; Items: TList<IPDItem>);
     procedure FillItemsWithCallBack(ItemKey: string; CallBack: TFillItemsCallBack; Context: Pointer);
     function GetItemByKey(ItemKey: string): IPDItem;
+    function GetItemByPath(Path: string): IPDItem;
     function Delete(ItemKey: string): Boolean;
     property Name: string read GetName;
     property DeviceID: string read GetDeviceID;
@@ -63,6 +68,140 @@ type
     function GetDeviceByName(DeviceName: string): IPDevice;
   end;
 
+  TPortableItemName = class(TObject)
+  private
+    FDevID: string;
+    FItemKey: string;
+    FPath: string;
+  public
+    constructor Create(ADevID: string; AItemKey: string; APath: string);
+    property DevID: string read FDevID;
+    property ItemKey: string read FItemKey;
+    property Path: string read FPath;
+  end;
+
+  ///////////////////////////////////////
+  ///
+  ///  Connection between path's and item keys (WIA/WPD)
+  ///
+  ///////////////////////////////////////
+  TPortableItemNameCache = class(TObject)
+  private
+    FSync: TCriticalSection;
+    FItems: TList<TPortableItemName>;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure ClearDeviceCache(DevID: string);
+    function GetPathByKey(DevID: string; ItemKey: string): string;
+    function GetKeyByPath(DevID: string; Path: string): string;
+    procedure AddName(DevID: string; ItemKey: string; Path: string);
+  end;
+
+function PortableItemNameCache: TPortableItemNameCache;
+
 implementation
+
+var
+  FPortableItemNameCache: TPortableItemNameCache = nil;
+
+function PortableItemNameCache: TPortableItemNameCache;
+begin
+  if FPortableItemNameCache = nil then
+    FPortableItemNameCache := TPortableItemNameCache.Create;
+
+  Result := FPortableItemNameCache
+end;
+
+{ TPortableItemCache }
+
+procedure TPortableItemNameCache.AddName(DevID, ItemKey, Path: string);
+var
+  Item: TPortableItemName;
+
+begin
+  FSync.Enter;
+  try
+    for Item in FItems do
+      if (Item.DevID = DevID) and (Item.ItemKey = ItemKey) and (Item.Path = Path) then
+        Exit;
+
+    Item := TPortableItemName.Create(DevID, ItemKey, Path);
+    FItems.Add(Item);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TPortableItemNameCache.ClearDeviceCache(DevID: string);
+var
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    for I := FItems.Count - 1 downto 0 do
+      if FItems[I].FDevID = DevID then
+        FItems.Delete(I);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+constructor TPortableItemNameCache.Create;
+begin
+  FSync := TCriticalSection.Create;
+  FItems := TList<TPortableItemName>.Create;
+end;
+
+destructor TPortableItemNameCache.Destroy;
+begin
+  F(FSync);
+  FreeList(FItems);
+  inherited;
+end;
+
+function TPortableItemNameCache.GetKeyByPath(DevID, Path: string): string;
+var
+  I: Integer;
+begin
+  Result := '';
+  FSync.Enter;
+  try
+    for I := FItems.Count - 1 downto 0 do
+      if (FItems[I].FDevID = DevID) and (FItems[I].Path = Path) then
+        Result := FItems[I].ItemKey;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TPortableItemNameCache.GetPathByKey(DevID, ItemKey: string): string;
+var
+  I: Integer;
+begin
+  Result := '';
+  FSync.Enter;
+  try
+    for I := FItems.Count - 1 downto 0 do
+      if (FItems[I].FDevID = DevID) and (FItems[I].ItemKey = ItemKey) then
+        Result := FItems[I].Path;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+{ TPortableItemName }
+
+constructor TPortableItemName.Create(ADevID, AItemKey, APath: string);
+begin
+  FDevID := ADevID;
+  FItemKey := AItemKey;
+  FPath := APath;
+end;
+
+initialization
+
+finalization
+  F(FPortableItemNameCache);
 
 end.

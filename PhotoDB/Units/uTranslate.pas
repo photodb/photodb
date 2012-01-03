@@ -48,7 +48,7 @@ type
     FLangCode: Integer;
     FLastScope: TLanguageScope;
   public
-    constructor Create(FileName: string);
+    constructor Create(FileName: string; Flags: Integer = 0);
     constructor CreateFromXML(XML: string);
     procedure Init;
     destructor Destroy; override;
@@ -354,7 +354,7 @@ end;
 
 { TLanguage }
 
-constructor TLanguage.Create(FileName: string);
+constructor TLanguage.Create(FileName: string; Flags: Integer = 0);
 begin
   Init;
   (FTranslate as IDOMPersist).load(FileName);
