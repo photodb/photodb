@@ -1416,7 +1416,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if Info.FileType = EXPLORER_ITEM_CAMERA then
+  if Info.FileType = EXPLORER_ITEM_DEVICE then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -1445,7 +1445,7 @@ begin
     Shell1.Visible := False;
   end;
 
-  if Info.FileType = EXPLORER_ITEM_CAMERA_IMAGE then
+  if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
     DBitem1.Visible := False;
     StenoGraphia1.Visible := False;
@@ -4053,8 +4053,8 @@ begin
     NewTop := TasksLabel.BoundsRect.Bottom;
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
+      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
+      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
     begin
       SlideShowLink.Visible := True;
       SlideShowLink.Top := NewTop + H;
@@ -4089,7 +4089,8 @@ begin
     end else
       ImageEditorLink.Visible := False;
 
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
+       (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
     begin
       PrintLink.Visible := True;
       PrintLink.Top := NewTop + H;
@@ -4103,7 +4104,8 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA)) and (SelCount = 1)) then
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) and (SelCount = 1)) then
     begin
       ShellLink.Visible := True;
       ShellLink.Top := NewTop + H;
@@ -4187,7 +4189,8 @@ begin
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE)) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE)) then
     begin
       if SelCount <> 0 then
       begin
@@ -4258,7 +4261,8 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA))
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY))
 		  and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
@@ -4275,7 +4279,8 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
     begin
       OtherPlacesLabel.Show;
       MyPicturesLink.Show;
@@ -4675,7 +4680,17 @@ begin
       end;
       if P is TPortableDeviceItem then
       begin
-        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_CAMERA), False);
+        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_DEVICE), False);
+        Exit;
+      end;
+      if P is TPortableStorageItem then
+      begin
+        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_DEVICE_STORAGE), False);
+        Exit;
+      end;
+      if P is TPortableDirectoryItem then
+      begin
+        SetNewPathW(ExplorerPath(Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False);
         Exit;
       end;
     finally
@@ -5249,7 +5264,11 @@ begin
   else if P is TPersonItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON), False)
   else if P is TPortableDeviceItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_CAMERA), False);
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE), False)
+  else if P is TPortableStorageItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_STORAGE), False)
+  else if P is TPortableDirectoryItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False);
 end;
 
 procedure TExplorerForm.PePathGetItemIconEvent(Sender: TPathEditor;
@@ -5655,10 +5674,22 @@ begin
     Caption := PePath.CurrentPathEx.DisplayName;
     ThreadType := THREAD_TYPE_GROUP;
   end;
-  if WPath.PType = EXPLORER_ITEM_CAMERA then
+  if WPath.PType = EXPLORER_ITEM_DEVICE then
   begin
     Caption := Path;
     PePath.SetPathEx(TPortableDeviceItem, Path);
+    ThreadType := THREAD_TYPE_CAMERA;
+  end;
+  if WPath.PType = EXPLORER_ITEM_DEVICE_STORAGE then
+  begin
+    Caption := Path;
+    PePath.SetPathEx(TPortableStorageItem, Path);
+    ThreadType := THREAD_TYPE_CAMERA;
+  end;
+  if WPath.PType = EXPLORER_ITEM_DEVICE_DIRECTORY then
+  begin
+    Caption := Path;
+    PePath.SetPathEx(TPortableDirectoryItem, Path);
     ThreadType := THREAD_TYPE_CAMERA;
   end;
 
@@ -6954,7 +6985,7 @@ begin
           if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) then
           begin
             Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
             FFolderImagesResult.Directory := '';
@@ -6986,7 +7017,10 @@ begin
                 try
                   Info.FileType := FSelectedInfo.FileType;
                   Info.ID := FSelectedInfo.Id;
-                  if (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA_IMAGE) then
+                  if (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
+                     (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
+                     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+                     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) then
                   begin
                     TExplorerThumbnailCreator.Create(Info, FSelectedInfo._GUID, Self, True);
                   end else
@@ -7047,7 +7081,7 @@ begin
           if (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_CAMERA) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -7073,7 +7107,7 @@ begin
                   FindIcon(HInstance, 'PERSONS', 48, 32, Ico);
                 EXPLORER_ITEM_GROUP_LIST:
                   FindIcon(HInstance, 'GROUPS', 48, 32, Ico);
-                EXPLORER_ITEM_CAMERA:
+                EXPLORER_ITEM_DEVICE:
                   FindIcon(HInstance, 'CAMERA', 48, 32, Ico);
               end;
               try
@@ -8312,7 +8346,8 @@ begin
       case FFilesInfo[Index].FileType of
         EXPLORER_ITEM_NETWORK, EXPLORER_ITEM_WORKGROUP, EXPLORER_ITEM_COMPUTER,
           EXPLORER_ITEM_SHARE, EXPLORER_ITEM_PERSON_LIST, EXPLORER_ITEM_GROUP_LIST,
-          EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_CAMERA:
+          EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_DEVICE,
+          EXPLORER_ITEM_DEVICE_STORAGE, EXPLORER_ITEM_DEVICE_DIRECTORY:
           SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
               FFilesInfo[Index].FileType), false);
       end;

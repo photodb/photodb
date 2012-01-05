@@ -777,9 +777,17 @@ begin
   else if PI is TShareItem then
     FileType := EXPLORER_ITEM_SHARE
   else if PI is TPortableDeviceItem then
-    FileType := EXPLORER_ITEM_CAMERA
-  else if PI is TCameraImageItem then
-    FileType := EXPLORER_ITEM_CAMERA_IMAGE;
+    FileType := EXPLORER_ITEM_DEVICE
+  else if PI is TPortableStorageItem then
+    FileType := EXPLORER_ITEM_DEVICE_STORAGE
+  else if PI is TPortableDirectoryItem then
+    FileType := EXPLORER_ITEM_DEVICE_DIRECTORY
+  else if PI is TPortableImageItem then
+    FileType := EXPLORER_ITEM_DEVICE_IMAGE
+  else if PI is TPortableVideoItem then
+    FileType := EXPLORER_ITEM_DEVICE_VIDEO
+  else if PI is TPortableFileItem then
+    FileType := EXPLORER_ITEM_DEVICE_FILE;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;

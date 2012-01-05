@@ -34,6 +34,8 @@ type
     function GetFullSize: Int64;
     function GetFreeSize: Int64;
     function GetItemDate: TDateTime;
+    function GetDeviceID: string;
+    function GetDeviceName: string;
     function ExtractPreview(PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
     function GetInnerInterface: IUnknown;
@@ -43,6 +45,8 @@ type
     property FullSize: Int64 read GetFullSize;
     property FreeSize: Int64 read GetFreeSize;
     property ItemDate: TDateTime read GetItemDate;
+    property DeviceID: string read GetDeviceID;
+    property DeviceName: string read GetDeviceName;
     property InnerInterface: IUnknown read GetInnerInterface;
   end;
 
@@ -72,11 +76,13 @@ type
   private
     FDevID: string;
     FItemKey: string;
+    FParentItemKey: string;
     FPath: string;
   public
-    constructor Create(ADevID: string; AItemKey: string; APath: string);
+    constructor Create(ADevID: string; AItemKey: string; AParentItemKey: string; APath: string);
     property DevID: string read FDevID;
     property ItemKey: string read FItemKey;
+    property ParentItemKey: string read FParentItemKey;
     property Path: string read FPath;
   end;
 
@@ -94,8 +100,9 @@ type
     destructor Destroy; override;
     procedure ClearDeviceCache(DevID: string);
     function GetPathByKey(DevID: string; ItemKey: string): string;
+    function GetParentKey(DevID: string; ItemKey: string): string;
     function GetKeyByPath(DevID: string; Path: string): string;
-    procedure AddName(DevID: string; ItemKey: string; Path: string);
+    procedure AddName(DevID: string; ItemKey, ParentKey: string; Path: string);
   end;
 
 function PortableItemNameCache: TPortableItemNameCache;
@@ -115,7 +122,7 @@ end;
 
 { TPortableItemCache }
 
-procedure TPortableItemNameCache.AddName(DevID, ItemKey, Path: string);
+procedure TPortableItemNameCache.AddName(DevID, ItemKey, ParentKey, Path: string);
 var
   Item: TPortableItemName;
 
@@ -126,7 +133,7 @@ begin
       if (Item.DevID = DevID) and (Item.ItemKey = ItemKey) and (Item.Path = Path) then
         Exit;
 
-    Item := TPortableItemName.Create(DevID, ItemKey, Path);
+    Item := TPortableItemName.Create(DevID, ItemKey, ParentKey, Path);
     FItems.Add(Item);
   finally
     FSync.Leave;
@@ -175,6 +182,21 @@ begin
   end;
 end;
 
+function TPortableItemNameCache.GetParentKey(DevID, ItemKey: string): string;
+var
+  I: Integer;
+begin
+  Result := '';
+  FSync.Enter;
+  try
+    for I := FItems.Count - 1 downto 0 do
+      if (FItems[I].FDevID = DevID) and (FItems[I].ItemKey = ItemKey) then
+        Result := FItems[I].ParentItemKey;
+  finally
+    FSync.Leave;
+  end;
+end;
+
 function TPortableItemNameCache.GetPathByKey(DevID, ItemKey: string): string;
 var
   I: Integer;
@@ -192,10 +214,11 @@ end;
 
 { TPortableItemName }
 
-constructor TPortableItemName.Create(ADevID, AItemKey, APath: string);
+constructor TPortableItemName.Create(ADevID, AItemKey, AParentItemKey, APath: string);
 begin
   FDevID := ADevID;
   FItemKey := AItemKey;
+  FParentItemKey := AParentItemKey;
   FPath := APath;
 end;
 

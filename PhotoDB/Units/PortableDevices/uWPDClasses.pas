@@ -11,6 +11,8 @@ uses
   Generics.Collections,
   System.Classes,
   System.SysUtils,
+  Vcl.Imaging.Jpeg,
+  uJpegUtils,
   Vcl.Graphics;
 
 type
@@ -20,12 +22,15 @@ type
   TWPDItem = class(TInterfacedObject, IPDItem)
   private
     FDevice: TWPDDevice;
+    FIDevice: IPDevice;
     FItemType: TPortableItemType;
     FName: string;
     FItemKey: string;
     FErrorCode: HRESULT;
     FFullSize, FFreeSize: Int64;
     FItemDate: TDateTime;
+    FDeviceID: string;
+    FDeviceName: string;
     procedure ErrorCheck(Code: HRESULT);
     procedure TransferContent(ResourceID: TGUID; Stream: TStream);
     procedure ReadProperties;
@@ -38,6 +43,8 @@ type
     function GetFullSize: Int64;
     function GetFreeSize: Int64;
     function GetItemDate: TDateTime;
+    function GetDeviceID: string;
+    function GetDeviceName: string;
     function GetInnerInterface: IUnknown;
     function ExtractPreview(PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
@@ -47,6 +54,7 @@ type
   private
     FContent: IPortableDeviceContent;
     FManager: TWPDDeviceManager;
+    FIManager: IPManager;
     FDevice: IPortableDevice;
     FErrorCode: HRESULT;
     FDeviceID: string;
@@ -158,7 +166,7 @@ begin
 
       if SUCCEEDED(HR) then
       begin
-        for I := 0 to DeviceIDCount - 1 do
+        for I := 0 to Integer(DeviceIDCount) - 1 do
         begin
           HR := CoCreateInstance(CLSID_PortableDeviceFTM,
                   nil,
@@ -279,6 +287,7 @@ begin
 
   FDevice := Device;
   FManager := AManager;
+  FIManager := AManager;
 
   FDevice.GetPnPDeviceID(pszDevID);
   FDeviceID := pszDevID;
@@ -361,7 +370,6 @@ begin
                               nil,                      // Filter is unused
                               EnumObjectIDs);
 
-
     // Loop calling Next() while S_OK is being returned.
     while SUCCEEDED(HR) do
     begin
@@ -384,7 +392,7 @@ begin
           Item := TWPDItem.Create(Self, ObjectKey);
           ItemList.Add(Item);
 
-          PortableItemNameCache.AddName(FDeviceID, Item.ItemKey, ParentPath + '\' + Item.Name);
+          PortableItemNameCache.AddName(FDeviceID, Item.ItemKey, ItemKey, ParentPath + '\' + Item.Name);
 
           CallBack(ItemKey, ItemList, Cancel, Context);
           if Cancel then
@@ -521,6 +529,7 @@ end;
 constructor TWPDItem.Create(ADevice: TWPDDevice; AItemKey: string);
 begin
   FDevice := ADevice;
+  FIDevice := ADevice; //to store reference to interface
   FItemKey := AItemKey;
   FErrorCode := S_OK;
   FItemType := piFile;
@@ -528,6 +537,8 @@ begin
   FFreeSize := 0;
   FFullSize := 0;
   FItemDate := MinDateTime;
+  FDeviceID := ADevice.FDeviceID;
+  FDeviceName := ADevice.FName;
   ReadProperties;
 end;
 
@@ -540,16 +551,34 @@ end;
 function TWPDItem.ExtractPreview(PreviewImage: TBitmap): Boolean;
 var
   MS: TMemoryStream;
+  J: TJpegImage;
 begin
   MS := TMemoryStream.Create;
   try
     TransferContent(WPD_RESOURCE_THUMBNAIL, MS);
     MS.Seek(0, soFromBeginning);
-    PreviewImage.LoadFromStream(MS);
-    Result := not PreviewImage.Empty;
+    J := TJpegImage.Create;
+    try
+      J.LoadFromStream(MS);
+      Result := not J.Empty;
+      if Result then
+        AssignJpeg(PreviewImage, J);
+    finally
+      F(J);
+    end;
   finally
     F(MS);
   end;
+end;
+
+function TWPDItem.GetDeviceID: string;
+begin
+  Result := FDeviceID;
+end;
+
+function TWPDItem.GetDeviceName: string;
+begin
+  Result := FDeviceName;
 end;
 
 function TWPDItem.GetErrorCode: HRESULT;

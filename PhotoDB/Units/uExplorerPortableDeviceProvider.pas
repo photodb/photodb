@@ -17,7 +17,8 @@ uses
   SysUtils, uBitmapUtils,
   uPortableClasses,
   System.Math,
-  uPortableDeviceManager;
+  uPortableDeviceManager,
+  uAssociatedIcons;
 
 type
   TPDContext = class(TObject)
@@ -44,31 +45,56 @@ type
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
   end;
 
-  TPortableStorageItem = class(TPathItem)
+  TPortableItem = class(TPathItem)
+  private
+    FItem: IPDItem;
+    function GetItem: IPDItem;
   protected
-    function InternalGetParent: TPathItem; override;
-    function InternalCreateNewInstance: TPathItem; override;
+    property Item: IPDItem read GetItem;
   public
-    function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
+    procedure LoadItem(AItem: IPDItem);
   end;
 
-  TCameraImageItem = class(TPathItem)
-  private
-    FImageName: string;
-    FItemID: string;
-    function GetCameraName: string;
+  TPortableStorageItem = class(TPortableItem)
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
   public
-    constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
-    procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
-    procedure ReadFromCameraImage(CI: IPDItem; Options, ImageSize: Integer);
-    property ImageName: string read FImageName;
-    property ItemID: string read FItemID;
-    property CameraName: string read GetCameraName;
+  end;
+
+  TPortableFSItem = class(TPortableItem)
+  protected
+    function InternalGetParent: TPathItem; override;
+  end;
+  
+  TPortableDirectoryItem = class(TPortableFSItem)
+  protected
+    function InternalCreateNewInstance: TPathItem; override;
+  public
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
+  end;  
+  
+  TPortableImageItem = class(TPortableFSItem)
+  protected
+    function InternalCreateNewInstance: TPathItem; override;
+  public
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
+  end;  
+  
+  TPortableVideoItem = class(TPortableFSItem)
+  protected
+    function InternalCreateNewInstance: TPathItem; override;
+  public
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
+  end;    
+   
+  TPortableFileItem = class(TPortableFSItem)
+  protected
+    function InternalCreateNewInstance: TPathItem; override;
+  public
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
   end;
 
 type
@@ -89,6 +115,18 @@ type
 
 implementation
 
+function ImageSizeToIconSize16_32_48(ImageSize: Integer): Integer;
+begin
+  if ImageSize >= 48 then
+    ImageSize := 48
+  else if ImageSize >= 32 then 
+    ImageSize := 32  
+  else if ImageSize >= 16 then  
+    ImageSize := 16; 
+
+  Result := ImageSize;
+end;
+
 function IsDevicePath(Path: string): Boolean;
 begin
   Result := False;
@@ -99,7 +137,7 @@ begin
   end;
 end;
 
-function IsDeviceImagePath(Path: string): Boolean;
+function IsDeviceItemPath(Path: string): Boolean;
 begin
   Result := False;
   if StartsText(cDevicesPath + '\', Path) then
@@ -119,10 +157,81 @@ begin
     Delete(Path, 1, Length(cDevicesPath + '\'));
     P := Pos('\', Path);
     if P = 0 then
-      P := Length(Path);
+      P := Length(Path) + 1;
 
     Result := Copy(Path, 1, P - 1);
   end;
+end;
+
+function ExtractDeviceItemPath(Path: string): string;
+var
+  P: Integer;
+begin
+  Result := '';
+  if StartsText(cDevicesPath + '\', Path) then
+  begin
+    Delete(Path, 1, Length(cDevicesPath + '\'));
+    P := Pos('\', Path);
+    if P > 1 then
+      Delete(Path, 1, P - 1);
+
+    Result := Path;
+  end;                                   
+end;
+
+function CreatePortableFSItem(Item: IPDItem; Options, ImageSize: Integer): TPortableItem;     
+var
+  ItemPath: string;
+begin
+  Result := nil;
+  ItemPath := PortableItemNameCache.GetPathByKey(Item.DeviceID, Item.ItemKey);  
+  ItemPath := cDevicesPath + '\' + Item.DeviceName + ItemPath;
+  case Item.ItemType of
+    piStorage:
+    begin
+      Result := TPortableStorageItem.CreateFromPath(ItemPath, Options, ImageSize);
+      Result.LoadItem(Item);
+    end;
+    piDirectory: 
+    begin
+      Result := TPortableDirectoryItem.CreateFromPath(ItemPath, Options, ImageSize);
+      Result.LoadItem(Item);
+    end;
+    piImage: 
+    begin
+      Result := TPortableImageItem.CreateFromPath(ItemPath, Options, ImageSize);
+      Result.LoadItem(Item);  
+    end;
+    piVideo: 
+    begin
+      Result := TPortableVideoItem.CreateFromPath(ItemPath, Options, ImageSize);
+      Result.LoadItem(Item);  
+    end;
+    piFile: 
+    begin
+      Result := TPortableFileItem.CreateFromPath(ItemPath, Options, ImageSize);
+      Result.LoadItem(Item);  
+    end;
+  end;
+end;  
+
+function CreateItemByPath(Path: string): TPathItem;
+var
+  ItemPath,
+  DeviceName: string;
+  Device: IPDevice;
+  Item: IPDItem;
+begin
+  DeviceName := ExtractDeviceName(Path);
+  ItemPath := ExtractDeviceItemPath(Path);
+  Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
+  if Device = nil then
+    Exit(THomeItem.Create);
+
+  Item := Device.GetItemByPath(ItemPath);
+  if Item = nil then
+    Exit(THomeItem.Create);
+  Result := CreatePortableFSItem(Item, PATH_LOAD_NO_IMAGE, 0);
 end;
 
 { TCameraProvider }
@@ -130,8 +239,8 @@ end;
 function TPortableDeviceProvider.CreateFromPath(Path: string): TPathItem;
 begin
   Result := nil;
-  if IsDeviceImagePath(Path) then
-    Result := TCameraImageItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+  if IsDeviceItemPath(Path) then
+    Result := CreateItemByPath(Path);
   if IsDevicePath(Path) then
     Result := TPortableDeviceItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
@@ -145,18 +254,19 @@ end;
 function TPortableDeviceProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
 var
-  CII: TCameraImageItem;
+  PortableItem: TPathItem;
 begin
-  CII := TCameraImageItem.CreateFromPath(Item.Path, PATH_LOAD_NORMAL, 0);
-  try
-    CII.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
-    Result := CII.Image <> nil;
-
-    if Result then
-      Bitmap.Assign(CII.Image.Bitmap);
-  finally
-    F(CII);
-  end;
+  Result := False;
+  PortableItem := PathProviderManager.CreatePathItem(Item.Path);
+  if (PortableItem is TPortableImageItem) or (PortableItem is TPortableVideoItem) then
+  begin     
+    PortableItem.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
+    if (PortableItem.Image <> nil) and (PortableItem.Image.Bitmap <> nil) then
+    begin
+      AssignBitmap(Bitmap, PortableItem.Image.Bitmap);
+      Result := not Bitmap.Empty;
+    end;
+  end; 
 end;
 
 procedure TPortableDeviceProvider.FillDevicesCallBack(Packet: TList<IPDevice>;
@@ -191,25 +301,15 @@ var
   ACancel: Boolean;
   C: TPDContext;
   Item: IPDItem;
-//  SI: TPortableStorageItem;
+  PItem: TPortableItem;
 begin
   C := TPDContext(Context);
   ACancel := False;
 
   for Item in Packet do
   begin
-    case Item.ItemType of
-      piStorage:
-      begin
-        //SI := TPortableStorageItem.CreateFromPath(cDevicesPath + '\' + Manager[I].CameraName + '\' + WCI.FileName, Options, ImageSize);
-        //CII.ReadFromCameraImage(WCI, Options, ImageSize);
-        //List.Add(CII);
-      end;
-      piDirectory,
-      piImage,
-      piVideo,
-      piFile:
-    end;
+    PItem := CreatePortableFSItem(Item, C.Options, C.ImageSize);
+    C.List.Add(PItem);
   end;
 
   if Assigned(C.CallBack) then
@@ -228,10 +328,9 @@ function TPortableDeviceProvider.InternalFillChildList(Sender: TObject; Item: TP
   List: TPathItemCollection; Options, ImageSize, PacketSize: Integer;
   CallBack: TLoadListCallBack): Boolean;
 var
-  Manager: IPManager;
-  DI: TPortableDeviceItem;
   Dev: IPDevice;
   Context: TPDContext;
+  DevName, DevItemPath, ItemKey: string;
 begin
   Result := True;
   Context := TPDContext.Create;
@@ -248,12 +347,21 @@ begin
 
     if Item is TPortableDeviceItem then
     begin
-      DI := TPortableDeviceItem(Item);
-
-      Dev := Manager.GetDeviceByName(DI.DisplayName);
+      Dev := CreateDeviceManagerInstance.GetDeviceByName(Item.DisplayName);
       if Dev <> nil then
         Dev.FillItemsWithCallBack('', FillItemsCallBack, Context);
+    end;     
+    if (Item is TPortableStorageItem) or (Item is TPortableDirectoryItem) then
+    begin
+      DevName := ExtractDeviceName(Item.Path);   
+      DevItemPath := ExtractDeviceItemPath(Item.Path);
 
+      Dev := CreateDeviceManagerInstance.GetDeviceByName(DevName);
+      if Dev <> nil then
+      begin
+        ItemKey := PortableItemNameCache.GetKeyByPath(Dev.DeviceID, DevItemPath);
+        Dev.FillItemsWithCallBack(ItemKey, FillItemsCallBack, Context);
+      end;
     end;
   finally
     F(Context);
@@ -296,9 +404,14 @@ begin
 end;
 
 function TPortableDeviceItem.GetDevice: IPDevice;
+var
+  DevName: string;
 begin
   if FDevice = nil then
-    FDevice := nil;
+  begin
+    DevName := ExtractDeviceName(Path);
+    FDevice := CreateDeviceManagerInstance.GetDeviceByName(DevName);
+  end;
 
   Result := FDevice;
 end;
@@ -333,9 +446,9 @@ begin
     end;
 
   end;
-  FindIcon(HInstance, DevIcon, ImageSize, 32, Icon);
+  FindIcon(HInstance, DevIcon, ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
   if Icon = nil then
-    FindIcon(HInstance, DevIcon, ImageSize, 8, Icon);
+    FindIcon(HInstance, DevIcon, ImageSizeToIconSize16_32_48(ImageSize), 8, Icon);
 
   FImage := TPathImage.Create(Icon);
   Result := True;
@@ -347,84 +460,7 @@ begin
   LoadImage;
 end;
 
-{ TCameraImageItem }
-
-procedure TCameraImageItem.Assign(Item: TPathItem);
-begin
-  inherited;
-
-end;
-
-constructor TCameraImageItem.CreateFromPath(APath: string; Options,
-  ImageSize: Integer);
-begin
-  inherited CreateFromPath(APath, Options, ImageSize);
-  FDisplayName := ExtractFileName(APath)
-end;
-
-function TCameraImageItem.GetCameraName: string;
-begin
-  Result := ExtractDeviceName(FPath);
-end;
-
-function TCameraImageItem.InternalCreateNewInstance: TPathItem;
-begin
-  Result := TCameraImageItem.Create;
-end;
-
-function TCameraImageItem.InternalGetParent: TPathItem;
-begin
-  Result := TPortableDeviceItem.CreateFromPath(ExtractDeviceName(FPath), PATH_LOAD_NO_IMAGE, 0);
-end;
-
-function TCameraImageItem.LoadImage(Options, ImageSize: Integer): Boolean;
-{var
-  Bitmap: TBitmap;
-  Manager: TWIAManager;
-  CameraName, ItemName: string;      }
-begin
-{  Manager := TWIAManager.Create;
-  try
-    CameraName := ExtractCameraName(Path);
-    ItemName := ExtractFileName(Path);
-    Bitmap := TBitmap.Create;
-    try
-      Result := Manager.GetImagePreview(CameraName, ItemName, Bitmap);
-      if Result then
-      begin
-        FImage := TPathImage.Create(Bitmap);
-        Bitmap := nil;
-      end;
-    finally
-      F(Bitmap);
-    end;
-
-  finally
-    F(Manager);
-  end;    }
-end;
-
-procedure TCameraImageItem.ReadFromCameraImage(CI: IPDItem; Options, ImageSize: Integer);
-{var
-  Bitmap: TBitmap;   }
-begin
-{  F(FImage);
-  Bitmap := CI.ExtractPreview;
-
-  if Options and PATH_LOAD_FOR_IMAGE_LIST <> 0 then
-    CenterBitmap24To32ImageList(Bitmap, ImageSize);
-
-  FImage := TPathImage.Create(Bitmap);  }
-end;
-
 { TPortableStorageItem }
-
-constructor TPortableStorageItem.CreateFromPath(APath: string; Options,
-  ImageSize: Integer);
-begin
-  inherited;
-
-end;
 
 function TPortableStorageItem.InternalCreateNewInstance: TPathItem;
 begin
@@ -432,8 +468,16 @@ begin
 end;
 
 function TPortableStorageItem.InternalGetParent: TPathItem;
+var
+  DevName: string;
+  Device: IPDevice;
 begin
-
+  DevName := ExtractDeviceName(Path);
+  Device := CreateDeviceManagerInstance.GetDeviceByName(DevName);
+  if Device <> nil then
+    Result := TPortableDeviceItem.CreateFromPath(cDevicesPath + '\' + Device.Name, PATH_LOAD_NO_IMAGE, 0)
+  else
+    Result := THomeItem.CreateFromPath('', PATH_LOAD_NO_IMAGE, 0);
 end;
 
 function TPortableStorageItem.LoadImage(Options, ImageSize: Integer): Boolean;
@@ -442,9 +486,187 @@ var
 begin
   F(FImage);
 
-  FindIcon(HInstance, 'STORAGE', ImageSize, 32, Icon);
+  FindIcon(HInstance, 'STORAGE', ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
   FImage := TPathImage.Create(Icon);
   Result := True;
+end;
+
+{ TPortableItem }
+
+constructor TPortableItem.CreateFromPath(APath: string; Options,
+  ImageSize: Integer);
+begin
+  inherited;
+  FItem := nil;
+  DisplayName := ExtractFileName(Path);
+end;
+
+function TPortableItem.GetItem: IPDItem;
+var
+  DevName: string;
+  ItemPath: string;
+  Device: IPDevice;
+begin
+  if FItem = nil then
+  begin
+    DevName := ExtractDeviceName(Path);
+    ItemPath := ExtractDeviceItemPath(Path);
+    Device := CreateDeviceManagerInstance.GetDeviceByName(DevName);
+    if (Device <> nil) then
+      FItem := Device.GetItemByPath(ItemPath);
+  end;
+  Result := FItem;
+end;
+
+procedure TPortableItem.LoadItem(AItem: IPDItem);
+begin
+  FItem := AItem;
+end;
+
+{ TPortableDirectoryItem }
+
+function TPortableDirectoryItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TPortableDirectoryItem.Create;
+end;
+
+function TPortableDirectoryItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Icon: TIcon;
+begin
+  F(FImage);
+
+  FindIcon(HInstance, 'DIRECTORY', ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
+  FImage := TPathImage.Create(Icon);
+  Result := True;
+end;
+
+{ TPortableFSItem }
+
+function TPortableFSItem.InternalGetParent: TPathItem;
+var
+  DeviceName,
+  ParentKey: string;
+  It: IPDItem;
+  Device: IPDevice;
+begin
+  It := Self.Item;
+  if It = nil then
+    Exit(THomeItem.Create);
+
+  DeviceName := ExtractDeviceName(Path);
+  Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
+  if Device = nil then
+    Exit(THomeItem.Create);
+  
+  if It.ItemKey = '' then
+    Exit(TPortableDeviceItem.CreateFromPath(cDevicesPath + '\' + DeviceName, PATH_LOAD_NO_IMAGE, 0));
+  
+  ParentKey := PortableItemNameCache.GetParentKey(It.DeviceID, It.ItemKey); 
+  It := Device.GetItemByKey(ParentKey); 
+  if It = nil then
+    Exit(THomeItem.Create);
+
+  Result := CreatePortableFSItem(It, PATH_LOAD_NO_IMAGE, 0);
+end;
+
+{ TPortableImageItem }
+
+function TPortableImageItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TPortableImageItem.Create;
+end;
+
+function TPortableImageItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  It: IPDItem;
+  Icon: TIcon;
+  Bitmap: TBitmap;
+begin
+  It := Item;
+  Icon := nil;
+  F(FImage);
+  
+  if Item = nil then
+  begin
+    FindIcon(HInstance, 'SIMPLEFILE', ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
+    FImage := TPathImage.Create(Icon);
+    Exit(True);
+  end;
+
+  Bitmap := TBitmap.Create;
+  try
+    if Item.ExtractPreview(Bitmap) then
+    begin
+      KeepProportions(Bitmap, ImageSize, ImageSize);
+      FImage := TPathImage.Create(Bitmap);
+      Bitmap := nil;        
+      Exit(True);
+    end;
+  finally
+    F(Bitmap);
+  end;  
+  Exit(False);
+end;
+
+{ TPortableVideoItem }
+
+function TPortableVideoItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TPortableVideoItem.Create;
+end;
+
+function TPortableVideoItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  It: IPDItem;
+  Icon: TIcon;
+  Bitmap: TBitmap;
+begin
+  It := Item;
+  Icon := nil;
+  F(FImage);
+  
+  if Item = nil then
+  begin
+    FindIcon(HInstance, 'SIMPLEFILE', ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
+    FImage := TPathImage.Create(Icon);
+    Exit(True);
+  end;
+
+  Bitmap := TBitmap.Create;
+  try
+    if Item.ExtractPreview(Bitmap) then
+    begin 
+      FImage := TPathImage.Create(Bitmap);
+      Bitmap := nil;        
+      Exit(True);
+    end;
+  finally
+    F(Bitmap);
+  end;  
+  Exit(False);
+end;
+
+{ TPortableFileItem }
+
+function TPortableFileItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TPortableVideoItem.Create;
+end;
+
+function TPortableFileItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Icon: TIcon;
+  IconSize: Integer;
+begin
+  IconSize := ImageSizeToIconSize16_32_48(ImageSize);
+  Icon := TAIcons.Instance.GetIconByExt(Path, False, IconSize, False);
+
+  if Icon = nil then
+    FindIcon(HInstance, 'SIMPLEFILE', ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
+
+  FImage := TPathImage.Create(Icon);
+  Exit(True);
 end;
 
 initialization

@@ -98,6 +98,7 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<DCC_DebugDCUs>false</DCC_DebugDCUs>
 			<Debugger_RunParams>/nologo</Debugger_RunParams>
 			<VerInfo_Build>386</VerInfo_Build>
 			<Manifest_File>None</Manifest_File>

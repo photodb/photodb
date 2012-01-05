@@ -107,7 +107,7 @@ type
     procedure LoadComputerFolder;
     procedure LoadGroups;
     procedure LoadPersons;
-    procedure LoadCameraImages;
+    procedure LoadDeviceItems;
     procedure ShowMessage_;
     procedure ExplorerBack;
     procedure UpdateFile;
@@ -477,9 +477,9 @@ begin
        SynchronizeEx(DoStopSearch);
        Exit;
       end;
-      if (FThreadType = THREAD_TYPE_CAMERA) then
+      if (FThreadType = THREAD_TYPE_CAMERA) or (FThreadType = THREAD_TYPE_CAMERAITEM) then
       begin
-       LoadCameraImages;
+       LoadDeviceItems;
        SynchronizeEx(DoStopSearch);
        Exit;
       end;
@@ -2118,19 +2118,20 @@ begin
   ShowInfo('', 1, 0);
 end;
 
-procedure TExplorerThread.LoadCameraImages;
+procedure TExplorerThread.LoadDeviceItems;
 var
-  CameraItem: TPathItem;
+  DeviceItem: TPathItem;
 begin
   HideProgress;
   ShowInfo(L('Loading camera images'), 1, 0);
   SynchronizeEx(BeginUpdate);
   try
-    CameraItem := PathProviderManager.CreatePathItem(FFolder);
+    DeviceItem := PathProviderManager.CreatePathItem(FFolder);
     try
-      LoadProviderItem(CameraItem, 5, ExplorerInfo.PictureSize);
+      if DeviceItem <> nil then
+        LoadProviderItem(DeviceItem, 5, ExplorerInfo.PictureSize);
     finally
-      F(CameraItem);
+      F(DeviceItem);
     end;
   finally
     EndUpdate;

@@ -31,6 +31,8 @@ type
     FErrorCode: HRESULT;
     FFullSize, FFreeSize: Int64;
     FItemDate: TDateTime;
+    FDeviceID: string;
+    FDeviceName: string;
     procedure ErrorCheck(Code: HRESULT);
     procedure ReadProps;
   public
@@ -42,6 +44,8 @@ type
     function GetFullSize: Int64;
     function GetFreeSize: Int64;
     function GetItemDate: TDateTime;
+    function GetDeviceID: string;
+    function GetDeviceName: string;
     function GetInnerInterface: IUnknown;
     function ExtractPreview(PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
@@ -187,6 +191,9 @@ var
   DevList: TList<IPDevice>;
 begin
   Cancel := False;
+
+  if FManager = nil then
+    Exit;
 
   DevList := TList<IPDevice>.Create;
   try
@@ -436,7 +443,7 @@ begin
             begin
               Item := TWIAItem.Create(Self, pChildWiaItem);
               ItemList.Add(Item);
-              PortableItemNameCache.AddName(FDeviceID, Item.ItemKey, ParentPath + '\' + Item.Name);
+              PortableItemNameCache.AddName(FDeviceID, Item.ItemKey, ItemKey, ParentPath + '\' + Item.Name);
               CallBack(ItemKey, ItemList, Cancel, Context);
               if Cancel then
                 Break;
@@ -530,7 +537,7 @@ begin
 
   if (FRoot <> nil) and (Result = nil) then
   begin
-    FRoot.FItem.FindItemByName(0, PChar(ItemKey), Result);
+    //FRoot.FItem.FindItemByName(0, PChar(ItemKey), Result);
 
     if Result = nil then
     begin
@@ -559,6 +566,8 @@ begin
   FFreeSize := 0;
   FFullSize := 0;
   FItemDate := MinDateTime;
+  FDeviceID := ADevice.FDeviceID;
+  FDeviceName := ADevice.FDeviceName;
   ReadProps;
 end;
 
@@ -627,14 +636,14 @@ begin
 
     if SUCCEEDED(HR) and (FItemType = piImage) then
     begin
-      ImageWidth := PropVariant[3].ulVal;
-      ImageHeight := PropVariant[4].ulVal;
-      PreviewWidth := PropVariant[6].ulVal;
-      PreviewHeight := PropVariant[7].ulVal;
+      ImageWidth := PropVariant[0].ulVal;
+      ImageHeight := PropVariant[1].ulVal;
+      PreviewWidth := PropVariant[2].ulVal;
+      PreviewHeight := PropVariant[3].ulVal;
 
       BitmapPreview := TBitmap.Create;
       try
-        ReadBitmapFromBuffer(PropVariant[8].cadate.pElems, BitmapPreview, PreviewWidth, PreviewHeight);
+        ReadBitmapFromBuffer(PropVariant[4].cadate.pElems, BitmapPreview, PreviewWidth, PreviewHeight);
         W := ImageWidth;
         H := ImageHeight;
         ProportionalSize(PreviewWidth, PreviewHeight, W, H);
@@ -643,8 +652,8 @@ begin
           PreviewImage.PixelFormat := pf24Bit;
           PreviewImage.SetSize(W, H);
           DrawImageExRect(PreviewImage, BitmapPreview, PreviewWidth div 2 - W div 2, PreviewHeight div 2 - H div 2, W, H, 0, 0);
-        end;
-        AssignBitmap(PreviewImage, BitmapPreview);
+        end else
+          AssignBitmap(PreviewImage, BitmapPreview);
         Result := not PreviewImage.Empty;
       finally
         BitmapPreview.Free;
@@ -652,6 +661,16 @@ begin
     end;
   end else
     ErrorCheck(HR);
+end;
+
+function TWIAItem.GetDeviceID: string;
+begin
+  Result := FDeviceID;
+end;
+
+function TWIAItem.GetDeviceName: string;
+begin
+  Result := FDeviceName;
 end;
 
 function TWIAItem.GetErrorCode: HRESULT;
