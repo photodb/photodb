@@ -14,14 +14,11 @@ procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
 function JoinList(List: TStrings; JoinString: string): string;
 function ConvertUniversalFloatToLocal(s: string): string;
 function PosExS(SubStr: string; const Str: string; index: integer = 1): Integer;
-function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer; overload;
-function PosExW(const SubStr, S: string; Offset : Integer = 1): Integer; overload;
+function PosExW(const SubStr, S: string; Offset, MaxPos: Integer): Integer; overload;
 function Right(Str: string; P: Integer): string;
 function Mid(Str: string; S, E: Integer): string;
 function Left(Str: string; P: Integer): string;
 
-var
-  _MaxSearchPos : Integer;
 
 implementation
 
@@ -86,7 +83,9 @@ begin
 
 end;
 
-function PosExW(const SubStr, S: string; Offset : Integer = 1): Integer;
+function PosExInternal(const SubStr, S: string; Offset: Integer): Integer;
+var
+  P: Integer;
 {$IFDEF CPUX86}
 asm
        test  eax, eax
@@ -122,8 +121,10 @@ asm
        mov   edx, [esp+4]
 
 @strisunicode:
-       mov   ecx,esi
-       mov   esi, _MaxSearchPos  //Length(Str)
+       mov   ecx, esi
+       mov   esi, ecx   //Length(Str)
+       shr   esi, 16
+       and   ecx, $0000FFFF
        mov   ebx, [eax-4]  //Length(Substr)
        sub   esi, ecx      //effective length of Str
        shl   ecx, 1        //double count of offset due to being wide char
@@ -236,10 +237,9 @@ begin
 {$ENDIF CPUX64}
 end;
 
-function PosExW(const SubStr, S: string; Offset, Max: Integer): Integer;
+function PosExW(const SubStr, S: string; Offset, MaxPos: Integer): Integer;
 begin
-  _MaxSearchPos := Max;
-  Result := PosExW(SubStr, S, Offset);
+  Result := PosExInternal(SubStr, S, Offset + MaxPos shl 16);
 end;
 
 function PosExS(SubStr: string; const Str: string; index: integer = 1): integer;

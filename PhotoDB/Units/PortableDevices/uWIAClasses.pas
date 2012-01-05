@@ -623,10 +623,10 @@ begin
     PropSpec[1].propid := WIA_IPA_NUMBER_OF_LINES;
 
     PropSpec[2].ulKind := PRSPEC_PROPID;
-    PropSpec[2].propid := WIA_IPC_THUMB_HEIGHT;
+    PropSpec[2].propid := WIA_IPC_THUMB_WIDTH;
 
     PropSpec[3].ulKind := PRSPEC_PROPID;
-    PropSpec[3].propid := WIA_IPC_THUMB_WIDTH;
+    PropSpec[3].propid := WIA_IPC_THUMB_HEIGHT;
 
     PropSpec[4].ulKind := PRSPEC_PROPID;
     PropSpec[4].propid := WIA_IPC_THUMBNAIL;

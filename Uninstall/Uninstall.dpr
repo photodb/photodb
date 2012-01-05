@@ -48,7 +48,8 @@ uses
   uIME in '..\PhotoDB\Units\uIME.pas',
   uUserUtils in '..\Installer\uUserUtils.pas',
   uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
-  uTime in '..\PhotoDB\Units\uTime.pas';
+  uTime in '..\PhotoDB\Units\uTime.pas',
+  MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}

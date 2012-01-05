@@ -73,11 +73,11 @@ typedef struct _WIA_DEV_CAP {
 
   IEnumWIA_DEV_CAPS = interface(IUnknown)
     ['{1FCC4287-ACA6-11D2-A093-00C04F72DC3C}']
-    function Next(celt: ULONG; out rgelt: WIA_DEV_CAP; var pceltFetched: ULONG): HRESULT; safecall;
-    function Skip(celt: ULONG): HRESULT; safecall;
-    function Reset: HRESULT; safecall;
-    function Clone(out ppIEnum: IEnumWIA_DEV_CAPS): HRESULT; safecall;
-    function GetCount(out pcelt: ULONG): HRESULT; safecall;
+    function Next(celt: ULONG; out rgelt: WIA_DEV_CAP; var pceltFetched: ULONG): HRESULT; stdcall;
+    function Skip(celt: ULONG): HRESULT; stdcall;
+    function Reset: HRESULT; stdcall;
+    function Clone(out ppIEnum: IEnumWIA_DEV_CAPS): HRESULT; stdcall;
+    function GetCount(out pcelt: ULONG): HRESULT; stdcall;
   end;
 
   IWiaItem = interface;
@@ -103,52 +103,52 @@ typedef struct _WIA_DEV_CAP {
       cpspec: ULONG;
       rgpspec: {PROPSPEC[]}IUnknown;
       rgflags: {ULONG[]}IUnknown;
-      rgpropvar: {PROPVARIANT[]}IUnknown): HRESULT; safecall;
-    function GetCount(var pcelt: ULONG): HRESULT; safecall;
+      rgpropvar: {PROPVARIANT[]}IUnknown): HRESULT; stdcall;
+    function GetCount(var pcelt: ULONG): HRESULT; stdcall;
     function GetPropertyStream(
       out pCompatibilityID: TGUID;
-      out ppIStream: IStream): HRESULT; safecall;
+      out ppIStream: IStream): HRESULT; stdcall;
     function SetPropertyStream(
       pCompatibilityID: TGUID;
-      pIStream: IStream): HRESULT; safecall;
+      pIStream: IStream): HRESULT; stdcall;
   end;
 
   IEnumWiaItem = interface(IUnknown)
     ['{5E8383FC-3391-11D2-9A33-00C04FA36145}']
-    function Next(celt: ULONG; out ppIWiaItem: IWiaItem; var pceltFetched: ULONG): HRESULT; safecall;
-    function Skip(celt: ULONG): HRESULT; safecall;
-    function Reset: HRESULT; safecall;
-    function Clone(out ppIEnum: IEnumWiaItem): HRESULT; safecall;
-    function GetCount(out pcelt: ULONG): HRESULT; safecall;
+    function Next(celt: ULONG; out ppIWiaItem: IWiaItem; var pceltFetched: ULONG): HRESULT; stdcall;
+    function Skip(celt: ULONG): HRESULT; stdcall;
+    function Reset: HRESULT; stdcall;
+    function Clone(out ppIEnum: IEnumWiaItem): HRESULT; stdcall;
+    function GetCount(out pcelt: ULONG): HRESULT; stdcall;
   end;
 
   IWiaItem = interface(IUnknown)
     ['{4DB1AD10-3391-11D2-9A33-00C04FA36145}']
-    function GetItemType(var itemType: Integer): HRESULT; safecall;
-    function AnalyzeItem(var lTags: Integer): HRESULT; safecall;
-    function EnumChildItems(out EnumWiaItem: IEnumWiaItem): HRESULT; safecall;
-    function DeleteItem(const lTags: Integer): HRESULT; safecall;
+    function GetItemType(var itemType: Integer): HRESULT; stdcall;
+    function AnalyzeItem(var lTags: Integer): HRESULT; stdcall;
+    function EnumChildItems(out EnumWiaItem: IEnumWiaItem): HRESULT; stdcall;
+    function DeleteItem(const lTags: Integer): HRESULT; stdcall;
     function CreateChildItem(lFlags: Integer;
       bstrItemName: string;
       bstrFullItemName: string;
-      var ppIWiaItem: IWiaItem): HRESULT; safecall;
+      var ppIWiaItem: IWiaItem): HRESULT; stdcall;
     function EnumRegisterEventInfo(lFlags: Integer;
       const pEventGUID: TGUID;
       var ppIEnum: IEnumWIA_DEV_CAPS): HRESULT;
     function FindItemByName(lFlags: LONG;
       bstrFullItemName: PChar;
-      out ppIWiaItem: IWiaItem): HRESULT; safecall;
+      out ppIWiaItem: IWiaItem): HRESULT; stdcall;
     function DeviceDlg(hwndParent: HWND;
       lFlags: Integer;
       lIntent: Integer;
       var plItemCount: Integer;
-      var ppIWiaItem: IWiaItem): HRESULT; safecall;
+      var ppIWiaItem: IWiaItem): HRESULT; stdcall;
     function DeviceCommand(lFlags: Integer;
       pCmdGUID: TGUID;
-      var pIWiaItem: IWiaItem): HRESULT; safecall;
-    function GetRootItem(out ppIWiaItem: IWiaItem): HRESULT; safecall;
+      var pIWiaItem: IWiaItem): HRESULT; stdcall;
+    function GetRootItem(out ppIWiaItem: IWiaItem): HRESULT; stdcall;
     function EnumDeviceCapabilities(lFlags: Integer;
-      out ppIEnumWIA_DEV_CAPS: IEnumWIA_DEV_CAPS): HRESULT; safecall;
+      out ppIEnumWIA_DEV_CAPS: IEnumWIA_DEV_CAPS): HRESULT; stdcall;
   end;
 
   IWiaDataCallback = interface(IUnknown)
@@ -189,11 +189,11 @@ typedef struct _WIA_DEV_CAP {
 
   IWiaDataTransfer = interface(IUnknown)
     ['{A6CEF998-A5B0-11D2-A08F-00C04F72DC3C}']
-      function idtGetData(pMedium: PSTGMEDIUM; pIWiaDataCallback: IWiaDataCallback): HRESULT; safecall;
-      function idtGetBandedData(pWiaDataTransInfo: PWIA_DATA_TRANSFER_INFO; pIWiaDataCallback: IWiaDataCallback): HRESULT; safecall;
-      function idtQueryGetData(pfe: WIA_FORMAT_INFO): HRESULT; safecall;
-      function idtEnumWIA_FORMAT_INFO(ppEnum: IEnumWIA_FORMAT_INFO): HRESULT; safecall;
-      function idtGetExtendedTransferInfo(pExtendedTransferInfo: PWIA_EXTENDED_TRANSFER_INFO): HRESULT; safecall;
+      function idtGetData(pMedium: PSTGMEDIUM; pIWiaDataCallback: IWiaDataCallback): HRESULT; stdcall;
+      function idtGetBandedData(pWiaDataTransInfo: PWIA_DATA_TRANSFER_INFO; pIWiaDataCallback: IWiaDataCallback): HRESULT; stdcall;
+      function idtQueryGetData(pfe: WIA_FORMAT_INFO): HRESULT; stdcall;
+      function idtEnumWIA_FORMAT_INFO(ppEnum: IEnumWIA_FORMAT_INFO): HRESULT; stdcall;
+      function idtGetExtendedTransferInfo(pExtendedTransferInfo: PWIA_EXTENDED_TRANSFER_INFO): HRESULT; stdcall;
   end;
 
   IEnumWIA_DEV_INFO = interface(IUnknown)
@@ -220,41 +220,41 @@ typedef struct _WIA_DEV_CAP {
 
   IWiaDevMgr = interface(IUnknown)
     ['{5EB2502A-8CF1-11D1-BF92-0060081ED811}']
-      function EnumDeviceInfo(lFlag: Integer; out ppIEnum: IEnumWIA_DEV_INFO): HRESULT; safecall;
-      function CreateDevice(bstrDeviceID: PChar; out ppWiaItemRoot: IWiaItem): HRESULT; safecall;
+      function EnumDeviceInfo(lFlag: Integer; out ppIEnum: IEnumWIA_DEV_INFO): HRESULT; stdcall;
+      function CreateDevice(bstrDeviceID: PChar; out ppWiaItemRoot: IWiaItem): HRESULT; stdcall;
       function SelectDeviceDlg(hwndParent: HWND; lDeviceType: Integer; lFlags: Integer;
-        var pbstrDeviceID: string; ppItemRoot: IWiaItem): HRESULT; safecall;
+        var pbstrDeviceID: string; ppItemRoot: IWiaItem): HRESULT; stdcall;
       function SelectDeviceDlgID(hwndParent: HWND;
         lDeviceType: Integer;
         lFlags: Integer;
-        out pbstrDeviceID: string): HRESULT; safecall;
+        out pbstrDeviceID: string): HRESULT; stdcall;
       function GetImageDlg(hwndParent: HWND;
         lDeviceType: Integer;
         lFlags: Integer;
         lIntent: Integer;
         pItemRoot: IWiaItem;
         bstrFilename: string;
-        var pguidFormat: TGUID): HRESULT; safecall;
+        var pguidFormat: TGUID): HRESULT; stdcall;
       function RegisterEventCallbackProgram(lFlags: Integer;
         bstrDeviceID: string;
         pEventGUID: TGUID;
         bstrCommandline: string;
         bstrName: string;
         bstrDescription: string;
-        bstrIcon: string): HRESULT; safecall;
+        bstrIcon: string): HRESULT; stdcall;
       function RegisterEventCallbackInterface(lFlags: Integer;
         bstrDeviceID: PChar;
         pEventGUID: PGUID;
         pIWiaEventCallback: IWiaEventCallback;
-        out pEventObject: IUnknown): HRESULT; safecall;
+        out pEventObject: IUnknown): HRESULT; stdcall;
       function RegisterEventCallbackCLSID(lFlags: Integer;
         bstrDeviceID: string;
         pEventGUID: TGUID;
         pClsID: TGUID;
         bstrName: string;
         bstrDescription: string;
-        bstrIcon: string): HRESULT; safecall;
-      function AddDeviceDlg(hwndParent: HWND; lFlags: Integer): HRESULT; safecall;
+        bstrIcon: string): HRESULT; stdcall;
+      function AddDeviceDlg(hwndParent: HWND; lFlags: Integer): HRESULT; stdcall;
   end;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -270,11 +270,11 @@ type
 
   IEnumWiaItem2 = interface(IUnknown)
     ['{59970AF4-CD0D-44D9-AB24-52295630E582}']
-    function Next(celt: ULONG; out ppIWiaItem: IWiaItem2; var pceltFetched: ULONG): HRESULT; safecall;
-    function Skip(celt: ULONG): HRESULT; safecall;
-    function Reset: HRESULT; safecall;
-    function Clone(out ppIEnum: IEnumWiaItem2): HRESULT; safecall;
-    function GetCount(out pcelt: ULONG): HRESULT; safecall;
+    function Next(celt: ULONG; out ppIWiaItem: IWiaItem2; var pceltFetched: ULONG): HRESULT; stdcall;
+    function Skip(celt: ULONG): HRESULT; stdcall;
+    function Reset: HRESULT; stdcall;
+    function Clone(out ppIEnum: IEnumWiaItem2): HRESULT; stdcall;
+    function GetCount(out pcelt: ULONG): HRESULT; stdcall;
   end;
 
   IWiaItem2 = interface(IUnknown)
@@ -282,43 +282,43 @@ type
     function CreateChildItem(lFlags: Integer;
       lCreationFlags: Integer;
       bstrItemName: string;
-      var ppIWiaItem2: IWiaItem2): HRESULT; safecall;
-    function DeleteItem(const lTags: Integer): HRESULT; safecall;
+      var ppIWiaItem2: IWiaItem2): HRESULT; stdcall;
+    function DeleteItem(const lTags: Integer): HRESULT; stdcall;
     function EnumChildItems(pCategoryGUID: PGUID;
-      out EnumWiaItem2: IEnumWiaItem2): HRESULT; safecall;
+      out EnumWiaItem2: IEnumWiaItem2): HRESULT; stdcall;
     function FindItemByName(lFlags: Integer;
       bstrFullItemName: string;
-      var ppIWiaItem2: IWiaItem2): HRESULT; safecall;
-    function GetItemCategory(out pItemCategoryGUID: TGUID): HRESULT; safecall;
-    function GetItemType(out pItemType: Integer): HRESULT; safecall;
+      var ppIWiaItem2: IWiaItem2): HRESULT; stdcall;
+    function GetItemCategory(out pItemCategoryGUID: TGUID): HRESULT; stdcall;
+    function GetItemType(out pItemType: Integer): HRESULT; stdcall;
     function DeviceDlg(lFlags: Integer;
       hwndParent: HWND;
       bstrFolderName: string;
       bstrFilename: string;
       plNumFiles: Integer;
       ppbstrFilePaths: string;
-      var ppIWiaItem2: IWiaItem2): HRESULT; safecall;
+      var ppIWiaItem2: IWiaItem2): HRESULT; stdcall;
     function DeviceCommand(lFlags: Integer;
       pCmdGUID: TGUID;
-      var pIWiaItem2: IWiaItem2): HRESULT; safecall;
+      var pIWiaItem2: IWiaItem2): HRESULT; stdcall;
     function EnumDeviceCapabilities(lFlags: Integer;
-      out ppIEnumWIA_DEV_CAPS: IEnumWIA_DEV_CAPS): HRESULT; safecall;
+      out ppIEnumWIA_DEV_CAPS: IEnumWIA_DEV_CAPS): HRESULT; stdcall;
     function CheckExtension(lFlags: Integer;
       bstrName: string;
       riidExtensionInterface: {REFIID}Pointer;
-      out pbExtensionExists: BOOL): HRESULT; safecall;
+      out pbExtensionExists: BOOL): HRESULT; stdcall;
     function GetExtension(lFlags: Integer;
       bstrName: string;
       riidExtensionInterface: {REFIID}Pointer;
-      out ppOut): HRESULT; safecall;
-    function GetParentItem(out ppIWiaItem2: IWiaItem2): HRESULT; safecall;
-    function GetRootItem(out ppIWiaItem: IWiaItem): HRESULT; safecall;
+      out ppOut): HRESULT; stdcall;
+    function GetParentItem(out ppIWiaItem2: IWiaItem2): HRESULT; stdcall;
+    function GetRootItem(out ppIWiaItem: IWiaItem): HRESULT; stdcall;
     function GetPreviewComponent(lFlags: Integer;
-      ppWiaPreview: IWiaPreview): HRESULT; safecall;
+      ppWiaPreview: IWiaPreview): HRESULT; stdcall;
     function EnumRegisterEventInfo(lFlags: Integer;
       const pEventGUID: TGUID;
       out ppIEnum: IEnumWIA_DEV_CAPS): HRESULT;
-    function Diagnostic(ulSize: ULONG; pBuffer: PByte): HRESULT; safecall;
+    function Diagnostic(ulSize: ULONG; pBuffer: PByte): HRESULT; stdcall;
   end;
 
   IWiaTransferCallback = interface(IUnknown)
@@ -331,33 +331,33 @@ type
 
   IWiaDevMgr2 = interface(IUnknown)
     ['{79C07CF1-CBDD-41EE-8EC3-F00080CADA7A}']
-      function EnumDeviceInfo(lFlag: Integer; out ppIEnum: IEnumWIA_DEV_INFO): HRESULT; safecall;
-      function CreateDevice(lFlags: Integer; bstrDeviceID: PChar; out ppWiaItem2Root: IWiaItem2): HRESULT; safecall;
+      function EnumDeviceInfo(lFlag: Integer; out ppIEnum: IEnumWIA_DEV_INFO): HRESULT; stdcall;
+      function CreateDevice(lFlags: Integer; bstrDeviceID: PChar; out ppWiaItem2Root: IWiaItem2): HRESULT; stdcall;
       function SelectDeviceDlg(hwndParent: HWND; lDeviceType: Integer; lFlags: Integer;
-        var pbstrDeviceID: PChar; out ppItemRoot: IWiaItem2): HRESULT; safecall;
+        var pbstrDeviceID: PChar; out ppItemRoot: IWiaItem2): HRESULT; stdcall;
       function SelectDeviceDlgID(hwndParent: HWND;
         lDeviceType: Integer;
         lFlags: Integer;
-        out pbstrDeviceID: string): HRESULT; safecall;
+        out pbstrDeviceID: string): HRESULT; stdcall;
       function RegisterEventCallbackInterface(lFlags: Integer;
         bstrDeviceID: string;
         pEventGUID: TGUID;
         pIWiaEventCallback: IWiaEventCallback;
-        out pEventObject: IUnknown): HRESULT; safecall;
+        out pEventObject: IUnknown): HRESULT; stdcall;
       function RegisterEventCallbackProgram(lFlags: Integer;
         bstrDeviceID: string;
         pEventGUID: TGUID;
         bstrCommandline: string;
         bstrName: string;
         bstrDescription: string;
-        bstrIcon: string): HRESULT; safecall;
+        bstrIcon: string): HRESULT; stdcall;
       function RegisterEventCallbackCLSID(lFlags: Integer;
         bstrDeviceID: string;
         pEventGUID: TGUID;
         pClsID: TGUID;
         bstrName: string;
         bstrDescription: string;
-        bstrIcon: string): HRESULT; safecall;
+        bstrIcon: string): HRESULT; stdcall;
       function GetImageDlg(lFlags: Integer;
         bstrDeviceID: string;
         hwndParent: HWND;
@@ -367,7 +367,7 @@ type
         plNumFiles: Integer;
         pItemRoot: IWiaItem;
         ppbstrFilePaths: string;
-        var ppItem: IWiaItem2): HRESULT; safecall;
+        var ppItem: IWiaItem2): HRESULT; stdcall;
   end;
 
 const WIA_PROP_READ           = $01;

@@ -605,8 +605,11 @@ begin
     end;
   finally
     F(Bitmap);
-  end;  
-  Exit(False);
+  end;
+
+  FindIcon(HInstance, 'SIMPLEFILE', ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
+  FImage := TPathImage.Create(Icon);
+  Exit(True);
 end;
 
 { TPortableVideoItem }

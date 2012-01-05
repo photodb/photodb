@@ -5,8 +5,8 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Classes, SysUtils, uLogger, uMemory, xmldom, uConstants,
-  SyncObjs, Registry, uRuntime, uTime;
+  Windows, Classes, SysUtils, uLogger, uMemory, uConstants,
+  SyncObjs, Registry, uRuntime, uTime, ComObj, MSXML2_TLB;
 
 type
   TTranslate = class(TObject)
@@ -14,7 +14,7 @@ type
     FOriginal: string;
     FTranslate: string;
   public
-    constructor Create(Node: IDOMNode);
+    constructor Create(Node: IXMLDOMNode);
     property Original: string read FOriginal write FOriginal;
     property Translate: string read FTranslate write FTranslate;
   end;
@@ -24,12 +24,12 @@ type
     FScope: string;
     FTranslateList: TList;
     FParced: Boolean;
-    FScopeNode: IDOMNode;
+    FScopeNode: IXMLDOMNode;
     function GetTranslate(index: Integer): TTranslate;
   protected
-    procedure LoadTranslateList(ScopeNode: IDOMNode);
+    procedure LoadTranslateList(ScopeNode: IXMLDOMNode);
   public
-    constructor Create(ScopeNode: IDOMNode);
+    constructor Create(ScopeNode: IXMLDOMNode);
     destructor Destroy; override;
     function Translate(Original: string; out ATranslate: string): Boolean;
     property Scope: string read FScope write FScope;
@@ -39,7 +39,7 @@ type
 type
   TLanguage = class(TObject)
   private
-    FTranslate: IDOMDocument;
+    FTranslate: IXMLDOMDocument;
     FTranslateList: TList;
     FName: string;
     FImageName: string;
@@ -262,15 +262,15 @@ end;
 
 { TLanguageScope }
 
-constructor TLanguageScope.Create(ScopeNode: IDOMNode);
+constructor TLanguageScope.Create(ScopeNode: IXMLDOMNode);
 var
-  NameAttr : IDOMNode;
+  NameAttr : IXMLDOMNode;
 begin
   FScopeNode := ScopeNode;
   FTranslateList := TList.Create;
   NameAttr := ScopeNode.attributes.getNamedItem('name');
   if NameAttr <> nil then
-    FScope := NameAttr.nodeValue;
+    FScope := NameAttr.text;
   FParced := False;
 end;
 
@@ -317,12 +317,12 @@ begin
   end;
 end;
 
-procedure TLanguageScope.LoadTranslateList(ScopeNode: IDOMNode);
+procedure TLanguageScope.LoadTranslateList(ScopeNode: IXMLDOMNode);
 var
-  I: Integer;
-  TranslateList: IDOMNodeList;
-  TranslateNode: IDOMNode;
-  Translate: TTranslate;
+  I : Integer;
+  TranslateList : IXMLDOMNodeList;
+  TranslateNode : IXMLDOMNode;
+  Translate : TTranslate;
 begin
   TranslateList := ScopeNode.childNodes;
   if TranslateList <> nil then
@@ -338,18 +338,18 @@ end;
 
 { TTranslate }
 
-constructor TTranslate.Create(Node: IDOMNode);
+constructor TTranslate.Create(Node: IXMLDOMNode);
 var
-  NameAttr : IDOMNode;
-  ValueAttr : IDOMNode;
+  NameAttr: IXMLDOMNode;
+  ValueAttr: IXMLDOMNode;
 begin
   NameAttr := Node.attributes.getNamedItem('name');
   if NameAttr <> nil then
-    FOriginal := StringReplace(NameAttr.nodeValue, '$nl$', #13, [rfReplaceAll]);
+    FOriginal := StringReplace(NameAttr.text, '$nl$', #13, [rfReplaceAll]);
 
   ValueAttr := Node.attributes.getNamedItem('value');
   if ValueAttr <> nil then
-    FTranslate := StringReplace(ValueAttr.nodeValue, '$nl$', #13, [rfReplaceAll]);
+    FTranslate := StringReplace(ValueAttr.text, '$nl$', #13, [rfReplaceAll]);
 end;
 
 { TLanguage }
@@ -357,14 +357,14 @@ end;
 constructor TLanguage.Create(FileName: string; Flags: Integer = 0);
 begin
   Init;
-  (FTranslate as IDOMPersist).load(FileName);
+  FTranslate.load(FileName);
   LoadTranslationList;
 end;
 
 constructor TLanguage.CreateFromXML(XML: string);
 begin
   Init;
-  (FTranslate as IDOMPersist).loadxml(XML);
+  FTranslate.loadXML(XML);
   LoadTranslationList;
 end;
 
@@ -379,7 +379,8 @@ procedure TLanguage.Init;
 begin
   FLastScope := nil;
   FTranslateList := TList.Create;
-  FTranslate := GetDOM.createDocument('', '', nil);
+  //'Msxml2.DOMDocument.6.0'
+  FTranslate := CreateOleObject('MSXML2.DOMDocument.3.0') as IXMLDOMDocument;
   FLangCode := 0;
   FCode := '--';
   FAutor := '';
@@ -387,14 +388,14 @@ end;
 
 procedure TLanguage.LoadTranslationList;
 var
-  DocumentElement: IDOMElement;
-  ScopeList: IDOMNodeList;
-  ScopeNode: IDOMNode;
+  DocumentElement: IXMLDOMElement;
+  ScopeList: IXMLDOMNodeList;
+  ScopeNode: IXMLDOMNode;
   AutorNameAttr,
   NameAttr,
   CodeAttr,
   LangCodeAttr,
-  ImageNameAttr: IDOMNode;
+  ImageNameAttr: IXMLDOMNode;
   I: Integer;
   Scope: TLanguageScope;
 begin
@@ -404,23 +405,23 @@ begin
   begin
     NameAttr := DocumentElement.attributes.getNamedItem('name');
     if NameAttr <> nil then
-      FName := NameAttr.nodeValue;
+      FName := NameAttr.text;
 
     ImageNameAttr := DocumentElement.attributes.getNamedItem('image');
     if ImageNameAttr <> nil then
-      FImageName := ImageNameAttr.nodeValue;
+      FImageName := ImageNameAttr.text;
 
     AutorNameAttr := DocumentElement.attributes.getNamedItem('autor');
     if AutorNameAttr <> nil then
-      FAutor := AutorNameAttr.nodeValue;
+      FAutor := AutorNameAttr.text;
 
     CodeAttr := DocumentElement.attributes.getNamedItem('code');
     if CodeAttr <> nil then
-      FCode := CodeAttr.nodeValue;
+      FCode := CodeAttr.text;
 
     LangCodeAttr := DocumentElement.attributes.getNamedItem('langCode');
     if LangCodeAttr <> nil then
-      FLangCode := StrToIntDef(LangCodeAttr.nodeValue, 0);
+      FLangCode := StrToIntDef(LangCodeAttr.text, 0);
 
     ScopeList := DocumentElement.childNodes;
     if ScopeList <> nil then
