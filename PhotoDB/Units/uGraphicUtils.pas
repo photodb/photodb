@@ -168,20 +168,7 @@ begin
   else if (Src is TPngImage) and ((TPngImage(Src).Header.BitDepth = 8) or
     (TPngImage(Src).Header.BitDepth = 16)) then
   begin
-    case TPngImage(Src).Header.ColorType of
-      COLOR_GRAYSCALE:
-        LoadPNGImage8BitWOTransparent(TPngImage(Src), Dest);
-      COLOR_GRAYSCALEALPHA:
-        LoadPNGImage8BitTransparent(TPngImage(Src), Dest);
-      COLOR_PALETTE:
-        LoadPNGImagePalette(TPngImage(Src), Dest);
-      COLOR_RGB:
-        LoadPNGImageWOTransparent(TPngImage(Src), Dest);
-      COLOR_RGBALPHA:
-        LoadPNGImageTransparent(TPngImage(Src), Dest);
-      else
-        Dest.Assign(Src);
-    end;
+    AssignPNG(Dest, TPngImage(Src));
   end else
     Dest.Assign(Src);
 end;

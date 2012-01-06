@@ -14,8 +14,27 @@ procedure LoadPNGImage8bitTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 procedure LoadPNGImagePalette(PNG: TPNGImage; Bitmap: TBitmap);
 
 procedure SavePNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
+procedure AssignPNG(Dest: TBitmap; Src: TPngImage);
 
 implementation
+
+procedure AssignPNG(Dest: TBitmap; Src: TPngImage);
+begin
+  case TPngImage(Src).Header.ColorType of
+    COLOR_GRAYSCALE:
+      LoadPNGImage8BitWOTransparent(TPngImage(Src), Dest);
+    COLOR_GRAYSCALEALPHA:
+      LoadPNGImage8BitTransparent(TPngImage(Src), Dest);
+    COLOR_PALETTE:
+      LoadPNGImagePalette(TPngImage(Src), Dest);
+    COLOR_RGB:
+      LoadPNGImageWOTransparent(TPngImage(Src), Dest);
+    COLOR_RGBALPHA:
+      LoadPNGImageTransparent(TPngImage(Src), Dest);
+    else
+      Dest.Assign(Src);
+  end;
+end;
 
 procedure SavePNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 var

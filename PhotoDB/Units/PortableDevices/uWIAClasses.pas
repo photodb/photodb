@@ -47,7 +47,7 @@ type
     function GetDeviceID: string;
     function GetDeviceName: string;
     function GetInnerInterface: IUnknown;
-    function ExtractPreview(PreviewImage: TBitmap): Boolean;
+    function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
   end;
 
@@ -537,6 +537,7 @@ begin
 
   if (FRoot <> nil) and (Result = nil) then
   begin
+    //always returns root item :(
     //FRoot.FItem.FindItemByName(0, PChar(ItemKey), Result);
 
     if Result = nil then
@@ -577,7 +578,7 @@ begin
     FErrorCode := Code;
 end;
 
-function TWIAItem.ExtractPreview(PreviewImage: TBitmap): Boolean;
+function TWIAItem.ExtractPreview(var PreviewImage: TBitmap): Boolean;
 var
   HR: HRESULT;
   PropList: IWiaPropertyStorage;
@@ -634,7 +635,7 @@ begin
     SetLength(PropVariant, 5);
     HR := PropList.ReadMultiple(5, @PropSpec[0], @PropVariant[0]);
 
-    if SUCCEEDED(HR) and (FItemType = piImage) then
+    if SUCCEEDED(HR) then
     begin
       ImageWidth := PropVariant[0].ulVal;
       ImageHeight := PropVariant[1].ulVal;
@@ -647,7 +648,7 @@ begin
         W := ImageWidth;
         H := ImageHeight;
         ProportionalSize(PreviewWidth, PreviewHeight, W, H);
-        if (W <> PreviewWidth) or (H <> PreviewHeight) then
+        if ((W <> PreviewWidth) or (H <> PreviewHeight)) and (W > 0) and (H > 0) then
         begin
           PreviewImage.PixelFormat := pf24Bit;
           PreviewImage.SetSize(W, H);
@@ -656,7 +657,7 @@ begin
           AssignBitmap(PreviewImage, BitmapPreview);
         Result := not PreviewImage.Empty;
       finally
-        BitmapPreview.Free;
+        F(BitmapPreview);
       end;
     end;
   end else

@@ -11,6 +11,7 @@ uses
 
 const
   DEFAULT_PORTABLE_DEVICE_NAME = 'Unknown Device';
+  EMPTY_PATH = '?\\NULL';
 
 type
   TDeviceType = (dtCamera, dtVideo, dtPhone, dtOther);
@@ -36,7 +37,7 @@ type
     function GetItemDate: TDateTime;
     function GetDeviceID: string;
     function GetDeviceName: string;
-    function ExtractPreview(PreviewImage: TBitmap): Boolean;
+    function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
     function GetInnerInterface: IUnknown;
     property ItemType: TPortableItemType read GetItemType;
@@ -171,7 +172,7 @@ function TPortableItemNameCache.GetKeyByPath(DevID, Path: string): string;
 var
   I: Integer;
 begin
-  Result := '';
+  Result := EMPTY_PATH;
   FSync.Enter;
   try
     for I := FItems.Count - 1 downto 0 do

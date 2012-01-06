@@ -258,15 +258,19 @@ var
 begin
   Result := False;
   PortableItem := PathProviderManager.CreatePathItem(Item.Path);
-  if (PortableItem is TPortableImageItem) or (PortableItem is TPortableVideoItem) then
-  begin     
-    PortableItem.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
-    if (PortableItem.Image <> nil) and (PortableItem.Image.Bitmap <> nil) then
+  try
+    if (PortableItem is TPortableImageItem) or (PortableItem is TPortableVideoItem) then
     begin
-      AssignBitmap(Bitmap, PortableItem.Image.Bitmap);
-      Result := not Bitmap.Empty;
+      PortableItem.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
+      if (PortableItem.Image <> nil) and (PortableItem.Image.Bitmap <> nil) then
+      begin
+        AssignBitmap(Bitmap, PortableItem.Image.Bitmap);
+        Result := not Bitmap.Empty;
+      end;
     end;
-  end; 
+  finally
+    F(PortableItem);
+  end;
 end;
 
 procedure TPortableDeviceProvider.FillDevicesCallBack(Packet: TList<IPDevice>;
@@ -308,7 +312,11 @@ begin
 
   for Item in Packet do
   begin
+    if ((C.Options and PATH_LOAD_DIRECTORIES_ONLY > 0) and (Item.ItemType <> piStorage) and (Item.ItemType <> piDirectory)) then
+      Continue;
+
     PItem := CreatePortableFSItem(Item, C.Options, C.ImageSize);
+    
     C.List.Add(PItem);
   end;
 
@@ -639,7 +647,8 @@ begin
   Bitmap := TBitmap.Create;
   try
     if Item.ExtractPreview(Bitmap) then
-    begin 
+    begin
+      KeepProportions(Bitmap, ImageSize, ImageSize);
       FImage := TPathImage.Create(Bitmap);
       Bitmap := nil;        
       Exit(True);

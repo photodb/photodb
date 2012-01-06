@@ -12,8 +12,11 @@ uses
   System.Classes,
   System.SysUtils,
   Vcl.Imaging.Jpeg,
+  Vcl.Imaging.pngimage,
   uJpegUtils,
-  Vcl.Graphics;
+  Vcl.Graphics,
+  uGraphicUtils,
+  uBitmapUtils;
 
 type
   TWPDDeviceManager = class;
@@ -31,8 +34,10 @@ type
     FItemDate: TDateTime;
     FDeviceID: string;
     FDeviceName: string;
+    FWidth: Integer;
+    FHeight: Integer;
     procedure ErrorCheck(Code: HRESULT);
-    procedure TransferContent(ResourceID: TGUID; Stream: TStream);
+    procedure TransferContent(ResourceID: TGUID; Stream: TStream; out ResourceFormat: TGUID);
     procedure ReadProperties;
   public
     constructor Create(ADevice: TWPDDevice; AItemKey: string);
@@ -45,8 +50,10 @@ type
     function GetItemDate: TDateTime;
     function GetDeviceID: string;
     function GetDeviceName: string;
+    function GetWidth: Integer;
+    function GetHeight: Integer;
     function GetInnerInterface: IUnknown;
-    function ExtractPreview(PreviewImage: TBitmap): Boolean;
+    function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
   end;
 
@@ -211,11 +218,14 @@ begin
                 if Succeeded(HR) then
                 begin
                   Device := TWPDDevice.Create(Self, FDevice);
-                  DevList.Clear;
-                  DevList.Add(Device);
-                  CallBack(DevList, Cancel, Context);
-                  if Cancel then
-                    Break;
+                  if Device.GetDeviceType <> dtOther then
+                  begin
+                    DevList.Clear;
+                    DevList.Add(Device);
+                    CallBack(DevList, Cancel, Context);
+                    if Cancel then
+                      Break;
+                  end;
                 end;
               end;
             end;
@@ -437,9 +447,66 @@ end;
 
 function TWPDDevice.GetItemByPath(Path: string): IPDItem;
 var
-  ItemKey: string;
+  ItemKey, CurrentPath: string;
+  HR: HRESULT;
+  pFilter: IPortableDeviceValues;
+  ppenum: IEnumPortableDeviceObjectIDs;
+  Key: _tagpropertykey;
+  cFetched: Cardinal;
+  ObjectID: PWSTR;
+  PathParts: TStrings;
+  I: Integer;
 begin
   ItemKey := PortableItemNameCache.GetKeyByPath(FDeviceID, Path);
+  if ItemKey = EMPTY_PATH then
+  begin
+    ItemKey := WPD_DEVICE_OBJECT_ID;
+
+    PathParts := TStringList.Create;
+    try
+      PathParts.Delimiter := '\';
+      PathParts.DelimitedText := Path;
+      CurrentPath := '';
+
+      HR := CoCreateInstance(CLSID_PortableDeviceValues, nil, CLSCTX_INPROC_SERVER, IID_PortableDeviceValues, pFilter);
+
+      if Succeeded(HR) then
+      begin
+        for I := 0 to PathParts.Count - 1 do
+        begin
+          if PathParts[I] = '' then
+            Continue;
+
+          CurrentPath := '\' + PathParts[I];
+          Key.fmtid := PKEY_GenericObj;
+          Key.pid := WPD_OBJECT_NAME;
+          HR := pFilter.SetStringValue(Key, PChar(PathParts[I]));
+          if Succeeded(HR) then
+          begin
+            HR := FContent.EnumObjects(0,
+                                       PChar(ItemKey),
+                                       pFilter,
+                                       ppenum);
+
+            if Succeeded(HR) then
+            begin
+              HR := ppenum.Next(1,            // Number of objects to request on each NEXT call
+                                @ObjectID,    // Array of PWSTR array which will be populated on each NEXT call
+                                cFetched);    // Number of objects written to the PWSTR array
+
+              if Succeeded(HR) and (cFetched = 1) then
+              begin
+                PortableItemNameCache.AddName(FDeviceID, string(ObjectID), ItemKey, CurrentPath);
+                ItemKey := string(ObjectID);
+              end;
+            end;
+          end;
+        end;
+      end;
+    finally
+      F(PathParts);
+    end;
+  end;
   Result := GetItemByKey(ItemKey);
 end;
 
@@ -539,6 +606,8 @@ begin
   FItemDate := MinDateTime;
   FDeviceID := ADevice.FDeviceID;
   FDeviceName := ADevice.FName;
+  FWidth := 0;
+  FHeight := 0;
   ReadProperties;
 end;
 
@@ -548,26 +617,69 @@ begin
     FErrorCode := Code;
 end;
 
-function TWPDItem.ExtractPreview(PreviewImage: TBitmap): Boolean;
+function TWPDItem.ExtractPreview(var PreviewImage: TBitmap): Boolean;
 var
   MS: TMemoryStream;
+  FormatGUID: TGUID;
   J: TJpegImage;
+  PNG: TPngImage;
+  W, H: Integer;
+  CroppedImage: TBitmap;
 begin
+  Result := False;
   MS := TMemoryStream.Create;
   try
-    TransferContent(WPD_RESOURCE_THUMBNAIL, MS);
+    TransferContent(WPD_RESOURCE_THUMBNAIL, MS, FormatGUID);
     MS.Seek(0, soFromBeginning);
-    J := TJpegImage.Create;
-    try
-      J.LoadFromStream(MS);
-      Result := not J.Empty;
-      if Result then
-        AssignJpeg(PreviewImage, J);
-    finally
-      F(J);
+    if FormatGUID = WPD_OBJECT_FORMAT_BMP then
+    begin
+      PreviewImage.LoadFromStream(MS);
+      Result := not PreviewImage.Empty;
+    end else if FormatGUID = WPD_OBJECT_FORMAT_JFIF then
+    begin
+      J := TJpegImage.Create;
+      try
+        J.LoadFromStream(MS);
+        Result := not J.Empty;
+        if Result then
+          AssignJpeg(PreviewImage, J);
+      finally
+        F(J);
+      end;
+    end else if FormatGUID = WPD_OBJECT_FORMAT_PNG then
+    begin
+      PNG := TPngImage.Create;
+      try
+        PNG.LoadFromStream(MS);
+        Result := not PNG.Empty;
+        if Result then
+          AssignGraphic(PreviewImage, PNG);
+      finally
+        F(PNG);
+      end;
     end;
   finally
     F(MS);
+  end;
+  if Result and (FWidth > 0)  and (FHeight > 0) then
+  begin
+
+    W := FWidth;
+    H := FHeight;
+    ProportionalSize(PreviewImage.Width, PreviewImage.Height, W, H);
+    if ((W <> PreviewImage.Width) or (H <> PreviewImage.Height)) and (W > 0) and (H > 0) then
+    begin
+      CroppedImage := TBitmap.Create;
+      try
+        CroppedImage.PixelFormat := pf24Bit;
+        CroppedImage.SetSize(W, H);
+        DrawImageExRect(CroppedImage, PreviewImage, PreviewImage.Width div 2 - W div 2, PreviewImage.Height div 2 - H div 2, W, H, 0, 0);
+        F(PreviewImage);
+        Exchange(PreviewImage, CroppedImage);
+      finally
+        F(CroppedImage);
+      end;
+    end;
   end;
 end;
 
@@ -596,6 +708,11 @@ begin
   Result := FFullSize;
 end;
 
+function TWPDItem.GetHeight: Integer;
+begin
+  Result := FHeight;
+end;
+
 function TWPDItem.GetInnerInterface: IUnknown;
 begin
   Result := nil;
@@ -621,6 +738,11 @@ begin
   Result := FName;
 end;
 
+function TWPDItem.GetWidth: Integer;
+begin
+  Result := FWidth;
+end;
+
 procedure TWPDItem.ReadProperties;
 var
   HR: HRESULT;
@@ -632,6 +754,7 @@ var
   ObjectTypeGUID: TGUID;
   Size: Int64;
   V: tag_inner_PROPVARIANT;
+  W, H: Integer;
 begin
   HR := CoCreateInstance(CLSID_PortableDeviceKeyCollection, nil, CLSCTX_INPROC_SERVER, IID_PortableDeviceKeyCollection, PropertiesToRead);
   if (SUCCEEDED(HR)) then
@@ -692,6 +815,14 @@ begin
             Key.pid := WPD_OBJECT_DATE_CREATED;
             ErrorCheck(PropertiesToRead.Add(key));
 
+            key.fmtid := WPD_MEDIA_PROPERTIES_V1;
+            Key.pid := WPD_MEDIA_WIDTH;
+            PropertiesToRead.Add(key);
+
+            key.fmtid := WPD_MEDIA_PROPERTIES_V1;
+            Key.pid := WPD_MEDIA_HEIGHT;
+            PropertiesToRead.Add(key);
+
             HR :=  ppProperties.GetValues(PChar(FItemKey),    // The object whose properties we are reading
                                           PropertiesToRead,   // The properties we want to read
                                           ppValues);          // Result property values for the specified object
@@ -707,6 +838,16 @@ begin
               Key.pid := WPD_OBJECT_DATE_CREATED;
               if ppValues.GetValue(key, V) = S_OK then
                 FItemDate := V.__MIDL____MIDL_itf_PortableDeviceApi_0001_00000001.date;
+
+              key.fmtid := WPD_MEDIA_PROPERTIES_V1;
+              Key.pid := WPD_MEDIA_WIDTH;
+              if ppValues.GetSignedIntegerValue(key, W) = S_OK then
+                FWidth := W;
+
+              key.fmtid := WPD_MEDIA_PROPERTIES_V1;
+              Key.pid := WPD_MEDIA_HEIGHT;
+              if ppValues.GetSignedIntegerValue(key, H) = S_OK then
+                FHeight := H;
             end;
           end;
           piStorage:
@@ -750,15 +891,17 @@ begin
 end;
 
 function TWPDItem.SaveToStream(S: TStream): Boolean;
+var
+  FormatGUID: TGUID;
 begin
-  TransferContent(WPD_RESOURCE_DEFAULT, S);
+  TransferContent(WPD_RESOURCE_DEFAULT, S, FormatGUID);
   Result := FErrorCode = S_OK;
 end;
 
 //WPD_RESOURCE_THUMBNAIL or WPD_RESOURCE_DEFAULT
-procedure TWPDItem.TransferContent(ResourceID: TGUID; Stream: TStream);
+procedure TWPDItem.TransferContent(ResourceID: TGUID; Stream: TStream; out ResourceFormat: TGUID);
 const
-  BufferSize: Integer = 2 * 1024 * 1024;
+  DefaultBufferSize: Integer = 2 * 1024 * 1024;
 var
   HR: HRESULT;
   pObjectDataStream: IStream;
@@ -767,10 +910,32 @@ var
   Key: _tagpropertykey;
   ButesRead: Longint;
   ppResources: IPortableDeviceResources;
+  ppResourceAttributes: IPortableDeviceValues;
+  BufferSize, ReadBufferSize: Int64;
+  ResFormat: TGUID;
 begin
+  ResourceFormat := WPD_OBJECT_FORMAT_JFIF;
+  BufferSize := DefaultBufferSize;
   HR := FDevice.Content.Transfer(ppResources);
   if (SUCCEEDED(HR)) then
   begin
+
+    HR := ppResources.GetResourceAttributes(PChar(FItemKey),
+                                            Key,
+                                            ppResourceAttributes);
+    if (SUCCEEDED(HR)) then
+    begin
+      key.fmtid := WPD_RESOURCE_ATTRIBUTES_V1;
+      Key.pid := WPD_RESOURCE_ATTRIBUTE_OPTIMAL_READ_BUFFER_SIZE;
+      if SUCCEEDED(ppResourceAttributes.GetSignedLargeIntegerValue(key, ReadBufferSize)) then
+        BufferSize := ReadBufferSize;
+
+      key.fmtid := WPD_RESOURCE_ATTRIBUTES_V1;
+      Key.pid := WPD_RESOURCE_ATTRIBUTE_FORMAT;
+      if SUCCEEDED(ppResourceAttributes.GetGuidValue(key, ResFormat)) and (ResFormat.D1 > 0) then
+        ResourceFormat := ResFormat;
+    end;
+
     cbOptimalTransferSize := BufferSize;
     Key.fmtid := ResourceID;
     Key.pid := 0;
@@ -798,6 +963,8 @@ begin
       ErrorCheck(HR);
   end else
     ErrorCheck(HR);
+
 end;
+
 
 end.

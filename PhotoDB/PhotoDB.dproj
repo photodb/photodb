@@ -100,10 +100,10 @@
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
 			<DCC_DebugDCUs>false</DCC_DebugDCUs>
 			<Debugger_RunParams>/nologo</Debugger_RunParams>
-			<VerInfo_Build>388</VerInfo_Build>
+			<VerInfo_Build>390</VerInfo_Build>
 			<Manifest_File>None</Manifest_File>
 			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.2.388;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.2.390;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">

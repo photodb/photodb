@@ -10,6 +10,9 @@ type
     function Join(JoinString: string): string;
   end;
 
+type
+  TStringFindOptions = array[0..1] of Integer;
+
 procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
 function JoinList(List: TStrings; JoinString: string): string;
 function ConvertUniversalFloatToLocal(s: string): string;
@@ -72,7 +75,7 @@ begin
     end;
 end;
 
-function ConvertUniversalFloatToLocal(s: string): string;
+function ConvertUniversalFloatToLocal(S: string): string;
 var
   I: Integer;
 begin
@@ -83,17 +86,16 @@ begin
 
 end;
 
-function PosExInternal(const SubStr, S: string; Offset: Integer): Integer;
-var
-  P: Integer;
+function PosExWX(const SubStr, S: string; Options: TStringFindOptions): Integer;
 {$IFDEF CPUX86}
 asm
        test  eax, eax
        jz    @Nil
        test  edx, edx
        jz    @Nil
-       dec   ecx
-       jl    @Nil
+       //ecx is pointer to options array, this check was moved to PosExW function
+       //dec   ecx
+       //jl    @Nil
 
        push  esi
        push  ebx
@@ -121,10 +123,8 @@ asm
        mov   edx, [esp+4]
 
 @strisunicode:
-       mov   ecx, esi
-       mov   esi, ecx   //Length(Str)
-       shr   esi, 16
-       and   ecx, $0000FFFF
+       mov   ecx, [esi]    //Offset
+       mov   esi, [esi+4]  //MaxPos
        mov   ebx, [eax-4]  //Length(Substr)
        sub   esi, ecx      //effective length of Str
        shl   ecx, 1        //double count of offset due to being wide char
@@ -233,28 +233,34 @@ asm
 {$ENDIF CPUX86}
 {$IFDEF CPUX64}
 begin
-  Result := PosEx(SubStr, S, Offset);
+  Result := PosEx(SubStr, Copy(S, 1, Options[1]), Options[0]);
 {$ENDIF CPUX64}
 end;
 
 function PosExW(const SubStr, S: string; Offset, MaxPos: Integer): Integer;
+var
+  Option: TStringFindOptions;
 begin
-  Result := PosExInternal(SubStr, S, Offset + MaxPos shl 16);
+  if Offset < 1 then
+    Exit(0);
+  Option[0] := Offset;
+  Option[1] := MaxPos;
+  Result := PosExWX(SubStr, S, Option);
 end;
 
-function PosExS(SubStr: string; const Str: string; index: integer = 1): integer;
+function PosExS(SubStr: string; const Str: string; Index: Integer = 1): Integer;
 var
-    I, N, NS, LS: Integer;
-    Q: Boolean;
-    C, FS: Char;
-    OneChar: Boolean;
-    PS, PSup: PChar;
+  I, N, NS, LS: Integer;
+  Q: Boolean;
+  C, FS: Char;
+  OneChar: Boolean;
+  PS, PSup: PChar;
 
   function IsSubStr: Boolean;
   var
-      K: Integer;
-      APS: PChar;
-      APSub: PChar;
+    K: Integer;
+    APS: PChar;
+    APSub: PChar;
   begin
     NativeUInt(APS) := NativeUInt(PS);
     NativeUInt(APSub) := NativeUInt(PSup);
