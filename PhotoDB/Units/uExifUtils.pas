@@ -3,8 +3,20 @@ unit uExifUtils;
 interface
 
 uses
-  Windows, uConstants, CCR.Exif, uMemory, UnitDBDeclare, uSettings, uAssociations,
-  Jpeg, GraphicEx, Graphics, SysUtils, CCR.Exif.XMPUtils, uTiffImage;
+  Windows,
+  uConstants,
+  CCR.Exif,
+  uMemory,
+  UnitDBDeclare,
+  uSettings,
+  uAssociations,
+  Jpeg,
+  GraphicEx,
+  Graphics,
+  SysUtils,
+  CCR.Exif.XMPUtils,
+  uTiffImage,
+  uPortableDeviceUtils;
 
 type
   TExifPatchInfo = class
@@ -83,6 +95,9 @@ begin
       Exit; //nothing to update
 
     if not Settings.Exif.ReadInfoFromExif then
+      Exit;
+
+    if IsDevicePath(Info.FileName) then
       Exit;
 
     try

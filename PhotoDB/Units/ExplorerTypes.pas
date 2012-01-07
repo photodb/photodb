@@ -783,11 +783,20 @@ begin
   else if PI is TPortableDirectoryItem then
     FileType := EXPLORER_ITEM_DEVICE_DIRECTORY
   else if PI is TPortableImageItem then
+  begin
+    FileSize := TPortableImageItem(PI).FileSize;
     FileType := EXPLORER_ITEM_DEVICE_IMAGE
+  end
   else if PI is TPortableVideoItem then
+  begin
+    FileSize := TPortableVideoItem(PI).FileSize;
     FileType := EXPLORER_ITEM_DEVICE_VIDEO
+  end
   else if PI is TPortableFileItem then
+  begin
+    FileSize := TPortableFileItem(PI).FileSize;
     FileType := EXPLORER_ITEM_DEVICE_FILE;
+  end;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;

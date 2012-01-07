@@ -265,9 +265,10 @@ var
   InfoPosition: Integer;
   PrivateFiles: TStringList;
   Crc: Cardinal;
-  IsPrivateDirectory : Boolean;
+  IsPrivateDirectory: Boolean;
   NotifyInfo: TExplorerNotifyInfo;
   P: TPathItem;
+  COMMode: Integer;
 
   procedure LoadDBContent;
   var
@@ -333,7 +334,12 @@ begin
   inherited;
   FreeOnTerminate := True;
 
-  CoInitialize(nil);
+  if (FThreadType = THREAD_TYPE_CAMERA) or (FThreadType = THREAD_TYPE_CAMERAITEM) then
+    COMMode := COINIT_MULTITHREADED
+  else
+    COMMode := COINIT_APARTMENTTHREADED;
+
+  CoInitializeEx(nil, COMMode);
   try
     LoadingAllBigImages := True;
 

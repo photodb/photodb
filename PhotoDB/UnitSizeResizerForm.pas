@@ -11,7 +11,10 @@ uses
   DmProgress, uW7TaskBar, uWatermarkOptions, uImageSource,
   UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
   uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime, ImButton, uLogger,
-  WebLink, SaveWindowPos, uDBThread, AppEvnts;
+  WebLink, SaveWindowPos,
+  uDBThread,
+  uPortableDeviceUtils,
+  AppEvnts;
 
 const
   Settings_ConvertForm = 'Convert settings';
@@ -426,6 +429,12 @@ begin
   if not CheckFileTypes and (DdConvert.ItemIndex < 0) then
   begin
     MessageBoxDB(Handle, L('Please, choose format!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
+
+  if IsDevicePath(EdSavePath.Text) then
+  begin
+    MessageBoxDB(Handle, L('Please, choose a valid directory!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;
 

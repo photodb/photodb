@@ -6,10 +6,22 @@ uses
   Windows, Classes, Graphics, GraphicCrypt, SysUtils, Forms,
   GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, uTiffImage,
   ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
-  uMemory, UnitDBDeclare, pngimage, uPNGUtils, UnitDBkernel, uDBThread,
-  uGraphicUtils, uDBUtils, uViewerTypes, uAssociations, RAWImage,
-  uExifUtils, uJpegUtils, uBitmapUtils, uSettings, uFaceDetection,
-  uConstants;
+  uMemory, UnitDBDeclare, pngimage,
+  uPNGUtils,
+  UnitDBkernel,
+  uDBThread,
+  uGraphicUtils,
+  uDBUtils,
+  uViewerTypes,
+  uAssociations,
+  RAWImage,
+  uExifUtils,
+  uJpegUtils,
+  uBitmapUtils,
+  uSettings,
+  uFaceDetection,
+  uConstants,
+  uPortableDeviceUtils;
 
 type
   TViewerThread = class(TDBThread)
@@ -92,7 +104,7 @@ begin
   Priority := tpHigher;
   try
     FTransparent := False;
-    if not FileExistsEx(FInfo.FileName) then
+    if not FileExistsEx(FInfo.FileName) and not IsDevicePath(FInfo.FileName) then
     begin
       SetNOImageAsynch;
       Exit;
@@ -118,28 +130,40 @@ begin
         TRAWImage(Graphic).IsPreview := not FFullImage;
 
       try
-        if PassWord <> '' then
+        if not IsDevicePath(FInfo.FileName) then
         begin
-          F(Graphic);
-          Graphic := DeCryptGraphicFileEx(FInfo.FileName, PassWord, FPages, FFullImage, FPage);
-        end else
-        begin
-          if FIsEncrypted and (PassWord = '') then
+          if PassWord <> '' then
           begin
-            SetNOImageAsynch;
-            Exit;
+            F(Graphic);
+            Graphic := DeCryptGraphicFileEx(FInfo.FileName, PassWord, FPages, FFullImage, FPage);
           end else
           begin
-            if Graphic is TTiffImage then
+            if FIsEncrypted and (PassWord = '') then
             begin
-              (Graphic as TTiffImage).Page := FPage;
-              (Graphic as TTiffImage).LoadFromFile(FInfo.FileName);
-            end
-            else
-              Graphic.LoadFromFile(FInfo.FileName);
-          end;
+              SetNOImageAsynch;
+              Exit;
+            end else
+            begin
+              if Graphic is TTiffImage then
+              begin
+                (Graphic as TTiffImage).Page := FPage;
+                (Graphic as TTiffImage).LoadFromFile(FInfo.FileName);
+              end
+              else
+                Graphic.LoadFromFile(FInfo.FileName);
+            end;
+          end
+        end else
+        begin
+          Graphic.LoadFromDevice(FInfo.FileName);
         end;
       except
+        SetNOImageAsynch;
+        Exit;
+      end;
+
+      if (Graphic.Width = 0) or (Graphic.Height = 0) then
+      begin
         SetNOImageAsynch;
         Exit;
       end;
@@ -202,7 +226,7 @@ begin
             Exit;
           end;
 
-          if FInfo.ID = 0 then
+          if (FInfo.ID = 0) and not IsDevicePath(FInfo.FileName) then
           begin
             if FInfo.Rotation = 0 then
               FInfo.Rotation := GetExifRotate(FInfo.FileName);
@@ -220,7 +244,7 @@ begin
     finally
       if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
       begin
-        if not (Graphic is TGIFImage) and not Graphic.Empty then
+        if not (Graphic is TGIFImage) and not Graphic.Empty and (Graphic.Width > 10) and (Graphic.Height > 10) then
         begin
           SynchronizeEx(ShowLoadingSign);
           FaceDetectionDataManager.RequestFaceDetection(FViewer, Graphic, FInfo.FileName, FInfo.ID);
@@ -237,7 +261,7 @@ end;
 procedure TViewerThread.GetPassword;
 begin
   PassWord := '';
-  if ValidCryptGraphicFile(FInfo.FileName) then
+  if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
   begin
 
     FIsEncrypted := True;

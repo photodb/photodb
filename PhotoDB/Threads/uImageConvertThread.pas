@@ -10,7 +10,9 @@ uses
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
   ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB,
   uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics, RAWImage,
-  uTiffImage, uFaceDetectionThread;
+  uTiffImage,
+  uFaceDetectionThread,
+  uPortableDeviceUtils;
 
 type
   TJpegX = class(TJPEGImage);
@@ -178,13 +180,13 @@ var
         ExifData.EndUpdate;
       end;
     except
-      on e : Exception do
+      on e: Exception do
         EventLog(e.Message);
     end;
     F(ExifData);
   end;
 
-  procedure FixJpegFileEXIF(FileName : string; Width, Height : Integer);
+  procedure FixJpegFileEXIF(FileName: string; Width, Height: Integer);
   var
     FS: TFileStream;
   begin
@@ -196,7 +198,7 @@ var
     end;
   end;
 
-  function TrimLeftString(S : string; Count: Integer) : string;
+  function TrimLeftString(S: string; Count: Integer): string;
   begin
     Result := S;
     if Length(S) > Count then
@@ -292,7 +294,9 @@ const
               begin
                 ExifData := TExifData.Create;
                 try
-                  ExifData.LoadFromGraphic(FData.FileName);
+                  if not IsDevicePath(FData.FileName) then
+                    ExifData.LoadFromGraphic(FData.FileName);
+
                   NewGraphic.SaveToFile(FileName);
                   if not ExifData.Empty and (NewGraphic is TJpegImage) or (NewGraphic is TTiffImage) then
                   begin
@@ -388,7 +392,10 @@ begin
     Ext := ExtractFileExt(FData.FileName);
     GraphicClass := TFileAssociations.Instance.GetGraphicClass(Ext);
 
-    Crypted := ValidCryptGraphicFile(FData.FileName);
+    if GraphicClass = nil then
+      Exit;
+
+    Crypted := not IsDevicePath(FData.FileName) and ValidCryptGraphicFile(FData.FileName);
     if Crypted then
     begin
       Password := DBKernel.FindPasswordForCryptImageFile(FData.FileName);
@@ -416,6 +423,7 @@ begin
     //if only rotate and JPEG image -> rotate only with GDI+
     InitGDIPlus;
     if FProcessingParams.Rotate
+      and not IsDevicePath(FData.FileName)
       and not FProcessingParams.Resize
       and not FProcessingParams.AddWatermark
       and not FProcessingParams.PreviewOptions.GeneratePreview then
@@ -513,8 +521,10 @@ begin
         F(Graphic);
 
         Graphic := DeCryptGraphicFile(FData.FileName, Password);
-      end else
-        Graphic.LoadFromFile(FData.FileName);
+      end else if not IsDevicePath(FData.FileName) then
+        Graphic.LoadFromFile(FData.FileName)
+      else
+        Graphic.LoadFromDevice(FData.FileName);
 
       if not CheckThread then
         Exit;
@@ -581,7 +591,7 @@ begin
           Exit;
 
         //apply rotation to image - quick process
-        if FProcessingParams.Rotate then
+        if FProcessingParams.Rotate and not IsDevicePath(FData.FileName) then
         begin
           FixEXIFRotate;
 

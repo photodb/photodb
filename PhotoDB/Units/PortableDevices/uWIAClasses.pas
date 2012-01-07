@@ -14,7 +14,11 @@ uses
   System.SysUtils,
   GraphicsBaseTypes,
   System.Win.ComObj,
-  uBitmapUtils;
+  uBitmapUtils,
+  System.SyncObjs;
+
+const
+  WIA_ERROR_BUSY = -2145320954;
 
 type
   TWIADeviceManager = class;
@@ -59,7 +63,7 @@ type
     FDeviceName: string;
     FDeviceType: TDeviceType;
     FBatteryStatus: Byte;
-    FRoot: TWIAItem;
+    FRoot: IWIAItem;
     function InternalGetItemByKey(ItemKey: string): IWiaItem;
     procedure ErrorCheck(Code: HRESULT);
     procedure FindItemByKeyCallBack(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
@@ -141,6 +145,11 @@ type
 
 implementation
 
+var
+  //only one request to WIA at moment - limitation of WIA
+  //http://msdn.microsoft.com/en-us/library/windows/desktop/ms630350%28v=vs.85%29.aspx
+  FLock: TCriticalSection = nil;
+
 { TWDManager }
 
 constructor TWIADeviceManager.Create;
@@ -198,7 +207,13 @@ begin
   DevList := TList<IPDevice>.Create;
   try
     pWiaEnumDevInfo := nil;
-    HR := FManager.EnumDeviceInfo(WIA_DEVINFO_ENUM_LOCAL, pWiaEnumDevInfo);
+
+    FLock.Enter;
+    try
+      HR := FManager.EnumDeviceInfo(WIA_DEVINFO_ENUM_LOCAL, pWiaEnumDevInfo);
+    finally
+      FLock.Leave;
+    end;
 
     //
     // Loop until you get an error or pWiaEnumDevInfo->Next returns
@@ -211,7 +226,12 @@ begin
       //
       pWiaPropertyStorage := nil;
 
-      HR := pWiaEnumDevInfo.Next(1, pWiaPropertyStorage, @pceltFetched);
+      FLock.Enter;
+      try
+        HR := pWiaEnumDevInfo.Next(1, pWiaPropertyStorage, @pceltFetched);
+      finally
+        FLock.Leave;
+      end;
       //
       // pWiaEnumDevInfo->Next will return S_FALSE when the list is
       // exhausted, so check for S_OK before using the returned
@@ -281,7 +301,6 @@ var
   PropSpec: array of TPropSpec;
   PropVariant: array of TPropVariant;
   bstrDeviceID: PChar;
-  Root: IWiaItem;
 begin
   FManager := AManager;
   FDeviceID := '';
@@ -307,7 +326,12 @@ begin
   PropSpec[2].propid := WIA_DIP_DEV_TYPE;
 
   SetLength(PropVariant, 3);
-  HR := PropList.ReadMultiple(3, @PropSpec[0], @PropVariant[0]);
+  FLock.Enter;
+  try
+    HR := PropList.ReadMultiple(3, @PropSpec[0], @PropVariant[0]);
+  finally
+    FLock.Leave;
+  end;
 
   if SUCCEEDED(HR) then
   begin
@@ -322,24 +346,31 @@ begin
 
     bstrDeviceID := SysAllocString(PChar(FDeviceID));
     try
-      Root := nil;
-      HR := Manager.FManager.CreateDevice(bstrDeviceID, Root);
-      if SUCCEEDED(HR) and (Root <> nil) then
-        FRoot := TWIAItem.Create(Self, Root);
+      FLock.Enter;
+      try
+        HR := Manager.FManager.CreateDevice(bstrDeviceID, FRoot);
+      finally
+        FLock.Leave;
+      end;
     finally
       SysFreeString(bstrDeviceID);
     end;
 
-    if FRoot <> nil then
+    if SUCCEEDED(HR) and (FRoot <> nil) then
     begin
-      HR := FRoot.FItem.QueryInterface(IWIAPropertyStorage, PropList);
+      HR := FRoot.QueryInterface(IWIAPropertyStorage, PropList);
       if SUCCEEDED(HR) then
       begin
         Setlength(PropSpec, 1);
         PropSpec[0].ulKind := PRSPEC_PROPID;
         PropSpec[0].propid := WIA_DPC_BATTERY_STATUS;
         SetLength(PropVariant, 1);
-        HR := PropList.ReadMultiple(1, @PropSpec[0], @PropVariant[0]);
+        FLock.Enter;
+        try
+          HR := PropList.ReadMultiple(1, @PropSpec[0], @PropVariant[0]);
+        finally
+          FLock.Leave;
+        end;
         if SUCCEEDED(HR) then
           FBatteryStatus := PropVariant[0].iVal;
 
@@ -356,7 +387,14 @@ begin
   Result := False;
   Item := GetItemByKey(ItemKey);
   if Item <> nil then
-    Result := Succeeded(IWIAItem(Item.InnerInterface).DeleteItem(0));
+  begin
+    FLock.Enter;
+    try
+      Result := Succeeded(IWIAItem(Item.InnerInterface).DeleteItem(0));
+    finally
+      FLock.Leave;
+    end;
+  end;
 end;
 
 procedure TWIADevice.ErrorCheck(Code: HRESULT);
@@ -393,11 +431,14 @@ begin
   Cancel := False;
 
   if (ItemKey = '') and (FRoot <> nil) then
-    pWiaItem := FRoot.FItem
+    pWiaItem := FRoot
   else
     pWiaItem := InternalGetItemByKey(ItemKey);
 
-  ParentPath := PortableItemNameCache.GetPathByKey(FDeviceID, ItemKey);
+  if ItemKey = '' then
+    ParentPath := ''
+  else
+    ParentPath := PortableItemNameCache.GetPathByKey(FDeviceID, ItemKey);
 
   HR := S_OK;
 
@@ -409,7 +450,13 @@ begin
       //
       // Get the item type for this item.
       //
-      HR := pWiaItem.GetItemType(lItemType);
+      FLock.Enter;
+      try
+        HR := pWiaItem.GetItemType(lItemType);
+      finally
+        FLock.Leave;
+      end;
+
       if (SUCCEEDED(HR)) then
       begin
         //
@@ -420,7 +467,12 @@ begin
           //
           // Get the child item enumerator for this item.
           //
-          HR := pWiaItem.EnumChildItems(pEnumWiaItem);
+          FLock.Enter;
+          try
+            HR := pWiaItem.EnumChildItems(pEnumWiaItem);
+          finally
+            FLock.Leave;
+          end;
           //
           // Loop until you get an error or pEnumWiaItem->Next returns
           // S_FALSE to signal the end of the list.
@@ -430,7 +482,12 @@ begin
             //
             // Get the next child item.
             //
-            HR := pEnumWiaItem.Next(1, pChildWiaItem, pceltFetched);
+            FLock.Enter;
+            try
+              HR := pEnumWiaItem.Next(1, pChildWiaItem, pceltFetched);
+            finally
+              FLock.Leave;
+            end;
 
             if pChildWiaItem = nil then
               Break;
@@ -576,6 +633,8 @@ procedure TWIAItem.ErrorCheck(Code: HRESULT);
 begin
   if Failed(Code) then
     FErrorCode := Code;
+
+  olecheck(Code);
 end;
 
 function TWIAItem.ExtractPreview(var PreviewImage: TBitmap): Boolean;
@@ -633,9 +692,14 @@ begin
     PropSpec[4].propid := WIA_IPC_THUMBNAIL;
 
     SetLength(PropVariant, 5);
-    HR := PropList.ReadMultiple(5, @PropSpec[0], @PropVariant[0]);
+    FLock.Enter;
+    try
+      HR := PropList.ReadMultiple(5, @PropSpec[0], @PropVariant[0]);
+    finally
+      FLock.Leave;
+    end;
 
-    if SUCCEEDED(HR) then
+    if SUCCEEDED(HR) and (PropVariant[4].cadate.pElems <> nil) then
     begin
       ImageWidth := PropVariant[0].ulVal;
       ImageHeight := PropVariant[1].ulVal;
@@ -744,7 +808,12 @@ begin
     PropSpec[5].propid := WIA_IPA_ITEM_SIZE;
 
     Setlength(PropVariant, 6);
-    HR := PropList.ReadMultiple(5, @PropSpec[0], @PropVariant[0]);
+    FLock.Enter;
+    try
+      HR := PropList.ReadMultiple(6, @PropSpec[0], @PropVariant[0]);
+    finally
+      FLock.Leave;
+    end;
     if SUCCEEDED(HR) then
     begin
       FName := PropVariant[1].bstrVal;
@@ -779,7 +848,7 @@ var
   PropSpec: array of TPropSpec;
   PropVariant: array of TPropVariant;
   TransferData: WIA_DATA_TRANSFER_INFO;
-  CallBack: TWiaDataCallback;
+  CallBack: IWiaDataCallback;
 begin
   Result := False;
   HR := FItem.QueryInterface(IWIAPropertyStorage, PropList);
@@ -789,8 +858,14 @@ begin
     Setlength(PropSpec, 1);
     PropSpec[0].ulKind := PRSPEC_PROPID;
     PropSpec[0].propid := WIA_IPA_PREFERRED_FORMAT;
+    Setlength(PropVariant, 1);
 
-    HR := PropList.ReadMultiple(1, @PropSpec[0], @PropVariant[0]);
+    FLock.Enter;
+    try
+      HR := PropList.ReadMultiple(1, @PropSpec[0], @PropVariant[0]);
+    finally
+      FLock.Leave;
+    end;
     if SUCCEEDED(HR) then
     begin
       HR := FItem.QueryInterface(IWiaDataTransfer, Transfer);
@@ -810,8 +885,12 @@ begin
         PropVariant[1].vt := VT_I4;
         PropVariant[1].lVal := TYMED_CALLBACK;
 
-        HR := PropList.WriteMultiple(2, @PropSpec[0], @PropVariant[0], WIA_IPA_FIRST);
-
+        FLock.Enter;
+        try
+          HR := PropList.WriteMultiple(2, @PropSpec[0], @PropVariant[0], WIA_IPA_FIRST);
+        finally
+          FLock.Leave;
+        end;
         if SUCCEEDED(HR) then
         begin
           FillChar(TransferData, SizeOf(TransferData), #0);
@@ -820,15 +899,20 @@ begin
           TransferData.ulBufferSize  := 2 * 1024 * 1024;
           TransferData.bDoubleBuffer := True;
 
-          CallBack := TWiaDataCallback.Create(S);
+          FLock.Enter;
           try
-            HR := Transfer.idtGetBandedData(@TransferData, CallBack);
-            ErrorCheck(HR);
-
-            Result := SUCCEEDED(HR);
+            CallBack := TWiaDataCallback.Create(S);
+            try
+              HR := Transfer.idtGetBandedData(@TransferData, CallBack);
+            finally
+              CallBack := nil;
+            end;
           finally
-            F(CallBack)
+            FLock.Leave;
           end;
+          ErrorCheck(HR);
+
+          Result := SUCCEEDED(HR);
         end;
       end;
     end;
@@ -854,6 +938,7 @@ end;
 
 constructor TWiaDataCallback.Create(Stream: TStream);
 begin
+  inherited Create;
   FStream := Stream;
 end;
 
@@ -871,5 +956,9 @@ begin
 end;
 
 initialization
+  FLock := TCriticalSection.Create;
+
+finalization
+  F(FLock);
 
 end.

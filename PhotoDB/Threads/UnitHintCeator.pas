@@ -7,8 +7,14 @@ uses
   Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
   Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage, uJpegUtils,
   GraphicCrypt, uGOM, uFileUtils, uDBForm, uExifUtils,
-  uMemory, SyncObjs, dolphin_db, UnitDBKernel, UnitDBDeclare,
-  uGraphicUtils, uRuntime, uAssociations, uDBThread;
+  uMemory, SyncObjs, dolphin_db, UnitDBKernel, ActiveX,
+  UnitDBDeclare,
+  uGraphicUtils,
+  uRuntime,
+  uAssociations,
+  uDBThread,
+  uConstants,
+  uPortableDeviceUtils;
 
 type
   THintCeator = class(TDBThread)
@@ -56,12 +62,12 @@ implementation
 uses UnitImHint;
 
 var
-  HintManager : THintManager = nil;
+  HintManager: THintManager = nil;
 
 { HintcCeator }
 
-constructor THintCeator.Create(AOwner : TDBForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
-                              Point : TPoint; HintCheckProc : THintCheckFunction);
+constructor THintCeator.Create(AOwner: TDBForm; AStateID: TGUID; AInfo: TDBPopupMenuInfoRecord;
+                              Point: TPoint; HintCheckProc: THintCheckFunction);
 begin
   inherited Create(AOwner, False);
   FOwner := AOwner;
@@ -74,17 +80,18 @@ end;
 
 procedure THintCeator.Execute;
 var
-  GraphicClass : TGraphicClass;
-  Crypted : Boolean;
+  GraphicClass: TGraphicClass;
+  Crypted: Boolean;
   FilePass: string;
-  Bitmap, FB : TBitmap;
-  FW, FH : Integer;
+  Bitmap, FB: TBitmap;
+  FW, FH: Integer;
 begin
   inherited;
   FreeOnTerminate := True;
+  CoInitializeEx(nil, COM_MODE);
 
   try
-    if not FInfo.FileExists then
+    if not IsDevicePath(FInfo.FileName) and not FInfo.FileExists then
       Exit;
 
     GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
@@ -95,7 +102,7 @@ begin
     try
       Crypted := False;
       FilePass := '';
-      if ValidCryptGraphicFile(FInfo.FileName) then
+      if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
       begin
         Crypted := True;
         FilePass := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
@@ -121,17 +128,24 @@ begin
       end else
       begin
         if Graphic is TRAWImage then
+            TRAWImage(Graphic).HalfSizeLoad := True;
+        if not IsDevicePath(FInfo.FileName) then
         begin
-          TRAWImage(Graphic).HalfSizeLoad := True;
-          if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
-            Graphic.LoadFromFile(FInfo.FileName)
-          else if FInfo.ID = 0 then
-            FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation)
+          if Graphic is TRAWImage then
+          begin
+            if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
+              Graphic.LoadFromFile(FInfo.FileName)
+            else if FInfo.ID = 0 then
+              FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation)
+          end else
+          begin
+            if not FInfo.InnerImage then
+              Graphic.LoadFromFile(FInfo.FileName);
+
+          end;
         end else
         begin
-          if not FInfo.InnerImage then
-            Graphic.LoadFromFile(FInfo.FileName);
-
+          Graphic.LoadFromDevice(FInfo.FileName);
         end;
       end;
 

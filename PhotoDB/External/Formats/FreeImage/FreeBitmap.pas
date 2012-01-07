@@ -143,6 +143,7 @@ type
     function LoadFromHandle(IO: PFreeImageIO; Handle: fi_handle; Flag: Integer = 0): Boolean;
     function LoadFromMemory(MemIO: TFreeMemoryIO; Flag: Integer = 0): Boolean;
     function LoadFromStream(Stream: TStream; Flag: Integer = 0): Boolean;
+    function LoadFromMemoryStream(MemStream: TMemoryStream; Flag: Integer = 0): Boolean;
     // save functions
     function CanSave(fif: FREE_IMAGE_FORMAT): Boolean;
     function Save(const FileName: AnsiString; Flag: Integer = 0): Boolean;
@@ -970,6 +971,22 @@ begin
     Change;
   end else
     Result := False;
+end;
+
+function TFreeBitmap.LoadFromMemoryStream(MemStream: TMemoryStream;
+  Flag: Integer): Boolean;
+var
+  MemIO: TFreeMemoryIO;
+  Data: PByte;
+begin
+  Data := MemStream.Memory;
+
+  MemIO := TFreeMemoryIO.Create(Data, MemStream.Size);
+  try
+    Result := LoadFromMemory(MemIO);
+  finally
+    MemIO.Free;
+  end;
 end;
 
 function TFreeBitmap.LoadFromStream(Stream: TStream;

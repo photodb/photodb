@@ -131,8 +131,11 @@ begin
   FSync.Enter;
   try
     for Item in FItems do
-      if (Item.DevID = DevID) and (Item.ItemKey = ItemKey) and (Item.Path = Path) then
+      if (Item.DevID = DevID) and (Item.ItemKey = ItemKey) then
+      begin
+        Item.FPath := Path;
         Exit;
+      end;
 
     Item := TPortableItemName.Create(DevID, ItemKey, ParentKey, Path);
     FItems.Add(Item);

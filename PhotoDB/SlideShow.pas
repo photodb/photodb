@@ -1880,7 +1880,7 @@ begin
   end;
 end;
 
-function TViewer.ShowFolderA(FileName : string; ShowPrivate : Boolean): Boolean;
+function TViewer.ShowFolderA(FileName: string; ShowPrivate: Boolean): Boolean;
 var
   N: Integer;
   Info: TDBPopupMenuInfo;
@@ -1904,8 +1904,7 @@ begin
 end;
 
 //TODO: remove ShowFolderA and use ExecuteDirectoryWithFileOnThread instead of
-
-procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName : String);
+procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName: String);
 var
   Info: TDBPopupMenuInfo;
   InfoItem: TDBPopupMenuInfoRecord;

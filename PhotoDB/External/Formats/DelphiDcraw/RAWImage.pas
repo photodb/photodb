@@ -182,17 +182,17 @@ begin
   HalfSizeLoad := False;
 end;
 
-function TRAWImage.GetHeight: integer;
+function TRAWImage.GetHeight: Integer;
 begin
-  if FIsPreview and not FDisplayDibSize then
+  if FIsPreview and not FDisplayDibSize and (FRealHeight > 0) then
     Result := FRealHeight
   else
     Result := FHeight;
 end;
 
-function TRAWImage.GetWidth: integer;
+function TRAWImage.GetWidth: Integer;
 begin
-  if FIsPreview and not FDisplayDibSize then
+  if FIsPreview and not FDisplayDibSize and (FRealWidth > 0) then
     Result := FRealWidth
   else
     Result := FWidth;
@@ -270,7 +270,12 @@ begin
     if FIsPreview then
     begin
       RawBitmap.Clear;
-      RawBitmap.LoadFromStream(Stream, FIF_LOAD_NOPIXELS);
+      Stream.Seek(0, soFromBeginning);
+      if Stream is TMemoryStream then
+        RawBitmap.LoadFromMemoryStream(TMemoryStream(Stream), FIF_LOAD_NOPIXELS)
+      else
+        RawBitmap.LoadFromStream(Stream, FIF_LOAD_NOPIXELS);
+
       FRealWidth := FreeImage_GetWidth(RawBitmap.Dib);
       FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
     end;

@@ -669,20 +669,20 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function NewExplorer(GoToLastSavedPath : Boolean) : TExplorerForm;
-    procedure FreeExplorer(Explorer : TExplorerForm);
-    procedure AddExplorer(Explorer : TExplorerForm);
+    function NewExplorer(GoToLastSavedPath: Boolean): TExplorerForm;
+    procedure FreeExplorer(Explorer: TExplorerForm);
+    procedure AddExplorer(Explorer: TExplorerForm);
     procedure LoadEXIF;
-    procedure RemoveExplorer(Explorer : TExplorerForm);
-    function GetExplorersTexts : TStrings;
-    function IsExplorer(Explorer : TExplorerForm) : Boolean;
-    function ExplorersCount : Integer;
-    function GetExplorerNumber(Explorer : TExplorerForm) : Integer;
-    function GetExplorerBySID(SID : string) : TExplorerForm;
-    property ShowPrivate : Boolean read fShowPrivate write fShowPrivate;
+    procedure RemoveExplorer(Explorer: TExplorerForm);
+    function GetExplorersTexts: TStrings;
+    function IsExplorer(Explorer: TExplorerForm): Boolean;
+    function ExplorersCount: Integer;
+    function GetExplorerNumber(Explorer: TExplorerForm): Integer;
+    function GetExplorerBySID(SID: string): TExplorerForm;
+    property ShowPrivate: Boolean read FShowPrivate write FShowPrivate;
     function IsExplorerForm(Explorer: TForm): Boolean;
-    property ShowEXIF : Boolean read fShowEXIF write fShowEXIF;
-    property ShowQuickLinks : Boolean read FShowQuickLinks write SetShowQuickLinks;
+    property ShowEXIF: Boolean read FShowEXIF write FShowEXIF;
+    property ShowQuickLinks: Boolean read FShowQuickLinks write SetShowQuickLinks;
     property Items[Index: Integer]: TExplorerForm read GetExplorerByIndex; default;
   end;
 
@@ -765,7 +765,7 @@ end;
 
 function MakeRegPath(Path : string) : string;
 var
-  I : Integer;
+  I: Integer;
 begin
   Result := Path;
   if Path = '' then
@@ -793,8 +793,7 @@ begin
     Result := L('Directory');
 end;
 
-procedure TExplorerForm.ShellTreeView1Change(Sender: TObject;
-  Node: TTreeNode);
+procedure TExplorerForm.ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
 begin
   if ElvMain <> nil then
     SetStringPath(TreeView.Path, True);
@@ -1135,7 +1134,8 @@ begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE then
+  if (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE) or
+     (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
   begin
     Index := MenuIndexToItemIndex(PmItemPopup.Tag);
     MenuInfo := GetCurrentPopUpMenuInfo(ElvMain.Items[Index]);
@@ -1742,7 +1742,7 @@ begin
           or (Info.FileType = EXPLORER_ITEM_FILE) or (Info.FileType = EXPLORER_ITEM_EXEFILE) then
           Files.Add(Info.FileName);
 
-        if (Info.FileType =  EXPLORER_ITEM_PERSON) or (Info.FileType =  EXPLORER_ITEM_GROUP) then
+        if (Info.FileType =  EXPLORER_ITEM_PERSON) or (Info.FileType = EXPLORER_ITEM_GROUP) then
         begin
           PI := PathProviderManager.CreatePathItem(Info.FileName);
           try
@@ -2170,7 +2170,8 @@ begin
     if not ElvMain.Items[I].Visible then
       Continue;
 
-    if FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE then
+    if (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE) or
+       (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
       MenuRecord := FFilesInfo[ItemIndex].Copy;
       MenuRecord.Selected := ElvMain.Items[I].Selected;
@@ -2681,13 +2682,14 @@ begin
   MouseDowned := False;
 
  if FDBCanDrag and ItemsDeselected then
- begin
-  If (abs(FDBDragPoint.x-x)>3) or (abs(FDBDragPoint.y-y)>3) then
-  if not FWasDragAndDrop then exit;
+  begin
+    If (Abs(FDBDragPoint.X - X) > 3) or (Abs(FDBDragPoint.Y - Y) > 3) then
+      if not FWasDragAndDrop then
+        Exit;
 
-  SetSelected(nil);
+    SetSelected(nil);
 
-  for J := 0 to ElvMain.Items.Count - 1 do
+    for J := 0 to ElvMain.Items.Count - 1 do
     begin
       for I := 0 to Length(FListDragItems) - 1 do
         if FListDragItems[I] = ElvMain.Items[J] then
@@ -2789,7 +2791,7 @@ begin
     FileList.Add(GetCurrentPath);
     Copy_Move(Application.Handle, True, FileList);
   finally
-    FileList.Free;
+    F(FileList);
   end;
 end;
 
@@ -3661,8 +3663,8 @@ var
   Files: TStrings;
   Effects: Integer;
 begin
-  OpeninSearchWindow1.Visible:=True;
-  Files:=TStringList.Create;
+  OpeninSearchWindow1.Visible := True;
+  Files := TStringList.Create;
   try
     LoadFIlesFromClipBoard(Effects, Files);
     Paste1.Enabled := Files.Count > 0;
@@ -3671,7 +3673,7 @@ begin
   end;
 
   Addfolder1.Visible := not FolderView;
-  MakeFolderViewer1.Visible := ((GetCurrentPathW.PType=EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
+  MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
 
   if GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER then
   begin
@@ -3874,7 +3876,7 @@ var
   PersonalPath, MyPicturesPath: string;
   OldMode: Cardinal;
 
-  function GetShellPath(name: string): string;
+  function GetShellPath(Name: string): string;
   var
     Reg: TRegIniFile;
   begin
@@ -3886,21 +3888,21 @@ var
     end;
   end;
 
-  function GetPersonalFolder : string;
+  function GetPersonalFolder: string;
   begin
     if PersonalPath = '' then
       PersonalPath := GetShellPath('Personal');
     Result := PersonalPath;
   end;
 
-  function GetMyPicturesFolder : string;
+  function GetMyPicturesFolder: string;
   begin
     if MyPicturesPath = '' then
       MyPicturesPath := GetShellPath('My Pictures');
     Result := MyPicturesPath;
   end;
 
-  function ValidLink(index: Integer): Boolean;
+  function ValidLink(Index: Integer): Boolean;
   var
     Path: string;
   begin
@@ -4412,10 +4414,10 @@ end;
 
 procedure TExplorerForm.MoveToLinkClick(Sender: TObject);
 var
-  EndDir: String;
-  I, Index: integer;
+  EndDir: string;
+  I, Index: Integer;
   Files: TStringList;
-  DlgCaption: String;
+  DlgCaption: string;
 begin
   Files := TStringList.Create;
   try
@@ -6201,6 +6203,8 @@ begin
   DropInfo := TStringList.Create;
   try
     DropFileTarget1.Files.AssignTo(DropInfo);
+    if DropInfo.Count = 0 then
+      Exit;
 
     if SsRight in LastShift then
     begin
@@ -7081,7 +7085,8 @@ begin
           if (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -7109,6 +7114,10 @@ begin
                   FindIcon(HInstance, 'GROUPS', 48, 32, Ico);
                 EXPLORER_ITEM_DEVICE:
                   FindIcon(HInstance, 'CAMERA', 48, 32, Ico);
+                EXPLORER_ITEM_DEVICE_STORAGE:
+                  FindIcon(HInstance, 'STORAGE', 48, 32, Ico);
+                EXPLORER_ITEM_DEVICE_DIRECTORY:
+                  FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico);
               end;
               try
                 Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
@@ -7184,8 +7193,11 @@ begin
             if FFilesInfo.Count - 1 < index then
               Exit;
             if (FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) or
-              ((FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or
-                (FFilesInfo[index].FileType = EXPLORER_ITEM_EXEFILE)) then
+               (FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or
+               (FFilesInfo[index].FileType = EXPLORER_ITEM_EXEFILE) or
+               (FFilesInfo[index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+               (FFilesInfo[index].FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+               (FFilesInfo[index].FileType = EXPLORER_ITEM_DEVICE_FILE) then
             begin
               FSelectedInfo.Size := FSelectedInfo.Size + FFilesInfo[index].FileSize;
             end;
@@ -7672,7 +7684,7 @@ begin
           B := True;
       end;
     end else if FoundVisible then
-      Break;       
+      Break;
   end;
 
   //order by TYPE
@@ -7846,17 +7858,17 @@ begin
   CloseTimer.Enabled := True;
 end;
 
-function TExplorerForm.ExplorerType: boolean;
+function TExplorerForm.ExplorerType: Boolean;
 begin
   Result := FIsExplorer;
 end;
 
-function TExplorerForm.ShowPrivate: boolean;
+function TExplorerForm.ShowPrivate: Boolean;
 begin
   Result := ExplorerManager.ShowPrivate;
 end;
 
-function TExplorerForm.GetPathByIndex(index: integer): string;
+function TExplorerForm.GetPathByIndex(Index: Integer): string;
 begin
   if ListView1Selected = nil then
     Result := ''
@@ -8274,9 +8286,9 @@ begin
       GetCursorPos(MousePos);
       Index := ListView1Selected.index;
       Index := ItemIndexToMenuIndex(index);
-      if Index > fFilesInfo.Count - 1 then
+      if Index > FFilesInfo.Count - 1 then
         Exit;
-      if (fFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
+      if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
       begin
         Dir := IncludeTrailingBackslash(FFilesInfo[Index].FileName);
         SetNewPath(Dir, false);
@@ -8287,7 +8299,8 @@ begin
         SetNewPath(FFilesInfo[Index].FileName, false);
         Exit;
       end;
-      if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
+      if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or
+         (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
       begin
         MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
         try
@@ -9130,8 +9143,8 @@ end;
 
 initialization
 
-PERegisterThreadEvent := RegisterPathEditThread;
-PEUnRegisterThreadEvent := UnRegisterPathEditThread;
+  PERegisterThreadEvent := RegisterPathEditThread;
+  PEUnRegisterThreadEvent := UnRegisterPathEditThread;
   PathProvider_UpdateText := PE_PathProvider_UpdateText;
   PathProvider_UpdateImage := PEPathProvider_UpdateImage;
 

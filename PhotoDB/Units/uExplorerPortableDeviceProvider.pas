@@ -18,7 +18,8 @@ uses
   uPortableClasses,
   System.Math,
   uPortableDeviceManager,
-  uAssociatedIcons;
+  uAssociatedIcons,
+  uPortableDeviceUtils;
 
 type
   TPDContext = class(TObject)
@@ -65,8 +66,12 @@ type
   end;
 
   TPortableFSItem = class(TPortableItem)
+  private
+    function GetFileSize: Int64;
   protected
     function InternalGetParent: TPathItem; override;
+  public
+    property FileSize: Int64 read GetFileSize;
   end;
   
   TPortableDirectoryItem = class(TPortableFSItem)
@@ -145,38 +150,6 @@ begin
     Delete(Path, 1, Length(cDevicesPath + '\'));
     Result := Pos('\', Path) > 0;
   end;
-end;
-
-function ExtractDeviceName(Path: string): string;
-var
-  P: Integer;
-begin
-  Result := '';
-  if StartsText(cDevicesPath + '\', Path) then
-  begin
-    Delete(Path, 1, Length(cDevicesPath + '\'));
-    P := Pos('\', Path);
-    if P = 0 then
-      P := Length(Path) + 1;
-
-    Result := Copy(Path, 1, P - 1);
-  end;
-end;
-
-function ExtractDeviceItemPath(Path: string): string;
-var
-  P: Integer;
-begin
-  Result := '';
-  if StartsText(cDevicesPath + '\', Path) then
-  begin
-    Delete(Path, 1, Length(cDevicesPath + '\'));
-    P := Pos('\', Path);
-    if P > 1 then
-      Delete(Path, 1, P - 1);
-
-    Result := Path;
-  end;                                   
 end;
 
 function CreatePortableFSItem(Item: IPDItem; Options, ImageSize: Integer): TPortableItem;     
@@ -550,6 +523,13 @@ begin
 end;
 
 { TPortableFSItem }
+
+function TPortableFSItem.GetFileSize: Int64;
+begin
+  Result := 0;
+  if Item <> nil then
+    Result := Item.FullSize;
+end;
 
 function TPortableFSItem.InternalGetParent: TPathItem;
 var

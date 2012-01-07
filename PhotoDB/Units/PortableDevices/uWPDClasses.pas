@@ -18,6 +18,12 @@ uses
   uGraphicUtils,
   uBitmapUtils;
 
+const
+  MAX_RESOURCE_WAIT_TIME = 60000; //60 sec to wait maximum
+  RESOURCE_RETRY_TIME = 100;
+
+  E_RESOURCE_IN_USE = -2147024726;// (800700aa)': Automation Error. The requested resource is in use.
+
 type
   TWPDDeviceManager = class;
   TWPDDevice = class;
@@ -175,12 +181,11 @@ begin
       begin
         for I := 0 to Integer(DeviceIDCount) - 1 do
         begin
-          HR := CoCreateInstance(CLSID_PortableDeviceFTM,
+          HR := CoCreateInstance(CLSID_PortableDevice{FTM},
                   nil,
                   CLSCTX_INPROC_SERVER,
-                  IID_PortableDeviceFTM,
+                  IID_PortableDevice{FTM},
                   FDevice);
-
 
           if SUCCEEDED(HR) then
           begin
@@ -454,7 +459,7 @@ var
   Key: _tagpropertykey;
   cFetched: Cardinal;
   ObjectID: PWSTR;
-  PathParts: TStrings;
+  PathParts: TStringList;
   I: Integer;
 begin
   ItemKey := PortableItemNameCache.GetKeyByPath(FDeviceID, Path);
@@ -465,6 +470,7 @@ begin
     PathParts := TStringList.Create;
     try
       PathParts.Delimiter := '\';
+      PathParts.StrictDelimiter := True;
       PathParts.DelimitedText := Path;
       CurrentPath := '';
 
@@ -913,6 +919,7 @@ var
   ppResourceAttributes: IPortableDeviceValues;
   BufferSize, ReadBufferSize: Int64;
   ResFormat: TGUID;
+  StartTime: Cardinal;
 begin
   ResourceFormat := WPD_OBJECT_FORMAT_JFIF;
   BufferSize := DefaultBufferSize;
@@ -939,20 +946,34 @@ begin
     cbOptimalTransferSize := BufferSize;
     Key.fmtid := ResourceID;
     Key.pid := 0;
-    HR := ppResources.GetStream(PChar(FItemKey),         // Identifier of the object we want to transfer
-                                Key,                     // We are transferring the default resource (which is the entire object's data)
-                                STGM_READ,               // Opening a stream in READ mode, because we are reading data from the device.
-                                cbOptimalTransferSize,   // Driver supplied optimal transfer size
-                                pObjectDataStream);
 
+    StartTime := GetTickCount;
+    repeat
+      HR := ppResources.GetStream(PChar(FItemKey),         // Identifier of the object we want to transfer
+                                  Key,                     // We are transferring the default resource (which is the entire object's data)
+                                  STGM_READ,               // Opening a stream in READ mode, because we are reading data from the device.
+                                  cbOptimalTransferSize,   // Driver supplied optimal transfer size
+                                  pObjectDataStream);
+      if HR = E_RESOURCE_IN_USE then
+      begin
+        if GetTickCount - StartTime < MAX_RESOURCE_WAIT_TIME then
+        begin
+          Sleep(RESOURCE_RETRY_TIME);
+          Continue;
+        end;
+      end;
+      Break;
+    until False;
+    //-2147024726 (800700aa)': Automation Error. The requested resource is in use.
     if (SUCCEEDED(HR)) then
     begin
 
       GetMem(Buff, BufferSize);
       try
         repeat
-          pObjectDataStream.Read(Buff, BufferSize, @ButesRead);
-          Stream.WriteBuffer(Buff[0], ButesRead);
+          HR := pObjectDataStream.Read(Buff, BufferSize, @ButesRead);
+          if (SUCCEEDED(HR)) then
+            Stream.WriteBuffer(Buff[0], ButesRead);
         until (ButesRead = 0);
       finally
         FreeMem(Buff);

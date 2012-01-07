@@ -8,7 +8,7 @@ uses
 const
   //Runtime options
                      // 2 = COINIT_APARTMENTTHREADED
-  COM_MODE = 2;      // 0 = OLE calls objects on any thread. COINIT_MULTITHREADED;
+  COM_MODE = 0;      // 0 = OLE calls objects on any thread. COINIT_MULTITHREADED;
 
   //envoirements
   TempFolder = '\Temp\';
