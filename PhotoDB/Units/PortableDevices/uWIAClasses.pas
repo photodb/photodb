@@ -633,8 +633,6 @@ procedure TWIAItem.ErrorCheck(Code: HRESULT);
 begin
   if Failed(Code) then
     FErrorCode := Code;
-
-  olecheck(Code);
 end;
 
 function TWIAItem.ExtractPreview(var PreviewImage: TBitmap): Boolean;

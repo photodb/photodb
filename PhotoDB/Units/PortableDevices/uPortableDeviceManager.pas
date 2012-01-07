@@ -24,8 +24,8 @@ begin
     Exit(TWPDDeviceManager.Create);
 
   IsWPDAvailable := False;
-  //Vista SP2
-  if (TOSVersion.Major = 6) and (TOSVersion.Minor = 0) and (TOSVersion.ServicePackMajor >= 2) then
+  //Vista SP1
+  if (TOSVersion.Major = 6) and (TOSVersion.Minor = 0) and (TOSVersion.ServicePackMajor >= 1) then
     IsWPDAvailable := True;
   //Windows7 and higher
   if (TOSVersion.Major = 6) and (TOSVersion.Minor >= 1) then
