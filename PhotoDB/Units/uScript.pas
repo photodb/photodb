@@ -29,19 +29,19 @@ type
 
   TValue = class(TObject)
   private
-    FOwner : TScript;
+    FOwner: TScript;
   public
-    AName : string;
-    StrValue : string;
-    FloatValue : Extended;
-    IntValue : Integer;
-    BoolValue : Boolean;
-    IntArray : TArrayOfInt;
-    StrArray : TArrayOfString;
-    FloatArray : TArrayOfFloat;
-    BoolArray : TArrayOfBool;
-    ArrayLength : Integer;
-    AType :Integer;
+    AName: string;
+    StrValue: string;
+    FloatValue: Extended;
+    IntValue: Integer;
+    BoolValue: Boolean;
+    IntArray: TArrayOfInt;
+    StrArray: TArrayOfString;
+    FloatArray: TArrayOfFloat;
+    BoolArray: TArrayOfBool;
+    ArrayLength: Integer;
+    AType: Integer;
     constructor Create(AOwner : TScript); overload;
     constructor CreateAsError(AOwner : TScript; Name : string); overload;
     procedure Assign(Value : TValue);
@@ -52,20 +52,20 @@ type
     function GetValueType(Value : string) : Integer;
   end;
 
-  TFunctinStringIsIntegerObject = function(s : string) : integer of object;
-  TFunctionIntegerIsIntegerObject = function(int : integer) : integer of object;
-  TFunctionIsIntegerObject = function : integer of object;
-  TFunctionIsBoolObject = function : Boolean of object;
-  TFunctionIsStringObject = function : String of object;
-  TFunctionIntegerIsStringObject = function(int : integer) : string of object;
-  TFunctionStringIsStringObject = function(s : string) : string of object;
-  TFunctionIsArrayStringsObject = function : TArrayOfString of object;
+  TFunctinStringIsIntegerObject = function(S: string): Integer of object;
+  TFunctionIntegerIsIntegerObject = function(Int: Integer): Integer of object;
+  TFunctionIsIntegerObject = function: Integer of object;
+  TFunctionIsBoolObject = function: Boolean of object;
+  TFunctionIsStringObject = function: String of object;
+  TFunctionIntegerIsStringObject = function(Int: Integer): string of object;
+  TFunctionStringIsStringObject = function(S: string): string of object;
+  TFunctionIsArrayStringsObject = function: TArrayOfString of object;
 
   TScriptStringFunction = record
-    FType : integer;
-    FName : string;
-    FArgs : TArrayOfString;
-    FBody : string;
+    FType: Integer;
+    FName: string;
+    FArgs: TArrayOfString;
+    FBody: string;
   end;
 
   TScriptFunction = class(TObject)
@@ -182,11 +182,10 @@ type
     property Owner: TDBForm read FOwner;
   end;
 
-
 implementation
 
 var
-  ScriptEnviroments : TScriptEnviroments = nil;
+  ScriptEnviroments: TScriptEnviroments = nil;
 
 { TScript }
 
@@ -225,9 +224,9 @@ end;
 destructor TScript.Destroy;
 begin
   GOM.RemoveObj(Self);
-  FPrivateEnviroment.Free;
-  FCombinedEnviromentFunctionList.Free;
-  FNamedValues.Free;
+  F(FPrivateEnviroment);
+  F(FCombinedEnviromentFunctionList);
+  F(FNamedValues);
   inherited;
 end;
 
@@ -246,7 +245,7 @@ end;
 
 procedure TNamedValues.Clear;
 begin
-  FValues.Free;
+  FValues.Clear;
 end;
 
 constructor TNamedValues.Create(AOwner : TScript);
@@ -263,7 +262,7 @@ end;
 
 function TNamedValues.Exists(Name: string; SearchInParent : Boolean = False): Boolean;
 var
-  I  : Integer;
+  I : Integer;
 begin
   Result := False;
   for I := 0 to FValues.Count - 1 do
@@ -280,7 +279,7 @@ end;
 function TNamedValues.GetByNameAndType(Name: string;
   AType: Integer): TValue;
 var
-  I  : Integer;
+  I: Integer;
 begin
   Result := nil;
   for I := 0 to FValues.Count - 1 do
@@ -309,7 +308,7 @@ end;
 
 function TNamedValues.GetValueByName(Index: string): TValue;
 var
-  I  : Integer;
+  I: Integer;
 begin
   for I := 0 to FValues.Count - 1 do
     if TValue(FValues[I]).AName = Index then
@@ -326,7 +325,7 @@ end;
 
 procedure TNamedValues.Remove(Name: string);
 var
-  I  : Integer;
+  I: Integer;
 begin
   for I := 0 to FValues.Count - 1 do
     if TValue(FValues[I]).AName = Name then
@@ -372,31 +371,31 @@ end;
 
 procedure TValue.FromString(Value: string);
 begin
- case GetValueType(Value) of
-  VALUE_TYPE_INTEGER:
-   begin
-    aType := VALUE_TYPE_INTEGER;
-    IntValue := StrToIntDef(Value,0);
-   end;
-  VALUE_TYPE_FLOAT:
-   begin
-    aType := VALUE_TYPE_FLOAT;
-    FloatValue := StrToFloatDef(ConvertUniversalFloatToLocal(Value), 0);
-   end;
-  VALUE_TYPE_STRING:
-   begin
-    aType := VALUE_TYPE_STRING;
-    if Value <> '""' then
-      StrValue := AnsiDequotedStr(Value, '"')
-    else
-      StrValue:='';
-   end;
-  VALUE_TYPE_BOOLEAN:
-   begin
-    aType:=VALUE_TYPE_BOOLEAN;
-    BoolValue := Value = 'true';
-   end;
- end;
+  case GetValueType(Value) of
+    VALUE_TYPE_INTEGER:
+      begin
+        AType := VALUE_TYPE_INTEGER;
+        IntValue := StrToIntDef(Value, 0);
+      end;
+    VALUE_TYPE_FLOAT:
+      begin
+        AType := VALUE_TYPE_FLOAT;
+        FloatValue := StrToFloatDef(ConvertUniversalFloatToLocal(Value), 0);
+      end;
+    VALUE_TYPE_STRING:
+      begin
+        AType := VALUE_TYPE_STRING;
+        if Value <> '""' then
+          StrValue := AnsiDequotedStr(Value, '"')
+        else
+          StrValue := '';
+      end;
+    VALUE_TYPE_BOOLEAN:
+      begin
+        AType := VALUE_TYPE_BOOLEAN;
+        BoolValue := Value = 'true';
+      end;
+  end;
 end;
 
 function TValue.GetValueType(Value: string): Integer;
@@ -437,19 +436,14 @@ begin
 end;
 
 destructor TScriptEnviroments.Destroy;
-var
-  I : integer;
 begin
-  for I := 0 to FEnviroments.Count - 1 do
-    TScriptEnviroment(FEnviroments[I]).Free;
-
-  FEnviroments.Free;
+  FreeList(FEnviroments);
   inherited;
 end;
 
 function TScriptEnviroments.GetEnviroment(Name: string): TScriptEnviroment;
 var
-  I : integer;
+  I: Integer;
 begin
   for I := 0 to FEnviroments.Count - 1 do
     if TScriptEnviroment(FEnviroments[I]).Name = Name then
@@ -523,7 +517,7 @@ end;
 
 procedure TStringFunctions.Register(AFunction: TScriptFunction; ReplaceExisted : Boolean = False);
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to FScriptFunctions.Count - 1 do
     if TScriptFunction(FScriptFunctions[I]).Name = AFunction.Name then

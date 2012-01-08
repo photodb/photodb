@@ -958,6 +958,7 @@ begin
  AddScriptFunction(Enviroment,'NewExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@NewExplorerByPath);
  AddScriptFunction(Enviroment,'NewExplorer',F_TYPE_FUNCTION_IS_STRING,@NewExplorer);
  AddScriptFunction(Enviroment,'GetPhotosFromFolder',F_TYPE_PROCEDURE_STRING,@GetPhotosFromFolder);
+ AddScriptFunction(Enviroment,'GetPhotosFromDevice',F_TYPE_PROCEDURE_STRING,@GetPhotosFromDevice);
  AddScriptFunction(Enviroment,'SelectDir',F_TYPE_FUNCTION_STRING_IS_STRING,@SelectDir);
 
  AddScriptFunction(Enviroment,'GetListOfKeyWords',F_TYPE_PROCEDURE_NO_PARAMS,@GetListOfKeyWords);

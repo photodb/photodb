@@ -37,6 +37,7 @@ type
     FItemDate: TDateTime;
     FDeviceID: string;
     FDeviceName: string;
+    FVisible: Boolean;
     procedure ErrorCheck(Code: HRESULT);
     procedure ReadProps;
   public
@@ -50,6 +51,7 @@ type
     function GetItemDate: TDateTime;
     function GetDeviceID: string;
     function GetDeviceName: string;
+    function GetIsVisible: Boolean;
     function GetInnerInterface: IUnknown;
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
@@ -626,6 +628,7 @@ begin
   FItemDate := MinDateTime;
   FDeviceID := ADevice.FDeviceID;
   FDeviceName := ADevice.FDeviceName;
+  FVisible := True;
   ReadProps;
 end;
 
@@ -754,6 +757,11 @@ end;
 function TWIAItem.GetInnerInterface: IUnknown;
 begin
   Result := FItem;
+end;
+
+function TWIAItem.GetIsVisible: Boolean;
+begin
+  Result := FVisible;
 end;
 
 function TWIAItem.GetItemDate: TDateTime;

@@ -17,13 +17,15 @@ uses
   Vcl.Graphics,
   uGraphicUtils,
   System.SyncObjs,
-  uBitmapUtils;
+  uBitmapUtils,
+  GIFImage;
 
 const
   MAX_RESOURCE_WAIT_TIME = 60000; //60 sec to wait maximum
   RESOURCE_RETRY_TIME = 100;
 
   E_RESOURCE_IN_USE = -2147024726;// (800700aa)': Automation Error. The requested resource is in use.
+  E_NOT_FOUND = -2147023728;
 
 type
   TWPDDeviceManager = class;
@@ -43,11 +45,13 @@ type
     FDeviceName: string;
     FWidth: Integer;
     FHeight: Integer;
+    FLoadOnlyName: Boolean;
+    FVisible: Boolean;
     procedure ErrorCheck(Code: HRESULT);
     procedure TransferContent(ResourceID: TGUID; Stream: TStream; out ResourceFormat: TGUID);
     procedure ReadProperties;
   public
-    constructor Create(ADevice: TWPDDevice; AItemKey: string);
+    constructor Create(ADevice: TWPDDevice; AItemKey: string; LoadOnlyName: Boolean = False);
     function GetErrorCode: HRESULT;
     function GetItemType: TPortableItemType;
     function GetName: string;
@@ -59,6 +63,7 @@ type
     function GetDeviceName: string;
     function GetWidth: Integer;
     function GetHeight: Integer;
+    function GetIsVisible: Boolean;
     function GetInnerInterface: IUnknown;
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
@@ -440,6 +445,7 @@ begin
 
       if cFetched = 0 then
         Break;
+
       if (SUCCEEDED(HR)) then
       begin
         // Traverse the results of the Next() operation and recursively enumerate
@@ -506,6 +512,7 @@ var
   ObjectID: PWSTR;
   PathParts: TStringList;
   I: Integer;
+  Item: IPDItem;
 begin
   ItemKey := PortableItemNameCache.GetKeyByPath(FDeviceID, Path);
   if ItemKey = EMPTY_PATH then
@@ -539,13 +546,13 @@ begin
             try
               HR := FContent.EnumObjects(0,
                                          PChar(ItemKey),
-                                         pFilter,
+                                         pFilter, //not all devices support this feature
                                          ppenum);
             finally
               FLock.Leave;
             end;
 
-            if Succeeded(HR) then
+            while Succeeded(HR) do
             begin
               FLock.Enter;
               try
@@ -556,10 +563,19 @@ begin
                 FLock.Leave;
               end;
 
+              if cFetched = 0 then
+                Break;
+
               if Succeeded(HR) and (cFetched = 1) then
               begin
-                PortableItemNameCache.AddName(FDeviceID, string(ObjectID), ItemKey, CurrentPath);
-                ItemKey := string(ObjectID);
+                Item := TWPDItem.Create(Self, string(ObjectID), True);
+                //check item name because filter can be ignored by device
+                if Item.GetName = PathParts[I] then
+                begin
+                  PortableItemNameCache.AddName(FDeviceID, string(ObjectID), ItemKey, CurrentPath);
+                  ItemKey := string(ObjectID);
+                  Break;
+                end;
               end;
             end;
           end;
@@ -665,7 +681,7 @@ end;
 
 { TWPDItem }
 
-constructor TWPDItem.Create(ADevice: TWPDDevice; AItemKey: string);
+constructor TWPDItem.Create(ADevice: TWPDDevice; AItemKey: string; LoadOnlyName: Boolean = False);
 begin
   FDevice := ADevice;
   FIDevice := ADevice; //to store reference to interface
@@ -680,6 +696,8 @@ begin
   FDeviceName := ADevice.FName;
   FWidth := 0;
   FHeight := 0;
+  FVisible := True;
+  FLoadOnlyName := LoadOnlyName;
   ReadProperties;
 end;
 
@@ -697,11 +715,31 @@ var
   PNG: TPngImage;
   W, H: Integer;
   CroppedImage: TBitmap;
+  GIF: TGIFImage;
+  Ext: string;
 begin
   Result := False;
   MS := TMemoryStream.Create;
   try
     TransferContent(WPD_RESOURCE_THUMBNAIL, MS, FormatGUID);
+    if MS.Size = 0 then
+    begin
+      Ext := AnsiLowerCase(ExtractFileExt(FName));
+      if (Ext = '.bmp') or (Ext = '.png') or (Ext = '.jpg') or (Ext = '.jpeg') or (Ext = '.gif') then
+      begin
+        TransferContent(WPD_RESOURCE_DEFAULT, MS, FormatGUID);
+        if (Ext = '.bmp') then
+          FormatGUID := WPD_OBJECT_FORMAT_BMP;
+        if (Ext = '.png') then
+          FormatGUID := WPD_OBJECT_FORMAT_PNG;
+        if (Ext = '.jpg') or (Ext = '.jpeg') then
+          FormatGUID := WPD_OBJECT_FORMAT_JFIF;
+        if (Ext = '.gif')  then
+          FormatGUID := WPD_OBJECT_FORMAT_GIF;
+      end else
+        Exit;
+    end;
+
     MS.Seek(0, soFromBeginning);
     if FormatGUID = WPD_OBJECT_FORMAT_BMP then
     begin
@@ -728,6 +766,17 @@ begin
           AssignGraphic(PreviewImage, PNG);
       finally
         F(PNG);
+      end;
+    end else if FormatGUID = WPD_OBJECT_FORMAT_GIF then
+    begin
+      GIF := TGIFImage.Create;
+      try
+        GIF.LoadFromStream(MS);
+        Result := not GIF.Empty;
+        if Result then
+          AssignBitmap(PreviewImage, GIF.Bitmap);
+      finally
+        F(GIF);
       end;
     end;
   finally
@@ -790,6 +839,11 @@ begin
   Result := nil;
 end;
 
+function TWPDItem.GetIsVisible: Boolean;
+begin
+  Result := FVisible;
+end;
+
 function TWPDItem.GetItemDate: TDateTime;
 begin
   Result := FItemDate;
@@ -827,6 +881,9 @@ var
   Size: Int64;
   V: tag_inner_PROPVARIANT;
   W, H: Integer;
+  B: Integer;
+  I, C: Cardinal;
+  pValue: tag_inner_PROPVARIANT;
 begin
   HR := CoCreateInstance(CLSID_PortableDeviceKeyCollection, nil, CLSCTX_INPROC_SERVER, IID_PortableDeviceKeyCollection, PropertiesToRead);
   if (SUCCEEDED(HR)) then
@@ -846,7 +903,15 @@ begin
       ErrorCheck(PropertiesToRead.Add(key));
 
       Key.fmtid := PKEY_GenericObj;
+      Key.pid := WPD_OBJECT_ORIGINAL_FILE_NAME;
+      ErrorCheck(PropertiesToRead.Add(key));
+
+      Key.fmtid := PKEY_GenericObj;
       Key.pid := WPD_OBJECT_CONTENT_TYPE;
+      ErrorCheck(PropertiesToRead.Add(key));
+
+      Key.fmtid := PKEY_GenericObj;
+      Key.pid := WPD_OBJECT_ISHIDDEN;
       ErrorCheck(PropertiesToRead.Add(key));
 
       FLock.Enter;
@@ -865,12 +930,24 @@ begin
         Key.pid := WPD_OBJECT_NAME;
         HR := ppValues.GetStringValue(key, pszObjectName);
         if (SUCCEEDED(HR)) then
-          FName := pszObjectName;
+          FName := pszObjectName
+        else
+        begin
+          Key.fmtid := PKEY_GenericObj;
+          Key.pid := WPD_OBJECT_ORIGINAL_FILE_NAME;
+          HR := ppValues.GetStringValue(key, pszObjectName);
+          if (SUCCEEDED(HR)) then
+            FName := pszObjectName;
+        end;
 
         Key.fmtid := PKEY_GenericObj;
+        Key.pid := WPD_OBJECT_ISHIDDEN;
+        HR := ppValues.GetBoolValue(key, B);
+        if Succeeded(HR) and (B = 1) then
+          FVisible := False;
+
         Key.pid := WPD_OBJECT_CONTENT_TYPE;
         HR := ppValues.GetGuidValue(key, ObjectTypeGUID);
-
         if (SUCCEEDED(HR)) then
         begin
           if ObjectTypeGUID = WPD_CONTENT_TYPE_FOLDER then
@@ -882,6 +959,9 @@ begin
           if ObjectTypeGUID = WPD_CONTENT_TYPE_FUNCTIONAL_OBJECT then
               FItemType := piStorage;
         end;
+
+        if FLoadOnlyName then
+          Exit;
 
         PropertiesToRead.Clear;
         case FItemType of
@@ -960,12 +1040,16 @@ begin
               Key.fmtid := WPD_STORAGE_OBJECT_PROPERTIES_V1;
               Key.pid := WPD_STORAGE_CAPACITY;
               if ppValues.GetSignedLargeIntegerValue(key, Size) = S_OK then
-                FFullSize := Size;
+                FFullSize := Size
+              else
+                FVisible := False;
 
               Key.fmtid := WPD_STORAGE_OBJECT_PROPERTIES_V1;
               Key.pid := WPD_STORAGE_FREE_SPACE_IN_BYTES;
               if ppValues.GetSignedLargeIntegerValue(key, Size) = S_OK then
-                FFreeSize := Size;
+                FFreeSize := Size
+              else
+                FVisible := False;
             end;
           end;
         end;

@@ -8,51 +8,51 @@
   resources were bound to the produced executable.
 */
 
-#define DECCipher_sAlreadyPadded 64848
-#define DECCipher_sInvalidState 64849
-#define DECCipher_sInvalidMessageLength 64850
-#define DECCipher_sKeyMaterialToLarge 64851
-#define DECCipher_sIVMaterialToLarge 64852
-#define DECCipher_sCipherNoDefault 64853
-#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64854
-#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64855
-#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64856
-#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64857
-#define Vcl_Shell_ShellConsts_SShellNoDetails 64858
-#define Vcl_Shell_ShellConsts_SCallLoadDetails 64859
-#define Vcl_Shell_ShellConsts_SRenamedFailedError 64860
-#define DropSource_sDropSourceBusy 64864
-#define DropSource_sDropSourceAsyncFailed 64865
-#define DropSource_sDropSourceAsyncBusy 64866
-#define DropTarget_sTargetAsyncBusy 64867
-#define DropTarget_sRichEditWarning 64868
-#define DragDrop_sImplementationRequired 64869
-#define DragDrop_sFormatNameReadOnly 64870
-#define DragDrop_sNoCopyStgMedium 64871
-#define DragDrop_sBadConstructor 64872
-#define DragDropPIDL_sBadDesktop 64873
-#define DragDropPIDL_sBadFilename 64874
-#define DECUtil_sClassNotRegistered 64875
-#define DECUtil_sWrongIdentity 64876
-#define DECHash_sHashingOverflowError 64877
-#define DECHash_sHashNotInitialized 64878
-#define DECHash_sHashNoDefault 64879
+#define Vcl_VDBConsts_SFirstRecord 64848
+#define Vcl_VDBConsts_SPriorRecord 64849
+#define Vcl_VDBConsts_SNextRecord 64850
+#define Vcl_VDBConsts_SLastRecord 64851
+#define Vcl_VDBConsts_SInsertRecord 64852
+#define Vcl_VDBConsts_SDeleteRecord 64853
+#define Vcl_VDBConsts_SEditRecord 64854
+#define Vcl_VDBConsts_SPostEdit 64855
+#define Vcl_VDBConsts_SCancelEdit 64856
+#define Vcl_VDBConsts_SRefreshRecord 64857
+#define Vcl_VDBConsts_SApplyUpdates 64858
+#define Vcl_VDBConsts_SCancelUpdates 64859
+#define Vcl_VDBConsts_SRemoteLogin 64860
+#define DECHash_sHashingOverflowError 64864
+#define DECHash_sHashNotInitialized 64865
+#define DECHash_sHashNoDefault 64866
+#define DECCipher_sAlreadyPadded 64867
+#define DECCipher_sInvalidState 64868
+#define DECCipher_sInvalidMessageLength 64869
+#define DECCipher_sKeyMaterialToLarge 64870
+#define DECCipher_sIVMaterialToLarge 64871
+#define DECCipher_sCipherNoDefault 64872
+#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64873
+#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64874
+#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64875
+#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64876
+#define Vcl_Shell_ShellConsts_SShellNoDetails 64877
+#define Vcl_Shell_ShellConsts_SCallLoadDetails 64878
+#define Vcl_Shell_ShellConsts_SRenamedFailedError 64879
 #define Xml_XMLConst_SNodeExpected 64880
 #define Xml_XMLConst_SMSDOMNotInstalled 64881
 #define uShellIntegration_SNotSupported 64882
-#define Vcl_VDBConsts_SFirstRecord 64883
-#define Vcl_VDBConsts_SPriorRecord 64884
-#define Vcl_VDBConsts_SNextRecord 64885
-#define Vcl_VDBConsts_SLastRecord 64886
-#define Vcl_VDBConsts_SInsertRecord 64887
-#define Vcl_VDBConsts_SDeleteRecord 64888
-#define Vcl_VDBConsts_SEditRecord 64889
-#define Vcl_VDBConsts_SPostEdit 64890
-#define Vcl_VDBConsts_SCancelEdit 64891
-#define Vcl_VDBConsts_SRefreshRecord 64892
-#define Vcl_VDBConsts_SApplyUpdates 64893
-#define Vcl_VDBConsts_SCancelUpdates 64894
-#define Vcl_VDBConsts_SRemoteLogin 64895
+#define DropSource_sDropSourceBusy 64883
+#define DropSource_sDropSourceAsyncFailed 64884
+#define DropSource_sDropSourceAsyncBusy 64885
+#define DropTarget_sTargetAsyncBusy 64886
+#define DropTarget_sRichEditWarning 64887
+#define DragDrop_sImplementationRequired 64888
+#define DragDrop_sFormatNameReadOnly 64889
+#define DragDrop_sNoCopyStgMedium 64890
+#define DragDrop_sBadConstructor 64891
+#define DragDropPIDL_sBadDesktop 64892
+#define DragDropPIDL_sBadFilename 64893
+#define DECUtil_sClassNotRegistered 64894
+#define DECUtil_sWrongIdentity 64895
 #define CCR_Exif_Consts_SUnsupportedGraphicFormat 64896
 #define CCR_Exif_Consts_SInvalidJPEGHeader 64897
 #define CCR_Exif_Consts_SInvalidPSDHeader 64898
@@ -695,38 +695,6 @@
 #define System_SysConst_SInvalidOp 65535
 STRINGTABLE
 BEGIN
-	DECCipher_sAlreadyPadded,	L"Cipher has already been padded, cannot process message"
-	DECCipher_sInvalidState,	L"Cipher is not in valid state for this action"
-	DECCipher_sInvalidMessageLength,	L"Message length for %s must be a multiple of %d bytes"
-	DECCipher_sKeyMaterialToLarge,	L"Keymaterial is too large for use (Security Issue)"
-	DECCipher_sIVMaterialToLarge,	L"Initvector is too large for use (Security Issue)"
-	DECCipher_sCipherNoDefault,	L"No default cipher has been registered"
-	Vcl_Shell_ShellConsts_SShellDefaultNameStr,	L"Name"
-	Vcl_Shell_ShellConsts_SShellDefaultSizeStr,	L"Size"
-	Vcl_Shell_ShellConsts_SShellDefaultTypeStr,	L"Type"
-	Vcl_Shell_ShellConsts_SShellDefaultModifiedStr,	L"Modified"
-	Vcl_Shell_ShellConsts_SShellNoDetails,	L"Unable to retrieve folder details for \"%s\". Error code $%x"
-	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
-	Vcl_Shell_ShellConsts_SRenamedFailedError,	L"Rename to %s failed"
-	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
-	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
-	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
-	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
-	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
-	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
-	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
-	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
-	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
-	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
-	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
-	DECUtil_sClassNotRegistered,	L"Class %s is not registered"
-	DECUtil_sWrongIdentity,	L"Another class \"%s\" with the same identity as \"%s\" has already been registered."
-	DECHash_sHashingOverflowError,	L"Hash function have to many bits processed"
-	DECHash_sHashNotInitialized,	L"Hash must be initialized"
-	DECHash_sHashNoDefault,	L"No default hash are registered"
-	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
-	Xml_XMLConst_SMSDOMNotInstalled,	L"Microsoft MSXML is not installed"
-	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
 	Vcl_VDBConsts_SFirstRecord,	L"First record"
 	Vcl_VDBConsts_SPriorRecord,	L"Prior record"
 	Vcl_VDBConsts_SNextRecord,	L"Next record"
@@ -740,6 +708,38 @@ BEGIN
 	Vcl_VDBConsts_SApplyUpdates,	L"Apply updates"
 	Vcl_VDBConsts_SCancelUpdates,	L"Cancel updates"
 	Vcl_VDBConsts_SRemoteLogin,	L"Remote Login"
+	DECHash_sHashingOverflowError,	L"Hash function have to many bits processed"
+	DECHash_sHashNotInitialized,	L"Hash must be initialized"
+	DECHash_sHashNoDefault,	L"No default hash are registered"
+	DECCipher_sAlreadyPadded,	L"Cipher has already been padded, cannot process message"
+	DECCipher_sInvalidState,	L"Cipher is not in valid state for this action"
+	DECCipher_sInvalidMessageLength,	L"Message length for %s must be a multiple of %d bytes"
+	DECCipher_sKeyMaterialToLarge,	L"Keymaterial is too large for use (Security Issue)"
+	DECCipher_sIVMaterialToLarge,	L"Initvector is too large for use (Security Issue)"
+	DECCipher_sCipherNoDefault,	L"No default cipher has been registered"
+	Vcl_Shell_ShellConsts_SShellDefaultNameStr,	L"Name"
+	Vcl_Shell_ShellConsts_SShellDefaultSizeStr,	L"Size"
+	Vcl_Shell_ShellConsts_SShellDefaultTypeStr,	L"Type"
+	Vcl_Shell_ShellConsts_SShellDefaultModifiedStr,	L"Modified"
+	Vcl_Shell_ShellConsts_SShellNoDetails,	L"Unable to retrieve folder details for \"%s\". Error code $%x"
+	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
+	Vcl_Shell_ShellConsts_SRenamedFailedError,	L"Rename to %s failed"
+	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
+	Xml_XMLConst_SMSDOMNotInstalled,	L"Microsoft MSXML is not installed"
+	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
+	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
+	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
+	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
+	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
+	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
+	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
+	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
+	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
+	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
+	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
+	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
+	DECUtil_sClassNotRegistered,	L"Class %s is not registered"
+	DECUtil_sWrongIdentity,	L"Another class \"%s\" with the same identity as \"%s\" has already been registered."
 	CCR_Exif_Consts_SUnsupportedGraphicFormat,	L"Unsupported graphic format"
 	CCR_Exif_Consts_SInvalidJPEGHeader,	L"JPEG header is not valid"
 	CCR_Exif_Consts_SInvalidPSDHeader,	L"Photoshop (PSD) file header is not valid"
@@ -1411,11 +1411,6 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\ExtDlgs.res */
 /* D:\Dmitry\Dmitry\Ratingres.res */
 /* C:\Users\Public\Documents\Mustangpeak\EasyListview\Source\EasyRes.res */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\DBCtrls.res */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\DBGrids.res */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDBCleaning.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ProgressActionUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitNewGroupForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSelectFontForm.dfm */
@@ -1430,11 +1425,41 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Printer\PrinterProgress.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitJPEGOptions.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Printer\PrintMainForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Wizards\uFrameWizardBase.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameActicationSetCode.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameFreeManualActivation.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameFreeActivation.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameBuyApplication.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameActivationLanding.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uActivation.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormInternetUpdating.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uAbout.dfm */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\DBCtrls.res */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\DBGrids.res */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitStringPromtForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormManagerHint.dfm */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\SPIN.RES */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationLanding.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBNewPathAndIcon.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDBOptions.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBExistedFile.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBFromList.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBLanding.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSelectDB.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitImHint.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBCreationSummary.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationSettings.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationProgress.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitConvertDBForm.dfm */
 /* D:\Dmitry\Dmitry\DBLOADING.RES */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitEditLinkForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Options.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PropertyForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\FloatPanelFullScreen.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SlideShowFullScreen.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormSelectPerson.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\SPIN.RES */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uWatermarkOptions.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSizeResizerForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormAddImage.dfm */
@@ -1445,56 +1470,36 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Units\UnitActionsForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImageEditor\ImEditor.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImageEditor\cursors.res */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitImHint.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitStringPromtForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitBigImagesSize.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCont.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Wizards\uFrameWizardBase.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Steganography\uFrmCreateJPEGSteno.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Steganography\uFrmCreatePNGSteno.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Steganography\uFrmSteganographyLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormSteganography.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormEditObject.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SlideShow.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitEditLinkForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Options.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PropertyForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitMenuDateForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\replaceform.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ExportUnit.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDBCleaning.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitGroupReplace.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitCompareProgress.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitCompareDataBases.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitMenuDateForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitChangeDBPath.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ManagerDBUnit.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitGetPhotosForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitListOfKeyWords.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\DBTools\UnitDBTreeView.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSplitExportForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapInfo.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapper.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSavingTableForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDExport.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\replaceform.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitHistoryForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitUpdateDB.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormPersonSuggest.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormCreatePerson.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapInfo.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormManagerHint.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationLanding.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBNewPathAndIcon.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDBOptions.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBExistedFile.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBFromList.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBLanding.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSelectDB.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBCreationSummary.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationSettings.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationProgress.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitConvertDBForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ExportUnit.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitCompareProgress.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitCompareDataBases.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitChangeDBPath.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ManagerDBUnit.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormInternetUpdating.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameActicationSetCode.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameFreeManualActivation.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameFreeActivation.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameBuyApplication.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Activation\uFrameActivationLanding.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uActivation.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uAbout.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFileRenamerForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitGetPhotosForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSavingTableForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ExplorerUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImportImages\uFrmImportImagesLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImportImages\uFrmImportImagesOptions.dfm */
@@ -1503,11 +1508,6 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\FormManegerUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitPasswordForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\CMDUnit.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitListOfKeyWords.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\DBTools\UnitDBTreeView.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSplitExportForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapper.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDExport.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDebugScriptForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormSizeListViewTh.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Searching.dfm */

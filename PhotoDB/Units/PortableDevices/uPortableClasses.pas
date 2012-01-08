@@ -37,6 +37,7 @@ type
     function GetItemDate: TDateTime;
     function GetDeviceID: string;
     function GetDeviceName: string;
+    function GetIsVisible: Boolean;
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
     function GetInnerInterface: IUnknown;
@@ -48,6 +49,7 @@ type
     property ItemDate: TDateTime read GetItemDate;
     property DeviceID: string read GetDeviceID;
     property DeviceName: string read GetDeviceName;
+    property IsVisible: Boolean read GetIsVisible;
     property InnerInterface: IUnknown read GetInnerInterface;
   end;
 

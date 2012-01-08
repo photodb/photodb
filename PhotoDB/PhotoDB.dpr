@@ -369,7 +369,8 @@ uses
   uWPDInterfaces in 'Units\PortableDevices\uWPDInterfaces.pas',
   uPortableDeviceManager in 'Units\PortableDevices\uPortableDeviceManager.pas',
   MSXML2_TLB in 'Units\MSXML2_TLB.pas',
-  uPortableDeviceUtils in 'Units\PortableDevices\uPortableDeviceUtils.pas';
+  uPortableDeviceUtils in 'Units\PortableDevices\uPortableDeviceUtils.pas',
+  uPortableScriptUtils in 'Units\uPortableScriptUtils.pas';
 
 {$R *.res}
 

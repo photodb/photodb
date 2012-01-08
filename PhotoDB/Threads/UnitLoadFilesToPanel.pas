@@ -209,6 +209,8 @@ begin
           if Fbyid then
             SetLength(FFiles, 1);
 
+          Graphic := nil;
+
           if Fbyid then
             GetInfoByFileNameOrID(Ffiles[0], Fids[I], I, Graphic)
           else
@@ -255,7 +257,7 @@ begin
   end;
 end;
 
-procedure LoadFilesToPanel.GetInfoByFileNameOrID(FileName: string; ID, N  : integer; out Graphic : TGraphic);
+procedure LoadFilesToPanel.GetInfoByFileNameOrID(FileName: string; ID, N  : integer; out Graphic: TGraphic);
 var
   Password, S: string;
   CryptFile: Boolean;

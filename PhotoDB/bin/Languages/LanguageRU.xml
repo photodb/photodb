@@ -759,6 +759,8 @@
 	<translate name="Memory for [%s]" value="Память для [%s]" />
 	<translate name="Unknown" value="Неизвестно" />
 	<translate name="Please select directory to place for processed files" value="Выберите директорию, куда будут помещаться обработанные файлы" />	
+	<translate name="Portable devices" value="Портативные устройства" />
+	<translate name="No removable devices" value="Портативные устройства не найдены" />
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />

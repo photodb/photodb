@@ -6,7 +6,11 @@ uses
   Windows, Classes, Graphics, GraphicCrypt, Dolphin_DB, Forms, DDraw,
   GraphicsCool, Effects, UnitDBCommonGraphics, uMemory, uDXUtils, SysUtils,
   SyncObjs, uConstants, UnitDBKernel, uGraphicUtils, uDBThread, uMemoryEx,
-  uAssociations, uJpegUtils, uBitmapUtils, RAWImage;
+  uAssociations,
+  uJpegUtils,
+  uBitmapUtils,
+  uPortableDeviceUtils,
+  RAWImage;
 
 type
   TDirectXSlideShowCreator = class(TDirectXSlideShowCreatorCustomThread)
@@ -119,7 +123,7 @@ begin
 
   Text_error_out := L('Unable to show file:');
   try
-    if ValidCryptGraphicFile(FInfo.FileName) then
+    if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
     begin
       FilePassword := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
       if FilePassword = '' then
@@ -132,7 +136,7 @@ begin
 
     Graphic := GraphicClass.Create;
     try
-      if ValidCryptGraphicFile(FInfo.FileName) then
+      if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
       begin
         F(Graphic);
         Graphic := DeCryptGraphicFile(FInfo.FileName, FilePassword, False);
@@ -141,7 +145,10 @@ begin
         if Graphic is TRAWImage then
           TRAWImage(Graphic).IsPreview := True;
 
-        Graphic.LoadFromFile(FInfo.FileName);
+        if not IsDevicePath(FInfo.FileName) then
+          Graphic.LoadFromFile(FInfo.FileName)
+        else
+          Graphic.LoadFromDevice(FInfo.FileName);
       end;
       JPEGScale(Graphic, FMonWidth, FMonHeight);
 

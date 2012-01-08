@@ -256,7 +256,7 @@ object GetToPersonalFolderForm: TGetToPersonalFolderForm
     Width = 243
     Height = 57
     Lines.Strings = (
-      'You comment')
+      'Your comment')
     TabOrder = 5
     OnChange = EdFolderMaskChange
   end

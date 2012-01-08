@@ -39,6 +39,7 @@ procedure DrawImageExRect(Dest, Src: TBitmap; SX, SY, SW, SH: Integer; DX, DY: I
 procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
+procedure FillTransparentChannel(Bitmap: TBitmap; TransparentValue: Byte);
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
 procedure DrawImageEx32To32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
@@ -1133,6 +1134,20 @@ begin
   end;
 end;
 
+procedure FillTransparentChannel(Bitmap: TBitmap; TransparentValue: Byte);
+var
+  I, J: Integer;
+  p: PARGB32;
+begin
+  Bitmap.PixelFormat := pf32Bit;
+  for I := 0 to Bitmap.Height - 1 do
+  begin
+    p := Bitmap.ScanLine[I];
+    for J := 0 to Bitmap.Width - 1 do
+      p[J].L := TransparentValue;
+  end;
+end;
+
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
 var
   I, J: Integer;
@@ -1149,10 +1164,10 @@ begin
     p := Bitmap.ScanLine[I];
     for J := 0 to Bitmap.Width - 1 do
     begin
-      p[j].R := R;
-      p[j].G := G;
-      p[j].B := B;
-      p[j].L := TransparentValue;
+      p[J].R := R;
+      p[J].G := G;
+      p[J].B := B;
+      p[J].L := TransparentValue;
     end;
   end;
 end;

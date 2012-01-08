@@ -105,6 +105,7 @@ type
 
 procedure GetPhotosFromDrive(DriveLetter: Char);
 procedure GetPhotosFromFolder(Folder: string);
+procedure GetPhotosFromDevice(DeviceName: string);
 
 implementation
 
@@ -125,6 +126,11 @@ var
 begin
   Application.CreateForm(TGetToPersonalFolderForm, GetToPersonalFolderForm);
   GetToPersonalFolderForm.Execute(Folder);
+end;
+
+procedure GetPhotosFromDevice(DeviceName: string);
+begin
+  ShowMessage(DeviceName);
 end;
 
 {$R *.dfm}

@@ -49,7 +49,7 @@ type
       OnDone: TNotifyEvent);
   end;
 
-function FormatFolderName(Mask, Comment: String; Date: TDateTime): String;
+function FormatFolderName(Mask, Comment: string; Date: TDateTime): string;
 
 implementation
 
@@ -262,10 +262,10 @@ end;
 
 function FormatFolderName(Mask, Comment: String; Date: TDateTime): String;
 var
-  S : String;
-  i : integer;
+  S: String;
+  I: Integer;
   TempSysTime: TSystemTime;
-  FineDate: array[0..255] of Char;
+  FineDate: array [0 .. 255] of Char;
 begin
   S := Mask;
   if S = '' then

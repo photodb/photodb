@@ -40,11 +40,17 @@ const
   WPD_OBJECT_PERSISTENT_UNIQUE_ID = 5;
   WPD_OBJECT_FORMAT = 6;
   WPD_OBJECT_CONTENT_TYPE = 7;
+  WPD_OBJECT_ISHIDDEN = 9;
+  WPD_OBJECT_ISSYSTEM = 10;
   WPD_OBJECT_SIZE = 11;
   WPD_OBJECT_ORIGINAL_FILE_NAME = 12;
+  //   [ VT_BOOL ] This property determines whether or not this object is intended to be understood by the device, or whether it has been placed on the device just for storage.
+  WPD_OBJECT_NON_CONSUMABLE = 13;
   WPD_OBJECT_DATE_CREATED = 18;
   WPD_OBJECT_DATE_MODIFIED = 19;
   WPD_OBJECT_DATE_AUTHORED = 20;
+//   [ VT_LPWSTR ] Indicates the Object ID of the closest functional object ancestor. For example, objects that represent files/folders under a Storage functional object, will have this property set to the object ID of the storage functional object.
+  WPD_OBJECT_CONTAINER_FUNCTIONAL_OBJECT_ID = 23;
 
   PKEY_DeviceObj: TGUID = '{26D4979A-E643-4626-9E2B-736DC0C92FDC}';
   WPD_DEVICE_FIRMWARE_VERSION = 3;
@@ -74,6 +80,7 @@ const
   WPD_RESOURCE_ATTRIBUTE_FORMAT = 8;
 
   WPD_OBJECT_FORMAT_BMP: TGUID          = '{38040000-AE6C-4804-98BA-C57B46965FE7}';
+  WPD_OBJECT_FORMAT_GIF: TGUID          = '{38070000-AE6C-4804-98BA-C57B46965FE7}';
   WPD_OBJECT_FORMAT_JFIF: TGUID         = '{38080000-AE6C-4804-98BA-C57B46965FE7}';
   WPD_OBJECT_FORMAT_PNG: TGUID          = '{380B0000-AE6C-4804-98BA-C57B46965FE7}';
   WPD_OBJECT_FORMAT_UNSPECIFIED: TGUID  = '{30000000-AE6C-4804-98BA-C57B46965FE7}';

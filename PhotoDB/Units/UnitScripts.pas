@@ -19,7 +19,8 @@ uses
   Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs, uMemoryEx,
   Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
   uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils, uSysUtils,
-  uGUIDUtils;
+  uGUIDUtils,
+  uPortableScriptUtils;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -197,8 +198,8 @@ type
    procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; const FunctionName : String; aFunction : TFunctionIsArrayStringsObject);
 
    function VarValue(aScript : TScript; const Variable : string; List : TListBox = nil) : string;
-   procedure LoadBaseFunctions(Enviroment : TScriptEnviroment);
-   procedure LoadFileFunctions(Enviroment : TScriptEnviroment);
+   procedure LoadBaseFunctions(Enviroment: TScriptEnviroment);
+   procedure LoadFileFunctions(Enviroment: TScriptEnviroment);
 
    const
   EndSymbol = '};';
@@ -3053,7 +3054,7 @@ begin
     Result := TA('Unregistered user');
 end;
 
-procedure LoadBaseFunctions(Enviroment : TScriptEnviroment);
+procedure LoadBaseFunctions(Enviroment: TScriptEnviroment);
 begin
   AddScriptFunction(Enviroment, 'ShowString', F_TYPE_PROCEDURE_STRING, @ShowString);
   AddScriptFunction(Enviroment, 'Format', F_TYPE_FUNCTION_FORMAT, nil);
@@ -3148,10 +3149,15 @@ begin
 
   AddScriptFunction(Enviroment, 'FileInPath', F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN, @FileInPath);
 
-  AddScriptFunction(Enviroment, 'FileHasExt', F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN,
-    @UnitScriptsFunctions.FileHasExt);
+  AddScriptFunction(Enviroment, 'FileHasExt', F_TYPE_FUNCTION_STRING_STRING_IS_BOOLEAN, @UnitScriptsFunctions.FileHasExt);
   AddScriptFunction(Enviroment, 'T', F_TYPE_FUNCTION_STRING_IS_STRING, @TranslateMenuString);
   AddScriptFunction(Enviroment, 'GetCurrentUser', F_TYPE_FUNCTION_IS_STRING, @GetCurrentUser);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //Portable Device Functions
+  //////////////////////////////////////////////////////////////////////////////
+  AddScriptFunction(Enviroment, 'GetPortableDevices', F_TYPE_FUNCTION_IS_ARRAYSTRING, @GetPortableDevices);
+  AddScriptFunction(Enviroment, 'GetPortableDeviceIcon', F_TYPE_FUNCTION_ADD_ICON, @GetPortableDeviceIcon);
 end;
 
 procedure LoadFileFunctions(Enviroment: TScriptEnviroment);
@@ -3180,7 +3186,7 @@ end;
 
 function TScriptsManager.AddScript(Script: TScript) : string;
 var
-  Index : integer;
+  Index: Integer;
 begin
   Index := FScripts.IndexOf(Script);
   if Index > -1 then
@@ -3197,7 +3203,7 @@ end;
 
 destructor TScriptsManager.Destroy;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to FScripts.Count - 1 do
     if GOM.IsObj(FScripts[i]) then
@@ -3210,7 +3216,7 @@ end;
 
 function TScriptsManager.GetIncludeScript(FileName: string): TIncludeScript;
 var
-  I : Integer;
+  I: Integer;
 begin
   Result := nil;
   for I := 0 to FIncludes.Count - 1 do
@@ -3225,7 +3231,7 @@ end;
 
 function TScriptsManager.GetScriptByID(ID: string): TScript;
 var
-  I : integer;
+  I: Integer;
 begin
   Result := nil;
   for I := 0 to FScripts.Count - 1 do
@@ -3239,7 +3245,7 @@ end;
 procedure TScriptsManager.RegisterIncludeScript(FileName,
   ScriptContent: string);
 var
-  IncludeScript : TIncludeScript;
+  IncludeScript: TIncludeScript;
 begin
   if GetIncludeScript(FileName) <> nil then
     Exit;
@@ -3252,7 +3258,7 @@ end;
 
 procedure TScriptsManager.RemoveScript(ID : string);
 var
-  I : integer;
+  I: Integer;
 begin
   for I := 0 to FScripts.Count - 1 do
     if TScript(FScripts[I]).ID = ID then
@@ -3264,7 +3270,7 @@ end;
 
 function TScriptsManager.ScriptExists(ID : string): Boolean;
 var
-  I : integer;
+  I: Integer;
 begin
   Result := False;
   for I := 0 to FScripts.Count - 1 do

@@ -7,65 +7,65 @@ uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs
   UnitDBFileDialogs, Forms, uConstants, uLogger, uShellIntegration,
   uTime, uMemory, uTranslate, uRuntime, ReplaseIconsInScript;
 
-function GetOpenFileName(InitFile, Filter : string) : string;
-function GetSaveFileName(InitFile, Filter : string) : string;
-procedure CreateFile(FileName : string);
-procedure WriteToFile(FileName, aString : string);
-procedure WriteLnToFile(FileName, aString : string);
-function aExtractFileName(FileName : string) : string;
-function aPos(sub, str : string) : integer;
-function aStrCopy(s : string; aBegin, aLength : integer) : string;
-function aStrToInt(s : string) : integer;
-function GetDirListing(Dir : String; Mask : string) : TArrayOfString;
-function SpilitWords(S : string) : TArrayOfString;
-function SpilitWordsW(S : string; SplitChar : char) : TArrayOfString;
-function aIntToStr(int : integer) : string;
-procedure Default(const aScript : TScript);
-procedure InVisible(const aScript : TScript);
-procedure Disabled(const aScript : TScript);
-procedure Checked(const aScript : TScript);
-function aDirectoryExists(FileName : string) : boolean;
-function aDirectoryFileExists(FileName : string) : boolean;
-function aPathFormat(aPath, aFile : string) : string;
-procedure CopyFile(aFile : string);
-procedure CutFile(aFile : string);
-procedure CopyFiles(Files : TArrayOfString);
-procedure CutFiles(Files : TArrayOfString);
-function LoadFilesFromClipBoardA : TArrayOfString;
-function NowString : String;
-function SumInt(int1, int2 : integer) : integer;
-function SumStr(str1, str2 : string) : string;
+function GetOpenFileName(InitFile, Filter: string): string;
+function GetSaveFileName(InitFile, Filter: string): string;
+procedure CreateFile(FileName: string);
+procedure WriteToFile(FileName, aString: string);
+procedure WriteLnToFile(FileName, aString: string);
+function aExtractFileName(FileName: string): string;
+function aPos(sub, str: string): integer;
+function aStrCopy(s: string; aBegin, aLength: Integer): string;
+function aStrToInt(s: string): integer;
+function GetDirListing(Dir: String; Mask: string): TArrayOfString;
+function SpilitWords(s: string): TArrayOfString;
+function SpilitWordsW(s: string; SplitChar: Char): TArrayOfString;
+function aIntToStr(int: integer): string;
+procedure Default(const aScript: TScript);
+procedure InVisible(const aScript: TScript);
+procedure Disabled(const aScript: TScript);
+procedure Checked(const aScript: TScript);
+function aDirectoryExists(FileName: string): Boolean;
+function aDirectoryFileExists(FileName: string): Boolean;
+function aPathFormat(aPath, aFile: string): string;
+procedure CopyFile(aFile: string);
+procedure CutFile(aFile: string);
+procedure CopyFiles(Files: TArrayOfString);
+procedure CutFiles(Files: TArrayOfString);
+function LoadFilesFromClipBoardA: TArrayOfString;
+function NowString: String;
+function SumInt(int1, int2: Integer): Integer;
+function SumStr(str1, str2: string): string;
 procedure ExecAndWait(FileName, Params: String);
-procedure Run(ExeFile, Params : String);
-procedure Exec(FileName : string);
-Procedure aCopyFile(FromFile, ToDir : string);
-procedure aRenameFile(S,D : String);
-function ShowInt(int : integer) : string;
-procedure aDeleteFile(S : String);
-function AltKeyDown : boolean;
-function CtrlKeyDown : boolean;
-function ShiftKeyDown : boolean;
-procedure ShowString(str : string);
-function GetSmallIconByPath(IconPath : String; Big : boolean = false) : TIcon;
-function AddIcon(Path : string; ImageList : TImageList; var IconsCount : integer) : integer;
-function AddAssociatedIcon(Path : string; ImageList : TImageList; var IconsCount : integer) : integer;
-function GetUSBDrives : TArrayOfString;
-function GetCDROMDrives : TArrayOfString;
-function GetAllDrives : TArrayOfString;
-function DriveState(driveletter: AnsiChar): TSDriveState;
-Function GetCDVolumeLabel(CDName : AnsiChar) : String;
-function GetDriveName(Drive : string; DefString : string) : string;
-function GetMyPicturesFolder : string;
-function GetMyDocumentsFolder : string;
-function GetProgramFolder : string;
-function GetSaveImageFileName(InitFile, Filter : string) : string;
-function GetOpenImageFileName(InitFile, Filter : string) : string;
-procedure CopyFileSynch(S,D : string);
-function FileInPath(aFile, aPath : string) : boolean;
-function GetOpenDirectory(Caption, Root : string) : string;
-function FileHasExt(aFile, aExt : string) : boolean;
-function ExtractFileDirectory(FileName : string) : string;
-procedure ExecuteScriptFile(FileName: string; UseDBFunctions: Boolean = False);
+procedure Run(ExeFile, Params: String);
+procedure Exec(FileName: string);
+Procedure aCopyFile(FromFile, ToDir: string);
+procedure aRenameFile(s, D: String);
+function ShowInt(int: Integer): string;
+procedure aDeleteFile(s: String);
+function AltKeyDown: Boolean;
+function CtrlKeyDown: Boolean;
+function ShiftKeyDown: Boolean;
+procedure ShowString(str: string);
+function GetSmallIconByPath(IconPath: String; Big: boolean = False): TIcon;
+function AddIcon(Path: string; ImageList: TImageList; var IconsCount: Integer): Integer;
+function AddAssociatedIcon(Path: string; ImageList: TImageList; var IconsCount: integer): Integer;
+function GetUSBDrives: TArrayOfString;
+function GetCDROMDrives: TArrayOfString;
+function GetAllDrives: TArrayOfString;
+function DriveState(DriveLetter: AnsiChar): TSDriveState;
+Function GetCDVolumeLabel(CDName: AnsiChar): String;
+function GetDriveName(Drive: string; DefString: string): string;
+function GetMyPicturesFolder: string;
+function GetMyDocumentsFolder: string;
+function GetProgramFolder: string;
+function GetSaveImageFileName(InitFile, Filter: string): string;
+function GetOpenImageFileName(InitFile, Filter: string): string;
+procedure CopyFileSynch(s, D: string);
+function FileInPath(aFile, aPath: string): Boolean;
+function GetOpenDirectory(Caption, Root: string): string;
+function FileHasExt(aFile, aExt: string): Boolean;
+function ExtractFileDirectory(FileName: string): string;
+procedure ExecuteScriptFile(FileName: string; UseDBFunctions: Boolean = false);
 
 implementation
 
@@ -666,15 +666,15 @@ begin
   end;
 end;
 
-function AddAssociatedIcon(Path: string; ImageList: TImageList; var IconsCount: integer) : integer;
+function AddAssociatedIcon(Path: string; ImageList: TImageList; var IconsCount: Integer): Integer;
 var
-  Ico : TIcon;
+  Ico: TIcon;
   OldMode: Cardinal;
 
-  function ExtractAssociatedIconFixed(FileName :String) :HICON;
+  function ExtractAssociatedIconFixed(FileName: string): HICON;
   var
-    I : Word;
-    B : array[0 .. 2048] of Char;
+    I: Word;
+    B: array[0 .. 2048] of Char;
   begin
     I := 1;
     Result := ExtractAssociatedIcon(0, StrLCopy(B, PChar(FileName), SizeOf(B) - 1), I);
@@ -692,10 +692,10 @@ begin
     if not Ico.Empty then
     begin
       ImageList.AddIcon(ico);
-      inc(IconsCount);
-      Result:=ImageList.Count-1;
+      Inc(IconsCount);
+      Result := ImageList.Count - 1;
     end
-    else Result:=-1;
+    else Result := -1;
   finally
     F(Ico);
   end;
@@ -703,26 +703,26 @@ end;
 
 function GetUSBDrives : TArrayOfString;
 var
-  I : integer;
+  I: Integer;
   OldMode: Cardinal;
 begin
   SetLength(Result, 0);
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    for I:=Ord('C') to Ord('Z') do
+    for I := Ord('C') to Ord('Z') do
     if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_REMOVABLE) then
     begin
       SetLength(Result, Length(Result) + 1);
-      Result[Length(Result)-1] := Chr(I) + ':\';
+      Result[Length(Result) - 1] := Chr(I) + ':\';
     end;
   finally
     SetErrorMode(OldMode);
   end;
 end;
 
-function GetCDROMDrives : TArrayOfString;
+function GetCDROMDrives: TArrayOfString;
 var
-  I : integer;
+  I: Integer;
   OldMode: Cardinal;
 begin
   SetLength(Result, 0);
@@ -739,7 +739,7 @@ begin
   end;
 end;
 
-function GetAllDrives : TArrayOfString;
+function GetAllDrives: TArrayOfString;
 var
   I : integer;
   OldMode: Cardinal;
@@ -758,7 +758,7 @@ begin
   end;
 end;
 
-function DriveState(driveletter: AnsiChar): TSDriveState;
+function DriveState(DriveLetter: AnsiChar): TSDriveState;
 var
   mask: string;
   sRec: TSearchRec;
@@ -785,7 +785,7 @@ begin
   end;
 end;
 
-function GetCDVolumeLabel(CDName : AnsiChar) : String;
+function GetCDVolumeLabel(CDName: AnsiChar) : String;
 var
   VolumeName,
   FileSystemName : array [0..MAX_PATH-1] of Char;
@@ -808,10 +808,10 @@ begin
   Result := uFileUtils.MrsGetFileType(StrFilename);
 end;
 
-function GetDriveName(Drive : string; DefString : string) : string;
+function GetDriveName(Drive: string; DefString: string): string;
 var
-  DS :  TSDriveState;
-  S : string;
+  DS:  TSDriveState;
+  S: string;
   oldMode: Cardinal;
 begin
   Result:= string(Drive);

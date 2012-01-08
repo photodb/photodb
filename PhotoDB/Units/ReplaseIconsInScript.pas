@@ -2,7 +2,8 @@ unit ReplaseIconsInScript;
 
 interface
 
-uses SysUtils;
+uses
+  SysUtils;
 
 function AddIconsX2(script : string) : string;
 function AddIconsX1(script : string) : string;
@@ -14,6 +15,7 @@ function AddIcons(script : string) : string;
 begin                                                                
 script:=StringReplace(script,'DB_IC_CD_EXPORT','116',[rfReplaceAll]);
 script:=StringReplace(script,'DB_IC_CD_MAPPING','117',[rfReplaceAll]);
+script:=StringReplace(script,'DB_IC_CAMERA','121',[rfReplaceAll]);
 
 script:=StringReplace(script,'DB_IC_SHELL_PREVIOUS','47',[rfReplaceAll]);
 script:=StringReplace(script,'DB_IC_ADD_SINGLE_FILE','58',[rfReplaceAll]);

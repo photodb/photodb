@@ -14,6 +14,25 @@ run:
     AddIntItem($CD_ROM_ICONS,$IconN);
     AddStringItem($CD_ROMs,$Drive);
   };
+  <Portable devices>[DB_IC_CAMERA]
+  {
+    <->[]{}
+    $PD=GetPortableDevices;
+    DeleteNoFirst;
+    $c=0;
+    $len=ArrayStringLength($PD);
+    $Command="GetPhotosFromDevice(""%1"");";
+    for ($i=0;$i<$len;$i=SumInt($i,1)) {
+      $Drive=GetStringItem($PD,$i);
+      $c=SumInt($c,1);
+      $RunScript=PathFormat($Command,$Drive);
+      $IconN=GetPortableDeviceIcon($Drive);
+      CreateItem($Drive,$IconN,$RunScript,false,0);
+    };
+    if ($c=0) {
+      CreateItemDef("No removable devices",DB_IC_DELETE_INFO,"",false,0,false);
+    };
+  }
   <Removable drives>[DB_IC_USB]
   {
     <->[]{}

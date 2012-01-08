@@ -121,12 +121,12 @@ function TAIcons.AddIconByExt(FileName, EXT: string; Size : integer) : integer;
 begin
   FSync.Enter;
   try
-    Result:=Length(FAssociatedIcons)-1;
-    SetLength(FAssociatedIcons,Length(FAssociatedIcons)+1);
-    FAssociatedIcons[Length(FAssociatedIcons)-1].Ext:=EXT;
-    FAssociatedIcons[Length(FAssociatedIcons)-1].SelfIcon:=VarIco(EXT);
-    FAssociatedIcons[Length(FAssociatedIcons)-1].Icon:=GetShellImage(FileName,Size);
-    FAssociatedIcons[Length(FAssociatedIcons)-1].Size:=Size;
+    Result := Length(FAssociatedIcons) - 1;
+    SetLength(FAssociatedIcons, Length(FAssociatedIcons) + 1);
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].Ext := Ext;
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].SelfIcon := VarIco(Ext);
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].Icon := GetShellImage(FileName, Size);
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].Size := Size;
   finally
     FSync.Leave;
   end;
@@ -229,10 +229,10 @@ begin
       Result := FAssociatedIcons[i].SelfIcon;
       Exit;
     end;
-    SetLength(FAssociatedIcons,Length(FAssociatedIcons)+1);
-    FAssociatedIcons[Length(FAssociatedIcons)-1].Ext:=EXT;
-    FAssociatedIcons[Length(FAssociatedIcons)-1].SelfIcon:=VarIco(EXT);
-    if FAssociatedIcons[Length(FAssociatedIcons)-1].SelfIcon then
+    SetLength(FAssociatedIcons, Length(FAssociatedIcons) + 1);
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].Ext := Ext;
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].SelfIcon := VarIco(Ext);
+    if FAssociatedIcons[Length(FAssociatedIcons) - 1].SelfIcon then
     begin
       Result:=true;
       Exit;
