@@ -374,8 +374,85 @@ begin
 end;
 
 function TWPDDevice.Delete(ItemKey: string): Boolean;
+var
+  pObjectIDs: IPortableDevicePropVariantCollection;
+  ppResults: IPortableDevicePropVariantCollection;
+  HR: HRESULT;
+  pv: tag_inner_PROPVARIANT;
+  ObjID: PChar;
+  ppCapabilities: IPortableDeviceCapabilities;
+  Mode: Integer;
+  Command: _tagpropertykey;
+  ppOptions: IPortableDeviceValues;
+  key: _tagpropertykey;
+  BoolValue: Integer;
 begin
   Result := False;
+
+  //To see if recursive deletion is supported, call IPortableDeviceCapabilities::GetCommandOptions.
+  //If the retrieved IPortableDeviceValues interface contains a property value called
+  //WPD_OPTION_OBJECT_MANAGEMENT_RECURSIVE_DELETE_SUPPORTED with a boolVal value of True, the device supports recursive deletion.
+  Mode := PORTABLE_DEVICE_DELETE_NO_RECURSION;
+  HR := FDevice.Capabilities(ppCapabilities);
+  if Succeeded(HR) then
+  begin
+    Command.fmtid := WPD_CATEGORY_OBJECT_MANAGEMENT;
+    Command.pid := WPD_COMMAND_OBJECT_MANAGEMENT_DELETE_OBJECTS;
+    HR := ppCapabilities.GetCommandOptions(Command, ppOptions);
+    if Succeeded(HR) then
+    begin
+      key.fmtid := WPD_CATEGORY_OBJECT_MANAGEMENT;
+      key.pid := WPD_OPTION_OBJECT_MANAGEMENT_RECURSIVE_DELETE_SUPPORTED;
+      HR := ppOptions.GetBoolValue(key, BoolValue);
+      if Succeeded(HR) and (BoolValue = 1) then
+        Mode := PORTABLE_DEVICE_DELETE_WITH_RECURSION;
+    end;
+  end;
+
+  if Failed(HR) then
+  begin
+    ErrorCheck(HR);
+    Exit;
+  end;
+
+  HR := CoCreateInstance(CLSID_PortableDevicePropVariantCollection,
+                         nil,
+                         CLSCTX_INPROC_SERVER,
+                         IID_PortableDevicePropVariantCollection,
+                         pObjectIDs);
+
+  if Succeeded(HR) then
+  begin
+    HR := CoCreateInstance(CLSID_PortableDevicePropVariantCollection,
+                           nil,
+                           CLSCTX_INPROC_SERVER,
+                           IID_PortableDevicePropVariantCollection,
+                           ppResults);
+
+    if Succeeded(HR) then
+    begin
+      ObjID := SysAllocString(PChar(ItemKey));
+      try
+        pv.VT := VT_LPWSTR;
+        pv.__MIDL____MIDL_itf_PortableDeviceApi_0001_00000001.pwszVal := ObjID;
+
+        HR := pObjectIDs.Add(pv);
+        if Succeeded(HR) then
+        begin
+          HR := Content.Delete(Mode,
+                               pObjectIDs,
+                               ppResults);
+
+          Result := Succeeded(HR);
+        end;
+      finally
+        SysFreeString(ObjID);
+      end;
+
+    end;
+  end;
+
+  ErrorCheck(HR);
 end;
 
 procedure TWPDDevice.ErrorCheck(Code: HRESULT);
@@ -882,8 +959,6 @@ var
   V: tag_inner_PROPVARIANT;
   W, H: Integer;
   B: Integer;
-  I, C: Cardinal;
-  pValue: tag_inner_PROPVARIANT;
 begin
   HR := CoCreateInstance(CLSID_PortableDeviceKeyCollection, nil, CLSCTX_INPROC_SERVER, IID_PortableDeviceKeyCollection, PropertiesToRead);
   if (SUCCEEDED(HR)) then

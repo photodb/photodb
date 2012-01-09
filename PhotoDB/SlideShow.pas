@@ -388,7 +388,7 @@ uses
 
 {$R *.dfm}
 
-function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload
+function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
 begin
   Result := R;
   if (OriginalSize.cx <> 0) and (OriginalSize.cy <> 0) then
@@ -398,7 +398,7 @@ begin
   end;
 end;
 
-function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload
+function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
 begin
   Result := R;
   if (Image.Width <> 0) and (Image.Height <> 0) then

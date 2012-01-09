@@ -2073,5 +2073,6 @@
 	<translate name="Text" value="Текст"/>
   </scope>
   <scope name="PortableDevicesProvider">
+	<translate name="Do you really want to delete object &quot;{0}&quot;?" value="Вы действительно хотите удалить объект &quot;{0}&quot;?" />
   </scope>  
 </language>

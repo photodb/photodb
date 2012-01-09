@@ -24,17 +24,14 @@ var
   TextSize: TSize;
   ADC: HDC;
 begin
-  with TextSize do
-    begin
-      aDC := GetDC(Handle);
-      try
-        SelectObject(ADC, Font.Handle);
-        GetTextExtentPoint32(ADC, PChar(Caption), Length(Caption), TextSize);
-        Width := Cx + 10;
-      finally
-        ReleaseDc(Handle, ADC);
-      end;
-    end;
+  aDC := GetDC(Handle);
+  try
+    SelectObject(ADC, Font.Handle);
+    GetTextExtentPoint32(ADC, PChar(Caption), Length(Caption), TextSize);
+    Width := TextSize.Cx + 10;
+  finally
+    ReleaseDc(Handle, ADC);
+  end;
 end;
 
 { TTimerHelper }

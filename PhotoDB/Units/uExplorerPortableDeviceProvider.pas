@@ -8,6 +8,7 @@ uses
   uPathProviders,
   Vcl.Graphics,
   uMemory,
+  uSysUtils,
   uExplorerPathProvider,
   System.Classes,
   uExplorerMyComputerProvider,
@@ -22,6 +23,8 @@ uses
   uAssociatedIcons,
   uPortableDeviceUtils,
   uShellThumbnails,
+  uDBForm,
+  uShellIntegration,
   uAssociations;
 
 type
@@ -107,6 +110,7 @@ type
     function GetTranslateID: string; override;
     procedure FillDevicesCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
     procedure FillItemsCallBack(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
+    function Delete(Sender: TObject; Item: TPathItem; Options: TPathFeatureOptions): Boolean;
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; overload; override;
@@ -227,10 +231,42 @@ begin
     Result := TPortableDeviceItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
+function TPortableDeviceProvider.Delete(Sender: TObject; Item: TPathItem;
+  Options: TPathFeatureOptions): Boolean;
+var
+  FSItem: TPortableFSItem;
+  Form: TDBForm;
+  DeviceName, DevicePath: string;
+  Device: IPDevice;
+  DItem: IPDItem;
+begin
+  Result := False;
+  Form := TDBForm(Sender);
+  FSItem := Item as TPortableFSItem;
+  if FSItem <> nil then
+  begin
+    if ID_OK = MessageBoxDB(Form.Handle, FormatEx(L('Do you really want to delete object "{0}"?'), [FSItem.DisplayName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    begin
+      DeviceName := ExtractDeviceName(FSItem.Path);
+      DevicePath := ExtractDeviceItemPath(FSItem.Path);
+      Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
+      if Device <> nil then
+      begin
+        DItem := Device.GetItemByPath(DevicePath);
+        if DItem <> nil then
+          Result := Device.Delete(DItem.ItemKey);
+      end;
+    end;
+  end;
+end;
+
 function TPortableDeviceProvider.ExecuteFeature(Sender: TObject; Item: TPathItem;
   Feature: string; Options: TPathFeatureOptions): Boolean;
 begin
   Result := inherited ExecuteFeature(Sender, Item, Feature, Options);
+
+  if Feature = PATH_FEATURE_DELETE then
+    Result := Delete(Sender, Item, Options);
 end;
 
 function TPortableDeviceProvider.ExtractPreview(Item: TPathItem; MaxWidth,
@@ -374,7 +410,7 @@ end;
 
 function TPortableDeviceProvider.SupportsFeature(Feature: string): Boolean;
 begin
-  Result := False;
+  Result := Feature = PATH_FEATURE_DELETE;
 end;
 
 { TPortableDeviceItem }

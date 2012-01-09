@@ -16,12 +16,15 @@ const
 type
   TDeviceType = (dtCamera, dtVideo, dtPhone, dtOther);
   TPortableItemType = (piStorage, piDirectory, piImage, piVideo, piFile);
+  TPortableEventType = (peDeviceConnected, peDeviceDisconnected, peItemAdded, peItemRemoved);
+  TPortableEventTypes = set of TPortableEventType;
 
   IPDItem = interface;
   IPDevice = interface;
 
   TFillItemsCallBack = procedure(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer) of object;
   TFillDevicesCallBack = procedure(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer) of object;
+  TPortableEventCallBack = procedure(EventType: TPortableItemType; DeviceID: string; ItemKey: string);
 
   IPBaseInterface = interface
     function GetErrorCode: HRESULT;
@@ -73,6 +76,11 @@ type
     procedure FillDevices(Devices: TList<IPDevice>);
     procedure FillDevicesWithCallBack(CallBack: TFillDevicesCallBack; Context: Pointer);
     function GetDeviceByName(DeviceName: string): IPDevice;
+  end;
+
+  IPEventManager = interface
+    procedure RegisterNotification(EventTypes: TPortableEventType; CallBack: TPortableEventCallBack);
+    procedure UnregisterNotification(EventTypes: TPortableEventType; CallBack: TPortableEventCallBack);
   end;
 
   TPortableItemName = class(TObject)

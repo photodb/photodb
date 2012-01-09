@@ -1775,7 +1775,9 @@ begin
           or (Info.FileType = EXPLORER_ITEM_FILE) or (Info.FileType = EXPLORER_ITEM_EXEFILE) then
           Files.Add(Info.FileName);
 
-        if (Info.FileType =  EXPLORER_ITEM_PERSON) or (Info.FileType = EXPLORER_ITEM_GROUP) then
+        if (Info.FileType =  EXPLORER_ITEM_PERSON) or (Info.FileType = EXPLORER_ITEM_GROUP) or
+           (Info.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+           (Info.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (Info.FileType = EXPLORER_ITEM_DEVICE_FILE) then
         begin
           PI := PathProviderManager.CreatePathItem(Info.FileName);
           try

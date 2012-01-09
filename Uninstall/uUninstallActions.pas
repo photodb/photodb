@@ -5,9 +5,21 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, uActions, uInstallScope, SysUtils, uInstallUtils,
-  uFileUtils, StrUtils, uConstants, uTranslate, ShellAPI, Registry,
-  uActivationUtils, uUserUtils;
+  Windows,
+  uActions,
+  uInstallScope,
+  SysUtils,
+  uInstallUtils,
+  uFileUtils,
+  StrUtils,
+  uConstants,
+  uTranslate,
+  ShellAPI,
+  Registry,
+  uActivationUtils,
+  uUserUtils,
+  uSysUtils,
+  uShellUtils;
 
 const
   DeleteFilePoints = 128 * 1024;
@@ -51,10 +63,10 @@ end;
 
 procedure TUninstallFiles.Execute(Callback: TActionCallback);
 var
-  I : Integer;
-  DiskObject : TDiskObject;
-  Destination : string;
-  Terminate : Boolean;
+  I: Integer;
+  DiskObject: TDiskObject;
+  Destination: string;
+  Terminate: Boolean;
 begin
   Terminate := False;
   for I := 0 to CurrentInstall.Files.Count - 1 do
@@ -77,8 +89,8 @@ end;
 
 function TUninstallShortCuts.CalculateTotalPoints: Int64;
 var
-  I : Integer;
-  DiskObject : TDiskObject;
+  I: Integer;
+  DiskObject: TDiskObject;
 begin
   Result := 0;
   for I := 0 to CurrentInstall.Files.Count - 1 do
@@ -90,10 +102,10 @@ end;
 
 procedure TUninstallShortCuts.Execute(Callback: TActionCallback);
 var
-  I, J : Integer;
-  DiskObject : TDiskObject;
-  CurentPosition : Int64;
-  ShortcutPath : string;
+  I, J: Integer;
+  DiskObject: TDiskObject;
+  CurentPosition: Int64;
+  ShortcutPath: string;
 begin
   CurentPosition := 0;
   for I := 0 to CurrentInstall.Files.Count - 1 do
@@ -125,8 +137,15 @@ end;
 procedure TUninstallNotify.Execute(Callback: TActionCallback);
 var
   NotifyUrl: string;
+  Version: string;
+  ExeFileName: string;
 begin
-  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + ProductMajorVersionVersion + '&ac=' + TActivationManager.Instance.ApplicationCode;
+  Version := ProductMajorVersionVersion;
+  ExeFileName := InstalledFileName;
+  if ExeFileName <> '' then
+    Version := ReleaseToString(GetExeVersion(ExeFileName));
+
+  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + Version + '&ac=' + TActivationManager.Instance.ApplicationCode;
   RunAsUser(NotifyUrl, NotifyUrl, NotifyUrl, False);
 end;
 
