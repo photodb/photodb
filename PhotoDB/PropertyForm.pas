@@ -1406,7 +1406,7 @@ begin
   IDLabel.Text := L('Not available');
   OwnerMemo.Text := L('Not available');
 
-  if YearOf(FFileDate) > 1900 then
+  if (FFileDate > 0) and (YearOf(FFileDate) > 1900) then
   begin
     DateEdit.DateTime := FFileDate;
     TimeEdit.Time := FFileTime;

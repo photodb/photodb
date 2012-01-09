@@ -1478,6 +1478,93 @@ begin
     Shell1.Visible := False;
   end;
 
+  if Info.FileType = EXPLORER_ITEM_DEVICE_STORAGE then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    SlideShow1.Visible := False;
+    Properties1.Visible := False;
+    Delete1.Visible := False;
+    Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
+  if Info.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    SlideShow1.Visible := False;
+    Properties1.Visible := False;
+    Delete1.Visible := True;
+    Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
+  if (Info.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (Info.FileType = EXPLORER_ITEM_DEVICE_FILE) then
+  begin
+    DBitem1.Visible := False;
+    StenoGraphia1.Visible := False;
+    Print1.Visible := False;
+    Othertasks1.Visible := False;
+    ImageEditor2.Visible := False;
+    RefreshID1.Visible := False;
+    Rotate1.Visible := False;
+    SetasDesktopWallpaper1.Visible := False;
+    Convert1.Visible := False;
+    Resize1.Visible := False;
+    CryptFile1.Visible := False;
+    ResetPassword1.Visible := False;
+    EnterPassword1.Visible := False;
+    Refresh1.Visible := False;
+    NewWindow1.Visible := False;
+    Open1.Visible := False;
+    SlideShow1.Visible := False;
+    Properties1.Visible := False;
+    Delete1.Visible := True;
+    Rename1.Visible := False;
+    AddFile1.Visible := False;
+    Cut2.Visible := False;
+    Copy1.Visible := False;
+    Paste2.Visible := False;
+    Shell1.Visible := False;
+  end;
+
   if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
     DBitem1.Visible := False;
@@ -3944,15 +4031,15 @@ var
     Path := AnsiLowerCase(GetCurrentPath);
     Result := False;
 
-    if FPlaces[index].MyComputer and (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
+    if FPlaces[Index].MyComputer and (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
       Result := True
-    else if FPlaces[index].MyDocuments and (Path = AnsiLowerCase(GetPersonalFolder)) then
+    else if FPlaces[Index].MyDocuments and (Path = AnsiLowerCase(GetPersonalFolder)) then
       Result := True
-    else if FPlaces[index].MyPictures and (Path = AnsiLowerCase(MyPicturesPath)) then
+    else if FPlaces[Index].MyPictures and (Path = AnsiLowerCase(MyPicturesPath)) then
         Result := True;
 
     if not Result then
-      if FPlaces[index].OtherFolder then
+      if FPlaces[Index].OtherFolder then
       begin
         Result := True;
         if (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
@@ -4091,7 +4178,7 @@ begin
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
+      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
       SlideShowLink.Visible := True;
       SlideShowLink.Top := NewTop + H;
@@ -4298,7 +4385,7 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY))
 		  and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
@@ -4316,7 +4403,7 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
     begin
       OtherPlacesLabel.Show;
@@ -6928,7 +7015,9 @@ begin
         FSelectedInfo.Encrypted := FFilesInfo[Index].Crypted;
         FileSID := FFilesInfo[Index].SID;
 
-        if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
+        if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
           FSelectedInfo.Size := FFilesInfo[Index].FileSize;
         PmItemPopup.Tag := Index;
 
@@ -7041,7 +7130,12 @@ begin
                 IsDirectory := (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER);
                 if IsDirectory then
                   FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico)
-                else
+                else if (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+                        (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
+                begin
+                  Ico := TIcon.Create;
+                  Ico.Handle := ExtractDefaultAssociatedIcon(ExtractFileExt(FileName), 48);
+                end else
                   FindIcon(HInstance, 'SIMPLEFILE', 48, 32, Ico);
 
                 try
@@ -7121,7 +7215,8 @@ begin
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)
+            or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -7153,7 +7248,13 @@ begin
                   FindIcon(HInstance, 'STORAGE', 48, 32, Ico);
                 EXPLORER_ITEM_DEVICE_DIRECTORY:
                   FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico);
+                EXPLORER_ITEM_DEVICE_FILE:
+                begin
+                  Ico := TIcon.Create;
+                  Ico.Handle := ExtractDefaultAssociatedIcon(ExtractFileExt(FileName), 48);
+                end;
               end;
+
               try
                 Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
                   ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
