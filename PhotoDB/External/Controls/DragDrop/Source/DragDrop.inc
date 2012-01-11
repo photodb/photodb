@@ -127,6 +127,18 @@
   {$DEFINE VER_OK}
 {$ENDIF}
 
+// Delphi XE
+{$IFDEF VER220}
+  {$DEFINE VER22_PLUS}
+  {$DEFINE VER_OK}
+{$ENDIF}
+
+// Delphi XE2
+{$IFDEF VER230}
+  {$DEFINE VER23_PLUS}
+  {$DEFINE VER_OK}
+{$ENDIF}
+
 // Unknown compiler version - assume D2009 compatible for Unicode or D2007 for Ansi
 {$IFNDEF VER_OK}
   {$ifdef UNICODE}

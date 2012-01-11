@@ -253,7 +253,7 @@ begin
           InvalidateRect(Handle, @ChildR, True);
 
         {$IFDEF HAS_THEMES_UNIT}
-        if ThemeServices.ThemesEnabled then
+        if {ThemeServices.ThemesEnabled}StyleServices.Enabled then
           for I := 0 to ControlCount - 1 do
             if Controls[I].Visible and (Controls[I] is TWinControl) then
             begin

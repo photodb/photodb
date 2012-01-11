@@ -51,11 +51,11 @@ begin
   end;
 end;
 
-function GetCommonDirectory(FileNames : TStrings): string;
+function GetCommonDirectory(FileNames: TStrings): string;
 var
   I: Integer;
   S, Temp, D: string;
-  Files : TStrings;
+  Files: TStrings;
 begin
   Result := '';
   if FileNames.Count = 0 then
