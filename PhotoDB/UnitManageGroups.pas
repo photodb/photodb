@@ -90,7 +90,7 @@ implementation
 
 uses
   UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo,
-  ExplorerUnit, UnitSelectFontForm;
+  uManagerExplorer, UnitSelectFontForm;
 
 {$R *.dfm}
 

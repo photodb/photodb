@@ -380,7 +380,7 @@ implementation
 
 uses
   UnitUpdateDB, PropertyForm, SlideShowFullScreen, uFormSelectPerson,
-  ExplorerUnit, FloatPanelFullScreen, UnitSizeResizerForm, uFormAddImage,
+  uManagerExplorer, FloatPanelFullScreen, UnitSizeResizerForm, uFormAddImage,
   DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
   UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,

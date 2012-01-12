@@ -135,7 +135,7 @@ procedure DestroyUpdaterObject;
 implementation
 
 uses
-  FormManegerUnit, UnitHistoryForm, ExplorerUnit, SlideShow, UnitScripts,
+  FormManegerUnit, UnitHistoryForm, uManagerExplorer, SlideShow, UnitScripts,
   DBScriptFunctions, UnitUpdateDBThread;
 
 var

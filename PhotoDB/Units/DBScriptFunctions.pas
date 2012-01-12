@@ -30,7 +30,7 @@ uses
   ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor, UnitFormCont,
-  ExplorerUnit, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
+  uManagerExplorer, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
   SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
   UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
@@ -233,7 +233,7 @@ function NewExplorerByPath(Path: string): string;
 begin
   with ExplorerManager.NewExplorer(False) do
   begin
-    SetStringPath(Path, False);
+    NavigateToFile(Path);
     Show;
     Result := GUIDToString(WindowID);
   end;
@@ -375,7 +375,7 @@ begin
     FormManager.CloseApp(nil);
 end;
 
-function GetExplorerByCID(CID : string) : TExplorerForm;
+function GetExplorerByCID(CID : string) : TCustomExplorerForm;
 var
   I: Integer;
 begin
@@ -416,7 +416,7 @@ begin
   begin
     SetLength(Result, ExplorerManager.ExplorersCount);
     for I := 0 to ExplorerManager.ExplorersCount - 1 do
-      if AnsiLowerCase(ExplorerManager[I].GetCurrentPath) = AnsiLowerCase(Path) then
+      if AnsiLowerCase(ExplorerManager[I].CurrentPath) = AnsiLowerCase(Path) then
       begin
         Result := GUIDToString(ExplorerManager[I].WindowID);
         Break;
@@ -432,7 +432,7 @@ begin
   if ExplorerManager <> nil then
   begin
     for I := 0 to ExplorerManager.ExplorersCount - 1 do
-      if AnsiLowerCase(ExplorerManager[I].GetCurrentPath) = AnsiLowerCase(Path) then
+      if AnsiLowerCase(ExplorerManager[I].CurrentPath) = AnsiLowerCase(Path) then
       begin
         SetLength(Result, Length(Result) + 1);
         Result[Length(Result) - 1] := GUIDToString(ExplorerManager[I].WindowID);
@@ -452,7 +452,7 @@ begin
     for I := 0 to ExplorerManager.ExplorersCount - 1 do
       if CID = GUIDToString(EditorsManager[I].WindowID) then
       begin
-        Result := ExplorerManager[I].GetCurrentPath;
+        Result := ExplorerManager[I].CurrentPath;
         Break;
       end;
   end;

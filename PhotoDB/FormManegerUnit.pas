@@ -67,7 +67,7 @@ procedure UnRegisterMainForm(Value: TForm);
 implementation
 
 uses
-  UnitCleanUpThread, ExplorerUnit, USearchTypes, SlideShow, UnitFileCheckerDB,
+  UnitCleanUpThread, uManagerExplorer, USearchTypes, SlideShow, UnitFileCheckerDB,
   UnitInternetUpdate, UAbout, UnitConvertDBForm, UnitImportingImagesForm,
   UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel,
   UActivation, UnitUpdateDB, UExifPatchThread;
@@ -400,9 +400,11 @@ begin
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
+{$IFDEF LICENSE}
 var
   FReg: TBDRegistry;
   InstallDate: TDateTime;
+{$ENDIF}
 begin
   if not CMDInProgress then
   begin
@@ -424,6 +426,7 @@ begin
       TW.I.Start('StartCRCCheckThread');
       TLoad.Instance.StartCRCCheckThread;
     end;
+    {$IFDEF LICENSE}
     if (FCheckCount = 30) and not FolderView then // after 4 sec.
     begin
       if TActivationManager.Instance.IsDemoMode then
@@ -441,6 +444,7 @@ begin
         end;
       end;
     end;
+    {$ENDIF}
     if (FCheckCount = 40) and not FolderView then // after 4 sec.
     begin
       if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then

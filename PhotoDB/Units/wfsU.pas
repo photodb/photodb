@@ -90,7 +90,7 @@ type
 implementation
 
 uses
-  ExplorerUnit;
+  ExplorerUnit, uManagerExplorer;
 
 var
   OM: TManagerObjects = nil;

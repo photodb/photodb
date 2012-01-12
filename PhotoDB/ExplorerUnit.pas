@@ -16,6 +16,7 @@ uses
   UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
   UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
   UnitDBFileDialogs,
+  uFormListView,
   uIconUtils,
   uBitmapUtils,
   uShellIcons,
@@ -25,7 +26,6 @@ uses
   System.SyncObjs,
   uResources,
   uListViewUtils,
-  uFormListView,
   uAssociatedIcons,
   uLogger,
   uConstants,
@@ -57,13 +57,16 @@ uses
   uExplorerSearchProviders,
   uExplorerPortableDeviceProvider,
   uTranslate,
-  uVCLHelpers;
+  uVCLHelpers,
+  uPortableDeviceUtils,
+  uShellNamespaceUtils,
+  uManagerExplorer;
 
 const
   RefreshListViewInterval = 50;
 
 type
-  TExplorerForm = class(TListViewForm)
+  TExplorerForm = class(TCustomExplorerForm)
     SizeImageList: TImageList;
     PmItemPopup: TPopupMenu;
     SlideShow1: TMenuItem;
@@ -312,7 +315,7 @@ type
       var Accept: Boolean);
     procedure ListView1SelectItem(Sender: TObject;
      Item: TEasyItem; Selected: Boolean);
-    procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SelectAll1Click(Sender: TObject);
     procedure Refresh2Click(Sender: TObject);
@@ -323,10 +326,8 @@ type
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure HistoryChanged(Sender: TObject);
-    procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ListView1Exit(Sender: TObject);
     procedure Refresh1Click(Sender: TObject);
     procedure RefreshItemByID(ID: Integer);
@@ -334,8 +335,8 @@ type
     procedure MakeNewFolder1Click(Sender: TObject);
     procedure Copy2Click(Sender: TObject);
     procedure OpenInNewWindow1Click(Sender: TObject);
-    function GetCurrentPath: String;
-    procedure SetPath(Path: String);
+    function GetCurrentPath: String; override;
+    procedure SetPath(NewPath: String); override;
     procedure ShowUpdater1Click(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
     procedure Select(Item: TEasyItem; GUID: TGUID);
@@ -359,12 +360,11 @@ type
     function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
     function ItemIndexToMenuIndex(Index: Integer): Integer;
     function MenuIndexToItemIndex(Index: Integer): Integer;
-    procedure SetOldPath(Path: String);
-    procedure NavigateToFile(FileName: string);
+    procedure SetOldPath(Path: string); override;
+    procedure NavigateToFile(FileName: string); override;
     procedure FormShow(Sender: TObject);
     procedure NewWindow1Click(Sender: TObject);
     procedure Cut1Click(Sender: TObject);
-    procedure Paste1Click(Sender: TObject);
     procedure PmListPopupPopup(Sender: TObject);
     procedure Cut2Click(Sender: TObject);
     procedure ShowProgress;
@@ -384,6 +384,8 @@ type
     procedure ScriptExecuted(Sender: TObject);
     procedure CopyToLinkClick(Sender: TObject);
     procedure MoveToLinkClick(Sender: TObject);
+    procedure PasteFromClipboard(CopyToCurrentDirectory: Boolean);
+    procedure Paste1Click(Sender: TObject);
     procedure Paste2Click(Sender: TObject);
     procedure ExplorerPanel1Click(Sender: TObject);
     procedure SetNewPath(Path: String; Explorer: Boolean);
@@ -437,7 +439,7 @@ type
     procedure DropFileTarget1Enter(Sender: TObject;
       ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure DropFileTarget1Leave(Sender: TObject);
-    procedure SetStringPath(Path : String; ChangeTreeView : Boolean);
+    procedure SetStringPath(Path : String; ChangeTreeView : Boolean); override;
     procedure HelpTimerTimer(Sender: TObject);
     procedure Help1NextClick(Sender: TObject);
     procedure Help1CloseClick(Sender : TObject; var CanClose : Boolean);
@@ -572,7 +574,6 @@ type
      { Private declarations }
      FBitmapImageList: TBitmapImageList;
      FSearchMode: Integer;
-     FWindowID: TGUID;
      NewFileName: string;
      NewFileNameGUID: TGUID;
      TempFolderName: string;
@@ -638,6 +639,8 @@ type
 
      FSelectedItem: TEasyItem;
 
+     FNextClipboardViewer: HWnd;
+     FIsFirstShow: Boolean;
      procedure ReadPlaces;
      procedure UserDefinedPlaceClick(Sender : TObject);
      procedure UserDefinedPlaceContextPopup(Sender: TObject;
@@ -668,6 +671,9 @@ type
      function GetFilterText: string;
      procedure SetNewHistoryPath(Sender: TObject);
      procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
+     procedure WMChangeCBChain(var Msg: TWMChangeCBChain); message WM_CHANGECBCHAIN;
+     procedure WMDrawClipboard(var Msg: TMessage); message WM_DRAWCLIPBOARD;
+     procedure WMClipboardUpdate(var Msg: TMessage); message WM_CLIPBOARDUPDATE;
      procedure AddItemToUpdate(Item: TEasyItem);
      procedure ItemUpdateTimer(Sender: TObject);
      procedure UpdateItems;
@@ -675,51 +681,18 @@ type
      NoLockListView: Boolean;
      procedure UpdateMenuItems(Menu: TPopupMenu;  PathList: TArExplorerPath; PathIcons: TPathItemCollection);
      procedure UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
-     procedure LoadLastPath;
+     procedure LoadLastPath; override;
      procedure LoadLanguage;
      procedure LoadSizes;
      procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
-     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); reintroduce; overload;
+     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
      destructor Destroy; override;
      procedure HideFilter(ResetFilter: Boolean = True);
      procedure ShowFilter(PerformFilter: Boolean);
-     property WindowID: TGUID read FWindowID;
      property MyComputer: string read GetMyComputer;
      property ViewInfo: TExplorerViewInfo read GetViewInfo;
      property View: Integer read GetView write SetView;
    end;
-
-  TManagerExplorer = class(TObject)
-  private
-    FExplorers: TList;
-    FForms: TList;
-    FShowPrivate: Boolean;
-    FShowEXIF: Boolean;
-    FShowQuickLinks: Boolean;
-    FSync: TCriticalSection;
-    procedure SetShowQuickLinks(const Value: Boolean);
-    function GetExplorerByIndex(Index: Integer): TExplorerForm;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function NewExplorer(GoToLastSavedPath: Boolean): TExplorerForm;
-    procedure FreeExplorer(Explorer: TExplorerForm);
-    procedure AddExplorer(Explorer: TExplorerForm);
-    procedure LoadEXIF;
-    procedure RemoveExplorer(Explorer: TExplorerForm);
-    function GetExplorersTexts: TStrings;
-    function IsExplorer(Explorer: TExplorerForm): Boolean;
-    function ExplorersCount: Integer;
-    function GetExplorerNumber(Explorer: TExplorerForm): Integer;
-    function GetExplorerBySID(SID: string): TExplorerForm;
-    property ShowPrivate: Boolean read FShowPrivate write FShowPrivate;
-    function IsExplorerForm(Explorer: TForm): Boolean;
-    property ShowEXIF: Boolean read FShowEXIF write FShowEXIF;
-    property ShowQuickLinks: Boolean read FShowQuickLinks write SetShowQuickLinks;
-    property Items[Index: Integer]: TExplorerForm read GetExplorerByIndex; default;
-  end;
-
-function ExplorerManager: TManagerExplorer;
 
 implementation
 
@@ -737,14 +710,22 @@ uses
 
 {$R *.dfm}
 
+//TODO: move to somewhere else
+function CanCopyFromClipboard: Boolean;
 var
-  FExplorerManager: TManagerExplorer = nil;
-
-function ExplorerManager: TManagerExplorer;
+  Files: TStrings;
+  Effects: Integer;
 begin
-  if FExplorerManager = nil then
-    FExplorerManager := TManagerExplorer.Create;
-  Result := FExplorerManager;
+  Files := TStringList.Create;
+  try
+    LoadFilesFromClipBoard(Effects, Files);
+    Result := Files.Count > 0;
+  finally
+    F(Files);
+  end;
+
+  if not Result then
+    Result := ClipboardHasPIDList;
 end;
 
 procedure RegisterPathEditThread(Sender: TThread);
@@ -834,22 +815,20 @@ end;
 
 procedure VerifyPaste(Explorer: TExplorerForm);
 var
-  Files: TStrings;
-  Effects: Integer;
+  CanPaste: Boolean;
+  FileType: Integer;
 begin
-  with Explorer do
-  begin
-    Files := TStringList.Create;
-    try
-      LoadFilesFromClipBoard(Effects, Files);
-      TBPaste.Enabled := Files.Count > 0;
-    finally
-      F(Files);
-    end;
-    TBPaste.Enabled := TBPaste.Enabled and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER)
-      or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE)
-      or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE));
-  end;
+  FileType := Explorer.FSelectedInfo.FileType;
+
+  CanPaste := CanCopyFromClipboard;
+
+  CanPaste := CanPaste and ((FileType = EXPLORER_ITEM_FOLDER)
+                        or (FileType = EXPLORER_ITEM_DRIVE)
+                        or (FileType = EXPLORER_ITEM_SHARE)
+                        or (FileType = EXPLORER_ITEM_DEVICE_STORAGE)
+                        or (FileType = EXPLORER_ITEM_DEVICE_DIRECTORY));
+
+  Explorer.TbPaste.Enabled := CanPaste;
 end;
 
 procedure TExplorerForm.CreateBackgrounds;
@@ -898,6 +877,7 @@ procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
+  FIsFirstShow := True;
   DirectoryWatcher := TWachDirectoryClass.Create;
   DefaultSort := -1;
   FWasDragAndDrop:= False;
@@ -957,7 +937,6 @@ begin
   ElvMain.Groups.Add;
   ElvMain.Groups[0].Visible := True;
 
-  FWindowID := GetGUID;
   RefreshIDList := TList.Create;
 
   SetLength(UserLinks, 0);
@@ -1199,72 +1178,57 @@ var
   Info: TExplorerFileInfo;
   Item: TEasyItem;
   Point: TPoint;
-  Files: TStrings;
-  Effects, I: Integer;
+  I: Integer;
   B: Boolean;
 begin
   GetCursorPos(Point);
+  Info := FFilesInfo[PmItemPopup.Tag];
+
+  DBitem1.Visible := False;
+  StenoGraphia1.Visible := False;
+  Print1.Visible := False;
+  Othertasks1.Visible := False;
+  ImageEditor2.Visible := False;
+  RefreshID1.Visible := False;
+  Rotate1.Visible := False;
+  SetasDesktopWallpaper1.Visible := False;
+  Convert1.Visible := False;
+  Resize1.Visible := False;
+  CryptFile1.Visible := False;
+  ResetPassword1.Visible := False;
+  EnterPassword1.Visible := False;
+  Refresh1.Visible := False;
+  NewWindow1.Visible := False;
+  Open1.Visible := False;
+  SlideShow1.Visible := False;
+  Properties1.Visible := False;
+  Delete1.Visible := False;
+  Rename1.Visible := False;
+  AddFile1.Visible := False;
+  Cut2.Visible := False;
+  Copy1.Visible := False;
   Paste2.Visible := False;
+  Shell1.Visible := False;
   SendTo1.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
-  Info := FFilesInfo[PmItemPopup.Tag];
 
   if Info.FileType = EXPLORER_ITEM_DRIVE then
   begin
-    DBitem1.Visible := False;
-    Print1.Visible := False;
-    RefreshID1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    Refresh1.Visible := False;
-    CryptFile1.Visible := False;
-    EnterPassword1.Visible := False;
-    ResetPassword1.Visible := False;
     NewWindow1.Visible := True;
     AddFile1.Caption := L('Add disk');
     AddFile1.Visible := not FolderView;
     Properties1.Visible := True;
     Open1.Visible := True;
     SlideShow1.Visible := True;
-    Rename1.Visible := False;
-    Delete1.Visible := False;
-    Files := TStringList.Create;
-    try
-      LoadFilesFromClipBoard(Effects, Files);
-      if Files.Count <> 0 then
-        Paste2.Enabled := True
-      else
-        Paste2.Enabled := False;
-    finally
-      F(Files);
-    end;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
+
     Paste2.Visible := True;
     Shell1.Visible := True;
   end;
+
   if Info.FileType = EXPLORER_ITEM_FOLDER then
   begin
-    DBitem1.Visible := False;
     MakeFolderViewer2.Visible := not FolderView;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    StenoGraphia1.Visible := False;
     Refresh1.Visible := True;
     NewWindow1.Visible := True;
     AddFile1.Caption := L('Add directory');
@@ -1275,23 +1239,11 @@ begin
     Delete1.Visible := True;
     Rename1.Visible := True;
     SlideShow1.Visible := True;
-    Files := TStringList.Create;
-    try
-      LoadFIlesFromClipBoard(Effects, Files);
-      if Files.Count <> 0 then
-        Paste2.Enabled := True
-      else
-        Paste2.Enabled := False;
-    finally
-      F(Files);
-    end;
 
-    B := CanCopySelection;
-    Cut2.Visible := B;
-    Copy1.Visible := B;
     Paste2.Visible := True;
     Shell1.Visible := True;
   end;
+
   if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
     DBitem1.Visible := True;
@@ -1314,10 +1266,7 @@ begin
     RefreshID1.Visible := (not EnterPassword1.Visible) and (Info.ID <> 0);
     SetasDesktopWallpaper1.Visible := CryptFile1.Visible and IsWallpaper(Info.FileName);
     Refresh1.Visible := True;
-    Open1.Visible := False;
-    Shell1.Visible := False;
     Rename1.Visible := True;
-    NewWindow1.Visible := False;
     Properties1.Visible := True;
     SlideShow1.Visible := True;
     Delete1.Visible := True;
@@ -1328,416 +1277,125 @@ begin
       AddFile1.Visible := False;
     Cut2.Visible := True;
     Copy1.Visible := True;
-    Paste2.Visible := False;
   end;
+
   if (Info.FileType = EXPLORER_ITEM_FILE) or (Info.FileType = EXPLORER_ITEM_EXEFILE) then
   begin
     if AnsiLowerCase(ExtractFileName(Info.FileName)) = AnsiLowerCase(C_CD_MAP_FILE) then
       MapCD1.Visible := not FolderView;
 
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
-    NewWindow1.Visible := False;
-    Open1.Visible := False;
-    SlideShow1.Visible := False;
     Properties1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := True;
-    AddFile1.Visible := False;
     Cut2.Visible := True;
     Copy1.Visible := True;
-    Paste2.Visible := False;
     Shell1.Visible := True;
   end;
 
   if Info.FileType = EXPLORER_ITEM_NETWORK then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
-    Properties1.Visible := False;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_WORKGROUP then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
-    Properties1.Visible := False;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_COMPUTER then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
-    Properties1.Visible := False;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_DEVICE then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
     Properties1.Visible := True;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_STORAGE then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
     Properties1.Visible := True;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
     Properties1.Visible := True;
-    Delete1.Visible := True;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
     Cut2.Visible := True;
     Copy1.Visible := True;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if (Info.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (Info.FileType = EXPLORER_ITEM_DEVICE_FILE) then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
-    NewWindow1.Visible := False;
-    Open1.Visible := False;
-    SlideShow1.Visible := False;
     Properties1.Visible := True;
     Delete1.Visible := True;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
     Cut2.Visible := True;
     Copy1.Visible := True;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
-    DBitem1.Visible := False;
     StenoGraphia1.Visible := True;
     Print1.Visible := True;
-    Othertasks1.Visible := False;
     ImageEditor2.Visible := True;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
     Convert1.Visible := True;
     Resize1.Visible := True;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
-    NewWindow1.Visible := False;
-    Open1.Visible := False;
     SlideShow1.Visible := True;
     Properties1.Visible := True;
     Delete1.Visible := True;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
     Cut2.Visible := True;
     Copy1.Visible := True;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_PERSON_LIST then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
-    Properties1.Visible := False;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_PERSON then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
     Properties1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := True;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_GROUP_LIST then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
-    Properties1.Visible := False;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_GROUP then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
     Properties1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := True;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
 
   if Info.FileType = EXPLORER_ITEM_SHARE then
   begin
-    DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
-    Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
-    RefreshID1.Visible := False;
-    Rotate1.Visible := False;
-    SetasDesktopWallpaper1.Visible := False;
-    Convert1.Visible := False;
-    Resize1.Visible := False;
-    CryptFile1.Visible := False;
-    ResetPassword1.Visible := False;
-    EnterPassword1.Visible := False;
-    Refresh1.Visible := False;
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    SlideShow1.Visible := False;
-    Properties1.Visible := False;
-    Delete1.Visible := False;
-    Rename1.Visible := False;
-    AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
-    Paste2.Visible := False;
-    Shell1.Visible := False;
   end;
+
+  Paste2.Enabled := CanCopyFromClipboard;
+
+  B := CanCopySelection;
+  Cut2.Visible := B;
+  Copy1.Visible := B;
 
   Item := ItemAtPos(ElvMain.ScreenToClient(Point).X, ElvMain.ScreenToClient(Point).Y);
   if PmItemPopup.Tag < 0 then
@@ -1798,7 +1456,7 @@ begin
   if FileList.Count > 0 then
     Copy_Move(Application.Handle, True, FileList);
   finally
-      FileList.Free;
+    F(FileList);
   end;
 end;
 
@@ -1929,6 +1587,11 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
+  if IsWindowsVista then
+    RemoveClipboardFormatListener(Handle)
+  else
+    ChangeClipboardChain(Handle, FNextClipboardViewer);
+
   ExplorerManager.RemoveExplorer(Self);
   NewFormState;
   ClearList;
@@ -2357,7 +2020,7 @@ begin
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: integer;
-  params: TEventFields; Value: TEventValues);
+  Params: TEventFields; Value: TEventValues);
 var
   ImParams, UpdateInfoParams: TEventFields;
   I, Index, ReRotation: Integer;
@@ -2485,11 +2148,7 @@ begin
       end;
     Exit;
   end;
-  if EventID_Param_CopyPaste in Params then
-  begin
-    VerifyPaste(Self);
-    Exit;
-  end;
+
   ImParams := [EventID_Param_Crypt, EventID_Param_Image,
     EventID_Param_Delete, EventID_Param_Critical];
   if ImParams * params<> [] then
@@ -2931,16 +2590,16 @@ begin
   Result := GetCurrentPathW.Path;
 end;
 
-procedure TExplorerForm.SetPath(Path: String);
+procedure TExplorerForm.SetPath(NewPath: String);
 begin
-  if not Self.Visible then
+  if not Visible then
   begin
-    SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(Path);
+    SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(NewPath);
     SaveWindowPos1.SetPosition;
     FixFormPosition;
   end;
-  FCurrentPath := Path;
-  SetNewPath(Path, False);
+  FCurrentPath := NewPath;
+  SetNewPath(NewPath, False);
 end;
 
 procedure TExplorerForm.ShowUpdater1Click(Sender: TObject);
@@ -3726,6 +3385,15 @@ end;
 
 procedure TExplorerForm.FormShow(Sender: TObject);
 begin
+  if FIsFirstShow then
+  begin
+    if not IsWindowsVista then
+      AddClipboardFormatListener(Handle)
+    else
+      FNextClipboardViewer := SetClipboardViewer(Handle);
+    FIsFirstShow := False;
+  end;
+
   NotSetOldPath := False;
   ElvMain.SetFocus;
 end;
@@ -3755,47 +3423,10 @@ begin
   end;
 end;
 
-procedure TExplorerForm.Paste1Click(Sender: TObject);
-var
-  Files: TStrings;
-  Effects: Integer;
-begin
-  Files := TStringList.Create;
-  try
-    LoadFilesFromClipBoard(Effects, Files);
-    if Files.Count = 0 then
-      Exit;
-
-    if Effects = DROPEFFECT_MOVE then
-    begin
-      CopyFiles(Handle, Files, GetCurrentPath, True, False, Self);
-      ClipBoard.Clear;
-      TbPaste.Enabled := False;
-    end;
-    if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
-      CopyFiles(Handle, Files, GetCurrentPath, False, False, Self);
-
-  finally
-    F(Files);
-  end;
-end;
-
 procedure TExplorerForm.PmListPopupPopup(Sender: TObject);
-var
-  Files: TStrings;
-  Effects: Integer;
 begin
-  OpeninSearchWindow1.Visible := True;
-  Files := TStringList.Create;
-  try
-    LoadFilesFromClipBoard(Effects, Files);
-    Paste1.Enabled := Files.Count > 0;
-  finally
-    F(Files);
-  end;
-
   Addfolder1.Visible := not FolderView;
-  MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
+  MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE)) and not FolderView;
 
   Paste1.Visible := False;
   Cut1.Visible := False;
@@ -3804,7 +3435,7 @@ begin
   MakeNew1.Visible := False;
   OpeninSearchWindow1.Visible := False;
 
-  if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE) then
+  if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) then
   begin
     Paste1.Visible := True;
     Cut1.Visible := True;
@@ -3820,6 +3451,8 @@ begin
     Cut1.Visible := False;
     Copy2.Visible := False;
   end;
+
+  Paste1.Enabled := CanCopyFromClipboard;
 end;
 
 procedure TExplorerForm.Cut2Click(Sender: TObject);
@@ -3837,7 +3470,7 @@ begin
     end;
     Copy_Move(Application.Handle, False, FileList);
   finally
-    FileList.Free;
+    F(FileList);
   end;
 end;
 
@@ -4572,30 +4205,6 @@ begin
   end;
 end;
 
-procedure TExplorerForm.Paste2Click(Sender: TObject);
-var
-  Files: TStrings;
-  Effects: Integer;
-begin
-  Files := TStringList.Create;
-  try
-    LoadFilesFromClipBoard(Effects, Files);
-    if Files.Count = 0 then
-      Exit;
-
-    if Effects = DROPEFFECT_MOVE then
-    begin
-      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, True, False, Self);
-      ClipBoard.Clear;
-      TbPaste.Enabled := False;
-    end;
-    if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
-      CopyFiles(Handle, Files, FFilesInfo[PmItemPopup.Tag].FileName, False, False, Self);
-  finally
-    F(Files);
-  end;
-end;
-
 procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
 var
   S: string;
@@ -4632,149 +4241,6 @@ begin
     MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidthExplorer', 135);
   finally
     EndScreenUpdate(Handle, False);
-  end;
-end;
-
-{ TManagerExplorer }
-
-procedure TManagerExplorer.LoadEXIF;
-begin
-  FShowEXIF := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
-end;
-
-procedure TManagerExplorer.AddExplorer(Explorer: TExplorerForm);
-begin
-  FShowEXIF := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
-  ShowQuickLinks := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
-
-  if FExplorers.IndexOf(Explorer) = -1 then
-    FExplorers.Add(Explorer);
-
-  if FForms.IndexOf(Explorer) = -1 then
-    FForms.Add(Explorer);
-
-end;
-
-constructor TManagerExplorer.Create;
-begin
-  FSync := TCriticalSection.Create;
-  FExplorers := TList.Create;
-  FForms := TList.Create;
-  FShowPrivate := False;
-end;
-
-destructor TManagerExplorer.Destroy;
-begin
-  F(FExplorers);
-  F(FForms);
-  F(FSync);
-  inherited;
-end;
-
-function TManagerExplorer.ExplorersCount: Integer;
-begin
-  FSync.Enter;
-  try
-    Result := FExplorers.Count;
-  finally
-    FSync.Leave;
-  end;
-end;
-
-procedure TManagerExplorer.FreeExplorer(Explorer: TExplorerForm);
-begin
-//
-end;
-
-function TManagerExplorer.GetExplorerBySID(SID: String): TExplorerForm;
-var
-  I: Integer;
-begin
-  Result := nil;
-  FSync.Enter;
-  try
-    for I := 0 to FExplorers.Count - 1 do
-      if IsEqualGUID(TExplorerForm(FExplorers[I]).StateID, StringToGUID(SID)) then
-      begin
-        Result := FExplorers[I];
-        Break;
-      end;
-  finally
-    FSync.Leave;
-  end;
-end;
-
-function TManagerExplorer.GetExplorerNumber(Explorer: TExplorerForm): Integer;
-begin
-  FSync.Enter;
-  try
-    Result := FExplorers.IndexOf(Explorer);
-  finally
-    FSync.Leave;
-  end;
-end;
-
-function TManagerExplorer.GetExplorersTexts: TStrings;
-var
-  I: Integer;
-  B: Boolean;
-  S: string;
-begin
-  Result := TStringList.Create;
-  FSync.Enter;
-  try
-    for I := 0 to FExplorers.Count - 1 do
-      Result.Add(TForm(FExplorers[I]).Caption);
-
-    repeat
-      B := False;
-      for I := 0 to Result.Count - 2 do
-        if Comparestr(Result[I], Result[I + 1]) > 0 then
-        begin
-          S := Result[I];
-          Result[I] := Result[I + 1];
-          Result[I + 1] := S;
-          B := True;
-        end;
-    until not B;
-  finally
-    FSync.Leave;
-  end;
-end;
-
-function TManagerExplorer.IsExplorer(Explorer: TExplorerForm): Boolean;
-begin
-  FSync.Enter;
-  try
-    Result := FExplorers.IndexOf(Explorer) <> -1;
-  finally
-    FSync.Leave;
-  end;
-end;
-
-function TManagerExplorer.IsExplorerForm(Explorer: TForm): Boolean;
-begin
-  FSync.Enter;
-  try
-    Result := FForms.IndexOf(Explorer) <> -1;
-  finally
-    FSync.Leave;
-  end;
-end;
-
-function TManagerExplorer.NewExplorer(GoToLastSavedPath : Boolean): TExplorerForm;
-begin
-  Result := TExplorerForm.Create(Application, GoToLastSavedPath);
-end;
-
-procedure TManagerExplorer.RemoveExplorer(Explorer: TExplorerForm);
-begin
-  FSync.Enter;
-  try
-    FExplorers.Remove(Explorer);
-    FForms.Remove(Explorer);
-  finally
-    FSync.Leave;
   end;
 end;
 
@@ -4933,25 +4399,19 @@ begin
 end;
 
 procedure TExplorerForm.Copy3Click(Sender: TObject);
-var
-  EventInfo: TEventValues;
 begin
   if SelCount= 0 then
     Copy2Click(Sender)
   else
     Copy1Click(Sender);
-  DBKernel.DoIDEvent(Self, 0, [EventID_Param_CopyPaste], EventInfo);
 end;
 
 procedure TExplorerForm.Cut3Click(Sender: TObject);
-var
-  EventInfo: TEventValues;
 begin
   if SelCount = 0 then
     Cut1Click(Sender)
   else
     Cut2Click(Sender);
-  DBKernel.DoIDEvent(Self, 0, [EventID_Param_CopyPaste], EventInfo);
 end;
 
 procedure TExplorerForm.Options1Click(Sender: TObject);
@@ -5348,7 +4808,6 @@ end;
 
 procedure TExplorerForm.Paste3Click(Sender: TObject);
 var
-  EventInfo: TEventValues;
   CopyMoveToSelectedFolder: Boolean;
   Index: Integer;
 begin
@@ -5357,14 +4816,63 @@ begin
   begin
     Index := ItemIndexToMenuIndex(ElvMain.Selection.First.Index);
     CopyMoveToSelectedFolder := (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or
-      (FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE);
+      (FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
+      (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_DIRECTORY);
     PmItemPopup.Tag := Index;
   end;
-  if CopyMoveToSelectedFolder then
-    Paste2Click(Sender)
+  PasteFromClipboard(not CopyMoveToSelectedFolder);
+end;
+
+procedure TExplorerForm.PasteFromClipboard(CopyToCurrentDirectory: Boolean);
+var
+  Files: TStrings;
+  Effects: Integer;
+  Path: string;
+begin
+  if CopyToCurrentDirectory then
+    Path := GetCurrentPath
   else
-    Paste1Click(Sender);
-  DBKernel.DoIDEvent(Self, 0, [EventID_Param_CopyPaste], EventInfo);
+    Path := FFilesInfo[PmItemPopup.Tag].FileName;
+
+  Files := TStringList.Create;
+  try
+    LoadFilesFromClipBoard(Effects, Files);
+    if Files.Count = 0 then
+    begin
+      if ClipboardHasPIDList then
+      begin
+        if IsDevicePath(Path) then
+        begin
+          Delete(Path, 1, Length(cDevicesPath) + 1);
+          ExecuteShellPathRelativeToMyComputerMenuAction(Handle, Path, nil, 'Paste');
+        end else
+          PastePIDListToFolder(Handle, Path);
+      end;
+      Exit;
+    end;
+
+    if Effects = DROPEFFECT_MOVE then
+    begin
+      CopyFiles(Handle, Files, Path, True, False, Self);
+      ClipBoard.Clear;
+      TbPaste.Enabled := False;
+    end;
+    if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
+      CopyFiles(Handle, Files, Path, False, False, Self);
+
+  finally
+    F(Files);
+  end;
+end;
+
+procedure TExplorerForm.Paste1Click(Sender: TObject);
+begin
+  PasteFromClipboard(True);
+end;
+
+procedure TExplorerForm.Paste2Click(Sender: TObject);
+begin
+  PasteFromClipboard(False);
 end;
 
 procedure TExplorerForm.PePathChange(Sender: TObject);
@@ -6653,11 +6161,6 @@ begin
   end;
 end;
 
-procedure TManagerExplorer.SetShowQuickLinks(const Value: Boolean);
-begin
-  FShowQuickLinks := Value;
-end;
-
 procedure TExplorerForm.MyPicturesLinkContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
@@ -7633,6 +7136,28 @@ begin
   end;
 end;
 
+procedure TExplorerForm.WMChangeCBChain(var Msg: TWMChangeCBChain);
+begin
+  if FNextClipboardViewer = Msg.Remove then
+    FNextClipboardViewer := Msg.Next
+  else if FNextClipboardViewer <> 0 then
+    SendMessage(FNextClipboardViewer, WM_ChangeCBChain, Msg.Remove, Msg.Next)
+end;
+
+procedure TExplorerForm.WMClipboardUpdate(var Msg: TMessage);
+begin
+  VerifyPaste(Self);
+end;
+
+procedure TExplorerForm.WMDrawClipboard(var Msg: TMessage);
+begin
+  //pass the message on to the next window
+  if FNextClipboardViewer <> 0 then
+   SendMessage(FNextClipboardViewer, WM_DrawClipboard, Msg.wParam, Msg.lParam);
+
+  VerifyPaste(Self);
+end;
+
 function TExplorerForm.GetFilterText: string;
 var
   Filter: string;
@@ -7849,32 +7374,27 @@ end;
 
 procedure TExplorerForm.LoadStatusVariables(Sender: TObject);
 var
-  Files: TStrings;
-  Effects: Integer;
   Index: Integer;
   FileEx, CanPaste: Boolean;
 begin
-  Files := TStringList.Create;
-  try
-    LoadFIlesFromClipBoard(Effects, Files);
-    FileEx := Files.Count <> 0;
-  finally
-    F(Files);
-  end;
+  FileEx := CanCopyFromClipboard;
+
   if SelCount = 0 then
     CanPaste := FileEx
   else
   begin
     if SelCount = 1 then
     begin
-      index := ItemIndexToMenuIndex(ListView1Selected.index);
-      if (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE) or (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) then
+      Index := ItemIndexToMenuIndex(ListView1Selected.Index);
+      if (FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or
+         (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_STORAGE) then
         CanPaste := FileEx
       else
         CanPaste := False;
     end else
       CanPaste := False;
   end;
+
   SetBoolAttr(AScript, '$CanUp', AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(MyComputer));
   SetBoolAttr(AScript, '$CanBack', FHistory.CanBack);
   SetBoolAttr(AScript, '$CanForward', FHistory.CanForward);
@@ -7885,14 +7405,14 @@ end;
 
 function TExplorerForm.CanUp: Boolean;
 begin
-  Result := AnsiLowerCase(GetCurrentPath)<>AnsiLowerCase(MyComputer);
+  Result := AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(MyComputer);
   if GetCurrentPath = '' then
     Result := False;
 end;
 
 function TExplorerForm.SelCount: Integer;
 begin
-  Result:= ElvMain.Selection.Count;
+  Result := ElvMain.Selection.Count;
 end;
 
 function TExplorerForm.SelectedIndex: Integer;
@@ -7908,21 +7428,24 @@ begin
   if ListView1Selected = nil then
     Result := -1
   else
-    Result := FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.index)].FileType;
+    Result := FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.Index)].FileType;
 end;
 
 function CanCopyFileByType(FileType: Integer): boolean;
 begin
   Result := ((FileType = EXPLORER_ITEM_FILE) or (FileType = EXPLORER_ITEM_IMAGE) or
-   (FileType = EXPLORER_ITEM_FOLDER) or (FileType = EXPLORER_ITEM_SHARE) or (FileType = EXPLORER_ITEM_EXEFILE));
+   (FileType = EXPLORER_ITEM_FOLDER) or (FileType = EXPLORER_ITEM_SHARE) or (FileType = EXPLORER_ITEM_EXEFILE) or
+   (FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+   (FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+   (FileType = EXPLORER_ITEM_DEVICE_FILE));
 end;
 
 function TExplorerForm.CanCopySelection: Boolean;
 var
   I, Index: Integer;
 begin
- Result := True;
- for I := 0 to ElvMain.Items.Count - 1 do
+  Result := True;
+  for I := 0 to ElvMain.Items.Count - 1 do
     if ElvMain.Items[I].Selected then
     begin
       Index := ItemIndexToMenuIndex(I);
@@ -9104,18 +8627,6 @@ begin
     Application.HintHidePause := 5000;
 end;
 
-function TManagerExplorer.GetExplorerByIndex(index: Integer): TExplorerForm;
-begin
-  Result := nil;
-  FSync.Enter;
-  try
-    if (Index > -1) and (Index < FExplorers.Count) then
-      Result := FExplorers[Index];
-  finally
-    FSync.Leave;
-  end;
-end;
-
 function TExplorerForm.TreeView: TShellTreeView;
 begin
   if FShellTreeView = nil then
@@ -9287,9 +8798,5 @@ initialization
   PEUnRegisterThreadEvent := UnRegisterPathEditThread;
   PathProvider_UpdateText := PE_PathProvider_UpdateText;
   PathProvider_UpdateImage := PEPathProvider_UpdateImage;
-
-Finalization
-
-  F(FExplorerManager);
 
 end.

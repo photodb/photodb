@@ -450,7 +450,7 @@ implementation
 uses
   UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
   PropertyForm, Options, UnitLoadFilesToPanel,
-  UnitHintCeator, ExplorerUnit, UnitUpdateDB,
+  UnitHintCeator, uManagerExplorer, UnitUpdateDB,
   UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
   UnitGroupReplace, UnitSavingTableForm, UnitHelp,
   UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,

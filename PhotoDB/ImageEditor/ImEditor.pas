@@ -10,7 +10,7 @@ uses
   EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus, uGUIDUtils,
   CustomSelectTool, TextToolUnit, BrushToolUnit, InsertImageToolUnit,
   GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm,
-  ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
+  uManagerExplorer, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
   UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage,
   RAWImage, DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
   UnitDBCommonGraphics,
@@ -244,7 +244,7 @@ type
   end;
 
 var
-  EditorsManager : TManagerEditors;
+  EditorsManager: TManagerEditors;
 
 const
   IMRELEASE = not DBInDebug;
@@ -261,7 +261,8 @@ const
 
 implementation
 
-uses UnitEditorFullScreenForm, PrintMainForm, UnitActionsForm;
+uses
+  UnitEditorFullScreenForm, PrintMainForm, UnitActionsForm;
 
 {$R *.dfm}
 {$R cursors.res}

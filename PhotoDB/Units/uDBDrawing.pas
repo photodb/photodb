@@ -47,7 +47,7 @@ function Icons: TIconsEx;
 implementation
 
 uses
-  UnitDBKernel, ExplorerUnit, MPCommonUtilities;
+  UnitDBKernel, uManagerExplorer, MPCommonUtilities;
 
 var
   FIcons: TIconsEx = nil;
@@ -136,9 +136,8 @@ begin
       FE := FileExistsSafe(FileName);
     end;
 
-  if (ExplorerManager <> nil) and ExplorerManager.ShowEXIF then
+  if ExplorerManager.ShowEXIF then
   begin
-
     ExifData := TExifData.Create;
     try
       try

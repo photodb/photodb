@@ -53,7 +53,7 @@ procedure ShowHistory(List : TStrings);
 implementation
 
 uses
-  ExplorerUnit, SlideShow, UnitUpdateDB;
+  uManagerExplorer, SlideShow, UnitUpdateDB;
 
 {$R *.dfm}
 

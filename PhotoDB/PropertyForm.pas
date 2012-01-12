@@ -316,7 +316,7 @@ implementation
 
 uses UnitQuickGroupInfo, uSearchTypes, SlideShow, UnitHintCeator,
      UnitEditGroupsForm, UnitManageGroups, CmpUnit,
-     UnitEditLinkForm, UnitHelp, ExplorerUnit, UnitNewGroupForm,
+     UnitEditLinkForm, UnitHelp, uManagerExplorer, UnitNewGroupForm,
      UnitFormChangeGroup, SelectGroupForm, UnitGroupsTools, Options;
 
 {$R *.dfm}

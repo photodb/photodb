@@ -11,7 +11,25 @@ uses
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
   uExplorerNetworkProviders,
-  uExplorerPortableDeviceProvider;
+  uExplorerPortableDeviceProvider,
+  uFormListView;
+
+type
+  TCustomExplorerForm = class(TListViewForm)
+  private
+    FWindowID: TGUID;
+  protected
+    function GetCurrentPath: string; virtual; abstract;
+  public
+    procedure SetStringPath(Path: String; ChangeTreeView: Boolean); virtual; abstract;
+    procedure SetPath(NewPath: string); virtual; abstract;
+    procedure SetOldPath(OldPath: string); virtual; abstract;
+    procedure LoadLastPath; virtual; abstract;
+    procedure NavigateToFile(FileName: string); virtual; abstract;
+    constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); reintroduce; overload;
+    property WindowID: TGUID read FWindowID;
+    property CurrentPath: string read GetCurrentPath;
+  end;
 
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
@@ -843,6 +861,14 @@ end;
 procedure TLoadPathList.UpdateMenu;
 begin
   TExplorerForm(FOwner).UpdateMenuItems(FSender, FPathList, FIcons);
+end;
+
+{ TCustomExplorerForm }
+
+constructor TCustomExplorerForm.Create(AOwner: TComponent;
+  GoToLastSavedPath: Boolean);
+begin
+  FWindowID := GetGUID;
 end;
 
 initialization

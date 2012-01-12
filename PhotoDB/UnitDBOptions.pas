@@ -61,7 +61,8 @@ procedure ChangeDBOptions(Options : TPhotoDBFile);  overload;
 
 implementation
 
-uses UnitConvertDBForm, ExplorerUnit;
+uses
+  UnitConvertDBForm, uManagerExplorer;
 
 {$R *.dfm}
 

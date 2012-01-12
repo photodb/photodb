@@ -56,7 +56,7 @@ implementation
 uses
   UnitWindowsCopyFilesThread,
   UnitGetPhotosForm,
-  ExplorerUnit,
+  uManagerExplorer,
   UnitUpdateDBObject,
   UnitUpdateDB;
 

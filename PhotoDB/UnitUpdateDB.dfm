@@ -279,8 +279,8 @@ object UpdateDBForm: TUpdateDBForm
     Tag = -1
     Left = 8
     Top = 112
-    Width = 64
-    Height = 13
+    Width = 80
+    Height = 16
     Cursor = crHandPoint
     Enabled = False
     Color = clWhite
@@ -297,13 +297,15 @@ object UpdateDBForm: TUpdateDBForm
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object WebLinkOpenFolder: TWebLink
     Tag = -1
     Left = 7
     Top = 131
-    Width = 64
-    Height = 13
+    Width = 80
+    Height = 16
     Cursor = crHandPoint
     Enabled = False
     Color = clWhite
@@ -320,13 +322,15 @@ object UpdateDBForm: TUpdateDBForm
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object ButtonClose: TWebLink
     Tag = -1
     Left = 304
     Top = 176
-    Width = 72
-    Height = 13
+    Width = 88
+    Height = 16
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -342,6 +346,8 @@ object UpdateDBForm: TUpdateDBForm
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object ButtonBreak: TWebLink
     Tag = -1
@@ -401,13 +407,15 @@ object UpdateDBForm: TUpdateDBForm
       0000840100008601000081010000C0030000E0070000F00F0000FFFF0000}
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object ButtonRunStop: TWebLink
     Tag = -1
     Left = 112
     Top = 109
-    Width = 125
-    Height = 13
+    Width = 141
+    Height = 16
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -423,13 +431,15 @@ object UpdateDBForm: TUpdateDBForm
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object ShowHistoryLink: TWebLink
     Tag = -1
     Left = 112
     Top = 132
-    Width = 111
-    Height = 13
+    Width = 127
+    Height = 16
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -445,13 +455,15 @@ object UpdateDBForm: TUpdateDBForm
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object WebLinkOptions: TWebLink
     Tag = -1
     Left = 8
     Top = 176
-    Width = 42
-    Height = 13
+    Width = 58
+    Height = 16
     Cursor = crHandPoint
     Color = clWhite
     ParentColor = False
@@ -467,6 +479,8 @@ object UpdateDBForm: TUpdateDBForm
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object TwWindowsPos: TTwButton
     Left = 374

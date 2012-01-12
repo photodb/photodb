@@ -52,7 +52,8 @@ procedure DoManageCDMapping;
 
 implementation
 
-uses UnitFormCDMapInfo, ExplorerUnit, UnitRefreshDBRecordsThread;
+uses
+  UnitFormCDMapInfo, uManagerExplorer, UnitRefreshDBRecordsThread;
 
 {$R *.dfm}
 

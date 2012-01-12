@@ -96,8 +96,9 @@ procedure DoCDExport;
 
 implementation
 
-uses FormManegerUnit, UnitStringPromtForm,
-     UnitCDExportThread, ExplorerUnit;
+uses
+  FormManegerUnit, UnitStringPromtForm,
+  UnitCDExportThread, uManagerExplorer;
 
 {$R *.dfm}
 

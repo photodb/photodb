@@ -248,8 +248,7 @@ var
 implementation
 
 uses
-  SlideShow, ExplorerThreadUnit,
-  ExplorerUnit, UnitJPEGOptions;
+  SlideShow, ExplorerThreadUnit, uManagerExplorer, UnitJPEGOptions;
 
 {$R *.dfm}
 

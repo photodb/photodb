@@ -9,6 +9,7 @@ uses
   Winapi.ActiveX,
   System.Win.ComObj,
   ShlObj,
+  uSysUtils,
   ShellAPI;
 
 procedure ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; Verb: AnsiString);
@@ -97,7 +98,6 @@ var
   Desktop: IShellFolder;
   ItemIDList: PITEMIDLIST;
   Eaten, Attr: ULONG;
-  HR: HRESULT;
 begin
   Result := nil;
   if Succeeded(SHGetDesktopFolder(Desktop)) then
@@ -121,6 +121,7 @@ var
   D: IDataObject;
   HR: HRESULT;
 begin
+  Result := False;
   HR := OleGetClipboard(D);
   if Succeeded(HR) then
   begin
@@ -173,7 +174,7 @@ begin
       HR := Desktop.GetUIObjectOf( 0, 1, PathPIDL, IContextMenu, nil, Pointer(Menu));
       if Succeeded(HR) then
       begin
-        FillMemory( @cmd, sizeof(cmd), 0 );
+        FillMemory( @cmd, SizeOf(cmd), 0 );
         with cmd do
         begin
           cbSize := SizeOf( cmd );
@@ -229,10 +230,13 @@ var
   end;
 
 begin
-  SetLength(FilePIDLs, Files.Count + 1);
-  FillChar(FilePIDLs[Files.Count], Sizeof(PItemIDList), #0);
-  for I := 0 to Files.Count - 1 do
-    FilePIDLs[I] := nil;
+  if Files <> nil then
+  begin
+    SetLength(FilePIDLs, Files.Count + 1);
+    FillChar(FilePIDLs[Files.Count], Sizeof(PItemIDList), #0);
+    for I := 0 to Files.Count - 1 do
+      FilePIDLs[I] := nil;
+  end;
 
   HR := SHGetMalloc(pMalloc);
   if Succeeded(HR) then
@@ -271,7 +275,7 @@ begin
 
                 if I = PathParts.Count - 1 then
                 begin
-                  if Files.Count > 0 then
+                  if (Files <> nil) and (Files.Count > 0) then
                   begin
                     HR := SHBindToObject(CurrentFolder, rgelt, nil, StringToGUID(SID_IShellFolder), Pointer(CurrentFolder));
                     Break;
@@ -291,10 +295,13 @@ begin
               end;
             end else
             begin
-              for J := 0 to Files.Count - 1 do
+              if Files <> nil then
               begin
-                if Files[J] = Name then
-                  FilePIDLs[J] := ILClone(rgelt);
+                for J := 0 to Files.Count - 1 do
+                begin
+                  if Files[J] = Name then
+                    FilePIDLs[J] := ILClone(rgelt);
+                end;
               end;
             end;
 
@@ -303,7 +310,7 @@ begin
         end;
       end;
 
-      if FilePIDLs <> nil then
+      if (Files <> nil) and (FilePIDLs <> nil) then
       begin
         HR := CurrentFolder.GetUIObjectOf(Handle,  Files.Count, FilePIDLs[0], IContextMenu, nil, Pointer(Menu));
         if Succeeded(HR) then
@@ -314,9 +321,12 @@ begin
     end;
   end;
 
-  for I := 0 to Files.Count - 1 do
-    if FilePIDLs[I] <> nil then
-      pMalloc.Free(FilePIDLs[I]);
+  if (Files <> nil) then
+  begin
+    for I := 0 to Files.Count - 1 do
+      if FilePIDLs[I] <> nil then
+        pMalloc.Free(FilePIDLs[I]);
+  end;
 end;
 
 end.

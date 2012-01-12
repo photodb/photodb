@@ -69,7 +69,7 @@ implementation
 {$R *.dfm}
 
 uses
-  UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, ExplorerUnit;
+  UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, uManagerExplorer;
 
 procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm);
 var

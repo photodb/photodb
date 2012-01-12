@@ -1689,7 +1689,7 @@ object ExplorerForm: TExplorerForm
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message
-    Left = 753
+    Left = 745
     Top = 72
   end
   object PopupMenu8: TPopupMenu

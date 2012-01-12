@@ -94,7 +94,7 @@ procedure MakeDBFileTree(DBFileName: string);
 implementation
 
 uses
-  ExplorerUnit, Searching, UnitOpenQueryThread, ProgressActionUnit;
+  uManagerExplorer, Searching, UnitOpenQueryThread, ProgressActionUnit;
 
 {$R *.dfm}
 
@@ -583,7 +583,7 @@ begin
   if DirectoryExists(FPath) then
     with ExplorerManager.NewExplorer(False) do
     begin
-      SetStringPath(FPath, False);
+      NavigateToFile(FPath);
       Show;
     end;
 end;

@@ -101,7 +101,7 @@ type
     EventID_Param_Delete, EventID_Param_Date,
     EventID_Param_Time, EventID_Param_IsDate , EventID_Param_IsTime,
     EventID_Param_Groups, EventID_Param_Crypt, EventID_Param_Include,
-    EventID_Param_GroupsChanged, EventID_Param_CopyPaste,
+    EventID_Param_GroupsChanged,
     EventID_Param_Add_Crypt_WithoutPass, SetNewIDFileData, EventID_CancelAddingImage,
     EventID_Param_Links,  EventID_Param_DB_Changed, EventID_Param_Refresh_Window,
     EventID_FileProcessed, EventID_Repaint_ImageList, EventID_No_EXIF,

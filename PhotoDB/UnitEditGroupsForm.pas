@@ -104,7 +104,7 @@ implementation
 
 uses
   UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
-  UnitQuickGroupInfo, SelectGroupForm, ExplorerUnit;
+  UnitQuickGroupInfo, SelectGroupForm, uManagerExplorer;
 
 {$R *.dfm}
 

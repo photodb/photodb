@@ -3,7 +3,7 @@ unit UnitExplorerThumbnailCreatorThread;
 interface
 
 uses
-  GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, JPEG,
+  GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, uManagerExplorer, JPEG,
   SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
   Effects, uJpegUtils, uCDMappingTypes, uLogger, UnitDBCommon,
   uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel, uExifUtils,

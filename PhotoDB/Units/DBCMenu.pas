@@ -85,7 +85,7 @@ var
 implementation
 
 uses
-  ExplorerUnit, PropertyForm, SlideShow, uSearchTypes, UnitFormCont,
+  uManagerExplorer, PropertyForm, SlideShow, uSearchTypes, UnitFormCont,
   UnitLoadFilesToPanel, UnitEditGroupsForm, UnitMenuDateForm, CmpUnit,
   UnitQuickGroupInfo, UnitCrypting, UnitPasswordForm,
   ImEditor, FormManegerUnit, CommonDBSupport, UnitSizeResizerForm;
@@ -397,7 +397,6 @@ procedure TDBPopupMenu.CopyItemPopUpMenu_(Sender: TObject);
 var
   I: Integer;
   FileList: TStrings;
-  EventInfo: TEventValues;
 begin
   FileList := TStringList.Create;
   try
@@ -407,8 +406,6 @@ begin
           FileList.Add(FInfo[I].FileName);
 
     Copy_Move(Application.Handle, True, FileList);
-
-    DBKernel.DoIDEvent(FOwner, 0, [EventID_Param_CopyPaste], EventInfo);
   finally
     F(FileList);
   end;
