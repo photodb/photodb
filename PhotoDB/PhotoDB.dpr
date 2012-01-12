@@ -370,7 +370,8 @@ uses
   uPortableDeviceManager in 'Units\PortableDevices\uPortableDeviceManager.pas',
   MSXML2_TLB in 'Units\MSXML2_TLB.pas',
   uPortableDeviceUtils in 'Units\PortableDevices\uPortableDeviceUtils.pas',
-  uPortableScriptUtils in 'Units\uPortableScriptUtils.pas';
+  uPortableScriptUtils in 'Units\uPortableScriptUtils.pas',
+  uShellNamespaceUtils in 'Units\uShellNamespaceUtils.pas';
 
 {$R *.res}
 

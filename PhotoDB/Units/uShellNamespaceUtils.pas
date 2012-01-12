@@ -18,7 +18,7 @@ procedure PastePIDListToFolder(Handle: THandle; Folder: string);
 implementation
 
 //WPD shell extension
-//code from MSDN, ported to DELPHI XE2
+//code from MSDN, ported to DELPHI XE2 by Dmitry Veresov (c) 2012
 (*procedure ProcessDataObject(pdto: IDataObject);
 var
   fmte: TFORMATETC;

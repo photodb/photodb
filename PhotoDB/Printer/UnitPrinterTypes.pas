@@ -3,9 +3,22 @@ unit UnitPrinterTypes;
 interface
 
 uses
-  Windows, SysUtils, Math, Graphics, Printers, Classes, ComObj, uLogger,
-  UnitDBKernel, GraphicCrypt, GraphicsBaseTypes,
-  ActiveX, uMemory, uAssociations, uBitmapUtils;
+  Windows,
+  SysUtils,
+  Math,
+  Graphics,
+  Printers,
+  Classes,
+  ComObj,
+  uLogger,
+  UnitDBKernel,
+  GraphicCrypt,
+  GraphicsBaseTypes,
+  ActiveX,
+  uMemory,
+  uAssociations,
+  uBitmapUtils,
+  uPortableDeviceUtils;
 
 type
   TCallBackPrinterGeneratePreviewProc = procedure(Progress: Byte; var Terminate: Boolean) of object;
@@ -302,7 +315,7 @@ begin
   Result := False;
   Graphic := nil;
   try
-    if ValidCryptGraphicFile(FileName) then
+    if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
     begin
       PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
       if PassWord <> '' then
@@ -316,13 +329,16 @@ begin
       if GraphicClass <> nil then
       begin
         Graphic := GraphicClass.Create;
-        Graphic.LoadFromFile(FileName);
+        if not IsDevicePath(FileName) then
+          Graphic.LoadFromFile(FileName)
+        else
+          Graphic.LoadFromDevice(FileName);
       end else
         Exit;
     end;
     Result := True;
   except
-    on e : Exception do
+    on e: Exception do
       EventLog(e.Message);
   end;
 end;

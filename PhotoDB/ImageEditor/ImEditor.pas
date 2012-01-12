@@ -13,9 +13,24 @@ uses
   ExplorerUnit, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
   UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage,
   RAWImage, DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
-  UnitDBCommonGraphics, uCDMappingTypes, uLogger, UnitJPEGOptions, uAssociations,
-  CCR.Exif, uEditorTypes, uShellIntegration, uRuntime, uSysUtils, uSearchTypes,
-  uFileUtils, uDBUtils, uDBTypes, uDBFileTypes, uConstants, uSettings;
+  UnitDBCommonGraphics,
+  uCDMappingTypes,
+  uLogger,
+  UnitJPEGOptions,
+  uAssociations,
+  CCR.Exif,
+  uEditorTypes,
+  uShellIntegration,
+  uRuntime,
+  uSysUtils,
+  uSearchTypes,
+  uFileUtils,
+  uDBUtils,
+  uDBTypes,
+  uDBFileTypes,
+  uConstants,
+  uSettings,
+  uPortableDeviceUtils;
 
 type
   TWindowEnableState = record
@@ -909,7 +924,7 @@ begin
   try
     G := nil;
     try
-      if ValidCryptGraphicFile(FileName) then
+      if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
       begin
         PassWord := DBkernel.FindPasswordForCryptImageFile(FileName);
         if PassWord = '' then
@@ -939,12 +954,17 @@ begin
           if GraphicClass = nil then
             Exit;
           G := GraphicClass.Create;
-          G.LoadFromFile(FileName);
+          if not IsDevicePath(FileName) then
+            G.LoadFromFile(FileName)
+          else
+            G.LoadFromDevice(FileName);
+
           CurrentFileName := FileName;
         end;
       end;
       EXIFSection := TExifData.Create;
-      EXIFSection.LoadFromGraphic(FileName);
+      if not IsDevicePath(FileName) then
+        EXIFSection.LoadFromGraphic(FileName);
 
       FilePassWord := PassWord;
       (ActionForm as TActionsForm).Reset;

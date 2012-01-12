@@ -846,9 +846,9 @@ begin
     finally
       F(Files);
     end;
-    TBPaste.Enabled := TBPaste.Enabled and (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER)
+    TBPaste.Enabled := TBPaste.Enabled and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER)
       or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE)
-      or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE);
+      or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE));
   end;
 end;
 
@@ -1468,7 +1468,7 @@ begin
     NewWindow1.Visible := True;
     Open1.Visible := True;
     SlideShow1.Visible := False;
-    Properties1.Visible := False;
+    Properties1.Visible := True;
     Delete1.Visible := False;
     Rename1.Visible := False;
     AddFile1.Visible := False;
@@ -1497,7 +1497,7 @@ begin
     NewWindow1.Visible := True;
     Open1.Visible := True;
     SlideShow1.Visible := False;
-    Properties1.Visible := False;
+    Properties1.Visible := True;
     Delete1.Visible := False;
     Rename1.Visible := False;
     AddFile1.Visible := False;
@@ -1526,12 +1526,12 @@ begin
     NewWindow1.Visible := True;
     Open1.Visible := True;
     SlideShow1.Visible := False;
-    Properties1.Visible := False;
+    Properties1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := False;
     AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
+    Cut2.Visible := True;
+    Copy1.Visible := True;
     Paste2.Visible := False;
     Shell1.Visible := False;
   end;
@@ -1555,12 +1555,12 @@ begin
     NewWindow1.Visible := False;
     Open1.Visible := False;
     SlideShow1.Visible := False;
-    Properties1.Visible := False;
+    Properties1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := False;
     AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
+    Cut2.Visible := True;
+    Copy1.Visible := True;
     Paste2.Visible := False;
     Shell1.Visible := False;
   end;
@@ -1568,10 +1568,10 @@ begin
   if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
     DBitem1.Visible := False;
-    StenoGraphia1.Visible := False;
-    Print1.Visible := False;
+    StenoGraphia1.Visible := True;
+    Print1.Visible := True;
     Othertasks1.Visible := False;
-    ImageEditor2.Visible := False;
+    ImageEditor2.Visible := True;
     RefreshID1.Visible := False;
     Rotate1.Visible := False;
     SetasDesktopWallpaper1.Visible := False;
@@ -1584,12 +1584,12 @@ begin
     NewWindow1.Visible := False;
     Open1.Visible := False;
     SlideShow1.Visible := True;
-    Properties1.Visible := False;
+    Properties1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := False;
     AddFile1.Visible := False;
-    Cut2.Visible := False;
-    Copy1.Visible := False;
+    Cut2.Visible := True;
+    Copy1.Visible := True;
     Paste2.Visible := False;
     Shell1.Visible := False;
   end;
@@ -3788,7 +3788,7 @@ begin
   OpeninSearchWindow1.Visible := True;
   Files := TStringList.Create;
   try
-    LoadFIlesFromClipBoard(Effects, Files);
+    LoadFilesFromClipBoard(Effects, Files);
     Paste1.Enabled := Files.Count > 0;
   finally
     F(Files);
@@ -3797,28 +3797,28 @@ begin
   Addfolder1.Visible := not FolderView;
   MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE)) and not FolderView;
 
-  if GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER then
+  Paste1.Visible := False;
+  Cut1.Visible := False;
+  Copy2.Visible := False;
+  Addfolder1.Visible := False;
+  MakeNew1.Visible := False;
+  OpeninSearchWindow1.Visible := False;
+
+  if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType=EXPLORER_ITEM_DRIVE) then
+  begin
+    Paste1.Visible := True;
+    Cut1.Visible := True;
+    Copy2.Visible := True;
+    Addfolder1.Visible := True;
+    MakeNew1.Visible := True;
+    OpeninSearchWindow1.Visible := True;
+  end;
+
+  if (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_STORAGE) or (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
   begin
     Paste1.Visible := False;
     Cut1.Visible := False;
     Copy2.Visible := False;
-    Addfolder1.Visible := False;
-    MakeNew1.Visible := False;
-    OpeninSearchWindow1.Visible := False;
-  end;
-  if (GetCurrentPathW.PType = EXPLORER_ITEM_NETWORK) or (GetCurrentPathW.PType = EXPLORER_ITEM_WORKGROUP) or
-    (GetCurrentPathW.PType = EXPLORER_ITEM_COMPUTER) then
-  begin
-    Paste1.Visible := False;
-    Cut1.Visible := False;
-    Copy2.Visible := False;
-    Addfolder1.Visible := False;
-    MakeNew1.Visible := False;
-    OpeninSearchWindow1.Visible := False;
-  end;
-  if (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
-  begin
-    Cut1.Visible := False;
   end;
 end;
 
@@ -3833,7 +3833,7 @@ begin
     if ElvMain.Items[I].Selected then
     begin
       Index := ItemIndexToMenuIndex(I);
-      FileList.Add(ProcessPath(fFilesInfo[Index].FileName));
+      FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
     end;
     Copy_Move(Application.Handle, False, FileList);
   finally
@@ -3961,24 +3961,28 @@ procedure TExplorerForm.ReallignToolInfo;
 begin
   VerifyPaste(Self);
 
-  if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) then
+  if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) then
   begin
     TbCopy.Enabled := SelCount <> 0;
   end else
     TbCopy.Enabled := False;
 
-  if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH)) then
+  if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
   begin
     TbCut.Enabled := SelCount <> 0;
   end else
     TbCut.Enabled := False;
 
-  if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
+  if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
   begin
     TbDelete.Enabled := SelCount <> 0;
   end else
