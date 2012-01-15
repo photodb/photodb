@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, uLogger, uMemory, uConstants,
-  SyncObjs, Registry, uRuntime, uTime, ComObj, MSXML2_TLB;
+  SyncObjs, Registry, uRuntime, uTime, ComObj, MSXML2_TLB, ActiveX;
 
 type
   TTranslate = class(TObject)
@@ -376,11 +376,24 @@ begin
 end;
 
 procedure TLanguage.Init;
+var
+  ClassID: TGUID;
+  HR: HRESULT;
 begin
   FLastScope := nil;
   FTranslateList := TList.Create;
   //'Msxml2.DOMDocument.6.0'
-  FTranslate := CreateOleObject('MSXML2.DOMDocument.3.0') as IXMLDOMDocument;
+
+  ClassID := ProgIDToClassID('Msxml2.DOMDocument.6.0');
+  HR := CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
+
+  if Failed(HR) then
+  begin
+    ClassID := ProgIDToClassID('Msxml2.DOMDocument.3.0');
+    //if this method failed - OS isn't supported
+    CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
+  end;
+
   FLangCode := 0;
   FCode := '--';
   FAutor := '';

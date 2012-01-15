@@ -6,9 +6,20 @@ uses
   SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
   CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
   uJpegUtils, uBitmapUtils, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
-  UnitDBCommon, uLogger, uMemory, UnitDBKernel, uAssociations, uDBForm,
-  uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes, uRuntime, uDBThread,
-  uExifUtils, uConstants;
+  UnitDBCommon,
+  uLogger,
+  uMemory,
+  UnitDBKernel,
+  uAssociations,
+  uDBForm,
+  uDBPopupMenuInfo,
+  uGraphicUtils,
+  uDBBaseTypes,
+  uRuntime,
+  uDBThread,
+  uExifUtils,
+  uConstants,
+  uPortableDeviceUtils;
 
 type
   LoadFilesToPanel = class(TDBThread)
@@ -293,7 +304,7 @@ begin
 
   if (C = 0) then
   begin
-    CryptFile := ValidCryptGraphicFile(FileName);
+    CryptFile := not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName);
     F(FInfo);
     FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     FInfo.Crypted := CryptFile;
@@ -311,14 +322,21 @@ begin
     end else
     begin
       if Graphic is TRAWImage then
-      begin
         TRAWImage(Graphic).HalfSizeLoad := True;
-        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
-          Graphic.LoadFromFile(FileName)
-        else
-          FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation);
+
+      if not IsDevicePath(FileName) then
+      begin
+        if Graphic is TRAWImage then
+        begin
+          if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
+            Graphic.LoadFromFile(FileName)
+          else
+            FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation);
+        end else
+          Graphic.LoadFromFile(FileName);
       end else
-        Graphic.LoadFromFile(FileName);
+        Graphic.LoadFromDevice(FileName);
+
     end;
     FInfo.Width := Graphic.Width;
     FInfo.Height := Graphic.Height;

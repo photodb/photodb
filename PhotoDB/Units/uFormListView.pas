@@ -9,14 +9,15 @@ uses
 type
   TListViewForm = class(TThreadForm, IImageSource)
   protected
-    function GetListView : TEasyListview; virtual;
-    function IsSelectedVisible : Boolean;
+    function GetListView: TEasyListview; virtual;
+    function IsSelectedVisible: Boolean;
     procedure CreateParams(var Params: TCreateParams); override;
     { IImageSource }
-    function GetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean;
-    function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; virtual;
+    function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
+    function InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean; virtual;
   public
-    function GetFilePreviw(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; virtual;
+    function GetFilePreviw(FileName: string; Bitmap: TBitmap;
+      var Width: Integer; var Height: Integer): Boolean; virtual;
   end;
 
 implementation

@@ -2,8 +2,9 @@ unit ShellContextMenu;
 
 interface
 
-uses Windows, SysUtils, Messages, StdCtrls, ComCtrls, ShlObj, ActiveX, ShellCtrls,
-     Classes, Controls, Math, Forms, uMemory;
+uses
+  Windows, SysUtils, Messages, StdCtrls, ComCtrls, ShlObj, ActiveX, ShellCtrls,
+  Classes, Controls, Math, Forms, uMemory, uFileUtils;
 
 procedure GetProperties(Files : TStrings; MP : TPoint; WC : TWinControl);
 procedure GetPropertiesWindows(Files : TStrings; WC : TWinControl);
@@ -30,6 +31,9 @@ function GetCommonDir(Dir1 { Common  dir } , Dir2 { Compare dir } : string): str
 var
   I, C: Integer;
 begin
+  if IsDrive(Dir1) or IsDrive(Dir2) then
+    Exit('');
+
   if Dir1 = Dir2 then
   begin
     Result := Dir1;
@@ -208,8 +212,10 @@ begin
       Exit;
     ICMError('x.1');
     begin
-      FPath := StringToOleStr(SFP);
       L := Length(SFP);
+      if SFP = '' then
+        SFP := '::' + GuidToString(CLSID_MyComputer);
+      FPath := StringToOleStr(SFP);
       SetLength(FilePIDLs, Files.Count + 1);
       FillChar(FilePIDLs[Files.Count], Sizeof(PItemIDList), #0);
       for I := 0 to Files.Count - 1 do

@@ -15,12 +15,20 @@ uses
   uFormListView;
 
 type
+  TExplorerPath = record
+    Path: string;
+    PType: Integer;
+    Tag: Integer;
+  end;
+
+type
   TCustomExplorerForm = class(TListViewForm)
   private
     FWindowID: TGUID;
   protected
     function GetCurrentPath: string; virtual; abstract;
   public
+    procedure SetNewPathW(WPath: TExplorerPath; Explorer: Boolean); virtual; abstract;
     procedure SetStringPath(Path: String; ChangeTreeView: Boolean); virtual; abstract;
     procedure SetPath(NewPath: string); virtual; abstract;
     procedure SetOldPath(OldPath: string); virtual; abstract;
@@ -69,13 +77,6 @@ type
     Directory: string;
     Width: Integer;
     Height: Integer;
-  end;
-
-type
-  TExplorerPath = record
-    Path: string;
-    PType: Integer;
-    Tag: Integer;
   end;
 
   TArExplorerPath = array of TExplorerPath;

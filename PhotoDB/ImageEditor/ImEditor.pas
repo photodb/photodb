@@ -946,7 +946,10 @@ begin
           G := TRAWImage.Create;
           // by default RAW is half-sized
           (G as TRAWImage).IsPreview := False;
-          G.LoadFromFile(FileName);
+          if not IsDevicePath(FileName) then
+            G.LoadFromFile(FileName)
+          else
+            G.LoadFromDevice(FileName);
           CurrentFileName := FileName;
           F(EXIFSection);
         end else

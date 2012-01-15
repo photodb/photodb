@@ -538,9 +538,9 @@ begin
           PortableItemNameCache.AddName(FDeviceID, Item.ItemKey, ItemKey, ParentPath + '\' + Item.Name);
 
           CallBack(ItemKey, ItemList, Cancel, Context);
+          ItemList.Clear;
           if Cancel then
             Break;
-          ItemList.Clear;
         end;
 
         FreeList(ItemList, False);
@@ -612,7 +612,7 @@ begin
           if PathParts[I] = '' then
             Continue;
 
-          CurrentPath := '\' + PathParts[I];
+          CurrentPath := CurrentPath + '\' + PathParts[I];
           Key.fmtid := PKEY_GenericObj;
           Key.pid := WPD_OBJECT_NAME;
           HR := pFilter.SetStringValue(Key, PChar(PathParts[I]));

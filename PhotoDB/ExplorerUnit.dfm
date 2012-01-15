@@ -718,21 +718,21 @@ object ExplorerForm: TExplorerForm
         Top = 0
         AutoSize = True
         ImageIndex = 3
-        OnClick = Cut3Click
+        OnClick = CutClick
       end
       object TbCopy: TToolButton
         Left = 98
         Top = 0
         AutoSize = True
         ImageIndex = 4
-        OnClick = Copy3Click
+        OnClick = CopyClick
       end
       object TbPaste: TToolButton
         Left = 110
         Top = 0
         AutoSize = True
         ImageIndex = 5
-        OnClick = Paste3Click
+        OnClick = PasteClick
       end
       object ToolButton17: TToolButton
         Left = 122
@@ -1392,15 +1392,11 @@ object ExplorerForm: TExplorerForm
     end
     object Copy1: TMenuItem
       Caption = 'Copy'
-      OnClick = Copy1Click
+      OnClick = CopyClick
     end
     object Cut2: TMenuItem
       Caption = 'Cut'
-      OnClick = Cut2Click
-    end
-    object Paste2: TMenuItem
-      Caption = 'Paste'
-      OnClick = Paste2Click
+      OnClick = CutClick
     end
     object Delete1: TMenuItem
       Caption = 'Delete'
@@ -1569,17 +1565,9 @@ object ExplorerForm: TExplorerForm
     object N6: TMenuItem
       Caption = '-'
     end
-    object Copy2: TMenuItem
-      Caption = 'Copy'
-      OnClick = Copy2Click
-    end
-    object Cut1: TMenuItem
-      Caption = 'Cut'
-      OnClick = Cut1Click
-    end
     object Paste1: TMenuItem
       Caption = 'Paste'
-      OnClick = Paste1Click
+      OnClick = PasteClick
     end
     object N5: TMenuItem
       Caption = '-'

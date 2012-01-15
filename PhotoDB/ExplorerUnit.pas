@@ -3,6 +3,7 @@ unit ExplorerUnit;
 interface
 
 uses
+  Generics.Collections,
   acDlgSelect, CommCtrl, ActiveX, ExplorerTypes, DBCMenu, UnitDBKernel, UnitINI,
   ShellApi, dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts,
@@ -60,7 +61,8 @@ uses
   uVCLHelpers,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
-  uManagerExplorer;
+  uManagerExplorer,
+  uExplorerPastePIDLsThread;
 
 const
   RefreshListViewInterval = 50;
@@ -96,17 +98,14 @@ type
     Exit2: TMenuItem;
     N2: TMenuItem;
     MakeNew1: TMenuItem;
-    Copy2: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
     ShowUpdater1: TMenuItem;
     ApplicationEvents1: TApplicationEvents;
     NewWindow1: TMenuItem;
-    Cut1: TMenuItem;
     Paste1: TMenuItem;
     N5: TMenuItem;
     N6: TMenuItem;
     Cut2: TMenuItem;
-    Paste2: TMenuItem;
     N7: TMenuItem;
     N8: TMenuItem;
     StatusBar1: TStatusBar;
@@ -279,50 +278,33 @@ type
     ImPathDropDownMenu: TImageList;
     EncryptLink: TWebLink;
     WlCreateObject: TWebLink;
-    Procedure LockItems;
-    Procedure UnLockItems;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
-    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
     procedure Shell1Click(Sender: TObject);
     procedure Properties1Click(Sender: TObject);
     procedure PmItemPopupPopup(Sender: TObject);
-    procedure Copy1Click(Sender: TObject);
+    procedure CopyClick(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
     procedure AddFile1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure ListView1Edited(Sender: TObject; Item: TEasyItem;
-      var S: String);
-    procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
+    procedure ListView1Edited(Sender: TObject; Item: TEasyItem; var S: String);
     procedure HintTimerTimer(Sender: TObject);
-    function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
-    procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
     procedure SpeedButton3Click(Sender: TObject);
-    Procedure BeginUpdate;
-    procedure EndUpdate(Invalidate: Boolean);
     procedure Open1Click(Sender: TObject);
-    function GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
-    function ListView1Selected: TEasyItem;
-    function ItemAtPos(X, Y: Integer): TEasyItem;
     procedure Exit1Click(Sender: TObject);
     procedure CloseButtonPanelResize(Sender: TObject);
-    procedure SplLeftPanelCanResize(Sender: TObject; var NewSize: Integer;
-      var Accept: Boolean);
-    procedure ListView1SelectItem(Sender: TObject;
-     Item: TEasyItem; Selected: Boolean);
-    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure SplLeftPanelCanResize(Sender: TObject; var NewSize: Integer; var Accept: Boolean);
+    procedure ListView1SelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SelectAll1Click(Sender: TObject);
     procedure Refresh2Click(Sender: TObject);
     procedure Exit2Click(Sender: TObject);
-    procedure DoExit; override;
     procedure Addfolder1Click(Sender: TObject);
-    procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure HistoryChanged(Sender: TObject);
@@ -330,77 +312,36 @@ type
     procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ListView1Exit(Sender: TObject);
     procedure Refresh1Click(Sender: TObject);
-    procedure RefreshItemByID(ID: Integer);
-    procedure RefreshItemByName(Name: String; UpdateDB: Boolean);
     procedure MakeNewFolder1Click(Sender: TObject);
-    procedure Copy2Click(Sender: TObject);
     procedure OpenInNewWindow1Click(Sender: TObject);
-    function GetCurrentPath: String; override;
-    procedure SetPath(NewPath: String); override;
     procedure ShowUpdater1Click(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
-    procedure Select(Item: TEasyItem; GUID: TGUID);
-    function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include : Boolean; Big : boolean = False): Boolean;
-    function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include : Boolean) : Boolean;
-    function AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1) : TEasyItem;
     procedure ListView1KeyPress(Sender: TObject; var Key: Char);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure Back1Click(Sender: TObject);
     procedure Forward1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
     procedure DeleteIndex1Click(Sender: TObject);
-    procedure DeleteItemWithIndex(Index : Integer);
-    procedure DeleteFiles(ToRecycle: Boolean);
-    procedure DirectoryChanged(Sender: TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
-    procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
-    procedure AddInfoAboutFile(Info: TExplorerFileInfos);
-    function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
-    function AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
-    function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
-    function ItemIndexToMenuIndex(Index: Integer): Integer;
-    function MenuIndexToItemIndex(Index: Integer): Integer;
-    procedure SetOldPath(Path: string); override;
-    procedure NavigateToFile(FileName: string); override;
     procedure FormShow(Sender: TObject);
     procedure NewWindow1Click(Sender: TObject);
-    procedure Cut1Click(Sender: TObject);
     procedure PmListPopupPopup(Sender: TObject);
-    procedure Cut2Click(Sender: TObject);
-    procedure ShowProgress;
-    procedure ShowIndeterminateProgress;
-    procedure HideProgress;
-    procedure SetProgressMax(Value: Integer);
-    procedure SetProgressPosition(Value: Integer);
-    procedure SetStatusText(Text: String);
-    procedure SetNewFileNameGUID(FileGUID: TGUID);
+    procedure CutClick(Sender: TObject);
     procedure BtnCloseExplorerClick(Sender: TObject);
-    procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
-    Procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
-    procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure PropertyPanelResize(Sender: TObject);
-    procedure ReallignInfo;
     procedure ScriptExecuted(Sender: TObject);
     procedure CopyToLinkClick(Sender: TObject);
     procedure MoveToLinkClick(Sender: TObject);
-    procedure PasteFromClipboard(CopyToCurrentDirectory: Boolean);
-    procedure Paste1Click(Sender: TObject);
-    procedure Paste2Click(Sender: TObject);
+    procedure PasteClick(Sender: TObject);
     procedure ExplorerPanel1Click(Sender: TObject);
-    procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure GoToSearchWindow1Click(Sender: TObject);
     procedure ImPreviewDblClick(Sender: TObject);
-    procedure Copy3Click(Sender: TObject);
-    procedure Cut3Click(Sender: TObject);
     procedure Options1Click(Sender: TObject);
     procedure DBManager1Click(Sender: TObject);
-    function AddItemW(Caption : string; FileGUID: TGUID) : TEasyItem;
     procedure SetSelected(NewSelected: TEasyItem);
     procedure PropertiesLinkClick(Sender: TObject);
     procedure SlideShowLinkClick(Sender: TObject);
     procedure InfoPanel1Click(Sender: TObject);
-    procedure Paste3Click(Sender: TObject);
     procedure ShowOnlyCommon1Click(Sender: TObject);
     procedure ShowPrivate1Click(Sender: TObject);
     procedure OpeninSearchWindow1Click(Sender: TObject);
@@ -410,10 +351,7 @@ type
     procedure AddFolder2Click(Sender: TObject);
     procedure AddLinkClick(Sender: TObject);
     procedure ScrollBox1Resize(Sender: TObject);
-    procedure SetNewPathW(WPath : TExplorerPath; Explorer : Boolean; FileMask : string = '');
-    function GetCurrentPathW : TExplorerPath;
     procedure RefreshLinkClick(Sender: TObject);
-    procedure DoBack;
     procedure JumpHistoryClick(Sender: TObject);
     procedure DragTimerTimer(Sender: TObject);
     procedure DragEnter(Sender: TObject);
@@ -434,12 +372,9 @@ type
     procedure RotateCW1Click(Sender: TObject);
     procedure Rotateon1801Click(Sender: TObject);
     procedure RefreshID1Click(Sender: TObject);
-    procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
-      Point: TPoint; var Effect: Integer);
-    procedure DropFileTarget1Enter(Sender: TObject;
-      ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
+    procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;  Point: TPoint; var Effect: Integer);
+    procedure DropFileTarget1Enter(Sender: TObject;  ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure DropFileTarget1Leave(Sender: TObject);
-    procedure SetStringPath(Path : String; ChangeTreeView : Boolean); override;
     procedure HelpTimerTimer(Sender: TObject);
     procedure Help1NextClick(Sender: TObject);
     procedure Help1CloseClick(Sender : TObject; var CanClose : Boolean);
@@ -452,8 +387,7 @@ type
     procedure ImageEditorLinkClick(Sender: TObject);
     procedure ExportImages1Click(Sender: TObject);
     procedure PrintLinkClick(Sender: TObject);
-    procedure MyPicturesLinkContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure MyPicturesLinkContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure Open2Click(Sender: TObject);
     procedure OpeninNewWindow2Click(Sender: TObject);
     procedure TextFile2Click(Sender: TObject);
@@ -465,27 +399,8 @@ type
     procedure SelectTimerTimer(Sender: TObject);
     procedure SendTo1Click(Sender: TObject);
     procedure View2Click(Sender: TObject);
-    procedure RemoveUpdateID(ID : Integer; CID : TGUID);
-    procedure AddUpdateID(ID : Integer);
-    procedure Reload;
-    function FileNameToID(FileName: string): integer;
-    function UpdatingNow(ID : Integer) : boolean;
-    function GetVisibleItems : TStrings;
-    procedure LoadStatusVariables(Sender: TObject);
-    function CanUp : boolean;
-    function SelCount : integer;
-    function SelectedIndex : integer;
-    function GetSelectedType : integer;
-    function CanCopySelection : boolean;
-    function GetPath : string;
-    function GetPathByIndex(index : integer) : string;
-    function GetSelectedFiles : TArrayOfString;
-    function CanPasteInSelection : boolean;
     procedure CloseWindow(Sender: TObject);
     procedure CloseTimerTimer(Sender: TObject);
-    function ExplorerType : boolean;
-    function ShowPrivate: Boolean;
-    procedure ReallignToolInfo;
     procedure FileName1Click(Sender: TObject);
     procedure SetFilter1Click(Sender: TObject);
     procedure MakeFolderViewer1Click(Sender: TObject);
@@ -493,29 +408,24 @@ type
         var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
     procedure EasyListview1ItemEdited(Sender: TCustomEasyListview;
         Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
-    procedure ListView1Resize(Sender : TObject);
+    procedure ListView1Resize(Sender: TObject);
     procedure N05Click(Sender: TObject);
     procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
       ShiftState: TShiftState; var Handled: Boolean);
     procedure EasyListview1ItemThumbnailDraw(
         Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
         ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
-    procedure EasyListview1ItemSelectionChanged(
-        Sender: TCustomEasyListview; Item: TEasyItem);
+    procedure EasyListview1ItemSelectionChanged(Sender: TCustomEasyListview; Item: TEasyItem);
     procedure ScrollBox1Reallign(Sender: TObject);
-    procedure BackGround(Sender: TObject; x, y, w, h: integer;
-        Bitmap: TBitmap);
+    procedure BackGround(Sender: TObject; x, y, w, h: integer; Bitmap: TBitmap);
     procedure Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
       var CompareResult: Integer);
-    procedure EasyListview1ItemImageDraw(Sender: TCustomEasyListview;
-      Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
+    procedure EasyListview1ItemImageDraw(Sender: TCustomEasyListview; Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
       const RectArray: TEasyRectArrayObject; AlphaBlender: TEasyAlphaBlender);
-    procedure EasyListview1ItemImageDrawIsCustom(
-     Sender: TCustomEasyListview; Item: TEasyItem; Column: TEasyColumn;
+    procedure EasyListview1ItemImageDrawIsCustom(Sender: TCustomEasyListview; Item: TEasyItem; Column: TEasyColumn;
      var IsCustom: Boolean);
     procedure EasyListview1ItemImageGetSize(Sender: TCustomEasyListview;
-     Item: TEasyItem; Column: TEasyColumn; var ImageWidth,
-      ImageHeight: Integer);
+     Item: TEasyItem; Column: TEasyColumn; var ImageWidth, ImageHeight: Integer);
     function ListViewTypeToSize(ListViewType : Integer) : Integer;
     procedure SmallIcons1Click(Sender: TObject);
     procedure Icons1Click(Sender: TObject);
@@ -524,14 +434,9 @@ type
     procedure Grid1Click(Sender: TObject);
     procedure ToolButtonViewClick(Sender: TObject);
     procedure Thumbnails1Click(Sender: TObject);
-    function GetView: Integer;
     procedure MakeFolderViewer2Click(Sender: TObject);
     procedure BigImagesTimerTimer(Sender: TObject);
-    procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
-    WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-    function GetAllItems: TExplorerFileInfos;
-    procedure DoDefaultSort(GUID : TGUID);
-    procedure DoStopLoading;
+    procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure AddHiddenInfo1Click(Sender: TObject);
     procedure ExtractHiddenInfo1Click(Sender: TObject);
     procedure TbZoomOutClick(Sender: TObject);
@@ -539,17 +444,12 @@ type
     procedure TbStopClick(Sender: TObject);
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
     procedure MapCD1Click(Sender: TObject);
-    procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure ClearList;
-    procedure ShowLoadingSign;
-    procedure HideLoadingSign;
+    procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure AsEXIF1Click(Sender: TObject);
     procedure PePathChange(Sender: TObject);
     procedure PePathUpdateItem(Sender: TObject; PathPart: TPathItem);
     procedure PePathGetSystemIcon(Sender: TPathEditor; IconType: string; var Image: TPathImage);
     procedure SbDoSearchClick(Sender: TObject);
-    procedure InitSearch;
     procedure LoadSearchMode(SearchMode: Integer);
     procedure Searchfiles1Click(Sender: TObject);
     procedure Searchincollection1Click(Sender: TObject);
@@ -560,10 +460,7 @@ type
     procedure WedSearchKeyPress(Sender: TObject; var Key: Char);
     procedure WedFilterKeyPress(Sender: TObject; var Key: Char);
     procedure SearchfileswithEXIF1Click(Sender: TObject);
-    function GetPathPartName(PP: TPathItem): string;
-    function MakePathName(Path: TExplorerPath): string;
-    procedure slSearchCanResize(Sender: TObject; var NewSize: Integer;
-      var Accept: Boolean);
+    procedure slSearchCanResize(Sender: TObject; var NewSize: Integer; var Accept: Boolean);
     procedure PopupMenuForwardPopup(Sender: TObject);
     procedure PopupMenuBackPopup(Sender: TObject);
     procedure EncryptLinkClick(Sender: TObject);
@@ -571,128 +468,208 @@ type
     procedure WlCreateObjectClick(Sender: TObject);
     procedure TbDeleteClick(Sender: TObject);
   private
-     { Private declarations }
-     FBitmapImageList: TBitmapImageList;
-     FSearchMode: Integer;
-     NewFileName: string;
-     NewFileNameGUID: TGUID;
-     TempFolderName: string;
-     FormLoadEnd: Boolean;
-     FPictureSize: Integer;
-     ListView: Integer;
-     ElvMain: TEasyListView;
-     AScript: TScript;
-     MainMenuScript: string;
-     RefreshIDList: TList;
-     Rdown: Boolean;
-     Outdrag: Boolean;
-     Fpopupdown: Boolean;
-     SelfDraging: Boolean;
-     FDblClicked: Boolean;
-     FSelectedInfo: TSelectedInfo;
-     FStatusProgress: TProgressBar;
-     FFilesInfo: TExplorerFileInfos;
-     FCurrentPath: string;
-     FCurrentTypePath: Integer;
-     LockDrawIcon: Boolean;
-     MouseDowned: Boolean;
-     PopupHandled: Boolean;
-     LastMouseItem, ItemWithHint: TEasyItem;
-     LastListViewSelected: TEasyItem;
-     FListDragItems: array of TEasyItem;
-     ItemByMouseDown: Boolean;
-     ItemSelectedByMouseDown: Boolean;
-     NotSetOldPath: Boolean;
-     FHistory: TStringsHistoryW;
-     FOldPatch: string;
-     FOldPatchType: Integer;
-     FFilesToDrag: TArStrings;
-     FDBCanDrag: Boolean;
-     FDBCanDragW: Boolean;
-     FDBDragPoint: TPoint;
-     UpdatingList: Boolean;
-     GlobalLock: Boolean;
-     FIsExplorer: Boolean;
-     LastShift: TShiftState;
-     LastListViewSelCount: Integer;
-     ItemsDeselected: Boolean;
-     IsReallignInfo: Boolean;
-     FWasDragAndDrop: Boolean;
-     RenameResult: Boolean;
-     FChangeHistoryOnChPath: Boolean;
-     WindowsMenuTickCount: Cardinal;
-     UserLinks: array of TWebLink;
-     FPlaces: TPlaceFolderArray;
-     DragFilesPopup: TStrings;
-     Lock: Boolean;
-     SlashHandled: Boolean;
-     DefaultSort: Integer;
-     DirectoryWatcher: TWachDirectoryClass;
-     FShellTreeView: TShellTreeView;
-     FGoToLastSavedPath: Boolean;
-     FW7TaskBar: ITaskbarList3;
-     FHistoryPathList: TArExplorerPath;
+    { Private declarations }
+    FBitmapImageList: TBitmapImageList;
+    FSearchMode: Integer;
+    NewFileName: string;
+    NewFileNameGUID: TGUID;
+    TempFolderName: string;
+    FormLoadEnd: Boolean;
+    FPictureSize: Integer;
+    ListView: Integer;
+    ElvMain: TEasyListView;
+    AScript: TScript;
+    MainMenuScript: string;
+    RefreshIDList: TList;
+    Rdown: Boolean;
+    Outdrag: Boolean;
+    Fpopupdown: Boolean;
+    SelfDraging: Boolean;
+    FDblClicked: Boolean;
+    FSelectedInfo: TSelectedInfo;
+    FStatusProgress: TProgressBar;
+    FFilesInfo: TExplorerFileInfos;
+    FCurrentPath: string;
+    FCurrentTypePath: Integer;
+    LockDrawIcon: Boolean;
+    MouseDowned: Boolean;
+    PopupHandled: Boolean;
+    LastMouseItem, ItemWithHint: TEasyItem;
+    LastListViewSelected: TEasyItem;
+    FListDragItems: array of TEasyItem;
+    ItemByMouseDown: Boolean;
+    ItemSelectedByMouseDown: Boolean;
+    NotSetOldPath: Boolean;
+    FHistory: TStringsHistoryW;
+    FOldPatch: string;
+    FOldPatchType: Integer;
+    FFilesToDrag: TArStrings;
+    FDBCanDrag: Boolean;
+    FDBCanDragW: Boolean;
+    FDBDragPoint: TPoint;
+    UpdatingList: Boolean;
+    GlobalLock: Boolean;
+    FIsExplorer: Boolean;
+    LastShift: TShiftState;
+    LastListViewSelCount: Integer;
+    ItemsDeselected: Boolean;
+    IsReallignInfo: Boolean;
+    FWasDragAndDrop: Boolean;
+    RenameResult: Boolean;
+    FChangeHistoryOnChPath: Boolean;
+    WindowsMenuTickCount: Cardinal;
+    UserLinks: array of TWebLink;
+    FPlaces: TPlaceFolderArray;
+    DragFilesPopup: TStrings;
+    Lock: Boolean;
+    SlashHandled: Boolean;
+    DefaultSort: Integer;
+    DirectoryWatcher: TWachDirectoryClass;
+    FShellTreeView: TShellTreeView;
+    FGoToLastSavedPath: Boolean;
+    FW7TaskBar: ITaskbarList3;
+    FHistoryPathList: TArExplorerPath;
 
-     FUpdateItemList: TList;
-     FItemUpdateTimer: TTimer;
-     FItemUpdateLastTime: Cardinal;
+    FUpdateItemList: TList;
+    FItemUpdateTimer: TTimer;
+    FItemUpdateLastTime: Cardinal;
 
-     FSelectedItem: TEasyItem;
+    FSelectedItem: TEasyItem;
 
-     FNextClipboardViewer: HWnd;
-     FIsFirstShow: Boolean;
-     procedure ReadPlaces;
-     procedure UserDefinedPlaceClick(Sender : TObject);
-     procedure UserDefinedPlaceContextPopup(Sender: TObject;
-       MousePos: TPoint; var Handled: Boolean);
-     procedure DoSelectItem;
-     procedure SendToItemPopUpMenu_(Sender : TObject);
-     procedure LoadIcons;
-     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
-     function GetMyComputer: string;
-     function GetSecondStepHelp: string;
-     function GetViewInfo: TExplorerViewInfo;
+    FNextClipboardViewer: HWnd;
+    FIsFirstShow: Boolean;
+    NoLockListView: Boolean;
+    procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
+    procedure SetNewPath(Path: String; Explorer: Boolean);
+    procedure Reload;
+    function GetCurrentPathW: TExplorerPath;
+    function FileNameToID(FileName: string): Integer;
+    function UpdatingNow(ID: Integer): Boolean;
+    function CanUp: Boolean;
+    function SelCount: Integer;
+    function SelectedIndex: Integer;
+    function GetSelectedType: Integer;
+    function CanCopySelection: Boolean;
+    function GetPath: string;
+    function GetPathByIndex(Index: Integer): string;
+    function GetSelectedFiles: TArrayOfString;
+    function CanPasteInSelection: Boolean;
+    function ExplorerType: Boolean;
+    function ShowPrivate: Boolean;
+    procedure ReallignToolInfo;
+    function GetPathPartName(PP: TPathItem): string;
+    procedure ReallignInfo;
+    procedure PasteFromClipboard;
+    function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
+    function GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer;
+      Params: TEventFields; Value: TEventValues);
+    procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
+    procedure RefreshItemByID(ID: Integer);
+    procedure RefreshItemByName(Name: string; UpdateDB: Boolean);
+    procedure DeleteItemWithIndex(Index: Integer);
+    procedure DeleteFiles(ToRecycle: Boolean);
+    function ItemIndexToMenuIndex(Index: Integer): Integer;
+    function MenuIndexToItemIndex(Index: Integer): Integer;
+    function GetView: Integer;
+    procedure ClearList;
+    procedure InitSearch;
+    function ListView1Selected: TEasyItem;
+    function ItemAtPos(X, Y: Integer): TEasyItem;
+    procedure LockItems;
+    procedure UnLockItems;
+    procedure ReadPlaces;
+    procedure UserDefinedPlaceClick(Sender: TObject);
+    procedure UserDefinedPlaceContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    procedure DoSelectItem;
+    procedure SendToItemPopUpMenu_(Sender: TObject);
+    procedure LoadIcons;
+    procedure KernelEventCallBack(ID: Integer; Params: TEventFields;
+      Value: TEventValues);
+    function GetMyComputer: string;
+    function GetSecondStepHelp: string;
+    function GetViewInfo: TExplorerViewInfo;
     procedure SetView(const Value: Integer);
-     property SecondStepHelp : string read GetSecondStepHelp;
-     function GetPathDescription(Path: string; FileType: Integer): string;
-     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
-   protected
-     procedure ZoomIn;
-     procedure ZoomOut;
-     procedure LoadToolBarGrayedIcons;
-     procedure LoadToolBarNormaIcons;
-     function TreeView: TShellTreeView;
-     procedure CreateBackgrounds;
-     procedure ShowHideFilter(Sender: TObject);
-     function GetFormID: string; override;
-     function GetListView: TEasyListview; override;
-     function InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
-     function MakeItemVisibleByFilter(Item: TEasyItem; Filter: string): Boolean;
-     function GetFilterText: string;
-     procedure SetNewHistoryPath(Sender: TObject);
-     procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
-     procedure WMChangeCBChain(var Msg: TWMChangeCBChain); message WM_CHANGECBCHAIN;
-     procedure WMDrawClipboard(var Msg: TMessage); message WM_DRAWCLIPBOARD;
-     procedure WMClipboardUpdate(var Msg: TMessage); message WM_CLIPBOARDUPDATE;
-     procedure AddItemToUpdate(Item: TEasyItem);
-     procedure ItemUpdateTimer(Sender: TObject);
-     procedure UpdateItems;
-   public
-     NoLockListView: Boolean;
-     procedure UpdateMenuItems(Menu: TPopupMenu;  PathList: TArExplorerPath; PathIcons: TPathItemCollection);
-     procedure UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
-     procedure LoadLastPath; override;
-     procedure LoadLanguage;
-     procedure LoadSizes;
-     procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
-     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
-     destructor Destroy; override;
-     procedure HideFilter(ResetFilter: Boolean = True);
-     procedure ShowFilter(PerformFilter: Boolean);
-     property MyComputer: string read GetMyComputer;
-     property ViewInfo: TExplorerViewInfo read GetViewInfo;
-     property View: Integer read GetView write SetView;
-   end;
+    property SecondStepHelp: string read GetSecondStepHelp;
+    function GetPathDescription(Path: string; FileType: Integer): string;
+    procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
+  protected
+    procedure ZoomIn;
+    procedure ZoomOut;
+    procedure LoadToolBarGrayedIcons;
+    procedure LoadToolBarNormaIcons;
+    function TreeView: TShellTreeView;
+    procedure CreateBackgrounds;
+    procedure ShowHideFilter(Sender: TObject);
+    function GetFormID: string; override;
+    function GetListView: TEasyListView; override;
+    function InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
+    function MakeItemVisibleByFilter(Item: TEasyItem; Filter: string): Boolean;
+    function GetFilterText: string;
+    procedure SetNewHistoryPath(Sender: TObject);
+    procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
+    procedure WMChangeCBChain(var Msg: TWMChangeCBChain); message WM_CHANGECBCHAIN;
+    procedure WMDrawClipboard(var Msg: TMessage); message WM_DRAWCLIPBOARD;
+    procedure WMClipboardUpdate(var Msg: TMessage); message WM_CLIPBOARDUPDATE;
+    procedure CMMOUSELEAVE(var Message: TWMNoParams); message CM_MOUSELEAVE;
+    procedure AddItemToUpdate(Item: TEasyItem);
+    procedure ItemUpdateTimer(Sender: TObject);
+    procedure UpdateItems;
+  public
+    constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
+    destructor Destroy; override;
+
+    procedure DoStopLoading;
+    procedure ShowLoadingSign;
+    procedure HideLoadingSign;
+    procedure BeginUpdate;
+    procedure EndUpdate(Invalidate: Boolean);
+    procedure DoDefaultSort(GUID: TGUID);
+    function GetAllItems: TExplorerFileInfos;
+
+    function GetVisibleItems: TStrings;
+    procedure RemoveUpdateID(ID: Integer; CID: TGUID);
+    procedure AddUpdateID(ID: Integer);
+    procedure DoBack;
+    procedure SetNewPathW(WPath: TExplorerPath; Explorer: Boolean); override;
+    procedure SetStringPath(Path : String; ChangeTreeView : Boolean); override;
+    procedure ShowProgress;
+    procedure ShowIndeterminateProgress;
+    procedure HideProgress;
+    procedure SetProgressMax(Value: Integer);
+    procedure SetProgressPosition(Value: Integer);
+    procedure SetStatusText(Text: String);
+    procedure SetNewFileNameGUID(FileGUID: TGUID);
+    procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
+    Procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
+    procedure AddInfoAboutFile(Info: TExplorerFileInfos);
+    procedure UpdateMenuItems(Menu: TPopupMenu; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
+    procedure DirectoryChanged(Sender: TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
+    function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
+    function AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
+    function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
+
+    function GetCurrentPath: String; override;
+    procedure SetPath(NewPath: String); override;
+    procedure Select(Item: TEasyItem; GUID: TGUID);
+    function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: Boolean; Big: Boolean = False): Boolean;
+    function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include: Boolean) : Boolean;
+    function AddItemW(Caption : string; FileGUID: TGUID) : TEasyItem;
+    function AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1): TEasyItem;
+    procedure SetOldPath(Path: string); override;
+    procedure NavigateToFile(FileName: string); override;
+    procedure UpdatePreviewIcon(Ico: HIcon; SID: TGUID);
+    procedure LoadLastPath; override;
+    procedure LoadLanguage;
+    procedure LoadSizes;
+    procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
+    procedure HideFilter(ResetFilter: Boolean = True);
+    procedure ShowFilter(PerformFilter: Boolean);
+    property MyComputer: string read GetMyComputer;
+    property ViewInfo: TExplorerViewInfo read GetViewInfo;
+    property View: Integer read GetView write SetView;
+  end;
 
 implementation
 
@@ -818,7 +795,7 @@ var
   CanPaste: Boolean;
   FileType: Integer;
 begin
-  FileType := Explorer.FSelectedInfo.FileType;
+  FileType := Explorer.FCurrentTypePath;
 
   CanPaste := CanCopyFromClipboard;
 
@@ -989,9 +966,9 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'GoBack',            F_TYPE_OBJ_PROCEDURE_TOBJECT, Back1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'GoForward',         F_TYPE_OBJ_PROCEDURE_TOBJECT, Forward1Click);
 
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'Copy',              F_TYPE_OBJ_PROCEDURE_TOBJECT, Copy3Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'Paste',             F_TYPE_OBJ_PROCEDURE_TOBJECT, Paste3Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'Cut',               F_TYPE_OBJ_PROCEDURE_TOBJECT, Cut3Click);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'Copy',              F_TYPE_OBJ_PROCEDURE_TOBJECT, CopyClick);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'Paste',             F_TYPE_OBJ_PROCEDURE_TOBJECT, PasteClick);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'Cut',               F_TYPE_OBJ_PROCEDURE_TOBJECT, CutClick);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'GoToExplorerMode',  F_TYPE_OBJ_PROCEDURE_TOBJECT, ExplorerPanel1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'CancelExplorerMode',F_TYPE_OBJ_PROCEDURE_TOBJECT, InfoPanel1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowPrivate',       F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowPrivate1Click);
@@ -1207,7 +1184,6 @@ begin
   AddFile1.Visible := False;
   Cut2.Visible := False;
   Copy1.Visible := False;
-  Paste2.Visible := False;
   Shell1.Visible := False;
   SendTo1.Visible := False;
   MakeFolderViewer2.Visible := False;
@@ -1222,7 +1198,6 @@ begin
     Open1.Visible := True;
     SlideShow1.Visible := True;
 
-    Paste2.Visible := True;
     Shell1.Visible := True;
   end;
 
@@ -1234,13 +1209,11 @@ begin
     AddFile1.Caption := L('Add directory');
     AddFile1.Visible := not FolderView;
     Properties1.Visible := True;
-    Paste2.Visible := True;
     Open1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := True;
     SlideShow1.Visible := True;
 
-    Paste2.Visible := True;
     Shell1.Visible := True;
   end;
 
@@ -1391,8 +1364,6 @@ begin
     Open1.Visible := True;
   end;
 
-  Paste2.Enabled := CanCopyFromClipboard;
-
   B := CanCopySelection;
   Cut2.Visible := B;
   Copy1.Visible := B;
@@ -1437,26 +1408,6 @@ begin
           F(Infos);
         end;
       end;
-  end;
-end;
-
-procedure TExplorerForm.Copy1Click(Sender: TObject);
-var
-  I, Index: Integer;
-  FileList: TStrings;
-begin
-  FileList := TStringList.Create;
-  try
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      Index := ItemIndexToMenuIndex(I);
-      FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
-    end;
-  if FileList.Count > 0 then
-    Copy_Move(Application.Handle, True, FileList);
-  finally
-    F(FileList);
   end;
 end;
 
@@ -1506,10 +1457,12 @@ var
   Files: TStringList;
   Info: TExplorerFileInfo;
   PI: TPathItem;
+  PL: TPathItemCollection;
 begin
   if SelCount = 0 then
     Exit;
   Files:= TStringList.Create;
+  PL := TPathItemCollection.Create;
   try
     for I := 0 to ElvMain.Items.Count - 1 do
       if ElvMain.Items[I].Selected then
@@ -1525,22 +1478,20 @@ begin
            (Info.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (Info.FileType = EXPLORER_ITEM_DEVICE_FILE) then
         begin
           PI := PathProviderManager.CreatePathItem(Info.FileName);
-          try
-            if (PI <> nil) and PI.Provider.SupportsFeature(PATH_FEATURE_DELETE) then
-            begin
-              if PI.Provider.ExecuteFeature(Self, PI, PATH_FEATURE_DELETE, nil) then
-              begin
-                DeleteItemWithIndex(Index);
-                Exit;
-              end;
-            end;
-          finally
-            F(PI);
-          end;
+
+          if (PI <> nil) and PI.Provider.SupportsFeature(PATH_FEATURE_DELETE) then
+            PL.Add(PI);
         end;
       end;
-    uFileUtils.DeleteFiles(Handle, Files, ToRecycle);
+
+    if Files.Count > 0 then
+      uFileUtils.DeleteFiles(Handle, Files, ToRecycle);
+
+    if PL.Count > 0 then
+      PL[0].Provider.ExecuteFeature(Self, PL, PATH_FEATURE_DELETE, nil);
   finally
+    PL.FreeItems;
+    F(PL);
     F(Files);
   end;
 end;
@@ -1624,6 +1575,7 @@ var
   Folder: string;
   Info: TExplorerFileInfo;
   PI: TPathItem;
+  PL: TPathItemCollection;
   EO: TPathFeatureOptions;
 begin
   //.Tag is index of item
@@ -1633,23 +1585,30 @@ begin
   Info := FFilesInfo[PmItemPopup.Tag];
   FDblClicked := False;
 
-  PI := PathProviderManager.CreatePathItem(Info.FileName);
+  PL := TPathItemCollection.Create;
   try
-    PI.LoadImage(PATH_LOAD_NO_IMAGE, 0);
+    PI := PathProviderManager.CreatePathItem(Info.FileName);
+    try
+      PI.LoadImage(PATH_LOAD_NO_IMAGE, 0);
+      PL.Add(PI);
 
-    if (PI <> nil) and (PI.Provider.SupportsFeature(PATH_FEATURE_RENAME)) then
-    begin
-      EO := TPathFeatureEditOptions.Create(S);
-      try
-        if not PI.Provider.ExecuteFeature(Self, PI, PATH_FEATURE_RENAME, EO) then
-          S := Item.Caption;
-      finally
-        F(EO);
+      if (PI <> nil) and (PI.Provider.SupportsFeature(PATH_FEATURE_RENAME)) then
+      begin
+        EO := TPathFeatureEditOptions.Create(S);
+        try
+          if not PI.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_RENAME, EO) then
+            S := Item.Caption;
+        finally
+          F(EO);
+        end;
+        Exit;
       end;
-      Exit;
+    finally
+      F(PI);
     end;
+    PL.Clear;
   finally
-    F(PI);
+    F(PL);
   end;
 
   S := Copy(S, 1, Min(Length(S), 255));
@@ -2282,11 +2241,6 @@ end;
 
 procedure TExplorerForm.Exit2Click(Sender: TObject);
 begin
-  DoExit;
-end;
-
-procedure TExplorerForm.DoExit;
-begin
   Close;
 end;
 
@@ -2563,26 +2517,13 @@ begin
   end;
 end;
 
-procedure TExplorerForm.Copy2Click(Sender: TObject);
-var
-  FileList: TStrings;
-begin
-  FileList := TStringList.Create;
-  try
-    FileList.Add(GetCurrentPath);
-    Copy_Move(Application.Handle, True, FileList);
-  finally
-    F(FileList);
-  end;
-end;
-
 procedure TExplorerForm.OpenInNewWindow1Click(Sender: TObject);
+var
+  Explorer: TCustomExplorerForm;
 begin
-  with ExplorerManager.NewExplorer(False) do
-  begin
-    SetNewPathW(Self.GetCurrentPathW, False);
-    Show;
-  end;
+  Explorer := ExplorerManager.NewExplorer(False);
+ // Explorer.SetNewPathW(Self.GetCurrentPathW, False);
+  Explorer.Show;
 end;
 
 function TExplorerForm.GetCurrentPath: string;
@@ -3046,11 +2987,11 @@ begin
         DeleteFiles(True);
 
       if (Msg.WParam = 67) and CtrlKeyDown then
-        Copy3Click(nil);
+        CopyClick(nil);
       if (Msg.WParam = 88) and CtrlKeyDown then
-        Cut3Click(nil);
+        CutClick(nil);
       if (Msg.WParam = 86) and CtrlKeyDown then
-        Paste3Click(nil);
+        PasteClick(nil);
       if (Msg.WParam = 65) and CtrlKeyDown then
         SelectAll1Click(nil);
     end;
@@ -3387,7 +3328,7 @@ procedure TExplorerForm.FormShow(Sender: TObject);
 begin
   if FIsFirstShow then
   begin
-    if not IsWindowsVista then
+    if IsWindowsVista then
       AddClipboardFormatListener(Handle)
     else
       FNextClipboardViewer := SetClipboardViewer(Handle);
@@ -3410,27 +3351,12 @@ begin
   end;
 end;
 
-procedure TExplorerForm.Cut1Click(Sender: TObject);
-var
-  FileList: TStrings;
-begin
-  FileList := TStringList.Create;
-  try
-    FileList.Add(GetCurrentPath);
-    Copy_Move(Application.Handle, False, FileList);
-  finally
-    F(FileList);
-  end;
-end;
-
 procedure TExplorerForm.PmListPopupPopup(Sender: TObject);
 begin
   Addfolder1.Visible := not FolderView;
   MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE)) and not FolderView;
 
   Paste1.Visible := False;
-  Cut1.Visible := False;
-  Copy2.Visible := False;
   Addfolder1.Visible := False;
   MakeNew1.Visible := False;
   OpeninSearchWindow1.Visible := False;
@@ -3438,8 +3364,6 @@ begin
   if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) then
   begin
     Paste1.Visible := True;
-    Cut1.Visible := True;
-    Copy2.Visible := True;
     Addfolder1.Visible := True;
     MakeNew1.Visible := True;
     OpeninSearchWindow1.Visible := True;
@@ -3448,30 +3372,9 @@ begin
   if (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_STORAGE) or (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
   begin
     Paste1.Visible := False;
-    Cut1.Visible := False;
-    Copy2.Visible := False;
   end;
 
-  Paste1.Enabled := CanCopyFromClipboard;
-end;
-
-procedure TExplorerForm.Cut2Click(Sender: TObject);
-var
-  I, Index: Integer;
-  FileList: TStrings;
-begin
-  FileList := TStringList.Create;
-  try
-    for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      Index := ItemIndexToMenuIndex(I);
-      FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
-    end;
-    Copy_Move(Application.Handle, False, FileList);
-  finally
-    F(FileList);
-  end;
+  Paste1.Visible := CanCopyFromClipboard;
 end;
 
 procedure TExplorerForm.ShowProgress;
@@ -3594,33 +3497,33 @@ procedure TExplorerForm.ReallignToolInfo;
 begin
   VerifyPaste(Self);
 
+  TbDelete.Enabled := False;
+  TbCopy.Enabled := False;
+  TbCut.Enabled := False;
+
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) then
-  begin
-    TbCopy.Enabled := SelCount <> 0;
-  end else
-    TbCopy.Enabled := False;
+    TbCopy.Enabled := SelCount > 0;
 
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
-  begin
-    TbCut.Enabled := SelCount <> 0;
-  end else
-    TbCut.Enabled := False;
+    TbCut.Enabled := SelCount > 0;
 
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
-  begin
-    TbDelete.Enabled := SelCount <> 0;
-  end else
-    TbDelete.Enabled := False;
-
+    TbDelete.Enabled := SelCount > 0;
 end;
 
 procedure TExplorerForm.ReallignInfo;
@@ -3888,13 +3791,13 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)) then
     begin
       CopyToLink.Visible := True;
-      TbCopy.Enabled := SelCount <> 0;
+      //TbCopy.Enabled := SelCount <> 0;
       CopyToLink.Top := NewTop + H;
       NewTop := CopyToLink.BoundsRect.Bottom;
     end else
     begin
       CopyToLink.Visible := False;
-      TbCopy.Enabled := False;
+      //TbCopy.Enabled := False;
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
@@ -3905,16 +3808,16 @@ begin
         MoveToLink.Top := NewTop + H;
         NewTop := MoveToLink.BoundsRect.Bottom;
         MoveToLink.Visible := True;
-        TbCut.Enabled := True;
+        //TbCut.Enabled := True;
       end else
       begin
-        TbCut.Enabled := False;
+        //TbCut.Enabled := False;
         MoveToLink.Visible := False;
       end;
     end else
     begin
       MoveToLink.Visible := False;
-      TbCut.Enabled := False;
+      //TbCut.Enabled := False;
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
@@ -3932,13 +3835,20 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER)) and (SelCount = 1)) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE)) and (SelCount = 1)) or
       ((SelCount = 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON))) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE))) or
           (((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE)) and
+          (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE)) and
         (SelCount > 1)) then
     begin
       PropertiesLink.Visible := True;
@@ -3955,18 +3865,18 @@ begin
     begin
       if SelCount <> 0 then
       begin
-        TbDelete.Enabled := True;
+        //TbDelete.Enabled := True;
         DeleteLink.Visible := True;
         DeleteLink.Top := NewTop + H;
         NewTop := DeleteLink.BoundsRect.Bottom;
       end else
       begin
-        TbDelete.Enabled := False;
+        //TbDelete.Enabled := False;
         DeleteLink.Visible := False;
       end;
     end else
     begin
-      TbDelete.Enabled := False;
+      //TbDelete.Enabled := False;
       DeleteLink.Visible := False;
     end;
 
@@ -4398,20 +4308,47 @@ begin
   Hinttimer.Enabled := False;
 end;
 
-procedure TExplorerForm.Copy3Click(Sender: TObject);
+procedure TExplorerForm.CopyFilesToClipboard(IsCutAction: Boolean = False);
+var
+  I, Index: Integer;
+  FileList: TStrings;
 begin
-  if SelCount= 0 then
-    Copy2Click(Sender)
-  else
-    Copy1Click(Sender);
+  FileList := TStringList.Create;
+  try
+    if not IsDevicePath(FCurrentPath) then
+    begin
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
+        end;
+      if FileList.Count > 0 then
+        Copy_Move(Application.Handle, not IsCutAction, FileList);
+    end else
+    begin
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          FileList.Add(ExtractFileName(FFilesInfo[Index].FileName));
+        end;
+
+      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, PhotoDBPathToDevicePath(FCurrentPath), FileList, AnsiString(IIF(IsCutAction, 'Cut', 'Copy')));
+    end;
+  finally
+    F(FileList);
+  end;
 end;
 
-procedure TExplorerForm.Cut3Click(Sender: TObject);
+procedure TExplorerForm.CopyClick(Sender: TObject);
 begin
-  if SelCount = 0 then
-    Cut1Click(Sender)
-  else
-    Cut2Click(Sender);
+  CopyFilesToClipboard;
+end;
+
+procedure TExplorerForm.CutClick(Sender: TObject);
+begin
+  CopyFilesToClipboard(True);
 end;
 
 procedure TExplorerForm.Options1Click(Sender: TObject);
@@ -4434,9 +4371,10 @@ var
   ArInt: TArInteger;
   Files: TStrings;
   WindowsProperty: Boolean;
-  I: Integer;
+  I, ItemIndex: Integer;
   EInfo: TExplorerFileInfo;
-  P: TPathItem;
+  P, PI: TPathItem;
+  PL: TPathItemCollection;
 
   procedure ShowWindowsPropertiesDialogToSelected;
   var
@@ -4458,56 +4396,76 @@ var
 
 begin
   EInfo := FFilesInfo[PmItemPopup.Tag];
-  if EInfo.FileType = EXPLORER_ITEM_IMAGE then
-  begin
-    if SelCount > 1 then
-    begin
-      Info := GetCurrentPopUpMenuInfo(ListView1Selected);
-      try
-        SetLength(ArInt, 0);
-        WindowsProperty := True;
-        for I := 0 to Info.Count - 1 do
-          if Info[I].Selected then
-          begin
-            SetLength(ArInt, Length(ArInt) + 1);
-            ArInt[Length(ArInt) - 1] := Info[I].ID;
-            if Info[I].ID <> 0 then
-              WindowsProperty := False;
-          end;
-        if not WindowsProperty then
-          PropertyManager.NewSimpleProperty.ExecuteEx(ArInt)
-        else
-          ShowWindowsPropertiesDialogToSelected;
-      finally
-        F(Info);
-      end;
-    end else
-    begin
-      if EInfo.FileType = EXPLORER_ITEM_IMAGE then
-      begin
-        if not EInfo.Loaded then
-          EInfo.ID := GetIdByFileName(EInfo.FileName);
-        if EInfo.ID = 0 then
-          PropertyManager.NewFileProperty(EInfo.FileName).ExecuteFileNoEx(EInfo.FileName)
-        else
-          PropertyManager.NewIDProperty(EInfo.ID).Execute(EInfo.ID);
-      end;
-    end;
-    Exit;
-  end;
 
-  P := PathProviderManager.CreatePathItem(FSelectedInfo.FileName);
+  P := PathProviderManager.CreatePathItem(EInfo.FileName);
   try
     if P <> nil then
     begin
       if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
       begin
-        P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, nil);
+        PL := TPathItemCollection.Create;
+        try
+          for I := 0 to ElvMain.Items.Count - 1 do
+          begin
+            ItemIndex := MenuIndexToItemIndex(I);
+            if ItemIndex > FFilesInfo.Count - 1 then
+              Exit;
+
+            //skip filtered items
+            if not ElvMain.Items[I].Visible then
+              Continue;
+
+            if not ElvMain.Items[I].Selected then
+              Continue;
+
+            PI := PathProviderManager.CreatePathItem(FFilesInfo[ItemIndex].FileName);
+            if PI <> nil then
+              PL.Add(PI);
+
+          end;
+          P.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_PROPERTIES, nil);
+        finally
+          PL.FreeItems;
+          F(PL);
+        end;
+
         Exit;
       end;
     end;
   finally
     F(P);
+  end;
+
+  if SelCount > 1 then
+  begin
+    Info := GetCurrentPopUpMenuInfo(ListView1Selected);
+    try
+      SetLength(ArInt, 0);
+      WindowsProperty := True;
+      for I := 0 to Info.Count - 1 do
+        if Info[I].Selected then
+        begin
+          SetLength(ArInt, Length(ArInt) + 1);
+          ArInt[Length(ArInt) - 1] := Info[I].ID;
+          if Info[I].ID <> 0 then
+            WindowsProperty := False;
+        end;
+      if not WindowsProperty then
+        PropertyManager.NewSimpleProperty.ExecuteEx(ArInt)
+      else
+        ShowWindowsPropertiesDialogToSelected;
+    finally
+      F(Info);
+    end;
+  end else if EInfo.FileType = EXPLORER_ITEM_IMAGE then
+  begin
+    if not EInfo.Loaded then
+      EInfo.ID := GetIdByFileName(EInfo.FileName);
+    if EInfo.ID = 0 then
+      PropertyManager.NewFileProperty(EInfo.FileName).ExecuteFileNoEx(EInfo.FileName)
+    else
+      PropertyManager.NewIDProperty(EInfo.ID).Execute(EInfo.ID);
+    Exit;
   end;
 
   ShowWindowsPropertiesDialogToSelected;
@@ -4518,6 +4476,40 @@ var
   Item: TEasyItem;
   Index: Integer;
   P: TPathItem;
+
+  function ExecuteProvider(FileName: string): Boolean;
+  var
+    PL: TPathItemCollection;
+    PI: TPathItem;
+  begin
+    Result := False;
+    
+    P := PathProviderManager.CreatePathItem(FileName);
+    try
+      if P <> nil then
+      begin
+        if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
+        begin
+          PL := TPathItemCollection.Create;
+          try
+            PI := PathProviderManager.CreatePathItem(FileName);
+            if PI <> nil then
+            begin
+              PL.Add(PI);
+              Result := P.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_PROPERTIES, nil);
+            end;
+          finally
+            PL.FreeItems;
+            F(PL);
+          end;
+          
+        end;
+      end;
+    finally
+      F(P);
+    end;
+  end;
+  
 begin
   if SelCount > 1 then
   begin
@@ -4537,38 +4529,18 @@ begin
   if SelCount = 0 then
   begin
 
-    P := PathProviderManager.CreatePathItem(GetCurrentPath);
-    try
-      if P <> nil then
-      begin
-        if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
-        begin
-          P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, nil);
-          Exit;
-        end;
-      end;
-    finally
-      F(P);
-    end;
+    if ExecuteProvider(GetCurrentPath) then
+      Exit;
+
     if FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER then
       ShowMyComputerProperties(Handle)
-    else
+    else 
       ShowPropertiesDialog(GetCurrentPath)
   end else
   begin
-    P := PathProviderManager.CreatePathItem(FSelectedInfo.FileName);
-    try
-      if P <> nil then
-      begin
-        if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
-        begin
-          P.Provider.ExecuteFeature(Self, P, PATH_FEATURE_PROPERTIES, nil);
-          Exit;
-        end;
-      end;
-    finally
-      F(P);
-    end;
+    if ExecuteProvider(FSelectedInfo.FileName) then
+      Exit;
+
 
     if FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER then
       ShowMyComputerProperties(Handle)
@@ -4784,6 +4756,7 @@ function TExplorerForm.InternalGetImage(FileName: string;
   Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 var
   I, Index : Integer;
+  B: TBitmap;
 begin
   Result := False;
   FileName := AnsiLowerCase(FileName);
@@ -4796,9 +4769,15 @@ begin
       begin
         if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
         begin
+          B := FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap;
           Width := FFilesInfo[Index].Width;
           Height := FFilesInfo[Index].Height;
-          Bitmap.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Graphic);
+          if (Width = 0) or (Height = 0) then
+          begin
+            Width := B.Width;
+            Height := B.Height;
+          end;
+          Bitmap.Assign(B);
           Result := True;
         end;
       end;
@@ -4806,33 +4785,13 @@ begin
   end;
 end;
 
-procedure TExplorerForm.Paste3Click(Sender: TObject);
-var
-  CopyMoveToSelectedFolder: Boolean;
-  Index: Integer;
-begin
-  CopyMoveToSelectedFolder := False;
-  if (SelCount = 1) then
-  begin
-    Index := ItemIndexToMenuIndex(ElvMain.Selection.First.Index);
-    CopyMoveToSelectedFolder := (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or
-      (FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-      (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_DIRECTORY);
-    PmItemPopup.Tag := Index;
-  end;
-  PasteFromClipboard(not CopyMoveToSelectedFolder);
-end;
-
-procedure TExplorerForm.PasteFromClipboard(CopyToCurrentDirectory: Boolean);
+procedure TExplorerForm.PasteFromClipboard;
 var
   Files: TStrings;
   Effects: Integer;
   Path: string;
 begin
-  if CopyToCurrentDirectory then
-    Path := GetCurrentPath
-  else
-    Path := FFilesInfo[PmItemPopup.Tag].FileName;
+  Path := GetCurrentPath;
 
   Files := TStringList.Create;
   try
@@ -4840,14 +4799,7 @@ begin
     if Files.Count = 0 then
     begin
       if ClipboardHasPIDList then
-      begin
-        if IsDevicePath(Path) then
-        begin
-          Delete(Path, 1, Length(cDevicesPath) + 1);
-          ExecuteShellPathRelativeToMyComputerMenuAction(Handle, Path, nil, 'Paste');
-        end else
-          PastePIDListToFolder(Handle, Path);
-      end;
+        TExplorerPastePIDLsThread.Create(Self, Path);
       Exit;
     end;
 
@@ -4865,14 +4817,9 @@ begin
   end;
 end;
 
-procedure TExplorerForm.Paste1Click(Sender: TObject);
+procedure TExplorerForm.PasteClick(Sender: TObject);
 begin
-  PasteFromClipboard(True);
-end;
-
-procedure TExplorerForm.Paste2Click(Sender: TObject);
-begin
-  PasteFromClipboard(False);
+  PasteFromClipboard;
 end;
 
 procedure TExplorerForm.PePathChange(Sender: TObject);
@@ -4946,24 +4893,6 @@ begin
   Result := PP.DisplayName;
 end;
 
-function TExplorerForm.MakePathName(Path: TExplorerPath): string;
-var
-  PP: TPathItem;
-begin
-  if (Path.PType = EXPLORER_ITEM_DRIVE) or (Path.PType = EXPLORER_ITEM_MYCOMPUTER) or (Path.PType = EXPLORER_ITEM_NETWORK) or (Path.PType = EXPLORER_ITEM_WORKGROUP) then
-    Result := Path.Path
-  else if (Path.PType = EXPLORER_ITEM_SEARCH) then
-  begin
-    PP := PathProviderManager.CreatePathItem(Path.Path);
-    try
-      Result := GetPathPartName(PP);
-    finally
-      F(PP);
-    end;
-  end else
-    Result := ExtractFileName(ExcludeTrailingPathDelimiter(Path.Path));
-end;
-
 procedure TExplorerForm.PePathUpdateItem(Sender: TObject; PathPart: TPathItem);
 begin
   if PathPart is THomeItem then
@@ -5020,7 +4949,6 @@ begin
     DBitem1.Caption := L('Collection Item');
     Copy1.Caption := L('Copy');
     Cut2.Caption := L('Cut');
-    Paste2.Caption := L('Paste');
     Delete1.Caption := L('Delete');
     Rename1.Caption := L('Rename');
     New1.Caption := L('New');
@@ -5030,8 +4958,7 @@ begin
     AddFile1.Caption := L('Add file');
     OpenInNewWindow1.Caption := L('Open in new window');
     OpenInNewWindow2.Caption := L('Open in new window');
-    Copy2.Caption := L('Copy');
-    Cut1.Caption := L('Cut');
+
     Paste1.Caption := L('Paste');
     Addfolder1.Caption := L('Add folder');
     MakeNew1.Caption := L('Make new');
@@ -5211,9 +5138,9 @@ begin
   ScrollBox1.BackgroundTop := ScrollBox1.Height - ScrollBox1.BackGround.Height - 3;
 end;
 
-procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath; Explorer: Boolean; FileMask: string = '');
+procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath; Explorer: Boolean);
 var
-  OldDir, S, Path: string;
+  OldDir, S, Path, FileMask: string;
   UpdaterInfo: TUpdaterInfo;
   ThreadType: Integer;
   Info: TExplorerViewInfo;
@@ -6151,9 +6078,9 @@ begin
     for I := 0 to ElvMain.Items.Count - 1 do
       if ElvMain.Items[I].Selected then
       begin
-        index := ItemIndexToMenuIndex(I);
-        if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
-          Files.Add(FFilesInfo[index].FileName)
+        Index := ItemIndexToMenuIndex(I);
+        if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+          Files.Add(FFilesInfo[Index].FileName)
       end;
     GetPrintForm(Files);
   finally
@@ -6597,11 +6524,11 @@ begin
         if HelpNo = 2 then
           HelpTimer.Enabled := True;
       end;
-      if not PropertyPanel.Visible then
+      {if not PropertyPanel.Visible then
       begin
-        ReallignToolInfo;
         Exit;
-      end;
+      end;}
+      ReallignToolInfo;
       ReallignInfo;
       TempBitmap := TBitmap.Create;
       try
@@ -7370,37 +7297,6 @@ begin
       F(TempResult);
     end;
   end;
-end;
-
-procedure TExplorerForm.LoadStatusVariables(Sender: TObject);
-var
-  Index: Integer;
-  FileEx, CanPaste: Boolean;
-begin
-  FileEx := CanCopyFromClipboard;
-
-  if SelCount = 0 then
-    CanPaste := FileEx
-  else
-  begin
-    if SelCount = 1 then
-    begin
-      Index := ItemIndexToMenuIndex(ListView1Selected.Index);
-      if (FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or
-         (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_STORAGE) then
-        CanPaste := FileEx
-      else
-        CanPaste := False;
-    end else
-      CanPaste := False;
-  end;
-
-  SetBoolAttr(AScript, '$CanUp', AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(MyComputer));
-  SetBoolAttr(AScript, '$CanBack', FHistory.CanBack);
-  SetBoolAttr(AScript, '$CanForward', FHistory.CanForward);
-  SetBoolAttr(AScript, '$CanPaste', CanPaste);
-  SetNamedValue(AScript, '$ItemsCount', IntToStr(ElvMain.Items.Count));
-  SetNamedValueStr(AScript, '$Path', GetCurrentPath);
 end;
 
 function TExplorerForm.CanUp: Boolean;
@@ -8414,18 +8310,23 @@ end;
 
 procedure TExplorerForm.DoDefaultSort(GUID : TGUID);
 begin
-case DefaultSort of
-    0:
-      FileName1Click(FileName1);
-    // 1: - rating!!! no default sorting, information about sorting goes later
-    2:
-      FileName1Click(Size1);
-    3:
-      FileName1Click(Type1);
-    4:
-      FileName1Click(Modified1);
-    5:
-      FileName1Click(Number1);
+  NoLockListView := True;
+  try
+    case DefaultSort of
+      0:
+        FileName1Click(FileName1);
+      // 1: - rating!!! no default sorting, information about sorting goes later
+      2:
+        FileName1Click(Size1);
+      3:
+        FileName1Click(Type1);
+      4:
+        FileName1Click(Modified1);
+      5:
+        FileName1Click(Number1);
+    end;
+  finally
+    NoLockListView := False;
   end;
 end;
 
@@ -8683,11 +8584,8 @@ begin
   Open1.ImageIndex := DB_IC_EXPLORER;
   Open2.ImageIndex := DB_IC_EXPLORER;
   SelectAll1.ImageIndex := DB_IC_SELECTALL;
-  Copy2.ImageIndex := DB_IC_COPY;
-  Cut1.ImageIndex := DB_IC_CUT;
   Cut2.ImageIndex := DB_IC_CUT;
   Paste1.ImageIndex := DB_IC_PASTE;
-  Paste2.ImageIndex := DB_IC_PASTE;
 
   New1.ImageIndex := DB_IC_NEW_SHELL;
   Directory1.ImageIndex := DB_IC_NEW_DIRECTORY;

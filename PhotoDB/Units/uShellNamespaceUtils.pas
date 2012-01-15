@@ -10,9 +10,13 @@ uses
   System.Win.ComObj,
   ShlObj,
   uSysUtils,
-  ShellAPI;
+  ShellAPI,
+  uConstants,
+  uPortableDeviceManager,
+  uPortableDeviceUtils,
+  StrUtils;
 
-procedure ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; Verb: AnsiString);
+function ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; Verb: AnsiString): Boolean;
 function ClipboardHasPIDList: Boolean;
 procedure PastePIDListToFolder(Handle: THandle; Folder: string);
 
@@ -190,7 +194,21 @@ begin
   end;
 end;
 
-procedure ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; Verb: AnsiString);
+function GetShellName(Path, APathName: string): string;
+var
+  P: Integer;
+begin
+  if (IsDeviceItemPath(cDevicesPath + '\' + Path) or IsDevicePath(cDevicesPath + '\' + Path)) and not IsWPDSupport then
+  begin
+    P := Pos('.', ReverseString(APathName));
+    if P > 0 then
+      APathName := Copy(APathName, 1, Length(APathName) - P);
+      //Delete(APathName, Length(APathName) - P, P);
+  end;
+  Result := APathName;
+end;
+
+function ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; Verb: AnsiString): Boolean;
 type
   TPItemIDListArray = array of PItemIDList;
 var
@@ -204,7 +222,7 @@ var
   rgelt: PItemIDList;
   FilePIDLs: TPItemIDListArray;
   Value: STRRET;
-  Name: string;
+  Name, PathName: string;
   Menu: IContextMenu;
 
   procedure ExecuteMenuAction;
@@ -226,6 +244,7 @@ var
         nShow := SW_SHOWNORMAL;
       end;
       HR := Menu.InvokeCommand( cmd );
+      Result := Succeeded(HR);
     end;
   end;
 
@@ -268,16 +287,22 @@ begin
             HR := CurrentFolder.GetDisplayNameOf(rgelt, SHGDN_INFOLDER or SHGDN_INCLUDE_NONFILESYS, Value);
             Name := GetDisplayName(rgelt, pMalloc, Value);
 
+            PathName := '';
+            if (I < PathParts.Count) then
+              PathName := PathParts[I];
+            if (I = PathParts.Count - 1) then
+              PathName := GetShellName(Path, PathParts[I]);
+
             if I < PathParts.Count then
             begin
-              if Name = PathParts[I] then
-              begin
 
+              if Name = PathName then
+              begin
                 if I = PathParts.Count - 1 then
                 begin
                   if (Files <> nil) and (Files.Count > 0) then
                   begin
-                    HR := SHBindToObject(CurrentFolder, rgelt, nil, StringToGUID(SID_IShellFolder), Pointer(CurrentFolder));
+                    HR := CurrentFolder.BindToObject(rgelt, nil, StringToGUID(SID_IShellFolder), Pointer(CurrentFolder));
                     Break;
                   end else
                   begin
@@ -288,18 +313,19 @@ begin
 
                 end else
                 begin
-                  HR := SHBindToObject(CurrentFolder, rgelt, nil, StringToGUID(SID_IShellFolder), Pointer(CurrentFolder));
+                  HR := CurrentFolder.BindToObject(rgelt, nil, StringToGUID(SID_IShellFolder), Pointer(CurrentFolder));
                   Break;
                 end;
 
               end;
             end else
             begin
+
               if Files <> nil then
               begin
                 for J := 0 to Files.Count - 1 do
                 begin
-                  if Files[J] = Name then
+                  if GetShellName(Path, Files[J]) = Name then
                     FilePIDLs[J] := ILClone(rgelt);
                 end;
               end;

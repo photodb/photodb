@@ -372,7 +372,8 @@ uses
   uPortableDeviceUtils in 'Units\PortableDevices\uPortableDeviceUtils.pas',
   uPortableScriptUtils in 'Units\uPortableScriptUtils.pas',
   uShellNamespaceUtils in 'Units\uShellNamespaceUtils.pas',
-  uManagerExplorer in 'Units\uManagerExplorer.pas';
+  uManagerExplorer in 'Units\uManagerExplorer.pas',
+  uExplorerPastePIDLsThread in 'Threads\uExplorerPastePIDLsThread.pas';
 
 {$R *.res}
 

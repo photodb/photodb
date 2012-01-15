@@ -238,6 +238,7 @@ procedure TFormManageGroups.DeleteGroup(Sender: TObject);
 var
   Index: Integer;
   GI: TGroupItem;
+  Items: TPathItemCollection;
 begin
   if (Sender is TmenuItem) then
     Index := (Sender as TMenuItem).Owner.Tag
@@ -249,7 +250,14 @@ begin
     GI := TGroupItem.Create;
     try
       GI.ReadFromGroup(Groups[Index], PATH_LOAD_NO_IMAGE, 0);
-      GI.Provider.ExecuteFeature(Self, GI, PATH_FEATURE_DELETE, nil);
+
+      Items := TPathItemCollection.Create;
+      try
+        Items.Add(GI);
+        GI.Provider.ExecuteFeature(Self, Items, PATH_FEATURE_DELETE, nil);
+      finally
+        F(Items);
+      end;
     finally
       F(GI);
     end;

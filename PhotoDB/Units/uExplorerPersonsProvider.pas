@@ -41,15 +41,15 @@ type
   protected
     function InternalFillChildList(Sender: TObject; Item: TPathItem; List: TPathItemCollection; Options, ImageSize: Integer; PacketSize: Integer; CallBack: TLoadListCallBack): Boolean; override;
     function GetTranslateID: string; override;
-    function ShowProperties(Sender: TObject; Item: TPersonItem): Boolean;
-    function Rename(Sender: TObject; Item: TPersonItem; Options: TPathFeatureEditOptions): Boolean;
-    function Delete(Sender: TObject; Item: TPersonItem): Boolean;
+    function ShowProperties(Sender: TObject; Items: TPathItemCollection): Boolean;
+    function Rename(Sender: TObject; Items: TPathItemCollection; Options: TPathFeatureEditOptions): Boolean;
+    function Delete(Sender: TObject;  Items: TPathItemCollection): Boolean;
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; override;
     function Supports(Path: string): Boolean; override;
     function SupportsFeature(Feature: string): Boolean; override;
-    function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: TPathFeatureOptions): Boolean; override;
+    function ExecuteFeature(Sender: TObject; Items: TPathItemCollection; Feature: string; Options: TPathFeatureOptions): Boolean; override;
     function CreateFromPath(Path: string): TPathItem; override;
   end;
 
@@ -79,14 +79,30 @@ begin
     Result := TPersonItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
-function TPersonProvider.Delete(Sender: TObject; Item: TPersonItem): Boolean;
+function TPersonProvider.Delete(Sender: TObject; Items: TPathItemCollection): Boolean;
 var
   P: TPerson;
   SC: TSelectCommand;
   Count: Integer;
   EventValues: TEventValues;
+  Form: TDBForm;
+  Item: TPersonItem;
 begin
   Result := False;
+
+  Form := TDBForm(Sender);
+
+  if Items.Count = 0 then
+    Exit;
+
+  if Items.Count > 1 then
+  begin
+    MessageBoxDB(Form.Handle, L('Please delete only one person at time!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
+
+  Item := TPersonItem(Items[0]);
+
   P := PersonManager.GetPersonByName(Item.PersonName);
   try
     if not P.Empty then
@@ -98,13 +114,13 @@ begin
         if SC.Execute > 0 then
         begin
           Count := SC.DS.FieldByName('RecordCount').AsInteger;
-          if ID_OK = MessageBoxDB(TDBForm(Sender).Handle, FormatEx(L('Do you really want to delete person "{0}" (Has {1} reference(s) on photo(s))?'), [P.Name, Count]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+          if ID_OK = MessageBoxDB(Form.Handle, FormatEx(L('Do you really want to delete person "{0}" (Has {1} reference(s) on photo(s))?'), [P.Name, Count]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
           begin
             Result := PersonManager.DeletePerson(Item.PersonName);
             if Result then
             begin
               EventValues.ID := Item.PersonID;
-              DBKernel.DoIDEvent(TDBForm(Sender), Item.PersonID, [EventID_PersonRemoved], EventValues);
+              DBKernel.DoIDEvent(Form, Item.PersonID, [EventID_PersonRemoved], EventValues);
             end;
           end;
         end;
@@ -117,19 +133,19 @@ begin
   end;
 end;
 
-function TPersonProvider.ExecuteFeature(Sender: TObject; Item: TPathItem;
+function TPersonProvider.ExecuteFeature(Sender: TObject; Items: TPathItemCollection;
   Feature: string; Options: TPathFeatureOptions): Boolean;
 begin
-  Result := inherited ExecuteFeature(Sender, Item, Feature, Options);
+  Result := inherited ExecuteFeature(Sender, Items, Feature, Options);
 
   if Feature = PATH_FEATURE_DELETE then
-    Result := Delete(Sender, Item as TPersonItem);
+    Result := Delete(Sender, Items);
 
   if Feature = PATH_FEATURE_PROPERTIES then
-    Result := ShowProperties(Sender, Item as TPersonItem);
+    Result := ShowProperties(Sender, Items);
 
   if Feature = PATH_FEATURE_RENAME then
-    Result := Rename(Sender, Item as TPersonItem, Options as TPathFeatureEditOptions);
+    Result := Rename(Sender, Items, Options as TPathFeatureEditOptions);
 end;
 
 function TPersonProvider.ExtractPreview(Item: TPathItem; MaxWidth,
@@ -208,11 +224,19 @@ begin
     CallBack(Sender, Item, List, Cancel);
 end;
 
-function TPersonProvider.Rename(Sender: TObject; Item: TPersonItem;
+function TPersonProvider.Rename(Sender: TObject; Items: TPathItemCollection;
   Options: TPathFeatureEditOptions): Boolean;
 var
   EventValues: TEventValues;
+  Item: TPersonItem;
 begin
+  Result := False;
+
+  if Items.Count = 0 then
+    Exit;
+
+  Item := TPersonItem(Items[0]);
+
   Result := PersonManager.RenamePerson(Item.PersonName, Options.NewName);
   if Result then
   begin
@@ -231,11 +255,16 @@ begin
 end;
 
 function TPersonProvider.ShowProperties(Sender: TObject;
-  Item: TPersonItem): Boolean;
+  Items: TPathItemCollection): Boolean;
 var
   P: TPerson;
 begin
-  P := PersonManager.GetPersonByName(Item.PersonName);
+  Result := False;
+
+  if Items.Count = 0 then
+    Exit;
+
+  P := PersonManager.GetPersonByName(TPersonItem(Items[0]).PersonName);
   try
     Result := P.ID > 0;
     if Result then

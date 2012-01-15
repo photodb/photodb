@@ -11,17 +11,18 @@ uses
   uWPDClasses;
 
 function CreateDeviceManagerInstance: IPManager;
+function IsWPDSupport: Boolean;
 
 implementation
 
-function CreateDeviceManagerInstance: IPManager;
+function IsWPDSupport: Boolean;
 var
   IsWPDAvailable: Boolean;
 begin
   if GetParamStrDBBool('/FORCEWIA') then
-    Exit(TWIADeviceManager.Create);
+    Exit(False);
   if GetParamStrDBBool('/FORCEWPD') then
-    Exit(TWPDDeviceManager.Create);
+    Exit(True);
 
   IsWPDAvailable := False;
   //Vista SP1
@@ -31,7 +32,12 @@ begin
   if (TOSVersion.Major = 6) and (TOSVersion.Minor >= 1) then
     IsWPDAvailable := True;
 
-  if IsWPDAvailable then
+  Result := IsWPDAvailable;
+end;
+
+function CreateDeviceManagerInstance: IPManager;
+begin
+  if IsWPDSupport then
     Result := TWPDDeviceManager.Create
   else
     Result := TWIADeviceManager.Create;

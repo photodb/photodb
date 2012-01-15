@@ -42,15 +42,15 @@ type
   protected
     function InternalFillChildList(Sender: TObject; Item: TPathItem; List: TPathItemCollection; Options, ImageSize: Integer; PacketSize: Integer; CallBack: TLoadListCallBack): Boolean; override;
     function GetTranslateID: string; override;
-    function Delete(Sender: TObject; Item: TPathItem; Options: TPathFeatureOptions): Boolean;
-    function ShowProperties(Sender: TObject; Item: TGroupItem): Boolean;
-    function Rename(Sender: TObject; Item: TGroupItem; Options: TPathFeatureEditOptions): Boolean;
+    function Delete(Sender: TObject; Items: TPathItemCollection; Options: TPathFeatureOptions): Boolean;
+    function ShowProperties(Sender: TObject; Items: TPathItemCollection): Boolean;
+    function Rename(Sender: TObject; Items: TPathItemCollection; Options: TPathFeatureEditOptions): Boolean;
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; override;
     function Supports(Path: string): Boolean; override;
     function SupportsFeature(Feature: string): Boolean; override;
-    function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: TPathFeatureOptions): Boolean; override;
+    function ExecuteFeature(Sender: TObject; Items: TPathItemCollection; Feature: string; Options: TPathFeatureOptions): Boolean; override;
     function CreateFromPath(Path: string): TPathItem; override;
   end;
 
@@ -80,7 +80,7 @@ begin
     Result := TGroupItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
-function TGroupProvider.Delete(Sender: TObject; Item: TPathItem; Options: TPathFeatureOptions): Boolean;
+function TGroupProvider.Delete(Sender: TObject; Items: TPathItemCollection; Options: TPathFeatureOptions): Boolean;
 var
   EventInfo: TEventValues;
   Group: TGroup;
@@ -89,7 +89,17 @@ var
 begin
   Result := False;
   Form := TDBForm(Sender);
-  GroupItem := Item as TGroupItem;
+
+  if Items.Count = 0 then
+    Exit;
+
+  if Items.Count > 1 then
+  begin
+    MessageBoxDB(Form.Handle, L('Please delete only one group at time!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
+  end;
+
+  GroupItem := Items[0] as TGroupItem;
 
   if GroupItem = nil then
     Exit;
@@ -116,19 +126,19 @@ begin
   end;
 end;
 
-function TGroupProvider.ExecuteFeature(Sender: TObject; Item: TPathItem;
+function TGroupProvider.ExecuteFeature(Sender: TObject; Items: TPathItemCollection;
   Feature: string; Options: TPathFeatureOptions): Boolean;
 begin
-  Result := inherited ExecuteFeature(Sender, Item, Feature, Options);
+  Result := inherited ExecuteFeature(Sender, Items, Feature, Options);
 
   if Feature = PATH_FEATURE_DELETE then
-    Result := Delete(Sender, Item, Options);
+    Result := Delete(Sender, Items, Options);
 
   if Feature = PATH_FEATURE_PROPERTIES then
-    Result := ShowProperties(Sender, Item as TGroupItem);
+    Result := ShowProperties(Sender, Items);
 
   if Feature = PATH_FEATURE_RENAME then
-    Result := Rename(Sender, Item as TGroupItem, Options as TPathFeatureEditOptions);
+    Result := Rename(Sender, Items, Options as TPathFeatureEditOptions);
 end;
 
 function TGroupProvider.ExtractPreview(Item: TPathItem; MaxWidth,
@@ -203,14 +213,19 @@ begin
     CallBack(Sender, Item, List, Cancel);
 end;
 
-function TGroupProvider.Rename(Sender: TObject; Item: TGroupItem;
+function TGroupProvider.Rename(Sender: TObject; Items: TPathItemCollection;
   Options: TPathFeatureEditOptions): Boolean;
 var
   Group: TGroup;
   Form: TDBForm;
   EventInfo: TEventValues;
+  Item: TGroupItem;
 begin
   Result := False;
+
+  if Items.Count = 0 then
+    Exit;
+  Item := Items[0] as TGroupItem;
 
   Group := GetGroupByGroupName(Item.GroupName, False);
   try
@@ -255,10 +270,12 @@ begin
   Result := Result or Supports(Item.Path);
 end;
 
-function TGroupProvider.ShowProperties(Sender: TObject;
-  Item: TGroupItem): Boolean;
+function TGroupProvider.ShowProperties(Sender: TObject; Items: TPathItemCollection): Boolean;
 begin
-  ShowGroupInfo(Item.GroupName, False, nil);
+  Result := False;
+  if Items.Count = 0 then
+    Exit;
+  ShowGroupInfo(TGroupItem(Items[0]).GroupName, False, nil);
   Result := True;
 end;
 

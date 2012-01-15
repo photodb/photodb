@@ -25,7 +25,8 @@ uses
   uShellThumbnails,
   uDBForm,
   uShellIntegration,
-  uAssociations;
+  uAssociations,
+  uShellNamespaceUtils;
 
 type
   TPDContext = class(TObject)
@@ -110,13 +111,14 @@ type
     function GetTranslateID: string; override;
     procedure FillDevicesCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
     procedure FillItemsCallBack(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
-    function Delete(Sender: TObject; Item: TPathItem; Options: TPathFeatureOptions): Boolean;
+    function Delete(Sender: TObject; Items: TPathItemCollection; Options: TPathFeatureOptions): Boolean;
+    function ShowProperties(Sender: TObject; Items: TPathItemCollection; Options: TPathFeatureOptions): Boolean;
   public
     function ExtractPreview(Item: TPathItem; MaxWidth, MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean; override;
     function Supports(Item: TPathItem): Boolean; overload; override;
     function Supports(Path: string): Boolean; overload; override;
     function SupportsFeature(Feature: string): Boolean; override;
-    function ExecuteFeature(Sender: TObject; Item: TPathItem; Feature: string; Options: TPathFeatureOptions): Boolean; override;
+    function ExecuteFeature(Sender: TObject; Items: TPathItemCollection; Feature: string; Options: TPathFeatureOptions): Boolean; override;
     function CreateFromPath(Path: string): TPathItem; override;
   end;
 
@@ -136,23 +138,13 @@ begin
   Result := ImageSize;
 end;
 
-function IsDevicePath(Path: string): Boolean;
+function IsDeviceStoragePath(Path: string): Boolean;
 begin
   Result := False;
   if StartsText(cDevicesPath + '\', Path) then
   begin
     Delete(Path, 1, Length(cDevicesPath + '\'));
-    Result := Pos('\', Path) = 0;
-  end;
-end;
-
-function IsDeviceItemPath(Path: string): Boolean;
-begin
-  Result := False;
-  if StartsText(cDevicesPath + '\', Path) then
-  begin
-    Delete(Path, 1, Length(cDevicesPath + '\'));
-    Result := Pos('\', Path) > 0;
+    Result := (Pos('\', Path) > 0) and (Pos('\', Path) = LastDelimiter('\', Path));
   end;
 end;
 
@@ -226,47 +218,69 @@ function TPortableDeviceProvider.CreateFromPath(Path: string): TPathItem;
 begin
   Result := nil;
   if IsDeviceItemPath(Path) then
-    Result := CreateItemByPath(Path);
-  if IsDevicePath(Path) then
+    Result := CreateItemByPath(Path)
+  else if IsDevicePath(Path) then
     Result := TPortableDeviceItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
 end;
 
-function TPortableDeviceProvider.Delete(Sender: TObject; Item: TPathItem;
+function TPortableDeviceProvider.Delete(Sender: TObject; Items: TPathItemCollection;
   Options: TPathFeatureOptions): Boolean;
 var
+  Item: TPathItem;
   FSItem: TPortableFSItem;
   Form: TDBForm;
   DeviceName, DevicePath: string;
   Device: IPDevice;
   DItem: IPDItem;
+  MessageText: string;
 begin
   Result := False;
   Form := TDBForm(Sender);
-  FSItem := Item as TPortableFSItem;
-  if FSItem <> nil then
+  Device := nil;
+  DeviceName := '';
+
+  if Items.Count = 0 then
+    Exit;
+
+  if Items.Count = 1 then
+    MessageText := FormatEx(L('Do you really want to delete object "{0}"?'), [Items[0].DisplayName])
+  else
+    MessageText := FormatEx(L('Do you really want to delete {0} objects?'), [Items.Count]);
+
+  if ID_OK = MessageBoxDB(Form.Handle, MessageText, L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    if ID_OK = MessageBoxDB(Form.Handle, FormatEx(L('Do you really want to delete object "{0}"?'), [FSItem.DisplayName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    for Item in Items do
     begin
-      DeviceName := ExtractDeviceName(FSItem.Path);
-      DevicePath := ExtractDeviceItemPath(FSItem.Path);
-      Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
-      if Device <> nil then
+      FSItem := Item as TPortableFSItem;
+      if FSItem <> nil then
       begin
-        DItem := Device.GetItemByPath(DevicePath);
-        if DItem <> nil then
-          Result := Device.Delete(DItem.ItemKey);
+        if (Device = nil) or (DeviceName <> ExtractDeviceName(FSItem.Path)) then
+        begin
+          DeviceName := ExtractDeviceName(FSItem.Path);
+          DevicePath := ExtractDeviceItemPath(FSItem.Path);
+          Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
+        end;
+        if Device <> nil then
+        begin
+          DItem := Device.GetItemByPath(DevicePath);
+          if DItem <> nil then
+            Result := Device.Delete(DItem.ItemKey);
+        end;
       end;
     end;
   end;
 end;
 
-function TPortableDeviceProvider.ExecuteFeature(Sender: TObject; Item: TPathItem;
+function TPortableDeviceProvider.ExecuteFeature(Sender: TObject; Items: TPathItemCollection;
   Feature: string; Options: TPathFeatureOptions): Boolean;
 begin
-  Result := inherited ExecuteFeature(Sender, Item, Feature, Options);
+  Result := inherited ExecuteFeature(Sender, Items, Feature, Options);
 
   if Feature = PATH_FEATURE_DELETE then
-    Result := Delete(Sender, Item, Options);
+    Result := Delete(Sender, Items, Options);
+
+  if Feature = PATH_FEATURE_PROPERTIES then
+    Result := ShowProperties(Sender, Items, Options);
 end;
 
 function TPortableDeviceProvider.ExtractPreview(Item: TPathItem; MaxWidth,
@@ -337,7 +351,7 @@ begin
       Continue;
 
     PItem := CreatePortableFSItem(Item, C.Options, C.ImageSize);
-    
+
     C.List.Add(PItem);
   end;
 
@@ -403,6 +417,37 @@ begin
   Result := Result or Supports(Item.Path);
 end;
 
+function TPortableDeviceProvider.ShowProperties(Sender: TObject;
+  Items: TPathItemCollection; Options: TPathFeatureOptions): Boolean;
+var
+  Form: TDBForm;
+  Path: string;
+  List: TStrings;
+  Item: TPathItem;
+begin
+  Result := False;
+  Form := TDBForm(Sender);
+
+  if Items.Count = 0 then
+    Exit;
+
+  if Items.Count = 1 then
+    Result := ExecuteShellPathRelativeToMyComputerMenuAction(Form.Handle, PhotoDBPathToDevicePath(Items[0].Path), nil, 'Properties')
+  else
+  begin
+    Path := PhotoDBPathToDevicePath(ExtractFileDir(Items[0].Path));
+    List := TStringList.Create;
+    try
+      for Item in Items do
+        List.Add(ExtractFileName(Item.Path));
+
+      Result := ExecuteShellPathRelativeToMyComputerMenuAction(Form.Handle, Path, List, 'Properties');
+    finally
+      F(List);
+    end;
+  end;
+end;
+
 function TPortableDeviceProvider.Supports(Path: string): Boolean;
 begin
   Result := StartsText(cDevicesPath, Path);
@@ -411,6 +456,7 @@ end;
 function TPortableDeviceProvider.SupportsFeature(Feature: string): Boolean;
 begin
   Result := Feature = PATH_FEATURE_DELETE;
+  Result := Result or (Feature = PATH_FEATURE_PROPERTIES);
 end;
 
 { TPortableDeviceItem }
@@ -499,14 +545,10 @@ end;
 function TPortableStorageItem.InternalGetParent: TPathItem;
 var
   DevName: string;
-  Device: IPDevice;
 begin
   DevName := ExtractDeviceName(Path);
-  Device := CreateDeviceManagerInstance.GetDeviceByName(DevName);
-  if Device <> nil then
-    Result := TPortableDeviceItem.CreateFromPath(cDevicesPath + '\' + Device.Name, PATH_LOAD_NO_IMAGE, 0)
-  else
-    Result := THomeItem.CreateFromPath('', PATH_LOAD_NO_IMAGE, 0);
+
+  Result := TPortableDeviceItem.CreateFromPath(cDevicesPath + '\' + DevName, PATH_LOAD_NO_IMAGE, 0);
 end;
 
 function TPortableStorageItem.LoadImage(Options, ImageSize: Integer): Boolean;
@@ -581,29 +623,34 @@ end;
 
 function TPortableFSItem.InternalGetParent: TPathItem;
 var
-  DeviceName,
-  ParentKey: string;
-  It: IPDItem;
-  Device: IPDevice;
+  Path, ParentPath: string;
+  P: Integer;
 begin
-  It := Self.Item;
-  if It = nil then
+  Path := Self.Path;
+  Path := ExcludeTrailingBackslash(Path);
+  P := LastDelimiter('\', Path);
+  if P < 2 then
     Exit(THomeItem.Create);
 
-  DeviceName := ExtractDeviceName(Path);
-  Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
-  if Device = nil then
-    Exit(THomeItem.Create);
-  
-  if It.ItemKey = '' then
-    Exit(TPortableDeviceItem.CreateFromPath(cDevicesPath + '\' + DeviceName, PATH_LOAD_NO_IMAGE, 0));
-  
-  ParentKey := PortableItemNameCache.GetParentKey(It.DeviceID, It.ItemKey); 
-  It := Device.GetItemByKey(ParentKey); 
-  if It = nil then
-    Exit(THomeItem.Create);
+  ParentPath := System.Copy(Path, 1, P - 1);
 
-  Result := CreatePortableFSItem(It, PATH_LOAD_NO_IMAGE, 0);
+  if IsDeviceItemPath(ParentPath) then
+  begin
+    if not IsWPDSupport then
+      Exit(TPortableDirectoryItem.CreateFromPath(ParentPath, PATH_LOAD_NO_IMAGE, 0))
+    else
+    begin
+      if IsDeviceStoragePath(ParentPath) then
+        Exit(TPortableStorageItem.CreateFromPath(ParentPath, PATH_LOAD_NO_IMAGE, 0))
+      else
+        Exit(TPortableDirectoryItem.CreateFromPath(ParentPath, PATH_LOAD_NO_IMAGE, 0))
+    end;
+  end;
+
+  if IsDevicePath(ParentPath) then
+    Exit(TPortableDeviceItem.CreateFromPath(ParentPath, PATH_LOAD_NO_IMAGE, 0));
+
+  Exit(THomeItem.Create);
 end;
 
 function TPortableFSItem.LoadImage(Options, ImageSize: Integer): Boolean;

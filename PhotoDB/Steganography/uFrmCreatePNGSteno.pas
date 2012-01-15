@@ -5,11 +5,30 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, uFrameWizardBase, StdCtrls, WatermarkedEdit, ExtCtrls, ShlObj,
-  uMemory, UnitDBFileDialogs, pngimage, uFileUtils, uConstants, uStenography,
-  GraphicCrypt, dolphin_db, UnitDBKernel, uAssociations, uShellIntegration,
-  UnitDBCommonGraphics, UnitDBCommon, uGraphicUtils, uDBPopupMenuInfo,
-  UnitDBDeclare, DBCMenu, Menus, WebLink, uCryptUtils, uDBUtils, LoadingSign,
-  uDBBaseTypes;
+  uMemory,
+  UnitDBFileDialogs,
+  pngimage,
+  uFileUtils,
+  uConstants,
+  uStenography,
+  GraphicCrypt,
+  dolphin_db,
+  UnitDBKernel,
+  uAssociations,
+  uShellIntegration,
+  UnitDBCommonGraphics,
+  UnitDBCommon,
+  uGraphicUtils,
+  uDBPopupMenuInfo,
+  UnitDBDeclare,
+  DBCMenu,
+  Menus,
+  WebLink,
+  uCryptUtils,
+  uDBUtils,
+  LoadingSign,
+  uDBBaseTypes,
+  uPortableDeviceUtils;
 
 type
   TFrmCreatePNGSteno = class(TFrameWizardBase)
@@ -385,6 +404,7 @@ procedure TFrmCreatePNGSteno.Init(Manager: TWizardManagerBase;
   FirstInitialization: Boolean);
 var
   FPassIcon: HIcon;
+  FileSize: Int64;
 begin
   inherited;
 
@@ -399,13 +419,17 @@ begin
     end;
   end else
   begin
-    LbImageFileSize.Caption := Format(L('File size: %s'), [SizeInText(GetFileSize(ImageFileName))]);
+    if not IsDevicePath(ImageFileName) then
+      FileSize := GetFileSize(ImageFileName)
+    else
+      FileSize := GetDeviceItemSize(ImageFileName);
+
+    LbImageFileSize.Caption := Format(L('File size: %s'), [SizeInText(FileSize)]);
 
     F(FBitmapImage);
     if ImImageFile.Picture.Graphic = nil then
       LsImage.Show;
-    TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color,
-      ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
+    TStenoLoadImageThread.Create(Manager.Owner, ImageFileName, Color, ErrorLoadingImageHandler, SetPreviewLoadingImageHandler);
     IsBusy := True;
     Changed;
   end;

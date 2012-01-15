@@ -1164,7 +1164,6 @@ begin
   FSender.BeginUpdate;
 end;
 
-
 procedure TExplorerThread.EndUpDateSync;
 begin
   TW.I.Start('EndUpdate START');
@@ -2041,7 +2040,7 @@ begin
   finally
     F(FFiles);
   end;
-  CurrentItems.Clear;
+  CurrentItems.FreeItems;
   TW.I.Start('Packet - end');
 end;
 
@@ -2059,6 +2058,7 @@ begin
       ImageSize := FIcoSize;
     end;
     Result := Item.Provider.FillChildList(Self, Item, List, Flags, ImageSize, PacketSize, PathProviderCallBack);
+    List.FreeItems;
   finally
     F(List);
   end;
@@ -2593,11 +2593,7 @@ end;
 procedure TExplorerThread.DoDefaultSort;
 begin
   if not IsTerminated then
-  begin
-    FSender.NoLockListView := True;
     FSender.DoDefaultSort(FCID);
-    FSender.NoLockListView := False;
-  end
 end;
 
 procedure TExplorerThread.DoStopSearch;
@@ -2707,7 +2703,7 @@ begin
 
   GUIDParam := FileID;
   FInfo.Assign(Info);
-  if not SynchronizeEx(ReplaceImageInExplorer) then
+  if TempBitmap.Empty or not SynchronizeEx(ReplaceImageInExplorer) then
     F(TempBitmap);
 end;
 

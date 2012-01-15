@@ -3,9 +3,22 @@ unit uStenoLoadImageThread;
 interface
 
 uses
-  Classes, Graphics, uAssociations, uFileUtils, UnitDBKernel, SysUtils,
-  uDBThread, uStrongCrypt, GraphicCrypt, uDBForm, uShellIntegration,
-  uConstants, uGraphicUtils, uMemory, uBitmapUtils;
+  Classes,
+  Graphics,
+  uAssociations,
+  uFileUtils,
+  UnitDBKernel,
+  SysUtils,
+  uDBThread,
+  uStrongCrypt,
+  GraphicCrypt,
+  uDBForm,
+  uShellIntegration,
+  uConstants,
+  uGraphicUtils,
+  uMemory,
+  uBitmapUtils,
+  uPortableDeviceUtils;
 
 type
   TErrorLoadingImageHandler = procedure(FileName: string) of object;
@@ -77,7 +90,7 @@ begin
 
     Graphic := nil;
     try
-      if ValidCryptGraphicFile(FFileName) then
+      if not IsDevicePath(FFileName) and ValidCryptGraphicFile(FFileName) then
       begin
         FPassword := DBkernel.FindPasswordForCryptImageFile(FFileName);
         if FPassword = '' then
@@ -94,7 +107,10 @@ begin
       end else
       begin
         Graphic := GraphicClass.Create;
-        Graphic.LoadFromFile(FFileName);
+        if not IsDevicePath(FFileName) then
+          Graphic.LoadFromFile(FFileName)
+        else
+          Graphic.LoadFromDevice(FFileName);
       end;
 
       if Graphic = nil then

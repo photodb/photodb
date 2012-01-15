@@ -3,9 +3,19 @@ unit uExplorerSearchProviders;
 interface
 
 uses
-  SysUtils, uMemory, Classes, uPathProviders, uConstants, StrUtils, uStringUtils,
-  uTranslate, uExplorerMyComputerProvider, Graphics, uShellIcons,
-  uExplorerFSProviders, uExplorerNetworkProviders;
+  SysUtils,
+  uMemory,
+  Classes,
+  uPathProviders, uConstants,
+  StrUtils,
+  uStringUtils,
+  uFileUtils,
+  uTranslate,
+  uExplorerMyComputerProvider,
+  Graphics,
+  uShellIcons,
+  uExplorerFSProviders,
+  uExplorerNetworkProviders;
 
 type
   TSearchItem = class(TPathItem)
