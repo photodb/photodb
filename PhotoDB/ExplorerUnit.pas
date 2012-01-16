@@ -535,6 +535,7 @@ type
     FItemUpdateLastTime: Cardinal;
 
     FSelectedItem: TEasyItem;
+    FCanPasteFromClipboard: Boolean;
 
     FNextClipboardViewer: HWnd;
     FIsFirstShow: Boolean;
@@ -797,9 +798,7 @@ var
 begin
   FileType := Explorer.FCurrentTypePath;
 
-  CanPaste := CanCopyFromClipboard;
-
-  CanPaste := CanPaste and ((FileType = EXPLORER_ITEM_FOLDER)
+  CanPaste := Explorer.FCanPasteFromClipboard and ((FileType = EXPLORER_ITEM_FOLDER)
                         or (FileType = EXPLORER_ITEM_DRIVE)
                         or (FileType = EXPLORER_ITEM_SHARE)
                         or (FileType = EXPLORER_ITEM_DEVICE_STORAGE)
@@ -873,6 +872,7 @@ begin
   ElvMain := TEasyListView.Create(self);
   ElvMain.Parent := PnContent;
   ElvMain.Align := AlClient;
+  ElvMain.ShowThemedBorder := False;
 
   MouseDowned := False;
   PopupHandled := False;
@@ -1032,6 +1032,7 @@ begin
   GOM.AddObj(Self);
   if FGoToLastSavedPath then
     LoadLastPath;
+  FCanPasteFromClipboard := CanCopyFromClipboard;
 
   for I := 0 to ComponentCount - 1 do
     if Components[I] is TWebLink then
@@ -3495,8 +3496,6 @@ end;
 
 procedure TExplorerForm.ReallignToolInfo;
 begin
-  VerifyPaste(Self);
-
   TbDelete.Enabled := False;
   TbCopy.Enabled := False;
   TbCut.Enabled := False;
@@ -4796,9 +4795,9 @@ begin
   Files := TStringList.Create;
   try
     LoadFilesFromClipBoard(Effects, Files);
-    if Files.Count = 0 then
+    if (Files.Count = 0) or IsDevicePath(FCurrentPath) then
     begin
-      if ClipboardHasPIDList then
+      if ClipboardHasPIDList or (Files.Count > 0) then
         TExplorerPastePIDLsThread.Create(Self, Path);
       Exit;
     end;
@@ -6784,6 +6783,7 @@ begin
       FSelectedInfo.One := True;
       FSelectedInfo.Rating := 0;
       TypeLabel.Caption := '';
+      ReallignToolInfo;
       ReallignInfo;
     end;
   end;
@@ -7073,6 +7073,7 @@ end;
 
 procedure TExplorerForm.WMClipboardUpdate(var Msg: TMessage);
 begin
+  FCanPasteFromClipboard := CanCopyFromClipboard;
   VerifyPaste(Self);
 end;
 
@@ -7082,6 +7083,7 @@ begin
   if FNextClipboardViewer <> 0 then
    SendMessage(FNextClipboardViewer, WM_DrawClipboard, Msg.wParam, Msg.lParam);
 
+  FCanPasteFromClipboard := CanCopyFromClipboard;
   VerifyPaste(Self);
 end;
 
@@ -8555,6 +8557,7 @@ begin
   FormLoadEnd := False;
   NoLockListView := False;
   FPictureSize := ThImageSize;
+  FCanPasteFromClipboard := False;
   ElvMain := nil;
   FBitmapImageList := TBitmapImageList.Create;
   FHistory := TStringsHistoryW.Create;

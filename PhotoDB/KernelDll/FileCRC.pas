@@ -1,7 +1,7 @@
 Unit FileCRC;
 interface
 const
-  ProgramCRC : Integer = $F21AC2F6;
+  ProgramCRC : Integer = $7C93AD77;
 implementation
 begin
 end.

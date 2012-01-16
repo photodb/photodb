@@ -276,7 +276,7 @@ begin
         if (I < PathParts.Count) and (PathParts[I] = '') then
           Continue;
 
-        CurrentFolder.EnumObjects(handle, SHCONTF_FOLDERS or SHCONTF_NONFOLDERS, EnumIDList);
+        CurrentFolder.EnumObjects(handle, SHCONTF_FOLDERS or SHCONTF_NONFOLDERS or SHCONTF_FASTITEMS or SHCONTF_INCLUDEHIDDEN, EnumIDList);
 
         pceltFetched := 1;
         while(pceltFetched = 1) do

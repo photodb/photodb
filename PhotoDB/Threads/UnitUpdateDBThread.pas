@@ -183,7 +183,7 @@ begin
         IsTime := False;
         try
           ExifData.LoadFromGraphic(Path);
-          if not ExifData.Empty then
+          if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) then
           begin;
             Date := DateOf(ExifData.DateTimeOriginal);
             Time := TimeOf(ExifData.DateTimeOriginal);

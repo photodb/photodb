@@ -279,6 +279,7 @@ type
     procedure BeginUpdate; virtual;
     function DrawWithThemes: Boolean;
     procedure EndUpdate(Invalidate: Boolean = True); virtual;
+    procedure Loaded; override;
     procedure PaintToRect(ACanvas: TCanvas; Rect: TRect; ClipRectInViewPortCoords: Boolean = True);
     procedure SafeInvalidateRect(ARect: PRect; ImmediateUpdate: Boolean);
 
@@ -1050,6 +1051,11 @@ begin
   end;
 end;
 
+procedure TCommonCanvasControl.Loaded;
+begin
+  inherited;
+end;
+
 procedure TCommonCanvasControl.MouseTimerProc(Sender: TObject);
 var
   Pt: TPoint;
@@ -1325,14 +1331,6 @@ begin
       OffsetX := NonClientR.Left;
       OffsetY := NonClientR.Top;
 
-      if BorderStyle = bsSingle then
-      begin
-        InflateRect(NonClientR, -1, -1);
-        if Ctl3D then
-          InflateRect(NonClientR, -1, -1);
-      end;
-
-
       // The DC origin is with respect to the Window so offset everything to match
       OffsetRect(NonClientR, -OffsetX, -OffsetY);
       OffsetRect(ClientR, -OffsetX, -OffsetY);
@@ -1341,7 +1339,7 @@ begin
       if (Style and WS_VSCROLL) <> 0 then
       begin
         StyleEx := GetWindowLong(Handle, GWL_EXSTYLE);
-        if (StyleEx and WS_EX_LEFTSCROLLBAR) <> 0 then
+        if (StyleEx and WS_EX_LEFTSCROLLBAR) <> 0 then          // RTL or LTR Reading
           Dec(ClientR.Left, GetSystemMetrics(SM_CYVSCROLL))
         else
           Inc(ClientR.Right, GetSystemMetrics(SM_CYVSCROLL))
@@ -1370,7 +1368,7 @@ begin
 
       // Will return false if USETHEMES not defined
       if DrawWithThemes then
-        PaintThemedNCBkgnd(NCCanvas, ClientR)
+        PaintThemedNCBkgnd(NCCanvas, NonClientR)
       else begin
         Windows.FillRect(DC, NonClientR, Brush.Handle);
         if BevelKind <> bkNone then
@@ -1380,7 +1378,7 @@ begin
           if BevelOuter <> bvNone then
             InflateRect(ClientR, 1, 1);
         end;
-        DrawEdge(DC, ClientR, InnerStyles[BevelInner] or OuterStyles[BevelOuter],
+        DrawEdge(DC, NonClientR, InnerStyles[BevelInner] or OuterStyles[BevelOuter],
             Byte(BevelEdges) or EdgeStyles[BevelKind] or Ctl3DStyles[Ctl3D]);
       end;
     finally
@@ -2809,5 +2807,14 @@ finalization
   FreeAndNil(PIDLMgr);
 
 end.
+
+
+
+
+
+
+
+
+
 
 

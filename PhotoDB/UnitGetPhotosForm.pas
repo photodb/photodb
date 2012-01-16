@@ -172,7 +172,7 @@ begin
       ExifData := TExifData.Create;
       try
         ExifData.LoadFromGraphic(Files[I - 1]);
-        if not ExifData.Empty and (YearOf(ExifData.DateTimeOriginal) > 1900) then
+        if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
           Dates[I] := DateOf(ExifData.DateTimeOriginal)
         else
           Dates[I] := DateOf(Now);

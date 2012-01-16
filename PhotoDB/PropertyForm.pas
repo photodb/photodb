@@ -1342,7 +1342,7 @@ begin
     FFileDate := 0;
     try
       LoadEXIFFromFile(FileName, ExifData);
-      if not ExifData.Empty then
+      if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) then
       begin
         FFileDate := DateOf(ExifData.DateTimeOriginal);
         FFileTime := TimeOf(ExifData.DateTimeOriginal);
@@ -2130,7 +2130,8 @@ begin
             XInsert(L('Make'), ExifData.CameraMake);
             XInsert(L('Model'), ExifData.CameraModel);
             XInsert(L('Copyright'), ExifData.Copyright);
-            XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTimeOriginal));
+            if ExifData.DateTimeOriginal > 0 then
+              XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTimeOriginal));
             XInsert(L('Description'), ExifData.ImageDescription);
             XInsert(L('Software'), ExifData.Software);
             Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));

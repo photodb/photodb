@@ -384,14 +384,16 @@ begin
   FTranslateList := TList.Create;
   //'Msxml2.DOMDocument.6.0'
 
-  ClassID := ProgIDToClassID('Msxml2.DOMDocument.6.0');
-  HR := CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
+  HR := CLSIDFromProgID(PWideChar(WideString('Msxml2.DOMDocument.6.0')), ClassID);
+  if Succeeded(HR) then
+    HR := CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
 
   if Failed(HR) then
   begin
-    ClassID := ProgIDToClassID('Msxml2.DOMDocument.3.0');
+    HR := CLSIDFromProgID(PWideChar(WideString('Msxml2.DOMDocument.3.0')), ClassID);
+    if Succeeded(HR) then
     //if this method failed - OS isn't supported
-    CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
+      CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
   end;
 
   FLangCode := 0;

@@ -809,7 +809,7 @@ begin
         ExifData.LoadFromGraphic(FileName);
         if Settings.ReadBool('Options', 'FixDateAndTime', True) then
         begin
-          if YearOf(ExifData.DateTimeOriginal) > 2000 then
+          if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 2000) then
           begin
             UpdateDateTime := True;
             DateToAdd := DateOf(ExifData.DateTimeOriginal);

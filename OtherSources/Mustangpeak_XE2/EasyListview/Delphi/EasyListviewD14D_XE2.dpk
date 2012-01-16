@@ -36,8 +36,8 @@ requires
   designide,
   vclactnband,
   vclx,
-  EasyListviewD14_XE2,
-  MPCommonLibD14D_XE2;
+  MPCommonLibD14D_XE2,
+  EasyListviewD14_XE2;
 
 contains
   EasyListviewReg in '..\Design\EasyListviewReg.pas',

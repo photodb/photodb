@@ -56,10 +56,12 @@
 // - COMPILER_11_UP : Kylix/Delphi/BCB 11.x or higher is the compiler.
 // - COMPILER_12    : Kylix/Delphi/BCB 12.x is the compiler.
 // - COMPILER_12_UP : Kylix/Delphi/BCB 12.x or higher is the compiler.
-// - COMPILER_13    : Kylix/Delphi/BCB 13.x is the compiler.
-// - COMPILER_13_UP : Kylix/Delphi/BCB 13.x or higher is the compiler.
-// - COMPILER_14    : Kylix/Delphi/BCB 14.x is the compiler.
-// - COMPILER_14_UP : Kylix/Delphi/BCB 14.x or higher is the compiler.
+// - COMPILER_14    : Delphi/BCB 14.x is the compiler.
+// - COMPILER_14_UP : Delphi/BCB 14.x or higher is the compiler.
+// - COMPILER_15    : Delphi/BCB 15.x is the compiler.           [XE]
+// - COMPILER_15_UP : Delphi/BCB 15.x or higher is the compiler. [XE]
+// - COMPILER_16    : Delphi/BCB 16.x is the compiler.           [XE2]
+// - COMPILER_16_UP : Delphi/BCB 16.x or higher is the compiler. [XE2]
 //
 // Only defined if Windows is the target:
 // - CPPB        : Any version of BCB is being used.
@@ -125,15 +127,27 @@
   {$endif DELPHI.NET_1}
 {$endif CLR}
 
-{$ifdef Win32}
-  {$define Win32or64}
-{$endif Win32}
-
 {$ifdef Win64}
-  {$define Win32or64}
-{$endif Win64}
 
-{$ifdef Win32or64}
+  // BDS XE2 (BDS 9.0) DELPHI and BCB are no longer defined, only COMPILER
+  {$ifdef VER230}
+    {$define COMPILER_16}
+  {$endif VER230}
+
+
+  {$ifdef COMPILER_16}
+    {$define COMPILER_16_UP}
+  {$endif}
+
+  {$ifdef BCB}
+    {$define CPPB}
+  {$else}
+    {$define DELPHI}
+  {$endif} 
+
+{$endif}
+
+{$ifdef Win32}
 
 // Compiler defines not specific to a particlular platform.
 
@@ -141,16 +155,18 @@
   {$ifdef VER230}
     {$define COMPILER_16}
   {$endif VER230}
-  
-  // BDS 2011 (BDS 8.0) DELPHI and BCB are no longer defined, only COMPILER
+
+  // BDS XE (BDS 8.0) DELPHI and BCB are no longer defined, only COMPILER
   {$ifdef VER220}
-    {$define COMPILER_14}
+    {$define COMPILER_15}
   {$endif VER220}
 
   // BDS 2010 (BDS 7.0) DELPHI and BCB are no longer defined, only COMPILER
   {$ifdef VER210}
-    {$define COMPILER_13}
+    {$define COMPILER_14}
   {$endif VER210}
+
+// No Compiler 13 
 
   // BDS 2009 (BDS 6.0) DELPHI and BCB are no longer defined, only COMPILER
   {$ifdef VER200}
@@ -561,7 +577,7 @@
 {$endif} 
 
 
-{$ifdef COMPILER_13}
+{$ifdef COMPILER_14}
   {$define COMPILER_1_UP}
   {$define COMPILER_2_UP}
   {$define COMPILER_3_UP}
@@ -574,7 +590,7 @@
   {$define COMPILER_10_UP}
   {$define COMPILER_11_UP}
   {$define COMPILER_12_UP}
-  {$define COMPILER_13_UP}
+  {$define COMPILER_14_UP}
   // Backwards compatibility
   {$define DELPHI_2_UP}
   {$define DELPHI_3_UP}
@@ -597,7 +613,7 @@
 
 {$endif}
 
-{$ifdef COMPILER_14}
+{$ifdef COMPILER_15}
   {$define COMPILER_1_UP}
   {$define COMPILER_2_UP}
   {$define COMPILER_3_UP}
@@ -610,8 +626,8 @@
   {$define COMPILER_10_UP}
   {$define COMPILER_11_UP}
   {$define COMPILER_12_UP}
-  {$define COMPILER_13_UP}
   {$define COMPILER_14_UP}
+  {$define COMPILER_15_UP}
   // Backwards compatibility
   {$define DELPHI_2_UP}
   {$define DELPHI_3_UP}
@@ -668,7 +684,7 @@
     {$define CPPB}
   {$else}
     {$define DELPHI}
-  {$endif}
+  {$endif} 
 
 {$endif}
 

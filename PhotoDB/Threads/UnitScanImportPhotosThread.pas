@@ -147,7 +147,7 @@ begin
       ExifData := TExifData.Create;
       try
         ExifData.LoadFromGraphic(FFiles[I]);
-        if not ExifData.Empty and (YearOf(ExifData.DateTimeOriginal) > 1900) then
+        if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
         begin
           AddFileToList(FFiles[I], DateOf(ExifData.DateTimeOriginal));
         end else

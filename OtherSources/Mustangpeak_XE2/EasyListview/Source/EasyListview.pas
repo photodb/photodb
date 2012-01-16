@@ -4636,7 +4636,7 @@ type
     FSearchItem: TEasyItem;
     FStart: TCoolIncrementalSearchStart;
     FState: TEasyIncrementalSearchStates;
-    FTimerStub: Pointer;
+    FTimerStub: ICallbackStub;
     procedure SetSearchItem(Value: TEasyItem);
   protected
     procedure EndTimer;
@@ -4655,7 +4655,7 @@ type
     property NextSearchItem: TEasyItem read FNextSearchItem write FNextSearchItem;
     property SearchBuffer: WideString read FSearchBuffer write FSearchBuffer;
     property SearchItem: TEasyItem read FSearchItem write SetSearchItem;
-    property TimerStub: Pointer read FTimerStub write FTimerStub;
+    property TimerStub: ICallBackStub read FTimerStub write FTimerStub;
   public
     constructor Create(AnOwner: TCustomEasyListview); override;
     destructor Destroy; override;
@@ -5203,7 +5203,7 @@ type
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AllowHiddenCheckedItems: Boolean read FAllowInvisibleCheckedItems write FAllowInvisibleCheckedItems default False;
     property BackGround: TEasyBackgroundManager read FBackGround write SetBackGround;
-    property BevelInner default bvLowered;
+    property BevelInner default bvRaised;
     property CheckManager: TEasyCheckManager read FCheckManager write FCheckManager;
     property Color default clWindow;
     property CellSizes: TEasyCellSizes read FCellSizes write FCellSizes;
@@ -5505,6 +5505,9 @@ type
     function SetEditorFocus: Boolean; override;
   end;
 
+  {$IF CompilerVersion >= 23}
+  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFEND}
   TEasyListview = class(TCustomEasyListview)
   private
     function GetPaintInfoColumn: TEasyPaintInfoColumn; reintroduce; virtual;
@@ -5783,6 +5786,9 @@ type
     constructor Create(AOwner: TComponent); override;
   end;
 
+  {$IF CompilerVersion >= 23}
+  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFEND}
   TEasyTaskPanelBand = class(TEasyBaseTaskBand)
   private
     FAutoScrollPanels: Boolean;
@@ -5905,7 +5911,10 @@ type
     property OnUnDock;
   end;
 
-  TEasyTaskBand = class(TEasyBaseTaskBand)    
+  {$IF CompilerVersion >= 23}
+  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFEND}
+  TEasyTaskBand = class(TEasyBaseTaskBand)
   protected
     procedure DoGroupCollapse(Group: TEasyGroup); override;
     procedure DoGroupExpand(Group: TEasyGroup); override;
@@ -10669,7 +10678,11 @@ begin
                    (Msg.message = WM_MBUTTONDOWN) or
                    (Msg.message = WM_RBUTTONDOWN) then
                 begin
-                  Pt := SmallPointToPoint(TSmallPoint(Integer(Msg.lParam)));
+                  {$IFDEF WIN64}
+                  Pt := SmallPointToPoint(TSmallPoint(Int64Rec(Msg.lParam).Lo));
+                  {$ELSE}
+                  Pt := SmallPointToPoint(TSmallPoint(Msg.lParam));
+                  {$ENDIF}
                   ClientToScreen(Msg.hwnd, Pt);
                   ScreenToClient(OwnerListview.Handle, Pt);
                   if not Editor.PtInEditControl(Pt) then
@@ -13267,7 +13280,7 @@ function TEasyDropTargetManager.DragEnter(const dataObj: IDataObject;
 var
   Effect: TCommonDropEffect;
   Effects: TCommonDropEffects;
-  Keys: TCommonKeyStates;
+  KeyState: TCommonKeyStates;
   StgMedium: TStgMedium;
 begin
   if Assigned(DropTargetHelper) then
@@ -13275,13 +13288,13 @@ begin
 
   if Owner.DragManager.Enabled then
   begin
-    Keys := KeyToKeyStates(grfKeyState);
+    KeyState := KeyToKeyStates(grfKeyState);
     Effects := DropEffectToDropEffectStates(dwEffect);
 
     // Get the "Windows Style" effect with the key modifiers
-    Effect := KeyStateToDropEffect(Keys);
+    Effect := KeyStateToDropEffect(KeyState);
 
-    Owner.DoOLEDropTargetDragEnter(dataObj, KeyToKeyStates(grfKeyState), pt, DropEffectToDropEffectStates(dwEffect), Effect);
+    Owner.DoOLEDropTargetDragEnter(dataObj, KeyState, pt, DropEffectToDropEffectStates(dwEffect), Effect);
 
     // Decide if this is a Header Drag and Drop or an Item Drag and Drop
     // Note that if we use a Windows supplied IDataObject it will return TRUE for QueryGetData
@@ -13292,7 +13305,7 @@ begin
       DragManager := Owner.DragManager;
 
     if Assigned(DragManager) then
-      DragManager.DragEnter(dataObj, nil, Owner.ScreenToClient(pt), Keys, Effect);
+      DragManager.DragEnter(dataObj, nil, Owner.ScreenToClient(pt), KeyState, Effect);
 
     dwEffect := DropEffectStateToDropEffect(Effect);
   end else
@@ -13319,22 +13332,22 @@ function TEasyDropTargetManager.DragOver(grfKeyState: Integer; pt: TPoint;
 var
   Effect: TCommonDropEffect;
   Effects: TCommonDropEffects;
-  Keys: TCommonKeyStates;
+  KeyState: TCommonKeyStates;
 begin
   if Assigned(DropTargetHelper) then
     DropTargetHelper.DragOver(Pt, dwEffect);
 
   if Owner.DragManager.Enabled then
   begin
-    Keys := KeyToKeyStates(grfKeyState);
+    KeyState := KeyToKeyStates(grfKeyState);
     Effects := DropEffectToDropEffectStates(dwEffect);
 
     // Get the "Windows Style" effect with the key modifiers
-    Effect := KeyStateToDropEffect(Keys);
-    Owner.DoOLEDropTargetDragOver(KeyToKeyStates(grfKeyState), pt, Effects, Effect);
+    Effect := KeyStateToDropEffect(KeyState);
+    Owner.DoOLEDropTargetDragOver(KeyState, pt, Effects, Effect);
 
     if Assigned(DragManager) then
-      DragManager.Drag(nil, Owner.ScreenToClient(pt), Keys, Effect);
+      DragManager.Drag(nil, Owner.ScreenToClient(pt), KeyState, Effect);
 
     dwEffect := DropEffectStateToDropEffect(Effect);
   end else
@@ -13347,22 +13360,22 @@ function TEasyDropTargetManager.Drop(const dataObj: IDataObject;
 var
   Effect: TCommonDropEffect;
   Effects: TCommonDropEffects;
-  Keys: TCommonKeyStates;
+  KeyState: TCommonKeyStates;
   Handled: Boolean;
 begin
   if Assigned(DropTargetHelper) then
     DropTargetHelper.Drop(dataObj, Pt, dwEffect);
 
-  Keys := KeyToKeyStates(grfKeyState);
+  KeyState := KeyToKeyStates(grfKeyState);
   Effects := DropEffectToDropEffectStates(dwEffect);
 
   // Get the "Windows Style" effect with the key modifiers
-  Effect := KeyStateToDropEffect(Keys);
+  Effect := KeyStateToDropEffect(KeyState);
   Handled := False;
-  Owner.DoOLEDropTargetDragDrop(dataObj, KeyToKeyStates(grfKeyState), pt, DropEffectToDropEffectStates(dwEffect), Effect, Handled);
+  Owner.DoOLEDropTargetDragDrop(dataObj, KeyState, pt, DropEffectToDropEffectStates(dwEffect), Effect, Handled);
 
   if Assigned(DragManager) then
-    DragManager.DragDrop(Owner.ScreenToClient(pt), Keys, Effect, Handled);
+    DragManager.DragDrop(Owner.ScreenToClient(pt), KeyState, Effect, Handled);
 
   dwEffect := DropEffectStateToDropEffect(Effect);
   Result := S_OK
@@ -13394,24 +13407,24 @@ function TEasyDropSourceManager.QueryContinueDrag(fEscapePressed: BOOL;
   grfKeyState: Integer): HResult;
 var
   QueryResult: TEasyQueryDragResult;
-  KeyStates: TCommonKeyStates;
+  KeyState: TCommonKeyStates;
 begin
-  KeyStates := KeyToKeyStates(grfKeyState);
+  KeyState := KeyToKeyStates(grfKeyState);
   if fEscapePressed then
     QueryResult := eqdrQuit
   else begin
-    if cksButton in KeyStates then
+    if cksButton in KeyState then
       QueryResult := eqdrContinue
     else
       QueryResult := eqdrQuit
   end;
 
   // If no buttons are down anymore then the user dropped the objects
-  if not(cksButton in KeyStates) then
+  if not(cksButton in KeyState) then
     QueryResult := eqdrDrop;
 
   // Allow the application to modify if desired
-  Owner.DoOLEDropSourceQueryContineDrag(fEscapePressed, KeyStates, QueryResult);
+  Owner.DoOLEDropSourceQueryContineDrag(fEscapePressed, KeyState, QueryResult);
   if QueryResult = eqdrQuit then
     Result := DRAGDROP_S_CANCEL
   else
@@ -14026,7 +14039,7 @@ begin
   ParentColor := False;
   Brush.Color := clWindow;
   Color := clWindow;
-  BevelInner := bvLowered;
+  BevelInner := bvRaised;
   ControlStyle := ControlStyle - [csCaptureMouse, csOpaque, csAcceptsControls]; // We will do this ourselves
   FBackGround := TEasyBackgroundManager.Create(Self);
   FScrollbars := TEasyScrollbarManager.Create(Self);
@@ -16315,7 +16328,7 @@ end;
 procedure TCustomEasyListview.HandleDblClick(Button: TCommonMouseButton; Msg: TWMMouse);
 var
   Group: TEasyGroup;
-  Keys: TCommonKeyStates;
+  KeyState: TCommonKeyStates;
   GroupHitInfo: TEasyGroupHitTestInfoSet;
   GroupInfo: TEasyHitInfoGroup;
   Item: TEasyItem;
@@ -16324,7 +16337,7 @@ var
   ViewPt: TPoint;
   Handled: Boolean;
 begin
-  Keys := KeyToKeyStates(Msg.Keys);
+  KeyState := KeyToKeyStates(Msg.Keys);
   ViewPt := Scrollbars.MapWindowToView(Msg.Pos);
   if ViewSupportsHeader and (Header.Visible) and (Msg.YPos < Header.Height) then
     Header.WMLButtonDblClk(Msg)
@@ -16766,7 +16779,7 @@ begin
 
                     // This test allows descendent to cancel out of drags incase they do something in the Focus or Selection Changing events
                     if (((Button in DragRect.MouseButton) or (Button in DragManager.MouseButton)) and (States * [ebcsLButtonDown, ebcsRButtonDown, ebcsMButtonDown] <> [])) then
-                      InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys), Item.AllowDrag(WindowPt), True);
+                      InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyState, Item.AllowDrag(WindowPt), True);
 
                     if StartTimer then
                     begin
@@ -16776,14 +16789,14 @@ begin
                   end else
                   begin
                     if (Button in DragManager.MouseButton) and (States * [ebcsLButtonDown, ebcsRButtonDown, ebcsMButtonDown] <> []) and not EditManager.Editing  then
-                      InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys), True, False);
+                      InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyState, True, False);
                   end
                 end else
                 begin
                   // All mouse button down actions trigger the same events
                   // Since it is unknown what the user is trying to do yet
                   if (Button in DragRect.MouseButton) and (States * [ebcsLButtonDown, ebcsRButtonDown, ebcsMButtonDown] <> []) and not EditManager.Editing  then
-                    InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys), False, True);
+                    InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyState, False, True);
                 end
               finally
                 Selection.GroupSelectEndUpdate;
@@ -16801,12 +16814,12 @@ begin
          // All mouse button down actions trigger the same events
          // Since it is unknown what the user is trying to do yet
           if (Button in DragRect.MouseButton) and (States * [ebcsLButtonDown, ebcsRButtonDown, ebcsMButtonDown] <> []) and not EditManager.Editing then
-            InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys), False, True);
+            InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyState, False, True);
         end
       end else
         // Did not hit an anything so get ready for a drag rectangle
         if (Button in DragRect.MouseButton) and (States * [ebcsLButtonDown, ebcsRButtonDown, ebcsMButtonDown] <> []) and not EditManager.Editing then
-          InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys), False, True);
+          InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyState, False, True);
     end;
   end else
   begin
@@ -16814,7 +16827,7 @@ begin
     // Since it is unknown what the user is trying to do yet
     // Did not hit a group so get ready for a drag rectangle
     if (Button in DragRect.MouseButton) and (States * [ebcsLButtonDown, ebcsRButtonDown, ebcsMButtonDown] <> []) and not EditManager.Editing then
-      InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys), False, True);
+      InitializeDragPendings(Item, SmallPointToPoint(Msg.Pos), KeyState, False, True);
   end;
 end;
 
@@ -16832,6 +16845,18 @@ var
 begin
   Group := nil;
   KeyState := KeyToKeyStates(Msg.Keys);
+  if States * [ebcsLButtonDown, ebcsLButtonDown, ebcsLButtonDown] <> [] then
+  begin
+    Include(KeyState, cksButton);
+    if ebcsLButtonDown in States then
+      Include(KeyState, cksLButton)
+    else
+    if ebcsRButtonDown in States then
+      Include(KeyState, cksRButton)
+    else
+    if ebcsMButtonDown in States then
+      Include(KeyState, cksMButton)
+  end;
   CtlDown := cksControl in KeyState;
   ShiftDown := cksShift in KeyState;
   Pt := Scrollbars.MapWindowToView(Msg.Pos);
@@ -16870,7 +16895,7 @@ begin
     end else
     if ebcsDragSelecting in States then
     begin
-      FinalizeDrag(SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys));
+      FinalizeDrag(SmallPointToPoint(Msg.Pos), KeyState);
     end else
     if ebcsDragging in States then
     begin
@@ -16878,7 +16903,7 @@ begin
       // This screws everything.  We will send a mouse up after the drag ends
       // with the cbcsVCLDrag cleared
       if not(ebcsVCLDrag in States) then
-        FinalizeDrag(SmallPointToPoint(Msg.Pos), KeyToKeyStates(Msg.Keys));
+        FinalizeDrag(SmallPointToPoint(Msg.Pos), KeyState);
     end else
     begin
       // If not dragging or drag selecting then check if it is necessary to unselect
@@ -16892,7 +16917,7 @@ begin
           DoItemMouseUp(Item, Button, DoDefaultItemUp);
           if DoDefaultItemUp then
           begin
-            DoItemClick(Item, KeyToKeyStates(Msg.Keys), ItemHitInfo);
+            DoItemClick(Item, KeyState, ItemHitInfo);
             if (Button in Selection.MouseButton) then
             begin
               if not Item.SelectionHitPt(Pt, eshtClickselect)  then
@@ -16918,9 +16943,9 @@ begin
           end
         end else
         begin
-          Group := ClickTestGroup(Pt, KeyToKeyStates(Msg.Keys), GroupHitInfo);
+          Group := ClickTestGroup(Pt, KeyState, GroupHitInfo);
           if Assigned(Group) then
-            DoGroupClick(Group, KeyToKeyStates(Msg.Keys), GroupHitInfo);
+            DoGroupClick(Group, KeyState, GroupHitInfo);
           if (Button in Selection.MouseButton) then
             Selection.ClearAll
         end
@@ -17057,18 +17082,16 @@ begin
 end;
 
 procedure TCustomEasyListview.PaintThemedNCBkgnd(ACanvas: TCanvas; ARect: TRect);
-{$IFDEF USETHEMES}
-var
-  R: TRect;
-{$ENDIF USETHEMES}
 begin
   {$IFDEF USETHEMES}
   if ShowThemedBorder then
   begin
-    R := Rect(0, 0, 0, 0);
-    GetThemeBackgroundExtent(Themes.ListviewTheme, ACanvas.Handle, LVP_EMPTYTEXT, LIS_NORMAL, ARect, R);
-    InflateRect(ARect, 2, 2);
-    DrawThemeBackground(Themes.ListviewTheme, ACanvas.Handle, LVP_EMPTYTEXT, LIS_NORMAL, ARect, nil);
+    // The border in Win7 for the Listview Theme is darker than the rest of the
+    // controls.  Must be a bug so use the Edit Frame for Win7
+    if IsWin7 then
+      DrawThemeBackground(Themes.EditThemeTheme, ACanvas.Handle, 0, 0, ARect, nil)
+    else
+      DrawThemeBackground(Themes.ListviewTheme, ACanvas.Handle, 0, 0, ARect, nil)
   end
   {$ENDIF USETHEMES}
 end;
@@ -20238,8 +20261,9 @@ var
   ClientR: TRect;
   HotTrackCheckObj: TEasyCollectionItem;
   Effects: TCommonDropEffect;
-
+  KeyState: TCommonKeyStates;
 begin
+  KeyState := KeyToKeyStates(Msg.Keys);
   ClearDropDownBtn := True;
   ClientR := ViewRect;
   ViewPt := SmallPointToPoint(Msg.Pos);
@@ -20269,7 +20293,7 @@ begin
   if ehsDragging in State then
   begin
     Effects := cdeMove;
-    DragManager.Drag(OwnerListview.Canvas, ViewPt, KeyToKeyStates(Msg.Keys), Effects);
+    DragManager.Drag(OwnerListview.Canvas, ViewPt, KeyState, Effects);
   end else
   if ehsResizePending in State then
   begin
@@ -20293,7 +20317,7 @@ begin
       DragManager.Column := PressColumn;
       Press(PressColumn, False);
       PressColumn := nil;
-      DragManager.BeginDrag(ViewPt, KeyToKeyStates(Msg.Keys));
+      DragManager.BeginDrag(ViewPt, KeyState);
     end
   end else
   if ehsClickPending in State then
@@ -21473,7 +21497,7 @@ begin
     FHeightAutoSizeRaw := FHeight;
     FWidthAutoSizeRaw := FWidth;
   finally
-    ReleaseDC(hdcScreen, GetDesktopWindow)
+    ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -21528,7 +21552,7 @@ begin
     SetSize(Round(DEFAULT_WIDTH_ICON * GetDeviceCaps(hdcScreen, LOGPIXELSX)/DEFAULT_PIXEL_PER_INCH),
             Round(DEFAULT_HEIGHT_ICON * GetDeviceCaps(hdcScreen, LOGPIXELSY)/DEFAULT_PIXEL_PER_INCH))
   finally
-     ReleaseDC(hdcScreen, GetDesktopWindow)
+     ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22040,7 +22064,7 @@ begin
     FHeightAutoSizeRaw := FHeight;
     FWidthAutoSizeRaw := FWidth;
   finally
-    ReleaseDC(hdcScreen, GetDesktopWindow)
+    ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22053,7 +22077,7 @@ begin
     SetSize(Round(DEFAULT_WIDTH_SMALLICON * GetDeviceCaps(hdcScreen, LOGPIXELSX)/DEFAULT_PIXEL_PER_INCH),
             Round(DEFAULT_HEIGHT_SMALLICON * GetDeviceCaps(hdcScreen, LOGPIXELSY)/DEFAULT_PIXEL_PER_INCH))
   finally
-     ReleaseDC(hdcScreen, GetDesktopWindow)
+     ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22071,7 +22095,7 @@ begin
     FHeightAutoSizeRaw := FHeight;
     FWidthAutoSizeRaw := FWidth;
   finally
-    ReleaseDC(hdcScreen, GetDesktopWindow)
+    ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22084,7 +22108,7 @@ begin
     SetSize(Round(DEFAULT_WIDTH_THUMBNAIL * GetDeviceCaps(hdcScreen, LOGPIXELSX)/DEFAULT_PIXEL_PER_INCH),
             Round(DEFAULT_HEIGHT_THUMBNAIL * GetDeviceCaps(hdcScreen, LOGPIXELSY)/DEFAULT_PIXEL_PER_INCH))
   finally
-     ReleaseDC(hdcScreen, GetDesktopWindow)
+     ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22102,7 +22126,7 @@ begin
     FHeightAutoSizeRaw := FHeight;
     FWidthAutoSizeRaw := FWidth;
   finally
-    ReleaseDC(hdcScreen, GetDesktopWindow)
+    ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22115,7 +22139,7 @@ begin
     SetSize(Round(DEFAULT_WIDTH_TILE * GetDeviceCaps(hdcScreen, LOGPIXELSX)/DEFAULT_PIXEL_PER_INCH),
             Round(DEFAULT_HEIGHT_TILE * GetDeviceCaps(hdcScreen, LOGPIXELSY)/DEFAULT_PIXEL_PER_INCH))
   finally
-     ReleaseDC(hdcScreen, GetDesktopWindow)
+     ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22133,7 +22157,7 @@ begin
     FHeightAutoSizeRaw := FHeight;
     FWidthAutoSizeRaw := FWidth;
   finally
-    ReleaseDC(hdcScreen, GetDesktopWindow)
+    ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22146,7 +22170,7 @@ begin
     SetSize(Round(DEFAULT_WIDTH_LIST * GetDeviceCaps(hdcScreen, LOGPIXELSX)/DEFAULT_PIXEL_PER_INCH),
             Round(DEFAULT_HEIGHT_LIST * GetDeviceCaps(hdcScreen, LOGPIXELSY)/DEFAULT_PIXEL_PER_INCH))
   finally
-     ReleaseDC(hdcScreen, GetDesktopWindow)
+     ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22164,7 +22188,7 @@ begin
     FHeightAutoSizeRaw := FHeight;
     FWidthAutoSizeRaw := FWidth;
   finally
-    ReleaseDC(hdcScreen, GetDesktopWindow)
+    ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -22177,7 +22201,7 @@ begin
     SetSize(Round(DEFAULT_WIDTH_REPORT * GetDeviceCaps(hdcScreen, LOGPIXELSX)/DEFAULT_PIXEL_PER_INCH),
             Round(DEFAULT_HEIGHT_REPORT * GetDeviceCaps(hdcScreen, LOGPIXELSY)/DEFAULT_PIXEL_PER_INCH))
   finally
-     ReleaseDC(hdcScreen, GetDesktopWindow)
+     ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -25858,10 +25882,6 @@ procedure TEasyBaseEditor.ControlWndHookProc(var Message: TMessage);
 //
 var
   Menu: TPopupMenu;
-  Count: Cardinal;
-  LpList: array [0 .. 9] of HKL;
-  BFound: Boolean;
-  I: Integer;
 begin
   case Message.Msg of
   WM_EDITORRESIZE:
@@ -25885,34 +25905,6 @@ begin
         Message.Result := 1;
       end;
   end;
-
-  //START
-  //HACK - application hangs when language changes using ctrl+shift+number
-  if Message.Msg = WM_INPUTLANGCHANGEREQUEST then
-  begin
-    Message.Result := 1;
-    if GetKeyboardLayout(0) = HKL(Message.LPARAM) then
-      Exit;
-    Count := GetKeyboardLayoutList(0, LpList);
-    if (Count = 0) then
-      Exit;
-
-    Count := GetKeyboardLayoutList(SizeOf(LpList), LpList);
-    BFound := FALSE;
-    for I := 0 to Count - 1 do
-    begin
-      if (HKL(Message.LParam) = LpList[I]) then
-      begin
-        BFound := TRUE;
-        Break;
-      end
-    end;
-
-    if BFound then
-      ActivateKeyboardLayout(HKL(Message.LParam), KLF_ACTIVATE or KLF_SUBSTITUTE_OK or KLF_REPLACELANG);
-    Exit;
-  end;
-
   FOldWndProc(Message)
 end;
 
@@ -28674,7 +28666,7 @@ begin
     begin
       hTimer := 0;
       Exclude(FState, eissTimerRunning);
-      DisposeStub(FTimerStub);
+      TimerStub := nil;
     end else
       Exception.Create('Can not Destroy Incremental Search Timer');
   end
@@ -28779,7 +28771,7 @@ begin
     if ((Shift * [ssAlt, ssCtrl]) = []) and (Msg.CharCode > 31) then
     begin
       CompareResult := 0;
-      SearchBuffer := SearchBuffer + Char( Msg.CharCode);
+      SearchBuffer := SearchBuffer + KeyUnicode(Char( Msg.CharCode));
 
       if not Assigned(NextSearchItem) then
         LoadFutureItem;
@@ -29021,8 +29013,8 @@ procedure TEasyIncrementalSearchManager.StartTimer;
 begin
   if Enabled and not(eissTimerRunning in State) then
   begin
-    TimerStub := CreateStub(Self, @TEasyIncrementalSearchManager.TimerProc);
-    hTimer := SetTimer(0, 0, ResetTime, TimerStub);
+    TimerStub := TCallbackStub.Create(Self, @TEasyIncrementalSearchManager.TimerProc, 4);
+    hTimer := SetTimer(0, 0, ResetTime, TimerStub.StubPointer);
     Include(FState, eissTimerRunning);
   end
 end;
@@ -30688,7 +30680,7 @@ begin
     FHeightAutoSizeRaw := FHeight;
     FWidthAutoSizeRaw := FWidth;
   finally
-    ReleaseDC(hdcScreen, GetDesktopWindow)
+    ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 
@@ -30701,7 +30693,7 @@ begin
     SetSize(Round(DEFAULT_WIDTH_REPORTTHUMB * GetDeviceCaps(hdcScreen, LOGPIXELSX)/DEFAULT_PIXEL_PER_INCH),
             Round(DEFAULT_HEIGHT_REPORTTHUMB * GetDeviceCaps(hdcScreen, LOGPIXELSY)/DEFAULT_PIXEL_PER_INCH))
   finally
-     ReleaseDC(hdcScreen, GetDesktopWindow)
+     ReleaseDC(GetDesktopWindow, hdcScreen)
   end
 end;
 

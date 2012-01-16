@@ -173,10 +173,10 @@ procedure TFullScreenView.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
   if Viewer.FullScreenNow then
-    if Msg.message = 260 then
+    if Msg.message = WM_SYSKEYDOWN then
       Msg.message := 0;
   if Viewer.FullScreenNow then
-    if Msg.message = 256 then
+    if Msg.message = WM_KEYDOWN then
     begin
       if Msg.WParam = VK_LEFT then
         if Viewer <> nil then
@@ -194,16 +194,16 @@ begin
         if AltKeyDown then
           Msg.WParam := 29;
 
-      if (Msg.WParam = 13) and CtrlKeyDown then
+      if (Msg.WParam = VK_RETURN) and CtrlKeyDown then
         if Viewer <> nil then
           Viewer.Exit1Click(nil);
 
       Msg.message := 0;
     end;
-  if Msg.message <> 522 then
+  if Msg.message <> WM_MOUSEWHEEL then
     Exit;
   if Viewer.FullScreenNow and (Viewer <> nil) then
-    if Msg.WParam > 0 then
+    if NativeInt(Msg.WParam) > 0 then
       Viewer.Previous_(Self)
     else
       Viewer.Next_(Self);

@@ -2703,7 +2703,7 @@ begin
 
   GUIDParam := FileID;
   FInfo.Assign(Info);
-  if TempBitmap.Empty or not SynchronizeEx(ReplaceImageInExplorer) then
+  if (TempBitmap = nil) or TempBitmap.Empty or not SynchronizeEx(ReplaceImageInExplorer) then
     F(TempBitmap);
 end;
 

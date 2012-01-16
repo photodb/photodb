@@ -37,9 +37,9 @@ contains
   MPShellTypes in '..\Source\MPShellTypes.pas',
   MPCommonUtilities in '..\Source\MPCommonUtilities.pas',
   MPResources in '..\Source\MPResources.pas',
-  MPCommonObjects in '..\Source\MPCommonObjects.pas',
   MPDataObject in '..\Source\MPDataObject.pas',
   MPThreadManager in '..\Source\MPThreadManager.pas',
-  MPShellUtilities in '..\Source\MPShellUtilities.pas';
+  MPShellUtilities in '..\Source\MPShellUtilities.pas',
+  MPCommonObjects in '..\Source\MPCommonObjects.pas';
 
 end.

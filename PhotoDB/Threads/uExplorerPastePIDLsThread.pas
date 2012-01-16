@@ -9,6 +9,7 @@ uses
   uConstants,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
+  ActiveX,
   uDBThread;
 
 type
@@ -38,13 +39,17 @@ end;
 procedure TExplorerPastePIDLsThread.Execute;
 begin
   FreeOnTerminate := True;
-
-  if IsDevicePath(FPath) then
-  begin
-    Delete(FPath, 1, Length(cDevicesPath) + 1);
-    ExecuteShellPathRelativeToMyComputerMenuAction(Handle, FPath, nil, 'Paste');
-  end else
-    PastePIDListToFolder(Handle, FPath);
+  CoInitialize(nil);
+  try
+    if IsDevicePath(FPath) then
+    begin
+      Delete(FPath, 1, Length(cDevicesPath) + 1);
+      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, FPath, nil, 'Paste');
+    end else
+      PastePIDListToFolder(Handle, FPath);
+  finally
+    CoUninitialize;
+  end;
 end;
 
 end.

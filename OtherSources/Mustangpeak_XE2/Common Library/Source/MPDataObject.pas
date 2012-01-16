@@ -320,7 +320,7 @@ type
     function CalculateDropFileStructureSizeW(Value: PDropFiles): integer;
     function FileCountA: Integer;
     function FileCountW: Integer;
-    function FileNameA(Index: integer): string;
+    function FileNameA(Index: integer): AnsiString;
     function FileNameW(Index: integer): WideString;
     procedure FreeStructure; // Frees memory allocated
   public
@@ -647,7 +647,7 @@ begin
     Path := PAnsiChar(FDropFiles) + FDropFiles.pFiles;
     for i := 0 to FileList.Count - 1 do
     begin
-      MoveMemory(Path, Pointer(FileList[i]), Length(FileList[i]));
+      MoveMemory(Path, Pointer(AnsiString( FileList[i])), Length(FileList[i]));
       Inc(Path, Length(FileList[i]) + 1); // skip over the single null #0
     end
   end
@@ -794,7 +794,7 @@ begin
   end
 end;
 
-function TCommonHDrop.FileNameA(Index: integer): string;
+function TCommonHDrop.FileNameA(Index: integer): AnsiString;
 var
   Head: PAnsiChar;
   PathNameCount: integer;

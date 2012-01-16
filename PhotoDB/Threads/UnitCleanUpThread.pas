@@ -225,7 +225,7 @@ begin
                 ExifData.LoadFromGraphic(Info.FileName);
                 if not ExifData.Empty then
                 begin
-                  if YearOf(ExifData.DateTimeOriginal) > 2000 then
+                  if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 2000) then
                     if (FTable.FieldByName('DateToAdd').AsDateTime <> ExifData.DateTimeOriginal) or
                       (FTable.FieldByName('aTime').AsDateTime <> TimeOf(ExifData.DateTimeOriginal)) then
                     begin
