@@ -5,8 +5,19 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, StdCtrls, uFrameWizardBase, pngimage, uStenography, UnitDBFileDialogs,
-  GraphicCrypt, DECUtil, DECCipher, win32crc, UnitDBKernel, uShellIntegration,
-  uConstants, uFileUtils, uMemory, uStrongCrypt, uAssociations, jpeg;
+  GraphicCrypt,
+  DECUtil,
+  DECCipher,
+  win32crc,
+  UnitDBKernel,
+  uShellIntegration,
+  uConstants,
+  uFileUtils,
+  uMemory,
+  uStrongCrypt,
+  uAssociations,
+  jpeg,
+  uPortableDeviceUtils;
 
 type
   TFrmSteganographyLanding = class(TFrameWizardBase)
@@ -138,7 +149,7 @@ var
   Chipper : TDECCipherClass;
   GraphicClass: TGraphicClass;
   J: TJPEGImage;
-  MS: TMemoryStream;
+  MS, DevMS: TMemoryStream;
   FS: TFileStream;
 
   function LoadCryptFile(FileName: string; _class: TGraphicClass): TGraphic;
@@ -146,7 +157,7 @@ var
     Password: string;
   begin
     Result := nil;
-    if ValidCryptGraphicFile(FileName) then
+    if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
     begin
       Password := DBkernel.FindPasswordForCryptImageFile(FileName);
       if Password = '' then
@@ -162,7 +173,10 @@ var
     end else
     begin
       Result := _class.Create;
-      Result.LoadFromFile(FileName);
+      if not IsDevicePath(FileName) then
+        Result.LoadFromFile(FileName)
+      else
+        Result.LoadFromDevice(FileName);
     end;
   end;
 
@@ -282,15 +296,13 @@ begin
     finally
       F(Bitmap);
     end;
-  end;
-
-  if (GraphicClass = TJpegImage) then
+  end else if (GraphicClass = TJpegImage) then
   begin
     J := nil;
     try
       MS := TMemoryStream.Create;
       try;
-        if ValidCryptGraphicFile(FileName) then
+        if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
         begin
           Password := DBkernel.FindPasswordForCryptImageFile(FileName);
           if Password = '' then
@@ -317,12 +329,23 @@ begin
 
         end else
         begin
-
-          FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
-          try
-            ExtractJpegInfo(FS);
-          finally
-            F(FS);
+          if not IsDevicePath(FileName) then
+          begin
+            FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+            try
+              ExtractJpegInfo(FS);
+            finally
+              F(FS);
+            end;
+          end else
+          begin
+            DevMS := TMemoryStream.Create;
+            try
+              ReadStreamFromDevice(FileName, DevMS);
+              ExtractJpegInfo(DevMS);
+            finally
+              F(DevMS);
+            end;
           end;
         end;
       finally
@@ -331,7 +354,9 @@ begin
     finally
       F(J);
     end;
-  end;
+  end else
+    MessageBoxDB(Handle, L('The image does not contain hidden information, or this format is not supported!'), L('Warning'), TD_BUTTON_OK,
+      TD_ICON_WARNING);
 end;
 
 procedure TFrmSteganographyLanding.LoadLanguage;

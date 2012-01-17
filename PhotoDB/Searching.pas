@@ -2094,7 +2094,7 @@ begin
       begin
         if CtrlKeyDown then
         begin
-          if Msg.wParam > 0 then i := 1 else i := -1;
+          if NativeInt(Msg.wParam) > 0 then i := 1 else i := -1;
           ListViewMouseWheel(ElvMain, [ssCtrl], i, Point(0,0), TmpBool);
           Msg.message := 0;
         end;

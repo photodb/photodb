@@ -19,34 +19,34 @@ type
 
   TShortCut = class(TObject)
   public
-    Name : string;
-    Location : string;
+    Name: string;
+    Location: string;
   end;
 
   TShortCuts = class(TObject)
   private
-    FShortCuts : TList;
+    FShortCuts: TList;
     function GetCount: Integer;
     function GetItemByIndex(Index: Integer): TShortCut;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Add(Name, Location : string); overload;
-    procedure Add(Location : string); overload;
-    property Count : Integer read GetCount;
-    property Items[Index : Integer] : TShortCut read GetItemByIndex; default;
+    procedure Add(Name, Location: string); overload;
+    procedure Add(Location: string); overload;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: TShortCut read GetItemByIndex; default;
   end;
 
   TDiskObject = class(TInstallObject)
   private
-    FShortCuts : TShortCuts;
+    FShortCuts: TShortCuts;
   public
-    Name : string;
-    FinalDestination : string;
-    Description : string;
-    constructor Create(AName, AFinalDestination, ADescription : string);
+    Name: string;
+    FinalDestination: string;
+    Description: string;
+    constructor Create(AName, AFinalDestination, ADescription: string);
     destructor Destroy; override;
-    property ShortCuts : TShortCuts read FShortCuts;
+    property ShortCuts: TShortCuts read FShortCuts;
   end;
 
   TFileObject = class(TDiskObject)
@@ -64,29 +64,29 @@ type
 
   TScopeFiles = class(TInstallScope)
   private
-    FFiles : TList;
+    FFiles: TList;
     function GetCount: Integer;
     function GetFileByIndex(Index: Integer): TDiskObject;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Add(DiskObject : TDiskObject);
-    property Count : Integer read GetCount;
-    property Files[Index : Integer] : TDiskObject read GetFileByIndex; default;
+    procedure Add(DiskObject: TDiskObject);
+    property Count: Integer read GetCount;
+    property Files[Index: Integer]: TDiskObject read GetFileByIndex; default;
   end;
 
-  //COMPLETE INSTALLLATION
+  // COMPLETE INSTALLLATION
   TInstall = class(TObject)
   private
-    FFiles : TScopeFiles;
-    FDestinationPath : string;
+    FFiles: TScopeFiles;
+    FDestinationPath: string;
     FIsUninstall: Boolean;
   public
     constructor Create; virtual;
     destructor Destroy; override;
-    property DestinationPath : string read FDestinationPath write FDestinationPath;
-    property Files : TScopeFiles read FFiles;
-    property IsUninstall : Boolean read FIsUninstall write FIsUninstall;
+    property DestinationPath: string read FDestinationPath write FDestinationPath;
+    property Files: TScopeFiles read FFiles;
+    property IsUninstall: Boolean read FIsUninstall write FIsUninstall;
   end;
 
   TPhotoDBInstall_V23 = class(TInstall)
@@ -94,21 +94,22 @@ type
     constructor Create; override;
   end;
 
-  function CurrentInstall : TInstall;
+function CurrentInstall: TInstall;
 
 implementation
 
 var
-  FCurrentInstall : TInstall = nil;
+  FCurrentInstall: TInstall = nil;
 
 {$IFDEF EXTERNAL}
+
 function TA(StringToTranslate, Scope: string): string;
 begin
   Result := StringToTranslate;
 end;
 {$ENDIF}
 
-function CurrentInstall : TInstall;
+function CurrentInstall: TInstall;
 begin
   if FCurrentInstall = nil then
     FCurrentInstall := TPhotoDBInstall_V23.Create;
@@ -120,7 +121,7 @@ end;
 
 procedure TShortCuts.Add(Name, Location: string);
 var
-  ShortCut : TShortCut;
+  ShortCut: TShortCut;
 begin
   ShortCut := TShortCut.Create;
   ShortCut.Name := Name;
@@ -230,6 +231,7 @@ begin
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + 'Home page.lnk', 'http://photodb.illusdolphin.net/{LNG}');
   Files.Add(PhotoDBFile);
 
+  Files.Add(TFileObject.Create('PhotoDBBridge.exe',               '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('Kernel.dll',                      '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('VCOpenCV.DLL',                    '%PROGRAM%', ''));

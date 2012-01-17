@@ -64,7 +64,7 @@
 	<translate name="Friends" value="Друзья" />
     <translate name="Family" value="Семья" />
     <translate name="Update" value="Обновление" />
-    <translate name="Program already started!" value="Программа уже запущена!" />
+    <translate name="Program is started! Install will close the program during installation process!" value="Программа уже запущена! Программа установки закроет приложение в процессе установки!" />
     <translate name="Install" value="Установить" />
     <translate name="Uninstall" value="Удалить" />
     <translate name="Next" value="Далее" />
@@ -345,6 +345,8 @@
     <translate name="Persons" value="Персоны" />
     <translate name="List of persons, search for person photos" value="Список персон, поиск фотографий персоны" />
     <translate name="List of groups, search for group photos" value="Список групп, поиск фотографий группы" />
+    <translate name="Copy address" value="Копировать адрес" />
+    <translate name="Edit address" value="Редактировать адрес" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

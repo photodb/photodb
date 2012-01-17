@@ -1,13 +1,19 @@
 program PhotoDBBridge;
 
+{ Reduce EXE size by disabling as much of RTTI as possible (delphi 2009/2010) }
+{$IF CompilerVersion >= 21.0}
+  {$WEAKLINKRTTI ON}
+  {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$IFEND}
+
+{$SetPEFlags 1}// 1 = Windows.IMAGE_FILE_RELOCS_STRIPPED
+
 uses
   Vcl.Forms,
   ComServ,
   uAutoplayHandler in 'uAutoplayHandler.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas';
-
-{$R *.res}
 
 var
   Frm: TForm;

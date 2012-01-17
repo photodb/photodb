@@ -432,7 +432,7 @@ begin
     Exit;
 
   if Items.Count = 1 then
-    Result := ExecuteShellPathRelativeToMyComputerMenuAction(Form.Handle, PhotoDBPathToDevicePath(Items[0].Path), nil, 'Properties')
+    Result := ExecuteShellPathRelativeToMyComputerMenuAction(Form.Handle, PhotoDBPathToDevicePath(Items[0].Path), nil, Point(0, 0), nil, 'Properties')
   else
   begin
     Path := PhotoDBPathToDevicePath(ExtractFileDir(Items[0].Path));
@@ -441,7 +441,7 @@ begin
       for Item in Items do
         List.Add(ExtractFileName(Item.Path));
 
-      Result := ExecuteShellPathRelativeToMyComputerMenuAction(Form.Handle, Path, List, 'Properties');
+      Result := ExecuteShellPathRelativeToMyComputerMenuAction(Form.Handle, Path, List, Point(0, 0), nil, 'Properties');
     finally
       F(List);
     end;

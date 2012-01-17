@@ -403,6 +403,7 @@ var
   CD: TCopyDataStruct;
   Buf: Pointer;
   P: PByte;
+  WinHandle: HWND;
 begin
   SetLastError(0);
   HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DBID));
@@ -410,7 +411,8 @@ begin
   begin
     CloseHandle(HSemaphore);
 
-    if FindWindow(nil, PChar(DBID)) <> 0 then
+    WinHandle := FindWindow(nil, PChar(DBID));
+    if WinHandle <> 0 then
     begin
 
       if ParamStr(1) = '' then
@@ -428,7 +430,7 @@ begin
           StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
           cd.lpData := Buf;
 
-          if SendMessageEx(FindWindow(nil, PChar(DBID)), WM_COPYDATA, 0, LongInt(@cd)) then
+          if SendMessageEx(WinHandle, WM_COPYDATA, 0, NativeInt(@cd)) then
           begin
             CloseSplashWindow;
             DBTerminating := True;

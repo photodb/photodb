@@ -18,6 +18,7 @@ type
     procedure CheckTimerTimer(Sender: TObject);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FMainForms: TList;
@@ -355,6 +356,11 @@ begin
   EventLog('');
   EventLog('');
   EventLog('finalization:');
+end;
+
+procedure TFormManager.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  ExitApplication;
 end;
 
 procedure TFormManager.FormCreate(Sender: TObject);

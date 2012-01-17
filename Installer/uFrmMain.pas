@@ -101,16 +101,13 @@ end;
 
 procedure TFrmMain.FormCreate(Sender: TObject);
 var
-  hSemaphore : THandle;
+  hSemaphore: THandle;
 begin
   FrmProgress := nil;
   hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
   if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
-  begin
-    TaskDialogEx(Handle, L('Program already started!'), L('Warning'), '', TD_BUTTON_OK, TD_ICON_ERROR, False);
-    Application.Terminate;
-    Exit;
-  end;
+    TaskDialogEx(Handle, L('Program is started! Install will close the program during installation process!'), L('Warning'), '', TD_BUTTON_OK, TD_ICON_WARNING, False);
+
   LoadMainImage;
   LoadLanguage;
 {$IFDEF INSTALL}
@@ -141,7 +138,7 @@ end;
 procedure TFrmMain.LoadLanguage;
 {$IFDEF INSTALL}
 var
-  S : string;
+  S: string;
 {$ENDIF}
 begin
   BeginTranslate;
@@ -173,8 +170,8 @@ end;
 
 procedure TFrmMain.LoadMainImage;
 var
-  MS : TMemoryStream;
-  Png : TPngImage;
+  MS: TMemoryStream;
+  Png: TPngImage;
 begin
   MS := TMemoryStream.Create;
   try

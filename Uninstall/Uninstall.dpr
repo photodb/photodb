@@ -53,6 +53,7 @@ uses
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}
+{$R ..\Installer\InstallMain.res}
 
 begin
   if not GetParamStrDBBool('/admin') then
@@ -74,6 +75,6 @@ begin
   begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TFrmMain, FrmMain);
-  Application.Run;
+    Application.Run;
   end;
 end.

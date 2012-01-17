@@ -10,6 +10,8 @@ uses
   uInstallScope,
   SysUtils,
   uInstallUtils,
+  Messages,
+  uRuntime,
   uFileUtils,
   StrUtils,
   uConstants,
@@ -22,12 +24,19 @@ uses
   uShellUtils;
 
 const
+  InstallPoints_Close_PhotoDB = 1024 * 1024;
   DeleteFilePoints = 128 * 1024;
   UnInstallPoints_ShortCut = 128 * 1024;
   UninstallNotifyPoints_ShortCut = 1024 * 1024;
   DeleteRegistryPoints = 128 * 1024;
 
 type
+  TInstallCloseApplication = class(TInstallAction)
+  public
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
+  end;
+
   TUninstallFiles = class(TInstallAction)
   public
     function CalculateTotalPoints : Int64; override;
@@ -214,6 +223,39 @@ begin
   end;
   FReg.Free;
   Callback(Self, 5 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
+end;
+
+{ TInstallCloseApplication }
+
+function TInstallCloseApplication.CalculateTotalPoints: Int64;
+begin
+  Result := InstallPoints_Close_PhotoDB;
+end;
+
+procedure TInstallCloseApplication.Execute(Callback: TActionCallback);
+const
+  Timeout = 5000;
+var
+  WinHandle: HWND;
+  StartTime: Cardinal;
+begin
+  inherited;
+  WinHandle := FindWindow(nil, PChar(DBID));
+  if WinHandle <> 0 then
+  begin
+    SendMessage(WinHandle, WM_CLOSE, 0, 0);
+    StartTime := GetTickCount;
+    while(true) do
+    begin
+      if FindWindow(nil, PChar(DBID)) = 0 then
+        Break;
+
+      if (GetTickCount - StartTime) > Timeout then
+        Break;
+
+      Sleep(100);
+    end;
+  end;
 end;
 
 end.

@@ -3,8 +3,20 @@ unit uShellIntegration;
 interface
 
 uses
-  Windows, SysUtils, Classes, Forms, uVistaFuncs, Clipbrd, uAppUtils,
-  ShlObj, ComObj, ActiveX, Variants, ShellApi;
+  uMemory,
+  Windows,
+  SysUtils,
+  Classes,
+  Forms,
+  uVistaFuncs,
+  Clipbrd,
+  uAppUtils,
+  ShlObj,
+  ComObj,
+  ActiveX,
+  Variants,
+  uShellNamespaceUtils,
+  ShellApi;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer;
   overload;
@@ -21,6 +33,7 @@ function ChangeIconDialog(HOwner: THandle; var IcoName: string): Boolean; overlo
 procedure LoadFilesFromClipBoard(var Effects: Integer; Files: TStrings);
 function ExtractAssociatedIconSafe(FileName: string; IconIndex: Word): HICON; overload;
 function ExtractAssociatedIconSafe(FileName: string): HICON;  overload;
+function CanCopyFromClipboard: Boolean;
 
 implementation
 
@@ -39,6 +52,23 @@ end;
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: Integer): Integer; overload;
 begin
   Result := MessageBoxDB(Handle, AContent, Title, '', Buttons, Icon);
+end;
+
+function CanCopyFromClipboard: Boolean;
+var
+  Files: TStrings;
+  Effects: Integer;
+begin
+  Files := TStringList.Create;
+  try
+    LoadFilesFromClipBoard(Effects, Files);
+    Result := Files.Count > 0;
+  finally
+    F(Files);
+  end;
+
+  if not Result then
+    Result := ClipboardHasPIDList;
 end;
 
 procedure TextToClipboard(const S: string);

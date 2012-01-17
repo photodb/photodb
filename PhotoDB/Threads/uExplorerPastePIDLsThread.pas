@@ -10,6 +10,7 @@ uses
   uPortableDeviceUtils,
   uShellNamespaceUtils,
   ActiveX,
+  System.Types,
   uDBThread;
 
 type
@@ -44,7 +45,7 @@ begin
     if IsDevicePath(FPath) then
     begin
       Delete(FPath, 1, Length(cDevicesPath) + 1);
-      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, FPath, nil, 'Paste');
+      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, FPath, nil, Point(0, 0), nil, 'Paste');
     end else
       PastePIDListToFolder(Handle, FPath);
   finally

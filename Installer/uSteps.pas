@@ -13,12 +13,12 @@ type
 
   TInstallSteps = class(TObject)
   private
-    FStepTypes : TList;
-    FX, FY : Integer;
-    FOwner : TWinControl;
-    FSteps : TList;
-    FOnChange : TNotifyEvent;
-    FCurrentStep : Integer;
+    FStepTypes: TList;
+    FX, FY: Integer;
+    FOwner: TWinControl;
+    FSteps: TList;
+    FOnChange: TNotifyEvent;
+    FCurrentStep: Integer;
     function GetStepByIndex(Index: Integer): TInstallFrame;
     function GetCount: Integer;
     function GetCanInstall: Boolean;
@@ -33,17 +33,17 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
-    procedure Start(Owner : TWinControl; X, Y : Integer);
+    procedure Start(Owner: TWinControl; X, Y: Integer);
     procedure NextStep;
     procedure PreviousStep;
     procedure PrepaireInstall;
-    property Steps[Index : Integer] : TInstallFrame read GetStepByIndex; default;
-    property Count : Integer read GetCount;
-    property OnChange : TNotifyEvent read FOnChange write FOnChange;
-    property CanInstall : Boolean read GetCanInstall;
-    property CurrentStep : Integer read GetCurrentStep;
-    property CanNext : Boolean read GetCanNext;
-    property CanPrevious : Boolean read GetCanPrevious;
+    property Steps[Index: Integer]: TInstallFrame read GetStepByIndex; default;
+    property Count: Integer read GetCount;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property CanInstall: Boolean read GetCanInstall;
+    property CurrentStep: Integer read GetCurrentStep;
+    property CanNext: Boolean read GetCanNext;
+    property CanPrevious: Boolean read GetCanPrevious;
   end;
 
 implementation
@@ -78,7 +78,7 @@ end;
 
 function TInstallSteps.GetCanInstall: Boolean;
 var
-  I : Integer;
+  I: Integer;
 begin
   Result := False;
   for I := 0 to Count - 1 do
@@ -149,8 +149,8 @@ end;
 
 procedure TInstallSteps.Start(Owner: TWinControl; X, Y: Integer);
 var
-  I : Integer;
-  Frame : TInstallFrame;
+  I: Integer;
+  Frame: TInstallFrame;
 begin
   FOwner := Owner;
   FX := X;
@@ -172,7 +172,7 @@ end;
 
 procedure TInstallSteps.UpdateCurrentStep;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to Count - 1 do
   begin

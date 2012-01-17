@@ -5,11 +5,26 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, uFrameWizardBase, ExtCtrls, StdCtrls, WatermarkedEdit, Menus,
-  WebLink, uDBPopupMenuInfo, UnitDBDeclare, uDBUtils, DBCMenu, uMemory, jpeg,
-  uShellIntegration, GraphicCrypt, UnitDBKernel, uConstants, uGraphicUtils,
-  UnitDBCommon, UnitDBCommonGraphics, uCryptUtils, Dolphin_db, uDBBaseTypes,
-  UnitDBFileDialogs, uFileUtils, uAssociations, uStenography, LoadingSign,
-  CCR.Exif;
+  WebLink, uDBPopupMenuInfo, UnitDBDeclare, uDBUtils, DBCMenu,
+  uMemory,
+  jpeg,
+  uShellIntegration,
+  GraphicCrypt,
+  UnitDBKernel,
+  uConstants,
+  uGraphicUtils,
+  UnitDBCommon,
+  UnitDBCommonGraphics,
+  uCryptUtils,
+  Dolphin_db,
+  uDBBaseTypes,
+  UnitDBFileDialogs,
+  uFileUtils,
+  uAssociations,
+  uStenography,
+  LoadingSign,
+  CCR.Exif,
+  uPortableDeviceUtils;
 
 type
   TFrmCreateJPEGSteno = class(TFrameWizardBase)
@@ -261,7 +276,11 @@ begin
   end else
   begin
 
-    FImageFileSize := GetFileSize(ImageFileName);
+    if not IsDevicePath(ImageFileName) then
+      FImageFileSize := GetFileSize(ImageFileName)
+    else
+      FImageFileSize := GetDeviceItemSize(ImageFileName);
+
     LbJpegFileSize.Caption := Format(L('File size: %s'), [SizeInText(FImageFileSize)]);
 
     F(FBitmapImage);

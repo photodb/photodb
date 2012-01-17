@@ -12,6 +12,13 @@ uses
   System.Win.Registry,
   uMemory;
 
+type
+  PMsgHdr = ^TMsgHdr;
+  TMsgHdr = packed record
+    MsgSize : Integer;
+    Data : PChar;
+  end;
+
 const
   AutoPlayHandler: TGUID = '{E6E1E865-47A8-42B6-A64E-56AA4BBC0489}';
   IID_IHWEventHandler: TGUID = '{C1FB73D0-EC3A-4BA2-B512-8CDB9187B6D1}';
@@ -38,7 +45,7 @@ type
     FInitLine: string;
     function CallApplication(pszDeviceID, pszAltDeviceID, pszEventType: string; hwndOwner: HWND): Boolean;
   public
-    function Initialize(pszParams: LPCWSTR): HRESULT; stdcall;
+    function Initialize(pszParams: LPCWSTR): HRESULT; reintroduce; stdcall;
     function HandleEvent(pszDeviceID, pszAltDeviceID, pszEventType: LPCWSTR): HRESULT; stdcall;
     function HandleEventWithContent(deviceId, altDeviceId, eventType, pDataObject: Pointer): HRESULT; stdcall;
     function HandleEventWithHWND(
@@ -52,14 +59,52 @@ implementation
 
 { THWEventHandler }
 
-function TPhotoDBAutoplayHandler.CallApplication(pszDeviceID, pszAltDeviceID,
-  pszEventType: string; hwndOwner: HWND): Boolean;
+function SendMessageToActiveCopy(MessageToSent: string): Boolean;
+var
+  HSemaphore: THandle;
+  CD: TCopyDataStruct;
+  Buf: Pointer;
+  P: PByte;
+  WinHandle: HWND;
+begin
+  Result := False;
+
+  HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DB_ID));
+  if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
+  begin
+    CloseHandle(HSemaphore);
+
+    WinHandle := FindWindow(nil, PChar(DB_ID));
+    if WinHandle <> 0 then
+    begin
+      cd.dwData := WM_COPYDATA_ID;
+      cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
+      GetMem(Buf, cd.cbData);
+      try
+        P := PByte(Buf);
+        NativeInt(P) := NativeInt(P) + SizeOf(TMsgHdr);
+
+        StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
+        cd.lpData := Buf;
+
+        SendMessage(WinHandle, WM_COPYDATA, 0, NativeInt(@cd));
+
+        Result := True;
+      finally
+        FreeMem(Buf);
+      end;
+    end;
+  end;
+end;
+
+function SendMessageToNewCopy(MessageToSent: string): Boolean;
 var
   StartInfo: TStartupInfo;
   ProcInfo: TProcessInformation;
   Reg: TRegistry;
-  PhotoDBExecutable, ExeParams: string;
+  PhotoDBExecutable: string;
 begin
+  Result := False;
   PhotoDBExecutable := '';
 
   Reg := TRegistry.Create(KEY_READ);
@@ -83,9 +128,7 @@ begin
         wShowWindow := SW_NORMAL;
       end;
 
-      ExeParams := '/devId:' + Trim(pszDeviceID) + ' /devAltId:' + pszAltDeviceID + ' /devEvent:' + Trim(pszEventType) + ' ' + FInitLine;
-
-      CreateProcess(nil, PChar('"' + PhotoDBExecutable + '"' + ' ' + ExeParams), nil, nil, False,
+      CreateProcess(nil, PChar('"' + PhotoDBExecutable + '"' + ' ' + MessageToSent), nil, nil, False,
                   CREATE_DEFAULT_ERROR_MODE or NORMAL_PRIORITY_CLASS,
                   nil, PChar(ExtractFileDir(PhotoDBExecutable)), StartInfo, ProcInfo);
 
@@ -95,6 +138,19 @@ begin
       CloseHandle(ProcInfo.hThread);
     end;
   end;
+end;
+
+function TPhotoDBAutoplayHandler.CallApplication(pszDeviceID, pszAltDeviceID,
+  pszEventType: string; hwndOwner: HWND): Boolean;
+var
+  MessageString: string;
+begin
+  MessageString := '/devId:' + Trim(pszDeviceID) + ' /devAltId:' + pszAltDeviceID + ' /devEvent:' + Trim(pszEventType) + ' ' + FInitLine;
+
+  Result := SendMessageToActiveCopy(MessageString);
+
+  if not Result then
+    Result := SendMessageToNewCopy(MessageString);
 end;
 
 function TPhotoDBAutoplayHandler.HandleEvent(pszDeviceID, pszAltDeviceID,

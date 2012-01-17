@@ -40,6 +40,10 @@ cd Uninstall
 "%DCC32%" %NS% UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
+cd Bridge
+"%DCC32%" %NS% PhotoDBBridge -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+cd ..
+
 cd Installer
 "%DCC32%" %NS% InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..

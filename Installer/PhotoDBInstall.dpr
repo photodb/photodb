@@ -29,8 +29,16 @@ var
   FS: TFileStream;
   ExeFileName: string;
   Size: Int64;
+  Mutex: Integer;
+
+function InitMutex(mid: string): boolean;
+begin
+  Mutex := CreateMutex(nil, false, pchar(mid));
+  Result := not ((Mutex = 0) or (GetLastError = ERROR_ALREADY_EXISTS));
+end;
 
 begin
+  InitMutex('{E8A4BE80-FF59-4742-AFA0-F6CC300F53A8}');
   try
     MS := TMemoryStream.Create;
     try
@@ -64,4 +72,6 @@ begin
     on e: Exception do
       MessageBox(0, PChar(e.Message), 'Error', MB_OK or MB_ICONERROR);
   end;
+  if Mutex <> 0 then
+    CloseHandle(Mutex);
 end.

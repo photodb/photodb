@@ -14,6 +14,7 @@ implementation
 
 initialization
 
+  TInstallManager.Instance.RegisterScope(TInstallCloseApplication);
   TInstallManager.Instance.RegisterScope(TInstallFiles);
   TInstallManager.Instance.RegisterScope(TInstallRegistry);
   TInstallManager.Instance.RegisterScope(TUninstallPreviousShortcutsAction);

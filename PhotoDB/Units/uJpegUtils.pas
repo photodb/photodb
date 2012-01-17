@@ -30,7 +30,11 @@ end;
 procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
 begin
   JPEG.Performance := jpBestSpeed;
-  JPEG.DIBNeeded;
+  try
+    JPEG.DIBNeeded;
+  except
+    //incorrect file will throw an error, but bitmap will be available so we can display partically decompressed image
+  end;
 
   AssignBitmap(Bitmap, TJPEGX(JPEG).InnerBitmap);
 end;

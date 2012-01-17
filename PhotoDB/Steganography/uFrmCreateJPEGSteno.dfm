@@ -149,8 +149,8 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     object WblMethod: TWebLink
       Left = 12
       Top = 160
-      Width = 68
-      Height = 13
+      Width = 84
+      Height = 16
       Cursor = crHandPoint
       Enabled = False
       Text = 'BlowFish - 56'
@@ -164,6 +164,8 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object CbConvertImage: TCheckBox
       Left = 12
@@ -193,6 +195,8 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
   end
   object LsImage: TLoadingSign

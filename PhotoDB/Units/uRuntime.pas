@@ -3,7 +3,8 @@ unit uRuntime;
 interface
 
 uses
-  Windows;
+  Windows,
+  uConstants;
 
 const
   DBInDebug = True;
@@ -15,11 +16,11 @@ var
    dbname: string = '';
 
 var
-  PortableWork : Boolean = False;
+  PortableWork: Boolean = False;
   FolderView: Boolean = False;
   LastInseredID: Integer = 0;
   DBTerminating: Boolean = False;
-  DBID : string = '{E1446065-CB87-440D-9315-6FA356F921B5}';
+  DBID: string = DB_ID;
   CMDInProgress: Boolean = False;
   ProgramVersionString: string = '';
 

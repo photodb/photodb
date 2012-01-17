@@ -31,6 +31,7 @@ const
   DelayExecuteSQLOperation = 200;
   LanguageFileMask = 'Language';
   SetupDataName = 'SETUP_DATA';
+  DB_ID = '{E1446065-CB87-440D-9315-6FA356F921B5}';
 
   //Bridge
   BridgeName = 'PhotoDBBridge';

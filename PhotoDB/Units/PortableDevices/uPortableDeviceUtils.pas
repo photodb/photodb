@@ -24,6 +24,7 @@ function IsDeviceItemPath(Path: string): Boolean;
 function ExtractDeviceName(Path: string): string;
 function ExtractDeviceItemPath(Path: string): string;
 function GetDeviceItemSize(Path: string): Int64;
+function ReadStreamFromDevice(Path: string; Stream: TStream): Boolean;
 
 implementation
 
@@ -79,6 +80,26 @@ begin
 
     Result := Path;
   end;
+end;
+
+function ReadStreamFromDevice(Path: string; Stream: TStream): Boolean;
+var
+  DeviceName, DevicePath: string;
+  Device: IPDevice;
+  Item: IPDItem;
+begin
+  Result := False;
+  DeviceName := ExtractDeviceName(Path);
+  DevicePath := ExtractDeviceItemPath(Path);
+  Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
+  if Device = nil then
+    Exit;
+
+  Item := Device.GetItemByPath(DevicePath);
+  if Item = nil then
+    Exit;
+
+  Result := Item.SaveToStream(Stream);
 end;
 
 { TPortableGraphicHelper }

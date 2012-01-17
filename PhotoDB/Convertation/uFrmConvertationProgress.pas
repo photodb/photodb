@@ -89,7 +89,7 @@ procedure TFrmConvertationProgress.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
 begin
   if Msg.Hwnd = InfoListBox.Handle then
-    if Msg.message = 522 then
+    if Msg.message = WM_MOUSEWHEEL then
       Msg.message := 0;
 end;
 

@@ -241,14 +241,8 @@ begin
       CMD_Command_Break := true;
   end;
   if Msg.hwnd = InfoListBox.Handle then
-    if Msg.message <> 15 then
-      if Msg.message <> 512 then
-        if Msg.message <> 160 then
-          if Msg.message <> 161 then
-            if Msg.message = 522 then
-            begin
-              Msg.message := 0;
-            end;
+    if Msg.message = WM_MOUSEWHEEL then
+      Msg.message := 0;
 end;
 
 procedure TCMDForm.ShowBadLinks;

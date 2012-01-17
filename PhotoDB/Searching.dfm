@@ -496,6 +496,7 @@ object SearchForm: TSearchForm
         Width = 167
         Height = 206
         Anchors = [akLeft, akTop, akRight, akBottom]
+        BorderStyle = bsNone
         Ctl3D = True
         EditManager.Font.Charset = DEFAULT_CHARSET
         EditManager.Font.Color = clWindowText

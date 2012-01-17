@@ -12,6 +12,7 @@ object FormManager: TFormManager
   Font.Style = []
   OldCreateOrder = False
   Position = poDesigned
+  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13

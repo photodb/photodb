@@ -987,6 +987,8 @@ object ExplorerForm: TExplorerForm
       GetSystemIcon = PePathGetSystemIcon
       CanBreakLoading = False
       OnBreakLoading = TbStopClick
+      OnImageContextPopup = PePathImageContextPopup
+      OnContextPopup = PePathContextPopup
       GetItemIconEvent = PePathGetItemIconEvent
     end
   end
@@ -1557,7 +1559,7 @@ object ExplorerForm: TExplorerForm
   object PmListPopup: TPopupMenu
     OnPopup = PmListPopupPopup
     Left = 360
-    Top = 504
+    Top = 472
     object OpenInNewWindow1: TMenuItem
       Caption = 'Open In New Window'
       OnClick = OpenInNewWindow1Click
@@ -1708,13 +1710,13 @@ object ExplorerForm: TExplorerForm
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuBackPopup
     Left = 360
-    Top = 452
+    Top = 428
   end
   object PopupMenuForward: TPopupMenu
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuForwardPopup
     Left = 360
-    Top = 404
+    Top = 380
   end
   object DragTimer: TTimer
     Interval = 100
@@ -1817,7 +1819,7 @@ object ExplorerForm: TExplorerForm
   end
   object RatingPopupMenu: TPopupMenu
     Left = 361
-    Top = 352
+    Top = 336
     object N00: TMenuItem
       Caption = '0'
       OnClick = N05Click
@@ -1850,7 +1852,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmListViewType: TPopupMenu
     Left = 360
-    Top = 296
+    Top = 288
     object Thumbnails1: TMenuItem
       Caption = 'Thumbnails'
       Checked = True
@@ -1950,5 +1952,17 @@ object ExplorerForm: TExplorerForm
     ColorDepth = cd32Bit
     Left = 200
     Top = 456
+  end
+  object PmPathMenu: TPopupMenu
+    Left = 360
+    Top = 520
+    object MiCopyAddress: TMenuItem
+      Caption = 'Copy Address'
+      OnClick = MiCopyAddressClick
+    end
+    object MiEditAddress: TMenuItem
+      Caption = 'Edit address'
+      OnClick = MiEditAddressClick
+    end
   end
 end

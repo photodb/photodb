@@ -14,9 +14,11 @@ uses
   uConstants,
   uPortableDeviceManager,
   uPortableDeviceUtils,
-  StrUtils;
+  StrUtils,
+  Controls,
+  ShellContextMenu;
 
-function ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; Verb: AnsiString): Boolean;
+function ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; P: TPoint; WC: TWinControl; Verb: AnsiString): Boolean;
 function ClipboardHasPIDList: Boolean;
 procedure PastePIDListToFolder(Handle: THandle; Folder: string);
 
@@ -208,7 +210,7 @@ begin
   Result := APathName;
 end;
 
-function ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; Verb: AnsiString): Boolean;
+function ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; P: TPoint; WC: TWinControl; Verb: AnsiString): Boolean;
 type
   TPItemIDListArray = array of PItemIDList;
 var
@@ -229,7 +231,10 @@ var
   var
     cmd: TCMInvokeCommandInfo;
   begin
-    if Succeeded(HR) then
+    if Failed(HR) then
+      Exit;
+
+    if Verb <> '' then
     begin
       FillMemory( @cmd, sizeof(cmd), 0 );
       with cmd do
@@ -238,13 +243,13 @@ var
         fMask := 0;
         hwnd := 0;
         lpVerb := PAnsiChar( Verb );
-        //lpVerb := PAnsiChar( 'Copy' );
-        //lpVerb := PAnsiChar( 'Cut' );
-        //lpVerb := PAnsiChar( 'Properties' );
         nShow := SW_SHOWNORMAL;
       end;
       HR := Menu.InvokeCommand( cmd );
       Result := Succeeded(HR);
+    end else
+    begin
+      DisplayShellMenu(Menu, P, WC, '');
     end;
   end;
 

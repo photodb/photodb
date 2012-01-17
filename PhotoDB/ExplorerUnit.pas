@@ -278,6 +278,9 @@ type
     ImPathDropDownMenu: TImageList;
     EncryptLink: TWebLink;
     WlCreateObject: TWebLink;
+    PmPathMenu: TPopupMenu;
+    MiCopyAddress: TMenuItem;
+    MiEditAddress: TMenuItem;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -467,6 +470,12 @@ type
     procedure PePathGetItemIconEvent(Sender: TPathEditor; Item: TPathItem);
     procedure WlCreateObjectClick(Sender: TObject);
     procedure TbDeleteClick(Sender: TObject);
+    procedure PePathImageContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure PePathContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure MiCopyAddressClick(Sender: TObject);
+    procedure MiEditAddressClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -687,24 +696,6 @@ uses
   uFormSteganography, UnitBigImagesSize, UnitNewGroupForm;
 
 {$R *.dfm}
-
-//TODO: move to somewhere else
-function CanCopyFromClipboard: Boolean;
-var
-  Files: TStrings;
-  Effects: Integer;
-begin
-  Files := TStringList.Create;
-  try
-    LoadFilesFromClipBoard(Effects, Files);
-    Result := Files.Count > 0;
-  finally
-    F(Files);
-  end;
-
-  if not Result then
-    Result := ClipboardHasPIDList;
-end;
 
 procedure RegisterPathEditThread(Sender: TThread);
 begin
@@ -2523,7 +2514,7 @@ var
   Explorer: TCustomExplorerForm;
 begin
   Explorer := ExplorerManager.NewExplorer(False);
- // Explorer.SetNewPathW(Self.GetCurrentPathW, False);
+  Explorer.SetNewPathW(Self.GetCurrentPathW, False);
   Explorer.Show;
 end;
 
@@ -3309,6 +3300,16 @@ begin
   end;
 end;
 
+procedure TExplorerForm.MiCopyAddressClick(Sender: TObject);
+begin
+  Clipboard.AsText := FCurrentPath;
+end;
+
+procedure TExplorerForm.MiEditAddressClick(Sender: TObject);
+begin
+  PePath.Edit;
+end;
+
 procedure TExplorerForm.LockItems;
 begin
   GlobalLock := True;
@@ -3505,8 +3506,7 @@ begin
      (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
-     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
-     (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) then
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
     TbCopy.Enabled := SelCount > 0;
 
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
@@ -3518,7 +3518,7 @@ begin
     TbCut.Enabled := SelCount > 0;
 
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
+     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
@@ -3790,14 +3790,10 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)) then
     begin
       CopyToLink.Visible := True;
-      //TbCopy.Enabled := SelCount <> 0;
       CopyToLink.Top := NewTop + H;
       NewTop := CopyToLink.BoundsRect.Bottom;
     end else
-    begin
       CopyToLink.Visible := False;
-      //TbCopy.Enabled := False;
-    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
@@ -3807,17 +3803,10 @@ begin
         MoveToLink.Top := NewTop + H;
         NewTop := MoveToLink.BoundsRect.Bottom;
         MoveToLink.Visible := True;
-        //TbCut.Enabled := True;
       end else
-      begin
-        //TbCut.Enabled := False;
         MoveToLink.Visible := False;
-      end;
     end else
-    begin
       MoveToLink.Visible := False;
-      //TbCut.Enabled := False;
-    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -4333,7 +4322,7 @@ begin
           FileList.Add(ExtractFileName(FFilesInfo[Index].FileName));
         end;
 
-      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, PhotoDBPathToDevicePath(FCurrentPath), FileList, AnsiString(IIF(IsCutAction, 'Cut', 'Copy')));
+      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, PhotoDBPathToDevicePath(FCurrentPath), FileList, Point(0, 0), nil, AnsiString(IIF(IsCutAction, 'Cut', 'Copy')));
     end;
   finally
     F(FileList);
@@ -4456,6 +4445,7 @@ begin
     finally
       F(Info);
     end;
+    Exit;
   end else if EInfo.FileType = EXPLORER_ITEM_IMAGE then
   begin
     if not EInfo.Loaded then
@@ -4853,6 +4843,14 @@ begin
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False);
 end;
 
+procedure TExplorerForm.PePathContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  MousePos := PePath.ClientToScreen(MousePos);
+  PmPathMenu.Popup(MousePos.X, MousePos.Y);
+  Handled := True;
+end;
+
 procedure TExplorerForm.PePathGetItemIconEvent(Sender: TPathEditor;
   Item: TPathItem);
 var
@@ -4885,6 +4883,24 @@ begin
   finally
     F(Ico);
   end;
+end;
+
+procedure TExplorerForm.PePathImageContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  Files: TStrings;
+begin
+  if not IsDevicePath(FCurrentPath) then
+  begin
+    Files := TStringList.Create;
+    try
+      Files.Add(ExcludeTrailingPathDelimiter(FCurrentPath));
+      GetProperties(Files, MousePos, PePath);
+    finally
+      F(Files)
+    end;
+  end else
+    ExecuteShellPathRelativeToMyComputerMenuAction(Handle, FCurrentPath, nil, MousePos, PePath, '');
 end;
 
 function TExplorerForm.GetPathPartName(PP: TPathItem): string;
@@ -5064,6 +5080,9 @@ begin
     CbFilterMatchCase.Caption := L('Match case');
     LbFilter.Caption := L('Filter') + ':';
     LbFilterInfo.Caption := L('Sorry, but phrase not found!');
+
+    MiCopyAddress.Caption := L('Copy address');
+    MiEditAddress.Caption := L('Edit address');
   finally
     EndTranslate;
   end;
