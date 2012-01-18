@@ -1898,7 +1898,7 @@ begin
   Result.IsPlusMenu := False;
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    ItemIndex := MenuIndexToItemIndex(I);
+    ItemIndex := ItemIndexToMenuIndex(I);
     if ItemIndex > FFilesInfo.Count - 1 then
       Exit;
 
@@ -4395,7 +4395,7 @@ begin
         try
           for I := 0 to ElvMain.Items.Count - 1 do
           begin
-            ItemIndex := MenuIndexToItemIndex(I);
+            ItemIndex := ItemIndexToMenuIndex(I);
             if ItemIndex > FFilesInfo.Count - 1 then
               Exit;
 
@@ -4901,6 +4901,8 @@ begin
     end;
   end else
     ExecuteShellPathRelativeToMyComputerMenuAction(Handle, FCurrentPath, nil, MousePos, PePath, '');
+
+  Handled := True;
 end;
 
 function TExplorerForm.GetPathPartName(PP: TPathItem): string;

@@ -31,14 +31,17 @@ var
   Size: Int64;
   Mutex: Integer;
 
-function InitMutex(mid: string): boolean;
+function InitMutex(mid: string): Boolean;
 begin
-  Mutex := CreateMutex(nil, false, pchar(mid));
+  Mutex := CreateMutex(nil, False, PChar(mid));
   Result := not ((Mutex = 0) or (GetLastError = ERROR_ALREADY_EXISTS));
 end;
 
 begin
-  InitMutex('{E8A4BE80-FF59-4742-AFA0-F6CC300F53A8}');
+  //do not allow 2 copies of application
+  if not InitMutex('{E8A4BE80-FF59-4742-AFA0-F6CC300F53A8}') then
+    Exit;
+
   try
     MS := TMemoryStream.Create;
     try

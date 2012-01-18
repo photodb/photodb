@@ -4,6 +4,7 @@ interface
 
 uses
   Winapi.Windows,
+  System.Types,
   Generics.Collections,
   uPathProviders,
   Vcl.Graphics,

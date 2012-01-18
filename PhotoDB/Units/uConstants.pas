@@ -32,6 +32,7 @@ const
   LanguageFileMask = 'Language';
   SetupDataName = 'SETUP_DATA';
   DB_ID = '{E1446065-CB87-440D-9315-6FA356F921B5}';
+  DB_ID_CLOSING = '{D4640FE7-EFF4-4D1F-A9D7-5FD1E2C92B3C}';
 
   //Bridge
   BridgeName = 'PhotoDBBridge';

@@ -4,13 +4,13 @@ interface
 
 uses
   GraphicCrypt, DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, UVistaFuncs, AppEvnts, ExtCtrls, UnitINI, UAppUtils,
+  Controls, Forms, uVistaFuncs, AppEvnts, ExtCtrls, UnitINI, uAppUtils,
   Dialogs, UnitDBKernel, CommonDBSupport, UnitDBDeclare, UnitFileExistsThread,
-  UnitDBCommon, ULogger, UConstants, UFileUtils, UTime, USplashThread,
-  UDBForm, UFastLoad, UMemory, UMultiCPUThreadManager, Win32crc,
-  UShellIntegration, URuntime, Dolphin_DB, UDBBaseTypes, UDBFileTypes,
-  UDBUtils, UDBPopupMenuInfo, USettings, UAssociations, UActivationUtils,
-  UExifUtils, UDBCustomThread, uPortableDeviceManager, uPortableClasses;
+  UnitDBCommon, uLogger, uConstants, uFileUtils, UTime, uSplashThread,
+  uDBForm, uFastLoad, uMemory, uMultiCPUThreadManager, Win32crc,
+  uShellIntegration, uRuntime, Dolphin_DB, UDBBaseTypes, UDBFileTypes,
+  uDBUtils, uDBPopupMenuInfo, uSettings, uAssociations, uActivationUtils,
+  uExifUtils, uDBCustomThread, uPortableDeviceManager, uPortableClasses;
 
 type
   TFormManager = class(TDBForm)
@@ -28,14 +28,15 @@ type
     LockCleaning: Boolean;
     FSetLanguageMessage: Cardinal;
     procedure ExitApplication;
-    procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
-    procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
     function GetTimeLimitMessage: string;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure RegisterMainForm(Value: TForm);
     procedure UnRegisterMainForm(Value: TForm);
+    procedure ProcessCommandLine(CommandLine: string);
   protected
     function GetFormID: string; override;
+    procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
+    procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -122,16 +123,16 @@ end;
 
 { TFormManager }
 
-procedure TFormManager.Run;
+procedure TFormManager.ProcessCommandLine(CommandLine: string);
 var
   Directory, S: string;
   ParamStr1, ParamStr2: string;
-  WIAParam: string;
   NewSearch: TSearchCustomForm;
   IDList: TArInteger;
   FileList: TArStrings;
   I: Integer;
   PDManager: IPManager;
+  PDevice: IPDevice;
 
   function IsFile(S: string): Boolean;
   var
@@ -146,131 +147,131 @@ var
         Result := True;
     end;
   end;
+begin
+  ParamStr1 := ParamStrEx(CommandLine, 1);
+  ParamStr2 := ParamstrEx(CommandLine, 2);
+  Directory := ExcludeTrailingBackslash(ParamStr2);
+  Directory := IncludeTrailingBackslash(LongFileName(Directory));
+  if FolderView then
+  begin
+    ParamStr1 := '/EXPLORER';
+    Directory := ExtractFileDir(Application.Exename);
+  end;
 
+  if AnsiUpperCase(ParamStr1) <> '/EXPLORER' then
+  begin
+    TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
+    if IsFile(ParamStr1) then
+    begin
+      if not IsGraphicFile(ParamStr1) then
+      begin
+        NewSearch := SearchManager.NewSearch;
+        if FileExistsSafe(ParamStr1) then
+        begin
+          if GetExt(ParamStr1) = 'IDS' then
+          begin
+            S := LoadIDsFromfile(ParamStr1);
+            NewSearch.SearchText := Copy(S, 1, 1000);
+            NewSearch.StartSearch;
+          end;
+          if GetExt(ParamStr1) = 'ITH' then
+          begin
+            S := LoadIDsFromfile(ParamStr1);
+            NewSearch.SearchText := ':HashFile(' + ParamStr1 + '):';
+            NewSearch.StartSearch;
+          end;
+          if GetExt(ParamStr1) = 'DBL' then
+          begin
+            LoadDblFromfile(ParamStr1, IDList, FileList);
+            S := '';
+            for I := 1 to Length(IDList) do
+              S := S + IntToStr(IDList[I - 1]) + '$';
+            NewSearch.SearchText := Copy(S, 1, 500);
+            NewSearch.StartSearch;
+          end;
+        end;
+        CloseSplashWindow;
+        NewSearch.Show;
+      end else
+      begin
+        TW.I.Start('RUN TViewer');
+        if Viewer = nil then
+          Application.CreateForm(TViewer, Viewer);
+        RegisterMainForm(Viewer);
+        TW.I.Start('ExecuteDirectoryWithFileOnThread');
+        Viewer.ExecuteDirectoryWithFileOnThread(ParamStr1);
+        TW.I.Start('ActivateApplication');
+        CloseSplashWindow;
+        Viewer.Show;
+      end;
+    end else
+    begin
+      // Default Form
+      if Settings.ReadBool('Options', 'RunExplorerAtStartUp', True) then
+      begin
+        TW.I.Start('RUN NewExplorer');
+        with ExplorerManager.NewExplorer(False) do
+        begin
+
+          if not GetParamStrDBBoolEx(CommandLine, '/import') then
+          begin
+            if Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
+              SetPath(Settings.ReadString('Options', 'SpecialStartUpFolder'))
+            else
+              LoadLastPath;
+          end else
+          begin
+            S := GetParamStrDBValueV2(CommandLine, '/devId');
+
+            PDManager := CreateDeviceManagerInstance;
+            PDevice := PDManager.GetDeviceByID(S);
+            if PDevice <> nil then
+              SetPath(cDevicesPath + '\' + PDevice.Name)
+            else
+              LoadLastPath;
+          end;
+          CloseSplashWindow;
+          Show;
+        end;
+      end else
+      begin
+        TW.I.Start('SearchManager.NewSearch');
+        NewSearch := SearchManager.NewSearch;
+        Application.Restore;
+        CloseSplashWindow;
+        NewSearch.Show;
+      end;
+    end;
+  end else
+  begin
+    if DirectoryExists(Directory) then
+    begin
+      with ExplorerManager.NewExplorer(False) do
+      begin
+        SetPath(Directory);
+        CloseSplashWindow;
+        Show;
+      end;
+    end else
+    begin
+      Application.Restore;
+      with SearchManager.NewSearch do
+      begin
+        CloseSplashWindow;
+        Show;
+      end;
+    end;
+  end;
+end;
+
+procedure TFormManager.Run;
 begin
   try
     EventLog(':TFormManager::Run()...');
     Settings.WriteProperty('Starting', 'ApplicationStarted', '1');
 
-    ParamStr1 := ParamStr(1);
-    ParamStr2 := Paramstr(2);
-    Directory := ExcludeTrailingBackslash(ParamStr2);
-    Directory := IncludeTrailingBackslash(LongFileName(Directory));
-    if FolderView then
-    begin
-      ParamStr1 := '/EXPLORER';
-      Directory := ExtractFileDir(Application.Exename);
-    end;
+    ProcessCommandLine(GetCommandLine);
 
-    if AnsiUpperCase(ParamStr1) <> '/EXPLORER' then
-    begin
-      TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
-      if IsFile(ParamStr1) then
-      begin
-        if not IsGraphicFile(ParamStr1) then
-        begin
-          NewSearch := SearchManager.NewSearch;
-          if FileExistsSafe(ParamStr1) then
-          begin
-            if GetExt(ParamStr1) = 'IDS' then
-            begin
-              S := LoadIDsFromfile(ParamStr1);
-              NewSearch.SearchText := Copy(S, 1, 1000);
-              NewSearch.StartSearch;
-            end;
-            if GetExt(ParamStr1) = 'ITH' then
-            begin
-              S := LoadIDsFromfile(ParamStr1);
-              NewSearch.SearchText := ':HashFile(' + ParamStr1 + '):';
-              NewSearch.StartSearch;
-            end;
-            if GetExt(ParamStr1) = 'DBL' then
-            begin
-              LoadDblFromfile(ParamStr1, IDList, FileList);
-              S := '';
-              for I := 1 to Length(IDList) do
-                S := S + IntToStr(IDList[I - 1]) + '$';
-              NewSearch.SearchText := Copy(S, 1, 500);
-              NewSearch.StartSearch;
-            end;
-          end;
-          CloseSplashWindow;
-          NewSearch.Show;
-        end
-        else
-        begin
-          TW.I.Start('RUN TViewer');
-          if Viewer = nil then
-            Application.CreateForm(TViewer, Viewer);
-          RegisterMainForm(Viewer);
-          TW.I.Start('ExecuteDirectoryWithFileOnThread');
-          Viewer.ExecuteDirectoryWithFileOnThread(ParamStr1);
-          TW.I.Start('ActivateApplication');
-          CloseSplashWindow;
-          Viewer.Show;
-        end;
-      end
-      else
-      begin
-        // Default Form
-        if Settings.ReadBool('Options', 'RunExplorerAtStartUp', True) then
-        begin
-          TW.I.Start('RUN NewExplorer');
-          with ExplorerManager.NewExplorer(False) do
-          begin
-
-            WIAParam := GetParamStrDBValue('/IMG_WIA');
-            if WIAParam = '' then
-            begin
-              if Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
-                SetPath(Settings.ReadString('Options', 'SpecialStartUpFolder'))
-              else
-                LoadLastPath;
-            end else
-            begin
-              S := GetParamStrDBValueV2('/StiDevice');
-
-              PDManager := CreateDeviceManagerInstance;
-
-              //Directory := PDManager.GetCameraPathByID(S);
-              //PDManager.
-              SetPath(Directory);
-            end;
-            CloseSplashWindow;
-            Show;
-          end;
-        end
-        else
-        begin
-          TW.I.Start('SearchManager.NewSearch');
-          NewSearch := SearchManager.NewSearch;
-          Application.Restore;
-          CloseSplashWindow;
-          NewSearch.Show;
-        end;
-      end;
-    end
-    else
-    begin
-      if DirectoryExists(Directory) then
-      begin
-        with ExplorerManager.NewExplorer(False) do
-        begin
-          SetPath(Directory);
-          CloseSplashWindow;
-          Show;
-        end;
-      end
-      else
-      begin
-        Application.Restore;
-        with SearchManager.NewSearch do
-        begin
-          CloseSplashWindow;
-          Show;
-        end;
-      end;
-    end;
     FCheckCount := 0;
     TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 55, @TimerProc);
   finally
@@ -333,7 +334,7 @@ begin
     end;
 
   // to allow run new copy
-  Caption := '';
+  Caption := DB_ID_CLOSING;
 
   // stop updating process, queue will be saved in registry
   DestroyUpdaterObject;
@@ -590,112 +591,16 @@ end;
 
 procedure TFormManager.WMCopyData(var Msg: TWMCopyData);
 var
-  Param: TArStrings;
-  Fids_: TArInteger;
-  FileNameA, FileNameB, S: string;
-  I: Integer;
-  FormCont: TFormCont;
-  B: TArBoolean;
+  S: string;
   Data: Pointer;
 begin
-
   if Msg.CopyDataStruct.DwData = WM_COPYDATA_ID then
   begin
     Data := PByte(Msg.CopyDataStruct.LpData) + SizeOf(TMsgHdr);
     SetString(S, PWideChar(Data), (Msg.CopyDataStruct.CbData - SizeOf(TMsgHdr) - 1) div SizeOf(WideChar));
 
-    for I := 1 to Length(S) do
-      if S[I] = #1 then
-      begin
-        FileNameA := Copy(S, 1, I - 1);
-        FileNameB := Copy(S, I + 1, Length(S) - I);
-        Break;
-      end;
-    if not CheckFileExistsWithMessageEx(FileNameA, False) then
-    begin
-      if AnsiUpperCase(FileNameA) = '/EXPLORER' then
-      begin
-        if CheckFileExistsWithMessageEx(LongFileName(FilenameB), True) then
-        begin
-          with ExplorerManager.NewExplorer(False) do
-          begin
-            SetPath(LongFileName(FileNameB));
-            Show;
-            ActivateBackgroundApplication(Handle);
-          end;
-        end;
-      end
-      else
-      begin
-        if AnsiUpperCase(FilenameA) = '/GETPHOTOS' then
-          if FileNameB <> '' then
-          begin
-            GetPhotosFromDrive(FileNameB[1]);
-            Exit;
-          end;
-        with SearchManager.GetAnySearch do
-        begin
-          Show;
-          ActivateBackgroundApplication(Handle);
-        end;
-        Exit;
-      end;
-    end;
-    if IsGraphicFile(FileNameA) then
-    begin
-      if Viewer = nil then
-        Application.CreateForm(TViewer, Viewer);
-      FileNameA := LongFileName(FileNameA);
-      ShowWindow(Viewer.Handle, SW_RESTORE);
-      Viewer.ExecuteDirectoryWithFileOnThread(FileNameA);
-      Viewer.Show;
-      ActivateBackgroundApplication(Viewer.Handle);
-    end
-    else if (AnsiUpperCase(FileNameA) <> '/EXPLORER') and CheckFileExistsWithMessageEx(FileNameA, False) then
-    begin
-      if GetExt(FileNameA) = 'DBL' then
-      begin
-        LoadDblFromfile(FileNameA, Fids_, Param);
-        FormCont := ManagerPanels.NewPanel;
-        SetLength(B, 0);
-        LoadFilesToPanel.Create(Param, Fids_, B, False, True, FormCont);
-        LoadFilesToPanel.Create(Param, Fids_, B, False, False, FormCont);
-        FormCont.Show;
-        ActivateBackgroundApplication(FormCont.Handle);
-        Exit;
-      end;
-      if GetExt(FilenameA) = 'IDS' then
-      begin
-        Fids_ := LoadIDsFromfileA(FileNameA);
-        Setlength(Param, 1);
-        FormCont := ManagerPanels.NewPanel;
-        LoadFilesToPanel.Create(Param, Fids_, B, False, True, FormCont);
-        FormCont.Show;
-        ActivateBackgroundApplication(FormCont.Handle);
-      end
-      else
-      begin
-        if GetExt(FileNameA) = 'ITH' then
-        begin
-          with SearchManager.NewSearch do
-          begin
-            StartSearch(':HashFile(' + FilenameA + '):');
-            ActivateBackgroundApplication(Handle);
-          end;
-          Exit;
-        end
-        else
-        begin
-          with SearchManager.GetAnySearch do
-          begin
-            Show;
-            ActivateBackgroundApplication(Handle);
-          end;
-        end;
-      end;
-    end;
-  end
-  else
+    ProcessCommandLine(ParamStr(0) + ' ' + S);
+  end else
     Dispatch(Msg);
 
 end;

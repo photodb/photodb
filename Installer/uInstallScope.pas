@@ -5,7 +5,9 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Classes, uMemory,
+  Generics.Collections,
+  Classes,
+  uMemory,
 {$IFNDEF EXTERNAL}
   uTranslate,
 {$ENDIF}
@@ -37,9 +39,31 @@ type
     property Items[Index: Integer]: TShortCut read GetItemByIndex; default;
   end;
 
+  TActionScope = (asInstall, asUninstall);
+
+  TFileAction = class(TObject)
+  public
+    CommandLine: string;
+    Scope: TActionScope;
+  end;
+
+  TFileActions = class(TObject)
+  private
+    FActions: TList<TFileAction>;
+    function GetCount: Integer;
+    function GetItemByIndex(Index: Integer): TFileAction;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Add(CommandLine: string; Scope: TActionScope); overload;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: TFileAction read GetItemByIndex; default;
+  end;
+
   TDiskObject = class(TInstallObject)
   private
     FShortCuts: TShortCuts;
+    FActions: TFileActions;
   public
     Name: string;
     FinalDestination: string;
@@ -47,6 +71,7 @@ type
     constructor Create(AName, AFinalDestination, ADescription: string);
     destructor Destroy; override;
     property ShortCuts: TShortCuts read FShortCuts;
+    property Actions: TFileActions read FActions;
   end;
 
   TFileObject = class(TDiskObject)
@@ -163,6 +188,7 @@ begin
   FinalDestination := AFinalDestination;
   Description := ADescription;
   FShortCuts := TShortCuts.Create;
+  FActions := TFileActions.Create;
 end;
 
 destructor TDiskObject.Destroy;
@@ -217,7 +243,8 @@ end;
 
 constructor TPhotoDBInstall_V23.Create;
 var
-  PhotoDBFile : TDiskObject;
+  PhotoDBFile: TDiskObject;
+  PhotoDBBridge: TDiskObject;
 begin
   inherited;
 
@@ -231,7 +258,10 @@ begin
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + 'Home page.lnk', 'http://photodb.illusdolphin.net/{LNG}');
   Files.Add(PhotoDBFile);
 
-  Files.Add(TFileObject.Create('PhotoDBBridge.exe',               '%PROGRAM%', ''));
+  PhotoDBBridge := TFileObject.Create('PhotoDBBridge.exe',         '%PROGRAM%', '');
+  PhotoDBBridge.FActions.Add('/regserver', asInstall);
+  PhotoDBBridge.FActions.Add('/unregserver', asUnInstall);
+  Files.Add(PhotoDBBridge);
   Files.Add(TFileObject.Create('Kernel.dll',                      '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('VCOpenCV.DLL',                    '%PROGRAM%', ''));
@@ -245,6 +275,39 @@ begin
   Files.Add(TDirectoryObject.Create('Scripts',     '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Images',      '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('PlugInsEx',   '%PROGRAM%', ''));
+end;
+
+{ TFileActions }
+
+procedure TFileActions.Add(CommandLine: string; Scope: TActionScope);
+var
+  FA: TFileAction;
+begin
+  FA := TFileAction.Create;
+  FA.CommandLine := CommandLine;
+  FA.Scope := Scope;
+  FActions.Add(FA);
+end;
+
+constructor TFileActions.Create;
+begin
+  FActions := TList<TFileAction>.Create;
+end;
+
+destructor TFileActions.Destroy;
+begin
+  FreeList(FActions);
+  inherited;
+end;
+
+function TFileActions.GetCount: Integer;
+begin
+  Result := FActions.Count;
+end;
+
+function TFileActions.GetItemByIndex(Index: Integer): TFileAction;
+begin
+  Result := FActions[Index];
 end;
 
 initialization

@@ -27,6 +27,7 @@ const
   InstallPoints_Close_PhotoDB = 1024 * 1024;
   DeleteFilePoints = 128 * 1024;
   UnInstallPoints_ShortCut = 128 * 1024;
+  UnInstallPoints_FileAcctions = 512 * 1024;
   UninstallNotifyPoints_ShortCut = 1024 * 1024;
   DeleteRegistryPoints = 128 * 1024;
 
@@ -41,6 +42,12 @@ type
   public
     function CalculateTotalPoints : Int64; override;
     procedure Execute(Callback : TActionCallback); override;
+  end;
+
+  TInstallFileActions = class(TInstallAction)
+  public
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TUninstallShortCuts = class(TInstallAction)
@@ -234,7 +241,7 @@ end;
 
 procedure TInstallCloseApplication.Execute(Callback: TActionCallback);
 const
-  Timeout = 5000;
+  Timeout = 10000;
 var
   WinHandle: HWND;
   StartTime: Cardinal;
@@ -247,13 +254,75 @@ begin
     StartTime := GetTickCount;
     while(true) do
     begin
-      if FindWindow(nil, PChar(DBID)) = 0 then
+      if (FindWindow(nil, PChar(DB_ID)) = 0) and (FindWindow(nil, PChar(DB_ID_CLOSING)) = 0) then
         Break;
 
       if (GetTickCount - StartTime) > Timeout then
         Break;
 
       Sleep(100);
+    end;
+  end;
+end;
+
+{ TInstallFileActions }
+
+function TInstallFileActions.CalculateTotalPoints: Int64;
+var
+  I, J: Integer;
+  DiskObject: TDiskObject;
+begin
+  Result := 0;
+  for I := 0 to CurrentInstall.Files.Count - 1 do
+  begin
+    DiskObject := CurrentInstall.Files[I];
+    for J := 0 to DiskObject.Actions.Count - 1 do
+      if DiskObject.Actions[J].Scope = asUninstall then
+        Inc(Result, DiskObject.Actions.Count * UnInstallPoints_FileAcctions);
+  end;
+end;
+
+procedure TInstallFileActions.Execute(Callback: TActionCallback);
+var
+  I, J: Integer;
+  DiskObject: TDiskObject;
+  CurentPosition: Int64;
+  ObjectPath: string;
+  StartInfo: TStartupInfo;
+  ProcInfo: TProcessInformation;
+begin
+  CurentPosition := 0;
+  for I := 0 to CurrentInstall.Files.Count - 1 do
+  begin
+    DiskObject := CurrentInstall.Files[I];
+    for J := 0 to DiskObject.Actions.Count - 1 do
+    begin
+      if DiskObject.Actions[J].Scope = asUninstall then
+      begin
+        Inc(CurentPosition, UnInstallPoints_FileAcctions);
+        ObjectPath := ResolveInstallPath(IncludeTrailingBackslash(DiskObject.FinalDestination) + DiskObject.Name);
+
+        { fill with known state }
+        FillChar(StartInfo, SizeOf(TStartupInfo), #0);
+        FillChar(ProcInfo, SizeOf(TProcessInformation), #0);
+        try
+          with StartInfo do begin
+            cb := SizeOf(StartInfo);
+            dwFlags := STARTF_USESHOWWINDOW;
+            wShowWindow := SW_NORMAL;
+          end;
+
+          CreateProcess(nil, PChar('"' + ObjectPath + '"' + ' ' + DiskObject.Actions[J].CommandLine), nil, nil, False,
+                      CREATE_DEFAULT_ERROR_MODE or NORMAL_PRIORITY_CLASS,
+                      nil, PChar(ExcludeTrailingPathDelimiter(ExtractFileDir(ObjectPath))), StartInfo, ProcInfo);
+
+          WaitForSingleObject(ProcInfo.hProcess, 30000);
+        finally
+          CloseHandle(ProcInfo.hProcess);
+          CloseHandle(ProcInfo.hThread);
+        end;
+      end;
+
     end;
   end;
 end;

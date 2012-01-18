@@ -406,7 +406,7 @@ var
   WinHandle: HWND;
 begin
   SetLastError(0);
-  HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DBID));
+  HSemaphore := CreateSemaphore( nil, 0, 1, PChar(DB_ID));
   if ((HSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
   begin
     CloseHandle(HSemaphore);
@@ -414,36 +414,32 @@ begin
     WinHandle := FindWindow(nil, PChar(DBID));
     if WinHandle <> 0 then
     begin
+      MessageToSent := GetCommandLine;
 
-      if ParamStr(1) = '' then
-        MessageToSent := 'Activate'
-      else
-        MessageToSent := ParamStr(1) + #1 + ParamStr(2);
+      cd.dwData := WM_COPYDATA_ID;
+      cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
+      GetMem(Buf, cd.cbData);
+      try
+        P := PByte(Buf);
+        Integer(P) := Integer(P) + SizeOf(TMsgHdr);
 
-        cd.dwData := WM_COPYDATA_ID;
-        cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
-        GetMem(Buf, cd.cbData);
-        try
-          P := PByte(Buf);
-          Integer(P) := Integer(P) + SizeOf(TMsgHdr);
+        StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
+        cd.lpData := Buf;
 
-          StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
-          cd.lpData := Buf;
-
-          if SendMessageEx(WinHandle, WM_COPYDATA, 0, NativeInt(@cd)) then
-          begin
-            CloseSplashWindow;
+        if SendMessageEx(WinHandle, WM_COPYDATA, 0, NativeInt(@cd)) then
+        begin
+          CloseSplashWindow;
+          DBTerminating := True;
+        end else
+        begin
+          CloseSplashWindow;
+          if ID_YES <> MessageBoxDB(0, TA('This program is running, but isn''t responding! Run new instance?', 'System'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
             DBTerminating := True;
-          end else
-          begin
-            CloseSplashWindow;
-            if ID_YES <> MessageBoxDB(0, TA('This program is running, but isn''t responding! Run new instance?', 'System'), TA('Error'), TD_BUTTON_YESNO, TD_ICON_ERROR) then
-              DBTerminating := True;
-          end;
-
-        finally
-          FreeMem(Buf);
         end;
+
+      finally
+        FreeMem(Buf);
+      end;
     end;
   end;
 end;

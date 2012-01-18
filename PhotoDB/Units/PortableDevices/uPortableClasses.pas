@@ -76,6 +76,7 @@ type
     procedure FillDevices(Devices: TList<IPDevice>);
     procedure FillDevicesWithCallBack(CallBack: TFillDevicesCallBack; Context: Pointer);
     function GetDeviceByName(DeviceName: string): IPDevice;
+    function GetDeviceByID(DeviceID: string): IPDevice;
   end;
 
   IPEventManager = interface

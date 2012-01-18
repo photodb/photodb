@@ -102,6 +102,12 @@ begin
     AWidthToSize := 0;
   end else
   begin
+    if AWidth = 0 then
+    begin
+      AWidthToSize := 0;
+      AHeightToSize := 0;
+      Exit;
+    end;
     if (AHeightToSize / AWidthToSize) < (AHeight / AWidth) then
     begin
       AHeightToSize := Round((AWidth / AWidthToSize) * AHeightToSize);
@@ -126,6 +132,12 @@ begin
     AWidthToSize := 0;
   end else
   begin
+    if AWidth = 0 then
+    begin
+      AWidthToSize := 0;
+      AHeightToSize := 0;
+      Exit;
+    end;
     if (AHeightToSize / AWidthToSize) < (AHeight / AWidth) then
     begin
       AHeightToSize := Trunc((AWidth / AWidthToSize) * AHeightToSize);

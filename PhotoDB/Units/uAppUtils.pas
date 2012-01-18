@@ -12,18 +12,122 @@ uses
 //uses specification:
 // /key /value
 function GetParamStrDBValue(ParamName: string): string;
+function GetParamStrDBValueEx(CommandLine, ParamName: string): string;
 //uses specification:
 // /key:value
-function GetParamStrDBValueV2(ParamName: string): string;
+function GetParamStrDBValueV2(CommandLine, ParamName: string): string;
 function GetParamStrDBBool(ParamName: string): Boolean;
+function GetParamStrDBBoolEx(CommandLine, ParamName: string): Boolean;
+function ParamStrEx(Parameters: string; Index: Integer): string;
 
 implementation
 
+function GetParamStr(P: PChar; var Param: string): PChar;
 var
-  ProgramParams : array of string = nil;
-  {$IFNDEF ONECPU}
-  FSync: TCriticalSection;
-  {$ENDIF}
+  i, Len: Integer;
+  Start, S: PChar;
+begin
+  // U-OK
+  while True do
+  begin
+    while (P[0] <> #0) and (P[0] <= ' ') do
+      Inc(P);
+    if (P[0] = '"') and (P[1] = '"') then Inc(P, 2) else Break;
+  end;
+  Len := 0;
+  Start := P;
+  while P[0] > ' ' do
+  begin
+    if P[0] = '"' then
+    begin
+      Inc(P);
+      while (P[0] <> #0) and (P[0] <> '"') do
+      begin
+        Inc(Len);
+        Inc(P);
+      end;
+      if P[0] <> #0 then
+        Inc(P);
+    end
+    else
+    begin
+      Inc(Len);
+      Inc(P);
+    end;
+  end;
+
+  SetLength(Param, Len);
+
+  P := Start;
+  S := Pointer(Param);
+  i := 0;
+  while P[0] > ' ' do
+  begin
+    if P[0] = '"' then
+    begin
+      Inc(P);
+      while (P[0] <> #0) and (P[0] <> '"') do
+      begin
+        S[i] := P^;
+        Inc(P);
+        Inc(i);
+      end;
+      if P[0] <> #0 then Inc(P);
+    end
+    else
+    begin
+      S[i] := P^;
+      Inc(P);
+      Inc(i);
+    end;
+  end;
+
+  Result := P;
+end;
+
+function ParamStrEx(Parameters: string; Index: Integer): string;
+var
+  P: PChar;
+  Buffer: array[0..260] of Char;
+begin
+  Result := '';
+  if Index = 0 then
+    SetString(Result, Buffer, GetModuleFileName(0, Buffer, Length(Buffer)))
+  else
+  begin
+    P := PChar(Parameters);
+    while True do
+    begin
+      P := GetParamStr(P, Result);
+      if (Index = 0) or (Result = '') then Break;
+      Dec(Index);
+    end;
+  end;
+end;
+
+function ParamCountEx(Parameters: PChar): Integer;
+{$IFDEF MSWINDOWS}
+var
+  P: PChar;
+  S: string;
+begin
+  // U-OK
+  Result := 0;
+  P := GetParamStr(Parameters, S);
+  while True do
+  begin
+    P := GetParamStr(P, S);
+    if S = '' then Break;
+    Inc(Result);
+  end;
+{$ENDIF MSWINDOWS}
+{$IF defined(LINUX) or defined(MACOS)}
+begin
+  if ArgCount > 1 then
+    Result := ArgCount - 1
+  else Result := 0;
+{$IFEND LINUX or MACOS}
+end;
 
 function UpperCase(S: string): string;
 var
@@ -34,124 +138,75 @@ begin
   Result := S;
 end;
 
-procedure CheckParams;
-var
-  L,
-  I: Integer;
-  S: string;
+function GetParamStrDBBool(ParamName: string): Boolean;
 begin
-  if ProgramParams = nil then
-  begin
-    SetLength(ProgramParams, 0);
-    S := '';
-    I := 1;
-    repeat
-      S := UpperCase(ParamStr(I));
-      L := Length(ProgramParams);
-      SetLength(ProgramParams, L + 1);
-      ProgramParams[L] := S;
-      Inc(I);
-    until (S = '') or (I > 10);
-
-  end;
+  Result := GetParamStrDBBoolEx(GetCommandLine, ParamName);
 end;
 
-function GetParamStrDBBool(ParamName : string) : Boolean;
+function GetParamStrDBBoolEx(CommandLine, ParamName: string): Boolean;
 var
   I: Integer;
+  P: PChar;
 begin
-  {$IFNDEF ONECPU}
-  FSync.Enter;
-  {$ENDIF}
-  try
-    CheckParams;
-    Result := False;
-    ParamName := UpperCase(ParamName);
-    for I := 0 to Length(ProgramParams) - 1 do
-      if ProgramParams[I] = ParamName then
-      begin
-        Result := True;
-        Break;
-      end;
-  finally
-    {$IFNDEF ONECPU}
-    FSync.Leave;
-    {$ENDIF}
-  end;
-end;
+  Result := False;
 
-function GetParamStrDBValue(ParamName : string) : string;
-var
-  I: Integer;
-begin
-  {$IFNDEF ONECPU}
-  FSync.Enter;
-  {$ENDIF}
-  try
-    Result := '';
-    if ParamName = '' then
-      Exit;
-    CheckParams;
-    ParamName := UpperCase(ParamName);
-    for I := 0 to Length(ProgramParams) - 2 do
-      if ProgramParams[I] = ParamName then
-      begin
-        Result := ProgramParams[I + 1];
-        Break;
-      end;
+  P := PChar(CommandLine);
 
-  finally
-    {$IFNDEF ONECPU}
-    FSync.Leave;
-    {$ENDIF}
-  end;
-end;
-
-function GetParamStrDBValueV2(ParamName: string): string;
-var
-  I: Integer;
-  S: string;
-begin
-  {$IFNDEF ONECPU}
-  FSync.Enter;
-  {$ENDIF}
-  try
-    Result := '';
-    if ParamName = '' then
-      Exit;
-    CheckParams;
-    ParamName := UpperCase(ParamName);
-    for I := 0 to Length(ProgramParams) - 2 do
+  ParamName := UpperCase(ParamName);
+  for I := 1 to ParamCountEx(P) do
+    if UpperCase(ParamStrEx(P, I)) = ParamName then
     begin
-      S := ProgramParams[I];
-      if Length(S) > Length(ParamName) then
+      Result := True;
+      Break;
+    end;
+end;
+
+function GetParamStrDBValue(ParamName: string): string;
+begin
+  Result := GetParamStrDBValueEx(GetCommandLine, ParamName);
+end;
+
+function GetParamStrDBValueEx(CommandLine, ParamName: string): string;
+var
+  I: Integer;
+  P: PChar;
+begin
+  Result := '';
+  if ParamName = '' then
+    Exit;
+
+  P := PChar(CommandLine);
+  ParamName := UpperCase(ParamName);
+  for I := 1 to ParamCountEx(P) - 1 do
+    if UpperCase(ParamStrEx(P, I)) = ParamName then
+    begin
+      Result := ParamStrEx(P, I + 1);
+      Break;
+    end;
+end;
+
+function GetParamStrDBValueV2(CommandLine, ParamName: string): string;
+var
+  I: Integer;
+  S: string;
+begin
+  Result := '';
+  if ParamName = '' then
+    Exit;
+
+  ParamName := UpperCase(ParamName);
+  for I := 0 to ParamCountEx(PChar(CommandLine)) - 1 do
+  begin
+    S := UpperCase(ParamStrEx(PChar(CommandLine), I));
+    if Length(S) > Length(ParamName) then
+    begin
+      if Copy(S, 1, Length(ParamName) + 1) = ParamName + ':' then
       begin
-        if Copy(S, 1, Length(ParamName) + 1) = ParamName + ':' then
-        begin
-          Result := Copy(S, Length(ParamName) + 2, Length(S) - Length(ParamName) - 1);
-          Break;
-        end;
+        Result := Copy(S, Length(ParamName) + 2, Length(S) - Length(ParamName) - 1);
+        Break;
       end;
     end;
-
-  finally
-    {$IFNDEF ONECPU}
-    FSync.Leave;
-    {$ENDIF}
   end;
 end;
-
-initialization
-
-  {$IFNDEF ONECPU}
-  FSync := TCriticalSection.Create;
-  {$ENDIF}
-
-finalization
-
-  {$IFNDEF ONECPU}
-  FSync.Free;
-  {$ENDIF}
-  SetLength(ProgramParams, 0);
 
 end.

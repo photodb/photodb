@@ -107,13 +107,15 @@ type
     FErrorCode: HRESULT;
     procedure ErrorCheck(Code: HRESULT);
     procedure FillDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
-    procedure FindDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
+    procedure FindDeviceByNameCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
+    procedure FindDeviceByIDCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
   public
     constructor Create;
     function GetErrorCode: HRESULT;
     procedure FillDevices(Devices: TList<IPDevice>);
     procedure FillDevicesWithCallBack(CallBack: TFillDevicesCallBack; Context: Pointer);
     function GetDeviceByName(DeviceName: string): IPDevice;
+    function GetDeviceByID(DeviceID: string): IPDevice;
     property Manager: IPortableDeviceManager read FManager;
   end;
 
@@ -269,7 +271,7 @@ begin
   end;
 end;
 
-procedure TWPDDeviceManager.FindDeviceCallBack(Packet: TList<IPDevice>;
+procedure TWPDDeviceManager.FindDeviceByIDCallBack(Packet: TList<IPDevice>;
   var Cancel: Boolean; Context: Pointer);
 var
   Device: IPDevice;
@@ -278,11 +280,44 @@ begin
   C := TFindDeviceContext(Context);
 
   for Device in Packet do
-    if Device.Name = C.Name then
+    if AnsiUpperCase(Device.DeviceID) = AnsiUpperCase(C.Name) then
     begin
       C.Device := Device;
       Cancel := True;
     end;
+end;
+
+procedure TWPDDeviceManager.FindDeviceByNameCallBack(Packet: TList<IPDevice>;
+  var Cancel: Boolean; Context: Pointer);
+var
+  Device: IPDevice;
+  C: TFindDeviceContext;
+begin
+  C := TFindDeviceContext(Context);
+
+  for Device in Packet do
+    if AnsiUpperCase(Device.Name) = AnsiUpperCase(C.Name) then
+    begin
+      C.Device := Device;
+      Cancel := True;
+    end;
+end;
+
+function TWPDDeviceManager.GetDeviceByID(DeviceID: string): IPDevice;
+var
+  Context: TFindDeviceContext;
+begin
+  Context := TFindDeviceContext.Create;
+  try
+    Context.Name := DeviceID;
+    try
+      FillDevicesWithCallBack(FindDeviceByIDCallBack, Context);
+    finally
+      Result := Context.Device;
+    end;
+  finally
+    F(Context);
+  end;
 end;
 
 function TWPDDeviceManager.GetDeviceByName(DeviceName: string): IPDevice;
@@ -293,7 +328,7 @@ begin
   try
     Context.Name := DeviceName;
     try
-      FillDevicesWithCallBack(FindDeviceCallBack, Context);
+      FillDevicesWithCallBack(FindDeviceByNameCallBack, Context);
     finally
       Result := Context.Device;
     end;

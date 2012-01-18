@@ -440,7 +440,10 @@ procedure TFormCreatePerson.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if Key = VK_ESCAPE then
+  begin
+    Key := 0;
     Close;
+  end;
 end;
 
 function TFormCreatePerson.GetFormID: string;

@@ -437,7 +437,7 @@ end;
 
 procedure TGetToPersonalFolderForm.ClearList;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to LvMain.Items.Count - 1 do
     TObject(LvMain.Items[I].Data).Free;

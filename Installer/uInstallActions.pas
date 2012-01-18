@@ -23,6 +23,7 @@ uses
 const
   InstallPoints_Close_PhotoDB = 1024 * 1024;
   InstallPoints_ShortCut = 500 * 1024;
+  InstallPoints_FileAction = 500 * 1024;
   InstallPoints_Registry = 128 * 1024;
   InstallPoints_RunProgram = 1024 * 1024;
 
@@ -47,6 +48,12 @@ type
     FCurrentlyDone: Int64;
     FCallBack: TActionCallback;
     procedure InternalCallBack(BytesRead, BytesTotal: Int64; var Terminate: Boolean);
+  public
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
+  end;
+
+  TInstallFileActions = class(TInstallAction)
   public
     function CalculateTotalPoints: Int64; override;
     procedure Execute(Callback: TActionCallback); override;
@@ -77,9 +84,9 @@ implementation
 
 function TInstallFiles.CalculateTotalPoints: Int64;
 var
-  MS : TMemoryStream;
-  DiskObject : TDiskObject;
-  I : Integer;
+  MS: TMemoryStream;
+  DiskObject: TDiskObject;
+  I: Integer;
 begin
   Result := 0;
   MS := TMemoryStream.Create;
@@ -99,10 +106,10 @@ end;
 
 procedure TInstallFiles.Execute(Callback: TActionCallback);
 var
-  MS : TMemoryStream;
-  I : Integer;
-  DiskObject : TDiskObject;
-  Destination : string;
+  MS: TMemoryStream;
+  I: Integer;
+  DiskObject: TDiskObject;
+  Destination: string;
 begin
   FCallBack := Callback;
   FTotal := CalculateTotalPoints;
@@ -139,8 +146,8 @@ end;
 
 function TInstallShortcuts.CalculateTotalPoints: Int64;
 var
-  I : Integer;
-  DiskObject : TDiskObject;
+  I: Integer;
+  DiskObject: TDiskObject;
 begin
   Result := 0;
   for I := 0 to CurrentInstall.Files.Count - 1 do
@@ -152,10 +159,10 @@ end;
 
 procedure TInstallShortcuts.Execute(Callback: TActionCallback);
 var
-  I, J : Integer;
-  DiskObject : TDiskObject;
-  CurentPosition : Int64;
-  ShortcutPath, ObjectPath : string;
+  I, J: Integer;
+  DiskObject: TDiskObject;
+  CurentPosition: Int64;
+  ShortcutPath, ObjectPath: string;
 begin
   CurentPosition := 0;
   for I := 0 to CurrentInstall.Files.Count - 1 do
@@ -188,14 +195,14 @@ end;
 
 procedure TInstallRegistry.Execute(Callback: TActionCallback);
 var
-  FileName : string;
+  FileName: string;
 begin
   FCallback := Callback;
   FileName := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
   RegInstallApplication(FileName, OnInstallRegistryCallBack);
 end;
 
-procedure TInstallRegistry.OnInstallRegistryCallBack(Current, Total : Integer;
+procedure TInstallRegistry.OnInstallRegistryCallBack(Current, Total: Integer;
   var Terminate: Boolean);
 begin
   FCallback(Self, Current * InstallPoints_Registry, Total * InstallPoints_Registry, Terminate);
@@ -210,8 +217,8 @@ end;
 
 procedure TInstallRunProgram.Execute(Callback: TActionCallback);
 var
-  Terminate : Boolean;
-  PhotoDBExeFile : string;
+  Terminate: Boolean;
+  PhotoDBExeFile: string;
 begin
   PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
 
@@ -229,7 +236,7 @@ end;
 
 procedure TInstallCloseApplication.Execute(Callback: TActionCallback);
 const
-  Timeout = 5000;
+  Timeout = 60000;
 var
   WinHandle: HWND;
   StartTime: Cardinal;
@@ -242,7 +249,7 @@ begin
     StartTime := GetTickCount;
     while(true) do
     begin
-      if FindWindow(nil, PChar(DBID)) = 0 then
+      if (FindWindow(nil, PChar(DB_ID)) = 0) and (FindWindow(nil, PChar(DB_ID_CLOSING)) = 0) then
         Break;
 
       if (GetTickCount - StartTime) > Timeout then
@@ -251,6 +258,68 @@ begin
       Sleep(100);
     end;
     Sleep(1000);
+  end;
+end;
+
+{ TInstallFileActions }
+
+function TInstallFileActions.CalculateTotalPoints: Int64;
+var
+  I, J: Integer;
+  DiskObject: TDiskObject;
+begin
+  Result := 0;
+  for I := 0 to CurrentInstall.Files.Count - 1 do
+  begin
+    DiskObject := CurrentInstall.Files[I];
+    for J := 0 to DiskObject.Actions.Count - 1 do
+      if DiskObject.Actions[J].Scope = asInstall then
+        Inc(Result, DiskObject.Actions.Count * InstallPoints_FileAction);
+  end;
+end;
+
+procedure TInstallFileActions.Execute(Callback: TActionCallback);
+var
+  I, J: Integer;
+  DiskObject: TDiskObject;
+  CurentPosition: Int64;
+  ObjectPath: string;
+  StartInfo: TStartupInfo;
+  ProcInfo: TProcessInformation;
+begin
+  CurentPosition := 0;
+  for I := 0 to CurrentInstall.Files.Count - 1 do
+  begin
+    DiskObject := CurrentInstall.Files[I];
+    for J := 0 to DiskObject.Actions.Count - 1 do
+    begin
+      if DiskObject.Actions[J].Scope = asInstall then
+      begin
+        Inc(CurentPosition, InstallPoints_ShortCut);
+        ObjectPath := ResolveInstallPath(IncludeTrailingBackslash(DiskObject.FinalDestination) + DiskObject.Name);
+
+        { fill with known state }
+        FillChar(StartInfo, SizeOf(TStartupInfo), #0);
+        FillChar(ProcInfo, SizeOf(TProcessInformation), #0);
+        try
+          with StartInfo do begin
+            cb := SizeOf(StartInfo);
+            dwFlags := STARTF_USESHOWWINDOW;
+            wShowWindow := SW_NORMAL;
+          end;
+
+          CreateProcess(nil, PChar('"' + ObjectPath + '"' + ' ' + DiskObject.Actions[J].CommandLine), nil, nil, False,
+                      CREATE_DEFAULT_ERROR_MODE or NORMAL_PRIORITY_CLASS,
+                      nil, PChar(ExcludeTrailingPathDelimiter(ExtractFileDir(ObjectPath))), StartInfo, ProcInfo);
+
+          WaitForSingleObject(ProcInfo.hProcess, 30000);
+        finally
+          CloseHandle(ProcInfo.hProcess);
+          CloseHandle(ProcInfo.hThread);
+        end;
+      end;
+
+    end;
   end;
 end;
 
