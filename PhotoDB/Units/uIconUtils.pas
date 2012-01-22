@@ -9,7 +9,6 @@ function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 
 implementation
 
-
 function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 var
   Path, Icon: string;

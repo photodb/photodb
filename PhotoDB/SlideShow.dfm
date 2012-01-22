@@ -658,9 +658,11 @@ object Viewer: TViewer
     end
     object N12: TMenuItem
       Caption = '-'
+      Visible = False
     end
     object Createnote1: TMenuItem
       Caption = 'Create note'
+      Visible = False
       OnClick = Createnote1Click
     end
     object MiFindPhotosSeparator: TMenuItem

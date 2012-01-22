@@ -7,40 +7,40 @@ uses
 
 type
   TDateRange = record
-    DateFrom : TDateTime;
-    DateTo : TDateTime;
+    DateFrom: TDateTime;
+    DateTo: TDateTime;
   end;
 
   TListFillInfo = record
-    LastYear : Integer;
-    LastMonth : Integer;
-    LastRating : Integer;
-    LastChar : Char;
-    LastSize : Int64;
+    LastYear: Integer;
+    LastMonth: Integer;
+    LastRating: Integer;
+    LastChar: Char;
+    LastSize: Int64;
   end;
 
   TGroupInfo = class(TObject)
   public
-    Name : string;
+    Name: string;
   end;
 
   TSearchInfo = class(TObject)
   private
-    FList : TList;
+    FList: TList;
     function GetCount: Integer;
     function GetValueByIndex(Index: Integer): TSearchQuery;
   public
     constructor Create;
     destructor Destroy; override;
-    function Add(RatingFrom, RatingTo : Integer; DateFrom, DateTo : TDateTime; GroupName, Query : string; SortMethod : Integer; SortDecrement : Boolean) : TSearchQuery;
+    function Add(RatingFrom, RatingTo: Integer; DateFrom, DateTo: TDateTime; GroupName, Query: string; SortMethod: Integer; SortDecrement: Boolean): TSearchQuery;
     property Items[Index: Integer]: TSearchQuery read GetValueByIndex; default;
-    property Count : Integer read GetCount;
+    property Count: Integer read GetCount;
   end;
 
 type
   TSearchCustomForm = class(TListViewForm)
   private
-    FWindowID : TGUID;
+    FWindowID: TGUID;
   protected
     function GetSearchText: string; virtual; abstract;
     procedure SetSearchText(value: string); virtual; abstract;
@@ -57,7 +57,7 @@ type
 type
   TManagerSearchs = class(TObject)
   private
-    FSearches : TList;
+    FSearches: TList;
     function GetValueByIndex(Index: Integer): TSearchCustomForm;
   public
     constructor Create;
@@ -88,7 +88,6 @@ begin
 
   Result := FSearchManager;
 end;
-
 
 { TManagerSearchs }
 
@@ -146,10 +145,10 @@ end;
 
 function TSearchInfo.Add(RatingFrom, RatingTo: Integer; DateFrom,
   DateTo: TDateTime; GroupName, Query: string; SortMethod: Integer;
-  SortDecrement: Boolean) : TSearchQuery;
+  SortDecrement: Boolean): TSearchQuery;
 var
-  I : Integer;
-  Tmp : TSearchQuery;
+  I: Integer;
+  Tmp: TSearchQuery;
 begin
   for I := 0 to Count - 1 do
   begin
@@ -184,13 +183,8 @@ begin
 end;
 
 destructor TSearchInfo.Destroy;
-var
-  I : Integer;
 begin
-  for I := 0 to FList.Count - 1 do
-    TSearchQuery(FList[I]).Free;
-
-  FList.Free;
+  FreeList(FList);
   inherited;
 end;
 

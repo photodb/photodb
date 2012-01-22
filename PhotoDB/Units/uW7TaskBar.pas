@@ -20,14 +20,14 @@ type
   TBATF = (TBATF_USEMDITHUMBNAIL = 1,
            TBATF_USEMDILIVEPREVIEW = 2);
 
-   ITaskbarList = interface(IUnknown)
-      ['{56FDF342-FD6D-11d0-958A-006097C9A090}']
-      function HrInit : HResult; stdcall;
-      function AddTab(hWndOwner : HWND) : HResult; stdcall;
-      function DeleteTab(hWndOwner : HWND) : HResult; stdcall;
-      function ActivateTab(hWndOwner : HWND) : HResult; stdcall;
-      function SetActiveAlt(hWndOwner : HWND) : HResult; stdcall;
-   end; { ITaskbarList }
+  ITaskbarList = interface(IUnknown)
+    ['{56FDF342-FD6D-11d0-958A-006097C9A090}']
+    function HrInit: HResult; stdcall;
+    function AddTab(hWndOwner: HWND): HRESULT; stdcall;
+    function DeleteTab(hWndOwner: HWND): HRESULT; stdcall;
+    function ActivateTab(hWndOwner: HWND): HRESULT; stdcall;
+    function SetActiveAlt(hWndOwner: HWND): HRESULT; stdcall;
+  end; { ITaskbarList }
 
   ITaskbarList2 = interface(ITaskbarList)
     ['{602D4995-B13A-429b-A66E-1935E44F4317}']
@@ -36,18 +36,18 @@ type
 
   ITaskbarList3 = interface (ITaskbarList2)
   ['{ea1afb91-9e28-4b86-90e9-9e9f8a5eefaf}']
-    function SetProgressValue (hWnd: HWND; ullCompleted: int64; ullTotal: int64): HResult; stdcall;
-    function SetProgressState (hWnd: HWND; tbpFlags: TBPF): HResult; stdcall;
-    function RegisterTab (hwndTab: HWND; hwndMDI: HWND): HResult; stdcall;
-    function UnregisterTab (hwndTab: HWND): HResult; stdcall;
-    function SetTabOrder (hwndTab: HWND; hwndInsertBefore: HWND): HResult; stdcall;
-    function SetTabActive (hwndTab: HWND; hwndMDI: HWND; tbatFlags: TBATF): HResult; stdcall;
-    function ThumbBarAddButtons (hWnd: HWND; cButtons: integer; pButtons: pointer): HResult; stdcall;
-    function ThumbBarUpdateButtons (hWnd: HWND; cButtons: cardinal; pButtons: pointer): HResult; stdcall;
-    function ThumbBarSetImageList (hWnd: HWND; himl: pointer): HResult; stdcall;
-    function SetOverlayIcon (hWnd: HWND; hIcon: HICON; pszDescription: PWideChar): HResult; stdcall;
-    function SetThumbnailTooltip (hWnd: HWND; pszTip: PWideChar): HResult; stdcall;
-    function SetThumbnailClip (hWnd: HWND; prcClip: PRect): HResult; stdcall;
+    function SetProgressValue (hWnd: HWND; ullCompleted: int64; ullTotal: int64): HRESULT; stdcall;
+    function SetProgressState (hWnd: HWND; tbpFlags: TBPF): HRESULT; stdcall;
+    function RegisterTab (hwndTab: HWND; hwndMDI: HWND): HRESULT; stdcall;
+    function UnregisterTab (hwndTab: HWND): HRESULT; stdcall;
+    function SetTabOrder (hwndTab: HWND; hwndInsertBefore: HWND): HRESULT; stdcall;
+    function SetTabActive (hwndTab: HWND; hwndMDI: HWND; tbatFlags: TBATF): HRESULT; stdcall;
+    function ThumbBarAddButtons (hWnd: HWND; cButtons: integer; pButtons: pointer): HRESULT; stdcall;
+    function ThumbBarUpdateButtons (hWnd: HWND; cButtons: cardinal; pButtons: pointer): HRESULT; stdcall;
+    function ThumbBarSetImageList (hWnd: HWND; himl: pointer): HRESULT; stdcall;
+    function SetOverlayIcon (hWnd: HWND; hIcon: HICON; pszDescription: PWideChar): HRESULT; stdcall;
+    function SetThumbnailTooltip (hWnd: HWND; pszTip: PWideChar): HRESULT; stdcall;
+    function SetThumbnailClip (hWnd: HWND; prcClip: PRect): HRESULT; stdcall;
   end;
 
 function CreateTaskBarInstance : ITaskbarList3;
@@ -56,8 +56,7 @@ implementation
 
 function CreateTaskBarInstance : ITaskbarList3;
 begin
-  if CoCreateInstance(CLSID_TaskbarList, nil, CLSCTX_INPROC_SERVER or
-    CLSCTX_LOCAL_SERVER, IID_ITaskbarList3, Result) = S_OK then
+  if CoCreateInstance(CLSID_TaskbarList, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IID_ITaskbarList3, Result) = S_OK then
     if Result.HrInit <> S_OK then
     begin
       Result._Release;

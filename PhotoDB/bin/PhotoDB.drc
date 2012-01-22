@@ -1396,6 +1396,7 @@ END
 /* Resources\PrinterPattern.res */
 /* Resources\BigPattern.res */
 /* Resources\Film_Strip.res */
+/* Resources\PathSeparator.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\icons.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\db_icons.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\ZoomRc.res */
@@ -1511,5 +1512,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDebugScriptForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormSizeListViewTh.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Searching.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormImportImages.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormMoveFilesProgress.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PhotoDB.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PhotoDB.drf */

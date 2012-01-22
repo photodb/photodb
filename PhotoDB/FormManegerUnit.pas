@@ -599,7 +599,8 @@ begin
     Data := PByte(Msg.CopyDataStruct.LpData) + SizeOf(TMsgHdr);
     SetString(S, PWideChar(Data), (Msg.CopyDataStruct.CbData - SizeOf(TMsgHdr) - 1) div SizeOf(WideChar));
 
-    ProcessCommandLine(ParamStr(0) + ' ' + S);
+    ProcessCommandLine(S);
+    ActivateBackgroundApplication(Handle);
   end else
     Dispatch(Msg);
 

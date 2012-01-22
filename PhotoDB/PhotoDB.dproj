@@ -29,9 +29,27 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win64)'!=''">
+			<Cfg_1_Win64>true</Cfg_1_Win64>
+			<CfgParent>Cfg_1</CfgParent>
+			<Cfg_1>true</Cfg_1>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+			<Cfg_1_Win32>true</Cfg_1_Win32>
+			<CfgParent>Cfg_1</CfgParent>
+			<Cfg_1>true</Cfg_1>
+			<Base>true</Base>
+		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
 			<Cfg_2>true</Cfg_2>
 			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+			<Cfg_2_Win64>true</Cfg_2_Win64>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
@@ -41,6 +59,8 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<Manifest_File>None</Manifest_File>
+			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
 			<VerInfo_Build>382</VerInfo_Build>
 			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2011;FileDescription=Photo DataBase;FileVersion=2.3.2.382;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2011;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com;Home Page=http://photodb.illusdolphin.net</VerInfo_Keys>
 			<VerInfo_Locale>1033</VerInfo_Locale>
@@ -75,16 +95,10 @@
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
 			<DCC_Namespace>Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-			<Icon_MainIcon>PhotoDB_Icon2.ico</Icon_MainIcon>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
-			<Icon_MainIcon>PhotoDB_Icon2.ico</Icon_MainIcon>
 			<Debugger_RunParams>/IMG_WIA /StiDevice:{EEC5AD98-8080-425f-922A-DABF3DE3F69A}\0003 /StiEvent:{A28BBADE-64B6-11d2-A231-00C04FA31809}</Debugger_RunParams>
 			<DCC_Namespace>Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1033</VerInfo_Locale>
-			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -93,17 +107,29 @@
 			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
 			<DCC_DebugInformation>false</DCC_DebugInformation>
 		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<DCC_DebugDCUs>true</DCC_DebugDCUs>
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+			<Manifest_File>None</Manifest_File>
+		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<VerInfo_Release>3</VerInfo_Release>
 			<DCC_DebugDCUs>false</DCC_DebugDCUs>
 			<Debugger_RunParams>/start</Debugger_RunParams>
 			<VerInfo_Build>402</VerInfo_Build>
 			<Manifest_File>None</Manifest_File>
 			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.2.402;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.3.402;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -400,8 +426,6 @@
 			<DCCReference Include="Units\UnitDBCommon.pas"/>
 			<DCCReference Include="Units\UnitDBCommonGraphics.pas"/>
 			<DCCReference Include="Units\UnitSlideShowScanDirectoryThread.pas"/>
-			<DCCReference Include="Units\VistaDialogInterfaces.pas"/>
-			<DCCReference Include="Units\VistaFileDialogs.pas"/>
 			<DCCReference Include="Units\UnitDBFileDialogs.pas"/>
 			<DCCReference Include="Units\UnitSendMessageWithTimeoutThread.pas"/>
 			<DCCReference Include="Units\UnitCDMappingSupport.pas"/>
@@ -642,6 +666,14 @@
 			<DCCReference Include="Units\uShellNamespaceUtils.pas"/>
 			<DCCReference Include="Units\uManagerExplorer.pas"/>
 			<DCCReference Include="Threads\uExplorerPastePIDLsThread.pas"/>
+			<DCCReference Include="uFormImportImages.pas">
+				<Form>FormImportImages</Form>
+				<FormType>dfm</FormType>
+			</DCCReference>
+			<DCCReference Include="uFormMoveFilesProgress.pas">
+				<Form>FormMoveFilesProgress</Form>
+				<FormType>dfm</FormType>
+			</DCCReference>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

@@ -207,8 +207,6 @@ uses
   UnitDBCommon in 'Units\UnitDBCommon.pas',
   UnitDBCommonGraphics in 'Units\UnitDBCommonGraphics.pas',
   UnitSlideShowScanDirectoryThread in 'Units\UnitSlideShowScanDirectoryThread.pas',
-  VistaDialogInterfaces in 'Units\VistaDialogInterfaces.pas',
-  VistaFileDialogs in 'Units\VistaFileDialogs.pas',
   UnitDBFileDialogs in 'Units\UnitDBFileDialogs.pas',
   UnitSendMessageWithTimeoutThread in 'Units\UnitSendMessageWithTimeoutThread.pas',
   UnitCDMappingSupport in 'Units\UnitCDMappingSupport.pas',
@@ -373,7 +371,9 @@ uses
   uPortableScriptUtils in 'Units\uPortableScriptUtils.pas',
   uShellNamespaceUtils in 'Units\uShellNamespaceUtils.pas',
   uManagerExplorer in 'Units\uManagerExplorer.pas',
-  uExplorerPastePIDLsThread in 'Threads\uExplorerPastePIDLsThread.pas';
+  uExplorerPastePIDLsThread in 'Threads\uExplorerPastePIDLsThread.pas',
+  uFormImportImages in 'uFormImportImages.pas' {FormImportImages},
+  uFormMoveFilesProgress in 'uFormMoveFilesProgress.pas' {FormMoveFilesProgress};
 
 {$R *.res}
 
@@ -537,9 +537,9 @@ begin
     SetSplashProgress(60);
 
     TW.I.Start('TFormManager Create');
-    Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
     // This is main form of application
+    Application.CreateForm(TFormManager, FormManager);
+    Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);
@@ -740,6 +740,21 @@ begin
     AllowDragAndDrop;
 
     TW.I.Start('Application.Run');
+
+  Application.CreateForm(TFormImportImages, FormImportImages);
+  FormImportImages.Show;
+
+  Application.CreateForm(TFormMoveFilesProgress, FormMoveFilesProgress);
+  FormMoveFilesProgress.Title := 'Copuing 2 items (240 Mb)';
+  FormMoveFilesProgress.Options['Name'].Value := 'File.CR2';
+  FormMoveFilesProgress.Options['From'].Value := 'Canon EOS 50D';
+  FormMoveFilesProgress.Options['From'].IsImportant := True;
+  FormMoveFilesProgress.Options['To'].Value := 'D:\Dmitry\My Pictures';
+  FormMoveFilesProgress.Options['To'].IsImportant := True;
+  FormMoveFilesProgress.Options['Items remaining'].Value := '2 (345 MB)';
+  FormMoveFilesProgress.Options['Speed'].Value := '49,5 MB/second';
+  FormMoveFilesProgress.RefreshOptionList;
+  FormMoveFilesProgress.Show;
 
     Application.Run;
 

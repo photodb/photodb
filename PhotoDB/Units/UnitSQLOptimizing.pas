@@ -15,14 +15,14 @@ type
   TSQLList = array of TOneSQL;
 
 const
-  VALUE_TYPE_ERROR    = 0;
+  VALUE_TYPE_ERROR = 0;
   VALUE_TYPE_KEYWORDS = 1;
-  VALUE_TYPE_GROUPS   = 2;
-  VALUE_TYPE_LINKS    = 3;
+  VALUE_TYPE_GROUPS = 2;
+  VALUE_TYPE_LINKS = 3;
 
-procedure FreeSQLList(var SQLList : TSQLList);
-procedure AddQuery(var SQLList : TSQLList; Value : string; ID : integer);
-procedure PackSQLList(var SQLList : TSQLList; ValueType : integer);
+procedure FreeSQLList(var SQLList: TSQLList);
+procedure AddQuery(var SQLList: TSQLList; Value: string; ID: Integer);
+procedure PackSQLList(var SQLList: TSQLList; ValueType: Integer);
 
 implementation
 

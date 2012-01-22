@@ -7,13 +7,7 @@ uses
   Jpeg, StdCtrls, ExtCtrls, ComCtrls, ShellApi, Math, CommCtrl,
   ShlObj, ActiveX, ComObj;
 
-
 const
-  CM_UpdateView = WM_USER + 2102; // Custom Message...
-  CM_Progress = WM_USER + 2112; // Custom Message...
-  MinSize = 52;
-  MaxSize = 256;
-  ColorFormat: DWord = 24;
   IEIFLAG_ASYNC = $001; // ask the extractor if it supports ASYNC extract
   // (free threaded)
   IEIFLAG_CACHE = $002; // returned from the extractor if it does NOT cache

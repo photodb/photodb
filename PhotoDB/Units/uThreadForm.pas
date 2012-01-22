@@ -3,29 +3,37 @@ unit uThreadForm;
 interface
 
 uses
-  Classes, Forms, SyncObjs, Dolphin_DB, uDBForm, uImageSource,
-  Graphics, uSysUtils, uMemory, uGUIDUtils;
+  Classes,
+  Forms,
+  SyncObjs,
+  Dolphin_DB,
+  uDBForm,
+  uImageSource,
+  Graphics,
+  uSysUtils,
+  uMemory,
+  uGUIDUtils;
 
 type
   TThreadForm = class(TDBForm)
   private
-    FThreadList : TList;
-    FSync : TCriticalSection;
-    FStateID : TGUID;
-    FSubStateID : TGUID;
+    FThreadList: TList;
+    FSync: TCriticalSection;
+    FStateID: TGUID;
+    FSubStateID: TGUID;
     procedure ThreadTerminated(Sender : TObject);
   protected
     procedure TerminateAllThreads;
     procedure NewFormState;
   public
     procedure NewFormSubState;
-    procedure RegisterThreadAndStart(Thread : TThread);
-    function IsActualState(State : TGUID) : Boolean;
+    procedure RegisterThreadAndStart(Thread: TThread);
+    function IsActualState(State: TGUID): Boolean;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    property StateID : TGUID read FStateID;
-    property SubStateID : TGUID read FSubStateID;
-    function GetImage(FileName : string; Bitmap : TBitmap) : Boolean;
+    property StateID: TGUID read FStateID;
+    property SubStateID: TGUID read FSubStateID;
+    function GetImage(FileName: string; Bitmap: TBitmap): Boolean;
   end;
 
 implementation
@@ -49,7 +57,7 @@ end;
 
 function TThreadForm.GetImage(FileName: string; Bitmap: TBitmap): Boolean;
 begin
-  result := false;
+  Result := False;
 end;
 
 function TThreadForm.IsActualState(State: TGUID): Boolean;
@@ -82,8 +90,8 @@ end;
 
 procedure TThreadForm.TerminateAllThreads;
 var
-  I : Integer;
-begin    
+  I: Integer;
+begin
   FSync.Enter;
   try
     for I := 0 to FThreadList.Count - 1 do
@@ -97,10 +105,10 @@ begin
 end;
 
 procedure TThreadForm.ThreadTerminated(Sender: TObject);
-begin     
+begin
   FSync.Enter;
   try
-    FThreadList.Remove(Sender);     
+    FThreadList.Remove(Sender);
   finally
     FSync.Leave;
   end;

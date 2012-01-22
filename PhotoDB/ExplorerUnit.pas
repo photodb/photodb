@@ -4602,7 +4602,7 @@ var
   PNG: TPNGImage;
   BMP: TBitmap;
 begin
-  PNG := LoadPNGFromRES(ResName);
+  PNG := TResourceUtils.LoadGraphicFromRES<TPngImage>(ResName);
   try
     BMP := TBitmap.Create;
     try
@@ -4670,7 +4670,7 @@ procedure TExplorerForm.PmSearchModePopup(Sender: TObject);
   begin
     BMP := TBitmap.Create;
     try
-      PNG := LoadPNGFromRES(ResName);
+      PNG := TResourceUtils.LoadGraphicFromRES<TPngImage>(ResName);
       try
         LoadPNGImageTransparent(PNG, BMP);
       finally
@@ -6730,11 +6730,11 @@ begin
               Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
 
               if FSearchMode = EXPLORER_SEARCH_DATABASE then
-                Pic := LoadPNGFromRES('SEARCH_DATABASE')
+                Pic := TResourceUtils.LoadGraphicFromRES<TPngImage>('SEARCH_DATABASE')
               else if FSearchMode = EXPLORER_SEARCH_FILES then
-                Pic := LoadPNGFromRES('SEARCH_FILES')
+                Pic := TResourceUtils.LoadGraphicFromRES<TPngImage>('SEARCH_FILES')
               else
-                Pic := LoadPNGFromRES('SEARCH_IMAGES');
+                Pic := TResourceUtils.LoadGraphicFromRES<TPngImage>('SEARCH_IMAGES');
               try
                 Canvas.Draw(ThSizeExplorerPreview div 2 - Pic.Width div 2,
                   ThSizeExplorerPreview div 2 - Pic.Height div 2, Pic);

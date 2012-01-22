@@ -333,8 +333,7 @@ procedure TGetToPersonalFolderForm.BtnChooseFolderClick(Sender: TObject);
 var
   Dir: string;
 begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select a folder to place images'), EdFolder.Text,
-    UseSimpleSelectFolderDialog);
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select a folder to place images'), EdFolder.Text, UseSimpleSelectFolderDialog);
 
   if DirectoryExists(Dir) then
     EdFolder.Text := Dir;

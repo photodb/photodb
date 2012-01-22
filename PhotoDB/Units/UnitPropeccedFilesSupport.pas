@@ -2,14 +2,15 @@ unit UnitPropeccedFilesSupport;
 
 interface
 
-uses Windows, Classes, win32crc, SysUtils, SyncObjs, uMemory;
+uses
+  Windows, Classes, win32crc, SysUtils, SyncObjs, uMemory;
 
 type
   TCollectionItem = class
   public
-    FileName : string;
-    CRC : Cardinal;
-    RefCount : integer; 
+    FileName: string;
+    CRC: Cardinal;
+    RefCount: integer;
     constructor Create;
     procedure AddRef;
     procedure RemoveRef;
@@ -18,12 +19,12 @@ type
 type
   TProcessedFilesCollection = class
   private
-    FData : TList;
-    FSync : TCriticalSection;
+    FData: TList;
+    FSync: TCriticalSection;
   public
-    function AddFile(FileName : String) : TCollectionItem;
-    procedure RemoveFile(FileName : String);
-    function ExistsFile(FileName : String) : TCollectionItem;
+    function AddFile(FileName: String): TCollectionItem;
+    procedure RemoveFile(FileName: String);
+    function ExistsFile(FileName: String): TCollectionItem;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -33,7 +34,7 @@ function ProcessedFilesCollection: TProcessedFilesCollection;
 implementation
 
 var
-  FProcessedFilesCollection : TProcessedFilesCollection = nil;
+  FProcessedFilesCollection: TProcessedFilesCollection = nil;
 
 function ProcessedFilesCollection: TProcessedFilesCollection;
 begin
@@ -80,7 +81,7 @@ var
   I : Integer;
   CRC : Cardinal;
   Item : TCollectionItem;
-begin    
+begin
   Result := nil;
   FSync.Enter;
   try

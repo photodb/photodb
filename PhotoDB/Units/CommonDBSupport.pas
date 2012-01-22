@@ -9,15 +9,15 @@ uses
   uFileUtils, uRuntime, uSysUtils;
 
 const
- DB_TYPE_UNKNOWN = 0;
- DB_TYPE_MDB     = 1;
+  DB_TYPE_UNKNOWN = 0;
+  DB_TYPE_MDB     = 1;
 
- DB_TABLE_UNKNOWN         = 0;
- DB_TABLE_GROUPS          = 1;
- DB_TABLE_IMAGES          = 2;
- DB_TABLE_PERSONS         = 3;
- DB_TABLE_PERSON_MAPPING  = 4;
- DB_TABLE_SETTINGS        = 5;
+  DB_TABLE_UNKNOWN         = 0;
+  DB_TABLE_GROUPS          = 1;
+  DB_TABLE_IMAGES          = 2;
+  DB_TABLE_PERSONS         = 3;
+  DB_TABLE_PERSON_MAPPING  = 4;
+  DB_TABLE_SETTINGS        = 5;
 
 type
   TADODBConnection = class(TObject)

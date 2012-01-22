@@ -18,11 +18,9 @@ uses
   uShellNamespaceUtils,
   ShellApi;
 
-function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer;
-  overload;
+function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer; overload;
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: Integer): Integer; overload;
 procedure TextToClipboard(const S: string);
-function IsWinXP: Boolean;
 procedure SetDesktopWallpaper(FileName: string; WOptions: Byte);
 procedure HideFromTaskBar(Handle: Thandle);
 procedure DisableWindowCloseButton(Handle: Thandle);
@@ -36,12 +34,6 @@ function ExtractAssociatedIconSafe(FileName: string): HICON;  overload;
 function CanCopyFromClipboard: Boolean;
 
 implementation
-
-function IsWinXP: Boolean;
-begin
-  Result := (Win32Platform = VER_PLATFORM_WIN32_NT) and
-    (Win32MajorVersion >= 5) and (Win32MinorVersion >= 1);
-end;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer;
   overload;

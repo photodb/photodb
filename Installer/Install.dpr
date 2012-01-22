@@ -30,8 +30,6 @@ uses
   uInstallActions in 'uInstallActions.pas',
   uVistaFuncs in '..\PhotoDB\Units\uVistaFuncs.pas',
   UnitDBFileDialogs in '..\PhotoDB\Units\UnitDBFileDialogs.pas',
-  VistaDialogInterfaces in '..\PhotoDB\Units\VistaDialogInterfaces.pas',
-  VistaFileDialogs in '..\PhotoDB\Units\VistaFileDialogs.pas',
   uInstallScope in 'uInstallScope.pas',
   uUninstallTypes in 'uUninstallTypes.pas',
   uUninstall in 'uUninstall.pas',

@@ -29,8 +29,8 @@ type
 
 type
   TSpilitOptions = record
-  UpDown : boolean;
- end;
+    UpDown: Boolean;
+  end;
 
 procedure SpilitWords(S: string; var Words: TStrings);
 procedure SpilitWordsA(S: string; var Words: TStrings; Options: TSpilitOptions);

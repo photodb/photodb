@@ -2,7 +2,8 @@ unit wfsU;
 
 interface
 
-uses Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, uLogger,
+uses
+  Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, uLogger,
   uGOM, ExplorerTypes, uMemory, SyncObjs, uTime, uThreadEx, uDBThread,
   uThreadForm;
 

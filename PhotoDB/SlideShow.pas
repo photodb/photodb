@@ -2071,11 +2071,11 @@ begin
 end;
 
 procedure TViewer.Createnote1Click(Sender: TObject);
-var
-  Area: TFaceDetectionResultItem;
+//var
+//  Area: TFaceDetectionResultItem;
  // O: TImageObject;
 begin
-  Area := TFaceDetectionResultItem(PmFace.Tag);
+//  Area := TFaceDetectionResultItem(PmFace.Tag);
 
 //  O := nil;
   try
@@ -2448,7 +2448,7 @@ begin
   if FDrawFace <> nil then
   begin
     FFaces.Add(FDrawFace);
-    PmFace.Tag := Integer(FDrawFace);
+    PmFace.Tag := NativeInt(FDrawFace);
     FHoverFace := FDrawFace;
     FDrawFace := nil;
     FFaces.SaveToFile(FFaces.PersistanceFileName);
@@ -2773,7 +2773,7 @@ begin
     begin
       FHoverFace := FFaces[I];   
       RefreshFaces;
-      PmFace.Tag := Integer(FFaces[I]);
+      PmFace.Tag := NativeInt(FFaces[I]);
       PmFace.Popup(ScreenRect.X, ScreenRect.Y);
       Exit;
     end;

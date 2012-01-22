@@ -95,16 +95,9 @@ begin
   end;
 
   TimeRem := Round(E);
-{$IFOPT R+}
-{$DEFINE CKRANGE}
-{$R-}
-{$ENDIF}
-  // Range check erro
-  SS := Round(TimeRem / 1000); // seconds
-{$IFDEF CKRANGE}
-{$UNDEF CKRANGE}
-{$R+}
-{$ENDIF}
+
+  SS := Byte(Round(TimeRem / 1000)); // seconds
+
   S := Ss mod 60;
   Ss := Ss - S;
   Ss := Ss div 60;

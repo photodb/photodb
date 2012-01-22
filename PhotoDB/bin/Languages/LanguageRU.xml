@@ -2079,5 +2079,9 @@
   <scope name="PortableDevicesProvider">
 	<translate name="Do you really want to delete object &quot;{0}&quot;?" value="Вы действительно хотите удалить объект &quot;{0}&quot;?" />
 	<translate name="Do you really want to delete {0} objects?" value="Вы действительно хотите удалить {0} объектов?" />
-  </scope>  
+  </scope>
+  <scope name="ImportPictures">
+	<translate name="Please select a folder or device with images" value="Пожалуйста, выберите папку или устройство с изображениями"/>
+	<translate name="Please select destination directory" value="Пожалуйста, выберите конечную папку"/>	
+  </scope>
 </language>

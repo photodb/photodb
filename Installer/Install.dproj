@@ -117,8 +117,6 @@
 			<DCCReference Include="uInstallActions.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uVistaFuncs.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\UnitDBFileDialogs.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\VistaDialogInterfaces.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\VistaFileDialogs.pas"/>
 			<DCCReference Include="uInstallScope.pas"/>
 			<DCCReference Include="uUninstallTypes.pas"/>
 			<DCCReference Include="uUninstall.pas"/>

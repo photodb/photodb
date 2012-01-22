@@ -10,8 +10,21 @@ uses
   UnitDBCommon,
   uAppUtils,
   {$ENDIF}
-  Classes, uMemory, uSysUtils,
-  uVistaFuncs, VistaFileDialogs, Dialogs, ExtDlgs, acDlgSelect, SysUtils;
+  Classes,
+  uMemory,
+  uSysUtils,
+  uVistaFuncs,
+  Dialogs,
+  ExtDlgs,
+  acDlgSelect,
+  SysUtils,
+  ActiveX,
+  uConstants,
+  Generics.Collections,
+  {$IFDEF PHOTODB}
+  uPortableDeviceManager,
+  {$ENDIF}
+  Winapi.ShlObj;
 
 type
   DBSaveDialog = class(TObject)
@@ -40,6 +53,7 @@ type
     FFilterIndex: Integer;
     FFilter: string;
     procedure SetFilter(const Value: string);
+    function GetShellItem: IShellItem;
   public
     constructor Create();
     destructor Destroy; override;
@@ -48,12 +62,13 @@ type
     function GetFilterIndex: Integer;
     function FileName: string;
     procedure SetFileName(FileName: string);
-    procedure SetOption(Option: VistaFileDialogs.TFileDialogOptions);
+    procedure SetOption(Option: TFileDialogOptions);
     procedure EnableMultyFileChooseWithDirectory;
     function GetFiles: TStrings;
     procedure EnableChooseWithDirectory;
     property FilterIndex: Integer write SetFilterIndex;
     property Filter: string read FFilter write SetFilter;
+    property ShellItem: IShellItem read GetShellItem;
   end;
 
 type
@@ -128,9 +143,31 @@ begin
   Result := DBSelectDir(Handle, Title, '', UseSimple);
 end;
 
+function GetItemName(Item: IShellItem; var ItemName: TFileName): HResult;
+var
+  pszItemName: LPCWSTR;
+begin
+  Result := Item.GetDisplayName(SIGDN_FILESYSPATH, pszItemName);
+  if Failed(Result) then
+    Result := Item.GetDisplayName(SIGDN_NORMALDISPLAY, pszItemName);
+  if Succeeded(Result) then
+  try
+    ItemName := pszItemName;
+  finally
+    CoTaskMemFree(pszItemName);
+  end;
+end;
+
 function DBSelectDir(Handle: THandle; Title, SelectedRoot: string; UseSimple: Boolean): string;
 var
   OpenDialog: DBOpenDialog;
+  {$IFDEF PHOTODB}
+  Parent: IShellItem;
+  FullItemPath, RootShellPath: string;
+  I: Integer;
+  ShellItemName: TFileName;
+  ShellParentList: TList<IShellItem>;
+  {$ENDIF}
 begin
   Result := '';
   if UseSimple or not CanUseVistaDlg then
@@ -144,9 +181,42 @@ begin
       if DirectoryExists(SelectedRoot) then
         OpenDialog.SetFileName(SelectedRoot);
 
-    OpenDialog.SetOption([VistaFileDialogs.FdoPickFolders]);
+    OpenDialog.SetOption([FdoPickFolders]);
     if OpenDialog.Execute then
       Result := OpenDialog.FileName;
+
+    {$IFDEF PHOTODB}
+    FullItemPath := '';
+    if (Length(Result) > 2) and (Result[2] <> ':') and (OpenDialog.ShellItem <> nil) then
+    begin
+      ShellParentList := TList<IShellItem>.Create;
+      try
+        Parent := OpenDialog.ShellItem;
+        while Parent <> nil do
+        begin
+          ShellParentList.Add(Parent);
+          if not Succeeded(Parent.GetParent(Parent)) then
+            Break;
+        end;
+        if ShellParentList.Count > 2 then
+        begin
+          RootShellPath := '';
+          for I := 0 to ShellParentList.Count - 3 do
+          begin
+            GetItemName(ShellParentList[I], ShellItemName);
+            FullItemPath := ShellItemName + '\' + FullItemPath;
+            RootShellPath := ShellItemName;
+          end;
+          if CreateDeviceManagerInstance.GetDeviceByName(RootShellPath) <> nil then
+            Result := cDevicesPath + '\' + FullItemPath;
+
+          Result := ExcludeTrailingPathDelimiter(Result);
+        end;
+      finally
+        F(ShellParentList);
+      end;
+    end;
+    {$ENDIF}
     finally
       F(OpenDialog);
     end;
@@ -159,11 +229,11 @@ constructor DBSaveDialog.Create;
 begin
   if CanUseVistaDlg then
   begin
-    Dialog := VistaFileDialogs.TFileSaveDialog.Create(nil);
-    VistaFileDialogs.TFileSaveDialog(Dialog).OnTypeChange := OnFilterIndexChanged;
+    Dialog := TFileSaveDialog.Create(nil);
+    TFileSaveDialog(Dialog).OnTypeChange := OnFilterIndexChanged;
   end else
   begin
-    Dialog := Dialogs.TSaveDialog.Create(nil);
+    Dialog := TSaveDialog.Create(nil);
   end;
 end;
 
@@ -175,41 +245,41 @@ end;
 function DBSaveDialog.Execute : boolean;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileSaveDialog(Dialog).Execute
+    Result := TFileSaveDialog(Dialog).Execute
   else
-    Result := Dialogs.TSaveDialog(Dialog).Execute;
+    Result := TSaveDialog(Dialog).Execute;
 end;
 
 function DBSaveDialog.FileName: string;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileSaveDialog(Dialog).FileName
+    Result := TFileSaveDialog(Dialog).FileName
   else
-    Result := Dialogs.TSaveDialog(Dialog).FileName;
+    Result := TSaveDialog(Dialog).FileName;
 end;
 
 function DBSaveDialog.GetFilterIndex: integer;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex
+    Result := TFileSaveDialog(Dialog).FileTypeIndex
   else
-    Result := Dialogs.TSaveDialog(Dialog).FilterIndex;
+    Result := TSaveDialog(Dialog).FilterIndex;
 end;
 
 procedure DBSaveDialog.OnFilterIndexChanged(Sender: TObject);
 begin
-  VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex:=VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex;
+  TFileSaveDialog(Dialog).FileTypeIndex := TFileSaveDialog(Dialog).FileTypeIndex;
 end;
 
 procedure DBSaveDialog.SetFileName(FileName: string);
 begin
   if CanUseVistaDlg then
   begin
-    VistaFileDialogs.TFileSaveDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    VistaFileDialogs.TFileSaveDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileSaveDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
+    TFileSaveDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
   end else
   begin
-    Dialogs.TSaveDialog(Dialog).FileName := FileName;
+    TSaveDialog(Dialog).FileName := FileName;
   end;
 end;
 
@@ -241,7 +311,7 @@ begin
 
         if IsFilterMask then
         begin
-          with VistaFileDialogs.TFileSaveDialog(Dialog).FileTypes.Add() do
+          with TFileSaveDialog(Dialog).FileTypes.Add() do
           begin
             DisplayName := FilterStr;
             FileMask := FilterMask;
@@ -252,7 +322,7 @@ begin
       end;
   end else
   begin
-    Dialogs.TSaveDialog(Dialog).Filter := Value;
+    TSaveDialog(Dialog).Filter := Value;
   end;
 end;
 
@@ -260,9 +330,9 @@ procedure DBSaveDialog.SetFilterIndex(const Value: Integer);
 begin
   FFilterIndex := Value;
   if CanUseVistaDlg then
-    VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex := Value
+    TFileSaveDialog(Dialog).FileTypeIndex := Value
   else
-    Dialogs.TSaveDialog(Dialog).FilterIndex := Value;
+    TSaveDialog(Dialog).FilterIndex := Value;
 end;
 
 { DBOpenDialog }
@@ -270,9 +340,9 @@ end;
 constructor DBOpenDialog.Create;
 begin
   if CanUseVistaDlg then
-    Dialog := VistaFileDialogs.TFileOpenDialog.Create(nil)
+    Dialog := TFileOpenDialog.Create(nil)
   else
-    Dialog := Dialogs.TOpenDialog.Create(nil);
+    Dialog := TOpenDialog.Create(nil);
 end;
 
 destructor DBOpenDialog.Destroy;
@@ -285,12 +355,11 @@ procedure DBOpenDialog.EnableChooseWithDirectory;
 begin
   if CanUseVistaDlg then
   begin
-    VistaFileDialogs.TFileOpenDialog(Dialog).Options := VistaFileDialogs.TFileOpenDialog(Dialog).Options + [VistaFileDialogs.FdoPickFolders, VistaFileDialogs.FdoStrictFileTypes];
-    VistaFileDialogs.TFileOpenDialog(Dialog).Files;
+    TFileOpenDialog(Dialog).Options := TFileOpenDialog(Dialog).Options + [FdoPickFolders, FdoStrictFileTypes];
+    TFileOpenDialog(Dialog).Files;
   end else
   begin
-    Dialogs.TOpenDialog(Dialog).Options := Dialogs.TOpenDialog(Dialog).Options + [OfPathMustExist, OfFileMustExist,
-      OfEnableSizing];
+    TOpenDialog(Dialog).Options := TOpenDialog(Dialog).Options + [OfPathMustExist, OfFileMustExist, OfEnableSizing];
   end;
 end;
 
@@ -298,13 +367,13 @@ procedure DBOpenDialog.EnableMultyFileChooseWithDirectory;
 begin
   if CanUseVistaDlg then
   begin
-    VistaFileDialogs.TFileOpenDialog(Dialog).Options := VistaFileDialogs.TFileOpenDialog(Dialog).Options + [VistaFileDialogs.FdoPickFolders, VistaFileDialogs.FdoForceFileSystem,
-      VistaFileDialogs.FdoAllowMultiSelect, VistaFileDialogs.FdoPathMustExist, VistaFileDialogs.FdoFileMustExist,
-      VistaFileDialogs.FdoForcePreviewPaneOn];
-    VistaFileDialogs.TFileOpenDialog(Dialog).Files
+    TFileOpenDialog(Dialog).Options := TFileOpenDialog(Dialog).Options + [FdoPickFolders, FdoForceFileSystem,
+      FdoAllowMultiSelect, FdoPathMustExist, FdoFileMustExist,
+      FdoForcePreviewPaneOn];
+    TFileOpenDialog(Dialog).Files;
   end else
   begin
-    Dialogs.TOpenDialog(Dialog).Options := Dialogs.TOpenDialog(Dialog).Options + [OfAllowMultiSelect, OfPathMustExist,
+    TOpenDialog(Dialog).Options := TOpenDialog(Dialog).Options + [OfAllowMultiSelect, OfPathMustExist,
       OfFileMustExist, OfEnableSizing];
   end;
 end;
@@ -312,44 +381,52 @@ end;
 function DBOpenDialog.Execute: Boolean;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileOpenDialog(Dialog).Execute
+    Result := TFileOpenDialog(Dialog).Execute
   else
-    Result := Dialogs.TOpenDialog(Dialog).Execute;
+    Result := TOpenDialog(Dialog).Execute;
 end;
 
 function DBOpenDialog.FileName: string;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileOpenDialog(Dialog).FileName
+    Result := TFileOpenDialog(Dialog).FileName
   else
-    Result := Dialogs.TOpenDialog(Dialog).FileName;
+    Result := TOpenDialog(Dialog).FileName;
 end;
 
 function DBOpenDialog.GetFiles: TStrings;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileOpenDialog(Dialog).Files
+    Result := TFileOpenDialog(Dialog).Files
   else
-    Result := Dialogs.TOpenDialog(Dialog).Files;
+    Result := TOpenDialog(Dialog).Files;
 end;
 
 function DBOpenDialog.GetFilterIndex: Integer;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileOpenDialog(Dialog).FileTypeIndex
+    Result := TFileOpenDialog(Dialog).FileTypeIndex
   else
-    Result := Dialogs.TOpenDialog(Dialog).FilterIndex;
+    Result := TOpenDialog(Dialog).FilterIndex;
+end;
+
+function DBOpenDialog.GetShellItem: IShellItem;
+begin
+  if CanUseVistaDlg then
+    Result := TFileOpenDialog(Dialog).ShellItem
+  else
+    Result := nil; //not supported
 end;
 
 procedure DBOpenDialog.SetFileName(FileName: string);
 begin
   if CanUseVistaDlg then
   begin
-    VistaFileDialogs.TFileOpenDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    VistaFileDialogs.TFileOpenDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileOpenDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
+    TFileOpenDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
   end else
   begin
-    Dialogs.TOpenDialog(Dialog).FileName := FileName;
+    TOpenDialog(Dialog).FileName := FileName;
   end;
 end;
 
@@ -360,7 +437,7 @@ var
   FilterMask: string;
   StrTemp: string;
   IsFilterMask: Boolean;
-  FileType: VistaFileDialogs.TFileTypeItem;
+  FileType: TFileTypeItem;
 begin
   FFilter := Value;
   if CanUseVistaDlg then
@@ -382,7 +459,7 @@ begin
 
         if IsFilterMask then
         begin
-          FileType := VistaFileDialogs.TFileOpenDialog(Dialog).FileTypes.Add();
+          FileType := TFileOpenDialog(Dialog).FileTypes.Add();
           FileType.DisplayName := FilterStr;
           FileType.FileMask := FilterMask;
         end;
@@ -391,7 +468,7 @@ begin
       end;
   end else
   begin
-    Dialogs.TOpenDialog(Dialog).Filter := Value;
+    TOpenDialog(Dialog).Filter := Value;
   end;
 end;
 
@@ -399,15 +476,15 @@ procedure DBOpenDialog.SetFilterIndex(const Value: Integer);
 begin
   FFilterIndex := Value;
   if CanUseVistaDlg then
-    VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex := Value
+    TFileSaveDialog(Dialog).FileTypeIndex := Value
   else
-    Dialogs.TOpenDialog(Dialog).FilterIndex := Value;
+    TOpenDialog(Dialog).FilterIndex := Value;
 end;
 
-procedure DBOpenDialog.SetOption(Option: VistaFileDialogs.TFileDialogOptions);
+procedure DBOpenDialog.SetOption(Option: TFileDialogOptions);
 begin
   if CanUseVistaDlg then
-    VistaFileDialogs.TFileSaveDialog(Dialog).Options := VistaFileDialogs.TFileSaveDialog(Dialog).Options + Option;
+    TFileSaveDialog(Dialog).Options := TFileSaveDialog(Dialog).Options + Option;
 end;
 
 { DBOpenPictureDialog }
@@ -417,11 +494,11 @@ begin
   inherited;
   if CanUseVistaDlg then
   begin
-    Dialog := VistaFileDialogs.TFileOpenDialog.Create(nil);
-    VistaFileDialogs.TFileOpenDialog(Dialog).Options := VistaFileDialogs.TFileOpenDialog(Dialog).Options + [VistaFileDialogs.FdoForcePreviewPaneOn];
+    Dialog := TFileOpenDialog.Create(nil);
+    TFileOpenDialog(Dialog).Options := TFileOpenDialog(Dialog).Options + [FdoForcePreviewPaneOn];
   end else
   begin
-    Dialog := ExtDlgs.TOpenPictureDialog.Create(nil);
+    Dialog := TOpenPictureDialog.Create(nil);
   end;
 end;
 
@@ -433,36 +510,36 @@ end;
 function DBOpenPictureDialog.Execute: Boolean;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileOpenDialog(Dialog).Execute
+    Result := TFileOpenDialog(Dialog).Execute
   else
-    Result := ExtDlgs.TOpenPictureDialog(Dialog).Execute;
+    Result := TOpenPictureDialog(Dialog).Execute;
 end;
 
 function DBOpenPictureDialog.FileName: string;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileOpenDialog(Dialog).FileName
+    Result := TFileOpenDialog(Dialog).FileName
   else
-    Result := ExtDlgs.TOpenPictureDialog(Dialog).FileName;
+    Result := TOpenPictureDialog(Dialog).FileName;
 end;
 
 function DBOpenPictureDialog.GetFilterIndex: Integer;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileOpenDialog(Dialog).FileTypeIndex
+    Result := TFileOpenDialog(Dialog).FileTypeIndex
   else
-    Result := ExtDlgs.TOpenPictureDialog(Dialog).FilterIndex;
+    Result := TOpenPictureDialog(Dialog).FilterIndex;
 end;
 
 procedure DBOpenPictureDialog.SetFileName(FileName: string);
 begin
   if CanUseVistaDlg then
   begin
-    VistaFileDialogs.TFileOpenDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    VistaFileDialogs.TFileOpenDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileOpenDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
+    TFileOpenDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
   end else
   begin
-    ExtDlgs.TOpenPictureDialog(Dialog).FileName := FileName;
+    TOpenPictureDialog(Dialog).FileName := FileName;
   end;
 end;
 
@@ -473,7 +550,7 @@ var
   FilterMask: string;
   StrTemp: string;
   IsFilterMask: Boolean;
-  FileType: VistaFileDialogs.TFileTypeItem;
+  FileType: TFileTypeItem;
 begin
   FFilter := Value;
   if CanUseVistaDlg then
@@ -495,7 +572,7 @@ begin
 
         if IsFilterMask then
         begin
-          FileType := VistaFileDialogs.TFileSaveDialog(Dialog).FileTypes.Add();
+          FileType := TFileSaveDialog(Dialog).FileTypes.Add();
           FileType.DisplayName := FilterStr;
           FileType.FileMask := FilterMask;
         end;
@@ -504,7 +581,7 @@ begin
       end;
   end else
   begin
-    ExtDlgs.TOpenPictureDialog(Dialog).Filter := Value;
+    TOpenPictureDialog(Dialog).Filter := Value;
   end;
 end;
 
@@ -512,9 +589,9 @@ procedure DBOpenPictureDialog.SetFilterIndex(const Value: Integer);
 begin
   FFilterIndex := Value;
   if CanUseVistaDlg then
-    VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex := Value
+    TFileSaveDialog(Dialog).FileTypeIndex := Value
   else
-    ExtDlgs.TOpenPictureDialog(Dialog).FilterIndex := Value;
+    TOpenPictureDialog(Dialog).FilterIndex := Value;
 end;
 
 { DBSavePictureDialog }
@@ -523,12 +600,12 @@ constructor DBSavePictureDialog.Create;
 begin
   if CanUseVistaDlg then
   begin
-    Dialog := VistaFileDialogs.TFileSaveDialog.Create(nil);
-    VistaFileDialogs.TFileSaveDialog(Dialog).Options := VistaFileDialogs.TFileSaveDialog(Dialog).Options + [VistaFileDialogs.FdoForcePreviewPaneOn];
-    VistaFileDialogs.TFileSaveDialog(Dialog).OnTypeChange := OnFilterIndexChanged;
+    Dialog := TFileSaveDialog.Create(nil);
+    TFileSaveDialog(Dialog).Options := TFileSaveDialog(Dialog).Options + [FdoForcePreviewPaneOn];
+    TFileSaveDialog(Dialog).OnTypeChange := OnFilterIndexChanged;
   end else
   begin
-    Dialog := ExtDlgs.TSavePictureDialog.Create(nil);
+    Dialog := TSavePictureDialog.Create(nil);
   end;
 end;
 
@@ -541,41 +618,41 @@ end;
 function DBSavePictureDialog.Execute: boolean;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileSaveDialog(Dialog).Execute
+    Result := TFileSaveDialog(Dialog).Execute
   else
-    Result := ExtDlgs.TSavePictureDialog(Dialog).Execute;
+    Result := TSavePictureDialog(Dialog).Execute;
 end;
 
 function DBSavePictureDialog.FileName: string;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileSaveDialog(Dialog).FileName
+    Result := TFileSaveDialog(Dialog).FileName
   else
-    Result := ExtDlgs.TSavePictureDialog(Dialog).FileName;
+    Result := TSavePictureDialog(Dialog).FileName;
 end;
 
 function DBSavePictureDialog.GetFilterIndex: Integer;
 begin
   if CanUseVistaDlg then
-    Result := VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex
+    Result := TFileSaveDialog(Dialog).FileTypeIndex
   else
-    Result := ExtDlgs.TSavePictureDialog(Dialog).FilterIndex;
+    Result := TSavePictureDialog(Dialog).FilterIndex;
 end;
 
 procedure DBSavePictureDialog.OnFilterIndexChanged(Sender: TObject);
 begin
- VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex:=VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex;
+  TFileSaveDialog(Dialog).FileTypeIndex := TFileSaveDialog(Dialog).FileTypeIndex;
 end;
 
 procedure DBSavePictureDialog.SetFileName(FileName: string);
 begin
   if CanUseVistaDlg then
   begin
-    VistaFileDialogs.TFileSaveDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    VistaFileDialogs.TFileSaveDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileSaveDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
+    TFileSaveDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
   end else
   begin
-    ExtDlgs.TSavePictureDialog(Dialog).FileName := FileName;
+    TSavePictureDialog(Dialog).FileName := FileName;
   end;
 end;
 
@@ -586,7 +663,7 @@ var
   FilterMask: string;
   StrTemp: string;
   IsFilterMask: Boolean;
-  FileType: VistaFileDialogs.TFileTypeItem;
+  FileType: TFileTypeItem;
 begin
   FFilter := Value;
   if CanUseVistaDlg then
@@ -608,7 +685,7 @@ begin
 
         if IsFilterMask then
         begin
-          FileType := VistaFileDialogs.TFileSaveDialog(Dialog).FileTypes.Add();
+          FileType := TFileSaveDialog(Dialog).FileTypes.Add();
           FileType.DisplayName := FilterStr;
           FileType.FileMask := FilterMask;
         end;
@@ -625,9 +702,9 @@ procedure DBSavePictureDialog.SetFilterIndex(const Value: Integer);
 begin
   FFilterIndex := Value;
   if CanUseVistaDlg then
-    VistaFileDialogs.TFileSaveDialog(Dialog).FileTypeIndex := Value
+    TFileSaveDialog(Dialog).FileTypeIndex := Value
   else
-    ExtDlgs.TSavePictureDialog(Dialog).FilterIndex := Value;
+    TSavePictureDialog(Dialog).FilterIndex := Value;
 
 end;
 
