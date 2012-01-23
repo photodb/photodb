@@ -567,7 +567,7 @@ begin
   PmExplorerMenu.Images := DBKernel.ImageList;
   OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
   AddFolder1.ImageIndex := DB_IC_ADD_FOLDER;
-  SortbyCompare1.ImageIndex := DB_IC_DUBLICAT;
+  SortbyCompare1.ImageIndex := DB_IC_DUPLICATE;
   View2.ImageIndex := DB_IC_SLIDE_SHOW;
   RatingPopupMenu1.Images := DBkernel.ImageList;
   N00.ImageIndex := DB_IC_DELETE_INFO;
@@ -1986,7 +1986,6 @@ begin
     Result.Add(MenuRecord);
   end;
   Result.Position := 0;
-  Result.AttrExists := True;
   for I := 0 to ElvMain.Items.Count - 1 do
     Result[I].Selected := ElvMain.Items[I].Selected;
   if Item <> nil then

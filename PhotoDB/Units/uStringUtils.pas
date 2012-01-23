@@ -243,7 +243,7 @@ var
 begin
   if Offset < 1 then
     Exit(0);
-  Option[0] := Offset;
+  Option[0] := Offset - 1;
   Option[1] := MaxPos;
   Result := PosExWX(SubStr, S, Option);
 end;

@@ -56,7 +56,7 @@ begin
   SaveWindowPos1.Key := RegRoot + 'Cleaning';
   SaveWindowPos1.SetPosition;
   CheckBox1.Checked := Settings.ReadBool('Options', 'DeleteNotValidRecords', True);
-  CbDuplicated.Checked := Settings.ReadBool('Options', 'VerifyDublicates', False);
+  CbDuplicated.Checked := Settings.ReadBool('Options', 'VerifyDuplicates', False);
   CbDeleted.Checked := Settings.ReadBool('Options', 'MarkDeletedFiles', True);
   CbAutoCleaning.Checked := Settings.ReadBool('Options', 'AllowAutoCleaning', False);
   CbFastCleaning.Checked := Settings.ReadBool('Options', 'AllowFastCleaning', False);
@@ -91,7 +91,7 @@ end;
 procedure TDBCleaningForm.BtnSaveClick(Sender: TObject);
 begin
   Settings.WriteBool('Options', 'DeleteNotValidRecords', CheckBox1.Checked);
-  Settings.WriteBool('Options', 'VerifyDublicates', CbDuplicated.Checked);
+  Settings.WriteBool('Options', 'VerifyDuplicates', CbDuplicated.Checked);
   Settings.WriteBool('Options', 'MarkDeletedFiles', CbDeleted.Checked);
   Settings.WriteBool('Options', 'AllowAutoCleaning', CbAutoCleaning.Checked);
   Settings.WriteBool('Options', 'AllowFastCleaning', CbFastCleaning.Checked);
@@ -103,7 +103,7 @@ procedure TDBCleaningForm.VerifyEnabledToSave;
 begin
   if (CheckBox1.Checked = Settings.ReadBool('Options', 'DeleteNotValidRecords',
       True)) and (CbDuplicated.Checked = Settings.ReadBool('Options',
-      'VerifyDublicates', False)) and (CbDeleted.Checked = Settings.ReadBool
+      'VerifyDuplicates', False)) and (CbDeleted.Checked = Settings.ReadBool
       ('Options', 'MarkDeletedFiles', True)) and
     (CbAutoCleaning.Checked = Settings.ReadBool('Options', 'AllowAutoCleaning',
       True)) and (CbFastCleaning.Checked = Settings.ReadBool('Options',

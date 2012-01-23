@@ -47,6 +47,7 @@ type
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
+    function GetIsDirectory: Boolean; override;
     property Device: IPDevice read GetDevice;
   public
     procedure LoadDevice(Device: IPDevice);
@@ -69,6 +70,7 @@ type
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
+    function GetIsDirectory: Boolean; override;
   public
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
   end;
@@ -86,15 +88,16 @@ type
   TPortableDirectoryItem = class(TPortableFSItem)
   protected
     function InternalCreateNewInstance: TPathItem; override;
+    function GetIsDirectory: Boolean; override;
   public
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
-  end;  
-  
+  end;
+
   TPortableImageItem = class(TPortableFSItem)
   protected
     function InternalCreateNewInstance: TPathItem; override;
   end;
-  
+
   TPortableVideoItem = class(TPortableFSItem)
   protected
     function InternalCreateNewInstance: TPathItem; override;
@@ -492,6 +495,11 @@ begin
   Result := FDevice;
 end;
 
+function TPortableDeviceItem.GetIsDirectory: Boolean;
+begin
+  Result := True;
+end;
+
 function TPortableDeviceItem.InternalCreateNewInstance: TPathItem;
 begin
   Result := TPortableDeviceItem.Create;
@@ -537,6 +545,11 @@ begin
 end;
 
 { TPortableStorageItem }
+
+function TPortableStorageItem.GetIsDirectory: Boolean;
+begin
+  Result := True;
+end;
 
 function TPortableStorageItem.InternalCreateNewInstance: TPathItem;
 begin
@@ -596,6 +609,11 @@ begin
 end;
 
 { TPortableDirectoryItem }
+
+function TPortableDirectoryItem.GetIsDirectory: Boolean;
+begin
+  Result := True;
+end;
 
 function TPortableDirectoryItem.InternalCreateNewInstance: TPathItem;
 begin

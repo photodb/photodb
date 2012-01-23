@@ -14,7 +14,7 @@ type
     { Private declarations }
     FStrParam: string;
     FIntParam: Integer;
-    FOptions: TOptimizeDublicatesThreadOptions;
+    FOptions: TOptimizeDuplicatesThreadOptions;
     ProgressInfo: TProgressCallBackInfo;
   protected
     function GetThreadID : string; override;
@@ -24,7 +24,7 @@ type
     procedure TextOutEx;
     procedure DoProgress;
   public
-    constructor Create(Options: TOptimizeDublicatesThreadOptions);
+    constructor Create(Options: TOptimizeDuplicatesThreadOptions);
   end;
 
 var
@@ -36,7 +36,7 @@ uses CMDUnit;
 
 { TThreadOptimizeDublicates }
 
-constructor TThreadOptimizeDublicates.Create(Options: TOptimizeDublicatesThreadOptions);
+constructor TThreadOptimizeDublicates.Create(Options: TOptimizeDuplicatesThreadOptions);
 begin
   inherited Create(Options.OwnerForm, False);
   FOptions := Options;

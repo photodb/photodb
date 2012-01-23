@@ -96,7 +96,7 @@ type
     N1: TMenuItem;
     SelectDB1: TMenuItem;
     EditDB1: TMenuItem;
-    DublicatesLink: TWebLink;
+    DuplicatesLink: TWebLink;
     ConvertLink: TWebLink;
     ChangePathLink: TWebLink;
     N2: TMenuItem;
@@ -165,7 +165,7 @@ type
     procedure DBLoadDataPacket(DataList : TList);
     procedure EditDB1Click(Sender: TObject);
     procedure RecordNumberEditChange(Sender: TObject);
-    procedure DublicatesLinkClick(Sender: TObject);
+    procedure DuplicatesLinkClick(Sender: TObject);
     procedure ConvertLinkClick(Sender: TObject);
     procedure ChangePathLinkClick(Sender: TObject);
     procedure Showfileinexplorer1Click(Sender: TObject);
@@ -277,7 +277,7 @@ begin
   ScanforBadLinksLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SEARCH + 1]);
   BackUpDBLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CANCEL_ACTION + 1]);
   CleaningLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COMMON + 1]);
-  DublicatesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DUBLICAT + 1]);
+  DuplicatesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DUPLICATE + 1]);
   ConvertLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CONVERT + 1]);
   ChangePathLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DIRECTORY + 1]);
 
@@ -591,7 +591,7 @@ begin
     ImportTableLink.Text:= L('Import collection');
     BackUpDBLink.Text:= L('Backup collection');
     CleaningLink.Text:= L('Cleaning');
-    DublicatesLink.Text:= L('Optimize duplicates');
+    DuplicatesLink.Text:= L('Optimize duplicates');
     BtnExecSQL.Caption:= L('Exec sql');
     DateExists1.Caption:= L('No date');
     DateExists2.Caption:= L('Set date');
@@ -1681,7 +1681,6 @@ begin
 
     MenuInfo.IsPlusMenu := False;
     MenuInfo.IsListItem := False;
-    MenuInfo.AttrExists := False;
     TDBPopupMenu.Instance.Execute(Self, ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y, MenuInfo);
   finally
     F(MenuInfo);
@@ -1915,11 +1914,11 @@ begin
   ElvMain.Refresh;
 end;
 
-procedure TManagerDB.DublicatesLinkClick(Sender: TObject);
+procedure TManagerDB.DuplicatesLinkClick(Sender: TObject);
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to optimize the duplicates in a table? Optimization starts at the next startup...'), L('Warning'), TD_BUTTON_OKCANCEL,
     TD_ICON_QUESTION) then
-    Settings.WriteBool('StartUp', 'OptimizeDublicates', True);
+    Settings.WriteBool('StartUp', 'OptimizeDuplicates', True);
 end;
 
 procedure TManagerDB.ConvertLinkClick(Sender: TObject);

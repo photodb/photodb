@@ -13,6 +13,7 @@ type
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
+    function GetIsDirectory: Boolean; override;
   public
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
@@ -27,6 +28,7 @@ type
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
+    function GetIsDirectory: Boolean; override;
   public
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
@@ -302,6 +304,11 @@ begin
     LoadImage(Options, ImageSize);
 end;
 
+function TGroupsItem.GetIsDirectory: Boolean;
+begin
+  Result := True;
+end;
+
 function TGroupsItem.InternalCreateNewInstance: TPathItem;
 begin
   Result := TGroupsItem.Create;
@@ -341,6 +348,11 @@ begin
   FDisplayName := FGroupName;
   if Options and PATH_LOAD_NO_IMAGE = 0 then
     LoadImage(Options, ImageSize);
+end;
+
+function TGroupItem.GetIsDirectory: Boolean;
+begin
+  Result := True;
 end;
 
 function TGroupItem.InternalCreateNewInstance: TPathItem;

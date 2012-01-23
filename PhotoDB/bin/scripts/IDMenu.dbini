@@ -336,12 +336,18 @@ run:
   PrintItemPopUpMenu;
 }
 
-<Duplicates>[DB_IC_DUBLICAT]
+<Duplicates>[DB_IC_DUPLICAT]
 {
 initialization:
-  if ($Dublicat=false) {InVisible;};
-  CreateItem("Show duplicates",DB_IC_DUBLICAT,"ShowDublicatesItemPopUpMenu;",false,0);
-  CreateItem("Delete duplicates",DB_IC_DEL_DUBLICAT,"DeleteDublicatesItemPopUpMenu;",false,0);
+  if ($Duplicate=false)
+  {
+    InVisible;
+  }; 
+  else
+  {
+    CreateItem("Show duplicates",DB_IC_DUPLICAT,"ShowDuplicatesItemPopUpMenu;",false,0);
+    CreateItem("Delete duplicates",DB_IC_DEL_DUPLICAT,"DeleteDuplicatesItemPopUpMenu;",false,0);
+  };
 }
 
 <Delete>[DB_IC_DELETE_FILE]
@@ -354,9 +360,9 @@ initialization:
 
   if ($IsFile=true) {
     if ($FileExists=true)
-	{
-	  CreateItem("Delete file",DB_IC_DELETE_FILE,"DeleteItemPopUpMenu;",false,0);
-	};
+    {
+      CreateItem("Delete file",DB_IC_DELETE_FILE,"DeleteItemPopUpMenu;",false,0);
+    };
   };
 }
 

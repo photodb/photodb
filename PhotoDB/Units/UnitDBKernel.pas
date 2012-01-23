@@ -1110,8 +1110,8 @@ begin
   icons[82] := LoadIcon(HInstance,'CONVERT');
   icons[83] := LoadIcon(HInstance,'RESIZE');
   icons[84] := LoadIcon(HInstance,'REFRESHID');
-  icons[85] := LoadIcon(HInstance,'DUBLICAT');
-  icons[86] := LoadIcon(HInstance,'DELDUBLICAT');
+  icons[85] := LoadIcon(HInstance,'DUPLICAT');
+  icons[86] := LoadIcon(HInstance,'DELDUPLICAT');
   icons[87] := LoadIcon(HInstance,'UPDATING');
   icons[88] := LoadIcon(HInstance,'Z_FULLSCREEN_NORM');
   icons[89] := LoadIcon(HInstance,'MYDOCUMENTS');

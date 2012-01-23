@@ -9,7 +9,6 @@ uses
 type
   TDBPopupMenuInfo = class(TObject)
   private
-    FAttrExists: Boolean;
     FIsPlusMenu: Boolean;
     FIsListItem: Boolean;
     FListItem: TEasyItem;
@@ -50,7 +49,6 @@ type
     function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
     property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex write SetValueByIndex; default;
     property IsListItem: Boolean read FIsListItem write FIsListItem;
-    property AttrExists: Boolean read FAttrExists write FAttrExists;
     property Count: Integer read GetCount;
     property IsVariousInclude: Boolean read GetIsVariousInclude;
     property IsVariousDate: Boolean read GetIsVariousDate;

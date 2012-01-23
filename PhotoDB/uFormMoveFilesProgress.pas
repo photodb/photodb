@@ -27,17 +27,19 @@ type
   TProgressOption = class(TObject)
   private
     FName: string;
+    FDisplayName: string;
     FValue: string;
     FIsImportant: Boolean;
-    //FImportantValue: string;
-    //procedure SetImportantValue(const Value: string);
-    procedure SetValue(const Value: string);
-    procedure SetIsImportant(const Value: Boolean);
   public
+    function SetName(Value: string): TProgressOption;
+    function SetDisplayName(Value: string): TProgressOption;
+    function SetValue(Value: string): TProgressOption;
+    function SetImportant(Value: Boolean): TProgressOption;
+
     property Name: string read FName;
-    property Value: string read FValue write SetValue;
-    property IsImportant: Boolean read FIsImportant write SetIsImportant;
-    //property ImportantValue: string read FImportantValue write SetImportantValue;
+    property Value: string read FValue write FValue;
+    property IsImportant: Boolean read FIsImportant write FIsImportant;
+    property DisplayName: string read FDisplayName write FDisplayName;
   end;
 
   TProgressOptions = class(TObject)
@@ -100,28 +102,35 @@ type
     property IsError: Boolean read FIsError write SetIsError;
   end;
 
-var
-  FormMoveFilesProgress: TFormMoveFilesProgress;
-
 implementation
 
 {$R *.dfm}
 
 { TProgressOption }
 
-{procedure TProgressOption.SetImportantValue(const Value: string);
-begin
-  FImportantValue := Value;
-end;}
 
-procedure TProgressOption.SetIsImportant(const Value: Boolean);
+function TProgressOption.SetDisplayName(Value: string): TProgressOption;
 begin
-  FIsImportant := Value;
+  FDisplayName := Value;
+  Result := Self;
 end;
 
-procedure TProgressOption.SetValue(const Value: string);
+function TProgressOption.SetImportant(Value: Boolean): TProgressOption;
+begin
+  FIsImportant := Value;
+  Result := Self;
+end;
+
+function TProgressOption.SetName(Value: string): TProgressOption;
+begin
+  FName := Value;
+  Result := Self;
+end;
+
+function TProgressOption.SetValue(Value: string): TProgressOption;
 begin
   FValue := Value;
+  Result := Self;
 end;
 
 { TProgressOptions }
@@ -269,7 +278,7 @@ begin
     L.Top := Top;
     L.Left := PaddingLeft;
     L.Font.Size := 9;
-    L.Caption := FOptions.GetItemByIndex(I).Name + ':';
+    L.Caption := FOptions.GetItemByIndex(I).DisplayName + ':';
     if NameWidth < L.Width then
       NameWidth := L.Width;
 

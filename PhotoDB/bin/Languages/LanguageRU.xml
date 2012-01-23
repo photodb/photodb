@@ -724,6 +724,8 @@
     <translate name="Scan image" value="Найти похожие изображения" />
     <translate name="Print" value="Печать" />
     <translate name="Duplicates" value="Дубликаты" />
+    <translate name="Show duplicates" value="Показать дубликаты" />
+    <translate name="Delete duplicates" value="Удалить дубликаты" />	
     <translate name="Delete" value="Удалить" />
     <translate name="Delete info from collection" value="Удалить информацию из базы" />
     <translate name="Delete file" value="Удалить файл" />
@@ -2082,6 +2084,12 @@
   </scope>
   <scope name="ImportPictures">
 	<translate name="Please select a folder or device with images" value="Пожалуйста, выберите папку или устройство с изображениями"/>
-	<translate name="Please select destination directory" value="Пожалуйста, выберите конечную папку"/>	
+	<translate name="Please select destination directory" value="Пожалуйста, выберите конечную папку"/>
+	<translate name="Calculating..." value="Подсчёт..."/>
+	<translate name="Name" value="Имя"/>
+	<translate name="From" value="Из"/>
+	<translate name="To" value="В"/>
+	<translate name="Items remaining" value="Осталось объектов"/>
+	<translate name="Speed" value="Скорость"/>
   </scope>
 </language>

@@ -15,23 +15,24 @@ uses
   uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings, uDBAdapter,
   Types;
 
-type TDBPopupMenu = class
-   private
-    _popupmenu : TPopupMenu;
-    _user_group_menu : TMenuItem;
-    _user_group_menu_sub_items : array of TMenuItem;
-    _user_menu : array of TMenuItem;
-    FInfo : TDBPopupMenuInfo;
-    FPopUpPoint : TPoint;
-    FUserMenu : TUserMenuItemArray;
-    FBusy : Boolean;
-    aScript : TScript;
-    FOwner : TDBForm;
-   public
-    class function Instance : TDBPopupMenu;
+type
+  TDBPopupMenu = class
+  private
+    _popupmenu: TPopupMenu;
+    _user_group_menu: TMenuItem;
+    _user_group_menu_sub_items: array of TMenuItem;
+    _user_menu: array of TMenuItem;
+    FInfo: TDBPopupMenuInfo;
+    FPopUpPoint: TPoint;
+    FUserMenu: TUserMenuItemArray;
+    FBusy: Boolean;
+    aScript: TScript;
+    FOwner: TDBForm;
+  public
+    class function Instance: TDBPopupMenu;
     constructor Create;
     destructor Destroy; override;
-    procedure ShowItemPopUpMenu_(Sender : TObject);
+    procedure ShowItemPopUpMenu_(Sender: TObject);
     procedure ShellExecutePopUpMenu_(Sender: TObject);
     procedure SearchFolderPopUpMenu_(Sender: TObject);
     procedure DeleteLItemPopUpMenu_(Sender: TObject);
@@ -57,15 +58,15 @@ type TDBPopupMenu = class
     procedure WallpaperCenterItemPopUpMenu_(Sender: TObject);
     procedure WallpaperTileItemPopUpMenu_(Sender: TObject);
     procedure RefreshIDItemPopUpMenu_(Sender: TObject);
-    procedure ShowDublicatesItemPopUpMenu_(Sender: TObject);
-    procedure DeleteDublicatesItemPopUpMenu_(Sender: TObject);
+    procedure ShowDuplicatesItemPopUpMenu_(Sender: TObject);
+    procedure DeleteDuplicatesItemPopUpMenu_(Sender: TObject);
     procedure UserMenuItemPopUpMenu_(Sender: TObject);
     procedure PrintItemPopUpMenu_(Sender: TObject);
     procedure ConvertItemPopUpMenu_(Sender: TObject);
-    procedure Execute(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
-    procedure ExecutePlus(Owner : TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
-    procedure AddDBContMenu(Form: TDBForm; Item: Tmenuitem; Info: TDBPopupMenuInfo);
-    procedure AddUserMenu(Item: Tmenuitem; Insert: Boolean; index: Integer);
+    procedure Execute(Owner: TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
+    procedure ExecutePlus(Owner: TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
+    procedure AddDBContMenu(Form: TDBForm; Item: TMenuItem; Info: TDBPopupMenuInfo);
+    procedure AddUserMenu(Item: TMenuItem; Insert: Boolean; index: Integer);
     procedure SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
     procedure ScriptExecuted(Sender: TObject);
     function GetGroupImageInImageList(GroupCode: string): Integer;
@@ -74,13 +75,13 @@ type TDBPopupMenu = class
     function CheckDBReadOnly: Boolean;
   end;
 
- procedure ReloadIDMenu;
+procedure ReloadIDMenu;
 
- const
-   DBMenuID = 'DBMenu';
+const
+  DBMenuID = 'DBMenu';
 
 var
-   MenuScript : string;
+  MenuScript: string;
 
 implementation
 
@@ -445,8 +446,8 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperCenterItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperCenterItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperTileItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperTileItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'RefreshIDItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshIDItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowDublicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowDublicatesItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteDublicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteDublicatesItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowDuplicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowDuplicatesItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteDuplicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteDuplicatesItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'UserMenuItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,UserMenuItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'PrintItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrintItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ConvertItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ConvertItemPopUpMenu_);
@@ -608,7 +609,7 @@ begin
   DecryptPhotos(FOwner, FInfo);
 end;
 
-procedure TDBPopupMenu.DeleteDublicatesItemPopUpMenu_(Sender: TObject);
+procedure TDBPopupMenu.DeleteDuplicatesItemPopUpMenu_(Sender: TObject);
 var
   I, J: Integer;
   FQuery: TDataSet;
@@ -625,7 +626,7 @@ begin
   begin
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
-        if Finfo[I].Attr = Db_attr_dublicate then
+        if Finfo[I].Attr = Db_attr_duplicate then
         begin
           FQuery := GetQuery;
           DA := TDBAdapter.Create(FQuery);
@@ -1115,18 +1116,9 @@ begin
     else
       SetNamedValue(AScript, '$CanDecrypt', 'false');
   end;
-  if Finfo.AttrExists then
-  begin
-    SetNamedValue(AScript, '$IsAttrExists', 'true');
-    SetBoolAttr(AScript, '$Dublicat', Item.Attr = Db_attr_dublicate);
-    SetNamedValue(AScript, '$Attr', IntToStr(Item.Attr));
-  end else
-  begin
-    SetNamedValue(AScript, '$IsAttrExists', 'false');
-    SetBoolAttr(AScript, '$Dublicat', False);
-    SetNamedValue(AScript, '$Attr', '0');
-  end;
 
+  SetBoolAttr(AScript, '$Duplicate', Item.Attr = Db_attr_duplicate);
+  SetNamedValue(AScript, '$Attr', IntToStr(Item.Attr));
   SetNamedValueInt(AScript, '$Access', Item.Access);
   SetNamedValueInt(AScript, '$Rotation', Item.Rotation);
   SetNamedValueInt(AScript, '$Rating', Item.Rating);
@@ -1447,7 +1439,7 @@ begin
     end;
 end;
 
-procedure TDBPopupMenu.ShowDublicatesItemPopUpMenu_(Sender: TObject);
+procedure TDBPopupMenu.ShowDuplicatesItemPopUpMenu_(Sender: TObject);
 begin
   SearchManager.NewSearch.StartSearch(':Similar(' + IntToStr(FInfo[Finfo.Position].ID) + '):');
 end;

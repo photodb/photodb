@@ -162,8 +162,8 @@ const
   DB_IC_CONVERT        = 81;
   DB_IC_RESIZE         = 82;
   DB_IC_REFRESH_ID     = 83;
-  DB_IC_DUBLICAT       = 84;
-  DB_IC_DEL_DUBLICAT   = 85;
+  DB_IC_DUPLICATE      = 84;
+  DB_IC_DEL_DUPLICAT   = 85;
   DB_IC_UPDATING       = 86;
   DB_IC_DO_SLIDE_SHOW  = 87;
   DB_IC_MY_DOCUMENTS   = 88;
@@ -236,7 +236,7 @@ const
   Db_access_none = 0;
   Db_attr_norm = 0;
   Db_attr_not_exists = 1;
-  Db_attr_dublicate = 2;
+  Db_attr_duplicate = 2;
 
 const
   DB_IMAGE_ROTATE_UNKNOWN = -1;
@@ -253,7 +253,7 @@ const
   Result_Skip_All                   =  3;
   Result_Replace                    =  4;
   Result_Replace_All                =  5;
-  Result_Replace_And_Del_Dublicates =  6;
+  Result_Replace_And_Del_Duplicates =  6;
   Result_Delete_File                =  7;
 
   DemoDays = 30;

@@ -526,7 +526,6 @@ var
 begin
   Info := GetMenuInfoByID(FID);
   try
-    Info.AttrExists := False;
     TDBPopupMenu.Instance.Execute(Self, ImMain.ClientToScreen(MousePos).X, ImMain.ClientToScreen(MousePos).Y, Info);
   finally
     F(Info);
@@ -569,7 +568,6 @@ begin
     begin
       Info := GetMenuInfoByID(TItemData(Node.Data^).ID);
       try
-        Info.AttrExists := False;
         TDBPopupMenu.Instance.Execute(Self, TreeView1.ClientToScreen(MousePos).X, TreeView1.ClientToScreen(MousePos).Y, Info);
       finally
         F(Info);

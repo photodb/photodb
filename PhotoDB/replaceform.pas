@@ -582,7 +582,6 @@ begin
   MenuInfo := TDBPopupMenuInfo.Create;
   MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
   MenuInfo.Add(MenuRecord);
-  MenuInfo.AttrExists := False;
   TDBPopupMenu.Instance.Execute(Self, Image2.ClientToScreen(MousePos).X, Image2.ClientToScreen(MousePos).Y, MenuInfo);
 end;
 
@@ -703,7 +702,7 @@ end;
 
 procedure TDBReplaceForm.BtnReplaceAndDeleteDuplicatesClick(Sender: TObject);
 begin
-  FSelectedMode := Result_Replace_And_Del_Dublicates;
+  FSelectedMode := Result_Replace_And_Del_Duplicates;
   FSelectedID := StrToInt(DB_ID.Text);
   OnCloseQuery := nil;
   Close;

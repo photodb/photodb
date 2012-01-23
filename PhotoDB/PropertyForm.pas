@@ -662,7 +662,6 @@ begin
       FMenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
       FFilesInfo.Clear;
       FFilesInfo.Add(FMenuRecord);
-      FFilesInfo.AttrExists := False;
       CommentMemoChange(nil);
       BtnFind.Visible := True;
       ReloadGroups;
@@ -1548,7 +1547,6 @@ begin
   if FShowInfoType = SHOW_INFO_IDS then
     Copy1.Visible := True;
   DBItem1.Clear;
-  FFilesInfo.AttrExists := False;
   TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, FFilesInfo);
 end;
 
@@ -2508,7 +2506,6 @@ begin
       try
         MenuInfo.IsPlusMenu := False;
         MenuInfo.IsListItem := False;
-        MenuInfo.AttrExists := False;
         IDMenu1.Caption := Format(L('Collection Item [%d]'), [ID]);
         TDBPopupMenu.Instance.AddDBContMenu(Self, IDMenu1, MenuInfo);
       finally
@@ -2525,7 +2522,6 @@ begin
       try
         MenuInfo.IsPlusMenu := False;
         MenuInfo.IsListItem := False;
-        MenuInfo.AttrExists := False;
 
         if MenuInfo.Count > 0 then
           IDMenu1.Caption := Format(L('Collection Item [%d]'), [MenuInfo[0].ID])

@@ -4,8 +4,11 @@ object FormImportImages: TFormImportImages
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Import pictures'
   ClientHeight = 348
-  ClientWidth = 415
+  ClientWidth = 384
   Color = clBtnFace
+  Constraints.MaxHeight = 386
+  Constraints.MinHeight = 386
+  Constraints.MinWidth = 400
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -14,7 +17,7 @@ object FormImportImages: TFormImportImages
   OldCreateOrder = False
   OnCreate = FormCreate
   DesignSize = (
-    415
+    384
     348)
   PixelsPerInch = 96
   TextHeight = 13
@@ -56,12 +59,11 @@ object FormImportImages: TFormImportImages
   object PeImportFromPath: TPathEditor
     Left = 8
     Top = 27
-    Width = 374
+    Width = 343
     Height = 25
     Anchors = [akLeft, akTop, akRight]
     LoadingText = 'Loading...'
     CanBreakLoading = False
-    ExplicitWidth = 370
   end
   object CbFormatCombo: TComboBox
     Left = 8
@@ -77,7 +79,7 @@ object FormImportImages: TFormImportImages
       'DD/MM/YYYY')
   end
   object BtnSelectPathFrom: TButton
-    Left = 388
+    Left = 357
     Top = 27
     Width = 19
     Height = 25
@@ -85,20 +87,18 @@ object FormImportImages: TFormImportImages
     Caption = '...'
     TabOrder = 2
     OnClick = BtnSelectPathFromClick
-    ExplicitLeft = 384
   end
   object PeImportToPath: TPathEditor
     Left = 8
     Top = 215
-    Width = 374
+    Width = 343
     Height = 25
     Anchors = [akLeft, akTop, akRight]
     LoadingText = 'Loading...'
     CanBreakLoading = False
-    ExplicitWidth = 370
   end
   object BtnSelectPathTo: TButton
-    Left = 388
+    Left = 357
     Top = 215
     Width = 19
     Height = 25
@@ -106,17 +106,15 @@ object FormImportImages: TFormImportImages
     Caption = '...'
     TabOrder = 4
     OnClick = BtnSelectPathToClick
-    ExplicitLeft = 384
   end
   object WedLabel: TWatermarkedEdit
     Left = 8
     Top = 123
-    Width = 399
+    Width = 368
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 5
     WatermarkText = 'WatermarkedEdit1'
-    ExplicitWidth = 395
   end
   object DtpDate: TDateTimePicker
     Left = 8
@@ -130,25 +128,24 @@ object FormImportImages: TFormImportImages
   object CbOnlyImages: TCheckBox
     Left = 8
     Top = 246
-    Width = 399
+    Width = 368
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Import only supported images'
     TabOrder = 7
-    ExplicitWidth = 395
   end
   object BtnOk: TButton
-    Left = 335
+    Left = 304
     Top = 315
     Width = 74
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Ok'
     TabOrder = 8
-    ExplicitLeft = 331
+    OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 253
+    Left = 222
     Top = 315
     Width = 76
     Height = 25
@@ -156,17 +153,15 @@ object FormImportImages: TFormImportImages
     Caption = 'Cancel'
     TabOrder = 9
     OnClick = BtnCancelClick
-    ExplicitLeft = 249
   end
   object CbDeleteAfterImport: TCheckBox
     Left = 8
     Top = 269
-    Width = 399
+    Width = 368
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Delete files after import'
     TabOrder = 10
-    ExplicitWidth = 395
   end
   object WlExtendedMode: TWebLink
     Left = 8
@@ -191,11 +186,10 @@ object FormImportImages: TFormImportImages
   object CbAddToCollection: TCheckBox
     Left = 8
     Top = 292
-    Width = 399
+    Width = 368
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Add files to collection after copying files'
     TabOrder = 12
-    ExplicitWidth = 395
   end
 end

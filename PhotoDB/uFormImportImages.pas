@@ -22,6 +22,7 @@ uses
   uShellUtils,
   uRuntime,
   uResources,
+  uSettings,
   uDBForm;
 
 type
@@ -48,9 +49,11 @@ type
     procedure BtnSelectPathToClick(Sender: TObject);
     procedure BtnSelectPathFromClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadLanguage;
+    procedure ReadOptions;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
@@ -63,10 +66,39 @@ var
 
 implementation
 
+uses
+  uThreadImportPictures;
+
 {$R *.dfm}
 
 procedure TFormImportImages.BtnCancelClick(Sender: TObject);
 begin
+  Close;
+end;
+
+procedure TFormImportImages.BtnOkClick(Sender: TObject);
+var
+  Options: TImportPicturesOptions;
+  Task: TImportPicturesTask;
+  Operation: TFileOperationTask;
+begin
+  Options := TImportPicturesOptions.Create;
+  Options.OnlySupportedImages := CbOnlyImages.Checked;
+  Options.DeleteFilesAfterImport := CbDeleteAfterImport.Checked;
+  Options.AddToCollection := CbAddToCollection.Checked;
+
+  Task := TImportPicturesTask.Create;
+  Options.AddTask(Task);
+
+  Operation := TFileOperationTask.Create(PeImportFromPath.PathEx, PeImportToPath.PathEx);
+  Task.AddOperation(Operation);
+  TThreadImportPictures.Create(Options);
+
+  Settings.WriteBool('ImportPictures', 'OnlyImages', CbOnlyImages.Checked);
+  Settings.WriteBool('ImportPictures', 'DeleteFiles', CbDeleteAfterImport.Checked);
+  Settings.WriteBool('ImportPictures', 'AddToCollection', CbAddToCollection.Checked);
+  Settings.WriteString('ImportPictures', 'Source', PeImportFromPath.Path);
+  Settings.WriteString('ImportPictures', 'Destination', PeImportToPath.Path);
   Close;
 end;
 
@@ -111,6 +143,8 @@ begin
   finally
     F(PathImage);
   end;
+
+  ReadOptions;
 end;
 
 function TFormImportImages.GetFormID: string;
@@ -126,6 +160,16 @@ begin
   finally
     EndTranslate;
   end;
+end;
+
+procedure TFormImportImages.ReadOptions;
+begin
+  CbOnlyImages.Checked := Settings.ReadBool('ImportPictures', 'OnlyImages', False);
+  CbDeleteAfterImport.Checked := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
+  CbAddToCollection.Checked := Settings.ReadBool('ImportPictures', 'AddToCollection', True);
+
+  PeImportFromPath.Path := Settings.ReadString('ImportPictures', 'Source', '');
+  PeImportToPath.Path := Settings.ReadString('ImportPictures', 'Destination', GetMyPicturesPath);
 end;
 
 end.

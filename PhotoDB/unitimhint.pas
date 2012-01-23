@@ -463,7 +463,6 @@ begin
   try
     MenuInfo.Add(CurrentInfo.Copy);
     MenuInfo[0].Selected := True;
-    MenuInfo.AttrExists := False;
     MenuInfo.ListItem := nil;
     MenuInfo.IsListItem := False;
     TDBPopupMenu.Instance.Execute(Self, ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y, MenuInfo);

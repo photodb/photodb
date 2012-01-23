@@ -141,11 +141,11 @@ begin
         ApplyFilter(Result, Db_attr_not_exists);
       end;
 
-      if AnsiLowerCase(Sysaction) = AnsiLowerCase('Dublicates') then
+      if AnsiLowerCase(Sysaction) = AnsiLowerCase('Duplicates') then
       begin
         SystemQuery := True;
         Result.Query := Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
-        ApplyFilter(Result, Db_attr_dublicate);
+        ApplyFilter(Result, Db_attr_duplicate);
       end;
 
       if AnsiLowerCase(Copy(Sysaction, 1, 5)) = AnsiLowerCase('Links') then
@@ -520,8 +520,8 @@ begin
   case Attr of
     db_attr_norm:
       Params.Query := Params.Query + Format(' AND (Attr <> %d)',[db_attr_not_exists]);
-    db_attr_dublicate:
-      Params.Query := Params.Query + Format(' (Attr = %d)', [db_attr_dublicate]);
+    db_attr_duplicate:
+      Params.Query := Params.Query + Format(' (Attr = %d)', [db_attr_duplicate]);
     db_attr_not_exists:
       Params.Query := Params.Query + Format(' (Attr = %d)', [db_attr_not_exists]);
   end;

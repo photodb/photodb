@@ -844,7 +844,6 @@ begin
     for I := 0 to Info.Count - 1 do
       Info[I].Selected := I = FCurrentPreviewPosition;
 
-    Info.AttrExists := False;
     TDBPopupMenu.Instance.Execute(Self, PbImage.ClientToScreen(MousePos).X, PbImage.ClientToScreen(MousePos).Y, Info);
   finally
     F(Info);

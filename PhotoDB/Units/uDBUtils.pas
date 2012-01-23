@@ -714,7 +714,7 @@ procedure UpdateImageRecordEx(Caller: TDBForm; FileName: string; ID: Integer; On
 var
   Table: TDataSet;
   Res: TImageDBRecordA;
-  Dublicat, IsDate, IsTime, UpdateDateTime: Boolean;
+  Duplicat, IsDate, IsTime, UpdateDateTime: Boolean;
   I, Attr, Counter: Integer;
   EventInfo: TEventValues;
   ExifData: TExifData;
@@ -872,17 +872,17 @@ begin
       end;
       F(ExifData);
 
-      if Attr = Db_attr_dublicate then
+      if Attr = Db_attr_duplicate then
       begin
-        Dublicat := False;
+        Duplicat := False;
         for I := 0 to Res.Count - 1 do
           if Res.IDs[I] <> ID then
             if Res.Attr[I] <> Db_attr_not_exists then
             begin
-              Dublicat := True;
+              Duplicat := True;
               Break;
             end;
-        if not Dublicat then
+        if not Duplicat then
         begin
           _SetSql := _SetSql + Format('Attr=%d,', [Db_attr_norm]);
           EventInfo.Attr := Db_attr_norm;
@@ -1694,7 +1694,6 @@ begin
     MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
     Result.Add(MenuRecord);
     Result.ListItem := nil;
-    Result.AttrExists := False;
     Result.IsListItem := False;
     Result.IsPlusMenu := False;
     FQuery.Close;
@@ -1721,7 +1720,6 @@ begin
     MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
     Result.Add(MenuRecord);
     Result.ListItem := nil;
-    Result.AttrExists := False;
     Result.IsListItem := False;
     Result.IsPlusMenu := False;
     Result.Position := 0;

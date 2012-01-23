@@ -434,7 +434,6 @@ begin
     Hinttimer.Enabled := False;
     Info := GetCurrentPopUpMenuInfo(Item);
     try
-      Info.AttrExists := False;
       if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
       begin
         Info.IsPlusMenu := False;

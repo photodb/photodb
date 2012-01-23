@@ -415,14 +415,14 @@ object ManagerDB: TManagerDB
         TabOrder = 22
         OnClick = BtnAddDBClick
       end
-      object DublicatesLink: TWebLink
+      object DuplicatesLink: TWebLink
         Left = 8
         Top = 168
         Width = 122
         Height = 16
         Cursor = crHandPoint
-        Text = 'Optimizing Dublicates'
-        OnClick = DublicatesLinkClick
+        Text = 'Optimizing Duplicates'
+        OnClick = DuplicatesLinkClick
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -559,8 +559,6 @@ object ManagerDB: TManagerDB
       OnMouseMove = ElvMainMouseMove
       OnResize = ElvMainResize
       OnSelectItem = ElvMainSelectItem
-      ExplicitLeft = 2
-      ExplicitTop = 223
     end
     object dblData: TDBLoading
       Left = 397

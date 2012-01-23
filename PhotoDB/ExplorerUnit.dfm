@@ -201,7 +201,7 @@ object ExplorerForm: TExplorerForm
         end
         object Label1: TLabel
           Left = 10
-          Top = 8
+          Top = 5
           Width = 97
           Height = 13
           AutoSize = False

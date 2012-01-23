@@ -262,7 +262,7 @@ begin
           if Termitating or DBTerminating then
             Break;
           try
-            if Settings.ReadBool('Options', 'VerifyDublicates', False) then
+            if Settings.ReadBool('Options', 'VerifyDuplicates', False) then
             begin
               FQuery.Active := False;
 
@@ -284,13 +284,13 @@ begin
                     Break;
                   if Termitating then
                     Break;
-                  if FQuery.FieldByName('Attr').AsInteger <> Db_attr_dublicate then
-                    SetAttr(FQuery.FieldByName('ID').AsInteger, Db_attr_dublicate);
+                  if FQuery.FieldByName('Attr').AsInteger <> Db_attr_duplicate then
+                    SetAttr(FQuery.FieldByName('ID').AsInteger, Db_attr_duplicate);
                   FQuery.Next;
                 end;
               end;
               if (FQuery.RecordCount = 1) and FileExistsSafe(FTable.FieldByName('FFileName').AsString) and
-                (FTable.FieldByName('Attr').AsInteger = Db_attr_dublicate) then
+                (FTable.FieldByName('Attr').AsInteger = Db_attr_duplicate) then
                 SetAttr(FTable.FieldByName('ID').AsInteger, Db_attr_norm);
             end;
           except

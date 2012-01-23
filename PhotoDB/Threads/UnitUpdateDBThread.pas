@@ -401,7 +401,7 @@ begin
                   FQuery := GetQuery;
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-                    SetIntParam(FQuery, 0, Db_attr_dublicate);
+                    SetIntParam(FQuery, 0, Db_attr_duplicate);
                     SetStrParam(FQuery, 1, Res.ImTh);
                     try
                       ExecSQL(FQuery);
@@ -417,7 +417,7 @@ begin
                 begin
                   DeleteFile(FInfo[FileNumber].FileName);
                 end;
-              Result_Replace_And_Del_Dublicates:
+              Result_Replace_And_Del_Duplicates:
                 begin
                   UpdateMovedDBRecord(IntIDResult, FInfo[FileNumber].FileName);
                   DoEventReplace(IntIDResult, FInfo[FileNumber].FileName);
@@ -452,7 +452,7 @@ begin
               FQuery := GetQuery;
               try
                 SetSQL(FQuery, 'Update $DB$ Set Attr = :Attr Where StrTh = :s');
-                SetIntParam(FQuery, 0, Db_attr_dublicate);
+                SetIntParam(FQuery, 0, Db_attr_duplicate);
                 SetStrParam(FQuery, 1, Res.ImTh);
                 try
                   ExecSQL(FQuery);
@@ -512,7 +512,7 @@ begin
                   FQuery := GetQuery;
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-                    SetIntParam(FQuery, 0, Db_attr_dublicate);
+                    SetIntParam(FQuery, 0, Db_attr_duplicate);
                     SetStrParam(FQuery, 1, Res.ImTh);
                     try
                       ExecSQL(FQuery);
@@ -533,7 +533,7 @@ begin
                   FQuery := GetQuery;
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-                    SetIntParam(FQuery, 0, Db_attr_dublicate);
+                    SetIntParam(FQuery, 0, Db_attr_duplicate);
                     SetStrParam(FQuery, 1, Res.ImTh);
                     try
                       ExecSQL(FQuery);
@@ -563,7 +563,7 @@ begin
               FQuery := GetQuery;
               try
                 SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
-                SetIntParam(FQuery, 0, Db_attr_dublicate);
+                SetIntParam(FQuery, 0, Db_attr_duplicate);
                 SetStrParam(FQuery, 1, Res.ImTh);
                 try
                   ExecSQL(FQuery);

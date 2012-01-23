@@ -25,7 +25,7 @@ initialization:
       CreateParentItem($Caption,$IconN,$RunString,false,0);
     };
   };
-	
+
   if ($c=0) { InVisible;};
   if ($IsCurrentFile=false) { InVisible;};
   $b=ReadRegBool("Options","UseUserMenuForIDmenu");

@@ -386,7 +386,6 @@ begin
 
     Info.IsPlusMenu := False;
     Info.IsListItem := False;
-    Info.AttrExists := False;
     Info.Add(Rec);
     Setlength(Menus, 1);
     Menus[0] := TMenuItem.Create(nil);

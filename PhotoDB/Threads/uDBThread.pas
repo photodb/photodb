@@ -11,15 +11,18 @@ type
   private
     FSupportedExt: string;
     FMethod: TThreadMethod;
+    FProcedure: TThreadProcedure;
     FCallResult: Boolean;
     FOwnerForm: TDBForm;
     function GetSupportedExt: string;
     procedure CallMethod;
+    procedure CallProcedure;
   protected
-    function L(TextToTranslate : string) : string; overload;
-    function L(TextToTranslate, Scope : string) : string; overload;
+    function L(TextToTranslate: string): string; overload;
+    function L(TextToTranslate, Scope: string): string; overload;
     function GetThreadID: string; virtual;
-    function SynchronizeEx(Method: TThreadMethod) : Boolean; virtual;
+    function SynchronizeEx(Method: TThreadMethod): Boolean; overload; virtual;
+    function SynchronizeEx(Proc: TThreadProcedure): Boolean; overload; virtual;
     property SupportedExt: string read GetSupportedExt;
     property OwnerForm: TDBForm read FOwnerForm;
     procedure Execute; override;
@@ -39,9 +42,18 @@ end;
 
 procedure TDBThread.CallMethod;
 begin
-  FCallResult := GOM.IsObj(FOwnerForm);
-  if FCallResult or (FOwnerForm = nil) then
+  FCallResult := GOM.IsObj(FOwnerForm) or (FOwnerForm = nil);
+  if FCallResult then
     FMethod
+  else
+    Terminate;
+end;
+
+procedure TDBThread.CallProcedure;
+begin
+  FCallResult := GOM.IsObj(FOwnerForm) or (FOwnerForm = nil);
+  if FCallResult then
+    FProcedure
   else
     Terminate;
 end;
@@ -80,6 +92,14 @@ end;
 function TDBThread.L(TextToTranslate, Scope: string): string;
 begin
   Result := TA(TextToTranslate, Scope);
+end;
+
+function TDBThread.SynchronizeEx(Proc: TThreadProcedure): Boolean;
+begin
+  FProcedure := Proc;
+  FCallResult := False;
+  Synchronize(CallProcedure);
+  Result := FCallResult;
 end;
 
 function TDBThread.SynchronizeEx(Method: TThreadMethod): Boolean;

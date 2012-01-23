@@ -84,7 +84,7 @@ type
     WriteLnLineProc: TWriteLineProcedure;
   end;
 
-  TOptimizeDublicatesThreadOptions = record
+  TOptimizeDuplicatesThreadOptions = record
     OwnerForm: TDBForm;
     FileName: string;
     OnEnd: TNotifyEvent;

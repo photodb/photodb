@@ -53,7 +53,7 @@ type
     procedure PackPhotoTable;
     procedure ShowBadLinks;
     procedure RecreateImThInPhotoTable;
-    procedure OptimizeDublicates;
+    procedure OptimizeDuplicates;
     procedure OnEnd(Sender: TObject);
     procedure LoadLanguage;
     procedure RestoreTable(FileName: string);
@@ -297,9 +297,9 @@ begin
   CMDForm.ShowModal;
 end;
 
-procedure TCMDForm.OptimizeDublicates;
+procedure TCMDForm.OptimizeDuplicates;
 var
-  Options: TOptimizeDublicatesThreadOptions;
+  Options: TOptimizeDuplicatesThreadOptions;
 begin
   WriteLnLine(Self, L('Optimization duplicates ... (Press Ctrl + B to break the process)'), LINE_INFO_INFO);
   WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);

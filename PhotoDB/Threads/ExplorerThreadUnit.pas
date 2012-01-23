@@ -41,7 +41,6 @@ type
     StringParam: string;
     GUIDParam: TGUID;
     CurrentFile: string;
-    GraphicParam: TGraphic;
     FShowFiles: Boolean;
     FQuery: TDataSet;
     FInfoText: string;
@@ -77,7 +76,6 @@ type
     procedure AddImageFileImageToExplorer;
     procedure AddImageFileItemToExplorer;
     procedure ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
-    procedure DrawImageToTempBitmapCenter;
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
     procedure ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
@@ -205,13 +203,10 @@ type
 type
   TIconType = (itSmall, itLarge);
 
+function ExplorerUpdateManager: TExplorerUpdateManager;
+
 var
   AExplorerFolders: TExplorerFolders = nil;
-  ExplorerUpdateBigImageThreadsCount: Integer = 0;
-  FullFolderPicture: TPNGImage = nil;
-  FFolderPictureLock: TCriticalSection = nil;
-
-function ExplorerUpdateManager: TExplorerUpdateManager;
 
 implementation
 
@@ -219,6 +214,9 @@ uses
   CommonDBSupport, uExplorerThreadPool;
 
 var
+  ExplorerUpdateBigImageThreadsCount: Integer = 0;
+  FullFolderPicture: TPNGImage = nil;
+  FFolderPictureLock: TCriticalSection = nil;
   ExplorerUpdateManagerInstance: TExplorerUpdateManager = nil;
 
 function ExplorerUpdateManager: TExplorerUpdateManager;
@@ -1289,18 +1287,13 @@ begin
   end;
 end;
 
-procedure TExplorerThread.DrawImageToTempBitmapCenter;
-begin
-  TempBitmap.Canvas.Draw(ThSize div 2 - GraphicParam.Width div 2, ThSize div 2 - GraphicParam.height div 2, GraphicParam);
-end;
-
 procedure TExplorerThread.ReplaceImageInExplorer;
 begin
   if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam, True);
 
-    if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage) then
+    if (TempBitmap = nil) or TempBitmap.Empty or not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage) then
       F(TempBitmap);
   end else
     F(TempBitmap);
@@ -1326,7 +1319,7 @@ var
   FilesDatesInFolder: array [1 .. 4] of TDateTime;
   CountFilesInFolder: Integer;
   FFileNames, FPrivateFileNames: TStringList;
-  DBFolder, Password: string;
+  DBFolder, Password, SelectQty: string;
   RecCount, SmallImageSize, Deltax, Deltay, _x, _y: Integer;
   Fbs: TStream;
   FJpeg: TJpegImage;
@@ -1399,10 +1392,15 @@ begin
           Query := GetQuery(True);
           ReadOnlyQuery(Query);
 
-          if ExplorerInfo.ShowPrivate then
-            SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC = ' + IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
+          if TPrivateHelper.Instance.IsPrivateDirectory(DBFolder) then
+            SelectQty := ''
           else
-            SetSQL(Query,'Select TOP 4 FFileName, Access, thum, Rotated From $DB$ where FolderCRC = ' + IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
+            SelectQty := 'TOP 4';
+
+          if ExplorerInfo.ShowPrivate then
+            SetSQL(Query,'Select ' + SelectQty + ' FFileName, Access, thum, Rotated From $DB$ where FolderCRC = ' + IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) ')
+          else
+            SetSQL(Query,'Select ' + SelectQty + ' FFileName, Access, thum, Rotated From $DB$ where FolderCRC = ' + IntToStr(Integer(crc)) + ' and (FFileName Like :FolderA) and not (FFileName like :FolderB) and Access <> ' + IntToStr(db_access_private));
 
           SetStrParam(Query, 0, '%' + NormalizeDBStringLike(DBFolder) + '%');
           SetStrParam(Query, 1, '%' + NormalizeDBStringLike(DBFolder) + '%\%');
@@ -1420,7 +1418,7 @@ begin
               if Query.FieldByName('Access').AsInteger = db_access_private then
                 FPrivateFileNames.Add(AnsiLowerCase(Query.FieldByName('FFileName').AsString));
 
-              if (Query.FieldByName('Access').AsInteger<>db_access_private) or ExplorerInfo.ShowPrivate then
+              if (Query.FieldByName('Access').AsInteger <> db_access_private) or ExplorerInfo.ShowPrivate then
                 if FileExistsSafe(Query.FieldByName('FFileName').AsString) then
                   if ShowFileIfHidden(Query.FieldByName('FFileName').AsString) then
                   begin
@@ -2703,7 +2701,7 @@ begin
 
   GUIDParam := FileID;
   FInfo.Assign(Info);
-  if (TempBitmap = nil) or TempBitmap.Empty or not SynchronizeEx(ReplaceImageInExplorer) then
+  if not SynchronizeEx(ReplaceImageInExplorer) then
     F(TempBitmap);
 end;
 

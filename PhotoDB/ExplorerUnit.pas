@@ -1378,7 +1378,6 @@ begin
         Infos.IsListItem := True;
         Infos.ListItem := Item;
       end;
-      Infos.AttrExists := False;
       TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Infos);
     finally
       F(Infos);

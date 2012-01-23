@@ -396,6 +396,7 @@ object DBReplaceForm: TDBReplaceForm
     Width = 133
     Height = 293
     Anchors = [akLeft, akTop, akRight, akBottom]
+    BorderStyle = bsNone
     EditManager.Font.Charset = DEFAULT_CHARSET
     EditManager.Font.Color = clWindowText
     EditManager.Font.Height = -11
