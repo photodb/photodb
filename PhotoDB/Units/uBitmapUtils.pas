@@ -1812,7 +1812,7 @@ begin
   end;
 end;
 
-procedure Interpolate(x, y, Width, Height: Integer; Rect: TRect; var S, D: TBitmap; CallBack: TProgressCallBackProc);
+procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; var S, D: TBitmap; CallBack: TProgressCallBackProc);
 var
   Z1, Z2: Single;
   K: Single;

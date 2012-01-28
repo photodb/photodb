@@ -72,7 +72,6 @@
 			<ImageDebugInfo>true</ImageDebugInfo>
 			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
 			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-			<DCC_RemoteDebug>true</DCC_RemoteDebug>
 			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<DCC_Optimize>false</DCC_Optimize>
 			<DCC_MapFile>3</DCC_MapFile>
@@ -127,8 +126,6 @@
 			<DCC_DebugDCUs>false</DCC_DebugDCUs>
 			<Debugger_RunParams>/start</Debugger_RunParams>
 			<VerInfo_Build>402</VerInfo_Build>
-			<Manifest_File>None</Manifest_File>
-			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
 			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.3.402;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
@@ -675,6 +672,8 @@
 				<FormType>dfm</FormType>
 			</DCCReference>
 			<DCCReference Include="Threads\uThreadImportPictures.pas"/>
+			<DCCReference Include="Units\uPathUtils.pas"/>
+			<DCCReference Include="Threads\uImportScanThread.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

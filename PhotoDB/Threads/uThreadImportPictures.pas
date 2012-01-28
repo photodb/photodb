@@ -5,10 +5,13 @@ interface
 uses
   Generics.Collections,
   System.Classes,
+  SysUtils,
   uMemory,
   uMemoryEx,
   Forms,
+  uPathUtils,
   uPathProviders,
+  uExplorerFSProviders,
   uFormMoveFilesProgress,
   uDBThread;
 
@@ -23,7 +26,6 @@ type
     function Copy: TFileOperationTask;
     constructor Create(ASource, ADestination: TPathItem);
     destructor Destroy; override;
-    procedure FillAtomOperationList(List: TList<TFileOperationTask>);
     property Source: TPathItem read FSource;
     property Destination: TPathItem read FDestination;
     property IsDirectory: Boolean read FIsDirectory;
@@ -98,26 +100,6 @@ destructor TFileOperationTask.Destroy;
 begin
   F(FSource);
   F(FDestination);
-end;
-
-procedure TFileOperationTask.FillAtomOperationList(
-  List: TList<TFileOperationTask>);
-var
-  SubItems: TPathItemCollection;
-begin
-  if not IsDirectory then
-    List.Add(Self.Copy)
-  else
-  begin
-    SubItems := TPathItemCollection.Create;
-    try
-      FSource.Provider.FillChilds(Self, FSource, SubItems, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
-
-
-    finally
-      F(SubItems);
-    end;
-  end;
 end;
 
 { TImportPicturesOptions }
@@ -204,9 +186,10 @@ var
   I, J: Integer;
   HR: Boolean;
   Source, Destination: string;
+  D: TPathItem;
   Childs: TPathItemCollection;
   FSize: Integer;
-  FileOperations, CurrentLevel: TList<TFileOperationTask>;
+  FileOperations, CurrentLevel, NextLevel: TList<TFileOperationTask>;
 begin
   FreeOnTerminate := True;
   FSize := 0;
@@ -240,29 +223,62 @@ begin
     FileOperations := TList<TFileOperationTask>.Create;
     try
 
-      for I := 0 to FOptions.TasksCount - 1 do
-      begin
-        CurrentLevel := TList<TFileOperationTask>.Create;
-        try
-          for J := 0 to FOptions.Tasks[I].OperationsCount - 1 do
-            CurrentLevel.Add(FOptions.Tasks[I].Operations[J].Copy);
+      CurrentLevel := TList<TFileOperationTask>.Create;
+      NextLevel := TList<TFileOperationTask>.Create;
+      try
 
-          while CurrentLevel.Count > 0 do
-          begin
-            for J := 0 to CurrentLevel.Count - 1 do
-            begin
-              Childs := TPathItemCollection.Create;
-              try
-                CurrentLevel[J].Source.Provider.FillChilds(Self, CurrentLevel[J].Source, Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
-              finally
-                F(Childs);
-              end;
-            end;
-          end
-        finally
-          FreeList(CurrentLevel);
+        for I := 0 to FOptions.TasksCount - 1 do
+        begin
+          for J := 0 to FOptions.Tasks[I].OperationsCount - 1 do
+            NextLevel.Add(FOptions.Tasks[I].Operations[J].Copy);
         end;
 
+        while NextLevel.Count > 0 do
+        begin
+          CurrentLevel.AddRange(NextLevel);
+          NextLevel.Clear;
+
+          for I := 0 to CurrentLevel.Count - 1 do
+          begin
+            Childs := TPathItemCollection.Create;
+            try
+              CurrentLevel[I].Source.Provider.FillChilds(Self, CurrentLevel[I].Source, Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+
+              Destination := CurrentLevel[I].Destination.Path;
+              for J := 0 to Childs.Count - 1 do
+              begin
+
+                if Childs[J].IsDirectoty then
+                begin
+                  D := TDirectoryItem.CreateFromPath(TPath.Combine(Destination, ExtractFileName(Childs[J].Path)), PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+                  try
+                    NextLevel.Add(TFileOperationTask.Create(Childs[J], D));
+                  finally
+                    F(D);
+                  end;
+                end else
+                begin
+                  D := TFileItem.CreateFromPath(TPath.Combine(Destination, ExtractFileName(Childs[J].Path)), PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+                  try
+                    FileOperations.Add(TFileOperationTask.Create(Childs[J], D));
+                  finally
+                    F(D);
+                  end;
+                end;
+                FSize := FSize + Childs[J].FileSize;
+              end;
+
+              //notify updated size
+            finally
+              F(Childs);
+            end;
+          end;
+
+        end
+
+      finally
+        FreeList(CurrentLevel);
+        FreeList(NextLevel);
       end;
 
     finally

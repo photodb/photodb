@@ -13,6 +13,7 @@ type
     FThreadForm: TThreadForm;
     FState: TGUID;
     FMethod: TThreadMethod;
+    FProcedure: TThreadProcedure;
     FSubThreads: TList;
     FIsTerminated: Boolean;
     FParentThread: TThreadEx;
@@ -24,7 +25,9 @@ type
     procedure TestMethod;
   protected
     function SynchronizeEx(Method: TThreadMethod): Boolean; override;
+    function SynchronizeEx(Proc: TThreadProcedure): Boolean; overload;
     procedure CallMethod;
+    procedure CallProcedure;
     procedure Start;
     function IsVirtualTerminate: Boolean; virtual;
     procedure WaitForSubThreads;
@@ -63,6 +66,20 @@ begin
   end;
 end;
 
+procedure TThreadEx.CallProcedure;
+begin
+  FSyncSuccessful := CheckForm;
+  if FSyncSuccessful then
+    FProcedure
+  else
+  begin
+    if IsVirtualTerminate then
+      FIsTerminated := True
+    else
+      Terminate;
+  end;
+end;
+
 function TThreadEx.CheckForm: Boolean;
 begin
   Result := False;
@@ -75,7 +92,7 @@ begin
   end;
 end;
 
-function TThreadEx.CheckThread : Boolean;
+function TThreadEx.CheckThread: Boolean;
 begin
   Result := SynchronizeEx(TestMethod);
 end;
@@ -96,7 +113,7 @@ begin
   end;
 end;
 
-constructor TThreadEx.Create(AOwnerForm: TThreadForm; AState : TGUID);
+constructor TThreadEx.Create(AOwnerForm: TThreadForm; AState: TGUID);
 begin
   inherited Create(AOwnerForm, False);
   FIsTerminated := False;
@@ -167,7 +184,18 @@ begin
     FThreadForm.RegisterThreadAndStart(Self)
 end;
 
-function TThreadEx.SynchronizeEx(Method: TThreadMethod) : Boolean;
+function TThreadEx.SynchronizeEx(Proc: TThreadProcedure): Boolean;
+begin
+  Result := False;
+  if not IsTerminated then
+  begin
+    FProcedure := Proc;
+    Synchronize(CallProcedure);
+    Result := FSyncSuccessful;
+  end;
+end;
+
+function TThreadEx.SynchronizeEx(Method: TThreadMethod): Boolean;
 begin
   Result := False;
   if not IsTerminated then

@@ -374,7 +374,9 @@ uses
   uExplorerPastePIDLsThread in 'Threads\uExplorerPastePIDLsThread.pas',
   uFormImportImages in 'uFormImportImages.pas' {FormImportImages},
   uFormMoveFilesProgress in 'uFormMoveFilesProgress.pas' {FormMoveFilesProgress},
-  uThreadImportPictures in 'Threads\uThreadImportPictures.pas';
+  uThreadImportPictures in 'Threads\uThreadImportPictures.pas',
+  uPathUtils in 'Units\uPathUtils.pas',
+  uImportScanThread in 'Threads\uImportScanThread.pas';
 
 {$R *.res}
 
@@ -742,9 +744,10 @@ begin
 
     TW.I.Start('Application.Run');
 
+{$IFDEF DEBUG}
   Application.CreateForm(TFormImportImages, FormImportImages);
   FormImportImages.Show;
-
+{$ENDIF}
 
     Application.Run;
 

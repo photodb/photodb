@@ -58,8 +58,10 @@ type
   TPortableItem = class(TPathItem)
   private
     FItem: IPDItem;
+    FItemSize: Int64;
     function GetItem: IPDItem;
   protected
+    function GetFileSize: Int64; override;
     property Item: IPDItem read GetItem;
   public
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
@@ -77,12 +79,14 @@ type
 
   TPortableFSItem = class(TPortableItem)
   private
-    function GetFileSize: Int64;
+    function GetDate: TDateTime;
   protected
+    function GetFileSize: Int64; override;
     function InternalGetParent: TPathItem; override;
   public
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     property FileSize: Int64 read GetFileSize;
+    property Date: TDateTime read GetDate;
   end;
   
   TPortableDirectoryItem = class(TPortableFSItem)
@@ -583,7 +587,13 @@ constructor TPortableItem.CreateFromPath(APath: string; Options,
 begin
   inherited;
   FItem := nil;
+  FItemSize := 0;
   DisplayName := ExtractFileName(Path);
+end;
+
+function TPortableItem.GetFileSize: Int64;
+begin
+  Result := FItemSize;
 end;
 
 function TPortableItem.GetItem: IPDItem;
@@ -717,6 +727,13 @@ begin
   FindIcon(HInstance, 'SIMPLEFILE', ImageSizeToIconSize16_32_48(ImageSize), 32, Icon);
   FImage := TPathImage.Create(Icon);
   Exit(True);
+end;
+
+function TPortableFSItem.GetDate: TDateTime;
+begin
+  Result := MinDateTime;
+  if Item <> nil then
+    Result := Item.ItemDate;
 end;
 
 { TPortableImageItem }

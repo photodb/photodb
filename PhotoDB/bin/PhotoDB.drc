@@ -1383,21 +1383,21 @@ BEGIN
 END
 
 /* Resources\MAIN.res */
-/* Resources\Logo.res */
-/* Resources\Slideshow_Load.res */
-/* Directory_Large.res */
-/* Resources\ExplorerBackground.res */
-/* Resources\SearchBackground.res */
-/* Resources\DateRange.res */
-/* Resources\Manifest.res */
-/* Resources\ImagePanelBackground.res */
-/* Resources\Loading.res */
-/* Resources\Activation.res */
-/* Resources\PrinterPattern.res */
-/* Resources\BigPattern.res */
-/* Resources\Film_Strip.res */
-/* Resources\PathSeparator.res */
-/* D:\Dmitry\Delphi exe\Photo Database\DBIcons\icons.res */
+/* Resources\logo.RES */
+/* Resources\slideshow_load.RES */
+/* directory_large.res */
+/* Resources\ExplorerBackground.RES */
+/* Resources\SearchBackground.RES */
+/* Resources\DateRange.RES */
+/* Resources\Manifest.RES */
+/* Resources\ImagePanelBackground.RES */
+/* Resources\Loading.RES */
+/* Resources\Activation.RES */
+/* Resources\PrinterPattern.RES */
+/* Resources\BigPattern.RES */
+/* Resources\Film_strip.RES */
+/* Resources\PathSeparator.RES */
+/* D:\Dmitry\Delphi exe\Photo Database\DBIcons\Icons.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\db_icons.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\ZoomRc.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\editor.res */
@@ -1406,11 +1406,11 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\panel.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\cmd_icons.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\updater.res */
-/* Resources\explorer_search.res */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Controls.res */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Buttons.res */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\ExtDlgs.res */
-/* D:\Dmitry\Dmitry\Ratingres.res */
+/* Resources\explorer_search.RES */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\controls.res */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\buttons.res */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\extdlgs.res */
+/* D:\Dmitry\Dmitry\ratingres.res */
 /* C:\Users\Public\Documents\Mustangpeak\EasyListview\Source\EasyRes.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ProgressActionUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitNewGroupForm.dfm */
@@ -1437,11 +1437,11 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uAbout.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\DBCtrls.res */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\DBGrids.res */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\dbctrls.res */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\dbgrids.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitStringPromtForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormManagerHint.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\SPIN.RES */
+/* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\spin.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBNewPathAndIcon.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDBOptions.dfm */
@@ -1449,12 +1449,12 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBFromList.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSelectDB.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitImHint.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\unitimhint.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\SelectDB\uFrmSelectDBCreationSummary.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationSettings.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Convertation\uFrmConvertationProgress.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitConvertDBForm.dfm */
-/* D:\Dmitry\Dmitry\DBLOADING.RES */
+/* D:\Dmitry\Dmitry\dbloading.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitEditLinkForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Options.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PropertyForm.dfm */
@@ -1464,7 +1464,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uWatermarkOptions.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSizeResizerForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormAddImage.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Units\dx\DX_Alpha.DFM */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Units\dx\DX_Alpha.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImageEditor\ExEffectFormUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImageEditor\TextToolRes.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitEditorFullScreenForm.dfm */
@@ -1490,6 +1490,9 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitGetPhotosForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitListOfKeyWords.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\DBTools\UnitDBTreeView.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormMoveFilesProgress.dfm */
+/* Resources\PicturesImport.RES */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormImportImages.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSplitExportForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapInfo.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapper.dfm */
@@ -1512,7 +1515,5 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitDebugScriptForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormSizeListViewTh.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Searching.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormMoveFilesProgress.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormImportImages.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PhotoDB.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PhotoDB.drf */

@@ -24,6 +24,7 @@ cd photodb/resources
 "%BRCC32%" Film_strip.rc
 "%BRCC32%" explorer_search.rc
 "%BRCC32%" PathSeparator.rc
+"%BRCC32%" PicturesImport.rc
 
 cd ..
 cd ..

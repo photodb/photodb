@@ -32,7 +32,7 @@ uses
   UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor, UnitFormCont,
   uManagerExplorer, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
   SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
-  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
+  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB, uFormImportImages,
   UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
   UnitFormCDMapper, UnitFormCDExport, uFormSteganography;
 

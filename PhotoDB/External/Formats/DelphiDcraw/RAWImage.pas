@@ -108,7 +108,7 @@ begin
   end;
 end;
 
-function ReadRAWExif(FileName: String) : TRAWExif;
+function ReadRAWExif(FileName: String): TRAWExif;
 var
   RawBitmap : TFreeWinBitmap;
   FindMetaData : PFIMETADATA;
@@ -358,6 +358,7 @@ end;
 
 constructor TRAWExif.Create;
 begin
+  FreeImageInit;
   FExifList := TList.Create;
 end;
 

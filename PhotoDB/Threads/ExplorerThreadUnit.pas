@@ -69,26 +69,26 @@ type
     procedure BeginUpDate;
     procedure EndUpDate(Invalidate: Boolean = True);
     procedure EndUpDateSync;
-    procedure MakeFolderImage(Folder : String);
+    procedure MakeFolderImage(Folder: String);
     procedure FileNeededAW;
     procedure AddDirectoryIconToExplorer;
     procedure AddImageFileToPacket;
     procedure AddImageFileImageToExplorer;
     procedure AddImageFileItemToExplorer;
-    procedure ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
+    procedure ReplaceImageItemImage(FileName: string; FileSize: Int64; FileID: TGUID);
     procedure ReplaceImageInExplorer;
     procedure ReplaceInfoInExplorer;
     procedure ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
-    procedure DrawFolderImageBig(Bitmap : TBitmap);
-    procedure DrawFolderImageWithXY(Bitmap : TBitmap; FolderImageRect : TRect; Source : TBitmap);
+    procedure DrawFolderImageBig(Bitmap: TBitmap);
+    procedure DrawFolderImageWithXY(Bitmap: TBitmap; FolderImageRect: TRect; Source: TBitmap);
     procedure ReplaceFolderImage;
     procedure AddFile;
     procedure AddImageFileToExplorerW;
     procedure AddImageFileItemToExplorerW;
-    function FindInQuery(FileName : String) : Boolean;
-    procedure ShowInfo(StatusText : String); overload;
-    procedure ShowInfo(Max, Value : Integer); overload;
-    procedure ShowInfo(StatusText : String; Max, Value : Integer); overload;
+    function FindInQuery(FileName: String): Boolean;
+    procedure ShowInfo(StatusText: String); overload;
+    procedure ShowInfo(Max, Value: Integer); overload;
+    procedure ShowInfo(StatusText: String; Max, Value: Integer); overload;
     procedure ShowInfo(Pos : Integer); overload;
     procedure SetInfoToStatusBar;
     procedure ShowProgress;
@@ -112,7 +112,7 @@ type
     procedure UpdateFolder;
     procedure ReplaceImageInExplorerB;
     procedure MakeIconForFile;
-    function ShowFileIfHidden(FileName :String) : boolean;
+    function ShowFileIfHidden(FileName: String): Boolean;
     procedure UpdateSimpleFile;
     procedure DoUpdaterHelpProc;
     procedure EndUpdateID;
@@ -120,8 +120,8 @@ type
     procedure DoLoadBigImages(LoadOnlyDBItems: Boolean);
     procedure GetAllFiles;
     procedure DoDefaultSort;
-    procedure ExtractImage(Info : TDBPopupMenuInfoRecord; CryptedFile : Boolean; FileID : TGUID);
-    procedure ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
+    procedure ExtractImage(Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
+    procedure ExtractDirectoryPreview(FileName: string; DirectoryID: TGUID);
     procedure ExtractBigPreview(FileName: string; ID: Integer; Rotated: Integer; FileGUID: TGUID);
     procedure DoMultiProcessorTask; override;
     procedure ShowLoadingSign;
@@ -133,15 +133,15 @@ type
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
     procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TDBPopupMenuInfo);
   protected
-    function IsVirtualTerminate : Boolean; override;
-    function GetThreadID : string; override;
+    function IsVirtualTerminate: Boolean; override;
+    function GetThreadID: string; override;
   public
-    FUpdaterInfo : TUpdaterInfo;
-    ExplorerInfo : TExplorerViewInfo;
-    FInfo : TDBPopupMenuInfoRecord;
-    IsCryptedFile : Boolean;
-    FFileID : TGUID;
-    FSender : TExplorerForm;
+    FUpdaterInfo: TUpdaterInfo;
+    ExplorerInfo: TExplorerViewInfo;
+    FInfo: TDBPopupMenuInfoRecord;
+    IsCryptedFile: Boolean;
+    FFileID: TGUID;
+    FSender: TExplorerForm;
     LoadingAllBigImages: Boolean;
     constructor Create(Folder, Mask: string;
       ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
@@ -962,8 +962,7 @@ var
         end else
           Directories.Add(CurrentDirectory);
 
-        Repeat
-
+        repeat
           CurrentDirectories.Assign(Directories);
           Directories.Clear;
 
