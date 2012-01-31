@@ -2092,5 +2092,6 @@
 	<translate name="Items remaining" value="Осталось объектов"/>
 	<translate name="Speed" value="Скорость"/>
 	<translate name="{0} Files" value="{0} Файлов"/>
+	<translate name="Label" value="Метка"/>
   </scope>
 </language>

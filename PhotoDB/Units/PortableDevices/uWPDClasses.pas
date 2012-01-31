@@ -180,6 +180,9 @@ var
   DevList: TList<IPDevice>;
   Cancel: Boolean;
 begin
+  if FManager = nil then
+    Exit;
+
   Cancel := False;
   DevList := TList<IPDevice>.Create;
   try

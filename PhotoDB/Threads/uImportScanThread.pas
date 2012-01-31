@@ -95,68 +95,77 @@ var
   ExifData: TExifData;
   RAWExif: TRAWExif;
   Date: TDateTime;
+  Packet: TList<TScanItem>;
 begin
-  for I := 0 to CurrentItems.Count - 1 do
-  begin
-    FileSize := 0;
-    Date := MinDateTime;
+  Packet := TList<TScanItem>.Create;
+  try
 
-    PI := CurrentItems[I];
-    if PI.IsDirectoty then
-      FNextLevel.Add(PI.Copy)
-    else
+    for I := 0 to CurrentItems.Count - 1 do
     begin
-      if PI is TPortableFSItem and not PI.IsDirectoty then
+      FileSize := 0;
+      Date := MinDateTime;
+
+      PI := CurrentItems[I];
+      if PI.IsDirectoty then
+        FNextLevel.Add(PI.Copy)
+      else
       begin
-        FileSize := TPortableImageItem(PI).FileSize;
-        Date := TPortableImageItem(PI).Date;
-      end else if PI is TFileItem then
-      begin
-        FileSize := PI.FileSize;
-        Date := TFileItem(PI).TimeStamp;
-        if IsGraphicFile(PI.Path) then
+        if PI is TPortableFSItem and not PI.IsDirectoty then
         begin
-          if IsRAWImageFile(PI.Path) then
+          FileSize := TPortableImageItem(PI).FileSize;
+          Date := TPortableImageItem(PI).Date;
+        end else if PI is TFileItem then
+        begin
+          FileSize := PI.FileSize;
+          Date := TFileItem(PI).TimeStamp;
+          if IsGraphicFile(PI.Path) then
           begin
-            RAWExif := ReadRAWExif(PI.Path);
-            try
-              if RAWExif.IsEXIF then
-              begin
-                Date := DateOf(RAWExif.TimeStamp);
-                FileSize := PI.FileSize;
+            if IsRAWImageFile(PI.Path) then
+            begin
+              RAWExif := ReadRAWExif(PI.Path);
+              try
+                if RAWExif.IsEXIF then
+                begin
+                  Date := DateOf(RAWExif.TimeStamp);
+                  FileSize := PI.FileSize;
+                end;
+              finally
+                F(RAWExif);
               end;
-            finally
-              F(RAWExif);
-            end;
-          end else
-          begin
-            ExifData := TExifData.Create;
-            try
-              ExifData.LoadFromGraphic(PI.Path);
-              if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
-              begin
-                Date := DateOf(ExifData.DateTimeOriginal);
-                FileSize := PI.FileSize;
+            end else
+            begin
+              ExifData := TExifData.Create;
+              try
+                ExifData.LoadFromGraphic(PI.Path);
+                if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
+                begin
+                  Date := DateOf(ExifData.DateTimeOriginal);
+                  FileSize := PI.FileSize;
+                end;
+              finally
+                F(ExifData);
               end;
-            finally
-              F(ExifData);
             end;
           end;
         end;
-      end;
 
-      if FileSize > 0 then
-      begin
-        SynchronizeEx(
-         procedure
-         begin
-           TFormImportImages(OwnerForm).AddItem(PI, Date, FileSize);
-         end
-        );
+        if FileSize > 0 then
+          Packet.Add(TScanItem.Create(PI, Date, FileSize));
       end;
     end;
+
+    SynchronizeEx(
+      procedure
+      begin
+        TFormImportImages(OwnerForm).AddItems(Packet);
+      end
+    );
+
+  finally
+    FreeList(Packet);
   end;
 
+  CurrentItems.FreeItems;
   //
   Break := IsTerminated;
 end;

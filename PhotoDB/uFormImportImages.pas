@@ -33,7 +33,23 @@ uses
   uSysUtils,
   uTranslate,
   Dolphin_db,
-  Vcl.ExtCtrls;
+  Vcl.ExtCtrls,
+  MPCommonObjects,
+  EasyListview,
+  uVCLHelpers,
+  UnitBitmapImageList;
+
+const
+  TAG_LABEL           = 1;
+  TAG_DATE            = 2;
+  TAG_ITEMS_COUNT     = 3;
+  TAG_ITEMS_SIZE      = 4;
+  TAG_SETTINGS        = 5;
+  TAG_EDIT_LABEL      = 6;
+  TAG_EDIT_LABEL_OK   = 7;
+  TAG_EDIT_DATE       = 8;
+  TAG_EDIT_DATE_OK    = 9;
+  TAG_LOADING         = 10;
 
 type
   TBaseSelectItem = class
@@ -53,12 +69,16 @@ type
     FDate: TDateTime;
     FItemsCount: Integer;
     FItemsSize: Int64;
+    FItems: TList<TPathItem>;
   protected
     function GetItemsCount: Integer; override;
     function GetItemsSize: Int64; override;
   public
-    procedure AddItem(Size: Int64);
+    constructor Create;
+    destructor Destroy; override;
+    procedure AddItem(Item: TPathItem; Size: Int64);
     property Date: TDateTime read FDate write FDate;
+    property Items: TList<TPathItem> read FItems;
   end;
 
   TSelectDateItems = class(TBaseSelectItem)
@@ -74,6 +94,7 @@ type
     destructor Destroy; override;
     property StartDate: TDateTime read GetStartDate;
     property EndDate: TDateTime read GetEndDate;
+    property Items: TList<TSelectDateItem> read FItems;
   end;
 
   TSelectDateCollection = class
@@ -82,12 +103,35 @@ type
     FContainer: TScrollBox;
     function GetScrollBoxByItem(Index: TBaseSelectItem): TScrollBox;
     property DisplayItems[Index: TBaseSelectItem]: TScrollBox read GetScrollBoxByItem;
+    procedure OnItemEditClick(Sender: TObject);
+    procedure OnDateEditClick(Sender: TObject);
+    function FindChildByTag<T: TWinControl>(Parent: TWinControl; Tag: NativeInt): T;
+  protected
+    procedure OnEditLabelEditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure OnEditLabelOkClick(Sender: TObject);
+    procedure EndEditLabel(Item: TBaseSelectItem);
+
+    procedure OnEditDateEditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure OnEditDateOkClick(Sender: TObject);
+    procedure EndEditDate(Item: TSelectDateItem);
+
+    procedure OnBoxMouseLeave(Sender: TObject);
+    procedure OnBoxMouseEnter(Sender: TObject);
+    procedure OnBoxClick(Sender: TObject);
   public
     constructor Create(Container: TScrollBox);
     destructor Destroy; override;
     procedure Clear;
     procedure UpdateModel;
-    procedure AddDateInfo(Date: TDateTime; Size: Int64);
+    procedure AddDateInfo(Item: TPathItem; Date: TDateTime; Size: Int64);
+  end;
+
+  TScanItem = class(TObject)
+  public
+    Item: TPathItem;
+    Date: TDateTime;
+    Size: Int64;
+    constructor Create(AItem: TPathItem; ADate: TDateTime; ASize: Int64);
   end;
 
 type
@@ -110,34 +154,11 @@ type
     CbDeleteAfterImport: TCheckBox;
     WlExtendedMode: TWebLink;
     CbAddToCollection: TCheckBox;
-    GroupBox1: TGroupBox;
+    GbSeries: TGroupBox;
     SbSeries: TScrollBox;
-    SbDate1: TScrollBox;
-    WebLink2: TWebLink;
-    WebLink3: TWebLink;
-    WebLink4: TWebLink;
-    WebLink5: TWebLink;
-    LoadingSign1: TLoadingSign;
-    WebLink1: TWebLink;
-    ScrollBox4: TScrollBox;
-    WebLink18: TWebLink;
-    WatermarkedEdit8: TWatermarkedEdit;
-    DateTimePicker8: TDateTimePicker;
-    WebLink19: TWebLink;
-    WebLink16: TWebLink;
-    ScrollBox1: TScrollBox;
-    WebLink17: TWebLink;
-    WebLink20: TWebLink;
-    WebLink21: TWebLink;
-    WebLink22: TWebLink;
-    LoadingSign2: TLoadingSign;
-    WebLink23: TWebLink;
-    ListView1: TListView;
     WebLink6: TWebLink;
-    Image1: TImage;
-    Image2: TImage;
-    Image3: TImage;
-    Image4: TImage;
+    ElvPreview: TEasyListview;
+    LsMain: TLoadingSign;
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnSelectPathToClick(Sender: TObject);
     procedure BtnSelectPathFromClick(Sender: TObject);
@@ -148,16 +169,21 @@ type
     procedure PeImportFromPathChange(Sender: TObject);
   private
     { Private declarations }
+    FItemUpdateTimer: TTimer;
+    FItemUpdateLastTime: Cardinal;
     FSeries: TSelectDateCollection;
+    FBitmapImageList: TBitmapImageList;
     procedure LoadLanguage;
     procedure ReadOptions;
+    procedure ItemUpdateTimer(Sender: TObject);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
   public
     { Public declarations }
     procedure SetPath(Path: string);
-    procedure AddItem(Item: TPathItem; Date: TDateTime; Size: Int64);
+    procedure AddItems(Items: TList<TScanItem>);
+    procedure AddPreviewItem(PathItem: TPathItem; Image: TPathImage);
   end;
 
 var
@@ -171,7 +197,8 @@ implementation
 
 uses
   uThreadImportPictures,
-  uImportScanThread;
+  uImportScanThread,
+  uImportSeriesPreview;
 
 procedure GetPhotosFromDevice(DeviceName: string);
 var
@@ -182,12 +209,33 @@ begin
   FormImportImages.Show;
 end;
 
+{ TScanItem }
+
+constructor TScanItem.Create(AItem: TPathItem; ADate: TDateTime; ASize: Int64);
+begin
+  Item := AItem;
+  Date := ADate;
+  Size := ASize;
+end;
+
 { TSelectDateItem }
 
-procedure TSelectDateItem.AddItem(Size: Int64);
+procedure TSelectDateItem.AddItem(Item: TPathItem; Size: Int64);
 begin
+  FItems.Add(Item.Copy);
   FItemsSize := FItemsSize + Size;
   Inc(FItemsCount);
+end;
+
+constructor TSelectDateItem.Create;
+begin
+  FItems := TList<TPathItem>.Create;
+end;
+
+destructor TSelectDateItem.Destroy;
+begin
+  FreeList(FItems);
+  inherited;
 end;
 
 function TSelectDateItem.GetItemsCount: Integer;
@@ -253,7 +301,7 @@ end;
 
 { TSelectDateCollection }
 
-procedure TSelectDateCollection.AddDateInfo(Date: TDateTime; Size: Int64);
+procedure TSelectDateCollection.AddDateInfo(Item: TPathItem; Date: TDateTime; Size: Int64);
 var
   SI: TBaseSelectItem;
 begin
@@ -265,7 +313,7 @@ begin
     begin
       if TSelectDateItem(SI).Date = Date then
       begin
-        TSelectDateItem(SI).AddItem(Size);
+        TSelectDateItem(SI).AddItem(Item, Size);
         Exit;
       end;
     end;
@@ -301,7 +349,7 @@ end;
 
 destructor TSelectDateCollection.Destroy;
 begin
-  F(FItems);
+  FreeList(FItems);
   inherited;
 end;
 
@@ -320,30 +368,287 @@ begin
       end;
 end;
 
+function TSelectDateCollection.FindChildByTag<T>(Parent: TWinControl; Tag: NativeInt): T;
+var
+  I: Integer;
+begin
+  Result := default(T);
+  for I := 0 to Parent.ControlCount - 1 do
+  begin
+    if Parent.Controls[I].Tag = Tag then
+    begin
+      Result := Parent.Controls[I] as T;
+      Exit;
+    end;
+  end;
+end;
+
+procedure TSelectDateCollection.OnEditLabelEditKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+var
+  Ed: TWatermarkedEdit;
+  SI: TBaseSelectItem;
+begin
+  Ed := TWatermarkedEdit(Sender);
+  if Key = VK_RETURN then
+  begin
+    Key := 0;
+    SI := TBaseSelectItem(Ed.Parent.Tag);
+    EndEditLabel(SI);
+  end;
+end;
+
+procedure TSelectDateCollection.OnEditLabelOkClick(Sender: TObject);
+var
+  SI: TBaseSelectItem;
+begin
+  SI := TBaseSelectItem(TWinControl(Sender).Parent.Tag);
+  EndEditLabel(SI);
+end;
+
+procedure TSelectDateCollection.OnEditDateEditKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+var
+  Dp: TDateTimePicker;
+  SI: TSelectDateItem;
+begin
+  Dp := TDateTimePicker(Sender);
+  if Key = VK_RETURN then
+  begin
+    Key := 0;
+    SI := TSelectDateItem(Dp.Parent.Tag);
+    EndEditDate(SI);
+  end;
+end;
+
+procedure TSelectDateCollection.OnEditDateOkClick(Sender: TObject);
+var
+  SI: TSelectDateItem;
+begin
+  SI := TSelectDateItem(TWinControl(Sender).Parent.Tag);
+  EndEditDate(SI);
+end;
+
+procedure TSelectDateCollection.EndEditDate(Item: TSelectDateItem);
+var
+  Sb: TScrollBox;
+  Dp: TDateTimePicker;
+  LnkOk, LnkDate: TWebLink;
+begin
+  Sb := DisplayItems[Item];
+  if (Sb <> nil) then
+  begin
+    LnkDate := FindChildByTag<TWebLink>(Sb, TAG_DATE);
+    Dp := FindChildByTag<TDateTimePicker>(Sb, TAG_EDIT_DATE);
+    LnkOk := FindChildByTag<TWebLink>(Sb, TAG_EDIT_DATE_OK);
+    Item.Date := Dp.Date;
+
+    LnkDate.Text := FormatDateTime('yyyy-mm-dd', Dp.Date);
+
+    LnkOk.Hide;
+    Dp.Hide;
+    LnkDate.Show;
+  end;
+end;
+
+procedure TSelectDateCollection.EndEditLabel(Item: TBaseSelectItem);
+var
+  Sb: TScrollBox;
+  Edit: TWatermarkedEdit;
+  LnkOk, LnkLabel: TWebLink;
+begin
+  Sb := DisplayItems[Item];
+  if (Sb <> nil) then
+  begin
+    LnkLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
+    Edit := FindChildByTag<TWatermarkedEdit>(Sb, TAG_EDIT_LABEL);
+    LnkOk := FindChildByTag<TWebLink>(Sb, TAG_EDIT_LABEL_OK);
+    Item.ItemLabel := Edit.Text;
+
+    LnkLabel.Text := Edit.Text;
+
+    LnkOk.Hide;
+    Edit.Hide;
+    LnkLabel.Show;
+  end;
+end;
+
+procedure TSelectDateCollection.OnBoxClick(Sender: TObject);
+var
+  Sb: TScrollBox;
+  SI: TBaseSelectItem;
+  I: Integer;
+  Data: TList<TPathItem>;
+
+  procedure AddToList(Item: TSelectDateItem);
+  var
+    J: Integer;
+  begin
+    for J := 0 to Item.Items.Count - 1 do
+      Data.Add(Item.Items[J].Copy);
+  end;
+
+begin
+  if Sender is TScrollBox then
+    Sb := TScrollBox(Sender)
+  else
+    Sb := TScrollBox(TWinControl(Sender).Parent);
+
+  Data := TList<TPathItem>.Create;
+
+  SI := TBaseSelectItem(Sb.Tag);
+  if SI is TSelectDateItem then
+    AddToList(TSelectDateItem(SI))
+  else
+    for I := 0 to TSelectDateItems(SI).ItemsCount - 1 do
+      AddToList(TSelectDateItems(SI).Items[I]);
+
+  TImportSeriesPreview.Create(TThreadForm(Sb.Owner), Data, 60);
+end;
+
+procedure TSelectDateCollection.OnBoxMouseEnter(Sender: TObject);
+var
+  Sb: TScrollBox;
+begin
+  if Sender is TScrollBox then
+    Sb := TScrollBox(Sender)
+  else
+    Sb := TScrollBox(TWinControl(Sender).Parent);
+
+  Sb.Color := $FFFFAF;
+end;
+
+procedure TSelectDateCollection.OnBoxMouseLeave(Sender: TObject);
+var
+  Sb: TScrollBox;
+begin
+  if Sender is TScrollBox then
+    Sb := TScrollBox(Sender)
+  else
+    Sb := TScrollBox(TWinControl(Sender).Parent);
+
+  Sb.Color := clWhite;
+end;
+
+procedure TSelectDateCollection.OnDateEditClick(Sender: TObject);
+var
+  DtpEditDate: TDateTimePicker;
+  LnkLabel, LnkOk: TWebLink;
+  SI: TBaseSelectItem;
+  Parent: TScrollBox;
+begin
+  LnkLabel := TWebLink(Sender);
+  LnkLabel.Hide;
+
+  Parent := TScrollBox(LnkLabel.Parent);
+  SI := TBaseSelectItem(Parent.Tag);
+  if SI is TSelectDateItem then
+  begin
+
+    DtpEditDate := FindChildByTag<TDateTimePicker>(Parent, TAG_EDIT_DATE);
+    if DtpEditDate = nil then
+    begin
+      DtpEditDate := TDateTimePicker.Create(FContainer.Owner);
+      DtpEditDate.Parent := Parent;
+      DtpEditDate.Left := 3;
+      DtpEditDate.Top := 27;
+      DtpEditDate.Width := 121;
+      DtpEditDate.Height := 21;
+      DtpEditDate.Date := TSelectDateItem(SI).Date;
+      DtpEditDate.Tag := TAG_EDIT_DATE;
+      DtpEditDate.OnKeyDown := OnEditDateEditKeyDown;
+      DtpEditDate.OnExit := OnEditDateOkClick;
+      DtpEditDate.OnMouseEnter := OnBoxMouseEnter;
+      DtpEditDate.OnMouseLeave := OnBoxMouseLeave;
+    end;
+
+    LnkOk := FindChildByTag<TWebLink>(Parent, TAG_EDIT_DATE_OK);
+    if LnkOk = nil then
+    begin
+      LnkOk := TWebLink.Create(FContainer.Owner);
+      LnkOk.Parent := Parent;
+      LnkOk.Left := 130;
+      LnkOk.Top := 29;
+      LnkOk.Text := TA('Ok');
+      LnkOk.HightliteImage := True;
+      LnkOk.Tag := TAG_EDIT_DATE_OK;
+      LnkOk.LoadFromResource('SERIES_OK');
+      LnkOk.ImageCanRegenerate := True;
+      LnkOk.OnClick := OnEditDateOkClick;
+      LnkOk.Refresh;
+      LnkOk.OnMouseEnter := OnBoxMouseEnter;
+      LnkOk.OnMouseLeave := OnBoxMouseLeave;
+    end;
+
+    DtpEditDate.Show;
+    DtpEditDate.SetFocus;
+    LnkOk.Show;
+  end;
+end;
+
+procedure TSelectDateCollection.OnItemEditClick(Sender: TObject);
+var
+  WebEditLabel: TWatermarkedEdit;
+  LnkLabel, LnkOk: TWebLink;
+  SI: TBaseSelectItem;
+  Parent: TScrollBox;
+begin
+  LnkLabel := TWebLink(Sender);
+  LnkLabel.Hide;
+
+  Parent := TScrollBox(LnkLabel.Parent);
+  SI := TBaseSelectItem(Parent.Tag);
+
+  WebEditLabel := FindChildByTag<TWatermarkedEdit>(Parent, TAG_EDIT_LABEL);
+  if WebEditLabel = nil then
+  begin
+    WebEditLabel := TWatermarkedEdit.Create(FContainer.Owner);
+    WebEditLabel.Parent := Parent;
+    WebEditLabel.Left := 3;
+    WebEditLabel.Top := 4;
+    WebEditLabel.Width := 121;
+    WebEditLabel.Height := 21;
+    WebEditLabel.Text := SI.ItemLabel;
+    WebEditLabel.WatermarkText := TA('ImportPictures', 'Label');
+    WebEditLabel.Tag := TAG_EDIT_LABEL;
+    WebEditLabel.OnKeyDown := OnEditLabelEditKeyDown;
+    WebEditLabel.OnExit := OnEditLabelOkClick;
+    WebEditLabel.OnMouseEnter := OnBoxMouseEnter;
+    WebEditLabel.OnMouseLeave := OnBoxMouseLeave;
+  end;
+
+  LnkOk := FindChildByTag<TWebLink>(Parent, TAG_EDIT_LABEL_OK);
+  if LnkOk = nil then
+  begin
+    LnkOk := TWebLink.Create(FContainer.Owner);
+    LnkOk.Parent := Parent;
+    LnkOk.Left := 130;
+    LnkOk.Top := 6;
+    LnkOk.Text := TA('Ok');
+    LnkOk.ImageCanRegenerate := True;
+    LnkOk.HightliteImage := True;
+    LnkOk.Tag := TAG_EDIT_LABEL_OK;
+    LnkOk.LoadFromResource('SERIES_OK');
+    LnkOk.OnClick := OnEditLabelOkClick;
+    LnkOk.Refresh;
+    LnkOk.OnMouseEnter := OnBoxMouseEnter;
+    LnkOk.OnMouseLeave := OnBoxMouseLeave;
+  end;
+
+  WebEditLabel.Show;
+  WebEditLabel.SetFocus;
+  LnkOk.Show;
+end;
+
 procedure TSelectDateCollection.UpdateModel;
 var
   I: Integer;
   Sb: TScrollBox;
-  WlLabel, WlDate, WlItemsCount, WlSize: TWebLink;
+  WlLabel, WlDate, WlItemsCount, WlSize, WlSettings: TWebLink;
   SI: TBaseSelectItem;
 
-  function FindChildByTag(Parent: TWinControl; Tag: NativeInt): TControl;
-  var
-    I: Integer;
-  begin
-    Result := nil;
-    for I := 0 to Parent.ControlCount - 1 do
-    begin
-      if Parent.Controls[I].Tag = Tag then
-      begin
-        Result := Parent.Controls[I];
-        Exit;
-      end;
-    end;
-  end;
-
 begin
-  BeginScreenUpdate(FContainer.Handle);
+  //BeginScreenUpdate(FContainer.Handle);
   try
     for I := 0 to FItems.Count - 1 do
     begin
@@ -352,6 +657,8 @@ begin
       if Sb = nil then
       begin
         Sb := TScrollBox.Create(FContainer.Owner);
+        Sb.Color := clWhite;
+        Sb.Visible := False;
         Sb.Parent := FContainer;
         Sb.Width := 175;
         Sb.Height := 75;
@@ -361,24 +668,33 @@ begin
         Sb.BorderStyle := bsNone;
         Sb.Top := 3;
         Sb.Tag := NativeInt(FItems[I]);
+        Sb.OnMouseEnter := OnBoxMouseEnter;
+        Sb.OnMouseLeave := OnBoxMouseLeave;
+        Sb.OnClick := OnBoxClick;
 
         WlLabel := TWebLink.Create(FContainer.Owner);
         WlLabel.Parent := Sb;
         WlLabel.Left := 2;
         WlLabel.Top := 6;
-        WlLabel.ImageCanRegenerate := True;
         WlLabel.LoadFromResource('SERIES_EDIT');
+        WlLabel.ImageCanRegenerate := True;
         WlLabel.Refresh;
-        WlLabel.Tag := 1;
+        WlLabel.Tag := TAG_LABEL;
+        WlLabel.OnClick := OnItemEditClick;
+        WlLabel.OnMouseEnter := OnBoxMouseEnter;
+        WlLabel.OnMouseLeave := OnBoxMouseLeave;
 
         WlDate := TWebLink.Create(FContainer.Owner);
         WlDate.Parent := Sb;
         WlDate.Left := 2;
         WlDate.Top := 28;
-        WlDate.ImageCanRegenerate := True;
         WlDate.LoadFromResource('SERIES_DATE');
+        WlDate.ImageCanRegenerate := True;
         WlDate.Refresh;
-        WlDate.Tag := 2;
+        WlDate.Tag := TAG_DATE;
+        WlDate.OnClick := OnDateEditClick;
+        WlDate.OnMouseEnter := OnBoxMouseEnter;
+        WlDate.OnMouseLeave := OnBoxMouseLeave;
 
         WlItemsCount := TWebLink.Create(FContainer.Owner);
         WlItemsCount.IconWidth := 0;
@@ -387,7 +703,9 @@ begin
         WlItemsCount.Left := 2;
         WlItemsCount.Top := 50;
         WlItemsCount.ImageCanRegenerate := True;
-        WlItemsCount.Tag := 3;
+        WlItemsCount.Tag := TAG_ITEMS_COUNT;
+        WlItemsCount.OnMouseEnter := OnBoxMouseEnter;
+        WlItemsCount.OnMouseLeave := OnBoxMouseLeave;
 
         WlSize := TWebLink.Create(FContainer.Owner);
         WlSize.IconWidth := 0;
@@ -396,27 +714,45 @@ begin
         WlSize.Left := 60;
         WlSize.Top := 50;
         WlSize.ImageCanRegenerate := True;
-        WlSize.Tag := 4;
-      end;
-      Sb.Left := 5 + I * (175 + 5);
+        WlSize.Tag := TAG_ITEMS_SIZE;
+        WlSize.OnMouseEnter := OnBoxMouseEnter;
+        WlSize.OnMouseLeave := OnBoxMouseLeave;
 
-      WlLabel := FindChildByTag(Sb, 1) as TWebLink;
+        WlSettings := TWebLink.Create(FContainer.Owner);
+        WlSettings.Parent := Sb;
+        WlSettings.Left := 150;
+        WlSettings.Top := 52;
+        WlSettings.TopIconIncrement := 0;
+        WlSettings.LoadFromResource('SERIES_SETTINGS');
+        WlSettings.ImageCanRegenerate := True;
+        WlSettings.Refresh;
+        WlSettings.Tag := TAG_SETTINGS;
+        WlSettings.OnMouseEnter := OnBoxMouseEnter;
+        WlSettings.OnMouseLeave := OnBoxMouseLeave;
+
+        TGroupBox(Sb.Parent.Parent).Caption := FormatEx(TA('Series of photos ({0})'), [FItems.Count]);
+      end;
+      Sb.Left := 5 + I * (175 + 5) - FContainer.HorzScrollBar.Position;
+      Sb.Show;
+
+      WlLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
       WlLabel.Text := SI.ItemLabel;
 
-      WlDate := FindChildByTag(Sb, 2) as TWebLink;
+      WlDate := FindChildByTag<TWebLink>(Sb, TAG_DATE);
       if SI is TSelectDateItem then
         WlDate.Text := FormatDateTime('yyyy-mm-dd', TSelectDateItem(SI).Date)
       else
         WlDate.Text := FormatDateTime('yyyy-mm-dd', TSelectDateItems(SI).StartDate) + ' - ' + FormatDateTime('yyyy-mm-dd', TSelectDateItems(SI).EndDate);
 
-      WlItemsCount := FindChildByTag(Sb, 3) as TWebLink;
+      WlItemsCount := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_COUNT);
       WlItemsCount.Text := FormatEx(TA('{0} Files', 'ImportPictures'), [SI.ItemsCount]);
 
-      WlSize := FindChildByTag(Sb, 4) as TWebLink;
+      WlSize := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_SIZE);
+      WlSize.Left := WlItemsCount.Left + WlItemsCount.Width + 5;
       WlSize.Text := SizeInText(SI.ItemsSize);
     end;
   finally
-    EndScreenUpdate(FContainer.Handle, True);
+    //EndScreenUpdate(FContainer.Handle, True);
   end;
 end;
 
@@ -424,10 +760,27 @@ end;
 
 { TFormImportImages }
 
-procedure TFormImportImages.AddItem(Item: TPathItem; Date: TDateTime; Size: Int64);
+procedure TFormImportImages.AddItems(Items: TList<TScanItem>);
+var
+  Item: TScanItem;
 begin
-  FSeries.AddDateInfo(Date, Size);
-  FSeries.UpdateModel;
+  for Item in Items do
+    FSeries.AddDateInfo(Item.Item, Item.Date, Item.Size);
+
+  if GetTickCount - FItemUpdateLastTime < 100 then
+  begin
+    FItemUpdateTimer.Enabled := True;
+  end else
+  begin
+    FItemUpdateTimer.Enabled := False;
+    FSeries.UpdateModel;
+  end;
+end;
+
+procedure TFormImportImages.AddPreviewItem(PathItem: TPathItem;
+  Image: TPathImage);
+begin
+  //
 end;
 
 procedure TFormImportImages.BtnCancelClick(Sender: TObject);
@@ -499,6 +852,14 @@ procedure TFormImportImages.FormCreate(Sender: TObject);
 var
   PathImage: TBitmap;
 begin
+  FBitmapImageList := TBitmapImageList.Create;
+
+  FItemUpdateLastTime := GetTickCount;
+  FItemUpdateTimer := TTimer.Create(nil);
+  FItemUpdateTimer.Enabled := False;
+  FItemUpdateTimer.Interval := 100;
+  FItemUpdateTimer.OnTimer := ItemUpdateTimer;
+
   FSeries := TSelectDateCollection.Create(SbSeries);
 
   LoadLanguage;
@@ -518,11 +879,19 @@ end;
 procedure TFormImportImages.FormDestroy(Sender: TObject);
 begin
   F(FSeries);
+  F(FItemUpdateTimer);
+  F(FBitmapImageList);
 end;
 
 function TFormImportImages.GetFormID: string;
 begin
   Result := 'ImportPictures';
+end;
+
+procedure TFormImportImages.ItemUpdateTimer(Sender: TObject);
+begin
+  FItemUpdateTimer.Enabled := False;
+  FSeries.UpdateModel;
 end;
 
 procedure TFormImportImages.LoadLanguage;

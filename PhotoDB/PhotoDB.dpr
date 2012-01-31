@@ -376,7 +376,8 @@ uses
   uFormMoveFilesProgress in 'uFormMoveFilesProgress.pas' {FormMoveFilesProgress},
   uThreadImportPictures in 'Threads\uThreadImportPictures.pas',
   uPathUtils in 'Units\uPathUtils.pas',
-  uImportScanThread in 'Threads\uImportScanThread.pas';
+  uImportScanThread in 'Threads\uImportScanThread.pas',
+  uImportSeriesPreview in 'Threads\uImportSeriesPreview.pas';
 
 {$R *.res}
 

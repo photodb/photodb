@@ -64,6 +64,7 @@ type
     function GetFileSize: Int64; override;
     property Item: IPDItem read GetItem;
   public
+    function Copy: TPathItem; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     procedure LoadItem(AItem: IPDItem);
   end;
@@ -581,6 +582,13 @@ begin
 end;
 
 { TPortableItem }
+
+function TPortableItem.Copy: TPathItem;
+begin
+  Result := inherited Copy;
+  TPortableItem(Result).FItem := FItem;
+  TPortableItem(Result).FItemSize := FItemSize;
+end;
 
 constructor TPortableItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);

@@ -5182,6 +5182,11 @@ begin
   TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
   OldDir := GetCurrentPath;
   Path := WPath.Path;
+
+  if FChangeHistoryOnChPath then
+    if (FHistory.LastPath.Path <> Path) or (FHistory.LastPath.PType <> WPath.PType) then
+      FHistory.Add(ExplorerPath(Path, WPath.PType));
+
   ThreadType := THREAD_TYPE_FOLDER;
 
   TW.I.Start('PATH parsing');
@@ -5341,9 +5346,6 @@ begin
   else if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
     S := MyComputer;
 
-  if FChangeHistoryOnChPath then
-    if (FHistory.LastPath.Path <> Path) or (FHistory.LastPath.PType <> WPath.PType) then
-      FHistory.Add(ExplorerPath(Path, WPath.PType));
   FChangeHistoryOnChPath := True;
   if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) or (WPath.PType = EXPLORER_ITEM_SEARCH) then
     TbCut.Enabled := False
