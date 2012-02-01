@@ -12,7 +12,7 @@ type
     FIsPlusMenu: Boolean;
     FIsListItem: Boolean;
     FListItem: TEasyItem;
-    function GetValueByIndex(index: Integer): TDBPopupMenuInfoRecord;
+    function GetValueByIndex(Index: Integer): TDBPopupMenuInfoRecord;
     function GetCount: Integer;
     function GetIsVariousInclude: Boolean;
     function GetStatRating: Integer;

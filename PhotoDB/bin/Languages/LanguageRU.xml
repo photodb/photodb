@@ -2093,5 +2093,12 @@
 	<translate name="Speed" value="Скорость"/>
 	<translate name="{0} Files" value="{0} Файлов"/>
 	<translate name="Label" value="Метка"/>
+	<translate name="Import from" value="Импорт из"/>
+	<translate name="Import to" value="Импорт в"/>
+	<translate name="Directory format" value="Формат директории"/>
+	<translate name="Import pictures" value="Испорт изображений"/>
+	<translate name="Import only supported images" value="Импорт только поддерживаемых типов файлов"/>
+	<translate name="Delete files after import" value="Удалить файлы после импорта"/>
+	<translate name="Add files to collection after copying files" value="Добавить в базу после импорта"/>
   </scope>
 </language>

@@ -116,25 +116,41 @@ end;
 procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
 var
   ClientRect: TRect;
-  CTD, CBD, DY: Integer;
+  CTDY, CBDY, CTDX, CBDX, DY, DX: Integer;
 begin
   ClientRect := ListView.Scrollbars.ViewableViewportRect;
 
-  CTD := 0;
-  CBD := 0;
-  if Y < ClientRect.Top then
-    CTD := ClientRect.Top - Y;
-
   DY := ClientRect.Top;
+  DX := ClientRect.Left;
+
+  //calculating Y
+  CTDY := 0;
+  CBDY := 0;
+  if Y < ClientRect.Top then
+    CTDY := ClientRect.Top - Y;
 
   if Y + Graphic.Height > ClientRect.Bottom then
-    CBD := ClientRect.Bottom - (Y + Graphic.Height);
+    CBDY := ClientRect.Bottom - (Y + Graphic.Height);
 
   if Y - DY < 0 then
     DY := Y;
+  //
+
+  //calculating X
+  CTDX := 0;
+  CBDX := 0;
+  if X < ClientRect.Left then
+    CTDX := ClientRect.Left - X;
+
+  if X + Graphic.Width > ClientRect.Right then
+    CBDX := ClientRect.Right - (X + Graphic.Width);
+
+  if X - DX < 0 then
+    DX := X;
+  //
 
   MPCommonUtilities.AlphaBlend(Graphic.Canvas.Handle, ACanvas.Handle,
-          Rect(0, CTD, Graphic.Width, Graphic.Height + CBD), Point(X, Y - DY),
+          Rect(CTDX, CTDY, Graphic.Width + CBDX, Graphic.Height + CBDY), Point(X - DX, Y - DY),
           cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color));
 
   TBitmap(Graphic).Handle;

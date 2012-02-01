@@ -51,6 +51,7 @@ type
     function AddIcon(Icon: TIcon; SelfReleased: Boolean; Ext : string = '') : Integer;
     procedure Clear;
     procedure ClearImagesList;
+    procedure ClearItems;
     function Count: Integer;
     procedure Delete(Index: Integer);
     property Items[Index: Integer]: TBitmapImageListImage read GetBitmapByIndex; default;
@@ -153,6 +154,12 @@ begin
 
   FImages.Delete(Index);
 
+end;
+
+procedure TBitmapImageList.ClearItems;
+begin
+  FImages.Clear;
+  FUseList.Clear;
 end;
 
 destructor TBitmapImageList.Destroy;

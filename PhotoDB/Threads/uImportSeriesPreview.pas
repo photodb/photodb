@@ -6,9 +6,13 @@ uses
   Generics.Collections,
   uThreadEx,
   uMemory,
+  SysUtils,
   Graphics,
   uThreadForm,
+  UnitBitmapImageList,
   uPathProviders,
+  uIconUtils,
+  uShellIcons,
   System.Classes;
 
 type
@@ -16,24 +20,33 @@ type
   private
     { Private declarations }
     FData: TList<TPathItem>;
-    FSize: Integer;
+    FImageSize: Integer;
+    FPacketImages: TBitmapImageList;
+    FPacketInfos: TList<TPathItem>;
+    FBitmap: TBitmap;
+    FItemParam: TPathItem;
   protected
     procedure Execute; override;
+    procedure SendPacketOfPreviews;
+    procedure UpdatePreview;
   public
-    constructor Create(OwnerForm: TThreadForm; Items: TList<TPathItem>; Size: Integer);
+    constructor Create(OwnerForm: TThreadForm; Items: TList<TPathItem>; ImageSize: Integer);
     destructor Destroy; override;
   end;
 
 implementation
 
+uses
+  uFormImportImages;
+
 { TImportSeriesPreview }
 
 constructor TImportSeriesPreview.Create(OwnerForm: TThreadForm;
-  Items: TList<TPathItem>; Size: Integer);
+  Items: TList<TPathItem>; ImageSize: Integer);
 begin
   inherited Create(OwnerForm, OwnerForm.StateID);
   FData := Items;
-  FSize := Size;
+  FImageSize := ImageSize;
 end;
 
 destructor TImportSeriesPreview.Destroy;
@@ -45,20 +58,64 @@ end;
 procedure TImportSeriesPreview.Execute;
 var
   I: Integer;
-  B: TBitmap;
   Data: TObject;
+  PI: TPathItem;
+  FIcon: TIcon;
 begin
   FreeOnTerminate := True;
-  for I := 0 to FData.Count - 1 do
-  begin
-    B := TBitmap.Create;
-    try
-      Data := nil;
-      FData[I].Provider.ExtractPreview(FData[I], FSize, FSize, B, Data);
-    finally
-      F(B);
+
+  FPacketImages := TBitmapImageList.Create;
+  FPacketInfos := TList<TPathItem>.Create;
+  try
+    //loading list with icons
+    for I := 0 to FData.Count - 1 do
+    begin
+      PI := FData[I].Copy;
+
+      FIcon := TIcon.Create;
+      FIcon.Handle := ExtractDefaultAssociatedIcon('*' + ExtractFileExt(PI.Path), ImageSizeToIconSize16_32_48(FImageSize));
+      FPacketImages.AddIcon(FIcon, True);
+      FPacketInfos.Add(PI);
+
+      if I mod 10 = 0 then
+        SynchronizeEx(SendPacketOfPreviews);
+
     end;
+    if FPacketInfos.Count > 0 then
+      SynchronizeEx(SendPacketOfPreviews);
+
+    for I := 0 to FData.Count - 1 do
+    begin
+      FItemParam := FData[I];
+      FBitmap := TBitmap.Create;
+      try
+        Data := nil;
+        if FData[I].Provider.ExtractPreview(FData[I], FImageSize, FImageSize, FBitmap, Data) then
+        begin
+          if SynchronizeEx(UpdatePreview) then
+            FBitmap := nil;
+        end;
+      finally
+        F(FBitmap);
+      end;
+    end;
+
+  finally
+    F(FPacketImages);
+    F(FPacketInfos);
   end;
+end;
+
+procedure TImportSeriesPreview.SendPacketOfPreviews;
+begin
+  TFormImportImages(OwnerForm).AddPreviews(FPacketInfos, FPacketImages);
+  FPacketInfos.Clear;
+  FPacketImages.ClearItems;
+end;
+
+procedure TImportSeriesPreview.UpdatePreview;
+begin
+  TFormImportImages(OwnerForm).UpdatePreview(FItemParam, FBitmap);
 end;
 
 end.

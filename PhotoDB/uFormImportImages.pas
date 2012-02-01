@@ -37,6 +37,11 @@ uses
   MPCommonObjects,
   EasyListview,
   uVCLHelpers,
+  uListViewUtils,
+  MPCommonUtilities,
+  uDBPopupMenuInfo,
+  UnitDBDeclare,
+  uAssociations,
   UnitBitmapImageList;
 
 const
@@ -139,20 +144,15 @@ type
     LbImportFrom: TLabel;
     LbDirectoryFormat: TLabel;
     LbImportTo: TLabel;
-    LbLabel: TLabel;
     PeImportFromPath: TPathEditor;
     CbFormatCombo: TComboBox;
     BtnSelectPathFrom: TButton;
     PeImportToPath: TPathEditor;
     BtnSelectPathTo: TButton;
-    WedLabel: TWatermarkedEdit;
-    DtpDate: TDateTimePicker;
-    LbDate: TLabel;
     CbOnlyImages: TCheckBox;
     BtnOk: TButton;
     BtnCancel: TButton;
     CbDeleteAfterImport: TCheckBox;
-    WlExtendedMode: TWebLink;
     CbAddToCollection: TCheckBox;
     GbSeries: TGroupBox;
     SbSeries: TScrollBox;
@@ -167,15 +167,22 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure PeImportFromPathChange(Sender: TObject);
+    procedure ElvPreviewItemThumbnailDraw(Sender: TCustomEasyListview;
+      Item: TEasyItem; ACanvas: TCanvas; ARect: TRect;
+      AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
+    procedure ElvPreviewItemDblClick(Sender: TCustomEasyListview;
+      Button: TCommonMouseButton; MousePos: TPoint; HitInfo: TEasyHitInfoItem);
   private
     { Private declarations }
     FItemUpdateTimer: TTimer;
     FItemUpdateLastTime: Cardinal;
     FSeries: TSelectDateCollection;
     FBitmapImageList: TBitmapImageList;
+    FPreviewData: TList<TPathItem>;
     procedure LoadLanguage;
     procedure ReadOptions;
     procedure ItemUpdateTimer(Sender: TObject);
+    procedure ClearItems;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
@@ -183,7 +190,8 @@ type
     { Public declarations }
     procedure SetPath(Path: string);
     procedure AddItems(Items: TList<TScanItem>);
-    procedure AddPreviewItem(PathItem: TPathItem; Image: TPathImage);
+    procedure AddPreviews(FPacketInfos: TList<TPathItem>; FPacketImages: TBitmapImageList);
+    procedure UpdatePreview(Item: TPathItem; Bitmap: TBitmap);
   end;
 
 var
@@ -198,7 +206,9 @@ implementation
 uses
   uThreadImportPictures,
   uImportScanThread,
-  uImportSeriesPreview;
+  uImportSeriesPreview,
+  SlideShow,
+  FormManegerUnit;
 
 procedure GetPhotosFromDevice(DeviceName: string);
 var
@@ -323,6 +333,7 @@ begin
   TSelectDateItem(SI).Date := Date;
   TSelectDateItem(SI).FItemsCount := 1;
   TSelectDateItem(SI).FItemsSize := Size;
+  TSelectDateItem(SI).Items.Add(Item.Copy);
   FItems.Add(SI);
   SI.ItemLabel := 'Some label';
 end;
@@ -503,7 +514,8 @@ begin
     for I := 0 to TSelectDateItems(SI).ItemsCount - 1 do
       AddToList(TSelectDateItems(SI).Items[I]);
 
-  TImportSeriesPreview.Create(TThreadForm(Sb.Owner), Data, 60);
+  TFormImportImages(Sb.Owner).ClearItems;
+  TImportSeriesPreview.Create(TThreadForm(Sb.Owner), Data, 125);
 end;
 
 procedure TSelectDateCollection.OnBoxMouseEnter(Sender: TObject);
@@ -777,10 +789,22 @@ begin
   end;
 end;
 
-procedure TFormImportImages.AddPreviewItem(PathItem: TPathItem;
-  Image: TPathImage);
+procedure TFormImportImages.AddPreviews(FPacketInfos: TList<TPathItem>; FPacketImages: TBitmapImageList);
+var
+  I: Integer;
+  EI: TEasyItem;
 begin
-  //
+  ElvPreview.Groups.BeginUpdate(True);
+  try
+    for I := 0 to FPacketInfos.Count - 1 do
+    begin
+      EI := ElvPreview.Items.Add(FPacketInfos[I]);
+      EI.ImageIndex := FBitmapImageList.AddIcon(FPacketImages[I].Icon, True);
+      EI.Caption := ExtractFileName(FPacketInfos[I].Path);
+    end;
+  finally
+    ElvPreview.Groups.EndUpdate(True);
+  end;
 end;
 
 procedure TFormImportImages.BtnCancelClick(Sender: TObject);
@@ -834,12 +858,65 @@ begin
      PeImportToPath.Path := Dir;
 end;
 
+procedure TFormImportImages.ClearItems;
+var
+  I: Integer;
+begin
+  for I := 0 to ElvPreview.Items.Count - 1 do
+    ElvPreview.Items[I].Data.Free;
+
+  ElvPreview.Items.Clear;
+end;
+
 procedure TFormImportImages.CreateParams(var Params: TCreateParams);
 begin
   Inherited CreateParams(Params);
   Params.WndParent := GetDesktopWindow;
   with params do
     ExStyle := ExStyle or WS_EX_APPWINDOW;
+end;
+
+procedure TFormImportImages.ElvPreviewItemDblClick(Sender: TCustomEasyListview;
+  Button: TCommonMouseButton; MousePos: TPoint; HitInfo: TEasyHitInfoItem);
+var
+  MenuInfo: TDBPopupMenuInfo;
+  Rec: TDBPopupMenuInfoRecord;
+  I: Integer;
+  PI: TPathItem;
+begin
+  MenuInfo := TDBPopupMenuInfo.Create;
+  try
+    if Viewer = nil then
+      Application.CreateForm(TViewer, Viewer);
+
+    for I := 0 to ElvPreview.Items.Count - 1 do
+    begin
+      PI := TPathItem(ElvPreview.Items[I].Data);
+      if IsGraphicFile(PI.Path) then
+      begin
+        Rec := TDBPopupMenuInfoRecord.CreateFromFile(PI.Path);
+        MenuInfo.Add(Rec);
+        if ElvPreview.Items[I].Selected then
+          MenuInfo.Position := MenuInfo.Count - 1;
+      end;
+    end;
+    Viewer.Execute(Sender, MenuInfo);
+    Viewer.Show;
+  finally
+    F(MenuInfo);
+  end;
+end;
+
+procedure TFormImportImages.ElvPreviewItemThumbnailDraw(
+  Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas; ARect: TRect;
+  AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
+var
+  Exists: Integer;
+  Y: Integer;
+begin
+  Exists := 1;
+  DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
+    False, 0, Item.Caption, 0, 0, 0, False, True, Exists, True);
 end;
 
 procedure TFormImportImages.FormClose(Sender: TObject;
@@ -852,7 +929,9 @@ procedure TFormImportImages.FormCreate(Sender: TObject);
 var
   PathImage: TBitmap;
 begin
+  RegisterMainForm(Self);
   FBitmapImageList := TBitmapImageList.Create;
+  FPreviewData := TList<TPathItem>.Create;
 
   FItemUpdateLastTime := GetTickCount;
   FItemUpdateTimer := TTimer.Create(nil);
@@ -878,9 +957,14 @@ end;
 
 procedure TFormImportImages.FormDestroy(Sender: TObject);
 begin
+  UnRegisterMainForm(Self);
+  ClearItems;
+
+  F(FBitmapImageList);
+  FreeList(FPreviewData);
+
   F(FSeries);
   F(FItemUpdateTimer);
-  F(FBitmapImageList);
 end;
 
 function TFormImportImages.GetFormID: string;
@@ -898,7 +982,15 @@ procedure TFormImportImages.LoadLanguage;
 begin
   BeginTranslate;
   try
+    Caption := L('Import pictures');
     LbImportFrom.Caption := L('Import from') + ':';
+    LbImportTo.Caption := L('Import to') + ':';
+    LbDirectoryFormat.Caption := L('Directory format') + ':';
+    BtnOk.Caption := L('Ok');
+    BtnCancel.Caption := L('Cancel');
+    CbOnlyImages.Caption := L('Import only supported images');
+    CbDeleteAfterImport.Caption := L('Delete files after import');
+    CbAddToCollection.Caption := L('Add files to collection after copying files');
   finally
     EndTranslate;
   end;
@@ -924,6 +1016,23 @@ end;
 procedure TFormImportImages.SetPath(Path: string);
 begin
   PeImportFromPath.Path := Path;
+end;
+
+procedure TFormImportImages.UpdatePreview(Item: TPathItem; Bitmap: TBitmap);
+var
+  I: Integer;
+  PI: TPathItem;
+begin
+  for I := 0 to ElvPreview.Items.Count - 1 do
+  begin
+    PI := TPathItem(ElvPreview.Items[I].Data);
+    if PI.Path = Item.Path then
+    begin
+      FBitmapImageList[ElvPreview.Items[I].ImageIndex].Graphic := Bitmap;
+      ElvPreview.Refresh;
+      Break;
+    end;
+  end;
 end;
 
 end.

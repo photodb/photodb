@@ -6,8 +6,21 @@ uses
   Windows, Graphics, ShellApi, SysUtils;
 
 function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
+function ImageSizeToIconSize16_32_48(ImageSize: Integer): Integer;
 
 implementation
+
+function ImageSizeToIconSize16_32_48(ImageSize: Integer): Integer;
+begin
+  if ImageSize >= 48 then
+    ImageSize := 48
+  else if ImageSize >= 32 then
+    ImageSize := 32
+  else if ImageSize >= 16 then
+    ImageSize := 16;
+
+  Result := ImageSize;
+end;
 
 function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 var

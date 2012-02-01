@@ -3,7 +3,7 @@ object FormImportImages: TFormImportImages
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Import pictures'
-  ClientHeight = 505
+  ClientHeight = 531
   ClientWidth = 907
   Color = clBtnFace
   Constraints.MinWidth = 400
@@ -19,7 +19,7 @@ object FormImportImages: TFormImportImages
   OnDestroy = FormDestroy
   DesignSize = (
     907
-    505)
+    531)
   PixelsPerInch = 96
   TextHeight = 13
   object LbImportFrom: TLabel
@@ -42,20 +42,6 @@ object FormImportImages: TFormImportImages
     Width = 90
     Height = 13
     Caption = 'Import pictures to:'
-  end
-  object LbLabel: TLabel
-    Left = 8
-    Top = 725
-    Width = 29
-    Height = 13
-    Caption = 'Label:'
-  end
-  object LbDate: TLabel
-    Left = 8
-    Top = 679
-    Width = 27
-    Height = 13
-    Caption = 'Date:'
   end
   object PeImportFromPath: TPathEditor
     Left = 8
@@ -109,24 +95,6 @@ object FormImportImages: TFormImportImages
     TabOrder = 4
     OnClick = BtnSelectPathToClick
   end
-  object WedLabel: TWatermarkedEdit
-    Left = 8
-    Top = 744
-    Width = 891
-    Height = 21
-    Anchors = [akLeft, akTop, akRight]
-    TabOrder = 5
-    WatermarkText = 'WatermarkedEdit1'
-  end
-  object DtpDate: TDateTimePicker
-    Left = 8
-    Top = 698
-    Width = 233
-    Height = 21
-    Date = 40929.867802500000000000
-    Time = 40929.867802500000000000
-    TabOrder = 6
-  end
   object CbOnlyImages: TCheckBox
     Left = 8
     Top = 154
@@ -134,26 +102,26 @@ object FormImportImages: TFormImportImages
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Import only supported images'
-    TabOrder = 7
+    TabOrder = 5
   end
   object BtnOk: TButton
     Left = 825
-    Top = 473
+    Top = 498
     Width = 74
     Height = 25
-    Anchors = [akTop, akRight]
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
-    TabOrder = 8
+    TabOrder = 6
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
     Left = 743
-    Top = 473
+    Top = 498
     Width = 76
     Height = 25
-    Anchors = [akTop, akRight]
+    Anchors = [akRight, akBottom]
     Caption = 'Cancel'
-    TabOrder = 9
+    TabOrder = 7
     OnClick = BtnCancelClick
   end
   object CbDeleteAfterImport: TCheckBox
@@ -163,27 +131,7 @@ object FormImportImages: TFormImportImages
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Delete files after import'
-    TabOrder = 10
-  end
-  object WlExtendedMode: TWebLink
-    Left = 8
-    Top = 660
-    Width = 80
-    Height = 13
-    Cursor = crHandPoint
-    Text = 'Extended mode'
-    ImageIndex = 0
-    IconWidth = 0
-    IconHeight = 0
-    UseEnterColor = False
-    EnterColor = clBlack
-    EnterBould = False
-    TopIconIncrement = 0
-    ImageCanRegenerate = True
-    UseSpecIconSize = True
-    HightliteImage = False
-    StretchImage = True
-    CanClick = True
+    TabOrder = 8
   end
   object CbAddToCollection: TCheckBox
     Left = 8
@@ -192,19 +140,19 @@ object FormImportImages: TFormImportImages
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Add files to collection after copying files'
-    TabOrder = 12
+    TabOrder = 9
   end
   object GbSeries: TGroupBox
     Left = 8
     Top = 226
     Width = 891
-    Height = 241
-    Anchors = [akLeft, akTop, akRight]
+    Height = 266
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'Series of photos'
-    TabOrder = 13
+    TabOrder = 10
     DesignSize = (
       891
-      241)
+      266)
     object SbSeries: TScrollBox
       Left = 10
       Top = 16
@@ -221,8 +169,9 @@ object FormImportImages: TFormImportImages
     object ElvPreview: TEasyListview
       Left = 10
       Top = 120
-      Width = 868
-      Height = 113
+      Width = 872
+      Height = 137
+      Anchors = [akLeft, akTop, akRight, akBottom]
       BorderStyle = bsNone
       EditManager.Font.Charset = DEFAULT_CHARSET
       EditManager.Font.Color = clWindowText
@@ -234,17 +183,33 @@ object FormImportImages: TFormImportImages
         0006000000800800010100010000000000000161000000FFFFFF1F0001000000
         00000000000000000000000000000000}
       PaintInfoGroup.MarginBottom.CaptionIndent = 4
+      PaintInfoItem.ShowBorder = False
+      Scrollbars.VertEnabled = False
+      Selection.AlphaBlend = True
+      Selection.AlphaBlendSelRect = True
+      Selection.EnableDragSelect = True
+      Selection.FullItemPaint = True
+      Selection.Gradient = True
+      Selection.GradientColorBottom = clGradientActiveCaption
+      Selection.GradientColorTop = clGradientInactiveCaption
+      Selection.RectSelect = True
+      Selection.RoundRect = True
+      Selection.TextColor = clWindowText
+      Selection.UseFocusRect = False
       TabOrder = 1
       View = elsFilmStrip
       WheelMouseDefaultScroll = edwsHorz
+      OnItemDblClick = ElvPreviewItemDblClick
+      OnItemThumbnailDraw = ElvPreviewItemThumbnailDraw
     end
   end
   object WebLink6: TWebLink
     Left = 8
-    Top = 473
+    Top = 510
     Width = 64
     Height = 13
     Cursor = crHandPoint
+    Anchors = [akLeft, akBottom]
     Text = 'Simple mode'
     ImageIndex = 0
     IconWidth = 0
@@ -261,11 +226,12 @@ object FormImportImages: TFormImportImages
   end
   object LsMain: TLoadingSign
     Left = 715
-    Top = 473
+    Top = 498
     Width = 22
     Height = 22
     Active = True
     FillPercent = 50
+    Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
   end
