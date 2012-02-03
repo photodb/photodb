@@ -52,6 +52,7 @@ object FormImportImages: TFormImportImages
     OnChange = PeImportFromPathChange
     LoadingText = 'Loading...'
     CanBreakLoading = False
+    OnlyFileSystem = False
   end
   object CbFormatCombo: TComboBox
     Left = 8
@@ -84,6 +85,7 @@ object FormImportImages: TFormImportImages
     Anchors = [akLeft, akTop, akRight]
     LoadingText = 'Loading...'
     CanBreakLoading = False
+    OnlyFileSystem = True
   end
   object BtnSelectPathTo: TButton
     Left = 880

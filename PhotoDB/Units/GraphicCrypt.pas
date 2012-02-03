@@ -403,16 +403,17 @@ begin
   Result := DeCryptGraphicFileEx(FileName, Password, Pages, LoadFullRAW, Page);
 end;
 
-function DecryptStream(Stream : TStream; GraphicHeader: TGraphicCryptFileHeader; Password : string; MS : TStream) : Boolean;
+function DecryptStream(Stream: TStream; GraphicHeader: TGraphicCryptFileHeader;
+  Password: string; MS: TStream): Boolean;
 var
-  AnsiPassword : AnsiString;
-  FileCRC, CRC : Cardinal;
-  I, LPass : Integer;
+  AnsiPassword: AnsiString;
+  FileCRC, CRC: Cardinal;
+  I, LPass: Integer;
   XCos: array [0 .. 1023] of Byte;
-  X : TByteArray;
+  X: TByteArray;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
-  Chipper : TDECCipherClass;
+  Chipper: TDECCipherClass;
 begin
   Result := False;
   if GraphicHeader.Version = 1 then

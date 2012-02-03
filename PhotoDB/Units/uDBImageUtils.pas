@@ -3,17 +3,31 @@ unit uDBImageUtils;
 interface
 
 uses
-  Graphics, GraphicCrypt, uMemory, UnitDBKernel, uAssociations, SysUtils,
+  Graphics,
+  GraphicCrypt,
+  uMemory,
+  UnitDBKernel,
+  uAssociations,
+  SysUtils,
+  uJpegUtils,
+  uPortableDeviceUtils,
+  uExifUtils,
+  uBitmapUtils,
+  uGraphicUtils,
   RAWImage;
 
-procedure LoadGraphic(FileName: string; var G: TGraphic; var IsEnCrypted: Boolean; var Password: string);
+function LoadGraphic(FileName: string; var G: TGraphic; var IsEnCrypted: Boolean; var Password: string): Boolean;
+function ExtractFilePreview(FileName: string; Width, Height: Integer; var Bitmap: TBitmap): Boolean;
 
 implementation
 
-procedure LoadGraphic(FileName: string; var G: TGraphic; var IsEnCrypted: Boolean; var Password: string);
+function LoadGraphic(FileName: string; var G: TGraphic; var IsEnCrypted: Boolean; var Password: string): Boolean;
+var
+  GC: TGraphicClass;
 begin
+  Result := False;
   F(G);
-  IsEnCrypted := ValidCryptGraphicFile(FileName);
+  IsEnCrypted := not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName);
   if IsEnCrypted then
   begin
     Password := DBKernel.FindPasswordForCryptImageFile(FileName);
@@ -23,12 +37,48 @@ begin
     G := DeCryptGraphicFile(FileName, PassWord);
   end  else
   begin
-    G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
+    GC := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+    if GC = nil then
+      Exit;
+
+    G := GC.Create;
     if G is TRawImage then
       TRawImage(G).IsPreview := True;
 
-    G.LoadFromFile(FileName);
+    if not IsDevicePath(FileName) then
+      G.LoadFromFile(FileName)
+    else
+      G.LoadFromDevice(FileName);
   end;
+
+  Result := not G.Empty;
+end;
+
+function ExtractFilePreview(FileName: string; Width, Height: Integer; var Bitmap: TBitmap): Boolean;
+var
+  G: TGraphic;
+  IsEncrypted: Boolean;
+  Password: string;
+  Rotation: Integer;
+begin
+  Result := False;
+  G := nil;
+  if not LoadGraphic(FileName, G, IsEncrypted, Password) then
+    Exit;
+
+  JPEGScale(G, Width, Height);
+
+  AssignGraphic(Bitmap, G);
+
+  KeepProportions(Bitmap, Width, Height);
+
+  if not IsDevicePath(FileName) then
+  begin
+    Rotation := GetExifRotate(FileName);
+    ApplyRotate(Bitmap, Rotation);
+  end;
+
+  Result := not G.Empty;
 end;
 
 end.

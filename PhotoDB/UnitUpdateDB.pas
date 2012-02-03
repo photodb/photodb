@@ -3,14 +3,14 @@ unit UnitUpdateDB;
 interface
 
 uses
-   dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
-   Forms, Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp,
-   uVistaFuncs, DB, AppEvnts, DragDrop, DragDropFile, WebLink,
-   DropSource, DropTarget, UnitDBkernel, UnitDBDeclare, uShellIntegration,
-   UnitUpdateDBObject, UnitTimeCounter, uJpegUtils, uBitmapUtils,
-   GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
-   uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
-   uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage, SaveWindowPos,
+  dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
+  Forms, Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp,
+  uVistaFuncs, DB, AppEvnts, DragDrop, DragDropFile, WebLink,
+  DropSource, DropTarget, UnitDBkernel, UnitDBDeclare, uShellIntegration,
+  UnitUpdateDBObject, UnitTimeCounter, uJpegUtils, uBitmapUtils,
+  GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
+  uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
+  uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage, SaveWindowPos,
   DmMemo;
 
 type
@@ -88,25 +88,25 @@ type
     procedure WebLinkOpenFolderClick(Sender: TObject);
   private
     { Private declarations }
-    FImage : TLayeredBitmap;
-    FImageInv : TLayeredBitmap;
-    FImageHourGlass : TLayeredBitmap;
-    FImagePos : integer;
-    FImagePosStep : integer;
-    FCurrentImage : TBitmap;
-    FCurrentFileName : string;
-    FAddObject : TUpdaterDB;
-    BadHistory : TStrings;
-    LastIDImage : integer;
-    LastFileName : string;
+    FImage: TLayeredBitmap;
+    FImageInv: TLayeredBitmap;
+    FImageHourGlass: TLayeredBitmap;
+    FImagePos: Integer;
+    FImagePosStep: Integer;
+    FCurrentImage: TBitmap;
+    FCurrentFileName: string;
+    FAddObject: TUpdaterDB;
+    BadHistory: TStrings;
+    LastIDImage: Integer;
+    LastFileName: string;
     TimeCounter: TTimeCounter;
-    FInfoStr : string;
-    FProgressMessage : Cardinal;
-    FW7TaskBar : ITaskbarList3;
+    FInfoStr: string;
+    FProgressMessage: Cardinal;
+    FW7TaskBar: ITaskbarList3;
     FFullSize: Int64;
-    procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
+    procedure WMMouseDown(var s: Tmessage); message WM_LBUTTONDOWN;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
     procedure LoadLanguage;
   public
     { Public declarations }
@@ -126,7 +126,7 @@ type
     procedure LoadToolBarIcons;
     procedure SetIcon(Link: TWebLink; name: string);
     procedure OnDirectorySearch(Owner: TObject; FileName: string; Size: Int64);
-    property FullSize : Int64 read FFullSize write FFullSize;
+    property FullSize: Int64 read FFullSize write FFullSize;
   end;
 
 function UpdaterDB: TUpdaterDB;

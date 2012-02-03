@@ -63,11 +63,11 @@ type
     function GetItem: IPDItem;
   protected
     function GetFileSize: Int64; override;
-    property Item: IPDItem read GetItem;
   public
     function Copy: TPathItem; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     procedure LoadItem(AItem: IPDItem);
+    property Item: IPDItem read GetItem;
   end;
 
   TPortableStorageItem = class(TPortableItem)
@@ -374,6 +374,10 @@ var
   DevName, DevItemPath, ItemKey: string;
 begin
   Result := True;
+
+  if Options and PATH_LOAD_ONLY_FILE_SYSTEM > 0 then
+    Exit;
+
   Context := TPDContext.Create;
   try
     Context.Sender := Sender;

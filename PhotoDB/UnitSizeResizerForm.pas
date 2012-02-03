@@ -10,11 +10,19 @@ uses
   UnitDBCommon, uBitmapUtils, ComCtrls, ImgList, uDBForm, LoadingSign,
   DmProgress, uW7TaskBar, uWatermarkOptions, uImageSource,
   UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
-  uDBPopupMenuInfo, uConstants, uShellIntegration, uRuntime, ImButton, uLogger,
-  WebLink, SaveWindowPos,
+  uDBPopupMenuInfo,
+  uConstants,
+  uShellIntegration,
+  uRuntime,
+  uResources,
+  ImButton,
+  uLogger,
+  WebLink,
+  SaveWindowPos,
   uDBThread,
   uPortableDeviceUtils,
-  AppEvnts;
+  AppEvnts,
+  PathEditor;
 
 const
   Settings_ConvertForm = 'Convert settings';
@@ -43,7 +51,6 @@ type
     EdHeight: TEdit;
     CbAspectRatio: TCheckBox;
     CbAddSuffix: TCheckBox;
-    EdSavePath: TEdit;
     BtChangeDirectory: TButton;
     BtWatermarkOptions: TButton;
     TmrPreview: TTimer;
@@ -52,6 +59,7 @@ type
     PbImage: TPaintBox;
     SwpMain: TSaveWindowPos;
     AeMain: TApplicationEvents;
+    PeSavePath: TPathEditor;
     procedure BtCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtJPEGOptionsClick(Sender: TObject);
@@ -179,6 +187,9 @@ procedure TFormSizeResizer.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
 var
   P: TPoint;
 begin
+  if not Active then
+    Exit;
+
   if Msg.message = WM_MOUSEWHEEL then
   begin
     if PrbMain.Visible then
@@ -296,7 +307,7 @@ begin
   else
     FProcessingParams.Preffix := '';
 
-  FProcessingParams.WorkDirectory := EdSavePath.Text;
+  FProcessingParams.WorkDirectory := PeSavePath.Path;
 end;
 
 procedure TFormSizeResizer.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -308,7 +319,8 @@ procedure TFormSizeResizer.FormCreate(Sender: TObject);
 var
   I: Integer;
   Description, Mask: string;
-  Ext : TFileAssociation;
+  Ext: TFileAssociation;
+  PathImage: TBitmap;
 begin
   FCreatingResize := True;
   FIgnoreInput := False;
@@ -343,6 +355,13 @@ begin
 
   SwpMain.Key := RegRoot + 'ConvertForm';
   SwpMain.SetPosition;
+
+  PathImage := GetPathSeparatorImage;
+  try
+    PeSavePath.SeparatorImage := PathImage;
+  finally
+    F(PathImage);
+  end;
 end;
 
 destructor TFormSizeResizer.Destroy;
@@ -372,6 +391,11 @@ end;
 procedure TFormSizeResizer.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  if Screen.ActiveControl <> nil then
+    if Screen.ActiveControl.Parent <> nil then
+      if Screen.ActiveControl.Parent.Parent = PeSavePath then
+        Exit;
+
   if Key = VK_ESCAPE then
     Close;
   if Key = VK_RETURN then
@@ -432,14 +456,14 @@ begin
     Exit;
   end;
 
-  if IsDevicePath(EdSavePath.Text) then
+  if IsDevicePath(PeSavePath.Path) then
   begin
     MessageBoxDB(Handle, L('Please, choose a valid directory!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;
 
-  CreateDirA(EdSavePath.Text);
-  if not DirectoryExistsSafe(EdSavePath.Text) then
+  CreateDirA(PeSavePath.Path);
+  if not DirectoryExistsSafe(PeSavePath.Path) then
   begin
     MessageBoxDB(Handle, L('Please, choose a valid directory!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
@@ -509,7 +533,7 @@ begin
   FCurrentPreviewPosition := FData.Position;
   if FData.Count > 0 then
   begin
-    EdSavePath.Text := ExtractFileDir(FData[FCurrentPreviewPosition].FileName);
+    PeSavePath.Path := ExtractFileDir(FData[FCurrentPreviewPosition].FileName);
     EdImageName.Text := ExtractFileName(FData[FCurrentPreviewPosition].FileName);
   end;
 
@@ -822,6 +846,8 @@ begin
 
     PrbMain.Text := L('Processing... (&%%)');
 
+    PeSavePath.LoadingText := L('Loading...');
+
     BtCancel.Caption := L('Cancel');
     BtOk.Caption := L('Ok');
   finally
@@ -929,7 +955,7 @@ begin
   Directory := UnitDBFileDialogs.DBSelectDir(Handle, L('Select folder for processed images'),
     UseSimpleSelectFolderDialog);
   if DirectoryExists(Directory) then
-    EdSavePath.Text := Directory;
+    PeSavePath.Path := Directory;
 end;
 
 end.

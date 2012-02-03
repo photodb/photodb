@@ -500,6 +500,7 @@ var
   end;
 
 begin
+
   if Sender is TScrollBox then
     Sb := TScrollBox(Sender)
   else
@@ -514,6 +515,7 @@ begin
     for I := 0 to TSelectDateItems(SI).ItemsCount - 1 do
       AddToList(TSelectDateItems(SI).Items[I]);
 
+  TFormImportImages(Sb.Owner).NewFormState;
   TFormImportImages(Sb.Owner).ClearItems;
   TImportSeriesPreview.Create(TThreadForm(Sb.Owner), Data, 125);
 end;
@@ -718,6 +720,7 @@ begin
         WlItemsCount.Tag := TAG_ITEMS_COUNT;
         WlItemsCount.OnMouseEnter := OnBoxMouseEnter;
         WlItemsCount.OnMouseLeave := OnBoxMouseLeave;
+        WlItemsCount.OnClick := OnBoxClick;
 
         WlSize := TWebLink.Create(FContainer.Owner);
         WlSize.IconWidth := 0;
@@ -729,6 +732,7 @@ begin
         WlSize.Tag := TAG_ITEMS_SIZE;
         WlSize.OnMouseEnter := OnBoxMouseEnter;
         WlSize.OnMouseLeave := OnBoxMouseLeave;
+        WlSize.OnClick := OnBoxClick;
 
         WlSettings := TWebLink.Create(FContainer.Owner);
         WlSettings.Parent := Sb;
@@ -798,7 +802,7 @@ begin
   try
     for I := 0 to FPacketInfos.Count - 1 do
     begin
-      EI := ElvPreview.Items.Add(FPacketInfos[I]);
+      EI := ElvPreview.Items.Add(FPacketInfos[I].Copy);
       EI.ImageIndex := FBitmapImageList.AddIcon(FPacketImages[I].Icon, True);
       EI.Caption := ExtractFileName(FPacketInfos[I].Path);
     end;
@@ -886,8 +890,6 @@ var
 begin
   MenuInfo := TDBPopupMenuInfo.Create;
   try
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
 
     for I := 0 to ElvPreview.Items.Count - 1 do
     begin
@@ -900,8 +902,14 @@ begin
           MenuInfo.Position := MenuInfo.Count - 1;
       end;
     end;
-    Viewer.Execute(Sender, MenuInfo);
-    Viewer.Show;
+
+    if MenuInfo.Count > 0 then
+    begin
+      if Viewer = nil then
+        Application.CreateForm(TViewer, Viewer);
+      Viewer.Execute(Sender, MenuInfo);
+      Viewer.Show;
+    end;
   finally
     F(MenuInfo);
   end;
@@ -991,6 +999,8 @@ begin
     CbOnlyImages.Caption := L('Import only supported images');
     CbDeleteAfterImport.Caption := L('Delete files after import');
     CbAddToCollection.Caption := L('Add files to collection after copying files');
+    PeImportFromPath.LoadingText := L('Loading...');
+    PeImportToPath.LoadingText := L('Loading...');
   finally
     EndTranslate;
   end;

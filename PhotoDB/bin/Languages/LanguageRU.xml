@@ -24,7 +24,8 @@
     <translate name="%dpx." value="%dпк." />
     <translate name="All formats (%s)" value="Все форматы (%s)" />
     <translate name="Unknown" value="Неизвестно" />
-    <translate name="Unregistered user" value="Незарегистрированный пользователь" />
+    <translate name="Unregistered user" value="Незарегистрированный пользователь" />	
+	<translate name="Loading..." value="Загрузка..."/>
   </scope>
   <scope name="Errors">
     <translate name="Result is undefined!" value="Результат не определён!" />
@@ -143,7 +144,7 @@
     <translate name="Watermark Options" value="Настнойки водяного знака" />
     <translate name="Please, choose a valid directory!" value="Пожалуйста, выберите существующую директорию!" />
     <translate name="processed" value="обработка" />
-    <translate name="Preview isn't available. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждено или зашифровано." />	
+    <translate name="Preview isn't available. Image can be corrupted or encrypted." value="Предпросмотр недоступен. Изображение может быть повреждено или зашифровано." />
   </scope>
   <scope name="Password">
     <translate name="Password" value="Пароль" />
@@ -324,7 +325,6 @@
     <translate name="Add disk" value="Добавить диск" />
     <translate name="Add directory" value="Добавить папку" />
     <translate name="Next..." value="Далее..." />
-    <translate name="Loading..." value="Загрузка..." />
     <translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />
     <translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
     <translate name="Add file" value="Добавить файл" />

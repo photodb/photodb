@@ -3,7 +3,11 @@ unit UnitTimeCounter;
 interface
 
 uses
-  Windows, ExtCtrls, DateUtils, Math;
+  Windows,
+  ExtCtrls,
+  DateUtils,
+  uMemory,
+  Math;
 
 type
   TTimeCounter = class(TObject)
@@ -61,7 +65,7 @@ end;
 
 destructor TTimeCounter.Destroy;
 begin
-  FTimer.Free;
+  F(FTimer);
   inherited;
 end;
 
@@ -102,7 +106,7 @@ begin
   Ss := Ss - S;
   Ss := Ss div 60;
 
- m:=ss;
+  M := Ss;
   Ss := Ss - M;
   Ss := Ss div 60;
 

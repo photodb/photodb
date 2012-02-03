@@ -67,6 +67,7 @@ type
     function GetInnerInterface: IUnknown;
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
+    function SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
   end;
 
   TWPDDevice = class(TInterfacedObject, IPDevice)
@@ -261,7 +262,8 @@ begin
                     CallBack(DevList, Cancel, Context);
                     if Cancel then
                       Break;
-                  end;
+                  end else
+                    F(Device);
                 end;
               end;
             end;
@@ -1179,6 +1181,12 @@ begin
 end;
 
 function TWPDItem.SaveToStream(S: TStream): Boolean;
+begin
+  SaveToStreamEx(S, nil);
+end;
+
+function TWPDItem.SaveToStreamEx(S: TStream;
+  CallBack: TPDProgressCallBack): Boolean;
 var
   FormatGUID: TGUID;
 begin

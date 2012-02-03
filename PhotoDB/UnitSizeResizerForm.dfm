@@ -2,11 +2,12 @@ object FormSizeResizer: TFormSizeResizer
   Left = 366
   Top = 205
   Caption = 'Change Image'
-  ClientHeight = 502
+  ClientHeight = 516
   ClientWidth = 394
   Color = clBtnFace
   Constraints.MinHeight = 540
   Constraints.MinWidth = 410
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -22,7 +23,7 @@ object FormSizeResizer: TFormSizeResizer
   OnResize = FormResize
   DesignSize = (
     394
-    502)
+    516)
   PixelsPerInch = 96
   TextHeight = 13
   object LbInfo: TLabel
@@ -42,15 +43,14 @@ object FormSizeResizer: TFormSizeResizer
     Left = 8
     Top = 56
     Width = 377
-    Height = 173
+    Height = 184
     Anchors = [akLeft, akTop, akRight, akBottom]
     OnContextPopup = PbImageContextPopup
     OnPaint = PbImagePaint
-    ExplicitHeight = 177
   end
   object BtOk: TButton
     Left = 311
-    Top = 471
+    Top = 485
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -61,7 +61,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object BtCancel: TButton
     Left = 230
-    Top = 471
+    Top = 485
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -71,7 +71,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object BtSaveAsDefault: TButton
     Left = 8
-    Top = 471
+    Top = 485
     Width = 153
     Height = 25
     Anchors = [akLeft, akBottom]
@@ -81,7 +81,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object EdImageName: TEdit
     Left = 38
-    Top = 260
+    Top = 271
     Width = 318
     Height = 21
     TabStop = False
@@ -110,7 +110,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object PrbMain: TDmProgress
     Left = 8
-    Top = 236
+    Top = 247
     Width = 378
     Height = 18
     Visible = False
@@ -130,27 +130,28 @@ object FormSizeResizer: TFormSizeResizer
   end
   object PnOptions: TPanel
     Left = 0
-    Top = 287
+    Top = 298
     Width = 394
-    Height = 178
+    Height = 181
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
       394
-      178)
+      181)
     object LbSizeSeparator: TLabel
       Left = 329
-      Top = 91
+      Top = 94
       Width = 6
       Height = 13
       Anchors = [akRight, akBottom]
       Caption = 'X'
       Enabled = False
+      ExplicitTop = 91
     end
     object CbWatermark: TCheckBox
       Left = 8
-      Top = 7
+      Top = 10
       Width = 115
       Height = 17
       Anchors = [akLeft, akBottom]
@@ -160,7 +161,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object CbConvert: TCheckBox
       Left = 8
-      Top = 35
+      Top = 38
       Width = 114
       Height = 17
       Anchors = [akLeft, akBottom]
@@ -170,7 +171,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object DdConvert: TComboBox
       Left = 128
-      Top = 34
+      Top = 37
       Width = 146
       Height = 21
       Style = csDropDownList
@@ -181,7 +182,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object BtJPEGOptions: TButton
       Left = 280
-      Top = 33
+      Top = 36
       Width = 106
       Height = 22
       Anchors = [akRight, akBottom]
@@ -193,7 +194,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object DdRotate: TComboBox
       Left = 128
-      Top = 61
+      Top = 64
       Width = 146
       Height = 21
       Style = csDropDownList
@@ -204,7 +205,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object CbRotate: TCheckBox
       Left = 8
-      Top = 63
+      Top = 66
       Width = 114
       Height = 17
       Anchors = [akLeft, akBottom]
@@ -214,7 +215,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object CbResize: TCheckBox
       Left = 8
-      Top = 91
+      Top = 94
       Width = 114
       Height = 17
       Anchors = [akLeft, akBottom]
@@ -224,7 +225,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object DdResizeAction: TComboBox
       Left = 128
-      Top = 88
+      Top = 91
       Width = 146
       Height = 21
       Style = csDropDownList
@@ -236,7 +237,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object EdWidth: TEdit
       Left = 280
-      Top = 88
+      Top = 91
       Width = 41
       Height = 21
       Anchors = [akRight, akBottom]
@@ -248,7 +249,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object EdHeight: TEdit
       Left = 345
-      Top = 88
+      Top = 91
       Width = 41
       Height = 21
       Anchors = [akRight, akBottom]
@@ -260,7 +261,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object CbAspectRatio: TCheckBox
       Left = 128
-      Top = 117
+      Top = 120
       Width = 258
       Height = 17
       Anchors = [akLeft, akRight, akBottom]
@@ -272,7 +273,7 @@ object FormSizeResizer: TFormSizeResizer
     end
     object CbAddSuffix: TCheckBox
       Left = 128
-      Top = 135
+      Top = 138
       Width = 258
       Height = 17
       Anchors = [akLeft, akRight, akBottom]
@@ -281,28 +282,19 @@ object FormSizeResizer: TFormSizeResizer
       State = cbChecked
       TabOrder = 12
     end
-    object EdSavePath: TEdit
-      Left = 8
-      Top = 157
-      Width = 353
-      Height = 21
-      Anchors = [akLeft, akRight, akBottom]
-      TabOrder = 13
-      Text = 'C:\'
-    end
     object BtChangeDirectory: TButton
       Left = 367
-      Top = 156
+      Top = 159
       Width = 19
       Height = 22
       Anchors = [akRight, akBottom]
       Caption = '...'
-      TabOrder = 14
+      TabOrder = 13
       OnClick = BtChangeDirectoryClick
     end
     object BtWatermarkOptions: TButton
       Left = 116
-      Top = 7
+      Top = 10
       Width = 158
       Height = 22
       Anchors = [akRight, akBottom]
@@ -313,10 +305,22 @@ object FormSizeResizer: TFormSizeResizer
       TabOrder = 1
       OnClick = BtWatermarkOptionsClick
     end
+    object PeSavePath: TPathEditor
+      Left = 10
+      Top = 158
+      Width = 351
+      Height = 25
+      DoubleBuffered = False
+      ParentDoubleBuffered = False
+      Anchors = [akLeft, akTop, akRight]
+      LoadingText = 'Loading...'
+      CanBreakLoading = False
+      OnlyFileSystem = True
+    end
   end
   object WlBack: TWebLink
     Left = 8
-    Top = 258
+    Top = 269
     Width = 29
     Height = 24
     Cursor = crHandPoint
@@ -416,7 +420,7 @@ object FormSizeResizer: TFormSizeResizer
   end
   object WlNext: TWebLink
     Left = 357
-    Top = 258
+    Top = 269
     Width = 29
     Height = 24
     Cursor = crHandPoint

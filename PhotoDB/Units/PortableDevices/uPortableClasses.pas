@@ -31,6 +31,8 @@ type
     property ErrorCode: HRESULT read GetErrorCode;
   end;
 
+  TPDProgressCallBack = procedure(Sender: TObject; BytesTotal, BytesDone: Int64; var Break: Boolean) of object;
+
   IPDItem = interface(IPBaseInterface)
     function GetItemType: TPortableItemType;
     function GetName: string;
@@ -43,6 +45,7 @@ type
     function GetIsVisible: Boolean;
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
+    function SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
     function GetInnerInterface: IUnknown;
     property ItemType: TPortableItemType read GetItemType;
     property Name: string read GetName;

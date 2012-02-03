@@ -682,7 +682,7 @@ object UpdateDBForm: TUpdateDBForm
     SetOnlyPosition = True
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\UpdatePos'
-    Left = 272
+    Left = 304
     Top = 104
   end
 end

@@ -55,6 +55,7 @@ type
     function GetInnerInterface: IUnknown;
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
+    function SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
   end;
 
   TWIADevice = class(TInterfacedObject, IPDevice)
@@ -883,6 +884,12 @@ begin
 end;
 
 function TWIAItem.SaveToStream(S: TStream): Boolean;
+begin
+  Result := SaveToStreamEx(S, nil);
+end;
+
+function TWIAItem.SaveToStreamEx(S: TStream;
+  CallBack: TPDProgressCallBack): Boolean;
 var
   HR: HRESULT;
   Transfer: IWiaDataTransfer;
@@ -890,7 +897,7 @@ var
   PropSpec: array of TPropSpec;
   PropVariant: array of TPropVariant;
   TransferData: WIA_DATA_TRANSFER_INFO;
-  CallBack: IWiaDataCallback;
+  WCallBack: IWiaDataCallback;
 begin
   Result := False;
   HR := FItem.QueryInterface(IWIAPropertyStorage, PropList);
@@ -943,11 +950,11 @@ begin
 
           FLock.Enter;
           try
-            CallBack := TWiaDataCallback.Create(S);
+            WCallBack := TWiaDataCallback.Create(S);
             try
-              HR := Transfer.idtGetBandedData(@TransferData, CallBack);
+              HR := Transfer.idtGetBandedData(@TransferData, WCallBack);
             finally
-              CallBack := nil;
+              WCallBack := nil;
             end;
           finally
             FLock.Leave;

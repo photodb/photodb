@@ -182,6 +182,9 @@ begin
   Result := True;
   Cancel := False;
 
+  if Options and PATH_LOAD_ONLY_FILE_SYSTEM > 0 then
+    Exit;
+
   if Item is THomeItem then
   begin
     GI := TGroupsItem.CreateFromPath(cGroupsPath, Options, ImageSize);

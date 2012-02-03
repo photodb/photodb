@@ -13,6 +13,8 @@ uses
   uPathProviders,
   uIconUtils,
   uShellIcons,
+  uDBImageUtils,
+  uPortableDeviceUtils,
   System.Classes;
 
 type
@@ -70,7 +72,7 @@ begin
     //loading list with icons
     for I := 0 to FData.Count - 1 do
     begin
-      PI := FData[I].Copy;
+      PI := FData[I];
 
       FIcon := TIcon.Create;
       FIcon.Handle := ExtractDefaultAssociatedIcon('*' + ExtractFileExt(PI.Path), ImageSizeToIconSize16_32_48(FImageSize));
@@ -86,14 +88,26 @@ begin
 
     for I := 0 to FData.Count - 1 do
     begin
+      if IsTerminated then
+        Break;
       FItemParam := FData[I];
       FBitmap := TBitmap.Create;
       try
         Data := nil;
-        if FData[I].Provider.ExtractPreview(FData[I], FImageSize, FImageSize, FBitmap, Data) then
+        if IsDevicePath(FData[I].Path) then
         begin
-          if SynchronizeEx(UpdatePreview) then
-            FBitmap := nil;
+          if FData[I].Provider.ExtractPreview(FData[I], FImageSize, FImageSize, FBitmap, Data) then
+          begin
+            if SynchronizeEx(UpdatePreview) then
+              FBitmap := nil;
+          end;
+        end else
+        begin
+          if ExtractFilePreview(FData[I].Path, FImageSize, FImageSize, FBitmap) then
+          begin
+            if SynchronizeEx(UpdatePreview) then
+              FBitmap := nil;
+          end;
         end;
       finally
         F(FBitmap);
