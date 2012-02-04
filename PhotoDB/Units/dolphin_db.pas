@@ -3,14 +3,50 @@ unit Dolphin_db;
 interface
 
 uses
-  Windows, uVistaFuncs, CommonDBSupport,
-  Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, JPEG,
-  DmProgress, UnitDBDeclare, uDBForm, ShellApi, uDBBaseTypes,
-  MAPI, DDraw, DateUtils, GraphicsCool, GraphicsBaseTypes, uLogger, uFileUtils,
-  UnitDBFileDialogs, UnitDBCommon, uConstants, uGraphicUtils, uShellIntegration,
-  uTranslate, uJpegUtils, uBitmapUtils, uMemory, uDBPopupMenuInfo, uAppUtils,
-  uRuntime, uSysUtils, uAssociations, uActivationUtils, GraphicCrypt, RAWImage,
+  Windows,
+  uVistaFuncs,
+  CommonDBSupport,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  Menus,
+  ExtCtrls,
+  StdCtrls,
+  ComCtrls,
+  JPEG,
+  UnitDBDeclare,
+  uDBForm,
+  ShellApi,
+  uDBBaseTypes,
+  MAPI,
+  DDraw,
+  Math,
+  DateUtils,
+  GraphicsCool,
+  GraphicsBaseTypes,
+  uLogger,
+  uFileUtils,
+  UnitDBFileDialogs,
+  UnitDBCommon,
+  uConstants,
+  uGraphicUtils,
+  uShellIntegration,
+  uTranslate,
+  uJpegUtils,
+  uBitmapUtils,
+  uMemory,
+  uDBPopupMenuInfo,
+  uAppUtils,
+  uRuntime,
+  uSysUtils,
+  uAssociations,
+  uActivationUtils,
+  GraphicCrypt,
+  RAWImage,
   UnitDBKernel;
 
 type
@@ -115,12 +151,15 @@ function GetActiveFormHandle: Integer;
 function CenterPos(W1, W2: Integer): Integer;
 
 function SizeInText(Size: Int64): string;
+function SpeedInText(Speed: Extended): string;
 
 function GetImageFromUser(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 
 procedure GetFileNamesFromDrive(Dir, Mask: string; Files: TStrings; var MaxFilesCount: Integer;
   MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
+
+function TimeIntervalInString(Time: TTime): string;
 
 implementation
 
@@ -427,6 +466,16 @@ begin
     Result := 0;
 end;
 
+function SpeedInText(Speed: Extended): string;
+begin
+  if Speed > 100 then
+    Result := FormatFloat('##', Speed)
+  else if Speed > 10 then
+    Result := FormatFloat('##.#', Speed)
+  else
+    Result := FormatFloat('##.##', Speed);
+end;
+
 function SizeInText(Size: Int64): string;
 begin
   if Size <= 1024 then
@@ -586,6 +635,40 @@ begin
     Found := SysUtils.FindNext(SearchRec);
   end;
   FindClose(SearchRec);
+end;
+
+function TimeIntervalInString(Time: TTime): string;
+var
+  Y, MM, Days, H, M, S, MS: Word;
+  SD, SH, SM, SS: string;
+
+  function RoundSeconds(Sec: Word): Word;
+  begin
+    Result := Ceil(S / 5) * 5;
+  end;
+
+begin
+  DecodeDateTime(Time, Y, MM, Days, H, M, S, MS);
+  Days := (Days - 1) + (Y - 1) * 12 * 365 + (MM - 1) * 30;
+
+  S := RoundSeconds(S);
+
+  SD := IntToStr(Days) + ' ' + IIF(Days > 1, TA('days', 'Global'), TA('day', 'Global'));
+  SH := IntToStr(H) + ' ' + IIF(H > 1, TA('hours', 'Global'), TA('hour', 'Global'));
+  SM := IntToStr(M) + ' ' + IIF(M > 1, TA('minutes', 'Global'), TA('minute', 'Global'));
+  SS := IntToStr(S) + ' ' + IIF(S > 1, TA('seconds', 'Global'), TA('second', 'Global'));
+
+  if Days > 0 then
+    Result := SD + ', ' + SH
+  else if H > 0 then
+    Result := SH + ', ' + SM
+  else if M > 0 then
+    Result := SM + ', ' + SS
+  else
+    Result := SS;
+
+  if Length(Result) > 0 then
+    Result[1] := UpCase(Result[1]);
 end;
 
 initialization

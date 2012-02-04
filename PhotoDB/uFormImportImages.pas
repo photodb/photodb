@@ -804,6 +804,7 @@ begin
     begin
       EI := ElvPreview.Items.Add(FPacketInfos[I].Copy);
       EI.ImageIndex := FBitmapImageList.AddIcon(FPacketImages[I].Icon, True);
+      FPacketImages[I].DetachImage;
       EI.Caption := ExtractFileName(FPacketInfos[I].Path);
     end;
   finally
@@ -870,6 +871,7 @@ begin
     ElvPreview.Items[I].Data.Free;
 
   ElvPreview.Items.Clear;
+  FBitmapImageList.Clear;
 end;
 
 procedure TFormImportImages.CreateParams(var Params: TCreateParams);
@@ -959,8 +961,8 @@ begin
     F(PathImage);
   end;
 
-  ReadOptions;
   FixFormPosition;
+  ReadOptions;
 end;
 
 procedure TFormImportImages.FormDestroy(Sender: TObject);
@@ -1019,8 +1021,8 @@ begin
   CbDeleteAfterImport.Checked := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
   CbAddToCollection.Checked := Settings.ReadBool('ImportPictures', 'AddToCollection', True);
 
-  PeImportFromPath.Path := Settings.ReadString('ImportPictures', 'Source', '');
   PeImportToPath.Path := Settings.ReadString('ImportPictures', 'Destination', GetMyPicturesPath);
+  PeImportFromPath.Path := Settings.ReadString('ImportPictures', 'Source', '');
 end;
 
 procedure TFormImportImages.SetPath(Path: string);

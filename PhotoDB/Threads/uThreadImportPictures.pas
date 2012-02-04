@@ -7,6 +7,7 @@ uses
   System.Classes,
   SysUtils,
   uMemory,
+  Windows,
   uMemoryEx,
   Forms,
   Dolphin_DB,
@@ -17,9 +18,12 @@ uses
   uSysUtils,
   uCounters,
   uFileUtils,
+  Math,
   uPortableDeviceUtils,
+  uConstants,
   uPortableClasses,
   uExplorerPortableDeviceProvider,
+  uTranslate,
   uDBThread;
 
 type
@@ -80,12 +84,21 @@ type
     FOptions: TImportPicturesOptions;
     FProgress: TFormMoveFilesProgress;
     FSpeedCounter: TSpeedEstimateCounter;
+    FTotalBytes: Int64;
+    FBytesCopyed: Int64;
+    FLastCopyPosition: Int64;
+    FTotalItems: Integer;
+    FDialogResult: Integer;
+    FErrorMessage: string;
+    FItemName: string;
+    FCurrentItem: TPathItem;
     procedure PDItemCopyCallBack(Sender: TObject; BytesTotal, BytesDone: Int64; var Break: Boolean);
   protected
     function GetThreadID: string; override;
     procedure Execute; override;
     procedure CopyDeviceFile(Task: TFileOperationTask);
     procedure CopyFSFile(Task: TFileOperationTask);
+    procedure ShowErrorMessage;
   public
     constructor Create(Options: TImportPicturesOptions);
     destructor Destroy; override;
@@ -176,11 +189,12 @@ end;
 procedure TThreadImportPictures.CopyDeviceFile(Task: TFileOperationTask);
 var
   S, D: TPathItem;
-  SE: TPortableItem;
   DestDirectory: string;
   FS: TFileStream;
-  DI: IPDItem;
+  SE: TPortableItem;
 begin
+  FLastCopyPosition := 0;
+
   S := Task.Source;
   if S is TPortableItem then
     SE := TPortableItem(S)
@@ -192,18 +206,122 @@ begin
   if not DirectoryExists(DestDirectory) then
     CreateDirA(DestDirectory);
 
-  //todo: check if file already exists
+  FLastCopyPosition := 0;
   FS := TFileStream.Create(D.Path, fmCreate);
   try
     SE.Item.SaveToStreamEx(FS, PDItemCopyCallBack);
   finally
     F(FS);
   end;
+
+  Inc(FBytesCopyed, S.FileSize);
+  Dec(FTotalItems);
+  SynchronizeEx(
+    procedure
+    begin
+      FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+      FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
+      FProgress.ProgressValue := FBytesCopyed;
+      FProgress.UpdateOptions(False);
+      if FProgress.IsCanceled then
+        Terminate;
+    end
+  );
 end;
 
 procedure TThreadImportPictures.CopyFSFile(Task: TFileOperationTask);
+const
+  BufferSize = 2 * 1024 * 1024;
+var
+  S, D: TPathItem;
+  DestDirectory: string;
+  FS, FD: TFileStream;
+  Buff: PByte;
+  Count: Int64;
+  BytesRemaining: Int64;
+  IsBreak: Boolean;
+  Size: Int64;
 begin
+  IsBreak := False;
+  S := Task.Source;
+  D := Task.Destination;
+  DestDirectory := ExtractFileDir(D.Path);
+  if not DirectoryExists(DestDirectory) then
+    CreateDirA(DestDirectory);
 
+  FLastCopyPosition := 0;
+  //todo: check if file already exists, check errors
+  FD := TFileStream.Create(D.Path, fmCreate);
+  try
+    FS := TFileStream.Create(S.Path, fmOpenRead, fmShareDenyNone);
+    try
+      Size := FS.Size;
+      GetMem(Buff, BufferSize);
+      try
+
+        BytesRemaining := FS.Size;
+        repeat
+          Count := Min(BufferSize, BytesRemaining);
+
+          FS.ReadBuffer(Buff[0], Count);
+          FD.WriteBuffer(Buff[0], Count);
+
+          Dec(BytesRemaining, Count);
+          PDItemCopyCallBack(Self, Size, FD.Size, IsBreak);
+
+          if IsBreak then
+            Break;
+        until (BytesRemaining = 0);
+
+      finally
+        FreeMem(Buff);
+      end;
+    finally
+      F(FS);
+    end;
+  finally
+    F(FD);
+  end;
+
+  Inc(FBytesCopyed, Size);
+  Dec(FTotalItems);
+  SynchronizeEx(
+    procedure
+    begin
+      FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+      FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
+      FProgress.ProgressValue := FBytesCopyed;
+      FProgress.UpdateOptions(False);
+      if FProgress.IsCanceled then
+        Terminate;
+    end
+  );
+end;
+
+procedure TThreadImportPictures.PDItemCopyCallBack(Sender: TObject; BytesTotal,
+  BytesDone: Int64; var Break: Boolean);
+begin
+  FSpeedCounter.AddSpeedInterval(BytesDone - FLastCopyPosition);
+  SynchronizeEx(
+    procedure
+    begin
+      FProgress.Options['Name'].SetDisplayName(L('Name')).SetValue(ExtractFileName(FCurrentItem.Path));
+      FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed - BytesDone)));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes - FBytesCopyed - BytesDone)]));
+      FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
+      FProgress.ProgressValue := FBytesCopyed;
+      FProgress.UpdateOptions(False);
+    end
+  );
+  FLastCopyPosition := BytesDone;
+  Break := Terminated;
+end;
+
+procedure TThreadImportPictures.ShowErrorMessage;
+begin
+  FDialogResult := Application.MessageBox(PChar(FormatEx(L('Error processing item {0}: {1}'), [FItemName, FErrorMessage])), PWideChar(PWideChar(TA('Error'))), MB_ICONERROR or MB_ABORTRETRYIGNORE);
 end;
 
 constructor TThreadImportPictures.Create(Options: TImportPicturesOptions);
@@ -227,18 +345,19 @@ end;
 
 procedure TThreadImportPictures.Execute;
 var
-  I, J: Integer;
+  I, J, ErrorCount: Integer;
   HR: Boolean;
   Source, Destination: string;
   D: TPathItem;
   Childs: TPathItemCollection;
-  FSize, FCount: Integer;
   FileOperations, CurrentLevel, NextLevel: TList<TFileOperationTask>;
   FO: TFileOperationTask;
 begin
   FreeOnTerminate := True;
-  FSize := 0;
-  FCount := 0;
+
+  FTotalItems := 0;
+  FTotalBytes := 0;
+  FBytesCopyed := 0;
 
   if FOptions.TasksCount = 0 then
     Exit;
@@ -249,6 +368,9 @@ begin
   Source := FOptions.Tasks[0].Operations[0].Source.Path;
   Destination := FOptions.Tasks[0].Operations[0].Destination.Path;
 
+  if IsDevicePath(Source) then
+    Delete(Source, 1, Length(cDevicesPath) + 1);
+
   HR := SynchronizeEx(
     procedure
     begin
@@ -257,15 +379,17 @@ begin
       FProgress.Options['Name'].SetDisplayName(L('Name')).SetValue(L('Calculating...'));
       FProgress.Options['From'].SetDisplayName(L('From')).SetValue(Source).SetImportant(True);
       FProgress.Options['To'].SetDisplayName(L('To')).SetValue(Destination).SetImportant(True);
-      FProgress.Options['Items remaining'].SetDisplayName(L('Items remaining')).SetValue(L('Calculating...'));//'2 (345 MB)'
-      FProgress.Options['Speed'].SetDisplayName(L('Speed')).SetValue(L('Calculating...'));//'49,5 MB/second'
+      FProgress.Options['Items remaining'].SetDisplayName(L('Items remaining')).SetValue(L('Calculating...'));
+      FProgress.Options['Time remaining'].SetDisplayName(L('Time remaining')).SetValue(L('Calculating...'));
+      FProgress.Options['Speed'].SetDisplayName(L('Speed')).SetValue(L('Calculating...'));
+      FProgress.IsCalculating := True;
       FProgress.RefreshOptionList;
       FProgress.Show;
     end
   );
   try
 
-    FSpeedCounter := TSpeedEstimateCounter.Create(1 * 1000);
+    FSpeedCounter := TSpeedEstimateCounter.Create(2 * 1000);
     try
 
       if HR then
@@ -291,6 +415,8 @@ begin
 
               for I := 0 to CurrentLevel.Count - 1 do
               begin
+                if Terminated then
+                  Break;
                 Childs := TPathItemCollection.Create;
                 try
                   CurrentLevel[I].Source.Provider.FillChilds(Self, CurrentLevel[I].Source, Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
@@ -315,23 +441,23 @@ begin
                       finally
                         F(D);
                       end;
-                      FSize := FSize + Childs[J].FileSize;
-                      Inc(FCount);
-                      FSpeedCounter.AddSpeedInterval(Childs[J].FileSize);
+                      Inc(FTotalBytes, Childs[J].FileSize);
+                      Inc(FTotalItems);
 
                       //notify updated size
                       SynchronizeEx(
                         procedure
                         begin
-                          FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FCount, SizeInText(FSize)]));
-                          FProgress.Options['Speed'].SetValue(FloatToStrEx(FSpeedCounter.CurrentSpeed / (1024 * 1024), 1) + L(' MB/second'));
-                          FProgress.UpdateOptions;
+                          FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes)]));
+                          if FProgress.IsCanceled then
+                            Terminate;
                         end
                       );
                     end;
                   end;
 
                 finally
+                  Childs.FreeItems;
                   F(Childs);
                 end;
               end;
@@ -345,17 +471,62 @@ begin
 
         FSpeedCounter.Reset;
 
+        SynchronizeEx(
+          procedure
+          begin
+            FProgress.Title := FormatEx(L('Importing {0} items ({1})'), [FTotalItems, SizeInText(FTotalBytes)]);
+            FProgress.ProgressMax := FTotalBytes;
+            FProgress.ProgressValue := 0;
+            FProgress.IsCalculating := False;
+            FProgress.UpdateOptions(True);
+          end
+        );
+
         //calculating done,
         for I := 0 to FileOperations.Count - 1 do
         begin
+          if Terminated then
+            Break;
+
           FO := FileOperations[I];
           if FO.IsDirectory then
             Continue;
 
-          if IsDevicePath(FO.Source.Path) then
-            CopyDeviceFile(FO)
-          else
-            CopyFSFile(FO);
+          FCurrentItem := FO.Source;
+
+          ErrorCount := 0;
+          while True do
+          begin
+            try
+              if IsDevicePath(FO.Source.Path) then
+                CopyDeviceFile(FO)
+              else
+                CopyFSFile(FO);
+            except
+              on e: Exception do
+              begin
+                Inc(ErrorCount);
+                if ErrorCount < 5 then
+                begin
+                  Sleep(100);
+                  Continue;
+                end;
+
+                FErrorMessage := e.Message;
+                Synchronize(ShowErrorMessage);
+
+                if FDialogResult = IDABORT then
+                begin
+                  Exit;
+                end else if FDialogResult = IDRETRY then
+                  Continue
+                else if FDialogResult = IDIGNORE then
+                  Break;
+              end;
+            end;
+
+            Break;
+          end;
 
         end;
 
@@ -374,19 +545,11 @@ begin
       end
     );
   end;
-
-  Sleep(20000);
 end;
 
 function TThreadImportPictures.GetThreadID: string;
 begin
   Result := 'ImportPictures';
-end;
-
-procedure TThreadImportPictures.PDItemCopyCallBack(Sender: TObject; BytesTotal,
-  BytesDone: Int64; var Break: Boolean);
-begin
-  //
 end;
 
 end.

@@ -12,6 +12,7 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
     446
@@ -32,6 +33,7 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 0
+    OnClick = BtnCancelClick
   end
   object BtnPause: TButton
     Left = 16
@@ -83,9 +85,9 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
     ParentBackground = False
     TabOrder = 3
     object LbTitle: TLabel
-      Left = 34
+      Left = 16
       Top = 9
-      Width = 194
+      Width = 212
       Height = 19
       Caption = 'Copying 20 items (450 Mb)'
       Font.Charset = DEFAULT_CHARSET
@@ -100,6 +102,7 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
       Top = 8
       Width = 20
       Height = 20
+      Visible = False
       Active = True
       FillPercent = 50
       SignColor = clBlack
@@ -109,6 +112,11 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
   object AeMain: TApplicationEvents
     OnMessage = AeMainMessage
     Left = 408
+    Top = 8
+  end
+  object TmUpdate: TTimer
+    OnTimer = TmUpdateTimer
+    Left = 360
     Top = 8
   end
 end

@@ -124,7 +124,7 @@ procedure TImportSeriesPreview.SendPacketOfPreviews;
 begin
   TFormImportImages(OwnerForm).AddPreviews(FPacketInfos, FPacketImages);
   FPacketInfos.Clear;
-  FPacketImages.ClearItems;
+  FPacketImages.Clear;
 end;
 
 procedure TImportSeriesPreview.UpdatePreview;

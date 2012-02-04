@@ -66,16 +66,21 @@ type
     LoadingSign1: TLoadingSign;
     AeMain: TApplicationEvents;
     Bevel1: TBevel;
+    TmUpdate: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+    procedure TmUpdateTimer(Sender: TObject);
+    procedure BtnCancelClick(Sender: TObject);
   private
     FOptions: TProgressOptions;
     FW7TaskBar: ITaskbarList3;
     FProgressMessage: Cardinal;
     FProgressValue: Int64;
+    FTitle: string;
     FIsError: Boolean;
     FIsCalculating: Boolean;
     FProgressMax: Int64;
+    FIsCanceled: Boolean;
     function GetTitle: string;
     procedure SetTitle(const Value: string);
     procedure SetIsCalculating(const Value: Boolean);
@@ -92,7 +97,7 @@ type
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure UpdateOptions;
+    procedure UpdateOptions(Full: Boolean);
     procedure RefreshOptionList;
     property Title: string read GetTitle write SetTitle;
     property Options: TProgressOptions read FOptions;
@@ -100,14 +105,17 @@ type
     property ProgressValue: Int64 read FProgressValue write SetProgressValue;
     property IsCalculating: Boolean read FIsCalculating write SetIsCalculating;
     property IsError: Boolean read FIsError write SetIsError;
+    property IsCanceled: Boolean read FIsCanceled;
   end;
 
 implementation
 
+uses
+  FormManegerUnit;
+
 {$R *.dfm}
 
 { TProgressOption }
-
 
 function TProgressOption.SetDisplayName(Value: string): TProgressOption;
 begin
@@ -181,10 +189,18 @@ begin
     FW7TaskBar := CreateTaskBarInstance;
 end;
 
+procedure TFormMoveFilesProgress.BtnCancelClick(Sender: TObject);
+begin
+  BtnCancel.Enabled := False;
+  FIsCanceled := True;
+end;
+
 constructor TFormMoveFilesProgress.Create(AOwner: TComponent);
 begin
   inherited;
   FOptions := TProgressOptions.Create;
+  FIsCanceled := False;
+  RegisterMainForm(Self);
 end;
 
 procedure TFormMoveFilesProgress.CreateParams(var Params: TCreateParams);
@@ -197,6 +213,7 @@ end;
 
 destructor TFormMoveFilesProgress.Destroy;
 begin
+  UnRegisterMainForm(Self);
   F(FOptions);
   inherited;
 end;
@@ -251,8 +268,12 @@ end;
 
 procedure TFormMoveFilesProgress.SetTitle(const Value: string);
 begin
-  LbTitle.Caption := Value;
-  Caption := Value;
+  FTitle := Value;
+end;
+
+procedure TFormMoveFilesProgress.TmUpdateTimer(Sender: TObject);
+begin
+  UpdateOptions(True);
 end;
 
 procedure TFormMoveFilesProgress.RefreshOptionList;
@@ -293,7 +314,6 @@ begin
     L.Top := Top;
     L.Left := NameWidth + 20;
     L.Font.Size := 9;
-    L.Caption := FOptions.GetItemByIndex(I).Value;
     L.Tag := NativeInt(FOptions.GetItemByIndex(I));
     if FOptions.GetItemByIndex(I).IsImportant then
       L.Font.Style := [fsBold];
@@ -304,20 +324,60 @@ begin
   ClientHeight := 120 + Top;
   Constraints.MaxHeight := Height;
   Constraints.MinHeight := Height;
+
+  UpdateOptions(True);
 end;
 
-procedure TFormMoveFilesProgress.UpdateOptions;
+procedure TFormMoveFilesProgress.UpdateOptions(Full: Boolean);
 var
   I: Integer;
   L: TLabel;
 begin
-  for I := PnInfo.ControlCount - 1 downto 0 do
-    if PnInfo.Controls[I] is TLabel then
-    begin
-      L := TLabel(PnInfo.Controls[I]);
-      if L.Tag > 0 then
-        L.Caption := TProgressOption(L.Tag).Value;
-    end;
+  if Full then
+  begin
+    for I := PnInfo.ControlCount - 1 downto 0 do
+      if PnInfo.Controls[I] is TLabel then
+      begin
+        L := TLabel(PnInfo.Controls[I]);
+        if L.Tag > 0 then
+          L.Caption := TProgressOption(L.Tag).Value;
+      end;
+
+    LbTitle.Caption := FTitle;
+    Caption := FTitle;
+  end;
+
+  if IsCalculating then
+  begin
+    PbMain.Style := pbstMarquee;
+    if FW7TaskBar <> nil then
+      FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
+  end else
+  begin
+    PbMain.Style := pbstNormal;
+    if FW7TaskBar <> nil then
+      FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+  end;
+
+  if IsError then
+  begin
+    PbMain.State := pbsError;
+    if FW7TaskBar <> nil then
+      FW7TaskBar.SetProgressState(Handle, TBPF_ERROR);
+  end else
+  begin
+    PbMain.State := pbsNormal;
+    if FW7TaskBar <> nil then
+      FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+  end;
+
+  PbMain.Max := 100;
+  if ProgressMax > 0 then
+    PbMain.Position := Round(100 * ProgressValue / ProgressMax)
+  else
+    PbMain.Position := 0;
+  if FW7TaskBar <> nil then
+    FW7TaskBar.SetProgressValue(Handle, ProgressValue, ProgressMax);
 end;
 
 end.

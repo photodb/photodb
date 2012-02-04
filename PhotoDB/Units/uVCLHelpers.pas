@@ -6,6 +6,7 @@ uses
   ExtCtrls,
   Windows,
   Classes,
+  FOrms,
   Controls,
   Graphics,
   StdCtrls;
@@ -25,9 +26,11 @@ type
 type
   TNotifyEventRef = reference to procedure(Sender: TObject);
   TKeyEventRef = reference to procedure(Sender: TObject; var Key: Word; Shift: TShiftState);
+  TMessageEventRef = reference to procedure(var Msg: TMsg; var Handled: Boolean);
 
 function MakeNotifyEvent(const ANotifyRef: TNotifyEventRef): TNotifyEvent;
 function MakeKeyEvent(const ANotifyRef: TKeyEventRef): TKeyEvent;
+function MakMessageEvent(const ANotifyRef: TMessageEventRef): TMessageEvent;
 
 implementation
 
@@ -48,6 +51,11 @@ begin
 end;
 
 function MakeKeyEvent(const ANotifyRef: TKeyEventRef): TKeyEvent;
+begin
+  MethRefToMethPtr(ANotifyRef, Result);
+end;
+
+function MakMessageEvent(const ANotifyRef: TMessageEventRef): TMessageEvent;
 begin
   MethRefToMethPtr(ANotifyRef, Result);
 end;

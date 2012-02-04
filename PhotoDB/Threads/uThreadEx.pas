@@ -25,7 +25,7 @@ type
     procedure TestMethod;
   protected
     function SynchronizeEx(Method: TThreadMethod): Boolean; override;
-    function SynchronizeEx(Proc: TThreadProcedure): Boolean; overload;
+    function SynchronizeEx(Proc: TThreadProcedure): Boolean; override;
     procedure CallMethod;
     procedure CallProcedure;
     procedure Start;

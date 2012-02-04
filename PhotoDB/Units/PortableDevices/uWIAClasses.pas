@@ -111,9 +111,11 @@ type
 
   TWiaDataCallback = class(TInterfacedObject, IWiaDataCallback)
   private
+    FItem: TWIAItem;
     FStream: TStream;
+    FCallBack: TPDProgressCallBack;
   public
-    constructor Create(Stream: TStream);
+    constructor Create(Item: TWIAItem; Stream: TStream; CallBack: TPDProgressCallBack);
     function BandedDataCallback(lMessage: LongInt;
       lStatus: LongInt;
       lPercentComplete: LongInt;
@@ -950,7 +952,7 @@ begin
 
           FLock.Enter;
           try
-            WCallBack := TWiaDataCallback.Create(S);
+            WCallBack := TWiaDataCallback.Create(Self, S, CallBack);
             try
               HR := Transfer.idtGetBandedData(@TransferData, WCallBack);
             finally
@@ -974,21 +976,35 @@ end;
 function TWiaDataCallback.BandedDataCallback(lMessage, lStatus,
   lPercentComplete, lOffset, lLength, lReserved, lResLength: Integer;
   pbBuffer: Pointer): HRESULT;
+var
+  B: Boolean;
 begin
+  Result := S_OK;
+  B := False;
   case lMessage of
     IT_MSG_DATA:
     begin
       if lStatus = IT_STATUS_TRANSFER_TO_CLIENT then
+      begin
         FStream.Write(pbBuffer^, lLength);
+
+        if Assigned(FCallBack) then
+        begin
+          FCallBack(FItem, FItem.FFullSize, FStream.Size, B);
+          if B then
+            Result := S_FALSE;
+        end;
+      end;
     end;
   end;
-  Result := S_OK;
 end;
 
-constructor TWiaDataCallback.Create(Stream: TStream);
+constructor TWiaDataCallback.Create(Item: TWIAItem; Stream: TStream; CallBack: TPDProgressCallBack);
 begin
   inherited Create;
+  FItem := Item;
   FStream := Stream;
+  FCallBack := CallBack;
 end;
 
 { TWIACallBack }

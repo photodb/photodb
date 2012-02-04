@@ -5,6 +5,8 @@ interface
 uses
   Windows,
   Generics.Collections,
+  DateUtils,
+  SysUtils,
   uMemory;
 
 type
@@ -28,6 +30,7 @@ type
     constructor Create(EstimateInterval: Cardinal);
     destructor Destroy; override;
     procedure Reset;
+    function GetTimeRemaining(BytesRemaining: Int64): TTime;
     procedure AddSpeedInterval(BytesDone: Int64);
     property CurrentSpeed: Int64 read GetSpeed;
   end;
@@ -99,9 +102,39 @@ begin
   Result := Round(Result / (Time / 1000));
 end;
 
+function TSpeedEstimateCounter.GetTimeRemaining(BytesRemaining: Int64): TTime;
+var
+  H, M, S, Ss, D: Word;
+  TimeRem: Extended;
+
+  Speed: Int64;
+begin
+  Speed := CurrentSpeed;
+
+  if Speed = 0 then
+    Exit(0);
+
+  TimeRem := BytesRemaining / Speed;
+
+  SS := Round(TimeRem); // seconds
+
+  D := SS div SecsPerDay;
+  SS := SS - D * SecsPerDay;
+
+  H := SS div SecsPerHour;
+  SS := SS - H * SecsPerHour;
+
+  M := SS div SecsPerMin;
+  SS := SS - M * SecsPerMin;
+
+  S := SS;
+
+  Result := EncodeDateTime(1, 1, 1 + D, H, M, S, 1);
+end;
+
 procedure TSpeedEstimateCounter.Reset;
 begin
-  FreeList(FList);
+  FreeList(FList, False);
   FStartTime := GetTickCount;
 end;
 

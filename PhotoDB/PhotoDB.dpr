@@ -670,9 +670,9 @@ begin
 
     SetSplashProgress(100);
 
-    If DBTerminating then
+    if DBTerminating then
       Application.ShowMainForm := False;
-    If not DBTerminating then
+    if not DBTerminating then
     begin
       EventLog('Form manager...');
       TW.I.Start('Form manager...');
@@ -683,7 +683,7 @@ begin
 
     TW.I.Start('THEMES AND RUNNING DB');
 
-    If not DBTerminating then
+    if not DBTerminating then
     begin
       EventLog('Run manager...');
       if not GetParamStrDBBool('/NoFullRun') or FolderView then

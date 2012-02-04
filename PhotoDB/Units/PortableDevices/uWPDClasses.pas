@@ -48,7 +48,8 @@ type
     FLoadOnlyName: Boolean;
     FVisible: Boolean;
     procedure ErrorCheck(Code: HRESULT);
-    procedure TransferContent(ResourceID: TGUID; Stream: TStream; out ResourceFormat: TGUID);
+    procedure TransferContent(ResourceID: TGUID; Stream: TStream; out ResourceFormat: TGUID;
+      CallBack: TPDProgressCallBack);
     procedure ReadProperties;
   public
     constructor Create(ADevice: TWPDDevice; AItemKey: string; LoadOnlyName: Boolean = False);
@@ -838,13 +839,13 @@ begin
   Result := False;
   MS := TMemoryStream.Create;
   try
-    TransferContent(WPD_RESOURCE_THUMBNAIL, MS, FormatGUID);
+    TransferContent(WPD_RESOURCE_THUMBNAIL, MS, FormatGUID, nil);
     if MS.Size = 0 then
     begin
       Ext := AnsiLowerCase(ExtractFileExt(FName));
       if (Ext = '.bmp') or (Ext = '.png') or (Ext = '.jpg') or (Ext = '.jpeg') or (Ext = '.gif') then
       begin
-        TransferContent(WPD_RESOURCE_DEFAULT, MS, FormatGUID);
+        TransferContent(WPD_RESOURCE_DEFAULT, MS, FormatGUID, nil);
         if (Ext = '.bmp') then
           FormatGUID := WPD_OBJECT_FORMAT_BMP;
         if (Ext = '.png') then
@@ -1182,20 +1183,20 @@ end;
 
 function TWPDItem.SaveToStream(S: TStream): Boolean;
 begin
-  SaveToStreamEx(S, nil);
+  Result := SaveToStreamEx(S, nil);
 end;
 
-function TWPDItem.SaveToStreamEx(S: TStream;
-  CallBack: TPDProgressCallBack): Boolean;
+function TWPDItem.SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
 var
   FormatGUID: TGUID;
 begin
-  TransferContent(WPD_RESOURCE_DEFAULT, S, FormatGUID);
+  TransferContent(WPD_RESOURCE_DEFAULT, S, FormatGUID, CallBack);
   Result := FErrorCode = S_OK;
 end;
 
 //WPD_RESOURCE_THUMBNAIL or WPD_RESOURCE_DEFAULT
-procedure TWPDItem.TransferContent(ResourceID: TGUID; Stream: TStream; out ResourceFormat: TGUID);
+procedure TWPDItem.TransferContent(ResourceID: TGUID; Stream: TStream; out ResourceFormat: TGUID;
+  CallBack: TPDProgressCallBack);
 const
   DefaultBufferSize: Integer = 2 * 1024 * 1024;
 var
@@ -1209,8 +1210,9 @@ var
   ppResourceAttributes: IPortableDeviceValues;
   BufferSize, ReadBufferSize: Int64;
   ResFormat: TGUID;
-  StartTime: Cardinal;
+  IsBreak: Boolean;
 begin
+  IsBreak := False;
   ResourceFormat := WPD_OBJECT_FORMAT_JFIF;
   BufferSize := DefaultBufferSize;
   FLock.Enter;
@@ -1246,51 +1248,43 @@ begin
     Key.fmtid := ResourceID;
     Key.pid := 0;
 
-    StartTime := GetTickCount;
-    repeat
-      FLock.Enter;
-      try
-        HR := ppResources.GetStream(PChar(FItemKey),         // Identifier of the object we want to transfer
-                                    Key,                     // We are transferring the default resource (which is the entire object's data)
-                                    STGM_READ,               // Opening a stream in READ mode, because we are reading data from the device.
-                                    cbOptimalTransferSize,   // Driver supplied optimal transfer size
-                                    pObjectDataStream);
-      finally
-        FLock.Leave;
-      end;
-      if HR = E_RESOURCE_IN_USE then
-      begin
-        if GetTickCount - StartTime < MAX_RESOURCE_WAIT_TIME then
-        begin
-          Sleep(RESOURCE_RETRY_TIME);
-          Continue;
-        end;
-      end;
-      Break;
-    until False;
-    //-2147024726 (800700aa)': Automation Error. The requested resource is in use.
-    if (SUCCEEDED(HR)) then
-    begin
+    FLock.Enter;
+    try
+      HR := ppResources.GetStream(PChar(FItemKey),         // Identifier of the object we want to transfer
+                                  Key,                     // We are transferring the default resource (which is the entire object's data)
+                                  STGM_READ,               // Opening a stream in READ mode, because we are reading data from the device.
+                                  cbOptimalTransferSize,   // Driver supplied optimal transfer size
+                                  pObjectDataStream);
 
-      GetMem(Buff, BufferSize);
-      try
-        FLock.Enter;
+      if (SUCCEEDED(HR)) then
+      begin
+
+        GetMem(Buff, BufferSize);
         try
           repeat
             HR := pObjectDataStream.Read(Buff, BufferSize, @ButesRead);
-            if (SUCCEEDED(HR)) then
+            if (SUCCEEDED(HR) and (ButesRead > 0)) then
+            begin
               Stream.WriteBuffer(Buff[0], ButesRead);
+              if Assigned(CallBack) then
+                CallBack(Self, FFullSize, Stream.Size, IsBreak);
+            end;
+            if IsBreak then
+            begin
+              FErrorCode := E_ABORT;
+              Break;
+            end;
           until (ButesRead = 0);
           pObjectDataStream.Commit(0);
         finally
-          FLock.Leave;
+          FreeMem(Buff);
         end;
-      finally
-        FreeMem(Buff);
-      end;
 
-    end else
-      ErrorCheck(HR);
+      end else
+        ErrorCheck(HR);
+    finally
+      FLock.Leave;
+    end;
   end else
     ErrorCheck(HR);
 

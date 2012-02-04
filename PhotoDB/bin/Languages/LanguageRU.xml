@@ -2090,15 +2090,31 @@
 	<translate name="From" value="Из"/>
 	<translate name="To" value="В"/>
 	<translate name="Items remaining" value="Осталось объектов"/>
+	<translate name="Time remaining" value="Осталось времени"/>
+	<translate name="MB/second" value="Мб/секунду"/>
 	<translate name="Speed" value="Скорость"/>
 	<translate name="{0} Files" value="{0} Файлов"/>
 	<translate name="Label" value="Метка"/>
 	<translate name="Import from" value="Импорт из"/>
 	<translate name="Import to" value="Импорт в"/>
 	<translate name="Directory format" value="Формат директории"/>
-	<translate name="Import pictures" value="Испорт изображений"/>
+	<translate name="Import pictures" value="Импорт изображений"/>
 	<translate name="Import only supported images" value="Импорт только поддерживаемых типов файлов"/>
 	<translate name="Delete files after import" value="Удалить файлы после импорта"/>
 	<translate name="Add files to collection after copying files" value="Добавить в базу после импорта"/>
+	<translate name="Importing {0} items ({1})" value="Импорт {0} объектов ({1})"/>
+	<translate name="Error processing item {0}: {1}" value="Ошибка обработки объекта {0}: {1}"/>	
+  </scope>
+  <scope name="Global">
+	<translate name="day" value="день"/>
+	<translate name="days" value="cуток"/>
+	<translate name="hours" value="часов"/>
+	<translate name="hour" value="час"/>
+	<translate name="minutes" value="минут"/>
+	<translate name="minute" value="минута"/>
+	<translate name="second" value="секунда"/>
+	<translate name="seconds" value="секунд"/>
+  </scope>
+  <scope name="FileMoveDialog">
   </scope>
 </language>
