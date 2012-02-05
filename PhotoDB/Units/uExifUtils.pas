@@ -16,6 +16,7 @@ uses
   SysUtils,
   CCR.Exif.XMPUtils,
   uTiffImage,
+  RAWImage,
   uPortableDeviceUtils;
 
 type
@@ -415,20 +416,28 @@ end;
 function GetExifRotate(FileName: string): Integer;
 var
   ExifData: TExifData;
-  OldMode : Cardinal;
+  OldMode: Cardinal;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     Result := DB_IMAGE_ROTATE_0;
     try
-      ExifData := TExifData.Create;
-      try
-        ExifData.LoadFromGraphic(FileName);
-        if not ExifData.Empty then
-          Result := ExifOrientationToRatation(Ord(ExifData.Orientation));
-      finally
-        F(ExifData);
+      if RAWImage.IsRAWSupport and IsRAWImageFile(FileName) then
+      begin
+        //image will be rotated at load;
+        Exit;
+      end else
+      begin
+        ExifData := TExifData.Create;
+        try
+          ExifData.LoadFromGraphic(FileName);
+          if not ExifData.Empty then
+            Result := ExifOrientationToRatation(Ord(ExifData.Orientation));
+        finally
+          F(ExifData);
+        end;
       end;
+
     except
       Exit;
     end;

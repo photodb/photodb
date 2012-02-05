@@ -2113,7 +2113,41 @@
 	<translate name="minutes" value="минут"/>
 	<translate name="minute" value="минута"/>
 	<translate name="second" value="секунда"/>
-	<translate name="seconds" value="секунд"/>
+  </scope>
+  <scope name="Date">
+	<translate name="january" value="января"/>
+	<translate name="february" value="февраля"/>
+	<translate name="march" value="марта"/>
+	<translate name="april" value="апреля"/>
+	<translate name="may" value="мая"/>
+	<translate name="june" value="июня"/>
+	<translate name="july" value="июля"/>
+	<translate name="august" value="августа"/>
+	<translate name="september" value="сентября"/>
+	<translate name="october" value="октября"/>
+	<translate name="november" value="ноября"/>
+	<translate name="december" value="декабря"/>
+	<translate name="monday" value="понедельник"/>
+	<translate name="tuesday" value="вторник"/>
+	<translate name="wednesday" value="среда"/>
+	<translate name="thursday" value="четверг"/>
+	<translate name="friday" value="пятница"/>
+	<translate name="saturday" value="суббота"/>
+	<translate name="sunday" value="воскресенье"/>
+  </scope>
+  <scope name="Month">
+	<translate name="january" value="январь"/>
+	<translate name="february" value="февраль"/>
+	<translate name="march" value="март"/>
+	<translate name="april" value="апрель"/>
+	<translate name="may" value="май"/>
+	<translate name="june" value="июнь"/>
+	<translate name="july" value="июль"/>
+	<translate name="august" value="август"/>
+	<translate name="september" value="сентябрь"/>
+	<translate name="october" value="октябрь"/>
+	<translate name="november" value="ноябрь"/>
+	<translate name="december" value="декабрь"/>
   </scope>
   <scope name="FileMoveDialog">
   </scope>

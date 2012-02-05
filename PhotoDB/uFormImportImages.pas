@@ -42,7 +42,12 @@ uses
   uDBPopupMenuInfo,
   UnitDBDeclare,
   uAssociations,
-  UnitBitmapImageList;
+  UnitBitmapImageList,
+  uExplorerFSProviders,
+  uExplorerMyComputerProvider,
+  uStringUtils,
+  Menus,
+  uPathUtils;
 
 const
   TAG_LABEL           = 1;
@@ -60,13 +65,16 @@ type
   TBaseSelectItem = class
   private
     FItemLabel: string;
+    FIsSelected: Boolean;
   protected
     function GetItemsCount: Integer; virtual; abstract;
     function GetItemsSize: Int64; virtual; abstract;
   public
+    constructor Create;
     property ItemLabel: string read FItemLabel write FItemLabel;
     property ItemsSize: Int64 read GetItemsSize;
     property ItemsCount: Integer read GetItemsCount;
+    property IsSelected: Boolean read FIsSelected write FIsSelected;
   end;
 
   TSelectDateItem = class(TBaseSelectItem)
@@ -106,7 +114,10 @@ type
   private
     FItems: TList<TBaseSelectItem>;
     FContainer: TScrollBox;
+    FMenuOptions: TPopupMenu;
     function GetScrollBoxByItem(Index: TBaseSelectItem): TScrollBox;
+    function GetItemByIndex(Index: Integer): TBaseSelectItem;
+    function GetCont: Integer;
     property DisplayItems[Index: TBaseSelectItem]: TScrollBox read GetScrollBoxByItem;
     procedure OnItemEditClick(Sender: TObject);
     procedure OnDateEditClick(Sender: TObject);
@@ -123,12 +134,15 @@ type
     procedure OnBoxMouseLeave(Sender: TObject);
     procedure OnBoxMouseEnter(Sender: TObject);
     procedure OnBoxClick(Sender: TObject);
+    procedure ShowSettings(Sender: TObject);
   public
     constructor Create(Container: TScrollBox);
     destructor Destroy; override;
     procedure Clear;
     procedure UpdateModel;
     procedure AddDateInfo(Item: TPathItem; Date: TDateTime; Size: Int64);
+    property Items[Index: Integer]: TBaseSelectItem read GetItemByIndex; default;
+    property Count: Integer read GetCont;
   end;
 
   TScanItem = class(TObject)
@@ -179,6 +193,7 @@ type
     FSeries: TSelectDateCollection;
     FBitmapImageList: TBitmapImageList;
     FPreviewData: TList<TPathItem>;
+    IsExtendedMode: Boolean;
     procedure LoadLanguage;
     procedure ReadOptions;
     procedure ItemUpdateTimer(Sender: TObject);
@@ -217,6 +232,13 @@ begin
   Application.CreateForm(TFormImportImages, FormImportImages);
   FormImportImages.SetPath(cDevicesPath + '\' + DeviceName);
   FormImportImages.Show;
+end;
+
+{ TBaseSelectItem }
+
+constructor TBaseSelectItem.Create;
+begin
+  FIsSelected := False;
 end;
 
 { TScanItem }
@@ -353,15 +375,45 @@ begin
 end;
 
 constructor TSelectDateCollection.Create(Container: TScrollBox);
+var
+  MI: TMenuItem;
 begin
   FContainer := Container;
   FItems := TList<TBaseSelectItem>.Create;
+  FMenuOptions := TPopupMenu.Create(nil);
+
+  MI := TMenuItem.Create(FMenuOptions);
+  MI.Caption := TA('Show objects');
+  FMenuOptions.Items.Add(MI);
+
+  MI := TMenuItem.Create(FMenuOptions);
+  MI.Caption := TA('Don''t import');
+  FMenuOptions.Items.Add(MI);
+
+  MI := TMenuItem.Create(FMenuOptions);
+  MI.Caption := TA('Merge left');
+  FMenuOptions.Items.Add(MI);
+
+  MI := TMenuItem.Create(FMenuOptions);
+  MI.Caption := TA('Merge right');
+  FMenuOptions.Items.Add(MI);
 end;
 
 destructor TSelectDateCollection.Destroy;
 begin
+  F(FMenuOptions);
   FreeList(FItems);
   inherited;
+end;
+
+function TSelectDateCollection.GetCont: Integer;
+begin
+  Result := FItems.Count;
+end;
+
+function TSelectDateCollection.GetItemByIndex(Index: Integer): TBaseSelectItem;
+begin
+  Result := FItems[Index];
 end;
 
 function TSelectDateCollection.GetScrollBoxByItem(
@@ -509,6 +561,17 @@ begin
   Data := TList<TPathItem>.Create;
 
   SI := TBaseSelectItem(Sb.Tag);
+
+  for I := 0 to FItems.Count - 1 do
+    FItems[I].IsSelected := False;
+  SI.IsSelected := True;
+
+  for I := 0 to FItems.Count - 1 do
+  begin
+    if FItems[I] <> SI then
+      DisplayItems[FItems[I]].OnMouseLeave(DisplayItems[FItems[I]]);
+  end;
+
   if SI is TSelectDateItem then
     AddToList(TSelectDateItem(SI))
   else
@@ -523,25 +586,35 @@ end;
 procedure TSelectDateCollection.OnBoxMouseEnter(Sender: TObject);
 var
   Sb: TScrollBox;
+  SI: TBaseSelectItem;
 begin
   if Sender is TScrollBox then
     Sb := TScrollBox(Sender)
   else
     Sb := TScrollBox(TWinControl(Sender).Parent);
 
-  Sb.Color := $FFFFAF;
+  SI := TBaseSelectItem(Sb.Tag);
+  if SI.IsSelected then
+    Sb.Color := $FFFFAF
+  else
+    Sb.Color := $FFFFAF;
 end;
 
 procedure TSelectDateCollection.OnBoxMouseLeave(Sender: TObject);
 var
   Sb: TScrollBox;
+  SI: TBaseSelectItem;
 begin
   if Sender is TScrollBox then
     Sb := TScrollBox(Sender)
   else
     Sb := TScrollBox(TWinControl(Sender).Parent);
 
-  Sb.Color := clWhite;
+  SI := TBaseSelectItem(Sb.Tag);
+  if SI.IsSelected then
+    Sb.Color := $CFCFCF
+  else
+    Sb.Color := $FFFFFF
 end;
 
 procedure TSelectDateCollection.OnDateEditClick(Sender: TObject);
@@ -654,6 +727,14 @@ begin
   LnkOk.Show;
 end;
 
+procedure TSelectDateCollection.ShowSettings(Sender: TObject);
+var
+  P: TPoint;
+begin
+  GetCursorPos(P);
+  FMenuOptions.Popup(P.X, P.Y);
+end;
+
 procedure TSelectDateCollection.UpdateModel;
 var
   I: Integer;
@@ -745,6 +826,7 @@ begin
         WlSettings.Tag := TAG_SETTINGS;
         WlSettings.OnMouseEnter := OnBoxMouseEnter;
         WlSettings.OnMouseLeave := OnBoxMouseLeave;
+        WlSettings.OnClick := ShowSettings;
 
         TGroupBox(Sb.Parent.Parent).Caption := FormatEx(TA('Series of photos ({0})'), [FItems.Count]);
       end;
@@ -822,17 +904,108 @@ var
   Options: TImportPicturesOptions;
   Task: TImportPicturesTask;
   Operation: TFileOperationTask;
+  I, J: Integer;
+  PD, PS: TPathItem;
+  SI: TBaseSelectItem;
+  Pattern: string;
+
+  function MonthToString(Date: TDate; Scope: string): string;
+  const
+    MonthList: array[1..12] of string = ('january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december');
+  begin
+    Result := L(MonthList[MonthOf(Date)], Scope);
+  end;
+
+  function WeekDayToString(Date: TDate): string;
+  const
+    MonthList: array[1..7] of string = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+  begin
+    Result := L(MonthList[DayOfTheWeek(Date)], 'Date');
+  end;
+
+  function FormatPath(Date: TDate; Patern, ItemsLabel: string): string;
+  var
+    SR: TStringReplacer;
+  begin
+    SR := TStringReplacer.Create(Patern);
+    try
+      SR.AddPattern('''LABEL''', '''' + ItemsLabel + '''');
+      SR.AddPattern('[LABEL]', '[' + ItemsLabel + ']');
+      SR.AddPattern('(LABEL)', '(' + ItemsLabel + ')');
+      SR.AddPattern('LABEL', ItemsLabel);
+      SR.AddPattern('YYYY', FormatDateTime('yyyy', Date));
+      SR.AddPattern('YY', FormatDateTime('yy', Date));
+      SR.AddPattern('MMMM', MonthToString(Date, 'Date'));
+      SR.AddPattern('MMM', MonthToString(Date, 'Month'));
+      SR.AddPattern('MM', FormatDateTime('mm', Date));
+      SR.AddPattern('M', FormatDateTime('M', Date));
+      SR.AddPattern('DDD', WeekDayToString(Date));
+      SR.AddPattern('DD', FormatDateTime('dd', Date));
+      SR.AddPattern('d', FormatDateTime('d', Date));
+
+      Result := SR.Result;
+    finally
+      F(SR);
+    end;
+  end;
+
+  procedure AddToList(Serie: TSelectDateItem);
+  var
+    I: Integer;
+    DestPath, Path: string;
+    D: TPathItem;
+  begin
+    Path := PD.Path + '\' + FormatPath(Serie.Date, Pattern, Serie.ItemLabel);
+    for I := 0 to Serie.ItemsCount - 1 do
+    begin
+      DestPath := TPath.Combine(Path, ExtractFileName(Serie.Items[I].Path));
+      D := TFileItem.CreateFromPath(DestPath, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+      try
+        Operation := TFileOperationTask.Create(Serie.Items[I], D);
+        Task.AddOperation(Operation);
+      finally
+        F(D);
+      end;
+    end;
+  end;
+
 begin
+  Pattern := CbFormatCombo.Text;
+
   Options := TImportPicturesOptions.Create;
   Options.OnlySupportedImages := CbOnlyImages.Checked;
   Options.DeleteFilesAfterImport := CbDeleteAfterImport.Checked;
   Options.AddToCollection := CbAddToCollection.Checked;
+  Options.Source := PeImportFromPath.PathEx;
+  Options.Destination := PeImportToPath.PathEx;
 
-  Task := TImportPicturesTask.Create;
-  Options.AddTask(Task);
+  PS := PeImportFromPath.PathEx;
+  PD := PeImportToPath.PathEx;
+  if not IsExtendedMode then
+  begin
+    Task := TImportPicturesTask.Create;
+    Options.AddTask(Task);
 
-  Operation := TFileOperationTask.Create(PeImportFromPath.PathEx, PeImportToPath.PathEx);
-  Task.AddOperation(Operation);
+    //create path using datetime and label
+    Operation := TFileOperationTask.Create(PS, PD);
+    Task.AddOperation(Operation);
+  end else
+  begin
+    Task := TImportPicturesTask.Create;
+    Options.AddTask(Task);
+
+    for I := 0 to FSeries.Count - 1 do
+    begin
+      SI := FSeries[I];
+
+      if SI is TSelectDateItem then
+        AddToList(TSelectDateItem(SI))
+      else
+        for J := 0 to TSelectDateItems(SI).ItemsCount - 1 do
+          AddToList(TSelectDateItems(SI).Items[J]);
+    end;
+  end;
+
   TThreadImportPictures.Create(Options);
 
   Settings.WriteBool('ImportPictures', 'OnlyImages', CbOnlyImages.Checked);
@@ -961,6 +1134,7 @@ begin
     F(PathImage);
   end;
 
+  IsExtendedMode := True;
   FixFormPosition;
   ReadOptions;
 end;
@@ -1010,9 +1184,12 @@ end;
 
 procedure TFormImportImages.PeImportFromPathChange(Sender: TObject);
 begin
-  NewFormState;
-  FSeries.Clear;
-  TImportScanThread.Create(Self, PeImportFromPath.PathEx);
+  if not (PeImportFromPath.PathEx is THomeItem) then
+  begin
+    NewFormState;
+    FSeries.Clear;
+    TImportScanThread.Create(Self, PeImportFromPath.PathEx);
+  end;
 end;
 
 procedure TFormImportImages.ReadOptions;

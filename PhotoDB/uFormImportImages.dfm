@@ -57,15 +57,16 @@ object FormImportImages: TFormImportImages
   object CbFormatCombo: TComboBox
     Left = 8
     Top = 123
-    Width = 233
+    Width = 393
     Height = 21
     Style = csDropDownList
     ItemIndex = 0
     TabOrder = 1
-    Text = 'YYYY/MM/DD (LABEL)'
+    Text = 'YYYY\MMM\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)'
     Items.Strings = (
-      'YYYY/MM/DD (LABEL)'
-      'DD/MM/YYYY')
+      'YYYY\MMM\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)'
+      'YYYY\YY.MM.DD (LABEL)'
+      'YYYY.MM.DD (LABEL)')
   end
   object BtnSelectPathFrom: TButton
     Left = 880

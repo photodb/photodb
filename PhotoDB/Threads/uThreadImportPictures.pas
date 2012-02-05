@@ -64,12 +64,18 @@ type
     FDeleteFilesAfterImport: Boolean;
     FAddToCollection: Boolean;
     FCaption: string;
+    FSource: TPathItem;
+    FDestination: TPathItem;
     function GetCount: Integer;
     function GetTaskByIndex(Index: Integer): TImportPicturesTask;
+    procedure SetSource(const Value: TPathItem);
+    procedure SetDestination(const Value: TPathItem);
   public
     constructor Create;
     destructor Destroy; override;
     procedure AddTask(Task: TImportPicturesTask);
+    property Source: TPathItem read FSource write SetSource;
+    property Destination: TPathItem read FDestination write SetDestination;
     property OnlySupportedImages: Boolean read FOnlySupportedImages write FOnlySupportedImages;
     property DeleteFilesAfterImport: Boolean read FDeleteFilesAfterImport write FDeleteFilesAfterImport;
     property AddToCollection: Boolean read FAddToCollection write FAddToCollection;
@@ -136,10 +142,13 @@ end;
 constructor TImportPicturesOptions.Create;
 begin
   FTasks := TList<TImportPicturesTask>.Create;
+  FSource := nil;
 end;
 
 destructor TImportPicturesOptions.Destroy;
 begin
+  F(FSource);
+  F(FDestination);
   FreeList(FTasks);
   inherited;
 end;
@@ -153,6 +162,18 @@ function TImportPicturesOptions.GetTaskByIndex(
   Index: Integer): TImportPicturesTask;
 begin
   Result := FTasks[Index];
+end;
+
+procedure TImportPicturesOptions.SetDestination(const Value: TPathItem);
+begin
+  F(FDestination);
+  FDestination := Value.Copy;
+end;
+
+procedure TImportPicturesOptions.SetSource(const Value: TPathItem);
+begin
+  F(FSource);
+  FSource := Value.Copy;
 end;
 
 { TImportPicturesTask }
@@ -311,7 +332,7 @@ begin
       FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed - BytesDone)));
       FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes - FBytesCopyed - BytesDone)]));
       FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
-      FProgress.ProgressValue := FBytesCopyed;
+      FProgress.ProgressValue := FBytesCopyed + BytesDone;
       FProgress.UpdateOptions(False);
     end
   );
@@ -365,8 +386,8 @@ begin
   if FOptions.Tasks[0].OperationsCount = 0 then
     Exit;
 
-  Source := FOptions.Tasks[0].Operations[0].Source.Path;
-  Destination := FOptions.Tasks[0].Operations[0].Destination.Path;
+  Source := FOptions.Source.Path;
+  Destination := FOptions.Destination.Path;
 
   if IsDevicePath(Source) then
     Delete(Source, 1, Length(cDevicesPath) + 1);
@@ -404,7 +425,17 @@ begin
             for I := 0 to FOptions.TasksCount - 1 do
             begin
               for J := 0 to FOptions.Tasks[I].OperationsCount - 1 do
-                NextLevel.Add(FOptions.Tasks[I].Operations[J].Copy);
+              begin
+                FO := FOptions.Tasks[I].Operations[J];
+                if FO.IsDirectory then
+                  NextLevel.Add(FO.Copy)
+                else
+                begin
+                  Inc(FTotalItems);
+                  Inc(FTotalBytes,FO.Source.FileSize);
+                  FileOperations.Add(TFileOperationTask.Create(FO.Source, FO.Destination));
+                end;
+              end;
             end;
 
             while NextLevel.Count > 0 do
@@ -528,6 +559,25 @@ begin
             Break;
           end;
 
+        end;
+
+        if FOptions.DeleteFilesAfterImport then
+        begin
+          FSpeedCounter.Reset;
+          for I := 0 to FileOperations.Count - 1 do
+          begin
+            if Terminated then
+              Break;
+
+            FO := FileOperations[I];
+            if FO.IsDirectory then
+              Continue;
+
+            FCurrentItem := FO.Source;
+
+            //delete item...
+
+          end;
         end;
 
         finally

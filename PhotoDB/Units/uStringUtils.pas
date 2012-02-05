@@ -3,7 +3,12 @@ unit uStringUtils;
 interface
 
 uses
-  Windows, Classes, SysUtils, StrUtils;
+  Generics.Collections,
+  Windows,
+  Classes,
+  SysUtils,
+  uMemory,
+  StrUtils;
 
 type
   TStringsHelper = class helper for TStrings
@@ -13,6 +18,32 @@ type
 type
   TStringFindOptions = array[0..1] of Integer;
 
+type
+  TStringReplaceItem = class(TObject)
+  public
+    SubPattern: string;
+    Value: string;
+  end;
+
+  TStringReplaceItemFoundResult = class(TObject)
+  public
+    SubPattern: string;
+    Value: string;
+    StartPos: Integer;
+  end;
+
+  TStringReplacer = class(TObject)
+  private
+    FList: TList<TStringReplaceItem>;
+    FPattern: string;
+    function GetResult: string;
+  public
+    constructor Create(Pattern: string);
+    destructor Destroy; override;
+    procedure AddPattern(SubPattern, Value: string);
+    property Result: string read GetResult;
+  end;
+
 procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
 function JoinList(List: TStrings; JoinString: string): string;
 function ConvertUniversalFloatToLocal(s: string): string;
@@ -21,7 +52,6 @@ function PosExW(const SubStr, S: string; Offset, MaxPos: Integer): Integer; over
 function Right(Str: string; P: Integer): string;
 function Mid(Str: string; S, E: Integer): string;
 function Left(Str: string; P: Integer): string;
-
 
 implementation
 
@@ -394,6 +424,100 @@ end;
 function TStringsHelper.Join(JoinString: string): string;
 begin
   Result := JoinList(Self, JoinString);
+end;
+
+procedure TStringReplacer.AddPattern(SubPattern, Value: string);
+var
+  Item: TStringReplaceItem;
+begin
+  Item := TStringReplaceItem.Create;
+  Item.SubPattern := SubPattern;
+  Item.Value := Value;
+  FList.Add(Item);
+end;
+
+constructor TStringReplacer.Create(Pattern: string);
+begin
+  FPattern := Pattern;
+  FList := TList<TStringReplaceItem>.Create;
+end;
+
+destructor TStringReplacer.Destroy;
+begin
+  FreeList(FList);
+  inherited;
+end;
+
+function TStringReplacer.GetResult: string;
+var
+  NextFound: Boolean;
+  I, Increment: Integer;
+  P: Integer;
+  RI: TStringReplaceItem;
+  FUpperPattern: string;
+  FUpperSubPattern: string;
+  Founds: TList<TStringReplaceItemFoundResult>;
+  FR: TStringReplaceItemFoundResult;
+begin
+  Founds := TList<TStringReplaceItemFoundResult>.Create;
+  try
+    FUpperPattern := AnsiUpperCase(FPattern);
+    //loop throw all patterns
+    for RI in FList do
+    begin
+      FUpperSubPattern := AnsiUpperCase(RI.SubPattern);
+
+      P := 1;
+      while P > 0 do
+      begin
+        P := PosEx(FUpperSubPattern, FUpperPattern, P);
+        if P > 0 then
+        begin
+          //check if this place is free
+          NextFound := False;
+          for I := 0 to Founds.Count - 1 do
+          begin
+            if (Founds[I].StartPos <= P) and (P <= Founds[I].StartPos + Length(Founds[I].SubPattern)) then
+            begin
+              NextFound := True;
+              Break;
+            end;
+          end;
+          if NextFound then
+          begin
+            Inc(P, Length(FUpperSubPattern));
+            Continue;
+          end;
+
+          FR := TStringReplaceItemFoundResult.Create;
+          FR.SubPattern := RI.SubPattern;
+          FR.Value := RI.Value;
+          FR.StartPos := P;
+          Founds.Add(FR);
+          Inc(P, Length(FUpperSubPattern));
+        end;
+      end;
+    end;
+
+    Result := FPattern;
+    //replace founds
+    for FR in  Founds do
+    begin
+      Delete(Result, FR.StartPos, Length(FR.SubPattern));
+      Insert(FR.Value, Result, FR.StartPos);
+      Increment := Length(FR.Value) - Length(FR.SubPattern);
+      if Increment <> 0 then
+      begin
+        for I := 0 to Founds.Count - 1 do
+        begin
+          if Founds[I].StartPos > FR.StartPos then
+            Founds[I].StartPos := Founds[I].StartPos + Increment;
+        end;
+      end;
+    end;
+  finally
+    FreeList(Founds);
+  end;
 end;
 
 end.
