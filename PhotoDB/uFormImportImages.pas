@@ -1188,7 +1188,7 @@ begin
   begin
     NewFormState;
     FSeries.Clear;
-    TImportScanThread.Create(Self, PeImportFromPath.PathEx);
+    TImportScanThread.Create(Self, PeImportFromPath.PathEx, CbOnlyImages.Checked);
   end;
 end;
 

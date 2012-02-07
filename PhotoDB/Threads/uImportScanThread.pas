@@ -21,13 +21,14 @@ type
   TImportScanThread = class(TThreadEx)
   private
     { Private declarations }
+    FOnlySupportedImages: Boolean;
     FDirectory: TPathItem;
     FNextLevel: TList<TPathItem>;
     procedure LoadCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean);
   protected
     procedure Execute; override;
   public
-    constructor Create(OwnerForm: TThreadForm; Directory: TPathItem);
+    constructor Create(OwnerForm: TThreadForm; Directory: TPathItem; OnlySupportedImages: Boolean);
     destructor Destroy; override;
   end;
 
@@ -38,9 +39,10 @@ uses
 
 { TImportScanThread }
 
-constructor TImportScanThread.Create(OwnerForm: TThreadForm; Directory: TPathItem);
+constructor TImportScanThread.Create(OwnerForm: TThreadForm; Directory: TPathItem; OnlySupportedImages: Boolean);
 begin
   FDirectory := Directory.Copy;
+  FOnlySupportedImages := OnlySupportedImages;
   inherited Create(OwnerForm, OwnerForm.StateID);
 end;
 
@@ -110,40 +112,43 @@ begin
         FNextLevel.Add(PI.Copy)
       else
       begin
-        if PI is TPortableFSItem and not PI.IsDirectoty then
+        if IsGraphicFile(PI.Path) or not FOnlySupportedImages then
         begin
-          FileSize := TPortableImageItem(PI).FileSize;
-          Date := TPortableImageItem(PI).Date;
-        end else if PI is TFileItem then
-        begin
-          FileSize := PI.FileSize;
-          Date := TFileItem(PI).TimeStamp;
-          if IsGraphicFile(PI.Path) then
+          if PI is TPortableFSItem then
           begin
-            if IsRAWImageFile(PI.Path) then
+            FileSize := TPortableImageItem(PI).FileSize;
+            Date := TPortableImageItem(PI).Date;
+          end else if PI is TFileItem then
+          begin
+            FileSize := PI.FileSize;
+            Date := TFileItem(PI).TimeStamp;
+            if IsGraphicFile(PI.Path) then
             begin
-              RAWExif := ReadRAWExif(PI.Path);
-              try
-                if RAWExif.IsEXIF then
-                begin
-                  Date := DateOf(RAWExif.TimeStamp);
-                  FileSize := PI.FileSize;
+              if IsRAWImageFile(PI.Path) then
+              begin
+                RAWExif := ReadRAWExif(PI.Path);
+                try
+                  if RAWExif.IsEXIF then
+                  begin
+                    Date := DateOf(RAWExif.TimeStamp);
+                    FileSize := PI.FileSize;
+                  end;
+                finally
+                  F(RAWExif);
                 end;
-              finally
-                F(RAWExif);
-              end;
-            end else
-            begin
-              ExifData := TExifData.Create;
-              try
-                ExifData.LoadFromGraphic(PI.Path);
-                if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
-                begin
-                  Date := DateOf(ExifData.DateTimeOriginal);
-                  FileSize := PI.FileSize;
+              end else
+              begin
+                ExifData := TExifData.Create;
+                try
+                  ExifData.LoadFromGraphic(PI.Path);
+                  if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
+                  begin
+                    Date := DateOf(ExifData.DateTimeOriginal);
+                    FileSize := PI.FileSize;
+                  end;
+                finally
+                  F(ExifData);
                 end;
-              finally
-                F(ExifData);
               end;
             end;
           end;

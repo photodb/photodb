@@ -24,6 +24,7 @@ uses
   uPortableClasses,
   uExplorerPortableDeviceProvider,
   uTranslate,
+  uAssociations,
   uDBThread;
 
 type
@@ -93,7 +94,7 @@ type
     FTotalBytes: Int64;
     FBytesCopyed: Int64;
     FLastCopyPosition: Int64;
-    FTotalItems: Integer;
+    FTotalItems, FCopiedItems: Integer;
     FDialogResult: Integer;
     FErrorMessage: string;
     FItemName: string;
@@ -236,12 +237,12 @@ begin
   end;
 
   Inc(FBytesCopyed, S.FileSize);
-  Dec(FTotalItems);
+  Inc(FCopiedItems);
   SynchronizeEx(
     procedure
     begin
       FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
-      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
       FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
       FProgress.ProgressValue := FBytesCopyed;
       FProgress.UpdateOptions(False);
@@ -306,12 +307,12 @@ begin
   end;
 
   Inc(FBytesCopyed, Size);
-  Dec(FTotalItems);
+  Inc(FCopiedItems);
   SynchronizeEx(
     procedure
     begin
       FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
-      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
       FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
       FProgress.ProgressValue := FBytesCopyed;
       FProgress.UpdateOptions(False);
@@ -330,7 +331,7 @@ begin
     begin
       FProgress.Options['Name'].SetDisplayName(L('Name')).SetValue(ExtractFileName(FCurrentItem.Path));
       FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed - BytesDone)));
-      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes - FBytesCopyed - BytesDone)]));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed - BytesDone)]));
       FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
       FProgress.ProgressValue := FBytesCopyed + BytesDone;
       FProgress.UpdateOptions(False);
@@ -373,12 +374,14 @@ var
   Childs: TPathItemCollection;
   FileOperations, CurrentLevel, NextLevel: TList<TFileOperationTask>;
   FO: TFileOperationTask;
+  Items: TPathItemCollection;
 begin
   FreeOnTerminate := True;
 
   FTotalItems := 0;
   FTotalBytes := 0;
   FBytesCopyed := 0;
+  FCopiedItems := 0;
 
   if FOptions.TasksCount = 0 then
     Exit;
@@ -429,7 +432,7 @@ begin
                 FO := FOptions.Tasks[I].Operations[J];
                 if FO.IsDirectory then
                   NextLevel.Add(FO.Copy)
-                else
+                else if IsGraphicFile(Childs[J].Path) or not FOptions.OnlySupportedImages then
                 begin
                   Inc(FTotalItems);
                   Inc(FTotalBytes,FO.Source.FileSize);
@@ -455,7 +458,6 @@ begin
                   Destination := CurrentLevel[I].Destination.Path;
                   for J := 0 to Childs.Count - 1 do
                   begin
-
                     if Childs[J].IsDirectoty then
                     begin
                       D := TDirectoryItem.CreateFromPath(TPath.Combine(Destination, ExtractFileName(Childs[J].Path)), PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
@@ -466,24 +468,27 @@ begin
                       end;
                     end else
                     begin
-                      D := TFileItem.CreateFromPath(TPath.Combine(Destination, ExtractFileName(Childs[J].Path)), PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
-                      try
-                        FileOperations.Add(TFileOperationTask.Create(Childs[J], D));
-                      finally
-                        F(D);
-                      end;
-                      Inc(FTotalBytes, Childs[J].FileSize);
-                      Inc(FTotalItems);
+                      if IsGraphicFile(Childs[J].Path) or not FOptions.OnlySupportedImages then
+                      begin
+                        D := TFileItem.CreateFromPath(TPath.Combine(Destination, ExtractFileName(Childs[J].Path)), PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+                        try
+                          FileOperations.Add(TFileOperationTask.Create(Childs[J], D));
+                        finally
+                          F(D);
+                        end;
+                        Inc(FTotalBytes, Childs[J].FileSize);
+                        Inc(FTotalItems);
 
-                      //notify updated size
-                      SynchronizeEx(
-                        procedure
-                        begin
-                          FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes)]));
-                          if FProgress.IsCanceled then
-                            Terminate;
-                        end
-                      );
+                        //notify updated size
+                        SynchronizeEx(
+                          procedure
+                          begin
+                            FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes)]));
+                            if FProgress.IsCanceled then
+                              Terminate;
+                          end
+                        );
+                      end;
                     end;
                   end;
 
@@ -563,7 +568,26 @@ begin
 
         if FOptions.DeleteFilesAfterImport then
         begin
+          FBytesCopyed := 0;
+          FCopiedItems := 0;
+          F(FSpeedCounter);
+          FSpeedCounter := TSpeedEstimateCounter.Create(10000);
           FSpeedCounter.Reset;
+
+          SynchronizeEx(
+            procedure
+            begin
+              FProgress.Title := FormatEx(L('Importing {0} items ({1})'), [FTotalItems, SizeInText(FTotalBytes)]);
+              FProgress.ProgressMax := FTotalBytes;
+              FProgress.ProgressValue := 0;
+              FProgress.Options['Name'].SetVisible(False);
+              FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes)]));
+              FProgress.Options['Time remaining'].SetDisplayName(L('Time remaining')).SetValue(L('Calculating...'));
+              FProgress.Options['Speed'].SetVisible(False);
+              FProgress.RefreshOptionList;
+            end
+          );
+
           for I := 0 to FileOperations.Count - 1 do
           begin
             if Terminated then
@@ -576,7 +600,28 @@ begin
             FCurrentItem := FO.Source;
 
             //delete item...
+            Items := TPathItemCollection.Create;
+            try
+              Items.Add(FCurrentItem);
+              FCurrentItem.Provider.ExecuteFeature(Self, Items, PATH_FEATURE_DELETE, nil);
+            finally
+              F(Items);
+            end;
 
+            Inc(FBytesCopyed, FCurrentItem.FileSize);
+            Inc(FCopiedItems);
+            FSpeedCounter.AddSpeedInterval(FBytesCopyed);
+            SynchronizeEx(
+              procedure
+              begin
+                FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
+                FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+                FProgress.ProgressValue := FBytesCopyed;
+                FProgress.UpdateOptions(False);
+                if FProgress.IsCanceled then
+                  Terminate;
+              end
+            );
           end;
         end;
 

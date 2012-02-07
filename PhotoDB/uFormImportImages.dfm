@@ -106,6 +106,7 @@ object FormImportImages: TFormImportImages
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Import only supported images'
     TabOrder = 5
+    OnClick = PeImportFromPathChange
   end
   object BtnOk: TButton
     Left = 825

@@ -245,8 +245,8 @@
 #define Vcl_ComStrs_sFailsetCalSelRange 65085
 #define Data_DBConsts_SInvalidFieldSize 65086
 #define Data_DBConsts_SInvalidFieldKind 65087
-#define Vcl_Imaging_pnglang_EInvalidNewSize 65088
-#define Vcl_Imaging_pnglang_EInvalidSpec 65089
+#define Vcl_Imaging_JConsts_sJPEGError 65088
+#define Vcl_Imaging_JConsts_sJPEGImageFile 65089
 #define System_Win_ComConst_SOleError 65090
 #define System_Win_ComConst_SNoMethod 65091
 #define System_Win_ComConst_SVarNotObject 65092
@@ -261,22 +261,22 @@
 #define Vcl_ComStrs_sTabFailSetObject 65101
 #define Vcl_ComStrs_sTabMustBeMultiLine 65102
 #define Vcl_ComStrs_sInvalidIndex 65103
-#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 65104
-#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 65105
-#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 65106
-#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 65107
-#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 65108
-#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 65109
-#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 65110
-#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 65111
-#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 65112
-#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 65113
-#define Vcl_Imaging_pnglang_EPNGNoImageDataText 65114
-#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 65115
-#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 65116
-#define Vcl_Imaging_pnglang_EPNGOutMemoryText 65117
-#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 65118
-#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 65119
+#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 65104
+#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 65105
+#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 65106
+#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 65107
+#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 65108
+#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 65109
+#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 65110
+#define Vcl_Imaging_pnglang_EPNGNoImageDataText 65111
+#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 65112
+#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 65113
+#define Vcl_Imaging_pnglang_EPNGOutMemoryText 65114
+#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 65115
+#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 65116
+#define Vcl_Imaging_pnglang_EInvalidNewSize 65117
+#define Vcl_Imaging_pnglang_EInvalidSpec 65118
+#define Vcl_Imaging_JConsts_sChangeJPGSize 65119
 #define Vcl_Consts_SNameMenuHighlight 65120
 #define Vcl_Consts_SNameMenuText 65121
 #define Vcl_Consts_SNameNone 65122
@@ -286,13 +286,13 @@
 #define Vcl_Consts_SNameWindow 65126
 #define Vcl_Consts_SNameWindowFrame 65127
 #define Vcl_Consts_SNameWindowText 65128
-#define Vcl_Imaging_JConsts_sChangeJPGSize 65129
-#define Vcl_Imaging_JConsts_sJPEGError 65130
-#define Vcl_Imaging_JConsts_sJPEGImageFile 65131
-#define Vcl_Imaging_pnglang_EPngInvalidCRCText 65132
-#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 65133
-#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 65134
-#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 65135
+#define Vcl_Imaging_pnglang_EPngInvalidCRCText 65129
+#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 65130
+#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 65131
+#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 65132
+#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 65133
+#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 65134
+#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 65135
 #define Vcl_Consts_SNameBtnText 65136
 #define Vcl_Consts_SNameCaptionText 65137
 #define Vcl_Consts_SNameDefault 65138
@@ -932,8 +932,8 @@ BEGIN
 	Vcl_ComStrs_sFailsetCalSelRange,	L"Failed to set calendar selected range"
 	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
 	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
-	Vcl_Imaging_pnglang_EInvalidNewSize,	L"The new size provided for image resizing is invalid."
-	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
+	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
+	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
 	System_Win_ComConst_SOleError,	L"OLE error %.8x"
 	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
 	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
@@ -948,9 +948,6 @@ BEGIN
 	Vcl_ComStrs_sTabFailSetObject,	L"Failed to set object at index %d"
 	Vcl_ComStrs_sTabMustBeMultiLine,	L"MultiLine must be True when TabPosition is tpLeft or tpRight"
 	Vcl_ComStrs_sInvalidIndex,	L"Invalid index"
-	Vcl_Imaging_pnglang_EPNGInvalidPaletteText,	L"The \"Portable Network Graphics\" image contains an invalid palette."
-	Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText,	L"The file being read is not a valid \"Portable Network Graphics\" image because it contains an invalid header. This file may be corrupted, try obtaining it again"
-	Vcl_Imaging_pnglang_EPNGIHDRNotFirstText,	L"This \"Portable Network Graphics\" image is not supported or it might be invalid.\r\n(IHDR chunk is not the first)"
 	Vcl_Imaging_pnglang_EPNGSizeExceedsText,	L"This \"Portable Network Graphics\" image is not supported because either its width or height exceeds the maximum size of 65535 pixels."
 	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
 	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
@@ -964,6 +961,9 @@ BEGIN
 	Vcl_Imaging_pnglang_EPNGOutMemoryText,	L"Some operation could not be performed because the system is out of resources. Close some windows and try again."
 	Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText,	L"Setting bit transparency color is not allowed for png images containing alpha value for each pixel (COLOR_RGBALPHA and COLOR_GRAYSCALEALPHA)"
 	Vcl_Imaging_pnglang_EPNGHeaderNotPresentText,	L"This operation is not valid because the current image contains no valid header."
+	Vcl_Imaging_pnglang_EInvalidNewSize,	L"The new size provided for image resizing is invalid."
+	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
+	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
 	Vcl_Consts_SNameMenuHighlight,	L"Menu Highlight"
 	Vcl_Consts_SNameMenuText,	L"Menu Text"
 	Vcl_Consts_SNameNone,	L"None"
@@ -973,13 +973,13 @@ BEGIN
 	Vcl_Consts_SNameWindow,	L"Window Background"
 	Vcl_Consts_SNameWindowFrame,	L"Window Frame"
 	Vcl_Consts_SNameWindowText,	L"Window Text"
-	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
-	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
-	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
 	Vcl_Imaging_pnglang_EPngInvalidCRCText,	L"This \"Portable Network Graphics\" image is not valid because it contains invalid pieces of data (crc error)"
 	Vcl_Imaging_pnglang_EPNGInvalidIHDRText,	L"The \"Portable Network Graphics\" image could not be loaded because one of its main piece of data (ihdr) might be corrupted"
 	Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText,	L"This \"Portable Network Graphics\" image is invalid because it has missing image parts."
 	Vcl_Imaging_pnglang_EPNGZLIBErrorText,	L"Could not decompress the image because it contains invalid compressed data.\r\n Description: "
+	Vcl_Imaging_pnglang_EPNGInvalidPaletteText,	L"The \"Portable Network Graphics\" image contains an invalid palette."
+	Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText,	L"The file being read is not a valid \"Portable Network Graphics\" image because it contains an invalid header. This file may be corrupted, try obtaining it again"
+	Vcl_Imaging_pnglang_EPNGIHDRNotFirstText,	L"This \"Portable Network Graphics\" image is not supported or it might be invalid.\r\n(IHDR chunk is not the first)"
 	Vcl_Consts_SNameBtnText,	L"Button Text"
 	Vcl_Consts_SNameCaptionText,	L"Caption Text"
 	Vcl_Consts_SNameDefault,	L"Default"

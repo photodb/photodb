@@ -3,7 +3,7 @@ unit uSplashThread;
 interface
 
 uses
-   Classes, Windows, Messages, Graphics, uTime,
+   Classes, Windows, Messages, Graphics, uTime, uPngUtils,
    uConstants, uResources, uMemory, pngimage, uFormUtils, uAppUtils, uRuntime;
 
 type
@@ -45,7 +45,7 @@ end;
 
 procedure UpdateFormImage;
 begin
-  RenderForm(hSplashWnd, LoadingImage, 220);
+  RenderForm(hSplashWnd, LoadingImage, 220, False);
 end;
 
 function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;
@@ -67,7 +67,7 @@ begin
         try
           LoadingImage := TBitmap.Create;
           LoadingImage.PixelFormat := pf32bit;
-          LoadingImage.Assign(PNGLogo);
+          AssignPNG(LoadingImage, PNGLogo);
         finally
           F(PNGLogo);
         end;
@@ -119,11 +119,12 @@ begin
 
     RegisterClass(SplashWindowClass);
     try
-      hSplashWnd := CreateWindowEx(WS_EX_TOOLWINDOW or WS_EX_TOPMOST, ClassName, 'SplashScreen',
+      hSplashWnd := CreateWindowEx(WS_EX_TOOLWINDOW or WS_EX_TOPMOST or WS_EX_LAYERED, ClassName, 'SplashScreen',
                                    WS_POPUP,
                                    GetSystemMetrics(SM_CXSCREEN) div 2 - SplWidth div 2,
                                    GetSystemMetrics(SM_CYSCREEN) div 2 - SplHeight div 2,
                                    SplWidth, SplHeight, 0, 0, Instance, nil);
+
       try
 
         if Terminated then

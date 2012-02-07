@@ -117,7 +117,7 @@ var
 
   procedure AddTag;
   var
-    Description, Value, Key : PAnsiChar;
+    Description, Value, Key: PAnsiChar;
   begin
     Description := FreeImage_GetTagDescription(TagData);
     Key := FreeImage_GetTagKey(TagData);

@@ -9,8 +9,14 @@ uses
   uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
   uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
   Math, CCR.Exif, ProgressActionUnit, uJpegUtils, uBitmapUtils, Forms,
-  uDBForm, uDBGraphicTypes, GraphicsCool, uAssociations, uDBImageUtils, RAWImage,
-  GraphicsBaseTypes, uDBAdapter, uCDMappingTypes, uExifUtils, UnitDBCommonGraphics;
+  uDBForm, uDBGraphicTypes, GraphicsCool,
+  uAssociations,
+  uDBImageUtils, RAWImage,
+  GraphicsBaseTypes,
+  uDBAdapter,
+  uCDMappingTypes,
+  uExifUtils,
+  UnitDBCommonGraphics;
 
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -1250,6 +1256,7 @@ begin
     except
       on E: Exception do
       begin
+        EventLog(E);
         Result.IsError := True;
         Result.ErrorText := E.message;
         Exit;
@@ -1311,6 +1318,7 @@ begin
     except
       on E: Exception do
       begin
+        EventLog(E);
         Result.IsError := True;
         Result.ErrorText := E.message;
       end;

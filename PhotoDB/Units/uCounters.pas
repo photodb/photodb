@@ -116,6 +116,9 @@ begin
 
   TimeRem := BytesRemaining / Speed;
 
+  if TimeRem < 0 then
+    Exit(0);
+
   SS := Round(TimeRem); // seconds
 
   D := SS div SecsPerDay;

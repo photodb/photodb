@@ -30,16 +30,20 @@ type
     FDisplayName: string;
     FValue: string;
     FIsImportant: Boolean;
+    FIsVisible: Boolean;
   public
+    constructor Create;
     function SetName(Value: string): TProgressOption;
     function SetDisplayName(Value: string): TProgressOption;
     function SetValue(Value: string): TProgressOption;
     function SetImportant(Value: Boolean): TProgressOption;
+    function SetVisible(Value: Boolean): TProgressOption;
 
     property Name: string read FName;
     property Value: string read FValue write FValue;
     property IsImportant: Boolean read FIsImportant write FIsImportant;
     property DisplayName: string read FDisplayName write FDisplayName;
+    property IsVisible: Boolean read FIsVisible write FIsVisible;
   end;
 
   TProgressOptions = class(TObject)
@@ -117,6 +121,11 @@ uses
 
 { TProgressOption }
 
+constructor TProgressOption.Create;
+begin
+  FIsVisible := True;
+end;
+
 function TProgressOption.SetDisplayName(Value: string): TProgressOption;
 begin
   FDisplayName := Value;
@@ -138,6 +147,12 @@ end;
 function TProgressOption.SetValue(Value: string): TProgressOption;
 begin
   FValue := Value;
+  Result := Self;
+end;
+
+function TProgressOption.SetVisible(Value: Boolean): TProgressOption;
+begin
+  FIsVisible := Value;
   Result := Self;
 end;
 
@@ -283,6 +298,7 @@ var
   I: Integer;
   L: TLabel;
   PaddingLeft, Top, NameWidth: Integer;
+  PO: TProgressOption;
 begin
   PaddingLeft := PbMain.Left;
 
@@ -294,12 +310,16 @@ begin
   NameWidth := 10;
   for I := 0 to FOptions.Count - 1 do
   begin
+    PO := FOptions.GetItemByIndex(I);
+    if not PO.IsVisible then
+      Continue;
+
     L := TLabel.Create(Self);
     L.Parent := PnInfo;
     L.Top := Top;
     L.Left := PaddingLeft;
     L.Font.Size := 9;
-    L.Caption := FOptions.GetItemByIndex(I).DisplayName + ':';
+    L.Caption := PO.DisplayName + ':';
     if NameWidth < L.Width then
       NameWidth := L.Width;
 
@@ -309,13 +329,17 @@ begin
   Top := PaddingTop;
   for I := 0 to FOptions.Count - 1 do
   begin
+    PO := FOptions.GetItemByIndex(I);
+    if not PO.IsVisible then
+      Continue;
+
     L := TLabel.Create(Self);
     L.Parent := PnInfo;
     L.Top := Top;
     L.Left := NameWidth + 20;
     L.Font.Size := 9;
-    L.Tag := NativeInt(FOptions.GetItemByIndex(I));
-    if FOptions.GetItemByIndex(I).IsImportant then
+    L.Tag := NativeInt(PO);
+    if PO.IsImportant then
       L.Font.Style := [fsBold];
 
     Top := Top + 3 + L.Height;

@@ -3,13 +3,47 @@ unit UnitImHint;
 interface
 
 uses
-  DBCMenu, UnitDBKernel, Menus, dolphin_db, Windows, Messages, SysUtils,
-  Variants, Classes, Graphics, Controls, Forms, GIFImage, Math,
-  Dialogs, StdCtrls, ExtCtrls, ImButton, ComCtrls, ActiveX,
-  AppEvnts, ImgList, DropSource, DropTarget, GraphicsCool, DragDropFile,
-  DragDrop, UnitDBCommon, uBitmapUtils, uMemory, uDBForm,
-  UnitBitmapImageList, uListViewUtils, uGOM, UnitHintCeator, uDBDrawing,
-  UnitDBDeclare, uConstants, uDBPopupMenuInfo, uFormUtils,
+  DBCMenu,
+  UnitDBKernel,
+  Menus,
+  dolphin_db,
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  GIFImage,
+  Math,
+  Dialogs,
+  StdCtrls,
+  ExtCtrls,
+  ImButton,
+  ComCtrls,
+  ActiveX,
+  AppEvnts,
+  ImgList,
+  DropSource,
+  DropTarget,
+  GraphicsCool,
+  DragDropFile,
+  DragDrop,
+  UnitDBCommon,
+  uBitmapUtils,
+  uMemory,
+  uDBForm,
+  UnitBitmapImageList,
+  uListViewUtils,
+  uGOM,
+  UnitHintCeator,
+  uDBDrawing,
+  uSysUtils,
+  UnitDBDeclare,
+  uConstants,
+  uDBPopupMenuInfo,
+  uFormUtils,
   uRuntime;
 
 type
@@ -711,7 +745,7 @@ begin
   else if CurrentInfo.InnerImage then
     Result := CurrentInfo.Name
   else
-    Result := ExtractFileName(CurrentInfo.Name);
+    Result := ExtractFileName(IIF(CurrentInfo.Name <> '', CurrentInfo.Name, ExtractFileName(CurrentInfo.FileName)));
 end;
 
 end.

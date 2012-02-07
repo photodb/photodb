@@ -4,11 +4,11 @@ interface
 
 uses Windows, Graphics, Classes;
 
-procedure RenderForm(FormHandle: THandle; Bitmap32: TBitmap; Transparenty: Byte); overload;
+procedure RenderForm(FormHandle: THandle; Bitmap32: TBitmap; Transparenty: Byte; UpdateFormStyle: Boolean = True); overload;
 
 implementation
 
-procedure RenderForm(FormHandle: THandle; Bitmap32: TBitmap; Transparenty: Byte);
+procedure RenderForm(FormHandle: THandle; Bitmap32: TBitmap; Transparenty: Byte; UpdateFormStyle: Boolean = True);
 var
   zSize: TSize;
   zPoint: TPoint;
@@ -16,8 +16,8 @@ var
   TopLeft: TPoint;
   Bounds : TRect;
 begin
-  SetWindowLong(FormHandle, GWL_EXSTYLE,
-  GetWindowLong(FormHandle, GWL_EXSTYLE) or WS_EX_LAYERED);
+  if UpdateFormStyle then
+    SetWindowLong(FormHandle, GWL_EXSTYLE, GetWindowLong(FormHandle, GWL_EXSTYLE) or WS_EX_LAYERED);
 
   zSize.cx := Bitmap32.Width;
   zSize.cy := Bitmap32.Height;

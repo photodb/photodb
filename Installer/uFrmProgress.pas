@@ -53,6 +53,7 @@ var
   MS: TMemoryStream;
   Png: TPngImage;
 begin
+  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_LAYERED);
   LoadLanguage;
   FProgress := 0;
   FBackgroundImage := TBitmap.Create;
@@ -115,7 +116,7 @@ begin
       end;
     end;
 
-    RenderForm(Handle, FCurrentImage, 255);
+    RenderForm(Handle, FCurrentImage, 255, False);
   finally
     F(FCurrentImage);
   end;
