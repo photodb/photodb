@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Messages, StdCtrls, ComCtrls, ShlObj, ActiveX, ShellCtrls,
-  Classes, Controls, Math, Forms, uMemory, uFileUtils, ComObj;
+  Classes, Controls, Math, Forms, uMemory, uFileUtils, ComObj, DragDropPIDL;
 
 procedure GetProperties(Files: TStrings; MP : TPoint; WC : TWinControl);
 procedure GetPropertiesWindows(Files: TStrings; WC: TWinControl);
@@ -200,7 +200,8 @@ begin
       if (DISF.ParseDisplayName(Handle, nil, FPath, L, PathPIDL, Attr) <> S_OK) or (DISF.BindToObject(PathPIDL, nil,
           IID_IShellFolder, Pointer(ISF)) <> S_OK) then
         Exit;
-      FilePIDLs[0] := ILClone(PathPIDL);
+      //win200 fails
+      FilePIDLs[0] := CopyPIDL(PathPIDL);
 
       DISF.GetUIObjectOf(Handle, 1, PathPIDL, IID_IContextMenu, nil, Pointer(Result));
     end else if IsDriveList then

@@ -4,7 +4,12 @@ interface
 
 uses
    Classes, Windows, Messages, Graphics, uTime, uPngUtils,
-   uConstants, uResources, uMemory, pngimage, uFormUtils, uAppUtils, uRuntime;
+   uConstants, uResources, uMemory,
+   pngimage,
+   uFormUtils,
+   uAppUtils,
+   uRuntime,
+   uBitmapUtils;
 
 type
   TSplashThread = class(TThread)
@@ -51,7 +56,7 @@ end;
 function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;
                     lParam : LPARAM) : LRESULT; stdcall;
 var
-  PNGLogo : TPNGImage;
+  PNGLogo: TPNGImage;
 begin
   case uMsg of
     WM_DESTROY:
@@ -67,6 +72,7 @@ begin
         try
           LoadingImage := TBitmap.Create;
           LoadingImage.PixelFormat := pf32bit;
+          LoadingImage.AlphaFormat := afDefined;
           AssignPNG(LoadingImage, PNGLogo);
         finally
           F(PNGLogo);
@@ -126,7 +132,6 @@ begin
                                    SplWidth, SplHeight, 0, 0, Instance, nil);
 
       try
-
         if Terminated then
           Exit;
 

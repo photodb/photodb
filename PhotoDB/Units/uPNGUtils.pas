@@ -3,7 +3,7 @@ unit uPNGUtils;
 interface
 
 uses
-  Windows, GraphicsBaseTypes, Graphics, pngimage;
+  Windows, GraphicsBaseTypes, Graphics, pngimage, Classes, uBitmapUtils;
 
 procedure LoadPNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 procedure LoadPNGImageWOTransparent(PNG: TPNGImage; Bitmap: TBitmap);
@@ -116,6 +116,9 @@ begin
       Inc(AddrS, 3);
       Inc(AddrD, 3);
       PByte(AddrD)^ := PByte(AddrSA)^;
+      if PByte(AddrD)^ = 0 then
+        //integer is 4 bytes, but 4th byte is transparencity and it't = 0
+        PInteger(AddrD - 3)^ := 0;
       Inc(AddrD, 1);
       Inc(AddrSA, 1);
     end;

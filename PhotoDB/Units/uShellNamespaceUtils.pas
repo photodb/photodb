@@ -16,6 +16,7 @@ uses
   uPortableDeviceUtils,
   StrUtils,
   Controls,
+  DragDropPIDL,
   ShellContextMenu;
 
 function ExecuteShellPathRelativeToMyComputerMenuAction(Handle: THandle; Path: string; Files: TStrings; P: TPoint; WC: TWinControl; Verb: AnsiString): Boolean;
@@ -331,7 +332,8 @@ begin
                 for J := 0 to Files.Count - 1 do
                 begin
                   if GetShellName(Path, Files[J]) = Name then
-                    FilePIDLs[J] := ILClone(rgelt);
+                    //win200 fails
+                    FilePIDLs[J] := CopyPIDL(rgelt);
                 end;
               end;
             end;

@@ -520,6 +520,8 @@ begin
       on E: Exception do
         EventLog(':TFormManager::FormCreate() throw exception: ' + E.message);
     end;
+
+    TW.I.Start('FM -> SetTimer');
     if DBTerminating then
       TimerCloseHandle := SetTimer(0, TIMER_CLOSE, 1000, @TimerProc);
 
@@ -528,6 +530,7 @@ begin
 
       if not FileExistsSafe(Dbname) then
       begin
+        TW.I.Start('FM -> DoChooseDBFile');
         CloseSplashWindow;
         DBFile := DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
         try
@@ -547,10 +550,12 @@ begin
         end;
       end;
 
+      TW.I.Start('FM -> check valid db version');
       // check valid db version
       StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(Dbname)), DB_VER_2_3]);
       if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
       begin
+        TW.I.Start('FM -> TestDBEx');
         DBVersion := DBKernel.TestDBEx(Dbname, False);
         if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
         begin
@@ -566,6 +571,7 @@ begin
         Settings.WriteBool('DBVersionCheck', StringDBCheckKey, True);
       end;
 
+      TW.I.Start('FM -> DBCheck');
       // checking RecordCount
       if Settings.ReadboolW('DBCheck', ExtractFileName(Dbname), True) = True then
       begin

@@ -614,7 +614,7 @@ begin
             SynchronizeEx(
               procedure
               begin
-                FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
+                FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalItems - FCopiedItems)));
                 FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
                 FProgress.ProgressValue := FBytesCopyed;
                 FProgress.UpdateOptions(False);

@@ -1190,7 +1190,7 @@ var
   p : PARGB;
   R, G, B : Byte;
 begin
-  Bitmap.PixelFormat := Pf24Bit;
+  Bitmap.PixelFormat := pf24Bit;
   Color := ColorToRGB(Color);
   R := GetRValue(Color);
   G := GetGValue(Color);

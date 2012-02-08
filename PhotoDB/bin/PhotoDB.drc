@@ -21,11 +21,11 @@
 #define Vcl_VDBConsts_SApplyUpdates 64858
 #define Vcl_VDBConsts_SCancelUpdates 64859
 #define Vcl_VDBConsts_SRemoteLogin 64860
-#define DragDrop_sFormatNameReadOnly 64864
-#define DragDrop_sNoCopyStgMedium 64865
-#define DragDrop_sBadConstructor 64866
-#define DragDropPIDL_sBadDesktop 64867
-#define DragDropPIDL_sBadFilename 64868
+#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64864
+#define Vcl_Shell_ShellConsts_SShellNoDetails 64865
+#define Vcl_Shell_ShellConsts_SCallLoadDetails 64866
+#define Vcl_Shell_ShellConsts_SRenamedFailedError 64867
+#define uShellIntegration_SNotSupported 64868
 #define DECUtil_sClassNotRegistered 64869
 #define DECUtil_sWrongIdentity 64870
 #define DECHash_sHashingOverflowError 64871
@@ -39,20 +39,20 @@
 #define DECCipher_sCipherNoDefault 64879
 #define Xml_XMLConst_SNodeExpected 64880
 #define Xml_XMLConst_SMSDOMNotInstalled 64881
-#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64882
-#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64883
-#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64884
-#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64885
-#define Vcl_Shell_ShellConsts_SShellNoDetails 64886
-#define Vcl_Shell_ShellConsts_SCallLoadDetails 64887
-#define Vcl_Shell_ShellConsts_SRenamedFailedError 64888
-#define uShellIntegration_SNotSupported 64889
-#define DropSource_sDropSourceBusy 64890
-#define DropSource_sDropSourceAsyncFailed 64891
-#define DropSource_sDropSourceAsyncBusy 64892
-#define DropTarget_sTargetAsyncBusy 64893
-#define DropTarget_sRichEditWarning 64894
-#define DragDrop_sImplementationRequired 64895
+#define DropSource_sDropSourceBusy 64882
+#define DropSource_sDropSourceAsyncFailed 64883
+#define DropSource_sDropSourceAsyncBusy 64884
+#define DropTarget_sTargetAsyncBusy 64885
+#define DropTarget_sRichEditWarning 64886
+#define DragDrop_sImplementationRequired 64887
+#define DragDrop_sFormatNameReadOnly 64888
+#define DragDrop_sNoCopyStgMedium 64889
+#define DragDrop_sBadConstructor 64890
+#define DragDropPIDL_sBadDesktop 64891
+#define DragDropPIDL_sBadFilename 64892
+#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64893
+#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64894
+#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64895
 #define CCR_Exif_Consts_SUnsupportedGraphicFormat 64896
 #define CCR_Exif_Consts_SInvalidJPEGHeader 64897
 #define CCR_Exif_Consts_SInvalidPSDHeader 64898
@@ -708,11 +708,11 @@ BEGIN
 	Vcl_VDBConsts_SApplyUpdates,	L"Apply updates"
 	Vcl_VDBConsts_SCancelUpdates,	L"Cancel updates"
 	Vcl_VDBConsts_SRemoteLogin,	L"Remote Login"
-	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
-	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
-	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
-	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
-	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
+	Vcl_Shell_ShellConsts_SShellDefaultModifiedStr,	L"Modified"
+	Vcl_Shell_ShellConsts_SShellNoDetails,	L"Unable to retrieve folder details for \"%s\". Error code $%x"
+	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
+	Vcl_Shell_ShellConsts_SRenamedFailedError,	L"Rename to %s failed"
+	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
 	DECUtil_sClassNotRegistered,	L"Class %s is not registered"
 	DECUtil_sWrongIdentity,	L"Another class \"%s\" with the same identity as \"%s\" has already been registered."
 	DECHash_sHashingOverflowError,	L"Hash function have to many bits processed"
@@ -726,20 +726,20 @@ BEGIN
 	DECCipher_sCipherNoDefault,	L"No default cipher has been registered"
 	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
 	Xml_XMLConst_SMSDOMNotInstalled,	L"Microsoft MSXML is not installed"
-	Vcl_Shell_ShellConsts_SShellDefaultNameStr,	L"Name"
-	Vcl_Shell_ShellConsts_SShellDefaultSizeStr,	L"Size"
-	Vcl_Shell_ShellConsts_SShellDefaultTypeStr,	L"Type"
-	Vcl_Shell_ShellConsts_SShellDefaultModifiedStr,	L"Modified"
-	Vcl_Shell_ShellConsts_SShellNoDetails,	L"Unable to retrieve folder details for \"%s\". Error code $%x"
-	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
-	Vcl_Shell_ShellConsts_SRenamedFailedError,	L"Rename to %s failed"
-	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
 	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
 	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
 	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
 	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
 	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
 	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
+	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
+	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
+	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
+	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
+	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
+	Vcl_Shell_ShellConsts_SShellDefaultNameStr,	L"Name"
+	Vcl_Shell_ShellConsts_SShellDefaultSizeStr,	L"Size"
+	Vcl_Shell_ShellConsts_SShellDefaultTypeStr,	L"Type"
 	CCR_Exif_Consts_SUnsupportedGraphicFormat,	L"Unsupported graphic format"
 	CCR_Exif_Consts_SInvalidJPEGHeader,	L"JPEG header is not valid"
 	CCR_Exif_Consts_SInvalidPSDHeader,	L"Photoshop (PSD) file header is not valid"

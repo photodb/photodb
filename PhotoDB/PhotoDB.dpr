@@ -544,7 +544,7 @@ begin
     TW.I.Start('TFormManager Create');
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);
