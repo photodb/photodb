@@ -2104,6 +2104,18 @@
 	<translate name="Add files to collection after copying files" value="Добавить в базу после импорта"/>
 	<translate name="Importing {0} items ({1})" value="Импорт {0} объектов ({1})"/>
 	<translate name="Error processing item {0}: {1}" value="Ошибка обработки объекта {0}: {1}"/>	
+	<translate name="Simple mode" value="Простой режим"/>
+	<translate name="Extended mode" value="Расширенный режим"/>
+	<translate name="Series of photos" value="Серии фотографий"/>
+	<translate name="Series of photos ({0})" value="Серии фотографий ({0})"/>
+	<translate name="Show photos" value="Показать фотографии"/>
+	<translate name="Show photos ({0})" value="Показать фотографии ({0})"/>
+	<translate name="Hide photos ({0})" value="Скрыть фотографии ({0})"/>
+	<translate name="Show objects" value="Показать фотографии"/>
+	<translate name="Don't import" value="Не импортировать"/>
+	<translate name="Merge left" value="Объединить слева"/>
+	<translate name="Merge right" value="Объединить справа"/>
+	
   </scope>
   <scope name="Global">
 	<translate name="day" value="день"/>

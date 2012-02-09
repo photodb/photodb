@@ -3,7 +3,7 @@ object FormImportImages: TFormImportImages
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Import pictures'
-  ClientHeight = 531
+  ClientHeight = 532
   ClientWidth = 907
   Color = clBtnFace
   Constraints.MinWidth = 400
@@ -19,7 +19,7 @@ object FormImportImages: TFormImportImages
   OnDestroy = FormDestroy
   DesignSize = (
     907
-    531)
+    532)
   PixelsPerInch = 96
   TextHeight = 13
   object LbImportFrom: TLabel
@@ -53,6 +53,8 @@ object FormImportImages: TFormImportImages
     LoadingText = 'Loading...'
     CanBreakLoading = False
     OnlyFileSystem = False
+    HideExtendedButton = True
+    ShowBorder = True
   end
   object CbFormatCombo: TComboBox
     Left = 8
@@ -87,6 +89,8 @@ object FormImportImages: TFormImportImages
     LoadingText = 'Loading...'
     CanBreakLoading = False
     OnlyFileSystem = True
+    HideExtendedButton = True
+    ShowBorder = True
   end
   object BtnSelectPathTo: TButton
     Left = 880
@@ -110,7 +114,7 @@ object FormImportImages: TFormImportImages
   end
   object BtnOk: TButton
     Left = 825
-    Top = 498
+    Top = 499
     Width = 74
     Height = 25
     Anchors = [akRight, akBottom]
@@ -120,7 +124,7 @@ object FormImportImages: TFormImportImages
   end
   object BtnCancel: TButton
     Left = 743
-    Top = 498
+    Top = 499
     Width = 76
     Height = 25
     Anchors = [akRight, akBottom]
@@ -150,15 +154,14 @@ object FormImportImages: TFormImportImages
     Left = 8
     Top = 226
     Width = 891
-    Height = 266
+    Height = 267
     Anchors = [akLeft, akTop, akRight, akBottom]
-    Caption = 'Series of photos'
     TabOrder = 10
     DesignSize = (
       891
-      266)
+      267)
     object SbSeries: TScrollBox
-      Left = 10
+      Left = 3
       Top = 16
       Width = 868
       Height = 98
@@ -174,7 +177,7 @@ object FormImportImages: TFormImportImages
       Left = 10
       Top = 120
       Width = 872
-      Height = 137
+      Height = 138
       Anchors = [akLeft, akTop, akRight, akBottom]
       BorderStyle = bsNone
       EditManager.Font.Charset = DEFAULT_CHARSET
@@ -207,14 +210,15 @@ object FormImportImages: TFormImportImages
       OnItemThumbnailDraw = ElvPreviewItemThumbnailDraw
     end
   end
-  object WebLink6: TWebLink
+  object WlMode: TWebLink
     Left = 8
-    Top = 510
+    Top = 511
     Width = 64
     Height = 13
     Cursor = crHandPoint
     Anchors = [akLeft, akBottom]
     Text = 'Simple mode'
+    OnClick = WlModeClick
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0
@@ -230,13 +234,35 @@ object FormImportImages: TFormImportImages
   end
   object LsMain: TLoadingSign
     Left = 715
-    Top = 498
+    Top = 499
     Width = 22
     Height = 22
+    Visible = False
     Active = True
     FillPercent = 50
     Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
+  end
+  object WlHideShowPictures: TWebLink
+    Left = 8
+    Top = 225
+    Width = 94
+    Height = 13
+    Cursor = crHandPoint
+    Text = 'Show/hide photos '
+    OnClick = WlHideShowPicturesClick
+    ImageIndex = 0
+    IconWidth = 0
+    IconHeight = 0
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = False
+    TopIconIncrement = 0
+    ImageCanRegenerate = True
+    UseSpecIconSize = True
+    HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
 end

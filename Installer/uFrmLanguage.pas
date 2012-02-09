@@ -253,7 +253,6 @@ begin
         begin
           Language := TLanguage.CreateFromXML(ReadFileContent(MS, FileList[I]));
           try
-            ShowMessage(Language.ImageName);
             ImageStream := TMemoryStream.Create;
             try
               LangItem := TLanguageItem.Create;

@@ -432,7 +432,7 @@ begin
                 FO := FOptions.Tasks[I].Operations[J];
                 if FO.IsDirectory then
                   NextLevel.Add(FO.Copy)
-                else if IsGraphicFile(Childs[J].Path) or not FOptions.OnlySupportedImages then
+                else if IsGraphicFile(FO.Source.Path) or not FOptions.OnlySupportedImages then
                 begin
                   Inc(FTotalItems);
                   Inc(FTotalBytes,FO.Source.FileSize);

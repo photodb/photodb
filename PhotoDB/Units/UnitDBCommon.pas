@@ -105,7 +105,7 @@ begin
   end;
 end;
 
-procedure ActivateBackgroundApplication(hWnd : THandle);
+procedure ActivateBackgroundApplication(hWnd: THandle);
 var
   hCurWnd, dwThreadID, dwCurThreadID: THandle;
   OldTimeOut: Cardinal;

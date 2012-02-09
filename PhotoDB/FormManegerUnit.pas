@@ -606,7 +606,8 @@ begin
     SetString(S, PWideChar(Data), (Msg.CopyDataStruct.CbData - SizeOf(TMsgHdr) - 1) div SizeOf(WideChar));
 
     ProcessCommandLine(S);
-    ActivateBackgroundApplication(Handle);
+    if Screen.ActiveCustomForm <> nil then
+      ActivateBackgroundApplication(Screen.ActiveCustomForm.Handle);
   end else
     Dispatch(Msg);
 

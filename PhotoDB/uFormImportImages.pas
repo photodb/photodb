@@ -62,6 +62,9 @@ const
   TAG_LOADING         = 10;
 
 type
+  TImportPicturesMode = (piModeSimple, piModeExtended);
+
+type
   TBaseSelectItem = class
   private
     FItemLabel: string;
@@ -140,6 +143,7 @@ type
     destructor Destroy; override;
     procedure Clear;
     procedure UpdateModel;
+    procedure ClearSelection;
     procedure AddDateInfo(Item: TPathItem; Date: TDateTime; Size: Int64);
     property Items[Index: Integer]: TBaseSelectItem read GetItemByIndex; default;
     property Count: Integer read GetCont;
@@ -170,9 +174,10 @@ type
     CbAddToCollection: TCheckBox;
     GbSeries: TGroupBox;
     SbSeries: TScrollBox;
-    WebLink6: TWebLink;
+    WlMode: TWebLink;
     ElvPreview: TEasyListview;
     LsMain: TLoadingSign;
+    WlHideShowPictures: TWebLink;
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnSelectPathToClick(Sender: TObject);
     procedure BtnSelectPathFromClick(Sender: TObject);
@@ -186,6 +191,8 @@ type
       AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
     procedure ElvPreviewItemDblClick(Sender: TCustomEasyListview;
       Button: TCommonMouseButton; MousePos: TPoint; HitInfo: TEasyHitInfoItem);
+    procedure WlModeClick(Sender: TObject);
+    procedure WlHideShowPicturesClick(Sender: TObject);
   private
     { Private declarations }
     FItemUpdateTimer: TTimer;
@@ -193,20 +200,27 @@ type
     FSeries: TSelectDateCollection;
     FBitmapImageList: TBitmapImageList;
     FPreviewData: TList<TPathItem>;
-    IsExtendedMode: Boolean;
+    FMode: TImportPicturesMode;
+    FIsDisplayingPreviews: Boolean;
     procedure LoadLanguage;
     procedure ReadOptions;
+    procedure SwitchMode;
     procedure ItemUpdateTimer(Sender: TObject);
     procedure ClearItems;
+    procedure UpdateItemsCount;
+    function GetImagesCount: Integer;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
   public
     { Public declarations }
+    procedure ShowLoadingSign;
+    procedure HideLoadingSign;
     procedure SetPath(Path: string);
     procedure AddItems(Items: TList<TScanItem>);
     procedure AddPreviews(FPacketInfos: TList<TPathItem>; FPacketImages: TBitmapImageList);
     procedure UpdatePreview(Item: TPathItem; Bitmap: TBitmap);
+    property ImagesCount: Integer read GetImagesCount;
   end;
 
 var
@@ -374,6 +388,18 @@ begin
   FreeList(FItems, False);
 end;
 
+procedure TSelectDateCollection.ClearSelection;
+var
+  I: Integer;
+  SI: TBaseSelectItem;
+begin
+  for SI in FItems do
+    SI.IsSelected := False;
+
+  for I := 0 to FItems.Count - 1 do
+    DisplayItems[FItems[I]].OnMouseLeave(DisplayItems[FItems[I]]);
+end;
+
 constructor TSelectDateCollection.Create(Container: TScrollBox);
 var
   MI: TMenuItem;
@@ -383,19 +409,19 @@ begin
   FMenuOptions := TPopupMenu.Create(nil);
 
   MI := TMenuItem.Create(FMenuOptions);
-  MI.Caption := TA('Show objects');
+  MI.Caption := TA('Show objects', 'ImportPictures');
   FMenuOptions.Items.Add(MI);
 
   MI := TMenuItem.Create(FMenuOptions);
-  MI.Caption := TA('Don''t import');
+  MI.Caption := TA('Don''t import', 'ImportPictures');
   FMenuOptions.Items.Add(MI);
 
   MI := TMenuItem.Create(FMenuOptions);
-  MI.Caption := TA('Merge left');
+  MI.Caption := TA('Merge left', 'ImportPictures');
   FMenuOptions.Items.Add(MI);
 
   MI := TMenuItem.Create(FMenuOptions);
-  MI.Caption := TA('Merge right');
+  MI.Caption := TA('Merge right', 'ImportPictures');
   FMenuOptions.Items.Add(MI);
 end;
 
@@ -873,6 +899,8 @@ begin
     FItemUpdateTimer.Enabled := False;
     FSeries.UpdateModel;
   end;
+
+  UpdateItemsCount;
 end;
 
 procedure TFormImportImages.AddPreviews(FPacketInfos: TList<TPathItem>; FPacketImages: TBitmapImageList);
@@ -981,7 +1009,7 @@ begin
 
   PS := PeImportFromPath.PathEx;
   PD := PeImportToPath.PathEx;
-  if not IsExtendedMode then
+  if FMode = piModeSimple then
   begin
     Task := TImportPicturesTask.Create;
     Options.AddTask(Task);
@@ -1013,6 +1041,7 @@ begin
   Settings.WriteBool('ImportPictures', 'AddToCollection', CbAddToCollection.Checked);
   Settings.WriteString('ImportPictures', 'Source', PeImportFromPath.Path);
   Settings.WriteString('ImportPictures', 'Destination', PeImportToPath.Path);
+
   Close;
 end;
 
@@ -1134,9 +1163,11 @@ begin
     F(PathImage);
   end;
 
-  IsExtendedMode := True;
+  FIsDisplayingPreviews := False;
   FixFormPosition;
   ReadOptions;
+
+  SwitchMode;
 end;
 
 procedure TFormImportImages.FormDestroy(Sender: TObject);
@@ -1154,6 +1185,66 @@ end;
 function TFormImportImages.GetFormID: string;
 begin
   Result := 'ImportPictures';
+end;
+
+function TFormImportImages.GetImagesCount: Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := 0 to FSeries.Count - 1 do
+    Inc(Result, FSeries[I].ItemsCount);
+end;
+
+procedure TFormImportImages.HideLoadingSign;
+begin
+  LsMain.Hide;
+end;
+
+procedure TFormImportImages.ShowLoadingSign;
+begin
+  LsMain.Show;
+end;
+
+procedure TFormImportImages.UpdateItemsCount;
+begin
+  if FIsDisplayingPreviews then
+  begin
+    WlHideShowPictures.Text := FormatEx(L('Hide photos ({0})'), [ImagesCount]);
+    GbSeries.Visible := True;
+  end else
+  begin
+    WlHideShowPictures.Text := FormatEx(L('Show photos ({0})'), [ImagesCount]);
+    GbSeries.Visible := False;
+  end;
+end;
+
+procedure TFormImportImages.SwitchMode;
+begin
+  if FMode = piModeSimple then
+  begin
+    UpdateItemsCount;
+
+    GbSeries.Caption := '';
+    WlMode.Text := L('Extended mode');
+    SbSeries.Hide;
+    ElvPreview.Top := 20;
+    ElvPreview.Height := GbSeries.Height - 30;
+    WlHideShowPictures.Show;
+
+    Height := 484;
+  end else
+  begin
+    FSeries.ClearSelection;
+    GbSeries.Caption := L('Series of photos');
+    SbSeries.Show;
+    ElvPreview.Top := SbSeries.Height + 5;
+    ElvPreview.Height := GbSeries.Height - ElvPreview.Top - 10;
+    WlMode.Text := L('Simple mode');
+    WlHideShowPictures.Hide;
+
+    Height := 567;
+  end;
 end;
 
 procedure TFormImportImages.ItemUpdateTimer(Sender: TObject);
@@ -1200,6 +1291,8 @@ begin
 
   PeImportToPath.Path := Settings.ReadString('ImportPictures', 'Destination', GetMyPicturesPath);
   PeImportFromPath.Path := Settings.ReadString('ImportPictures', 'Source', '');
+
+  FMode := TImportPicturesMode(Settings.ReadInteger('ImportPictures', 'Source', Integer(piModeSimple)));
 end;
 
 procedure TFormImportImages.SetPath(Path: string);
@@ -1224,4 +1317,23 @@ begin
   end;
 end;
 
+procedure TFormImportImages.WlHideShowPicturesClick(Sender: TObject);
+begin
+  FIsDisplayingPreviews := not FIsDisplayingPreviews;
+  SwitchMode;
+end;
+
+procedure TFormImportImages.WlModeClick(Sender: TObject);
+begin
+  if FMode = piModeExtended then
+    FMode := piModeSimple
+  else
+    FMode := piModeExtended;
+
+  Settings.WriteInteger('ImportPictures', 'Mode', Integer(FMode));
+  SwitchMode;
+end;
+
 end.
+
+

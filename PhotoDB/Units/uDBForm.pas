@@ -84,6 +84,7 @@ var
   Form: TDBForm;
   X, Y: Integer;
   R: TRect;
+  FoundForm: Boolean;
 
   function BRect(X, Y, Width, Height: Integer): TRect;
   begin
@@ -156,21 +157,32 @@ var
 
 begin
   R := CalculateFormRect;
-  for I := 0 to TFormCollection.Instance.Count - 1 do
+
+  while True do
   begin
-    Form := TFormCollection.Instance[I];
-    if Windows.EqualRect(Form.BoundsRect, R) and Form.Visible and (Form <> Self) then
+    FoundForm := False;
+    for I := 0 to TFormCollection.Instance.Count - 1 do
     begin
-      X := R.Left + 20;
-      Y := R.Top + 20;
-      if (X + Width < Form.Monitor.BoundsRect.Right) and (Y + Height < Form.Monitor.BoundsRect.Bottom) then
+      Form := TFormCollection.Instance[I];
+      if (Form.BoundsRect.Left = R.Left) and (Form.BoundsRect.Top = R.Top) and Form.Visible and (Form <> Self) then
       begin
-        Position := poDesigned;
-        Left := X;
-        Top := Y;
+        X := R.Left + 20;
+        Y := R.Top + 20;
+        if (X + Width < Form.Monitor.BoundsRect.Right) and (Y + Height < Form.Monitor.BoundsRect.Bottom) then
+        begin
+          Position := poDesigned;
+          Left := X;
+          Top := Y;
+          R.Left := X;
+          R.Top := Y;
+          FoundForm := True;
+        end;
       end;
     end;
+    if not FoundForm then
+      Break;
   end;
+
   if Position <> poDesigned then
   begin
     SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));

@@ -257,6 +257,7 @@ var
 begin
   // Fast test -> in thread load db query
   Result := 0;
+  TW.I.Start('TestDBEx -> FileExistsSafe');
   if not FileExistsSafe(DBName_) then
   begin
     Result := -1;
@@ -264,11 +265,14 @@ begin
   end;
   FTestTable := nil;
   try
+    TW.I.Start('TestDBEx -> GetDBType');
     if (GetDBType(DBName_) = DB_TYPE_MDB) and (GetFileSizeByName(DBName_) > 500 * 1025) then
     begin
+      TW.I.Start('TestDBEx -> GetQuery');
       FTestTable := GetQuery(DBName_, True);
       ForwardOnlyQuery(FTestTable);
 
+      TW.I.Start('TestDBEx -> SetSQL');
       SetSQL(FTestTable, 'Select TOP 1 * From ImageTable');
       try
         FTestTable.Open;
@@ -281,20 +285,24 @@ begin
         end;
       end;
     end;
-
+    TW.I.Start('TestDBEx -> FTestTable.Active');
     if FTestTable <> nil then
       if FTestTable.Active then
         if FTestTable.RecordCount = 0 then
         begin
           FreeDS(FTestTable);
+          TW.I.Start('TestDBEx -> FTestTable.GetTable');
           FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
         end;
 
+    TW.I.Start('TestDBEx -> FTestTable = nil');
     if FTestTable = nil then
       FTestTable := GetTable(DBName_, DB_TABLE_IMAGES);
 
     if FTestTable = nil then
       Exit;
+
+    TW.I.Start('TestDBEx -> !FTestTable.Active');
     if not(FTestTable.Active) then
     begin
       if OpenInThread then

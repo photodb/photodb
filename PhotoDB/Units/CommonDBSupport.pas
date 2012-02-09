@@ -721,9 +721,9 @@ const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'D
     Res: HResult;
     G : TGUID;
   begin
-    G:=ProgIDToClassID(OLEClassName);
+    G := ProgIDToClassID(OLEClassName);
     Res := CoCreateInstance(G, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, Res);
-    Result:=Res = S_OK;
+    Result := Res = S_OK;
   end;
 
 begin

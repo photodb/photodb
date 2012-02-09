@@ -42,7 +42,7 @@ implementation
    SendMessageThread := TSendMessageWithTimeoutThread.Create(hWnd, Msg, wParam, lParam);
    WaitForSingleObject(SendMessageThread.Handle, 5000);
 
-   Result:=SendMessageResult;
+   Result := SendMessageResult;
   end;
 
 { TSendMessageWithTimeoutThread }
