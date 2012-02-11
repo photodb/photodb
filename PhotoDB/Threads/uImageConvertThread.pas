@@ -9,7 +9,11 @@ uses
   uJpegUtils, GDIPlusRotate, UnitPropeccedFilesSupport, uThreadEx,
   uThreadForm, uTranslate, uDBPopupMenuInfo, uConstants, ExplorerTypes,
   ActiveX, CCR.Exif, CCR.Exif.IPTC, uDBUtils, uGraphicUtils, Dolphin_DB,
-  uAssociations, uExifUtils, uBitmapUtils, UnitDBCommonGraphics, RAWImage,
+  uAssociations,
+  uExifUtils,
+  uBitmapUtils,
+  UnitDBCommonGraphics,
+  RAWImage,
   uTiffImage,
   uFaceDetectionThread,
   uPortableDeviceUtils;
@@ -215,6 +219,7 @@ const
   var
     W, H: Integer;
     RetryCounter: Integer;
+    ErrorCode: Cardinal;
 
     procedure UpdatePreviewWindow;
     var
@@ -318,9 +323,11 @@ const
               //do nothing - preview is updated automatically
           end;
 
+          ErrorCode := GetLastError;
+
           UpdatePreviewWindow;
 
-          if (GetLastError <> 0) and (GetLastError <> 183) and (GetLastError <> 6) and (GetLastError <> 87) then
+          if (ErrorCode <> 0) and (ErrorCode <> 183) and (ErrorCode <> 6) and (ErrorCode <> 87) then
             raise Exception.Create('Error code = ' + IntToStr(GetLastError));
           Exit;
         except

@@ -47,6 +47,7 @@ uses
   uExplorerMyComputerProvider,
   uStringUtils,
   Menus,
+  Math,
   uPathUtils;
 
 const
@@ -543,8 +544,10 @@ end;
 procedure TSelectDateCollection.EndEditLabel(Item: TBaseSelectItem);
 var
   Sb: TScrollBox;
+  SI: TBaseSelectItem;
   Edit: TWatermarkedEdit;
   LnkOk, LnkLabel: TWebLink;
+  I, TextSize, Left: Integer;
 begin
   Sb := DisplayItems[Item];
   if (Sb <> nil) then
@@ -552,13 +555,26 @@ begin
     LnkLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
     Edit := FindChildByTag<TWatermarkedEdit>(Sb, TAG_EDIT_LABEL);
     LnkOk := FindChildByTag<TWebLink>(Sb, TAG_EDIT_LABEL_OK);
-    Item.ItemLabel := Edit.Text;
 
+    Item.ItemLabel := Edit.Text;
     LnkLabel.Text := Edit.Text;
 
     LnkOk.Hide;
     Edit.Hide;
     LnkLabel.Show;
+
+    Left := 5;
+    for I := 0 to FItems.Count - 1 do
+    begin
+      SI := FItems[I];
+      Sb := DisplayItems[SI];
+
+      LnkLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
+      TextSize := Math.Min(Math.Max(LnkLabel.Width - LnkLabel.Left - 5, 175 - 18), 450);
+      Sb.Width := TextSize + 18;
+      Sb.Left := Left - FContainer.HorzScrollBar.Position;
+      Left := Left + Sb.Width + 5;
+    end;
   end;
 end;
 
@@ -662,6 +678,7 @@ begin
     if DtpEditDate = nil then
     begin
       DtpEditDate := TDateTimePicker.Create(FContainer.Owner);
+      DtpEditDate.Anchors := [akTop, akLeft, akRight];
       DtpEditDate.Parent := Parent;
       DtpEditDate.Left := 3;
       DtpEditDate.Top := 27;
@@ -679,6 +696,7 @@ begin
     if LnkOk = nil then
     begin
       LnkOk := TWebLink.Create(FContainer.Owner);
+      LnkOk.Anchors := [akTop, akRight];
       LnkOk.Parent := Parent;
       LnkOk.Left := 130;
       LnkOk.Top := 29;
@@ -716,6 +734,7 @@ begin
   if WebEditLabel = nil then
   begin
     WebEditLabel := TWatermarkedEdit.Create(FContainer.Owner);
+    WebEditLabel.Anchors := [akTop, akLeft, akRight];
     WebEditLabel.Parent := Parent;
     WebEditLabel.Left := 3;
     WebEditLabel.Top := 4;
@@ -734,6 +753,7 @@ begin
   if LnkOk = nil then
   begin
     LnkOk := TWebLink.Create(FContainer.Owner);
+    LnkOk.Anchors := [akTop, akRight];
     LnkOk.Parent := Parent;
     LnkOk.Left := 130;
     LnkOk.Top := 6;
@@ -763,13 +783,14 @@ end;
 
 procedure TSelectDateCollection.UpdateModel;
 var
-  I: Integer;
+  I, Left: Integer;
   Sb: TScrollBox;
   WlLabel, WlDate, WlItemsCount, WlSize, WlSettings: TWebLink;
   SI: TBaseSelectItem;
 
 begin
   //BeginScreenUpdate(FContainer.Handle);
+  Left := 5;
   try
     for I := 0 to FItems.Count - 1 do
     begin
@@ -842,6 +863,7 @@ begin
         WlSize.OnClick := OnBoxClick;
 
         WlSettings := TWebLink.Create(FContainer.Owner);
+        WlSettings.Anchors := [akTop, akRight];
         WlSettings.Parent := Sb;
         WlSettings.Left := 150;
         WlSettings.Top := 52;
@@ -856,7 +878,8 @@ begin
 
         TGroupBox(Sb.Parent.Parent).Caption := FormatEx(TA('Series of photos ({0})'), [FItems.Count]);
       end;
-      Sb.Left := 5 + I * (175 + 5) - FContainer.HorzScrollBar.Position;
+      Sb.Left := Left - FContainer.HorzScrollBar.Position;
+      Left := Left + 180;
       Sb.Show;
 
       WlLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);

@@ -2817,7 +2817,7 @@ const
   {$EXTERNALSYM SHGetFileInfoW}
   function SHGetFileInfoW(pszPath: PWideChar; dwFileAttributes: DWORD;
     var psfi: TSHFileInfoW; cbFileInfo, uFlags: UINT): DWORD; stdcall;
-      external shell32 name 'SHGetFileInfoW';
+      external shell32 name 'SHGetFileInfoW' delayed;
 
   {$EXTERNALSYM CreateProcessW}
   function CreateProcessW(lpApplicationName: PWideChar; lpCommandLine: PWideChar;
@@ -2825,7 +2825,7 @@ const
     bInheritHandles: BOOL; dwCreationFlags: DWORD; lpEnvironment: Pointer;
     lpCurrentDirectory: PWideChar; const lpStartupInfo: TStartupInfoW;
     var lpProcessInformation: TProcessInformation): BOOL; stdcall;
-      external kernel32 name 'CreateProcessW';
+      external kernel32 name 'CreateProcessW' delayed;
 
 const
   SID_IShellFolderViewCB = '{2047E320-F2A9-11CE-AE65-08002B2E1262}';

@@ -310,31 +310,31 @@ resourcestring
 ////////////////////////////////////////////////////////////////////////////////
 {$ifdef STATIC_PIDL}
 function ILFindLastID(Pidl: PItemIDList): PItemIDList; stdcall;
-  external shell32 index 16;
+  external shell32 index 16 delayed;
 
 function ILRemoveLastID(Pidl: PItemIDList): LongBool; stdcall;
-  external shell32 index 17;
+  external shell32 index 17 delayed;
 
 function ILClone(Pidl: PItemIDList): PItemIDList; stdcall;
-  external shell32 index 18;
+  external shell32 index 18 delayed;
 
 function ILCloneFirst(Pidl: PItemIDList): PItemIDList; stdcall;
-  external shell32 index 19;
+  external shell32 index 19 delayed;
 
 function ILIsEqual(Pidl1, Pidl2: PItemIDList): LongBool; stdcall;
-  external shell32 index 21;
+  external shell32 index 21 delayed;
 
 function ILCombine(Pidl1, Pidl2: PItemIDList): PItemIDList; stdcall;
-  external shell32 index 25;
+  external shell32 index 25 delayed;
 
 function ILGetSize(Pidl: PItemIDList): Word; stdcall;
-  external shell32 index 152;
+  external shell32 index 152 delayed;
 
 function ILGetNext(Pidl: PItemIDList): PItemIDList; stdcall;
-  external shell32 index 153;
+  external shell32 index 153 delayed;
 
 procedure ILFree(Pidl: PItemIDList); stdcall {$ifdef VER15_PLUS} deprecated {$endif};
-  external shell32 index 155;
+  external shell32 index 155 delayed;
 
 (* TODO : Unused IL functions:
 function ILCreateFromPath(Path: PWideChar): PItemIDList; stdcall;

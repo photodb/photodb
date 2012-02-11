@@ -661,10 +661,10 @@ implementation
 
 uses ComObj;
 
-function LresultFromObject; external 'oleacc.dll' name 'LresultFromObject';
-function ObjectFromLresult; external 'oleacc.dll' name 'ObjectFromLresult';
+function LresultFromObject; external 'oleacc.dll' name 'LresultFromObject' delayed;
+function ObjectFromLresult; external 'oleacc.dll' name 'ObjectFromLresult' delayed;
 (*  function WindowFromAccessibleObject(IAccessible*, HWND* phwnd);*)
-function AccessibleObjectFromWindow; external 'oleacc.dll' name 'AccessibleObjectFromWindow';
+function AccessibleObjectFromWindow; external 'oleacc.dll' name 'AccessibleObjectFromWindow' delayed;
 (*  function AccessibleObjectFromEvent(HWND hwnd, DWORD dwId, DWORD dwChildId, IAccessible** ppacc, VARIANT* pvarChild);")
   function AccessibleObjectFromPoint(POINT ptScreen, IAccessible ** ppacc, VARIANT* pvarChild);")
   function AccessibleChildren (IAccessible* paccContainer, LONG iChildStart,LONG cChildren, VARIANT* rgvarChildren,LONG* pcObtained);")
@@ -672,8 +672,8 @@ function AccessibleObjectFromWindow; external 'oleacc.dll' name 'AccessibleObjec
 
 (*$HPPEMIT '#pragma link "oleacc.lib"'*)
 
-function CreateStdAccessibleObject; external 'oleacc.dll' name 'CreateStdAccessibleObject';
-function CreateStdAccessibleProxyA; external 'oleacc.dll' name 'CreateStdAccessibleProxyA';
+function CreateStdAccessibleObject; external 'oleacc.dll' name 'CreateStdAccessibleObject' delayed;
+function CreateStdAccessibleProxyA; external 'oleacc.dll' name 'CreateStdAccessibleProxyA' delayed;
 
 function CreateAccessibleProxy(Handle: THandle; Classname: AnsiString): IDispatch;
 var
@@ -693,6 +693,6 @@ begin
   Result := CreateRemoteComObject(MachineName, CLASS_CAccPropServices) as IAccPropServices;
 end;
 
-procedure NotifyWinEvent; external user32 name 'NotifyWinEvent';
+procedure NotifyWinEvent; external user32 name 'NotifyWinEvent' delayed;
 
 end.

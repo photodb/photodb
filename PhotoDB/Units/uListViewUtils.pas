@@ -114,11 +114,11 @@ begin
 end;
 
 procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
-var
+{var
   ClientRect: TRect;
-  CTDY, CBDY, CTDX, CBDX, DY, DX: Integer;
+  CTDY, CBDY, CTDX, CBDX, DY, DX: Integer;}
 begin
-  ClientRect := ListView.Scrollbars.ViewableViewportRect;
+{  ClientRect := ListView.Scrollbars.ViewableViewportRect;
 
   DY := ClientRect.Top;
   DX := ClientRect.Left;
@@ -153,7 +153,12 @@ begin
           Rect(CTDX, CTDY, Graphic.Width + CBDX, Graphic.Height + CBDY), Point(X - DX, Y - DY),
           cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color));
 
-  TBitmap(Graphic).Handle;
+  TBitmap(Graphic).Handle;   }
+
+  //this method is more compatible (xp with custom theme can work bad with MPCommonUtilities.AlphaBlend
+  //ACanvas.Draw calls DrawTransparent method that calls Windows.AlphaBlend and should work good on any version of windows
+  Graphic.AlphaFormat := afDefined;
+  ACanvas.Draw(X, Y, Graphic, 255);
 end;
 
 

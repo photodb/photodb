@@ -210,12 +210,12 @@ const
 {!! Note: Entry points have been verified with release versions of
   Windows NT 4.0 and Windows 95 }
 
-function OpenIMsgSession; external Mapi32Dll name 'OpenIMsgSession@12';
-procedure CloseIMsgSession; external Mapi32Dll name 'CloseIMsgSession@4';
-function OpenIMsgOnIStg; external Mapi32Dll name 'OpenIMsgOnIStg@44';
-function GetAttribIMsgOnIStg; external Mapi32Dll name 'GetAttribIMsgOnIStg@12';
-function SetAttribIMsgOnIStg; external Mapi32Dll name 'SetAttribIMsgOnIStg@16';
-function MapStorageSCode; external Mapi32Dll name 'MapStorageSCode@4';
+function OpenIMsgSession; external Mapi32Dll name 'OpenIMsgSession@12' delayed;
+procedure CloseIMsgSession; external Mapi32Dll name 'CloseIMsgSession@4' delayed;
+function OpenIMsgOnIStg; external Mapi32Dll name 'OpenIMsgOnIStg@44' delayed;
+function GetAttribIMsgOnIStg; external Mapi32Dll name 'GetAttribIMsgOnIStg@12' delayed;
+function SetAttribIMsgOnIStg; external Mapi32Dll name 'SetAttribIMsgOnIStg@16' delayed;
+function MapStorageSCode; external Mapi32Dll name 'MapStorageSCode@4' delayed;
 
 end.
 

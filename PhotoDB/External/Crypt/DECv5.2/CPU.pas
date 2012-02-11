@@ -127,8 +127,8 @@ resourcestring
 var
   FCPU: TCPUData;
 
-function QPC(var C: Comp): Bool; stdcall; external 'kernel32.dll' name 'QueryPerformanceCounter';
-function QPF(var F: Comp): Bool; stdcall; external 'kernel32.dll' name 'QueryPerformanceFrequency';
+function QPC(var C: Comp): Bool; stdcall; external 'kernel32.dll' name 'QueryPerformanceCounter' delayed;
+function QPF(var F: Comp): Bool; stdcall; external 'kernel32.dll' name 'QueryPerformanceFrequency' delayed;
 
 function PerfCounter: Comp;
 begin
