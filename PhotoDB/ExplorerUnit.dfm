@@ -275,6 +275,11 @@ object ExplorerForm: TExplorerForm
           Width = 72
           Height = 16
           Cursor = crHandPoint
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
           Text = 'Slide Show'
           OnClick = SlideShowLinkClick
           ImageIndex = 0
@@ -949,7 +954,6 @@ object ExplorerForm: TExplorerForm
       Alignment = taCenter
       Caption = '  Address:'
       TabOrder = 1
-      ExplicitHeight = 17
     end
     object PePath: TPathEditor
       Left = 62
@@ -991,6 +995,9 @@ object ExplorerForm: TExplorerForm
       OnImageContextPopup = PePathImageContextPopup
       OnContextPopup = PePathContextPopup
       GetItemIconEvent = PePathGetItemIconEvent
+      OnlyFileSystem = False
+      HideExtendedButton = False
+      ShowBorder = False
     end
   end
   object PnContent: TPanel

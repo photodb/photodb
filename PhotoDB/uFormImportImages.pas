@@ -48,7 +48,7 @@ uses
   uStringUtils,
   Menus,
   Math,
-  uPathUtils;
+  uPathUtils, Vcl.AppEvnts;
 
 const
   TAG_LABEL           = 1;
@@ -789,7 +789,7 @@ var
   SI: TBaseSelectItem;
 
 begin
-  //BeginScreenUpdate(FContainer.Handle);
+  BeginScreenUpdate(TForm(FContainer.Owner).Handle);
   Left := 5;
   try
     for I := 0 to FItems.Count - 1 do
@@ -893,13 +893,14 @@ begin
 
       WlItemsCount := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_COUNT);
       WlItemsCount.Text := FormatEx(TA('{0} Files', 'ImportPictures'), [SI.ItemsCount]);
+      WlItemsCount.Left := 2;
 
       WlSize := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_SIZE);
       WlSize.Left := WlItemsCount.Left + WlItemsCount.Width + 5;
       WlSize.Text := SizeInText(SI.ItemsSize);
     end;
   finally
-    //EndScreenUpdate(FContainer.Handle, True);
+    EndScreenUpdate(TForm(FContainer.Owner).Handle, True);
   end;
 end;
 

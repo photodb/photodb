@@ -63,22 +63,27 @@ var
 begin
   Result := False;
   G := nil;
-  if not LoadGraphic(FileName, G, IsEncrypted, Password) then
-    Exit;
+  try
+    if not LoadGraphic(FileName, G, IsEncrypted, Password) then
+      Exit;
 
-  JPEGScale(G, Width, Height);
+    JPEGScale(G, Width, Height);
 
-  AssignGraphic(Bitmap, G);
+    AssignGraphic(Bitmap, G);
+    F(G);
 
-  KeepProportions(Bitmap, Width, Height);
+    KeepProportions(Bitmap, Width, Height);
 
-  if not IsDevicePath(FileName) then
-  begin
-    Rotation := GetExifRotate(FileName);
-    ApplyRotate(Bitmap, Rotation);
+    if not IsDevicePath(FileName) then
+    begin
+      Rotation := GetExifRotate(FileName);
+      ApplyRotate(Bitmap, Rotation);
+    end;
+
+    Result := not Bitmap.Empty;
+  finally
+    F(G);
   end;
-
-  Result := not G.Empty;
 end;
 
 end.

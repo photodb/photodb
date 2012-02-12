@@ -78,6 +78,7 @@ begin
         try
           LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);
         finally
+          Childs.FreeItems;
           F(Childs);
         end;
       end;
