@@ -32,7 +32,7 @@ type
     MTimer1: TMenuItem;
     MouseTimer: TTimer;
     DBItem1: TMenuItem;
-    ApplicationEvents1: TApplicationEvents;
+    AeMain: TApplicationEvents;
     AddToDB1: TMenuItem;
     Onlythisfile1: TMenuItem;
     AllFolder1: TMenuItem;
@@ -160,7 +160,7 @@ type
     Procedure ShowFolder(Files: Tstrings; CurrentN: Integer);
     function ShowFolderA(FileName: string; ShowPrivate: Boolean): Boolean;
     procedure UpdateRecord(FileNo: Integer);
-    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure DoWaitToImage(Sender: TObject);
     procedure EndWaitToImage(Sender: TObject);
     procedure Onlythisfile1Click(Sender: TObject);
@@ -203,8 +203,8 @@ type
     procedure TbDeleteClick(Sender: TObject);
     procedure TbRatingClick(Sender: TObject);
     procedure N51Click(Sender: TObject);
-    procedure ApplicationEvents1Hint(Sender: TObject);
-    procedure UpdateInfoAboutFileName(FileName: String; Info: TDBPopupMenuInfoRecord);
+    procedure AeMainHint(Sender: TObject);
+    procedure UpdateInfoAboutFileName(FileName: string; Info: TDBPopupMenuInfoRecord);
     procedure SendTo1Click(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
     procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
@@ -1733,7 +1733,7 @@ begin
   end;
 end;
 
-procedure TViewer.ApplicationEvents1Message(var Msg: tagMSG;
+procedure TViewer.AeMainMessage(var Msg: tagMSG;
   var Handled: Boolean);
 var
   FButtons: array[0..1] of TThumbButton;
@@ -3975,7 +3975,7 @@ begin
 
 end;
 
-procedure TViewer.ApplicationEvents1Hint(Sender: TObject);
+procedure TViewer.AeMainHint(Sender: TObject);
 begin
   Application.HintPause := 1000;
   Application.HintHidePause := 5000;

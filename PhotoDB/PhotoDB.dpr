@@ -378,7 +378,9 @@ uses
   uPathUtils in 'Units\uPathUtils.pas',
   uImportScanThread in 'Threads\uImportScanThread.pas',
   uImportSeriesPreview in 'Threads\uImportSeriesPreview.pas',
-  uCounters in 'Units\uCounters.pas';
+  uCounters in 'Units\uCounters.pas',
+  uFormImportPicturesSettings in 'uFormImportPicturesSettings.pas' {FormImportPicturesSettings},
+  uImportPicturesUtils in 'Units\uImportPicturesUtils.pas';
 
 {$R *.res}
 
@@ -544,7 +546,7 @@ begin
     TW.I.Start('TFormManager Create');
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

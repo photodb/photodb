@@ -56,6 +56,7 @@ type
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
     function SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
+    function Clone: IPDItem;
   end;
 
   TWIADevice = class(TInterfacedObject, IPDevice)
@@ -654,6 +655,11 @@ begin
 end;
 
 { TWIAItem }
+
+function TWIAItem.Clone: IPDItem;
+begin
+  Result := nil;
+end;
 
 constructor TWIAItem.Create(ADevice: TWIADevice; AItem: IWIAItem);
 begin

@@ -63,25 +63,37 @@ begin
   LevelItems := TList<TPathItem>.Create;
   FNextLevel := TList<TPathItem>.Create;
   try
+    SynchronizeEx(procedure
+    begin
+      TFormImportImages(OwnerForm).ShowLoadingSign;
+    end
+    );
 
     FNextLevel.Add(FDirectory.Copy);
-
-    while FNextLevel.Count > 0 do
-    begin
-      FreeList(LevelItems, False);
-      LevelItems.AddRange(FNextLevel);
-      FNextLevel.Clear;
-
-      for I := 0 to LevelItems.Count - 1 do
+    try
+      while FNextLevel.Count > 0 do
       begin
-        Childs := TPathItemCollection.Create;
-        try
-          LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);
-        finally
-          Childs.FreeItems;
-          F(Childs);
+        FreeList(LevelItems, False);
+        LevelItems.AddRange(FNextLevel);
+        FNextLevel.Clear;
+
+        for I := 0 to LevelItems.Count - 1 do
+        begin
+          Childs := TPathItemCollection.Create;
+          try
+            LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);
+          finally
+            Childs.FreeItems;
+            F(Childs);
+          end;
         end;
       end;
+    finally
+      SynchronizeEx(procedure
+      begin
+        TFormImportImages(OwnerForm).FinishScan;
+      end
+      );
     end;
   finally
     FreeList(LevelItems);

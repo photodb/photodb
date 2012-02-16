@@ -579,7 +579,13 @@ end;
 function TPortableItem.Copy: TPathItem;
 begin
   Result := inherited Copy;
-  TPortableItem(Result).FItem := FItem;
+  //WIA will be null, WPD the same item
+  //WIA doesn't support calls from other threads so we can'r use the same item
+  if FItem <> nil then
+    TPortableItem(Result).FItem := FItem.Clone
+  else
+    TPortableItem(Result).FItem := nil;
+
   TPortableItem(Result).FItemSize := FItemSize;
 end;
 

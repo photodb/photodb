@@ -24,6 +24,15 @@ type
   end;
 
 type
+  TComboBoxHelper = class helper for TComboBox
+  private
+    function GetValue: string;
+    procedure SetValue(const Value: string);
+  public
+    property Value: string read GetValue write SetValue;
+  end;
+
+type
   TNotifyEventRef = reference to procedure(Sender: TObject);
   TKeyEventRef = reference to procedure(Sender: TObject; var Key: Word; Shift: TShiftState);
   TMessageEventRef = reference to procedure(var Msg: TMsg; var Handled: Boolean);
@@ -81,6 +90,29 @@ procedure TTimerHelper.Restart;
 begin
   Enabled := False;
   Enabled := True;
+end;
+
+{ TComboBoxHelper }
+
+function TComboBoxHelper.GetValue: string;
+begin
+  Result := '';
+  if ItemIndex > -1 then
+    Result := Items[ItemIndex];
+end;
+
+procedure TComboBoxHelper.SetValue(const Value: string);
+var
+  I: Integer;
+begin
+  if Items.Count > 0 then
+    ItemIndex := 0;
+  for I := 0 to Items.Count - 1 do
+    if Items[I] = Value then
+    begin
+      ItemIndex := I;
+      Break;
+    end;
 end;
 
 end.

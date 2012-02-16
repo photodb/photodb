@@ -47,6 +47,7 @@ type
     function SaveToStream(S: TStream): Boolean;
     function SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
     function GetInnerInterface: IUnknown;
+    function Clone: IPDItem;
     property ItemType: TPortableItemType read GetItemType;
     property Name: string read GetName;
     property ItemKey: string read GetItemKey;

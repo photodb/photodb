@@ -3,7 +3,7 @@ unit uDBBaseTypes;
 interface
 
 uses
-  Menus;
+  Vcl.Menus;
 
 type
   TStringFunction = function: string;

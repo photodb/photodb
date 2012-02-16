@@ -110,10 +110,10 @@ end;
 
 function ReadRAWExif(FileName: String): TRAWExif;
 var
-  RawBitmap : TFreeWinBitmap;
-  FindMetaData : PFIMETADATA;
-  I : Integer;
-  TagData : PFITAG;
+  RawBitmap: TFreeWinBitmap;
+  FindMetaData: PFIMETADATA;
+  I: Integer;
+  TagData: PFITAG;
 
   procedure AddTag;
   var

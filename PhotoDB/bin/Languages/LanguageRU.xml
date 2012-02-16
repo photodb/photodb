@@ -2109,22 +2109,30 @@
 	<translate name="Series of photos" value="Серии фотографий"/>
 	<translate name="Series of photos ({0})" value="Серии фотографий ({0})"/>
 	<translate name="Show photos" value="Показать фотографии"/>
-	<translate name="Show photos ({0})" value="Показать фотографии ({0})"/>
-	<translate name="Hide photos ({0})" value="Скрыть фотографии ({0})"/>
+	<translate name="Show photos ({0}, {1})" value="Показать фотографии ({0}, {1})"/>
+	<translate name="Hide photos ({0}, {1})" value="Скрыть фотографии ({0}, {1})"/>
 	<translate name="Show objects" value="Показать фотографии"/>
 	<translate name="Don't import" value="Не импортировать"/>
 	<translate name="Merge left" value="Объединить слева"/>
 	<translate name="Merge right" value="Объединить справа"/>
-	
+	<translate name="Split series" value="Разъединить серии"/>
+	<translate name="Set label" value="Установить метку"/>
+	<translate name="Set date" value="Установить дату"/>
+	<translate name="(Reset)" value="(Сброс)"/>
+	<translate name="Enter label" value="Введите метку"/>
+	<translate name="Settings" value="Настройки"/>
+	<translate name="Import settings" value="Настройки импорта"/>
+	<translate name="Photos in selected location were not found! Please select another location to see series of photos." value="Фотографии по выбранному пути не найдены! Пожалуйста, выберите другое размещение чтобы видеть серии фотографий."/>
   </scope>
   <scope name="Global">
 	<translate name="day" value="день"/>
 	<translate name="days" value="cуток"/>
 	<translate name="hours" value="часов"/>
 	<translate name="hour" value="час"/>
-	<translate name="minutes" value="минут"/>
+	<translate name="minutes" value="минут(ы)"/>
 	<translate name="minute" value="минута"/>
 	<translate name="second" value="секунда"/>
+	<translate name="seconds" value="секунд"/>
   </scope>
   <scope name="Date">
 	<translate name="january" value="января"/>

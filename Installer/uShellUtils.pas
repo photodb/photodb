@@ -30,18 +30,8 @@ function GetAppDataPath: string;
 function GetTempDirectory: string;
 function GetTempFileName: TFileName;
 procedure RefreshSystemIconCache;
-procedure SetElevationRequiredState(Control: TWinControl; Required: Boolean);
 
 implementation
-
-procedure SetElevationRequiredState(Control: TWinControl; Required: Boolean);
-var
-  LRequired: NativeInt;
-begin
-  LRequired := NativeInt(Required);
-  if IsWindowsVista then
-    SendMessage(Control.Handle, BCM_SETSHIELD, 0, LRequired);
-end;
 
 function InstalledDirectory: string;
 begin

@@ -67,6 +67,8 @@ type
     FCaption: string;
     FSource: TPathItem;
     FDestination: TPathItem;
+    FDate: TDateTime;
+    FAutoSplit: Boolean;
     function GetCount: Integer;
     function GetTaskByIndex(Index: Integer): TImportPicturesTask;
     procedure SetSource(const Value: TPathItem);
@@ -81,8 +83,10 @@ type
     property DeleteFilesAfterImport: Boolean read FDeleteFilesAfterImport write FDeleteFilesAfterImport;
     property AddToCollection: Boolean read FAddToCollection write FAddToCollection;
     property Caption: string read FCaption write FCaption;
+    property Date: TDateTime read FDate write FDate;
     property TasksCount: Integer read GetCount;
     property Tasks[Index: Integer]: TImportPicturesTask read GetTaskByIndex;
+    property AutoSplit: Boolean read FAutoSplit write FAutoSplit;
   end;
 
   TThreadImportPictures = class(TDBThread)
@@ -144,6 +148,9 @@ constructor TImportPicturesOptions.Create;
 begin
   FTasks := TList<TImportPicturesTask>.Create;
   FSource := nil;
+  FCaption := '';
+  FDate := MinDateTime;
+  FAutoSplit := True;
 end;
 
 destructor TImportPicturesOptions.Destroy;

@@ -452,7 +452,6 @@ var
   FPassIcon : HIcon;
 begin
   ReloadData := False;
-  SetElevationRequiredState(BtnInstallExtensions, True);
   SaveWindowPos1.Key := GetRegRootKey + 'Options';
   SaveWindowPos1.SetPosition;
   for I := 0 to 5 do

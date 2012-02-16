@@ -37,7 +37,9 @@ object Viewer: TViewer
     Top = 433
     Width = 622
     Height = 17
+    DoubleBuffered = True
     PageSize = 0
+    ParentDoubleBuffered = False
     TabOrder = 0
     Visible = False
     OnScroll = SbHorisontalScroll
@@ -47,8 +49,10 @@ object Viewer: TViewer
     Top = 0
     Width = 17
     Height = 441
+    DoubleBuffered = True
     Kind = sbVertical
     PageSize = 0
+    ParentDoubleBuffered = False
     TabOrder = 1
     Visible = False
     OnScroll = SbHorisontalScroll
@@ -476,9 +480,9 @@ object Viewer: TViewer
     Left = 232
     Top = 272
   end
-  object ApplicationEvents1: TApplicationEvents
-    OnHint = ApplicationEvents1Hint
-    OnMessage = ApplicationEvents1Message
+  object AeMain: TApplicationEvents
+    OnHint = AeMainHint
+    OnMessage = AeMainMessage
     Left = 48
   end
   object SaveWindowPos1: TSaveWindowPos

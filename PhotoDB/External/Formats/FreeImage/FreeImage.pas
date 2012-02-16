@@ -2000,6 +2000,7 @@ begin
       FreeImage_AllocateEx := GetProcAddress(FIDLLHandle, '_FreeImage_AllocateEx@36');
       FreeImage_AllocateExT := GetProcAddress(FIDLLHandle, '_FreeImage_AllocateExT@40');
       FreeImage_MultigridPoissonSolver := GetProcAddress(FIDLLHandle, '_FreeImage_MultigridPoissonSolver@8');
+      FreeImage_Initialise(True);
     finally
       FSync.Leave;
     end;
