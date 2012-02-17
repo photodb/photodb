@@ -62,6 +62,7 @@ type
   TWIADevice = class(TInterfacedObject, IPDevice)
   private
     FManager: TWIADeviceManager;
+    FPropList: IWiaPropertyStorage;
     FErrorCode: HRESULT;
     FDeviceID: string;
     FDeviceName: string;
@@ -72,6 +73,8 @@ type
     procedure ErrorCheck(Code: HRESULT);
     procedure FindItemByKeyCallBack(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
     procedure FillItemsCallBack(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer);
+    procedure InitDevice;
+    function GetRoot: IWiaItem;
   public
     constructor Create(AManager: TWIADeviceManager; PropList: IWiaPropertyStorage);
     function GetErrorCode: HRESULT;
@@ -85,6 +88,7 @@ type
     function GetItemByPath(Path: string): IPDItem;
     function Delete(ItemKey: string): Boolean;
     property Manager: TWIADeviceManager read FManager;
+    property Root: IWiaItem read GetRoot;
   end;
 
   TWIADeviceManager = class(TInterfacedObject, IPManager)
@@ -102,6 +106,7 @@ type
     procedure FindDeviceByIdCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
   public
     constructor Create;
+    destructor Destroy; override;
     function GetErrorCode: HRESULT;
     procedure FillDevices(Devices: TList<IPDevice>);
     procedure FillDevicesWithCallBack(CallBack: TFillDevicesCallBack; Context: Pointer);
@@ -151,12 +156,54 @@ type
             ulReserved: ULONG) : HRESULT; stdcall;
   end;
 
+  TWIADeviceInfo = class
+  private
+    FDeviceID: string;
+    FRoot: IWiaItem;
+    FThreadID: THandle;
+  public
+    constructor Create(DeviceID: string; Root: IWiaItem; ThreadID: THandle);
+    property DeviceID: string read FDeviceID;
+    property Root: IWiaItem read FRoot;
+    property ThreadID: THandle read FThreadID;
+  end;
+
+  TWiaManager = class
+  private
+    FDevicesCache: TList<TWIADeviceInfo>;
+    FLock: TCriticalSection;
+    function GetThreadID: THandle;
+    property ThreadId: THandle read GetThreadID;
+  public
+    procedure AddItem(DeviceID: string; Root: IWiaItem);
+    constructor Create;
+    destructor Destroy; override;
+    procedure CleanUp(ThreadID: THandle);
+    function GetRoot(DeviceID: string): IWiaItem;
+  end;
+
+procedure CleanUpWIA(Handle: THandle);
+
 implementation
 
 var
   //only one request to WIA at moment - limitation of WIA
   //http://msdn.microsoft.com/en-us/library/windows/desktop/ms630350%28v=vs.85%29.aspx
   FLock: TCriticalSection = nil;
+  FWiaManager: TWiaManager;
+
+function WiaManager: TWiaManager;
+begin
+  if FWiaManager = nil then
+    FWiaManager := TWiaManager.Create;
+
+  Result := FWiaManager;
+end;
+
+procedure CleanUpWIA(Handle: THandle);
+begin
+  WiaManager.CleanUp(Handle);
+end;
 
 { TWDManager }
 
@@ -176,6 +223,10 @@ begin
     FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
     FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
   end;
+end;
+
+destructor TWIADeviceManager.Destroy;
+begin
 end;
 
 procedure TWIADeviceManager.ErrorCheck(Code: HRESULT);
@@ -312,7 +363,6 @@ begin
   end;
 end;
 
-
 function TWIADeviceManager.GetDeviceByName(DeviceName: string): IPDevice;
 var
   Context: TFindDeviceContext;
@@ -342,9 +392,10 @@ var
   HR: HResult;
   PropSpec: array of TPropSpec;
   PropVariant: array of TPropVariant;
-  bstrDeviceID: PChar;
 begin
   FManager := AManager;
+  FPropList := PropList;
+  FRoot := nil;
   FDeviceID := '';
   FDeviceName := DEFAULT_PORTABLE_DEVICE_NAME;
   FDeviceType := dtOther;
@@ -386,6 +437,24 @@ begin
         FDeviceType := dtVideo;
     end;
 
+  end;
+end;
+
+procedure TWIADevice.InitDevice;
+var
+  bstrDeviceID: PChar;
+  HR: HRESULT;
+  PropSpec: array of TPropSpec;
+  PropVariant: array of TPropVariant;
+begin
+  if FRoot <> nil then
+    Exit;
+
+  HR := S_OK;
+
+  FRoot := WiaManager.GetRoot(FDeviceID);
+  if FRoot = nil then
+  begin
     bstrDeviceID := SysAllocString(PChar(FDeviceID));
     try
       FLock.Enter;
@@ -397,28 +466,29 @@ begin
     finally
       SysFreeString(bstrDeviceID);
     end;
+  end;
 
-    if SUCCEEDED(HR) and (FRoot <> nil) then
+  if SUCCEEDED(HR) and (FRoot <> nil) then
+  begin
+    WiaManager.AddItem(FDeviceID, Root);
+    HR := FRoot.QueryInterface(IWIAPropertyStorage, FPropList);
+    if SUCCEEDED(HR) then
     begin
-      HR := FRoot.QueryInterface(IWIAPropertyStorage, PropList);
+      Setlength(PropSpec, 1);
+      PropSpec[0].ulKind := PRSPEC_PROPID;
+      PropSpec[0].propid := WIA_DPC_BATTERY_STATUS;
+      SetLength(PropVariant, 1);
+      FLock.Enter;
+      try
+        HR := FPropList.ReadMultiple(1, @PropSpec[0], @PropVariant[0]);
+      finally
+        FLock.Leave;
+      end;
       if SUCCEEDED(HR) then
-      begin
-        Setlength(PropSpec, 1);
-        PropSpec[0].ulKind := PRSPEC_PROPID;
-        PropSpec[0].propid := WIA_DPC_BATTERY_STATUS;
-        SetLength(PropVariant, 1);
-        FLock.Enter;
-        try
-          HR := PropList.ReadMultiple(1, @PropSpec[0], @PropVariant[0]);
-        finally
-          FLock.Leave;
-        end;
-        if SUCCEEDED(HR) then
-          FBatteryStatus := PropVariant[0].iVal;
+        FBatteryStatus := PropVariant[0].iVal;
 
-      end else
-        ErrorCheck(HR);
-    end;
+    end else
+      ErrorCheck(HR);
   end;
 end;
 
@@ -472,8 +542,8 @@ var
 begin
   Cancel := False;
 
-  if (ItemKey = '') and (FRoot <> nil) then
-    pWiaItem := FRoot
+  if (ItemKey = '') and (Root <> nil) then
+    pWiaItem := Root
   else
     pWiaItem := InternalGetItemByKey(ItemKey);
 
@@ -587,6 +657,7 @@ end;
 
 function TWIADevice.GetBatteryStatus: Byte;
 begin
+  InitDevice;
   Result := FBatteryStatus;
 end;
 
@@ -628,16 +699,22 @@ begin
   Result := FDeviceName;
 end;
 
+function TWIADevice.GetRoot: IWiaItem;
+begin
+  InitDevice;
+  Result := FRoot;
+end;
+
 function TWIADevice.InternalGetItemByKey(ItemKey: string): IWiaItem;
 var
   Context: TFindItemContext;
 begin
   Result := nil;
 
-  if (FRoot <> nil) and (Result = nil) then
+  if (Root <> nil) and (Result = nil) then
   begin
     //always returns root item :(
-    //FRoot.FItem.FindItemByName(0, PChar(ItemKey), Result);
+    //Root.FItem.FindItemByName(0, PChar(ItemKey), Result);
 
     if Result = nil then
     begin
@@ -996,12 +1073,19 @@ begin
 
         if Assigned(FCallBack) then
         begin
-          FCallBack(FItem, FItem.FFullSize, FStream.Size, B);
+          FLock.Leave;
+          try
+            FCallBack(FItem, FItem.FFullSize, FStream.Size, B);
+          finally
+            FLock.Enter;
+          end;
           if B then
             Result := S_FALSE;
         end;
       end;
     end;
+    IT_MSG_TERMINATION:
+      FItem := nil;
   end;
 end;
 
@@ -1026,10 +1110,91 @@ begin
   Result := S_OK;
 end;
 
+{ TWiaManager }
+
+procedure TWiaManager.AddItem(DeviceID: string; Root: IWiaItem);
+var
+  Info: TWIADeviceInfo;
+begin
+  FLock.Enter;
+  try
+    Info := TWIADeviceInfo.Create(DeviceID, Root, ThreadId);
+    FDevicesCache.Add(Info);
+  finally
+    FLock.Leave;
+  end;
+end;
+
+procedure TWiaManager.CleanUp(ThreadID: THandle);
+var
+  I: Integer;
+begin
+  FLock.Enter;
+  try
+    for I := FDevicesCache.Count - 1 downto 0 do
+    begin
+      if FDevicesCache[I].ThreadID = ThreadID then
+      begin
+        FDevicesCache[I].Free;
+        FDevicesCache.Delete(I);
+      end;
+    end;
+  finally
+    FLock.Leave;
+  end;
+end;
+
+constructor TWiaManager.Create;
+begin
+  FDevicesCache := TList<TWIADeviceInfo>.Create;
+  FLock := TCriticalSection.Create;
+end;
+
+destructor TWiaManager.Destroy;
+begin
+  F(FLock);
+  FreeList(FDevicesCache);
+  inherited;
+end;
+
+function TWiaManager.GetRoot(DeviceID: string): IWiaItem;
+var
+  I: Integer;
+begin
+  FLock.Enter;
+  try
+    for I := FDevicesCache.Count - 1 downto 0 do
+    begin
+      if (FDevicesCache[I].ThreadID = ThreadId) and (AnsiLowerCase(FDevicesCache[I].DeviceID) = AnsiLowerCase(DeviceID)) then
+      begin
+        Result := FDevicesCache[I].Root;
+        Break;
+      end;
+    end;
+  finally
+    FLock.Leave;
+  end;
+end;
+
+function TWiaManager.GetThreadID: THandle;
+begin
+  Result := GetCurrentThreadId;
+end;
+
+{ TWIADeviceInfo }
+
+constructor TWIADeviceInfo.Create(DeviceID: string; Root: IWiaItem; ThreadID: THandle);
+begin
+  FDeviceID := DeviceID;
+  FRoot := Root;
+  FThreadID := ThreadID;
+end;
+
 initialization
   FLock := TCriticalSection.Create;
 
 finalization
   F(FLock);
+  F(FWiaManager);
 
 end.

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, uTranslate, uAssociations, uMemory, uGOM, SyncObjs, Forms,
-  uDBForm, uIME, uTime, SysUtils, uSysUtils, uDBCustomThread;
+  uDBForm, uIME, uTime, SysUtils, uSysUtils, uDBCustomThread, uPortableDeviceManager;
 
 type
   TDBThread = class(TDBCustomThread)
@@ -68,6 +68,7 @@ end;
 destructor TDBThread.Destroy;
 begin
   GOM.RemoveObj(Self);
+  ThreadCleanUp(ThreadID);
   inherited;
 end;
 

@@ -690,7 +690,7 @@ uses
   uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
   UnitFileRenamerForm, UnitSizeResizerForm, ImEditor,
   UnitManageGroups, UnitHelp, uMachMask,
-  UnitGetPhotosForm, UnitFormCont, UnitGroupsWork,
+  uFormImportImages, UnitFormCont, UnitGroupsWork,
   UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
   UnitSavingTableForm, UnitUpdateDBObject,
   uFormSteganography, UnitBigImagesSize, UnitNewGroupForm;

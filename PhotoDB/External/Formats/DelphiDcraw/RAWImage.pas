@@ -55,14 +55,14 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Add(Description, Key, Value: string) : TRAWExifRecord;
+    function Add(Description, Key, Value: string): TRAWExifRecord;
     function IsEXIF: Boolean;
-    property TimeStamp : TDateTime read GetTimeStamp;
+    property TimeStamp: TDateTime read GetTimeStamp;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TRAWExifRecord read GetValueByIndex; default;
   end;
 
-  function ReadRAWExif(FileName: String) : TRAWExif;
+  function ReadRAWExif(FileName: String): TRAWExif;
 
 var
   IsRAWSupport: Boolean = True;

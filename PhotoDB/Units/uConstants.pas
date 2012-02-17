@@ -59,6 +59,8 @@ const
   BuyPageURL = SiteLocation + '/{LNG}/buy';
   FreeActivationURL = SiteLocation + '/FreeActivationHandler';
 
+  DefaultImportPattern = 'YYYY\MMM\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)';
+
   ReleaseNumber = 12;
 
 const

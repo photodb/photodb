@@ -15,6 +15,7 @@ uses
   Vcl.StdCtrls,
   uVCLHelpers,
   uDBForm,
+  uConstants,
   uSettings;
 
 type
@@ -87,7 +88,7 @@ end;
 
 procedure TFormImportPicturesSettings.ReadOptions;
 begin
-  CbFormatCombo.Value := Settings.ReadString('ImportPictures', 'Pattern', '');
+  CbFormatCombo.Value := Settings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
   CbOnlyImages.Checked := Settings.ReadBool('ImportPictures', 'OnlyImages', False);
   CbDeleteAfterImport.Checked := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
   CbAddToCollection.Checked := Settings.ReadBool('ImportPictures', 'AddToCollection', True);

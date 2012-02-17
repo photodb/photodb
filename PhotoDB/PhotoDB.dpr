@@ -98,7 +98,6 @@ uses
   UnitDBTreeView in 'DBTools\UnitDBTreeView.pas' {FormCreateDBFileTree},
   PrintMainForm in 'Printer\PrintMainForm.pas' {PrintForm},
   PrinterProgress in 'Printer\PrinterProgress.pas' {FormPrinterProgress},
-  UnitGetPhotosForm in 'UnitGetPhotosForm.pas' {GetToPersonalFolderForm},
   UnitFormManagerHint in 'UnitFormManagerHint.pas' {FormManagerHint},
   UnitActionsForm in 'Units\UnitActionsForm.pas' {ActionsForm},
   UnitSplitExportForm in 'UnitSplitExportForm.pas' {SplitExportForm},
@@ -130,7 +129,6 @@ uses
   ConvertDBThreadUnit in 'Threads\ConvertDBThreadUnit.pas',
   UnitPropertyLoadImageThread in 'Threads\UnitPropertyLoadImageThread.pas',
   UnitPropertyLoadGistogrammThread in 'Threads\UnitPropertyLoadGistogrammThread.pas',
-  UnitScanImportPhotosThread in 'Threads\UnitScanImportPhotosThread.pas',
   UnitRefreshDBRecordsThread in 'Threads\UnitRefreshDBRecordsThread.pas',
   UnitCryptingImagesThread in 'Threads\UnitCryptingImagesThread.pas',
   UnitPanelLoadingBigImagesThread in 'Threads\UnitPanelLoadingBigImagesThread.pas',
@@ -323,7 +321,6 @@ uses
   uFrmImportImagesOptions in 'ImportImages\uFrmImportImagesOptions.pas' {FrmImportImagesOptions: TFrame},
   uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame},
   uIME in 'Units\uIME.pas',
-  uGetPhotosThread in 'Threads\uGetPhotosThread.pas',
   uSearchHelpAddPhotosThread in 'Threads\uSearchHelpAddPhotosThread.pas',
   uExifUtils in 'Units\uExifUtils.pas',
   uExifPatchThread in 'Threads\uExifPatchThread.pas',
@@ -749,8 +746,8 @@ begin
     TW.I.Start('Application.Run');
 
 {$IFDEF DEBUG}
-  Application.CreateForm(TFormImportImages, FormImportImages);
-  FormImportImages.Show;
+//  Application.CreateForm(TFormImportImages, FormImportImages);
+//  FormImportImages.Show;
 {$ENDIF}
 
     Application.Run;

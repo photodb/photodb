@@ -145,9 +145,10 @@ function TPhotoDBAutoplayHandler.CallApplication(pszDeviceID, pszAltDeviceID,
 var
   MessageString: string;
 begin
-  MessageString := '"' + ParamStr(0) + '"' + ' /devId:' + Trim(pszDeviceID) + ' /devAltId:' + pszAltDeviceID + ' /devEvent:' + Trim(pszEventType) + ' ' + FInitLine;
+  MessageString := ' /devId:' + Trim(pszDeviceID) + ' /devAltId:' + pszAltDeviceID + ' /devEvent:' + Trim(pszEventType) + ' ' + FInitLine;
 
-  Result := SendMessageToActiveCopy(MessageString);
+  //add parameter to emulate standart parameters
+  Result := SendMessageToActiveCopy('"' + ParamStr(0) + '"' + MessageString);
 
   if not Result then
     Result := SendMessageToNewCopy(MessageString);

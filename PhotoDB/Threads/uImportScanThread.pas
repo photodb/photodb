@@ -15,6 +15,8 @@ uses
   uExplorerFSProviders,
   uExplorerPortableDeviceProvider,
   uAssociations,
+  uImportPicturesUtils,
+  ActiveX,
   uThreadEx;
 
 type
@@ -59,45 +61,50 @@ var
   Childs: TPathItemCollection;
 begin
   FreeOnTerminate := True;
-
-  LevelItems := TList<TPathItem>.Create;
-  FNextLevel := TList<TPathItem>.Create;
+  CoInitialize(nil);
   try
-    SynchronizeEx(procedure
-    begin
-      TFormImportImages(OwnerForm).ShowLoadingSign;
-    end
-    );
 
-    FNextLevel.Add(FDirectory.Copy);
+    LevelItems := TList<TPathItem>.Create;
+    FNextLevel := TList<TPathItem>.Create;
     try
-      while FNextLevel.Count > 0 do
-      begin
-        FreeList(LevelItems, False);
-        LevelItems.AddRange(FNextLevel);
-        FNextLevel.Clear;
-
-        for I := 0 to LevelItems.Count - 1 do
-        begin
-          Childs := TPathItemCollection.Create;
-          try
-            LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);
-          finally
-            Childs.FreeItems;
-            F(Childs);
-          end;
-        end;
-      end;
-    finally
       SynchronizeEx(procedure
       begin
-        TFormImportImages(OwnerForm).FinishScan;
+        TFormImportImages(OwnerForm).ShowLoadingSign;
       end
       );
+
+      FNextLevel.Add(FDirectory.Copy);
+      try
+        while FNextLevel.Count > 0 do
+        begin
+          FreeList(LevelItems, False);
+          LevelItems.AddRange(FNextLevel);
+          FNextLevel.Clear;
+
+          for I := 0 to LevelItems.Count - 1 do
+          begin
+            Childs := TPathItemCollection.Create;
+            try
+              LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);
+            finally
+              Childs.FreeItems;
+              F(Childs);
+            end;
+          end;
+        end;
+      finally
+        SynchronizeEx(procedure
+        begin
+          TFormImportImages(OwnerForm).FinishScan;
+        end
+        );
+      end;
+    finally
+      FreeList(LevelItems);
+      FreeList(FNextLevel);
     end;
   finally
-    FreeList(LevelItems);
-    FreeList(FNextLevel);
+    CoUninitialize;
   end;
 end;
 
@@ -107,9 +114,7 @@ var
   I: Integer;
   FileSize: Integer;
   PI: TPathItem;
-  ExifData: TExifData;
-  RAWExif: TRAWExif;
-  Date: TDateTime;
+   Date: TDateTime;
   Packet: TList<TScanItem>;
 begin
   Packet := TList<TScanItem>.Create;
@@ -127,44 +132,12 @@ begin
       begin
         if IsGraphicFile(PI.Path) or not FOnlySupportedImages then
         begin
+          Date := GetImageDate(PI);
           if PI is TPortableFSItem then
-          begin
-            FileSize := TPortableImageItem(PI).FileSize;
-            Date := TPortableImageItem(PI).Date;
-          end else if PI is TFileItem then
-          begin
+            FileSize := TPortableImageItem(PI).FileSize
+          else if PI is TFileItem then
             FileSize := PI.FileSize;
-            Date := TFileItem(PI).TimeStamp;
-            if IsGraphicFile(PI.Path) then
-            begin
-              if IsRAWImageFile(PI.Path) then
-              begin
-                RAWExif := ReadRAWExif(PI.Path);
-                try
-                  if RAWExif.IsEXIF then
-                  begin
-                    Date := DateOf(RAWExif.TimeStamp);
-                    FileSize := PI.FileSize;
-                  end;
-                finally
-                  F(RAWExif);
-                end;
-              end else
-              begin
-                ExifData := TExifData.Create;
-                try
-                  ExifData.LoadFromGraphic(PI.Path);
-                  if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
-                  begin
-                    Date := DateOf(ExifData.DateTimeOriginal);
-                    FileSize := PI.FileSize;
-                  end;
-                finally
-                  F(ExifData);
-                end;
-              end;
-            end;
-          end;
+
         end;
 
         if FileSize > 0 then

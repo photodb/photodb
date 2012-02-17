@@ -1018,41 +1018,6 @@
 	<translate name="Unknown file" value="Неизвестный файл" />
 	<translate name="Please wait while the search is executed" value="Пожалуйста, подождите, пока выполниться поиск" />
   </scope>
-  <scope name="GetPhotos">
-	<translate name="Import of photos" value="Импорт фотографий" />
-	<translate name="Date of photos" value="Дата фотографий" />
-	<translate name="Open this folder" value="Открыть папку" />
-	<translate name="Folder mask" value="Маска имени директории" />
-	<translate name="Comment for folder" value="Комментарий к папке" />
-	<translate name="Your comment" value="Ваш комментарий" />
-	<translate name="Folder name" value="Имя директории" />
-	<translate name="Final location" value="Конечная директория" />
-	<translate name="Method" value="Метод" />
-	<translate name="Copy" value="Копировать" />
-	<translate name="Move" value="Переместить" />
-	<translate name="Save" value="Сохранить" />
-	<translate name="Copy multimedia files" value="Копировать мультимедийные файлы" />
-	<translate name="Add folder" value="Добавить директорию" />
-	<translate name="Series of pictures by dates" value="Серии фотографий по датам" />
-	<translate name="Options" value="Опции" />
-	<translate name="Date" value="Дата" />
-	<translate name="Up" value="Вверх" />
-	<translate name="Down" value="Вниз" />
-	<translate name="Delete" value="Удалить" />
-	<translate name="Separate folder" value="Отдельная директория" />
-	<translate name="Merge up" value="Совместить с верхней" />
-	<translate name="Merge down" value="Совместить с нижней" />
-	<translate name="Skip" value="Пропустить" />
-	<translate name="Show photos" value="Показать фотографии" />
-	<translate name="Scan directory" value="Показать серии фотографий" />
-	<translate name="y." value="г." />
-	<translate name="Select a folder to place images" value="Выберите папку для размещения изображений" />
-	<translate name="Do you really want to delete this item?" value="Вы действительно хотите удалить этот пункт?" />
-	<translate name="No photos found! Window will be closed!" value="Фотографии не найдены! Окно будет закрыто!" />
-	<translate name="An error occurred during the preparation of photographs. Perhaps you're trying to move pictures from media which is read-only" value="Произошла ошибка в процессе получения фотографий. Возможно, Вы пытаетесь переместить фотографии с носителя, который доступен только для чтения" />
-	<translate name="Unable to create directory: &quot;%s&quot;" value="Невозможно создать директорию: &quot;%s&quot;" />
-	<translate name="Photos in the specified path: &quot;%s&quot; not found" value="Фотографии по указанному пути: &quot;%s&quot; не найдены" />
-  </scope> 
   <scope name="ReplaceGroup">
 	<translate name="Group" value="Группа" />
 	<translate name="Replace group" value="Заменить группу" />
@@ -2094,7 +2059,6 @@
 	<translate name="MB/second" value="Мб/секунду"/>
 	<translate name="Speed" value="Скорость"/>
 	<translate name="{0} Files" value="{0} Файлов"/>
-	<translate name="Label" value="Метка"/>
 	<translate name="Import from" value="Импорт из"/>
 	<translate name="Import to" value="Импорт в"/>
 	<translate name="Directory format" value="Формат директории"/>
@@ -2171,4 +2135,12 @@
   </scope>
   <scope name="FileMoveDialog">
   </scope>
+  <scope name="GetPhotos" todo="delete">
+	<translate name="Select a folder to place images" value="Выберите папку для размещения изображений" />
+	<translate name="Do you really want to delete this item?" value="Вы действительно хотите удалить этот пункт?" />
+	<translate name="No photos found! Window will be closed!" value="Фотографии не найдены! Окно будет закрыто!" />
+	<translate name="An error occurred during the preparation of photographs. Perhaps you're trying to move pictures from media which is read-only" value="Произошла ошибка в процессе получения фотографий. Возможно, Вы пытаетесь переместить фотографии с носителя, который доступен только для чтения" />
+	<translate name="Unable to create directory: &quot;%s&quot;" value="Невозможно создать директорию: &quot;%s&quot;" />
+	<translate name="Photos in the specified path: &quot;%s&quot; not found" value="Фотографии по указанному пути: &quot;%s&quot; не найдены" />
+  </scope> 
 </language>

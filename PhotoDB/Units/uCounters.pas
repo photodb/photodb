@@ -132,6 +132,9 @@ begin
 
   S := SS;
 
+  //max 30 days!
+  if D > 30 then
+    D := 30;
   Result := EncodeDateTime(1, 1, 1 + D, H, M, S, 1);
 end;
 

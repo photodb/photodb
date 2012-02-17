@@ -61,47 +61,6 @@ type
 
   TImageDBRecordAArray = array of TImageDBRecordA;
 
-type
-  TGetImagesOptions = record
-    Date: TDateTime;
-    FolderMask: string;
-    Comment: string;
-    ToFolder: string;
-    GetMultimediaFiles: Boolean;
-    MultimediaMask: string;
-    Move: Boolean;
-    OpenFolder: Boolean;
-    AddFolder: Boolean;
-  end;
-
-  TGetImagesOptionsArray = array of TGetImagesOptions;
-
-  TItemRecordOptions = class
-  public
-    StringDate: string;
-    Date: TDateTime;
-    Options: Integer;
-    Tag: Integer;
-  end;
-
-type
-  TScanImportPhotosThreadOptions = record
-    Directory: string;
-    Mask: string;
-    OnEnd: TNotifyEvent;
-    Owner: TForm;
-    OnProgress: TCallBackProgressEvent;
-  end;
-
-  TFileDateRecord = record
-    FileName: string;
-    Date: TDateTime;
-    Options: Integer;
-    Tag: Integer;
-  end;
-
-  TFileDateList = array of TFileDateRecord;
-
 implementation
 
 end.

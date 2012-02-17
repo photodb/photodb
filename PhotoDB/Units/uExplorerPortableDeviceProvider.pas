@@ -231,21 +231,31 @@ var
   Device: IPDevice;
   DItem: IPDItem;
   MessageText: string;
+  FDO: TPathFeatureDeleteOptions;
+  Silent: Boolean;
 begin
   Result := False;
   Form := TDBForm(Sender);
+
+  FDO := TPathFeatureDeleteOptions(Options);
+
   Device := nil;
   DeviceName := '';
+  MessageText := '';
 
   if Items.Count = 0 then
     Exit;
+
+  Silent := False;
+  if FDO <> nil then
+    Silent := FDO.Silent;
 
   if Items.Count = 1 then
     MessageText := FormatEx(L('Do you really want to delete object "{0}"?'), [Items[0].DisplayName])
   else
     MessageText := FormatEx(L('Do you really want to delete {0} objects?'), [Items.Count]);
 
-  if ID_OK = MessageBoxDB(Form.Handle, MessageText, L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+  if Silent or (ID_OK = MessageBoxDB(Form.Handle, MessageText, L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
   begin
     for Item in Items do
     begin

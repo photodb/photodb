@@ -71,7 +71,7 @@ implementation
 uses
   UnitCleanUpThread, uManagerExplorer, USearchTypes, SlideShow, UnitFileCheckerDB,
   UnitInternetUpdate, UAbout, UnitConvertDBForm, UnitImportingImagesForm,
-  UnitSelectDB, UnitFormCont, UnitGetPhotosForm, UnitLoadFilesToPanel,
+  UnitSelectDB, UnitFormCont, uFormImportImages, UnitLoadFilesToPanel,
   UActivation, UnitUpdateDB, UExifPatchThread;
 
 {$R *.dfm}
@@ -261,6 +261,16 @@ begin
         Show;
       end;
     end;
+  end;
+
+  if GetParamStrDBBoolEx(CommandLine, '/import') then
+  begin
+    S := GetParamStrDBValueV2(CommandLine, '/devId');
+
+    PDManager := CreateDeviceManagerInstance;
+    PDevice := PDManager.GetDeviceByID(S);
+    if PDevice <> nil then
+      GetPhotosFromDevice(PDevice.Name);
   end;
 end;
 

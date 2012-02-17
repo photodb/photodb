@@ -1487,13 +1487,12 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitMenuDateForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitChangeDBPath.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ManagerDBUnit.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitGetPhotosForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitListOfKeyWords.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\DBTools\UnitDBTreeView.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormMoveFilesProgress.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormImportPicturesSettings.dfm */
 /* Resources\PicturesImport.RES */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormImportImages.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitListOfKeyWords.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\DBTools\UnitDBTreeView.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitSplitExportForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapInfo.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFormCDMapper.dfm */

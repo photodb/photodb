@@ -1262,35 +1262,50 @@ begin
                                   cbOptimalTransferSize,   // Driver supplied optimal transfer size
                                   pObjectDataStream);
 
-      if (SUCCEEDED(HR)) then
-      begin
-
-        GetMem(Buff, BufferSize);
-        try
-          repeat
-            HR := pObjectDataStream.Read(Buff, BufferSize, @ButesRead);
-            if (SUCCEEDED(HR) and (ButesRead > 0)) then
-            begin
-              Stream.WriteBuffer(Buff[0], ButesRead);
-              if Assigned(CallBack) then
-                CallBack(Self, FFullSize, Stream.Size, IsBreak);
-            end;
-            if IsBreak then
-            begin
-              FErrorCode := E_ABORT;
-              Break;
-            end;
-          until (ButesRead = 0);
-          pObjectDataStream.Commit(0);
-        finally
-          FreeMem(Buff);
-        end;
-
-      end else
-        ErrorCheck(HR);
     finally
       FLock.Leave;
     end;
+
+    if (SUCCEEDED(HR)) then
+    begin
+
+      GetMem(Buff, BufferSize);
+      try
+        repeat
+
+          FLock.Enter;
+          try
+            HR := pObjectDataStream.Read(Buff, BufferSize, @ButesRead);
+          finally
+            FLock.Leave;
+          end;
+
+          if (SUCCEEDED(HR) and (ButesRead > 0)) then
+          begin
+            Stream.WriteBuffer(Buff[0], ButesRead);
+            if Assigned(CallBack) then
+              CallBack(Self, FFullSize, Stream.Size, IsBreak);
+          end;
+          if IsBreak then
+          begin
+            FErrorCode := E_ABORT;
+            Break;
+          end;
+        until (ButesRead = 0);
+
+        FLock.Enter;
+        try
+          pObjectDataStream.Commit(0);
+        finally
+          FLock.Leave;
+        end;
+      finally
+        FreeMem(Buff);
+      end;
+
+    end else
+      ErrorCheck(HR);
+
   end else
     ErrorCheck(HR);
 

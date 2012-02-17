@@ -30,9 +30,9 @@ uses
   ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor, UnitFormCont,
-  uManagerExplorer, UnitGetPhotosForm, UnitListOfKeyWords, UnitDBTreeView,
+  uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
   SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
-  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB, uFormImportImages,
+  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
   UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
   UnitFormCDMapper, UnitFormCDExport, uFormSteganography;
 

@@ -15,6 +15,7 @@ uses
   uShellIcons,
   uDBImageUtils,
   uPortableDeviceUtils,
+  ActiveX,
   System.Classes;
 
 type
@@ -46,7 +47,7 @@ uses
 constructor TImportSeriesPreview.Create(OwnerForm: TThreadForm;
   Items: TList<TPathItem>; ImageSize: Integer);
 begin
-  inherited Create(OwnerForm, OwnerForm.StateID);
+  inherited Create(OwnerForm, OwnerForm.SubStateID);
   FData := Items;
   FImageSize := ImageSize;
 end;
@@ -65,58 +66,62 @@ var
   FIcon: TIcon;
 begin
   FreeOnTerminate := True;
-
-  FPacketImages := TBitmapImageList.Create;
-  FPacketInfos := TList<TPathItem>.Create;
+  CoInitialize(nil);
   try
-    //loading list with icons
-    for I := 0 to FData.Count - 1 do
-    begin
-      PI := FData[I];
+    FPacketImages := TBitmapImageList.Create;
+    FPacketInfos := TList<TPathItem>.Create;
+    try
+      //loading list with icons
+      for I := 0 to FData.Count - 1 do
+      begin
+        PI := FData[I];
 
-      FIcon := TIcon.Create;
-      FIcon.Handle := ExtractDefaultAssociatedIcon('*' + ExtractFileExt(PI.Path), ImageSizeToIconSize16_32_48(FImageSize));
-      FPacketImages.AddIcon(FIcon, True);
-      FPacketInfos.Add(PI);
+        FIcon := TIcon.Create;
+        FIcon.Handle := ExtractDefaultAssociatedIcon('*' + ExtractFileExt(PI.Path), ImageSizeToIconSize16_32_48(FImageSize));
+        FPacketImages.AddIcon(FIcon, True);
+        FPacketInfos.Add(PI);
 
-      if I mod 10 = 0 then
+        if I mod 10 = 0 then
+          SynchronizeEx(SendPacketOfPreviews);
+
+      end;
+      if FPacketInfos.Count > 0 then
         SynchronizeEx(SendPacketOfPreviews);
 
-    end;
-    if FPacketInfos.Count > 0 then
-      SynchronizeEx(SendPacketOfPreviews);
-
-    for I := 0 to FData.Count - 1 do
-    begin
-      if IsTerminated then
-        Break;
-      FItemParam := FData[I];
-      FBitmap := TBitmap.Create;
-      try
-        Data := nil;
-        if IsDevicePath(FData[I].Path) then
-        begin
-          if FData[I].Provider.ExtractPreview(FData[I], FImageSize, FImageSize, FBitmap, Data) then
+      for I := 0 to FData.Count - 1 do
+      begin
+        if IsTerminated then
+          Break;
+        FItemParam := FData[I];
+        FBitmap := TBitmap.Create;
+        try
+          Data := nil;
+          if IsDevicePath(FData[I].Path) then
           begin
-            if SynchronizeEx(UpdatePreview) then
-              FBitmap := nil;
-          end;
-        end else
-        begin
-          if ExtractFilePreview(FData[I].Path, FImageSize, FImageSize, FBitmap) then
+            if FData[I].Provider.ExtractPreview(FData[I], FImageSize, FImageSize, FBitmap, Data) then
+            begin
+              if SynchronizeEx(UpdatePreview) then
+                FBitmap := nil;
+            end;
+          end else
           begin
-            if SynchronizeEx(UpdatePreview) then
-              FBitmap := nil;
+            if ExtractFilePreview(FData[I].Path, FImageSize, FImageSize, FBitmap) then
+            begin
+              if SynchronizeEx(UpdatePreview) then
+                FBitmap := nil;
+            end;
           end;
+        finally
+          F(FBitmap);
         end;
-      finally
-        F(FBitmap);
       end;
-    end;
 
+    finally
+      F(FPacketImages);
+      F(FPacketInfos);
+    end;
   finally
-    F(FPacketImages);
-    F(FPacketInfos);
+    CoUninitialize;
   end;
 end;
 

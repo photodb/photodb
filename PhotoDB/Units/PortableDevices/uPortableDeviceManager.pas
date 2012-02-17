@@ -12,6 +12,7 @@ uses
 
 function CreateDeviceManagerInstance: IPManager;
 function IsWPDSupport: Boolean;
+procedure ThreadCleanUp(ThreadID: THandle);
 
 implementation
 
@@ -41,6 +42,12 @@ begin
     Result := TWPDDeviceManager.Create
   else
     Result := TWIADeviceManager.Create;
+end;
+
+procedure ThreadCleanUp(ThreadID: THandle);
+begin
+  if not IsWPDSupport then
+    CleanUpWIA(ThreadID);
 end;
 
 end.

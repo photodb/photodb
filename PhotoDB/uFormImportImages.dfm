@@ -48,7 +48,6 @@ object FormImportImages: TFormImportImages
     OnlyFileSystem = False
     HideExtendedButton = True
     ShowBorder = True
-    ExplicitWidth = 866
   end
   object BtnSelectPathFrom: TButton
     Left = 578
@@ -59,7 +58,6 @@ object FormImportImages: TFormImportImages
     Caption = '...'
     TabOrder = 1
     OnClick = BtnSelectPathFromClick
-    ExplicitLeft = 880
   end
   object PeImportToPath: TPathEditor
     Left = 8
@@ -72,7 +70,6 @@ object FormImportImages: TFormImportImages
     OnlyFileSystem = True
     HideExtendedButton = True
     ShowBorder = True
-    ExplicitWidth = 866
   end
   object BtnSelectPathTo: TButton
     Left = 578
@@ -83,7 +80,6 @@ object FormImportImages: TFormImportImages
     Caption = '...'
     TabOrder = 3
     OnClick = BtnSelectPathToClick
-    ExplicitLeft = 880
   end
   object BtnOk: TButton
     Left = 523
@@ -94,7 +90,6 @@ object FormImportImages: TFormImportImages
     Caption = 'Ok'
     TabOrder = 4
     OnClick = BtnOkClick
-    ExplicitLeft = 825
   end
   object BtnCancel: TButton
     Left = 441
@@ -105,7 +100,6 @@ object FormImportImages: TFormImportImages
     Caption = 'Cancel'
     TabOrder = 5
     OnClick = BtnCancelClick
-    ExplicitLeft = 743
   end
   object GbSeries: TGroupBox
     Left = 8
@@ -114,7 +108,6 @@ object FormImportImages: TFormImportImages
     Height = 258
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 6
-    ExplicitWidth = 891
     DesignSize = (
       589
       258)
@@ -320,7 +313,6 @@ object FormImportImages: TFormImportImages
       WheelMouseDefaultScroll = edwsHorz
       OnItemDblClick = ElvPreviewItemDblClick
       OnItemThumbnailDraw = ElvPreviewItemThumbnailDraw
-      ExplicitWidth = 872
     end
   end
   object WlMode: TWebLink
@@ -356,7 +348,6 @@ object FormImportImages: TFormImportImages
     Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
-    ExplicitLeft = 628
   end
   object WlHideShowPictures: TWebLink
     Left = 10
@@ -391,7 +382,6 @@ object FormImportImages: TFormImportImages
     Anchors = [akLeft, akTop, akRight]
     BevelOuter = bvNone
     TabOrder = 10
-    ExplicitWidth = 897
     object WlLabel: TWebLink
       Left = 5
       Top = 3
@@ -531,6 +521,5 @@ object FormImportImages: TFormImportImages
     Caption = 'Settings'
     TabOrder = 11
     OnClick = BtnSettingsClick
-    ExplicitLeft = 656
   end
 end
