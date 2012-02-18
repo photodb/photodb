@@ -33,6 +33,12 @@ type
   end;
 
 type
+  TCheckBoxHelper = class helper for TCheckBox
+  public
+    procedure AdjustWidth;
+  end;
+
+type
   TNotifyEventRef = reference to procedure(Sender: TObject);
   TKeyEventRef = reference to procedure(Sender: TObject; var Key: Word; Shift: TShiftState);
   TMessageEventRef = reference to procedure(var Msg: TMsg; var Handled: Boolean);
@@ -113,6 +119,23 @@ begin
       ItemIndex := I;
       Break;
     end;
+end;
+
+{ TCheckBoxHelper }
+
+procedure TCheckBoxHelper.AdjustWidth;
+var
+  TextSize: TSize;
+  ADC: HDC;
+begin
+  aDC := GetDC(Handle);
+  try
+    SelectObject(ADC, Font.Handle);
+    GetTextExtentPoint32(ADC, PChar(Caption), Length(Caption), TextSize);
+    Width := TextSize.Cx + GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE) * 2;
+  finally
+    ReleaseDc(Handle, ADC);
+  end;
 end;
 
 end.

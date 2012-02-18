@@ -1119,7 +1119,7 @@ begin
   DWidth := Dest.Width;
   SHeight := Src.Height;
   SWidth := Src.Width;
-  for I := 0 to SW - 1 do
+  for I := 0 to SH - 1 do
   begin
 
     YD := I + DY;
@@ -1137,7 +1137,7 @@ begin
       XD := J + DX;
       if (XD >= DWidth) then
         Break;
-      XS := J + DY;
+      XS := J + SX;
       if (XS >= SWidth) then
         Break;
 

@@ -272,7 +272,7 @@ type
     FIsReady: Boolean;
     procedure LoadLanguage;
     procedure ReadOptions;
-    procedure SwitchMode;
+    procedure SwitchMode(NewMode: Boolean = True);
     procedure ItemUpdateTimer(Sender: TObject);
     procedure ClearItems;
     procedure UpdateItemsCount;
@@ -986,7 +986,7 @@ begin
   TFormImportImages(Sb.Owner).NewFormSubState;
   TFormImportImages(Sb.Owner).ClearItems;
   TFormImportImages(Sb.Owner).IsDisplayingPreviews := True;
-  TFormImportImages(Sb.Owner).SwitchMode;
+  TFormImportImages(Sb.Owner).SwitchMode(False);
   TImportSeriesPreview.Create(TThreadForm(Sb.Owner), Data, 125);
 end;
 
@@ -1532,6 +1532,8 @@ begin
   FormImportPicturesSettings := TFormImportPicturesSettings.Create(Self);
   try
     FormImportPicturesSettings.ShowModal;
+    if FormImportPicturesSettings.ModalResult = mrOk then
+      PeImportFromPathChange(Sender);
   finally
     R(FormImportPicturesSettings);
   end;
@@ -1735,7 +1737,7 @@ begin
   end;
 end;
 
-procedure TFormImportImages.SwitchMode;
+procedure TFormImportImages.SwitchMode(NewMode: Boolean = True);
 begin
   if FMode = piModeSimple then
   begin
@@ -1749,7 +1751,8 @@ begin
     begin
       WlHideShowPictures.LoadFromResource('SERIES_COLLAPSE');
       ElvPreview.Show;
-      Height := 396;
+      if NewMode or (Height < 396) then
+        Height := 396;
       GbSeries.Height := 180;
       GbSeries.Visible := True;
       GbSeries.Caption := '';
@@ -1781,7 +1784,10 @@ begin
     GbSeries.Top := 110;
     if FIsDisplayingPreviews then
     begin
-      Height := 470;
+      if NewMode or (Height < 470) then
+        Height := 470;
+
+      if NewMode or (GbSeries.Height < 280) then
       GbSeries.Height := 280;
       ElvPreview.Show;
     end else

@@ -3,11 +3,36 @@ unit UnitHintCeator;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, ExtCtrls, uBitmapUtils,
-  Graphics, Controls, Forms, GIFImage, GraphicEx, Math, UnitDBCommonGraphics,
-  Dialogs, StdCtrls, ComCtrls, ShellCtrls, RAWImage, uJpegUtils,
-  GraphicCrypt, uGOM, uFileUtils, uDBForm, uExifUtils,
-  uMemory, SyncObjs, dolphin_db, UnitDBKernel, ActiveX,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  ExtCtrls,
+  uBitmapUtils,
+  Graphics,
+  Controls,
+  Forms,
+  GIFImage,
+  uAnimatedJPEG,
+  GraphicEx,
+  Math,
+  UnitDBCommonGraphics,
+  Dialogs,
+  StdCtrls,
+  ComCtrls,
+  ShellCtrls,
+  RAWImage,
+  uJpegUtils,
+  GraphicCrypt,
+  uGOM,
+  uFileUtils,
+  uDBForm,
+  uExifUtils,
+  uMemory,
+  SyncObjs,
+  dolphin_db,
+  UnitDBKernel,
+  ActiveX,
   UnitDBDeclare,
   uGraphicUtils,
   uRuntime,
@@ -162,8 +187,10 @@ begin
         FOriginalHeight := FInfo.Image.Height;
       end;
 
-      if (Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 1) then
+      if ((Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 1)) or (Graphic is TAnimatedJPEG) then
       begin
+        if (Graphic is TAnimatedJPEG) then
+          TAnimatedJPEG(Graphic).ResizeTo(500, 500);
         SynchronizeEx(DoShowHint);
         Exit;
       end else

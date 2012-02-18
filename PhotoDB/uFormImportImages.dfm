@@ -61,7 +61,7 @@ object FormImportImages: TFormImportImages
   end
   object PeImportToPath: TPathEditor
     Left = 8
-    Top = 73
+    Top = 77
     Width = 564
     Height = 25
     Anchors = [akLeft, akTop, akRight]
@@ -73,7 +73,7 @@ object FormImportImages: TFormImportImages
   end
   object BtnSelectPathTo: TButton
     Left = 578
-    Top = 73
+    Top = 77
     Width = 19
     Height = 25
     Anchors = [akTop, akRight]

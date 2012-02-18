@@ -16,7 +16,9 @@ uses
   uVCLHelpers,
   uDBForm,
   uConstants,
-  uSettings;
+  uSettings,
+  uMemoryEx,
+  WebLink;
 
 type
   TFormImportPicturesSettings = class(TDBForm)
@@ -27,13 +29,17 @@ type
     CbAddToCollection: TCheckBox;
     BtnOk: TButton;
     BtnCancel: TButton;
+    WlFilter: TWebLink;
+    BtnChangePatterns: TButton;
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
+    procedure BtnChangePatternsClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadLanguage;
     procedure ReadOptions;
+    procedure ReadPatternList;
   protected
     { Protected declarations }
     function GetFormID: string; override;
@@ -43,11 +49,28 @@ type
 
 implementation
 
+uses
+  uPicturesImportPatternEdit;
+
 {$R *.dfm}
 
 procedure TFormImportPicturesSettings.BtnCancelClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TFormImportPicturesSettings.BtnChangePatternsClick(Sender: TObject);
+var
+  PicturesImportPatternEdit: TPicturesImportPatternEdit;
+begin
+  PicturesImportPatternEdit := TPicturesImportPatternEdit.Create(Self);
+  try
+    PicturesImportPatternEdit.ShowModal;
+    if PicturesImportPatternEdit.ModalResult = mrOk then
+      ReadPatternList;
+  finally
+    R(PicturesImportPatternEdit);
+  end;
 end;
 
 procedure TFormImportPicturesSettings.BtnOkClick(Sender: TObject);
@@ -57,12 +80,14 @@ begin
   Settings.WriteBool('ImportPictures', 'DeleteFiles', CbDeleteAfterImport.Checked);
   Settings.WriteBool('ImportPictures', 'AddToCollection', CbAddToCollection.Checked);
   Close;
+  ModalResult := mrOk;
 end;
 
 procedure TFormImportPicturesSettings.FormCreate(Sender: TObject);
 begin
   ReadOptions;
   LoadLanguage;
+  ModalResult := mrCancel;
 end;
 
 function TFormImportPicturesSettings.GetFormID: string;
@@ -81,6 +106,9 @@ begin
     CbOnlyImages.Caption := L('Import only supported images');
     CbDeleteAfterImport.Caption := L('Delete files after import');
     CbAddToCollection.Caption := L('Add files to collection after copying files');
+    CbOnlyImages.AdjustWidth;
+    WlFilter.Left := CbOnlyImages.Left + CbOnlyImages.Width + 10;
+    WlFilter.Top := CbOnlyImages.Top + CbOnlyImages.Height div 2 - WlFilter.Height div 2;
   finally
     EndTranslate;
   end;
@@ -88,10 +116,18 @@ end;
 
 procedure TFormImportPicturesSettings.ReadOptions;
 begin
+  ReadPatternList;
   CbFormatCombo.Value := Settings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
   CbOnlyImages.Checked := Settings.ReadBool('ImportPictures', 'OnlyImages', False);
   CbDeleteAfterImport.Checked := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
   CbAddToCollection.Checked := Settings.ReadBool('ImportPictures', 'AddToCollection', True);
+end;
+
+procedure TFormImportPicturesSettings.ReadPatternList;
+begin
+  CbFormatCombo.Items.Text := Settings.ReadString('ImportPictures', 'PatternList', DefaultImportPatternList);
+  if CbFormatCombo.Items.Count > 0 then
+    CbFormatCombo.ItemIndex := 0;
 end;
 
 end.

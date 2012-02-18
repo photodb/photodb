@@ -11,6 +11,7 @@ uses
   uTiffImage,
   GifImage,
   RAWImage,
+  uAnimatedJPEG,
   {$ENDIF}
   pngimage,
   uStringUtils;
@@ -31,6 +32,7 @@ const
   TPSPGraphic = nil;
   TCUTGraphic = nil;
   TEPSGraphic = nil;
+  TAnimatedJPEG = nil;
 {$IFEND}
 
 type
@@ -485,7 +487,10 @@ begin
     AddFileExtension('.cut', 'Dr. Halo images', 16, TCUTGraphic);
     AddFileExtension('.pal', 'Dr. Halo images', 16, TCUTGraphic);
 
-    //AddFileExtension('.eps', 'Encapsulated Postscript images', 17, TEPSGraphic);
+    AddFileExtension('.jps', 'JPEG 3D Images', 17, TAnimatedJPEG);
+    AddFileExtension('.mpo', 'JPEG 3D Images', 17, TAnimatedJPEG);
+
+    //AddFileExtension('.eps', 'Encapsulated Postscript images', 18, TEPSGraphic);
   finally
     FSync.Leave;
   end;

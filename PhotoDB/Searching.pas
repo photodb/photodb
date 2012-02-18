@@ -4554,6 +4554,9 @@ begin
       if DBTerminating then
         Exit;
       Date := DA.Date;
+      if Date < 0 then
+        Date := 0;
+
       if YearOf(Date) <> CurrentYear then
       begin
         CurrentYear := YearOf(Date);
@@ -4568,7 +4571,6 @@ begin
         end;
       end;
 
-      Date := DA.Date;
       if MonthOf(Date) <> CurrentMonth then
       begin
         CurrentMonth := MonthOf(Date);

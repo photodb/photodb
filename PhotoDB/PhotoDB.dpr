@@ -377,7 +377,9 @@ uses
   uImportSeriesPreview in 'Threads\uImportSeriesPreview.pas',
   uCounters in 'Units\uCounters.pas',
   uFormImportPicturesSettings in 'uFormImportPicturesSettings.pas' {FormImportPicturesSettings},
-  uImportPicturesUtils in 'Units\uImportPicturesUtils.pas';
+  uImportPicturesUtils in 'Units\uImportPicturesUtils.pas',
+  uPicturesImportPatternEdit in 'uPicturesImportPatternEdit.pas' {PicturesImportPatternEdit},
+  uAnimatedJPEG in 'Units\Formats\uAnimatedJPEG.pas';
 
 {$R *.res}
 

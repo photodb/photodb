@@ -16,7 +16,8 @@ uses
   uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo,
   uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
   uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
-  uExifUtils, uInterfaces, WebLink, uPeopleSupport, u2DUtils, uVCLHelpers;
+  uExifUtils, uInterfaces, WebLink, uPeopleSupport, u2DUtils, uVCLHelpers,
+  uAnimatedJPEG;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
@@ -2409,7 +2410,7 @@ var
   P: TPoint;
   PA: TPersonArea;
 begin
-  if (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not DBCanDrag then
+  if StaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not DBCanDrag then
   begin
     FIsSelectingFace := False;
     FDrawingFace := True;
@@ -3295,7 +3296,7 @@ end;
 procedure TViewer.SetAnimatedImage(Image: TGraphic);
 var
   I: Integer;
-  Im: TGifImage;
+  Gif: TGifImage;
 begin
   F(AnimatedImage);
   AnimatedImage := Image;
@@ -3323,18 +3324,27 @@ begin
   ReAllignScrolls(False, Point(0, 0));
   SlideNO := -1;
   ZoomerOn := False;
-  Im := (AnimatedImage as TGIFImage);
   ValidImages := 0;
   TransparentImage := False;
-  for I := 0 to Im.Images.Count - 1 do
+
+  if AnimatedImage is TGIFImage then
   begin
-    if not Im.Images[I].Empty then
-      ValidImages := ValidImages + 1;
-    if Im.Images[I].Transparent then
-      TransparentImage := True;
+    Gif := (AnimatedImage as TGIFImage);
+    for I := 0 to Gif.Images.Count - 1 do
+    begin
+      if not Gif.Images[I].Empty then
+        ValidImages := ValidImages + 1;
+      if Gif.Images[I].Transparent then
+        TransparentImage := True;
+    end;
+  end else if AnimatedImage is TAnimatedJPEG then
+  begin
+    TransparentImage := False;
+    ValidImages := TAnimatedJPEG(AnimatedImage).Count;
   end;
-  AnimatedBuffer.Width := Im.Width;
-  AnimatedBuffer.Height := Im.Height;
+
+  AnimatedBuffer.Width := AnimatedImage.Width;
+  AnimatedBuffer.Height := AnimatedImage.Height;
   if FullScreenNow then
   begin
     AnimatedBuffer.Canvas.Brush.Color := 0;
@@ -3383,8 +3393,9 @@ var
   TimerEnabled: Boolean;
   Gsi: TGIFSubImage;
 begin
+  TimerEnabled := False;
   Del := 1;
-  if not(ImageExists and not StaticImage) then
+  if not (ImageExists and not StaticImage) then
     Exit;
   if SlideNO = -1 then
   begin
@@ -3393,7 +3404,7 @@ begin
   begin
     SlideNO := GetNextImageNO;
   end;
-  R := (AnimatedImage as TGIFImage).Images[SlideNO].BoundsRect;
+
   if FullScreenNow then
   begin
     AnimatedBuffer.Canvas.Brush.Color := 0;
@@ -3403,62 +3414,75 @@ begin
     AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
     AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
   end;
-  Im := (AnimatedImage as TGIFImage);
-  TimerEnabled := False;
-  PreviousNumber := GetPreviousImageNO;
-  DisposalMethod := DmNone;
-  if Im.Animate then
-    if Im.Images.Count > 1 then
-    begin
-      Gsi := Im.Images[SlideNO];
-      if Gsi.Empty then
-        Exit;
-      if Im.Images[PreviousNumber].Empty then
-        DisposalMethod := DmNone
-      else
-      begin
-        if Im.Images[PreviousNumber].GraphicControlExtension <> nil then
-          DisposalMethod := Im.Images[PreviousNumber].GraphicControlExtension.Disposal
-        else
-          DisposalMethod := DmNone;
-      end;
-      Del := 100;
-      if Im.Images[SlideNO].GraphicControlExtension <> nil then
-        Del := Im.Images[SlideNO].GraphicControlExtension.Delay * 10;
-      if Del = 10 then
-        Del := 100;
-      if Del = 0 then
-        Del := 100;
-      TimerEnabled := True;
-    end
-    else
-      DisposalMethod := DmNone;
-  if SlideNO = 0 then
-    DisposalMethod := DmBackground;
-  if (DisposalMethod = DmBackground) then
+
+  if (AnimatedImage is TGIFImage) then
   begin
-    Bounds_ := Im.Images[PreviousNumber].BoundsRect;
-    if FullScreenNow then
+    Im := (AnimatedImage as TGIFImage);
+    R := Im.Images[SlideNO].BoundsRect;
+    TimerEnabled := False;
+    PreviousNumber := GetPreviousImageNO;
+    DisposalMethod := DmNone;
+    if Im.Animate then
+      if Im.Images.Count > 1 then
+      begin
+        Gsi := Im.Images[SlideNO];
+        if Gsi.Empty then
+          Exit;
+        if Im.Images[PreviousNumber].Empty then
+          DisposalMethod := DmNone
+        else
+        begin
+          if Im.Images[PreviousNumber].GraphicControlExtension <> nil then
+            DisposalMethod := Im.Images[PreviousNumber].GraphicControlExtension.Disposal
+          else
+            DisposalMethod := DmNone;
+        end;
+        Del := 100;
+        if Im.Images[SlideNO].GraphicControlExtension <> nil then
+          Del := Im.Images[SlideNO].GraphicControlExtension.Delay * 10;
+        if Del = 10 then
+          Del := 100;
+        if Del = 0 then
+          Del := 100;
+        TimerEnabled := True;
+      end
+      else
+        DisposalMethod := DmNone;
+    if SlideNO = 0 then
+      DisposalMethod := DmBackground;
+    if (DisposalMethod = DmBackground) then
     begin
-      AnimatedBuffer.Canvas.Pen.Color := 0;
-      AnimatedBuffer.Canvas.Brush.Color := 0;
-    end else
-    begin
-      AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
-      AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
+      Bounds_ := Im.Images[PreviousNumber].BoundsRect;
+      if FullScreenNow then
+      begin
+        AnimatedBuffer.Canvas.Pen.Color := 0;
+        AnimatedBuffer.Canvas.Brush.Color := 0;
+      end else
+      begin
+        AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
+        AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
+      end;
+
+      AnimatedBuffer.Canvas.Rectangle(Bounds_);
     end;
 
-    AnimatedBuffer.Canvas.Rectangle(Bounds_);
-  end;
-  if DisposalMethod = DmPrevious then
+    if DisposalMethod = DmPrevious then
+    begin
+      C := SlideNO;
+      Dec(C);
+      if C < 0 then
+        C := Im.Images.Count - 1;
+      Im.Images[C].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+    end;
+    Im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+
+  end else if AnimatedImage is TAnimatedJPEG then
   begin
-    C := SlideNO;
-    Dec(C);
-    if C < 0 then
-      C := Im.Images.Count - 1;
-    Im.Images[C].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+    AnimatedBuffer.Assign(TAnimatedJPEG(AnimatedImage).Images[SlideNO]);
+    Del := Animation3DDelay;
+    TimerEnabled := True;
   end;
-  Im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
+
   if CurrentFileNumber <= CurrentInfo.Count - 1 then
     case Item.Rotation of
       DB_IMAGE_ROTATE_0:
@@ -3470,6 +3494,7 @@ begin
       DB_IMAGE_ROTATE_270:
         Rotate270(AnimatedBuffer, FbImage)
     end;
+
   RecreateDrawImage(Self);
   ImageFrameTimer.Enabled := False;
   ImageFrameTimer.Interval := Del;
@@ -3495,12 +3520,18 @@ begin
     Result := 0
   else
   begin
-    for I := 0 to (AnimatedImage as TGIFImage).Images.Count - 1 do
-      if not(AnimatedImage as TGIFImage).Images[I].Empty then
-      begin
-        Result := I;
-        Break;
-      end;
+    if (AnimatedImage is TGIFImage) then
+    begin
+      for I := 0 to (AnimatedImage as TGIFImage).Images.Count - 1 do
+        if not(AnimatedImage as TGIFImage).Images[I].Empty then
+        begin
+          Result := I;
+          Break;
+        end;
+    end else if (AnimatedImage is TAnimatedJPEG) then
+    begin
+      Result := 0;
+    end;
   end;
 end;
 
@@ -3513,18 +3544,26 @@ function TViewer.GetNextImageNO: Integer;
 var
   Im: TGIFImage;
 begin
+  Result := 0;
   if ValidImages = 0 then
     Result := 0
   else
   begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := SlideNO;
-    Inc(Result);
-    if Result >= Im.Images.Count then
-      Result := 0;
+    if (AnimatedImage is TGIFImage) then
+    begin
+      Im := (AnimatedImage as TGIFImage);
+      Result := SlideNO;
+      Inc(Result);
+      if Result >= Im.Images.Count then
+        Result := 0;
 
-    if Im.Images[Result].Empty then
-      Result := GetNextImageNOX(Result);
+      if Im.Images[Result].Empty then
+        Result := GetNextImageNOX(Result);
+    end else if (AnimatedImage is TAnimatedJPEG) then
+    begin
+      //onle 2 slides
+      Result := IIF(SlideNO = 1, 0, 1);
+    end;
   end;
 end;
 
@@ -3532,18 +3571,25 @@ function TViewer.GetPreviousImageNO: Integer;
 var
   Im: TGIFImage;
 begin
+  Result := 0;
   if ValidImages = 0 then
     Result := 0
   else
   begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := SlideNO;
-    Dec(Result);
-    if Result < 0 then
-      Result := Im.Images.Count - 1;
+    if (AnimatedImage is TGIFImage) then
+    begin
+      Im := (AnimatedImage as TGIFImage);
+      Result := SlideNO;
+      Dec(Result);
+      if Result < 0 then
+        Result := Im.Images.Count - 1;
 
-    if Im.Images[Result].Empty then
-      Result := GetPreviousImageNOX(Result);
+      if Im.Images[Result].Empty then
+        Result := GetPreviousImageNOX(Result);
+    end else if (AnimatedImage is TAnimatedJPEG) then
+    begin
+      Result := IIF(SlideNO = 1, 0, 1);
+    end;
 
   end;
 end;
@@ -3552,18 +3598,25 @@ function TViewer.GetNextImageNOX(NO: Integer): Integer;
 var
   Im: TGIFImage;
 begin
+  Result := 0;
   if ValidImages = 0 then
     Result := 0
   else
   begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := NO;
-    Inc(Result);
-    if Result >= Im.Images.Count then
-      Result := 0;
+    if (AnimatedImage is TGIFImage) then
+    begin
+      Im := (AnimatedImage as TGIFImage);
+      Result := NO;
+      Inc(Result);
+      if Result >= Im.Images.Count then
+        Result := 0;
 
-    if Im.Images[Result].Empty then
-      Result := GetNextImageNOX(Result);
+      if Im.Images[Result].Empty then
+        Result := GetNextImageNOX(Result);
+    end else if (AnimatedImage is TAnimatedJPEG) then
+    begin
+      Result := IIF(NO = 1, 0, 1);
+    end;
   end;
 end;
 
@@ -3571,18 +3624,25 @@ function TViewer.GetPreviousImageNOX(NO: Integer): Integer;
 var
   Im: TGIFImage;
 begin
+  Result := 0;
   if ValidImages = 0 then
     Result := 0
   else
   begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := NO;
-    Dec(Result);
-    if Result < 0 then
-      Result := Im.Images.Count - 1;
+    if (AnimatedImage is TGIFImage) then
+    begin
+      Im := (AnimatedImage as TGIFImage);
+      Result := NO;
+      Dec(Result);
+      if Result < 0 then
+        Result := Im.Images.Count - 1;
 
-    if Im.Images[Result].Empty then
-      Result := GetPreviousImageNOX(Result);
+      if Im.Images[Result].Empty then
+        Result := GetPreviousImageNOX(Result);
+    end else if (AnimatedImage is TAnimatedJPEG) then
+    begin
+      Result := IIF(NO = 1, 0, 1);
+    end;
   end;
 end;
 

@@ -60,6 +60,13 @@ const
   FreeActivationURL = SiteLocation + '/FreeActivationHandler';
 
   DefaultImportPattern = 'YYYY\MMM\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)';
+  DefaultImportPatternList =
+    DefaultImportPattern + #13 +
+    'YYYY\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)' + #13 +
+    'YYYY\YY.MM.DD (LABEL)' + #13 +
+    'YYYY.MM.DD (LABEL)';
+
+  Animation3DDelay = 100;
 
   ReleaseNumber = 12;
 

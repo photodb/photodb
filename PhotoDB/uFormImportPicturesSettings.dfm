@@ -4,7 +4,7 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
   BorderStyle = bsSingle
   Caption = 'FormImportPicturesSettings'
   ClientHeight = 165
-  ClientWidth = 420
+  ClientWidth = 429
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,7 +15,7 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
   Position = poOwnerFormCenter
   OnCreate = FormCreate
   DesignSize = (
-    420
+    429
     165)
   PixelsPerInch = 96
   TextHeight = 13
@@ -29,30 +29,31 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
   object CbFormatCombo: TComboBox
     Left = 8
     Top = 27
-    Width = 393
+    Width = 384
     Height = 21
     Style = csDropDownList
+    Anchors = [akLeft, akTop, akRight]
     ItemIndex = 0
     TabOrder = 0
     Text = 'YYYY\MMM\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)'
     Items.Strings = (
       'YYYY\MMM\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)'
+      'YYYY\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)'
       'YYYY\YY.MM.DD (LABEL)'
       'YYYY.MM.DD (LABEL)')
   end
   object CbOnlyImages: TCheckBox
     Left = 8
     Top = 58
-    Width = 406
+    Width = 161
     Height = 17
-    Anchors = [akLeft, akTop, akRight]
     Caption = 'Import only supported images'
     TabOrder = 1
   end
   object CbDeleteAfterImport: TCheckBox
     Left = 8
     Top = 81
-    Width = 406
+    Width = 415
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Delete files after import'
@@ -61,14 +62,14 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
   object CbAddToCollection: TCheckBox
     Left = 8
     Top = 104
-    Width = 406
+    Width = 415
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Add files to collection after copying files'
     TabOrder = 3
   end
   object BtnOk: TButton
-    Left = 337
+    Left = 346
     Top = 132
     Width = 75
     Height = 25
@@ -78,13 +79,43 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 256
+    Left = 265
     Top = 132
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
-    Caption = 'Button1'
+    Caption = 'BtnCancel'
     TabOrder = 5
     OnClick = BtnCancelClick
+  end
+  object WlFilter: TWebLink
+    Left = 175
+    Top = 61
+    Width = 58
+    Height = 13
+    Cursor = crHandPoint
+    Text = '(filter: *.*)'
+    ImageIndex = 0
+    IconWidth = 0
+    IconHeight = 0
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = False
+    TopIconIncrement = 0
+    ImageCanRegenerate = True
+    UseSpecIconSize = True
+    HightliteImage = False
+    StretchImage = True
+    CanClick = True
+  end
+  object BtnChangePatterns: TButton
+    Left = 398
+    Top = 27
+    Width = 23
+    Height = 23
+    Anchors = [akTop, akRight]
+    Caption = '...'
+    TabOrder = 7
+    OnClick = BtnChangePatternsClick
   end
 end

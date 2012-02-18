@@ -2085,7 +2085,10 @@
 	<translate name="(Reset)" value="(Сброс)"/>
 	<translate name="Enter label" value="Введите метку"/>
 	<translate name="Settings" value="Настройки"/>
+	<translate name="(filter: {0})" value="(фильтр: {0})"/>
 	<translate name="Import settings" value="Настройки импорта"/>
+	<translate name="Edit directory fotmats" value="Настройки форматов директорий"/>	
+	<translate name="Please enter any directory format" value="Пожалуйста, введите список форматов директорий"/>
 	<translate name="Photos in selected location were not found! Please select another location to see series of photos." value="Фотографии по выбранному пути не найдены! Пожалуйста, выберите другое размещение чтобы видеть серии фотографий."/>
   </scope>
   <scope name="Global">

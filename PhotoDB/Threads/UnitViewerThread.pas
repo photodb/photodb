@@ -3,10 +3,24 @@ unit UnitViewerThread;
 interface
 
 uses
-  Windows, Classes, Graphics, GraphicCrypt, SysUtils, Forms,
-  GIFImage, DB, GraphicsBaseTypes, CommonDBSupport, uTiffImage,
-  ActiveX, UnitDBCommonGraphics, UnitDBCommon, uFileUtils, JPEG,
-  uMemory, UnitDBDeclare, pngimage,
+  Windows,
+  Classes,
+  Graphics,
+  GraphicCrypt,
+  SysUtils,
+  Forms,
+  GIFImage,
+  DB, GraphicsBaseTypes,
+  CommonDBSupport,
+  uTiffImage,
+  ActiveX,
+  UnitDBCommonGraphics,
+  UnitDBCommon,
+  uFileUtils,
+  JPEG,
+  uMemory,
+  UnitDBDeclare,
+  pngimage,
   uPNGUtils,
   UnitDBkernel,
   uDBThread,
@@ -21,7 +35,8 @@ uses
   uSettings,
   uFaceDetection,
   uConstants,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  uAnimatedJPEG;
 
 type
   TViewerThread = class(TDBThread)
@@ -182,7 +197,7 @@ begin
       if Graphic is TRAWImage then
         FRealZoomScale := TRAWImage(Graphic).Width / TRAWImage(Graphic).GraphicWidth;
 
-      if Graphic is TGIFImage then
+      if (Graphic is TGIFImage) or (Graphic is TAnimatedJPEG) then
       begin
         SetAnimatedImageAsynch;
       end else
