@@ -94,6 +94,16 @@ const
   WPD_MEDIA_WIDTH = 22;
   WPD_MEDIA_HEIGHT = 23;
 
+  WPD_EVENT_PROPERTIES_V1: TGUID  = '{15AB1953-F817-4FEF-A921-5676E838F6E0}';
+  WPD_EVENT_PARAMETER_PNP_DEVICE_ID = 2;
+  WPD_EVENT_PARAMETER_EVENT_ID = 3;
+
+  //connection event is sent as windows message
+  WPD_EVENT_OBJECT_ADDED: TGUID   = '{A726DA95-E207-4B02-8D44-BEF2E86CBFFC}';
+  WPD_EVENT_OBJECT_REMOVED: TGUID = '{BE82AB88-A52C-4823-96E5-D0272671FC38}';
+  WPD_EVENT_DEVICE_RESET: TGUID   = '{7755CF53-C1ED-44F3-B5A2-451E2C376B27}';
+  WPD_EVENT_DEVICE_REMOVED: TGUID = '{E4CBCA1B-6918-48B9-85EE-02BE7C850AF9}';
+
   WPD_CATEGORY_OBJECT_MANAGEMENT: TGUID  = '{EF1E43DD-A9ED-4341-8BCC-186192AEA089}';
   WPD_COMMAND_OBJECT_MANAGEMENT_DELETE_OBJECTS = 7;
   WPD_OPTION_OBJECT_MANAGEMENT_RECURSIVE_DELETE_SUPPORTED = 5001;
@@ -825,8 +835,8 @@ type
     function Capabilities(out ppCapabilities: IPortableDeviceCapabilities): HResult; stdcall;
     function Cancel: HResult; stdcall;
     function Close: HResult; stdcall;
-    function Advise(dwFlags: LongWord; const pCallback: IPortableDeviceEventCallback;
-                    const pParameters: IPortableDeviceValues; out ppszCookie: PWideChar): HResult; stdcall;
+    function Advise(const dwFlags: LongWord; pCallback: IPortableDeviceEventCallback;
+                    pParameters: IPortableDeviceValues; out ppszCookie: PWideChar): HResult; stdcall;
     function Unadvise(pszCookie: PWideChar): HResult; stdcall;
     function GetPnPDeviceID(out ppszPnPDeviceID: PWideChar): HResult; stdcall;
   end;

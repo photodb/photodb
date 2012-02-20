@@ -469,11 +469,11 @@ end;
 function SpeedInText(Speed: Extended): string;
 begin
   if Speed > 100 then
-    Result := FormatFloat('##', Speed)
+    Result := IntToStr(Round(Speed))
   else if Speed > 10 then
     Result := FormatFloat('##.#', Speed)
   else
-    Result := FormatFloat('##.##', Speed);
+    Result := FormatFloat('0.##', Speed);
 end;
 
 function SizeInText(Size: Int64): string;
@@ -649,7 +649,7 @@ var
 
 begin
   DecodeDateTime(Time, Y, MM, Days, H, M, S, MS);
-  Days := (Days - 1) + (Y - 1) * 12 * 365 + (MM - 1) * 30;
+  Days := Min(30, (Days - 1) + (Y - 1) * 12 * 365 + (MM - 1) * 30);
 
   S := RoundSeconds(S);
 

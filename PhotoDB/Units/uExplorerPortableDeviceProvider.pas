@@ -67,6 +67,7 @@ type
     function Copy: TPathItem; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     procedure LoadItem(AItem: IPDItem);
+    procedure ResetItem;
     property Item: IPDItem read GetItem;
   end;
 
@@ -633,6 +634,11 @@ end;
 procedure TPortableItem.LoadItem(AItem: IPDItem);
 begin
   FItem := AItem;
+end;
+
+procedure TPortableItem.ResetItem;
+begin
+  FItem := nil;
 end;
 
 { TPortableDirectoryItem }

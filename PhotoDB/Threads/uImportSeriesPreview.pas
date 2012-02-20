@@ -66,7 +66,7 @@ var
   FIcon: TIcon;
 begin
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
     FPacketImages := TBitmapImageList.Create;
     FPacketInfos := TList<TPathItem>.Create;

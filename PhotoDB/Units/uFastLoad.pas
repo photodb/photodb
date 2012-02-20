@@ -134,25 +134,33 @@ end;
 procedure TLoad.RequaredCRCCheck;
 begin
   TW.I.Start('TLoad.RequaredCRCCheck');
-  WaitForThread(LoadCRCCheckThreadID);
+  if LoadCRCCheckThreadID <> GetEmptyGUID then
+    WaitForThread(LoadCRCCheckThreadID);
+  LoadCRCCheckThreadID := GetEmptyGUID;
 end;
 
 procedure TLoad.RequaredDBKernelIcons;
 begin
   TW.I.Start('TLoad.RequaredDBKernelIcons');
-  WaitForThread(LoadDBKernelIconsThreadID);
+  if LoadDBKernelIconsThreadID <> GetEmptyGUID then
+    WaitForThread(LoadDBKernelIconsThreadID);
+  LoadDBKernelIconsThreadID := GetEmptyGUID;
 end;
 
 procedure TLoad.RequaredDBSettings;
 begin
   TW.I.Start('TLoad.LoadDBSettingsThread');
-  WaitForThread(LoadDBSettingsThreadID);
+  if LoadDBSettingsThreadID <> GetEmptyGUID then
+    WaitForThread(LoadDBSettingsThreadID);
+  LoadDBSettingsThreadID := GetEmptyGUID;
 end;
 
 procedure TLoad.RequaredPersons;
 begin
   TW.I.Start('TLoad.RequaredPersons');
-  WaitForThread(LoadPersonsThreadID);
+  if LoadPersonsThreadID <> GetEmptyGUID then
+    WaitForThread(LoadPersonsThreadID);
+  LoadPersonsThreadID := GetEmptyGUID;
 end;
 
 initialization

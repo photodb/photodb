@@ -117,7 +117,6 @@ end;
 procedure TFormImportPicturesSettings.ReadOptions;
 begin
   ReadPatternList;
-  CbFormatCombo.Value := Settings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
   CbOnlyImages.Checked := Settings.ReadBool('ImportPictures', 'OnlyImages', False);
   CbDeleteAfterImport.Checked := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
   CbAddToCollection.Checked := Settings.ReadBool('ImportPictures', 'AddToCollection', True);
@@ -128,6 +127,7 @@ begin
   CbFormatCombo.Items.Text := Settings.ReadString('ImportPictures', 'PatternList', DefaultImportPatternList);
   if CbFormatCombo.Items.Count > 0 then
     CbFormatCombo.ItemIndex := 0;
+  CbFormatCombo.Value := Settings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
 end;
 
 end.

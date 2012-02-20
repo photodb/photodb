@@ -8,6 +8,7 @@ uses
   Classes,
   SysUtils,
   uMemory,
+  uSysUtils,
   StrUtils;
 
 type
@@ -36,12 +37,14 @@ type
   private
     FList: TList<TStringReplaceItem>;
     FPattern: string;
+    FCaseSencetive: Boolean;
     function GetResult: string;
   public
     constructor Create(Pattern: string);
     destructor Destroy; override;
     procedure AddPattern(SubPattern, Value: string);
     property Result: string read GetResult;
+    property CaseSencetive: Boolean read FCaseSencetive write FCaseSencetive;
   end;
 
 procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
@@ -52,8 +55,16 @@ function PosExW(const SubStr, S: string; Offset, MaxPos: Integer): Integer; over
 function Right(Str: string; P: Integer): string;
 function Mid(Str: string; S, E: Integer): string;
 function Left(Str: string; P: Integer): string;
+function UpperCaseFirstLetter(S: string): string;
 
 implementation
+
+function UpperCaseFirstLetter(S: string): string;
+begin
+  Result := S;
+  if Length(S) > 0 then
+    S[1] := UpCase(S[1]);
+end;
 
 function Left(Str: string; P: Integer): string;
 begin
@@ -439,6 +450,7 @@ end;
 constructor TStringReplacer.Create(Pattern: string);
 begin
   FPattern := Pattern;
+  FCaseSencetive := False;
   FList := TList<TStringReplaceItem>.Create;
 end;
 
@@ -461,11 +473,12 @@ var
 begin
   Founds := TList<TStringReplaceItemFoundResult>.Create;
   try
-    FUpperPattern := AnsiUpperCase(FPattern);
+
+    FUpperPattern := IIF(FCaseSencetive, FPattern, AnsiUpperCase(FPattern));
     //loop throw all patterns
     for RI in FList do
     begin
-      FUpperSubPattern := AnsiUpperCase(RI.SubPattern);
+      FUpperSubPattern := IIF(FCaseSencetive, RI.SubPattern, AnsiUpperCase(RI.SubPattern));
 
       P := 1;
       while P > 0 do

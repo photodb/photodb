@@ -504,7 +504,7 @@ begin
   TSelectDateItem(SDI).FItemsCount := 1;
   TSelectDateItem(SDI).FItemsSize := Size;
   TSelectDateItem(SDI).Items.Add(Item.Copy);
-  SDI.ItemLabel := '';
+  SDI.ItemLabel := Settings.ReadString('ImportPicturesSeries', FormatDateTime('yyyy.mm.dd', Date), '');
 
   Index := -1;
 
@@ -935,6 +935,8 @@ begin
       LnkLabel.Text := TA('Enter label', 'ImportPictures')
     else
       LnkLabel.Text := Edit.Text;
+
+    Settings.WriteString('ImportPicturesSeries', FormatDateTime('yyyy.mm.dd', Item.Date), Item.ItemLabel);
 
     LnkOk.Hide;
     Edit.Hide;

@@ -43,19 +43,23 @@ var
 begin
   SR := TStringReplacer.Create(Patern);
   try
+    SR.CaseSencetive := True;
     SR.AddPattern('''LABEL''', IIF(ItemsLabel = '', '', '''' + ItemsLabel + ''''));
     SR.AddPattern('[LABEL]', IIF(ItemsLabel = '', '', '[' + ItemsLabel + ']'));
     SR.AddPattern('(LABEL)', IIF(ItemsLabel = '', '', '(' + ItemsLabel + ')'));
     SR.AddPattern('LABEL', ItemsLabel);
     SR.AddPattern('YYYY', FormatDateTime('yyyy', Date));
     SR.AddPattern('YY', FormatDateTime('yy', Date));
-    SR.AddPattern('MMMM', MonthToString(Date, 'Date'));
-    SR.AddPattern('MMM', MonthToString(Date, 'Month'));
+    SR.AddPattern('mmmm', MonthToString(Date, 'Date'));
+    SR.AddPattern('MMMM', UpperCaseFirstLetter(MonthToString(Date, 'Date')));
+    SR.AddPattern('mmm', MonthToString(Date, 'Month'));
+    SR.AddPattern('MMM', UpperCaseFirstLetter(MonthToString(Date, 'Month')));
     SR.AddPattern('MM', FormatDateTime('mm', Date));
     SR.AddPattern('M', FormatDateTime('M', Date));
-    SR.AddPattern('DDD', WeekDayToString(Date));
+    SR.AddPattern('DDD', UpperCaseFirstLetter(WeekDayToString(Date)));
+    SR.AddPattern('ddd', WeekDayToString(Date));
     SR.AddPattern('DD', FormatDateTime('dd', Date));
-    SR.AddPattern('d', FormatDateTime('d', Date));
+    SR.AddPattern('D', FormatDateTime('d', Date));
 
     Result := SR.Result;
   finally

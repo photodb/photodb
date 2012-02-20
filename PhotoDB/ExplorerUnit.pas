@@ -2390,7 +2390,7 @@ end;
 procedure TExplorerForm.ListView1MouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  I, J, K : Integer;
+  I, J, K: Integer;
   Handled: Boolean;
   Item: TEasyItem;
 begin

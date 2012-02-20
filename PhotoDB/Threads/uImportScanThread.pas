@@ -61,7 +61,7 @@ var
   Childs: TPathItemCollection;
 begin
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
 
     LevelItems := TList<TPathItem>.Create;

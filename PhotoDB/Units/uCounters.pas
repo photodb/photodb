@@ -7,6 +7,7 @@ uses
   Generics.Collections,
   DateUtils,
   SysUtils,
+  Math,
   uMemory;
 
 type
@@ -53,7 +54,7 @@ var
   CurrentSavedTime: Cardinal;
   I: Integer;
 begin
-  CurrentTime :=GetTickCount;
+  CurrentTime := GetTickCount;
   FList.Add(TSpeedSctimatePeriod.Create(CurrentTime - FStartTime, BytesDone));
   FStartTime := CurrentTime;
 
@@ -62,7 +63,7 @@ begin
   for I := FList.Count - 1 downto 0 do
   begin
     CurrentSavedTime := CurrentSavedTime + FList[I].TimeInterval;
-    if (I > 0) and (CurrentSavedTime > FEstimateInterval) then
+    if (FList.Count > 0) and (CurrentSavedTime > FEstimateInterval) then
     begin
       FList[I].Free;
       FList.Delete(I);
@@ -99,12 +100,12 @@ begin
   if Time = 0 then
     Exit(0);
 
-  Result := Round(Result / (Time / 1000));
+  Result := Round(Min(MaxInt, Result / (Time / 1000)));
 end;
 
 function TSpeedEstimateCounter.GetTimeRemaining(BytesRemaining: Int64): TTime;
 var
-  H, M, S, Ss, D: Word;
+  H, M, S, SS, D: Integer;
   TimeRem: Extended;
 
   Speed: Int64;
@@ -119,7 +120,7 @@ begin
   if TimeRem < 0 then
     Exit(0);
 
-  SS := Round(TimeRem); // seconds
+  SS := Round(Min(MaxInt, TimeRem)); // seconds
 
   D := SS div SecsPerDay;
   SS := SS - D * SecsPerDay;

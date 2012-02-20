@@ -59,10 +59,10 @@ const
   BuyPageURL = SiteLocation + '/{LNG}/buy';
   FreeActivationURL = SiteLocation + '/FreeActivationHandler';
 
-  DefaultImportPattern = 'YYYY\MMM\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)';
+  DefaultImportPattern = 'YYYY\MMM\YY.MM.DD = DDD, D mmmm, YYYY (LABEL)';
   DefaultImportPatternList =
     DefaultImportPattern + #13 +
-    'YYYY\YY.MM.DD = DDD, D MMMM, YYYY (LABEL)' + #13 +
+    'YYYY\YY.MM.DD = DDD, D mmmm, YYYY (LABEL)' + #13 +
     'YYYY\YY.MM.DD (LABEL)' + #13 +
     'YYYY.MM.DD (LABEL)';
 

@@ -95,6 +95,7 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
     Height = 13
     Cursor = crHandPoint
     Text = '(filter: *.*)'
+    Visible = False
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0

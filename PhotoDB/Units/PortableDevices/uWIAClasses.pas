@@ -95,11 +95,11 @@ type
   private
     FErrorCode: HRESULT;
     FManager: IWiaDevMgr;
-    FEventCallBack: TWIAEventCallBack;
-    FObjEventDeviceConnected: IUnknown;
-    FObjEventDeviceDisconnected: IUnknown;
-    FObjEventCallBackCreated: IUnknown;
-    FObjEventCallBackDeleted: IUnknown;
+    FEventCallBack: IWiaEventCallback;
+    FObjEventDeviceConnected: IInterface;
+    FObjEventDeviceDisconnected: IInterface;
+    FObjEventCallBackCreated: IInterface;
+    FObjEventCallBackDeleted: IInterface;
     procedure ErrorCheck(Code: HRESULT);
     procedure FillDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
     procedure FindDeviceByNameCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
@@ -113,6 +113,23 @@ type
     function GetDeviceByName(DeviceName: string): IPDevice;
     function GetDeviceByID(DeviceID: string): IPDevice;
     property Manager: IWiaDevMgr read FManager;
+  end;
+
+  TEventTargetInfo = class
+  public
+    EventTypes: TPortableEventTypes;
+    CallBack: TPortableEventCallBack;
+  end;
+
+  TWIAEventManager = class(TInterfacedObject, IPEventManager)
+  private
+    FEventTargets: TList<TEventTargetInfo>;
+    procedure InvokeItem(EventType: TPortableEventType; DeviceID, ItemKey, ItemPath: string);
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure RegisterNotification(EventTypes: TPortableEventTypes; CallBack: TPortableEventCallBack);
+    procedure UnregisterNotification(CallBack: TPortableEventCallBack);
   end;
 
   TWiaDataCallback = class(TInterfacedObject, IWiaDataCallback)
@@ -183,6 +200,7 @@ type
   end;
 
 procedure CleanUpWIA(Handle: THandle);
+function WiaEventManager: TWIAEventManager;
 
 implementation
 
@@ -190,7 +208,11 @@ var
   //only one request to WIA at moment - limitation of WIA
   //http://msdn.microsoft.com/en-us/library/windows/desktop/ms630350%28v=vs.85%29.aspx
   FLock: TCriticalSection = nil;
-  FWiaManager: TWiaManager;
+  FWiaManager: TWiaManager = nil;
+  FWiaEventManager: TWIAEventManager = nil;
+  FManager: IWiaDevMgr;
+    FEventCallBack: IWiaEventCallback;
+    FObjEventDeviceConnected: IInterface;
 
 function WiaManager: TWiaManager;
 begin
@@ -198,6 +220,14 @@ begin
     FWiaManager := TWiaManager.Create;
 
   Result := FWiaManager;
+end;
+
+function WiaEventManager: TWIAEventManager;
+begin
+  if FWiaEventManager = nil then
+    FWiaEventManager := TWIAEventManager.Create;
+
+  Result := FWiaEventManager;
 end;
 
 procedure CleanUpWIA(Handle: THandle);
@@ -219,9 +249,9 @@ begin
   if FManager <> nil then
   begin
     FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_CONNECTED, FEventCallBack, FObjEventDeviceConnected);
-    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_DISCONNECTED, FEventCallBack, FObjEventDeviceDisconnected);
-    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
-    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
+    //FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_DISCONNECTED, FEventCallBack, FObjEventDeviceDisconnected);
+    //FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
+    //FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
   end;
 end;
 
@@ -1105,7 +1135,45 @@ function TWIAEventCallBack.ImageEventCallback(pEventGUID: PGUID;
   ulReserved: ULONG): HRESULT;
 begin
   if pEventGUID^ = WIA_EVENT_DEVICE_DISCONNECTED then
+  begin
     PortableItemNameCache.ClearDeviceCache(bstrDeviceID);
+    TThread.Synchronize(nil,
+    procedure
+    begin
+      WiaEventManager.InvokeItem(peDeviceDisconnected, bstrDeviceID, '', '');
+    end
+    );
+  end;
+  if pEventGUID^ = WIA_EVENT_DEVICE_CONNECTED then
+  begin
+    PortableItemNameCache.ClearDeviceCache(bstrDeviceID);
+    TThread.Synchronize(nil,
+    procedure
+    begin
+      WiaEventManager.InvokeItem(peDeviceConnected, bstrDeviceID, '', '');
+    end
+    );
+  end;
+  if pEventGUID^ = WIA_EVENT_ITEM_CREATED then
+  begin
+    PortableItemNameCache.ClearDeviceCache(bstrDeviceID);
+    TThread.Synchronize(nil,
+    procedure
+    begin
+      WiaEventManager.InvokeItem(peItemAdded, bstrDeviceID, bstrFullItemName, '');
+    end
+    );
+  end;
+  if pEventGUID^ = WIA_EVENT_ITEM_DELETED then
+  begin
+    PortableItemNameCache.ClearDeviceCache(bstrDeviceID);
+    TThread.Synchronize(nil,
+    procedure
+    begin
+      WiaEventManager.InvokeItem(peItemRemoved, bstrDeviceID, bstrFullItemName, '');
+    end
+    );
+  end;
 
   Result := S_OK;
 end;
@@ -1190,11 +1258,63 @@ begin
   FThreadID := ThreadID;
 end;
 
+{ TWIAEventManager }
+
+constructor TWIAEventManager.Create;
+begin
+  FEventTargets := TList<TEventTargetInfo>.Create;
+end;
+
+destructor TWIAEventManager.Destroy;
+begin
+  FreeList(FEventTargets);
+  inherited;
+end;
+
+procedure TWIAEventManager.InvokeItem(EventType: TPortableEventType; DeviceID,
+  ItemKey, ItemPath: string);
+var
+  Info: TEventTargetInfo;
+begin
+  for Info in FEventTargets do
+    if EventType in Info.EventTypes then
+      Info.CallBack(EventType, DeviceID, ItemKey, ItemPath);
+end;
+
+procedure TWIAEventManager.RegisterNotification(EventTypes: TPortableEventTypes;
+  CallBack: TPortableEventCallBack);
+var
+  Info: TEventTargetInfo;
+begin
+  Info := TEventTargetInfo.Create;
+  Info.EventTypes := EventTypes;
+  Info.CallBack := CallBack;
+  FEventTargets.Add(Info);
+end;
+
+procedure TWIAEventManager.UnregisterNotification(
+  CallBack: TPortableEventCallBack);
+var
+  I: Integer;
+  Info: TEventTargetInfo;
+begin
+  for I := FEventTargets.Count - 1 downto 0 do
+  begin
+    Info := FEventTargets[I];
+    if Addr(Info.CallBack) = Addr(CallBack) then
+    begin
+      FEventTargets.Remove(Info);
+      Info.Free;
+    end;
+  end;
+end;
+
 initialization
   FLock := TCriticalSection.Create;
 
 finalization
   F(FLock);
   F(FWiaManager);
+  F(FWiaEventManager);
 
 end.

@@ -96,7 +96,7 @@ type
     procedure ShowIndeterminateProgress;
     procedure DoStopSearch;
     procedure SetProgressVisible;
-    procedure PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean);
+    procedure PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var ABreak: Boolean);
     function LoadProviderItem(Item: TPathItem; PacketSize, ImageSize: Integer): Boolean;
     procedure LoadMyComputerFolder;
     procedure LoadNetWorkFolder;
@@ -332,7 +332,7 @@ begin
   inherited;
   FreeOnTerminate := True;
 
-  if (FThreadType = THREAD_TYPE_CAMERA) or (FThreadType = THREAD_TYPE_CAMERAITEM) then
+  if (FThreadType = THREAD_TYPE_CAMERA) or (FThreadType = THREAD_TYPE_CAMERAITEM) or (FThreadType = THREAD_TYPE_MY_COMPUTER) then
     COMMode := COINIT_MULTITHREADED
   else
     COMMode := COINIT_APARTMENTTHREADED;
@@ -1982,7 +1982,7 @@ begin
   SynchronizeEx(SetProgressVisible);
 end;
 
-procedure TExplorerThread.PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean);
+procedure TExplorerThread.PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var ABreak: Boolean);
 var
   I: Integer;
   CI: TPathItem;
@@ -1998,6 +1998,8 @@ begin
     try
       for I := 0 to CurrentItems.Count - 1 do
       begin
+        if Terminated then
+          Break;
         CI := CurrentItems[I];
         TW.I.Start('Packet - CreateFromPathItem');
         Info := TExplorerFileInfo.CreateFromPathItem(CI);
@@ -2027,7 +2029,7 @@ begin
           raise Exception.Create('Image is null!');
       end;
       TW.I.Start('Packet - send');
-      Break := not SynchronizeEx(SendPacketToExplorer);
+      ABreak := not SynchronizeEx(SendPacketToExplorer);
       TW.I.Start('Packet - after send');
     finally
       F(FPacketImages);
@@ -2039,6 +2041,9 @@ begin
   end;
   CurrentItems.FreeItems;
   TW.I.Start('Packet - end');
+
+  if Terminated then
+    ABreak := True;
 end;
 
 function TExplorerThread.LoadProviderItem(Item: TPathItem; PacketSize, ImageSize: Integer): Boolean;

@@ -18,6 +18,7 @@ uses
   uGraphicUtils,
   System.SyncObjs,
   uBitmapUtils,
+  Math,
   GIFImage;
 
 const
@@ -102,6 +103,8 @@ type
     function Delete(ItemKey: string): Boolean;
     property Manager: TWPDDeviceManager read FManager;
     property Content: IPortableDeviceContent read GetContent;
+    property Device: IPortableDevice read FDevice;
+    property DeviceID: string read GetDeviceID;
   end;
 
   TWPDDeviceManager = class(TInterfacedObject, IPManager)
@@ -122,6 +125,40 @@ type
     property Manager: IPortableDeviceManager read FManager;
   end;
 
+  TEventTargetInfo = class
+  public
+    EventTypes: TPortableEventTypes;
+    CallBack: TPortableEventCallBack;
+  end;
+
+  TEventDeviceInfo = class
+  public
+    DeviceID: string;
+    Device: IPortableDevice;
+    Cookie: string;
+  end;
+
+  TWPDDeviceEventCallback = class(TInterfacedObject, IPortableDeviceEventCallback)
+  public
+    function OnEvent(const pEventParameters: IPortableDeviceValues): HRESULT; stdcall;
+  end;
+
+  TWPDEventManager = class(TInterfacedObject, IPEventManager)
+  private
+    FSync: TCriticalSection;
+    FEventTargets: TList<TEventTargetInfo>;
+    FEventDevices: TList<TEventDeviceInfo>;
+    FDeviceCallBack: IPortableDeviceEventCallback;
+    procedure InvokeItem(EventType: TPortableEventType; DeviceID, ItemKey, ItemPath: string);
+    procedure UnregisterDevice(DeviceID: string);
+    procedure RegisterDevice(Device: TWPDDevice);
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure RegisterNotification(EventTypes: TPortableEventTypes; CallBack: TPortableEventCallBack);
+    procedure UnregisterNotification(CallBack: TPortableEventCallBack);
+  end;
+
   TFindDeviceContext = class(TObject)
   public
     Name: string;
@@ -134,6 +171,15 @@ var
   //only one request to WIA at moment - limitation of WIA, looks like WPD has the same limitation
   //http://msdn.microsoft.com/en-us/library/windows/desktop/ms630350%28v=vs.85%29.aspx
   FLock: TCriticalSection = nil;
+  FEventManager: TWPDEventManager = nil;
+
+function EventManager: TWPDEventManager;
+begin
+  if FEventManager = nil then
+    FEventManager := TWPDEventManager.Create;
+
+  Result := FEventManager;
+end;
 
 { TWPDDeviceManager }
 
@@ -413,6 +459,7 @@ begin
   end else
     ErrorCheck(HR);
 
+  EventManager.RegisterDevice(Self);
 end;
 
 function TWPDDevice.Delete(ItemKey: string): Boolean;
@@ -1219,6 +1266,7 @@ var
   IsBreak: Boolean;
 begin
   IsBreak := False;
+  FErrorCode := S_OK;
   ResourceFormat := WPD_OBJECT_FORMAT_JFIF;
   BufferSize := DefaultBufferSize;
   FLock.Enter;
@@ -1250,6 +1298,7 @@ begin
         ResourceFormat := ResFormat;
     end;
 
+    BufferSize := Max(BufferSize, DefaultBufferSize);
     cbOptimalTransferSize := BufferSize;
     Key.fmtid := ResourceID;
     Key.pid := 0;
@@ -1285,7 +1334,9 @@ begin
             Stream.WriteBuffer(Buff[0], ButesRead);
             if Assigned(CallBack) then
               CallBack(Self, FFullSize, Stream.Size, IsBreak);
-          end;
+          end else if HR <> E_RESOURCE_IN_USE then
+            Break;
+
           if IsBreak then
           begin
             FErrorCode := E_ABORT;
@@ -1311,10 +1362,216 @@ begin
 
 end;
 
+{ TWPDEventManager }
+
+constructor TWPDEventManager.Create;
+begin
+  FSync := TCriticalSection.Create;
+  FEventTargets := TList<TEventTargetInfo>.Create;
+  FEventDevices := TList<TEventDeviceInfo>.Create;
+  FDeviceCallBack := TWPDDeviceEventCallback.Create;
+end;
+
+destructor TWPDEventManager.Destroy;
+var
+  HR: HRESULT;
+  DevEventInfo: TEventDeviceInfo;
+begin
+  FreeList(FEventTargets);
+  for DevEventInfo in FEventDevices do
+  begin
+    HR := DevEventInfo.Device.Unadvise(PChar(DevEventInfo.Cookie));
+    if Failed(HR) then
+      Break;
+  end;
+  FreeList(FEventDevices);
+  F(FSync);
+  inherited;
+end;
+
+procedure TWPDEventManager.InvokeItem(EventType: TPortableEventType; DeviceID, ItemKey, ItemPath: string);
+var
+  Info: TEventTargetInfo;
+begin
+  for Info in FEventTargets do
+    if EventType in Info.EventTypes then
+      Info.CallBack(EventType, DeviceID, ItemKey, ItemPath);
+end;
+
+procedure TWPDEventManager.RegisterNotification(EventTypes: TPortableEventTypes;
+  CallBack: TPortableEventCallBack);
+var
+  Info: TEventTargetInfo;
+begin
+  Info := TEventTargetInfo.Create;
+  Info.EventTypes := EventTypes;
+  Info.CallBack := CallBack;
+  FEventTargets.Add(Info);
+end;
+
+procedure TWPDEventManager.RegisterDevice(Device: TWPDDevice);
+var
+  HR: HRESULT;
+  ppszCookie: PWideChar;
+  EventDeviceInfo: TEventDeviceInfo;
+  FDevice: IPortableDevice;
+  ClientInformation: IPortableDeviceValues;
+begin
+  FSync.Enter;
+  try
+    for EventDeviceInfo in FEventDevices do
+      if AnsiLowerCase(EventDeviceInfo.DeviceID) = AnsiLowerCase(Device.DeviceID) then
+        Exit;
+
+    HR := CoCreateInstance(CLSID_PortableDeviceFTM,
+            nil,
+            CLSCTX_INPROC_SERVER,
+            IID_PortableDeviceFTM,
+            FDevice);
+
+    if SUCCEEDED(HR) then
+    begin
+
+      HR := CoCreateInstance(CLSID_PortableDeviceValues,
+                            nil,
+                            CLSCTX_INPROC_SERVER,
+                            IID_PortableDeviceValues,
+                            ClientInformation);
+
+      if SUCCEEDED(HR) then
+      begin
+        FLock.Enter;
+        try
+          HR := FDevice.Open(PWideChar(Device.DeviceID), ClientInformation);
+        finally
+          FLock.Leave;
+        end;
+
+        if Succeeded(HR) then
+        begin
+          HR := FDevice.Advise(0, FDeviceCallBack, nil, ppszCookie);
+          if Succeeded(HR) then
+          begin
+            EventDeviceInfo := TEventDeviceInfo.Create;
+            EventDeviceInfo.Device := FDevice;
+            EventDeviceInfo.DeviceID := Device.DeviceID;
+            EventDeviceInfo.Cookie := string(ppszCookie);
+            FEventDevices.Add(EventDeviceInfo);
+            CoTaskMemFree(ppszCookie);
+          end;
+        end;
+      end;
+    end;
+
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TWPDEventManager.UnregisterDevice(DeviceID: string);
+var
+  I: Integer;
+  DevEventInfo: TEventDeviceInfo;
+begin
+  FSync.Enter;
+  try
+    for I := FEventDevices.Count - 1 downto 0 do
+    begin
+      DevEventInfo := FEventDevices[I];
+      if AnsiLowerCase(DevEventInfo.DeviceID) = AnsiLowerCase(DeviceID) then
+      begin
+        DevEventInfo.DeviceID := '';
+        DevEventInfo.Cookie := '';
+
+        //todo: cleanup this in register event
+        //FEventDevices.Remove(DevEventInfo);
+        //DevEventInfo.Device.Unadvise(PChar(DevEventInfo.Cookie));
+        //F(DevEventInfo);
+      end;
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TWPDEventManager.UnregisterNotification(CallBack: TPortableEventCallBack);
+var
+  I: Integer;
+  Info: TEventTargetInfo;
+begin
+  for I := FEventTargets.Count - 1 downto 0 do
+  begin
+    Info := FEventTargets[I];
+    if Addr(Info.CallBack) = Addr(CallBack) then
+    begin
+      FEventTargets.Remove(Info);
+      Info.Free;
+    end;
+  end;
+end;
+
+{ TWPDDeviceEventCallback }
+
+function TWPDDeviceEventCallback.OnEvent(
+  const pEventParameters: IPortableDeviceValues): HRESULT;
+var
+  HR: HRESULT;
+  Key: _tagpropertykey;
+  DeviceID: PChar;
+  EventGUID: TGUID;
+begin
+  Result := S_OK;
+
+  if pEventParameters <> nil then
+  begin
+    Key.fmtid := WPD_EVENT_PROPERTIES_V1;
+    Key.pid := WPD_EVENT_PARAMETER_PNP_DEVICE_ID;
+    HR := pEventParameters.GetStringValue(Key, DeviceID);
+    if Succeeded(HR) then
+    begin
+      Key.fmtid := WPD_EVENT_PROPERTIES_V1;
+      Key.pid := WPD_EVENT_PARAMETER_EVENT_ID;
+      HR := pEventParameters.GetGuidValue(Key, EventGUID);
+      if Succeeded(HR) then
+      begin
+        if EventGUID = WPD_EVENT_OBJECT_ADDED then
+        begin
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              EventManager.InvokeItem(peItemAdded, DeviceID, '', '');
+            end
+          );
+        end;
+        if EventGUID = WPD_EVENT_OBJECT_REMOVED then
+        begin
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              EventManager.InvokeItem(peItemRemoved, DeviceID, '', '');
+            end
+          );
+        end;
+        if EventGUID = WPD_EVENT_DEVICE_REMOVED then
+        begin
+          EventManager.UnregisterDevice(DeviceID);
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              EventManager.InvokeItem(peDeviceDisconnected, DeviceID, '', '');
+            end
+          );
+        end;
+      end;
+    end;
+end;
+end;
+
 initialization
   FLock := TCriticalSection.Create;
 
 finalization
   F(FLock);
+  F(FEventManager);
 
 end.

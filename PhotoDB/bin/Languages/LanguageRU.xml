@@ -2090,6 +2090,8 @@
 	<translate name="Edit directory fotmats" value="Настройки форматов директорий"/>	
 	<translate name="Please enter any directory format" value="Пожалуйста, введите список форматов директорий"/>
 	<translate name="Photos in selected location were not found! Please select another location to see series of photos." value="Фотографии по выбранному пути не найдены! Пожалуйста, выберите другое размещение чтобы видеть серии фотографий."/>
+	<translate name="Please use the following format for pattern list:$nl$  Each line is a separated pattern$nl$  YYYY - year as &quot;2010&quot;$nl$  YY - year as &quot;10&quot;$nl$  mmmm - month as &quot;january&quot;$nl$  MMMM - month as &quot;January&quot;$nl$  mmm - month as &quot;january&quot;$nl$  MMM - month as &quot;January&quot;$nl$  MM - month as &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - day as &quot;monday&quot;$nl$  DDD - day as &quot;Monday&quot;$nl$  DD - day as &quot;07&quot;$nl$  D - day as &quot;7&quot;" value="Пожалуйста, используйте следующий формат для списка шаблонов:$nl$  Каждая линия это отдельный шаблон$nl$  YYYY - год как &quot;2010&quot;$nl$  YY - год как &quot;10&quot;$nl$  mmmm - месяц как &quot;january&quot;$nl$  MMMM - месяц как &quot;January&quot;$nl$  mmm - месяц как &quot;january&quot;$nl$  MMM - месяц как &quot;January&quot;$nl$  MM - месяц как &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - месяц как &quot;monday&quot;$nl$  DDD - день как &quot;Monday&quot;$nl$  DD - день как &quot;07&quot;$nl$  D - день как &quot;7&quot;"/>
+	<translate name="Source file {0} not found!" value="Исходный файл {0} не найден!"/>	
   </scope>
   <scope name="Global">
 	<translate name="day" value="день"/>

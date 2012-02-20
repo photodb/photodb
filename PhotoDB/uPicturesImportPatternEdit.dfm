@@ -166,18 +166,19 @@ object PicturesImportPatternEdit: TPicturesImportPatternEdit
   object LbInfo: TLabel
     Left = 8
     Top = 8
-    Width = 364
-    Height = 129
+    Width = 365
+    Height = 100
     Anchors = [akLeft, akTop, akRight]
-    AutoSize = False
+    Constraints.MaxWidth = 365
+    Constraints.MinHeight = 100
+    Constraints.MinWidth = 365
     WordWrap = True
-    ExplicitWidth = 293
   end
   object WmPatterns: TWatermarkedMemo
     Left = 8
-    Top = 148
+    Top = 114
     Width = 402
-    Height = 142
+    Height = 176
     Anchors = [akLeft, akTop, akRight, akBottom]
     ScrollBars = ssBoth
     TabOrder = 0

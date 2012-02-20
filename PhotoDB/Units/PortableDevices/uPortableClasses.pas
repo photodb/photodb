@@ -24,7 +24,7 @@ type
 
   TFillItemsCallBack = procedure(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer) of object;
   TFillDevicesCallBack = procedure(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer) of object;
-  TPortableEventCallBack = procedure(EventType: TPortableItemType; DeviceID: string; ItemKey: string);
+  TPortableEventCallBack = procedure(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
 
   IPBaseInterface = interface
     function GetErrorCode: HRESULT;
@@ -84,8 +84,8 @@ type
   end;
 
   IPEventManager = interface
-    procedure RegisterNotification(EventTypes: TPortableEventType; CallBack: TPortableEventCallBack);
-    procedure UnregisterNotification(EventTypes: TPortableEventType; CallBack: TPortableEventCallBack);
+    procedure RegisterNotification(EventTypes: TPortableEventTypes; CallBack: TPortableEventCallBack);
+    procedure UnregisterNotification(CallBack: TPortableEventCallBack);
   end;
 
   TPortableItemName = class(TObject)

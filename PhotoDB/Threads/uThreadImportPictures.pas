@@ -27,6 +27,7 @@ uses
   uAssociations,
   uImportPicturesUtils,
   ActiveX,
+  ComObj,
   uDBThread;
 
 type
@@ -225,6 +226,7 @@ var
   DestDirectory: string;
   FS: TFileStream;
   SE: TPortableItem;
+  E: HRESULT;
 begin
   FLastCopyPosition := 0;
 
@@ -234,6 +236,9 @@ begin
   else
     Exit;
 
+  if SE.Item = nil then
+    raise Exception.Create(FormatEx(TA('Source file {0} not found!', 'ImportPictures'), [S.Path]));
+
   D := Task.Destination;
   DestDirectory := ExtractFileDir(D.Path);
   if not DirectoryExists(DestDirectory) then
@@ -242,7 +247,15 @@ begin
   FLastCopyPosition := 0;
   FS := TFileStream.Create(D.Path, fmCreate);
   try
-    SE.Item.SaveToStreamEx(FS, PDItemCopyCallBack);
+
+    if not SE.Item.SaveToStreamEx(FS, PDItemCopyCallBack) then
+    begin
+      E := SE.Item.ErrorCode;
+      if Failed(E) then
+        SE.ResetItem;
+
+      OleCheck(E);
+    end;
   finally
     F(FS);
   end;
@@ -396,7 +409,7 @@ var
     Date: TDateTime;
   begin
     Date := GetImageDate(Item);
-    Path := FOptions.Destination.Path + '\' + FormatPath(FOptions.NamePattern, Date, '');
+    Path := FOptions.Destination.Path + '\' + TPath.TrimPathDirectories(FormatPath(FOptions.NamePattern, Date, ''));
 
     DestPath := TPath.Combine(Path, ExtractFileName(Item.Path));
     D := TFileItem.CreateFromPath(DestPath, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
@@ -410,7 +423,7 @@ var
 
 begin
   FreeOnTerminate := True;
-  CoInitialize(nil);
+  CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
 
     FTotalItems := 0;
