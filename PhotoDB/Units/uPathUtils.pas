@@ -11,11 +11,25 @@ type
   TPath = class
     class function Combine(FirstPath: string; PathToCombine: string): string;
     class function TrimPathDirectories(Path: string): string;
+    class function CleanUp(Path: string): string;
   end;
 
 implementation
 
 { TPath }
+
+class function TPath.CleanUp(Path: string): string;
+begin
+  Result := StringReplace(Path, '\', '', [rfReplaceAll]);
+  Result := StringReplace(Path, '/', '', [rfReplaceAll]);
+  Result := StringReplace(Path, ':', '', [rfReplaceAll]);
+  Result := StringReplace(Path, '*', '', [rfReplaceAll]);
+  Result := StringReplace(Path, '?', '', [rfReplaceAll]);
+  Result := StringReplace(Path, '"', '', [rfReplaceAll]);
+  Result := StringReplace(Path, '<', '', [rfReplaceAll]);
+  Result := StringReplace(Path, '>', '', [rfReplaceAll]);
+  Result := StringReplace(Path, '|', '', [rfReplaceAll]);
+end;
 
 class function TPath.Combine(FirstPath, PathToCombine: string): string;
 begin
@@ -41,7 +55,7 @@ class function TPath.TrimPathDirectories(Path: string): string;
       SL.StrictDelimiter := True;
       SL.DelimitedText := Result;
       for I := 0 to SL.Count - 1 do
-        SL[I] := Trim(SL[I]);
+        SL[I] := TPath.CleanUp(Trim(SL[I]));
 
       Result := SL.DelimitedText;
     finally

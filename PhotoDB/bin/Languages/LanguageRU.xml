@@ -820,7 +820,9 @@
     <translate name="Delete (Ctrl+D)" value="Удалить (Ctrl+D)" />
     <translate name="Print (Ctrl+P)" value="Печать (Ctrl+P)" />
     <translate name="Rating (Ctrl+rating)" value="Оценка (Ctrl+оценка)" />
-    <translate name="Image editor (Ctrl+E)" value="Редактор (Ctrl+E)" />
+    <translate name="Explorer (Ctrl+E)" value="Проводник (Ctrl+E)" />
+    <translate name="Resize (Ctrl+W)" value="Изменить размер (Ctrl+W)" />	
+    <translate name="Image editor (Shift+E)" value="Редактор (Shift+E)" />
     <translate name="Properties (Ctrl+Z)" value="Свойства (Ctrl+Z)" />
     <translate name="Encrypt/Decrypt (Ctrl+X)" value="Зашифровать/Расшифровать (Ctrl+X)" />	
     <translate name="Error initializing graphics mode: %s" value="Ошибка инициализации графического режима: %s" />

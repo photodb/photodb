@@ -9,6 +9,7 @@ object Viewer: TViewer
   Color = clBtnFace
   Constraints.MinHeight = 100
   Constraints.MinWidth = 100
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -37,9 +38,7 @@ object Viewer: TViewer
     Top = 433
     Width = 622
     Height = 17
-    DoubleBuffered = True
     PageSize = 0
-    ParentDoubleBuffered = False
     TabOrder = 0
     Visible = False
     OnScroll = SbHorisontalScroll
@@ -49,10 +48,8 @@ object Viewer: TViewer
     Top = 0
     Width = 17
     Height = 441
-    DoubleBuffered = True
     Kind = sbVertical
     PageSize = 0
-    ParentDoubleBuffered = False
     TabOrder = 1
     Visible = False
     OnScroll = SbHorisontalScroll
@@ -67,226 +64,15 @@ object Viewer: TViewer
     Visible = False
   end
   object BottomImage: TPanel
-    Left = -4
-    Top = 456
-    Width = 641
+    Left = 0
+    Top = 459
+    Width = 645
     Height = 25
+    Align = alBottom
     BevelOuter = bvNone
     TabOrder = 3
     Visible = False
-    object ToolsBar: TPanel
-      Left = 95
-      Top = 0
-      Width = 489
-      Height = 25
-      BevelOuter = bvNone
-      ParentColor = True
-      TabOrder = 0
-      object TbrActions: TToolBar
-        Left = 0
-        Top = 0
-        Width = 481
-        Height = 25
-        Align = alNone
-        ButtonHeight = 23
-        Color = clBtnFace
-        DisabledImages = ImageList3
-        HotImages = ImageList2
-        Images = ImageList1
-        ParentColor = False
-        TabOrder = 0
-        Transparent = True
-        object TbBack: TToolButton
-          Left = 0
-          Top = 0
-          Caption = 'Back'
-          ImageIndex = 1
-          OnClick = PreviousImageClick
-        end
-        object TbForward: TToolButton
-          Left = 23
-          Top = 0
-          Caption = 'Forward'
-          ImageIndex = 0
-          OnClick = NextImageClick
-        end
-        object TbSeparator1: TToolButton
-          Left = 46
-          Top = 0
-          Width = 8
-          ImageIndex = 2
-          Style = tbsSeparator
-        end
-        object TbFitToWindow: TToolButton
-          Left = 54
-          Top = 0
-          Caption = 'FitToWindow'
-          Grouped = True
-          ImageIndex = 2
-          Style = tbsCheck
-          OnClick = FitToWindowClick
-        end
-        object TbRealSize: TToolButton
-          Left = 77
-          Top = 0
-          Caption = 'RealSize'
-          Grouped = True
-          ImageIndex = 3
-          Style = tbsCheck
-          OnClick = RealSizeClick
-        end
-        object TbSlideShow: TToolButton
-          Left = 100
-          Top = 0
-          Caption = 'SlideShow'
-          ImageIndex = 4
-          OnClick = TbSlideShowClick
-        end
-        object TbFullScreen: TToolButton
-          Left = 123
-          Top = 0
-          Caption = 'FullScreen'
-          ImageIndex = 7
-          OnClick = FullScreen1Click
-        end
-        object TbSeparator2: TToolButton
-          Left = 146
-          Top = 0
-          Width = 8
-          ImageIndex = 5
-          Style = tbsSeparator
-        end
-        object TbZoomOut: TToolButton
-          Left = 154
-          Top = 0
-          Caption = 'ZoomOut'
-          Grouped = True
-          ImageIndex = 5
-          Style = tbsCheck
-          OnClick = TbZoomOutClick
-        end
-        object TbZoomIn: TToolButton
-          Left = 177
-          Top = 0
-          Caption = 'ZoomIn'
-          Grouped = True
-          ImageIndex = 6
-          Style = tbsCheck
-          OnClick = TbZoomInClick
-        end
-        object TbSeparator3: TToolButton
-          Left = 200
-          Top = 0
-          Width = 8
-          ImageIndex = 7
-          Style = tbsSeparator
-        end
-        object TbPageNumber: TToolButton
-          Left = 208
-          Top = 0
-          Caption = 'PageNumber'
-          DropdownMenu = PopupMenuPageSelecter
-          EnableDropdown = True
-          ImageIndex = 22
-          Style = tbsDropDown
-          Visible = False
-          OnClick = TbPageNumberClick
-        end
-        object TbSeparatorPageNumber: TToolButton
-          Left = 246
-          Top = 0
-          Width = 8
-          ImageIndex = 11
-          Style = tbsSeparator
-          Visible = False
-        end
-        object TbRotateCCW: TToolButton
-          Left = 254
-          Top = 0
-          Caption = 'RotateCCW'
-          ImageIndex = 8
-          OnClick = RotateCCW1Click
-        end
-        object TbRotateCW: TToolButton
-          Left = 277
-          Top = 0
-          Caption = 'RotateCW'
-          ImageIndex = 9
-          OnClick = RotateCW1Click
-        end
-        object TbSeparator4: TToolButton
-          Left = 300
-          Top = 0
-          Width = 8
-          ImageIndex = 11
-          Style = tbsSeparator
-        end
-        object TbDelete: TToolButton
-          Left = 308
-          Top = 0
-          ImageIndex = 13
-          OnClick = TbDeleteClick
-        end
-        object TbSeparator5: TToolButton
-          Left = 331
-          Top = 0
-          Width = 8
-          ImageIndex = 11
-          Style = tbsSeparator
-        end
-        object TbPrint: TToolButton
-          Left = 339
-          Top = 0
-          Caption = 'Print'
-          ImageIndex = 12
-          OnClick = Print1Click
-        end
-        object TbEncrypt: TToolButton
-          Left = 362
-          Top = 0
-          Caption = 'Encrypt'
-          ImageIndex = 23
-          PopupMenu = PmSteganography
-          OnClick = TbEncryptClick
-          OnMouseDown = TbEncryptMouseDown
-        end
-        object TbSeparator6: TToolButton
-          Left = 385
-          Top = 0
-          Width = 8
-          ImageIndex = 11
-          Style = tbsSeparator
-        end
-        object TbRating: TToolButton
-          Left = 393
-          Top = 0
-          Caption = 'Rating'
-          ImageIndex = 14
-          OnClick = TbRatingClick
-        end
-        object TbSeparator7: TToolButton
-          Left = 416
-          Top = 0
-          Width = 8
-          ImageIndex = 12
-          Style = tbsSeparator
-        end
-        object TbEditImage: TToolButton
-          Left = 424
-          Top = 0
-          Caption = 'Edit Image'
-          ImageIndex = 11
-          OnClick = ImageEditor1Click
-        end
-        object TbInfo: TToolButton
-          Left = 447
-          Top = 0
-          Caption = 'Info'
-          ImageIndex = 10
-          OnClick = Properties1Click
-        end
-      end
-    end
+    ExplicitTop = 457
     object LsDetectingFaces: TLoadingSign
       Left = 4
       Top = 2
@@ -324,6 +110,223 @@ object Viewer: TViewer
       HightliteImage = True
       StretchImage = True
       CanClick = True
+    end
+    object TbrActions: TToolBar
+      Left = 81
+      Top = 0
+      Width = 520
+      Height = 25
+      Align = alNone
+      ButtonHeight = 23
+      Color = clBtnFace
+      DisabledImages = ImlToolBarDisabled
+      HotImages = ImlToolBarHot
+      Images = ImlToolBarNormal
+      ParentColor = False
+      TabOrder = 2
+      Transparent = True
+      object TbBack: TToolButton
+        Left = 0
+        Top = 0
+        Caption = 'Back'
+        ImageIndex = 1
+        OnClick = PreviousImageClick
+      end
+      object TbForward: TToolButton
+        Left = 23
+        Top = 0
+        Caption = 'Forward'
+        ImageIndex = 0
+        OnClick = NextImageClick
+      end
+      object TbSeparator1: TToolButton
+        Left = 46
+        Top = 0
+        Width = 8
+        ImageIndex = 2
+        Style = tbsSeparator
+      end
+      object TbFitToWindow: TToolButton
+        Left = 54
+        Top = 0
+        Caption = 'FitToWindow'
+        Grouped = True
+        ImageIndex = 2
+        Style = tbsCheck
+        OnClick = FitToWindowClick
+      end
+      object TbRealSize: TToolButton
+        Left = 77
+        Top = 0
+        Caption = 'RealSize'
+        Grouped = True
+        ImageIndex = 3
+        Style = tbsCheck
+        OnClick = RealSizeClick
+      end
+      object TbSlideShow: TToolButton
+        Left = 100
+        Top = 0
+        Caption = 'SlideShow'
+        ImageIndex = 4
+        OnClick = TbSlideShowClick
+      end
+      object TbFullScreen: TToolButton
+        Left = 123
+        Top = 0
+        Caption = 'FullScreen'
+        ImageIndex = 7
+        OnClick = FullScreen1Click
+      end
+      object TbSeparator2: TToolButton
+        Left = 146
+        Top = 0
+        Width = 8
+        ImageIndex = 5
+        Style = tbsSeparator
+      end
+      object TbZoomOut: TToolButton
+        Left = 154
+        Top = 0
+        Caption = 'ZoomOut'
+        Grouped = True
+        ImageIndex = 5
+        Style = tbsCheck
+        OnClick = TbZoomOutClick
+      end
+      object TbZoomIn: TToolButton
+        Left = 177
+        Top = 0
+        Caption = 'ZoomIn'
+        Grouped = True
+        ImageIndex = 6
+        Style = tbsCheck
+        OnClick = TbZoomInClick
+      end
+      object TbSeparator3: TToolButton
+        Left = 200
+        Top = 0
+        Width = 8
+        ImageIndex = 7
+        Style = tbsSeparator
+      end
+      object TbPageNumber: TToolButton
+        Left = 208
+        Top = 0
+        Caption = 'PageNumber'
+        DropdownMenu = PopupMenuPageSelecter
+        EnableDropdown = True
+        ImageIndex = 22
+        Indeterminate = True
+        Style = tbsDropDown
+        Visible = False
+        OnClick = TbPageNumberClick
+      end
+      object TbSeparatorPageNumber: TToolButton
+        Left = 246
+        Top = 0
+        Width = 8
+        ImageIndex = 11
+        Style = tbsSeparator
+        Visible = False
+      end
+      object TbRotateCCW: TToolButton
+        Left = 254
+        Top = 0
+        Caption = 'RotateCCW'
+        ImageIndex = 8
+        OnClick = RotateCCW1Click
+      end
+      object TbRotateCW: TToolButton
+        Left = 277
+        Top = 0
+        Caption = 'RotateCW'
+        ImageIndex = 9
+        OnClick = RotateCW1Click
+      end
+      object TbSeparator4: TToolButton
+        Left = 300
+        Top = 0
+        Width = 8
+        ImageIndex = 11
+        Style = tbsSeparator
+      end
+      object TbDelete: TToolButton
+        Left = 308
+        Top = 0
+        ImageIndex = 13
+        OnClick = TbDeleteClick
+      end
+      object TbSeparator5: TToolButton
+        Left = 331
+        Top = 0
+        Width = 8
+        ImageIndex = 11
+        Style = tbsSeparator
+      end
+      object TbPrint: TToolButton
+        Left = 339
+        Top = 0
+        Caption = 'Print'
+        ImageIndex = 12
+        OnClick = Print1Click
+      end
+      object TbEncrypt: TToolButton
+        Left = 362
+        Top = 0
+        Caption = 'Encrypt'
+        ImageIndex = 23
+        PopupMenu = PmSteganography
+        OnClick = TbEncryptClick
+        OnMouseDown = TbEncryptMouseDown
+      end
+      object TbSeparator6: TToolButton
+        Left = 385
+        Top = 0
+        Width = 8
+        ImageIndex = 11
+        Style = tbsSeparator
+      end
+      object TbRating: TToolButton
+        Left = 393
+        Top = 0
+        Caption = 'Rating'
+        ImageIndex = 14
+        OnClick = TbRatingClick
+      end
+      object TbSeparator7: TToolButton
+        Left = 416
+        Top = 0
+        Width = 8
+        ImageIndex = 12
+        Style = tbsSeparator
+      end
+      object TbExplore: TToolButton
+        Left = 424
+        Top = 0
+        ImageIndex = 25
+        OnClick = TbExploreClick
+      end
+      object TbConvert: TToolButton
+        Left = 447
+        Top = 0
+        ImageIndex = 26
+        OnClick = Resize1Click
+      end
+      object TbEditImage: TToolButton
+        Left = 470
+        Top = 0
+        Caption = 'Edit Image'
+        ImageIndex = 11
+        OnClick = ImageEditor1Click
+      end
+      object TbInfo: TToolButton
+        Left = 493
+        Top = 0
+        Caption = 'Info'
+        ImageIndex = 10
+        OnClick = Properties1Click
+      end
     end
   end
   object LsLoading: TLoadingSign
@@ -477,7 +480,7 @@ object Viewer: TViewer
   object MouseTimer: TTimer
     Enabled = False
     Interval = 5000
-    Left = 232
+    Left = 248
     Top = 272
   end
   object AeMain: TApplicationEvents
@@ -491,19 +494,19 @@ object Viewer: TViewer
     Key = 'Software\Positions\Noname'
     Left = 152
   end
-  object ImageList1: TImageList
+  object ImlToolBarNormal: TImageList
     BlendColor = 12937777
     BkColor = 12937777
     Left = 152
     Top = 224
   end
-  object ImageList2: TImageList
+  object ImlToolBarHot: TImageList
     BlendColor = 12937777
     BkColor = 12937777
     Left = 152
     Top = 272
   end
-  object ImageList3: TImageList
+  object ImlToolBarDisabled: TImageList
     Left = 152
     Top = 320
   end
@@ -532,14 +535,14 @@ object Viewer: TViewer
     Enabled = False
     Interval = 100
     OnTimer = ImageFrameTimerTimer
-    Left = 232
+    Left = 248
     Top = 320
   end
   object SlideTimer: TTimer
     Enabled = False
     Interval = 4000
     OnTimer = SlideTimerTimer
-    Left = 232
+    Left = 248
     Top = 224
   end
   object RatingPopupMenu: TPopupMenu
@@ -575,7 +578,7 @@ object Viewer: TViewer
     Enabled = False
     Interval = 500
     OnTimer = TimerDBWorkTimer
-    Left = 232
+    Left = 248
     Top = 176
   end
   object PopupMenuPageSelecter: TPopupMenu

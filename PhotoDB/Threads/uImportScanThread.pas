@@ -17,6 +17,7 @@ uses
   uAssociations,
   uImportPicturesUtils,
   ActiveX,
+  uLogger,
   uThreadEx;
 
 type
@@ -61,50 +62,55 @@ var
   Childs: TPathItemCollection;
 begin
   FreeOnTerminate := True;
-  CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
-
-    LevelItems := TList<TPathItem>.Create;
-    FNextLevel := TList<TPathItem>.Create;
+    CoInitializeEx(nil, COINIT_MULTITHREADED);
     try
-      SynchronizeEx(procedure
-      begin
-        TFormImportImages(OwnerForm).ShowLoadingSign;
-      end
-      );
 
-      FNextLevel.Add(FDirectory.Copy);
+      LevelItems := TList<TPathItem>.Create;
+      FNextLevel := TList<TPathItem>.Create;
       try
-        while FNextLevel.Count > 0 do
-        begin
-          FreeList(LevelItems, False);
-          LevelItems.AddRange(FNextLevel);
-          FNextLevel.Clear;
-
-          for I := 0 to LevelItems.Count - 1 do
-          begin
-            Childs := TPathItemCollection.Create;
-            try
-              LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);
-            finally
-              Childs.FreeItems;
-              F(Childs);
-            end;
-          end;
-        end;
-      finally
         SynchronizeEx(procedure
         begin
-          TFormImportImages(OwnerForm).FinishScan;
+          TFormImportImages(OwnerForm).ShowLoadingSign;
         end
         );
+
+        FNextLevel.Add(FDirectory.Copy);
+        try
+          while FNextLevel.Count > 0 do
+          begin
+            FreeList(LevelItems, False);
+            LevelItems.AddRange(FNextLevel);
+            FNextLevel.Clear;
+
+            for I := 0 to LevelItems.Count - 1 do
+            begin
+              Childs := TPathItemCollection.Create;
+              try
+                LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);
+              finally
+                Childs.FreeItems;
+                F(Childs);
+              end;
+            end;
+          end;
+        finally
+          SynchronizeEx(procedure
+          begin
+            TFormImportImages(OwnerForm).FinishScan;
+          end
+          );
+        end;
+      finally
+        FreeList(LevelItems);
+        FreeList(FNextLevel);
       end;
     finally
-      FreeList(LevelItems);
-      FreeList(FNextLevel);
+      CoUninitialize;
     end;
-  finally
-    CoUninitialize;
+  except
+    on e: Exception do
+      EventLog(e);
   end;
 end;
 
@@ -112,9 +118,9 @@ procedure TImportScanThread.LoadCallBack(Sender: TObject; Item: TPathItem;
   CurrentItems: TPathItemCollection; var Break: Boolean);
 var
   I: Integer;
-  FileSize: Integer;
+  FileSize: Int64;
   PI: TPathItem;
-   Date: TDateTime;
+  Date: TDateTime;
   Packet: TList<TScanItem>;
 begin
   Packet := TList<TScanItem>.Create;

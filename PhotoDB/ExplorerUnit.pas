@@ -5611,9 +5611,9 @@ begin
       FileName := IIF(Info.Count > 0, ProcessPath(Info[0].FileName), '');
 
     Password := DBKernel.FindPasswordForCryptImageFile(FileName);
-    if Password = '' then
+    if (Password = '') then
       Password := GetImagePasswordFromUser(FileName);
-    if Password = '' then
+    if (Password = '') then
       Exit;
 
     EncryptFiles(Self, Info, Password, False, False);

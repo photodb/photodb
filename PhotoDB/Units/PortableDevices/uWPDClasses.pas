@@ -170,7 +170,6 @@ implementation
 var
   //only one request to WIA at moment - limitation of WIA, looks like WPD has the same limitation
   //http://msdn.microsoft.com/en-us/library/windows/desktop/ms630350%28v=vs.85%29.aspx
-  FLock: TCriticalSection = nil;
   FEventManager: TWPDEventManager = nil;
 
 function EventManager: TWPDEventManager;
@@ -235,22 +234,17 @@ begin
   Cancel := False;
   DevList := TList<IPDevice>.Create;
   try
-    FLock.Enter;
-    try
+    repeat
       HR := FManager.GetDevices(nil, @DeviceIDCount);
-    finally
-      FLock.Leave;
-    end;
+    until E_RESOURCE_IN_USE <> HR;
+
     if SUCCEEDED(HR) then
     begin
       SetLength(PDISs, DeviceIDCount);
 
-      FLock.Enter;
-      try
+      repeat
         HR := FManager.GetDevices(PLPWSTR(PDISs), @DeviceIDCount);
-      finally
-        FLock.Leave;
-      end;
+      until E_RESOURCE_IN_USE <> HR;
 
       if SUCCEEDED(HR) then
       begin
@@ -293,12 +287,10 @@ begin
 
               if Succeeded(HR) then
               begin
-                FLock.Enter;
-                try
+                repeat
                   HR := FDevice.Open(PWideChar(PDISs[I]), ClientInformation);
-                finally
-                  FLock.Leave;
-                end;
+                until E_RESOURCE_IN_USE <> HR;
+
                 //DEVICE IS READY FOR USING
                 if Succeeded(HR) then
                 begin
@@ -418,23 +410,19 @@ begin
   FManager := AManager;
   FIManager := AManager;
 
-  FLock.Enter;
-  try
-    FDevice.GetPnPDeviceID(pszDevID);
-  finally
-    FLock.Leave;
-  end;
+  repeat
+    HR := FDevice.GetPnPDeviceID(pszDevID);
+  until E_RESOURCE_IN_USE <> HR;
+
   FDeviceID := pszDevID;
   // First, pass NULL as the PWSTR return string parameter to get the total number
   // of characters to allocate for the string value.
 
   cchFriendlyName := 0;
-  FLock.Enter;
-  try
+
+  repeat
     HR := FManager.Manager.GetDeviceFriendlyName(PChar(FDeviceID), nil, @cchFriendlyName);
-  finally
-    FLock.Leave;
-  end;
+  until E_RESOURCE_IN_USE <> HR;
 
   // Second allocate the number of characters needed and retrieve the string value.
   if (SUCCEEDED(HR) and (cchFriendlyName > 0)) then
@@ -442,12 +430,10 @@ begin
     GetMem(pszFriendlyName, cchFriendlyName * SizeOf(WChar));
     if (pszFriendlyName <> nil) then
     begin
-      FLock.Enter;
-      try
+      repeat
         HR := FManager.Manager.GetDeviceFriendlyName(PChar(FDeviceID), pszFriendlyName, @cchFriendlyName);
-      finally
-        FLock.Leave;
-      end;
+      until E_RESOURCE_IN_USE <> HR;
+
       if (Failed(HR)) then
         FName := DEFAULT_PORTABLE_DEVICE_NAME
       else
@@ -587,27 +573,21 @@ begin
   ItemList := TList<IPDItem>.Create;
   try
 
-    FLock.Enter;
-    try
+    repeat
       HR := Content.EnumObjects(0,                        // Flags are unused
                                 PWideChar(ItemKey),       // Starting from the passed in object
                                 nil,                      // Filter is unused
                                 EnumObjectIDs);
-    finally
-      FLock.Leave;
-    end;
+    until E_RESOURCE_IN_USE <> HR;
 
     // Loop calling Next() while S_OK is being returned.
     while SUCCEEDED(HR) do
     begin
-      FLock.Enter;
-      try
+      repeat
         HR := EnumObjectIDs.Next(NUM_OBJECTS_TO_REQUEST,    // Number of objects to request on each NEXT call
                                  @ObjectIDArray,            // Array of PWSTR array which will be populated on each NEXT call
                                  cFetched);                 // Number of objects written to the PWSTR array
-      finally
-        FLock.Leave;
-      end;
+      until E_RESOURCE_IN_USE <> HR;
 
       if cFetched = 0 then
         Break;
@@ -708,26 +688,20 @@ begin
           if Succeeded(HR) then
           begin
 
-            FLock.Enter;
-            try
-              HR := FContent.EnumObjects(0,
-                                         PChar(ItemKey),
-                                         pFilter, //not all devices support this feature
-                                         ppenum);
-            finally
-              FLock.Leave;
-            end;
+            repeat
+            HR := FContent.EnumObjects(0,
+                                       PChar(ItemKey),
+                                       pFilter, //not all devices support this feature
+                                       ppenum);
+            until E_RESOURCE_IN_USE <> HR;
 
             while Succeeded(HR) do
             begin
-              FLock.Enter;
-              try
+              repeat
                 HR := ppenum.Next(1,            // Number of objects to request on each NEXT call
                                   @ObjectID,    // Array of PWSTR array which will be populated on each NEXT call
                                   cFetched);    // Number of objects written to the PWSTR array
-              finally
-                FLock.Leave;
-              end;
+              until E_RESOURCE_IN_USE <> HR;
 
               if cFetched = 0 then
                 Break;
@@ -774,15 +748,13 @@ begin
   FPropertiesReaded := True;
 
   HR := CoCreateInstance(CLSID_PortableDeviceKeyCollection, nil, CLSCTX_INPROC_SERVER, IID_PortableDeviceKeyCollection, PropertiesToRead);
-  FLock.Enter;
-  try
-    if (SUCCEEDED(HR)) then
-      HR := Content.Properties(ppProperties)
-    else
-      ErrorCheck(HR);
-  finally
-    FLock.Leave;
-  end;
+  if (SUCCEEDED(HR)) then
+  begin
+    repeat
+      HR := Content.Properties(ppProperties);
+    until E_RESOURCE_IN_USE <> HR;
+  end else
+    ErrorCheck(HR);
 
   ErrorCheck(HR);
 
@@ -797,14 +769,11 @@ begin
   ErrorCheck(HR);
 
   // 3. Request the properties from the device.
-  FLock.Enter;
-  try
+  repeat
     HR :=  ppProperties.GetValues(PChar(WPD_DEVICE_OBJECT_ID),    // The object whose properties we are reading
                                   PropertiesToRead,               // The properties we want to read
                                   ppValues);                      // Result property values for the specified object
-  finally
-    FLock.Leave;
-  end;
+  until E_RESOURCE_IN_USE <> HR;
 
   if (SUCCEEDED(HR)) then
   begin
@@ -1057,12 +1026,9 @@ begin
   HR := CoCreateInstance(CLSID_PortableDeviceKeyCollection, nil, CLSCTX_INPROC_SERVER, IID_PortableDeviceKeyCollection, PropertiesToRead);
   if (SUCCEEDED(HR)) then
   begin
-    FLock.Enter;
-    try
+    repeat
       HR := FDevice.Content.Properties(ppProperties);
-    finally
-      FLock.Leave;
-    end;
+    until E_RESOURCE_IN_USE <> HR;
 
     if Succeeded(HR) then
     begin
@@ -1083,14 +1049,11 @@ begin
       Key.pid := WPD_OBJECT_ISHIDDEN;
       ErrorCheck(PropertiesToRead.Add(key));
 
-      FLock.Enter;
-      try
+      repeat
         HR :=  ppProperties.GetValues(PChar(FItemKey),    // The object whose properties we are reading
                                       PropertiesToRead,   // The properties we want to read
                                       ppValues);          // Result property values for the specified object
-      finally
-        FLock.Leave;
-      end;
+      until E_RESOURCE_IN_USE <> HR;
 
       if Succeeded(HR) then
       begin
@@ -1153,14 +1116,11 @@ begin
             key.fmtid := WPD_MEDIA_PROPERTIES_V1;
             Key.pid := WPD_MEDIA_HEIGHT;
             PropertiesToRead.Add(key);
-            FLock.Enter;
-            try
+            repeat
               HR :=  ppProperties.GetValues(PChar(FItemKey),    // The object whose properties we are reading
                                             PropertiesToRead,   // The properties we want to read
                                             ppValues);          // Result property values for the specified object
-            finally
-              FLock.Leave;
-            end;
+            until E_RESOURCE_IN_USE <> HR;
 
             if Succeeded(HR) then
             begin
@@ -1195,14 +1155,11 @@ begin
             Key.pid := WPD_STORAGE_FREE_SPACE_IN_BYTES;
             ErrorCheck(PropertiesToRead.Add(key));
 
-            FLock.Enter;
-            try
+            repeat
               HR :=  ppProperties.GetValues(PChar(FItemKey),    // The object whose properties we are reading
                                             PropertiesToRead,   // The properties we want to read
                                             ppValues);          // Result property values for the specified object
-            finally
-              FLock.Leave;
-            end;
+            until E_RESOURCE_IN_USE <> HR;
 
             if Succeeded(HR) then
             begin
@@ -1269,22 +1226,19 @@ begin
   FErrorCode := S_OK;
   ResourceFormat := WPD_OBJECT_FORMAT_JFIF;
   BufferSize := DefaultBufferSize;
-  FLock.Enter;
-  try
+
+  repeat
     HR := FDevice.Content.Transfer(ppResources);
-  finally
-    FLock.Leave;
-  end;
+  until E_RESOURCE_IN_USE <> HR;
+
   if (SUCCEEDED(HR)) then
   begin
-    FLock.Enter;
-    try
+    repeat
       HR := ppResources.GetResourceAttributes(PChar(FItemKey),
                                               Key,
                                               ppResourceAttributes);
-    finally
-      FLock.Leave;
-    end;
+    until E_RESOURCE_IN_USE <> HR;
+
     if (SUCCEEDED(HR)) then
     begin
       key.fmtid := WPD_RESOURCE_ATTRIBUTES_V1;
@@ -1303,17 +1257,13 @@ begin
     Key.fmtid := ResourceID;
     Key.pid := 0;
 
-    FLock.Enter;
-    try
+    repeat
       HR := ppResources.GetStream(PChar(FItemKey),         // Identifier of the object we want to transfer
                                   Key,                     // We are transferring the default resource (which is the entire object's data)
                                   STGM_READ,               // Opening a stream in READ mode, because we are reading data from the device.
                                   cbOptimalTransferSize,   // Driver supplied optimal transfer size
                                   pObjectDataStream);
-
-    finally
-      FLock.Leave;
-    end;
+    until E_RESOURCE_IN_USE <> HR;
 
     if (SUCCEEDED(HR)) then
     begin
@@ -1322,20 +1272,18 @@ begin
       try
         repeat
 
-          FLock.Enter;
-          try
-            HR := pObjectDataStream.Read(Buff, BufferSize, @ButesRead);
-          finally
-            FLock.Leave;
-          end;
+          HR := pObjectDataStream.Read(Buff, BufferSize, @ButesRead);
 
           if (SUCCEEDED(HR) and (ButesRead > 0)) then
           begin
             Stream.WriteBuffer(Buff[0], ButesRead);
             if Assigned(CallBack) then
               CallBack(Self, FFullSize, Stream.Size, IsBreak);
-          end else if HR <> E_RESOURCE_IN_USE then
+          end else if Failed(HR) and (HR <> E_RESOURCE_IN_USE) then
+          begin
+            IsBreak := False;
             Break;
+          end;
 
           if IsBreak then
           begin
@@ -1344,12 +1292,9 @@ begin
           end;
         until (ButesRead = 0);
 
-        FLock.Enter;
-        try
+        repeat
           pObjectDataStream.Commit(0);
-        finally
-          FLock.Leave;
-        end;
+        until E_RESOURCE_IN_USE <> HR;
       finally
         FreeMem(Buff);
       end;
@@ -1440,16 +1385,16 @@ begin
 
       if SUCCEEDED(HR) then
       begin
-        FLock.Enter;
-        try
+        repeat
           HR := FDevice.Open(PWideChar(Device.DeviceID), ClientInformation);
-        finally
-          FLock.Leave;
-        end;
+        until E_RESOURCE_IN_USE <> HR;
 
         if Succeeded(HR) then
         begin
-          HR := FDevice.Advise(0, FDeviceCallBack, nil, ppszCookie);
+          repeat
+            HR := FDevice.Advise(0, FDeviceCallBack, nil, ppszCookie);
+          until E_RESOURCE_IN_USE <> HR;
+
           if Succeeded(HR) then
           begin
             EventDeviceInfo := TEventDeviceInfo.Create;
@@ -1568,10 +1513,8 @@ end;
 end;
 
 initialization
-  FLock := TCriticalSection.Create;
 
 finalization
-  F(FLock);
   F(FEventManager);
 
 end.

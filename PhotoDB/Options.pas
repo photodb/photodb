@@ -663,23 +663,18 @@ end;
 procedure TOptionsForm.BtnInstallExtensionsClick(Sender: TObject);
 var
   I: Integer;
+//  ShellExecuteInfo: TShellExecuteInfo;
 begin
-  //TODO:
-{ShellExecuteInfo: TShellExecuteInfo;
-begin
- Hide;
- ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);
- ShellExecuteInfo.fMask:= 0;
- ShellExecuteInfo.Wnd:= 0;
- ShellExecuteInfo.lpVerb:= 'runas';
- ShellExecuteInfo.lpFile:= PAnsiChar(Application.ExeName);
- ShellExecuteInfo.lpParameters:= nil;
- ShellExecuteInfo.lpDirectory:= nil;
- ShellExecuteInfo.nShow:= SW_SHOWNORMAL;
- if ShellExecuteEx(@ShellExecuteInfo) then
-   Close;
- Show;}
-
+{  ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);
+  ShellExecuteInfo.fMask:= 0;
+  ShellExecuteInfo.Wnd:= 0;
+  ShellExecuteInfo.lpVerb:= 'runas';
+  ShellExecuteInfo.lpFile:= PAnsiChar(Application.ExeName);
+  ShellExecuteInfo.lpParameters:= nil;
+  ShellExecuteInfo.lpDirectory:= nil;
+  ShellExecuteInfo.nShow:= SW_SHOWNORMAL;
+  if ShellExecuteEx(@ShellExecuteInfo) then
+                                                  }
   for I := 0 to CbExtensionList.Items.Count - 1 do
     TFileAssociations.Instance.Exts[TFileAssociation(CbExtensionList.Items.Objects[I]).Extension].State := CheckboxStateToAssociationState(CbExtensionList.State[I]);
 

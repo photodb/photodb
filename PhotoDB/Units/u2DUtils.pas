@@ -44,8 +44,13 @@ function RectIntersectWithRectPercent(ROuter: TRect; RInner: TRect): Byte;
 var
   R: TRect;
 begin
+  ROuter := NormalizeRect(ROuter);
+  RInner := NormalizeRect(RInner);
   IntersectRect(R, ROuter, RInner);
-  Result := RectInRectPercent(RInner, R);
+  if IsRectEmpty(R) then
+    Exit(0);
+
+  Result := Round(100 * RectSquare(R) / RectSquare(RInner));
 end;
 
 function MoveRect(R: TRect; Dx, Dy: Integer): TRect;

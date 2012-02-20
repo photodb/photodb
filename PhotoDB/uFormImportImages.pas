@@ -934,7 +934,7 @@ begin
     if Edit.Text = '' then
       LnkLabel.Text := TA('Enter label', 'ImportPictures')
     else
-      LnkLabel.Text := Edit.Text;
+      LnkLabel.Text := TPath.CleanUp(Edit.Text);
 
     Settings.WriteString('ImportPicturesSeries', FormatDateTime('yyyy.mm.dd', Item.Date), Item.ItemLabel);
 
@@ -1261,15 +1261,14 @@ begin
 
         TGroupBox(Sb.Parent.Parent).Caption := FormatEx(TA('Series of photos ({0})', 'ImportPictures'), [FItems.Count]);
       end;
-      Sb.Left := Left - FContainer.HorzScrollBar.Position;
-      Left := Left + 180;
-      Sb.Show;
 
       WlLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
       if SI.ItemLabel = '' then
         WlLabel.Text := TA('Enter label', 'ImportPictures')
       else
         WlLabel.Text := SI.ItemLabel;
+
+      Sb.Width := Math.Min(Math.Max(WlLabel.Width - WlLabel.Left - 5, 175 - 18), 450) + 18;
 
       WlDate := FindChildByTag<TWebLink>(Sb, TAG_DATE);
 
@@ -1282,6 +1281,10 @@ begin
       WlSize := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_SIZE);
       WlSize.Left := WlItemsCount.Left + WlItemsCount.Width + 5;
       WlSize.Text := SizeInText(SI.ItemsSize);
+
+      Sb.Left := Left - FContainer.HorzScrollBar.Position;
+      Left := Left + Sb.Width + 5;
+      Sb.Show;
     end;
   finally
     EndScreenUpdate(TForm(FContainer.Owner).Handle, True);

@@ -5,19 +5,51 @@ interface
 uses
   Shellapi, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
-  AppEvnts, ImgList, UnitDBKernel, jpeg, Win32crc, CommCtrl, uMemoryEx,
+  AppEvnts, ImgList, UnitDBKernel, jpeg, Win32crc, CommCtrl,
+  uMemoryEx,
   StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
-  FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db, uSearchTypes,
-  ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage, uFileUtils,
+  FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db,
+  uSearchTypes,
+  ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage,
+  uFileUtils,
   Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
-  uVistaFuncs, UnitDBDeclare, UnitFileExistsThread, uBitmapUtils, uGUIDUtils,
-  uCDMappingTypes, uThreadForm, uLogger, uConstants, uTime, uFastLoad,
-  uResources, uW7TaskBar, uMemory, UnitBitmapImageList, uFaceDetection,
-  uListViewUtils, uFormListView, uImageSource, uDBPopupMenuInfo,
-  uGraphicUtils, uShellIntegration, uSysUtils, uDBUtils, uRuntime, CCR.Exif,
-  uDBBaseTypes, uViewerTypes, uSettings, uAssociations, LoadingSign,
-  uExifUtils, uInterfaces, WebLink, uPeopleSupport, u2DUtils, uVCLHelpers,
-  uAnimatedJPEG;
+  uVistaFuncs, UnitDBDeclare, UnitFileExistsThread,
+  uBitmapUtils,
+  uGUIDUtils,
+  uCDMappingTypes,
+  uThreadForm,
+  uLogger,
+  uConstants,
+  uTime,
+  uFastLoad,
+  uResources,
+  uW7TaskBar,
+  uMemory,
+  UnitBitmapImageList,
+  uFaceDetection,
+  uListViewUtils,
+  uFormListView,
+  uImageSource,
+  uDBPopupMenuInfo,
+  uGraphicUtils,
+  uShellIntegration,
+  uSysUtils,
+  uDBUtils,
+  uRuntime,
+  CCR.Exif,
+  uDBBaseTypes,
+  uViewerTypes,
+  uSettings,
+  uAssociations,
+  LoadingSign,
+  uExifUtils,
+  uInterfaces,
+  WebLink,
+  uPeopleSupport,
+  u2DUtils,
+  uVCLHelpers,
+  uAnimatedJPEG,
+  ExplorerTypes;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
@@ -45,11 +77,10 @@ type
     SbHorisontal: TScrollBar;
     SbVertical: TScrollBar;
     Panel1: TPanel;
-    ImageList1: TImageList;
-    ImageList2: TImageList;
-    ImageList3: TImageList;
+    ImlToolBarNormal: TImageList;
+    ImlToolBarHot: TImageList;
+    ImlToolBarDisabled: TImageList;
     BottomImage: TPanel;
-    ToolsBar: TPanel;
     TbrActions: TToolBar;
     TbBack: TToolButton;
     TbForward: TToolButton;
@@ -136,6 +167,8 @@ type
     PmObject: TPopupMenu;
     N12: TMenuItem;
     Createnote1: TMenuItem;
+    TbConvert: TToolButton;
+    TbExplore: TToolButton;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -237,6 +270,7 @@ type
     procedure MiCurrentPersonClick(Sender: TObject);
     procedure MiDrawFaceClick(Sender: TObject);
     procedure Createnote1Click(Sender: TObject);
+    procedure TbExploreClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -846,10 +880,10 @@ begin
   DrawImage.Height := HeightW;
   if not FIsWaiting then
     ReAllignScrolls(False, Point(0, 0));
-  ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
-  BottomImage.Top := ClientHeight - ToolsBar.Height;
+  TbrActions.Left := ClientWidth div 2 - TbrActions.Width div 2;
+  BottomImage.Top := ClientHeight - TbrActions.Height;
   BottomImage.Width := ClientWidth;
-  BottomImage.Height := ToolsBar.Height;
+  BottomImage.Height := TbrActions.Height;
   BottomImage.Show;
 
   LsLoading.Left := ClientWidth div 2 - LsLoading.Width div 2;
@@ -1813,6 +1847,7 @@ begin
     if ShiftKeyDown then
     begin
       if Msg.wParam = Byte('R') then ByEXIF1Click(Self);
+      if Msg.wParam = Byte('E') then ImageEditor1Click(Self);
     end else if CtrlKeyDown then
     begin
       if Msg.wParam = Byte('F') then FitToWindowClick(Self);
@@ -1825,9 +1860,10 @@ begin
       if Msg.wParam = Byte('R') then RotateCW1Click(Self);
       if Msg.wParam = Byte('D') then TbDeleteClick(Self);
       if Msg.wParam = Byte('P') then Print1Click(Self);
-      if Msg.wParam = Byte('E') then ImageEditor1Click(Self);
+      if Msg.wParam = Byte('E') then TbExploreClick(Self);
       if Msg.wParam = Byte('Z') then Properties1Click(Self);
       if Msg.wParam = Byte('X') then TbEncryptClick(Self);
+      if Msg.wParam = Byte('W') then Resize1Click(Self);
 
       if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N51Click(N01);
       if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N51Click(N11);
@@ -2376,9 +2412,11 @@ begin
     TbDelete.Hint := L('Delete (Ctrl+D)');
     TbPrint.Hint := L('Print (Ctrl+P)');
     TbRating.Hint := L('Rating (Ctrl+rating)');
-    TbEditImage.Hint := L('Image editor (Ctrl+E)');
+    TbEditImage.Hint := L('Image editor (Shift+E)');
     TbInfo.Hint := L('Properties (Ctrl+Z)');
     TbEncrypt.Hint := L('Encrypt/Decrypt (Ctrl+X)');
+    TbExplore.Hint := L('Explorer (Ctrl+E)');
+    TbConvert.Hint := L('Resize (Ctrl+W)');
 
     MiCreatePerson.Caption := L('Create person');
     MiOtherPersons.Caption := L('Other person');
@@ -2824,7 +2862,7 @@ end;
 
 function TViewer.HeightW: Integer;
 begin
-  Result := ClientHeight - ToolsBar.Height - 3;
+  Result := ClientHeight - TbrActions.Height - 3;
 end;
 
 function TViewer.GetImageRectA: TRect;
@@ -2853,7 +2891,7 @@ begin
     else
       Increment := 0;
     FY := Max(0,
-      round(HeightW / 2 - Increment - FBImage.Height * Zoom / 2));
+      Round(HeightW / 2 - Increment - FBImage.Height * Zoom / 2));
   end;
   if SbVertical.Visible then
     Increment := SbVertical.width
@@ -2864,10 +2902,10 @@ begin
     Increment := SbHorisontal.Height
   else
     Increment := 0;
-  FH := round(Min(HeightW - Increment, FBImage.Height * Zoom));
+  FH := Round(Min(HeightW - Increment, FBImage.Height * Zoom));
   FH := FH;
 
-  Result := rect(FX, FY, FW + FX, FH + FY);
+  Result := Rect(FX, FY, FW + FX, FH + FY);
 end;
 
 function TViewer.GetItem: TDBPopupMenuInfoRecord;
@@ -2877,7 +2915,7 @@ end;
 
 procedure TViewer.RecreateImLists;
 const
-  IconsCount = 24;
+  IconsCount = 26;
 var
   Icons: array [0 .. 1, 0 .. IconsCount] of HIcon;
   I, J: Integer;
@@ -2885,13 +2923,19 @@ var
   Imlists: array [0 .. 2] of TImageList;
 
 const
-  Names: array [0 .. 1, 0 .. IconsCount] of string = (('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
-      'Z_FULLSIZE_NORM', 'Z_FULLSCREEN_NORM', 'Z_ZOOMIN_NORM', 'Z_ZOOMOUT_NORM', 'Z_FULLSCREEN', 'Z_LEFT_NORM',
-      'Z_RIGHT_NORM', 'Z_INFO_NORM', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1', 'TRATING_2',
-      'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE'), ('Z_NEXT_HOT', 'Z_PREVIOUS_HOT',
-      'Z_BESTSIZE_HOT', 'Z_FULLSIZE_HOT', 'Z_FULLSCREEN_HOT', 'Z_ZOOMIN_HOT', 'Z_ZOOMOUT_HOT', 'Z_FULLSCREEN',
-      'Z_LEFT_HOT', 'Z_RIGHT_HOT', 'Z_INFO_HOT', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1',
-      'TRATING_2', 'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE'));
+  Names: array [0 .. 1, 0 .. IconsCount] of string = (
+    ('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
+    'Z_FULLSIZE_NORM', 'Z_FULLSCREEN_NORM', 'Z_ZOOMIN_NORM', 'Z_ZOOMOUT_NORM', 'Z_FULLSCREEN', 'Z_LEFT_NORM',
+    'Z_RIGHT_NORM', 'Z_INFO_NORM', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1', 'TRATING_2',
+    'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE',
+    'EXPLORER', 'RESIZE'),
+
+    ('Z_NEXT_HOT', 'Z_PREVIOUS_HOT',  'Z_BESTSIZE_HOT',
+    'Z_FULLSIZE_HOT', 'Z_FULLSCREEN_HOT', 'Z_ZOOMIN_HOT', 'Z_ZOOMOUT_HOT', 'Z_FULLSCREEN', 'Z_LEFT_HOT',
+    'Z_RIGHT_HOT', 'Z_INFO_HOT', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1', 'TRATING_2',
+    'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE',
+    'EXPLORER', 'RESIZE')
+    );
 
 begin
   TW.I.Start('LoadIcon');
@@ -2899,9 +2943,9 @@ begin
     for J := 0 to IconsCount do
       Icons[I, J] := LoadImage(HInstance, PWideChar(Names[I, J]), IMAGE_ICON, 16, 16, 0);
 
-  Imlists[0] := ImageList1;
-  Imlists[1] := ImageList2;
-  Imlists[2] := ImageList3;
+  Imlists[0] := ImlToolBarNormal;
+  Imlists[1] := ImlToolBarHot;
+  Imlists[2] := ImlToolBarDisabled;
   TW.I.Start('Clear');
   if not FCreating then
     for I := 0 to 2 do
@@ -3755,8 +3799,8 @@ end;
 
 procedure TViewer.CheckFaceIndicatorVisibility;
 begin
-  WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < ToolsBar.Left) and StaticImage and FaceDetectionManager.IsActive;
-  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < ToolsBar.Left) and not FFaceDetectionComplete) and StaticImage and Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and FaceDetectionManager.IsActive;
+  WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < TbrActions.Left) and StaticImage and FaceDetectionManager.IsActive;
+  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < TbrActions.Left) and not FFaceDetectionComplete) and StaticImage and Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and FaceDetectionManager.IsActive;
 end;
 
 procedure TViewer.UpdateFaceDetectionState;
@@ -3980,6 +4024,18 @@ begin
   end;
 end;
 
+procedure TViewer.TbExploreClick(Sender: TObject);
+var
+  E: TCustomExplorerForm;
+begin
+  E := ExplorerManager.NewExplorer(False);
+  E.SetOldPath(Item.FileName);
+  E.SetPath(ExtractFileDir(Item.FileName));
+  E.SetBounds(Self.BoundsRect.Left, Self.BoundsRect.Top, Self.BoundsRect.Width, Self.BoundsRect.Height);
+  E.Show;
+  Close;
+end;
+
 procedure TViewer.TbPageNumberClick(Sender: TObject);
 var
   P: TPoint;
@@ -4163,10 +4219,10 @@ begin
   begin
     TbPageNumber.Visible := FPageCount > 1;
     TbSeparatorPageNumber.Visible := FPageCount > 1;
-    ToolsBar.Realign;
+    //ToolsBar.Realign;
     TbrActions.Width := TbInfo.Left + TbInfo.Width + 2;
-    ToolsBar.Width := TbrActions.Width;
-    ToolsBar.Left := ClientWidth div 2 - ToolsBar.Width div 2;
+    //TbrActions.Width := TbrActions.Width;
+    TbrActions.Left := ClientWidth div 2 - TbrActions.Width div 2;
   end;
   PopupMenuPageSelecter.Items.Clear;
   for I := 0 to FPageCount - 1 do
@@ -4208,7 +4264,7 @@ begin
   if Value >= 0 then
     TbRating.ImageIndex := 14 + Abs(Value)
   else
-    TbRating.ImageIndex := - (Value div 10) + ImageList1.Count - 6;
+    TbRating.ImageIndex := - (Value div 10) + ImlToolBarNormal.Count - 8;
 end;
 
 procedure TViewer.SetProgressPosition(Position, Max: Integer);
