@@ -165,17 +165,23 @@ type
     Device: IPDevice;
   end;
 
+function WPDEventManager: TWPDEventManager;
+
 implementation
 
 var
   //only one request to WIA at moment - limitation of WIA, looks like WPD has the same limitation
   //http://msdn.microsoft.com/en-us/library/windows/desktop/ms630350%28v=vs.85%29.aspx
   FEventManager: TWPDEventManager = nil;
+  FIEventManager: IPEventManager = nil;
 
-function EventManager: TWPDEventManager;
+function WPDEventManager: TWPDEventManager;
 begin
   if FEventManager = nil then
+  begin
     FEventManager := TWPDEventManager.Create;
+    FIEventManager := FEventManager;
+  end;
 
   Result := FEventManager;
 end;
@@ -445,7 +451,7 @@ begin
   end else
     ErrorCheck(HR);
 
-  EventManager.RegisterDevice(Self);
+  WPDEventManager.RegisterDevice(Self);
 end;
 
 function TWPDDevice.Delete(ItemKey: string): Boolean;
@@ -1464,6 +1470,11 @@ var
   Key: _tagpropertykey;
   DeviceID: PChar;
   EventGUID: TGUID;
+  FilePath: string;
+  PItemKey: PChar;
+  Manager: IPManager;
+  Device: IPDevice;
+  Item: IPDItem;
 begin
   Result := S_OK;
 
@@ -1479,31 +1490,61 @@ begin
       HR := pEventParameters.GetGuidValue(Key, EventGUID);
       if Succeeded(HR) then
       begin
-        if EventGUID = WPD_EVENT_OBJECT_ADDED then
-        begin
-          TThread.Synchronize(nil,
-            procedure
-            begin
-              EventManager.InvokeItem(peItemAdded, DeviceID, '', '');
-            end
-          );
-        end;
+
         if EventGUID = WPD_EVENT_OBJECT_REMOVED then
         begin
-          TThread.Synchronize(nil,
-            procedure
+          Manager := TWPDDeviceManager.Create;
+          Device := Manager.GetDeviceByID(DeviceID);
+          if Device <> nil then
+          begin
+            Key.fmtid := PKEY_GenericObj;
+            Key.pid := WPD_OBJECT_ID;
+            HR := pEventParameters.GetStringValue(Key, PItemKey);
+            if Succeeded(HR) then
             begin
-              EventManager.InvokeItem(peItemRemoved, DeviceID, '', '');
-            end
-          );
+              FilePath := Device.Name + PortableItemNameCache.GetPathByKey(DeviceID, string(PItemKey));
+              TThread.Synchronize(nil,
+                procedure
+                begin
+                  WPDEventManager.InvokeItem(peItemRemoved, DeviceID, string(PItemKey), FilePath);
+                end
+              );
+            end;
+          end;
+        end;
+        if EventGUID = WPD_EVENT_OBJECT_ADDED then
+        begin
+          Key.fmtid := PKEY_GenericObj;
+          Key.pid := WPD_OBJECT_ID;
+          HR := pEventParameters.GetStringValue(Key, PItemKey);
+          if Succeeded(HR) then
+          begin
+            Manager := TWPDDeviceManager.Create;
+            Device := Manager.GetDeviceByID(DeviceID);
+            if Device <> nil then
+            begin
+              Item := Device.GetItemByKey(string(PItemKey));
+              if Item <> nil then
+              begin
+                FilePath := Device.Name + PortableItemNameCache.GetPathByKey(DeviceID, string(PItemKey));
+                TThread.Synchronize(nil,
+                  procedure
+                  begin
+                    WPDEventManager.InvokeItem(peItemAdded, DeviceID, Item.ItemKey, FilePath);
+                  end
+                );
+              end;
+            end;
+          end;
         end;
         if EventGUID = WPD_EVENT_DEVICE_REMOVED then
         begin
-          EventManager.UnregisterDevice(DeviceID);
+          WPDEventManager.UnregisterDevice(DeviceID);
+          PortableItemNameCache.ClearDeviceCache(DeviceID);
           TThread.Synchronize(nil,
             procedure
             begin
-              EventManager.InvokeItem(peDeviceDisconnected, DeviceID, '', '');
+              WPDEventManager.InvokeItem(peDeviceDisconnected, DeviceID, '', '');
             end
           );
         end;
@@ -1515,6 +1556,6 @@ end;
 initialization
 
 finalization
-  F(FEventManager);
+  FIEventManager := nil;
 
 end.

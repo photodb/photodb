@@ -3,14 +3,59 @@ unit Options;
 interface
 
 uses
-  Registry, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, TabNotBk, DmProgress, ExtCtrls, CheckLst,
-  Menus, ShellCtrls, Dolphin_DB, ImgList, Math, Mask, uFileUtils, uSysUtils,
-  acDlgSelect, UnitDBKernel, SaveWindowPos, UnitINI, uVistaFuncs, UnitDBDeclare,
-  UnitDBFileDialogs, uAssociatedIcons, uLogger, uConstants, uShellIntegration,
-  UnitDBCommon, UnitDBCommonGraphics, uTranslate, uShellUtils, uDBForm,
-  uRuntime, uMemory, uSettings, WebLink, uAssociations, AppEvnts, Spin,
-  uCryptUtils, uIconUtils, LoadingSign, uDBThread, uConfiguration;
+  Registry,
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ComCtrls,
+  TabNotBk,
+  DmProgress,
+  ExtCtrls,
+  CheckLst,
+  Menus,
+  ShellCtrls,
+  Dolphin_DB,
+  ImgList,
+  Math,
+  Mask,
+  uFileUtils,
+  uSysUtils,
+  acDlgSelect,
+  UnitDBKernel,
+  SaveWindowPos,
+  UnitINI,
+  uVistaFuncs,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  uAssociatedIcons,
+  uLogger,
+  uConstants,
+  uShellIntegration,
+  UnitDBCommon,
+  UnitDBCommonGraphics,
+  uTranslate,
+  uShellUtils,
+  uDBForm,
+  uRuntime,
+  uMemory,
+  uSettings,
+  WebLink,
+  uAssociations,
+  AppEvnts,
+  Spin,
+  uCryptUtils,
+  uIconUtils,
+  LoadingSign,
+  uDBThread,
+  Winapi.ShellApi,
+  uConfiguration;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)
@@ -663,24 +708,27 @@ end;
 procedure TOptionsForm.BtnInstallExtensionsClick(Sender: TObject);
 var
   I: Integer;
-//  ShellExecuteInfo: TShellExecuteInfo;
+  ShellExecuteInfo: TShellExecuteInfo;
+  ExtParams: string;
 begin
-{  ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);
-  ShellExecuteInfo.fMask:= 0;
+  ExtParams := '';
+  for I := 0 to CbExtensionList.Items.Count - 1 do
+    ExtParams := ExtParams + IIF(ExtParams = '', '', ';') + TFileAssociation(CbExtensionList.Items.Objects[I]).Extension + ':' + CheckboxStateToString(CbExtensionList.State[I]);
+
+  ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);
+  ShellExecuteInfo.fMask:= SEE_MASK_FLAG_DDEWAIT or SEE_MASK_FLAG_NO_UI or SEE_MASK_NOCLOSEPROCESS;
   ShellExecuteInfo.Wnd:= 0;
   ShellExecuteInfo.lpVerb:= 'runas';
-  ShellExecuteInfo.lpFile:= PAnsiChar(Application.ExeName);
-  ShellExecuteInfo.lpParameters:= nil;
-  ShellExecuteInfo.lpDirectory:= nil;
+  ShellExecuteInfo.lpFile:= PChar('"' + Application.ExeName + '"');
+  ShellExecuteInfo.lpParameters:= PChar('/close /NoPrevVersion /nologo /installExt ' + ExtParams);
+  ShellExecuteInfo.lpDirectory:= PChar(ExtractFileDir(Application.ExeName));
   ShellExecuteInfo.nShow:= SW_SHOWNORMAL;
   if ShellExecuteEx(@ShellExecuteInfo) then
-                                                  }
-  for I := 0 to CbExtensionList.Items.Count - 1 do
-    TFileAssociations.Instance.Exts[TFileAssociation(CbExtensionList.Items.Objects[I]).Extension].State := CheckboxStateToAssociationState(CbExtensionList.State[I]);
-
-  InstallGraphicFileAssociations(Application.ExeName, nil);
-  RefreshSystemIconCache;
-  LoadDefaultExtStates;
+  begin
+    WaitForSingleObject(ShellExecuteInfo.hProcess, 5000);
+    CloseHandle(ShellExecuteInfo.hProcess);
+    LoadDefaultExtStates;
+  end;
 end;
 
 procedure TOptionsForm.LoadLanguage;

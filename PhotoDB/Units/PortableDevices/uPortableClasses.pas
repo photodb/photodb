@@ -24,7 +24,7 @@ type
 
   TFillItemsCallBack = procedure(ParentKey: string; Packet: TList<IPDItem>; var Cancel: Boolean; Context: Pointer) of object;
   TFillDevicesCallBack = procedure(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer) of object;
-  TPortableEventCallBack = procedure(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
+  TPortableEventCallBack = procedure(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string) of object;
 
   IPBaseInterface = interface
     function GetErrorCode: HRESULT;

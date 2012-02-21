@@ -271,6 +271,7 @@ begin
         end;
         if Device <> nil then
         begin
+          DevicePath := ExtractDeviceItemPath(FSItem.Path);
           DItem := Device.GetItemByPath(DevicePath);
           if DItem <> nil then
             Result := Device.Delete(DItem.ItemKey);

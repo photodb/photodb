@@ -1680,13 +1680,13 @@ object ExplorerForm: TExplorerForm
     Left = 200
     Top = 64
   end
-  object ApplicationEvents1: TApplicationEvents
-    OnMessage = ApplicationEvents1Message
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
     Left = 745
     Top = 72
   end
-  object PopupMenu8: TPopupMenu
-    OnPopup = PopupMenu8Popup
+  object PopupMenuTreeView: TPopupMenu
+    OnPopup = PopupMenuTreeViewPopup
     Left = 361
     Top = 152
     object OpeninExplorer1: TMenuItem

@@ -72,7 +72,6 @@ object Viewer: TViewer
     BevelOuter = bvNone
     TabOrder = 3
     Visible = False
-    ExplicitTop = 457
     object LsDetectingFaces: TLoadingSign
       Left = 4
       Top = 2

@@ -11,6 +11,7 @@ uses
   uWPDClasses;
 
 function CreateDeviceManagerInstance: IPManager;
+function GetDeviceEventManager: IPEventManager;
 function IsWPDSupport: Boolean;
 procedure ThreadCleanUp(ThreadID: THandle);
 
@@ -42,6 +43,14 @@ begin
     Result := TWPDDeviceManager.Create
   else
     Result := TWIADeviceManager.Create;
+end;
+
+function GetDeviceEventManager: IPEventManager;
+begin
+  if IsWPDSupport then
+    Result := WPDEventManager
+  else
+    Result := WiaEventManager;
 end;
 
 procedure ThreadCleanUp(ThreadID: THandle);

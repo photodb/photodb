@@ -95,11 +95,6 @@ type
   private
     FErrorCode: HRESULT;
     FManager: IWiaDevMgr;
-    FEventCallBack: IWiaEventCallback;
-    FObjEventDeviceConnected: IInterface;
-    FObjEventDeviceDisconnected: IInterface;
-    FObjEventCallBackCreated: IInterface;
-    FObjEventCallBackDeleted: IInterface;
     procedure ErrorCheck(Code: HRESULT);
     procedure FillDeviceCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
     procedure FindDeviceByNameCallBack(Packet: TList<IPDevice>; var Cancel: Boolean; Context: Pointer);
@@ -124,7 +119,14 @@ type
   TWIAEventManager = class(TInterfacedObject, IPEventManager)
   private
     FEventTargets: TList<TEventTargetInfo>;
+    FManager: IWiaDevMgr;
+    FEventCallBack: IWiaEventCallback;
+    FObjEventDeviceConnected: IInterface;
+    FObjEventDeviceDisconnected: IInterface;
+    FObjEventCallBackCreated: IInterface;
+    FObjEventCallBackDeleted: IInterface;
     procedure InvokeItem(EventType: TPortableEventType; DeviceID, ItemKey, ItemPath: string);
+    procedure InitCallBacks;
   public
     constructor Create;
     destructor Destroy; override;
@@ -210,9 +212,7 @@ var
   FLock: TCriticalSection = nil;
   FWiaManager: TWiaManager = nil;
   FWiaEventManager: TWIAEventManager = nil;
-  FManager: IWiaDevMgr;
-    FEventCallBack: IWiaEventCallback;
-    FObjEventDeviceConnected: IInterface;
+  FIWiaEventManager: IPEventManager = nil;
 
 function WiaManager: TWiaManager;
 begin
@@ -225,7 +225,10 @@ end;
 function WiaEventManager: TWIAEventManager;
 begin
   if FWiaEventManager = nil then
+  begin
     FWiaEventManager := TWIAEventManager.Create;
+    FIWiaEventManager := FWiaEventManager;
+  end;
 
   Result := FWiaEventManager;
 end;
@@ -241,18 +244,8 @@ constructor TWIADeviceManager.Create;
 begin
   FErrorCode := S_OK;
   FManager := nil;
-  FEventCallBack := TWIAEventCallBack.Create;
-  FObjEventCallBackCreated := nil;
-  FObjEventCallBackDeleted := nil;
   ErrorCheck(CoCreateInstance(CLSID_WiaDevMgr, nil, CLSCTX_LOCAL_SERVER, IID_IWiaDevMgr, FManager));
-
-  if FManager <> nil then
-  begin
-    FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_CONNECTED, FEventCallBack, FObjEventDeviceConnected);
-    //FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_DISCONNECTED, FEventCallBack, FObjEventDeviceDisconnected);
-    //FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
-    //FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
-  end;
+  WiaEventManager.InitCallBacks;
 end;
 
 destructor TWIADeviceManager.Destroy;
@@ -1133,6 +1126,10 @@ function TWIAEventCallBack.ImageEventCallback(pEventGUID: PGUID;
   bstrEventDescription, bstrDeviceID, bstrDeviceDescription: PChar;
   dwDeviceType: DWORD; bstrFullItemName: PChar; var pulEventType: PULONG;
   ulReserved: ULONG): HRESULT;
+var
+  Manager: IPManager;
+  Device: IPDevice;
+  FilePath: string;
 begin
   if pEventGUID^ = WIA_EVENT_DEVICE_DISCONNECTED then
   begin
@@ -1156,7 +1153,6 @@ begin
   end;
   if pEventGUID^ = WIA_EVENT_ITEM_CREATED then
   begin
-    PortableItemNameCache.ClearDeviceCache(bstrDeviceID);
     TThread.Synchronize(nil,
     procedure
     begin
@@ -1166,13 +1162,18 @@ begin
   end;
   if pEventGUID^ = WIA_EVENT_ITEM_DELETED then
   begin
-    PortableItemNameCache.ClearDeviceCache(bstrDeviceID);
-    TThread.Synchronize(nil,
-    procedure
+    Manager := TWIADeviceManager.Create;
+    Device := Manager.GetDeviceByID(bstrDeviceID);
+    if Device <> nil then
     begin
-      WiaEventManager.InvokeItem(peItemRemoved, bstrDeviceID, bstrFullItemName, '');
-    end
-    );
+      FilePath := Device.Name + PortableItemNameCache.GetPathByKey(bstrDeviceID, string(bstrFullItemName));
+      TThread.Synchronize(nil,
+      procedure
+      begin
+        WiaEventManager.InvokeItem(peItemRemoved, bstrDeviceID, bstrFullItemName, FilePath);
+      end
+      );
+    end;
   end;
 
   Result := S_OK;
@@ -1263,12 +1264,34 @@ end;
 constructor TWIAEventManager.Create;
 begin
   FEventTargets := TList<TEventTargetInfo>.Create;
+  FManager := nil;
 end;
 
 destructor TWIAEventManager.Destroy;
 begin
   FreeList(FEventTargets);
   inherited;
+end;
+
+procedure TWIAEventManager.InitCallBacks;
+begin
+  if FManager = nil then
+  begin
+    CoCreateInstance(CLSID_WiaDevMgr, nil, CLSCTX_LOCAL_SERVER, IID_IWiaDevMgr, FManager);
+    FEventCallBack := TWIAEventCallBack.Create;
+    FObjEventDeviceConnected := nil;
+    FObjEventDeviceDisconnected := nil;
+    FObjEventCallBackCreated := nil;
+    FObjEventCallBackDeleted := nil;
+
+    if FManager <> nil then
+    begin
+      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_CONNECTED, FEventCallBack, FObjEventDeviceConnected);
+      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_DISCONNECTED, FEventCallBack, FObjEventDeviceDisconnected);
+      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
+      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
+    end;
+  end;
 end;
 
 procedure TWIAEventManager.InvokeItem(EventType: TPortableEventType; DeviceID,

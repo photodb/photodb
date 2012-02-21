@@ -122,6 +122,9 @@ type
 
 implementation
 
+uses
+  UnitUpdateDB;
+
 { TFileOperationTask }
 
 function TFileOperationTask.Copy: TFileOperationTask;
@@ -665,6 +668,12 @@ begin
                 end
               );
             end;
+          end;
+
+          if FOptions.AddToCollection then
+          begin
+            for I := 0 to FileOperations.Count - 1 do
+              UpdaterDB.AddFile(FileOperations[I].Destination.Path);
           end;
 
           finally

@@ -4,18 +4,78 @@ interface
 
 uses
   Generics.Collections,
-  acDlgSelect, CommCtrl, ActiveX, ExplorerTypes, DBCMenu, UnitDBKernel, UnitINI,
-  ShellApi, dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, ComObj, Registry, PrintMainForm, uScript, UnitScripts,
-  Dialogs, ComCtrls, ShellCtrls, ImgList, Menus, ExtCtrls, ToolWin, Buttons,
-  ImButton, StdCtrls, SaveWindowPos, AppEvnts, WebLink, UnitBitmapImageList,
-  Network, GraphicCrypt, UnitCrypting, DropSource, DragDropFile, DragDrop,
-  DropTarget, ScPanel, uGOM, UnitCDMappingSupport, StrUtils, Tlayered_Bitmap,
-  ShellContextMenu, ShlObj, Clipbrd, GraphicsCool, uShellIntegration,
-  ProgressActionUnit, GraphicsBaseTypes, Math, DB, CommonDBSupport, uDBCustomThread,
-  EasyListview, MPCommonUtilities, MPCommonObjects, uShellUtils, uGUIDUtils,
-  UnitRefreshDBRecordsThread, UnitPropeccedFilesSupport, uPrivateHelper,
-  UnitCryptingImagesThread, uVistaFuncs, wfsU, UnitDBDeclare, pngimage,
+  acDlgSelect,
+  CommCtrl,
+  ActiveX,
+  ExplorerTypes,
+  DBCMenu,
+  UnitDBKernel,
+  UnitINI,
+  ShellApi,
+  dolphin_db,
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  ComObj,
+  Registry,
+  PrintMainForm,
+  uScript,
+  UnitScripts,
+  Dialogs,
+  ComCtrls,
+  ShellCtrls,
+  ImgList,
+  Menus,
+  ExtCtrls,
+  ToolWin,
+  Buttons,
+  ImButton,
+  StdCtrls,
+  SaveWindowPos,
+  AppEvnts,
+  WebLink,
+  UnitBitmapImageList,
+  Network,
+  GraphicCrypt,
+  UnitCrypting,
+  DropSource,
+  DragDropFile,
+  DragDrop,
+  DropTarget,
+  ScPanel,
+  uGOM,
+  UnitCDMappingSupport,
+  StrUtils,
+  Tlayered_Bitmap,
+  ShellContextMenu,
+  ShlObj,
+  Clipbrd,
+  GraphicsCool,
+  uShellIntegration,
+  ProgressActionUnit,
+  GraphicsBaseTypes,
+  Math,
+  DB,
+  CommonDBSupport,
+  uDBCustomThread,
+  EasyListview,
+  MPCommonUtilities,
+  MPCommonObjects,
+  uShellUtils,
+  uGUIDUtils,
+  UnitRefreshDBRecordsThread,
+  UnitPropeccedFilesSupport,
+  uPrivateHelper,
+  UnitCryptingImagesThread,
+  uVistaFuncs,
+  wfsU,
+  UnitDBDeclare,
+  pngimage,
   UnitDBFileDialogs,
   uFormListView,
   uIconUtils,
@@ -62,7 +122,10 @@ uses
   uPortableDeviceUtils,
   uShellNamespaceUtils,
   uManagerExplorer,
-  uExplorerPastePIDLsThread;
+  uExplorerPastePIDLsThread,
+  uPathProviderUtils,
+  uPortableDeviceManager,
+  uPortableClasses;
 
 const
   RefreshListViewInterval = 50;
@@ -100,7 +163,7 @@ type
     MakeNew1: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
     ShowUpdater1: TMenuItem;
-    ApplicationEvents1: TApplicationEvents;
+    AeMain: TApplicationEvents;
     NewWindow1: TMenuItem;
     Paste1: TMenuItem;
     N5: TMenuItem;
@@ -111,7 +174,7 @@ type
     StatusBar1: TStatusBar;
     GoToSearchWindow1: TMenuItem;
     OpeninSearchWindow1: TMenuItem;
-    PopupMenu8: TPopupMenu;
+    PopupMenuTreeView: TPopupMenu;
     OpeninExplorer1: TMenuItem;
     AddFolder2: TMenuItem;
     ToolBarNormalImageList: TImageList;
@@ -320,7 +383,7 @@ type
     procedure ShowUpdater1Click(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
     procedure ListView1KeyPress(Sender: TObject; var Key: Char);
-    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure Back1Click(Sender: TObject);
     procedure Forward1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
@@ -349,7 +412,7 @@ type
     procedure ShowPrivate1Click(Sender: TObject);
     procedure OpeninSearchWindow1Click(Sender: TObject);
     procedure Help1Click(Sender: TObject);
-    procedure PopupMenu8Popup(Sender: TObject);
+    procedure PopupMenuTreeViewPopup(Sender: TObject);
     procedure OpeninExplorer1Click(Sender: TObject);
     procedure AddFolder2Click(Sender: TObject);
     procedure AddLinkClick(Sender: TObject);
@@ -538,14 +601,11 @@ type
     FGoToLastSavedPath: Boolean;
     FW7TaskBar: ITaskbarList3;
     FHistoryPathList: TArExplorerPath;
-
     FUpdateItemList: TList;
     FItemUpdateTimer: TTimer;
     FItemUpdateLastTime: Cardinal;
-
     FSelectedItem: TEasyItem;
     FCanPasteFromClipboard: Boolean;
-
     FNextClipboardViewer: HWnd;
     FIsFirstShow: Boolean;
     NoLockListView: Boolean;
@@ -572,8 +632,7 @@ type
     procedure PasteFromClipboard;
     function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
     function GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
-    procedure ChangedDBDataByID(Sender: TObject; ID: Integer;
-      Params: TEventFields; Value: TEventValues);
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
     procedure RefreshItemByID(ID: Integer);
     procedure RefreshItemByName(Name: string; UpdateDB: Boolean);
@@ -603,6 +662,7 @@ type
     property SecondStepHelp: string read GetSecondStepHelp;
     function GetPathDescription(Path: string; FileType: Integer): string;
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
+    procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -654,7 +714,7 @@ type
     Procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     procedure UpdateMenuItems(Menu: TPopupMenu; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
-    procedure DirectoryChanged(Sender: TObject; SID : TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
     procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
     function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
     function AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
@@ -844,6 +904,7 @@ procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
+  GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
   FIsFirstShow := True;
   DirectoryWatcher := TWachDirectoryClass.Create;
   DefaultSort := -1;
@@ -2839,7 +2900,7 @@ begin
     EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
-procedure TExplorerForm.ApplicationEvents1Message(var Msg: tagMSG;
+procedure TExplorerForm.AeMainMessage(var Msg: tagMSG;
   var Handled: Boolean);
 var
   InternalHandled: Boolean;
@@ -4463,39 +4524,10 @@ procedure TExplorerForm.PropertiesLinkClick(Sender: TObject);
 var
   Item: TEasyItem;
   Index: Integer;
-  P: TPathItem;
 
   function ExecuteProvider(FileName: string): Boolean;
-  var
-    PL: TPathItemCollection;
-    PI: TPathItem;
   begin
-    Result := False;
-    
-    P := PathProviderManager.CreatePathItem(FileName);
-    try
-      if P <> nil then
-      begin
-        if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
-        begin
-          PL := TPathItemCollection.Create;
-          try
-            PI := PathProviderManager.CreatePathItem(FileName);
-            if PI <> nil then
-            begin
-              PL.Add(PI);
-              Result := P.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_PROPERTIES, nil);
-            end;
-          finally
-            PL.FreeItems;
-            F(PL);
-          end;
-          
-        end;
-      end;
-    finally
-      F(P);
-    end;
+    Result := ExecuteProviderFeature(Self, FileName, PATH_FEATURE_PROPERTIES);
   end;
   
 begin
@@ -4528,7 +4560,6 @@ begin
   begin
     if ExecuteProvider(FSelectedInfo.FileName) then
       Exit;
-
 
     if FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER then
       ShowMyComputerProperties(Handle)
@@ -5102,7 +5133,7 @@ begin
   ShowAbout;
 end;
 
-procedure TExplorerForm.PopupMenu8Popup(Sender: TObject);
+procedure TExplorerForm.PopupMenuTreeViewPopup(Sender: TObject);
 begin
  if TreeView.SelectedFolder<>nil then
  begin
@@ -8504,6 +8535,34 @@ begin
   BigImagesSizeForm.Execute(Self, fPictureSize, BigSizeCallBack);
 end;
 
+procedure TExplorerForm.PortableEventsCallBack(EventType: TPortableEventType;
+  DeviceID, ItemKey, ItemPath: string);
+var
+  Index, I: Integer;
+begin
+  case EventType of
+    peDeviceConnected,
+    peDeviceDisconnected:
+    begin
+      if FCurrentTypePath = EXPLORER_ITEM_COMPUTER then
+        Reload;
+    end;
+    //peItemAdded:
+    peItemRemoved:
+    begin
+      for I := 0 to ElvMain.Items.Count - 1 do
+      begin
+        Index := ItemIndexToMenuIndex(I);
+        if AnsiLowerCase(FFilesInfo[index].FileName) = AnsiLowerCase(cDevicesPath + '\' + ItemPath) then
+        begin
+          DeleteItemWithIndex(I);
+          Break;
+        end;
+      end;
+    end;
+  end;
+end;
+
 procedure TExplorerForm.BigSizeCallBack(Sender: TObject; SizeX,
   SizeY: integer);
 var
@@ -8561,7 +8620,7 @@ begin
     FShellTreeView.Align := alClient;
     FShellTreeView.HideSelection := False;
     FShellTreeView.AutoRefresh := False;
-    FShellTreeView.PopupMenu := PopupMenu8;
+    FShellTreeView.PopupMenu := PopupMenuTreeView;
     FShellTreeView.RightClickSelect := True;
     FShellTreeView.ShowRoot := False;
     FShellTreeView.OnChange := ShellTreeView1Change;
@@ -8629,7 +8688,7 @@ begin
   GoToSearchWindow1.ImageIndex := DB_IC_ADDTODB;
   OpeninSearchWindow1.ImageIndex := DB_IC_ADDTODB;
 
-  PopupMenu8.Images := DBKernel.ImageList;
+  PopupMenuTreeView.Images := DBKernel.ImageList;
   OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
   AddFolder2.ImageIndex := DB_IC_ADD_FOLDER;
 

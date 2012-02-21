@@ -379,7 +379,8 @@ uses
   uFormImportPicturesSettings in 'uFormImportPicturesSettings.pas' {FormImportPicturesSettings},
   uImportPicturesUtils in 'Units\uImportPicturesUtils.pas',
   uPicturesImportPatternEdit in 'uPicturesImportPatternEdit.pas' {PicturesImportPatternEdit},
-  uAnimatedJPEG in 'Units\Formats\uAnimatedJPEG.pas';
+  uAnimatedJPEG in 'Units\Formats\uAnimatedJPEG.pas',
+  uPathProviderUtils in 'Units\uPathProviderUtils.pas';
 
 {$R *.res}
 
@@ -671,6 +672,9 @@ begin
 
     SetSplashProgress(100);
 
+    if GetParamStrDBBool('/close') then
+      StopApplication;
+
     if DBTerminating then
       Application.ShowMainForm := False;
     if not DBTerminating then
@@ -739,6 +743,14 @@ begin
       ExecuteQuery(s1);
     end;
 
+    if GetParamStrDBBool('/installExt') then
+    begin
+      s1 := GetParamStrDBValue('/installExt');
+
+      InstallGraphicFileAssociationsFromParamStr(Application.ExeName, s1);
+      RefreshSystemIconCache;
+    end;
+
     if GetParamStrDBBool('/CPU1') then
       ProcessorCount := 1;
 
@@ -746,11 +758,6 @@ begin
     AllowDragAndDrop;
 
     TW.I.Start('Application.Run');
-
-{$IFDEF DEBUG}
-//  Application.CreateForm(TFormImportImages, FormImportImages);
-//  FormImportImages.Show;
-{$ENDIF}
 
     Application.Run;
 

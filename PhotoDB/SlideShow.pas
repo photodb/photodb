@@ -3,17 +3,53 @@ unit SlideShow;
 interface
 
 uses
-  Shellapi, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Menus, Buttons, SaveWindowPos, DB, ComObj, ShlObj,
-  AppEvnts, ImgList, UnitDBKernel, jpeg, Win32crc, CommCtrl,
+  Shellapi,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  Menus,
+  Buttons,
+  SaveWindowPos,
+  DB,
+  ComObj,
+  ShlObj,
+  AppEvnts,
+  ImgList,
+  UnitDBKernel,
+  jpeg,
+  Win32crc,
+  CommCtrl,
   uMemoryEx,
-  StdCtrls, math, ToolWin, ComCtrls, Tlayered_Bitmap, GraphicCrypt,
-  FormManegerUnit, UnitUpdateDBThread, DBCMenu, dolphin_db,
+  StdCtrls,
+  math,
+  ToolWin,
+  ComCtrls,
+  Tlayered_Bitmap,
+  GraphicCrypt,
+  FormManegerUnit,
+  UnitUpdateDBThread,
+  DBCMenu,
+  dolphin_db,
   uSearchTypes,
-  ShellContextMenu, DropSource, DropTarget, GIFImage, pngimage,
+  ShellContextMenu,
+  DropSource,
+  DropTarget,
+  GIFImage,
   uFileUtils,
-  Effects, GraphicsCool, UnitUpdateDBObject, DragDropFile, DragDrop,
-  uVistaFuncs, UnitDBDeclare, UnitFileExistsThread,
+  Effects,
+  GraphicsCool,
+  UnitUpdateDBObject,
+  DragDropFile,
+  DragDrop,
+  uVistaFuncs,
+  UnitDBDeclare,
+  UnitFileExistsThread,
   uBitmapUtils,
   uGUIDUtils,
   uCDMappingTypes,
@@ -49,7 +85,13 @@ uses
   u2DUtils,
   uVCLHelpers,
   uAnimatedJPEG,
-  ExplorerTypes;
+  ExplorerTypes,
+  uPathProviders,
+  uPathProviderUtils,
+  uPortableClasses,
+  uPortableDeviceUtils,
+  uPortableDeviceManager,
+  uShellNamespaceUtils;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
@@ -573,8 +615,8 @@ begin
     CurrentInfo.Count]);
 
   DisplayRating := Item.Rating;
-  TbRotateCCW.Enabled := True;
-  TbRotateCW.Enabled := True;
+  TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
+  TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
   UpdateCrypted;
 
   FSID := GetGUID;
@@ -905,8 +947,7 @@ begin
     CurrentFileNumber := 0;
   FCurrentPage := 0;
   if SlideShowNow then
-    if Item.Crypted or ValidCryptGraphicFile(Item.FileName)
-      then
+    if Item.Crypted or ValidCryptGraphicFile(Item.FileName)  then
       if DBKernel.FindPasswordForCryptImageFile(Item.FileName) = '' then
         Exit;
   if not SlideShowNow then
@@ -1265,10 +1306,10 @@ begin
     FullScreen1.Visible := not(FullScreenNow or SlideShowNow);
     SlideShow1.Visible := not(FullScreenNow or SlideShowNow);
     begin
-      AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Crypted and not FolderView;
-      DBItem1.Visible := not(SlideShowNow or FullScreenNow) and (Item.ID <> 0);
-      SetasDesktopWallpaper1.Visible := not(SlideShowNow) and ImageExists and not Item.Crypted and IsWallpaper(Item.FileName);
-      Rotate1.Visible := not(SlideShowNow) and ImageExists;
+      AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Crypted and not FolderView and not IsDevicePath(Item.FileName);
+      DBItem1.Visible := not(SlideShowNow or FullScreenNow) and (Item.ID <> 0)  and not IsDevicePath(Item.FileName);
+      SetasDesktopWallpaper1.Visible := not(SlideShowNow) and ImageExists and not Item.Crypted and IsWallpaper(Item.FileName) and not IsDevicePath(Item.FileName);
+      Rotate1.Visible := not(SlideShowNow) and ImageExists  and not IsDevicePath(Item.FileName);
       Properties1.Visible := not(SlideShowNow or FullScreenNow);
       GoToSearchWindow1.Visible := not(SlideShowNow);
       Explorer1.Visible := not(SlideShowNow);
@@ -1864,6 +1905,7 @@ begin
       if Msg.wParam = Byte('Z') then Properties1Click(Self);
       if Msg.wParam = Byte('X') then TbEncryptClick(Self);
       if Msg.wParam = Byte('W') then Resize1Click(Self);
+      if Msg.wParam = Byte('C') then Copy1Click(Self);
 
       if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N51Click(N01);
       if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N51Click(N11);
@@ -2431,12 +2473,19 @@ end;
 
 procedure TViewer.Copy1Click(Sender: TObject);
 var
-  FileList : TStrings;
+  FileList: TStrings;
 begin
   FileList := TStringList.Create;
   try
-    FileList.Add(Item.FileName);
-    Copy_Move(Application.Handle, True, FileList);
+    if not IsDevicePath(Item.FileName) then
+    begin
+      FileList.Add(Item.FileName);
+      Copy_Move(Application.Handle, True, FileList)
+    end else
+    begin
+      FileList.Add(ExtractFileName(Item.FileName));
+      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, PhotoDBPathToDevicePath(ExtractFilePath(Item.FileName)), FileList, Point(0, 0), nil, AnsiString('Copy'));
+    end;
   finally
      F(FileList);
   end;
@@ -2969,7 +3018,7 @@ begin
         ImageList_ReplaceIcon(Imlists[I].Handle, -1, Icons[I, J]);
         if I = 0 then
         begin
-          if J in [0, 1, 12, 14, 22, 23] then
+          if J in [0, 1, 8, 9, 12, 14, 22, 23] then
           begin
             B.Canvas.Rectangle(0, 0, 16, 16);
             DrawIconEx(B.Canvas.Handle, 0, 0, Icons[I, J], 16, 16, 0, 0, DI_NORMAL);
@@ -3199,10 +3248,16 @@ end;
 
 procedure TViewer.Properties1Click(Sender: TObject);
 begin
-  if Item.ID <> 0 then
-    PropertyManager.NewIDProperty(Item.ID).Execute(Item.ID)
-  else
-    PropertyManager.NewFileProperty(Item.FileName).ExecuteFileNoEx(Item.FileName);
+  if not IsDevicePath(Item.Path) then
+  begin
+    if Item.ID <> 0 then
+      PropertyManager.NewIDProperty(Item.ID).Execute(Item.ID)
+    else
+      PropertyManager.NewFileProperty(Item.FileName).ExecuteFileNoEx(Item.FileName);
+  end else
+  begin
+    ExecuteProviderFeature(Self, Item.Path, PATH_FEATURE_PROPERTIES)
+  end;
 end;
 
 procedure TViewer.Resize1Click(Sender: TObject);
@@ -3290,7 +3345,7 @@ begin
   Result := FSID;
 end;
 
-procedure TViewer.SetStaticImage(Image : TBitmap; Transparent : Boolean);
+procedure TViewer.SetStaticImage(Image: TBitmap; Transparent: Boolean);
 begin
   if CurrentFileNumber > CurrentInfo.Count - 1 then
     Exit;
@@ -3310,8 +3365,8 @@ begin
   TbSlideShow.Enabled := True;
   TbZoomOut.Enabled := True;
   TbZoomIn.Enabled := True;
-  TbRotateCCW.Enabled := True;
-  TbRotateCW.Enabled := True;
+  TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
+  TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
   TbRealSize.Down := False;
   TbFitToWindow.Down := False;
   TbZoomOut.Down := False;
@@ -3357,8 +3412,8 @@ begin
   TbZoomOut.Enabled := True;
   TbZoomIn.Enabled := True;
 
-  TbRotateCCW.Enabled := True;
-  TbRotateCW.Enabled := True;
+  TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
+  TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
 
   TbRealSize.Down := False;
   TbFitToWindow.Down := False;
@@ -3782,7 +3837,7 @@ end;
 
 procedure TViewer.UpdateCrypted;
 begin
-  TbEncrypt.Enabled := StaticPath(Item.FileName);
+  TbEncrypt.Enabled := StaticPath(Item.FileName) and not IsDevicePath(Item.FileName);;
   if Item.Crypted then
     TbEncrypt.ImageIndex := 24
   else
@@ -3909,7 +3964,7 @@ var
 begin
   Files := TStringList.Create;
   try
-    if FileExistsSafe(Item.FileName) then
+    if FileExistsSafe(Item.FileName) or IsDevicePath(Item.FileName) then
       Files.Add(Item.FileName);
     if Files.Count > 0 then
       GetPrintForm(Files);
@@ -3923,8 +3978,10 @@ var
   FQuery: TDataSet;
   Files: TStrings;
   EventInfo: TEventValues;
-  SQL_: string;
+  SQL_, DeviceName, DevicePath: string;
   DeleteID: Integer;
+  DItem: IPDItem;
+  Device: IPDevice;
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete file to recycle bin?'), L('Delete confirmation'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
@@ -3943,12 +4000,27 @@ begin
       end;
     end;
 
-    Files := TStringList.Create;
-    try
-      Files.Add(Item.FileName);
-      SilentDeleteFiles(Handle, Files, True);
-    finally
-      F(Files);
+    if not IsDevicePath(Item.FileName) then
+    begin
+      Files := TStringList.Create;
+      try
+        Files.Add(Item.FileName);
+        SilentDeleteFiles(Handle, Files, True);
+      finally
+        F(Files);
+      end;
+    end else
+    begin
+      DeviceName := ExtractDeviceName(Item.FileName);
+      DevicePath := ExtractDeviceItemPath(Item.FileName);
+      Device := CreateDeviceManagerInstance.GetDeviceByName(DeviceName);
+      if Device <> nil then
+      begin
+        DItem := Device.GetItemByPath(DevicePath);
+        if DItem <> nil then
+          if not Device.Delete(DItem.ItemKey) then
+            Exit;
+      end;
     end;
 
     CurrentInfo.Delete(CurrentFileNumber);
@@ -4172,8 +4244,8 @@ begin
     end;
 
   DisplayRating := Item.Rating;
-  TbRotateCCW.Enabled := True;
-  TbRotateCW.Enabled := True;
+  TbRotateCCW.Enabled := not IsDevicePath(FileName);
+  TbRotateCW.Enabled := not IsDevicePath(FileName);
   UpdateCrypted;
 end;
 
@@ -4259,7 +4331,7 @@ end;
 
 procedure TViewer.SetDisplayRating(const Value: Integer);
 begin
-  TbRating.Enabled := not (FolderView and (Item.ID = 0)) and not DBReadOnly;
+  TbRating.Enabled := (not (FolderView and (Item.ID = 0)) and not DBReadOnly) and not IsDevicePath(Item.Path);
 
   if Value >= 0 then
     TbRating.ImageIndex := 14 + Abs(Value)

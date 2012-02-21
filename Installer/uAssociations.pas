@@ -98,11 +98,11 @@ const
   ASSOCIATION_ADD_HANDLER_COMMAND = 'PhotoDBView';
   ASSOCIATION_PATH = '\Software\Classes\';
 
-function InstallGraphicFileAssociations(FileName: string;
-  CallBack: TInstallAssociationCallBack): Boolean;
-function AssociationStateToCheckboxState(AssociationState: TAssociationState;
-  Update: Boolean): TCheckBoxState;
+function InstallGraphicFileAssociations(FileName: string; CallBack: TInstallAssociationCallBack): Boolean;
+function InstallGraphicFileAssociationsFromParamStr(FileName, Parameters: string): Boolean;
+function AssociationStateToCheckboxState(AssociationState: TAssociationState; Update: Boolean): TCheckBoxState;
 function CheckboxStateToAssociationState(CheckBoxState: TCheckBoxState): TAssociationState;
+function CheckboxStateToString(CheckBoxState: TCheckBoxState): string;
 function IsGraphicFile(FileName: string): Boolean;
 function IsRAWImageFile(FileName: String): Boolean;
 
@@ -141,7 +141,7 @@ begin
   end;
 end;
 
-function CheckboxStateToAssociationState(CheckBoxState : TCheckBoxState) : TAssociationState;
+function CheckboxStateToAssociationState(CheckBoxState: TCheckBoxState): TAssociationState;
 begin
   case CheckBoxState of
     cbUnchecked:
@@ -150,6 +150,32 @@ begin
       Result := TAS_PHOTODB_HANDLER;
     cbChecked:
       Result := TAS_PHOTODB_DEFAULT;
+    else
+      raise Exception.Create('Invalid CheckBoxState');
+  end;
+end;
+
+function StringToAssociationState(State: string): TAssociationState;
+begin
+  if State = 'o' then
+    Result := TAS_INSTALLED_OTHER
+  else if State = 'h' then
+    Result := TAS_PHOTODB_HANDLER
+  else if State = 'c' then
+    Result := TAS_PHOTODB_DEFAULT
+  else
+    raise Exception.Create('Invalid State');
+end;
+
+function CheckboxStateToString(CheckBoxState: TCheckBoxState): string;
+begin
+  case CheckBoxState of
+    cbUnchecked:
+      Result := 'o';
+    cbGrayed:
+      Result := 'h';
+    cbChecked:
+      Result := 'c';
     else
       raise Exception.Create('Invalid CheckBoxState');
   end;
@@ -211,13 +237,45 @@ begin
   end;
 end;
 
-function InstallGraphicFileAssociations(FileName: string; CallBack : TInstallAssociationCallBack): Boolean;
+function InstallGraphicFileAssociationsFromParamStr(FileName, Parameters: string): Boolean;
+var
+  I: Integer;
+  P: Integer;
+  SL: TStringList;
+  S, Ext, State: string;
+begin
+  SL := TStringList.Create;
+  try
+    SL.Delimiter := ';';
+    SL.StrictDelimiter := True;
+    SL.DelimitedText := Parameters;
+
+    for I := 0 to SL.Count - 1 do
+    begin
+      S := SL[I];
+      P := Pos(':', S);
+      if P > 0 then
+      begin
+        Ext := Copy(S, 1, P - 1);
+        Delete(S, 1, P);
+        State := S;
+
+        TFileAssociations.Instance.Exts[Ext].State := StringToAssociationState(State);
+      end;
+    end;
+  finally
+    F(SL);
+  end;
+  Result := InstallGraphicFileAssociations(FileName, nil);
+end;
+
+function InstallGraphicFileAssociations(FileName: string; CallBack: TInstallAssociationCallBack): Boolean;
 var
   Reg: TRegistry;
   I: Integer;
   S, Ext: string;
   B, C: Boolean;
-  Terminate : Boolean;
+  Terminate: Boolean;
   CurrectAssociation: TAssociationState;
 begin
   Terminate := False;
@@ -531,7 +589,7 @@ var
   Reg: TRegistry;
   AssociationHandler, AssociationCommand : string;
 begin
-  Reg := TRegistry.Create;
+  Reg := TRegistry.Create(KEY_READ);
   try
     Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
 
