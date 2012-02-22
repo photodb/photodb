@@ -263,6 +263,7 @@ initialization:
 <Encrypting>[DB_IC_KEY]
 {
 initialization:
+  if ($DeviceItem=true) {InVisible;};
   if ($Crypted=true) {
     CreateItem("Enter password",DB_IC_PASSWORD,"EnterPasswordItemPopUpMenu;",false,0);
     CreateItem("Decrypt",DB_IC_DECRYPTIMAGE,"DeCryptItemPopUpMenu;",false,0);
@@ -377,6 +378,9 @@ run:
 
 <Rename>[DB_IC_RENAME]
 {
+initialization:
+  if ($DeviceItem=true) {InVisible;};
+run:
   RenameItemPopUpMenu;
 }
 

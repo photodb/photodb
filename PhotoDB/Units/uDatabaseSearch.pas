@@ -3,11 +3,37 @@ unit uDatabaseSearch;
 interface
 
 uses
-  Windows, Classes, SysUtils, DB, StrUtils, Math, CommonDBSupport, uDBBaseTypes,
-  uConstants, uDBUtils, UnitGroupsWork, UnitDBDeclare, uMemory, uDBFileTypes,
-  Graphics, uTranslate, jpeg, uJpegUtils, GraphicCrypt, UnitDBKernel,
-  uGraphicUtils, uBitmapUtils, DateUtils, uDBPopupMenuInfo, uAssociatedIcons,
-  uThreadEx, UnitDBCommonGraphics, uDBGraphicTypes, uPeopleSupport,
+  Windows,
+  Classes,
+  SysUtils,
+  DB,
+  StrUtils,
+  Math,
+  CommonDBSupport,
+  uDBBaseTypes,
+  uConstants,
+  uDBUtils,
+  UnitGroupsWork,
+  UnitDBDeclare,
+  uMemory,
+  uDBFileTypes,
+  Graphics,
+  uTranslate,
+  jpeg,
+  uJpegUtils,
+  GraphicCrypt,
+  UnitDBKernel,
+  uGraphicUtils,
+  uBitmapUtils,
+  DateUtils,
+  uDBPopupMenuInfo,
+  uAssociatedIcons,
+  uThreadEx,
+  UnitDBCommonGraphics,
+  uDBGraphicTypes,
+  uPeopleSupport,
+  uPortableDeviceUtils,
+  uAssociations,
   uSysUtils;
 
 const
@@ -731,10 +757,10 @@ end;
 
 procedure TDatabaseSearch.DoScanSimilarFiles(QueryParams: TDBQueryParams);
 var
-  Pic: TPicture;
+  GC: TGraphicClass;
+  G: TGraphic;
   TempSql,
   PassWord: string;
-  Graphic: TGraphic;
   TempBitmap,
   SBitmap: TBitmap;
   FQuery: TDataSet;
@@ -750,7 +776,7 @@ begin
   if not FSearchParams.IsEstimate then
   begin
 
-    Pic := TPicture.Create;
+    G := nil;
     try
       if GraphicCrypt.ValidCryptGraphicFile(ScanParams.ScanFileName) then
       begin
@@ -761,18 +787,29 @@ begin
         if PassWord = '' then
           Exit;
 
-        Graphic := DeCryptGraphicFile(ScanParams.ScanFileName, PassWord);
-        Pic.Graphic := Graphic;
-        F(Graphic);
+        G := DeCryptGraphicFile(ScanParams.ScanFileName, PassWord);
       end else
-        Pic.LoadFromFile(ScanParams.ScanFileName);
+      begin
+        GC := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ScanParams.ScanFileName));
+        if GC <> nil then
+        begin
+          G := GC.Create;
+          if not IsDevicePath(ScanParams.ScanFileName) then
+            G.LoadFromFile(ScanParams.ScanFileName)
+          else
+            G.LoadFromDevice(ScanParams.ScanFileName);
+        end;
+      end;
+
+      if G = nil then
+        Exit;
 
       //resampling image to DB size
-      JPEGScale(Pic.Graphic, 100, 100); //100x100 is the best size!
+      JPEGScale(G, 100, 100); //100x100 is the best size!
       TempBitmap := TBitmap.Create;
       try
         TempBitmap.PixelFormat := pf24bit;
-        AssignGraphic(TempBitmap, Pic.Graphic);
+        AssignGraphic(TempBitmap, G);
         SBitmap := TBitmap.Create;
         try
           SBitmap.PixelFormat := pf24bit;
@@ -882,7 +919,7 @@ begin
         F(TempBitmap);
       end;
     finally
-      F(Pic);
+      F(G);
     end;
   end;
 end;

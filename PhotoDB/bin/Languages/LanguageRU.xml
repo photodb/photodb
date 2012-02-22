@@ -1307,6 +1307,7 @@
 	<translate name="Dither" value="Dither" />
 	<translate name="Inverse" value="Инверсия" />
 	<translate name="Auto levels" value="Авто уровни" />
+	<translate name="Auto colors" value="Авто цвета" />
 	<translate name="Emboss" value="Барельеф" />
 	<translate name="Smoothing" value="Сглаживание" />
 	<translate name="Optimize image" value="Оптимизировать изображение" />	

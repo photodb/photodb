@@ -20,6 +20,7 @@ uses
   Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
   uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils, uSysUtils,
   uGUIDUtils,
+  uPortableDeviceUtils,
   uPortableScriptUtils;
 
 type
@@ -3109,6 +3110,7 @@ begin
   AddScriptFunction(Enviroment, 'FileExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @AFileExists);
   AddScriptFunction(Enviroment, 'DirectoryExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @ADirectoryExists);
   AddScriptFunction(Enviroment, 'DirectoryFileExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @ADirectoryFileExists);
+  AddScriptFunction(Enviroment, 'IsDevicePath', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @IsDevicePath);
   AddScriptFunction(Enviroment, 'AddAssociatedIcon', F_TYPE_FUNCTION_ADD_ICON, @AddAssociatedIcon);
   AddScriptFunction(Enviroment, 'PathFormat', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @APathFormat);
   AddScriptFunction(Enviroment, 'GetUSBDrives', F_TYPE_FUNCTION_IS_ARRAYSTRING, @GetUSBDrives);

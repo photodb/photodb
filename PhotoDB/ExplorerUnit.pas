@@ -1272,6 +1272,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
+    SendTo1.Visible := True;
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
     AddHiddenInfo1.Visible := (SelCount = 1);
@@ -1369,6 +1370,8 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
+    DBitem1.Visible := True;
+    SendTo1.Visible := True;
     StenoGraphia1.Visible := True;
     Print1.Visible := True;
     ImageEditor2.Visible := True;
@@ -1379,6 +1382,7 @@ begin
     Delete1.Visible := True;
     Cut2.Visible := True;
     Copy1.Visible := True;
+    ImageEditor2.Visible := True;
   end;
 
   if Info.FileType = EXPLORER_ITEM_PERSON_LIST then
@@ -1447,8 +1451,6 @@ begin
 
   if Info.ID = 0 then
   begin
-    if Info.FileType = EXPLORER_ITEM_IMAGE then
-      SendTo1.Visible := True;
     if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
       if Info.FileType = EXPLORER_ITEM_IMAGE then
       begin
@@ -3804,7 +3806,7 @@ begin
     end else
       EncryptLink.Visible := False;
 
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) then
+    if ((FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE)) and (SelCount = 1) then
     begin
       ImageEditorLink.Visible := True;
       ImageEditorLink.Top := NewTop + H;
@@ -3812,8 +3814,7 @@ begin
     end else
       ImageEditorLink.Visible := False;
 
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
-       (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
       PrintLink.Visible := True;
       PrintLink.Top := NewTop + H;
@@ -3913,20 +3914,13 @@ begin
     begin
       if SelCount <> 0 then
       begin
-        //TbDelete.Enabled := True;
         DeleteLink.Visible := True;
         DeleteLink.Top := NewTop + H;
         NewTop := DeleteLink.BoundsRect.Bottom;
       end else
-      begin
-        //TbDelete.Enabled := False;
         DeleteLink.Visible := False;
-      end;
     end else
-    begin
-      //TbDelete.Enabled := False;
       DeleteLink.Visible := False;
-    end;
 
     if ElvMain.Items.Count < 400 then
     begin

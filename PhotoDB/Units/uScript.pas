@@ -400,9 +400,9 @@ end;
 
 function TValue.GetValueType(Value: string): Integer;
 begin
-  if StrToIntDef(Value,-1) = StrToIntDef(Value,1) then
+  if StrToIntDef(Value, -1) = StrToIntDef(Value, 1) then
     Result := VALUE_TYPE_INTEGER
-  else if (Value='true') or (Value='false') then
+  else if (Value = 'true') or (Value = 'false') then
     Result := VALUE_TYPE_BOOLEAN
   else if StrToFloatDef(ConvertUniversalFloatToLocal(Value), -1) = StrToFloatDef(ConvertUniversalFloatToLocal(Value), 1) then
     Result := VALUE_TYPE_FLOAT

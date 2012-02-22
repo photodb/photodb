@@ -1274,22 +1274,29 @@ begin
 end;
 
 procedure TWIAEventManager.InitCallBacks;
+var
+  HR: HRESULT;
 begin
   if FManager = nil then
   begin
-    CoCreateInstance(CLSID_WiaDevMgr, nil, CLSCTX_LOCAL_SERVER, IID_IWiaDevMgr, FManager);
-    FEventCallBack := TWIAEventCallBack.Create;
-    FObjEventDeviceConnected := nil;
-    FObjEventDeviceDisconnected := nil;
-    FObjEventCallBackCreated := nil;
-    FObjEventCallBackDeleted := nil;
-
-    if FManager <> nil then
+    HR := CoInitializeEx(nil, COINIT_MULTITHREADED);
+    //COINIT_MULTITHREADED is already initialized
+    if HR = S_FALSE then
     begin
-      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_CONNECTED, FEventCallBack, FObjEventDeviceConnected);
-      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_DISCONNECTED, FEventCallBack, FObjEventDeviceDisconnected);
-      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
-      FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
+      CoCreateInstance(CLSID_WiaDevMgr, nil, CLSCTX_LOCAL_SERVER, IID_IWiaDevMgr, FManager);
+      FEventCallBack := TWIAEventCallBack.Create;
+      FObjEventDeviceConnected := nil;
+      FObjEventDeviceDisconnected := nil;
+      FObjEventCallBackCreated := nil;
+      FObjEventCallBackDeleted := nil;
+
+      if FManager <> nil then
+      begin
+        FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_CONNECTED, FEventCallBack, FObjEventDeviceConnected);
+        FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_DEVICE_DISCONNECTED, FEventCallBack, FObjEventDeviceDisconnected);
+        FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_CREATED, FEventCallBack, FObjEventCallBackCreated);
+        FManager.RegisterEventCallbackInterface(0, nil, @WIA_EVENT_ITEM_DELETED, FEventCallBack, FObjEventCallBackDeleted);
+      end;
     end;
   end;
 end;
@@ -1338,6 +1345,5 @@ initialization
 finalization
   F(FLock);
   F(FWiaManager);
-  F(FWiaEventManager);
 
 end.

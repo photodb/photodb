@@ -1368,54 +1368,59 @@ var
   FDevice: IPortableDevice;
   ClientInformation: IPortableDeviceValues;
 begin
-  FSync.Enter;
-  try
-    for EventDeviceInfo in FEventDevices do
-      if AnsiLowerCase(EventDeviceInfo.DeviceID) = AnsiLowerCase(Device.DeviceID) then
-        Exit;
+  HR := CoInitializeEx(nil, COINIT_MULTITHREADED);
+  //COINIT_MULTITHREADED is already initialized
+  if HR = S_FALSE then
+  begin
+    FSync.Enter;
+    try
+      for EventDeviceInfo in FEventDevices do
+        if AnsiLowerCase(EventDeviceInfo.DeviceID) = AnsiLowerCase(Device.DeviceID) then
+          Exit;
 
-    HR := CoCreateInstance(CLSID_PortableDeviceFTM,
-            nil,
-            CLSCTX_INPROC_SERVER,
-            IID_PortableDeviceFTM,
-            FDevice);
-
-    if SUCCEEDED(HR) then
-    begin
-
-      HR := CoCreateInstance(CLSID_PortableDeviceValues,
-                            nil,
-                            CLSCTX_INPROC_SERVER,
-                            IID_PortableDeviceValues,
-                            ClientInformation);
+      HR := CoCreateInstance(CLSID_PortableDeviceFTM,
+              nil,
+              CLSCTX_INPROC_SERVER,
+              IID_PortableDeviceFTM,
+              FDevice);
 
       if SUCCEEDED(HR) then
       begin
-        repeat
-          HR := FDevice.Open(PWideChar(Device.DeviceID), ClientInformation);
-        until E_RESOURCE_IN_USE <> HR;
 
-        if Succeeded(HR) then
+        HR := CoCreateInstance(CLSID_PortableDeviceValues,
+                              nil,
+                              CLSCTX_INPROC_SERVER,
+                              IID_PortableDeviceValues,
+                              ClientInformation);
+
+        if SUCCEEDED(HR) then
         begin
           repeat
-            HR := FDevice.Advise(0, FDeviceCallBack, nil, ppszCookie);
+            HR := FDevice.Open(PWideChar(Device.DeviceID), ClientInformation);
           until E_RESOURCE_IN_USE <> HR;
 
           if Succeeded(HR) then
           begin
-            EventDeviceInfo := TEventDeviceInfo.Create;
-            EventDeviceInfo.Device := FDevice;
-            EventDeviceInfo.DeviceID := Device.DeviceID;
-            EventDeviceInfo.Cookie := string(ppszCookie);
-            FEventDevices.Add(EventDeviceInfo);
-            CoTaskMemFree(ppszCookie);
+            repeat
+              HR := FDevice.Advise(0, FDeviceCallBack, nil, ppszCookie);
+            until E_RESOURCE_IN_USE <> HR;
+
+            if Succeeded(HR) then
+            begin
+              EventDeviceInfo := TEventDeviceInfo.Create;
+              EventDeviceInfo.Device := FDevice;
+              EventDeviceInfo.DeviceID := Device.DeviceID;
+              EventDeviceInfo.Cookie := string(ppszCookie);
+              FEventDevices.Add(EventDeviceInfo);
+              CoTaskMemFree(ppszCookie);
+            end;
           end;
         end;
       end;
-    end;
 
-  finally
-    FSync.Leave;
+    finally
+      FSync.Leave;
+    end;
   end;
 end;
 

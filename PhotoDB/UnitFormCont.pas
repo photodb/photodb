@@ -15,7 +15,8 @@ uses
   uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
   uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,
   uGraphicUtils, uDBBaseTypes, uSysUtils, uDBUtils, uDBFileTypes,
-  uRuntime, uSettings, uAssociations, SaveWindowPos;
+  uRuntime, uSettings, uAssociations, SaveWindowPos,
+  uPortableDeviceUtils;
 
 type
   TDestDype = class(TObject)
@@ -769,11 +770,11 @@ begin
     WlResize.Visible := True;
     WlConvert.Visible := True;
     ExportLink.Visible := True;
-    ExCopyLink.Visible := True;
+    ExCopyLink.Visible := not IsDevicePath(Data[Item.index].FileName);
     TbResize.Enabled := True;
     TbConvert.Enabled := True;
     TbExport.Enabled := True;
-    TbCopy.Enabled := True;
+    TbCopy.Enabled := ExCopyLink.Visible;
     LabelSize.Visible := True;
     LabelSize.Caption := Format(L('Items : %d'), [SelCount]);
   end;
@@ -1245,8 +1246,8 @@ procedure TFormCont.EasyListview1ItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  Y : Integer;
-  Info : TDBPopupMenuInfoRecord;
+  Y: Integer;
+  Info: TDBPopupMenuInfoRecord;
 begin
   if Item.Data = nil then
     Exit;
@@ -1257,7 +1258,7 @@ begin
   Info := Data[Item.Index];
 
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
-    True, Info.ID, Info.ExistedFileName,
+    not IsDevicePath(Info.FileName), Info.ID, Info.ExistedFileName,
     Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Include, Info.Exists, True);
 end;
 

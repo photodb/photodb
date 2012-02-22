@@ -348,7 +348,7 @@ begin
   Buffer := TBitmap.Create;
   Buffer.PixelFormat := Pf24bit;
   Tool := ToolNone;
-  FStatusProgress := CreateProgressBar(StatusBar1, 1);
+  FStatusProgress := CreateProgressBar(StatusBar1, 0);
   LockedImage := False;
   TempImage := False;
   Screen.Cursors[CUR_UPDOWN] := LoadCursor(HInstance, 'UPDOWN');
@@ -433,7 +433,7 @@ var
   I, J: Integer;
   P: PARGB;
 begin
-  StatusBar1.Panels[0].Text := L('Loading BMP format');
+  StatusBar1.Panels[1].Text := L('Loading BMP format');
   StatusBar1.Repaint;
   StatusBar1.Refresh;
 
@@ -465,14 +465,14 @@ begin
   end;
 
   FStatusProgress.Position := 0;
-  StatusBar1.Panels[0].Text := '';
+  StatusBar1.Panels[1].Text := '';
 end;
 
 procedure TImageEditor.LoadGIFImage(GIF: TGIFImage);
 var
   I, J: Integer;
 begin
-  StatusBar1.Panels[0].Text := L('Loading GIF format');
+  StatusBar1.Panels[1].Text := L('Loading GIF format');
 
   StatusBar1.Repaint;
   StatusBar1.Refresh;
@@ -504,12 +504,12 @@ begin
   CurrentImage.PixelFormat := pf24bit;
   MakePCurrentImage;
   FStatusProgress.Position := 0;
-  StatusBar1.Panels[0].Text := '';
+  StatusBar1.Panels[1].Text := '';
 end;
 
 procedure TImageEditor.LoadJPEGImage(JPEG: TJPEGImage);
 begin
-  StatusBar1.Panels[0].Text := L('Loading JPEG format');
+  StatusBar1.Panels[1].Text := L('Loading JPEG format');
   StatusBar1.Repaint;
   StatusBar1.Refresh;
   FStatusProgress.Max := 2;
@@ -519,7 +519,7 @@ begin
   CurrentImage.PixelFormat := pf24bit;
   MakePCurrentImage;
   FStatusProgress.Position := 0;
-  StatusBar1.Panels[0].Text := '';
+  StatusBar1.Panels[1].Text := '';
 end;
 
 procedure TImageEditor.LoadImageVariousformat(Image: TGraphic);
@@ -544,6 +544,10 @@ var
 begin
   if LockedImage then
     Exit;
+
+  if CurrentImage = nil then
+    Exit;
+
 
   if (CurrentImage.Height = 0) or (CurrentImage.Width = 0) then
     Exit;

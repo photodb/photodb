@@ -253,7 +253,8 @@ end;
 
 procedure TEffectsToolPanelClass.FreeNewImage;
 begin
-  CancelPointerToImage(NewImage);
+  if Assigned(CancelPointerToImage) then
+    CancelPointerToImage(NewImage);
   F(NewImage);
 end;
 

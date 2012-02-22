@@ -10,7 +10,6 @@ function ExecuteProviderFeature(Sender: TObject; FileName, Feature: string): Boo
 
 implementation
 
-
 function ExecuteProviderFeature(Sender: TObject; FileName, Feature: string): Boolean;
 var
   PL: TPathItemCollection;

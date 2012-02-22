@@ -40,15 +40,16 @@ type
     FSID: TGUID;
   protected
     procedure Execute; override;
-    procedure GetInfoByFileNameOrID(FileName : string; ID, N : integer; out Graphic : TGraphic);
-    Procedure NewItem(Graphic : TGraphic);
+    procedure GetInfoByFileNameOrID(FileName: string; ID, N: Integer; out Graphic: TGraphic);
+    Procedure NewItem(Graphic: TGraphic);
     procedure AddToPanel;
-    procedure CreateItemsByID(IDs : TArInteger);
+    procedure CreateItemsByID(IDs: TArInteger);
     procedure GetPictureSize;
     procedure GetSIDFromForm;
     procedure RemoveWorkerThread;
   public
-    constructor Create(Files : TArStrings; IDs : TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TDBForm);
+    constructor Create(Files: TArStrings; IDs: TArInteger; ArLoaded: TArBoolean;
+      UseLoaded, ByID: Boolean; Owner: TDBForm);
     destructor Destroy; override;
   end;
 
@@ -222,7 +223,7 @@ begin
 
           Graphic := nil;
 
-          if Fbyid then
+          if FByID then
             GetInfoByFileNameOrID(Ffiles[0], Fids[I], I, Graphic)
           else
             GetInfoByFileNameOrID(Ffiles[I], Fids[0], I, Graphic);
@@ -268,7 +269,7 @@ begin
   end;
 end;
 
-procedure LoadFilesToPanel.GetInfoByFileNameOrID(FileName: string; ID, N  : integer; out Graphic: TGraphic);
+procedure LoadFilesToPanel.GetInfoByFileNameOrID(FileName: string; ID, N: Integer; out Graphic: TGraphic);
 var
   Password, S: string;
   CryptFile: Boolean;
@@ -277,7 +278,7 @@ var
   GraphicClass : TGraphicClass;
 begin
   C := 0;
-  if not(FUseLoaded and not Fbyid and (FArLoaded[N] = True)) then
+  if not(FUseLoaded and not FByID and (FArLoaded[N] = True)) then
   begin
     FQuery.Active := False;
     if Fbyid then
@@ -310,6 +311,7 @@ begin
     FInfo.Crypted := CryptFile;
     FInfo.Include := True;
     FInfo.InfoLoaded := True;
+    FInfo.Exists := 1;
     UpdateImageRecordFromExif(FInfo, False);
     if CryptFile then
     begin

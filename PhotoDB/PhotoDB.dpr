@@ -380,7 +380,8 @@ uses
   uImportPicturesUtils in 'Units\uImportPicturesUtils.pas',
   uPicturesImportPatternEdit in 'uPicturesImportPatternEdit.pas' {PicturesImportPatternEdit},
   uAnimatedJPEG in 'Units\Formats\uAnimatedJPEG.pas',
-  uPathProviderUtils in 'Units\uPathProviderUtils.pas';
+  uPathProviderUtils in 'Units\uPathProviderUtils.pas',
+  uBufferedFileStream in 'Units\uBufferedFileStream.pas';
 
 {$R *.res}
 

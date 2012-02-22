@@ -2,7 +2,8 @@ unit UnitScriptsFunctions;
 
 interface
 
-uses Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
+uses
+  Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
   Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB, uFileUtils,
   UnitDBFileDialogs, Forms, uConstants, uLogger, uShellIntegration,
   uTime, uMemory, uTranslate, uRuntime, ReplaseIconsInScript;
@@ -65,7 +66,7 @@ function FileInPath(aFile, aPath: string): Boolean;
 function GetOpenDirectory(Caption, Root: string): string;
 function FileHasExt(aFile, aExt: string): Boolean;
 function ExtractFileDirectory(FileName: string): string;
-procedure ExecuteScriptFile(FileName: string; UseDBFunctions: Boolean = false);
+procedure ExecuteScriptFile(FileName: string; UseDBFunctions: Boolean = False);
 
 implementation
 

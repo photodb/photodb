@@ -3,22 +3,64 @@ unit DBCMenu;
 interface
 
 uses
-  StdCtrls, UnitGroupsWork, ComCtrls, Dolphin_DB, uMemoryEx,
-  dialogs,ExtCtrls, ShlObj, ComObj, ActiveX, Math, Controls,
-  forms, Registry, ShellApi, Windows, SysUtils, Classes, DB, uCDMappingTypes,
-  Graphics, Menus, UnitDBKernel, UnitCryptImageForm, GraphicCrypt,
-  ProgressActionUnit, PrintMainForm, JPEG, ShellContextMenu, uVistaFuncs,
-  UnitSQLOptimizing, UnitScripts, DBScriptFunctions, UnitRefreshDBRecordsThread,
-  EasyListview, UnitCryptingImagesThread, UnitINI, UnitDBDeclare, uTime,
-  uIconUtils, uScript, uLogger, uFileUtils, uMemory, uGOM, uBitmapUtils,
-  uDBPopupMenuInfo, uConstants, uPrivateHelper, uTranslate, uImageSource,
-  uShellIntegration, uDBBaseTypes, uDBForm, uDBUtils, uSettings, uDBAdapter,
-  Types;
+  UnitGroupsWork,
+  Types,
+  Dolphin_DB,
+  uMemoryEx,
+  ShlObj,
+  Math,
+  Forms,
+  ShellApi,
+  Windows,
+  SysUtils,
+  Classes,
+  DB,
+  uCDMappingTypes,
+  Graphics,
+  Menus,
+  UnitDBKernel,
+  UnitCryptImageForm,
+  GraphicCrypt,
+  ProgressActionUnit,
+  PrintMainForm,
+  ShellContextMenu,
+  UnitSQLOptimizing,
+  UnitScripts,
+  DBScriptFunctions,
+  UnitRefreshDBRecordsThread,
+  EasyListview,
+  UnitCryptingImagesThread,
+  UnitINI,
+  UnitDBDeclare,
+  uTime,
+  uIconUtils,
+  uScript,
+  uLogger,
+  uFileUtils,
+  uMemory,
+  uGOM,
+  uBitmapUtils,
+  uDBPopupMenuInfo,
+  uConstants,
+  uPrivateHelper,
+  uTranslate,
+  uImageSource,
+  uPathProviderUtils,
+  uPathProviders,
+  uSysUtils,
+  uShellIntegration,
+  uDBBaseTypes,
+  uDBForm,
+  uDBUtils,
+  uSettings,
+  uDBAdapter,
+  uPortableDeviceUtils,
+  uShellNamespaceUtils;
 
 type
   TDBPopupMenu = class
   private
-    _popupmenu: TPopupMenu;
+    _popupMenu: TPopupMenu;
     _user_group_menu: TMenuItem;
     _user_group_menu_sub_items: array of TMenuItem;
     _user_menu: array of TMenuItem;
@@ -123,7 +165,7 @@ begin
   begin
     for I := 0 to Item.Count - 1 do
       Item.Delete(0);
-    BusyMenu := Tmenuitem.Create(_popupmenu);
+    BusyMenu := Tmenuitem.Create(_popupMenu);
     BusyMenu.Caption := TA('Busy...', DBMenuID);
     BusyMenu.Enabled := False;
     Item.Add(BusyMenu);
@@ -133,7 +175,7 @@ begin
   begin
     for I := 0 to Item.Count - 1 do
       Item.Delete(0);
-    ErrorMenu := TMenuItem.Create(_popupmenu);
+    ErrorMenu := TMenuItem.Create(_popupMenu);
     ErrorMenu.Caption := TA('Unable to show menu!', DBMenuID);
     ErrorMenu.Enabled := False;
     Item.Add(ErrorMenu);
@@ -398,15 +440,35 @@ procedure TDBPopupMenu.CopyItemPopUpMenu_(Sender: TObject);
 var
   I: Integer;
   FileList: TStrings;
+  IsDeviceItems: Boolean;
+  Handle: THandle;
 begin
   FileList := TStringList.Create;
   try
+    IsDeviceItems := False;
     for I := 0 to FInfo.Count - 1 do
       if FInfo[I].Selected then
-        if FileExistsSafe(FInfo[I].FileName) then
-          FileList.Add(FInfo[I].FileName);
+      begin
+        if not IsDevicePath(FInfo[I].FileName) then
+        begin
+          if FileExistsSafe(FInfo[I].FileName) then
+            FileList.Add(FInfo[I].FileName);
+        end else
+        begin
+          IsDeviceItems := True;
+          FileList.Add(ExtractFileName(FInfo[I].FileName));
+        end;
+      end;
 
-    Copy_Move(Application.Handle, True, FileList);
+    if not IsDeviceItems then
+      Copy_Move(Application.Handle, True, FileList)
+    else
+    begin
+      Handle := 0;
+      if FOwner <> nil then
+        Handle := FOwner.Handle;
+      ExecuteShellPathRelativeToMyComputerMenuAction(Handle, PhotoDBPathToDevicePath(ExtractFileDir(FInfo[FInfo.Position].FileName)), FileList, Point(0, 0), nil, AnsiString('Copy'));
+    end;
   finally
     F(FileList);
   end;
@@ -449,14 +511,14 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowDuplicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowDuplicatesItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteDuplicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteDuplicatesItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'UserMenuItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,UserMenuItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'PrintItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrintItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'PrintItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT, PrintItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ConvertItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ConvertItemPopUpMenu_);
 
   AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesNo',Self.LoadVariablesNo);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesSelectedFileNo',Self.LoadVariablesSelectedFileNo);
 
-  _popupmenu := TPopupMenu.Create(nil);
+  _popupMenu := TPopupMenu.Create(nil);
 end;
 
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);
@@ -764,7 +826,7 @@ end;
 
 destructor TDBPopupMenu.destroy;
 begin
-  F(_popupmenu);
+  F(_popupMenu);
   if GOM.IsObj(aScript) then
     F(aScript);
   F(Finfo);
@@ -812,16 +874,16 @@ begin
     if FInfo.Count = 0 then
       Exit;
     begin
-      _popupmenu.Images := DBKernel.ImageList;
-      _popupmenu.Items.Clear;
-      AddDBContMenu(FOwner, _popupmenu.Items, Finfo);
-      _popupmenu.Popup(X, Y);
+      _popupMenu.Images := DBKernel.ImageList;
+      _popupMenu.Items.Clear;
+      AddDBContMenu(FOwner, _popupMenu.Items, Finfo);
+      _popupMenu.Popup(X, Y);
     end;
   end else
   begin
-    _popupmenu.Items.Clear;
-    AddDBContMenu(FOwner, _popupmenu.Items, Finfo);
-    _popupmenu.Popup(X, Y);
+    _popupMenu.Items.Clear;
+    AddDBContMenu(FOwner, _popupMenu.Items, Finfo);
+    _popupMenu.Popup(X, Y);
   end;
 end;
 
@@ -829,7 +891,7 @@ procedure TDBPopupMenu.ExecutePlus(Owner : TDBForm; X, Y: integer; Info: TDBPopu
   Menus: TArMenuitem);
 var
   I: Integer;
-  _menuitem_nil: TMenuItem;
+  _menuItem_nil: TMenuItem;
 begin
   FOwner := Owner;
   FPopUpPoint := Point(X, Y);
@@ -838,20 +900,20 @@ begin
     Exit;
   begin
 
-    _popupmenu.Images := DBKernel.ImageList;
+    _popupMenu.Images := DBKernel.ImageList;
     _popupmenu.Items.Clear;
-    AddDBContMenu(FOwner, _popupmenu.Items, Finfo);
+    AddDBContMenu(FOwner, _popupMenu.Items, Finfo);
     if Length(Menus) > 0 then
     begin
-      _menuitem_nil := Tmenuitem.Create(_popupmenu);
-      _menuitem_nil.Caption := '-';
-      _popupmenu.Items.Add(_menuitem_nil);
+      _menuItem_nil := Tmenuitem.Create(_popupMenu);
+      _menuItem_nil.Caption := '-';
+      _popupMenu.Items.Add(_menuItem_nil);
       for I := 0 to Length(Menus) - 1 do
       begin
-        _popupmenu.Items.Add(Menus[I]);
+        _popupMenu.Items.Add(Menus[I]);
       end;
     end;
-    _popupmenu.Popup(X, Y);
+    _popupMenu.Popup(X, Y);
 
   end;
 end;
@@ -1126,6 +1188,7 @@ begin
   SetNamedValueStr(AScript, '$FileName', ProcessPath(Item.FileName));
   SetNamedValueStr(AScript, '$KeyWords', Item.KeyWords);
   SetNamedValueStr(AScript, '$Links', Item.Links);
+  SetNamedValue(AScript, '$DeviceItem', IIF(IsDevicePath(Item.FileName), 'true', 'false'));
 end;
 
 procedure TDBPopupMenu.PrintItemPopUpMenu_(Sender: TObject);
@@ -1137,7 +1200,7 @@ begin
   try
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
-        if FileExistsSafe(Finfo[I].FileName) then
+        if FileExistsSafe(Finfo[I].FileName) or IsDevicePath(Finfo[I].FileName) then
           Files.Add(Finfo[I].FileName);
 
     if Files.Count <> 0 then
@@ -1204,6 +1267,44 @@ var
   WindowsProp: Boolean;
   SelectCount: Integer;
   FFiles: TStrings;
+  CI: TDBPopupMenuInfoRecord;
+
+  procedure ShowPathProperties;
+  var
+    I: Integer;
+    P, PI: TPathItem;
+    PL: TPathItemCollection;
+  begin
+    P := PathProviderManager.CreatePathItem(CI.FileName);
+    try
+      if P <> nil then
+      begin
+        if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
+        begin
+          PL := TPathItemCollection.Create;
+          try
+            for I := 0 to FInfo.Count - 1 do
+              if FInfo[I].Selected then
+              begin
+                PI := PathProviderManager.CreatePathItem(FInfo[I].FileName);
+                if PI <> nil then
+                  PL.Add(PI);
+              end;
+
+            P.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_PROPERTIES, nil);
+          finally
+            PL.FreeItems;
+            F(PL);
+          end;
+
+          Exit;
+        end;
+      end;
+    finally
+      F(P);
+    end;
+  end;
+
 begin
   SetLength(Items, 0);
   FFiles := TStringList.Create;
@@ -1213,7 +1314,10 @@ begin
     for I := 0 to FInfo.Count - 1 do
       if FInfo[I].Selected then
         Inc(SelectCount);
-    WindowsProp := (SelectCount > 1) and (FInfo[FInfo.Position].ID = 0);
+
+    CI := FInfo[FInfo.Position];
+
+    WindowsProp := (SelectCount > 1) and (CI.ID = 0);
     for I := 0 to FInfo.Count - 1 do
       if ((FInfo[I].ID <> 0) or WindowsProp) and FInfo[I].Selected then
       begin
@@ -1223,16 +1327,29 @@ begin
       end;
     if Length(Items) < 2 then
     begin
-      if FInfo[FInfo.Position].ID <> 0 then
-        PropertyManager.NewIDProperty(FInfo[FInfo.Position].ID).Execute(FInfo[FInfo.Position].ID);
-      if FInfo[FInfo.Position].ID = 0 then
-        if FInfo[FInfo.Position].FileName <> '' then
-          PropertyManager.NewFileProperty(FInfo[FInfo.Position].FileName).ExecuteFileNoEx(FInfo[FInfo.Position].FileName);
+      if CI.ID <> 0 then
+        PropertyManager.NewIDProperty(CI.ID).Execute(CI.ID);
+      if CI.ID = 0 then
+      begin
+        if not IsDevicePath(CI.FileName) then
+        begin
+          if CI.FileName <> '' then
+            PropertyManager.NewFileProperty(CI.FileName).ExecuteFileNoEx(CI.FileName);
+        end else
+        begin
+          ExecuteProviderFeature(FOwner, CI.FileName, PATH_FEATURE_PROPERTIES);
+        end;
+      end;
     end else
     begin
-      if FInfo[FInfo.Position].ID = 0 then
-        GetPropertiesWindows(FFiles, FormManager)
-      else
+      if CI.ID = 0 then
+      begin
+        if not IsDevicePath(CI.FileName) then
+          GetPropertiesWindows(FFiles, FormManager)
+        else
+          ShowPathProperties;
+
+      end else
         PropertyManager.NewSimpleProperty.ExecuteEx(Items);
     end;
   finally
@@ -1516,7 +1633,7 @@ begin
     MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
     Exit;
   end;
-  SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_TILE)
+  SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_TILE);
 end;
 
 initialization

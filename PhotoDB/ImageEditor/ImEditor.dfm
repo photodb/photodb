@@ -2895,10 +2895,10 @@ object ImageEditor: TImageEditor
     Align = alNone
     Panels = <
       item
-        Width = 200
+        Width = 100
       end
       item
-        Width = 150
+        Width = 300
       end>
   end
   object TempPanel: TPanel

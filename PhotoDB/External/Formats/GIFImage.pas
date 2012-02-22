@@ -362,6 +362,7 @@ uses
   sysutils,
   Windows,
   Graphics,
+  uBufferedFileStream,
   Classes;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1246,6 +1247,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
     procedure SaveToStream(Stream: TStream); override;
+    procedure LoadFromFile(const FileName: string); override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure LoadFromResourceName(Instance: THandle; const ResName: String);  // 2002.07.07
     function Add(Source: TPersistent): integer;
@@ -12156,6 +12158,18 @@ begin  // 2002.07.07
 {$ELSE}  // 2002.07.07
   Error(sGIFToClipboard);  // 2002.07.07
 {$ENDIF}  // 2002.07.07
+end;
+
+procedure TGIFImage.LoadFromFile(const FileName: string);
+var
+  FS: TReadOnlyCachedFileStream;
+begin
+  FS := TReadOnlyCachedFileStream.Create(Filename, 10 * 1024);
+  try
+    LoadFromStream(FS);
+  finally
+    FS.Free;
+  end;
 end;
 
 procedure TGIFImage.SaveToClipboardFormat(var AFormat: Word; var AData: THandle;
