@@ -76,8 +76,8 @@ initialization:
   { 
      $file=GetStringItem($files,$i);
 
-     $file_name=ExtractFileName($file);
-
+     $file_name=GetFileNameWithoutExt($file);
+	 $file_name=T($file_name);
      $script="ApplyActionsToSelected("""+$sID+""","""+$file+""");";
      CreateItem($file_name,DB_IC_APPLY_ACTION,$script,false,0);
   };

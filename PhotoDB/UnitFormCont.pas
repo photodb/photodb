@@ -192,7 +192,6 @@ type
     function GetVisibleItems: TArStrings;
     function FileNameExistsInList(FileName: string): Boolean;
     procedure ReplaseBitmapWithPath(FileName: string; Bitmap: TBitmap);
-//    procedure AddThread;
     procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
     procedure LoadLanguage;
     procedure LoadToolBarIcons;
@@ -1814,16 +1813,16 @@ end;
 
 procedure TFormCont.LoadToolBarIcons;
 var
-  Ico : HIcon;
+  Ico: HIcon;
 
-  procedure AddIcon(Name : String);
+  procedure AddIcon(Name: String);
   begin
     Ico := LoadIcon(HInstance, PWideChar(Name));
     ImageList_AddIcon(ToolBarImageList.Handle, Ico);
     DestroyIcon(Ico);
   end;
 
-  procedure AddDisabledIcon(Name : String);
+  procedure AddDisabledIcon(Name: String);
   begin
     Ico := LoadIcon(HInstance, PWideChar(Name));
     ImageList_AddIcon(ToolBarDisabledImageList.Handle, Ico);

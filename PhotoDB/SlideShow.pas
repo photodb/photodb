@@ -53,6 +53,7 @@ uses
   uBitmapUtils,
   uGUIDUtils,
   uCDMappingTypes,
+  uDBForm,
   uThreadForm,
   uLogger,
   uConstants,
@@ -3456,6 +3457,10 @@ begin
   AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
   ImageFrameTimer.Interval := 1;
   ImageFrameTimer.Enabled := True;
+
+  FFaces.Clear;
+  FFaceDetectionComplete := True;
+  UpdateFaceDetectionState;
 end;
 
 procedure TViewer.ImageFrameTimerTimer(Sender: TObject);
@@ -4099,7 +4104,15 @@ end;
 procedure TViewer.TbExploreClick(Sender: TObject);
 var
   E: TCustomExplorerForm;
+  F: TDBForm;
 begin
+  F := TFormCollection.Instance.GetFormByBounds<TCustomExplorerForm>(Self.BoundsRect);
+  if F is TCustomExplorerForm then
+  begin
+    F.Show;
+    Close;
+    Exit;
+  end;
   E := ExplorerManager.NewExplorer(False);
   E.SetOldPath(Item.FileName);
   E.SetPath(ExtractFileDir(Item.FileName));

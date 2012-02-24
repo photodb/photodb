@@ -624,7 +624,7 @@ begin
   begin
     for I := 0 to EditorsManager.EditorsCount - 1 do
     begin
-      if CID = GUIDToString(EditorsManager[I].WindowID) then
+      if AnsiLowerCase(CID) = AnsiLowerCase(GUIDToString(EditorsManager[I].WindowID)) then
       begin
         Result := EditorsManager[I];
         Break;

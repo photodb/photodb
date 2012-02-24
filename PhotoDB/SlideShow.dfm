@@ -682,6 +682,7 @@ object Viewer: TViewer
   end
   object ImFacePopup: TImageList
     ColorDepth = cd32Bit
+    BkColor = 15790320
     Left = 152
     Top = 368
   end

@@ -39,8 +39,8 @@ object ActionsForm: TActionsForm
     object SaveToFileLink: TWebLink
       Left = 8
       Top = 8
-      Width = 65
-      Height = 13
+      Width = 79
+      Height = 16
       Cursor = crHandPoint
       Text = 'Save To File'
       OnClick = SaveToFileLinkClick
@@ -54,12 +54,14 @@ object ActionsForm: TActionsForm
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object LoadFromFileLink: TWebLink
       Left = 8
       Top = 24
-      Width = 74
-      Height = 13
+      Width = 90
+      Height = 16
       Cursor = crHandPoint
       Text = 'Load From File'
       OnClick = LoadFromFileLinkClick
@@ -73,12 +75,14 @@ object ActionsForm: TActionsForm
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object CloseLink: TWebLink
       Left = 8
       Top = 40
-      Width = 31
-      Height = 13
+      Width = 47
+      Height = 16
       Cursor = crHandPoint
       Text = 'Close'
       OnClick = CloseLinkClick
@@ -92,9 +96,12 @@ object ActionsForm: TActionsForm
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
   end
   object ActionsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 168
     Top = 104
   end

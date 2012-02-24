@@ -98,10 +98,10 @@ begin
     try
       ExecuteScript(nil, AScript, LoadScript, I, nil);
     except
-      on e : Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
+      on e: Exception do EventLog(':ExecuteScriptFile() throw exception: '+e.Message);
     end;
   finally
-    AScript.Free;
+    F(AScript);
   end;
 end;
 

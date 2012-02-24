@@ -39,6 +39,7 @@ uses
   uGOM,
   UnitHintCeator,
   uDBDrawing,
+  uGraphicUtils,
   uSysUtils,
   UnitDBDeclare,
   uConstants,
@@ -266,7 +267,7 @@ begin
     FDragDrop := True;
     CurrentInfo := Info.Copy;
 
-    IsAnimated := ((G is TGIFImage) and ((G as TGIFImage).Images.Count > 1)) or (G is TAnimatedJPEG);
+    IsAnimated := IsAnimatedGraphic(G);
     InverseHW := not (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_180);
     if not (InverseHW and IsAnimated) then
     begin

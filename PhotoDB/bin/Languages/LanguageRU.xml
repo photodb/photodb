@@ -189,6 +189,8 @@
     <translate name="Delete" value="Удалить" />
     <translate name="Refresh" value="Обновить" />
     <translate name="Image editor" value="Редактор" />
+    <translate name="Crop" value="Кадрировать" />
+    <translate name="Image tasks" value="Изображение" />
     <translate name="Print" value="Печать" />
     <translate name="My pictures" value="Мои фотографии" />
     <translate name="My documents" value="Мои документы" />
@@ -765,6 +767,14 @@
 	<translate name="Please select directory to place for processed files" value="Выберите директорию, куда будут помещаться обработанные файлы" />	
 	<translate name="Portable devices" value="Портативные устройства" />
 	<translate name="No removable devices" value="Портативные устройства не найдены" />
+	<translate name="Auto colors and sharpness - FullHD (1920x1080)" value="Авто цвет и обострение - FullHD (1920x1080)" />
+	<translate name="Black-white - Full HD (1920x1080)" value="Чёрно-белое - Full HD (1920x1080)" />
+	<translate name="Black-white contrast - Full HD (1920x1080)" value="Чёрно-белое контрастное - Full HD (1920x1080)" />
+	<translate name="Resize 800x600" value="Уменьшить 800x600" />
+	<translate name="Resize FullHD (1920x1080)" value="Уменьшить FullHD (1920x1080)" />
+	<translate name="Resize HD (1280x720)" value="Уменьшить HD (1280x720)" />
+	<translate name="Sepia - FullHD (1920x1080)" value="Сепия - FullHD (1920x1080)" />
+	<translate name="Smart smooth - FullHD (1920x1080)" value="Умное сглаживание - FullHD (1920x1080)" />
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />
@@ -1751,6 +1761,7 @@
 	<translate name="Best perfomance" value="Лучшая производительность"/>
 	<translate name="Mpx" value="Мпкс"/>
 	<translate name="Clear cache" value="Очистить кэш"/>
+	<translate name="Red-cyan glasses for stereo images" value="Анаглифные (красно-синие) очки для стереоизображений"/>	
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>

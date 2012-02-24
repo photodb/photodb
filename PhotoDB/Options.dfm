@@ -529,6 +529,15 @@ object OptionsForm: TOptionsForm
         SignColor = clBlack
         MaxTransparencity = 255
       end
+      object CbRedCyanStereo: TCheckBox
+        Left = 8
+        Top = 314
+        Width = 418
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Red-cyan glasses for stereo images'
+        TabOrder = 9
+      end
     end
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'

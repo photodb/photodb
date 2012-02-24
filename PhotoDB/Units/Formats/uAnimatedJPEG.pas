@@ -10,15 +10,18 @@ uses
   uMemory,
   Classes,
   Graphics,
+  Math,
   uBitmapUtils,
   uJpegUtils,
   StrUtils,
+  GraphicsBaseTypes,
   jpeg;
 
 type
   TAnimatedJPEG = class(TBitmap)
   private
     FImages: TList<TBitmap>;
+    FIsRedCyan: Boolean;
     function GetCount: Integer;
     function GetImageByIndex(Index: Integer): TBitmap;
   protected
@@ -27,8 +30,10 @@ type
     destructor Destroy; override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure ResizeTo(Width, Height: Integer);
+    procedure LoadRedCyanImage;
     property Count: Integer read GetCount;        
     property Images[Index: Integer]: TBitmap read GetImageByIndex;
+    property IsRedCyan: Boolean read FIsRedCyan write FIsRedCyan;
   end;
 
 implementation
@@ -38,6 +43,7 @@ implementation
 constructor TAnimatedJPEG.Create;
 begin
   FImages := TList<TBitmap>.Create;
+  FIsRedCyan := False;
 end;
 
 destructor TAnimatedJPEG.Destroy;
@@ -159,10 +165,7 @@ begin
   end;
   
   Stream.Seek(Pos, soFromBeginning);
-  if FImages.Count > 1 then
-  begin
-    Assign(FImages[0]);
-  end else if FImages.Count = 1 then
+  if FImages.Count = 1 then
   begin
     B := FImages[0];
     BHalf := TBitmap.Create;
@@ -172,7 +175,6 @@ begin
         BHalf.PixelFormat := pf24Bit;
         BHalf.SetSize(B.Width div 2, B.Height);
         DrawImageExRect(BHalf, B, 0, 0, B.Width div 2, B.Height, 0, 0);
-        Assign(BHalf);
         FImages.Add(BHalf);
         
         BHalf := nil;
@@ -191,6 +193,52 @@ begin
       F(BHalf);
     end;
   end;
+  if FImages.Count > 0 then
+  begin
+    if not FIsRedCyan or (FImages.Count = 1) then
+      Assign(FImages[0])
+    else
+      LoadRedCyanImage;
+
+  end;
+end;
+
+procedure TAnimatedJPEG.LoadRedCyanImage;
+var
+  I, J, W, H: Integer;
+  PS1, PS2, PD: PARGB;
+  B: TBitmap;
+begin
+  if FImages.Count < 2 then
+  begin
+    Assign(FImages[0]);
+    Exit;
+  end;
+  B := TBitmap.Create;
+  try
+    B.PixelFormat := pf24Bit;
+    FImages[0].PixelFormat := pf24Bit;
+    FImages[1].PixelFormat := pf24Bit;
+    W := Math.Min(FImages[0].Width, FImages[1].Width);
+    H := Math.Min(FImages[0].Height, FImages[1].Height);
+    B.SetSize(W, H);
+
+    for I := 0 to H - 1 do
+    begin
+      PS1 := FImages[0].ScanLine[I];
+      PS2 := FImages[1].ScanLine[I];
+      PD := B.ScanLine[I];
+      for J := 0 to W - 1 do
+      begin
+        PD[J].R := PS1[J].R;
+        PD[J].G := PS2[J].G;
+        PD[J].B := PS2[J].B;
+      end;
+    end;
+    Assign(B);
+  finally
+    F(B);
+  end;
 end;
 
 procedure TAnimatedJPEG.ResizeTo(Width, Height: Integer);
@@ -200,14 +248,19 @@ var
 begin
   B := TBitmap.Create;
   try
-    B.Assign(Self);
-    uBitmapUtils.KeepProportions(B, 500, 500);
-    Assign(B);
     for I := 0 to Count - 1 do
     begin
       BI := FImages[I];
       uBitmapUtils.KeepProportions(B, 500, 500);
       FImages[I] := BI;
+    end;
+    if FIsRedCyan then
+      LoadRedCyanImage
+    else
+    begin
+      B.Assign(Self);
+      uBitmapUtils.KeepProportions(B, 500, 500);
+      Assign(B);
     end;
   finally
     F(B);

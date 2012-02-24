@@ -125,6 +125,7 @@ begin
 
     Graphic := GraphicClass.Create;
     try
+      InitGraphic(Graphic);
       Crypted := False;
       FilePass := '';
       if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
@@ -169,9 +170,7 @@ begin
 
           end;
         end else
-        begin
           Graphic.LoadFromDevice(FInfo.FileName);
-        end;
       end;
 
       if not CheckThreadState then
@@ -187,7 +186,7 @@ begin
         FOriginalHeight := FInfo.Image.Height;
       end;
 
-      if ((Graphic is TGifImage) and (TGifImage(Graphic).Images.Count > 1)) or (Graphic is TAnimatedJPEG) then
+      if IsAnimatedGraphic(Graphic) then
       begin
         if (Graphic is TAnimatedJPEG) then
           TAnimatedJPEG(Graphic).ResizeTo(500, 500);

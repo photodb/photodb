@@ -5,10 +5,29 @@ unit GraphicCrypt;
 interface
 
 uses
-  win32crc, Windows, SysUtils, Classes, Graphics, ADODB,
-  JPEG, PngImage, uFileUtils, uAssociations, uTiffImage,
-  GraphicEx, RAWImage, uConstants, uStrongCrypt, DECUtil, DECCipher,
-  GIFImage, DB, uMemoryUtils, uErrors, uShellUtils;
+  win32crc,
+  Windows,
+  SysUtils,
+  Classes,
+  Graphics,
+  ADODB,
+  JPEG,
+  PngImage,
+  uFileUtils,
+  uAssociations,
+  uTiffImage,
+  GraphicEx,
+  RAWImage,
+  uConstants,
+  uStrongCrypt,
+  DECUtil,
+  DECCipher,
+  GIFImage,
+  DB,
+  uMemoryUtils,
+  uErrors,
+  uGraphicUtils,
+  uShellUtils;
 
 type
   TCryptImageOptions = record
@@ -565,7 +584,7 @@ begin
         Exit;
 
       Result := GraphicClass.Create;
-
+      InitGraphic(Result);
       if (Result is TRAWImage) then
          (Result as TRAWImage).IsPreview := not LoadFullRAW;
 

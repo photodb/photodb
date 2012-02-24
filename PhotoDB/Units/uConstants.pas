@@ -208,6 +208,8 @@ const
   DB_IC_CD_IMAGE       = 118;
   DB_IC_ROTATE_MAGIC   = 119;
   DB_IC_PEOPLE         = 120;
+  DB_IC_CAMERA         = 121;
+  DB_IC_CROP           = 122;
 
 const
     WM_DROPFILES = $0233;

@@ -17,9 +17,9 @@ type
     View1: TMenuItem;
     Explorer1: TMenuItem;
     ReAddAll1: TMenuItem;
-    Button1: TButton;
+    BtnOk: TButton;
     procedure FormCreate(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure InfoListBoxDblClick(Sender: TObject);
     procedure InfoListBoxContextPopup(Sender: TObject; MousePos: TPoint;
@@ -90,7 +90,7 @@ begin
   try
     InfoLabel.Caption := L('In this list are the files that for whatever reasons, have not been added') + ':';
     Caption := L('Update history');
-    Button1.Caption := L('Ok');
+    BtnOk.Caption := L('Ok');
     View1.Caption := L('Slide show');
     Explorer1.Caption := L('Explorer');
     ReAddAll1.Caption := L('Add all files again');
@@ -99,7 +99,7 @@ begin
   end;
 end;
 
-procedure TFormHistory.Button1Click(Sender: TObject);
+procedure TFormHistory.BtnOkClick(Sender: TObject);
 begin
   Close;
 end;

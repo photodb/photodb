@@ -1,7 +1,6 @@
 ﻿  @functions 
 
   .void ApplyActionsToSelected($ID,$FILE){
-
     LOAD_VARS($ID);
     DELETE_VAR($FileName);
     DELETE_VAR($Selected);
@@ -53,7 +52,7 @@
           $form=NewImageEditor;
           ShowDBForm($form);
           ImageEditorOpenFileName($form,$FileName);
-          //!!!
+          
           SAVE_VAR($sID,$FileDoneCounter);
           ImageEditorRegisterCallBack($form,$sID,"CallBackProc");
           ExecuteActions($form,$FILE,$NewFileName);

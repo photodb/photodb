@@ -2169,7 +2169,7 @@ object ImageEditor: TImageEditor
       CanClick = True
     end
     object UndoLink: TWebLink
-      Left = 512
+      Left = 527
       Top = 8
       Width = 54
       Height = 24
@@ -2305,7 +2305,7 @@ object ImageEditor: TImageEditor
       CanClick = True
     end
     object RedoLink: TWebLink
-      Left = 608
+      Left = 625
       Top = 8
       Width = 54
       Height = 24
@@ -2441,7 +2441,7 @@ object ImageEditor: TImageEditor
       CanClick = True
     end
     object FitToSizeLink: TWebLink
-      Left = 392
+      Left = 395
       Top = 8
       Width = 78
       Height = 24

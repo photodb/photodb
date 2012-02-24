@@ -363,10 +363,7 @@ begin
   FFiles := TStringList.Create;
   LvMain.DoubleBuffered := True;
   VirtualBitmap := nil;
-  ZoomInLink.LoadIconSize(ZoomInLink.Icon, 16, 16);
-  ZoomOutLink.LoadIconSize(ZoomOutLink.Icon, 16, 16);
-  FitToSizeLink.LoadIconSize(FitToSizeLink.Icon, 16, 16);
-  FullSizeLink.LoadIconSize(FullSizeLink.Icon, 16, 16);
+
   FStatusProgress := CreateProgressBar(StatusBar1, 0);
   FStatusProgress.Hide;
 

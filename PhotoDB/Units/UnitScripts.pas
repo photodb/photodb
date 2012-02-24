@@ -16,10 +16,31 @@ interface
 {$ENDIF}
 
 uses
-  Windows, Menus, SysUtils, Graphics, ShellAPI, StrUtils, Dialogs, uMemoryEx,
-  Classes, Controls, Registry, ShlObj, Forms, StdCtrls, uScript, uStringUtils,
-  uMemory, uGOM, uTime, uTranslate, uRuntime, uActivationUtils, uSysUtils,
+  Windows,
+  Menus,
+  SysUtils,
+  Graphics,
+  ShellAPI,
+  StrUtils,
+  Dialogs,
+  uMemoryEx,
+  Classes,
+  Controls,
+  Registry,
+  ShlObj,
+  Forms,
+  StdCtrls,
+  uScript,
+  uStringUtils,
+  uMemory,
+  uGOM,
+  uTime,
+  uTranslate,
+  uRuntime,
+  uActivationUtils,
+  uSysUtils,
   uGUIDUtils,
+  uFileUtils,
   uPortableDeviceUtils,
   uPortableScriptUtils;
 
@@ -791,7 +812,7 @@ begin
   Result := TrimRight(Result);
 end;
 
-function OneParam(const aFunction : string) : string;
+function OneParam(const aFunction: string): string;
 var
   Fb, Fe: Integer;
 begin
@@ -800,7 +821,7 @@ begin
   Result := Copy(AFunction, Fb + 1, Fe - Fb - 1);
 end;
 
-function FirstParam(const aFunction : string) : string;
+function FirstParam(const aFunction : string): string;
 var
   Fb, Fe, P: Integer;
 begin
@@ -812,7 +833,7 @@ begin
   Result := Copy(AFunction, Fb + 1, P - Fb - 1);
 end;
 
-function SecondParam(const aFunction : string) : string;
+function SecondParam(const aFunction: string): string;
 var
   Fb, Fe, P: Integer;
 begin
@@ -822,7 +843,7 @@ begin
   Result := Copy(AFunction, P + 1, Fe - P - 1);
 end;
 
-function ParamNO(const aFunction : string; const N : integer) : string;
+function ParamNO(const aFunction: string; const N: Integer): string;
 var
   Fb, I, P, Px, Pold: Integer;
 begin
@@ -832,8 +853,8 @@ begin
   for I := 1 to N do
   begin
     Pold := P;
-    P := PosEx(',', AFunction, P + 1);
-    Px := PosEx(')', AFunction, P + 1);
+    P := PosExS(',', AFunction, P + 1);
+    Px := PosExS(')', AFunction, IIF(P = 0, Pold, P) + 1);
     if (Px < P) or (P = 0) then
       P := Px;
   end;
@@ -842,7 +863,7 @@ begin
   Result := Copy(AFunction, Pold + 1, P - Pold - 1);
 end;
 
-function RightEvalution(const aScript : TScript; Evalution : string) : boolean;
+function RightEvalution(const aScript: TScript; Evalution: string): Boolean;
 var
  _as, _bs : string;
  _ai, _bi : integer;
@@ -3110,7 +3131,6 @@ begin
   AddScriptFunction(Enviroment, 'FileExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @AFileExists);
   AddScriptFunction(Enviroment, 'DirectoryExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @ADirectoryExists);
   AddScriptFunction(Enviroment, 'DirectoryFileExists', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @ADirectoryFileExists);
-  AddScriptFunction(Enviroment, 'IsDevicePath', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @IsDevicePath);
   AddScriptFunction(Enviroment, 'AddAssociatedIcon', F_TYPE_FUNCTION_ADD_ICON, @AddAssociatedIcon);
   AddScriptFunction(Enviroment, 'PathFormat', F_TYPE_FUNCTION_STRING_STRING_IS_STRING, @APathFormat);
   AddScriptFunction(Enviroment, 'GetUSBDrives', F_TYPE_FUNCTION_IS_ARRAYSTRING, @GetUSBDrives);
@@ -3144,6 +3164,7 @@ begin
   AddScriptFunction(Enviroment, 'ExtractFileName', F_TYPE_FUNCTION_STRING_IS_STRING, @AExtractFileName);
 
   AddScriptFunction(Enviroment, 'ExtractFileDirectory', F_TYPE_FUNCTION_STRING_IS_STRING, @ExtractFileDirectory);
+  AddScriptFunction(Enviroment, 'GetFileNameWithoutExt', F_TYPE_FUNCTION_STRING_IS_STRING, @GetFileNameWithoutExt);
   AddScriptFunction(Enviroment, 'ExecuteScriptFile', F_TYPE_PROCEDURE_TSCRIPT_STRING_W, @ExecuteScriptFile);
 {$ENDIF EXT}
   AddScriptFunction(Enviroment, 'MessageBox', F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER, @AMessageBox);
@@ -3160,6 +3181,7 @@ begin
   //////////////////////////////////////////////////////////////////////////////
   AddScriptFunction(Enviroment, 'GetPortableDevices', F_TYPE_FUNCTION_IS_ARRAYSTRING, @GetPortableDevices);
   AddScriptFunction(Enviroment, 'GetPortableDeviceIcon', F_TYPE_FUNCTION_ADD_ICON, @GetPortableDeviceIcon);
+  AddScriptFunction(Enviroment, 'IsDevicePath', F_TYPE_FUNCTION_STRING_IS_BOOLEAN, @IsDevicePath);
 end;
 
 procedure LoadFileFunctions(Enviroment: TScriptEnviroment);

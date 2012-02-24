@@ -58,7 +58,7 @@ object FormHistory: TFormHistory
     OnDrawItem = InfoListBoxDrawItem
     OnMeasureItem = InfoListBoxMeasureItem
   end
-  object Button1: TButton
+  object BtnOk: TButton
     Left = 299
     Top = 254
     Width = 75
@@ -66,7 +66,7 @@ object FormHistory: TFormHistory
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 2
-    OnClick = Button1Click
+    OnClick = BtnOkClick
   end
   object PmActions: TPopupMenu
     Left = 112

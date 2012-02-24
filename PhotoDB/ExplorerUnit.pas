@@ -344,6 +344,10 @@ type
     PmPathMenu: TPopupMenu;
     MiCopyAddress: TMenuItem;
     MiEditAddress: TMenuItem;
+    ImageTasksLabel: TLabel;
+    WlResize: TWebLink;
+    WlConvert: TWebLink;
+    WlCrop: TWebLink;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -539,6 +543,7 @@ type
       var Handled: Boolean);
     procedure MiCopyAddressClick(Sender: TObject);
     procedure MiEditAddressClick(Sender: TObject);
+    procedure WlCropClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -3671,13 +3676,13 @@ begin
     NameLabel.Constraints.MinWidth := ScrollBox1.Width - ScrollBox1.Left - Otstup - ScrollBox1.VertScrollBar.ButtonSize;
     NewTop := NameLabel.BoundsRect.Bottom;
 
-    TypeLabel.Caption := FSelectedInfo.FileTypeW;
     if FSelectedInfo.FileTypeW <> '' then
     begin
       TypeLabel.Top := NewTop + H;
       TypeLabel.Visible := True;
       TypeLabel.Constraints.MaxWidth := NameLabel.Constraints.MaxWidth;
       TypeLabel.Constraints.MinWidth := NameLabel.Constraints.MinWidth;
+      TypeLabel.Caption := FSelectedInfo.FileTypeW;
       NewTop := TypeLabel.BoundsRect.Bottom;
     end else
       TypeLabel.Visible := False;
@@ -3708,7 +3713,7 @@ begin
       NewTop := DimensionsLabel.BoundsRect.Bottom;
     end;
 
-    if (FSelectedInfo.Size <> -1) or (FSelectedInfo.FileType= EXPLORER_ITEM_DRIVE) then
+    if (FSelectedInfo.Size <> -1) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
     begin
       if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) and (Length(FSelectedInfo.FileName) > 0) then
       begin
@@ -3734,7 +3739,6 @@ begin
       end;
     end else
       SizeLabel.Visible := False;
-
 
     if FSelectedInfo.ID <> 0 then
     begin
@@ -3773,6 +3777,70 @@ begin
       AccessLabel.Hide;
     end;
 
+    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+    begin
+      NewTop := NewTop + H * 4;
+      ImageTasksLabel.Show;
+      ImageTasksLabel.Top := NewTop;
+      NewTop := ImageTasksLabel.BoundsRect.Bottom;
+
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
+      begin
+        if not FSelectedInfo.Encrypted then
+        begin
+          EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
+          EncryptLink.Text := L('Encrypt');
+          EncryptLink.Tag := ACTION_CRYPT_IMAGES;
+        end else
+        begin
+          EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
+          EncryptLink.Text := L('Decrypt');
+          EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
+        end;
+        EncryptLink.Visible := True;
+        EncryptLink.Top := NewTop + H;
+        NewTop := EncryptLink.BoundsRect.Bottom;
+      end else
+        EncryptLink.Visible := False;
+
+      WlResize.Visible := True;
+      WlResize.Top := NewTop + H;
+      NewTop := WlResize.BoundsRect.Bottom;
+
+      WlConvert.Visible := True;
+      WlConvert.Top := NewTop + H;
+      NewTop := WlConvert.BoundsRect.Bottom;
+
+      WlCrop.Visible := True;
+      WlCrop.Top := NewTop + H;
+      NewTop := WlCrop.BoundsRect.Bottom;
+
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+      begin
+        PrintLink.Visible := True;
+        PrintLink.Top := NewTop + H;
+        NewTop := PrintLink.BoundsRect.Bottom;
+      end else
+        PrintLink.Visible := False;
+
+      if ((FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE)) and (SelCount = 1) then
+      begin
+        ImageEditorLink.Visible := True;
+        ImageEditorLink.Top := NewTop + H;
+        NewTop := ImageEditorLink.BoundsRect.Bottom;
+      end else
+        ImageEditorLink.Visible := False;
+    end else
+    begin
+      ImageTasksLabel.Hide;
+      WlResize.Visible := False;
+      WlConvert.Visible := False;
+      WlCrop.Visible := False;
+      EncryptLink.Visible := False;
+      PrintLink.Visible := False;
+      ImageEditorLink.Visible := False;
+    end;
+
     NewTop := NewTop + H * 4;
     TasksLabel.Top := NewTop;
     NewTop := TasksLabel.BoundsRect.Bottom;
@@ -3786,41 +3854,6 @@ begin
       NewTop := SlideShowLink.BoundsRect.Bottom;
     end else
       SlideShowLink.Visible := False;
-
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
-    begin
-      if not FSelectedInfo.Encrypted then
-      begin
-        EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
-        EncryptLink.Text := L('Encrypt');
-        EncryptLink.Tag := ACTION_CRYPT_IMAGES;
-      end else
-      begin
-        EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
-        EncryptLink.Text := L('Decrypt');
-        EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
-      end;
-      EncryptLink.Visible := True;
-      EncryptLink.Top := NewTop + H;
-      NewTop := EncryptLink.BoundsRect.Bottom;
-    end else
-      EncryptLink.Visible := False;
-
-    if ((FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE)) and (SelCount = 1) then
-    begin
-      ImageEditorLink.Visible := True;
-      ImageEditorLink.Top := NewTop + H;
-      NewTop := ImageEditorLink.BoundsRect.Bottom;
-    end else
-      ImageEditorLink.Visible := False;
-
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
-    begin
-      PrintLink.Visible := True;
-      PrintLink.Top := NewTop + H;
-      NewTop := PrintLink.BoundsRect.Bottom;
-    end else
-      PrintLink.Visible := False;
 
     if (((((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
               (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
@@ -4980,6 +5013,11 @@ begin
     MyComputerLink.Text := L('My Computer');
     AddLink.Text := L('Add to collection');
 
+    ImageTasksLabel.Caption := L('Image tasks');
+    WlResize.Text := L('Resize');
+    WlConvert.Text := L('Convert');
+    WlCrop.Text := L('Crop');
+
     Label1.Caption := L('Preview');
     TasksLabel.Caption := L('Tasks');
     Open1.Caption := L('Open');
@@ -5689,8 +5727,13 @@ end;
 procedure TExplorerForm.Resize1Click(Sender: TObject);
 var
   List: TDBPopupMenuInfo;
+  Item: TEasyItem;
 begin
-  List := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
+  if Sender = WlResize then
+    Item := ElvMain.Selection.First
+  else
+    Item := ElvMain.Selection.FocusedItem;
+  List := GetCurrentPopUpMenuInfo(Item);
   try
     ResizeImages(Self, List);
   finally
@@ -5701,8 +5744,13 @@ end;
 procedure TExplorerForm.Convert1Click(Sender: TObject);
 var
   List: TDBPopupMenuInfo;
+  Item: TEasyItem;
 begin
-  List := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
+  if Sender = WlConvert then
+    Item := ElvMain.Selection.First
+  else
+    Item := ElvMain.Selection.FocusedItem;
+  List := GetCurrentPopUpMenuInfo(Item);
   try
     ConvertImages(Self, List);
   finally
@@ -5712,7 +5760,7 @@ end;
 
 procedure TExplorerForm.Stretch1Click(Sender: TObject);
 var
-  FileName : string;
+  FileName: string;
 begin
   FileName:=fFilesInfo[PmItemPopup.Tag].FileName;
   SetDesktopWallpaper(FileName, WPSTYLE_STRETCH);
@@ -6067,19 +6115,17 @@ end;
 
 procedure TExplorerForm.ImageEditor2Click(Sender: TObject);
 var
-  I, Index : integer;
+  Index : integer;
 begin
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
+  if ElvMain.Selection.FocusedItem <> nil then
+  begin
+    Index := ItemIndexToMenuIndex(ElvMain.Selection.FocusedItem.Index);
+    with EditorsManager.NewEditor do
     begin
-      Index := ItemIndexToMenuIndex(I);
-      with EditorsManager.NewEditor do
-      begin
-        Show;
-        OpenFileName(FFilesInfo[index].FileName);
-      end;
-      Break;
+      Show;
+      OpenFileName(FFilesInfo[index].FileName);
     end;
+  end;
 end;
 
 procedure TExplorerForm.ImageEditorLinkClick(Sender: TObject);
@@ -7054,6 +7100,22 @@ end;
 procedure TExplorerForm.WlCreateObjectClick(Sender: TObject);
 begin
   CreateNewGroupDialog;
+end;
+
+procedure TExplorerForm.WlCropClick(Sender: TObject);
+var
+  Item: TEasyItem;
+begin
+  Item := ListView1Selected;
+  if Item <> nil then
+  begin
+    with EditorsManager.NewEditor do
+    begin
+      Show;
+      OpenFileName(FFilesInfo[ItemIndexToMenuIndex(Item.index)].FileName);
+      CropLinkClick(nil);
+    end;
+  end;
 end;
 
 procedure TExplorerForm.WMDeviceChange(var Msg: TMessage);
@@ -8757,6 +8819,10 @@ begin
   MyComputerLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_COMPUTER + 1]);
   DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]);
   WlCreateObject.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW_SHELL + 1]);
+
+  WlResize.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
+  WlConvert.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
+  WlCrop.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CROP + 1]);
 end;
 
 destructor TExplorerForm.Destroy;

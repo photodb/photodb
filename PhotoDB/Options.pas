@@ -199,6 +199,7 @@ type
     CbDetectionSize: TComboBox;
     BtnClearFaceDetectionCache: TButton;
     LsFaceDetectionClearCache: TLoadingSign;
+    CbRedCyanStereo: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -355,6 +356,7 @@ begin
       if Integer(CbDetectionSize.Items.Objects[I]) = Size then
         CbDetectionSize.ItemIndex := I;
 
+    CbRedCyanStereo.Checked := Settings.ReadString('Options', 'StereoMode', '') <> '';
   end;
   if NewTab = 4 then
   begin
@@ -642,6 +644,8 @@ begin
 
     Settings.WriteBool('Options', 'ViewerFaceDetection', CbViewerFaceDetection.Checked);
     Settings.WriteInteger('Options', 'FaceDetectionSize', Integer(CbDetectionSize.Items.Objects[CbDetectionSize.ItemIndex]));
+    Settings.WriteString('Options', 'StereoMode', IIF(CbRedCyanStereo.Checked, 'RedCyan', ''));
+
   end;
 
   Settings.ClearCache;
@@ -847,6 +851,8 @@ begin
 
     cbViewerFaceDetection.Caption := L('Enable face detection');
     lbDetectionSize.Caption := L('Detection size') + ':';
+
+    CbRedCyanStereo.Caption := L('Red-cyan glasses for stereo images');
 
     for I := 1 to 5 do
     begin

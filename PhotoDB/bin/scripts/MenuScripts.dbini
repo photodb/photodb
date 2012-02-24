@@ -12,7 +12,7 @@
     {
      $script_path=GetProgramPath;
      $script_path=ExtractFileDirectory($script_path);
-     $script_path=$script_path+"\scripts";
+     $script_path=$script_path+"scripts\";
      NewExplorerByPath($script_path);
     }
   }

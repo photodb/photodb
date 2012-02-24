@@ -3,9 +3,25 @@ unit uGraphicUtils;
 interface
 
 uses
-  Windows, SysUtils, Classes, Graphics, Jpeg, Math, uConstants,
-  uMemory, uBitmapUtils, Forms, Messages, uJpegUtils, RAWImage, pngimage,
-  uPngUtils, GIFImage, GraphicsBaseTypes;
+  Windows,
+  SysUtils,
+  Classes,
+  Graphics,
+  Jpeg,
+  Math,
+  uConstants,
+  uMemory,
+  uBitmapUtils,
+  Forms,
+  Messages,
+  uJpegUtils,
+  RAWImage,
+  pngimage,
+  uPngUtils,
+  GIFImage,
+  GraphicsBaseTypes,
+  uAnimatedJPEG,
+  uSettings;
 
 procedure BeginScreenUpdate(Hwnd: THandle);
 procedure EndScreenUpdate(Hwnd: THandle; Erase: Boolean);
@@ -17,8 +33,29 @@ function ColorDarken(Color: TColor): TColor;
 procedure AssignGraphic(Dest: TBitmap; Src: TGraphic);
 procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
+procedure InitGraphic(G: TGraphic);
+function IsAnimatedGraphic(G: TGraphic): Boolean;
 
 implementation
+
+procedure InitGraphic(G: TGraphic);
+begin
+  if G is TAnimatedJPEG then
+  begin
+    if Settings.ReadString('Options', 'StereoMode', '') <> '' then
+      TAnimatedJPEG(G).IsRedCyan := True;
+  end;
+end;
+
+function IsAnimatedGraphic(G: TGraphic): Boolean;
+var
+  IsAniGIF: Boolean;
+  IsAniJpeg: Boolean;
+begin
+  IsAniGIF := (G is TGifImage) and (TGifImage(G).Images.Count > 1);
+  IsAniJpeg := (G is TAnimatedJPEG) and (Settings.ReadString('Options', 'StereoMode', '') = '');
+  Result := IsAniGIF or IsAniJpeg;
+end;
 
 procedure BeginScreenUpdate(hwnd: THandle);
 begin

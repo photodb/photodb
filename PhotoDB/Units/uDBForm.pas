@@ -3,8 +3,23 @@ unit uDBForm;
 interface
 
 uses
-  Windows, Forms, Types, Classes, uTranslate, Graphics, SyncObjs, Messages, ActiveX,
-  uVistaFuncs, uMemory, uGOM, uImageSource, SysUtils, uSysUtils, MultiMon;
+  Generics.Collections,
+  Windows,
+  Forms,
+  Types,
+  Classes,
+  uTranslate,
+  Graphics,
+  SyncObjs,
+  Messages,
+  ActiveX,
+  uVistaFuncs,
+  uMemory,
+  uGOM,
+  uImageSource,
+  SysUtils,
+  uSysUtils,
+  MultiMon;
 
 type
   TDBForm = class(TForm)
@@ -29,7 +44,7 @@ type
   TFormCollection = class(TObject)
   private
     FSync: TCriticalSection;
-    FForms: TList;
+    FForms: TList<TDBForm>;
     constructor Create;
     function GetFormByIndex(Index: Integer): TDBForm;
   public
@@ -39,6 +54,7 @@ type
     procedure RegisterForm(Form: TDBForm);
     function GetImage(BaseForm: TDBForm; FileName: string; Bitmap: TBitmap; var Width: Integer;
       var Height: Integer): Boolean;
+    function GetFormByBounds<T: TDBForm>(BoundsRect: TRect): TDBForm;
     function GetForm(WindowID: string): TDBForm;
     function Count: Integer;
     property Forms[Index: Integer]: TDBForm read GetFormByIndex; default;
@@ -206,7 +222,7 @@ begin
 end;
 
 var
-  FInstance : TFormCollection = nil;
+  FInstance: TFormCollection = nil;
 
 { TFormManager }
 
@@ -218,7 +234,7 @@ end;
 constructor TFormCollection.Create;
 begin
   FSync := TCriticalSection.Create;
-  FForms := TList.Create;
+  FForms := TList<TDBForm>.Create;
 end;
 
 destructor TFormCollection.Destroy;
@@ -235,7 +251,19 @@ begin
   Result := nil;
   for I := 0 to FForms.Count - 1 do
   begin
-    if TDBForm(FForms[I]).WindowID = WindowID then
+    if FForms[I].WindowID = WindowID then
+      Result := FForms[I];
+  end;
+end;
+
+function TFormCollection.GetFormByBounds<T>(BoundsRect: TRect): TDBForm;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to FForms.Count - 1 do
+  begin
+    if (FForms[I] is T) and EqualRect(FForms[I].BoundsRect, BoundsRect)  then
       Result := TDBForm(FForms[I]);
   end;
 end;
@@ -259,8 +287,8 @@ begin
 
   for I := 0 to FForms.Count - 1 do
   begin
-    if Supports(TDBForm(FForms[I]), IImageSource) then
-      Result := (TDBForm(FForms[I]) as IImageSource).GetImage(FileName, Bitmap, Width, Height);
+    if Supports(FForms[I], IImageSource) then
+      Result := (FForms[I] as IImageSource).GetImage(FileName, Bitmap, Width, Height);
     if Result then
       Exit;
 

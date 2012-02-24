@@ -140,7 +140,7 @@ begin
 
     Graphic := GraphicClass.Create;
     try
-
+      InitGraphic(Graphic);
       if Graphic is TRAWImage then
         TRAWImage(Graphic).IsPreview := not FFullImage;
 
@@ -197,7 +197,7 @@ begin
       if Graphic is TRAWImage then
         FRealZoomScale := TRAWImage(Graphic).Width / TRAWImage(Graphic).GraphicWidth;
 
-      if (Graphic is TGIFImage) or (Graphic is TAnimatedJPEG) then
+      if IsAnimatedGraphic(Graphic) then
       begin
         SetAnimatedImageAsynch;
       end else

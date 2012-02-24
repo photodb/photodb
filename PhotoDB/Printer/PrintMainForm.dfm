@@ -165,6 +165,7 @@ object PrintForm: TPrintForm
       Width = 161
       Height = 328
       Anchors = [akLeft, akTop, akBottom]
+      BorderStyle = bsNone
       EditManager.Font.Charset = DEFAULT_CHARSET
       EditManager.Font.Color = clWindowText
       EditManager.Font.Height = -11
@@ -452,7 +453,7 @@ object PrintForm: TPrintForm
       CanClick = True
     end
     object FitToSizeLink: TWebLink
-      Left = 6
+      Left = 8
       Top = 182
       Width = 66
       Height = 16

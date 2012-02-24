@@ -184,6 +184,7 @@ end;
 function RegInstallApplication(FileName: string; CallBack : TRegistryInstallCallBack): Boolean;
 const
   ActionCount = 14;
+  WPD_CONTENT_TYPE_IMAGE = '{EF2107D5-A52A-4243-A26B-62D4176D7603}';
 var
   FReg: TBDRegistry;
   Terminate : Boolean;
@@ -205,11 +206,11 @@ begin
     begin
       Result := False;
       EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      FReg.Free;
+      F(FReg);
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(2, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
@@ -230,11 +231,11 @@ begin
     begin
       Result := False;
       EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      FReg.Free;
+      F(FReg);
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(3, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
@@ -254,7 +255,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(4, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
@@ -276,7 +277,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(5, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
@@ -299,7 +300,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(6, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
@@ -322,18 +323,20 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   // Adding Handler for removable drives
   CallBack(7, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
-    FReg.OpenKey
-      ('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\Handlers\PhotoDBGetPhotosHandler', True);
+    FReg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\WPD\Source\' + WPD_CONTENT_TYPE_IMAGE, True);
+    FReg.WriteString('PhotoDBGetPhotosHandler', '');
+    FReg.CloseKey;
+    FReg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\Handlers\PhotoDBGetPhotosHandler', True);
     FReg.WriteString('Action', TA('Get photos', 'System'));
     FReg.WriteString('DefaultIcon', FileName + ',0');
-    FReg.WriteString('InvokeProgID', 'PhotoDB.AutoPlayHandler');
-    FReg.WriteString('InvokeVerb', 'Open');
+    FReg.WriteString('ProgID', 'PhotoDBBridge.PhotoDBAutoplayHandler');
+    FReg.WriteString('InitCmdLine', '/import');
     FReg.WriteString('Provider', 'Photo DataBase ' + IIF(ProgramVersionString = '', ProductVersion, ProgramVersionString));
     FReg.CloseKey;
   except
@@ -344,13 +347,15 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(8, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
-    FReg.OpenKey(
-      '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\ShowPicturesOnArrival', True);
+    FReg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\ShowPicturesOnArrival', True);
+    FReg.WriteString('PhotoDBGetPhotosHandler', '');
+    FReg.CloseKey;
+    FReg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\MixedContentOnArrival', True);
     FReg.WriteString('PhotoDBGetPhotosHandler', '');
     FReg.CloseKey;
   except
@@ -361,10 +366,10 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
 //WIA SECTION START
-  CallBack(9, ActionCount, Terminate);
+(*  CallBack(9, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
   try
     FReg.OpenKey(
@@ -379,7 +384,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(10, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
@@ -402,7 +407,8 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
+           *)
 
 //WIA SECTION END
 
@@ -428,7 +434,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(12, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
@@ -446,7 +452,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(13, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
@@ -464,7 +470,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 
   CallBack(14, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_CLASSES);
@@ -482,7 +488,7 @@ begin
       Exit;
     end;
   end;
-  FReg.Free;
+  F(FReg);
 end;
 
 function GetSystemPath(PathType : Integer) : string;

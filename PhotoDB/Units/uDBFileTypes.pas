@@ -309,7 +309,7 @@ begin
   if not FileExists(FileName) then
     Exit;
   try
-    FS := TFileStream.Create(Filename, FmOpenRead);
+    FS := TFileStream.Create(Filename, fmOpenRead or fmShareDenyNone);
   except
     Exit;
   end;

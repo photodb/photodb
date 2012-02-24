@@ -9,6 +9,8 @@ program PhotoDBBridge;
 {$SetPEFlags 1}// 1 = Windows.IMAGE_FILE_RELOCS_STRIPPED
 
 uses
+  Windows,
+  Dialogs,
   Vcl.Forms,
   ComServ,
   uAutoplayHandler in 'uAutoplayHandler.pas',
