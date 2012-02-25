@@ -2394,7 +2394,7 @@ end;
 
 procedure TViewer.AllFolder1Click(Sender: TObject);
 begin
-  UpdaterDB.AddDirectory(ExtractFileDir(Item.FileName), nil)
+  UpdaterDB.AddDirectory(ExtractFileDir(Item.FileName))
 end;
 
 procedure TViewer.GoToSearchWindow1Click(Sender: TObject);

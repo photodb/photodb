@@ -3,14 +3,36 @@ unit uFrmImportImagesProgress;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, uFrameWizardBase, DmProgress, StdCtrls, ExtCtrls,
-  Dolphin_DB, UnitDBDeclare, uGraphicUtils, uMemory, uRuntime, UnitDBkernel,
-  UnitUpdateDBObject, UnitTimeCounter, uFileUtils, uConstants,
-  uBitmapUtils, pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  uFrameWizardBase,
+  DmProgress,
+  StdCtrls,
+  ExtCtrls,
+  Dolphin_DB,
+  UnitDBDeclare,
+  uGraphicUtils,
+  uMemory,
+  uRuntime,
+  UnitDBkernel,
+  UnitUpdateDBObject,
+  UnitTimeCounter,
+  uFileUtils,
+  uConstants,
+  uBitmapUtils,
+  uUpdateDBTypes,
+  uInterfaceManager,
+  uDBForm,
+  pngimage;
 
 type
-  TFrmImportImagesProgress = class(TFrameWizardBase)
+  TFrmImportImagesProgress = class(TFrameWizardBase, IDBUpdaterCallBack)
     LbStepInfo: TLabel;
     ImWait: TImage;
     ImCurrentPreview: TImage;
@@ -27,24 +49,35 @@ type
     ProcessingSize: Int64;
     ImageProcessedCounter: Integer;
     TimeCounter: TTimeCounter;
-    UpdateObject: TUpdaterDB;
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
   public
     { Public declarations }
-    procedure DirectoryAdded(Sender: TObject);
+    procedure UpdaterSetText(Text: string);
+    procedure UpdaterSetMaxValue(Value: Integer);
+    procedure UpdaterSetAutoAnswer(Value: Integer);
+    procedure UpdaterSetTimeText(Text: string);
+    procedure UpdaterSetPosition(Value: Integer);
+    procedure UpdaterSetFileName(FileName: string);
+    procedure UpdaterAddFileSizes(Value: Int64);
+    procedure UpdaterDirectoryAdded(Sender: TObject);
+    procedure UpdaterOnDone(Sender: TObject);
+    procedure UpdaterShowForm(Sender: TObject);
+    procedure UpdaterSetBeginUpdation(Sender: TObject);
+    procedure UpdaterShowImage(Sender: TObject);
+    procedure UpdaterFoundedEvent(Owner: TObject; FileName: string; Size: Int64);
+    procedure UpdaterSetFullSize(Value: Int64);
+    function UpdaterGetForm: TDBForm;
+
     procedure FileFounded(Owner: TObject; FileName: string; Size: Int64);
-    procedure OnDone(Sender: TObject);
     function IsFinal: Boolean; override;
     constructor Create(AOwner: TComponent); override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Unload; override;
     procedure Execute; override;
     procedure Pause(Value: Boolean); override;
-    procedure SetMaxValue(Value: Integer);
-    procedure SetPosition(Value: Integer);
     function IsPaused: Boolean; override;
   end;
 
@@ -62,8 +95,7 @@ uses
 
 constructor TFrmImportImagesProgress.Create(AOwner: TComponent);
 begin
-  inherited;
-  UpdateObject := nil;
+  inherited Create(AOwner);
 end;
 
 procedure TFrmImportImagesProgress.Execute;
@@ -73,25 +105,20 @@ var
 begin
   inherited;
   IsBusy := True;
-  UpdateObject := TUpdaterDB.Create(Manager.Owner);
-  UpdateObject.OwnerFormSetMaxValue := SetMaxValue;
-  UpdateObject.OwnerFormSetPosition := SetPosition;
-  UpdateObject.OnDirectoryAdded := DirectoryAdded;
-  UpdateObject.SetDone := OnDone;
 
   OptionsStep := TFrmImportImagesOptions(Manager.GetStepByType(TFrmImportImagesOptions));
   case OptionsStep.DefaultActionIndex of
     1:
-      UpdateObject.AutoAnswer := Result_add_all;
+      UpdaterDB.AutoAnswer := Result_add_all;
     2:
-      UpdateObject.AutoAnswer := Result_skip_all;
+      UpdaterDB.AutoAnswer := Result_skip_all;
     3:
-      UpdateObject.AutoAnswer := Result_replace_all;
+      UpdaterDB.AutoAnswer := Result_replace_all;
   end;
 
-  UpdateObject.Auto := False;
+  UpdaterDB.Auto := False;
   LandingStep := TFrmImportImagesLanding(Manager.GetStepByType(TFrmImportImagesLanding));
-  UpdateObject.AddDirectory(LandingStep.FirstPath, FileFounded);
+  UpdaterDB.AddDirectory(LandingStep.FirstPath);
   LbStatus.Visible := True;
   LbImagesSize.Visible := True;
   LbImagesCount.Visible := True;
@@ -107,6 +134,7 @@ begin
   inherited;
   if FirstInitialization then
   begin
+    InterfaceManager.RegisterObject(Self);
     FullSize := 0;
     TimeCounter := TTimeCounter.Create;
     TimeCounter.TimerInterval := 15000; // 15 seconds to refresh
@@ -136,13 +164,10 @@ end;
 procedure TFrmImportImagesProgress.Unload;
 begin
   inherited;
+  InterfaceManager.UnRegisterObject(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  if UpdateObject <> nil then
-  begin
-    UpdateObject.SetDone := nil;
-    UpdateObject.DoTerminate;
-    F(UpdateObject);
-  end;
+
+  UpdaterDB.DoTerminate;
   F(TimeCounter);
 end;
 
@@ -156,7 +181,7 @@ var
 
 begin
   if (SetNewIDFileData in params) or (EventID_FileProcessed in params) then
-    if UpdateObject.Active then
+    if UpdaterDB.Active then
     begin
       ImWait.Visible := False;
       Bit := TBitmap.Create;
@@ -208,14 +233,59 @@ begin
   end;
 end;
 
-procedure TFrmImportImagesProgress.SetMaxValue(Value: integer);
+procedure TFrmImportImagesProgress.UpdaterAddFileSizes(Value: Int64);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterSetAutoAnswer(Value: Integer);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterSetBeginUpdation(Sender: TObject);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterSetFileName(FileName: string);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterSetFullSize(Value: Int64);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterSetMaxValue(Value: integer);
 begin
   PbMain.MaxValue := Value;
 end;
 
-procedure TFrmImportImagesProgress.SetPosition(Value: integer);
+procedure TFrmImportImagesProgress.UpdaterSetPosition(Value: integer);
 begin
   PbMain.Position := Value;
+end;
+
+procedure TFrmImportImagesProgress.UpdaterSetText(Text: string);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterSetTimeText(Text: string);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterShowForm(Sender: TObject);
+begin
+  //isn't used
+end;
+
+procedure TFrmImportImagesProgress.UpdaterShowImage(Sender: TObject);
+begin
+  //isn't used
 end;
 
 procedure TFrmImportImagesProgress.FileFounded(Owner: TObject; FileName: string;
@@ -228,7 +298,7 @@ begin
   EdCurrentFileName.Text := FileName;
 end;
 
-procedure TFrmImportImagesProgress.OnDone(Sender: TObject);
+procedure TFrmImportImagesProgress.UpdaterOnDone(Sender: TObject);
 begin
   PbMain.Position := PbMain.MaxValue;
   LbTimeLeft.Visible := False;
@@ -239,18 +309,18 @@ end;
 
 function TFrmImportImagesProgress.IsPaused: Boolean;
 begin
-  Result := UpdateObject.Pause;
+  Result := UpdaterDB.Pause;
 end;
 
 procedure TFrmImportImagesProgress.Pause(Value: Boolean);
 begin
   if Value then
-    UpdateObject.DoPause
+    UpdaterDB.DoPause
   else
-    UpdateObject.DoUnPause;
+    UpdaterDB.DoUnPause;
 end;
 
-procedure TFrmImportImagesProgress.DirectoryAdded(Sender: TObject);
+procedure TFrmImportImagesProgress.UpdaterDirectoryAdded(Sender: TObject);
 var
   LandingStep: TFrmImportImagesLanding;
   Directory: string;
@@ -259,19 +329,30 @@ begin
   Directory := LandingStep.ExtractNextDirectory;
 
   if Directory <> '' then
-    UpdateObject.AddDirectory(Directory, FileFounded)
+    UpdaterDB.AddDirectory(Directory)
   else
   begin
-    if UpdateObject.GetCount = 0 then
+    if UpdaterDB.GetCount = 0 then
     begin
-      OnDone(Sender);
+      UpdaterOnDone(Sender);
       Exit;
     end;
     TimeCounter.MaxActions := FullSize;
     TimeCounter.DoBegin;
-    UpdateObject.Execute;
+    UpdaterDB.Execute;
     LbStatus.Caption := L('Processing images');
   end;
+end;
+
+procedure TFrmImportImagesProgress.UpdaterFoundedEvent(Owner: TObject;
+  FileName: string; Size: Int64);
+begin
+  //isn't used
+end;
+
+function TFrmImportImagesProgress.UpdaterGetForm: TDBForm;
+begin
+  Result := Manager.Owner;
 end;
 
 end.

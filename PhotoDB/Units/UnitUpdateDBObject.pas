@@ -3,19 +3,33 @@ unit UnitUpdateDBObject;
 interface
 
 uses
-  Windows, Controls, Classes,  Forms, SysUtils, uScript, UnitScripts,
-  UnitDBDeclare, uMemory, UnitDBKernel, uRuntime,
-  uFileUtils, uDBPopupMenuInfo, uConstants, uAppUtils, uGOM, uMemoryEx,
-  uTranslate, Dolphin_DB, uDBForm, uSettings, uAssociations, win32crc;
-
-type
-   TOwnerFormSetText = procedure(Text : string) of object;
-   TOwnerFormSetMaxValue = procedure(Value : integer) of object;
-   TOwnerFormSetAutoAnswer = procedure(Value : integer) of object;
-   TOwnerFormSetTimeText = procedure(Text : string) of object;
-   TOwnerFormSetPosition = procedure(Value : integer) of object;
-   TOwnerFormSetFileName = procedure(FileName : string) of object;
-   TOwnerFormAddFileSizes = procedure(Value : int64) of object;
+  Windows,
+  Controls,
+  Classes,
+  Forms,
+  SysUtils,
+  uScript,
+  UnitScripts,
+  UnitDBDeclare,
+  uMemory,
+  UnitDBKernel,
+  uRuntime,
+  uFileUtils,
+  uDBPopupMenuInfo,
+  uConstants,
+  uAppUtils,
+  uGOM,
+  uMemoryEx,
+  uTranslate,
+  Dolphin_DB,
+  uDBForm,
+  uSettings,
+  uAssociations,
+  uLogger,
+  SyncObjs,
+  uUpdateDBTypes,
+  uInterfaceManager,
+  win32crc;
 
 type
   TUpdaterDB = class(TObject)
@@ -25,8 +39,7 @@ type
     ScriptProcessString: string;
     FPosition: Integer;
     FShowWindow: Boolean;
-    FForm: TDBForm;
-    FmaxSize: Integer;
+    FMaxSize: Integer;
     FTerminate: Boolean;
     FActive: Boolean;
     FAuto: Boolean;
@@ -35,30 +48,20 @@ type
     BeginTime: TDateTime;
     FFilesInfo: TDBPopupMenuInfo;
     FUseFileNameScaning: Boolean;
+    FSync: TCriticalSection;
     procedure SetAuto(const Value: boolean);
     procedure SetAutoAnswer(Value: Integer);
     procedure SetUseFileNameScaning(const Value: boolean);
     procedure ProcessFile(var FileName : string);
+    function GetForm: TDBForm;
+    procedure FoundedEvent(Owner: TObject; FileName: string; Size: Int64);
   public
-    OwnerFormSetText: TOwnerFormSetText;
-    OwnerFormSetMaxValue: TOwnerFormSetMaxValue;
-    OwnerFormSetAutoAnswer: TOwnerFormSetAutoAnswer;
-    OwnerFormSetTimeText: TOwnerFormSetTimeText;
-    OwnerFormSetPosition: TOwnerFormSetPosition;
-    OwnerFormSetFileName: TOwnerFormSetFileName;
-    OwnerFormAddFileSizes: TOwnerFormAddFileSizes;
-    ShowForm: TNotifyEvent;
-    SetDone: TNotifyEvent;
-    SetBeginUpdation: TNotifyEvent;
-    DoShowImage: TNotifyEvent;
-    OnDirectoryAdded: TNotifyEvent;
-    OnExecuting: TNotifyEvent;
     NoLimit: Boolean;
-    constructor Create(OwnerForm: TDBForm = nil);
+    constructor Create;
     destructor Destroy; override;
     function AddFile(FileName: string; Silent: Boolean = False): Boolean;
     function AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean): Boolean;
-    function AddDirectory(Directory: string; OnFileFounded: TFileFoundedEvent): Boolean;
+    function AddDirectory(Directory: string): Boolean;
     procedure EndDirectorySize(Sender: TObject);
     procedure OnAddFileDone(Sender: TObject);
     procedure Execute;
@@ -76,35 +79,75 @@ type
     property UseFileNameScaning: Boolean read FUseFileNameScaning write SetUseFileNameScaning default False;
     property AutoAnswer: Integer read FAutoAnswer write SetAutoAnswer;
     property Pause: Boolean read FPause;
-    property Form: TDBForm read FForm;
+    property Form: TDBForm read GetForm;
   end;
+
+function UpdaterDB: TUpdaterDB;
+procedure DestroyUpdaterObject;
 
 implementation
 
 uses
-  UnitUpdateDBThread, DBScriptFunctions, CommonDBSupport,
-  FormManegerUnit, UnitUpdateDB, ProgressActionUnit;
+  UnitUpdateDBThread,
+  DBScriptFunctions,
+  CommonDBSupport,
+  FormManegerUnit,
+  UnitUpdateDB,
+  ProgressActionUnit;
+
+var
+  FUpdaterDB: TUpdaterDB = nil;
+
+function UpdaterDB: TUpdaterDB;
+begin
+  if FUpdaterDB = nil then
+    FUpdaterDB := TUpdaterDB.Create;
+
+  Result := FUpdaterDB;
+end;
+
+procedure DestroyUpdaterObject;
+begin
+  F(FUpdaterDB);
+end;
 
 { TUpdaterDB }
 
-function TUpdaterDB.AddDirectory(Directory: string; OnFileFounded : TFileFoundedEvent): Boolean;
+function TUpdaterDB.AddDirectory(Directory: string): Boolean;
 var
   Dir: string;
 begin
   Dir := Directory;
 
-  if FFilesInfo.Count = 0 then
-    if Assigned(OwnerFormSetText) then
-      OwnerFormSetText(TA('Getting list of files from directory', 'Updater'));
-
-  if FForm <> nil then
-    if (FForm is TUpdateDBForm) then
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
     begin
-      OnFileFounded := (FForm as TUpdateDBForm).OnDirectorySearch;
-      (FForm as TUpdateDBForm).FullSize := 0;
-    end;
-  DirectorySizeThread.Create(Dir, EndDirectorySize, @FTerminate, OnFileFounded, ProcessFile);
+      if FFilesInfo.Count = 0 then
+        for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+          I.UpdaterSetText(TA('Getting list of files from directory', 'Updater'));
+
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterSetFullSize(0);
+    end
+  );
+
+  DirectorySizeThread.Create(Dir, EndDirectorySize, @FTerminate, FoundedEvent, ProcessFile);
   Result := True;
+end;
+
+procedure TUpdaterDB.FoundedEvent(Owner: TObject; FileName: string; Size: Int64);
+begin
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterFoundedEvent(Owner, FileName, Size);
+    end
+  );
 end;
 
 function TUpdaterDB.FileExistsInFileList(FileName: String): Boolean;
@@ -153,33 +196,50 @@ begin
       else
         FFilesInfo.Insert(0, FileInfo.Copy);
 
-      if Assigned(OwnerFormSetMaxValue) then
-        OwnerFormSetMaxValue(FFilesInfo.Count);
-
-      if Assigned(OwnerFormAddFileSizes) then
-        OwnerFormAddFileSizes(FileSize);
+      TThread.Synchronize(nil,
+        procedure
+        var
+          I: IDBUpdaterCallBack;
+        begin
+          for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+          begin
+            I.UpdaterSetMaxValue(FFilesInfo.Count);
+            I.UpdaterAddFileSizes(FileSize);
+          end;
+        end
+      );
 
       if Auto then
       begin
         Execute;
         if not Silent then
-          if Assigned(ShowForm) then
-            ShowForm(Self);
+        begin
+
+          TThread.Synchronize(nil,
+            procedure
+            var
+              I: IDBUpdaterCallBack;
+            begin
+              for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+                I.UpdaterShowForm(Self);
+            end
+          );
+
+        end;
       end;
     end;
   Result := True;
 end;
 
-constructor TUpdaterDB.Create(OwnerForm: TDBForm = nil);
+constructor TUpdaterDB.Create;
 begin
-  FForm := OwnerForm;
+  FSync := TCriticalSection.Create;
   FFilesInfo := TDBPopupMenuInfo.Create;
   ScriptProcessString := Include('Scripts\Adding_AddFile.dbini');
-  FProcessScript := TScript.Create(FForm, '');
+  FProcessScript := TScript.Create(nil, '');
   FProcessScript.Description := 'Add File script';
 
   NoLimit := False;
-  OwnerFormSetText := nil;
   FUseFileNameScaning := False;
 
   FFilesInfo.Clear;
@@ -191,34 +251,24 @@ begin
   FmaxSize := 0;
   FPause := False;
   FAutoAnswer := Result_invalid;
-  if OwnerForm = nil then
-  begin
-    Application.CreateForm(TUpdateDBForm, FForm);
-    (FForm as TUpdateDBForm).SetAddObject(Self);
-    // SETTING EVENTS
-    OwnerFormSetAutoAnswer := (FForm as TUpdateDBForm).SetAutoAnswer;
-    OwnerFormSetText := (FForm as TUpdateDBForm).SetText;
-    OwnerFormSetMaxValue := (FForm as TUpdateDBForm).SetMaxValue;
-    OwnerFormSetPosition := (FForm as TUpdateDBForm).SetPosition;
-    ShowForm := (FForm as TUpdateDBForm).ShowForm;
-    SetDone := (FForm as TUpdateDBForm).SetDone;
-    OwnerFormSetTimeText := (FForm as TUpdateDBForm).SetTimeText;
-    OwnerFormSetFileName := (FForm as TUpdateDBForm).SetFileName;
-    SetBeginUpdation := (FForm as TUpdateDBForm).SetBeginUpdation;
-    OwnerFormAddFileSizes := (FForm as TUpdateDBForm).AddFileSizes;
-    SetBeginUpdation := (FForm as TUpdateDBForm).OnBeginUpdation;
-    LoadWork;
-  end;
+
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      CreateUpdaterForm;
+    end
+  );
+  LoadWork;
+
   BeginTime := -1;
 end;
 
 destructor TUpdaterDB.Destroy;
 begin
   SaveWork;
-  if GOM.IsObj(FForm) then
-    R(FForm);
   F(FProcessScript);
   F(FFilesInfo);
+  F(FSync);
 end;
 
 procedure TUpdaterDB.DoPause;
@@ -235,14 +285,22 @@ begin
   for I := 0 to FFilesInfo.Count - 1 do
   begin
     EventInfo.Name := AnsiLowerCase(FFilesInfo[I].FileName);
-    DBKernel.DoIDEvent(FForm, 0, [EventID_CancelAddingImage], EventInfo);
+    DBKernel.DoIDEvent(Form, 0, [EventID_CancelAddingImage], EventInfo);
   end;
   FFilesInfo.Clear;
   FPosition := 0;
   FActive := False;
   BeginTime := -1;
-  if Assigned(SetDone) then
-    SetDone(Self);
+
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterOnDone(Self);
+    end
+  );
 end;
 
 procedure TUpdaterDB.DoUnPause;
@@ -255,31 +313,68 @@ procedure TUpdaterDB.EndDirectorySize(Sender: TObject);
 var
   I: Integer;
 begin
-  if FFilesInfo.Count = 0 then
-    if Assigned(OwnerFormSetFileName) then
-      OwnerFormSetFileName(TA('<No files>', 'Updater'));
+
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      if FFilesInfo.Count = 0 then
+        for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+          I.UpdaterSetFileName(TA('<No files>', 'Updater'));
+    end
+  );
 
   Inc(FmaxSize, (Sender as TValueObject).TIntValue);
 
-  if Assigned(OwnerFormAddFileSizes) then
-    OwnerFormAddFileSizes((Sender as TValueObject).TIntValue);
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterAddFileSizes((Sender as TValueObject).TIntValue);
+    end
+  );
 
   for I := 1 to (Sender as TValueObject).TStrValue.Count do
     FFilesInfo.Add((Sender as TValueObject).TStrValue[I - 1]);
 
-  if Assigned(OwnerFormSetMaxValue) then
-    OwnerFormSetMaxValue(FFilesInfo.Count);
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterSetMaxValue(FFilesInfo.Count);
+    end
+  );
 
   if Auto then
   begin
     ShowMessageAboutLimit := True;
     Execute;
-    if Assigned(ShowForm) then
-      ShowForm(Self);
+
+    TThread.Synchronize(nil,
+      procedure
+      var
+        I: IDBUpdaterCallBack;
+      begin
+        for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+          I.UpdaterShowForm(Self);
+      end
+    );
   end;
 
-  if Assigned(OnDirectoryAdded) then
-    OnDirectoryAdded(Self);
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterDirectoryAdded(Self);
+    end
+  );
 end;
 
 procedure TUpdaterDB.Execute;
@@ -287,76 +382,143 @@ var
   Info: TDBPopupMenuInfo;
   I: Integer;
 begin
-  if BeginTime < 0 then
-    BeginTime := Now;
-  if FTerminate then
-  begin
-    FTerminate := False;
-    FActive := False;
-    BeginTime := -1;
-    Exit;
-  end;
-  if FActive then
-    Exit;
-  FActive := True;
-  if FPosition = 0 then
-  begin
-    if Assigned(SetBeginUpdation) then
-      SetBeginUpdation(Self);
-  end;
-  if FPosition >= FFilesInfo.Count then
-  begin
-    FFilesInfo.Clear;
-    FPosition := 0;
-    FActive := False;
-    BeginTime := -1;
-    if Assigned(SetDone) then
-      SetDone(Self);
-    Exit;
-  end;
-  if FFilesInfo.Count = 0 then
-  begin
-    FActive := False;
-    if Assigned(SetDone) then
-      SetDone(Self);
-    Exit;
-  end;
-  if (FPosition <> 0) then
-  begin
-    if Assigned(DoShowImage) then
-      DoShowImage(Self);
-    if (FFilesInfo.Count - FPosition > 1) then
+  try
+    if BeginTime < 0 then
+      BeginTime := Now;
+    if FTerminate then
     begin
-      if Assigned(OwnerFormSetTimeText) then
-        OwnerFormSetTimeText(TimeTostr(((Now - BeginTime) / FPosition) * (FFilesInfo.Count - FPosition)));
-    end else
-    begin
-      if Assigned(OwnerFormSetTimeText) then
-        OwnerFormSetTimeText(TA('The last file', 'Updater') + '...');
+      FTerminate := False;
+      FActive := False;
+      BeginTime := -1;
+      Exit;
     end;
+    if FActive then
+      Exit;
+    FActive := True;
+    if FPosition = 0 then
+    begin
+
+      TThread.Synchronize(nil,
+        procedure
+        var
+          I: IDBUpdaterCallBack;
+        begin
+          for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+            I.UpdaterSetBeginUpdation(Self);
+        end
+      );
+
+    end;
+    if FPosition >= FFilesInfo.Count then
+    begin
+      FFilesInfo.Clear;
+      FPosition := 0;
+      FActive := False;
+      BeginTime := -1;
+
+      TThread.Synchronize(nil,
+        procedure
+        var
+          I: IDBUpdaterCallBack;
+        begin
+          for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+            I.UpdaterOnDone(Self);
+        end
+      );
+
+      Exit;
+    end;
+    if FFilesInfo.Count = 0 then
+    begin
+      FActive := False;
+
+      TThread.Synchronize(nil,
+        procedure
+        var
+          I: IDBUpdaterCallBack;
+        begin
+          for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+            I.UpdaterOnDone(Self);
+        end
+      );
+
+      Exit;
+    end;
+    if (FPosition <> 0) then
+    begin
+
+      TThread.Synchronize(nil,
+        procedure
+        var
+          I: IDBUpdaterCallBack;
+        begin
+          for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+            I.UpdaterShowImage(Self);
+        end
+      );
+
+      if (FFilesInfo.Count - FPosition > 1) then
+      begin
+
+        TThread.Synchronize(nil,
+          procedure
+          var
+            I: IDBUpdaterCallBack;
+          begin
+            for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+              I.UpdaterSetTimeText(TimeTostr(((Now - BeginTime) / FPosition) * (FFilesInfo.Count - FPosition)));
+          end
+        );
+
+      end else
+      begin
+
+        TThread.Synchronize(nil,
+          procedure
+          var
+            I: IDBUpdaterCallBack;
+          begin
+            for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+              I.UpdaterSetTimeText(TA('The last file', 'Updater') + '...');
+          end
+        );
+
+      end;
+    end;
+
+    TThread.Synchronize(nil,
+      procedure
+      var
+        I: IDBUpdaterCallBack;
+      begin
+        for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        begin
+          I.UpdaterSetPosition(FPosition + 1);
+          I.UpdaterSetFileName(FFilesInfo[FPosition].FileName);
+        end;
+      end
+    );
+
+    if FPause then
+    begin
+      FActive := False;
+      Exit;
+    end;
+
+    Info := TDBPopupMenuInfo.Create;
+
+    for I := 0 to 4 do
+    begin
+      Info.Add(FFilesInfo[FPosition].Copy);
+      Inc(FPosition);
+      if (FFilesInfo.Count - FPosition = 0) then
+        Break;
+    end;
+    UpdateDBThread.Create(Self, Info, OnAddFileDone, FAutoAnswer, UseFileNameScaning, @FTerminate, @FPause, NoLimit);
+  except
+    on e: Exception do
+      EventLog(e);
   end;
-  if Assigned(OwnerFormSetPosition) then
-    OwnerFormSetPosition(FPosition + 1);
-
-  if Assigned(OwnerFormSetFileName) then
-    OwnerFormSetFileName(FFilesInfo[FPosition].FileName);
-
-  if FPause then
-  begin
-    FActive := False;
-    Exit;
-  end;
-
-  Info := TDBPopupMenuInfo.Create;
-
-  for I := 0 to 4 do
-  begin
-    Info.Add(FFilesInfo[FPosition].Copy);
-    Inc(FPosition);
-    if (FFilesInfo.Count - FPosition = 0) then
-      Break;
-  end;
-  UpdateDBThread.Create(Self, Info, OnAddFileDone, FAutoAnswer, UseFileNameScaning, @FTerminate, @FPause, NoLimit);
 end;
 
 procedure TUpdaterDB.OnAddFileDone(Sender: TObject);
@@ -373,8 +535,16 @@ end;
 procedure TUpdaterDB.SetAutoAnswer(Value: Integer);
 begin
   FAutoAnswer := Value;
-  if Assigned(OwnerFormSetAutoAnswer) then
-    OwnerFormSetAutoAnswer(Value);
+
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterSetAutoAnswer(Value);
+    end
+  );
 end;
 
 procedure TUpdaterDB.SetUseFileNameScaning(const Value: boolean);
@@ -384,12 +554,37 @@ end;
 
 procedure TUpdaterDB.ShowWindowNow;
 begin
-  FForm.Show;
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        I.UpdaterShowForm(Self);
+    end
+  );
 end;
 
 function TUpdaterDB.GetFilesCount: Integer;
 begin
   Result := FFilesInfo.Count;
+end;
+
+function TUpdaterDB.GetForm: TDBForm;
+var
+  F: TDBForm;
+begin
+  TThread.Synchronize(nil,
+    procedure
+    var
+      I: IDBUpdaterCallBack;
+    begin
+      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+        F := I.UpdaterGetForm;
+    end
+  );
+
+  Result := F;
 end;
 
 procedure TUpdaterDB.ProcessFile(var FileName: string);
@@ -402,35 +597,40 @@ begin
 end;
 
 procedure TUpdaterDB.LoadWork;
-var
-  I, C: Integer;
-  ProgressWindow: TProgressActionForm;
-  DBPrefix: string;
 begin
-  DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
-  ProgressWindow := GetProgressWindow;
-  try
-    C := Settings.ReadInteger('Updater_' + DBPrefix, 'Counter', 0);
-    ProgressWindow.OneOperation := True;
-    ProgressWindow.MaxPosCurrentOperation := C;
-    ProgressWindow.XPosition := 0;
-    ProgressWindow.SetAlternativeText(TA('Wait until the program is restore the work', 'Updater'));
-    if C > 10 then
-      ProgressWindow.Show;
+  TThread.Synchronize(nil,
+  procedure
+  var
+    I, C: Integer;
+    DBPrefix: string;
+    ProgressWindow: TProgressActionForm;
+  begin
+    DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
+    ProgressWindow := GetProgressWindow;
+    try
+      C := Settings.ReadInteger('Updater_' + DBPrefix, 'Counter', 0);
+      ProgressWindow.OneOperation := True;
+      ProgressWindow.MaxPosCurrentOperation := C;
+      ProgressWindow.XPosition := 0;
+      ProgressWindow.SetAlternativeText(TA('Wait until the program is restore the work', 'Updater'));
+      if C > 10 then
+        ProgressWindow.Show;
 
-    for I := 0 to C - 1 do
-    begin
-      if I mod 8 = 0 then
+      for I := 0 to C - 1 do
       begin
-        ProgressWindow.XPosition := I;
-        Application.ProcessMessages;
+        if I mod 8 = 0 then
+        begin
+          ProgressWindow.XPosition := I;
+          Application.ProcessMessages;
+        end;
+        AddFile(Settings.ReadString('Updater_' + DBPrefix, 'File' + IntToStr(I)), I <> C - 1);
       end;
-      AddFile(Settings.ReadString('Updater_' + DBPrefix, 'File' + IntToStr(I)), I <> C - 1);
-    end;
 
-  finally
-    R(ProgressWindow);
-  end;
+    finally
+      R(ProgressWindow);
+    end;
+  end
+  );
 end;
 
 procedure TUpdaterDB.SaveWork;
@@ -448,5 +648,10 @@ function TUpdaterDB.GetCount: Integer;
 begin
   Result := FFilesInfo.Count;
 end;
+
+initialization
+
+finalization
+  DestroyUpdaterObject;
 
 end.

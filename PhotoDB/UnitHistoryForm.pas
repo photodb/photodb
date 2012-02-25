@@ -3,10 +3,29 @@ unit UnitHistoryForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, uDBUtils, Menus, UnitDBKernel, uGraphicUtils,
-  UnitDBCommonGraphics, UnitDBDeclare, GraphicCrypt, uMemory, uDBForm,
-  uConstants, uDBPopupMenuInfo, uFileUtils;
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  StdCtrls,
+  uDBUtils,
+  Menus,
+  UnitDBKernel,
+  uGraphicUtils,
+  UnitDBCommonGraphics,
+  UnitDBDeclare,
+  GraphicCrypt,
+  uMemory,
+  uDBForm,
+  uConstants,
+  uDBPopupMenuInfo,
+  uFileUtils;
 
 type
   TFormHistory = class(TDBForm)
@@ -40,20 +59,22 @@ type
     FileList: TStrings;
     procedure LoadLanguage;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
-   procedure LoadToolBarIcons;
-   procedure SetFilesList(List : TStrings);
-   procedure WriteLnLine(Sender: TObject; Line: string; Info : integer);
+    procedure LoadToolBarIcons;
+    procedure SetFilesList(List: TStrings);
+    procedure WriteLnLine(Sender: TObject; Line: string; Info: Integer);
   end;
 
-procedure ShowHistory(List : TStrings);
+procedure ShowHistory(List: TStrings);
 
 implementation
 
 uses
-  uManagerExplorer, SlideShow, UnitUpdateDB;
+  uManagerExplorer,
+  SlideShow,
+  UnitUpdateDBObject;
 
 {$R *.dfm}
 

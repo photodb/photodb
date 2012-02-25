@@ -32,7 +32,7 @@ type
     destructor Destroy; override;
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate: string; Scope: string): string; overload;
-    function LF(StringToTranslate: string; args: array of const): string;
+    function LF(StringToTranslate: string; Args: array of const): string;
     procedure BeginTranslate;
     procedure EndTranslate;
     procedure FixFormPosition;
@@ -211,7 +211,7 @@ begin
   Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope)
 end;
 
-function TDBForm.LF(StringToTranslate: string; args: array of const): string;
+function TDBForm.LF(StringToTranslate: string; Args: array of const): string;
 begin
   Result := FormatEx(L(StringToTranslate), args);
 end;

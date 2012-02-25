@@ -106,10 +106,11 @@ procedure UnRegisterMainForm(Value: TForm);
 implementation
 
 uses
-  UnitCleanUpThread, uManagerExplorer, USearchTypes, SlideShow, UnitFileCheckerDB,
+  UnitCleanUpThread, uManagerExplorer, uSearchTypes, SlideShow, UnitFileCheckerDB,
   UnitInternetUpdate, UAbout, UnitConvertDBForm, UnitImportingImagesForm,
   UnitSelectDB, UnitFormCont, uFormImportImages, UnitLoadFilesToPanel,
-  UActivation, UnitUpdateDB, UExifPatchThread;
+  uActivation, UnitUpdateDBObject,
+  uExifPatchThread;
 
 {$R *.dfm}
 

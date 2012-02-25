@@ -219,7 +219,7 @@ object UpdateDBForm: TUpdateDBForm
       454E44AE426082}
     Visible = False
   end
-  object DmMemo1: TDmMemo
+  object MemInfoCaption: TDmMemo
     Tag = -1
     Left = 120
     Top = 5
@@ -237,22 +237,6 @@ object UpdateDBForm: TUpdateDBForm
     ParentFont = False
     ReadOnly = True
     TabOrder = 0
-    Visible = False
-    TransparentMouse = True
-  end
-  object FilesLabel: TDmMemo
-    Tag = -1
-    Left = 117
-    Top = 24
-    Width = 273
-    Height = 57
-    Cursor = crArrow
-    BorderStyle = bsNone
-    Lines.Strings = (
-      'D:\Favorite pictures\photo\100001-200000\171811 - '
-      '?? ?????? ???? ??????.jpg')
-    ReadOnly = True
-    TabOrder = 1
     Visible = False
     TransparentMouse = True
   end
@@ -325,7 +309,7 @@ object UpdateDBForm: TUpdateDBForm
     StretchImage = True
     CanClick = True
   end
-  object ButtonClose: TWebLink
+  object WlClose: TWebLink
     Tag = -1
     Left = 304
     Top = 176
@@ -335,7 +319,7 @@ object UpdateDBForm: TUpdateDBForm
     Color = clWhite
     ParentColor = False
     Text = 'Close Window'
-    OnClick = ButtonCloseClick
+    OnClick = WlCloseClick
     ImageIndex = 0
     IconWidth = 16
     IconHeight = 16
@@ -352,7 +336,7 @@ object UpdateDBForm: TUpdateDBForm
   object ButtonBreak: TWebLink
     Tag = -1
     Left = 112
-    Top = 86
+    Top = 87
     Width = 123
     Height = 16
     Cursor = crHandPoint
@@ -667,14 +651,14 @@ object UpdateDBForm: TUpdateDBForm
     Left = 112
     Top = 48
   end
-  object ApplicationEvents1: TApplicationEvents
-    OnMessage = ApplicationEvents1Message
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
     Left = 64
     Top = 8
   end
-  object Timer1: TTimer
+  object TmrAnimation: TTimer
     Interval = 10
-    OnTimer = Timer1Timer
+    OnTimer = TmrAnimationTimer
     Left = 352
     Top = 104
   end

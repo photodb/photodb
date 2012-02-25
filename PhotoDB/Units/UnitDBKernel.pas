@@ -24,7 +24,7 @@ type
   TDBEventsIDArray = array of DBEventsIDArray;
 
 const
-  IconsCount = 123;
+  IconsCount = 124;
 
 type
  TDbKernelArrayIcons = array [1..IconsCount] of THandle;
@@ -1157,6 +1157,7 @@ begin
   icons[121] := LoadIcon(HInstance,'PERSONS');
   icons[122] := LoadIcon(HInstance,'CAMERA');
   icons[123] := LoadIcon(HInstance,'CROP');
+  icons[124] := LoadIcon(HInstance,'PIC_IMPORT');
 
   //disabled items are bad
   for I := 1 to IconsCount do

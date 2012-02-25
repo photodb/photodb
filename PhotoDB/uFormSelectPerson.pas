@@ -62,7 +62,7 @@ const
 implementation
 
 uses
-  UnitUpdateDB;
+  UnitUpdateDBObject;
 
 {$R *.dfm}
 

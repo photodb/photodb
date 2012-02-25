@@ -681,6 +681,8 @@
 			<DCCReference Include="Units\Formats\uAnimatedJPEG.pas"/>
 			<DCCReference Include="Units\uPathProviderUtils.pas"/>
 			<DCCReference Include="Units\uBufferedFileStream.pas"/>
+			<DCCReference Include="Units\uUpdateDBTypes.pas"/>
+			<DCCReference Include="Units\uInterfaceManager.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

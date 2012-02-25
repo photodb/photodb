@@ -249,7 +249,7 @@ end;
 
 procedure TManagerDB.FormCreate(Sender: TObject);
 var
-  I : integer;
+  I: Integer;
 begin
   FLoadingDataThread := nil;
   FData := TList.Create;
@@ -269,17 +269,17 @@ begin
   R03.ImageIndex := DB_IC_ROTETED_180;
   R04.ImageIndex := DB_IC_ROTETED_270;
 
-  SI:=-1;
-  PackTabelLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SHELL + 1]);
-  ExportTableLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SAVE_AS_TABLE + 1]);
-  ImportTableLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_LOADFROMFILE + 1]);
-  RecreateIDExLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_REFRESH_ID + 1]);
-  ScanforBadLinksLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_SEARCH + 1]);
-  BackUpDBLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CANCEL_ACTION + 1]);
-  CleaningLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_COMMON + 1]);
-  DuplicatesLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DUPLICATE + 1]);
-  ConvertLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_CONVERT + 1]);
-  ChangePathLink.LoadFromHIcon(UnitDBKernel.icons[DB_IC_DIRECTORY + 1]);
+  SI := -1;
+  PackTabelLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
+  ExportTableLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SAVE_AS_TABLE + 1]);
+  ImportTableLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_LOADFROMFILE + 1]);
+  RecreateIDExLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_REFRESH_ID + 1]);
+  ScanforBadLinksLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SEARCH + 1]);
+  BackUpDBLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CANCEL_ACTION + 1]);
+  CleaningLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COMMON + 1]);
+  DuplicatesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DUPLICATE + 1]);
+  ConvertLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
+  ChangePathLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
 
   OldWNDProc := elvMain.WindowProc;
   elvMain.WindowProc := ElvMainWindowProc;
@@ -314,9 +314,9 @@ begin
   CbWhereField2.Items.Add(ChFields[1]);
   for I := 2 to FieldCount do
   begin
-    CbSetField.Items.Add(ChFields[i]);
-    CbWhereField1.Items.Add(ChFields[i]);
-    CbWhereField2.Items.Add(ChFields[i]);
+    CbSetField.Items.Add(ChFields[I]);
+    CbWhereField1.Items.Add(ChFields[I]);
+    CbWhereField2.Items.Add(ChFields[I]);
   end;
   CheckSQL;
   SaveWindowPos1.Key := RegRoot + 'Manager';
@@ -791,7 +791,7 @@ begin
       ProportionalSize(16, 16, W, H);
       GroupBitmaps[I].Height := H;
       GroupBitmaps[I].Width := W;
-      GroupBitmaps[I].PixelFormat := Pf24bit;
+      GroupBitmaps[I].PixelFormat := pf24bit;
       StretchCoolWTransparent(0, 0, W, H, Rect(0, 0, B.Width, B.Height), B, GroupBitmaps[I], 128);
     finally
       F(B);

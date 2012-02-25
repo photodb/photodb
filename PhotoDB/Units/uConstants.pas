@@ -210,6 +210,7 @@ const
   DB_IC_PEOPLE         = 120;
   DB_IC_CAMERA         = 121;
   DB_IC_CROP           = 122;
+  DB_IC_PICTURES_IMPORT = 123;
 
 const
     WM_DROPFILES = $0233;

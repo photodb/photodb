@@ -3,18 +3,58 @@ unit UnitUpdateDB;
 interface
 
 uses
-  dolphin_db, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
-  Forms, Dialogs, StdCtrls, DmProgress, Menus, ExtCtrls, UnitHelp,
-  uVistaFuncs, DB, AppEvnts, DragDrop, DragDropFile, WebLink,
-  DropSource, DropTarget, UnitDBkernel, UnitDBDeclare, uShellIntegration,
-  UnitUpdateDBObject, UnitTimeCounter, uJpegUtils, uBitmapUtils,
-  GraphicCrypt, jpeg, TLayered_Bitmap, UnitDBCommon, uMemory, uFileUtils,
-  uW7TaskBar, GraphicsBaseTypes, TwButton, uGraphicUtils, uDBForm,
-  uConstants, uAppUtils, uDBUtils, uDBPopupMenuInfo, pngimage, SaveWindowPos,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  DmProgress,
+  Menus,
+  ExtCtrls,
+  UnitHelp,
+  uVistaFuncs,
+  DB,
+  dolphin_db,
+  AppEvnts,
+  DragDrop,
+  DragDropFile,
+  WebLink,
+  DropSource,
+  DropTarget,
+  UnitDBkernel,
+  UnitDBDeclare,
+  uShellIntegration,
+  UnitUpdateDBObject,
+  UnitTimeCounter,
+  uJpegUtils,
+  uBitmapUtils,
+  GraphicCrypt,
+  jpeg,
+  TLayered_Bitmap,
+  UnitDBCommon,
+  uMemory,
+  uFileUtils,
+  uW7TaskBar,
+  GraphicsBaseTypes,
+  TwButton,
+  uGraphicUtils,
+  uDBForm,
+  uConstants,
+  uAppUtils,
+  uDBUtils,
+  uDBPopupMenuInfo,
+  pngimage,
+  SaveWindowPos,
+  uUpdateDBTypes,
+  uInterfaceManager,
   DmMemo;
 
 type
-  TUpdateDBForm = class(TDBForm)
+  TUpdateDBForm = class(TDBForm, IDBUpdaterCallBack)
     PmMain: TPopupMenu;
     Stayontop1: TMenuItem;
     Layered1: TMenuItem;
@@ -38,23 +78,22 @@ type
     History1: TMenuItem;
     UseScaningByFilename1: TMenuItem;
     DropFileTarget1: TDropFileTarget;
-    ApplicationEvents1: TApplicationEvents;
-    DmMemo1: TDmMemo;
-    FilesLabel: TDmMemo;
+    AeMain: TApplicationEvents;
+    MemInfoCaption: TDmMemo;
     ProgressBar: TDmProgress;
     WebLinkOpenImage: TWebLink;
     WebLinkOpenFolder: TWebLink;
-    ButtonClose: TWebLink;
+    WlClose: TWebLink;
     ButtonBreak: TWebLink;
     ButtonRunStop: TWebLink;
     ShowHistoryLink: TWebLink;
     WebLinkOptions: TWebLink;
     ImageGo: TImage;
     ImageHourGlass: TImage;
-    Timer1: TTimer;
+    TmrAnimation: TTimer;
     TwWindowsPos: TTwButton;
     SwpWindow: TSaveWindowPos;
-    procedure ButtonCloseClick(Sender: TObject);
+    procedure WlCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Stayontop1Click(Sender: TObject);
     procedure Hide1Click(Sender: TObject);
@@ -66,7 +105,6 @@ type
     procedure SkipAll1Click(Sender: TObject);
     procedure ButtonRunStopClick(Sender: TObject);
     procedure ButtonBreakClick(Sender: TObject);
-    procedure SetAddObject(AddObject : TUpdaterDB);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
     procedure FormDestroy(Sender: TObject);
@@ -76,12 +114,12 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure HideImage(OnCreate : boolean);
     procedure ShowImage;
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
+    procedure AeMainMessage(var Msg: tagMSG;
       var Handled: Boolean);
     procedure Image1Click(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure WebLinkOptionsClick(Sender: TObject);
-    procedure Timer1Timer(Sender: TObject);
+    procedure TmrAnimationTimer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure WebLinkOpenImageClick(Sender: TObject);
@@ -95,7 +133,6 @@ type
     FImagePosStep: Integer;
     FCurrentImage: TBitmap;
     FCurrentFileName: string;
-    FAddObject: TUpdaterDB;
     BadHistory: TStrings;
     LastIDImage: Integer;
     LastFileName: string;
@@ -104,66 +141,64 @@ type
     FProgressMessage: Cardinal;
     FW7TaskBar: ITaskbarList3;
     FFullSize: Int64;
-    procedure WMMouseDown(var s: Tmessage); message WM_LBUTTONDOWN;
+    FInfoText: string;
+    procedure WMMouseDown(var S: TMessage); message WM_LBUTTONDOWN;
   protected
     function GetFormID: string; override;
     procedure LoadLanguage;
   public
     { Public declarations }
-    constructor Create(AOwner: TComponent; AddObject: TUpdaterDB); reintroduce;
-    procedure SetAutoAnswer(Value: Integer);
-    procedure SetText(Text: string);
-    procedure ShowForm(Sender: TObject);
-    procedure SetMaxValue(Value: Integer);
-    procedure SetDone(Sender: TObject);
-    procedure SetBeginUpdation(Sender: TObject);
-    procedure SetTimeText(Text: string);
-    procedure SetPosition(Value: Integer);
-    procedure SetFileName(FileName: string);
-    procedure DoShowImage(Sender: TObject);
-    procedure AddFileSizes(Value: Int64);
+    procedure UpdaterSetText(Text: string);
+    procedure UpdaterSetMaxValue(Value: Integer);
+    procedure UpdaterSetAutoAnswer(Value: Integer);
+    procedure UpdaterSetTimeText(Text: string);
+    procedure UpdaterSetPosition(Value: Integer);
+    procedure UpdaterSetFileName(FileName: string);
+    procedure UpdaterAddFileSizes(Value: Int64);
+    procedure UpdaterDirectoryAdded(Sender: TObject);
+    procedure UpdaterOnDone(Sender: TObject);
+    procedure UpdaterShowForm(Sender: TObject);
+    procedure UpdaterSetBeginUpdation(Sender: TObject);
+    procedure UpdaterShowImage(Sender: TObject);
+    procedure UpdaterSetFullSize(Value: Int64);
+    procedure UpdaterFoundedEvent(Owner: TObject; FileName: string; Size: Int64);
+    function UpdaterGetForm: TDBForm;
+
     procedure OnBeginUpdation(Sender: TObject);
     procedure LoadToolBarIcons;
     procedure SetIcon(Link: TWebLink; name: string);
-    procedure OnDirectorySearch(Owner: TObject; FileName: string; Size: Int64);
-    property FullSize: Int64 read FFullSize write FFullSize;
   end;
 
-function UpdaterDB: TUpdaterDB;
-procedure DestroyUpdaterObject;
+procedure CreateUpdaterForm;
 
 implementation
 
 uses
-  FormManegerUnit, UnitHistoryForm, uManagerExplorer, SlideShow, UnitScripts,
-  DBScriptFunctions, UnitUpdateDBThread;
+  FormManegerUnit,
+  UnitHistoryForm,
+  uManagerExplorer,
+  SlideShow,
+  UnitScripts,
+  DBScriptFunctions,
+  UnitUpdateDBThread;
 
+procedure CreateUpdaterForm;
 var
-  FUpdaterDB: TUpdaterDB = nil;
-
-function UpdaterDB: TUpdaterDB;
+  FForm: TUpdateDBForm;
 begin
-  if FUpdaterDB = nil then
-    FUpdaterDB := TUpdaterDB.Create;
-
-  Result := FUpdaterDB;
-end;
-
-procedure DestroyUpdaterObject;
-begin
-  F(FUpdaterDB);
+  Application.CreateForm(TUpdateDBForm, FForm);
 end;
 
 {$R *.dfm}
 
 { TUpdateDBForm }
 
-procedure TUpdateDBForm.WMMouseDown(var S: Tmessage);
+procedure TUpdateDBForm.WMMouseDown(var S: TMessage);
 begin
-  Perform(WM_NCLButtonDown, HTcaption, S.Lparam);
+  Perform(WM_NCLBUTTONDOWN, HTCAPTION, S.LParam);
 end;
 
-procedure TUpdateDBForm.ButtonCloseClick(Sender: TObject);
+procedure TUpdateDBForm.WlCloseClick(Sender: TObject);
 begin
   Close;
 end;
@@ -174,6 +209,7 @@ var
   B: Byte;
   P: PARGB32;
 begin
+  InterfaceManager.RegisterObject(Self);
   FFullSize := 0;
   DoubleBuffered := True;
   FInfoStr := '';
@@ -189,7 +225,7 @@ begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   LoadLanguage;
   LoadToolBarIcons;
-  ButtonClose.Left := ClientWidth - ButtonClose.Width - 5;
+  WlClose.Left := ClientWidth - WlClose.Width - 5;
 
   FImagePos := 0;
   FImagePosStep := 1;
@@ -230,28 +266,28 @@ begin
     FormStyle := FsStayOnTop;
 end;
 
-constructor TUpdateDBForm.Create(AOwner: TComponent;
+{constructor TUpdateDBForm.Create(AOwner: TComponent;
   AddObject: TUpdaterDB);
 begin
   inherited Create(AOwner);
   FAddObject := AddObject;
-end;
+end; }
 
-procedure TUpdateDBForm.SetAddObject(AddObject: TUpdaterDB);
+{procedure TUpdateDBForm.SetAddObject(AddObject: TUpdaterDB);
 begin
   FAddObject := AddObject;
-end;
+end;    }
 
 procedure TUpdateDBForm.LoadLanguage;
 begin
   BeginTranslate;
   try
     Caption := L('Collection Updater');
-    FilesLabel.Text := L('No files');
+    FInfoText := L('No files');
     ProgressBar.Text := '';
     ButtonBreak.Text := L('Stop');
     ButtonRunStop.Text := L('Pause');
-    ButtonClose.Text := L('Close');
+    WlClose.Text := L('Close');
     ProgressBar.Text := L('Progress... (&%%)');
     Stayontop1.Caption := L('Stay on top');
     Layered1.Caption := L('Transparency');
@@ -270,7 +306,7 @@ begin
     WebLinkOptions.Text := L('Options');
     WebLinkOpenImage.Text := L('Open');
     WebLinkOpenFolder.Text := L('Explorer');
-    DmMemo1.Text := L('Status') + ':';
+    MemInfoCaption.Text := L('Status') + ':';
   finally
     EndTranslate;
   end;
@@ -280,7 +316,8 @@ procedure TUpdateDBForm.ChangedDBDataByID(Sender: TObject; ID: integer;
   params: TEventFields; Value: TEventValues);
 var
   P: TPoint;
-  I, FileSize: Integer;
+  I: Integer;
+  FileSize: Int64;
   B: Boolean;
   W, H: Integer;
   Bit, Bitmap: TBitmap;
@@ -407,42 +444,41 @@ end;
 procedure TUpdateDBForm.Auto1Click(Sender: TObject);
 begin
   Auto1.Checked := not Auto1.Checked;
-  FAddObject.Auto := Auto1.Checked;
+  UpdaterDB.Auto := Auto1.Checked;
 end;
 
 procedure TUpdateDBForm.None1Click(Sender: TObject);
 begin
-  FAddObject.AutoAnswer := Result_invalid;
+  UpdaterDB.AutoAnswer := Result_invalid;
 end;
 
 procedure TUpdateDBForm.ReplaceAll1Click(Sender: TObject);
 begin
-  FAddObject.AutoAnswer := Result_replace_All;
+  UpdaterDB.AutoAnswer := Result_replace_All;
 end;
 
 procedure TUpdateDBForm.AddAll1Click(Sender: TObject);
 begin
-  FAddObject.AutoAnswer := Result_add_all;
+  UpdaterDB.AutoAnswer := Result_add_all;
 end;
 
 procedure TUpdateDBForm.SkipAll1Click(Sender: TObject);
 begin
-  FAddObject.AutoAnswer := Result_skip_all;
+  UpdaterDB.AutoAnswer := Result_skip_all;
 end;
 
 procedure TUpdateDBForm.ButtonRunStopClick(Sender: TObject);
 begin
-  if FAddObject.Pause then
+  if UpdaterDB.Pause then
   begin
-    FAddObject.DoUnPause;
+    UpdaterDB.DoUnPause;
     SetIcon(ButtonRunStop, 'UPDATER_PAUSE');
     ButtonRunStop.Text := L('Pause');
     if FW7TaskBar <> nil then
       FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
   end else
   begin
-    // TODO icon
-    FAddObject.DoPause;
+    UpdaterDB.DoPause;
     SetIcon(ButtonRunStop, 'UPDATER_PLAY');
     ButtonRunStop.Text := L('Run');
     if FW7TaskBar <> nil then
@@ -452,7 +488,7 @@ end;
 
 procedure TUpdateDBForm.ButtonBreakClick(Sender: TObject);
 begin
-  FAddObject.DoTerminate;
+  UpdaterDB.DoTerminate;
 end;
 
 procedure TUpdateDBForm.DropFileTarget1Drop(Sender: TObject;
@@ -467,7 +503,7 @@ begin
       UpdaterDB.AddFile((DropFileTarget1.Files[I]));
 
     if DirectoryExistsSafe((DropFileTarget1.Files[I])) then
-      UpdaterDB.AddDirectory((DropFileTarget1.Files[I]), OnDirectorySearch);
+      UpdaterDB.AddDirectory((DropFileTarget1.Files[I]));
 
     UpdaterDB.Execute;
   end;
@@ -476,6 +512,8 @@ end;
 procedure TUpdateDBForm.FormDestroy(Sender: TObject);
 begin
   SwpWindow.SavePosition;
+
+  InterfaceManager.UnRegisterObject(Self);
 
   F(FImage);
   F(FImageInv);
@@ -490,7 +528,7 @@ end;
 procedure TUpdateDBForm.UseScaningByFilename1Click(Sender: TObject);
 begin
   UseScaningByFilename1.Checked := not UseScaningByFilename1.Checked;
-  FAddObject.UseFileNameScaning := UseScaningByFilename1.Checked;
+  UpdaterDB.UseFileNameScaning := UseScaningByFilename1.Checked;
 end;
 
 procedure TUpdateDBForm.History1Click(Sender: TObject);
@@ -509,13 +547,12 @@ procedure TUpdateDBForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   if FormManager.IsMainForms(Self) and (FormManager.MainFormsCount = 1) then
-    FAddObject.DoTerminate;
+    UpdaterDB.DoTerminate;
   //do not free this form, it owned by update object
   //TODO: check how application terminating when this form is last
 end;
 
-procedure TUpdateDBForm.ApplicationEvents1Message(var Msg: tagMSG;
-  var Handled: Boolean);
+procedure TUpdateDBForm.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
 const
   SC_DragMove = $F012;
 begin
@@ -524,8 +561,7 @@ begin
 
   if (Msg.Message = WM_LBUTTONDOWN) then
   begin
-    if (Msg.hwnd = FilesLabel.Handle)
-    or (Msg.hwnd = DmMemo1.Handle)
+    if (Msg.hwnd = MemInfoCaption.Handle)
     or (Msg.hwnd = ProgressBar.Handle) then
     begin
       Perform(WM_NCLBUTTONDOWN, HTcaption, Msg.lparam);
@@ -559,7 +595,7 @@ begin
   end;
 end;
 
-procedure TUpdateDBForm.SetAutoAnswer(Value: Integer);
+procedure TUpdateDBForm.UpdaterSetAutoAnswer(Value: Integer);
 begin
   AddAll1.Checked := False;
   SkipAll1.Checked := False;
@@ -577,46 +613,46 @@ begin
   end;
 end;
 
-procedure TUpdateDBForm.SetText(Text: string);
+procedure TUpdateDBForm.UpdaterSetText(Text: string);
 begin
-  FilesLabel.Text := Text;
+  FInfoText := Text;
 end;
 
-procedure TUpdateDBForm.ShowForm(Sender: TObject);
+procedure TUpdateDBForm.UpdaterShowForm(Sender: TObject);
 begin
   Show;
 end;
 
-procedure TUpdateDBForm.SetMaxValue(Value: integer);
+procedure TUpdateDBForm.UpdaterSetMaxValue(Value: integer);
 begin
   ProgressBar.MaxValue := Value;
 end;
 
-procedure TUpdateDBForm.SetDone(Sender: TObject);
+procedure TUpdateDBForm.UpdaterOnDone(Sender: TObject);
 begin
   HideImage(False);
   ProgressBar.Position := 0;
   ProgressBar.Text := L('Done');
-  FilesLabel.Text := L('No files to add');
+  FInfoText := L('No files to add');
 end;
 
-procedure TUpdateDBForm.SetBeginUpdation(Sender: TObject);
+procedure TUpdateDBForm.UpdaterSetBeginUpdation(Sender: TObject);
 begin
   HideImage(False);
   ProgressBar.Position := 0;
   ProgressBar.Text := L('Processing files... (&%%)');
-  FilesLabel.Text := L('<current file>');
+  FInfoText := L('<current file>');
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;
 
-procedure TUpdateDBForm.SetTimeText(Text: string);
+procedure TUpdateDBForm.UpdaterSetTimeText(Text: string);
 begin
 // TimeLabel.Caption:=Text;
 end;
 
-procedure TUpdateDBForm.SetPosition(Value: integer);
+procedure TUpdateDBForm.UpdaterSetPosition(Value: integer);
 begin
   ProgressBar.Position := Value;
   if FW7TaskBar <> nil then
@@ -626,21 +662,36 @@ begin
   end;
 end;
 
-procedure TUpdateDBForm.SetFileName(FileName: string);
+procedure TUpdateDBForm.UpdaterSetFileName(FileName: string);
 begin
-  FilesLabel.Lines.Text := Mince(FileName, 40);
+  FInfoText := Mince(FileName, 40);
 end;
 
-procedure TUpdateDBForm.DoShowImage(Sender: TObject);
+procedure TUpdateDBForm.UpdaterSetFullSize(Value: Int64);
+begin
+  FFullSize := Value;
+end;
+
+procedure TUpdateDBForm.UpdaterShowImage(Sender: TObject);
 begin
   FInfoStr := '';
   ShowImage;
 end;
 
-procedure TUpdateDBForm.AddFileSizes(Value: int64);
+procedure TUpdateDBForm.UpdaterAddFileSizes(Value: int64);
 begin
   FInfoStr := '';
   TimeCounter.AddActions(Value);
+end;
+
+procedure TUpdateDBForm.UpdaterDirectoryAdded(Sender: TObject);
+begin
+  //isn't used
+end;
+
+function TUpdateDBForm.UpdaterGetForm: TDBForm;
+begin
+  Result := Self;
 end;
 
 procedure TUpdateDBForm.OnBeginUpdation(Sender: TObject);
@@ -682,7 +733,7 @@ begin
   Canvas.Brush.Color := ClWhite;
   Canvas.Font.Style := [];
 
-  DrawText(Canvas.Handle, PChar(FilesLabel.Text), Length(FilesLabel.Text), R, DrawTextOpt);
+  DrawText(Canvas.Handle, PChar(FInfoText), Length(FInfoText), R, DrawTextOpt);
 
   if FCurrentImage <> nil then
     Canvas.Draw(10 + 50 - FCurrentImage.Width div 2, 10 + 50 - FCurrentImage.Height div 2, FCurrentImage);
@@ -700,7 +751,7 @@ end;
 
 procedure TUpdateDBForm.SetIcon(Link : TWebLink; Name : String);
 var
-  Ico : HIcon;
+  Ico: HIcon;
 begin
   Ico := LoadIcon(HInstance, PWideChar(Name));
   try
@@ -716,7 +767,7 @@ begin
   SetIcon(ButtonRunStop, 'UPDATER_PLAY');
   SetIcon(ButtonBreak, 'UPDATER_STOP');
   SetIcon(ShowHistoryLink, 'UPDATER_HISTORY');
-  SetIcon(ButtonClose, 'UPDATER_CLOSE');
+  SetIcon(WlClose, 'UPDATER_CLOSE');
   SetIcon(WebLinkOpenImage, 'UPDATER_OPEN_IMAGE');
   SetIcon(WebLinkOpenFolder, 'UPDATER_OPEN_FOLDER');
 end;
@@ -731,7 +782,7 @@ begin
   PmMain.Popup(P.X, P.Y);
 end;
 
-procedure TUpdateDBForm.Timer1Timer(Sender: TObject);
+procedure TUpdateDBForm.TmrAnimationTimer(Sender: TObject);
 var
   Bitmap: TBitmap;
   TextTop, TextLeft, TextWidth, TextHeight: Integer;
@@ -776,7 +827,7 @@ begin
 
       end;
       FImageHourGlass.DolayeredDraw(Bitmap.Width div 2 - FImageHourGlass.Width div 2 - 10, 16, 150, Bitmap);
-      Canvas.Draw(10, FilesLabel.Top, Bitmap);
+      Canvas.Draw(10, MemInfoCaption.Top + MemInfoCaption.Height + 3, Bitmap);
     finally
       F(Bitmap);
     end;
@@ -792,8 +843,7 @@ begin
   end;
 end;
 
-procedure TUpdateDBForm.OnDirectorySearch(Owner: TObject; FileName: string;
-  Size: int64);
+procedure TUpdateDBForm.UpdaterFoundedEvent(Owner: TObject; FileName: string; Size: int64);
 begin
   FFullSize := FFullSize + Size;
   FInfoStr := Format(L('Reading [%s]'), [SizeInText(FFullSize)]);
@@ -830,13 +880,5 @@ begin
     end;
   end;
 end;
-
-initialization
-
-  FUpdaterDB := nil;
-
-finalization
-
-  F(FUpdaterDB);
 
 end.

@@ -123,7 +123,7 @@ type
 implementation
 
 uses
-  UnitUpdateDB;
+  UnitUpdateDBObject;
 
 { TFileOperationTask }
 
@@ -269,7 +269,7 @@ begin
     procedure
     begin
       FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
-      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
       FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
       FProgress.ProgressValue := FBytesCopyed;
       FProgress.UpdateOptions(False);
@@ -339,7 +339,7 @@ begin
     procedure
     begin
       FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed)));
-      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
       FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
       FProgress.ProgressValue := FBytesCopyed;
       FProgress.UpdateOptions(False);
@@ -358,7 +358,7 @@ begin
     begin
       FProgress.Options['Name'].SetDisplayName(L('Name')).SetValue(ExtractFileName(FCurrentItem.Path));
       FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalBytes - FBytesCopyed - BytesDone)));
-      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed - BytesDone)]));
+      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed - BytesDone)]));
       FProgress.Options['Speed'].SetValue(SpeedInText(FSpeedCounter.CurrentSpeed / (1024 * 1024)) + ' ' + L('MB/second'));
       FProgress.ProgressValue := FBytesCopyed + BytesDone;
       FProgress.UpdateOptions(False);
@@ -523,7 +523,7 @@ begin
                           SynchronizeEx(
                             procedure
                             begin
-                              FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes)]));
+                              FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems, SizeInText(FTotalBytes)]));
                               if FProgress.IsCanceled then
                                 Terminate;
                             end
@@ -621,7 +621,7 @@ begin
                 FProgress.ProgressMax := FTotalBytes;
                 FProgress.ProgressValue := 0;
                 FProgress.Options['Name'].SetVisible(False);
-                FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems, SizeInText(FTotalBytes)]));
+                FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems, SizeInText(FTotalBytes)]));
                 FProgress.Options['Time remaining'].SetDisplayName(L('Time remaining')).SetValue(L('Calculating...'));
                 FProgress.Options['Speed'].SetVisible(False);
                 FProgress.RefreshOptionList;
@@ -660,7 +660,7 @@ begin
                 procedure
                 begin
                   FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalItems - FCopiedItems)));
-                  FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1}))', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+                  FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
                   FProgress.ProgressValue := FBytesCopyed;
                   FProgress.UpdateOptions(False);
                   if FProgress.IsCanceled then
@@ -673,7 +673,14 @@ begin
           if FOptions.AddToCollection then
           begin
             for I := 0 to FileOperations.Count - 1 do
-              UpdaterDB.AddFile(FileOperations[I].Destination.Path);
+            begin
+
+              FO := FileOperations[I];
+              if FO.IsDirectory then
+                Continue;
+
+              UpdaterDB.AddFile(FO.Destination.Path);
+            end;
           end;
 
           finally

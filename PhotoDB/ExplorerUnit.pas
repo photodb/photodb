@@ -348,6 +348,8 @@ type
     WlResize: TWebLink;
     WlConvert: TWebLink;
     WlCrop: TWebLink;
+    WlImportPictures: TWebLink;
+    MiImportImages: TMenuItem;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -544,6 +546,7 @@ type
     procedure MiCopyAddressClick(Sender: TObject);
     procedure MiEditAddressClick(Sender: TObject);
     procedure WlCropClick(Sender: TObject);
+    procedure WlImportPicturesClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1240,6 +1243,7 @@ begin
   Delete1.Visible := False;
   Rename1.Visible := False;
   AddFile1.Visible := False;
+  MiImportImages.Visible := False;
   Cut2.Visible := False;
   Copy1.Visible := False;
   Shell1.Visible := False;
@@ -1255,6 +1259,7 @@ begin
     Properties1.Visible := True;
     Open1.Visible := True;
     SlideShow1.Visible := True;
+    MiImportImages.Visible := True;
 
     Shell1.Visible := True;
   end;
@@ -1344,6 +1349,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_DEVICE then
   begin
+    MiImportImages.Visible := True;
     NewWindow1.Visible := True;
     Open1.Visible := True;
     Properties1.Visible := True;
@@ -1351,6 +1357,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_STORAGE then
   begin
+    MiImportImages.Visible := True;
     NewWindow1.Visible := True;
     Open1.Visible := True;
     Properties1.Visible := True;
@@ -1358,6 +1365,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY then
   begin
+    MiImportImages.Visible := True;
     NewWindow1.Visible := True;
     Open1.Visible := True;
     Properties1.Visible := True;
@@ -1573,7 +1581,7 @@ begin
         Index := ItemIndexToMenuIndex(I);
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER then
         begin
-          UpdaterDB.AddDirectory(FFilesInfo[Index].FileName, nil);
+          UpdaterDB.AddDirectory(FFilesInfo[Index].FileName);
           Continue;
         end;
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
@@ -1584,7 +1592,7 @@ begin
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
           if ID_OK = MessageBoxDB(Handle, L('Do you really want to add full drive with subfolders?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
           begin
-            UpdaterDB.AddDirectory(FFilesInfo[Index].FileName, nil);
+            UpdaterDB.AddDirectory(FFilesInfo[Index].FileName);
             Continue;
           end;
       end;
@@ -1592,7 +1600,7 @@ begin
   end;
   if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) then
     if SelCount = 0 then
-      UpdaterDB.AddDirectory(GetCurrentPath, nil);
+      UpdaterDB.AddDirectory(GetCurrentPath);
 end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
@@ -2305,7 +2313,7 @@ end;
 
 procedure TExplorerForm.Addfolder1Click(Sender: TObject);
 begin
-  UpdaterDB.AddDirectory(GetCurrentPath, nil)
+  UpdaterDB.AddDirectory(GetCurrentPath)
 end;
 
 procedure TExplorerForm.Refresh1Click(Sender: TObject);
@@ -3955,6 +3963,19 @@ begin
     end else
       DeleteLink.Visible := False;
 
+    if ((FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) then
+    begin
+      if SelCount <= 1 then
+      begin
+        WlImportPictures.Visible := True;
+        WlImportPictures.Top := NewTop + H;
+        NewTop := WlImportPictures.BoundsRect.Bottom;
+      end else
+        WlImportPictures.Visible := False;
+    end else
+      WlImportPictures.Visible := False;
+
     if ElvMain.Items.Count < 400 then
     begin
       if ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE)) and
@@ -5004,6 +5025,7 @@ begin
     RenameLink.Text := L('Rename');
     PropertiesLink.Text := L('Properties');
     DeleteLink.Text := L('Delete');
+
     RefreshLink.Text := L('Refresh');
     ImageEditorLink.Text := L('Image editor');
     PrintLink.Text := L('Print');
@@ -5012,6 +5034,8 @@ begin
     DesktopLink.Text := L('Desktop');
     MyComputerLink.Text := L('My Computer');
     AddLink.Text := L('Add to collection');
+    WlImportPictures.Text := L('Import pictures');
+    MiImportImages.Caption := L('Import pictures');
 
     ImageTasksLabel.Caption := L('Image tasks');
     WlResize.Text := L('Resize');
@@ -5206,7 +5230,7 @@ end;
 
 procedure TExplorerForm.AddFolder2Click(Sender: TObject);
 begin
-  UpdaterDB.AddDirectory(TempFolderName, nil);
+  UpdaterDB.AddDirectory(TempFolderName);
 end;
 
 procedure TExplorerForm.AddLinkClick(Sender: TObject);
@@ -7118,6 +7142,20 @@ begin
   end;
 end;
 
+procedure TExplorerForm.WlImportPicturesClick(Sender: TObject);
+var
+  Item: TEasyItem;
+  Path: string;
+begin
+  Item := ListView1Selected;
+  if Item <> nil then
+  begin
+    Path := FFilesInfo[ItemIndexToMenuIndex(Item.index)].FileName;
+    GetPhotosFromFolder(Path);
+  end else
+    GetPhotosFromFolder(GetCurrentPath);
+end;
+
 procedure TExplorerForm.WMDeviceChange(var Msg: TMessage);
 var
   Drive: string;
@@ -8726,6 +8764,7 @@ begin
   SelectAll1.ImageIndex := DB_IC_SELECTALL;
   Cut2.ImageIndex := DB_IC_CUT;
   Paste1.ImageIndex := DB_IC_PASTE;
+  MiImportImages.ImageIndex := DB_IC_PICTURES_IMPORT;
 
   New1.ImageIndex := DB_IC_NEW_SHELL;
   Directory1.ImageIndex := DB_IC_NEW_DIRECTORY;
@@ -8823,6 +8862,7 @@ begin
   WlResize.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
   WlConvert.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
   WlCrop.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CROP + 1]);
+  WlImportPictures.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PICTURES_IMPORT + 1]);
 end;
 
 destructor TExplorerForm.Destroy;

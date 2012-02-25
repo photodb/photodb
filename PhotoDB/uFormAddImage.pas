@@ -33,7 +33,7 @@ procedure AddImage(Info: TDBPopupMenuInfoRecord);
 implementation
 
 uses
-  UnitUpdateDB;
+  UnitUpdateDBObject;
 
 procedure AddImage(Info: TDBPopupMenuInfoRecord);
 var

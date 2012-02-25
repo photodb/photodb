@@ -73,7 +73,7 @@ end;
 
 procedure AddFolderInDB(Directory: string);
 begin
-  UpdaterDB.AddDirectory(Directory, nil);
+  UpdaterDB.AddDirectory(Directory);
 end;
 
 function GetRegKeyListing(Key : string) : TArrayOfString;

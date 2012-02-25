@@ -285,7 +285,7 @@ object ExplorerForm: TExplorerForm
         end
         object SlideShowLink: TWebLink
           Left = 5
-          Top = 345
+          Top = 340
           Width = 72
           Height = 16
           Cursor = crHandPoint
@@ -306,7 +306,7 @@ object ExplorerForm: TExplorerForm
         end
         object ShellLink: TWebLink
           Left = 5
-          Top = 367
+          Top = 354
           Width = 47
           Height = 16
           Cursor = crHandPoint
@@ -327,7 +327,7 @@ object ExplorerForm: TExplorerForm
         end
         object RenameLink: TWebLink
           Left = 5
-          Top = 439
+          Top = 415
           Width = 60
           Height = 16
           Cursor = crHandPoint
@@ -348,7 +348,7 @@ object ExplorerForm: TExplorerForm
         end
         object RefreshLink: TWebLink
           Left = 5
-          Top = 472
+          Top = 445
           Width = 59
           Height = 16
           Cursor = crHandPoint
@@ -369,7 +369,7 @@ object ExplorerForm: TExplorerForm
         end
         object PropertiesLink: TWebLink
           Left = 5
-          Top = 455
+          Top = 430
           Width = 70
           Height = 16
           Cursor = crHandPoint
@@ -477,7 +477,7 @@ object ExplorerForm: TExplorerForm
         end
         object MoveToLink: TWebLink
           Left = 5
-          Top = 423
+          Top = 400
           Width = 62
           Height = 16
           Cursor = crHandPoint
@@ -541,7 +541,7 @@ object ExplorerForm: TExplorerForm
         end
         object DeleteLink: TWebLink
           Left = 5
-          Top = 488
+          Top = 459
           Width = 52
           Height = 16
           Cursor = crHandPoint
@@ -562,7 +562,7 @@ object ExplorerForm: TExplorerForm
         end
         object CopyToLink: TWebLink
           Left = 5
-          Top = 407
+          Top = 383
           Width = 61
           Height = 16
           Cursor = crHandPoint
@@ -583,7 +583,7 @@ object ExplorerForm: TExplorerForm
         end
         object AddLink: TWebLink
           Left = 5
-          Top = 504
+          Top = 490
           Width = 75
           Height = 16
           Cursor = crHandPoint
@@ -625,7 +625,7 @@ object ExplorerForm: TExplorerForm
         end
         object WlCreateObject: TWebLink
           Left = 5
-          Top = 389
+          Top = 369
           Width = 54
           Height = 16
           Cursor = crHandPoint
@@ -695,6 +695,27 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Crop'
           OnClick = WlCropClick
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          ImageCanRegenerate = True
+          UseSpecIconSize = True
+          HightliteImage = False
+          StretchImage = True
+          CanClick = True
+        end
+        object WlImportPictures: TWebLink
+          Left = 5
+          Top = 473
+          Width = 94
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'Import pictures'
+          OnClick = WlImportPicturesClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -1026,6 +1047,7 @@ object ExplorerForm: TExplorerForm
       Alignment = taCenter
       Caption = '  Address:'
       TabOrder = 1
+      ExplicitHeight = 17
     end
     object PePath: TPathEditor
       Left = 62
@@ -1622,6 +1644,10 @@ object ExplorerForm: TExplorerForm
     object AddFile1: TMenuItem
       Caption = 'Add File'
       OnClick = AddFile1Click
+    end
+    object MiImportImages: TMenuItem
+      Caption = 'Import Images'
+      OnClick = WlImportPicturesClick
     end
     object N13: TMenuItem
       Caption = '-'

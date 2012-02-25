@@ -381,7 +381,9 @@ uses
   uPicturesImportPatternEdit in 'uPicturesImportPatternEdit.pas' {PicturesImportPatternEdit},
   uAnimatedJPEG in 'Units\Formats\uAnimatedJPEG.pas',
   uPathProviderUtils in 'Units\uPathProviderUtils.pas',
-  uBufferedFileStream in 'Units\uBufferedFileStream.pas';
+  uBufferedFileStream in 'Units\uBufferedFileStream.pas',
+  uUpdateDBTypes in 'Units\uUpdateDBTypes.pas',
+  uInterfaceManager in 'Units\uInterfaceManager.pas';
 
 {$R *.res}
 
@@ -729,7 +731,7 @@ begin
     if (s1 <> '') and DirectoryExists(s1) then
     begin
       RegisterMainForm(UpdaterDB.Form);
-      UpdaterDB.AddDirectory(s1, nil);
+      UpdaterDB.AddDirectory(s1);
     end;
 
     if GetParamStrDBBool('/SQLExec') then

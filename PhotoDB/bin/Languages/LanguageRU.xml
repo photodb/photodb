@@ -85,6 +85,7 @@
   <scope name="Associations">
 	<translate name="All supported formats" value="Все поддерживаемые форматы" />
 	<translate name="JPEG Images" value="JPEG Изображения" />
+	<translate name="JPEG 3D Images" value="JPEG 3D (стерео) Изображения" />
 	<translate name="TIFF images" value="TIFF Изображения" />
 	<translate name="Photoshop Images" value="Photoshop Изображения" />
 	<translate name="Animated images" value="Анимированные изображения" />
@@ -191,6 +192,7 @@
     <translate name="Image editor" value="Редактор" />
     <translate name="Crop" value="Кадрировать" />
     <translate name="Image tasks" value="Изображение" />
+    <translate name="Import pictures" value="Импорт фото" />	
     <translate name="Print" value="Печать" />
     <translate name="My pictures" value="Мои фотографии" />
     <translate name="My documents" value="Мои документы" />

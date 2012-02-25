@@ -3,14 +3,55 @@ unit uFormCreatePerson;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, WatermarkedEdit, ExtCtrls, WatermarkedMemo, ComCtrls,
-  WebLinkList, uFaceDetection, uPeopleSupport, uMemory, uMemoryEx, jpeg,
-  uBitmapUtils, uThreadEx, uDBThread, uThreadForm, LoadingSign, u2DUtils,
-  UnitDBDeclare, UnitDBKernel, AppEvnts, WebLink, UnitGroupsWork, ImgList,
-  uConstants, uEditorTypes, Dolphin_db, uLogger, RAWImage, uJpegUtils,
-  uFastLoad, uVCLHelpers, ActiveX, uDBClasses, uPathProviders, uDBForm, Types,
-  uSettings, Menus, uExplorerPersonsProvider, uSysUtils, CommonDBSupport;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  WatermarkedEdit,
+  ExtCtrls,
+  WatermarkedMemo,
+  ComCtrls,
+  WebLinkList,
+  uFaceDetection,
+  uPeopleSupport,
+  uMemory,
+  uMemoryEx,
+  jpeg,
+  uBitmapUtils,
+  uThreadEx,
+  uDBThread,
+  uThreadForm,
+  LoadingSign,
+  u2DUtils,
+  UnitDBDeclare,
+  UnitDBKernel,
+  AppEvnts,
+  WebLink,
+  UnitGroupsWork,
+  ImgList,
+  uConstants,
+  uEditorTypes,
+  Dolphin_db,
+  uLogger,
+  RAWImage,
+  uJpegUtils,
+  uFastLoad,
+  uVCLHelpers,
+  ActiveX,
+  uDBClasses,
+  uPathProviders,
+  uDBForm,
+  Types,
+  uSettings,
+  Menus,
+  uExplorerPersonsProvider,
+  uSysUtils,
+  CommonDBSupport;
 
 type
   TFormCreatePerson = class(TThreadForm)
@@ -125,7 +166,10 @@ function EditPerson(PersonID: Integer): Boolean;
 implementation
 
 uses
-  UnitUpdateDB, UnitEditGroupsForm, UnitQuickGroupInfo, ImEditor,
+  UnitUpdateDBObject,
+  UnitEditGroupsForm,
+  UnitQuickGroupInfo,
+  ImEditor,
   uFormPersonSuggest;
 
 {$R *.dfm}

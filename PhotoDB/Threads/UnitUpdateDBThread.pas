@@ -118,8 +118,8 @@ var
 
 { UpdateDBThread }
 
-constructor UpdateDBThread.Create(Sender : TUpdaterDB;
-  Info : TDBPopupMenuInfo; OnDone: TNotifyEvent;
+constructor UpdateDBThread.Create(Sender: TUpdaterDB;
+  Info: TDBPopupMenuInfo; OnDone: TNotifyEvent;
   AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
   Pause: PBoolean; NoLimit : boolean = false);
 begin
@@ -281,6 +281,7 @@ var
     Info: TDBPopupMenuInfoRecord;
     Groups, ExifGroups: string;
   begin
+    try
     Info := FInfo[FileNumber];
 
     //save original groups and extract Exif groups
@@ -306,6 +307,10 @@ var
     end else
       F(ResArray[FileNumber].Jpeg);
 
+    except
+      on e: Exception do
+        EventLog(e);
+    end;
   end;
 
   function GetRecordsCount: Integer;

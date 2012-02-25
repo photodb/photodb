@@ -2500,7 +2500,7 @@ end;
 
 procedure TSearchForm.AddFolder1Click(Sender: TObject);
 begin
-  UpdaterDB.AddDirectory(TempFolderName, nil);
+  UpdaterDB.AddDirectory(TempFolderName);
 end;
 
 procedure TSearchForm.Hide1Click(Sender: TObject);
