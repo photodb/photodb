@@ -5,9 +5,26 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, SysUtils, Classes, Messages, Registry, ShlObj, ComObj, ActiveX,
-  uConstants, uMemory, uInstallTypes, uInstallScope, VRSIShortCuts, Forms,
-  IniFiles, uTranslate, uLogger, UnitINI, uShellUtils, uUserUtils,
+  Windows,
+  SysUtils,
+  Classes,
+  Messages,
+  Registry,
+  ShlObj,
+  ComObj,
+  ActiveX,
+  uConstants,
+  uMemory,
+  uInstallTypes,
+  uInstallScope,
+  VRSIShortCuts,
+  Forms,
+  IniFiles,
+  uTranslate,
+  uLogger,
+  UnitINI,
+  uShellUtils,
+  uUserUtils,
   uAppUtils;
 
 type

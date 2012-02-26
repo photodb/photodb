@@ -66,7 +66,7 @@ type
     SampleImage: TImage;
     RedEyeLink: TWebLink;
     SaveLink: TWebLink;
-    FullSiseLink: TWebLink;
+    FullSizeLink: TWebLink;
     DestroyTimer: TTimer;
     PmMain: TPopupMenu;
     Exit1: TMenuItem;
@@ -143,7 +143,7 @@ type
     procedure SaveLinkClick(Sender: TObject);
     procedure DisableHistory;
     procedure EnableHistory;
-    procedure FullSiseLinkClick(Sender: TObject);
+    procedure FullSizeLinkClick(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure Search1Click(Sender: TObject);
@@ -256,9 +256,6 @@ const
   CUR_HAND = 144;
   CUR_CROP = 145;
 
-  ImageEditorProductName = 'DBImage Editor v1.3';
-
-
 implementation
 
 uses
@@ -361,6 +358,13 @@ begin
   DropFileTarget1.register(Self);
 
   LoadLanguage;
+
+  ZoomOutLink.Left := SaveLink.Left + SaveLink.Width + 25;
+  ZoomInLink.Left := ZoomOutLink.Left + ZoomOutLink.Width + 25;
+  FullSizeLink.Left := ZoomInLink.Left + ZoomInLink.Width + 25;
+  FitToSizeLink.Left := FullSizeLink.Left + FullSizeLink.Width + 25;
+  UndoLink.Left := FitToSizeLink.Left + FitToSizeLink.Width + 25;
+  RedoLink.Left := UndoLink.Left + UndoLink.Width + 25;
 
   Application.CreateForm(TActionsForm, ActionForm);
   TActionsForm(ActionForm).SetParentForm(Self);
@@ -884,8 +888,8 @@ begin
   ToolObject.Image := CurrentImage;
   ToolObject.SetImagePointer := SetPointerToNewImage;
   ToolObject.OnClosePanel := ShowTools;
-  ToolObject.FirstPoint := Point(CurrentImage.Width div 3, CurrentImage.Height div 3);
-  ToolObject.SecondPoint := Point(CurrentImage.Width * 2 div 3, CurrentImage.Height * 2 div 3);
+  ToolObject.FirstPoint := Point(CurrentImage.Width div 10, CurrentImage.Height div 10);
+  ToolObject.SecondPoint := Point(CurrentImage.Width * 9 div 10, CurrentImage.Height * 9 div 10);
   MakeImage;
   FormPaint(Sender);
 end;
@@ -897,7 +901,7 @@ begin
     OpenFileName(DropFileTarget1.Files[0]);
 end;
 
-function TImageEditor.OpenFileName(FileName: String): boolean;
+function TImageEditor.OpenFileName(FileName: String): Boolean;
 var
   G: TGraphic;
   GraphicClass: TGraphicClass;
@@ -1987,7 +1991,7 @@ end;
 
 procedure TImageEditor.MakeCaption;
 begin
-  Caption := ImageEditorProductName + '  "' + ExtractFileName(CurrentFileName) + Format('"  [%dx%d px.]',
+  Caption := L('Image editor') + ' - "' + ExtractFileName(CurrentFileName) + Format('"  [%dx%d px.]',
     [CurrentImage.Width, CurrentImage.Height]) + Format('  %d%% ', [Round(GetZoom * 100)]);
 end;
 
@@ -2423,7 +2427,7 @@ begin
   RedoLink.Invalidate;
 end;
 
-procedure TImageEditor.FullSiseLinkClick(Sender: TObject);
+procedure TImageEditor.FullSizeLinkClick(Sender: TObject);
 begin
   if not ZoomerOn then
   begin
@@ -2482,7 +2486,7 @@ begin
     SaveLink.Text := L('Save');
     ZoomOutLink.Text := L('Zoom out');
     ZoomInLink.Text := L('Zoom in');
-    FullSiseLink.Text := L('100%');
+    FullSizeLink.Text := L('100%');
     FitToSizeLink.Text := L('Fit to window');
     UndoLink.Text := L('Undo');
     RedoLink.Text := L('Redo');

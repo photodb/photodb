@@ -63,16 +63,16 @@ type
 type
   TValueObject = class(TObject)
   private
-    FTIntValue: Integer;
+    FTIntValue: Int64;
     FSTStrValue: TStrings;
     FTBoolValue: Boolean;
-    procedure SetTIntValue(const Value: Integer);
+    procedure SetTIntValue(const Value: Int64);
     procedure SetTStrValue(const Value: TStrings);
     procedure SetTBoolValue(const Value: Boolean);
   public
     constructor Create;
     destructor Destroy; override;
-    property TIntValue: Integer read FTIntValue write SetTIntValue;
+    property TIntValue: Int64 read FTIntValue write SetTIntValue;
     property TStrValue: TStrings read FSTStrValue write SetTStrValue;
     property TBoolValue: Boolean read FTBoolValue write SetTBoolValue;
   end;
@@ -85,7 +85,7 @@ type
     FObject: TValueObject;
     FOnDone: TNotifyEvent;
     FTerminating: PBoolean;
-    IntParam: Integer;
+    IntParam: Int64;
     FOnFileFounded: TFileFoundedEvent;
     FProcessFileEvent: TFileProcessProcedureOfObject;
   protected
@@ -96,7 +96,7 @@ type
     procedure DoOnDone;
     procedure DoFileProcessed;
     procedure DoOnFileFounded;
-    function GetDirectory(DirectoryName: string; var Files : TStrings; Terminating : PBoolean):integer;
+    function GetDirectory(DirectoryName: string; var Files: TStrings; Terminating: PBoolean): Int64;
   end;
 
 var
@@ -282,30 +282,31 @@ var
     Groups, ExifGroups: string;
   begin
     try
-    Info := FInfo[FileNumber];
+      Info := FInfo[FileNumber];
+      Info.FileName := AnsiLowerCase(Info.FileName);
 
-    //save original groups and extract Exif groups
-    Groups := Info.Groups;
-    ExifGroups := '';
-    Info.Groups := '';
-    UpdateImageRecordFromExif(Info, True, True);
+      //save original groups and extract Exif groups
+      Groups := Info.Groups;
+      ExifGroups := '';
+      Info.Groups := '';
+      UpdateImageRecordFromExif(Info, True, True);
 
-    //do not rotate preview, just dusplay
-    if IsRAWImageFile(Info.FileName) then
-      Info.Rotation := Info.Rotation * 10;
+      //do not rotate preview, just dusplay
+      if IsRAWImageFile(Info.FileName) then
+        Info.Rotation := Info.Rotation * 10;
 
-    ExifGroups := Info.Groups;
-    Info.Groups := Groups;
-    ProcessGroups(Info, ExifGroups);
+      ExifGroups := Info.Groups;
+      Info.Groups := Groups;
+      ProcessGroups(Info, ExifGroups);
 
-    if SQL_AddFileToDB(Info.FileName, Res.Crypt, Res.Jpeg, Res.ImTh, Info.KeyWords,
-      Info.Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, Info.Include, Info.Rating,
-      Info.Rotation, Info.Links, Info.Access, Info.Groups) then
-    begin
-      Res.Jpeg.DIBNeeded;
-      SynchronizeEx(SetImages);
-    end else
-      F(ResArray[FileNumber].Jpeg);
+      if SQL_AddFileToDB(Info.FileName, Res.Crypt, Res.Jpeg, Res.ImTh, Info.KeyWords,
+        Info.Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, Info.Include, Info.Rating,
+        Info.Rotation, Info.Links, Info.Access, Info.Groups) then
+      begin
+        Res.Jpeg.DIBNeeded;
+        SynchronizeEx(SetImages);
+      end else
+        F(ResArray[FileNumber].Jpeg);
 
     except
       on e: Exception do
@@ -362,6 +363,7 @@ begin
 
     for Counter := 1 to FInfo.Count do
     begin
+      FInfo[FileNumber].FileName := AnsiLowerCase(FInfo[FileNumber].FileName);
       if Res.Jpeg <> nil then
       begin
         if (Res.Count = 1) and ((Res.Attr[0] = Db_attr_not_exists) or (Res.FileNames[0] <> FInfo[FileNumber].FileName)) and
@@ -765,7 +767,7 @@ end;
 
 { DirectorySizeThread }
 
-function DirectorySizeThread.GetDirectory(DirectoryName: string; var Files : TStrings; Terminating : PBoolean): Integer;
+function DirectorySizeThread.GetDirectory(DirectoryName: string; var Files: TStrings; Terminating: PBoolean): Int64;
 var
   Found: Integer;
   SearchRec: TSearchRec;
@@ -807,8 +809,8 @@ begin
   FindClose(SearchRec);
 end;
 
-constructor DirectorySizeThread.Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded : TFileFoundedEvent;
-  ProcessFileEvent : TFileProcessProcedureOfObject = nil);
+constructor DirectorySizeThread.Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded: TFileFoundedEvent;
+  ProcessFileEvent: TFileProcessProcedureOfObject = nil);
 begin
   inherited Create(nil, False);
   FDirectory := Directory;
@@ -826,7 +828,7 @@ end;
 
 procedure DirectorySizeThread.Execute;
 var
-  Size: Integer;
+  Size: Int64;
   Files: TStrings;
 begin
   inherited;
@@ -879,7 +881,7 @@ begin
   FTBoolValue := Value;
 end;
 
-procedure TValueObject.SetTIntValue(const Value: Integer);
+procedure TValueObject.SetTIntValue(const Value: Int64);
 begin
   FTIntValue := Value;
 end;

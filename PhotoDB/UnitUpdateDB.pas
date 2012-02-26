@@ -764,7 +764,7 @@ end;
 procedure TUpdateDBForm.LoadToolBarIcons;
 begin
   SetIcon(WebLinkOptions, 'UPDATER_OPTIONS');
-  SetIcon(ButtonRunStop, 'UPDATER_PLAY');
+  SetIcon(ButtonRunStop, 'UPDATER_PAUSE');
   SetIcon(ButtonBreak, 'UPDATER_STOP');
   SetIcon(ShowHistoryLink, 'UPDATER_HISTORY');
   SetIcon(WlClose, 'UPDATER_CLOSE');

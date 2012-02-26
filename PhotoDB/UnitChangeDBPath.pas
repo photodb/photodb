@@ -221,6 +221,7 @@ begin
         WorkQuery.Next;
       end;
 
+      CbOldPath.Items.Clear;
       for I := 0 to PathList.Count - 1 do
         CbOldPath.Items.Add(PathList[I]);
 

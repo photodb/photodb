@@ -65,7 +65,7 @@ begin
 
     try
       UpdateFullUrl := ResolveLanguageString(UpdateNotifyURL);
-      UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion + '&lang=' + TTranslateManager.Instance.Language;
+      UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion;
       UpdateText := DownloadFile(UpdateFullUrl, TEncoding.UTF8);
     except
       on E: Exception do

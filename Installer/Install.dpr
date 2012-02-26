@@ -57,7 +57,8 @@ uses
   uInstallRuntime in 'uInstallRuntime.pas',
   uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
   uTime in '..\PhotoDB\Units\uTime.pas',
-  MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas';
+  MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
+  uStillImage in 'uStillImage.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

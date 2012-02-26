@@ -61,7 +61,7 @@ begin
   if not EditorsManager.IsEditor(FEditor) then
     Exit;
   if (FEditor as TImageEditor).ToolClass = FOwner then
-    (FEditor as TImageEditor).StatusBar1.Panels[0].Text := '';
+    (FEditor as TImageEditor).StatusBar1.Panels[1].Text := '';
 end;
 
 constructor TBaseEffectThread.Create(AOwner: TObject; Proc: TBaseEffectProc; S: TBitmap; SID: string;

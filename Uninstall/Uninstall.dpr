@@ -49,7 +49,8 @@ uses
   uUserUtils in '..\Installer\uUserUtils.pas',
   uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
   uTime in '..\PhotoDB\Units\uTime.pas',
-  MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas';
+  MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
+  uStillImage in '..\Installer\uStillImage.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}

@@ -9,6 +9,7 @@ object ImageEditor: TImageEditor
   Color = clBtnFace
   Constraints.MinHeight = 250
   Constraints.MinWidth = 250
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -2711,14 +2712,14 @@ object ImageEditor: TImageEditor
       StretchImage = True
       CanClick = True
     end
-    object FullSiseLink: TWebLink
+    object FullSizeLink: TWebLink
       Left = 312
       Top = 8
       Width = 67
       Height = 24
       Cursor = crHandPoint
       Text = 'Full Size'
-      OnClick = FullSiseLinkClick
+      OnClick = FullSizeLinkClick
       ImageIndex = 0
       IconWidth = 24
       IconHeight = 24

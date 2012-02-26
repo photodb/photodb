@@ -72,6 +72,7 @@ begin
 
     if (FInfo.FileType = EXPLORER_ITEM_GROUP) or
        (FInfo.FileType = EXPLORER_ITEM_PERSON) or
+       (FInfo.FileType = EXPLORER_ITEM_DEVICE) or
        (FInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
        (FInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
@@ -88,7 +89,11 @@ begin
 
             ShadowImage := TBitmap.Create;
             try
-              DrawShadowToImage(ShadowImage, FBit);
+              if (FInfo.FileType <> EXPLORER_ITEM_DEVICE) then
+                DrawShadowToImage(ShadowImage, FBit)
+              else
+                ShadowImage.Assign(FBit);
+
               DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
                 TempBitmap.Height div 2 - ShadowImage.Height div 2);
             finally

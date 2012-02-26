@@ -94,7 +94,7 @@ end;
 destructor TExEffect.Destroy;
 begin
   if EditorsManager.IsEditor(FEditor) then
-    (FEditor as TImageEditor).StatusBar1.Panels[0].Text := '';
+    (FEditor as TImageEditor).StatusBar1.Panels[1].Text := '';
   inherited;
 end;
 

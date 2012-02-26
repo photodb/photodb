@@ -315,7 +315,7 @@ begin
   begin
     NewImage.Assign(Image);
     TempFilterID := BaseEffects[Integer(Item.Data)].ID;
-    (Editor as TImageEditor).StatusBar1.Panels[0].Text := Format(L('Filter "%s" is working'), [BaseEffects[Integer(Item.Data)].name]);
+    (Editor as TImageEditor).StatusBar1.Panels[1].Text := Format(L('Filter "%s" is working'), [BaseEffects[Integer(Item.Data)].name]);
     TBaseEffectThread.Create(Self, BaseEffects[Integer(Item.Data)].Proc, NewImage, FSID, SetThreadImage, Editor);
     NewImage := nil;
   end else
@@ -326,7 +326,7 @@ begin
       ExEffect := ExEffects[Integer(Item.Data) - Length(BaseEffects)].Create;
       try
       TempFilterID := ExEffect.ID;
-      (Editor as TImageEditor).StatusBar1.Panels[0].Text := Format(L('Filter "%s" is working'), [ExEffect.GetName]);
+      (Editor as TImageEditor).StatusBar1.Panels[1].Text := Format(L('Filter "%s" is working'), [ExEffect.GetName]);
 
       finally
         F(ExEffect);

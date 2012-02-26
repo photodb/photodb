@@ -21,6 +21,7 @@ uses
   uActivationUtils,
   uUserUtils,
   uSysUtils,
+  uStillImage,
   uShellUtils;
 
 const
@@ -30,6 +31,7 @@ const
   UnInstallPoints_FileAcctions = 512 * 1024;
   UninstallNotifyPoints_ShortCut = 1024 * 1024;
   DeleteRegistryPoints = 128 * 1024;
+  UnInstallPoints_StillImage = 512 * 1024;
 
 type
   TInstallCloseApplication = class(TInstallAction)
@@ -66,6 +68,11 @@ type
   public
     function CalculateTotalPoints : Int64; override;
     procedure Execute(Callback : TActionCallback); override;
+  end;
+
+  TUnInstallStillImageHandler = class(TInstallAction)
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
 implementation
@@ -325,6 +332,22 @@ begin
 
     end;
   end;
+end;
+
+{ TUnInstallStillImageHandler }
+
+function TUnInstallStillImageHandler.CalculateTotalPoints: Int64;
+begin
+  if IsWindowsXPOnly then
+    Result := UnInstallPoints_StillImage
+  else
+    Result := 0;
+end;
+
+procedure TUnInstallStillImageHandler.Execute(Callback: TActionCallback);
+begin
+  if IsWindowsXPOnly then
+    UnRegisterStillHandler('Photo Database');
 end;
 
 end.

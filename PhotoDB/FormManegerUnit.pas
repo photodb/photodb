@@ -106,10 +106,21 @@ procedure UnRegisterMainForm(Value: TForm);
 implementation
 
 uses
-  UnitCleanUpThread, uManagerExplorer, uSearchTypes, SlideShow, UnitFileCheckerDB,
-  UnitInternetUpdate, UAbout, UnitConvertDBForm, UnitImportingImagesForm,
-  UnitSelectDB, UnitFormCont, uFormImportImages, UnitLoadFilesToPanel,
-  uActivation, UnitUpdateDBObject,
+  UnitCleanUpThread,
+  uManagerExplorer,
+  uSearchTypes,
+  SlideShow,
+  UnitFileCheckerDB,
+  UnitInternetUpdate,
+  uAbout,
+  UnitConvertDBForm,
+  UnitImportingImagesForm,
+  UnitSelectDB,
+  UnitFormCont,
+  uFormImportImages,
+  UnitLoadFilesToPanel,
+  uActivation,
+  UnitUpdateDBObject,
   uExifPatchThread;
 
 {$R *.dfm}
@@ -235,7 +246,6 @@ begin
         TW.I.Start('RUN TViewer');
         if Viewer = nil then
           Application.CreateForm(TViewer, Viewer);
-        RegisterMainForm(Viewer);
         TW.I.Start('ExecuteDirectoryWithFileOnThread');
         Viewer.ExecuteDirectoryWithFileOnThread(ParamStr1);
         TW.I.Start('ActivateApplication');
@@ -260,6 +270,8 @@ begin
           end else
           begin
             S := GetParamStrDBValueV2(CommandLine, '/devId');
+            if S = '' then
+              S := GetParamStrDBValueV2(CommandLine, '/StiDevice');
 
             PDManager := CreateDeviceManagerInstance;
             PDevice := PDManager.GetDeviceByID(S);
@@ -304,6 +316,8 @@ begin
   if GetParamStrDBBoolEx(CommandLine, '/import') then
   begin
     S := GetParamStrDBValueV2(CommandLine, '/devId');
+    if S = '' then
+      S := GetParamStrDBValueV2(CommandLine, '/StiDevice');
 
     PDManager := CreateDeviceManagerInstance;
     PDevice := PDManager.GetDeviceByID(S);

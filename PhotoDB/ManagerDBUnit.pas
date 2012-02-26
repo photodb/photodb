@@ -275,7 +275,7 @@ begin
   ImportTableLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_LOADFROMFILE + 1]);
   RecreateIDExLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_REFRESH_ID + 1]);
   ScanforBadLinksLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SEARCH + 1]);
-  BackUpDBLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CANCEL_ACTION + 1]);
+  BackUpDBLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_BACKUP + 1]);
   CleaningLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COMMON + 1]);
   DuplicatesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DUPLICATE + 1]);
   ConvertLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);

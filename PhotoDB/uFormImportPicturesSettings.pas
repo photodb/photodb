@@ -31,6 +31,7 @@ type
     BtnCancel: TButton;
     WlFilter: TWebLink;
     BtnChangePatterns: TButton;
+    CbOpenDestination: TCheckBox;
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
@@ -79,6 +80,7 @@ begin
   Settings.WriteBool('ImportPictures', 'OnlyImages', CbOnlyImages.Checked);
   Settings.WriteBool('ImportPictures', 'DeleteFiles', CbDeleteAfterImport.Checked);
   Settings.WriteBool('ImportPictures', 'AddToCollection', CbAddToCollection.Checked);
+  Settings.WriteBool('ImportPictures', 'OpenDestination', CbOpenDestination.Checked);
   Close;
   ModalResult := mrOk;
 end;
@@ -109,6 +111,7 @@ begin
     CbOnlyImages.AdjustWidth;
     WlFilter.Left := CbOnlyImages.Left + CbOnlyImages.Width + 10;
     WlFilter.Top := CbOnlyImages.Top + CbOnlyImages.Height div 2 - WlFilter.Height div 2;
+    CbOpenDestination.Caption := L('Open destination directory after import');
   finally
     EndTranslate;
   end;
@@ -120,6 +123,7 @@ begin
   CbOnlyImages.Checked := Settings.ReadBool('ImportPictures', 'OnlyImages', False);
   CbDeleteAfterImport.Checked := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
   CbAddToCollection.Checked := Settings.ReadBool('ImportPictures', 'AddToCollection', True);
+  CbOpenDestination.Checked := Settings.ReadBool('ImportPictures', 'OpenDestination', True);
 end;
 
 procedure TFormImportPicturesSettings.ReadPatternList;

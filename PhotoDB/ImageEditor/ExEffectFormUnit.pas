@@ -124,7 +124,7 @@ begin
     F(FEffect);
 
   (Editor as TImageEditor).FStatusProgress.Position := 0;
-  (Editor as TImageEditor).StatusBar1.Panels[0].Text := '';
+  (Editor as TImageEditor).StatusBar1.Panels[1].Text := '';
 end;
 
 procedure TExEffectForm.SetImage(Image: TBitmap);

@@ -1605,6 +1605,8 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
+  GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
+
   if IsWindowsVista then
     RemoveClipboardFormatListener(Handle)
   else
@@ -6640,10 +6642,7 @@ begin
         if HelpNo = 2 then
           HelpTimer.Enabled := True;
       end;
-      {if not PropertyPanel.Visible then
-      begin
-        Exit;
-      end;}
+
       ReallignToolInfo;
       ReallignInfo;
       TempBitmap := TBitmap.Create;
@@ -6663,7 +6662,8 @@ begin
           if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) then
           begin
             Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
             FFolderImagesResult.Directory := '';
@@ -6702,6 +6702,7 @@ begin
                   Info.ID := FSelectedInfo.Id;
                   if (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
                      (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
+                     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
                      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
                      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) then
                   begin
@@ -6764,9 +6765,8 @@ begin
           if (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)
-            or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
           begin
             with ImPreview.Picture.Bitmap do
             begin

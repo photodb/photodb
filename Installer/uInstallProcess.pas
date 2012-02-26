@@ -21,6 +21,7 @@ initialization
   TInstallManager.Instance.RegisterScope(TUninstallPreviousShortcutsAction);
   TInstallManager.Instance.RegisterScope(TInstallShortcuts);
   TInstallManager.Instance.RegisterScope(TInstallAssociations);
+  TInstallManager.Instance.RegisterScope(TInstallStillImageHandler);
   TInstallManager.Instance.RegisterScope(TInstallUpdatingWindows);
   TInstallManager.Instance.RegisterScope(TSetupDatabaseActions);
   TInstallManager.Instance.RegisterScope(TInstallRunProgram);

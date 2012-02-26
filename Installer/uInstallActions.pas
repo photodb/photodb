@@ -5,20 +5,28 @@ unit uInstallActions;
 interface
 
 uses
-  Windows, Classes, uMemory, uInstallTypes, uInstallUtils, uConstants, uInstallScope,
+  Windows,
+  Classes,
+  uMemory,
+  uInstallTypes,
+  uInstallUtils,
+  uConstants,
+  uInstallScope,
   VRSIShortCuts,
   Messages,
   ShellApi,
   uRuntime,
   ShlObj,
   SysUtils,
+  uSysUtils,
   uTranslate,
   StrUtils,
   uInstallZip,
   uAssociations,
   uShellUtils,
   uActions,
-  uUserUtils;
+  uUserUtils,
+  uStillImage;
 
 const
   InstallPoints_Close_PhotoDB = 1024 * 1024;
@@ -26,6 +34,7 @@ const
   InstallPoints_FileAction = 500 * 1024;
   InstallPoints_Registry = 128 * 1024;
   InstallPoints_RunProgram = 1024 * 1024;
+  InstallPoints_StillImage = 512 * 1024;
 
 type
   TUpdatePreviousVersions = class(TInstallAction)
@@ -69,6 +78,11 @@ type
   end;
 
   TInstallShortcuts = class(TInstallAction)
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
+  end;
+
+  TInstallStillImageHandler = class(TInstallAction)
     function CalculateTotalPoints: Int64; override;
     procedure Execute(Callback: TActionCallback); override;
   end;
@@ -320,6 +334,27 @@ begin
       end;
 
     end;
+  end;
+end;
+
+{ TInstallStillImageHandler }
+
+function TInstallStillImageHandler.CalculateTotalPoints: Int64;
+begin
+  if IsWindowsXPOnly then
+    Result := InstallPoints_StillImage
+  else
+    Result := 0;
+end;
+
+procedure TInstallStillImageHandler.Execute(Callback: TActionCallback);
+var
+  PhotoDBExeFile: string;
+begin
+  if IsWindowsXPOnly then
+  begin
+    PhotoDBExeFile := IncludeTrailingBackslash(CurrentInstall.DestinationPath) + PhotoDBFileName;
+    RegisterStillHandler('Photo Database', PhotoDBExeFile + ' /import');
   end;
 end;
 

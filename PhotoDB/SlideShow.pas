@@ -488,6 +488,7 @@ end;
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin
+  RegisterMainForm(Viewer);
   FIsClosing := False;
   TLoad.Instance.StartPersonsThread;
   TW.I.Start('TViewer.FormCreate');
@@ -2433,7 +2434,7 @@ begin
   if DirectShowForm <> nil then
     DirectShowForm.Close;
   FIsClosing := True;
-  Release;
+  Action := caFree;
 end;
 
 procedure TViewer.LoadLanguage;
@@ -4304,9 +4305,7 @@ begin
   begin
     TbPageNumber.Visible := FPageCount > 1;
     TbSeparatorPageNumber.Visible := FPageCount > 1;
-    //ToolsBar.Realign;
     TbrActions.Width := TbInfo.Left + TbInfo.Width + 2;
-    //TbrActions.Width := TbrActions.Width;
     TbrActions.Left := ClientWidth div 2 - TbrActions.Width div 2;
   end;
   PopupMenuPageSelecter.Items.Clear;
@@ -4349,7 +4348,7 @@ begin
   if Value >= 0 then
     TbRating.ImageIndex := 14 + Abs(Value)
   else
-    TbRating.ImageIndex := - (Value div 10) + ImlToolBarNormal.Count - 8;
+    TbRating.ImageIndex := - (Value div 10) + ImlToolBarNormal.Count - 6;
 end;
 
 procedure TViewer.SetProgressPosition(Position, Max: Integer);

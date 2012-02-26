@@ -28,6 +28,7 @@ uses
   uShellIntegration,
   uAssociations,
   uIconUtils,
+  TLayered_Bitmap,
   uShellNamespaceUtils;
 
 type
@@ -236,7 +237,9 @@ var
   Silent: Boolean;
 begin
   Result := False;
-  Form := TDBForm(Sender);
+  Form := nil;
+  if Sender is TDBForm then
+    Form := TDBForm(Sender);
 
   FDO := TPathFeatureDeleteOptions(Options);
 
@@ -297,17 +300,34 @@ function TPortableDeviceProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
 var
   PortableItem: TPathItem;
+  Ico: TLayeredBitmap;
 begin
   Result := False;
   PortableItem := PathProviderManager.CreatePathItem(Item.Path);
   try
-    if (PortableItem is TPortableImageItem) or (PortableItem is TPortableVideoItem) then
+    if (PortableItem is TPortableImageItem) or (PortableItem is TPortableVideoItem) or (PortableItem is TPortableDeviceItem) then
     begin
       PortableItem.LoadImage(PATH_LOAD_NORMAL, Min(MaxWidth, MaxHeight));
       if (PortableItem.Image <> nil) and (PortableItem.Image.Bitmap <> nil) then
       begin
         AssignBitmap(Bitmap, PortableItem.Image.Bitmap);
         Result := not Bitmap.Empty;
+      end;
+      if (PortableItem.Image <> nil) and (PortableItem.Image.Icon <> nil) then
+      begin
+        Ico := TLayeredBitmap.Create;
+        try
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              Ico.LoadFromHIcon(PortableItem.Image.Icon.Handle, ImageSizeToIconSize16_32_48(MaxWidth), ImageSizeToIconSize16_32_48(MaxHeight));
+            end
+          );
+          AssignBitmap(Bitmap, Ico);
+          Result := not Bitmap.Empty;
+        finally
+          F(Ico);
+        end;
       end;
     end;
   finally
