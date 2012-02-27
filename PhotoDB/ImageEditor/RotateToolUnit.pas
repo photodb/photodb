@@ -165,7 +165,7 @@ begin
   ColorChooser := TColorDialog.Create(AOwner);
 
   MakeItLink := TWebLink.Create(Self);
-  MakeItLink.Top := AngleEdit.Top + AngleEdit.Width + 5;
+  MakeItLink.Top := AngleEdit.Top + AngleEdit.Width + 10;
   MakeItLink.Left := 10;
   MakeItLink.Parent := Self;
   MakeItLink.Text := L('Apply');
@@ -177,7 +177,7 @@ begin
   IcoOK.Free;
 
   CloseLink := TWebLink.Create(Self);
-  CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 10;
+  CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
   CloseLink.Left := 10;
   CloseLink.Parent := Self;
   CloseLink.Text := L('Close tool');

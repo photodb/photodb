@@ -359,6 +359,7 @@ var
           FMask := '';
           ExplorerInfo := NotifyInfo.FExplorerViewInfo;
           FUpdaterInfo := NotifyInfo.FUpdaterInfo;
+          StateID := NotifyInfo.FState;
           if FUpdaterInfo.FileInfo <> nil then
           begin
             FFolder := FUpdaterInfo.FileInfo.FileName;
@@ -1793,7 +1794,8 @@ begin
     begin
       GUIDParam := FFiles[0].SID;
       CurrentFile := FFiles[0].FileName;
-      AddImageFileToExplorerW; // TODO: filesize is undefined
+      FFiles[0].FileSize := GetFileSize(FFiles[0].FileName);
+      AddImageFileToExplorerW;
       if ExplorerInfo.ShowThumbNailsForImages then
         ReplaceImageItemImage(CurrentFile, FFiles[0].FileSize, GUIDParam);
     end;
@@ -2778,7 +2780,7 @@ end;
 
 function TExplorerThread.IsVirtualTerminate: Boolean;
 begin
-  Result := FThreadType = THREAD_TYPE_THREAD_PREVIEW;
+  Result := (FThreadType = THREAD_TYPE_THREAD_PREVIEW) or FUpdaterInfo.IsUpdater;
 end;
 
 { TExplorerUpdateManager }
@@ -2929,6 +2931,8 @@ begin
       if (Info.FExplorer = FOwner) and (Info.FMode = Mode) then
       begin
         Info.FCounter := Info.FCounter - 1;
+        if Info.FCounter < 0 then
+          Info.FCounter := 0;
         Break;
       end;
     end;

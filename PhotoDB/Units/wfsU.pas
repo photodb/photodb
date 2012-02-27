@@ -31,8 +31,8 @@ type
     InfoCallback: TInfoCallBackDirectoryChangedArray;
     FOnNeedClosing: TThreadExNotify;
     FOnThreadClosing: TNotifyEvent;
-    FPublicOwner : TObject;
-    FCID : TGUID;
+    FPublicOwner: TObject;
+    FCID: TGUID;
     function CreateDirHandle(ADir: string): THandle;
     procedure WatchEvent;
     procedure HandleEvent;
@@ -69,6 +69,7 @@ type
     destructor Destroy; override;
     procedure Start(Directory: string; Owner: TThreadForm; CID: TGUID);
     procedure StopWatch;
+    procedure UpdateStateID(NewStateID: TGUID);
     property OnDirectoryChanged: TNotifyDirectoryChangeW read FOnDirectoryChanged write FOnDirectoryChanged;
   end;
 
@@ -95,8 +96,8 @@ uses
 
 var
   OM: TManagerObjects = nil;
-  FSync : TCriticalSection = nil;
-  FIoCompletionManager : TIoCompletionManager = nil;
+  FSync: TCriticalSection = nil;
+  FIoCompletionManager: TIoCompletionManager = nil;
 
 procedure TWachDirectoryClass.CallBack(PInfo: TInfoCallBackDirectoryChangedArray);
 begin
@@ -171,6 +172,19 @@ begin
   begin
     TW.I.Start('StopWatch.CLOSE = ' + IntToStr(Port));
     TIoCompletionManager.Instance.FinishIoCompletion(Port);
+  end;
+end;
+
+procedure TWachDirectoryClass.UpdateStateID(NewStateID: TGUID);
+begin
+  FSync.Enter;
+  try
+    FCID := NewStateID;
+    TW.I.Start('TWachDirectoryClass.StopWatch');
+    if OM.IsObj(WFS) then
+      WFS.FCID := NewStateID;
+  finally
+    FSync.Leave;
   end;
 end;
 

@@ -3,10 +3,32 @@ unit DX_Alpha;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
   System.UITypes,
-  ExtDlgs, ComCtrls, StdCtrls, ExtCtrls, AppEvnts, Dolphin_DB, DDraw, uGUIDUtils,
-  Math, uSysUtils, uDBForm, uDXUtils, uMemory, uSettings, uBitmapUtils, uMemoryEx,
+  ExtDlgs,
+  ComCtrls,
+  StdCtrls,
+  ExtCtrls,
+  AppEvnts,
+  Dolphin_DB,
+  DDraw,
+  uGUIDUtils,
+  Math,
+  uSysUtils,
+  uDBForm,
+  uDXUtils,
+  uMemory,
+  uSettings,
+  uBitmapUtils,
+  uMemoryEx,
+  ComObj,
   uVCLHelpers;
 
 type
@@ -294,68 +316,82 @@ var
   Fx: TDDBltFx;
   R: TRect;
   PixelFormat: TDDPixelFormat;
+  HR: HRESULT;
 begin
   // По Create создаем DirectDraw и все провехности. Надо бы это делать по Resize
   // и после каждого IDirectDrawSurface4.IsLost, но я забил болт.
   DDrawInit;
   try
     // Создаем DirectDraw.
-    DirectDrawCreate(nil, DirectDraw2, nil);
-    // Запрашиваем интерфейс IDirectDraw4.
-    DirectDraw2.QueryInterface(IID_IDirectDraw4, DirectDraw4);
-    DirectDraw2.Release;
-    DirectDraw2 := nil;
+    HR := DirectDrawCreate(nil, DirectDraw2, nil);
+    if Succeeded(HR) then
+    begin
+      // Запрашиваем интерфейс IDirectDraw4.
+      DirectDraw2.QueryInterface(IID_IDirectDraw4, DirectDraw4);
+      DirectDraw2.Release;
+      DirectDraw2 := nil;
 
-    DirectDraw4.SetCooperativeLevel(Handle, DDSCL_SETFOCUSWINDOW or DDSCL_EXCLUSIVE);
-    // Основная (видимая) поверхность...
-    FillChar(SurfaceDesc, Sizeof(SurfaceDesc), 0);
+      DirectDraw4.SetCooperativeLevel(Handle, DDSCL_SETFOCUSWINDOW or DDSCL_EXCLUSIVE);
+      // Основная (видимая) поверхность...
+      FillChar(SurfaceDesc, Sizeof(SurfaceDesc), 0);
 
-    DirectDraw4.SetCooperativeLevel (Handle, DDSCL_NORMAL);
-    //Основная (видимая) поверхность...
-    FillChar (SurfaceDesc, SizeOf (SurfaceDesc), 0);
-    SurfaceDesc.dwSize := SizeOf (SurfaceDesc);
-    SurfaceDesc.dwFlags := DDSD_CAPS;
-    SurfaceDesc.ddsCaps.dwCaps := DDSCAPS_PRIMARYSURFACE;
+      DirectDraw4.SetCooperativeLevel (Handle, DDSCL_NORMAL);
+      //Основная (видимая) поверхность...
+      FillChar (SurfaceDesc, SizeOf (SurfaceDesc), 0);
+      SurfaceDesc.dwSize := SizeOf (SurfaceDesc);
+      SurfaceDesc.dwFlags := DDSD_CAPS;
+      SurfaceDesc.ddsCaps.dwCaps := DDSCAPS_PRIMARYSURFACE;
 
-    DirectDraw4.CreateSurface(SurfaceDesc, PrimarySurface, nil);
-    // ...привязывается к главному окну через IDirectDrawClipper.
-    // Поэтому создаем IDirectDrawClipper...
-    DirectDraw4.CreateClipper(0, Clpr, nil);
-    // ...связываем его с главным окном...
-    Clpr.SetHWND(0, Handle);
+      HR := DirectDraw4.CreateSurface(SurfaceDesc, PrimarySurface, nil);
+      if Succeeded(HR) then
+      begin
+        // ...привязывается к главному окну через IDirectDrawClipper.
+        // Поэтому создаем IDirectDrawClipper...
+        DirectDraw4.CreateClipper(0, Clpr, nil);
+        // ...связываем его с главным окном...
+        Clpr.SetHWND(0, Handle);
 
-    // ...а потОм - с видимой поверхностью.
-    PrimarySurface.SetClipper(Clpr);
+        // ...а потОм - с видимой поверхностью.
+        PrimarySurface.SetClipper(Clpr);
 
-    // Определяем цветовой формат экрана...
-    PixelFormat.DwSize := SizeOf(TDDPIXELFORMAT);
-    PrimarySurface.GetPixelFormat(PixelFormat);
-    BPP := PixelFormat.DwRGBBitCount;
-    BPP := 32;
-    // ...и маски красного, синего и зеленого каналов.
-    // Они потОм используются при паковке цвета.
-    Pp := Round(Exp(BPP / 3.0 * Ln(2.0)));
-    if Pp > $FF then
-      Pp := $FF;
-    RBM := Round(Ln(1.0 * PixelFormat.DwRBitMask / Pp) / Ln(2.0));
-    GBM := Round(Ln(1.0 * PixelFormat.DwGBitMask / Pp) / Ln(2.0));
-    BBM := Round(Ln(1.0 * PixelFormat.DwBBitMask / Pp) / Ln(2.0));
-    // Теперь создаем внеэкранные (невидимые) поверхности. Они все имеют
-    // одинаковые размеры.
-    SurfaceDesc.DwFlags := DDSD_HEIGHT or DDSD_WIDTH;
-    SurfaceDesc.DdsCaps.DwCaps := DDSCAPS_OFFSCREENPLAIN;
-    SurfaceDesc.DwWidth := Width;
-    SurfaceDesc.DwHeight := Height;
-    // Эта используется для обработки WM_PAINT.
-    DirectDraw4.CreateSurface(SurfaceDesc, Offscreen, nil);
-    //Закрасим ее цветом фона (иначе на ней будет "снег").
-    FillChar(fx, SizeOf(fx), 0);
-    fx.dwSize := SizeOf(fx);
-    fx.dwFillColor := PackColor(Color, BPP, RBM, GBM, BBM);
-    R := ClientRect;
-    Offscreen.Blt(@R, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @fx);
-    //Это - первый источник для преобразования.
-    DirectDraw4.CreateSurface (SurfaceDesc, Buffer, nil);
+        // Определяем цветовой формат экрана...
+        PixelFormat.DwSize := SizeOf(TDDPIXELFORMAT);
+        HR := PrimarySurface.GetPixelFormat(PixelFormat);
+        if Succeeded(HR) then
+        begin
+          BPP := PixelFormat.DwRGBBitCount;
+          BPP := 32;
+          // ...и маски красного, синего и зеленого каналов.
+          // Они потОм используются при паковке цвета.
+          Pp := Round(Exp(BPP / 3.0 * Ln(2.0)));
+          if Pp > $FF then
+            Pp := $FF;
+          RBM := Round(Ln(1.0 * PixelFormat.DwRBitMask / Pp) / Ln(2.0));
+          GBM := Round(Ln(1.0 * PixelFormat.DwGBitMask / Pp) / Ln(2.0));
+          BBM := Round(Ln(1.0 * PixelFormat.DwBBitMask / Pp) / Ln(2.0));
+          // Теперь создаем внеэкранные (невидимые) поверхности. Они все имеют
+          // одинаковые размеры.
+          SurfaceDesc.DwFlags := DDSD_HEIGHT or DDSD_WIDTH;
+          SurfaceDesc.DdsCaps.DwCaps := DDSCAPS_OFFSCREENPLAIN;
+          SurfaceDesc.DwWidth := Width;
+          SurfaceDesc.DwHeight := Height;
+          // Эта используется для обработки WM_PAINT.
+          HR := DirectDraw4.CreateSurface(SurfaceDesc, Offscreen, nil);
+          if Succeeded(HR) then
+          begin
+            //Закрасим ее цветом фона (иначе на ней будет "снег").
+            FillChar(fx, SizeOf(fx), 0);
+            fx.dwSize := SizeOf(fx);
+            fx.dwFillColor := PackColor(Color, BPP, RBM, GBM, BBM);
+            R := ClientRect;
+            Offscreen.Blt(@R, nil, nil, DDBLT_WAIT + DDBLT_COLORFILL, @fx);
+            //Это - первый источник для преобразования.
+            HR := DirectDraw4.CreateSurface (SurfaceDesc, Buffer, nil);
+          end;
+        end;
+      end;
+    end;
+    OleCheck(HR);
   except
     on e: Exception do
       ShowMessage(Format(L('Error initializing graphics mode: %s'), [e.Message]));

@@ -105,6 +105,7 @@ uses
   uSysUtils,
   uRuntime,
   uDBUtils,
+  uPathUtils,
   uSettings,
   uAssociations,
   PathEditor,
@@ -5691,13 +5692,22 @@ procedure TExplorerForm.ResetPassword1Click(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
   FileName, Password: string;
+  Item: TEasyItem;
+  Index: Integer;
 begin
   Info := GetCurrentPopupMenuInfo(nil);
   try
     if PmItemPopup.Tag <> -1 then
       FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
     else
-      FileName := IIF(Info.Count > 0, ProcessPath(Info[0].FileName), '');
+    begin
+      Item := ElvMain.Selection.First;
+      if Item = nil then
+        Exit;
+
+      Index := ItemIndexToMenuIndex(Item.Index);
+      FileName := IIF(Index > -1, ProcessPath(Info[Index].FileName), '');
+    end;
 
     Password := DBKernel.FindPasswordForCryptImageFile(FileName);
     if (Password = '') then
@@ -5716,13 +5726,22 @@ var
   Opt: TCryptImageOptions;
   Info: TDBPopupMenuInfo;
   FileName: string;
+  Item: TEasyItem;
+  Index: Integer;
 begin
   Info := GetCurrentPopupMenuInfo(nil);
   try
     if PmItemPopup.Tag <> -1 then
       FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
     else
-      FileName := IIF(Info.Count > 0, ProcessPath(Info[0].FileName), '');
+    begin
+      Item := ElvMain.Selection.First;
+      if Item = nil then
+        Exit;
+
+      Index := ItemIndexToMenuIndex(Item.Index);
+      FileName := IIF(Index > -1, ProcessPath(Info[Index].FileName), '');
+    end;
 
     Opt := GetPassForCryptImageFile(FileName);
     if Opt.Password = '' then
@@ -6366,7 +6385,7 @@ begin
         Temp := ExtractFilePath(Temp);
         L2 := Length(Temp);
         UpDir := Copy(Files[0], L2 + 1, L1 - L2);
-        NewDir := IncludeTrailingBackslash(Dir + UpDir);
+        NewDir := IncludeTrailingBackslash(TPath.Combine(Dir, UpDir));
         CreateDirA(NewDir);
         CopyFiles(Handle, Files, NewDir, False, False, Self);
       end;
@@ -8444,6 +8463,7 @@ begin
   UpdaterInfo.FileInfo := nil;
 
   NewFormState;
+  DirectoryWatcher.UpdateStateID(StateID);
 
   PePath.CanBreakLoading := True;
   TExplorerThread.Create('::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, ViewInfo, Self, UpdaterInfo, StateID);
