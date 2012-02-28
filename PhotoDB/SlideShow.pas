@@ -432,6 +432,7 @@ type
     procedure CheckFaceIndicatorVisibility;
     procedure UpdateCursor;
     property DisplayRating: Integer write SetDisplayRating;
+    procedure FinishDetectionFaces;
   published
     property ImageExists: Boolean read FImageExists write SetImageExists;
     property StaticImage: Boolean read FStaticImage write SetPropStaticImage;
@@ -2744,6 +2745,12 @@ begin
     ZoomerOn := True;
     FormResize(Sender);
   end;
+end;
+
+procedure TViewer.FinishDetectionFaces;
+begin
+  FFaceDetectionComplete := True;
+  UpdateFaceDetectionState;
 end;
 
 procedure TViewer.FitToWindowClick(Sender: TObject);

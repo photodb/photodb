@@ -158,10 +158,10 @@ begin
     FillImageSize(CbPanelSize);
     FillImageSize(CbPreviewSize);
 
-    LoadLinkIcon(WlPreviewDBSize, 'ROTATE_0');
-    LoadLinkIcon(WlPreviewDBJpegQuality, 'ROTATE_0');
-    LoadLinkIcon(WlPanelSize, 'ROTATE_0');
-    LoadLinkIcon(WlPreviewSize, 'ROTATE_0');
+    LoadLinkIcon(WlPreviewDBSize, 'PICTURE');
+    LoadLinkIcon(WlPreviewDBJpegQuality, 'PICTURE');
+    LoadLinkIcon(WlPanelSize, 'PICTURE');
+    LoadLinkIcon(WlPreviewSize, 'PICTURE');
 
     CbDBImageSize.Text := IntToStr(ImageOptions.ThSize);
     CbDBJpegquality.Text := IntToStr(ImageOptions.DBJpegCompressionQuality);

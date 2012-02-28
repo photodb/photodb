@@ -232,6 +232,8 @@ begin
   finally
     FreeDS(WorkQuery);
     EnableControls;
+    DprMain.Position := 0;
+    DprMain.MaxValue := 100;
     Working := False;
   end;
 end;

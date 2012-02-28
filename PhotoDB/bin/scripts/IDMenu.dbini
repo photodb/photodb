@@ -380,6 +380,8 @@ run:
 {
 initialization:
   if ($DeviceItem=true) {InVisible;};
+  if ($CanRename=false) {InVisible;};
+  if ($FileExists=false) {InVisible;};
 run:
   RenameItemPopUpMenu;
 }

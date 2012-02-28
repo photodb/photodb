@@ -2106,8 +2106,8 @@
 	<translate name="Import settings" value="Настройки импорта"/>
 	<translate name="Edit directory fotmats" value="Настройки форматов директорий"/>	
 	<translate name="Please enter any directory format" value="Пожалуйста, введите список форматов директорий"/>
-	<translate name="Photos in selected location were not found! Please select another location to see series of photos." value="Фотографии по выбранному пути не найдены! Пожалуйста, выберите другое размещение чтобы видеть серии фотографий."/>
-	<translate name="Please use the following format for pattern list:$nl$  Each line is a separated pattern$nl$  YYYY - year as &quot;2010&quot;$nl$  YY - year as &quot;10&quot;$nl$  mmmm - month as &quot;january&quot;$nl$  MMMM - month as &quot;January&quot;$nl$  mmm - month as &quot;january&quot;$nl$  MMM - month as &quot;January&quot;$nl$  MM - month as &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - day as &quot;monday&quot;$nl$  DDD - day as &quot;Monday&quot;$nl$  DD - day as &quot;07&quot;$nl$  D - day as &quot;7&quot;" value="Пожалуйста, используйте следующий формат для списка шаблонов:$nl$  Каждая линия это отдельный шаблон$nl$  YYYY - год как &quot;2010&quot;$nl$  YY - год как &quot;10&quot;$nl$  mmmm - месяц как &quot;january&quot;$nl$  MMMM - месяц как &quot;January&quot;$nl$  mmm - месяц как &quot;january&quot;$nl$  MMM - месяц как &quot;January&quot;$nl$  MM - месяц как &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - месяц как &quot;monday&quot;$nl$  DDD - день как &quot;Monday&quot;$nl$  DD - день как &quot;07&quot;$nl$  D - день как &quot;7&quot;"/>
+	<translate name="Photos in selected location were not found! Please select another location to see series of photos." value="Фотографии по выбранному пути не найдены! Пожалуйста, выберите другое размещение, чтобы видеть серии фотографий."/>
+	<translate name="Please use the following format for pattern list:$nl$  Each line is a separated pattern$nl$  YYYY - year as &quot;2010&quot;$nl$  YY - year as &quot;10&quot;$nl$  mmmm - month as &quot;january&quot;$nl$  MMMM - month as &quot;January&quot;$nl$  mmm - month as &quot;january&quot;$nl$  MMM - month as &quot;January&quot;$nl$  MM - month as &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - day as &quot;monday&quot;$nl$  DDD - day as &quot;Monday&quot;$nl$  DD - day as &quot;07&quot;$nl$  D - day as &quot;7&quot;" value="Пожалуйста, используйте следующий формат для списка шаблонов:$nl$  Каждая линия это отдельный шаблон$nl$  YYYY - год как &quot;2010&quot;$nl$  YY - год как &quot;10&quot;$nl$  mmmm - месяц как &quot;января&quot;$nl$  MMMM - месяц как &quot;Января&quot;$nl$  mmm - месяц как &quot;январь&quot;$nl$  MMM - месяц как &quot;Январь&quot;$nl$  MM - месяц как &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - месяц как &quot;monday&quot;$nl$  DDD - день как &quot;Monday&quot;$nl$  DD - день как &quot;07&quot;$nl$  D - день как &quot;7&quot;"/>
 	<translate name="Source file {0} not found!" value="Исходный файл {0} не найден!"/>	
 	<translate name="Open destination directory after import" value="Открыть конечную директорию после импорта"/>	
   </scope>
@@ -2116,7 +2116,7 @@
 	<translate name="days" value="cуток"/>
 	<translate name="hours" value="часов"/>
 	<translate name="hour" value="час"/>
-	<translate name="minutes" value="минут(ы)"/>
+	<translate name="minutes" value="минут(а,ы)"/>
 	<translate name="minute" value="минута"/>
 	<translate name="second" value="секунда"/>
 	<translate name="seconds" value="секунд"/>
@@ -2158,12 +2158,4 @@
   </scope>
   <scope name="FileMoveDialog">
   </scope>
-  <scope name="GetPhotos" todo="delete">
-	<translate name="Select a folder to place images" value="Выберите папку для размещения изображений" />
-	<translate name="Do you really want to delete this item?" value="Вы действительно хотите удалить этот пункт?" />
-	<translate name="No photos found! Window will be closed!" value="Фотографии не найдены! Окно будет закрыто!" />
-	<translate name="An error occurred during the preparation of photographs. Perhaps you're trying to move pictures from media which is read-only" value="Произошла ошибка в процессе получения фотографий. Возможно, Вы пытаетесь переместить фотографии с носителя, который доступен только для чтения" />
-	<translate name="Unable to create directory: &quot;%s&quot;" value="Невозможно создать директорию: &quot;%s&quot;" />
-	<translate name="Photos in the specified path: &quot;%s&quot; not found" value="Фотографии по указанному пути: &quot;%s&quot; не найдены" />
-  </scope> 
 </language>

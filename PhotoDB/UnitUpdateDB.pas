@@ -25,11 +25,11 @@ uses
   WebLink,
   DropSource,
   DropTarget,
-  UnitDBkernel,
+  UnitDBKernel,
   UnitDBDeclare,
   uShellIntegration,
   UnitUpdateDBObject,
-  UnitTimeCounter,
+  uCounters,
   uJpegUtils,
   uBitmapUtils,
   GraphicCrypt,
@@ -136,7 +136,7 @@ type
     BadHistory: TStrings;
     LastIDImage: Integer;
     LastFileName: string;
-    TimeCounter: TTimeCounter;
+    FSpeedCounter: TSpeedEstimateCounter;
     FInfoStr: string;
     FProgressMessage: Cardinal;
     FW7TaskBar: ITaskbarList3;
@@ -216,8 +216,8 @@ begin
   FCurrentImage := nil;
   FCurrentFileName := '';
   HideImage(True);
-  TimeCounter := TTimeCounter.Create;
-  TimeCounter.TimerInterval := 10000; // 10 seconds to refresh
+  FSpeedCounter := TSpeedEstimateCounter.Create(10000); // 10 seconds to refresh
+
   LastIDImage := 0;
   LastFileName := ':::';
   BadHistory := TStringList.Create;
@@ -265,18 +265,6 @@ begin
   else
     FormStyle := FsStayOnTop;
 end;
-
-{constructor TUpdateDBForm.Create(AOwner: TComponent;
-  AddObject: TUpdaterDB);
-begin
-  inherited Create(AOwner);
-  FAddObject := AddObject;
-end; }
-
-{procedure TUpdateDBForm.SetAddObject(AddObject: TUpdaterDB);
-begin
-  FAddObject := AddObject;
-end;    }
 
 procedure TUpdateDBForm.LoadLanguage;
 begin
@@ -332,6 +320,15 @@ var
 
 begin
 
+  if (EventID_CancelAddingImage in Params) then
+  begin
+    FileSize := GetFileSizeByName(Value.name);
+    FSpeedCounter.AddSpeedInterval(FileSize);
+
+    ProgressBar.Text := Format(L('Tile left - %s (&%%%%)'), [TimeIntervalInString(FSpeedCounter.GetTimeRemaining(UpdaterDB.GetSize))]);
+    FCurrentFileName := Value.name;
+    Invalidate;
+  end;
   if (SetNewIDFileData in Params) or (EventID_FileProcessed in Params) then
   begin
     LastFileName := Value.name;
@@ -360,9 +357,9 @@ begin
       F(Bit);
     end;
     FileSize := GetFileSizeByName(Value.name);
-    TimeCounter.NextAction(FileSize);
+    FSpeedCounter.AddSpeedInterval(FileSize);
 
-    ProgressBar.Text := Format(L('Tile left - %s (&%%%%)'), [FormatDateTime('hh:mm:ss', TimeCounter.GetTimeRemaining)]);
+    ProgressBar.Text := Format(L('Tile left - %s (&%%%%)'), [FormatDateTime('hh:mm:ss', FSpeedCounter.GetTimeRemaining(UpdaterDB.GetSize))]);
     FCurrentFileName := Value.name;
     WebLinkOpenImage.Enabled := True;
     WebLinkOpenImage.RefreshBuffer;
@@ -519,7 +516,7 @@ begin
   F(FImageInv);
   F(FImageHourGlass);
 
-  F(TimeCounter);
+  F(FSpeedCounter);
   F(BadHistory);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   DropFileTarget1.Unregister;
@@ -616,6 +613,7 @@ end;
 procedure TUpdateDBForm.UpdaterSetText(Text: string);
 begin
   FInfoText := Text;
+  Invalidate;
 end;
 
 procedure TUpdateDBForm.UpdaterShowForm(Sender: TObject);
@@ -626,18 +624,28 @@ end;
 procedure TUpdateDBForm.UpdaterSetMaxValue(Value: integer);
 begin
   ProgressBar.MaxValue := Value;
+  Invalidate;
 end;
 
 procedure TUpdateDBForm.UpdaterOnDone(Sender: TObject);
 begin
   HideImage(False);
+  FFullSize := 0;
   ProgressBar.Position := 0;
   ProgressBar.Text := L('Done');
   FInfoText := L('No files to add');
+  SetIcon(ButtonRunStop, 'UPDATER_PAUSE');
+  ButtonRunStop.Text := L('Pause');
+  ButtonBreak.Enabled := False;
+  ButtonRunStop.Enabled := False;
+  Invalidate;
 end;
 
 procedure TUpdateDBForm.UpdaterSetBeginUpdation(Sender: TObject);
 begin
+  ButtonBreak.Enabled := True;
+  ButtonRunStop.Enabled := True;
+
   HideImage(False);
   ProgressBar.Position := 0;
   ProgressBar.Text := L('Processing files... (&%%)');
@@ -649,7 +657,6 @@ end;
 
 procedure TUpdateDBForm.UpdaterSetTimeText(Text: string);
 begin
-// TimeLabel.Caption:=Text;
 end;
 
 procedure TUpdateDBForm.UpdaterSetPosition(Value: integer);
@@ -678,10 +685,9 @@ begin
   ShowImage;
 end;
 
-procedure TUpdateDBForm.UpdaterAddFileSizes(Value: int64);
+procedure TUpdateDBForm.UpdaterAddFileSizes(Value: Int64);
 begin
   FInfoStr := '';
-  TimeCounter.AddActions(Value);
 end;
 
 procedure TUpdateDBForm.UpdaterDirectoryAdded(Sender: TObject);
@@ -696,7 +702,7 @@ end;
 
 procedure TUpdateDBForm.OnBeginUpdation(Sender: TObject);
 begin
-  TimeCounter.DoBegin;
+  FSpeedCounter.Reset;
 end;
 
 procedure TUpdateDBForm.FormPaint(Sender: TObject);

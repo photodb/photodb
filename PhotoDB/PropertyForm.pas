@@ -1547,6 +1547,8 @@ begin
   if FShowInfoType = SHOW_INFO_IDS then
     Copy1.Visible := True;
   DBItem1.Clear;
+  FFilesInfo.ListItem := nil;
+  FFilesInfo.IsListItem := False;
   TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, FFilesInfo);
 end;
 

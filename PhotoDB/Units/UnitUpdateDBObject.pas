@@ -74,6 +74,7 @@ type
     function GetFilesCount: Integer;
     function FileExistsInFileList(FileName: string): Boolean;
     function GetCount: Integer;
+    function GetSize: Int64;
     property Active: Boolean read FActive;
     property Auto: Boolean read FAuto write SetAuto default True;
     property UseFileNameScaning: Boolean read FUseFileNameScaning write SetUseFileNameScaning default False;
@@ -132,7 +133,7 @@ begin
         I.UpdaterSetFullSize(0);
     end
   );
-
+  FTerminate := False;
   DirectorySizeThread.Create(Dir, EndDirectorySize, @FTerminate, FoundedEvent, ProcessFile);
   Result := True;
 end;
@@ -181,6 +182,7 @@ function TUpdaterDB.AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical
 var
   FileSize: Int64;
   FileName: string;
+  Info: TDBPopupMenuInfoRecord;
 begin
   FileName := FileInfo.FileName;
   ProcessFile(FileName);
@@ -191,10 +193,13 @@ begin
     begin
       FileSize := GetFileSizeByName(FileName);
       Inc(FmaxSize, FileSize);
+
+      Info := FileInfo.Copy;
+      Info.FileSize := FileSize;
       if not Critical then
-        FFilesInfo.Add(FileInfo.Copy)
+        FFilesInfo.Add(Info)
       else
-        FFilesInfo.Insert(0, FileInfo.Copy);
+        FFilesInfo.Insert(0, Info);
 
       TThread.Synchronize(nil,
         procedure
@@ -585,6 +590,15 @@ begin
   );
 
   Result := F;
+end;
+
+function TUpdaterDB.GetSize: Int64;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := FPosition to FFilesInfo.Count - 1 do
+    Result := Result + FFilesInfo[I].FileSize;
 end;
 
 procedure TUpdaterDB.ProcessFile(var FileName: string);

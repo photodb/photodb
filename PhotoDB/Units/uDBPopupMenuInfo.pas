@@ -3,8 +3,15 @@ unit uDBPopupMenuInfo;
 interface
 
 uses
-  Classes, EasyListView, UnitDBDeclare, UnitLinksSupport, UnitGroupsWork,
-  CmpUnit, uList64, uMemory;
+  Classes,
+  EasyListView,
+  UnitDBDeclare,
+  UnitLinksSupport,
+  UnitGroupsWork,
+  CmpUnit,
+  uList64,
+  uFileUtils,
+  uMemory;
 
 type
   TDBPopupMenuInfo = class(TObject)
@@ -91,6 +98,7 @@ begin
   Result := TDBPopupMenuInfoRecord.Create;
   Result.FileName := FileName;
   Result.Include := True;
+  Result.FileSize := GetFileSize(FileName);
   Add(Result);
 end;
 

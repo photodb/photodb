@@ -281,6 +281,7 @@ type
     procedure UnlockHeight;
     function GetImagesSize: Int64;
     procedure AllignSimpleOptions;
+    procedure SetSeriesCount(Count: Integer);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
@@ -1259,7 +1260,7 @@ begin
         WlSettings.OnMouseLeave := OnBoxMouseLeave;
         WlSettings.OnClick := ShowSettings;
 
-        TGroupBox(Sb.Parent.Parent).Caption := FormatEx(TA('Series of photos ({0})', 'ImportPictures'), [FItems.Count]);
+        TFormImportImages(FContainer.Owner).SetSeriesCount(FItems.Count);
       end;
 
       WlLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
@@ -1746,6 +1747,7 @@ procedure TFormImportImages.SwitchMode(NewMode: Boolean = True);
 begin
   if FMode = piModeSimple then
   begin
+    GbSeries.Caption := '';
     BtnOk.Enabled := True;
     FSeries.ClearSelection;
 
@@ -1772,7 +1774,6 @@ begin
     GbSeries.Top := 138;
     WlHideShowPictures.Refresh;
 
-    GbSeries.Caption := '';
     WlMode.Text := L('Extended mode');
     SbSeries.Hide;
     ElvPreview.Top := 20;
@@ -1805,7 +1806,7 @@ begin
 
     PnSimpleOptions.Visible := False;
     if ImagesCount > 0 then
-      GbSeries.Caption := FormatEx(L('Series of photos ({0})', 'ImportPictures'), [FSeries.Count])
+      GbSeries.Caption := FormatEx(L('Series of photos ({0})'), [FSeries.Count])
     else
       GbSeries.Caption := L('Series of photos');
     SbSeries.Show;
@@ -1895,6 +1896,12 @@ end;
 procedure TFormImportImages.SetPath(Path: string);
 begin
   PeImportFromPath.Path := Path;
+end;
+
+procedure TFormImportImages.SetSeriesCount(Count: Integer);
+begin
+  if FMode = piModeExtended then
+    GbSeries.Caption := FormatEx(L('Series of photos ({0})'), [Count]);
 end;
 
 procedure TFormImportImages.UpdatePreview(Item: TPathItem; Bitmap: TBitmap);

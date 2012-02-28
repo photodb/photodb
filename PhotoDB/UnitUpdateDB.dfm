@@ -248,7 +248,7 @@ object UpdateDBForm: TUpdateDBForm
     Visible = False
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = 16711808
+    Font.Color = 16744688
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
@@ -340,6 +340,7 @@ object UpdateDBForm: TUpdateDBForm
     Width = 123
     Height = 16
     Cursor = crHandPoint
+    Enabled = False
     Color = clWhite
     ParentColor = False
     Text = 'Break adding images!'
@@ -401,6 +402,7 @@ object UpdateDBForm: TUpdateDBForm
     Width = 141
     Height = 16
     Cursor = crHandPoint
+    Enabled = False
     Color = clWhite
     ParentColor = False
     Text = 'Run\Stop adding prosess'

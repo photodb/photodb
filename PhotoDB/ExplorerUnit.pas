@@ -5706,7 +5706,7 @@ begin
         Exit;
 
       Index := ItemIndexToMenuIndex(Item.Index);
-      FileName := IIF(Index > -1, ProcessPath(Info[Index].FileName), '');
+      FileName := IIF(Index > -1, ProcessPath(FFilesInfo[Index].FileName), '');
     end;
 
     Password := DBKernel.FindPasswordForCryptImageFile(FileName);
@@ -5740,7 +5740,7 @@ begin
         Exit;
 
       Index := ItemIndexToMenuIndex(Item.Index);
-      FileName := IIF(Index > -1, ProcessPath(Info[Index].FileName), '');
+      FileName := IIF(Index > -1, ProcessPath(FFilesInfo[Index].FileName), '');
     end;
 
     Opt := GetPassForCryptImageFile(FileName);

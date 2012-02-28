@@ -65,6 +65,13 @@ begin
   end;
   if EventID_CancelAddingImage in Params then
   begin
+    if (AnsiLowerCase(Value.NewName) = AnsiLowerCase(FInfo.FileName)) and (Value.ID > 0) then
+    begin
+      FInfo.ID := Value.ID;
+      Close;
+      Exit;
+    end;
+
     if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
       Close;
   end;

@@ -45,8 +45,10 @@ type
     procedure ExecuteReplaceDialog;
     procedure AddAutoAnswer;
     procedure SetImages;
-    procedure DoEventReplace(ID : Integer; Name : String);
+    procedure DoEventReplace(ID: Integer; Name: String);
     procedure DoEventReplaceSynch;
+    procedure DoEventCancel(Name: String);
+    procedure DoEventCancelSynch;
     procedure UpdateCurrent;
     procedure CryptFileWithoutPass;
     function Res : TImageDBRecordA;
@@ -120,8 +122,8 @@ var
 
 constructor UpdateDBThread.Create(Sender: TUpdaterDB;
   Info: TDBPopupMenuInfo; OnDone: TNotifyEvent;
-  AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
-  Pause: PBoolean; NoLimit : boolean = false);
+  AutoAnswer: Integer; UseFileNameScaning : Boolean; Terminating,
+  Pause: PBoolean; NoLimit: Boolean = false);
 begin
   //owner is dynamic
   inherited Create(nil, False);
@@ -389,12 +391,14 @@ begin
                 begin
                   FAutoAnswer := Result_Add_all;
                   SynchronizeEx(AddAutoAnswer);
+                  DoEventCancel(FInfo[FileNumber].FileName);
                 end;
               Result_skip_all:
                 begin
               FAutoAnswer := Result_skip_all;
                   AutoAnswerSetted := True;
                   SynchronizeEx(AddAutoAnswer);
+                  DoEventCancel(FInfo[FileNumber].FileName);
                 end;
               Result_replace:
                 begin
@@ -423,6 +427,7 @@ begin
               Result_Delete_File:
                 begin
                   DeleteFile(FInfo[FileNumber].FileName);
+                  DoEventCancel(FInfo[FileNumber].FileName);
                 end;
               Result_Replace_And_Del_Duplicates:
                 begin
@@ -489,10 +494,12 @@ begin
                   FAutoAnswer := Result_skip_all;
                   SynchronizeEx(AddAutoAnswer);
                   AutoAnswerSetted := True;
+                  DoEventCancel(FInfo[FileNumber].FileName);
                 end;
               Result_Delete_File:
                 begin
                   DeleteFile(FInfo[FileNumber].FileName);
+                  DoEventCancel(FInfo[FileNumber].FileName);
                 end;
               Result_replace_all:
                 begin
@@ -560,10 +567,13 @@ begin
             begin
               UpdateMovedDBRecord(Res.Ids[0], FInfo[FileNumber].FileName);
               DoEventReplace(Res.Ids[0], FInfo[FileNumber].FileName);
-            end;
+            end else
+            if FAutoAnswer = Result_replace then
+            begin
+            end else
             if FAutoAnswer = Result_skip_all then
             begin
-            end;
+            end else
             if FAutoAnswer = Result_Add_All then
             begin
               AddFileToDB;
@@ -581,9 +591,11 @@ begin
               finally
                 FreeDS(FQuery);
               end;
-            end;
+            end else
+              DoEventCancel(FInfo[FileNumber].FileName);
           end;
-        end;
+        end else
+          DoEventCancel(FInfo[FileNumber].FileName);
         AutoAnswerSetted := False;
 
         if Res.Count = 0 then
@@ -670,10 +682,31 @@ begin
   inherited;
 end;
 
+procedure UpdateDBThread.DoEventCancel(Name: String);
+begin
+  NameParam := Name;
+  IDParam := 0;
+  SynchronizeEx(DoEventCancelSynch);
+end;
+
+procedure UpdateDBThread.DoEventCancelSynch;
+var
+  EventInfo: TEventValues;
+begin
+  try
+    EventInfo.Name := NameParam;
+    EventInfo.ID := IDParam;
+    DBKernel.DoIDEvent(FSender.Form, IDParam, [EventID_CancelAddingImage], EventInfo);
+  except
+    on E: Exception do
+      EventLog(':UpdateDBThread::DoEventReplaceSynch() throw exception: ' + E.message);
+  end;
+end;
+
 procedure UpdateDBThread.DoEventReplace(ID: Integer; Name: String);
 begin
   IDParam := ID;
-  NameParam := name;
+  NameParam := Name;
   SynchronizeEx(DoEventReplaceSynch);
 end;
 
@@ -684,7 +717,7 @@ begin
   try
     EventInfo.NewName := NameParam;
     EventInfo.ID := IDParam;
-    DBKernel.DoIDEvent(FSender.Form, IDParam, [EventID_Param_Name], EventInfo);
+    DBKernel.DoIDEvent(FSender.Form, IDParam, [EventID_Param_Name, EventID_CancelAddingImage], EventInfo);
   except
     on E: Exception do
       EventLog(':UpdateDBThread::DoEventReplaceSynch() throw exception: ' + E.message);

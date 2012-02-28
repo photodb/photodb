@@ -67,8 +67,8 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
   object WlPreviewDBSize: TWebLink
     Left = 124
     Top = 165
-    Width = 87
-    Height = 13
+    Width = 103
+    Height = 16
     Cursor = crHandPoint
     Text = 'WlPreviewDBSize'
     OnClick = WlPreviewDBSizeClick
@@ -82,6 +82,8 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object CbDBImageSize: TComboBox
     Left = 5
@@ -122,8 +124,8 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
   object WlPreviewDBJpegQuality: TWebLink
     Left = 124
     Top = 211
-    Width = 125
-    Height = 13
+    Width = 141
+    Height = 16
     Cursor = crHandPoint
     Text = 'WlPreviewDBJpegQuality'
     OnClick = WlPreviewDBSizeClick
@@ -137,12 +139,14 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object WlPanelSize: TWebLink
     Left = 124
     Top = 260
-    Width = 62
-    Height = 13
+    Width = 78
+    Height = 16
     Cursor = crHandPoint
     Text = 'WlPanelSize'
     OnClick = WlPanelSizeClick
@@ -156,6 +160,8 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object CbPanelSize: TComboBox
     Left = 5
@@ -196,8 +202,8 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
   object WlPreviewSize: TWebLink
     Left = 124
     Top = 306
-    Width = 74
-    Height = 13
+    Width = 90
+    Height = 16
     Cursor = crHandPoint
     Text = 'WlPreviewSize'
     OnClick = WlPreviewSizeClick
@@ -211,5 +217,7 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
 end

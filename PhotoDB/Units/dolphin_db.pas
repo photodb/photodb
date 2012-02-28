@@ -653,10 +653,10 @@ begin
 
   S := RoundSeconds(S);
 
-  SD := IntToStr(Days) + ' ' + IIF(Days > 1, TA('days', 'Global'), TA('day', 'Global'));
-  SH := IntToStr(H) + ' ' + IIF(H > 1, TA('hours', 'Global'), TA('hour', 'Global'));
-  SM := IntToStr(M) + ' ' + IIF(M > 1, TA('minutes', 'Global'), TA('minute', 'Global'));
-  SS := IntToStr(S) + ' ' + IIF(S > 1, TA('seconds', 'Global'), TA('second', 'Global'));
+  SD := IntToStr(Days) + ' ' + IIF(Days <> 1, TA('days', 'Global'), TA('day', 'Global'));
+  SH := IntToStr(H) + ' ' + IIF(H <> 1, TA('hours', 'Global'), TA('hour', 'Global'));
+  SM := IntToStr(M) + ' ' + IIF(M <> 1, TA('minutes', 'Global'), TA('minute', 'Global'));
+  SS := IntToStr(S) + ' ' + IIF(S <> 1, TA('seconds', 'Global'), TA('second', 'Global'));
 
   if Days > 0 then
     Result := SD + ', ' + SH

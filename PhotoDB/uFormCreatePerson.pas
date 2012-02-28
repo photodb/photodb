@@ -367,6 +367,13 @@ begin
   end;
   if EventID_CancelAddingImage in Params then
   begin
+    if (AnsiLowerCase(Value.NewName) = AnsiLowerCase(FInfo.FileName)) and (Value.ID > 0) then
+    begin
+      FInfo.ID := Value.ID;
+      AddPhoto;
+      Exit;
+    end;
+
     if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
       EnableControls(True);
 
@@ -432,6 +439,7 @@ begin
   DtpBirthDay.Enabled := IsEnabled;
   WmComments.Enabled := IsEnabled;
   LsAdding.Visible := not IsEnabled;
+  WlPersonNameStatus.Enabled := IsEnabled;
 end;
 
 procedure TFormCreatePerson.CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem;

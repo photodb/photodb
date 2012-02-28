@@ -22,7 +22,7 @@ uses
   uRuntime,
   UnitDBkernel,
   UnitUpdateDBObject,
-  UnitTimeCounter,
+  uCounters,
   uFileUtils,
   uConstants,
   uBitmapUtils,
@@ -48,8 +48,8 @@ type
     ImageCounter: Integer;
     ProcessingSize: Int64;
     ImageProcessedCounter: Integer;
-    TimeCounter: TTimeCounter;
-    procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
+    FSpeedCounter: TSpeedEstimateCounter;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer;  params: TEventFields; Value: TEventValues);
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
@@ -71,7 +71,6 @@ type
     procedure UpdaterSetFullSize(Value: Int64);
     function UpdaterGetForm: TDBForm;
 
-    procedure FileFounded(Owner: TObject; FileName: string; Size: Int64);
     function IsFinal: Boolean; override;
     constructor Create(AOwner: TComponent); override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
@@ -136,8 +135,7 @@ begin
   begin
     InterfaceManager.RegisterObject(Self);
     FullSize := 0;
-    TimeCounter := TTimeCounter.Create;
-    TimeCounter.TimerInterval := 15000; // 15 seconds to refresh
+    FSpeedCounter := TSpeedEstimateCounter.Create(15000); // 15 seconds to refresh
     ImageCounter := 0;
     ImageProcessedCounter := 0;
     ProcessingSize := 0;
@@ -168,7 +166,7 @@ begin
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 
   UpdaterDB.DoTerminate;
-  F(TimeCounter);
+  F(FSpeedCounter);
 end;
 
 procedure TFrmImportImagesProgress.ChangedDBDataByID(Sender: TObject;
@@ -179,7 +177,28 @@ var
   FileSize: Integer;
   W, H: Integer;
 
+  procedure UpdateInfo;
+  begin
+    EdCurrentFileName.Text := Value.Name;
+
+    Inc(ImageProcessedCounter);
+    FileSize := GetFileSizeByName(Value.Name);
+    FSpeedCounter.AddSpeedInterval(FileSize);
+    ProcessingSize := ProcessingSize + FileSize;
+    LbImagesSize.Caption := Format(L('Size: %s from %s'), [SizeInText(ProcessingSize), SizeInText(FullSize)]);
+    LbImagesCount.Caption := Format(L('Processed %d from %d'), [ImageProcessedCounter, ImageCounter]);
+
+    LbTimeLeft.Visible := True;
+    LbTimeLeft.Caption := Format(L('Time remaining: %s'), [TimeIntervalInString(FSpeedCounter.GetTimeRemaining(UpdaterDB.GetSize))]);
+  end;
+
 begin
+  if (EventID_CancelAddingImage in Params) then
+  begin
+    EdCurrentFileName.Text := Value.Name;
+    UpdateInfo;
+  end;
+
   if (SetNewIDFileData in params) or (EventID_FileProcessed in params) then
     if UpdaterDB.Active then
     begin
@@ -204,22 +223,8 @@ begin
       finally
         F(Bit);
       end;
-      EdCurrentFileName.Text := Value.Name;
 
-      Inc(ImageProcessedCounter);
-      FileSize := GetFileSizeByName(Value.Name);
-      ProcessingSize := ProcessingSize + FileSize;
-      LbImagesSize.Caption := Format(L('Size: %s from %s'),
-        [SizeInText(ProcessingSize), SizeInText(FullSize)]);
-      LbImagesCount.Caption := Format(L('Processed %d from %d'),
-        [ImageProcessedCounter, ImageCounter]);
-
-      TimeCounter.NextAction(FileSize);
-
-      LbTimeLeft.Visible := True;
-      LbTimeLeft.Caption := Format(L('Time remaining: %s'),
-        [FormatDateTime('hh:mm:ss', TimeCounter.GetTimeRemaining)]);
-
+      UpdateInfo;
       Exit;
     end;
 
@@ -288,7 +293,7 @@ begin
   //isn't used
 end;
 
-procedure TFrmImportImagesProgress.FileFounded(Owner: TObject; FileName: string;
+procedure TFrmImportImagesProgress.UpdaterFoundedEvent(Owner: TObject; FileName: string;
   Size: int64);
 begin
   FullSize := FullSize + Size;
@@ -337,17 +342,10 @@ begin
       UpdaterOnDone(Sender);
       Exit;
     end;
-    TimeCounter.MaxActions := FullSize;
-    TimeCounter.DoBegin;
+    FSpeedCounter.Reset;
     UpdaterDB.Execute;
     LbStatus.Caption := L('Processing images');
   end;
-end;
-
-procedure TFrmImportImagesProgress.UpdaterFoundedEvent(Owner: TObject;
-  FileName: string; Size: Int64);
-begin
-  //isn't used
 end;
 
 function TFrmImportImagesProgress.UpdaterGetForm: TDBForm;
