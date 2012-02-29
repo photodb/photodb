@@ -63,28 +63,11 @@ type
   end;
 
 type
-  TValueObject = class(TObject)
-  private
-    FTIntValue: Int64;
-    FSTStrValue: TStrings;
-    FTBoolValue: Boolean;
-    procedure SetTIntValue(const Value: Int64);
-    procedure SetTStrValue(const Value: TStrings);
-    procedure SetTBoolValue(const Value: Boolean);
-  public
-    constructor Create;
-    destructor Destroy; override;
-    property TIntValue: Int64 read FTIntValue write SetTIntValue;
-    property TStrValue: TStrings read FSTStrValue write SetTStrValue;
-    property TBoolValue: Boolean read FTBoolValue write SetTBoolValue;
-  end;
-
-type
   DirectorySizeThread = class(TDBThread)
   private
     { Private declarations }
     FDirectory, StrParam: string;
-    FObject: TValueObject;
+    FItems: TDBPopupMenuInfo;
     FOnDone: TNotifyEvent;
     FTerminating: PBoolean;
     IntParam: Int64;
@@ -98,7 +81,7 @@ type
     procedure DoOnDone;
     procedure DoFileProcessed;
     procedure DoOnFileFounded;
-    function GetDirectory(DirectoryName: string; var Files: TStrings; Terminating: PBoolean): Int64;
+    function GetDirectory(DirectoryName: string; Files: TDBPopupMenuInfo; Terminating: PBoolean): Int64;
   end;
 
 var
@@ -800,19 +783,21 @@ end;
 
 { DirectorySizeThread }
 
-function DirectorySizeThread.GetDirectory(DirectoryName: string; var Files: TStrings; Terminating: PBoolean): Int64;
+function DirectorySizeThread.GetDirectory(DirectoryName: string; Files: TDBPopupMenuInfo; Terminating: PBoolean): Int64;
 var
   Found: Integer;
   SearchRec: TSearchRec;
   FileName: string;
+  Item: TDBPopupMenuInfoRecord;
 begin
   Result := 0;
   if Terminating^ then
     Exit;
-  if not DirectoryExists(DirectoryName) then
+  if not DirectoryExistsSafe(DirectoryName) then
     Exit;
-  if DirectoryName[Length(DirectoryName)] <> '\' then
-    DirectoryName := DirectoryName + '\';
+
+  DirectoryName := IncludeTrailingPathDelimiter(DirectoryName);
+
   Found := FindFirst(DirectoryName + '*.*', FaAnyFile, SearchRec);
   while Found = 0 do
   begin
@@ -830,7 +815,13 @@ begin
         StrParam := FileName;
         SynchronizeEx(DoFileProcessed);
         FileName := StrParam;
-        Files.Add(FileName);
+
+        Item := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+        Item.Include := True;
+        Item.FileSize := SearchRec.Size;
+
+        Files.Add(Item);
+
         IntParam := SearchRec.Size;
         SynchronizeEx(DoOnFileFounded);
       end
@@ -856,32 +847,22 @@ end;
 procedure DirectorySizeThread.DoOnDone;
 begin
   if Assigned(FOnDone) then
-    FOnDone(FObject);
+    FOnDone(FItems);
 end;
 
 procedure DirectorySizeThread.Execute;
 var
   Size: Int64;
-  Files: TStrings;
 begin
   inherited;
   FreeOnTerminate := True;
-  Files := TStringList.Create;
+  FItems := TDBPopupMenuInfo.Create;
   try
-    Size := GetDirectory(FDirectory, Files, FTerminating);
+    Size := GetDirectory(FDirectory, FItems, FTerminating);
     if not FTerminating^ then
-    begin
-      FObject := TValueObject.Create;
-      try
-        FObject.TIntValue := Size;
-        FObject.TStrValue := Files;
-        SynchronizeEx(DoOnDone);
-      finally
-        F(FObject);
-      end;
-    end;
+      SynchronizeEx(DoOnDone);
   finally
-    F(Files);
+    F(FItems);
   end;
 end;
 
@@ -895,33 +876,6 @@ procedure DirectorySizeThread.DoOnFileFounded;
 begin
   if Assigned(FOnFileFounded) then
     FOnFileFounded(nil, StrParam, IntParam);
-end;
-
-{ TValueObject }
-
-constructor TValueObject.Create;
-begin
-  FSTStrValue := TStringList.Create;
-end;
-
-destructor TValueObject.Destroy;
-begin
-  FSTStrValue.Free;
-end;
-
-procedure TValueObject.SetTBoolValue(const Value: Boolean);
-begin
-  FTBoolValue := Value;
-end;
-
-procedure TValueObject.SetTIntValue(const Value: Int64);
-begin
-  FTIntValue := Value;
-end;
-
-procedure TValueObject.SetTStrValue(const Value: TStrings);
-begin
-  FSTStrValue.Assign(Value);
 end;
 
 initialization

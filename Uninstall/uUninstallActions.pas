@@ -22,6 +22,8 @@ uses
   uUserUtils,
   uSysUtils,
   uStillImage,
+  uSettings,
+  uUpTime,
   uShellUtils;
 
 const
@@ -42,8 +44,8 @@ type
 
   TUninstallFiles = class(TInstallAction)
   public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TInstallFileActions = class(TInstallAction)
@@ -54,20 +56,20 @@ type
 
   TUninstallShortCuts = class(TInstallAction)
   public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TUninstallNotify = class(TInstallAction)
   public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TUninstallRegistry = class(TInstallAction)
   public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
   TUnInstallStillImageHandler = class(TInstallAction)
@@ -76,6 +78,9 @@ type
   end;
 
 implementation
+
+var
+  CurrentVersion: TRelease;
 
 { TUninstallFiles }
 
@@ -88,10 +93,14 @@ procedure TUninstallFiles.Execute(Callback: TActionCallback);
 var
   I: Integer;
   DiskObject: TDiskObject;
-  Destination: string;
+  ExeFileName, Destination: string;
   Terminate: Boolean;
 begin
   Terminate := False;
+
+  ExeFileName := ExtractFilePath(ParamStr(0)) + 'PhotoDB.exe';
+  CurrentVersion := GetExeVersion(ExeFileName);
+
   for I := 0 to CurrentInstall.Files.Count - 1 do
   begin
     DiskObject := CurrentInstall.Files[I];
@@ -161,14 +170,12 @@ procedure TUninstallNotify.Execute(Callback: TActionCallback);
 var
   NotifyUrl: string;
   Version: string;
-  ExeFileName: string;
 begin
   Version := ProductMajorVersionVersion;
-  ExeFileName := InstalledFileName;
-  if ExeFileName <> '' then
-    Version := ReleaseToString(GetExeVersion(ExeFileName));
+  if CurrentVersion.Build > 0 then
+    Version := ReleaseToString(CurrentVersion);
 
-  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + Version + '&ac=' + TActivationManager.Instance.ApplicationCode;
+  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + Version + '&ac=' + TActivationManager.Instance.ApplicationCode + '&ut=' + IntToStr(GetCurrentUpTime);
   RunAsUser(NotifyUrl, NotifyUrl, NotifyUrl, False);
 end;
 

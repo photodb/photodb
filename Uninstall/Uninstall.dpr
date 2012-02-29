@@ -50,7 +50,9 @@ uses
   uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
   uTime in '..\PhotoDB\Units\uTime.pas',
   MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
-  uStillImage in '..\Installer\uStillImage.pas';
+  uStillImage in '..\Installer\uStillImage.pas',
+  uSettings in '..\PhotoDB\Units\uSettings.pas',
+  uUpTime in '..\PhotoDB\Units\uUpTime.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}
@@ -76,6 +78,6 @@ begin
   begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TFrmMain, FrmMain);
-    Application.Run;
+  Application.Run;
   end;
 end.

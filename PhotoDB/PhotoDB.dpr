@@ -382,7 +382,8 @@ uses
   uPathProviderUtils in 'Units\uPathProviderUtils.pas',
   uBufferedFileStream in 'Units\uBufferedFileStream.pas',
   uUpdateDBTypes in 'Units\uUpdateDBTypes.pas',
-  uInterfaceManager in 'Units\uInterfaceManager.pas';
+  uInterfaceManager in 'Units\uInterfaceManager.pas',
+  uUpTime in 'Units\uUpTime.pas';
 
 {$R *.res}
 

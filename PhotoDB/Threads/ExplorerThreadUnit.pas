@@ -1338,10 +1338,12 @@ begin
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam, True);
 
-    if (TempBitmap = nil) or TempBitmap.Empty or not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, isBigImage) then
+    if (TempBitmap = nil) or TempBitmap.Empty or not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, IsBigImage) then
       F(TempBitmap);
   end else
     F(TempBitmap);
+
+  TempBitmap := nil;
 end;
 
 procedure TExplorerThread.ReplaceInfoInExplorer;
@@ -1527,7 +1529,9 @@ begin
             begin
               MakeFolderImage(CurrentFile);
               if not SynchronizeEx(AddImageFileImageToExplorer) then
-                F(FIcon);
+                F(FIcon)
+              else
+                FIcon := nil;
             end;
             Exit;
           end;
@@ -1755,7 +1759,9 @@ end;
 procedure TExplorerThread.ReplaceFolderImage;
 begin
   if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, True) then
-    F(TempBitmap);
+    F(TempBitmap)
+  else
+    TempBitmap := nil;
 end;
 
 procedure TExplorerThread.AddFile;
@@ -1824,7 +1830,9 @@ begin
   F(TempBitmap);
   FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
   if not SynchronizeEx(AddImageFileItemToExplorerW) then
-    F(FIcon);
+    F(FIcon)
+  else
+    FIcon := nil;
 end;
 
 procedure TExplorerThread.AddImageFileItemToExplorerW;
@@ -1833,7 +1841,9 @@ begin
   begin
     FSender.AddInfoAboutFile(FFiles);
     if not FSender.AddIcon(FIcon, True, GUIDParam) then
-      F(FIcon);
+      F(FIcon)
+    else
+      FIcon := nil;
 
     if FUpdaterInfo.NewFileItem then
       FSender.SetNewFileNameGUID(GUIDParam);
@@ -2360,10 +2370,14 @@ begin
   if TempBitmap <> nil then
   begin
     if not FSender.ReplaceBitmap(TempBitmap, GUIDParam, True, BooleanParam) then
-      F(TempBitmap);
+      F(TempBitmap)
+    else
+      TempBitmap := nil;
   end else
     if not FSender.ReplaceIcon(FIcon, GUIDParam, True) then
-      F(FIcon);
+      F(FIcon)
+    else
+      FIcon := nil;
 end;
 
 procedure TExplorerThread.MakeIconForFile;
@@ -2373,14 +2387,18 @@ begin
   begin
     FIcon := TAIcons.Instance.GetIconByExt(CurrentFile, False, FIcoSize, False);
     if not SynchronizeEx(ReplaceImageInExplorerB) then
-      F(FIcon);
+      F(FIcon)
+    else
+      FIcon := nil;
   end else
   begin
     TempBitmap := TBitmap.Create;
     if ExtractVideoThumbnail(CurrentFile, ExplorerInfo.PictureSize, TempBitmap) then
     begin
       if not SynchronizeEx(ReplaceImageInExplorerB) then
-        F(TempBitmap);
+        F(TempBitmap)
+      else
+        TempBitmap := nil;
     end else
       F(TempBitmap);
   end;
@@ -2610,7 +2628,9 @@ begin
     BooleanParam := LoadingAllBigImages;
 
     if not SynchronizeEx(ReplaceImageInExplorerB) then
-      F(TempBitmap);
+      F(TempBitmap)
+    else
+      TempBitmap := nil;
   finally
     F(Graphic);
   end;
@@ -2658,6 +2678,7 @@ var
   Password: string;
   TempBit: TBitmap;
 begin
+  F(TempBitmap);
   if Info.ID = 0 then
   begin
     UpdateImageRecordFromExif(Info, False);
@@ -2753,7 +2774,9 @@ begin
   GUIDParam := FileID;
   FInfo.Assign(Info);
   if not SynchronizeEx(ReplaceImageInExplorer) then
-    F(TempBitmap);
+    F(TempBitmap)
+  else
+    TempBitmap := nil;
 end;
 
 procedure TExplorerThread.DoMultiProcessorTask;

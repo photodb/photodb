@@ -189,11 +189,11 @@ end;
 
 procedure TImHint.CreateFormImage;
 var
-  Bitmap : TBitmap;
+  Bitmap: TBitmap;
   SFileSize,
-  SImageSize : string;
-  TextHeight, ImageNameHeight : Integer;
-  R : TRect;
+  SImageSize: string;
+  TextHeight, ImageNameHeight: Integer;
+  R: TRect;
 begin
 
   SImageSize := Format(L('Image size: %d x %d'), [FWidth, FHeight]);
@@ -283,7 +283,7 @@ begin
 
     ImageBuffer := TBitmap.Create;
     AnimatedBuffer := TBitmap.Create;
-    AnimatedBuffer.PixelFormat := Pf24bit;
+    AnimatedBuffer.PixelFormat := pf24bit;
     AnimatedBuffer.Width := G.Width;
     AnimatedBuffer.Height := G.Height;
     AnimatedBuffer.Canvas.Brush.Color := clBtnFace;

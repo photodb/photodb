@@ -104,7 +104,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Left = 189
       Top = 52
       Width = 112
-      Height = 13
+      Height = 16
       Cursor = crHandPoint
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
@@ -125,6 +125,8 @@ object FormFastFileRenamer: TFormFastFileRenamer
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
     object SedStartN: TSpinEdit
       Left = 333
@@ -135,7 +137,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       MaxValue = 0
       MinValue = 0
       TabOrder = 1
-      Value = 0
+      Value = 1
       OnChange = Edit1Change
     end
   end

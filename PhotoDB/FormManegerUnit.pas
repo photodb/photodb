@@ -47,6 +47,7 @@ uses
   uExifUtils,
   uDBCustomThread,
   uPortableDeviceManager,
+  uUpTime,
   uPortableClasses;
 
 type
@@ -379,6 +380,10 @@ var
 begin
   if ExitAppl then
     Exit;
+
+  //save uptime
+  PermanentlySaveUpTime;
+
   DBTerminating := True;
   ExitAppl := True;
 
@@ -527,6 +532,12 @@ begin
     if (FCheckCount = 600) and not FolderView then // after 1.min. backup database
       DBKernel.BackUpTable;
 
+    if (FCheckCount mod 100 = 0) then
+    begin
+      //each 10 seconts save uptime
+      AddUptimeSecs(10);
+    end;
+
     if FMainForms.Count = 0 then
       ExitApplication;
   end;
@@ -575,8 +586,7 @@ begin
 
         if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase
             (GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
-          Dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName))
-            + '.photodb';
+          Dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
       end;
     except
       on E: Exception do

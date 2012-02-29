@@ -3,7 +3,9 @@ unit uConfiguration;
 interface
 
 uses
-  uSysUtils, uFileUtils, uConstants;
+  uSysUtils,
+  uFileUtils,
+  uConstants;
 
 function GetAppDataDirectory: string;
 

@@ -301,7 +301,7 @@ begin
       Break;
     except
       if GetLastError in [ERROR_PATH_NOT_FOUND, ERROR_INVALID_DRIVE, ERROR_NOT_READY,
-                          ERROR_FILE_NOT_FOUND, ERROR_GEN_FAILURE] then
+                          ERROR_FILE_NOT_FOUND, ERROR_GEN_FAILURE, ERROR_INVALID_NAME] then
         Exit;
       Sleep(DelayReadFileOperation);
     end;

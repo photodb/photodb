@@ -29,6 +29,7 @@ uses
   SyncObjs,
   uUpdateDBTypes,
   uInterfaceManager,
+  StrUtils,
   win32crc;
 
 type
@@ -39,7 +40,7 @@ type
     ScriptProcessString: string;
     FPosition: Integer;
     FShowWindow: Boolean;
-    FMaxSize: Integer;
+    FMaxSize: Int64;
     FTerminate: Boolean;
     FActive: Boolean;
     FAuto: Boolean;
@@ -59,8 +60,8 @@ type
     NoLimit: Boolean;
     constructor Create;
     destructor Destroy; override;
-    function AddFile(FileName: string; Silent: Boolean = False): Boolean;
-    function AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean): Boolean;
+    function AddFile(FileName: string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
+    function AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean; NoExecute: Boolean = False): Boolean;
     function AddDirectory(Directory: string): Boolean;
     procedure EndDirectorySize(Sender: TObject);
     procedure OnAddFileDone(Sender: TObject);
@@ -98,13 +99,23 @@ uses
 
 var
   FUpdaterDB: TUpdaterDB = nil;
+  FSync: TCriticalSection;
+  IsFinalized: Boolean = False;
 
 function UpdaterDB: TUpdaterDB;
 begin
-  if FUpdaterDB = nil then
-    FUpdaterDB := TUpdaterDB.Create;
+  FSync.Enter;
+  try
+    if FUpdaterDB = nil then
+    begin
+      FUpdaterDB := TUpdaterDB.Create;
+      FUpdaterDB.LoadWork;
+    end;
 
-  Result := FUpdaterDB;
+    Result := FUpdaterDB;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure DestroyUpdaterObject;
@@ -154,17 +165,24 @@ end;
 function TUpdaterDB.FileExistsInFileList(FileName: String): Boolean;
 var
   I: Integer;
+  CRC: Cardinal;
+  Info: TDBPopupMenuInfoRecord;
 begin
   Result := False;
+  FileName := AnsiLowerCase(FileName);
+  CRC := StringCRC(FileName);
   for I := 0 to FFilesInfo.Count - 1 do
-    if AnsiLowerCase(FileName) = AnsiLowerCase(FFilesInfo[I].FileName) then
+  begin
+    Info := FFilesInfo[I];
+    if (CRC = Info.FileNameCRC) and (FileName = AnsiLowerCase(Info.FileName)) then
     begin
       Result := True;
       Exit;
     end;
+  end;
 end;
 
-function TUpdaterDB.AddFile(FileName : string; Silent : Boolean = False): Boolean;
+function TUpdaterDB.AddFile(FileName : string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
 var
   Info: TDBPopupMenuInfoRecord;
 begin
@@ -178,7 +196,7 @@ begin
   end;
 end;
 
-function TUpdaterDB.AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean): Boolean;
+function TUpdaterDB.AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean; NoExecute: Boolean = False): Boolean;
 var
   FileSize: Int64;
   FileName: string;
@@ -214,7 +232,7 @@ begin
         end
       );
 
-      if Auto then
+      if Auto and not NoExecute then
       begin
         Execute;
         if not Silent then
@@ -256,14 +274,6 @@ begin
   FmaxSize := 0;
   FPause := False;
   FAutoAnswer := Result_invalid;
-
-  TThread.Synchronize(nil,
-    procedure
-    begin
-      CreateUpdaterForm;
-    end
-  );
-  LoadWork;
 
   BeginTime := -1;
 end;
@@ -317,7 +327,10 @@ end;
 procedure TUpdaterDB.EndDirectorySize(Sender: TObject);
 var
   I: Integer;
+  Info: TDBPopupMenuInfo;
+  Size: Int64;
 begin
+  Info := Sender as TDBPopupMenuInfo;
 
   TThread.Synchronize(nil,
     procedure
@@ -330,7 +343,11 @@ begin
     end
   );
 
-  Inc(FmaxSize, (Sender as TValueObject).TIntValue);
+  Size := 0;
+  for I := 0 to Info.Count - 1 do
+    Inc(Size, Info[I].FileSize);
+
+  FMaxSize := FMaxSize + Size;
 
   TThread.Synchronize(nil,
     procedure
@@ -338,12 +355,12 @@ begin
       I: IDBUpdaterCallBack;
     begin
       for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
-        I.UpdaterAddFileSizes((Sender as TValueObject).TIntValue);
+        I.UpdaterAddFileSizes(Size);
     end
   );
 
-  for I := 1 to (Sender as TValueObject).TStrValue.Count do
-    FFilesInfo.Add((Sender as TValueObject).TStrValue[I - 1]);
+  for I := 0 to Info.Count - 1 do
+    FFilesInfo.Add(Info[I].Copy);
 
   TThread.Synchronize(nil,
     procedure
@@ -498,7 +515,7 @@ begin
       begin
         for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
         begin
-          I.UpdaterSetPosition(FPosition + 1);
+          I.UpdaterSetPosition(FPosition + 1, FFilesInfo.Count);
           I.UpdaterSetFileName(FFilesInfo[FPosition].FileName);
         end;
       end
@@ -611,13 +628,50 @@ begin
 end;
 
 procedure TUpdaterDB.LoadWork;
+var
+  C: Integer;
 begin
+  if IsFinalized then
+    Exit;
+
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      CreateUpdaterForm;
+    end
+  );
+
   TThread.Synchronize(nil,
   procedure
   var
-    I, C: Integer;
+    I: Integer;
     DBPrefix: string;
     ProgressWindow: TProgressActionForm;
+    T: Cardinal;
+
+    procedure AddFileToList(FileName: string);
+    var
+      FileSize: Int64;
+      Info: TDBPopupMenuInfoRecord;
+    begin
+      ProcessFile(FileName);
+
+      if IsGraphicFile(FileName) and not(FileExistsInFileList(FileName)) then
+      begin
+        FileSize := GetFileSizeByName(FileName);
+        if FileSize > 0 then
+        begin
+          Inc(FMaxSize, FileSize);
+
+          Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+          Info.FileSize := FileSize;
+          Info.Include := True;
+
+          FFilesInfo.Add(Info);
+        end;
+      end;
+    end;
+
   begin
     DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
     ProgressWindow := GetProgressWindow;
@@ -627,17 +681,26 @@ begin
       ProgressWindow.MaxPosCurrentOperation := C;
       ProgressWindow.XPosition := 0;
       ProgressWindow.SetAlternativeText(TA('Wait until the program is restore the work', 'Updater'));
+      ProgressWindow.CanClosedByUser := True;
       if C > 10 then
         ProgressWindow.Show;
 
+      T := GetTickCount;
       for I := 0 to C - 1 do
       begin
-        if I mod 8 = 0 then
+        if ProgressWindow.Closed then
+          Break;
+        if I mod 50 = 0 then
         begin
           ProgressWindow.XPosition := I;
-          Application.ProcessMessages;
+          ProgressWindow.Repaint;
         end;
-        AddFile(Settings.ReadString('Updater_' + DBPrefix, 'File' + IntToStr(I)), I <> C - 1);
+        if GetTickCount - T > 100 then
+        begin
+          Application.ProcessMessages;
+          T := GetTickCount;
+        end;
+        AddFileToList(Settings.ReadString('Updater_' + DBPrefix, 'File' + IntToStr(I)));
       end;
 
     finally
@@ -645,6 +708,8 @@ begin
     end;
   end
   );
+  if C > 0 then
+    Execute;
 end;
 
 procedure TUpdaterDB.SaveWork;
@@ -664,8 +729,11 @@ begin
 end;
 
 initialization
+  FSync := TCriticalSection.Create;
 
 finalization
   DestroyUpdaterObject;
+  F(FSync);
+  IsFinalized := True;
 
 end.

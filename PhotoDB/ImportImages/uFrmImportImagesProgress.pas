@@ -59,7 +59,7 @@ type
     procedure UpdaterSetMaxValue(Value: Integer);
     procedure UpdaterSetAutoAnswer(Value: Integer);
     procedure UpdaterSetTimeText(Text: string);
-    procedure UpdaterSetPosition(Value: Integer);
+    procedure UpdaterSetPosition(Value, Max: Integer);
     procedure UpdaterSetFileName(FileName: string);
     procedure UpdaterAddFileSizes(Value: Int64);
     procedure UpdaterDirectoryAdded(Sender: TObject);
@@ -162,6 +162,7 @@ end;
 procedure TFrmImportImagesProgress.Unload;
 begin
   inherited;
+  UpdaterDB.Auto := True;
   InterfaceManager.UnRegisterObject(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 
@@ -268,9 +269,10 @@ begin
   PbMain.MaxValue := Value;
 end;
 
-procedure TFrmImportImagesProgress.UpdaterSetPosition(Value: integer);
+procedure TFrmImportImagesProgress.UpdaterSetPosition(Value, Max: integer);
 begin
   PbMain.Position := Value;
+  PbMain.MaxValue := Max;
 end;
 
 procedure TFrmImportImagesProgress.UpdaterSetText(Text: string);

@@ -15,7 +15,7 @@ type
     procedure UpdaterSetMaxValue(Value: Integer);
     procedure UpdaterSetAutoAnswer(Value: Integer);
     procedure UpdaterSetTimeText(Text: string);
-    procedure UpdaterSetPosition(Value: Integer);
+    procedure UpdaterSetPosition(Value, Max: Integer);
     procedure UpdaterSetFileName(FileName: string);
     procedure UpdaterAddFileSizes(Value: Int64);
     procedure UpdaterDirectoryAdded(Sender: TObject);

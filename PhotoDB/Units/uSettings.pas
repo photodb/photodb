@@ -3,7 +3,12 @@ unit uSettings;
 interface
 
 uses
-  Windows, Classes, SysUtils, uMemory, uConstants, UnitINI;
+  Windows,
+  Classes,
+  SysUtils,
+  uMemory,
+  uConstants,
+  UnitINI;
 
 type
   TExifSettings = class;

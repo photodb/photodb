@@ -152,7 +152,7 @@ type
     procedure UpdaterSetMaxValue(Value: Integer);
     procedure UpdaterSetAutoAnswer(Value: Integer);
     procedure UpdaterSetTimeText(Text: string);
-    procedure UpdaterSetPosition(Value: Integer);
+    procedure UpdaterSetPosition(Value, Max: Integer);
     procedure UpdaterSetFileName(FileName: string);
     procedure UpdaterAddFileSizes(Value: Int64);
     procedure UpdaterDirectoryAdded(Sender: TObject);
@@ -623,6 +623,8 @@ end;
 
 procedure TUpdateDBForm.UpdaterSetMaxValue(Value: integer);
 begin
+  ButtonBreak.Enabled := True;
+  ButtonRunStop.Enabled := True;
   ProgressBar.MaxValue := Value;
   Invalidate;
 end;
@@ -659,13 +661,14 @@ procedure TUpdateDBForm.UpdaterSetTimeText(Text: string);
 begin
 end;
 
-procedure TUpdateDBForm.UpdaterSetPosition(Value: integer);
+procedure TUpdateDBForm.UpdaterSetPosition(Value, Max: Integer);
 begin
   ProgressBar.Position := Value;
+  ProgressBar.MaxValue := Max;
   if FW7TaskBar <> nil then
   begin
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
-    FW7TaskBar.SetProgressValue(Handle, Value, ProgressBar.MaxValue);
+    FW7TaskBar.SetProgressValue(Handle, Value, Max);
   end;
 end;
 

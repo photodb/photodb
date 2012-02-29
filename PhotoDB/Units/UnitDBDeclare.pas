@@ -3,10 +3,26 @@ unit UnitDBDeclare;
 interface
 
 uses
-  DB, Windows, Classes, Menus, Graphics, JPEG, EasyListview,
-  GraphicCrypt, uMemory, uFileUtils, uDBBaseTypes, uDBGraphicTypes,
-  uDBForm, DateUtils, SysUtils, uRuntime, uDBAdapter,
-  uCDMappingTypes, uPathProviders;
+  DB,
+  Windows,
+  Classes,
+  Menus,
+  Graphics,
+  JPEG,
+  EasyListview,
+  GraphicCrypt,
+  uMemory,
+  uFileUtils,
+  uDBBaseTypes,
+  uDBGraphicTypes,
+  uDBForm,
+  DateUtils,
+  SysUtils,
+  uRuntime,
+  uDBAdapter,
+  Win32Crc,
+  uCDMappingTypes,
+  uPathProviders;
 
 const
   BufferSize = 100*3*4*4096;
@@ -237,8 +253,10 @@ type
   TDBPopupMenuInfoRecord = class(TPathItem)
   private
     FOriginalFileName: string;
+    FFileNameCRC32: Cardinal;
     function GetInnerImage: Boolean;
     function GetExistedFileName: string;
+    function GetFileNameCRC: Cardinal;
   protected
     function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
   public
@@ -282,6 +300,8 @@ type
     procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False); reintroduce;
     property InnerImage: Boolean read GetInnerImage;
     property ExistedFileName: string read GetExistedFileName;
+    //lower case
+    property FileNameCRC: Cardinal read GetFileNameCRC;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
@@ -391,6 +411,7 @@ end;
 
 constructor TDBPopupMenuInfoRecord.Create;
 begin
+  FFileNameCRC32 := 0;
   PassTag := 0;
   Tag := 0;
   ID := 0;
@@ -452,6 +473,12 @@ begin
     Result := FileName
   else
     Result := FOriginalFileName;
+end;
+
+function TDBPopupMenuInfoRecord.GetFileNameCRC: Cardinal;
+begin
+  if FFileNameCRC32 = 0 then
+    FFileNameCRC32 := StringCRC(AnsiLowerCase(FileName));
 end;
 
 function TDBPopupMenuInfoRecord.GetInnerImage: Boolean;
