@@ -23,10 +23,8 @@ namespace PhotoDBUserControls
             string incorrectFormat = GetProperty("invalidFormatText");
 
             rfvFirstName.ErrorMessage = String.Format(errorMessage, GetProperty("firstNameText"));
-            rfvLastName.ErrorMessage = String.Format(errorMessage, GetProperty("lastNameText"));
             rfvEmail.ErrorMessage = String.Format(errorMessage, GetProperty("emailText"));
             revEmail.ErrorMessage = String.Format(incorrectFormat, GetProperty("emailText"));
-            rfvOrganization.ErrorMessage = String.Format(errorMessage, GetProperty("organizationText"));
             rfvMessageText.ErrorMessage = String.Format(errorMessage, GetProperty("messageText"));
         }
 

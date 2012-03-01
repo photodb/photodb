@@ -381,13 +381,19 @@ begin
   if ExitAppl then
     Exit;
 
-  //save uptime
-  PermanentlySaveUpTime;
-
   DBTerminating := True;
   ExitAppl := True;
 
+  //save uptime
+  PermanentlySaveUpTime;
+
+  // to allow run new copy
+  Caption := DB_ID_CLOSING;
+
   EventLog(':TFormManager::ExitApplication()...');
+
+  // stop updating process, queue will be saved in registry
+  UpdaterObjectSaveWork;
 
   for I := 0 to FMainForms.Count - 1 do
     if not TForm(FMainForms[I]).Visible then
@@ -399,12 +405,6 @@ begin
           EventLog(':TFormManager::ExitApplication()/CloseForms throw exception: ' + E.message);
       end;
     end;
-
-  // to allow run new copy
-  Caption := DB_ID_CLOSING;
-
-  // stop updating process, queue will be saved in registry
-  DestroyUpdaterObject;
 
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
@@ -709,7 +709,6 @@ begin
 end;
 
 initialization
-
-FormManager := nil;
+  FormManager := nil;
 
 end.

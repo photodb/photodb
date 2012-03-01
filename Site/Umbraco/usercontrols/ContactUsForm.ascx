@@ -10,9 +10,6 @@
                         ID="rfvFirstName" ControlToValidate="txtFirstName" 
                         Display="None" SetFocusOnError="true" ValidationGroup="vgContactUs" />
             <asp:RequiredFieldValidator runat="server" 
-                        ID="rfvLastName" ControlToValidate="txtLastName" 
-                        Display="None" SetFocusOnError="true" ValidationGroup="vgContactUs" />
-            <asp:RequiredFieldValidator runat="server" 
                         ID="rfvEmail" ControlToValidate="txtEmail" 
                         Display="None" SetFocusOnError="true" ValidationGroup="vgContactUs" />
             <asp:RegularExpressionValidator runat="server"
@@ -20,9 +17,6 @@
                         ControlToValidate="txtEmail" Display="None"  
                         ValidationExpression="\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" 
                         SetFocusOnError="true" ValidationGroup="vgContactUs"/>
-            <asp:RequiredFieldValidator runat="server" 
-                        ID="rfvOrganization" ControlToValidate="txtOrganization" 
-                        Display="None" SetFocusOnError="true" ValidationGroup="vgContactUs" />
             <asp:RequiredFieldValidator runat="server" 
                         ID="rfvMessageText" ControlToValidate="txtMessageText" 
                         Display="None" SetFocusOnError="true" ValidationGroup="vgContactUs" />
@@ -34,9 +28,9 @@
                 <div class="requared_sign" >*</div>
                 <asp:TextBox runat="server" ID="txtFirstName" CssClass="standartInput" MaxLength="100" />
             </div>
-	        <div class="row required">
+	        <div class="row">
                 <div class="row_label" ><%= GetProperty("lastNameText")%>:</div>
-                <div class="requared_sign" >*</div>
+                <div class="requared_sign" >&nbsp;</div>
                 <asp:TextBox runat="server" ID="txtLastName" CssClass="standartInput" MaxLength="100" />
             </div>
             <div class="row required">
@@ -44,9 +38,9 @@
                 <div class="requared_sign" >*</div>
                 <asp:TextBox runat="server" ID="txtEmail" CssClass="standartInput" MaxLength="100" />
             </div>
-            <div class="row required">
+            <div class="row">
                 <div class="row_label"><%= GetProperty("organizationText")%>:</div>
-                <div class="requared_sign" >*</div>
+                <div class="requared_sign" >&nbsp;</div>
                 <asp:TextBox runat="server" ID="txtOrganization" CssClass="standartInput" MaxLength="100" />
             </div>
             <div class="row optional">

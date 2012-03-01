@@ -2173,7 +2173,19 @@ begin
   try
     PersonsItem := PathProviderManager.CreatePathItem(cPersonsPath);
     try
-      LoadProviderItem(PersonsItem, 10, ExplorerInfo.PictureSize);
+      try
+        LoadProviderItem(PersonsItem, 10, ExplorerInfo.PictureSize);
+      except
+        on e: Exception do
+          EventLog(e);
+      end;
+      SynchronizeEx(
+        procedure
+        begin
+          if FSender.ItemsCount = 0 then
+            FSender.ShowHelp(FSender.L('Learn more about creating and using persons'), SITE_ACTION_PERSONS);
+        end
+      );
     finally
       F(PersonsItem);
     end;

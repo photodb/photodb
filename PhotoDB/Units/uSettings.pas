@@ -40,6 +40,7 @@ type
     function ReadString(Key, Name: string; Default: string = ''): string;
     function ReadStringW(Key, Name: string; Default: string = ''): string;
     function ReadDateTime(Key, Name: string; Default: TdateTime): TDateTime;
+    function GetSection(Key: string): TBDRegistry;
     procedure DeleteValues(Key: string);
     property DataBase: string read GetDataBase;
     property Exif: TExifSettings read FExifSettings;
@@ -311,6 +312,11 @@ var
 begin
   Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
   Result := Reg.ReadString('DBDefaultName');
+end;
+
+function TSettings.GetSection(Key: string): TBDRegistry;
+begin
+  Result := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
 end;
 
 { TExifSettings }

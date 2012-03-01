@@ -351,6 +351,9 @@ type
     WlCrop: TWebLink;
     WlImportPictures: TWebLink;
     MiImportImages: TMenuItem;
+    PnInfo: TPanel;
+    WlLearnMoreLink: TWebLink;
+    SbCloseHelp: TSpeedButton;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -548,6 +551,9 @@ type
     procedure MiEditAddressClick(Sender: TObject);
     procedure WlCropClick(Sender: TObject);
     procedure WlImportPicturesClick(Sender: TObject);
+    procedure WlLearnMoreLinkClick(Sender: TObject);
+    procedure PnInfoResize(Sender: TObject);
+    procedure SbCloseHelpClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -668,6 +674,7 @@ type
     function GetSecondStepHelp: string;
     function GetViewInfo: TExplorerViewInfo;
     procedure SetView(const Value: Integer);
+    function GetItemsCount: Integer;
     property SecondStepHelp: string read GetSecondStepHelp;
     function GetPathDescription(Path: string; FileType: Integer): string;
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
@@ -720,7 +727,7 @@ type
     procedure SetStatusText(Text: String);
     procedure SetNewFileNameGUID(FileGUID: TGUID);
     procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
-    Procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
+    procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     procedure UpdateMenuItems(Menu: TPopupMenu; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
@@ -732,6 +739,7 @@ type
     function GetCurrentPath: String; override;
     procedure SetPath(NewPath: String); override;
     procedure Select(Item: TEasyItem; GUID: TGUID);
+    procedure ShowHelp(Text, Link: string);
     function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: Boolean; Big: Boolean = False): Boolean;
     function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include: Boolean) : Boolean;
     function AddItemW(Caption : string; FileGUID: TGUID) : TEasyItem;
@@ -748,6 +756,7 @@ type
     property MyComputer: string read GetMyComputer;
     property ViewInfo: TExplorerViewInfo read GetViewInfo;
     property View: Integer read GetView write SetView;
+    property ItemsCount: Integer read GetItemsCount;
   end;
 
 implementation
@@ -1097,7 +1106,8 @@ begin
 
   for I := 0 to ComponentCount - 1 do
     if Components[I] is TWebLink then
-      (Components[I] as TWebLink).GetBackGround := BackGround;
+      if Components[I] <> WlLearnMoreLink then
+        (Components[I] as TWebLink).GetBackGround := BackGround;
 
   for I := 0 to Length(UserLinks) - 1 do
     UserLinks[I].GetBackGround := BackGround;
@@ -1599,7 +1609,10 @@ begin
       end;
     end;
   end;
-  if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) then
+  if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE)
+    or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER)
+    or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)
+    or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
     if SelCount = 0 then
       UpdaterDB.AddDirectory(GetCurrentPath);
 end;
@@ -2004,6 +2017,11 @@ end;
 function TExplorerForm.GetFormID: string;
 begin
   Result := 'Explorer';
+end;
+
+function TExplorerForm.GetItemsCount: Integer;
+begin
+  Result := ElvMain.Items.Count;
 end;
 
 function TExplorerForm.GetListView: TEasyListview;
@@ -4776,6 +4794,11 @@ begin
   Searchincollection1.Default := FSearchMode = EXPLORER_SEARCH_DATABASE;
 end;
 
+procedure TExplorerForm.PnInfoResize(Sender: TObject);
+begin
+  WlLearnMoreLink.Left := PnInfo.Width div 2 - WlLearnMoreLink.Width div 2;
+end;
+
 procedure TExplorerForm.SbSearchModeClick(Sender: TObject);
 var
   P: TPoint;
@@ -4812,6 +4835,15 @@ begin
     WedFilter.SetFocus;
   if PerformFilter then
     WedFilter.OnChange(Self);
+end;
+
+procedure TExplorerForm.ShowHelp(Text, Link: string);
+begin
+  WlLearnMoreLink.Text := Text;
+  WlLearnMoreLink.HelpKeyword := Link;
+
+  PnInfoResize(Self);
+  PnInfo.Show;
 end;
 
 procedure TExplorerForm.ShowHideFilter(Sender: TObject);
@@ -5255,6 +5287,7 @@ var
   Info: TExplorerViewInfo;
   P: TSearchItem;
 begin
+  PnInfo.Hide;
   FSelectedItem := nil;
   EventLog('SetNewPathW "' + WPath.Path + '"');
   TW.I.Start('SetNewPathW');
@@ -7091,6 +7124,11 @@ begin
   end;
 end;
 
+procedure TExplorerForm.SbCloseHelpClick(Sender: TObject);
+begin
+  PnInfo.Hide;
+end;
+
 procedure TExplorerForm.SbDoSearchClick(Sender: TObject);
 var
   S, Path: string;
@@ -7173,6 +7211,11 @@ begin
     GetPhotosFromFolder(Path);
   end else
     GetPhotosFromFolder(GetCurrentPath);
+end;
+
+procedure TExplorerForm.WlLearnMoreLinkClick(Sender: TObject);
+begin
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + WlLearnMoreLink.HelpKeyword), nil, nil, SW_NORMAL);
 end;
 
 procedure TExplorerForm.WMDeviceChange(var Msg: TMessage);

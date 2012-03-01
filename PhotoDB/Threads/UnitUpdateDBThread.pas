@@ -851,14 +851,12 @@ begin
 end;
 
 procedure DirectorySizeThread.Execute;
-var
-  Size: Int64;
 begin
   inherited;
   FreeOnTerminate := True;
   FItems := TDBPopupMenuInfo.Create;
   try
-    Size := GetDirectory(FDirectory, FItems, FTerminating);
+    GetDirectory(FDirectory, FItems, FTerminating);
     if not FTerminating^ then
       SynchronizeEx(DoOnDone);
   finally

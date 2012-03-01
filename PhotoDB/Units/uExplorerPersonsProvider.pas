@@ -121,7 +121,7 @@ begin
             Result := PersonManager.DeletePerson(Item.PersonName);
             if Result then
             begin
-              EventValues.ID := Item.PersonID;
+              EventValues.ID := P.ID;
               DBKernel.DoIDEvent(Form, Item.PersonID, [EventID_PersonRemoved], EventValues);
             end;
           end;

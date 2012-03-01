@@ -479,6 +479,7 @@ function TDBPopupMenuInfoRecord.GetFileNameCRC: Cardinal;
 begin
   if FFileNameCRC32 = 0 then
     FFileNameCRC32 := StringCRC(AnsiLowerCase(FileName));
+  Result := FFileNameCRC32;
 end;
 
 function TDBPopupMenuInfoRecord.GetInnerImage: Boolean;

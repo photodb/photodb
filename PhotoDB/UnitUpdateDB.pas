@@ -51,6 +51,7 @@ uses
   SaveWindowPos,
   uUpdateDBTypes,
   uInterfaceManager,
+  uRuntime,
   DmMemo;
 
 type
@@ -319,6 +320,8 @@ var
   end;
 
 begin
+  if DBTerminating then
+    Exit;
 
   if (EventID_CancelAddingImage in Params) then
   begin

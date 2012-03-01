@@ -1459,17 +1459,127 @@ object ExplorerForm: TExplorerForm
         OnClick = WedFilterChange
       end
     end
+    object PnInfo: TPanel
+      Left = 0
+      Top = 0
+      Width = 726
+      Height = 33
+      Align = alTop
+      BevelEdges = [beBottom]
+      Color = clYellow
+      ParentBackground = False
+      TabOrder = 1
+      Visible = False
+      OnResize = PnInfoResize
+      DesignSize = (
+        726
+        33)
+      object SbCloseHelp: TSpeedButton
+        Left = 696
+        Top = 5
+        Width = 23
+        Height = 22
+        Anchors = [akTop, akRight]
+        Flat = True
+        Glyph.Data = {
+          36030000424D3603000000000000360000002800000010000000100000000100
+          1800000000000003000000000000000000000000000000000000FFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F3DEDFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFF1E1CE2FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          4744EF4E4BF23F3DEDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2321E4312F
+          E81E1CE2FFFFFFFFFFFFFFFFFF4F4CF45754F66361F85754F63F3DEDFFFFFFFF
+          FFFFFFFFFFFFFFFF2B29E64240EE4B49F6312FE81E1CE2FFFFFFFFFFFF5754F6
+          5B59F66361F8706DFD5754F64240EEFFFFFFFFFFFF3533EB4744EF6666FF4B49
+          F62F2CE72321E4FFFFFFFFFFFFFFFFFF5754F65B59F66361F87371FF5B59F642
+          40EE3C39EC4F4CF46666FF4F4CF43533EB2B29E6FFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFF5B59F65B59F66361F87371FF7371FF706DFD6D6BFF5654F73F3DED312F
+          E8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5B59F65B59F67875FF58
+          55FF5855FF7371FF4744EF3C39ECFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFF5B59F67D7BFF5D5AFF5855FF7371FF4744EFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8706DFD807DFF7D
+          7BFF7D7BFF7875FF5B59F64744EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFF6D6BFA7875FF8581FF7371FF6361F8605DF86D6BFA7875FF605DF84744
+          EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7371FF7D7BFF8986FF7D7BFF6D6BFA63
+          61F8605DF8605DF86D6BFA7D7BFF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF
+          7875FF807DFF807DFF7371FF6D6BFAFFFFFFFFFFFF605DF8605DF86D6BFA7D7B
+          FF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF7875FF7875FF706DFDFFFFFFFF
+          FFFFFFFFFFFFFFFF605DF86361F86D6BFA4F4CF44E4BF2FFFFFFFFFFFFFFFFFF
+          FFFFFF7875FF7875FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF605DF85B59
+          F65754F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8FFFFFFFFFFFFFFFFFF}
+        OnClick = SbCloseHelpClick
+      end
+      object WlLearnMoreLink: TWebLink
+        Left = 240
+        Top = 8
+        Width = 189
+        Height = 16
+        Cursor = crHandPoint
+        Text = 'Learn more about creating persons'
+        OnClick = WlLearnMoreLinkClick
+        ImageIndex = 0
+        IconWidth = 16
+        IconHeight = 16
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
+        Icon.Data = {
+          0000010001001010000001002000680400001600000028000000100000002000
+          0000010020000000000040040000000000000000000000000000000000000000
+          00000000000000000000000000000000000000000000D3690044D3690044D369
+          0044D36900440000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000D3690044D76B00E6D97F20FFD98E37FFD88E
+          37FFD87F20FFD76B00E6D3690044000000000000000000000000000000000000
+          00000000000000000000D66A00CEE07C14FFE9B463FFF6C46DFFF6C56EFFF6C5
+          6EFFF2C877FFE7B463FFDD801DFFD66A00CE0000000000000000000000000000
+          000000000000D66A00CEE48924FFF2BA63FFF3BD66FFFCEFD9FFFFFFFFFFFCEF
+          D9FFF3BE67FFF3BD66FFEEBF6DFFE48924FFD66A00CE00000000000000000000
+          0000D3690044E07D16FFEFB15AFFF0B45DFFF0B65FFFFBEDD7FFFFFFFFFFFBED
+          D7FFF1B861FFF0B65FFFF0B45DFFEFB15AFFDF7910FFD3690044000000000000
+          0000D76B00E6E9A046FFECAB53FFEDAD56FFEEAF58FFF4CE98FFF7D8ACFFF5CF
+          98FFEEB15AFFEEAF58FFEDAD56FFECAB53FFE7993CFFD76B00E600000000D369
+          0044DE760DFFE8A048FFE9A34CFFEAA64EFFEBA851FFF9E4C9FFFFFFFFFFFBEF
+          DFFFECAA52FFEBA851FFEAA64FFFEAA44CFFE8A049FFDD7309FFD3690044D369
+          0044DF7C17FFE69941FFE79C44FFE89F47FFE8A149FFF0BF83FFFFFFFFFFFFFF
+          FFFFF7DCBBFFE9A754FFE89F47FFE79C44FFE69941FFDE7710FFD3690044D369
+          0044DF7E1BFFE39139FFE4943CFFE5963EFFE59840FFECB371FFECB371FFFDF9
+          F3FFFFFFFFFFF8E5CFFFE5973EFFE4943CFFE39139FFDD760EFFD3690044D369
+          0044DD730BFFDF8930FFE18C35FFEFC08FFFFFFFFFFFFFFFFFFFE9A863FFF3D0
+          ABFFFFFFFFFFFFFFFFFFE39441FFE39340FFE08B35FFDD730CFFD36900440000
+          0000D76C04E6DD822AFFE18F3EFFE4994EFFFDF8F3FFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFF7DFC7FFE4994EFFE3984EFFDF8835FFD76B00E6000000000000
+          0000D3690044DC7615FFE2954DFFE29751FFE7A769FFF3D3B5FFF8E6D5FFF8E7
+          D6FFF0C9A3FFE59F5CFFE49E5DFFE49E5DFFDC7717FFD3690070000000000000
+          000000000000D66B03CEDE8330FFE5A063FFE5A264FFE6A366FFE6A468FFE6A5
+          6AFFE6A66BFFE6A76DFFE7A86EFFE19043FFD66A00CE00000000000000000000
+          00000000000000000000D66B03CEDF832BFFE6A76DFFE9AF7BFFE9B07CFFE9B1
+          7EFFEAB280FFE7AB74FFDF852FFFD66A00CE0000000000000000000000000000
+          0000000000000000000000000000D3690044D66D05E6DD791AFFDF822AFFDF82
+          2AFFDD7A1BFFD66D05E6D3690044000000000000000000000000000000000000
+          00000000000000000000000000000000000000000000D3690044D3690044D369
+          0044D3690044000000000000000000000000000000000000000000000000FC3F
+          0000F00F0000E0070000C0030000800100008001000000000000000000000000
+          0000000000008001000080010000C0030000E0070000F00F0000FC3F0000}
+        UseSpecIconSize = True
+        HightliteImage = False
+        StretchImage = True
+        CanClick = True
+      end
+    end
   end
   object SizeImageList: TImageList
     Height = 102
     Width = 102
     Left = 200
-    Top = 208
+    Top = 240
   end
   object PmItemPopup: TPopupMenu
     OnPopup = PmItemPopupPopup
     Left = 360
-    Top = 56
+    Top = 96
     object Open1: TMenuItem
       Caption = 'Open'
       OnClick = Open1Click
@@ -1664,7 +1774,7 @@ object ExplorerForm: TExplorerForm
   object PmListPopup: TPopupMenu
     OnPopup = PmListPopupPopup
     Left = 360
-    Top = 472
+    Top = 512
     object OpenInNewWindow1: TMenuItem
       Caption = 'Open In New Window'
       OnClick = OpenInNewWindow1Click
@@ -1780,17 +1890,17 @@ object ExplorerForm: TExplorerForm
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
     Left = 200
-    Top = 64
+    Top = 96
   end
   object AeMain: TApplicationEvents
     OnMessage = AeMainMessage
-    Left = 745
-    Top = 72
+    Left = 769
+    Top = 112
   end
   object PopupMenuTreeView: TPopupMenu
     OnPopup = PopupMenuTreeViewPopup
     Left = 361
-    Top = 152
+    Top = 192
     object OpeninExplorer1: TMenuItem
       Caption = 'Open in Explorer'
       OnClick = OpeninExplorer1Click
@@ -1809,19 +1919,19 @@ object ExplorerForm: TExplorerForm
     Height = 32
     Width = 32
     Left = 200
-    Top = 404
+    Top = 436
   end
   object PopupMenuBack: TPopupMenu
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuBackPopup
     Left = 360
-    Top = 428
+    Top = 468
   end
   object PopupMenuForward: TPopupMenu
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuForwardPopup
     Left = 360
-    Top = 380
+    Top = 420
   end
   object DragTimer: TTimer
     Interval = 100
@@ -1834,7 +1944,7 @@ object ExplorerForm: TExplorerForm
     Height = 32
     Width = 32
     Left = 201
-    Top = 164
+    Top = 196
   end
   object DropFileTarget1: TDropFileTarget
     DragTypes = [dtCopy, dtMove]
@@ -1844,15 +1954,15 @@ object ExplorerForm: TExplorerForm
     MultiTarget = True
     AutoRegister = False
     OptimizedMove = True
-    Left = 648
-    Top = 168
+    Left = 656
+    Top = 200
   end
   object DropFileSourceMain: TDropFileSource
     DragTypes = [dtCopy, dtMove, dtLink]
     Images = DragImageList
     ShowImage = True
-    Left = 648
-    Top = 120
+    Left = 656
+    Top = 152
   end
   object DragImageList: TImageList
     ColorDepth = cd32Bit
@@ -1860,13 +1970,13 @@ object ExplorerForm: TExplorerForm
     Height = 102
     Width = 102
     Left = 200
-    Top = 256
+    Top = 288
   end
   object DropFileTarget2: TDropFileTarget
     DragTypes = []
     OptimizedMove = True
-    Left = 648
-    Top = 72
+    Left = 656
+    Top = 104
   end
   object HelpTimer: TTimer
     Interval = 2000
@@ -1876,7 +1986,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmLinkOptions: TPopupMenu
     Left = 360
-    Top = 104
+    Top = 144
     object Open2: TMenuItem
       Caption = 'Open'
       OnClick = Open2Click
@@ -1888,7 +1998,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmDragMode: TPopupMenu
     Left = 360
-    Top = 200
+    Top = 240
     object Copy4: TMenuItem
       Caption = 'Copy'
       OnClick = Copy4Click
@@ -1912,8 +2022,8 @@ object ExplorerForm: TExplorerForm
     Top = 300
   end
   object ScriptMainMenu: TMainMenu
-    Left = 529
-    Top = 56
+    Left = 537
+    Top = 104
   end
   object CloseTimer: TTimer
     Enabled = False
@@ -1924,7 +2034,7 @@ object ExplorerForm: TExplorerForm
   end
   object RatingPopupMenu: TPopupMenu
     Left = 361
-    Top = 336
+    Top = 376
     object N00: TMenuItem
       Caption = '0'
       OnClick = N05Click
@@ -1957,7 +2067,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmListViewType: TPopupMenu
     Left = 360
-    Top = 288
+    Top = 328
     object Thumbnails1: TMenuItem
       Caption = 'Thumbnails'
       Checked = True
@@ -2002,12 +2112,12 @@ object ExplorerForm: TExplorerForm
     Height = 32
     Width = 32
     Left = 200
-    Top = 304
+    Top = 336
   end
   object SmallIconsImageList: TImageList
     ColorDepth = cd32Bit
     Left = 200
-    Top = 352
+    Top = 384
   end
   object BigImagesTimer: TTimer
     Enabled = False
@@ -2019,13 +2129,13 @@ object ExplorerForm: TExplorerForm
   object PopupMenuZoomDropDown: TPopupMenu
     OnPopup = PopupMenuZoomDropDownPopup
     Left = 362
-    Top = 242
+    Top = 282
   end
   object SearchImageList: TImageList
     Height = 18
     Width = 18
     Left = 201
-    Top = 112
+    Top = 144
   end
   object PmSearchMode: TPopupMenu
     Images = ImSearchMode
@@ -2056,11 +2166,11 @@ object ExplorerForm: TExplorerForm
   object ImPathDropDownMenu: TImageList
     ColorDepth = cd32Bit
     Left = 200
-    Top = 456
+    Top = 488
   end
   object PmPathMenu: TPopupMenu
     Left = 360
-    Top = 520
+    Top = 560
     object MiCopyAddress: TMenuItem
       Caption = 'Copy Address'
       OnClick = MiCopyAddressClick

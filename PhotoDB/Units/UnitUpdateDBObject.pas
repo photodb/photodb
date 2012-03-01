@@ -30,6 +30,7 @@ uses
   uUpdateDBTypes,
   uInterfaceManager,
   StrUtils,
+  UnitINI,
   win32crc;
 
 type
@@ -50,7 +51,8 @@ type
     FFilesInfo: TDBPopupMenuInfo;
     FUseFileNameScaning: Boolean;
     FSync: TCriticalSection;
-    procedure SetAuto(const Value: boolean);
+    FIsSaved: Boolean;
+    procedure SetAuto(const Value: Boolean);
     procedure SetAutoAnswer(Value: Integer);
     procedure SetUseFileNameScaning(const Value: boolean);
     procedure ProcessFile(var FileName : string);
@@ -85,7 +87,7 @@ type
   end;
 
 function UpdaterDB: TUpdaterDB;
-procedure DestroyUpdaterObject;
+procedure UpdaterObjectSaveWork;
 
 implementation
 
@@ -100,7 +102,6 @@ uses
 var
   FUpdaterDB: TUpdaterDB = nil;
   FSync: TCriticalSection;
-  IsFinalized: Boolean = False;
 
 function UpdaterDB: TUpdaterDB;
 begin
@@ -118,9 +119,10 @@ begin
   end;
 end;
 
-procedure DestroyUpdaterObject;
+procedure UpdaterObjectSaveWork;
 begin
-  F(FUpdaterDB);
+  if FUpdaterDB <> nil then
+    FUpdaterDB.SaveWork;
 end;
 
 { TUpdaterDB }
@@ -202,6 +204,10 @@ var
   FileName: string;
   Info: TDBPopupMenuInfoRecord;
 begin
+  Result := False;
+  if DBTerminating then
+    Exit;
+
   FileName := FileInfo.FileName;
   ProcessFile(FileName);
   FileInfo.FileName := FileName;
@@ -256,6 +262,7 @@ end;
 
 constructor TUpdaterDB.Create;
 begin
+  FIsSaved := False;
   FSync := TCriticalSection.Create;
   FFilesInfo := TDBPopupMenuInfo.Create;
   ScriptProcessString := Include('Scripts\Adding_AddFile.dbini');
@@ -280,7 +287,6 @@ end;
 
 destructor TUpdaterDB.Destroy;
 begin
-  SaveWork;
   F(FProcessScript);
   F(FFilesInfo);
   F(FSync);
@@ -297,25 +303,30 @@ var
   I: Integer;
 begin
   FTerminate := True;
-  for I := 0 to FFilesInfo.Count - 1 do
+
+  if not DBTerminating then
   begin
-    EventInfo.Name := AnsiLowerCase(FFilesInfo[I].FileName);
-    DBKernel.DoIDEvent(Form, 0, [EventID_CancelAddingImage], EventInfo);
+    for I := 0 to FFilesInfo.Count - 1 do
+    begin
+      EventInfo.Name := AnsiLowerCase(FFilesInfo[I].FileName);
+      DBKernel.DoIDEvent(Form, 0, [EventID_CancelAddingImage], EventInfo);
+    end;
   end;
   FFilesInfo.Clear;
   FPosition := 0;
   FActive := False;
   BeginTime := -1;
 
-  TThread.Synchronize(nil,
-    procedure
-    var
-      I: IDBUpdaterCallBack;
-    begin
-      for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
-        I.UpdaterOnDone(Self);
-    end
-  );
+  if not DBTerminating then
+    TThread.Synchronize(nil,
+      procedure
+      var
+        I: IDBUpdaterCallBack;
+      begin
+        for I in InterfaceManager.QueryInterfaces<IDBUpdaterCallBack>(IID_DBUpdaterCallBack) do
+          I.UpdaterOnDone(Self);
+      end
+    );
 end;
 
 procedure TUpdaterDB.DoUnPause;
@@ -405,6 +416,9 @@ var
   I: Integer;
 begin
   try
+    if FIsSaved then
+      Exit;
+
     if BeginTime < 0 then
       BeginTime := Now;
     if FTerminate then
@@ -631,7 +645,7 @@ procedure TUpdaterDB.LoadWork;
 var
   C: Integer;
 begin
-  if IsFinalized then
+  if FIsSaved then
     Exit;
 
   TThread.Synchronize(nil,
@@ -648,6 +662,7 @@ begin
     DBPrefix: string;
     ProgressWindow: TProgressActionForm;
     T: Cardinal;
+    Reg: TBDRegistry;
 
     procedure AddFileToList(FileName: string);
     var
@@ -686,6 +701,7 @@ begin
         ProgressWindow.Show;
 
       T := GetTickCount;
+      Reg := Settings.GetSection('Updater_' + DBPrefix);
       for I := 0 to C - 1 do
       begin
         if ProgressWindow.Closed then
@@ -700,7 +716,7 @@ begin
           Application.ProcessMessages;
           T := GetTickCount;
         end;
-        AddFileToList(Settings.ReadString('Updater_' + DBPrefix, 'File' + IntToStr(I)));
+        AddFileToList(Reg.ReadString('File' + IntToStr(I)));
       end;
 
     finally
@@ -716,11 +732,19 @@ procedure TUpdaterDB.SaveWork;
 var
   I: Integer;
   DBPrefix: string;
+  Reg: TBDRegistry;
 begin
+  if FIsSaved then
+    Exit;
+
+  FIsSaved := True;
+
   DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
   Settings.WriteInteger('Updater_' + DBPrefix, 'Counter', FFilesInfo.Count);
+  Reg := Settings.GetSection('Updater_' + DBPrefix);
+
   for I := 0 to FFilesInfo.Count - 1 do
-    Settings.WriteString('Updater_' + DBPrefix, 'File' + IntToStr(I), FFilesInfo[I].FileName);
+    Reg.WriteString('File' + IntToStr(I), FFilesInfo[I].FileName);
 end;
 
 function TUpdaterDB.GetCount: Integer;
@@ -732,8 +756,7 @@ initialization
   FSync := TCriticalSection.Create;
 
 finalization
-  DestroyUpdaterObject;
+  F(FUpdaterDB);
   F(FSync);
-  IsFinalized := True;
 
 end.

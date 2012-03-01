@@ -3,9 +3,29 @@ unit uPeopleSupport;
 interface
 
 uses
-  SysUtils, Windows, Classes, DB, Graphics, jpeg, uMemory, SyncObjs, uDBClasses,
-  uGUIDUtils, uFaceDetection, uSettings, Math, uFastLoad, UnitDBKernel, uDBForm,
-  uPersonDB, UnitDBDeclare, UnitGroupsWork, uSysUtils, uRuntime, uConstants,
+  SysUtils,
+  Windows,
+  Classes,
+  DB,
+  Graphics,
+  jpeg,
+  uMemory,
+  SyncObjs,
+  uDBClasses,
+  uGUIDUtils,
+  uFaceDetection,
+  uSettings,
+  Math,
+  uFastLoad,
+  UnitDBKernel,
+  uDBForm,
+  uPersonDB,
+  UnitDBDeclare,
+  UnitGroupsWork,
+  uSysUtils,
+  uRuntime,
+  uConstants,
+  uLogger,
   uBitmapUtils;
 
 const
@@ -684,14 +704,20 @@ procedure TPersonManager.LoadPersonList(Persons: TPersonCollection);
 var
   SC: TSelectCommand;
 begin
-  SC := TSelectCommand.Create(ObjectTableName);
   try
-    SC.AddParameter(TAllParameter.Create);
-    SC.Order.Add(TOrderParameter.Create('ObjectName', False));
-    SC.Execute;
-    Persons.ReadFromDS(SC.DS);
-  finally
-    F(SC);
+    SC := TSelectCommand.Create(ObjectTableName);
+    try
+      SC.AddParameter(TAllParameter.Create);
+      SC.Order.Add(TOrderParameter.Create('ObjectName', False));
+      SC.Execute;
+      Persons.ReadFromDS(SC.DS);
+    finally
+      F(SC);
+    end;
+  except
+    //if database doesn't have any tables could be exception - ignore it
+    on e: Exception do
+      EventLog(e);
   end;
 end;
 

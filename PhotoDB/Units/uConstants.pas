@@ -51,6 +51,8 @@ const
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2012';
   ProgramInstallSize = 12600; //in Kb
 
+  SITE_ACTION_PERSONS = 'persons';
+
   SiteLocation = 'http://photodb.illusdolphin.net';
   DonateURL = SiteLocation + '/{LNG}/donate';
   UnInstallNotifyURL = SiteLocation + '/{LNG}/uninstall';
@@ -58,6 +60,7 @@ const
   HomePageURL = SiteLocation + '/{LNG}';
   BuyPageURL = SiteLocation + '/{LNG}/buy';
   FreeActivationURL = SiteLocation + '/FreeActivationHandler';
+  ActionHelpPageURL = SiteLocation + '/{LNG}/?action=';
 
   DefaultImportPattern = 'YYYY\MMM\YY.MM.DD = DDD, D mmmm, YYYY (LABEL)';
   DefaultImportPatternList =

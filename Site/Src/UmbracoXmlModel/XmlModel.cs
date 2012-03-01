@@ -7,6 +7,8 @@ namespace UmbracoXmlModel
         [UmbracoXmlMappingMethodAttribute()]
         private void LoadTypeList()
         {
+            _mapping.Add("Action", typeof(Action));
+            _mapping.Add("ActionsHolder", typeof(ActionsHolder));
             _mapping.Add("BuyLanding", typeof(BuyLanding));
             _mapping.Add("Donate", typeof(Donate));
             _mapping.Add("DonateDetail", typeof(DonateDetail));
@@ -21,6 +23,7 @@ namespace UmbracoXmlModel
             _mapping.Add("GoogleSiteMap", typeof(GoogleSiteMap));
             _mapping.Add("HomePage", typeof(HomePage));
             _mapping.Add("HomePageImage", typeof(HomePageImage));
+            _mapping.Add("InternalLink", typeof(InternalLink));
             _mapping.Add("LanguageHolder", typeof(LanguageHolder));
             _mapping.Add("Master", typeof(Master));
             _mapping.Add("NewsItem", typeof(NewsItem));
@@ -50,6 +53,22 @@ namespace UmbracoXmlModel
             _mapping.Add("ReleaseFolder", typeof(MediaReleaseFolder));
             _mapping.Add("ReleaseHolder", typeof(MediaReleaseHolder));
         }
+    }
+    [UmbracoXmlAttribute("Action")]
+    public class Action : Settings
+    {
+        [UmbracoXmlAttribute("handler")]
+        public string Handler { get; set; }
+        [UmbracoXmlAttribute("node")]
+        public Int32? Node { get; set; }
+        public Action(string xPath) : base(xPath) { }
+        public Action(int id) : base(id) { }
+    }
+    [UmbracoXmlAttribute("ActionsHolder")]
+    public class ActionsHolder : Settings
+    {
+        public ActionsHolder(string xPath) : base(xPath) { }
+        public ActionsHolder(int id) : base(id) { }
     }
     [UmbracoXmlAttribute("BuyLanding")]
     public class BuyLanding : Master
@@ -233,6 +252,16 @@ namespace UmbracoXmlModel
         public HomePageImage(string xPath) : base(xPath) { }
         public HomePageImage(int id) : base(id) { }
     }
+    [UmbracoXmlAttribute("InternalLink")]
+    public class InternalLink : UmbracoXmlEntry
+    {
+        [UmbracoXmlAttribute("title")]
+        public string Title { get; set; }
+        [UmbracoXmlAttribute("node")]
+        public Int32? Node { get; set; }
+        public InternalLink(string xPath) : base(xPath) { }
+        public InternalLink(int id) : base(id) { }
+    }
     [UmbracoXmlAttribute("LanguageHolder")]
     public class LanguageHolder : UmbracoXmlEntry
     {
@@ -252,6 +281,8 @@ namespace UmbracoXmlModel
         public string METAKeywords { get; set; }
         [UmbracoXmlAttribute("mETADescription")]
         public string METADescription { get; set; }
+        [UmbracoXmlAttribute("mETATitle")]
+        public string METATitle { get; set; }
         public Master(string xPath) : base(xPath) { }
         public Master(int id) : base(id) { }
     }
@@ -390,6 +421,8 @@ namespace UmbracoXmlModel
         public string MessageText { get; set; }
         [UmbracoXmlAttribute("thankYouMessage")]
         public string ThankYouMessage { get; set; }
+        [UmbracoXmlAttribute("content")]
+        public string Content { get; set; }
         public UnInstallReason(string xPath) : base(xPath) { }
         public UnInstallReason(int id) : base(id) { }
     }

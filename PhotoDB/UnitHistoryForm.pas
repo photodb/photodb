@@ -53,7 +53,7 @@ type
     procedure ReAddAll1Click(Sender: TObject);
   private
     { Private declarations }
-    Icons : array of TIcon;
+    Icons: array of TIcon;
     ItemsData: TList;
     Infos: TStrings;
     FileList: TStrings;
@@ -260,7 +260,7 @@ end;
 
 procedure TFormHistory.LoadToolBarIcons;
 var
-  Index : Integer;
+  Index: Integer;
 
   procedure AddIcon(Name : String);
   begin
@@ -282,7 +282,11 @@ begin
 end;
 
 procedure TFormHistory.FormDestroy(Sender: TObject);
+var
+  I: Integer;
 begin
+  for I := 0 to Length(Icons) - 1 do
+    Icons[I].Free;
   F(ItemsData);
   F(Infos);
   F(FileList);
