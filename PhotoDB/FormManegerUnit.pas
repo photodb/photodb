@@ -395,7 +395,7 @@ begin
   // stop updating process, queue will be saved in registry
   UpdaterObjectSaveWork;
 
-  for I := 0 to FMainForms.Count - 1 do
+  for I := FMainForms.Count - 1 downto 0 do
     if not TForm(FMainForms[I]).Visible then
     begin
       try
@@ -427,7 +427,16 @@ begin
 end;
 
 procedure TFormManager.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  I: Integer;
 begin
+  for I := FMainForms.Count - 1 downto 0 do
+  try
+    TForm(FMainForms[I]).Close;
+  except
+    on E: Exception do
+      EventLog(':TFormManager::ExitApplication()/CloseForms throw exception: ' + E.message);
+  end;
   ExitApplication;
 end;
 

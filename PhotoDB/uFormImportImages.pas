@@ -1498,7 +1498,7 @@ begin
       if SI is TSelectDateItem then
         AddToList(TSelectDateItem(SI), SI.Date, SI.ItemLabel)
       else
-        for J := 0 to TSelectDateItems(SI).ItemsCount - 1 do
+        for J := 0 to TSelectDateItems(SI).Items.Count - 1 do
           AddToList(TSelectDateItems(SI).Items[J], SI.Date, SI.ItemLabel);
     end;
   end;
