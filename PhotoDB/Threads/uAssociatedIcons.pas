@@ -21,33 +21,33 @@ uses
 
 type
   TAssociatedIcons = record
-    Icon : TIcon;
-    Ext : String;
-    SelfIcon : Boolean;
-    Size : integer;
+    Icon: TIcon;
+    Ext: String;
+    SelfIcon: Boolean;
+    Size: Integer;
   end;
 
   TAIcons = class(TObject)
   private
-    FAssociatedIcons : array of TAssociatedIcons;
+    FAssociatedIcons: array of TAssociatedIcons;
     FIDesktopFolder: IShellFolder;
     UnLoadingListEXT : TStringList;
-    FSync : TCriticalSection;
+    FSync: TCriticalSection;
     procedure Initialize;
   public
-    class function Instance : TAIcons;
+    class function Instance: TAIcons;
     constructor Create;
     destructor Destroy; override;
-    function IsExt(Ext : string; Size : integer): boolean;
-    function AddIconByExt(FileName, EXT : string; Size : integer) : integer;
-    function GetIconByExt(FileName : String; IsFolder : boolean; Size : integer; Default : boolean) : TIcon;
-    function GetShellImage(Path : String; Size : integer): TIcon;
-    function IsVarIcon(FileName : String; Size : integer): boolean;
+    function IsExt(Ext: string; Size: Integer): Boolean;
+    function AddIconByExt(FileName, Ext: string; Size: Integer): Integer;
+    function GetIconByExt(FileName: String; IsFolder: Boolean; Size: Integer; Default: Boolean): TIcon;
+    function GetShellImage(Path: String; Size: Integer): TIcon;
+    function IsVarIcon(FileName: String; Size: Integer): Boolean;
     procedure Clear;
-    function SetPath(const Value: string) : PItemIDList;
+    function SetPath(const Value: string): PItemIDList;
   end;
 
-function VarIco(Ext : string) : boolean;
+function VarIco(Ext: string): Boolean;
 function IsVideoFile(FileName: string): Boolean;
 
 implementation
@@ -55,7 +55,7 @@ implementation
 uses ExplorerTypes;
 
 var
-  AIcons : TAIcons = nil;
+  AIcons: TAIcons = nil;
 
 function IsVideoFile(FileName: string): Boolean;
 begin
@@ -64,11 +64,11 @@ end;
 
 { TAIcons }
 
-function VarIco(Ext : string) : boolean;
+function VarIco(Ext: string): Boolean;
 var
-  reg : TRegistry;
-  s : string;
-  i : integer;
+  Reg: TRegistry;
+  S: string;
+  I: integer;
 begin
   Result := False;
   if  (Ext = '') or (Ext = '.scr') or (Ext = '.exe') then
@@ -77,7 +77,7 @@ begin
     Exit;
   end;
 
- Reg := TRegistry.Create;
+  Reg := TRegistry.Create(KEY_READ);
   try
     Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
     if not Reg.OpenKey('\' + Ext, False) then
@@ -93,7 +93,7 @@ begin
     if S = '%1' then
       Result := True;
   finally
-    Reg.Free;
+    F(Reg);
   end;
 end;
 
@@ -103,7 +103,7 @@ var
   Flags,
   NumChars: LongWord;
 begin
-  Result:=nil;
+  Result := nil;
   NumChars := Length(Value);
   Flags := 0;
   P := StringToOleStr(Value);
@@ -144,7 +144,7 @@ end;
 
 destructor TAIcons.Destroy;
 var
-  i : integer;
+  I: Integer;
 begin
   AIcons := nil;
   for I := 0 to Length(FAssociatedIcons) - 1 do
@@ -246,7 +246,7 @@ end;
 
 procedure TAIcons.Clear;
 var
-  i : Integer;
+  I: Integer;
 begin
   FSync.Enter;
   try

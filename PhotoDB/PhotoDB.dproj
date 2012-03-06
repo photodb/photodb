@@ -683,6 +683,7 @@
 			<DCCReference Include="Units\uUpdateDBTypes.pas"/>
 			<DCCReference Include="Units\uInterfaceManager.pas"/>
 			<DCCReference Include="Units\uUpTime.pas"/>
+			<DCCReference Include="Units\uGeoLocation.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

@@ -40,6 +40,7 @@ type
     IsVaruousInclude: Boolean;
     Include: Boolean;
     PreviewID: TGUID;
+    GeoLocation: TGeoLocation;
   end;
 
   TImageDBRecordA = record

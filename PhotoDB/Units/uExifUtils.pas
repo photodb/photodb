@@ -87,6 +87,14 @@ var
   ExifData: TExifData;
   Rating, Rotation: Integer;
   OldMode : Cardinal;
+
+  function GeoLocationToDouble(Location: TGPSCoordinate): Double;
+  begin
+    Result := (Location.Degrees.Quotient) + (Location.Minutes.Quotient) / 60 + (Location.Seconds.Quotient) / 3600;
+    if (Location.Direction = 'S') or (Location.Direction = 'W') then
+      Result := -Result;
+  end;
+
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
@@ -147,6 +155,9 @@ begin
 
           if Info.Include then
             Info.Include := ExifData.XMPPacket.Include;
+
+          if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
+            Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
         end;
       finally
         F(ExifData);

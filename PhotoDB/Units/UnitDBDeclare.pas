@@ -249,16 +249,22 @@ type
     Path: string;
   end;
 
+  TGeoLocation = class
+    Latitude: Double;
+    Longitude: Double;
+  end;
+
 type
   TDBPopupMenuInfoRecord = class(TPathItem)
   private
     FOriginalFileName: string;
     FFileNameCRC32: Cardinal;
+    FGeoLocation: TGeoLocation;
     function GetInnerImage: Boolean;
     function GetExistedFileName: string;
     function GetFileNameCRC: Cardinal;
   protected
-    function InitNewInstance : TDBPopupMenuInfoRecord; virtual;
+    function InitNewInstance: TDBPopupMenuInfoRecord; virtual;
   public
     Name: string;
     FileName: string;
@@ -297,11 +303,13 @@ type
     procedure WriteToDS(DS: TDataSet);
     function Copy: TDBPopupMenuInfoRecord; reintroduce; virtual;
     function FileExists: Boolean;
+    procedure LoadGeoInfo(Latitude, Longitude: Double);
     procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False); reintroduce;
     property InnerImage: Boolean read GetInnerImage;
     property ExistedFileName: string read GetExistedFileName;
     //lower case
     property FileNameCRC: Cardinal read GetFileNameCRC;
+    property GeoLocation: TGeoLocation read FGeoLocation;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
@@ -397,6 +405,8 @@ begin
     Image := Item.Image;
     Item.Image := nil;
   end;
+  if FGeoLocation <> nil then
+    Item.LoadGeoInfo(FGeoLocation.Latitude, FGeoLocation.Longitude);
 end;
 
 function TDBPopupMenuInfoRecord.Copy: TDBPopupMenuInfoRecord;
@@ -435,6 +445,7 @@ begin
   Selected := False;
   Data := nil;
   Image := nil;
+  FGeoLocation := nil;
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromDS(DS: TDataSet);
@@ -459,6 +470,7 @@ destructor TDBPopupMenuInfoRecord.Destroy;
 begin
   F(Data);
   F(Image);
+  F(FGeoLocation);
   inherited;
 end;
 
@@ -490,6 +502,14 @@ end;
 function TDBPopupMenuInfoRecord.InitNewInstance: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfoRecord.Create;
+end;
+
+procedure TDBPopupMenuInfoRecord.LoadGeoInfo(Latitude, Longitude: Double);
+begin
+  F(FGeoLocation);
+  FGeoLocation := TGeoLocation.Create;
+  FGeoLocation.Latitude := Latitude;
+  FGeoLocation.Longitude := Longitude;
 end;
 
 procedure TDBPopupMenuInfoRecord.ReadExists;

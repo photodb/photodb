@@ -3278,7 +3278,7 @@ function TGPSCoordinate.GetDirectionChar: AnsiChar;
 var
   Tag: TExifTag;
 begin
-  if FOwner[esGPS].Find(RefTagID, Tag) and (Tag.DataType = tdAscii) and (Tag.ElementCount >= 2) then
+  if FOwner[esGPS].Find(RefTagID, Tag) and (Tag.DataType = tdAscii) and (Tag.ElementCount > 0) then
     Result := UpCase(PAnsiChar(Tag.Data)^)
   else
     Result := #0;

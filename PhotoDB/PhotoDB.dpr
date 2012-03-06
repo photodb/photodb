@@ -383,7 +383,8 @@ uses
   uBufferedFileStream in 'Units\uBufferedFileStream.pas',
   uUpdateDBTypes in 'Units\uUpdateDBTypes.pas',
   uInterfaceManager in 'Units\uInterfaceManager.pas',
-  uUpTime in 'Units\uUpTime.pas';
+  uUpTime in 'Units\uUpTime.pas',
+  uGeoLocation in 'Units\uGeoLocation.pas';
 
 {$R *.res}
 

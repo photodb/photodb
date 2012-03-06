@@ -3,12 +3,41 @@ unit UnitExplorerThumbnailCreatorThread;
 interface
 
 uses
-  GraphicCrypt, Windows, Graphics, Classes, ExplorerUnit, uManagerExplorer, JPEG,
-  SysUtils, Math, ComObj, ActiveX, ShlObj, CommCtrl, RAWImage, uDBDrawing,
-  Effects, uJpegUtils, uCDMappingTypes, uLogger, UnitDBCommon,
-  uMemory, UnitDBDeclare, uGraphicUtils, UnitDBKernel, uExifUtils,
-  uRuntime, uDBUtils, uFileUtils, uAssociations, uDBThread, CCR.Exif,
-  uBitmapUtils, uShellIcons, ExplorerTypes, uConstants;
+  GraphicCrypt,
+  Windows,
+  Graphics,
+  Classes,
+  ExplorerUnit,
+  uManagerExplorer,
+  JPEG,
+  SysUtils,
+  Math,
+  ComObj,
+  ActiveX,
+  ShlObj,
+  CommCtrl,
+  RAWImage,
+  uDBDrawing,
+  Effects,
+  uJpegUtils,
+  uCDMappingTypes,
+  uLogger,
+  UnitDBCommon,
+  uMemory,
+  UnitDBDeclare,
+  uGraphicUtils,
+  UnitDBKernel,
+  uExifUtils,
+  uRuntime,
+  uDBUtils,
+  uFileUtils,
+  uAssociations,
+  uDBThread,
+  CCR.Exif,
+  uBitmapUtils,
+  uShellIcons,
+  ExplorerTypes,
+  uConstants;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)

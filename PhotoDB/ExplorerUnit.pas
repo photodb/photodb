@@ -126,7 +126,11 @@ uses
   uExplorerPastePIDLsThread,
   uPathProviderUtils,
   uPortableDeviceManager,
-  uPortableClasses;
+  uPortableClasses,
+  Vcl.OleCtrls,
+  SHDocVw,
+  MSHTML,
+  uGeoLocation;
 
 const
   RefreshListViewInterval = 50;
@@ -354,6 +358,14 @@ type
     PnInfo: TPanel;
     WlLearnMoreLink: TWebLink;
     SbCloseHelp: TSpeedButton;
+    PnGeoLocation: TPanel;
+    WbGeoLocation: TWebBrowser;
+    SplGeoLocation: TSplitter;
+    PnGeoTop: TPanel;
+    SbCloseGeoLocation: TSpeedButton;
+    WlGeoLocation: TWebLink;
+    WlSaveLocation: TWebLink;
+    WlPanoramio: TWebLink;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -554,6 +566,11 @@ type
     procedure WlLearnMoreLinkClick(Sender: TObject);
     procedure PnInfoResize(Sender: TObject);
     procedure SbCloseHelpClick(Sender: TObject);
+    procedure SbCloseGeoLocationClick(Sender: TObject);
+    procedure WlGeoLocationClick(Sender: TObject);
+    procedure WbGeoLocationExit(Sender: TObject);
+    procedure WbGeoLocationDocumentComplete(ASender: TObject;
+      const pDisp: IDispatch; const URL: OleVariant);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -624,6 +641,8 @@ type
     FNextClipboardViewer: HWnd;
     FIsFirstShow: Boolean;
     NoLockListView: Boolean;
+    FGeoHTMLWindow: IHTMLWindow2;
+    FGeoLocationMapReady: Boolean;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -701,6 +720,9 @@ type
     procedure AddItemToUpdate(Item: TEasyItem);
     procedure ItemUpdateTimer(Sender: TObject);
     procedure UpdateItems;
+    procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double);
+    procedure StartMap;
+    procedure ClearGeoLocation;
   public
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
     destructor Destroy; override;
@@ -922,6 +944,8 @@ procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
+  FGeoHTMLWindow := nil;
+  FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
   FIsFirstShow := True;
   DirectoryWatcher := TWachDirectoryClass.Create;
@@ -1619,6 +1643,8 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
+  ClearGeoLocation;
+
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
 
   if IsWindowsVista then
@@ -2037,6 +2063,15 @@ end;
 procedure TExplorerForm.Exit1Click(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TExplorerForm.ClearGeoLocation;
+begin
+  if FSelectedInfo.GeoLocation <> nil then
+  begin
+    FSelectedInfo.GeoLocation.Free;
+    FSelectedInfo.GeoLocation := nil;
+  end;
 end;
 
 procedure TExplorerForm.ClearList;
@@ -2973,6 +3008,11 @@ begin
 
   if Msg.Hwnd = ElvMain.Handle then
   begin
+    if ((Msg.message = WM_RBUTTONDOWN) or
+       (Msg.message = WM_LBUTTONDBLCLK) or
+       (Msg.message = WM_LBUTTONDOWN)) and PnGeoLocation.Visible then
+      Windows.SetFocus(ElvMain.Handle);
+
     if UpdatingList then
     begin
       if Msg.message = WM_RBUTTONDOWN then
@@ -3238,6 +3278,63 @@ begin
         end;
     end;
 end;
+
+function FormatScriptFloat(Value: Double): string;
+var
+  LocalFormatSettings: TFormatSettings;
+begin
+  // Initialize special format settings record
+  LocalFormatSettings := TFormatSettings.Create(0);
+
+  LocalFormatSettings.DecimalSeparator := '.';
+
+  Result := FloatToStrF(Value, ffFixed,
+        12, //Precision: "should be 18 or less for values of type Extended"
+        9, //Scale 0..18.   Sure...9 digits before decimal mark, 9 digits after. Why not
+        LocalFormatSettings);
+end;
+
+procedure ShowMarker(GeoHTMLWindow: IHTMLWindow2; FileName: string; Lat, Lng: Double);
+begin
+  if GeoHTMLWindow <> nil then
+    GeoHTMLWindow.execScript(FormatEx('PutMarker({0},{1},"{2}");showPanaramio();', [FormatScriptFloat(Lat), FormatScriptFloat(Lng), FileName]), 'JavaScript');
+end;
+
+procedure TExplorerForm.DisplayGeoLocation(FileName: string; Lat, Lng: Double);
+begin
+  PnGeoLocation.Show;
+  SplGeoLocation.Show;
+  SplGeoLocation.Left := PnGeoLocation.Left;
+  StartMap;
+  if FGeoLocationMapReady then
+    ShowMarker(FGeoHTMLWindow, FileName, Lat, Lng)
+  else
+    WbGeoLocation.Tag := 1;
+end;
+
+procedure TExplorerForm.WbGeoLocationDocumentComplete(ASender: TObject;
+  const pDisp: IDispatch; const URL: OleVariant);
+begin
+  FGeoLocationMapReady := True;
+  if WbGeoLocation.Tag = 1 then
+  begin
+    WbGeoLocation.Tag := 0;
+    if FSelectedInfo.GeoLocation <> nil then
+    begin
+      ShowMarker(FGeoHTMLWindow, ExtractFileName(FSelectedInfo.FileName),
+        FSelectedInfo.GeoLocation.Latitude,
+        FSelectedInfo.GeoLocation.Longitude);
+    end;
+  end;
+end;
+
+procedure TExplorerForm.WbGeoLocationExit(Sender: TObject);
+begin
+  Windows.SetFocus(Handle);
+  ActiveControl := nil;
+  ElvMain.SetFocus;
+end;
+
 
 procedure TExplorerForm.LoadInfoAboutFiles(Info: TExplorerFileInfos);
 begin
@@ -3551,12 +3648,20 @@ procedure TExplorerForm.SetPanelInfo(Info: TDBPopupMenuInfoRecord;
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
   begin
+    ClearGeoLocation;
     FSelectedInfo.Width := Info.Width;
     FSelectedInfo.Height := Info.Height;
     FSelectedInfo.Id := Info.ID;
     FSelectedInfo.Rating := Info.Rating;
     FSelectedInfo.Access := Info.Access;
     FSelectedInfo.Encrypted := Info.Crypted;
+    if Info.GeoLocation <> nil then
+    begin
+      FSelectedInfo.GeoLocation := TGeoLocation.Create;
+      FSelectedInfo.GeoLocation.Latitude := Info.GeoLocation.Latitude;
+      FSelectedInfo.GeoLocation.Longitude := Info.GeoLocation.Longitude;
+    end;
+
     ReallignInfo;
   end;
 end;
@@ -3859,6 +3964,15 @@ begin
         NewTop := ImageEditorLink.BoundsRect.Bottom;
       end else
         ImageEditorLink.Visible := False;
+
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) and (FSelectedInfo.GeoLocation <> nil) then
+      begin
+        WlGeoLocation.Visible := True;
+        WlGeoLocation.Top := NewTop + H;
+        NewTop := WlGeoLocation.BoundsRect.Bottom;
+      end else
+        WlGeoLocation.Visible := False;
+
     end else
     begin
       ImageTasksLabel.Hide;
@@ -3868,6 +3982,7 @@ begin
       EncryptLink.Visible := False;
       PrintLink.Visible := False;
       ImageEditorLink.Visible := False;
+      WlGeoLocation.Visible := False;
     end;
 
     NewTop := NewTop + H * 4;
@@ -5076,6 +5191,7 @@ begin
     WlResize.Text := L('Resize');
     WlConvert.Text := L('Convert');
     WlCrop.Text := L('Crop');
+    WlGeoLocation.Text := L('Display on map');
 
     Label1.Caption := L('Preview');
     TasksLabel.Caption := L('Tasks');
@@ -5836,6 +5952,30 @@ begin
   end;
 end;
 
+procedure TExplorerForm.StartMap;
+var
+  Stream: TMemoryStream;
+  MapHTML: AnsiString;
+begin
+  if FGeoHTMLWindow = nil then
+  begin
+    WbGeoLocation.Navigate('about:blank');
+    if Assigned(WbGeoLocation.Document) then
+    begin
+      Stream := TMemoryStream.Create;
+      try
+        MapHTML := AnsiString(StringReplace(string(GoogleMapHTMLStr), '%LANG%' , TTranslateManager.Instance.Language, []));
+        Stream.WriteBuffer(Pointer(MapHTML)^, Length(MapHTML));
+        Stream.Seek(0, soFromBeginning);
+        (WbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
+      finally
+        F(Stream);
+      end;
+      FGeoHTMLWindow := (WbGeoLocation.Document as IHTMLDocument2).parentWindow;
+    end;
+  end;
+end;
+
 procedure TExplorerForm.Stretch1Click(Sender: TObject);
 var
   FileName: string;
@@ -6589,6 +6729,7 @@ var
   Info: TExplorerFileInfo;
   PI: TPathItem;
 begin
+  ClearGeoLocation;
   if Rdown then
     FDBCanDrag := False;
   if ElvMain <> nil then
@@ -7124,6 +7265,13 @@ begin
   end;
 end;
 
+procedure TExplorerForm.SbCloseGeoLocationClick(Sender: TObject);
+begin
+  PnGeoLocation.Hide;
+  SplGeoLocation.Hide;
+  Windows.SetFocus(ElvMain.Handle);
+end;
+
 procedure TExplorerForm.SbCloseHelpClick(Sender: TObject);
 begin
   PnInfo.Hide;
@@ -7196,6 +7344,16 @@ begin
       OpenFileName(FFilesInfo[ItemIndexToMenuIndex(Item.index)].FileName);
       CropLinkClick(nil);
     end;
+  end;
+end;
+
+procedure TExplorerForm.WlGeoLocationClick(Sender: TObject);
+begin
+  if FSelectedInfo.GeoLocation <> nil then
+  begin
+    DisplayGeoLocation(ExtractFileName(FSelectedInfo.FileName),
+      FSelectedInfo.GeoLocation.Latitude,
+      FSelectedInfo.GeoLocation.Longitude);
   end;
 end;
 
@@ -8789,6 +8947,7 @@ end;
 constructor TExplorerForm.Create(AOwner: TComponent;
   GoToLastSavedPath: Boolean);
 begin
+  FSelectedInfo.GeoLocation := nil;
   TPrivateHelper.Instance.Init;
   FFilesInfo := TExplorerFileInfos.Create;
   FShellTreeView := nil;
@@ -8915,6 +9074,7 @@ begin
   AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW + 1]);
   RefreshLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_REFRESH_THUM + 1]);
   ImageEditorLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_IMEDITOR + 1]);
+  WlGeoLocation.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1]);
   PrintLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PRINTER + 1]);
   MyPicturesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_PICTURES + 1]);
   MyDocumentsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_DOCUMENTS + 1]);

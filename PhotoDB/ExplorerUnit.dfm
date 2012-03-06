@@ -4,7 +4,7 @@ object ExplorerForm: TExplorerForm
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
   ClientHeight = 698
-  ClientWidth = 867
+  ClientWidth = 879
   Color = clBtnFace
   Constraints.MinHeight = 200
   Constraints.MinWidth = 300
@@ -23,7 +23,7 @@ object ExplorerForm: TExplorerForm
   OnDeactivate = FormDeactivate
   OnShow = FormShow
   DesignSize = (
-    867
+    879
     698)
   PixelsPerInch = 96
   TextHeight = 13
@@ -133,7 +133,7 @@ object ExplorerForm: TExplorerForm
         object TasksLabel: TLabel
           Tag = 1
           Left = 8
-          Top = 326
+          Top = 340
           Width = 33
           Height = 13
           Caption = 'Tasks'
@@ -285,7 +285,7 @@ object ExplorerForm: TExplorerForm
         end
         object SlideShowLink: TWebLink
           Left = 5
-          Top = 340
+          Top = 355
           Width = 72
           Height = 16
           Cursor = crHandPoint
@@ -306,7 +306,7 @@ object ExplorerForm: TExplorerForm
         end
         object ShellLink: TWebLink
           Left = 5
-          Top = 354
+          Top = 369
           Width = 47
           Height = 16
           Cursor = crHandPoint
@@ -327,7 +327,7 @@ object ExplorerForm: TExplorerForm
         end
         object RenameLink: TWebLink
           Left = 5
-          Top = 415
+          Top = 430
           Width = 60
           Height = 16
           Cursor = crHandPoint
@@ -348,7 +348,7 @@ object ExplorerForm: TExplorerForm
         end
         object RefreshLink: TWebLink
           Left = 5
-          Top = 445
+          Top = 460
           Width = 59
           Height = 16
           Cursor = crHandPoint
@@ -369,7 +369,7 @@ object ExplorerForm: TExplorerForm
         end
         object PropertiesLink: TWebLink
           Left = 5
-          Top = 430
+          Top = 445
           Width = 70
           Height = 16
           Cursor = crHandPoint
@@ -477,7 +477,7 @@ object ExplorerForm: TExplorerForm
         end
         object MoveToLink: TWebLink
           Left = 5
-          Top = 400
+          Top = 415
           Width = 62
           Height = 16
           Cursor = crHandPoint
@@ -541,7 +541,7 @@ object ExplorerForm: TExplorerForm
         end
         object DeleteLink: TWebLink
           Left = 5
-          Top = 459
+          Top = 474
           Width = 52
           Height = 16
           Cursor = crHandPoint
@@ -562,7 +562,7 @@ object ExplorerForm: TExplorerForm
         end
         object CopyToLink: TWebLink
           Left = 5
-          Top = 383
+          Top = 398
           Width = 61
           Height = 16
           Cursor = crHandPoint
@@ -583,7 +583,7 @@ object ExplorerForm: TExplorerForm
         end
         object AddLink: TWebLink
           Left = 5
-          Top = 490
+          Top = 505
           Width = 75
           Height = 16
           Cursor = crHandPoint
@@ -625,7 +625,7 @@ object ExplorerForm: TExplorerForm
         end
         object WlCreateObject: TWebLink
           Left = 5
-          Top = 369
+          Top = 384
           Width = 54
           Height = 16
           Cursor = crHandPoint
@@ -710,12 +710,33 @@ object ExplorerForm: TExplorerForm
         end
         object WlImportPictures: TWebLink
           Left = 5
-          Top = 473
+          Top = 488
           Width = 94
           Height = 16
           Cursor = crHandPoint
           Text = 'Import pictures'
           OnClick = WlImportPicturesClick
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          ImageCanRegenerate = True
+          UseSpecIconSize = True
+          HightliteImage = False
+          StretchImage = True
+          CanClick = True
+        end
+        object WlGeoLocation: TWebLink
+          Left = 5
+          Top = 320
+          Width = 93
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'Display on map'
+          OnClick = WlGeoLocationClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -735,7 +756,7 @@ object ExplorerForm: TExplorerForm
   object StatusBar1: TStatusBar
     Left = 0
     Top = 678
-    Width = 867
+    Width = 879
     Height = 20
     Panels = <
       item
@@ -744,11 +765,12 @@ object ExplorerForm: TExplorerForm
       item
         Width = 500
       end>
+    ExplicitWidth = 867
   end
   object CoolBarTop: TCoolBar
     Left = 0
     Top = 0
-    Width = 867
+    Width = 879
     Height = 21
     AutoSize = True
     BandBorderStyle = bsNone
@@ -757,13 +779,13 @@ object ExplorerForm: TExplorerForm
         Control = ToolBar1
         ImageIndex = -1
         MinHeight = 21
-        Width = 865
+        Width = 877
       end>
     EdgeBorders = []
     object ToolBar1: TToolBar
       Left = 11
       Top = 0
-      Width = 856
+      Width = 868
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 48
@@ -922,7 +944,7 @@ object ExplorerForm: TExplorerForm
     end
   end
   object LsMain: TLoadingSign
-    Left = 842
+    Left = 854
     Top = 49
     Width = 20
     Height = 20
@@ -932,11 +954,12 @@ object ExplorerForm: TExplorerForm
     Anchors = [akTop, akRight]
     SignColor = clBlack
     MaxTransparencity = 255
+    ExplicitLeft = 842
   end
   object PnNavigation: TPanel
     Left = 0
     Top = 21
-    Width = 867
+    Width = 879
     Height = 27
     Align = alTop
     AutoSize = True
@@ -944,8 +967,9 @@ object ExplorerForm: TExplorerForm
     Color = clWindow
     ParentBackground = False
     TabOrder = 4
+    ExplicitWidth = 867
     object BvSeparatorAddress: TBevel
-      Left = 676
+      Left = 688
       Top = 1
       Width = 2
       Height = 25
@@ -964,7 +988,7 @@ object ExplorerForm: TExplorerForm
       ExplicitTop = 2
     end
     object slSearch: TSplitter
-      Left = 678
+      Left = 690
       Top = 1
       Height = 25
       Align = alRight
@@ -974,7 +998,7 @@ object ExplorerForm: TExplorerForm
       ExplicitTop = 6
     end
     object PnSearch: TPanel
-      Left = 681
+      Left = 693
       Top = 1
       Width = 185
       Height = 25
@@ -984,6 +1008,7 @@ object ExplorerForm: TExplorerForm
       FullRepaint = False
       ParentDoubleBuffered = False
       TabOrder = 0
+      ExplicitLeft = 681
       object SbSearchMode: TSpeedButton
         Left = 0
         Top = 0
@@ -1051,7 +1076,7 @@ object ExplorerForm: TExplorerForm
     object PePath: TPathEditor
       Left = 62
       Top = 1
-      Width = 614
+      Width = 626
       Height = 25
       DoubleBuffered = False
       ParentDoubleBuffered = False
@@ -1091,25 +1116,37 @@ object ExplorerForm: TExplorerForm
       OnlyFileSystem = False
       HideExtendedButton = False
       ShowBorder = False
+      ExplicitWidth = 614
     end
   end
   object PnContent: TPanel
     Left = 141
     Top = 48
-    Width = 726
+    Width = 738
     Height = 630
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
     TabOrder = 5
+    ExplicitWidth = 726
+    object SplGeoLocation: TSplitter
+      Left = 483
+      Top = 33
+      Width = 5
+      Height = 564
+      Align = alRight
+      ExplicitLeft = 572
+      ExplicitTop = 27
+    end
     object PnFilter: TPanel
       Left = 0
       Top = 597
-      Width = 726
+      Width = 738
       Height = 33
       Align = alBottom
       TabOrder = 0
       Visible = False
+      ExplicitWidth = 726
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1462,7 +1499,7 @@ object ExplorerForm: TExplorerForm
     object PnInfo: TPanel
       Left = 0
       Top = 0
-      Width = 726
+      Width = 738
       Height = 33
       Align = alTop
       BevelEdges = [beBottom]
@@ -1471,11 +1508,12 @@ object ExplorerForm: TExplorerForm
       TabOrder = 1
       Visible = False
       OnResize = PnInfoResize
+      ExplicitWidth = 726
       DesignSize = (
-        726
+        738
         33)
       object SbCloseHelp: TSpeedButton
-        Left = 696
+        Left = 708
         Top = 5
         Width = 23
         Height = 22
@@ -1509,6 +1547,7 @@ object ExplorerForm: TExplorerForm
           F65754F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
           FFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8FFFFFFFFFFFFFFFFFF}
         OnClick = SbCloseHelpClick
+        ExplicitLeft = 696
       end
       object WlLearnMoreLink: TWebLink
         Left = 240
@@ -1567,6 +1606,124 @@ object ExplorerForm: TExplorerForm
         HightliteImage = False
         StretchImage = True
         CanClick = True
+      end
+    end
+    object PnGeoLocation: TPanel
+      Left = 488
+      Top = 33
+      Width = 250
+      Height = 564
+      Align = alRight
+      TabOrder = 2
+      Visible = False
+      ExplicitLeft = 476
+      object WbGeoLocation: TWebBrowser
+        Left = 1
+        Top = 34
+        Width = 248
+        Height = 529
+        Align = alClient
+        TabOrder = 0
+        OnDocumentComplete = WbGeoLocationDocumentComplete
+        ExplicitWidth = 200
+        ControlData = {
+          4C000000A2190000AC3600000000000000000000000000000000000000000000
+          000000004C000000000000000000000001000000E0D057007335CF11AE690800
+          2B2E126208000000000000004C0000000114020000000000C000000000000046
+          8000000000000000000000000000000000000000000000000000000000000000
+          00000000000000000100000000000000000000000000000000000000}
+      end
+      object PnGeoTop: TPanel
+        Left = 1
+        Top = 1
+        Width = 248
+        Height = 33
+        Align = alTop
+        BevelEdges = [beBottom]
+        ParentBackground = False
+        TabOrder = 1
+        OnResize = PnInfoResize
+        ExplicitWidth = 198
+        DesignSize = (
+          248
+          33)
+        object SbCloseGeoLocation: TSpeedButton
+          Left = 221
+          Top = 5
+          Width = 23
+          Height = 22
+          Anchors = [akTop, akRight]
+          Flat = True
+          Glyph.Data = {
+            36030000424D3603000000000000360000002800000010000000100000000100
+            1800000000000003000000000000000000000000000000000000FFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F3DEDFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFF1E1CE2FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            4744EF4E4BF23F3DEDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2321E4312F
+            E81E1CE2FFFFFFFFFFFFFFFFFF4F4CF45754F66361F85754F63F3DEDFFFFFFFF
+            FFFFFFFFFFFFFFFF2B29E64240EE4B49F6312FE81E1CE2FFFFFFFFFFFF5754F6
+            5B59F66361F8706DFD5754F64240EEFFFFFFFFFFFF3533EB4744EF6666FF4B49
+            F62F2CE72321E4FFFFFFFFFFFFFFFFFF5754F65B59F66361F87371FF5B59F642
+            40EE3C39EC4F4CF46666FF4F4CF43533EB2B29E6FFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFF5B59F65B59F66361F87371FF7371FF706DFD6D6BFF5654F73F3DED312F
+            E8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5B59F65B59F67875FF58
+            55FF5855FF7371FF4744EF3C39ECFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFF5B59F67D7BFF5D5AFF5855FF7371FF4744EFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8706DFD807DFF7D
+            7BFF7D7BFF7875FF5B59F64744EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFF6D6BFA7875FF8581FF7371FF6361F8605DF86D6BFA7875FF605DF84744
+            EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7371FF7D7BFF8986FF7D7BFF6D6BFA63
+            61F8605DF8605DF86D6BFA7D7BFF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF
+            7875FF807DFF807DFF7371FF6D6BFAFFFFFFFFFFFF605DF8605DF86D6BFA7D7B
+            FF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF7875FF7875FF706DFDFFFFFFFF
+            FFFFFFFFFFFFFFFF605DF86361F86D6BFA4F4CF44E4BF2FFFFFFFFFFFFFFFFFF
+            FFFFFF7875FF7875FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF605DF85B59
+            F65754F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8FFFFFFFFFFFFFFFFFF}
+          OnClick = SbCloseGeoLocationClick
+          ExplicitLeft = 25
+        end
+        object WlSaveLocation: TWebLink
+          Left = 5
+          Top = 8
+          Width = 97
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'WlSaveLocation'
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          ImageCanRegenerate = False
+          UseSpecIconSize = True
+          HightliteImage = False
+          StretchImage = True
+          CanClick = True
+        end
+        object WlPanoramio: TWebLink
+          Left = 110
+          Top = 8
+          Width = 97
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'WlSaveLocation'
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          ImageCanRegenerate = False
+          UseSpecIconSize = True
+          HightliteImage = False
+          StretchImage = True
+          CanClick = True
+        end
       end
     end
   end
@@ -2161,7 +2318,7 @@ object ExplorerForm: TExplorerForm
   object ImSearchMode: TImageList
     ColorDepth = cd32Bit
     Left = 656
-    Top = 344
+    Top = 384
   end
   object ImPathDropDownMenu: TImageList
     ColorDepth = cd32Bit

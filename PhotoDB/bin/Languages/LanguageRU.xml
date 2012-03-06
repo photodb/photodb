@@ -228,7 +228,8 @@
     <translate name="Decrypt file" value="Расшифровать файл" />
     <translate name="Encrypt" value="Зашифровать" />
     <translate name="Decrypt" value="Расшифровать" />
-    <translate name="Enter password" value="Ввести пароль" />
+    <translate name="Enter password" value="Ввести пароль" />	
+    <translate name="Display on map" value="Показать на карте" />
     <translate name="Convert" value="Конвертировать" />
     <translate name="Resize" value="Изменить размер" />
     <translate name="Rotate" value="Повернуть" />
