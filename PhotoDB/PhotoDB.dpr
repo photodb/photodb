@@ -384,7 +384,8 @@ uses
   uUpdateDBTypes in 'Units\uUpdateDBTypes.pas',
   uInterfaceManager in 'Units\uInterfaceManager.pas',
   uUpTime in 'Units\uUpTime.pas',
-  uGeoLocation in 'Units\uGeoLocation.pas';
+  uGeoLocation in 'Units\uGeoLocation.pas',
+  uImageListDelayed in 'Units\uImageListDelayed.pas';
 
 {$R *.res}
 

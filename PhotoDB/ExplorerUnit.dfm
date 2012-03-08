@@ -765,7 +765,6 @@ object ExplorerForm: TExplorerForm
       item
         Width = 500
       end>
-    ExplicitWidth = 867
   end
   object CoolBarTop: TCoolBar
     Left = 0
@@ -954,7 +953,6 @@ object ExplorerForm: TExplorerForm
     Anchors = [akTop, akRight]
     SignColor = clBlack
     MaxTransparencity = 255
-    ExplicitLeft = 842
   end
   object PnNavigation: TPanel
     Left = 0
@@ -967,7 +965,6 @@ object ExplorerForm: TExplorerForm
     Color = clWindow
     ParentBackground = False
     TabOrder = 4
-    ExplicitWidth = 867
     object BvSeparatorAddress: TBevel
       Left = 688
       Top = 1
@@ -1008,7 +1005,6 @@ object ExplorerForm: TExplorerForm
       FullRepaint = False
       ParentDoubleBuffered = False
       TabOrder = 0
-      ExplicitLeft = 681
       object SbSearchMode: TSpeedButton
         Left = 0
         Top = 0
@@ -1116,7 +1112,6 @@ object ExplorerForm: TExplorerForm
       OnlyFileSystem = False
       HideExtendedButton = False
       ShowBorder = False
-      ExplicitWidth = 614
     end
   end
   object PnContent: TPanel
@@ -1128,7 +1123,6 @@ object ExplorerForm: TExplorerForm
     BevelOuter = bvNone
     FullRepaint = False
     TabOrder = 5
-    ExplicitWidth = 726
     object SplGeoLocation: TSplitter
       Left = 483
       Top = 33
@@ -1146,7 +1140,6 @@ object ExplorerForm: TExplorerForm
       Align = alBottom
       TabOrder = 0
       Visible = False
-      ExplicitWidth = 726
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1508,7 +1501,6 @@ object ExplorerForm: TExplorerForm
       TabOrder = 1
       Visible = False
       OnResize = PnInfoResize
-      ExplicitWidth = 726
       DesignSize = (
         738
         33)
@@ -1616,7 +1608,6 @@ object ExplorerForm: TExplorerForm
       Align = alRight
       TabOrder = 2
       Visible = False
-      ExplicitLeft = 476
       object WbGeoLocation: TWebBrowser
         Left = 1
         Top = 34
@@ -1624,6 +1615,7 @@ object ExplorerForm: TExplorerForm
         Height = 529
         Align = alClient
         TabOrder = 0
+        OnCommandStateChange = WbGeoLocationCommandStateChange
         OnDocumentComplete = WbGeoLocationDocumentComplete
         ExplicitWidth = 200
         ControlData = {
@@ -1643,7 +1635,6 @@ object ExplorerForm: TExplorerForm
         ParentBackground = False
         TabOrder = 1
         OnResize = PnInfoResize
-        ExplicitWidth = 198
         DesignSize = (
           248
           33)
@@ -1690,6 +1681,7 @@ object ExplorerForm: TExplorerForm
           Width = 97
           Height = 16
           Cursor = crHandPoint
+          Enabled = False
           Text = 'WlSaveLocation'
           ImageIndex = 0
           IconWidth = 16
@@ -1698,7 +1690,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -1707,10 +1699,11 @@ object ExplorerForm: TExplorerForm
         object WlPanoramio: TWebLink
           Left = 110
           Top = 8
-          Width = 97
+          Width = 83
           Height = 16
           Cursor = crHandPoint
-          Text = 'WlSaveLocation'
+          Text = 'WlPanoramio'
+          OnClick = WlPanoramioClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -1718,7 +1711,7 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = False
+          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True

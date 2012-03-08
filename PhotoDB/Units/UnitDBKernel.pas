@@ -3,12 +3,41 @@ unit UnitDBKernel;
 interface
 
 uses
-  Win32crc, Forms, Windows, Classes,
-  Controls, Graphics, DB, SysUtils, JPEG, UnitDBDeclare, IniFiles,
-  GraphicCrypt, ADODB, uLogger, uActivationUtils, uCDMappingTypes,
-  uConstants, CommCtrl, uTime, UnitINI, SyncObjs, uMemory, uFileUtils,
-  uAppUtils, uTranslate, uDBForm, uVistaFuncs, uShellIntegration,
-  uRuntime, uDBBaseTypes, uStringUtils, uSettings, uSysUtils;
+  Win32crc,
+  Forms,
+  Windows,
+  Classes,
+  Controls,
+  Graphics,
+  DB,
+  SysUtils,
+  JPEG,
+  UnitDBDeclare,
+  IniFiles,
+  GraphicCrypt,
+  ADODB,
+  uLogger,
+  uActivationUtils,
+  uCDMappingTypes,
+  uConstants,
+  CommCtrl,
+  uTime,
+  UnitINI,
+  SyncObjs,
+  uMemory,
+  uFileUtils,
+  uAppUtils,
+  uTranslate,
+  uDBForm,
+  uVistaFuncs,
+  uShellIntegration,
+  uRuntime,
+  uDBBaseTypes,
+  uStringUtils,
+  uSettings,
+  uSysUtils,
+  uImageListDelayed,
+  ImgList;
 
 type
   DBChangesIDEvent = procedure(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -36,7 +65,7 @@ type
     FINIPasswods: TStrings;
     FPasswodsInSession: TStrings;
     FEvents: TDBEventsIDArray;
-    FImageList: TImageList;
+    FImageList: TCustomImageList;
     FForms: TList;
     FApplicationKey: string;
     ThreadOpenResultBool: Boolean;
@@ -51,7 +80,7 @@ type
     constructor Create;
     destructor Destroy; override;
     property DBs: TPhotoDBFiles read FDBs;
-    property ImageList: TImageList read FImageList;
+    property ImageList: TCustomImageList read FImageList;
     procedure UnRegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
     procedure UnRegisterChangesIDByID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
     procedure RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
@@ -1021,18 +1050,18 @@ end;
 
 procedure TDBKernel.LoadIcons;
 var
-  I : Integer;
+  I: Integer;
 
-  function LoadIcon(Instance : HINST; ResName : string) : HIcon;
+  function LoadIcon(Instance: HINST; ResName: string): HIcon;
   begin
     Result := LoadImage(Instance, PWideChar(ResName), IMAGE_ICON, 16, 16, 0);
   end;
 
 begin
-  FImageList := TImageList.Create(nil);
+  FImageList := TDelayedImageList.Create(nil);
   FImageList.Width := 16;
   FImageList.Height := 16;
-  FImageList.BkColor := ClMenu;
+  FImageList.BkColor := clMenu;
 
   icons[1] := LoadIcon(HInstance,'SHELL');
   icons[2] := LoadIcon(HInstance,'SLIDE_SHOW');

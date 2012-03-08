@@ -29,6 +29,7 @@ uses
   Registry,
   ShlObj,
   Forms,
+  ImgList,
   StdCtrls,
   uScript,
   uStringUtils,
@@ -62,52 +63,58 @@ type
 
   TScriptFunctionArray = array of TScriptFunction;
 
-  TInitScriptFunction = function(Script : String) : string;
+  TInitScriptFunction = function(Script: String): string;
   TSimpleProcedure = procedure;
-  TProcedureInteger = procedure(int : Integer);
-  TProcedureIntegerInteger = procedure(int1, int2 : Integer);
-  TProcedureStringString = procedure(A,B : string);
-  TFunctionString = function : string;
-  TFunctionStringIsString = function(S : String) : string;
-  TFunctionIntegerIsInteger = function(int : integer) : integer;
-  TFunctionInteger = function : integer;
-  TProcedureObject = procedure(Sender : TObject) of object;
-  TProcedureString = procedure(S : String);
-  TProcedureIntegerString = procedure(int : Integer; S : String);
-  TProcedureWriteString = function(S : String) : string;
-  TFunctionIntegerIntegerIsInteger = function(int1, int2 : integer) : integer;
-  TFunctionStringStringIsString = function(S1,S2 : String) : String;
-  TFunctionStringStringIsInteger = function(S1,S2 : String) : integer;
-  TFunctionStringStringIsBool = function(S1,S2 : String) : Boolean;
-  TFunctionStringStringIsArrayString = function(S1,S2 : String) : TArrayOfString;
-  TFunctionStringIsArrayString = function(S : String) : TArrayOfString;
-  TFunctionIsArrayString = function : TArrayOfString;
-  TFunctionArrayStringIsInteger = function(aArray : TArrayOfString) : integer;
-  TProcedureArrayString = procedure(aArray : TArrayOfString);
-  TFunctionArrayStringIntegerIsString = function(aArray : TArrayOfString; int : integer) : string;
-  TFunctionCreateItem = function (aOwner: TMenuItem; Caption, Icon, Script: string; Default : boolean; Tag : integer; ImageList : TImageList; var ImagesCount : integer; OnClick : TNotifyEvent) : TMenuItemW;
-  TFunctionCreateItemDef = function (aOwner: TMenuItem; Caption, Icon, Script: string; Default, Enabled : boolean; Tag : integer; ImageList : TImageList; var ImagesCount : integer; OnClick : TNotifyEvent) : TMenuItemW;
-  TFunctionCreateItemDefChecked = function (aOwner: TMenuItem; Caption, Icon, Script: string; Default, Enabled, Checked : boolean; Tag : integer; ImageList : TImageList; var ImagesCount : integer; OnClick : TNotifyEvent) : TMenuItemW;
-  TFunctionIntegerIsString = function(int : integer) : string;
-  TFunctionBooleanIsBoolean = function(Bool : Boolean) : Boolean;
-  TFunctionIsBoolean = function : Boolean;
-  TFunctionStringIsBoolean = function(S : String) : Boolean;
-  TFunctionAddIcon = function(Path : string; ImageList : TImageList; var IconsCount : integer) : integer;
-  TProcedureScript = procedure(const Script : TScript);
-  TProcedureBoolean = procedure(Bool : Boolean);
-  TFunctionStringIsInteger = function(S : String) : integer;
+  TProcedureInteger = procedure(int: Integer);
+  TProcedureIntegerInteger = procedure(int1, int2: Integer);
+  TProcedureStringString = procedure(A, B: string);
+  TFunctionString = function: string;
+  TFunctionStringIsString = function(S: String): string;
+  TFunctionIntegerIsInteger = function(int: Integer): Integer;
+  TFunctionInteger = function: Integer;
+  TProcedureObject = procedure(Sender: TObject) of object;
+  TProcedureString = procedure(S: String);
+  TProcedureIntegerString = procedure(int: Integer; S: String);
+  TProcedureWriteString = function(S: String): string;
+  TFunctionIntegerIntegerIsInteger = function(int1, int2: Integer): Integer;
+  TFunctionStringStringIsString = function(S1, S2: String): String;
+  TFunctionStringStringIsInteger = function(S1, S2: String): Integer;
+  TFunctionStringStringIsBool = function(S1, S2: String): Boolean;
+  TFunctionStringStringIsArrayString = function(S1, S2: String): TArrayOfString;
+  TFunctionStringIsArrayString = function(S: String): TArrayOfString;
+  TFunctionIsArrayString = function: TArrayOfString;
+  TFunctionArrayStringIsInteger = function(aArray: TArrayOfString): Integer;
+  TProcedureArrayString = procedure(aArray: TArrayOfString);
+  TFunctionArrayStringIntegerIsString = function(aArray: TArrayOfString; int: Integer): string;
+  TFunctionCreateItem = function(aOwner: TMenuItem;
+    Caption, Icon, Script: string; Default: Boolean; Tag: Integer; ImageList: TCustomImageList; var ImagesCount: Integer; OnClick: TNotifyEvent): TMenuItemW;
+  TFunctionCreateItemDef = function(aOwner: TMenuItem; Caption, Icon, Script: string; Default, Enabled: Boolean; Tag: Integer;
+    ImageList: TCustomImageList; var ImagesCount: Integer; OnClick: TNotifyEvent): TMenuItemW;
+  TFunctionCreateItemDefChecked = function(aOwner: TMenuItem; Caption, Icon, Script: string; Default, Enabled, Checked: Boolean;
+    Tag: Integer; ImageList: TCustomImageList; var ImagesCount: Integer;
+    OnClick: TNotifyEvent): TMenuItemW;
+  TFunctionIntegerIsString = function(int: Integer): string;
+  TFunctionBooleanIsBoolean = function(Bool: Boolean): Boolean;
+  TFunctionIsBoolean = function: Boolean;
+  TFunctionStringIsBoolean = function(S: String): Boolean;
+  TFunctionAddIcon = function(Path: string; ImageList: TCustomImageList; var IconsCount: Integer): Integer;
+  TProcedureScript = procedure(const Script: TScript);
+  TProcedureBoolean = procedure(Bool: Boolean);
+  TFunctionStringIsInteger = function(S: String): Integer;
   TProcedureClear = procedure(aOwner: TMenuItem);
-  TFunctionArrayIntegerIsInteger = function(aArray : TArrayOfInt) : integer;
-  TFunctionArrayIntegerIntegerIsInteger = function(aArray : TArrayOfInt; int : integer) : integer;
-  TProcedureArrayIntegerIntegerInteger = procedure(aArray : TArrayOfInt; index, value : integer);
-  TProcedureVarArrayIntegerInteger = procedure(var aArray : TArrayOfInt; int : integer);
-  TFunctionIntegerIsArrayInteger = function(int : integer) : TArrayOfInt;
-  TProcedureVarArrayStringString = procedure(var aArray : TArrayOfString; S : string);
-  TFunctionStringIntegerIntegerIsInteger = function(s : string; int1, int2 : integer) : string;
+  TFunctionArrayIntegerIsInteger = function(aArray: TArrayOfInt): Integer;
+  TFunctionArrayIntegerIntegerIsInteger = function(aArray: TArrayOfInt;  int: Integer): Integer;
+  TProcedureArrayIntegerIntegerInteger = procedure(aArray: TArrayOfInt; index, value: Integer);
+  TProcedureVarArrayIntegerInteger = procedure(var aArray: TArrayOfInt; int: Integer);
+  TFunctionIntegerIsArrayInteger = function(int: Integer): TArrayOfInt;
+  TProcedureVarArrayStringString = procedure(var aArray: TArrayOfString;
+    S: string);
+  TFunctionStringIntegerIntegerIsInteger = function(S: string;
+    int1, int2: Integer): string;
 
   TFunctionFloatIsFloat = function(x : Extended) : Extended;
 
-  TProcedureScriptStringW = procedure(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil; s : string = '');
+  TProcedureScriptStringW = procedure(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TCustomImageList; OnClick : TNotifyEvent = nil; s : string = '');
   TFunctionStringStringIntegerIsInteger = function(s1, s2 : string; int : integer) : integer;
 
   TProcedureStringStringString = procedure(s1, s2, s3 : string);
@@ -186,9 +193,9 @@ type
 
 
 //MessageBox
-   procedure ExecuteScript(Sender : TMenuItemW; aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil);
+   procedure ExecuteScript(Sender : TMenuItemW; aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TCustomImageList; OnClick : TNotifyEvent = nil);
    procedure LoadItemVariables(aScript : TScript; Sender : TMenuItem);
-   procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TImageList; Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
+   procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TCustomImageList; Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
    procedure SetNamedValue(const aScript : TScript; const ValueName, AValue : string);
    procedure SetNamedValueStr(const aScript : TScript; const ValueName, AValue : string);
    procedure SetNamedValueFloat(const aScript : TScript; const ValueName : string; const Value : Extended);
@@ -203,7 +210,7 @@ type
    procedure SetIntAttr(aScript : TScript; Name : String; Value :Integer);
    function Include(FileName : string) : string;
    function aFileExists(FileName : string) : boolean;
-   procedure ExecuteScriptFile(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil; FileName : string = '');
+   procedure ExecuteScriptFile(Sender : TMenuItemW; var aScript : TScript; AlternativeCommand : string; var ImagesCount: Integer; ImageList: TCustomImageList; OnClick : TNotifyEvent = nil; FileName : string = '');
 
    function ReadScriptFile(FileName : string) : string;
 
@@ -1087,7 +1094,7 @@ begin
   until (PosEx(';', Functions, Fb) < 1) or (Fb >= Length(Functions));
 end;
 
-procedure ExecuteScript(Sender : TMenuItemW; aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TImageList; OnClick : TNotifyEvent = nil);
+procedure ExecuteScript(Sender : TMenuItemW; aScript : TScript; AlternativeCommand : string; var ImagesCount : integer; ImageList : TCustomImageList; OnClick : TNotifyEvent = nil);
 var
   Apos, Af, Fb, Fe, I, J, N, R, Ifb, Ifsb, Ifse, Ifssb, Ifsse, Ifelex, Ifelb, Ifele, Forb, Forsb, Forse, Forssb,
     Forsse, N1, N2, N3: Integer;
@@ -2077,7 +2084,7 @@ begin
   Delete(Desc, B, E - B + 1);
 end;
 
-function MakeNewItem(Owner: TComponent; MenuItem : TMenuItem; ImageList : TImageList; Caption, Icon : string; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer) : TMenuItemW;
+function MakeNewItem(Owner: TComponent; MenuItem : TMenuItem; ImageList : TCustomImageList; Caption, Icon : string; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer) : TMenuItemW;
 var
   Item: TMenuItemW;
   Ico: TIcon;
@@ -2139,7 +2146,7 @@ begin
   end;
 end;
 
-procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TImageList; Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
+procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TCustomImageList; Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer; initialize : boolean);
 var
   Text, Icon, Command, InitScript, RunScript, IncludeFile: string;
   I: Integer;
@@ -2463,7 +2470,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsInteger(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsIntegerObject);
+procedure AddScriptObjFunctionIsInteger(Enviroment: TScriptEnviroment; const FunctionName: String; AFunction: TFunctionIsIntegerObject);
 var
   FFunction: TScriptFunction;
 begin
@@ -2475,7 +2482,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsBool(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsBoolObject);
+procedure AddScriptObjFunctionIsBool(Enviroment: TScriptEnviroment; const FunctionName: String; AFunction: TFunctionIsBoolObject);
 var
   FFunction: TScriptFunction;
 begin
@@ -2487,7 +2494,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsString(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsStringObject);
+procedure AddScriptObjFunctionIsString(Enviroment: TScriptEnviroment; const FunctionName: String; AFunction: TFunctionIsStringObject);
 var
   FFunction: TScriptFunction;
 begin
@@ -2499,7 +2506,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIntegerIsString(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIntegerIsStringObject);
+procedure AddScriptObjFunctionIntegerIsString(Enviroment: TScriptEnviroment; const FunctionName: String; AFunction: TFunctionIntegerIsStringObject);
 var
   FFunction: TScriptFunction;
 begin
@@ -2511,7 +2518,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionStringIsString(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionStringIsStringObject);
+procedure AddScriptObjFunctionStringIsString(Enviroment: TScriptEnviroment; const FunctionName: String; AFunction: TFunctionStringIsStringObject);
 var
   FFunction: TScriptFunction;
 begin
@@ -2523,7 +2530,7 @@ begin
   Enviroment.Functions.Register(FFunction);
 end;
 
-procedure AddScriptObjFunctionIsArrayStrings(Enviroment : TScriptEnviroment; const FunctionName : String; AFunction : TFunctionIsArrayStringsObject);
+procedure AddScriptObjFunctionIsArrayStrings(Enviroment: TScriptEnviroment; const FunctionName: String; AFunction: TFunctionIsArrayStringsObject);
 var
   FFunction: TScriptFunction;
 begin
@@ -3041,7 +3048,7 @@ begin
 end;
 
 procedure ExecuteScriptFile(Sender: TMenuItemW; var AScript: TScript; AlternativeCommand: string;
-  var ImagesCount: Integer; ImageList: TImageList; OnClick: TNotifyEvent = nil; FileName: string = '');
+  var ImagesCount: Integer; ImageList: TCustomImageList; OnClick: TNotifyEvent = nil; FileName: string = '');
 var
   FileText: string;
 begin

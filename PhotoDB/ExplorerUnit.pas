@@ -571,6 +571,9 @@ type
     procedure WbGeoLocationExit(Sender: TObject);
     procedure WbGeoLocationDocumentComplete(ASender: TObject;
       const pDisp: IDispatch; const URL: OleVariant);
+    procedure WbGeoLocationCommandStateChange(ASender: TObject;
+      Command: Integer; Enable: WordBool);
+    procedure WlPanoramioClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -643,6 +646,10 @@ type
     NoLockListView: Boolean;
     FGeoHTMLWindow: IHTMLWindow2;
     FGeoLocationMapReady: Boolean;
+    FIsPanaramio: Boolean;
+    FMapLocationLat: Double;
+    FMapLocationLng: Double;
+    FIsMapLoaded: Boolean;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -720,6 +727,7 @@ type
     procedure AddItemToUpdate(Item: TEasyItem);
     procedure ItemUpdateTimer(Sender: TObject);
     procedure UpdateItems;
+    procedure ShowMarker(FileName: string; Lat, Lng: Double);
     procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double);
     procedure StartMap;
     procedure ClearGeoLocation;
@@ -954,6 +962,7 @@ begin
   LockDrawIcon := False;
   ListView := LV_THUMBS;
   IsReallignInfo := False;
+  FIsMapLoaded := False;
 
   TW.I.Start('ListView1');
 
@@ -3294,10 +3303,28 @@ begin
         LocalFormatSettings);
 end;
 
-procedure ShowMarker(GeoHTMLWindow: IHTMLWindow2; FileName: string; Lat, Lng: Double);
+function StringToFloat(S: string): Double;
+var
+  LocalFormatSettings: TFormatSettings;
 begin
-  if GeoHTMLWindow <> nil then
-    GeoHTMLWindow.execScript(FormatEx('PutMarker({0},{1},"{2}");showPanaramio();', [FormatScriptFloat(Lat), FormatScriptFloat(Lng), FileName]), 'JavaScript');
+  // Initialize special format settings record
+  LocalFormatSettings := TFormatSettings.Create(0);
+
+  LocalFormatSettings.DecimalSeparator := '.';
+
+  Result := StrToFloatDef(S, 0, LocalFormatSettings);
+end;
+
+procedure TExplorerForm.ShowMarker(FileName: string; Lat, Lng: Double);
+begin
+  FMapLocationLat := Lat;
+  FMapLocationLng := Lng;
+
+  if FIsMapLoaded then
+  begin
+    if FGeoHTMLWindow <> nil then
+      FGeoHTMLWindow.execScript(FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});', [FormatScriptFloat(Lat), FormatScriptFloat(Lng), FileName]), 'JavaScript');
+  end;
 end;
 
 procedure TExplorerForm.DisplayGeoLocation(FileName: string; Lat, Lng: Double);
@@ -3307,9 +3334,117 @@ begin
   SplGeoLocation.Left := PnGeoLocation.Left;
   StartMap;
   if FGeoLocationMapReady then
-    ShowMarker(FGeoHTMLWindow, FileName, Lat, Lng)
+    ShowMarker(FileName, Lat, Lng)
   else
     WbGeoLocation.Tag := 1;
+end;
+
+procedure TExplorerForm.WlPanoramioClick(Sender: TObject);
+begin
+  FIsPanaramio := not FIsPanaramio;
+  if FIsMapLoaded then
+  begin
+    if FIsPanaramio then
+      FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []), 'JavaScript')
+    else
+      FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []), 'JavaScript');
+  end;
+end;
+
+procedure TExplorerForm.WbGeoLocationCommandStateChange(ASender: TObject;
+  Command: Integer; Enable: WordBool);
+var
+  ADocument: IHTMLDocument2;
+  ABody: IHTMLElement2;
+  Lat, Lng: Double;
+  IsMapLoaded: Boolean;
+
+  function GetIdValue(const Id: string): string;
+  var
+    Tag: IHTMLElement;
+    TagsList: IHTMLElementCollection;
+    Index: Integer;
+  begin
+    Result := '';
+    TagsList := ABody.getElementsByTagName('input');
+    for Index := 0 to TagsList.Length - 1 do
+    begin
+      Tag := TagsList.item(Index, EmptyParam) As IHTMLElement;
+      if CompareText(Tag.Id, Id) = 0 then
+        Result := Tag.getAttribute('value', 0);
+    end;
+  end;
+
+begin
+  if FSelectedInfo.GeoLocation = nil then
+    Exit;
+
+  if TOleEnum(Command) <> CSC_UPDATECOMMANDS then
+    Exit;
+
+  ADocument := WbGeoLocation.Document as IHTMLDocument2;
+  if not Assigned(ADocument) then
+    Exit;
+
+  if not Supports(ADocument.body, IHTMLElement2, ABody) then
+    Exit;
+
+  IsMapLoaded := GetIdValue('MapIsReady') <> '';
+  Lat := StringToFloat(GetIdValue('LatValue'));
+  Lng := StringToFloat(GetIdValue('LngValue'));
+  if  (Lat <> 0) and (Lng <> 0) and ((Lat <> FMapLocationLat) or (Lng <> FMapLocationLng)) then
+  begin
+    FMapLocationLat := Lat;
+    FMapLocationLng := Lng;
+    WlSaveLocation.Enabled := True;
+  end;
+
+  if IsMapLoaded and not FIsMapLoaded then
+  begin
+    FIsMapLoaded := True;
+    if FGeoHTMLWindow <> nil then
+    begin
+      FGeoHTMLWindow.execScript(FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});', [FormatScriptFloat(FMapLocationLat), FormatScriptFloat(FMapLocationLng), ExtractFileName(FSelectedInfo.FileName)]), 'JavaScript');
+
+      if FIsPanaramio then
+        FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []), 'JavaScript')
+      else
+        FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []), 'JavaScript');
+    end;
+  end;
+end;
+
+procedure TExplorerForm.StartMap;
+var
+  Stream: TMemoryStream;
+  MapHTML: AnsiString;
+begin
+  if FGeoHTMLWindow = nil then
+  begin
+    FMapLocationLat := 0;
+    FMapLocationLng := 0;
+
+    WlSaveLocation.LoadFromResource('MAP_MARKER_ADD');
+    WlSaveLocation.Refresh;
+    WlPanoramio.LoadFromResource('PANORAMIO');
+    WlPanoramio.Refresh;
+    WlPanoramio.Left := WlSaveLocation.Left + WlSaveLocation.Width + 5;
+
+    WbGeoLocation.Navigate('about:blank');
+    if Assigned(WbGeoLocation.Document) then
+    begin
+      Stream := TMemoryStream.Create;
+      try
+        MapHTML := AnsiString(StringReplace(string(GoogleMapHTMLStr), '%LANG%' , TTranslateManager.Instance.Language, []));
+        Stream.WriteBuffer(Pointer(MapHTML)^, Length(MapHTML));
+        Stream.Seek(0, soFromBeginning);
+        (WbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
+      finally
+        F(Stream);
+      end;
+      FGeoHTMLWindow := (WbGeoLocation.Document as IHTMLDocument2).parentWindow;
+    end;
+  end;
 end;
 
 procedure TExplorerForm.WbGeoLocationDocumentComplete(ASender: TObject;
@@ -3321,7 +3456,7 @@ begin
     WbGeoLocation.Tag := 0;
     if FSelectedInfo.GeoLocation <> nil then
     begin
-      ShowMarker(FGeoHTMLWindow, ExtractFileName(FSelectedInfo.FileName),
+      ShowMarker(ExtractFileName(FSelectedInfo.FileName),
         FSelectedInfo.GeoLocation.Latitude,
         FSelectedInfo.GeoLocation.Longitude);
     end;
@@ -5949,30 +6084,6 @@ begin
     ConvertImages(Self, List);
   finally
     F(List);
-  end;
-end;
-
-procedure TExplorerForm.StartMap;
-var
-  Stream: TMemoryStream;
-  MapHTML: AnsiString;
-begin
-  if FGeoHTMLWindow = nil then
-  begin
-    WbGeoLocation.Navigate('about:blank');
-    if Assigned(WbGeoLocation.Document) then
-    begin
-      Stream := TMemoryStream.Create;
-      try
-        MapHTML := AnsiString(StringReplace(string(GoogleMapHTMLStr), '%LANG%' , TTranslateManager.Instance.Language, []));
-        Stream.WriteBuffer(Pointer(MapHTML)^, Length(MapHTML));
-        Stream.Seek(0, soFromBeginning);
-        (WbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
-      finally
-        F(Stream);
-      end;
-      FGeoHTMLWindow := (WbGeoLocation.Document as IHTMLDocument2).parentWindow;
-    end;
   end;
 end;
 
@@ -8965,6 +9076,7 @@ begin
   FChangeHistoryOnChPath := True;
   FGoToLastSavedPath := GoToLastSavedPath;
   FSelectedItem := nil;
+  FIsPanaramio := False;
   inherited Create(AOwner);
 end;
 
