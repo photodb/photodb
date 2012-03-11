@@ -81,7 +81,7 @@ begin
   try
     LoadScript := '';
     try
-      AFS := TFileStream.Create(FileName, FmOpenRead);
+      AFS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
       SetLength(LoadScript, AFS.Size);
       AFS.read(LoadScript[1], AFS.Size);
       for I := Length(LoadScript) downto 1 do
@@ -212,7 +212,7 @@ var
   FS: TFileStream;
 begin
   try
-    FS := TFileStream.Create(FileName, FmOpenWrite);
+    FS := TFileStream.Create(FileName, fmOpenWrite);
   except
     on E: Exception do
     begin
@@ -234,7 +234,7 @@ var
   Eof: array [0 .. 1] of Byte;
 begin
   try
-    FS := TFileStream.Create(FileName, FmOpenWrite);
+    FS := TFileStream.Create(FileName, fmOpenWrite);
   except
     on E: Exception do
     begin

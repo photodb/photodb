@@ -17,6 +17,7 @@ uses
   CCR.Exif.XMPUtils,
   uTiffImage,
   RAWImage,
+  uLogger,
   uPortableDeviceUtils;
 
 type
@@ -64,11 +65,13 @@ function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean; overlo
 function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean; overload;
 function CreateRating(Rating: Integer): TWindowsStarRating;
 function CreateOrientation(Rotation: Integer): TExifOrientation;
-function CanSaveFileOrientation(FileName: string): Boolean;
+function CanSaveEXIF(FileName: string): Boolean;
+function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation): Boolean;
+function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
 
 implementation
 
-function CanSaveFileOrientation(FileName: string): Boolean;
+function CanSaveEXIF(FileName: string): Boolean;
 var
   GraphicClass: TGraphicClass;
 begin
@@ -82,19 +85,55 @@ begin
     Result := False;
 end;
 
+
+function GeoLocationToDouble(Location: TGPSCoordinate): Double;
+begin
+  Result := (Location.Degrees.Quotient) + (Location.Minutes.Quotient) / 60 + (Location.Seconds.Quotient) / 3600;
+  if (Location.Direction = 'S') or (Location.Direction = 'W') then
+    Result := -Result;
+end;
+
+function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+var
+  ExifData: TExifData;
+  OldMode : Cardinal;
+begin
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := False;
+
+    if not Settings.Exif.ReadInfoFromExif then
+      Exit;
+
+    if IsDevicePath(Info.FileName) then
+      Exit;
+
+    try
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(Info.FileName);
+        if not ExifData.Empty then
+        begin
+          if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
+            Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
+        end;
+      finally
+        F(ExifData);
+      end;
+    except
+      Result := False;
+    end;
+    Result := True;
+  finally
+    SetErrorMode(OldMode);
+  end;
+end;
+
 function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 var
   ExifData: TExifData;
   Rating, Rotation: Integer;
-  OldMode : Cardinal;
-
-  function GeoLocationToDouble(Location: TGPSCoordinate): Double;
-  begin
-    Result := (Location.Degrees.Quotient) + (Location.Minutes.Quotient) / 60 + (Location.Seconds.Quotient) / 3600;
-    if (Location.Direction = 'S') or (Location.Direction = 'W') then
-      Result := -Result;
-  end;
-
+  OldMode: Cardinal;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
@@ -180,7 +219,7 @@ begin
   Result := False;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    if not CanSaveFileOrientation(Info.FileName) then
+    if not CanSaveEXIF(Info.FileName) then
       Exit;
     Changed := False;
     try
@@ -280,7 +319,7 @@ begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     Changed := False;
-    if not CanSaveFileOrientation(FileName) then
+    if not CanSaveEXIF(FileName) then
       Exit;
     try
       ExifData := TExifData.Create;
@@ -509,6 +548,76 @@ begin
       end;
     except
       Result := 0;
+    end;
+  finally
+    SetErrorMode(OldMode);
+  end;
+end;
+
+function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation): Boolean;
+var
+  ExifData: TExifData;
+  OldMode: Cardinal;
+  D, M, S: TExifFraction;
+
+  procedure DoubleToCoordinates(Value: Double; out D, M, S: TExifFraction);
+  var
+    Vd, Md, Sd: Double;
+  begin
+    Vd := Abs(Value);
+
+    D := TExifFraction.Create(Trunc(Vd), 1);
+
+    Md := (Vd - Trunc(Vd)) * 60;
+
+    M := TExifFraction.Create(Trunc(Md), 1);
+
+    Sd := (Md - Trunc(Md)) * 60;
+
+    S := TExifFraction.Create(Round(Sd * 1000), 1000);;
+  end;
+
+  function GetLatDirection(V: Double): TGPSLatitudeRef;
+  begin
+    if V < 0 then
+      Result := ltSouth
+    else
+      Result := ltNorth;
+  end;
+
+  function GetLngDirection(V: Double): TGPSLongitudeRef;
+  begin
+    if V < 0 then
+      Result := lnWest
+    else
+      Result := lnEast;
+  end;
+
+begin
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    try
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(FileName);
+
+        DoubleToCoordinates(GeoInfo.Latitude, D, M, S);
+        ExifData.GPSLatitude.Assign(D, M, S, GetLatDirection(GeoInfo.Latitude));
+
+        DoubleToCoordinates(GeoInfo.Longitude, D, M, S);
+        ExifData.GPSLongitude.Assign(D, M, S, GetLngDirection(GeoInfo.Longitude));
+
+        ExifData.SaveToGraphic(FileName);
+        Result := True;
+      finally
+        F(ExifData);
+      end;
+    except
+      on e: Exception do
+      begin
+        EventLog(e);
+        Result := False;
+      end;
     end;
   finally
     SetErrorMode(OldMode);

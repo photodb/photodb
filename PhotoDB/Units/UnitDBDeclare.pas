@@ -405,8 +405,9 @@ begin
     Image := Item.Image;
     Item.Image := nil;
   end;
-  if FGeoLocation <> nil then
-    Item.LoadGeoInfo(FGeoLocation.Latitude, FGeoLocation.Longitude);
+  F(FGeoLocation);
+  if Item.GeoLocation <> nil then
+    LoadGeoInfo(Item.GeoLocation.Latitude, Item.GeoLocation.Longitude);
 end;
 
 function TDBPopupMenuInfoRecord.Copy: TDBPopupMenuInfoRecord;
@@ -455,6 +456,7 @@ begin
   ReadFromDS(DS);
   Data := nil;
   Image := nil;
+  FGeoLocation := nil;
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromFile(FileName: string);

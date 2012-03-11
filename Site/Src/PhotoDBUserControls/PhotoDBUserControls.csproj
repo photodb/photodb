@@ -13,6 +13,7 @@
     <RootNamespace>PhotoDBUserControls</RootNamespace>
     <AssemblyName>PhotoDBUserControls</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <UseIISExpress>false</UseIISExpress>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -89,9 +90,6 @@
     </Compile>
     <Compile Include="Classes\Activation.cs" />
     <Compile Include="Classes\Constants.cs" />
-    <Compile Include="Classes\MaxMind\CountryLookup.cs" />
-    <Compile Include="Classes\MaxMind\GeoIPCountry.cs" />
-    <Compile Include="Classes\MaxMind\GeoIPHelper.cs" />
     <Compile Include="Classes\UmbracoUserControl.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

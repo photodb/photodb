@@ -150,6 +150,7 @@ begin
         FInfo.Image := TJPEGImage.Create;
         try
           GetInfoByFileNameA(FInfo.FileName, True, FInfo);
+          UpdateImageGeoInfo(FInfo);
 
           if (FInfo.Image <> nil) and not FInfo.Image.Empty then
           begin

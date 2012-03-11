@@ -51,9 +51,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GeoLocation.cs" />
+    <Compile Include="Handlers\IPLocationHandler.cs" />
     <Compile Include="HttpHelper.cs" />
     <Compile Include="MailData.cs" />
     <Compile Include="Mailer.cs" />
+    <Compile Include="MaxMind\Country.cs" />
+    <Compile Include="MaxMind\CountryLookup.cs" />
+    <Compile Include="MaxMind\DatabaseInfo.cs" />
+    <Compile Include="MaxMind\GeoIPCountry.cs" />
+    <Compile Include="MaxMind\GeoIPHelper.cs" />
+    <Compile Include="MaxMind\Location.cs" />
+    <Compile Include="MaxMind\LookupService.cs" />
+    <Compile Include="MaxMind\Region.cs" />
+    <Compile Include="MaxMind\RegionName.cs" />
     <Compile Include="UmbracoHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UmbracoSettings.cs" />

@@ -2765,6 +2765,7 @@ begin
     end;
   end else //if ID <> 0
   begin
+    UpdateImageGeoInfo(Info);
     if not ((Info.PassTag = 0) and Info.Crypted) and not ((Info.Image = nil) or Info.Image.Empty) then
     begin
       TempBitmap := TBitmap.Create;
@@ -2784,7 +2785,8 @@ begin
     IsBigImage := False; //сбрасываем флаг для того чтобы перезагрузилась картинка
 
   GUIDParam := FileID;
-  FInfo.Assign(Info);
+  if FInfo <> Info then
+    FInfo.Assign(Info);
   if not SynchronizeEx(ReplaceImageInExplorer) then
     F(TempBitmap)
   else

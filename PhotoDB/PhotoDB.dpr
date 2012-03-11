@@ -385,8 +385,15 @@ uses
   uInterfaceManager in 'Units\uInterfaceManager.pas',
   uUpTime in 'Units\uUpTime.pas',
   uGeoLocation in 'Units\uGeoLocation.pas',
-  uImageListDelayed in 'Units\uImageListDelayed.pas';
+  uImageListDelayed in 'Units\uImageListDelayed.pas',
+  uBrowserEmbedDraw in 'Units\uBrowserEmbedDraw.pas',
+  IntfDocHostUIHandler in 'Units\WebJS\IntfDocHostUIHandler.pas',
+  uWebJSExternal in 'Units\WebJS\uWebJSExternal.pas',
+  uWebJSExternalContainer in 'Units\WebJS\uWebJSExternalContainer.pas',
+  uWebNullContainer in 'Units\WebJS\uWebNullContainer.pas',
+  WebJS_TLB in 'Units\WebJS\WebJS_TLB.pas';
 
+{$R *.tlb}
 {$R *.res}
 
 var

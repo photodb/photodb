@@ -120,6 +120,7 @@ uses
   uExplorerPortableDeviceProvider,
   uTranslate,
   uVCLHelpers,
+
   uPortableDeviceUtils,
   uShellNamespaceUtils,
   uManagerExplorer,
@@ -127,16 +128,22 @@ uses
   uPathProviderUtils,
   uPortableDeviceManager,
   uPortableClasses,
+
   Vcl.OleCtrls,
+  uWebJSExternalContainer,
+  WebJS_TLB,
   SHDocVw,
   MSHTML,
-  uGeoLocation;
+  uExifUtils,
+  uGeoLocation,
+  uBrowserEmbedDraw
+  ;
 
 const
   RefreshListViewInterval = 50;
 
 type
-  TExplorerForm = class(TCustomExplorerForm)
+  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
     SizeImageList: TImageList;
     PmItemPopup: TPopupMenu;
     SlideShow1: TMenuItem;
@@ -366,6 +373,9 @@ type
     WlGeoLocation: TWebLink;
     WlSaveLocation: TWebLink;
     WlPanoramio: TWebLink;
+    PnGeoSearch: TPanel;
+    WedGeoSearch: TWatermarkedEdit;
+    SbDoSearchLocation: TSpeedButton;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -493,9 +503,9 @@ type
     procedure SetFilter1Click(Sender: TObject);
     procedure MakeFolderViewer1Click(Sender: TObject);
     procedure EasyListview2KeyAction(Sender: TCustomEasyListview;
-        var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
+      var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
     procedure EasyListview1ItemEdited(Sender: TCustomEasyListview;
-        Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
+      Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
     procedure ListView1Resize(Sender: TObject);
     procedure N05Click(Sender: TObject);
     procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
@@ -569,11 +579,14 @@ type
     procedure SbCloseGeoLocationClick(Sender: TObject);
     procedure WlGeoLocationClick(Sender: TObject);
     procedure WbGeoLocationExit(Sender: TObject);
-    procedure WbGeoLocationDocumentComplete(ASender: TObject;
-      const pDisp: IDispatch; const URL: OleVariant);
     procedure WbGeoLocationCommandStateChange(ASender: TObject;
       Command: Integer; Enable: WordBool);
     procedure WlPanoramioClick(Sender: TObject);
+    procedure SbDoSearchLocationClick(Sender: TObject);
+    procedure WlSaveLocationClick(Sender: TObject);
+    procedure WedGeoSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure SplGeoLocationMoved(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -645,11 +658,14 @@ type
     FIsFirstShow: Boolean;
     NoLockListView: Boolean;
     FGeoHTMLWindow: IHTMLWindow2;
-    FGeoLocationMapReady: Boolean;
     FIsPanaramio: Boolean;
     FMapLocationLat: Double;
     FMapLocationLng: Double;
     FIsMapLoaded: Boolean;
+    FGeoLocationMapReady: Boolean;
+    FWebBorwserElemBehavior: IElementBehavior;
+    FWebBorwserFactory: IElementBehaviorFactory;
+    FWebJSContainer: TWebJSExternalContainer;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -731,6 +747,11 @@ type
     procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double);
     procedure StartMap;
     procedure ClearGeoLocation;
+
+    function SaveLocation(Lat: Double; Lng: Double; const FileName: WideString): Shortint; safecall;
+    procedure ZoomPan(Lat: Double; Lng: Double; Zoom: SYSINT); safecall;
+    procedure UpdateEmbed; safecall;
+    procedure MapStarted; safecall;
   public
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
     destructor Destroy; override;
@@ -743,12 +764,13 @@ type
     procedure DoDefaultSort(GUID: TGUID);
     function GetAllItems: TExplorerFileInfos;
 
+    procedure GetCurrentImage(W, H: Integer; out Bitmap: TBitmap); override;
     function GetVisibleItems: TStrings;
     procedure RemoveUpdateID(ID: Integer; CID: TGUID);
     procedure AddUpdateID(ID: Integer);
     procedure DoBack;
     procedure SetNewPathW(WPath: TExplorerPath; Explorer: Boolean); override;
-    procedure SetStringPath(Path : String; ChangeTreeView : Boolean); override;
+    procedure SetStringPath(Path: String; ChangeTreeView: Boolean); override;
     procedure ShowProgress;
     procedure ShowIndeterminateProgress;
     procedure HideProgress;
@@ -854,7 +876,26 @@ begin
   end;
 end;
 
-function MakeRegPath(Path : string) : string;
+procedure LoadSpeedButtonFromResourcePNG(SB: TSpeedButton; ResName: string);
+var
+  PNG: TPNGImage;
+  BMP: TBitmap;
+begin
+  PNG := TResourceUtils.LoadGraphicFromRES<TPNGImage>(ResName);
+  try
+    BMP := TBitmap.Create;
+    try
+      LoadPNGImage32bit(PNG, BMP, ClWindow);
+      SB.Glyph := BMP;
+    finally
+      F(BMP);
+    end;
+  finally
+    F(PNG);
+  end;
+end;
+
+function MakeRegPath(Path: string): string;
 var
   I: Integer;
 begin
@@ -873,7 +914,7 @@ end;
 function TExplorerForm.GetPathDescription(Path: string; FileType: Integer): string;
 begin
   if ((Length(Path) = 3) or (Length(Path) = 2)) and (Path[2] = ':') then
-     Result := Format(L('%s drive'), [GetCDVolumeLabelEx(Path[1])])
+    Result := Format(L('%s drive'), [GetCDVolumeLabelEx(Path[1])])
   else if IsNetworkServer(Path) then
     Result := L('Computer')
   else if IsNetworkShare(Path) then
@@ -929,12 +970,12 @@ begin
         LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, clBtnFace);
 
         Background := ScrollBox1.BackGround;
-        BackGround.PixelFormat := pf24bit;
-        BackGround.SetSize(130, 150);
-        BackGround.Canvas.Brush.Color := clBtnFace;
-        BackGround.Canvas.Pen.Color := clBtnFace;
-        BackGround.Canvas.Rectangle(0, 0, BackGround.Width, BackGround.Height);
-        DrawTransparent(ExplorerBackgroundBMP, BackGround, 40);
+        Background.PixelFormat := pf24bit;
+        Background.SetSize(130, 150);
+        Background.Canvas.Brush.Color := clBtnFace;
+        Background.Canvas.Pen.Color := clBtnFace;
+        Background.Canvas.Rectangle(0, 0, BackGround.Width, BackGround.Height);
+        DrawTransparent(ExplorerBackgroundBMP, Background, 40);
         ScrollBox1Resize(Self);
       finally
         F(ExplorerBackgroundBMP);
@@ -958,7 +999,7 @@ begin
   FIsFirstShow := True;
   DirectoryWatcher := TWachDirectoryClass.Create;
   DefaultSort := -1;
-  FWasDragAndDrop:= False;
+  FWasDragAndDrop := False;
   LockDrawIcon := False;
   ListView := LV_THUMBS;
   IsReallignInfo := False;
@@ -972,7 +1013,7 @@ begin
   FItemUpdateTimer.Interval := RefreshListViewInterval;
   FItemUpdateTimer.OnTimer := ItemUpdateTimer;
 
-  ElvMain := TEasyListView.Create(self);
+  ElvMain := TEasyListView.Create(Self);
   ElvMain.Parent := PnContent;
   ElvMain.Align := AlClient;
   ElvMain.ShowThemedBorder := False;
@@ -1011,6 +1052,7 @@ begin
   ElvMain.OnItemImageDraw := EasyListview1ItemImageDraw;
   ElvMain.OnItemImageDrawIsCustom := EasyListview1ItemImageDrawIsCustom;
   ElvMain.OnItemImageGetSize := EasyListview1ItemImageGetSize;
+
   ElvMain.Header.DragManager.Enabled := False;
   ElvMain.DragManager.Enabled := False;
   ElvMain.Header.Columns.Add;
@@ -1024,7 +1066,7 @@ begin
   DragFilesPopup := TStringList.Create;
 
   SelfDraging := False;
-  OutDrag := False;
+  Outdrag := False;
   FDblClicked := False;
   FIsExplorer := False;
   SetLength(FListDragItems, 0);
@@ -1060,7 +1102,7 @@ begin
   CreateBackgrounds;
 
   TW.I.Start('aScript');
-  aScript := TScript.Create(Self, '');
+  AScript := TScript.Create(Self, '');
 
   AddScriptObjFunction(aScript.PrivateEnviroment,'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, CloseWindow);
 
@@ -1102,13 +1144,13 @@ begin
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
   TW.I.Start('Script read');
-  SetNamedValueStr(aScript, '$dbname', dbname);
+  SetNamedValueStr(AScript, '$dbname', dbname);
   MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');
   TW.I.Start('Script Execure');
   Menu := nil;
-  LoadMenuFromScript(ScriptMainMenu.Items, DBkernel.ImageList, MainMenuScript, aScript, ScriptExecuted, FExtImagesInImageList, True);
+  LoadMenuFromScript(ScriptMainMenu.Items, DBKernel.ImageList, MainMenuScript, AScript, ScriptExecuted, FExtImagesInImageList, True);
   Menu := ScriptMainMenu;
-  ScriptMainMenu.Images := DBkernel.ImageList;
+  ScriptMainMenu.Images := DBKernel.ImageList;
 
   TW.I.Start('LoadLanguage');
   LoadLanguage;
@@ -1128,7 +1170,6 @@ begin
 
   FormLoadEnd := True;
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
-  LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3;
   LsMain.BringToFront;
   LsMain.Color := clWindow;
 
@@ -1169,7 +1210,7 @@ begin
   if CopyFilesSynchCount > 0 then
     WindowsMenuTickCount := GetTickCount;
 
-  rdown := False;
+  Rdown := False;
   FDblClicked := False;
   HintTimer.Enabled := False;
   FDBCanDrag := False;
@@ -1186,7 +1227,7 @@ begin
     LastMouseItem := nil;
     Application.HideHint;
     THintManager.Instance.CloseHint;
-    if Item.index > FFilesInfo.Count - 1 then
+    if Item.Index > FFilesInfo.Count - 1 then
       Exit;
 
     SetForegroundWindow(Handle);
@@ -1229,7 +1270,7 @@ begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
   if (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE) or
-     (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+    (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
   begin
     Index := MenuIndexToItemIndex(PmItemPopup.Tag);
     MenuInfo := GetCurrentPopUpMenuInfo(ElvMain.Items[Index]);
@@ -1251,20 +1292,20 @@ end;
 
 procedure TExplorerForm.Shell1Click(Sender: TObject);
 begin
-  ShellExecute(Handle, 'open', PChar(ProcessPath(fFilesInfo[PmItemPopup.Tag].FileName)), nil, nil, SW_NORMAL);
+  ShellExecute(Handle, 'open', PChar(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)), nil, nil, SW_NORMAL);
 end;
 
 procedure TExplorerForm.PmItemPopupPopup(Sender: TObject);
 var
   Infos: TDBPopupMenuInfo;
-  Info: TExplorerFileInfo;
+  info: TExplorerFileInfo;
   Item: TEasyItem;
   Point: TPoint;
   I: Integer;
   B: Boolean;
 begin
   GetCursorPos(Point);
-  Info := FFilesInfo[PmItemPopup.Tag];
+  info := FFilesInfo[PmItemPopup.Tag];
 
   DBitem1.Visible := False;
   StenoGraphia1.Visible := False;
@@ -1339,7 +1380,7 @@ begin
     CryptFile1.Visible := not ValidCryptGraphicFile(Info.FileName);
     ResetPassword1.Visible := not CryptFile1.Visible;
     EnterPassword1.Visible := not CryptFile1.Visible and
-      (DBkernel.FindPasswordForCryptImageFile(Info.FileName) = '');
+      (DBKernel.FindPasswordForCryptImageFile(info.FileName) = '');
 
     Convert1.Visible := not EnterPassword1.Visible;
     Resize1.Visible := not EnterPassword1.Visible;
@@ -1653,6 +1694,7 @@ end;
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
   ClearGeoLocation;
+  F(FWebJSContainer);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
 
@@ -1666,7 +1708,7 @@ begin
   ClearList;
   DirectoryWatcher.StopWatch;
   F(DirectoryWatcher);
-  F(aScript);
+  F(AScript);
   F(DragFilesPopup);
   F(FBitmapImageList);
 
@@ -1678,13 +1720,16 @@ begin
   DropFileTarget1.Unregister;
   DBKernel.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
-  Settings.WriteInteger('Explorer','LeftPanelWidth', MainPanel.Width);
-  Settings.WriteString('Explorer','Path', GetCurrentPathW.Path);
-  Settings.WriteInteger('Explorer','PathType', GetCurrentPathW.PType);
+  Settings.WriteInteger('Explorer', 'LeftPanelWidth', MainPanel.Width);
+  Settings.WriteString('Explorer', 'Path', GetCurrentPathW.Path);
+  Settings.WriteInteger('Explorer', 'PathType', GetCurrentPathW.PType);
   F(FStatusProgress);
   UnRegisterMainForm(Self);
   F(FFilesInfo);
   GOM.RemoveObj(Self);
+
+  FWebBorwserElemBehavior := nil;
+  FWebBorwserFactory := nil;
 end;
 
 procedure TExplorerForm.ListView1Edited(Sender: TObject; Item: TEasyItem; var S: String);
@@ -2059,7 +2104,7 @@ begin
   Result := ElvMain.Items.Count;
 end;
 
-function TExplorerForm.GetListView: TEasyListview;
+function TExplorerForm.GetListView: TEasyListView;
 begin
   Result := ElvMain;
 end;
@@ -2110,7 +2155,7 @@ begin
   SelectTimer.Enabled := True;
 end;
 
-procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: integer;
+procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
   Params: TEventFields; Value: TEventValues);
 var
   ImParams, UpdateInfoParams: TEventFields;
@@ -2193,7 +2238,7 @@ begin
     Exit;
   end;
 
-  //TODO: remove or update next 2 lines
+  // TODO: remove or update next 2 lines
   if ID = -2 then
     Exit;
 
@@ -2403,7 +2448,7 @@ begin
 
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
         TExplorerThread.Create(FFilesInfo[Index].FileName, '',
-          THREAD_TYPE_FOLDER_UPDATE, Info, Self, UpdaterInfo, StateID);
+          THREAD_TYPE_FOLDER_UPDATE, info, Self, UpdaterInfo, StateID);
     end;
 end;
 
@@ -2630,7 +2675,7 @@ var
   S, FolderName: String;
   N: Integer;
 begin
-  FolderName:= L('New directory');
+  FolderName := L('New directory');
   S := IncludeTrailingBackslash(GetCurrentPath);
   N := 1;
   if DirectoryExists(S + FolderName) then
@@ -2656,6 +2701,12 @@ begin
   Explorer := ExplorerManager.NewExplorer(False);
   Explorer.SetNewPathW(Self.GetCurrentPathW, False);
   Explorer.Show;
+end;
+
+procedure TExplorerForm.GetCurrentImage(W, H: Integer; out Bitmap: TBitmap);
+begin
+  Bitmap := TBitmap.Create;
+  GetImage(FSelectedInfo.FileName, Bitmap, W, H);
 end;
 
 function TExplorerForm.GetCurrentPath: string;
@@ -2697,13 +2748,13 @@ function TExplorerForm.ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: 
 var
   I, Index, C: Integer;
   Item: TEasyItem;
-  Info: TExplorerFileInfo;
+  info: TExplorerFileInfo;
 begin
   Result := False;
   for I := 0 to FFilesInfo.Count - 1 do
   begin
-    Info := FFilesInfo[I];
-    if IsEqualGUID(Info.SID, FileGUID) then
+    info := FFilesInfo[I];
+    if IsEqualGUID(info.SID, FileGUID) then
     begin
       Index := MenuIndexToItemIndex(I);
       Item := ElvMain.Items[Index];
@@ -2718,7 +2769,7 @@ begin
         Exit;
 
       if Big then
-        Info.IsBigImage := True;
+        info.IsBigImage := True;
 
       if Index > ElvMain.Items.Count - 1 then
         Exit;
@@ -2734,7 +2785,7 @@ begin
       if C = -1 then
       begin
         FBitmapImageList.AddBitmap(nil);
-        Info.ImageIndex := FBitmapImageList.Count - 1;
+        info.ImageIndex := FBitmapImageList.Count - 1;
         C := FBitmapImageList.Count - 1;
       end;
 
@@ -2835,8 +2886,8 @@ var
 
   function GetNewItemPos(Info: TExplorerFileInfo): Integer;
   var
-    x: TExplorerFileInfo;
-    n, first, last, mid: Integer;
+    X: TExplorerFileInfo;
+    N, First, last, mid: Integer;
 
     function A_0(Index: Integer): TExplorerFileInfo;
     begin
@@ -2860,12 +2911,12 @@ var
 
     if Sort = 0 then
     begin
-      first := 0;
-      x := Info;
-      n := ElvMain.Items.Count;
-      last := n;
+      First := 0;
+      X := info;
+      N := ElvMain.Items.Count;
+      last := N;
 
-      if (Cmp(A_0(0), x) > 0) then
+      if (Cmp(A_0(0), X) > 0) then
       begin
         Result := 0;
         Exit;
@@ -2874,14 +2925,14 @@ var
         Exit;
       end;
 
-      while (first < last) do
+      while (First < last) do
       begin
-          mid := first + (last - first) div 2;
+        mid := First + (last - First) div 2;
 
-          if (Cmp(x, A_0(mid)) <= 0) then
-            last := mid
-          else
-            first := mid + 1;
+        if (Cmp(X, A_0(mid)) <= 0) then
+          last := mid
+        else
+          First := mid + 1;
       end;
 
       Result := last;
@@ -2901,7 +2952,7 @@ begin
       Data := TDataObject.Create;
       Data.Include := FI.Include;
 
-      //without sorting
+      // without sorting
       if Sort = -1 then
         Result := ElvMain.Items.Add(Data)
       else if Sort = 0 then
@@ -2980,11 +3031,12 @@ begin
     EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
-procedure TExplorerForm.AeMainMessage(var Msg: tagMSG;
-  var Handled: Boolean);
+procedure TExplorerForm.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
 var
   InternalHandled: Boolean;
   I: Integer;
+  P: TPoint;
+  H: THandle;
 begin
   if not Self.Active then
     Exit;
@@ -3003,11 +3055,11 @@ begin
             TbUp.Click
     end;
 
-    //search by F3
+    // search by F3
     if (Msg.Wparam = VK_F3) then
       WedSearch.SetFocus;
 
-    //filter by Ctrl+F
+    // filter by Ctrl+F
     if CtrlKeyDown and (Msg.Wparam = Ord('F')) then
     begin
       ShowHideFilter(Self);
@@ -3015,43 +3067,77 @@ begin
     end;
   end;
 
-  if Msg.Hwnd = ElvMain.Handle then
+  if Msg.message = WM_MOUSEWHEEL then
+  begin
+    H := GetFocus;
+    if PnGeoLocation.Visible then
+    begin
+      GetCursorPos(P);
+      P := WbGeoLocation.ScreenToClient(P);
+      if PtInRect(WbGeoLocation.ClientRect, P) then
+      begin
+        if WbGeoLocation.Document <> nil then
+        begin
+          with WbGeoLocation do
+          if Document <> nil then
+            with Application as IOleobject do
+              DoVerb(OLEIVERB_UIACTIVATE, nil, WbGeoLocation, 0, Handle, GetClientRect);
+
+          H := GetWindow(WbGeoLocation.Handle, GW_CHILD);
+          H := GetWindow(H, GW_CHILD); // this is handle that you need
+
+          SendMessage(H, Msg.message, Msg.wParam, Msg.lParam);
+          Msg.message := 0;
+        end;
+      end;
+    end;
+
+    if H <> ElvMain.Handle then
+    begin
+      GetCursorPos(P);
+      P := ElvMain.ScreenToClient(P);
+      if PtInRect(ElvMain.ClientRect, P) then
+        Windows.SetFocus(ElvMain.Handle);
+    end;
+  end;
+
+  if Msg.HWnd = ElvMain.Handle then
   begin
     if ((Msg.message = WM_RBUTTONDOWN) or
        (Msg.message = WM_LBUTTONDBLCLK) or
-       (Msg.message = WM_LBUTTONDOWN)) and PnGeoLocation.Visible then
+      (Msg.Message = WM_LBUTTONDOWN)) and PnGeoLocation.Visible then
       Windows.SetFocus(ElvMain.Handle);
 
     if UpdatingList then
     begin
-      if Msg.message = WM_RBUTTONDOWN then
-        Msg.message := 0;
-      if Msg.message = WM_LBUTTONDBLCLK then
-        Msg.message := 0;
-      if Msg.message = WM_LBUTTONDOWN then
+      if Msg.Message = WM_RBUTTONDOWN then
+        Msg.Message := 0;
+      if Msg.Message = WM_LBUTTONDBLCLK then
+        Msg.Message := 0;
+      if Msg.Message = WM_LBUTTONDOWN then
       begin
         SetLength(FFilesToDrag, 0);
         SetLength(FListDragItems, 0);
         FDBCanDrag := False;
         FDBCanDragW := False;
-        Msg.message := 0;
+        Msg.Message := 0;
       end;
     end;
 
-    if Msg.message = WM_RBUTTONDOWN then
+    if Msg.Message = WM_RBUTTONDOWN then
       WindowsMenuTickCount := GetTickCount;
 
-    if Msg.message = WM_MOUSEWHEEL then
+    if Msg.Message = WM_MOUSEWHEEL then
     begin
       if CtrlKeyDown then
       begin
-        if NativeInt(Msg.WParam) > 0 then
+        if NativeInt(Msg.Wparam) > 0 then
           I := 1
         else
           I := -1;
         ListView1MouseWheel(ElvMain, [SsCtrl], I, Point(0, 0), InternalHandled);
 
-        Msg.message := 0;
+        Msg.Message := 0;
       end;
 
       Application.HideHint;
@@ -3059,53 +3145,58 @@ begin
     end;
 
     // middle mouse button
-    if Msg.message = WM_MBUTTONDOWN then
+    if Msg.Message = WM_MBUTTONDOWN then
     begin
       Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
       BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
-      Msg.message := 0;
+      Msg.Message := 0;
     end;
   end;
 
-  if Msg.message = WM_KEYDOWN then
+  if Msg.Message = WM_KEYDOWN then
   begin
     WindowsMenuTickCount := GetTickCount;
-    if (Msg.WParam = VK_LEFT) and CtrlKeyDown and TbBack.Enabled then
+    if (Msg.Wparam = VK_LEFT) and CtrlKeyDown and TbBack.Enabled then
       SpeedButton1Click(Self);
-    if (Msg.WParam = VK_RIGHT) and CtrlKeyDown and TbForward.Enabled then
+    if (Msg.Wparam = VK_RIGHT) and CtrlKeyDown and TbForward.Enabled then
       SpeedButton2Click(Self);
-    if (Msg.WParam = VK_UP) and CtrlKeyDown and TbUp.Enabled then
+    if (Msg.Wparam = VK_UP) and CtrlKeyDown and TbUp.Enabled then
       SpeedButton3Click(Self);
-    if (Msg.WParam = 83) and CtrlKeyDown then
+    if (Msg.Wparam = 83) and CtrlKeyDown then
       if PePath.CanBreakLoading then
         TbStopClick(Self);
-    if (Msg.WParam = VK_F5) then
+    if (Msg.Wparam = VK_F5) then
+    begin
       SetNewPathW(GetCurrentPathW, True);
+      Msg.Wparam := 0;
+    end;
   end;
 
-  if Msg.Hwnd = ElvMain.Handle then
-    if Msg.message = WM_KEYDOWN then
+  if Msg.HWnd = ElvMain.Handle then
+    if Msg.Message = WM_KEYDOWN then
     begin
       WindowsMenuTickCount := GetTickCount;
 
-      if (Msg.WParam = 93) and CtrlKeyDown then
+      if (Msg.Wparam = 93) and CtrlKeyDown then
       begin
         if SelCount = 0 then
           ListView1ContextPopup(nil, ElvMain.ClientToScreen(Point(ElvMain.Left, ElvMain.Top)), InternalHandled);
       end;
 
-      if (Msg.WParam = VK_APPS) then
+      if (Msg.Wparam = VK_APPS) then
         ListView1ContextPopup(ElvMain, Point(-1, -1), InternalHandled);
 
-      if (Msg.WParam = VK_SUBTRACT) then
+      if (Msg.Wparam = VK_SUBTRACT) then
         ZoomOut;
-      if (Msg.WParam = VK_ADD) then
+      if (Msg.Wparam = VK_ADD) then
         ZoomIn;
 
-      if (Msg.WParam = VK_F2) then
-        if ((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP)) then
+      if (Msg.Wparam = VK_F2) then
+        if ((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP)) then
         begin
           if ListView1Selected <> nil then
           begin
@@ -3114,22 +3205,22 @@ begin
           end;
         end;
 
-      if (Msg.WParam = VK_DELETE) and ShiftKeyDown then
+      if (Msg.Wparam = VK_DELETE) and ShiftKeyDown then
       begin
         DeleteFiles(False);
         Exit;
       end;
 
-      if (Msg.WParam = VK_DELETE) then
+      if (Msg.Wparam = VK_DELETE) then
         DeleteFiles(True);
 
-      if (Msg.WParam = 67) and CtrlKeyDown then
+      if (Msg.Wparam = 67) and CtrlKeyDown then
         CopyClick(nil);
-      if (Msg.WParam = 88) and CtrlKeyDown then
+      if (Msg.Wparam = 88) and CtrlKeyDown then
         CutClick(nil);
-      if (Msg.WParam = 86) and CtrlKeyDown then
+      if (Msg.Wparam = 86) and CtrlKeyDown then
         PasteClick(nil);
-      if (Msg.WParam = 65) and CtrlKeyDown then
+      if (Msg.Wparam = 65) and CtrlKeyDown then
         SelectAll1Click(nil);
     end;
 end;
@@ -3288,31 +3379,23 @@ begin
     end;
 end;
 
-function FormatScriptFloat(Value: Double): string;
-var
-  LocalFormatSettings: TFormatSettings;
+procedure TExplorerForm.WlGeoLocationClick(Sender: TObject);
 begin
-  // Initialize special format settings record
-  LocalFormatSettings := TFormatSettings.Create(0);
-
-  LocalFormatSettings.DecimalSeparator := '.';
-
-  Result := FloatToStrF(Value, ffFixed,
-        12, //Precision: "should be 18 or less for values of type Extended"
-        9, //Scale 0..18.   Sure...9 digits before decimal mark, 9 digits after. Why not
-        LocalFormatSettings);
-end;
-
-function StringToFloat(S: string): Double;
-var
-  LocalFormatSettings: TFormatSettings;
-begin
-  // Initialize special format settings record
-  LocalFormatSettings := TFormatSettings.Create(0);
-
-  LocalFormatSettings.DecimalSeparator := '.';
-
-  Result := StrToFloatDef(S, 0, LocalFormatSettings);
+  if FSelectedInfo.GeoLocation <> nil then
+  begin
+    DisplayGeoLocation(ExtractFileName(FSelectedInfo.FileName),
+      FSelectedInfo.GeoLocation.Latitude, FSelectedInfo.GeoLocation.Longitude);
+  end else
+  begin
+    StartMap;
+    if FIsMapLoaded then
+    begin
+      if FGeoHTMLWindow <> nil then
+        FGeoHTMLWindow.execScript(FormatEx('ClearMarkers(); ', []), 'JavaScript');
+    end;
+  end;
+  if ElvMain.Selection.FocusedItem <> nil then
+    ElvMain.Selection.FocusedItem.MakeVisible(EmvTop);
 end;
 
 procedure TExplorerForm.ShowMarker(FileName: string; Lat, Lng: Double);
@@ -3323,17 +3406,18 @@ begin
   if FIsMapLoaded then
   begin
     if FGeoHTMLWindow <> nil then
-      FGeoHTMLWindow.execScript(FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});', [FormatScriptFloat(Lat), FormatScriptFloat(Lng), FileName]), 'JavaScript');
+    begin
+      FGeoHTMLWindow.execScript
+        (FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});',
+        [DoubleToStringPoint(Lat), DoubleToStringPoint(Lng), FileName]), 'JavaScript');
+    end;
   end;
 end;
 
 procedure TExplorerForm.DisplayGeoLocation(FileName: string; Lat, Lng: Double);
 begin
-  PnGeoLocation.Show;
-  SplGeoLocation.Show;
-  SplGeoLocation.Left := PnGeoLocation.Left;
   StartMap;
-  if FGeoLocationMapReady then
+  if FIsMapLoaded then
     ShowMarker(FileName, Lat, Lng)
   else
     WbGeoLocation.Tag := 1;
@@ -3349,6 +3433,31 @@ begin
     else
       FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []), 'JavaScript');
   end;
+  WlPanoramio.Text := IIF(FIsPanaramio, L('Hide Panoramio'), L('Show Panoramio'));
+end;
+
+procedure TExplorerForm.SplGeoLocationMoved(Sender: TObject);
+begin
+  Settings.WriteInteger('Explorer', 'GeoLocationWidth', PnGeoLocation.Width);
+end;
+
+procedure TExplorerForm.WlSaveLocationClick(Sender: TObject);
+var
+  GeoLocation: TGeoLocation;
+begin
+  if CanSaveEXIF(FSelectedInfo.FileName) then
+  begin
+    GeoLocation := TGeoLocation.Create;
+    try
+      GeoLocation.Latitude := FMapLocationLat;
+      GeoLocation.Longitude := FMapLocationLng;
+      if UpdateFileGeoInfo(FSelectedInfo.FileName, GeoLocation) then
+        WlSaveLocation.Enabled := False;
+    finally
+      F(GeoLocation);
+    end;
+  end else
+    MessageBoxDB(Handle, Format(L('Geo location can''t be saved to this file type!'), []), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TExplorerForm.WbGeoLocationCommandStateChange(ASender: TObject;
@@ -3356,10 +3465,11 @@ procedure TExplorerForm.WbGeoLocationCommandStateChange(ASender: TObject;
 var
   ADocument: IHTMLDocument2;
   ABody: IHTMLElement2;
-  Lat, Lng: Double;
+  Lat, Lng, Lt, Ln: Double;
+  Zoom: Integer;
   IsMapLoaded: Boolean;
 
-  function GetIdValue(const Id: string): string;
+  function GetIdValue(const ID: string): string;
   var
     Tag: IHTMLElement;
     TagsList: IHTMLElementCollection;
@@ -3369,16 +3479,13 @@ var
     TagsList := ABody.getElementsByTagName('input');
     for Index := 0 to TagsList.Length - 1 do
     begin
-      Tag := TagsList.item(Index, EmptyParam) As IHTMLElement;
-      if CompareText(Tag.Id, Id) = 0 then
+      Tag := TagsList.Item(Index, EmptyParam) As IHTMLElement;
+      if CompareText(Tag.ID, ID) = 0 then
         Result := Tag.getAttribute('value', 0);
     end;
   end;
 
 begin
-  if FSelectedInfo.GeoLocation = nil then
-    Exit;
-
   if TOleEnum(Command) <> CSC_UPDATECOMMANDS then
     Exit;
 
@@ -3390,9 +3497,10 @@ begin
     Exit;
 
   IsMapLoaded := GetIdValue('MapIsReady') <> '';
-  Lat := StringToFloat(GetIdValue('LatValue'));
-  Lng := StringToFloat(GetIdValue('LngValue'));
-  if  (Lat <> 0) and (Lng <> 0) and ((Lat <> FMapLocationLat) or (Lng <> FMapLocationLng)) then
+  Lat := StringToDoublePoint(GetIdValue('LatValue'));
+  Lng := StringToDoublePoint(GetIdValue('LngValue'));
+  if ((Lat <> 0) or (Lng <> 0)) and
+    ((Abs(Lat - FMapLocationLat) > 0.0000003) or (Abs(Lng - FMapLocationLng) > 0.0000003)) then
   begin
     FMapLocationLat := Lat;
     FMapLocationLng := Lng;
@@ -3402,15 +3510,52 @@ begin
   if IsMapLoaded and not FIsMapLoaded then
   begin
     FIsMapLoaded := True;
-    if FGeoHTMLWindow <> nil then
+
+    if WbGeoLocation.Tag = 1 then
     begin
-      FGeoHTMLWindow.execScript(FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});', [FormatScriptFloat(FMapLocationLat), FormatScriptFloat(FMapLocationLng), ExtractFileName(FSelectedInfo.FileName)]), 'JavaScript');
+      WbGeoLocation.Tag := 0;
+      if FSelectedInfo.GeoLocation <> nil then
+      begin
+        ShowMarker(ExtractFileName(FSelectedInfo.FileName),
+          FSelectedInfo.GeoLocation.Latitude,
+          FSelectedInfo.GeoLocation.Longitude);
+      end else
+      begin
+        if (FGeoHTMLWindow <> nil) then
+        begin
+          Lt := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLat', ''));
+          Ln := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLng', ''));
+          Zoom := StrToIntDef(Settings.ReadString('Explorer', 'MapZoom', ''), 0);
+          if (Zoom > 0) and ((Lt > 0) or (Ln > 0)) then
+          begin
+            FGeoHTMLWindow.execScript
+              (FormatEx('SetMapBounds({0}, {1}, {2}); ', [DoubleToStringPoint(Lt), DoubleToStringPoint(Ln), Zoom]), 'JavaScript');
+          end;
+        end;
+      end;
+    end;
+
+    if (FGeoHTMLWindow <> nil) and ((Lat <> 0) or (Lng <> 0)) then
+    begin
+      FGeoHTMLWindow.execScript
+        (FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});',
+        [DoubleToStringPoint(FMapLocationLat), DoubleToStringPoint(FMapLocationLng),
+        ExtractFileName(FSelectedInfo.FileName)]), 'JavaScript');
 
       if FIsPanaramio then
-        FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []), 'JavaScript')
+        FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []),
+          'JavaScript')
       else
-        FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []), 'JavaScript');
+        FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []),
+          'JavaScript');
     end;
+  end;
+
+  if FIsMapLoaded then
+  begin
+    Settings.WriteString('Explorer', 'MapZoom', GetIdValue('MapZoom'));
+    Settings.WriteString('Explorer', 'MapLat', GetIdValue('MapLat'));
+    Settings.WriteString('Explorer', 'MapLng', GetIdValue('MapLng'));
   end;
 end;
 
@@ -3421,6 +3566,7 @@ var
 begin
   if FGeoHTMLWindow = nil then
   begin
+    WedGeoSearch.Text := Settings.ReadString('Explorer', 'LastGeoSearch', '');
     FMapLocationLat := 0;
     FMapLocationLng := 0;
 
@@ -3428,14 +3574,22 @@ begin
     WlSaveLocation.Refresh;
     WlPanoramio.LoadFromResource('PANORAMIO');
     WlPanoramio.Refresh;
-    WlPanoramio.Left := WlSaveLocation.Left + WlSaveLocation.Width + 5;
 
+    WedGeoSearch.WatermarkText := L('Search location by address');
+    WlPanoramio.Text := L('Show Panoramio');
+    WlSaveLocation.Text := L('Save location');
+    WlPanoramio.Left := WlSaveLocation.Left + WlSaveLocation.Width + 10;
+
+    LoadSpeedButtonFromResourcePNG(SbDoSearchLocation, 'SEARCH');
+    WbGeoLocation.Tag := 1;
+
+    FWebJSContainer := TWebJSExternalContainer.Create(WbGeoLocation, Self);
     WbGeoLocation.Navigate('about:blank');
-    if Assigned(WbGeoLocation.Document) then
+   if Assigned(WbGeoLocation.Document) then
     begin
-      Stream := TMemoryStream.Create;
+       Stream := TMemoryStream.Create;
       try
-        MapHTML := AnsiString(StringReplace(string(GoogleMapHTMLStr), '%LANG%' , TTranslateManager.Instance.Language, []));
+        MapHTML := AnsiString(StringReplace(string(GoogleMapHTMLStr), '%LANG%', TTranslateManager.Instance.Language, []));
         Stream.WriteBuffer(Pointer(MapHTML)^, Length(MapHTML));
         Stream.Seek(0, soFromBeginning);
         (WbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
@@ -3444,23 +3598,19 @@ begin
       end;
       FGeoHTMLWindow := (WbGeoLocation.Document as IHTMLDocument2).parentWindow;
     end;
+    PnGeoLocation.Width := Settings.ReadInteger('Explorer', 'GeoLocationWidth', PnGeoLocation.Width);
   end;
+  PnGeoLocation.Show;
+  SplGeoLocation.Show;
+  SplGeoLocation.Left := PnGeoLocation.Left;
 end;
 
-procedure TExplorerForm.WbGeoLocationDocumentComplete(ASender: TObject;
-  const pDisp: IDispatch; const URL: OleVariant);
+procedure TExplorerForm.SbDoSearchLocationClick(Sender: TObject);
 begin
-  FGeoLocationMapReady := True;
-  if WbGeoLocation.Tag = 1 then
-  begin
-    WbGeoLocation.Tag := 0;
-    if FSelectedInfo.GeoLocation <> nil then
-    begin
-      ShowMarker(ExtractFileName(FSelectedInfo.FileName),
-        FSelectedInfo.GeoLocation.Latitude,
-        FSelectedInfo.GeoLocation.Longitude);
-    end;
-  end;
+  Settings.WriteString('Explorer', 'LastGeoSearch', WedGeoSearch.Text);
+  if FIsMapLoaded then
+    if FGeoHTMLWindow <> nil then
+      FGeoHTMLWindow.execScript(FormatEx('FindLocation("{0}");', [WedGeoSearch.Text]), 'JavaScript');
 end;
 
 procedure TExplorerForm.WbGeoLocationExit(Sender: TObject);
@@ -3470,6 +3620,15 @@ begin
   ElvMain.SetFocus;
 end;
 
+procedure TExplorerForm.WedGeoSearchKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+  begin
+    Key := 0;
+    SbDoSearchLocationClick(Sender);
+  end;
+end;
 
 procedure TExplorerForm.LoadInfoAboutFiles(Info: TExplorerFileInfos);
 begin
@@ -3548,6 +3707,48 @@ begin
   begin
     FItemUpdateTimer.Enabled := False;
     UpdateItems;
+  end;
+end;
+
+procedure TExplorerForm.MapStarted;
+begin
+  //
+end;
+
+procedure TExplorerForm.ZoomPan(Lat, Lng: Double; Zoom: SYSINT);
+begin
+  //
+end;
+
+function TExplorerForm.SaveLocation(Lat, Lng: Double;
+  const FileName: WideString): Shortint;
+begin
+  //
+end;
+
+procedure TExplorerForm.UpdateEmbed;
+var
+  Embed2: IHTMLElement2;
+  Embed: IHTMLElement;
+  FactoryVar: OleVariant;
+  I: Integer;
+  Embeds: IHTMLElementCollection;
+begin
+  Embeds := (WbGeoLocation.Document as IHTMLDocument2).embeds;
+  for I := 0 to Embeds.length - 1 do
+  begin
+    Embed2 := Embeds.item(0, I) as IHTMLElement2;
+    if Assigned(Embed2) then
+    begin
+      Embed := Embeds.item(0, I) as IHTMLElement;
+      if Assigned(Embed) and (Embed.className = 'image') then
+      begin
+        FWebBorwserElemBehavior := TElementBehavior.Create(Self);
+        FWebBorwserFactory := TElementBehaviorFactory.Create(FWebBorwserElemBehavior);
+        FactoryVar := IElementBehaviorFactory(FWebBorwserFactory);
+        Embed2.addBehavior('', FactoryVar);
+      end;
+    end;
   end;
 end;
 
@@ -4524,8 +4725,8 @@ end;
 procedure TExplorerForm.SetNewPath(Path: String; Explorer: Boolean);
 var
   S, S1: string;
-  I: integer;
-  oldMode: Cardinal;
+  I: Integer;
+  OldMode: Cardinal;
   P: TPathItem;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
@@ -4582,7 +4783,7 @@ begin
             Exit;
           end;
         end;
-      if (AnsiLowerCase(Path) = AnsiLowerCase(MyComputer)) or (Path='') then
+      if (AnsiLowerCase(Path) = AnsiLowerCase(MyComputer)) or (Path = '') then
       begin
         SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False);
         Exit;
@@ -4665,14 +4866,14 @@ procedure TExplorerForm.CMMOUSELEAVE(var Message: TWMNoParams);
 var
   P: TPoint;
 begin
-  GetCursorPos(p);
+  GetCursorPos(P);
   if THintManager.Instance.HintAtPoint(P) <> nil then
     Exit;
 
-  LastMouseItem:= nil;
+  LastMouseItem := nil;
   Application.HideHint;
   THintManager.Instance.CloseHint;
-  Hinttimer.Enabled := False;
+  HintTimer.Enabled := False;
 end;
 
 procedure TExplorerForm.CopyFilesToClipboard(IsCutAction: Boolean = False);
@@ -4946,25 +5147,6 @@ begin
   BtnCloseExplorerClick(Sender);
 end;
 
-procedure LoadSpeedButtonFromResourcePNG(SB: TSpeedButton; ResName: string);
-var
-  PNG: TPNGImage;
-  BMP: TBitmap;
-begin
-  PNG := TResourceUtils.LoadGraphicFromRES<TPngImage>(ResName);
-  try
-    BMP := TBitmap.Create;
-    try
-       LoadPNGImage32bit(PNG, BMP, clWindow);
-       SB.Glyph := BMP;
-    finally
-      F(BMP);
-    end;
-  finally
-    F(PNG);
-  end;
-end;
-
 procedure TExplorerForm.Searchfiles1Click(Sender: TObject);
 begin
   Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES);
@@ -5104,10 +5286,10 @@ begin
     HideFilter;
 end;
 
-function TExplorerForm.InternalGetImage(FileName: string;
-  Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
+function TExplorerForm.InternalGetImage(FileName: string; Bitmap: TBitmap;
+  var Width: Integer; var Height: Integer): Boolean;
 var
-  I, Index : Integer;
+  I, Index: Integer;
   B: TBitmap;
 begin
   Result := False;
@@ -5180,7 +5362,7 @@ var
 begin
   P := PePath.CurrentPathEx;
 
-  if (P is TDirectoryItem) or (P is TDriveItem) or (P is TShareItem)  then
+  if (P is TDirectoryItem) or (P is TDriveItem) or (P is TShareItem) then
     SetStringPath(PePath.Path, False)
   else if P is TComputerItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_COMPUTER), False)
@@ -5209,7 +5391,7 @@ end;
 procedure TExplorerForm.PePathContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
-  MousePos := PePath.ClientToScreen(MousePos);
+  MousePos := PePath.Clienttoscreen(MousePos);
   PmPathMenu.Popup(MousePos.X, MousePos.Y);
   Handled := True;
 end;
@@ -5303,7 +5485,7 @@ procedure TExplorerForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    SlideShowLink.Text:= L('Slide show');
+    SlideShowLink.Text := L('Slide show');
     ShellLink.Text := L('Execute');
     CopyToLink.Text := L('Copy to');
     MoveToLink.Text := L('Move to');
@@ -5326,7 +5508,6 @@ begin
     WlResize.Text := L('Resize');
     WlConvert.Text := L('Convert');
     WlCrop.Text := L('Crop');
-    WlGeoLocation.Text := L('Display on map');
 
     Label1.Caption := L('Preview');
     TasksLabel.Caption := L('Tasks');
@@ -5444,12 +5625,12 @@ begin
 
     PePath.LoadingText := L('Loading...');
 
-    //search
+    // search
     Searchfiles1.Caption := L('Search in directory');
     SearchfileswithEXIF1.Caption := L('Search in directory (with EXIF)');
     Searchincollection1.Caption := L('Search in collection');
 
-    //filter
+    // filter
     WedFilter.WatermarkText := L('Filter content');
     CbFilterMatchCase.Caption := L('Match case');
     LbFilter.Caption := L('Filter') + ':';
@@ -5477,8 +5658,8 @@ end;
 
 procedure TExplorerForm.PopupMenuTreeViewPopup(Sender: TObject);
 begin
- if TreeView.SelectedFolder<>nil then
- begin
+  if TreeView.SelectedFolder <> nil then
+  begin
     TempFolderName := TreeView.SelectedFolder.PathName;
     OpeninExplorer1.Visible := DirectoryExists(TempFolderName);
     AddFolder2.Visible := OpeninExplorer1.Visible and not FolderView;
@@ -5804,7 +5985,7 @@ end;
 
 procedure TExplorerForm.RefreshLinkClick(Sender: TObject);
 begin
- if (SelCount=0) or (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
+  if (SelCount = 0) or (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
     Refresh2Click(Sender)
   else
     Refresh1Click(Sender);
@@ -5820,7 +6001,7 @@ end;
 
 procedure TExplorerForm.JumpHistoryClick(Sender: TObject);
 var
-  N : Integer;
+  N: Integer;
 begin
   N := (Sender as TMenuItem).Tag;
   FChangeHistoryOnChPath := False;
@@ -5947,9 +6128,9 @@ var
   ItemIDs: TArInteger;
   ItemSelected: TArBoolean;
 begin
-  Setlength(ItemFileNames, FileList.Count);
-  Setlength(ItemIDs, FileList.Count);
-  Setlength(ItemSelected, FileList.Count);
+  SetLength(ItemFileNames, FileList.Count);
+  SetLength(ItemIDs, FileList.Count);
+  SetLength(ItemSelected, FileList.Count);
 
   // be default unchecked
   for I := 0 to FileList.Count - 1 do
@@ -6091,7 +6272,7 @@ procedure TExplorerForm.Stretch1Click(Sender: TObject);
 var
   FileName: string;
 begin
-  FileName:=fFilesInfo[PmItemPopup.Tag].FileName;
+  FileName := FFilesInfo[PmItemPopup.Tag].FileName;
   SetDesktopWallpaper(FileName, WPSTYLE_STRETCH);
 end;
 
@@ -6204,7 +6385,7 @@ begin
 
     if not(SsRight in LastShift) then
     begin
-      if not SelfDraging and (Selcount = 0) then
+      if not SelfDraging and (SelCount = 0) then
       begin
         FDBCanDragW := False;
 
@@ -6214,7 +6395,7 @@ begin
           CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, Self);
 
       end;
-      if Selcount = 1 then
+      if SelCount = 1 then
         if ListView1Selected <> nil then
         begin
           FDBCanDragW := False;
@@ -6234,7 +6415,7 @@ begin
       if SelCount = 1 then
         if ListView1Selected <> nil then
         begin
-          index := ItemIndexToMenuIndex(ListView1Selected.index);
+          index := ItemIndexToMenuIndex(ListView1Selected.Index);
           if (GetExt(FFilesInfo[index].FileName) = 'EXE') then
           begin
             FDBCanDragW := False;
@@ -6388,7 +6569,7 @@ begin
 
   HelpNo := HelpNo + 1;
 
-  if HelpNO= 4 then
+  if HelpNo = 4 then
     HelpTimer.Enabled := True;
 end;
 
@@ -6410,7 +6591,7 @@ var
 begin
   Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
   try
-    SetStringPath(Reg.ReadString('Shell Folders', 'Personal', ''),false);
+    SetStringPath(Reg.ReadString('Shell Folders', 'Personal', ''), False);
   finally
     F(Reg);
   end;
@@ -6427,7 +6608,7 @@ var
 begin
   Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
   try
-    SetStringPath(Reg.ReadString('Shell Folders', 'Desktop', ''),false);
+    SetStringPath(Reg.ReadString('Shell Folders', 'Desktop', ''), False);
   finally
     F(Reg);
   end;
@@ -6444,7 +6625,7 @@ end;
 
 procedure TExplorerForm.ImageEditor2Click(Sender: TObject);
 var
-  Index : integer;
+  Index: Integer;
 begin
   if ElvMain.Selection.FocusedItem <> nil then
   begin
@@ -6467,7 +6648,7 @@ begin
     with EditorsManager.NewEditor do
     begin
       Show;
-      OpenFileName(FFilesInfo[ItemIndexToMenuIndex(Item.index)].FileName);
+      OpenFileName(FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName);
     end;
   end;
 end;
@@ -6479,13 +6660,13 @@ end;
 
 procedure TExplorerForm.ExportImages1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  info: TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
+  info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
-    ExportImages(Self, Info);
+    ExportImages(Self, info);
   finally
-    F(Info);
+    F(info);
   end;
 end;
 
@@ -6533,7 +6714,7 @@ var
   I: Integer;
 begin
   Link := TWebLink(PmLinkOptions.Tag);
-  DefLink:=true;
+  DefLink := True;
   for I := 0 to Length(UserLinks) - 1 do
     if Link = UserLinks[I] then
     begin
@@ -6736,8 +6917,8 @@ begin
           WebLink.Text := FName;
           WebLink.Tag := Length(UserLinks) - 1;
           WebLink.OnClick := UserDefinedPlaceClick;
-          WebLink.Color := ClBtnface;
-          WebLink.Font.Color := ClWindowText;
+          WebLink.Color := clBtnFace;
+          WebLink.Font.Color := clWindowText;
           WebLink.EnterBould := False;
           WebLink.IconWidth := 16;
           WebLink.IconHeight := 16;
@@ -6754,7 +6935,7 @@ begin
           FPlaces[Length(FPlaces) - 1].OtherFolder := FOtherFolder;
           Ico := TIcon.Create;
           try
-            //TODO: optimize code
+            // TODO: optimize code
             Ico.Handle := ExtractSmallIconByPath(FIcon, True);
             UserLinks[Length(UserLinks) - 1].Icon := Ico;
           finally
@@ -6848,7 +7029,7 @@ begin
     FSelectedInfo.FileType := GetCurrentPathW.PType;
     if SelCount < 2 then
     begin
-      FSelectedInfo.Id := 0;
+      FSelectedInfo.ID := 0;
       FSelectedInfo.Width := 0;
       FSelectedInfo.Height := 0;
       FSelectedInfo.One := True;
@@ -6864,7 +7045,7 @@ begin
         if Index > FFilesInfo.Count - 1 then
           Exit;
 
-        FSelectedInfo.Id := FFilesInfo[Index].ID;
+        FSelectedInfo.ID := FFilesInfo[Index].ID;
         FSelectedInfo.FileType := FFilesInfo[Index].FileType;
         FileName := FFilesInfo[Index].FileName;
         FSelectedInfo.FileName := FFilesInfo[Index].FileName;
@@ -7315,9 +7496,9 @@ var
   Index: Integer;
 begin
   NumberOfPanel := (Sender as TMenuItem).Tag;
-  Setlength(InfoNames, 0);
-  Setlength(InfoIDs, 0);
-  Setlength(Infoloaded, 0);
+  SetLength(InfoNames, 0);
+  SetLength(InfoIDs, 0);
+  SetLength(Infoloaded, 0);
   for I := 0 to FFilesInfo.Count - 1 do
   begin
     Index := MenuIndexToItemIndex(I);
@@ -7325,13 +7506,13 @@ begin
     begin
       if FFilesInfo[I].ID = 0 then
       begin
-        Setlength(InfoNames, Length(InfoNames) + 1);
-        Setlength(Infoloaded, Length(Infoloaded) + 1);
+        SetLength(InfoNames, Length(InfoNames) + 1);
+        SetLength(Infoloaded, Length(Infoloaded) + 1);
         InfoNames[Length(InfoNames) - 1] := FFilesInfo[I].FileName;
         Infoloaded[Length(Infoloaded) - 1] := FFilesInfo[I].Loaded;
       end else
       begin
-        Setlength(InfoIDs, Length(InfoIDs) + 1);
+        SetLength(InfoIDs, Length(InfoIDs) + 1);
         InfoIDs[Length(InfoIDs) - 1] := FFilesInfo[I].ID;
       end;
     end;
@@ -7418,7 +7599,7 @@ begin
       Path := Path + '\';
     if FSearchMode = EXPLORER_SEARCH_FILES then
       SetNewPath(Path + cFilesSearchPath + S, False)
-    else  if FSearchMode = EXPLORER_SEARCH_IMAGES then
+    else if FSearchMode = EXPLORER_SEARCH_IMAGES then
       SetNewPath(Path + cImagesSearchPath + S, False)
     else
       SetNewPath(cDBSearchPath + S, False);
@@ -7452,19 +7633,9 @@ begin
     with EditorsManager.NewEditor do
     begin
       Show;
-      OpenFileName(FFilesInfo[ItemIndexToMenuIndex(Item.index)].FileName);
+      OpenFileName(FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName);
       CropLinkClick(nil);
     end;
-  end;
-end;
-
-procedure TExplorerForm.WlGeoLocationClick(Sender: TObject);
-begin
-  if FSelectedInfo.GeoLocation <> nil then
-  begin
-    DisplayGeoLocation(ExtractFileName(FSelectedInfo.FileName),
-      FSelectedInfo.GeoLocation.Latitude,
-      FSelectedInfo.GeoLocation.Longitude);
   end;
 end;
 
@@ -7476,7 +7647,7 @@ begin
   Item := ListView1Selected;
   if Item <> nil then
   begin
-    Path := FFilesInfo[ItemIndexToMenuIndex(Item.index)].FileName;
+    Path := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
     GetPhotosFromFolder(Path);
   end else
     GetPhotosFromFolder(GetCurrentPath);
@@ -7498,10 +7669,10 @@ var
     Maske: DWORD;
   begin
     Maske := pDBVol^.dbcv_unitmask;
-    for i := 0 to 25 do
+    for I := 0 to 25 do
     begin
       if (Maske and 1) = 1 then
-        Result := Char(i + Ord('A')) + ':';
+        Result := Char(I + Ord('A')) + ':';
       Maske := Maske shr 1;
     end;
   end;
@@ -7509,11 +7680,11 @@ var
 begin
   if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
   begin
-    case Msg.wParam of
+    case Msg.Wparam of
       DBT_DeviceArrival:
         if PDevBroadcastHdr(Msg.lParam)^.dbcd_devicetype = DBT_DevTyp_Volume then
         begin
-          //Drive := GetDrive(PDevBroadcastVolume(Msg.lParam));
+          // Drive := GetDrive(PDevBroadcastVolume(Msg.lParam));
           ElvMain.Selection.ClearAll;
           RefreshLinkClick(RefreshLink);
         end;
@@ -7532,11 +7703,11 @@ begin
           end;
         end;
       DBT_DEVNODES_CHANGED:
-      begin
-        //just refresh list
-        ElvMain.Selection.ClearAll;
-        RefreshLinkClick(RefreshLink);
-      end;
+        begin
+          // just refresh list
+          ElvMain.Selection.ClearAll;
+          RefreshLinkClick(RefreshLink);
+        end;
     end;
   end;
 end;
@@ -7546,7 +7717,7 @@ begin
   if FNextClipboardViewer = Msg.Remove then
     FNextClipboardViewer := Msg.Next
   else if FNextClipboardViewer <> 0 then
-    SendMessage(FNextClipboardViewer, WM_ChangeCBChain, Msg.Remove, Msg.Next)
+    SendMessage(FNextClipboardViewer, WM_CHANGECBCHAIN, Msg.Remove, Msg.Next)
 end;
 
 procedure TExplorerForm.WMClipboardUpdate(var Msg: TMessage);
@@ -7557,9 +7728,9 @@ end;
 
 procedure TExplorerForm.WMDrawClipboard(var Msg: TMessage);
 begin
-  //pass the message on to the next window
+  // pass the message on to the next window
   if FNextClipboardViewer <> 0 then
-   SendMessage(FNextClipboardViewer, WM_DrawClipboard, Msg.wParam, Msg.lParam);
+    SendMessage(FNextClipboardViewer, WM_DRAWCLIPBOARD, Msg.Wparam, Msg.lParam);
 
   FCanPasteFromClipboard := CanCopyFromClipboard;
   VerifyPaste(Self);
@@ -7682,7 +7853,7 @@ begin
   end;
 end;
 
-function TExplorerForm.UpdatingNow(ID: Integer): boolean;
+function TExplorerForm.UpdatingNow(ID: Integer): Boolean;
 begin
   Result := RefreshIDList.IndexOf(Pointer(ID)) > -1;
 end;
@@ -7750,7 +7921,7 @@ begin
       Result.Add(GUIDToString(FFilesInfo[Index].SID));
       SetLength(T, Length(T) + 1);
       T[Length(T) - 1] := FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER;
-      if not b then
+      if not B then
       begin
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER then
           B := True;
@@ -7759,8 +7930,8 @@ begin
       Break;
   end;
 
-  //order by TYPE
-  if b then
+  // order by TYPE
+  if B then
   begin
     TempResult := TStringList.Create;
     try
@@ -7796,7 +7967,7 @@ begin
   if ListView1Selected = nil then
     Result := -1
   else
-    Result := ListView1Selected.index;
+    Result := ListView1Selected.Index;
 end;
 
 function TExplorerForm.GetSelectedType: Integer;
@@ -7807,7 +7978,7 @@ begin
     Result := FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.Index)].FileType;
 end;
 
-function CanCopyFileByType(FileType: Integer): boolean;
+function CanCopyFileByType(FileType: Integer): Boolean;
 begin
   Result := ((FileType = EXPLORER_ITEM_FILE) or (FileType = EXPLORER_ITEM_IMAGE) or
    (FileType = EXPLORER_ITEM_FOLDER) or (FileType = EXPLORER_ITEM_SHARE) or (FileType = EXPLORER_ITEM_EXEFILE) or
@@ -7869,13 +8040,13 @@ begin
     end;
 end;
 
-function TExplorerForm.CanPasteInSelection: boolean;
+function TExplorerForm.CanPasteInSelection: Boolean;
 var
   Index: Integer;
 begin
   Result := False;
   if SelCount > 1 then
-     Exit;
+    Exit;
   if SelCount = 1 then
   begin
     index := ItemIndexToMenuIndex(ListView1Selected.Tag);
@@ -7921,8 +8092,8 @@ var
   aType: Byte;
 
 type
-  Item = TExplorerFileInfo; { This defines the objects being sorted.}
-  List = array of Item; {This is an array of objects to be sorted.}
+  Item = TExplorerFileInfo; { This defines the objects being sorted. }
+  List = array of Item; { This is an array of objects to be sorted. }
 
   SortList = array of TEasyItem;
 
@@ -7931,14 +8102,14 @@ type
     ValueInt: Integer;
     ValueStr: string;
     ValueDouble: Double;
-   end;
+  end;
 
-   aListItem = record
+  aListItem = record
     Caption: string;
     Indent: Integer;
     Data: Pointer;
     ImageIndex: Integer;
-   end;
+  end;
 
   aListItems = array of aListItem;
 
@@ -7948,10 +8119,10 @@ var
   SIs: TSortItems;
   LI: aListItems;
 
-  function L_Less_Than_R(L,R: TSortItem; aType: Byte): Boolean;
+  function L_Less_Than_R(L, R: TSortItem; aType: Byte): Boolean;
   begin
     Result := True;
-    if AType = 1 then
+    if aType = 1 then
     begin
       if L.ValueInt = R.ValueInt then
         Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0
@@ -7959,9 +8130,9 @@ var
         Result := L.ValueInt < R.ValueInt;
       Exit;
     end;
-    if AType = 0 then
+    if aType = 0 then
       Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0;
-    if AType = 5 then
+    if aType = 5 then
     begin
       if (L.ValueInt = EXPLORER_ITEM_FOLDER) and (R.ValueInt <> EXPLORER_ITEM_FOLDER) then
       begin
@@ -7975,7 +8146,7 @@ var
       end;
       Result := AnsiCompareTextWithNum(L.ValueStr, R.ValueStr) < 0;
     end;
-    if AType = 2 then
+    if aType = 2 then
     begin
       if L.ValueDouble = R.ValueDouble then
         Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0
@@ -7983,7 +8154,7 @@ var
         Result := L.ValueDouble < R.ValueDouble;
       Exit;
     end;
-    if AType = 3 then
+    if aType = 3 then
     begin
       N := AnsiCompareText(ExtractFileExt(L.ValueStr), ExtractFileExt(R.ValueStr));
       if N = 0 then
@@ -7992,7 +8163,7 @@ var
         Result := N < 0;
       Exit;
     end;
-    if AType = 4 then
+    if aType = 4 then
     begin
       if (L.ValueInt = EXPLORER_ITEM_FOLDER) and (R.ValueInt <> EXPLORER_ITEM_FOLDER) then
       begin
@@ -8017,7 +8188,7 @@ var
     X[J] := Temp;
   end;
 
-  procedure Qsort(var X: TSortItems; Left, Right: integer; AType: Byte);
+  procedure Qsort(var X: TSortItems; Left, Right: Integer; aType: Byte);
   label Again;
   var
     Pivot: TSortItem;
@@ -8031,41 +8202,41 @@ var
 
     while P <= Q do
     begin
-      while L_Less_Than_R(X[P], Pivot, AType) do
-         begin
-           if P = M then
-             Break;
-           Inc(P);
-         end;
-         while L_Less_Than_R(Pivot, X[Q], AType) do
-         begin
-           if Q = M then
-             Break;
-           Dec(Q);
-         end;
-         if P > Q then
-           goto Again;
-         Swap(X, P, Q);
-         Inc(P);
-         Dec(Q);
-       end;
+      while L_Less_Than_R(X[P], Pivot, aType) do
+      begin
+        if P = M then
+          Break;
+        Inc(P);
+      end;
+      while L_Less_Than_R(Pivot, X[Q], aType) do
+      begin
+        if Q = M then
+          Break;
+        Dec(Q);
+      end;
+      if P > Q then
+        goto Again;
+      Swap(X, P, Q);
+      Inc(P);
+      Dec(Q);
+    end;
 
-     Again :
-       if Left < Q then
-         Qsort(X, Left, Q, AType);
-       if P < Right then
-         Qsort(X, P, Right, AType);
-     end;
+  Again:
+    if Left < Q then
+      Qsort(X, Left, Q, aType);
+    if P < Right then
+      Qsort(X, P, Right, aType);
+  end;
 
-     procedure QuickSort(var X: TSortItems; N: Integer; AType: Byte);
-     begin
-       Qsort(X, 0, N - 1, AType);
-     end;
+  procedure QuickSort(var X: TSortItems; N: Integer; aType: Byte);
+  begin
+    Qsort(X, 0, N - 1, aType);
+  end;
 
-   begin
-     DefaultSort := (Sender as TMenuItem).Tag;
+begin
+  DefaultSort := (Sender as TMenuItem).Tag;
 
-  //NOT RIGHT! SORTING BY FOLDERS-IMAGES-OTHERS
+  // NOT RIGHT! SORTING BY FOLDERS-IMAGES-OTHERS
   if ((Sender as TMenuItem).Tag = -1) then
     Exit;
 
@@ -8125,20 +8296,20 @@ var
 
     case (Sender as TMenuItem).Tag of
       0:
-        AType := 4;
+        aType := 4;
       1, 2:
-        AType := 1;
+        aType := 1;
       3:
-        AType := 3;
+        aType := 3;
       4:
-        AType := 2;
+        aType := 2;
       5:
-        AType := 5;
+        aType := 5;
     else
-      AType := 0;
+      aType := 0;
     end;
 
-    QuickSort(SIs, L, AType);
+    QuickSort(SIs, L, aType);
 
     for I := 0 to L - 1 do
     begin
@@ -8148,8 +8319,8 @@ var
       ElvMain.Items[I].Data := LI[SIs[I].ID].Data;
     end;
   except
-    on E: Exception do
-      EventLog(':TExplorerForm.FileName1Click() throw exception: ' + E.message);
+    on e: Exception do
+      EventLog(':TExplorerForm.FileName1Click() throw exception: ' + e.Message);
   end;
 
   if not NoLockListView then
@@ -8256,6 +8427,7 @@ procedure TExplorerForm.ListView1Resize(Sender: TObject);
 begin
   ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
   ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
+  LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3 - IIF(PnGeoLocation.Visible, PnGeoLocation.Width, 0);
   LoadSizes;
 end;
 
@@ -8263,9 +8435,9 @@ procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;
   Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState;
   var Handled: Boolean);
 var
-  Capt, dir, ShellDir, LinkPath: string;
+  Capt, Dir, ShellDir, LinkPath: string;
   MenuInfo: TDBPopupMenuInfo;
-  index: Integer;
+  Index: Integer;
   P, P1: TPoint;
   Item: TObject;
   EasyItem: TEasyItem;
@@ -8279,13 +8451,13 @@ var
 begin
 
   GetCursorPos(P1);
-  P := ElvMain.ScreenToClient(p1);
+  P := ElvMain.ScreenToClient(P1);
   EasyItem := ElvMain.Selection.FocusedItem;
   if (EasyItem <> nil) and (EasyItem.ImageIndex > -1) and not DBReadOnly then
   begin
     if ItemByPointStar(ElvMain, p, FPictureSize, FBitmapImageList[EasyItem.ImageIndex].Graphic) = EasyItem then
     begin
-      Index := ItemAtPos(p.X, p.Y).Index;
+      Index := ItemAtPos(P.X, P.Y).Index;
       Index := ItemIndexToMenuIndex(index);
       if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
       begin
@@ -8294,12 +8466,12 @@ begin
         else
           RatingPopupMenu.Tag := -Index;
 
-        if not ((RatingPopupMenu.Tag < 0) and FolderView) then
+        if not((RatingPopupMenu.Tag < 0) and FolderView) then
         begin
           Application.HideHint;
           THintManager.Instance.CloseHint;
           LastMouseItem := nil;
-          RatingPopupMenu.Popup(p1.X, p1.Y);
+          RatingPopupMenu.Popup(P1.X, P1.Y);
           Exit;
         end;
       end;
@@ -8312,7 +8484,7 @@ begin
   SetLength(FFilesToDrag, 0);
   Application.HideHint;
   THintManager.Instance.CloseHint;
-  HintTimer.Enabled := false;
+  HintTimer.Enabled := False;
 
   Item := EasyItem;
   if (Item = nil) and (Sender = nil) then
@@ -8323,23 +8495,23 @@ begin
     begin
       Capt := ListView1Selected.Caption;
       GetCursorPos(MousePos);
-      Index := ListView1Selected.index;
+      Index := ListView1Selected.Index;
       Index := ItemIndexToMenuIndex(index);
       if Index > FFilesInfo.Count - 1 then
         Exit;
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
       begin
         Dir := IncludeTrailingBackslash(FFilesInfo[Index].FileName);
-        SetNewPath(Dir, false);
+        SetNewPath(Dir, False);
         Exit;
       end;
       if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
       begin
-        SetNewPath(FFilesInfo[Index].FileName, false);
+        SetNewPath(FFilesInfo[Index].FileName, False);
         Exit;
       end;
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or
-         (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+        (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
       begin
         MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
         try
@@ -8369,7 +8541,7 @@ begin
             Exit;
           if DirectoryExists(LinkPath) then
           begin
-            SetStringPath(LinkPath, false);
+            SetStringPath(LinkPath, False);
             Exit;
           end else
           begin
@@ -8401,7 +8573,7 @@ begin
           EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_DEVICE,
           EXPLORER_ITEM_DEVICE_STORAGE, EXPLORER_ITEM_DEVICE_DIRECTORY:
           SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
-              FFilesInfo[Index].FileType), false);
+            FFilesInfo[Index].FileType), False);
       end;
     end;
 end;
@@ -8456,7 +8628,7 @@ begin
   if IsReallignInfo then
     Exit;
 
-  //to match backgroupd image
+  // to match backgroupd image
   for I := 0 to ScrollBox1.ControlCount - 1 do
   begin
     if ScrollBox1.Controls[I] is TWebLink then
@@ -8480,7 +8652,7 @@ begin
   if Item = nil then
     Exit;
 
-  Comparestr := Item.Caption;
+  CompareStr := Item.Caption;
   SetLength(CompareStr, Length(SearchBuffer));
 
   if IsUnicode then
@@ -8547,7 +8719,7 @@ begin
   if GlobalLock then
     Exit;
   Include := True;
-  if not ((Item.Data = nil) or (Item.ImageIndex < 0)) then
+  if not((Item.Data = nil) or (Item.ImageIndex < 0)) then
   begin
     Index := ItemIndexToMenuIndex(Item.Index);
     Include := FFilesInfo[Index].Include or (FFilesInfo[Index].ID = 0);
@@ -8644,7 +8816,7 @@ end;
 procedure TExplorerForm.MakeFolderViewer2Click(Sender: TObject);
 var
   FileList: TStrings;
-  I, Index: integer;
+  I, Index: Integer;
 begin
   if ListView1Selected <> nil then
   begin
@@ -8667,9 +8839,9 @@ begin
 end;
 
 procedure TExplorerForm.ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
-    WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
-  if not (ssCtrl in Shift) then
+  if not(SsCtrl in Shift) then
     Exit;
 
   if WheelDelta < 0 then
@@ -8693,12 +8865,12 @@ begin
       FPictureSize := FPictureSize + 10;
       LoadSizes;
       BigImagesTimer.Restart;
-      ElvMain.Scrollbars.ReCalculateScrollbars(false,true);
+      ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
       ElvMain.Groups.ReIndexItems;
-      ElvMain.Groups.Rebuild(true);
+      ElvMain.Groups.Rebuild(True);
 
-     if SelectedVisible and not IsSelectedVisible then
-       ElvMain.Selection.First.MakeVisible(emvTop);
+      if SelectedVisible and not IsSelectedVisible then
+        ElvMain.Selection.First.MakeVisible(EmvTop);
     end else
     begin
       case View of
@@ -8713,6 +8885,7 @@ begin
         LV_TILE:
           View := LV_THUMBS;
         LV_THUMBS:
+          View := LV_THUMBS;
       end;
     end;
 
@@ -8753,8 +8926,7 @@ begin
         LV_SMALLICONS:
           View := LV_TITLES;
         LV_TITLES:
-        //  View := LV_GRID;
-        //LV_GRID:
+           View := LV_TITLES;
       end;
     end;
   finally
@@ -8789,7 +8961,7 @@ begin
   Result.Assign(FFilesInfo);
 end;
 
-procedure TExplorerForm.DoDefaultSort(GUID : TGUID);
+procedure TExplorerForm.DoDefaultSort(GUID: TGUID);
 begin
   NoLockListView := True;
   try
@@ -8817,7 +8989,7 @@ var
 begin
   if SelCount = 1 then
   begin
-    Index := ItemIndexToMenuIndex(ListView1Selected.index);
+    Index := ItemIndexToMenuIndex(ListView1Selected.Index);
     HideDataInImage(FFilesInfo[index].FileName);
   end;
 end;
@@ -8845,14 +9017,14 @@ end;
 
 procedure TExplorerForm.LoadToolBarNormaIcons;
 var
-  UseSmallIcons : Boolean;
+  UseSmallIcons: Boolean;
 
-  procedure AddIcon(Name : String);
+  procedure AddIcon(Name: String);
   var
-    Icon : HIcon;
+    Icon: HIcon;
   begin
     if UseSmallIcons then
-      Name:=Name + '_SMALL';
+      Name := Name + '_SMALL';
 
     Icon := LoadIcon(HInstance, PWideChar(Name));
     ImageList_ReplaceIcon(ToolBarNormalImageList.Handle, -1, Icon);
@@ -8865,8 +9037,8 @@ begin
 
   if UseSmallIcons then
   begin
-    ToolBarNormalImageList.Width:=16;
-    ToolBarNormalImageList.Height:=16;
+    ToolBarNormalImageList.Width := 16;
+    ToolBarNormalImageList.Height := 16;
   end;
 
   AddIcon('EXPLORER_BACK');
@@ -8887,16 +9059,16 @@ end;
 
 procedure TExplorerForm.LoadToolBarGrayedIcons;
 var
-  UseSmallIcons : Boolean;
+  UseSmallIcons: Boolean;
 
-  procedure AddIcon(Name : String);
+  procedure AddIcon(Name: String);
   var
-    Icon : HIcon;
+    Icon: HIcon;
   begin
     if UseSmallIcons then
       Name := Name + '_SMALL';
 
-    Icon :=  LoadIcon(HInstance, PWideChar(Name));
+    Icon := LoadIcon(HInstance, PWideChar(Name));
     ImageList_ReplaceIcon(ToolBarDisabledImageList.Handle, -1, Icon);
     DestroyIcon(Icon);
   end;
@@ -8946,7 +9118,7 @@ end;
 procedure TExplorerForm.DoStopLoading;
 begin
   PePath.CanBreakLoading := False;
-  fStatusProgress.Visible := False;
+  FStatusProgress.Visible := False;
   StatusBar1.Panels[1].Text := '';
 end;
 
@@ -8958,7 +9130,7 @@ end;
 procedure TExplorerForm.PopupMenuZoomDropDownPopup(Sender: TObject);
 begin
   Application.CreateForm(TBigImagesSizeForm, BigImagesSizeForm);
-  BigImagesSizeForm.Execute(Self, fPictureSize, BigSizeCallBack);
+  BigImagesSizeForm.Execute(Self, FPictureSize, BigSizeCallBack);
 end;
 
 procedure TExplorerForm.PortableEventsCallBack(EventType: TPortableEventType;
@@ -8992,7 +9164,7 @@ end;
 procedure TExplorerForm.BigSizeCallBack(Sender: TObject; SizeX,
   SizeY: integer);
 var
-  SelectedVisible : boolean;
+  SelectedVisible: Boolean;
 begin
   ElvMain.BeginUpdate;
   try
@@ -9043,7 +9215,7 @@ begin
   begin
     FShellTreeView := TShellTreeView.Create(Self);
     FShellTreeView.Parent := MainPanel;
-    FShellTreeView.Align := alClient;
+    FShellTreeView.Align := AlClient;
     FShellTreeView.HideSelection := False;
     FShellTreeView.AutoRefresh := False;
     FShellTreeView.PopupMenu := PopupMenuTreeView;
@@ -9059,6 +9231,7 @@ constructor TExplorerForm.Create(AOwner: TComponent;
   GoToLastSavedPath: Boolean);
 begin
   FSelectedInfo.GeoLocation := nil;
+  FWebJSContainer := nil;
   TPrivateHelper.Instance.Init;
   FFilesInfo := TExplorerFileInfos.Create;
   FShellTreeView := nil;
@@ -9160,7 +9333,7 @@ begin
   MakeFolderViewer2.ImageIndex := DB_IC_SAVE_AS_TABLE;
   Number1.ImageIndex := DB_IC_RENAME;
 
-  RatingPopupMenu.Images := DBkernel.ImageList;
+  RatingPopupMenu.Images := DBKernel.ImageList;
 
   N00.ImageIndex := DB_IC_DELETE_INFO;
   N01.ImageIndex := DB_IC_RATING_1;
@@ -9210,7 +9383,6 @@ begin
 end;
 
 initialization
-
   PERegisterThreadEvent := RegisterPathEditThread;
   PEUnRegisterThreadEvent := UnRegisterPathEditThread;
   PathProvider_UpdateText := PE_PathProvider_UpdateText;

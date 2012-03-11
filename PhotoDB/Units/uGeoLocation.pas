@@ -3,20 +3,6 @@ unit uGeoLocation;
 interface
 
 const
-(*
-
-geocoder = new google.maps.Geocoder();
-geocoder.geocode( { 'address': address}, function(results, status) {
-  if (status == google.maps.GeocoderStatus.OK) {
-    map.setCenter(results[0].geometry.location);
-    var marker = new google.maps.Marker({
-    map: map,
-    position: results[0].geometry.location
-  });
-
-
-*)
-
   GoogleMapHTMLStr: AnsiString =
     '<html> '+
     '<head> '+
@@ -24,17 +10,19 @@ geocoder.geocode( { 'address': address}, function(results, status) {
     '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true&language=%LANG%&libraries=panoramio"></script> '+
     '<script type="text/javascript"> '+
     ''+
+
     ''+
     '  var geocoder; '+
     '  var map;  '+
     '  var markersArray = [];'+
+    '  var infoWindow;'+
     ''+
     ''+
     '  function initialize() { '+
     '    geocoder = new google.maps.Geocoder();'+
     '    var latlng = new google.maps.LatLng(0, 0); '+
     '    var myOptions = { '+
-    '      zoom: 23, '+
+    '      zoom: 20, '+
     '      center: latlng, '+
     '      mapTypeId: google.maps.MapTypeId.SATELLITE '+
     '    }; '+
@@ -47,13 +35,35 @@ geocoder.geocode( { 'address': address}, function(results, status) {
     '                         PutMarker(event.latLng.lat(), event.latLng.lng(), ""); '+
     '                        } '+
     '    ); '+
+
+
+    '    google.maps.event.addListener(map, "bounds_changed", function() { '+
+    '      document.getElementById("MapLat").value = map.getCenter().lat() + "";'+
+    '      document.getElementById("MapLng").value = map.getCenter().lng() + "";'+
+    '      document.getElementById("MapZoom").value = map.getZoom() + "";'+
+    '    }); '+
+    '    infoWindow = new google.maps.InfoWindow();'+
+
+
+
+    '    google.maps.event.addListener(infoWindow, "domready", function () { '+
+    '      external.UpdateEmbed(); '+
+    '    }); '+
+
     '    document.getElementById("MapIsReady").value = "1";'+
     '  } '+
     ''+
-    ''+
+
     '  function GotoLatLng(Lat, Lang) { '+
     '   var latlng = new google.maps.LatLng(Lat,Lang);'+
     '   map.setCenter(latlng);'+
+    '  }'+
+    ''+
+
+    '  function SetMapBounds(Lat, Lang, Zoom) { '+
+    '   var latlng = new google.maps.LatLng(Lat,Lang);'+
+    '   map.setCenter(latlng);'+
+    '   map.setZoom(Zoom);'+
     '  }'+
     ''+
 
@@ -77,6 +87,12 @@ geocoder.geocode( { 'address': address}, function(results, status) {
     ' } '+
     ''+
 
+    ' function clearPosition(lat, lng) { '+
+    '    document.getElementById("LatValue").value = ""; '+
+    '    document.getElementById("LngValue").value = ""; '+
+    ' } '+
+    ''+
+
     'function ClearMarkers() {  '+
     '  if (markersArray) {        '+
     '    for (i in markersArray) {  '+
@@ -86,20 +102,46 @@ geocoder.geocode( { 'address': address}, function(results, status) {
     '}  '+
     ''+
 
-    '  function PutMarker(Lat, Lang, Msg) { '+
+    'function PutMarker(Lat, Lang, Msg) { '+
     '   ClearMarkers(); '+
-    '   var latlng = new google.maps.LatLng(Lat,Lang);'+
-    '   var marker = new google.maps.Marker({'+
-    '      position: latlng, '+
-    '      map: map,'+
-    '      title: Msg+" ("+Lat+","+Lang+")"'+
-    '  });'+
+
+    '   var html = document.getElementById("googlePopup").innerHTML;'+
+    '   html = html.replace(/%NAME%/g, Msg);'+
+    '   html = html.replace(/imageClass/g, "image");'+
+
+    '   var latlng = new google.maps.LatLng(Lat, Lang); '+
+    '   var options = { '+
+    '               position: latlng, '+
+    '               map: map, '+
+    '               icon: "http://www.google.com/mapfiles/marker.png", '+
+    '               title: Msg+" ("+Lat+","+Lang+")", '+
+    '               content: html '+
+    '           }; '+
+
+    '   var marker = new google.maps.Marker({ map: map });'+
+    '   marker.setOptions(options); '+
+    '   infoWindow.setOptions(options); '+
+    '   infoWindow.open(map, marker); '+
+    '   google.maps.event.addListener(marker, "click", function () { '+
+    '          infoWindow.setOptions(options); '+
+    '          infoWindow.open(map, marker); '+
+    '       '+
+    '  }); '+
+
     '  markersArray.push(marker); '+
-    '  index= (markersArray.length % 10);'+
-    '  if (index==0) { index=10 } '+
-    '  icon = "http://www.google.com/mapfiles/kml/paddle/"+index+"-lv.png"; '+
-    '  marker.setIcon(icon); '+
-    '  }'+
+    '  setTimeout("external.UpdateEmbed()", 1); '+
+    '}'+
+    ''+
+
+    'function FindLocation(address) {  '+
+    'geocoder.geocode( { "address": address}, function(results, status) { '+
+    '    if (status == google.maps.GeocoderStatus.OK) { '+
+    '      map.setCenter(results[0].geometry.location); '+
+    '      if (results[0].geometry.bounds) '+
+    '        map.fitBounds(results[0].geometry.bounds); '+
+    '    }  '+
+    '   });' +
+	  '}'+
     ''+
 
     '</script> '+
@@ -109,9 +151,20 @@ geocoder.geocode( { 'address': address}, function(results, status) {
     '  <div id="map_canvas" style="width:100%; height:100%"></div> '+
     '  <input type="hidden" id="LatValue">'+
     '  <input type="hidden" id="LngValue">'+
+    '  <input type="hidden" id="MapLat">'+
+    '  <input type="hidden" id="MapLng">'+
+    '  <input type="hidden" id="MapZoom">'+
     '  <input type="hidden" id="MapIsReady" value="0">'+
     '  </div>  '+
-    ''+
+    '  <div id="googlePopup" style="display: none;"> '+
+    '	   <div style="height: 120px; width: 205px;"> '+
+    '       <p style="color: #000000; margin: 0 0 10px;"><span>%NAME%</span> '+
+    '         <br />x '+
+    '         <embed class="imageClass" width="120" height="100"></embed> '+
+    '         <br />y '+
+    '       </p> '+
+    '     </div> '+
+    '  </div> '+
     '</body> '+
     '</html> ';
 

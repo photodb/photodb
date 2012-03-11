@@ -2,7 +2,7 @@
 using System.Configuration;
 using System.Web;
 using CountryLookupProj;
-using PhotoDBUserControls.Classes.MaxMind;
+using PhotoDBUmbracoExtensions.MaxMind;
 using PhotoDBUmbracoExtensions;
 
 namespace PhotoDBUserControls

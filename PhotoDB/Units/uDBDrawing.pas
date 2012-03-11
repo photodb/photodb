@@ -115,7 +115,6 @@ var
   end;
 
 begin
-
   if ID = 0 then
     DoDrawIconEx(HCanvas, DeltaX, DeltaY, DB_IC_NEW);
 
@@ -195,7 +194,7 @@ begin
 
   if not FE then
   begin
-    if Copy(FileName,1,2) = '::' then
+    if Copy(FileName, 1, 2) = '::' then
       DoDrawIconEx(HCanvas, 0 + DeltaX, DeltaY, DB_IC_CD_IMAGE )
     else
       DoDrawIconEx(HCanvas, 0 + DeltaX, DeltaY, DB_IC_DELETE_INFO);

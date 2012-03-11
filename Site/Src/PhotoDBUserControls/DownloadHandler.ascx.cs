@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using PhotoDBDatabase.Classes;
 using PhotoDBUmbracoExtensions;
-using PhotoDBUserControls.Classes.MaxMind;
+using PhotoDBUmbracoExtensions.MaxMind;
 using UmbracoXmlModel;
 
 namespace PhotoDBUserControls

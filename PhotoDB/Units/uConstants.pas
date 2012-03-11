@@ -61,6 +61,7 @@ const
   BuyPageURL = SiteLocation + '/{LNG}/buy';
   FreeActivationURL = SiteLocation + '/FreeActivationHandler';
   ActionHelpPageURL = SiteLocation + '/{LNG}/?action=';
+  GeoLocationJSON = SiteLocation + '/iplocation.ashx?lng={LNG}';
 
   DefaultImportPattern = 'YYYY\MMM\YY.MM.DD = DDD, D mmmm, YYYY (LABEL)';
   DefaultImportPatternList =

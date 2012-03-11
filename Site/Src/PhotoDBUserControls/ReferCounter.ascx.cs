@@ -1,7 +1,7 @@
 ﻿using System;
 using PhotoDBDatabase.Classes;
 using PhotoDBUmbracoExtensions;
-using PhotoDBUserControls.Classes.MaxMind;
+using PhotoDBUmbracoExtensions.MaxMind;
 using umbraco.NodeFactory;
 
 namespace PhotoDBUserControls

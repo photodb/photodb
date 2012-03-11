@@ -50,6 +50,7 @@ type
     procedure SetOldPath(OldPath: string); virtual; abstract;
     procedure LoadLastPath; virtual; abstract;
     procedure NavigateToFile(FileName: string); virtual; abstract;
+    procedure GetCurrentImage(W, H: Integer; out Bitmap: TBitmap); virtual; abstract;
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); reintroduce; overload;
     property WindowID: TGUID read FWindowID;
     property CurrentPath: string read GetCurrentPath;

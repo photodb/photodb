@@ -84,7 +84,7 @@ begin
   if not FileExists(FileName) then
     Exit;
   try
-    FS := TFileStream.Create(FileName, FmOpenRead);
+    FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   except
     Exit;
   end;
@@ -172,7 +172,7 @@ begin
   if not FileExists(FileName) then
     Exit;
   try
-    Fs := TFileStream.Create(Filename, FmOpenRead);
+    Fs := TFileStream.Create(Filename, fmOpenRead or fmShareDenyWrite);
   except
     Exit;
   end;
@@ -207,7 +207,7 @@ begin
   if not FileExists(FileName) then
     Exit;
   try
-    Fs := TFileStream.Create(Filename, FmOpenRead);
+    Fs := TFileStream.Create(Filename, fmOpenRead or fmShareDenyWrite);
   except
     Exit;
   end;
@@ -400,7 +400,7 @@ var
 begin
   Result := False;
   try
-    FS := TFileStream.Create(Filename, FmOpenRead);
+    FS := TFileStream.Create(Filename, fmOpenRead or fmShareDenyWrite);
   except
     Exit;
   end;

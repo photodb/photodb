@@ -1124,11 +1124,12 @@ object ExplorerForm: TExplorerForm
     FullRepaint = False
     TabOrder = 5
     object SplGeoLocation: TSplitter
-      Left = 483
+      Left = 383
       Top = 33
       Width = 5
       Height = 564
       Align = alRight
+      OnMoved = SplGeoLocationMoved
       ExplicitLeft = 572
       ExplicitTop = 27
     end
@@ -1601,9 +1602,9 @@ object ExplorerForm: TExplorerForm
       end
     end
     object PnGeoLocation: TPanel
-      Left = 488
+      Left = 388
       Top = 33
-      Width = 250
+      Width = 350
       Height = 564
       Align = alRight
       TabOrder = 2
@@ -1611,15 +1612,15 @@ object ExplorerForm: TExplorerForm
       object WbGeoLocation: TWebBrowser
         Left = 1
         Top = 34
-        Width = 248
-        Height = 529
+        Width = 348
+        Height = 494
         Align = alClient
         TabOrder = 0
         OnCommandStateChange = WbGeoLocationCommandStateChange
-        OnDocumentComplete = WbGeoLocationDocumentComplete
         ExplicitWidth = 200
+        ExplicitHeight = 529
         ControlData = {
-          4C000000A2190000AC3600000000000000000000000000000000000000000000
+          4C000000F82300000E3300000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
           2B2E126208000000000000004C0000000114020000000000C000000000000046
           8000000000000000000000000000000000000000000000000000000000000000
@@ -1628,7 +1629,7 @@ object ExplorerForm: TExplorerForm
       object PnGeoTop: TPanel
         Left = 1
         Top = 1
-        Width = 248
+        Width = 348
         Height = 33
         Align = alTop
         BevelEdges = [beBottom]
@@ -1636,10 +1637,10 @@ object ExplorerForm: TExplorerForm
         TabOrder = 1
         OnResize = PnInfoResize
         DesignSize = (
-          248
+          348
           33)
         object SbCloseGeoLocation: TSpeedButton
-          Left = 221
+          Left = 321
           Top = 5
           Width = 23
           Height = 22
@@ -1683,6 +1684,7 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Enabled = False
           Text = 'WlSaveLocation'
+          OnClick = WlSaveLocationClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -1692,7 +1694,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
-          HightliteImage = False
+          HightliteImage = True
           StretchImage = True
           CanClick = True
         end
@@ -1713,9 +1715,40 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           ImageCanRegenerate = True
           UseSpecIconSize = True
-          HightliteImage = False
+          HightliteImage = True
           StretchImage = True
           CanClick = True
+        end
+      end
+      object PnGeoSearch: TPanel
+        Left = 1
+        Top = 528
+        Width = 348
+        Height = 35
+        Align = alBottom
+        TabOrder = 2
+        DesignSize = (
+          348
+          35)
+        object SbDoSearchLocation: TSpeedButton
+          Left = 321
+          Top = 5
+          Width = 23
+          Height = 22
+          Anchors = [akTop, akRight]
+          Flat = True
+          OnClick = SbDoSearchLocationClick
+          ExplicitLeft = 25
+        end
+        object WedGeoSearch: TWatermarkedEdit
+          Left = 5
+          Top = 6
+          Width = 312
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 0
+          OnKeyDown = WedGeoSearchKeyDown
+          WatermarkText = 'Search location'
         end
       end
     end

@@ -305,7 +305,7 @@ begin
   //todo: check if file already exists, check errors
   FD := TFileStream.Create(D.Path, fmCreate);
   try
-    FS := TFileStream.Create(S.Path, fmOpenRead, fmShareDenyNone);
+    FS := TFileStream.Create(S.Path, fmOpenRead or fmShareDenyNone);
     try
       Size := FS.Size;
       GetMem(Buff, BufferSize);
