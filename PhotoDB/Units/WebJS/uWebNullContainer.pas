@@ -149,7 +149,25 @@ end;
 function TWebNullWBContainer.GetHostInfo(var pInfo: TDocHostUIInfo): HResult;
 begin
   { Return S_OK to indicate UI is OK without changes }
-  Result := S_OK;
+  try
+    // Clear structure and set size
+    ZeroMemory(@pInfo, SizeOf(TDocHostUIInfo));
+    pInfo.cbSize := SizeOf(TDocHostUIInfo);
+    // Set scroll bar visibility
+    pInfo.dwFlags := pInfo.dwFlags or DOCHOSTUIFLAG_SCROLL_NO;
+    // Set border visibility
+    pInfo.dwFlags := pInfo.dwFlags or DOCHOSTUIFLAG_NO3DBORDER;
+    // Decide if text can be selected
+    pInfo.dwFlags := pInfo.dwFlags or DOCHOSTUIFLAG_DIALOG;
+    // Ensure browser uses themes if application is doing
+    pInfo.dwFlags := pInfo.dwFlags or DOCHOSTUIFLAG_THEME;
+
+    // Return S_OK to indicate we've made changes
+    Result := S_OK;
+  except
+    // Return E_FAIL on error
+    Result := E_FAIL;
+  end;
 end;
 
 function TWebNullWBContainer.GetMoniker(dwAssign, dwWhichMoniker: Integer;

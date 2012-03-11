@@ -34,6 +34,7 @@ type
     procedure ZoomPan(Lat: Double; Lng: Double; Zoom: SYSINT); safecall;
     procedure UpdateEmbed(); safecall;
     procedure MapStarted(); safecall;
+    function CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint; safecall;
   public
     constructor Create(ExternalObject: IWebJSExternal);
     destructor Destroy; override;
@@ -64,6 +65,11 @@ destructor TWebJSExternal.Destroy;
 begin
   FExternalObject := nil;
   inherited;
+end;
+
+function TWebJSExternal.CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint;
+begin
+  Result := FExternalObject.CanSaveLocation(Lat, Lng, Value);
 end;
 
 procedure TWebJSExternal.MapStarted();

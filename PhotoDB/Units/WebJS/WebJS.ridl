@@ -6,7 +6,7 @@
 // However, when applying changes via the Editor this file will be regenerated
 // and comments or formatting changes will be lost.
 // ************************************************************************ //
-// File generated on 10.03.2012 23:47:20 (- $Rev: 12980 $, 1037812).
+// File generated on 11.03.2012 21:17:15 (- $Rev: 12980 $, 78429627).
 
 [
   uuid(517F7078-5E73-4E5A-B8A2-8F0FF14EF21B),
@@ -38,6 +38,8 @@ library WebJS
     HRESULT _stdcall UpdateEmbed(void);
     [id(0x000000CC)]
     HRESULT _stdcall MapStarted(void);
+    [id(0x000000CD)]
+    HRESULT _stdcall CanSaveLocation([in] double Lat, [in] double Lng, [in] byte Value, [out, retval] byte Result);
   };
 
 };

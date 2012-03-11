@@ -98,6 +98,8 @@ begin
       Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
     Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
     Avaliablethread.StateID := Thread.StateID;
+
+
     Avaliablethread.FInfo.FileName := FileName;
     Avaliablethread.FInfo.Rotation := Rotated;
     Avaliablethread.FInfo.ID := ID;

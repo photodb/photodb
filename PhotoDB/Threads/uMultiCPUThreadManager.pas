@@ -37,6 +37,7 @@ type
     FBusyThreadList: TList;
     FTerminating : Boolean;
     FSync: TCriticalSection;
+    FIsStated: Boolean;
     function GetAvaliableThreadsCount: Integer;
     function GetBusyThreadsCount: Integer;
   protected
@@ -87,7 +88,7 @@ end;
 
 procedure TThreadPoolCustom.AddAvaliableThread(Thread: TMultiCPUThread);
 begin
-  FAvaliableThreadList.Add(Thread);
+  FBusyThreadList.Add(Thread);
   Thread.FThreadNumber := FAvaliableThreadList.Count + FBusyThreadList.Count;
   Thread.Valid := True;
 end;
@@ -98,6 +99,7 @@ begin
   FAvaliableThreadList := TList.Create;
   FBusyThreadList := TList.Create;
   FTerminating := False;
+  FIsStated := False;
   MultiThreadManagers.Add(Self);
 end;
 
@@ -316,10 +318,12 @@ begin
       FSync.Leave;
     end;
     if ThreadsCount > 0 then
-      WaitForMultipleObjects(ThreadsCount, @ThreadHandles[0], False, 1000);
+      WaitForMultipleObjects(ThreadsCount, @ThreadHandles[0], False, IIF(FIsStated, 1000, 10));
 
     TW.I.Start('WaitForMultipleObjects END');
   end;
+
+  FIsStated := True;
 end;
 
 procedure TThreadPoolCustom.Unlock;
@@ -345,7 +349,7 @@ constructor TMultiCPUThread.Create(AOwnerForm: TThreadForm; AState: TGUID);
 begin
   inherited Create(AOwnerForm, AState);
   FSyncEvent := CreateEvent(nil, False, False, PWideChar(GUIDToString(GetGUID)));
-  FWorkingInProgress := False;
+  FWorkingInProgress := True;
   FMode := -1;
   FValid := False;
 end;
@@ -357,7 +361,6 @@ end;
 
 procedure TMultiCPUThread.DoMultiProcessorWork;
 begin
-  WorkingInProgress := True;
   while True do
   begin
     IsTerminated := False;
@@ -370,6 +373,7 @@ begin
           if GOM.IsObj(ParentThread) then
             ParentThread.UnRegisterSubThread(Self);
 
+          Valid := True;
           if Mode = 0 then
             Exit;
         except
@@ -384,7 +388,7 @@ begin
       end;
     finally
       TW.I.Start('Suspended: ' + IntToStr(FEvent));
-      if Mode > 0 then
+      if Mode <> 0 then
         WaitForSingleObject(FSyncEvent, INFINITE);
       TW.I.Start('Resumed: ' + IntToStr(FEvent));
       WorkingInProgress := True;

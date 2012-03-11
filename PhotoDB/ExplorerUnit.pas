@@ -91,6 +91,7 @@ uses
   uLogger,
   uConstants,
   uTime,
+  DateUtils,
   uFastLoad,
   uFileUtils,
   uDBPopupMenuInfo,
@@ -579,8 +580,6 @@ type
     procedure SbCloseGeoLocationClick(Sender: TObject);
     procedure WlGeoLocationClick(Sender: TObject);
     procedure WbGeoLocationExit(Sender: TObject);
-    procedure WbGeoLocationCommandStateChange(ASender: TObject;
-      Command: Integer; Enable: WordBool);
     procedure WlPanoramioClick(Sender: TObject);
     procedure SbDoSearchLocationClick(Sender: TObject);
     procedure WlSaveLocationClick(Sender: TObject);
@@ -663,7 +662,6 @@ type
     FMapLocationLng: Double;
     FIsMapLoaded: Boolean;
     FGeoLocationMapReady: Boolean;
-    FWebBorwserElemBehavior: IElementBehavior;
     FWebBorwserFactory: IElementBehaviorFactory;
     FWebJSContainer: TWebJSExternalContainer;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
@@ -743,11 +741,14 @@ type
     procedure AddItemToUpdate(Item: TEasyItem);
     procedure ItemUpdateTimer(Sender: TObject);
     procedure UpdateItems;
-    procedure ShowMarker(FileName: string; Lat, Lng: Double);
-    procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double);
+    procedure ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
+    procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double; Date: TDateTime);
     procedure StartMap;
+    procedure ClearMap;
+    procedure SaveCurrentImageInfoToMap;
     procedure ClearGeoLocation;
 
+    function CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint; safecall;
     function SaveLocation(Lat: Double; Lng: Double; const FileName: WideString): Shortint; safecall;
     procedure ZoomPan(Lat: Double; Lng: Double; Zoom: SYSINT); safecall;
     procedure UpdateEmbed; safecall;
@@ -764,7 +765,7 @@ type
     procedure DoDefaultSort(GUID: TGUID);
     function GetAllItems: TExplorerFileInfos;
 
-    procedure GetCurrentImage(W, H: Integer; out Bitmap: TBitmap); override;
+    procedure GetCurrentImage(W, H: Integer; out Image: TGraphic); override;
     function GetVisibleItems: TStrings;
     procedure RemoveUpdateID(ID: Integer; CID: TGUID);
     procedure AddUpdateID(ID: Integer);
@@ -1693,6 +1694,7 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
+  ClearWebBrowser(WbGeoLocation);
   ClearGeoLocation;
   F(FWebJSContainer);
 
@@ -1728,7 +1730,6 @@ begin
   F(FFilesInfo);
   GOM.RemoveObj(Self);
 
-  FWebBorwserElemBehavior := nil;
   FWebBorwserFactory := nil;
 end;
 
@@ -2703,10 +2704,34 @@ begin
   Explorer.Show;
 end;
 
-procedure TExplorerForm.GetCurrentImage(W, H: Integer; out Bitmap: TBitmap);
+procedure TExplorerForm.GetCurrentImage(W, H: Integer; out Image: TGraphic);
+var
+  I, Index: Integer;
+  B: TBitmap;
+  FileName: string;
 begin
-  Bitmap := TBitmap.Create;
-  GetImage(FSelectedInfo.FileName, Bitmap, W, H);
+  Image := nil;
+  FileName := AnsiLowerCase(FSelectedInfo.FileName);
+  for I := 0 to ElvMain.Items.Count - 1 do
+  begin
+    if ElvMain.Items[I].ImageIndex <> -1 then
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      if AnsiLowerCase(FFilesInfo[Index].FileName) = FileName then
+      begin
+        if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
+        begin
+          B := FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap;
+          Image := TBitmap.Create;
+          Image.Assign(B);
+        end else if FBitmapImageList[ElvMain.Items[I].ImageIndex].Icon <> nil then
+        begin
+          Image := TIcon.Create;
+          Image.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Icon);
+        end;
+      end;
+    end;
+  end;
 end;
 
 function TExplorerForm.GetCurrentPath: string;
@@ -3384,41 +3409,39 @@ begin
   if FSelectedInfo.GeoLocation <> nil then
   begin
     DisplayGeoLocation(ExtractFileName(FSelectedInfo.FileName),
-      FSelectedInfo.GeoLocation.Latitude, FSelectedInfo.GeoLocation.Longitude);
+      FSelectedInfo.GeoLocation.Latitude, FSelectedInfo.GeoLocation.Longitude, FSelectedInfo.Date + FSelectedInfo.Time);
   end else
   begin
     StartMap;
-    if FIsMapLoaded then
-    begin
-      if FGeoHTMLWindow <> nil then
-        FGeoHTMLWindow.execScript(FormatEx('ClearMarkers(); ', []), 'JavaScript');
-    end;
+    ClearMap;
   end;
   if ElvMain.Selection.FocusedItem <> nil then
     ElvMain.Selection.FocusedItem.MakeVisible(EmvTop);
 end;
 
-procedure TExplorerForm.ShowMarker(FileName: string; Lat, Lng: Double);
+procedure TExplorerForm.ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
 begin
   FMapLocationLat := Lat;
   FMapLocationLng := Lng;
+  WlSaveLocation.Enabled := False;
 
   if FIsMapLoaded then
   begin
     if FGeoHTMLWindow <> nil then
     begin
       FGeoHTMLWindow.execScript
-        (FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});',
-        [DoubleToStringPoint(Lat), DoubleToStringPoint(Lng), FileName]), 'JavaScript');
+        (FormatEx('ShowImageLocation({0}, {1}, "{2}", "{3}"); GotoLatLng({0}, {1});',
+        [DoubleToStringPoint(Lat), DoubleToStringPoint(Lng), FileName,
+        IIF(YearOf(Date) > 1900, FormatDateTime('yyyy.mm.dd HH:MM', Date), '')]), 'JavaScript');
     end;
   end;
 end;
 
-procedure TExplorerForm.DisplayGeoLocation(FileName: string; Lat, Lng: Double);
+procedure TExplorerForm.DisplayGeoLocation(FileName: string; Lat, Lng: Double; Date: TDateTime);
 begin
   StartMap;
   if FIsMapLoaded then
-    ShowMarker(FileName, Lat, Lng)
+    ShowMarker(FileName, Lat, Lng, Date)
   else
     WbGeoLocation.Tag := 1;
 end;
@@ -3460,109 +3483,133 @@ begin
     MessageBoxDB(Handle, Format(L('Geo location can''t be saved to this file type!'), []), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
-procedure TExplorerForm.WbGeoLocationCommandStateChange(ASender: TObject;
-  Command: Integer; Enable: WordBool);
+procedure TExplorerForm.MapStarted;
 var
-  ADocument: IHTMLDocument2;
-  ABody: IHTMLElement2;
-  Lat, Lng, Lt, Ln: Double;
+  Lt, Ln: Double;
   Zoom: Integer;
-  IsMapLoaded: Boolean;
-
-  function GetIdValue(const ID: string): string;
-  var
-    Tag: IHTMLElement;
-    TagsList: IHTMLElementCollection;
-    Index: Integer;
+begin
+  FIsMapLoaded := True;
+  if WbGeoLocation.Tag = 1 then
   begin
-    Result := '';
-    TagsList := ABody.getElementsByTagName('input');
-    for Index := 0 to TagsList.Length - 1 do
+    WbGeoLocation.Tag := 0;
+    if FSelectedInfo.GeoLocation <> nil then
     begin
-      Tag := TagsList.Item(Index, EmptyParam) As IHTMLElement;
-      if CompareText(Tag.ID, ID) = 0 then
-        Result := Tag.getAttribute('value', 0);
+      ShowMarker(ExtractFileName(FSelectedInfo.FileName),
+        FSelectedInfo.GeoLocation.Latitude,
+        FSelectedInfo.GeoLocation.Longitude,
+        FSelectedInfo.Date + FSelectedInfo.Date);
+    end else
+    begin
+      SaveCurrentImageInfoToMap;
+      if (FGeoHTMLWindow <> nil) then
+      begin
+        Lt := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLat', ''));
+        Ln := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLng', ''));
+        Zoom := Settings.ReadInteger('Explorer', 'MapZoom', 0);
+        if (Zoom > 0) and ((Lt > 0) or (Ln > 0)) then
+        begin
+          FGeoHTMLWindow.execScript
+            (FormatEx('SetMapBounds({0}, {1}, {2}); ', [DoubleToStringPoint(Lt), DoubleToStringPoint(Ln), Zoom]), 'JavaScript');
+        end;
+      end;
     end;
   end;
 
+  if (FGeoHTMLWindow <> nil) then
+  begin
+(*
+    FGeoHTMLWindow.execScript
+      (FormatEx('ShowImageLocation({0}, {1}, "{2}", "{3}"); GotoLatLng({0}, {1});',
+      [DoubleToStringPoint(FMapLocationLat), DoubleToStringPoint(FMapLocationLng),
+      ExtractFileName(FSelectedInfo.FileName),
+      IIF(YearOf(Date) > 1900, FormatDateTime('yyyy.mm.dd HH:MM', Date), '')]), 'JavaScript');  *)
+
+    if FIsPanaramio then
+      FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []), 'JavaScript')
+    else
+      FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []), 'JavaScript');
+  end;
+end;
+
+procedure TExplorerForm.ZoomPan(Lat, Lng: Double; Zoom: SYSINT);
 begin
-  if TOleEnum(Command) <> CSC_UPDATECOMMANDS then
-    Exit;
+  Settings.WriteInteger('Explorer', 'MapZoom', Zoom);
+  Settings.WriteString('Explorer', 'MapLat', DoubleToStringPoint(Lat));
+  Settings.WriteString('Explorer', 'MapLng', DoubleToStringPoint(Lng));
+end;
 
-  ADocument := WbGeoLocation.Document as IHTMLDocument2;
-  if not Assigned(ADocument) then
+function TExplorerForm.CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint;
+begin
+  Result := 0;
+  if Value < 0 then
+  begin
+    WlSaveLocation.Enabled := False;
     Exit;
-
-  if not Supports(ADocument.body, IHTMLElement2, ABody) then
-    Exit;
-
-  IsMapLoaded := GetIdValue('MapIsReady') <> '';
-  Lat := StringToDoublePoint(GetIdValue('LatValue'));
-  Lng := StringToDoublePoint(GetIdValue('LngValue'));
-  if ((Lat <> 0) or (Lng <> 0)) and
-    ((Abs(Lat - FMapLocationLat) > 0.0000003) or (Abs(Lng - FMapLocationLng) > 0.0000003)) then
+  end;
+  if CanSaveEXIF(FSelectedInfo.FileName) then
   begin
     FMapLocationLat := Lat;
     FMapLocationLng := Lng;
     WlSaveLocation.Enabled := True;
+    Result := 1;
   end;
+end;
 
-  if IsMapLoaded and not FIsMapLoaded then
+procedure TExplorerForm.SaveCurrentImageInfoToMap;
+begin
+  if (FGeoHTMLWindow <> nil) then
+    FGeoHTMLWindow.execScript
+      (FormatEx('SaveImageInfo("{0}", "{1}");',
+      [ExtractFileName(FSelectedInfo.FileName),
+      IIF(YearOf(FSelectedInfo.Date) > 1900, FormatDateTime('yyyy.mm.dd HH:MM', FSelectedInfo.Date + FSelectedInfo.Time), '')]), 'JavaScript');
+end;
+
+function TExplorerForm.SaveLocation(Lat, Lng: Double; const FileName: WideString): Shortint;
+begin
+  FMapLocationLat := Lat;
+  FMapLocationLng := Lng;
+  WlSaveLocationClick(Self);
+end;
+
+procedure TExplorerForm.UpdateEmbed;
+var
+  Embed2: IHTMLElement2;
+  Embed: IHTMLElement;
+  FactoryVar: OleVariant;
+  I: Integer;
+  Embeds: IHTMLElementCollection;
+begin
+  Embeds := (WbGeoLocation.Document as IHTMLDocument2).embeds;
+  for I := 0 to Embeds.length - 1 do
   begin
-    FIsMapLoaded := True;
-
-    if WbGeoLocation.Tag = 1 then
+    Embed2 := Embeds.item(0, I) as IHTMLElement2;
+    if Assigned(Embed2) then
     begin
-      WbGeoLocation.Tag := 0;
-      if FSelectedInfo.GeoLocation <> nil then
+      Embed := Embeds.item(0, I) as IHTMLElement;
+      if Assigned(Embed) and (Embed.className = 'image') then
       begin
-        ShowMarker(ExtractFileName(FSelectedInfo.FileName),
-          FSelectedInfo.GeoLocation.Latitude,
-          FSelectedInfo.GeoLocation.Longitude);
-      end else
-      begin
-        if (FGeoHTMLWindow <> nil) then
-        begin
-          Lt := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLat', ''));
-          Ln := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLng', ''));
-          Zoom := StrToIntDef(Settings.ReadString('Explorer', 'MapZoom', ''), 0);
-          if (Zoom > 0) and ((Lt > 0) or (Ln > 0)) then
-          begin
-            FGeoHTMLWindow.execScript
-              (FormatEx('SetMapBounds({0}, {1}, {2}); ', [DoubleToStringPoint(Lt), DoubleToStringPoint(Ln), Zoom]), 'JavaScript');
-          end;
-        end;
+        FWebBorwserFactory := TElementBehaviorFactory.Create(Self);
+        FactoryVar := IElementBehaviorFactory(FWebBorwserFactory);
+        Embed2.addBehavior('', FactoryVar);
       end;
     end;
-
-    if (FGeoHTMLWindow <> nil) and ((Lat <> 0) or (Lng <> 0)) then
-    begin
-      FGeoHTMLWindow.execScript
-        (FormatEx('PutMarker({0}, {1}, "{2}"); GotoLatLng({0}, {1});',
-        [DoubleToStringPoint(FMapLocationLat), DoubleToStringPoint(FMapLocationLng),
-        ExtractFileName(FSelectedInfo.FileName)]), 'JavaScript');
-
-      if FIsPanaramio then
-        FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []),
-          'JavaScript')
-      else
-        FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []),
-          'JavaScript');
-    end;
   end;
+end;
 
+procedure TExplorerForm.ClearMap;
+begin
   if FIsMapLoaded then
   begin
-    Settings.WriteString('Explorer', 'MapZoom', GetIdValue('MapZoom'));
-    Settings.WriteString('Explorer', 'MapLat', GetIdValue('MapLat'));
-    Settings.WriteString('Explorer', 'MapLng', GetIdValue('MapLng'));
+    if FGeoHTMLWindow <> nil then
+      FGeoHTMLWindow.execScript(FormatEx('ClearMarkers(); ', []), 'JavaScript');
   end;
 end;
 
 procedure TExplorerForm.StartMap;
 var
   Stream: TMemoryStream;
-  MapHTML: AnsiString;
+  SW: TStreamWriter;
+  MapHTML, S: string;
 begin
   if FGeoHTMLWindow = nil then
   begin
@@ -3585,14 +3632,27 @@ begin
 
     FWebJSContainer := TWebJSExternalContainer.Create(WbGeoLocation, Self);
     WbGeoLocation.Navigate('about:blank');
-   if Assigned(WbGeoLocation.Document) then
+    if Assigned(WbGeoLocation.Document) then
     begin
        Stream := TMemoryStream.Create;
       try
-        MapHTML := AnsiString(StringReplace(string(GoogleMapHTMLStr), '%LANG%', TTranslateManager.Instance.Language, []));
-        Stream.WriteBuffer(Pointer(MapHTML)^, Length(MapHTML));
-        Stream.Seek(0, soFromBeginning);
-        (WbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
+        S := GoogleMapHTMLStr;
+        S := StringReplace(S, '%LANG%', TTranslateManager.Instance.Language, []);
+        S := StringReplace(S, '%YES%', L('Yes'), []);
+        S := StringReplace(S, '%NO%', L('No'), []);
+        S := StringReplace(S, '%NAME_LABEL%', L('Name'), []);
+        S := StringReplace(S, '%DATE_LABEL%', L('Date'), []);
+        S := StringReplace(S, '%ZOOM_TEXT%', L('Zoom in'), []);
+        S := StringReplace(S, '%SAVE_TEXT%', L('Save current location for the image?'), []);
+        MapHTML := S;
+        SW := TStreamWriter.Create(Stream);
+        try
+          SW.Write(MapHTML);
+          Stream.Seek(0, soFromBeginning);
+          (WbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
+        finally
+          F(SW);
+        end;
       finally
         F(Stream);
       end;
@@ -3707,48 +3767,6 @@ begin
   begin
     FItemUpdateTimer.Enabled := False;
     UpdateItems;
-  end;
-end;
-
-procedure TExplorerForm.MapStarted;
-begin
-  //
-end;
-
-procedure TExplorerForm.ZoomPan(Lat, Lng: Double; Zoom: SYSINT);
-begin
-  //
-end;
-
-function TExplorerForm.SaveLocation(Lat, Lng: Double;
-  const FileName: WideString): Shortint;
-begin
-  //
-end;
-
-procedure TExplorerForm.UpdateEmbed;
-var
-  Embed2: IHTMLElement2;
-  Embed: IHTMLElement;
-  FactoryVar: OleVariant;
-  I: Integer;
-  Embeds: IHTMLElementCollection;
-begin
-  Embeds := (WbGeoLocation.Document as IHTMLDocument2).embeds;
-  for I := 0 to Embeds.length - 1 do
-  begin
-    Embed2 := Embeds.item(0, I) as IHTMLElement2;
-    if Assigned(Embed2) then
-    begin
-      Embed := Embeds.item(0, I) as IHTMLElement;
-      if Assigned(Embed) and (Embed.className = 'image') then
-      begin
-        FWebBorwserElemBehavior := TElementBehavior.Create(Self);
-        FWebBorwserFactory := TElementBehaviorFactory.Create(FWebBorwserElemBehavior);
-        FactoryVar := IElementBehaviorFactory(FWebBorwserFactory);
-        Embed2.addBehavior('', FactoryVar);
-      end;
-    end;
   end;
 end;
 
@@ -4301,8 +4319,12 @@ begin
       end else
         ImageEditorLink.Visible := False;
 
-      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) and (FSelectedInfo.GeoLocation <> nil) then
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) then
       begin
+        if (FSelectedInfo.GeoLocation <> nil)  then
+          WlGeoLocation.Text := L('Display on map')
+        else
+          WlGeoLocation.Text := L('Set map location');
         WlGeoLocation.Visible := True;
         WlGeoLocation.Top := NewTop + H;
         NewTop := WlGeoLocation.BoundsRect.Bottom;
@@ -7045,21 +7067,26 @@ begin
         if Index > FFilesInfo.Count - 1 then
           Exit;
 
-        FSelectedInfo.ID := FFilesInfo[Index].ID;
-        FSelectedInfo.FileType := FFilesInfo[Index].FileType;
-        FileName := FFilesInfo[Index].FileName;
-        FSelectedInfo.FileName := FFilesInfo[Index].FileName;
-        FSelectedInfo.Encrypted := FFilesInfo[Index].Crypted;
-        FileSID := FFilesInfo[Index].SID;
+        Info := FFilesInfo[Index];
+        FSelectedInfo.ID := Info.ID;
+        FSelectedInfo.FileType := Info.FileType;
+        FileName := Info.FileName;
+        FSelectedInfo.FileName := Info.FileName;
+        FSelectedInfo.Encrypted := Info.Crypted;
+        FSelectedInfo.Date := Info.Date;
+        FSelectedInfo.Time := Info.Time;
+        FileSID := Info.SID;
+        if Info.GeoLocation <> nil then
+          FSelectedInfo.GeoLocation := Info.GeoLocation.Copy;
 
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
-          FSelectedInfo.Size := FFilesInfo[Index].FileSize;
+          FSelectedInfo.Size := Info.FileSize;
         PmItemPopup.Tag := Index;
 
         if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) then
-          FSelectedInfo.FileTypeW := FFilesInfo[Index].Comment;
+          FSelectedInfo.FileTypeW := Info.Comment;
       end else
       begin
         FileName := ExcludeTrailingPathDelimiter(GetCurrentPath);
@@ -7388,6 +7415,17 @@ begin
       ReallignToolInfo;
       ReallignInfo;
     end;
+  end;
+
+  if (PnGeoLocation.Visible) then
+  begin
+    if (FSelectedInfo.GeoLocation <> nil) then
+      WlGeoLocationClick(Self)
+    else
+      SaveCurrentImageInfoToMap;
+
+    if (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) or (FSelectedInfo.GeoLocation = nil) then
+      ClearMap;
   end;
 end;
 
@@ -8601,6 +8639,9 @@ begin
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.ExistedFileName,
     Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Include, Exists, True);
+
+  if Info.GeoLocation <> nil then
+    DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1], 16, 16, 0, 0, DI_NORMAL);
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(
@@ -8678,7 +8719,6 @@ begin
   Bitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
   if Bitmap <> nil then
     AlphaBlender.Blend(Sender, Item, ACanvas, RectArray.IconRect, Bitmap);
-
 end;
 
 procedure TExplorerForm.EasyListview1ItemImageDrawIsCustom(

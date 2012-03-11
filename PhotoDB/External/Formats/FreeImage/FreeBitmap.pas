@@ -983,7 +983,7 @@ begin
 
   MemIO := TFreeMemoryIO.Create(Data, MemStream.Size);
   try
-    Result := LoadFromMemory(MemIO);
+    Result := LoadFromMemory(MemIO, Flag);
   finally
     MemIO.Free;
   end;
@@ -1006,7 +1006,7 @@ begin
 
     MemIO := TFreeMemoryIO.Create(Data, Size);
     try
-      Result := LoadFromMemory(MemIO);
+      Result := LoadFromMemory(MemIO, Flag);
     finally
       MemIO.Free;
     end;

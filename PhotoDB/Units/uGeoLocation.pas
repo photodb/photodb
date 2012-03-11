@@ -2,10 +2,19 @@ unit uGeoLocation;
 
 interface
 
+uses
+  ActiveX,
+  Variants,
+  SHDocVw,
+  MSHTML,
+  Vcl.OleCtrls;
+
 const
-  GoogleMapHTMLStr: AnsiString =
+  GoogleMapHTMLStr: string =
     '<html> '+
     '<head> '+
+    '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />' +
+    '<META HTTP-EQUIV="MSThemeCompatible" CONTENT="Yes">'+
     '<meta name="viewport" content="initial-scale=1.0, user-scalable=yes" /> '+
     '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true&language=%LANG%&libraries=panoramio"></script> '+
     '<script type="text/javascript"> '+
@@ -16,82 +25,92 @@ const
     '  var map;  '+
     '  var markersArray = [];'+
     '  var infoWindow;'+
+    '  var mapLat;'+
+    '  var mapLng;'+
+    '  var currentImage;'+
+    '  var currentLat;'+
+    '  var currentLng;'+
+    '  var imageLat;'+
+    '  var imageLng;'+
+    '  var currentDate;'+
+    '  var canSave;'+
     ''+
     ''+
     '  function initialize() { '+
     '    geocoder = new google.maps.Geocoder();'+
     '    var latlng = new google.maps.LatLng(0, 0); '+
     '    var myOptions = { '+
-    '      zoom: 20, '+
+    '      zoom: 19, '+
     '      center: latlng, '+
     '      mapTypeId: google.maps.MapTypeId.SATELLITE '+
     '    }; '+
     '    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions); '+
     '    map.set("streetViewControl", false);'+
     '    google.maps.event.addListener(map, "click", '+
-    '         function(event) '+
-    '                        {'+
-    '                         markerClick(event.latLng.lat(), event.latLng.lng()); '+
-    '                         PutMarker(event.latLng.lat(), event.latLng.lng(), ""); '+
+    '         function(event){ '+
+    '                          mapLat = event.latLng.lat();' +
+    '                          mapLng = event.latLng.lng();' +
+    '                          currentLat = mapLat; '+
+    '                          currentLng = mapLng; '+
+    '                          if (external.CanSaveLocation(mapLat, mapLng, 1) > 0)' +
+    '                            canSave = true; '+
+    '                          PutMarker(mapLat, mapLng); '+
     '                        } '+
     '    ); '+
 
-
     '    google.maps.event.addListener(map, "bounds_changed", function() { '+
-    '      document.getElementById("MapLat").value = map.getCenter().lat() + "";'+
-    '      document.getElementById("MapLng").value = map.getCenter().lng() + "";'+
-    '      document.getElementById("MapZoom").value = map.getZoom() + "";'+
+    '      external.ZoomPan(map.getCenter().lat(), map.getCenter().lng(), map.getZoom()) '+
     '    }); '+
     '    infoWindow = new google.maps.InfoWindow();'+
 
-
-
     '    google.maps.event.addListener(infoWindow, "domready", function () { '+
     '      external.UpdateEmbed(); '+
+    '      if (canSave) ' +
+    '        DisplaySave("block"); '+
     '    }); '+
 
-    '    document.getElementById("MapIsReady").value = "1";'+
+    '    external.MapStarted(); '+
     '  } '+
     ''+
 
-    '  function GotoLatLng(Lat, Lang) { '+
-    '   var latlng = new google.maps.LatLng(Lat,Lang);'+
-    '   map.setCenter(latlng);'+
+    '  function DisplaySave(Value) { '+
+    '    var arr = document.getElementsByTagName("div"); '+
+    '    for (i = 0; i < arr.length; i++)  '+
+    '       if (arr[i].className == "divSave") '+
+    '         arr[i].style.display = Value; '+
+    '  } '+
+
+    '  function GotoLatLng(Lat, Lng) { '+
+    '    var latlng = new google.maps.LatLng(Lat, Lng);'+
+    '    map.setCenter(latlng);'+
     '  }'+
     ''+
 
     '  function SetMapBounds(Lat, Lang, Zoom) { '+
-    '   var latlng = new google.maps.LatLng(Lat,Lang);'+
-    '   map.setCenter(latlng);'+
-    '   map.setZoom(Zoom);'+
+    '    var latlng = new google.maps.LatLng(Lat,Lang);'+
+    '    map.setCenter(latlng);'+
+    '    map.setZoom(Zoom);'+
+    '  }'+
+    ''+
+
+    '  function SaveLocation() { '+
+    '    external.SaveLocation(mapLat, mapLng, currentImage);'+
     '  }'+
     ''+
 
     ' var panoramioLayer = null; '+
     ' function showPanaramio() { '+
-    '     if (panoramioLayer == null) { '+
+    '   if (panoramioLayer == null) { '+
     '        panoramioLayer = new google.maps.panoramio.PanoramioLayer(); '+
-    '     } '+
-    '     panoramioLayer.setMap(map); '+
+    '   } '+
+    '   panoramioLayer.setMap(map); '+
     ' } '+
 
     ' function hidePanaramio() { '+
-    '     if (panoramioLayer != null) { '+
-    '        panoramioLayer.setMap(null); '+
-    '     } '+
+    '   if (panoramioLayer != null) { '+
+    '       panoramioLayer.setMap(null); '+
+    '   } '+
     ' } '+
-
-    ' function markerClick(lat, lng) { '+
-    '    document.getElementById("LatValue").value = lat + ""; '+
-    '    document.getElementById("LngValue").value = lng + ""; '+
-    ' } '+
-    ''+
-
-    ' function clearPosition(lat, lng) { '+
-    '    document.getElementById("LatValue").value = ""; '+
-    '    document.getElementById("LngValue").value = ""; '+
-    ' } '+
-    ''+
 
     'function ClearMarkers() {  '+
     '  if (markersArray) {        '+
@@ -102,19 +121,56 @@ const
     '}  '+
     ''+
 
-    'function PutMarker(Lat, Lang, Msg) { '+
+    'function ResetLocation(){' +
+    '  canSave = false; ' +
+    '  external.CanSaveLocation(0, 0, -1);' +
+    '  if ((imageLat != 0) && (imageLng != 0)) '+
+    '    PutMarker(imageLat, imageLng);' +
+    '  else '+
+    '    ClearMarkers();' +
+    '' +
+    '} '+
+
+    'function SaveImageInfo(Name, Date){' +
+    '   canSave = false; '+
+    '   currentImage = Name; '+
+    '   currentDate = Date; '+
+    '   imageLat = 0; '+
+    '   imageLng = 0; '+
+    '' +
+    '} '+
+
+    'function ShowImageLocation(Lat, Lng, Msg, Date) { '+
+    '   canSave = false; '+
+    '   currentLat = Lat; '+
+    '   currentLng = Lng; '+
+    '   imageLat = Lat; '+
+    '   imageLng = Lng; '+
+    '   currentImage = Msg; '+
+    '   currentDate = Date; '+
+    '   PutMarker(Lat, Lng); '+
+    '}' +
+
+    'function PutMarker(Lat, Lng) { '+
     '   ClearMarkers(); '+
-
     '   var html = document.getElementById("googlePopup").innerHTML;'+
-    '   html = html.replace(/%NAME%/g, Msg);'+
+    '   html = html.replace(/%NAME%/g, currentImage);'+
+    '   html = html.replace(/%DATE%/g, currentDate);'+
     '   html = html.replace(/imageClass/g, "image");'+
-
-    '   var latlng = new google.maps.LatLng(Lat, Lang); '+
+    '   html = html.replace(/idSave/g, "divSave");'+
+    '   if (canSave)' +
+    '     html = html.replace(/1111/g, "350");'+
+    '   else '+
+    '     html = html.replace(/1111/g, "250");'+
+    '    '+
+    '   if (currentDate == "") '+
+    '     html = html.replace(/inline/g, "none");'+
+    '   var latlng = new google.maps.LatLng(Lat, Lng); '+
     '   var options = { '+
     '               position: latlng, '+
     '               map: map, '+
     '               icon: "http://www.google.com/mapfiles/marker.png", '+
-    '               title: Msg+" ("+Lat+","+Lang+")", '+
+    '               title: currentImage + " (" + Lat + ", " + Lng + ")", '+
     '               content: html '+
     '           }; '+
 
@@ -129,7 +185,6 @@ const
     '  }); '+
 
     '  markersArray.push(marker); '+
-    '  setTimeout("external.UpdateEmbed()", 1); '+
     '}'+
     ''+
 
@@ -144,30 +199,60 @@ const
 	  '}'+
     ''+
 
+    'function ZoomIn() { '+
+    '  map.setZoom(19);'+
+    '  GotoLatLng(currentLat, currentLng); '+
+    '}'+
+    ''+
+
     '</script> '+
+    '<style>' +
+    '</style>' +
     '</head> '+
     ''+
     '<body onload="initialize()" style="margin:0; padding:0; overflow: hidden"> '+
     '  <div id="map_canvas" style="width:100%; height:100%"></div> '+
-    '  <input type="hidden" id="LatValue">'+
-    '  <input type="hidden" id="LngValue">'+
-    '  <input type="hidden" id="MapLat">'+
-    '  <input type="hidden" id="MapLng">'+
-    '  <input type="hidden" id="MapZoom">'+
-    '  <input type="hidden" id="MapIsReady" value="0">'+
-    '  </div>  '+
     '  <div id="googlePopup" style="display: none;"> '+
-    '	   <div style="height: 120px; width: 205px;"> '+
-    '       <p style="color: #000000; margin: 0 0 10px;"><span>%NAME%</span> '+
-    '         <br />x '+
-    '         <embed class="imageClass" width="120" height="100"></embed> '+
-    '         <br />y '+
+    '	   <div style="height: 1111px; width: 230px; font-size: 12px;"> '+
+    '       <p style="color: #000000; margin: 0"> '+
+    '         <div style="text-align:center;"> '+
+    '           <embed class="imageClass" width="204" height="204"></embed> '+
+    '         </div> '+
+    '         <span style="">%NAME_LABEL%: <strong>%NAME%</strong></span> '+
+    '         <br /> '+
+    '         <span style="display:inline">%DATE_LABEL%: %DATE%</span> '+
+    '         <br /> '+
+    '         <span style="padding-top: 5px; display:block;"><a onclick="ZoomIn();" href="javascript:;">%ZOOM_TEXT%</a></span> '+
+    '         <div class="idSave" style="display: none; padding-top: 10px;"> '+
+    '           <span style="padding: 5px;"><strong>%SAVE_TEXT%</strong></span> '+
+    '           <br /> '+
+    '           <input type="button" value="%YES%" onclick="SaveLocation()" style="width: 70px"> '+
+    '           <input type="button" value="%NO%" onclick="ResetLocation()" style="width: 70px"> '+
+    '         </div> '+
     '       </p> '+
     '     </div> '+
     '  </div> '+
     '</body> '+
     '</html> ';
 
+//TODO: move this method to other unit
+procedure ClearWebBrowser(WebBrowser: TWebBrowser);
+
 implementation
+
+procedure ClearWebBrowser(WebBrowser: TWebBrowser);
+var
+  v: Variant;
+  HTMLDocument: IHTMLDocument2;
+begin
+  HTMLDocument := WebBrowser.Document as IHTMLDocument2;
+  if HTMLDocument <> nil then
+  begin
+    v := VarArrayCreate([0, 0], varVariant);
+    v[0] := ''; //empty document
+    HTMLDocument.Write(PSafeArray(TVarData(v).VArray));
+    HTMLDocument.Close;
+  end;
+end;
 
 end.

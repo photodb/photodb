@@ -252,6 +252,8 @@ type
   TGeoLocation = class
     Latitude: Double;
     Longitude: Double;
+    function Copy: TGeoLocation;
+    procedure Assign(Item: TGeoLocation);
   end;
 
 type
@@ -371,7 +373,7 @@ end;
 
 { TDBPopupMenuInfoRecord }
 
-procedure TDBPopupMenuInfoRecord.Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False);
+procedure TDBPopupMenuInfoRecord.Assign(Item: TDBPopupMenuInfoRecord; MoveImage: Boolean = False);
 begin
   FPath := Item.Path;
   ID := Item.ID;
@@ -661,6 +663,20 @@ end;
 constructor TImageDBOptions.Create;
 begin
   Version := 0;
+end;
+
+{ TGeoLocation }
+
+procedure TGeoLocation.Assign(Item: TGeoLocation);
+begin
+  Self.Latitude := Item.Latitude;
+  Self.Longitude := Item.Longitude;
+end;
+
+function TGeoLocation.Copy: TGeoLocation;
+begin
+  Result := TGeoLocation.Create;
+  Result.Assign(Self);
 end;
 
 end.

@@ -12,10 +12,10 @@ unit WebJS_TLB;
 // ************************************************************************ //
 
 // $Rev: 41960 $
-// File generated on 10.03.2012 23:47:16 from Type Library described below.
+// File generated on 11.03.2012 21:14:10 from Type Library described below.
 
 // ************************************************************************  //
-// Type Lib: C:\Users\dolphin.HOME\Desktop\CallBack\WebJS (1)
+// Type Lib: D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Units\WebJS\WebJS (1)
 // LIBID: {517F7078-5E73-4E5A-B8A2-8F0FF14EF21B}
 // LCID: 0
 // Helpfile:
@@ -68,6 +68,7 @@ type
     procedure ZoomPan(Lat: Double; Lng: Double; Zoom: SYSINT); safecall;
     procedure UpdateEmbed; safecall;
     procedure MapStarted; safecall;
+    function CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint; safecall;
   end;
 
 // *********************************************************************//
@@ -81,6 +82,7 @@ type
     procedure ZoomPan(Lat: Double; Lng: Double; Zoom: SYSINT); dispid 202;
     procedure UpdateEmbed; dispid 203;
     procedure MapStarted; dispid 204;
+    function CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint; dispid 205;
   end;
 
 implementation

@@ -235,6 +235,12 @@
     <translate name="Show Panoramio" value="Показать Panoramio" />
     <translate name="Hide Panoramio" value="Скрыть Panoramio" />
     <translate name="Save location" value="Сохранить точку" />
+    <translate name="Zoom in" value="Увеличить" />
+    <translate name="Yes" value="Да" />
+    <translate name="No" value="Нет" />
+    <translate name="Name" value="Имя" />
+    <translate name="Date" value="Дата" />
+    <translate name="Save current location for the image?" value="Сохранить текущее месторасположение для фото?" />	
     <translate name="Geo location can't be saved to this file type!" value="Месторасположение не может быть сохранено для данного типа файлов!" />	
     <translate name="Convert" value="Конвертировать" />
     <translate name="Resize" value="Изменить размер" />

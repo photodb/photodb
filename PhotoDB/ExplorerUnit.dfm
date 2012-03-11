@@ -1616,7 +1616,6 @@ object ExplorerForm: TExplorerForm
         Height = 494
         Align = alClient
         TabOrder = 0
-        OnCommandStateChange = WbGeoLocationCommandStateChange
         ExplicitWidth = 200
         ExplicitHeight = 529
         ControlData = {

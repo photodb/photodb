@@ -1337,6 +1337,8 @@ begin
   if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam, True);
+    if (TempBitmap = nil) then
+      FSender.ReplaceBitmap(nil, GUIDParam, FInfo.Include, IsBigImage);
 
     if (TempBitmap = nil) or TempBitmap.Empty or not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, IsBigImage) then
       F(TempBitmap);
@@ -2682,7 +2684,7 @@ begin
   FSender.DoStopLoading;
 end;
 
-procedure TExplorerThread.ExtractImage(Info: TDBPopupMenuInfoRecord; CryptedFile : Boolean; FileID : TGUID);
+procedure TExplorerThread.ExtractImage(Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
 var
   W, H: Integer;
   Graphic: TGraphic;
@@ -2785,8 +2787,7 @@ begin
     IsBigImage := False; //сбрасываем флаг для того чтобы перезагрузилась картинка
 
   GUIDParam := FileID;
-  if FInfo <> Info then
-    FInfo.Assign(Info);
+
   if not SynchronizeEx(ReplaceImageInExplorer) then
     F(TempBitmap)
   else

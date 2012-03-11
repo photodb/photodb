@@ -71,6 +71,8 @@ const
     'YYYY.MM.DD (LABEL)';
 
   Animation3DDelay = 100;
+  MapImageWidth = 200;
+  MapImageHeight = 200;
 
   ReleaseNumber = 12;
 

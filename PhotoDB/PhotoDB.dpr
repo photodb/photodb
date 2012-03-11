@@ -8,8 +8,6 @@ program PhotoDB;
   {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
-{$SetPEFlags 1}// 1 = Windows.IMAGE_FILE_RELOCS_STRIPPED
-
 uses
   FastMM4,
   uInit in 'Units\uInit.pas',
@@ -393,6 +391,7 @@ uses
   uWebNullContainer in 'Units\WebJS\uWebNullContainer.pas',
   WebJS_TLB in 'Units\WebJS\WebJS_TLB.pas';
 
+{$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
 {$R *.res}
 

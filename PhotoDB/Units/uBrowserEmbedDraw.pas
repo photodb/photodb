@@ -10,6 +10,8 @@ uses
   SHDocVw,
   ActiveX,
   ExplorerTypes,
+  uConstants,
+  uBitmapUtils,
   MSHTML;
 
 type
@@ -90,7 +92,7 @@ type
   private
     FElemBehavior: IElementBehavior;
   public
-    constructor Create(ElemBehavior: IElementBehavior);
+    constructor Create(Owner: TCustomExplorerForm);
     destructor Destroy; override;
     function FindBehavior(const bstrBehavior: WideString;
       const bstrBehaviorUrl: WideString; const pSite: IElementBehaviorSite;
@@ -99,12 +101,11 @@ type
 
 implementation
 
-
 { TElementBehaviorFactory }
 
-constructor TElementBehaviorFactory.Create(ElemBehavior: IElementBehavior);
+constructor TElementBehaviorFactory.Create(Owner: TCustomExplorerForm);
 begin
-  FElemBehavior := ElemBehavior;
+  FElemBehavior := TElementBehavior.Create(Owner);
 end;
 
 destructor TElementBehaviorFactory.Destroy;
@@ -126,13 +127,53 @@ end;
 function TElementBehavior.Draw(rcBounds, rcUpdate: tagRECT; lDrawFlags: Integer;
   hdc: hdc; pvDrawObject: Pointer): HResult;
 var
-  Bitmap: TBitmap;
+  G: TGraphic;
+  W, H: Integer;
+  B, Bitmap, SB: TBitmap;
 begin
-  { Отрисовка }
-  FExplorer.GetCurrentImage(100, 100, Bitmap);
+  { Draw embed object }
+  Bitmap := TBitmap.Create;
   try
-    with rcBounds do
-      BitBlt(hdc, Left, Top, Right - Left, Bottom - Top, Bitmap.Canvas.Handle, 0, 0, SRCCOPY);
+    FExplorer.GetCurrentImage(MapImageWidth, MapImageHeight, G);
+    try
+      if G <> nil then
+      begin
+        Bitmap.PixelFormat := pf24Bit;
+        W := rcBounds.Right - rcBounds.Left;
+        H := rcBounds.Bottom - rcBounds.Top;
+        Bitmap.SetSize(W, H);
+        FillColorEx(Bitmap, clWhite);
+
+        if G is TIcon then
+          Bitmap.Canvas.Draw(W div 2 - G.Width div 2, H div 2 - G.Height div 2, G);
+
+        if G is TBitmap then
+        begin
+          B := TBitmap(G);
+          if B.PixelFormat = pf24Bit then
+          begin
+            SB := TBitmap.Create;
+            try
+              KeepProportions(B, W - 4, H - 4);
+              G := B;
+              DrawShadowToImage(SB, B);
+
+              DrawImageEx32To24(Bitmap, SB, W div 2 - SB.Width div 2, H div 2 - SB.Height div 2);
+            finally
+              F(SB);
+            end;
+          end;
+          if B.PixelFormat = pf32Bit then
+            DrawImageEx32To24(Bitmap, B, W div 2 - B.Width div 2, H div 2 - B.Height div 2);
+
+        end;
+
+        with rcBounds do
+          BitBlt(hdc, Left, Top, W, H, Bitmap.Canvas.Handle, 0, 0, SRCCOPY);
+      end;
+    finally
+      F(G);
+    end;
   finally
     F(Bitmap);
   end;
