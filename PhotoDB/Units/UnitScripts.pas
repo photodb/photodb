@@ -43,7 +43,8 @@ uses
   uGUIDUtils,
   uFileUtils,
   uPortableDeviceUtils,
-  uPortableScriptUtils;
+  uPortableScriptUtils,
+  uVCLHelpers;
 
 type
   TMenuItemW = class(TMenuItem)
@@ -2119,7 +2120,7 @@ begin
 
   Item.Tag := GetNamedValueInt(AScript, '$Tag');
   Item.Visible := GetNamedValueBool(AScript, '$Visible');
-  Item.default := GetNamedValueBool(AScript, '$Default');
+  Item.ExSetDefault(GetNamedValueBool(AScript, '$Default'));
   Item.Enabled := GetNamedValueBool(AScript, '$Enabled');
   Item.Checked := GetNamedValueBool(AScript, '$Checked');
 
@@ -2327,7 +2328,7 @@ begin
               TempItem.Caption := VirtualItem.Items[I].Caption;
               TempItem.Script := (VirtualItem.Items[I] as TMenuItemW).Script;
               TempItem.ImageIndex := VirtualItem.Items[I].ImageIndex;
-              TempItem.default := VirtualItem.Items[I].default;
+              TempItem.ExSetDefault(VirtualItem.Items[I].ExGetDefault);
               TempItem.Tag := VirtualItem.Items[I].Tag;
               TempItem.OnClick := VirtualItem.Items[I].OnClick;
               NewItem.Add(TempItem);
@@ -2713,7 +2714,7 @@ begin
  Result:= TMenuItemW.Create(AOwner);
   Result.Caption := TTranslateManager.Instance.SmartTranslate(Caption, 'DBMenu');
   Result.Script := Script;
-  Result.default := default;
+  Result.ExSetDefault(Default);
   Result.OnClick := OnClick;
   Result.Tag := Tag;
   if (Icon <> '') then
@@ -2745,7 +2746,7 @@ begin
   Result := TMenuItemW.Create(AOwner);
   Result.Caption := TTranslateManager.Instance.SmartTranslate(Caption, 'DBMenu');
   Result.Script := Script;
-  Result.default := default;
+  Result.ExSetDefault(Default);
   Result.OnClick := OnClick;
   Result.Enabled := Enabled;
   Result.Tag := Tag;
@@ -2778,7 +2779,7 @@ begin
   Result := TMenuItemW.Create(AOwner);
   Result.Caption := TTranslateManager.Instance.SmartTranslate(Caption, 'DBMenu');
   Result.Script := Script;
-  Result.Default := default;
+  Result.ExSetDefault(Default);
   Result.OnClick := OnClick;
   Result.Enabled := Enabled;
   Result.Checked := Checked;

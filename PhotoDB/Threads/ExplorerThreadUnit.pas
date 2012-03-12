@@ -70,7 +70,7 @@ type
     FFolder: string;
     FLastFolderCheck: string;
     FMask: string;
-    FIcon: Ticon;
+    FIcon: TIcon;
     FCID: TGUID;
     TempBitmap: TBitmap;
     FBmp: TBitmap;
@@ -1337,8 +1337,6 @@ begin
   if not IsTerminated then
   begin
     FSender.SetInfoToItem(FInfo, GUIDParam, True);
-    if (TempBitmap = nil) then
-      FSender.ReplaceBitmap(nil, GUIDParam, FInfo.Include, IsBigImage);
 
     if (TempBitmap = nil) or TempBitmap.Empty or not FSender.ReplaceBitmap(TempBitmap, GUIDParam, FInfo.Include, IsBigImage) then
       F(TempBitmap);

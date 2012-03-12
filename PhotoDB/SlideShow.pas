@@ -92,11 +92,15 @@ uses
   uPortableClasses,
   uPortableDeviceUtils,
   uPortableDeviceManager,
-  uShellNamespaceUtils;
+  uShellNamespaceUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils,
+  Themes;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
-    PmMain: TPopupMenu;
+    PmMain: TPopupActionBar;
     Next1: TMenuItem;
     Previous1: TMenuItem;
     N1: TMenuItem;
@@ -164,7 +168,7 @@ type
     TbDelete: TToolButton;
     TbSeparator6: TToolButton;
     TbRating: TToolButton;
-    RatingPopupMenu: TPopupMenu;
+    RatingPopupMenu: TPopupActionBar;
     N01: TMenuItem;
     N11: TMenuItem;
     N21: TMenuItem;
@@ -178,20 +182,20 @@ type
     TimerDBWork: TTimer;
     TbSeparatorPageNumber: TToolButton;
     TbPageNumber: TToolButton;
-    PopupMenuPageSelecter: TPopupMenu;
+    PopupMenuPageSelecter: TPopupActionBar;
     LsLoading: TLoadingSign;
     TbEncrypt: TToolButton;
     N5: TMenuItem;
     ByEXIF1: TMenuItem;
-    PmSteganography: TPopupMenu;
+    PmSteganography: TPopupActionBar;
     AddHiddenInfo1: TMenuItem;
     ExtractHiddenInfo1: TMenuItem;
     LsDetectingFaces: TLoadingSign;
     WlFaceCount: TWebLink;
-    PmFaces: TPopupMenu;
+    PmFaces: TPopupActionBar;
     MiFaceDetectionStatus: TMenuItem;
     MiDetectionMethod: TMenuItem;
-    PmFace: TPopupMenu;
+    PmFace: TPopupActionBar;
     MiClearFaceZone: TMenuItem;
     MiClearFaceZoneSeparatpr: TMenuItem;
     MiCurrentPerson: TMenuItem;
@@ -207,7 +211,7 @@ type
     MiDrawFace: TMenuItem;
     N10: TMenuItem;
     ImFacePopup: TImageList;
-    PmObject: TPopupMenu;
+    PmObject: TPopupActionBar;
     N12: TMenuItem;
     Createnote1: TMenuItem;
     TbConvert: TToolButton;
@@ -669,7 +673,7 @@ var
   begin
     if TransparentImage then
     begin
-      Drawimage.Canvas.Brush.Color := ClBtnFace;
+      Drawimage.Canvas.Brush.Color := Theme.WindowColor;
       Drawimage.Canvas.Pen.Color := 0;
       Drawimage.Canvas.Rectangle(X1 - 1, Y1 - 1, X2 + 1, Y2 + 1);
     end;
@@ -759,8 +763,8 @@ begin
   end;
   DrawImage.Width := Clientwidth;
   DrawImage.Height := HeightW;
-  DrawImage.Canvas.Brush.Color := ClBtnFace;
-  DrawImage.Canvas.Pen.Color := ClBtnFace;
+  DrawImage.Canvas.Brush.Color := Theme.WindowColor;
+  DrawImage.Canvas.Pen.Color := Theme.WindowColor;
   DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
   if (FbImage.Height = 0) or (FbImage.Width = 0) then
     begin
@@ -1255,7 +1259,7 @@ begin
       MI := TMenuItem.Create(PmFaces);
       MI.Caption := ExtractFileName(FileList[I]);
       MI.OnClick := SelectCascade;
-      MI.Default := MI.Caption = DetectionMethod;
+      MI.ExSetDefault(MI.Caption = DetectionMethod);
       MiDetectionMethod.Add(MI);
     end;
   finally
@@ -1713,8 +1717,8 @@ begin
     Exit;
   if (Buffer = nil) or Buffer.Empty then
   begin
-    Bitmap.Canvas.Pen.Color := clBtnFace;
-    Bitmap.Canvas.Brush.Color := clBtnFace;
+    Bitmap.Canvas.Pen.Color := Theme.WindowColor;
+    Bitmap.Canvas.Brush.Color := Theme.WindowColor;
     Bitmap.Canvas.Rectangle(0, 0, W, H);
   end else
     Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), Buffer.Canvas, Rect(X, Y, X + W, Y + H));
@@ -1800,6 +1804,10 @@ end;
 
 procedure TViewer.WndProc(var Message: TMessage);
 begin
+  //TODO: handle erasing
+  if (Message.Msg = WM_ERASEBKGND) and StyleServices.Enabled then
+    Message.Msg := WM_ERASEBKGND;
+
   inherited;
 
   if Message.Msg = WM_COMMAND then
@@ -3010,16 +3018,13 @@ begin
       Imlists[I].Clear;
 
   TW.I.Start('BkColor');
-  Imlists[0].BkColor := ClBtnFace;
-  Imlists[1].BkColor := ClBtnFace;
-  Imlists[2].BkColor := ClBtnFace;
 
   B := TBitmap.Create;
   try
     B.Width := 16;
     B.Height := 16;
-    B.Canvas.Brush.Color := ClBtnFace;
-    B.Canvas.Pen.Color := ClBtnFace;
+    B.Canvas.Brush.Color := Theme.PanelColor;
+    B.Canvas.Pen.Color := Theme.PanelColor;
     TW.I.Start('ImageList_ReplaceIcon');
     for I := 0 to 1 do
       for J := 0 to IconsCount do
@@ -3459,8 +3464,8 @@ begin
     AnimatedBuffer.Canvas.Pen.Color := 0;
   end else
   begin
-    AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
-    AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
+    AnimatedBuffer.Canvas.Brush.Color := Theme.WindowColor;
+    AnimatedBuffer.Canvas.Pen.Color := Theme.WindowColor;
   end;
   AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
   ImageFrameTimer.Interval := 1;
@@ -3523,8 +3528,8 @@ begin
     AnimatedBuffer.Canvas.Pen.Color := 0;
   end else
   begin
-    AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
-    AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
+    AnimatedBuffer.Canvas.Brush.Color := Theme.WindowColor;
+    AnimatedBuffer.Canvas.Pen.Color := Theme.WindowColor;
   end;
 
   if (AnimatedImage is TGIFImage) then
@@ -3571,8 +3576,8 @@ begin
         AnimatedBuffer.Canvas.Brush.Color := 0;
       end else
       begin
-        AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
-        AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
+        AnimatedBuffer.Canvas.Pen.Color := Theme.WindowColor;
+        AnimatedBuffer.Canvas.Brush.Color := Theme.WindowColor;
       end;
 
       AnimatedBuffer.Canvas.Rectangle(Bounds_);
@@ -4147,9 +4152,9 @@ begin
     Rating := - Rating div 10;
   GetCursorPos(P);
   for I := 0 to 5 do
-    (FindComponent('N' + IntToStr(I) + '1') as TMenuItem).Default := False;
+    (FindComponent('N' + IntToStr(I) + '1') as TMenuItem).ExSetDefault(False);
 
-  (FindComponent('N' + IntToStr(Rating) + '1') as TMenuItem).Default := True;
+  (FindComponent('N' + IntToStr(Rating) + '1') as TMenuItem).ExSetDefault(True);
 
   RatingPopupMenu.Popup(P.X, P.Y);
 end;
@@ -4323,7 +4328,7 @@ begin
     MenuItem.OnClick := OnPageSelecterClick;
     MenuItem.Tag := I;
     if I = FCurrentPage then
-      MenuItem.Default := True;
+      MenuItem.ExSetDefault(True);
     PopupMenuPageSelecter.Items.Add(MenuItem);
    end;
 end;

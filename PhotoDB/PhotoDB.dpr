@@ -134,7 +134,6 @@ uses
   UnitSlideShowUpdateInfoThread in 'Threads\UnitSlideShowUpdateInfoThread.pas',
   UnitCDExportThread in 'Threads\UnitCDExportThread.pas',
   UnitSearchBigImagesLoaderThread in 'Threads\UnitSearchBigImagesLoaderThread.pas',
-  Scpanel in 'External\Controls\scpanel\Scpanel.pas',
   GraphicEx in 'External\Formats\GraphicEx\GraphicEx.pas',
   GraphicColor in 'External\Formats\GraphicEx\GraphicColor.pas',
   GraphicCompression in 'External\Formats\GraphicEx\GraphicCompression.pas',
@@ -389,7 +388,10 @@ uses
   uWebJSExternal in 'Units\WebJS\uWebJSExternal.pas',
   uWebJSExternalContainer in 'Units\WebJS\uWebJSExternalContainer.pas',
   uWebNullContainer in 'Units\WebJS\uWebNullContainer.pas',
-  WebJS_TLB in 'Units\WebJS\WebJS_TLB.pas';
+  WebJS_TLB in 'Units\WebJS\WebJS_TLB.pas',
+  Vcl.Themes,
+  Vcl.Styles,
+  uThemesUtils in 'Units\uThemesUtils.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -556,7 +558,8 @@ begin
 
     TW.I.Start('TFormManager Create');
     // This is main form of application
-    Application.CreateForm(TFormManager, FormManager);
+    TStyleManager.TrySetStyle('Amakrits');
+  Application.CreateForm(TFormManager, FormManager);
   Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');

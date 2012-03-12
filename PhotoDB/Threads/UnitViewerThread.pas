@@ -263,12 +263,7 @@ begin
         begin
           SynchronizeEx(ShowLoadingSign);
           FaceDetectionDataManager.RequestFaceDetection(FViewer, Graphic, FInfo.FileName, FInfo.ID);
-        end else
-          SynchronizeEx(procedure
-            begin
-              Viewer.FinishDetectionFaces;
-            end
-          );
+        end;
       end;
       F(Graphic);
     end;

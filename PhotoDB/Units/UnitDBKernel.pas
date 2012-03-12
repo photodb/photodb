@@ -1061,7 +1061,7 @@ begin
   FImageList := TDelayedImageList.Create(nil);
   FImageList.Width := 16;
   FImageList.Height := 16;
-  FImageList.BkColor := clMenu;
+  FImageList.ColorDepth := cd32Bit;
 
   icons[1] := LoadIcon(HInstance,'SHELL');
   icons[2] := LoadIcon(HInstance,'SLIDE_SHOW');

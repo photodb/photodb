@@ -3,10 +3,26 @@ unit UnitPropertyLoadImageThread;
 interface
 
 uses
-  Windows, Classes, Messages, Graphics, SysUtils, RAWImage,
-  UnitDBKernel, GraphicCrypt, uJpegUtils, uBitmapUtils, uDBThread,
-  uMemory, GraphicsCool, uGraphicUtils, uRuntime, uAssociations,
-  uConstants, uDBForm, uExifUtils;
+  Windows,
+  Classes,
+  Messages,
+  Graphics,
+  SysUtils,
+  RAWImage,
+  UnitDBKernel,
+  GraphicCrypt,
+  uJpegUtils,
+  uBitmapUtils,
+  uDBThread,
+  uMemory,
+  GraphicsCool,
+  uGraphicUtils,
+  uRuntime,
+  uAssociations,
+  uConstants,
+  uDBForm,
+  uThemesUtils,
+  uExifUtils;
 
 type
   TPropertyLoadImageThreadOptions = record
@@ -135,7 +151,7 @@ begin
 
           BitmapParam := FB1;
 
-          FillRectNoCanvas(FB1, ClBtnFace);
+          FillRectNoCanvas(FB1, Theme.PanelColor);
 
           if FB.PixelFormat = pf24Bit then
             DrawImageEx(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,

@@ -9,6 +9,16 @@ uses
   MSHTML,
   Vcl.OleCtrls;
 
+(*
+function setMaxZoomCenter(latlng) {
+  map.getCurrentMapType().getMaxZoomAtLatLng(latlng, function(response) {
+    if (response && response['status'] == G_GEO_SUCCESS) {
+      map.setCenter(latlng, response['zoom']);
+    }
+  });
+}
+*)
+
 const
   GoogleMapHTMLStr: string =
     '<html> '+
@@ -216,7 +226,7 @@ const
     '	   <div style="height: 1111px; width: 230px; font-size: 12px;"> '+
     '       <p style="color: #000000; margin: 0"> '+
     '         <div style="text-align:center;"> '+
-    '           <embed class="imageClass" width="204" height="204"></embed> '+
+    '           <embed class="imageClass" width="204" height="204" style="z-index: 0" wmode="transparent"></embed> '+
     '         </div> '+
     '         <span style="">%NAME_LABEL%: <strong>%NAME%</strong></span> '+
     '         <br /> '+

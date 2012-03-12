@@ -90,9 +90,7 @@ object ExplorerForm: TExplorerForm
       Height = 609
       Align = alClient
       BevelOuter = bvNone
-      Color = clInactiveCaption
-      Ctl3D = True
-      ParentCtl3D = False
+      ParentColor = True
       TabOrder = 1
       OnResize = PropertyPanelResize
       object ScrollBox1: TScrollPanel
@@ -113,7 +111,6 @@ object ExplorerForm: TExplorerForm
         Align = alClient
         BevelOuter = bvNone
         FullRepaint = False
-        Caption = 'ScrollBox1'
         TabOrder = 0
         OnResize = ScrollBox1Resize
         object TypeLabel: TLabel
@@ -963,7 +960,6 @@ object ExplorerForm: TExplorerForm
     AutoSize = True
     BevelEdges = [beBottom]
     Color = clWindow
-    ParentBackground = False
     TabOrder = 4
     object BvSeparatorAddress: TBevel
       Left = 688
@@ -1001,9 +997,6 @@ object ExplorerForm: TExplorerForm
       Height = 25
       Align = alRight
       BevelOuter = bvNone
-      DoubleBuffered = True
-      FullRepaint = False
-      ParentDoubleBuffered = False
       TabOrder = 0
       object SbSearchMode: TSpeedButton
         Left = 0
@@ -1039,8 +1032,6 @@ object ExplorerForm: TExplorerForm
         Height = 25
         Align = alClient
         BevelOuter = bvNone
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 0
         DesignSize = (
           135
@@ -1758,7 +1749,7 @@ object ExplorerForm: TExplorerForm
     Left = 200
     Top = 240
   end
-  object PmItemPopup: TPopupMenu
+  object PmItemPopup: TPopupActionBar
     OnPopup = PmItemPopupPopup
     Left = 360
     Top = 96
@@ -1953,7 +1944,7 @@ object ExplorerForm: TExplorerForm
       OnClick = Properties1Click
     end
   end
-  object PmListPopup: TPopupMenu
+  object PmListPopup: TPopupActionBar
     OnPopup = PmListPopupPopup
     Left = 360
     Top = 512
@@ -2079,7 +2070,7 @@ object ExplorerForm: TExplorerForm
     Left = 769
     Top = 112
   end
-  object PopupMenuTreeView: TPopupMenu
+  object PopupMenuTreeView: TPopupActionBar
     OnPopup = PopupMenuTreeViewPopup
     Left = 361
     Top = 192
@@ -2103,13 +2094,13 @@ object ExplorerForm: TExplorerForm
     Left = 200
     Top = 436
   end
-  object PopupMenuBack: TPopupMenu
+  object PopupMenuBack: TPopupActionBar
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuBackPopup
     Left = 360
     Top = 468
   end
-  object PopupMenuForward: TPopupMenu
+  object PopupMenuForward: TPopupActionBar
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuForwardPopup
     Left = 360
@@ -2166,7 +2157,7 @@ object ExplorerForm: TExplorerForm
     Left = 536
     Top = 456
   end
-  object PmLinkOptions: TPopupMenu
+  object PmLinkOptions: TPopupActionBar
     Left = 360
     Top = 144
     object Open2: TMenuItem
@@ -2178,7 +2169,7 @@ object ExplorerForm: TExplorerForm
       OnClick = OpeninNewWindow2Click
     end
   end
-  object PmDragMode: TPopupMenu
+  object PmDragMode: TPopupActionBar
     Left = 360
     Top = 240
     object Copy4: TMenuItem
@@ -2214,7 +2205,7 @@ object ExplorerForm: TExplorerForm
     Left = 536
     Top = 408
   end
-  object RatingPopupMenu: TPopupMenu
+  object RatingPopupMenu: TPopupActionBar
     Left = 361
     Top = 376
     object N00: TMenuItem
@@ -2247,7 +2238,7 @@ object ExplorerForm: TExplorerForm
       OnClick = N05Click
     end
   end
-  object PmListViewType: TPopupMenu
+  object PmListViewType: TPopupActionBar
     Left = 360
     Top = 328
     object Thumbnails1: TMenuItem
@@ -2308,7 +2299,7 @@ object ExplorerForm: TExplorerForm
     Left = 538
     Top = 251
   end
-  object PopupMenuZoomDropDown: TPopupMenu
+  object PopupMenuZoomDropDown: TPopupActionBar
     OnPopup = PopupMenuZoomDropDownPopup
     Left = 362
     Top = 282
@@ -2319,7 +2310,8 @@ object ExplorerForm: TExplorerForm
     Left = 201
     Top = 144
   end
-  object PmSearchMode: TPopupMenu
+  object PmSearchMode: TPopupActionBar
+    AutoPopup = False
     Images = ImSearchMode
     OnPopup = PmSearchModePopup
     Left = 656
@@ -2350,7 +2342,7 @@ object ExplorerForm: TExplorerForm
     Left = 200
     Top = 488
   end
-  object PmPathMenu: TPopupMenu
+  object PmPathMenu: TPopupActionBar
     Left = 360
     Top = 560
     object MiCopyAddress: TMenuItem

@@ -341,13 +341,12 @@ object Viewer: TViewer
     MaxTransparencity = 255
     GetBackGround = LsLoadingGetBackGround
   end
-  object PmMain: TPopupMenu
+  object PmMain: TPopupActionBar
     OnPopup = PmMainPopup
     Left = 48
     Top = 96
     object Next1: TMenuItem
       Caption = 'Next'
-      Default = True
       OnClick = NextImageClick
     end
     object Previous1: TMenuItem
@@ -494,18 +493,17 @@ object Viewer: TViewer
     Left = 152
   end
   object ImlToolBarNormal: TImageList
-    BlendColor = 12937777
-    BkColor = 12937777
+    ColorDepth = cd32Bit
     Left = 152
     Top = 224
   end
   object ImlToolBarHot: TImageList
-    BlendColor = 12937777
-    BkColor = 12937777
+    ColorDepth = cd32Bit
     Left = 152
     Top = 272
   end
   object ImlToolBarDisabled: TImageList
+    ColorDepth = cd32Bit
     Left = 152
     Top = 320
   end
@@ -544,7 +542,7 @@ object Viewer: TViewer
     Left = 248
     Top = 224
   end
-  object RatingPopupMenu: TPopupMenu
+  object RatingPopupMenu: TPopupActionBar
     MenuAnimation = [maBottomToTop]
     Left = 48
     Top = 192
@@ -580,11 +578,11 @@ object Viewer: TViewer
     Left = 248
     Top = 176
   end
-  object PopupMenuPageSelecter: TPopupMenu
+  object PopupMenuPageSelecter: TPopupActionBar
     Left = 48
     Top = 144
   end
-  object PmSteganography: TPopupMenu
+  object PmSteganography: TPopupActionBar
     OnPopup = PmSteganographyPopup
     Left = 48
     Top = 240
@@ -597,7 +595,7 @@ object Viewer: TViewer
       OnClick = ExtractHiddenInfo1Click
     end
   end
-  object PmFaces: TPopupMenu
+  object PmFaces: TPopupActionBar
     OnPopup = PmFacesPopup
     Left = 48
     Top = 336
@@ -623,7 +621,7 @@ object Viewer: TViewer
       OnClick = MiFaceDetectionStatusClick
     end
   end
-  object PmFace: TPopupMenu
+  object PmFace: TPopupActionBar
     Images = ImFacePopup
     OnPopup = PmFacePopup
     Left = 48
@@ -686,7 +684,7 @@ object Viewer: TViewer
     Left = 152
     Top = 368
   end
-  object PmObject: TPopupMenu
+  object PmObject: TPopupActionBar
     Left = 48
     Top = 384
   end

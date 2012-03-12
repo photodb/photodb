@@ -9,6 +9,8 @@ uses
   FOrms,
   Controls,
   Graphics,
+  Menus,
+  Themes,
   StdCtrls;
 
 type
@@ -36,6 +38,13 @@ type
   TCheckBoxHelper = class helper for TCheckBox
   public
     procedure AdjustWidth;
+  end;
+
+type
+  TMenuItemHelper = class helper for TMenuItem
+  public
+    procedure ExSetDefault(Value: Boolean);
+    function ExGetDefault: Boolean;
   end;
 
 type
@@ -135,6 +144,46 @@ begin
     Width := TextSize.Cx + GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE) * 2;
   finally
     ReleaseDc(Handle, ADC);
+  end;
+end;
+
+{ TMenuItemHelper }
+
+function TMenuItemHelper.ExGetDefault: Boolean;
+begin
+  if TStyleManager.Enabled and TStyleManager.IsCustomStyleActive then
+    Result := Checked
+  else
+    Result := Default;
+end;
+
+procedure TMenuItemHelper.ExSetDefault(Value: Boolean);
+var
+  I: Integer;
+begin
+  if not Value then
+  begin
+    if TStyleManager.Enabled and TStyleManager.IsCustomStyleActive then
+      Self.Checked := False
+    else
+      Self.Default := False;
+
+    Exit;
+  end;
+  if TStyleManager.Enabled and TStyleManager.IsCustomStyleActive then
+  begin
+    Self.Checked := True;
+    if Parent <> nil then
+    begin
+      for I := 0 to Parent.Count - 1 do
+      begin
+        if Parent.Items[I] <> Self then
+          Parent.Items[I].Checked := False;
+      end;
+    end;
+  end else
+  begin
+    Self.Default := True;
   end;
 end;
 

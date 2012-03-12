@@ -37,6 +37,7 @@ uses
   uBitmapUtils,
   uShellIcons,
   ExplorerTypes,
+  uThemesUtils,
   uConstants;
 
 type
@@ -114,7 +115,7 @@ begin
           try
             TempBitmap.PixelFormat := pf32Bit;
             TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
-            FillTransparentColor(TempBitmap, clBtnFace);
+            FillTransparentColor(TempBitmap, Theme.PanelColor);
 
             ShadowImage := TBitmap.Create;
             try
@@ -145,7 +146,7 @@ begin
       try
         TempBitmap.PixelFormat := pf32Bit;
         TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
-        FillTransparentColor(TempBitmap, clBtnFace);
+        FillTransparentColor(TempBitmap, Theme.PanelColor);
 
         FInfo.Image := TJPEGImage.Create;
         try

@@ -3,8 +3,20 @@ unit uCryptUtils;
 interface
 
 uses
-  Windows, Classes, SysUtils, DECUtil, DECCipher, uStrongCrypt, uStringUtils, Menus,
-  uActivationUtils, uSettings, uMemory, uDBForm, WebLink;
+  Windows,
+  Classes,
+  SysUtils,
+  DECUtil,
+  DECCipher,
+  uStrongCrypt,
+  uStringUtils,
+  Menus,
+  uActivationUtils,
+  uSettings,
+  uMemory,
+  uDBForm,
+  uVCLHelpers,
+  WebLink;
 
 type
   TPasswordMethodChanger = class(TObject)
@@ -114,7 +126,7 @@ end;
 
 procedure TPasswordMethodChanger.OnChiperSelected(Sender: TObject);
 begin
-  TMenuItem(Sender).Default := True;
+  TMenuItem(Sender).ExSetDefault(True);
   FWebLink.Text := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
   FWebLink.Tag := TMenuItem(Sender).Tag;
 

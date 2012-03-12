@@ -3,10 +3,27 @@ unit uListViewUtils;
 interface
 
 uses
-  Windows, Classes, Controls, Graphics, SysUtils, EasyListview, CommCtrl,
-  UnitBitmapImageList, uMemory, ComCtrls, Math,
-  MPCommonUtilities, uDBDrawing, TLayered_Bitmap, uGraphicUtils, uConstants, uRuntime,
-  uSettings, uBitmapUtils;
+  Windows,
+  Classes,
+  Controls,
+  Graphics,
+  SysUtils,
+  EasyListview,
+  CommCtrl,
+  UnitBitmapImageList,
+  uMemory,
+  ComCtrls,
+  Math,
+  MPCommonUtilities,
+  uDBDrawing,
+  TLayered_Bitmap,
+  uGraphicUtils,
+  uConstants,
+  uRuntime,
+  uSettings,
+  Themes,
+  uThemesUtils,
+  uBitmapUtils;
 
 type
   TEasyCollectionItemX = class(TEasyCollectionItem)
@@ -108,9 +125,9 @@ uses UnitPropeccedFilesSupport, UnitDBKernel;
 procedure FixListViewText(ACanvas: TCanvas; Item : TEasyItem; Include : Boolean);
 begin
   if not Include then
-    ACanvas.Font.Color := ColorDiv2(clWindow, clWindowText)
+    ACanvas.Font.Color := ColorDiv2(Theme.ListViewColor, Theme.ListViewFontColor)
   else
-    ACanvas.Font.Color := clWindowText;
+    ACanvas.Font.Color := Theme.ListViewFontColor;
 end;
 
 procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
@@ -185,7 +202,7 @@ var
   ColorFrom, ColorTo, ColorFromOriginal, ColorToOriginal: TColor;
   SelectionRect, R: TRect;
 begin
-  ACanvas.Font.Color := clWindowText;
+  ACanvas.Font.Color := Theme.ListViewFontColor;
   Graphic := BImageList[Item.ImageIndex].Graphic;
 
   if (Graphic = nil) or Graphic.Empty then
@@ -353,13 +370,13 @@ begin
     AFont.Assign(Font);
     AFont.Style := [fsBold];
     AFont.Size := AFont.Size + 2;
-    AFont.Color := clHighlightText;
+    AFont.Color := Theme.HighlightTextColor;
     W := Bitmap.Canvas.TextWidth(IntToStr(ItemsSelected));
     H := Bitmap.Canvas.TextHeight(IntToStr(ItemsSelected));
     Inc(W, 10);
     Inc(H, 10);
     R := Rect(5, 5, 5 + W, 5 + H);
-    DrawRoundGradientVert(Bitmap, R, clBlack, clHighlight, clHighlightText, RoundRadius);
+    DrawRoundGradientVert(Bitmap, R, clBlack, Theme.HighlightColor, Theme.HighlightTextColor, RoundRadius);
     DrawText32Bit(Bitmap, IntToStr(ItemsSelected), AFont, R, DT_CENTER or DT_VCENTER);
   finally
     AFont.Free;
@@ -375,8 +392,7 @@ var
   MaxH, MaxW, I, N, FSelCount, ItemsSelected, ImageW, ImageH : Integer;
   Graphic : TGraphic;
   DX, DY, DMax : Extended;
-  TmpImage,
-  SelectedImage : TBitmap;
+  TmpImage, SelectedImage: TBitmap;
   LBitmap : TLayeredBitmap;
   FocusedItem : TEasyItem;
 
@@ -665,6 +681,8 @@ end;
 
 procedure SetLVSelection(ListView : TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 begin
+  if StyleServices.Enabled then
+    ListView.Color := StyleServices.GetStyleColor(scListView);
   ListView.Selection.MouseButton := MouseButton;
   ListView.Selection.AlphaBlend := True;
   ListView.Selection.AlphaBlendSelRect := True;
@@ -676,11 +694,24 @@ begin
   end;
   ListView.Selection.FullItemPaint := True;
   ListView.Selection.Gradient := True;
+  if StyleServices.Enabled then
+  begin
+    ListView.Selection.GradientColorTop := StyleServices.GetStyleColor(scGenericGradientBase);
+    ListView.Selection.GradientColorBottom := StyleServices.GetStyleColor(scGenericGradientEnd);
+    ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
+    ListView.Font.Color := StyleServices.GetStyleFontColor(sfListItemTextNormal);
+    ListView.HotTrack.Color := StyleServices.GetStyleFontColor(sfListItemTextHot);
+  end else
+  begin
   ListView.Selection.GradientColorBottom := clGradientActiveCaption;
   ListView.Selection.GradientColorTop := clGradientInactiveCaption;
+    ListView.Selection.TextColor := clWindowText;
+    ListView.HotTrack.Color := clWindowText;
+    ListView.Font.Color := 0;
+  end;
   ListView.Selection.RoundRect := True;
   ListView.Selection.UseFocusRect := False;
-  ListView.Selection.TextColor := clWindowText;
+
   ListView.PaintInfoItem.ShowBorder := False;
   ListView.HotTrack.Cursor := CrArrow;
   ListView.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);

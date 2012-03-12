@@ -28,7 +28,8 @@ uses
   uExplorerPersonsProvider,
   uExplorerNetworkProviders,
   uExplorerPortableDeviceProvider,
-  uFormListView;
+  uFormListView,
+  Vcl.ActnPopup;
 
 type
   TExplorerPath = record
@@ -242,13 +243,13 @@ type
   private
     FOwner: TThreadForm;
     FPathList: TArExplorerPath;
-    FSender: TPopupMenu;
+    FSender: TPopupActionBar;
     FIcons: TPathItemCollection;
     procedure UpdateMenu;
   protected
     procedure Execute; override;
   public
-    constructor Create(Owner: TThreadForm; PathList: TArExplorerPath; Sender: TPopupMenu);
+    constructor Create(Owner: TThreadForm; PathList: TArExplorerPath; Sender: TPopupActionBar);
   end;
 
 function ExplorerPath(Path: string; PType: Integer): TExplorerPath;
@@ -843,7 +844,7 @@ end;
 { TLoadPathList }
 
 constructor TLoadPathList.Create(Owner: TThreadForm; PathList: TArExplorerPath;
-  Sender: TPopupMenu);
+  Sender: TPopupActionBar);
 begin
   inherited Create(Owner, Owner.StateID);
   FOwner := Owner;

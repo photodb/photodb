@@ -21,6 +21,7 @@ uses
   Graphics,
   Controls,
   Forms,
+  Themes,
   ComObj,
   Registry,
   PrintMainForm,
@@ -137,7 +138,10 @@ uses
   MSHTML,
   uExifUtils,
   uGeoLocation,
-  uBrowserEmbedDraw
+  uBrowserEmbedDraw,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils
   ;
 
 const
@@ -146,7 +150,7 @@ const
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
     SizeImageList: TImageList;
-    PmItemPopup: TPopupMenu;
+    PmItemPopup: TPopupActionBar;
     SlideShow1: TMenuItem;
     Properties1: TMenuItem;
     Shell1: TMenuItem;
@@ -155,7 +159,7 @@ type
     Delete1: TMenuItem;
     DBitem1: TMenuItem;
     SplLeftPanel: TSplitter;
-    PmListPopup: TPopupMenu;
+    PmListPopup: TPopupActionBar;
     Addfolder1: TMenuItem;
     SelectAll1: TMenuItem;
     AddFile1: TMenuItem;
@@ -187,12 +191,12 @@ type
     StatusBar1: TStatusBar;
     GoToSearchWindow1: TMenuItem;
     OpeninSearchWindow1: TMenuItem;
-    PopupMenuTreeView: TPopupMenu;
+    PopupMenuTreeView: TPopupActionBar;
     OpeninExplorer1: TMenuItem;
     AddFolder2: TMenuItem;
     ToolBarNormalImageList: TImageList;
-    PopupMenuBack: TPopupMenu;
-    PopupMenuForward: TPopupMenu;
+    PopupMenuBack: TPopupActionBar;
+    PopupMenuForward: TPopupActionBar;
     DragTimer: TTimer;
     ToolBarDisabledImageList: TImageList;
     N10: TMenuItem;
@@ -221,14 +225,14 @@ type
     Othertasks1: TMenuItem;
     ExportImages1: TMenuItem;
     Print1: TMenuItem;
-    PmLinkOptions: TPopupMenu;
+    PmLinkOptions: TPopupActionBar;
     OpeninNewWindow2: TMenuItem;
     Open2: TMenuItem;
     TextFile1: TMenuItem;
     Directory2: TMenuItem;
     TextFile2: TMenuItem;
     Copywithfolder1: TMenuItem;
-    PmDragMode: TPopupMenu;
+    PmDragMode: TPopupActionBar;
     Copy4: TMenuItem;
     Move1: TMenuItem;
     N15: TMenuItem;
@@ -250,7 +254,7 @@ type
     SetFilter1: TMenuItem;
     MakeFolderViewer1: TMenuItem;
     Number1: TMenuItem;
-    RatingPopupMenu: TPopupMenu;
+    RatingPopupMenu: TPopupActionBar;
     N00: TMenuItem;
     N01: TMenuItem;
     N02: TMenuItem;
@@ -285,7 +289,7 @@ type
     CopyToLink: TWebLink;
     AddLink: TWebLink;
     AccessLabel: TLabel;
-    PmListViewType: TPopupMenu;
+    PmListViewType: TPopupActionBar;
     Thumbnails1: TMenuItem;
     Icons1: TMenuItem;
     List1: TMenuItem;
@@ -320,7 +324,7 @@ type
     ToolButton16: TToolButton;
     TbOptions: TToolButton;
     ToolButton20: TToolButton;
-    PopupMenuZoomDropDown: TPopupMenu;
+    PopupMenuZoomDropDown: TPopupActionBar;
     MapCD1: TMenuItem;
     LsMain: TLoadingSign;
     AsEXIF1: TMenuItem;
@@ -338,7 +342,7 @@ type
     SbDoSearch: TSpeedButton;
     PnSearch: TPanel;
     PnSearchEditPlace: TPanel;
-    PmSearchMode: TPopupMenu;
+    PmSearchMode: TPopupActionBar;
     ImSearchMode: TImageList;
     Searchfiles1: TMenuItem;
     Searchincollection1: TMenuItem;
@@ -354,7 +358,7 @@ type
     ImPathDropDownMenu: TImageList;
     EncryptLink: TWebLink;
     WlCreateObject: TWebLink;
-    PmPathMenu: TPopupMenu;
+    PmPathMenu: TPopupActionBar;
     MiCopyAddress: TMenuItem;
     MiEditAddress: TMenuItem;
     ImageTasksLabel: TLabel;
@@ -782,7 +786,7 @@ type
     procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
     procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
-    procedure UpdateMenuItems(Menu: TPopupMenu; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
+    procedure UpdateMenuItems(Menu: TPopupActionBar; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
     procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
     function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
@@ -886,7 +890,7 @@ begin
   try
     BMP := TBitmap.Create;
     try
-      LoadPNGImage32bit(PNG, BMP, ClWindow);
+      BMP.Assign(PNG);
       SB.Glyph := BMP;
     finally
       F(BMP);
@@ -958,23 +962,25 @@ begin
     Bitmap.PixelFormat := pf24bit;
     Bitmap.Width := 150;
     Bitmap.Height := 150;
-    Bitmap.Canvas.Brush.Color := ClWindow;
-    Bitmap.Canvas.Pen.Color := ClWindow;
+
+    Bitmap.Canvas.Brush.Color := Theme.ListViewColor;
+    Bitmap.Canvas.Pen.Color := Theme.ListViewColor;
     Bitmap.Canvas.Rectangle(0, 0, 150, 150);
     ExplorerBackground := GetExplorerBackground;
     try
       ExplorerBackgroundBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, ClWindow);
+        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme.ListViewColor);
         Bitmap.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
 
-        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, clBtnFace);
+        LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme.PanelColor);
 
         Background := ScrollBox1.BackGround;
         Background.PixelFormat := pf24bit;
         Background.SetSize(130, 150);
-        Background.Canvas.Brush.Color := clBtnFace;
-        Background.Canvas.Pen.Color := clBtnFace;
+
+        Background.Canvas.Brush.Color := Theme.PanelColor;
+        Background.Canvas.Pen.Color := Theme.PanelColor;
         Background.Canvas.Rectangle(0, 0, BackGround.Width, BackGround.Height);
         DrawTransparent(ExplorerBackgroundBMP, Background, 40);
         ScrollBox1Resize(Self);
@@ -1028,8 +1034,6 @@ begin
   ElvMain.BackGround.OffsetTrack := True;
   ElvMain.BackGround.BlendAlpha := 220;
 
-  ElvMain.HotTrack.Color := clWindowText;
-  ElvMain.Font.Color := 0;
   ElvMain.View := elsThumbnail;
   ElvMain.DragKind := dkDock;
   SetLVSelection(ElvMain, True);
@@ -1059,6 +1063,8 @@ begin
   ElvMain.Header.Columns.Add;
   ElvMain.Groups.Add;
   ElvMain.Groups[0].Visible := True;
+
+  PnNavigation.Color := Theme.EditColor;
 
   RefreshIDList := TList.Create;
 
@@ -1172,7 +1178,7 @@ begin
   FormLoadEnd := True;
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
   LsMain.BringToFront;
-  LsMain.Color := clWindow;
+  LsMain.Color := Theme.ListViewColor;
 
   GOM.AddObj(Self);
   if FGoToLastSavedPath then
@@ -4319,7 +4325,7 @@ begin
       end else
         ImageEditorLink.Visible := False;
 
-      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) then
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) and CanSaveEXIF(FSelectedInfo.FileName) then
       begin
         if (FSelectedInfo.GeoLocation <> nil)  then
           WlGeoLocation.Text := L('Display on map')
@@ -5243,9 +5249,9 @@ begin
     AddResourceImage('DATABASE');
   end;
 
-  Searchfiles1.Default := FSearchMode = EXPLORER_SEARCH_FILES;
-  SearchfileswithEXIF1.Default := FSearchMode = EXPLORER_SEARCH_IMAGES;
-  Searchincollection1.Default := FSearchMode = EXPLORER_SEARCH_DATABASE;
+  Searchfiles1.ExSetDefault(FSearchMode = EXPLORER_SEARCH_FILES);
+  SearchfileswithEXIF1.ExSetDefault(FSearchMode = EXPLORER_SEARCH_IMAGES);
+  Searchincollection1.ExSetDefault(FSearchMode = EXPLORER_SEARCH_DATABASE);
 end;
 
 procedure TExplorerForm.PnInfoResize(Sender: TObject);
@@ -5698,13 +5704,13 @@ end;
 procedure TExplorerForm.PopupMenuBackPopup(Sender: TObject);
 begin
   if TPopupMenu(Sender).Tag = 0 then
-    TLoadPathList.Create(Self, FHistory.GetBackHistory, TPopupMenu(Sender));
+    TLoadPathList.Create(Self, FHistory.GetBackHistory, TPopupActionBar(Sender));
 end;
 
 procedure TExplorerForm.PopupMenuForwardPopup(Sender: TObject);
 begin
   if TPopupMenu(Sender).Tag = 0 then
-    TLoadPathList.Create(Self, FHistory.GetForwardHistory, TPopupMenu(Sender));
+    TLoadPathList.Create(Self, FHistory.GetForwardHistory, TPopupActionBar(Sender));
 end;
 
 procedure TExplorerForm.OpeninExplorer1Click(Sender: TObject);
@@ -6939,8 +6945,8 @@ begin
           WebLink.Text := FName;
           WebLink.Tag := Length(UserLinks) - 1;
           WebLink.OnClick := UserDefinedPlaceClick;
-          WebLink.Color := clBtnFace;
-          WebLink.Font.Color := clWindowText;
+          WebLink.Color := Theme.PanelColor;
+          WebLink.Font.Color := Theme.PanelFontColor;
           WebLink.EnterBould := False;
           WebLink.IconWidth := 16;
           WebLink.IconHeight := 16;
@@ -7169,8 +7175,8 @@ begin
         begin
           Width := ThSizeExplorerPreview;
           Height := ThSizeExplorerPreview;
-          Canvas.Pen.Color := clBtnFace;
-          Canvas.Brush.Color := clBtnFace;
+          Canvas.Pen.Color := Theme.PanelColor;
+          Canvas.Brush.Color := Theme.PanelColor;
           if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
@@ -7284,8 +7290,8 @@ begin
             begin
               Width := ThSizeExplorerPreview;
               Height := ThSizeExplorerPreview;
-              Canvas.Pen.Color := clBtnFace;
-              Canvas.Brush.Color := clBtnFace;
+              Canvas.Pen.Color := Theme.PanelColor;
+              Canvas.Brush.Color := Theme.PanelColor;
               Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
 
               Ico := nil;
@@ -7333,8 +7339,8 @@ begin
             begin
               Width := ThSizeExplorerPreview;
               Height := ThSizeExplorerPreview;
-              Canvas.Pen.Color := clBtnFace;
-              Canvas.Brush.Color := clBtnFace;
+              Canvas.Pen.Color := Theme.PanelColor;
+              Canvas.Brush.Color := Theme.PanelColor;
               Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
 
               if FSearchMode = EXPLORER_SEARCH_DATABASE then
@@ -7368,7 +7374,7 @@ begin
         TempBitmap := TBitmap.Create;
         try
           TempBitmap.PixelFormat := pf24bit;
-          LoadBMPImage32bit(Bit32, TempBitmap, clBtnFace);
+          LoadBMPImage32bit(Bit32, TempBitmap, Theme.PanelColor);
           ImPreview.Picture.Graphic := TempBitmap;
         finally
           F(TempBitmap);
@@ -7429,7 +7435,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.UpdateMenuItems(Menu: TPopupMenu; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
+procedure TExplorerForm.UpdateMenuItems(Menu: TPopupActionBar; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
 var
   I: Integer;
   MI: TMenuItem;
@@ -7462,13 +7468,17 @@ begin
     MI.OnClick := SetNewHistoryPath;
     MI.ImageIndex := ImPathDropDownMenu.Count - 1;
     MI.Tag := I;
-    AddItemToMenu(MI, Menu);
+    Menu.Items.Add(MI);
   end;
   if Menu.Items.Count = 1 then
     //close popup menu
-    SendMessage(PopupList.Window, WM_CANCELMODE, 0, 0)
+    Menu.PopupMenu.CloseMenu
   else
+  begin
     Menu.Items.Delete(0);
+    Menu.PopupMenu.ActionClient.Items.Delete(0);
+    Menu.PopupMenu.LoadMenu(Menu.PopupMenu.ActionClient.Items, Menu.Items);
+  end;
 
   Menu.Tag := 1;
 end;
@@ -7498,8 +7508,8 @@ begin
   begin
     Width := ThSizeExplorerPreview;
     Height := ThSizeExplorerPreview;
-    Canvas.Pen.Color := clBtnFace;
-    Canvas.Brush.Color := clBtnFace;
+    Canvas.Pen.Color := Theme.PanelColor;
+    Canvas.Brush.Color := Theme.PanelColor;
     Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
     Icon := TIcon.Create;
     try

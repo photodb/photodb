@@ -1,5 +1,5 @@
 ﻿<#>[]{scripts\changedb_functions.dbini}
-<File>[0]
+<File>[-1]
 {
   //all icons should be created before displaying menu (Choose Collection)
   $IconList=GetDBsIcons;
@@ -30,7 +30,7 @@
     CloseWindow;
   }
 }
-<View>[0]
+<View>[-1]
 {
  <->[]{}
  DeleteNoFirst;
@@ -44,7 +44,7 @@
   CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"ShowExplorerPanel;",false,true,false,0);
  };
 }
-<Tools>[0]
+<Tools>[-1]
 {
   <List of keywords>[DB_IC_SEARCH]
   {
