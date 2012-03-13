@@ -3,11 +3,40 @@ unit UnitEditGroupsForm;
 interface
 
 uses
-  UnitGroupsWork, Windows, Messages, SysUtils, Classes,
-  Graphics, Controls, Forms, JPEG, UnitDBKernel, Math, UnitGroupsTools,
-  Dialogs, StdCtrls, ComCtrls, Menus, ExtCtrls, AppEvnts, CmpUnit, ImgList,
-  UnitDBDeclare, uBitmapUtils, uDBForm, uShellIntegration, uVCLHelpers,
-  uGraphicUtils, uConstants, uMemory, uSettings, pngimage, WatermarkedEdit,
+  UnitGroupsWork,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  JPEG,
+  UnitDBKernel,
+  Math,
+  UnitGroupsTools,
+  Dialogs,
+  StdCtrls,
+  ComCtrls,
+  Menus,
+  ExtCtrls,
+  AppEvnts,
+  CmpUnit,
+  ImgList,
+  UnitDBDeclare,
+  uBitmapUtils,
+  uDBForm,
+  uShellIntegration,
+  uVCLHelpers,
+  uGraphicUtils,
+  uConstants,
+  uMemory,
+  uSettings,
+  pngimage,
+  WatermarkedEdit,
+  uThemesUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   uMachMask;
 
 type
@@ -15,17 +44,17 @@ type
     BtnCancel: TButton;
     BtnOk: TButton;
     BtnCreateGroup: TButton;
-    PmGroup: TPopupMenu;
+    PmGroup: TPopupActionBar;
     Delete1: TMenuItem;
     N1: TMenuItem;
     CreateGroup1: TMenuItem;
     ChangeGroup1: TMenuItem;
     GroupManeger1: TMenuItem;
     BtnManager: TButton;
-    PmGroupsManager: TPopupMenu;
+    PmGroupsManager: TPopupActionBar;
     GroupManeger2: TMenuItem;
     QuickInfo1: TMenuItem;
-    PmClear: TPopupMenu;
+    PmClear: TPopupActionBar;
     Clear1: TMenuItem;
     Label1: TLabel;
     Image1: TImage;
@@ -373,8 +402,8 @@ begin
     SmallB.PixelFormat := pf24bit;
     SmallB.Width := 32;
     SmallB.Height := 32 + 2;
-    SmallB.Canvas.Pen.Color := ClBtnFace;
-    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Pen.Color := Theme.ListColor;
+    SmallB.Canvas.Brush.Color := Theme.ListColor;
     SmallB.Canvas.Rectangle(0, 0, SmallB.Width, SmallB.Height);
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], SmallB.Width div 2 - 8,
       SmallB.Height div 2 - 8, 0, 0, DI_NORMAL);
@@ -387,15 +416,15 @@ begin
     SmallB := TBitmap.Create;
     try
       SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := clBtnFace;
+      SmallB.Canvas.Brush.Color := Theme.ListColor;
       if FRegGroups[I].GroupImage <> nil then
         if not FRegGroups[I].GroupImage.Empty then
         begin
           B := TBitmap.Create;
           try
             B.PixelFormat := pf24bit;
-            B.Canvas.Brush.Color := ClBtnFace;
-            B.Canvas.Pen.Color := ClBtnFace;
+            B.Canvas.Brush.Color := Theme.ListColor;
+            B.Canvas.Pen.Color := Theme.ListColor;
             Size := Max(FRegGroups[I].GroupImage.Width, FRegGroups[I].GroupImage.Height);
             B.Width := Size;
             B.Height := Size;
@@ -621,13 +650,19 @@ begin
 
       if Control = LstAvaliableGroups then
         if N > -1 then
-          if NewGroup(FRegGroups[N - 1].GroupCode) then (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
+          if NewGroup(FRegGroups[N - 1].GroupCode) then
+            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
           else
           begin
             if GroupExists(FShowenRegGroups[index].GroupCode) then
-              (Control as TListBox).Canvas.Font.Color := ColorDiv2(clWindowText, clWindow)
+              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme.ListFontColor, Theme.ListColor)
             else
-              (Control as TListBox).Canvas.Font.Color := clWindowText;
+            begin
+              if TListBox(Control).Selected[index] then
+                (Control as TListBox).Canvas.Font.Color := Theme.ListFontSelectedColor
+              else
+                (Control as TListBox).Canvas.Font.Color := Theme.ListFontColor;
+            end;
 
             (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
           end;

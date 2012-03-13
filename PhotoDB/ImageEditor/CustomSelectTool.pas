@@ -25,9 +25,9 @@ type
     FBeginDragPoint: TPoint;
     FBeginFirstPoint: TPoint;
     FBeginSecondPoint: TPoint;
-    EditLock : Boolean;
-    FTerminating : Boolean;
-    FAnyRect: boolean;
+    EditLock: Boolean;
+    FTerminating: Boolean;
+    FAnyRect: Boolean;
     procedure SetFirstPoint(const Value: TPoint);
     procedure SetSecondPoint(const Value: TPoint);
     procedure SetMakingRect(const Value: Boolean);
@@ -157,6 +157,7 @@ begin
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.Icon := IcoSave;
   SaveSettingsLink.ImageCanRegenerate := True;
+  SaveSettingsLink.LoadImage;
   IcoSave.Free;
 
   MakeItLink := TWebLink.Create(Self);
@@ -169,6 +170,7 @@ begin
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
   MakeItLink.ImageCanRegenerate := True;
+  MakeItLink.LoadImage;
   IcoOK.Free;
 
   CloseLink := TWebLink.Create(Self);
@@ -181,6 +183,7 @@ begin
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
   CloseLink.ImageCanRegenerate := True;
+  CloseLink.LoadImage;
   IcoCancel.Free;
 
 end;

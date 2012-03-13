@@ -55,12 +55,13 @@ uses
   uSettings,
   uDBAdapter,
   uPortableDeviceUtils,
-  uShellNamespaceUtils;
+  uShellNamespaceUtils,
+  Vcl.ActnPopup;
 
 type
   TDBPopupMenu = class
   private
-    _popupMenu: TPopupMenu;
+    _popupMenu: TPopupActionBar;
     _user_group_menu: TMenuItem;
     _user_group_menu_sub_items: array of TMenuItem;
     _user_menu: array of TMenuItem;
@@ -518,7 +519,7 @@ begin
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesNo',Self.LoadVariablesNo);
   AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesSelectedFileNo',Self.LoadVariablesSelectedFileNo);
 
-  _popupMenu := TPopupMenu.Create(nil);
+  _popupMenu := TPopupActionBar.Create(nil);
 end;
 
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);

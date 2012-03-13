@@ -170,7 +170,7 @@ begin
 
     Exit;
   end;
-  if TStyleManager.Enabled and TStyleManager.IsCustomStyleActive then
+  if TStyleManager.Enabled {and TStyleManager.IsCustomStyleActive} then
   begin
     Self.Checked := True;
     if Parent <> nil then

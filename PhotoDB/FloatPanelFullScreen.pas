@@ -3,8 +3,21 @@ unit FloatPanelFullScreen;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, ToolWin, ImgList, TLayered_bitmap, ExtCtrls, uMemory;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ComCtrls,
+  ToolWin,
+  ImgList,
+  TLayered_bitmap,
+  ExtCtrls,
+  uThemesUtils,
+  uMemory;
 
 type
   TFloatPanel = class(TForm)
@@ -87,10 +100,8 @@ begin
   Imlists[1] := HotImageList;
   Imlists[2] := DisabledImageList;
   for I := 0 to 2 do
-  begin
     Imlists[I].Clear;
-    Imlists[I].BkColor := ClBtnFace;
-  end;
+
   for I := 0 to 1 do
     for J := 0 to 4 do
     begin
@@ -105,8 +116,8 @@ begin
           try
             B.Width := 16;
             B.Height := 16;
-            B.Canvas.Brush.Color := clBtnFace;
-            B.Canvas.Pen.Color := clBtnFace;
+            B.Canvas.Brush.Color := Theme.PanelColor;
+            B.Canvas.Pen.Color := Theme.PanelColor;
             B.Canvas.Rectangle(0, 0, 16, 16);
             Lb.DoStreachDraw(0, 0, 16, 16, B);
             Imlists[2].Add(B, nil);

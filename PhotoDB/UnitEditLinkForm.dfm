@@ -203,6 +203,7 @@ object FormEditLink: TFormEditLink
     Top = 56
   end
   object LinkImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 112
     Top = 56
   end

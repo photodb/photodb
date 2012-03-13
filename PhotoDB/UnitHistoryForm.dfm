@@ -68,7 +68,7 @@ object FormHistory: TFormHistory
     TabOrder = 2
     OnClick = BtnOkClick
   end
-  object PmActions: TPopupMenu
+  object PmActions: TPopupActionBar
     Left = 112
     Top = 152
     object View1: TMenuItem

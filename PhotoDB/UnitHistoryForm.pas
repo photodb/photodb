@@ -25,6 +25,8 @@ uses
   uDBForm,
   uConstants,
   uDBPopupMenuInfo,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   uFileUtils;
 
 type
@@ -32,7 +34,7 @@ type
     Panel1: TPanel;
     InfoListBox: TListBox;
     InfoLabel: TLabel;
-    PmActions: TPopupMenu;
+    PmActions: TPopupActionBar;
     View1: TMenuItem;
     Explorer1: TMenuItem;
     ReAddAll1: TMenuItem;
@@ -78,7 +80,7 @@ uses
 
 {$R *.dfm}
 
-procedure ShowHistory(List : TStrings);
+procedure ShowHistory(List: TStrings);
 var
   FormHistory: TFormHistory;
 begin

@@ -336,7 +336,7 @@ object FormCreatePerson: TFormCreatePerson
     StretchImage = True
     CanClick = True
   end
-  object PmImageOptions: TPopupMenu
+  object PmImageOptions: TPopupActionBar
     Left = 104
     Top = 48
     object MiLoadOtherImage: TMenuItem
@@ -354,6 +354,7 @@ object FormCreatePerson: TFormCreatePerson
     Top = 144
   end
   object GroupsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 104
     Top = 96
   end

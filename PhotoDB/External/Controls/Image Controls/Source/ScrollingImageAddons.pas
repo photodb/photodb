@@ -27,7 +27,8 @@ unit ScrollingImageAddons;
 interface
 
 uses
-  Windows, SysUtils, Classes, Controls, Forms, Messages, Graphics, ScrollingImage;
+  Windows, SysUtils, Classes, Controls, Forms, Messages, Graphics, ScrollingImage,
+  Themes;
 
 type
   {@exclude}
@@ -450,13 +451,19 @@ begin
 end;
 
 procedure TScrollingImageNavigator.Paint;
+var
+  C: TColor;
 begin
+  if StyleServices.Enabled then
+    C := StyleServices.GetStyleColor(scPanel)
+  else
+    C := Color;
   if csDesigning in ComponentState then
     with Canvas do
     begin
       Pen.Style := psDash;
       Pen.Color := clBlack;
-      Brush.Color := Color;
+      Brush.Color := C;
       Brush.Style := bsSolid;
       Rectangle(0, 0, ClientWidth, ClientHeight);
     end;
@@ -466,7 +473,7 @@ begin
   else
   with Canvas do
   begin
-    Brush.Color := Color;
+    Brush.Color := C;
     FillRect(Rect(0, 0, ClientWidth, FBitmapTop));
     FillRect(Rect(0, FBitmapTop + FBitmap.Height, ClientWidth, ClientHeight));
     FillRect(Rect(0, 0, FBitmapLeft, ClientHeight));

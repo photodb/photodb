@@ -88,7 +88,9 @@ uses
   uStringUtils,
   WatermarkedEdit,
   uVCLHelpers,
-  uMachMask;
+  uThemesUtils,
+  Vcl.ActnPopup,
+  uMachMask, Vcl.PlatformDefaultStyleActnCtrls;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -98,7 +100,7 @@ type
     ImMain: TImage;
     CommentMemo: TMemo;
     LabelComment: TLabel;
-    PmItem: TPopupMenu;
+    PmItem: TPopupActionBar;
     Shell1: TMenuItem;
     Show1: TMenuItem;
     Copy1: TMenuItem;
@@ -107,9 +109,9 @@ type
     DBItem1: TMenuItem;
     ApplicationEvents1: TApplicationEvents;
     SaveWindowPos1: TSaveWindowPos;
-    PmRatingNotAvaliable: TPopupMenu;
+    PmRatingNotAvaliable: TPopupActionBar;
     Ratingnotsets1: TMenuItem;
-    PmComment: TPopupMenu;
+    PmComment: TPopupActionBar;
     SetComent1: TMenuItem;
     Comentnotsets1: TMenuItem;
     N2: TMenuItem;
@@ -127,12 +129,12 @@ type
     BtDone: TButton;
     BtSave: TButton;
     BtnFind: TButton;
-    CopyEXIFPopupMenu: TPopupMenu;
+    CopyEXIFPopupMenu: TPopupActionBar;
     CopyCurrent1: TMenuItem;
     CopyAll1: TMenuItem;
     ImageList1: TImageList;
-    PmLinks: TPopupMenu;
-    PmAddLink: TPopupMenu;
+    PmLinks: TPopupActionBar;
+    PmAddLink: TPopupActionBar;
     Open1: TMenuItem;
     OpenFolder1: TMenuItem;
     Change1: TMenuItem;
@@ -144,7 +146,7 @@ type
     Up1: TMenuItem;
     Down1: TMenuItem;
     RegGroupsImageList: TImageList;
-    PopupMenuGroups: TPopupMenu;
+    PopupMenuGroups: TPopupActionBar;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     CreateGroup1: TMenuItem;
@@ -152,11 +154,11 @@ type
     GroupManeger1: TMenuItem;
     SearchForGroup1: TMenuItem;
     QuickInfo1: TMenuItem;
-    PmClear: TPopupMenu;
+    PmClear: TPopupActionBar;
     Clear1: TMenuItem;
     MoveToGroup1: TMenuItem;
     DropFileTarget2: TDropFileTarget;
-    PmImageConnect: TPopupMenu;
+    PmImageConnect: TPopupActionBar;
     AddImThLink1: TMenuItem;
     N7: TMenuItem;
     Cancel1: TMenuItem;
@@ -653,8 +655,8 @@ begin
 
               B1.Width := ThSizePropertyPreview + 4;
               B1.Height := ThSizePropertyPreview + 4;
-              B1.Canvas.Brush.Color := clBtnFace;
-              B1.Canvas.Pen.Color := clBtnFace;
+              B1.Canvas.Brush.Color := Theme.WindowColor;
+              B1.Canvas.Pen.Color := Theme.WindowColor;
               B1.Canvas.Rectangle(0, 0, B1.Width, B1.Height);
 
               FShadowImage := TBitmap.Create;
@@ -822,6 +824,8 @@ begin
   Up1.ImageIndex := DB_IC_UP;
   Down1.ImageIndex := DB_IC_DOWN;
 
+  LstAvaliableGroups.Font.Color := Theme.PanelFOntCOlor;
+
   SaveWindowPos1.Key := GetRegRootKey + 'Properties';
   SaveWindowPos1.SetPosition;
   FixFormPosition;
@@ -869,8 +873,8 @@ end;
 procedure TPropertiesForm.ImageLoadingFileDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := clBtnFace;
-  Buffer.Canvas.Brush.Color := clBtnFace;
+  Buffer.Canvas.Pen.Color := Theme.WindowColor;
+  Buffer.Canvas.Brush.Color := Theme.WindowColor;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 
@@ -1718,9 +1722,9 @@ begin
       B.Width := 100;
       B.Height := 100;
       B.PixelFormat := pf24bit;
-      B.Canvas.Brush.Color := clBtnFace;
-      B.Canvas.Pen.Color := RGB(Round(GetRValue(ColorToRGB(ClBtnFace)) * 0.8),
-        Round(GetGValue(ColorToRGB(ClBtnFace)) * 0.8), Round(GetBValue(ColorToRGB(ClBtnFace)) * 0.8));
+      B.Canvas.Brush.Color := Theme.WindowColor;
+      B.Canvas.Pen.Color := RGB(Round(GetRValue(ColorToRGB(Theme.WindowColor)) * 0.8),
+        Round(GetGValue(ColorToRGB(Theme.WindowColor)) * 0.8), Round(GetBValue(ColorToRGB(Theme.WindowColor)) * 0.8));
       B.Canvas.Rectangle(0, 0, 100, 100);
       Ico := TIcon.Create;
       try
@@ -2385,9 +2389,9 @@ begin
     Links[I].Top := I * (19 + 5) + 10;
     Links[I].Parent := LinksScrollBox;
     if LI[I].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT <> 0 then
-      Links[I].Font.Color := ColorDiv2(ClBtnFace, ClWindowText)
+      Links[I].Font.Color := ColorDiv2(Theme.PanelColor, Theme.PanelFontColor)
     else
-      Links[I].Font.Color := ClWindowText;
+      Links[I].Font.Color := Theme.PanelColor;
 
     Links[I].Color := LinksScrollBox.Color;
     Links[I].Width := LinksScrollBox.Width - 10;
@@ -2766,8 +2770,8 @@ begin
     SmallB.PixelFormat := pf24bit;
     SmallB.Width := 16;
     SmallB.Height := 18;
-    SmallB.Canvas.Pen.Color := ClBtnFace;
-    SmallB.Canvas.Brush.Color := ClBtnFace;
+    SmallB.Canvas.Pen.Color := Theme.PanelColor;
+    SmallB.Canvas.Brush.Color := Theme.PanelColor;
     SmallB.Canvas.Rectangle(0, 0, 16, 18);
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
     RegGroupsImageList.Add(SmallB, nil);
@@ -2780,7 +2784,7 @@ begin
     SmallB := TBitmap.Create;
     try
       SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := ClBtnFace;
+      SmallB.Canvas.Brush.Color := Theme.PanelColor;
       if RegGroups[I].GroupImage <> nil then
         if not RegGroups[I].GroupImage.Empty then
         begin
@@ -2788,8 +2792,8 @@ begin
           try
             B.PixelFormat := pf24bit;
             Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
-            B.Canvas.Brush.Color := ClBtnFace;
-            B.Canvas.Pen.Color := ClBtnFace;
+            B.Canvas.Brush.Color := Theme.PanelColor;
+            B.Canvas.Pen.Color := Theme.PanelColor;
             B.Width := Size;
             B.Height := Size;
             B.Canvas.Rectangle(0, 0, Size, Size);
@@ -2929,9 +2933,9 @@ begin
           else
           begin
             if GroupExists(FShowenRegGroups[index].GroupCode) then
-              (Control as TListBox).Canvas.Font.Color := ColorDiv2(clWindowText, clWindow)
+              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme.PanelColor, Theme.PanelFontColor)
             else
-              (Control as TListBox).Canvas.Font.Color := clWindowText;
+              (Control as TListBox).Canvas.Font.Color := Theme.PanelColor;
 
             (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
           end;

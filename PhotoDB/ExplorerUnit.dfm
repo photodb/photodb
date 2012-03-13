@@ -21,6 +21,7 @@ object ExplorerForm: TExplorerForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
+  OnResize = FormResize
   OnShow = FormShow
   DesignSize = (
     879

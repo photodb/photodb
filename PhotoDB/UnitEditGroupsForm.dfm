@@ -441,7 +441,7 @@ object EditGroupsForm: TEditGroupsForm
     OnChange = WedGroupsFilterChange
     WatermarkText = 'Filter groups'
   end
-  object PmGroup: TPopupMenu
+  object PmGroup: TPopupActionBar
     OnPopup = PmGroupPopup
     Left = 208
     Top = 48
@@ -477,7 +477,7 @@ object EditGroupsForm: TEditGroupsForm
       OnClick = QuickInfo1Click
     end
   end
-  object PmGroupsManager: TPopupMenu
+  object PmGroupsManager: TPopupActionBar
     Left = 176
     Top = 48
     object GroupManeger2: TMenuItem
@@ -485,7 +485,7 @@ object EditGroupsForm: TEditGroupsForm
       OnClick = GroupManeger1Click
     end
   end
-  object PmClear: TPopupMenu
+  object PmClear: TPopupActionBar
     Left = 144
     Top = 48
     object Clear1: TMenuItem
@@ -499,6 +499,7 @@ object EditGroupsForm: TEditGroupsForm
     Top = 48
   end
   object GroupsImageList: TImageList
+    ColorDepth = cd32Bit
     Height = 34
     Width = 32
     Left = 240

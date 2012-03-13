@@ -20,7 +20,7 @@ object FormSelectFont: TFormSelectFont
     Left = 8
     Top = 232
     Width = 61
-    Height = 20
+    Height = 19
     Caption = 'Old Font'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -32,8 +32,8 @@ object FormSelectFont: TFormSelectFont
   object Label2: TLabel
     Left = 8
     Top = 256
-    Width = 63
-    Height = 20
+    Width = 64
+    Height = 19
     Caption = 'New font'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

@@ -3,16 +3,64 @@ unit ImEditor;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, WebLink, StdCtrls, ExtCtrls, ComCtrls, ExtDlgs, Jpeg, GIFImage, Math,
-  DropSource, DropTarget, ToolsUnit, CropToolUnit, SaveWindowPos,
-  ImageHistoryUnit, RotateToolUnit, ResizeToolUnit, Clipbrd, uTiffImage,
-  EffectsToolUnit, RedEyeToolUnit, ColorToolUnit, Spin, Menus, uGUIDUtils,
-  CustomSelectTool, TextToolUnit, BrushToolUnit, InsertImageToolUnit,
-  GraphicsBaseTypes, UMemory, GraphicCrypt, Dolphin_DB, UnitPasswordForm,
-  uManagerExplorer, FormManegerUnit, UnitDBKernel, PropertyForm, Buttons,
-  UnitCrypting, GraphicEx, GraphicsCool, UScript, UnitScripts, PngImage,
-  RAWImage, DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs,
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  WebLink,
+  StdCtrls,
+  ExtCtrls,
+  ComCtrls,
+  ExtDlgs,
+  Jpeg,
+  GIFImage,
+  Math,
+  DropSource,
+  DropTarget,
+  ToolsUnit,
+  CropToolUnit,
+  SaveWindowPos,
+  ImageHistoryUnit,
+  RotateToolUnit,
+  ResizeToolUnit,
+  Clipbrd, uTiffImage,
+  EffectsToolUnit,
+  RedEyeToolUnit,
+  ColorToolUnit,
+  Spin,
+  Menus,
+  uGUIDUtils,
+  CustomSelectTool,
+  TextToolUnit,
+  BrushToolUnit,
+  InsertImageToolUnit,
+  GraphicsBaseTypes,
+  uMemory,
+  GraphicCrypt,
+  Dolphin_DB,
+  UnitPasswordForm,
+  uManagerExplorer,
+  FormManegerUnit,
+  UnitDBKernel,
+  PropertyForm,
+  Buttons,
+  UnitCrypting,
+  GraphicEx,
+  GraphicsCool,
+  uScript,
+  UnitScripts,
+  PngImage,
+  RAWImage,
+  DragDrop,
+  DragDropFile,
+  uVistaFuncs,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
   UnitDBCommonGraphics,
   uCDMappingTypes,
   uLogger,
@@ -30,7 +78,10 @@ uses
   uDBFileTypes,
   uConstants,
   uSettings,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils;
 
 type
   TWindowEnableState = record
@@ -68,7 +119,7 @@ type
     SaveLink: TWebLink;
     FullSizeLink: TWebLink;
     DestroyTimer: TTimer;
-    PmMain: TPopupMenu;
+    PmMain: TPopupActionBar;
     Exit1: TMenuItem;
     OpenFile1: TMenuItem;
     Search1: TMenuItem;
@@ -355,9 +406,17 @@ begin
   Screen.Cursors[CUR_HAND] := LoadCursor(HInstance, 'HAND');
   Screen.Cursors[CUR_CROP] := LoadCursor(HInstance, 'CROP');
 
-  DropFileTarget1.register(Self);
+  DropFileTarget1.Register(Self);
 
   LoadLanguage;
+
+  SaveLink.LoadImage;
+  ZoomOutLink.LoadImage;
+  ZoomInLink.LoadImage;
+  FullSizeLink.LoadImage;
+  FitToSizeLink.LoadImage;
+  UndoLink.LoadImage;
+  RedoLink.LoadImage;
 
   ZoomOutLink.Left := SaveLink.Left + SaveLink.Width + 25;
   ZoomInLink.Left := ZoomOutLink.Left + ZoomOutLink.Width + 25;

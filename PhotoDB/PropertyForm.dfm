@@ -179,7 +179,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 298
     Height = 372
-    ActivePage = TsGeneral
+    ActivePage = TsGroups
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -535,10 +535,6 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Groups'
       ImageIndex = 1
       OnResize = TsGroupsResize
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -936,10 +932,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -960,10 +952,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1018,10 +1006,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1077,7 +1061,7 @@ object PropertiesForm: TPropertiesForm
       end
     end
   end
-  object PmItem: TPopupMenu
+  object PmItem: TPopupActionBar
     OnPopup = PmItemPopup
     Left = 8
     Top = 8
@@ -1117,7 +1101,7 @@ object PropertiesForm: TPropertiesForm
     Left = 48
     Top = 496
   end
-  object PmRatingNotAvaliable: TPopupMenu
+  object PmRatingNotAvaliable: TPopupActionBar
     OnPopup = PmRatingNotAvaliablePopup
     Left = 72
     Top = 8
@@ -1126,7 +1110,7 @@ object PropertiesForm: TPropertiesForm
       OnClick = Ratingnotsets1Click
     end
   end
-  object PmComment: TPopupMenu
+  object PmComment: TPopupActionBar
     OnPopup = PmCommentPopup
     Left = 40
     Top = 8
@@ -1188,7 +1172,7 @@ object PropertiesForm: TPropertiesForm
     Left = 144
     Top = 496
   end
-  object CopyEXIFPopupMenu: TPopupMenu
+  object CopyEXIFPopupMenu: TPopupActionBar
     Left = 168
     Top = 8
     object CopyCurrent1: TMenuItem
@@ -1204,7 +1188,7 @@ object PropertiesForm: TPropertiesForm
     Left = 80
     Top = 496
   end
-  object PmLinks: TPopupMenu
+  object PmLinks: TPopupActionBar
     OnPopup = PmLinksPopup
     Left = 200
     Top = 8
@@ -1242,7 +1226,7 @@ object PropertiesForm: TPropertiesForm
       OnClick = Delete1Click
     end
   end
-  object PmAddLink: TPopupMenu
+  object PmAddLink: TPopupActionBar
     OnPopup = PmAddLinkPopup
     Left = 104
     Top = 8
@@ -1255,7 +1239,7 @@ object PropertiesForm: TPropertiesForm
     Left = 112
     Top = 496
   end
-  object PopupMenuGroups: TPopupMenu
+  object PopupMenuGroups: TPopupActionBar
     OnPopup = PopupMenuGroupsPopup
     Left = 200
     Top = 40
@@ -1291,7 +1275,7 @@ object PropertiesForm: TPropertiesForm
       OnClick = QuickInfo1Click
     end
   end
-  object PmClear: TPopupMenu
+  object PmClear: TPopupActionBar
     OnPopup = PmClearPopup
     Left = 136
     Top = 8
@@ -1308,7 +1292,7 @@ object PropertiesForm: TPropertiesForm
     Left = 136
     Top = 80
   end
-  object PmImageConnect: TPopupMenu
+  object PmImageConnect: TPopupActionBar
     OnPopup = PmImageConnectPopup
     Left = 976
     Top = 65360

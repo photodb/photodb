@@ -3,14 +3,52 @@ unit PrintMainForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ShellAPI, StdCtrls, ExtCtrls, ComCtrls, jpeg,
-  ScrollingImage, printers, ScrollingImageAddons, ImgList, Math, UnitPrinterTypes,
-  WebLink, SaveWindowPos, ExtDlgs, UnitDBFileDialogs, UnitDBKernel,
-  Dolphin_DB, GraphicCrypt, uVistaFuncs, uCDMappingTypes, uConstants,
-  Menus, uDBForm, uMemory, uTranslate, uShellIntegration, uFileUtils,
-  uResources, CommCtrl, MPCommonObjects, EasyListview, MPCommonUtilities,
-  uListViewUtils, uSettings;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ShellAPI,
+  StdCtrls,
+  ExtCtrls,
+  ComCtrls,
+  jpeg,
+  ScrollingImage,
+  printers,
+  ScrollingImageAddons,
+  ImgList,
+  Math,
+  UnitPrinterTypes,
+  WebLink,
+  SaveWindowPos,
+  ExtDlgs,
+  UnitDBFileDialogs,
+  UnitDBKernel,
+  Dolphin_DB,
+  GraphicCrypt,
+  uVistaFuncs,
+  uCDMappingTypes,
+  uConstants,
+  Menus,
+  uDBForm,
+  uMemory,
+  uTranslate,
+  uShellIntegration,
+  uFileUtils,
+  uResources,
+  CommCtrl,
+  MPCommonObjects,
+  EasyListview,
+  MPCommonUtilities,
+  uListViewUtils,
+  Themes,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils,
+  uSettings;
 
 type
   TPrintForm = class(TDBForm)
@@ -49,7 +87,7 @@ type
     RadioGroup1: TRadioGroup;
     TerminateTimes: TTimer;
     SaveWindowPos1: TSaveWindowPos;
-    PopupMenu1: TPopupMenu;
+    PmCopyToFile: TPopupActionBar;
     CopyToFile1: TMenuItem;
     ImCurrentFormat: TImage;
     Label5: TLabel;
@@ -74,7 +112,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure TerminateTimesTimer(Sender: TObject);
     function GetSampleType : TPrintSampleSizeOne;
-    procedure PopupMenu1Popup(Sender: TObject);
+    procedure PmCopyToFilePopup(Sender: TObject);
     procedure CopyToFile1Click(Sender: TObject);
     procedure LoadLanguage;
     procedure CbUseCustomSizeClick(Sender: TObject);
@@ -359,6 +397,11 @@ begin
 
   SetLVSelection(LvMain, False, [cmbLeft]);
 
+  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+    LvMain.ShowThemedBorder := False;
+
+  FastScrollingImage1.Color := Theme.WindowColor;
+
   PrintFormExists := True;
   FFiles := TStringList.Create;
   LvMain.DoubleBuffered := True;
@@ -398,6 +441,7 @@ begin
   try
     ImlFormatPreviews.GetBitmap(Item.ImageIndex, Bitmap);
     ImCurrentFormat.Picture.Graphic := Bitmap;
+    ImCurrentFormat.Repaint;
   finally
     F(Bitmap);
   end;
@@ -662,7 +706,7 @@ begin
   Result := FCurrentFormat;
 end;
 
-procedure TPrintForm.PopupMenu1Popup(Sender: TObject);
+procedure TPrintForm.PmCopyToFilePopup(Sender: TObject);
 begin
   CopyToFile1.Visible := BtnPrint.Enabled;
 end;

@@ -3,11 +3,37 @@ unit uActivation;
 interface
 
 uses
-  UnitINI, Searching, dolphin_db, UnitDBKernel, Windows, Messages, SysUtils,
-  Variants, Classes, Graphics, Controls, Forms, uVistaFuncs, uActivationUtils,
-  Dialogs, StdCtrls, jpeg, ExtCtrls, uShellIntegration, uRuntime, uDBForm,
-  uMemory, uConstants, uWizards, pngimage, uResources, uPNGUtils, uSettings,
-  uMemoryEx, LoadingSign;
+  UnitINI,
+  Searching,
+  dolphin_db,
+  UnitDBKernel,
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  uVistaFuncs,
+  uActivationUtils,
+  Dialogs,
+  StdCtrls,
+  jpeg,
+  ExtCtrls,
+  uShellIntegration,
+  uRuntime,
+  uDBForm,
+  uMemory,
+  uConstants,
+  uWizards,
+  pngimage,
+  uResources,
+  uPNGUtils,
+  uSettings,
+  uMemoryEx,
+  uThemesUtils,
+  LoadingSign;
 
 type
   TActivateForm = class(TDBForm)
@@ -23,8 +49,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure Execute;
     procedure Button1Click(Sender: TObject);
-    procedure FormKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure BtnCancelClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnFinishClick(Sender: TObject);
@@ -88,11 +113,12 @@ begin
   FWizard.AddStep(TFrameActivationLanding);
   FWizard.Start(Self, 190, 8);
 
+  LsLoading.Color := Theme.WizardColor;
   FImageBmp := TBitmap.Create;
   try
     Activation := GetActivationImage;
     try
-      LoadPNGImage32bit(Activation, FImageBmp, clWhite);
+      LoadPNGImage32bit(Activation, FImageBmp, Theme.WindowColor);
       ImActivationImage.Picture.Graphic := FImageBmp;
     finally
       F(Activation);

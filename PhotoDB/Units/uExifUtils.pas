@@ -17,6 +17,7 @@ uses
   CCR.Exif.XMPUtils,
   uTiffImage,
   RAWImage,
+  uAnimatedJPEG,
   uLogger,
   uPortableDeviceUtils;
 
@@ -77,6 +78,7 @@ var
 begin
   GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
   if (GraphicClass = Jpeg.TJPEGImage)
+    or (GraphicClass = TAnimatedJPEG)
     or (GraphicClass = TTiffImage)
     or (GraphicClass = GraphicEx.TPSDGraphic)
     then

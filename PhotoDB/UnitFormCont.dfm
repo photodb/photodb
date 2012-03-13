@@ -379,7 +379,7 @@ object FormCont: TFormCont
       end
     end
   end
-  object PopupMenu1: TPopupMenu
+  object PopupMenu1: TPopupActionBar
     OnPopup = PopupMenu1Popup
     Left = 228
     Top = 34
@@ -499,7 +499,7 @@ object FormCont: TFormCont
     Left = 272
     Top = 160
   end
-  object RatingPopupMenu1: TPopupMenu
+  object RatingPopupMenu1: TPopupActionBar
     Left = 425
     Top = 128
     object N00: TMenuItem
@@ -532,7 +532,7 @@ object FormCont: TFormCont
       OnClick = N05Click
     end
   end
-  object PopupMenuZoomDropDown: TPopupMenu
+  object PopupMenuZoomDropDown: TPopupActionBar
     OnPopup = PopupMenuZoomDropDownPopup
     Left = 360
     Top = 232

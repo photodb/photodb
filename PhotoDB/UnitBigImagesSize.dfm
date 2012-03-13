@@ -62,8 +62,8 @@ object BigImagesSizeForm: TBigImagesSizeForm
     object LnkClose: TWebLink
       Left = 48
       Top = 151
-      Width = 31
-      Height = 13
+      Width = 47
+      Height = 16
       Cursor = crHandPoint
       Text = 'Close'
       OnClick = LnkCloseClick
@@ -77,6 +77,8 @@ object BigImagesSizeForm: TBigImagesSizeForm
       ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
+      StretchImage = True
+      CanClick = True
     end
   end
   object TimerActivate: TTimer

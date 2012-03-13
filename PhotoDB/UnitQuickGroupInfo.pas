@@ -3,11 +3,38 @@ unit UnitQuickGroupInfo;
 interface
 
 uses
-  UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes,
-  Graphics, Controls, Forms, uVistaFuncs, ImgList, Menus, StdCtrls, Math,
-  ComCtrls, jpeg, ExtCtrls, Dialogs, uBitmapUtils, uDBForm, uMemory,
-  uShellIntegration, uConstants, WebLinkList, WebLink, AppEvnts,
-  uMemoryEx, uVCLHelpers;
+  UnitGroupsWork,
+  Dolphin_DB,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  uVistaFuncs,
+  ImgList,
+  Menus,
+  StdCtrls,
+  Math,
+  ComCtrls,
+  jpeg,
+  ExtCtrls,
+  Dialogs,
+  uBitmapUtils,
+  uDBForm,
+  uMemory,
+  uShellIntegration,
+  uConstants,
+  WebLinkList,
+  WebLink,
+  AppEvnts,
+  uMemoryEx,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils,
+  uVCLHelpers
+  ;
 
 type
   TFormQuickGroupInfo = class(TDBForm)
@@ -17,7 +44,7 @@ type
     BtnOk: TButton;
     DateEdit: TEdit;
     AccessEdit: TEdit;
-    PopupMenu1: TPopupMenu;
+    PmGroupOptions: TPopupActionBar;
     Manager1: TMenuItem;
     EditGroup1: TMenuItem;
     CommentLabel: TLabel;
@@ -31,7 +58,6 @@ type
     Label3: TLabel;
     CbInclude: TCheckBox;
     GroupsImageList: TImageList;
-    PopupMenu2: TPopupMenu;
     WllGroups: TWebLinkList;
     ApplicationEvents1: TApplicationEvents;
     BtnEdit: TButton;
@@ -299,16 +325,16 @@ begin
     SmallB := TBitmap.Create;
     try
       SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := ClBtnFace;
+      SmallB.Canvas.Brush.Color := Theme.PanelColor;
       Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
+      begin
         if not Group.GroupImage.Empty then
         begin
           B := TBitmap.Create;
           try
             B.PixelFormat := pf24bit;
             B.Assign(Group.GroupImage);
-            FreeGroup(Group);
             DoResize(15, 15, B, SmallB);
             SmallB.Height := 16;
             SmallB.Width := 16;
@@ -316,6 +342,8 @@ begin
             F(B);
           end;
         end;
+        FreeGroup(Group);
+      end;
       GroupsImageList.Add(SmallB, nil);
     finally
       F(SmallB);

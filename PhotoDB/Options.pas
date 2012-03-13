@@ -55,21 +55,23 @@ uses
   LoadingSign,
   uDBThread,
   Winapi.ShellApi,
-  uConfiguration;
+  Vcl.ActnPopup,
+  uConfiguration,
+  Vcl.PlatformDefaultStyleActnCtrls;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)
     CancelButton: TButton;
     OkButton: TButton;
-    PmExtensionStatus: TPopupMenu;
+    PmExtensionStatus: TPopupActionBar;
     Usethisprogramasdefault1: TMenuItem;
     Usemenuitem1: TMenuItem;
     Dontusethisextension1: TMenuItem;
-    PmUserMenu: TPopupMenu;
+    PmUserMenu: TPopupActionBar;
     Addnewcommand1: TMenuItem;
     Remove1: TMenuItem;
     ImageList1: TImageList;
-    PmPlaces: TPopupMenu;
+    PmPlaces: TPopupActionBar;
     Additem1: TMenuItem;
     DeleteItem1: TMenuItem;
     N1: TMenuItem;
@@ -182,7 +184,7 @@ type
     SedBackupDays: TSpinEdit;
     WblMethod: TWebLink;
     LbDefaultPasswordMethod: TLabel;
-    PmCryptMethod: TPopupMenu;
+    PmCryptMethod: TPopupActionBar;
     SedMinHeight: TSpinEdit;
     SedMinWidth: TSpinEdit;
     Bevel3: TBevel;
@@ -262,11 +264,11 @@ type
     procedure DeselectAll1Click(Sender: TObject);
     procedure BtnClearFaceDetectionCacheClick(Sender: TObject);
   private
-    FThemeList : TStringList;
-    FUserMenu : TUserMenuItemArray;
-    FLoadedPages : array[0..5] of boolean;
-    FPlaces : TPlaceFolderArray;
-    ReloadData : boolean;
+    FThemeList: TStringList;
+    FUserMenu: TUserMenuItemArray;
+    FLoadedPages: array [0 .. 5] of Boolean;
+    FPlaces: TPlaceFolderArray;
+    ReloadData: Boolean;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;

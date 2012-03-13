@@ -3,12 +3,40 @@ unit UnitEditLinkForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, UnitLinksSupport, ExtDlgs, GraphicEx,
-  acDlgSelect, DropSource, DropTarget, uDBUtils, ComCtrls, ImgList,
-  UnitDBKernel, DragDrop, DragDropFile, uVistaFuncs, ComboBoxExDB,
-  UnitDBFileDialogs, uDBForm, WatermarkedMemo, WatermarkedEdit,
-  uShellIntegration, Dolphin_db, uConstants, uAssociations, uMemory, pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  StdCtrls,
+  UnitLinksSupport,
+  ExtDlgs, GraphicEx,
+  acDlgSelect,
+  DropSource,
+  DropTarget,
+  uDBUtils,
+  ComCtrls,
+  ImgList,
+  UnitDBKernel,
+  DragDrop,
+  DragDropFile,
+  uVistaFuncs,
+  ComboBoxExDB,
+  UnitDBFileDialogs,
+  uDBForm,
+  WatermarkedMemo,
+  WatermarkedEdit,
+  uShellIntegration,
+  Dolphin_db,
+  uConstants,
+  uAssociations,
+  uMemory,
+  uThemesUtils,
+  pngimage;
 
 type
   TFormEditLink = class(TDBForm)
@@ -113,11 +141,11 @@ begin
   begin
     SmallB := TBitmap.Create;
     try
-      SmallB.PixelFormat := Pf24bit;
+      SmallB.PixelFormat := pf24bit;
       SmallB.Width := 16;
       SmallB.Height := 16;
-      SmallB.Canvas.Pen.Color := ClWindow;
-      SmallB.Canvas.Brush.Color := ClWindow;
+      SmallB.Canvas.Pen.Color := Theme.MenuColor;
+      SmallB.Canvas.Brush.Color := Theme.MenuColor;
       SmallB.Canvas.Rectangle(0, 0, 16, 16);
       case I of
         LINK_TYPE_ID:

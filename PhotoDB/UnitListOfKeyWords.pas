@@ -3,10 +3,33 @@ unit UnitListOfKeyWords;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DB, Dolphin_DB, ProgressActionUnit, uVistaFuncs,
-  CmpUnit, ExtCtrls, ClipBrd, Menus, UnitDBkernel, CommonDBSupport, uMemory,
-  uDBForm, uShellIntegration, uConstants, uMemoryEx, uRuntime;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  DB,
+  Dolphin_DB,
+  ProgressActionUnit,
+  uVistaFuncs,
+  CmpUnit,
+  ExtCtrls,
+  ClipBrd,
+  Menus,
+  UnitDBkernel,
+  CommonDBSupport,
+  uMemory,
+  uDBForm,
+  uShellIntegration,
+  uConstants,
+  uMemoryEx,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uRuntime;
 
 type
   Item = string; { This defines the objects being sorted. }
@@ -15,14 +38,14 @@ type
 type
   TFormListOfKeyWords = class(TDBForm)
     LstKeywords: TListBox;
-    PmKeywords: TPopupMenu;
+    PmKeywords: TPopupActionBar;
     Copy1: TMenuItem;
     N1: TMenuItem;
     Search1: TMenuItem;
-    Panel1: TPanel;
+    PnBottom: TPanel;
     Panel2: TPanel;
     BtnOk: TButton;
-    Panel3: TPanel;
+    PnTop: TPanel;
     LbInfo: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

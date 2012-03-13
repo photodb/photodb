@@ -1157,7 +1157,7 @@ object SearchForm: TSearchForm
     Left = 704
     Top = 48
   end
-  object PmSearchOptions: TPopupMenu
+  object PmSearchOptions: TPopupActionBar
     OnPopup = PmSearchOptionsPopup
     Left = 592
     Top = 104
@@ -1180,7 +1180,7 @@ object SearchForm: TSearchForm
       end
     end
   end
-  object PmDateEdit: TPopupMenu
+  object PmDateEdit: TPopupActionBar
     OnPopup = PmDateEditPopup
     Left = 480
     Top = 368
@@ -1197,7 +1197,7 @@ object SearchForm: TSearchForm
       OnClick = Datenotsets1Click
     end
   end
-  object PmEditGroups: TPopupMenu
+  object PmEditGroups: TPopupActionBar
     OnPopup = PmEditGroupsPopup
     Left = 480
     Top = 88
@@ -1210,7 +1210,7 @@ object SearchForm: TSearchForm
       OnClick = GroupsManager1Click
     end
   end
-  object PmRating: TPopupMenu
+  object PmRating: TPopupActionBar
     OnPopup = PmRatingPopup
     Left = 481
     Top = 608
@@ -1219,7 +1219,7 @@ object SearchForm: TSearchForm
       OnClick = Ratingnotsets1Click
     end
   end
-  object PmComment: TPopupMenu
+  object PmComment: TPopupActionBar
     OnPopup = PmCommentPopup
     Left = 480
     Top = 560
@@ -1261,7 +1261,7 @@ object SearchForm: TSearchForm
       OnClick = Undo1Click
     end
   end
-  object PmSetDate: TPopupMenu
+  object PmSetDate: TPopupActionBar
     OnPopup = PmSetDatePopup
     Left = 482
     Top = 512
@@ -1276,7 +1276,7 @@ object SearchForm: TSearchForm
     Left = 233
     Top = 504
   end
-  object PmExplorerMenu: TPopupMenu
+  object PmExplorerMenu: TPopupActionBar
     OnPopup = PmExplorerMenuPopup
     Left = 482
     Top = 464
@@ -1322,12 +1322,12 @@ object SearchForm: TSearchForm
     Left = 234
     Top = 136
   end
-  object QuickGroupsSearch: TPopupMenu
+  object QuickGroupsSearch: TPopupActionBar
     Images = GroupsImageList
     Left = 480
     Top = 48
   end
-  object SortingPopupMenu: TPopupMenu
+  object SortingPopupMenu: TPopupActionBar
     OnPopup = SortingPopupMenuPopup
     Left = 481
     Top = 176
@@ -1404,7 +1404,7 @@ object SearchForm: TSearchForm
     Left = 337
     Top = 480
   end
-  object InsertSpesialQueryPopupMenu: TPopupMenu
+  object InsertSpesialQueryPopupMenu: TPopupActionBar
     Left = 481
     Top = 320
   end
@@ -1415,7 +1415,7 @@ object SearchForm: TSearchForm
     Left = 233
     Top = 320
   end
-  object PmSetTime: TPopupMenu
+  object PmSetTime: TPopupActionBar
     OnPopup = PmSetDatePopup
     Left = 482
     Top = 136
@@ -1424,7 +1424,7 @@ object SearchForm: TSearchForm
       OnClick = PanelValueIsTimeSetsDblClick
     end
   end
-  object PmTimeEdit: TPopupMenu
+  object PmTimeEdit: TPopupActionBar
     OnPopup = PmTimeEditPopup
     Left = 480
     Top = 416
@@ -1455,7 +1455,7 @@ object SearchForm: TSearchForm
     Left = 233
     Top = 184
   end
-  object ScriptListPopupMenu: TPopupMenu
+  object ScriptLisTPopupActionBar: TPopupActionBar
     Left = 592
     Top = 48
   end
@@ -1463,7 +1463,7 @@ object SearchForm: TSearchForm
     Left = 337
     Top = 32
   end
-  object RatingPopupMenu1: TPopupMenu
+  object RatingPopupMenu1: TPopupActionBar
     Left = 481
     Top = 272
     object N00: TMenuItem
@@ -1526,7 +1526,7 @@ object SearchForm: TSearchForm
     Left = 337
     Top = 377
   end
-  object PopupMenuZoomDropDown: TPopupMenu
+  object PopupMenuZoomDropDown: TPopupActionBar
     OnPopup = PopupMenuZoomDropDownPopup
     Left = 481
     Top = 225

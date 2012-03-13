@@ -254,6 +254,7 @@ begin
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.Icon := IcoSave;
   SaveSettingsLink.ImageCanRegenerate := True;
+  SaveSettingsLink.LoadImage;
   IcoSave.Free;
 
   IcoOK := TIcon.Create;
@@ -271,6 +272,7 @@ begin
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
   MakeItLink.ImageCanRegenerate := True;
+  MakeItLink.LoadImage;
   IcoOK.Free;
 
   CloseLink := TWebLink.Create(Self);
@@ -283,6 +285,7 @@ begin
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
   CloseLink.ImageCanRegenerate := True;
+  CloseLink.LoadImage;
   IcoCancel.Free;
 
   CloseLink.ImageCanRegenerate := True;

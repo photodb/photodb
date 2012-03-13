@@ -3,8 +3,18 @@ unit uFrameWizardBase;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, uTranslate, uDBForm, uGOM;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  uTranslate,
+  uDBForm,
+  uThemesUtils,
+  uGOM;
 
 type
   TFrameWizardBase = class;
@@ -111,6 +121,7 @@ begin
   if FirstInitialization then
   begin
     GOM.AddObj(Self);
+    Color := Theme.WizardColor;
     FIsBusy := False;
     FIsStepComplete := False;
     FManager := Manager;

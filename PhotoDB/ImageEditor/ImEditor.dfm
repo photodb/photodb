@@ -2932,7 +2932,7 @@ object ImageEditor: TImageEditor
     Left = 232
     Top = 48
   end
-  object PmMain: TPopupMenu
+  object PmMain: TPopupActionBar
     OnPopup = PmMainPopup
     Left = 272
     Top = 48

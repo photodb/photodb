@@ -24,7 +24,7 @@ object EditorFullScreenForm: TEditorFullScreenForm
   OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
-  object PmMain: TPopupMenu
+  object PmMain: TPopupActionBar
     Left = 120
     Top = 56
     object SelectBackGroundColor1: TMenuItem

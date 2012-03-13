@@ -145,6 +145,7 @@ object PrintForm: TPrintForm
         Height = 16
         Cursor = crHandPoint
         Text = 'Make Image'
+        OnClick = ALvMainDblClick
         ImageIndex = 0
         IconWidth = 16
         IconHeight = 16
@@ -544,7 +545,7 @@ object PrintForm: TPrintForm
     Height = 527
     Zoom = 100.000000000000000000
     Align = alClient
-    PopupMenu = PopupMenu1
+    PopupMenu = PmCopyToFile
     OnResize = FastScrollingImage1Resize
   end
   object StatusBar1: TStatusBar
@@ -619,8 +620,8 @@ object PrintForm: TPrintForm
     Left = 288
     Top = 8
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
+  object PmCopyToFile: TPopupActionBar
+    OnPopup = PmCopyToFilePopup
     Left = 256
     Top = 8
     object CopyToFile1: TMenuItem

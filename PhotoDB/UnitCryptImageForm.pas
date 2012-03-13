@@ -3,12 +3,37 @@ unit UnitCryptImageForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, FormManegerUnit, GraphicCrypt,
-  uConstants, WebLink, Menus, uMemory, uStrongCrypt, DECUtil, DECCipher,
-  WatermarkedEdit, uDBForm, UnitDBKernel, uShellIntegration, uSettings,
-  uActivationUtils, uCryptUtils, uDBPopupMenuInfo, UnitDBDeclare,
-  uTranslate, uDBBaseTypes, uFileUtils;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  Dolphin_DB,
+  FormManegerUnit,
+  GraphicCrypt,
+  uConstants,
+  WebLink,
+  Menus,
+  uMemory,
+  uStrongCrypt,
+  DECUtil,
+  DECCipher,
+  WatermarkedEdit,
+  uDBForm, UnitDBKernel,
+  uShellIntegration,
+  uSettings,
+  uActivationUtils,
+  uCryptUtils,
+  uDBPopupMenuInfo,
+  UnitDBDeclare,
+  uTranslate,
+  uDBBaseTypes,
+  Vcl.ActnPopup,
+  uFileUtils, Vcl.PlatformDefaultStyleActnCtrls;
 
 type
   TCryptImageForm = class(TPasswordSettingsDBForm)
@@ -23,7 +48,7 @@ type
     EdPasswordConfirm: TWatermarkedEdit;
     CbShowPassword: TCheckBox;
     WblMethod: TWebLink;
-    PmCryptMethod: TPopupMenu;
+    PmCryptMethod: TPopupActionBar;
     procedure FormCreate(Sender: TObject);
     procedure BtOkClick(Sender: TObject);
     procedure CbShowPasswordClick(Sender: TObject);

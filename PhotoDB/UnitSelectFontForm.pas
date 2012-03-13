@@ -3,8 +3,21 @@ unit UnitSelectFontForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, uDBForm, uMemory, uMemoryEx;
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  Dolphin_DB,
+  uDBForm,
+  uMemory,
+  uThemesUtils,
+  uMemoryEx;
 
 type
   TFormSelectFont = class(TDBForm)
@@ -77,8 +90,8 @@ procedure TFormSelectFont.LstFontsDrawItem(Control: TWinControl; index: Integer;
 begin
   with LstFonts.Canvas do
   begin
-    Brush.Color := ClWindow;
-    Font.Color := ClWindowText;
+    Brush.Color := Theme.ListColor;
+    Font.Color := Theme.ListFontColor;
     FillRect(Rect);
     Font.name := LstFonts.Items[index];
     Font.Size := 0; // use font's preferred size
@@ -88,7 +101,7 @@ end;
 
 procedure TFormSelectFont.FormCreate(Sender: TObject);
 begin
-  LstFonts.Color := clWindow;
+  LstFonts.Color := Theme.ListColor;
   LoadLanguage;
   ExecutedOk := False;
   LstFonts.Items := Screen.Fonts;

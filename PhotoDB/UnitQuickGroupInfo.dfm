@@ -81,7 +81,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
       A49FCDFA763D13C63058EA7269B26B9729A7D95940C82112869A56662490003C
       70077E95E4B3797E7C9E496316E3B0B0E76E78CD24923CAE5E476776392CC724
       D36B82ACE12D211B7E2CE9A709AD672BFE0BFAF99FFFD9}
-    PopupMenu = PopupMenu1
+    PopupMenu = PmGroupOptions
   end
   object CommentLabel: TLabel
     Tag = 2
@@ -302,9 +302,9 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     TabOrder = 9
     OnClick = EditGroup1Click
   end
-  object PopupMenu1: TPopupMenu
-    Left = 120
-    Top = 64
+  object PmGroupOptions: TPopupActionBar
+    Left = 192
+    Top = 120
     object EditGroup1: TMenuItem
       Caption = 'Edit Group'
       OnClick = EditGroup1Click
@@ -319,12 +319,9 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     end
   end
   object GroupsImageList: TImageList
-    Left = 88
-    Top = 64
-  end
-  object PopupMenu2: TPopupMenu
-    Left = 152
-    Top = 64
+    ColorDepth = cd32Bit
+    Left = 192
+    Top = 176
   end
   object ApplicationEvents1: TApplicationEvents
     OnMessage = ApplicationEvents1Message

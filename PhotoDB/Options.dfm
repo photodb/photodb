@@ -183,6 +183,10 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -395,6 +399,10 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -542,6 +550,10 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -798,6 +810,10 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1235,6 +1251,10 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1414,7 +1434,7 @@ object OptionsForm: TOptionsForm
       end
     end
   end
-  object PmExtensionStatus: TPopupMenu
+  object PmExtensionStatus: TPopupActionBar
     Left = 232
     Top = 440
     object Usethisprogramasdefault1: TMenuItem
@@ -1448,7 +1468,7 @@ object OptionsForm: TOptionsForm
       OnClick = DeselectAll1Click
     end
   end
-  object PmUserMenu: TPopupMenu
+  object PmUserMenu: TPopupActionBar
     Left = 121
     Top = 437
     object Addnewcommand1: TMenuItem
@@ -1464,7 +1484,7 @@ object OptionsForm: TOptionsForm
     Left = 9
     Top = 437
   end
-  object PmPlaces: TPopupMenu
+  object PmPlaces: TPopupActionBar
     Left = 84
     Top = 440
     object Additem1: TMenuItem
@@ -1510,7 +1530,7 @@ object OptionsForm: TOptionsForm
     Left = 200
     Top = 440
   end
-  object PmCryptMethod: TPopupMenu
+  object PmCryptMethod: TPopupActionBar
     Left = 272
     Top = 440
   end

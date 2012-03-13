@@ -51,6 +51,9 @@ uses
   Menus,
   uExplorerPersonsProvider,
   uSysUtils,
+  uThemesUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   CommonDBSupport;
 
 type
@@ -68,7 +71,7 @@ type
     LbBirthDate: TLabel;
     DtpBirthDay: TDateTimePicker;
     LsExtracting: TLoadingSign;
-    PmImageOptions: TPopupMenu;
+    PmImageOptions: TPopupActionBar;
     MiLoadOtherImage: TMenuItem;
     LsAdding: TLoadingSign;
     AeMain: TApplicationEvents;
@@ -574,7 +577,7 @@ begin
       DoResize(W, H, B, SmallB);
       F(FDisplayImage);
       FDisplayImage := TBitmap.Create;
-      LoadBMPImage32bit(SmallB, FDisplayImage, clBtnFace);
+      LoadBMPImage32bit(SmallB, FDisplayImage, Theme.WindowColor);
     finally
       F(SmallB);
     end;
@@ -784,8 +787,8 @@ begin
     SmallB.PixelFormat := pf24bit;
     SmallB.Width := 16;
     SmallB.Height := 16;
-    SmallB.Canvas.Pen.Color := clBtnFace;
-    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Pen.Color := Theme.PanelColor;
+    SmallB.Canvas.Brush.Color := Theme.PanelColor;
     SmallB.Canvas.Rectangle(0, 0, 16, 16);
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
     GroupsImageList.Add(SmallB, nil);
@@ -798,7 +801,7 @@ begin
     SmallB := TBitmap.Create;
     try
       SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := clBtnFace;
+      SmallB.Canvas.Brush.Color := Theme.PanelColor;
       Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
         if not Group.GroupImage.Empty then

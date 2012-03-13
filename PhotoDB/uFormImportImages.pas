@@ -1346,6 +1346,7 @@ begin
   if not FIsSimpleLabelEditing then
   begin
     WlLabel.Text := IIF(FSimpleLabel = '', L('Set label'), FSimpleLabel);
+    WlLabel.LoadImage;
     X := WlLabel.Left + WlLabel.Width + 10;
     WlLabel.Show;
     WlSetLabel.Hide;

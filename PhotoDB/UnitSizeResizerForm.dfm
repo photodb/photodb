@@ -59,7 +59,6 @@ object FormSizeResizer: TFormSizeResizer
     Enabled = False
     TabOrder = 6
     OnClick = BtOkClick
-    ExplicitTop = 485
   end
   object BtCancel: TButton
     Left = 230
@@ -70,7 +69,6 @@ object FormSizeResizer: TFormSizeResizer
     Caption = 'Cancel'
     TabOrder = 3
     OnClick = BtCancelClick
-    ExplicitTop = 485
   end
   object BtSaveAsDefault: TButton
     Left = 8
@@ -81,7 +79,6 @@ object FormSizeResizer: TFormSizeResizer
     Caption = 'Save settings as default'
     TabOrder = 2
     OnClick = BtSaveAsDefaultClick
-    ExplicitTop = 485
   end
   object EdImageName: TEdit
     Left = 38
@@ -100,7 +97,6 @@ object FormSizeResizer: TFormSizeResizer
     TabOrder = 0
     Text = 'Image Name'
     OnEnter = EdImageNameEnter
-    ExplicitTop = 271
   end
   object LsMain: TLoadingSign
     Left = 358
@@ -132,7 +128,6 @@ object FormSizeResizer: TFormSizeResizer
     Color = clBlack
     View = dm_pr_cool
     Inverse = False
-    ExplicitTop = 247
   end
   object PnOptions: TPanel
     Left = 0
@@ -420,7 +415,6 @@ object FormSizeResizer: TFormSizeResizer
     HightliteImage = True
     StretchImage = True
     CanClick = True
-    ExplicitTop = 269
   end
   object WlNext: TWebLink
     Left = 357
@@ -521,7 +515,6 @@ object FormSizeResizer: TFormSizeResizer
     HightliteImage = True
     StretchImage = True
     CanClick = True
-    ExplicitTop = 269
   end
   object ImlWatermarkPatterns: TImageList
     Left = 48

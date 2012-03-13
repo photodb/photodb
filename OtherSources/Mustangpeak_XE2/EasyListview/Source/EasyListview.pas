@@ -97,11 +97,11 @@ uses
     UxTheme,
     {$ENDIF}
   {$ENDIF}
-  {$ifdef COMPILER_10_UP}
-  oleacc, // MSAA support in Delphi 2006 or higher
-  {$ELSE}
+//  {$ifdef COMPILER_10_UP}
+//  oleacc, // MSAA support in Delphi 2006 or higher
+//  {$ELSE}
   EasyMSAAIntf, // MSAA support for Delphi up to 2005
-  {$ENDIF}
+//  {$ENDIF}
   ExtCtrls,
   Forms,
   ImgList,
@@ -17955,6 +17955,11 @@ begin
     if Msg.Result = 0 then
       HandleMouseUp(cmbRight, Msg);
     ClearPendingDrags;
+
+    //2012.03.13 - fix for popup menu
+    if TStyleManager.Enabled and TStyleManager.IsCustomStyleActive then
+      Msg.Msg := 0;
+
     inherited;  // Handles the context menu
     Mouse.Capture := 0;
   end;

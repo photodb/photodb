@@ -31,7 +31,7 @@ object FormListOfKeyWords: TFormListOfKeyWords
     OnContextPopup = LstKeywordsContextPopup
     OnDblClick = LstKeywordsDblClick
   end
-  object Panel1: TPanel
+  object PnBottom: TPanel
     Left = 0
     Top = 327
     Width = 304
@@ -58,7 +58,7 @@ object FormListOfKeyWords: TFormListOfKeyWords
       end
     end
   end
-  object Panel3: TPanel
+  object PnTop: TPanel
     Left = 0
     Top = 0
     Width = 304
@@ -78,7 +78,7 @@ object FormListOfKeyWords: TFormListOfKeyWords
       WordWrap = True
     end
   end
-  object PmKeywords: TPopupMenu
+  object PmKeywords: TPopupActionBar
     Left = 128
     Top = 8
     object Copy1: TMenuItem

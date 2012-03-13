@@ -3,13 +3,28 @@ unit UnitEditorFullScreenForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Menus, uConstants, uMemory, uDBForm, uBitmapUtils,
-  UnitDBKernel, uSysUtils;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  Menus,
+  uConstants,
+  uMemory,
+  uDBForm,
+  uBitmapUtils,
+  UnitDBKernel,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uSysUtils;
 
 type
   TEditorFullScreenForm = class(TDBForm)
-    PmMain: TPopupMenu;
+    PmMain: TPopupActionBar;
     Close1: TMenuItem;
     N1: TMenuItem;
     SelectBackGroundColor1: TMenuItem;
@@ -27,7 +42,7 @@ type
     DrawImage: TBitmap;
     procedure LoadLanguage;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     procedure SetImage(Image: TBitmap);

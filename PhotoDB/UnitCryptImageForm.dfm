@@ -90,7 +90,7 @@ object CryptImageForm: TCryptImageForm
     Left = 8
     Top = 24
     Width = 310
-    Height = 32
+    Height = 31
     Anchors = [akLeft, akTop, akRight]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -107,7 +107,7 @@ object CryptImageForm: TCryptImageForm
     Left = 8
     Top = 72
     Width = 310
-    Height = 32
+    Height = 31
     Anchors = [akLeft, akTop, akRight]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -133,8 +133,8 @@ object CryptImageForm: TCryptImageForm
   object WblMethod: TWebLink
     Left = 8
     Top = 178
-    Width = 68
-    Height = 13
+    Width = 84
+    Height = 16
     Cursor = crHandPoint
     Text = 'BlowFish - 56'
     ImageIndex = 0
@@ -147,8 +147,10 @@ object CryptImageForm: TCryptImageForm
     ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
-  object PmCryptMethod: TPopupMenu
+  object PmCryptMethod: TPopupActionBar
     Left = 104
     Top = 168
   end

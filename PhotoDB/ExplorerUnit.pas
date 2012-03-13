@@ -590,6 +590,7 @@ type
     procedure WedGeoSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure SplGeoLocationMoved(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -890,7 +891,7 @@ begin
   try
     BMP := TBitmap.Create;
     try
-      BMP.Assign(PNG);
+      LoadPNGImage32bit(PNG, BMP, Theme.MenuColor);
       SB.Glyph := BMP;
     finally
       F(BMP);
@@ -1737,6 +1738,16 @@ begin
   GOM.RemoveObj(Self);
 
   FWebBorwserFactory := nil;
+end;
+
+procedure TExplorerForm.FormResize(Sender: TObject);
+begin
+  if StyleServices.Enabled then
+  begin
+    //hack for scrollbars in easy lsit view
+    ElvMain.Scrollbars.VertEnabled := false;
+    ElvMain.Scrollbars.VertEnabled := True;
+  end;
 end;
 
 procedure TExplorerForm.ListView1Edited(Sender: TObject; Item: TEasyItem; var S: String);
@@ -2591,14 +2602,14 @@ begin
   Item := Self.ItemAtPos(X, Y);
   RightClickFix(ElvMain, Button, Shift, Item, ItemByMouseDown, ItemSelectedByMouseDown);
 
-  if MouseDowned then
-    if Button = MbRight then
-    begin
-      ListView1ContextPopup(ElvMain, Point(X, Y), Handled);
-      PopupHandled := True;
-    end;
-
-  MouseDowned := False;
+  if MouseDowned and (Button = MbRight) then
+  begin
+    MouseDowned := False;
+    ListView1ContextPopup(ElvMain, Point(X, Y), Handled);
+    WindowsMenuTickCount := GetTickCount;
+    PopupHandled := True;
+  end else
+    MouseDowned := False;
 
  if FDBCanDrag and ItemsDeselected then
   begin

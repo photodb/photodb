@@ -48,6 +48,8 @@ uses
   uDBCustomThread,
   uPortableDeviceManager,
   uUpTime,
+  Themes,
+  EasyListView,
   uPortableClasses;
 
 type
@@ -442,6 +444,8 @@ end;
 
 procedure TFormManager.FormCreate(Sender: TObject);
 begin
+  if Assigned(TStyleManager.Engine) then
+    TStyleManager.Engine.RegisterStyleHook(TEasyListview, TScrollingStyleHook);
   FSetLanguageMessage := RegisterWindowMessage('UPDATE_APP_LANGUAGE');
   DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
 end;

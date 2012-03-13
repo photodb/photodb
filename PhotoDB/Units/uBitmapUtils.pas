@@ -1444,6 +1444,8 @@ const
 begin
   //set new image size
   Dest32.PixelFormat := pf32Bit;
+  if Src = nil then
+    Exit;
   SW := Src.Width;
   SH := Src.Height;
   Dest32.SetSize(SW + 4, SH + 4);

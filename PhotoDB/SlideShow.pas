@@ -538,6 +538,8 @@ begin
   FbImage.PixelFormat := pf24bit;
   DrawImage.PixelFormat := pf24bit;
 
+  LsDetectingFaces.Color := Theme.PanelColor;
+
   TW.I.Start('AnimatedBuffer');
   AnimatedBuffer := TBitmap.Create;
   AnimatedBuffer.PixelFormat := pf24bit;
@@ -942,6 +944,7 @@ begin
   TbrActions.Refresh;
   TbrActions.Realign;
   CheckFaceIndicatorVisibility;
+  Repaint;
   TW.I.Start('TViewer.FormResize - end');
 end;
 
@@ -1803,10 +1806,37 @@ begin
 end;
 
 procedure TViewer.WndProc(var Message: TMessage);
+var
+  C: TColor;
+  DC: HDC;
+  BrushInfo: TagLOGBRUSH;
+  Brush: HBrush;
+  Top: Integer;
 begin
-  //TODO: handle erasing
   if (Message.Msg = WM_ERASEBKGND) and StyleServices.Enabled then
-    Message.Msg := WM_ERASEBKGND;
+  begin
+    Message.Result := 1;
+
+    DC := TWMEraseBkgnd(Message).DC;
+    if DC = 0 then
+      Exit;
+
+    C := Theme.WindowColor;
+    brushInfo.lbStyle := BS_SOLID;
+    brushInfo.lbColor := ColorToRGB(C);
+    Brush := CreateBrushIndirect(brushInfo);
+
+    Top := Buffer.Height;
+    if SbHorisontal.Visible then
+      Top := SbHorisontal.Top;
+
+    FillRect(DC, Rect(0, Top, Width, Height), Brush);
+
+    if(Brush > 0) then
+      DeleteObject(Brush);
+
+    Exit;
+  end;
 
   inherited;
 
@@ -3016,8 +3046,6 @@ begin
   if not FCreating then
     for I := 0 to 2 do
       Imlists[I].Clear;
-
-  TW.I.Start('BkColor');
 
   B := TBitmap.Create;
   try

@@ -118,6 +118,7 @@ begin
   EffectsChooser.DoubleBuffered := True;
   EffectsChooser.EditManager.Enabled := False;
   EffectsChooser.OnKeyAction := EffectChooserPress;
+  EffectsChooser.ShowThemedBorder := False;
 
   SetLVSelection(EffectsChooser, False, [cmbLeft]);
   EffectsChooser.Selection.BlendIcon := False;
@@ -140,6 +141,7 @@ begin
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
   MakeItLink.ImageCanRegenerate := True;
+  MakeItLink.LoadImage;
   MakeItLink.Anchors := [akLeft, akBottom];
   IcoOK.Free;
 
@@ -153,6 +155,7 @@ begin
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
   CloseLink.ImageCanRegenerate := True;
+  CloseLink.LoadImage;
   CloseLink.Anchors := [akLeft, akBottom];
   IcoCancel.Free;
 

@@ -3,13 +3,43 @@ unit UnitSizeResizerForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Dolphin_DB, ExtCtrls, Math, uVistaFuncs,
-  JPEG, GraphicEx, UnitDBkernel, GraphicCrypt, uAssociations,
-  AcDlgSelect, UnitDBDeclare, UnitDBFileDialogs, uFileUtils,
-  UnitDBCommon, uBitmapUtils, ComCtrls, ImgList, uDBForm, LoadingSign,
-  DmProgress, uW7TaskBar, uWatermarkOptions, uImageSource,
-  UnitPropeccedFilesSupport, uThreadForm, uMemory, uFormListView, uSettings,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  Dolphin_DB,
+  ExtCtrls,
+  Math,
+  uVistaFuncs,
+  JPEG,
+  GraphicEx,
+  UnitDBkernel,
+  GraphicCrypt,
+  uAssociations,
+  AcDlgSelect,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  uFileUtils,
+  UnitDBCommon,
+  uBitmapUtils,
+  ComCtrls,
+  ImgList,
+  uDBForm,
+  LoadingSign,
+  DmProgress,
+  uW7TaskBar,
+  uWatermarkOptions,
+  uImageSource,
+  UnitPropeccedFilesSupport,
+  uThreadForm,
+  uMemory,
+  uFormListView,
+  uSettings,
   uDBPopupMenuInfo,
   uConstants,
   uShellIntegration,
@@ -22,6 +52,8 @@ uses
   uDBThread,
   uPortableDeviceUtils,
   AppEvnts,
+  Themes,
+  uThemesUtils,
   PathEditor;
 
 const
@@ -114,6 +146,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     procedure ReadSettings;
     procedure UpdateNavigation;
+    procedure WndProc(var Message: TMessage); override;
   public
     { Public declarations }
     destructor Destroy; override;
@@ -355,6 +388,7 @@ begin
 
   SwpMain.Key := RegRoot + 'ConvertForm';
   SwpMain.SetPosition;
+  LsMain.Color := Theme.WindowColor;
 
   PathImage := GetPathSeparatorImage;
   try
@@ -660,6 +694,41 @@ begin
   end;
 end;
 
+procedure TFormSizeResizer.WndProc(var Message: TMessage);
+var
+  C: TColor;
+  DC: HDC;
+  BrushInfo: TagLOGBRUSH;
+  Brush: HBrush;
+begin
+  if (Message.Msg = WM_ERASEBKGND) and StyleServices.Enabled then
+  begin
+    Message.Result := 1;
+
+    DC := TWMEraseBkgnd(Message).DC;
+    if DC = 0 then
+      Exit;
+
+    C := Theme.WindowColor;
+    brushInfo.lbStyle := BS_SOLID;
+    brushInfo.lbColor := ColorToRGB(C);
+    Brush := CreateBrushIndirect(brushInfo);
+
+    FillRect(DC, Rect(0, 0, Width, PbImage.Top), Brush);
+    FillRect(DC, Rect(0, PbImage.Top + PbImage.Height, Width, Height), Brush);
+
+    FillRect(DC, Rect(0, PbImage.Top, PbImage.Left, PbImage.Top + PbImage.Height), Brush);
+    FillRect(DC, Rect(PbImage.Left + PbImage.Width, PbImage.Top, Width, PbImage.Top + PbImage.Height), Brush);
+
+    if(Brush > 0) then
+      DeleteObject(Brush);
+
+    Exit;
+  end;
+
+  inherited;
+end;
+
 procedure TFormSizeResizer.BtSaveAsDefaultClick(Sender: TObject);
 begin
   Settings.WriteInteger(Settings_ConvertForm, 'Convert', DdConvert.ItemIndex);
@@ -904,7 +973,11 @@ begin
       DisplayImage.PixelFormat := pf24Bit;
       DrawShadowToImage(ShadowImage, FPreviewImage);
       DisplayImage.SetSize(ShadowImage.Width, ShadowImage.Height);
-      LoadBMPImage32bit(ShadowImage, DisplayImage, clBtnFace);
+      LoadBMPImage32bit(ShadowImage, DisplayImage, Theme.WindowColor);
+
+      PbImage.Canvas.Pen.Color := Theme.WindowColor;
+      PbImage.Canvas.Brush.Color := Theme.WindowColor;
+      PbImage.Canvas.Rectangle(PbImage.ClientRect);
       PbImage.Canvas.StretchDraw(R, DisplayImage);
     finally
       F(DisplayImage);

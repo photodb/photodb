@@ -88,6 +88,7 @@ procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEas
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
 procedure SetLVThumbnailSize(ListView: TEasyListView; ImageSize: Integer);
+procedure SetListViewColors(ListView: TEasyListView);
 procedure SetLVSelection(ListView : TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
@@ -376,7 +377,7 @@ begin
     Inc(W, 10);
     Inc(H, 10);
     R := Rect(5, 5, 5 + W, 5 + H);
-    DrawRoundGradientVert(Bitmap, R, clBlack, Theme.HighlightColor, Theme.HighlightTextColor, RoundRadius);
+    DrawRoundGradientVert(Bitmap, R, Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightTextColor, RoundRadius);
     DrawText32Bit(Bitmap, IntToStr(ItemsSelected), AFont, R, DT_CENTER or DT_VCENTER);
   finally
     AFont.Free;
@@ -679,7 +680,28 @@ begin
   end;
 end;
 
-procedure SetLVSelection(ListView : TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
+procedure SetListViewColors(ListView: TEasyListView);
+begin
+  if StyleServices.Enabled then
+  begin
+    ListView.Selection.GradientColorTop := StyleServices.GetStyleColor(scGenericGradientBase);
+    ListView.Selection.GradientColorBottom := StyleServices.GetStyleColor(scGenericGradientEnd);
+    ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
+    ListView.Font.Color := StyleServices.GetStyleFontColor(sfListItemTextNormal);
+    ListView.HotTrack.Color := StyleServices.GetStyleFontColor(sfListItemTextHot);
+    ListView.GroupFont.Color := StyleServices.GetStyleFontColor(sfListItemTextNormal);
+  end else
+  begin
+    ListView.Selection.GradientColorBottom := clGradientActiveCaption;
+    ListView.Selection.GradientColorTop := clGradientInactiveCaption;
+    ListView.Selection.TextColor := clWindowText;
+    ListView.HotTrack.Color := clWindowText;
+    ListView.Font.Color := clWindowText;
+    ListView.GroupFont.Color := ClWindowText;
+  end;
+end;
+
+procedure SetLVSelection(ListView: TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 begin
   if StyleServices.Enabled then
     ListView.Color := StyleServices.GetStyleColor(scListView);
@@ -694,21 +716,8 @@ begin
   end;
   ListView.Selection.FullItemPaint := True;
   ListView.Selection.Gradient := True;
-  if StyleServices.Enabled then
-  begin
-    ListView.Selection.GradientColorTop := StyleServices.GetStyleColor(scGenericGradientBase);
-    ListView.Selection.GradientColorBottom := StyleServices.GetStyleColor(scGenericGradientEnd);
-    ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
-    ListView.Font.Color := StyleServices.GetStyleFontColor(sfListItemTextNormal);
-    ListView.HotTrack.Color := StyleServices.GetStyleFontColor(sfListItemTextHot);
-  end else
-  begin
-  ListView.Selection.GradientColorBottom := clGradientActiveCaption;
-  ListView.Selection.GradientColorTop := clGradientInactiveCaption;
-    ListView.Selection.TextColor := clWindowText;
-    ListView.HotTrack.Color := clWindowText;
-    ListView.Font.Color := 0;
-  end;
+  SetListViewColors(ListView);
+
   ListView.Selection.RoundRect := True;
   ListView.Selection.UseFocusRect := False;
 

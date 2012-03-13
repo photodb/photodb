@@ -46,6 +46,8 @@ uses
   uDBPopupMenuInfo,
   uFormUtils,
   uAnimatedJPEG,
+  Themes,
+  uThemesUtils,
   uRuntime;
 
 type
@@ -58,28 +60,23 @@ type
     DragImageList: TImageList;
     DropFileTargetMain: TDropFileTarget;
     ImageFrameTimer: TTimer;
-    function Execute(Sender: TForm; G: TGraphic; W, H: Integer;
-      Info: TDBPopupMenuInfoRecord; Pos: TPoint;
+    function Execute(Sender: TForm; G: TGraphic; W, H: Integer; Info: TDBPopupMenuInfoRecord; Pos: TPoint;
       CheckFunction: THintCheckFunction): Boolean;
     procedure FormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure WMActivateApp(var Msg: TMessage); message WM_ACTIVATEAPP;
-    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure TimerShowTimer(Sender: TObject);
     procedure TimerHideTimer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure Image1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure TimerHintCheckTimer(Sender: TObject);
-    procedure LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure LbSizeMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     function GetNextImageNO : integer;
     function GetNextImageNOX(NO: Integer): integer;
     function GetPreviousImageNO: integer;
@@ -203,11 +200,14 @@ begin
   FFormBuffer.Height := Height;
   FillTransparentColor(FFormBuffer, clBlack, 0);
   DrawRoundGradientVert(FFormBuffer, Rect(0, 0, Width, Height),
-    clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 220);
+    Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightTextColor, 8, 220);
   TextHeight := Canvas.TextHeight('Iy');
 
   Bitmap := TBitmap.Create;
   try
+    if StyleServices.Enabled then
+      Font.Color := Theme.PanelFontColor;
+
     DrawShadowToImage(Bitmap, ImageBuffer);
     DrawImageEx32(FFormBuffer, Bitmap, 5, 5);
     R.Left := 5;

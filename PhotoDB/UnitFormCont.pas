@@ -3,20 +3,79 @@ unit UnitFormCont;
 interface
 
 uses
-  Clipbrd, DBCMenu, ComCtrls, CommCtrl, ImgList, ExtCtrls, StdCtrls,
-  UnitDBKernel, db, Windows, Messages, SysUtils, Classes, uGUIDUtils,
-  Graphics, Controls, Forms, GraphicCrypt, ShellContextMenu, GraphicsCool,
-  Dialogs, Activex, jpeg, Menus, Buttons, acDlgSelect,  Math,
-  DropSource, DropTarget, AppEvnts, WebLink, MPCommonUtilities, uVistaFuncs,
-  UnitBitmapImageList, EasyListview, DragDropFile, DragDrop, uShellIntegration,
-  ToolWin, PanelCanvas, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
-  UnitDBFileDialogs, UnitPropeccedFilesSupport, uBitmapUtils,
-  UnitDBCommon, uCDMappingTypes, uLogger, uConstants, uThreadForm,
-  uListViewUtils, uDBDrawing, uFileUtils, uResources, pngimage, TwButton,
-  uGOM, uMemory, uFormListView, uTranslate, uDBPopupMenuInfo, uPNGUtils,
-  uGraphicUtils, uDBBaseTypes, uSysUtils, uDBUtils, uDBFileTypes,
-  uRuntime, uSettings, uAssociations, SaveWindowPos,
-  uPortableDeviceUtils;
+  Clipbrd,
+  DBCMenu,
+  ComCtrls,
+  CommCtrl,
+  ImgList,
+  ExtCtrls,
+  StdCtrls,
+  UnitDBKernel,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  uGUIDUtils,
+  Graphics,
+  Controls,
+  Forms,
+  GraphicCrypt,
+  ShellContextMenu,
+  GraphicsCool,
+  Dialogs,
+  Activex,
+  jpeg,
+  Menus,
+  Buttons,
+  acDlgSelect,
+  Math,
+  DropSource,
+  DropTarget,
+  AppEvnts,
+  WebLink,
+  MPCommonUtilities,
+  uVistaFuncs,
+  UnitBitmapImageList,
+  EasyListview,
+  DragDropFile,
+  DragDrop,
+  uShellIntegration,
+  ToolWin,
+  PanelCanvas,
+  UnitPanelLoadingBigImagesThread,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  UnitPropeccedFilesSupport,
+  uBitmapUtils,
+  UnitDBCommon,
+  uCDMappingTypes,
+  uLogger,
+  uConstants,
+  uThreadForm,
+  uListViewUtils,
+  uDBDrawing,
+  uFileUtils,
+  uResources,
+  pngimage,
+  TwButton,
+  uGOM, uMemory,
+  uFormListView,
+  uTranslate,
+  uDBPopupMenuInfo,
+  uPNGUtils,
+  uGraphicUtils,
+  uDBBaseTypes,
+  uSysUtils,
+  uDBUtils,
+  uDBFileTypes,
+  uRuntime,
+  uSettings,
+  uAssociations,
+  SaveWindowPos,
+  uPortableDeviceUtils,
+  uThemesUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup;
 
 type
   TDestDype = class(TObject)
@@ -30,7 +89,7 @@ type
 type
   TFormCont = class(TListViewForm)
     Panel1: TPanel;
-    PopupMenu1: TPopupMenu;
+    PopupMenu1: TPopupActionBar;
     SelectAll1: TMenuItem;
     Clear1: TMenuItem;
     Close1: TMenuItem;
@@ -78,24 +137,22 @@ type
     ToolButton11: TToolButton;
     ToolBarDisabledImageList: TImageList;
     TerminateTimer: TTimer;
-    RatingPopupMenu1: TPopupMenu;
+    RatingPopupMenu1: TPopupActionBar;
     N00: TMenuItem;
     N01: TMenuItem;
     N02: TMenuItem;
     N03: TMenuItem;
     N04: TMenuItem;
     N05: TMenuItem;
-    PopupMenuZoomDropDown: TPopupMenu;
+    PopupMenuZoomDropDown: TPopupActionBar;
     TwWindowsPos: TTwButton;
     SaveWindowPos1: TSaveWindowPos;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefreshItemByID( ID: integer);
     function AddNewItem(Image : TBitmap; Info : TDBPopupMenuInfoRecord): Boolean;
-    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
-    procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure DeleteIndexItemFromPopUpMenu(Sender: TObject);
     procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     procedure Close1Click(Sender: TObject);
@@ -103,8 +160,7 @@ type
     procedure Clear1Click(Sender: TObject);
     procedure SaveToFile1Click(Sender: TObject);
     procedure HinttimerTimer(Sender: TObject);
-    procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure FormDeactivate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
@@ -115,8 +171,7 @@ type
     function ExistsItemByFileName(FileName : string) : Boolean;
     procedure ListView1DblClick(Sender: TObject);
     procedure ListView1KeyPress(Sender: TObject; var Key: Char);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
     procedure WlResizeClick(Sender: TObject);
@@ -125,8 +180,7 @@ type
     procedure ExCopyLinkClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
-    procedure ListView1SelectItem(Sender: TObject; Item: TEasyItem;
-      Selected: Boolean);
+    procedure ListView1SelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
     function GetListItemByID( ID : integer): TEasyItem;
     procedure TbZoomInClick(Sender: TObject);
     procedure TbZoomOutClick(Sender: TObject);
@@ -154,23 +208,21 @@ type
     FPictureSize: Integer;
     FBitmapImageList: TBitmapImageList;
     FWorkerThreadCount: Integer;
-    procedure DeleteIndexItemByID(ID : integer);
+    procedure DeleteIndexItemByID(ID: integer);
     procedure EasyListview1ItemThumbnailDraw(
       Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
     procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
       ShiftState: TShiftState; var Handled: Boolean);
-    procedure EasyListview1ItemSelectionChanged(
-      Sender: TCustomEasyListview; Item: TEasyItem);
+    procedure EasyListview1ItemSelectionChanged(Sender: TCustomEasyListview; Item: TEasyItem);
     Procedure ListView1Resize(Sender : TObject);
-    procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton;  Shift: TShiftState; X, Y: Integer);
     procedure Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
       var CompareResult: Integer);
     Function ListView1Selected : TEasyItem;
-    Function ItemAtPos(X,Y : integer): TEasyItem;
-    function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
-    Function SelCount : integer;
+    Function ItemAtPos(X,Y: Integer): TEasyItem;
+    function GetCurrenTPopupActionBarInfo(Item: TEasyItem) : TDBPopupMenuInfo;
+    Function SelCount: Integer;
     procedure ListView1MouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     function HintCallBack(Info: TDBPopupMenuInfoRecord): Boolean;
@@ -178,9 +230,9 @@ type
       Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
   protected
     { Protected declarations }
-    function GetFormID : string; override;
-    function GetListView : TEasyListview; override;
-    function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
+    function GetFormID: string; override;
+    function GetListView: TEasyListView; override;
+    function InternalGetImage(FileName: string; Bitmap: TBitmap; var Width: integer; var Height: integer): Boolean; override;
   public
     { Public declarations }
     WindowID: TGUID;
@@ -275,14 +327,14 @@ end;
 
 procedure TFormCont.CreateBackgroundImage;
 var
-  BackgroundImage : TPNGImage;
-  Bitmap, SearchBackgroundBMP : TBitmap;
+  BackgroundImage: TPNGImage;
+  Bitmap, SearchBackgroundBMP: TBitmap;
 begin
   Bitmap := TBitmap.Create;
   try
     Bitmap.PixelFormat := pf24bit;
-    Bitmap.Canvas.Brush.Color := clWindow;
-    Bitmap.Canvas.Pen.Color := clWindow;
+    Bitmap.Canvas.Brush.Color := Theme.ListViewColor;
+    Bitmap.Canvas.Pen.Color := Theme.ListViewColor;
     Bitmap.Width := 120;
     Bitmap.Height := 120;
 
@@ -290,7 +342,7 @@ begin
     try
       SearchBackgroundBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, clWindow);
+        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme.ListViewColor);
         Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
       finally
         F(SearchBackgroundBMP);
@@ -326,16 +378,14 @@ begin
   ElvMain.BackGround.BlendAlpha := 220;
   CreateBackgroundImage;
 
-  ElvMain.Font.Color := 0;
   ElvMain.View := ElsThumbnail;
   ElvMain.DragKind := DkDock;
-  ElvMain.HotTrack.Color := clWindowText;
-
   SetLVSelection(ElvMain, True);
 
   FPictureSize := Max(85, ThSizePanelPreview);
   LoadSizes;
 
+  ElvMain.ShowThemedBorder := False;
   ElvMain.IncrementalSearch.Enabled := True;
   ElvMain.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
   ElvMain.OnItemPaintText := EasyListview1ItemPaintText;
@@ -432,7 +482,7 @@ begin
     THintManager.Instance.CloseHint;
 
     Hinttimer.Enabled := False;
-    Info := GetCurrentPopUpMenuInfo(Item);
+    Info := GetCurrenTPopupActionBarInfo(Item);
     try
       if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
       begin
@@ -490,7 +540,7 @@ begin
     DBCanDrag := True;
     FilesToDrag.Clear;
     GetCursorPos(DBDragPoint);
-    MenuInfo := GetCurrentPopUpMenuInfo(Item);
+    MenuInfo := GetCurrenTPopupActionBarInfo(Item);
     try
       for I := 0 to MenuInfo.Count - 1 do
         if ElvMain.Items[I].Selected then
@@ -1121,7 +1171,7 @@ var
 begin
   if Viewer = nil then
     Application.CreateForm(TViewer, Viewer);
-  DBInfo := GetCurrentPopUpMenuInfo(nil);
+  DBInfo := GetCurrenTPopupActionBarInfo(nil);
   try
     Viewer.Execute(Sender, DBInfo);
     Viewer.Show;
@@ -1143,7 +1193,7 @@ begin
     end;
 end;
 
-function TFormCont.GetCurrentPopUpMenuInfo(Item: TEasyItem) : TDBPopupMenuInfo;
+function TFormCont.GetCurrenTPopupActionBarInfo(Item: TEasyItem) : TDBPopupMenuInfo;
 var
   I: Integer;
 begin
@@ -1549,7 +1599,7 @@ begin
   begin
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
-    MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
+    MenuInfo := GetCurrenTPopupActionBarInfo(ListView1Selected);
     try
       Viewer.Execute(Sender, MenuInfo);
       Viewer.Show;
@@ -1653,7 +1703,7 @@ procedure TFormCont.WlResizeClick(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrenTPopupActionBarInfo(nil);
   try
     ResizeImages(Self, Info);
   finally
@@ -1665,7 +1715,7 @@ procedure TFormCont.WlConvertClick(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrenTPopupActionBarInfo(nil);
   try
     ConvertImages(Self, Info);
   finally
@@ -1677,7 +1727,7 @@ procedure TFormCont.ExportLinkClick(Sender: TObject);
 var
   Info: TDBPopupMenuInfo;
 begin
-  Info := GetCurrentPopUpMenuInfo(nil);
+  Info := GetCurrenTPopupActionBarInfo(nil);
   try
     ExportImages(Self, Info);
   finally

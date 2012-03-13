@@ -87,14 +87,17 @@ object FloatPanel: TFloatPanel
     end
   end
   object NormalImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 8
     Top = 32
   end
   object HotImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 40
     Top = 32
   end
   object DisabledImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 72
     Top = 32
   end

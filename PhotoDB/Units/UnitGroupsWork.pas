@@ -827,9 +827,9 @@ begin
   end;
 end;
 
-function GetRegisterGroupListW(FileName : String; LoadImages : Boolean; SortByName : Boolean; UseInclude : Boolean = false) : TGroups;
+function GetRegisterGroupListW(FileName: String; LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
 var
-  Table : TDataSet;
+  Table: TDataSet;
   N: Integer;
   I, J: Integer;
   Temp: TGroup;

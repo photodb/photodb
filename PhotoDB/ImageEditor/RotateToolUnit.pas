@@ -174,6 +174,7 @@ begin
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
   MakeItLink.ImageCanRegenerate := True;
+  MakeItLink.LoadImage;
   IcoOK.Free;
 
   CloseLink := TWebLink.Create(Self);
@@ -186,6 +187,7 @@ begin
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
   CloseLink.ImageCanRegenerate := True;
+  CloseLink.LoadImage;
   IcoCancel.Free;
 
 end;

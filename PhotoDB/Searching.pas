@@ -3,25 +3,103 @@ unit Searching;
 interface
 
 uses
-  UnitGroupsWork, DBCMenu, CmpUnit, ToolWin,
-  ShellApi, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, DB, Menus, ExtCtrls, StdCtrls, UGraphicUtils, UMemoryEx,
-  ImgList, ComCtrls, ActiveX, ShlObj, JPEG, ClipBrd, uGUIDUtils,
-  SaveWindowPos, ExtDlgs, UnitDBKernel, Rating, Math, CommonDBSupport,
-  AppEvnts, TwButton, ShellCtrls, UnitBitmapImageList, GraphicCrypt,
-  ShellContextMenu, DropSource, DropTarget, DateUtils,
-  ProgressActionUnit, UnitSQLOptimizing, uScript, UnitScripts,
-  EasyListview, WebLink, MPCommonUtilities, DBScriptFunctions,
-  UnitSearchBigImagesLoaderThread, DragDropFile, uFileUtils,
-  DragDrop, UnitPropeccedFilesSupport, ComboBoxExDB,
-  UnitDBDeclare, UnitDBFileDialogs, UnitDBCommon, UnitDBCommonGraphics,
-  uCDMappingTypes, uThreadForm, uLogger, UConstants, uTime, CommCtrl,
-  UFastload, uListViewUtils, UDBDrawing, Pngimage, uResources, uMemory,
-  MPCommonObjects, ADODB, DBLoading, LoadingSign, uW7TaskBar,
-  UFormListView, uDBPopupMenuInfo, uPNGUtils, uTranslate, uAssociations,
-  UShellIntegration, uDBBaseTypes, uDBTypes, uRuntime, uSysUtils,
-  UDBUtils, UDBFileTypes, Dolphin_DB, uSettings, uSearchTypes, WebLinkList,
-  uDBAdapter, uBitmapUtils;
+  UnitGroupsWork,
+  DBCMenu,
+  CmpUnit,
+  ToolWin,
+  ShellApi,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  DB,
+  Menus,
+  ExtCtrls,
+  StdCtrls,
+  uGraphicUtils,
+  uMemoryEx,
+  ImgList,
+  ComCtrls,
+  ActiveX,
+  ShlObj,
+  JPEG,
+  ClipBrd,
+  uGUIDUtils,
+  SaveWindowPos,
+  ExtDlgs,
+  UnitDBKernel,
+  Rating,
+  Math,
+  CommonDBSupport,
+  AppEvnts,
+  TwButton,
+  ShellCtrls,
+  UnitBitmapImageList,
+  GraphicCrypt,
+  ShellContextMenu,
+  DropSource,
+  DropTarget,
+  DateUtils,
+  ProgressActionUnit,
+  UnitSQLOptimizing,
+  uScript,
+  UnitScripts,
+  EasyListview,
+  WebLink,
+  MPCommonUtilities,
+  DBScriptFunctions,
+  UnitSearchBigImagesLoaderThread,
+  DragDropFile,
+  uFileUtils,
+  DragDrop,
+  UnitPropeccedFilesSupport,
+  ComboBoxExDB,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  UnitDBCommon,
+  UnitDBCommonGraphics,
+  uCDMappingTypes,
+  uThreadForm,
+  uLogger,
+  uConstants,
+  uTime,
+  CommCtrl,
+  UFastload,
+  uListViewUtils,
+  uDBDrawing,
+  pngimage,
+  uResources,
+  uMemory,
+  MPCommonObjects,
+  ADODB,
+  DBLoading,
+  LoadingSign,
+  uW7TaskBar,
+  UFormListView,
+  uDBPopupMenuInfo,
+  uPNGUtils,
+  uTranslate,
+  uAssociations,
+  UShellIntegration,
+  uDBBaseTypes,
+  uDBTypes,
+  uRuntime,
+  uSysUtils,
+  UDBUtils,
+  UDBFileTypes,
+  Dolphin_DB,
+  uSettings,
+  uSearchTypes,
+  WebLinkList,
+  uDBAdapter,
+  uBitmapUtils,
+  uThemesUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup;
 
 type
   TSearchForm = class(TSearchCustomForm)
@@ -45,23 +123,23 @@ type
     MemKeyWords: TMemo;
     Save: TButton;
     ExplorerPanel: TPanel;
-    PmSearchOptions: TPopupMenu;
+    PmSearchOptions: TPopupActionBar;
     DoSearchNow1: TMenuItem;
     Panels1: TMenuItem;
     Properties1: TMenuItem;
     Explorer2: TMenuItem;
     DtpDate: TDateTimePicker;
     IsDatePanel: TPanel;
-    PmDateEdit: TPopupMenu;
+    PmDateEdit: TPopupActionBar;
     Datenotexists1: TMenuItem;
     PanelValueIsDateSets: TPanel;
-    PmEditGroups: TPopupMenu;
+    PmEditGroups: TPopupActionBar;
     EditGroups1: TMenuItem;
     GroupsManager1: TMenuItem;
     DateExists1: TMenuItem;
-    PmRating: TPopupMenu;
+    PmRating: TPopupActionBar;
     Ratingnotsets1: TMenuItem;
-    PmComment: TPopupMenu;
+    PmComment: TPopupActionBar;
     SetComent1: TMenuItem;
     Comentnotsets1: TMenuItem;
     MenuItem1: TMenuItem;
@@ -73,11 +151,11 @@ type
     MenuItem3: TMenuItem;
     Undo1: TMenuItem;
     Datenotsets1: TMenuItem;
-    PmSetDate: TPopupMenu;
+    PmSetDate: TPopupActionBar;
     Setvalue1: TMenuItem;
     HelpTimer: TTimer;
     PnDateRange: TPanel;
-    PmExplorerMenu: TPopupMenu;
+    PmExplorerMenu: TPopupActionBar;
     OpeninExplorer1: TMenuItem;
     AddFolder1: TMenuItem;
     Hide1: TMenuItem;
@@ -85,8 +163,8 @@ type
     DragImageList: TImageList;
     DropFileTarget1: TDropFileTarget;
     Image3: TImage;
-    QuickGroupsSearch: TPopupMenu;
-    SortingPopupMenu: TPopupMenu;
+    QuickGroupsSearch: TPopupActionBar;
+    SortingPopupMenu: TPopupActionBar;
     SortbyID1: TMenuItem;
     SortbyName1: TMenuItem;
     SortbyDate1: TMenuItem;
@@ -99,23 +177,23 @@ type
     Image5: TImage;
     Image6: TImage;
     GroupsImageList: TImageList;
-    InsertSpesialQueryPopupMenu: TPopupMenu;
+    InsertSpesialQueryPopupMenu: TPopupActionBar;
     HidePanelTimer: TTimer;
     DtpTime: TDateTimePicker;
     IsTimePanel: TPanel;
     PanelValueIsTimeSets: TPanel;
-    PmSetTime: TPopupMenu;
+    PmSetTime: TPopupActionBar;
     Setvalue2: TMenuItem;
-    PmTimeEdit: TPopupMenu;
+    PmTimeEdit: TPopupActionBar;
     Timenotexists1: TMenuItem;
     TimeExists1: TMenuItem;
     Timenotsets1: TMenuItem;
     SelectTimer: TTimer;
     View2: TMenuItem;
     DropFileTarget2: TDropFileTarget;
-    ScriptListPopupMenu: TPopupMenu;
+    ScriptLisTPopupActionBar: TPopupActionBar;
     ScriptMainMenu: TMainMenu;
-    RatingPopupMenu1: TPopupMenu;
+    RatingPopupMenu1: TPopupActionBar;
     N00: TMenuItem;
     N01: TMenuItem;
     N02: TMenuItem;
@@ -148,7 +226,7 @@ type
     TbStopOperation: TToolButton;
     ToolButton15: TToolButton;
     DisabledToolBarImageList: TImageList;
-    PopupMenuZoomDropDown: TPopupMenu;
+    PopupMenuZoomDropDown: TPopupActionBar;
     SortbyCompare1: TMenuItem;
     ElvDateRange: TEasyListview;
     DblDate: TDBLoading;
@@ -283,7 +361,7 @@ type
     function ItemIndex(item : TEasyItem) : integer;
     procedure ListViewEdited(Sender: TObject; Item: TEasyItem;
       var S: String);
-    function GetCurrentPopUpMenuInfo(item : TEasyItem) : TDBPopupMenuInfo;
+    function GetCurrenTPopupActionBarInfo(item : TEasyItem) : TDBPopupMenuInfo;
     function ListViewSelected : TEasyItem;
     function ItemAtPos(X,Y : integer): TEasyItem;
     procedure EasyListviewDblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
@@ -518,8 +596,9 @@ begin
   end;
   Menu := ScriptMainMenu;
 
-  ScriptListPopupMenu.Images := DBKernel.ImageList;
+  ScriptLisTPopupActionBar.Images := DBKernel.ImageList;
   ScriptMainMenu.Images := DBKernel.ImageList;
+  LsSearchResults.Color := Theme.PanelColor;
 
   TW.I.Start('S -> Register');
   DropFileTarget2.register(SearchEdit);
@@ -635,13 +714,13 @@ begin
   ElvMain.BackGround.AlphaBlend := True;
   ElvMain.BackGround.OffsetTrack := True;
   ElvMain.BackGround.BlendAlpha := 220;
-  ElvMain.Font.Color := 0;
+
   ElvMain.View := ElsThumbnail;
   ElvMain.DragKind := DkDock;
+  ElvMain.ShowThemedBorder := False;
   SetLVSelection(ElvMain, True);
-  ElvMain.GroupFont.Color := ClWindowText;
+
   ElvMain.Font.name := 'Tahoma';
-  ElvMain.HotTrack.Color := ClWindowText;
   ElvMain.HotTrack.Cursor := CrArrow;
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   ElvMain.IncrementalSearch.Enabled := True;
@@ -725,8 +804,6 @@ begin
     F(FScript);
   end;
 
-  LsSearchResults.Color := ElvMain.Color;
-
   DateRange := GetDateFilter;
   WlStartStop.OnClick := BreakOperation;
   WlStartStop.Text := L('Stop');
@@ -796,7 +873,8 @@ begin
 
   HintTimer.Enabled := False;
   Item := ItemByPointImage(ElvMain, Point(MousePos.x, MousePos.y));
-  if (Item=nil) or ((MousePos.x=-1) and (MousePos.y=-1)) then Item:=ElvMain.Selection.First;
+  if (Item = nil) or ((MousePos.x =- 1) and (MousePos.y = -1)) then
+    Item := ElvMain.Selection.First;
 
   if (Item <> nil) and (Item.Selected) then
   begin
@@ -804,7 +882,7 @@ begin
 
     THintManager.Instance.CloseHint;
     HintTimer.Enabled := False;
-    Info := GetCurrentPopUpMenuInfo(Item);
+    Info := GetCurrenTPopupActionBarInfo(Item);
     try
       if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
       begin
@@ -844,15 +922,15 @@ begin
       FilesCount := FileList.Count;
       F(FileList);
     end;
-    SetBoolAttr(aScript,'$OneFileExists', FilesCount > 0);
+    SetBoolAttr(aScript, '$OneFileExists', FilesCount > 0);
     S := ListMenuScript;
     TTranslateManager.Instance.BeginTranslate;
     try
-      LoadMenuFromScript(ScriptListPopupMenu.Items, DBkernel.ImageList, S, aScript, ScriptExecuted, FExtImagesInImageList, True);
+      LoadMenuFromScript(ScriptLisTPopupActionBar.Items, DBkernel.ImageList, S, aScript, ScriptExecuted, FExtImagesInImageList, True);
     finally
       TTranslateManager.Instance.EndTranslate;
     end;
-    ScriptListPopupMenu.Popup(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
+    ScriptLisTPopupActionBar.Popup(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
   end;
 end;
 
@@ -876,7 +954,7 @@ begin
     DBCanDrag := True;
     FilesToDrag.Clear;
     GetCursorPos(DBDragPoint);
-    MenuInfo := GetCurrentPopUpMenuInfo(Item);
+    MenuInfo := GetCurrenTPopupActionBarInfo(Item);
     try
 
       for I := 0 to MenuInfo.Count - 1 do
@@ -919,7 +997,7 @@ begin
 
   if ElvMain.Selection.First <> nil then
   begin
-    MenuInfo := GetCurrentPopUpMenuInfo(ListViewSelected);
+    MenuInfo := GetCurrenTPopupActionBarInfo(ListViewSelected);
     try
       if Viewer = nil then
         Application.CreateForm(TViewer, Viewer);
@@ -1015,13 +1093,14 @@ begin
   Item := Self.ItemAtPos(X, Y);
   RightClickFix(ElvMain, Button, Shift, Item, ItemByMouseDown, ItemSelectedByMouseDown);
 
-  if MouseDowned then
-    if Button = MbRight then
-    begin
-      ListViewContextPopup(ElvMain, Point(X, Y), Handled);
-      PopupHandled := True;
-    end;
-  MouseDowned := False;
+  if MouseDowned and (Button = MbRight) then
+  begin
+    MouseDowned := False;
+    ListViewContextPopup(ElvMain, Point(X, Y), Handled);
+    PopupHandled := True;
+  end else
+    MouseDowned := False;
+
   DBCanDrag := False;
   FilesToDrag.Clear;
 end;
@@ -1159,7 +1238,7 @@ procedure TSearchForm.SlideShow1Click(Sender: TObject);
 var
   DBInfo: TDBPopupMenuInfo;
 begin
-  DBInfo := GetCurrentPopUpMenuInfo(nil);
+  DBInfo := GetCurrenTPopupActionBarInfo(nil);
   try
     if Viewer = nil then
       Application.CreateForm(TViewer, Viewer);
@@ -1969,7 +2048,7 @@ begin
   DoSearchNow(Sender);
 end;
 
-function TSearchForm.GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
+function TSearchForm.GetCurrenTPopupActionBarInfo(Item: TEasyItem): TDBPopupMenuInfo;
 var
   I: Integer;
   MenuRecord: TDBPopupMenuInfoRecord;
@@ -2577,7 +2656,7 @@ begin
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
   try
-    SmallB.PixelFormat := Pf24bit;
+    SmallB.PixelFormat := pf24bit;
     for I := 0 to Length(Groups) - 1 do
     begin
       B := TBitmap.Create;
@@ -2586,8 +2665,8 @@ begin
         JPEG := TJPEGImage.Create;
         try
           JPEG.Assign(Groups[I].GroupImage);
-          B.Canvas.Brush.Color := Graphics.ClMenu;
-          B.Canvas.Pen.Color := Graphics.ClMenu;
+          B.Canvas.Brush.Color := Theme.MenuColor;
+          B.Canvas.Pen.Color := Theme.MenuColor;
           Size := Max(JPEG.Width, JPEG.Height);
           B.Width := Size;
           B.Height := Size;
@@ -2723,8 +2802,8 @@ var
   begin
     SmallB.Width := 16;
     SmallB.Height := 16;
-    SmallB.Canvas.Pen.Color := clBtnFace;
-    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Pen.Color := Theme.WindowColor;
+    SmallB.Canvas.Brush.Color := Theme.WindowColor;
     SmallB.Canvas.Rectangle(0, 0, 16, 16);
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
     GroupImageValid := True;
@@ -2748,11 +2827,12 @@ begin
     SmallB := TBitmap.Create;
     try
       SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := ClBtnFace;
+      SmallB.Canvas.Brush.Color := Theme.PanelColor;
       Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
       try
         GroupImageValid := False;
         if Group.GroupImage <> nil then
+        begin
           if not Group.GroupImage.Empty then
           begin
             B := TBitmap.Create;
@@ -2761,15 +2841,13 @@ begin
               GroupImageValid := True;
 
               Size := Max(Group.GroupImage.Width, Group.GroupImage.Height);
-              B.Canvas.Brush.Color := clBtnFace;
-              B.Canvas.Pen.Color := clBtnFace;
+              B.Canvas.Brush.Color := Theme.WindowColor;
+              B.Canvas.Pen.Color := Theme.WindowColor;
               B.Width := Size;
               B.Height := Size;
               B.Canvas.Rectangle(0, 0, Size, Size);
-              B.Canvas.Draw(B.Width div 2 - Group.GroupImage.Width div 2, B.Height div 2 - Group.GroupImage.Height div 2,
-                Group.GroupImage);
+              B.Canvas.Draw(B.Width div 2 - Group.GroupImage.Width div 2, B.Height div 2 - Group.GroupImage.Height div 2, Group.GroupImage);
 
-              FreeGroup(Group);
               DoResize(15, 15, B, SmallB);
               SmallB.Height := 16;
               SmallB.Width := 16;
@@ -2778,6 +2856,10 @@ begin
             end;
           end else
             CreteDefaultGroupImage;
+
+          FreeGroup(Group);
+        end else
+          CreteDefaultGroupImage;
 
       finally
         FreeGroup(Group);
@@ -3392,8 +3474,8 @@ begin
         B := TBitmap.Create;
         try
           B.PixelFormat := pf24bit;
-          B.Canvas.Brush.Color := Graphics.clMenu;
-          B.Canvas.Pen.Color := Graphics.clMenu;
+          B.Canvas.Brush.Color := Theme.ComboBoxColor;
+          B.Canvas.Pen.Color := Theme.ComboBoxColor;
           Size := Max(ImageAllGroups.Picture.Graphic.Width, ImageAllGroups.Picture.Graphic.Height);
           B.Width := Size;
           B.Height := Size;
@@ -3424,8 +3506,8 @@ begin
         JPEG := TJPEGImage.Create;
         try
           JPEG.Assign(Groups[I].GroupImage);
-          B.Canvas.Brush.Color := Graphics.clMenu;
-          B.Canvas.Pen.Color := Graphics.clMenu;
+          B.Canvas.Brush.Color := Theme.ComboBoxColor;
+          B.Canvas.Pen.Color := Theme.ComboBoxColor;
           Size := Max(JPEG.Width, JPEG.Height);
           B.Width := Size;
           B.Height := Size;
@@ -4036,14 +4118,14 @@ begin
     Bitmap.PixelFormat := pf24bit;
     Bitmap.Width := 150;
     Bitmap.Height := 150;
-    Bitmap.Canvas.Brush.Color := clWindow;
-    Bitmap.Canvas.Pen.Color := clWindow;
-    Bitmap.Canvas.Rectangle(0,0,150,150);
+    Bitmap.Canvas.Brush.Color := Theme.ListViewColor;
+    Bitmap.Canvas.Pen.Color := Theme.ListViewColor;
+    Bitmap.Canvas.Rectangle(0, 0, 150, 150);
     BackgroundImage := GetSearchBackground;
     try
       SearchBackgroundBMP := TBitmap.Create;
       try
-        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, ClWindow);
+        LoadPNGImage32bit(BackgroundImage, SearchBackgroundBMP, Theme.ListViewColor);
         Bitmap.Canvas.Draw(0, 0, SearchBackgroundBMP);
       finally
         F(SearchBackgroundBMP);
@@ -4071,14 +4153,16 @@ begin
   elvDateRange.BackGround.AlphaBlend := True;
   elvDateRange.BackGround.OffsetTrack := True;
   elvDateRange.BackGround.BlendAlpha := 220;
+  SetListViewColors(elvDateRange);
+  elvDateRange.ShowThemedBorder := False;
 
   BackgroundImage := TBitmap.Create;
   try
     BackgroundImage.PixelFormat := pf24bit;
     BackgroundImage.Width := 100;
     BackgroundImage.Height := 100;
-    BackgroundImage.Canvas.Brush.Color := clWindow;
-    BackgroundImage.Canvas.Pen.Color := clWindow;
+    BackgroundImage.Canvas.Brush.Color := Theme.ListViewColor;
+    BackgroundImage.Canvas.Pen.Color := Theme.ListViewColor;
     BackgroundImage.Canvas.Rectangle(0, 0, 100, 100);
     elvDateRange.BackGround.Image := BackgroundImage;
   finally
@@ -4092,10 +4176,10 @@ begin
       LoadPNGImage32bit(DateRangeBackgroundImage, DateRangeBackgroundImageBMP, clWindow);
       elvDateRange.BackGround.Image.Canvas.Draw(0, 0, DateRangeBackgroundImageBMP);
     finally
-      DateRangeBackgroundImageBMP.Free;
-     end;
+      F(DateRangeBackgroundImageBMP);
+    end;
   finally
-    DateRangeBackgroundImage.Free;
+    F(DateRangeBackgroundImage);
   end;
   elvDateRange.Refresh;
 
@@ -4679,7 +4763,6 @@ begin
       LsData.Color := ElvMain.Color;
       LsData.Show;
       LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
-      LsSearchResults.Color := SearchPanelA.Color;
       LsSearchResults.Show;
       UpdateVistaProgressState(TBPF_INDETERMINATE);
     end else
@@ -4702,7 +4785,6 @@ begin
     UpdateVistaProgressState(TBPF_NOPROGRESS);
     WlStartStop.Text := L('Search');
     LsSearchResults.Left := WlStartStop.Left + WlStartStop.Width + 5;
-    LsSearchResults.Color := SearchPanelA.Color;
     LsSearchResults.Show;
   end else
   begin

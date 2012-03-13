@@ -3,16 +3,34 @@ unit UnitActionsForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, WebLink, ImgList, ImageHistoryUnit,
-  UnitDBDeclare, UnitDBFileDialogs, uDBForm, uMemory, uFileUtils,
-  uDBFileTypes, uConstants;
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  StdCtrls,
+  WebLink,
+  ImgList,
+  ImageHistoryUnit,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  uDBForm,
+  uMemory,
+  uFileUtils,
+  uDBFileTypes,
+  uThemesUtils,
+  uConstants;
 
 type
   TActionObject = class(TObject)
   public
-    Action : string;
-    ImageIndex : Integer;
+    Action: string;
+    ImageIndex: Integer;
     constructor Create(AAction : string; AImageIndex : Integer);
   end;
 
@@ -64,7 +82,7 @@ begin
   SaveToFileLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SAVETOFILE + 1]);
   LoadFromFileLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_LOADFROMFILE + 1]);
   CloseLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EXIT + 1]);
-  ActionsImageList.BkColor := ClWindow;
+
   Cursor := 0;
   Actions := TList.Create;
 end;
@@ -220,31 +238,29 @@ begin
   AAddIcon(TImageEditor(FParent).InsertImageLink.Icon);
 end;
 
-procedure TActionsForm.ActionListDrawItem(Control: TWinControl; index: Integer; Rect: TRect; State: TOwnerDrawState);
+procedure TActionsForm.ActionListDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
 begin
-  if Cursor = index + 1 then
+  if Cursor = Index + 1 then
   begin
-    ActionList.Canvas.Brush.Color := clHighlight;
-    ActionList.Canvas.Pen.Color := clHighlight;
+    //current item
+    ActionList.Canvas.Brush.Color := Theme.ListSelectedColor;
+    ActionList.Canvas.Pen.Color := Theme.ListSelectedColor;
   end else
   begin
-    ActionList.Canvas.Brush.Color := ClWindow;
-    ActionList.Canvas.Pen.Color := ClWindow;
+    ActionList.Canvas.Brush.Color := Theme.ListColor;
+    ActionList.Canvas.Pen.Color := Theme.ListColor;
   end;
   ActionList.Canvas.Rectangle(Rect);
-  ActionList.Canvas.Pen.Color := clWindowText;
+  ActionList.Canvas.Pen.Color := Theme.WindowColor;
 
-  // if Cursor=index+1 then
-  begin
-    ActionList.Canvas.Pen.Color := clWindowText;
-    if Cursor = index + 1 then
-      ActionList.Canvas.Brush.Color := clHighlight
-    else
-      ActionList.Canvas.Brush.Color := ClWindow;
-    ActionList.Canvas.Rectangle(Rect.Left, Rect.Top, Rect.Left + 20, Rect.Top + 20);
-  end;
+  if Cursor = Index + 1 then
+    ActionList.Canvas.Font.Color := Theme.ListFontSelectedColor
+  else
+    ActionList.Canvas.Font.Color := Theme.ListFontColor;
+  //ActionList.Canvas.Rectangle(Rect.Left, Rect.Top, Rect.Left + 20, Rect.Top + 20);
+
   ActionsImageList.Draw(ActionList.Canvas, Rect.Left + 2, Rect.Top + 2, TActionObject(Actions[index]).ImageIndex);
-  ActionList.Canvas.Font.Color := clWindowText;
+  //ActionList.Canvas.Font.Color := Theme.ListFontColor;
   ActionList.Canvas.TextOut(Rect.Left + 25, Rect.Top + 2, ActionList.Items[index]);
 end;
 
@@ -252,8 +268,8 @@ procedure TActionsForm.SaveToFileLinkClick(Sender: TObject);
 var
   SaveDialog: DBSaveDialog;
   FileName: string;
-  StringActions : TStrings;
-  I : Integer;
+  StringActions: TStrings;
+  I: Integer;
 begin
   SaveDialog := DBSaveDialog.Create;
   try

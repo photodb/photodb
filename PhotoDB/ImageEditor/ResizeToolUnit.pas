@@ -315,6 +315,7 @@ begin
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.Icon := IcoSave;
   SaveSettingsLink.ImageCanRegenerate := True;
+  SaveSettingsLink.LoadImage;
   IcoSave.Free;
 
   MakeItLink := TWebLink.Create(nil);
@@ -327,6 +328,7 @@ begin
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
   MakeItLink.ImageCanRegenerate := True;
+  MakeItLink.LoadImage;
   IcoOK.Free;
 
   CloseLink := TWebLink.Create(nil);
@@ -339,6 +341,7 @@ begin
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
   CloseLink.ImageCanRegenerate := True;
+  CloseLink.LoadImage;
   IcoCancel.Free;
 
   ComboBoxPercent.Text := IntToStr(Settings.ReadInteger('Editor', 'PercentValue', 100)) + '%';
