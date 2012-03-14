@@ -3,13 +3,46 @@ unit UnitManageGroups;
 interface
 
 uses
-  UnitGroupsWork, Windows, Messages, SysUtils, Classes,
-  Graphics, Controls, Forms, UnitGroupsTools, UnitDBkernel, UnitBitmapImageList,
-  ComCtrls, AppEvnts, jpeg, ExtCtrls, Menus, Math, CommCtrl,
-  ImgList, NoVSBListView, uBitmapUtils, ExplorerTypes,
-  UnitDBDeclare, uDBDrawing, uMemory, uDBForm, uGraphicUtils, uMemoryEx,
-  uShellIntegration, uConstants, Dolphin_DB, uSettings, uRuntime,
-  CommonDBSupport, ToolWin, uPathProviders, uExplorerGroupsProvider;
+  UnitGroupsWork,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  UnitGroupsTools,
+  UnitDBkernel,
+  UnitBitmapImageList,
+  ComCtrls,
+  AppEvnts,
+  jpeg,
+  ExtCtrls,
+  Menus,
+  Math,
+  CommCtrl,
+  ImgList,
+  NoVSBListView,
+  uBitmapUtils,
+  ExplorerTypes,
+  UnitDBDeclare,
+  uDBDrawing,
+  uMemory,
+  uDBForm,
+  uGraphicUtils,
+  uMemoryEx,
+  uShellIntegration,
+  uConstants,
+  Dolphin_DB,
+  uSettings,
+  uRuntime,
+  CommonDBSupport,
+  ToolWin,
+  uThemesUtils,
+  uPathProviders,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uExplorerGroupsProvider;
 
 type
   TFormManageGroups = class(TDBForm)
@@ -70,7 +103,7 @@ type
   public
     { Public declarations }
     Groups: TGroups;
-    ImagePopupMenu: TPopupMenu;
+    ImagePopupMenu: TPopupActionBar;
     MenuChangeGroup: TMenuItem;
     MenuDeleteGroup: TMenuItem;
     MenuAddGroup: TMenuItem;
@@ -89,8 +122,11 @@ procedure ExecuteGroupManager;
 implementation
 
 uses
-  UnitFormChangeGroup, UnitNewGroupForm, UnitQuickGroupInfo,
-  uManagerExplorer, UnitSelectFontForm;
+  UnitFormChangeGroup,
+  UnitNewGroupForm,
+  UnitQuickGroupInfo,
+  uManagerExplorer,
+  UnitSelectFontForm;
 
 {$R *.dfm}
 
@@ -159,7 +195,7 @@ begin
   if (Sender as TListView).GetItemAt(MousePos.X, MousePos.Y) = nil then
     Exit;
   F(ImagePopupMenu);
-  ImagePopupMenu := TPopupMenu.Create(Self);
+  ImagePopupMenu := TPopupActionBar.Create(Self);
   ImagePopupMenu.Images := DBKernel.ImageList;
   ImagePopupMenu.Tag := (Sender as TListView).GetItemAt(MousePos.X, MousePos.Y).ImageIndex;
 
@@ -217,7 +253,7 @@ begin
     begin
       B := TBitmap.Create;
       try
-        B.PixelFormat := Pf24bit;
+        B.PixelFormat := pf24bit;
         B.Assign(Groups[I].GroupImage);
         FBitmapImageList.AddBitmap(B, False);
       finally
@@ -343,14 +379,14 @@ begin
     begin
       if Item.Selected then
       begin
-        SelectedColor(B, MakeDarken(WindowColor, 0.5));
-        Sender.Canvas.Pen.Color := MakeDarken(WindowColor,  0.9);
-        Sender.Canvas.Brush.Color := MakeDarken(WindowColor,  0.9);
+        SelectedColor(B, MakeDarken(Theme.WindowColor, 0.5));
+        Sender.Canvas.Pen.Color := MakeDarken(Theme.WindowColor,  0.9);
+        Sender.Canvas.Brush.Color := MakeDarken(Theme.WindowColor,  0.9);
         Sender.Canvas.FillRect(R2);
       end else
       begin
-        Sender.Canvas.Pen.Color := clWindow;
-        Sender.Canvas.Brush.Color := clWindow;
+        Sender.Canvas.Pen.Color := Theme.WindowColor;
+        Sender.Canvas.Brush.Color := Theme.WindowColor;
         Sender.Canvas.FillRect(R2);
       end;
 
@@ -379,7 +415,7 @@ begin
             Btext.Canvas.Font.Style := [Fsbold] + [FsUnderline]
           else
             Btext.Canvas.Font.Style := [Fsbold];
-          Btext.Canvas.Font.Color := clWindowText;
+          Btext.Canvas.Font.Color := Theme.WindowTextColor;
           Btext.Canvas.Font.Size := 10;
           Textrect := Rect(5, 0, (Btext.Width div 4) * 2 - 3, R2.Bottom);
           DrawText(Btext.Canvas.Handle, PWideChar(Acaption), Length(Acaption), Textrect, DrawTextOpt + DT_LEFT);
@@ -392,7 +428,7 @@ begin
               Btext.Canvas.Font.Style := [Fsbold] + [FsUnderline]
             else
               Btext.Canvas.Font.Style := [Fsbold];
-            Btext.Canvas.Font.Color := ColorToRGB(clWindowText) xor $FF0000;
+            Btext.Canvas.Font.Color := ColorToRGB(Theme.WindowTextColor) xor $FF0000;
             Textrect := Rect((Btext.Width div 4) * 2 + 5, 0, (Btext.Width div 4) * 3, Btext.Height);
             DrawText(Btext.Canvas.Handle, PWideChar(L('Keywords') + ':'), Length(L('Keywords') + ':'), Textrect,
               DrawTextOpt + DT_LEFT);
@@ -400,13 +436,13 @@ begin
           if Length(AxGroups) > 0 then
           begin
             Btext.Canvas.Font.Style := [Fsbold];
-            Btext.Canvas.Font.Color := ColorToRGB(clWindowText) xor $008000;
+            Btext.Canvas.Font.Color := ColorToRGB(Theme.WindowTextColor) xor $008000;
             Textrect := Rect((Btext.Width div 4) * 3 + 5, 0, Btext.Width, Btext.Height);
             DrawText(Btext.Canvas.Handle, PWideChar(L('Groups') + ':'), Length(L('Groups') + ':'), Textrect,
               DrawTextOpt + DT_LEFT);
           end;
           Btext.Canvas.Font.Style := [];
-          Btext.Canvas.Font.Color := MixColors(clWindow, clWindowText, 40);
+          Btext.Canvas.Font.Color := MixColors(Theme.WindowColor, Theme.WindowTextColor, 40);
           Textrect := Rect(8, Size, (Btext.Width div 4) * 2 - 8, Btext.Height);
           DrawText(Btext.Canvas.Handle, PWideChar(Atext), Length(Atext), Textrect, DrawTextOpt1 + DT_LEFT);
 

@@ -452,7 +452,7 @@ object Viewer: TViewer
     object SendTo1: TMenuItem
       Caption = 'Send To'
       OnClick = SendTo1Click
-      object N8: TMenuItem
+      object SendToSeparator: TMenuItem
         Caption = '-'
       end
     end

@@ -225,7 +225,7 @@ object FormChangeGroup: TFormChangeGroup
     PaddingTop = 2
     PaddingLeft = 2
   end
-  object PmLoadFromFile: TPopupMenu
+  object PmLoadFromFile: TPopupActionBar
     OnPopup = PmLoadFromFilePopup
     Left = 120
     Top = 64
@@ -235,6 +235,7 @@ object FormChangeGroup: TFormChangeGroup
     end
   end
   object GroupsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 192
     Top = 120
   end

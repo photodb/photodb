@@ -112,6 +112,7 @@ const
   DOCHOSTUIFLAG_DISABLE_UNTRUSTEDPROTOCOL   = $1;
     {IE6 or later. Turns off untrusted protocols. Untrusted protocols include
     ms-its, ms-itss, its, and mk:@msitstore}
+  DOCHOSTUIFLAG_ENABLE_ACTIVEX_INACTIVATE_MODE = $20000000;
 
   {
     Set of values used to indicate the proper action on a double-click event.

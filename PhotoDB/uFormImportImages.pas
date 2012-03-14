@@ -53,7 +53,8 @@ uses
   uList64,
   Winapi.CommCtrl,
   uImportPicturesUtils,
-  ImgList;
+  Themes,
+  ImgList, Vcl.AppEvnts;
 
 const
   TAG_LABEL           = 1;
@@ -78,6 +79,8 @@ type
   TImportPicturesMode = (piModeSimple, piModeExtended);
 
 type
+  TBox = class(TPanel);
+
   TBaseSelectItem = class
   private
     FItemLabel: string;
@@ -145,11 +148,11 @@ type
     FContainer: TScrollBox;
     FMenuOptions: TPopupMenu;
     FImageList: TImageList;
-    function GetScrollBoxByItem(Index: TBaseSelectItem): TScrollBox;
+    function GetScrollBoxByItem(Index: TBaseSelectItem): TBox;
     function GetItemByIndex(Index: Integer): TBaseSelectItem;
     function GetCont: Integer;
     function GetStatDate: TDateTime;
-    property DisplayItems[Index: TBaseSelectItem]: TScrollBox read GetScrollBoxByItem;
+    property DisplayItems[Index: TBaseSelectItem]: TBox read GetScrollBoxByItem;
     procedure OnItemEditClick(Sender: TObject);
     procedure OnDateEditClick(Sender: TObject);
     function FindChildByTag<T: TWinControl>(Parent: TWinControl; Tag: NativeInt): T;
@@ -523,13 +526,13 @@ end;
 procedure TSelectDateCollection.Clear;
 var
   SI: TBaseSelectItem;
-  Sb: TScrollBox;
+  B: TBox;
 begin
   for SI in FItems do
   begin
-    Sb := DisplayItems[SI];
-    if Sb <> nil then
-      Sb.Free;
+    B := DisplayItems[SI];
+    if B <> nil then
+      B.Free;
   end;
   FreeList(FItems, False);
 end;
@@ -639,16 +642,16 @@ begin
 end;
 
 function TSelectDateCollection.GetScrollBoxByItem(
-  Index: TBaseSelectItem): TScrollBox;
+  Index: TBaseSelectItem): TBox;
 var
   I: Integer;
 begin
   Result := nil;
   for I := 0 to FContainer.ControlCount - 1 do
-    if FContainer.Controls[I] is TScrollBox then
+    if FContainer.Controls[I] is TBox then
       if FContainer.Controls[I].Tag = NativeInt(Index) then
       begin
-        Result := TScrollBox(FContainer.Controls[I]);
+        Result := TBox(FContainer.Controls[I]);
         Exit;
       end;
 end;
@@ -700,7 +703,7 @@ procedure TSelectDateCollection.MIDontImport(Sender: TObject);
 var
   SI: TBaseSelectItem;
   WlLabel, WlDate: TWebLink;
-  SB: TScrollBox;
+  SB: TBox;
 begin
   SI := TBaseSelectItem(TMenuItem(Sender).GetParentMenu.Tag);
   SI.IsDisabled := True;
@@ -719,7 +722,7 @@ procedure TSelectDateCollection.MIImport(Sender: TObject);
 var
   SI: TBaseSelectItem;
   WlLabel, WlDate: TWebLink;
-  SB: TScrollBox;
+  SB: TBox;
 begin
   SI := TBaseSelectItem(TMenuItem(Sender).GetParentMenu.Tag);
   SI.IsDisabled := False;
@@ -896,7 +899,7 @@ end;
 
 procedure TSelectDateCollection.EndEditDate(Item: TBaseSelectItem);
 var
-  Sb: TScrollBox;
+  Sb: TBox;
   Dp: TDateTimePicker;
   LnkOk, LnkDate: TWebLink;
 begin
@@ -918,7 +921,7 @@ end;
 
 procedure TSelectDateCollection.EndEditLabel(Item: TBaseSelectItem);
 var
-  Sb: TScrollBox;
+  Sb: TBox;
   SI: TBaseSelectItem;
   Edit: TWatermarkedEdit;
   LnkOk, LnkLabel: TWebLink;
@@ -960,15 +963,15 @@ end;
 
 procedure TSelectDateCollection.OnBoxClick(Sender: TObject);
 var
-  Sb: TScrollBox;
+  Sb: TBox;
   SI: TBaseSelectItem;
   I: Integer;
   Data: TList<TPathItem>;
 begin
-  if Sender is TScrollBox then
-    Sb := TScrollBox(Sender)
+  if Sender is TBox then
+    Sb := TBox(Sender)
   else
-    Sb := TScrollBox(TWinControl(Sender).Parent);
+    Sb := TBox(TWinControl(Sender).Parent);
 
   Data := TList<TPathItem>.Create;
 
@@ -995,30 +998,33 @@ end;
 
 procedure TSelectDateCollection.OnBoxMouseEnter(Sender: TObject);
 var
-  Sb: TScrollBox;
+  Sb: TBox;
   SI: TBaseSelectItem;
 begin
-  if Sender is TScrollBox then
-    Sb := TScrollBox(Sender)
+  if Sender is TBox then
+    Sb := TBox(Sender)
   else
-    Sb := TScrollBox(TWinControl(Sender).Parent);
+    Sb := TBox(TWinControl(Sender).Parent);
 
   SI := TBaseSelectItem(Sb.Tag);
   if SI.IsSelected then
+  begin
     Sb.Color := $FFFFAF
-  else
+  end else
+  begin
     Sb.Color := $FFFFAF;
+  end;
 end;
 
 procedure TSelectDateCollection.OnBoxMouseLeave(Sender: TObject);
 var
-  Sb: TScrollBox;
+  Sb: TBox;
   SI: TBaseSelectItem;
 begin
-  if Sender is TScrollBox then
-    Sb := TScrollBox(Sender)
+  if Sender is TBox then
+    Sb := TBox(Sender)
   else
-    Sb := TScrollBox(TWinControl(Sender).Parent);
+    Sb := TBox(TWinControl(Sender).Parent);
 
   SI := TBaseSelectItem(Sb.Tag);
   if SI.IsSelected then
@@ -1032,12 +1038,12 @@ var
   DtpEditDate: TDateTimePicker;
   LnkLabel, LnkOk: TWebLink;
   SI: TBaseSelectItem;
-  Parent: TScrollBox;
+  Parent: TBox;
 begin
   LnkLabel := TWebLink(Sender);
   LnkLabel.Hide;
 
-  Parent := TScrollBox(LnkLabel.Parent);
+  Parent := TBox(LnkLabel.Parent);
   SI := TBaseSelectItem(Parent.Tag);
 
   DtpEditDate := FindChildByTag<TDateTimePicker>(Parent, TAG_EDIT_DATE);
@@ -1087,12 +1093,12 @@ var
   WebEditLabel: TWatermarkedEdit;
   LnkLabel, LnkOk: TWebLink;
   SI: TBaseSelectItem;
-  Parent: TScrollBox;
+  Parent: TBox;
 begin
   LnkLabel := TWebLink(Sender);
   LnkLabel.Hide;
 
-  Parent := TScrollBox(LnkLabel.Parent);
+  Parent := TBox(LnkLabel.Parent);
   SI := TBaseSelectItem(Parent.Tag);
 
   WebEditLabel := FindChildByTag<TWatermarkedEdit>(Parent, TAG_EDIT_LABEL);
@@ -1168,7 +1174,7 @@ end;
 procedure TSelectDateCollection.UpdateModel;
 var
   I, Left: Integer;
-  Sb: TScrollBox;
+  Sb: TBox;
   WlLabel, WlDate, WlItemsCount, WlSize, WlSettings: TWebLink;
   SI: TBaseSelectItem;
 
@@ -1182,14 +1188,14 @@ begin
       Sb := DisplayItems[SI];
       if Sb = nil then
       begin
-        Sb := TScrollBox.Create(FContainer.Owner);
+        Sb := TBox.Create(FContainer.Owner);
         Sb.Color := clWhite;
         Sb.Visible := False;
         Sb.Parent := FContainer;
         Sb.Width := 175;
         Sb.Height := 75;
-        Sb.HorzScrollBar.Visible := False;
-        Sb.VertScrollBar.Visible := False;
+        //Sb.HorzScrollBar.Visible := False;
+        //Sb.VertScrollBar.Visible := False;
         Sb.BevelKind := bkTile;
         Sb.BorderStyle := bsNone;
         Sb.Top := 3;
@@ -1680,6 +1686,11 @@ begin
   FSimpleDate := MinDateTime;
   FSimpleLabel := '';
 
+  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+    ElvPreview.ShowThemedBorder := False;
+
+  SetListViewColors(ElvPreview);
+
   SwitchMode;
 end;
 
@@ -1751,7 +1762,7 @@ begin
     GbSeries.Caption := '';
     BtnOk.Enabled := True;
     FSeries.ClearSelection;
-
+    SbSeries.HorzScrollBar.Visible := False;
     UpdateItemsCount;
 
     UnlockHeight;
@@ -1789,6 +1800,7 @@ begin
     BtnOk.Enabled := FIsReady and (FSeries.Count > 0);
     UnlockHeight;
     GbSeries.Top := 110;
+    SbSeries.HorzScrollBar.Visible := True;
     if FIsDisplayingPreviews then
     begin
       if NewMode or (Height < 470) then

@@ -160,17 +160,30 @@ end;
 procedure TMenuItemHelper.ExSetDefault(Value: Boolean);
 var
   I: Integer;
+
+  function IsStyledItem: Boolean;
+  begin
+    Result := TStyleManager.Enabled;
+
+    if GetParentMenu is TMainMenu then
+      Result := False;
+
+    if (Owner is TMenuItem) then
+      if (Owner as TMenuItem).GetParentMenu is TMainMenu then
+        Result := False;
+  end;
+
 begin
   if not Value then
   begin
-    if TStyleManager.Enabled and TStyleManager.IsCustomStyleActive then
+    if IsStyledItem then
       Self.Checked := False
     else
       Self.Default := False;
 
     Exit;
   end;
-  if TStyleManager.Enabled {and TStyleManager.IsCustomStyleActive} then
+  if IsStyledItem then
   begin
     Self.Checked := True;
     if Parent <> nil then

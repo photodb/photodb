@@ -99,8 +99,8 @@ object FormDBOptions: TFormDBOptions
       '300')
   end
   object BtnOk: TButton
-    Left = 456
-    Top = 304
+    Left = 451
+    Top = 302
     Width = 75
     Height = 25
     Caption = 'Ok'
@@ -108,8 +108,8 @@ object FormDBOptions: TFormDBOptions
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 376
-    Top = 304
+    Left = 370
+    Top = 302
     Width = 75
     Height = 25
     Caption = 'Cancel'

@@ -178,7 +178,7 @@ type
     N6: TMenuItem;
     N7: TMenuItem;
     SendTo1: TMenuItem;
-    N8: TMenuItem;
+    SendToSeparator: TMenuItem;
     TimerDBWork: TTimer;
     TbSeparatorPageNumber: TToolButton;
     TbPageNumber: TToolButton;
@@ -3143,7 +3143,7 @@ var
           R.Right := Max(R.Right, Rct.Right);
           FaceTextRect := R;
           InflateRect(R, 4, 4);
-          DrawRoundGradientVert(FOverlayBuffer, R, clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 220);
+          DrawRoundGradientVert(FOverlayBuffer, R, Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightColor, 8, 220);
           DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), FaceTextRect, DrawTextOpt);
         end;
       finally
@@ -4240,6 +4240,7 @@ end;
 procedure TViewer.SendTo1Click(Sender: TObject);
 begin
   ManagerPanels.FillSendToPanelItems(Sender as TMenuItem, SendToItemPopUpMenu);
+  SendToSeparator.Visible := (Sender as TMenuItem).Count = 1;
 end;
 
 procedure TViewer.SendToItemPopUpMenu(Sender: TObject);

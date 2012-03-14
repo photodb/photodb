@@ -30,7 +30,7 @@ run:
       CreateItem($Drive,$IconN,$RunScript,false,0);
     };
     if ($c=0) {
-      CreateItemDef("No removable devices",DB_IC_DELETE_INFO,"",false,0,false);
+      CreateItemDef("No portable devices",DB_IC_DELETE_INFO,"",false,0,false);
     };
   }
   <Removable drives>[DB_IC_USB]

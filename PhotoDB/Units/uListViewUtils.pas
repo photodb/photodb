@@ -331,8 +331,8 @@ begin
     try
       DragImage.Assign(Bitmap);
       BitmapImageList.AddBitmap(DragImage, False);
-      CreateDragImageEx(nil, DragImageList, BitmapImageList, clGradientActiveCaption,
-        clGradientInactiveCaption, clHighlight, Font, ExtractFileName(FileName));
+      CreateDragImageEx(nil, DragImageList, BitmapImageList, Theme.GradientFromColor,
+        Theme.GradientToColor, Theme.HighlightColor, Font, ExtractFileName(FileName));
     finally
       F(DragImage);
     end;
@@ -377,7 +377,7 @@ begin
     Inc(W, 10);
     Inc(H, 10);
     R := Rect(5, 5, 5 + W, 5 + H);
-    DrawRoundGradientVert(Bitmap, R, Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightTextColor, RoundRadius);
+    DrawRoundGradientVert(Bitmap, R, Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightColor, RoundRadius);
     DrawText32Bit(Bitmap, IntToStr(ItemsSelected), AFont, R, DT_CENTER or DT_VCENTER);
   finally
     AFont.Free;
@@ -387,19 +387,19 @@ end;
 procedure  CreateMultiselectImage(ListView : TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer);
 var
-  SelCount : Integer;
-  SelectedItem : TEasyItem;
-  Items : array of TEasyItem;
-  MaxH, MaxW, I, N, FSelCount, ItemsSelected, ImageW, ImageH : Integer;
-  Graphic : TGraphic;
-  DX, DY, DMax : Extended;
+  SelCount: Integer;
+  SelectedItem: TEasyItem;
+  Items: array of TEasyItem;
+  MaxH, MaxW, I, N, FSelCount, ItemsSelected, ImageW, ImageH: Integer;
+  Graphic: TGraphic;
+  DX, DY, DMax: Extended;
   TmpImage, SelectedImage: TBitmap;
-  LBitmap : TLayeredBitmap;
-  FocusedItem : TEasyItem;
+  LBitmap: TLayeredBitmap;
+  FocusedItem: TEasyItem;
 
   function LastSelected : TEasyItem;
   var
-    Item : TEasyItem;
+    Item: TEasyItem;
   begin
     Result := nil;
     Item := ListView.Selection.First;
@@ -684,9 +684,17 @@ procedure SetListViewColors(ListView: TEasyListView);
 begin
   if StyleServices.Enabled then
   begin
+    ListView.Color := StyleServices.GetStyleColor(scListView);
     ListView.Selection.GradientColorTop := StyleServices.GetStyleColor(scGenericGradientBase);
     ListView.Selection.GradientColorBottom := StyleServices.GetStyleColor(scGenericGradientEnd);
     ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
+    ListView.Selection.InactiveTextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
+    ListView.Selection.Color := StyleServices.GetSystemColor(clHighlight);
+    ListView.Selection.InactiveColor := StyleServices.GetSystemColor(clHighlight);
+    ListView.Selection.BorderColor := StyleServices.GetSystemColor(clHighlight);
+    ListView.Selection.InactiveBorderColor := StyleServices.GetSystemColor(clHighlight);
+    ListView.Selection.BlendColorSelRect := StyleServices.GetSystemColor(clHighlight);
+    ListView.Selection.BorderColorSelRect := StyleServices.GetSystemColor(clHighlight);
     ListView.Font.Color := StyleServices.GetStyleFontColor(sfListItemTextNormal);
     ListView.HotTrack.Color := StyleServices.GetStyleFontColor(sfListItemTextHot);
     ListView.GroupFont.Color := StyleServices.GetStyleFontColor(sfListItemTextNormal);

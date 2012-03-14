@@ -200,7 +200,7 @@ begin
   FFormBuffer.Height := Height;
   FillTransparentColor(FFormBuffer, clBlack, 0);
   DrawRoundGradientVert(FFormBuffer, Rect(0, 0, Width, Height),
-    Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightTextColor, 8, 220);
+    Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightColor, 8, 220);
   TextHeight := Canvas.TextHeight('Iy');
 
   Bitmap := TBitmap.Create;

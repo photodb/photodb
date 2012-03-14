@@ -3,24 +3,86 @@ unit ManagerDBUnit;
 interface
 
 uses
-  UnitGroupsWork, DBCMenu, Dolphin_DB, UnitDBkernel, Windows, Messages, Types,
-  SysUtils, Variants, Classes, Graphics, Controls, Forms, Math, uVistaFuncs,
-  ExtCtrls, AppEvnts, ImgList, DropTarget, DragDropFile, DragDrop,
-  DropSource, Menus, SaveWindowPos, DB, ComCtrls, WebLink, StdCtrls,
-  Dialogs, Grids, DBGrids, jpeg, TwButton, Rating, Mask, uMemoryEx,
-  GraphicCrypt, UnitStringPromtForm, CommonDBSupport, GraphicsCool,
-  CommCtrl, DateUtils, uScript, UnitScripts, CmpUnit, UnitFormManagerHint,
-  UnitConvertDBForm, UnitDBDeclare, UnitDBCommon, uBitmapUtils,
-  uCDMappingTypes, uConstants, uFileUtils, uDBDrawing, adodb,
-  DBLoading, LoadingSign, uDBForm, uMemory, uDBPopupMenuInfo, uGOM,
-  uShellIntegration, uGraphicUtils, uSysUtils, uDBUtils, uRuntime,
-  uSettings, uThreadForm, uDBAdapter, uIconUtils, uConfiguration;
+  UnitGroupsWork,
+  DBCMenu,
+  Dolphin_DB,
+  UnitDBkernel,
+  Windows,
+  Messages,
+  Types,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Math,
+  uVistaFuncs,
+  ExtCtrls,
+  AppEvnts,
+  ImgList,
+  DropTarget,
+  DragDropFile,
+  DragDrop,
+  DropSource,
+  Menus,
+  SaveWindowPos,
+  DB,
+  ComCtrls,
+  WebLink,
+  StdCtrls,
+  Dialogs,
+  Grids,
+  DBGrids,
+  jpeg,
+  TwButton,
+  Rating,
+  Mask,
+  uMemoryEx,
+  GraphicCrypt,
+  UnitStringPromtForm,
+  CommonDBSupport,
+  GraphicsCool,
+  CommCtrl,
+  DateUtils,
+  uScript,
+  UnitScripts,
+  CmpUnit,
+  UnitFormManagerHint,
+  UnitConvertDBForm,
+  UnitDBDeclare,
+  UnitDBCommon,
+  uBitmapUtils,
+  uCDMappingTypes,
+  uConstants,
+  uFileUtils,
+  uDBDrawing,
+  adodb,
+  DBLoading,
+  LoadingSign,
+  uDBForm,
+  uMemory,
+  uDBPopupMenuInfo,
+  uGOM,
+  uShellIntegration,
+  uGraphicUtils,
+  uSysUtils,
+  uDBUtils,
+  uRuntime,
+  uSettings,
+  uThreadForm,
+  uDBAdapter,
+  uIconUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils,
+  Themes,
+  uConfiguration;
 
 type
   TManagerDB = class(TThreadForm)
     Panel2: TPanel;
     PnTop: TPanel;
-    PopupMenu1: TPopupMenu;
+    PopupMenu1: TPopupActionBar;
     Label7: TLabel;
     CbSetField: TComboBox;
     Label9: TLabel;
@@ -38,12 +100,12 @@ type
     RbSQLDelete: TRadioButton;
     RecordNumberEdit: TEdit;
     SaveWindowPos1: TSaveWindowPos;
-    PopupMenu2: TPopupMenu;
+    PopupMenu2: TPopupActionBar;
     Dateexists1: TMenuItem;
-    PmEdiGroups: TPopupMenu;
+    PmEdiGroups: TPopupActionBar;
     EditGroups1: TMenuItem;
     GroupsManager1: TMenuItem;
-    PopupMenu4: TPopupMenu;
+    PopupMenu4: TPopupActionBar;
     DateExists2: TMenuItem;
     DropFileSource1: TDropFileSource;
     DropFileTarget1: TDropFileTarget;
@@ -51,35 +113,35 @@ type
     GroupsImageList: TImageList;
     LbBackups: TListBox;
     Label11: TLabel;
-    PmRestoreDB: TPopupMenu;
+    PmRestoreDB: TPopupActionBar;
     Delete1: TMenuItem;
     Restore1: TMenuItem;
     Refresh1: TMenuItem;
-    PopupMenu6: TPopupMenu;
+    PopupMenu6: TPopupActionBar;
     Timenotexists1: TMenuItem;
-    PopupMenu7: TPopupMenu;
+    PopupMenu7: TPopupActionBar;
     TimeExists1: TMenuItem;
     Rename1: TMenuItem;
     ElvMain: TListView;
     ApplicationEvents1: TApplicationEvents;
     ImlMain: TImageList;
-    PopupMenuRating: TPopupMenu;
+    PopupMenuRating: TPopupActionBar;
     N01: TMenuItem;
     N11: TMenuItem;
     N21: TMenuItem;
     N31: TMenuItem;
     N41: TMenuItem;
     N51: TMenuItem;
-    PopupMenuKeyWords: TPopupMenu;
-    PopupMenuRotate: TPopupMenu;
+    PopupMenuKeyWords: TPopupActionBar;
+    PopupMenuRotate: TPopupActionBar;
     R01: TMenuItem;
     R02: TMenuItem;
     R03: TMenuItem;
     R04: TMenuItem;
-    PopupMenuGroups: TPopupMenu;
+    PopupMenuGroups: TPopupActionBar;
     ImageListPopupGroups: TImageList;
-    PopupMenuDate: TPopupMenu;
-    PopupMenuFile: TPopupMenu;
+    PopupMenuDate: TPopupActionBar;
+    PopupMenuFile: TPopupActionBar;
     PackTabelLink: TWebLink;
     ExportTableLink: TWebLink;
     ImportTableLink: TWebLink;
@@ -90,7 +152,7 @@ type
     LbDatabases: TListBox;
     BtnAddDB: TButton;
     DBImageList: TImageList;
-    PmRestore: TPopupMenu;
+    PmRestore: TPopupActionBar;
     DeleteDB1: TMenuItem;
     RenameDB1: TMenuItem;
     N1: TMenuItem;
@@ -155,8 +217,7 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure BtnAddDBClick(Sender: TObject);
     procedure RefreshDBList;
-    procedure LbDatabasesContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure LbDatabasesContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure RenameDB1Click(Sender: TObject);
     procedure SelectDB1Click(Sender: TObject);
     procedure DeleteDB1Click(Sender: TObject);
@@ -173,20 +234,20 @@ type
     procedure dblDataDrawBackground(Sender: TObject; Buffer: TBitmap);
     procedure ElvMainResize(Sender: TObject);
   private
-    OldWNDProc : TWndMethod;
-    LastSelected : TListItem;
-    LastSelectedIndex : Integer;
-    LockDraw :Boolean;
-    aGroups : TGroups;
-    GroupBitmaps : array of TBitmap;
-    FormManagerHint : TFormManagerHint;
-    WorkQuery : TDataSet;
-    IsLock : Boolean;
-    FBackUpFiles : TStrings;
-    DBCanDrag : Boolean;
-    SI : Integer;
-    FData : TList;
-    FLoadingDataThread : TThread;
+    OldWNDProc: TWndMethod;
+    LastSelected: TListItem;
+    LastSelectedIndex: integer;
+    LockDraw: Boolean;
+    aGroups: TGroups;
+    GroupBitmaps: array of TBitmap;
+    FormManagerHint: TFormManagerHint;
+    WorkQuery: TDataSet;
+    IsLock: Boolean;
+    FBackUpFiles: TStrings;
+    DBCanDrag: Boolean;
+    SI: integer;
+    FData: TList;
+    FLoadingDataThread: TThread;
     procedure OnMove(var Msg: TWMMove); message WM_MOVE;
     procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
     procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
@@ -217,12 +278,24 @@ FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeStr,FieldTypeStr,FieldTypeStr,Fi
 
 implementation
 
-uses UnitQuickGroupInfo, uManagerExplorer,
-     Searching, SlideShow, ExportUnit, UnitManageGroups,
-     UnitDBCleaning, UnitCompareDataBases, UnitEditGroupsForm,
-     UnitPasswordForm, ProgressActionUnit,
-     UnitMenuDateForm, UnitChangeDBPath, UnitSelectDB, uThreadLoadingManagerDB,
-     UnitDBOptions, uListViewUtils;
+uses
+  UnitQuickGroupInfo,
+  uManagerExplorer,
+  Searching,
+  SlideShow,
+  ExportUnit,
+  UnitManageGroups,
+  UnitDBCleaning,
+  UnitCompareDataBases,
+  UnitEditGroupsForm,
+  UnitPasswordForm,
+  ProgressActionUnit,
+  UnitMenuDateForm,
+  UnitChangeDBPath,
+  UnitSelectDB,
+  uThreadLoadingManagerDB,
+  UnitDBOptions,
+  uListViewUtils;
 
 {$R *.dfm}
 
@@ -253,7 +326,7 @@ var
 begin
   FLoadingDataThread := nil;
   FData := TList.Create;
-  LsLoadingDB.Color := clWindow;
+  LsLoadingDB.Color := Theme.WindowColor;
   FormManagerHint := nil;
   PopupMenuRating.Images := DBkernel.ImageList;
   PopupMenuRotate.Images := DBkernel.ImageList;
@@ -280,6 +353,8 @@ begin
   DuplicatesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DUPLICATE + 1]);
   ConvertLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
   ChangePathLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
+
+  ElvMain.Font.Color := Theme.ListViewFontColor;
 
   OldWNDProc := elvMain.WindowProc;
   elvMain.WindowProc := ElvMainWindowProc;
@@ -849,16 +924,28 @@ procedure TManagerDB.ElvMainAdvancedCustomDrawSubItem(
   Sender: TCustomListView; Item: TListItem; SubItem: Integer;
   State: TCustomDrawState; Stage: TCustomDrawStage;
   var DefaultDraw: Boolean);
- var
-   R2: TRect;
-   Caption: string;
-   ARect: TRect;
-   J, I: Integer;
-   G: TGroups;
-   ItemData: TDBPopupMenuInfoRecord;
+var
+  R2: TRect;
+  Caption: string;
+  ARect: TRect;
+  J, I: integer;
+  G: TGroups;
+  ItemData: TDBPopupMenuInfoRecord;
 
- const
-   DrawTextOpt = DT_NOPREFIX + DT_CENTER + DT_WORDBREAK + DT_EDITCONTROL;
+const
+  DrawTextOpt = DT_NOPREFIX + DT_CENTER + DT_WORDBREAK + DT_EDITCONTROL;
+
+function GetStyleTextColor(RequestedColor: TColor): TColor;
+begin
+  if TStyleManager.IsCustomStyleActive then
+  begin
+    if Item.Selected then
+      Result := Theme.ListViewSelectedFontColor
+    else
+      Result := Theme.ListViewFontColor
+  end else
+    Result := RequestedColor;
+end;
 
 begin
   SetLength(G, 0);
@@ -867,28 +954,29 @@ begin
   if LockDraw then
     Exit;
 
+  elvMain.Canvas.Font.Color := GetStyleTextColor(0);
   ItemData := FData[Item.Index];
-  if SubItem=1 then
+  if SubItem = 1 then
   begin
     r2 := Item.DisplayRect(drLabel);
-    Sender.Canvas.Brush.Style:=bsSolid;
+    Sender.Canvas.Brush.Style := bsSolid;
     if Item.Selected and DefaultDraw then
     begin
-      Sender.Canvas.Brush.Color := clHighlight;
-      Sender.Canvas.Pen.Color := clHighlight;
+      Sender.Canvas.Brush.Color := Theme.HighlightColor;
+      Sender.Canvas.Pen.Color := Theme.HighlightColor;
       ListView_GetSubItemRect(elvMain.Handle, Item.Index, 10, 0, @aRect);
-      elvMain.Canvas.Rectangle(0, r2.Top, aRect.Right, r2.Bottom);
+        elvMain.Canvas.Rectangle(0, r2.Top, aRect.Right, r2.Bottom);
     end else
     begin
       if Odd(Item.Index) then
       begin
-        Sender.Canvas.Brush.Color := ColorDarken(clWindow);
-        Sender.Canvas.Pen.Color := ColorDarken(clWindow);
+        Sender.Canvas.Brush.Color := ColorDarken(Theme.ListViewColor);
+        Sender.Canvas.Pen.Color := ColorDarken(Theme.ListViewColor);
         Sender.Canvas.Rectangle(0, r2.Top, Sender.Width, r2.Bottom);
       end else
       begin
-        Sender.Canvas.Brush.Color := clWindow;
-        Sender.Canvas.Pen.Color := clWindow;
+        Sender.Canvas.Brush.Color := Theme.ListViewColor;
+        Sender.Canvas.Pen.Color := Theme.ListViewColor;
         Sender.Canvas.Rectangle(0, r2.Top, Sender.Width, r2.Bottom);
       end;
     end;
@@ -901,7 +989,7 @@ begin
   end;
   Sender.Canvas.Brush.Style := bsClear;
   ListView_GetSubItemRect(elvMain.Handle, Item.Index, SubItem, 0, @aRect);
-  Sender.Canvas.Pen.Color := ColorDarken(clWindowText);
+  Sender.Canvas.Pen.Color := ColorDarken(Theme.WindowTextColor);
   Sender.Canvas.MoveTo(aRect.Left, aRect.Top);
   Sender.Canvas.LineTo(aRect.Left, aRect.Bottom);
   if not ItemData.InfoLoaded then
@@ -916,17 +1004,17 @@ begin
     end;
     2:
     begin
-      elvMain.Canvas.Font.Color := $808080;
+      elvMain.Canvas.Font.Color := GetStyleTextColor($808080);
       aRect.Top := aRect.Top + 2;
       DrawText(Sender.Canvas.Handle, PWideChar(ItemData.KeyWords), Length(ItemData.KeyWords), aRect, DrawTextOpt);
-      elvMain.Canvas.Font.Color:=$0;
+      elvMain.Canvas.Font.Color := GetStyleTextColor($0);
     end;
     3:
     begin
-      elvMain.Canvas.Font.Color := $FF8080;
+      elvMain.Canvas.Font.Color := GetStyleTextColor($FF8080);
       aRect.Top := aRect.Top + 2;
       DrawText(Sender.Canvas.Handle, PWideChar(ItemData.Comment), Length(ItemData.Comment), aRect, DrawTextOpt);
-      elvMain.Canvas.Font.Color := $0;
+      elvMain.Canvas.Font.Color := GetStyleTextColor($0);
     end;
     7:
     begin
@@ -951,10 +1039,10 @@ begin
         DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
       end else
       begin
-        elvMain.Canvas.Font.Color := $808080;
+        elvMain.Canvas.Font.Color := GetStyleTextColor($808080);
         Caption := L('No date');
         DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
-        elvMain.Canvas.Font.Color := $0;
+        elvMain.Canvas.Font.Color := GetStyleTextColor($0);
       end;
     end;
     9:
@@ -966,10 +1054,10 @@ begin
           DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), ARect, DrawTextOpt);
         end else
         begin
-          ElvMain.Canvas.Font.Color := $808080;
+          ElvMain.Canvas.Font.Color := GetStyleTextColor($808080);
           Caption := L('No time');
           DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), ARect, DrawTextOpt);
-          ElvMain.Canvas.Font.Color := $0;
+          ElvMain.Canvas.Font.Color := GetStyleTextColor($0);
         end;
       end;
     10:
@@ -992,9 +1080,9 @@ begin
         DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
       end else
       begin
-        elvMain.Canvas.Font.Color := $808080;
+        elvMain.Canvas.Font.Color := GetStyleTextColor($808080);
         DrawText(Sender.Canvas.Handle, PWideChar(Caption), Length(Caption), aRect, DrawTextOpt);
-        elvMain.Canvas.Font.Color := $0;
+        elvMain.Canvas.Font.Color := GetStyleTextColor($0);
       end;
     end;
     5:
@@ -1019,12 +1107,12 @@ end;
 
 procedure TManagerDB.GetData(Index: integer);
 var
-  I, J, N, L : Integer;
-  WorkQuery : TDataSet;
+  I, J, N, L: integer;
+  WorkQuery: TDataSet;
   DA: TDBAdapter;
   _sqlexectext: string;
-  B : Boolean;
-  ItemData : TDBPopupMenuInfoRecord;
+  B: Boolean;
+  ItemData: TDBPopupMenuInfoRecord;
 begin
   _sqlexectext := 'Select ID, FFileName, Rating, Comment, Rotated, Access, KeyWords, Groups, Links, DateToAdd, aTime, IsDate, IsTime, FileSize, Include from $DB$';
   _sqlexectext := _sqlexectext+' where ID in (';
@@ -1573,10 +1661,10 @@ begin
 
           B.Width := ThSize;
           B.Height := ThSize;
-          B.Canvas.Pen.Color := ClBtnFace;
-          B.Canvas.Brush.Color := ClBtnFace;
+          B.Canvas.Pen.Color := Theme.PanelColor;
+          B.Canvas.Brush.Color := Theme.PanelColor;
           B.Canvas.Rectangle(0, 0, B.Width, B.Height);
-          B.Canvas.Pen.Color := clWindow;
+          B.Canvas.Pen.Color := Theme.WindowColor;
           B.Canvas.Draw(ThSize div 2 - JPG.Width div 2, ThSize div 2 - JPG.Height div 2, JPG);
         finally
           F(JPG);
@@ -1766,7 +1854,7 @@ var
 begin
   DBImageList.Clear;
   LbDatabases.Clear;
-  DBImageList.BkColor := clWindow;
+
   for I := 0 to DBKernel.DBs.Count - 1 do
   begin
     LbDatabases.Items.Add(DBKernel.DBs[I].name);
@@ -1958,8 +2046,8 @@ end;
 procedure TManagerDB.dblDataDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := clWindow;
-  Buffer.Canvas.Brush.Color := clWindow;
+  Buffer.Canvas.Pen.Color := Theme.WindowColor;
+  Buffer.Canvas.Brush.Color := Theme.WindowColor;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 

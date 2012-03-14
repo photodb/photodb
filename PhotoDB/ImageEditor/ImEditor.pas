@@ -81,6 +81,7 @@ uses
   uPortableDeviceUtils,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
+  Themes,
   uThemesUtils;
 
 type
@@ -258,6 +259,7 @@ type
     procedure LoadLanguage;
     procedure InitEditor(FileName: string);
   protected
+    procedure WndProc(var Message: TMessage); override;
     procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID : string; override;
@@ -611,10 +613,6 @@ begin
   if CurrentImage = nil then
     Exit;
 
-
-  if (CurrentImage.Height = 0) or (CurrentImage.Width = 0) then
-    Exit;
-
   if (Tool <> ToolColor) or ResizedWindow then
   begin
     for I := 0 to Buffer.Height - 1 do
@@ -627,6 +625,10 @@ begin
       end;
     end;
   end;
+
+  if (CurrentImage.Height = 0) or (CurrentImage.Width = 0) then
+    Exit;
+
   if (CurrentImage.Width > GetVisibleImageWidth) or (CurrentImage.Height > GetVisibleImageHeight) then
   begin
     if CurrentImage.Width / CurrentImage.Height < Buffer.Width / Buffer.Height then
@@ -2118,6 +2120,47 @@ begin
   Image.Assign(ImageHistory.DoBack);
   F(CurrentImage);
   SetPointerToNewImage(Image);
+end;
+
+procedure TImageEditor.WndProc(var Message: TMessage);
+var
+  C: TColor;
+  DC: HDC;
+  BrushInfo: TagLOGBRUSH;
+  Brush: HBrush;
+  L, T: Integer;
+begin
+  if (Message.Msg = WM_ERASEBKGND) and StyleServices.Enabled then
+  begin
+    Message.Result := 1;
+
+    DC := TWMEraseBkgnd(Message).DC;
+    if DC = 0 then
+      Exit;
+
+    C := Theme.WindowColor;
+    brushInfo.lbStyle := BS_SOLID;
+    brushInfo.lbColor := ColorToRGB(C);
+    Brush := CreateBrushIndirect(brushInfo);
+
+    L := ToolsPanel.Left;
+    if ScrollBarV.Visible then
+      L := L - ScrollBarV.Width;
+
+    T := StatusBar1.Top;
+    if ScrollBarH.Visible then
+      T := T - ScrollBarH.Height;
+
+    FillRect(DC, Rect(0, 0, Width, ButtomPanel.Height), Brush);
+    FillRect(DC, Rect(L, ButtomPanel.Height, Width, Height), Brush);
+    FillRect(DC, Rect(0, T, L, Height), Brush);
+
+    if(Brush > 0) then
+      DeleteObject(Brush);
+
+    Exit;
+  end;
+  inherited;
 end;
 
 procedure TImageEditor.RedoLinkClick(Sender: TObject);

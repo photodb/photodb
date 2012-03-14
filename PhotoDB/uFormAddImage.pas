@@ -3,9 +3,26 @@ unit uFormAddImage;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, LoadingSign, StdCtrls, UnitDBDeclare, uMemory, uMemoryEx,
-  UnitDBKernel, uFormUtils, ExtCtrls, uBitmapUtils, uDBForm;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  LoadingSign,
+  StdCtrls,
+  UnitDBDeclare,
+  uMemory,
+  uMemoryEx,
+  UnitDBKernel,
+  uFormUtils,
+  ExtCtrls,
+  uBitmapUtils,
+  Themes,
+  uThemesUtils,
+  uDBForm;
 
 type
   TFormAddingImage = class(TDBForm)
@@ -88,7 +105,7 @@ begin
     Bitmap.Height := Height;
     FillTransparentColor(Bitmap, clBlack, 0);
     DrawRoundGradientVert(Bitmap, Rect(0, 0, Width, Height),
-      clGradientActiveCaption, clGradientInactiveCaption, clHighlight, 8, 240);
+      Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightColor, 8, 240);
 
     DrawLoadingSignImage(LsMain.Left, LsMain.Top,
       Round((LsMain.Height div 2) * 70 / 100),

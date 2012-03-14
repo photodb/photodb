@@ -3,8 +3,21 @@ unit SlideShowFullScreen;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, AppEvnts, ImgList, ComCtrls, ToolWin, uSysUtils;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  AppEvnts,
+  ImgList,
+  ComCtrls,
+  ToolWin,
+  Themes,
+  uSysUtils;
 
 type
   TFullScreenView = class(TForm)
@@ -35,7 +48,9 @@ type
     procedure DestroyTimerTimer(Sender: TObject);
   private
     { Private declarations }
-    FOldPoint : TPoint;
+    FOldPoint: TPoint;
+  protected
+    { Protected declarations }
   public
     { Public declarations }
   end;

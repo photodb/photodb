@@ -3,12 +3,43 @@ unit UnitSplitExportForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, ExtCtrls, StdCtrls, DropSource, DropTarget, Dolphin_DB,
-  acDlgSelect, ImgList, Menus, DB, UnitGroupsWork, win32crc, uFileUtils,
-  DragDrop, DragDropFile, uVistaFuncs, UnitDBDeclare, UnitDBFileDialogs, uLogger,
-  UnitDBCommon, uConstants, uDBForm, uShellIntegration, uMemory, WatermarkedEdit,
-  uAssociations, uDBUtils;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ComCtrls,
+  ExtCtrls,
+  StdCtrls,
+  DropSource,
+  DropTarget,
+  Dolphin_DB,
+  acDlgSelect,
+  ImgList,
+  Menus,
+  DB,
+  UnitGroupsWork,
+  uFileUtils,
+  DragDrop,
+  DragDropFile,
+  uVistaFuncs,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  uLogger,
+  UnitDBCommon,
+  uConstants,
+  uDBForm,
+  uShellIntegration,
+  uMemory,
+  WatermarkedEdit,
+  uAssociations,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils,
+  uDBUtils;
 
 type
   TSplitExportForm = class(TDBForm)
@@ -16,7 +47,7 @@ type
     DropFileTarget1: TDropFileTarget;
     ImlListView: TImageList;
     MethodImageList: TImageList;
-    PmMethod: TPopupMenu;
+    PmMethod: TPopupActionBar;
     Copy1: TMenuItem;
     Cut1: TMenuItem;
     Delete1: TMenuItem;
@@ -30,29 +61,25 @@ type
     Image1: TImage;
     BtnNew: TButton;
     BtnChooseFile: TButton;
-    PmInsertMethod: TPopupMenu;
+    PmInsertMethod: TPopupActionBar;
     Copy2: TMenuItem;
     Cut2: TMenuItem;
     procedure FormCreate(Sender: TObject);
-    procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
-      Point: TPoint; var Effect: Integer);
+    procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure BtnChooseFileClick(Sender: TObject);
     procedure LvMainAdvancedCustomDrawSubItem(Sender: TCustomListView;
       Item: TListItem; SubItem: Integer; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
-    procedure LvMainContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure LvMainContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure Copy1Click(Sender: TObject);
-    procedure LvMainMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure LvMainMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Delete1Click(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnOkClick(Sender: TObject);
     procedure BtnNewClick(Sender: TObject);
     procedure LvMainResize(Sender: TObject);
-    procedure LvMainKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure LvMainKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormDestroy(Sender: TObject);
     procedure Cut2Click(Sender: TObject);
   private
@@ -80,7 +107,10 @@ var
 implementation
 
 uses
-  UnitDBKernel, CommCtrl, CommonDBSupport, ProgressActionUnit;
+  UnitDBKernel,
+  CommCtrl,
+  CommonDBSupport,
+  ProgressActionUnit;
 
 {$R *.dfm}
 
@@ -104,8 +134,6 @@ begin
 
   DropFileTarget1.Register(LvMain);
   LoadLanguage;
-  MethodImageList.BkColor := clWindow;
-  ImlListView.BkColor := clWindow;
 
   ImageList_ReplaceIcon(MethodImageList.Handle, -1, Icons[DB_IC_COPY + 1]);
   ImageList_ReplaceIcon(MethodImageList.Handle, -1, Icons[DB_IC_CUT + 1]);

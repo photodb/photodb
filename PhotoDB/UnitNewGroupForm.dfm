@@ -80,7 +80,7 @@ object NewGroupForm: TNewGroupForm
       A49FCDFA763D13C63058EA7269B26B9729A7D95940C82112869A56662490003C
       70077E95E4B3797E7C9E496316E3B0B0E76E78CD24923CAE5E476776392CC724
       D36B82ACE12D211B7E2CE9A709AD672BFE0BFAF99FFFD9}
-    PopupMenu = PopupMenu1
+    PopupMenu = PmLoadImage
     OnClick = ImGroupClick
   end
   object KeyWordsLabel: TLabel
@@ -211,7 +211,7 @@ object NewGroupForm: TNewGroupForm
     PaddingTop = 2
     PaddingLeft = 2
   end
-  object PopupMenu1: TPopupMenu
+  object PmLoadImage: TPopupActionBar
     Left = 152
     Top = 24
     object LoadFromFile1: TMenuItem
@@ -220,6 +220,7 @@ object NewGroupForm: TNewGroupForm
     end
   end
   object GroupsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 104
     Top = 24
   end

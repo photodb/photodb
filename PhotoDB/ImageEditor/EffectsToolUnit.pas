@@ -3,11 +3,36 @@ unit EffectsToolUnit;
 interface
 
 uses
-  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls, Types,
-  ComCtrls, Effects, ExEffects, Dialogs, Forms, GraphicsBaseTypes, uMemoryEx,
-  ExEffectsUnitW, OptimizeImageUnit, UnitDBKernel, uListViewUtils, MPCommonUtilities,
-  uEditorTypes, uMemory, uTranslate, EasyListView;
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  Math,
+  SysUtils,
+  ImageHistoryUnit,
+  ExtCtrls,
+  Types,
+  ComCtrls,
+  Effects,
+  ExEffects,
+  Dialogs,
+  Forms,
+  GraphicsBaseTypes,
+  uMemoryEx,
+  ExEffectsUnitW,
+  OptimizeImageUnit,
+  UnitDBKernel,
+  uListViewUtils,
+  MPCommonUtilities,
+  uEditorTypes,
+  uMemory,
+  uTranslate,
+  Themes,
+  EasyListView;
 
 type
   TEffectsManager = class(TObject)
@@ -118,7 +143,8 @@ begin
   EffectsChooser.DoubleBuffered := True;
   EffectsChooser.EditManager.Enabled := False;
   EffectsChooser.OnKeyAction := EffectChooserPress;
-  EffectsChooser.ShowThemedBorder := False;
+  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+    EffectsChooser.ShowThemedBorder := False;
 
   SetLVSelection(EffectsChooser, False, [cmbLeft]);
   EffectsChooser.Selection.BlendIcon := False;

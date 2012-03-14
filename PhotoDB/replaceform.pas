@@ -3,15 +3,58 @@ unit replaceform;
 interface
 
 uses
-  UnitDBKernel, DBCMenu, dolphin_db, Windows, Messages, SysUtils,
-  Classes, Graphics, Controls, Forms, GraphicCrypt, UnitDBDeclare,
-  DropTarget, DragDropFile, DragDrop, DropSource, Menus, ImgList, StdCtrls,
-  ExtCtrls, ComCtrls, Dialogs, DB, JPEG, Math, uMemory,
-  ActiveX, UnitBitmapImageList, CommonDBSupport,  uJpegUtils, uBitmapUtils,
-  uLogger, uDBDrawing, uFileUtils, uGraphicUtils, Types,
-  uConstants, uDBPopupMenuInfo, uShellIntegration, uDBTypes, uDBForm,
-  uSettings, uListViewUtils, uAssociations, uDBAdapter, MPCommonObjects,
-  EasyListview, MPCommonUtilities, RAWImage;
+  UnitDBKernel,
+  DBCMenu,
+  dolphin_db,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  GraphicCrypt,
+  UnitDBDeclare,
+  DropTarget,
+  DragDropFile,
+  DragDrop,
+  DropSource,
+  Menus,
+  ImgList,
+  StdCtrls,
+  ExtCtrls,
+  ComCtrls,
+  Dialogs,
+  DB,
+  JPEG,
+  Math,
+  uMemory,
+  ActiveX,
+  UnitBitmapImageList,
+  CommonDBSupport,
+  uJpegUtils,
+  uBitmapUtils,
+  uLogger,
+  uDBDrawing,
+  uFileUtils,
+  uGraphicUtils,
+  Types,
+  uConstants,
+  uDBPopupMenuInfo,
+  uShellIntegration,
+  uDBTypes,
+  uDBForm,
+  uSettings,
+  uListViewUtils,
+  uAssociations,
+  uDBAdapter,
+  MPCommonObjects,
+  EasyListview,
+  MPCommonUtilities,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils,
+  RAWImage;
 
 type
   TDBReplaceForm = class(TDBForm)
@@ -45,7 +88,7 @@ type
     F_SIZE: TEdit;
     F_WIDTH: TEdit;
     F_HEIGHT: TEdit;
-    PmListView: TPopupMenu;
+    PmListView: TPopupActionBar;
     Delete1: TMenuItem;
     DropFileSource1: TDropFileSource;
     DropFileTarget1: TDropFileTarget;
@@ -58,9 +101,10 @@ type
     BtnDeleteFile: TButton;
     CbForAll: TCheckBox;
     LvMain: TEasyListview;
-    procedure ExecuteToAdd(Filename : string; LongImageID : string; var ResultAction: Integer; var SelectedID: Integer; rec_ : TImageDBRecordA);
-    procedure readDBInfoByID(id : integer);
-    procedure AddItem(Text : string; ID : integer; fbit_ : tbitmap);
+    procedure ExecuteToAdd(Filename: string; LongImageID: string;
+      var ResultAction: Integer; var SelectedID: Integer; rec_: TImageDBRecordA);
+    procedure readDBInfoByID(id: Integer);
+    procedure AddItem(Text: string; id: Integer; fbit_: TBitmap);
     procedure FormCreate(Sender: TObject);
     procedure BtnAddClick(Sender: TObject);
     procedure BtnReplaceClick(Sender: TObject);
@@ -120,7 +164,7 @@ uses
 
 {$R *.dfm}
 
-procedure TDBReplaceForm.Additem(Text: string; ID: integer; fbit_: tbitmap);
+procedure TDBReplaceForm.Additem(Text: string; ID: integer; fbit_: TBitmap);
 var
   New: TEasyItem;
   Bit: TBitmap;
@@ -280,8 +324,8 @@ begin
       try
         Bit.PixelFormat := pf24bit;
         Bit.SetSize(ListItemPreviewSize, ListItemPreviewSize);
-        Bit.Canvas.Brush.Color := clBtnFace;
-        Bit.Canvas.Pen.Color := clBtnFace;
+        Bit.Canvas.Brush.Color := Theme.PanelColor;
+        Bit.Canvas.Pen.Color := Theme.PanelColor;
         if DA.Thumb = nil then
           Exit;
 
@@ -469,8 +513,8 @@ begin
         Fb1.PixelFormat := pf24bit;
         Fb1.Width := FilePreviewSize;
         Fb1.Height := FilePreviewSize;
-        Fb1.Canvas.Brush.Color := ClBtnFace;
-        Fb1.Canvas.Pen.Color := ClBtnFace;
+        Fb1.Canvas.Brush.Color := Theme.PanelColor;
+        Fb1.Canvas.Pen.Color := Theme.PanelColor;
         Fb1.Canvas.Rectangle(0, 0, FilePreviewSize, FilePreviewSize);
         if G.Width > G.Height then
         begin

@@ -6,6 +6,7 @@ object EditorFullScreenForm: TEditorFullScreenForm
   ClientHeight = 446
   ClientWidth = 688
   Color = clBlack
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -22,6 +23,7 @@ object EditorFullScreenForm: TEditorFullScreenForm
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   OnPaint = FormPaint
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object PmMain: TPopupActionBar

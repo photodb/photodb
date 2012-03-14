@@ -583,7 +583,7 @@ object ManagerDB: TManagerDB
       MaxTransparencity = 255
     end
   end
-  object PopupMenu1: TPopupMenu
+  object PopupMenu1: TPopupActionBar
     Left = 184
     Top = 232
   end
@@ -594,14 +594,14 @@ object ManagerDB: TManagerDB
     Left = 217
     Top = 232
   end
-  object PopupMenu2: TPopupMenu
+  object PopupMenu2: TPopupActionBar
     Left = 249
     Top = 232
     object Dateexists1: TMenuItem
       Caption = 'Date not exists'
     end
   end
-  object PmEdiGroups: TPopupMenu
+  object PmEdiGroups: TPopupActionBar
     Left = 281
     Top = 232
     object EditGroups1: TMenuItem
@@ -612,8 +612,8 @@ object ManagerDB: TManagerDB
       OnClick = GroupsManager1Click
     end
   end
-  object PopupMenu4: TPopupMenu
-    Left = 313
+  object PopupMenu4: TPopupActionBar
+    Left = 361
     Top = 232
     object DateExists2: TMenuItem
       Caption = 'DateExists'
@@ -633,14 +633,16 @@ object ManagerDB: TManagerDB
     Top = 288
   end
   object DragImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 217
     Top = 288
   end
   object GroupsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 249
     Top = 288
   end
-  object PmRestoreDB: TPopupMenu
+  object PmRestoreDB: TPopupActionBar
     Left = 722
     Top = 129
     object Restore1: TMenuItem
@@ -667,14 +669,14 @@ object ManagerDB: TManagerDB
       OnClick = Showfileinexplorer1Click
     end
   end
-  object PopupMenu6: TPopupMenu
+  object PopupMenu6: TPopupActionBar
     Left = 329
     Top = 288
     object Timenotexists1: TMenuItem
       Caption = 'Time not exists'
     end
   end
-  object PopupMenu7: TPopupMenu
+  object PopupMenu7: TPopupActionBar
     Left = 401
     Top = 288
     object TimeExists1: TMenuItem
@@ -687,11 +689,12 @@ object ManagerDB: TManagerDB
     Top = 416
   end
   object ImlMain: TImageList
+    ColorDepth = cd32Bit
     Height = 18
     Left = 280
     Top = 416
   end
-  object PopupMenuRating: TPopupMenu
+  object PopupMenuRating: TPopupActionBar
     Left = 400
     Top = 496
     object N01: TMenuItem
@@ -725,11 +728,11 @@ object ManagerDB: TManagerDB
       OnClick = N51Click
     end
   end
-  object PopupMenuKeyWords: TPopupMenu
+  object PopupMenuKeyWords: TPopupActionBar
     Left = 432
     Top = 496
   end
-  object PopupMenuRotate: TPopupMenu
+  object PopupMenuRotate: TPopupActionBar
     Left = 464
     Top = 496
     object R01: TMenuItem
@@ -756,29 +759,30 @@ object ManagerDB: TManagerDB
       OnClick = R04Click
     end
   end
-  object PopupMenuGroups: TPopupMenu
+  object PopupMenuGroups: TPopupActionBar
     Images = ImageListPopupGroups
     Left = 496
     Top = 496
   end
   object ImageListPopupGroups: TImageList
+    ColorDepth = cd32Bit
     Left = 536
     Top = 496
   end
-  object PopupMenuDate: TPopupMenu
+  object PopupMenuDate: TPopupActionBar
     Left = 569
     Top = 496
   end
-  object PopupMenuFile: TPopupMenu
+  object PopupMenuFile: TPopupActionBar
     Left = 601
     Top = 496
   end
   object DBImageList: TImageList
-    BkColor = clWindow
+    ColorDepth = cd32Bit
     Left = 497
     Top = 129
   end
-  object PmRestore: TPopupMenu
+  object PmRestore: TPopupActionBar
     Left = 561
     Top = 129
     object SelectDB1: TMenuItem

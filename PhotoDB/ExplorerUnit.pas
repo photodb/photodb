@@ -240,7 +240,7 @@ type
     SelectTimer: TTimer;
     N17: TMenuItem;
     SendTo1: TMenuItem;
-    N18: TMenuItem;
+    PiSendToSeparator: TMenuItem;
     View2: TMenuItem;
     ScriptMainMenu: TMainMenu;
     CloseTimer: TTimer;
@@ -6964,6 +6964,7 @@ begin
           WebLink.Left := MyPicturesLink.Left;
           WebLink.OnContextPopup := UserDefinedPlaceContextPopup;
           WebLink.ImageCanRegenerate := True;
+          WebLink.LoadImage;
           SetLength(FPlaces, Length(FPlaces) + 1);
           FPlaces[Length(FPlaces) - 1].Name := FName;
           FPlaces[Length(FPlaces) - 1].FolderName := FFolderName;
@@ -7251,7 +7252,7 @@ begin
                 try
                   Bit32 := TBitmap.Create;
                   try
-                    LoadPNGImage32bit(Pic, Bit32, clBtnFace);
+                    LoadPNGImage32bit(Pic, Bit32, Theme.PanelColor);
                     F(Pic);
                     StretchCoolW(0, 0, 100, 100, Rect(0, 0, Bit32.Width, Bit32.Height), Bit32, TempBitmap);
                   finally
@@ -7542,6 +7543,7 @@ end;
 procedure TExplorerForm.SendTo1Click(Sender: TObject);
 begin
   ManagerPanels.FillSendToPanelItems(Sender as TMenuItem, SendToItemPopUpMenu_);
+  PiSendToSeparator.Visible := (Sender as TMenuItem).Count = 1;
 end;
 
 procedure TExplorerForm.SendToItemPopUpMenu_(Sender: TObject);

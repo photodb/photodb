@@ -132,8 +132,12 @@ procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : B
 implementation
 
 uses
-  UnitNewGroupForm, UnitManageGroups, UnitFormChangeGroup,
-  UnitQuickGroupInfo, SelectGroupForm, uManagerExplorer;
+  UnitNewGroupForm,
+  UnitManageGroups,
+  UnitFormChangeGroup,
+  UnitQuickGroupInfo,
+  SelectGroupForm,
+  uManagerExplorer;
 
 {$R *.dfm}
 

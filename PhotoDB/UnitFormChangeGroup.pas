@@ -3,12 +3,45 @@ unit UnitFormChangeGroup;
 interface
 
 uses
-  UnitGroupsWork, Dolphin_DB, Windows, Messages, SysUtils, Classes,
-  Graphics, Controls, Forms, Math, UnitGroupsTools,
-  Dialogs, Menus, ExtDlgs, StdCtrls, jpeg, ExtCtrls, UnitDBDeclare,
-  ImgList, GraphicSelectEx, uBitmapUtils, UnitDBCommon, uExplorerGroupsProvider,
-  uConstants, uFileUtils, uDBForm, WatermarkedEdit, WatermarkedMemo, uMemoryEx,
-  uShellIntegration, AppEvnts, uMemory, WebLinkList, WebLink, uPathProviders;
+  UnitGroupsWork,
+  Dolphin_DB,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Math,
+  UnitGroupsTools,
+  Dialogs,
+  Menus,
+  ExtDlgs,
+  StdCtrls,
+  jpeg,
+  ExtCtrls,
+  UnitDBDeclare,
+  ImgList,
+  GraphicSelectEx,
+  uBitmapUtils,
+  UnitDBCommon,
+  uExplorerGroupsProvider,
+  uConstants,
+  uFileUtils,
+  uDBForm,
+  WatermarkedEdit,
+  WatermarkedMemo,
+  uMemoryEx,
+  uShellIntegration,
+  AppEvnts,
+  uMemory,
+  WebLinkList,
+  WebLink,
+  uPathProviders,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils
+  ;
 
 type
   TFormChangeGroup = class(TDBForm)
@@ -16,7 +49,7 @@ type
     MemComments: TWatermarkedMemo;
     BtnOk: TButton;
     BtnCancel: TButton;
-    PmLoadFromFile: TPopupMenu;
+    PmLoadFromFile: TPopupActionBar;
     LoadFromFile1: TMenuItem;
     MemKeywords: TWatermarkedMemo;
     CbAddkeywords: TCheckBox;
@@ -338,8 +371,8 @@ begin
     SmallB.PixelFormat := pf24bit;
     SmallB.Width := 16;
     SmallB.Height := 16;
-    SmallB.Canvas.Pen.Color := clBtnFace;
-    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Pen.Color := Theme.PanelColor;
+    SmallB.Canvas.Brush.Color := Theme.PanelColor;
     SmallB.Canvas.Rectangle(0, 0, 16, 16);
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
     GroupsImageList.Add(SmallB, nil);
@@ -352,7 +385,7 @@ begin
     SmallB := TBitmap.Create;
     try
       SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := ClBtnFace;
+      SmallB.Canvas.Brush.Color := Theme.PanelColor;
       Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
         if not Group.GroupImage.Empty then

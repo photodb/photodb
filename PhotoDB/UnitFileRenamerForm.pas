@@ -3,10 +3,35 @@ unit UnitFileRenamerForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Grids, ValEdit, StdCtrls, Menus, UnitDBKernel,
-  DB, WebLink, uConstants, UnitDBDeclare, uFileUtils, Dolphin_DB, uMemory,
-  uDBForm, uShellIntegration, uDBBaseTypes, uDBUtils, uSettings, Spin;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  Grids,
+  ValEdit,
+  StdCtrls,
+  Menus,
+  UnitDBKernel,
+  DB,
+  WebLink,
+  uConstants,
+  UnitDBDeclare,
+  uFileUtils,
+  Dolphin_DB,
+  uMemory,
+  uDBForm,
+  uShellIntegration,
+  uDBBaseTypes,
+  uDBUtils,
+  uSettings,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Spin;
 
 type
   TFormFastFileRenamer = class(TDBForm)
@@ -14,7 +39,7 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     LblTitle: TLabel;
-    pmSort: TPopupMenu;
+    pmSort: TPopupActionBar;
     SortbyFileName1: TMenuItem;
     SortbyFileSize1: TMenuItem;
     BtnHelp: TButton;

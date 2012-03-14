@@ -234,6 +234,7 @@ object UpdateDBForm: TUpdateDBForm
     Font.Style = [fsBold]
     Lines.Strings = (
       'Processing FileName:')
+    ParentColor = True
     ParentFont = False
     ReadOnly = True
     TabOrder = 0
@@ -557,7 +558,7 @@ object UpdateDBForm: TUpdateDBForm
     Layered = 255
     ImageCanRegenerate = True
   end
-  object PmMain: TPopupMenu
+  object PmMain: TPopupActionBar
     Left = 144
     Top = 32
     object Stayontop1: TMenuItem

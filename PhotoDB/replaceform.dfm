@@ -423,7 +423,7 @@ object DBReplaceForm: TDBReplaceForm
     Left = 16
     Top = 16
   end
-  object PmListView: TPopupMenu
+  object PmListView: TPopupActionBar
     Left = 48
     Top = 16
     object Delete1: TMenuItem
@@ -445,6 +445,7 @@ object DBReplaceForm: TDBReplaceForm
     Top = 321
   end
   object DragImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 24
     Top = 320
   end

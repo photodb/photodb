@@ -27,8 +27,7 @@ uses
 
 type
 
-  TWebNullWBContainer = class(TObject,
-    IUnknown, IOleClientSite, IDocHostUIHandler)
+  TWebNullWBContainer = class(TObject, IUnknown, IOleClientSite, IDocHostUIHandler)
   private
     FHostedBrowser: TWebBrowser;
     // Registration method

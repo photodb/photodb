@@ -27,15 +27,19 @@ type
     function GetListFontColor: TColor;
     function GetListFontSelectedColor: TColor;
     function GetComboBoxColor: TColor;
+    function GetWindowTextColor: TColor;
+    function GetListViewSelectedFontColor: TColor;
   public
     property PanelColor: TColor read GetPanelColor;
     property PanelFontColor: TColor read GetPanelFontColor;
     property ListViewColor: TColor read GetListViewColor;
     property ListViewFontColor: TColor read GetListViewFontColor;
+    property ListViewSelectedFontColor: TColor read GetListViewSelectedFontColor;
     property HighlightTextColor: TColor read GetHighlightTextColor;
     property HighlightColor: TColor read GetHighlightColor;
     property EditColor: TColor read GetEditColor;
     property WindowColor: TColor read GetWindowColor;
+    property WindowTextColor: TColor read GetWindowTextColor;
     property GradientFromColor: TColor read GetGradientFromColor;
     property GradientToColor: TColor read GetGradientToColor;
     property MenuColor: TColor read GetMenuColor;
@@ -160,6 +164,14 @@ begin
     Result := clWindowText;
 end;
 
+function TDatabaseTheme.GetListViewSelectedFontColor: TColor;
+begin
+  if StyleServices.Enabled then
+    Result := StyleServices.GetStyleFontColor(sfListItemTextSelected)
+  else
+    Result := clHighlightText;
+end;
+
 function TDatabaseTheme.GetMenuColor: TColor;
 begin
   if StyleServices.Enabled then
@@ -189,7 +201,15 @@ begin
   if StyleServices.Enabled then
     Result := StyleServices.GetStyleColor(scWindow)
   else
-    Result := ClBtnFace;
+    Result := clWindow;
+end;
+
+function TDatabaseTheme.GetWindowTextColor: TColor;
+begin
+  if StyleServices.Enabled then
+    Result := StyleServices.GetStyleFontColor(sfWindowTextNormal)
+  else
+    Result := clWindowText;
 end;
 
 function TDatabaseTheme.GetWizardColor: TColor;

@@ -3,13 +3,40 @@ unit UnitConvertDBForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, DmProgress, ComCtrls, Dolphin_DB,
-  uConstants, jpeg, Spin, CommonDBSupport, Menus, uMemoryEx,
-  ExtDlgs, Graphics, UnitDBDeclare, AppEvnts, uWizards,
-  UnitDBCommonGraphics, UnitDBFileDialogs, UnitDBCommon,
-  uSplashThread, uThreadForm, uMemory, uShellIntegration,
-  uDBBaseTypes, uDBTypes, uInterfaces, pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ExtCtrls,
+  DmProgress,
+  ComCtrls,
+  Dolphin_DB,
+  uConstants,
+  jpeg,
+  Spin,
+  CommonDBSupport,
+  Menus,
+  uMemoryEx,
+  ExtDlgs,
+  Graphics,
+  UnitDBDeclare,
+  AppEvnts,
+  uWizards,
+  UnitDBCommonGraphics,
+  UnitDBFileDialogs,
+  UnitDBCommon,
+  uSplashThread,
+  uThreadForm,
+  uMemory,
+  uShellIntegration,
+  uDBBaseTypes,
+  uDBTypes,
+  uInterfaces,
+  pngimage;
 
 type
   TFormConvertingDB = class(TThreadForm, IDBImageSettings)
@@ -37,7 +64,8 @@ type
     CurrentWideIndex: Integer;
     FWizard: TWizardManager;
     procedure StepChanged(Sender: TObject);
-    function GetImageOptions : TImageDBOptions;
+    function GetImageOptions: TImageDBOptions;
+    procedure UpdateLayout;
   protected
     function GetFormID : string; override;
   public
@@ -133,6 +161,18 @@ begin
 
   if FWizard.WizardDone then
     Close;
+end;
+
+procedure TFormConvertingDB.UpdateLayout;
+var
+  CW: Integer;
+begin
+  CW := ClientWidth;
+  BtnFinish.Left := CW - BtnFinish.Width - 5;
+  BtnNext.Left := CW - BtnFinish.Width - 5;
+  BtnPrevious.Left := BtnFinish.Left - BtnPrevious.Width - 5;
+  BtnCancel.Left := BtnPrevious.Left - BtnCancel.Width - 5;
+  Bevel1.Width := ClientWidth - 10;
 end;
 
 procedure TFormConvertingDB.BtnCancelClick(Sender: TObject);

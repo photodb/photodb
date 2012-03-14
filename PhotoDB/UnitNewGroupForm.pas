@@ -19,7 +19,8 @@ uses
   Dolphin_DB,
   Menus,
   GraphicEx,
-  Math, ComCtrls,
+  Math,
+  ComCtrls,
   ImgList,
   GraphicSelectEx,
   UnitDBDeclare,
@@ -37,6 +38,9 @@ uses
   WebLinkList,
   WebLink,
   AppEvnts,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uThemesUtils,
   uPathProviders;
 
 type
@@ -46,7 +50,7 @@ type
     MemComments: TWatermarkedMemo;
     BtnOk: TButton;
     BtnCancel: TButton;
-    PopupMenu1: TPopupMenu;
+    PmLoadImage: TPopupActionBar;
     LoadFromFile1: TMenuItem;
     MemKeywords: TWatermarkedMemo;
     CbAddkeywords: TCheckBox;
@@ -96,7 +100,9 @@ procedure CreateNewGroupDialogB(GroupCode: string; Image: TJpegImage; out Create
 implementation
 
 uses
-  UnitDBKernel, UnitEditGroupsForm, UnitQuickGroupInfo;
+  UnitDBKernel,
+  UnitEditGroupsForm,
+  UnitQuickGroupInfo;
 
 {$R *.dfm}
 
@@ -361,8 +367,8 @@ begin
     SmallB.PixelFormat := pf24bit;
     SmallB.Width := 16;
     SmallB.Height := 16;
-    SmallB.Canvas.Pen.Color := clBtnFace;
-    SmallB.Canvas.Brush.Color := clBtnFace;
+    SmallB.Canvas.Pen.Color := Theme.PanelColor;
+    SmallB.Canvas.Brush.Color := Theme.PanelColor;
     SmallB.Canvas.Rectangle(0, 0, 16, 16);
     DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
     GroupsImageList.Add(SmallB, nil);
@@ -375,7 +381,7 @@ begin
     SmallB := TBitmap.Create;
     try
       SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := clBtnFace;
+      SmallB.Canvas.Brush.Color := Theme.PanelColor;
       Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
         if not Group.GroupImage.Empty then

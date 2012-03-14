@@ -60,6 +60,7 @@ type
     { Private declarations }
     FWizard: TWizardManager;
     procedure LoadLanguage;
+    procedure UpdateLayout;
     procedure StepChanged(Sender: TObject);
     procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
   protected
@@ -127,6 +128,7 @@ begin
     F(FImageBmp);
   end;
 
+  UpdateLayout;
 end;
 
 procedure TActivateForm.FormDestroy(Sender: TObject);
@@ -199,6 +201,18 @@ begin
 
   if FWizard.WizardDone then
     Close;
+end;
+
+procedure TActivateForm.UpdateLayout;
+var
+  CW: Integer;
+begin
+  CW := ClientWidth;
+  BtnFinish.Left := CW - BtnFinish.Width - 5;
+  BtnNext.Left := CW - BtnFinish.Width - 5;
+  BtnPrevious.Left := BtnFinish.Left - BtnPrevious.Width - 5;
+  BtnCancel.Left := BtnPrevious.Left - BtnCancel.Width - 5;
+  Bevel1.Width := ClientWidth - 10;
 end;
 
 procedure TActivateForm.HelpActivationCloseClick(Sender: TObject;

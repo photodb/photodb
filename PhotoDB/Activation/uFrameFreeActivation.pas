@@ -3,9 +3,23 @@ unit uFrameFreeActivation;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, uFrameWizardBase, LoadingSign, uShellIntegration,
-  uConstants, uActivationUtils, uLogger, Dolphin_DB;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ExtCtrls,
+  uFrameWizardBase,
+  LoadingSign,
+  uShellIntegration,
+  uConstants,
+  uActivationUtils,
+  uLogger,
+  Dolphin_DB;
 
 type
   TFrameFreeActivation = class(TFrameWizardBase)

@@ -25,7 +25,7 @@ object SplitExportForm: TSplitExportForm
     Left = 8
     Top = 93
     Width = 84
-    Height = 12
+    Height = 13
     Caption = 'Folders and Files:'
   end
   object lbFileName: TLabel
@@ -175,14 +175,16 @@ object SplitExportForm: TSplitExportForm
     Top = 312
   end
   object ImlListView: TImageList
+    ColorDepth = cd32Bit
     Left = 200
     Top = 256
   end
   object MethodImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 200
     Top = 312
   end
-  object PmMethod: TPopupMenu
+  object PmMethod: TPopupActionBar
     Left = 128
     Top = 312
     object Copy1: TMenuItem
@@ -202,7 +204,7 @@ object SplitExportForm: TSplitExportForm
       OnClick = Delete1Click
     end
   end
-  object PmInsertMethod: TPopupMenu
+  object PmInsertMethod: TPopupActionBar
     Left = 128
     Top = 256
     object Copy2: TMenuItem

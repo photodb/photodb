@@ -179,7 +179,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 298
     Height = 372
-    ActivePage = TsGroups
+    ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -206,7 +206,7 @@ object PropertiesForm: TPropertiesForm
       end
       object IDLabel1: TLabel
         Left = 3
-        Top = 261
+        Top = 262
         Width = 11
         Height = 13
         Caption = 'ID'
@@ -232,7 +232,7 @@ object PropertiesForm: TPropertiesForm
       end
       object Heightlabel: TLabel
         Left = 3
-        Top = 242
+        Top = 243
         Width = 27
         Height = 13
         Caption = 'Heigh'
@@ -363,9 +363,9 @@ object PropertiesForm: TPropertiesForm
       object IDLabel: TMemo
         Tag = 11
         Left = 72
-        Top = 261
+        Top = 262
         Width = 215
-        Height = 15
+        Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
         Lines.Strings = (
@@ -376,7 +376,7 @@ object PropertiesForm: TPropertiesForm
       object heightmemo: TMemo
         Tag = 11
         Left = 72
-        Top = 242
+        Top = 243
         Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -467,7 +467,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 108
-        Width = 207
+        Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -481,7 +481,7 @@ object PropertiesForm: TPropertiesForm
         Tag = 11
         Left = 72
         Top = 88
-        Width = 207
+        Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone

@@ -18,6 +18,7 @@ uses
   uDBForm,
   uBitmapUtils,
   UnitDBKernel,
+  Themes,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uSysUtils;
@@ -36,6 +37,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure SelectBackGroundColor1Click(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   private
     { Private declarations }
     CurrentImage: TBitmap;
@@ -43,6 +45,7 @@ type
     procedure LoadLanguage;
   protected
     function GetFormID: string; override;
+    procedure WndProc(var Message: TMessage); override;
   public
     { Public declarations }
     procedure SetImage(Image: TBitmap);
@@ -63,6 +66,11 @@ begin
   Canvas.Draw(ClientWidth div 2 - DrawImage.Width div 2, Clientheight div 2 - DrawImage.Height div 2, DrawImage);
 end;
 
+procedure TEditorFullScreenForm.FormResize(Sender: TObject);
+begin
+  Repaint;
+end;
+
 function TEditorFullScreenForm.GetFormID: string;
 begin
   Result := 'Editor';
@@ -73,10 +81,38 @@ begin
   CurrentImage := Image;
 end;
 
+procedure TEditorFullScreenForm.WndProc(var Message: TMessage);
+var
+  DC: HDC;
+  BrushInfo: TagLOGBRUSH;
+  Brush: HBrush;
+begin
+  if (Message.Msg = WM_ERASEBKGND) and StyleServices.Enabled then
+  begin
+    Message.Result := 1;
+
+    DC := TWMEraseBkgnd(Message).DC;
+    if DC = 0 then
+      Exit;
+
+    brushInfo.lbStyle := BS_SOLID;
+    brushInfo.lbColor := ColorToRGB(Color);
+    Brush := CreateBrushIndirect(brushInfo);
+
+    FillRect(DC, Rect(0, 0, Width, Height), Brush);
+
+    if(Brush > 0) then
+      DeleteObject(Brush);
+
+    Exit;
+  end;
+  inherited;
+end;
+
 procedure TEditorFullScreenForm.FormCreate(Sender: TObject);
 begin
   DrawImage := TBitmap.Create;
-  DrawImage.PixelFormat := Pf24bit;
+  DrawImage.PixelFormat := pf24bit;
   LoadLanguage;
 
   PmMain.Images := DBKernel.ImageList;

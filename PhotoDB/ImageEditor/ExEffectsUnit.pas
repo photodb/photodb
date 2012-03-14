@@ -356,13 +356,13 @@ type
   TCustomMatrixEffectThread = class(TDBThread)
   private
     { Private declarations }
-    FAOwner : TObject;
-    FS : TBitmap;
-    FSID : string;
-    FM : TConvolutionMatrix;
-    FOnExit : TBaseEffectProcThreadExit;
-    FProgress : integer;
-    FBreak : boolean;
+    FAOwner: TObject;
+    FS: Tbitmap;
+    FSID: string;
+    FM: TConvolutionMatrix;
+    FOnExit: TBaseEffectProcThreadExit;
+    FProgress: Integer;
+    FBreak: Boolean;
   protected
     procedure Execute; override;
   public

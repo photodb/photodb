@@ -1902,7 +1902,7 @@ object ExplorerForm: TExplorerForm
     object SendTo1: TMenuItem
       Caption = 'Send To'
       OnClick = SendTo1Click
-      object N18: TMenuItem
+      object PiSendToSeparator: TMenuItem
         Caption = '-'
       end
     end

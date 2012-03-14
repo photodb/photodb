@@ -9,16 +9,6 @@ uses
   MSHTML,
   Vcl.OleCtrls;
 
-(*
-function setMaxZoomCenter(latlng) {
-  map.getCurrentMapType().getMaxZoomAtLatLng(latlng, function(response) {
-    if (response && response['status'] == G_GEO_SUCCESS) {
-      map.setCenter(latlng, response['zoom']);
-    }
-  });
-}
-*)
-
 const
   GoogleMapHTMLStr: string =
     '<html> '+
@@ -32,6 +22,7 @@ const
 
     ''+
     '  var geocoder; '+
+    '  var maxZoomService; '+
     '  var map;  '+
     '  var markersArray = [];'+
     '  var infoWindow;'+
@@ -62,9 +53,10 @@ const
     '                          mapLng = event.latLng.lng();' +
     '                          currentLat = mapLat; '+
     '                          currentLng = mapLng; '+
-    '                          if (external.CanSaveLocation(mapLat, mapLng, 1) > 0)' +
+    '                          if (external.CanSaveLocation(mapLat, mapLng, 1) > 0){' +
     '                            canSave = true; '+
-    '                          PutMarker(mapLat, mapLng); '+
+    '                            PutMarker(mapLat, mapLng); '+
+    '                          } '+
     '                        } '+
     '    ); '+
 
@@ -72,6 +64,7 @@ const
     '      external.ZoomPan(map.getCenter().lat(), map.getCenter().lng(), map.getZoom()) '+
     '    }); '+
     '    infoWindow = new google.maps.InfoWindow();'+
+    '    maxZoomService = new google.maps.MaxZoomService(); '+
 
     '    google.maps.event.addListener(infoWindow, "domready", function () { '+
     '      external.UpdateEmbed(); '+
@@ -210,17 +203,26 @@ const
     ''+
 
     'function ZoomIn() { '+
-    '  map.setZoom(19);'+
+    '  map.setZoom(19); '+
     '  GotoLatLng(currentLat, currentLng); '+
+    '  var latlng = new google.maps.LatLng(currentLat, currentLng); '+
+    '  maxZoomService.getMaxZoomAtLatLng(latlng, function(response) { '+
+    '    if (response.status == google.maps.MaxZoomStatus.OK) { '+
+    '      map.setZoom(response.zoom); '+
+    '    }   '+
+    '  }); '+
+
     '}'+
     ''+
+
+    'google.maps.event.addDomListener(window, "load", initialize); ' +
 
     '</script> '+
     '<style>' +
     '</style>' +
     '</head> '+
     ''+
-    '<body onload="initialize()" style="margin:0; padding:0; overflow: hidden"> '+
+    '<body style="margin:0; padding:0; overflow: hidden"> '+
     '  <div id="map_canvas" style="width:100%; height:100%"></div> '+
     '  <div id="googlePopup" style="display: none;"> '+
     '	   <div style="height: 1111px; width: 230px; font-size: 12px;"> '+

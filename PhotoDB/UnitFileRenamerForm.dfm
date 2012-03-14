@@ -6,6 +6,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
   ClientWidth = 479
   Color = clBtnFace
   Constraints.MinHeight = 350
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -191,7 +192,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       OnClick = Edit1Change
     end
   end
-  object pmSort: TPopupMenu
+  object pmSort: TPopupActionBar
     Left = 72
     Top = 104
     object SortbyFileName1: TMenuItem

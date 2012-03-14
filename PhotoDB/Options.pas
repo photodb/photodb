@@ -402,7 +402,7 @@ begin
     ImageList1.Clear;
     ImageList1.Width := 16;
     ImageList1.Height := 16;
-    ImageList1.BkColor := clMenu;
+
     Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
     try
       Reg.OpenKey(GetRegRootKey + '\Menu', True);
@@ -1252,7 +1252,7 @@ begin
   PlacesImageList.Clear;
   PlacesImageList.Width := 16;
   PlacesImageList.Height := 16;
-  PlacesImageList.BkColor := Clmenu;
+
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
     Reg.OpenKey(GetRegRootKey + '\Places', True);
@@ -1552,6 +1552,7 @@ end;
 procedure TOptionsForm.CbExplorerStartupLocationClick(Sender: TObject);
 begin
   EdExplorerStartupLocation.Enabled := CbExplorerStartupLocation.Checked;
+  BtnSelectExplorerStartupFolder.Enabled := CbExplorerStartupLocation.Checked;
 end;
 
 procedure TOptionsForm.CbDontAddSmallFilesClick(Sender: TObject);

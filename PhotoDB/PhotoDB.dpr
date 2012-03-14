@@ -45,7 +45,6 @@ uses
   Searching in 'Searching.pas' {SearchForm},
   SlideShow in 'SlideShow.pas' {Viewer},
   Options in 'Options.pas' {OptionsForm},
-  PropertyForm in 'PropertyForm.pas' {PropertiesForm},
   UnitFormCont in 'UnitFormCont.pas' {FormCont},
   replaceform in 'replaceform.pas' {DBReplaceForm},
   unitimhint in 'unitimhint.pas' {ImHint},
@@ -391,7 +390,9 @@ uses
   WebJS_TLB in 'Units\WebJS\WebJS_TLB.pas',
   Vcl.Themes,
   Vcl.Styles,
-  uThemesUtils in 'Units\uThemesUtils.pas';
+  uThemesUtils in 'Units\uThemesUtils.pas',
+  uDateTimePickerStyleHookXP in 'Units\Styles\uDateTimePickerStyleHookXP.pas',
+  uEditStyleHookColor in 'Units\Styles\uEditStyleHookColor.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -699,8 +700,11 @@ begin
     end;
 
     // THEMES AND RUNNING DB ---------------------------------------------
-
     TW.I.Start('THEMES AND RUNNING DB');
+
+    //fix for datetimepicker in XP
+    if (TOSVersion.Major = 5) and (TOSVersion.Minor = 1) then
+      TCustomStyleEngine.RegisterStyleHook(TDateTimePicker, TDateTimePickerStyleHookXP);
 
     if not DBTerminating then
     begin

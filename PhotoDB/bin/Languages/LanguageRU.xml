@@ -784,7 +784,7 @@
 	<translate name="Unknown" value="Неизвестно" />
 	<translate name="Please select directory to place for processed files" value="Выберите директорию, куда будут помещаться обработанные файлы" />	
 	<translate name="Portable devices" value="Портативные устройства" />
-	<translate name="No removable devices" value="Портативные устройства не найдены" />
+	<translate name="No portable devices" value="Портативные устройства не найдены" />
 	<translate name="Auto colors and sharpness - FullHD (1920x1080)" value="Авто цвет и обострение - FullHD (1920x1080)" />
 	<translate name="Black-white - Full HD (1920x1080)" value="Чёрно-белое - Full HD (1920x1080)" />
 	<translate name="Black-white contrast - Full HD (1920x1080)" value="Чёрно-белое контрастное - Full HD (1920x1080)" />

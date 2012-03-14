@@ -9,6 +9,7 @@ object FormManageGroups: TFormManageGroups
   ClientHeight = 386
   ClientWidth = 597
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -145,6 +146,7 @@ object FormManageGroups: TFormManageGroups
     end
   end
   object ImlGroups: TImageList
+    ColorDepth = cd32Bit
     Height = 50
     Width = 50
     Left = 64

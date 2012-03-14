@@ -364,7 +364,7 @@ begin
     Icon.Handle := ExtractSmallIconByPath(IconPath);
     Picture.Graphic := Icon;
   finally
-    Icon.Free;
+    F(Icon);
   end;
 end;
 
@@ -377,10 +377,9 @@ begin
     Icon.Handle := ExtractSmallIconByPath(IconPath);
     ImageList.AddIcon(Icon);
   finally
-    Icon.Free;
+    F(Icon);
   end;
 end;
-
 
 function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
 var

@@ -48,7 +48,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 471
     Height = 441
-    ActivePage = TsGeneral
+    ActivePage = TsGlobal
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
@@ -183,10 +183,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -399,10 +395,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -550,10 +542,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -810,10 +798,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1251,10 +1235,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         463
         413)
@@ -1481,6 +1461,7 @@ object OptionsForm: TOptionsForm
     end
   end
   object ImageList1: TImageList
+    ColorDepth = cd32Bit
     Left = 9
     Top = 437
   end
@@ -1515,6 +1496,7 @@ object OptionsForm: TOptionsForm
     end
   end
   object PlacesImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 44
     Top = 440
   end

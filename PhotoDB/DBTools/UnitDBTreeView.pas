@@ -3,18 +3,49 @@ unit UnitDBTreeView;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ImgList, DB, ExtCtrls, JPEG, CommCtrl,
-  UnitDBKernel, GraphicCrypt, DBCMenu, Menus, uListViewUtils,
-  AppEvnts, DropSource, DropTarget, CommonDBSupport, DragDropFile, DragDrop,
-  UnitDBCommon, uBitmapUtils, uDBDrawing, uFileUtils,
-  uDBPopupMenuInfo, uMemory, uDBForm, uGraphicUtils, uDBUtils,
-  Dolphin_DB, uConstants;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ComCtrls,
+  ImgList,
+  DB,
+  ExtCtrls,
+  JPEG,
+  CommCtrl,
+  UnitDBKernel,
+  GraphicCrypt,
+  DBCMenu,
+  Menus,
+  uListViewUtils,
+  AppEvnts,
+  DropSource,
+  DropTarget,
+  CommonDBSupport,
+  DragDropFile,
+  DragDrop,
+  UnitDBCommon,
+  uBitmapUtils,
+  uDBDrawing,
+  uFileUtils,
+  uDBPopupMenuInfo,
+  uMemory,
+  uDBForm,
+  uGraphicUtils,
+  uDBUtils,
+  Dolphin_DB,
+  uThemesUtils,
+  uConstants;
 
 type
   TItemData = record
-    ID : Integer;
-    Crypted : Boolean;
+    ID: Integer;
+    Crypted: Boolean;
   end;
 
   PItemData = ^TItemData;
@@ -55,13 +86,10 @@ type
     procedure TreeView1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure OpeninExplorer1Click(Sender: TObject);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure SelectTimerTimer(Sender: TObject);
-    procedure ImMainMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure ImMainMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure ImMainMouseDown(Sender: TObject; Button: TMouseButton;  Shift: TShiftState; X, Y: Integer);
+    procedure ImMainMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ImMainMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormDestroy(Sender: TObject);
@@ -342,9 +370,9 @@ begin
   FCanFree := False;
   FStatusProgress := CreateProgressBar(StatusBar1, 0);
   LoadLanguage;
-  ImageList1.BkColor := clWindow;
-  TreeView1.Color := clWindow;
-  TreeView1.Font.Color := clWindowText;
+
+  TreeView1.Color := Theme.WindowColor;
+  TreeView1.Font.Color := Theme.WindowTextColor;
 
   AddIcon('MAINICON');
   AddIcon('PICTURE');
@@ -393,7 +421,7 @@ begin
         B.PixelFormat := pf24bit;
         B.Width := 102;
         B.Height := 102;
-        FillColorEx(B, ClWindow);
+        FillColorEx(B, Theme.WindowColor);
         Exists := 0;
         DrawAttributes(B, 102, 0, 0, 0, '', False, Exists);
         ImMain.Picture.Graphic := B;
@@ -411,7 +439,7 @@ begin
         B.PixelFormat := pf24bit;
         B.Width := 102;
         B.Height := 102;
-        FillColorEx(B, ClWindow);
+        FillColorEx(B, Theme.WindowColor);
 
         if PassWord = '' then
         begin
@@ -446,10 +474,10 @@ begin
     begin
       B := TBitmap.Create;
       try
-        B.PixelFormat := Pf24bit;
+        B.PixelFormat := pf24bit;
         B.Width := 102;
         B.Height := 102;
-        FillColorEx(B, ClWindow);
+        FillColorEx(B, Theme.WindowColor);
         J := TJPEGImage.Create;
         try
           J.Assign(TempTable.FieldByName('Thum'));

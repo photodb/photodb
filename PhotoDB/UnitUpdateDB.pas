@@ -52,11 +52,14 @@ uses
   uUpdateDBTypes,
   uInterfaceManager,
   uRuntime,
+  uThemesUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   DmMemo;
 
 type
   TUpdateDBForm = class(TDBForm, IDBUpdaterCallBack)
-    PmMain: TPopupMenu;
+    PmMain: TPopupActionBar;
     Stayontop1: TMenuItem;
     Layered1: TMenuItem;
     Fill1: TMenuItem;
@@ -226,6 +229,7 @@ begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   LoadLanguage;
   LoadToolBarIcons;
+  WlClose.LoadImage;
   WlClose.Left := ClientWidth - WlClose.Width - 5;
 
   FImagePos := 0;
@@ -314,9 +318,9 @@ var
   procedure FillRectToBitmapA(Bitmap: TBitmap);
   begin
     Bitmap.Canvas.Pen.Color := 0;
-    Bitmap.Canvas.Brush.Color := MakeDarken(clWindow, 0.9);
+    Bitmap.Canvas.Brush.Color := MakeDarken(Theme.WindowColor, 0.9);
     Bitmap.Canvas.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
-    Bitmap.Canvas.Pen.Color := clWindow;
+    Bitmap.Canvas.Pen.Color := Theme.WindowColor;
   end;
 
 begin
@@ -742,7 +746,8 @@ begin
   Canvas.LineTo(R.Left - 1, R.Bottom);
   Canvas.LineTo(R.Left - 1, R.Top - 1);
 
-  Canvas.Brush.Color := ClWhite;
+  Canvas.Font.Color := Theme.WindowTextColor;
+  Canvas.Brush.Color := Theme.WindowColor;
   Canvas.Font.Style := [];
 
   DrawText(Canvas.Handle, PChar(FInfoText), Length(FInfoText), R, DrawTextOpt);
@@ -807,8 +812,8 @@ begin
     try
       Bitmap.Width := 100;
       Bitmap.Height := 85;
-      Bitmap.Canvas.Brush.Color := ClWhite;
-      Bitmap.Canvas.Pen.Color := ClWhite;
+      Bitmap.Canvas.Brush.Color := Theme.WindowColor;
+      Bitmap.Canvas.Pen.Color := Theme.WindowColor;
       Bitmap.Canvas.Rectangle(0, 0, 100, 100);
 
       if FInfoStr = '' then
@@ -823,7 +828,8 @@ begin
         Bitmap.Canvas.Font.Name := 'Times New Roman';
         Bitmap.Canvas.Font.Size := 8;
         Bitmap.Canvas.Font.Style := [FsBold];
-        Bitmap.Canvas.Brush.Color := ClWhite;
+        Bitmap.Canvas.Font.Color := Theme.WindowTextColor;
+        Bitmap.Canvas.Brush.Color := Theme.WindowColor;
         Text := FInfoStr;
         TextWidth := Canvas.TextWidth(Text);
         TextHeight := Canvas.TextHeight(Text);
