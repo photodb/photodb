@@ -682,6 +682,7 @@ end;
 
 procedure SetListViewColors(ListView: TEasyListView);
 begin
+  ListView.Font.Name := 'Tahoma';
   if StyleServices.Enabled then
   begin
     ListView.Color := StyleServices.GetStyleColor(scListView);
@@ -711,6 +712,7 @@ end;
 
 procedure SetLVSelection(ListView: TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 begin
+
   if StyleServices.Enabled then
     ListView.Color := StyleServices.GetStyleColor(scListView);
   ListView.Selection.MouseButton := MouseButton;

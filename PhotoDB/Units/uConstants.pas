@@ -19,6 +19,7 @@ const
   ThemesDirectory = 'Themes\';
   BackUpFolder: string = '\DBBackUp\';
   ScriptsFolder: string = 'Scripts\';
+  StylesFolder: string = 'Styles\';
   ActionsFolder: string = 'Actions\';
   ImagesFolder: string = 'Images\';
   FaceCacheDirectory: string = '\CVCache\Face\';
@@ -52,6 +53,7 @@ const
   ProgramInstallSize = 19069; //in Kb
 
   SITE_ACTION_PERSONS = 'persons';
+  SITE_ACTION_STYLES = 'styles';
 
   SiteLocation = 'http://photodb.illusdolphin.net';
   DonateURL = SiteLocation + '/{LNG}/donate';

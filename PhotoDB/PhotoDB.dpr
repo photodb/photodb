@@ -14,6 +14,7 @@ uses
   uTime in 'Units\uTime.pas',
   uSplashThread in 'Threads\uSplashThread.pas',
   uLanguageLoadThread in 'Threads\uLanguageLoadThread.pas',
+  uLoadStyleThread in 'Threads\uLoadStyleThread.pas',
   ActiveX,
   ComObj,
   ADODB,
@@ -392,7 +393,12 @@ uses
   Vcl.Styles,
   uThemesUtils in 'Units\uThemesUtils.pas',
   uDateTimePickerStyleHookXP in 'Units\Styles\uDateTimePickerStyleHookXP.pas',
-  uEditStyleHookColor in 'Units\Styles\uEditStyleHookColor.pas';
+  uEditStyleHookColor in 'Units\Styles\uEditStyleHookColor.pas',
+  uHSLUtils in 'Units\Styles\uHSLUtils.pas',
+  Vcl.Styles.Ext in 'Units\Styles\Vcl.Styles.Ext.pas',
+  Vcl.Styles.Utils in 'Units\Styles\Vcl.Styles.Utils.pas',
+  uMainMenuStyleHook in 'Units\Styles\uMainMenuStyleHook.pas',
+  PropertyForm in 'PropertyForm.pas' {PropertiesForm};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -558,9 +564,9 @@ begin
     SetSplashProgress(60);
 
     TW.I.Start('TFormManager Create');
+
     // This is main form of application
-    TStyleManager.TrySetStyle('Amakrits');
-  Application.CreateForm(TFormManager, FormManager);
+    Application.CreateForm(TFormManager, FormManager);
   Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
@@ -784,6 +790,7 @@ begin
         TLoad.Instance.RequaredDBKernelIcons;
         TLoad.Instance.RequaredCRCCheck;
         TLoad.Instance.RequaredDBSettings;
+        TLoad.Instance.RequaredStyle;
       end;
 
     UnReigisterPersonManager;

@@ -5,7 +5,7 @@ object OptionsForm: TOptionsForm
   BorderStyle = bsSingle
   Caption = 'Options'
   ClientHeight = 488
-  ClientWidth = 486
+  ClientWidth = 520
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,12 +19,12 @@ object OptionsForm: TOptionsForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    486
+    520
     488)
   PixelsPerInch = 96
   TextHeight = 13
   object CancelButton: TButton
-    Left = 323
+    Left = 357
     Top = 455
     Width = 75
     Height = 23
@@ -34,7 +34,7 @@ object OptionsForm: TOptionsForm
     OnClick = CancelButtonClick
   end
   object OkButton: TButton
-    Left = 404
+    Left = 438
     Top = 455
     Width = 75
     Height = 23
@@ -46,46 +46,124 @@ object OptionsForm: TOptionsForm
   object PcMain: TPageControl
     Left = 8
     Top = 8
-    Width = 471
+    Width = 505
     Height = 441
-    ActivePage = TsGlobal
+    ActivePage = TsStyle
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
+    object TsStyle: TTabSheet
+      Caption = 'Style'
+      ImageIndex = 6
+      DesignSize = (
+        497
+        413)
+      object LbAvailableTemes: TLabel
+        Left = 3
+        Top = 13
+        Width = 85
+        Height = 13
+        Caption = 'LbAvailableTemes'
+      end
+      object ImStylePreview: TImage
+        Left = 176
+        Top = 32
+        Width = 318
+        Height = 297
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Transparent = True
+      end
+      object LbThemePreview: TLabel
+        Left = 176
+        Top = 13
+        Width = 81
+        Height = 13
+        Caption = 'LbThemePreview'
+      end
+      object LbStyles: TListBox
+        Left = 3
+        Top = 32
+        Width = 167
+        Height = 297
+        Anchors = [akLeft, akTop, akBottom]
+        ItemHeight = 13
+        TabOrder = 0
+        OnClick = LbStylesClick
+      end
+      object BtnApplyTheme: TButton
+        Left = 3
+        Top = 335
+        Width = 167
+        Height = 25
+        Anchors = [akLeft, akBottom]
+        Caption = 'BtnApplyTheme'
+        TabOrder = 1
+        OnClick = BtnApplyThemeClick
+      end
+      object WlGetMoreStyles: TWebLink
+        Left = 407
+        Top = 397
+        Width = 87
+        Height = 13
+        Cursor = crHandPoint
+        Anchors = [akRight, akBottom]
+        Text = 'WlGetMoreStyles'
+        OnClick = WlGetMoreStylesClick
+        ImageIndex = 0
+        IconWidth = 0
+        IconHeight = 0
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        ImageCanRegenerate = True
+        UseSpecIconSize = True
+        HightliteImage = False
+        StretchImage = True
+        CanClick = True
+      end
+    end
     object TsGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        463
+        497
         413)
       object LblSkipExt: TLabel
         Left = 282
         Top = 121
-        Width = 174
+        Width = 208
         Height = 40
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '- File extension ignored'
         WordWrap = True
+        ExplicitWidth = 174
       end
       object LblAddSubmenuItem: TLabel
         Left = 282
         Top = 77
-        Width = 174
+        Width = 208
         Height = 38
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '- File option will added for this file type'
         WordWrap = True
+        ExplicitWidth = 174
       end
       object LblUseExt: TLabel
         Left = 282
         Top = 34
-        Width = 174
+        Width = 208
         Height = 40
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '- File will open with this Program'
         WordWrap = True
+        ExplicitWidth = 174
       end
       object Bevel2: TBevel
         Left = 6
@@ -183,8 +261,12 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        463
+        497
         413)
       object LbDisplayPlacesIn: TLabel
         Left = 223
@@ -203,7 +285,7 @@ object OptionsForm: TOptionsForm
       object Bevel1: TBevel
         Left = 3
         Top = 344
-        Width = 441
+        Width = 475
         Height = 9
         Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
@@ -267,7 +349,7 @@ object OptionsForm: TOptionsForm
       object CblPlacesDisplayIn: TCheckListBox
         Left = 223
         Top = 176
-        Width = 221
+        Width = 255
         Height = 132
         OnClickCheck = CblPlacesDisplayInClickCheck
         Anchors = [akLeft, akTop, akRight]
@@ -299,7 +381,7 @@ object OptionsForm: TOptionsForm
       object CbExplorerShowThumbsForImages: TCheckBox
         Left = 194
         Top = 72
-        Width = 265
+        Width = 299
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Thumbnails For Images'
@@ -308,7 +390,7 @@ object OptionsForm: TOptionsForm
       object CbExplorerSaveThumbsForFolders: TCheckBox
         Left = 194
         Top = 56
-        Width = 265
+        Width = 299
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Save Thumbnails For Folders'
@@ -317,7 +399,7 @@ object OptionsForm: TOptionsForm
       object CbExplorerShowThumbsForFolders: TCheckBox
         Left = 194
         Top = 40
-        Width = 265
+        Width = 299
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Thumbnails For Folders'
@@ -326,7 +408,7 @@ object OptionsForm: TOptionsForm
       object CbExplorerShowAttributes: TCheckBox
         Left = 194
         Top = 24
-        Width = 265
+        Width = 299
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Attributes'
@@ -385,7 +467,7 @@ object OptionsForm: TOptionsForm
       object CbExplorerShowThumbsForVideo: TCheckBox
         Left = 194
         Top = 88
-        Width = 265
+        Width = 299
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Thumbnails For Video'
@@ -395,13 +477,17 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        463
+        497
         413)
       object Label15: TLabel
         Left = 6
         Top = 4
-        Width = 440
+        Width = 474
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
@@ -419,7 +505,7 @@ object OptionsForm: TOptionsForm
       object Label26: TLabel
         Left = 6
         Top = 111
-        Width = 440
+        Width = 474
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
@@ -436,7 +522,7 @@ object OptionsForm: TOptionsForm
       object TrackBar1: TTrackBar
         Left = 3
         Top = 19
-        Width = 440
+        Width = 474
         Height = 25
         Anchors = [akLeft, akTop, akRight]
         Max = 100
@@ -449,7 +535,7 @@ object OptionsForm: TOptionsForm
       object TrackBar2: TTrackBar
         Left = 3
         Top = 71
-        Width = 440
+        Width = 474
         Height = 25
         Anchors = [akLeft, akTop, akRight]
         Max = 100
@@ -462,7 +548,7 @@ object OptionsForm: TOptionsForm
       object TrackBar4: TTrackBar
         Left = 3
         Top = 124
-        Width = 440
+        Width = 474
         Height = 29
         Anchors = [akLeft, akTop, akRight]
         Max = 100
@@ -475,7 +561,7 @@ object OptionsForm: TOptionsForm
       object CbViewerNextOnClick: TCheckBox
         Left = 8
         Top = 168
-        Width = 430
+        Width = 464
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Next on Click'
@@ -484,7 +570,7 @@ object OptionsForm: TOptionsForm
       object CbViewerUseCoolStretch: TCheckBox
         Left = 8
         Top = 191
-        Width = 430
+        Width = 464
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use Cool Stretch'
@@ -493,7 +579,7 @@ object OptionsForm: TOptionsForm
       object cbViewerFaceDetection: TCheckBox
         Left = 8
         Top = 214
-        Width = 430
+        Width = 464
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Enable face detection'
@@ -532,7 +618,7 @@ object OptionsForm: TOptionsForm
       object CbRedCyanStereo: TCheckBox
         Left = 8
         Top = 314
-        Width = 418
+        Width = 452
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Red-cyan glasses for stereo images'
@@ -542,8 +628,12 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        463
+        497
         413)
       object Label23: TLabel
         Left = 3
@@ -603,7 +693,7 @@ object OptionsForm: TOptionsForm
       object Bevel3: TBevel
         Left = 0
         Top = 223
-        Width = 444
+        Width = 478
         Height = 9
         Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
@@ -612,7 +702,7 @@ object OptionsForm: TOptionsForm
       object GbUserMenuUseFor: TGroupBox
         Left = 179
         Top = 238
-        Width = 265
+        Width = 299
         Height = 123
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use Menu for'
@@ -645,7 +735,7 @@ object OptionsForm: TOptionsForm
       object BtnSaveUserMenuItem: TButton
         Left = 135
         Top = 200
-        Width = 311
+        Width = 345
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Save'
@@ -735,7 +825,7 @@ object OptionsForm: TOptionsForm
       object EdUserMenuItemIcon: TEdit
         Left = 135
         Top = 143
-        Width = 290
+        Width = 324
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         Enabled = False
@@ -744,7 +834,7 @@ object OptionsForm: TOptionsForm
         OnKeyPress = EdUserMenuItemCaptionKeyPress
       end
       object BtnUserMenuChooseIcon: TButton
-        Left = 429
+        Left = 463
         Top = 142
         Width = 15
         Height = 21
@@ -757,7 +847,7 @@ object OptionsForm: TOptionsForm
       object EdUserMenuItemParams: TEdit
         Left = 135
         Top = 103
-        Width = 309
+        Width = 343
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         Enabled = False
@@ -767,7 +857,7 @@ object OptionsForm: TOptionsForm
       object EdUserMenuItemExecutable: TEdit
         Left = 135
         Top = 63
-        Width = 290
+        Width = 324
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         Enabled = False
@@ -775,7 +865,7 @@ object OptionsForm: TOptionsForm
         OnKeyPress = EdUserMenuItemCaptionKeyPress
       end
       object BtnUserMenuChooseExecutable: TButton
-        Left = 431
+        Left = 465
         Top = 63
         Width = 15
         Height = 21
@@ -799,12 +889,12 @@ object OptionsForm: TOptionsForm
       Caption = 'Security'
       ImageIndex = 4
       DesignSize = (
-        463
+        497
         413)
       object GbBackup: TGroupBox
         Left = 8
         Top = 247
-        Width = 445
+        Width = 479
         Height = 81
         Anchors = [akLeft, akTop, akRight]
         Caption = 'BackUping'
@@ -837,13 +927,13 @@ object OptionsForm: TOptionsForm
       object GbPasswords: TGroupBox
         Left = 11
         Top = 8
-        Width = 442
+        Width = 476
         Height = 233
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Passwords'
         TabOrder = 1
         DesignSize = (
-          442
+          476
           233)
         object LbSecureInfo: TLabel
           Left = 64
@@ -1195,7 +1285,7 @@ object OptionsForm: TOptionsForm
         object CbAutoSavePasswordInSettings: TCheckBox
           Left = 8
           Top = 88
-          Width = 431
+          Width = 465
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Use auto saving password in user'#39's settings'
@@ -1204,7 +1294,7 @@ object OptionsForm: TOptionsForm
         object CbAutoSavePasswordForSession: TCheckBox
           Left = 8
           Top = 72
-          Width = 431
+          Width = 465
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Use auto saving password in current session'
@@ -1235,8 +1325,12 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
-        463
+        497
         413)
       object LbAddHeight: TLabel
         Left = 173
@@ -1281,7 +1375,7 @@ object OptionsForm: TOptionsForm
       object CbExplorerStartupLocation: TCheckBox
         Left = 11
         Top = 191
-        Width = 405
+        Width = 439
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use Special Folder'
@@ -1291,7 +1385,7 @@ object OptionsForm: TOptionsForm
       object CbStartUpExplorer: TCheckBox
         Left = 11
         Top = 168
-        Width = 405
+        Width = 439
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Start Explorer At startup'
@@ -1301,7 +1395,7 @@ object OptionsForm: TOptionsForm
       object CbCheckLinksOnUpdate: TCheckBox
         Left = 11
         Top = 126
-        Width = 405
+        Width = 439
         Height = 38
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Verify links on updation images (works slowly, read help)'
@@ -1311,7 +1405,7 @@ object OptionsForm: TOptionsForm
       object CbSmallToolBars: TCheckBox
         Left = 11
         Top = 103
-        Width = 405
+        Width = 439
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use small icons in toolbars'
@@ -1320,7 +1414,7 @@ object OptionsForm: TOptionsForm
       object CblEditorVirtuaCursor: TCheckBox
         Left = 11
         Top = 80
-        Width = 405
+        Width = 439
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Virtual Cursor in Editor'
@@ -1329,7 +1423,7 @@ object OptionsForm: TOptionsForm
       object CbSortGroups: TCheckBox
         Left = 11
         Top = 57
-        Width = 405
+        Width = 439
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Sort Groups by Name'
@@ -1338,7 +1432,7 @@ object OptionsForm: TOptionsForm
       object CbListViewHotSelect: TCheckBox
         Left = 11
         Top = 11
-        Width = 405
+        Width = 439
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use "hot" select in listviews'
@@ -1347,7 +1441,7 @@ object OptionsForm: TOptionsForm
       object CbListViewShowPreview: TCheckBox
         Left = 11
         Top = 34
-        Width = 405
+        Width = 439
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Preview'
@@ -1376,18 +1470,18 @@ object OptionsForm: TOptionsForm
       object GroupBox1: TGroupBox
         Left = 11
         Top = 307
-        Width = 445
+        Width = 479
         Height = 86
         Anchors = [akLeft, akTop, akRight]
         Caption = 'EXIF'
         TabOrder = 13
         DesignSize = (
-          445
+          479
           86)
         object CbReadInfoFromExif: TCheckBox
           Left = 11
           Top = 16
-          Width = 426
+          Width = 460
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbReadInfoFromExif'
@@ -1396,7 +1490,7 @@ object OptionsForm: TOptionsForm
         object CbSaveInfoToExif: TCheckBox
           Left = 11
           Top = 39
-          Width = 426
+          Width = 460
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbSaveInfoToExif'
@@ -1405,7 +1499,7 @@ object OptionsForm: TOptionsForm
         object CbUpdateExifInfoInBackground: TCheckBox
           Left = 11
           Top = 62
-          Width = 430
+          Width = 464
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbUpdateExifInfoInBackground'

@@ -89,10 +89,10 @@ begin
     CalcStringCRC32(FileName, CRC);
     for I := 0 to FData.Count - 1 do
     begin
-      Item := FData.Items[i];
+      Item := FData.Items[I];
       if (Item.CRC = CRC) and (Item.FileName = FileName) then
       begin
-        Result:=Item;
+        Result := Item;
         Exit;
       end;
     end;
@@ -103,7 +103,7 @@ end;
 
 procedure TProcessedFilesCollection.RemoveFile(FileName: String);
 var
-  Item : TCollectionItem;
+  Item: TCollectionItem;
 begin
   FSync.Enter;
   try

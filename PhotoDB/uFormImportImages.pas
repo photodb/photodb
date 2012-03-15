@@ -54,7 +54,10 @@ uses
   Winapi.CommCtrl,
   uImportPicturesUtils,
   Themes,
-  ImgList, Vcl.AppEvnts;
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  ImgList,
+  Vcl.AppEvnts;
 
 const
   TAG_LABEL           = 1;
@@ -146,7 +149,7 @@ type
   private
     FItems: TList<TBaseSelectItem>;
     FContainer: TScrollBox;
-    FMenuOptions: TPopupMenu;
+    FMenuOptions: TPopupActionBar;
     FImageList: TImageList;
     function GetScrollBoxByItem(Index: TBaseSelectItem): TBox;
     function GetItemByIndex(Index: Integer): TBaseSelectItem;
@@ -156,7 +159,7 @@ type
     procedure OnItemEditClick(Sender: TObject);
     procedure OnDateEditClick(Sender: TObject);
     function FindChildByTag<T: TWinControl>(Parent: TWinControl; Tag: NativeInt): T;
-    function FindMenuItemByImageIndex(Parent: TPopupMenu; Index: NativeInt): TMenuItem;
+    function FindMenuItemByImageIndex(Parent: TPopupActionBar; Index: NativeInt): TMenuItem;
 
     procedure SplitItem(SDI: TSelectDateItems);
   protected
@@ -568,7 +571,7 @@ var
 begin
   FContainer := Container;
   FItems := TList<TBaseSelectItem>.Create;
-  FMenuOptions := TPopupMenu.Create(nil);
+  FMenuOptions := TPopupActionBar.Create(nil);
   FMenuOptions.OnPopup := MenuOptionsPopup;
 
   FImageList := TImageList.Create(nil);
@@ -691,7 +694,7 @@ procedure TSelectDateCollection.MenuOptionsPopup(Sender: TObject);
 var
   SI: TBaseSelectItem;
 begin
-  SI := TBaseSelectItem(TPopupMenu(Sender).Tag);
+  SI := TBaseSelectItem(TPopupActionBar(Sender).Tag);
   FindMenuItemByImageIndex(FMenuOptions, POPUP_IMAGE_INDEX_DONT_IMPORT).Visible := not SI.IsDisabled;
   FindMenuItemByImageIndex(FMenuOptions, POPUP_IMAGE_INDEX_IMPORT).Visible := SI.IsDisabled;
   FindMenuItemByImageIndex(FMenuOptions, POPUP_IMAGE_INDEX_SPLIT).Visible := SI is TSelectDateItems;
@@ -835,7 +838,7 @@ begin
   end;
 end;
 
-function TSelectDateCollection.FindMenuItemByImageIndex(Parent: TPopupMenu;
+function TSelectDateCollection.FindMenuItemByImageIndex(Parent: TPopupActionBar;
   Index: NativeInt): TMenuItem;
 var
   I: Integer;
@@ -1255,7 +1258,7 @@ begin
         WlSettings := TWebLink.Create(FContainer.Owner);
         WlSettings.Anchors := [akTop, akRight];
         WlSettings.Parent := Sb;
-        WlSettings.Left := 150;
+        WlSettings.Left := 148;
         WlSettings.Top := 52;
         WlSettings.TopIconIncrement := 0;
         WlSettings.LoadFromResource('SERIES_SETTINGS');

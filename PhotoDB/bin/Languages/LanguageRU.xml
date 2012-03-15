@@ -57,6 +57,7 @@
     <translate name="After the 30 days has expired, you must activate your copy!" value="Время работы программы истекло! Вы должны активизировать данную копию!" />
     <translate name="Application is damaged! Possible it is infected by a virus!" value="Приложение повреждено! Возможно, что оно инфицировано каким-либо вирусом!" />
     <translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
+    <translate name="Activate application to enable strong encryption!" value="Активируйте приложение для стойкого шифрования!" />
   </scope>
   <scope name="Setup">
     <translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />
@@ -242,7 +243,8 @@
     <translate name="Date" value="Дата" />
     <translate name="Save current location for the image?" value="Сохранить текущее месторасположение для фото?" />	
     <translate name="Geo location can't be saved to this file type!" value="Месторасположение не может быть сохранено для данного типа файлов!" />	
-    <translate name="Convert" value="Конвертировать" />
+	<translate name="An error occurred while saving location: {0}!" value="Ошибка сохранения выбранного местоположения: {0}!" />
+	<translate name="Convert" value="Конвертировать" />
     <translate name="Resize" value="Изменить размер" />
     <translate name="Rotate" value="Повернуть" />
     <translate name="Rotate left" value="Влево" />
@@ -1781,6 +1783,14 @@
 	<translate name="Mpx" value="Мпкс"/>
 	<translate name="Clear cache" value="Очистить кэш"/>
 	<translate name="Red-cyan glasses for stereo images" value="Анаглифные (красно-синие) очки для стереоизображений"/>	
+	<translate name="Styles" value="Стили"/>
+	<translate name="Apply style" value="Применить стиль"/>
+	<translate name="Available styles" value="Доступные стили"/>
+	<translate name="Style preview" value="Предпросмотр стиля"/>
+	<translate name="Get more styles!" value="Скачать другие стили"/>
+	<translate name="Windows style (standard)" value="Стиль Windows (стандартный)"/>
+	<translate name="Standard windows theme (preview isn't available)" value="Стандартная тема для Windows - предпросмотр недоступен"/>	
+	<translate name="Restart of application is required for applying new style! Restart application now?" value="Необходим перезапуск приложения для применения нового стиля! Перезапустить приложение?"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>

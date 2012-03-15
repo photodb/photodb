@@ -53,7 +53,8 @@ var
   Rx: T255ByteArray;
   Rct: TRect;
   Xdp: TArPARGB;
-  Xc, Yc, Mx, My, XMx, XMy, T, Rb, Re: Integer;
+  Xc, Yc, T, Rb, Re: Integer;
+  Mx, My, XMx, XMy: Int64;
   GR, Gray: Byte;
   Rn, Cn: Integer;
   Xx: array [0 .. 255] of Integer;

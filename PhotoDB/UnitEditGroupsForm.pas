@@ -571,13 +571,16 @@ end;
 procedure TEditGroupsForm.LstAvaliableGroupsDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
-  N, I, W : Integer;
-  xNewGroups : TGroups;
-  Text, Text1 : string;
+  N, I: Integer;
+  xNewGroups: TGroups;
+  FC, C: TColor;
+  IsChoosed: Boolean;
+  ACanvas: TCanvas;
+  LB: TListBox;
 
   function NewGroup(GroupCode : String) : Boolean;
   var
-    J : integer;
+    J: Integer;
   begin
    Result:=false;
    for J := 0 to Length(xNewGroups) - 1 do
@@ -602,6 +605,7 @@ var
   end;
 
 begin
+
   if Control = LstSelectedGroups then
   begin
     XNewGroups := CopyGroups(FSetGroups);
@@ -612,11 +616,13 @@ begin
     RemoveGroupsFromGroups(xNewGroups,FSetGroups);
   end;
   try
-    if index = -1 then
+    LB := TListBox(Control);
+    ACanvas := LB.Canvas;
+
+    ACanvas.FillRect(Rect);
+    if Index = -1 then
       Exit;
-    with (Control as TListBox).Canvas do
-    begin
-      FillRect(Rect);
+
       N := -1;
       if Control = LstSelectedGroups then
       begin
@@ -640,47 +646,41 @@ begin
         end
       end;
 
-      GroupsImageList.Draw((Control as TListBox).Canvas, Rect.Left + 2, Rect.Top + 2, Max(0, N));
+      GroupsImageList.Draw(ACanvas, Rect.Left + 1, Rect.Top + 1, Max(0, N));
       if N = -1 then
-      begin
-        DrawIconEx((Control as TListBox).Canvas.Handle, Rect.Left + 10, Rect.Top + 8,
-          UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
-      end;
+        DrawIconEx(Canvas.Handle, Rect.Left + 10, Rect.Top + 8, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
+
+      IsChoosed := False;
       if Control = LstSelectedGroups then
-        if NewGroup(FSetGroups[index].GroupCode) then
-          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
+        IsChoosed := NewGroup(FSetGroups[Index].GroupCode)
+      else if (N > -1) and (N < Length(FRegGroups)) then
+        IsChoosed := NewGroup(FRegGroups[N - 1].GroupCode);
+
+      if IsChoosed then
+        ACanvas.Font.Style := ACanvas.Font.Style + [FsBold]
+      else
+        ACanvas.Font.Style := ACanvas.Font.Style - [FsBold];
+
+      if (Control = LstAvaliableGroups) then
+      begin
+        if odSelected in State then
+        begin
+          FC := Theme.ListFontSelectedColor;
+          C := Theme.ListSelectedColor;
+        end else
+        begin
+          FC := Theme.ListFontColor;
+          C := Theme.ListColor;
+        end;
+
+        if GroupExists(FShowenRegGroups[Index].GroupCode) then
+          ACanvas.Font.Color := ColorDiv2(FC, C)
         else
-          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
+          ACanvas.Font.Color := FC;
+      end;
 
-      if Control = LstAvaliableGroups then
-        if N > -1 then
-          if NewGroup(FRegGroups[N - 1].GroupCode) then
-            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
-          else
-          begin
-            if GroupExists(FShowenRegGroups[index].GroupCode) then
-              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme.ListFontColor, Theme.ListColor)
-            else
-            begin
-              if TListBox(Control).Selected[index] then
-                (Control as TListBox).Canvas.Font.Color := Theme.ListFontSelectedColor
-              else
-                (Control as TListBox).Canvas.Font.Color := Theme.ListFontColor;
-            end;
+      ACanvas.TextOut(Rect.Left + 32 + 5, Rect.Top + 3, LB.Items[index]);
 
-            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
-          end;
-      Text := (Control as TListBox).Items[index];
-      W := Control.Width div (Control as TListBox).Canvas.TextWidth('w');
-      Text1 := Copy(Text, 1, Min(Length(Text), W));
-      Delete(Text, 1, Length(Text1));
-      if Text <> '' then
-        if CharInSet(Text1[Length(Text1)], ['a' .. 'z', 'A' .. 'Z', 'à' .. 'ß', 'à' .. 'ß']) then
-          if CharInSet(Text[1], ['a' .. 'z', 'A' .. 'Z', 'à' .. 'ß', 'à' .. 'ß']) then
-            Text1 := Text1 + '-';
-      TextOut(Rect.Left + 32 + 5, Rect.Top + 3, Text1);
-      TextOut(Rect.Left + 32 + 5, Rect.Top + 3 + 14, Text);
-    end;
   finally
     FreeGroups(XNewGroups);
   end;

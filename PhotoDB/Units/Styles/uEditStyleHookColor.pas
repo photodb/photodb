@@ -91,6 +91,7 @@ end;
 
 initialization
   ApplyVCLColorsStyleHook(TEdit);
+  ApplyVCLColorsStyleHook(TMemo);
   ApplyVCLColorsStyleHook(TWatermarkedEdit);
   ApplyVCLColorsStyleHook(TLabeledEdit);
 

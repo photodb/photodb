@@ -753,11 +753,15 @@ type
     procedure SaveCurrentImageInfoToMap;
     procedure ClearGeoLocation;
 
+    //JS callbacks
     function CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint; safecall;
     function SaveLocation(Lat: Double; Lng: Double; const FileName: WideString): Shortint; safecall;
     procedure ZoomPan(Lat: Double; Lng: Double; Zoom: SYSINT); safecall;
     procedure UpdateEmbed; safecall;
     procedure MapStarted; safecall;
+    //END - JS callbacks
+
+    procedure ApplyStyle; override;
   public
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
     destructor Destroy; override;
@@ -934,7 +938,11 @@ end;
 procedure TExplorerForm.ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
 begin
   if ElvMain <> nil then
+  begin
     SetStringPath(TreeView.Path, True);
+    if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+      FShellTreeView.Repaint;
+  end;
 end;
 
 procedure VerifyPaste(Explorer: TExplorerForm);
@@ -1023,7 +1031,7 @@ begin
 
   ElvMain := TEasyListView.Create(Self);
   ElvMain.Parent := PnContent;
-  ElvMain.Align := AlClient;
+  ElvMain.Align := alClient;
   ElvMain.ShowThemedBorder := False;
 
   MouseDowned := False;
@@ -1037,9 +1045,7 @@ begin
 
   ElvMain.View := elsThumbnail;
   ElvMain.DragKind := dkDock;
-  SetLVSelection(ElvMain, True);
 
-  ElvMain.Font.Name := 'Tahoma';
   ElvMain.IncrementalSearch.Enabled := True;
   ElvMain.IncrementalSearch.ItemType := eisiInitializedOnly;
   ElvMain.OnItemThumbnailDraw := EasyListview1ItemThumbnailDraw;
@@ -1064,8 +1070,6 @@ begin
   ElvMain.Header.Columns.Add;
   ElvMain.Groups.Add;
   ElvMain.Groups[0].Visible := True;
-
-  PnNavigation.Color := Theme.EditColor;
 
   RefreshIDList := TList.Create;
 
@@ -1106,8 +1110,6 @@ begin
   LoadToolBarNormaIcons;
   TW.I.Start('LoadToolBarGrayedIcons');
   LoadToolBarGrayedIcons;
-
-  CreateBackgrounds;
 
   TW.I.Start('aScript');
   AScript := TScript.Create(Self, '');
@@ -1166,8 +1168,6 @@ begin
   ToolBar1.Images := ToolBarNormalImageList;
   ToolBar1.DisabledImages := ToolBarDisabledImageList;
 
-  InitSearch;
-
   PePath.Width := PnNavigation.Width - (StAddress.Left + StAddress.Width + 5);
 
   ExplorerManager.AddExplorer(Self);
@@ -1179,7 +1179,6 @@ begin
   FormLoadEnd := True;
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
   LsMain.BringToFront;
-  LsMain.Color := Theme.ListViewColor;
 
   GOM.AddObj(Self);
   if FGoToLastSavedPath then
@@ -3147,8 +3146,13 @@ begin
   begin
     if ((Msg.message = WM_RBUTTONDOWN) or
        (Msg.message = WM_LBUTTONDBLCLK) or
-      (Msg.Message = WM_LBUTTONDOWN)) and PnGeoLocation.Visible then
-      Windows.SetFocus(ElvMain.Handle);
+      (Msg.Message = WM_LBUTTONDOWN)) then
+      begin
+        WindowsMenuTickCount := GetTickCount;
+
+        if PnGeoLocation.Visible then
+          Windows.SetFocus(ElvMain.Handle);
+      end;
 
     if UpdatingList then
     begin
@@ -3265,6 +3269,16 @@ begin
       if (Msg.Wparam = 65) and CtrlKeyDown then
         SelectAll1Click(nil);
     end;
+end;
+
+procedure TExplorerForm.ApplyStyle;
+begin
+  inherited;
+  SetLVSelection(ElvMain, True);
+  CreateBackgrounds;
+  InitSearch;
+  PnNavigation.Color := Theme.EditColor;
+  LsMain.Color := Theme.ListViewColor;
 end;
 
 procedure TExplorerForm.Back1Click(Sender: TObject);
@@ -3491,8 +3505,13 @@ begin
     try
       GeoLocation.Latitude := FMapLocationLat;
       GeoLocation.Longitude := FMapLocationLng;
-      if UpdateFileGeoInfo(FSelectedInfo.FileName, GeoLocation) then
-        WlSaveLocation.Enabled := False;
+      try
+        if UpdateFileGeoInfo(FSelectedInfo.FileName, GeoLocation, True) then
+          WlSaveLocation.Enabled := False;
+      except
+        on e: Exception do
+          MessageBoxDB(Handle, FormatEx(L('An error occurred while saving location: {0}!'), [e.Message]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      end;
     finally
       F(GeoLocation);
     end;
@@ -3635,13 +3654,12 @@ begin
     FMapLocationLng := 0;
 
     WlSaveLocation.LoadFromResource('MAP_MARKER_ADD');
-    WlSaveLocation.Refresh;
     WlPanoramio.LoadFromResource('PANORAMIO');
-    WlPanoramio.Refresh;
 
     WedGeoSearch.WatermarkText := L('Search location by address');
     WlPanoramio.Text := L('Show Panoramio');
     WlSaveLocation.Text := L('Save location');
+    WlSaveLocation.LoadImage;
     WlPanoramio.Left := WlSaveLocation.Left + WlSaveLocation.Width + 10;
 
     LoadSpeedButtonFromResourcePNG(SbDoSearchLocation, 'SEARCH');

@@ -3,7 +3,13 @@ unit uFastLoad;
 interface
 
 uses
-  WIndows, SysUtils, uDBCustomThread, uDBThread, uTime, uMemory, uSysUtils;
+  Windows,
+  SysUtils,
+  uDBCustomThread,
+  uTime,
+  uMemory,
+  Forms,
+  uSysUtils;
 
 type
   TLoad = class(TObject)
@@ -12,7 +18,8 @@ type
     LoadDBKernelIconsThreadID,
     LoadDBSettingsThreadID,
     LoadCRCCheckThreadID,
-    LoadPersonsThreadID: TGUID;
+    LoadPersonsThreadID,
+    LoadStyleThreadID: TGUID;
     procedure WaitForThread(Thread: TGUID);
   public
     constructor Create;
@@ -23,11 +30,13 @@ type
     procedure StartDBSettingsThread;
     procedure StartCRCCheckThread;
     procedure StartPersonsThread;
+    procedure StartStyleThread;
     //Requareds
     procedure RequaredCRCCheck;
     procedure RequaredDBKernelIcons;
     procedure RequaredDBSettings;
     procedure RequaredPersons;
+    procedure RequaredStyle;
     procedure Stop;
   end;
 
@@ -37,7 +46,9 @@ uses
   UnitLoadDBSettingsThread,
   UnitLoadDBKernelIconsThread,
   UnitLoadCRCCheckThread,
-  UnitLoadPersonsThread;
+  UnitLoadPersonsThread,
+  uDBThread,
+  uLoadStyleThread;
 
 var
   SLoadInstance : TLoad = nil;
@@ -50,6 +61,7 @@ begin
   LoadDBSettingsThreadID := GetEmptyGUID;
   LoadCRCCheckThreadID := GetEmptyGUID;
   LoadPersonsThreadID := GetEmptyGUID;
+  LoadStyleThreadID := GetEmptyGUID;
 end;
 
 destructor TLoad.Destroy;
@@ -92,6 +104,15 @@ begin
   T.Start;
 end;
 
+procedure TLoad.StartStyleThread;
+var
+  T: TDBThread;
+begin
+  T := TLoadStyleThread.Create(nil, True);
+  LoadStyleThreadID := T.UniqID;
+  T.Start;
+end;
+
 procedure TLoad.StartCRCCheckThread;
 var
   T: TDBThread;
@@ -114,11 +135,13 @@ begin
   KillThread(LoadDBSettingsThreadID);
   KillThread(LoadCRCCheckThreadID);
   KillThread(LoadPersonsThreadID);
+  KillThread(LoadStyleThreadID);
 end;
 
 procedure TLoad.WaitForThread(Thread: TGUID);
 var
   H: THandle;
+  C: Integer;
 begin
   if DBThreadManager.IsThread(Thread) then
   begin
@@ -126,7 +149,15 @@ begin
     if H <> 0 then
     begin
       TW.I.Start('WaitForSingleObject: ' + IntToStr(H));
-      WaitForSingleObject(H, 10000);
+      C := 0;
+
+      while (WAIT_TIMEOUT = WaitForSingleObject(H, 10)) do
+      begin
+        C := C + 10;
+        Application.ProcessMessages;
+        if C > 10000 then
+          Break;
+      end;
     end;
   end;
 end;
@@ -163,10 +194,17 @@ begin
   LoadPersonsThreadID := GetEmptyGUID;
 end;
 
+procedure TLoad.RequaredStyle;
+begin
+  TW.I.Start('TLoad.RequaredStyle');
+  if LoadStyleThreadID <> GetEmptyGUID then
+    WaitForThread(LoadStyleThreadID);
+  LoadStyleThreadID := GetEmptyGUID;
+end;
+
 initialization
 
 finalization
-
   F(SLoadInstance);
 
 end.

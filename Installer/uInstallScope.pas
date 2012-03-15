@@ -275,6 +275,7 @@ begin
   Files.Add(TDirectoryObject.Create('Scripts',     '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Images',      '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('PlugInsEx',   '%PROGRAM%', ''));
+  Files.Add(TDirectoryObject.Create('Styles',      '%PROGRAM%', ''));
 end;
 
 { TFileActions }

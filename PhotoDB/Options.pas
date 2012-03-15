@@ -55,9 +55,16 @@ uses
   LoadingSign,
   uDBThread,
   Winapi.ShellApi,
+  IOUtils,
+  uBitmapUtils,
+  uThemesUtils,
   Vcl.ActnPopup,
   uConfiguration,
-  Vcl.PlatformDefaultStyleActnCtrls;
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.Themes,
+  Vcl.Styles,
+  Vcl.Styles.Ext,
+  Vcl.Styles.Utils;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)
@@ -202,6 +209,13 @@ type
     BtnClearFaceDetectionCache: TButton;
     LsFaceDetectionClearCache: TLoadingSign;
     CbRedCyanStereo: TCheckBox;
+    TsStyle: TTabSheet;
+    LbStyles: TListBox;
+    LbAvailableTemes: TLabel;
+    ImStylePreview: TImage;
+    LbThemePreview: TLabel;
+    BtnApplyTheme: TButton;
+    WlGetMoreStyles: TWebLink;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
@@ -263,10 +277,13 @@ type
     procedure SelectAll1Click(Sender: TObject);
     procedure DeselectAll1Click(Sender: TObject);
     procedure BtnClearFaceDetectionCacheClick(Sender: TObject);
+    procedure BtnApplyThemeClick(Sender: TObject);
+    procedure LbStylesClick(Sender: TObject);
+    procedure WlGetMoreStylesClick(Sender: TObject);
   private
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
-    FLoadedPages: array [0 .. 5] of Boolean;
+    FLoadedPages: array [0..6] of Boolean;
     FPlaces: TPlaceFolderArray;
     ReloadData: Boolean;
   protected
@@ -296,7 +313,11 @@ var
 implementation
 
 uses
-  SlideShow, ExplorerThreadUnit, uManagerExplorer, UnitJPEGOptions;
+  SlideShow,
+  ExplorerThreadUnit,
+  uManagerExplorer,
+  UnitJPEGOptions,
+  FormManegerUnit;
 
 {$R *.dfm}
 
@@ -305,14 +326,39 @@ var
   I, Size: Integer;
   Reg: TBDRegistry;
   S: TStrings;
+  StylesPath,
+  FileName,
+  CurrentStyle,
   FCaption, EXEFile, Params, Icon: string;
-  UseSubMenu: Boolean;
+  UseSubMenu, IsStyleSelected: Boolean;
 begin
   if FLoadedPages[NewTab] then
     Exit;
   FLoadedPages[NewTab] := True;
 
   if NewTab = 0 then
+  begin
+    LbStyles.Items.Clear;
+    StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
+    LbStyles.Items.Add(L('Windows style (standard)'));
+    IsStyleSelected := False;
+    CurrentStyle := Settings.ReadString('Style', 'FileName', 'Amakrits.vsf');
+    for FileName in TDirectory.GetFiles(StylesPath, '*.vsf') do
+    begin
+      LbStyles.Items.Add(ExtractFileName(FileName));
+      if AnsiLowerCase(CurrentStyle) = AnsiLowerCase(ExtractFileName(FileName)) then
+      begin
+        LbStyles.Selected[LbStyles.Items.Count - 1] := True;
+        IsStyleSelected := True;
+      end;
+    end;
+    if not IsStyleSelected then
+      LbStyles.Selected[0] := True;
+
+    LbStylesClick(Self);
+  end;
+
+  if NewTab = 1 then
   begin
     CbListViewShowPreview.Checked := Settings.Readbool('Options', 'AllowPreview', True);
     CbExtensionList.Enabled := not FolderView;
@@ -323,7 +369,7 @@ begin
 
     LoadDefaultExtStates;
   end;
-  if NewTab = 1 then
+  if NewTab = 2 then
   begin
     CbExplorerShowFolders.Checked := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
     CbExplorerShowSimpleFiles.Checked := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
@@ -339,7 +385,7 @@ begin
 
     ReadPlaces;
   end;
-  if NewTab = 2 then
+  if NewTab = 3 then
   begin
     CbViewerNextOnClick.Checked := Settings.Readbool('Options', 'NextOnClick', False);
     TrackBar1.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
@@ -360,14 +406,14 @@ begin
 
     CbRedCyanStereo.Checked := Settings.ReadString('Options', 'StereoMode', '') <> '';
   end;
-  if NewTab = 4 then
+  if NewTab = 5 then
   begin
     CbAutoSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
     CbAutoSavePasswordInSettings.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
     SedBackupDays.Value := Settings.ReadInteger('Options', 'BackUpdays', 7);
   end;
 
-  if NewTab = 5 then
+  if NewTab = 6 then
   begin
 
     CbSmallToolBars.Checked := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
@@ -397,7 +443,7 @@ begin
     CbUpdateExifInfoInBackground.Checked := Settings.Exif.UpdateExifInfoInBackground;
   end;
 
-  if NewTab = 3 then
+  if NewTab = 4 then
   begin
     ImageList1.Clear;
     ImageList1.Width := 16;
@@ -518,13 +564,14 @@ begin
   Remove1.ImageIndex := DB_IC_DELETE_INFO;
   CbCheckLinksOnUpdate.Enabled := not FolderView;
   ClientHeight := 484;
+  PcMain.Width := ClientWidth - 15;
   PcMainChange(Self);
   WlDefaultJPEGOptions.Color := clWindow;
-  WblMethod.Color := clWindow;
 
   FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
   WblMethod.LoadFromHIcon(FPassIcon);
   DestroyIcon(FPassIcon);
+
 end;
 
 procedure TOptionsForm.FormDestroy(Sender: TObject);
@@ -547,12 +594,12 @@ begin
   end;
   // Case TabbedNotebook1.PageIndex of
   // 0:
-  if FLoadedPages[0] then
+  if FLoadedPages[1] then
   begin
    //nothing to save
   end;
   // 1:
-  if FLoadedPages[1] then
+  if FLoadedPages[2] then
   begin
     Settings.WriteBool('Options', 'Explorer_ShowFolders', CbExplorerShowFolders.Checked);
     Settings.WriteBool('Options', 'Explorer_ShowSimpleFiles', CbExplorerShowSimpleFiles.Checked);
@@ -572,7 +619,7 @@ begin
     WritePlaces;
   end;
   // 3 :
-  if FLoadedPages[3] then
+  if FLoadedPages[4] then
   begin
     Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
     try
@@ -606,14 +653,14 @@ begin
     Settings.WriteBool('Options', 'UseUserMenuForExplorer', CbUseUserMenuForExplorer.Checked);
   end;
   // 4 :
-  if FLoadedPages[4] then
+  if FLoadedPages[5] then
   begin
     Settings.WriteBool('Options', 'AutoSaveSessionPasswords', CbAutoSavePasswordForSession.Checked);
     Settings.WriteBool('Options', 'AutoSaveINIPasswords', CbAutoSavePasswordInSettings.Checked);
     Settings.WriteInteger('Options', 'BackUpdays', SedBackupDays.Value);
   end;
   // 5 :
-  if FLoadedPages[5] then
+  if FLoadedPages[6] then
   begin
     Settings.WriteBool('Options', 'AllowPreview', CbListViewShowPreview.Checked);
     Settings.WriteBool('Options', 'UseSmallToolBarButtons', CbSmallToolBars.Checked);
@@ -636,7 +683,7 @@ begin
     Settings.Exif.UpdateExifInfoInBackground := CbUpdateExifInfoInBackground.Checked;
   end;
   // 2 :
-  if FLoadedPages[2] then
+  if FLoadedPages[3] then
   begin
     Settings.WriteBool('Options', 'NextOnClick', CbViewerNextOnClick.Checked);
     Settings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CbViewerUseCoolStretch.Checked);
@@ -862,6 +909,14 @@ begin
       CbDetectionSize.Items.AddObject(S, TObject(I));
     end;
     BtnClearFaceDetectionCache.Caption := L('Clear cache');
+
+    TsStyle.Caption := L('Styles');
+    BtnApplyTheme.Caption := L('Apply style');
+    LbAvailableTemes.Caption := L('Available styles') + ':';
+    LbThemePreview.Caption := L('Style preview') + ':';
+    WlGetMoreStyles.Text := L('Get more styles!');
+    WlGetMoreStyles.LoadImage;
+    WlGetMoreStyles.Left := TsStyle.ClientRect.Width - WlGetMoreStyles.Width - 5;
   finally
     EndTranslate;
   end;
@@ -880,6 +935,60 @@ end;
 procedure TOptionsForm.TrackBar4Change(Sender: TObject);
 begin
   Label26.Caption := Format(L('Speed of displaying images for fullscreen: %d ms.'), [TrackBar4.Position * 100]);
+end;
+
+procedure TOptionsForm.LbStylesClick(Sender: TObject);
+var
+  I: Integer;
+  LStyle: TCustomStyle;
+  FBitmap: TBitmap;
+  StylesPath, Text: string;
+  R: TRect;
+begin
+  for I := 0 to LbStyles.Items.Count - 1 do
+    if LbStyles.Selected[I] then
+    begin
+      if I = 0 then
+      begin
+        FBitmap := TBitmap.Create;
+        try
+          FBitmap.PixelFormat := pf32Bit;
+          FBitmap.Width := ImStylePreview.ClientRect.Width;
+          FBitmap.Height := ImStylePreview.ClientRect.Height;
+          FillTransparentColor(FBitmap, Theme.PanelColor, 255);
+          FBitmap.Canvas.Font.Color := Theme.PanelFontColor;
+          FBitmap.Canvas.Pen.Color := Theme.PanelColor;
+          FBitmap.Canvas.Brush.Color := Theme.PanelColor;
+          Text := L('Standard windows theme (preview isn''t available)');
+          R := ImStylePreview.ClientRect;
+          DrawText(FBitmap.Canvas.Handle, Text, Length(Text), R, DT_CENTER or DT_VCENTER );
+          ImStylePreview.Picture.Graphic := FBitmap;
+        finally
+          F(FBitmap);
+        end;
+        Exit;
+      end;
+      StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
+      LStyle := TCustomStyleExt.Create(StylesPath + LbStyles.Items[I]);
+      try
+        if Assigned(LStyle) then
+        begin
+          FBitmap := TBitmap.Create;
+          try
+            FBitmap.PixelFormat := pf32bit;
+            FBitmap.Width := ImStylePreview.ClientRect.Width;
+            FBitmap.Height := ImStylePreview.ClientRect.Height;
+            FillTransparentColor(FBitmap, Theme.PanelColor, 0);
+            DrawSampleWindow(LStyle, FBitmap.Canvas, ImStylePreview.ClientRect, 'Photo Database');
+            ImStylePreview.Picture.Graphic := FBitmap;
+          finally
+            F(FBitmap);
+          end;
+        end;
+      finally
+        F(LStyle);
+      end;
+  end;
 end;
 
 procedure TOptionsForm.LoadDefaultExtStates;
@@ -1200,6 +1309,34 @@ begin
   PmPlaces.Popup(PlacesListView.ClientToScreen(MousePos).X, PlacesListView.ClientToScreen(MousePos).Y);
 end;
 
+procedure TOptionsForm.BtnApplyThemeClick(Sender: TObject);
+var
+  I: Integer;
+  ShellExecuteInfo: TShellExecuteInfo;
+begin
+  for I := 0 to LbStyles.Items.Count - 1 do
+    if LbStyles.Selected[I] then
+    begin
+      Settings.WriteString('Style', 'FileName', LbStyles.Items[I]);
+      if MessageBoxDB(Handle, L('Restart of application is required for applying new style! Restart application now?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
+      begin
+        ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);
+        ShellExecuteInfo.fMask:= SEE_MASK_FLAG_DDEWAIT or SEE_MASK_FLAG_NO_UI or SEE_MASK_NOCLOSEPROCESS;
+        ShellExecuteInfo.Wnd:= 0;
+        ShellExecuteInfo.lpVerb:= 'open';
+        ShellExecuteInfo.lpFile:= PChar('"' + Application.ExeName + '"');
+        ShellExecuteInfo.lpParameters:= PChar('/NoPrevVersion');
+        ShellExecuteInfo.lpDirectory:= PChar(ExtractFileDir(Application.ExeName));
+        ShellExecuteInfo.nShow:= SW_SHOWNORMAL;
+        if ShellExecuteEx(@ShellExecuteInfo) then
+        begin
+          Close;
+          FormManager.CloseApp(Self);
+        end;
+      end;
+    end;
+end;
+
 procedure TOptionsForm.BtnChooseNewPlaceClick(Sender: TObject);
 var
   NewPlace: String;
@@ -1216,10 +1353,10 @@ begin
       FPlaces[Length(FPlaces) - 1].Name := GetFileNameWithoutExt(NewPlace);
       FPlaces[Length(FPlaces) - 1].FolderName := NewPlace;
       FPlaces[Length(FPlaces) - 1].Icon := DefaultIcon;
-      FPlaces[Length(FPlaces) - 1].MyComputer := true;
-      FPlaces[Length(FPlaces) - 1].MyDocuments := true;
-      FPlaces[Length(FPlaces) - 1].MyPictures := true;
-      FPlaces[Length(FPlaces) - 1].OtherFolder := true;
+      FPlaces[Length(FPlaces) - 1].MyComputer := True;
+      FPlaces[Length(FPlaces) - 1].MyDocuments := True;
+      FPlaces[Length(FPlaces) - 1].MyPictures := True;
+      FPlaces[Length(FPlaces) - 1].OtherFolder := True;
       AddIconToListFromPath(PlacesImageList, DefaultIcon);
       with PlacesListView.Items.AddItem(nil) do
       begin
@@ -1316,6 +1453,11 @@ end;
 procedure TOptionsForm.WlDefaultJPEGOptionsClick(Sender: TObject);
 begin
   SetJPEGOptions;
+end;
+
+procedure TOptionsForm.WlGetMoreStylesClick(Sender: TObject);
+begin
+  ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + SITE_ACTION_STYLES), nil, nil, SW_NORMAL);
 end;
 
 procedure TOptionsForm.WritePlaces;

@@ -532,7 +532,7 @@ begin
   SlideTimer.Interval := Math.Min(Math.Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
   FullScreenNow := False;
   SlideShowNow := False;
-  Drawimage := Tbitmap.Create;
+  Drawimage := TBitmap.Create;
   FbImage := TBitmap.Create;
   FOverlayBuffer := TBitmap.Create;
   FbImage.PixelFormat := pf24bit;
@@ -1826,7 +1826,9 @@ begin
     brushInfo.lbColor := ColorToRGB(C);
     Brush := CreateBrushIndirect(brushInfo);
 
-    Top := Buffer.Height;
+    Top := Height;
+    if Buffer<> nil then
+      Top := Buffer.Height;
     if SbHorisontal.Visible then
       Top := SbHorisontal.Top;
 
@@ -3139,6 +3141,7 @@ var
           R := Rect(R.Left, R.Bottom + 8, Max(R.Left + 20, R.Right), R.Bottom + 500);
           Rct := R;
           FOverlayBuffer.Canvas.Font := Font;
+          FOverlayBuffer.Canvas.Font.Color := Theme.ListViewFontColor;
           DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), R, DrawTextOpt or DT_CALCRECT);
           R.Right := Max(R.Right, Rct.Right);
           FaceTextRect := R;
@@ -4557,7 +4560,7 @@ end;
 
 function TViewer.Buffer: TBitmap;
 begin
-  if FOverlayBuffer.Empty then
+  if (FOverlayBuffer = nil) or FOverlayBuffer.Empty then
     Result := DrawImage
   else
     Result := FOverlayBuffer;

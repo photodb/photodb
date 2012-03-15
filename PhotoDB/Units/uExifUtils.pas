@@ -67,7 +67,7 @@ function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean; overload;
 function CreateRating(Rating: Integer): TWindowsStarRating;
 function CreateOrientation(Rotation: Integer): TExifOrientation;
 function CanSaveEXIF(FileName: string): Boolean;
-function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation): Boolean;
+function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation; RaiseException: Boolean = False): Boolean;
 function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
 
 implementation
@@ -556,7 +556,7 @@ begin
   end;
 end;
 
-function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation): Boolean;
+function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation; RaiseException: Boolean = False): Boolean;
 var
   ExifData: TExifData;
   OldMode: Cardinal;
@@ -618,6 +618,8 @@ begin
       on e: Exception do
       begin
         EventLog(e);
+        if RaiseException then
+          raise;
         Result := False;
       end;
     end;

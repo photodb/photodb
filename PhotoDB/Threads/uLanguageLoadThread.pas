@@ -28,6 +28,7 @@ begin
   finally
     TW.I.Start('TLanguageThread.Execute - CoUninitialize');
     CoUninitialize;
+    TW.I.Start('TLanguageThread.Execute - CoUninitialize - DONE');
   end;
 end;
 

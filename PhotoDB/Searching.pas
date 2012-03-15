@@ -485,6 +485,7 @@ type
     function GetSearchText: string; override;
     procedure SetSearchText(Value: string); override;
     procedure SetupListView;
+    procedure ApplyStyle; override;
   public
     procedure LoadGroupsList(LoadAllLIst: Boolean = False);
     procedure AddNewSearchListEntry;
@@ -718,7 +719,6 @@ begin
   ElvMain.View := ElsThumbnail;
   ElvMain.DragKind := DkDock;
   ElvMain.ShowThemedBorder := False;
-  SetLVSelection(ElvMain, True);
 
   ElvMain.Font.name := 'Tahoma';
   ElvMain.HotTrack.Cursor := CrArrow;
@@ -2208,6 +2208,12 @@ begin
 
     end;
   end;
+end;
+
+procedure TSearchForm.ApplyStyle;
+begin
+  inherited;
+  SetLVSelection(ElvMain, True);
 end;
 
 procedure TSearchForm.SetPath(Value: string);

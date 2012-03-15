@@ -16,6 +16,7 @@ uses
   uMemory,
   uDBForm,
   uVCLHelpers,
+  uTranslate,
   WebLink;
 
 type
@@ -28,6 +29,7 @@ type
     procedure FillChiperList;
     procedure OnChiperSelected(Sender: TObject);
     procedure WblMethodClick(Sender: TObject);
+    procedure ActivationClick(Sender: TObject);
   public
     constructor Create(WebLink: TWebLink; PopupMenu: TPopupMenu);
   end;
@@ -36,13 +38,16 @@ type
   private
     FMethodChanger: TPasswordMethodChanger;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function GetPasswordSettingsPopupMenu: TPopupMenu; virtual; abstract;
     function GetPaswordLink: TWebLink; virtual; abstract;
   end;
 
 implementation
+
+uses
+  uActivation;
 
 constructor TPasswordSettingsDBForm.Create(AOwner: TComponent);
 begin
@@ -58,8 +63,12 @@ end;
 
 { TPasswordMethodChanger }
 
-constructor TPasswordMethodChanger.Create(WebLink: TWebLink;
-  PopupMenu: TPopupMenu);
+procedure TPasswordMethodChanger.ActivationClick(Sender: TObject);
+begin
+  ShowActivationDialog;
+end;
+
+constructor TPasswordMethodChanger.Create(WebLink: TWebLink; PopupMenu: TPopupMenu);
 begin
   FWebLink := WebLink;
   FPopupMenu := PopupMenu;
@@ -67,6 +76,8 @@ begin
 end;
 
 procedure TPasswordMethodChanger.FillChiperList;
+var
+  MenuItem: TMenuItem;
 
   function GetChipperName(Chiper : TDECCipher) : string;
   var
@@ -122,6 +133,19 @@ begin
   FSelectedChiper := Settings.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity));
 
   DECEnumClasses(@DoEnumClasses, Self);
+
+  if TActivationManager.Instance.IsDemoMode then
+  begin
+    MenuItem := TMenuItem.Create(FPopupMenu);
+    MenuItem.Caption := '-';
+    FPopupMenu.Items.Add(MenuItem);
+
+    MenuItem := TMenuItem.Create(FPopupMenu);
+    MenuItem.Caption := TA('Activate application to enable strong encryption!', 'System');
+    MenuItem.OnClick := ActivationClick;
+    FPopupMenu.Items.Add(MenuItem);
+  end;
+
 end;
 
 procedure TPasswordMethodChanger.OnChiperSelected(Sender: TObject);

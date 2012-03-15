@@ -336,7 +336,7 @@ object FormCDExport: TFormCDExport
       Text = '0 Mb'
     end
   end
-  object PopupMenuListView: TPopupMenu
+  object PopupMenuListView: TPopupActionBar
     OnPopup = PopupMenuListViewPopup
     Left = 120
     Top = 216

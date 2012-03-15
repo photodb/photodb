@@ -3,11 +3,38 @@ unit UnitFormCDMapper;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Dolphin_DB, UnitDBKernel,
-  ImgList, UnitCDMappingSupport, UnitDBCommonGraphics, Menus, DB, CommonDBSupport,
-  uVistaFuncs, uLogger, uDBForm, uMemory, UnitDBDeclare, uDBPopupMenuInfo,
-  uShellIntegration, uConstants, uCDMappingTypes, pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ComCtrls,
+  ExtCtrls,
+  Dolphin_DB,
+  UnitDBKernel,
+  ImgList,
+  UnitCDMappingSupport,
+  UnitDBCommonGraphics,
+  Menus,
+  DB,
+  CommonDBSupport,
+  uVistaFuncs,
+  uLogger,
+  uDBForm,
+  uMemory,
+  UnitDBDeclare,
+  uDBPopupMenuInfo,
+  uShellIntegration,
+  uConstants,
+  uCDMappingTypes,
+  pngimage,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup
+  ;
 
 type
   TFormCDMapper = class(TDBForm)
@@ -18,7 +45,7 @@ type
     ButtonAddocation: TButton;
     ButtonRemoveLocation: TButton;
     CDImageList: TImageList;
-    PopupMenuCDActions: TPopupMenu;
+    PopupMenuCDActions: TPopupActionBar;
     Explorer1: TMenuItem;
     N1: TMenuItem;
     Dismount1: TMenuItem;

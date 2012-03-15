@@ -2848,6 +2848,10 @@ procedure TPropertiesForm.LstAvaliableGroupsDrawItem(Control: TWinControl;
 var
   N, I: Integer;
   XNewGroups: TGroups;
+  FC, C: TColor;
+  IsChoosed: Boolean;
+  ACanvas: TCanvas;
+  LB: TListBox;
 
   function NewGroup(GroupCode: string): Boolean;
   var
@@ -2886,62 +2890,73 @@ begin
     RemoveGroupsFromGroups(XNewGroups, FNowGroups);
   end;
   try
+    LB := TListBox(Control);
+    ACanvas := LB.Canvas;
+
+    ACanvas.FillRect(Rect);
+
     if Index = -1 then
       Exit;
-    with (Control as TListBox).Canvas do
+
+    N := -1;
+    if Control = LstCurrentGroups then
     begin
-      FillRect(Rect);
-      N := -1;
-      if Control = LstCurrentGroups then
+      for I := 0 to Length(RegGroups) - 1 do
       begin
-        for I := 0 to Length(RegGroups) - 1 do
+        if RegGroups[I].GroupCode = FNowGroups[index].GroupCode then
         begin
-          if RegGroups[I].GroupCode = FNowGroups[index].GroupCode then
-          begin
-            N := I + 1;
-            Break;
-          end;
-        end
+          N := I + 1;
+          Break;
+        end;
+      end
+    end else
+    begin
+      for I := 0 to Length(RegGroups) - 1 do
+      begin
+        if RegGroups[I].GroupName = (Control as TListBox).Items[index] then
+        begin
+          N := I + 1;
+          Break;
+        end;
+      end
+    end;
+
+    RegGroupsImageList.Draw(ACanvas, Rect.Left + 2, Rect.Top + 2, Max(0, N));
+    if N = -1 then
+    begin
+      DrawIconEx(ACanvas.Handle, Rect.Left + 10, Rect.Top + 8, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
+    end;
+
+    IsChoosed := False;
+    if Control = LstCurrentGroups then
+      IsChoosed := NewGroup(FNowGroups[Index].GroupCode)
+    else if (N > -1) and (N < Length(RegGroups)) then
+      IsChoosed := NewGroup(RegGroups[N - 1].GroupCode);
+
+    if IsChoosed then
+      ACanvas.Font.Style := ACanvas.Font.Style + [FsBold]
+    else
+      ACanvas.Font.Style := ACanvas.Font.Style - [FsBold];
+
+    if (Control = LstAvaliableGroups) then
+    begin
+      if odSelected in State then
+      begin
+        FC := Theme.ListFontSelectedColor;
+        C := Theme.ListSelectedColor;
       end else
       begin
-        for I := 0 to Length(RegGroups) - 1 do
-        begin
-          if RegGroups[I].GroupName = (Control as TListBox).Items[index] then
-          begin
-            N := I + 1;
-            Break;
-          end;
-        end
+        FC := Theme.ListFontColor;
+        C := Theme.ListColor;
       end;
 
-      RegGroupsImageList.Draw((Control as TListBox).Canvas, Rect.Left + 2, Rect.Top + 2, Max(0, N));
-      if N = -1 then
-      begin
-        DrawIconEx((Control as TListBox).Canvas.Handle, Rect.Left + 10, Rect.Top + 8,
-          UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
-      end;
-      if Control = LstCurrentGroups then
-        if NewGroup(FNowGroups[index].GroupCode) then
-          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
-        else
-          (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
-
-      if Control = LstAvaliableGroups then
-        if N > -1 then
-          if NewGroup(RegGroups[N - 1].GroupCode) then
-            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style + [FsBold]
-          else
-          begin
-            if GroupExists(FShowenRegGroups[index].GroupCode) then
-              (Control as TListBox).Canvas.Font.Color := ColorDiv2(Theme.PanelColor, Theme.PanelFontColor)
-            else
-              (Control as TListBox).Canvas.Font.Color := Theme.PanelColor;
-
-            (Control as TListBox).Canvas.Font.Style := (Control as TListBox).Canvas.Font.Style - [FsBold];
-          end;
-
-      TextOut(Rect.Left + 21, Rect.Top + 3, (Control as TListBox).Items[index]);
+      if GroupExists(FShowenRegGroups[Index].GroupCode) then
+        ACanvas.Font.Color := ColorDiv2(FC, C)
+      else
+        ACanvas.Font.Color := FC;
     end;
+
+    ACanvas.TextOut(Rect.Left + 21, Rect.Top + 3, LB.Items[index]);
   except
     on E: Exception do
       EventLog(':TPropertiesForm.ListBox2DrawItem() throw exception: ' + E.message);

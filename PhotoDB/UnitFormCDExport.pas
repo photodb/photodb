@@ -3,13 +3,44 @@ unit UnitFormCDExport;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, ComCtrls, StdCtrls, ComboBoxExDB, Menus, ImgList,
-  Dolphin_DB, UnitDBKernel, Buttons, DragDrop, DropTarget, uFileUtils,
-  DragDropFile, UnitCDMappingSupport, UnitDBFileDialogs, UnitDBCommonGraphics,
-  AppEvnts, uAssociatedIcons, WatermarkedEdit, uMemory, uCDMappingTypes,
-  uDBForm, uShellIntegration, uRuntime, uConstants, ShellApi, LoadingSign,
-  pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  ComCtrls,
+  StdCtrls,
+  ComboBoxExDB,
+  Menus,
+  ImgList,
+  Dolphin_DB,
+  UnitDBKernel,
+  Buttons,
+  DragDrop,
+  DropTarget,
+  uFileUtils,
+  DragDropFile,
+  UnitCDMappingSupport,
+  UnitDBFileDialogs,
+  UnitDBCommonGraphics,
+  AppEvnts,
+  uAssociatedIcons,
+  WatermarkedEdit,
+  uMemory,
+  uCDMappingTypes,
+  uDBForm,
+  uShellIntegration,
+  uRuntime,
+  uConstants,
+  ShellApi,
+  LoadingSign,
+  pngimage,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup;
 
 type
   TFormCDExport = class(TDBForm)
@@ -28,7 +59,7 @@ type
     ButtonExport: TButton;
     CheckBoxDeleteFiles: TCheckBox;
     CheckBoxModifyDB: TCheckBox;
-    PopupMenuListView: TPopupMenu;
+    PopupMenuListView: TPopupActionBar;
     Copy1: TMenuItem;
     Cut1: TMenuItem;
     Paste1: TMenuItem;

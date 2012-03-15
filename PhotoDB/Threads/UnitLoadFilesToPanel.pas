@@ -67,7 +67,7 @@ begin
       FBit := nil;
 end;
 
-constructor LoadFilesToPanel.Create(Files: TArStrings; IDs : TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TDBForm);
+constructor LoadFilesToPanel.Create(Files: TArStrings; IDs: TArInteger; ArLoaded : TArBoolean; UseLoaded, ByID : boolean; Owner : TDBForm);
 var
   I: Integer;
 begin

@@ -124,6 +124,7 @@ end;
 
 procedure TFormConvertingDB.FormCreate(Sender: TObject);
 begin
+  UpdateLayout;
   FImageOptions := TImageDBOptions.Create;
 
   LoadLanguage;

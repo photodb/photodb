@@ -555,8 +555,9 @@ end;
 
 procedure TFormCreatePerson.PbPhotoPaint(Sender: TObject);
 begin
-  PbPhoto.Canvas.Draw(PbPhoto.Width div 2 - FDisplayImage.Width div 2,
-    PbPhoto.Height div 2 - FDisplayImage.Height div 2, FDisplayImage);
+  if FDisplayImage <> nil then
+    PbPhoto.Canvas.Draw(PbPhoto.Width div 2 - FDisplayImage.Width div 2,
+      PbPhoto.Height div 2 - FDisplayImage.Height div 2, FDisplayImage);
 end;
 
 procedure TFormCreatePerson.RecreateImage;

@@ -3,15 +3,29 @@ unit UnitMenuDateForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, Menus, ExtCtrls, DateUtils, uDBForm;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ComCtrls,
+  StdCtrls,
+  Menus,
+  ExtCtrls,
+  DateUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uDBForm;
 
 type
   TFormMenuDateEdit = class(TDBForm)
     McDate: TMonthCalendar;
     BtOK: TButton;
     BtCancel: TButton;
-    PmDate: TPopupMenu;
+    PmDate: TPopupActionBar;
     GoToCurrentDate1: TMenuItem;
     DateNotExists1: TMenuItem;
     DateExists1: TMenuItem;
@@ -19,7 +33,7 @@ type
     Label1: TLabel;
     Label2: TLabel;
     DtpTime: TDateTimePicker;
-    PmTime: TPopupMenu;
+    PmTime: TPopupActionBar;
     GoToCurrentTime1: TMenuItem;
     TimeNotExists1: TMenuItem;
     TimeExists1: TMenuItem;

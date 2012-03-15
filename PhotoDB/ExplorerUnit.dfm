@@ -1121,6 +1121,7 @@ object ExplorerForm: TExplorerForm
       Width = 5
       Height = 564
       Align = alRight
+      Visible = False
       OnMoved = SplGeoLocationMoved
       ExplicitLeft = 572
       ExplicitTop = 27
@@ -2055,6 +2056,7 @@ object ExplorerForm: TExplorerForm
     end
   end
   object HintTimer: TTimer
+    Enabled = False
     OnTimer = HintTimerTimer
     Left = 536
     Top = 200
@@ -2108,6 +2110,7 @@ object ExplorerForm: TExplorerForm
     Top = 420
   end
   object DragTimer: TTimer
+    Enabled = False
     Interval = 100
     OnTimer = DragTimerTimer
     Left = 536
@@ -2153,6 +2156,7 @@ object ExplorerForm: TExplorerForm
     Top = 104
   end
   object HelpTimer: TTimer
+    Enabled = False
     Interval = 2000
     OnTimer = HelpTimerTimer
     Left = 536

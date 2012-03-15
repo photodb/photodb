@@ -19,14 +19,24 @@ uses
   uImageSource,
   SysUtils,
   uSysUtils,
+  Themes,
+  {$IFDEF PHOTODB}
+  uFastLoad,
+  Menus,
+  uMainMenuStyleHook,
+  {$ENDIF}
   MultiMon;
 
 type
   TDBForm = class(TForm)
   private
     FWindowID: string;
+    FWasPaint: Boolean;
   protected
+    procedure WndProc(var Message: TMessage); override;
     function GetFormID: string; virtual; abstract;
+    procedure DoCreate; override;
+    procedure ApplyStyle; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -69,6 +79,10 @@ end;
 
 { TDBForm }
 
+procedure TDBForm.ApplyStyle;
+begin
+end;
+
 procedure TDBForm.BeginTranslate;
 begin
   TTranslateManager.Instance.BeginTranslate;
@@ -87,6 +101,18 @@ begin
   GOM.RemoveObj(Self);
   TFormCollection.Instance.UnRegisterForm(Self);
   inherited;
+end;
+
+procedure TDBForm.DoCreate;
+begin
+  inherited;
+  {$IFDEF PHOTODB}
+  if Menu is TMainMenu then
+    TMainMenuStyleHook.RegisterMenu(TMainMenu(Menu));
+  if ClassName <> 'TFormManager' then
+    TLoad.Instance.RequaredStyle;
+  ApplyStyle;
+  {$ENDIF}
 end;
 
 procedure TDBForm.EndTranslate;
@@ -214,6 +240,32 @@ end;
 function TDBForm.LF(StringToTranslate: string; Args: array of const): string;
 begin
   Result := FormatEx(L(StringToTranslate), args);
+end;
+
+procedure TDBForm.WndProc(var Message: TMessage);
+var
+  Canvas: TCanvas;
+  LDetails: TThemedElementDetails;
+begin
+  //when styles enabled and form is visible -> white rectangle in all client rect
+  //it causes flicking on black theme
+  //this is fix for form startup
+  if (Message.Msg = WM_NCPAINT) and StyleServices.Enabled and not FWasPaint then
+  begin
+    Canvas := TCanvas.Create;
+    try
+      Canvas.Handle := GetWindowDC(Handle);
+      LDetails.Element := teWindow;
+      LDetails.Part := 0;
+      StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, Width, Height));
+    finally
+      ReleaseDC(Self.Handle, Canvas.Handle) ;
+      F(Canvas);
+    end;
+  end;
+  if (Message.Msg = WM_PAINT) and StyleServices.Enabled then
+    FWasPaint := True;
+  inherited;
 end;
 
 function TDBForm.L(StringToTranslate: string): string;

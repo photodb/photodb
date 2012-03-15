@@ -132,7 +132,7 @@ object PassWordForm: TPassWordForm
     OnKeyPress = EdPasswordKeyPress
     WatermarkText = 'Enter your password here'
   end
-  object PmCopyFileList: TPopupMenu
+  object PmCopyFileList: TPopupActionBar
     Left = 120
     Top = 248
     object CopyText1: TMenuItem
@@ -140,7 +140,7 @@ object PassWordForm: TPassWordForm
       OnClick = CopyText1Click
     end
   end
-  object PmCloseAction: TPopupMenu
+  object PmCloseAction: TPopupActionBar
     Left = 160
     Top = 184
     object CloseDialog1: TMenuItem

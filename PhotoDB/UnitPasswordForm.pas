@@ -3,11 +3,36 @@ unit UnitPasswordForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, UnitDBKernel, FormManegerUnit, GraphicCrypt, DB,
-  uConstants, win32crc, Menus, Clipbrd, UnitDBDeclare, WatermarkedEdit,
-  uDBForm, uTranslate, uFileUtils, uShellIntegration, uSettings,
-  uSysUtils, uMemory, Types, System.UITypes;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  UnitDBKernel,
+  FormManegerUnit,
+  GraphicCrypt,
+  DB,
+  uConstants,
+  win32crc,
+  Menus,
+  Clipbrd,
+  UnitDBDeclare,
+  WatermarkedEdit,
+  uDBForm,
+  uTranslate,
+  uFileUtils,
+  uShellIntegration,
+  uSettings,
+  uSysUtils,
+  uMemory,
+  Types,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  System.UITypes;
 
 type
   PasswordType = Integer;
@@ -29,10 +54,10 @@ type
     BtCancelForFiles: TButton;
     InfoListBox: TListBox;
     BtHideDetails: TButton;
-    PmCopyFileList: TPopupMenu;
+    PmCopyFileList: TPopupActionBar;
     CopyText1: TMenuItem;
     LbInfo: TLabel;
-    PmCloseAction: TPopupMenu;
+    PmCloseAction: TPopupActionBar;
     CloseDialog1: TMenuItem;
     Skipthisfiles1: TMenuItem;
     EdPassword: TWatermarkedEdit;

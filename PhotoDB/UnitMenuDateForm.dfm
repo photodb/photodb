@@ -422,7 +422,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Top = 0
     Width = 162
     Height = 154
-    Date = 38187.033727118050000000
+    Date = 38187.997470370370000000
     PopupMenu = PmDate
     TabOrder = 0
     OnDblClick = BtOKClick
@@ -458,7 +458,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
     PopupMenu = PmTime
     TabOrder = 1
   end
-  object PmDate: TPopupMenu
+  object PmDate: TPopupActionBar
     OnPopup = PmDatePopup
     object GoToCurrentDate1: TMenuItem
       Caption = 'Go To Current Date'
@@ -473,7 +473,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
       OnClick = DateExists1Click
     end
   end
-  object PmTime: TPopupMenu
+  object PmTime: TPopupActionBar
     OnPopup = PmTimePopup
     Left = 32
     object GoToCurrentTime1: TMenuItem

@@ -1076,7 +1076,7 @@ begin
   BrushLink.Enabled := True;
   InsertImageLink.Enabled := True;
   SaveLink.Enabled := True;
-  OpenFileLink.SetDefault;
+{  OpenFileLink.SetDefault;
   CropLink.SetDefault;
   RotateLink.SetDefault;
   ColorsLink.SetDefault;
@@ -1086,7 +1086,7 @@ begin
   TextLink.SetDefault;
   SaveLink.SetDefault;
   BrushLink.SetDefault;
-  InsertImageLink.SetDefault;
+  InsertImageLink.SetDefault; }
 end;
 
 procedure TImageEditor.ScrollBarHScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);

@@ -33,7 +33,8 @@ uses
   uTranslate,
   uDBBaseTypes,
   Vcl.ActnPopup,
-  uFileUtils, Vcl.PlatformDefaultStyleActnCtrls;
+  uFileUtils,
+  Vcl.PlatformDefaultStyleActnCtrls;
 
 type
   TCryptImageForm = class(TPasswordSettingsDBForm)

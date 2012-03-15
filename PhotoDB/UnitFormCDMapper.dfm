@@ -193,7 +193,7 @@ object FormCDMapper: TFormCDMapper
     Left = 16
     Top = 96
   end
-  object PopupMenuCDActions: TPopupMenu
+  object PopupMenuCDActions: TPopupActionBar
     OnPopup = PopupMenuCDActionsPopup
     Left = 56
     Top = 96
