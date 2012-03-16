@@ -123,7 +123,7 @@ implementation
 
 uses UnitPropeccedFilesSupport, UnitDBKernel;
 
-procedure FixListViewText(ACanvas: TCanvas; Item : TEasyItem; Include : Boolean);
+procedure FixListViewText(ACanvas: TCanvas; Item: TEasyItem; Include: Boolean);
 begin
   if not Include then
     ACanvas.Font.Color := ColorDiv2(Theme.ListViewColor, Theme.ListViewFontColor)
@@ -331,6 +331,8 @@ begin
     try
       DragImage.Assign(Bitmap);
       BitmapImageList.AddBitmap(DragImage, False);
+      if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+         Font.Color := THeme.ListViewFontColor;
       CreateDragImageEx(nil, DragImageList, BitmapImageList, Theme.GradientFromColor,
         Theme.GradientToColor, Theme.HighlightColor, Font, ExtractFileName(FileName));
     finally
@@ -350,8 +352,8 @@ begin
     ListView.Selection.Color, ListView.Font, Caption, DragPoint, SpotX, SpotY);
 end;
 
-procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string);
+procedure CreateDragImageEx(ListView: TEasyListView; DImageList: TImageList; SImageList: TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor : TColor; Font: TFont; Caption : string);
 var
   X, Y : Integer;
   Point : TPoint;
@@ -371,7 +373,7 @@ begin
     AFont.Assign(Font);
     AFont.Style := [fsBold];
     AFont.Size := AFont.Size + 2;
-    AFont.Color := Theme.HighlightTextColor;
+    AFont.Color := Theme.ListViewFontColor;
     W := Bitmap.Canvas.TextWidth(IntToStr(ItemsSelected));
     H := Bitmap.Canvas.TextHeight(IntToStr(ItemsSelected));
     Inc(W, 10);
@@ -604,7 +606,7 @@ begin
     DrawText(TempImage.Canvas.Handle, PChar(Caption), Length(Caption), R, DrawTextOpt or DT_CALCRECT);
 
     TempImage.SetSize(Max(MaxW, R.Right + 3), Max(MaxH, R.Bottom) + 5 * 2);
-    FillTransparentColor(TempImage, ClBlack, 1);
+    FillTransparentColor(TempImage, clBlack, 1);
     SelectionRect := Rect(0, 0, TempImage.Width, TempImage.Height);
 
     DrawRoundGradientVert(TempImage, SelectionRect, GradientFrom, GradientTo, SelectionColor, RoundRadius);
@@ -688,7 +690,7 @@ begin
     ListView.Color := StyleServices.GetStyleColor(scListView);
     ListView.Selection.GradientColorTop := StyleServices.GetStyleColor(scGenericGradientBase);
     ListView.Selection.GradientColorBottom := StyleServices.GetStyleColor(scGenericGradientEnd);
-    ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
+    ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextNormal);
     ListView.Selection.InactiveTextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
     ListView.Selection.Color := StyleServices.GetSystemColor(clHighlight);
     ListView.Selection.InactiveColor := StyleServices.GetSystemColor(clHighlight);

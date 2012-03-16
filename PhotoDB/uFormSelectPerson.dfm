@@ -161,7 +161,7 @@ object FormFindPerson: TFormFindPerson
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
+    DisableStyles = False
     Icon.Data = {
       0000010001001010000001002000680400001600000028000000100000002000
       000001002000000000004004000000000000000000000000000000000000FFFF

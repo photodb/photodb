@@ -104,7 +104,6 @@ object Viewer: TViewer
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = True
       StretchImage = True
@@ -113,17 +112,17 @@ object Viewer: TViewer
     object TbrActions: TToolBar
       Left = 81
       Top = 0
-      Width = 520
-      Height = 25
+      Width = 516
+      Height = 23
       Align = alNone
       ButtonHeight = 23
-      Color = clBtnFace
       DisabledImages = ImlToolBarDisabled
       HotImages = ImlToolBarHot
       Images = ImlToolBarNormal
-      ParentColor = False
       TabOrder = 2
       Transparent = True
+      Visible = False
+      Wrapable = False
       object TbBack: TToolButton
         Left = 0
         Top = 0

@@ -141,7 +141,8 @@ uses
   uBrowserEmbedDraw,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  uThemesUtils
+  uThemesUtils,
+  uBaseWinControl
   ;
 
 const
@@ -1243,7 +1244,7 @@ begin
     if not(GetTickCount - WindowsMenuTickCount > WindowsMenuTime) then
     begin
       PmItemPopup.Tag := ItemIndexToMenuIndex(Item.index);
-      PmItemPopup.Popup(ElvMain.Clienttoscreen(MousePos).X, ElvMain.Clienttoscreen(MousePos).Y);
+      PmItemPopup.DoPopupEx(ElvMain.Clienttoscreen(MousePos).X, ElvMain.Clienttoscreen(MousePos).Y);
     end else
     begin
       Screen.Cursor := CrDefault;
@@ -1264,7 +1265,7 @@ begin
       end;
     end;
   end else
-    PmListPopup.Popup(ElvMain.Clienttoscreen(MousePos).X, ElvMain.Clienttoscreen(MousePos).Y);
+    PmListPopup.DoPopupEx(ElvMain.Clienttoscreen(MousePos).X, ElvMain.Clienttoscreen(MousePos).Y);
 end;
 
 procedure TExplorerForm.SlideShow1Click(Sender: TObject);
@@ -3277,7 +3278,18 @@ begin
   SetLVSelection(ElvMain, True);
   CreateBackgrounds;
   InitSearch;
-  PnNavigation.Color := Theme.EditColor;
+  if not (StyleServices.Enabled and TStyleManager.IsCustomStyleActive) then
+    PnNavigation.Color := Theme.EditColor;
+
+  if (StyleServices.Enabled and TStyleManager.IsCustomStyleActive) then
+  begin
+    PnNavigation.ParentBackground := False;
+    PnSearch.ParentBackground := False;
+    PnSearchEditPlace.ParentBackground := False;
+    WedSearch.Color := Theme.PanelColor;
+    WedSearch.Font.Color := Theme.PanelFontColor;
+    BvSeparatorAddress.Hide;
+  end;
   LsMain.Color := Theme.ListViewColor;
 end;
 
@@ -3912,6 +3924,7 @@ procedure TExplorerForm.FormShow(Sender: TObject);
 begin
   if FIsFirstShow then
   begin
+    DragTimer.Enabled := True;
     if IsWindowsVista then
       AddClipboardFormatListener(Handle)
     else
@@ -4074,9 +4087,9 @@ begin
     Application.HideHint;
     THintManager.Instance.CloseHint;
     PmItemPopup.Tag := ItemIndexToMenuIndex(Item.Index);
-    PmItemPopup.Popup(ImPreview.Clienttoscreen(MousePos).X, ImPreview.Clienttoscreen(MousePos).Y);
+    PmItemPopup.DoPopupEx(ImPreview.Clienttoscreen(MousePos).X, ImPreview.Clienttoscreen(MousePos).Y);
   end else
-    PmListPopup.Popup(ImPreview.Clienttoscreen(MousePos).X, ImPreview.Clienttoscreen(MousePos).Y);
+    PmListPopup.DoPopupEx(ImPreview.Clienttoscreen(MousePos).X, ImPreview.Clienttoscreen(MousePos).Y);
 
 end;
 
@@ -5294,7 +5307,7 @@ var
 begin
   P := Point(0, SbSearchMode.Height);
   P := SbSearchMode.ClientToScreen(P);
-  PmSearchMode.Popup(P.X, P.Y);
+  PmSearchMode.DoPopupEx(P.X, P.Y);
 end;
 
 procedure TExplorerForm.SetFilter1Click(Sender: TObject);
@@ -5449,7 +5462,7 @@ procedure TExplorerForm.PePathContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
   MousePos := PePath.Clienttoscreen(MousePos);
-  PmPathMenu.Popup(MousePos.X, MousePos.Y);
+  PmPathMenu.DoPopupEx(MousePos.X, MousePos.Y);
   Handled := True;
 end;
 
@@ -6031,6 +6044,12 @@ begin
     FOldPatchType := WPath.PType;
   end;
 
+  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+  begin
+    InvalidateRect(PePath.Handle, PePath.ClientRect, True);
+    InvalidateRect(ToolBar1.Handle, ToolBar1.ClientRect, True);
+  end;
+
   EventLog('SetPath OK');
 end;
 
@@ -6437,7 +6456,7 @@ begin
       LastListViewSelected := ListView1Selected;
       DragFilesPopup.Assign(DropInfo);
       GetCursorPos(Pnt);
-      PmDragMode.Popup(Pnt.X, Pnt.Y);
+      PmDragMode.DoPopupEx(Pnt.X, Pnt.Y);
     end;
 
     if not(SsRight in LastShift) then
@@ -6754,7 +6773,7 @@ var
 begin
   GetCursorPos(P);
   PmLinkOptions.Tag := Integer(Sender);
-  PmLinkOptions.Popup(P.X, P.Y);
+  PmLinkOptions.DoPopupEx(P.X, P.Y);
 end;
 
 procedure TExplorerForm.Open2Click(Sender: TObject);
@@ -6981,7 +7000,6 @@ begin
           WebLink.IconHeight := 16;
           WebLink.Left := MyPicturesLink.Left;
           WebLink.OnContextPopup := UserDefinedPlaceContextPopup;
-          WebLink.ImageCanRegenerate := True;
           WebLink.LoadImage;
           SetLength(FPlaces, Length(FPlaces) + 1);
           FPlaces[Length(FPlaces) - 1].Name := FName;
@@ -7020,7 +7038,7 @@ var
 begin
   GetCursorPos(P);
   PmLinkOptions.Tag := Integer(Sender);
-  PmLinkOptions.Popup(P.X, P.Y);
+  PmLinkOptions.DoPopupEx(P.X, P.Y);
 end;
 
 procedure TExplorerForm.Copy4Click(Sender: TObject);
@@ -8550,7 +8568,7 @@ begin
           Application.HideHint;
           THintManager.Instance.CloseHint;
           LastMouseItem := nil;
-          RatingPopupMenu.Popup(P1.X, P1.Y);
+          RatingPopupMenu.DoPopupEx(P1.X, P1.Y);
           Exit;
         end;
       end;
@@ -8876,7 +8894,7 @@ var
 begin
   APoint := Point(ToolButtonView.Left, ToolButtonView.Top + ToolButtonView.Height);
   APoint := ToolBar1.ClientToScreen(APoint);
-  PmListViewType.Popup(APoint.X, APoint.Y);
+  PmListViewType.DoPopupEx(APoint.X, APoint.Y);
 end;
 
 function TExplorerForm.GetViewInfo: TExplorerViewInfo;

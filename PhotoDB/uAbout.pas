@@ -3,13 +3,37 @@ unit uAbout;
 interface
 
 uses
-  win32crc, UnitDBKernel, Searching, Windows, Messages, SysUtils,
-  Variants, Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
-  ImButton, Dialogs, jpeg, DmProgress, psAPI, uConstants, uTime,
-  UnitDBCommonGraphics, uResources, pngimage, ComCtrls, WebLink, LoadingSign,
-  uMemory, uTranslate, uRuntime, uActivationUtils, uDBForm, uMemoryEx,
-  UnitInternetUpdate, uInternetUtils, ShellApi, Dolphin_DB, uSysUtils,
-  uMobileUtils;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  ExtCtrls,
+  StdCtrls,
+  ImButton,
+  Dialogs,
+  jpeg,
+  uConstants,
+  uResources,
+  pngimage,
+  ComCtrls,
+  WebLink,
+  LoadingSign,
+  uMemory,
+  uTranslate,
+  uRuntime,
+  uActivationUtils,
+  uDBForm,
+  uMemoryEx,
+  UnitInternetUpdate,
+  uInternetUtils,
+  ShellApi,
+  Dolphin_DB,
+  uSysUtils,
+  uMobileUtils,
+  uBaseWinControl;
 
 type
   TAboutForm = class(TDBForm)

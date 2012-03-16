@@ -188,6 +188,10 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -932,6 +936,10 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -952,6 +960,10 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1006,6 +1018,10 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1053,7 +1069,7 @@ object PropertiesForm: TPropertiesForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
+        DisableStyles = False
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True

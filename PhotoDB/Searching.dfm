@@ -767,7 +767,6 @@ object SearchForm: TSearchForm
         OnChange = SearchEditChange
         IsLayered = False
         Layered = 100
-        ImageCanRegenerate = True
       end
       object ShowDateOptionsLink: TWebLink
         Left = 8
@@ -784,7 +783,6 @@ object SearchForm: TSearchForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -806,7 +804,6 @@ object SearchForm: TSearchForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -906,7 +903,6 @@ object SearchForm: TSearchForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -973,7 +969,6 @@ object SearchForm: TSearchForm
         OnChange = SearchEditChange
         IsLayered = False
         Layered = 100
-        ImageCanRegenerate = True
       end
     end
   end
@@ -1129,6 +1124,7 @@ object SearchForm: TSearchForm
     Top = 30
     Width = 16
     Height = 16
+    DisableStyles = True
     Visible = False
     Active = True
     FillPercent = 50

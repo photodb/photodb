@@ -444,7 +444,6 @@ begin
   WL.Text := L('Edit related groups');
   WL.ImageList := GroupsImageList;
   WL.ImageIndex := 0;
-  WL.ImageCanRegenerate := True;
   WL.Tag := -1;
   WL.OnClick := GroupClick;
 
@@ -454,7 +453,6 @@ begin
     WL.Text := FCurrentGroups[I].GroupName;
     WL.ImageList := GroupsImageList;
     WL.ImageIndex := I + 1;
-    WL.ImageCanRegenerate := True;
     WL.Tag := I;
     WL.OnClick := GroupClick;
   end;

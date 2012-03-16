@@ -181,14 +181,14 @@ begin
 end;
 
 function TElementBehavior.GetPainterInfo(out pInfo: _HTML_PAINTER_INFO): HResult;
-const
+{const
   HTMLPAINTER_OPAQUE = $00000001;
-  HTMLPAINT_ZORDER_WINDOW_TOP = $00000008;
+  HTMLPAINT_ZORDER_WINDOW_TOP = $00000008;    }
 begin
   with pInfo do
   begin
     lFlags := HTMLPAINTER_OPAQUE;
-    lZOrder := HTMLPAINT_ZORDER_WINDOW_TOP;
+    lZOrder := HTMLPAINT_ZORDER_REPLACE_ALL;
     FillChar(rcExpand, SizeOf(TRect), 0);
   end;
   Result := S_OK;

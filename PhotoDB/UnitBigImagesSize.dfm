@@ -74,7 +74,7 @@ object BigImagesSizeForm: TBigImagesSizeForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
+      DisableStyles = False
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True

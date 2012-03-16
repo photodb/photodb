@@ -64,7 +64,7 @@ uses
   Vcl.Themes,
   Vcl.Styles,
   Vcl.Styles.Ext,
-  Vcl.Styles.Utils;
+  Vcl.Styles.Utils, uBaseWinControl;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)
@@ -91,7 +91,7 @@ type
     N3: TMenuItem;
     Default1: TMenuItem;
     PcMain: TPageControl;
-    TsGeneral: TTabSheet;
+    TsAssociations: TTabSheet;
     TsExplorer: TTabSheet;
     BtnClearIconCache: TButton;
     BtnClearThumbnailCache: TButton;
@@ -566,7 +566,8 @@ begin
   ClientHeight := 484;
   PcMain.Width := ClientWidth - 15;
   PcMainChange(Self);
-  WlDefaultJPEGOptions.Color := clWindow;
+  WblMethod.Color := Theme.PanelColor;
+  WblMethod.Font.Color := Theme.PanelFontColor;
 
   FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
   WblMethod.LoadFromHIcon(FPassIcon);
@@ -794,7 +795,7 @@ begin
   BeginTranslate;
   try
     Caption := L('Options');
-    TsGeneral.Caption := L('General');
+    TsAssociations.Caption := L('Associations');
     TsExplorer.Caption := L('Explorer'); ;
     TsView.Caption := L('Viewer'); ;
     TsUserMenu.Caption := L('User menu');

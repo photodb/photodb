@@ -11,6 +11,8 @@ uses
   Graphics,
   Menus,
   Themes,
+  Vcl.ActnPopup,
+  uRuntime,
   StdCtrls;
 
 type
@@ -45,6 +47,12 @@ type
   public
     procedure ExSetDefault(Value: Boolean);
     function ExGetDefault: Boolean;
+  end;
+
+type
+  TPopupActionBarHelper = class helper for TPopupActionBar
+  public
+    procedure DoPopupEx(X, Y: Integer);
   end;
 
 type
@@ -197,6 +205,18 @@ begin
   end else
   begin
     Self.Default := True;
+  end;
+end;
+
+{ TPopupActionBarHelper }
+
+procedure TPopupActionBarHelper.DoPopupEx(X, Y: Integer);
+begin
+  BlockClosingOfWindows := True;
+  try
+    Popup(X, Y);
+  finally
+    BlockClosingOfWindows := False;
   end;
 end;
 

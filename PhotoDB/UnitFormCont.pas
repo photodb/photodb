@@ -75,8 +75,10 @@ uses
   SaveWindowPos,
   uPortableDeviceUtils,
   uThemesUtils,
+  uVCLHelpers,
   Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup;
+  Vcl.ActnPopup,
+  uBaseWinControl;
 
 type
   TDestDype = class(TObject)
@@ -515,7 +517,7 @@ begin
     end;
 
   end else
-    PopupMenu1.Popup(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
+    PopupMenu1.DoPopupEx(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
 end;
 
 procedure TFormCont.ListView1MouseDown(Sender: TObject;
@@ -1588,7 +1590,7 @@ begin
       Application.HideHint;
       THintManager.Instance.CloseHint;
       LastMouseItem := nil;
-      RatingPopupMenu1.Popup(MousePos.X, MousePos.Y);
+      RatingPopupMenu1.DoPopupEx(MousePos.X, MousePos.Y);
       Exit;
     end;
   end;

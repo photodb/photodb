@@ -161,7 +161,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
+      DisableStyles = False
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True
@@ -192,7 +192,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
+      DisableStyles = False
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True

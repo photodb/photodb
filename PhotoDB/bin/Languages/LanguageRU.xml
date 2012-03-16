@@ -1750,7 +1750,7 @@
 	<translate name="Clear previews cache" value="Очистить кэш предпросмотров"/>	
 	<translate name="Clear icons cache" value="Очистить кэш иконок"/>	
 	<translate name="Show EXIF marker" value="Показывать EXIF заголовок"/>
-	<translate name="General" value="Основное" />
+	<translate name="Associations" value="Ассоциации" />
 	<translate name="Display links &quot;Other places&quot;" value="Отображать ссылки &quot;Другие места&quot;"/>
 	<translate name="&quot;Next&quot; by click" value="&quot;Следующий&quot; при клике"/>
 	<translate name="Use the selection by hover on the list" value="Использовать выделение при наведении в списках"/>

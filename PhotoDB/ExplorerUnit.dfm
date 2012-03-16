@@ -296,7 +296,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -317,7 +316,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -338,7 +336,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -359,7 +356,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -380,7 +376,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -401,7 +396,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -423,7 +417,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -445,7 +438,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -467,7 +459,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -488,7 +479,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -509,7 +499,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -531,7 +520,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -552,7 +540,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -573,7 +560,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -594,7 +580,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -615,7 +600,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -637,7 +621,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -658,7 +641,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -679,7 +661,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -700,7 +681,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -721,7 +701,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -742,7 +721,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -771,6 +749,7 @@ object ExplorerForm: TExplorerForm
     Height = 21
     AutoSize = True
     BandBorderStyle = bsNone
+    BandMaximize = bmNone
     Bands = <
       item
         Control = ToolBar1
@@ -779,10 +758,11 @@ object ExplorerForm: TExplorerForm
         Width = 877
       end>
     EdgeBorders = []
+    FixedOrder = True
     object ToolBar1: TToolBar
-      Left = 11
+      Left = 2
       Top = 0
-      Width = 868
+      Width = 877
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 48
@@ -945,6 +925,7 @@ object ExplorerForm: TExplorerForm
     Top = 49
     Width = 20
     Height = 20
+    DisableStyles = True
     Visible = False
     Active = True
     FillPercent = 50
@@ -960,7 +941,7 @@ object ExplorerForm: TExplorerForm
     Align = alTop
     AutoSize = True
     BevelEdges = [beBottom]
-    Color = clWindow
+    ParentColor = True
     TabOrder = 4
     object BvSeparatorAddress: TBevel
       Left = 688
@@ -1053,13 +1034,15 @@ object ExplorerForm: TExplorerForm
     object StAddress: TStaticText
       AlignWithMargins = True
       Left = 4
-      Top = 4
+      Top = 6
       Width = 53
-      Height = 19
+      Height = 17
+      Margins.Top = 5
       Align = alLeft
       Alignment = taCenter
       Caption = '  Address:'
       TabOrder = 1
+      ExplicitTop = 4
     end
     object PePath: TPathEditor
       Left = 62
@@ -1114,6 +1097,7 @@ object ExplorerForm: TExplorerForm
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
+    ParentColor = True
     TabOrder = 5
     object SplGeoLocation: TSplitter
       Left = 383
@@ -1550,7 +1534,6 @@ object ExplorerForm: TExplorerForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010001001010000001002000680400001600000028000000100000002000
           0000010020000000000040040000000000000000000000000000000000000000
@@ -1614,7 +1597,7 @@ object ExplorerForm: TExplorerForm
         ControlData = {
           4C000000F82300000E3300000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126208000000000000004C0000000114020000000000C000000000000046
+          2B2E12620A000000000000004C0000000114020000000000C000000000000046
           8000000000000000000000000000000000000000000000000000000000000000
           00000000000000000100000000000000000000000000000000000000}
       end
@@ -1684,7 +1667,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = True
           StretchImage = True
@@ -1705,7 +1687,6 @@ object ExplorerForm: TExplorerForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = True
           StretchImage = True

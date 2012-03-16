@@ -314,7 +314,6 @@ begin
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.Icon := IcoSave;
-  SaveSettingsLink.ImageCanRegenerate := True;
   SaveSettingsLink.LoadImage;
   IcoSave.Free;
 
@@ -327,7 +326,6 @@ begin
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
-  MakeItLink.ImageCanRegenerate := True;
   MakeItLink.LoadImage;
   IcoOK.Free;
 
@@ -340,7 +338,6 @@ begin
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
-  CloseLink.ImageCanRegenerate := True;
   CloseLink.LoadImage;
   IcoCancel.Free;
 

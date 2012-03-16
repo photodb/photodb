@@ -324,8 +324,8 @@ begin
       try
         Bit.PixelFormat := pf24bit;
         Bit.SetSize(ListItemPreviewSize, ListItemPreviewSize);
-        Bit.Canvas.Brush.Color := Theme.PanelColor;
-        Bit.Canvas.Pen.Color := Theme.PanelColor;
+        Bit.Canvas.Brush.Color := Theme.WindowColor;
+        Bit.Canvas.Pen.Color := Theme.WindowColor;
         if DA.Thumb = nil then
           Exit;
 
@@ -413,12 +413,19 @@ begin
   FListViewMouseDown := False;
   WorkQuery := GetQuery;
   WDA := TDBAdapter.Create(WorkQuery);
-  DropFileTarget1.register(Self);
+  DropFileTarget1.Register(Self);
   FBitmapImageList := TBitmapImageList.Create;
   LvMain.DoubleBuffered := True;
   DBKernel.RegisterChangesID(Self, Self.ChangedDBDataByID);
   LoadLanguage;
   SetLVSelection(LvMain, False, [cmbLeft]);
+
+  BtnDeleteFile.Left := ClientWidth - BtnDeleteFile.Width - 5;
+  BtnReplaceAndDeleteDuplicates.Left := BtnDeleteFile.Left - BtnReplaceAndDeleteDuplicates.Width - 5;
+
+  BtnSkip.Left := ClientWidth - BtnSkip.Width - 5;
+  BtnReplace.Left := BtnSkip.Left - BtnReplace.Width - 5;
+  BtnAdd.Left := BtnReplace.Left - BtnAdd.Width - 5;
 end;
 
 procedure TDBReplaceForm.BtnAddClick(Sender: TObject);
@@ -513,8 +520,8 @@ begin
         Fb1.PixelFormat := pf24bit;
         Fb1.Width := FilePreviewSize;
         Fb1.Height := FilePreviewSize;
-        Fb1.Canvas.Brush.Color := Theme.PanelColor;
-        Fb1.Canvas.Pen.Color := Theme.PanelColor;
+        Fb1.Canvas.Brush.Color := Theme.WindowColor;
+        Fb1.Canvas.Pen.Color := Theme.WindowColor;
         Fb1.Canvas.Rectangle(0, 0, FilePreviewSize, FilePreviewSize);
         if G.Width > G.Height then
         begin
@@ -542,7 +549,7 @@ end;
 procedure TDBReplaceForm.Image2MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if (Button = MbLeft) and FileExistsSafe(DB_PATH.Text) then
+  if (Button = mbLeft) and FileExistsSafe(DB_PATH.Text) then
   begin
     DragImageList.Clear;
     DropFileSource1.Files.Clear;

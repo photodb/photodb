@@ -98,8 +98,10 @@ uses
   uDBAdapter,
   uBitmapUtils,
   uThemesUtils,
+  uVCLHelpers,
   Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup;
+  Vcl.ActnPopup,
+  uBaseWinControl;
 
 type
   TSearchForm = class(TSearchCustomForm)
@@ -930,7 +932,8 @@ begin
     finally
       TTranslateManager.Instance.EndTranslate;
     end;
-    ScriptLisTPopupActionBar.Popup(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
+    HintTimer.Enabled := False;
+    ScriptListPopupActionBar.DoPopupEx(ElvMain.ClientToScreen(MousePos).X, ElvMain.ClientToScreen(MousePos).Y);
   end;
 end;
 
@@ -987,7 +990,8 @@ begin
       Application.HideHint;
       THintManager.Instance.CloseHint;
       LastMouseItem := nil;
-      RatingPopupMenu1.Popup(P1.X, P1.Y);
+      HintTimer.Enabled := False;
+      RatingPopupMenu1.DoPopupEx(P1.X, P1.Y);
       Exit;
     end;
   end;
@@ -2118,7 +2122,7 @@ var
 begin
   WHandle := WindowFromPoint(SearchPanelA.ClientToScreen(MousePos));
   if WHandle <> SearchEdit.Handle then
-    PmSearchOptions.Popup(SearchPanelA.ClientToScreen(MousePos).X, SearchPanelA.ClientToScreen(MousePos).Y);
+    PmSearchOptions.DoPopupEx(SearchPanelA.ClientToScreen(MousePos).X, SearchPanelA.ClientToScreen(MousePos).Y);
 end;
 
 procedure TSearchForm.RatingEditMouseDown(Sender: TObject);
@@ -2284,7 +2288,6 @@ begin
     WL.Text := L('Edit groups');
     WL.ImageList := GroupsImageList;
     WL.ImageIndex := 0;
-    WL.ImageCanRegenerate := True;
     WL.Tag := -1;
     WL.OnClick := GroupClick;
   end;
@@ -2295,7 +2298,6 @@ begin
     WL.Text := FCurrentGroups[I].GroupName;
     WL.ImageList := GroupsImageList;
     WL.ImageIndex := I + 1;
-    WL.ImageCanRegenerate := True;
     WL.Tag := I;
     WL.OnClick := GroupClick;
   end;
@@ -2647,11 +2649,10 @@ end;
 procedure TSearchForm.Image3Click(Sender: TObject);
 var
   Groups: TGroups;
-  Size, I: Integer;
+  I: Integer;
   MenuItem: TmenuItem;
   P: TPoint;
-  SmallB, B: TBitmap;
-  JPEG: TJPEGImage;
+  SmallB: TBitmap;
 begin
   if not GroupsLoaded then
     LoadGroupsList(True);
@@ -2665,27 +2666,13 @@ begin
     SmallB.PixelFormat := pf24bit;
     for I := 0 to Length(Groups) - 1 do
     begin
-      B := TBitmap.Create;
-      try
-        B.PixelFormat := pf24bit;
-        JPEG := TJPEGImage.Create;
-        try
-          JPEG.Assign(Groups[I].GroupImage);
-          B.Canvas.Brush.Color := Theme.MenuColor;
-          B.Canvas.Pen.Color := Theme.MenuColor;
-          Size := Max(JPEG.Width, JPEG.Height);
-          B.Width := Size;
-          B.Height := Size;
-          B.Canvas.Rectangle(0, 0, Size, Size);
-          B.Canvas.Draw(B.Width div 2 - JPEG.Width div 2, B.Height div 2 - JPEG.Height div 2, JPEG);
-          DoResize(16, 16, B, SmallB);
-        finally
-          F(JPEG);
-        end;
-      finally
-        F(B);
+      if Groups[I].GroupImage <> nil then
+      begin
+        SmallB.PixelFormat := pf24Bit;
+        SmallB.Assign(Groups[I].GroupImage);
+        CenterBitmap24To32ImageList(SmallB, 16);
+        GroupsImageList.Add(SmallB, nil);
       end;
-      GroupsImageList.Add(SmallB, nil);
     end;
   finally
     F(SmallB);
@@ -2699,7 +2686,7 @@ begin
     MenuItem.ImageIndex := I;
     QuickGroupsSearch.Items.Add(MenuItem);
   end;
-  QuickGroupsSearch.Popup(P.X, P.Y);
+  QuickGroupsSearch.DoPopupEx(P.X, P.Y);
 end;
 
 procedure TSearchForm.QuickGroupsearch(Sender: TObject);
@@ -2776,7 +2763,7 @@ var
   P: TPoint;
 begin
   GetCursorPos(P);
-  SortingPopupMenu.Popup(P.X, P.Y);
+  SortingPopupMenu.DoPopupEx(P.X, P.Y);
 end;
 
 procedure TSearchForm.Decremect1Click(Sender: TObject);
@@ -4179,7 +4166,7 @@ begin
   try
     DateRangeBackgroundImageBMP := TBitmap.Create;
     try
-      LoadPNGImage32bit(DateRangeBackgroundImage, DateRangeBackgroundImageBMP, clWindow);
+      LoadPNGImage32bit(DateRangeBackgroundImage, DateRangeBackgroundImageBMP, Theme.ListViewColor);
       elvDateRange.BackGround.Image.Canvas.Draw(0, 0, DateRangeBackgroundImageBMP);
     finally
       F(DateRangeBackgroundImageBMP);
@@ -4590,8 +4577,8 @@ end;
 procedure TSearchForm.dblDateDrawBackground(Sender: TObject;
   Buffer: TBitmap);
 begin
-  Buffer.Canvas.Pen.Color := ClWindow;
-  Buffer.Canvas.Brush.Color := ClWindow;
+  Buffer.Canvas.Pen.Color := Theme.ListViewColor;
+  Buffer.Canvas.Brush.Color := Theme.ListViewColor;
   Buffer.Canvas.Rectangle(0, 0, Buffer.Width, Buffer.Height);
 end;
 

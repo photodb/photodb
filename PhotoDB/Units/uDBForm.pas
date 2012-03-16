@@ -94,6 +94,8 @@ begin
   FWindowID := GUIDToString(GetGUID);
   TFormCollection.Instance.RegisterForm(Self);
   GOM.AddObj(Self);
+  {$IFDEF PHOTODB}
+  {$ENDIF}
 end;
 
 destructor TDBForm.Destroy;

@@ -107,6 +107,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Width = 112
       Height = 16
       Cursor = crHandPoint
+      DisableStyles = True
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
       Font.Height = -11
@@ -123,7 +124,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True

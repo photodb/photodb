@@ -34,7 +34,6 @@ uses
   Grids,
   DBGrids,
   jpeg,
-  TwButton,
   Rating,
   Mask,
   uMemoryEx,
@@ -72,11 +71,13 @@ uses
   uThreadForm,
   uDBAdapter,
   uIconUtils,
+  uVCLHelpers,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
   Themes,
-  uConfiguration;
+  uConfiguration,
+  uBaseWinControl;
 
 type
   TManagerDB = class(TThreadForm)
@@ -1321,14 +1322,14 @@ begin
         PopupMenuRating.Tag := Item.Index;
         P := ElvMain.ClientToScreen(P);
         for I := 0 to 5 do
-          (FindComponent('N' + IntToStr(I) + '1') as TMenuItem).Default := ItemData.Rating = I;
+          (FindComponent('N' + IntToStr(I) + '1') as TMenuItem).ExSetDefault(ItemData.Rating = I);
         PopupMenuRating.Popup(P.X, P. Y);
       end else if GetSubItemIndexByPoint(ElvMain, Item, P) = 5 then
       begin
         PopupMenuRotate.Tag := Item.Index;
         p := ElvMain.ClientToScreen(p);
         for I := 0 to 3 do
-          (FindComponent('R0' + IntToStr(I + 1)) as TMenuItem).Default := ItemData.Rotation = I;
+          (FindComponent('R0' + IntToStr(I + 1)) as TMenuItem).ExSetDefault(ItemData.Rotation = I);
         PopupMenuRotate.Popup(P.X, P. Y);
       end else if (GetSubItemIndexByPoint(ElvMain,Item, P) = 8) or (GetSubItemIndexByPoint(ElvMain,Item, P) = 9) then
       begin

@@ -96,7 +96,7 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
-  Themes;
+  Themes, uBaseWinControl;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
@@ -1125,7 +1125,7 @@ var
   SelectedPersons: TPersonCollection;
   LatestPersons: Boolean;
   MI: TMenuItem;
-begin  
+begin
   RI := TFaceDetectionResultItem(PmFace.Tag);
   PA := TPersonArea(RI.Data);
 
@@ -2908,7 +2908,7 @@ begin
   for I := 0 to FFaces.Count - 1 do
     if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FBImage, FFaces[I].ImageSize)) then
     begin
-      FHoverFace := FFaces[I];   
+      FHoverFace := FFaces[I];
       RefreshFaces;
       PmFace.Tag := NativeInt(FFaces[I]);
       PmFace.Popup(ScreenRect.X, ScreenRect.Y);
@@ -4349,8 +4349,15 @@ begin
   begin
     TbPageNumber.Visible := FPageCount > 1;
     TbSeparatorPageNumber.Visible := FPageCount > 1;
-    TbrActions.Width := TbInfo.Left + TbInfo.Width + 2;
-    TbrActions.Left := ClientWidth div 2 - TbrActions.Width div 2;
+    BeginScreenUpdate(BottomImage.Handle);
+    try
+      TbrActions.Visible := True;
+      TbrActions.AutoSize := True;
+      TbrActions.AutoSize := False;
+      TbrActions.Left := ClientWidth div 2 - TbrActions.Width div 2;
+    finally
+      EndScreenUpdate(BottomImage.Handle, True);
+    end;
   end;
   PopupMenuPageSelecter.Items.Clear;
   for I := 0 to FPageCount - 1 do
@@ -4362,7 +4369,7 @@ begin
     if I = FCurrentPage then
       MenuItem.ExSetDefault(True);
     PopupMenuPageSelecter.Items.Add(MenuItem);
-   end;
+  end;
 end;
 
 procedure TViewer.OnPageSelecterClick(Sender: TObject);

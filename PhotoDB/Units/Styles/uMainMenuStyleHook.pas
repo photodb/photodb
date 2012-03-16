@@ -44,12 +44,16 @@ begin
   begin
     ACanvas.Brush.Color := StyleServices.GetStyleColor(scButtonFocused);
     ACanvas.Pen.Color := StyleServices.GetStyleColor(scButtonFocused);
+    Details := StyleServices.GetElementDetails(tmPopupItemHot);
   end else
   begin
     ACanvas.Brush.Color := StyleServices.GetStyleColor(scButtonNormal);
     ACanvas.Pen.Color := StyleServices.GetStyleColor(scButtonNormal);
+    Details := StyleServices.GetElementDetails(tmPopupItemNormal);
   end;
+  SetBkMode(ACanvas.Handle, Windows.OPAQUE);
   ACanvas.Rectangle(ARect);
+  StyleServices.DrawElement(ACanvas.Handle, Details, ARect);
 
   if MI.Caption = '-' then
   begin
@@ -96,6 +100,7 @@ begin
     ACanvas.Font.Style := ACanvas.Font.Style + [fsBold]
   else
     ACanvas.Font.Style := ACanvas.Font.Style - [fsBold];
+
   ACanvas.Brush.Style := bsClear;
   ARect.Left := ARect.Left + 16 + 4;
   DrawText(ACanvas.Handle, TMenuItem(Sender).Caption, Length(TMenuItem(Sender).Caption), ARect, DT_SINGLELINE or DT_VCENTER );

@@ -573,7 +573,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000001002000680400002600000018180000010020008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -714,7 +713,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -855,7 +853,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -996,7 +993,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1137,7 +1133,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1278,7 +1273,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1419,7 +1413,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000000000000680400002600000018180000000000008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1560,7 +1553,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010001001818000001002000880900001600000028000000180000003000
           0000010020000000000060090000000000000000000000000000000000000000
@@ -1665,7 +1657,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010001001818000001002000880900001600000028000000180000003000
           0000010020000000000060090000000000000000000000000000000000000000
@@ -1770,7 +1761,6 @@ object ImageEditor: TImageEditor
         EnterColor = clMaroon
         EnterBould = True
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         Icon.Data = {
           0000010002001010000001002000680400002600000018180000010020008809
           00008E0400002800000010000000200000000100200000000000400400000000
@@ -1914,7 +1904,6 @@ object ImageEditor: TImageEditor
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2049,7 +2038,6 @@ object ImageEditor: TImageEditor
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2185,7 +2173,6 @@ object ImageEditor: TImageEditor
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2321,7 +2308,6 @@ object ImageEditor: TImageEditor
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2456,7 +2442,6 @@ object ImageEditor: TImageEditor
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2592,7 +2577,6 @@ object ImageEditor: TImageEditor
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000
@@ -2727,7 +2711,6 @@ object ImageEditor: TImageEditor
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       Icon.Data = {
         0000010002001010000000000000680400002600000018180000000000008809
         00008E0400002800000010000000200000000100200000000000400400000000

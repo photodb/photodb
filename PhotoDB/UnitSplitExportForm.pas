@@ -39,6 +39,7 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
+  uVCLHelpers,
   uDBUtils;
 
 type
@@ -289,9 +290,9 @@ begin
     PmMethod.Tag := Item.Index;
     Item.Selected := True;
     if Item.ImageIndex = 0 then
-      Copy1.Default := True
+      Copy1.ExSetDefault(True)
     else
-      Cut1.Default := True;
+      Cut1.ExSetDefault(True);
     PmMethod.Popup(LvMain.ClientToScreen(MousePos).X,
       LvMain.ClientToScreen(MousePos).Y);
   end;

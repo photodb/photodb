@@ -23,6 +23,7 @@ var
   DBID: string = DB_ID;
   CMDInProgress: Boolean = False;
   ProgramVersionString: string = '';
+  BlockClosingOfWindows: Boolean = False;
 
 var
   ProcessorCount: Integer = 0;

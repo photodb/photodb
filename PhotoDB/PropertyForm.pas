@@ -2399,7 +2399,6 @@ begin
     Links[I].Tag := I;
     Links[I].OnClick := LinkClick;
     Links[I].OnContextPopup := LinkOnPopup;
-    Links[I].ImageCanRegenerate := True;
     //
     Icon := TIcon.Create;
     try

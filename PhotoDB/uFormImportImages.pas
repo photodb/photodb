@@ -1079,7 +1079,6 @@ begin
     LnkOk.HightliteImage := True;
     LnkOk.Tag := TAG_EDIT_DATE_OK;
     LnkOk.LoadFromResource('SERIES_OK');
-    LnkOk.ImageCanRegenerate := True;
     LnkOk.OnClick := OnEditDateOkClick;
     LnkOk.Refresh;
     LnkOk.OnMouseEnter := OnBoxMouseEnter;
@@ -1132,7 +1131,6 @@ begin
     LnkOk.Left := 130;
     LnkOk.Top := 6;
     LnkOk.Text := TA('Ok');
-    LnkOk.ImageCanRegenerate := True;
     LnkOk.HightliteImage := True;
     LnkOk.Tag := TAG_EDIT_LABEL_OK;
     LnkOk.LoadFromResource('SERIES_OK');
@@ -1212,7 +1210,6 @@ begin
         WlLabel.Left := 2;
         WlLabel.Top := 6;
         WlLabel.LoadFromResource('SERIES_EDIT');
-        WlLabel.ImageCanRegenerate := True;
         WlLabel.Refresh;
         WlLabel.Tag := TAG_LABEL;
         WlLabel.OnClick := OnItemEditClick;
@@ -1224,7 +1221,6 @@ begin
         WlDate.Left := 2;
         WlDate.Top := 28;
         WlDate.LoadFromResource('SERIES_DATE');
-        WlDate.ImageCanRegenerate := True;
         WlDate.Refresh;
         WlDate.Tag := TAG_DATE;
         WlDate.OnClick := OnDateEditClick;
@@ -1237,7 +1233,6 @@ begin
         WlItemsCount.Parent := Sb;
         WlItemsCount.Left := 2;
         WlItemsCount.Top := 50;
-        WlItemsCount.ImageCanRegenerate := True;
         WlItemsCount.Tag := TAG_ITEMS_COUNT;
         WlItemsCount.OnMouseEnter := OnBoxMouseEnter;
         WlItemsCount.OnMouseLeave := OnBoxMouseLeave;
@@ -1249,7 +1244,6 @@ begin
         WlSize.Parent := Sb;
         WlSize.Left := 60;
         WlSize.Top := 50;
-        WlSize.ImageCanRegenerate := True;
         WlSize.Tag := TAG_ITEMS_SIZE;
         WlSize.OnMouseEnter := OnBoxMouseEnter;
         WlSize.OnMouseLeave := OnBoxMouseLeave;
@@ -1262,7 +1256,6 @@ begin
         WlSettings.Top := 52;
         WlSettings.TopIconIncrement := 0;
         WlSettings.LoadFromResource('SERIES_SETTINGS');
-        WlSettings.ImageCanRegenerate := True;
         WlSettings.Refresh;
         WlSettings.Tag := TAG_SETTINGS;
         WlSettings.OnMouseEnter := OnBoxMouseEnter;

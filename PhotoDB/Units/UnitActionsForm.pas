@@ -24,7 +24,7 @@ uses
   uFileUtils,
   uDBFileTypes,
   uThemesUtils,
-  uConstants;
+  uConstants, uBaseWinControl;
 
 type
   TActionObject = class(TObject)

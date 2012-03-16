@@ -45,7 +45,7 @@ object FormInternetUpdating: TFormInternetUpdating
   object WlHomePage: TWebLink
     Left = 8
     Top = 233
-    Width = 61
+    Width = 59
     Height = 13
     Cursor = crHandPoint
     Font.Charset = DEFAULT_CHARSET
@@ -62,9 +62,11 @@ object FormInternetUpdating: TFormInternetUpdating
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
+    DisableStyles = False
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
   object CbRemindMeLater: TCheckBox
     Left = 8
@@ -100,7 +102,7 @@ object FormInternetUpdating: TFormInternetUpdating
   object WlDownload: TWebLink
     Left = 8
     Top = 215
-    Width = 88
+    Width = 86
     Height = 13
     Cursor = crHandPoint
     Font.Charset = DEFAULT_CHARSET
@@ -117,8 +119,10 @@ object FormInternetUpdating: TFormInternetUpdating
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
+    DisableStyles = False
     UseSpecIconSize = True
     HightliteImage = False
+    StretchImage = True
+    CanClick = True
   end
 end

@@ -31,7 +31,7 @@ uses
   uSettings,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  Spin;
+  Spin, uBaseWinControl;
 
 type
   TFormFastFileRenamer = class(TDBForm)

@@ -32,7 +32,8 @@ uses
   uMemory,
   uTranslate,
   Themes,
-  EasyListView;
+  EasyListView,
+  ImgList;
 
 type
   TEffectsManager = class(TObject)
@@ -153,7 +154,7 @@ begin
   ImageList := TImageList.Create(nil);
   ImageList.Width := 100;
   ImageList.Height := 100;
-  ImageList.BkColor := ClWhite;
+  ImageList.ColorDepth := cd32Bit;
   EffectsChooser.ImagesLarge := ImageList;
   EffectsChooser.View := elsThumbnail;
 
@@ -163,10 +164,8 @@ begin
   MakeItLink.Top := EffectsChooser.Top + EffectsChooser.Height + 8;
   MakeItLink.Left := 10;
   MakeItLink.Visible := True;
-  MakeItLink.Color := clBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.Icon := IcoOK;
-  MakeItLink.ImageCanRegenerate := True;
   MakeItLink.LoadImage;
   MakeItLink.Anchors := [akLeft, akBottom];
   IcoOK.Free;
@@ -177,15 +176,11 @@ begin
   CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
   CloseLink.Left := 10;
   CloseLink.Visible := True;
-  CloseLink.Color := clBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.Icon := IcoCancel;
-  CloseLink.ImageCanRegenerate := True;
   CloseLink.LoadImage;
   CloseLink.Anchors := [akLeft, akBottom];
   IcoCancel.Free;
-
-  CloseLink.ImageCanRegenerate := True;
 end;
 
 destructor TEffectsToolPanelClass.Destroy;

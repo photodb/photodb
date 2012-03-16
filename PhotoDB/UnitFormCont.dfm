@@ -57,7 +57,6 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -122,7 +121,6 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -143,7 +141,6 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -164,7 +161,6 @@ object FormCont: TFormCont
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -257,7 +253,6 @@ object FormCont: TFormCont
       OnChange = TwWindowsPosChange
       IsLayered = False
       Layered = 255
-      ImageCanRegenerate = True
     end
   end
   object CoolBar1: TCoolBar

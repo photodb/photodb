@@ -113,6 +113,9 @@ type
 
 implementation
 
+uses
+  FormManegerUnit;
+
 {$R *.dfm}
 
 { TImHint }
@@ -411,7 +414,7 @@ begin
     W := ImageBuffer.Width;
     H := ImageBuffer.Height;
     ProportionalSize(ThSize, ThSize, W, H);
-    DragImage:=TBitmap.Create;
+    DragImage := TBitmap.Create;
     try
       DragImage.PixelFormat := ImageBuffer.PixelFormat;
       DoResize(W, H, ImageBuffer, DragImage);
@@ -448,9 +451,13 @@ begin
   FAlphaBlend := Max(FAlphaBlend - 40, 0);
   if FAlphaBlend = 0 then
   begin
-    TimerHide.Enabled:=false;
-    FInternalClose := True;
-    Close;
+    if not BlockClosingOfWindows then
+    begin
+      TimerHide.Enabled := False;
+      FInternalClose := True;
+      Close;
+    end else
+      Hide;
   end else
     CreateFormImage;
 end;

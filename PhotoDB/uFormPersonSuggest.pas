@@ -114,7 +114,6 @@ begin
       WL.StretchImage := False;
       WL.OnClick := SelectPerson;
       WL.Tag := TPersonItem(PersonList[I]).PersonID;
-      WL.ImageCanRegenerate := True;
     end;
 
     CreateLink(PersonList.Count);
@@ -124,7 +123,6 @@ begin
     WL.Text := L('Close');
     WL.IconWidth := 0;
     WL.IconHeight := 0;
-    WL.ImageCanRegenerate := True;
 
     ShowWindow(Handle, SW_SHOWNOACTIVATE);
     Visible := True;

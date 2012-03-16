@@ -82,7 +82,7 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   Themes,
-  uThemesUtils;
+  uThemesUtils, uBaseWinControl;
 
 type
   TWindowEnableState = record
@@ -735,7 +735,10 @@ begin
   ToolsPanel.Height := ClientHeight - ButtomPanel.Height - StatusBar1.Height;
   ReAllignScrolls(False, Point(0, 0));
   MakeImage(True);
-  FormPaint(Sender);
+  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+    Repaint
+  else
+    FormPaint(Sender);
   MakeCaption;
   StatusBar1.Top := ClientHeight - StatusBar1.Height;
   StatusBar1.Width := ClientWidth;

@@ -153,7 +153,7 @@ object PrintForm: TPrintForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
+        DisableStyles = False
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -292,7 +292,7 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
+      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000000000
@@ -351,7 +351,7 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
+      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000000000
@@ -410,7 +410,7 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
+      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000001A19
@@ -469,7 +469,7 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
+      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000001A19

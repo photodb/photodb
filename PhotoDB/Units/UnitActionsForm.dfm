@@ -51,7 +51,6 @@ object ActionsForm: TActionsForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True
@@ -72,7 +71,6 @@ object ActionsForm: TActionsForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True
@@ -93,7 +91,6 @@ object ActionsForm: TActionsForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      ImageCanRegenerate = True
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True

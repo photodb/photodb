@@ -151,6 +151,7 @@ begin
     if FGroup.GroupName = '' then
     begin
       MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Close;
       Exit;
     end;
     FPrGroup := CopyGroup(FGroup);
@@ -296,7 +297,6 @@ begin
     WL.Text := FCurrentGroups[I].GroupName;
     WL.ImageList := GroupsImageList;
     WL.ImageIndex := I;
-    WL.ImageCanRegenerate := True;
     WL.Tag := I;
     WL.OnClick := GroupClick;
   end;

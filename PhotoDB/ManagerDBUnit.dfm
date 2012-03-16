@@ -262,7 +262,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -283,7 +282,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -304,7 +302,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -325,7 +322,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -346,7 +342,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -367,7 +362,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -388,7 +382,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -430,7 +423,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -451,7 +443,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -472,7 +463,6 @@ object ManagerDB: TManagerDB
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True

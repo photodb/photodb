@@ -116,19 +116,14 @@ object OptionsForm: TOptionsForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
         CanClick = True
       end
     end
-    object TsGeneral: TTabSheet
-      Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+    object TsAssociations: TTabSheet
+      Caption = 'Associations'
       DesignSize = (
         497
         413)
@@ -251,7 +246,6 @@ object OptionsForm: TOptionsForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        ImageCanRegenerate = True
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -261,10 +255,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -477,10 +467,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -628,10 +614,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -1306,6 +1288,7 @@ object OptionsForm: TOptionsForm
           Width = 84
           Height = 16
           Cursor = crHandPoint
+          DisableStyles = True
           Text = 'BlowFish - 56'
           ImageIndex = 0
           IconWidth = 16
@@ -1314,7 +1297,6 @@ object OptionsForm: TOptionsForm
           EnterColor = clBlack
           EnterBould = False
           TopIconIncrement = 0
-          ImageCanRegenerate = True
           UseSpecIconSize = True
           HightliteImage = False
           StretchImage = True
@@ -1325,10 +1307,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)

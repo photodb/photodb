@@ -279,7 +279,6 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
     StretchImage = True
@@ -304,7 +303,6 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
     StretchImage = True
@@ -328,7 +326,6 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
     StretchImage = True
@@ -353,7 +350,6 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
     Icon.Data = {
       0000010001001010000001002000680400001600000028000000100000002000
       0000010020000000000040040000000000000000000000000000000000000000
@@ -415,7 +411,6 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
     StretchImage = True
@@ -439,7 +434,6 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
     StretchImage = True
@@ -463,7 +457,6 @@ object UpdateDBForm: TUpdateDBForm
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
     UseSpecIconSize = True
     HightliteImage = False
     StretchImage = True
@@ -556,7 +549,6 @@ object UpdateDBForm: TUpdateDBForm
     OnChange = Stayontop1Click
     IsLayered = False
     Layered = 255
-    ImageCanRegenerate = True
   end
   object PmMain: TPopupActionBar
     Left = 144

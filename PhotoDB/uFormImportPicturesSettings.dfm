@@ -77,7 +77,6 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
     Caption = 'BtnOk'
     TabOrder = 4
     OnClick = BtnOkClick
-    ExplicitTop = 132
   end
   object BtnCancel: TButton
     Left = 265
@@ -88,7 +87,6 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
     Caption = 'BtnCancel'
     TabOrder = 5
     OnClick = BtnCancelClick
-    ExplicitTop = 132
   end
   object WlFilter: TWebLink
     Left = 175
@@ -105,7 +103,7 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    ImageCanRegenerate = True
+    DisableStyles = False
     UseSpecIconSize = True
     HightliteImage = False
     StretchImage = True
