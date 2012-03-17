@@ -27,11 +27,14 @@ const
   DBRestoreFolder: string = '\DB\';
   PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase';
   RegRoot: string = 'Software\Photo DataBase\';
+  cUserData = 'UserData\';
   TempFolderMask = '|NDX|MB|DB|NET|';
   DelayReadFileOperation = 200;
   DelayExecuteSQLOperation = 200;
   LanguageFileMask = 'Language';
   SetupDataName = 'SETUP_DATA';
+  DefaultThemeName = 'Carbon.vsf';
+  StyleResourceSection = 'VCLSTYLE';
   DB_ID = '{E1446065-CB87-440D-9315-6FA356F921B5}';
   DB_ID_CLOSING = '{D4640FE7-EFF4-4D1F-A9D7-5FD1E2C92B3C}';
 

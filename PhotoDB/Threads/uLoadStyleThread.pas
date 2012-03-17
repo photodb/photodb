@@ -3,6 +3,7 @@ unit uLoadStyleThread;
 interface
 
 uses
+  Windows,
   Vcl.Styles,
   Themes,
   SysUtils,
@@ -10,6 +11,7 @@ uses
   uSettings,
   uConstants,
   uDBThread,
+  uRuntime,
   Classes;
 
 type
@@ -30,19 +32,28 @@ uses
 procedure TLoadStyleThread.Execute;
 var
   StyleFileName: string;
+  StyleHandle: TStyleManager.TStyleServicesHandle;
   SI: TStyleInfo;
 begin
   FreeOnTerminate := True;
   try
-    StyleFileName := Settings.ReadString('Style', 'FileName', 'Amakrits.vsf');
-    if StyleFileName <> '' then
+    if not FolderView then
     begin
-      StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
-      if TStyleManager.IsValidStyle(StyleFileName, SI) then
+      StyleFileName := Settings.ReadString('Style', 'FileName', DefaultThemeName);
+      if StyleFileName <> '' then
       begin
-        TStyleManager.LoadFromFile(StyleFileName);
-        TStyleManager.SetStyle(si.Name);
+        StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
+        if TStyleManager.IsValidStyle(StyleFileName, SI) then
+        begin
+          TStyleManager.LoadFromFile(StyleFileName);
+          TStyleManager.SetStyle(si.Name);
+        end;
       end;
+    end else
+    begin
+      TStyleManager.Initialize;
+      if TStyleManager.TryLoadFromResource(HInstance, 'MOBILE_STYLE', PWideChar(StyleResourceSection), StyleHandle ) then
+        TStyleManager.SetStyle(StyleHandle);
     end;
   except
     on e: Exception do

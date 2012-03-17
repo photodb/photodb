@@ -3,8 +3,16 @@ unit UnitINI;
 interface
 
 uses
-  Windows, Registry, IniFiles, Classes, SysUtils, uLogger, uConstants, uMemory,
-  uRuntime, SyncObjs;
+  Windows,
+  Registry,
+  IniFiles,
+  Classes,
+  SysUtils,
+  uLogger,
+  uConstants,
+  uMemory,
+  uRuntime,
+  SyncObjs;
 
 type
   TMyRegistryINIFile = class(TIniFile)
@@ -64,7 +72,7 @@ implementation
 
 function GetRegRootKey: string;
 begin
-  Result := RegRoot + 'UserData\';
+  Result := RegRoot + cUserData;
 end;
 
 function GetRegIniFileName: string;

@@ -947,6 +947,8 @@ var
   index, i : integer;
   MenuRecord : TDBPopupMenuInfoRecord;
 begin
+  if BlockClosingOfWindows then
+    Exit;
   GetCursorPos(P);
   P1 := ElvMain.ScreenToClient(P);
   if (not Self.Active) or (not ElvMain.Focused) or (ItemAtPos(P1.X, P1.Y) <> LastMouseItem) or
@@ -1843,11 +1845,11 @@ begin
   if MouseDowned then
     if Button = MbRight then
     begin
+      MouseDowned := False;
       ListView1ContextPopup(ElvMain, Point(X, Y), Handled);
       PopupHandled := True;
-    end;
-
-  MouseDowned := False;
+    end else
+      MouseDowned := False;
 end;
 
 procedure TFormCont.Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;

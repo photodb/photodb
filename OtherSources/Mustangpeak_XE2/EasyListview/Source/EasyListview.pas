@@ -17960,8 +17960,8 @@ begin
     if TStyleManager.Enabled and TStyleManager.IsCustomStyleActive then
       Msg.Msg := 0;
 
-    inherited;  // Handles the context menu
     Mouse.Capture := 0;
+    inherited;  // Handles the context menu
   end;
   ClearStates;
 end;

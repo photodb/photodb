@@ -169,7 +169,7 @@ object FormCont: TFormCont
     end
     object TwWindowsPos: TTwButton
       Left = 74
-      Top = 10
+      Top = 11
       Width = 16
       Height = 16
       Cursor = crHandPoint
@@ -271,10 +271,11 @@ object FormCont: TFormCont
       end>
     EdgeInner = esNone
     EdgeOuter = esNone
+    FixedOrder = True
     object ToolBar1: TToolBar
-      Left = 11
+      Left = 2
       Top = 0
-      Width = 531
+      Width = 540
       Height = 30
       AutoSize = True
       ButtonHeight = 30

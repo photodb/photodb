@@ -96,7 +96,8 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
-  Themes, uBaseWinControl;
+  Themes,
+  uBaseWinControl;
 
 type
   TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
@@ -3841,6 +3842,11 @@ begin
   ValidImages := 0;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
+
+  FFaces.Clear;
+  FFaceDetectionComplete := True;
+  UpdateFaceDetectionState;
+
   Invalidate;
   RecreateDrawImage(Self);
   PrepareNextImage;

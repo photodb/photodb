@@ -5,8 +5,19 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Classes, SysUtils, uLogger, uMemory, uConstants,
-  SyncObjs, Registry, uRuntime, uTime, ComObj, MSXML2_TLB, ActiveX;
+  Windows,
+  Classes,
+  SysUtils,
+  uLogger,
+  uMemory,
+  uConstants,
+  SyncObjs,
+  Registry,
+  uRuntime,
+  uTime,
+  ComObj,
+  MSXML2_TLB,
+  ActiveX;
 
 type
   TTranslate = class(TObject)

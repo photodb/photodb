@@ -3,8 +3,15 @@ unit uResourceUtils;
 interface
 
 uses
-  Windows, Classes, Graphics, acWorkRes, uTranslate, uFileUtils,
-  uConstants, uMemory, uTime;
+  Windows,
+  Classes,
+  Graphics,
+  acWorkRes,
+  uTranslate,
+  uFileUtils,
+  uConstants,
+  uMemory,
+  uTime;
 
 function ReplaceIcon(ExeFileName: string; IcoTempNameW: PWideChar): Boolean;
 function LoadFileResourceFromStream(Update: dword; Section, Name: PWideChar; MS: TMemoryStream) : Bool;

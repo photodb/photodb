@@ -85,8 +85,8 @@ end;
 
 class function TW.I: TW;
 var
-  I : Integer;
-  CurrentThreadID : THandle;
+  I: Integer;
+  CurrentThreadID: THandle;
 begin
   Result := nil;
   if Sync = nil then
@@ -147,6 +147,9 @@ var
   Info : string;
   Delta : Integer;
 begin
+{$IFNDEF PROFILER}
+  Exit;
+{$ENDIF}
   IsRuning := False;
   Delta := Round((Now - FStart) * 24 * 60 * 60 * 1000);
 {$IFDEF STARTUP}

@@ -821,6 +821,7 @@ object SearchForm: TSearchForm
         OnDropDown = ComboBoxSearchGroupsDropDown
         OnSelect = ComboBoxSearchGroupsSelect
         Images = SearchGroupsImageList
+        DropDownCount = 15
         ShowDropDownMenu = True
         LastItemIndex = 0
         ShowEditIndex = -1
@@ -985,10 +986,11 @@ object SearchForm: TSearchForm
         MinHeight = 21
         Width = 799
       end>
+    FixedOrder = True
     object TbMain: TToolBar
-      Left = 11
+      Left = 2
       Top = 0
-      Width = 790
+      Width = 799
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 57

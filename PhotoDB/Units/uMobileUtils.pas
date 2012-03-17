@@ -3,8 +3,22 @@ unit uMobileUtils;
 interface
 
 uses
-  Windows, Graphics, SysUtils, uResourceUtils, uFileUtils, uMemory, uGUIDUtils,
-  uTranslate, uConstants, acWorkRes, uTime, Classes, uSysUtils, uResources;
+  Windows,
+  uLogger,
+  Graphics,
+  SysUtils,
+  uResourceUtils,
+  uFileUtils,
+  uMemory,
+  Registry,
+  uGUIDUtils,
+  uTranslate,
+  uConstants,
+  acWorkRes,
+  uTime,
+  Classes,
+  uSysUtils,
+  uResources;
 
 const
   FSLanguageFileName = 'Language.xml';
@@ -19,7 +33,8 @@ type
 function CreateMobileDBFilesInDirectory(DestinationName: string): Boolean;
 procedure UpdateExeResources(ExeFileName: string);
 function ReadInternalFSContent(Name: string): string;
-procedure LoadLanguageFromMobileFS(var Language : TLanguage; var LanguageCode : string);
+procedure LoadLanguageFromMobileFS(var Language : TLanguage; var LanguageCode: string);
+procedure AddStyleToMobileEXE(Update: Cardinal);
 
 implementation
 
@@ -37,7 +52,8 @@ var
   LanguageXMLFileName, LicenseTxtFileName: string;
   Header: TInternalFSHeader;
   Files: TStrings;
-  Update, Counter: Integer;
+  Counter: Integer;
+  Update: DWORD;
 
   procedure AddFileToStream(FileName: string; Name: string = ''; Content: string = '');
   var
@@ -129,6 +145,7 @@ begin
     try
       TW.I.Check('LoadFileResourceFromStream');
       LoadFileResourceFromStream(Update, RT_RCDATA, 'MOBILE_FS', MS);
+      AddStyleToMobileEXE(Update);
     finally
       TW.I.Check('EndUpdateResourceW');
       EndUpdateResourceW(Update, False);
@@ -138,6 +155,48 @@ begin
     F(MS);
   end;
   TW.I.Check('END');
+end;
+
+procedure AddStyleToMobileEXE(Update: Cardinal);
+var
+  StyleFileName: string;
+  Reg: TRegistry;
+  FS: TFileStream;
+  MS: TMemoryStream;
+begin
+  TW.I.Start('LoadLanguageFromFile - START');
+
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := Windows.HKEY_CURRENT_USER;
+    Reg.OpenKey(RegRoot + cUserData + 'Style', False);
+    StyleFileName := Reg.ReadString('FileName');
+  finally
+    F(Reg);
+  end;
+  if StyleFileName <> '' then
+  begin
+    StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
+    try
+      FS := TFileStream.Create(StyleFileName, fmOpenRead, fmShareDenyNone);
+      try
+        MS := TMemoryStream.Create;
+        try
+          MS.CopyFrom(FS, FS.Size);
+          MS.Seek(0, soFromBeginning);
+          LoadFileResourceFromStream(Update, PChar(StyleResourceSection), 'MOBILE_STYLE', MS);
+        finally
+          F(MS);
+        end;
+      finally
+        F(FS);
+      end;
+
+    except
+      on e: Exception do
+        EventLog(e);
+    end;
+  end;
 end;
 
 function ReadInternalFSContent(Name: string): string;

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, WatermarkedEdit, ComCtrls, ImgList, uDBForm,
   uPeopleSupport, uBitmapUtils, uMemory, uMachMask, uGraphicUtils, CommCtrl,
-  UnitDBDeclare, UnitDBKernel, LoadingSign, WebLink;
+  UnitDBDeclare, UnitDBKernel, LoadingSign, WebLink, uBaseWinControl;
 
 type
   TFormFindPerson = class(TDBForm)

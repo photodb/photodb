@@ -1042,7 +1042,6 @@ object ExplorerForm: TExplorerForm
       Alignment = taCenter
       Caption = '  Address:'
       TabOrder = 1
-      ExplicitTop = 4
     end
     object PePath: TPathEditor
       Left = 62

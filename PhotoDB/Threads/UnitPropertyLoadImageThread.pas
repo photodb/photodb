@@ -151,7 +151,7 @@ begin
 
           BitmapParam := FB1;
 
-          FillRectNoCanvas(FB1, Theme.PanelColor);
+          FillRectNoCanvas(FB1, Theme.WindowColor);
 
           if FB.PixelFormat = pf24Bit then
             DrawImageEx(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,

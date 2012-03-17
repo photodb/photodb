@@ -114,9 +114,9 @@ object FormFindPerson: TFormFindPerson
     Columns = <
       item
         Caption = 'Image'
-        MaxWidth = 110
-        MinWidth = 110
-        Width = 110
+        MaxWidth = 105
+        MinWidth = 105
+        Width = 105
       end
       item
         Caption = 'Name'
@@ -161,7 +161,6 @@ object FormFindPerson: TFormFindPerson
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    DisableStyles = False
     Icon.Data = {
       0000010001001010000001002000680400001600000028000000100000002000
       000001002000000000004004000000000000000000000000000000000000FFFF

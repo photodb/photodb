@@ -842,14 +842,7 @@ begin
     begin
       ItemRectArray(Item, Metrics.TmHeight, RectArray);
 
-      if ListView = 0 then
-      begin
-        if PtInRect(RectArray.IconRect, ViewportPoint) then
-          Result := Item
-        else if PtInRect(RectArray.TextRect, ViewportPoint) then
-          Result := Item;
-      end
-      else if PtInRect(RectArray.BoundsRect, ViewportPoint) then
+      if PtInRect(RectArray.BoundsRect, ViewportPoint) then
         Result := Item;
     end;
 

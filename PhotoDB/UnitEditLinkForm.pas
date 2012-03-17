@@ -14,7 +14,7 @@ uses
   ExtCtrls,
   StdCtrls,
   UnitLinksSupport,
-  ExtDlgs, GraphicEx,
+  ExtDlgs,
   acDlgSelect,
   DropSource,
   DropTarget,
@@ -36,6 +36,7 @@ uses
   uAssociations,
   uMemory,
   uThemesUtils,
+  CommCtrl,
   pngimage;
 
 type
@@ -130,7 +131,6 @@ end;
 
 procedure TFormEditLink.FormCreate(Sender: TObject);
 var
-  SmallB: TBitmap;
   Icon: THandle;
   I: Integer;
 begin
@@ -139,36 +139,23 @@ begin
   LinkImageList.Clear;
   for I := LINK_TYPE_ID to LINK_TYPE_TXT do
   begin
-    SmallB := TBitmap.Create;
-    try
-      SmallB.PixelFormat := pf24bit;
-      SmallB.Width := 16;
-      SmallB.Height := 16;
-      SmallB.Canvas.Pen.Color := Theme.MenuColor;
-      SmallB.Canvas.Brush.Color := Theme.MenuColor;
-      SmallB.Canvas.Rectangle(0, 0, 16, 16);
-      case I of
-        LINK_TYPE_ID:
-          Icon := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
-        LINK_TYPE_ID_EXT:
-          Icon := UnitDBKernel.Icons[DB_IC_NOTES + 1];
-        LINK_TYPE_IMAGE:
-          Icon := UnitDBKernel.Icons[DB_IC_DESKTOP + 1];
-        LINK_TYPE_FILE:
-          Icon := UnitDBKernel.Icons[DB_IC_SHELL + 1];
-        LINK_TYPE_FOLDER:
-          Icon := UnitDBKernel.Icons[DB_IC_DIRECTORY + 1];
-        LINK_TYPE_TXT:
-          Icon := UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1];
-      else
-        Icon := 0;
-      end;
-      if Icon <> 0 then
-        DrawIconEx(SmallB.Canvas.Handle, 0, 0, Icon, 16, 16, 0, 0, DI_NORMAL);
-      LinkImageList.Add(SmallB, nil);
-    finally
-      SmallB.Free;
+    case I of
+      LINK_TYPE_ID:
+        Icon := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+      LINK_TYPE_ID_EXT:
+        Icon := UnitDBKernel.Icons[DB_IC_NOTES + 1];
+      LINK_TYPE_IMAGE:
+        Icon := UnitDBKernel.Icons[DB_IC_DESKTOP + 1];
+      LINK_TYPE_FILE:
+        Icon := UnitDBKernel.Icons[DB_IC_SHELL + 1];
+      LINK_TYPE_FOLDER:
+        Icon := UnitDBKernel.Icons[DB_IC_DIRECTORY + 1];
+      LINK_TYPE_TXT:
+        Icon := UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1];
+    else
+      Icon := 0;
     end;
+      ImageList_AddIcon(LinkImageList.Handle, Icon);
   end;
 
   CbLinkType.Items.Add(L(LINK_TEXT_TYPE_ID));

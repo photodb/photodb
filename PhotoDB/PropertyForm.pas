@@ -90,7 +90,7 @@ uses
   uVCLHelpers,
   uThemesUtils,
   Vcl.ActnPopup,
-  uMachMask, Vcl.PlatformDefaultStyleActnCtrls;
+  uMachMask, Vcl.PlatformDefaultStyleActnCtrls, uBaseWinControl;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);

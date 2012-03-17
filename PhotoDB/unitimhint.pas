@@ -457,7 +457,10 @@ begin
       FInternalClose := True;
       Close;
     end else
+    begin
+      CreateFormImage;
       Hide;
+    end;
   end else
     CreateFormImage;
 end;

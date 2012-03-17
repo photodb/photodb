@@ -3,7 +3,8 @@ unit uDateTimePickerStyleHookXP;
 interface
 
 uses
-  classes,
+  Classes,
+  UITypes,
   SysUtils,
   Windows,
   StdCtrls,

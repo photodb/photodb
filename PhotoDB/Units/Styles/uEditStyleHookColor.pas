@@ -12,6 +12,7 @@ uses
   Controls,
   Themes,
   WatermarkedEdit,
+  DmMemo,
   Messages;
 
 type
@@ -91,7 +92,7 @@ end;
 
 initialization
   ApplyVCLColorsStyleHook(TEdit);
-  ApplyVCLColorsStyleHook(TMemo);
+  ApplyVCLColorsStyleHook(TDmMemo);
   ApplyVCLColorsStyleHook(TWatermarkedEdit);
   ApplyVCLColorsStyleHook(TLabeledEdit);
 

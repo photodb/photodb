@@ -179,7 +179,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 298
     Height = 372
-    ActivePage = TsGroups
+    ActivePage = TsGeneral
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -188,10 +188,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1069,7 +1065,6 @@ object PropertiesForm: TPropertiesForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        DisableStyles = False
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True

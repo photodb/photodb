@@ -8,341 +8,342 @@
   resources were bound to the produced executable.
 */
 
-#define Vcl_Shell_ShellConsts_SRenamedFailedError 64800
-#define uShellIntegration_SNotSupported 64801
-#define Vcl_VDBConsts_SFirstRecord 64802
-#define Vcl_VDBConsts_SPriorRecord 64803
-#define Vcl_VDBConsts_SNextRecord 64804
-#define Vcl_VDBConsts_SLastRecord 64805
-#define Vcl_VDBConsts_SInsertRecord 64806
-#define Vcl_VDBConsts_SDeleteRecord 64807
-#define Vcl_VDBConsts_SEditRecord 64808
-#define Vcl_VDBConsts_SPostEdit 64809
-#define Vcl_VDBConsts_SCancelEdit 64810
-#define Vcl_VDBConsts_SRefreshRecord 64811
-#define Vcl_VDBConsts_SApplyUpdates 64812
-#define Vcl_VDBConsts_SCancelUpdates 64813
-#define Vcl_VDBConsts_SRemoteLogin 64814
-#define DropSource_sDropSourceAsyncFailed 64816
-#define DropSource_sDropSourceAsyncBusy 64817
-#define DropTarget_sTargetAsyncBusy 64818
-#define DropTarget_sRichEditWarning 64819
-#define DragDrop_sImplementationRequired 64820
-#define DragDrop_sFormatNameReadOnly 64821
-#define DragDrop_sNoCopyStgMedium 64822
-#define DragDrop_sBadConstructor 64823
-#define DragDropPIDL_sBadDesktop 64824
-#define DragDropPIDL_sBadFilename 64825
-#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64826
-#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64827
-#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64828
-#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64829
-#define Vcl_Shell_ShellConsts_SShellNoDetails 64830
-#define Vcl_Shell_ShellConsts_SCallLoadDetails 64831
-#define Data_Win_ADOConst_SNoFilterOptions 64832
-#define Data_Win_ADOConst_SRecordsetNotOpen 64833
-#define Data_Win_ADOConst_sNameAttr 64834
-#define Data_Win_ADOConst_sValueAttr 64835
-#define DECUtil_sClassNotRegistered 64836
-#define DECUtil_sWrongIdentity 64837
-#define DECHash_sHashingOverflowError 64838
-#define DECHash_sHashNotInitialized 64839
-#define DECHash_sHashNoDefault 64840
-#define DECCipher_sAlreadyPadded 64841
-#define DECCipher_sInvalidState 64842
-#define DECCipher_sInvalidMessageLength 64843
-#define DECCipher_sKeyMaterialToLarge 64844
-#define DECCipher_sIVMaterialToLarge 64845
-#define DECCipher_sCipherNoDefault 64846
-#define DropSource_sDropSourceBusy 64847
-#define Data_DBConsts_SUnassignedVar 64848
-#define Data_DBConsts_SRecordNotFound 64849
-#define Data_DBConsts_SBcdOverflow 64850
-#define Data_DBConsts_SInvalidBcdValue 64851
-#define Data_DBConsts_SCouldNotParseTimeStamp 64852
-#define Data_DBConsts_SInvalidSqlTimeStamp 64853
-#define Data_Win_ADOConst_SMissingConnection 64854
-#define Data_Win_ADOConst_SNoDetailFilter 64855
-#define Data_Win_ADOConst_SBookmarksRequired 64856
-#define Data_Win_ADOConst_SMissingCommandText 64857
-#define Data_Win_ADOConst_SNoResultSet 64858
-#define Data_Win_ADOConst_SADOCreateError 64859
-#define Data_Win_ADOConst_SEventsNotSupported 64860
-#define Data_Win_ADOConst_SUsupportedFieldType 64861
-#define Data_Win_ADOConst_SConnectionRequired 64862
-#define Data_Win_ADOConst_SCantRequery 64863
-#define Data_DBConsts_SCircularDataLink 64864
-#define Data_DBConsts_SLookupInfoError 64865
-#define Data_DBConsts_SDataSourceChange 64866
-#define Data_DBConsts_SDataSetOpen 64867
-#define Data_DBConsts_SNotEditing 64868
-#define Data_DBConsts_SDataSetClosed 64869
-#define Data_DBConsts_SDataSetReadOnly 64870
-#define Data_DBConsts_SNestedDataSetClass 64871
-#define Data_DBConsts_STextFalse 64872
-#define Data_DBConsts_STextTrue 64873
-#define Data_DBConsts_SParameterNotFound 64874
-#define Data_DBConsts_SInvalidVersion 64875
-#define Data_DBConsts_SBadFieldType 64876
-#define Data_DBConsts_SProviderSQLNotSupported 64877
-#define Data_DBConsts_SProviderExecuteNotSupported 64878
-#define Data_DBConsts_SDataSetUnidirectional 64879
-#define Data_DBConsts_SFieldRangeError 64880
-#define Data_DBConsts_SBcdFieldRangeError 64881
-#define Data_DBConsts_SInvalidIntegerValue 64882
-#define Data_DBConsts_SInvalidBoolValue 64883
-#define Data_DBConsts_SInvalidFloatValue 64884
-#define Data_DBConsts_SFieldTypeMismatch 64885
-#define Data_DBConsts_SFieldSizeMismatch 64886
-#define Data_DBConsts_SInvalidVarByteArray 64887
-#define Data_DBConsts_SFieldOutOfRange 64888
-#define Data_DBConsts_SFieldRequired 64889
-#define Data_DBConsts_SDataSetMissing 64890
-#define Data_DBConsts_SInvalidCalcType 64891
-#define Data_DBConsts_SFieldReadOnly 64892
-#define Data_DBConsts_SNoIndexForFields 64893
-#define Data_DBConsts_SIndexNotFound 64894
-#define Data_DBConsts_SDBDuplicateName 64895
-#define CCR_Exif_Consts_SSubPropertiesNotSupported 64896
-#define CCR_Exif_Consts_SCannotWriteSingleValueToStructureProperty 64897
-#define CCR_Exif_Consts_SPreferredPrefixMustBeSet 64898
-#define Xml_XMLConst_SDuplicateRegistration 64899
-#define Xml_XMLConst_SNoMatchingDOMVendor 64900
-#define Xml_XMLConst_SDOMNotSupported 64901
-#define Xml_XMLConst_SNodeExpected 64902
-#define Xml_XMLConst_SMSDOMNotInstalled 64903
-#define Data_DBConsts_SInvalidFieldSize 64904
-#define Data_DBConsts_SInvalidFieldKind 64905
-#define Data_DBConsts_SUnknownFieldType 64906
-#define Data_DBConsts_SFieldNameMissing 64907
-#define Data_DBConsts_SDuplicateFieldName 64908
-#define Data_DBConsts_SFieldNotFound 64909
-#define Data_DBConsts_SFieldAccessError 64910
-#define Data_DBConsts_SFieldValueError 64911
-#define GIFImage_sProgressSaving 64912
-#define GIFImage_sProgressConverting 64913
-#define GIFImage_sProgressRendering 64914
-#define GIFImage_sProgressCopying 64915
-#define GIFImage_sProgressOptimizing 64916
-#define CCR_Exif_Consts_SStreamIsReadOnly 64917
-#define CCR_Exif_Consts_SUnsupportedGraphicFormat 64918
-#define CCR_Exif_Consts_SInvalidJPEGHeader 64919
-#define CCR_Exif_Consts_SInvalidPSDHeader 64920
-#define CCR_Exif_Consts_SInvalidTiffData 64921
-#define CCR_Exif_Consts_STagAlreadyExists 64922
-#define CCR_Exif_Consts_SIllegalEditOfExifData 64923
-#define CCR_Exif_Consts_STagCanContainOnlyASCII 64924
-#define CCR_Exif_Consts_SInvalidMakerNoteFormat 64925
-#define CCR_Exif_Consts_SInvalidXMPPacket 64926
-#define CCR_Exif_Consts_SSubPropertiesMustBeNamed 64927
-#define GIFImage_sBadHeight 64928
-#define GIFImage_sBadWidth 64929
-#define GIFImage_sFailedPaste 64930
-#define GIFImage_sScreenSizeExceeded 64931
-#define GIFImage_sNoColorTable 64932
-#define GIFImage_sBadPixelCoordinates 64933
-#define GIFImage_sInvalidPixelFormat 64934
-#define GIFImage_sBadDimension 64935
-#define GIFImage_sNoDIB 64936
-#define GIFImage_sInvalidStream 64937
-#define GIFImage_sInvalidColor 64938
-#define GIFImage_sEmptyColorMap 64939
-#define GIFImage_sEmptyImage 64940
-#define GIFImage_sInvalidReduction 64941
-#define GIFImage_sGIFImageFile 64942
-#define GIFImage_sProgressLoading 64943
-#define GIFImage_sBadColorIndex 64944
-#define GIFImage_sBadVersion 64945
-#define GIFImage_sBadSignature 64946
-#define GIFImage_sScreenBadColorSize 64947
-#define GIFImage_sImageBadColorSize 64948
-#define GIFImage_sUnknownExtension 64949
-#define GIFImage_sBadExtensionLabel 64950
-#define GIFImage_sOutOfMemDIB 64951
-#define GIFImage_sDecodeTooFewBits 64952
-#define GIFImage_sDecodeCircular 64953
-#define GIFImage_sBadTrailer 64954
-#define GIFImage_sBadExtensionInstance 64955
-#define GIFImage_sBadBlockSize 64956
-#define GIFImage_sBadBlock 64957
-#define GIFImage_sUnsupportedClass 64958
-#define GIFImage_sInvalidData 64959
-#define GraphicStrings_gesInvalidImage 64960
-#define GraphicStrings_gesInvalidColorFormat 64961
-#define GraphicStrings_gesStreamReadError 64962
-#define GraphicStrings_gesIndexedNotSupported 64963
-#define GraphicStrings_gesConversionUnsupported 64964
-#define GraphicStrings_gesInvalidSampleDepth 64965
-#define GraphicStrings_gesInvalidPixelDepth 64966
-#define GraphicStrings_gesInvalidSubSampling 64967
-#define GraphicStrings_gesVerticalSubSamplingError 64968
-#define GraphicStrings_gesPreparing 64969
-#define GraphicStrings_gesLoadingData 64970
-#define GraphicStrings_gesUpsampling 64971
-#define GraphicStrings_gesTransfering 64972
-#define GraphicStrings_gesLZ77Error 64973
-#define GIFImage_sOutOfData 64974
-#define GIFImage_sTooManyColors 64975
-#define GraphicStrings_gesSGI 64976
-#define GraphicStrings_gesSGITrueColor 64977
-#define GraphicStrings_gesZSoft 64978
-#define GraphicStrings_gesZSoftWord 64979
-#define GraphicStrings_gesAliasWaveFront 64980
-#define GraphicStrings_gesSGITrueColorAlpha 64981
-#define GraphicStrings_gesSGIMono 64982
-#define GraphicStrings_gesPhotoshop 64983
-#define GraphicStrings_gesPortable 64984
-#define GraphicStrings_gesPortablePixel 64985
-#define GraphicStrings_gesPortableGray 64986
-#define GraphicStrings_gesPortableMono 64987
-#define GraphicStrings_gesAutoDesk 64988
-#define GraphicStrings_gesKodakPhotoCD 64989
-#define GraphicStrings_gesHalo 64990
-#define GraphicStrings_gesPaintShopPro 64991
-#define MZLib_SInvalidStoredBlockLengths 64992
-#define MZLib_STooManyLDSymbols 64993
-#define MZLib_SInvalidBitLengthRepeat 64994
-#define MZLib_SIncorrectDataCheck 64995
-#define MZLib_SUnknownCompression 64996
-#define MZLib_SInvalidWindowSize 64997
-#define MZLib_SIncorrectHeaderCheck 64998
-#define MZLib_SNeedDictionary 64999
-#define GraphicStrings_gesRegistration 65000
-#define GraphicStrings_gesBitmaps 65001
-#define GraphicStrings_gesRLEBitmaps 65002
-#define GraphicStrings_gesDIBs 65003
-#define GraphicStrings_gesIcons 65004
-#define GraphicStrings_gesMetaFiles 65005
-#define GraphicStrings_gesEnhancedMetaFiles 65006
-#define GraphicStrings_gesTruevision 65007
-#define MZLib_SNeedDict 65008
-#define MZLib_SStreamEnd 65009
-#define MZLib_SFileError 65010
-#define MZLib_SStreamError 65011
-#define MZLib_SDataError 65012
-#define MZLib_SInsufficientMemory 65013
-#define MZLib_SBufferError 65014
-#define MZLib_SIncompatibleVersion 65015
-#define MZLib_SInvalidDistanceCode 65016
-#define MZLib_SInvalidLengthCode 65017
-#define MZLib_SOversubscribedDBLTree 65018
-#define MZLib_SIncompleteDBLTree 65019
-#define MZLib_SOversubscribedLLTree 65020
-#define MZLib_SIncompleteLLTree 65021
-#define MZLib_SEmptyDistanceTree 65022
-#define MZLib_SInvalidBlockType 65023
-#define Vcl_ComStrs_sTabMustBeMultiLine 65024
-#define Vcl_ComStrs_sInvalidIndex 65025
-#define Vcl_ComStrs_sInsertError 65026
-#define Vcl_ComStrs_sInvalidOwner 65027
-#define Vcl_ComStrs_sRichEditInsertError 65028
-#define Vcl_ComStrs_sRichEditLoadFail 65029
-#define Vcl_ComStrs_sRichEditSaveFail 65030
-#define Vcl_ComStrs_sPageIndexError 65031
-#define Vcl_ComStrs_sInvalidComCtl32 65032
-#define Vcl_ComStrs_sDateTimeMax 65033
-#define Vcl_ComStrs_sDateTimeMin 65034
-#define Vcl_ComStrs_sNeedAllowNone 65035
-#define Vcl_ComStrs_sFailSetCalDateTime 65036
-#define Vcl_ComStrs_sFailSetCalMaxSelRange 65037
-#define Vcl_ComStrs_sFailSetCalMinMaxRange 65038
-#define Vcl_ComStrs_sFailsetCalSelRange 65039
-#define System_Win_ComConst_SOleError 65040
-#define System_Win_ComConst_SNoMethod 65041
-#define System_Win_ComConst_SVarNotObject 65042
-#define System_Win_ComConst_STooManyParams 65043
-#define System_Win_ComConst_SDCOMNotInstalled 65044
-#define Vcl_OleConst_SCannotActivate 65045
-#define Vcl_OleConst_SNoWindowHandle 65046
-#define Vcl_OleConst_SInvalidLicense 65047
-#define Vcl_OleConst_SNotLicensed 65048
-#define Vcl_OleConst_sNoRunningObject 65049
-#define Vcl_ComStrs_sTabFailClear 65050
-#define Vcl_ComStrs_sTabFailDelete 65051
-#define Vcl_ComStrs_sTabFailRetrieve 65052
-#define Vcl_ComStrs_sTabFailGetObject 65053
-#define Vcl_ComStrs_sTabFailSet 65054
-#define Vcl_ComStrs_sTabFailSetObject 65055
-#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 65056
-#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 65057
-#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 65058
-#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 65059
-#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 65060
-#define Vcl_Imaging_pnglang_EPNGNoImageDataText 65061
-#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 65062
-#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 65063
-#define Vcl_Imaging_pnglang_EPNGOutMemoryText 65064
-#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 65065
-#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 65066
-#define Vcl_Imaging_pnglang_EInvalidNewSize 65067
-#define Vcl_Imaging_pnglang_EInvalidSpec 65068
-#define Vcl_Imaging_JConsts_sChangeJPGSize 65069
-#define Vcl_Imaging_JConsts_sJPEGError 65070
-#define Vcl_Imaging_JConsts_sJPEGImageFile 65071
-#define Vcl_Consts_SNameNone 65072
-#define Vcl_Consts_SNameScrollBar 65073
-#define Vcl_Consts_SName3DDkShadow 65074
-#define Vcl_Consts_SName3DLight 65075
-#define Vcl_Consts_SNameWindow 65076
-#define Vcl_Consts_SNameWindowFrame 65077
-#define Vcl_Consts_SNameWindowText 65078
-#define Vcl_Imaging_pnglang_EPngInvalidCRCText 65079
-#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 65080
-#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 65081
-#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 65082
-#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 65083
-#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 65084
-#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 65085
-#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 65086
-#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 65087
-#define Vcl_Consts_SNameDefault 65088
-#define Vcl_Consts_SNameGradientActiveCaption 65089
-#define Vcl_Consts_SNameGradientInactiveCaption 65090
-#define Vcl_Consts_SNameGrayText 65091
-#define Vcl_Consts_SNameHighlight 65092
-#define Vcl_Consts_SNameHighlightText 65093
-#define Vcl_Consts_SNameHotLight 65094
-#define Vcl_Consts_SNameInactiveBorder 65095
-#define Vcl_Consts_SNameInactiveCaption 65096
-#define Vcl_Consts_SNameInactiveCaptionText 65097
-#define Vcl_Consts_SNameInfoBk 65098
-#define Vcl_Consts_SNameInfoText 65099
-#define Vcl_Consts_SNameMenu 65100
-#define Vcl_Consts_SNameMenuBar 65101
-#define Vcl_Consts_SNameMenuHighlight 65102
-#define Vcl_Consts_SNameMenuText 65103
-#define Vcl_Consts_SNameFuchsia 65104
-#define Vcl_Consts_SNameAqua 65105
-#define Vcl_Consts_SNameWhite 65106
-#define Vcl_Consts_SNameMoneyGreen 65107
-#define Vcl_Consts_SNameSkyBlue 65108
-#define Vcl_Consts_SNameCream 65109
-#define Vcl_Consts_SNameMedGray 65110
-#define Vcl_Consts_SNameActiveBorder 65111
-#define Vcl_Consts_SNameActiveCaption 65112
-#define Vcl_Consts_SNameAppWorkSpace 65113
-#define Vcl_Consts_SNameBackground 65114
-#define Vcl_Consts_SNameBtnFace 65115
-#define Vcl_Consts_SNameBtnHighlight 65116
-#define Vcl_Consts_SNameBtnShadow 65117
-#define Vcl_Consts_SNameBtnText 65118
-#define Vcl_Consts_SNameCaptionText 65119
-#define Vcl_Consts_SStyleInvalidParameter 65120
-#define Vcl_Consts_SStyleHookClassNotFound 65121
-#define Vcl_Consts_SStyleFeatureNotSupported 65122
-#define Vcl_Consts_SNameBlack 65123
-#define Vcl_Consts_SNameMaroon 65124
-#define Vcl_Consts_SNameGreen 65125
-#define Vcl_Consts_SNameOlive 65126
-#define Vcl_Consts_SNameNavy 65127
-#define Vcl_Consts_SNamePurple 65128
-#define Vcl_Consts_SNameTeal 65129
-#define Vcl_Consts_SNameGray 65130
-#define Vcl_Consts_SNameSilver 65131
-#define Vcl_Consts_SNameRed 65132
-#define Vcl_Consts_SNameLime 65133
-#define Vcl_Consts_SNameYellow 65134
-#define Vcl_Consts_SNameBlue 65135
+#define Vcl_Shell_ShellConsts_SCallLoadDetails 64800
+#define Vcl_Shell_ShellConsts_SRenamedFailedError 64801
+#define uShellIntegration_SNotSupported 64802
+#define Vcl_VDBConsts_SFirstRecord 64803
+#define Vcl_VDBConsts_SPriorRecord 64804
+#define Vcl_VDBConsts_SNextRecord 64805
+#define Vcl_VDBConsts_SLastRecord 64806
+#define Vcl_VDBConsts_SInsertRecord 64807
+#define Vcl_VDBConsts_SDeleteRecord 64808
+#define Vcl_VDBConsts_SEditRecord 64809
+#define Vcl_VDBConsts_SPostEdit 64810
+#define Vcl_VDBConsts_SCancelEdit 64811
+#define Vcl_VDBConsts_SRefreshRecord 64812
+#define Vcl_VDBConsts_SApplyUpdates 64813
+#define Vcl_VDBConsts_SCancelUpdates 64814
+#define Vcl_VDBConsts_SRemoteLogin 64815
+#define DropSource_sDropSourceBusy 64816
+#define DropSource_sDropSourceAsyncFailed 64817
+#define DropSource_sDropSourceAsyncBusy 64818
+#define DropTarget_sTargetAsyncBusy 64819
+#define DropTarget_sRichEditWarning 64820
+#define DragDrop_sImplementationRequired 64821
+#define DragDrop_sFormatNameReadOnly 64822
+#define DragDrop_sNoCopyStgMedium 64823
+#define DragDrop_sBadConstructor 64824
+#define DragDropPIDL_sBadDesktop 64825
+#define DragDropPIDL_sBadFilename 64826
+#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64827
+#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64828
+#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64829
+#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64830
+#define Vcl_Shell_ShellConsts_SShellNoDetails 64831
+#define Data_Win_ADOConst_SCantRequery 64832
+#define Data_Win_ADOConst_SNoFilterOptions 64833
+#define Data_Win_ADOConst_SRecordsetNotOpen 64834
+#define Data_Win_ADOConst_sNameAttr 64835
+#define Data_Win_ADOConst_sValueAttr 64836
+#define DECUtil_sClassNotRegistered 64837
+#define DECUtil_sWrongIdentity 64838
+#define DECHash_sHashingOverflowError 64839
+#define DECHash_sHashNotInitialized 64840
+#define DECHash_sHashNoDefault 64841
+#define DECCipher_sAlreadyPadded 64842
+#define DECCipher_sInvalidState 64843
+#define DECCipher_sInvalidMessageLength 64844
+#define DECCipher_sKeyMaterialToLarge 64845
+#define DECCipher_sIVMaterialToLarge 64846
+#define DECCipher_sCipherNoDefault 64847
+#define Data_DBConsts_SDataSetUnidirectional 64848
+#define Data_DBConsts_SUnassignedVar 64849
+#define Data_DBConsts_SRecordNotFound 64850
+#define Data_DBConsts_SBcdOverflow 64851
+#define Data_DBConsts_SInvalidBcdValue 64852
+#define Data_DBConsts_SCouldNotParseTimeStamp 64853
+#define Data_DBConsts_SInvalidSqlTimeStamp 64854
+#define Data_Win_ADOConst_SMissingConnection 64855
+#define Data_Win_ADOConst_SNoDetailFilter 64856
+#define Data_Win_ADOConst_SBookmarksRequired 64857
+#define Data_Win_ADOConst_SMissingCommandText 64858
+#define Data_Win_ADOConst_SNoResultSet 64859
+#define Data_Win_ADOConst_SADOCreateError 64860
+#define Data_Win_ADOConst_SEventsNotSupported 64861
+#define Data_Win_ADOConst_SUsupportedFieldType 64862
+#define Data_Win_ADOConst_SConnectionRequired 64863
+#define Data_DBConsts_SDBDuplicateName 64864
+#define Data_DBConsts_SCircularDataLink 64865
+#define Data_DBConsts_SLookupInfoError 64866
+#define Data_DBConsts_SDataSourceChange 64867
+#define Data_DBConsts_SDataSetOpen 64868
+#define Data_DBConsts_SNotEditing 64869
+#define Data_DBConsts_SDataSetClosed 64870
+#define Data_DBConsts_SDataSetReadOnly 64871
+#define Data_DBConsts_SNestedDataSetClass 64872
+#define Data_DBConsts_STextFalse 64873
+#define Data_DBConsts_STextTrue 64874
+#define Data_DBConsts_SParameterNotFound 64875
+#define Data_DBConsts_SInvalidVersion 64876
+#define Data_DBConsts_SBadFieldType 64877
+#define Data_DBConsts_SProviderSQLNotSupported 64878
+#define Data_DBConsts_SProviderExecuteNotSupported 64879
+#define Data_DBConsts_SFieldValueError 64880
+#define Data_DBConsts_SFieldRangeError 64881
+#define Data_DBConsts_SBcdFieldRangeError 64882
+#define Data_DBConsts_SInvalidIntegerValue 64883
+#define Data_DBConsts_SInvalidBoolValue 64884
+#define Data_DBConsts_SInvalidFloatValue 64885
+#define Data_DBConsts_SFieldTypeMismatch 64886
+#define Data_DBConsts_SFieldSizeMismatch 64887
+#define Data_DBConsts_SInvalidVarByteArray 64888
+#define Data_DBConsts_SFieldOutOfRange 64889
+#define Data_DBConsts_SFieldRequired 64890
+#define Data_DBConsts_SDataSetMissing 64891
+#define Data_DBConsts_SInvalidCalcType 64892
+#define Data_DBConsts_SFieldReadOnly 64893
+#define Data_DBConsts_SNoIndexForFields 64894
+#define Data_DBConsts_SIndexNotFound 64895
+#define CCR_Exif_Consts_SSubPropertiesMustBeNamed 64896
+#define CCR_Exif_Consts_SSubPropertiesNotSupported 64897
+#define CCR_Exif_Consts_SCannotWriteSingleValueToStructureProperty 64898
+#define CCR_Exif_Consts_SPreferredPrefixMustBeSet 64899
+#define Xml_XMLConst_SDuplicateRegistration 64900
+#define Xml_XMLConst_SNoMatchingDOMVendor 64901
+#define Xml_XMLConst_SDOMNotSupported 64902
+#define Xml_XMLConst_SNodeExpected 64903
+#define Xml_XMLConst_SMSDOMNotInstalled 64904
+#define Data_DBConsts_SInvalidFieldSize 64905
+#define Data_DBConsts_SInvalidFieldKind 64906
+#define Data_DBConsts_SUnknownFieldType 64907
+#define Data_DBConsts_SFieldNameMissing 64908
+#define Data_DBConsts_SDuplicateFieldName 64909
+#define Data_DBConsts_SFieldNotFound 64910
+#define Data_DBConsts_SFieldAccessError 64911
+#define GIFImage_sProgressLoading 64912
+#define GIFImage_sProgressSaving 64913
+#define GIFImage_sProgressConverting 64914
+#define GIFImage_sProgressRendering 64915
+#define GIFImage_sProgressCopying 64916
+#define GIFImage_sProgressOptimizing 64917
+#define CCR_Exif_Consts_SStreamIsReadOnly 64918
+#define CCR_Exif_Consts_SUnsupportedGraphicFormat 64919
+#define CCR_Exif_Consts_SInvalidJPEGHeader 64920
+#define CCR_Exif_Consts_SInvalidPSDHeader 64921
+#define CCR_Exif_Consts_SInvalidTiffData 64922
+#define CCR_Exif_Consts_STagAlreadyExists 64923
+#define CCR_Exif_Consts_SIllegalEditOfExifData 64924
+#define CCR_Exif_Consts_STagCanContainOnlyASCII 64925
+#define CCR_Exif_Consts_SInvalidMakerNoteFormat 64926
+#define CCR_Exif_Consts_SInvalidXMPPacket 64927
+#define GIFImage_sInvalidData 64928
+#define GIFImage_sBadHeight 64929
+#define GIFImage_sBadWidth 64930
+#define GIFImage_sFailedPaste 64931
+#define GIFImage_sScreenSizeExceeded 64932
+#define GIFImage_sNoColorTable 64933
+#define GIFImage_sBadPixelCoordinates 64934
+#define GIFImage_sInvalidPixelFormat 64935
+#define GIFImage_sBadDimension 64936
+#define GIFImage_sNoDIB 64937
+#define GIFImage_sInvalidStream 64938
+#define GIFImage_sInvalidColor 64939
+#define GIFImage_sEmptyColorMap 64940
+#define GIFImage_sEmptyImage 64941
+#define GIFImage_sInvalidReduction 64942
+#define GIFImage_sGIFImageFile 64943
+#define GIFImage_sTooManyColors 64944
+#define GIFImage_sBadColorIndex 64945
+#define GIFImage_sBadVersion 64946
+#define GIFImage_sBadSignature 64947
+#define GIFImage_sScreenBadColorSize 64948
+#define GIFImage_sImageBadColorSize 64949
+#define GIFImage_sUnknownExtension 64950
+#define GIFImage_sBadExtensionLabel 64951
+#define GIFImage_sOutOfMemDIB 64952
+#define GIFImage_sDecodeTooFewBits 64953
+#define GIFImage_sDecodeCircular 64954
+#define GIFImage_sBadTrailer 64955
+#define GIFImage_sBadExtensionInstance 64956
+#define GIFImage_sBadBlockSize 64957
+#define GIFImage_sBadBlock 64958
+#define GIFImage_sUnsupportedClass 64959
+#define GraphicStrings_gesPaintShopPro 64960
+#define GraphicStrings_gesInvalidImage 64961
+#define GraphicStrings_gesInvalidColorFormat 64962
+#define GraphicStrings_gesStreamReadError 64963
+#define GraphicStrings_gesIndexedNotSupported 64964
+#define GraphicStrings_gesConversionUnsupported 64965
+#define GraphicStrings_gesInvalidSampleDepth 64966
+#define GraphicStrings_gesInvalidPixelDepth 64967
+#define GraphicStrings_gesInvalidSubSampling 64968
+#define GraphicStrings_gesVerticalSubSamplingError 64969
+#define GraphicStrings_gesPreparing 64970
+#define GraphicStrings_gesLoadingData 64971
+#define GraphicStrings_gesUpsampling 64972
+#define GraphicStrings_gesTransfering 64973
+#define GraphicStrings_gesLZ77Error 64974
+#define GIFImage_sOutOfData 64975
+#define GraphicStrings_gesTruevision 64976
+#define GraphicStrings_gesSGI 64977
+#define GraphicStrings_gesSGITrueColor 64978
+#define GraphicStrings_gesZSoft 64979
+#define GraphicStrings_gesZSoftWord 64980
+#define GraphicStrings_gesAliasWaveFront 64981
+#define GraphicStrings_gesSGITrueColorAlpha 64982
+#define GraphicStrings_gesSGIMono 64983
+#define GraphicStrings_gesPhotoshop 64984
+#define GraphicStrings_gesPortable 64985
+#define GraphicStrings_gesPortablePixel 64986
+#define GraphicStrings_gesPortableGray 64987
+#define GraphicStrings_gesPortableMono 64988
+#define GraphicStrings_gesAutoDesk 64989
+#define GraphicStrings_gesKodakPhotoCD 64990
+#define GraphicStrings_gesHalo 64991
+#define MZLib_SInvalidBlockType 64992
+#define MZLib_SInvalidStoredBlockLengths 64993
+#define MZLib_STooManyLDSymbols 64994
+#define MZLib_SInvalidBitLengthRepeat 64995
+#define MZLib_SIncorrectDataCheck 64996
+#define MZLib_SUnknownCompression 64997
+#define MZLib_SInvalidWindowSize 64998
+#define MZLib_SIncorrectHeaderCheck 64999
+#define MZLib_SNeedDictionary 65000
+#define GraphicStrings_gesRegistration 65001
+#define GraphicStrings_gesBitmaps 65002
+#define GraphicStrings_gesRLEBitmaps 65003
+#define GraphicStrings_gesDIBs 65004
+#define GraphicStrings_gesIcons 65005
+#define GraphicStrings_gesMetaFiles 65006
+#define GraphicStrings_gesEnhancedMetaFiles 65007
+#define Vcl_ComStrs_sFailsetCalSelRange 65008
+#define MZLib_SNeedDict 65009
+#define MZLib_SStreamEnd 65010
+#define MZLib_SFileError 65011
+#define MZLib_SStreamError 65012
+#define MZLib_SDataError 65013
+#define MZLib_SInsufficientMemory 65014
+#define MZLib_SBufferError 65015
+#define MZLib_SIncompatibleVersion 65016
+#define MZLib_SInvalidDistanceCode 65017
+#define MZLib_SInvalidLengthCode 65018
+#define MZLib_SOversubscribedDBLTree 65019
+#define MZLib_SIncompleteDBLTree 65020
+#define MZLib_SOversubscribedLLTree 65021
+#define MZLib_SIncompleteLLTree 65022
+#define MZLib_SEmptyDistanceTree 65023
+#define Vcl_ComStrs_sTabFailSetObject 65024
+#define Vcl_ComStrs_sTabMustBeMultiLine 65025
+#define Vcl_ComStrs_sInvalidIndex 65026
+#define Vcl_ComStrs_sInsertError 65027
+#define Vcl_ComStrs_sInvalidOwner 65028
+#define Vcl_ComStrs_sRichEditInsertError 65029
+#define Vcl_ComStrs_sRichEditLoadFail 65030
+#define Vcl_ComStrs_sRichEditSaveFail 65031
+#define Vcl_ComStrs_sPageIndexError 65032
+#define Vcl_ComStrs_sInvalidComCtl32 65033
+#define Vcl_ComStrs_sDateTimeMax 65034
+#define Vcl_ComStrs_sDateTimeMin 65035
+#define Vcl_ComStrs_sNeedAllowNone 65036
+#define Vcl_ComStrs_sFailSetCalDateTime 65037
+#define Vcl_ComStrs_sFailSetCalMaxSelRange 65038
+#define Vcl_ComStrs_sFailSetCalMinMaxRange 65039
+#define Vcl_Imaging_JConsts_sJPEGImageFile 65040
+#define System_Win_ComConst_SOleError 65041
+#define System_Win_ComConst_SNoMethod 65042
+#define System_Win_ComConst_SVarNotObject 65043
+#define System_Win_ComConst_STooManyParams 65044
+#define System_Win_ComConst_SDCOMNotInstalled 65045
+#define Vcl_OleConst_SCannotActivate 65046
+#define Vcl_OleConst_SNoWindowHandle 65047
+#define Vcl_OleConst_SInvalidLicense 65048
+#define Vcl_OleConst_SNotLicensed 65049
+#define Vcl_OleConst_sNoRunningObject 65050
+#define Vcl_ComStrs_sTabFailClear 65051
+#define Vcl_ComStrs_sTabFailDelete 65052
+#define Vcl_ComStrs_sTabFailRetrieve 65053
+#define Vcl_ComStrs_sTabFailGetObject 65054
+#define Vcl_ComStrs_sTabFailSet 65055
+#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 65056
+#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 65057
+#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 65058
+#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 65059
+#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 65060
+#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 65061
+#define Vcl_Imaging_pnglang_EPNGNoImageDataText 65062
+#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 65063
+#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 65064
+#define Vcl_Imaging_pnglang_EPNGOutMemoryText 65065
+#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 65066
+#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 65067
+#define Vcl_Imaging_pnglang_EInvalidNewSize 65068
+#define Vcl_Imaging_pnglang_EInvalidSpec 65069
+#define Vcl_Imaging_JConsts_sChangeJPGSize 65070
+#define Vcl_Imaging_JConsts_sJPEGError 65071
+#define Vcl_Consts_SNameMenuText 65072
+#define Vcl_Consts_SNameNone 65073
+#define Vcl_Consts_SNameScrollBar 65074
+#define Vcl_Consts_SName3DDkShadow 65075
+#define Vcl_Consts_SName3DLight 65076
+#define Vcl_Consts_SNameWindow 65077
+#define Vcl_Consts_SNameWindowFrame 65078
+#define Vcl_Consts_SNameWindowText 65079
+#define Vcl_Imaging_pnglang_EPngInvalidCRCText 65080
+#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 65081
+#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 65082
+#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 65083
+#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 65084
+#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 65085
+#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 65086
+#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 65087
+#define Vcl_Consts_SNameCaptionText 65088
+#define Vcl_Consts_SNameDefault 65089
+#define Vcl_Consts_SNameGradientActiveCaption 65090
+#define Vcl_Consts_SNameGradientInactiveCaption 65091
+#define Vcl_Consts_SNameGrayText 65092
+#define Vcl_Consts_SNameHighlight 65093
+#define Vcl_Consts_SNameHighlightText 65094
+#define Vcl_Consts_SNameHotLight 65095
+#define Vcl_Consts_SNameInactiveBorder 65096
+#define Vcl_Consts_SNameInactiveCaption 65097
+#define Vcl_Consts_SNameInactiveCaptionText 65098
+#define Vcl_Consts_SNameInfoBk 65099
+#define Vcl_Consts_SNameInfoText 65100
+#define Vcl_Consts_SNameMenu 65101
+#define Vcl_Consts_SNameMenuBar 65102
+#define Vcl_Consts_SNameMenuHighlight 65103
+#define Vcl_Consts_SNameBlue 65104
+#define Vcl_Consts_SNameFuchsia 65105
+#define Vcl_Consts_SNameAqua 65106
+#define Vcl_Consts_SNameWhite 65107
+#define Vcl_Consts_SNameMoneyGreen 65108
+#define Vcl_Consts_SNameSkyBlue 65109
+#define Vcl_Consts_SNameCream 65110
+#define Vcl_Consts_SNameMedGray 65111
+#define Vcl_Consts_SNameActiveBorder 65112
+#define Vcl_Consts_SNameActiveCaption 65113
+#define Vcl_Consts_SNameAppWorkSpace 65114
+#define Vcl_Consts_SNameBackground 65115
+#define Vcl_Consts_SNameBtnFace 65116
+#define Vcl_Consts_SNameBtnHighlight 65117
+#define Vcl_Consts_SNameBtnShadow 65118
+#define Vcl_Consts_SNameBtnText 65119
+#define Vcl_Consts_SStyleHookClassNotRegistered 65120
+#define Vcl_Consts_SStyleInvalidParameter 65121
+#define Vcl_Consts_SStyleHookClassNotFound 65122
+#define Vcl_Consts_SStyleFeatureNotSupported 65123
+#define Vcl_Consts_SNameBlack 65124
+#define Vcl_Consts_SNameMaroon 65125
+#define Vcl_Consts_SNameGreen 65126
+#define Vcl_Consts_SNameOlive 65127
+#define Vcl_Consts_SNameNavy 65128
+#define Vcl_Consts_SNamePurple 65129
+#define Vcl_Consts_SNameTeal 65130
+#define Vcl_Consts_SNameGray 65131
+#define Vcl_Consts_SNameSilver 65132
+#define Vcl_Consts_SNameRed 65133
+#define Vcl_Consts_SNameLime 65134
+#define Vcl_Consts_SNameYellow 65135
 #define Vcl_Consts_SUTF7Encoding 65136
 #define Vcl_Consts_STrayIconRemoveError 65137
 #define Vcl_Consts_SPageControlNotSet 65138
@@ -356,9 +357,9 @@
 #define Vcl_Consts_SStyleClassRegisterError 65146
 #define Vcl_Consts_SStyleNotFound 65147
 #define Vcl_Consts_SStyleClassNotFound 65148
-#define Vcl_Consts_SStyleFormatError 65149
-#define Vcl_Consts_SStyleFileDescription 65150
-#define Vcl_Consts_SStyleHookClassNotRegistered 65151
+#define Vcl_Consts_SStyleInvalidHandle 65149
+#define Vcl_Consts_SStyleFormatError 65150
+#define Vcl_Consts_SStyleFileDescription 65151
 #define Vcl_Consts_SSeparator 65152
 #define Vcl_Consts_SCircularReferencesNotAllowed 65153
 #define Vcl_Consts_SCannotHideActionBand 65154
@@ -745,6 +746,7 @@
 #define System_SysConst_SInvalidOp 65535
 STRINGTABLE
 BEGIN
+	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
 	Vcl_Shell_ShellConsts_SRenamedFailedError,	L"Rename to %s failed"
 	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
 	Vcl_VDBConsts_SFirstRecord,	L"First record"
@@ -760,6 +762,7 @@ BEGIN
 	Vcl_VDBConsts_SApplyUpdates,	L"Apply updates"
 	Vcl_VDBConsts_SCancelUpdates,	L"Cancel updates"
 	Vcl_VDBConsts_SRemoteLogin,	L"Remote Login"
+	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
 	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
 	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
 	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
@@ -775,7 +778,7 @@ BEGIN
 	Vcl_Shell_ShellConsts_SShellDefaultTypeStr,	L"Type"
 	Vcl_Shell_ShellConsts_SShellDefaultModifiedStr,	L"Modified"
 	Vcl_Shell_ShellConsts_SShellNoDetails,	L"Unable to retrieve folder details for \"%s\". Error code $%x"
-	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
+	Data_Win_ADOConst_SCantRequery,	L"Cannot perform a requery after connection has changed"
 	Data_Win_ADOConst_SNoFilterOptions,	L"FilterOptions are not supported"
 	Data_Win_ADOConst_SRecordsetNotOpen,	L"Recordset is not open"
 	Data_Win_ADOConst_sNameAttr,	L"Name"
@@ -791,7 +794,7 @@ BEGIN
 	DECCipher_sKeyMaterialToLarge,	L"Keymaterial is too large for use (Security Issue)"
 	DECCipher_sIVMaterialToLarge,	L"Initvector is too large for use (Security Issue)"
 	DECCipher_sCipherNoDefault,	L"No default cipher has been registered"
-	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
+	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
 	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
 	Data_DBConsts_SRecordNotFound,	L"Record not found"
 	Data_DBConsts_SBcdOverflow,	L"BCD overflow"
@@ -807,7 +810,7 @@ BEGIN
 	Data_Win_ADOConst_SEventsNotSupported,	L"Events are not supported with server side TableDirect cursors"
 	Data_Win_ADOConst_SUsupportedFieldType,	L"Unsupported field type (%s) in field %s"
 	Data_Win_ADOConst_SConnectionRequired,	L"A connection component is required for async ExecuteOptions"
-	Data_Win_ADOConst_SCantRequery,	L"Cannot perform a requery after connection has changed"
+	Data_DBConsts_SDBDuplicateName,	L"Duplicate name '%s' in %s"
 	Data_DBConsts_SCircularDataLink,	L"Circular datalinks are not allowed"
 	Data_DBConsts_SLookupInfoError,	L"Lookup information for field '%s' is incomplete"
 	Data_DBConsts_SDataSourceChange,	L"DataSource cannot be changed"
@@ -823,7 +826,7 @@ BEGIN
 	Data_DBConsts_SBadFieldType,	L"Field '%s' is of an unsupported type"
 	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
 	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
-	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
+	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
 	Data_DBConsts_SFieldRangeError,	L"%g is not a valid value for field '%s'. The allowed range is %g to %g"
 	Data_DBConsts_SBcdFieldRangeError,	L"%s is not a valid value for field '%s'. The allowed range is %s to %s"
 	Data_DBConsts_SInvalidIntegerValue,	L"'%s' is not a valid integer value for field '%s'"
@@ -839,7 +842,7 @@ BEGIN
 	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
 	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
 	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
-	Data_DBConsts_SDBDuplicateName,	L"Duplicate name '%s' in %s"
+	CCR_Exif_Consts_SSubPropertiesMustBeNamed,	L"Sub-properties must be named"
 	CCR_Exif_Consts_SSubPropertiesNotSupported,	L"Property type does not support sub-properties"
 	CCR_Exif_Consts_SCannotWriteSingleValueToStructureProperty,	L"Cannot assign a single value to a structure property"
 	CCR_Exif_Consts_SPreferredPrefixMustBeSet,	L"The schema's PreferredPrefix property must be set before a new item can be added"
@@ -855,7 +858,7 @@ BEGIN
 	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
 	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
 	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
-	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
+	GIFImage_sProgressLoading,	L"Loading..."
 	GIFImage_sProgressSaving,	L"Saving..."
 	GIFImage_sProgressConverting,	L"Converting..."
 	GIFImage_sProgressRendering,	L"Rendering..."
@@ -871,7 +874,7 @@ BEGIN
 	CCR_Exif_Consts_STagCanContainOnlyASCII,	L"Tag may contain only ASCII string data"
 	CCR_Exif_Consts_SInvalidMakerNoteFormat,	L"Invalid MakerNote format"
 	CCR_Exif_Consts_SInvalidXMPPacket,	L"XMP packet is not valid"
-	CCR_Exif_Consts_SSubPropertiesMustBeNamed,	L"Sub-properties must be named"
+	GIFImage_sInvalidData,	L"Invalid GIF data"
 	GIFImage_sBadHeight,	L"Image height too small for contained frames"
 	GIFImage_sBadWidth,	L"Image width too small for contained frames"
 	GIFImage_sFailedPaste,	L"Failed to store GIF on clipboard"
@@ -887,7 +890,7 @@ BEGIN
 	GIFImage_sEmptyImage,	L"Image is empty"
 	GIFImage_sInvalidReduction,	L"Invalid reduction method"
 	GIFImage_sGIFImageFile,	L"GIF Image"
-	GIFImage_sProgressLoading,	L"Loading..."
+	GIFImage_sTooManyColors,	L"Color table overflow"
 	GIFImage_sBadColorIndex,	L"Invalid color index"
 	GIFImage_sBadVersion,	L"Unsupported GIF version"
 	GIFImage_sBadSignature,	L"Invalid GIF signature"
@@ -903,7 +906,7 @@ BEGIN
 	GIFImage_sBadBlockSize,	L"Unsupported Application Extension block size"
 	GIFImage_sBadBlock,	L"Unknown GIF block type"
 	GIFImage_sUnsupportedClass,	L"Object type not supported for operation"
-	GIFImage_sInvalidData,	L"Invalid GIF data"
+	GraphicStrings_gesPaintShopPro,	L"Paintshop Pro images"
 	GraphicStrings_gesInvalidImage,	L"Cannot load image. Invalid or unexpected %s image format."
 	GraphicStrings_gesInvalidColorFormat,	L"Invalid color format in %s file."
 	GraphicStrings_gesStreamReadError,	L"Stream read error in %s file."
@@ -919,7 +922,7 @@ BEGIN
 	GraphicStrings_gesTransfering,	L"Transfering..."
 	GraphicStrings_gesLZ77Error,	L"LZ77 decompression error."
 	GIFImage_sOutOfData,	L"Premature end of data"
-	GIFImage_sTooManyColors,	L"Color table overflow"
+	GraphicStrings_gesTruevision,	L"Truevision images"
 	GraphicStrings_gesSGI,	L"SGI images"
 	GraphicStrings_gesSGITrueColor,	L"SGI true color images"
 	GraphicStrings_gesZSoft,	L"ZSoft Paintbrush images"
@@ -935,7 +938,7 @@ BEGIN
 	GraphicStrings_gesAutoDesk,	L"Autodesk images"
 	GraphicStrings_gesKodakPhotoCD,	L"Kodak Photo-CD images"
 	GraphicStrings_gesHalo,	L"Dr. Halo images"
-	GraphicStrings_gesPaintShopPro,	L"Paintshop Pro images"
+	MZLib_SInvalidBlockType,	L"invalid block type"
 	MZLib_SInvalidStoredBlockLengths,	L"invalid stored block lengths"
 	MZLib_STooManyLDSymbols,	L"too many length or distance symbols"
 	MZLib_SInvalidBitLengthRepeat,	L"invalid bit length repeat"
@@ -951,7 +954,7 @@ BEGIN
 	GraphicStrings_gesIcons,	L"Windows icons"
 	GraphicStrings_gesMetaFiles,	L"Windows metafiles"
 	GraphicStrings_gesEnhancedMetaFiles,	L"Windows enhanced meta files"
-	GraphicStrings_gesTruevision,	L"Truevision images"
+	Vcl_ComStrs_sFailsetCalSelRange,	L"Failed to set calendar selected range"
 	MZLib_SNeedDict,	L"need dictionary"
 	MZLib_SStreamEnd,	L"stream end"
 	MZLib_SFileError,	L"file error"
@@ -967,7 +970,7 @@ BEGIN
 	MZLib_SOversubscribedLLTree,	L"oversubscribed literal/length tree"
 	MZLib_SIncompleteLLTree,	L"incomplete literal/length tree"
 	MZLib_SEmptyDistanceTree,	L"empty distance tree with lengths"
-	MZLib_SInvalidBlockType,	L"invalid block type"
+	Vcl_ComStrs_sTabFailSetObject,	L"Failed to set object at index %d"
 	Vcl_ComStrs_sTabMustBeMultiLine,	L"MultiLine must be True when TabPosition is tpLeft or tpRight"
 	Vcl_ComStrs_sInvalidIndex,	L"Invalid index"
 	Vcl_ComStrs_sInsertError,	L"Unable to insert an item"
@@ -983,7 +986,7 @@ BEGIN
 	Vcl_ComStrs_sFailSetCalDateTime,	L"Failed to set calendar date or time"
 	Vcl_ComStrs_sFailSetCalMaxSelRange,	L"Failed to set maximum selection range"
 	Vcl_ComStrs_sFailSetCalMinMaxRange,	L"Failed to set calendar min/max range"
-	Vcl_ComStrs_sFailsetCalSelRange,	L"Failed to set calendar selected range"
+	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
 	System_Win_ComConst_SOleError,	L"OLE error %.8x"
 	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
 	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
@@ -999,7 +1002,7 @@ BEGIN
 	Vcl_ComStrs_sTabFailRetrieve,	L"Failed to retrieve tab at index %d"
 	Vcl_ComStrs_sTabFailGetObject,	L"Failed to get object at index %d"
 	Vcl_ComStrs_sTabFailSet,	L"Failed to set tab \"%s\" at index %d"
-	Vcl_ComStrs_sTabFailSetObject,	L"Failed to set object at index %d"
+	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
 	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
 	Vcl_Imaging_pnglang_EPNGUnknownCompressionText,	L"This \"Portable Network Graphics\" image is encoded with an unknown compression scheme which could not be decoded."
 	Vcl_Imaging_pnglang_EPNGUnknownInterlaceText,	L"This \"Portable Network Graphics\" image uses an unknown interlace scheme which could not be decoded."
@@ -1015,7 +1018,7 @@ BEGIN
 	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
 	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
 	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
-	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
+	Vcl_Consts_SNameMenuText,	L"Menu Text"
 	Vcl_Consts_SNameNone,	L"None"
 	Vcl_Consts_SNameScrollBar,	L"Scroll Bar"
 	Vcl_Consts_SName3DDkShadow,	L"3D Dark Shadow"
@@ -1031,7 +1034,7 @@ BEGIN
 	Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText,	L"The file being read is not a valid \"Portable Network Graphics\" image because it contains an invalid header. This file may be corrupted, try obtaining it again"
 	Vcl_Imaging_pnglang_EPNGIHDRNotFirstText,	L"This \"Portable Network Graphics\" image is not supported or it might be invalid.\r\n(IHDR chunk is not the first)"
 	Vcl_Imaging_pnglang_EPNGSizeExceedsText,	L"This \"Portable Network Graphics\" image is not supported because either its width or height exceeds the maximum size of 65535 pixels."
-	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
+	Vcl_Consts_SNameCaptionText,	L"Caption Text"
 	Vcl_Consts_SNameDefault,	L"Default"
 	Vcl_Consts_SNameGradientActiveCaption,	L"Gradient Active Caption"
 	Vcl_Consts_SNameGradientInactiveCaption,	L"Gradient Inactive Caption"
@@ -1047,7 +1050,7 @@ BEGIN
 	Vcl_Consts_SNameMenu,	L"Menu Background"
 	Vcl_Consts_SNameMenuBar,	L"Menu Bar"
 	Vcl_Consts_SNameMenuHighlight,	L"Menu Highlight"
-	Vcl_Consts_SNameMenuText,	L"Menu Text"
+	Vcl_Consts_SNameBlue,	L"Blue"
 	Vcl_Consts_SNameFuchsia,	L"Fuchsia"
 	Vcl_Consts_SNameAqua,	L"Aqua"
 	Vcl_Consts_SNameWhite,	L"White"
@@ -1063,7 +1066,7 @@ BEGIN
 	Vcl_Consts_SNameBtnHighlight,	L"Button Highlight"
 	Vcl_Consts_SNameBtnShadow,	L"Button Shadow"
 	Vcl_Consts_SNameBtnText,	L"Button Text"
-	Vcl_Consts_SNameCaptionText,	L"Caption Text"
+	Vcl_Consts_SStyleHookClassNotRegistered,	L"Class '%s' is not registered for '%s'"
 	Vcl_Consts_SStyleInvalidParameter,	L"%s parameter cannot be nil"
 	Vcl_Consts_SStyleHookClassNotFound,	L"A StyleHook class has not been registered for %s"
 	Vcl_Consts_SStyleFeatureNotSupported,	L"Feature not supported by this style"
@@ -1079,7 +1082,6 @@ BEGIN
 	Vcl_Consts_SNameRed,	L"Red"
 	Vcl_Consts_SNameLime,	L"Lime"
 	Vcl_Consts_SNameYellow,	L"Yellow"
-	Vcl_Consts_SNameBlue,	L"Blue"
 	Vcl_Consts_SUTF7Encoding,	L"UTF-7"
 	Vcl_Consts_STrayIconRemoveError,	L"Cannot remove shell notification icon"
 	Vcl_Consts_SPageControlNotSet,	L"PageControl must first be assigned"
@@ -1093,9 +1095,9 @@ BEGIN
 	Vcl_Consts_SStyleClassRegisterError,	L"Style class '%s' already registered"
 	Vcl_Consts_SStyleNotFound,	L"Style '%s' not found"
 	Vcl_Consts_SStyleClassNotFound,	L"Style class '%s' not found"
+	Vcl_Consts_SStyleInvalidHandle,	L"Invalid style handle"
 	Vcl_Consts_SStyleFormatError,	L"Invalid style format"
 	Vcl_Consts_SStyleFileDescription,	L"VCL Style File"
-	Vcl_Consts_SStyleHookClassNotRegistered,	L"Class '%s' is not registered for '%s'"
 	Vcl_Consts_SSeparator,	L"Separator"
 	Vcl_Consts_SCircularReferencesNotAllowed,	L"Circular references not allowed"
 	Vcl_Consts_SCannotHideActionBand,	L"%s does not allow hiding"
@@ -1506,6 +1508,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\panel.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\cmd_icons.res */
 /* D:\Dmitry\Delphi exe\Photo Database\DBIcons\updater.res */
+/* Resources\MOBILE_FS.res */
 /* Resources\explorer_search.RES */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\controls.res */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\CategoryButtons.res */

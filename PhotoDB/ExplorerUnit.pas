@@ -1247,7 +1247,7 @@ begin
       PmItemPopup.DoPopupEx(ElvMain.Clienttoscreen(MousePos).X, ElvMain.Clienttoscreen(MousePos).Y);
     end else
     begin
-      Screen.Cursor := CrDefault;
+      Screen.Cursor := crDefault;
       if ListView1Selected <> nil then
       begin
         FileNames := TStringList.Create;
@@ -1745,8 +1745,9 @@ begin
   if StyleServices.Enabled then
   begin
     //hack for scrollbars in easy lsit view
-    ElvMain.Scrollbars.VertEnabled := false;
+    ElvMain.Scrollbars.VertEnabled := False;
     ElvMain.Scrollbars.VertEnabled := True;
+    Repaint;
   end;
 end;
 
@@ -1838,6 +1839,9 @@ var
   Index, I: Integer;
   MenuInfo: TDBPopupMenuInfoRecord;
 begin
+  if BlockClosingOfWindows then
+    Exit;
+
   GetCursorPos(P);
   P1 := ElvMain.ScreenToClient(P);
   if (not Active) or (not ElvMain.Focused) or (ItemAtPos(P1.X, P1.Y) <> LastMouseItem) or
@@ -5119,7 +5123,7 @@ var
   begin
     Result := ExecuteProviderFeature(Self, FileName, PATH_FEATURE_PROPERTIES);
   end;
-  
+
 begin
   if SelCount > 1 then
   begin
@@ -5144,7 +5148,7 @@ begin
 
     if FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER then
       ShowMyComputerProperties(Handle)
-    else 
+    else
       ShowPropertiesDialog(GetCurrentPath)
   end else
   begin

@@ -816,6 +816,7 @@ begin
     except result := false end;
 end;
 
+{$R-}
 function UpdateResourceW(update: dword; type_, name: PWideChar; language: word; data: pointer; size: dword) : bool; stdcall;
 
   procedure SetData(item: TPResItem);
@@ -933,7 +934,7 @@ begin
       end;
     except result := false end;
 end;
-
+{$R+}
 // ***************************************************************
 
 function GetResourceW(update: dword; type_, name: PWideChar; language: word; var data: pointer; var size: dword) : bool; stdcall;

@@ -342,7 +342,7 @@ begin
     StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
     LbStyles.Items.Add(L('Windows style (standard)'));
     IsStyleSelected := False;
-    CurrentStyle := Settings.ReadString('Style', 'FileName', 'Amakrits.vsf');
+    CurrentStyle := Settings.ReadString('Style', 'FileName', DefaultThemeName);
     for FileName in TDirectory.GetFiles(StylesPath, '*.vsf') do
     begin
       LbStyles.Items.Add(ExtractFileName(FileName));
@@ -546,6 +546,13 @@ var
   I: Integer;
   FPassIcon : HIcon;
 begin
+  if FolderView then
+  begin
+    PcMain.Pages[0].TabVisible := False;
+    PcMain.Pages[1].TabVisible := False;
+    PcMain.ActivePageIndex := 2;
+  end;
+
   ReloadData := False;
   SaveWindowPos1.Key := GetRegRootKey + 'Options';
   SaveWindowPos1.SetPosition;
@@ -572,7 +579,6 @@ begin
   FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
   WblMethod.LoadFromHIcon(FPassIcon);
   DestroyIcon(FPassIcon);
-
 end;
 
 procedure TOptionsForm.FormDestroy(Sender: TObject);

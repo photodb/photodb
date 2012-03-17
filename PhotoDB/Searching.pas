@@ -101,6 +101,7 @@ uses
   uVCLHelpers,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
+  Themes,
   uBaseWinControl;
 
 type
@@ -1294,6 +1295,9 @@ var
   Item: TEasyItem;
   DataRecord: TDBPopupMenuInfoRecord;
 begin
+  if BlockClosingOfWindows then
+    Exit;
+
   GetCursorPos(P);
   P1 := ElvMain.ScreenToClient(P);
 
@@ -3557,6 +3561,9 @@ procedure TSearchForm.FormResize(Sender: TObject);
 var
   ATop, N, LastIndex: Integer;
 begin
+  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+    Exit;
+
   LastIndex := ComboBoxSearchGroups.ItemIndex;
   ATop := ClientHeight - ComboBoxSearchGroups.Top - ComboBoxSearchGroups.Height - PnLeft.Top;
   N := Max(5, ATop div 32);

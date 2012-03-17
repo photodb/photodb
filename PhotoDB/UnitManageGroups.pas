@@ -340,7 +340,6 @@ var
   Size, I: Integer;
   Acaption, Atext, AkeyWords, AGroups, Fn: string;
   AxGroups: TGroups;
-  WindowColor : TColor;
 
 const
   DrawTextOpt = DT_EDITCONTROL;
@@ -348,7 +347,6 @@ const
   ThSize: Integer = 48;
 
 begin
-  WindowColor := ColorToRGB(ClWindow);
   R := Item.DisplayRect(DrBounds);
   if not RectInRect(Sender.ClientRect, R) then
     Exit;

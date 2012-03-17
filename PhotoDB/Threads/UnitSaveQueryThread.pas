@@ -3,12 +3,41 @@ unit UnitSaveQueryThread;
 interface
 
 uses
-  Windows, SysUtils, UnitGroupsWork, UnitExportThread, Classes, DB, Dolphin_DB,
-  CommonDBSupport, Forms, win32crc, ActiveX, acWorkRes, Graphics, Dialogs,
-  acDlgSelect, uVistaFuncs, UnitDBDeclare, uFileUtils, uConstants, uDBUtils,
-  uShellIntegration, UnitDBKernel, uDBBaseTypes, uMemory, uTranslate, ExplorerTypes,
-  uDBThread, uResourceUtils, uThreadForm, uThreadEx, uMobileUtils, uTime,
-  uDBShellUtils, uRuntime;
+  Windows,
+  SysUtils,
+  UnitGroupsWork,
+  UnitExportThread,
+  Classes,
+  DB,
+  Dolphin_DB,
+  CommonDBSupport,
+  Forms,
+  win32crc,
+  ActiveX,
+  acWorkRes,
+  Graphics,
+  Dialogs,
+  acDlgSelect,
+  uVistaFuncs,
+  UnitDBDeclare,
+  uFileUtils,
+  uConstants,
+  uDBUtils,
+  uShellIntegration,
+  UnitDBKernel,
+  uDBBaseTypes,
+  uMemory,
+  uTranslate,
+  ExplorerTypes,
+  uDBThread,
+  uResourceUtils,
+  uThreadForm,
+  uThreadEx,
+  uMobileUtils,
+  uTime,
+  uLogger,
+  uDBShellUtils,
+  uRuntime;
 
 type
   TSaveQueryThread = class(TThreadEx)
@@ -138,105 +167,110 @@ begin
   inherited;
   FreeOnTerminate := True;
   try
-    CoInitializeEx(nil, COM_MODE);
     try
-      SaveToDBName := GetFileNameWithoutExt(FDestinationPath);
-      if SaveToDBName <> '' then
-        if Length(SaveToDBName) > 1 then
-          if SaveToDBName[2] = ':' then
-            SaveToDBName := SaveToDBName[1] + '_drive';
-      SynchronizeEx(LoadCustomDBName);
-
-      FDestinationPath := IncludeTrailingBackslash(FDestinationPath);
-
-      FDBFileName := FDestinationPath + SaveToDBName + '.photodb';
-      if DBKernel.CreateDBbyName(FDBFileName) <> 0 then
-        Exit;
-
-      ImageSettings := CommonDBSupport.GetImageSettingsFromTable(DBName);
+      CoInitializeEx(nil, COM_MODE);
       try
-        CommonDBSupport.UpdateImageSettings(FDBFileName, ImageSettings);
-      finally
-        F(ImageSettings);
-      end;
+        SaveToDBName := GetFileNameWithoutExt(FDestinationPath);
+        if SaveToDBName <> '' then
+          if Length(SaveToDBName) > 1 then
+            if SaveToDBName[2] = ':' then
+              SaveToDBName := SaveToDBName[1] + '_drive';
+        SynchronizeEx(LoadCustomDBName);
 
-      FTable := GetTable(FDBFileName, DB_TABLE_IMAGES);
+        FDestinationPath := IncludeTrailingBackslash(FDestinationPath);
 
-      try
-        FTable.Active := True;
+        FDBFileName := FDestinationPath + SaveToDBName + '.photodb';
+        if DBKernel.CreateDBbyName(FDBFileName) <> 0 then
+          Exit;
 
-        DBFolder := ExtractFilePath(FDBFileName);
-
-        Setlength(FGroupsFounded, 0);
-
-        for I := 0 to FFileList.Count - 1 do
-        begin
-          FQuery := GetQuery;
-          try
-            LoadLocation(FQuery, FFileList[I], FSubFolders);
-            SaveLocation(FQuery, FTable);
-          finally
-            FreeDS(FQuery);
-          end;
+        ImageSettings := CommonDBSupport.GetImageSettingsFromTable(DBName);
+        try
+          CommonDBSupport.UpdateImageSettings(FDBFileName, ImageSettings);
+        finally
+          F(ImageSettings);
         end;
 
-        SetMaxValue(Length(FGroupsFounded));
-        FRegGroups := GetRegisterGroupList(True);
-        try
-          CreateGroupsTableW(GroupsTableFileNameW(FDBFileName));
+        FTable := GetTable(FDBFileName, DB_TABLE_IMAGES);
 
-          for I := 0 to Length(FGroupsFounded) - 1 do
+        try
+          FTable.Active := True;
+
+          DBFolder := ExtractFilePath(FDBFileName);
+
+          Setlength(FGroupsFounded, 0);
+
+          for I := 0 to FFileList.Count - 1 do
           begin
-            if IsTerminated then
-              Break;
-            SetProgress(I);
-            for J := 0 to Length(FRegGroups) - 1 do
-              if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
-              begin
-                AddGroupW(FRegGroups[J], GroupsTableFileNameW(ExtractFilePath(FDBFileName) + SaveToDBName + '.photodb'));
+            FQuery := GetQuery;
+            try
+              LoadLocation(FQuery, FFileList[I], FSubFolders);
+              SaveLocation(FQuery, FTable);
+            finally
+              FreeDS(FQuery);
+            end;
+          end;
+
+          SetMaxValue(Length(FGroupsFounded));
+          FRegGroups := GetRegisterGroupList(True);
+          try
+            CreateGroupsTableW(GroupsTableFileNameW(FDBFileName));
+
+            for I := 0 to Length(FGroupsFounded) - 1 do
+            begin
+              if IsTerminated then
                 Break;
-              end;
+              SetProgress(I);
+              for J := 0 to Length(FRegGroups) - 1 do
+                if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
+                begin
+                  AddGroupW(FRegGroups[J], GroupsTableFileNameW(ExtractFilePath(FDBFileName) + SaveToDBName + '.photodb'));
+                  Break;
+                end;
+            end;
+          finally
+            FreeGroups(FRegGroups);
           end;
         finally
-          FreeGroups(FRegGroups);
+          FreeDS(FTable);
         end;
-      finally
-        FreeDS(FTable);
-      end;
-      TryRemoveConnection(FDBFileName, True);
+        TryRemoveConnection(FDBFileName, True);
 
-      TW.I.Check('Copy File');
+        TW.I.Check('Copy File');
 
-      FExeFileName := ExtractFilePath(FDBFileName) + SaveToDBName + '.exe';
+        FExeFileName := ExtractFilePath(FDBFileName) + SaveToDBName + '.exe';
 
-      CopyFile(PChar(Application.Exename), PChar(FExeFileName), False);
-      TW.I.Check('Update File Resources');
-      UpdateExeResources(FExeFileName);
+        CopyFile(PChar(Application.Exename), PChar(FExeFileName), False);
+        TW.I.Check('Update File Resources');
+        UpdateExeResources(FExeFileName);
 
-      TW.I.Check('Change File Icon');
-      NewIcon := TIcon.Create;
-      try
-        SynchronizeEx(ReplaceIconAction);
-        if not NewIcon.Empty then
-        begin
-          NewIcon.SaveToFile(OutIconName);
+        TW.I.Check('Change File Icon');
+        NewIcon := TIcon.Create;
+        try
+          SynchronizeEx(ReplaceIconAction);
+          if not NewIcon.Empty then
+          begin
+            NewIcon.SaveToFile(OutIconName);
+            F(NewIcon);
+
+            ReplaceIcon(FExeFileName, PWideChar(OutIconName));
+
+            if FileExistsSafe(OutIconName) then
+              DeleteFile(OutIconName);
+
+          end;
+        finally
           F(NewIcon);
-
-          ReplaceIcon(FExeFileName, PWideChar(OutIconName));
-
-          if FileExistsSafe(OutIconName) then
-            DeleteFile(OutIconName);
-
         end;
-      finally
-        F(NewIcon);
-      end;
 
+      finally
+        CoUninitialize;
+      end;
     finally
-      CoUninitialize;
+      SynchronizeEx(Done);
     end;
-  finally
-    SynchronizeEx(Done);
+  except
+    on e: Exception do
+      EventLog(e);
   end;
 end;
 
