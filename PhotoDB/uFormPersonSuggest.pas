@@ -56,7 +56,7 @@ end;
 
 procedure TFormPersonSuggest.FormPaint(Sender: TObject);
 begin
-  Canvas.Pen.Color := clWindowText;
+  Canvas.Pen.Color := Theme.WindowTextColor;
   Canvas.MoveTo(0, 0);
   Canvas.LineTo(Width - 1, 0);
   Canvas.LineTo(Width - 1, Height - 1);
@@ -88,7 +88,7 @@ var
     WL.Top := TopInc + Index * 18;
     WL.Width := Width - 2;
     WL.Height := 16;
-    WL.Color := clWhite;
+    WL.Color := Theme.ListColor;
   end;
 
 begin

@@ -186,9 +186,14 @@
     <translate name="Copy to" value="Скопировать в" />
     <translate name="Move to" value="Переместить в" />
     <translate name="Send to" value="Отправить в" />
+    <translate name="Add to shelf" value="Отложить" />
+    <translate name="Photo shelf ({0} items)" value="Отложенные фото - {0}" />
+    <translate name="Photo shelf" value="Отложенные фото" />
+    <translate name="List of shelfed photos and other objects" value="Список отложенных фото и других объектов" />
     <translate name="Rename" value="Переименовать" />
     <translate name="Properties" value="Свойства" />
     <translate name="Delete" value="Удалить" />
+    <translate name="Clear" value="Очистить" />
     <translate name="Refresh" value="Обновить" />
     <translate name="Image editor" value="Редактор" />
     <translate name="Crop" value="Кадрировать" />
@@ -2183,5 +2188,8 @@
 	<translate name="december" value="декабрь"/>
   </scope>
   <scope name="FileMoveDialog">
+  </scope>
+  <scope name="PhotoShelf">
+	<translate name="Photo shelf" value="Отложенные фото"/>
   </scope>
 </language>

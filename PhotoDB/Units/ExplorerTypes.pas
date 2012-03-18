@@ -28,6 +28,7 @@ uses
   uExplorerPersonsProvider,
   uExplorerNetworkProviders,
   uExplorerPortableDeviceProvider,
+  uExplorerShelfProvider,
   uFormListView,
   Vcl.ActnPopup;
 
@@ -833,6 +834,10 @@ begin
   begin
     FileSize := TPortableFileItem(PI).FileSize;
     FileType := EXPLORER_ITEM_DEVICE_FILE;
+  end
+  else if PI is TShelfItem then
+  begin
+    FileType := EXPLORER_ITEM_SHELF;
   end;
 end;
 

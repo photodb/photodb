@@ -38,7 +38,10 @@ uses
   pngimage,
   uMemoryEx,
   uWizards,
-  LoadingSign;
+  LoadingSign,
+  uThemesUtils,
+  uFastLoad,
+  uBaseWinControl;
 
 type
   TFormImportingImages = class(TDBForm)
@@ -104,6 +107,8 @@ end;
 
 procedure TFormImportingImages.FormCreate(Sender: TObject);
 begin
+  TLoad.Instance.RequaredStyle;
+  LsWorking.Color := Theme.WizardColor;
   FWizard := TWizardManager.Create(Self);
   FWizard.OnChange := StepChanged;
   FWizard.AddStep(TFrmImportImagesLanding);

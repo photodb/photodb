@@ -3,16 +3,23 @@ unit uDBCustomThread;
 interface
 
 uses
-  Windows, Classes, SyncObjs, uSysUtils, uMemory;
+  Windows,
+  Classes,
+  SyncObjs,
+  uSysUtils,
+  uThemesUtils,
+  uMemory;
 
 type
   TDBCustomThread = class(TThread)
   private
     FID: TGUID;
+    function GetTheme: TDatabaseTheme;
   public
     constructor Create(CreateSuspended: Boolean);
     destructor Destroy; override;
     property UniqID: TGuid read FID;
+    property Theme: TDatabaseTheme read GetTheme;
   end;
 
   TTDBThreadClass = class of TDBCustomThread;
@@ -238,6 +245,11 @@ destructor TDBCustomThread.Destroy;
 begin
   DBThreadManager.UnRegisterThread(Self);
   inherited;
+end;
+
+function TDBCustomThread.GetTheme: TDatabaseTheme;
+begin
+  Result := uThemesUtils.Theme;
 end;
 
 initialization

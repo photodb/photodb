@@ -21,7 +21,9 @@ uses
   uMemory,
   uW7TaskBar,
   uVistaFuncs,
-  Vcl.AppEvnts;
+  Vcl.AppEvnts,
+  Themes,
+  uBaseWinControl;
 
 type
   TProgressOption = class(TObject)
@@ -75,6 +77,7 @@ type
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure TmUpdateTimer(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   private
     FOptions: TProgressOptions;
     FW7TaskBar: ITaskbarList3;
@@ -240,6 +243,12 @@ begin
   LoadLanguage;
 end;
 
+procedure TFormMoveFilesProgress.FormResize(Sender: TObject);
+begin
+  if TStyleManager.IsCustomStyleActive then
+    Repaint;
+end;
+
 function TFormMoveFilesProgress.GetFormID: string;
 begin
   Result := 'FileMoveDialog';
@@ -363,7 +372,7 @@ begin
       if PnInfo.Controls[I] is TLabel then
       begin
         L := TLabel(PnInfo.Controls[I]);
-        if L.Tag > 0 then
+        if L.Tag <> 0 then
           L.Caption := TProgressOption(L.Tag).Value;
       end;
 
@@ -402,6 +411,9 @@ begin
     PbMain.Position := 0;
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressValue(Handle, ProgressValue, ProgressMax);
+
+  if TStyleManager.IsCustomStyleActive then
+    Repaint;
 end;
 
 end.

@@ -147,9 +147,9 @@ begin
             JPEGScale(Graphic, FPictureSize, FPictureSize);
             Fbit := TBitmap.Create;
             try
-              Fbit.PixelFormat := Pf24bit;
+              Fbit.PixelFormat := pf24bit;
 
-              LoadImageX(Graphic, Fbit, clWindow);
+              LoadImageX(Graphic, Fbit, Theme.ListViewColor);
               F(Graphic);
               TempBitmap := TBitmap.Create;
               try

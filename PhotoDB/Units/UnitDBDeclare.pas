@@ -122,7 +122,8 @@ type
     EventID_Param_Links,  EventID_Param_DB_Changed, EventID_Param_Refresh_Window,
     EventID_FileProcessed, EventID_Repaint_ImageList, EventID_No_EXIF,
     EventID_PersonAdded, EventID_PersonChanged, EventID_PersonRemoved,
-    EventID_GroupAdded, EventID_GroupChanged, EventID_GroupRemoved);
+    EventID_GroupAdded, EventID_GroupChanged, EventID_GroupRemoved,
+    EventID_ShelfChanged);
 
   TEventFields = set of TEventField;
 

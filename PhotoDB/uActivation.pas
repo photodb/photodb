@@ -33,7 +33,7 @@ uses
   uSettings,
   uMemoryEx,
   uThemesUtils,
-  LoadingSign;
+  LoadingSign, uBaseWinControl;
 
 type
   TActivateForm = class(TDBForm)

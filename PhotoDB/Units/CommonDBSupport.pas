@@ -571,9 +571,9 @@ function GetDefaultImageDBOptions: TImageDBOptions;
 begin
   Result := TImageDBOptions.Create;
   Result.DBJpegCompressionQuality := 75;
-  Result.ThSize := 150;
-  Result.ThSizePanelPreview := 75;
-  Result.ThHintSize := 300;
+  Result.ThSize := 200;
+  Result.ThSizePanelPreview := 100;
+  Result.ThHintSize := 400;
 end;
 
 function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
@@ -666,7 +666,7 @@ begin
       ':DBJpegCompressionQuality,:ThSizePanelPreview,:ThImageSize,:ThHintSize)'; }
 
     SQL := 'Insert Into DBSettings  (Version, DBJpegCompressionQuality, ThSizePanelPreview,' +
-      'ThImageSize, ThHintSize, DBName, DBDescription) Values (2,75,75,150,300,"","")';
+      'ThImageSize, ThHintSize, DBName, DBDescription) Values (2,75,100,200,400,"","")';
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);

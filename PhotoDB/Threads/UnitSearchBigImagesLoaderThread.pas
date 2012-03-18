@@ -187,7 +187,7 @@ begin
       JPEGScale(FGraphic, PictureSize, PictureSize);
 
       if Min(FGraphic.Height, FGraphic.Width) > 1 then
-        LoadImageX(FGraphic, FBit, clWindow);
+        LoadImageX(FGraphic, FBit, Theme.ListViewColor);
 
       TempBitmap:=TBitmap.Create;
       try

@@ -3,10 +3,28 @@ unit uFrmImportImagesLanding;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, uFrameWizardBase, StdCtrls, ComCtrls, ImgList, Menus, UnitDBDeclare,
-  UnitDBKernel, uConstants, UnitDBCommonGraphics, uFileUtils, uShellIntegration,
-  uShellUtils, UnitDBFileDialogs, uRuntime;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  uFrameWizardBase,
+  StdCtrls,
+  ComCtrls,
+  ImgList,
+  Menus,
+  UnitDBDeclare,
+  UnitDBKernel,
+  uConstants,
+  UnitDBCommonGraphics,
+  uFileUtils,
+  uShellIntegration,
+  uShellUtils,
+  UnitDBFileDialogs,
+  uRuntime;
 
 type
   TFrmImportImagesLanding = class(TFrameWizardBase)
@@ -52,7 +70,7 @@ begin
   begin
     PmDeleteItem.Images := DBKernel.ImageList;
     DeleteItem1.ImageIndex := DB_IC_DELETE_INFO;
-    PlacesImageList.BkColor := LvPlaces.Color;
+
     AddFolder(GetMyPicturesPath);
   end;
 end;

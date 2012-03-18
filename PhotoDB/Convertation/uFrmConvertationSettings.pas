@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, uFrameWizardBase, jpeg, ExtCtrls, StdCtrls, uMemory, Menus,
   UnitDBDeclare, uJpegUtils, Dolphin_DB, uBItmapUtils,
-  UnitDBFileDialogs, uResources, WebLink, Math, uConstants, uInterfaces;
+  UnitDBFileDialogs, uResources, WebLink, Math, uConstants, uInterfaces,
+  uBaseWinControl;
 
 type
   TFrmConvertationSettings = class(TFrameWizardBase)

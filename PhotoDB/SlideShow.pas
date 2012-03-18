@@ -251,12 +251,9 @@ type
     procedure Explorer1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Copy1Click(Sender: TObject);
-    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure FormMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure SbHorisontalScroll(Sender: TObject; ScrollCode: TScrollCode;
-      var ScrollPos: Integer);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure SbHorisontalScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure RealSizeClick(Sender: TObject);
     procedure FitToWindowClick(Sender: TObject);
     procedure TbZoomOutClick(Sender: TObject);
@@ -270,8 +267,7 @@ type
     procedure Tile1Click(Sender: TObject);
     procedure Properties1Click(Sender: TObject);
     procedure Resize1Click(Sender: TObject);
-    procedure FormContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure FormContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
     procedure ReloadCurrent;
@@ -289,19 +285,15 @@ type
     procedure UpdateInfoAboutFileName(FileName: string; Info: TDBPopupMenuInfoRecord);
     procedure SendTo1Click(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
-    procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
-      MousePos: TPoint; var Handled: Boolean);
-    procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
-      MousePos: TPoint; var Handled: Boolean);
-    procedure LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
-      Bitmap: TBitmap);
+    procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+    procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+    procedure LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer; Bitmap: TBitmap);
     procedure TbEncryptClick(Sender: TObject);
     procedure ByEXIF1Click(Sender: TObject);
     procedure PmSteganographyPopup(Sender: TObject);
     procedure AddHiddenInfo1Click(Sender: TObject);
     procedure ExtractHiddenInfo1Click(Sender: TObject);
-    procedure TbEncryptMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure TbEncryptMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure TbPageNumberClick(Sender: TObject);
     procedure WlFaceCountMouseEnter(Sender: TObject);
     procedure WlFaceCountMouseLeave(Sender: TObject);
@@ -374,7 +366,8 @@ type
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WndProc(var Message: TMessage); override;
-    function GetFormID : string; override;
+    function GetFormID: string; override;
+    procedure ApplyStyle; override;
     function GetItem: TDBPopupMenuInfoRecord; override;
     procedure RefreshFaces;
     procedure RefreshFaceDetestionState;
@@ -602,8 +595,6 @@ begin
   TW.I.Start('MakePagesLinks');
   MakePagesLinks;
   FCreating := False;
-  TW.I.Start('RecreateImLists');
-  RecreateImLists;
   TW.I.Start('RecreateImLists - END');
   FProgressMessage := RegisterWindowMessage('SLIDE_SHOW_PROGRESS');
   PostMessage(Handle, FProgressMessage, 0, 0);
@@ -690,9 +681,9 @@ var
     begin
       MessageText := L('Can''t display file') + ':';
       if not FullScreenNow then
-        DrawImage.Canvas.Font.Color := clWindowText
+        DrawImage.Canvas.Font.Color := Theme.WindowTextColor
       else
-        DrawImage.Canvas.Font.Color := clHighlightText;
+        DrawImage.Canvas.Font.Color := Theme.HighlightTextColor;
 
       DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(MessageText) div 2,
         DrawImage.Height div 2 - DrawImage.Canvas.Textheight(MessageText) div 2, MessageText);
@@ -2440,6 +2431,13 @@ begin
   UpdaterDB.AddDirectory(ExtractFileDir(Item.FileName))
 end;
 
+procedure TViewer.ApplyStyle;
+begin
+  inherited;
+  TW.I.Start('RecreateImLists');
+  RecreateImLists;
+end;
+
 procedure TViewer.GoToSearchWindow1Click(Sender: TObject);
 var
   NewSearch: TSearchCustomForm;
@@ -3120,7 +3118,7 @@ var
     P1 := ImagePointToBufferPoint(P1);
     P2 := ImagePointToBufferPoint(P2);
     R := Rect(P1, P2);
-    FOverlayBuffer.Canvas.Pen.Color := clWhite;
+    FOverlayBuffer.Canvas.Pen.Color := Theme.WindowColor;
     FOverlayBuffer.Canvas.Rectangle(R);
     InflateRect(R, -1, -1);
     FOverlayBuffer.Canvas.Pen.Color := clGray;

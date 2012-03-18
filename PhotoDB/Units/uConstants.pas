@@ -224,6 +224,7 @@ const
   DB_IC_PICTURES_IMPORT = 123;
   DB_IC_BACKUP         = 124;
   DB_IC_MAP_MARKER     = 125;
+  DB_IC_SHELF          = 126;
 
 const
     WM_DROPFILES = $0233;
@@ -313,6 +314,7 @@ const
   EXPLORER_ITEM_DEVICE_IMAGE     = 19;
   EXPLORER_ITEM_DEVICE_VIDEO     = 20;
   EXPLORER_ITEM_DEVICE_FILE      = 21;
+  EXPLORER_ITEM_SHELF            = 22;
 
 //////////////////////////////////////////////////
 
@@ -337,6 +339,7 @@ const
   THREAD_TYPE_PERSON         = 17;
   THREAD_TYPE_CAMERA         = 18;
   THREAD_TYPE_CAMERAITEM     = 19;
+  THREAD_TYPE_SHELF          = 20;
 
   THREAD_PREVIEW_MODE_IMAGE      = 1;
   THREAD_PREVIEW_MODE_BIG_IMAGE  = 2;
@@ -423,6 +426,7 @@ const
   cDBSearchPath = '::db://';
   cImagesSearchPath = '::images://';
   cFilesSearchPath = '::files://';
+  cShelfPath = 'Shelf';
 
 const
   ObjectTableName = 'Objects';

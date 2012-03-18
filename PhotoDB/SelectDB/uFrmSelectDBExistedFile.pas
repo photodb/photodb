@@ -6,7 +6,7 @@ uses
   Windows, SysUtils, Classes, Graphics, Controls, Forms, uRuntime,
   Dialogs, WebLink, StdCtrls, ExtCtrls, uFrameWizardBase, UnitDBKernel,
   uShellIntegration, UnitDBCommonGraphics, uMemory, UnitDBDeclare, uIconUtils,
-  UnitDBFileDialogs, uFileUtils, uConstants, WatermarkedEdit;
+  UnitDBFileDialogs, uFileUtils, uConstants, WatermarkedEdit, uBaseWinControl;
 
 type
   TFrmSelectDBExistedFile = class(TFrameWizardBase)

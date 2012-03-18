@@ -398,7 +398,9 @@ uses
   Vcl.Styles.Ext in 'Units\Styles\Vcl.Styles.Ext.pas',
   Vcl.Styles.Utils in 'Units\Styles\Vcl.Styles.Utils.pas',
   uMainMenuStyleHook in 'Units\Styles\uMainMenuStyleHook.pas',
-  PropertyForm in 'PropertyForm.pas' {PropertiesForm};
+  PropertyForm in 'PropertyForm.pas' {PropertiesForm},
+  uPhotoShelf in 'Units\uPhotoShelf.pas',
+  uExplorerShelfProvider in 'Units\uExplorerShelfProvider.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -567,7 +569,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

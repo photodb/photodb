@@ -831,7 +831,7 @@ begin
   FixFormPosition;
 
   WlAddLink.LoadFromResource('GROUP_ADD_SMALL');
-  WlAddLink.Color := clWindow;
+  WlAddLink.Color := Theme.WindowColor;
 
   LoadLanguage;
 

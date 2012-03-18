@@ -577,7 +577,7 @@ begin
             end else
               DoEventCancel(FInfo[FileNumber].FileName);
           end;
-        end else
+        end else if Res.Count <> 0 then
           DoEventCancel(FInfo[FileNumber].FileName);
         AutoAnswerSetted := False;
 

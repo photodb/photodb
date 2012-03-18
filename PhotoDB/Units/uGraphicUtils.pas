@@ -88,7 +88,7 @@ begin
   Result := RGB(Round(GetRValue(Color) / 1.2), (Round(GetGValue(Color) / 1.2)), (Round(GetBValue(Color) / 1.2)));
 end;
 
-function MakeDarken(BaseColor : TColor; Multiply : Extended) : TColor;
+function MakeDarken(BaseColor: TColor; Multiply: Extended) : TColor;
 var
   R, G, B : Byte;
 begin
@@ -96,9 +96,9 @@ begin
   R := GetRValue(BaseColor);
   G := GetGValue(BaseColor);
   B := GetBValue(BaseColor);
-  R := Byte(Round(R * Multiply));
-  G := Byte(Round(G * Multiply));
-  B := Byte(Round(B * Multiply));
+  R := Byte(Min(255, Round(R * Multiply)));
+  G := Byte(Min(255, Round(G * Multiply)));
+  B := Byte(Min(255, Round(B * Multiply)));
   Result := RGB(R, G, B);
 end;
 

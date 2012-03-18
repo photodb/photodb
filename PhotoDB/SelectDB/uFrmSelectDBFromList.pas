@@ -108,7 +108,6 @@ var
 begin
   CbDBList.Clear;
   DBImageList.Clear;
-  DBImageList.BkColor := clWindow;
 
   for I := 0 to DBKernel.DBs.Count - 1 do
   begin

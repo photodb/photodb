@@ -596,6 +596,7 @@ var
   end;
 
 begin
+  Result := False;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     try

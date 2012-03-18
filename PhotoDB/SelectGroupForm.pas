@@ -146,7 +146,7 @@ var
   I : integer;
 begin
   CbeGroupList.Clear;
-  FillGroupsToImageList(GroupsImageList, Groups, ClBtnFace);
+  FillGroupsToImageList(GroupsImageList, Groups, Theme.PanelColor);
 
   for I := 0 to Length(Groups) - 1 do
     with CbeGroupList.ItemsEx.Add do

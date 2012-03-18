@@ -32,12 +32,12 @@ var
   // Image sizes
   // In FormManager this sizes loaded from DB
   DBJpegCompressionQuality: Integer = 75;
-  ThSize: Integer = 152;
+  ThSize: Integer = 202;
   ThSizeExplorerPreview: Integer = 100;
   ThSizePropertyPreview: Integer = 100;
   ThSizePanelPreview: Integer = 85;
-  ThImageSize: Integer = 150;
-  ThHintSize: Integer = 300;
+  ThImageSize: Integer = 200;
+  ThHintSize: Integer = 400;
 
 implementation
 

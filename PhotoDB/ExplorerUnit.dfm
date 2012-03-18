@@ -3,7 +3,7 @@ object ExplorerForm: TExplorerForm
   Top = 225
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
-  ClientHeight = 698
+  ClientHeight = 801
   ClientWidth = 879
   Color = clBtnFace
   Constraints.MinHeight = 200
@@ -25,14 +25,14 @@ object ExplorerForm: TExplorerForm
   OnShow = FormShow
   DesignSize = (
     879
-    698)
+    801)
   PixelsPerInch = 96
   TextHeight = 13
   object SplLeftPanel: TSplitter
     Left = 135
     Top = 48
     Width = 5
-    Height = 630
+    Height = 733
     Constraints.MaxWidth = 150
     OnCanResize = SplLeftPanelCanResize
     ExplicitLeft = 150
@@ -43,7 +43,7 @@ object ExplorerForm: TExplorerForm
     Left = 140
     Top = 48
     Width = 1
-    Height = 630
+    Height = 733
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
@@ -53,11 +53,12 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 48
     Width = 135
-    Height = 630
+    Height = 733
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 0
+    ExplicitHeight = 630
     object CloseButtonPanel: TPanel
       Left = 0
       Top = 0
@@ -88,17 +89,18 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 21
       Width = 135
-      Height = 609
+      Height = 712
       Align = alClient
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 1
       OnResize = PropertyPanelResize
+      ExplicitHeight = 609
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
         Width = 135
-        Height = 609
+        Height = 683
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -114,6 +116,7 @@ object ExplorerForm: TExplorerForm
         FullRepaint = False
         TabOrder = 0
         OnResize = ScrollBox1Resize
+        ExplicitHeight = 609
         object TypeLabel: TLabel
           Left = 7
           Top = 141
@@ -171,7 +174,7 @@ object ExplorerForm: TExplorerForm
         object OtherPlacesLabel: TLabel
           Tag = 1
           Left = 8
-          Top = 527
+          Top = 559
           Width = 71
           Height = 13
           Caption = 'Other Places'
@@ -403,7 +406,7 @@ object ExplorerForm: TExplorerForm
         end
         object MyPicturesLink: TWebLink
           Left = 5
-          Top = 556
+          Top = 588
           Width = 76
           Height = 16
           Cursor = crHandPoint
@@ -424,7 +427,7 @@ object ExplorerForm: TExplorerForm
         end
         object MyDocumentsLink: TWebLink
           Left = 5
-          Top = 572
+          Top = 604
           Width = 91
           Height = 16
           Cursor = crHandPoint
@@ -445,7 +448,7 @@ object ExplorerForm: TExplorerForm
         end
         object MyComputerLink: TWebLink
           Left = 5
-          Top = 540
+          Top = 572
           Width = 85
           Height = 16
           Cursor = crHandPoint
@@ -506,7 +509,7 @@ object ExplorerForm: TExplorerForm
         end
         object DesktopLink: TWebLink
           Left = 5
-          Top = 588
+          Top = 620
           Width = 60
           Height = 16
           Cursor = crHandPoint
@@ -726,12 +729,62 @@ object ExplorerForm: TExplorerForm
           StretchImage = True
           CanClick = True
         end
+        object WlClear: TWebLink
+          Left = 5
+          Top = 521
+          Width = 46
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'Clear'
+          OnClick = WlClearClick
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          UseSpecIconSize = True
+          HightliteImage = False
+          StretchImage = True
+          CanClick = True
+        end
+      end
+      object PnShelf: TPanel
+        Left = 0
+        Top = 683
+        Width = 135
+        Height = 29
+        Align = alBottom
+        TabOrder = 1
+        Visible = False
+        ExplicitTop = 580
+        object WlGoToShelf: TWebLink
+          Left = 5
+          Top = 6
+          Width = 82
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'WlGoToShelf'
+          OnClick = WlGoToShelfClick
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          UseSpecIconSize = True
+          HightliteImage = False
+          StretchImage = True
+          CanClick = True
+        end
       end
     end
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 678
+    Top = 781
     Width = 879
     Height = 20
     Panels = <
@@ -741,6 +794,7 @@ object ExplorerForm: TExplorerForm
       item
         Width = 500
       end>
+    ExplicitTop = 678
   end
   object CoolBarTop: TCoolBar
     Left = 0
@@ -1092,31 +1146,34 @@ object ExplorerForm: TExplorerForm
     Left = 141
     Top = 48
     Width = 738
-    Height = 630
+    Height = 733
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
     ParentColor = True
     TabOrder = 5
+    ExplicitHeight = 630
     object SplGeoLocation: TSplitter
       Left = 383
       Top = 33
       Width = 5
-      Height = 564
+      Height = 667
       Align = alRight
       Visible = False
       OnMoved = SplGeoLocationMoved
       ExplicitLeft = 572
       ExplicitTop = 27
+      ExplicitHeight = 564
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 597
+      Top = 700
       Width = 738
       Height = 33
       Align = alBottom
       TabOrder = 0
       Visible = False
+      ExplicitTop = 597
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1580,21 +1637,22 @@ object ExplorerForm: TExplorerForm
       Left = 388
       Top = 33
       Width = 350
-      Height = 564
+      Height = 667
       Align = alRight
       TabOrder = 2
       Visible = False
+      ExplicitHeight = 564
       object WbGeoLocation: TWebBrowser
         Left = 1
         Top = 34
         Width = 348
-        Height = 494
+        Height = 597
         Align = alClient
         TabOrder = 0
         ExplicitWidth = 200
         ExplicitHeight = 529
         ControlData = {
-          4C000000F82300000E3300000000000000000000000000000000000000000000
+          4C000000F8230000B43D00000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
           2B2E12620A000000000000004C0000000114020000000000C000000000000046
           8000000000000000000000000000000000000000000000000000000000000000
@@ -1694,11 +1752,12 @@ object ExplorerForm: TExplorerForm
       end
       object PnGeoSearch: TPanel
         Left = 1
-        Top = 528
+        Top = 631
         Width = 348
         Height = 35
         Align = alBottom
         TabOrder = 2
+        ExplicitTop = 528
         DesignSize = (
           348
           35)
@@ -1879,6 +1938,10 @@ object ExplorerForm: TExplorerForm
     end
     object N12: TMenuItem
       Caption = '-'
+    end
+    object MiShelf: TMenuItem
+      Caption = 'Add to shelf'
+      OnClick = MiShelfClick
     end
     object SendTo1: TMenuItem
       Caption = 'Send To'

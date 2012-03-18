@@ -6,6 +6,7 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
   ClientHeight = 122
   ClientWidth = 446
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -14,6 +15,7 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnResize = FormResize
   DesignSize = (
     446
     122)
@@ -87,7 +89,7 @@ object FormMoveFilesProgress: TFormMoveFilesProgress
     object LbTitle: TLabel
       Left = 16
       Top = 9
-      Width = 212
+      Width = 194
       Height = 19
       Caption = 'Copying 20 items (450 Mb)'
       Font.Charset = DEFAULT_CHARSET

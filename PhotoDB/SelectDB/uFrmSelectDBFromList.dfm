@@ -67,6 +67,7 @@ inherited FrmSelectDBFromList: TFrmSelectDBFromList
     TabOrder = 1
   end
   object DBImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 40
     Top = 200
   end

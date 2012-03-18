@@ -99,7 +99,7 @@ begin
   if Viewer.FullScreenNow then
     TransparentColor := 0
   else
-    TransparentColor := ClBtnFace;
+    TransparentColor := Theme.PanelColor;
 end;
 
 destructor TViewerThread.Destroy;

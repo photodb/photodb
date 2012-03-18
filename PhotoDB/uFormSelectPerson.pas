@@ -300,7 +300,7 @@ begin
           try
             LB.PixelFormat := pf32bit;
             LB.SetSize(ImlPersons.Width, ImlPersons.Height);
-            FillTransparentColor(LB, clWindow, 0);
+            FillTransparentColor(LB, Theme.ListViewColor, 0);
             DrawImageEx32To32(LB, B32, ImlPersons.Width div 2 - B32.Width div 2, ImlPersons.Height div 2 - B32.Height div 2);
             ImlPersons.Add(LB, nil);
           finally

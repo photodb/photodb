@@ -24,6 +24,7 @@ uses
   uFastLoad,
   Menus,
   uMainMenuStyleHook,
+  uThemesUtils,
   {$ENDIF}
   MultiMon;
 
@@ -32,6 +33,7 @@ type
   private
     FWindowID: string;
     FWasPaint: Boolean;
+    function GetTheme: {$IFDEF PHOTODB}TDatabaseTheme{$ELSE}TObject{$ENDIF};
   protected
     procedure WndProc(var Message: TMessage); override;
     function GetFormID: string; virtual; abstract;
@@ -48,6 +50,7 @@ type
     procedure FixFormPosition;
     property FormID: string read GetFormID;
     property WindowID: string read FWindowID;
+    property Theme: {$IFDEF PHOTODB}TDatabaseTheme{$ELSE}TObject{$ENDIF} read GetTheme;
   end;
 
 type
@@ -232,6 +235,11 @@ begin
     SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
     Position := poDesigned;
   end;
+end;
+
+function TDBForm.GetTheme: {$IFDEF PHOTODB}TDatabaseTheme{$ELSE}TObject{$ENDIF};
+begin
+  Result := {$IFDEF PHOTODB}uThemesUtils.Theme{$ELSE}nil{$ENDIF};
 end;
 
 function TDBForm.L(StringToTranslate: string; Scope: string): string;

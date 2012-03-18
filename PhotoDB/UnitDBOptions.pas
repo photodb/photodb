@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Dolphin_DB, StdCtrls, CommonDBSupport, WebLink, uMemoryEx,
   UnitDBDeclare, UnitDBFileDialogs, uConstants, ExtCtrls, UnitDBCommonGraphics,
-  UnitDBKernel, uShellIntegration, uDBForm, uMemory, uFileUtils, uRuntime;
+  UnitDBKernel, uShellIntegration, uDBForm, uMemory, uFileUtils, uRuntime,
+  uBaseWinControl;
 
 type
   TFormDBOptions = class(TDBForm)

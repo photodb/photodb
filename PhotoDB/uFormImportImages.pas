@@ -57,7 +57,7 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   ImgList,
-  Vcl.AppEvnts;
+  Vcl.AppEvnts, uBaseWinControl;
 
 const
   TAG_LABEL           = 1;
@@ -82,7 +82,16 @@ type
   TImportPicturesMode = (piModeSimple, piModeExtended);
 
 type
-  TBox = class(TPanel);
+  TBox = class(TPanel)
+  private
+    FIsHovered: Boolean;
+    procedure SetIsHovered(const Value: Boolean);
+  protected
+    procedure Paint; override;
+    procedure WMEraseBkgnd(var Message: TWmEraseBkgnd); message WM_ERASEBKGND;
+  public
+    property IsHovered: Boolean read FIsHovered write SetIsHovered;
+  end;
 
   TBaseSelectItem = class
   private
@@ -1002,38 +1011,25 @@ end;
 procedure TSelectDateCollection.OnBoxMouseEnter(Sender: TObject);
 var
   Sb: TBox;
-  SI: TBaseSelectItem;
 begin
   if Sender is TBox then
     Sb := TBox(Sender)
   else
     Sb := TBox(TWinControl(Sender).Parent);
 
-  SI := TBaseSelectItem(Sb.Tag);
-  if SI.IsSelected then
-  begin
-    Sb.Color := $FFFFAF
-  end else
-  begin
-    Sb.Color := $FFFFAF;
-  end;
+  Sb.IsHovered := True;
 end;
 
 procedure TSelectDateCollection.OnBoxMouseLeave(Sender: TObject);
 var
   Sb: TBox;
-  SI: TBaseSelectItem;
 begin
   if Sender is TBox then
     Sb := TBox(Sender)
   else
     Sb := TBox(TWinControl(Sender).Parent);
 
-  SI := TBaseSelectItem(Sb.Tag);
-  if SI.IsSelected then
-    Sb.Color := $CFCFCF
-  else
-    Sb.Color := $FFFFFF
+  Sb.IsHovered := False;
 end;
 
 procedure TSelectDateCollection.OnDateEditClick(Sender: TObject);
@@ -1079,6 +1075,8 @@ begin
     LnkOk.HightliteImage := True;
     LnkOk.Tag := TAG_EDIT_DATE_OK;
     LnkOk.LoadFromResource('SERIES_OK');
+    LnkOk.Color := Parent.Color;
+    LnkOk.DisableStyles := True;
     LnkOk.OnClick := OnEditDateOkClick;
     LnkOk.Refresh;
     LnkOk.OnMouseEnter := OnBoxMouseEnter;
@@ -1135,6 +1133,8 @@ begin
     LnkOk.Tag := TAG_EDIT_LABEL_OK;
     LnkOk.LoadFromResource('SERIES_OK');
     LnkOk.OnClick := OnEditLabelOkClick;
+    LnkOk.Color := Parent.Color;
+    LnkOk.DisableStyles := True;
     LnkOk.Refresh;
     LnkOk.OnMouseEnter := OnBoxMouseEnter;
     LnkOk.OnMouseLeave := OnBoxMouseLeave;
@@ -1190,17 +1190,15 @@ begin
       if Sb = nil then
       begin
         Sb := TBox.Create(FContainer.Owner);
-        Sb.Color := clWhite;
         Sb.Visible := False;
         Sb.Parent := FContainer;
         Sb.Width := 175;
         Sb.Height := 75;
-        //Sb.HorzScrollBar.Visible := False;
-        //Sb.VertScrollBar.Visible := False;
         Sb.BevelKind := bkTile;
         Sb.BorderStyle := bsNone;
         Sb.Top := 3;
         Sb.Tag := NativeInt(FItems[I]);
+        Sb.Color := StyleServices.GetStyleColor(scPanel);
         Sb.OnMouseEnter := OnBoxMouseEnter;
         Sb.OnMouseLeave := OnBoxMouseLeave;
         Sb.OnClick := OnBoxClick;
@@ -1210,6 +1208,8 @@ begin
         WlLabel.Left := 2;
         WlLabel.Top := 6;
         WlLabel.LoadFromResource('SERIES_EDIT');
+        WlLabel.Color := SB.Color;
+        WlLabel.DisableStyles := True;
         WlLabel.Refresh;
         WlLabel.Tag := TAG_LABEL;
         WlLabel.OnClick := OnItemEditClick;
@@ -1221,6 +1221,8 @@ begin
         WlDate.Left := 2;
         WlDate.Top := 28;
         WlDate.LoadFromResource('SERIES_DATE');
+        WlDate.Color := SB.Color;
+        WlDate.DisableStyles := True;
         WlDate.Refresh;
         WlDate.Tag := TAG_DATE;
         WlDate.OnClick := OnDateEditClick;
@@ -1234,6 +1236,9 @@ begin
         WlItemsCount.Left := 2;
         WlItemsCount.Top := 50;
         WlItemsCount.Tag := TAG_ITEMS_COUNT;
+        WlItemsCount.Color := SB.Color;
+        WlItemsCount.DisableStyles := True;
+        WlItemsCount.Refresh;
         WlItemsCount.OnMouseEnter := OnBoxMouseEnter;
         WlItemsCount.OnMouseLeave := OnBoxMouseLeave;
         WlItemsCount.OnClick := OnBoxClick;
@@ -1245,6 +1250,9 @@ begin
         WlSize.Left := 60;
         WlSize.Top := 50;
         WlSize.Tag := TAG_ITEMS_SIZE;
+        WlSize.Color := SB.Color;
+        WlSize.DisableStyles := True;
+        WlSize.Refresh;
         WlSize.OnMouseEnter := OnBoxMouseEnter;
         WlSize.OnMouseLeave := OnBoxMouseLeave;
         WlSize.OnClick := OnBoxClick;
@@ -1256,6 +1264,8 @@ begin
         WlSettings.Top := 52;
         WlSettings.TopIconIncrement := 0;
         WlSettings.LoadFromResource('SERIES_SETTINGS');
+        WlSettings.Color := SB.Color;
+        WlSettings.DisableStyles := True;
         WlSettings.Refresh;
         WlSettings.Tag := TAG_SETTINGS;
         WlSettings.OnMouseEnter := OnBoxMouseEnter;
@@ -1270,20 +1280,24 @@ begin
         WlLabel.Text := TA('Enter label', 'ImportPictures')
       else
         WlLabel.Text := SI.ItemLabel;
+      WlLabel.LoadImage;
 
       Sb.Width := Math.Min(Math.Max(WlLabel.Width - WlLabel.Left - 5, 175 - 18), 450) + 18;
 
       WlDate := FindChildByTag<TWebLink>(Sb, TAG_DATE);
 
       WlDate.Text := FormatDateTime('yyyy-mm-dd', SI.Date);
+      WlDate.LoadImage;
 
       WlItemsCount := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_COUNT);
       WlItemsCount.Text := FormatEx(TA('{0} Files', 'ImportPictures'), [SI.ItemsCount]);
+      WlItemsCount.LoadImage;
       WlItemsCount.Left := 2;
 
       WlSize := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_SIZE);
       WlSize.Left := WlItemsCount.Left + WlItemsCount.Width + 5;
       WlSize.Text := SizeInText(SI.ItemsSize);
+      WlSize.LoadImage;
 
       Sb.Left := Left - FContainer.HorzScrollBar.Position;
       Left := Left + Sb.Width + 5;
@@ -1357,6 +1371,7 @@ begin
   begin
     WedLabel.Width := Math.Max(150, WlLabel.Width);
     WlSetLabel.Left := WedLabel.Left + WedLabel.Width + 5;
+    WlSetLabel.LoadImage;
     X := WlSetLabel.Left + WlSetLabel.Width + 10;
     if not WedLabel.Visible then
     begin
@@ -2023,6 +2038,112 @@ procedure TFormImportImages.WlSetLabelClick(Sender: TObject);
 begin
   FSimpleLabel := WedLabel.Text;
   WedLabelExit(Sender);
+end;
+
+{ TBox }
+
+procedure TBox.Paint;
+const
+  Alignments: array[TAlignment] of Longint = (DT_LEFT, DT_RIGHT, DT_CENTER);
+  VerticalAlignments: array[TVerticalAlignment] of Longint = (DT_TOP, DT_BOTTOM, DT_VCENTER);
+var
+  Rect: TRect;
+  LColor: TColor;
+  LStyle: TCustomStyleServices;
+  LDetails: TThemedElementDetails;
+  TopColor, BottomColor: TColor;
+  BaseColor, BaseTopColor, BaseBottomColor: TColor;
+  SI: TBaseSelectItem;
+
+  procedure AdjustColors(Bevel: TPanelBevel);
+  begin
+    TopColor := BaseTopColor;
+    if Bevel = bvLowered then
+      TopColor := BaseBottomColor;
+    BottomColor := BaseBottomColor;
+    if Bevel = bvLowered then
+      BottomColor := BaseTopColor;
+  end;
+
+begin
+  Rect := GetClientRect;
+
+  BaseColor := Color;
+  BaseTopColor := clBtnHighlight;
+  BaseBottomColor := clBtnShadow;
+  LStyle := StyleServices;
+  if LStyle.Enabled then
+  begin
+    LDetails := LStyle.GetElementDetails(tpPanelBackground);
+    if LStyle.GetElementColor(LDetails, ecFillColor, LColor) and (LColor <> clNone) then
+      BaseColor := LColor;
+    LDetails := LStyle.GetElementDetails(tpPanelBevel);
+    if LStyle.GetElementColor(LDetails, ecEdgeHighLightColor, LColor) and (LColor <> clNone) then
+      BaseTopColor := LColor;
+    if LStyle.GetElementColor(LDetails, ecEdgeShadowColor, LColor) and (LColor <> clNone) then
+      BaseBottomColor := LColor;
+  end;
+
+  if BevelOuter <> bvNone then
+  begin
+    AdjustColors(BevelOuter);
+    Frame3D(Canvas, Rect, TopColor, BottomColor, BevelWidth);
+  end;
+  if not (LStyle.Enabled and (csParentBackground in ControlStyle)) then
+    Frame3D(Canvas, Rect, BaseColor, BaseColor, BorderWidth)
+  else
+    InflateRect(Rect, -Integer(BorderWidth), -Integer(BorderWidth));
+  if BevelInner <> bvNone then
+  begin
+    AdjustColors(BevelInner);
+    Frame3D(Canvas, Rect, TopColor, BottomColor, BevelWidth);
+  end;
+  with Canvas do
+  begin
+    //if not LStyle.Enabled or not ParentBackground then
+    begin
+      SI := TBaseSelectItem(Tag);
+      if SI.IsSelected or IsHovered then
+      begin
+        Brush.Color := StyleServices.GetSystemColor(clHighlight);
+        FillRect(Rect);
+      end else
+      begin
+        Brush.Color := StyleServices.GetStyleColor(scPanel);
+        FillRect(Rect);
+      end;
+    end;
+  end;
+end;
+
+procedure TBox.SetIsHovered(const Value: Boolean);
+var
+  I: Integer;
+  WL: TWebLink;
+  SI: TBaseSelectItem;
+begin
+  FIsHovered := Value;
+  SI := TBaseSelectItem(Tag);
+  for I := 0 to ControlCount - 1 do
+    if Controls[I] is TWebLink then
+    begin
+      WL := TWebLink(Controls[I]);
+      if Value or SI.IsSelected then
+      begin
+        WL.Color := StyleServices.GetSystemColor(clHighlight);
+        WL.Font.Color := StyleServices.GetSystemColor(clHighlightText);
+      end else
+      begin
+        WL.Color := StyleServices.GetStyleColor(scPanel);
+        WL.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
+      end;
+    end;
+  Invalidate;
+end;
+
+procedure TBox.WMEraseBkgnd(var Message: TWmEraseBkgnd);
+begin
+  Message.Result := 1;
 end;
 
 end.

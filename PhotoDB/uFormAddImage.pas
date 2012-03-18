@@ -22,7 +22,7 @@ uses
   uBitmapUtils,
   Themes,
   uThemesUtils,
-  uDBForm;
+  uDBForm, uBaseWinControl;
 
 type
   TFormAddingImage = class(TDBForm)

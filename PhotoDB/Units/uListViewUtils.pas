@@ -688,9 +688,9 @@ begin
   if StyleServices.Enabled then
   begin
     ListView.Color := StyleServices.GetStyleColor(scListView);
-    ListView.Selection.GradientColorTop := StyleServices.GetStyleColor(scGenericGradientBase);
-    ListView.Selection.GradientColorBottom := StyleServices.GetStyleColor(scGenericGradientEnd);
-    ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextNormal);
+    ListView.Selection.GradientColorTop := MakeDarken(StyleServices.GetSystemColor(clHighlight), 0.8);
+    ListView.Selection.GradientColorBottom := MakeDarken(StyleServices.GetSystemColor(clHighlight), 1.2);
+    ListView.Selection.TextColor := StyleServices.GetSystemColor(clHighlightText);
     ListView.Selection.InactiveTextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
     ListView.Selection.Color := StyleServices.GetSystemColor(clHighlight);
     ListView.Selection.InactiveColor := StyleServices.GetSystemColor(clHighlight);

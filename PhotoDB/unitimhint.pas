@@ -289,8 +289,8 @@ begin
     AnimatedBuffer.PixelFormat := pf24bit;
     AnimatedBuffer.Width := G.Width;
     AnimatedBuffer.Height := G.Height;
-    AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
-    AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
+    AnimatedBuffer.Canvas.Brush.Color := Theme.PanelColor;
+    AnimatedBuffer.Canvas.Pen.Color := Theme.PanelColor;
     AnimatedBuffer.Canvas.Rectangle(0, 0, AnimatedBuffer.Width, AnimatedBuffer.Height);
     AnimatedImage := G;
 
@@ -710,8 +710,8 @@ begin
   begin
     Im := AnimatedImage as TGIFImage;
     R := Im.Images[SlideNO].BoundsRect;
-    AnimatedBuffer.Canvas.Brush.Color := clBtnFace;
-    AnimatedBuffer.Canvas.Pen.Color := clBtnFace;
+    AnimatedBuffer.Canvas.Brush.Color := Theme.PanelColor;
+    AnimatedBuffer.Canvas.Pen.Color := Theme.PanelColor;
     TimerEnabled := False;
     PreviousNumber := GetPreviousImageNO;
     if (Im.Animate) and (Im.Images.Count > 1) then
@@ -742,8 +742,8 @@ begin
     else if (DisposalMethod = DmBackground) then
     begin
       Bounds_ := Im.Images[PreviousNumber].BoundsRect;
-      AnimatedBuffer.Canvas.Pen.Color := ClBtnFace;
-      AnimatedBuffer.Canvas.Brush.Color := ClBtnFace;
+      AnimatedBuffer.Canvas.Pen.Color := Theme.PanelColor;
+      AnimatedBuffer.Canvas.Brush.Color := Theme.PanelColor;
       AnimatedBuffer.Canvas.Rectangle(Bounds_);
     end;
     if DisposalMethod = DmPrevious then
@@ -762,19 +762,19 @@ begin
     Del := Animation3DDelay;
   end;
 
-  ImageBuffer.Canvas.Pen.Color := clBtnFace;
-  ImageBuffer.Canvas.Brush.Color := clBtnFace;
+  ImageBuffer.Canvas.Pen.Color := Theme.PanelColor;
+  ImageBuffer.Canvas.Brush.Color := Theme.PanelColor;
   ImageBuffer.Canvas.Rectangle(0, 0, ImageBuffer.Width, ImageBuffer.Height);
 
   case CurrentInfo.Rotation of
     DB_IMAGE_ROTATE_0:
-      StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, ClBtnFace);
+      StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
     DB_IMAGE_ROTATE_90:
-      StretchCoolEx90(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, ClBtnFace);
+      StretchCoolEx90(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
     DB_IMAGE_ROTATE_180:
-      StretchCoolEx180(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, ClBtnFace);
+      StretchCoolEx180(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
     DB_IMAGE_ROTATE_270:
-      StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, ClBtnFace);
+      StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
   end;
 
   DrawHintInfo(ImageBuffer, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);

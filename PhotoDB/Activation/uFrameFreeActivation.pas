@@ -19,7 +19,7 @@ uses
   uConstants,
   uActivationUtils,
   uLogger,
-  Dolphin_DB;
+  Dolphin_DB, uBaseWinControl;
 
 type
   TFrameFreeActivation = class(TFrameWizardBase)

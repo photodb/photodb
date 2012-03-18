@@ -72,7 +72,6 @@ object FormGroupReplace: TFormGroupReplace
       Top = 56
       Width = 100
       Height = 21
-      ParentColor = True
       ReadOnly = True
       TabOrder = 4
       WatermarkText = 'Group'
@@ -114,7 +113,7 @@ object FormGroupReplace: TFormGroupReplace
       Left = 64
       Top = 17
       Width = 216
-      Height = 32
+      Height = 31
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -19

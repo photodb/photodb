@@ -422,9 +422,14 @@ var
 begin
   ListBox := Control as TListBox;
   if OdSelected in State then
-    ListBox.Canvas.Brush.Color := $A0A0A0
-  else
-    ListBox.Canvas.Brush.Color := ClWhite;
+  begin
+    ListBox.Canvas.Brush.Color := Theme.HighlightColor;
+    ListBox.Canvas.Font.Color := Theme.HighlightTextColor;
+  end else
+  begin
+    ListBox.Canvas.Brush.Color := Theme.ListColor;
+    ListBox.Canvas.Font.Color := Theme.ListFontColor;
+  end;
   // clearing rect
   ListBox.Canvas.Pen.Color := ListBox.Canvas.Brush.Color;
   ListBox.Canvas.Rectangle(ARect);

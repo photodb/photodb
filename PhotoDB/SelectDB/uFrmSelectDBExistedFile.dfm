@@ -114,7 +114,6 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True

@@ -61,6 +61,7 @@ inherited FrmImportImagesLanding: TFrmImportImagesLanding
     end
   end
   object PlacesImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 48
     Top = 168
   end

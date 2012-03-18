@@ -124,10 +124,6 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -259,10 +255,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -475,10 +467,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -626,10 +614,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -886,10 +870,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -1327,10 +1307,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -1360,13 +1336,13 @@ object OptionsForm: TOptionsForm
       object EdExplorerStartupLocation: TEdit
         Left = 11
         Top = 214
-        Width = 267
+        Width = 453
         Height = 21
         TabOrder = 9
         Text = 'C:\'
       end
       object BtnSelectExplorerStartupFolder: TButton
-        Left = 284
+        Left = 470
         Top = 214
         Width = 17
         Height = 21

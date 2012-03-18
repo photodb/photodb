@@ -120,6 +120,7 @@ uses
   uExplorerGroupsProvider,
   uExplorerSearchProviders,
   uExplorerPortableDeviceProvider,
+  uExplorerShelfProvider,
   uTranslate,
   uVCLHelpers,
 
@@ -142,7 +143,9 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
-  uBaseWinControl
+  uBaseWinControl,
+
+  uPhotoShelf
   ;
 
 const
@@ -382,6 +385,10 @@ type
     PnGeoSearch: TPanel;
     WedGeoSearch: TWatermarkedEdit;
     SbDoSearchLocation: TSpeedButton;
+    MiShelf: TMenuItem;
+    PnShelf: TPanel;
+    WlGoToShelf: TWebLink;
+    WlClear: TWebLink;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -592,6 +599,9 @@ type
       Shift: TShiftState);
     procedure SplGeoLocationMoved(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure MiShelfClick(Sender: TObject);
+    procedure WlGoToShelfClick(Sender: TObject);
+    procedure WlClearClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1341,6 +1351,7 @@ begin
   Copy1.Visible := False;
   Shell1.Visible := False;
   SendTo1.Visible := False;
+  MiShelf.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
 
@@ -1376,6 +1387,7 @@ begin
   if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
     SendTo1.Visible := True;
+    MiShelf.Visible := True;
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
     AddHiddenInfo1.Visible := (SelCount = 1);
@@ -1414,6 +1426,7 @@ begin
     if AnsiLowerCase(ExtractFileName(Info.FileName)) = AnsiLowerCase(C_CD_MAP_FILE) then
       MapCD1.Visible := not FolderView;
 
+    MiShelf.Visible := True;
     Properties1.Visible := True;
     Delete1.Visible := True;
     Rename1.Visible := True;
@@ -1468,6 +1481,7 @@ begin
 
   if (Info.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (Info.FileType = EXPLORER_ITEM_DEVICE_FILE) then
   begin
+    //MiShelf.Visible := True;
     Properties1.Visible := True;
     Delete1.Visible := True;
     Cut2.Visible := True;
@@ -1478,6 +1492,7 @@ begin
   begin
     DBitem1.Visible := True;
     SendTo1.Visible := True;
+    //MiShelf.Visible := True;
     StenoGraphia1.Visible := True;
     Print1.Visible := True;
     ImageEditor2.Visible := True;
@@ -1510,6 +1525,13 @@ begin
   begin
     NewWindow1.Visible := True;
     Open1.Visible := True;
+  end;
+
+  if Info.FileType = EXPLORER_ITEM_SHELF then
+  begin
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    Delete1.Visible := True;
   end;
 
   if Info.FileType = EXPLORER_ITEM_GROUP then
@@ -1621,6 +1643,27 @@ var
 begin
   if SelCount = 0 then
     Exit;
+
+  if FCurrentTypePath = EXPLORER_ITEM_SHELF then
+  begin
+    Files := TStringList.Create;
+    try
+      for I := ElvMain.Items.Count - 1 downto 0 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          Info := FFilesInfo[index];
+          Files.Add(Info.FileName);
+          DeleteItemWithIndex(I);
+        end;
+
+      PhotoShelf.DeleteItems(Self, Files);
+    finally
+      F(Files);
+    end;
+    Exit;
+  end;
+
   Files:= TStringList.Create;
   PL := TPathItemCollection.Create;
   try
@@ -1628,7 +1671,7 @@ begin
       if ElvMain.Items[I].Selected then
       begin
         Index := ItemIndexToMenuIndex(I);
-        Info := FFilesInfo[index];
+        Info := FFilesInfo[Index];
         if (Info.FileType = EXPLORER_ITEM_FOLDER) or (Info.FileType = EXPLORER_ITEM_IMAGE)
           or (Info.FileType = EXPLORER_ITEM_FILE) or (Info.FileType = EXPLORER_ITEM_EXEFILE) then
           Files.Add(Info.FileName);
@@ -2186,7 +2229,12 @@ var
   GI: TGroupItem;
   S: string;
 begin
-
+  if EventID_ShelfChanged in Params then
+  begin
+    PnShelf.Visible := PhotoShelf.Count > 0;
+    WlGoToShelf.Text := FormatEx(L('Photo shelf ({0} items)'), [PhotoShelf.Count]);
+    ElvMain.Repaint;
+  end;
   if FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST then
   begin
     if EventID_PersonAdded in Params then
@@ -3466,6 +3514,11 @@ begin
     ElvMain.Selection.FocusedItem.MakeVisible(EmvTop);
 end;
 
+procedure TExplorerForm.WlGoToShelfClick(Sender: TObject);
+begin
+  SetNewPathW(ExplorerPath(cShelfPath, EXPLORER_ITEM_SHELF), False);
+end;
+
 procedure TExplorerForm.ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
 begin
   FMapLocationLat := Lat;
@@ -3908,6 +3961,39 @@ begin
   PePath.Edit;
 end;
 
+procedure TExplorerForm.MiShelfClick(Sender: TObject);
+var
+  I, Index: Integer;
+  FileList: TStrings;
+begin
+  if ListView1Selected <> nil then
+  begin
+    FileList := TStringList.Create;
+    try
+      for I := 0 to ElvMain.Items.Count - 1 do
+      begin
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+          if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or
+             (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or
+             (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+             (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+             (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_FILE) then
+            FileList.Add(FFilesInfo[Index].FileName);
+        end;
+      end;
+
+      if PhotoShelf.PathInShelf(FSelectedInfo.FileName) = -1 then
+        PhotoShelf.AddItems(Self, FileList)
+      else
+        PhotoShelf.DeleteItems(Self, FileList)
+    finally
+      F(FileList);
+    end;
+  end;
+end;
+
 procedure TExplorerForm.LockItems;
 begin
   GlobalLock := True;
@@ -4283,12 +4369,13 @@ begin
     if FSelectedInfo.ID <> 0 then
     begin
       IDLabel.Show;
-      DBInfoLabel.Show;
+      {DBInfoLabel.Show;
 
       DBInfoLabel.Top := NewTop + H;
-
+      NewTop := DBInfoLabel.Top + DBInfoLabel.Height + H;
+                                         }
       IDLabel.Caption := Format(L('ID = %d'), [FSelectedInfo.ID]);
-      IDLabel.Top := DBInfoLabel.Top + DBInfoLabel.Height + H;
+      IDLabel.Top := NewTop + H;
       NewTop := IDLabel.BoundsRect.Bottom;
 
       if FSelectedInfo.Rating <> 0 then
@@ -4416,7 +4503,7 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) and (SelCount = 1)) then
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) and (SelCount = 1)) then
     begin
       ShellLink.Visible := True;
       ShellLink.Top := NewTop + H;
@@ -4509,6 +4596,18 @@ begin
     end else
       DeleteLink.Visible := False;
 
+    if ((FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) then
+    begin
+      if SelCount = 0 then
+      begin
+        WlClear.Visible := True;
+        WlClear.Top := NewTop + H;
+        NewTop := WlClear.BoundsRect.Bottom;
+      end else
+        WlClear.Visible := False;
+    end else
+      WlClear.Visible := False;
+
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) then
     begin
@@ -4575,7 +4674,7 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY))
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF))
 		  and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
@@ -4593,7 +4692,7 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
     begin
       OtherPlacesLabel.Show;
       MyPicturesLink.Show;
@@ -5459,7 +5558,9 @@ begin
   else if P is TPortableStorageItem then
     SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_STORAGE), False)
   else if P is TPortableDirectoryItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False);
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False)
+  else if P is TShelfItem then
+    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_SHELF), False);
 end;
 
 procedure TExplorerForm.PePathContextPopup(Sender: TObject; MousePos: TPoint;
@@ -5566,6 +5667,7 @@ begin
     RenameLink.Text := L('Rename');
     PropertiesLink.Text := L('Properties');
     DeleteLink.Text := L('Delete');
+    WlClear.Text := L('Clear');
 
     RefreshLink.Text := L('Refresh');
     ImageEditorLink.Text := L('Image editor');
@@ -5653,6 +5755,7 @@ begin
     Cancel1.Caption := L('Cancel');
 
     SendTo1.Caption := L('Send to');
+    MiShelf.Caption := L('Add to shelf');
     View2.Caption := L('Slide show');
 
     Sortby1.Caption := L('Sort by');
@@ -5883,6 +5986,12 @@ begin
     PePath.SetPathEx(TGroupsItem, Path);
     Caption := PePath.CurrentPathEx.DisplayName;
     ThreadType := THREAD_TYPE_GROUPS;
+  end;
+  if WPath.PType = EXPLORER_ITEM_SHELF then
+  begin
+    PePath.SetPathEx(TShelfItem, Path);
+    Caption := PePath.CurrentPathEx.DisplayName;
+    ThreadType := THREAD_TYPE_SHELF;
   end;
   if WPath.PType = EXPLORER_ITEM_GROUP then
   begin
@@ -6997,8 +7106,8 @@ begin
           WebLink.Text := FName;
           WebLink.Tag := Length(UserLinks) - 1;
           WebLink.OnClick := UserDefinedPlaceClick;
-          WebLink.Color := Theme.PanelColor;
-          WebLink.Font.Color := Theme.PanelFontColor;
+          //WebLink.Color := Theme.PanelColor;
+          //WebLink.Font.Color := Theme.PanelFontColor;
           WebLink.EnterBould := False;
           WebLink.IconWidth := 16;
           WebLink.IconHeight := 16;
@@ -7197,6 +7306,11 @@ begin
         FSelectedInfo.FileName := L('Groups');
         FSelectedInfo.FileTypeW := L('List of groups, search for group photos');
       end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) then
+      begin
+        FSelectedInfo.FileName := L('Photo shelf');
+        FSelectedInfo.FileTypeW := L('List of shelfed photos and other objects');
+      end;
 
       FSelectedInfo._GUID := FileSID;
       if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
@@ -7336,7 +7450,8 @@ begin
             (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
+            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
+            (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -7368,6 +7483,8 @@ begin
                   FindIcon(HInstance, 'STORAGE', 48, 32, Ico);
                 EXPLORER_ITEM_DEVICE_DIRECTORY:
                   FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico);
+                EXPLORER_ITEM_SHELF:
+                  FindIcon(HInstance, 'SHELF', 48, 32, Ico);
                 EXPLORER_ITEM_DEVICE_FILE:
                 begin
                   Ico := TIcon.Create;
@@ -7680,7 +7797,8 @@ begin
     begin
       if (FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST) or (FCurrentTypePath = EXPLORER_ITEM_PERSON)
         or (FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST) or (FCurrentTypePath = EXPLORER_ITEM_GROUP)
-        or (FCurrentTypePath = EXPLORER_ITEM_NETWORK) or (FCurrentTypePath = EXPLORER_ITEM_WORKGROUP) then
+        or (FCurrentTypePath = EXPLORER_ITEM_NETWORK) or (FCurrentTypePath = EXPLORER_ITEM_WORKGROUP)
+        or (FCurrentTypePath = EXPLORER_ITEM_SHELF) then
       begin
         ShowFilter(False);
         WedFilter.Text := WedSearch.Text;
@@ -7717,6 +7835,18 @@ begin
     Key := #0;
     SbDoSearchClick(Sender);
   end;
+end;
+
+procedure TExplorerForm.WlClearClick(Sender: TObject);
+var
+  EventInfo: TEventValues;
+begin
+  ClearList;
+  PhotoShelf.Clear;
+  EventInfo.Image := nil;
+  DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
+
+  SpeedButton1Click(Sender);
 end;
 
 procedure TExplorerForm.WlCreateObjectClick(Sender: TObject);
@@ -8672,7 +8802,8 @@ begin
         EXPLORER_ITEM_NETWORK, EXPLORER_ITEM_WORKGROUP, EXPLORER_ITEM_COMPUTER,
           EXPLORER_ITEM_SHARE, EXPLORER_ITEM_PERSON_LIST, EXPLORER_ITEM_GROUP_LIST,
           EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_DEVICE,
-          EXPLORER_ITEM_DEVICE_STORAGE, EXPLORER_ITEM_DEVICE_DIRECTORY:
+          EXPLORER_ITEM_DEVICE_STORAGE, EXPLORER_ITEM_DEVICE_DIRECTORY,
+          EXPLORER_ITEM_SHELF:
           SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
             FFilesInfo[Index].FileType), False);
       end;
@@ -8705,6 +8836,9 @@ begin
 
   if Info.GeoLocation <> nil then
     DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1], 16, 16, 0, 0, DI_NORMAL);
+
+  if PhotoShelf.PathInShelf(Info.FileName) > -1 then
+    DrawIconEx(ACanvas.Handle, ARect.Right - 20, ARect.Bottom, UnitDBKernel.Icons[DB_IC_SHELF + 1], 16, 16, 0, 0, DI_NORMAL);
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(
@@ -8781,7 +8915,10 @@ begin
 
   Bitmap := FBitmapImageList[Item.ImageIndex].Bitmap;
   if Bitmap <> nil then
+  begin
+    Bitmap.AlphaFormat := afDefined;
     AlphaBlender.Blend(Sender, Item, ACanvas, RectArray.IconRect, Bitmap);
+  end;
 end;
 
 procedure TExplorerForm.EasyListview1ItemImageDrawIsCustom(
@@ -9421,6 +9558,7 @@ begin
   Copywithfolder1.ImageIndex := DB_IC_COPY;
 
   SendTo1.ImageIndex := DB_IC_SEND;
+  MiShelf.ImageIndex := DB_IC_SHELF;
   View2.ImageIndex := DB_IC_SLIDE_SHOW;
 
   Sortby1.ImageIndex := DB_IC_SORT;
@@ -9459,6 +9597,7 @@ begin
   RenameLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RENAME + 1]);
   PropertiesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PROPERTIES + 1]);
   DeleteLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
+  WlClear.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
   AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW + 1]);
   RefreshLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_REFRESH_THUM + 1]);
   ImageEditorLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_IMEDITOR + 1]);
@@ -9469,6 +9608,7 @@ begin
   MyComputerLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_COMPUTER + 1]);
   DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]);
   WlCreateObject.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW_SHELL + 1]);
+  WlGoToShelf.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELF + 1]);
 
   WlResize.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
   WlConvert.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);

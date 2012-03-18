@@ -1586,9 +1586,9 @@ begin
   try
     Bitmap.PixelFormat := pf24Bit;
     Bitmap.Canvas.Font.Assign(Font);
-    Bitmap.Canvas.Font.Color := ClBlack;
-    Bitmap.Canvas.Brush.Color := ClWhite;
-    Bitmap.Canvas.Pen.Color := ClWhite;
+    Bitmap.Canvas.Font.Color := clBlack;
+    Bitmap.Canvas.Brush.Color := clWhite;
+    Bitmap.Canvas.Pen.Color := clWhite;
     Bitmap.Width := ARect.Right - ARect.Left;
     Bitmap.Height := ARect.Bottom - ARect.Top;
     R := Rect(0, 0, Bitmap.Width, Bitmap.Height);

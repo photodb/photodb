@@ -3,9 +3,22 @@ unit UnitLoadFilesToPanel;
 interface
 
 uses
-  SysUtils, Classes, Dolphin_DB, JPEG, DB, Forms, ActiveX,
-  CommonDBSupport, Graphics, GraphicCrypt, Math, GraphicsCool, RAWImage,
-  uJpegUtils, uBitmapUtils, UnitPanelLoadingBigImagesThread, UnitDBDeclare,
+  SysUtils,
+  Classes,
+  Dolphin_DB,
+  JPEG,
+  DB,
+  ActiveX,
+  CommonDBSupport,
+  Graphics,
+  GraphicCrypt,
+  Math,
+  GraphicsCool,
+  RAWImage,
+  uJpegUtils,
+  uBitmapUtils,
+  UnitPanelLoadingBigImagesThread,
+  UnitDBDeclare,
   UnitDBCommon,
   uLogger,
   uMemory,
@@ -48,8 +61,7 @@ type
     procedure GetSIDFromForm;
     procedure RemoveWorkerThread;
   public
-    constructor Create(Files: TArStrings; IDs: TArInteger; ArLoaded: TArBoolean;
-      UseLoaded, ByID: Boolean; Owner: TDBForm);
+    constructor Create(Files: TArStrings; IDs: TArInteger; ArLoaded: TArBoolean; UseLoaded, ByID: Boolean; Owner: TDBForm);
     destructor Destroy; override;
   end;
 
@@ -398,7 +410,7 @@ var
 begin
   B := TBitmap.Create;
   try
-    LoadImageX(Graphic, B, clWindow);
+    LoadImageX(Graphic, B, Theme.ListViewColor);
     W := B.Width;
     H := B.Height;
     ProportionalSize(FPictureSize, FPictureSize, W, H);

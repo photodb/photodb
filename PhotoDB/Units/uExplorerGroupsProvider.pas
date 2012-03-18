@@ -3,10 +3,25 @@ unit uExplorerGroupsProvider;
 interface
 
 uses
-  Windows, Graphics, uExplorerPathProvider, uPathProviders, UnitGroupsWork,
-  uBitmapUtils, UnitDBDeclare, uConstants, UnitDBKernel, StrUtils,
-  uShellIntegration, SysUtils, uDBForm, uExplorerMyComputerProvider,
-  uMemory, uTranslate, uShellIcons, uStringUtils, uJpegUtils;
+  Windows,
+  Graphics,
+  uExplorerPathProvider,
+  uPathProviders,
+  UnitGroupsWork,
+  uBitmapUtils,
+  UnitDBDeclare,
+  uConstants,
+  UnitDBKernel,
+  StrUtils,
+  uShellIntegration,
+  SysUtils,
+  uDBForm,
+  uExplorerMyComputerProvider,
+  uMemory,
+  uTranslate,
+  uShellIcons,
+  uStringUtils,
+  uJpegUtils;
 
 type
   TGroupsItem = class(TPathItem)

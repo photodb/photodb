@@ -255,7 +255,7 @@ begin
                 TempBit := TBitmap.Create;
                 try
 
-                  LoadImageX(FGraphic, TempBit, clBtnFace);
+                  LoadImageX(FGraphic, TempBit, Theme.PanelColor);
                   F(FGraphic);
                   W := TempBit.Width;
                   H := TempBit.Height;
