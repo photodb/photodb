@@ -29,6 +29,7 @@ type
     function GetComboBoxColor: TColor;
     function GetWindowTextColor: TColor;
     function GetListViewSelectedFontColor: TColor;
+    function GetGradientText: TColor;
   public
     property PanelColor: TColor read GetPanelColor;
     property PanelFontColor: TColor read GetPanelFontColor;
@@ -42,6 +43,7 @@ type
     property WindowTextColor: TColor read GetWindowTextColor;
     property GradientFromColor: TColor read GetGradientFromColor;
     property GradientToColor: TColor read GetGradientToColor;
+    property GradientText: TColor read GetGradientText;
     property MenuColor: TColor read GetMenuColor;
     property WizardColor: TColor read GetWizardColor;
     property ListSelectedColor: TColor read GetListSelectedColor;
@@ -84,6 +86,16 @@ begin
     Result := clWindow;
 end;
 
+{
+    ListView.Selection.GradientColorTop := MakeDarken(StyleServices.GetSystemColor(clHighlight), 0.8);
+    ListView.Selection.GradientColorBottom := MakeDarken(StyleServices.GetSystemColor(clHighlight), 1.2);
+    ListView.Selection.TextColor := StyleServices.GetSystemColor(clHighlightText);
+
+    {ListView.Selection.GradientColorTop := StyleServices.GetStyleColor(scGenericGradientBase);
+    ListView.Selection.GradientColorBottom := StyleServices.GetStyleColor(scGenericGradientEnd);
+    ListView.Selection.TextColor := StyleServices.GetStyleFontColor(sfListItemTextNormal);
+}
+
 function TDatabaseTheme.GetGradientFromColor: TColor;
 begin
   if StyleServices.Enabled then
@@ -98,6 +110,14 @@ begin
     Result := StyleServices.GetStyleColor(scGenericGradientEnd)
   else
     Result := clGradientInactiveCaption;
+end;
+
+function TDatabaseTheme.GetGradientText: TColor;
+begin
+  if StyleServices.Enabled then
+    Result := StyleServices.GetStyleFontColor(sfWindowTextNormal)
+  else
+    Result := clWindowText;
 end;
 
 function TDatabaseTheme.GetHighlightColor: TColor;

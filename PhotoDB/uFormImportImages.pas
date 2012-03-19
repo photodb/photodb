@@ -1076,6 +1076,7 @@ begin
     LnkOk.Tag := TAG_EDIT_DATE_OK;
     LnkOk.LoadFromResource('SERIES_OK');
     LnkOk.Color := Parent.Color;
+    LnkOk.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
     LnkOk.DisableStyles := True;
     LnkOk.OnClick := OnEditDateOkClick;
     LnkOk.Refresh;
@@ -1134,6 +1135,7 @@ begin
     LnkOk.LoadFromResource('SERIES_OK');
     LnkOk.OnClick := OnEditLabelOkClick;
     LnkOk.Color := Parent.Color;
+    LnkOk.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
     LnkOk.DisableStyles := True;
     LnkOk.Refresh;
     LnkOk.OnMouseEnter := OnBoxMouseEnter;
@@ -1208,8 +1210,9 @@ begin
         WlLabel.Left := 2;
         WlLabel.Top := 6;
         WlLabel.LoadFromResource('SERIES_EDIT');
-        WlLabel.Color := SB.Color;
         WlLabel.DisableStyles := True;
+        WlLabel.Color := SB.Color;
+        WlLabel.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
         WlLabel.Refresh;
         WlLabel.Tag := TAG_LABEL;
         WlLabel.OnClick := OnItemEditClick;
@@ -1221,8 +1224,9 @@ begin
         WlDate.Left := 2;
         WlDate.Top := 28;
         WlDate.LoadFromResource('SERIES_DATE');
-        WlDate.Color := SB.Color;
         WlDate.DisableStyles := True;
+        WlDate.Color := SB.Color;
+        WlDate.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
         WlDate.Refresh;
         WlDate.Tag := TAG_DATE;
         WlDate.OnClick := OnDateEditClick;
@@ -1236,8 +1240,9 @@ begin
         WlItemsCount.Left := 2;
         WlItemsCount.Top := 50;
         WlItemsCount.Tag := TAG_ITEMS_COUNT;
-        WlItemsCount.Color := SB.Color;
         WlItemsCount.DisableStyles := True;
+        WlItemsCount.Color := SB.Color;
+        WlItemsCount.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
         WlItemsCount.Refresh;
         WlItemsCount.OnMouseEnter := OnBoxMouseEnter;
         WlItemsCount.OnMouseLeave := OnBoxMouseLeave;
@@ -1250,8 +1255,9 @@ begin
         WlSize.Left := 60;
         WlSize.Top := 50;
         WlSize.Tag := TAG_ITEMS_SIZE;
-        WlSize.Color := SB.Color;
         WlSize.DisableStyles := True;
+        WlSize.Color := SB.Color;
+        WlSize.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
         WlSize.Refresh;
         WlSize.OnMouseEnter := OnBoxMouseEnter;
         WlSize.OnMouseLeave := OnBoxMouseLeave;
@@ -1265,6 +1271,7 @@ begin
         WlSettings.TopIconIncrement := 0;
         WlSettings.LoadFromResource('SERIES_SETTINGS');
         WlSettings.Color := SB.Color;
+        WlSettings.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
         WlSettings.DisableStyles := True;
         WlSettings.Refresh;
         WlSettings.Tag := TAG_SETTINGS;

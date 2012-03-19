@@ -124,11 +124,17 @@ implementation
 uses UnitPropeccedFilesSupport, UnitDBKernel;
 
 procedure FixListViewText(ACanvas: TCanvas; Item: TEasyItem; Include: Boolean);
+var
+  C: TColor;
 begin
-  if not Include then
-    ACanvas.Font.Color := ColorDiv2(Theme.ListViewColor, Theme.ListViewFontColor)
+  if Item.Selected then
+    C := Theme.GradientText//StyleServices.GetStyleFontColor(sfListItemTextSelected)
   else
-    ACanvas.Font.Color := Theme.ListViewFontColor;
+    C := StyleServices.GetStyleFontColor(sfListItemTextNormal);
+  if not Include then
+    ACanvas.Font.Color := ColorDiv2(Theme.ListViewColor, C)
+  else
+    ACanvas.Font.Color := C;
 end;
 
 procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
@@ -332,7 +338,7 @@ begin
       DragImage.Assign(Bitmap);
       BitmapImageList.AddBitmap(DragImage, False);
       if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
-         Font.Color := THeme.ListViewFontColor;
+        Font.Color := Theme.GradientText;
       CreateDragImageEx(nil, DragImageList, BitmapImageList, Theme.GradientFromColor,
         Theme.GradientToColor, Theme.HighlightColor, Font, ExtractFileName(FileName));
     finally
@@ -343,20 +349,20 @@ begin
   end;
 end;
 
-procedure CreateDragImage(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
-          Caption : string;
-          DragPoint : TPoint; var SpotX, SpotY : Integer);
+procedure CreateDragImage(ListView: TEasyListview; DImageList: TImageList;
+  SImageList: TBitmapImageList; Caption: string; DragPoint: TPoint;
+  var SpotX, SpotY: Integer);
 begin
   CreateDragImageEx(ListView, DImageList, SImageList,
     ListView.Selection.GradientColorBottom, ListView.Selection.GradientColorTop,
     ListView.Selection.Color, ListView.Font, Caption, DragPoint, SpotX, SpotY);
 end;
 
-procedure CreateDragImageEx(ListView: TEasyListView; DImageList: TImageList; SImageList: TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font: TFont; Caption : string);
+procedure CreateDragImageEx(ListView: TEasyListview; DImageList: TImageList; SImageList: TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font: TFont; Caption: string);
 var
-  X, Y : Integer;
-  Point : TPoint;
+  X, Y: Integer;
+  Point: TPoint;
 begin
   CreateDragImageEx(ListView, DImageList, SImageList, GradientFrom, GradientTo, SelectionColor,
     Font, Caption, Point, X, Y);
@@ -364,16 +370,16 @@ end;
 
 procedure DrawSelectionCount(Bitmap : TBitmap; ItemsSelected : Integer; Font : TFont; RoundRadius : Integer);
 var
-  AFont : TFont;
-  W, H : Integer;
-  R : TRect;
+  AFont: TFont;
+  W, H: Integer;
+  R: TRect;
 begin
   AFont := TFont.Create;
   try
     AFont.Assign(Font);
     AFont.Style := [fsBold];
     AFont.Size := AFont.Size + 2;
-    AFont.Color := Theme.ListViewFontColor;
+    AFont.Color := Theme.GradientText;
     W := Bitmap.Canvas.TextWidth(IntToStr(ItemsSelected));
     H := Bitmap.Canvas.TextHeight(IntToStr(ItemsSelected));
     Inc(W, 10);
@@ -531,21 +537,21 @@ begin
   DrawSelectionCount(ResultImage, ItemsSelected, Font, RoundRadius);
 end;
 
-procedure CreateDragImageEx(ListView : TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
+procedure CreateDragImageEx(ListView: TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string;
   DragPoint : TPoint; var SpotX, SpotY : Integer);
 var
-  DragImage, TempImage : TBitmap;
-  SelCount : Integer;
-  SelectedItem : TEasyItem;
-  I, N, MaxH, MaxW, ImH, ImW, FSelCount, ItemsSelected : Integer;
-  W, H : Integer;
-  ImageW, ImageH, X, Y : Integer;
-  Graphic : TGraphic;
-  ARect, R, SelectionRect : TRect;
-  LBitmap : TLayeredBitmap;
-  Items : array of TEasyItem;
-  EasyRect : TEasyRectArrayObject;
+  DragImage, TempImage: TBitmap;
+  SelCount: Integer;
+  SelectedItem: TEasyItem;
+  I, N, MaxH, MaxW, ImH, ImW, FSelCount, ItemsSelected: Integer;
+  W, H: Integer;
+  ImageW, ImageH, X, Y: Integer;
+  Graphic: TGraphic;
+  ARect, R, SelectionRect: TRect;
+  LBitmap: TLayeredBitmap;
+  Items: array of TEasyItem;
+  EasyRect: TEasyRectArrayObject;
 
 const
   ImageMoveLength = 7;
@@ -603,6 +609,10 @@ begin
 
     R := Rect(3, MaxH + 3, MaxW, 1000);
     TempImage.Canvas.Font := Font;
+
+    if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+      Font.Color := Theme.GradientText;
+
     DrawText(TempImage.Canvas.Handle, PChar(Caption), Length(Caption), R, DrawTextOpt or DT_CALCRECT);
 
     TempImage.SetSize(Max(MaxW, R.Right + 3), Max(MaxH, R.Bottom) + 5 * 2);
@@ -632,7 +642,7 @@ begin
             DrawShadowToImage(DragImage, Graphic as TBitmap, 1);
             DrawImageEx32(TempImage, DragImage, N, N);
           finally
-            DragImage.Free;
+            F(DragImage);
           end;
         end else if TBitmap(Graphic).PixelFormat = pf32bit then
         begin
@@ -645,7 +655,7 @@ begin
           LBitmap.LoadFromHIcon(TIcon(Graphic).Handle, TIcon(Graphic).Height, TIcon(Graphic).Width);
           DrawImageEx32(TempImage, LBitmap, N, N);
         finally
-          LBitmap.Free;
+          F(LBitmap);
         end;
       end;
     end;
@@ -678,7 +688,7 @@ begin
     DImageList.SetSize(TempImage.Width, TempImage.Height);
     DImageList.Add(TempImage, nil);
   finally
-    TempImage.Free;
+    F(TempImage);
   end;
 end;
 
@@ -688,12 +698,14 @@ begin
   if StyleServices.Enabled then
   begin
     ListView.Color := StyleServices.GetStyleColor(scListView);
-    ListView.Selection.GradientColorTop := MakeDarken(StyleServices.GetSystemColor(clHighlight), 0.8);
-    ListView.Selection.GradientColorBottom := MakeDarken(StyleServices.GetSystemColor(clHighlight), 1.2);
-    ListView.Selection.TextColor := StyleServices.GetSystemColor(clHighlightText);
+
+    ListView.Selection.GradientColorTop := Theme.GradientFromColor;
+    ListView.Selection.GradientColorBottom := Theme.GradientToColor;
+    ListView.Selection.TextColor := Theme.GradientText;
+
     ListView.Selection.InactiveTextColor := StyleServices.GetStyleFontColor(sfListItemTextSelected);
     ListView.Selection.Color := StyleServices.GetSystemColor(clHighlight);
-    ListView.Selection.InactiveColor := StyleServices.GetSystemColor(clHighlight);
+    ListView.Selection.InactiveColor := Theme.GradientToColor;
     ListView.Selection.BorderColor := StyleServices.GetSystemColor(clHighlight);
     ListView.Selection.InactiveBorderColor := StyleServices.GetSystemColor(clHighlight);
     ListView.Selection.BlendColorSelRect := StyleServices.GetSystemColor(clHighlight);
@@ -714,9 +726,6 @@ end;
 
 procedure SetLVSelection(ListView: TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 begin
-
-  if StyleServices.Enabled then
-    ListView.Color := StyleServices.GetStyleColor(scListView);
   ListView.Selection.MouseButton := MouseButton;
   ListView.Selection.AlphaBlend := True;
   ListView.Selection.AlphaBlendSelRect := True;

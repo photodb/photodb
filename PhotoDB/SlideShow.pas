@@ -3140,7 +3140,7 @@ var
           R := Rect(R.Left, R.Bottom + 8, Max(R.Left + 20, R.Right), R.Bottom + 500);
           Rct := R;
           FOverlayBuffer.Canvas.Font := Font;
-          FOverlayBuffer.Canvas.Font.Color := Theme.ListViewFontColor;
+          FOverlayBuffer.Canvas.Font.Color := Theme.GradientText;
           DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), R, DrawTextOpt or DT_CALCRECT);
           R.Right := Max(R.Right, Rct.Right);
           FaceTextRect := R;

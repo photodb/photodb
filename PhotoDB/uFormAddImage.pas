@@ -111,6 +111,8 @@ begin
       Round((LsMain.Height div 2) * 70 / 100),
       LsMain.Height, Bitmap, clBlack, FLoadingState, 240);
 
+    if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+      Font.Color := Theme.GradientText;
     R := Rect(LsMain.Left + LsMain.Width + 5, LsMain.Top, ClientWidth, ClientHeight);
     DrawText32Bit(Bitmap, L('Please wait...'), Font, R, 0);
 

@@ -58,7 +58,6 @@ object ExplorerForm: TExplorerForm
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 0
-    ExplicitHeight = 630
     object CloseButtonPanel: TPanel
       Left = 0
       Top = 0
@@ -95,7 +94,6 @@ object ExplorerForm: TExplorerForm
       ParentColor = True
       TabOrder = 1
       OnResize = PropertyPanelResize
-      ExplicitHeight = 609
       object ScrollBox1: TScrollPanel
         Left = 0
         Top = 0
@@ -116,7 +114,6 @@ object ExplorerForm: TExplorerForm
         FullRepaint = False
         TabOrder = 0
         OnResize = ScrollBox1Resize
-        ExplicitHeight = 609
         object TypeLabel: TLabel
           Left = 7
           Top = 141
@@ -749,6 +746,26 @@ object ExplorerForm: TExplorerForm
           StretchImage = True
           CanClick = True
         end
+        object WlShare: TWebLink
+          Left = 5
+          Top = 537
+          Width = 49
+          Height = 16
+          Cursor = crHandPoint
+          Text = 'Share'
+          Visible = False
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          UseSpecIconSize = True
+          HightliteImage = False
+          StretchImage = True
+          CanClick = True
+        end
       end
       object PnShelf: TPanel
         Left = 0
@@ -758,7 +775,6 @@ object ExplorerForm: TExplorerForm
         Align = alBottom
         TabOrder = 1
         Visible = False
-        ExplicitTop = 580
         object WlGoToShelf: TWebLink
           Left = 5
           Top = 6
@@ -794,7 +810,6 @@ object ExplorerForm: TExplorerForm
       item
         Width = 500
       end>
-    ExplicitTop = 678
   end
   object CoolBarTop: TCoolBar
     Left = 0
@@ -1152,7 +1167,6 @@ object ExplorerForm: TExplorerForm
     FullRepaint = False
     ParentColor = True
     TabOrder = 5
-    ExplicitHeight = 630
     object SplGeoLocation: TSplitter
       Left = 383
       Top = 33
@@ -1173,7 +1187,6 @@ object ExplorerForm: TExplorerForm
       Align = alBottom
       TabOrder = 0
       Visible = False
-      ExplicitTop = 597
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1641,7 +1654,6 @@ object ExplorerForm: TExplorerForm
       Align = alRight
       TabOrder = 2
       Visible = False
-      ExplicitHeight = 564
       object WbGeoLocation: TWebBrowser
         Left = 1
         Top = 34
@@ -1757,7 +1769,6 @@ object ExplorerForm: TExplorerForm
         Height = 35
         Align = alBottom
         TabOrder = 2
-        ExplicitTop = 528
         DesignSize = (
           348
           35)

@@ -3,6 +3,7 @@ unit ExplorerThreadUnit;
 interface
 
 uses
+  Generics.Collections,
   Jpeg,
   DB,
   ExplorerTypes,
@@ -108,6 +109,7 @@ type
     FPacketImages: TBitmapImageList;
     FPacketInfos: TExplorerFileInfos;
     FInvalidate: Boolean;
+    FUpdaterInfo: TUpdaterInfo;
   protected
     procedure GetVisibleFiles;
     procedure Execute; override;
@@ -160,11 +162,11 @@ type
     procedure UpdateFolder;
     procedure ReplaceImageInExplorerB;
     procedure MakeIconForFile;
-    function ShowFileIfHidden(FileName: String): Boolean;
+    function ShowFileIfHidden(FileName: string): Boolean;
     procedure UpdateSimpleFile;
     procedure DoUpdaterHelpProc;
     procedure EndUpdateID;
-    procedure VisibleUp(TopIndex : integer);
+    procedure VisibleUp(TopIndex: Integer);
     procedure DoLoadBigImages(LoadOnlyDBItems: Boolean);
     procedure GetAllFiles;
     procedure DoDefaultSort;
@@ -175,7 +177,7 @@ type
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
     procedure SendPacket;
-    procedure SendInfoToExplorer(Files: TExplorerFileInfos; var LastPacketTime: Cardinal);
+    procedure SendInfoToExplorer(Info: TExplorerFileInfo; var LastPacketTime: Cardinal);
     procedure SendPacketToExplorer;
     procedure SearchFolder(SearchContent: Boolean);
     procedure SearchDB;
@@ -186,19 +188,18 @@ type
     function IsVirtualTerminate: Boolean; override;
     function GetThreadID: string; override;
   public
-    FUpdaterInfo: TUpdaterInfo;
     ExplorerInfo: TExplorerViewInfo;
     FInfo: TDBPopupMenuInfoRecord;
     IsCryptedFile: Boolean;
     FFileID: TGUID;
     FSender: TExplorerForm;
     LoadingAllBigImages: Boolean;
-    constructor Create(Folder, Mask: string;
-      ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
+    constructor Create(Folder, Mask: string; ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
     destructor Destroy; override;
-    property OwnerThreadType : Integer read FOwnerThreadType write FOwnerThreadType;
-    property ThreadType : Integer read FThreadType;
+    property OwnerThreadType: Integer read FOwnerThreadType write FOwnerThreadType;
+    property ThreadType: Integer read FThreadType;
+    property UpdaterInfo: TUpdaterInfo read FUpdaterInfo;
   end;
 
 const
@@ -222,6 +223,7 @@ type
       UpdaterInfo: TUpdaterInfo; ExplorerViewInfo: TExplorerViewInfo;
       Mode: Integer; FileName, GUID: string);
     destructor Destroy; override;
+    property UpdaterInfo: TUpdaterInfo read FUpdaterInfo;
   end;
 
 type
@@ -236,7 +238,7 @@ type
   TExplorerUpdateManager = class(TObject)
   private
     FSync: TCriticalSection;
-    FData: TList;
+    FData: TList<TExplorerNotifyInfo>;
     FExplorerThreads: TList;
   protected
     constructor Create;
@@ -356,25 +358,19 @@ var
         NotifyInfo := ExplorerUpdateManager.DeQueue(FSender, StateID, UpdateMode);
         if NotifyInfo <> nil then
         begin
-          if FUpdaterInfo.FileInfo <> nil then
-          begin
-            FUpdaterInfo.FileInfo.Free;
-            FUpdaterInfo.FileInfo := nil;
-          end;
           FMask := '';
           ExplorerInfo := NotifyInfo.FExplorerViewInfo;
-          FUpdaterInfo := NotifyInfo.FUpdaterInfo;
+          UpdaterInfo.Assign(NotifyInfo.FUpdaterInfo);
           StateID := NotifyInfo.FState;
           if FUpdaterInfo.FileInfo <> nil then
-          begin
-            FFolder := FUpdaterInfo.FileInfo.FileName;
-            FUpdaterInfo.FileInfo := FUpdaterInfo.FileInfo.Copy as TExplorerFileInfo;
-          end;
+            FFolder := FUpdaterInfo.FileInfo.FileName
+          else
+            FFolder := '';
         end;
       until NotifyInfo = nil;
     finally
       ExplorerUpdateManager.UnRegisterThread(FSender, UpdateMode);
-      //check if new info is became avliable since last check ws performed
+      //check if new info is became avliable since last check was performed
       ExplorerUpdateManager.QueueNotify(ExplorerUpdateManager.DeQueue(FSender, StateID, UpdateMode));
     end;
   end;
@@ -896,11 +892,6 @@ begin
 
   RefreshQueue := TList.Create;
   try
-    //info for refresh items
-    UpdaterInfo.IsUpdater := False;
-    UpdaterInfo.UpdateDB := False;
-    UpdaterInfo.ProcHelpAfterUpdate := nil;
-    UpdaterInfo.FileInfo := nil;
 
     if ExplorerInfo.View = LV_THUMBS then
     begin
@@ -909,21 +900,29 @@ begin
         Info := FPacketInfos[I];
         if ExplorerInfo.ShowThumbNailsForImages and (Info.FileType = EXPLORER_ITEM_IMAGE) then
         begin
-          UpdaterInfo.FileInfo := TExplorerFileInfo(Info.Copy);
+          //info for refresh items
+          UpdaterInfo := TUpdaterInfo.Create;
+          UpdaterInfo.FileInfo := Info;
+          UpdaterInfo.DisableLoadingOfBigImage := (FThreadType = THREAD_TYPE_SHELF);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_IMAGE,
             Info.FileName, GUIDToString(Info.SID));
           RefreshQueue.Add(NotifyInfo);
         end;
         if ExplorerInfo.ShowThumbNailsForFolders and (Info.FileType = EXPLORER_ITEM_FOLDER) then
         begin
-          UpdaterInfo.FileInfo := TExplorerFileInfo(Info.Copy);
+          //info for refresh items
+          UpdaterInfo := TUpdaterInfo.Create;
+          UpdaterInfo.FileInfo := Info;
+          UpdaterInfo.DisableLoadingOfBigImage := (FThreadType = THREAD_TYPE_SHELF);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FOLDER,
             Info.FileName, GUIDToString(Info.SID));
           RefreshQueue.Add(NotifyInfo);
         end;
         if (Info.FileType = EXPLORER_ITEM_FILE) and (Info.Tag = 1) then
         begin
-          UpdaterInfo.FileInfo := TExplorerFileInfo(Info.Copy);
+          //info for refresh items
+          UpdaterInfo := TUpdaterInfo.Create;
+          UpdaterInfo.FileInfo := Info;
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FILE,
             Info.FileName, GUIDToString(Info.SID));
           RefreshQueue.Add(NotifyInfo);
@@ -942,14 +941,9 @@ begin
   end;
 end;
 
-procedure TExplorerThread.SendInfoToExplorer(Files: TExplorerFileInfos; var LastPacketTime: Cardinal);
-var
-  Info: TExplorerFileInfo;
+procedure TExplorerThread.SendInfoToExplorer(Info: TExplorerFileInfo; var LastPacketTime: Cardinal);
 begin
-  if Files.Count = 0 then
-    Exit;
   //add the last info
-  Info := Files[Files.Count - 1];
   FPacketInfos.Add(Info);
   //load icon
   GUIDParam := Info.SID;
@@ -982,6 +976,7 @@ var
   LastPacketTime: Cardinal;
   List: TStrings;
   Files: TExplorerFileInfos;
+  FileInfo: TExplorerFileInfo;
   I: Integer;
   FileName, S: string;
   FileSize: Int64;
@@ -989,6 +984,7 @@ var
 begin
   FPacketImages := TBitmapImageList.Create;
   FPacketInfos := TExplorerFileInfos.Create;
+  Files := TExplorerFileInfos.Create;
   try
     LastPacketTime := GetTickCount;
     SynchronizeEx(ShowLoadingSign);
@@ -996,63 +992,62 @@ begin
     try
       List := TStringList.Create;
       try
-        Files := TExplorerFileInfos.Create;
-        try
-          PhotoShelf.GetItems(List);
-          LastPacketTime := 0;
+        PhotoShelf.GetItems(List);
+        LastPacketTime := 0;
 
-          for I := 0 to List.Count - 1 do
-          begin
-            FileName := List[I];
+        for I := 0 to List.Count - 1 do
+        begin
+          FileName := List[I];
+          FileInfo := nil;
 
-          {  PI := PathProviderManager.CreatePathItem(FileName);
-            try
-              if PI is TPortableVideoItem then
+        {  PI := PathProviderManager.CreatePathItem(FileName);
+          try
+            if PI is TPortableVideoItem then
+            begin
+              AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_VIDEO, -1, GetGUID, 0, 0,
+                0, 0, PI.FileSize, '', '', '', 0, False, True, True);
+            end else if PI is TPortableImageItem then
+            begin
+              AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_IMAGE, -1, GetGUID, 0, 0,
+                0, 0, PI.FileSize, '', '', '', 0, False, True, True);
+            end else if PI is TPortableFileItem then
+            begin
+              AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_FILE, -1, GetGUID, 0, 0,
+                0, 0, PI.FileSize, '', '', '', 0, False, True, True);
+            end else }
+            begin
+              if FileExistsSafe(FileName) then
               begin
-                AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_VIDEO, -1, GetGUID, 0, 0,
-                  0, 0, PI.FileSize, '', '', '', 0, False, True, True);
-              end else if PI is TPortableImageItem then
-              begin
-                AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_IMAGE, -1, GetGUID, 0, 0,
-                  0, 0, PI.FileSize, '', '', '', 0, False, True, True);
-              end else if PI is TPortableFileItem then
-              begin
-                AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_FILE, -1, GetGUID, 0, 0,
-                  0, 0, PI.FileSize, '', '', '', 0, False, True, True);
-              end else }
-              begin
-                if FileExistsSafe(FileName) then
+                FileSize := GetFileSize(FileName);
+                S := ExtractFileExt(FileName);
+                S := '|' + AnsiLowerCase(S) + '|';
+                if Pos(S, SupportedExt) <> 0 then
                 begin
-                  FileSize := GetFileSize(FileName);
-                  S := ExtractFileExt(FileName);
-                  S := '|' + AnsiLowerCase(S) + '|';
-                  if Pos(S, SupportedExt) <> 0 then
-                  begin
-                    AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0,
-                      0, 0, FileSize, '', '', '', 0, False, False, True);
-                  end else
-                  begin
-                    AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
-                      0, 0, FileSize, '', '', '', 0, False, False, True);
-                  end;
-                end else if DirectoryExistsSafe(FileName) then
+                  FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0,
+                    0, 0, FileSize, '', '', '', 0, False, False, True);
+                end else
                 begin
-                  AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
-                    0, 0, 0, '', '', '', 0, False, True, True);
+                  FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
+                    0, 0, FileSize, '', '', '', 0, False, False, True);
                 end;
+              end else if DirectoryExistsSafe(FileName) then
+              begin
+                FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
+                  0, 0, 0, '', '', '', 0, False, True, True);
               end;
-            {
-            finally
-              F(PI);
-            end; }
-            SendInfoToExplorer(Files, LastPacketTime);
-            Files.Delete(0);
+            end;
+          {
+          finally
+            F(PI);
+          end; }
+          if FileInfo <> nil then
+          begin
+            Files.Add(FileInfo);
+            SendInfoToExplorer(FileInfo, LastPacketTime);
           end;
-          if FPacketInfos.Count > 0 then
-            SendPacket;
-        finally
-          F(Files);
         end;
+        if FPacketInfos.Count > 0 then
+          SendPacket;
       finally
         F(List);
       end;
@@ -1060,12 +1055,12 @@ begin
       HideProgress;
       ShowInfo('');
       SynchronizeEx(DoStopSearch);
-      HideProgress;
       SynchronizeEx(HideLoadingSign);
     end;
   finally
     F(FPacketInfos);
     F(FPacketImages);
+    F(Files);
   end;
 end;
 
@@ -1164,11 +1159,8 @@ var
                 if not IsMatchMask(AnsiLowerCase(SearchKey), FMask, True) then
                 begin
                   if DE then
-                  begin
                     //save directory, but don't add to results
-                    ProcessSearchRecord(Files, CurrentDirectory, SearchRec);
                     Directories.Add(CurrentDirectory + SearchRec.Name);
-                  end;
                   Continue;
                 end;
 
@@ -1177,7 +1169,7 @@ var
                   if DE then
                     Directories.Add(CurrentDirectory + SearchRec.Name);
 
-                  SendInfoToExplorer(Files, LastPacketTime);
+                  SendInfoToExplorer(Files[Files.Count - 1], LastPacketTime);
                 end;
 
               finally
@@ -1220,7 +1212,6 @@ begin
       HideProgress;
       ShowInfo('');
       SynchronizeEx(DoStopSearch);
-      HideProgress;
       SynchronizeEx(HideLoadingSign);
     end;
   finally
@@ -2415,53 +2406,59 @@ begin
       UpdateImageRecord(FSender, Info.FileName, Info.ID);
 
     FQuery := GetQuery;
-    ReadOnlyQuery(FQuery);
-    UnProcessPath(FFolder);
-
-    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
-
-    SetIntParam(FQuery, 0, GetPathCRC(Info.FileName, True));
-    SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(Info.FileName)));
     try
-      FQuery.Active := True;
-    except
-      on e : Exception do
-        EventLog(e.Message);
-    end;
-    F(FFiles);
-    FFiles := TExplorerFileInfos.Create;
-    try
-      if FQuery.RecordCount > 0 then
-      begin
-        NewInfo := TExplorerFileInfo.CreateFromDS(FQuery);
-        NewInfo.SID := Info.SID;
-      end else
-      begin
-        NewInfo := TExplorerFileInfo.CreateFromFile(Info.FileName);
-        NewInfo.FileSize := GetFileSizeByName(Info.FileName);
-        NewInfo.Crypted := ValidCryptGraphicFile(Info.FileName);
-        NewInfo.SID := Info.SID;
+      ReadOnlyQuery(FQuery);
+      UnProcessPath(FFolder);
+
+      SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
+
+      SetIntParam(FQuery, 0, GetPathCRC(Info.FileName, True));
+      SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(Info.FileName)));
+      try
+        FQuery.Active := True;
+      except
+        on e: Exception do
+          EventLog(e.Message);
       end;
-      FFiles.Add(NewInfo);
-
-      GUIDParam := FFiles[0].SID;
-      if FolderView then
-        CurrentFile := ProgramDir + FFiles[0].FileName
-      else
-        CurrentFile := FFiles[0].FileName;
-
-      if ExplorerInfo.ShowThumbNailsForImages then
-        ReplaceImageItemImage(FFiles[0].FileName, FFiles[0].FileSize, GUIDParam);
-
-      IntParam := Info.ID;
-      SynchronizeEx(EndUpdateID);
-      FreeDS(FQuery);
-
-      FFiles[0].FileType := EXPLORER_ITEM_IMAGE;
-      DoLoadBigImages(False);
-
-    finally
       F(FFiles);
+      FFiles := TExplorerFileInfos.Create;
+      try
+        if FQuery.RecordCount > 0 then
+        begin
+          NewInfo := TExplorerFileInfo.CreateFromDS(FQuery);
+          NewInfo.SID := Info.SID;
+        end else
+        begin
+          NewInfo := TExplorerFileInfo.CreateFromFile(Info.FileName);
+          NewInfo.FileSize := GetFileSizeByName(Info.FileName);
+          NewInfo.Crypted := ValidCryptGraphicFile(Info.FileName);
+          NewInfo.SID := Info.SID;
+        end;
+        FFiles.Add(NewInfo);
+
+        GUIDParam := FFiles[0].SID;
+        if FolderView then
+          CurrentFile := ProgramDir + FFiles[0].FileName
+        else
+          CurrentFile := FFiles[0].FileName;
+
+        if ExplorerInfo.ShowThumbNailsForImages then
+          ReplaceImageItemImage(FFiles[0].FileName, FFiles[0].FileSize, GUIDParam);
+
+        IntParam := Info.ID;
+        SynchronizeEx(EndUpdateID);
+
+        if ExplorerInfo.ShowThumbNailsForImages and not FUpdaterInfo.DisableLoadingOfBigImage then
+        begin
+          FFiles[0].FileType := EXPLORER_ITEM_IMAGE;
+          DoLoadBigImages(False);
+        end;
+
+      finally
+        F(FFiles);
+      end;
+    finally
+      FreeDS(FQuery);
     end;
     if FInfo.ID <> 0 then
       if Assigned(FUpdaterInfo.ProcHelpAfterUpdate) then
@@ -2636,7 +2633,8 @@ begin
         else
           SynchronizeEx(FileNeededAW);
 
-        if IsTerminated then Break;
+        if IsTerminated then
+          Break;
 
         if LoadOnlyDBItems then
           BooleanResult := FFiles[I].ID > 0;
@@ -2684,7 +2682,7 @@ procedure TExplorerThread.ExtractBigPreview(FileName: string; ID: Integer; Rotat
 var
   Graphic: TGraphic;
   GraphicClass: TGraphicClass;
-  PassWord : String;
+  PassWord: String;
   FBit: TBitmap;
   W, H: Integer;
 begin
@@ -2776,7 +2774,7 @@ destructor TExplorerThread.Destroy;
 begin
   F(FVisibleFiles);
   F(FFiles);
-  F(FUpdaterInfo.FileInfo);
+  F(FUpdaterInfo);
   F(FInfo);
   inherited;
 end;
@@ -2913,7 +2911,7 @@ begin
   if Mode = THREAD_PREVIEW_MODE_BIG_IMAGE then
     ExtractBigPreview(FInfo.FileName, FInfo.ID, FInfo.Rotation, FFileID);
 
-  F(FUpdaterInfo.FileInfo);
+  FUpdaterInfo.FileInfo := nil;
 end;
 
 procedure TExplorerThread.ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);
@@ -2951,7 +2949,7 @@ end;
 constructor TExplorerUpdateManager.Create;
 begin
   FSync := TCriticalSection.Create;
-  FData := TList.Create;
+  FData := TList<TExplorerNotifyInfo>.Create;
   FExplorerThreads := TList.Create;
 end;
 
@@ -2983,13 +2981,6 @@ begin
 end;
 
 procedure TExplorerUpdateManager.QueueNotify(Info: TExplorerNotifyInfo);
-
-  function CopyInfo(UInfo: TUpdaterInfo) : TUpdaterInfo;
-  begin
-    Result := UInfo;
-    Result.FileInfo := Result.FileInfo.Copy as TExplorerFileInfo;
-  end;
-
 begin
   if Info = nil then
     Exit;
@@ -3000,13 +2991,13 @@ begin
     begin
 
       if Info.FMode = UPDATE_MODE_ADD then
-        TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
+        TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_IMAGE then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_FOLDER then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FOLDER_UPDATE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState)
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FOLDER_UPDATE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_FILE then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FILE, Info.FExplorerViewInfo, Info.FOwner, CopyInfo(Info.FUpdaterInfo), Info.FState);
+        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FILE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState);
 
       ExplorerUpdateManager.RegisterThread(Info.FOwner, Info.FMode);
       F(Info);
@@ -3105,11 +3096,7 @@ end;
 
 destructor TExplorerNotifyInfo.Destroy;
 begin
-  if FUpdaterInfo.FileInfo <> nil then
-  begin
-    FUpdaterInfo.FileInfo.Free;
-    FUpdaterInfo.FileInfo := nil;
-  end;
+  F(FUpdaterInfo);
   inherited;
 end;
 

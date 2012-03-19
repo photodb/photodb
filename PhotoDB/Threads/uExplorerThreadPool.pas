@@ -13,7 +13,7 @@ type
   protected
     procedure AddNewThread(Thread : TMultiCPUThread); override;
   public
-    class function Instance : TExplorerThreadPool;
+    class function Instance: TExplorerThreadPool;
     procedure ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
     procedure ExtractDirectoryPreview(Sender : TMultiCPUThread; DirectoryPath: string; FileID : TGUID);
     procedure ExtractBigImage(Sender: TMultiCPUThread; FileName: string; ID, Rotated: Integer; FileID : TGUID);
@@ -21,7 +21,9 @@ type
 
 implementation
 
-uses ExplorerThreadUnit, ExplorerUnit;
+uses
+  ExplorerThreadUnit,
+  ExplorerUnit;
 
 var
    ExplorerThreadPool : TExplorerThreadPool = nil;
@@ -30,26 +32,19 @@ var
 
 procedure TExplorerThreadPool.AddNewThread(Thread: TMultiCPUThread);
 var
-  UpdaterInfo: TUpdaterInfo;
   ExplorerViewInfo: TExplorerViewInfo;
 begin
-  UpdaterInfo := TExplorerThread(Thread).FUpdaterInfo;
-  UpdaterInfo.IsUpdater := False;
-  UpdaterInfo.UpdateDB := False;
-  UpdaterInfo.ProcHelpAfterUpdate := nil;
-  UpdaterInfo.NewFileItem := False;
-  UpdaterInfo.FileInfo := nil;
   ExplorerViewInfo := TExplorerThread(Thread).ExplorerInfo;
   ExplorerViewInfo.View := -1;
   ExplorerViewInfo.PictureSize := 0;
   if (Thread <> nil) and (AvaliableThreadsCount + BusyThreadsCount < Min(MAX_THREADS_USE, ProcessorCount + 1)) then
-    AddAvaliableThread(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, ExplorerViewInfo, nil, UpdaterInfo, Thread.StateID));
+    AddAvaliableThread(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, ExplorerViewInfo, nil, TUpdaterInfo.Create, Thread.StateID));
 end;
 
-procedure TExplorerThreadPool.ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID : TGUID);
+procedure TExplorerThreadPool.ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
 var
-  Thread : TExplorerThread;
-  Avaliablethread : TExplorerThread;
+  Thread: TExplorerThread;
+  Avaliablethread: TExplorerThread;
 begin
   Thread := Sender as TExplorerThread;
   if Thread = nil then
@@ -61,9 +56,7 @@ begin
   begin
     Avaliablethread.ThreadForm := Sender.ThreadForm;
     Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
-    Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
-    if Thread.FUpdaterInfo.FileInfo <> nil then
-      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
+    Avaliablethread.UpdaterInfo.Assign(Thread.UpdaterInfo);
     Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
     Avaliablethread.StateID := Thread.StateID;
     Avaliablethread.FInfo.Assign(Info, True);
@@ -93,13 +86,9 @@ begin
   begin
     Avaliablethread.ThreadForm := Sender.ThreadForm;
     Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
-    Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
-    if Thread.FUpdaterInfo.FileInfo <> nil then
-      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
+    Avaliablethread.UpdaterInfo.Assign(Thread.UpdaterInfo);
     Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
     Avaliablethread.StateID := Thread.StateID;
-
-
     Avaliablethread.FInfo.FileName := FileName;
     Avaliablethread.FInfo.Rotation := Rotated;
     Avaliablethread.FInfo.ID := ID;
@@ -130,9 +119,7 @@ begin
   begin
     Avaliablethread.ThreadForm := Sender.ThreadForm;
     Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
-    Avaliablethread.FUpdaterInfo := Thread.FUpdaterInfo;
-    if Thread.FUpdaterInfo.FileInfo <> nil then
-      Avaliablethread.FUpdaterInfo.FileInfo := TExplorerFileInfo(Thread.FUpdaterInfo.FileInfo.Copy);
+    Avaliablethread.UpdaterInfo.Assign(Thread.UpdaterInfo);
     Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;
     Avaliablethread.StateID := Thread.StateID;
     Avaliablethread.FInfo.FileName := DirectoryPath;

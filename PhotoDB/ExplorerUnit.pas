@@ -389,6 +389,7 @@ type
     PnShelf: TPanel;
     WlGoToShelf: TWebLink;
     WlClear: TWebLink;
+    WlShare: TWebLink;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -2034,9 +2035,9 @@ var
   I: Integer;
   ExplorerInfo: TExplorerFileInfo;
 begin
-  for I := 0 to fFilesInfo.Count - 1 do
+  for I := 0 to FFilesInfo.Count - 1 do
   begin
-    ExplorerInfo := fFilesInfo[I];
+    ExplorerInfo := FFilesInfo[I];
     if IsEqualGUID(ExplorerInfo.SID, FileGUID) then
     begin
       ExplorerInfo.Assign(Info);
@@ -2234,6 +2235,7 @@ begin
     PnShelf.Visible := PhotoShelf.Count > 0;
     WlGoToShelf.Text := FormatEx(L('Photo shelf ({0} items)'), [PhotoShelf.Count]);
     ElvMain.Repaint;
+    Exit;
   end;
   if FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST then
   begin
@@ -2498,27 +2500,22 @@ end;
 
 procedure TExplorerForm.Refresh1Click(Sender: TObject);
 var
-  UpdaterInfo: TUpdaterInfo;
   I, Index: Integer;
   Info: TExplorerViewInfo;
 begin
-  UpdaterInfo.IsUpdater := False;
-  UpdaterInfo.UpdateDB := False;
-  UpdaterInfo.ProcHelpAfterUpdate := nil;
-  UpdaterInfo.FileInfo := nil;
   Info := ViewInfo;
   for I := 0 to ElvMain.Items.Count - 1 do
     if ElvMain.Items[I].Selected then
     begin
       Index := ItemIndexToMenuIndex(I);
-      UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
+
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) then
         TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_IMAGE,
-          Info, Self, UpdaterInfo, StateID);
+          Info, Self, TUpdaterInfo.Create(FFilesInfo[Index]), StateID);
 
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
         TExplorerThread.Create(FFilesInfo[Index].FileName, '',
-          THREAD_TYPE_FOLDER_UPDATE, info, Self, UpdaterInfo, StateID);
+          THREAD_TYPE_FOLDER_UPDATE, info, Self, TUpdaterInfo.Create(FFilesInfo[Index]), StateID);
     end;
 end;
 
@@ -2529,10 +2526,9 @@ var
   NotifyInfo: TExplorerNotifyInfo;
 begin
   Index := ItemIndexToMenuIndex(Number);
-  UpdaterInfo.IsUpdater := False;
+  UpdaterInfo := TUpdaterInfo.Create;
   UpdaterInfo.UpdateDB := UpdateDB;
-  UpdaterInfo.FileInfo := TExplorerFileInfo(FFilesInfo[Index].Copy);
-  UpdaterInfo.ProcHelpAfterUpdate := nil;
+  UpdaterInfo.FileInfo := FFilesInfo[Index];
   if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
   begin
     NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_REFRESH_IMAGE,
@@ -2540,12 +2536,7 @@ begin
     ExplorerUpdateManager.QueueNotify(NotifyInfo);
   end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
     TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo,
-      Self, UpdaterInfo, StateID)
-  else
-  begin
-    UpdaterInfo.FileInfo.Free;
-    UpdaterInfo.FileInfo := nil;
-  end;
+      Self, UpdaterInfo, StateID);
 end;
 
 procedure TExplorerForm.HistoryChanged(Sender: TObject);
@@ -3397,8 +3388,6 @@ var
 begin
   if not FormLoadEnd then
     Exit;
-  UpdaterInfo.ProcHelpAfterUpdate := nil;
-  UpdaterInfo.FileInfo := nil;
   if not IsActualState(SID) then
     Exit;
   for K := 0 to Length(PInfo) - 1 do
@@ -3412,6 +3401,7 @@ begin
           Info := TExplorerFileInfo.Create;
           Info.FileName := PInfo[K].FNewFileName;
 
+          UpdaterInfo := TUpdaterInfo.Create;
           UpdaterInfo.IsUpdater := True;
           UpdaterInfo.FileInfo := Info;
           UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
@@ -3464,7 +3454,7 @@ begin
             Exit;
           for I := 0 to ElvMain.Items.Count - 1 do
           begin
-            index := ItemIndexToMenuIndex(I);
+            Index := ItemIndexToMenuIndex(I);
             if index > FFilesInfo.Count - 1 then
               Exit;
             if AnsiLowerCase(FFilesInfo[index].FileName) = AnsiLowerCase(PInfo[K].FOldFileName) then
@@ -3833,7 +3823,7 @@ begin
   for I := 0 to fFilesInfo.Count - 1 do
   If IsEqualGUID(fFilesInfo[I].SID, FileSID) then
   begin
-    if not fFilesInfo[I].IsBigImage then
+    if not FFilesInfo[I].IsBigImage then
       Result := True;
     Break;
   end;
@@ -5908,7 +5898,7 @@ begin
   TW.I.Start('HideFilter - END');
 
   RefreshIDList.Clear;
-  UpdaterInfo.ProcHelpAfterUpdate := nil;
+
   FDBCanDragW := False;
   FDBCanDrag := False;
   TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
@@ -6125,13 +6115,11 @@ begin
         ElvMain.View := ElsGrid;
   end;
 
-  UpdaterInfo.IsUpdater := False;
-  UpdaterInfo.FileInfo := nil;
-
   EventLog('ExplorerThread');
   if ElvMain <> nil then
   begin
     PePath.CanBreakLoading := True;
+    UpdaterInfo := TUpdaterInfo.Create;
     TExplorerThread.Create(Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
   if FIsExplorer then
@@ -9183,8 +9171,7 @@ begin
   if ListView <> LV_THUMBS then
     Exit;
   // тут начинается загрузка больших картинок
-  UpdaterInfo.IsUpdater := False;
-  UpdaterInfo.FileInfo := nil;
+  UpdaterInfo := TUpdaterInfo.Create;
 
   NewFormState;
   DirectoryWatcher.UpdateStateID(StateID);

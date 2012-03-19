@@ -143,13 +143,13 @@ begin
 end;
 
 procedure TSearchBigImagesLoaderThread.ExtractBigImage(PictureSize: Integer;
-  FileName: string; Rotation : Integer);
+  FileName: string; Rotation: Integer);
 var
-  FGraphicClass : TGraphicClass;
-  FGraphic : TGraphic;
-  PassWord : String;
-  FBit, TempBitmap : TBitmap;
-  W, H : integer;
+  FGraphicClass: TGraphicClass;
+  FGraphic: TGraphic;
+  PassWord: String;
+  FBit, TempBitmap: TBitmap;
+  W, H: Integer;
 begin
   FileName := ProcessPath(FileName);
 

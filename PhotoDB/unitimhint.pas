@@ -209,7 +209,7 @@ begin
   Bitmap := TBitmap.Create;
   try
     if StyleServices.Enabled then
-      Font.Color := Theme.PanelFontColor;
+      Font.Color := Theme.GradientText;
 
     DrawShadowToImage(Bitmap, ImageBuffer);
     DrawImageEx32(FFormBuffer, Bitmap, 5, 5);

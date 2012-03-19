@@ -158,12 +158,28 @@ type
   end;
 
 type
-  TUpdaterInfo = record
-    IsUpdater: Boolean;
-    UpdateDB: Boolean;
-    ProcHelpAfterUpdate: TNotifyEvent;
-    NewFileItem: Boolean;
-    FileInfo: TExplorerFileInfo;
+  TUpdaterInfo = class(TObject)
+  private
+    FIsUpdater: Boolean;
+    FUpdateDB: Boolean;
+    FProcHelpAfterUpdate: TNotifyEvent;
+    FNewFileItem: Boolean;
+    FFileInfo: TExplorerFileInfo;
+    FDisableLoadingOfBigImage: Boolean;
+    procedure SetFileInfo(const Value: TExplorerFileInfo);
+    procedure Init;
+  public
+    constructor Create; overload;
+    constructor Create(Info: TExplorerFileInfo); overload;
+    destructor Destroy; override;
+    procedure Assign(Info: TUpdaterInfo);
+    function Copy: TUpdaterInfo;
+    property IsUpdater: Boolean read FIsUpdater write FIsUpdater;
+    property UpdateDB: Boolean read FUpdateDB write FUpdateDB;
+    property ProcHelpAfterUpdate: TNotifyEvent read FProcHelpAfterUpdate write FProcHelpAfterUpdate;
+    property NewFileItem: Boolean read FNewFileItem write FNewFileItem;
+    property FileInfo: TExplorerFileInfo read FFileInfo write SetFileInfo;
+    property DisableLoadingOfBigImage: Boolean read FDisableLoadingOfBigImage write FDisableLoadingOfBigImage;
   end;
 
 function AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
@@ -476,7 +492,8 @@ begin
   Info.Include := Include;
   Info.IsBigImage := False;
   Info.Exists := 1;
-  Infos.Add(Info);
+  if Infos <> nil then
+    Infos.Add(Info);
   Result := Info;
 end;
 
@@ -893,6 +910,58 @@ constructor TCustomExplorerForm.Create(AOwner: TComponent;
   GoToLastSavedPath: Boolean);
 begin
   FWindowID := GetGUID;
+end;
+
+{ TUpdaterInfo }
+
+procedure TUpdaterInfo.Assign(Info: TUpdaterInfo);
+begin
+  IsUpdater := Info.IsUpdater;
+  UpdateDB := Info.UpdateDB;
+  ProcHelpAfterUpdate := Info.ProcHelpAfterUpdate;
+  NewFileItem := Info.NewFileItem;
+  FileInfo := Info.FileInfo;
+  DisableLoadingOfBigImage := Info.DisableLoadingOfBigImage;
+end;
+
+function TUpdaterInfo.Copy: TUpdaterInfo;
+begin
+  Result := TUpdaterInfo.Create;
+  Result.Assign(Self);
+end;
+
+procedure TUpdaterInfo.Init;
+begin
+  FIsUpdater := False;
+  FUpdateDB := False;
+  FProcHelpAfterUpdate := nil;
+  FNewFileItem := False;
+  FFileInfo := nil;
+  FDisableLoadingOfBigImage := False;
+end;
+
+constructor TUpdaterInfo.Create(Info: TExplorerFileInfo);
+begin
+  Init;
+  FileInfo := Info;
+end;
+
+constructor TUpdaterInfo.Create;
+begin
+  Init;
+end;
+
+destructor TUpdaterInfo.Destroy;
+begin
+  F(FFileInfo);
+  inherited;
+end;
+
+procedure TUpdaterInfo.SetFileInfo(const Value: TExplorerFileInfo);
+begin
+  F(FFileInfo);
+  if Value <> nil then
+    FFileInfo := TExplorerFileInfo(Value.Copy);
 end;
 
 initialization

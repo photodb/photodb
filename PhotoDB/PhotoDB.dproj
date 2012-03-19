@@ -62,8 +62,8 @@
 			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<Manifest_File>None</Manifest_File>
 			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
-			<VerInfo_Build>382</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2011;FileDescription=Photo DataBase;FileVersion=2.3.2.382;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2011;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com;Home Page=http://photodb.illusdolphin.net</VerInfo_Keys>
+			<VerInfo_Build>384</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2011;FileDescription=Photo DataBase;FileVersion=2.3.2.384;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2011;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com;Home Page=http://photodb.illusdolphin.net</VerInfo_Keys>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;Posix;System.Win;Data.Win;$(DCC_Namespace)</DCC_Namespace>
@@ -710,7 +710,7 @@
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>
-		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
@@ -763,12 +763,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile LocalName="bin\PhotoDB.rsm" Class="DebugSymbols" Configuration="Debug">
+					<DeployFile LocalName="bin\PhotoDB.rsm" Configuration="Debug" Class="DebugSymbols">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile LocalName="bin\PhotoDB.exe" Class="ProjectOutput" Configuration="Debug">
+					<DeployFile LocalName="bin\PhotoDB.exe" Configuration="Debug" Class="ProjectOutput">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">
@@ -839,9 +839,9 @@
 							<Operation>1</Operation>
 						</Platform>
 					</DeployClass>
+					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win32"/>
 					<ProjectRoot Name="$(PROJECTNAME)" Platform="OSX32"/>
 					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win64"/>
-					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win32"/>
 				</Deployment>
 				<ActiveXProjectInfo>
 					<version>1</version>
@@ -849,6 +849,6 @@
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>
 		</ProjectExtensions>
-		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
-		<Import Condition="Exists('$(MSBuildProjectName).deployproj')" Project="$(MSBuildProjectName).deployproj"/>
+		<Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+		<Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
 	</Project>

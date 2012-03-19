@@ -112,6 +112,7 @@ var
   Logo : TPngImage;
 begin
   LoadLanguage;
+  LnkGoToWebSite.LoadImage;
   LnkGoToWebSite.Left := LsUpdates.Left - LnkGoToWebSite.Width - 5;
   DoubleBuffered := True;
   MemoInfo.Brush.Style := BsClear;

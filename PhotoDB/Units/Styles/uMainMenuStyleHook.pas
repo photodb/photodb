@@ -40,20 +40,18 @@ var
 begin
   MI := TMenuItem(Sender);
 
+  ACanvas.Brush.Style := bsClear;
   if odSelected in State then
   begin
-    ACanvas.Brush.Color := StyleServices.GetStyleColor(scButtonFocused);
-    ACanvas.Pen.Color := StyleServices.GetStyleColor(scButtonFocused);
-    Details := StyleServices.GetElementDetails(tmPopupItemHot);
+    ACanvas.Brush.Color := StyleServices.GetSystemColor(clHighlight);
+    ACanvas.Pen.Color := StyleServices.GetSystemColor(clHighlight);
   end else
   begin
-    ACanvas.Brush.Color := StyleServices.GetStyleColor(scButtonNormal);
-    ACanvas.Pen.Color := StyleServices.GetStyleColor(scButtonNormal);
-    Details := StyleServices.GetElementDetails(tmPopupItemNormal);
+    ACanvas.Brush.Color := StyleServices.GetStyleColor(scListView);
+    ACanvas.Pen.Color := StyleServices.GetStyleColor(scListView);
   end;
   SetBkMode(ACanvas.Handle, Windows.OPAQUE);
   ACanvas.Rectangle(ARect);
-  StyleServices.DrawElement(ACanvas.Handle, Details, ARect);
 
   if MI.Caption = '-' then
   begin
@@ -66,7 +64,7 @@ begin
   begin
     Menu := MI.GetParentMenu;
     if (Menu <> nil) and (Menu.Images <> nil) then
-      Menu.Images.Draw(ACanvas, ARect.Left + 1, ARect.Top + 1, MI.ImageIndex, MI.Enabled);
+      Menu.Images.Draw(ACanvas, ARect.Left + 2, ARect.Top + 2, MI.ImageIndex, MI.Enabled);
 
   end else
   begin
@@ -92,9 +90,9 @@ begin
   end;
 
   if odSelected in State then
-    ACanvas.Font.Color := StyleServices.GetStyleFontColor(sfPopupMenuItemTextSelected)
+    ACanvas.Font.Color := StyleServices.GetStyleFontColor(sfListItemTextSelected)
   else
-    ACanvas.Font.Color := StyleServices.GetStyleFontColor(sfPopupMenuItemTextNormal);
+    ACanvas.Font.Color := StyleServices.GetStyleFontColor(sfListItemTextNormal);
 
   if odDefault in State then
     ACanvas.Font.Style := ACanvas.Font.Style + [fsBold]
