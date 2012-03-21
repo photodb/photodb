@@ -219,6 +219,7 @@
     <translate name="Paste" value="Вставить" />
     <translate name="New" value="Новый" />
     <translate name="Directory" value="Каталог" />
+    <translate name="Share" value="Поделиться" />	
     <translate name="Open in new window" value="Открыть в новом окне" />
     <translate name="Add folder" value="Добавить каталог" />
     <translate name="Make new" value="Создать новый" />
@@ -762,8 +763,6 @@
 	<translate name="Paste" value="Вставить" />
     <translate name="Rename" value="Переименовать" />
     <translate name="Open in Explorer" value="Открыть в проводнике" />
-    <translate name="Send to" value="Отправить в" />
-    <translate name="New Panel" value="Новую панель" />
     <translate name="Show folder" value="Показать папку" />
     <translate name="Properties" value="Свойства" />
     <translate name="Scripts" value="Сценарии" />
@@ -800,6 +799,7 @@
 	<translate name="Resize HD (1280x720)" value="Уменьшить HD (1280x720)" />
 	<translate name="Sepia - FullHD (1920x1080)" value="Сепия - FullHD (1920x1080)" />
 	<translate name="Smart smooth - FullHD (1920x1080)" value="Умное сглаживание - FullHD (1920x1080)" />
+	<translate name="Add to shelf" value="Отложить" />	
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />
@@ -840,8 +840,6 @@
     <translate name="Slide show" value="Слайд шоу" />
     <translate name="Image editor" value="Редактор" />
     <translate name="Print" value="Печать" />
-    <translate name="Send to" value="Отправить в" />
-    <translate name="New panel" value="Новую панель" />
     <translate name="Back (left arrow)" value="Назад (стрелка влево)" />
     <translate name="Forward (right arrow)" value="Вперёд (стрелка вправо)" />
     <translate name="Fit to window (Ctrl+F)" value="Лучший размер (Ctrl+F)" />
@@ -883,6 +881,7 @@
     <translate name="Previous selections" value="Предыдущие выборы" />
     <translate name="Face detection disabled" value="Определение лиц отключено" />
     <translate name="Select person" value="Указать персону" />
+    <translate name="Add to shelf" value="Отложить" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -953,32 +952,6 @@
     <translate name="An error occurred while renaming file &quot;%s&quot; to &quot;%s&quot;! Error message: %s" value="Возникла ошибка при переименовании файла &quot;%s&quot; в &quot;%s&quot;! Ошибка: %s" />
 	<translate name="File mask: replace %d to number, %date - current date, %fn - original file name (without extension)" value="Маска файла: заменять %d на номер, %date - текущая дата, %fn - оригинальное имя файла (без расширения)" />
 	<translate name="Conflict in file names!" value="Конфликт в именах файлов!" />
-  </scope>
-  <scope name="Panel">
-	<translate name="Panel (%d)" value="Панель (%d)" />
-	<translate name="Delete item from list" value="Удалить из списка" />
-	<translate name="ID = %d" value="ID = %d" />
-	<translate name="Items : %d" value="Фото: %d" />
-	<translate name="File already exists! Replace?" value="Файл уже существует! Заменить?" />
-	<translate name="Info" value="Инфо" />
-	<translate name="View" value="Вид" />
-	<translate name="Select all" value="Выделить всё" />
-	<translate name="Copy" value="Копия" />
-	<translate name="Paste" value="Вставить" />
-	<translate name="Load from file" value="Загрузить из файла" />
-	<translate name="Save to file" value="Сохранить в файл" />
-	<translate name="Clear" value="Очистить" />
-	<translate name="Resize" value="Размер" />
-	<translate name="Convert" value="Формат" />
-	<translate name="Export" value="Экспорт" />
-	<translate name="Photo" value="Фото" />
-	<translate name="Actions" value="Действия" />
-	<translate name="Rename" value="Переименовать" />
-	<translate name="Select place to copy files" value="Выберите место для копирования файлов" />
-	<translate name="Enter text" value="Введите текст" />
-	<translate name="Enter new name of panel" value="Введите новое название панели" />
-	<translate name="New panel" value="Новую панель" />
-	<translate name="All supported (*.ids,*.dbl)|*.dbl;*.ids|DataDase Results (*.ids)|*.ids|DataDase FileList (*.dbl)|*.dbl" value="Все поддерживаемые (*.ids,*.dbl)|*.dbl;*.ids|DataDase результаты (*.ids)|*.ids|DataDase списки файлов (*.dbl)|*.dbl" />
   </scope>
   <scope name="KeywordList">
 	<translate name="List of keywords" value="Список ключевых слов" />
@@ -2191,5 +2164,8 @@
   </scope>
   <scope name="PhotoShelf">
 	<translate name="Photo shelf" value="Отложенные фото"/>
+  </scope>
+  <scope name="Picasa">
+	<translate name="Picasa authorisation" value="Авторизация на Picasa"/>
   </scope>
 </language>

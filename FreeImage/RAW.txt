@@ -1,0 +1,26 @@
+	
+		// (-6) 16-bit or 8-bit
+		RawProcessor.imgdata.params.output_bps = bitspersample;
+		// (-g power toe_slope)
+		if(bitspersample == 16) {
+			// set -g 1 1 for linear curve
+			RawProcessor.imgdata.params.gamm[0] = 1/2.222;
+			RawProcessor.imgdata.params.gamm[1] = 4.5;
+		} else if(bitspersample == 8) {
+			// by default settings for rec. BT.709 are used: power 2.222 (i.e. gamm[0]=1/2.222) and slope 4.5
+			RawProcessor.imgdata.params.gamm[0] = 1/2.222;
+			RawProcessor.imgdata.params.gamm[1] = 4.5;
+		}
+		// (-W) Don't use automatic increase of brightness by histogram
+		RawProcessor.imgdata.params.no_auto_bright = 0;
+		// (-a) Use automatic white balance obtained after averaging over the entire image
+		RawProcessor.imgdata.params.use_auto_wb = 1;
+		// (-q 3) Adaptive homogeneity-directed demosaicing algorithm (AHD)
+		RawProcessor.imgdata.params.user_qual = 3;
+		
+		RawProcessor.imgdata.params.med_passes = 1;
+		RawProcessor.imgdata.params.use_camera_wb = true;
+		RawProcessor.imgdata.params.use_camera_matrix = true;
+		RawProcessor.imgdata.params.auto_bright_thr = 0.01f;
+		RawProcessor.imgdata.params.fbdd_noiserd = 1;
+		// -----------------------

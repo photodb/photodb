@@ -124,8 +124,8 @@
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
 			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
 			<VerInfo_Release>3</VerInfo_Release>
-			<VerInfo_Build>440</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.3.440;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Build>444</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.3.444;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -144,9 +144,6 @@
 			</DCCReference>
 			<DCCReference Include="Options.pas">
 				<Form>OptionsForm</Form>
-			</DCCReference>
-			<DCCReference Include="UnitFormCont.pas">
-				<Form>FormCont</Form>
 			</DCCReference>
 			<DCCReference Include="replaceform.pas">
 				<Form>DBReplaceForm</Form>
@@ -318,7 +315,6 @@
 			</DCCReference>
 			<DCCReference Include="Threads\Loadingresults.pas"/>
 			<DCCReference Include="Threads\UnitCleanUpThread.pas"/>
-			<DCCReference Include="Threads\UnitLoadFilesToPanel.pas"/>
 			<DCCReference Include="Threads\UnitHintCeator.pas"/>
 			<DCCReference Include="Threads\UnitCmpDB.pas"/>
 			<DCCReference Include="Threads\ExplorerThreadUnit.pas"/>
@@ -342,7 +338,6 @@
 			<DCCReference Include="Threads\UnitPropertyLoadGistogrammThread.pas"/>
 			<DCCReference Include="Threads\UnitRefreshDBRecordsThread.pas"/>
 			<DCCReference Include="Threads\UnitCryptingImagesThread.pas"/>
-			<DCCReference Include="Threads\UnitPanelLoadingBigImagesThread.pas"/>
 			<DCCReference Include="Threads\UnitFileExistsThread.pas"/>
 			<DCCReference Include="Threads\UnitSlideShowUpdateInfoThread.pas"/>
 			<DCCReference Include="Threads\UnitCDExportThread.pas"/>
@@ -697,6 +692,17 @@
 			</DCCReference>
 			<DCCReference Include="Units\uPhotoShelf.pas"/>
 			<DCCReference Include="Units\uExplorerShelfProvider.pas"/>
+			<DCCReference Include="Units\uXMLUtils.pas"/>
+			<DCCReference Include="Units\Share\uGoogleOAuth.pas"/>
+			<DCCReference Include="Units\Share\uPhotoShareInterfaces.pas"/>
+			<DCCReference Include="Units\Share\uPicasaProvider.pas"/>
+			<DCCReference Include="Units\Share\uPicasaOAuth2.pas">
+				<Form>FormPicasaOAuth</Form>
+			</DCCReference>
+			<DCCReference Include="uFormShareFiles.pas">
+				<Form>FormShareFiles</Form>
+				<FormType>dfm</FormType>
+			</DCCReference>
 			<RidlCompile Include="Units\WebJS\WebJS.ridl"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
@@ -710,7 +716,7 @@
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>
-		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
@@ -763,12 +769,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile LocalName="bin\PhotoDB.rsm" Configuration="Debug" Class="DebugSymbols">
+					<DeployFile LocalName="bin\PhotoDB.rsm" Class="DebugSymbols" Configuration="Debug">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile LocalName="bin\PhotoDB.exe" Configuration="Debug" Class="ProjectOutput">
+					<DeployFile LocalName="bin\PhotoDB.exe" Class="ProjectOutput" Configuration="Debug">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">
@@ -839,9 +845,9 @@
 							<Operation>1</Operation>
 						</Platform>
 					</DeployClass>
-					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win32"/>
 					<ProjectRoot Name="$(PROJECTNAME)" Platform="OSX32"/>
 					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win64"/>
+					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win32"/>
 				</Deployment>
 				<ActiveXProjectInfo>
 					<version>1</version>
@@ -849,6 +855,6 @@
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>
 		</ProjectExtensions>
-		<Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
-		<Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+		<Import Condition="Exists('$(MSBuildProjectName).deployproj')" Project="$(MSBuildProjectName).deployproj"/>
 	</Project>

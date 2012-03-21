@@ -1954,13 +1954,6 @@ object ExplorerForm: TExplorerForm
       Caption = 'Add to shelf'
       OnClick = MiShelfClick
     end
-    object SendTo1: TMenuItem
-      Caption = 'Send To'
-      OnClick = SendTo1Click
-      object PiSendToSeparator: TMenuItem
-        Caption = '-'
-      end
-    end
     object N17: TMenuItem
       Caption = '-'
     end
@@ -2412,5 +2405,11 @@ object ExplorerForm: TExplorerForm
       Caption = 'Edit address'
       OnClick = MiEditAddressClick
     end
+  end
+  object TmrDelayedStart: TTimer
+    Enabled = False
+    OnTimer = TmrDelayedStartTimer
+    Left = 536
+    Top = 512
   end
 end

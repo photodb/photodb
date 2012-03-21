@@ -11,8 +11,9 @@ function AddIcons(script: string): string;
 
 implementation
 
-function AddIcons(script : string) : string;
+function AddIcons(script: string): string;
 begin
+script:=StringReplace(script,'DB_IC_SHELF','126',[rfReplaceAll]);
 script:=StringReplace(script,'DB_IC_CD_EXPORT','116',[rfReplaceAll]);
 script:=StringReplace(script,'DB_IC_CD_MAPPING','117',[rfReplaceAll]);
 script:=StringReplace(script,'DB_IC_CAMERA','121',[rfReplaceAll]);

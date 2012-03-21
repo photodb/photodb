@@ -247,6 +247,7 @@ type
     procedure QueueNotify(Info: TExplorerNotifyInfo);
     function DeQueue(FOwner: TExplorerForm; FState: TGUID; Mode: Integer): TExplorerNotifyInfo;
     procedure CleanUp(FOwner: TExplorerForm);
+    procedure CleanUpState(StateID: TGUID);
     procedure RegisterThread(FOwner: TExplorerForm; Mode: Integer);
     procedure UnRegisterThread(FOwner: TExplorerForm; Mode: Integer);
     function GetThreadCount(FOwner: TExplorerForm; Mode: Integer): Integer;
@@ -2937,6 +2938,23 @@ begin
   try
     for I := FData.Count - 1 downto 0 do
       if TExplorerNotifyInfo(FData[I]).FOwner = FOwner then
+      begin
+        TObject(FData[I]).Free;
+        FData.Delete(I);
+      end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TExplorerUpdateManager.CleanUpState(StateID: TGUID);
+var
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    for I := FData.Count - 1 downto 0 do
+      if TExplorerNotifyInfo(FData[I]).FState = StateID then
       begin
         TObject(FData[I]).Free;
         FData.Delete(I);

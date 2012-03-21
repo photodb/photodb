@@ -50,8 +50,7 @@ uses
   uUpTime,
   Themes,
   EasyListView,
-  uPortableClasses,
-  uPhotoShelf;
+  uPortableClasses;
 
 type
   TFormManager = class(TDBForm)
@@ -120,9 +119,7 @@ uses
   UnitConvertDBForm,
   UnitImportingImagesForm,
   UnitSelectDB,
-  UnitFormCont,
   uFormImportImages,
-  UnitLoadFilesToPanel,
   uActivation,
   UnitUpdateDBObject,
   uExifPatchThread;
@@ -488,12 +485,11 @@ begin
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
-var
 {$IFDEF LICENSE}
+var
   FReg: TBDRegistry;
   InstallDate: TDateTime;
 {$ENDIF}
-  EventInfo: TEventValues;
 begin
   if not CMDInProgress then
   begin
@@ -508,10 +504,6 @@ begin
     begin
       SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
       SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
-
-      PhotoShelf;
-      EventInfo.Image := nil;
-      DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
     end;
     if (FCheckCount = 20) and not FolderView then // after 2 sec.
     begin

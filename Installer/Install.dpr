@@ -58,7 +58,8 @@ uses
   uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
   uTime in '..\PhotoDB\Units\uTime.pas',
   MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
-  uStillImage in 'uStillImage.pas';
+  uStillImage in 'uStillImage.pas',
+  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

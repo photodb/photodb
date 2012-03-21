@@ -52,7 +52,8 @@ uses
   MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
   uStillImage in '..\Installer\uStillImage.pas',
   uSettings in '..\PhotoDB\Units\uSettings.pas',
-  uUpTime in '..\PhotoDB\Units\uUpTime.pas';
+  uUpTime in '..\PhotoDB\Units\uUpTime.pas',
+  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas';
 
 {$R *.res}
 {$R ..\PhotoDB\Resources\Install.res}

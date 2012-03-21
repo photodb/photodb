@@ -396,16 +396,13 @@ run:
   ExplorerPopUpMenu;
 }
 
-<Send to>[DB_IC_SENDTO]
+<Add to shelf>[DB_IC_SHELF]
 {
-  initialization:
-  $len=ArrayStringLength($Panels);
-  for ($i=0;$i<$len;$i=SumInt($i,1)) {
-      $s=GetStringItem($Panels,$i);
-      CreateItem($s,DB_IC_SEND,"SendToItemPopUpMenu;",false,$i);
-   };
-  CreateItem("-","","",false,0);
-  CreateItem("New Panel",DB_IC_SENDTO,"SendToItemPopUpMenu;",false,-1);
+initialization:
+  if ($FileExists=false) {InVisible;};
+  if ($DeviceItem=true) {InVisible;};
+run:
+  ShelfItemPopUpMenu;
 }
 
 <Show folder>[DB_IC_SEARCH]

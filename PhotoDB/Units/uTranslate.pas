@@ -17,6 +17,7 @@ uses
   uTime,
   ComObj,
   MSXML2_TLB,
+  uXMLUtils,
   ActiveX;
 
 type
@@ -387,31 +388,10 @@ begin
 end;
 
 procedure TLanguage.Init;
-var
-  ClassID: TGUID;
-  HR: HRESULT;
 begin
   FLastScope := nil;
   FTranslateList := TList.Create;
-
-  HR := CLSIDFromProgID(PWideChar(WideString('Msxml2.DOMDocument.6.0')), ClassID);
-  if Succeeded(HR) then
-    HR := CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
-
-  if Failed(HR) then
-  begin
-    HR := CLSIDFromProgID(PWideChar(WideString('Msxml2.DOMDocument.3.0')), ClassID);
-    if Succeeded(HR) then
-      CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
-  end;
-
-  if Failed(HR) then
-  begin
-    HR := CLSIDFromProgID(PWideChar(WideString('Msxml.DOMDocument')), ClassID);
-    if Succeeded(HR) then
-    //if this method failed - OS isn't supported
-      CoCreateInstance(ClassID, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, FTranslate);
-  end;
+  FTranslate := CreateXMLDocument;
 
   FLangCode := 0;
   FCode := '--';

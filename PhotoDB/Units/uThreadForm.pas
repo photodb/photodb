@@ -25,6 +25,7 @@ type
   protected
     procedure TerminateAllThreads;
     procedure NewFormState;
+    procedure StateChanged(OldState: TGUID); virtual;
   public
     procedure NewFormSubState;
     procedure RegisterThreadAndStart(Thread: TThread);
@@ -67,9 +68,13 @@ begin
 end;
 
 procedure TThreadForm.NewFormState;
+var
+  OldState: TGUID;
 begin
+  OldState := FStateID;
   FStateID := GetGUID;
   NewFormSubState;
+  StateChanged(OldState);
 end;
 
 procedure TThreadForm.NewFormSubState;
@@ -86,6 +91,10 @@ begin
   finally
     FSync.Leave;
   end;
+end;
+
+procedure TThreadForm.StateChanged(OldState: TGUID);
+begin
 end;
 
 procedure TThreadForm.TerminateAllThreads;

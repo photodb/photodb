@@ -46,7 +46,6 @@ uses
   Searching in 'Searching.pas' {SearchForm},
   SlideShow in 'SlideShow.pas' {Viewer},
   Options in 'Options.pas' {OptionsForm},
-  UnitFormCont in 'UnitFormCont.pas' {FormCont},
   replaceform in 'replaceform.pas' {DBReplaceForm},
   unitimhint in 'unitimhint.pas' {ImHint},
   SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
@@ -105,7 +104,6 @@ uses
   UnitBigImagesSize in 'UnitBigImagesSize.pas' {BigImagesSizeForm},
   Loadingresults in 'Threads\Loadingresults.pas',
   UnitCleanUpThread in 'Threads\UnitCleanUpThread.pas',
-  UnitLoadFilesToPanel in 'Threads\UnitLoadFilesToPanel.pas',
   UnitHintCeator in 'Threads\UnitHintCeator.pas',
   UnitCmpDB in 'Threads\UnitCmpDB.pas',
   ExplorerThreadUnit in 'Threads\ExplorerThreadUnit.pas',
@@ -129,7 +127,6 @@ uses
   UnitPropertyLoadGistogrammThread in 'Threads\UnitPropertyLoadGistogrammThread.pas',
   UnitRefreshDBRecordsThread in 'Threads\UnitRefreshDBRecordsThread.pas',
   UnitCryptingImagesThread in 'Threads\UnitCryptingImagesThread.pas',
-  UnitPanelLoadingBigImagesThread in 'Threads\UnitPanelLoadingBigImagesThread.pas',
   UnitFileExistsThread in 'Threads\UnitFileExistsThread.pas',
   UnitSlideShowUpdateInfoThread in 'Threads\UnitSlideShowUpdateInfoThread.pas',
   UnitCDExportThread in 'Threads\UnitCDExportThread.pas',
@@ -400,7 +397,13 @@ uses
   uMainMenuStyleHook in 'Units\Styles\uMainMenuStyleHook.pas',
   PropertyForm in 'PropertyForm.pas' {PropertiesForm},
   uPhotoShelf in 'Units\uPhotoShelf.pas',
-  uExplorerShelfProvider in 'Units\uExplorerShelfProvider.pas';
+  uExplorerShelfProvider in 'Units\uExplorerShelfProvider.pas',
+  uXMLUtils in 'Units\uXMLUtils.pas',
+  uGoogleOAuth in 'Units\Share\uGoogleOAuth.pas',
+  uPhotoShareInterfaces in 'Units\Share\uPhotoShareInterfaces.pas',
+  uPicasaProvider in 'Units\Share\uPicasaProvider.pas',
+  uPicasaOAuth2 in 'Units\Share\uPicasaOAuth2.pas' {FormPicasaOAuth},
+  uFormShareFiles in 'uFormShareFiles.pas' {FormShareFiles};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

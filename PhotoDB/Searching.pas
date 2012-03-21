@@ -531,8 +531,7 @@ implementation
 
 uses
   UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
-  PropertyForm, Options, UnitLoadFilesToPanel,
-  UnitHintCeator, uManagerExplorer, UnitUpdateDB,
+  PropertyForm, Options, UnitHintCeator, uManagerExplorer, UnitUpdateDB,
   UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
   UnitGroupReplace, UnitSavingTableForm, UnitHelp,
   UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,

@@ -243,8 +243,6 @@ type
     Cancel1: TMenuItem;
     SelectTimer: TTimer;
     N17: TMenuItem;
-    SendTo1: TMenuItem;
-    PiSendToSeparator: TMenuItem;
     View2: TMenuItem;
     ScriptMainMenu: TMainMenu;
     CloseTimer: TTimer;
@@ -390,6 +388,7 @@ type
     WlGoToShelf: TWebLink;
     WlClear: TWebLink;
     WlShare: TWebLink;
+    TmrDelayedStart: TTimer;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -507,9 +506,7 @@ type
     procedure GetPhotosFromDrive1Click(Sender: TObject);
     procedure Copywithfolder1Click(Sender: TObject);
     procedure Copy4Click(Sender: TObject);
-    procedure NewPanel1Click(Sender: TObject);
     procedure SelectTimerTimer(Sender: TObject);
-    procedure SendTo1Click(Sender: TObject);
     procedure View2Click(Sender: TObject);
     procedure CloseWindow(Sender: TObject);
     procedure CloseTimerTimer(Sender: TObject);
@@ -603,6 +600,7 @@ type
     procedure MiShelfClick(Sender: TObject);
     procedure WlGoToShelfClick(Sender: TObject);
     procedure WlClearClick(Sender: TObject);
+    procedure TmrDelayedStartTimer(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -723,7 +721,6 @@ type
     procedure UserDefinedPlaceClick(Sender: TObject);
     procedure UserDefinedPlaceContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure DoSelectItem;
-    procedure SendToItemPopUpMenu_(Sender: TObject);
     procedure LoadIcons;
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields;
       Value: TEventValues);
@@ -758,6 +755,8 @@ type
     procedure AddItemToUpdate(Item: TEasyItem);
     procedure ItemUpdateTimer(Sender: TObject);
     procedure UpdateItems;
+    procedure StateChanged(OldState: TGUID); override;
+
     procedure ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
     procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double; Date: TDateTime);
     procedure StartMap;
@@ -836,18 +835,42 @@ type
 implementation
 
 uses
-  UnitUpdateDB, ExplorerThreadUnit, uSearchTypes,
-  SlideShow, PropertyForm, UnitHintCeator, UnitImHint,
-  FormManegerUnit, Options, ManagerDBUnit, UnitExplorerThumbnailCreatorThread,
-  uAbout, uActivation, UnitPasswordForm, UnitCryptImageForm,
-  UnitFileRenamerForm, UnitSizeResizerForm, ImEditor,
-  UnitManageGroups, UnitHelp, uMachMask,
-  uFormImportImages, UnitFormCont, UnitGroupsWork,
-  UnitLoadFilesToPanel, DBScriptFunctions, UnitStringPromtForm,
-  UnitSavingTableForm, UnitUpdateDBObject,
-  uFormSteganography, UnitBigImagesSize, UnitNewGroupForm;
+  UnitUpdateDB,
+  ExplorerThreadUnit,
+  uSearchTypes,
+  SlideShow,
+  PropertyForm,
+  UnitHintCeator,
+  FormManegerUnit,
+  Options,
+  ManagerDBUnit,
+  UnitExplorerThumbnailCreatorThread,
+  uAbout,
+  uActivation,
+  UnitPasswordForm,
+  UnitCryptImageForm,
+  UnitFileRenamerForm,
+  UnitSizeResizerForm,
+  ImEditor,
+  UnitManageGroups,
+  UnitHelp,
+  uMachMask,
+  uFormImportImages,
+  UnitGroupsWork,
+  DBScriptFunctions,
+  UnitStringPromtForm,
+  UnitSavingTableForm,
+  UnitUpdateDBObject,
+  uFormSteganography,
+  UnitBigImagesSize,
+  UnitNewGroupForm;
 
 {$R *.dfm}
+
+function CanShareFile(FileName: string): Boolean;
+begin
+  Result := False;
+end;
 
 procedure RegisterPathEditThread(Sender: TThread);
 begin
@@ -1351,7 +1374,6 @@ begin
   Cut2.Visible := False;
   Copy1.Visible := False;
   Shell1.Visible := False;
-  SendTo1.Visible := False;
   MiShelf.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
@@ -1387,7 +1409,6 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
-    SendTo1.Visible := True;
     MiShelf.Visible := True;
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
@@ -1492,7 +1513,6 @@ begin
   if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
     DBitem1.Visible := True;
-    SendTo1.Visible := True;
     //MiShelf.Visible := True;
     StenoGraphia1.Visible := True;
     Print1.Visible := True;
@@ -1995,13 +2015,13 @@ begin
       HintTimer.Enabled := False;
       FWasDragAndDrop := True;
       DropFileSourceMain.ImageIndex := 0;
+
       DropFileSourceMain.Execute;
       SelfDraging := False;
       DropFileTarget1.Files.clear;
       FDBCanDrag := True;
       ListView1MouseUp(Sender, MbLeft, Shift, X, Y);
       SetLength(FListDragItems, 0);
-      FDBCanDrag := False;
     end;
   end;
 
@@ -2640,7 +2660,11 @@ var
   I, J, K: Integer;
   Handled: Boolean;
   Item: TEasyItem;
+  WasDBDrag: Boolean;
 begin
+  WasDBDrag := FDBCanDrag;
+  FDBCanDrag := False;
+  FDBCanDragW := False;
 
   Item := Self.ItemAtPos(X, Y);
   RightClickFix(ElvMain, Button, Shift, Item, ItemByMouseDown, ItemSelectedByMouseDown);
@@ -2654,7 +2678,7 @@ begin
   end else
     MouseDowned := False;
 
- if FDBCanDrag and ItemsDeselected then
+ if WasDBDrag and ItemsDeselected then
   begin
     If (Abs(FDBDragPoint.X - X) > 3) or (Abs(FDBDragPoint.Y - Y) > 3) then
       if not FWasDragAndDrop then
@@ -2680,8 +2704,6 @@ begin
   end;
   SetLength(FFilesToDrag, 0);
   SetLength(FListDragItems, 0);
-  FDBCanDrag := False;
-  FDBCanDragW := False;
 end;
 
 procedure TExplorerForm.ListView1Exit(Sender: TObject);
@@ -3334,6 +3356,8 @@ begin
     BvSeparatorAddress.Hide;
   end;
   LsMain.Color := Theme.ListViewColor;
+
+  TmrDelayedStart.Enabled := True;
 end;
 
 procedure TExplorerForm.Back1Click(Sender: TObject);
@@ -3757,6 +3781,12 @@ begin
   PnGeoLocation.Show;
   SplGeoLocation.Show;
   SplGeoLocation.Left := PnGeoLocation.Left;
+end;
+
+procedure TExplorerForm.StateChanged(OldState: TGUID);
+begin
+  inherited;
+  ExplorerUpdateManager.CleanUpState(OldState);
 end;
 
 procedure TExplorerForm.SbDoSearchLocationClick(Sender: TObject);
@@ -4460,6 +4490,14 @@ begin
       end else
         WlGeoLocation.Visible := False;
 
+      if ((FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or ((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) and CanShareFile(FSelectedInfo.FileName))) then
+      begin
+        WlShare.Visible := True;
+        WlShare.Top := NewTop + H;
+        NewTop := WlShare.BoundsRect.Bottom;
+      end else
+        WlShare.Visible := False;
+
     end else
     begin
       ImageTasksLabel.Hide;
@@ -4470,6 +4508,7 @@ begin
       PrintLink.Visible := False;
       ImageEditorLink.Visible := False;
       WlGeoLocation.Visible := False;
+      WlShare.Visible := False;
     end;
 
     NewTop := NewTop + H * 4;
@@ -5430,6 +5469,9 @@ begin
     WedFilter.SetFocus;
   if PerformFilter then
     WedFilter.OnChange(Self);
+
+  if TStyleManager.IsCustomStyleActive then
+    InvalidateRect(PnFilter.Handle, PnFilter.ClientRect, True);
 end;
 
 procedure TExplorerForm.ShowHelp(Text, Link: string);
@@ -5669,6 +5711,7 @@ begin
     AddLink.Text := L('Add to collection');
     WlImportPictures.Text := L('Import pictures');
     MiImportImages.Caption := L('Import pictures');
+    WlShare.Text := L('Share');
 
     ImageTasksLabel.Caption := L('Image tasks');
     WlResize.Text := L('Resize');
@@ -5744,7 +5787,6 @@ begin
     Move1.Caption := L('Move');
     Cancel1.Caption := L('Cancel');
 
-    SendTo1.Caption := L('Send to');
     MiShelf.Caption := L('Add to shelf');
     View2.Caption := L('Slide show');
 
@@ -5890,10 +5932,6 @@ begin
   FSelectedItem := nil;
   EventLog('SetNewPathW "' + WPath.Path + '"');
   TW.I.Start('SetNewPathW');
-  if (WPath.PType = EXPLORER_ITEM_PERSON_LIST) or (WPath.PType = EXPLORER_ITEM_GROUP_LIST) then
-    ShowFilter(False)
-  else
-    HideFilter(False);
 
   TW.I.Start('HideFilter - END');
 
@@ -6145,11 +6183,17 @@ begin
     FOldPatchType := WPath.PType;
   end;
 
-  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
+  if (WPath.PType = EXPLORER_ITEM_PERSON_LIST) or (WPath.PType = EXPLORER_ITEM_GROUP_LIST) then
+    ShowFilter(False)
+  else
+    HideFilter(False);
+
+  if TStyleManager.IsCustomStyleActive then
   begin
     InvalidateRect(PePath.Handle, PePath.ClientRect, True);
     InvalidateRect(ToolBar1.Handle, ToolBar1.ClientRect, True);
   end;
+
 
   EventLog('SetPath OK');
 end;
@@ -7176,11 +7220,6 @@ begin
     end;
 end;
 
-procedure TExplorerForm.NewPanel1Click(Sender: TObject);
-begin
-  ManagerPanels.NewPanel.Show;
-end;
-
 procedure TExplorerForm.DoSelectItem;
 var
   Index, I, J, X, Y, W, H: Integer;
@@ -7683,58 +7722,6 @@ procedure TExplorerForm.SelectTimerTimer(Sender: TObject);
 begin
   SelectTimer.Enabled := False;
   DoSelectItem;
-end;
-
-procedure TExplorerForm.SendTo1Click(Sender: TObject);
-begin
-  ManagerPanels.FillSendToPanelItems(Sender as TMenuItem, SendToItemPopUpMenu_);
-  PiSendToSeparator.Visible := (Sender as TMenuItem).Count = 1;
-end;
-
-procedure TExplorerForm.SendToItemPopUpMenu_(Sender: TObject);
-var
-  NumberOfPanel: Integer;
-  InfoNames: TArStrings;
-  InfoIDs: TArInteger;
-  Infoloaded: TArBoolean;
-  I: Integer;
-  Panel: TFormCont;
-  Index: Integer;
-begin
-  NumberOfPanel := (Sender as TMenuItem).Tag;
-  SetLength(InfoNames, 0);
-  SetLength(InfoIDs, 0);
-  SetLength(Infoloaded, 0);
-  for I := 0 to FFilesInfo.Count - 1 do
-  begin
-    Index := MenuIndexToItemIndex(I);
-    if ElvMain.Items[index].Selected then
-    begin
-      if FFilesInfo[I].ID = 0 then
-      begin
-        SetLength(InfoNames, Length(InfoNames) + 1);
-        SetLength(Infoloaded, Length(Infoloaded) + 1);
-        InfoNames[Length(InfoNames) - 1] := FFilesInfo[I].FileName;
-        Infoloaded[Length(Infoloaded) - 1] := FFilesInfo[I].Loaded;
-      end else
-      begin
-        SetLength(InfoIDs, Length(InfoIDs) + 1);
-        InfoIDs[Length(InfoIDs) - 1] := FFilesInfo[I].ID;
-      end;
-    end;
-  end;
-  if NumberOfPanel >= 0 then
-  begin
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, ManagerPanels[NumberOfPanel]);
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, ManagerPanels[NumberOfPanel]);
-  end;
-  if NumberOfPanel < 0 then
-  begin
-    Panel := ManagerPanels.NewPanel;
-    Panel.Show;
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, Panel);
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, Panel);
-  end;
 end;
 
 procedure TExplorerForm.SetNewFileNameGUID(FileGUID: TGUID);
@@ -9007,6 +8994,15 @@ begin
   View := LV_TILE;
 end;
 
+procedure TExplorerForm.TmrDelayedStartTimer(Sender: TObject);
+var
+  EventInfo: TEventValues;
+begin
+  PhotoShelf;
+  EventInfo.Image := nil;
+  DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
+end;
+
 procedure TExplorerForm.Grid1Click(Sender: TObject);
 begin
   View := LV_GRID;
@@ -9544,7 +9540,6 @@ begin
   Print1.ImageIndex := DB_IC_PRINTER;
   Copywithfolder1.ImageIndex := DB_IC_COPY;
 
-  SendTo1.ImageIndex := DB_IC_SEND;
   MiShelf.ImageIndex := DB_IC_SHELF;
   View2.ImageIndex := DB_IC_SLIDE_SHOW;
 
@@ -9601,6 +9596,7 @@ begin
   WlConvert.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
   WlCrop.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CROP + 1]);
   WlImportPictures.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PICTURES_IMPORT + 1]);
+  WlShare.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PHOTO_SHARE + 1]);
 end;
 
 destructor TExplorerForm.Destroy;

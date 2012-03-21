@@ -97,6 +97,7 @@ uses
   Vcl.ActnPopup,
   uThemesUtils,
   Themes,
+  uPhotoShelf,
   uBaseWinControl;
 
 type
@@ -178,8 +179,7 @@ type
     N51: TMenuItem;
     N6: TMenuItem;
     N7: TMenuItem;
-    SendTo1: TMenuItem;
-    SendToSeparator: TMenuItem;
+    MiShelf: TMenuItem;
     TimerDBWork: TTimer;
     TbSeparatorPageNumber: TToolButton;
     TbPageNumber: TToolButton;
@@ -283,7 +283,7 @@ type
     procedure N51Click(Sender: TObject);
     procedure AeMainHint(Sender: TObject);
     procedure UpdateInfoAboutFileName(FileName: string; Info: TDBPopupMenuInfoRecord);
-    procedure SendTo1Click(Sender: TObject);
+    procedure MiShelfClick(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
     procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
@@ -356,7 +356,6 @@ type
     procedure SetTransparentImage(const Value: Boolean);
     procedure SetCurrentlyLoadedFile(const Value: String);
     procedure SetPlay(const Value: boolean);
-    procedure SendToItemPopUpMenu(Sender: TObject);
     procedure OnPageSelecterClick(Sender: TObject);
     procedure SelectPreviousPerson(Sender: TObject);
     procedure SetDisplayRating(const Value: Integer);
@@ -458,8 +457,8 @@ implementation
 uses
   UnitUpdateDB, PropertyForm, SlideShowFullScreen, uFormSelectPerson,
   uManagerExplorer, FloatPanelFullScreen, UnitSizeResizerForm, uFormAddImage,
-  DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm, UnitFormCont,
-  UnitLoadFilesToPanel, CommonDBSupport, UnitSlideShowScanDirectoryThread,
+  DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm,
+  CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,
   uFormCreatePerson, uFaceDetectionThread, uFormEditObject;
 
@@ -575,7 +574,7 @@ begin
   SlideShow1.ImageIndex := DB_IC_DO_SLIDE_SHOW;
   ImageEditor1.ImageIndex := DB_IC_IMEDITOR;
   Print1.ImageIndex := DB_IC_PRINTER;
-  SendTo1.ImageIndex := DB_IC_SEND;
+  MiShelf.ImageIndex := DB_IC_SHELF;
   PmSteganography.Images := DBKernel.ImageList;
   AddHiddenInfo1.ImageIndex := DB_IC_STENO;
   ExtractHiddenInfo1.ImageIndex := DB_IC_DESTENO;
@@ -1318,7 +1317,7 @@ begin
       Resize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
       Print1.Visible := not(SlideShowNow) and ImageExists;
       ImageEditor1.Visible := not(SlideShowNow) and ImageExists;
-      SendTo1.Visible := not(SlideShowNow) and ImageExists and (Item.ID = 0);
+      MiShelf.Visible := not(SlideShowNow) and ImageExists and (Item.ID = 0);
     end;
   finally
     F(Info);
@@ -1698,7 +1697,7 @@ begin
     SlideShow1.Caption := L('Slide show');
     ImageEditor1.Caption := L('Image editor');
     Print1.Caption := L('Print');
-    SendTo1.Caption := L('Send to');
+    MiShelf.Caption := L('Add to shelf');
     ByEXIF1.Caption := L('By EXIF');
   finally
     EndTranslate;
@@ -4244,43 +4243,9 @@ begin
       end;
 end;
 
-procedure TViewer.SendTo1Click(Sender: TObject);
+procedure TViewer.MiShelfClick(Sender: TObject);
 begin
-  ManagerPanels.FillSendToPanelItems(Sender as TMenuItem, SendToItemPopUpMenu);
-  SendToSeparator.Visible := (Sender as TMenuItem).Count = 1;
-end;
-
-procedure TViewer.SendToItemPopUpMenu(Sender: TObject);
-var
-  NumberOfPanel: Integer;
-  InfoNames: TArStrings;
-  InfoIDs: TArInteger;
-  Infoloaded: TArBoolean;
-  Panel: TFormCont;
-begin
-  NumberOfPanel := (Sender as TMenuItem).Tag;
-  Setlength(InfoNames, 1);
-  Setlength(InfoIDs, 0);
-  Setlength(Infoloaded, 1);
-  Infoloaded[0] := True;
-  if Item.ID <> 0 then
-  begin
-    Setlength(InfoIDs, 1);
-    InfoIDs[0] := Item.ID;
-  end else
-  begin
-    Setlength(InfoNames, 1);
-    InfoNames[0] := Item.FileName;
-  end;
-
-  if NumberOfPanel >= 0 then
-    Panel := ManagerPanels[NumberOfPanel]
-  else
-    Panel := ManagerPanels.NewPanel;
-
-  Panel.Show;
-  LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, Panel);
-  LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, Panel);
+  PhotoShelf.AddToShelf(Item.FileName);
 end;
 
 procedure TViewer.DoUpdateRecordWithDataSet(FileName: string; DS: TDataSet);

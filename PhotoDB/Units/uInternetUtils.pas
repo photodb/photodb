@@ -3,8 +3,16 @@ unit uInternetUtils;
 interface
 
 uses
-  Windows, Classes, SysUtils, uMemory, uConstants,
-  EncdDecd, uDBBaseTypes, uSysUtils;
+  Windows,
+  Classes,
+  SysUtils,
+  uMemory,
+  uConstants,
+  EncdDecd,
+  uDBBaseTypes,
+  uSysUtils,
+  IdSSLOpenSSL,
+  idHTTP;
 
 type
   TUpdateInfo = record
@@ -41,6 +49,19 @@ const
   INTERNET_FLAG_RELOAD = $80000000;                 { retrieve the original item }
   wininet = 'wininet.dll';
 
+  type
+  TSpecials = set of AnsiChar;
+
+const
+  URLSpecialChar: TSpecials = [#$00..#$20, '_', '<', '>', '"', '%', '{', '}', '|', '\', '^', '~', '[', ']',  '`', #$7F..#$FF];
+  URLFullSpecialChar: TSpecials =  [';', '/', '?', ':', '@', '=', '&', '#', '+'];
+
+  cConnectionTimeout = 15000;
+  cReadTimeout = 20000;
+  cBrowserAgent: string = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0';
+
+function LoadStreamFromURL(URL: string; Stream: TStream): Boolean;
+function EncodeURLElement(const Value: string): AnsiString;
 function DownloadFile(const Url: string; Encoding: TEncoding): string;
 function InternetTimeToDateTime(const Value: string) : TDateTime;
 function EncodeBase64Url(inputData: string): string;
@@ -141,6 +162,75 @@ begin
     end
   else
 { NetHandle недопустимый. Генерируем исключительную ситуацию }
+end;
+
+
+function LoadStreamFromURL(URL: string; Stream: TStream): Boolean;
+var
+  FHTTP: TIdHTTP;
+  FSSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
+begin
+  FHTTP := TIdHTTP.Create(nil);
+  try
+    FSSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+    try
+      FHTTP.Request.UserAgent := cBrowserAgent;
+      FHTTP.IOHandler := FSSLIOHandler;
+      FHTTP.ConnectTimeout := cConnectionTimeout;
+      FHTTP.ReadTimeout := 0;
+      try
+        FHTTP.Get(URL, Stream);
+        Result := True;
+      except
+        on e: Exception do
+        begin
+          Stream.Size := 0;
+          Result := False;
+        end;
+      end;
+    finally
+      F(FSSLIOHandler);
+    end;
+  finally
+    F(FHTTP);
+  end;
+end;
+
+function EncodeTriplet(const Value: AnsiString; Delimiter: AnsiChar;
+  Specials: TSpecials): AnsiString;
+var
+  n, l: Integer;
+  s: AnsiString;
+  c: AnsiChar;
+begin
+  SetLength(Result, Length(Value) * 3);
+  l := 1;
+  for n := 1 to Length(Value) do
+  begin
+    c := Value[n];
+    if c in Specials then
+    begin
+      Result[l] := Delimiter;
+      Inc(l);
+      s := AnsiString(IntToHex(Ord(c), 2));
+      Result[l] := s[1];
+      Inc(l);
+      Result[l] := s[2];
+      Inc(l);
+    end
+    else
+    begin
+      Result[l] := c;
+      Inc(l);
+    end;
+  end;
+  Dec(l);
+  SetLength(Result, l);
+end;
+
+function EncodeURLElement(const Value: string): AnsiString;
+begin
+  Result := EncodeTriplet(AnsiString(Value), '%', URLSpecialChar + URLFullSpecialChar);
 end;
 
 end.

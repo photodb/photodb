@@ -448,12 +448,9 @@ object Viewer: TViewer
     object N4: TMenuItem
       Caption = '-'
     end
-    object SendTo1: TMenuItem
-      Caption = 'Send To'
-      OnClick = SendTo1Click
-      object SendToSeparator: TMenuItem
-        Caption = '-'
-      end
+    object MiShelf: TMenuItem
+      Caption = 'Shelf'
+      OnClick = MiShelfClick
     end
     object N7: TMenuItem
       Caption = '-'

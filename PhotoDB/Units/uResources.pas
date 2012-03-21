@@ -23,7 +23,6 @@ function GetSlideShowLoadPicture: TPNGImage;
 function GetExplorerBackground: TPNGImage;
 function GetSearchBackground: TPNGImage;
 function GetDateRangeImage: TPNGImage;
-function GetImagePanelImage: TPNGImage;
 function GetLoadingImage: TPNGImage;
 function GetActivationImage: TPNGImage;
 function GetPrinterPatternImage: TJpegImage;
@@ -39,7 +38,6 @@ function GetPathSeparatorImage: TBitmap;
 {$R SearchBackground.res}
 {$R DateRange.res}
 {$R Manifest.res}
-{$R ImagePanelBackground.res}
 {$R Loading.res}
 {$R Activation.res}
 {$R PrinterPattern.res}
@@ -54,7 +52,6 @@ function GetPathSeparatorImage: TBitmap;
 {$R editor.res}
 {$R explorer.res}
 {$R search.res}
-{$R panel.res}
 {$R cmd_icons.res}
 {$R updater.res}
 
@@ -135,11 +132,6 @@ end;
 function GetDateRangeImage: TPNGImage;
 begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('DATERANGE');
-end;
-
-function GetImagePanelImage: TPNGImage;
-begin
-  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('IMAGEPANELBACKGROUND');
 end;
 
 function GetLoadingImage: TPNGImage;

@@ -225,6 +225,7 @@ const
   DB_IC_BACKUP         = 124;
   DB_IC_MAP_MARKER     = 125;
   DB_IC_SHELF          = 126;
+  DB_IC_PHOTO_SHARE    = 127;
 
 const
     WM_DROPFILES = $0233;

@@ -56,7 +56,8 @@ uses
   uDBAdapter,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
-  Vcl.ActnPopup;
+  Vcl.ActnPopup,
+  uPhotoShelf;
 
 type
   TDBPopupMenu = class
@@ -88,7 +89,7 @@ type
     procedure PrivateItemPopUpMenu_(Sender: TObject);
     procedure RenameItemPopUpMenu_(Sender: TObject);
     procedure CopyItemPopUpMenu_(Sender: TObject);
-    procedure SendToItemPopUpMenu_(Sender: TObject);
+    procedure ShelfItemPopUpMenu_(Sender: TObject);
     procedure ExplorerPopUpMenu_(Sender: TObject);
     procedure GroupsPopUpMenu_(Sender: TObject);
     procedure DateItemPopUpMenu_(Sender: TObject);
@@ -129,10 +130,20 @@ var
 implementation
 
 uses
-  uManagerExplorer, PropertyForm, SlideShow, uSearchTypes, UnitFormCont,
-  UnitLoadFilesToPanel, UnitEditGroupsForm, UnitMenuDateForm, CmpUnit,
-  UnitQuickGroupInfo, UnitCrypting, UnitPasswordForm,
-  ImEditor, FormManegerUnit, CommonDBSupport, UnitSizeResizerForm;
+  uManagerExplorer,
+  PropertyForm,
+  SlideShow,
+  uSearchTypes,
+  UnitEditGroupsForm,
+  UnitMenuDateForm,
+  CmpUnit,
+  UnitQuickGroupInfo,
+  UnitCrypting,
+  UnitPasswordForm,
+  ImEditor,
+  FormManegerUnit,
+  CommonDBSupport,
+  UnitSizeResizerForm;
 
 var
   DBPopupMenu: TDBPopupMenu = nil;
@@ -149,7 +160,6 @@ procedure TDBPopupMenu.AddDBContMenu(Form: TDBForm; Item: TMenuItem;
 var
   I: Integer;
   FE, Isrecord, IsFile, IsCurrentFile: Boolean;
-  PanelsTexts: TStrings;
   MenuGroups: TGroups;
   GroupsList: TStringList;
   StrGroups, Script: string;
@@ -253,17 +263,6 @@ begin
 
   LoadVariablesNo(FInfo.Position);
 
-  TW.I.Start('Panels');
-  PanelsTexts := TStringList.Create;
-  try
-    ManagerPanels.GetPanelsTexts(PanelsTexts);
-    SetLength(APanelTexts, PanelsTexts.Count);
-    for I := 0 to PanelsTexts.Count - 1 do
-      APanelTexts[I] := PanelsTexts[I];
-    SetNamedValueArrayStrings(AScript, '$Panels', APanelTexts);
-  finally
-    F(PanelsTexts);
-  end;
   TW.I.Start('Groups');
   GroupsList := TStringList.Create;
   try
@@ -496,7 +495,7 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'PrivateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrivateItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'RenameItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RenameItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'CopyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,CopyItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SendToItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SendToItemPopUpMenu_);
+  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShelfItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShelfItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ExplorerPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ExplorerPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'GroupsPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,GroupsPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'DateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DateItemPopUpMenu_);
@@ -1420,45 +1419,24 @@ begin
     Finfo[Finfo.Position].ID);
 end;
 
-procedure TDBPopupMenu.SendToItemPopUpMenu_(Sender: TObject);
+procedure TDBPopupMenu.ShelfItemPopUpMenu_(Sender: TObject);
 var
-  NumberOfPanel: Integer;
-  InfoNames: TArStrings;
-  InfoIDs: TArInteger;
-  Infoloaded: TArBoolean;
   I: Integer;
-  Panel: TFormCont;
+  IsInShelf: Boolean;
+  EventInfo: TEventValues;
 begin
-  NumberOfPanel := (Sender as TMenuItem).Tag;
-  Setlength(InfoNames, 0);
-  Setlength(InfoIDs, 0);
+  IsInShelf := PhotoShelf.PathInShelf(Finfo[Finfo.Position].FileName) > -1;
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
     begin
-      if FInfo[I].ID = 0 then
-      begin
-        Setlength(InfoNames, Length(InfoNames) + 1);
-        Setlength(Infoloaded, Length(Infoloaded) + 1);
-        InfoNames[Length(InfoNames) - 1] := FInfo[I].FileName;
-        Infoloaded[Length(Infoloaded) - 1] := FInfo[I].InfoLoaded;
-      end else
-      begin
-        Setlength(InfoIDs, Length(InfoIDs) + 1);
-        InfoIDs[Length(InfoIDs) - 1] := FInfo[I].ID;
-      end;
+      if IsInShelf then
+        PhotoShelf.RemoveFromShelf(FInfo[I].FileName)
+      else
+        PhotoShelf.AddToShelf(FInfo[I].FileName);
     end;
-  if NumberOfPanel >= 0 then
-  begin
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, ManagerPanels[NumberOfPanel]);
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, ManagerPanels[NumberOfPanel]);
-  end;
-  if NumberOfPanel < 0 then
-  begin
-    Panel := ManagerPanels.NewPanel;
-    Panel.Show;
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, True, Panel);
-    LoadFilesToPanel.Create(InfoNames, InfoIDs, Infoloaded, True, False, Panel);
-  end;
+
+  EventInfo.ID := 0;
+  DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfChanged], EventInfo);
 end;
 
 procedure TDBPopupMenu.SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);

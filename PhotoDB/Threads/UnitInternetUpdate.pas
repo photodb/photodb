@@ -123,7 +123,7 @@ end;
 procedure TInternetUpdate.ParceReply(Reply: string);
 var
   XmlReply: IDOMDocument;
-  DocumentNode : IDOMNode;
+  DocumentNode: IDOMNode;
   I: Integer;
   DetailName, DetailValue : string;
 begin

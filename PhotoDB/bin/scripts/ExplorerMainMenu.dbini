@@ -143,10 +143,6 @@
     $form=NewImageEditor;
     ShowDBForm($form);
   }
-  <New Panel>[DB_IC_PANEL]
-  {
-    NewPanel;
-  }
   <New search>[DB_IC_ADDTODB]
   {
     NewSearch;

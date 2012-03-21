@@ -3,13 +3,41 @@ unit DBScriptFunctions;
 interface
 
 uses
-  Windows, Dolphin_DB, UnitScripts, ReplaseIconsInScript, acDlgSelect,
-  Forms, Classes, SysUtils, Registry, GraphicCrypt, uMemory,
-  Graphics, DB, UnitINI, UnitDBDeclare, UnitDBFileDialogs, uTranslate,
-  Math, uScript, uCDMappingTypes, uFileUtils, uAssociations, uDBForm,
-  uDBUtils, uDBBaseTypes, uDBTypes, uRuntime, uDBGraphicTypes,
-  uDBFileTypes, uGraphicUtils, uSysUtils, uDBPopupMenuInfo, uSettings,
-  UnitDBCommonGraphics;
+  Windows,
+  Dolphin_DB,
+  UnitScripts,
+  ReplaseIconsInScript,
+  acDlgSelect,
+  Forms,
+  Classes,
+  SysUtils,
+  Registry,
+  GraphicCrypt,
+  uMemory,
+  Graphics,
+  DB,
+  UnitINI,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  uTranslate,
+  Math,
+  uScript,
+  uCDMappingTypes,
+  uFileUtils,
+  uAssociations,
+  uDBForm,
+  uDBUtils,
+  uDBBaseTypes,
+  uDBTypes,
+  uRuntime,
+  uDBGraphicTypes,
+  uDBFileTypes,
+  uGraphicUtils,
+  uSysUtils,
+  uDBPopupMenuInfo,
+  uSettings,
+  UnitDBCommonGraphics,
+  uPhotoShelf;
 
 procedure DoActivation;
 procedure GetUpdates(IsBackground: boolean);
@@ -29,7 +57,7 @@ implementation
 uses
   ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
-  UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor, UnitFormCont,
+  UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor,
   uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
   SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
@@ -191,31 +219,6 @@ begin
     // Show;
     Result := GUIDToString(WindowID);
     CloseOnFailture := False;
-  end;
-end;
-
-function NewPanel: string;
-begin
-  with ManagerPanels.NewPanel do
-  begin
-    Show;
-    SetFocus;
-    Result := GUIDToString(WindowID);
-  end;
-end;
-
-function GetLastPanel: string;
-begin
-  if ManagerPanels.Count > 0 then
-  begin
-    Result := GUIDToString(ManagerPanels[ManagerPanels.Count - 1].WindowID);
-    Exit;
-  end;
-  with ManagerPanels.NewPanel do
-  begin
-    Show;
-    SetFocus;
-    Result := GUIDToString(WindowID);
   end;
 end;
 
@@ -493,24 +496,6 @@ begin
   end;
 end;
 
-function GetPanelByCID(CID: string): TFormCont;
-var
-  I: Integer;
-begin
-  Result := nil;
-  if ManagerPanels <> nil then
-  begin
-    for I := 0 to ManagerPanels.Count - 1 do
-    begin
-      if CID = GUIDToString(ManagerPanels[I].WindowID) then
-      begin
-        Result := ManagerPanels[I];
-        Break;
-      end;
-    end;
-  end;
-end;
-
 function GetSearchTextByCID(CID: string): string;
 var
   I: Integer;
@@ -642,8 +627,6 @@ begin
     GetSearchByCID(CID).Close;
   if GetExplorerByCID(CID) <> nil then
     GetExplorerByCID(CID).Close;
-  if GetPanelByCID(CID) <> nil then
-    GetPanelByCID(CID).Close;
 
   if GetProgressByCID(CID) <> nil then
   begin
@@ -665,8 +648,6 @@ begin
     GetExplorerByCID(CID).Show;
   if GetProgressByCID(CID) <> nil then
     GetProgressByCID(CID).DoFormShow;
-  if GetPanelByCID(CID) <> nil then
-    GetPanelByCID(CID).Show;
 end;
 
 function GetDBNameList: TArrayOfString;
@@ -812,10 +793,9 @@ begin
   Result := DBKernel.TestDB(DB);
 end;
 
-procedure AddFileToPanel(CID, FileName: string);
+procedure AddFileToShelf(FileName: string);
 begin
-  if GetPanelByCID(CID) <> nil then
-    GetPanelByCID(CID).AddFileName(FileName);
+  PhotoShelf.AddToShelf(FileName);
 end;
 
 function ExecuteActions(CID, FileName, ToFileName : string): string;
@@ -948,11 +928,7 @@ begin
 
  AddScriptFunction(Enviroment,'ImageEditorOpenFileName',F_TYPE_PROCEDURE_STRING_STRING,@ImageEditorOpenFileName);
 
- AddScriptFunction(Enviroment,'NewPanel',F_TYPE_FUNCTION_IS_STRING,@NewPanel);
-
- AddScriptFunction(Enviroment,'AddFileToPanel',F_TYPE_PROCEDURE_STRING_STRING,@AddFileToPanel);
-
- AddScriptFunction(Enviroment,'GetLastPanel',F_TYPE_FUNCTION_IS_STRING,@GetLastPanel);
+ AddScriptFunction(Enviroment,'AddFileToShelf',F_TYPE_PROCEDURE_STRING,@AddFileToShelf);
 
  AddScriptFunction(Enviroment,'NewSearch',F_TYPE_FUNCTION_IS_STRING,@NewSearch);
  AddScriptFunction(Enviroment,'NewExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@NewExplorerByPath);
