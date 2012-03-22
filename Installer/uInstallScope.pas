@@ -266,6 +266,8 @@ begin
   Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('VCOpenCV.DLL',                    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('UnInstall.exe',                   '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('libeay32.dll',                    '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('ssleay32.dll',                    '%PROGRAM%', ''));
 
   {$IFDEF DBDEBUG}
   Files.Add(TFileObject.Create('FastMM_FullDebugMode.dll', '%PROGRAM%', ''));

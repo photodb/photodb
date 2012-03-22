@@ -403,7 +403,7 @@ uses
   uPhotoShareInterfaces in 'Units\Share\uPhotoShareInterfaces.pas',
   uPicasaProvider in 'Units\Share\uPicasaProvider.pas',
   uPicasaOAuth2 in 'Units\Share\uPicasaOAuth2.pas' {FormPicasaOAuth},
-  uFormShareFiles in 'uFormShareFiles.pas' {FormShareFiles};
+  uFormSharePhotos in 'uFormSharePhotos.pas' {FormSharePhotos};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -572,7 +572,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

@@ -124,8 +124,8 @@
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
 			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
 			<VerInfo_Release>3</VerInfo_Release>
-			<VerInfo_Build>444</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.3.444;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Build>445</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=2.3.3.445;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -699,9 +699,8 @@
 			<DCCReference Include="Units\Share\uPicasaOAuth2.pas">
 				<Form>FormPicasaOAuth</Form>
 			</DCCReference>
-			<DCCReference Include="uFormShareFiles.pas">
-				<Form>FormShareFiles</Form>
-				<FormType>dfm</FormType>
+			<DCCReference Include="uFormSharePhotos.pas">
+				<Form>FormSharePhotos</Form>
 			</DCCReference>
 			<RidlCompile Include="Units\WebJS\WebJS.ridl"/>
 			<BuildConfiguration Include="Debug">
@@ -769,12 +768,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile LocalName="bin\PhotoDB.rsm" Class="DebugSymbols" Configuration="Debug">
+					<DeployFile Class="DebugSymbols" Configuration="Debug" LocalName="bin\PhotoDB.rsm">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile LocalName="bin\PhotoDB.exe" Class="ProjectOutput" Configuration="Debug">
+					<DeployFile Class="ProjectOutput" Configuration="Debug" LocalName="bin\PhotoDB.exe">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">

@@ -2793,26 +2793,34 @@ var
   FileName: string;
 begin
   Image := nil;
-  FileName := AnsiLowerCase(FSelectedInfo.FileName);
-  for I := 0 to ElvMain.Items.Count - 1 do
+  if SelCount = 1 then
   begin
-    if ElvMain.Items[I].ImageIndex <> -1 then
+    FileName := AnsiLowerCase(FSelectedInfo.FileName);
+    for I := 0 to ElvMain.Items.Count - 1 do
     begin
-      Index := ItemIndexToMenuIndex(I);
-      if AnsiLowerCase(FFilesInfo[Index].FileName) = FileName then
+      if ElvMain.Items[I].ImageIndex <> -1 then
       begin
-        if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
+        Index := ItemIndexToMenuIndex(I);
+        if AnsiLowerCase(FFilesInfo[Index].FileName) = FileName then
         begin
-          B := FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap;
-          Image := TBitmap.Create;
-          Image.Assign(B);
-        end else if FBitmapImageList[ElvMain.Items[I].ImageIndex].Icon <> nil then
-        begin
-          Image := TIcon.Create;
-          Image.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Icon);
+          if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
+          begin
+            B := FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap;
+            Image := TBitmap.Create;
+            Image.Assign(B);
+          end else if FBitmapImageList[ElvMain.Items[I].ImageIndex].Icon <> nil then
+          begin
+            Image := TIcon.Create;
+            Image.Assign(FBitmapImageList[ElvMain.Items[I].ImageIndex].Icon);
+          end;
         end;
       end;
     end;
+  end else
+  begin
+    Image := TBitmap.Create;
+    CreateMultiselectImage(ElvMain, TBitmap(Image), FBitmapImageList, ElvMain.Selection.GradientColorBottom, ElvMain.Selection.GradientColorTop,
+      ElvMain.Selection.Color, ElvMain.Font, ThSizeExplorerPreview + 3, ThSizeExplorerPreview + 3);
   end;
 end;
 
@@ -3514,11 +3522,19 @@ begin
 end;
 
 procedure TExplorerForm.WlGeoLocationClick(Sender: TObject);
+var
+  ImageName: string;
 begin
   if FSelectedInfo.GeoLocation <> nil then
   begin
-    DisplayGeoLocation(ExtractFileName(FSelectedInfo.FileName),
-      FSelectedInfo.GeoLocation.Latitude, FSelectedInfo.GeoLocation.Longitude, FSelectedInfo.Date + FSelectedInfo.Time);
+    if SelCount = 1 then
+      ImageName := ExtractFileName(FSelectedInfo.FileName)
+    else
+      ImageName := Format(L('%d objects'), [SelCount]);
+
+    DisplayGeoLocation(ImageName,
+      FSelectedInfo.GeoLocation.Latitude, FSelectedInfo.GeoLocation.Longitude,
+      FSelectedInfo.Date + FSelectedInfo.Time);
   end else
   begin
     StartMap;
@@ -3636,13 +3652,6 @@ begin
 
   if (FGeoHTMLWindow <> nil) then
   begin
-(*
-    FGeoHTMLWindow.execScript
-      (FormatEx('ShowImageLocation({0}, {1}, "{2}", "{3}"); GotoLatLng({0}, {1});',
-      [DoubleToStringPoint(FMapLocationLat), DoubleToStringPoint(FMapLocationLng),
-      ExtractFileName(FSelectedInfo.FileName),
-      IIF(YearOf(Date) > 1900, FormatDateTime('yyyy.mm.dd HH:MM', Date), '')]), 'JavaScript');  *)
-
     if FIsPanaramio then
       FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []), 'JavaScript')
     else
@@ -4478,7 +4487,7 @@ begin
       end else
         ImageEditorLink.Visible := False;
 
-      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount = 1) and CanSaveEXIF(FSelectedInfo.FileName) then
+      if not IsDevicePath(FSelectedInfo.FileName) and CanSaveEXIF(FSelectedInfo.FileName) then
       begin
         if (FSelectedInfo.GeoLocation <> nil)  then
           WlGeoLocation.Text := L('Display on map')
@@ -7587,26 +7596,25 @@ begin
         for I := 0 to ElvMain.Items.Count - 1 do
           if ElvMain.Items[I].Selected then
           begin
-            index := ItemIndexToMenuIndex(I);
+            Index := ItemIndexToMenuIndex(I);
             if FSelectedInfo.FileType <> EXPLORER_ITEM_MYCOMPUTER then
-              FSelectedInfo.FileType := FFilesInfo[index].FileType;
+              FSelectedInfo.FileType := FFilesInfo[Index].FileType;
             if FFilesInfo.Count - 1 < index then
               Exit;
-            if (FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) or
-               (FFilesInfo[index].FileType = EXPLORER_ITEM_FILE) or
-               (FFilesInfo[index].FileType = EXPLORER_ITEM_EXEFILE) or
-               (FFilesInfo[index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
-               (FFilesInfo[index].FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
-               (FFilesInfo[index].FileType = EXPLORER_ITEM_DEVICE_FILE) then
+            if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or
+               (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or
+               (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) or
+               (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+               (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+               (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_FILE) then
             begin
-              FSelectedInfo.Size := FSelectedInfo.Size + FFilesInfo[index].FileSize;
+              FSelectedInfo.Size := FSelectedInfo.Size + FFilesInfo[Index].FileSize;
             end;
           end
-      end
-      else
+      end else
         FSelectedInfo.Size := -1;
 
-      FSelectedInfo.FileName := Format(L('%d objects'), [SelCount]);
+      FSelectedInfo.FileName :=  Format(L('%d objects'), [SelCount]);
       FSelectedInfo.FileTypeW := '';
       FSelectedInfo.Id := 0;
       FSelectedInfo.Width := 0;
