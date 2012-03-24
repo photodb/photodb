@@ -240,20 +240,6 @@ object ExplorerForm: TExplorerForm
           Font.Style = []
           ParentFont = False
         end
-        object DBInfoLabel: TLabel
-          Tag = 2
-          Left = 8
-          Top = 168
-          Width = 73
-          Height = 13
-          Caption = 'DataBase Info:'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
         object AccessLabel: TLabel
           Left = 8
           Top = 208
@@ -754,6 +740,7 @@ object ExplorerForm: TExplorerForm
           Cursor = crHandPoint
           Text = 'Share'
           Visible = False
+          OnClick = WlShareClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -2366,8 +2353,8 @@ object ExplorerForm: TExplorerForm
     AutoPopup = False
     Images = ImSearchMode
     OnPopup = PmSearchModePopup
-    Left = 656
-    Top = 288
+    Left = 360
+    Top = 608
     object Searchfiles1: TMenuItem
       Caption = 'Search files'
       ImageIndex = 0
@@ -2386,8 +2373,8 @@ object ExplorerForm: TExplorerForm
   end
   object ImSearchMode: TImageList
     ColorDepth = cd32Bit
-    Left = 656
-    Top = 384
+    Left = 200
+    Top = 536
   end
   object ImPathDropDownMenu: TImageList
     ColorDepth = cd32Bit

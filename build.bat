@@ -25,6 +25,7 @@ cd photodb/resources
 "%BRCC32%" explorer_search.rc
 "%BRCC32%" PathSeparator.rc
 "%BRCC32%" PicturesImport.rc
+"%BRCC32%" SharePictures.rc
 
 cd ..
 cd ..

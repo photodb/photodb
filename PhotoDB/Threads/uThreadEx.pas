@@ -3,7 +3,14 @@ unit uThreadEx;
 interface
 
 uses
-  Classes, uThreadForm, Windows, SyncObjs, uDBThread, uGOM, uRuntime, SysUtils;
+  Classes,
+  uThreadForm,
+  Windows,
+  SyncObjs,
+  uDBThread,
+  uGOM,
+  uRuntime,
+  SysUtils;
 
 type
   TThreadExNotify = procedure(Sender: TObject; StateID: TGUID) of object;

@@ -30,14 +30,13 @@ type
   TProgressActionForm = class(TDBForm)
     OperationCounter: TDmProgress;
     OperationProgress: TDmProgress;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
+    LbActiveTask: TLabel;
+    LbTasks: TLabel;
+    LbInfo: TLabel;
     ImMain: TImage;
-    ApplicationEvents1: TApplicationEvents;
+    AeMain: TApplicationEvents;
     procedure FormCreate(Sender: TObject);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormShow(Sender: TObject);
@@ -59,8 +58,6 @@ type
     procedure SetOperationCount(const Value: Int64);
     procedure SetOperationPosition(const Value: Int64);
     procedure SetCanClosedByUser(const Value: Boolean);
-    procedure WMActivate(var message: TWMActivate); message WM_ACTIVATE;
-    procedure WMSyscommand(var message: TWmSysCommand); message WM_SYSCOMMAND;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -100,13 +97,13 @@ type
     procedure RemoveProgress(Progress: TForm);
     function IsProgress(Progress: TProgressActionForm): Boolean;
     function ProgressCount: Integer;
-    property Items[Index : Integer] : TProgressActionForm read GetItem; default;
+    property Items[Index: Integer] : TProgressActionForm read GetItem; default;
   end;
 
 function GetProgressWindow(Background: Boolean = False): TProgressActionForm;
 
 var
-  ManagerProgresses : TManagerProgresses = nil;
+  ManagerProgresses: TManagerProgresses = nil;
 
 implementation
 
@@ -141,16 +138,15 @@ begin
   FLoading := False;
   FCanClosedByUser := False;
   DoubleBuffered := True;
-  GOM.AddObj(Self);
 end;
 
 procedure TProgressActionForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Label3.Caption := L('Please wait while the program performs the current operation and updates the collection.');
-    Label2.Caption := L('Tasks') + ':';
-    Label1.Caption := L('Current action') + ':';
+    LbInfo.Caption := L('Please wait while the program performs the current operation and updates the collection.');
+    LbTasks.Caption := L('Tasks') + ':';
+    LbActiveTask.Caption := L('Current action') + ':';
     Caption := L('Action is performed');
     OperationCounter.Text := L('Processing... (&%%)');
     OperationProgress.Text := L('Processing... (&%%)');
@@ -178,7 +174,7 @@ end;
 
 procedure TProgressActionForm.SetAlternativeText(Text: string);
 begin
-  Label3.Caption := Text;
+  LbInfo.Caption := Text;
 end;
 
 procedure TProgressActionForm.SetLoading(const Value: Boolean);
@@ -226,11 +222,11 @@ begin
   ReCount;
 end;
 
-procedure TProgressActionForm.ApplicationEvents1Message(var Msg: TagMSG; var Handled: Boolean);
+procedure TProgressActionForm.AeMainMessage(var Msg: TagMSG; var Handled: Boolean);
 begin
   if not CanClosedByUser then
     if Active then
-      if Msg.message = 260 then
+      if Msg.message = WM_SYSKEYDOWN then
         Msg.message := 0;
 end;
 
@@ -285,7 +281,6 @@ end;
 
 procedure TProgressActionForm.FormDestroy(Sender: TObject);
 begin
-  GOM.RemoveObj(Self);
   ManagerProgresses.RemoveProgress(Self);
 end;
 
@@ -332,35 +327,6 @@ begin
   inherited CreateParams(Params);
   if IsWindowsVista then
     Params.ExStyle := Params.ExStyle and not WS_EX_TOOLWINDOW or WS_EX_APPWINDOW;
-end;
-
-procedure TProgressActionForm.WMActivate(var message: TWMActivate);
-begin
-  if (message.Active = WA_ACTIVE) and not IsWindowEnabled(Handle) and IsWindowsVista then
-  begin
-    SetActiveWindow(Application.Handle);
-    message.Result := 0;
-  end
-  else
-    inherited;
-end;
-
-procedure TProgressActionForm.WMSyscommand(var Message: TWmSysCommand);
-begin
-  case (Message.CmdType and $FFF0) of
-    SC_MINIMIZE:
-    begin
-      ShowWindow(Handle, SW_MINIMIZE);
-      Message.Result := 0;
-    end;
-    SC_RESTORE:
-    begin
-      ShowWindow(Handle, SW_RESTORE);
-      Message.Result := 0;
-    end;
-  else
-    inherited;
-  end;
 end;
 
 procedure TProgressActionForm.FormPaint(Sender: TObject);

@@ -8,48 +8,48 @@
   resources were bound to the produced executable.
 */
 
-#define Vcl_Imaging_GIFConsts_sEmptyImage 64512
-#define Vcl_Imaging_GIFConsts_sMultipleGCE 64513
-#define Vcl_Imaging_GIFConsts_sNoPalette 64514
-#define Vcl_Imaging_GIFConsts_sGIFImageFile 64515
-#define Vcl_Imaging_GIFConsts_sProgressLoading 64516
-#define Vcl_Imaging_GIFConsts_sProgressSaving 64517
-#define Vcl_Imaging_GIFConsts_sProgressConverting 64518
-#define Vcl_Imaging_GIFConsts_sProgressRendering 64519
-#define Vcl_Imaging_GIFConsts_sProgressCopying 64520
-#define Vcl_Imaging_GIFConsts_sProgressOptimizing 64521
-#define Vcl_Imaging_GIFConsts_sBadExtensionInstance 64528
-#define Vcl_Imaging_GIFConsts_sBadBlockSize 64529
-#define Vcl_Imaging_GIFConsts_sBadBlock 64530
-#define Vcl_Imaging_GIFConsts_sUnsupportedClass 64531
-#define Vcl_Imaging_GIFConsts_sInvalidData 64532
-#define Vcl_Imaging_GIFConsts_sBadSize 64533
-#define Vcl_Imaging_GIFConsts_sScreenSizeExceeded 64534
-#define Vcl_Imaging_GIFConsts_sNoColorTable 64535
-#define Vcl_Imaging_GIFConsts_sBadPixelCoordinates 64536
-#define Vcl_Imaging_GIFConsts_sInvalidPixelFormat 64537
-#define Vcl_Imaging_GIFConsts_sBadDimension 64538
-#define Vcl_Imaging_GIFConsts_sNoDIB 64539
-#define Vcl_Imaging_GIFConsts_sInvalidStream 64540
-#define Vcl_Imaging_GIFConsts_sInvalidColor 64541
-#define Vcl_Imaging_GIFConsts_sInvalidBitSize 64542
-#define Vcl_Imaging_GIFConsts_sEmptyColorMap 64543
-#define uGoogleOAuth_rsRequestError 64544
-#define uGoogleOAuth_rsUnknownError 64545
-#define Vcl_Imaging_GIFConsts_sOutOfData 64546
-#define Vcl_Imaging_GIFConsts_sTooManyColors 64547
-#define Vcl_Imaging_GIFConsts_sBadColorIndex 64548
-#define Vcl_Imaging_GIFConsts_sBadColorIndexFixed 64549
-#define Vcl_Imaging_GIFConsts_sGIFErrorSaveEmpty 64550
-#define Vcl_Imaging_GIFConsts_sBadSignature 64551
-#define Vcl_Imaging_GIFConsts_sScreenBadColorSize 64552
-#define Vcl_Imaging_GIFConsts_sImageBadColorSize 64553
-#define Vcl_Imaging_GIFConsts_sUnknownExtension 64554
-#define Vcl_Imaging_GIFConsts_sBadExtensionLabel 64555
-#define Vcl_Imaging_GIFConsts_sOutOfMemDIB 64556
-#define Vcl_Imaging_GIFConsts_sDecodeTooFewBits 64557
-#define Vcl_Imaging_GIFConsts_sDecodeCircular 64558
-#define Vcl_Imaging_GIFConsts_sBadTrailer 64559
+#define Vcl_Imaging_GIFConsts_sNoPalette 64512
+#define Vcl_Imaging_GIFConsts_sGIFImageFile 64513
+#define Vcl_Imaging_GIFConsts_sProgressLoading 64514
+#define Vcl_Imaging_GIFConsts_sProgressSaving 64515
+#define Vcl_Imaging_GIFConsts_sProgressConverting 64516
+#define Vcl_Imaging_GIFConsts_sProgressRendering 64517
+#define Vcl_Imaging_GIFConsts_sProgressCopying 64518
+#define Vcl_Imaging_GIFConsts_sProgressOptimizing 64519
+#define uGoogleOAuth_rsRequestError 64520
+#define uGoogleOAuth_rsUnknownError 64521
+#define Vcl_Imaging_GIFConsts_sBadBlock 64528
+#define Vcl_Imaging_GIFConsts_sUnsupportedClass 64529
+#define Vcl_Imaging_GIFConsts_sInvalidData 64530
+#define Vcl_Imaging_GIFConsts_sBadSize 64531
+#define Vcl_Imaging_GIFConsts_sScreenSizeExceeded 64532
+#define Vcl_Imaging_GIFConsts_sNoColorTable 64533
+#define Vcl_Imaging_GIFConsts_sBadPixelCoordinates 64534
+#define Vcl_Imaging_GIFConsts_sInvalidPixelFormat 64535
+#define Vcl_Imaging_GIFConsts_sBadDimension 64536
+#define Vcl_Imaging_GIFConsts_sNoDIB 64537
+#define Vcl_Imaging_GIFConsts_sInvalidStream 64538
+#define Vcl_Imaging_GIFConsts_sInvalidColor 64539
+#define Vcl_Imaging_GIFConsts_sInvalidBitSize 64540
+#define Vcl_Imaging_GIFConsts_sEmptyColorMap 64541
+#define Vcl_Imaging_GIFConsts_sEmptyImage 64542
+#define Vcl_Imaging_GIFConsts_sMultipleGCE 64543
+#define Vcl_Imaging_GIFConsts_sOutOfData 64544
+#define Vcl_Imaging_GIFConsts_sTooManyColors 64545
+#define Vcl_Imaging_GIFConsts_sBadColorIndex 64546
+#define Vcl_Imaging_GIFConsts_sBadColorIndexFixed 64547
+#define Vcl_Imaging_GIFConsts_sGIFErrorSaveEmpty 64548
+#define Vcl_Imaging_GIFConsts_sBadSignature 64549
+#define Vcl_Imaging_GIFConsts_sScreenBadColorSize 64550
+#define Vcl_Imaging_GIFConsts_sImageBadColorSize 64551
+#define Vcl_Imaging_GIFConsts_sUnknownExtension 64552
+#define Vcl_Imaging_GIFConsts_sBadExtensionLabel 64553
+#define Vcl_Imaging_GIFConsts_sOutOfMemDIB 64554
+#define Vcl_Imaging_GIFConsts_sDecodeTooFewBits 64555
+#define Vcl_Imaging_GIFConsts_sDecodeCircular 64556
+#define Vcl_Imaging_GIFConsts_sBadTrailer 64557
+#define Vcl_Imaging_GIFConsts_sBadExtensionInstance 64558
+#define Vcl_Imaging_GIFConsts_sBadBlockSize 64559
 #define IdResourceStringsProtocols_RSOSSLAcceptLoop 64560
 #define IdResourceStringsProtocols_RSOSSLAcceptError 64561
 #define IdResourceStringsProtocols_RSOSSLAcceptFailed 64562
@@ -1028,8 +1028,6 @@
 #define System_SysConst_SInvalidOp 65535
 STRINGTABLE
 BEGIN
-	Vcl_Imaging_GIFConsts_sEmptyImage,	L"Image is empty"
-	Vcl_Imaging_GIFConsts_sMultipleGCE,	L"Frame contains multiple Graphic Control Extension blocks"
 	Vcl_Imaging_GIFConsts_sNoPalette,	L"Missing, invalid or empty palette"
 	Vcl_Imaging_GIFConsts_sGIFImageFile,	L"GIF Image"
 	Vcl_Imaging_GIFConsts_sProgressLoading,	L"Loading"
@@ -1038,8 +1036,8 @@ BEGIN
 	Vcl_Imaging_GIFConsts_sProgressRendering,	L"Rendering"
 	Vcl_Imaging_GIFConsts_sProgressCopying,	L"Copying"
 	Vcl_Imaging_GIFConsts_sProgressOptimizing,	L"Optimizing"
-	Vcl_Imaging_GIFConsts_sBadExtensionInstance,	L"Internal error: Extension Instance does not match Extension Label"
-	Vcl_Imaging_GIFConsts_sBadBlockSize,	L"Unsupported Application Extension block size"
+	uGoogleOAuth_rsRequestError,	L"Request error: %d - %s"
+	uGoogleOAuth_rsUnknownError,	L"Unknown error"
 	Vcl_Imaging_GIFConsts_sBadBlock,	L"Unknown GIF block type"
 	Vcl_Imaging_GIFConsts_sUnsupportedClass,	L"Object type not supported for operation"
 	Vcl_Imaging_GIFConsts_sInvalidData,	L"Invalid GIF data"
@@ -1054,8 +1052,8 @@ BEGIN
 	Vcl_Imaging_GIFConsts_sInvalidColor,	L"Color not in color table"
 	Vcl_Imaging_GIFConsts_sInvalidBitSize,	L"Invalid Bits Per Pixel value"
 	Vcl_Imaging_GIFConsts_sEmptyColorMap,	L"Color table is empty"
-	uGoogleOAuth_rsRequestError,	L"Request error: %d - %s"
-	uGoogleOAuth_rsUnknownError,	L"Unknown error"
+	Vcl_Imaging_GIFConsts_sEmptyImage,	L"Image is empty"
+	Vcl_Imaging_GIFConsts_sMultipleGCE,	L"Frame contains multiple Graphic Control Extension blocks"
 	Vcl_Imaging_GIFConsts_sOutOfData,	L"Premature end of data"
 	Vcl_Imaging_GIFConsts_sTooManyColors,	L"Color table overflow"
 	Vcl_Imaging_GIFConsts_sBadColorIndex,	L"Invalid color index"
@@ -1070,6 +1068,8 @@ BEGIN
 	Vcl_Imaging_GIFConsts_sDecodeTooFewBits,	L"Decoder bit buffer under-run"
 	Vcl_Imaging_GIFConsts_sDecodeCircular,	L"Circular decoder table entry"
 	Vcl_Imaging_GIFConsts_sBadTrailer,	L"Invalid Image trailer"
+	Vcl_Imaging_GIFConsts_sBadExtensionInstance,	L"Internal error: Extension Instance does not match Extension Label"
+	Vcl_Imaging_GIFConsts_sBadBlockSize,	L"Unsupported Application Extension block size"
 	IdResourceStringsProtocols_RSOSSLAcceptLoop,	L"Accept Loop"
 	IdResourceStringsProtocols_RSOSSLAcceptError,	L"Accept Error"
 	IdResourceStringsProtocols_RSOSSLAcceptFailed,	L"Accept Failed"
@@ -2173,6 +2173,8 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormPersonSuggest.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormCreatePerson.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitFileRenamerForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uOperationProgress.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormSharePhotos.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ExplorerUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImportImages\uFrmImportImagesLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\ImportImages\uFrmImportImagesOptions.dfm */
@@ -2182,7 +2184,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\UnitPasswordForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\CMDUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\Units\Share\uPicasaOAuth2.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\uFormSharePhotos.dfm */
+/* Resources\SharePictures.RES */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PhotoDB.tlb */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PhotoDB.res */
 /* D:\Dmitry\Delphi exe\Photo Database\PhotoDB\PhotoDB.drf */

@@ -15,7 +15,11 @@ uses
   pngimage,
   uInternetUtils,
   uGoogleOAuth,
-  uPhotoShareInterfaces;
+  uPhotoShareInterfaces,
+  uResources,
+  uTranslate,
+  uSettings,
+  Forms;
 
 const
   GOOGLE_APP_CLIENT_ID = '958093310635.apps.googleusercontent.com';
@@ -53,11 +57,13 @@ type
     FAuthorName: string;
     FUrl: string;
     FAvatarUrl: string;
+    FAvailableSpace: Int64;
   public
     constructor Create(AlbumXML: string);
     property AuthorName: string read FAuthorName;
     property Url: string read FUrl;
     property AvatarUrl: string read FAvatarUrl;
+    property AvailableSpace: Int64 read FAvailableSpace;
   end;
 
   TPicasaUserAlbumsInfo = class(TInterfacedObject, IPhotoServiceUserInfo)
@@ -69,6 +75,7 @@ type
     function GetUserAvatar(Bitmap: TBitmap): Boolean;
     function GetUserDisplayName: string;
     function GetHomeUrl: string;
+    function GetAvailableSpace: Int64;
     property UserDisplayName: string read GetUserDisplayName;
     property HomeUrl: string read GetHomeUrl;
   end;
@@ -126,17 +133,22 @@ type
     FSync: TCriticalSection;
     function GetAccessUrl: string;
     function CheckToken(Force: Boolean): Boolean;
+    procedure ResetAuth;
   public
     constructor Create;
     destructor Destroy; override;
     function IsFeatureSupported(Feature: string): Boolean;
     function InitializeService: Boolean;
+    function GetProviderName: string;
     function GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
     function GetAlbumList(Albums: TList<IPhotoServiceAlbum>): Boolean;
     function CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
     function UploadPhoto(AlbumID, FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; out Photo: IPhotoServiceItem): Boolean;
+    function GetProviderImage(Bitmap: TBitmap): Boolean;
     property AccessURL: string read GetAccessUrl;
   end;
+
+{$R SharePictures.res}
 
 implementation
 
@@ -176,94 +188,6 @@ begin
   Result:= EncodeDate(1970, 1, 1) + TimeStamp / MSecsPerDay;
 end;
 
-function GetMimeContentType(Content: Pointer; Len: integer): string;
-begin // see http://www.garykessler.net/library/file_sigs.html for magic numbers
-  Result := '';
-  if (Content <> nil) and (Len > 4) then
-    case PCardinal(Content)^ of
-    $04034B50: Result := 'application/zip'; // 50 4B 03 04
-    $46445025: Result := 'application/pdf'; //  25 50 44 46 2D 31 2E
-    $21726152: Result := 'application/x-rar-compressed'; // 52 61 72 21 1A 07 00
-    $AFBC7A37: Result := 'application/x-7z-compressed';  // 37 7A BC AF 27 1C
-    $75B22630: Result := 'audio/x-ms-wma'; // 30 26 B2 75 8E 66
-    $9AC6CDD7: Result := 'video/x-ms-wmv'; // D7 CD C6 9A 00 00
-    $474E5089: Result := 'image/png'; // 89 50 4E 47 0D 0A 1A 0A
-    $38464947: Result := 'image/gif'; // 47 49 46 38
-    $002A4949, $2A004D4D, $2B004D4D:
-      Result := 'image/tiff'; // 49 49 2A 00 or 4D 4D 00 2A or 4D 4D 00 2B
-    $E011CFD0: // Microsoft Office applications D0 CF 11 E0 = DOCFILE
-      if Len > 600 then
-      case PWordArray(Content)^[256] of // at offset 512
-        $A5EC: Result := 'application/msword'; // EC A5 C1 00
-        $FFFD: // FD FF FF
-          case PByteArray(Content)^[516] of
-            $0E,$1C,$43: Result := 'application/vnd.ms-powerpoint';
-            $10,$1F,$20,$22,$23,$28,$29: Result := 'application/vnd.ms-excel';
-          end;
-      end;
-    else
-      case PCardinal(Content)^ and $00ffffff of
-        $685A42: Result := 'application/bzip2'; // 42 5A 68
-        $088B1F: Result := 'application/gzip'; // 1F 8B 08
-        $492049: Result := 'image/tiff'; // 49 20 49
-        $FFD8FF: Result := 'image/jpeg'; // FF D8 FF DB/E0/E1/E2/E3/E8
-        else
-          case PWord(Content)^ of
-            $4D42: Result := 'image/bmp'; // 42 4D
-          end;
-      end;
-    end;
-end;
-
-function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap): Boolean;
-var
-  MS: TMemoryStream;
-  Jpeg: TJPEGImage;
-  Png: TPngImage;
-  Mime: string;
-begin
-  Result := False;
-  MS := TMemoryStream.Create;
-  try
-    if Url <> '' then
-    begin
-      if LoadStreamFromURL(Url, MS) and (MS.Size > 0) then
-      begin
-        Mime := GetMimeContentType(MS.Memory, MS.Size);
-
-        MS.Seek(0, soFromBeginning);
-
-        if Mime = 'image/jpeg' then
-        begin
-          Jpeg := TJPEGImage.Create;
-          try
-            Jpeg.LoadFromStream(MS);
-            Bitmap.Assign(Jpeg);
-            Result := True;
-          finally
-            F(Jpeg);
-          end;
-        end;
-
-        if Mime = 'image/png' then
-        begin
-          Png := TPngImage.Create;
-          try
-            Png.LoadFromStream(MS);
-            Bitmap.Assign(Png);
-            Result := True;
-          finally
-            F(Png);
-          end;
-        end;
-
-      end;
-    end;
-  finally
-    F(MS);
-  end;
-end;
-
 function FindNode(ParentNode: IXMLDOMNode; Name: string): IXMLDOMNode;
 var
   I: Integer;
@@ -294,7 +218,7 @@ begin
         var
           Form: TFormPicasaOAuth;
         begin
-          Form := TFormPicasaOAuth.Create(nil, Self);
+          Form := TFormPicasaOAuth.Create(Screen.ActiveForm, Self);
           try
             Form.ShowModal;
             ApplicationCode := Form.ApplicationCode;
@@ -308,9 +232,12 @@ begin
         FOAuth.ResponseCode := ApplicationCode;
         FOAuth.GetAccessToken;
       end;
-    end;
+    end else
+      FOAuth.RefreshToken;
   end;
   Result := FOAuth.Access_token <> '';
+  if Result then
+    Settings.WriteString('PhotoShare', 'RefreshToken', FOAuth.Refresh_token);
 end;
 
 constructor TPicasaProvider.Create;
@@ -484,6 +411,25 @@ begin
     end;
   end;
 end;
+
+function TPicasaProvider.GetProviderImage(Bitmap: TBitmap): Boolean;
+var
+  Png: TPngImage;
+begin
+  Png := TResourceUtils.LoadGraphicFromRES<TPngImage>('PICASA_LOGO');
+  try
+    Bitmap.Assign(Png);
+    Result := True;
+  finally
+    F(Png);
+  end;
+end;
+
+function TPicasaProvider.GetProviderName: string;
+begin
+  Result := TA('Picasa web albums', 'Picasa');
+end;
+
 function TPicasaProvider.GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
 var
   AlbumsXML: string;
@@ -511,6 +457,7 @@ begin
       FOAuth.ClientID := GOOGLE_APP_CLIENT_ID;
       FOAuth.ClientSecret := GOOGLE_APP_CLIENT_SECRET;
       FOAuth.Scope := GOOGLE_PICASAWEB_ACCESS_POINT;
+      FOAuth.Refresh_token := Settings.ReadString('PhotoShare', 'RefreshToken', '');
     end;
     Result := True;
   finally
@@ -525,6 +472,15 @@ begin
   Result := Result or (Feature = PHOTO_PROVIDER_FEATURE_PRIVATE_ITEMS);
 end;
 
+procedure TPicasaProvider.ResetAuth;
+begin
+  if InitializeService then
+  begin
+    Settings.WriteString('PhotoShare', 'RefreshToken', '');
+    FOAuth.Refresh_token := '';
+  end;
+end;
+
 { TPicasaUserAlbumsInfo }
 
 constructor TPicasaUserAlbumsInfo.Create(AlbumXML: string);
@@ -536,6 +492,11 @@ destructor TPicasaUserAlbumsInfo.Destroy;
 begin
   F(FAlbumsInfo);
   inherited;
+end;
+
+function TPicasaUserAlbumsInfo.GetAvailableSpace: Int64;
+begin
+  Result := FAlbumsInfo.AvailableSpace;
 end;
 
 function TPicasaUserAlbumsInfo.GetHomeUrl: string;
@@ -562,11 +523,14 @@ var
   AuthorNode,
   NameNode,
   UrlNode,
-  AvatarNode: IXMLDOMNode;
+  AvatarNode,
+  QuotaLimitNode,
+  QuotaCurrentNode: IXMLDOMNode;
 begin
   FAuthorName := '';
   FUrl := '';
   FAvatarUrl := '';
+  FAvailableSpace := 0;
 
   FAlbumXML := AlbumXML;
   Doc := CreateXMLDocument;
@@ -581,6 +545,8 @@ begin
         NameNode := FindNode(AuthorNode, 'name');
         UrlNode := FindNode(AuthorNode, 'uri');
       end;
+      QuotaLimitNode := FindNode(DocumentNode, 'gphoto:quotalimit');
+      QuotaCurrentNode := FindNode(DocumentNode, 'gphoto:quotacurrent');
       AvatarNode := FindNode(DocumentNode, 'icon');
 
       if NameNode <> nil then
@@ -589,6 +555,9 @@ begin
         FUrl := UrlNode.text;
       if AvatarNode <> nil then
         FAvatarUrl := AvatarNode.text;
+
+      if (QuotaLimitNode <> nil) and (QuotaCurrentNode <> nil) then
+        FAvailableSpace := StrToInt64Def(QuotaLimitNode.text, 0) - StrToInt64Def(QuotaCurrentNode.text, 0);
     end;
   end;
 end;

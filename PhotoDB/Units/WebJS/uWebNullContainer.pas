@@ -23,7 +23,8 @@ interface
 
 uses
   Windows, ActiveX, SHDocVw,
-  IntfDocHostUIHandler;
+  IntfDocHostUIHandler,
+  Winapi.UrlMon, SecurityManager;
 
 type
 
@@ -217,6 +218,12 @@ end;
 
 function TWebNullWBContainer.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
+  if IsEqualGuid(IInternetSecurityManager, IID) and IsEqualGuid(IID, iid) then
+  begin
+    Result := TSecurityManager.Create(nil).Queryinterface(IInternetSecurityManager, Obj);
+    Exit;
+  end;
+
   if GetInterface(IID, Obj) then
     Result := S_OK
   else

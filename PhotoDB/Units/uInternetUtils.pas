@@ -4,6 +4,7 @@ interface
 
 uses
   Windows,
+  Graphics,
   Classes,
   SysUtils,
   uMemory,
@@ -11,6 +12,8 @@ uses
   EncdDecd,
   uDBBaseTypes,
   uSysUtils,
+  JPEG,
+  pngimage,
   IdSSLOpenSSL,
   idHTTP;
 
@@ -65,8 +68,98 @@ function EncodeURLElement(const Value: string): AnsiString;
 function DownloadFile(const Url: string; Encoding: TEncoding): string;
 function InternetTimeToDateTime(const Value: string) : TDateTime;
 function EncodeBase64Url(inputData: string): string;
+function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap): Boolean;
+function GetMimeContentType(Content: Pointer; Len: integer): string;
 
 implementation
+
+function GetMimeContentType(Content: Pointer; Len: integer): string;
+begin // see http://www.garykessler.net/library/file_sigs.html for magic numbers
+  Result := '';
+  if (Content <> nil) and (Len > 4) then
+    case PCardinal(Content)^ of
+    $04034B50: Result := 'application/zip'; // 50 4B 03 04
+    $46445025: Result := 'application/pdf'; //  25 50 44 46 2D 31 2E
+    $21726152: Result := 'application/x-rar-compressed'; // 52 61 72 21 1A 07 00
+    $AFBC7A37: Result := 'application/x-7z-compressed';  // 37 7A BC AF 27 1C
+    $75B22630: Result := 'audio/x-ms-wma'; // 30 26 B2 75 8E 66
+    $9AC6CDD7: Result := 'video/x-ms-wmv'; // D7 CD C6 9A 00 00
+    $474E5089: Result := 'image/png'; // 89 50 4E 47 0D 0A 1A 0A
+    $38464947: Result := 'image/gif'; // 47 49 46 38
+    $002A4949, $2A004D4D, $2B004D4D:
+      Result := 'image/tiff'; // 49 49 2A 00 or 4D 4D 00 2A or 4D 4D 00 2B
+    $E011CFD0: // Microsoft Office applications D0 CF 11 E0 = DOCFILE
+      if Len > 600 then
+      case PWordArray(Content)^[256] of // at offset 512
+        $A5EC: Result := 'application/msword'; // EC A5 C1 00
+        $FFFD: // FD FF FF
+          case PByteArray(Content)^[516] of
+            $0E,$1C,$43: Result := 'application/vnd.ms-powerpoint';
+            $10,$1F,$20,$22,$23,$28,$29: Result := 'application/vnd.ms-excel';
+          end;
+      end;
+    else
+      case PCardinal(Content)^ and $00ffffff of
+        $685A42: Result := 'application/bzip2'; // 42 5A 68
+        $088B1F: Result := 'application/gzip'; // 1F 8B 08
+        $492049: Result := 'image/tiff'; // 49 20 49
+        $FFD8FF: Result := 'image/jpeg'; // FF D8 FF DB/E0/E1/E2/E3/E8
+        else
+          case PWord(Content)^ of
+            $4D42: Result := 'image/bmp'; // 42 4D
+          end;
+      end;
+    end;
+end;
+
+function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap): Boolean;
+var
+  MS: TMemoryStream;
+  Jpeg: TJPEGImage;
+  Png: TPngImage;
+  Mime: string;
+begin
+  Result := False;
+  MS := TMemoryStream.Create;
+  try
+    if Url <> '' then
+    begin
+      if LoadStreamFromURL(Url, MS) and (MS.Size > 0) then
+      begin
+        Mime := GetMimeContentType(MS.Memory, MS.Size);
+
+        MS.Seek(0, soFromBeginning);
+
+        if Mime = 'image/jpeg' then
+        begin
+          Jpeg := TJPEGImage.Create;
+          try
+            Jpeg.LoadFromStream(MS);
+            Bitmap.Assign(Jpeg);
+            Result := True;
+          finally
+            F(Jpeg);
+          end;
+        end;
+
+        if Mime = 'image/png' then
+        begin
+          Png := TPngImage.Create;
+          try
+            Png.LoadFromStream(MS);
+            Bitmap.Assign(Png);
+            Result := True;
+          finally
+            F(Png);
+          end;
+        end;
+
+      end;
+    end;
+  finally
+    F(MS);
+  end;
+end;
 
 function EncodeBase64Url(inputData: string): string;
 begin

@@ -250,6 +250,7 @@
     <translate name="Save current location for the image?" value="Сохранить текущее месторасположение для фото?" />	
     <translate name="Geo location can't be saved to this file type!" value="Месторасположение не может быть сохранено для данного типа файлов!" />	
 	<translate name="An error occurred while saving location: {0}!" value="Ошибка сохранения выбранного местоположения: {0}!" />
+	<translate name="Updating of location" value="Обновление месторасположения" />
 	<translate name="Convert" value="Конвертировать" />
     <translate name="Resize" value="Изменить размер" />
     <translate name="Rotate" value="Повернуть" />
@@ -262,7 +263,6 @@
     <translate name="Center" value="По центру" />
     <translate name="Tile" value="Замостить" />
     <translate name="Refresh info" value="Обновить информацию в базе" />
-    <translate name="Collection Info" value="Информация" />
     <translate name="Image editor" value="Редактор" />
     <translate name="Other tasks" value="Другие задачи" />
     <translate name="Export images" value="Экспорт изображений" />
@@ -2166,9 +2166,13 @@
 	<translate name="Photo shelf" value="Отложенные фото"/>
   </scope>
   <scope name="Picasa">
-	<translate name="Picasa authorisation" value="Авторизация на Picasa"/>
+	<translate name="Picasa authorisation" value="Авторизация на Picasa"/>	
   </scope>
   <scope name="PhotoShare">
 	<translate name="Share photos and videos" value="Поделиться фото и видео"/>
+	<translate name="(Available space: {0})" value="(доступно {0})"/>
+  </scope>
+  <scope name="OperationProgress">
+	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
   </scope>
 </language>

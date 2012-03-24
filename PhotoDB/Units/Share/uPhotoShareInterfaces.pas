@@ -19,8 +19,10 @@ type
     function GetUserAvatar(Bitmap: TBitmap): Boolean;
     function GetUserDisplayName: string;
     function GetHomeUrl: string;
+    function GetAvailableSpace: Int64;
     property UserDisplayName: string read GetUserDisplayName;
     property HomeUrl: string read GetHomeUrl;
+    property AvailableSpace: Int64 read GetAvailableSpace;
   end;
 
   IPhotoServiceItem = interface
@@ -57,10 +59,12 @@ type
 
   IPhotoShareProvider = interface
     function InitializeService: Boolean;
+    function GetProviderName: string;
     function GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
     function GetAlbumList(Albums: TList<IPhotoServiceAlbum>): Boolean;
     function CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
     function IsFeatureSupported(Feature: string): Boolean;
+    function GetProviderImage(Bitmap: TBitmap): Boolean;
   end;
 
   TPhotoShareManager = class(TObject)

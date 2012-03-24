@@ -589,7 +589,7 @@ begin
     OneOperation := True;
     MaxPosCurrentOperation := 100;
     if Text <> '' then
-      Label1.Caption := Text;
+      LbInfo.Caption := Text;
     Result := GUIDToString(WindowID);
   end;
 end;

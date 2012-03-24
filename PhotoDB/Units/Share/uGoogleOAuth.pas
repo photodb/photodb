@@ -10,7 +10,8 @@ uses
   IdSSLOpenSSL,
   IdException,
   idUri,
-  uInternetUtils;
+  uInternetUtils,
+  uTranslate;
 
 resourcestring
   rsRequestError = 'Request error: %d - %s';
@@ -196,7 +197,7 @@ const
 
 function TOAuth.AccessURL: string;
 begin
-  Result := Format(oauth_url, [ClientID, redirect_uri, Scope]);
+  Result := Format(oauth_url, [ClientID, redirect_uri, Scope]) + '&hl=' + TTranslateManager.Instance.Language;;
 end;
 
 constructor TOAuth.Create;

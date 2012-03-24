@@ -21,21 +21,21 @@ object ProgressActionForm: TProgressActionForm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object LbActiveTask: TLabel
     Left = 8
     Top = 96
     Width = 74
     Height = 13
     Caption = 'Current Action:'
   end
-  object Label2: TLabel
+  object LbTasks: TLabel
     Left = 8
     Top = 56
     Width = 31
     Height = 13
     Caption = 'Tasks:'
   end
-  object Label3: TLabel
+  object LbInfo: TLabel
     Left = 48
     Top = 8
     Width = 249
@@ -153,8 +153,8 @@ object ProgressActionForm: TProgressActionForm
     View = dm_pr_cool
     Inverse = False
   end
-  object ApplicationEvents1: TApplicationEvents
-    OnMessage = ApplicationEvents1Message
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
     Left = 136
     Top = 16
   end

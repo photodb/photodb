@@ -140,6 +140,9 @@ uses
   uExifUtils,
   uGeoLocation,
   uBrowserEmbedDraw,
+  SecurityManager,
+  UrlMon,
+
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
@@ -287,7 +290,6 @@ type
     DimensionsLabel: TLabel;
     DesktopLink: TWebLink;
     DeleteLink: TWebLink;
-    DBInfoLabel: TLabel;
     CopyToLink: TWebLink;
     AddLink: TWebLink;
     AccessLabel: TLabel;
@@ -601,6 +603,7 @@ type
     procedure WlGoToShelfClick(Sender: TObject);
     procedure WlClearClick(Sender: TObject);
     procedure TmrDelayedStartTimer(Sender: TObject);
+    procedure WlShareClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -679,6 +682,8 @@ type
     FGeoLocationMapReady: Boolean;
     FWebBorwserFactory: IElementBehaviorFactory;
     FWebJSContainer: TWebJSExternalContainer;
+    FSecurityManager: IInternetSecurityManager;
+    FZoneManager: IInternetZoneManager;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -763,6 +768,7 @@ type
     procedure ClearMap;
     procedure SaveCurrentImageInfoToMap;
     procedure ClearGeoLocation;
+    function CanSaveGeoLocation: Boolean;
 
     //JS callbacks
     function CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint; safecall;
@@ -863,7 +869,9 @@ uses
   UnitUpdateDBObject,
   uFormSteganography,
   UnitBigImagesSize,
-  UnitNewGroupForm;
+  UnitNewGroupForm,
+  uOperationProgress,
+  uFormSharePhotos;
 
 {$R *.dfm}
 
@@ -3596,26 +3604,90 @@ end;
 
 procedure TExplorerForm.WlSaveLocationClick(Sender: TObject);
 var
+  I, Index: Integer;
   GeoLocation: TGeoLocation;
+  Progress: TOperationProgress;
+  UpdatingDone: Boolean;
+  EI: TExplorerFileInfo;
 begin
-  if CanSaveEXIF(FSelectedInfo.FileName) then
+  if CanSaveGeoLocation then
   begin
-    GeoLocation := TGeoLocation.Create;
+    Progress := TOperationProgress.Create(Self);
     try
-      GeoLocation.Latitude := FMapLocationLat;
-      GeoLocation.Longitude := FMapLocationLng;
+      GeoLocation := TGeoLocation.Create;
       try
-        if UpdateFileGeoInfo(FSelectedInfo.FileName, GeoLocation, True) then
-          WlSaveLocation.Enabled := False;
-      except
-        on e: Exception do
-          MessageBoxDB(Handle, FormatEx(L('An error occurred while saving location: {0}!'), [e.Message]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        Progress.Text := L('Updating of location');
+
+        GeoLocation.Latitude := FMapLocationLat;
+        GeoLocation.Longitude := FMapLocationLng;
+        try
+          UpdatingDone := True;
+
+          Progress.Max := SelCount;
+          Progress.Position := 0;
+
+          if SelCount > 1 then
+            Progress.Show;
+
+          for I := 0 to ElvMain.Items.Count - 1 do
+            if ElvMain.Items[I].Selected then
+            begin
+              Index := ItemIndexToMenuIndex(I);
+              EI := FFilesInfo[Index];
+              if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
+              begin
+                if not UpdateFileGeoInfo(EI.FileName, GeoLocation, True) then
+                  UpdatingDone := False;
+
+                Progress.Position := Progress.Position + 1;
+                if Progress.Closed then
+                  Break;
+              end;
+            end;
+
+          if UpdatingDone then
+            WlSaveLocation.Enabled := False;
+        except
+          on e: Exception do
+            MessageBoxDB(Handle, FormatEx(L('An error occurred while saving location: {0}!'), [e.Message]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        end;
+      finally
+        F(GeoLocation);
       end;
     finally
-      F(GeoLocation);
+      F(Progress);
     end;
   end else
     MessageBoxDB(Handle, Format(L('Geo location can''t be saved to this file type!'), []), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+end;
+
+procedure TExplorerForm.WlShareClick(Sender: TObject);
+var
+  I, Index: Integer;
+  Files: TStrings;
+  EI: TExplorerFileInfo;
+begin
+  Files := TStringList.Create;
+  try
+    for I := 0 to ElvMain.Items.Count - 1 do
+      if ElvMain.Items[I].Selected then
+      begin
+        Index := ItemIndexToMenuIndex(I);
+        EI := FFilesInfo[Index];
+
+        if   (EI.FileType = EXPLORER_ITEM_IMAGE)
+          or (EI.FileType = EXPLORER_ITEM_DEVICE_IMAGE)
+          or ((EI.FileType = EXPLORER_ITEM_DEVICE_VIDEO) and CanShareVideo(EI.FileName))
+          or ((EI.FileType = EXPLORER_ITEM_FILE)         and CanShareVideo(EI.FileName)) then
+          Files.Add(EI.FileName);
+      end;
+
+    if Files.Count > 0 then
+      SharePictures(Self, Files);
+  finally
+    F(Files);
+  end;
+
 end;
 
 procedure TExplorerForm.MapStarted;
@@ -3666,6 +3738,36 @@ begin
   Settings.WriteString('Explorer', 'MapLng', DoubleToStringPoint(Lng));
 end;
 
+function TExplorerForm.CanSaveGeoLocation: Boolean;
+var
+  SC, I, Index: Integer;
+  EI: TExplorerFileInfo;
+begin
+  Result := False;
+
+  SC := SelCount;
+  if SC = 0 then
+    Exit(False);
+
+  if SC = 1 then
+  begin
+    Result := not IsDevicePath(FSelectedInfo.FileName) and CanSaveEXIF(FSelectedInfo.FileName);
+    Exit;
+  end;
+
+  for I := 0 to ElvMain.Items.Count - 1 do
+    if ElvMain.Items[I].Selected then
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      EI := FFilesInfo[Index];
+      if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+end;
+
 function TExplorerForm.CanSaveLocation(Lat: Double; Lng: Double; Value: Shortint): Shortint;
 begin
   Result := 0;
@@ -3674,7 +3776,7 @@ begin
     WlSaveLocation.Enabled := False;
     Exit;
   end;
-  if CanSaveEXIF(FSelectedInfo.FileName) then
+  if CanSaveGeoLocation then
   begin
     FMapLocationLat := Lat;
     FMapLocationLng := Lng;
@@ -3738,6 +3840,8 @@ var
   Stream: TMemoryStream;
   SW: TStreamWriter;
   MapHTML, S: string;
+  dwZone: Cardinal;
+  ZA: TZoneAttributes;
 begin
   if FGeoHTMLWindow = nil then
   begin
@@ -3758,7 +3862,40 @@ begin
     WbGeoLocation.Tag := 1;
 
     FWebJSContainer := TWebJSExternalContainer.Create(WbGeoLocation, Self);
+    CoInternetCreateSecurityManager(WbGeoLocation, FSecurityManager, 0);
+    CoInternetCreateZoneManager(WbGeoLocation, FZoneManager, 0);
     WbGeoLocation.Navigate('about:blank');
+
+    begin
+      FSecurityManager.MapUrlToZone(PWideChar(WideString(WbGeoLocation.LocationURL)), dwZone, 0);
+      FZoneManager.GetZoneAttributes(dwZone, ZA);
+      (*
+
+
+function TMyWebBrowser.QueryService(const rsid, iid: TGUID;
+  out Obj): HRESULT;
+begin
+  if IsEqualGuid(IInternetSecurityManager, rsid) and IsEqualGuid(rsid, iid) then
+     Result := Self.Queryinterface(IInternetSecurityManager, Obj)
+   else
+     Result := E_NOINTERFACE;
+end;
+
+....
+
+function TMyWebBrowser.ProcessUrlAction(pwszUrl: LPCWSTR;
+  dwAction: DWORD; pPolicy: Pointer; cbPolicy: DWORD; pContext: Pointer;
+  cbContext, dwFlags, dwReserved: DWORD): HResult;
+begin
+  if CheckUrl(pwszUrl) then
+    Result := S_OK
+  else
+    Result := INET_E_DEFAULT_ACTION;
+end;
+
+      *)
+    end;
+
     if Assigned(WbGeoLocation.Document) then
     begin
        Stream := TMemoryStream.Create;
@@ -4398,11 +4535,7 @@ begin
     if FSelectedInfo.ID <> 0 then
     begin
       IDLabel.Show;
-      {DBInfoLabel.Show;
 
-      DBInfoLabel.Top := NewTop + H;
-      NewTop := DBInfoLabel.Top + DBInfoLabel.Height + H;
-                                         }
       IDLabel.Caption := Format(L('ID = %d'), [FSelectedInfo.ID]);
       IDLabel.Top := NewTop + H;
       NewTop := IDLabel.BoundsRect.Bottom;
@@ -4427,7 +4560,6 @@ begin
 
     end else
     begin
-      DBInfoLabel.Hide;
       IDLabel.Hide;
       RatingLabel.Hide;
       AccessLabel.Hide;
@@ -4487,7 +4619,7 @@ begin
       end else
         ImageEditorLink.Visible := False;
 
-      if not IsDevicePath(FSelectedInfo.FileName) and CanSaveEXIF(FSelectedInfo.FileName) then
+      if CanSaveGeoLocation then
       begin
         if (FSelectedInfo.GeoLocation <> nil)  then
           WlGeoLocation.Text := L('Display on map')
@@ -5780,7 +5912,6 @@ begin
     Center1.Caption := L('Center');
     Tile1.Caption := L('Tile');
     RefreshID1.Caption := L('Refresh info');
-    DBInfoLabel.Caption := L('Collection Info') + ':';
     ImageEditor2.Caption := L('Image editor');
 
     Othertasks1.Caption := L('Other tasks');

@@ -313,7 +313,6 @@ begin
   finally
     EndScreenUpdate(Handle, False);
   end;
-  LockWindowUpdate(0);
 end;
 
 procedure TFormHistory.ReAddAll1Click(Sender: TObject);
