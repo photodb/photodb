@@ -14,6 +14,7 @@ object FormSharePhotos: TFormSharePhotos
   OldCreateOrder = False
   Position = poOwnerFormCenter
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     559
     406)
@@ -205,14 +206,14 @@ object FormSharePhotos: TFormSharePhotos
     StretchImage = True
     CanClick = True
   end
-  object WlUserAction: TWebLink
-    Left = 411
+  object WlChangeUser: TWebLink
+    Left = 446
     Top = 27
-    Width = 101
+    Width = 66
     Height = 13
     Cursor = crHandPoint
     Anchors = [akTop, akRight]
-    Text = 'Change user / Login'
+    Text = 'Change user'
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0
@@ -257,7 +258,7 @@ object FormSharePhotos: TFormSharePhotos
     object Panel1: TPanel
       Left = 3
       Top = 3
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       ParentBackground = False
@@ -285,7 +286,7 @@ object FormSharePhotos: TFormSharePhotos
     object Panel2: TPanel
       Left = 3
       Top = 50
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
@@ -366,7 +367,7 @@ object FormSharePhotos: TFormSharePhotos
     object Panel3: TPanel
       Left = 3
       Top = 97
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
@@ -447,7 +448,7 @@ object FormSharePhotos: TFormSharePhotos
     object Panel4: TPanel
       Left = 3
       Top = 144
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 3
@@ -528,7 +529,7 @@ object FormSharePhotos: TFormSharePhotos
     object Panel5: TPanel
       Left = 3
       Top = 191
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 4
@@ -609,7 +610,7 @@ object FormSharePhotos: TFormSharePhotos
     object Panel6: TPanel
       Left = 3
       Top = 238
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 5
@@ -690,7 +691,7 @@ object FormSharePhotos: TFormSharePhotos
     object Panel7: TPanel
       Left = 3
       Top = 285
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 6
@@ -791,13 +792,13 @@ object FormSharePhotos: TFormSharePhotos
     object Panel8: TPanel
       Left = 3
       Top = 3
-      Width = 374
+      Width = 370
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       ParentBackground = False
       TabOrder = 0
       DesignSize = (
-        374
+        370
         41)
       object Image3: TImage
         Left = 3
@@ -898,7 +899,7 @@ object FormSharePhotos: TFormSharePhotos
         CanClick = True
       end
       object LoadingSign1: TLoadingSign
-        Left = 354
+        Left = 350
         Top = 22
         Width = 16
         Height = 16
@@ -907,7 +908,6 @@ object FormSharePhotos: TFormSharePhotos
         Anchors = [akRight, akBottom]
         SignColor = clBlack
         MaxTransparencity = 255
-        ExplicitLeft = 342
       end
       object WebLink6: TWebLink
         Left = 108

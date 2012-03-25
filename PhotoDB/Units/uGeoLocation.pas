@@ -202,16 +202,17 @@ const
 	  '}'+
     ''+
 
-    'function ZoomIn() { '+
-    '  map.setZoom(19); '+
-    '  GotoLatLng(currentLat, currentLng); '+
-    '  var latlng = new google.maps.LatLng(currentLat, currentLng); '+
-    '  maxZoomService.getMaxZoomAtLatLng(latlng, function(response) { '+
-    '    if (response.status == google.maps.MaxZoomStatus.OK) { '+
-    '      map.setZoom(response.zoom); '+
-    '    }   '+
-    '  }); '+
+    '  function showMaxZoom() { '+
+    '    maxZoomService.getMaxZoomAtLatLng(map.getCenter(), function(response) { '+
+    '      if (response.status == google.maps.MaxZoomStatus.OK) { '+
+    '        map.setZoom(response.zoom); '+
+    '      } '+
+    '    }); '+
+    '  } '+
 
+    'function ZoomIn() { '+
+    '  GotoLatLng(currentLat, currentLng); '+
+    '  setTimeout("showMaxZoom()", 1); ' +
     '}'+
     ''+
 

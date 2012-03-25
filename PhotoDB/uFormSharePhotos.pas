@@ -34,7 +34,7 @@ type
   TFormSharePhotos = class(TThreadForm)
     ImProviderImage: TImage;
     WlUserName: TWebLink;
-    WlUserAction: TWebLink;
+    WlChangeUser: TWebLink;
     ImAvatar: TImage;
     LbProviderInfo: TLabel;
     BtnShare: TButton;
@@ -80,13 +80,16 @@ type
     LsAuthorisation: TLoadingSign;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    FFiles: TStrings;
     procedure LoadLanguage;
     procedure EnableControls(Value: Boolean);
     procedure LoadProviderInfo;
     procedure UpdateUserInfo(Provider: IPhotoShareProvider; Info: IPhotoServiceUserInfo);
     procedure ErrorLoadingInfo;
+    procedure LoadImageList;
   protected
     { Protected declarations }
     function GetFormID: string; override;
@@ -128,19 +131,27 @@ procedure TFormSharePhotos.EnableControls(Value: Boolean);
 begin
   BtnShare.Enabled := Value;
   WlUserName.Enabled := Value;
-  WlUserAction.Enabled := Value;
+  WlChangeUser.Enabled := Value;
 end;
 
 procedure TFormSharePhotos.Execute(FileList: TStrings);
 begin
+  FFiles.Assign(FileList);
+  LoadImageList;
   LoadProviderInfo;
   ShowModal;
 end;
 
 procedure TFormSharePhotos.FormCreate(Sender: TObject);
 begin
+  FFiles := TStringList.Create;
   LoadLanguage;
   EnableControls(False);
+end;
+
+procedure TFormSharePhotos.FormDestroy(Sender: TObject);
+begin
+  F(FFiles);
 end;
 
 function TFormSharePhotos.GetFormID: string;
@@ -148,11 +159,20 @@ begin
   Result := 'PhotoShare';
 end;
 
+procedure TFormSharePhotos.LoadImageList;
+var
+  I: Integer;
+begin
+  for I := 0 to FFiles.Count - 1 do
+    
+end;
+
 procedure TFormSharePhotos.LoadLanguage;
 begin
   BeginTranslate;
   try
     Caption := L('Share photos and videos');
+    WlChangeUser.Text := L('Change user');
   finally
     EndTranslate;
   end;

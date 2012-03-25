@@ -2171,6 +2171,7 @@
   <scope name="PhotoShare">
 	<translate name="Share photos and videos" value="Поделиться фото и видео"/>
 	<translate name="(Available space: {0})" value="(доступно {0})"/>
+	<translate name="Change user" value="Сменить пользователя"/>
   </scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>

@@ -24,11 +24,11 @@ interface
 uses
   Windows, ActiveX, SHDocVw,
   IntfDocHostUIHandler,
-  Winapi.UrlMon, SecurityManager;
+  Winapi.UrlMon;
 
 type
 
-  TWebNullWBContainer = class(TObject, IUnknown, IOleClientSite, IDocHostUIHandler)
+  TWebNullWBContainer = class(TObject, IUnknown, IOleClientSite, IDocHostUIHandler, IServiceProvider, IInternetSecurityManager)
   private
     FHostedBrowser: TWebBrowser;
     // Registration method
@@ -76,6 +76,28 @@ type
       var ppchURLOut: POLESTR): HResult; stdcall;
     function FilterDataObject(const pDO: IDataObject;
       out ppDORet: IDataObject): HResult; stdcall;
+
+    //IServiceProvider
+    function QueryService(const rsid, iid: TGuid; out Obj): HResult; stdcall;
+
+    //IInternetSecurityManager
+    function SetSecuritySite(Site: IInternetSecurityMgrSite): HResult; stdcall;
+    function GetSecuritySite(out Site: IInternetSecurityMgrSite): HResult; stdcall;
+    function MapUrlToZone(pwszUrl: LPCWSTR; out dwZone: DWORD;
+      dwFlags: DWORD): HResult; stdcall;
+    function GetSecurityId(pwszUrl: LPCWSTR; pbSecurityId: Pointer;
+      var cbSecurityId: DWORD; dwReserved: DWORD): HResult; stdcall;
+    function ProcessUrlAction(pwszUrl: LPCWSTR; dwAction: DWORD;
+      pPolicy: Pointer; cbPolicy: DWORD; pContext: Pointer; cbContext: DWORD;
+      dwFlags, dwReserved: DWORD): HResult; stdcall;
+    function QueryCustomPolicy(pwszUrl: LPCWSTR; const guidKey: TGUID;
+      out pPolicy: Pointer; out cbPolicy: DWORD; pContext: Pointer; cbContext: DWORD;
+      dwReserved: DWORD): HResult; stdcall;
+    function SetZoneMapping(dwZone: DWORD; lpszPattern: LPCWSTR;
+      dwFlags: DWORD): HResult; stdcall;
+    function GetZoneMappings(dwZone: DWORD; out enumString: IEnumString;
+      dwFlags: DWORD): HResult; stdcall;
+
   public
     constructor Create(const HostedBrowser: TWebBrowser);
     destructor Destroy; override;
@@ -218,16 +240,21 @@ end;
 
 function TWebNullWBContainer.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
-  if IsEqualGuid(IInternetSecurityManager, IID) and IsEqualGuid(IID, iid) then
-  begin
-    Result := TSecurityManager.Create(nil).Queryinterface(IInternetSecurityManager, Obj);
-    Exit;
-  end;
-
   if GetInterface(IID, Obj) then
     Result := S_OK
   else
     Result := E_NOINTERFACE;
+end;
+
+function TWebNullWBContainer.QueryService(const rsid, iid: TGuid;
+  out Obj): HResult;
+const
+  IID_InternetSecurityManager: TGUID = '{79eac9ee-baf9-11ce-8c82-00aa004ba90b}';
+begin
+  if IsEqualGuid(IID_InternetSecurityManager, rsid) and IsEqualGuid(rsid, iid) then
+     Result := Self.Queryinterface(IInternetSecurityManager, Obj)
+   else
+     Result := E_NOINTERFACE;
 end;
 
 function TWebNullWBContainer.RequestNewObjectLayout: HResult;
@@ -321,6 +348,59 @@ end;
 function TWebNullWBContainer._Release: Integer;
 begin
   Result := -1;
+end;
+
+function TWebNullWBContainer.GetSecurityId(pwszUrl: LPCWSTR;
+  pbSecurityId: Pointer; var cbSecurityId: DWORD; dwReserved: DWORD): HResult;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+
+function TWebNullWBContainer.GetSecuritySite(
+  out Site: IInternetSecurityMgrSite): HResult;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+
+function TWebNullWBContainer.GetZoneMappings(dwZone: DWORD;
+  out enumString: IEnumString; dwFlags: DWORD): HResult;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+
+function TWebNullWBContainer.MapUrlToZone(pwszUrl: LPCWSTR; out dwZone: DWORD;
+  dwFlags: DWORD): HResult;
+begin
+  dwZone := 2; //Trusted
+  Result := S_OK;
+end;
+
+function TWebNullWBContainer.ProcessUrlAction(pwszUrl: LPCWSTR; dwAction: DWORD;
+  pPolicy: Pointer; cbPolicy: DWORD; pContext: Pointer; cbContext, dwFlags,
+  dwReserved: DWORD): HResult;
+begin
+  Result := S_OK;
+  Dword(pPolicy^) := URLPOLICY_ALLOW;
+end;
+
+function TWebNullWBContainer.QueryCustomPolicy(pwszUrl: LPCWSTR;
+  const guidKey: TGUID; out pPolicy: Pointer; out cbPolicy: DWORD;
+  pContext: Pointer; cbContext, dwReserved: DWORD): HResult;
+begin
+  Result := S_OK;
+  Dword(pPolicy^) := URLPOLICY_ALLOW;
+end;
+
+function TWebNullWBContainer.SetSecuritySite(
+  Site: IInternetSecurityMgrSite): HResult;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+
+function TWebNullWBContainer.SetZoneMapping(dwZone: DWORD; lpszPattern: LPCWSTR;
+  dwFlags: DWORD): HResult;
+begin
+  Result := INET_E_DEFAULT_ACTION;
 end;
 
 end.

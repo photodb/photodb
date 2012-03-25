@@ -405,8 +405,7 @@ uses
   uPicasaOAuth2 in 'Units\Share\uPicasaOAuth2.pas' {FormPicasaOAuth},
   uFormSharePhotos in 'uFormSharePhotos.pas' {FormSharePhotos},
   uOperationProgress in 'uOperationProgress.pas' {FormOperationProgress},
-  uThreadTask in 'Threads\uThreadTask.pas',
-  SecurityManager in 'Units\WebJS\SecurityManager.pas';
+  uThreadTask in 'Threads\uThreadTask.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

@@ -140,8 +140,6 @@ uses
   uExifUtils,
   uGeoLocation,
   uBrowserEmbedDraw,
-  SecurityManager,
-  UrlMon,
 
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
@@ -375,7 +373,6 @@ type
     WlLearnMoreLink: TWebLink;
     SbCloseHelp: TSpeedButton;
     PnGeoLocation: TPanel;
-    WbGeoLocation: TWebBrowser;
     SplGeoLocation: TSplitter;
     PnGeoTop: TPanel;
     SbCloseGeoLocation: TSpeedButton;
@@ -682,8 +679,7 @@ type
     FGeoLocationMapReady: Boolean;
     FWebBorwserFactory: IElementBehaviorFactory;
     FWebJSContainer: TWebJSExternalContainer;
-    FSecurityManager: IInternetSecurityManager;
-    FZoneManager: IInternetZoneManager;
+    FWbGeoLocation: TWebBrowser;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -1773,9 +1769,10 @@ end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
 begin
-  ClearWebBrowser(WbGeoLocation);
+  ClearWebBrowser(FWbGeoLocation);
   ClearGeoLocation;
   F(FWebJSContainer);
+  F(FWbGeoLocation);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
 
@@ -3193,20 +3190,20 @@ begin
   if Msg.message = WM_MOUSEWHEEL then
   begin
     H := GetFocus;
-    if PnGeoLocation.Visible then
+    if PnGeoLocation.Visible and (FWbGeoLocation <> nil) then
     begin
       GetCursorPos(P);
-      P := WbGeoLocation.ScreenToClient(P);
-      if PtInRect(WbGeoLocation.ClientRect, P) then
+      P := FWbGeoLocation.ScreenToClient(P);
+      if PtInRect(FWbGeoLocation.ClientRect, P) then
       begin
-        if WbGeoLocation.Document <> nil then
+        if FWbGeoLocation.Document <> nil then
         begin
-          with WbGeoLocation do
+          with FWbGeoLocation do
           if Document <> nil then
             with Application as IOleobject do
-              DoVerb(OLEIVERB_UIACTIVATE, nil, WbGeoLocation, 0, Handle, GetClientRect);
+              DoVerb(OLEIVERB_UIACTIVATE, nil, FWbGeoLocation, 0, Handle, GetClientRect);
 
-          H := GetWindow(WbGeoLocation.Handle, GW_CHILD);
+          H := GetWindow(FWbGeoLocation.Handle, GW_CHILD);
           H := GetWindow(H, GW_CHILD); // this is handle that you need
 
           SendMessage(H, Msg.message, Msg.wParam, Msg.lParam);
@@ -3581,7 +3578,7 @@ begin
   if FIsMapLoaded then
     ShowMarker(FileName, Lat, Lng, Date)
   else
-    WbGeoLocation.Tag := 1;
+    FWbGeoLocation.Tag := 1;
 end;
 
 procedure TExplorerForm.WlPanoramioClick(Sender: TObject);
@@ -3696,9 +3693,9 @@ var
   Zoom: Integer;
 begin
   FIsMapLoaded := True;
-  if WbGeoLocation.Tag = 1 then
+  if FWbGeoLocation.Tag = 1 then
   begin
-    WbGeoLocation.Tag := 0;
+    FWbGeoLocation.Tag := 0;
     if FSelectedInfo.GeoLocation <> nil then
     begin
       ShowMarker(ExtractFileName(FSelectedInfo.FileName),
@@ -3809,7 +3806,7 @@ var
   I: Integer;
   Embeds: IHTMLElementCollection;
 begin
-  Embeds := (WbGeoLocation.Document as IHTMLDocument2).embeds;
+  Embeds := (FWbGeoLocation.Document as IHTMLDocument2).embeds;
   for I := 0 to Embeds.length - 1 do
   begin
     Embed2 := Embeds.item(0, I) as IHTMLElement2;
@@ -3840,8 +3837,6 @@ var
   Stream: TMemoryStream;
   SW: TStreamWriter;
   MapHTML, S: string;
-  dwZone: Cardinal;
-  ZA: TZoneAttributes;
 begin
   if FGeoHTMLWindow = nil then
   begin
@@ -3859,44 +3854,17 @@ begin
     WlPanoramio.Left := WlSaveLocation.Left + WlSaveLocation.Width + 10;
 
     LoadSpeedButtonFromResourcePNG(SbDoSearchLocation, 'SEARCH');
-    WbGeoLocation.Tag := 1;
 
-    FWebJSContainer := TWebJSExternalContainer.Create(WbGeoLocation, Self);
-    CoInternetCreateSecurityManager(WbGeoLocation, FSecurityManager, 0);
-    CoInternetCreateZoneManager(WbGeoLocation, FZoneManager, 0);
-    WbGeoLocation.Navigate('about:blank');
+    FWbGeoLocation := TWebBrowser.Create(PnGeoLocation);
+    TWinControl(FWbGeoLocation).Parent := PnGeoLocation;
+    FWbGeoLocation.Tag := 1;
+    FWbGeoLocation.Align := alClient;
+    FWbGeoLocation.Silent := True;
 
-    begin
-      FSecurityManager.MapUrlToZone(PWideChar(WideString(WbGeoLocation.LocationURL)), dwZone, 0);
-      FZoneManager.GetZoneAttributes(dwZone, ZA);
-      (*
+    FWebJSContainer := TWebJSExternalContainer.Create(FWbGeoLocation, Self);
+    FWbGeoLocation.Navigate('about:blank');
 
-
-function TMyWebBrowser.QueryService(const rsid, iid: TGUID;
-  out Obj): HRESULT;
-begin
-  if IsEqualGuid(IInternetSecurityManager, rsid) and IsEqualGuid(rsid, iid) then
-     Result := Self.Queryinterface(IInternetSecurityManager, Obj)
-   else
-     Result := E_NOINTERFACE;
-end;
-
-....
-
-function TMyWebBrowser.ProcessUrlAction(pwszUrl: LPCWSTR;
-  dwAction: DWORD; pPolicy: Pointer; cbPolicy: DWORD; pContext: Pointer;
-  cbContext, dwFlags, dwReserved: DWORD): HResult;
-begin
-  if CheckUrl(pwszUrl) then
-    Result := S_OK
-  else
-    Result := INET_E_DEFAULT_ACTION;
-end;
-
-      *)
-    end;
-
-    if Assigned(WbGeoLocation.Document) then
+    if Assigned(FWbGeoLocation.Document) then
     begin
        Stream := TMemoryStream.Create;
       try
@@ -3913,14 +3881,14 @@ end;
         try
           SW.Write(MapHTML);
           Stream.Seek(0, soFromBeginning);
-          (WbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
+          (FWbGeoLocation.Document as IPersistStreamInit).Load(TStreamAdapter.Create(Stream));
         finally
           F(SW);
         end;
       finally
         F(Stream);
       end;
-      FGeoHTMLWindow := (WbGeoLocation.Document as IHTMLDocument2).parentWindow;
+      FGeoHTMLWindow := (FWbGeoLocation.Document as IHTMLDocument2).parentWindow;
     end;
     PnGeoLocation.Width := Settings.ReadInteger('Explorer', 'GeoLocationWidth', PnGeoLocation.Width);
   end;

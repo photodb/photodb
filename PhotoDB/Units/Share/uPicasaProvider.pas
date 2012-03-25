@@ -150,6 +150,8 @@ type
 
 {$R SharePictures.res}
 
+function ReadFile(FileName: string): string;
+
 implementation
 
 uses
