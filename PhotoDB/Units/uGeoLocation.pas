@@ -127,11 +127,13 @@ const
     'function ResetLocation(){' +
     '  canSave = false; ' +
     '  external.CanSaveLocation(0, 0, -1);' +
-    '  if ((imageLat != 0) && (imageLng != 0)) '+
+    '  if ((imageLat != 0) && (imageLng != 0)) {'+
     '    PutMarker(imageLat, imageLng);' +
-    '  else '+
+    '    currentLat = imageLat; '+
+    '    currentLng = imageLng; '+
+    '  } else {'+
     '    ClearMarkers();' +
-    '' +
+    '  }' +
     '} '+
 
     'function SaveImageInfo(Name, Date){' +
@@ -258,13 +260,16 @@ var
   v: Variant;
   HTMLDocument: IHTMLDocument2;
 begin
-  HTMLDocument := WebBrowser.Document as IHTMLDocument2;
-  if HTMLDocument <> nil then
+  if WebBrowser <> nil then
   begin
-    v := VarArrayCreate([0, 0], varVariant);
-    v[0] := ''; //empty document
-    HTMLDocument.Write(PSafeArray(TVarData(v).VArray));
-    HTMLDocument.Close;
+    HTMLDocument := WebBrowser.Document as IHTMLDocument2;
+    if HTMLDocument <> nil then
+    begin
+      v := VarArrayCreate([0, 0], varVariant);
+      v[0] := ''; //empty document
+      HTMLDocument.Write(PSafeArray(TVarData(v).VArray));
+      HTMLDocument.Close;
+    end;
   end;
 end;
 

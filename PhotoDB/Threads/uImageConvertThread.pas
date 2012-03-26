@@ -126,7 +126,7 @@ begin
   Result := FIntParam;
 end;
 
-constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState : TGUID; AData: TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
+constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState : TGUID; AData: TDBPopupMenuInfoRecord; AProcessingParams: TProcessingParams);
 begin
   inherited Create(AOwnerForm, AState);
   FData := AData;
@@ -185,7 +185,7 @@ var
     end;
   end;
 
-  procedure FixJpegStreamEXIF(Stream : TStream; Width, Height : Integer);
+  procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
   var
     Jpeg: TJpegImage;
   begin

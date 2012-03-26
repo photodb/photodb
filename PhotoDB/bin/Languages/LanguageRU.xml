@@ -2166,12 +2166,18 @@
 	<translate name="Photo shelf" value="Отложенные фото"/>
   </scope>
   <scope name="Picasa">
-	<translate name="Picasa authorisation" value="Авторизация на Picasa"/>	
+	<translate name="Picasa authorisation" value="Авторизация на Picasa"/>
+	<translate name="Picasa web albums" value="Веб-альбом Picasa"/>	
   </scope>
   <scope name="PhotoShare">
 	<translate name="Share photos and videos" value="Поделиться фото и видео"/>
 	<translate name="(Available space: {0})" value="(доступно {0})"/>
 	<translate name="Change user" value="Сменить пользователя"/>
+	<translate name="Create new album" value="Создать альбом"/>
+	<translate name="Settings" value="Настройки"/>
+	<translate name="Share!" value="Поделиться!"/>
+	<translate name="Album list" value="Список альбомов"/>
+	<translate name="Items to upload" value="Файлы"/>
   </scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>

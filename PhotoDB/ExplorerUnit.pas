@@ -3661,10 +3661,10 @@ end;
 procedure TExplorerForm.WlShareClick(Sender: TObject);
 var
   I, Index: Integer;
-  Files: TStrings;
+  Files: TDBPopupMenuInfo;
   EI: TExplorerFileInfo;
 begin
-  Files := TStringList.Create;
+  Files := TDBPopupMenuInfo.Create;
   try
     for I := 0 to ElvMain.Items.Count - 1 do
       if ElvMain.Items[I].Selected then
@@ -3676,7 +3676,7 @@ begin
           or (EI.FileType = EXPLORER_ITEM_DEVICE_IMAGE)
           or ((EI.FileType = EXPLORER_ITEM_DEVICE_VIDEO) and CanShareVideo(EI.FileName))
           or ((EI.FileType = EXPLORER_ITEM_FILE)         and CanShareVideo(EI.FileName)) then
-          Files.Add(EI.FileName);
+          Files.Add(EI.Copy);
       end;
 
     if Files.Count > 0 then
@@ -3684,7 +3684,6 @@ begin
   finally
     F(Files);
   end;
-
 end;
 
 procedure TExplorerForm.MapStarted;

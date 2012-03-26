@@ -18,7 +18,7 @@ uses
   uConstants,
   uSettings,
   uMemoryEx,
-  WebLink;
+  WebLink, uBaseWinControl;
 
 type
   TFormImportPicturesSettings = class(TDBForm)

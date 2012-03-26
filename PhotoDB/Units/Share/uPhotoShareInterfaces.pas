@@ -65,6 +65,7 @@ type
     function CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
     function IsFeatureSupported(Feature: string): Boolean;
     function GetProviderImage(Bitmap: TBitmap): Boolean;
+    function ChangeUser: Boolean;
   end;
 
   TPhotoShareManager = class(TObject)

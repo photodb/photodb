@@ -57,7 +57,9 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   ImgList,
-  Vcl.AppEvnts, uBaseWinControl;
+  Vcl.AppEvnts,
+  uBox,
+  uBaseWinControl;
 
 const
   TAG_LABEL           = 1;
@@ -80,18 +82,6 @@ const
 
 type
   TImportPicturesMode = (piModeSimple, piModeExtended);
-
-type
-  TBox = class(TPanel)
-  private
-    FIsHovered: Boolean;
-    procedure SetIsHovered(const Value: Boolean);
-  protected
-    procedure Paint; override;
-    procedure WMEraseBkgnd(var Message: TWmEraseBkgnd); message WM_ERASEBKGND;
-  public
-    property IsHovered: Boolean read FIsHovered write SetIsHovered;
-  end;
 
   TBaseSelectItem = class
   private
@@ -167,7 +157,7 @@ type
     property DisplayItems[Index: TBaseSelectItem]: TBox read GetScrollBoxByItem;
     procedure OnItemEditClick(Sender: TObject);
     procedure OnDateEditClick(Sender: TObject);
-    function FindChildByTag<T: TWinControl>(Parent: TWinControl; Tag: NativeInt): T;
+//    function FindChildByTag<T: TWinControl>(Parent: TWinControl; Tag: NativeInt): T;
     function FindMenuItemByImageIndex(Parent: TPopupActionBar; Index: NativeInt): TMenuItem;
 
     procedure SplitItem(SDI: TSelectDateItems);
@@ -721,8 +711,8 @@ begin
   SI.IsDisabled := True;
   SB := DisplayItems[SI];
 
-  WlLabel := FindChildByTag<TWebLink>(SB, TAG_LABEL);
-  WlDate := FindChildByTag<TWebLink>(SB, TAG_DATE);
+  WlLabel := SB.FindChildByTag<TWebLink>(TAG_LABEL);
+  WlDate := SB.FindChildByTag<TWebLink>(TAG_DATE);
 
   WlLabel.LoadFromResource('SERIES_CANCEL');
   WlLabel.Enabled := False;
@@ -740,8 +730,8 @@ begin
   SI.IsDisabled := False;
   SB := DisplayItems[SI];
 
-  WlLabel := FindChildByTag<TWebLink>(SB, TAG_LABEL);
-  WlDate := FindChildByTag<TWebLink>(SB, TAG_DATE);
+  WlLabel := SB.FindChildByTag<TWebLink>(TAG_LABEL);
+  WlDate := SB.FindChildByTag<TWebLink>(TAG_DATE);
 
   WlLabel.LoadFromResource('SERIES_EDIT');
   WlLabel.Enabled := True;
@@ -832,7 +822,7 @@ begin
   UpdateModel;
 end;
 
-function TSelectDateCollection.FindChildByTag<T>(Parent: TWinControl; Tag: NativeInt): T;
+{function TSelectDateCollection.FindChildByTag<T>(Parent: TWinControl; Tag: NativeInt): T;
 var
   I: Integer;
 begin
@@ -845,7 +835,7 @@ begin
       Exit;
     end;
   end;
-end;
+end;  }
 
 function TSelectDateCollection.FindMenuItemByImageIndex(Parent: TPopupActionBar;
   Index: NativeInt): TMenuItem;
@@ -918,9 +908,9 @@ begin
   Sb := DisplayItems[Item];
   if (Sb <> nil) then
   begin
-    LnkDate := FindChildByTag<TWebLink>(Sb, TAG_DATE);
-    Dp := FindChildByTag<TDateTimePicker>(Sb, TAG_EDIT_DATE);
-    LnkOk := FindChildByTag<TWebLink>(Sb, TAG_EDIT_DATE_OK);
+    LnkDate := Sb.FindChildByTag<TWebLink>(TAG_DATE);
+    Dp := Sb.FindChildByTag<TDateTimePicker>(TAG_EDIT_DATE);
+    LnkOk := Sb.FindChildByTag<TWebLink>(TAG_EDIT_DATE_OK);
     Item.Date := Dp.Date;
 
     LnkDate.Text := FormatDateTime('yyyy-mm-dd', Dp.Date);
@@ -942,9 +932,9 @@ begin
   Sb := DisplayItems[Item];
   if (Sb <> nil) then
   begin
-    LnkLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
-    Edit := FindChildByTag<TWatermarkedEdit>(Sb, TAG_EDIT_LABEL);
-    LnkOk := FindChildByTag<TWebLink>(Sb, TAG_EDIT_LABEL_OK);
+    LnkLabel := Sb.FindChildByTag<TWebLink>(TAG_LABEL);
+    Edit := Sb.FindChildByTag<TWatermarkedEdit>(TAG_EDIT_LABEL);
+    LnkOk := Sb.FindChildByTag<TWebLink>(TAG_EDIT_LABEL_OK);
 
     Item.ItemLabel := Edit.Text;
     if Edit.Text = '' then
@@ -964,7 +954,7 @@ begin
       SI := FItems[I];
       Sb := DisplayItems[SI];
 
-      LnkLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
+      LnkLabel := Sb.FindChildByTag<TWebLink>(TAG_LABEL);
       TextSize := Math.Min(Math.Max(LnkLabel.Width - LnkLabel.Left - 5, 175 - 18), 450);
       Sb.Width := TextSize + 18;
       Sb.Left := Left - FContainer.HorzScrollBar.Position;
@@ -990,8 +980,12 @@ begin
   SI := TBaseSelectItem(Sb.Tag);
 
   for I := 0 to FItems.Count - 1 do
+  begin
     FItems[I].IsSelected := False;
+    DisplayItems[FItems[I]].IsSelected := False;
+  end;
   SI.IsSelected := True;
+  Sb.IsSelected := True;
 
   for I := 0 to FItems.Count - 1 do
   begin
@@ -1045,7 +1039,7 @@ begin
   Parent := TBox(LnkLabel.Parent);
   SI := TBaseSelectItem(Parent.Tag);
 
-  DtpEditDate := FindChildByTag<TDateTimePicker>(Parent, TAG_EDIT_DATE);
+  DtpEditDate := Parent.FindChildByTag<TDateTimePicker>(TAG_EDIT_DATE);
   if DtpEditDate = nil then
   begin
     DtpEditDate := TDateTimePicker.Create(FContainer.Owner);
@@ -1063,7 +1057,7 @@ begin
     DtpEditDate.OnMouseLeave := OnBoxMouseLeave;
   end;
 
-  LnkOk := FindChildByTag<TWebLink>(Parent, TAG_EDIT_DATE_OK);
+  LnkOk := Parent.FindChildByTag<TWebLink>(TAG_EDIT_DATE_OK);
   if LnkOk = nil then
   begin
     LnkOk := TWebLink.Create(FContainer.Owner);
@@ -1102,7 +1096,7 @@ begin
   Parent := TBox(LnkLabel.Parent);
   SI := TBaseSelectItem(Parent.Tag);
 
-  WebEditLabel := FindChildByTag<TWatermarkedEdit>(Parent, TAG_EDIT_LABEL);
+  WebEditLabel := Parent.FindChildByTag<TWatermarkedEdit>(TAG_EDIT_LABEL);
   if WebEditLabel = nil then
   begin
     WebEditLabel := TWatermarkedEdit.Create(FContainer.Owner);
@@ -1121,7 +1115,7 @@ begin
     WebEditLabel.OnMouseLeave := OnBoxMouseLeave;
   end;
 
-  LnkOk := FindChildByTag<TWebLink>(Parent, TAG_EDIT_LABEL_OK);
+  LnkOk := Parent.FindChildByTag<TWebLink>(TAG_EDIT_LABEL_OK);
   if LnkOk = nil then
   begin
     LnkOk := TWebLink.Create(FContainer.Owner);
@@ -1282,7 +1276,7 @@ begin
         TFormImportImages(FContainer.Owner).SetSeriesCount(FItems.Count);
       end;
 
-      WlLabel := FindChildByTag<TWebLink>(Sb, TAG_LABEL);
+      WlLabel := Sb.FindChildByTag<TWebLink>(TAG_LABEL);
       if SI.ItemLabel = '' then
         WlLabel.Text := TA('Enter label', 'ImportPictures')
       else
@@ -1291,17 +1285,17 @@ begin
 
       Sb.Width := Math.Min(Math.Max(WlLabel.Width - WlLabel.Left - 5, 175 - 18), 450) + 18;
 
-      WlDate := FindChildByTag<TWebLink>(Sb, TAG_DATE);
+      WlDate := Sb.FindChildByTag<TWebLink>(TAG_DATE);
 
       WlDate.Text := FormatDateTime('yyyy-mm-dd', SI.Date);
       WlDate.LoadImage;
 
-      WlItemsCount := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_COUNT);
+      WlItemsCount := Sb.FindChildByTag<TWebLink>(TAG_ITEMS_COUNT);
       WlItemsCount.Text := FormatEx(TA('{0} Files', 'ImportPictures'), [SI.ItemsCount]);
       WlItemsCount.LoadImage;
       WlItemsCount.Left := 2;
 
-      WlSize := FindChildByTag<TWebLink>(Sb, TAG_ITEMS_SIZE);
+      WlSize := Sb.FindChildByTag<TWebLink>(TAG_ITEMS_SIZE);
       WlSize.Left := WlItemsCount.Left + WlItemsCount.Width + 5;
       WlSize.Text := SizeInText(SI.ItemsSize);
       WlSize.LoadImage;
@@ -2045,112 +2039,6 @@ procedure TFormImportImages.WlSetLabelClick(Sender: TObject);
 begin
   FSimpleLabel := WedLabel.Text;
   WedLabelExit(Sender);
-end;
-
-{ TBox }
-
-procedure TBox.Paint;
-const
-  Alignments: array[TAlignment] of Longint = (DT_LEFT, DT_RIGHT, DT_CENTER);
-  VerticalAlignments: array[TVerticalAlignment] of Longint = (DT_TOP, DT_BOTTOM, DT_VCENTER);
-var
-  Rect: TRect;
-  LColor: TColor;
-  LStyle: TCustomStyleServices;
-  LDetails: TThemedElementDetails;
-  TopColor, BottomColor: TColor;
-  BaseColor, BaseTopColor, BaseBottomColor: TColor;
-  SI: TBaseSelectItem;
-
-  procedure AdjustColors(Bevel: TPanelBevel);
-  begin
-    TopColor := BaseTopColor;
-    if Bevel = bvLowered then
-      TopColor := BaseBottomColor;
-    BottomColor := BaseBottomColor;
-    if Bevel = bvLowered then
-      BottomColor := BaseTopColor;
-  end;
-
-begin
-  Rect := GetClientRect;
-
-  BaseColor := Color;
-  BaseTopColor := clBtnHighlight;
-  BaseBottomColor := clBtnShadow;
-  LStyle := StyleServices;
-  if LStyle.Enabled then
-  begin
-    LDetails := LStyle.GetElementDetails(tpPanelBackground);
-    if LStyle.GetElementColor(LDetails, ecFillColor, LColor) and (LColor <> clNone) then
-      BaseColor := LColor;
-    LDetails := LStyle.GetElementDetails(tpPanelBevel);
-    if LStyle.GetElementColor(LDetails, ecEdgeHighLightColor, LColor) and (LColor <> clNone) then
-      BaseTopColor := LColor;
-    if LStyle.GetElementColor(LDetails, ecEdgeShadowColor, LColor) and (LColor <> clNone) then
-      BaseBottomColor := LColor;
-  end;
-
-  if BevelOuter <> bvNone then
-  begin
-    AdjustColors(BevelOuter);
-    Frame3D(Canvas, Rect, TopColor, BottomColor, BevelWidth);
-  end;
-  if not (LStyle.Enabled and (csParentBackground in ControlStyle)) then
-    Frame3D(Canvas, Rect, BaseColor, BaseColor, BorderWidth)
-  else
-    InflateRect(Rect, -Integer(BorderWidth), -Integer(BorderWidth));
-  if BevelInner <> bvNone then
-  begin
-    AdjustColors(BevelInner);
-    Frame3D(Canvas, Rect, TopColor, BottomColor, BevelWidth);
-  end;
-  with Canvas do
-  begin
-    //if not LStyle.Enabled or not ParentBackground then
-    begin
-      SI := TBaseSelectItem(Tag);
-      if SI.IsSelected or IsHovered then
-      begin
-        Brush.Color := StyleServices.GetSystemColor(clHighlight);
-        FillRect(Rect);
-      end else
-      begin
-        Brush.Color := StyleServices.GetStyleColor(scPanel);
-        FillRect(Rect);
-      end;
-    end;
-  end;
-end;
-
-procedure TBox.SetIsHovered(const Value: Boolean);
-var
-  I: Integer;
-  WL: TWebLink;
-  SI: TBaseSelectItem;
-begin
-  FIsHovered := Value;
-  SI := TBaseSelectItem(Tag);
-  for I := 0 to ControlCount - 1 do
-    if Controls[I] is TWebLink then
-    begin
-      WL := TWebLink(Controls[I]);
-      if Value or SI.IsSelected then
-      begin
-        WL.Color := StyleServices.GetSystemColor(clHighlight);
-        WL.Font.Color := StyleServices.GetSystemColor(clHighlightText);
-      end else
-      begin
-        WL.Color := StyleServices.GetStyleColor(scPanel);
-        WL.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
-      end;
-    end;
-  Invalidate;
-end;
-
-procedure TBox.WMEraseBkgnd(var Message: TWmEraseBkgnd);
-begin
-  Message.Result := 1;
 end;
 
 end.

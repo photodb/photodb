@@ -55,6 +55,12 @@ type
     procedure DoPopupEx(X, Y: Integer);
   end;
 
+  TWinControlHelper = class helper for TWinControl
+  public
+    function FindChildByTag<T: TControl>(Tag: NativeInt): T;
+    function FindChildByType<T: TControl>: T;
+  end;
+
 type
   TNotifyEventRef = reference to procedure(Sender: TObject);
   TKeyEventRef = reference to procedure(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -217,6 +223,38 @@ begin
     Popup(X, Y);
   finally
     BlockClosingOfWindows := False;
+  end;
+end;
+
+{ TWinControlHelper }
+
+function TWinControlHelper.FindChildByTag<T>(Tag: NativeInt): T;
+var
+  I: Integer;
+begin
+  Result := default(T);
+  for I := 0 to ControlCount - 1 do
+  begin
+    if Controls[I].Tag = Tag then
+    begin
+      Result := Controls[I] as T;
+      Exit;
+    end;
+  end;
+end;
+
+function TWinControlHelper.FindChildByType<T>: T;
+var
+  I: Integer;
+begin
+  Result := default(T);
+  for I := 0 to ControlCount - 1 do
+  begin
+    if Controls[I] is T then
+    begin
+      Result := Controls[I] as T;
+      Exit;
+    end;
   end;
 end;
 

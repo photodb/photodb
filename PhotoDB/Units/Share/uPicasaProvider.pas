@@ -140,6 +140,7 @@ type
     function IsFeatureSupported(Feature: string): Boolean;
     function InitializeService: Boolean;
     function GetProviderName: string;
+    function ChangeUser: Boolean;
     function GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
     function GetAlbumList(Albums: TList<IPhotoServiceAlbum>): Boolean;
     function CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
@@ -207,35 +208,50 @@ end;
 
 { TPicasaProvider }
 
+function TPicasaProvider.ChangeUser: Boolean;
+begin
+  Result := False;
+  FSync.Enter;
+  try
+    if CheckToken(True) then
+      Result := True;
+  finally
+    FSync.Leave;
+  end;
+end;
+
 function TPicasaProvider.CheckToken(Force: Boolean): Boolean;
 var
   ApplicationCode: string;
 begin
   if InitializeService then
   begin
-    if FOAuth.Refresh_token = '' then
+    if (FOAuth.Access_token = '') or Force then
     begin
-      TThread.Synchronize(nil,
-        procedure
-        var
-          Form: TFormPicasaOAuth;
-        begin
-          Form := TFormPicasaOAuth.Create(Screen.ActiveForm, Self);
-          try
-            Form.ShowModal;
-            ApplicationCode := Form.ApplicationCode;
-          finally
-            F(Form);
-          end;
-        end
-      );
-      if ApplicationCode <> '' then
+      if (FOAuth.Refresh_token = '') or Force then
       begin
-        FOAuth.ResponseCode := ApplicationCode;
-        FOAuth.GetAccessToken;
-      end;
-    end else
-      FOAuth.RefreshToken;
+        TThread.Synchronize(nil,
+          procedure
+          var
+            Form: TFormPicasaOAuth;
+          begin
+            Form := TFormPicasaOAuth.Create(Screen.ActiveForm, Self);
+            try
+              Form.ShowModal;
+              ApplicationCode := Form.ApplicationCode;
+            finally
+              F(Form);
+            end;
+          end
+        );
+        if ApplicationCode <> '' then
+        begin
+          FOAuth.ResponseCode := ApplicationCode;
+          FOAuth.GetAccessToken;
+        end;
+      end else
+        FOAuth.RefreshToken;
+    end;
   end;
   Result := FOAuth.Access_token <> '';
   if Result then
@@ -254,30 +270,35 @@ var
   Data: TStringStream;
 begin
   Result := False;
-  if CheckToken(False) then
-  begin
-    AlbumInfo := PICASA_CREATE_ALBUM_XML;
-    AlbumInfo := StringReplace(AlbumInfo, '{title}', Name, []);
-    AlbumInfo := StringReplace(AlbumInfo, '{summary}', Description, []);
-    AlbumInfo := StringReplace(AlbumInfo, '{location}', '', []);
-    AlbumInfo := StringReplace(AlbumInfo, '{date}', IntToStr(DateTimeTimeStamp(Date)), []);
-    AlbumInfo := StringReplace(AlbumInfo, '{keywords}', '', []);
-    Data := TStringStream.Create;
-    try
-      Data.WriteString(AlbumInfo);
-      Data.Seek(0, soFromBeginning);
+  FSync.Enter;
+  try
+    if CheckToken(False) then
+    begin
+      AlbumInfo := PICASA_CREATE_ALBUM_XML;
+      AlbumInfo := StringReplace(AlbumInfo, '{title}', Name, []);
+      AlbumInfo := StringReplace(AlbumInfo, '{summary}', Description, []);
+      AlbumInfo := StringReplace(AlbumInfo, '{location}', '', []);
+      AlbumInfo := StringReplace(AlbumInfo, '{date}', IntToStr(DateTimeTimeStamp(Date)), []);
+      AlbumInfo := StringReplace(AlbumInfo, '{keywords}', '', []);
+      Data := TStringStream.Create;
+      try
+        Data.WriteString(AlbumInfo);
+        Data.Seek(0, soFromBeginning);
 
-      AlbumXML := ReadFile('c:\create_album.xml');
-      //AlbumXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default', nil, Data, 'application/atom+xml');
+        AlbumXML := ReadFile('c:\create_album.xml');
+        //AlbumXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default', nil, Data, 'application/atom+xml');
 
-      if AlbumXML <> '' then
-      begin
-        Album := TPicasaUserAlbum.Create(Self, AlbumXML);
-        Result := True;
+        if AlbumXML <> '' then
+        begin
+          Album := TPicasaUserAlbum.Create(Self, AlbumXML);
+          Result := True;
+        end;
+      finally
+        F(Data);
       end;
-    finally
-      F(Data);
     end;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -315,50 +336,55 @@ var
 begin
   Result := False;
   Photo := nil;
-  if CheckToken(False) then
-  begin
-    RequestXML := PICASA_UPLOAD_ITEM;
-    RequestXML := StringReplace(RequestXML, '{title}', Name, []);
-    RequestXML := StringReplace(RequestXML, '{summary}', Description, []);
-    FOAuth.Slug := EncodeURLElement(ExtractFileName(FileName));
+  FSync.Enter;
+  try
+    if CheckToken(False) then
+    begin
+      RequestXML := PICASA_UPLOAD_ITEM;
+      RequestXML := StringReplace(RequestXML, '{title}', Name, []);
+      RequestXML := StringReplace(RequestXML, '{summary}', Description, []);
+      FOAuth.Slug := EncodeURLElement(ExtractFileName(FileName));
 
-    MS := TMemoryStream.Create;
-    try
-      SW := TStreamWriter.Create(MS);
+      MS := TMemoryStream.Create;
       try
-       { составляем тело запроса }
-        S := '--END_OF_PART' + CRLF;
-        // MIME-тип первой части документа
-        S := S + 'Content-Type: application/atom+xml' + CRLF + CRLF;
-        MS.Write(PAnsiChar(S)^, length(S));//записали строку
-        //пишем в Document содержимое XML
+        SW := TStreamWriter.Create(MS);
+        try
+         { составляем тело запроса }
+          S := '--END_OF_PART' + CRLF;
+          // MIME-тип первой части документа
+          S := S + 'Content-Type: application/atom+xml' + CRLF + CRLF;
+          MS.Write(PAnsiChar(S)^, length(S));//записали строку
+          //пишем в Document содержимое XML
 
-        SW.Write(RequestXML);
-        S := CRLF + CRLF + '--END_OF_PART' + CRLF;//первая часть документа закончена
-        { вторая часть - документ *.doc }
-        S := S + 'Content-Type: ' + AnsiString(ContentType) + CRLF + CRLF;
-        MS.Write(PAnsiChar(S)^, Length(S));//записали строку
-        {записываем doc-файл}
+          SW.Write(RequestXML);
+          S := CRLF + CRLF + '--END_OF_PART' + CRLF;//первая часть документа закончена
+          { вторая часть - документ *.doc }
+          S := S + 'Content-Type: ' + AnsiString(ContentType) + CRLF + CRLF;
+          MS.Write(PAnsiChar(S)^, Length(S));//записали строку
+          {записываем doc-файл}
 
-        MS.CopyFrom(Stream, Stream.Size);
-        {завершаем тело запроса}
-        s := CRLF + '--END_OF_PART--' + CRLF;
-        MS.Write(PAnsiChar(S)^, Length(S));//завершили тело документа
+          MS.CopyFrom(Stream, Stream.Size);
+          {завершаем тело запроса}
+          s := CRLF + '--END_OF_PART--' + CRLF;
+          MS.Write(PAnsiChar(S)^, Length(S));//завершили тело документа
 
 
-        ResponseXML := ReadFile('c:\upload_image.xml');
-        //ResponseXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default/albumid/' + AlbumID, nil, MS, 'multipart/related; boundary=END_OF_PART');
-        if ResponseXML <> '' then
-        begin
-          Photo := TPicasaUserAlbumPhoto.Create(ResponseXML);
-          Result := True;
+          ResponseXML := ReadFile('c:\upload_image.xml');
+          //ResponseXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default/albumid/' + AlbumID, nil, MS, 'multipart/related; boundary=END_OF_PART');
+          if ResponseXML <> '' then
+          begin
+            Photo := TPicasaUserAlbumPhoto.Create(ResponseXML);
+            Result := True;
+          end;
+        finally
+          F(SW);
         end;
       finally
-        F(SW);
+        F(MS);
       end;
-    finally
-      F(MS);
     end;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -388,29 +414,34 @@ var
   I: Integer;
 begin
   Result := False;
-  if CheckToken(False) then
-  begin
-    AlbumsXML := FOAuth.GETCommand('https://picasaweb.google.com:443/data/feed/api/user/default', nil);
-    if AlbumsXML <> '' then
+  FSync.Enter;
+  try
+    if CheckToken(False) then
     begin
-      Doc := CreateXMLDocument;
-      if (Doc <> nil) and Doc.loadXML(AlbumsXML) then
+      AlbumsXML := FOAuth.GETCommand('https://picasaweb.google.com:443/data/feed/api/user/default', nil);
+      if AlbumsXML <> '' then
       begin
-        DocumentNode := Doc.documentElement;
-        if (DocumentNode <> nil) and (DocumentNode.nodeName = 'feed') then
+        Doc := CreateXMLDocument;
+        if (Doc <> nil) and Doc.loadXML(AlbumsXML) then
         begin
-          for I := 0 to DocumentNode.childNodes.length - 1 do
+          DocumentNode := Doc.documentElement;
+          if (DocumentNode <> nil) and (DocumentNode.nodeName = 'feed') then
           begin
-            if DocumentNode.childNodes.item[I].nodeName = 'entry' then
+            for I := 0 to DocumentNode.childNodes.length - 1 do
             begin
-              AlbumXML := DocumentNode.childNodes.item[I].xml;
-              Albums.Add(TPicasaUserAlbum.Create(Self, AlbumXML))
+              if DocumentNode.childNodes.item[I].nodeName = 'entry' then
+              begin
+                AlbumXML := DocumentNode.childNodes.item[I].xml;
+                Albums.Add(TPicasaUserAlbum.Create(Self, AlbumXML))
+              end;
             end;
           end;
         end;
+        Result := True;
       end;
-      Result := True;
     end;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -438,14 +469,19 @@ var
 begin
   Result := False;
   Info := nil;
-  if CheckToken(False) then
-  begin
-    AlbumsXML := FOAuth.GETCommand('https://picasaweb.google.com:443/data/feed/api/user/default', nil);
-    if AlbumsXML <> '' then
+  FSync.Enter;
+  try
+    if CheckToken(False) then
     begin
-      Info := TPicasaUserAlbumsInfo.Create(AlbumsXML);
-      Result := True;
+      AlbumsXML := FOAuth.GETCommand('https://picasaweb.google.com:443/data/feed/api/user/default', nil);
+      if AlbumsXML <> '' then
+      begin
+        Info := TPicasaUserAlbumsInfo.Create(AlbumsXML);
+        Result := True;
+      end;
     end;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -480,6 +516,7 @@ begin
   begin
     Settings.WriteString('PhotoShare', 'RefreshToken', '');
     FOAuth.Refresh_token := '';
+    FOAuth.Access_token := '';
   end;
 end;
 
