@@ -3,6 +3,7 @@ unit uFormSharePhotos;
 interface
 
 uses
+  uRuntime,
   Generics.Collections,
   Winapi.Windows,
   Winapi.Messages,
@@ -35,7 +36,7 @@ uses
   uInternetUtils,
   uBitmapUtils,
   UnitDBDeclare,
-  uDBPopupMenuInfo;
+  uDBPopupMenuInfo, Vcl.AppEvnts;
 
 type
   TFormSharePhotos = class(TThreadForm)
@@ -62,6 +63,7 @@ type
     BtnSettings: TButton;
     LsAuthorisation: TLoadingSign;
     LsLoadingAlbums: TLoadingSign;
+    AeMain: TApplicationEvents;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -69,9 +71,11 @@ type
     procedure WlUserNameClick(Sender: TObject);
     procedure WlChangeUserClick(Sender: TObject);
     procedure BtnSettingsClick(Sender: TObject);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
     FFiles: TDBPopupMenuInfo;
+    FPreviewImages: TList<Boolean>;
     FAlbums: TList<IPhotoServiceAlbum>;
     FUserUrl: string;
     FProvider: IPhotoShareProvider;
@@ -94,6 +98,8 @@ type
     procedure Execute(FileList: TDBPopupMenuInfo);
   public
     { Public declarations }
+    procedure GetDataForPreview(var Data: TDBPopupMenuInfoRecord);
+    procedure UpdatePreview(Data: TDBPopupMenuInfoRecord; Preview: TBitmap);
   end;
 
 procedure SharePictures(Owner: TDBForm; Info: TDBPopupMenuInfo);
@@ -125,6 +131,30 @@ begin
   end;
 end;
 
+procedure TFormSharePhotos.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
+var
+  CY: Integer;
+  P: TPoint;
+begin
+  if not Active then
+    Exit;
+
+  if Msg.message = WM_MOUSEWHEEL then
+  begin
+    if NativeInt(Msg.WParam) > 0 then
+      CY := -50
+    else
+      CY := 50;
+
+    GetCursorPos(P);
+    P := ScreenToClient(P);
+    if PtInRect(SbAlbums.BoundsRect, P) then
+      SbAlbums.VertScrollBar.Position := SbAlbums.VertScrollBar.Position + CY;
+    if PtInRect(SbItemsToUpload.BoundsRect, P) then
+      SbItemsToUpload.VertScrollBar.Position := SbItemsToUpload.VertScrollBar.Position + CY;
+  end;
+end;
+
 procedure TFormSharePhotos.BtnCancelClick(Sender: TObject);
 begin
   Close;
@@ -144,8 +174,12 @@ begin
 end;
 
 procedure TFormSharePhotos.Execute(FileList: TDBPopupMenuInfo);
+var
+  I: Integer;
 begin
   FFiles.Assign(FileList);
+  for I := 1 to FFiles.Count do
+    FPreviewImages.Add(False);
   LoadImageList;
   LoadProviderInfo;
   ShowModal;
@@ -155,6 +189,7 @@ procedure TFormSharePhotos.FormCreate(Sender: TObject);
 begin
   FFiles := TDBPopupMenuInfo.Create;
   FAlbums := TList<IPhotoServiceAlbum>.Create;
+  FPreviewImages := TList<Boolean>.Create;
   LoadLanguage;
   EnableControls(False);
   FProvider := nil;
@@ -165,11 +200,26 @@ procedure TFormSharePhotos.FormDestroy(Sender: TObject);
 begin
   F(FAlbums);
   F(FFiles);
+  F(FPreviewImages);
 end;
 
 procedure TFormSharePhotos.FormResize(Sender: TObject);
 begin
   Invalidate;
+end;
+
+procedure TFormSharePhotos.GetDataForPreview(var Data: TDBPopupMenuInfoRecord);
+var
+  I: Integer;
+begin
+  F(Data);
+  for I := 0 to FPreviewImages.Count - 1 do
+    if not FPreviewImages[I] then
+    begin
+      FPreviewImages[I] := True;
+      Data := FFiles[I].Copy;
+      Break;
+    end;
 end;
 
 function TFormSharePhotos.GetFormID: string;
@@ -187,6 +237,9 @@ var
   WlImageDate: TWebLink;
 begin
   //clear old data
+  for I := 0 to FPreviewImages.Count - 1 do
+    FPreviewImages[I] := False;
+
   for I := SbItemsToUpload.ControlCount - 1 downto 0 do
   begin
     Box := TBox(SbItemsToUpload.Controls[I]);
@@ -248,7 +301,8 @@ begin
     WlImageDate.OnClick := ShowImages;
   end;
 
-  TShareImagesThread.Create(Self, FFiles, True);
+  for I := 0 to ProcessorCount do
+    TShareImagesThread.Create(Self, True);
 end;
 
 procedure TFormSharePhotos.LoadLanguage;
@@ -286,6 +340,8 @@ begin
       begin
         ImageConrol := TImage.Create(Box);
         ImageConrol.Parent := Box;
+        ImageConrol.Center := True;
+        ImageConrol.Proportional := True;
         ImageConrol.SetBounds(LS.Left, LS.Top, LS.Width, LS.Height);
         ImageConrol.OnMouseEnter := OnBoxMouseEnter;
         ImageConrol.OnMouseLeave := OnBoxMouseLeave;
@@ -297,6 +353,38 @@ begin
         ImageConrol.Picture.Graphic := Image;
     end;
   end;
+end;
+
+procedure TFormSharePhotos.UpdatePreview(Data: TDBPopupMenuInfoRecord;
+  Preview: TBitmap);
+var
+  I: Integer;
+  LS: TLoadingSign;
+  ImageConrol: TImage;
+  Box: TBox;
+  FileName: string;
+begin
+  FileName := AnsiLowerCase(Data.FileName);
+  for I := 0 to FFiles.Count - 1 do
+    if AnsiLowerCase(FFiles[I].FileName) = FileName then
+    begin
+      Box := TBox(SbItemsToUpload.Controls[I]);
+      LS := Box.FindChildByType<TLoadingSign>();
+      if LS <> nil then
+      begin
+        ImageConrol := TImage.Create(Box);
+        ImageConrol.Parent := Box;
+        ImageConrol.Center := True;
+        ImageConrol.Proportional := True;
+        ImageConrol.SetBounds(LS.Left, LS.Top, LS.Width, LS.Height);
+        ImageConrol.OnMouseEnter := OnBoxMouseEnter;
+        ImageConrol.OnMouseLeave := OnBoxMouseLeave;
+        ImageConrol.OnClick := ShowImages;
+        ImageConrol.Picture.Graphic := Preview;
+        LS.Free;
+      end;
+      Break;
+    end;
 end;
 
 procedure TFormSharePhotos.UpdateUserInfo(Provider: IPhotoShareProvider;

@@ -54,7 +54,7 @@ uses
   AppEvnts,
   Themes,
   uThemesUtils,
-  PathEditor;
+  PathEditor, uBaseWinControl;
 
 const
   Settings_ConvertForm = 'Convert settings';
@@ -277,25 +277,35 @@ begin
     case DdResizeAction.ItemIndex of
       0:
         begin
+          FProcessingParams.Width := 1920;
+          FProcessingParams.Height := 1080;
+        end;
+      1:
+        begin
+          FProcessingParams.Width := 1280;
+          FProcessingParams.Height := 720;
+        end;
+      2:
+        begin
           FProcessingParams.Width := 1024;
           FProcessingParams.Height := 768;
         end;
-      1:
+      3:
         begin
           FProcessingParams.Width := 800;
           FProcessingParams.Height := 600;
         end;
-      2:
+      4:
         begin
           FProcessingParams.Width := 640;
           FProcessingParams.Height := 480;
         end;
-      3:
+      5:
         begin
           FProcessingParams.Width := 320;
           FProcessingParams.Height := 240;
         end;
-      4:
+      6:
         begin
           FProcessingParams.Width := 128;
           FProcessingParams.Height := 124;
@@ -889,6 +899,8 @@ begin
     CbConvert.Caption := L('Convert');
 
     CbResize.Caption := L('Resize');
+    DdResizeAction.Items.Add(L('Full HD (1920x1080)'));
+    DdResizeAction.Items.Add(L('HD (1280x720)'));
     DdResizeAction.Items.Add(L('Big (1024x768)'));
     DdResizeAction.Items.Add(L('Medium (800x600)'));
     DdResizeAction.Items.Add(L('Small (640x480)'));

@@ -3,9 +3,16 @@ unit uWinThumbnails;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
-  Jpeg, StdCtrls, ExtCtrls, ComCtrls, ShellApi, Math, CommCtrl,
-  ShlObj, ActiveX, ComObj;
+  Windows,
+  SysUtils,
+  Classes,
+  Graphics,
+  Jpeg,
+  ShellApi,
+  CommCtrl,
+  ShlObj,
+  ActiveX,
+  ComObj;
 
 const
   IEIFLAG_ASYNC = $001; // ask the extractor if it supports ASYNC extract
@@ -143,7 +150,6 @@ begin
     if InitOle then
       CoInitializeEx(nil, COINIT_APARTMENTTHREADED or COINIT_DISABLE_OLE1DDE);
     try
-
       OleCheck(SHGetDesktopFolder(DesktopShellFolder));
       OleCheck(DesktopShellFolder.ParseDisplayName(0, nil, StringToOleStr(ExtractFilePath(Path)),
           Eaten, PIDL, Atribute));

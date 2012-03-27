@@ -257,6 +257,7 @@ object FormSharePhotos: TFormSharePhotos
     Top = 64
     Width = 153
     Height = 334
+    HorzScrollBar.Visible = False
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 4
     DesignSize = (
@@ -265,7 +266,7 @@ object FormSharePhotos: TFormSharePhotos
     object PnCreateAlbum: TPanel
       Left = 3
       Top = 3
-      Width = 143
+      Width = 139
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       ParentBackground = False
@@ -291,8 +292,8 @@ object FormSharePhotos: TFormSharePhotos
       end
     end
     object LsLoadingAlbums: TLoadingSign
-      Left = 122
-      Top = 303
+      Left = 118
+      Top = 299
       Width = 24
       Height = 24
       Active = True
@@ -316,6 +317,7 @@ object FormSharePhotos: TFormSharePhotos
     Top = 64
     Width = 364
     Height = 303
+    HorzScrollBar.Visible = False
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 6
     DesignSize = (
@@ -324,13 +326,13 @@ object FormSharePhotos: TFormSharePhotos
     object Panel8: TPanel
       Left = 3
       Top = 3
-      Width = 354
+      Width = 350
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       ParentBackground = False
       TabOrder = 0
       DesignSize = (
-        354
+        350
         41)
       object Image3: TImage
         Left = 3
@@ -380,7 +382,7 @@ object FormSharePhotos: TFormSharePhotos
         CanClick = True
       end
       object LoadingSign1: TLoadingSign
-        Left = 334
+        Left = 330
         Top = 22
         Width = 16
         Height = 16
@@ -389,7 +391,6 @@ object FormSharePhotos: TFormSharePhotos
         Anchors = [akRight, akBottom]
         SignColor = clBlack
         MaxTransparencity = 255
-        ExplicitLeft = 322
       end
       object WebLink6: TWebLink
         Left = 108
@@ -421,5 +422,10 @@ object FormSharePhotos: TFormSharePhotos
     Caption = 'Settings'
     TabOrder = 7
     OnClick = BtnSettingsClick
+  end
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
+    Left = 384
+    Top = 8
   end
 end

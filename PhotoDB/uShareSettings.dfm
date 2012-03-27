@@ -4,7 +4,7 @@ object FormShareSettings: TFormShareSettings
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'FormShareSettings'
-  ClientHeight = 246
+  ClientHeight = 217
   ClientWidth = 378
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,7 +17,7 @@ object FormShareSettings: TFormShareSettings
   OnCreate = FormCreate
   DesignSize = (
     378
-    246)
+    217)
   PixelsPerInch = 96
   TextHeight = 13
   object LbOutputFormat: TLabel
@@ -27,36 +27,41 @@ object FormShareSettings: TFormShareSettings
     Height = 13
     Caption = 'LbOutputFormat'
   end
-  object LbImageSize: TLabel
+  object LbWidth: TLabel
     Left = 8
-    Top = 70
-    Width = 60
+    Top = 127
+    Width = 39
     Height = 13
-    Caption = 'LbImageSize'
+    Caption = 'LbWidth'
+  end
+  object LbHeight: TLabel
+    Left = 144
+    Top = 127
+    Width = 42
+    Height = 13
+    Caption = 'LbHeight'
   end
   object BtnOk: TButton
     Left = 295
-    Top = 213
+    Top = 184
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
     TabOrder = 0
     OnClick = BtnOkClick
-    ExplicitLeft = 401
-    ExplicitTop = 282
+    ExplicitTop = 213
   end
   object BtnCancel: TButton
     Left = 214
-    Top = 213
+    Top = 184
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 1
     OnClick = BtnCancelClick
-    ExplicitLeft = 320
-    ExplicitTop = 282
+    ExplicitTop = 213
   end
   object CbOutputFormat: TComboBox
     Left = 8
@@ -74,6 +79,7 @@ object FormShareSettings: TFormShareSettings
     Height = 13
     Cursor = crHandPoint
     Text = 'WlJpegSettings'
+    OnClick = WlJpegSettingsClick
     ImageIndex = 0
     IconWidth = 0
     IconHeight = 0
@@ -88,20 +94,50 @@ object FormShareSettings: TFormShareSettings
   end
   object CbPreviewForRAW: TCheckBox
     Left = 8
-    Top = 190
+    Top = 161
     Width = 362
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'CbPreviewForRAW'
     TabOrder = 4
   end
-  object ComboBox1: TComboBox
+  object CbImageSize: TComboBox
     Left = 8
-    Top = 89
+    Top = 97
     Width = 362
     Height = 21
     Style = csDropDownList
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 5
+    OnChange = CbImageSizeChange
+  end
+  object SeWidth: TSpinEdit
+    Left = 53
+    Top = 124
+    Width = 79
+    Height = 22
+    MaxValue = 9999
+    MinValue = 400
+    TabOrder = 6
+    Value = 800
+  end
+  object SeHeight: TSpinEdit
+    Left = 192
+    Top = 124
+    Width = 79
+    Height = 22
+    MaxValue = 9999
+    MinValue = 400
+    TabOrder = 7
+    Value = 600
+  end
+  object CbResizeToSize: TCheckBox
+    Left = 8
+    Top = 78
+    Width = 362
+    Height = 17
+    Caption = 'CbResizeToSize'
+    TabOrder = 8
+    OnClick = CbResizeToSizeClick
   end
 end

@@ -17,10 +17,16 @@ function CalcJpegResampledSize(Jpeg: TJpegImage; Size: Integer; CompressionRate:
   out JpegImageResampled: TJpegImage): Int64;
 function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte;
   out JpegImageResampled: TJpegImage): Int64;
+procedure FreeJpegBitmap(J: TJpegImage);
 
 implementation
 
 { TJPEGX }
+
+procedure FreeJpegBitmap(J: TJpegImage);
+begin
+  TJpegX(J).FreeBitmap;
+end;
 
 function TJPEGX.InnerBitmap: TBitmap;
 begin

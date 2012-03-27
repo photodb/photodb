@@ -332,7 +332,6 @@ object FormSizeResizer: TFormSizeResizer
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    DisableStyles = False
     Icon.Data = {
       0000010001001818000001002000880900001600000028000000180000003000
       0000010020000000000060090000000000000000000000000000000000000000
@@ -432,7 +431,6 @@ object FormSizeResizer: TFormSizeResizer
     EnterColor = clBlack
     EnterBould = False
     TopIconIncrement = 0
-    DisableStyles = False
     Icon.Data = {
       0000010001001818000001002000880900001600000028000000180000003000
       0000010020000000000060090000000000000000000000000000000000000000
