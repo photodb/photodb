@@ -3,10 +3,11 @@ unit uDateUtils;
 interface
 
 uses
-  SysUtils, DateUtils;
+  SysUtils,
+  DateUtils;
 
-function DateTimeStrEval(const DateTimeFormat : string;
-                         const DateTimeStr : string) : TDateTime;
+function DateTimeStrEval(const DateTimeFormat: string; const DateTimeStr: string): TDateTime;
+function FormatDateTimeShortDate(Date: TDateTime): string;
 
 implementation
 
@@ -269,6 +270,11 @@ begin
     Retvar) then
     Retvar := 0.0;
   Result := Retvar;
+end;
+
+function FormatDateTimeShortDate(Date: TDateTime): string;
+begin
+  Result := FormatDateTime('ddddd', Date);
 end;
 
 end.

@@ -47,6 +47,7 @@ uses
   uExplorerFSProviders,
   uExplorerMyComputerProvider,
   uStringUtils,
+  uDateUtils,
   Menus,
   Math,
   uPathUtils,
@@ -510,7 +511,7 @@ begin
   TSelectDateItem(SDI).FItemsCount := 1;
   TSelectDateItem(SDI).FItemsSize := Size;
   TSelectDateItem(SDI).Items.Add(Item.Copy);
-  SDI.ItemLabel := Settings.ReadString('ImportPicturesSeries', FormatDateTime('yyyy.mm.dd', Date), '');
+  SDI.ItemLabel := Settings.ReadString('ImportPicturesSeries', FormatDateTimeShortDate(Date), '');
 
   Index := -1;
 
@@ -913,7 +914,7 @@ begin
     LnkOk := Sb.FindChildByTag<TWebLink>(TAG_EDIT_DATE_OK);
     Item.Date := Dp.Date;
 
-    LnkDate.Text := FormatDateTime('yyyy-mm-dd', Dp.Date);
+    LnkDate.Text := FormatDateTimeShortDate(Dp.Date);
 
     LnkOk.Hide;
     Dp.Hide;
@@ -942,7 +943,7 @@ begin
     else
       LnkLabel.Text := TPath.CleanUp(Edit.Text);
 
-    Settings.WriteString('ImportPicturesSeries', FormatDateTime('yyyy.mm.dd', Item.Date), Item.ItemLabel);
+    Settings.WriteString('ImportPicturesSeries', FormatDateTimeShortDate(Item.Date), Item.ItemLabel);
 
     LnkOk.Hide;
     Edit.Hide;
@@ -1287,7 +1288,7 @@ begin
 
       WlDate := Sb.FindChildByTag<TWebLink>(TAG_DATE);
 
-      WlDate.Text := FormatDateTime('yyyy-mm-dd', SI.Date);
+      WlDate.Text := FormatDateTimeShortDate(SI.Date);
       WlDate.LoadImage;
 
       WlItemsCount := Sb.FindChildByTag<TWebLink>(TAG_ITEMS_COUNT);
@@ -1387,7 +1388,7 @@ begin
   DtpDate.Left := X;
   if not FIsSimpleDateEditing then
   begin
-    WlDate.Text := IIF(FSimpleDate = MinDateTime, L('Set date'), FormatDateTime('yyyy-mm-dd', FSimpleDate));
+    WlDate.Text := IIF(FSimpleDate = MinDateTime, L('Set date'), FormatDateTimeShortDate(FSimpleDate));
     X := WlDate.Left + WlDate.Width + 10;
     WlDate.Show;
     WlSetDate.Hide;
@@ -1708,7 +1709,6 @@ end;
 
 procedure TFormImportImages.FormDestroy(Sender: TObject);
 begin
-  UnRegisterMainForm(Self);
   ClearItems;
 
   F(FBitmapImageList);
@@ -1716,6 +1716,7 @@ begin
 
   F(FSeries);
   F(FItemUpdateTimer);
+  UnRegisterMainForm(Self);
 end;
 
 function TFormImportImages.GetFormID: string;

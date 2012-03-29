@@ -50,15 +50,19 @@ uses
   uUpTime,
   Themes,
   EasyListView,
-  uPortableClasses;
+  uPortableClasses,
+  uTranslate,
+  uSysUtils;
 
 type
   TFormManager = class(TDBForm)
+    AeMain: TApplicationEvents;
     procedure CalledTimerTimer(Sender: TObject);
     procedure CheckTimerTimer(Sender: TObject);
     procedure TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure AeMainException(Sender: TObject; E: Exception);
   private
     { Private declarations }
     FMainForms: TList;
@@ -456,6 +460,11 @@ end;
 function TFormManager.GetTimeLimitMessage: string;
 begin
   Result := L('After the 30 days has expired, you must activate your copy!');
+end;
+
+procedure TFormManager.AeMainException(Sender: TObject; E: Exception);
+begin
+  MessageBoxDB(Handle, FormatEx(TA('An unhandled error occurred: {0}!'), [e.Message]), L('Error'),  TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
 procedure TFormManager.CalledTimerTimer(Sender: TObject);

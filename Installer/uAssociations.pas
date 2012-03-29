@@ -3,8 +3,16 @@ unit uAssociations;
 interface
 
 uses
-  Windows, Classes, Graphics, StdCtrls, uMemory, SysUtils, Registry,
-  uTranslate, StrUtils, SyncObjs,
+  Windows,
+  Classes,
+  Graphics,
+  StdCtrls,
+  uMemory,
+  SysUtils,
+  Registry,
+  uTranslate,
+  StrUtils,
+  SyncObjs,
   jpeg,
   {$IFDEF PHOTODB}
   GraphicEx,

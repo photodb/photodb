@@ -775,6 +775,7 @@ type
     //END - JS callbacks
 
     procedure ApplyStyle; override;
+    function CanShareSelectedObjects: Boolean;
   public
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
     destructor Destroy; override;
@@ -870,11 +871,6 @@ uses
   uFormSharePhotos;
 
 {$R *.dfm}
-
-function CanShareFile(FileName: string): Boolean;
-begin
-  Result := False;
-end;
 
 procedure RegisterPathEditThread(Sender: TThread);
 begin
@@ -3658,6 +3654,36 @@ begin
     MessageBoxDB(Handle, Format(L('Geo location can''t be saved to this file type!'), []), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
+function TExplorerForm.CanShareSelectedObjects: Boolean;
+var
+  SC, I, Index: Integer;
+  EI: TExplorerFileInfo;
+begin
+  Result := False;
+
+  SC := SelCount;
+  if SC = 0 then
+    Exit(False);
+
+  if SC = 1 then
+  begin
+    Result := IsGraphicFile(FSelectedInfo.FileName) or CanShareVideo(FSelectedInfo.FileName);
+    Exit;
+  end;
+
+  for I := 0 to ElvMain.Items.Count - 1 do
+    if ElvMain.Items[I].Selected then
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      EI := FFilesInfo[Index];
+      if IsGraphicFile(EI.FileName) or CanShareVideo(EI.FileName) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+end;
+
 procedure TExplorerForm.WlShareClick(Sender: TObject);
 var
   I, Index: Integer;
@@ -4598,7 +4624,7 @@ begin
       end else
         WlGeoLocation.Visible := False;
 
-      if ((FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or ((FSelectedInfo.FileType = EXPLORER_ITEM_FILE) and CanShareFile(FSelectedInfo.FileName))) then
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
       begin
         WlShare.Visible := True;
         WlShare.Top := NewTop + H;
@@ -4744,6 +4770,17 @@ begin
         WlClear.Visible := False;
     end else
       WlClear.Visible := False;
+
+    if (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) then
+    begin
+      if CanShareSelectedObjects then
+      begin
+        WlShare.Visible := True;
+        WlShare.Top := NewTop + H;
+        NewTop := WlShare.BoundsRect.Bottom;
+      end else
+        WlShare.Visible := False;
+    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) then

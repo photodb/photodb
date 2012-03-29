@@ -377,6 +377,7 @@ begin
       end;
 
     LbTitle.Caption := FTitle;
+    LbTitle.Repaint;
     Caption := FTitle;
   end;
 

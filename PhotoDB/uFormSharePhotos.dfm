@@ -2,9 +2,11 @@ object FormSharePhotos: TFormSharePhotos
   Left = 0
   Top = 0
   Caption = 'Share your photos'
-  ClientHeight = 406
-  ClientWidth = 539
+  ClientHeight = 450
+  ClientWidth = 625
   Color = clBtnFace
+  Constraints.MinHeight = 200
+  Constraints.MinWidth = 550
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,12 +15,14 @@ object FormSharePhotos: TFormSharePhotos
   Font.Style = []
   OldCreateOrder = False
   Position = poOwnerFormCenter
+  OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
   DesignSize = (
-    539
-    406)
+    625
+    450)
   PixelsPerInch = 96
   TextHeight = 13
   object ImProviderImage: TImage
@@ -28,7 +32,7 @@ object FormSharePhotos: TFormSharePhotos
     Height = 33
   end
   object ImAvatar: TImage
-    Left = 498
+    Left = 584
     Top = 10
     Width = 32
     Height = 32
@@ -156,6 +160,7 @@ object FormSharePhotos: TFormSharePhotos
     Stretch = True
     Transparent = True
     OnClick = WlUserNameClick
+    ExplicitLeft = 498
   end
   object LbProviderInfo: TLabel
     Left = 47
@@ -179,7 +184,7 @@ object FormSharePhotos: TFormSharePhotos
     Caption = 'Items to upload:'
   end
   object LsAuthorisation: TLoadingSign
-    Left = 498
+    Left = 584
     Top = 10
     Width = 32
     Height = 32
@@ -190,7 +195,7 @@ object FormSharePhotos: TFormSharePhotos
     MaxTransparencity = 255
   end
   object WlUserName: TWebLink
-    Left = 435
+    Left = 521
     Top = 8
     Width = 57
     Height = 13
@@ -212,7 +217,7 @@ object FormSharePhotos: TFormSharePhotos
     CanClick = True
   end
   object WlChangeUser: TWebLink
-    Left = 426
+    Left = 512
     Top = 27
     Width = 66
     Height = 13
@@ -234,17 +239,18 @@ object FormSharePhotos: TFormSharePhotos
     CanClick = True
   end
   object BtnShare: TButton
-    Left = 435
-    Top = 373
+    Left = 521
+    Top = 417
     Width = 96
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Share!'
     TabOrder = 2
+    OnClick = BtnShareClick
   end
   object BtnCancel: TButton
-    Left = 347
-    Top = 373
+    Left = 433
+    Top = 417
     Width = 82
     Height = 25
     Anchors = [akRight, akBottom]
@@ -256,44 +262,16 @@ object FormSharePhotos: TFormSharePhotos
     Left = 8
     Top = 64
     Width = 153
-    Height = 334
+    Height = 378
     HorzScrollBar.Visible = False
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 4
     DesignSize = (
       149
-      330)
-    object PnCreateAlbum: TPanel
-      Left = 3
-      Top = 3
-      Width = 139
-      Height = 41
-      Anchors = [akLeft, akTop, akRight]
-      ParentBackground = False
-      TabOrder = 0
-      object WlCreateAlbumName: TWebLink
-        Left = 24
-        Top = 14
-        Width = 93
-        Height = 13
-        Cursor = crHandPoint
-        Text = 'Create new Album'
-        ImageIndex = 0
-        IconWidth = 0
-        IconHeight = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
-      end
-    end
+      374)
     object LsLoadingAlbums: TLoadingSign
-      Left = 118
-      Top = 299
+      Left = 122
+      Top = 347
       Width = 24
       Height = 24
       Active = True
@@ -303,36 +281,37 @@ object FormSharePhotos: TFormSharePhotos
       MaxTransparencity = 255
     end
   end
-  object ProgressBar1: TProgressBar
+  object PbMain: TProgressBar
     Left = 167
-    Top = 373
-    Width = 79
+    Top = 417
+    Width = 165
     Height = 25
     Anchors = [akLeft, akRight, akBottom]
     Position = 75
     TabOrder = 5
+    Visible = False
   end
   object SbItemsToUpload: TScrollBox
     Left = 167
     Top = 64
-    Width = 364
-    Height = 303
+    Width = 450
+    Height = 347
     HorzScrollBar.Visible = False
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 6
     DesignSize = (
-      360
-      299)
-    object Panel8: TPanel
+      446
+      343)
+    object PnExample: TPanel
       Left = 3
       Top = 3
-      Width = 350
+      Width = 432
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       ParentBackground = False
       TabOrder = 0
       DesignSize = (
-        350
+        432
         41)
       object Image3: TImage
         Left = 3
@@ -382,7 +361,7 @@ object FormSharePhotos: TFormSharePhotos
         CanClick = True
       end
       object LoadingSign1: TLoadingSign
-        Left = 330
+        Left = 412
         Top = 22
         Width = 16
         Height = 16
@@ -414,8 +393,8 @@ object FormSharePhotos: TFormSharePhotos
     end
   end
   object BtnSettings: TButton
-    Left = 252
-    Top = 373
+    Left = 338
+    Top = 417
     Width = 89
     Height = 25
     Anchors = [akRight, akBottom]
@@ -426,6 +405,13 @@ object FormSharePhotos: TFormSharePhotos
   object AeMain: TApplicationEvents
     OnMessage = AeMainMessage
     Left = 384
+    Top = 8
+  end
+  object SaveWindowPos1: TSaveWindowPos
+    SetOnlyPosition = False
+    RootKey = HKEY_CURRENT_USER
+    Key = 'Software\Positions\Noname'
+    Left = 120
     Top = 8
   end
 end

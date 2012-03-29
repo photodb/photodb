@@ -7,6 +7,7 @@ uses
   Generics.Collections,
   Classes,
   SyncObjs,
+  SysUtils,
   Graphics;
 
 const
@@ -80,6 +81,7 @@ type
   end;
 
 function PhotoShareManager: TPhotoShareManager;
+function GetFileContentType(FileName: string): string;
 
 implementation
 
@@ -92,6 +94,46 @@ begin
     FPhotoShareManager := TPhotoShareManager.Create;
 
   Result := FPhotoShareManager;
+end;
+
+{ 
+----------------------
+    * video/3gpp
+    * video/avi
+    * video/quicktime
+    * video/mp4
+    * video/mpeg
+    * video/mpeg4
+    * video/msvideo
+    * video/x-ms-asf
+    * video/x-ms-wmv
+    * video/x-msvideo
+}
+
+function GetFileContentType(FileName: string): string;
+var
+  Ext: string;
+begin
+  Ext := AnsiLowerCase(ExtractFileExt(FileName));
+
+  Result := 'video/' + StringReplace(Ext, '.', '', []);
+
+  if (Ext = '.3gp2') or (Ext = '.3gpp') or (Ext = '.3gp') or (Ext = '.3g2') then
+    Result := 'video/3gpp'
+  else if (Ext = '.avi') then
+    Result := 'video/avi'
+  else if (Ext = '.mov') then
+    Result := 'video/quicktime'
+  else if (Ext = '.mp4') then
+    Result := 'video/mp4'
+  else if (Ext = '.mpeg') then
+    Result := 'video/mpeg'
+  else if (Ext = '.mpeg4') then
+    Result := 'video/mpeg4'
+  else if (Ext = '.asf') then
+    Result := 'video/x-ms-asf'
+  else if (Ext = '.wmv') then
+    Result := 'video/x-ms-wmv';
 end;
 
 { TPhotoShareManager }

@@ -402,8 +402,10 @@ var
   Bitmap: TBitmap;
 begin
   FDisplayName := Group.GroupName;
+  FGroupName := Group.GroupName;
   FComment := Group.GroupComment;
   FKeywords := Group.GroupKeyWords;
+  FPath := cGroupsPath + '\' + Group.GroupName;
   if (Group.GroupImage <> nil) and (ImageSize > 0) then
   begin
     Bitmap := TBitmap.Create;

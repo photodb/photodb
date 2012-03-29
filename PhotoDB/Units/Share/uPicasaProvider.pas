@@ -368,9 +368,8 @@ begin
           s := CRLF + '--END_OF_PART--' + CRLF;
           MS.Write(PAnsiChar(S)^, Length(S));//завершили тело документа
 
-
-          ResponseXML := ReadFile('c:\upload_image.xml');
-          //ResponseXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default/albumid/' + AlbumID, nil, MS, 'multipart/related; boundary=END_OF_PART');
+          //ResponseXML := ReadFile('c:\upload_image.xml');
+          ResponseXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default/albumid/' + AlbumID, nil, MS, 'multipart/related; boundary=END_OF_PART');
           if ResponseXML <> '' then
           begin
             Photo := TPicasaUserAlbumPhoto.Create(ResponseXML);

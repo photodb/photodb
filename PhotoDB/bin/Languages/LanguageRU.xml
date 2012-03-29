@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <language name="Русский язык" image="LanguageRU.png" autor="Команда PhotoDB" code="ru" langCode="25">
   <scope name="">
-    <translate name="Ok" value="Да" />
-    <translate name="Cancel" value="Отмена" />
     <translate name="Close" value="Закрыть" />
     <translate name="JPEG Options" value="Настройки JPEG" />
     <translate name="Save settings by default" value="Сохранить по умолчанию" />
@@ -12,6 +10,18 @@
     <translate name="Gb" value="Гб" />
     <translate name="Tb" value="Тб" />
     <translate name="Bytes" value="Байт" />
+    <translate name="Yes" value="Да" />
+    <translate name="No" value="Нет" />
+    <translate name="Ok" value="Да" />
+    <translate name="Cancel" value="Отмена" />
+    <translate name="Abort" value="Прервать" />
+    <translate name="Retry" value="Повтор" />
+    <translate name="Ignore" value="Игнорировать" />
+    <translate name="All" value="Все" />
+    <translate name="No to all" value="Нет для всех" />
+    <translate name="Yes to all" value="Да для всех" />
+    <translate name="Help" value="Справка" />
+    <translate name="Close" value="Закрыть" />	
     <translate name="Error" value="Ошибка" />
     <translate name="Warning" value="Внимание" />
     <translate name="Question" value="Вопрос" />
@@ -24,8 +34,9 @@
     <translate name="%dpx." value="%dпк." />
     <translate name="All formats (%s)" value="Все форматы (%s)" />
     <translate name="Unknown" value="Неизвестно" />
-    <translate name="Unregistered user" value="Незарегистрированный пользователь" />	
-	<translate name="Loading..." value="Загрузка..."/>
+    <translate name="Unregistered user" value="Незарегистрированный пользователь" />
+	<translate name="Loading..." value="Загрузка..."/>	
+	<translate name="An unhandled error occurred: {0}!" value="Возникла неожиданная ошибка: {0}!"/>
   </scope>
   <scope name="Errors">
     <translate name="Result is undefined!" value="Результат не определён!" />
@@ -2189,7 +2200,9 @@
     <translate name="Medium (800x600)" value="Средние (800x600)" />
     <translate name="Big (1024x768)" value="Большие (1024x768)" />
     <translate name="Custom size:" value="Произвольный размер:" />
-  </scope>
+	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
+    <translate name="Can''t create album!" value="Не удаётся создать альбом!" />
+	</scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
   </scope>

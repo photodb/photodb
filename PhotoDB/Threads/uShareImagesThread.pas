@@ -3,9 +3,12 @@ unit uShareImagesThread;
 interface
 
 uses
+  uConstants,
+  uRuntime,
   uMemory,
   Winapi.Windows,
   System.SysUtils,
+  System.Classes,
   uThreadEx,
   uThreadForm,
   Vcl.Graphics,
@@ -21,21 +24,33 @@ uses
   GraphicEx,
   uSettings,
   uBitmapUtils,
+  uLogger,
+  uShellThumbnails,
+  uAssociatedIcons,
   Vcl.Imaging.Jpeg,
-  Vcl.Imaging.pngImage;
+  Vcl.Imaging.pngImage,
+  Vcl.ComCtrls,
+  uPhotoShareInterfaces,
+  uShellIntegration,
+  CCR.Exif;
 
 type
   TShareImagesThread = class(TThreadEx)
   private
     FData: TDBPopupMenuInfoRecord;
     FIsPreview: Boolean;
+    FAlbum: IPhotoServiceAlbum;
+    FProvider: IPhotoShareProvider;
+    procedure ShowError(ErrorText: string);
+    procedure CreateAlbum;
     procedure ProcessItem(Data: TDBPopupMenuInfoRecord);
     procedure ProcessImage(Data: TDBPopupMenuInfoRecord);
     procedure ProcessVideo(Data: TDBPopupMenuInfoRecord);
   protected
     procedure Execute; override;
+    function GetThreadID: string; override;
   public
-    constructor Create(AOwnerForm: TThreadForm; IsPreview: Boolean);
+    constructor Create(AOwnerForm: TThreadForm; Provider: IPhotoShareProvider; IsPreview: Boolean);
     destructor Destroy; override;
   end;
 
@@ -47,11 +62,33 @@ uses
 
 { TShareImagesThread }
 
-constructor TShareImagesThread.Create(AOwnerForm: TThreadForm; IsPreview: Boolean);
+constructor TShareImagesThread.Create(AOwnerForm: TThreadForm; Provider: IPhotoShareProvider; IsPreview: Boolean);
 begin
   inherited Create(AOwnerForm, AOwnerForm.StateID);
   FIsPreview := IsPreview;
+  FProvider := Provider;
   FData := nil;
+  FAlbum := nil;
+end;
+
+procedure TShareImagesThread.CreateAlbum;
+var
+  FAlbumID, AlbumName: string;
+  AlbumDate: TDateTime;
+begin
+  SynchronizeEx(
+    procedure
+    begin
+      TFormSharePhotos(OwnerForm).GetAlbumInfo(FAlbumID, AlbumName, AlbumDate, FAlbum);
+    end
+  );
+  if FAlbumID = '' then
+  begin
+    if FProvider.CreateAlbum(AlbumName, '', AlbumDate, FAlbum) then
+      FAlbumID := FAlbum.AlbumID
+    else
+      ShowError(L('Can''t create album!'));
+  end;
 end;
 
 destructor TShareImagesThread.Destroy;
@@ -63,26 +100,87 @@ end;
 procedure TShareImagesThread.Execute;
 begin
   FreeOnTerminate := True;
-  //for video previews
-  CoInitializeEx(nil, COINIT_APARTMENTTHREADED);
   try
-    if FIsPreview then
-    begin
-      repeat
+    //for video previews
+    CoInitializeEx(nil, COINIT_APARTMENTTHREADED);
+    try
+      if not FIsPreview then
         SynchronizeEx(
           procedure
           begin
-            TFormSharePhotos(OwnerForm).GetDataForPreview(FData)
+            TFormSharePhotos(OwnerForm).PbMain.Style := pbstMarquee;
+            TFormSharePhotos(OwnerForm).PbMain.Show;
           end
         );
-        if FData <> nil then
-          ProcessItem(FData);
 
-      until FData = nil;
+      try
+
+        if not FIsPreview then
+        begin
+          CreateAlbum;
+          SynchronizeEx(
+            procedure
+            begin
+              TFormSharePhotos(OwnerForm).PbMain.Style := pbstNormal;
+            end
+          );
+          if FAlbum = nil then
+            Exit;
+        end;
+
+        repeat
+          if IsTerminated or DBTerminating then
+            Break;
+
+          SynchronizeEx(
+            procedure
+            begin
+              if FIsPreview then
+                TFormSharePhotos(OwnerForm).GetDataForPreview(FData)
+              else
+                TFormSharePhotos(OwnerForm).GetData(FData);
+            end
+          );
+
+          if IsTerminated or DBTerminating then
+            Break;
+
+          if FData <> nil then
+            ProcessItem(FData);
+
+        until FData = nil;
+
+      finally
+        if not FIsPreview then
+          SynchronizeEx(
+            procedure
+            begin
+              TFormSharePhotos(OwnerForm).PbMain.Hide;
+            end
+          );
+      end;
+    finally
+      if not FIsPreview then
+        SynchronizeEx(
+          procedure
+          begin
+            TFormSharePhotos(OwnerForm).SharingDone;
+          end
+        );
+      CoUninitialize;
     end;
-  finally
-    CoUninitialize;
+  except
+    on e: Exception do
+    begin
+      EventLog(e);
+      ShowError(e.Message);
+    end;
   end;
+end;
+
+function TShareImagesThread.GetThreadID: string;
+begin
+  Result := 'PhotoShare';
 end;
 
 procedure TShareImagesThread.ProcessItem(Data: TDBPopupMenuInfoRecord);
@@ -95,15 +193,17 @@ end;
 
 procedure TShareImagesThread.ProcessImage(Data: TDBPopupMenuInfoRecord);
 var
-  Ext, Password: string;
+  Ext, Password, ContentType: string;
   GraphicClass: TGraphicClass;
-  Enrypted: Boolean;
+  Enrypted, UsePreviewForRAW: Boolean;
   Graphic, NewGraphic: TGraphic;
   Original: TBitmap;
   Width, Height, W, H: Integer;
   IsJpegImageFormat,
   ResizeImage: Boolean;
-
+  MS: TMemoryStream;
+  PhotoItem: IPhotoServiceItem;
+  ExifData: TExifData;
 begin
   Width := 0;
   Height := 0;
@@ -119,6 +219,7 @@ begin
     Height := 32;
   end;
 
+  UsePreviewForRAW := Settings.ReadBool('Share', 'RAWPreview', True);
   IsJpegImageFormat := Settings.ReadInteger('Share', 'ImageFormat', 0) = 0;
 
   Ext := ExtractFileExt(Data.FileName);
@@ -140,7 +241,8 @@ begin
 
     //RAW loads sd preview
     if Graphic is TRAWImage then
-      TRAWImage(Graphic).IsPreview := True;
+      if UsePreviewForRAW or FIsPreview then
+        TRAWImage(Graphic).IsPreview := True;
 
     if Enrypted then
     begin
@@ -189,8 +291,21 @@ begin
           if NewGraphic is TJPEGImage then
             FreeJpegBitmap(TJPEGImage(NewGraphic));
 
-          //TODO: save and update EXIF
-          //TODO: post image
+          MS := TMemoryStream.Create;
+          try
+            NewGraphic.SaveToStream(MS);
+            MS.Seek(0, soFromBeginning);
+
+            if IsJpegImageFormat then
+              ContentType := 'image/jpeg'
+            else
+              ContentType := 'image/png';
+
+             FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
+              ExtractFileName(Data.FileName), Data.Date, ContentType, MS, PhotoItem);
+          finally
+            F(MS);
+          end;
         finally
           F(NewGraphic);
         end;
@@ -205,8 +320,55 @@ begin
 end;
 
 procedure TShareImagesThread.ProcessVideo(Data: TDBPopupMenuInfoRecord);
+var
+  TempBitmap: TBitmap;
+  Ico: TIcon;
 begin
+  if FIsPreview then
+  begin
+    TempBitmap := TBitmap.Create;
+    try
+      if ExtractVideoThumbnail(Data.FileName, 32, TempBitmap) then
+      begin
+        SynchronizeEx(
+          procedure
+          begin
+            TFormSharePhotos(OwnerForm).UpdatePreview(Data, TempBitmap);
+          end
+        );
+      end else
+      begin
+        Ico := TAIcons.Instance.GetIconByExt(Data.FileName, False, 32, False);
+        try
+          SynchronizeEx(
+            procedure
+            begin
+              TFormSharePhotos(OwnerForm).UpdatePreview(Data, Ico);
+            end
+          );
+        finally
+          F(Ico);
+        end;
+      end;
+    finally
+      F(TempBitmap);
+    end;
+  end else
+  begin
 
+    GetFileContentType(Data.FileName)
+
+  end;
+end;
+
+procedure TShareImagesThread.ShowError(ErrorText: string);
+begin
+  SynchronizeEx(
+    procedure
+    begin
+      MessageBoxDB(Handle, ErrorText, L('Warning'), TD_BUTTON_OK, TD_ICON_ERROR);
+    end
+  );
 end;
 
 end.

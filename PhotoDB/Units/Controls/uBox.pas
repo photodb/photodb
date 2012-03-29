@@ -18,13 +18,15 @@ type
     FIsHovered: Boolean;
     FIsSelected: Boolean;
     procedure SetIsHovered(const Value: Boolean);
+    procedure UpdateSubControls;
+    procedure SetIsSelected(const Value: Boolean);
   protected
     procedure Paint; override;
     procedure WMEraseBkgnd(var Message: TWmEraseBkgnd); message WM_ERASEBKGND;
   public
     constructor Create(AOwner: TComponent); override;
     property IsHovered: Boolean read FIsHovered write SetIsHovered;
-    property IsSelected: Boolean read FIsSelected write FIsSelected;
+    property IsSelected: Boolean read FIsSelected write SetIsSelected;
   end;
 
 implementation
@@ -108,16 +110,29 @@ begin
 end;
 
 procedure TBox.SetIsHovered(const Value: Boolean);
-var
-  I: Integer;
-  WL: TWebLink;
 begin
   FIsHovered := Value;
+  UpdateSubControls;
+  Invalidate;
+end;
+
+procedure TBox.SetIsSelected(const Value: Boolean);
+begin
+  FIsSelected := Value;
+  UpdateSubControls;
+  Invalidate;
+end;
+
+procedure TBox.UpdateSubControls;
+var
+  WL: TWebLink;
+  I: Integer;
+begin
   for I := 0 to ControlCount - 1 do
     if Controls[I] is TWebLink then
     begin
       WL := TWebLink(Controls[I]);
-      if Value or IsSelected then
+      if IsHovered or IsSelected then
       begin
         WL.Color := StyleServices.GetSystemColor(clHighlight);
         WL.Font.Color := StyleServices.GetSystemColor(clHighlightText);
@@ -127,7 +142,6 @@ begin
         WL.Font.Color := StyleServices.GetStyleFontColor(sfPanelTextNormal);
       end;
     end;
-  Invalidate;
 end;
 
 procedure TBox.WMEraseBkgnd(var Message: TWmEraseBkgnd);
