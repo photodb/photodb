@@ -25,6 +25,7 @@ type
   TButtonHelper = class helper for TButton
   public
     procedure AdjustButtonWidth;
+    procedure SetEnabledEx(Value: Boolean);
   end;
 
 type
@@ -256,6 +257,13 @@ begin
       Exit;
     end;
   end;
+end;
+
+procedure TButtonHelper.SetEnabledEx(Value: Boolean);
+begin
+  Enabled := Value;
+  if not Value then
+    Perform(CM_RECREATEWND, 0, 0);
 end;
 
 end.

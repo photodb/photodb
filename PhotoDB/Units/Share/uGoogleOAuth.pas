@@ -11,7 +11,8 @@ uses
   IdException,
   idUri,
   uInternetUtils,
-  uTranslate;
+  uTranslate,
+  IdComponent;
 
 resourcestring
   rsRequestError = 'Request error: %d - %s';
@@ -24,6 +25,8 @@ const
   DefaultMime = 'application/json; charset=UTF-8';
 
 type
+  TOnInternetProgress = procedure(Sender: TObject; Max, Position: Int64) of object;
+
   /// <summary>
   /// Компонент для авторизации в сервисах Google по протоколу OAuth и
   /// выполнения основных HTTP-запросов: GET, POST, PUT и DELETE к ресурсам API
@@ -42,6 +45,9 @@ type
     FExpires_in: string;
     FRefresh_token: string;
     FSlug: AnsiString;
+    FWorkMax: Int64;
+    FWorkPosition: Int64;
+    FOnProgress: TOnInternetProgress;
     function HTTPMethod(AURL: string; AMethod: TMethodType; AParams: TStrings;
       ABody: TStream; AMime: string = DefaultMime): string;
     procedure SetClientID(const Value: string);
@@ -50,6 +56,9 @@ type
     function ParamValue(ParamName, JSONString: string): string;
     procedure SetClientSecret(Value: string);
     function PrepareParams(Params: TStrings): string;
+    procedure WorkBeginEvent(ASender: TObject; AWorkMode: TWorkMode; AWorkCountMax: Int64);
+    procedure WorkEndEvent(ASender: TObject; AWorkMode: TWorkMode);
+    procedure WorkEvent(ASender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
   public
     constructor Create;
     destructor Destroy; override;
@@ -180,6 +189,7 @@ type
     /// </summary>
     property ClientSecret: string read FClientSecret write SetClientSecret;
     property Slug: AnsiString read FSlug write FSlug;
+    property OnProgress: TOnInternetProgress read FOnProgress write FOnProgress;
   end;
 
 implementation
@@ -203,11 +213,15 @@ end;
 constructor TOAuth.Create;
 begin
   inherited;
+  FOnProgress := nil;
   FHTTP := TIdHTTP.Create(nil);
   FSSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   FHTTP.IOHandler := FSSLIOHandler;
   FHTTP.ConnectTimeout := cConnectionTimeout;
   FHTTP.ReadTimeout := 0;
+  FHTTP.OnWorkBegin := WorkBeginEvent;
+  FHTTP.OnWorkEnd := WorkEndEvent;
+  FHTTP.OnWork := WorkEvent;
   FSlug := '';
 end;
 
@@ -265,35 +279,30 @@ begin
       FHTTP.Request.CustomHeaders.Add('Slug: ' + string(FSlug));
       FSlug := '';
     end;
-    try
-      case AMethod of
-        tmGET:
-          begin
-            FHTTP.Get(AURL + ParamString, Response);
-          end;
-        tmPOST:
-          begin
-            FHTTP.Request.ContentType := AMime;
-            FHTTP.Post(AURL + ParamString, ABody, Response);
-          end;
-        tmPUT:
-          begin
-            FHTTP.Request.ContentType := AMime;
-            FHTTP.Put(AURL, ABody, Response);
-          end;
-        tmDELETE:
-          begin
-            FHTTP.Delete(AURL);
-          end;
-      end;
-      if AMethod <> tmDELETE then
-        Result := Response.DataString;
-    except
-      on E: EIdHTTPProtocolException do
-        raise E.CreateFmt(rsRequestError, [E.ErrorCode, E.ErrorMessage])
-      else
-        raise Exception.Create(rsUnknownError);
+
+    case AMethod of
+      tmGET:
+        begin
+          FHTTP.Get(AURL + ParamString, Response);
+        end;
+      tmPOST:
+        begin
+          FHTTP.Request.ContentType := AMime;
+          FHTTP.Post(AURL + ParamString, ABody, Response);
+        end;
+      tmPUT:
+        begin
+          FHTTP.Request.ContentType := AMime;
+          FHTTP.Put(AURL, ABody, Response);
+        end;
+      tmDELETE:
+        begin
+          FHTTP.Delete(AURL);
+        end;
     end;
+    if AMethod <> tmDELETE then
+      Result := Response.DataString;
+
   finally
     Response.Free
   end;
@@ -377,6 +386,26 @@ end;
 procedure TOAuth.SetScope(const Value: string);
 begin
   FScope := Value;
+end;
+
+procedure TOAuth.WorkBeginEvent(ASender: TObject; AWorkMode: TWorkMode;
+  AWorkCountMax: Int64);
+begin
+  FWorkMax := AWorkCountMax;
+  FWorkPosition := 0;
+end;
+
+procedure TOAuth.WorkEndEvent(ASender: TObject; AWorkMode: TWorkMode);
+begin
+  FWorkPosition := FWorkMax;
+end;
+
+procedure TOAuth.WorkEvent(ASender: TObject; AWorkMode: TWorkMode;
+  AWorkCount: Int64);
+begin
+  FWorkPosition := AWorkCount;
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, FWorkMax, FWorkPosition);
 end;
 
 end.

@@ -27,14 +27,14 @@ type
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
-    FProvider: TPicasaProvider;
+    FAccessUrl: string;
     FApplicationCode: string;
     procedure LoadLanguage;
   protected
     function GetFormID: string; override;
   public
     { Public declarations }
-    constructor Create(AOwner: TComponent; Provider: TPicasaProvider); reintroduce;
+    constructor Create(AOwner: TComponent; AccessUrl: string); reintroduce;
     property ApplicationCode: string read FApplicationCode;
   end;
 
@@ -42,10 +42,9 @@ implementation
 
 {$R *.dfm}
 
-constructor TFormPicasaOAuth.Create(AOwner: TComponent;
-  Provider: TPicasaProvider);
+constructor TFormPicasaOAuth.Create(AOwner: TComponent; AccessUrl: string);
 begin
-  FProvider := Provider;
+  FAccessUrl := AccessUrl;
   inherited Create(AOwner);
   FApplicationCode := '';
 end;
@@ -53,7 +52,7 @@ end;
 procedure TFormPicasaOAuth.FormCreate(Sender: TObject);
 begin
   LoadLanguage;
-  WbApplicationRequest.Navigate(FProvider.AccessURL);
+  WbApplicationRequest.Navigate(FAccessUrl);
 end;
 
 function TFormPicasaOAuth.GetFormID: string;

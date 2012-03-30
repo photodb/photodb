@@ -50,7 +50,7 @@ begin
   try
     FFile := TFileStream.Create(GetAppDataDirectory + '\EventLog' + FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) + '.txt', fmCreate);
   except
-    on e : Exception do
+    on e: Exception do
       MessageBox(0, PChar(e.Message), PChar('ERROR!'), MB_OK + MB_ICONERROR);
   end;
 {$ENDIF LOG}

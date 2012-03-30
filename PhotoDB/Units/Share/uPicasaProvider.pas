@@ -4,6 +4,7 @@ interface
 
 uses
   uMemory,
+  uMemoryEx,
   Generics.Collections,
   Classes,
   SysUtils,
@@ -119,7 +120,7 @@ type
   public
     constructor Create(Provider: TPicasaProvider; XML: string);
     destructor Destroy; override;
-    function UploadItem(FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; out Item: IPhotoServiceItem): Boolean;
+    function UploadItem(FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; Progress: IUploadProgress; out Item: IPhotoServiceItem): Boolean;
     function GetAlbumID: string;
     function GetName: string;
     function GetDescription: string;
@@ -131,12 +132,14 @@ type
   private
     FOAuth: TOAuth;
     FSync: TCriticalSection;
+    FTmpProgress: IUploadProgress;
     function GetAccessUrl: string;
     function CheckToken(Force: Boolean): Boolean;
-    procedure ResetAuth;
+    procedure DoOperationProgress(Sender: TObject; Max, Position: Int64);
   public
     constructor Create;
     destructor Destroy; override;
+    procedure ResetAuth;
     function IsFeatureSupported(Feature: string): Boolean;
     function InitializeService: Boolean;
     function GetProviderName: string;
@@ -144,7 +147,8 @@ type
     function GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
     function GetAlbumList(Albums: TList<IPhotoServiceAlbum>): Boolean;
     function CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
-    function UploadPhoto(AlbumID, FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; out Photo: IPhotoServiceItem): Boolean;
+    function UploadPhoto(AlbumID, FileName, Name, Description: string; Date: TDateTime; ContentType: string;
+      Stream: TStream; Progress: IUploadProgress; out Photo: IPhotoServiceItem): Boolean;
     function GetProviderImage(Bitmap: TBitmap): Boolean;
     property AccessURL: string read GetAccessUrl;
   end;
@@ -222,7 +226,7 @@ end;
 
 function TPicasaProvider.CheckToken(Force: Boolean): Boolean;
 var
-  ApplicationCode: string;
+  ApplicationCode, LocalAccessUrl: string;
 begin
   if InitializeService then
   begin
@@ -230,17 +234,18 @@ begin
     begin
       if (FOAuth.Refresh_token = '') or Force then
       begin
+        LocalAccessUrl := Self.AccessUrl;
         TThread.Synchronize(nil,
           procedure
           var
             Form: TFormPicasaOAuth;
           begin
-            Form := TFormPicasaOAuth.Create(Screen.ActiveForm, Self);
+            Form := TFormPicasaOAuth.Create(Screen.ActiveForm, LocalAccessUrl);
             try
               Form.ShowModal;
               ApplicationCode := Form.ApplicationCode;
             finally
-              F(Form);
+              R(Form);
             end;
           end
         );
@@ -262,6 +267,7 @@ constructor TPicasaProvider.Create;
 begin
   FSync := TCriticalSection.Create;
   FOAuth := nil;
+  FTmpProgress := nil;
 end;
 
 function TPicasaProvider.CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
@@ -280,14 +286,12 @@ begin
       AlbumInfo := StringReplace(AlbumInfo, '{location}', '', []);
       AlbumInfo := StringReplace(AlbumInfo, '{date}', IntToStr(DateTimeTimeStamp(Date)), []);
       AlbumInfo := StringReplace(AlbumInfo, '{keywords}', '', []);
-      Data := TStringStream.Create;
+      Data := TStringStream.Create(AlbumInfo, TEncoding.UTF8);
       try
-        Data.WriteString(AlbumInfo);
         Data.Seek(0, soFromBeginning);
 
-        AlbumXML := ReadFile('c:\create_album.xml');
-        //AlbumXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default', nil, Data, 'application/atom+xml');
-
+        AlbumXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default', nil, Data, 'application/atom+xml');
+        AlbumXML := Utf8ToUnicodeString(RawByteString(AlbumXML));
         if AlbumXML <> '' then
         begin
           Album := TPicasaUserAlbum.Create(Self, AlbumXML);
@@ -323,7 +327,7 @@ end;
 }
 
 function TPicasaProvider.UploadPhoto(AlbumID, FileName, Name, Description: string; Date: TDateTime;
-  ContentType: string; Stream: TStream; out Photo: IPhotoServiceItem): Boolean;
+  ContentType: string; Stream: TStream; Progress: IUploadProgress; out Photo: IPhotoServiceItem): Boolean;
 const
   CR = #$0D;
   LF = #$0A;
@@ -347,8 +351,14 @@ begin
 
       MS := TMemoryStream.Create;
       try
-        SW := TStreamWriter.Create(MS);
+        SW := TStreamWriter.Create(MS, TEncoding.UTF8);
         try
+          S := 'Content-Type: multipart/related; boundary="END_OF_PART"' + CRLF;
+          S := 'Content-Length: ' + AnsiString(IntToStr(MS.Size)) + CRLF;
+          S := S + 'MIME-version: 1.0' + CRLF+ CRLF;
+          S := S + 'Media multipart posting' + CRLF;
+          MS.Write(PAnsiChar(S)^, length(S));//записали строку
+
          { составляем тело запроса }
           S := '--END_OF_PART' + CRLF;
           // MIME-тип первой части документа
@@ -368,12 +378,17 @@ begin
           s := CRLF + '--END_OF_PART--' + CRLF;
           MS.Write(PAnsiChar(S)^, Length(S));//завершили тело документа
 
-          //ResponseXML := ReadFile('c:\upload_image.xml');
-          ResponseXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default/albumid/' + AlbumID, nil, MS, 'multipart/related; boundary=END_OF_PART');
-          if ResponseXML <> '' then
-          begin
-            Photo := TPicasaUserAlbumPhoto.Create(ResponseXML);
-            Result := True;
+          FTmpProgress := Progress;
+          try
+            ResponseXML := FOAuth.POSTCommand('https://picasaweb.google.com/data/feed/api/user/default/albumid/' + AlbumID, nil, MS, 'multipart/related; boundary=END_OF_PART');
+            ResponseXML := Utf8ToUnicodeString(RawByteString(ResponseXML));
+            if ResponseXML <> '' then
+            begin
+              Photo := TPicasaUserAlbumPhoto.Create(ResponseXML);
+              Result := True;
+            end;
+          finally
+            FTmpProgress := nil;
           end;
         finally
           F(SW);
@@ -392,6 +407,13 @@ begin
   F(FOAuth);
   F(FSync);
   inherited;
+end;
+
+procedure TPicasaProvider.DoOperationProgress(Sender: TObject; Max,
+  Position: Int64);
+begin
+  if FTmpProgress <> nil then
+    FTmpProgress.OnProgress(Self, Max, Position);
 end;
 
 function TPicasaProvider.GetAccessUrl: string;
@@ -418,6 +440,7 @@ begin
     if CheckToken(False) then
     begin
       AlbumsXML := FOAuth.GETCommand('https://picasaweb.google.com:443/data/feed/api/user/default', nil);
+      AlbumsXML := Utf8ToUnicodeString(RawByteString(AlbumsXML));
       if AlbumsXML <> '' then
       begin
         Doc := CreateXMLDocument;
@@ -473,6 +496,7 @@ begin
     if CheckToken(False) then
     begin
       AlbumsXML := FOAuth.GETCommand('https://picasaweb.google.com:443/data/feed/api/user/default', nil);
+      AlbumsXML := Utf8ToUnicodeString(RawByteString(AlbumsXML));
       if AlbumsXML <> '' then
       begin
         Info := TPicasaUserAlbumsInfo.Create(AlbumsXML);
@@ -491,6 +515,7 @@ begin
     if FOAuth = nil then
     begin
       FOAuth := TOAuth.Create;
+      FOAuth.OnProgress := DoOperationProgress;
       FOAuth.ClientID := GOOGLE_APP_CLIENT_ID;
       FOAuth.ClientSecret := GOOGLE_APP_CLIENT_SECRET;
       FOAuth.Scope := GOOGLE_PICASAWEB_ACCESS_POINT;
@@ -689,9 +714,9 @@ begin
   Result := LoadBitmapFromUrl(FAlbumPreviewUrl, Bitmap);
 end;
 
-function TPicasaUserAlbum.UploadItem(FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; out Item: IPhotoServiceItem): Boolean;
+function TPicasaUserAlbum.UploadItem(FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; Progress: IUploadProgress; out Item: IPhotoServiceItem): Boolean;
 begin
-  Result := FProvider.UploadPhoto(GetAlbumID, FileName, Name, Description, Date, ContentType, Stream, Item);
+  Result := FProvider.UploadPhoto(GetAlbumID, FileName, Name, Description, Date, ContentType, Stream, Progress, Item);
 end;
 
 { TPicasaUserAlbumPhoto }

@@ -35,17 +35,30 @@ uses
   CCR.Exif;
 
 type
+  TShareImagesThread = class;
+
+  TItemUploadProgress = class(TInterfacedObject, IUploadProgress)
+  private
+    FThread: TShareImagesThread;
+    FItem: TDBPopupMenuInfoRecord;
+  public
+    constructor Create(Thread: TShareImagesThread; Item: TDBPopupMenuInfoRecord);
+    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
+  end;
+
   TShareImagesThread = class(TThreadEx)
   private
     FData: TDBPopupMenuInfoRecord;
     FIsPreview: Boolean;
     FAlbum: IPhotoServiceAlbum;
     FProvider: IPhotoShareProvider;
+    FIsAlbumCreated: Boolean;
     procedure ShowError(ErrorText: string);
     procedure CreateAlbum;
     procedure ProcessItem(Data: TDBPopupMenuInfoRecord);
     procedure ProcessImage(Data: TDBPopupMenuInfoRecord);
     procedure ProcessVideo(Data: TDBPopupMenuInfoRecord);
+    procedure NotifyProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
   protected
     procedure Execute; override;
     function GetThreadID: string; override;
@@ -69,6 +82,7 @@ begin
   FProvider := Provider;
   FData := nil;
   FAlbum := nil;
+  FIsAlbumCreated := False;
 end;
 
 procedure TShareImagesThread.CreateAlbum;
@@ -85,8 +99,10 @@ begin
   if FAlbumID = '' then
   begin
     if FProvider.CreateAlbum(AlbumName, '', AlbumDate, FAlbum) then
-      FAlbumID := FAlbum.AlbumID
-    else
+    begin
+      FAlbumID := FAlbum.AlbumID;
+      FIsAlbumCreated := True;
+    end else
       ShowError(L('Can''t create album!'));
   end;
 end;
@@ -98,6 +114,8 @@ begin
 end;
 
 procedure TShareImagesThread.Execute;
+var
+  ErrorMessage: string;
 begin
   FreeOnTerminate := True;
   try
@@ -146,7 +164,38 @@ begin
             Break;
 
           if FData <> nil then
-            ProcessItem(FData);
+          begin
+
+            if not FIsPreview then
+              SynchronizeEx(
+                procedure
+                begin
+                  TFormSharePhotos(OwnerForm).StartProcessing(FData);
+                end
+              );
+
+            ErrorMessage := '';
+            try
+
+              try
+                ProcessItem(FData);
+              except
+                on e: Exception do
+                  ErrorMessage := e.Message;
+              end;
+
+            finally
+
+              if not FIsPreview then
+                SynchronizeEx(
+                  procedure
+                  begin
+                    TFormSharePhotos(OwnerForm).EndProcessing(FData, ErrorMessage);
+                  end
+                );
+
+            end;
+          end;
 
         until FData = nil;
 
@@ -183,12 +232,33 @@ begin
   Result := 'PhotoShare';
 end;
 
+procedure TShareImagesThread.NotifyProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
+begin
+  SynchronizeEx(
+    procedure
+    begin
+      TFormSharePhotos(OwnerForm).NotifyItemProgress(Data, Max, Position);
+    end
+  );
+end;
+
 procedure TShareImagesThread.ProcessItem(Data: TDBPopupMenuInfoRecord);
 begin
   if CanShareVideo(Data.FileName) then
     ProcessVideo(Data)
   else
     ProcessImage(Data);
+
+  if FIsAlbumCreated then
+  begin
+    SynchronizeEx(
+      procedure
+      begin
+        TFormSharePhotos(OwnerForm).ReloadAlbums;
+      end
+    );
+    FIsAlbumCreated := False;
+  end;
 end;
 
 procedure TShareImagesThread.ProcessImage(Data: TDBPopupMenuInfoRecord);
@@ -204,6 +274,7 @@ var
   MS: TMemoryStream;
   PhotoItem: IPhotoServiceItem;
   ExifData: TExifData;
+  ItemProgress: IUploadProgress;
 begin
   Width := 0;
   Height := 0;
@@ -301,8 +372,13 @@ begin
             else
               ContentType := 'image/png';
 
-             FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
-              ExtractFileName(Data.FileName), Data.Date, ContentType, MS, PhotoItem);
+             ItemProgress := TItemUploadProgress.Create(Self, Data);
+             try
+               FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
+                 ExtractFileName(Data.FileName), Data.Date, ContentType, MS, ItemProgress, PhotoItem);
+             finally
+               ItemProgress := nil;
+             end;
           finally
             F(MS);
           end;
@@ -323,6 +399,10 @@ procedure TShareImagesThread.ProcessVideo(Data: TDBPopupMenuInfoRecord);
 var
   TempBitmap: TBitmap;
   Ico: TIcon;
+  FS: TFileStream;
+  ContentType: string;
+  ItemProgress: IUploadProgress;
+  VideoItem: IPhotoServiceItem;
 begin
   if FIsPreview then
   begin
@@ -356,8 +436,22 @@ begin
   end else
   begin
 
-    GetFileContentType(Data.FileName)
+    ContentType := GetFileContentType(Data.FileName);
 
+    FS := TFileStream.Create(Data.FileName, fmOpenRead or fmShareDenyWrite);
+    try
+      FS.Seek(0, soFromBeginning);
+
+       ItemProgress := TItemUploadProgress.Create(Self, Data);
+       try
+         FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
+           ExtractFileName(Data.FileName), Data.Date, ContentType, FS, ItemProgress, VideoItem);
+       finally
+         ItemProgress := nil;
+       end;
+    finally
+      F(FS);
+    end;
   end;
 end;
 
@@ -369,6 +463,21 @@ begin
       MessageBoxDB(Handle, ErrorText, L('Warning'), TD_BUTTON_OK, TD_ICON_ERROR);
     end
   );
+end;
+
+{ TItemUploadProgress }
+
+constructor TItemUploadProgress.Create(Thread: TShareImagesThread;
+  Item: TDBPopupMenuInfoRecord);
+begin
+  FThread := Thread;
+  FItem := Item;
+end;
+
+procedure TItemUploadProgress.OnProgress(Sender: IPhotoShareProvider; Max,
+  Position: Int64);
+begin
+  FThread.NotifyProgress(FItem, Max, Position);
 end;
 
 end.

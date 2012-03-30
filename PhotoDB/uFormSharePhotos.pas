@@ -43,7 +43,11 @@ uses
   uAssociations,
   uShellIntegration,
   DateUtils,
-  uDateUtils, SaveWindowPos;
+  uDateUtils,
+  SaveWindowPos,
+  Vcl.Menus,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup;
 
 type
   TFormSharePhotos = class(TThreadForm)
@@ -63,13 +67,16 @@ type
     Image3: TImage;
     WebLink4: TWebLink;
     WebLink5: TWebLink;
-    LoadingSign1: TLoadingSign;
+    LsWorking: TLoadingSign;
     WebLink6: TWebLink;
     BtnSettings: TButton;
     LsAuthorisation: TLoadingSign;
     LsLoadingAlbums: TLoadingSign;
     AeMain: TApplicationEvents;
     SaveWindowPos1: TSaveWindowPos;
+    WlUploadState: TWebLink;
+    PmAlbums: TPopupActionBar;
+    MiRefreshAlbums: TMenuItem;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -81,6 +88,7 @@ type
     procedure BtnShareClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure MiRefreshAlbumsClick(Sender: TObject);
   private
     { Private declarations }
     FFiles: TDBPopupMenuInfo;
@@ -120,10 +128,13 @@ type
     procedure LoadAlbumList(Provider: IPhotoShareProvider);
     procedure FillAlbumList(Albums: TList<IPhotoServiceAlbum>);
     procedure UpdateAlbumImage(Album: IPhotoServiceAlbum; Image: TBitmap);
+    function GetItemBlockByData(Index: TDBPopupMenuInfoRecord): TBox;
   protected
     { Protected declarations }
+    procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
     procedure Execute(FileList: TDBPopupMenuInfo);
+    property ItemBlock[Index: TDBPopupMenuInfoRecord]: TBox read GetItemBlockByData;
   public
     { Public declarations }
     procedure GetDataForPreview(var Data: TDBPopupMenuInfoRecord);
@@ -131,7 +142,15 @@ type
     procedure UpdatePreview(Data: TDBPopupMenuInfoRecord; Preview: TGraphic);
     procedure SharingDone;
     procedure GetAlbumInfo(var AlbumID, AlbumName: string; var AlbumDate: TDateTime; var Album: IPhotoServiceAlbum);
+    procedure StartProcessing(Data: TDBPopupMenuInfoRecord);
+    procedure NotifyItemProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
+    procedure EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);
+    procedure ReloadAlbums;
   end;
+
+const
+  CONTROL_ITEM_UPLOADING_STATE = 1;
+  CONTROL_ITEM_UPLOADING_INFO = 2;
 
 procedure SharePictures(Owner: TDBForm; Info: TDBPopupMenuInfo);
 function CanShareVideo(FileName: string): Boolean;
@@ -160,11 +179,7 @@ var
   FormSharePhotos: TFormSharePhotos;
 begin
   FormSharePhotos := TFormSharePhotos.Create(Owner);
-  try
-    FormSharePhotos.Execute(Info);
-  finally
-    R(FormSharePhotos);
-  end;
+  FormSharePhotos.Execute(Info);
 end;
 
 procedure TFormSharePhotos.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
@@ -205,7 +220,7 @@ end;
 procedure TFormSharePhotos.BtnShareClick(Sender: TObject);
 begin
   FIsWorking := True;
-  BtnShare.Enabled := False;
+  BtnShare.SetEnabledEx(False);
   TShareImagesThread.Create(Self, FProvider, False);
 end;
 
@@ -213,6 +228,14 @@ procedure TFormSharePhotos.CreateAlbumBoxResize(Sender: TObject);
 begin
   if FWlCreateAlbumName <> nil then
     FWlCreateAlbumName.Left := FCreateAlbumBox.Width div 2 - FWlCreateAlbumName.Width div 2;
+end;
+
+procedure TFormSharePhotos.CreateParams(var Params: TCreateParams);
+begin
+  inherited CreateParams(Params);
+  Params.WndParent := GetDesktopWindow;
+  with params do
+    ExStyle := ExStyle or WS_EX_APPWINDOW;
 end;
 
 procedure TFormSharePhotos.DtpAlbumDateKeyDown(Sender: TObject; var Key: Word;
@@ -249,14 +272,16 @@ begin
   FFiles.Assign(FileList);
   for I := 1 to FFiles.Count do
     FPreviewImages.Add(False);
+  InitAlbumCreating;
   LoadImageList;
   LoadProviderInfo;
-  ShowModal;
+  Show;
 end;
 
 procedure TFormSharePhotos.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SaveWindowPos1.SavePosition;
+  Action := caFree;
 end;
 
 procedure TFormSharePhotos.FormCloseQuery(Sender: TObject;
@@ -283,12 +308,12 @@ begin
   FPreviewImages := TList<Boolean>.Create;
   LoadLanguage;
   EnableControls(False);
-  InitAlbumCreating;
   FProvider := nil;
 end;
 
 procedure TFormSharePhotos.FormDestroy(Sender: TObject);
 begin
+  NewFormState;
   F(FAlbums);
   F(FFiles);
   F(FPreviewImages);
@@ -333,20 +358,23 @@ var
 begin
   if Data = nil then
   begin
+    PbMain.Max := FFiles.Count;
+    PbMain.Position := 1;
     Data := FFiles[0].Copy;
     Exit;
   end;
   D := Data;
   Data := nil;
-
   for I := 0 to FFiles.Count - 2 do
   begin
     if AnsiLowerCase(FFiles[I].FileName) = AnsiLowerCase(D.FileName) then
     begin
+      PbMain.Position := I + 1;
       Data := FFiles[I + 1].Copy;
       Exit;
     end;
   end;
+  F(D);
 end;
 
 procedure TFormSharePhotos.GetDataForPreview(var Data: TDBPopupMenuInfoRecord);
@@ -366,6 +394,25 @@ end;
 function TFormSharePhotos.GetFormID: string;
 begin
   Result := 'PhotoShare';
+end;
+
+function TFormSharePhotos.GetItemBlockByData(Index: TDBPopupMenuInfoRecord): TBox;
+var
+  I: Integer;
+  Box: TBox;
+  FI: TDBPopupMenuInfoRecord;
+begin
+  Result := nil;
+  for I := 0 to SbItemsToUpload.ControlCount - 1 do
+  begin
+    Box := TBox(SbItemsToUpload.Controls[I]);
+    FI := TDBPopupMenuInfoRecord(Box.Tag);
+    if AnsiLowerCase(FI.FileName) = AnsiLowerCase(Index.FileName) then
+    begin
+      Result := Box;
+      Exit;
+    end;
+  end;
 end;
 
 procedure TFormSharePhotos.SharingDone;
@@ -507,9 +554,11 @@ var
   I: Integer;
   Box: TBox;
   Top: Integer;
-  LsImage: TLoadingSign;
+  Date: TDateTime;
+  LsImage, LsUploading: TLoadingSign;
   WlImageName,
   WlImageDate: TWebLink;
+  WlProgressState: TWebLink;
 begin
   //clear old data
   for I := 0 to FPreviewImages.Count - 1 do
@@ -573,11 +622,46 @@ begin
       WlImageDate.Top := 22;
       WlImageDate.IconWidth := 0;
       WlImageDate.IconHeight := 0;
-      WlImageDate.Text := FormatDateTimeShortDate(Now);
+
+      Date := FFiles[I].Date;
+      if YearOf(Date) < 2000 then
+        Date := Now;
+      WlImageDate.Text := FormatDateTimeShortDate(Date);
+
       WlImageDate.LoadImage;
       WlImageDate.OnMouseEnter := OnBoxMouseEnter;
       WlImageDate.OnMouseLeave := OnBoxMouseLeave;
       WlImageDate.OnClick := ShowImages;
+
+      WlProgressState := TWebLink.Create(Box);
+      WlProgressState.Parent := Box;
+      WlProgressState.Text := '0%';
+      WlProgressState.IconWidth := 0;
+      WlProgressState.IconHeight := 0;
+      WlProgressState.LoadImage;
+      WlProgressState.Top := Box.ClientHeight - WlProgressState.Height - 3;
+      WlProgressState.Left := Box.ClientWidth - WlProgressState.Width - 2;
+      WlProgressState.Anchors := [akTop, akRight];
+      WlProgressState.OnMouseEnter := OnBoxMouseEnter;
+      WlProgressState.OnMouseLeave := OnBoxMouseLeave;
+      WlProgressState.OnClick := SelectAlbumClick;
+      WlProgressState.Visible := False;
+      WlProgressState.Tag := CONTROL_ITEM_UPLOADING_INFO;
+
+      LsUploading := TLoadingSign.Create(Box);
+      LsUploading.Parent := Box;
+      LsUploading.Top := WlProgressState.Top - 1;
+      LsUploading.Width := 16;
+      LsUploading.Height := 16;
+      LsUploading.FillPercent := 60;
+      LsUploading.Left := WlProgressState.Left - LsUploading.Width;
+      LsUploading.Anchors := [akTop, akRight];
+      LsUploading.Active := True;
+      LsUploading.OnMouseEnter := OnBoxMouseEnter;
+      LsUploading.OnMouseLeave := OnBoxMouseLeave;
+      LsUploading.OnClick := SelectAlbumClick;
+      LsUploading.Visible := False;
+      LsUploading.Tag := CONTROL_ITEM_UPLOADING_STATE;
     end;
 
   finally
@@ -600,6 +684,7 @@ begin
     BtnShare.Caption := L('Share!');
     LbAlbumList.Caption := L('Album list') + ':';
     LbItems.Caption := L('Items to upload') + ':';
+    MiRefreshAlbums.Caption := L('Refresh albums');
   finally
     EndTranslate;
   end;
@@ -763,7 +848,11 @@ end;
 procedure TFormSharePhotos.WlChangeUserClick(Sender: TObject);
 begin
   if FProvider <> nil then
-    FProvider.ChangeUser;
+    if FProvider.ChangeUser then
+    begin
+      LoadProviderInfo;
+      ReloadAlbums;
+    end;
 end;
 
 procedure TFormSharePhotos.WlCreateAlbumNameClick(Sender: TObject);
@@ -916,6 +1005,8 @@ begin
 
       for I := 0 to Albums.Count - 1 do
       begin
+        if Thread.IsTerminated then
+          Break;
         B := TBitmap.Create;
         try
           if Albums[I].GetPreview(B) then
@@ -987,6 +1078,11 @@ begin
   end;
 end;
 
+procedure TFormSharePhotos.MiRefreshAlbumsClick(Sender: TObject);
+begin
+  ReloadAlbums;
+end;
+
 procedure TFormSharePhotos.OnBoxMouseEnter(Sender: TObject);
 var
   Sb: TBox;
@@ -1009,6 +1105,11 @@ begin
     Sb := TBox(TWinControl(Sender).Parent);
 
   Sb.IsHovered := False;
+end;
+
+procedure TFormSharePhotos.ReloadAlbums;
+begin
+  LoadAlbumList(FProvider);
 end;
 
 procedure TFormSharePhotos.SelectAlbumClick(Sender: TObject);
@@ -1061,6 +1162,72 @@ begin
 
   Viewer.Execute(Self, FFiles);
   Viewer.Show;
+end;
+
+procedure TFormSharePhotos.EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);
+var
+  Box: TBox;
+  LS: TLoadingSign;
+  WlInfo: TWebLink;
+begin
+  Box := ItemBlock[Data];
+  if Box = nil then
+    Exit;
+
+  LS := Box.FindChildByTag<TLoadingSign>(CONTROL_ITEM_UPLOADING_STATE);
+  WlInfo := Box.FindChildByTag<TWebLink>(CONTROL_ITEM_UPLOADING_INFO);
+
+  LS.Hide;
+  WlInfo.IconWidth := 16;
+  WlInfo.IconHeight := 16;
+  WlInfo.LoadFromResource('SERIES_OK');
+  WlInfo.Text := '';
+  WlInfo.Top := Box.ClientHeight - WlInfo.Height - 3;
+  WlInfo.Left := Box.ClientWidth - WlInfo.Width - 4;
+end;
+
+procedure TFormSharePhotos.StartProcessing(Data: TDBPopupMenuInfoRecord);
+var
+  Box: TBox;
+  LS: TLoadingSign;
+  WlInfo: TWebLink;
+begin
+  Box := ItemBlock[Data];
+  if Box = nil then
+    Exit;
+
+  LS := Box.FindChildByTag<TLoadingSign>(CONTROL_ITEM_UPLOADING_STATE);
+  WlInfo := Box.FindChildByTag<TWebLink>(CONTROL_ITEM_UPLOADING_INFO);
+  WlInfo.IconWidth := 0;
+  WlInfo.IconHeight := 0;
+  WlInfo.Text := '0%';
+  WlInfo.Left := Box.ClientWidth - WlInfo.Width - 4;
+  LS.Left := WlInfo.Left - LS.Width;
+
+  LS.Show;
+  WlInfo.Show;
+end;
+
+procedure TFormSharePhotos.NotifyItemProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
+var
+  Box: TBox;
+  LS: TLoadingSign;
+  WlInfo: TWebLink;
+begin
+  Box := ItemBlock[Data];
+  if Box = nil then
+    Exit;
+
+  if Max > 0 then
+  begin
+    LS := Box.FindChildByTag<TLoadingSign>(CONTROL_ITEM_UPLOADING_STATE);
+    WlInfo := Box.FindChildByTag<TWebLink>(CONTROL_ITEM_UPLOADING_INFO);
+
+    WlInfo.Text := IntToStr(Round(100 * Position / Max)) + '%';
+    WlInfo.Left := Box.ClientWidth - WlInfo.Width - 4;
+
+    LS.Left := WlInfo.Left - LS.Width;
+  end;
 end;
 
 end.

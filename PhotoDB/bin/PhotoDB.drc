@@ -8,8 +8,6 @@
   resources were bound to the produced executable.
 */
 
-#define uGoogleOAuth_rsRequestError 64544
-#define uGoogleOAuth_rsUnknownError 64545
 #define IdResourceStringsProtocols_RSOSSLAcceptLoop 64560
 #define IdResourceStringsProtocols_RSOSSLAcceptError 64561
 #define IdResourceStringsProtocols_RSOSSLAcceptFailed 64562
@@ -988,8 +986,6 @@
 #define System_SysConst_SInvalidOp 65535
 STRINGTABLE
 BEGIN
-	uGoogleOAuth_rsRequestError,	L"Request error: %d - %s"
-	uGoogleOAuth_rsUnknownError,	L"Unknown error"
 	IdResourceStringsProtocols_RSOSSLAcceptLoop,	L"Accept Loop"
 	IdResourceStringsProtocols_RSOSSLAcceptError,	L"Accept Error"
 	IdResourceStringsProtocols_RSOSSLAcceptFailed,	L"Accept Failed"

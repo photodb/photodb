@@ -2202,7 +2202,7 @@ end;
 procedure TViewer.CreateParams(var Params: TCreateParams);
 begin
   TW.I.Start('CreateParams');
-  Inherited CreateParams(Params);
+  inherited CreateParams(Params);
   TW.I.Start('GetDesktopWindow');
   Params.WndParent := GetDesktopWindow;
   with params do

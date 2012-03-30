@@ -265,13 +265,14 @@ object FormSharePhotos: TFormSharePhotos
     Height = 378
     HorzScrollBar.Visible = False
     Anchors = [akLeft, akTop, akBottom]
+    PopupMenu = PmAlbums
     TabOrder = 4
     DesignSize = (
       149
       374)
     object LsLoadingAlbums: TLoadingSign
-      Left = 122
-      Top = 347
+      Left = 109
+      Top = 331
       Width = 24
       Height = 24
       Active = True
@@ -305,13 +306,13 @@ object FormSharePhotos: TFormSharePhotos
     object PnExample: TPanel
       Left = 3
       Top = 3
-      Width = 432
+      Width = 428
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       ParentBackground = False
       TabOrder = 0
       DesignSize = (
-        432
+        428
         41)
       object Image3: TImage
         Left = 3
@@ -360,13 +361,13 @@ object FormSharePhotos: TFormSharePhotos
         StretchImage = True
         CanClick = True
       end
-      object LoadingSign1: TLoadingSign
-        Left = 412
+      object LsWorking: TLoadingSign
+        Left = 368
         Top = 22
         Width = 16
         Height = 16
         Active = True
-        FillPercent = 50
+        FillPercent = 60
         Anchors = [akRight, akBottom]
         SignColor = clBlack
         MaxTransparencity = 255
@@ -378,6 +379,26 @@ object FormSharePhotos: TFormSharePhotos
         Height = 13
         Cursor = crHandPoint
         Text = '256 Kb'
+        ImageIndex = 0
+        IconWidth = 0
+        IconHeight = 0
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        UseSpecIconSize = True
+        HightliteImage = False
+        StretchImage = True
+        CanClick = True
+      end
+      object WlUploadState: TWebLink
+        Left = 390
+        Top = 24
+        Width = 34
+        Height = 13
+        Cursor = crHandPoint
+        Anchors = [akRight, akBottom]
+        Text = '100%'
         ImageIndex = 0
         IconWidth = 0
         IconHeight = 0
@@ -413,5 +434,13 @@ object FormSharePhotos: TFormSharePhotos
     Key = 'Software\Positions\Noname'
     Left = 120
     Top = 8
+  end
+  object PmAlbums: TPopupActionBar
+    Left = 232
+    Top = 200
+    object MiRefreshAlbums: TMenuItem
+      Caption = 'Refresh albums'
+      OnClick = MiRefreshAlbumsClick
+    end
   end
 end

@@ -2202,7 +2202,8 @@
     <translate name="Custom size:" value="Произвольный размер:" />
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
     <translate name="Can''t create album!" value="Не удаётся создать альбом!" />
-	</scope>
+	<translate name="Refresh albums" value="Обновить список альбомов"/>	
+  </scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
   </scope>

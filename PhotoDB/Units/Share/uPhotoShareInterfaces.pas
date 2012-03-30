@@ -45,8 +45,15 @@ type
     property Height: Integer read GetHeight;
   end;
 
+  IPhotoShareProvider = interface;
+
+  IUploadProgress = interface
+    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
+  end;
+
   IPhotoServiceAlbum = interface
-    function UploadItem(FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; out Item: IPhotoServiceItem): Boolean;
+    function UploadItem(FileName, Name, Description: string; Date: TDateTime; ContentType: string;
+      Stream: TStream; Progress: IUploadProgress; out Item: IPhotoServiceItem): Boolean;
     function GetAlbumID: string;
     function GetName: string;
     function GetDescription: string;

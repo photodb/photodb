@@ -55,7 +55,8 @@ uses
   uThemesUtils,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  DmMemo, uBaseWinControl;
+  DmMemo,
+  uBaseWinControl;
 
 type
   TUpdateDBForm = class(TDBForm, IDBUpdaterCallBack)
