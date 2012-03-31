@@ -895,6 +895,7 @@ begin
 
     SynchronizeEx(UpdateMenu);
   finally
+    FIcons.FreeItems;
     F(FIcons);
   end;
 end;

@@ -4,7 +4,7 @@ object FormShareSettings: TFormShareSettings
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'FormShareSettings'
-  ClientHeight = 217
+  ClientHeight = 273
   ClientWidth = 378
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,7 +17,7 @@ object FormShareSettings: TFormShareSettings
   OnCreate = FormCreate
   DesignSize = (
     378
-    217)
+    273)
   PixelsPerInch = 96
   TextHeight = 13
   object LbOutputFormat: TLabel
@@ -41,27 +41,34 @@ object FormShareSettings: TFormShareSettings
     Height = 13
     Caption = 'LbHeight'
   end
+  object LbAccess: TLabel
+    Left = 8
+    Top = 192
+    Width = 105
+    Height = 13
+    Caption = 'Default album access:'
+  end
   object BtnOk: TButton
     Left = 295
-    Top = 184
+    Top = 240
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
     TabOrder = 0
     OnClick = BtnOkClick
-    ExplicitTop = 213
+    ExplicitTop = 184
   end
   object BtnCancel: TButton
     Left = 214
-    Top = 184
+    Top = 240
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 1
     OnClick = BtnCancelClick
-    ExplicitTop = 213
+    ExplicitTop = 184
   end
   object CbOutputFormat: TComboBox
     Left = 8
@@ -139,5 +146,14 @@ object FormShareSettings: TFormShareSettings
     Caption = 'CbResizeToSize'
     TabOrder = 8
     OnClick = CbResizeToSizeClick
+  end
+  object CbDefaultAlbumAccess: TComboBox
+    Left = 8
+    Top = 211
+    Width = 362
+    Height = 21
+    Style = csDropDownList
+    Anchors = [akLeft, akTop, akRight]
+    TabOrder = 9
   end
 end

@@ -271,8 +271,8 @@ object FormSharePhotos: TFormSharePhotos
       149
       374)
     object LsLoadingAlbums: TLoadingSign
-      Left = 109
-      Top = 331
+      Left = 122
+      Top = 347
       Width = 24
       Height = 24
       Active = True
@@ -306,13 +306,13 @@ object FormSharePhotos: TFormSharePhotos
     object PnExample: TPanel
       Left = 3
       Top = 3
-      Width = 428
+      Width = 440
       Height = 41
       Anchors = [akLeft, akTop, akRight]
       ParentBackground = False
       TabOrder = 0
       DesignSize = (
-        428
+        440
         41)
       object Image3: TImage
         Left = 3
@@ -362,7 +362,7 @@ object FormSharePhotos: TFormSharePhotos
         CanClick = True
       end
       object LsWorking: TLoadingSign
-        Left = 368
+        Left = 380
         Top = 22
         Width = 16
         Height = 16
@@ -371,6 +371,7 @@ object FormSharePhotos: TFormSharePhotos
         Anchors = [akRight, akBottom]
         SignColor = clBlack
         MaxTransparencity = 255
+        ExplicitLeft = 376
       end
       object WebLink6: TWebLink
         Left = 108
@@ -392,7 +393,7 @@ object FormSharePhotos: TFormSharePhotos
         CanClick = True
       end
       object WlUploadState: TWebLink
-        Left = 390
+        Left = 402
         Top = 24
         Width = 34
         Height = 13
@@ -410,6 +411,7 @@ object FormSharePhotos: TFormSharePhotos
         HightliteImage = False
         StretchImage = True
         CanClick = True
+        ExplicitLeft = 398
       end
     end
   end
@@ -432,7 +434,7 @@ object FormSharePhotos: TFormSharePhotos
     SetOnlyPosition = False
     RootKey = HKEY_CURRENT_USER
     Key = 'Software\Positions\Noname'
-    Left = 120
+    Left = 312
     Top = 8
   end
   object PmAlbums: TPopupActionBar
@@ -441,6 +443,40 @@ object FormSharePhotos: TFormSharePhotos
     object MiRefreshAlbums: TMenuItem
       Caption = 'Refresh albums'
       OnClick = MiRefreshAlbumsClick
+    end
+  end
+  object PmAlbumAccess: TPopupActionBar
+    Left = 232
+    Top = 248
+    object MiPublic: TMenuItem
+      Caption = 'MiPublic'
+      RadioItem = True
+      OnClick = MiPublicClick
+    end
+    object MiProtected: TMenuItem
+      Caption = 'MiProtected'
+      RadioItem = True
+      OnClick = MiProtectedClick
+    end
+    object MiPrivate: TMenuItem
+      Caption = 'MiPrivate'
+      RadioItem = True
+      OnClick = MiPrivateClick
+    end
+  end
+  object PmAlbumOptions: TPopupActionBar
+    Left = 232
+    Top = 296
+    object MiShowInBrowser: TMenuItem
+      Caption = 'MiShowInBrowser'
+      OnClick = MiShowInBrowserClick
+    end
+  end
+  object PmItemOptions: TPopupActionBar
+    Left = 232
+    Top = 344
+    object MiRemoveFromList: TMenuItem
+      Caption = 'MiRemoveFromList'
     end
   end
 end

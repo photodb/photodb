@@ -89,16 +89,17 @@ procedure TShareImagesThread.CreateAlbum;
 var
   FAlbumID, AlbumName: string;
   AlbumDate: TDateTime;
+  FAccess: Integer;
 begin
   SynchronizeEx(
     procedure
     begin
-      TFormSharePhotos(OwnerForm).GetAlbumInfo(FAlbumID, AlbumName, AlbumDate, FAlbum);
+      TFormSharePhotos(OwnerForm).GetAlbumInfo(FAlbumID, AlbumName, AlbumDate, FAccess, FAlbum);
     end
   );
   if FAlbumID = '' then
   begin
-    if FProvider.CreateAlbum(AlbumName, '', AlbumDate, FAlbum) then
+    if FProvider.CreateAlbum(AlbumName, '', AlbumDate, FAccess, FAlbum) then
     begin
       FAlbumID := FAlbum.AlbumID;
       FIsAlbumCreated := True;

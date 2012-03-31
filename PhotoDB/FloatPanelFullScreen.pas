@@ -52,7 +52,10 @@ var
 implementation
 
 uses
-  SlideShowFullScreen, SlideShow, UnitDBKernel, Dolphin_DB;
+  SlideShowFullScreen,
+  SlideShow,
+  UnitDBKernel,
+  Dolphin_DB;
 
 {$R *.dfm}
 

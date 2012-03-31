@@ -54,7 +54,7 @@ uses
   uThemesUtils,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  CommonDBSupport;
+  CommonDBSupport, uBaseWinControl;
 
 type
   TFormCreatePerson = class(TThreadForm)

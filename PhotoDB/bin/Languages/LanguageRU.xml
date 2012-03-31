@@ -2202,7 +2202,12 @@
     <translate name="Custom size:" value="Произвольный размер:" />
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
     <translate name="Can''t create album!" value="Не удаётся создать альбом!" />
-	<translate name="Refresh albums" value="Обновить список альбомов"/>	
+	<translate name="Refresh albums" value="Обновить список альбомов"/>
+	<translate name="Access" value="Отображение"/>	
+	<translate name="Public on web" value="Для всех в Интернете"/>
+	<translate name="Limited, anyone with the link" value="Только тем, у кого есть ссылка"/>
+	<translate name="Only you" value="Только вам"/>
+	<translate name="Show in browser" value="Показать в браузере"/>	
   </scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>

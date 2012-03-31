@@ -35,6 +35,8 @@ type
     LbHeight: TLabel;
     SeHeight: TSpinEdit;
     CbResizeToSize: TCheckBox;
+    LbAccess: TLabel;
+    CbDefaultAlbumAccess: TComboBox;
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -161,7 +163,9 @@ end;
 
 procedure TFormShareSettings.LoadSettings;
 var
-  FormatIndex, SizeIndex: Integer;
+  FormatIndex,
+  SizeIndex,
+  AccessIndex: Integer;
 begin
   CbOutputFormat.Items.Add(TA(TFileAssociations.Instance.Exts['.jpg'].Description, 'Associations'));
   CbOutputFormat.Items.Add(TA(TFileAssociations.Instance.Exts['.png'].Description, 'Associations'));
@@ -186,7 +190,18 @@ begin
   if (SizeIndex > -1) and (SizeIndex < CbImageSize.Items.Count)  then
     CbImageSize.ItemIndex := SizeIndex;
 
+  CbImageSizeChange(Self);
+
   CbPreviewForRAW.Checked := Settings.ReadBool('Share', 'RAWPreview', True);
+
+  LbAccess.Caption := L('Access');
+  CbDefaultAlbumAccess.Items.Add(L('Public on web'));
+  CbDefaultAlbumAccess.Items.Add(L('Limited, anyone with the link'));
+  CbDefaultAlbumAccess.Items.Add(L('Only you'));
+
+  AccessIndex := Settings.ReadInteger('Share', 'AlbumAccess', 0);
+  if (AccessIndex > -1) and (AccessIndex < CbDefaultAlbumAccess.Items.Count)  then
+    CbDefaultAlbumAccess.ItemIndex := AccessIndex;
 
   SeWidth.Value := Settings.ReadInteger('Share', 'ImageWidth', 1920);
   SeHeight.Value := Settings.ReadInteger('Share', 'ImageHeight', 1080);
@@ -202,6 +217,8 @@ begin
 
   Settings.WriteInteger('Share', 'ImageWidth', SeWidth.Value);
   Settings.WriteInteger('Share', 'ImageHeight', SeHeight.Value);
+
+  Settings.WriteInteger('Share', 'AlbumAccess', CbDefaultAlbumAccess.ItemIndex);
 end;
 
 procedure TFormShareSettings.WlJpegSettingsClick(Sender: TObject);

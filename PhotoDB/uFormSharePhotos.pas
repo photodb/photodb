@@ -47,7 +47,8 @@ uses
   SaveWindowPos,
   Vcl.Menus,
   Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup;
+  Vcl.ActnPopup,
+  uSettings;
 
 type
   TFormSharePhotos = class(TThreadForm)
@@ -77,6 +78,14 @@ type
     WlUploadState: TWebLink;
     PmAlbums: TPopupActionBar;
     MiRefreshAlbums: TMenuItem;
+    PmAlbumAccess: TPopupActionBar;
+    PmAlbumOptions: TPopupActionBar;
+    MiPublic: TMenuItem;
+    MiProtected: TMenuItem;
+    MiPrivate: TMenuItem;
+    PmItemOptions: TPopupActionBar;
+    MiRemoveFromList: TMenuItem;
+    MiShowInBrowser: TMenuItem;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -89,6 +98,10 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure MiRefreshAlbumsClick(Sender: TObject);
+    procedure MiShowInBrowserClick(Sender: TObject);
+    procedure MiPublicClick(Sender: TObject);
+    procedure MiProtectedClick(Sender: TObject);
+    procedure MiPrivateClick(Sender: TObject);
   private
     { Private declarations }
     FFiles: TDBPopupMenuInfo;
@@ -105,6 +118,8 @@ type
     FWlAlbumDateOk: TWebLink;
     FWlAlbumName: TWebLink;
     FWlAlbumDate: TWebLink;
+    FWlAlbumSettings: TWebLink;
+    FAlbumAccess: Integer;
     procedure LoadLanguage;
     procedure EnableControls(Value: Boolean);
     procedure OnBoxMouseLeave(Sender: TObject);
@@ -119,6 +134,8 @@ type
     procedure WlAlbumNameClick(Sender: TObject);
     procedure WlAlbumDateClick(Sender: TObject);
     procedure SelectAlbumClick(Sender: TObject);
+    procedure ShowAlbumClick(Sender: TObject);
+    procedure WlAlbumSettingsClick(Sender: TObject);
 
     procedure LoadProviderInfo;
     procedure UpdateUserInfo(Provider: IPhotoShareProvider; Info: IPhotoServiceUserInfo);
@@ -141,7 +158,8 @@ type
     procedure GetData(var Data: TDBPopupMenuInfoRecord);
     procedure UpdatePreview(Data: TDBPopupMenuInfoRecord; Preview: TGraphic);
     procedure SharingDone;
-    procedure GetAlbumInfo(var AlbumID, AlbumName: string; var AlbumDate: TDateTime; var Album: IPhotoServiceAlbum);
+    procedure GetAlbumInfo(var AlbumID, AlbumName: string; var AlbumDate: TDateTime;
+      var Access: Integer; var Album: IPhotoServiceAlbum);
     procedure StartProcessing(Data: TDBPopupMenuInfoRecord);
     procedure NotifyItemProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
     procedure EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);
@@ -221,6 +239,7 @@ procedure TFormSharePhotos.BtnShareClick(Sender: TObject);
 begin
   FIsWorking := True;
   BtnShare.SetEnabledEx(False);
+  BtnSettings.Enabled := False;
   TShareImagesThread.Create(Self, FProvider, False);
 end;
 
@@ -295,6 +314,8 @@ begin
 end;
 
 procedure TFormSharePhotos.FormCreate(Sender: TObject);
+var
+  AccessIndex: Integer;
 begin
   RegisterMainForm(Self);
 
@@ -308,6 +329,25 @@ begin
   FPreviewImages := TList<Boolean>.Create;
   LoadLanguage;
   EnableControls(False);
+
+  AccessIndex := Settings.ReadInteger('Share', 'AlbumAccess', 0);
+  case AccessIndex of
+    1:
+    begin
+      MiProtected.Checked := True;
+      FAlbumAccess := PHOTO_PROVIDER_ALBUM_PROTECTED;
+    end;
+    2:
+    begin
+      MiPrivate.Checked := True;
+      FAlbumAccess := PHOTO_PROVIDER_ALBUM_PRIVATE;
+    end else
+    begin
+      MiPublic.Checked := True;
+      FAlbumAccess := PHOTO_PROVIDER_ALBUM_PUBLIC;
+    end;
+  end;
+
   FProvider := nil;
 end;
 
@@ -326,7 +366,7 @@ begin
 end;
 
 procedure TFormSharePhotos.GetAlbumInfo(var AlbumID, AlbumName: string;
-  var AlbumDate: TDateTime; var Album: IPhotoServiceAlbum);
+  var AlbumDate: TDateTime; var Access: Integer; var Album: IPhotoServiceAlbum);
 var
   I: Integer;
   Box: TBox;
@@ -334,6 +374,7 @@ begin
   AlbumID := '';
   AlbumName := FWlAlbumName.Text;
   AlbumDate := FDtpAlbumDate.Date;
+  Access := FAlbumAccess;
 
   for I := 0 to SbAlbums.ControlCount - 1 do
   begin
@@ -418,7 +459,7 @@ end;
 procedure TFormSharePhotos.SharingDone;
 begin
   FIsWorking := False;
-  BtnShare.Enabled := True;
+  BtnSettings.Enabled := True;
 end;
 
 procedure TFormSharePhotos.InitAlbumCreating;
@@ -524,6 +565,21 @@ begin
   FWlAlbumDate.OnMouseEnter := OnBoxMouseEnter;
   FWlAlbumDate.OnMouseLeave := OnBoxMouseLeave;
   FWlAlbumDate.OnClick := WlAlbumDateClick;
+
+  FWlAlbumSettings := TWebLink.Create(FCreateAlbumBox);
+  FWlAlbumSettings.Parent := FCreateAlbumBox;
+  FWlAlbumSettings.IconWidth := 16;
+  FWlAlbumSettings.IconHeight := 16;
+  FWlAlbumSettings.LoadFromResource('SERIES_SETTINGS');
+  FWlAlbumSettings.LoadImage;
+  FWlAlbumSettings.Anchors := [akBottom, akRight];
+  FWlAlbumSettings.Left := FCreateAlbumBox.ClientWidth - FWlAlbumSettings.Width;
+  FWlAlbumSettings.Top := FCreateAlbumBox.ClientHeight - FWlAlbumSettings.Height - 3;
+  FWlAlbumSettings.OnMouseEnter := OnBoxMouseEnter;
+  FWlAlbumSettings.OnMouseLeave := OnBoxMouseLeave;
+  FWlAlbumSettings.PopupMenu := PmAlbumAccess;
+  FWlAlbumSettings.OnClick := WlAlbumSettingsClick;
+  FWlAlbumSettings.Visible := False;
 
   VertIncrement := (FCreateAlbumBox.ClientHeight - FEdAlbumName.Height - FDtpAlbumDate.Height) div 2;
 
@@ -685,6 +741,12 @@ begin
     LbAlbumList.Caption := L('Album list') + ':';
     LbItems.Caption := L('Items to upload') + ':';
     MiRefreshAlbums.Caption := L('Refresh albums');
+
+    MiPublic.Caption := L('Public on web');
+    MiProtected.Caption := L('Limited, anyone with the link');
+    MiPrivate.Caption := L('Only you');
+
+    MiShowInBrowser.Caption := L('Show in browser');
   finally
     EndTranslate;
   end;
@@ -845,6 +907,14 @@ begin
   SelectAlbumClick(Sender);
 end;
 
+procedure TFormSharePhotos.WlAlbumSettingsClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  GetCursorPos(P);
+  PmAlbumAccess.Popup(P.X, P.Y);
+end;
+
 procedure TFormSharePhotos.WlChangeUserClick(Sender: TObject);
 begin
   if FProvider <> nil then
@@ -863,6 +933,7 @@ begin
   FWlAlbumNameOk.Show;
   FEdAlbumName.SelectAll;
   FEdAlbumName.SetFocus;
+  FWlAlbumSettings.Show;
   SelectAlbumClick(Sender);
 end;
 
@@ -941,53 +1012,63 @@ begin
   FAlbums.AddRange(Albums);
   LsLoadingAlbums.Hide;
 
-  Top := FCreateAlbumBox.Top + FCreateAlbumBox.Height + 5;
-  for I := 0 to FAlbums.Count - 1 do
-  begin
-    Box := TBox.Create(SbAlbums);
-    Box.Parent := SbAlbums;
-    Box.Top := Top;
-    Box.Height := 41;
-    Box.Left := FCreateAlbumBox.Left;
-    Box.Width := SbAlbums.ClientWidth - 5;
-    Box.Anchors := FCreateAlbumBox.Anchors;
-    Box.ParentBackground := False;
-    Box.OnMouseEnter := OnBoxMouseEnter;
-    Box.OnMouseLeave := OnBoxMouseLeave;
-    Box.Tag := Integer(FAlbums[I]);
-    Box.OnClick := SelectAlbumClick;
+  SbAlbums.DisableAlign;
+  try
+    Top := FCreateAlbumBox.Top + FCreateAlbumBox.Height + 5;
+    for I := 0 to FAlbums.Count - 1 do
+    begin
+      Box := TBox.Create(SbAlbums);
+      Box.Parent := SbAlbums;
+      Box.Top := Top;
+      Box.Height := 41;
+      Box.Left := FCreateAlbumBox.Left;
+      Box.Width := SbAlbums.ClientWidth - 5;
+      Box.Anchors := FCreateAlbumBox.Anchors;
+      Box.ParentBackground := False;
+      Box.OnMouseEnter := OnBoxMouseEnter;
+      Box.OnMouseLeave := OnBoxMouseLeave;
+      Box.Tag := Integer(FAlbums[I]);
+      Box.OnClick := SelectAlbumClick;
+      Box.OnDblClick := ShowAlbumClick;
+      Box.PopupMenu := PmAlbumOptions;
 
-    Top := Box.Top + Box.Height + 5;
+      Top := Box.Top + Box.Height + 5;
 
-    LsImage := TLoadingSign.Create(Box);
-    LsImage.Parent := Box;
-    LsImage.Left := 4;
-    LsImage.Top := 4;
-    LsImage.Width := 32;
-    LsImage.Height := 32;
-    LsImage.FillPercent := 80;
-    LsImage.Active := True; 
-    LsImage.OnMouseEnter := OnBoxMouseEnter;
-    LsImage.OnMouseLeave := OnBoxMouseLeave;
-    LsImage.OnClick := SelectAlbumClick;
+      LsImage := TLoadingSign.Create(Box);
+      LsImage.Parent := Box;
+      LsImage.Left := 4;
+      LsImage.Top := 4;
+      LsImage.Width := 32;
+      LsImage.Height := 32;
+      LsImage.FillPercent := 80;
+      LsImage.Active := True;
+      LsImage.OnMouseEnter := OnBoxMouseEnter;
+      LsImage.OnMouseLeave := OnBoxMouseLeave;
+      LsImage.OnClick := SelectAlbumClick;
+      LsImage.OnDblClick := ShowAlbumClick;
 
-    LbName := TLabel.Create(Box);
-    LbName.Parent := Box;
-    LbName.Left := 41;
-    LbName.Top := 3;
-    LbName.Caption := FAlbums[I].Name;
-    LbName.OnMouseEnter := OnBoxMouseEnter;
-    LbName.OnMouseLeave := OnBoxMouseLeave;
-    LbName.OnClick := SelectAlbumClick;
+      LbName := TLabel.Create(Box);
+      LbName.Parent := Box;
+      LbName.Left := 41;
+      LbName.Top := 3;
+      LbName.Caption := FAlbums[I].Name;
+      LbName.OnMouseEnter := OnBoxMouseEnter;
+      LbName.OnMouseLeave := OnBoxMouseLeave;
+      LbName.OnClick := SelectAlbumClick;
+      LbName.OnDblClick := ShowAlbumClick;
               
-    LbDate := TLabel.Create(Box);
-    LbDate.Parent := Box;
-    LbDate.Left := 41;
-    LbDate.Top := 22;
-    LbDate.Caption := FormatDateTimeShortDate(FAlbums[I].Date);
-    LbDate.OnMouseEnter := OnBoxMouseEnter;
-    LbDate.OnMouseLeave := OnBoxMouseLeave;
-    LbDate.OnClick := SelectAlbumClick;
+      LbDate := TLabel.Create(Box);
+      LbDate.Parent := Box;
+      LbDate.Left := 41;
+      LbDate.Top := 22;
+      LbDate.Caption := FormatDateTimeShortDate(FAlbums[I].Date);
+      LbDate.OnMouseEnter := OnBoxMouseEnter;
+      LbDate.OnMouseLeave := OnBoxMouseLeave;
+      LbDate.OnClick := SelectAlbumClick;
+      LbDate.OnDblClick := ShowAlbumClick;
+    end;
+  finally
+    SbAlbums.EnableAlign;
   end;
 
   //data for loading images thread
@@ -1000,29 +1081,36 @@ begin
       I: Integer;
       B: TBitmap;
       Albums: TList<IPhotoServiceAlbum>;
+      HttpContainer: THTTPRequestContainer;
     begin
       Albums := TList<IPhotoServiceAlbum>(Data);
 
-      for I := 0 to Albums.Count - 1 do
-      begin
-        if Thread.IsTerminated then
-          Break;
-        B := TBitmap.Create;
-        try
-          if Albums[I].GetPreview(B) then
-          begin
-            KeepProportions(B, 32, 32);
-            Thread.SynchronizeTask(
-              procedure
-              begin
-                UpdateAlbumImage(Albums[I], B);
-              end
-            );
+      HttpContainer := THTTPRequestContainer.Create;
+      try
+        for I := 0 to Albums.Count - 1 do
+        begin
+          if Thread.IsTerminated then
+            Break;
+          B := TBitmap.Create;
+          try
+            if Albums[I].GetPreview(B, HttpContainer) then
+            begin
+              KeepProportions(B, 32, 32);
+              Thread.SynchronizeTask(
+                procedure
+                begin
+                  UpdateAlbumImage(Albums[I], B);
+                end
+              );
+            end;
+          finally
+            F(B);
           end;
-        finally
-          F(B);
         end;
+      finally
+        F(HttpContainer);
       end;
+
       F(ThreadData);
     end
   );
@@ -1078,9 +1166,40 @@ begin
   end;
 end;
 
+procedure TFormSharePhotos.MiPrivateClick(Sender: TObject);
+begin
+  FAlbumAccess := PHOTO_PROVIDER_ALBUM_PRIVATE;
+  TMenuItem(Sender).Checked := True;
+end;
+
+procedure TFormSharePhotos.MiProtectedClick(Sender: TObject);
+begin
+  FAlbumAccess := PHOTO_PROVIDER_ALBUM_PROTECTED;
+  TMenuItem(Sender).Checked := True;
+end;
+
+procedure TFormSharePhotos.MiPublicClick(Sender: TObject);
+begin
+  FAlbumAccess := PHOTO_PROVIDER_ALBUM_PUBLIC;
+  TMenuItem(Sender).Checked := True;
+end;
+
 procedure TFormSharePhotos.MiRefreshAlbumsClick(Sender: TObject);
 begin
   ReloadAlbums;
+end;
+
+procedure TFormSharePhotos.MiShowInBrowserClick(Sender: TObject);
+var
+  Album: IPhotoServiceAlbum;
+begin
+  if PmAlbumOptions.PopupComponent <> nil then
+  begin
+    Album := IPhotoServiceAlbum(PmAlbumOptions.PopupComponent.Tag);
+
+    if Album.Url <> '' then
+      ShellExecute(GetActiveWindow, 'open', PWideChar(Album.Url), nil, nil, SW_NORMAL);
+  end;
 end;
 
 procedure TFormSharePhotos.OnBoxMouseEnter(Sender: TObject);
@@ -1127,6 +1246,22 @@ begin
       TBox(SbAlbums.Controls[I]).IsSelected := False;
 
   Sb.IsSelected := True;
+end;
+
+procedure TFormSharePhotos.ShowAlbumClick(Sender: TObject);
+var
+  Sb: TBox;
+  Album: IPhotoServiceAlbum;
+begin
+  if Sender is TBox then
+    Sb := TBox(Sender)
+  else
+    Sb := TBox(TWinControl(Sender).Parent);
+
+  Album := IPhotoServiceAlbum(Sb.Tag);
+
+  if Album.Url <> '' then
+    ShellExecute(GetActiveWindow, 'open', PWideChar(Album.Url), nil, nil, SW_NORMAL);
 end;
 
 procedure TFormSharePhotos.ShowImages(Sender: TObject);

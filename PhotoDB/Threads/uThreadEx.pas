@@ -3,6 +3,7 @@ unit uThreadEx;
 interface
 
 uses
+  uMemory,
   Classes,
   uThreadForm,
   Windows,
@@ -136,8 +137,8 @@ destructor TThreadEx.Destroy;
 begin
   Terminate;
   WaitForSubThreads;
-  FSubThreads.Free;
-  FSync.Free;
+  F(FSubThreads);
+  F(FSync);
   inherited;
 end;
 
@@ -259,3 +260,4 @@ begin
 end;
 
 end.
+

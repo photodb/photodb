@@ -34,7 +34,7 @@ const
   '    <title type="text">{title}</title>                                                  ' +
   '    <summary type="text">{summary}</summary>                                            ' +
   '    <gphoto:location>{location}</gphoto:location>                                       ' +
-  '    <gphoto:access>public</gphoto:access>                                               ' +
+  '    <gphoto:access>{access}</gphoto:access>                                             ' +
   '    <gphoto:timestamp>{date}</gphoto:timestamp>                                         ' +
   '    <media:group>                                                                       ' +
   '      <media:keywords>{keywords}</media:keywords>                                       ' +
@@ -59,12 +59,14 @@ type
     FUrl: string;
     FAvatarUrl: string;
     FAvailableSpace: Int64;
+    FUserID: string;
   public
     constructor Create(AlbumXML: string);
     property AuthorName: string read FAuthorName;
     property Url: string read FUrl;
     property AvatarUrl: string read FAvatarUrl;
     property AvailableSpace: Int64 read FAvailableSpace;
+    property UserID: string read FUserID;
   end;
 
   TPicasaUserAlbumsInfo = class(TInterfacedObject, IPhotoServiceUserInfo)
@@ -114,6 +116,7 @@ type
     FName: string;
     FDescription: string;
     FAlbumPreviewUrl: string;
+    FAlbumUrl: string;
     FDateTime: TDateTime;
     FProvider: TPicasaProvider;
     FIProvider: IPhotoShareProvider;
@@ -125,7 +128,8 @@ type
     function GetName: string;
     function GetDescription: string;
     function GetDate: TDateTime;
-    function GetPreview(Bitmap: TBitmap): Boolean;
+    function GetUrl: string;
+    function GetPreview(Bitmap: TBitmap; HttpContainer: THTTPRequestContainer = nil): Boolean;
   end;
 
   TPicasaProvider = class(TInterfacedObject, IPhotoShareProvider)
@@ -146,7 +150,7 @@ type
     function ChangeUser: Boolean;
     function GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
     function GetAlbumList(Albums: TList<IPhotoServiceAlbum>): Boolean;
-    function CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
+    function CreateAlbum(Name, Description: string; Date: TDateTime; Access: Integer; out Album: IPhotoServiceAlbum): Boolean;
     function UploadPhoto(AlbumID, FileName, Name, Description: string; Date: TDateTime; ContentType: string;
       Stream: TStream; Progress: IUploadProgress; out Photo: IPhotoServiceItem): Boolean;
     function GetProviderImage(Bitmap: TBitmap): Boolean;
@@ -270,7 +274,7 @@ begin
   FTmpProgress := nil;
 end;
 
-function TPicasaProvider.CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
+function TPicasaProvider.CreateAlbum(Name, Description: string; Date: TDateTime; Access: Integer; out Album: IPhotoServiceAlbum): Boolean;
 var
   AlbumInfo, AlbumXML: string;
   Data: TStringStream;
@@ -286,6 +290,16 @@ begin
       AlbumInfo := StringReplace(AlbumInfo, '{location}', '', []);
       AlbumInfo := StringReplace(AlbumInfo, '{date}', IntToStr(DateTimeTimeStamp(Date)), []);
       AlbumInfo := StringReplace(AlbumInfo, '{keywords}', '', []);
+
+      case Access of
+        PHOTO_PROVIDER_ALBUM_PROTECTED:
+          AlbumInfo := StringReplace(AlbumInfo, '{access}', 'private', []);
+        PHOTO_PROVIDER_ALBUM_PRIVATE:
+          AlbumInfo := StringReplace(AlbumInfo, '{access}', 'protected', []);
+        else
+          AlbumInfo := StringReplace(AlbumInfo, '{access}', 'public', []);
+      end;
+
       Data := TStringStream.Create(AlbumInfo, TEncoding.UTF8);
       try
         Data.Seek(0, soFromBeginning);
@@ -637,13 +651,17 @@ var
   DateTimeNode,
   MediaGroup,
   PreviewNode,
-  UrlAttr: IXMLDOMNode;
+  UrlAttr,
+  AlbumNameNode,
+  AuthorNode,
+  UserUrlNode: IXMLDOMNode;
   TimeStamp: Int64;
 begin
   FXML := XML;
   FProvider := Provider;
   //add new reference
   FIProvider := Provider;
+  FAlbumUrl := '';
 
   PreviewNode := nil;
   Doc := CreateXMLDocument;
@@ -659,6 +677,15 @@ begin
       MediaGroup := FindNode(DocumentNode, 'media:group');
       if MediaGroup <> nil then
         PreviewNode := FindNode(MediaGroup, 'media:thumbnail');
+
+      AuthorNode := FindNode(DocumentNode, 'author');
+      if AuthorNode <> nil then
+      begin
+        UserUrlNode := FindNode(AuthorNode, 'uri');
+        AlbumNameNode := FindNode(DocumentNode, 'gphoto:name');
+        if (UserUrlNode <> nil) and (AlbumNameNode <> nil) then
+          FAlbumUrl := UserUrlNode.text + '/' + AlbumNameNode.text;
+      end;
 
       if AlbumIDNode <> nil then
         FAlbumID := AlbumIDNode.text;
@@ -709,9 +736,14 @@ begin
   Result := FName;
 end;
 
-function TPicasaUserAlbum.GetPreview(Bitmap: TBitmap): Boolean;
+function TPicasaUserAlbum.GetPreview(Bitmap: TBitmap; HttpContainer: THTTPRequestContainer = nil): Boolean;
 begin
-  Result := LoadBitmapFromUrl(FAlbumPreviewUrl, Bitmap);
+  Result := LoadBitmapFromUrl(FAlbumPreviewUrl, Bitmap, HttpContainer);
+end;
+
+function TPicasaUserAlbum.GetUrl: string;
+begin
+  Result := FAlbumUrl;
 end;
 
 function TPicasaUserAlbum.UploadItem(FileName, Name, Description: string; Date: TDateTime; ContentType: string; Stream: TStream; Progress: IUploadProgress; out Item: IPhotoServiceItem): Boolean;

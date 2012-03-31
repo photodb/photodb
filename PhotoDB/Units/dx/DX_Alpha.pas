@@ -537,12 +537,17 @@ end;
 procedure TDirectShowForm.HideMouse;
 var
   CState: Integer;
-begin
+  P: TPoint;
+begin      
+  GetCursorPos(P);
+  if not PtInRect(BoundsRect, P) then
+    Exit;
   CState := ShowCursor(True);
   while Cstate >= 0 do
     Cstate := ShowCursor(False);
   if FloatPanel <> nil then
     FloatPanel.Hide;
+  SetFocus;
 end;
 
 procedure TDirectShowForm.ShowMouse;
@@ -558,11 +563,23 @@ begin
 end;
 
 procedure TDirectShowForm.ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+
+  function CanProcessMessage: Boolean;
+  var
+    P: TPoint;
+  begin
+    GetCursorPos(P);
+    Result := Active or PtInRect(BoundsRect, P);
+  end;
+
 begin
-  if Active and (Msg.message = WM_SYSKEYDOWN) then
+  if not Visible then
+    Exit;
+
+  if CanProcessMessage and (Msg.message = WM_SYSKEYDOWN) then
     Msg.Message := 0;
 
-  if Viewer <> nil then
+  if (Viewer <> nil) and CanProcessMessage then
   begin
     if Msg.message = WM_KEYDOWN then
     begin

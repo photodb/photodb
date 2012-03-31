@@ -61,7 +61,8 @@ var
 implementation
 
 uses
-  SlideShow, FloatPanelFullScreen;
+  SlideShow,
+  FloatPanelFullScreen;
 
 {$R *.dfm}
 
@@ -186,11 +187,24 @@ end;
 
 procedure TFullScreenView.ApplicationEvents1Message(var Msg: tagMSG;
   var Handled: Boolean);
+
+  function CanProcessMessage: Boolean;
+  var
+    P: TPoint;
+  begin
+    GetCursorPos(P);
+    Result := Active or PtInRect(BoundsRect, P);
+  end;
+
 begin
-  if Viewer.FullScreenNow then
+  if not Visible then
+    Exit;
+
+  if Viewer.FullScreenNow and CanProcessMessage then
     if Msg.message = WM_SYSKEYDOWN then
       Msg.message := 0;
-  if Viewer.FullScreenNow then
+
+  if Viewer.FullScreenNow and CanProcessMessage then
     if Msg.message = WM_KEYDOWN then
     begin
       if Msg.WParam = VK_LEFT then
@@ -215,13 +229,17 @@ begin
 
       Msg.message := 0;
     end;
-  if Msg.message <> WM_MOUSEWHEEL then
-    Exit;
-  if Viewer.FullScreenNow and (Viewer <> nil) then
-    if NativeInt(Msg.WParam) > 0 then
-      Viewer.Previous_(Self)
-    else
-      Viewer.Next_(Self);
+
+  if (Msg.message = WM_MOUSEWHEEL) and CanProcessMessage then
+  begin
+    if Viewer.FullScreenNow and (Viewer <> nil) then
+      if NativeInt(Msg.WParam) > 0 then
+        Viewer.Previous_(Self)
+      else
+        Viewer.Next_(Self);
+
+    Handled := True;
+  end;
 end;
 
 procedure TFullScreenView.FormResize(Sender: TObject);

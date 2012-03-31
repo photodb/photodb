@@ -8,12 +8,17 @@ uses
   Classes,
   SyncObjs,
   SysUtils,
-  Graphics;
+  Graphics,
+  uInternetUtils;
 
 const
   PHOTO_PROVIDER_FEATURE_ALBUMS        = '{06213CD9-35C9-4FA8-B21D-4D7628347DEC}';
   PHOTO_PROVIDER_FEATURE_PRIVATE_ITEMS = '{0D4C568C-C3E7-45DD-9E61-47D529480D0E}';
   PHOTO_PROVIDER_FEATURE_DELETE        = '{7258EB96-A9FE-4E63-8035-2F94680EC320}';
+
+  PHOTO_PROVIDER_ALBUM_PUBLIC = 1;
+  PHOTO_PROVIDER_ALBUM_PROTECTED = 2;
+  PHOTO_PROVIDER_ALBUM_PRIVATE = 3;
 
 type
   IPhotoServiceUserInfo = interface
@@ -58,11 +63,13 @@ type
     function GetName: string;
     function GetDescription: string;
     function GetDate: TDateTime;
-    function GetPreview(Bitmap: TBitmap): Boolean;
+    function GetUrl: string;
+    function GetPreview(Bitmap: TBitmap; HttpContainer: THTTPRequestContainer = nil): Boolean;
     property AlbumID: string read GetAlbumID;
     property Name: string read GetName;
     property Description: string read GetDescription;
     property Date: TDateTime read GetDate;
+    property Url: string read GetUrl;
   end;
 
   IPhotoShareProvider = interface
@@ -70,7 +77,7 @@ type
     function GetProviderName: string;
     function GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
     function GetAlbumList(Albums: TList<IPhotoServiceAlbum>): Boolean;
-    function CreateAlbum(Name, Description: string; Date: TDateTime; out Album: IPhotoServiceAlbum): Boolean;
+    function CreateAlbum(Name, Description: string; Date: TDateTime; Access: Integer; out Album: IPhotoServiceAlbum): Boolean;
     function IsFeatureSupported(Feature: string): Boolean;
     function GetProviderImage(Bitmap: TBitmap): Boolean;
     function ChangeUser: Boolean;
