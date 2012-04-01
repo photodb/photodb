@@ -67,8 +67,9 @@ function GistogrammG(S : TBitmap; var Terminated : boolean; CallBack : TProgress
 function GistogrammR(S : TBitmap; var Terminated : boolean; CallBack : TProgressCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
 function Gistogramma(S : TBitmap; var Terminated : boolean; CallBack : TProgressCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
 
-function GetGistogrammBitmap(Height : integer; SBitmap : TBitmap; Options : byte; var MinC, MaxC : Integer) : TBitmap;
-procedure GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer; Bitmap : TBitmap);
+function GetGistogrammBitmap(Height: Integer; SBitmap: TBitmap; Options: Byte; var MinC, MaxC: Integer): TBitmap;
+procedure GetGistogrammBitmapW(Height: Integer; Source: T255IntArray; var MinC, MaxC: Integer; Bitmap: TBitmap; Color: TColor);
+procedure GetGistogrammBitmapWRGB(Height: Integer; SGray, SR, SG, SB: T255IntArray; var MinC, MaxC: Integer; Bitmap: TBitmap; BackColor: TColor);
 function GetGistogrammBitmapX(Height,d : integer; G : T255IntArray; var MinC, MaxC : Integer) : TBitmap;
 
 //new effects from ScineLineFX
@@ -2249,13 +2250,13 @@ begin
   Result.Canvas.LineTo(MaxC, Height - D);
 end;
 
-procedure GetGistogrammBitmapW(Height : integer; Source : T255IntArray; var MinC, MaxC : Integer; Bitmap : TBitmap);
+procedure GetGistogrammBitmapW(Height: Integer; Source: T255IntArray; var MinC, MaxC: Integer; Bitmap: TBitmap; Color: TColor);
 var
   I, J, Xc: Integer;
   X, MaxCount: Integer;
   GE: array [0 .. 255] of Extended;
 begin
-  Bitmap.PixelFormat := Pf24bit;
+  Bitmap.PixelFormat := pf24bit;
 
   MaxCount := 1;
 
@@ -2302,12 +2303,135 @@ begin
   end;
   Bitmap.Width := 256;
   Bitmap.Height := Height;
+
+  Bitmap.Canvas.Brush.Color := clGray;
   Bitmap.Canvas.Rectangle(0, 0, 256, Height);
+
+  Bitmap.Canvas.Pen.Color := Color;
   for I := 0 to 255 do
   begin
     Bitmap.Canvas.MoveTo(I + 1, Height);
     Bitmap.Canvas.LineTo(I + 1, Height - Round(Height * GE[I]));
   end;
+
+  Bitmap.Canvas.Pen.Color := $888888;
+  Bitmap.Canvas.MoveTo(MinC, 0);
+  Bitmap.Canvas.LineTo(MinC, Height);
+  Bitmap.Canvas.Pen.Color := $888888;
+  Bitmap.Canvas.MoveTo(MaxC, 0);
+  Bitmap.Canvas.LineTo(MaxC, Height);
+end;
+
+procedure GetGistogrammBitmapWRGB(Height: Integer; SGray, SR, SG, SB: T255IntArray; var MinC, MaxC: Integer; Bitmap: TBitmap; BackColor: TColor);
+type
+  ExtendedArray255 = array[0 .. 255] of Extended;
+var
+  I, J: Integer;
+  GGray, GR, GG, GB: ExtendedArray255;
+  P: PARGB;
+  R, B, G: Byte;
+
+  function NormalizeGistogramm(Gisto: T255IntArray): ExtendedArray255;
+  var
+    I, J: Integer;
+    MaxCount, Xc: Integer;
+    X: Integer;
+  begin
+    MaxCount := 1;
+
+    for I := 0 to 255 do
+      if Gisto[I] > MaxCount then
+      begin
+        X := Gisto[I] div 2;
+        Xc := 0;
+        for J := 0 to 255 do
+          if I <> J then
+            if Gisto[J] > X then
+              Inc(Xc);
+        if Xc > 5 then
+          MaxCount := Gisto[I];
+      end;
+
+    if MaxCount = 1 then
+    begin
+      for I := 0 to 255 do
+        if Gisto[I] > MaxCount then
+          MaxCount := Gisto[I];
+    end;
+
+    for I := 0 to 255 do
+      Result[I] := Gisto[I] / MaxCount;
+  end;
+
+begin
+  Bitmap.PixelFormat := pf24bit;
+
+  GGray := NormalizeGistogramm(SGray);
+  GR := NormalizeGistogramm(SR);
+  GG := NormalizeGistogramm(SG);
+  GB := NormalizeGistogramm(SB);
+
+  BackColor := ColorToRGB(BackColor);
+  R := GetRValue(BackColor);
+  G := GetGValue(BackColor);
+  B := GetBValue(BackColor);
+
+  MinC := 0;
+  for I := 0 to 255 do
+  begin
+    if GGray[I] > 0.05 then
+    begin
+      MinC := I;
+      Break;
+    end;
+  end;
+  MaxC := 0;
+  for I := 255 downto 0 do
+  begin
+    if GGray[I] > 0.05 then
+    begin
+      MaxC := I;
+      Break;
+    end;
+  end;
+
+  Bitmap.Width := 256;
+  Bitmap.Height := Height;
+  Bitmap.Canvas.Brush.Color := clBlack;
+  Bitmap.Canvas.Rectangle(0, 0, 256, Height);
+
+  for I := 0 to 255 do
+  begin
+    for J := Max(0, Height - Round(Height * GR[I])) to Bitmap.Height - 1 do
+    begin
+      P := Bitmap.ScanLine[J];
+      P^[I].R := 255;
+    end;
+    for J := Max(0, Height - Round(Height * GG[I])) to Bitmap.Height - 1 do
+    begin
+      P := Bitmap.ScanLine[J];
+      P^[I].G := 255;
+    end;
+    for J := Max(0, Height - Round(Height * GB[I])) to Bitmap.Height - 1 do
+    begin
+      P := Bitmap.ScanLine[J];
+      P^[I].B := 255;
+    end;
+  end;
+  for I := 0 to Bitmap.Height - 1 do
+  begin
+    P := Bitmap.ScanLine[I];
+    for J := 0 to Bitmap.Width - 1 do
+    begin
+      if (P^[J].R = 0) and (P^[J].G = 0) and (P^[J].B = 0) then
+      begin
+        P^[J].R := R;
+        P^[J].G := G;
+        P^[J].B := B;
+      end;
+    end;
+  end;
+
   Bitmap.Canvas.Pen.Color := $888888;
   Bitmap.Canvas.MoveTo(MinC, 0);
   Bitmap.Canvas.LineTo(MinC, Height);

@@ -169,20 +169,6 @@ object FormSharePhotos: TFormSharePhotos
     Height = 13
     Caption = 'Info text'
   end
-  object LbAlbumList: TLabel
-    Left = 8
-    Top = 47
-    Width = 49
-    Height = 13
-    Caption = 'Album list:'
-  end
-  object LbItems: TLabel
-    Left = 167
-    Top = 47
-    Width = 79
-    Height = 13
-    Caption = 'Items to upload:'
-  end
   object LsAuthorisation: TLoadingSign
     Left = 584
     Top = 10
@@ -238,192 +224,135 @@ object FormSharePhotos: TFormSharePhotos
     StretchImage = True
     CanClick = True
   end
-  object BtnShare: TButton
-    Left = 521
-    Top = 417
-    Width = 96
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Share!'
-    TabOrder = 2
-    OnClick = BtnShareClick
-  end
-  object BtnCancel: TButton
-    Left = 433
-    Top = 417
-    Width = 82
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Cancel'
-    TabOrder = 3
-    OnClick = BtnCancelClick
-  end
-  object SbAlbums: TScrollBox
-    Left = 8
-    Top = 64
-    Width = 153
-    Height = 378
-    HorzScrollBar.Visible = False
-    Anchors = [akLeft, akTop, akBottom]
-    PopupMenu = PmAlbums
-    TabOrder = 4
-    DesignSize = (
-      149
-      374)
-    object LsLoadingAlbums: TLoadingSign
-      Left = 122
-      Top = 347
-      Width = 24
-      Height = 24
-      Active = True
-      FillPercent = 80
-      Anchors = [akBottom]
-      SignColor = clBlack
-      MaxTransparencity = 255
-    end
-  end
-  object PbMain: TProgressBar
-    Left = 167
-    Top = 417
-    Width = 165
-    Height = 25
-    Anchors = [akLeft, akRight, akBottom]
-    Position = 75
-    TabOrder = 5
-    Visible = False
-  end
-  object SbItemsToUpload: TScrollBox
-    Left = 167
-    Top = 64
-    Width = 450
-    Height = 347
-    HorzScrollBar.Visible = False
+  object PnContent: TPanel
+    Left = 0
+    Top = 47
+    Width = 625
+    Height = 402
     Anchors = [akLeft, akTop, akRight, akBottom]
-    TabOrder = 6
-    DesignSize = (
-      446
-      343)
-    object PnExample: TPanel
-      Left = 3
-      Top = 3
-      Width = 440
-      Height = 41
-      Anchors = [akLeft, akTop, akRight]
-      ParentBackground = False
+    BevelOuter = bvNone
+    TabOrder = 3
+    object SplAlbums: TSplitter
+      Left = 161
+      Top = 0
+      Width = 5
+      Height = 402
+      OnCanResize = SplAlbumsCanResize
+      ExplicitLeft = 320
+    end
+    object PnAlbums: TPanel
+      Left = 0
+      Top = 0
+      Width = 161
+      Height = 402
+      Align = alLeft
+      BevelOuter = bvNone
+      Caption = 'PnAlbums'
       TabOrder = 0
       DesignSize = (
-        440
-        41)
-      object Image3: TImage
-        Left = 3
-        Top = 3
-        Width = 32
-        Height = 32
-        Cursor = crHandPoint
-        Proportional = True
-        Stretch = True
-      end
-      object WebLink4: TWebLink
-        Left = 41
-        Top = 3
-        Width = 64
+        161
+        402)
+      object LbAlbumList: TLabel
+        Left = 8
+        Top = 1
+        Width = 49
         Height = 13
-        Cursor = crHandPoint
-        Text = 'Image name'
-        ImageIndex = 0
-        IconWidth = 0
-        IconHeight = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
+        Caption = 'Album list:'
       end
-      object WebLink5: TWebLink
-        Left = 41
-        Top = 22
-        Width = 61
-        Height = 13
-        Cursor = crHandPoint
-        Text = '2012/12/12'
-        ImageIndex = 0
-        IconWidth = 0
-        IconHeight = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
-      end
-      object LsWorking: TLoadingSign
-        Left = 380
-        Top = 22
-        Width = 16
-        Height = 16
-        Active = True
-        FillPercent = 60
-        Anchors = [akRight, akBottom]
-        SignColor = clBlack
-        MaxTransparencity = 255
-        ExplicitLeft = 376
-      end
-      object WebLink6: TWebLink
-        Left = 108
-        Top = 22
-        Width = 38
-        Height = 13
-        Cursor = crHandPoint
-        Text = '256 Kb'
-        ImageIndex = 0
-        IconWidth = 0
-        IconHeight = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
-      end
-      object WlUploadState: TWebLink
-        Left = 402
-        Top = 24
-        Width = 34
-        Height = 13
-        Cursor = crHandPoint
-        Anchors = [akRight, akBottom]
-        Text = '100%'
-        ImageIndex = 0
-        IconWidth = 0
-        IconHeight = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
-        ExplicitLeft = 398
+      object SbAlbums: TScrollBox
+        Left = 8
+        Top = 18
+        Width = 150
+        Height = 375
+        HorzScrollBar.Visible = False
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        PopupMenu = PmAlbums
+        TabOrder = 0
+        DesignSize = (
+          146
+          371)
+        object LsLoadingAlbums: TLoadingSign
+          Left = 119
+          Top = 343
+          Width = 24
+          Height = 24
+          Active = True
+          FillPercent = 80
+          Anchors = [akRight, akBottom]
+          SignColor = clBlack
+          MaxTransparencity = 255
+        end
       end
     end
-  end
-  object BtnSettings: TButton
-    Left = 338
-    Top = 417
-    Width = 89
-    Height = 25
-    Anchors = [akRight, akBottom]
-    Caption = 'Settings'
-    TabOrder = 7
-    OnClick = BtnSettingsClick
+    object PnContentArea: TPanel
+      Left = 166
+      Top = 0
+      Width = 459
+      Height = 402
+      Align = alClient
+      BevelOuter = bvNone
+      Caption = 'PnContentArea'
+      TabOrder = 1
+      DesignSize = (
+        459
+        402)
+      object LbItems: TLabel
+        Left = 1
+        Top = 1
+        Width = 79
+        Height = 13
+        Caption = 'Items to upload:'
+      end
+      object BtnSettings: TButton
+        Left = 171
+        Top = 370
+        Width = 89
+        Height = 25
+        Anchors = [akRight, akBottom]
+        Caption = 'Settings'
+        TabOrder = 0
+        OnClick = BtnSettingsClick
+      end
+      object PbMain: TProgressBar
+        Left = 1
+        Top = 370
+        Width = 164
+        Height = 25
+        Anchors = [akLeft, akRight, akBottom]
+        Position = 75
+        TabOrder = 1
+        Visible = False
+      end
+      object BtnCancel: TButton
+        Left = 266
+        Top = 370
+        Width = 82
+        Height = 25
+        Anchors = [akRight, akBottom]
+        Caption = 'Cancel'
+        TabOrder = 2
+        OnClick = BtnCancelClick
+      end
+      object BtnShare: TButton
+        Left = 354
+        Top = 370
+        Width = 96
+        Height = 25
+        Anchors = [akRight, akBottom]
+        Caption = 'Share!'
+        TabOrder = 3
+        OnClick = BtnShareClick
+      end
+      object SbItemsToUpload: TScrollBox
+        Left = 1
+        Top = 19
+        Width = 449
+        Height = 345
+        HorzScrollBar.Visible = False
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        TabOrder = 4
+      end
+    end
   end
   object AeMain: TApplicationEvents
     OnMessage = AeMainMessage

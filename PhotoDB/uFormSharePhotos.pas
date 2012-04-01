@@ -48,7 +48,9 @@ uses
   Vcl.Menus,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  uSettings;
+  uSettings,
+  uDBBaseTypes,
+  ShellContextMenu;
 
 type
   TFormSharePhotos = class(TThreadForm)
@@ -57,25 +59,9 @@ type
     WlChangeUser: TWebLink;
     ImAvatar: TImage;
     LbProviderInfo: TLabel;
-    BtnShare: TButton;
-    BtnCancel: TButton;
-    SbAlbums: TScrollBox;
-    LbAlbumList: TLabel;
-    PbMain: TProgressBar;
-    SbItemsToUpload: TScrollBox;
-    LbItems: TLabel;
-    PnExample: TPanel;
-    Image3: TImage;
-    WebLink4: TWebLink;
-    WebLink5: TWebLink;
-    LsWorking: TLoadingSign;
-    WebLink6: TWebLink;
-    BtnSettings: TButton;
     LsAuthorisation: TLoadingSign;
-    LsLoadingAlbums: TLoadingSign;
     AeMain: TApplicationEvents;
     SaveWindowPos1: TSaveWindowPos;
-    WlUploadState: TWebLink;
     PmAlbums: TPopupActionBar;
     MiRefreshAlbums: TMenuItem;
     PmAlbumAccess: TPopupActionBar;
@@ -86,6 +72,19 @@ type
     PmItemOptions: TPopupActionBar;
     MiRemoveFromList: TMenuItem;
     MiShowInBrowser: TMenuItem;
+    PnContent: TPanel;
+    PnAlbums: TPanel;
+    SbAlbums: TScrollBox;
+    LsLoadingAlbums: TLoadingSign;
+    LbAlbumList: TLabel;
+    SplAlbums: TSplitter;
+    PnContentArea: TPanel;
+    BtnSettings: TButton;
+    PbMain: TProgressBar;
+    BtnCancel: TButton;
+    BtnShare: TButton;
+    SbItemsToUpload: TScrollBox;
+    LbItems: TLabel;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -102,6 +101,8 @@ type
     procedure MiPublicClick(Sender: TObject);
     procedure MiProtectedClick(Sender: TObject);
     procedure MiPrivateClick(Sender: TObject);
+    procedure SplAlbumsCanResize(Sender: TObject; var NewSize: Integer;
+      var Accept: Boolean);
   private
     { Private declarations }
     FFiles: TDBPopupMenuInfo;
@@ -136,6 +137,8 @@ type
     procedure SelectAlbumClick(Sender: TObject);
     procedure ShowAlbumClick(Sender: TObject);
     procedure WlAlbumSettingsClick(Sender: TObject);
+    procedure ItemContexPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    procedure DeleteItemFromList(Sender: TObject);
 
     procedure LoadProviderInfo;
     procedure UpdateUserInfo(Provider: IPhotoShareProvider; Info: IPhotoServiceUserInfo);
@@ -164,6 +167,7 @@ type
     procedure NotifyItemProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
     procedure EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);
     procedure ReloadAlbums;
+    procedure HideAlbumCreation;
   end;
 
 const
@@ -179,7 +183,8 @@ uses
   FormManegerUnit,
   SlideShow,
   uShareSettings,
-  uShareImagesThread;
+  uShareImagesThread,
+  DBCMenu;
 
 {$R *.dfm}
 
@@ -216,10 +221,10 @@ begin
       CY := 50;
 
     GetCursorPos(P);
-    P := ScreenToClient(P);
-    if PtInRect(SbAlbums.BoundsRect, P) then
+
+    if PtInRect(SbAlbums.BoundsRectScreen, P) then
       SbAlbums.VertScrollBar.Position := SbAlbums.VertScrollBar.Position + CY;
-    if PtInRect(SbItemsToUpload.BoundsRect, P) then
+    if PtInRect(SbItemsToUpload.BoundsRectScreen, P) then
       SbItemsToUpload.VertScrollBar.Position := SbItemsToUpload.VertScrollBar.Position + CY;
   end;
 end;
@@ -238,6 +243,14 @@ end;
 procedure TFormSharePhotos.BtnShareClick(Sender: TObject);
 begin
   FIsWorking := True;
+
+  WlAlbumNameOkClick(FWlAlbumNameOk);
+  WlAlbumDateOkClick(FWlAlbumDateOk);
+  FWlAlbumName.Enabled := False;
+  FWlAlbumDate.Enabled := False;
+  FWlAlbumSettings.Enabled := False;
+  WlChangeUser.Enabled := False;
+
   BtnShare.SetEnabledEx(False);
   BtnSettings.Enabled := False;
   TShareImagesThread.Create(Self, FProvider, False);
@@ -279,7 +292,7 @@ end;
 
 procedure TFormSharePhotos.EnableControls(Value: Boolean);
 begin
-  BtnShare.Enabled := Value;
+  BtnShare.Enabled := FFiles.Count > 0;
   WlUserName.Enabled := Value;
   WlChangeUser.Enabled := Value;
 end;
@@ -299,6 +312,7 @@ end;
 
 procedure TFormSharePhotos.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  Settings.WriteInteger('Share', 'AlbumsSplitterPos', PnAlbums.Width);
   SaveWindowPos1.SavePosition;
   Action := caFree;
 end;
@@ -348,6 +362,7 @@ begin
     end;
   end;
 
+  PnAlbums.Width := Settings.ReadInteger('Share', 'AlbumsSplitterPos', 160);
   FProvider := nil;
 end;
 
@@ -456,10 +471,16 @@ begin
   end;
 end;
 
+procedure TFormSharePhotos.HideAlbumCreation;
+begin
+  FCreateAlbumBox.Hide;
+end;
+
 procedure TFormSharePhotos.SharingDone;
 begin
   FIsWorking := False;
   BtnSettings.Enabled := True;
+  BtnCancel.Caption := L('Done');
 end;
 
 procedure TFormSharePhotos.InitAlbumCreating;
@@ -605,6 +626,94 @@ begin
   CreateAlbumBoxResize(Self);
 end;
 
+procedure TFormSharePhotos.DeleteItemFromList(Sender: TObject);
+var
+  MI: TMenuItem;
+  Sb: TBox;
+  Info: TDBPopupMenuInfoRecord;
+  I, Top: Integer;
+  Box: TBox;
+begin
+  MI := TMenuItem(Sender);
+  Sb := TBox(MI.Tag);
+
+  Info := TDBPopupMenuInfoRecord(Sb.Tag);
+
+  for I := 0 to FFiles.Count - 1 do
+  begin
+    if FFiles[I] = Info then
+    begin
+      FFiles.Delete(I);
+      Sb.Free;
+      Break;
+    end;
+  end;
+
+  Top := 3;
+  for I := 0 to SbItemsToUpload.ControlCount - 1 do
+  begin
+    if SbItemsToUpload.Controls[I] is TBox then
+    begin
+      Box := TBox(SbItemsToUpload.Controls[I]);
+      Box.Top := Top - SbItemsToUpload.VertScrollBar.Position;
+      Top := Box.Top + Box.Height + 3;
+    end;
+  end;
+
+  BtnShare.Enabled := FFiles.Count > 0;
+end;
+
+procedure TFormSharePhotos.ItemContexPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+var
+  Info: TDBPopupMenuInfo;
+  Menus: TArMenuItem;
+  Sb: TBox;
+  Rec: TDBPopupMenuInfoRecord;
+  FileList: TStrings;
+  P: TPoint;
+begin
+  Handled := True;
+  if Sender is TBox then
+    Sb := TBox(Sender)
+  else
+    Sb := TBox(TWinControl(Sender).Parent);
+
+  P := TWinControl(Sender).ClientToScreen(MousePos);
+
+  Rec := TDBPopupMenuInfoRecord(Sb.Tag);
+
+  Info := TDBPopupMenuInfo.Create;
+  try
+
+    if IsGraphicFile(Rec.FileName) then
+    begin
+      Info.Add(Rec.Copy);
+      Info.IsPlusMenu := False;
+      Info.IsListItem := False;
+      Setlength(Menus, 1);
+      Menus[0] := TMenuItem.Create(nil);
+      Menus[0].Caption := L('Delete item from list');
+      Menus[0].Tag := Integer(Sb);
+      Menus[0].ImageIndex := DB_IC_DELETE_INFO;
+      Menus[0].OnClick := DeleteItemFromList;
+
+      TDBPopupMenu.Instance.ExecutePlus(Self, P.X, P.Y, Info, Menus);
+    end else
+    begin
+      FileList := TStringList.Create;
+      try
+        FileList.Add(Rec.FileName);
+        GetProperties(FileList, MousePos, TWinControl(Sender));
+      finally
+        F(FileList);
+      end;
+    end;
+  finally
+    F(Info);
+  end;
+end;
+
 procedure TFormSharePhotos.LoadImageList;
 var
   I: Integer;
@@ -645,6 +754,7 @@ begin
       Box.OnMouseLeave := OnBoxMouseLeave;
       Box.OnClick := ShowImages;
       Box.Tag := NativeInt(FFiles[I]);
+      Box.OnContextPopup := ItemContexPopup;
 
       Top := Box.Top + Box.Height + 3;
 
@@ -872,6 +982,7 @@ begin
   FWlAlbumDateOk.Show;
   FDtpAlbumDate.Show;
   FWlAlbumDate.Hide;
+  FWlAlbumSettings.Hide;
 
   FDtpAlbumDate.SetFocus;
   SelectAlbumClick(Sender);
@@ -881,6 +992,7 @@ procedure TFormSharePhotos.WlAlbumDateOkClick(Sender: TObject);
 begin
   FWlAlbumDate.Text := FormatDateTimeShortDate(FDtpAlbumDate.Date);
   FWlAlbumDate.Show;
+  FWlAlbumSettings.Show;
 
   FWlAlbumDateOk.Hide;
   FDtpAlbumDate.Hide;
@@ -958,10 +1070,10 @@ begin
     //clear old data
     for I := SbAlbums.ControlCount - 1 downto 0 do
     begin
-      if SbAlbums.Controls[I] is TWebLink then
+      if SbAlbums.Controls[I] is TBox then
       begin
         Box := TBox(SbAlbums.Controls[I]);
-        if Box.Tag > 0 then
+        if Box.Tag <> 0 then
           Box.Free;
       end;
     end;
@@ -1014,7 +1126,8 @@ begin
 
   SbAlbums.DisableAlign;
   try
-    Top := FCreateAlbumBox.Top + FCreateAlbumBox.Height + 5;
+    SbAlbums.VertScrollBar.Position := 0;
+    Top := IIF(FCreateAlbumBox.Visible, FCreateAlbumBox.Top + FCreateAlbumBox.Height, 0) + 5;
     for I := 0 to FAlbums.Count - 1 do
     begin
       Box := TBox.Create(SbAlbums);
@@ -1236,6 +1349,9 @@ var
   Sb: TBox;
   I: Integer;
 begin
+  if FIsWorking then
+    Exit;
+
   if Sender is TBox then
     Sb := TBox(Sender)
   else
@@ -1297,6 +1413,12 @@ begin
 
   Viewer.Execute(Self, FFiles);
   Viewer.Show;
+end;
+
+procedure TFormSharePhotos.SplAlbumsCanResize(Sender: TObject;
+  var NewSize: Integer; var Accept: Boolean);
+begin
+  Accept := (NewSize > 160) and (NewSize < 320);
 end;
 
 procedure TFormSharePhotos.EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);

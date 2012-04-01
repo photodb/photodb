@@ -235,7 +235,7 @@ end;
 function TDatabaseTheme.GetWizardColor: TColor;
 begin
   if StyleServices.Enabled  then
-    Result := StyleServices.GetStyleColor(scWindow)
+    Result := StyleServices.GetSystemColor(clWindow)
   else
     Result := clWhite;
 end;

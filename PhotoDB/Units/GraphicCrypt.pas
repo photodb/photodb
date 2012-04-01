@@ -528,8 +528,7 @@ begin
   end;
 end;
 
-
-function DecryptFileToStream(FileName: String; Password : string; Stream : TStream) : Boolean;
+function DecryptFileToStream(FileName: String; Password: string; Stream: TStream): Boolean;
 var
   FS: TFileStream;
   GraphicHeader: TGraphicCryptFileHeader;

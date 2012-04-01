@@ -121,7 +121,8 @@ begin
   if FirstInitialization then
   begin
     GOM.AddObj(Self);
-    Color := Theme.WizardColor;
+    ParentColor := True;
+    ParentBackground := True;
     FIsBusy := False;
     FIsStepComplete := False;
     FManager := Manager;

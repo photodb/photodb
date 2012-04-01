@@ -2,6 +2,7 @@
 <language name="Русский язык" image="LanguageRU.png" autor="Команда PhotoDB" code="ru" langCode="25">
   <scope name="">
     <translate name="Close" value="Закрыть" />
+    <translate name="Done" value="Готово" />
     <translate name="JPEG Options" value="Настройки JPEG" />
     <translate name="Save settings by default" value="Сохранить по умолчанию" />
     <translate name="Processing... (&amp;%%)" value="Обработка... (&amp;%%)" />
@@ -470,6 +471,7 @@
     <translate name="Differen width" value="Различная ширина" />
     <translate name="Differen height" value="Различная высота" />	
     <translate name="Different directories" value="Различные директории" />
+    <translate name="Different comments" value="Различные комментарии" />	
     <translate name="ID" value="ID" />
     <translate name="All in %s" value="Все в %s" />	
     <translate name="Keywords" value="Ключевые слова" />
@@ -494,11 +496,12 @@
     <translate name="EXIF" value="EXIF" />
     <translate name="Key" value="Ключ" />
     <translate name="Value" value="Значение" />
-    <translate name="Gistogramm" value="Гистограмма" />
+    <translate name="Histogram" value="Гистограмма" />
     <translate name="Additional" value="Дополнительно" />
-    <translate name="Gistogramm image" value="Гистограмма изображения" />
+    <translate name="Histogram image" value="Гистограмма изображения" />
     <translate name="Effective range: %d..%d" value="Эффективный диапазон: %d..%d" />
-    <translate name="Channel" value="Канал" />
+    <translate name="Channel" value="Канал" />	
+    <translate name="All channels" value="Все каналы" />
     <translate name="Gray" value="Чёрно-белое" />
     <translate name="Red channel" value="Красный канал" />
     <translate name="Green channel" value="Зелёный канал" />
@@ -892,6 +895,7 @@
     <translate name="Previous selections" value="Предыдущие выборы" />
     <translate name="Face detection disabled" value="Определение лиц отключено" />
     <translate name="Select person" value="Указать персону" />
+    <translate name="Click to select person" value="Нажмите для выбора персоны" />	
     <translate name="Add to shelf" value="Отложить" />
   </scope>
   <scope name="ThumbnailsSize">
@@ -2208,6 +2212,7 @@
 	<translate name="Limited, anyone with the link" value="Только тем, у кого есть ссылка"/>
 	<translate name="Only you" value="Только вам"/>
 	<translate name="Show in browser" value="Показать в браузере"/>	
+	<translate name="Delete item from list" value="Убрать из списка"/>	
   </scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>

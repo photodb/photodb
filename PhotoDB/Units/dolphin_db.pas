@@ -156,9 +156,6 @@ function SpeedInText(Speed: Extended): string;
 function GetImageFromUser(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 
-procedure GetFileNamesFromDrive(Dir, Mask: string; Files: TStrings; var MaxFilesCount: Integer;
-  MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
-
 function TimeIntervalInString(Time: TTime): string;
 
 implementation
@@ -581,60 +578,6 @@ begin
       StrDispose(Receip.lpszName);
     MapiLogOff(MAPI_Session, Handle, 0, 0);
   end;
-end;
-
-procedure GetFileNamesFromDrive(Dir, Mask: string; Files: TStrings; var MaxFilesCount: Integer;
-  MaxFilesSearch: Integer; CallBack: TCallBackProgressEvent = nil);
-var
-  Found: Integer;
-  SearchRec: TSearchRec;
-  Info: TProgressCallBackInfo;
-  FileName : string;
-  FileExists,
-  DirectoryExists: Boolean;
-begin
-  if Dir = '' then
-    Exit;
-
-  Dir := IncludeTrailingBackSlash(Dir);
-  Found := FindFirst(Dir + '*.*', FaAnyFile, SearchRec);
-  while Found = 0 do
-  begin
-    if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
-    begin
-      FileName := Dir + SearchRec.Name;
-      FileExists := (SearchRec.Attr and FaDirectory = 0);
-      DirectoryExists := (SearchRec.Attr and FaDirectory <> 0);
-      if FileExists then
-        Dec(MaxFilesCount);
-
-      if MaxFilesCount < 0 then
-        Break;
-
-      if FileExists and (Pos(AnsiLowerCase(ExtractFileExt(FileName)), Mask) > 0) then
-      begin
-        if Files.Count >= MaxFilesSearch then
-          Break;
-        Files.Add(FileName);
-        if Files.Count >= MaxFilesSearch then
-          Break;
-        if Assigned(CallBack) then
-        begin
-          Info.MaxValue := -1;
-          Info.Position := -1;
-          Info.Information := FileName;
-          Info.Terminate := False;
-          CallBack(nil, Info);
-          if Info.Terminate then
-            Break;
-        end;
-      end
-      else if DirectoryExists then
-        GetFileNamesFromDrive(FileName, Mask, Files, MaxFilesCount, MaxFilesSearch, CallBack);
-    end;
-    Found := SysUtils.FindNext(SearchRec);
-  end;
-  FindClose(SearchRec);
 end;
 
 function TimeIntervalInString(Time: TTime): string;

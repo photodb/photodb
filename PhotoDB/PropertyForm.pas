@@ -2002,7 +2002,7 @@ begin
   if not ValidCryptGraphicFile(FileName) then
     ExifData.LoadFromGraphic(FileName)
   else begin
-    PassWord := DBkernel.FindPasswordForCryptImageFile(FileName);
+    PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
     if PassWord <> '' then
     begin
       MS := TMemoryStream.Create;
@@ -2053,15 +2053,16 @@ begin
   PcMain.Pages[0].Caption := L('General');
   PcMain.Pages[1].Caption := L('Groups');
   PcMain.Pages[2].Caption := L('EXIF');
-  PcMain.Pages[3].Caption := L('Gistogramm');
+  PcMain.Pages[3].Caption := L('Histogram');
   PcMain.Pages[4].Caption := L('Additional');
 
-  Label2.Caption := L('Gistogramm image') + ':';
+  Label2.Caption := L('Histogram image') + ':';
   RgGistogrammChannel.Caption := L('Channel');
-  RgGistogrammChannel.Items[0] := L('Gray');
-  RgGistogrammChannel.Items[1] := L('Red channel');
-  RgGistogrammChannel.Items[2] := L('Green channel');
-  RgGistogrammChannel.Items[3] := L('Blue channel');
+  RgGistogrammChannel.Items[0] := L('All channels');
+  RgGistogrammChannel.Items[1] := L('Gray');
+  RgGistogrammChannel.Items[2] := L('Red channel');
+  RgGistogrammChannel.Items[3] := L('Green channel');
+  RgGistogrammChannel.Items[4] := L('Blue channel');
   CopyCurrent1.Caption := L('Copy line');
   CopyAll1.Caption := L('Copy all information');
   CbInclude.Caption := L('Include in base search');
@@ -2098,7 +2099,7 @@ begin
   AddOriginalImTh1.Caption := L('Connect this photo with original');
 
   VleExif.TitleCaptions[0] := L('Key');
-  VleExif.TitleCaptions[01] := L('Value');
+  VleExif.TitleCaptions[1] := L('Value');
 
   WedGroupsFilter.WatermarkText := L('Filter groups');
 end;
@@ -2237,8 +2238,11 @@ begin
             else
               XInsert(L('Flash'), L('Off'));
 
-            XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
-            XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
+            if (ExifData.ExifImageWidth.Value > 0) and (ExifData.ExifImageHeight.Value > 0) then
+            begin
+              XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
+              XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
+            end;
 
             XInsert(L('Author'), ExifData.Author);
             XInsert(L('Comments'), ExifData.Comments);
@@ -2319,10 +2323,12 @@ begin
     0:
       DgGistogramm.ColorTo := $FFFFFF;
     1:
-      DgGistogramm.ColorTo := $0000FF;
+      DgGistogramm.ColorTo := $FFFFFF;
     2:
-      DgGistogramm.ColorTo := $00FF00;
+      DgGistogramm.ColorTo := $0000FF;
     3:
+      DgGistogramm.ColorTo := $00FF00;
+    4:
       DgGistogramm.ColorTo := $FF0000;
   end;
   OnDoneLoadGistogrammData(Sender);
@@ -3462,13 +3468,15 @@ begin
   try
     case RgGistogrammChannel.ItemIndex of
       0:
-        GetGistogrammBitmapW(130, GistogrammData.Gray, MinC, MaxC, Bitmap);
+        GetGistogrammBitmapWRGB(130, GistogrammData.Gray, GistogrammData.Red, GistogrammData.Green, GistogrammData.Blue, MinC, MaxC, Bitmap, clGray);
       1:
-        GetGistogrammBitmapW(130, GistogrammData.Red, MinC, MaxC, Bitmap);
+        GetGistogrammBitmapW(130, GistogrammData.Gray, MinC, MaxC, Bitmap, clBlack);
       2:
-        GetGistogrammBitmapW(130, GistogrammData.Green, MinC, MaxC, Bitmap);
+        GetGistogrammBitmapW(130, GistogrammData.Red, MinC, MaxC, Bitmap, clRed);
       3:
-        GetGistogrammBitmapW(130, GistogrammData.Blue, MinC, MaxC, Bitmap);
+        GetGistogrammBitmapW(130, GistogrammData.Green, MinC, MaxC, Bitmap, clGreen);
+      4:
+        GetGistogrammBitmapW(130, GistogrammData.Blue, MinC, MaxC, Bitmap, clBlue);
     end;
 
     LbEffectiveRange.Caption := Format(L('Effective range: %d..%d'), [MinC, MaxC]);

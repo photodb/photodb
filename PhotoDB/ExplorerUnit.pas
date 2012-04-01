@@ -4226,6 +4226,7 @@ end;
 procedure TExplorerForm.ShowProgress;
 begin
   FStatusProgress.Show;
+  FStatusProgress.Style := pbstNormal;
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
@@ -4233,6 +4234,8 @@ end;
 
 procedure TExplorerForm.ShowIndeterminateProgress;
 begin
+  FStatusProgress.Style := pbstMarquee;
+
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;

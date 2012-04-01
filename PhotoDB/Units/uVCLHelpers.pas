@@ -57,9 +57,12 @@ type
   end;
 
   TWinControlHelper = class helper for TWinControl
+  private
+    function GetBoundsRectScreen: TRect;
   public
     function FindChildByTag<T: TControl>(Tag: NativeInt): T;
     function FindChildByType<T: TControl>: T;
+    property BoundsRectScreen: TRect read GetBoundsRectScreen;
   end;
 
 type
@@ -257,6 +260,19 @@ begin
       Exit;
     end;
   end;
+end;
+
+function TWinControlHelper.GetBoundsRectScreen: TRect;
+var
+  P1, P2: TPoint;
+begin
+  P1 := BoundsRect.TopLeft;
+  P2 := BoundsRect.BottomRight;
+
+  P1 := ClientToScreen(P1);
+  P2 := ClientToScreen(P2);
+
+  Result := Rect(P1, P2);
 end;
 
 procedure TButtonHelper.SetEnabledEx(Value: Boolean);

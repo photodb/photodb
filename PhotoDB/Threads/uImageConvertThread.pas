@@ -185,40 +185,6 @@ var
     end;
   end;
 
-  procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
-  var
-    Jpeg: TJpegImage;
-  begin
-    ExifData := TExifData.Create;
-    try
-      Stream.Seek(0, soFromBeginning);
-      ExifData.LoadFromGraphic(Stream);
-      ExifData.BeginUpdate;
-      try
-        ExifData.Orientation := toTopLeft;
-        ExifData.ExifImageWidth := Width;
-        ExifData.ExifImageHeight := Height;
-        ExifData.Thumbnail := nil;
-        Stream.Seek(0, soFromBeginning);
-        Jpeg := TJpegImage.Create;
-        try
-          Jpeg.LoadFromStream(Stream);
-          ExifData.SaveToGraphic(Jpeg);
-          Stream.Size := 0;
-          Jpeg.SaveToStream(Stream);
-        finally
-          F(Jpeg);
-        end;
-      finally
-        ExifData.EndUpdate;
-      end;
-    except
-      on e: Exception do
-        EventLog(e.Message);
-    end;
-    F(ExifData);
-  end;
-
   procedure FixJpegFileEXIF(FileName: string; Width, Height: Integer);
   var
     FS: TFileStream;

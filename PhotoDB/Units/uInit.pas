@@ -3,7 +3,9 @@ unit uInit;
 interface
 
 uses
-  Windows, uRuntime, SysUtils;
+  Windows,
+  uRuntime,
+  SysUtils;
 
 implementation
 

@@ -1002,6 +1002,7 @@ object PropertiesForm: TPropertiesForm
         Caption = 'Chanel'
         ItemIndex = 0
         Items.Strings = (
+          'All channels'
           'Grayscale'
           'Red chanel'
           'Green chanel'

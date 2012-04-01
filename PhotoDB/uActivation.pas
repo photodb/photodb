@@ -33,7 +33,8 @@ uses
   uSettings,
   uMemoryEx,
   uThemesUtils,
-  LoadingSign, uBaseWinControl;
+  LoadingSign,
+  uBaseWinControl;
 
 type
   TActivateForm = class(TDBForm)
@@ -104,7 +105,6 @@ end;
 
 procedure TActivateForm.FormCreate(Sender: TObject);
 var
-  FImageBmp: TBitmap;
   Activation: TPngImage;
 begin
   LoadLanguage;
@@ -115,17 +115,11 @@ begin
   FWizard.Start(Self, 190, 8);
 
   LsLoading.Color := Theme.WizardColor;
-  FImageBmp := TBitmap.Create;
+  Activation := GetActivationImage;
   try
-    Activation := GetActivationImage;
-    try
-      LoadPNGImage32bit(Activation, FImageBmp, Theme.WindowColor);
-      ImActivationImage.Picture.Graphic := FImageBmp;
-    finally
-      F(Activation);
-    end;
+    ImActivationImage.Picture.Graphic := Activation;
   finally
-    F(FImageBmp);
+    F(Activation);
   end;
 
   UpdateLayout;

@@ -7,6 +7,7 @@ uses
   uConstants,
   CCR.Exif,
   uMemory,
+  Classes,
   UnitDBDeclare,
   uSettings,
   uAssociations,
@@ -69,8 +70,51 @@ function CreateOrientation(Rotation: Integer): TExifOrientation;
 function CanSaveEXIF(FileName: string): Boolean;
 function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation; RaiseException: Boolean = False): Boolean;
 function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
+procedure FixEXIFForJpegStream(Exif: TExifData; Stream: TStream; Width, Height: Integer);
 
 implementation
+
+procedure FixEXIFForJpegStream(Exif: TExifData; Stream: TStream; Width, Height: Integer);
+var
+  Jpeg: TJpegImage;
+begin
+  Exif.BeginUpdate;
+  try
+    Exif.Orientation := toTopLeft;
+    Exif.ExifImageWidth := Width;
+    Exif.ExifImageHeight := Height;
+    Exif.Thumbnail := nil;
+    Stream.Seek(0, soFromBeginning);
+    Jpeg := TJpegImage.Create;
+    try
+      Jpeg.LoadFromStream(Stream);
+      Exif.SaveToGraphic(Jpeg);
+      Stream.Size := 0;
+      Jpeg.SaveToStream(Stream);
+    finally
+      F(Jpeg);
+    end;
+  finally
+    Exif.EndUpdate;
+  end;
+end;
+
+procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
+var
+  ExifData: TExifData;
+begin
+  ExifData := TExifData.Create;
+  try
+    Stream.Seek(0, soFromBeginning);
+    ExifData.LoadFromGraphic(Stream);
+    FixEXIFForJpegStream(ExifData, Stream, Width, Height);
+  except
+    on e: Exception do
+      EventLog(e.Message);
+  end;
+  F(ExifData);
+end;
 
 function CanSaveEXIF(FileName: string): Boolean;
 var

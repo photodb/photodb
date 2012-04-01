@@ -32,6 +32,7 @@ uses
   Vcl.ComCtrls,
   uPhotoShareInterfaces,
   uShellIntegration,
+  uExifUtils,
   CCR.Exif;
 
 type
@@ -255,6 +256,7 @@ begin
     SynchronizeEx(
       procedure
       begin
+        TFormSharePhotos(OwnerForm).HideAlbumCreation;
         TFormSharePhotos(OwnerForm).ReloadAlbums;
       end
     );
@@ -276,6 +278,7 @@ var
   PhotoItem: IPhotoServiceItem;
   ExifData: TExifData;
   ItemProgress: IUploadProgress;
+  Ico: TIcon;
 begin
   Width := 0;
   Height := 0;
@@ -316,80 +319,134 @@ begin
       if UsePreviewForRAW or FIsPreview then
         TRAWImage(Graphic).IsPreview := True;
 
-    if Enrypted then
-    begin
-      F(Graphic);
-
-      Graphic := DeCryptGraphicFile(Data.FileName, Password);
-    end else if not IsDevicePath(Data.FileName) then
-      Graphic.LoadFromFile(Data.FileName)
-    else
-      Graphic.LoadFromDevice(Data.FileName);
-
-    W := Graphic.Width;
-    H := Graphic.Height;
-    ProportionalSize(Width, Height, W, H);
-
-    if (Width > 0) and (Height > 0) then
-      JPEGScale(Graphic, W, H);
-
-    Original := TBitmap.Create;
+    ExifData := TExifData.Create(nil);
     try
-      AssignGraphic(Original, Graphic);
-      F(Graphic);
 
-      if (Width > 0) and (Height > 0) then
-        Stretch(W, H, sfLanczos3, 0, Original);
+      if Enrypted then
+      begin
+        F(Graphic);
+        Graphic := DeCryptGraphicFile(Data.FileName, Password);
+      end else if not IsDevicePath(Data.FileName) then
+        Graphic.LoadFromFile(Data.FileName)
+      else
+        Graphic.LoadFromDevice(Data.FileName);
 
-      if FIsPreview then
+      if Graphic = nil then
       begin
-        SynchronizeEx(
-          procedure
-          begin
-            TFormSharePhotos(OwnerForm).UpdatePreview(Data, Original);
-          end
-        );
-      end else
-      begin
-        if IsJpegImageFormat then
-          NewGraphic := TJpegImage.Create
-        else
-          NewGraphic := TPngImage.Create;
+        Ico := TAIcons.Instance.GetIconByExt(Data.FileName, False, 32, False);
         try
-          AssignToGraphic(NewGraphic, Original);
-          F(Original);
+          SynchronizeEx(
+            procedure
+            begin
+              TFormSharePhotos(OwnerForm).UpdatePreview(Data, Ico);
+            end
+          );
+        finally
+          F(Ico);
+        end;
+        Exit;
+      end;
 
-          SetJPEGGraphicSaveOptions('ShareImages', NewGraphic);
-          if NewGraphic is TJPEGImage then
-            FreeJpegBitmap(TJPEGImage(NewGraphic));
-
+      if IsJpegImageFormat then
+      begin
+        //try to read exif
+        if Enrypted then
+        begin
           MS := TMemoryStream.Create;
           try
-            NewGraphic.SaveToStream(MS);
-            MS.Seek(0, soFromBeginning);
-
-            if IsJpegImageFormat then
-              ContentType := 'image/jpeg'
-            else
-              ContentType := 'image/png';
-
-             ItemProgress := TItemUploadProgress.Create(Self, Data);
-             try
-               FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
-                 ExtractFileName(Data.FileName), Data.Date, ContentType, MS, ItemProgress, PhotoItem);
-             finally
-               ItemProgress := nil;
-             end;
+            if DecryptFileToStream(Data.FileName, Password, MS) then
+            begin
+              MS.Seek(0, soFromBeginning);
+              ExifData.LoadFromStream(MS);
+            end;
           finally
             F(MS);
           end;
-        finally
-          F(NewGraphic);
+        end else if not IsDevicePath(Data.FileName) then
+          ExifData.LoadFromGraphic(Data.FileName) else
+        begin
+          MS := TMemoryStream.Create;
+          try
+            if ReadStreamFromDevice(Data.FileName, MS) then
+            begin
+              MS.Seek(0, soFromBeginning);
+              ExifData.LoadFromStream(MS);
+            end;
+          finally
+            F(MS);
+          end;
         end;
       end;
 
+      W := Graphic.Width;
+      H := Graphic.Height;
+      ProportionalSize(Width, Height, W, H);
+
+      if (Width > 0) and (Height > 0) then
+        JPEGScale(Graphic, W, H);
+
+      Original := TBitmap.Create;
+      try
+        AssignGraphic(Original, Graphic);
+        F(Graphic);
+
+        if (Width > 0) and (Height > 0) then
+          Stretch(W, H, sfLanczos3, 0, Original);
+
+        if FIsPreview then
+        begin
+          SynchronizeEx(
+            procedure
+            begin
+              TFormSharePhotos(OwnerForm).UpdatePreview(Data, Original);
+            end
+          );
+        end else
+        begin
+          if IsJpegImageFormat then
+            NewGraphic := TJpegImage.Create
+          else
+            NewGraphic := TPngImage.Create;
+          try
+            AssignToGraphic(NewGraphic, Original);
+            F(Original);
+
+            SetJPEGGraphicSaveOptions('ShareImages', NewGraphic);
+            if NewGraphic is TJPEGImage then
+              FreeJpegBitmap(TJPEGImage(NewGraphic));
+
+            MS := TMemoryStream.Create;
+            try
+              NewGraphic.SaveToStream(MS);
+              if IsJpegImageFormat and not ExifData.Empty then
+                FixEXIFForJpegStream(ExifData, MS, NewGraphic.Width, NewGraphic.Height);
+              MS.Seek(0, soFromBeginning);
+
+              if IsJpegImageFormat then
+                ContentType := 'image/jpeg'
+              else
+                ContentType := 'image/png';
+
+               ItemProgress := TItemUploadProgress.Create(Self, Data);
+               try
+                 FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
+                   ExtractFileName(Data.FileName), Data.Date, ContentType, MS, ItemProgress, PhotoItem);
+               finally
+                 ItemProgress := nil;
+               end;
+            finally
+              F(MS);
+            end;
+          finally
+            F(NewGraphic);
+          end;
+        end;
+
+      finally
+        F(Original);
+      end;
     finally
-      F(Original);
+      F(ExifData);
     end;
   finally
     F(Graphic);

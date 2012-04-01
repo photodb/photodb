@@ -3100,6 +3100,20 @@ var
   PA: TPersonArea;
   P: TPerson;
 
+  procedure DrawFaceText(Text: string);
+  begin
+    R := Rect(R.Left, R.Bottom + 8, Max(R.Left + 20, R.Right), R.Bottom + 500);
+    Rct := R;
+    FOverlayBuffer.Canvas.Font := Font;
+    FOverlayBuffer.Canvas.Font.Color := Theme.GradientText;
+    DrawText(FOverlayBuffer.Canvas.Handle, PChar(Text), Length(Text), R, DrawTextOpt or DT_CALCRECT);
+    R.Right := Max(R.Right, Rct.Right);
+    FaceTextRect := R;
+    InflateRect(R, 4, 4);
+    DrawRoundGradientVert(FOverlayBuffer, R, Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightColor, 8, 220);
+    DrawText(FOverlayBuffer.Canvas.Handle, PChar(Text), Length(Text), FaceTextRect, DrawTextOpt);
+  end;
+
   procedure DrawFace(Face: TFaceDetectionResultItem);
   var
     S: string;
@@ -3136,21 +3150,13 @@ var
           else
             S := L('New person');
 
-          R := Rect(R.Left, R.Bottom + 8, Max(R.Left + 20, R.Right), R.Bottom + 500);
-          Rct := R;
-          FOverlayBuffer.Canvas.Font := Font;
-          FOverlayBuffer.Canvas.Font.Color := Theme.GradientText;
-          DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), R, DrawTextOpt or DT_CALCRECT);
-          R.Right := Max(R.Right, Rct.Right);
-          FaceTextRect := R;
-          InflateRect(R, 4, 4);
-          DrawRoundGradientVert(FOverlayBuffer, R, Theme.GradientFromColor, Theme.GradientToColor, Theme.HighlightColor, 8, 220);
-          DrawText(FOverlayBuffer.Canvas.Handle, PChar(S), Length(S), FaceTextRect, DrawTextOpt);
+          DrawFaceText(S);
         end;
       finally
         F(P);
       end;
-    end;
+    end else
+      DrawFaceText(L('Click to select person'));
   end;
 
 begin
