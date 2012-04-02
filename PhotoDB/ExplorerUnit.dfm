@@ -760,6 +760,7 @@ object ExplorerForm: TExplorerForm
         Width = 135
         Height = 29
         Align = alBottom
+        ParentBackground = False
         TabOrder = 1
         Visible = False
         object WlGoToShelf: TWebLink
@@ -984,7 +985,7 @@ object ExplorerForm: TExplorerForm
     DisableStyles = True
     Visible = False
     Active = True
-    FillPercent = 50
+    FillPercent = 70
     Anchors = [akTop, akRight]
     SignColor = clBlack
     MaxTransparencity = 255
@@ -2382,5 +2383,10 @@ object ExplorerForm: TExplorerForm
     OnTimer = TmrDelayedStartTimer
     Left = 536
     Top = 512
+  end
+  object TmrCheckItemVisibility: TTimer
+    OnTimer = TmrCheckItemVisibilityTimer
+    Left = 536
+    Top = 568
   end
 end

@@ -64,12 +64,14 @@ type
     function GetDescription: string;
     function GetDate: TDateTime;
     function GetUrl: string;
+    function GetAccess: Integer;
     function GetPreview(Bitmap: TBitmap; HttpContainer: THTTPRequestContainer = nil): Boolean;
     property AlbumID: string read GetAlbumID;
     property Name: string read GetName;
     property Description: string read GetDescription;
     property Date: TDateTime read GetDate;
     property Url: string read GetUrl;
+    property Access: Integer read GetAccess;
   end;
 
   IPhotoShareProvider = interface

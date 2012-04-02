@@ -6,6 +6,7 @@ object ProgressActionForm: TProgressActionForm
   ClientHeight = 136
   ClientWidth = 312
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

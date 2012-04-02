@@ -2211,10 +2211,20 @@
 	<translate name="Public on web" value="Для всех в Интернете"/>
 	<translate name="Limited, anyone with the link" value="Только тем, у кого есть ссылка"/>
 	<translate name="Only you" value="Только вам"/>
-	<translate name="Show in browser" value="Показать в браузере"/>	
-	<translate name="Delete item from list" value="Убрать из списка"/>	
+	<translate name="Show in browser" value="Показать в браузере"/>
+	<translate name="Delete item from list" value="Убрать из списка"/>
+	<translate name="You can share maximum 100 files at one time!" value="Вы можете поделиться максимум 100 файлами за один раз!"/>
+	<translate name="Maximum file size for sharing is {0}, skipping file &quot;{1}&quot;, {2}!" value="Максимальный размер файла - {0}, пропускаем файл &quot;{1}&quot;, {2}!"/>
+	<translate name="Some files are encrypted! Album access is changed to &quot;private&quot;!" value="Некоторые файлы загифрованы! Доступ к альбом изменён на &quot;личный&quot;!"/>	
   </scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>
+  </scope>
+  <scope name="BackUp">
+	<translate name="Backup process successfully ended." value="Резервная копия успешно создана."/>
+  </scope>
+  <scope name="Exif">
+	<translate name="Can't decrypt file {0}!" value="Невозможно расшифровать файл {0}!"/>
+	<translate name="Can't write info to file {0}!" value="Не удаётся записать информацию в файл {0}!"/>	
   </scope>
 </language>

@@ -56,8 +56,7 @@ type
       var Handled: Boolean);
     procedure Search1Click(Sender: TObject);
     procedure DBOpened(Sender : TObject; DS : TDataSet);
-    procedure FormKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     DBInOpening: Boolean;
@@ -140,11 +139,11 @@ end;
 
 procedure TFormListOfKeyWords.Execute;
 var
-  FTable : TDataSet;
-  ProgressForm, OpenProgress : TProgressActionForm;
-  i, c : integer;
-  AllList, Words : TStrings;
-  X : List;
+  FTable: TDataSet;
+  ProgressForm, OpenProgress: TProgressActionForm;
+  I, c: Integer;
+  AllList, Words: TStrings;
+  X: List;
 
 begin
 
@@ -160,35 +159,33 @@ begin
       ProgressForm.CanClosedByUser := True;
       ProgressForm.SetAlternativeText(L('Loading list. Please, wait...'));
       try
-        begin
 
-          TOpenQueryThread.Create(Self, FTable, DBOpened);
-          OpenProgress := GetProgressWindow;
-          OpenProgress.OneOperation := True;
-          OpenProgress.OperationCounter.Inverse := True;
-          OpenProgress.OperationCounter.Text := '';
-          OpenProgress.OperationProgress.Inverse := True;
-          OpenProgress.OperationProgress.Text := '';
-          OpenProgress.SetAlternativeText(L('Executing query. Please, wait...'));
+        TOpenQueryThread.Create(Self, FTable, DBOpened);
+        OpenProgress := GetProgressWindow;
+        OpenProgress.OneOperation := True;
+        OpenProgress.OperationCounter.Inverse := True;
+        OpenProgress.OperationCounter.Text := '';
+        OpenProgress.OperationProgress.Inverse := True;
+        OpenProgress.OperationProgress.Text := '';
+        OpenProgress.SetAlternativeText(L('Executing query. Please, wait...'));
 
-          C := 0;
-          I := 0;
-          OpenProgress.Show;
-          repeat
-            OpenProgress.MaxPosCurrentOperation := 100;
-            Inc(I);
-            if I mod 50 = 0 then
-            begin
-              Inc(C);
-              if C > 100 then
-                C := 0;
-              OpenProgress.XPosition := C;
-            end;
-            Application.ProcessMessages;
-          until not DBInOpening;
-          OpenProgress.Release;
-          FTable.First;
-        end;
+        C := 0;
+        I := 0;
+        OpenProgress.Show;
+        repeat
+          OpenProgress.MaxPosCurrentOperation := 100;
+          Inc(I);
+          if I mod 50 = 0 then
+          begin
+            Inc(C);
+            if C > 100 then
+              C := 0;
+            OpenProgress.XPosition := C;
+          end;
+          Application.ProcessMessages;
+        until not DBInOpening;
+        OpenProgress.Release;
+        FTable.First;
 
       except
         MessageBoxDB(Handle, Format(L('Error executing query on collection "%s"'), [Dbname]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
@@ -201,34 +198,39 @@ begin
       FTable.First;
       AllList := TStringList.Create;
       Words := TStringList.Create;
-      FTable.Last;
-      for I := FTable.RecordCount downto 1 do
-      begin
-        ProgressForm.XPosition := FTable.RecordCount - FTable.RecNo;
-        Application.ProcessMessages;
-        SpilitWords(FTable.FieldByName('KeyWords').AsString, Words);
+      try
+        FTable.Last;
+        for I := FTable.RecordCount downto 1 do
+        begin
+          ProgressForm.XPosition := FTable.RecordCount - FTable.RecNo;
+          Application.ProcessMessages;
+          SpilitWords(FTable.FieldByName('KeyWords').AsString, Words);
 
-        AddWordsB(Words, AllList);
-        FTable.Prior;
-        if ProgressForm.Closed then
-          Break;
+          AddWordsB(Words, AllList);
+          FTable.Prior;
+          if ProgressForm.Closed then
+            Break;
+        end;
+        SetLength(X, AllList.Count);
+        for I := 0 to AllList.Count - 1 do
+          X[I] := AllList.Strings[I];
+        if Length(X) > 1 then
+          QuickSort(X, Length(X));
+
+        for I := 0 to AllList.Count - 1 do
+          AllList.Strings[I] := X[I];
+
+        for I := AllList.Count - 2 downto 0 do
+        begin
+          if AllList[I] = AllList[I + 1] then
+            AllList.Delete(I);
+        end;
+
+        LstKeywords.Items.Assign(AllList);
+      finally
+        F(AllList);
+        F(Words);
       end;
-      SetLength(X, AllList.Count);
-      for I := 0 to AllList.Count - 1 do
-        X[I] := AllList.Strings[I];
-      if Length(X) > 1 then
-        QuickSort(X, Length(X));
-
-      for I := 0 to AllList.Count - 1 do
-        AllList.Strings[I] := X[I];
-
-      for I := AllList.Count - 2 downto 0 do
-      begin
-        if AllList[I] = AllList[I + 1] then
-          AllList.Delete(I);
-      end;
-
-      LstKeywords.Items := AllList;
     finally
       R(ProgressForm);
     end;

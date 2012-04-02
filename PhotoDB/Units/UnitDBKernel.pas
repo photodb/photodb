@@ -1000,8 +1000,8 @@ end;
 
 procedure TDBKernel.DoSelectDB;
 var
-  ParamDBFile : string;
-  i : integer;
+  ParamDBFile: string;
+  I: Integer;
 begin
   ParamDBFile := GetParamStrDBValue('/SelectDB');
   if ParamDBFile = '' then

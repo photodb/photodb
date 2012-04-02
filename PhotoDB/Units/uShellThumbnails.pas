@@ -3,8 +3,17 @@ unit uShellThumbnails;
 interface
 
 uses
-  Windows, Classes, Graphics, uMemory, uWinThumbnails, pngimage, SyncObjs,
-  uPngUtils, GraphicsCool, uResources, uBitmapUtils;
+  Windows,
+  Classes,
+  Graphics,
+  uMemory,
+  uWinThumbnails,
+  pngimage,
+  SyncObjs,
+  uPngUtils,
+  GraphicsCool,
+  uResources,
+  uBitmapUtils;
 
 function ExtractVideoThumbnail(FileName: string; MaxSize: Integer; Bitmap: TBitmap): Boolean;
 procedure UpdateBitmapToVideo(var Thumb: TBitmap);

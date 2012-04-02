@@ -100,8 +100,7 @@ begin
       Canvas.Handle := 0;
       F(Canvas);
     end;
-  end else
-    Timer.Enabled := False;
+  end;
 end;
 
 initialization

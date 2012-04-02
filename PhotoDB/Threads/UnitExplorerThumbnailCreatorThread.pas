@@ -38,7 +38,9 @@ uses
   uShellIcons,
   ExplorerTypes,
   uThemesUtils,
-  uConstants;
+  uConstants,
+  uShellThumbnails,
+  uAssociatedIcons;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)
@@ -89,7 +91,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitializeEx(nil, COM_MODE);
+  CoInitializeEx(nil, COINIT_APARTMENTTHREADED);
   try
     if not FLoadFullImage then
     begin
@@ -136,6 +138,18 @@ begin
         end;
       finally
         F(FBit);
+      end;
+      Exit;
+    end;
+
+    if IsVideoFile(FInfo.FileName) then
+    begin
+      TempBitmap := TBitmap.Create;
+      try
+        if ExtractVideoThumbnail(FInfo.FileName, ThSizeExplorerPreview, TempBitmap) then
+          SynchronizeEx(SetImage);
+      finally
+        F(TempBitmap);
       end;
       Exit;
     end;

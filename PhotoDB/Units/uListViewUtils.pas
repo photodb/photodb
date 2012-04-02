@@ -392,7 +392,7 @@ begin
   end;
 end;
 
-procedure  CreateMultiselectImage(ListView : TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
+procedure  CreateMultiselectImage(ListView: TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer);
 var
   SelCount: Integer;
@@ -446,13 +446,19 @@ begin
         if Length(Items) = FSelCount - 1 then
           Break;
 
-        SetLength(Items, Length(Items) + 1);
-        Items[Length(Items) - 1] := SelectedItem;
+        if SelectedItem <> nil then
+        begin
+          SetLength(Items, Length(Items) + 1);
+          Items[Length(Items) - 1] := SelectedItem;
+        end;
       end;
       SelectedItem := ListView.Selection.Next(SelectedItem);
     end;
-    SetLength(Items, Length(Items) + 1);
-    Items[Length(Items) - 1] := FocusedItem;
+    if FocusedItem <> nil then
+    begin
+      SetLength(Items, Length(Items) + 1);
+      Items[Length(Items) - 1] := FocusedItem;
+    end;
     FSelCount := Length(Items);
   end else begin
     ItemsSelected := SImageList.Count;
@@ -463,7 +469,7 @@ begin
 
   MaxH := 0;
   MaxW := 0;
-  for I := 1 to FSelCount do
+  for I := 1 to Length(Items) do
   begin
 
     if ListView <> nil then

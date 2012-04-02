@@ -50,7 +50,11 @@ uses
   Vcl.ActnPopup,
   uSettings,
   uDBBaseTypes,
-  ShellContextMenu;
+  ShellContextMenu,
+  uConfiguration,
+  GraphicCrypt,
+  uFileUtils,
+  uLogger;
 
 type
   TFormSharePhotos = class(TThreadForm)
@@ -188,6 +192,11 @@ uses
 
 {$R *.dfm}
 
+function AlbumCacheDirectory: string;
+begin
+   Result := GetAppDataDirectory + ShareAlbumCacheDirectory
+end;
+
 function CanShareVideo(FileName: string): Boolean;
 var
   Ext: string;
@@ -300,10 +309,50 @@ end;
 procedure TFormSharePhotos.Execute(FileList: TDBPopupMenuInfo);
 var
   I: Integer;
+  HasEncryptedFiles: Boolean;
 begin
-  FFiles.Assign(FileList);
-  for I := 1 to FFiles.Count do
+  for I := 0 to FileList.Count - 1 do
+  begin
+    if FFiles.Count = cMaxShareFilesLimit then
+    begin
+      MessageBoxDB(Handle, L('You can share maximum 100 files at one time!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Break;
+    end;
+    if FileList[I].FileSize > cMaxShareFileSize then
+    begin
+      if ID_OK <> MessageBoxDB(Handle, FormatEx(L('Maximum file size for sharing is {0}, skipping file "{1}", {2}!'),
+        [SizeInText(cMaxShareFileSize), FileList[I].FileName, SizeInText(FileList[I].FileSize)]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+      begin
+        Close;
+        Exit;
+      end else
+        Continue;
+    end;
+    FFiles.Add(FileList[I].Copy);
+  end;
+
+  if FFiles.Count = 0 then
+  begin
+    Close;
+    Exit;
+  end;
+
+  HasEncryptedFiles := False;
+
+  for I := 0 to FFiles.Count - 1 do
+  begin
+    if IsGraphicFile(FFiles[I].FileName) and not HasEncryptedFiles and ValidCryptGraphicFile(FFiles[I].FileName) then
+      HasEncryptedFiles := True;
+
     FPreviewImages.Add(False);
+  end;
+
+  if HasEncryptedFiles then
+  begin
+    MessageBoxDB(Handle, L('Some files are encrypted! Album access is changed to "private"!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    FAlbumAccess := PHOTO_PROVIDER_ALBUM_PRIVATE;
+  end;
+
   InitAlbumCreating;
   LoadImageList;
   LoadProviderInfo;
@@ -1119,6 +1168,9 @@ var
   LsImage: TLoadingSign;
   LbName, LbDate: TLabel;
   ThreadData: TList<IPhotoServiceAlbum>;
+  CacheFileName: string;
+  B: TBitmap;
+  ImImage: TImage;
 begin
   FAlbums.Clear;
   FAlbums.AddRange(Albums);
@@ -1130,6 +1182,8 @@ begin
     Top := IIF(FCreateAlbumBox.Visible, FCreateAlbumBox.Top + FCreateAlbumBox.Height, 0) + 5;
     for I := 0 to FAlbums.Count - 1 do
     begin
+      CacheFileName := AlbumCacheDirectory + '\' + Albums[I].AlbumID + '.bmp';
+
       Box := TBox.Create(SbAlbums);
       Box.Parent := SbAlbums;
       Box.Top := Top;
@@ -1147,18 +1201,51 @@ begin
 
       Top := Box.Top + Box.Height + 5;
 
-      LsImage := TLoadingSign.Create(Box);
-      LsImage.Parent := Box;
-      LsImage.Left := 4;
-      LsImage.Top := 4;
-      LsImage.Width := 32;
-      LsImage.Height := 32;
-      LsImage.FillPercent := 80;
-      LsImage.Active := True;
-      LsImage.OnMouseEnter := OnBoxMouseEnter;
-      LsImage.OnMouseLeave := OnBoxMouseLeave;
-      LsImage.OnClick := SelectAlbumClick;
-      LsImage.OnDblClick := ShowAlbumClick;
+      ImImage := nil;
+      if FileExistsSafe(CacheFileName) then
+      begin
+        B := TBitmap.Create;
+        try
+          try
+            B.LoadFromFile(CacheFileName);
+
+            ImImage := TImage.Create(Box);
+            ImImage.Parent := Box;
+            ImImage.Center := True;
+            ImImage.Proportional := True;
+            ImImage.Left := 4;
+            ImImage.Top := 4;
+            ImImage.Width := 32;
+            ImImage.Height := 32;
+            ImImage.OnMouseEnter := OnBoxMouseEnter;
+            ImImage.OnMouseLeave := OnBoxMouseLeave;
+            ImImage.OnClick := SelectAlbumClick;
+            ImImage.Picture.Graphic := B;
+
+          except
+            on e: Exception do
+              EventLog(e);
+          end;
+        finally
+          F(B);
+        end;
+      end else
+
+      if ImImage = nil then
+      begin
+        LsImage := TLoadingSign.Create(Box);
+        LsImage.Parent := Box;
+        LsImage.Left := 4;
+        LsImage.Top := 4;
+        LsImage.Width := 32;
+        LsImage.Height := 32;
+        LsImage.FillPercent := 80;
+        LsImage.Active := True;
+        LsImage.OnMouseEnter := OnBoxMouseEnter;
+        LsImage.OnMouseLeave := OnBoxMouseLeave;
+        LsImage.OnClick := SelectAlbumClick;
+        LsImage.OnDblClick := ShowAlbumClick;
+      end;
 
       LbName := TLabel.Create(Box);
       LbName.Parent := Box;
@@ -1195,8 +1282,11 @@ begin
       B: TBitmap;
       Albums: TList<IPhotoServiceAlbum>;
       HttpContainer: THTTPRequestContainer;
+      CacheFileName: string;
     begin
       Albums := TList<IPhotoServiceAlbum>(Data);
+
+      CreateDirA(AlbumCacheDirectory);
 
       HttpContainer := THTTPRequestContainer.Create;
       try
@@ -1209,12 +1299,23 @@ begin
             if Albums[I].GetPreview(B, HttpContainer) then
             begin
               KeepProportions(B, 32, 32);
+
               Thread.SynchronizeTask(
                 procedure
                 begin
                   UpdateAlbumImage(Albums[I], B);
                 end
               );
+
+              CacheFileName := AlbumCacheDirectory + '\' + Albums[I].AlbumID + '.bmp';
+              if Albums[I].Access <> PHOTO_PROVIDER_ALBUM_PRIVATE then
+              begin
+                //save album cover to cache
+                B.SaveToFile(CacheFileName);
+              end else
+                //delete private cover
+                DeleteFile(CacheFileName);
+
             end;
           finally
             F(B);
@@ -1418,7 +1519,7 @@ end;
 procedure TFormSharePhotos.SplAlbumsCanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
-  Accept := (NewSize > 160) and (NewSize < 320);
+  Accept := (NewSize > 160) and (NewSize < 400);
 end;
 
 procedure TFormSharePhotos.EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);

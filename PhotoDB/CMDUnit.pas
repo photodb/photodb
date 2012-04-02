@@ -3,11 +3,34 @@ unit CMDUnit;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, UnitDBKernel, ComCtrls, ExtCtrls, AppEvnts, Clipbrd,
-  uVistaFuncs, UnitPasswordKeeper, ImgList, uGraphicUtils,
-  UnitDBDeclare, DmProgress, UnitDBCommonGraphics, uConstants, uRuntime,
-  uShellIntegration, uDBBaseTypes, uDBTypes, uSysUtils, uDBForm,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  UnitDBKernel,
+  ComCtrls,
+  ExtCtrls,
+  AppEvnts,
+  Clipbrd,
+  uVistaFuncs,
+  UnitPasswordKeeper,
+  ImgList,
+  uGraphicUtils,
+  UnitDBDeclare,
+  DmProgress,
+  UnitDBCommonGraphics,
+  uConstants,
+  uRuntime,
+  uShellIntegration,
+  uDBBaseTypes,
+  uDBTypes,
+  uSysUtils,
+  uDBForm,
   uMemory;
 
 type
@@ -21,8 +44,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure PasswordTimerTimer(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure InfoListBoxMeasureItem(Control: TWinControl; Index: Integer;
@@ -61,8 +83,7 @@ type
     procedure WriteLine(Sender: TObject; Line: string; Info: Integer);
     procedure WriteLnLine(Sender: TObject; Line: string; Info: Integer);
     procedure LoadToolBarIcons;
-    procedure ProgressCallBack(Sender: TObject;
-      var Info: TProgressCallBackInfo);
+    procedure ProgressCallBack(Sender: TObject; var Info: TProgressCallBackInfo);
     procedure SetWideIndex;
   end;
 
@@ -73,9 +94,12 @@ var
 implementation
 
 uses
-  UnitRecreatingThInTable, UnitPackingTable,
-  UnitRestoreTableThread, UnitThreadShowBadLinks,
-  UnitBackUpTableInCMD, UnitOptimizeDublicatesThread;
+  UnitRecreatingThInTable,
+  UnitPackingTable,
+  UnitRestoreTableThread,
+  UnitThreadShowBadLinks,
+  UnitBackUpTableInCMD,
+  UnitOptimizeDublicatesThread;
 
 {$R *.dfm}
 

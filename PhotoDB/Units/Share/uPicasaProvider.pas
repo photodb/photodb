@@ -118,6 +118,7 @@ type
     FAlbumPreviewUrl: string;
     FAlbumUrl: string;
     FDateTime: TDateTime;
+    FAccess: Integer;
     FProvider: TPicasaProvider;
     FIProvider: IPhotoShareProvider;
   public
@@ -129,6 +130,7 @@ type
     function GetDescription: string;
     function GetDate: TDateTime;
     function GetUrl: string;
+    function GetAccess: Integer;
     function GetPreview(Bitmap: TBitmap; HttpContainer: THTTPRequestContainer = nil): Boolean;
   end;
 
@@ -654,7 +656,8 @@ var
   UrlAttr,
   AlbumNameNode,
   AuthorNode,
-  UserUrlNode: IXMLDOMNode;
+  UserUrlNode,
+  AccessNode: IXMLDOMNode;
   TimeStamp: Int64;
 begin
   FXML := XML;
@@ -675,6 +678,7 @@ begin
       SummaryNode := FindNode(DocumentNode, 'summary');
       DateTimeNode := FindNode(DocumentNode, 'gphoto:timestamp');
       MediaGroup := FindNode(DocumentNode, 'media:group');
+      AccessNode := FindNode(DocumentNode, 'media:access');
       if MediaGroup <> nil then
         PreviewNode := FindNode(MediaGroup, 'media:thumbnail');
 
@@ -704,6 +708,14 @@ begin
         if UrlAttr <> nil then
           FAlbumPreviewUrl := UrlAttr.nodeValue;
       end;
+      FAccess := PHOTO_PROVIDER_ALBUM_PUBLIC;
+      if AccessNode <> nil then
+      begin
+        if AccessNode.text = 'private' then
+          FAccess := PHOTO_PROVIDER_ALBUM_PROTECTED;
+        if AccessNode.text = 'protected' then
+          FAccess := PHOTO_PROVIDER_ALBUM_PRIVATE;
+      end;
     end;
   end;
 end;
@@ -714,6 +726,11 @@ begin
   //remove reference
   FIProvider := nil;
   inherited;
+end;
+
+function TPicasaUserAlbum.GetAccess: Integer;
+begin
+  Result := FAccess;
 end;
 
 function TPicasaUserAlbum.GetAlbumID: string;

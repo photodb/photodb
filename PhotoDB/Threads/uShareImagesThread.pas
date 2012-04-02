@@ -378,8 +378,15 @@ begin
         end;
       end;
 
-      W := Graphic.Width;
-      H := Graphic.Height;
+      if Graphic is TRAWImage then
+      begin
+        W := TRAWImage(Graphic).GraphicWidth;
+        H := TRAWImage(Graphic).GraphicHeight;
+      end else
+      begin
+        W := Graphic.Width;
+        H := Graphic.Height;
+      end;
       ProportionalSize(Width, Height, W, H);
 
       if (Width > 0) and (Height > 0) then

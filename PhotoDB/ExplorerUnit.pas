@@ -388,6 +388,7 @@ type
     WlClear: TWebLink;
     WlShare: TWebLink;
     TmrDelayedStart: TTimer;
+    TmrCheckItemVisibility: TTimer;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -601,6 +602,7 @@ type
     procedure WlClearClick(Sender: TObject);
     procedure TmrDelayedStartTimer(Sender: TObject);
     procedure WlShareClick(Sender: TObject);
+    procedure TmrCheckItemVisibilityTimer(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -2548,16 +2550,20 @@ var
 begin
   Index := ItemIndexToMenuIndex(Number);
   UpdaterInfo := TUpdaterInfo.Create;
-  UpdaterInfo.UpdateDB := UpdateDB;
-  UpdaterInfo.FileInfo := FFilesInfo[Index];
-  if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
-  begin
-    NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_REFRESH_IMAGE,
-      FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID));
-    ExplorerUpdateManager.QueueNotify(NotifyInfo);
-  end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
-    TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo,
-      Self, UpdaterInfo, StateID);
+  try
+    UpdaterInfo.UpdateDB := UpdateDB;
+    UpdaterInfo.FileInfo := FFilesInfo[Index];
+    if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
+    begin
+      NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_REFRESH_IMAGE,
+        FFilesInfo[Index].FileName, GUIDToString(FFilesInfo[Index].SID));
+      ExplorerUpdateManager.QueueNotify(NotifyInfo);
+      UpdaterInfo := nil;
+    end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
+      TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo, Self, UpdaterInfo, StateID);
+  finally
+    F(UpdaterInfo);
+  end;
 end;
 
 procedure TExplorerForm.HistoryChanged(Sender: TObject);
@@ -2794,6 +2800,8 @@ var
   FileName: string;
 begin
   Image := nil;
+  if SelCount = 0 then
+    Exit;
   if SelCount = 1 then
   begin
     FileName := AnsiLowerCase(FSelectedInfo.FileName);
@@ -3365,6 +3373,7 @@ begin
     BvSeparatorAddress.Hide;
   end;
   LsMain.Color := Theme.ListViewColor;
+  LsMain.SignColor := Theme.ListViewFontColor;
 
   TmrDelayedStart.Enabled := True;
 end;
@@ -4225,8 +4234,8 @@ end;
 
 procedure TExplorerForm.ShowProgress;
 begin
-  FStatusProgress.Show;
   FStatusProgress.Style := pbstNormal;
+  FStatusProgress.Show;
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
@@ -4235,6 +4244,7 @@ end;
 procedure TExplorerForm.ShowIndeterminateProgress;
 begin
   FStatusProgress.Style := pbstMarquee;
+  FStatusProgress.Show;
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
@@ -7562,7 +7572,8 @@ begin
                      (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
                      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
                      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
-                     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) then
+                     (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+                     IsVideoFile(FileName) then
                   begin
                     TExplorerThumbnailCreator.Create(Info, FSelectedInfo._GUID, Self, True);
                   end else
@@ -8232,9 +8243,8 @@ var
   function IsItemVisible(Index: Integer): Boolean;
   begin
     ElvMain.Items[Index].ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
-    R := Rect(ElvMain.ClientRect.Left + rv.Left, ElvMain.ClientRect.Top + rv.Top, ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
 
-    Result := RectInRect(R, RectArray.BoundsRect);
+    Result :=  RectInRect(R, RectArray.BoundsRect);
   end;
 
 begin
@@ -8253,7 +8263,7 @@ begin
     M := (L + U) div 2;
 
     ElvMain.Items[M].ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
-    if RectArray.BoundsRect.Top < R.Top then
+    if RectArray.BoundsRect.Bottom < R.Top then
       L := M
     else
       U := M;
@@ -9138,6 +9148,27 @@ end;
 procedure TExplorerForm.Tile2Click(Sender: TObject);
 begin
   View := LV_TILE;
+end;
+
+procedure TExplorerForm.TmrCheckItemVisibilityTimer(Sender: TObject);
+var
+  FI: TEasyItem;
+  RectArray: TEasyRectArrayObject;
+  RV, R, NR: TRect;
+begin  
+  if ElvMain.Height > ElvMain.CellSizes.Thumbnail.Height then
+  begin
+    FI := ElvMain.Selection.FocusedItem;
+    if ElvMain.Selection.FocusedItem <> nil then
+    begin
+      FI.ItemRectArray(ElvMain.Header.FirstColumn, ElvMain.Canvas, RectArray);
+      RV :=  ElvMain.Scrollbars.ViewableViewportRect;
+      R := Rect(ElvMain.ClientRect.Left + rv.Left, ElvMain.ClientRect.Top + rv.Top, ElvMain.ClientRect.Right + rv.Left, ElvMain.ClientRect.Bottom + rv.Top);
+
+      if IntersectRect(NR, R, RectArray.BoundsRect) then
+        FI.MakeVisible(emvAuto);
+    end;
+  end;
 end;
 
 procedure TExplorerForm.TmrDelayedStartTimer(Sender: TObject);

@@ -273,7 +273,7 @@ object FormSharePhotos: TFormSharePhotos
           371)
         object LsLoadingAlbums: TLoadingSign
           Left = 119
-          Top = 343
+          Top = 344
           Width = 24
           Height = 24
           Active = True

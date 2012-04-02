@@ -23,6 +23,7 @@ const
   ActionsFolder: string = 'Actions\';
   ImagesFolder: string = 'Images\';
   FaceCacheDirectory: string = '\CVCache\Face\';
+  ShareAlbumCacheDirectory: string = '\Share\Albums';
   CascadesDirectory: string = 'Cascades';
   DBRestoreFolder: string = '\DB\';
   PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase';
@@ -78,6 +79,9 @@ const
   Animation3DDelay = 100;
   MapImageWidth = 200;
   MapImageHeight = 200;
+
+  cMaxShareFilesLimit = 100;
+  cMaxShareFileSize = 100 * 1024 * 1024;
 
   ReleaseNumber = 12;
 

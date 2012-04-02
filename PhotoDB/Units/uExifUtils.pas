@@ -3,6 +3,7 @@ unit uExifUtils;
 interface
 
 uses
+  uErrors,
   Windows,
   uConstants,
   CCR.Exif,
@@ -20,7 +21,11 @@ uses
   RAWImage,
   uAnimatedJPEG,
   uLogger,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  GraphicCrypt,
+  UnitDBKernel,
+  uSysUtils,
+  uTranslate;
 
 type
   TExifPatchInfo = class
@@ -56,6 +61,14 @@ type
     property Include: Boolean read GetInclude write SetInclude;
     property Lens: string read GetLens;
   end;
+
+  TExifDataHelper = class helper for TExifData
+  public
+    procedure LoadFromFileEx(FileName: string);
+    procedure SaveToFileEx(FileName: string);
+  end;
+
+  TExifDataEx = class(TExifData);
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;
 function ExifDisplayButNotRotate(Orientation: Integer): Integer;
@@ -131,7 +144,6 @@ begin
     Result := False;
 end;
 
-
 function GeoLocationToDouble(Location: TGPSCoordinate): Double;
 begin
   Result := (Location.Degrees.Quotient) + (Location.Minutes.Quotient) / 60 + (Location.Seconds.Quotient) / 3600;
@@ -151,13 +163,10 @@ begin
     if not Settings.Exif.ReadInfoFromExif then
       Exit;
 
-    if IsDevicePath(Info.FileName) then
-      Exit;
-
     try
       ExifData := TExifData.Create;
       try
-        ExifData.LoadFromGraphic(Info.FileName);
+        ExifData.LoadFromFileEx(Info.FileName);
         if not ExifData.Empty then
         begin
           if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
@@ -167,7 +176,11 @@ begin
         F(ExifData);
       end;
     except
-      Result := False;
+      on e: Exception do
+      begin
+        EventLog(e);
+        Result := False;
+      end;
     end;
     Result := True;
   finally
@@ -197,7 +210,7 @@ begin
     try
       ExifData := TExifData.Create;
       try
-        ExifData.LoadFromGraphic(Info.FileName);
+        ExifData.LoadFromFileEx(Info.FileName);
         if not ExifData.Empty then
         begin
           if Info.Rating <= 0 then
@@ -646,16 +659,19 @@ begin
     try
       ExifData := TExifData.Create;
       try
-        ExifData.LoadFromGraphic(FileName);
+        ExifData.LoadFromFileEx(FileName);
 
-        DoubleToCoordinates(GeoInfo.Latitude, D, M, S);
-        ExifData.GPSLatitude.Assign(D, M, S, GetLatDirection(GeoInfo.Latitude));
+        if not ExifData.Empty then
+        begin
+          DoubleToCoordinates(GeoInfo.Latitude, D, M, S);
+          ExifData.GPSLatitude.Assign(D, M, S, GetLatDirection(GeoInfo.Latitude));
 
-        DoubleToCoordinates(GeoInfo.Longitude, D, M, S);
-        ExifData.GPSLongitude.Assign(D, M, S, GetLngDirection(GeoInfo.Longitude));
+          DoubleToCoordinates(GeoInfo.Longitude, D, M, S);
+          ExifData.GPSLongitude.Assign(D, M, S, GetLngDirection(GeoInfo.Longitude));
 
-        ExifData.SaveToGraphic(FileName);
-        Result := True;
+          ExifData.SaveToFileEx(FileName);
+          Result := True;
+        end;
       finally
         F(ExifData);
       end;
@@ -760,6 +776,91 @@ end;
 procedure DBXMPPacket.WriteString(Name, Value: string);
 begin
   Schemas[xsXMPBasic].Properties[Name].WriteValue(Value);
+end;
+
+{ TExifDataHelper }
+
+procedure TExifDataHelper.LoadFromFileEx(FileName: string);
+var
+  MS: TMemoryStream;
+  Password: string;
+begin
+  if IsDevicePath(FileName) then
+    Exit;
+
+  if ValidCryptGraphicFile(FileName) then
+  begin
+    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    MS := TMemoryStream.Create;
+    try
+      if DecryptGraphicFileToStream(FileName, Password, MS) then
+        LoadFromGraphic(MS)
+      else
+        raise Exception.Create(FormatEx(TA('Can''t decrypt file {0}!', 'Exif'), [FileName]));
+    finally
+      F(MS);
+    end;
+    Exit;
+  end;
+
+  LoadFromGraphic(FileName);
+end;
+
+procedure TExifDataHelper.SaveToFileEx(FileName: string);
+var
+  MS, OS: TMemoryStream;
+  Password: string;
+  GraphicClass: TGraphicClass;
+begin
+  if IsDevicePath(FileName) then
+    Exit;
+
+  if ValidCryptGraphicFile(FileName) then
+  begin
+    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    MS := TMemoryStream.Create;
+    try
+      if DecryptGraphicFileToStream(FileName, Password, MS) then
+      begin
+        GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
+
+        OS := TMemoryStream.Create;
+        try
+          if (GraphicClass = Jpeg.TJPEGImage) or (GraphicClass = TAnimatedJPEG) then
+          begin
+            TExifDataEx(Self).DoSaveToJPEG(MS, OS);
+          end;
+
+          if (GraphicClass = TTiffImage) then
+          begin
+            TExifDataEx(Self).DoSaveToTIFF(MS, OS);
+          end;
+
+          if (GraphicClass = TPSDGraphic) then
+          begin
+            TExifDataEx(Self).DoSaveToPSD(MS, OS);
+          end;
+
+          if OS.Size > 0 then
+          begin
+            OS.Seek(0, soFromBeginning);
+            if SaveNewStreamForEncryptedFile(FileName, Password, OS) = CRYPT_RESULT_ERROR_WRITING_FILE then
+              raise Exception.Create(FormatEx(TA('Can''t write info to file {0}!', 'Exif'), [FileName]));
+          end;
+
+        finally
+          F(OS);
+        end;
+      end else
+        raise Exception.Create(FormatEx(TA('Can''t decrypt file {0}!', 'Exif'), [FileName]));
+    finally
+      F(MS);
+    end;
+    Exit;
+  end else
+    raise Exception.Create(FormatEx(TA('Can''t decrypt file {0}!', 'Exif'), [FileName]));
+
+  SaveToGraphic(FileName);
 end;
 
 end.

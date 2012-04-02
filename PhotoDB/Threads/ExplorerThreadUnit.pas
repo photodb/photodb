@@ -240,6 +240,7 @@ type
     FSync: TCriticalSection;
     FData: TList<TExplorerNotifyInfo>;
     FExplorerThreads: TList;
+    FLastVisibleRequest: Cardinal;
   protected
     constructor Create;
   public
@@ -2969,13 +2970,56 @@ begin
   FSync := TCriticalSection.Create;
   FData := TList<TExplorerNotifyInfo>.Create;
   FExplorerThreads := TList.Create;
+  FLastVisibleRequest := GetTickCount;
 end;
 
 function TExplorerUpdateManager.DeQueue(FOwner: TExplorerForm; FState: TGUID; Mode: Integer): TExplorerNotifyInfo;
 var
-  I: Integer;
+  I, J, C: Integer;
+  VisibleFiles: TStrings;
 begin
   Result := nil;
+
+  VisibleFiles := nil;
+
+  if GetTickCount - FLastVisibleRequest > 1000 then
+  begin
+    FLastVisibleRequest := GetTickCount;
+    try
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          if GOM.IsObj(FOwner) then
+          begin
+            VisibleFiles := FOwner.GetVisibleItems;
+          end;
+        end
+      );
+      FSync.Enter;
+      try
+        C := 0;
+
+        for I := 0 to VisibleFiles.Count - 1 do
+          for J := 0 to FData.Count - 1 do
+            begin
+              if VisibleFiles[I] = FData[J].FGUID then
+              begin
+                FData.Exchange(C, J);
+                Inc(C);
+                if C >= FData.Count then
+                  Exit;
+              end;
+            end;
+
+      finally
+        FSync.Leave;
+      end;
+
+    finally
+      F(VisibleFiles);
+    end;
+  end;
+
   FSync.Enter;
   try
     for I := 0 to FData.Count - 1 do

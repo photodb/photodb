@@ -3,10 +3,24 @@ unit UnitDBCommonGraphics;
 interface
 
 uses
-  Windows, Classes, Controls, StdCtrls, Graphics,
-  uMemory, uDBGraphicTypes, SysUtils, uGraphicUtils,
-  DmProgress, uBitmapUtils, UnitDBDeclare, uTranslate,
-  GraphicsBaseTypes, Effects, Math, uIconUtils;
+  Windows,
+  Classes,
+  Controls,
+  StdCtrls,
+  Graphics,
+  uMemory,
+  uDBGraphicTypes,
+  SysUtils,
+  uGraphicUtils,
+  DmProgress,
+  uBitmapUtils,
+  UnitDBDeclare,
+  uTranslate,
+  GraphicsBaseTypes,
+  Effects,
+  Math,
+  uIconUtils,
+  uThemesUtils;
 
 type
   TTextPrepareAsyncProcedure = function(Bitmap: TBitmap; Font: HFont; Text: string): Integer of object;
@@ -203,12 +217,12 @@ begin
 end;
 
 procedure DoInfoListBoxDrawItem(ListBox: TListBox; Index: Integer; aRect: TRect; State: TOwnerDrawState;
-  ItemsData : TList; Icons : array of TIcon; FProgressEnabled : boolean; TempProgress : TDmProgress;
-  Infos : TStrings);
+  ItemsData: TList; Icons: array of TIcon; FProgressEnabled: Boolean;
+  TempProgress: TDmProgress; Infos: TStrings);
 var
-  InfoText, Text : string;
-  r : TRect;
-  ItemData : integer;
+  InfoText, Text: string;
+  R: TRect;
+  ItemData: Integer;
 const
   IndexAdminToolsRecord = 6;
   IndexProgressRecord = 4;
@@ -218,18 +232,20 @@ const
   IndexErrorRecord = 1;
   IndexDBRecord = 5;
 begin
-    //
   ItemData := Integer(ItemsData[index]);
   if OdSelected in State then
-    ListBox.Canvas.Brush.Color := $A0A0A0
-  else
-    ListBox.Canvas.Brush.Color := ClWhite;
+  begin
+    ListBox.Canvas.Brush.Color := Theme.ListSelectedColor;
+    ListBox.Canvas.Font.Color := Theme.ListFontSelectedColor;
+  end else
+  begin
+    ListBox.Canvas.Brush.Color := Theme.ListColor;
+    ListBox.Canvas.Font.Color := Theme.ListFontColor;
+  end;
   // clearing rect
   ListBox.Canvas.Pen.Color := ListBox.Canvas.Brush.Color;
   ListBox.Canvas.Rectangle(ARect);
 
-  ListBox.Canvas.Pen.Color := ClBlack;
-  ListBox.Canvas.Font.Color := ClBlack;
   Text := ListBox.Items[index];
 
   // first Record
@@ -237,19 +253,17 @@ begin
   begin
     if TempProgress <> nil then
     begin
-      DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexProgressRecord].Handle, 16, 16, 0, 0,
-          DI_NORMAL);
+      DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexProgressRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
       ARect.Left := ARect.Left + 20;
       R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
       ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
       InfoText := TA('Executing') + ':';
-      ListBox.Canvas.Font.Style := [FsBold];
+      ListBox.Canvas.Font.Style := [fsBold];
       DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
       if FProgressEnabled then
       begin
         TempProgress.Text := '';
-        TempProgress.Width := ARect.Right - ARect.Left - ListBox.Canvas.TextWidth(InfoText)
-          - 10 - ListBox.ScrollWidth;
+        TempProgress.Width := ARect.Right - ARect.Left - ListBox.Canvas.TextWidth(InfoText) - 10 - ListBox.ScrollWidth;
         TempProgress.Height := ListBox.Canvas.TextHeight('Iy');
         TempProgress.DoPaintOnXY(ListBox.Canvas, R.Left + ListBox.Canvas.TextWidth(InfoText) + 10, R.Top);
       end;
@@ -264,7 +278,7 @@ begin
       R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
       ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
       InfoText := Infos[index];
-      ListBox.Canvas.Font.Style := [FsBold];
+      ListBox.Canvas.Font.Style := [fsBold];
       DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
       ListBox.Canvas.Font.Style := [];
     end;
@@ -281,7 +295,7 @@ begin
       R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
       ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
       InfoText := Infos[index];
-      ListBox.Canvas.Font.Style := [FsBold];
+      ListBox.Canvas.Font.Style := [fsBold];
       DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
       ListBox.Canvas.Font.Style := [];
     end;
@@ -296,12 +310,11 @@ begin
     R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
     ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
     InfoText := Infos[index];
-    ListBox.Canvas.Font.Style := [FsBold];
+    ListBox.Canvas.Font.Style := [fsBold];
     DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
     ListBox.Canvas.Font.Style := [];
 
-    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexAdminToolsRecord].Handle, 16, 16, 0, 0,
-      DI_NORMAL);
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexAdminToolsRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
 
     ARect.Left := ARect.Left + 20;
     Text := '';
@@ -315,26 +328,24 @@ begin
       R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
       ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
       InfoText := Infos[index];
-      ListBox.Canvas.Font.Style := [FsBold];
+      ListBox.Canvas.Font.Style := [fsBold];
       DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
       ListBox.Canvas.Font.Style := [];
     end;
 
-    DrawIconEx(ListBox.Canvas.Handle, ARect.Left + 10, ARect.Top, Icons[IndexPlusRecord].Handle, 16, 16, 0, 0,
-      DI_NORMAL);
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left + 10, ARect.Top, Icons[IndexPlusRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
     ARect.Left := ARect.Left + 30;
   end;
 
   if ItemData = LINE_INFO_WARNING then
   begin
-    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexWarningRecord].Handle, 16, 16, 0, 0,
-      DI_NORMAL);
+    DrawIconEx(ListBox.Canvas.Handle, ARect.Left, ARect.Top, Icons[IndexWarningRecord].Handle, 16, 16, 0, 0, DI_NORMAL);
 
     ARect.Left := ARect.Left + 20;
     R := Rect(ARect.Left, ARect.Top, ARect.Right, ARect.Top + ListBox.Canvas.TextHeight('Iy'));
     ARect.Top := ARect.Top + ListBox.Canvas.TextHeight('Iy');
     InfoText := TA('Warning') + ':';
-    ListBox.Canvas.Font.Style := [FsBold];
+    ListBox.Canvas.Font.Style := [fsBold];
     DrawText(ListBox.Canvas.Handle, PWideChar(InfoText), Length(InfoText), R, 0);
     ListBox.Canvas.Font.Style := [];
   end;

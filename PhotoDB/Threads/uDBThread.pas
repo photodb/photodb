@@ -3,8 +3,21 @@ unit uDBThread;
 interface
 
 uses
-  Windows, Classes, uTranslate, uAssociations, uMemory, uGOM, SyncObjs, Forms,
-  uDBForm, uIME, uTime, SysUtils, uSysUtils, uDBCustomThread, uPortableDeviceManager;
+  Windows,
+  Classes,
+  uTranslate,
+  uAssociations,
+  uMemory,
+  uGOM,
+  SyncObjs,
+  Forms,
+  uDBForm,
+  uIME,
+  uTime,
+  SysUtils,
+  uSysUtils,
+  uDBCustomThread,
+  uPortableDeviceManager;
 
 type
   TDBThread = class(TDBCustomThread)

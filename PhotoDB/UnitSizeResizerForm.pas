@@ -54,7 +54,8 @@ uses
   AppEvnts,
   Themes,
   uThemesUtils,
-  PathEditor, uBaseWinControl;
+  PathEditor,
+  uBaseWinControl;
 
 const
   Settings_ConvertForm = 'Convert settings';

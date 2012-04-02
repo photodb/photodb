@@ -24,7 +24,8 @@ uses
   uShellIntegration,
   uSysUtils,
   uDBForm,
-  pngimage;
+  pngimage,
+  Themes;
 
 type
   TProgressActionForm = class(TDBForm)
@@ -331,7 +332,7 @@ end;
 
 procedure TProgressActionForm.FormPaint(Sender: TObject);
 begin
-  if not Active then
+  if not Active and not StyleServices.Enabled then
   begin
     OperationCounter.DoPaintOnXY(Canvas, OperationCounter.Left, OperationCounter.Top);
     OperationProgress.DoPaintOnXY(Canvas, OperationProgress.Left, OperationProgress.Top);

@@ -3,8 +3,19 @@ unit UnitBackUpTableInCMD;
 interface
 
 uses
-  Classes, SysUtils, UnitDBKernel, Forms, uDBThread, uRuntime,
-  UnitDBDeclare, uConstants, uFileUtils, uTranslate, uSettings, uConfiguration;
+  uMemory,
+  Classes,
+  SysUtils,
+  UnitDBKernel,
+  Forms,
+  uDBThread,
+  uRuntime,
+  UnitDBDeclare,
+  uConstants,
+  uFileUtils,
+  uTranslate,
+  uSettings,
+  uConfiguration;
 
 type
   BackUpTableInCMD = class(TDBThread)
@@ -48,7 +59,6 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-
   Directory := ExcludeTrailingBackslash(GetAppDataDirectory + BackUpFolder);
   CreateDirA(Directory);
   try
@@ -58,13 +68,13 @@ begin
       try
         FSIn.CopyFrom(FSOut, FSOut.Size);
       finally
-        FSIn.Free;
+        F(FSIn);
       end;
     finally
-      FSOut.Free;
+      F(FSOut);
     end;
   except
-    on e : Exception do
+    on e: Exception do
     begin
       FStrParam := TA('Error') + ': ' + e.Message;
       FIntParam := LINE_INFO_ERROR;

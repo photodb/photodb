@@ -276,7 +276,7 @@ end;
 
 constructor TLanguageScope.Create(ScopeNode: IXMLDOMNode);
 var
-  NameAttr : IXMLDOMNode;
+  NameAttr: IXMLDOMNode;
 begin
   FScopeNode := ScopeNode;
   FTranslateList := TList.Create;
@@ -331,10 +331,10 @@ end;
 
 procedure TLanguageScope.LoadTranslateList(ScopeNode: IXMLDOMNode);
 var
-  I : Integer;
-  TranslateList : IXMLDOMNodeList;
-  TranslateNode : IXMLDOMNode;
-  Translate : TTranslate;
+  I: Integer;
+  TranslateList: IXMLDOMNodeList;
+  TranslateNode: IXMLDOMNode;
+  Translate: TTranslate;
 begin
   TranslateList := ScopeNode.childNodes;
   if TranslateList <> nil then
