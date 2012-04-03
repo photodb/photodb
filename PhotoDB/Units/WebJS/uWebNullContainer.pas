@@ -22,7 +22,9 @@ interface
 
 
 uses
-  Windows, ActiveX, SHDocVw,
+  Windows,
+  ActiveX,
+  SHDocVw,
   IntfDocHostUIHandler,
   Winapi.UrlMon;
 

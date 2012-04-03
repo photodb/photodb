@@ -3,8 +3,18 @@ unit uInstallThread;
 interface
 
 uses
-  Windows, Classes, uInstallTypes, uDBForm, uMemory, uConstants,
-  uInstallUtils, uInstallScope, uActions, ActiveX, SysUtils, uIME;
+  Windows,
+  Classes,
+  uInstallTypes,
+  uDBForm,
+  uMemory,
+  uConstants,
+  uInstallUtils,
+  uInstallScope,
+  uActions,
+  ActiveX,
+  SysUtils,
+  uIME;
 
 type
   TInstallThread = class(TThread)

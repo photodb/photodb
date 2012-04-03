@@ -3,9 +3,22 @@ unit uFrmProgress;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, pngimage, ExtCtrls, uFormUtils, uMemory, GraphicsBaseTypes,
-  uInstallUtils, uDBForm, uInstallScope, AppEvnts;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  pngimage,
+  ExtCtrls,
+  uFormUtils,
+  uMemory, GraphicsBaseTypes,
+  uInstallUtils,
+  uDBForm,
+  uInstallScope,
+  AppEvnts;
 
 type
   TFrmProgress = class(TDBForm)
@@ -136,7 +149,7 @@ procedure TFrmProgress.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption := L('PhotoDB 2.3 Setup');
+    Caption := L('PhotoDB 3.0 Setup');
   finally
     EndTranslate;
   end;

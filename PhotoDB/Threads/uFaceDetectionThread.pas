@@ -3,10 +3,35 @@ unit uFaceDetectionThread;
 interface
 
 uses
-  Windows, Classes, Graphics, uDBThread, uThreadForm, uFaceDetection, uMemory,
-  xmldom, ActiveX, SysUtils, uLogger, win32crc, uFileUtils, uConstants, SyncObjs,
-  uRuntime, uGraphicUtils, uGOM, uInterfaces, Math, uBitmapUtils, uSettings,
-  uDateUtils, uPeopleSupport, u2DUtils, uConfiguration, uStringUtils;
+  Windows,
+  Classes,
+  Graphics,
+  uDBThread,
+  uThreadForm,
+  uFaceDetection,
+  uMemory,
+  xmldom,
+  ActiveX,
+  SysUtils,
+  uLogger,
+  win32crc,
+  uFileUtils,
+  uConstants,
+  SyncObjs,
+  uRuntime,
+  uGraphicUtils,
+  uGOM,
+  uInterfaces,
+  Math,
+  uBitmapUtils,
+  uSettings,
+  uDateUtils,
+  uPeopleSupport,
+  u2DUtils,
+  uConfiguration,
+  uStringUtils,
+  GIFImage,
+  uPortableDeviceUtils;
 
 const
   FACE_DETECTION_OK           = 0;
@@ -79,6 +104,7 @@ type
   end;
 
 function FaceDetectionDataManager: TFaceDetectionDataManager;
+function CanDetectFacesOnImage(FileName: string; Graphic: TGraphic): Boolean;
 
 implementation
 
@@ -87,6 +113,21 @@ uses
 
 var
   FManager: TFaceDetectionDataManager = nil;
+
+function CanDetectFacesOnImage(FileName: string; Graphic: TGraphic): Boolean;
+begin
+  Result := True;
+  if (Graphic = nil) then
+    Exit(False);
+  if (Graphic.Empty) then
+    Exit(False);
+  if (Graphic is TGIFImage) then
+    Exit(False);
+  if (Graphic.Width <= 10) or (Graphic.Height <= 10) then
+    Exit(False);
+  if IsDevicePath(FileName) then
+    Exit(False);
+end;
 
 function FaceDetectionDataManager: TFaceDetectionDataManager;
 begin

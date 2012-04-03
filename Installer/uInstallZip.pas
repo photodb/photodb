@@ -5,7 +5,12 @@ unit uInstallZip;
 interface
 
 uses
-  Zlib, uInstallTypes, uMemory, Classes, SysUtils, Math;
+  Zlib,
+  uInstallTypes,
+  uMemory,
+  Classes,
+  SysUtils,
+  Math;
 
 function AddStringToStream(Stream: TStream; S: string; FileName: string): Boolean;
 function AddFileToStream(Stream: TStream; FileName: string): Boolean;

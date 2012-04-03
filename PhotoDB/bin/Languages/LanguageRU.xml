@@ -61,7 +61,7 @@
   </scope>
   <scope name="System">    
     <translate name="This program is running, but isn't responding! Run new instance?" value="Программа уже запущена, но не отвечает на запросы. Запустить ещё одну копию?" />
-    <translate name="Do you really want to delete Photo Database 2.3?" value="Вы действительно хотите удалить Photo Database 2.3?" />
+    <translate name="Do you really want to delete Photo Database 3.0?" value="Вы действительно хотите удалить Photo Database 3.0?" />
     <translate name="View with PhotoDB" value="Просмотр с помощью PhotoDB" />
     <translate name="Photo Database {V} helps you to find, protect and organize your photos." value="Photo Database {V} поможет вам в поиске, защите и организации ваших фотографий." />
     <translate name="Get photos" value="Получить фотографии" />
@@ -70,10 +70,11 @@
     <translate name="Application is damaged! Possible it is infected by a virus!" value="Приложение повреждено! Возможно, что оно инфицировано каким-либо вирусом!" />
     <translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
     <translate name="Activate application to enable strong encryption!" value="Активируйте приложение для стойкого шифрования!" />
+    <translate name="Home page" value="Домашняя страница" />
   </scope>
   <scope name="Setup">
     <translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />
-    <translate name="Welcome to the Photo Database 2.3" value="Добро пожаловать в Photo Database 2.3" />
+    <translate name="Welcome to the Photo Database 3.0" value="Добро пожаловать в Photo Database 3.0" />
 	<translate name="Newer version (%s) is already installed! Do you want to install old version (%s)?" value="Более новая версия (%s) уже установлена! Вы действительно хотите установить старую версию (%s)?" />
 	<translate name="Friends" value="Друзья" />
     <translate name="Family" value="Семья" />
@@ -84,12 +85,12 @@
     <translate name="Next" value="Далее" />
     <translate name="Previous" value="Назад" />	
     <translate name="Install path" value="Путь для установки" />
-    <translate name="PhotoDB 2.3 Setup" value="Установка PhotoDB 2.3" />
+    <translate name="PhotoDB 3.0 Setup" value="Установка PhotoDB 3.0" />
     <translate name="I accept license agreement" value="Я принимаю лицензионное соглашение" />
     <translate name="Select default associations" value="По умолчанию" />
     <translate name="Select all" value="Выбрать всё" />
     <translate name="Select none" value="Отменить всё" />
-    <translate name="PhotoDB 2.3 Uninstall" value="Удаление PhotoDB 2.3" />
+    <translate name="PhotoDB 3.0 Uninstall" value="Удаление PhotoDB 3.0" />
     <translate name="Yes, I want to uninstall this program" value="Да, я хочу удалить эту программу" />
 	<translate name="Don't use this extension" value="Не использовать это расширение"/>
 	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>

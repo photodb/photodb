@@ -238,10 +238,10 @@ var
 begin
   S := HardwareString;
   CalcStringCRC32(S, N);
-  N := N xor $6357A303; // v2.3
+  N := N xor $6357A303; // v2.3-3.0?
   S := IntToHex(N, 8);
   CalcStringCRC32(S, N);
-  N := N xor $162C90CA; // v2.3
+  N := N xor $162C90CA; // v2.3-3.0?
   Code := S + Inttohex(N, 8);
   Result := Code;
 end;

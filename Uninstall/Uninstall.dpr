@@ -56,8 +56,8 @@ uses
   uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas';
 
 {$R *.res}
+{$R Commands.res}
 {$R ..\PhotoDB\Resources\Install.res}
-{$R ..\Installer\InstallMain.res}
 
 begin
   if not GetParamStrDBBool('/admin') then
@@ -74,7 +74,7 @@ begin
 
   Application.Initialize;
 
-  If ID_YES = TaskDialogEx(0, TA('Do you really want to delete Photo Database 2.3?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO,
+  If ID_YES = TaskDialogEx(0, TA('Do you really want to delete Photo Database 3.0?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO,
     TD_ICON_WARNING, False) then
   begin
     Application.MainFormOnTaskbar := True;

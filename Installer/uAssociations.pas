@@ -49,7 +49,7 @@ type
   end;
 
   TAssociationState = (
-    TAS_NOT_INSTALLED, TAS_INSTALLED_OTHER, TAS_PHOTODB_HANDLER, TAS_PHOTODB_DEFAULT
+    TAS_NOT_INSTALLED, TAS_INSTALLED_OTHER, TAS_PHOTODB_HANDLER, TAS_PHOTODB_DEFAULT, TAS_UNINSTALL
   );
 
   TFileAssociation = class(TAssociation)
@@ -189,24 +189,11 @@ begin
   end;
 end;
 
-procedure UnregisterPhotoDBAssociation(Ext : string; Full: Boolean);
+procedure UnregisterPhotoDBAssociation(Ext: string; Full: Boolean);
 var
   Reg: TRegistry;
   ShellPath, ExtensionHandler, PreviousHandler : string;
 begin
-  if Full then
-  begin
-    Reg := TRegistry.Create;
-    try
-      Reg.RootKey := Windows.HKEY_CURRENT_USER;
-      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
-      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-    finally
-      F(Reg);
-    end;
-  end;
-
   Reg := TRegistry.Create;
   try
     Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
@@ -239,9 +226,28 @@ begin
       Reg.WriteString('', PreviousHandler)
     else
       Reg.WriteString('', '');
+
+    if PreviousHandler <> '' then
+      Reg.DeleteValue(ASSOCIATION_PREVIOUS);
+
     Reg.CloseKey;
   finally
     F(Reg);
+  end;
+
+  if Full then
+  begin
+    Reg := TRegistry.Create;
+    try
+      Reg.RootKey := Windows.HKEY_CURRENT_USER;
+      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
+      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
+      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.DeleteKey(ASSOCIATION_PATH + EXT_ASSOCIATION_PREFIX + '.' + Ext);
+    finally
+      F(Reg);
+    end;
   end;
 end;
 
@@ -306,6 +312,8 @@ begin
       CurrectAssociation := TFileAssociations.Instance.GetCurrentAssociationState(Ext);
 
       case TFileAssociations.Instance[I].State of
+        TAS_UNINSTALL:
+          UnregisterPhotoDBAssociation(Ext, True);
         TAS_NOT_INSTALLED,
         TAS_INSTALLED_OTHER:
           case CurrectAssociation of

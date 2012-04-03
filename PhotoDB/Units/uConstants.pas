@@ -46,9 +46,9 @@ const
 
   //Information
   PhotoDBFileName = 'PhotoDB.exe';
-  ProductName = 'Photo DataBase 2.3';
-  StartMenuProgramsPath = 'Photo DB v2.3';
-  ProductMajorVersionVersion = '2.3';
+  ProductName = 'Photo DataBase 3.0';
+  StartMenuProgramsPath = 'Photo DB v3.0';
+  ProductMajorVersionVersion = '3.0';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;
@@ -86,7 +86,6 @@ const
   ReleaseNumber = 12;
 
 const
-  MultimediaBaseFiles = '|MOV|MP3|AVI|MPEG|MPG|WAV|';
   RetryTryCountOnWrite = 10;
   RetryTryDelayOnWrite = 100;
   CurrentDBSettingVersion = 1;
@@ -100,6 +99,7 @@ const
   DB_VER_2_1 = 4;
   DB_VER_2_2 = 5;
   DB_VER_2_3 = 6;
+  DB_VER_3_0 = 6; //the same, no DB structure changes
 
 const
   DB_IC_SHELL          = 0;
@@ -361,16 +361,16 @@ const
   TD_ICON_BLANK = 102;
   TD_ICON_WARNING = 81;
   TD_ICON_QUESTION = 99;
-  TD_ICON_ERROR = TD_ICON_BLANK+3;
-  TD_ICON_ACCEPT_ICON = TD_ICON_BLANK+4;
-  TD_ICON_INFORMATION = TD_ICON_BLANK+5;
-  TD_ICON_PC = TD_ICON_BLANK+7;
-  TD_ICON_SCREEN = TD_ICON_BLANK+8;
-  TD_ICON_SETTINGS = TD_ICON_BLANK+14;
-  TD_ICON_IMAGE = TD_ICON_BLANK+20;
+  TD_ICON_ERROR = TD_ICON_BLANK + 3;
+  TD_ICON_ACCEPT_ICON = TD_ICON_BLANK + 4;
+  TD_ICON_INFORMATION = TD_ICON_BLANK + 5;
+  TD_ICON_PC = TD_ICON_BLANK + 7;
+  TD_ICON_SCREEN = TD_ICON_BLANK + 8;
+  TD_ICON_SETTINGS = TD_ICON_BLANK + 14;
+  TD_ICON_IMAGE = TD_ICON_BLANK + 20;
   TD_ICON_DELETE = 89;
-  TD_ICON_SEARCH = TD_ICON_BLANK+75;
-  TD_ICON_EDIT =94;
+  TD_ICON_SEARCH = TD_ICON_BLANK + 75;
+  TD_ICON_EDIT = 94;
 
   TD_BUTTON_OK = 1;
   TD_BUTTON_YES = 2;

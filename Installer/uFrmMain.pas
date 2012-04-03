@@ -5,10 +5,31 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ZLib, pngimage, ExtCtrls, uDBForm, StdCtrls, WatermarkedEdit,
-  uInstallTypes, uInstallUtils, uMemory, uConstants, uRuntime,
-  uVistaFuncs, uInstallScope, Registry, uShellUtils, uSteps, uSysUtils,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ZLib,
+  pngimage,
+  ExtCtrls,
+  uDBForm,
+  StdCtrls,
+  WatermarkedEdit,
+  uInstallTypes,
+  uInstallUtils,
+  uMemory,
+  uConstants,
+  uRuntime,
+  uVistaFuncs,
+  uInstallScope,
+  Registry,
+  uShellUtils,
+  uSteps,
+  uSysUtils,
   uDBBaseTypes,
 {$IFDEF INSTALL}
   uInstallSteps,
@@ -42,10 +63,10 @@ type
     procedure LoadMainImage;
     procedure StepsChanged(Sender: TObject);
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
-    function UpdateProgress(Position, Total : Int64) : Boolean;
+    function UpdateProgress(Position, Total: Int64): Boolean;
   end;
 
 var
@@ -118,7 +139,7 @@ begin
 {$ENDIF}
 
 {$IFDEF UNINSTALL}
-  FInstallType := TUninstall_V2_3.Create;
+  FInstallType := TUninstall_V3_X.Create;
 {$ENDIF}
 
   FInstallType.OnChange := StepsChanged;
@@ -144,13 +165,13 @@ begin
   BeginTranslate;
   try
 {$IFDEF INSTALL}
-    S := L('PhotoDB 2.3 Setup');
+    S := L('PhotoDB 3.0 Setup');
     if IsApplicationInstalled then
       S := S + ' (' + L('Update') + ' ' + ReleaseToString(InstallVersion) + ')';
     Caption := S;
 {$ENDIF}
 {$IFDEF UNINSTALL}
-    Caption := L('PhotoDB 2.3 Uninstall');
+    Caption := L('PhotoDB 3.0 Uninstall');
 {$ENDIF}
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
@@ -162,7 +183,7 @@ begin
 {$IFDEF UNINSTALL}
     BtnInstall.Caption := L('Uninstall');
 {$ENDIF}
-    LbWelcome.Caption := L('Welcome to the Photo Database 2.3');
+    LbWelcome.Caption := L('Welcome to the Photo Database 3.0');
   finally
     EndTranslate;
   end;

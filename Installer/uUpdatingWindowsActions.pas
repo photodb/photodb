@@ -3,7 +3,8 @@ unit uUpdatingWindowsActions;
 interface
 
 uses
-  uActions, uShellUtils;
+  uActions,
+  uShellUtils;
 
 const
   InstallPoints_SystemInfo = 1024 * 1024;

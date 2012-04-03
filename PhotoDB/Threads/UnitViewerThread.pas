@@ -71,6 +71,7 @@ type
     procedure SetAnimatedImageAsynch;
     procedure UpdateRecord;
     procedure ShowLoadingSign;
+    procedure FinishDetectionFaces;
   public
     constructor Create(Viewer: TViewerForm; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended;
       SID: TGUID; IsForward: Boolean; Page: Word);
@@ -259,18 +260,30 @@ begin
     finally
       if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
       begin
-        if not (Graphic = nil) and not (Graphic is TGIFImage) and not Graphic.Empty and (Graphic.Width > 10) and (Graphic.Height > 10) then
+        if CanDetectFacesOnImage(FInfo.FileName, Graphic) then
         begin
           SynchronizeEx(ShowLoadingSign);
           FaceDetectionDataManager.RequestFaceDetection(FViewer, Graphic, FInfo.FileName, FInfo.ID);
-        end;
-      end;
+        end else
+          FinishDetectionFaces;
+      end else
+        FinishDetectionFaces;
       F(Graphic);
     end;
 
   finally
     F(FInfo);
   end;
+end;
+
+procedure TViewerThread.FinishDetectionFaces;
+begin
+  SynchronizeEx(procedure
+    begin
+      if Viewer <> nil then
+        Viewer.FinishDetectionFaces;
+    end
+  );
 end;
 
 procedure TViewerThread.GetPassword;

@@ -1317,7 +1317,7 @@ begin
       Resize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
       Print1.Visible := not(SlideShowNow) and ImageExists;
       ImageEditor1.Visible := not(SlideShowNow) and ImageExists;
-      MiShelf.Visible := not(SlideShowNow) and ImageExists and (Item.ID = 0);
+      MiShelf.Visible := not(SlideShowNow) and ImageExists and not IsDevicePath(Item.FileName);
     end;
   finally
     F(Info);

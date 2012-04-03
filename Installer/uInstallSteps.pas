@@ -3,7 +3,10 @@ unit uInstallSteps;
 interface
 
 uses
-  Classes, uMemory, Controls, uSteps;
+  Classes,
+  uMemory,
+  Controls,
+  uSteps;
 
 type
 

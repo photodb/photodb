@@ -3,8 +3,13 @@ unit uSelfDeleteAction;
 interface
 
 uses
-  Windows, SysUtils, Classes, uMemory,
-  uActions, uShellUtils, uInstallUtils;
+  Windows,
+  SysUtils,
+  Classes,
+  uMemory,
+  uActions,
+  uShellUtils,
+  uInstallUtils;
 
 const
   InstallRemoveSelfPoints = 512 * 1024;
@@ -12,8 +17,8 @@ const
 type
   TSelfDeleteActions = class(TInstallAction)
   public
-    function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    function CalculateTotalPoints: Int64; override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
 implementation
@@ -27,10 +32,10 @@ end;
 
 procedure TSelfDeleteActions.Execute(Callback: TActionCallback);
 var
-  Terminate : Boolean;
-  ExeCommandsName : string;
-  MS : TMemoryStream;
-  FS : TFileStream;
+  Terminate: Boolean;
+  ExeCommandsName: string;
+  MS: TMemoryStream;
+  FS: TFileStream;
   Pi: TProcessInformation;
   Si: TStartupInfo;
 begin

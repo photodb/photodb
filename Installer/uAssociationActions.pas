@@ -5,7 +5,11 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  uActions, SysUtils, uAssociations, uInstallScope, uConstants;
+  uActions,
+  SysUtils,
+  uAssociations,
+  uInstallScope,
+  uConstants;
 
 const
   InstallPoints_Association = 128 * 1024;
@@ -14,10 +18,10 @@ type
   TInstallAssociations = class(TInstallAction)
   private
     FCallback : TActionCallback;
-    procedure OnInstallAssociationCallBack(Current, Total : Integer; var Terminate : Boolean);
+    procedure OnInstallAssociationCallBack(Current, Total: Integer; var Terminate: Boolean);
   public
     function CalculateTotalPoints : Int64; override;
-    procedure Execute(Callback : TActionCallback); override;
+    procedure Execute(Callback: TActionCallback); override;
   end;
 
 implementation

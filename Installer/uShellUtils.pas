@@ -5,9 +5,27 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Classes, Forms, UnitINI, uConstants, Registry, SysUtils, uLogger,
-  uMemory, uInstallTypes, uTranslate, uDBBaseTypes, uAssociations, Controls,
-  ShellApi, ShlObj, uFileUtils, uRuntime, win32crc, uSysUtils, Messages;
+  Windows,
+  Classes,
+  Forms,
+  UnitINI,
+  uConstants,
+  Registry,
+  SysUtils,
+  uLogger,
+  uMemory,
+  uInstallTypes,
+  uTranslate,
+  uDBBaseTypes,
+  uAssociations,
+  Controls,
+  ShellApi,
+  ShlObj,
+  uFileUtils,
+  uRuntime,
+  win32crc,
+  uSysUtils,
+  Messages;
 
 const
   BCM_FIRST = $1600; //Button control messages

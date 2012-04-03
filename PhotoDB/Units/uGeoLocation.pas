@@ -212,6 +212,30 @@ const
     '    }); '+
     '  } '+
 
+    'var locationReq = null; ' +
+    'function LoadLocation(url) { ' +
+    '  locationReq = new ActiveXObject("MSXML2.ServerXMLHTTP.6.0"); ' +
+    '	 if (locationReq) {  ' +
+    '	 	 locationReq.onreadystatechange = LoadLocationReply; ' +
+    '		 locationReq.open("GET", url, true); ' +
+    '		 locationReq.send(); ' +
+    '	 } ' +
+    '} ' +
+
+    'function LoadLocationReply() { ' +
+    '	if (locationReq && locationReq.readyState == 4) {  ' +
+    '		if (locationReq.status == 200) { ' +
+    '			var jsonObj = eval("(function(){return " + locationReq.responseText + ";})()"); ' +
+    '     map.setMapTypeId(google.maps.MapTypeId.ROADMAP); '+
+    '			FindLocation(jsonObj.text); ' +
+    '		} ' +
+    '	} ' +
+    '}' +
+
+    'function TryToResolvePosition(url){' +
+    '  LoadLocation(url); ' +
+    '}' +
+
     'function ZoomIn() { '+
     '  GotoLatLng(currentLat, currentLng); '+
     '  setTimeout("showMaxZoom()", 1); ' +

@@ -3,7 +3,8 @@ unit uActions;
 interface
 
 uses
-  Classes, uMemory;
+  Classes,
+  uMemory;
 
 type
   TInstallAction = class;

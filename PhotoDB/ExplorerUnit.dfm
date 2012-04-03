@@ -2385,6 +2385,7 @@ object ExplorerForm: TExplorerForm
     Top = 512
   end
   object TmrCheckItemVisibility: TTimer
+    Interval = 250
     OnTimer = TmrCheckItemVisibilityTimer
     Left = 536
     Top = 568

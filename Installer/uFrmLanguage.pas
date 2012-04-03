@@ -3,10 +3,30 @@ unit uFrmLanguage;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, uDBForm, uInstallUtils, uMemory, uConstants, uInstallTypes,
-  StrUtils, uTranslate, uLogger, pngimage, uInstallZip, uSysUtils, uLangUtils,
-  Registry, uInstallRuntime, uRuntime;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  uDBForm,
+  uInstallUtils,
+  uMemory,
+  uConstants,
+  uInstallTypes,
+  StrUtils,
+  uTranslate,
+  uLogger,
+  pngimage,
+  uInstallZip,
+  uSysUtils,
+  uLangUtils,
+  Registry,
+  uInstallRuntime,
+  uRuntime;
 
 type
   TLanguageItem = class(TObject)

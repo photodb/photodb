@@ -5,8 +5,16 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Classes, uActions, uInstallTypes, uMemory, Registry, uConstants,
-  SysUtils, uUninstallTypes, uShellUtils;
+  Windows,
+  Classes,
+  uActions,
+  uInstallTypes,
+  uMemory,
+  Registry,
+  uConstants,
+  SysUtils,
+  uUninstallTypes,
+  uShellUtils;
 
 const
   InstallPoints_UninstallShortcuts = 16 * 1024;
@@ -132,6 +140,11 @@ begin
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_2_2 + '\' + ProgramShortCutFile_2_2, False);
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_2_2 + '\' + HelpShortCutFile_2_2, False);
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_2_2, True);
+
+  AddUninstallShortcut('Desktop', ProgramShortCutFile_2_3, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_2_3 + '\' + ProgramShortCutFile_2_3, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_2_3 + '\' + HelpShortCutFile_2_3, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_2_3, True);
 end;
 
 end.

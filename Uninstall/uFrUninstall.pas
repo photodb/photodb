@@ -5,13 +5,28 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, StdCtrls, uInstallFrame, uInstallUtils, uTranslate,
-  uMemory, uConstants, uInstallScope, uAssociations;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  uInstallFrame,
+  uInstallUtils,
+  uTranslate,
+  uMemory,
+  uConstants,
+  uInstallScope,
+  uAssociations;
 
 type
   TFrUninstall = class(TInstallFrame)
     cbYesUninstall: TCheckBox;
+    CbUnInstallAllUserSettings: TCheckBox;
+    CbDeleAllRegisteredCollection: TCheckBox;
     procedure YesUninstallClick(Sender: TObject);
   private
     { Private declarations }
@@ -47,9 +62,11 @@ var
 begin
   inherited;
   for I := 0 to TFileAssociations.Instance.Count - 1 do
-    TFileAssociations.Instance[I].State := TAS_INSTALLED_OTHER;
+    TFileAssociations.Instance[I].State := TAS_UNINSTALL;
 
   CurrentInstall.DestinationPath := IncludeTrailingBackslash(ExtractFileDir(GetInstalledFileName));
+  CurrentInstall.UninstallOptions.DeleteUserSettings := CbUnInstallAllUserSettings.Checked;
+  CurrentInstall.UninstallOptions.DeleteAllCollections := CbDeleAllRegisteredCollection.Checked;
 end;
 
 procedure TFrUninstall.LoadLanguage;

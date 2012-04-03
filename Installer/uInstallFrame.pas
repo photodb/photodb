@@ -3,7 +3,10 @@ unit uInstallFrame;
 interface
 
 uses
-  Classes, Forms, uTranslate, uAssociations;
+  Classes,
+  Forms,
+  uTranslate,
+  uAssociations;
 
 type
   TInstallFrame = class(TFrame)

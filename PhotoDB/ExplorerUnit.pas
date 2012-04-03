@@ -123,6 +123,7 @@ uses
   uExplorerShelfProvider,
   uTranslate,
   uVCLHelpers,
+  uActivationUtils,
 
   uPortableDeviceUtils,
   uShellNamespaceUtils,
@@ -2242,6 +2243,7 @@ procedure TExplorerForm.ListView1SelectItem(Sender: TObject;
   Item: TEasyItem; Selected: Boolean);
 begin
   SelectTimer.Enabled := True;
+  TmrCheckItemVisibility.Restart;
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -3748,6 +3750,10 @@ begin
         begin
           FGeoHTMLWindow.execScript
             (FormatEx('SetMapBounds({0}, {1}, {2}); ', [DoubleToStringPoint(Lt), DoubleToStringPoint(Ln), Zoom]), 'JavaScript');
+        end else
+        begin
+          FGeoHTMLWindow.execScript
+            (FormatEx('TryToResolvePosition("{0}"); ', [ResolveLanguageString(GeoLocationJSON) + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion]), 'JavaScript');
         end;
       end;
     end;

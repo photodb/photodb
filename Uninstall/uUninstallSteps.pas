@@ -6,7 +6,7 @@ uses
   uSteps;
 
 type
-  TUninstall_V2_3 = class(TInstallSteps)
+  TUninstall_V3_X = class(TInstallSteps)
   public
     constructor Create; override;
   end;
@@ -16,9 +16,9 @@ implementation
 uses
   uFrUninstall;
 
-{ TUninstall_V2_3 }
+{ TUninstall_V3_X }
 
-constructor TUninstall_V2_3.Create;
+constructor TUninstall_V3_X.Create;
 begin
   inherited;
   AddStep(TFrUninstall);

@@ -100,18 +100,30 @@ type
     property Files[Index: Integer]: TDiskObject read GetFileByIndex; default;
   end;
 
+  TUninstallOptions = class(TObject)
+  private
+    FDeleteUserSettings: Boolean;
+    FDeleteAllCollections: Boolean;
+  public
+    constructor Create;
+    property DeleteUserSettings: Boolean read FDeleteUserSettings write FDeleteUserSettings;
+    property DeleteAllCollections: Boolean read FDeleteAllCollections write FDeleteAllCollections;
+  end;
+
   // COMPLETE INSTALLLATION
   TInstall = class(TObject)
   private
     FFiles: TScopeFiles;
     FDestinationPath: string;
     FIsUninstall: Boolean;
+    FUninstallOptions: TUninstallOptions;
   public
     constructor Create; virtual;
     destructor Destroy; override;
     property DestinationPath: string read FDestinationPath write FDestinationPath;
     property Files: TScopeFiles read FFiles;
     property IsUninstall: Boolean read FIsUninstall write FIsUninstall;
+    property UninstallOptions: TUninstallOptions read FUninstallOptions;
   end;
 
   TPhotoDBInstall_V23 = class(TInstall)
@@ -230,12 +242,14 @@ end;
 constructor TInstall.Create;
 begin
   FFiles := TScopeFiles.Create;
+  FUninstallOptions := TUninstallOptions.Create;
   FIsUninstall := False;
 end;
 
 destructor TInstall.Destroy;
 begin
   F(FFiles);
+  F(FUninstallOptions);
   inherited;
 end;
 
@@ -255,7 +269,7 @@ begin
   PhotoDBFile := TFileObject.Create(PhotoDBFileName, '%PROGRAM%', TA('Photo Database {V} helps you to find, protect and organize your photos.', 'System'));
   PhotoDBFile.FShortCuts.Add('%DESKTOP%\Photo Database {V}.lnk');
   PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + ProgramShortCutFile);
-  PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + 'Home page.lnk', 'http://photodb.illusdolphin.net/{LNG}');
+  PhotoDBFile.FShortCuts.Add('%STARTMENU%\' + StartMenuProgramsPath + '\' + TA('Home page', 'System') + '.lnk', 'http://photodb.illusdolphin.net/{LNG}');
   Files.Add(PhotoDBFile);
 
   PhotoDBBridge := TFileObject.Create('PhotoDBBridge.exe',         '%PROGRAM%', '');
@@ -311,6 +325,14 @@ end;
 function TFileActions.GetItemByIndex(Index: Integer): TFileAction;
 begin
   Result := FActions[Index];
+end;
+
+{ TUninstallOptions }
+
+constructor TUninstallOptions.Create;
+begin
+  FDeleteUserSettings := True;
+  FDeleteAllCollections := False;
 end;
 
 initialization
