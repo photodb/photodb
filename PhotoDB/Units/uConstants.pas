@@ -28,6 +28,7 @@ const
   DBRestoreFolder: string = '\DB\';
   PHOTO_DB_APPDATA_DIRECTORY = 'Photo DataBase';
   RegRoot: string = 'Software\Photo DataBase\';
+  cDatabasesSubKey = 'DBS';
   cUserData = 'UserData\';
   TempFolderMask = '|NDX|MB|DB|NET|';
   DelayReadFileOperation = 200;

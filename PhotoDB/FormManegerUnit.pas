@@ -389,7 +389,8 @@ begin
   ExitAppl := True;
 
   //save uptime
-  PermanentlySaveUpTime;
+  if not GetParamStrDBBool('/uninstall') then
+    PermanentlySaveUpTime;
 
   // to allow run new copy
   Caption := DB_ID_CLOSING;
@@ -422,7 +423,8 @@ begin
   Application.Terminate;
   TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
 
-  Settings.WriteProperty('Starting', 'ApplicationStarted', '0');
+  if not GetParamStrDBBool('/uninstall') then
+    Settings.WriteProperty('Starting', 'ApplicationStarted', '0');
   EventLog(':TFormManager::ExitApplication()/OK...');
   EventLog('');
   EventLog('');

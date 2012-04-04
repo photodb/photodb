@@ -210,7 +210,7 @@ end;
 function TBDRegistry.OpenKey(Key: String; CreateInNotExists: Boolean) : boolean;
 begin
   FKey := Key;
-  Result:=false;
+  Result := False;
   if Registry is TRegistry then
     Result := (Registry as TRegistry).OpenKey(Key, not FReadOnly);
   if Registry is TMyRegistryINIFile then

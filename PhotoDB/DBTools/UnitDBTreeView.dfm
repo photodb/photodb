@@ -103,7 +103,7 @@ object FormCreateDBFileTree: TFormCreateDBFileTree
     Left = 224
     Top = 32
   end
-  object PopupMenu1: TPopupMenu
+  object PmActions: TPopupActionBar
     Left = 224
     Top = 72
     object OpeninExplorer1: TMenuItem

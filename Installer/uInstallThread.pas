@@ -20,9 +20,9 @@ type
   TInstallThread = class(TThread)
   private
     { Private declarations }
-    FOwner : TDBForm;
-    FTotal, FCurrentlyDone : Int64;
-    FTerminateProgress : Boolean;
+    FOwner: TDBForm;
+    FTotal, FCurrentlyDone: Int64;
+    FTerminateProgress: Boolean;
   protected
     procedure Execute; override;
     procedure ExitSetup;

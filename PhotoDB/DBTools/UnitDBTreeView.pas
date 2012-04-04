@@ -40,7 +40,9 @@ uses
   uDBUtils,
   Dolphin_DB,
   uThemesUtils,
-  uConstants;
+  uConstants,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup;
 
 type
   TItemData = record
@@ -60,7 +62,7 @@ type
     StatusBar1: TStatusBar;
     Panel2: TPanel;
     ImMain: TImage;
-    PopupMenu1: TPopupMenu;
+    PmActions: TPopupActionBar;
     OpeninExplorer1: TMenuItem;
     Label2: TLabel;
     ApplicationEvents1: TApplicationEvents;
@@ -384,7 +386,7 @@ begin
   Label1.Hide;
   Panel2.Hide;
   Label2.Hide;
-  PopupMenu1.Images := DBKernel.ImageList;
+  PmActions.Images := DBKernel.ImageList;
   OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
 end;
 
@@ -587,7 +589,7 @@ begin
   if DirectoryExists(Path) then
   begin
     FPath := IncludeTrailingBackslash(Path);
-    Popupmenu1.Popup(TreeView1.ClientToScreen(MousePos).X, TreeView1.ClientToScreen(MousePos).Y);
+    PmActions.Popup(TreeView1.ClientToScreen(MousePos).X, TreeView1.ClientToScreen(MousePos).Y);
   end else
   begin
     FPath := '';

@@ -126,7 +126,7 @@ begin
     Result := False;
 end;
 
-function TSettings.ReadInteger(Key, Name: string; Default: Integer): integer;
+function TSettings.ReadInteger(Key, Name: string; Default: Integer): Integer;
 var
   Reg: TBDRegistry;
 begin

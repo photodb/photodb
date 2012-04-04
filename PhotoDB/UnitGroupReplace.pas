@@ -35,7 +35,7 @@ type
     NewGroupNameBox: TWatermarkedEdit;
     CbAllKnownGroups: TCheckBox;
     RbAddGroup: TRadioButton;
-    PopupMenu1: TPopupMenu;
+    PmDummy: TPopupMenu;
     procedure RbAddWithAnotherNameClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);

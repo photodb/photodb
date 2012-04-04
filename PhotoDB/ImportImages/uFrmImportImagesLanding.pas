@@ -24,7 +24,9 @@ uses
   uShellIntegration,
   uShellUtils,
   UnitDBFileDialogs,
-  uRuntime;
+  uRuntime,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup;
 
 type
   TFrmImportImagesLanding = class(TFrameWizardBase)
@@ -32,7 +34,7 @@ type
     BtnAddFolder: TButton;
     BtnRemoveFolder: TButton;
     LbLandingInfo: TLabel;
-    PmDeleteItem: TPopupMenu;
+    PmDeleteItem: TPopupActionBar;
     DeleteItem1: TMenuItem;
     PlacesImageList: TImageList;
     procedure BtnAddFolderClick(Sender: TObject);

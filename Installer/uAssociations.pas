@@ -103,6 +103,7 @@ type
 const
   EXT_ASSOCIATION_PREFIX = 'PhotoDB';
   ASSOCIATION_PREVIOUS = 'PhotoDB_PreviousAssociation';
+  ASSOCIATION_PHOTODB_FILE_EXT = 'PhotoDB_Owner';
   ASSOCIATION_ADD_HANDLER_COMMAND = 'PhotoDBView';
   ASSOCIATION_PATH = '\Software\Classes\';
 
@@ -222,15 +223,26 @@ begin
     end;
 
     Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
-    if not StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(PreviousHandler)) then
-      Reg.WriteString('', PreviousHandler)
-    else
-      Reg.WriteString('', '');
-
     if PreviousHandler <> '' then
-      Reg.DeleteValue(ASSOCIATION_PREVIOUS);
+    begin
+      if not StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(PreviousHandler)) then
+        Reg.WriteString('', PreviousHandler)
+      else
+        Reg.WriteString('', '');
+    end;
 
-    Reg.CloseKey;
+    ExtensionHandler := Reg.ReadString('');
+    if StartsText(AnsiLowerCase(EXT_ASSOCIATION_PREFIX) + '.', AnsiLowerCase(ExtensionHandler)) then
+      Reg.DeleteValue('');
+
+    Reg.DeleteValue(ASSOCIATION_PREVIOUS);
+
+    if Reg.ValueExists(ASSOCIATION_PHOTODB_FILE_EXT) then
+    begin       
+      Reg.CloseKey;
+      Reg.DeleteKey(ASSOCIATION_PATH + Ext);
+    end else
+      Reg.CloseKey;
   finally
     F(Reg);
   end;
@@ -244,7 +256,7 @@ begin
       Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
       Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
       Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
-      Reg.DeleteKey(ASSOCIATION_PATH + EXT_ASSOCIATION_PREFIX + '.' + Ext);
+      Reg.DeleteKey(ASSOCIATION_PATH + EXT_ASSOCIATION_PREFIX + Ext);
     finally
       F(Reg);
     end;
@@ -289,7 +301,7 @@ var
   I: Integer;
   S, Ext: string;
   B, C: Boolean;
-  Terminate: Boolean;
+  Terminate, KeyAlreadyExists: Boolean;
   CurrectAssociation: TAssociationState;
 begin
   Terminate := False;
@@ -324,89 +336,100 @@ begin
           end;
         TAS_PHOTODB_DEFAULT:
           begin
-            Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
-            S := Reg.ReadString('');
-            Reg.CloseKey;
-            B := False;
-            if S = '' then
-              B := True;
-            if not B then
+            KeyAlreadyExists := Reg.KeyExists(ASSOCIATION_PATH + Ext);
+            if Reg.OpenKey(ASSOCIATION_PATH + Ext, True) then
             begin
-              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\Open\Command', False);
-              B := Reg.ReadString('') = '';
-              Reg.CloseKey;
-            end;
-            if B then
-            begin
-              Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
-              Reg.WriteString('', 'PhotoDB' + Ext);
-              Reg.CloseKey;
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext, True);
-              Reg.WriteString('', TFileAssociations.Instance[I].Description);
-              Reg.CloseKey;
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
-              Reg.WriteString('', Format('"%s" "%%1"', [FileName]));
-              Reg.CloseKey;
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
-              Reg.WriteString('', Filename + ',0');
-              Reg.CloseKey;
-            end else
-            begin
-              Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
+              if not KeyAlreadyExists then
+                Reg.WriteBool(ASSOCIATION_PHOTODB_FILE_EXT, True);
               S := Reg.ReadString('');
-              Reg.WriteString('PhotoDB_PreviousAssociation', S);
-              Reg.WriteString('', 'PhotoDB' + Ext);
               Reg.CloseKey;
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext, True);
-              Reg.WriteString('', TFileAssociations.Instance[I].Description);
-              Reg.CloseKey;
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
-              Reg.WriteString('', Format('"%s" "%%1"', [Filename]));
-              Reg.CloseKey;
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
-              Reg.WriteString('', Filename + ',0');
-              Reg.CloseKey;
+              B := False;
+              if S = '' then
+                B := True;
+              if not B then
+              begin
+                Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\Open\Command', False);
+                B := Reg.ReadString('') = '';
+                Reg.CloseKey;
+              end;
+              if B then
+              begin
+                Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
+                Reg.WriteString('', 'PhotoDB' + Ext);
+                Reg.CloseKey;
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext, True);
+                Reg.WriteString('', TFileAssociations.Instance[I].Description);
+                Reg.CloseKey;
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
+                Reg.WriteString('', Format('"%s" "%%1"', [FileName]));
+                Reg.CloseKey;
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
+                Reg.WriteString('', Filename + ',0');
+                Reg.CloseKey;
+              end else
+              begin
+                Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
+                S := Reg.ReadString('');
+                if not StartsText('PhotoDB', S) then
+                  Reg.WriteString('PhotoDB_PreviousAssociation', S);
+                Reg.WriteString('', 'PhotoDB' + Ext);
+                Reg.CloseKey;
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext, True);
+                Reg.WriteString('', TFileAssociations.Instance[I].Description);
+                Reg.CloseKey;
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\Open\Command', True);
+                Reg.WriteString('', Format('"%s" "%%1"', [Filename]));
+                Reg.CloseKey;
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
+                Reg.WriteString('', Filename + ',0');
+                Reg.CloseKey;
+              end;
             end;
           end;
         TAS_PHOTODB_HANDLER:
           begin
-            Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
-            S := Reg.ReadString('');
-            Reg.CloseKey;
-            C := False;
-            B := True;
-            if S = '' then
-              C := True;
-            if not C then
+            KeyAlreadyExists := Reg.KeyExists(ASSOCIATION_PATH + Ext);
+            if Reg.OpenKey(ASSOCIATION_PATH + Ext, True) then
             begin
-              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\Open\Command', False);
-              B :=  Reg.ReadString('') = '';
+              if not KeyAlreadyExists then
+                Reg.WriteBool(ASSOCIATION_PHOTODB_FILE_EXT, True);
+              S := Reg.ReadString('');
               Reg.CloseKey;
-            end;
-            if B then
-            begin
-              Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
-              Reg.WriteString('', 'PhotoDB' + Ext);
+              C := False;
+              B := True;
+              if S = '' then
+                C := True;
+              if not C then
+              begin
+                Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\Open\Command', False);
+                B :=  Reg.ReadString('') = '';
+                Reg.CloseKey;
+              end;
+              if B then
+              begin
+                Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
+                Reg.WriteString('', 'PhotoDB' + Ext);
+                Reg.CloseKey;
+              end;
+              if B then
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND, True)
+              else
+                Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND, True);
+              Reg.WriteString('', TA('View with PhotoDB', 'System'));
               Reg.CloseKey;
-            end;
-            if B then
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND, True)
-            else
-              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND, True);
-            Reg.WriteString('', TA('View with PhotoDB', 'System'));
-            Reg.CloseKey;
-            if B then
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command', True)
-            else
-              Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command', True);
-            Reg.WriteString('', Format('"%s" "%%1"', [Filename]));
-            if B then
-            begin
-              Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
-              Reg.WriteString('', Filename + ',0');
-            end;
-            Reg.CloseKey;
+              if B then
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command', True)
+              else
+                Reg.OpenKey(ASSOCIATION_PATH + S + '\Shell\' + ASSOCIATION_ADD_HANDLER_COMMAND + '\Command', True);
+              Reg.WriteString('', Format('"%s" "%%1"', [Filename]));
+              if B then
+              begin
+                Reg.OpenKey(ASSOCIATION_PATH + 'PhotoDB' + Ext + '\DefaultIcon', True);
+                Reg.WriteString('', Filename + ',0');
+              end;
+              Reg.CloseKey;
           end;
+        end;
       end;
     end;
   finally

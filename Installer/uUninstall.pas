@@ -5,7 +5,7 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows,
+  Windows, Dialogs,
   Classes,
   uActions,
   uInstallTypes,
@@ -14,7 +14,9 @@ uses
   uConstants,
   SysUtils,
   uUninstallTypes,
-  uShellUtils;
+  uFileUtils,
+  uShellUtils,
+  StrUtils;
 
 const
   InstallPoints_UninstallShortcuts = 16 * 1024;
@@ -75,11 +77,11 @@ end;
 
 procedure TUninstallPreviousShortcutsAction.Execute(Callback: TActionCallback);
 var
-  I : Integer;
-  Shortcut : TUninstallPreviousShortcut;
-  Path : string;
-  FCurrent, FTotal : Int64;
-  Terminate : Boolean;
+  I, P: Integer;
+  Shortcut: TUninstallPreviousShortcut;
+  Path, RemovePath, RemoveMask: string;
+  FCurrent, FTotal: Int64;
+  Terminate: Boolean;
 begin
   FTotal := CalculateTotalPoints;
   FCurrent := 0;
@@ -96,7 +98,17 @@ begin
       Path := GetProgramFilesPath;
 
     Path := IncludeTrailingBackslash(Path) + Shortcut.RelativePath;
-    if not Shortcut.Directory then
+
+    if EndsText('|', Path) then
+    begin
+      P := Pos('*', Path);
+      if P > 0 then
+      begin
+        RemovePath := Copy(Path, 1, P - 1);
+        RemoveMask := Copy(Path, P + 1, Length(Path) - 2);
+        DelDir(RemovePath, RemoveMask);
+      end;
+    end else if not Shortcut.Directory then
       SysUtils.DeleteFile(Path)
     else
       SysUtils.RemoveDir(Path);

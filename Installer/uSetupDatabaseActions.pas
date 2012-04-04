@@ -5,7 +5,12 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, uActions, SysUtils, uAssociations, uInstallScope, uConstants,
+  Windows,
+  uActions,
+  SysUtils,
+  uAssociations,
+  uInstallScope,
+  uConstants,
   uUserUtils;
 
 const

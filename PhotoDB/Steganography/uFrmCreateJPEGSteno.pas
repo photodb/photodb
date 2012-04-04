@@ -40,7 +40,11 @@ uses
   uStenography,
   LoadingSign,
   CCR.Exif,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  uBaseWinControl,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Themes;
 
 type
   TFrmCreateJPEGSteno = class(TFrameWizardBase)
@@ -61,7 +65,7 @@ type
     EdPasswordConfirm: TWatermarkedEdit;
     CbIncludeCRC: TCheckBox;
     WblMethod: TWebLink;
-    PmCryptMethod: TPopupMenu;
+    PmCryptMethod: TPopupActionBar;
     CbConvertImage: TCheckBox;
     WblJpegOptions: TWebLink;
     LsImage: TLoadingSign;
@@ -287,6 +291,12 @@ begin
       WblMethod.LoadFromHIcon(FPassIcon);
     finally
       DestroyIcon(FPassIcon);
+    end;
+
+    if StyleServices.Enabled then
+    begin
+      ParentBackground := True;
+      ParentColor := True;
     end;
   end else
   begin

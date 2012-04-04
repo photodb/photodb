@@ -64,7 +64,8 @@ uses
   Vcl.Themes,
   Vcl.Styles,
   Vcl.Styles.Ext,
-  Vcl.Styles.Utils, uBaseWinControl;
+  Vcl.Styles.Utils,
+  uBaseWinControl;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)

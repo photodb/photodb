@@ -2995,24 +2995,27 @@ begin
           end;
         end
       );
-      FSync.Enter;
-      try
-        C := 0;
+      if VisibleFiles <> nil then
+      begin
+        FSync.Enter;
+        try
+          C := 0;
 
-        for I := 0 to VisibleFiles.Count - 1 do
-          for J := 0 to FData.Count - 1 do
-            begin
-              if VisibleFiles[I] = FData[J].FGUID then
+          for I := 0 to VisibleFiles.Count - 1 do
+            for J := 0 to FData.Count - 1 do
               begin
-                FData.Exchange(C, J);
-                Inc(C);
-                if C >= FData.Count then
-                  Exit;
+                if VisibleFiles[I] = FData[J].FGUID then
+                begin
+                  FData.Exchange(C, J);
+                  Inc(C);
+                  if C >= FData.Count then
+                    Exit;
+                end;
               end;
-            end;
 
-      finally
-        FSync.Leave;
+        finally
+          FSync.Leave;
+        end;
       end;
 
     finally

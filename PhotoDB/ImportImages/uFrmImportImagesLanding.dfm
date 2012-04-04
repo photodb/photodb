@@ -52,7 +52,7 @@ inherited FrmImportImagesLanding: TFrmImportImagesLanding
     TabOrder = 2
     OnClick = BtnRemoveFolderClick
   end
-  object PmDeleteItem: TPopupMenu
+  object PmDeleteItem: TPopupActionBar
     Left = 128
     Top = 168
     object DeleteItem1: TMenuItem

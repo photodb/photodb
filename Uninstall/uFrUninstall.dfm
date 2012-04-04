@@ -6,26 +6,39 @@ inherited FrUninstall: TFrUninstall
   ExplicitHeight = 330
   object cbYesUninstall: TCheckBox
     Left = 3
-    Top = 3
+    Top = 27
     Width = 424
     Height = 17
     Caption = 'cbYesUninstall'
     TabOrder = 0
   end
-  object CbUnInstallAllUserSettings: TCheckBox
+  object GbUninstallOptions: TGroupBox
     Left = 3
-    Top = 26
+    Top = 72
     Width = 424
-    Height = 17
-    Caption = 'CbUnInstallAllUserSettings'
+    Height = 169
+    Caption = 'GbUninstallOptions'
     TabOrder = 1
-  end
-  object CbDeleAllRegisteredCollection: TCheckBox
-    Left = 3
-    Top = 49
-    Width = 424
-    Height = 17
-    Caption = 'CbDeleAllRegisteredCollection'
-    TabOrder = 2
+    object CbDeleteAllRegisteredCollection: TCheckBox
+      Left = 10
+      Top = 97
+      Width = 400
+      Height = 17
+      Caption = 'CbDeleteAllRegisteredCollection'
+      Enabled = False
+      TabOrder = 0
+      OnClick = CbDeleteAllRegisteredCollectionClick
+    end
+    object CbUnInstallAllUserSettings: TCheckBox
+      Left = 10
+      Top = 26
+      Width = 400
+      Height = 17
+      Caption = 'CbUnInstallAllUserSettings'
+      Checked = True
+      Enabled = False
+      State = cbChecked
+      TabOrder = 1
+    end
   end
 end

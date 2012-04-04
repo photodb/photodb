@@ -60,10 +60,10 @@ begin
   inherited;
 end;
 
-procedure TInstallManager.ExecuteInstallActions(Callback : TActionCallback);
+procedure TInstallManager.ExecuteInstallActions(Callback: TActionCallback);
 var
-  I : Integer;
-  Action : TInstallAction;
+  I: Integer;
+  Action: TInstallAction;
 begin
   FCalBack := Callback;
   FTotal := 0;

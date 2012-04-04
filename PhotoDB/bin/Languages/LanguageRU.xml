@@ -83,7 +83,7 @@
     <translate name="Install" value="Установить" />
     <translate name="Uninstall" value="Удалить" />
     <translate name="Next" value="Далее" />
-    <translate name="Previous" value="Назад" />	
+    <translate name="Previous" value="Назад" />
     <translate name="Install path" value="Путь для установки" />
     <translate name="PhotoDB 3.0 Setup" value="Установка PhotoDB 3.0" />
     <translate name="I accept license agreement" value="Я принимаю лицензионное соглашение" />
@@ -94,7 +94,11 @@
     <translate name="Yes, I want to uninstall this program" value="Да, я хочу удалить эту программу" />
 	<translate name="Don't use this extension" value="Не использовать это расширение"/>
 	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
-	<translate name="Add menu item" value="Использовать пункт в меню"/>	
+	<translate name="Add menu item" value="Использовать пункт в меню"/>
+    <translate name="Delete all user settings" value="Удалить все пользовательские настройки" />
+    <translate name="Delete all registered collections" value="Удалить все зарегистрированные коллекции" />	
+    <translate name="Uninstall options" value="Настройки удаления" />
+    <translate name="Do you really want to delete all collection files (*.photodb)?" value="Вы действительно хотите удалить все файлы коллекций (*.photodb)?" />	
   </scope>
   <scope name="Associations">
 	<translate name="All supported formats" value="Все поддерживаемые форматы" />

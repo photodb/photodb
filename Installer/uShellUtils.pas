@@ -102,7 +102,7 @@ begin
       end;
     end;
   except
-    on e : Exception do
+    on e: Exception do
       EventLog(e.Message);
   end;
   F(FReg);
@@ -171,6 +171,7 @@ begin
   FReg := TRegistry.Create;
   try
     FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    FReg.DeleteKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\WPD\Source');
     FReg.DeleteKey(
       '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\Handlers\PhotoDBGetPhotosHandler');
     FReg.DeleteKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler');
@@ -385,50 +386,6 @@ begin
     end;
   end;
   F(FReg);
-
-//WIA SECTION START
-(*  CallBack(9, ActionCount, Terminate);
-  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
-  try
-    FReg.OpenKey(
-      '\SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\AutoplayHandlers\EventHandlers\WPD\Compat\WiaDeviceConnected', True);
-    FReg.WriteString('WIA_{6288D3A0-3E70-481A-8037-378532BED8C6}', '');
-    FReg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-      Exit;
-    end;
-  end;
-  F(FReg);
-
-  CallBack(10, ActionCount, Terminate);
-  FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);
-  try
-    FReg.OpenKey(
-      '\SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\AutoplayHandlers\Handlers\WIA_{6288D3A0-3E70-481A-8037-378532BED8C6}', True);
-
-    FReg.WriteString('Action', TA('Get photos', 'System'));
-    FReg.WriteString('DefaultIcon', FileName + ',0');
-    FReg.WriteString('InitCmdLine', FormatEx('/WiaCmd;{0} /IMG_WIA;', [FileName]));
-    FReg.WriteString('Provider', 'Photo DataBase ' + IIF(ProgramVersionString = '', ProductVersion, ProgramVersionString));
-    FReg.WriteString('CLSID', '{A55803CC-4D53-404c-8557-FD63DBA95D24}');
-
-    FReg.CloseKey;
-  except
-    on E: Exception do
-    begin
-      EventLog(':RegInstallApplication() throw exception: ' + E.message);
-      Result := False;
-      Exit;
-    end;
-  end;
-  F(FReg);
-           *)
-
-//WIA SECTION END
 
   CallBack(11, ActionCount, Terminate);
   FReg := TBDRegistry.Create(REGISTRY_ALL_USERS);

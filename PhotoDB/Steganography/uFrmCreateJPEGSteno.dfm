@@ -161,7 +161,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True
@@ -192,7 +191,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True
@@ -209,7 +207,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     SignColor = clBlack
     MaxTransparencity = 255
   end
-  object PmCryptMethod: TPopupMenu
+  object PmCryptMethod: TPopupActionBar
     Left = 440
     Top = 152
   end

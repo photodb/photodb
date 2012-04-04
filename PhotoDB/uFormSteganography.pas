@@ -3,9 +3,24 @@ unit uFormSteganography;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, uDBForm, StdCtrls, ExtCtrls, uWizards, uMemory, uMemoryEx, pngimage,
-  LoadingSign;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  uDBForm,
+  StdCtrls,
+  ExtCtrls,
+  uWizards,
+  uMemory,
+  uMemoryEx,
+  pngimage,
+  Themes,
+  LoadingSign,
+  uBaseWinControl;
 
 type
   TFormSteganography = class(TDBForm)
@@ -115,6 +130,8 @@ begin
   FWizard.AddStep(TFrmSteganographyLanding);
   FWizard.Start(Self, 127, 8);
   LoadLanguage;
+  if StyleServices.Enabled then
+    Color := StyleServices.GetStyleColor(scWindow);
 end;
 
 procedure TFormSteganography.FormDestroy(Sender: TObject);

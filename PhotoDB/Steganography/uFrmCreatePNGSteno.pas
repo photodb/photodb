@@ -3,8 +3,19 @@ unit uFrmCreatePNGSteno;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, uFrameWizardBase, StdCtrls, WatermarkedEdit, ExtCtrls, ShlObj,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  uFrameWizardBase,
+  StdCtrls,
+  WatermarkedEdit,
+  ExtCtrls,
+  ShlObj,
   uMemory,
   UnitDBFileDialogs,
   pngimage,
@@ -28,7 +39,10 @@ uses
   uDBUtils,
   LoadingSign,
   uDBBaseTypes,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  uBaseWinControl;
 
 type
   TFrmCreatePNGSteno = class(TFrameWizardBase)
@@ -51,7 +65,7 @@ type
     LbFilter: TLabel;
     OpenDialog1: TOpenDialog;
     WblMethod: TWebLink;
-    PmCryptMethod: TPopupMenu;
+    PmCryptMethod: TPopupActionBar;
     LsImage: TLoadingSign;
     procedure OpenDialog1IncludeItem(const OFN: TOFNotifyEx;
       var Include: Boolean);

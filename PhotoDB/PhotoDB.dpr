@@ -409,7 +409,8 @@ uses
   uBox in 'Units\Controls\uBox.pas',
   uShareImagesThread in 'Threads\uShareImagesThread.pas',
   uShareSettings in 'uShareSettings.pas' {FormShareSettings},
-  uProgressBarStyleHookMarquee in 'Units\Styles\uProgressBarStyleHookMarquee.pas';
+  uProgressBarStyleHookMarquee in 'Units\Styles\uProgressBarStyleHookMarquee.pas',
+  uUninstallUtils in 'Units\uUninstallUtils.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -604,6 +605,12 @@ begin
         DBKernel.SetDataBase(s1);
       end;
 
+      StopApplication;
+    end;
+
+    if not FolderView and not DBTerminating and GetParamStrDBBool('/uninstall') then
+    begin
+      CleanUpUserSettings;
       StopApplication;
     end;
 

@@ -53,7 +53,7 @@ const
   StartMenuProgramsPath_2_3 = 'Photo DB v2.3';
   ProductVersion_2_3 = '2.2';
   ProgramShortCutFile_2_3 = ProductName_2_3 + '.lnk';
-  HelpShortCutFile_2_3 = TEXT_MES_HELP + '.lnk';
+  HelpShortCutFile_2_3 = '*|LNK|';
   // [END]
 
 implementation

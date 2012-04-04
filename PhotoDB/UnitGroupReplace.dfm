@@ -34,7 +34,7 @@ object FormGroupReplace: TFormGroupReplace
       Height = 21
       Enabled = False
       ParentColor = True
-      PopupMenu = PopupMenu1
+      PopupMenu = PmDummy
       TabOrder = 2
       Text = 'CbExistedGroups'
       OnKeyPress = CbExistedGroupsKeyPress
@@ -435,7 +435,7 @@ object FormGroupReplace: TFormGroupReplace
     TabOrder = 4
     OnClick = BtnOkClick
   end
-  object PopupMenu1: TPopupMenu
+  object PmDummy: TPopupMenu
     Left = 232
     Top = 56
   end

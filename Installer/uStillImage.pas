@@ -3,9 +3,11 @@ unit uStillImage;
 interface
 
 uses
+  uMemory,
   SysUtils,
   Classes,
   ActiveX,
+  Registry,
   Windows;
 
 const
@@ -57,9 +59,14 @@ begin
 end;
 
 function UnRegisterStillHandler(Name: string): Boolean;
+const
+  EventsLocation = 'SYSTEM\CurrentControlSet\Control\StillImage\Events\STIProxyEvent';
 var
   HR: HRESULT;
   StillImage: IStillImageW;
+  Reg: TRegistry;
+  I: Integer;
+  EventList: TStrings;
 begin
   Result := False;
   HR := CoCreateInstance (CLSID_Sti, nil, CLSCTX_INPROC_SERVER, IID_IStillImageW, StillImage);
@@ -67,6 +74,37 @@ begin
   begin
     HR := StillImage.UnregisterLaunchApplication(PChar(Name));
     Result := Succeeded(HR);
+  end;
+
+  //for some reason unregistered application is still visible in registry, so clean-up manually
+  Reg := TRegistry.Create;
+  try
+    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    if Reg.OpenKey(EventsLocation, False) then
+    begin
+      EventList := TStringList.Create;
+      try
+        Reg.GetKeyNames(EventList);
+        Reg.CloseKey;
+        for I := 0 to EventList.Count - 1 do
+        begin
+          if Reg.OpenKey(EventsLocation + '\' + EventList[I], False) then
+          begin
+            if Reg.ReadString('Name') = Name then
+            begin
+              Reg.CloseKey;
+              Reg.DeleteKey(EventsLocation + '\' + EventList[I]);
+              Reg.DeleteKey('SOFTWARE\Classes\CLSID\' + EventList[I]);
+            end else
+              Reg.CloseKey;
+          end;
+        end;
+      finally
+        F(EventList);
+      end;
+    end;
+  finally
+    F(Reg);
   end;
 end;
 

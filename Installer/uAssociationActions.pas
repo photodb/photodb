@@ -17,7 +17,7 @@ const
 type
   TInstallAssociations = class(TInstallAction)
   private
-    FCallback : TActionCallback;
+    FCallback: TActionCallback;
     procedure OnInstallAssociationCallBack(Current, Total: Integer; var Terminate: Boolean);
   public
     function CalculateTotalPoints : Int64; override;
@@ -40,7 +40,7 @@ begin
 end;
 
 procedure TInstallAssociations.OnInstallAssociationCallBack(Current, Total: Integer;
-  var Terminate : Boolean);
+  var Terminate: Boolean);
 begin
   FCallback(Self, InstallPoints_Association * Current, InstallPoints_Association * Total, Terminate);
 end;

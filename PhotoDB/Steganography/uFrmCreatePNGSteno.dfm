@@ -156,7 +156,6 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       UseSpecIconSize = True
       HightliteImage = False
       StretchImage = True
@@ -202,7 +201,7 @@ inherited FrmCreatePNGSteno: TFrmCreatePNGSteno
     Left = 24
     Top = 32
   end
-  object PmCryptMethod: TPopupMenu
+  object PmCryptMethod: TPopupActionBar
     Left = 280
     Top = 192
   end

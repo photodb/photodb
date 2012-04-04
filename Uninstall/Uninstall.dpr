@@ -53,7 +53,8 @@ uses
   uStillImage in '..\Installer\uStillImage.pas',
   uSettings in '..\PhotoDB\Units\uSettings.pas',
   uUpTime in '..\PhotoDB\Units\uUpTime.pas',
-  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas';
+  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas',
+  uUninstallCurrentUser in 'uUninstallCurrentUser.pas';
 
 {$R *.res}
 {$R Commands.res}

@@ -456,7 +456,7 @@
 #define GraphicStrings_gesIcons 65005
 #define GraphicStrings_gesMetaFiles 65006
 #define GraphicStrings_gesEnhancedMetaFiles 65007
-#define Vcl_ComStrs_sFailsetCalSelRange 65008
+#define Vcl_OleConst_sNoRunningObject 65008
 #define MZLib_SNeedDict 65009
 #define MZLib_SStreamEnd 65010
 #define MZLib_SFileError 65011
@@ -472,38 +472,38 @@
 #define MZLib_SOversubscribedLLTree 65021
 #define MZLib_SIncompleteLLTree 65022
 #define MZLib_SEmptyDistanceTree 65023
-#define Vcl_ComStrs_sTabFailSetObject 65024
-#define Vcl_ComStrs_sTabMustBeMultiLine 65025
-#define Vcl_ComStrs_sInvalidIndex 65026
-#define Vcl_ComStrs_sInsertError 65027
-#define Vcl_ComStrs_sInvalidOwner 65028
-#define Vcl_ComStrs_sRichEditInsertError 65029
-#define Vcl_ComStrs_sRichEditLoadFail 65030
-#define Vcl_ComStrs_sRichEditSaveFail 65031
-#define Vcl_ComStrs_sPageIndexError 65032
-#define Vcl_ComStrs_sInvalidComCtl32 65033
-#define Vcl_ComStrs_sDateTimeMax 65034
-#define Vcl_ComStrs_sDateTimeMin 65035
-#define Vcl_ComStrs_sNeedAllowNone 65036
-#define Vcl_ComStrs_sFailSetCalDateTime 65037
-#define Vcl_ComStrs_sFailSetCalMaxSelRange 65038
-#define Vcl_ComStrs_sFailSetCalMinMaxRange 65039
+#define Vcl_ComStrs_sRichEditInsertError 65024
+#define Vcl_ComStrs_sRichEditLoadFail 65025
+#define Vcl_ComStrs_sRichEditSaveFail 65026
+#define Vcl_ComStrs_sPageIndexError 65027
+#define Vcl_ComStrs_sInvalidComCtl32 65028
+#define Vcl_ComStrs_sDateTimeMax 65029
+#define Vcl_ComStrs_sDateTimeMin 65030
+#define Vcl_ComStrs_sNeedAllowNone 65031
+#define Vcl_ComStrs_sFailSetCalDateTime 65032
+#define Vcl_ComStrs_sFailSetCalMaxSelRange 65033
+#define Vcl_ComStrs_sFailSetCalMinMaxRange 65034
+#define Vcl_ComStrs_sFailsetCalSelRange 65035
+#define Vcl_OleConst_SCannotActivate 65036
+#define Vcl_OleConst_SNoWindowHandle 65037
+#define Vcl_OleConst_SInvalidLicense 65038
+#define Vcl_OleConst_SNotLicensed 65039
 #define Vcl_Imaging_JConsts_sJPEGImageFile 65040
 #define System_Win_ComConst_SOleError 65041
 #define System_Win_ComConst_SNoMethod 65042
 #define System_Win_ComConst_SVarNotObject 65043
 #define System_Win_ComConst_STooManyParams 65044
 #define System_Win_ComConst_SDCOMNotInstalled 65045
-#define Vcl_OleConst_SCannotActivate 65046
-#define Vcl_OleConst_SNoWindowHandle 65047
-#define Vcl_OleConst_SInvalidLicense 65048
-#define Vcl_OleConst_SNotLicensed 65049
-#define Vcl_OleConst_sNoRunningObject 65050
-#define Vcl_ComStrs_sTabFailClear 65051
-#define Vcl_ComStrs_sTabFailDelete 65052
-#define Vcl_ComStrs_sTabFailRetrieve 65053
-#define Vcl_ComStrs_sTabFailGetObject 65054
-#define Vcl_ComStrs_sTabFailSet 65055
+#define Vcl_ComStrs_sTabFailClear 65046
+#define Vcl_ComStrs_sTabFailDelete 65047
+#define Vcl_ComStrs_sTabFailRetrieve 65048
+#define Vcl_ComStrs_sTabFailGetObject 65049
+#define Vcl_ComStrs_sTabFailSet 65050
+#define Vcl_ComStrs_sTabFailSetObject 65051
+#define Vcl_ComStrs_sTabMustBeMultiLine 65052
+#define Vcl_ComStrs_sInvalidIndex 65053
+#define Vcl_ComStrs_sInsertError 65054
+#define Vcl_ComStrs_sInvalidOwner 65055
 #define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 65056
 #define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 65057
 #define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 65058
@@ -1434,7 +1434,7 @@ BEGIN
 	GraphicStrings_gesIcons,	L"Windows icons"
 	GraphicStrings_gesMetaFiles,	L"Windows metafiles"
 	GraphicStrings_gesEnhancedMetaFiles,	L"Windows enhanced meta files"
-	Vcl_ComStrs_sFailsetCalSelRange,	L"Failed to set calendar selected range"
+	Vcl_OleConst_sNoRunningObject,	L"Unable to retrieve a pointer to a running object registered with OLE for %s/%s"
 	MZLib_SNeedDict,	L"need dictionary"
 	MZLib_SStreamEnd,	L"stream end"
 	MZLib_SFileError,	L"file error"
@@ -1450,11 +1450,6 @@ BEGIN
 	MZLib_SOversubscribedLLTree,	L"oversubscribed literal/length tree"
 	MZLib_SIncompleteLLTree,	L"incomplete literal/length tree"
 	MZLib_SEmptyDistanceTree,	L"empty distance tree with lengths"
-	Vcl_ComStrs_sTabFailSetObject,	L"Failed to set object at index %d"
-	Vcl_ComStrs_sTabMustBeMultiLine,	L"MultiLine must be True when TabPosition is tpLeft or tpRight"
-	Vcl_ComStrs_sInvalidIndex,	L"Invalid index"
-	Vcl_ComStrs_sInsertError,	L"Unable to insert an item"
-	Vcl_ComStrs_sInvalidOwner,	L"Invalid owner"
 	Vcl_ComStrs_sRichEditInsertError,	L"RichEdit line insertion error"
 	Vcl_ComStrs_sRichEditLoadFail,	L"Failed to Load Stream"
 	Vcl_ComStrs_sRichEditSaveFail,	L"Failed to Save Stream"
@@ -1466,22 +1461,27 @@ BEGIN
 	Vcl_ComStrs_sFailSetCalDateTime,	L"Failed to set calendar date or time"
 	Vcl_ComStrs_sFailSetCalMaxSelRange,	L"Failed to set maximum selection range"
 	Vcl_ComStrs_sFailSetCalMinMaxRange,	L"Failed to set calendar min/max range"
+	Vcl_ComStrs_sFailsetCalSelRange,	L"Failed to set calendar selected range"
+	Vcl_OleConst_SCannotActivate,	L"OLE control activation failed"
+	Vcl_OleConst_SNoWindowHandle,	L"Could not obtain OLE control window handle"
+	Vcl_OleConst_SInvalidLicense,	L"License information for %s is invalid"
+	Vcl_OleConst_SNotLicensed,	L"License information for %s not found. You cannot use this control in design mode"
 	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
 	System_Win_ComConst_SOleError,	L"OLE error %.8x"
 	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
 	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
 	System_Win_ComConst_STooManyParams,	L"Dispatch methods do not support more than 64 parameters"
 	System_Win_ComConst_SDCOMNotInstalled,	L"DCOM not installed"
-	Vcl_OleConst_SCannotActivate,	L"OLE control activation failed"
-	Vcl_OleConst_SNoWindowHandle,	L"Could not obtain OLE control window handle"
-	Vcl_OleConst_SInvalidLicense,	L"License information for %s is invalid"
-	Vcl_OleConst_SNotLicensed,	L"License information for %s not found. You cannot use this control in design mode"
-	Vcl_OleConst_sNoRunningObject,	L"Unable to retrieve a pointer to a running object registered with OLE for %s/%s"
 	Vcl_ComStrs_sTabFailClear,	L"Failed to clear tab control"
 	Vcl_ComStrs_sTabFailDelete,	L"Failed to delete tab at index %d"
 	Vcl_ComStrs_sTabFailRetrieve,	L"Failed to retrieve tab at index %d"
 	Vcl_ComStrs_sTabFailGetObject,	L"Failed to get object at index %d"
 	Vcl_ComStrs_sTabFailSet,	L"Failed to set tab \"%s\" at index %d"
+	Vcl_ComStrs_sTabFailSetObject,	L"Failed to set object at index %d"
+	Vcl_ComStrs_sTabMustBeMultiLine,	L"MultiLine must be True when TabPosition is tpLeft or tpRight"
+	Vcl_ComStrs_sInvalidIndex,	L"Invalid index"
+	Vcl_ComStrs_sInsertError,	L"Unable to insert an item"
+	Vcl_ComStrs_sInvalidOwner,	L"Invalid owner"
 	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
 	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
 	Vcl_Imaging_pnglang_EPNGUnknownCompressionText,	L"This \"Portable Network Graphics\" image is encoded with an unknown compression scheme which could not be decoded."
