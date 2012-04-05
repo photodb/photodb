@@ -27,6 +27,7 @@ uses
   uRuntime,
   uResources,
   uSettings,
+  uDBForm,
   uThreadForm,
   uPathProviders,
   uGraphicUtils,
@@ -158,7 +159,6 @@ type
     property DisplayItems[Index: TBaseSelectItem]: TBox read GetScrollBoxByItem;
     procedure OnItemEditClick(Sender: TObject);
     procedure OnDateEditClick(Sender: TObject);
-//    function FindChildByTag<T: TWinControl>(Parent: TWinControl; Tag: NativeInt): T;
     function FindMenuItemByImageIndex(Parent: TPopupActionBar; Index: NativeInt): TMenuItem;
 
     procedure SplitItem(SDI: TSelectDateItems);
@@ -264,6 +264,7 @@ type
     procedure SbSeriesResize(Sender: TObject);
   private
     { Private declarations }
+    FOriginalPath: string;
     FItemUpdateTimer: TTimer;
     FItemUpdateLastTime: Cardinal;
     FSeries: TSelectDateCollection;
@@ -303,6 +304,7 @@ type
     property ImagesCount: Integer read GetImagesCount;
     property ImagesSize: Int64 read GetImagesSize;
     property IsDisplayingPreviews: Boolean read FIsDisplayingPreviews write FIsDisplayingPreviews;
+    property OriginalPath: string read FOriginalPath;
   end;
 
 procedure GetPhotosFromDevice(DeviceName: string);
@@ -334,7 +336,22 @@ end;
 procedure GetPhotosFromFolder(Folder: string);
 var
   FormImportImages: TFormImportImages;
+  Imports: TList<TFormImportImages>;
+  Form: TFormImportImages;
 begin
+  Imports := TList<TFormImportImages>.Create;
+  try
+    TFormCollection.Instance.GetForms<TFormImportImages>(Imports);
+    for Form in Imports do
+      if Form.OriginalPath = Folder then
+      begin
+        Form.Show;
+        Exit;
+      end;
+  finally
+    F(Imports);
+  end;
+
   Application.CreateForm(TFormImportImages, FormImportImages);
   FormImportImages.SetPath(Folder);
   FormImportImages.Show;
@@ -1922,6 +1939,7 @@ end;
 procedure TFormImportImages.SetPath(Path: string);
 begin
   PeImportFromPath.Path := Path;
+  FOriginalPath := Path;
 end;
 
 procedure TFormImportImages.SetSeriesCount(Count: Integer);

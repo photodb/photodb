@@ -11,7 +11,8 @@ uses
   CmpUnit,
   uList64,
   uFileUtils,
-  uMemory;
+  uMemory,
+  SysUtils;
 
 type
   TDBPopupMenuInfo = class(TObject)
@@ -37,23 +38,27 @@ type
     procedure SetPosition(const Value: Integer);
     function GetStatInclude: Boolean;
     function GetCommonComments: string;
-    procedure SetValueByIndex(index: Integer;
-      const Value: TDBPopupMenuInfoRecord);
+    procedure SetValueByIndex(Index: Integer; const Value: TDBPopupMenuInfoRecord);
     function GetSelectionCount: Integer;
+    function GetIsVariousHeight: Boolean;
+    function GetIsVariousWidth: Boolean;
+    function GetOnlyDBInfo: Boolean;
+    function GetFilesSize: Int64;
+    function GetIsVariousLocation: Boolean;
   protected
     FData: TList;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Assign(Source : TDBPopupMenuInfo);
+    procedure Assign(Source: TDBPopupMenuInfo);
     procedure Insert(Index: Integer; MenuRecord: TDBPopupMenuInfoRecord);
     procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
-    function Add(FileName: string) : TDBPopupMenuInfoRecord; overload;
+    function Add(FileName: string): TDBPopupMenuInfoRecord; overload;
     procedure Clear;
     procedure ClearList;
-    procedure Exchange(Index1, Index2 : Integer);
-    procedure Delete(Index : Integer);
-    function Extract(Index : Integer) : TDBPopupMenuInfoRecord;
+    procedure Exchange(Index1, Index2: Integer);
+    procedure Delete(Index: Integer);
+    function Extract(Index: Integer): TDBPopupMenuInfoRecord;
     property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex write SetValueByIndex; default;
     property IsListItem: Boolean read FIsListItem write FIsListItem;
     property Count: Integer read GetCount;
@@ -61,6 +66,9 @@ type
     property IsVariousDate: Boolean read GetIsVariousDate;
     property IsVariousTime: Boolean read GetIsVariousTime;
     property IsVariousComments: Boolean read GetIsVariousComments;
+    property IsVariousWidth: Boolean read GetIsVariousWidth;
+    property IsVariousHeight: Boolean read GetIsVariousHeight;
+    property IsVariousLocation: Boolean read GetIsVariousLocation;
     property StatRating: Integer read GetStatRating;
     property StatDate: TDateTime read GetStatDate;
     property StatTime: TDateTime read GetStatTime;
@@ -75,6 +83,8 @@ type
     property Position: Integer read GetPosition write SetPosition;
     property ListItem: TEasyItem read FListItem write FListItem;
     property SelectionCount: Integer read GetSelectionCount;
+    property OnlyDBInfo: Boolean read GetOnlyDBInfo;
+    property FilesSize: Int64 read GetFilesSize;
   end;
 
 implementation
@@ -218,6 +228,15 @@ begin
   Result := FData.Count;
 end;
 
+function TDBPopupMenuInfo.GetFilesSize: Int64;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := 0 to Count - 1 do
+    Inc(Result, Self[I].FileSize);
+end;
+
 function TDBPopupMenuInfo.GetIsVariousComments: Boolean;
 var
   I: Integer;
@@ -240,6 +259,17 @@ begin
         Result := True;
 end;
 
+function TDBPopupMenuInfo.GetIsVariousHeight: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Height <> Self[I].Height then
+        Result := True;
+end;
+
 function TDBPopupMenuInfo.GetIsVariousInclude: Boolean;
 var
   I: Integer;
@@ -249,7 +279,19 @@ begin
     for I := 1 to Count - 1 do
       if Self[0].Include <> Self[I].Include then
         Result := True;
-  end;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousLocation: Boolean;
+var
+  I: Integer;
+  FirstDir: string;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if FirstDir <> ExtractFileDir(Self[I].FileName) then
+        Result := True;
+end;
 
 function TDBPopupMenuInfo.GetIsVariousTime: Boolean;
 var
@@ -260,6 +302,28 @@ begin
     for I := 1 to Count - 1 do
       if Self[0].Time <> Self[I].Time then
         Result := True;
+end;
+
+function TDBPopupMenuInfo.GetIsVariousWidth: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Width <> Self[I].Width then
+        Result := True;
+end;
+
+function TDBPopupMenuInfo.GetOnlyDBInfo: Boolean;
+var
+  I: Integer;
+begin
+  Result := True;
+
+  for I := 0 to Count - 1 do
+    if Self[I].ID = 0 then
+      Exit(False);
 end;
 
 function TDBPopupMenuInfo.GetPosition: Integer;

@@ -23,6 +23,7 @@ object UpdateDBForm: TUpdateDBForm
   Position = poDesigned
   Scaled = False
   ScreenSnap = True
+  SnapBuffer = 50
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy

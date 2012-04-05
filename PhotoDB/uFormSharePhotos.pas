@@ -203,7 +203,17 @@ var
 begin
   Ext := AnsiLowerCase(ExtractFileExt(FileName));
   Result := False;
+  Result := Result or (Ext = '.3gp2');
+  Result := Result or (Ext = '.3gpp');
+  Result := Result or (Ext = '.3gp');
+  Result := Result or (Ext = '.3g2');
+  Result := Result or (Ext = '.avi');
   Result := Result or (Ext = '.mov');
+  Result := Result or (Ext = '.mp4');
+  Result := Result or (Ext = '.mpeg');
+  Result := Result or (Ext = '.mpeg4');
+  Result := Result or (Ext = '.asf');
+  Result := Result or (Ext = '.wmv');
 end;
 
 procedure SharePictures(Owner: TDBForm; Info: TDBPopupMenuInfo);
@@ -541,6 +551,7 @@ begin
 
   FCreateAlbumBox := TBox.Create(SbAlbums);
   FCreateAlbumBox.Parent := SbAlbums;
+  FCreateAlbumBox.ParentColor := True;
   FCreateAlbumBox.Top := 3;
   FCreateAlbumBox.Height := 60;
   FCreateAlbumBox.Left := 3;
@@ -793,6 +804,8 @@ begin
     begin
       Box := TBox.Create(SbItemsToUpload);
       Box.Parent := SbItemsToUpload;
+      Box.ParentColor := True;
+      Box.ParentBackground := True;
       Box.Top := Top;
       Box.Height := 41;
       Box.Left := 3;
@@ -1186,6 +1199,7 @@ begin
 
       Box := TBox.Create(SbAlbums);
       Box.Parent := SbAlbums;
+      Box.ParentColor := True;
       Box.Top := Top;
       Box.Height := 41;
       Box.Left := FCreateAlbumBox.Left;

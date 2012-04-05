@@ -390,6 +390,7 @@ type
     WlShare: TWebLink;
     TmrDelayedStart: TTimer;
     TmrCheckItemVisibility: TTimer;
+    MiShare: TMenuItem;
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -683,6 +684,7 @@ type
     FWebBorwserFactory: IElementBehaviorFactory;
     FWebJSContainer: TWebJSExternalContainer;
     FWbGeoLocation: TWebBrowser;
+    FWebBrowserJSMessage: Cardinal;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -1135,7 +1137,7 @@ begin
   DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
 
   NewFormState;
-  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
+  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
   PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 210);
 
   Lock := False;
@@ -1237,6 +1239,8 @@ begin
   LoadIcons;
 
   FItemUpdateLastTime := 0;
+
+  FWebBrowserJSMessage := RegisterWindowMessage('WEBBROWSER_JS_MESSAGE');
 
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
@@ -1378,6 +1382,7 @@ begin
   Copy1.Visible := False;
   Shell1.Visible := False;
   MiShelf.Visible := False;
+  MiShare.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
 
@@ -1412,6 +1417,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
+    MiShare.Visible := True;
     MiShelf.Visible := True;
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
@@ -1451,6 +1457,7 @@ begin
     if AnsiLowerCase(ExtractFileName(Info.FileName)) = AnsiLowerCase(C_CD_MAP_FILE) then
       MapCD1.Visible := not FolderView;
 
+    MiShare.Visible := CanShareVideo(Info.FileName);
     MiShelf.Visible := True;
     Properties1.Visible := True;
     Delete1.Visible := True;
@@ -1506,7 +1513,7 @@ begin
 
   if (Info.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (Info.FileType = EXPLORER_ITEM_DEVICE_FILE) then
   begin
-    //MiShelf.Visible := True;
+    MiShare.Visible := CanShareVideo(Info.FileName);
     Properties1.Visible := True;
     Delete1.Visible := True;
     Cut2.Visible := True;
@@ -1516,7 +1523,7 @@ begin
   if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
     DBitem1.Visible := True;
-    //MiShelf.Visible := True;
+    MiShare.Visible := True;
     StenoGraphia1.Visible := True;
     Print1.Visible := True;
     ImageEditor2.Visible := True;
@@ -2551,10 +2558,9 @@ var
   NotifyInfo: TExplorerNotifyInfo;
 begin
   Index := ItemIndexToMenuIndex(Number);
-  UpdaterInfo := TUpdaterInfo.Create;
+  UpdaterInfo := TUpdaterInfo.Create(FFilesInfo[Index]);
   try
     UpdaterInfo.UpdateDB := UpdateDB;
-    UpdaterInfo.FileInfo := FFilesInfo[Index];
     if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
     begin
       NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_REFRESH_IMAGE,
@@ -2562,7 +2568,10 @@ begin
       ExplorerUpdateManager.QueueNotify(NotifyInfo);
       UpdaterInfo := nil;
     end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
+    begin
       TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo, Self, UpdaterInfo, StateID);
+      UpdaterInfo := nil;
+    end;
   finally
     F(UpdaterInfo);
   end;
@@ -3167,6 +3176,9 @@ begin
   if not Self.Active then
     Exit;
 
+  if Msg.message = FWebBrowserJSMessage then
+    WlSaveLocationClick(Self);
+
   if Msg.Message = WM_KEYDOWN then
   begin
     if (Msg.Wparam = VK_BACK) and ElvMain.Focused then
@@ -3443,16 +3455,19 @@ begin
               Exit;
 
           Info := TExplorerFileInfo.Create;
-          Info.FileName := PInfo[K].FNewFileName;
+          try
+            Info.FileName := PInfo[K].FNewFileName;
 
-          UpdaterInfo := TUpdaterInfo.Create;
-          UpdaterInfo.IsUpdater := True;
-          UpdaterInfo.FileInfo := Info;
-          UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
+            UpdaterInfo := TUpdaterInfo.Create(Info);
+            UpdaterInfo.IsUpdater := True;
+            UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
 
-          Self.NewFileName := '';
-          NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_ADD, '', '');
-          ExplorerUpdateManager.QueueNotify(NotifyInfo);
+            Self.NewFileName := '';
+            NotifyInfo := TExplorerNotifyInfo.Create(Self, StateID, UpdaterInfo, ViewInfo, UPDATE_MODE_ADD, '', '');
+            ExplorerUpdateManager.QueueNotify(NotifyInfo);
+          finally
+            F(Info);
+          end;
         end;
       FILE_ACTION_REMOVED:
         begin
@@ -3614,55 +3629,60 @@ var
   UpdatingDone: Boolean;
   EI: TExplorerFileInfo;
 begin
-  if CanSaveGeoLocation then
-  begin
-    Progress := TOperationProgress.Create(Self);
-    try
-      GeoLocation := TGeoLocation.Create;
+  Enabled := False;
+  try
+    if CanSaveGeoLocation then
+    begin
+      Progress := TOperationProgress.Create(Self);
       try
-        Progress.Text := L('Updating of location');
-
-        GeoLocation.Latitude := FMapLocationLat;
-        GeoLocation.Longitude := FMapLocationLng;
+        GeoLocation := TGeoLocation.Create;
         try
-          UpdatingDone := True;
+          Progress.Text := L('Updating of location');
 
-          Progress.Max := SelCount;
-          Progress.Position := 0;
+          GeoLocation.Latitude := FMapLocationLat;
+          GeoLocation.Longitude := FMapLocationLng;
+          try
+            UpdatingDone := True;
 
-          if SelCount > 1 then
-            Progress.Show;
+            Progress.Max := SelCount;
+            Progress.Position := 0;
 
-          for I := 0 to ElvMain.Items.Count - 1 do
-            if ElvMain.Items[I].Selected then
-            begin
-              Index := ItemIndexToMenuIndex(I);
-              EI := FFilesInfo[Index];
-              if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
+            if SelCount > 1 then
+              Progress.Show;
+
+            for I := 0 to ElvMain.Items.Count - 1 do
+              if ElvMain.Items[I].Selected then
               begin
-                if not UpdateFileGeoInfo(EI.FileName, GeoLocation, True) then
-                  UpdatingDone := False;
+                Index := ItemIndexToMenuIndex(I);
+                EI := FFilesInfo[Index];
+                if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
+                begin
+                  if not UpdateFileGeoInfo(EI.FileName, GeoLocation, True) then
+                    UpdatingDone := False;
 
-                Progress.Position := Progress.Position + 1;
-                if Progress.Closed then
-                  Break;
+                  Progress.Position := Progress.Position + 1;
+                  if Progress.Closed then
+                    Break;
+                end;
               end;
-            end;
 
-          if UpdatingDone then
-            WlSaveLocation.Enabled := False;
-        except
-          on e: Exception do
-            MessageBoxDB(Handle, FormatEx(L('An error occurred while saving location: {0}!'), [e.Message]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+            if UpdatingDone then
+              WlSaveLocation.Enabled := False;
+          except
+            on e: Exception do
+              MessageBoxDB(Handle, FormatEx(L('An error occurred while saving location: {0}!'), [e.Message]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+          end;
+        finally
+          F(GeoLocation);
         end;
       finally
-        F(GeoLocation);
+        F(Progress);
       end;
-    finally
-      F(Progress);
-    end;
-  end else
-    MessageBoxDB(Handle, Format(L('Geo location can''t be saved to this file type!'), []), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    end else
+      MessageBoxDB(Handle, Format(L('Geo location can''t be saved to this file type!'), []), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+  finally
+    Enabled := True;
+  end;
 end;
 
 function TExplorerForm.CanShareSelectedObjects: Boolean;
@@ -3835,7 +3855,8 @@ function TExplorerForm.SaveLocation(Lat, Lng: Double; const FileName: WideString
 begin
   FMapLocationLat := Lat;
   FMapLocationLng := Lng;
-  WlSaveLocationClick(Self);
+
+  PostMessage(Handle, FWebBrowserJSMessage, 0, 0);
 end;
 
 procedure TExplorerForm.UpdateEmbed;
@@ -4297,7 +4318,7 @@ begin
     FShellTreeView.Hide;
     CloseButtonPanel.Hide;
     Settings.WriteInteger('Explorer', 'LeftPanelWidthExplorer', MainPanel.Width);
-    MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 135);
+    MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
     ListView1SelectItem(Sender, ListView1Selected, False);
   finally
     EndScreenUpdate(Handle, False);
@@ -5951,6 +5972,7 @@ begin
     Cancel1.Caption := L('Cancel');
 
     MiShelf.Caption := L('Add to shelf');
+    MiShare.Caption := L('Share');
     View2.Caption := L('Slide show');
 
     Sortby1.Caption := L('Sort by');
@@ -9724,6 +9746,7 @@ begin
   Copywithfolder1.ImageIndex := DB_IC_COPY;
 
   MiShelf.ImageIndex := DB_IC_SHELF;
+  MiShare.ImageIndex := DB_IC_PHOTO_SHARE;
   View2.ImageIndex := DB_IC_SLIDE_SHOW;
 
   Sortby1.ImageIndex := DB_IC_SORT;

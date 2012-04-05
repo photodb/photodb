@@ -10,7 +10,6 @@ program PhotoDBBridge;
 
 uses
   Windows,
-  Dialogs,
   Vcl.Forms,
   ComServ,
   uAutoplayHandler in 'uAutoplayHandler.pas',

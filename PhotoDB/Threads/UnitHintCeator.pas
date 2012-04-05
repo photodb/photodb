@@ -50,41 +50,42 @@ type
     FOriginalHeight: Integer;
     BooleanResult: Boolean;
     FStateID: TGUID;
-    FInfo : TDBPopupMenuInfoRecord;
-    FOwner : TForm;
-    FHintCheckProc : THintCheckFunction;
-    FPoint : TPoint;
+    FInfo: TDBPopupMenuInfoRecord;
+    FOwner: TDBForm;
+    FHintCheckProc: THintCheckFunction;
+    FPoint: TPoint;
     function CheckThreadState: Boolean;
     procedure CheckThreadStateSync;
     procedure DoShowHint;
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner : TDBForm; AStateID : TGUID; AInfo : TDBPopupMenuInfoRecord;
-      Point : TPoint; HintCheckProc : THintCheckFunction);
+    constructor Create(AOwner: TDBForm; AStateID: TGUID; AInfo: TDBPopupMenuInfoRecord; Point: TPoint;
+      HintCheckProc: THintCheckFunction);
   end;
 
   THintManager = class(TObject)
   private
-    FStateID : TGUID;
-    FSync : TCriticalSection;
-    FHints : TList;
+    FStateID: TGUID;
+    FSync: TCriticalSection;
+    FHints: TList;
     constructor Create;
   public
     destructor Destroy; override;
-    class function Instance : THintManager;
-    procedure CreateHintWindow(Owner : TDBForm; Info : TDBPopupMenuInfoRecord;
-      Point : TPoint; HintCheckProc : THintCheckFunction);
+    class function Instance: THintManager;
+    procedure CreateHintWindow(Owner: TDBForm; Info: TDBPopupMenuInfoRecord;
+      Point: TPoint; HintCheckProc: THintCheckFunction);
     procedure NewState;
-    procedure RegisterHint(HintWindow : TForm);
-    procedure UnRegisterHint(HintWindow : TForm);
+    procedure RegisterHint(HintWindow: TForm);
+    procedure UnRegisterHint(HintWindow: TForm);
     procedure CloseHint;
-    function HintAtPoint(Point : TPoint) : TForm;
+    function HintAtPoint(Point: TPoint): TForm;
   end;
 
 implementation
 
-uses UnitImHint;
+uses
+  UnitImHint;
 
 var
   HintManager: THintManager = nil;
@@ -304,9 +305,9 @@ end;
 
 function THintManager.HintAtPoint(Point: TPoint): TForm;
 var
-  I : Integer;
-  R : TRect;
-  HintWindow : TForm;
+  I: Integer;
+  R: TRect;
+  HintWindow: TForm;
 begin
   Result := nil;
   for I := 0 to FHints.Count - 1 do
@@ -356,4 +357,3 @@ finalization
   F(HintManager);
 
 end.
-

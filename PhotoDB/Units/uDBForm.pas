@@ -69,6 +69,7 @@ type
       var Height: Integer): Boolean;
     function GetFormByBounds<T: TDBForm>(BoundsRect: TRect): TDBForm;
     function GetForm(WindowID: string): TDBForm;
+    procedure GetForms<T: TDBForm>(Forms: TList<T>);
     function Count: Integer;
     property Forms[Index: Integer]: TDBForm read GetFormByIndex; default;
   end;
@@ -333,6 +334,17 @@ end;
 function TFormCollection.GetFormByIndex(Index: Integer): TDBForm;
 begin
   Result := FForms[Index];
+end;
+
+procedure TFormCollection.GetForms<T>(Forms: TList<T>);
+var
+  I: Integer;
+begin
+  for I := 0 to FForms.Count - 1 do
+  begin
+    if FForms[I] is T then
+      Forms.Add(FForms[I] as T);
+  end;
 end;
 
 function TFormCollection.GetImage(BaseForm: TDBForm; FileName: string;

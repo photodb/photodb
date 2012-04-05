@@ -168,17 +168,24 @@ type
     FDisableLoadingOfBigImage: Boolean;
     procedure SetFileInfo(const Value: TExplorerFileInfo);
     procedure Init;
+    function GetFileName: string;
+    function GetID: Integer;
+    function GetSID: TGUID;
   public
     constructor Create; overload;
     constructor Create(Info: TExplorerFileInfo); overload;
     destructor Destroy; override;
     procedure Assign(Info: TUpdaterInfo);
     function Copy: TUpdaterInfo;
+    procedure ClearInfo;
     property IsUpdater: Boolean read FIsUpdater write FIsUpdater;
     property UpdateDB: Boolean read FUpdateDB write FUpdateDB;
     property ProcHelpAfterUpdate: TNotifyEvent read FProcHelpAfterUpdate write FProcHelpAfterUpdate;
     property NewFileItem: Boolean read FNewFileItem write FNewFileItem;
-    property FileInfo: TExplorerFileInfo read FFileInfo write SetFileInfo;
+    //property FileInfo: TExplorerFileInfo read FFileInfo write SetFileInfo;
+    property FileName: string read GetFileName;
+    property ID: Integer read GetID;
+    property SID: TGUID read GetSID;
     property DisableLoadingOfBigImage: Boolean read FDisableLoadingOfBigImage write FDisableLoadingOfBigImage;
   end;
 
@@ -921,8 +928,13 @@ begin
   UpdateDB := Info.UpdateDB;
   ProcHelpAfterUpdate := Info.ProcHelpAfterUpdate;
   NewFileItem := Info.NewFileItem;
-  FileInfo := Info.FileInfo;
+  SetFileInfo(Info.FFileInfo);
   DisableLoadingOfBigImage := Info.DisableLoadingOfBigImage;
+end;
+
+procedure TUpdaterInfo.ClearInfo;
+begin
+  SetFileInfo(nil);
 end;
 
 function TUpdaterInfo.Copy: TUpdaterInfo;
@@ -944,7 +956,7 @@ end;
 constructor TUpdaterInfo.Create(Info: TExplorerFileInfo);
 begin
   Init;
-  FileInfo := Info;
+  SetFileInfo(Info);
 end;
 
 constructor TUpdaterInfo.Create;
@@ -956,6 +968,30 @@ destructor TUpdaterInfo.Destroy;
 begin
   F(FFileInfo);
   inherited;
+end;
+
+function TUpdaterInfo.GetFileName: string;
+begin
+  if FFileInfo <> nil then
+    Result := FFileInfo.FileName
+  else
+    Result := '';
+end;
+
+function TUpdaterInfo.GetID: Integer;
+begin
+  if FFileInfo <> nil then
+    Result := FFileInfo.ID
+  else
+    Result := 0;
+end;
+
+function TUpdaterInfo.GetSID: TGUID;
+begin
+  if FFileInfo <> nil then
+    Result := FFileInfo.SID
+  else
+    Result := GetEmptyGUID;
 end;
 
 procedure TUpdaterInfo.SetFileInfo(const Value: TExplorerFileInfo);

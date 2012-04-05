@@ -4,8 +4,10 @@ interface
 
 uses
   Windows,
+  Generics.Collections,
   Classes,
   Graphics,
+  UnitDBDeclare,
   uDBThread,
   uThreadForm,
   uFaceDetection,
@@ -65,18 +67,24 @@ type
   end;
 
   TFaceDetectionData = class
+  private
+    function GetFileName: string;
+    function GetID: Integer;
+    function GetRotate: Integer;
   public
     Image: TGraphic;
-    FileName: string;
-    ID: Integer;
+    Data: TDBPopupMenuInfoRecord;
     Caller: TThreadForm;
-    constructor Create(AImage: TGraphic; AFileName: string; AID: Integer; ACaller: TThreadForm);
+    constructor Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TThreadForm);
     destructor Destroy; override;
+    property ID: Integer read GetID;
+    property FileName: string read GetFileName;
+    property Rotate: Integer read GetRotate;
   end;
 
   TFaceDetectionDataManager = class(TObject)
   private
-    FImages: TList;
+    FImages: TList<TFaceDetectionData>;
     FSync: TCriticalSection;
     function CreateCacheFileName(DetectMethod, FileName: string): string;
     function CreateCacheFileDirectory(FileName: string): string;
@@ -84,7 +92,7 @@ type
     function ExtractData: TFaceDetectionData;
     function GetDetectionMethod: string;
   public
-    procedure RequestFaceDetection(Caller: TThreadForm; var Image: TGraphic; FileName: string; ID: Integer);
+    procedure RequestFaceDetection(Caller: TThreadForm; var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
     function GetFaceDataFromCache(CacheFileName: string; Faces: TFaceDetectionResult): Integer;
     function RotateCacheData(ImageFileName: string; Rotate: Integer): Boolean;
     function RotateDBData(ID: Integer; Rotate: Integer): Boolean;
@@ -161,6 +169,7 @@ var
   Thread: TDBFaceLoadThread;
 begin
   inherited;
+  Thread := nil;
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try
@@ -210,6 +219,7 @@ begin
                 try
                   ProportionalSize(Round(W / RR), Round(H / RR), W, H);
                   uBitmapUtils.QuickReduceWide(W, H, FBitmap, SmallBitmap);
+                  ApplyRotate(SmallBitmap, ImageData.Rotate);
                   FaceDetectionManager.FacesDetection(SmallBitmap, 0, FFaces, FaceMethod);
                 finally
                   F(SmallBitmap);
@@ -228,8 +238,7 @@ begin
             end;
             Synchronize(UpdateFaceList);
           finally
-            if ImageData.ID > 0 then
-              F(Thread);
+            F(Thread);
           end;
         finally
           F(ImageData);
@@ -255,7 +264,7 @@ end;
 
 constructor TFaceDetectionDataManager.Create;
 begin
-  FImages := TList.Create;
+  FImages := TList<TFaceDetectionData>.Create;
   FSync := TCriticalSection.Create;
   TFaceDetectionThread.Create;
 end;
@@ -325,18 +334,18 @@ begin
 end;
 
 procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TThreadForm;
-  var Image: TGraphic; FileName: string; ID: Integer);
+  var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
 var
   I: Integer;
-  Data: TFaceDetectionData;
+  FData: TFaceDetectionData;
 begin
   FSync.Enter;
   try
     if Image = nil then
       Exit;
 
-    Data := TFaceDetectionData.Create(Image, FileName, ID, Caller);
-    FImages.Insert(0, Data);
+    FData := TFaceDetectionData.Create(Image, Data, Caller);
+    FImages.Insert(0, FData);
     Image := nil;
     for I := FImages.Count - 1 downto 1 do
     begin
@@ -425,19 +434,33 @@ end;
 
 { TFaceDetectionData }
 
-constructor TFaceDetectionData.Create(AImage: TGraphic; AFileName: string;
-  AID: Integer; ACaller: TThreadForm);
+constructor TFaceDetectionData.Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TThreadForm);
 begin
   Image := AImage;
-  FileName := AFileName;
-  ID := AID;
+  Data := AData.Copy;
   Caller := ACaller;
 end;
 
 destructor TFaceDetectionData.Destroy;
 begin
   F(Image);
+  F(Data);
   inherited;
+end;
+
+function TFaceDetectionData.GetFileName: string;
+begin
+  Result := Data.FileName;
+end;
+
+function TFaceDetectionData.GetID: Integer;
+begin
+  Result := Data.ID;
+end;
+
+function TFaceDetectionData.GetRotate: Integer;
+begin
+  Result := Data.Rotation;
 end;
 
 { TDBFaceDetectionResult }

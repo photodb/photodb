@@ -368,7 +368,7 @@ begin
     Font, Caption, Point, X, Y);
 end;
 
-procedure DrawSelectionCount(Bitmap : TBitmap; ItemsSelected : Integer; Font : TFont; RoundRadius : Integer);
+procedure DrawSelectionCount(Bitmap: TBitmap; ItemsSelected: Integer; Font: TFont; RoundRadius: Integer);
 var
   AFont: TFont;
   W, H: Integer;
@@ -392,8 +392,8 @@ begin
   end;
 end;
 
-procedure  CreateMultiselectImage(ListView: TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer);
+procedure CreateMultiselectImage(ListView: TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font: TFont; Width, Height: Integer);
 var
   SelCount: Integer;
   SelectedItem: TEasyItem;
@@ -543,9 +543,9 @@ begin
   DrawSelectionCount(ResultImage, ItemsSelected, Font, RoundRadius);
 end;
 
-procedure CreateDragImageEx(ListView: TEasyListView; DImageList : TImageList; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font : TFont; Caption : string;
-  DragPoint : TPoint; var SpotX, SpotY : Integer);
+procedure CreateDragImageEx(ListView: TEasyListview; DImageList: TImageList; SImageList: TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font: TFont; Caption: string; DragPoint: TPoint;
+  var SpotX, SpotY: Integer);
 var
   DragImage, TempImage: TBitmap;
   SelCount: Integer;

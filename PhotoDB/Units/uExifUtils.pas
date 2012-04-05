@@ -857,8 +857,7 @@ begin
       F(MS);
     end;
     Exit;
-  end else
-    raise Exception.Create(FormatEx(TA('Can''t decrypt file {0}!', 'Exif'), [FileName]));
+  end;
 
   SaveToGraphic(FileName);
 end;

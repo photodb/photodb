@@ -363,11 +363,7 @@ var
           FMask := '';
           ExplorerInfo := NotifyInfo.FExplorerViewInfo;
           UpdaterInfo.Assign(NotifyInfo.FUpdaterInfo);
-          StateID := NotifyInfo.FState;
-          if FUpdaterInfo.FileInfo <> nil then
-            FFolder := FUpdaterInfo.FileInfo.FileName
-          else
-            FFolder := '';
+          FFolder := FUpdaterInfo.FileName;
         end;
       until NotifyInfo = nil;
     finally
@@ -903,8 +899,7 @@ begin
         if ExplorerInfo.ShowThumbNailsForImages and (Info.FileType = EXPLORER_ITEM_IMAGE) then
         begin
           //info for refresh items
-          UpdaterInfo := TUpdaterInfo.Create;
-          UpdaterInfo.FileInfo := Info;
+          UpdaterInfo := TUpdaterInfo.Create(Info);
           UpdaterInfo.DisableLoadingOfBigImage := (FThreadType = THREAD_TYPE_SHELF);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_IMAGE,
             Info.FileName, GUIDToString(Info.SID));
@@ -913,8 +908,7 @@ begin
         if ExplorerInfo.ShowThumbNailsForFolders and (Info.FileType = EXPLORER_ITEM_FOLDER) then
         begin
           //info for refresh items
-          UpdaterInfo := TUpdaterInfo.Create;
-          UpdaterInfo.FileInfo := Info;
+          UpdaterInfo := TUpdaterInfo.Create(Info);
           UpdaterInfo.DisableLoadingOfBigImage := (FThreadType = THREAD_TYPE_SHELF);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FOLDER,
             Info.FileName, GUIDToString(Info.SID));
@@ -923,8 +917,7 @@ begin
         if (Info.FileType = EXPLORER_ITEM_FILE) and (Info.Tag = 1) then
         begin
           //info for refresh items
-          UpdaterInfo := TUpdaterInfo.Create;
-          UpdaterInfo.FileInfo := Info;
+          UpdaterInfo := TUpdaterInfo.Create(Info);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FILE,
             Info.FileName, GUIDToString(Info.SID));
           RefreshQueue.Add(NotifyInfo);
@@ -1865,34 +1858,32 @@ end;
 
 procedure TExplorerThread.AddFile;
 var
-  Ext_ : String;
-  IsExt_  : Boolean;
-  FE : Boolean;
-  Info : TDBPopupMenuInfoRecord;
+  Ext_: string;
+  IsExt_: Boolean;
+  FE: Boolean;
 begin
-  Info := FUpdaterInfo.FileInfo;
-  FE := FileExistsSafe(Info.FileName);
+  FE := FileExistsSafe(FUpdaterInfo.FileName);
 
   if FolderView then
-    if AnsiLowerCase(ExtractFileExt(Info.FileName)) = '.ldb' then
+    if AnsiLowerCase(ExtractFileExt(FUpdaterInfo.FileName)) = '.ldb' then
       Exit;
 
   F(FFiles);
   FFiles := TExplorerFileInfos.Create;
   try
-    Ext_ := ExtractFileExt(Info.FileName);
+    Ext_ := ExtractFileExt(FUpdaterInfo.FileName);
     IsExt_ := ExtInMask(SupportedExt, Ext_);
-    if DirectoryExists(Info.FileName) then
-      AddOneExplorerFileInfo(FFiles, Info.FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0, 0, 0,
-        GetFileSizeByName(Info.FileName), '', '', '', 0, False, False, True);
+    if DirectoryExists(FUpdaterInfo.FileName) then
+      AddOneExplorerFileInfo(FFiles, FUpdaterInfo.FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0, 0, 0,
+        GetFileSizeByName(FUpdaterInfo.FileName), '', '', '', 0, False, False, True);
     if FE and IsExt_ then
-      AddOneExplorerFileInfo(FFiles, Info.FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0, 0, 0,
-        GetFileSizeByName(Info.FileName), '', '', '', 0, False, ValidCryptGraphicFile(Info.FileName),
+      AddOneExplorerFileInfo(FFiles, FUpdaterInfo.FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0, 0, 0,
+        GetFileSizeByName(FUpdaterInfo.FileName), '', '', '', 0, False, ValidCryptGraphicFile(FUpdaterInfo.FileName),
         True);
     if FShowFiles then
       if FE and not IsExt_ then
-        AddOneExplorerFileInfo(FFiles, Info.FileName, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0, 0, 0,
-          GetFileSizeByName(Info.FileName), '', '', '', 0, False, False, True);
+        AddOneExplorerFileInfo(FFiles, FUpdaterInfo.FileName, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0, 0, 0,
+          GetFileSizeByName(FUpdaterInfo.FileName), '', '', '', 0, False, False, True);
     if FFiles.Count = 0 then
       Exit;
     if FFiles[0].FileType = EXPLORER_ITEM_IMAGE then
@@ -2399,13 +2390,11 @@ end;
 
 procedure TExplorerThread.UpdateFile;
 var
-  Info: TExplorerFileInfo;
   NewInfo: TExplorerFileInfo;
 begin
   try
-    Info := FUpdaterInfo.FileInfo;
-    if FUpdaterInfo.UpdateDB and (Info.ID > 0) then
-      UpdateImageRecord(FSender, Info.FileName, Info.ID);
+    if FUpdaterInfo.UpdateDB and (FUpdaterInfo.ID > 0) then
+      UpdateImageRecord(FSender, FUpdaterInfo.FileName, FUpdaterInfo.ID);
 
     FQuery := GetQuery;
     try
@@ -2414,8 +2403,8 @@ begin
 
       SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = :FolderCRC AND Name = :Name');
 
-      SetIntParam(FQuery, 0, GetPathCRC(Info.FileName, True));
-      SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(Info.FileName)));
+      SetIntParam(FQuery, 0, GetPathCRC(FUpdaterInfo.FileName, True));
+      SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(FUpdaterInfo.FileName)));
       try
         FQuery.Active := True;
       except
@@ -2428,13 +2417,13 @@ begin
         if FQuery.RecordCount > 0 then
         begin
           NewInfo := TExplorerFileInfo.CreateFromDS(FQuery);
-          NewInfo.SID := Info.SID;
+          NewInfo.SID := FUpdaterInfo.SID;
         end else
         begin
-          NewInfo := TExplorerFileInfo.CreateFromFile(Info.FileName);
-          NewInfo.FileSize := GetFileSizeByName(Info.FileName);
-          NewInfo.Crypted := ValidCryptGraphicFile(Info.FileName);
-          NewInfo.SID := Info.SID;
+          NewInfo := TExplorerFileInfo.CreateFromFile(FUpdaterInfo.FileName);
+          NewInfo.FileSize := GetFileSizeByName(FUpdaterInfo.FileName);
+          NewInfo.Crypted := ValidCryptGraphicFile(FUpdaterInfo.FileName);
+          NewInfo.SID := FUpdaterInfo.SID;
         end;
         FFiles.Add(NewInfo);
 
@@ -2447,7 +2436,7 @@ begin
         if ExplorerInfo.ShowThumbNailsForImages then
           ReplaceImageItemImage(FFiles[0].FileName, FFiles[0].FileSize, GUIDParam);
 
-        IntParam := Info.ID;
+        IntParam := FUpdaterInfo.ID;
         SynchronizeEx(EndUpdateID);
 
         if ExplorerInfo.ShowThumbNailsForImages and not FUpdaterInfo.DisableLoadingOfBigImage then
@@ -2525,8 +2514,7 @@ procedure TExplorerThread.UpdateSimpleFile;
 begin
   StringParam := Fmask;
   CurrentFile := FFolder;
-  if FUpdaterInfo.FileInfo <> nil then
-    GUIDParam := FUpdaterInfo.FileInfo.SID;
+  GUIDParam := FUpdaterInfo.SID;
   MakeIconForFile;
 end;
 
@@ -2547,7 +2535,7 @@ begin
   F(FFiles);
   FFiles := TExplorerFileInfos.Create;
 
-  AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, FUpdaterInfo.FileInfo.SID, 0, 0, 0, 0, 0, '', '', '', 0,
+  AddOneExplorerFileInfo(FFiles, FFolder, EXPLORER_ITEM_FOLDER, -1, FUpdaterInfo.SID, 0, 0, 0, 0, 0, '', '', '', 0,
     False, False, True);
   GUIDParam := FFiles[0].SID;
   CurrentFile := FFiles[0].FileName;
@@ -2913,7 +2901,7 @@ begin
   if Mode = THREAD_PREVIEW_MODE_BIG_IMAGE then
     ExtractBigPreview(FInfo.FileName, FInfo.ID, FInfo.Rotation, FFileID);
 
-  FUpdaterInfo.FileInfo := nil;
+  FUpdaterInfo.ClearInfo;
 end;
 
 procedure TExplorerThread.ExtractDirectoryPreview(FileName : string; DirectoryID: TGUID);

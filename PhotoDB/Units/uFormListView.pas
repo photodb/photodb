@@ -3,8 +3,15 @@ unit uFormListView;
 interface
 
 uses
-  Windows, Graphics, Classes, Controls, EasyListview, uThreadForm,
-  uDBDrawing, uListViewUtils, uImageSource;
+  Windows,
+  Graphics,
+  Classes,
+  Controls,
+  EasyListview,
+  uThreadForm,
+  uDBDrawing,
+  uListViewUtils,
+  uImageSource;
 
 type
   TListViewForm = class(TThreadForm, IImageSource)

@@ -3,8 +3,8 @@ object ExplorerForm: TExplorerForm
   Top = 225
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
-  ClientHeight = 801
-  ClientWidth = 879
+  ClientHeight = 690
+  ClientWidth = 1008
   Color = clBtnFace
   Constraints.MinHeight = 200
   Constraints.MinWidth = 300
@@ -24,15 +24,15 @@ object ExplorerForm: TExplorerForm
   OnResize = FormResize
   OnShow = FormShow
   DesignSize = (
-    879
-    801)
+    1008
+    690)
   PixelsPerInch = 96
   TextHeight = 13
   object SplLeftPanel: TSplitter
     Left = 135
     Top = 48
     Width = 5
-    Height = 733
+    Height = 622
     Constraints.MaxWidth = 150
     OnCanResize = SplLeftPanelCanResize
     ExplicitLeft = 150
@@ -43,7 +43,7 @@ object ExplorerForm: TExplorerForm
     Left = 140
     Top = 48
     Width = 1
-    Height = 733
+    Height = 622
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
@@ -53,7 +53,7 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 48
     Width = 135
-    Height = 733
+    Height = 622
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
@@ -88,7 +88,7 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 21
       Width = 135
-      Height = 712
+      Height = 601
       Align = alClient
       BevelOuter = bvNone
       ParentColor = True
@@ -98,7 +98,7 @@ object ExplorerForm: TExplorerForm
         Left = 0
         Top = 0
         Width = 135
-        Height = 683
+        Height = 572
         HorzScrollBar.Increment = 10
         HorzScrollBar.Visible = False
         VertScrollBar.Smooth = True
@@ -756,7 +756,7 @@ object ExplorerForm: TExplorerForm
       end
       object PnShelf: TPanel
         Left = 0
-        Top = 683
+        Top = 572
         Width = 135
         Height = 29
         Align = alBottom
@@ -788,8 +788,8 @@ object ExplorerForm: TExplorerForm
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 781
-    Width = 879
+    Top = 670
+    Width = 1008
     Height = 20
     Panels = <
       item
@@ -802,7 +802,7 @@ object ExplorerForm: TExplorerForm
   object CoolBarTop: TCoolBar
     Left = 0
     Top = 0
-    Width = 879
+    Width = 1008
     Height = 21
     AutoSize = True
     BandBorderStyle = bsNone
@@ -812,14 +812,14 @@ object ExplorerForm: TExplorerForm
         Control = ToolBar1
         ImageIndex = -1
         MinHeight = 21
-        Width = 877
+        Width = 1006
       end>
     EdgeBorders = []
     FixedOrder = True
     object ToolBar1: TToolBar
       Left = 2
       Top = 0
-      Width = 877
+      Width = 1006
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 48
@@ -978,7 +978,7 @@ object ExplorerForm: TExplorerForm
     end
   end
   object LsMain: TLoadingSign
-    Left = 854
+    Left = 983
     Top = 49
     Width = 20
     Height = 20
@@ -993,7 +993,7 @@ object ExplorerForm: TExplorerForm
   object PnNavigation: TPanel
     Left = 0
     Top = 21
-    Width = 879
+    Width = 1008
     Height = 27
     Align = alTop
     AutoSize = True
@@ -1001,7 +1001,7 @@ object ExplorerForm: TExplorerForm
     ParentColor = True
     TabOrder = 4
     object BvSeparatorAddress: TBevel
-      Left = 688
+      Left = 817
       Top = 1
       Width = 2
       Height = 25
@@ -1020,7 +1020,7 @@ object ExplorerForm: TExplorerForm
       ExplicitTop = 2
     end
     object slSearch: TSplitter
-      Left = 690
+      Left = 819
       Top = 1
       Height = 25
       Align = alRight
@@ -1030,7 +1030,7 @@ object ExplorerForm: TExplorerForm
       ExplicitTop = 6
     end
     object PnSearch: TPanel
-      Left = 693
+      Left = 822
       Top = 1
       Width = 185
       Height = 25
@@ -1103,7 +1103,7 @@ object ExplorerForm: TExplorerForm
     object PePath: TPathEditor
       Left = 62
       Top = 1
-      Width = 626
+      Width = 755
       Height = 25
       DoubleBuffered = False
       ParentDoubleBuffered = False
@@ -1148,18 +1148,18 @@ object ExplorerForm: TExplorerForm
   object PnContent: TPanel
     Left = 141
     Top = 48
-    Width = 738
-    Height = 733
+    Width = 867
+    Height = 622
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
     ParentColor = True
     TabOrder = 5
     object SplGeoLocation: TSplitter
-      Left = 383
+      Left = 512
       Top = 33
       Width = 5
-      Height = 667
+      Height = 556
       Align = alRight
       Visible = False
       OnMoved = SplGeoLocationMoved
@@ -1169,8 +1169,8 @@ object ExplorerForm: TExplorerForm
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 700
-      Width = 738
+      Top = 589
+      Width = 867
       Height = 33
       Align = alBottom
       TabOrder = 0
@@ -1527,7 +1527,7 @@ object ExplorerForm: TExplorerForm
     object PnInfo: TPanel
       Left = 0
       Top = 0
-      Width = 738
+      Width = 867
       Height = 33
       Align = alTop
       BevelEdges = [beBottom]
@@ -1537,10 +1537,10 @@ object ExplorerForm: TExplorerForm
       Visible = False
       OnResize = PnInfoResize
       DesignSize = (
-        738
+        867
         33)
       object SbCloseHelp: TSpeedButton
-        Left = 708
+        Left = 837
         Top = 5
         Width = 23
         Height = 22
@@ -1635,10 +1635,10 @@ object ExplorerForm: TExplorerForm
       end
     end
     object PnGeoLocation: TPanel
-      Left = 388
+      Left = 517
       Top = 33
       Width = 350
-      Height = 667
+      Height = 556
       Align = alRight
       TabOrder = 2
       Visible = False
@@ -1736,7 +1736,7 @@ object ExplorerForm: TExplorerForm
       end
       object PnGeoSearch: TPanel
         Left = 1
-        Top = 631
+        Top = 520
         Width = 348
         Height = 35
         Align = alBottom
@@ -1918,6 +1918,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'Extract Hidden Info'
         OnClick = ExtractHiddenInfo1Click
       end
+    end
+    object MiShare: TMenuItem
+      Caption = 'Share'
+      OnClick = WlShareClick
     end
     object N12: TMenuItem
       Caption = '-'
