@@ -73,8 +73,15 @@ type
 function MakeNotifyEvent(const ANotifyRef: TNotifyEventRef): TNotifyEvent;
 function MakeKeyEvent(const ANotifyRef: TKeyEventRef): TKeyEvent;
 function MakMessageEvent(const ANotifyRef: TMessageEventRef): TMessageEvent;
+function IsPopupMenuActive: Boolean;
 
 implementation
+
+function IsPopupMenuActive: Boolean;
+begin
+  //todo: review functionality if possible
+  Result := BlockClosingOfWindows;
+end;
 
 procedure MethRefToMethPtr(const MethRef; var MethPtr);
 type

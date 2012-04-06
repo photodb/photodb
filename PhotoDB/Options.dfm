@@ -106,6 +106,7 @@ object OptionsForm: TOptionsForm
         Width = 87
         Height = 13
         Cursor = crHandPoint
+        DisableStyles = True
         Anchors = [akRight, akBottom]
         Text = 'WlGetMoreStyles'
         OnClick = WlGetMoreStylesClick
@@ -118,7 +119,7 @@ object OptionsForm: TOptionsForm
         TopIconIncrement = 0
         UseSpecIconSize = True
         HightliteImage = False
-        StretchImage = True
+        StretchImage = False
         CanClick = True
       end
     end
@@ -229,6 +230,7 @@ object OptionsForm: TOptionsForm
         Width = 147
         Height = 13
         Cursor = crHandPoint
+        DisableStyles = True
         Anchors = [akLeft, akBottom]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlue
@@ -1288,7 +1290,6 @@ object OptionsForm: TOptionsForm
           Width = 84
           Height = 16
           Cursor = crHandPoint
-          DisableStyles = True
           Text = 'BlowFish - 56'
           ImageIndex = 0
           IconWidth = 16
@@ -1307,10 +1308,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)

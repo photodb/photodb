@@ -3183,14 +3183,8 @@ begin
   begin
     if (Msg.Wparam = VK_BACK) and ElvMain.Focused then
     begin
-      if TbBack.Enabled then
-        TbBack.Click
-      else
-        if TbForward.Enabled then
-          TbForward.Click
-        else
-          if TbUp.Enabled then
-            TbUp.Click
+      if TbUp.Enabled then
+        TbUp.Click
     end;
 
     // search by F3
@@ -5322,14 +5316,13 @@ end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
-  ArInt: TArInteger;
+  PropInfo, Info: TDBPopupMenuInfo;
   Files: TStrings;
-  WindowsProperty: Boolean;
   I, ItemIndex: Integer;
   EInfo: TExplorerFileInfo;
   P, PI: TPathItem;
   PL: TPathItemCollection;
+  Bit32: TBitmap;
 
   procedure ShowWindowsPropertiesDialogToSelected;
   var
@@ -5395,20 +5388,25 @@ begin
   begin
     Info := GetCurrentPopUpMenuInfo(ListView1Selected);
     try
-      SetLength(ArInt, 0);
-      WindowsProperty := True;
-      for I := 0 to Info.Count - 1 do
-        if Info[I].Selected then
-        begin
-          SetLength(ArInt, Length(ArInt) + 1);
-          ArInt[Length(ArInt) - 1] := Info[I].ID;
-          if Info[I].ID <> 0 then
-            WindowsProperty := False;
-        end;
-      if not WindowsProperty then
-        PropertyManager.NewSimpleProperty.ExecuteEx(ArInt)
-      else
-        ShowWindowsPropertiesDialogToSelected;
+      PropInfo := TDBPopupMenuInfo.Create;
+      try
+        for I := 0 to Info.Count - 1 do
+          if Info[I].Selected then
+            PropInfo.Add(Info[I].Copy);
+
+      Bit32 := TBitmap.Create;
+      try
+        CreateMultiselectImage(ElvMain, Bit32, FBitmapImageList, ElvMain.Selection.GradientColorBottom, ElvMain.Selection.GradientColorTop,
+          ElvMain.Selection.Color, ElvMain.Font, ThSizeExplorerPreview + 3, ThSizeExplorerPreview + 3);
+
+        PropertyManager.NewSimpleProperty.ExecuteEx(PropInfo, Bit32);
+      finally
+        F(Bit32);
+      end;
+
+      finally
+        F(PropInfo);
+      end;
     finally
       F(Info);
     end;
@@ -7753,14 +7751,7 @@ begin
       try
         CreateMultiselectImage(ElvMain, Bit32, FBitmapImageList, ElvMain.Selection.GradientColorBottom, ElvMain.Selection.GradientColorTop,
           ElvMain.Selection.Color, ElvMain.Font, ThSizeExplorerPreview + 3, ThSizeExplorerPreview + 3);
-        TempBitmap := TBitmap.Create;
-        try
-          TempBitmap.PixelFormat := pf24bit;
-          LoadBMPImage32bit(Bit32, TempBitmap, Theme.PanelColor);
-          ImPreview.Picture.Graphic := TempBitmap;
-        finally
-          F(TempBitmap);
-        end;
+        ImPreview.Picture.Graphic := Bit32;
       finally
         F(Bit32);
       end;
@@ -7857,8 +7848,13 @@ begin
   else
   begin
     Menu.Items.Delete(0);
+    Menu.PopupMenu.DisableAlign;
+    try
+      Menu.PopupMenu.LoadMenu(Menu.PopupMenu.ActionClient.Items, Menu.Items);
+    finally
+      Menu.PopupMenu.EnableAlign;
+    end;
     Menu.PopupMenu.ActionClient.Items.Delete(0);
-    Menu.PopupMenu.LoadMenu(Menu.PopupMenu.ActionClient.Items, Menu.Items);
   end;
 
   Menu.Tag := 1;
@@ -9206,6 +9202,7 @@ begin
   PhotoShelf;
   EventInfo.Image := nil;
   DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
+  TmrDelayedStart.Enabled := False;
 end;
 
 procedure TExplorerForm.Grid1Click(Sender: TObject);

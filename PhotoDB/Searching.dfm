@@ -458,6 +458,7 @@ object SearchForm: TSearchForm
         BevelInner = bvNone
         BevelOuter = bvNone
         BorderStyle = bsNone
+        ParentBackground = True
         TabOrder = 10
         OnDblClick = ComboBox1_DblClick
         VerticalIncrement = 3

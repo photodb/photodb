@@ -2220,7 +2220,9 @@
 	<translate name="Delete item from list" value="Убрать из списка"/>
 	<translate name="You can share maximum 100 files at one time!" value="Вы можете поделиться максимум 100 файлами за один раз!"/>
 	<translate name="Maximum file size for sharing is {0}, skipping file &quot;{1}&quot;, {2}!" value="Максимальный размер файла - {0}, пропускаем файл &quot;{1}&quot;, {2}!"/>
-	<translate name="Some files are encrypted! Album access is changed to &quot;private&quot;!" value="Некоторые файлы загифрованы! Доступ к альбом изменён на &quot;личный&quot;!"/>	
+	<translate name="Some files are encrypted! Album access is changed to &quot;private&quot;!" value="Некоторые файлы загифрованы! Доступ к альбом изменён на &quot;личный&quot;!"/>
+	<translate name="Can't decrypt image &quot;{0}&quot;" value="Не удаётся расшифровать изображение &quot;{0}&quot;"/>
+	<translate name="Can't load image &quot;{0}&quot;" value="Не удаётся загрузить изображение &quot;{0}&quot;"/>
   </scope>
   <scope name="OperationProgress">
 	<translate name="Please wait..." value="Пожалуйста, подождите..."/>

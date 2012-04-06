@@ -3,15 +3,47 @@ unit uDBUtils;
 interface
 
 uses
-  Windows, SysUtils, Graphics, Jpeg, Classes, UnitGroupsWork, uTranslate, uLogger,
-  UnitDBKernel, uSysUtils, DB, uConstants, CommonDBSupport, uDBTypes,
-  uDBPopupMenuInfo, UnitDBDeclare, DateUtils, win32crc, uPrivateHelper,
-  uRuntime, uShellIntegration, uVistaFuncs, uFileUtils, GraphicCrypt,
-  uDBBaseTypes, uMemory, UnitLinksSupport, uGraphicUtils, uSettings,
-  Math, CCR.Exif, ProgressActionUnit, uJpegUtils, uBitmapUtils, Forms,
-  uDBForm, uDBGraphicTypes, GraphicsCool,
+  Windows,
+  SysUtils,
+  Graphics,
+  Jpeg,
+  Classes,
+  UnitGroupsWork,
+  uTranslate,
+  uLogger,
+  UnitDBKernel,
+  uSysUtils,
+  DB,
+  uConstants,
+  CommonDBSupport,
+  uDBTypes,
+  uDBPopupMenuInfo,
+  UnitDBDeclare,
+  DateUtils,
+  win32crc,
+  uPrivateHelper,
+  uRuntime,
+  uShellIntegration,
+  uVistaFuncs,
+  uFileUtils,
+  GraphicCrypt,
+  uDBBaseTypes,
+  uMemory,
+  UnitLinksSupport,
+  uGraphicUtils,
+  uSettings,
+  Math,
+  CCR.Exif,
+  ProgressActionUnit,
+  uJpegUtils,
+  uBitmapUtils,
+  Forms,
+  uDBForm,
+  uDBGraphicTypes,
+  GraphicsCool,
   uAssociations,
-  uDBImageUtils, RAWImage,
+  uDBImageUtils,
+  RAWImage,
   GraphicsBaseTypes,
   uDBAdapter,
   uCDMappingTypes,
@@ -45,8 +77,8 @@ procedure SetRating(ID, Rating: Integer);
 procedure SetAttr(ID, Attr: Integer);
 procedure UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer);
 procedure UpdateImageRecordEx(Caller: TDBForm; FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
-function SelectDB(Caller : TDBForm; DB: string) : Boolean;
-procedure CopyFullRecordInfo(Handle : THandle; ID: Integer);
+function SelectDB(Caller: TDBForm; DB: string): Boolean;
+procedure CopyFullRecordInfo(Handle: THandle; ID: Integer);
 procedure ExecuteQuery(SQL: string);
 procedure GetFileListByMask(BeginFile, Mask: string;
   Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
@@ -59,8 +91,10 @@ procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; Au
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
 
 { DB Types }
+
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
 function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
+procedure UpdateDataFromDB(Info: TDBPopupMenuInfo);
 { END DB Types }
 
 implementation
@@ -1707,6 +1741,44 @@ begin
     FQuery.Close;
   finally
     FreeDS(FQuery);
+  end;
+end;
+
+procedure UpdateDataFromDB(Info: TDBPopupMenuInfo);
+var
+  I, J, K: Integer;
+  FQuery: TDataSet;
+  MenuRecord: TDBPopupMenuInfoRecord;
+begin
+  for I := 0 to Info.Count - 1 do
+  begin
+    if not Info[I].InfoLoaded then
+    begin
+      FQuery := GetQuery;
+      try
+        //todo: don't select images
+        SetSQL(FQuery, 'Select * from $DB$ where FolderCRC=' + IntToStr(GetPathCRC(Info[I].FileName, True)));
+        FQuery.Open;
+
+        if not FQuery.Eof then
+          for J := 1 to FQuery.RecordCount do
+          begin
+            MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
+            try
+              for K := I to Info.Count - 1 do
+              begin
+                if AnsiLowerCase(Info[I].FileName) = MenuRecord.FileName then
+                  Info[I].Assign(MenuRecord);
+              end;
+              FQuery.Next;
+            finally
+              F(MenuRecord);
+            end;
+          end;
+      finally
+        FreeDS(FQuery);
+      end;
+    end;
   end;
 end;
 

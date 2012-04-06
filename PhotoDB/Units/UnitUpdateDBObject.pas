@@ -223,7 +223,7 @@ begin
       if not Critical then
         FFilesInfo.Add(Info)
       else
-        FFilesInfo.Insert(0, Info);
+        FFilesInfo.Insert(FPosition, Info);
 
       TThread.Synchronize(nil,
         procedure

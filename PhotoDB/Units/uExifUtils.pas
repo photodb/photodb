@@ -54,6 +54,7 @@ type
     procedure WriteInteger(Name: string; Value: Integer);
     function ReadBool(Name: string; DefaultValue: Boolean): Boolean;
     procedure WriteBool(Name: string; Value: Boolean);
+    procedure UpdateXML;
   published
     property Groups: string read GetGroups write SetGroups;
     property Links: string read GetLinks write SetLinks;
@@ -269,11 +270,26 @@ begin
   end;
 end;
 
+function GetFileDate(FileName: string): Integer;
+var
+  FH: THandle;
+begin
+  Result := 0;
+  FH := FileOpen(FileName, fmOpenRead or fmShareDenyNone);
+  try
+    if FH > 0 then
+      Result := FileGetDate(FH);
+  finally
+    FileClose(FH);
+  end;
+end;
+
 function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean;
 var
   ExifData: TExifData;
   Changed: Boolean;
-  OldMode : Cardinal;
+  OldMode: Cardinal;
+  FD: Integer;
 begin
   Result := False;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
@@ -355,7 +371,14 @@ begin
         end;
 
         if Changed then
+        begin
+          ExifData.XMPPacket.UpdateXML;
+
+          FD := GetFileDate(Info.FileName);
           ExifData.SaveToGraphic(Info.FileName);
+          if FD > 0 then
+            FileSetDate(Info.FileName, FD);
+        end;
       finally
         F(ExifData);
       end;
@@ -372,7 +395,8 @@ function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean;
 var
   ExifData: TExifData;
   Changed: Boolean;
-  OldMode : Cardinal;
+  OldMode: Cardinal;
+  FD: Integer;
 begin
   Result := False;
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
@@ -465,7 +489,14 @@ begin
         end;
 
         if Changed then
+        begin
+          ExifData.XMPPacket.UpdateXML;
+
+          FD := GetFileDate(FileName);
           ExifData.SaveToGraphic(FileName);
+          if FD > 0 then
+            FileSetDate(FileName, FD);
+        end;
       finally
         F(ExifData);
       end;
@@ -763,6 +794,14 @@ begin
   WriteString(uConstants.EXIF_BASE_LINKS, Value);
 end;
 
+type
+  TXMPPacketEx = class(TXMPPacket);
+
+procedure DBXMPPacket.UpdateXML;
+begin
+  TXMPPacketEx(Self).Changed(True);
+end;
+
 procedure DBXMPPacket.WriteBool(Name: string; Value: Boolean);
 begin
   Schemas[xsXMPBasic].Properties[Name].WriteValue(Value);
@@ -811,10 +850,12 @@ var
   MS, OS: TMemoryStream;
   Password: string;
   GraphicClass: TGraphicClass;
+  FD: Integer;
 begin
   if IsDevicePath(FileName) then
     Exit;
 
+  FD := GetFileDate(FileName);
   if ValidCryptGraphicFile(FileName) then
   begin
     Password := DBKernel.FindPasswordForCryptImageFile(FileName);
@@ -848,6 +889,8 @@ begin
               raise Exception.Create(FormatEx(TA('Can''t write info to file {0}!', 'Exif'), [FileName]));
           end;
 
+          if FD > 0 then
+            FileSetDate(FileName, FD);
         finally
           F(OS);
         end;
@@ -860,6 +903,8 @@ begin
   end;
 
   SaveToGraphic(FileName);
+  if FD > 0 then
+    FileSetDate(FileName, FD);
 end;
 
 end.

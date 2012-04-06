@@ -2311,9 +2311,15 @@ begin
   Bitmap.Canvas.Pen.Color := Color;
   for I := 0 to 255 do
   begin
-    Bitmap.Canvas.MoveTo(I{ + 1}, Height - 1);
-    Bitmap.Canvas.LineTo(I{ + 1}, Height - Round(Height * GE[I]) - 1);
+    Bitmap.Canvas.MoveTo(I, Height - 1);
+    Bitmap.Canvas.LineTo(I, Height - Round(Height * GE[I]) - 1);
   end;
+  Bitmap.Canvas.Pen.Color := $888888;
+  Bitmap.Canvas.MoveTo(MinC, 0);
+  Bitmap.Canvas.LineTo(MinC, Height);
+  Bitmap.Canvas.Pen.Color := $888888;
+  Bitmap.Canvas.MoveTo(MaxC, 0);
+  Bitmap.Canvas.LineTo(MaxC, Height);
 end;
 
 procedure GetGistogrammBitmapWRGB(Height: Integer; SGray, SR, SG, SB: T255IntArray; var MinC, MaxC: Integer; Bitmap: TBitmap; BackColor: TColor);

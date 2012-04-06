@@ -143,6 +143,7 @@ type
     procedure WlAlbumSettingsClick(Sender: TObject);
     procedure ItemContexPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure DeleteItemFromList(Sender: TObject);
+    procedure ProgressStateClick(Sender: TObject);
 
     procedure LoadProviderInfo;
     procedure UpdateUserInfo(Provider: IPhotoShareProvider; Info: IPhotoServiceUserInfo);
@@ -872,7 +873,7 @@ begin
       WlProgressState.Anchors := [akTop, akRight];
       WlProgressState.OnMouseEnter := OnBoxMouseEnter;
       WlProgressState.OnMouseLeave := OnBoxMouseLeave;
-      WlProgressState.OnClick := SelectAlbumClick;
+      WlProgressState.OnClick := ProgressStateClick;
       WlProgressState.Visible := False;
       WlProgressState.Tag := CONTROL_ITEM_UPLOADING_INFO;
 
@@ -887,7 +888,7 @@ begin
       LsUploading.Active := True;
       LsUploading.OnMouseEnter := OnBoxMouseEnter;
       LsUploading.OnMouseLeave := OnBoxMouseLeave;
-      LsUploading.OnClick := SelectAlbumClick;
+      LsUploading.OnClick := ShowImages;
       LsUploading.Visible := False;
       LsUploading.Tag := CONTROL_ITEM_UPLOADING_STATE;
     end;
@@ -1454,6 +1455,15 @@ begin
   Sb.IsHovered := False;
 end;
 
+procedure TFormSharePhotos.ProgressStateClick(Sender: TObject);
+begin
+  if Sender is TWebLink then
+  begin
+    if TWebLink(Sender).Hint <> '' then
+      MessageBoxDB(Handle, L(TWebLink(Sender).Hint), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+  end;
+end;
+
 procedure TFormSharePhotos.ReloadAlbums;
 begin
   LoadAlbumList(FProvider);
@@ -1552,8 +1562,17 @@ begin
   LS.Hide;
   WlInfo.IconWidth := 16;
   WlInfo.IconHeight := 16;
-  WlInfo.LoadFromResource('SERIES_OK');
+  if ErrorInfo = '' then
+    WlInfo.LoadFromResource('SERIES_OK')
+  else
+  begin
+    WlInfo.LoadFromResource('SERIES_CANCEL');
+    WlInfo.Hint := ErrorInfo;
+  end;
+
   WlInfo.Text := '';
+  WlInfo.Show;
+  WlInfo.LoadImage;
   WlInfo.Top := Box.ClientHeight - WlInfo.Height - 3;
   WlInfo.Left := Box.ClientWidth - WlInfo.Width - 4;
 end;

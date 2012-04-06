@@ -356,7 +356,7 @@ type
     procedure ExecuteFileNoEx(FileName: string);
     procedure Execute(ID: Integer);
     procedure ExecuteEx(IDs: TArInteger); overload;
-    procedure ExecuteEx(Data: TDBPopupMenuInfo); overload;
+    procedure ExecuteEx(Data: TDBPopupMenuInfo; Image: TBitmap = nil); overload;
     property ImageID: Integer read GetImageID;
     property FileName: string read GetFileName;
   end;
@@ -837,7 +837,11 @@ begin
   Up1.ImageIndex := DB_IC_UP;
   Down1.ImageIndex := DB_IC_DOWN;
 
-  LstAvaliableGroups.Font.Color := Theme.PanelFontColor;
+  lstCurrentGroups.Font.Color := Theme.ListFontColor;
+  lstCurrentGroups.Color := Theme.ListColor;
+
+  LstAvaliableGroups.Font.Color := Theme.ListFontColor;
+  LstAvaliableGroups.Color := Theme.ListColor;
 
   SaveWindowPos1.Key := GetRegRootKey + 'Properties';
   SaveWindowPos1.SetPosition;
@@ -965,7 +969,7 @@ procedure TPropertiesForm.BtSaveClick(Sender: TObject);
 var
   _sqlexectext, CommonGroups, KeyWords, SGroups, SLinks: string;
   SLinkInfo: TLinksInfo;
-  I, J: Integer;
+  I, J, C: Integer;
   EventInfo: TEventValues;
   XCount: Integer;
   ProgressForm: TProgressActionForm;
@@ -980,20 +984,39 @@ var
   var
     K: Integer;
   begin
-    Result := '';
+    Result := '0';
     for K := 0 to FFilesInfo.Count - 1 do
     begin
       if FFilesInfo[K].ID = 0 then
         Continue;
-      if K <> 0 then
-        Result := Result + ',';
-      Result := Result + IntToStr(FFilesInfo[K].ID);
+      Result := Result + ',' + IntToStr(FFilesInfo[K].ID);
     end;
+  end;
+
+  procedure FillDataRecordWithUserInfo(Info: TDBPopupMenuInfoRecord);
+  begin
+    if CommentMemo.Text <> '' then
+      Info.Comment := CommentMemo.Text;
+    if KeyWordsMemo.Text <> '' then
+      Info.KeyWords := KeyWordsMemo.Text;
+    if (RatingEdit.Rating  > 0) and not RatingEdit.Islayered then
+      Info.Rating := RatingEdit.Rating;
+    if Length(FNowGroups) > 0 then
+      Info.Groups := CodeGroups(FNowGroups);
+    Info.Include := CbInclude.Checked;
+    if DateEdit.Checked then
+      Info.Date := DateOf(DateEdit.DateTime);
+    if TimeEdit.Checked then
+      Info.Time := TimeOf(TimeEdit.Time);
+    Info.IsDate := DateEdit.Checked;
+    Info.IsTime := TimeEdit.Checked;
+    if Length(FPropertyLinks) > 0 then
+      Info.Links := CodeLinksInfo(FPropertyLinks);
   end;
 
 begin
   WorkQuery := GetQuery;
-  BtSave.Enabled := False;
+  BtSave.SetEnabledEx(False);
   try
     if FShowInfoType = SHOW_INFO_IDS then
     begin
@@ -1008,6 +1031,8 @@ begin
       if not CommentMemo.readonly then
         Inc(XCount);
       if ReadCHLinks then
+        Inc(XCount);
+      if FFilesInfo.HasNonDBInfo then
         Inc(XCount);
 
       if XCount > 0 then
@@ -1190,20 +1215,15 @@ begin
         try
           if not DateEdit.Checked then
           begin
-            _sqlexectext := 'Update $DB$ Set IsDate = :IsDate Where ID in (';
-            for I := 0 to FFilesInfo.Count - 1 do
-              if I = 0 then
-                _sqlexectext := _sqlexectext + IntToStr(FFilesInfo[I].ID)
-              else
-                _sqlexectext := _sqlexectext + ',' + IntToStr(FFilesInfo[I].ID);
-            _sqlexectext := _sqlexectext + ')';
+            _sqlexectext := 'Update $DB$ Set IsDate = :IsDate Where ID in (' + GenerateIDList + ')';
             WorkQuery.Active := False;
             SetSQL(WorkQuery, _sqlexectext);
             SetBoolParam(WorkQuery, 0, False);
             ExecSQL(WorkQuery);
             EventInfo.IsDate := False;
             for I := 0 to FFilesInfo.Count - 1 do
-              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
+              if FFilesInfo[I].ID > 0 then
+                DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
           end else
           begin
             _sqlexectext := Format('Update $DB$ Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (%s)', [GenerateIDList]);
@@ -1214,7 +1234,8 @@ begin
             EventInfo.Date := DateEdit.DateTime;
             EventInfo.IsDate := True;
             for I := 0 to FFilesInfo.Count - 1 do
-              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
+              if FFilesInfo[I].ID > 0 then
+                DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
           end;
         finally
           FreeDS(FQuery);
@@ -1233,7 +1254,8 @@ begin
           ExecSQL(WorkQuery);
           EventInfo.IsTime := False;
           for I := 0 to FFilesInfo.Count - 1 do
-            DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
+            if FFilesInfo[I].ID > 0 then
+              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
         end else
         begin
           _sqlexectext := Format('Update $DB$ Set aTime = :aTime, IsTime = True Where ID in (%s)', [GenerateIDList]);
@@ -1244,10 +1266,44 @@ begin
           EventInfo.Time := TimeOf(TimeEdit.Time);
           EventInfo.IsTime := True;
           for I := 0 to FFilesInfo.Count - 1 do
-            DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
+            if FFilesInfo[I].ID > 0 then
+              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
         end;
       end;// [END] Time Support
 
+      for I := 0 to FFilesInfo.Count - 1 do
+        if FFilesInfo[I].ID = 0 then
+        begin
+          FileInfo := FFilesInfo[I].Copy;
+          try
+            FillDataRecordWithUserInfo(FileInfo);
+            UpdaterDB.AddFileEx(FileInfo, True, True);
+          finally
+            F(FileInfo);
+          end;
+        end;
+
+      if FFilesInfo.HasNonDBInfo then
+      begin
+        ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
+        ProgressForm.XPosition := 0;
+        ProgressForm.MaxPosCurrentOperation := 0;
+        for I := 0 to FFilesInfo.Count - 1 do
+          if FFilesInfo[I].ID = 0 then
+            ProgressForm.MaxPosCurrentOperation := ProgressForm.MaxPosCurrentOperation + 1;
+
+        while not ProgressForm.Closed and FFilesInfo.HasNonDBInfo do
+        begin
+          Application.ProcessMessages;
+          C := 0;
+          for I := 0 to FFilesInfo.Count - 1 do
+            if FFilesInfo[I].ID = 0 then
+              Inc(C);
+
+          if ProgressForm.XPosition <> C then
+            ProgressForm.XPosition := ProgressForm.MaxPosCurrentOperation - C;
+        end;
+      end;
       R(ProgressForm);
 
       UnLockImput;
@@ -1307,16 +1363,7 @@ begin
 
       FileInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
       try
-        FileInfo.Comment := CommentMemo.Text;
-        FileInfo.KeyWords := KeyWordsMemo.Text;
-        FileInfo.Rating := RatingEdit.Rating;
-        FileInfo.Groups := CodeGroups(FNowGroups);
-        FileInfo.Include := CbInclude.Checked;
-        FileInfo.Date := DateOf(DateEdit.DateTime);
-        FileInfo.Time := TimeOf(TimeEdit.Time);
-        FileInfo.IsDate := DateEdit.Checked;
-        FileInfo.IsTime := TimeEdit.Checked;
-        FileInfo.Links := CodeLinksInfo(FPropertyLinks);
+        FillDataRecordWithUserInfo(FileInfo);
         UpdaterDB.AddFileEx(FileInfo, True, True);
       finally
         F(FileInfo);
@@ -1604,6 +1651,23 @@ begin
         end;
       SHOW_INFO_IDS:
         begin
+          if FFilesInfo.HasNonDBInfo and (SetNewIDFileData in Params) then
+          begin
+            for I := 0 to FFilesInfo.Count - 1 do
+              if AnsiLowerCase(FFilesInfo[I].FileName) = Value.Name then
+                FFilesInfo[I].ID := ID;
+            Exit;
+          end;
+          if FFilesInfo.HasNonDBInfo and (EventID_CancelAddingImage in Params) then
+          begin
+            for I := 0 to FFilesInfo.Count - 1 do
+              if AnsiLowerCase(FFilesInfo[I].FileName) = Value.Name then
+                FFilesInfo[I].ID := -1;
+            Exit;
+          end;
+          if ID = 0 then
+            Exit;
+
           for I := 0 to FFilesInfo.Count - 1 do
             if FFilesInfo[I].ID = ID then
               ImgReloadInfo.Visible := True;
@@ -1771,8 +1835,9 @@ begin
   end;
 end;
 
-procedure TPropertiesForm.ExecuteEx(Data: TDBPopupMenuInfo);
+procedure TPropertiesForm.ExecuteEx(Data: TDBPopupMenuInfo; Image: TBitmap = nil);
 var
+  I: Integer;
   B: TBitmap;
   Ico: TIcon;
   S: string;
@@ -1792,6 +1857,12 @@ begin
   end;
   FFilesInfo.Assign(Data);
 
+  UpdateDataFromDB(Data);
+
+  for I := 0 to FFilesInfo.Count - 1 do
+    if FFilesInfo[I].ID = 0 then
+       FFilesInfo[I].Include := True;
+
   GistogrammData.Loading := False;
   R(EditLinkForm);
   ResetBold;
@@ -1810,25 +1881,30 @@ begin
 
     FShowInfoType := SHOW_INFO_IDS;
 
-    B := TBitmap.Create;
-    try
-      B.Width := 100;
-      B.Height := 100;
-      B.PixelFormat := pf24bit;
-      B.Canvas.Brush.Color := Theme.WindowColor;
-      B.Canvas.Pen.Color := RGB(Round(GetRValue(ColorToRGB(Theme.WindowColor)) * 0.8),
-        Round(GetGValue(ColorToRGB(Theme.WindowColor)) * 0.8), Round(GetBValue(ColorToRGB(Theme.WindowColor)) * 0.8));
-      B.Canvas.Rectangle(0, 0, 100, 100);
-      Ico := TIcon.Create;
+    if Image <> nil then
+      ImMain.Picture.Graphic := Image
+    else
+    begin
+      B := TBitmap.Create;
       try
-        Ico.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_MANY_FILES + 1]);
-        B.Canvas.Draw(100 div 2 - Ico.Width div 2, 100 div 2 - Ico.Height div 2, Ico);
+        B.Width := 100;
+        B.Height := 100;
+        B.PixelFormat := pf24bit;
+        B.Canvas.Brush.Color := Theme.WindowColor;
+        B.Canvas.Pen.Color := RGB(Round(GetRValue(ColorToRGB(Theme.WindowColor)) * 0.8),
+          Round(GetGValue(ColorToRGB(Theme.WindowColor)) * 0.8), Round(GetBValue(ColorToRGB(Theme.WindowColor)) * 0.8));
+        B.Canvas.Rectangle(0, 0, 100, 100);
+        Ico := TIcon.Create;
+        try
+          Ico.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_MANY_FILES + 1]);
+          B.Canvas.Draw(100 div 2 - Ico.Width div 2, 100 div 2 - Ico.Height div 2, Ico);
+        finally
+          F(Ico);
+        end;
+        ImMain.Picture.Graphic := B;
       finally
-        F(Ico);
+        F(B);
       end;
-      ImMain.Picture.Graphic := B;
-    finally
-      F(B);
     end;
 
     Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
@@ -1911,7 +1987,6 @@ begin
     Editing_info := True;
   end;
 end;
-
 
 procedure TPropertiesForm.FormShow(Sender: TObject);
 begin

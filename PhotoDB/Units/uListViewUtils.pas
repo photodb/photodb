@@ -108,11 +108,11 @@ procedure CreateDragImageEx(ListView: TEasyListView; DImageList: TImageList; SIm
   GradientFrom, GradientTo, SelectionColor : TColor; Font: TFont; Caption : string;
   DragPoint: TPoint; var SpotX, SpotY: Integer); overload;
 procedure EnsureSelectionInListView(EasyListview: TEasyListview; ListItem : TEasyItem;
-  Shift: TShiftState; X, Y: Integer; var ItemSelectedByMouseDown : Boolean;
+  Shift: TShiftState; X, Y: Integer; var ItemSelectedByMouseDown: Boolean;
   var ItemByMouseDown: Boolean);
 procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item : TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
-procedure CreateMultiselectImage(ListView: TEasyListView; ResultImage : TBitmap; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer);
+procedure CreateMultiselectImage(ListView: TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer; OnlyImages: Boolean = False);
 procedure FixListViewText(ACanvas: TCanvas; Item : TEasyItem; Include : Boolean);
 procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
 
@@ -393,7 +393,7 @@ begin
 end;
 
 procedure CreateMultiselectImage(ListView: TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor: TColor; Font: TFont; Width, Height: Integer);
+  GradientFrom, GradientTo, SelectionColor: TColor; Font: TFont; Width, Height: Integer; OnlyImages: Boolean = False);
 var
   SelCount: Integer;
   SelectedItem: TEasyItem;
@@ -541,6 +541,8 @@ begin
   end;
 
   DrawSelectionCount(ResultImage, ItemsSelected, Font, RoundRadius);
+  ResultImage.TransparentMode := tmFixed;
+  ResultImage.AlphaFormat := afDefined;
 end;
 
 procedure CreateDragImageEx(ListView: TEasyListview; DImageList: TImageList; SImageList: TBitmapImageList;

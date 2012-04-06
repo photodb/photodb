@@ -574,8 +574,13 @@ begin
   ClientHeight := 484;
   PcMain.Width := ClientWidth - 15;
   PcMainChange(Self);
+
   WblMethod.Color := Theme.PanelColor;
   WblMethod.Font.Color := Theme.PanelFontColor;
+  WlGetMoreStyles.Color := Theme.PanelColor;
+  WlGetMoreStyles.Font.Color := Theme.PanelFontColor;
+  WlDefaultJPEGOptions.Color := Theme.PanelColor;
+  WlDefaultJPEGOptions.Font.Color := Theme.PanelFontColor;
 
   FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
   WblMethod.LoadFromHIcon(FPassIcon);
@@ -969,6 +974,7 @@ begin
           FBitmap.Canvas.Brush.Color := Theme.PanelColor;
           Text := L('Standard windows theme (preview isn''t available)');
           R := ImStylePreview.ClientRect;
+          SetBkMode(FBitmap.Canvas.Handle, Windows.TRANSPARENT);
           DrawText(FBitmap.Canvas.Handle, Text, Length(Text), R, DT_CENTER or DT_VCENTER );
           ImStylePreview.Picture.Graphic := FBitmap;
         finally

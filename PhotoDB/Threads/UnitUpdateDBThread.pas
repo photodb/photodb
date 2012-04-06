@@ -3,16 +3,47 @@ unit UnitUpdateDBThread;
 interface
 
 uses
-  ReplaceForm, Windows, Dolphin_db, Classes, UnitUpdateDB, Forms,
-  SysUtils, DB, GraphicCrypt, Dialogs, DateUtils, CommonDBSupport,
-  Win32crc, Jpeg, UnitUpdateDBObject, uVistaFuncs, uLogger, uFileUtils,
-  UnitDBDeclare, UnitDBCommon, uMemory, uDBPopupMenuInfo, uConstants,
-  CCR.Exif, uShellIntegration, uDBTypes, uRuntime, uDBUtils, uSysUtils,
-  uTranslate, ActiveX, uActivationUtils, uSettings, uMemoryEx,
-  UnitDBKernel, uAssociations, uDBThread, uExifUtils, UnitGroupsWork;
+  ReplaceForm,
+  Windows,
+  Dolphin_db,
+  Classes,
+  UnitUpdateDB,
+  Forms,
+  SysUtils,
+  DB,
+  GraphicCrypt,
+  DateUtils,
+  CommonDBSupport,
+  Win32crc,
+  Jpeg,
+  UnitUpdateDBObject,
+  uVistaFuncs,
+  uLogger,
+  uFileUtils,
+  UnitDBDeclare,
+  UnitDBCommon,
+  uMemory,
+  uDBPopupMenuInfo,
+  uConstants,
+  CCR.Exif,
+  uShellIntegration,
+  uDBTypes,
+  uRuntime,
+  uDBUtils,
+  uSysUtils,
+  uTranslate,
+  ActiveX,
+  uActivationUtils,
+  uSettings,
+  uMemoryEx,
+  UnitDBKernel,
+  uAssociations,
+  uDBThread,
+  uExifUtils,
+  UnitGroupsWork;
 
 type
-  TFileProcessProcedureOfObject = procedure(var FileName : string) of object;
+  TFileProcessProcedureOfObject = procedure(var FileName: string) of object;
 
 type
   UpdateDBThread = class(TDBThread)
@@ -51,12 +82,11 @@ type
     procedure DoEventCancelSynch;
     procedure UpdateCurrent;
     procedure CryptFileWithoutPass;
-    function Res : TImageDBRecordA;
+    function Res: TImageDBRecordA;
     procedure FileProcessed;
-    constructor Create(Sender : TUpdaterDB;
-      Info : TDBPopupMenuInfo; OnDone : TNotifyEvent;
-      AutoAnswer : Integer; UseFileNameScaning : Boolean; Terminating,
-      Pause: PBoolean; NoLimit : boolean = false);
+    constructor Create(Sender: TUpdaterDB; Info: TDBPopupMenuInfo;
+      OnDone: TNotifyEvent; AutoAnswer: Integer; UseFileNameScaning: Boolean;
+      Terminating, Pause: PBoolean; NoLimit: Boolean = False);
     destructor Destroy; override;
     procedure ProcessGroups(Info: TDBPopupMenuInfoRecord; ExifGroups: string);
     procedure ProcessGroupsSync;
@@ -245,7 +275,7 @@ begin
       end else
         Inc(LastInseredID);
     except
-      on e : Exception do
+      on e: Exception do
         Eventlog('Error adding file to DB: ' + e.Message);
     end;
   finally

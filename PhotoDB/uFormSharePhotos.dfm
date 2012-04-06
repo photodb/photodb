@@ -272,8 +272,8 @@ object FormSharePhotos: TFormSharePhotos
           146
           371)
         object LsLoadingAlbums: TLoadingSign
-          Left = 111
-          Top = 336
+          Left = 119
+          Top = 344
           Width = 24
           Height = 24
           Active = True
@@ -281,8 +281,6 @@ object FormSharePhotos: TFormSharePhotos
           Anchors = [akRight, akBottom]
           SignColor = clBlack
           MaxTransparencity = 255
-          ExplicitLeft = 115
-          ExplicitTop = 340
         end
       end
     end

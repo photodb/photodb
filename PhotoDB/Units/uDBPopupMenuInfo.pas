@@ -45,6 +45,7 @@ type
     function GetOnlyDBInfo: Boolean;
     function GetFilesSize: Int64;
     function GetIsVariousLocation: Boolean;
+    function GetHasNonDBInfo: Boolean;
   protected
     FData: TList;
   public
@@ -85,6 +86,7 @@ type
     property SelectionCount: Integer read GetSelectionCount;
     property OnlyDBInfo: Boolean read GetOnlyDBInfo;
     property FilesSize: Int64 read GetFilesSize;
+    property HasNonDBInfo: Boolean read GetHasNonDBInfo;
   end;
 
 implementation
@@ -235,6 +237,16 @@ begin
   Result := 0;
   for I := 0 to Count - 1 do
     Inc(Result, Self[I].FileSize);
+end;
+
+function TDBPopupMenuInfo.GetHasNonDBInfo: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 0 to Count - 1 do
+    if Self[I].ID = 0 then
+      Exit(True);
 end;
 
 function TDBPopupMenuInfo.GetIsVariousComments: Boolean;

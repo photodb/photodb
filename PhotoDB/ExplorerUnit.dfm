@@ -284,7 +284,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object ShellLink: TWebLink
@@ -304,7 +304,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object RenameLink: TWebLink
@@ -324,7 +324,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object RefreshLink: TWebLink
@@ -344,7 +344,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object PropertiesLink: TWebLink
@@ -364,7 +364,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object PrintLink: TWebLink
@@ -384,7 +384,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object MyPicturesLink: TWebLink
@@ -467,7 +467,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object ImageEditorLink: TWebLink
@@ -487,7 +487,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object DesktopLink: TWebLink
@@ -528,7 +528,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object CopyToLink: TWebLink
@@ -548,7 +548,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object AddLink: TWebLink
@@ -568,7 +568,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object EncryptLink: TWebLink
@@ -588,7 +588,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlCreateObject: TWebLink
@@ -609,7 +609,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlResize: TWebLink
@@ -629,7 +629,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlConvert: TWebLink
@@ -649,7 +649,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlCrop: TWebLink
@@ -669,7 +669,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlImportPictures: TWebLink
@@ -689,7 +689,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlGeoLocation: TWebLink
@@ -709,7 +709,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlClear: TWebLink
@@ -729,7 +729,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlShare: TWebLink
@@ -750,7 +750,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
       end
@@ -780,7 +780,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = False
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
       end
@@ -1710,7 +1710,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = True
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
         object WlPanoramio: TWebLink
@@ -1730,7 +1730,7 @@ object ExplorerForm: TExplorerForm
           TopIconIncrement = 0
           UseSpecIconSize = True
           HightliteImage = True
-          StretchImage = True
+          StretchImage = False
           CanClick = True
         end
       end

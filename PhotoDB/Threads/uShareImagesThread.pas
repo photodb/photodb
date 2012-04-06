@@ -6,6 +6,8 @@ uses
   uConstants,
   uRuntime,
   uMemory,
+  uSysUtils,
+  uTranslate,
   Winapi.Windows,
   System.SysUtils,
   System.Classes,
@@ -188,7 +190,7 @@ begin
 
             finally
 
-              if not FIsPreview then
+              if not FIsPreview or (ErrorMessage <> '') then
                 SynchronizeEx(
                   procedure
                   begin
@@ -280,183 +282,188 @@ var
   ItemProgress: IUploadProgress;
   Ico: TIcon;
 begin
-  Width := 0;
-  Height := 0;
-  ResizeImage := Settings.ReadBool('Share', 'ResizeImage', True);
-  if ResizeImage then
-  begin
-    Width := Settings.ReadInteger('Share', 'ImageWidth', 1920);
-    Height := Settings.ReadInteger('Share', 'ImageWidth', 1920);
-  end;
-  if FIsPreview then
-  begin
-    Width := 32;
-    Height := 32;
-  end;
-
-  UsePreviewForRAW := Settings.ReadBool('Share', 'RAWPreview', True);
-  IsJpegImageFormat := Settings.ReadInteger('Share', 'ImageFormat', 0) = 0;
-
-  Ext := ExtractFileExt(Data.FileName);
-  GraphicClass := TFileAssociations.Instance.GetGraphicClass(Ext);
-
-  if GraphicClass = nil then
-    Exit;
-
-  Enrypted := not IsDevicePath(Data.FileName) and ValidCryptGraphicFile(Data.FileName);
-  if Enrypted then
-  begin
-    Password := DBKernel.FindPasswordForCryptImageFile(Data.FileName);
-    if Password = '' then
-      Exit;
-  end;
-
-  Graphic := GraphicClass.Create;
   try
+  Width := 0;
+    Height := 0;
+    ResizeImage := Settings.ReadBool('Share', 'ResizeImage', True);
+    if ResizeImage then
+    begin
+      Width := Settings.ReadInteger('Share', 'ImageWidth', 1920);
+      Height := Settings.ReadInteger('Share', 'ImageWidth', 1920);
+    end;
+    if FIsPreview then
+    begin
+      Width := 32;
+      Height := 32;
+    end;
 
-    //RAW loads sd preview
-    if Graphic is TRAWImage then
-      if UsePreviewForRAW or FIsPreview then
-        TRAWImage(Graphic).IsPreview := True;
+    UsePreviewForRAW := Settings.ReadBool('Share', 'RAWPreview', True);
+    IsJpegImageFormat := Settings.ReadInteger('Share', 'ImageFormat', 0) = 0;
 
-    ExifData := TExifData.Create(nil);
+    Ext := ExtractFileExt(Data.FileName);
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(Ext);
+
+    if GraphicClass = nil then
+      Exit;
+
+    Enrypted := not IsDevicePath(Data.FileName) and ValidCryptGraphicFile(Data.FileName);
+    if Enrypted then
+    begin
+      Password := DBKernel.FindPasswordForCryptImageFile(Data.FileName);
+      if Password = '' then
+        raise Exception.Create(FormatEx(L('Can''t decrypt image "{0}"'), [Data.FileName]));
+    end;
+
+    Graphic := GraphicClass.Create;
     try
 
-      if Enrypted then
-      begin
-        F(Graphic);
-        Graphic := DeCryptGraphicFile(Data.FileName, Password);
-      end else if not IsDevicePath(Data.FileName) then
-        Graphic.LoadFromFile(Data.FileName)
-      else
-        Graphic.LoadFromDevice(Data.FileName);
+      //RAW loads sd preview
+      if Graphic is TRAWImage then
+        if UsePreviewForRAW or FIsPreview then
+          TRAWImage(Graphic).IsPreview := True;
 
-      if Graphic = nil then
-      begin
-        Ico := TAIcons.Instance.GetIconByExt(Data.FileName, False, 32, False);
-        try
-          SynchronizeEx(
-            procedure
-            begin
-              TFormSharePhotos(OwnerForm).UpdatePreview(Data, Ico);
-            end
-          );
-        finally
-          F(Ico);
-        end;
-        Exit;
-      end;
+      ExifData := TExifData.Create(nil);
+      try
 
-      if IsJpegImageFormat then
-      begin
-        //try to read exif
         if Enrypted then
         begin
-          MS := TMemoryStream.Create;
-          try
-            if DecryptFileToStream(Data.FileName, Password, MS) then
-            begin
-              MS.Seek(0, soFromBeginning);
-              ExifData.LoadFromStream(MS);
-            end;
-          finally
-            F(MS);
-          end;
+          F(Graphic);
+          Graphic := DeCryptGraphicFile(Data.FileName, Password);
         end else if not IsDevicePath(Data.FileName) then
-          ExifData.LoadFromGraphic(Data.FileName) else
+          Graphic.LoadFromFile(Data.FileName)
+        else
+          Graphic.LoadFromDevice(Data.FileName);
+
+        if Graphic = nil then
+          raise Exception.Create(FormatEx(L('Can''t load image "{0}"'), [Data.FileName]));
+
+        if IsJpegImageFormat then
         begin
-          MS := TMemoryStream.Create;
-          try
-            if ReadStreamFromDevice(Data.FileName, MS) then
-            begin
-              MS.Seek(0, soFromBeginning);
-              ExifData.LoadFromStream(MS);
-            end;
-          finally
-            F(MS);
-          end;
-        end;
-      end;
-
-      if Graphic is TRAWImage then
-      begin
-        W := TRAWImage(Graphic).GraphicWidth;
-        H := TRAWImage(Graphic).GraphicHeight;
-      end else
-      begin
-        W := Graphic.Width;
-        H := Graphic.Height;
-      end;
-      ProportionalSize(Width, Height, W, H);
-
-      if (Width > 0) and (Height > 0) then
-        JPEGScale(Graphic, W, H);
-
-      Original := TBitmap.Create;
-      try
-        AssignGraphic(Original, Graphic);
-        F(Graphic);
-
-        if (Width > 0) and (Height > 0) then
-          Stretch(W, H, sfLanczos3, 0, Original);
-
-        if FIsPreview then
-        begin
-          SynchronizeEx(
-            procedure
-            begin
-              TFormSharePhotos(OwnerForm).UpdatePreview(Data, Original);
-            end
-          );
-        end else
-        begin
-          if IsJpegImageFormat then
-            NewGraphic := TJpegImage.Create
-          else
-            NewGraphic := TPngImage.Create;
-          try
-            AssignToGraphic(NewGraphic, Original);
-            F(Original);
-
-            SetJPEGGraphicSaveOptions('ShareImages', NewGraphic);
-            if NewGraphic is TJPEGImage then
-              FreeJpegBitmap(TJPEGImage(NewGraphic));
-
+          //try to read exif
+          if Enrypted then
+          begin
             MS := TMemoryStream.Create;
             try
-              NewGraphic.SaveToStream(MS);
-              if IsJpegImageFormat and not ExifData.Empty then
-                FixEXIFForJpegStream(ExifData, MS, NewGraphic.Width, NewGraphic.Height);
-              MS.Seek(0, soFromBeginning);
-
-              if IsJpegImageFormat then
-                ContentType := 'image/jpeg'
-              else
-                ContentType := 'image/png';
-
-               ItemProgress := TItemUploadProgress.Create(Self, Data);
-               try
-                 FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
-                   ExtractFileName(Data.FileName), Data.Date, ContentType, MS, ItemProgress, PhotoItem);
-               finally
-                 ItemProgress := nil;
-               end;
+              if DecryptFileToStream(Data.FileName, Password, MS) then
+              begin
+                MS.Seek(0, soFromBeginning);
+                ExifData.LoadFromStream(MS);
+              end;
             finally
               F(MS);
             end;
-          finally
-            F(NewGraphic);
+          end else if not IsDevicePath(Data.FileName) then
+            ExifData.LoadFromGraphic(Data.FileName) else
+          begin
+            MS := TMemoryStream.Create;
+            try
+              if ReadStreamFromDevice(Data.FileName, MS) then
+              begin
+                MS.Seek(0, soFromBeginning);
+                ExifData.LoadFromStream(MS);
+              end;
+            finally
+              F(MS);
+            end;
           end;
         end;
 
+        if Graphic is TRAWImage then
+        begin
+          W := TRAWImage(Graphic).GraphicWidth;
+          H := TRAWImage(Graphic).GraphicHeight;
+        end else
+        begin
+          W := Graphic.Width;
+          H := Graphic.Height;
+        end;
+        ProportionalSize(Width, Height, W, H);
+
+        if (Width > 0) and (Height > 0) then
+          JPEGScale(Graphic, W, H);
+
+        Original := TBitmap.Create;
+        try
+          AssignGraphic(Original, Graphic);
+          F(Graphic);
+
+          if (Width > 0) and (Height > 0) then
+            Stretch(W, H, sfLanczos3, 0, Original);
+
+          if FIsPreview then
+          begin
+            SynchronizeEx(
+              procedure
+              begin
+                TFormSharePhotos(OwnerForm).UpdatePreview(Data, Original);
+              end
+            );
+          end else
+          begin
+            if IsJpegImageFormat then
+              NewGraphic := TJpegImage.Create
+            else
+              NewGraphic := TPngImage.Create;
+            try
+              AssignToGraphic(NewGraphic, Original);
+              F(Original);
+
+              SetJPEGGraphicSaveOptions('ShareImages', NewGraphic);
+              if NewGraphic is TJPEGImage then
+                FreeJpegBitmap(TJPEGImage(NewGraphic));
+
+              MS := TMemoryStream.Create;
+              try
+                NewGraphic.SaveToStream(MS);
+                if IsJpegImageFormat and not ExifData.Empty then
+                  FixEXIFForJpegStream(ExifData, MS, NewGraphic.Width, NewGraphic.Height);
+                MS.Seek(0, soFromBeginning);
+
+                if IsJpegImageFormat then
+                  ContentType := 'image/jpeg'
+                else
+                  ContentType := 'image/png';
+
+                 ItemProgress := TItemUploadProgress.Create(Self, Data);
+                 try
+                   FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
+                     ExtractFileName(Data.FileName), Data.Date, ContentType, MS, ItemProgress, PhotoItem);
+                 finally
+                   ItemProgress := nil;
+                 end;
+              finally
+                F(MS);
+              end;
+            finally
+              F(NewGraphic);
+            end;
+          end;
+
+        finally
+          F(Original);
+        end;
       finally
-        F(Original);
+        F(ExifData);
       end;
     finally
-      F(ExifData);
+      F(Graphic);
     end;
-  finally
-    F(Graphic);
+  except
+    on e: Exception do
+    begin
+      Ico := TAIcons.Instance.GetIconByExt(Data.FileName, False, 32, False);
+      try
+        SynchronizeEx(
+          procedure
+          begin
+            TFormSharePhotos(OwnerForm).UpdatePreview(Data, Ico);
+          end
+        );
+      finally
+        F(Ico);
+      end;
+      raise;
+    end;
   end;
 end;
 

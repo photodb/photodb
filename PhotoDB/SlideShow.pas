@@ -1393,7 +1393,7 @@ var
 begin
   StartPoint := Point(X, Y);
 
-  if not FPersonMouseMoveLock then
+  if not FPersonMouseMoveLock and not IsPopupMenuActive then
   begin
     P := BufferPointToImagePoint(StartPoint);
     OldHoverFace := FHoverFace;
@@ -1781,7 +1781,7 @@ var
   P: TPoint;
 begin
   GetCursorPos(P);
-  PmFaces.Popup(P.X, P.Y);
+  PmFaces.DoPopupEx(P.X, P.Y);
 end;
 
 procedure TViewer.WlFaceCountMouseEnter(Sender: TObject);
@@ -2587,7 +2587,7 @@ begin
 
     P := Point(X, Y);
     P := ClientToScreen(P);
-    PmFace.Popup(P.X, P.Y);
+    PmFace.DoPopupEx(P.X, P.Y);
     UpdateCursor;
   end;
   F(FDrawFace);
@@ -2909,7 +2909,7 @@ begin
       FHoverFace := FFaces[I];
       RefreshFaces;
       PmFace.Tag := NativeInt(FFaces[I]);
-      PmFace.Popup(ScreenRect.X, ScreenRect.Y);
+      PmFace.DoPopupEx(ScreenRect.X, ScreenRect.Y);
       Exit;
     end;
 
