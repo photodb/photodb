@@ -50,14 +50,23 @@ type
 procedure SplitString(Str: string; SplitChar: Char; List: TStrings);
 function JoinList(List: TStrings; JoinString: string): string;
 function ConvertUniversalFloatToLocal(s: string): string;
-function PosExS(SubStr: string; const Str: string; index: integer = 1): Integer;
+function PosExS(SubStr: string; const Str: string; Index: Integer = 1): Integer;
 function PosExW(const SubStr, S: string; Offset, MaxPos: Integer): Integer; overload;
 function Right(Str: string; P: Integer): string;
 function Mid(Str: string; S, E: Integer): string;
 function Left(Str: string; P: Integer): string;
 function UpperCaseFirstLetter(S: string): string;
+function NotEmptyString(S1, S2: string): string;
 
 implementation
+
+function NotEmptyString(S1, S2: string): string;
+begin
+  if S1 <> '' then
+    Result := S1
+  else
+    Result := S2;
+end;
 
 function UpperCaseFirstLetter(S: string): string;
 begin

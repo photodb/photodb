@@ -2146,11 +2146,11 @@ object ExplorerForm: TExplorerForm
     Left = 201
     Top = 196
   end
-  object DropFileTarget1: TDropFileTarget
+  object DropFileTargetMain: TDropFileTarget
     DragTypes = [dtCopy, dtMove]
-    OnEnter = DropFileTarget1Enter
-    OnLeave = DropFileTarget1Leave
-    OnDrop = DropFileTarget1Drop
+    OnEnter = DropFileTargetMainEnter
+    OnLeave = DropFileTargetMainLeave
+    OnDrop = DropFileTargetMainDrop
     MultiTarget = True
     AutoRegister = False
     OptimizedMove = True
@@ -2172,7 +2172,7 @@ object ExplorerForm: TExplorerForm
     Left = 200
     Top = 288
   end
-  object DropFileTarget2: TDropFileTarget
+  object DropFileTargetFake: TDropFileTarget
     DragTypes = []
     OptimizedMove = True
     Left = 656
@@ -2389,6 +2389,7 @@ object ExplorerForm: TExplorerForm
     Top = 512
   end
   object TmrCheckItemVisibility: TTimer
+    Enabled = False
     Interval = 250
     OnTimer = TmrCheckItemVisibilityTimer
     Left = 536

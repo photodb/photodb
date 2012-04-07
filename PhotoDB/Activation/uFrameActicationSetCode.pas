@@ -3,9 +3,21 @@ unit uFrameActicationSetCode;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, uFrameWizardBase, ExtCtrls, StdCtrls, uActivationUtils, uRuntime,
-  uShellIntegration, uConstants;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  uFrameWizardBase,
+  ExtCtrls,
+  StdCtrls,
+  uActivationUtils,
+  uRuntime,
+  uShellIntegration,
+  uConstants;
 
 type
   TFrameActicationSetCode = class(TFrameWizardBase)

@@ -221,7 +221,7 @@ procedure SharePictures(Owner: TDBForm; Info: TDBPopupMenuInfo);
 var
   FormSharePhotos: TFormSharePhotos;
 begin
-  FormSharePhotos := TFormSharePhotos.Create(Owner);
+  FormSharePhotos := TFormSharePhotos.Create(nil);
   FormSharePhotos.Execute(Info);
 end;
 
@@ -266,6 +266,7 @@ begin
 
   WlAlbumNameOkClick(FWlAlbumNameOk);
   WlAlbumDateOkClick(FWlAlbumDateOk);
+  FWlCreateAlbumName.Visible := False;
   FWlAlbumName.Enabled := False;
   FWlAlbumDate.Enabled := False;
   FWlAlbumSettings.Enabled := False;
@@ -1073,8 +1074,21 @@ begin
 end;
 
 procedure TFormSharePhotos.WlAlbumNameOkClick(Sender: TObject);
+var
+  AlbumName: string;
+  StatDate: TDateTime;
 begin
-  FWlAlbumName.Text := FEdAlbumName.Text;
+  AlbumName := FEdAlbumName.Text;
+  if AlbumName = '' then
+  begin
+    StatDate := FFiles.StatDate;
+    if YearOf(StatDate) < 2000 then
+      StatDate := DateOf(Now);
+
+    AlbumName := FormatDateTimeShortDate(StatDate);
+    FEdAlbumName.Text := AlbumName;
+  end else
+    FWlAlbumName.Text := AlbumName;
   FWlAlbumName.Show;
 
   FWlAlbumNameOk.Hide;

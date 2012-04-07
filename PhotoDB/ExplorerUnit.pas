@@ -221,10 +221,10 @@ type
     Center1: TMenuItem;
     Tile1: TMenuItem;
     RefreshID1: TMenuItem;
-    DropFileTarget1: TDropFileTarget;
+    DropFileTargetMain: TDropFileTarget;
     DropFileSourceMain: TDropFileSource;
     DragImageList: TImageList;
-    DropFileTarget2: TDropFileTarget;
+    DropFileTargetFake: TDropFileTarget;
     HelpTimer: TTimer;
     ImageEditor2: TMenuItem;
     N13: TMenuItem;
@@ -485,9 +485,9 @@ type
     procedure RotateCW1Click(Sender: TObject);
     procedure Rotateon1801Click(Sender: TObject);
     procedure RefreshID1Click(Sender: TObject);
-    procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;  Point: TPoint; var Effect: Integer);
-    procedure DropFileTarget1Enter(Sender: TObject;  ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
-    procedure DropFileTarget1Leave(Sender: TObject);
+    procedure DropFileTargetMainDrop(Sender: TObject; ShiftState: TShiftState;  Point: TPoint; var Effect: Integer);
+    procedure DropFileTargetMainEnter(Sender: TObject;  ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
+    procedure DropFileTargetMainLeave(Sender: TObject);
     procedure HelpTimerTimer(Sender: TObject);
     procedure Help1NextClick(Sender: TObject);
     procedure Help1CloseClick(Sender : TObject; var CanClose : Boolean);
@@ -651,6 +651,7 @@ type
     LastShift: TShiftState;
     LastListViewSelCount: Integer;
     ItemsDeselected: Boolean;
+    FPopupMenuWasActiveOnMouseDown: Boolean;
     IsReallignInfo: Boolean;
     FWasDragAndDrop: Boolean;
     RenameResult: Boolean;
@@ -728,8 +729,7 @@ type
     procedure UserDefinedPlaceContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure DoSelectItem;
     procedure LoadIcons;
-    procedure KernelEventCallBack(ID: Integer; Params: TEventFields;
-      Value: TEventValues);
+    procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
     function GetMyComputer: string;
     function GetSecondStepHelp: string;
     function GetViewInfo: TExplorerViewInfo;
@@ -739,6 +739,7 @@ type
     function GetPathDescription(Path: string; FileType: Integer): string;
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
     procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
+    procedure RestoreDragSelectedItems;
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1124,8 +1125,8 @@ begin
   SetLength(FListDragItems, 0);
   FDBCanDragW := False;
   ImPreview.Picture.Bitmap := nil;
-  DropFileTarget2.Register(Self);
-  DropFileTarget1.Register(ElvMain);
+  DropFileTargetFake.Register(Self);
+  DropFileTargetMain.Register(ElvMain);
 
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   RegisterMainForm(Self);
@@ -1580,6 +1581,14 @@ begin
     Open1.Visible := True;
   end;
 
+  if MiShelf.Visible then
+  begin
+    if PhotoShelf.PathInShelf(info.FileName) = -1 then
+      MiShelf.Caption := L('Shelve')
+    else
+      MiShelf.Caption := L('Unshelve');
+  end;
+
   B := CanCopySelection;
   Cut2.Visible := B;
   Copy1.Visible := B;
@@ -1800,8 +1809,8 @@ begin
   F(FItemUpdateTimer);
 
   SaveWindowPos1.SavePosition;
-  DropFileTarget2.Unregister;
-  DropFileTarget1.Unregister;
+  DropFileTargetFake.Unregister;
+  DropFileTargetMain.Unregister;
   DBKernel.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
   Settings.WriteInteger('Explorer', 'LeftPanelWidth', MainPanel.Width);
@@ -1988,6 +1997,9 @@ var
   SpotX, SpotY: Integer;
 
 begin
+  if IsPopupMenuActive then
+    Exit;
+
   PopupHandled := False;
 
   LButtonState := GetAsyncKeystate(VK_LBUTTON);
@@ -2029,10 +2041,14 @@ begin
 
       DropFileSourceMain.Execute;
       SelfDraging := False;
-      DropFileTarget1.Files.clear;
+      DropFileTargetMain.Files.clear;
       FDBCanDrag := True;
-      ListView1MouseUp(Sender, MbLeft, Shift, X, Y);
-      SetLength(FListDragItems, 0);
+
+      if not FPopupMenuWasActiveOnMouseDown then
+      begin
+        RestoreDragSelectedItems;
+        SetLength(FListDragItems, 0);
+      end;
     end;
   end;
 
@@ -2250,7 +2266,8 @@ procedure TExplorerForm.ListView1SelectItem(Sender: TObject;
   Item: TEasyItem; Selected: Boolean);
 begin
   SelectTimer.Enabled := True;
-  TmrCheckItemVisibility.Restart;
+  if (Item <> nil) and Item.Focused then
+    TmrCheckItemVisibility.Restart;
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -2269,6 +2286,18 @@ begin
     ElvMain.Repaint;
     Exit;
   end;
+  if FCurrentTypePath = EXPLORER_ITEM_SHELF then
+    if EventID_ShelfItemRemoved in Params then
+    begin
+      for I := 0 to FFilesInfo.Count - 1 do
+        if AnsiLowerCase(FFilesInfo[I].FileName) = AnsiLowerCase(Value.Name) then
+        begin
+          Index := MenuIndexToItemIndex(I);
+          DeleteItemWithIndex(Index);
+          Break;
+        end;
+      Exit;
+    end;
   if FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST then
   begin
     if EventID_PersonAdded in Params then
@@ -2628,6 +2657,10 @@ var
   I, Index: Integer;
   Item, ItemSel: TEasyItem;
 begin
+  FPopupMenuWasActiveOnMouseDown := IsPopupMenuActive;
+  if FPopupMenuWasActiveOnMouseDown then
+    RestoreDragSelectedItems;
+
   ItemsDeselected := False;
   FWasDragAndDrop := False;
 
@@ -2672,10 +2705,8 @@ begin
   FDblClicked := False;
 end;
 
-procedure TExplorerForm.ListView1MouseUp(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TExplorerForm.ListView1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  I, J, K: Integer;
   Handled: Boolean;
   Item: TEasyItem;
   WasDBDrag: Boolean;
@@ -2702,23 +2733,7 @@ begin
       if not FWasDragAndDrop then
         Exit;
 
-    SetSelected(nil);
-
-    for J := 0 to ElvMain.Items.Count - 1 do
-    begin
-      for I := 0 to Length(FListDragItems) - 1 do
-        if FListDragItems[I] = ElvMain.Items[J] then
-        begin
-          FListDragItems[I].Selected := True;
-          if I <> 0 then
-          begin
-            for K := I to Length(FListDragItems) - 2 do
-              FListDragItems[K] := FListDragItems[K + 1];
-            SetLength(FListDragItems, Length(FListDragItems) - 1);
-          end;
-          Break;
-        end;
-    end;
+    RestoreDragSelectedItems;
   end;
   SetLength(FFilesToDrag, 0);
   SetLength(FListDragItems, 0);
@@ -5969,7 +5984,6 @@ begin
     Move1.Caption := L('Move');
     Cancel1.Caption := L('Cancel');
 
-    MiShelf.Caption := L('Add to shelf');
     MiShare.Caption := L('Share');
     View2.Caption := L('Slide show');
 
@@ -6356,9 +6370,9 @@ begin
         except
         end;
 
-  DropFileTarget1.Unregister;
+  DropFileTargetMain.Unregister;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE) then
-    DropFileTarget1.Register(ElvMain);
+    DropFileTargetMain.Register(ElvMain);
 
   if not NotSetOldPath then
   begin
@@ -6655,6 +6669,23 @@ begin
   end;
 end;
 
+procedure TExplorerForm.RestoreDragSelectedItems;
+var
+  I, J: Integer;
+begin
+  SetSelected(nil);
+
+  for J := 0 to ElvMain.Items.Count - 1 do
+  begin
+    for I := 0 to Length(FListDragItems) - 1 do
+      if FListDragItems[I] = ElvMain.Items[J] then
+      begin
+        FListDragItems[I].Selected := True;
+        Break;
+      end;
+  end;
+end;
+
 procedure TExplorerForm.Convert1Click(Sender: TObject);
 var
   List: TDBPopupMenuInfo;
@@ -6758,7 +6789,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint;
+procedure TExplorerForm.DropFileTargetMainDrop(Sender: TObject; ShiftState: TShiftState; Point: TPoint;
   var Effect: Integer);
 var
   I, Index: Integer;
@@ -6771,7 +6802,7 @@ begin
   Outdrag := False;
   DropInfo := TStringList.Create;
   try
-    DropFileTarget1.Files.AssignTo(DropInfo);
+    DropFileTargetMain.Files.AssignTo(DropInfo);
     if DropInfo.Count = 0 then
       Exit;
 
@@ -6785,6 +6816,11 @@ begin
       DragFilesPopup.Assign(DropInfo);
       GetCursorPos(Pnt);
       PmDragMode.DoPopupEx(Pnt.X, Pnt.Y);
+      if Length(FListDragItems) > 0 then
+      begin
+        RestoreDragSelectedItems;
+        FPopupMenuWasActiveOnMouseDown := True;
+      end;
     end;
 
     if not(SsRight in LastShift) then
@@ -6842,10 +6878,12 @@ begin
   finally
     F(DropInfo);
   end;
+  if Length(FListDragItems) > 0 then
+    RestoreDragSelectedItems;
   SelfDraging := False;
 end;
 
-procedure TExplorerForm.DropFileTarget1Enter(Sender: TObject;
+procedure TExplorerForm.DropFileTargetMainEnter(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 begin
   LastShift := ShiftState;
@@ -6854,7 +6892,7 @@ begin
   FDBCanDrag := True;
 end;
 
-procedure TExplorerForm.DropFileTarget1Leave(Sender: TObject);
+procedure TExplorerForm.DropFileTargetMainLeave(Sender: TObject);
 begin
   FDBCanDrag := False;
   OutDrag := False;
@@ -8119,8 +8157,11 @@ begin
   if FNextClipboardViewer <> 0 then
     SendMessage(FNextClipboardViewer, WM_DRAWCLIPBOARD, Msg.Wparam, Msg.lParam);
 
-  FCanPasteFromClipboard := CanCopyFromClipboard;
-  VerifyPaste(Self);
+  if not (fsShowing in FormState) then
+  begin
+    FCanPasteFromClipboard := CanCopyFromClipboard;
+    VerifyPaste(Self);
+  end;
 end;
 
 function TExplorerForm.GetFilterText: string;
@@ -9179,7 +9220,8 @@ var
   FI: TEasyItem;
   RectArray: TEasyRectArrayObject;
   RV, R, NR: TRect;
-begin  
+begin
+  TmrCheckItemVisibility.Enabled := False;
   if ElvMain.Height > ElvMain.CellSizes.Thumbnail.Height then
   begin
     FI := ElvMain.Selection.FocusedItem;

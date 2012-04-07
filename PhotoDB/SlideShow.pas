@@ -1318,6 +1318,13 @@ begin
       Print1.Visible := not(SlideShowNow) and ImageExists;
       ImageEditor1.Visible := not(SlideShowNow) and ImageExists;
       MiShelf.Visible := not(SlideShowNow) and ImageExists and not IsDevicePath(Item.FileName);
+      if MiShelf.Visible then
+      begin
+        if PhotoShelf.PathInShelf(Item.FileName) = -1 then
+          MiShelf.Caption := L('Shelve')
+        else
+          MiShelf.Caption := L('Unshelve');
+      end;
     end;
   finally
     F(Info);
@@ -1697,7 +1704,6 @@ begin
     SlideShow1.Caption := L('Slide show');
     ImageEditor1.Caption := L('Image editor');
     Print1.Caption := L('Print');
-    MiShelf.Caption := L('Add to shelf');
     ByEXIF1.Caption := L('By EXIF');
   finally
     EndTranslate;
@@ -4253,8 +4259,22 @@ begin
 end;
 
 procedure TViewer.MiShelfClick(Sender: TObject);
+var
+  EventInfo: TEventValues;
 begin
-  PhotoShelf.AddToShelf(Item.FileName);
+  if PhotoShelf.PathInShelf(Item.FileName) = -1 then
+  begin
+    PhotoShelf.AddToShelf(Item.FileName);
+    EventInfo.ID := 0;
+    EventInfo.Name := Item.FileName;
+    DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemAdded], EventInfo);
+  end else
+  begin
+    PhotoShelf.RemoveFromShelf(Item.FileName);
+    EventInfo.ID := 0;
+    EventInfo.Name := Item.FileName;
+    DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemRemoved], EventInfo);
+  end;
 end;
 
 procedure TViewer.DoUpdateRecordWithDataSet(FileName: string; DS: TDataSet);

@@ -19,7 +19,8 @@ uses
   uConstants,
   uActivationUtils,
   uLogger,
-  Dolphin_DB, uBaseWinControl;
+  Dolphin_DB,
+  uBaseWinControl;
 
 type
   TFrameFreeActivation = class(TFrameWizardBase)
@@ -148,7 +149,7 @@ begin
       Name := Format('%s %s', [EdFirstName.Text, EdLastName.Text]);
       if TActivationManager.Instance.SaveActivateKey(Name, Reply, True) or TActivationManager.Instance.SaveActivateKey(Name, Reply, False) then
       begin
-        MessageBoxDB(Handle, L('Thank you for activation the program!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+        MessageBoxDB(Handle, L('Thank you for activation the program! Please restart the application!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         DoDonate;
         IsStepComplete := True;
         Exit;

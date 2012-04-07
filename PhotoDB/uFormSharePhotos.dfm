@@ -14,7 +14,7 @@ object FormSharePhotos: TFormSharePhotos
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Position = poOwnerFormCenter
+  Position = poScreenCenter
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -272,8 +272,8 @@ object FormSharePhotos: TFormSharePhotos
           146
           371)
         object LsLoadingAlbums: TLoadingSign
-          Left = 119
-          Top = 344
+          Left = 111
+          Top = 336
           Width = 24
           Height = 24
           Active = True

@@ -188,7 +188,7 @@ const
     '          infoWindow.open(map, marker); '+
     '       '+
     '  }); '+
-
+    '  setTimeout("fixZoom()", 1); ' +
     '  markersArray.push(marker); '+
     '}'+
     ''+
@@ -203,6 +203,14 @@ const
     '   });' +
 	  '}'+
     ''+
+
+    '  function fixZoom() { '+
+    '    maxZoomService.getMaxZoomAtLatLng(map.getCenter(), function(response) { '+
+    '      if (response.status == google.maps.MaxZoomStatus.OK && response.zoom < map.getZoom()) { '+
+    '        map.setZoom(response.zoom); '+
+    '      } '+
+    '    }); '+
+    '  } '+
 
     '  function showMaxZoom() { '+
     '    maxZoomService.getMaxZoomAtLatLng(map.getCenter(), function(response) { '+

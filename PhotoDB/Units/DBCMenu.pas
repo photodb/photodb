@@ -57,6 +57,7 @@ uses
   uPortableDeviceUtils,
   uShellNamespaceUtils,
   Vcl.ActnPopup,
+  uVCLHelpers,
   uPhotoShelf;
 
 type
@@ -254,6 +255,7 @@ begin
 
   SetIntAttr(AScript, '$MenuLength', FInfo.Count);
   SetIntAttr(AScript, '$Position', FInfo.Position);
+  SetBoolAttr(AScript, '$ItemInShelf', PhotoShelf.PathInShelf(FInfo[FInfo.Position].FileName) > -1);
 
   // if user haven't rights to get FileName its only possible way to know
   SetBoolAttr(AScript, '$FileExists', FE);
@@ -877,13 +879,13 @@ begin
       _popupMenu.Images := DBKernel.ImageList;
       _popupMenu.Items.Clear;
       AddDBContMenu(FOwner, _popupMenu.Items, Finfo);
-      _popupMenu.Popup(X, Y);
+      _popupMenu.DoPopupEx(X, Y);
     end;
   end else
   begin
     _popupMenu.Items.Clear;
     AddDBContMenu(FOwner, _popupMenu.Items, Finfo);
-    _popupMenu.Popup(X, Y);
+    _popupMenu.DoPopupEx(X, Y);
   end;
 end;
 
@@ -913,7 +915,7 @@ begin
         _popupMenu.Items.Add(Menus[I]);
       end;
     end;
-    _popupMenu.Popup(X, Y);
+    _popupMenu.DoPopupEx(X, Y);
 
   end;
 end;
@@ -1425,17 +1427,26 @@ var
   IsInShelf: Boolean;
   EventInfo: TEventValues;
 begin
+  EventInfo.ID := 0;
   IsInShelf := PhotoShelf.PathInShelf(Finfo[Finfo.Position].FileName) > -1;
+
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
     begin
+      EventInfo.Name := FInfo[I].FileName;
+
       if IsInShelf then
-        PhotoShelf.RemoveFromShelf(FInfo[I].FileName)
-      else
+      begin
+        PhotoShelf.RemoveFromShelf(FInfo[I].FileName);
+        DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfItemRemoved], EventInfo);
+      end else
+      begin
         PhotoShelf.AddToShelf(FInfo[I].FileName);
+        DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfItemAdded], EventInfo);
+      end;
     end;
 
-  EventInfo.ID := 0;
+  EventInfo.Name := '';
   DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfChanged], EventInfo);
 end;
 

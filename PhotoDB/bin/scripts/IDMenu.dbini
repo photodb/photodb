@@ -396,11 +396,16 @@ run:
   ExplorerPopUpMenu;
 }
 
-<Add to shelf>[DB_IC_SHELF]
+<Shelve>[DB_IC_SHELF]
 {
 initialization:
   if ($FileExists=false) {InVisible;};
   if ($DeviceItem=true) {InVisible;};
+  if ($ItemInShelf=true) {
+    $ItemName=T("Unshelve");
+  }; else {
+    $ItemName=T("Shelve");
+  };
 run:
   ShelfItemPopUpMenu;
 }

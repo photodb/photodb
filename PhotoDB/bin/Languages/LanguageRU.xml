@@ -203,7 +203,8 @@
     <translate name="Copy to" value="Скопировать в" />
     <translate name="Move to" value="Переместить в" />
     <translate name="Send to" value="Отправить в" />
-    <translate name="Add to shelf" value="Отложить" />
+    <translate name="Shelve" value="Отложить" />
+    <translate name="Unshelve" value="Отложить (отмена)" />
     <translate name="Photo shelf ({0} items)" value="Отложенные фото - {0}" />
     <translate name="Photo shelf" value="Отложенные фото" />
     <translate name="List of shelfed photos and other objects" value="Список отложенных фото и других объектов" />
@@ -818,7 +819,8 @@
 	<translate name="Resize HD (1280x720)" value="Уменьшить HD (1280x720)" />
 	<translate name="Sepia - FullHD (1920x1080)" value="Сепия - FullHD (1920x1080)" />
 	<translate name="Smart smooth - FullHD (1920x1080)" value="Умное сглаживание - FullHD (1920x1080)" />
-	<translate name="Add to shelf" value="Отложить" />	
+	<translate name="Shelve" value="Отложить" />
+    <translate name="Unshelve" value="Отложить (отмена)" />	
   </scope>
   <scope name="Viewer">
     <translate name="Stop timer" value="Остановить таймер" />
@@ -901,7 +903,8 @@
     <translate name="Face detection disabled" value="Определение лиц отключено" />
     <translate name="Select person" value="Указать персону" />
     <translate name="Click to select person" value="Нажмите для выбора персоны" />	
-    <translate name="Add to shelf" value="Отложить" />
+    <translate name="Shelve" value="Отложить" />
+    <translate name="Unshelve" value="Отложить (отмена)" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -1967,7 +1970,7 @@
     <translate name="Country" value="Страна" />
     <translate name="City" value="Город" />
     <translate name="Address" value="Адрес" />
-    <translate name="Thank you for activation the program!" value="Спасибо за активацию программы" />
+    <translate name="Thank you for activation the program! Please restart the application!" value="Спасибо за активацию программы! Перезагрузите программу для применения настроек." />
     <translate name="Please wait until program completes the activation process..." value="Пожалуйста, подождите, пока программма выполнит активацию через интернет..." />
     <translate name="Activation via internet failed! Please, check your internet connection settings in IE. Only manual activation is possible at this moment!" value="Активация через интернет не удалась! Проверьте настройки интернета в IE. Возможна только ручная активация!" />
     <translate name="This wizard helps you to activate this copy of application. Please fill all required fields and follow the instructions." value="Этот диалог поможет вам активировать программу. Пожалуйста, заполните все необходимые поля и следуйте инструкциям." />

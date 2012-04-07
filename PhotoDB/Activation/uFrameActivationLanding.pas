@@ -3,8 +3,18 @@ unit uFrameActivationLanding;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, StdCtrls, uFrameWizardBase, uActivationUtils, uFrameActicationSetCode;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  uFrameWizardBase,
+  uActivationUtils,
+  uFrameActicationSetCode;
 
 type
   TFrameActivationLanding = class(TFrameWizardBase)

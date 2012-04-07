@@ -2085,7 +2085,8 @@ begin
   Delete(Desc, B, E - B + 1);
 end;
 
-function MakeNewItem(Owner: TComponent; MenuItem : TMenuItem; ImageList : TCustomImageList; Caption, Icon : string; var Script : string; var aScript : TScript; OnClick : TNotifyEvent; var ImagesCount : integer) : TMenuItemW;
+function MakeNewItem(Owner: TComponent; MenuItem: TMenuItem; ImageList: TCustomImageList; Caption, Icon: string; var Script: string;
+  var aScript: TScript; OnClick: TNotifyEvent; var ImagesCount: Integer): TMenuItemW;
 var
   Item: TMenuItemW;
   Ico: TIcon;
@@ -2123,6 +2124,7 @@ begin
   Item.ExSetDefault(GetNamedValueBool(AScript, '$Default'));
   Item.Enabled := GetNamedValueBool(AScript, '$Enabled');
   Item.Checked := GetNamedValueBool(AScript, '$Checked');
+  Item.Caption := NotEmptyString(GetNamedValueString(AScript, '$ItemName'), Caption);
 
   Item.Script := Command;
   MenuItem.Add(Item);
@@ -2311,6 +2313,7 @@ begin
           TW.I.Start('END - Init-Run');
 
 
+          SetNamedValue(AScript, '$ItemName', Text);
           SetNamedValue(AScript, '$Tag', '0');
           SetNamedValue(AScript, '$Visible', 'true');
           SetNamedValue(AScript, '$Default', 'false');

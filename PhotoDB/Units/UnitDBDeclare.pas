@@ -123,7 +123,7 @@ type
     EventID_FileProcessed, EventID_Repaint_ImageList, EventID_No_EXIF,
     EventID_PersonAdded, EventID_PersonChanged, EventID_PersonRemoved,
     EventID_GroupAdded, EventID_GroupChanged, EventID_GroupRemoved,
-    EventID_ShelfChanged);
+    EventID_ShelfChanged, EventID_ShelfItemRemoved, EventID_ShelfItemAdded);
 
   TEventFields = set of TEventField;
 

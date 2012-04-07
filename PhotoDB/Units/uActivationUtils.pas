@@ -3,15 +3,21 @@ unit uActivationUtils;
 interface
 
 uses
-  Windows, SysUtils, uRuntime, Classes, Registry, uMemory,
-  win32crc, uConstants, SyncObjs, uTranslate, uSysUtils;
-
-type
-  TCIDProcedure = procedure(Buffferm: PChar; BuffesSize : Integer);
+  Windows,
+  SysUtils,
+  uRuntime,
+  Classes,
+  Registry,
+  uMemory,
+  win32crc,
+  uConstants,
+  SyncObjs,
+  uTranslate,
+  uSysUtils;
 
 const
-  RegistrationUserName : string = 'UserName';
-  RegistrationCode : string = 'AcivationCode';
+  RegistrationUserName: string = 'UserName';
+  RegistrationCode: string = 'AcivationCode';
 
 type
   TActivationManager = class(TObject)
@@ -238,10 +244,12 @@ var
 begin
   S := HardwareString;
   CalcStringCRC32(S, N);
-  N := N xor $6357A303; // v2.3-3.0?
+  //N := N xor $6357A303; // v2.3
+  N := N xor $6357A304; // v3.0
   S := IntToHex(N, 8);
   CalcStringCRC32(S, N);
-  N := N xor $162C90CA; // v2.3-3.0?
+  //N := N xor $162C90CA; // v2.3
+  N := N xor $162C90CB; // v3.0
   Code := S + Inttohex(N, 8);
   Result := Code;
 end;

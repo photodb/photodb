@@ -29,20 +29,15 @@ type
     procedure Execute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDeactivate(Sender: TObject);
-    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure MouseTimerTimer(Sender: TObject);
-    procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure FormContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure FormContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure FormClick(Sender: TObject);
-    procedure FormMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-   procedure HideMouse;
-   procedure ShowMouse;
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure HideMouse;
+    procedure ShowMouse;
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
@@ -223,7 +218,7 @@ begin
         if AltKeyDown then
           Msg.WParam := 29;
 
-      if (Msg.WParam = VK_RETURN) and CtrlKeyDown then
+      if (Msg.WParam = VK_RETURN) then
         if Viewer <> nil then
           Viewer.Exit1Click(nil);
 

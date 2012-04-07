@@ -26,7 +26,7 @@ type
     procedure LoadSavedItems;
     procedure SaveItems;
     procedure AddToShelf(Path: string);
-    procedure RemoveFromShelf(Path: string);
+    function RemoveFromShelf(Path: string): Boolean;
     function PathInShelf(Path: string): Integer;
     procedure AddItems(Sender: TDBForm; Items: TStrings);
     procedure DeleteItems(Sender: TDBForm; Items: TStrings);
@@ -58,24 +58,41 @@ end;
 procedure TPhotoShelf.AddItems(Sender: TDBForm; Items: TStrings);
 var
   S: string;
+  AddedItems: TStrings;
 begin
-  FSync.Enter;
+  AddedItems := TStringList.Create;
   try
-    for S in Items do
-      if PathInShelf(S) = -1 then
-        FItems.Add(S);
+    FSync.Enter;
+    try
+      for S in Items do
+        if PathInShelf(S) = -1 then
+        begin
+          FItems.Add(S);
+          AddedItems.Add(S);
+        end;
+    finally
+      FSync.Leave;
+    end;
+    TThread.Synchronize(nil,
+      procedure
+      var
+        EventInfo: TEventValues;
+        I: Integer;
+      begin
+        EventInfo.Image := nil;
+        EventInfo.ID := 0;
+        DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
+
+        for I := 0 to AddedItems.Count - 1 do
+        begin
+          EventInfo.Name := AddedItems[I];
+          DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfItemAdded], EventInfo);
+        end;
+      end
+    );
   finally
-    FSync.Leave;
+    F(AddedItems);
   end;
-  TThread.Synchronize(nil,
-    procedure
-    var
-      EventInfo: TEventValues;
-    begin
-      EventInfo.Image := nil;
-      DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
-    end
-  );
 end;
 
 procedure TPhotoShelf.AddToShelf(Path: string);
@@ -108,24 +125,39 @@ end;
 procedure TPhotoShelf.DeleteItems(Sender: TDBForm; Items: TStrings);
 var
   S: string;
+  RemovedItems: TStrings;
 begin
-  FSync.Enter;
+  RemovedItems := TStringList.Create;
   try
-    for S in Items do
-      RemoveFromShelf(S);
-  finally
-    FSync.Leave;
-  end;
+    FSync.Enter;
+    try
+      for S in Items do
+        if RemoveFromShelf(S) then
+          RemovedItems.Add(S);
+    finally
+      FSync.Leave;
+    end;
 
-  TThread.Synchronize(nil,
-    procedure
-    var
-      EventInfo: TEventValues;
-    begin
-      EventInfo.Image := nil;
-      DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
-    end
-  );
+    TThread.Synchronize(nil,
+      procedure
+      var
+        EventInfo: TEventValues;
+        I: Integer;
+      begin
+        EventInfo.Image := nil;
+        EventInfo.ID := 0;
+        DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
+
+        for I := 0 to RemovedItems.Count - 1 do
+        begin
+          EventInfo.Name := RemovedItems[I];
+          DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfItemRemoved], EventInfo);
+        end;
+      end
+    );
+  finally
+    F(RemovedItems);
+  end;
 end;
 
 destructor TPhotoShelf.Destroy;
@@ -179,15 +211,19 @@ begin
   end;
 end;
 
-procedure TPhotoShelf.RemoveFromShelf(Path: string);
+function TPhotoShelf.RemoveFromShelf(Path: string): Boolean;
 var
   Index: Integer;
 begin
+  Result := False;
   FSync.Enter;
   try
     Index := PathInShelf(Path);
     if Index > -1 then
+    begin
       FItems.Delete(Index);
+      Result := True;
+    end;
   finally
     FSync.Leave;
   end;
