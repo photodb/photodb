@@ -122,6 +122,16 @@ object OptionsForm: TOptionsForm
         StretchImage = False
         CanClick = True
       end
+      object BtnShowThemesFolder: TButton
+        Left = 176
+        Top = 335
+        Width = 318
+        Height = 25
+        Anchors = [akLeft, akBottom]
+        Caption = 'BtnShowThemesFolder'
+        TabOrder = 3
+        OnClick = BtnShowThemesFolderClick
+      end
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'

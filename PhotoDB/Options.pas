@@ -217,14 +217,13 @@ type
     LbThemePreview: TLabel;
     BtnApplyTheme: TButton;
     WlGetMoreStyles: TWebLink;
-    procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer;
-      var AllowChange: Boolean);
+    BtnShowThemesFolder: TButton;
+    procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure OkButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
-    procedure CbExtensionListContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure CbExtensionListContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure Usethisprogramasdefault1Click(Sender: TObject);
     procedure Usemenuitem1Click(Sender: TObject);
     procedure Dontusethisextension1Click(Sender: TObject);
@@ -236,12 +235,10 @@ type
     procedure BtnClearPasswordsInSettingsClick(Sender: TObject);
     procedure BtnUserMenuChooseIconClick(Sender: TObject);
     procedure BtnUserMenuChooseExecutableClick(Sender: TObject);
-    procedure LvUserMenuItemsContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure LvUserMenuItemsContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure Addnewcommand1Click(Sender: TObject);
     procedure Remove1Click(Sender: TObject);
-    procedure LvUserMenuItemsSelectItem(Sender: TObject; Item: TListItem;
-      Selected: Boolean);
+    procedure LvUserMenuItemsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure BtnSaveUserMenuItemClick(Sender: TObject);
     procedure EdUserMenuItemCaptionKeyPress(Sender: TObject; var Key: Char);
     procedure BtnSelectUserMenuItemIconClick(Sender: TObject);
@@ -250,21 +247,18 @@ type
     procedure BtnClearIconCacheClick(Sender: TObject);
     procedure BtnClearThumbnailCacheClick(Sender: TObject);
     procedure TrackBar4Change(Sender: TObject);
-    procedure PlacesListViewContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure PlacesListViewContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure BtnChooseNewPlaceClick(Sender: TObject);
     procedure ReadPlaces;
     procedure WritePlaces;
-    procedure PlacesListViewSelectItem(Sender: TObject; Item: TListItem;
-      Selected: Boolean);
+    procedure PlacesListViewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure CblPlacesDisplayInClickCheck(Sender: TObject);
     procedure BtnChoosePlaceIconClick(Sender: TObject);
     procedure DeleteItem1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
     procedure Down1Click(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
-    procedure PlacesListViewEdited(Sender: TObject; Item: TListItem;
-      var S: String);
+    procedure PlacesListViewEdited(Sender: TObject; Item: TListItem; var S: String);
     procedure Default1Click(Sender: TObject);
     procedure CbStartUpExplorerClick(Sender: TObject);
     procedure BtnSelectExplorerStartupFolderClick(Sender: TObject);
@@ -281,6 +275,7 @@ type
     procedure BtnApplyThemeClick(Sender: TObject);
     procedure LbStylesClick(Sender: TObject);
     procedure WlGetMoreStylesClick(Sender: TObject);
+    procedure BtnShowThemesFolderClick(Sender: TObject);
   private
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
@@ -322,16 +317,47 @@ uses
 
 {$R *.dfm}
 
+procedure TOptionsForm.BtnShowThemesFolderClick(Sender: TObject);
+var
+  StylesUserPath: string;
+begin
+  StylesUserPath := GetAppDataDirectory + '\' + StylesFolder;
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetOldPath(StylesUserPath);
+    SetPath(StylesUserPath);
+    Show;
+  end;
+end;
+
 procedure TOptionsForm.TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
 var
   I, Size: Integer;
   Reg: TBDRegistry;
   S: TStrings;
   StylesPath,
-  FileName,
   CurrentStyle,
+  StylesUserPath,
   FCaption, EXEFile, Params, Icon: string;
   UseSubMenu, IsStyleSelected: Boolean;
+
+  procedure LoadStylesFromDirectory(Directory: string);
+  var
+    FileName: string;
+  begin
+    for FileName in TDirectory.GetFiles(Directory, '*.vsf') do
+    begin
+      FThemeList.Add(FileName);
+      LbStyles.Items.Add(ExtractFileName(FileName));
+      if not IsStyleSelected and ((AnsiLowerCase(CurrentStyle) = AnsiLowerCase(ExtractFileName(FileName))) or
+        (AnsiLowerCase(CurrentStyle) = AnsiLowerCase(FileName))) then
+      begin
+        LbStyles.Selected[LbStyles.Items.Count - 1] := True;
+        IsStyleSelected := True;
+      end;
+    end;
+  end;
+
 begin
   if FLoadedPages[NewTab] then
     Exit;
@@ -339,20 +365,22 @@ begin
 
   if NewTab = 0 then
   begin
-    LbStyles.Items.Clear;
-    StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
-    LbStyles.Items.Add(L('Windows style (standard)'));
     IsStyleSelected := False;
+
     CurrentStyle := Settings.ReadString('Style', 'FileName', DefaultThemeName);
-    for FileName in TDirectory.GetFiles(StylesPath, '*.vsf') do
-    begin
-      LbStyles.Items.Add(ExtractFileName(FileName));
-      if AnsiLowerCase(CurrentStyle) = AnsiLowerCase(ExtractFileName(FileName)) then
-      begin
-        LbStyles.Selected[LbStyles.Items.Count - 1] := True;
-        IsStyleSelected := True;
-      end;
-    end;
+
+    LbStyles.Items.Clear;
+    FThemeList.Clear;
+    FThemeList.Add('');
+    LbStyles.Items.Add(L('Windows style (standard)'));
+
+    StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
+    LoadStylesFromDirectory(StylesPath);
+
+    StylesUserPath := GetAppDataDirectory + '\' + StylesFolder;
+    CreateDirA(StylesUserPath);
+    LoadStylesFromDirectory(StylesUserPath);
+
     if not IsStyleSelected then
       LbStyles.Selected[0] := True;
 
@@ -560,7 +588,7 @@ begin
   for I := 0 to 5 do
     FLoadedPages[I] := False;
   LoadLanguage;
-  FThemeList := nil;
+  FThemeList := TStringList.Create;
   PmPlaces.Images := DBKernel.ImageList;
   PmUserMenu.Images := DBKernel.ImageList;
   Up1.ImageIndex := DB_IC_UP;
@@ -590,6 +618,7 @@ end;
 procedure TOptionsForm.FormDestroy(Sender: TObject);
 begin
   OptionsForm := nil;
+  F(FThemeList);
 end;
 
 procedure TOptionsForm.OkButtonClick(Sender: TObject);
@@ -927,6 +956,7 @@ begin
     BtnApplyTheme.Caption := L('Apply style');
     LbAvailableTemes.Caption := L('Available styles') + ':';
     LbThemePreview.Caption := L('Style preview') + ':';
+    BtnShowThemesFolder.Caption := L('Open user themes folder');
     WlGetMoreStyles.Text := L('Get more styles!');
     WlGetMoreStyles.LoadImage;
     WlGetMoreStyles.Left := TsStyle.ClientRect.Width - WlGetMoreStyles.Width - 5;
@@ -955,7 +985,7 @@ var
   I: Integer;
   LStyle: TCustomStyle;
   FBitmap: TBitmap;
-  StylesPath, Text: string;
+  Text: string;
   R: TRect;
 begin
   for I := 0 to LbStyles.Items.Count - 1 do
@@ -982,8 +1012,7 @@ begin
         end;
         Exit;
       end;
-      StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
-      LStyle := TCustomStyleExt.Create(StylesPath + LbStyles.Items[I]);
+      LStyle := TCustomStyleExt.Create(FThemeList[I]);
       try
         if Assigned(LStyle) then
         begin
@@ -994,6 +1023,7 @@ begin
             FBitmap.Height := ImStylePreview.ClientRect.Height;
             FillTransparentColor(FBitmap, Theme.PanelColor, 0);
             DrawSampleWindow(LStyle, FBitmap.Canvas, ImStylePreview.ClientRect, 'Photo Database');
+            FBitmap.AlphaFormat := afDefined;
             ImStylePreview.Picture.Graphic := FBitmap;
           finally
             F(FBitmap);
@@ -1331,7 +1361,7 @@ begin
   for I := 0 to LbStyles.Items.Count - 1 do
     if LbStyles.Selected[I] then
     begin
-      Settings.WriteString('Style', 'FileName', LbStyles.Items[I]);
+      Settings.WriteString('Style', 'FileName', FThemeList[I]);
       if MessageBoxDB(Handle, L('Restart of application is required for applying new style! Restart application now?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
       begin
         ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);

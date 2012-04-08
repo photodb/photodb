@@ -42,7 +42,8 @@ begin
       StyleFileName := Settings.ReadString('Style', 'FileName', DefaultThemeName);
       if StyleFileName <> '' then
       begin
-        StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
+        if Pos(':', StyleFileName) = 0 then
+          StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
         if TStyleManager.IsValidStyle(StyleFileName, SI) then
         begin
           TStyleManager.LoadFromFile(StyleFileName);
