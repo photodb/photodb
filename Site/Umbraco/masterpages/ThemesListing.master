@@ -1,8 +1,5 @@
 ﻿<%@ Master Language="C#" MasterPageFile="~/masterpages/LeftNavigation.master" AutoEventWireup="true" %>
 
 <asp:Content ContentPlaceHolderID="RightContent" runat="server">
-  <form runat="server">
-    <umbraco:Item field="content" runat="server" />
-    <umbraco:Macro Alias="UnInstallReason" runat="server" />
-  </form>
+  <umbraco:Macro Alias="ThemesListing" runat="server" />
 </asp:Content>

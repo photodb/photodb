@@ -47,7 +47,7 @@
       
   <meta name="keywords" content="{$keywords}" />
   <meta name="description" content="{$currentPage/mETADescription}" />
-  <title>Photo Database - <xsl:value-of select="$settingsNode/siteSlogan" /> - <xsl:value-of select="$title" /></title>
+  <title>Photo Database - <xsl:value-of select="$settingsNode/siteSlogan" /> - <xsl:value-of select="Plib:Coalesce($currentPage/mETATitle,$title)" /></title>
 </xsl:template>
 
 </xsl:stylesheet>

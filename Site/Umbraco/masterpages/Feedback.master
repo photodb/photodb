@@ -2,6 +2,7 @@
 
 <asp:Content ContentPlaceHolderID="RightContent" runat="server">
   <form runat="server">
+    <umbraco:Item field="content" runat="server" />
     <umbraco:Macro Alias="ContactUs" runat="server" />
   </form>
 </asp:Content>

@@ -511,7 +511,18 @@ font-size: 12px; text-align: center;
   font-weight:bold;
 }
 
+#container em{
+  font-style: italic; 
+}
 
+.themes_list{
+ padding: 15px; 
+}
+
+.theme_details{
+  padding:10px; 
+  float:left;
+}
 
 
 

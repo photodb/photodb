@@ -371,7 +371,7 @@ begin
 
     LbStyles.Items.Clear;
     FThemeList.Clear;
-    FThemeList.Add('');
+    FThemeList.Add(' ');
     LbStyles.Items.Add(L('Windows style (standard)'));
 
     StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
@@ -1023,7 +1023,6 @@ begin
             FBitmap.Height := ImStylePreview.ClientRect.Height;
             FillTransparentColor(FBitmap, Theme.PanelColor, 0);
             DrawSampleWindow(LStyle, FBitmap.Canvas, ImStylePreview.ClientRect, 'Photo Database');
-            FBitmap.AlphaFormat := afDefined;
             ImStylePreview.Picture.Graphic := FBitmap;
           finally
             F(FBitmap);

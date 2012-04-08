@@ -18,7 +18,7 @@
     <xsl:for-each select="$footerLinks">
       <a href="{umbraco.library:NiceUrl(./@id)}"><xsl:value-of select="./title" /></a>
     </xsl:for-each>
-    <span><a href="mailto:photodb@illusdolphin.net">©2011 Studio Illusion Dolphin</a></span>
+    <span><a href="mailto:photodb@illusdolphin.net">©2012 Studio Illusion Dolphin</a></span>
   </div><!--footer-->
 
 </xsl:template>

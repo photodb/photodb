@@ -17,8 +17,6 @@
     
 <xsl:template match="/">
 
-<!-- Plib:IsLoggedIntoBackend() -->
-<xsl:if test="1">
   <div class="home_news">
     <div class="news_block_title">
       <strong><a href="{umbraco.library:NiceUrl($NewsHolder/@id)}"><xsl:value-of select="$NewsHolder/homeLatestNewsTitle" /></a></strong>
@@ -37,7 +35,6 @@
       </xsl:if>
     </xsl:for-each>
   </div>
-</xsl:if>
 
 </xsl:template>
 

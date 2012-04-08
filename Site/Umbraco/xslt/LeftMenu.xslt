@@ -14,6 +14,7 @@
 <xsl:variable name="DonatePageDocTypeId" select="1079" />
 <xsl:variable name="level2Page" select="$currentPage/ancestor-or-self::*[@level=2]" />
 <xsl:variable name="SkipDocTypeIds" select="',1233,'" />
+<xsl:variable name="IncludeDocTypeIds" select="',1419,'" />
     
 <xsl:template match="/">
 
@@ -26,12 +27,21 @@
       </a>
     </li>
   </xsl:if>
-  <xsl:for-each select="$level2Page/child::*[@isDoc and string(umbracoNaviHide) != '1' and string(@template)!='0' and not(contains($SkipDocTypeIds, @nodeType))]">
+  <xsl:for-each select="$level2Page/child::*[@isDoc and string(umbracoNaviHide) != '1' and (string(@template)!='0' or contains($IncludeDocTypeIds, @nodeType)) and not(contains($SkipDocTypeIds, @nodeType))]">
     <li>
-      <a href="{umbraco.library:NiceUrl(./@id)}">
-        <xsl:if test="./@id=$currentPage/@id"><xsl:attribute name="class">selected</xsl:attribute></xsl:if>
-        <xsl:value-of select="./title" />
-      </a>
+      <xsl:choose>
+        <xsl:when test="name()='InternalLink' and ./node != ''">
+          <a href="{umbraco.library:NiceUrl(./node)}">
+            <xsl:value-of select="./title" />
+          </a>
+        </xsl:when>
+        <xsl:otherwise>
+          <a href="{umbraco.library:NiceUrl(./@id)}">
+            <xsl:if test="./@id=$currentPage/@id"><xsl:attribute name="class">selected</xsl:attribute></xsl:if>
+            <xsl:value-of select="./title" />
+          </a>
+        </xsl:otherwise>
+      </xsl:choose>
     </li>
   </xsl:for-each>
   <xsl:if test="$currentPage/@nodeType!=$DownloadPageDocTypeId">
