@@ -3,9 +3,22 @@ unit CustomSelectTool;
 interface
 
 uses
-  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
-  GraphicsBaseTypes, UnitDBKernel, uMemory;
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  Math,
+  SysUtils,
+  ImageHistoryUnit,
+  Effects,
+  ComCtrls,
+  GraphicsBaseTypes,
+  UnitDBKernel,
+  uMemory;
 
 type
   TCustomSelectToolClass = class(TToolsPanelClass)
@@ -102,8 +115,6 @@ begin
 end;
 
 constructor TCustomSelectToolClass.Create(AOwner: TComponent);
-var
-  IcoOK, IcoCancel, IcoSave: TIcon;
 begin
   inherited;
   FAnyRect := False;
@@ -140,13 +151,6 @@ begin
   EditHeightLabel.Left := EditHeight.Left;
   EditHeightLabel.Parent := AOwner as TWinControl;
 
-  IcoOK := TIcon.Create;
-  IcoCancel := TIcon.Create;
-  IcoSave := TIcon.Create;
-  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
-  IcoSave.Handle := LoadIcon(HInstance, 'SAVETOFILE');
-
   SaveSettingsLink := TWebLink.Create(Self);
   SaveSettingsLink.Parent := AOwner as TWinControl;
   SaveSettingsLink.Text := L('Save settings');
@@ -155,9 +159,7 @@ begin
   SaveSettingsLink.Visible := True;
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
-  SaveSettingsLink.Icon := IcoSave;
-  SaveSettingsLink.LoadImage;
-  IcoSave.Free;
+  SaveSettingsLink.LoadFromResource('SAVETOFILE');
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := AOwner as TWinControl;
@@ -167,9 +169,7 @@ begin
   MakeItLink.Visible := True;
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
-  MakeItLink.Icon := IcoOK;
-  MakeItLink.LoadImage;
-  IcoOK.Free;
+  MakeItLink.LoadFromResource('DOIT');
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := AOwner as TWinControl;
@@ -179,10 +179,7 @@ begin
   CloseLink.Visible := True;
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
-  CloseLink.Icon := IcoCancel;
-  CloseLink.LoadImage;
-  IcoCancel.Free;
-
+  CloseLink.LoadFromResource('CANCELACTION');
 end;
 
 destructor TCustomSelectToolClass.Destroy;

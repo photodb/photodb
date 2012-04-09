@@ -3,10 +3,26 @@ unit RedEyeToolUnit;
 interface
 
 uses
-  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, Effects, ComCtrls,
-  GraphicsBaseTypes, CustomSelectTool, Dialogs, UnitDBKernel,
-  uDBGraphicTypes, uMemory, uSettings;
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  Math,
+  SysUtils,
+  ImageHistoryUnit,
+  Effects,
+  ComCtrls,
+  GraphicsBaseTypes,
+  CustomSelectTool,
+  Dialogs,
+  UnitDBKernel,
+  uDBGraphicTypes,
+  uMemory,
+  uSettings;
 
 type
   TRedEyeToolPanelClass = class(TCustomSelectToolClass)

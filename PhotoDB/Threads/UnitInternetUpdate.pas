@@ -3,10 +3,29 @@ unit UnitInternetUpdate;
 interface
 
 uses
-  Classes, Registry, Windows, SysUtils, UnitDBKernel, Forms,
-  uVistaFuncs, uLogger, uConstants, uShellIntegration, uGOM, DateUtils,
-  uTranslate, uInternetUtils, xmldom, uDBForm, ActiveX,
-  Dolphin_DB, uActivationUtils, uSettings, uSysUtils, uDBThread;
+  Classes,
+  Registry,
+  Windows,
+  SysUtils,
+  UnitDBKernel,
+  Forms,
+  uVistaFuncs,
+  uLogger,
+  uConstants,
+  uShellIntegration,
+  uGOM,
+  DateUtils,
+  uTranslate,
+  uInternetUtils,
+  xmldom,
+  uDBForm,
+  ActiveX,
+  Dolphin_DB,
+  uActivationUtils,
+  uSettings,
+  uSysUtils,
+  uDBThread,
+  uUpTime;
 
 type
   TInternetUpdate = class(TDBThread)
@@ -16,7 +35,7 @@ type
     StringParam: string;
     FNotifyHandler: TUpdateNotifyHandler;
     FOwner: TDBForm;
-    Info : TUpdateInfo;
+    Info: TUpdateInfo;
   protected
     function GetThreadID: string; override;
     procedure Execute; override;
@@ -28,7 +47,7 @@ type
   public
    constructor Create(Owner: TDBForm; IsBackground: Boolean; NotifyHandler: TUpdateNotifyHandler);
   end;
-                                  
+
 implementation
 
 uses
@@ -65,7 +84,7 @@ begin
 
     try
       UpdateFullUrl := ResolveLanguageString(UpdateNotifyURL);
-      UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion;
+      UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion + '&ut=' + IntToStr(GetCurrentUpTime);
       UpdateText := DownloadFile(UpdateFullUrl, TEncoding.UTF8);
     except
       on E: Exception do

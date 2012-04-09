@@ -37,8 +37,16 @@ implementation
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer;
   overload;
+var
+  Res: Integer;
 begin
-  Result := TaskDialogEx(Handle, AContent, Title, ADescription, Buttons, Icon, GetParamStrDBBool('NoVistaMsg'));
+  TThread.Synchronize(nil,
+    procedure
+    begin
+     Res := TaskDialogEx(Handle, AContent, Title, ADescription, Buttons, Icon, GetParamStrDBBool('NoVistaMsg'));
+    end
+  );
+  Result := Res;
 end;
 
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: Integer): Integer; overload;

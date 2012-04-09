@@ -261,6 +261,7 @@ object FormCreatePerson: TFormCreatePerson
     BevelInner = bvNone
     BevelOuter = bvNone
     BorderStyle = bsNone
+    ParentBackground = True
     TabOrder = 2
     OnDblClick = WllGroupsDblClick
     VerticalIncrement = 5

@@ -3,7 +3,10 @@ unit GBlur2;
 interface
 
 uses
-  Windows, Graphics, GraphicsBaseTypes, uEditorTypes;
+  Windows,
+  Graphics,
+  GraphicsBaseTypes,
+  uEditorTypes;
 
 type
   PRGBTriple = ^TRGBTriple;

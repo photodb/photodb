@@ -15,10 +15,8 @@ type
   TMainMenuStyleHook = class(TObject)
   private
     procedure HookMenu(MenuItem: TMenuItem);
-    procedure AdvancedDrawItem(Sender: TObject; ACanvas: TCanvas;
-      ARect: TRect; State: TOwnerDrawState);
-    procedure MenuChanged(Sender: TObject; Source: TMenuItem;
-      Rebuild: Boolean);
+    procedure AdvancedDrawItem(Sender: TObject; ACanvas: TCanvas; ARect: TRect; State: TOwnerDrawState);
+    procedure MenuChanged(Sender: TObject; Source: TMenuItem; Rebuild: Boolean);
   public
     class procedure RegisterMenu(Menu: TMainMenu);
   end;
@@ -100,7 +98,7 @@ begin
     ACanvas.Font.Style := ACanvas.Font.Style - [fsBold];
 
   ACanvas.Brush.Style := bsClear;
-  ARect.Left := ARect.Left + 16 + 4;
+  ARect.Left := ARect.Left + 20 + 4;
   DrawText(ACanvas.Handle, TMenuItem(Sender).Caption, Length(TMenuItem(Sender).Caption), ARect, DT_SINGLELINE or DT_VCENTER );
 end;
 

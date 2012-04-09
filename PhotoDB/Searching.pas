@@ -165,7 +165,7 @@ type
     DropFileSource1: TDropFileSource;
     DragImageList: TImageList;
     DropFileTarget1: TDropFileTarget;
-    Image3: TImage;
+    ImSelectGroup: TImage;
     QuickGroupsSearch: TPopupActionBar;
     SortingPopupMenu: TPopupActionBar;
     SortbyID1: TMenuItem;
@@ -322,7 +322,7 @@ type
     procedure HelpNextClick(Sender: TObject);
     procedure HelpCloseClick(Sender: TObject; var CanClose: Boolean);
     procedure FormShow(Sender: TObject);
-    procedure Image3Click(Sender: TObject);
+    procedure ImSelectGroupClick(Sender: TObject);
     procedure QuickGroupsearch(Sender: TObject);
     procedure SortbyID1Click(Sender: TObject);
     procedure SortbyName1Click(Sender: TObject);
@@ -699,7 +699,7 @@ begin
   Ico := TIcon.Create;
   try
     DBkernel.ImageList.GetIcon(DB_IC_GROUPS, Ico);
-    Image3.Picture.Graphic := Ico;
+    ImSelectGroup.Picture.Graphic := Ico;
   finally
     F(Ico);
   end;
@@ -2649,7 +2649,7 @@ begin
   SearchEdit.SetFocus;
 end;
 
-procedure TSearchForm.Image3Click(Sender: TObject);
+procedure TSearchForm.ImSelectGroupClick(Sender: TObject);
 var
   Groups: TGroups;
   I: Integer;
@@ -2662,32 +2662,36 @@ begin
 
   GetCursorPos(P);
   Groups := GetRegisterGroupList(True, not(ShiftKeyDown));
-  QuickGroupsSearch.Items.Clear;
-  GroupsImageList.Clear;
-  SmallB := TBitmap.Create;
   try
-    SmallB.PixelFormat := pf24bit;
+    QuickGroupsSearch.Items.Clear;
+    GroupsImageList.Clear;
+    SmallB := TBitmap.Create;
+    try
+      SmallB.PixelFormat := pf24bit;
+      for I := 0 to Length(Groups) - 1 do
+      begin
+        if Groups[I].GroupImage <> nil then
+        begin
+          SmallB.PixelFormat := pf24Bit;
+          SmallB.Assign(Groups[I].GroupImage);
+          CenterBitmap24To32ImageList(SmallB, 16);
+          GroupsImageList.Add(SmallB, nil);
+        end;
+      end;
+    finally
+      F(SmallB);
+    end;
+
     for I := 0 to Length(Groups) - 1 do
     begin
-      if Groups[I].GroupImage <> nil then
-      begin
-        SmallB.PixelFormat := pf24Bit;
-        SmallB.Assign(Groups[I].GroupImage);
-        CenterBitmap24To32ImageList(SmallB, 16);
-        GroupsImageList.Add(SmallB, nil);
-      end;
+      MenuItem := TmenuItem.Create(QuickGroupsSearch.Items);
+      MenuItem.Caption := Groups[I].GroupName;
+      MenuItem.OnClick := QuickGroupsearch;
+      MenuItem.ImageIndex := I;
+      QuickGroupsSearch.Items.Add(MenuItem);
     end;
   finally
-    F(SmallB);
-  end;
-
-  for I := 0 to Length(Groups) - 1 do
-  begin
-    MenuItem := TmenuItem.Create(QuickGroupsSearch.Items);
-    MenuItem.Caption := Groups[I].GroupName;
-    MenuItem.OnClick := QuickGroupsearch;
-    MenuItem.ImageIndex := I;
-    QuickGroupsSearch.Items.Add(MenuItem);
+    FreeGroups(Groups);
   end;
   QuickGroupsSearch.DoPopupEx(P.X, P.Y);
 end;
@@ -2703,12 +2707,15 @@ begin
     if (S[I] = '&') and (S[I + 1] <> '&') then
       Delete(S, I, 1);
   end;
+  BeginScreenUpdate(ComboBoxSearchGroups.Handle);
   for I := 1 to ComboBoxSearchGroups.Items.Count - 1 do
     if ComboBoxSearchGroups.ItemsEx[I].Caption = S then
     begin
       ComboBoxSearchGroups.ItemIndex := I;
+      InvalidateRect(ComboBoxSearchGroups.EditHandle, nil, True);
       Break;
     end;
+  EndScreenUpdate(ComboBoxSearchGroups.Handle, True);
   if WlStartStop.Text <> L('Stop') then
     DoSearchNow(Sender);
 end;
@@ -3454,65 +3461,39 @@ end;
 procedure TSearchForm.LoadGroupsList(LoadAllLIst: Boolean = False);
 var
   Groups: TGroups;
-  Size, I: Integer;
-  SmallB, B: TBitmap;
-  JPEG: TJPEGImage;
+  I: Integer;
+  B: TBitmap;
 begin
-  SmallB := TBitmap.Create;
-  try
-    SmallB.PixelFormat := pf24bit;
-    if not LoadAllLIst then
-    begin
-      SearchGroupsImageList.Clear;
-      ComboBoxSearchGroups.Items.Clear;
-      with ComboBoxSearchGroups.ItemsEx.Add do
-      begin
-        B := TBitmap.Create;
-        try
-          B.PixelFormat := pf24bit;
-          B.Canvas.Brush.Color := Theme.ComboBoxColor;
-          B.Canvas.Pen.Color := Theme.ComboBoxColor;
-          Size := Max(ImageAllGroups.Picture.Graphic.Width, ImageAllGroups.Picture.Graphic.Height);
-          B.Width := Size;
-          B.Height := Size;
-          B.Canvas.Draw(B.Width div 2 - ImageAllGroups.Picture.Graphic.Width div 2, B.Height div 2 - ImageAllGroups.Picture.Graphic.Height div 2,ImageAllGroups.Picture.Graphic);
-          DoResize(32, 32, B, SmallB);
-          SearchGroupsImageList.Add(SmallB, nil);
-        finally
-          B.Free;
-        end;
-        Data := Pointer(1);
-        Caption := L('All groups');
-        ImageIndex := 0;
-      end;
-      ComboBoxSearchGroups.ItemIndex := 0;
-      Exit;
-    end;
-    if GroupsLoaded then
-      Exit;
 
-    GroupsLoaded := True;
-    Groups := GetRegisterGroupList(True, False);
+  if not LoadAllLIst then
+  begin
+    SearchGroupsImageList.Clear;
+    ComboBoxSearchGroups.Items.Clear;
+    with ComboBoxSearchGroups.ItemsEx.Add do
+    begin
+      SearchGroupsImageList.AddIcon(ImageAllGroups.Picture.Icon);
+      Data := Pointer(1);
+      Caption := L('All groups');
+      ImageIndex := 0;
+    end;
+    ComboBoxSearchGroups.ItemIndex := 0;
+    Exit;
+  end;
+  if GroupsLoaded then
+    Exit;
+
+  GroupsLoaded := True;
+  Groups := GetRegisterGroupList(True, False);
+  try
 
     for I := 0 to Length(Groups) - 1 do
     begin
       B := TBitmap.Create;
       try
         B.PixelFormat := pf24bit;
-        JPEG := TJPEGImage.Create;
-        try
-          JPEG.Assign(Groups[I].GroupImage);
-          B.Canvas.Brush.Color := Theme.ComboBoxColor;
-          B.Canvas.Pen.Color := Theme.ComboBoxColor;
-          Size := Max(JPEG.Width, JPEG.Height);
-          B.Width := Size;
-          B.Height := Size;
-          B.Canvas.Draw(B.Width div 2 - JPEG.Width div 2, B.Height div 2 - JPEG.Height div 2, JPEG);
-          DoResize(32, 32, B, SmallB);
-          SearchGroupsImageList.Add(SmallB, nil);
-        finally
-          F(JPEG);
-        end;
+        B.Assign(Groups[I].GroupImage);
+        CenterBitmap24To32ImageList(B, 32);
+        SearchGroupsImageList.Add(B, nil);
       finally
         F(B);
       end;
@@ -3523,10 +3504,8 @@ begin
         Data := nil;
       end;
     end;
-
-    FreeGroups(Groups);
   finally
-    F(SmallB);
+    FreeGroups(Groups);
   end;
 end;
 
@@ -3560,9 +3539,6 @@ procedure TSearchForm.FormResize(Sender: TObject);
 var
   ATop, N, LastIndex: Integer;
 begin
-  if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
-    Exit;
-
   LastIndex := ComboBoxSearchGroups.ItemIndex;
   ATop := ClientHeight - ComboBoxSearchGroups.Top - ComboBoxSearchGroups.Height - PnLeft.Top;
   N := Max(5, ATop div 32);

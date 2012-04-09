@@ -33,15 +33,11 @@ type
     Cur: HIcon;
     Initialized: Boolean;
     FButtonPressed: Boolean;
-    Brush : TBrushToDraw;
-
+    Brush: TBrushToDraw;
     procedure SetProcRecteateImage(const Value: TNotifyEvent);
-    procedure ButtonMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure ButtonMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure ButtonMouseMove(Sender: TObject; Shift: TShiftState;
-      X, Y: Integer);
+    procedure ButtonMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ButtonMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ButtonMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
   protected
     function LangID: string; override;
   public
@@ -92,8 +88,6 @@ begin
 end;
 
 constructor TBrushToolClass.Create(AOwner: TComponent);
-var
-  IcoOK, IcoCancel, IcoSave: TIcon;
 begin
   inherited;
   Cur := 0;
@@ -182,13 +176,6 @@ begin
 
   BrushColorChooserDialog := TColorDialog.Create(AOwner);
 
-  IcoOK := TIcon.Create;
-  IcoCancel := TIcon.Create;
-  IcoSave := TIcon.Create;
-  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
-  IcoSave.Handle := LoadIcon(HInstance, 'SAVETOFILE');
-
   SaveSettingsLink := TWebLink.Create(Self);
   SaveSettingsLink.Parent := AOwner as TWinControl;
   SaveSettingsLink.Text := L('Save settings');
@@ -197,9 +184,7 @@ begin
   SaveSettingsLink.Visible := True;
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
-  SaveSettingsLink.Icon := IcoSave;
-  SaveSettingsLink.LoadImage;
-  IcoSave.Free;
+  SaveSettingsLink.LoadFromResource('SAVETOFILE');
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := AOwner as TWinControl;
@@ -209,9 +194,7 @@ begin
   MakeItLink.Visible := True;
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
-  MakeItLink.Icon := IcoOK;
-  MakeItLink.LoadImage;
-  IcoOK.Free;
+  MakeItLink.LoadFromResource('DOIT');
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := AOwner as TWinControl;
@@ -221,10 +204,7 @@ begin
   CloseLink.Visible := True;
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
-  CloseLink.Icon := IcoCancel;
-  CloseLink.LoadImage;
-  IcoCancel.Free;
-
+  CloseLink.LoadFromResource('CANCELACTION');
 end;
 
 destructor TBrushToolClass.Destroy;

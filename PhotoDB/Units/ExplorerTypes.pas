@@ -210,7 +210,9 @@ type
     function CanForward: Boolean;
     function GetCurrentPos: Integer;
     function DoBack: TExplorerPath;
+    function GetBackPath: TExplorerPath;
     function DoForward: TExplorerPath;
+    function GetForwardPath: TExplorerPath;
     function LastPath: TExplorerPath;
     function GetBackHistory: TArExplorerPath;
     function GetForwardHistory: TArExplorerPath;
@@ -556,6 +558,19 @@ begin
   inherited;
 end;
 
+function TStringsHistoryW.GetBackPath: TExplorerPath;
+begin
+  Result := ExplorerPath('', 0);
+
+  if FPosition = -1 then
+    Exit;
+
+  if FPosition = 0 then
+    Result := FArray[0]
+  else
+    Result := FArray[FPosition - 1];
+end;
+
 function TStringsHistoryW.DoBack: TExplorerPath;
 begin
   Result := ExplorerPath('', 0);
@@ -591,6 +606,19 @@ begin
   end;
   if Assigned(OnHistoryChange) then
     OnHistoryChange(Self);
+end;
+
+function TStringsHistoryW.GetForwardPath: TExplorerPath;
+begin
+  Result := ExplorerPath('', 0);
+
+  if FPosition = -1 then
+    Exit;
+
+  if (FPosition = Length(FArray) - 1) or (Length(FArray) = 1) then
+    Result := FArray[Length(FArray) - 1]
+  else
+    Result := FArray[FPosition + 1];
 end;
 
 function TStringsHistoryW.GetBackHistory: TArExplorerPath;

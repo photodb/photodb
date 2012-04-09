@@ -26,7 +26,8 @@ uses
   uRuntime,
   uConstants,
   uLogger,
-  uBitmapUtils;
+  uBitmapUtils,
+  CmpUnit;
 
 const
   PERSON_TYPE = 1;
@@ -339,9 +340,11 @@ var
   IC: TInsertCommand;
   SC: TSelectCommand;
   UC: TUpdateCommand;
-  Groups: string;
+  Groups, Keywords: string;
+  GS: TGroups;
+  G: TGroup;
   Values: TEventValues;
-
+  I: Integer;
 begin
   Result := False;
 
@@ -370,20 +373,32 @@ begin
           SC := TSelectCommand.Create(ImageTable);
           try
             SC.AddParameter(TStringParameter.Create('Groups', ''));
+            SC.AddParameter(TStringParameter.Create('Keywords', ''));
             SC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
             if SC.Execute > 0 then
             begin
               Groups := SC.DS.FieldByName('Groups').AsString;
+              Keywords := SC.DS.FieldByName('Keywords').AsString;
               AddGroupsToGroups(Groups, P.Groups);
+
+              GS := EncodeGroups(P.Groups);
+              for I := 0 to Length(GS) - 1 do
+              begin
+                G := GetGroupByGroupName(GS[I].GroupName, False);
+                AddWordsA(G.GroupKeyWords, KeyWords);
+              end;
+              AddWordsA(P.Name, KeyWords);
 
               UC := TUpdateCommand.Create(ImageTable);
               try
                 UC.AddParameter(TStringParameter.Create('Groups', Groups));
+                UC.AddParameter(TStringParameter.Create('Keywords', Keywords));
                 UC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
                 UC.Execute;
 
                 Values.Groups := Groups;
-                DBKernel.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups], Values);
+                Values.Keywords := Keywords;
+                DBKernel.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups, EventID_Param_KeyWords], Values);
 
               finally
                 F(UC);

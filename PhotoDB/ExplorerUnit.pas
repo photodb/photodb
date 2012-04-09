@@ -605,6 +605,10 @@ type
     procedure TmrDelayedStartTimer(Sender: TObject);
     procedure WlShareClick(Sender: TObject);
     procedure TmrCheckItemVisibilityTimer(Sender: TObject);
+    procedure TbBackMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure TbForwardMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -2649,6 +2653,22 @@ procedure TExplorerForm.SpeedButton2Click(Sender: TObject);
 begin
   if FHistory.CanForward then
     SetNewPathW(FHistory.DoForward, False)
+end;
+
+procedure TExplorerForm.TbForwardMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Explorer: TCustomExplorerForm;
+begin
+  if Button = mbMiddle then
+  begin
+    if FHistory.CanForward then
+    begin
+      Explorer := ExplorerManager.NewExplorer(False);
+      Explorer.SetNewPathW(FHistory.GetForwardPath, False);
+      Explorer.Show;
+    end;
+  end;
 end;
 
 procedure TExplorerForm.ListView1MouseDown(Sender: TObject;
@@ -7359,8 +7379,6 @@ begin
           WebLink.Text := FName;
           WebLink.Tag := Length(UserLinks) - 1;
           WebLink.OnClick := UserDefinedPlaceClick;
-          //WebLink.Color := Theme.PanelColor;
-          //WebLink.Font.Color := Theme.PanelFontColor;
           WebLink.EnterBould := False;
           WebLink.IconWidth := 16;
           WebLink.IconHeight := 16;
@@ -7378,7 +7396,7 @@ begin
           Ico := TIcon.Create;
           try
             // TODO: optimize code
-            Ico.Handle := ExtractSmallIconByPath(FIcon, True);
+            Ico.Handle := ExtractSmallIconByPath(FIcon, False);
             UserLinks[Length(UserLinks) - 1].Icon := Ico;
           finally
             F(Ico);
@@ -9564,6 +9582,22 @@ begin
   AddIcon('EXPLORER_OPTIONS_GRAY');
   AddIcon('EXPLORER_BREAK_GRAY');
 
+end;
+
+procedure TExplorerForm.TbBackMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  Explorer: TCustomExplorerForm;
+begin
+  if Button = mbMiddle then
+  begin
+    if FHistory.CanBack then
+    begin
+      Explorer := ExplorerManager.NewExplorer(False);
+      Explorer.SetNewPathW(FHistory.GetBackPath, False);
+      Explorer.Show;
+    end;
+  end;
 end;
 
 procedure TExplorerForm.TbDeleteClick(Sender: TObject);

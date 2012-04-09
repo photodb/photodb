@@ -3,8 +3,18 @@ unit uInternetFreeActivationThread;
 interface
 
 uses
-  Classes, SysUtils, uMemory, uInternetUtils, uConstants, uActivationUtils,
-  uTranslate, uGOM, uDBForm, uDBThread, uSysUtils;
+  Classes,
+  SysUtils,
+  uMemory,
+  uInternetUtils,
+  uConstants,
+  uActivationUtils,
+  uTranslate,
+  uGOM,
+  uDBForm,
+  uDBThread,
+  uSysUtils,
+  uUpTime;
 
 type
   TFreeRegistrationCallBack = procedure(Reply: string) of object;
@@ -58,7 +68,7 @@ begin
   try
     try
       QueryUrl := FreeActivationURL;
-      QueryParams := Format('?k=%s&v=%s&fn=%s&ln=%s&e=%s&p=%s&co=%s&ci=%s&a=%s',
+      QueryParams := Format('?k=%s&v=%s&fn=%s&ln=%s&e=%s&p=%s&co=%s&ci=%s&a=%s&ut=%s',
         [TActivationManager.Instance.ApplicationCode,
         ProductVersion,
         EncodeBase64Url(FInfo.FirstName),
@@ -67,7 +77,8 @@ begin
         EncodeBase64Url(FInfo.Phone),
         EncodeBase64Url(FInfo.Country),
         EncodeBase64Url(FInfo.City),
-        EncodeBase64Url(FInfo.Address)]);
+        EncodeBase64Url(FInfo.Address),
+        IntToStr(GetCurrentUpTime)]);
       FServerReply := DownloadFile(QueryUrl + QueryParams, TEncoding.UTF8);
     except
       on e: Exception do

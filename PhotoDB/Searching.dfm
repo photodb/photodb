@@ -603,12 +603,12 @@ object SearchForm: TSearchForm
         ParentFont = False
         PopupMenu = InsertSpesialQueryPopupMenu
       end
-      object Image3: TImage
+      object ImSelectGroup: TImage
         Left = 145
         Top = 74
         Width = 16
         Height = 16
-        OnClick = Image3Click
+        OnClick = ImSelectGroupClick
       end
       object Image5: TImage
         Left = 80
@@ -1400,6 +1400,7 @@ object SearchForm: TSearchForm
     end
   end
   object GroupsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 337
     Top = 480
   end
@@ -1503,6 +1504,7 @@ object SearchForm: TSearchForm
     Top = 456
   end
   object SearchGroupsImageList: TImageList
+    ColorDepth = cd32Bit
     AllocBy = 1
     Height = 32
     Masked = False

@@ -3,8 +3,15 @@ unit ExEffects;
 interface
 
 uses
-  Effects, StdCtrls, Graphics, GraphicsBaseTypes, Forms, StrUtils, SysUtils,
-  uEditorTypes, uTranslate;
+  Effects,
+  StdCtrls,
+  Graphics,
+  GraphicsBaseTypes,
+  Forms,
+  StrUtils,
+  SysUtils,
+  uEditorTypes,
+  uTranslate;
 
 type
   TExEffect = class(TObject)

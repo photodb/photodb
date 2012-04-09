@@ -3,9 +3,21 @@ unit CropToolUnit;
 interface
 
 uses
-  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, uSettings,
-  GraphicsBaseTypes, UnitDBKernel, Menus, uMemory;
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  Math, SysUtils,
+  ImageHistoryUnit,
+  uSettings,
+  GraphicsBaseTypes,
+  UnitDBKernel,
+  Menus,
+  uMemory;
 
 type
   TCropToolPanelClass = class(TToolsPanelClass)
@@ -127,8 +139,6 @@ begin
 end;
 
 constructor TCropToolPanelClass.Create(AOwner: TComponent);
-var
-  IcoOK, IcoCancel, IcoSave: TIcon;
 begin
   inherited;
   Align := AlClient;
@@ -241,9 +251,6 @@ begin
   ComboBoxProp.Items.Add('25/20');
   ComboBoxProp.ItemIndex := 0;
 
-  IcoSave := TIcon.Create;
-  IcoSave.Handle := LoadIcon(HInstance, 'SAVETOFILE');
-
   SaveSettingsLink := TWebLink.Create(nil);
   SaveSettingsLink.Parent := AOwner as TWinControl;
   SaveSettingsLink.Text := L('Save settings');
@@ -252,14 +259,7 @@ begin
   SaveSettingsLink.Visible := True;
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
-  SaveSettingsLink.Icon := IcoSave;
-  SaveSettingsLink.LoadImage;
-  IcoSave.Free;
-
-  IcoOK := TIcon.Create;
-  IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
+  SaveSettingsLink.LoadFromResource('SAVETOFILE');
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := Self;
@@ -269,9 +269,7 @@ begin
   MakeItLink.Visible := True;
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
-  MakeItLink.Icon := IcoOK;
-  MakeItLink.LoadImage;
-  IcoOK.Free;
+  MakeItLink.LoadFromResource('DOIT');
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := Self;
@@ -281,9 +279,7 @@ begin
   CloseLink.Visible := True;
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
-  CloseLink.Icon := IcoCancel;
-  CloseLink.LoadImage;
-  IcoCancel.Free;
+  CloseLink.LoadFromResource('CANCELACTION');
 
   ComboBoxProp.ItemIndex := Settings.ReadInteger('Editor', 'Crop_Tool_PropSelect', 0);
   EditPrWidth.Text := IntToStr(Settings.ReadInteger('Editor', 'Crop_Tool_Prop_W', 15));

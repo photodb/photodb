@@ -324,7 +324,7 @@ end;
 
 procedure TExplorerThumbnailCreator.DoDrawAttributes;
 var
-  Exists : integer;
+  Exists: integer;
 begin
   Exists := 1;
   DrawAttributes(TempBitmap, ThSizeExplorerPreview, FInfo.Rating, FInfo.Rotation, FInfo.Access,

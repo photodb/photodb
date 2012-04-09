@@ -3,16 +3,34 @@ unit ExEffectsUnit;
 interface
 
 uses
-  Windows, ExEffects, Effects, Graphics, StdCtrls, ComCtrls, GBlur2,
-  Classes, GraphicsBaseTypes, SysUtils, ExtCtrls, Controls, Dialogs,
-  Forms, OptimizeImageUnit, uEditorTypes, uGOM, uDBThread,
-  UnitDBKernel, uMemory, uSettings, System.UITypes;
+  Windows,
+  ExEffects,
+  Effects,
+  Graphics,
+  StdCtrls,
+  ComCtrls,
+  GBlur2,
+  Classes,
+  GraphicsBaseTypes,
+  SysUtils,
+  ExtCtrls,
+  Controls,
+  Dialogs,
+  Forms,
+  OptimizeImageUnit,
+  uEditorTypes,
+  uGOM,
+  uDBThread,
+  UnitDBKernel,
+  uMemory,
+  uSettings,
+  System.UITypes;
 
 type
   TGausBlur = class(TExEffect)
   private
     { Private declarations }
-    FS, FD: Tbitmap;
+    FS, FD: TBitmap;
     FTrackBar: TTrackBar;
     FTrackBarlabel: TLabel;
     FSID: string;
@@ -35,13 +53,13 @@ type
   TGaussBlurThread = class(TDBThread)
   private
     { Private declarations }
-    FAOwner : TObject;
-    FS : TBitmap;
-    FRadius : Double;
-    FSID : string;
-    FOnExit : TBaseEffectProcThreadExit;
-    FProgress : integer;
-    FBreak: boolean;
+    FAOwner: TObject;
+    FS: Tbitmap;
+    FRadius: Double;
+    FSID: string;
+    FOnExit: TBaseEffectProcThreadExit;
+    FProgress: Integer;
+    FBreak: Boolean;
   protected
     procedure Execute; override;
   public
@@ -78,13 +96,13 @@ type
   TSharpenThread = class(TDBThread)
   private
     { Private declarations }
-    FAOwner : TObject;
-    FS : TBitmap;
-    FEffectSize : integer;
-    FSID : string;
-    FOnExit : TBaseEffectProcThreadExit;
-    FProgress : integer;
-    FBreak : Boolean;
+    FAOwner: TObject;
+    FS: TBitmap;
+    FEffectSize: Integer;
+    FSID: string;
+    FOnExit: TBaseEffectProcThreadExit;
+    FProgress: Integer;
+    FBreak: Boolean;
   protected
     procedure Execute; override;
   public

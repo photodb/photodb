@@ -3,9 +3,26 @@ unit TextToolUnit;
 interface
 
 uses
-  CustomSelectTool, Windows, Classes, Graphics, Effects, GraphicsBaseTypes, Math,
-  StdCtrls, Controls, Forms, SysUtils, ExtCtrls, Buttons, Spin, System.UITypes,
-  UnitDBKernel, Dialogs, uDBGraphicTypes, uMemory, uSettings;
+  CustomSelectTool,
+  Windows,
+  Classes,
+  Graphics,
+  Effects,
+  GraphicsBaseTypes,
+  Math,
+  StdCtrls,
+  Controls,
+  Forms,
+  SysUtils,
+  ExtCtrls,
+  Buttons,
+  Spin,
+  System.UITypes,
+  UnitDBKernel,
+  Dialogs,
+  uDBGraphicTypes,
+  uMemory,
+  uSettings;
 
 type
   TextToolClass = Class(TCustomSelectToolClass)
@@ -73,7 +90,6 @@ const
 var
   I: Integer;
   Bit : TBitmap;
-
 begin
   inherited;
   AnyRect := True;

@@ -2,7 +2,7 @@ object PrintForm: TPrintForm
   Left = 175
   Top = 207
   Caption = 'PrintForm'
-  ClientHeight = 587
+  ClientHeight = 662
   ClientWidth = 754
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,12 +21,13 @@ object PrintForm: TPrintForm
     Left = 0
     Top = 0
     Width = 177
-    Height = 527
+    Height = 602
     Align = alLeft
     TabOrder = 0
+    ExplicitHeight = 527
     DesignSize = (
       177
-      527)
+      602)
     object Panel2: TPanel
       Left = 1
       Top = 1
@@ -63,12 +64,13 @@ object PrintForm: TPrintForm
     end
     object Panel3: TPanel
       Left = 1
-      Top = 422
+      Top = 497
       Width = 175
       Height = 104
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitTop = 422
       object Label4: TLabel
         Left = 54
         Top = 57
@@ -153,7 +155,6 @@ object PrintForm: TPrintForm
         EnterColor = clBlack
         EnterBould = False
         TopIconIncrement = 0
-        DisableStyles = False
         UseSpecIconSize = True
         HightliteImage = False
         StretchImage = True
@@ -164,7 +165,7 @@ object PrintForm: TPrintForm
       Left = 8
       Top = 88
       Width = 161
-      Height = 328
+      Height = 403
       Anchors = [akLeft, akTop, akBottom]
       BorderStyle = bsNone
       EditManager.Font.Charset = DEFAULT_CHARSET
@@ -188,15 +189,17 @@ object PrintForm: TPrintForm
       TabOrder = 2
       View = elsThumbnail
       OnDblClick = LvMainDblClick
+      ExplicitHeight = 328
     end
   end
   object BottomPanel: TPanel
     Left = 0
-    Top = 527
+    Top = 602
     Width = 754
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 527
     object OkButtonPanel: TPanel
       Left = 568
       Top = 1
@@ -227,28 +230,28 @@ object PrintForm: TPrintForm
     end
   end
   object RightPanel: TPanel
-    Left = 624
+    Left = 592
     Top = 0
-    Width = 130
-    Height = 527
+    Width = 162
+    Height = 602
     Align = alRight
     TabOrder = 2
     object Label2: TLabel
       Left = 8
-      Top = 200
+      Top = 220
       Width = 28
       Height = 13
       Caption = 'Page:'
     end
     object ImCurrentFormat: TImage
       Left = 8
-      Top = 320
-      Width = 121
+      Top = 340
+      Width = 145
       Height = 198
     end
     object Label5: TLabel
       Left = 8
-      Top = 304
+      Top = 324
       Width = 78
       Height = 13
       Caption = 'Current Format:'
@@ -256,15 +259,15 @@ object PrintForm: TPrintForm
     object Panel1: TPanel
       Left = 8
       Top = 8
-      Width = 113
-      Height = 105
+      Width = 145
+      Height = 126
       BevelInner = bvLowered
       TabOrder = 0
       object ScrollingImageNavigator1: TScrollingImageNavigator
         Left = 2
         Top = 2
-        Width = 109
-        Height = 101
+        Width = 141
+        Height = 122
         ScrollingImage = FastScrollingImage1
         Shape.Left = 0
         Shape.Top = 0
@@ -274,11 +277,12 @@ object PrintForm: TPrintForm
         Shape.Pen.Color = clRed
         Shape.Pen.Width = 2
         Align = alClient
+        ExplicitHeight = 103
       end
     end
     object ZoomInLink: TWebLink
       Left = 8
-      Top = 120
+      Top = 140
       Width = 60
       Height = 16
       Cursor = crHandPoint
@@ -292,7 +296,6 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000000000
@@ -337,7 +340,7 @@ object PrintForm: TPrintForm
     end
     object ZoomOutLink: TWebLink
       Left = 8
-      Top = 140
+      Top = 160
       Width = 68
       Height = 16
       Cursor = crHandPoint
@@ -351,7 +354,6 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000000000
@@ -396,7 +398,7 @@ object PrintForm: TPrintForm
     end
     object FullSizeLink: TWebLink
       Left = 8
-      Top = 160
+      Top = 180
       Width = 59
       Height = 16
       Cursor = crHandPoint
@@ -410,7 +412,6 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000001A19
@@ -455,7 +456,7 @@ object PrintForm: TPrintForm
     end
     object FitToSizeLink: TWebLink
       Left = 8
-      Top = 182
+      Top = 200
       Width = 66
       Height = 16
       Cursor = crHandPoint
@@ -469,7 +470,6 @@ object PrintForm: TPrintForm
       EnterColor = clBlack
       EnterBould = False
       TopIconIncrement = 0
-      DisableStyles = False
       Icon.Data = {
         0000010001001010000001002000680400001600000028000000100000002000
         0000010020000000000040040000000000000000000000000000000000001A19
@@ -514,8 +514,8 @@ object PrintForm: TPrintForm
     end
     object CbPageNumber: TComboBox
       Left = 8
-      Top = 216
-      Width = 113
+      Top = 236
+      Width = 145
       Height = 21
       Enabled = False
       TabOrder = 5
@@ -526,8 +526,8 @@ object PrintForm: TPrintForm
     end
     object RadioGroup1: TRadioGroup
       Left = 8
-      Top = 240
-      Width = 113
+      Top = 260
+      Width = 145
       Height = 57
       Caption = 'Print Pange'
       Enabled = False
@@ -541,16 +541,18 @@ object PrintForm: TPrintForm
   object FastScrollingImage1: TFastScrollingImage
     Left = 177
     Top = 0
-    Width = 447
-    Height = 527
+    Width = 415
+    Height = 602
     Zoom = 100.000000000000000000
     Align = alClient
     PopupMenu = PmCopyToFile
     OnResize = FastScrollingImage1Resize
+    ExplicitWidth = 447
+    ExplicitHeight = 527
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 568
+    Top = 643
     Width = 754
     Height = 19
     Panels = <
@@ -560,6 +562,7 @@ object PrintForm: TPrintForm
       item
         Width = 150
       end>
+    ExplicitTop = 568
   end
   object StHintText: TStaticText
     Left = 248

@@ -77,8 +77,8 @@ end;
 
 procedure TWindowsCopyFilesThread.CorrectPath(Owner: TDBForm; Src: TStrings; Dest: string);
 var
-  I : Integer;
-  FN, Adest : string;
+  I: Integer;
+  FN, Adest: string;
 begin
   Dest := ExcludeTrailingBackslash(Dest);
   for I := 0 to Src.Count - 1 do

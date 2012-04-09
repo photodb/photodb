@@ -3,9 +3,22 @@ unit ColorToolUnit;
 interface
 
 uses
-  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  ComCtrls, Effects, UnitDBKernel, UDBGraphicTypes,
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  Math,
+  SysUtils,
+  ImageHistoryUnit,
+  ExtCtrls,
+  ComCtrls,
+  Effects,
+  UnitDBKernel,
+  UDBGraphicTypes,
   uMemory;
 
 type
@@ -68,18 +81,13 @@ begin
 end;
 
 constructor TColorToolPanelClass.Create(AOwner: TComponent);
-var
-  IcoOK, IcoCancel: TIcon;
 begin
   inherited;
   ApplyOnDone := False;
   NewImage := nil;
   Loading := True;
   Align := AlClient;
-  IcoOK := TIcon.Create;
-  IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
+
 
   ContrastLabel := TStaticText.Create(Self);
 
@@ -173,9 +181,7 @@ begin
   MakeItLink.Visible := True;
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
-  MakeItLink.Icon := IcoOK;
-  MakeItLink.LoadImage;
-  IcoOK.Free;
+  MakeItLink.LoadFromResource('DOIT');
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := AOwner as TWinControl;
@@ -185,10 +191,7 @@ begin
   CloseLink.Visible := True;
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
-  CloseLink.Icon := IcoCancel;
-  CloseLink.LoadImage;
-  IcoCancel.Free;
-
+  CloseLink.LoadFromResource('CANCELACTION');
   Loading := False;
 
   RefreshInfo;

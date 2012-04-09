@@ -34,7 +34,7 @@ uses
   uDBBaseTypes,
   Vcl.ActnPopup,
   uFileUtils,
-  Vcl.PlatformDefaultStyleActnCtrls;
+  Vcl.PlatformDefaultStyleActnCtrls, uBaseWinControl;
 
 type
   TCryptImageForm = class(TPasswordSettingsDBForm)
@@ -182,7 +182,7 @@ begin
   Password := '';
   LoadLanguage;
 
-  FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
+  FPassIcon := LoadImage(HInstance, PChar('PASSWORD'),IMAGE_ICON, 16, 16, 0);
   try
     WblMethod.LoadFromHIcon(FPassIcon);
   finally

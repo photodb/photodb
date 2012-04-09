@@ -3,8 +3,19 @@ unit EffectsToolThreadUnit;
 interface
 
 uses
-  Windows, Classes, Effects, EffectsToolUnit, Graphics, GraphicsBaseTypes, Forms,
-  uConstants, uLogger, uEditorTypes, uShellIntegration, uMemory, uDBThread;
+  Windows,
+  Classes,
+  Effects,
+  EffectsToolUnit,
+  Graphics,
+  GraphicsBaseTypes,
+  Forms,
+  uConstants,
+  uLogger,
+  uEditorTypes,
+  uShellIntegration,
+  uMemory,
+  uDBThread;
 
 type
   TBaseEffectThread = class(TDBThread)

@@ -573,7 +573,6 @@ end;
 procedure TOptionsForm.FormCreate(Sender: TObject);
 var
   I: Integer;
-  FPassIcon : HIcon;
 begin
   if FolderView then
   begin
@@ -610,9 +609,7 @@ begin
   WlDefaultJPEGOptions.Color := Theme.PanelColor;
   WlDefaultJPEGOptions.Font.Color := Theme.PanelFontColor;
 
-  FPassIcon := LoadIcon(HInstance, PChar('PASSWORD'));
-  WblMethod.LoadFromHIcon(FPassIcon);
-  DestroyIcon(FPassIcon);
+  WblMethod.LoadFromResource('PASSWORD');
 end;
 
 procedure TOptionsForm.FormDestroy(Sender: TObject);

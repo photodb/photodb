@@ -119,8 +119,6 @@ begin
 end;
 
 constructor TEffectsToolPanelClass.Create(AOwner: TComponent);
-var
-  IcoOK, IcoCancel: TIcon;
 begin
   inherited;
   NewImage := nil;
@@ -128,10 +126,6 @@ begin
   Align := AlClient;
   BaseImage := TBitmap.Create;
   BaseImage.PixelFormat := pf24bit;
-  IcoOK := TIcon.Create;
-  IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
 
   EffectsChooser := TEasyListview.Create(nil);
   EffectsChooser.Parent := AOwner as TWinControl;
@@ -165,10 +159,8 @@ begin
   MakeItLink.Left := 10;
   MakeItLink.Visible := True;
   MakeItLink.OnClick := DoMakeImage;
-  MakeItLink.Icon := IcoOK;
-  MakeItLink.LoadImage;
+  MakeItLink.LoadFromResource('DOIT');
   MakeItLink.Anchors := [akLeft, akBottom];
-  IcoOK.Free;
 
   CloseLink := TWebLink.Create(nil);
   CloseLink.Parent := AOwner as TWinControl;
@@ -177,10 +169,8 @@ begin
   CloseLink.Left := 10;
   CloseLink.Visible := True;
   CloseLink.OnClick := ClosePanelEvent;
-  CloseLink.Icon := IcoCancel;
-  CloseLink.LoadImage;
+  CloseLink.LoadFromResource('CANCELACTION');
   CloseLink.Anchors := [akLeft, akBottom];
-  IcoCancel.Free;
 end;
 
 destructor TEffectsToolPanelClass.Destroy;

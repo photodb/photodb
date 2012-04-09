@@ -3,9 +3,21 @@ unit ToolsUnit;
 interface
 
 uses
-  ExtCtrls, Classes, Graphics, ImageHistoryUnit, ComCtrls, Menus, Controls,
-  GraphicsBaseTypes, Forms, StrUtils, SysUtils, uDBForm, uEditorTypes,
-  uTranslate, uMemory;
+  ExtCtrls,
+  Classes,
+  Graphics,
+  ImageHistoryUnit,
+  ComCtrls,
+  Menus,
+  Controls,
+  GraphicsBaseTypes,
+  Forms,
+  StrUtils,
+  SysUtils,
+  uDBForm,
+  uEditorTypes,
+  uTranslate,
+  uMemory;
 
 type
   TToolsPanelClass = class(TPanel)

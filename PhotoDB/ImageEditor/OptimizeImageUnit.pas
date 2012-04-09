@@ -3,7 +3,12 @@ unit OptimizeImageUnit;
 interface
 
 uses
-  Windows, Graphics, GBlur2, GraphicsBaseTypes, ScanlinesFX, uEditorTypes,
+  Windows,
+  Graphics,
+  GBlur2,
+  GraphicsBaseTypes,
+  ScanlinesFX,
+  uEditorTypes,
   uMemory;
 
 type

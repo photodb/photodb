@@ -3,10 +3,28 @@ unit RotateToolUnit;
 interface
 
 uses
-  Windows,ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  Effects, Angle, Spin, Dialogs, GraphicsBaseTypes, uConstants,
-  uEditorTypes, UnitDBKernel, uMemory, uExifUtils,
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  Math,
+  SysUtils,
+  ImageHistoryUnit,
+  ExtCtrls,
+  Effects,
+  Angle,
+  Spin,
+  Dialogs,
+  GraphicsBaseTypes,
+  uConstants,
+  uEditorTypes,
+  UnitDBKernel,
+  uMemory,
+  uExifUtils,
   System.UITypes;
 
 type
@@ -99,18 +117,12 @@ begin
 end;
 
 constructor TRotateToolPanelClass.Create(AOwner: TComponent);
-var
-  IcoOK, IcoCancel: TIcon;
 begin
   inherited;
   ApplyOnDone := False;
   NewImage := nil;
   Align := AlClient;
   ApplyOnDone := False;
-  IcoOK := TIcon.Create;
-  IcoCancel := TIcon.Create;
-  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
 
   SelectChooseBox := TRadioGroup.Create(AOwner);
   SelectChooseBox.Top := 5;
@@ -172,9 +184,7 @@ begin
   MakeItLink.Visible := True;
   MakeItLink.Color := clBtnface;
   MakeItLink.OnClick := DoMakeImage;
-  MakeItLink.Icon := IcoOK;
-  MakeItLink.LoadImage;
-  IcoOK.Free;
+  MakeItLink.LoadFromResource('DOIT');
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
@@ -184,10 +194,7 @@ begin
   CloseLink.Visible := True;
   CloseLink.Color := clBtnface;
   CloseLink.OnClick := ClosePanelEvent;
-  CloseLink.Icon := IcoCancel;
-  CloseLink.LoadImage;
-  IcoCancel.Free;
-
+  CloseLink.LoadFromResource('CANCELACTION');
 end;
 
 destructor TRotateToolPanelClass.Destroy;

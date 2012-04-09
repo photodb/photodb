@@ -3,10 +3,25 @@ unit ResizeToolUnit;
 interface
 
 uses
-  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, Math, SysUtils, ImageHistoryUnit, ExtCtrls,
-  UnitResampleFilters, uDBBaseTypes, uSettings,
-  uBitmapUtils, uConstants, uEditorTypes, uMemory;
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  Math,
+  SysUtils,
+  ImageHistoryUnit,
+  ExtCtrls,
+  UnitResampleFilters,
+  uDBBaseTypes,
+  uSettings,
+  uBitmapUtils,
+  uConstants,
+  uEditorTypes,
+  uMemory;
 
 type
   TResizeToolPanelClass = class(TToolsPanelClass)
@@ -165,7 +180,6 @@ end;
 constructor TResizeToolPanelClass.Create(AOwner: TComponent);
 var
   Left, I: Integer;
-  IcoOK, IcoCancel, IcoSave: TIcon;
 const
   PercentCount = 11;
   Percents: array [1 .. PercentCount] of Integer = (500, 200, 95, 75, 66, 50, 33, 25, 15, 10, 5);
@@ -296,14 +310,7 @@ begin
   for I := 0 to 6 do
     ComboBoxMethod.Items.Add(ResampleFilters[I].Name);
 
- ComboBoxMethod.ItemIndex:=0;
-
-  IcoOK := TIcon.Create;
-  IcoCancel := TIcon.Create;
-  IcoSave := TIcon.Create;
-  IcoOK.Handle := LoadIcon(HInstance, 'DOIT');
-  IcoCancel.Handle := LoadIcon(HInstance, 'CANCELACTION');
-  IcoSave.Handle := LoadIcon(HInstance, 'SAVETOFILE');
+  ComboBoxMethod.ItemIndex := 0;
 
   SaveSettingsLink := TWebLink.Create(nil);
   SaveSettingsLink.Parent := AOwner as TWinControl;
@@ -313,9 +320,7 @@ begin
   SaveSettingsLink.Visible := True;
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
-  SaveSettingsLink.Icon := IcoSave;
-  SaveSettingsLink.LoadImage;
-  IcoSave.Free;
+  SaveSettingsLink.LoadFromResource('SAVETOFILE');
 
   MakeItLink := TWebLink.Create(nil);
   MakeItLink.Parent := AOwner as TWinControl;
@@ -325,9 +330,7 @@ begin
   MakeItLink.Visible := True;
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
-  MakeItLink.Icon := IcoOK;
-  MakeItLink.LoadImage;
-  IcoOK.Free;
+  MakeItLink.LoadFromResource('DOIT');
 
   CloseLink := TWebLink.Create(nil);
   CloseLink.Parent := AOwner as TWinControl;
@@ -337,9 +340,7 @@ begin
   CloseLink.Visible := True;
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
-  CloseLink.Icon := IcoCancel;
-  CloseLink.LoadImage;
-  IcoCancel.Free;
+  CloseLink.LoadFromResource('CANCELACTION');
 
   ComboBoxPercent.Text := IntToStr(Settings.ReadInteger('Editor', 'PercentValue', 100)) + '%';
   WidthEdit.Text := IntToStr(Settings.ReadInteger('Editor', 'CustomWidth', 100));

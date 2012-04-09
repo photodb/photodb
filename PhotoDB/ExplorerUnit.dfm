@@ -842,6 +842,7 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 0
         Style = tbsDropDown
         OnClick = SpeedButton1Click
+        OnMouseDown = TbBackMouseDown
       end
       object TbForward: TToolButton
         Left = 33
@@ -851,6 +852,7 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 2
         Style = tbsDropDown
         OnClick = SpeedButton2Click
+        OnMouseDown = TbForwardMouseDown
       end
       object TbUp: TToolButton
         Left = 66

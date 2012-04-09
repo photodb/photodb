@@ -48,7 +48,7 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
-  uSettings;
+  uSettings, uBaseWinControl;
 
 type
   TPrintForm = class(TDBForm)

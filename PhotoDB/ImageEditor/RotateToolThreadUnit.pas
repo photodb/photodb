@@ -3,8 +3,17 @@ unit RotateToolThreadUnit;
 interface
 
 uses
-  Windows, Classes, Effects, EffectsToolUnit, Graphics, RotateToolUnit,
-  GraphicsBaseTypes, ScanlinesFX, uEditorTypes, uMemory, uDBThread;
+  Windows,
+  Classes,
+  Effects,
+  EffectsToolUnit,
+  Graphics,
+  RotateToolUnit,
+  GraphicsBaseTypes,
+  ScanlinesFX,
+  uEditorTypes,
+  uMemory,
+  uDBThread;
 
 type
   TRotateEffectThread = class(TDBThread)

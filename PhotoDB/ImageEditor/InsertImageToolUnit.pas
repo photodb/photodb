@@ -3,11 +3,31 @@ unit InsertImageToolUnit;
 interface
 
 uses
-  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics, StdCtrls,
-  GraphicsCool, SysUtils, ImageHistoryUnit, Effects, ComCtrls, Math,
-  GraphicsBaseTypes, CustomSelectTool, Dialogs, ExtDlgs, uBitmapUtils,
-  clipbrd, UnitDBFileDialogs, UnitDBCommonGraphics,
-  uDBGraphicTypes, uAssociations, uMemory, uSettings;
+  Windows,
+  ToolsUnit,
+  WebLink,
+  Classes,
+  Controls,
+  Graphics,
+  StdCtrls,
+  GraphicsCool,
+  SysUtils,
+  ImageHistoryUnit,
+  Effects,
+  ComCtrls,
+  Math,
+  GraphicsBaseTypes,
+  CustomSelectTool,
+  Dialogs,
+  ExtDlgs,
+  uBitmapUtils,
+  clipbrd,
+  UnitDBFileDialogs,
+  UnitDBCommonGraphics,
+  uDBGraphicTypes,
+  uAssociations,
+  uMemory,
+  uSettings;
 
 type
   InsertImageToolPanelClass = class(TCustomSelectToolClass)

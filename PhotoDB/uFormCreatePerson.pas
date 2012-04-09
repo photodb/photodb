@@ -768,7 +768,7 @@ begin
     ShowGroupInfo(WL.Text, False, nil);
   end else
   begin
-    DBChangeGroups(FRelatedGroups, KeyWords, False);
+    DBChangeGroups(FRelatedGroups, KeyWords);
     PostMessage(Handle, FReloadGroupsMessage, 0, 0);
   end;
 end;
