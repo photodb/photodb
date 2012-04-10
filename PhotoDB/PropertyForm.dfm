@@ -284,7 +284,7 @@ object PropertiesForm: TPropertiesForm
       end
       object RatingLabel1: TLabel
         Left = 3
-        Top = 129
+        Top = 130
         Width = 31
         Height = 13
         Caption = 'Rating'
@@ -447,7 +447,7 @@ object PropertiesForm: TPropertiesForm
       end
       object RatingEdit: TRating
         Left = 72
-        Top = 128
+        Top = 130
         Width = 96
         Height = 16
         Cursor = crHandPoint

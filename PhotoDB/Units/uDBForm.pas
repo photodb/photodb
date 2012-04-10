@@ -5,6 +5,7 @@ interface
 uses
   Generics.Collections,
   Windows,
+  Controls,
   Forms,
   Types,
   Classes,
@@ -20,6 +21,7 @@ uses
   SysUtils,
   uSysUtils,
   Themes,
+  DwmApi,
   {$IFDEF PHOTODB}
   uFastLoad,
   Menus,
@@ -257,21 +259,29 @@ procedure TDBForm.WndProc(var Message: TMessage);
 var
   Canvas: TCanvas;
   LDetails: TThemedElementDetails;
+  pfEnabled: BOOL;
 begin
   //when styles enabled and form is visible -> white rectangle in all client rect
-  //it causes flicking on black theme
+  //it causes flicking on black theme if Aero is enabled
   //this is fix for form startup
   if (Message.Msg = WM_NCPAINT) and StyleServices.Enabled and not FWasPaint then
   begin
-    Canvas := TCanvas.Create;
-    try
-      Canvas.Handle := GetWindowDC(Handle);
-      LDetails.Element := teWindow;
-      LDetails.Part := 0;
-      StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, Width, Height));
-    finally
-      ReleaseDC(Self.Handle, Canvas.Handle) ;
-      F(Canvas);
+    if (Win32MajorVersion >= 6) then
+    begin
+      DwmIsCompositionEnabled(pfEnabled);
+      if pfEnabled then
+      begin
+        Canvas := TCanvas.Create;
+        try
+          Canvas.Handle := GetWindowDC(Handle);
+          LDetails.Element := teWindow;
+          LDetails.Part := 0;
+          StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, Width, Height));
+        finally
+          ReleaseDC(Self.Handle, Canvas.Handle) ;
+          F(Canvas);
+        end;
+      end;
     end;
   end;
   if (Message.Msg = WM_PAINT) and StyleServices.Enabled then

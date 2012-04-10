@@ -176,7 +176,8 @@ begin
   end;
   if StyleFileName <> '' then
   begin
-    StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
+    if Pos(':', StyleFileName) = 0 then
+      StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
     try
       FS := TFileStream.Create(StyleFileName, fmOpenRead, fmShareDenyNone);
       try

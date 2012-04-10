@@ -41,7 +41,7 @@ const
     '    geocoder = new google.maps.Geocoder();'+
     '    var latlng = new google.maps.LatLng(0, 0); '+
     '    var myOptions = { '+
-    '      zoom: 19, '+
+    '      zoom: 1, '+
     '      center: latlng, '+
     '      mapTypeId: google.maps.MapTypeId.SATELLITE '+
     '    }; '+

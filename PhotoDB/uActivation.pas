@@ -34,6 +34,7 @@ uses
   uMemoryEx,
   uThemesUtils,
   LoadingSign,
+  uVCLHelpers,
   uBaseWinControl;
 
 type
@@ -185,10 +186,10 @@ end;
 procedure TActivateForm.StepChanged(Sender: TObject);
 begin
   LsLoading.Visible := FWizard.IsBusy;
-  BtnCancel.Enabled := not FWizard.IsBusy;
-  BtnNext.Enabled := FWizard.CanGoNext and not FWizard.IsBusy;
-  BtnPrevious.Enabled := FWizard.CanGoBack;
-  BtnFinish.Enabled := FWizard.IsFinalStep and not FWizard.IsBusy;
+  BtnCancel.SetEnabledEx(not FWizard.IsBusy);
+  BtnNext.SetEnabledEx(FWizard.CanGoNext and not FWizard.IsBusy);
+  BtnPrevious.SetEnabledEx(FWizard.CanGoBack);
+  BtnFinish.SetEnabledEx(FWizard.IsFinalStep and not FWizard.IsBusy);
 
   BtnFinish.Visible := FWizard.IsFinalStep;
   BtnNext.Visible := not FWizard.IsFinalStep;

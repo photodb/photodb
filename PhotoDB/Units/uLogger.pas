@@ -3,7 +3,12 @@ unit uLogger;
 interface
 
 uses
-  Windows, Classes, SysUtils, uConfiguration, SyncObjs, uMemory;
+  Windows,
+  Classes,
+  SysUtils,
+  uConfiguration,
+  SyncObjs,
+  uMemory;
 
 {$DEFINE _EVENTLOG}
 
@@ -11,30 +16,30 @@ type
   TLogger = class(TObject)
   private
 {$IFDEF LOG}
-    FFile : TFileStream;
-    FSync : TCriticalSection;
+    FFile: TFileStream;
+    FSync: TCriticalSection;
 {$ENDIF}
   public
     constructor Create;
     destructor Destroy; override;
-    class function Instance : TLogger;
-    procedure Message(Value : string);
+    class function Instance: TLogger;
+    procedure Message(Value: string);
   end;
 
-procedure EventLog(Message : string); overload;
+procedure EventLog(Message: string); overload;
 procedure EventLog(Ex: Exception); overload;
 
 implementation
 
 var
-  Logger : TLogger = nil;
+  Logger: TLogger = nil;
 
 procedure EventLog(Ex: Exception);
 begin
   EventLog(Ex.ToString);
 end;
 
-procedure EventLog(Message : string);
+procedure EventLog(Message: string);
 begin
 {$IFDEF EVENTLOG}
   TLogger.Instance.Message(Message);

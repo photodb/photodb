@@ -1055,6 +1055,7 @@ var
   I: Integer;
 begin
   FGeoHTMLWindow := nil;
+  FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
   FIsFirstShow := True;
@@ -1422,7 +1423,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
-    MiShare.Visible := True;
+    MiShare.Visible := not FolderView;
     MiShelf.Visible := True;
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
@@ -1462,7 +1463,7 @@ begin
     if AnsiLowerCase(ExtractFileName(Info.FileName)) = AnsiLowerCase(C_CD_MAP_FILE) then
       MapCD1.Visible := not FolderView;
 
-    MiShare.Visible := CanShareVideo(Info.FileName);
+    MiShare.Visible := CanShareVideo(Info.FileName) and not FolderView;
     MiShelf.Visible := True;
     Properties1.Visible := True;
     Delete1.Visible := True;
@@ -1518,7 +1519,7 @@ begin
 
   if (Info.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (Info.FileType = EXPLORER_ITEM_DEVICE_FILE) then
   begin
-    MiShare.Visible := CanShareVideo(Info.FileName);
+    MiShare.Visible := CanShareVideo(Info.FileName) and not FolderView;
     Properties1.Visible := True;
     Delete1.Visible := True;
     Cut2.Visible := True;
@@ -1528,7 +1529,7 @@ begin
   if Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE then
   begin
     DBitem1.Visible := True;
-    MiShare.Visible := True;
+    MiShare.Visible := not FolderView;
     StenoGraphia1.Visible := True;
     Print1.Visible := True;
     ImageEditor2.Visible := True;
@@ -3795,14 +3796,14 @@ begin
         Lt := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLat', ''));
         Ln := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLng', ''));
         Zoom := Settings.ReadInteger('Explorer', 'MapZoom', 0);
-        if (Zoom > 0) and ((Lt > 0) or (Ln > 0)) then
+        if (Zoom > 1) and ((Lt > 0) or (Ln > 0)) then
         begin
           FGeoHTMLWindow.execScript
             (FormatEx('SetMapBounds({0}, {1}, {2}); ', [DoubleToStringPoint(Lt), DoubleToStringPoint(Ln), Zoom]), 'JavaScript');
         end else
         begin
           FGeoHTMLWindow.execScript
-            (FormatEx('TryToResolvePosition("{0}"); ', [ResolveLanguageString(GeoLocationJSON) + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion]), 'JavaScript');
+            (FormatEx('TryToResolvePosition("{0}"); ', [ResolveLanguageString(GeoLocationJSON) + '&c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion]), 'JavaScript');
         end;
       end;
     end;
@@ -3819,9 +3820,12 @@ end;
 
 procedure TExplorerForm.ZoomPan(Lat, Lng: Double; Zoom: SYSINT);
 begin
-  Settings.WriteInteger('Explorer', 'MapZoom', Zoom);
-  Settings.WriteString('Explorer', 'MapLat', DoubleToStringPoint(Lat));
-  Settings.WriteString('Explorer', 'MapLng', DoubleToStringPoint(Lng));
+  if FIsMapLoaded then
+  begin
+    Settings.WriteInteger('Explorer', 'MapZoom', Zoom);
+    Settings.WriteString('Explorer', 'MapLat', DoubleToStringPoint(Lat));
+    Settings.WriteString('Explorer', 'MapLng', DoubleToStringPoint(Lng));
+  end;
 end;
 
 function TExplorerForm.CanSaveGeoLocation: Boolean;
@@ -4693,7 +4697,7 @@ begin
       end else
         WlGeoLocation.Visible := False;
 
-      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and not FolderView then
       begin
         WlShare.Visible := True;
         WlShare.Top := NewTop + H;
@@ -4856,7 +4860,7 @@ begin
     begin
       if SelCount <= 1 then
       begin
-        WlImportPictures.Visible := True;
+        WlImportPictures.Visible := not FolderView;
         WlImportPictures.Top := NewTop + H;
         NewTop := WlImportPictures.BoundsRect.Bottom;
       end else

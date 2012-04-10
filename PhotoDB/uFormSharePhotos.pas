@@ -438,7 +438,7 @@ end;
 
 procedure TFormSharePhotos.FormResize(Sender: TObject);
 begin
-  Invalidate;
+  Repaint;
 end;
 
 procedure TFormSharePhotos.GetAlbumInfo(var AlbumID, AlbumName: string;
