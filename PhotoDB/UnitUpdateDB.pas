@@ -129,6 +129,8 @@ type
       Shift: TShiftState);
     procedure WebLinkOpenImageClick(Sender: TObject);
     procedure WebLinkOpenFolderClick(Sender: TObject);
+    procedure WebLinkOptionsMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     FImage: TLayeredBitmap;
@@ -798,6 +800,13 @@ begin
   P.Y := WebLinkOptions.Top + WebLinkOptions.Height;
   P := ClientToScreen(P);
   PmMain.Popup(P.X, P.Y);
+end;
+
+procedure TUpdateDBForm.WebLinkOptionsMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button = mbLeft then
+    WebLinkOptionsClick(Sender);
 end;
 
 procedure TUpdateDBForm.TmrAnimationTimer(Sender: TObject);

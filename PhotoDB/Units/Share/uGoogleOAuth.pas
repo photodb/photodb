@@ -12,6 +12,7 @@ uses
   idUri,
   uInternetUtils,
   uTranslate,
+  uInternetProxy,
   IdComponent;
 
 resourcestring
@@ -35,8 +36,6 @@ type
   private type
     TMethodType = (tmGET, tmPOST, tmPUT, tmDELETE);
   private
-    FHTTP: TIdHTTP;
-    FSSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
     FClientID: string;
     FClientSecret: string;
     FScope: string;
@@ -214,14 +213,6 @@ constructor TOAuth.Create;
 begin
   inherited;
   FOnProgress := nil;
-  FHTTP := TIdHTTP.Create(nil);
-  FSSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
-  FHTTP.IOHandler := FSSLIOHandler;
-  FHTTP.ConnectTimeout := cConnectionTimeout;
-  FHTTP.ReadTimeout := 0;
-  FHTTP.OnWorkBegin := WorkBeginEvent;
-  FHTTP.OnWorkEnd := WorkEndEvent;
-  FHTTP.OnWork := WorkEvent;
   FSlug := '';
 end;
 
@@ -232,8 +223,6 @@ end;
 
 destructor TOAuth.Destroy;
 begin
-  FSSLIOHandler.Free;
-  FHTTP.Free;
   inherited;
 end;
 
@@ -265,52 +254,69 @@ function TOAuth.HTTPMethod(AURL: string; AMethod: TMethodType;
 var
   Response: TStringStream;
   ParamString: string;
+  FHTTP: TIdHTTP;
+  FSSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
 begin
-  if Assigned(AParams) and (AParams.Count > 0) then
-    ParamString := PrepareParams(AParams);
-
-  Response := TStringStream.Create;
+  FHTTP := TIdHTTP.Create(nil);
+  FSSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+  FHTTP.IOHandler := FSSLIOHandler;
+  FHTTP.ConnectTimeout := cConnectionTimeout;
+  FHTTP.ReadTimeout := 0;
+  FHTTP.OnWorkBegin := WorkBeginEvent;
+  FHTTP.OnWorkEnd := WorkEndEvent;
+  FHTTP.OnWork := WorkEvent;
+  ConfigureIdHttpProxy(FHTTP, 'https://google.com');
   try
-    FHTTP.Request.CustomHeaders.Clear;
-    FHTTP.Request.CustomHeaders.Add(Format(AuthHeader, [Access_token]));
-    FHTTP.Request.CustomHeaders.Add('GData-Version: 2');
-    if FSlug <> '' then
-    begin
-      FHTTP.Request.CustomHeaders.Add('Slug: ' + string(FSlug));
-      FSlug := '';
-    end;
 
-    case AMethod of
-      tmGET:
-        begin
-          FHTTP.Get(AURL + ParamString, Response);
-        end;
-      tmPOST:
-        begin
-          FHTTP.Request.ContentType := AMime;
-          FHTTP.Post(AURL + ParamString, ABody, Response);
-        end;
-      tmPUT:
-        begin
-          FHTTP.Request.ContentType := AMime;
-          FHTTP.Put(AURL, ABody, Response);
-        end;
-      tmDELETE:
-        begin
-          FHTTP.Delete(AURL);
-        end;
-    end;
-    if AMethod <> tmDELETE then
-      Result := Response.DataString;
+    if Assigned(AParams) and (AParams.Count > 0) then
+      ParamString := PrepareParams(AParams);
 
+    Response := TStringStream.Create;
+    try
+      FHTTP.Request.CustomHeaders.Clear;
+      FHTTP.Request.CustomHeaders.Add(Format(AuthHeader, [Access_token]));
+      FHTTP.Request.CustomHeaders.Add('GData-Version: 2');
+      if FSlug <> '' then
+      begin
+        FHTTP.Request.CustomHeaders.Add('Slug: ' + string(FSlug));
+        FSlug := '';
+      end;
+
+      case AMethod of
+        tmGET:
+          begin
+            FHTTP.Get(AURL + ParamString, Response);
+          end;
+        tmPOST:
+          begin
+            FHTTP.Request.ContentType := AMime;
+            FHTTP.Post(AURL + ParamString, ABody, Response);
+          end;
+        tmPUT:
+          begin
+            FHTTP.Request.ContentType := AMime;
+            FHTTP.Put(AURL, ABody, Response);
+          end;
+        tmDELETE:
+          begin
+            FHTTP.Delete(AURL);
+          end;
+      end;
+      if AMethod <> tmDELETE then
+        Result := Response.DataString;
+
+    finally
+      Response.Free
+    end;
   finally
-    Response.Free
+    FSSLIOHandler.Free;
+    FHTTP.Free;
   end;
 end;
 
 function TOAuth.ParamValue(ParamName, JSONString: string): string;
 var
-  I, J: integer;
+  I, J: Integer;
 begin
   I := pos(ParamName, JSONString);
   if I > 0 then

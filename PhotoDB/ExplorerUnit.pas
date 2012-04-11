@@ -147,7 +147,9 @@ uses
   uThemesUtils,
   uBaseWinControl,
 
-  uPhotoShelf
+  uPhotoShelf,
+  uThreadTask,
+  uInternetUtils
   ;
 
 const
@@ -1198,6 +1200,9 @@ begin
   AddScriptObjFunctionIntegerIsString(aScript.PrivateEnviroment, 'GetPathByIndex',     GetPathByIndex);
 
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
+
+  if IsWindows8 then
+    TLoad.Instance.RequaredDBKernelIcons;
 
   TW.I.Start('Script read');
   SetNamedValueStr(AScript, '$dbname', dbname);
@@ -3774,9 +3779,6 @@ begin
 end;
 
 procedure TExplorerForm.MapStarted;
-var
-  Lt, Ln: Double;
-  Zoom: Integer;
 begin
   FIsMapLoaded := True;
   if FWbGeoLocation.Tag = 1 then
@@ -3791,20 +3793,30 @@ begin
     end else
     begin
       SaveCurrentImageInfoToMap;
-      if (FGeoHTMLWindow <> nil) then
+
+      if Settings.ReadInteger('Explorer', 'MapZoom', 1) <= 1 then
       begin
-        Lt := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLat', ''));
-        Ln := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLng', ''));
-        Zoom := Settings.ReadInteger('Explorer', 'MapZoom', 0);
-        if (Zoom > 1) and ((Lt > 0) or (Ln > 0)) then
-        begin
-          FGeoHTMLWindow.execScript
-            (FormatEx('SetMapBounds({0}, {1}, {2}); ', [DoubleToStringPoint(Lt), DoubleToStringPoint(Ln), Zoom]), 'JavaScript');
-        end else
-        begin
-          FGeoHTMLWindow.execScript
-            (FormatEx('TryToResolvePosition("{0}"); ', [ResolveLanguageString(GeoLocationJSON) + '&c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion]), 'JavaScript');
-        end;
+        TThreadTask.Create(Self, nil,
+          procedure(Thread: TThreadTask; Data: Pointer)
+          var
+            Url, LocationJson: string;
+          begin
+            Url := ResolveLanguageString(GeoLocationJSON) + '&c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion;
+            LocationJson := DownloadFile(Url, TEncoding.UTF8);
+
+            Thread.SynchronizeTask(
+              procedure
+              begin
+                if (FGeoHTMLWindow <> nil) and (LocationJson <> '') then
+                begin
+                  LocationJson := StringReplace(LocationJson, '"', '''', [rfReplaceAll]);
+                  FGeoHTMLWindow.execScript
+                    (FormatEx('TryToResolvePosition("{0}"); ', [LocationJson]), 'JavaScript');
+                end;
+              end
+            );
+          end
+        );
       end;
     end;
   end;
@@ -3931,6 +3943,8 @@ var
   Stream: TMemoryStream;
   SW: TStreamWriter;
   MapHTML, S: string;
+  Lt, Ln: Double;
+  Zoom: Integer;
 begin
   if FGeoHTMLWindow = nil then
   begin
@@ -3970,6 +3984,15 @@ begin
         S := StringReplace(S, '%DATE_LABEL%', L('Date'), []);
         S := StringReplace(S, '%ZOOM_TEXT%', L('Zoom in'), []);
         S := StringReplace(S, '%SAVE_TEXT%', L('Save current location for the image?'), []);
+
+        Lt := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLat', ''));
+        Ln := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLng', ''));
+        Zoom := Settings.ReadInteger('Explorer', 'MapZoom', 1);
+
+        S := StringReplace(S, '%START_LT%', DoubleToStringPoint(Lt), []);
+        S := StringReplace(S, '%START_LN%', DoubleToStringPoint(Ln), []);
+        S := StringReplace(S, '%START_ZOOM%', IntToStr(Zoom), []);
+
         MapHTML := S;
         SW := TStreamWriter.Create(Stream);
         try
@@ -5423,42 +5446,45 @@ begin
     F(P);
   end;
 
-  if SelCount > 1 then
+  if EInfo.FileType = EXPLORER_ITEM_IMAGE then
   begin
-    Info := GetCurrentPopUpMenuInfo(ListView1Selected);
-    try
-      PropInfo := TDBPopupMenuInfo.Create;
+    if SelCount > 1 then
+    begin
+      Info := GetCurrentPopUpMenuInfo(ListView1Selected);
       try
-        for I := 0 to Info.Count - 1 do
-          if Info[I].Selected then
-            PropInfo.Add(Info[I].Copy);
+        PropInfo := TDBPopupMenuInfo.Create;
+        try
+          for I := 0 to Info.Count - 1 do
+            if Info[I].Selected then
+              PropInfo.Add(Info[I].Copy);
 
-      Bit32 := TBitmap.Create;
-      try
-        CreateMultiselectImage(ElvMain, Bit32, FBitmapImageList, ElvMain.Selection.GradientColorBottom, ElvMain.Selection.GradientColorTop,
-          ElvMain.Selection.Color, ElvMain.Font, ThSizeExplorerPreview + 3, ThSizeExplorerPreview + 3);
+        Bit32 := TBitmap.Create;
+        try
+          CreateMultiselectImage(ElvMain, Bit32, FBitmapImageList, ElvMain.Selection.GradientColorBottom, ElvMain.Selection.GradientColorTop,
+            ElvMain.Selection.Color, ElvMain.Font, ThSizeExplorerPreview + 3, ThSizeExplorerPreview + 3);
 
-        PropertyManager.NewSimpleProperty.ExecuteEx(PropInfo, Bit32);
+          PropertyManager.NewSimpleProperty.ExecuteEx(PropInfo, Bit32);
+        finally
+          F(Bit32);
+        end;
+
+        finally
+          F(PropInfo);
+        end;
       finally
-        F(Bit32);
+        F(Info);
       end;
-
-      finally
-        F(PropInfo);
-      end;
-    finally
-      F(Info);
+      Exit;
+    end else
+    begin
+      if not EInfo.Loaded then
+        EInfo.ID := GetIdByFileName(EInfo.FileName);
+      if EInfo.ID = 0 then
+        PropertyManager.NewFileProperty(EInfo.FileName).ExecuteFileNoEx(EInfo.FileName)
+      else
+        PropertyManager.NewIDProperty(EInfo.ID).Execute(EInfo.ID);
+      Exit;
     end;
-    Exit;
-  end else if EInfo.FileType = EXPLORER_ITEM_IMAGE then
-  begin
-    if not EInfo.Loaded then
-      EInfo.ID := GetIdByFileName(EInfo.FileName);
-    if EInfo.ID = 0 then
-      PropertyManager.NewFileProperty(EInfo.FileName).ExecuteFileNoEx(EInfo.FileName)
-    else
-      PropertyManager.NewIDProperty(EInfo.ID).Execute(EInfo.ID);
-    Exit;
   end;
 
   ShowWindowsPropertiesDialogToSelected;
@@ -5480,7 +5506,7 @@ begin
     Item := ListView1Selected;
     if Item = nil then
       Exit;
-    Index := ItemIndexToMenuIndex(Item.index);
+    Index := ItemIndexToMenuIndex(Item.Index);
     PmItemPopup.Tag := index;
     if Index > FFilesInfo.Count - 1 then
       Exit;
@@ -9854,7 +9880,9 @@ begin
 
   MapCD1.ImageIndex := DB_IC_CD_MAPPING;
 
-  TLoad.Instance.RequaredDBKernelIcons;
+  if not IsWindows8 then
+    TLoad.Instance.RequaredDBKernelIcons;
+
   SlideShowLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
   ShellLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
   CopyToLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COPY + 1]);

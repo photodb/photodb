@@ -450,7 +450,7 @@ object UpdateDBForm: TUpdateDBForm
     Color = clWhite
     ParentColor = False
     Text = 'Options'
-    OnClick = WebLinkOptionsClick
+    OnMouseUp = WebLinkOptionsMouseUp
     ImageIndex = 0
     IconWidth = 16
     IconHeight = 16

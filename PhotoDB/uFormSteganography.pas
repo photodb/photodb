@@ -20,6 +20,7 @@ uses
   pngimage,
   Themes,
   LoadingSign,
+  uVCLHelpers,
   uBaseWinControl;
 
 type
@@ -180,10 +181,10 @@ end;
 
 procedure TFormSteganography.StepChanged(Sender: TObject);
 begin
-  BtnCancel.Enabled := not FWizard.IsBusy;
-  BtnNext.Enabled := FWizard.CanGoNext;
-  BtnPrevious.Enabled := FWizard.CanGoBack;
-  BtnFinish.Enabled := FWizard.IsFinalStep and not FWizard.IsBusy and not FWizard.OperationInProgress;
+  BtnCancel.SetEnabledEx(not FWizard.IsBusy);
+  BtnNext.SetEnabledEx(FWizard.CanGoNext);
+  BtnPrevious.SetEnabledEx(FWizard.CanGoBack);
+  BtnFinish.SetEnabledEx(FWizard.IsFinalStep and not FWizard.IsBusy and not FWizard.OperationInProgress);
 
   BtnFinish.Visible := FWizard.IsFinalStep;
   BtnNext.Visible := not FWizard.IsFinalStep;

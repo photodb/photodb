@@ -3,7 +3,9 @@ unit uThreadTask;
 interface
 
 uses
+  SysUtils,
   Classes,
+  uLogger,
   uThreadEx,
   uThreadForm;
 
@@ -49,10 +51,15 @@ end;
 procedure TThreadTask.Execute;
 begin
   FreeOnTerminate := True;
-  if FDataObj <> nil then
-    FProc(Self, FDataObj)
-  else
-    FProc(Self, Pointer(FDataInterface));
+  try
+    if FDataObj <> nil then
+      FProc(Self, FDataObj)
+    else
+      FProc(Self, Pointer(FDataInterface));
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
 end;
 
 function TThreadTask.SynchronizeTask(Proc: TThreadProcedure): Boolean;

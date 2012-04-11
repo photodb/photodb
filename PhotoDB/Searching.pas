@@ -574,6 +574,9 @@ begin
   WindowID := GetGUID;
   TW.I.Start('S -> TScript');
 
+  if IsWindows8 then
+    TLoad.Instance.RequaredDBKernelIcons;
+
   aScript := TScript.Create(Self, '');
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Explorer2Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'HideExplorerPanel',  F_TYPE_OBJ_PROCEDURE_TOBJECT, Properties1Click);
@@ -599,8 +602,6 @@ begin
   end;
   Menu := ScriptMainMenu;
 
-  ScriptLisTPopupActionBar.Images := DBKernel.ImageList;
-  ScriptMainMenu.Images := DBKernel.ImageList;
   LsSearchResults.Color := Theme.PanelColor;
 
   TW.I.Start('S -> Register');
@@ -646,20 +647,6 @@ begin
 
   TW.I.Start('S -> Images');
   SortLink.UseSpecIconSize := True;
-  PmExplorerMenu.Images := DBKernel.ImageList;
-  OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
-  AddFolder1.ImageIndex := DB_IC_ADD_FOLDER;
-  SortbyCompare1.ImageIndex := DB_IC_DUPLICATE;
-  View2.ImageIndex := DB_IC_SLIDE_SHOW;
-  RatingPopupMenu1.Images := DBkernel.ImageList;
-  N00.ImageIndex := DB_IC_DELETE_INFO;
-  N01.ImageIndex := DB_IC_RATING_1;
-  N02.ImageIndex := DB_IC_RATING_2;
-  N03.ImageIndex := DB_IC_RATING_3;
-  N04.ImageIndex := DB_IC_RATING_4;
-  N05.ImageIndex := DB_IC_RATING_5;
-  ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
-  ShowDateOptionsLinkClick(Self);
 
   TW.I.Start('S -> Splitter1Moved');
   Creating := False;
@@ -695,7 +682,8 @@ begin
   LoadSizes;
 
   TW.I.Start('S -> RequaredDBKernelIcons');
-  TLoad.Instance.RequaredDBKernelIcons;
+  if not IsWindows8 then
+    TLoad.Instance.RequaredDBKernelIcons;
   Ico := TIcon.Create;
   try
     DBkernel.ImageList.GetIcon(DB_IC_GROUPS, Ico);
@@ -703,6 +691,24 @@ begin
   finally
     F(Ico);
   end;
+
+  ScriptLisTPopupActionBar.Images := DBKernel.ImageList;
+  ScriptMainMenu.Images := DBKernel.ImageList;
+  PmExplorerMenu.Images := DBKernel.ImageList;
+  OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
+  AddFolder1.ImageIndex := DB_IC_ADD_FOLDER;
+  SortbyCompare1.ImageIndex := DB_IC_DUPLICATE;
+  View2.ImageIndex := DB_IC_SLIDE_SHOW;
+  RatingPopupMenu1.Images := DBkernel.ImageList;
+  N00.ImageIndex := DB_IC_DELETE_INFO;
+  N01.ImageIndex := DB_IC_RATING_1;
+  N02.ImageIndex := DB_IC_RATING_2;
+  N03.ImageIndex := DB_IC_RATING_3;
+  N04.ImageIndex := DB_IC_RATING_4;
+  N05.ImageIndex := DB_IC_RATING_5;
+  ShowDateOptionsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
+  ShowDateOptionsLinkClick(Self);
+
   TW.I.Start('S -> Create - END');
 
 end;

@@ -1734,16 +1734,16 @@
 	<translate name="Parameters" value="Параметры запуска"/>
 	<translate name="Icon" value="Иконка"/>
 	<translate name="Add to submenu" value="Добавить в субменю"/>	
-	<translate name="Additional" value="Дополнительно"/>	
-	<translate name="Refresh data in windows?" value="Перезагрузить данные в окнах?"/>	
-	<translate name="Please select folder" value="Выберите папку"/>	
-	<translate name="Preview" value="Предпросмотр"/>	
+	<translate name="Additional" value="Дополнительно"/>
+	<translate name="Refresh data in windows?" value="Перезагрузить данные в окнах?"/>
+	<translate name="Please select folder" value="Выберите папку"/>
+	<translate name="Preview" value="Предпросмотр"/>
 	<translate name="Submenu caption" value="Заголовок субменю"/>
-	<translate name="Submenu icon" value="Иконка субменю"/>	
-	<translate name="Add new item" value="Добавить новый пункт"/>	
-	<translate name="Remove" value="Удалить"/>	
+	<translate name="Submenu icon" value="Иконка субменю"/>
+	<translate name="Add new item" value="Добавить новый пункт"/>
+	<translate name="Remove" value="Удалить"/>
 	<translate name="Up" value="Вверх"/>
-	<translate name="Down" value="Вниз"/>	
+	<translate name="Down" value="Вниз"/>
 	<translate name="Display menu for" value="Отображать меню для"/>	
 	<translate name="ID Menu" value="ID Меню"/>
 	<translate name="Viewer window" value="Просмотра"/>
@@ -1756,6 +1756,7 @@
 	<translate name="&quot;Next&quot; by click" value="&quot;Следующий&quot; при клике"/>
 	<translate name="Use the selection by hover on the list" value="Использовать выделение при наведении в списках"/>
 	<translate name="Sort groups" value="Сортировать группы"/>
+    <translate name="Backups" value="Резервные копии" />
 	<translate name="Create backup every" value="Создавать резервную копию каждые"/>	
 	<translate name="days" value="дней"/>
 	<translate name="My documents" value="Мои документы"/>
@@ -1793,6 +1794,9 @@
 	<translate name="Standard windows theme (preview isn't available)" value="Стандартная тема для Windows - предпросмотр недоступен"/>	
 	<translate name="Restart of application is required for applying new style! Restart application now?" value="Необходим перезапуск приложения для применения нового стиля! Перезапустить приложение?"/>
 	<translate name="Open user themes folder" value="Открыть пользовательские стили"/>
+	<translate name="Proxy authorisation" value="Авторизация прокси"/>
+	<translate name="User name" value="Имя пользователя"/>
+	<translate name="Password" value="Пароль"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>
@@ -2135,7 +2139,7 @@
 	<translate name="Edit directory fotmats" value="Настройки форматов директорий"/>	
 	<translate name="Please enter any directory format" value="Пожалуйста, введите список форматов директорий"/>
 	<translate name="Photos in selected location were not found! Please select another location to see series of photos." value="Фотографии по выбранному пути не найдены! Пожалуйста, выберите другое размещение, чтобы видеть серии фотографий."/>
-	<translate name="Please use the following format for pattern list:$nl$  Each line is a separated pattern$nl$  YYYY - year as &quot;2010&quot;$nl$  YY - year as &quot;10&quot;$nl$  mmmm - month as &quot;january&quot;$nl$  MMMM - month as &quot;January&quot;$nl$  mmm - month as &quot;january&quot;$nl$  MMM - month as &quot;January&quot;$nl$  MM - month as &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - day as &quot;monday&quot;$nl$  DDD - day as &quot;Monday&quot;$nl$  DD - day as &quot;07&quot;$nl$  D - day as &quot;7&quot;" value="Пожалуйста, используйте следующий формат для списка шаблонов:$nl$  Каждая линия это отдельный шаблон$nl$  YYYY - год как &quot;2010&quot;$nl$  YY - год как &quot;10&quot;$nl$  mmmm - месяц как &quot;января&quot;$nl$  MMMM - месяц как &quot;Января&quot;$nl$  mmm - месяц как &quot;январь&quot;$nl$  MMM - месяц как &quot;Январь&quot;$nl$  MM - месяц как &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - месяц как &quot;monday&quot;$nl$  DDD - день как &quot;Monday&quot;$nl$  DD - день как &quot;07&quot;$nl$  D - день как &quot;7&quot;"/>
+	<translate name="Please use the following format for pattern list:$nl$  Each line is a separated pattern$nl$  YYYY - year as &quot;2010&quot;$nl$  YY - year as &quot;10&quot;$nl$  mmmm - month as &quot;january&quot;$nl$  MMMM - month as &quot;January&quot;$nl$  mmm - month as &quot;january&quot;$nl$  MMM - month as &quot;January&quot;$nl$  MM - month as &quot;07&quot;$nl$  M - month as &quot;7&quot;$nl$  ddd - day as &quot;monday&quot;$nl$  DDD - day as &quot;Monday&quot;$nl$  DD - day as &quot;07&quot;$nl$  D - day as &quot;7&quot;" value="Пожалуйста, используйте следующий формат для списка шаблонов:$nl$  Каждая линия это отдельный шаблон$nl$  YYYY - год как &quot;2010&quot;$nl$  YY - год как &quot;10&quot;$nl$  mmmm - месяц как &quot;января&quot;$nl$  MMMM - месяц как &quot;Января&quot;$nl$  mmm - месяц как &quot;январь&quot;$nl$  MMM - месяц как &quot;Январь&quot;$nl$  MM - месяц как &quot;07&quot;$nl$  M - месяц как &quot;7&quot;$nl$  ddd - месяц как &quot;monday&quot;$nl$  DDD - день как &quot;Monday&quot;$nl$  DD - день как &quot;07&quot;$nl$  D - день как &quot;7&quot;"/>
 	<translate name="Source file {0} not found!" value="Исходный файл {0} не найден!"/>	
 	<translate name="Open destination directory after import" value="Открыть конечную директорию после импорта"/>	
   </scope>

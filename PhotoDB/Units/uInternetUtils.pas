@@ -14,6 +14,7 @@ uses
   uSysUtils,
   JPEG,
   pngimage,
+  uInternetProxy,
   IdSSLOpenSSL,
   idHTTP;
 
@@ -279,6 +280,7 @@ begin
   try
     FHTTP := Container.HTTP;
     try
+      ConfigureIdHttpProxy(FHTTP, URL);
       FHTTP.Get(URL, Stream);
       Result := True;
     except

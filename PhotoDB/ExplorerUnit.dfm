@@ -1083,6 +1083,9 @@ object ExplorerForm: TExplorerForm
           Width = 130
           Height = 17
           Anchors = [akLeft, akTop, akRight]
+          BevelEdges = []
+          BevelInner = bvNone
+          BevelOuter = bvNone
           BorderStyle = bsNone
           TabOrder = 0
           OnKeyPress = WedSearchKeyPress

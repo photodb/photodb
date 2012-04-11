@@ -410,7 +410,8 @@ uses
   uShareImagesThread in 'Threads\uShareImagesThread.pas',
   uShareSettings in 'uShareSettings.pas' {FormShareSettings},
   uProgressBarStyleHookMarquee in 'Units\Styles\uProgressBarStyleHookMarquee.pas',
-  uUninstallUtils in 'Units\uUninstallUtils.pas';
+  uUninstallUtils in 'Units\uUninstallUtils.pas',
+  uInternetProxy in 'Units\uInternetProxy.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

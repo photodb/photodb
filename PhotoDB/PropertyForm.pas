@@ -727,17 +727,13 @@ begin
       DateEdit.Checked := DataRecord.IsDate;
       TimeEdit.Checked := DataRecord.IsTime;
       CbInclude.Checked := DataRecord.Include;
-      if Length(DataRecord.Comment) > 0 then
-      begin
-        CommentMemo.Show;
-        CommentMemo.Text := DataRecord.Comment;
-        LabelComment.Show;
-      end else
-      begin
-        CommentMemo.Hide;
-        CommentMemo.Text := '';
-        LabelComment.Hide;
-      end;
+
+      CommentMemo.Show;
+      CommentMemo.Text := DataRecord.Comment;
+	    CommentMemo.PopupMenu := nil;
+
+      LabelComment.Show;
+
       ItemLinks := ParseLinksInfo(DataRecord.Links);
       FPropertyLinks := CopyLinksInfo(ItemLinks);
 
@@ -1531,6 +1527,8 @@ begin
   FFilesInfo.Add(Rec);
 
   CommentMemo.Text := '';
+  CommentMemo.PopupMenu := nil;
+
   RatingEdit.Islayered := False;
 
   ResetBold;
@@ -1538,8 +1536,7 @@ begin
 
   LabelName.Text := ExtractFileName(FileName);
   LabelPath.Text := LongFileName(FileName);
-  LabelComment.Hide;
-  CommentMemo.Hide;
+
   RatingEdit.Rating := 0;
   ImgReloadInfo.Visible := False;
   CollectionMemo.Text := L('Not available');
@@ -1909,12 +1906,10 @@ begin
 
     Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
     SizeLAbel.Text := SizeInText(FFilesInfo.FilesSize);
-    CollectionMemo.Text := DBKernel.GetDataBaseName;
-    OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
-
-    OwnerMemo.Readonly := True;
-    CommentMemo.PopupMenu := nil;
     CollectionMemo.Readonly := True;
+    CollectionMemo.Text := DBKernel.GetDataBaseName;
+    OwnerMemo.Readonly := True;
+    OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
     if FFilesInfo.IsVariousInclude then
       CbInclude.State := cbGrayed
@@ -1956,15 +1951,20 @@ begin
 
     KeyWordsMemo.Text := FFilesInfo.CommonKeyWords;
     IDLabel.Text := Format(L('%d files are selected'), [FFilesInfo.Count]);
-    CommentMemo.Cursor := CrDefault;
 
     if FFilesInfo.IsVariousComments then
     begin
       CommentMemo.ReadOnly := True;
-      CommentMemo.Cursor := crHandPoint;
       CommentMemo.PopupMenu := PmComment;
+      CommentMemo.Cursor := crHandPoint;
+      CommentMemo.Text := L('Different comments');
+    end else
+    begin
+      CommentMemo.ReadOnly := False;
+      CommentMemo.PopupMenu := nil;
+      CommentMemo.Cursor := crDefault;
+      CommentMemo.Text := FFilesInfo.CommonComments;
     end;
-    CommentMemo.Text := FFilesInfo.CommonComments;
 
     FreeGroups(FNowGroups);
     FNowGroups := UnitGroupsWork.EncodeGroups(FFilesInfo.CommonGroups);
@@ -2033,7 +2033,7 @@ end;
 
 procedure TPropertiesForm.CommentMemoDblClick(Sender: TObject);
 begin
-  if not CommentMemo.readonly then
+  if not CommentMemo.Readonly then
     Exit;
   CommentMemo.readonly := False;
   CommentMemo.Cursor := CrDefault;
@@ -2043,7 +2043,7 @@ end;
 
 procedure TPropertiesForm.PmCommentPopup(Sender: TObject);
 begin
-  SetComent1.Visible := CommentMemo.readonly and (FShowInfoType = SHOW_INFO_FILE_NAME);
+  SetComent1.Visible := CommentMemo.Readonly;
   Comentnotsets1.Visible := not CommentMemo.ReadOnly;
   SelectAll1.Visible := not CommentMemo.ReadOnly;
   Cut1.Visible := not CommentMemo.ReadOnly;
@@ -2077,6 +2077,7 @@ end;
 
 procedure TPropertiesForm.Paste1Click(Sender: TObject);
 begin
+  CommentMemoDblClick(Sender);
   CommentMemo.PasteFromClipboard;
 end;
 
@@ -3562,13 +3563,13 @@ begin
       0:
         GetGistogrammBitmapWRGB(130, GistogrammData.Gray, GistogrammData.Red, GistogrammData.Green, GistogrammData.Blue, MinC, MaxC, Bitmap, clGray);
       1:
-        GetGistogrammBitmapW(130, GistogrammData.Gray, MinC, MaxC, Bitmap, clBlack);
+        GetGistogrammBitmapW(130, GistogrammData.Gray, MinC, MaxC, Bitmap, $000000);
       2:
-        GetGistogrammBitmapW(130, GistogrammData.Red, MinC, MaxC, Bitmap, clRed);
+        GetGistogrammBitmapW(130, GistogrammData.Red, MinC, MaxC, Bitmap, $0000FF);
       3:
-        GetGistogrammBitmapW(130, GistogrammData.Green, MinC, MaxC, Bitmap, clGreen);
+        GetGistogrammBitmapW(130, GistogrammData.Green, MinC, MaxC, Bitmap, $00FF00);
       4:
-        GetGistogrammBitmapW(130, GistogrammData.Blue, MinC, MaxC, Bitmap, clBlue);
+        GetGistogrammBitmapW(130, GistogrammData.Blue, MinC, MaxC, Bitmap, $FF0000);
     end;
 
     LbEffectiveRange.Caption := Format(L('Effective range: %d..%d'), [MinC, MaxC]);

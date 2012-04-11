@@ -54,6 +54,8 @@ uses
   uConfiguration,
   GraphicCrypt,
   uFileUtils,
+  uGOM,
+  uTime,
   uLogger;
 
 type
@@ -423,7 +425,7 @@ begin
     end;
   end;
 
-  PnAlbums.Width := Settings.ReadInteger('Share', 'AlbumsSplitterPos', 160);
+  PnAlbums.Width := Settings.ReadInteger('Share', 'AlbumsSplitterPos', 250);
   FProvider := nil;
 end;
 
@@ -1144,6 +1146,7 @@ var
 begin
   SbAlbums.DisableAlign;
   try
+    TW.I.Start('LoadAlbumList - START');
     //clear old data
     for I := SbAlbums.ControlCount - 1 downto 0 do
     begin
@@ -1155,12 +1158,14 @@ begin
       end;
     end;
     FAlbums.Clear;
+    TW.I.Start('LoadAlbumList - Cleared albums');
 
     SbAlbums.VertScrollBar.Position := 0;
 
     //load albums
     LsLoadingAlbums.Show;
 
+    TW.I.Start('LoadAlbumList - Start loading list');
     TThreadTask.Create(Self, Provider,
       procedure(Thread: TThreadTask; Data: Pointer)
       var
@@ -1168,8 +1173,10 @@ begin
       begin
         Albums := TList<IPhotoServiceAlbum>.Create;
         try
+          TW.I.Start('LoadAlbumList - GetAlbumList - start');
           if IPhotoShareProvider(Data).GetAlbumList(Albums) then
           begin
+            TW.I.Start('LoadAlbumList - GetAlbumList - ok');
             Thread.SynchronizeTask(
               procedure
               begin
@@ -1177,6 +1184,8 @@ begin
               end
             );
           end;
+
+          TW.I.Start('LoadAlbumList - GetAlbumList - done');
         finally
           F(Albums);
         end;
@@ -1200,12 +1209,14 @@ var
   B: TBitmap;
   ImImage: TImage;
 begin
+  TW.I.Start('FillAlbumList - clear old info');
   FAlbums.Clear;
   FAlbums.AddRange(Albums);
   LsLoadingAlbums.Hide;
 
   SbAlbums.DisableAlign;
   try
+    TW.I.Start('FillAlbumList - create album blocks');
     SbAlbums.VertScrollBar.Position := 0;
     Top := IIF(FCreateAlbumBox.Visible, FCreateAlbumBox.Top + FCreateAlbumBox.Height, 0) + 5;
     for I := 0 to FAlbums.Count - 1 do
@@ -1304,6 +1315,7 @@ begin
   ThreadData := TList<IPhotoServiceAlbum>.Create;
   ThreadData.AddRange(FAlbums);
 
+  TW.I.Start('FillAlbumList - loading thumbnails');
   TThreadTask.Create(Self, ThreadData,
     procedure(Thread: TThreadTask; Data: Pointer)
     var
@@ -1332,7 +1344,8 @@ begin
               Thread.SynchronizeTask(
                 procedure
                 begin
-                  UpdateAlbumImage(Albums[I], B);
+                  if GOM.IsObj(Thread.ThreadForm) then
+                    UpdateAlbumImage(Albums[I], B);
                 end
               );
 

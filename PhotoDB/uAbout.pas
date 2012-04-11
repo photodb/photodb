@@ -137,6 +137,7 @@ begin
   else
     MemoInfo.Lines.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Licenses\License' + TTranslateManager.Instance.Language + '.txt');
 
+  LnkGoToWebSite.Font.Color := clBlack;
   LnkGoToWebSite.Visible := not FolderView;
   LsUpdates.Visible := not FolderView;
   FUpdateInfo.InfoAvaliable := False;

@@ -3,7 +3,11 @@ unit uTime;
 interface
 
 uses
-  Classes, Windows, SysUtils, SyncObjs, uMemory;
+  Classes,
+  Windows,
+  SysUtils,
+  SyncObjs,
+  uMemory;
 
 {$DEFINE _STARTUP}
 {$DEFINE _PROFILER}
@@ -40,7 +44,7 @@ type
 implementation
 
 var
-  W : TList = nil;
+  W: TList = nil;
   Sync : TCriticalSection = nil;
 
 { TW }

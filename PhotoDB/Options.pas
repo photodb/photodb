@@ -65,7 +65,7 @@ uses
   Vcl.Styles,
   Vcl.Styles.Ext,
   Vcl.Styles.Utils,
-  uBaseWinControl;
+  uBaseWinControl, WatermarkedEdit, ShellNotify;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)
@@ -218,6 +218,12 @@ type
     BtnApplyTheme: TButton;
     WlGetMoreStyles: TWebLink;
     BtnShowThemesFolder: TButton;
+    GbProxyAuthorisation: TGroupBox;
+    WebProxyUserName: TWatermarkedEdit;
+    LbProxyUserName: TLabel;
+    LbProxyPassword: TLabel;
+    WebProxyPassword: TWatermarkedEdit;
+    SnStyles: TShellNotification;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -276,12 +282,14 @@ type
     procedure LbStylesClick(Sender: TObject);
     procedure WlGetMoreStylesClick(Sender: TObject);
     procedure BtnShowThemesFolderClick(Sender: TObject);
+    procedure SnStylesFileCreate(Sender: TObject; Path: string);
   private
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
     FLoadedPages: array [0..6] of Boolean;
     FPlaces: TPlaceFolderArray;
     ReloadData: Boolean;
+    procedure LoadStylesList;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -335,29 +343,8 @@ var
   I, Size: Integer;
   Reg: TBDRegistry;
   S: TStrings;
-  StylesPath,
-  CurrentStyle,
-  StylesUserPath,
   FCaption, EXEFile, Params, Icon: string;
-  UseSubMenu, IsStyleSelected: Boolean;
-
-  procedure LoadStylesFromDirectory(Directory: string);
-  var
-    FileName: string;
-  begin
-    for FileName in TDirectory.GetFiles(Directory, '*.vsf') do
-    begin
-      FThemeList.Add(FileName);
-      LbStyles.Items.Add(ExtractFileName(FileName));
-      if not IsStyleSelected and ((AnsiLowerCase(CurrentStyle) = AnsiLowerCase(ExtractFileName(FileName))) or
-        (AnsiLowerCase(CurrentStyle) = AnsiLowerCase(FileName))) then
-      begin
-        LbStyles.Selected[LbStyles.Items.Count - 1] := True;
-        IsStyleSelected := True;
-      end;
-    end;
-  end;
-
+  UseSubMenu: Boolean;
 begin
   if FLoadedPages[NewTab] then
     Exit;
@@ -365,31 +352,15 @@ begin
 
   if NewTab = 0 then
   begin
-    IsStyleSelected := False;
-
-    CurrentStyle := Settings.ReadString('Style', 'FileName', DefaultThemeName);
-
-    LbStyles.Items.Clear;
-    FThemeList.Clear;
-    FThemeList.Add(' ');
-    LbStyles.Items.Add(L('Windows style (standard)'));
-
-    StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
-    LoadStylesFromDirectory(StylesPath);
-
-    StylesUserPath := GetAppDataDirectory + '\' + StylesFolder;
-    CreateDirA(StylesUserPath);
-    LoadStylesFromDirectory(StylesUserPath);
-
-    if not IsStyleSelected then
-      LbStyles.Selected[0] := True;
-
+    LoadStylesList;
     LbStylesClick(Self);
+
+    SnStyles.Path := GetAppDataDirectory + '\' + StylesFolder;
+    SnStyles.Active := True;
   end;
 
   if NewTab = 1 then
   begin
-    CbListViewShowPreview.Checked := Settings.Readbool('Options', 'AllowPreview', True);
     CbExtensionList.Enabled := not FolderView;
     BtnInstallExtensions.Enabled := not FolderView;
     CbExtensionList.Items.Clear;
@@ -440,11 +411,15 @@ begin
     CbAutoSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
     CbAutoSavePasswordInSettings.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
     SedBackupDays.Value := Settings.ReadInteger('Options', 'BackUpdays', 7);
+
+    WebProxyUserName.Text := Settings.ReadString('Options', 'ProxyUser');
+    WebProxyPassword.Text := Settings.ReadString('Options', 'ProxyPassword');
   end;
 
   if NewTab = 6 then
   begin
 
+    CbListViewShowPreview.Checked := Settings.Readbool('Options', 'AllowPreview', True);
     CbSmallToolBars.Checked := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
     CbSortGroups.Checked := Settings.Readbool('Options', 'SortGroupsByName', True);
     CbListViewHotSelect.Checked := Settings.Readbool('Options', 'UseHotSelect', True);
@@ -697,6 +672,9 @@ begin
     Settings.WriteBool('Options', 'AutoSaveSessionPasswords', CbAutoSavePasswordForSession.Checked);
     Settings.WriteBool('Options', 'AutoSaveINIPasswords', CbAutoSavePasswordInSettings.Checked);
     Settings.WriteInteger('Options', 'BackUpdays', SedBackupDays.Value);
+
+    Settings.WriteString('Options', 'ProxyUser', WebProxyUserName.Text);
+    Settings.WriteString('Options', 'ProxyPassword', WebProxyPassword.Text);
   end;
   // 5 :
   if FLoadedPages[6] then
@@ -957,9 +935,60 @@ begin
     WlGetMoreStyles.Text := L('Get more styles!');
     WlGetMoreStyles.LoadImage;
     WlGetMoreStyles.Left := TsStyle.ClientRect.Width - WlGetMoreStyles.Width - 5;
+
+    GbProxyAuthorisation.Caption := L('Proxy authorisation');
+    LbProxyUserName.Caption := L('User name') + ':';
+    LbProxyPassword.Caption := L('Password') + ':';
+    WebProxyUserName.WatermarkText := L('User name');
+    WebProxyPassword.WatermarkText := L('Password');
   finally
     EndTranslate;
   end;
+end;
+
+procedure TOptionsForm.LoadStylesList;
+var
+  StylesPath,
+  CurrentStyle,
+  StylesUserPath: string;
+  IsStyleSelected: Boolean;
+
+  procedure LoadStylesFromDirectory(Directory: string);
+  var
+    FileName: string;
+  begin
+    for FileName in TDirectory.GetFiles(Directory, '*.vsf') do
+    begin
+      FThemeList.Add(FileName);
+      LbStyles.Items.Add(ExtractFileName(FileName));
+      if not IsStyleSelected and ((AnsiLowerCase(CurrentStyle) = AnsiLowerCase(ExtractFileName(FileName))) or
+        (AnsiLowerCase(CurrentStyle) = AnsiLowerCase(FileName))) then
+      begin
+        LbStyles.Selected[LbStyles.Items.Count - 1] := True;
+        IsStyleSelected := True;
+      end;
+    end;
+  end;
+
+begin
+  IsStyleSelected := False;
+
+  CurrentStyle := Settings.ReadString('Style', 'FileName', DefaultThemeName);
+
+  LbStyles.Items.Clear;
+  FThemeList.Clear;
+  FThemeList.Add(' ');
+  LbStyles.Items.Add(L('Windows style (standard)'));
+
+  StylesPath := ExtractFilePath(ParamStr(0)) + StylesFolder;
+  LoadStylesFromDirectory(StylesPath);
+
+  StylesUserPath := GetAppDataDirectory + '\' + StylesFolder;
+  CreateDirA(StylesUserPath);
+  LoadStylesFromDirectory(StylesUserPath);
+
+  if not IsStyleSelected then
+    LbStyles.Selected[0] := True;
 end;
 
 procedure TOptionsForm.TrackBar1Change(Sender: TObject);
@@ -1706,6 +1735,11 @@ var
 begin
   for I := 0 to CbExtensionList.Items.Count - 1 do
     CbExtensionList.State[I] := cbChecked;
+end;
+
+procedure TOptionsForm.SnStylesFileCreate(Sender: TObject; Path: string);
+begin
+  LoadStylesList;
 end;
 
 procedure TOptionsForm.Default1Click(Sender: TObject);

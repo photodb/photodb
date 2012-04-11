@@ -55,10 +55,6 @@ object OptionsForm: TOptionsForm
     object TsStyle: TTabSheet
       Caption = 'Style'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -139,10 +135,6 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -275,10 +267,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -491,10 +479,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -642,10 +626,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -902,10 +882,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -913,7 +889,7 @@ object OptionsForm: TOptionsForm
         Left = 8
         Top = 247
         Width = 479
-        Height = 81
+        Height = 74
         Anchors = [akLeft, akTop, akRight]
         Caption = 'BackUping'
         TabOrder = 0
@@ -1338,14 +1314,50 @@ object OptionsForm: TOptionsForm
           CanClick = True
         end
       end
+      object GbProxyAuthorisation: TGroupBox
+        Left = 8
+        Top = 327
+        Width = 479
+        Height = 74
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Proxy authorisation'
+        TabOrder = 2
+        object LbProxyUserName: TLabel
+          Left = 8
+          Top = 23
+          Width = 56
+          Height = 13
+          Caption = 'User Name:'
+        end
+        object LbProxyPassword: TLabel
+          Left = 208
+          Top = 23
+          Width = 50
+          Height = 13
+          Caption = 'Password:'
+        end
+        object WebProxyUserName: TWatermarkedEdit
+          Left = 8
+          Top = 42
+          Width = 177
+          Height = 21
+          TabOrder = 0
+          Text = 'WebProxyUserName'
+        end
+        object WebProxyPassword: TWatermarkedEdit
+          Left = 208
+          Top = 42
+          Width = 177
+          Height = 21
+          PasswordChar = '*'
+          TabOrder = 1
+          Text = 'WebProxyUserName'
+        end
+      end
     end
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -1625,6 +1637,15 @@ object OptionsForm: TOptionsForm
   end
   object PmCryptMethod: TPopupActionBar
     Left = 272
+    Top = 440
+  end
+  object SnStyles: TShellNotification
+    Active = False
+    WatchSubTree = False
+    WatchEvents = [neFileCreate, neFileDelete]
+    OnFileCreate = SnStylesFileCreate
+    OnFileDelete = SnStylesFileCreate
+    Left = 328
     Top = 440
   end
 end

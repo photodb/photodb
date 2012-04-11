@@ -41,7 +41,8 @@ uses
   LoadingSign,
   uThemesUtils,
   uFastLoad,
-  uBaseWinControl;
+  uBaseWinControl,
+  uVCLHelpers;
 
 type
   TFormImportingImages = class(TDBForm)
@@ -141,12 +142,12 @@ end;
 
 procedure TFormImportingImages.StepChanged(Sender: TObject);
 begin
-  BtnCancel.Enabled := not FWizard.IsBusy;
-  BtnNext.Enabled := FWizard.CanGoNext;
-  BtnPrev.Enabled := FWizard.CanGoBack;
+  BtnCancel.SetEnabledEx(not FWizard.IsBusy);
+  BtnNext.SetEnabledEx(FWizard.CanGoNext);
+  BtnPrev.SetEnabledEx(FWizard.CanGoBack);
   BtnPrev.Visible := not FWizard.IsBusy;
   BtnPause.Visible := FWizard.IsBusy;
-  BtnFinish.Enabled := FWizard.IsFinalStep and not FWizard.IsBusy and not FWizard.OperationInProgress;
+  BtnFinish.SetEnabledEx(FWizard.IsFinalStep and not FWizard.IsBusy and not FWizard.OperationInProgress);
   BtnFinish.Visible := FWizard.IsFinalStep;
   BtnNext.Visible := not FWizard.IsFinalStep;
   LsWorking.Visible := FWizard.IsBusy;

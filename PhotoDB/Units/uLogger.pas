@@ -17,6 +17,7 @@ type
   private
 {$IFDEF LOG}
     FFile: TFileStream;
+    SW: TStreamWriter;
     FSync: TCriticalSection;
 {$ENDIF}
   public
@@ -52,8 +53,10 @@ constructor TLogger.Create;
 begin
 {$IFDEF LOG}
   FSync := TCriticalSection.Create;
+  SW := nil;
   try
     FFile := TFileStream.Create(GetAppDataDirectory + '\EventLog' + FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) + '.txt', fmCreate);
+    SW := TStreamWriter.Create(FFile);
   except
     on e: Exception do
       MessageBox(0, PChar(e.Message), PChar('ERROR!'), MB_OK + MB_ICONERROR);
@@ -64,6 +67,7 @@ end;
 destructor TLogger.Destroy;
 begin        
 {$IFDEF LOG}
+  F(SW);
   F(FFile);
   F(FSync);
 {$ENDIF LOG}
@@ -84,11 +88,15 @@ begin
   FSync.Enter;
   try
     Value := Value + #13#10;
-    FFile.Write(Value[1], Length(Value));
+    SW.Write(Value);
   finally
     FSync.Leave;
   end;        
 {$ENDIF LOG}
 end;
+
+initialization
+finalization
+  F(Logger);
 
 end.

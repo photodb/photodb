@@ -503,12 +503,6 @@ begin
   FDrawFace := nil;
   LockEventRotateFileList := TStringList.Create;
   RatingPopupMenu.Images := DBKernel.ImageList;
-  N01.ImageIndex := DB_IC_DELETE_INFO;
-  N11.ImageIndex := DB_IC_RATING_1;
-  N21.ImageIndex := DB_IC_RATING_2;
-  N31.ImageIndex := DB_IC_RATING_3;
-  N41.ImageIndex := DB_IC_RATING_4;
-  N51.ImageIndex := DB_IC_RATING_5;
   FPlay := False;
   FCurrentlyLoadedFile := '';
   TransparentImage := False;
@@ -541,9 +535,19 @@ begin
   FFaceDetectionComplete := False;
   FHoverFace := nil;
   FDisplayAllFaces := False;
-  WlFaceCount.ImageList := DBkernel.ImageList;
 
   MTimer1.Caption := L('Stop timer');
+
+  if IsWindows8 then
+    TLoad.Instance.RequaredDBKernelIcons;
+
+  WlFaceCount.ImageList := DBkernel.ImageList;
+  N01.ImageIndex := DB_IC_DELETE_INFO;
+  N11.ImageIndex := DB_IC_RATING_1;
+  N21.ImageIndex := DB_IC_RATING_2;
+  N31.ImageIndex := DB_IC_RATING_3;
+  N41.ImageIndex := DB_IC_RATING_4;
+  N51.ImageIndex := DB_IC_RATING_5;
   MTimer1.ImageIndex := DB_IC_PAUSE;
 
   SaveWindowPos1.Key := RegRoot + 'SlideShow';
