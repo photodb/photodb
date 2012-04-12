@@ -171,6 +171,8 @@ begin
     Reg.RootKey := Windows.HKEY_CURRENT_USER;
     Reg.OpenKey(RegRoot + cUserData + 'Style', False);
     StyleFileName := Reg.ReadString('FileName');
+    if StyleFileName = '' then
+      StyleFileName := DefaultThemeName;
   finally
     F(Reg);
   end;

@@ -328,6 +328,7 @@ begin
   FLoadingDataThread := nil;
   FData := TList.Create;
   LsLoadingDB.Color := Theme.WindowColor;
+  LbBackups.Color := Theme.ListColor;
   FormManagerHint := nil;
   PopupMenuRating.Images := DBkernel.ImageList;
   PopupMenuRotate.Images := DBkernel.ImageList;

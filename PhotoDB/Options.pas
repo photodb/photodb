@@ -65,7 +65,9 @@ uses
   Vcl.Styles,
   Vcl.Styles.Ext,
   Vcl.Styles.Utils,
-  uBaseWinControl, WatermarkedEdit, ShellNotify;
+  uBaseWinControl,
+  WatermarkedEdit,
+  ShellNotify;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)

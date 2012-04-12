@@ -2029,8 +2029,7 @@ begin
       if ElvMain.Selection.FocusedItem = nil then
         ElvMain.Selection.FocusedItem := Item;
 
-      FDBDragPoint := ElvMain.ScreenToClient(FDBDragPoint);
-      CreateDragImage(ElvMain, DragImageList, FBitmapImageList, Item.Caption, FDBDragPoint, SpotX, SpotY);
+      CreateDragImage(ElvMain, DragImageList, FBitmapImageList, Item.Caption, Pos, SpotX, SpotY);
 
       DropFileSourceMain.ImageHotSpotX := SpotX;
       DropFileSourceMain.ImageHotSpotY := SpotY;
@@ -2050,6 +2049,7 @@ begin
       DropFileSourceMain.ImageIndex := 0;
 
       DropFileSourceMain.Execute;
+
       SelfDraging := False;
       DropFileTargetMain.Files.clear;
       FDBCanDrag := True;
@@ -2683,8 +2683,9 @@ var
   I, Index: Integer;
   Item, ItemSel: TEasyItem;
 begin
+  WindowsMenuTickCount := GetTickCount;
   FPopupMenuWasActiveOnMouseDown := IsPopupMenuActive;
-  if FPopupMenuWasActiveOnMouseDown then
+  if FPopupMenuWasActiveOnMouseDown and FWasDragAndDrop then
     RestoreDragSelectedItems;
 
   ItemsDeselected := False;
@@ -2761,8 +2762,11 @@ begin
 
     RestoreDragSelectedItems;
   end;
-  SetLength(FFilesToDrag, 0);
-  SetLength(FListDragItems, 0);
+  if WasDBDrag then
+  begin
+    SetLength(FFilesToDrag, 0);
+    SetLength(FListDragItems, 0);
+  end;
 end;
 
 procedure TExplorerForm.ListView1Exit(Sender: TObject);
@@ -3286,6 +3290,9 @@ begin
           Windows.SetFocus(ElvMain.Handle);
       end;
 
+    if (Msg.message = WM_MOUSEMOVE) and (ebcsDragSelecting in ElvMain.States) then
+      WindowsMenuTickCount := GetTickCount;
+
     if UpdatingList then
     begin
       if Msg.Message = WM_RBUTTONDOWN then
@@ -3301,9 +3308,6 @@ begin
         Msg.Message := 0;
       end;
     end;
-
-    if Msg.Message = WM_RBUTTONDOWN then
-      WindowsMenuTickCount := GetTickCount;
 
     if Msg.Message = WM_MOUSEWHEEL then
     begin
@@ -8839,8 +8843,17 @@ begin
 end;
 
 function TExplorerForm.ItemAtPos(X, Y: Integer): TEasyItem;
+var
+  WindowPt: TPoint;
+  Group: TEasyGroup;
 begin
-  Result := ItemByPointImage(ElvMain, Point(X, Y), ListView);
+  WindowPt := ElvMain.Scrollbars.MapWindowToView(Point(X, Y));
+
+  Result := nil;
+
+  Group := ElvMain.Groups.GroupByPoint(WindowPt);
+  if Assigned(Group) then
+    Result := Group.ItembyPoint(WindowPt);
 end;
 
 procedure TExplorerForm.EasyListview2KeyAction(Sender: TCustomEasyListview; var CharCode: Word; var Shift: TShiftState;
