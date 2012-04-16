@@ -8,6 +8,7 @@ uses
   SysUtils,
   uMemory,
   uConstants,
+  uConfiguration,
   UnitINI;
 
 type
@@ -76,6 +77,7 @@ type
   end;
 
 function Settings: TSettings;
+function GetAppDataDirectoryFromSettings: string;
 
 implementation
 
@@ -88,6 +90,16 @@ begin
     FSettings := TSettings.Create;
 
   Result := FSettings;
+end;
+
+function GetAppDataDirectoryFromSettings: string;
+begin
+  Result := Settings.ReadString('Settings', 'AppData');
+  if Result = '' then
+  begin
+    Result :=GetAppDataDirectory;
+    Settings.WriteString('Settings', 'AppData', Result);
+  end;
 end;
 
 function TSettings.Readbool(Key, Name: string; Default: Boolean): Boolean;

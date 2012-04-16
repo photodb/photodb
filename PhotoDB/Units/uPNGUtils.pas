@@ -3,7 +3,12 @@ unit uPNGUtils;
 interface
 
 uses
-  Windows, GraphicsBaseTypes, Graphics, pngimage, Classes, uBitmapUtils;
+  Windows,
+  GraphicsBaseTypes,
+  Graphics,
+  pngimage,
+  Classes,
+  uBitmapUtils;
 
 procedure LoadPNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 procedure LoadPNGImageWOTransparent(PNG: TPNGImage; Bitmap: TBitmap);

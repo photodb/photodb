@@ -3,8 +3,15 @@ unit uSplashThread;
 interface
 
 uses
-   Classes, Windows, Messages, Graphics, uTime, uPngUtils,
-   uConstants, uResources, uMemory,
+   Classes,
+   Windows,
+   Messages,
+   Graphics,
+   uTime,
+   uPngUtils,
+   uConstants,
+   uResources,
+   uMemory,
    pngimage,
    uFormUtils,
    uAppUtils,

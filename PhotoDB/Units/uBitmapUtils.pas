@@ -3,7 +3,13 @@ unit uBitmapUtils;
 interface
 
 uses
-  Windows, Graphics, uConstants, GraphicsBaseTypes, uMemory, Math, uMath,
+  Windows,
+  Graphics,
+  uConstants,
+  GraphicsBaseTypes,
+  uMemory,
+  Math,
+  uMath,
   Classes;
 
 const

@@ -216,6 +216,9 @@ begin
   SetLength(FRegGroups, 0);
   SetLength(FShowenRegGroups, 0);
 
+  LstAvaliableGroups.Color := Theme.ListColor;
+  LstSelectedGroups.Color := Theme.ListColor;
+
   RecreateGroupsList;
   DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
   LoadLanguage;

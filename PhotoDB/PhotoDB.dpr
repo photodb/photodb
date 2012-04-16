@@ -411,7 +411,8 @@ uses
   uShareSettings in 'uShareSettings.pas' {FormShareSettings},
   uProgressBarStyleHookMarquee in 'Units\Styles\uProgressBarStyleHookMarquee.pas',
   uUninstallUtils in 'Units\uUninstallUtils.pas',
-  uInternetProxy in 'Units\uInternetProxy.pas';
+  uInternetProxy in 'Units\uInternetProxy.pas',
+  uVCLStylesOneLoadSpeedUp in 'Units\Styles\uVCLStylesOneLoadSpeedUp.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

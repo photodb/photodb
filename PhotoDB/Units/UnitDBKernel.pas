@@ -37,6 +37,7 @@ uses
   uSettings,
   uSysUtils,
   uImageListDelayed,
+  uVCLHelpers,
   ImgList;
 
 type
@@ -56,7 +57,7 @@ const
   IconsCount = 128;
 
 type
- TDbKernelArrayIcons = array [1..IconsCount] of THandle;
+  TDbKernelArrayIcons = array [1..IconsCount] of THandle;
 
 type
   TDBKernel = class(TObject)
@@ -119,16 +120,41 @@ type
     property SortGroupsByName : Boolean read GetSortGroupsByName;
   end;
 
+  TDBIcons = class(TObject)
+  private
+    FIcons: TDbKernelArrayIcons;
+    function GetIconByIndex(Index: Integer): HIcon;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    property Icons[Index: Integer]: HIcon read GetIconByIndex; default;
+  end;
+
 var
-  Icons: TDbKernelArrayIcons;
-  DBKernel: TDBKernel = nil;
+  DBKernel: TDBKernel = nil;   
+                 
+function Icons: TDBIcons;
 
 implementation
 
 uses
-  UnitCrypting, CommonDBSupport,
-  UnitActiveTableThread, UnitFileCheckerDB, UnitGroupsWork,
+  UnitCrypting, 
+  CommonDBSupport,
+  UnitActiveTableThread, 
+  UnitFileCheckerDB, 
+  UnitGroupsWork,
   UnitBackUpTableInCMD;
+
+var
+  FIcons: TDBIcons = nil;
+
+function Icons: TDBIcons;
+begin
+  if FIcons = nil then
+    FIcons := TDBIcons.Create;
+
+  Result := FIcons;
+end;
 
 { TDBKernel }
 
@@ -1050,7 +1076,8 @@ end;
 
 procedure TDBKernel.LoadIcons;
 var
-  I: Integer;
+  I: Integer; 
+  Icons: TDbKernelArrayIcons;
 
   function LoadIcon(Instance: HINST; ResName: string): HIcon;
   begin
@@ -1063,138 +1090,170 @@ begin
   FImageList.Height := 16;
   FImageList.ColorDepth := cd32Bit;
 
-  icons[1] := LoadIcon(HInstance,'SHELL');
-  icons[2] := LoadIcon(HInstance,'SLIDE_SHOW');
-  icons[3] := LoadIcon(HInstance,'REFRESH_THUM');
-  icons[4] := LoadIcon(HInstance,'RATING_STAR');
-  icons[5] := LoadIcon(HInstance,'DELETE_INFO');
-  icons[6] := LoadIcon(HInstance,'DELETE_FILE');
-  icons[7] := LoadIcon(HInstance,'COPY_ITEM');
-  icons[8] := LoadIcon(HInstance,'PROPERTIES');
-  icons[9] := LoadIcon(HInstance,'PRIVATE');
-  icons[10] := LoadIcon(HInstance,'COMMON');
-  icons[11] := LoadIcon(HInstance,'SEARCH');
-  icons[12] := LoadIcon(HInstance,'EXIT');
-  icons[13] := LoadIcon(HInstance,'FAVORITE');
-  icons[14] := LoadIcon(HInstance,'DESKTOP');
-  icons[15] := LoadIcon(HInstance,'RELOAD');
-  icons[16] := LoadIcon(HInstance,'NOTES');
-  icons[17] := LoadIcon(HInstance,'NOTEPAD');
-  icons[18] := LoadIcon(HInstance,'TRATING_1');
-  icons[19] := LoadIcon(HInstance,'TRATING_2');
-  icons[20] := LoadIcon(HInstance,'TRATING_3');
-  icons[21] := LoadIcon(HInstance,'TRATING_4');
-  icons[22] := LoadIcon(HInstance,'TRATING_5');
-  icons[23] := LoadIcon(HInstance,'NEXT');
-  icons[24] := LoadIcon(HInstance,'PREVIOUS');
-  icons[25] := LoadIcon(HInstance,'TH_NEW');
-  icons[26] := LoadIcon(HInstance,'ROTATE_0');
-  icons[27] := LoadIcon(HInstance,'ROTATE_90');
-  icons[28] := LoadIcon(HInstance,'ROTATE_180');
-  icons[29] := LoadIcon(HInstance,'ROTATE_270');
-  icons[30] := LoadIcon(HInstance,'PLAY');
-  icons[31] := LoadIcon(HInstance,'PAUSE');
-  icons[32] := LoadIcon(HInstance,'COPY');
-  icons[33] := LoadIcon(HInstance,'PASTE');
-  icons[34] := LoadIcon(HInstance,'LOADFROMFILE');
-  icons[35] := LoadIcon(HInstance,'SAVETOFILE');
-  icons[36] := LoadIcon(HInstance,'PANEL');
-  icons[37] := LoadIcon(HInstance,'SELECTALL');
-  icons[38] := LoadIcon(HInstance,'OPTIONS');
-  icons[39] := LoadIcon(HInstance,'ADMINTOOLS');
-  icons[40] := LoadIcon(HInstance,'ADDTODB');
-  icons[41] := LoadIcon(HInstance,'HELP');
-  icons[42] := LoadIcon(HInstance,'RENAME');
-  icons[43] := LoadIcon(HInstance,'EXPLORER');
-  icons[44] := LoadIcon(HInstance,'SEND');
-  icons[45] := LoadIcon(HInstance,'SENDTO');
-  icons[46] := LoadIcon(HInstance,'NEW');
-  icons[47] := LoadIcon(HInstance,'NEWDIRECTORY');
-  icons[48] := LoadIcon(HInstance,'SHELLPREVIOUS');
-  icons[49] := LoadIcon(HInstance,'SHELLNEXT');
-  icons[50] := LoadIcon(HInstance,'SHELLUP');
-  icons[51] := LoadIcon(HInstance,'KEY');
-  icons[52] := LoadIcon(HInstance,'FOLDER');
-  icons[53] := LoadIcon(HInstance,'ADDFOLDER');
-  icons[54] := LoadIcon(HInstance,'BOX');
-  icons[55] := LoadIcon(HInstance,'DIRECTORY');
-  icons[56] := LoadIcon(HInstance,'THFOLDER');
-  icons[57] := LoadIcon(HInstance,'CUT');
-  icons[58] := LoadIcon(HInstance,'NEWWINDOW');
-  icons[59] := LoadIcon(HInstance,'ADDSINGLEFILE');
-  icons[60] := LoadIcon(HInstance,'MANYFILES');
-  icons[61] := LoadIcon(HInstance,'MYCOMPUTER');
-  icons[62] := LoadIcon(HInstance,'EXPLORERPANEL');
-  icons[63] := LoadIcon(HInstance,'INFOPANEL');
-  icons[64] := LoadIcon(HInstance,'SAVEASTABLE');
-  icons[65] := LoadIcon(HInstance,'EDITDATE');
-  icons[66] := LoadIcon(HInstance,'GROUPS');
-  icons[67] := LoadIcon(HInstance,'WALLPAPER');
-  icons[68] := LoadIcon(HInstance,'NETWORK');
-  icons[69] := LoadIcon(HInstance,'WORKGROUP');
-  icons[70] := LoadIcon(HInstance,'COMPUTER');
-  icons[71] := LoadIcon(HInstance,'SHARE');
-  icons[72] := LoadIcon(HInstance,'Z_ZOOMIN_NORM');
-  icons[73] := LoadIcon(HInstance,'Z_ZOOMOUT_NORM');
-  icons[74] := LoadIcon(HInstance,'Z_FULLSIZE_NORM');
-  icons[75] := LoadIcon(HInstance,'Z_BESTSIZE_NORM');
-  icons[76] := LoadIcon(HInstance,'E_MAIL');
-  icons[77] := LoadIcon(HInstance,'CRYPTFILE');
-  icons[78] := LoadIcon(HInstance,'DECRYPTFILE');
-  icons[79] := LoadIcon(HInstance,'PASSWORD');
-  icons[80] := LoadIcon(HInstance,'EXEFILE');
-  icons[81] := LoadIcon(HInstance,'SIMPLEFILE');
-  icons[82] := LoadIcon(HInstance,'CONVERT');
-  icons[83] := LoadIcon(HInstance,'RESIZE');
-  icons[84] := LoadIcon(HInstance,'REFRESHID');
-  icons[85] := LoadIcon(HInstance,'DUPLICAT');
-  icons[86] := LoadIcon(HInstance,'DELDUPLICAT');
-  icons[87] := LoadIcon(HInstance,'UPDATING');
-  icons[88] := LoadIcon(HInstance,'Z_FULLSCREEN_NORM');
-  icons[89] := LoadIcon(HInstance,'MYDOCUMENTS');
-  icons[90] := LoadIcon(HInstance,'MYPICTURES');
-  icons[91] := LoadIcon(HInstance,'DESKTOPLINK');
-  icons[92] := LoadIcon(HInstance,'IMEDITOR');
-  icons[93] := LoadIcon(HInstance,'OTHER_TOOLS');
-  icons[94] := LoadIcon(HInstance,'EXPORT_IMAGES');
-  icons[95] := LoadIcon(HInstance,'PRINTER');
-  icons[96] := LoadIcon(HInstance,'EXIF');
-  icons[97] := LoadIcon(HInstance,'GET_USB');
-  icons[98] := LoadIcon(HInstance,'USB');
-  icons[99] := LoadIcon(HInstance,'TXTFILE');
-  icons[100] := LoadIcon(HInstance,'DOWN');
-  icons[101] := LoadIcon(HInstance,'UP');
-  icons[102] := LoadIcon(HInstance,'CDROM');
-  icons[103] := LoadIcon(HInstance,'TREE');
-  icons[104] := LoadIcon(HInstance,'CANCELACTION');
-  icons[105] := LoadIcon(HInstance,'XDB');
-  icons[106] := LoadIcon(HInstance,'XMDB');
-  icons[107] := LoadIcon(HInstance,'SORT');
-  icons[108] := LoadIcon(HInstance,'FILTER');
-  icons[109] := LoadIcon(HInstance,'CLOCK');
-  icons[110] := LoadIcon(HInstance,'ATYPE');
-  icons[111] := LoadIcon(HInstance,'MAINICON');
-  icons[112] := LoadIcon(HInstance,'APPLY_ACTION');
-  icons[113] := LoadIcon(HInstance,'RELOADING');
-  icons[114] := LoadIcon(HInstance,'STENO');
-  icons[115] := LoadIcon(HInstance,'DESTENO');
-  icons[116] := LoadIcon(HInstance,'SPLIT');
-  icons[117] := LoadIcon(HInstance,'CD_EXPORT');
-  icons[118] := LoadIcon(HInstance,'CD_MAPPING');
-  icons[119] := LoadIcon(HInstance,'CD_IMAGE');
-  icons[120] := LoadIcon(HInstance,'MAGIC_ROTATE');
-  icons[121] := LoadIcon(HInstance,'PERSONS');
-  icons[122] := LoadIcon(HInstance,'CAMERA');
-  icons[123] := LoadIcon(HInstance,'CROP');
-  icons[124] := LoadIcon(HInstance,'PIC_IMPORT');
-  icons[125] := LoadIcon(HInstance,'BACKUP');
-  icons[126] := LoadIcon(HInstance,'MAP_MARKER');
-  icons[127] := LoadIcon(HInstance,'SHELF');
-  icons[128] := LoadIcon(HInstance,'PHOTO_SHARE');
+  if not FImageList.LoadFromCache('Im' + IntToStr(IconsCount)) then
+  begin
+    icons[1] := LoadIcon(HInstance,'SHELL');
+    icons[2] := LoadIcon(HInstance,'SLIDE_SHOW');
+    icons[3] := LoadIcon(HInstance,'REFRESH_THUM');
+    icons[4] := LoadIcon(HInstance,'RATING_STAR');
+    icons[5] := LoadIcon(HInstance,'DELETE_INFO');
+    icons[6] := LoadIcon(HInstance,'DELETE_FILE');
+    icons[7] := LoadIcon(HInstance,'COPY_ITEM');
+    icons[8] := LoadIcon(HInstance,'PROPERTIES');
+    icons[9] := LoadIcon(HInstance,'PRIVATE');
+    icons[10] := LoadIcon(HInstance,'COMMON');
+    icons[11] := LoadIcon(HInstance,'SEARCH');
+    icons[12] := LoadIcon(HInstance,'EXIT');
+    icons[13] := LoadIcon(HInstance,'FAVORITE');
+    icons[14] := LoadIcon(HInstance,'DESKTOP');
+    icons[15] := LoadIcon(HInstance,'RELOAD');
+    icons[16] := LoadIcon(HInstance,'NOTES');
+    icons[17] := LoadIcon(HInstance,'NOTEPAD');
+    icons[18] := LoadIcon(HInstance,'TRATING_1');
+    icons[19] := LoadIcon(HInstance,'TRATING_2');
+    icons[20] := LoadIcon(HInstance,'TRATING_3');
+    icons[21] := LoadIcon(HInstance,'TRATING_4');
+    icons[22] := LoadIcon(HInstance,'TRATING_5');
+    icons[23] := LoadIcon(HInstance,'NEXT');
+    icons[24] := LoadIcon(HInstance,'PREVIOUS');
+    icons[25] := LoadIcon(HInstance,'TH_NEW');
+    icons[26] := LoadIcon(HInstance,'ROTATE_0');
+    icons[27] := LoadIcon(HInstance,'ROTATE_90');
+    icons[28] := LoadIcon(HInstance,'ROTATE_180');
+    icons[29] := LoadIcon(HInstance,'ROTATE_270');
+    icons[30] := LoadIcon(HInstance,'PLAY');
+    icons[31] := LoadIcon(HInstance,'PAUSE');
+    icons[32] := LoadIcon(HInstance,'COPY');
+    icons[33] := LoadIcon(HInstance,'PASTE');
+    icons[34] := LoadIcon(HInstance,'LOADFROMFILE');
+    icons[35] := LoadIcon(HInstance,'SAVETOFILE');
+    icons[36] := LoadIcon(HInstance,'PANEL');
+    icons[37] := LoadIcon(HInstance,'SELECTALL');
+    icons[38] := LoadIcon(HInstance,'OPTIONS');
+    icons[39] := LoadIcon(HInstance,'ADMINTOOLS');
+    icons[40] := LoadIcon(HInstance,'ADDTODB');
+    icons[41] := LoadIcon(HInstance,'HELP');
+    icons[42] := LoadIcon(HInstance,'RENAME');
+    icons[43] := LoadIcon(HInstance,'EXPLORER');
+    icons[44] := LoadIcon(HInstance,'SEND');
+    icons[45] := LoadIcon(HInstance,'SENDTO');
+    icons[46] := LoadIcon(HInstance,'NEW');
+    icons[47] := LoadIcon(HInstance,'NEWDIRECTORY');
+    icons[48] := LoadIcon(HInstance,'SHELLPREVIOUS');
+    icons[49] := LoadIcon(HInstance,'SHELLNEXT');
+    icons[50] := LoadIcon(HInstance,'SHELLUP');
+    icons[51] := LoadIcon(HInstance,'KEY');
+    icons[52] := LoadIcon(HInstance,'FOLDER');
+    icons[53] := LoadIcon(HInstance,'ADDFOLDER');
+    icons[54] := LoadIcon(HInstance,'BOX');
+    icons[55] := LoadIcon(HInstance,'DIRECTORY');
+    icons[56] := LoadIcon(HInstance,'THFOLDER');
+    icons[57] := LoadIcon(HInstance,'CUT');
+    icons[58] := LoadIcon(HInstance,'NEWWINDOW');
+    icons[59] := LoadIcon(HInstance,'ADDSINGLEFILE');
+    icons[60] := LoadIcon(HInstance,'MANYFILES');
+    icons[61] := LoadIcon(HInstance,'MYCOMPUTER');
+    icons[62] := LoadIcon(HInstance,'EXPLORERPANEL');
+    icons[63] := LoadIcon(HInstance,'INFOPANEL');
+    icons[64] := LoadIcon(HInstance,'SAVEASTABLE');
+    icons[65] := LoadIcon(HInstance,'EDITDATE');
+    icons[66] := LoadIcon(HInstance,'GROUPS');
+    icons[67] := LoadIcon(HInstance,'WALLPAPER');
+    icons[68] := LoadIcon(HInstance,'NETWORK');
+    icons[69] := LoadIcon(HInstance,'WORKGROUP');
+    icons[70] := LoadIcon(HInstance,'COMPUTER');
+    icons[71] := LoadIcon(HInstance,'SHARE');
+    icons[72] := LoadIcon(HInstance,'Z_ZOOMIN_NORM');
+    icons[73] := LoadIcon(HInstance,'Z_ZOOMOUT_NORM');
+    icons[74] := LoadIcon(HInstance,'Z_FULLSIZE_NORM');
+    icons[75] := LoadIcon(HInstance,'Z_BESTSIZE_NORM');
+    icons[76] := LoadIcon(HInstance,'E_MAIL');
+    icons[77] := LoadIcon(HInstance,'CRYPTFILE');
+    icons[78] := LoadIcon(HInstance,'DECRYPTFILE');
+    icons[79] := LoadIcon(HInstance,'PASSWORD');
+    icons[80] := LoadIcon(HInstance,'EXEFILE');
+    icons[81] := LoadIcon(HInstance,'SIMPLEFILE');
+    icons[82] := LoadIcon(HInstance,'CONVERT');
+    icons[83] := LoadIcon(HInstance,'RESIZE');
+    icons[84] := LoadIcon(HInstance,'REFRESHID');
+    icons[85] := LoadIcon(HInstance,'DUPLICAT');
+    icons[86] := LoadIcon(HInstance,'DELDUPLICAT');
+    icons[87] := LoadIcon(HInstance,'UPDATING');
+    icons[88] := LoadIcon(HInstance,'Z_FULLSCREEN_NORM');
+    icons[89] := LoadIcon(HInstance,'MYDOCUMENTS');
+    icons[90] := LoadIcon(HInstance,'MYPICTURES');
+    icons[91] := LoadIcon(HInstance,'DESKTOPLINK');
+    icons[92] := LoadIcon(HInstance,'IMEDITOR');
+    icons[93] := LoadIcon(HInstance,'OTHER_TOOLS');
+    icons[94] := LoadIcon(HInstance,'EXPORT_IMAGES');
+    icons[95] := LoadIcon(HInstance,'PRINTER');
+    icons[96] := LoadIcon(HInstance,'EXIF');
+    icons[97] := LoadIcon(HInstance,'GET_USB');
+    icons[98] := LoadIcon(HInstance,'USB');
+    icons[99] := LoadIcon(HInstance,'TXTFILE');
+    icons[100] := LoadIcon(HInstance,'DOWN');
+    icons[101] := LoadIcon(HInstance,'UP');
+    icons[102] := LoadIcon(HInstance,'CDROM');
+    icons[103] := LoadIcon(HInstance,'TREE');
+    icons[104] := LoadIcon(HInstance,'CANCELACTION');
+    icons[105] := LoadIcon(HInstance,'XDB');
+    icons[106] := LoadIcon(HInstance,'XMDB');
+    icons[107] := LoadIcon(HInstance,'SORT');
+    icons[108] := LoadIcon(HInstance,'FILTER');
+    icons[109] := LoadIcon(HInstance,'CLOCK');
+    icons[110] := LoadIcon(HInstance,'ATYPE');
+    icons[111] := LoadIcon(HInstance,'MAINICON');
+    icons[112] := LoadIcon(HInstance,'APPLY_ACTION');
+    icons[113] := LoadIcon(HInstance,'RELOADING');
+    icons[114] := LoadIcon(HInstance,'STENO');
+    icons[115] := LoadIcon(HInstance,'DESTENO');
+    icons[116] := LoadIcon(HInstance,'SPLIT');
+    icons[117] := LoadIcon(HInstance,'CD_EXPORT');
+    icons[118] := LoadIcon(HInstance,'CD_MAPPING');
+    icons[119] := LoadIcon(HInstance,'CD_IMAGE');
+    icons[120] := LoadIcon(HInstance,'MAGIC_ROTATE');
+    icons[121] := LoadIcon(HInstance,'PERSONS');
+    icons[122] := LoadIcon(HInstance,'CAMERA');
+    icons[123] := LoadIcon(HInstance,'CROP');
+    icons[124] := LoadIcon(HInstance,'PIC_IMPORT');
+    icons[125] := LoadIcon(HInstance,'BACKUP');
+    icons[126] := LoadIcon(HInstance,'MAP_MARKER');
+    icons[127] := LoadIcon(HInstance,'SHELF');
+    icons[128] := LoadIcon(HInstance,'PHOTO_SHARE');
 
-  //disabled items are bad
+    //disabled items are bad
+    for I := 1 to IconsCount do
+      ImageList_ReplaceIcon(FImageList.Handle, -1, Icons[I]);
+
+    FImageList.SaveToCache('Im' + IntToStr(IconsCount));
+  end;
+end;
+
+{ TDBIcons }
+
+constructor TDBIcons.Create;  
+var
+  I: Integer; 
+begin
   for I := 1 to IconsCount do
-    ImageList_ReplaceIcon(FImageList.Handle, -1, Icons[I]);
+    FIcons[I] := 0;
+end;
+
+destructor TDBIcons.Destroy;
+var
+  I: Integer; 
+begin
+  for I := 1 to IconsCount do
+    DestroyIcon(FIcons[I]);
+end;
+
+function TDBIcons.GetIconByIndex(Index: Integer): HIcon;
+begin
+  if FIcons[Index] <> 0 then
+    Exit(FIcons[Index]);
+    
+  FIcons[Index] := ImageList_GetIcon(DBKernel.ImageList.Handle, Index - 1, 0);
+  Result := FIcons[Index];
 end;
 
 initialization
@@ -1203,5 +1262,6 @@ finalization
 
   FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(Dbname));
   F(DBKernel);
+  F(FIcons);
 
 end.

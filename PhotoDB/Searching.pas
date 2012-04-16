@@ -4820,7 +4820,7 @@ begin
   if FileID <> 0 then
     SearchEdit.Text := ':Folder(' + IntToStr(FileID) + '):'
   else
-    SearchEdit.Text := ':Folder(' + Text + '):';
+    SearchEdit.Text := ':Folder(' + Directory + '):';
 
   SetPath(Directory);
   DoSearchNow(Self);

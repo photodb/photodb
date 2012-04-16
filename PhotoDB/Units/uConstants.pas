@@ -17,6 +17,7 @@ const
   PlugInImagesFolder = 'PlugInsEx\';
   OldPlugInImagesFolder = 'PlugIns\';
   ThemesDirectory = 'Themes\';
+  CommonCacheDirectory = '\Cache\';
   BackUpFolder: string = '\DBBackUp\';
   ScriptsFolder: string = 'Scripts\';
   StylesFolder: string = 'Styles\';

@@ -3,17 +3,25 @@ unit uVCLHelpers;
 interface
 
 uses
+  uMemory,
+  uConstants,
+  uLogger,
+  SysUtils,
   ExtCtrls,
   Windows,
   Classes,
-  FOrms,
+  Forms,
   Controls,
   Graphics,
   Menus,
   Themes,
   Vcl.ActnPopup,
   uRuntime,
-  StdCtrls;
+  StdCtrls,
+  ImgList,
+  uFileUtils,
+  uSettings,
+  uConfiguration;
 
 type
   TTimerHelper = class helper for TTimer
@@ -63,6 +71,12 @@ type
     function FindChildByTag<T: TControl>(Tag: NativeInt): T;
     function FindChildByType<T: TControl>: T;
     property BoundsRectScreen: TRect read GetBoundsRectScreen;
+  end;
+
+  TCustomImageListHelper = class helper for TCustomImageList
+  public
+    function LoadFromCache(CacheFileName: string): Boolean;
+    procedure SaveToCache(CacheFileName: string);
   end;
 
 type
@@ -287,6 +301,57 @@ begin
   Enabled := Value;
   if not Value then
     Perform(CM_RECREATEWND, 0, 0);
+end;
+
+{ TCustomImageListHelper }
+
+type
+  TCustomImageListEx = class(TCustomImageList);
+
+function TCustomImageListHelper.LoadFromCache(CacheFileName: string): Boolean;
+var
+  FileName: string;
+  FS: TFileStream;
+begin
+  Result := True;
+  FileName := GetAppDataDirectoryFromSettings + CommonCacheDirectory + CacheFileName + '.imlist';
+  FS := nil;
+  try
+    try
+      FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+      TCustomImageListEx(Self).ReadData(FS);
+    except
+      on e: Exception do
+      begin
+        EventLog(e);
+        Result := False;
+      end;
+    end;
+  finally
+    F(FS);
+  end;
+end;
+
+procedure TCustomImageListHelper.SaveToCache(CacheFileName: string);
+var
+  Directory, FileName: string;
+  FS: TFileStream;
+begin
+  Directory := GetAppDataDirectoryFromSettings + CommonCacheDirectory;
+  CreateDirA(Directory);
+  FileName := Directory + CacheFileName + '.imlist';
+  FS := nil;
+  try
+    try
+      FS := TFileStream.Create(FileName, fmCreate);
+      TCustomImageListEx(Self).WriteData(FS);
+    except
+      on e: Exception do
+        EventLog(e);
+    end;
+  finally
+    F(FS);
+  end;
 end;
 
 end.
