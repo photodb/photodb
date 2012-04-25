@@ -44,11 +44,16 @@ namespace PhotoDBDatabase.Classes
         {
             get
             {
-                string referer = String.Empty;
+                string referer = (string)HttpContext.Current.Session["HTTP_REFERER"] ?? String.Empty;
+                if (!string.IsNullOrEmpty(referer))
+                    return referer;
+
                 if (HttpContext.Current.Request.UrlReferrer != null)
                     referer = HttpContext.Current.Request.UrlReferrer.AbsoluteUri ?? String.Empty;
                 if (String.IsNullOrEmpty(referer))
                     referer = HttpContext.Current.Request.ServerVariables["HTTP_REFERER"] ?? String.Empty;
+
+                HttpContext.Current.Session["HTTP_REFERER"] = referer;
                 return referer;
             }
         }

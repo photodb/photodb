@@ -952,7 +952,8 @@ begin
            RenameFile(Name,DatabaseName); // и переименовываем упакованную базу
        end;
    except
-    on e : Exception do EventLog(':CompactDatabase_JRO() throw exception: '+e.Message);
+    on e : Exception do
+      EventLog(':CompactDatabase_JRO() throw exception: '+e.Message);
     // выдаем сообщение об исключительной ситуации
    end;
 end;

@@ -4296,14 +4296,14 @@ end;
 procedure TExplorerForm.PmListPopupPopup(Sender: TObject);
 begin
   Addfolder1.Visible := not FolderView;
-  MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE)) and not FolderView;
+  MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE)) and not FolderView;
 
   Paste1.Visible := False;
   Addfolder1.Visible := False;
   MakeNew1.Visible := False;
   OpeninSearchWindow1.Visible := False;
 
-  if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) then
+  if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
   begin
     Paste1.Visible := True;
     Addfolder1.Visible := True;

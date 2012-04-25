@@ -24,7 +24,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    class function Instance : TLoad;
+    class function Instance: TLoad;
     //Starts
     procedure StartDBKernelIconsThread;
     procedure StartDBSettingsThread;
@@ -51,7 +51,7 @@ uses
   uLoadStyleThread;
 
 var
-  SLoadInstance : TLoad = nil;
+  SLoadInstance: TLoad = nil;
 
 { TLoad }
 

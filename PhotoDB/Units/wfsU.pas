@@ -11,7 +11,7 @@ type
   WFSError = class(Exception);
 
 const
-  WathBufferSize = 165535;
+  WathBufferSize = 64 * 1024;
 
 type
   TWFS = class(TDBThread)

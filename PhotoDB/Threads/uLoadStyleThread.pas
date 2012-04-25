@@ -12,6 +12,7 @@ uses
   uConstants,
   uDBThread,
   uRuntime,
+  uTime,
   Classes;
 
 type
@@ -37,6 +38,7 @@ var
 begin
   FreeOnTerminate := True;
   try
+    TW.I.Start('TLoadStyleThread - START');
     if not FolderView then
     begin
       StyleFileName := Settings.ReadString('Style', 'FileName', DefaultThemeName);
@@ -56,6 +58,7 @@ begin
       if TStyleManager.TryLoadFromResource(HInstance, 'MOBILE_STYLE', PWideChar(StyleResourceSection), StyleHandle ) then
         TStyleManager.SetStyle(StyleHandle);
     end;
+    TW.I.Start('TLoadStyleThread - END');
   except
     on e: Exception do
       EventLog(e);

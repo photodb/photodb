@@ -17,13 +17,13 @@ namespace PhotoDBDatabase.Classes
             }
         }
 
-        public static void NewDownload(int mediaId, int pageId, string requestUrl, string downloadUrl, string countryCode)
+        public static bool NewDownload(int mediaId, int pageId, string requestUrl, string downloadUrl, string countryCode)
         {
             using (SiteDatabaseDataContext db = new SiteDatabaseDataContext(ConnectionString))
             {
                 Download lastDownload = db.Downloads.OrderBy(x => -x.DownloadId).FirstOrDefault();
                 if (lastDownload != null && lastDownload.HostId == StatsManager.HostId)
-                    return;
+                    return false;
 
                 Download d = new Download()
                 {
@@ -38,6 +38,8 @@ namespace PhotoDBDatabase.Classes
                 };
                 db.Downloads.InsertOnSubmit(d);
                 db.SubmitChanges();
+
+                return true;
             }
         }
     }
