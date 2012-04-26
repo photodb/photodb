@@ -300,9 +300,12 @@ var
 begin
   Result := False;
   if Count > 1 then
+  begin
+    FirstDir := ExtractFileDir(Self[0].FileName);
     for I := 1 to Count - 1 do
       if FirstDir <> ExtractFileDir(Self[I].FileName) then
         Result := True;
+  end;
 end;
 
 function TDBPopupMenuInfo.GetIsVariousTime: Boolean;

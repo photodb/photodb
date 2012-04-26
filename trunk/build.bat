@@ -1,5 +1,5 @@
-d:
-cd "D:\Dmitry\Delphi exe\Photo Database"
+REM  d:
+REM  cd "D:\Dmitry\Delphi exe\Photo Database"
 
 SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\9.0
 SET PROGS=C:\Users\Public\Documents
