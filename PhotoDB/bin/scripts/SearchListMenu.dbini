@@ -1,0 +1,63 @@
+﻿<Slide Show>[DB_IC_SLIDE_SHOW]
+{
+initialization:
+  if ($OneFileExists=false) {InVisible;};
+run:
+  SlideShow;
+}
+<Select all>[DB_IC_SELECTALL]
+{
+initialization:
+  if ($OneFileExists=false) {InVisible;};
+run:
+  SelectAll;
+}
+<->[]{}
+<Show updater>[DB_IC_BOX]
+{
+initialization:
+  if ($Mobile=true) {InVisible;};
+run:
+  ShowUpdateWindow;
+}
+<->[]{}
+
+<>[]{scripts\HelpScript.dbini}
+<Collection Manager>[DB_IC_ADMINTOOLS]
+{
+initialization:
+  if ($Mobile=true) {InVisible;};
+run:
+  DoManager;
+}
+<Options>[DB_IC_OPTIONS]
+{
+  DoOptions;
+}
+<Groups manager>[DB_IC_GROUPS]
+{
+  ExecuteGroupManager;
+}
+<Image editor>[DB_IC_IMEDITOR]
+{
+  $form=NewImageEditor;
+  ShowDBForm($form);
+}
+<>[]{scripts\GetPhotosScript.dbini}
+<Load results from file>[DB_IC_LOADFROMFILE]
+{
+  LoadResults;
+}
+<Save results to file>[DB_IC_SAVETOFILE]
+{
+  SaveResults;
+}
+<New search>[DB_IC_ADDTODB]
+{
+  NewSearch;
+}
+<->[]{}
+<Explorer>[DB_IC_EXPLORER]
+{
+  NewExplorer;
+}

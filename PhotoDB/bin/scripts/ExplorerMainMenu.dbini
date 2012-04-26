@@ -1,0 +1,182 @@
+﻿// <Execute>[DB_IC_SHELL]
+// {
+//  $index=SelectedIndex;
+//  $file=GetOpenFileName("","Exe Files (*.exe)|*.exe");
+//  Run($file,"");
+// }
+<#>[]{scripts\changedb_functions.dbini}
+<File>[-1]
+{
+ <->[]{}
+ $IconList=GetDBsIcons;
+ DeleteNoFirst;
+ $Sel=SelCount;
+ if ($Sel=1) 
+ {
+  $index=SelectedIndex;
+  $file=GetPathByIndex($index);
+  $im=ImageFile($file);
+  $b=true;
+  if ($im=true) 
+  {
+   $runscript=PathFormat("ShowFile(""%1"")",$file);
+   CreateItemDefChecked("Execute",DB_IC_SHELL,$runscript,false,true,false,0);
+   $b=false;
+  };
+  $dir=DirectoryExists($file);
+  if ($dir=true) 
+  {
+   $runscript=PathFormat("NewExplorerByPath(""%1"")",$file);
+   CreateItemDefChecked("Execute",DB_IC_SHELL,$runscript,false,true,false,0);
+   $b=false;
+  };
+  if ($b=true)
+  {
+   $runscript=PathFormat("Exec(""%1"")",$file);
+   CreateItemDefChecked("Execute",DB_IC_SHELL,$runscript,false,true,false,0);
+  };
+ };
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+
+ InsertSelectDBMenu($IconList);
+
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ CreateItemDefChecked("Exit",DB_IC_EXIT,"CloseWindow;",false,true,false,0);
+}
+
+<Edit>[-1]
+{
+ <->[]{}
+ DeleteNoFirst;
+ $fCanBack=CanBack;
+ CreateItemDefChecked("Back",DB_IC_PREVIOUS,"GoBack;",false,$fCanBack,false,0);
+ $fCanForward=CanForward;
+ CreateItemDefChecked("Forward",DB_IC_NEXT,"GoForward;",false,$fCanForward,false,0);
+ $fCanUp=CanUp;
+ CreateItemDefChecked("Up",DB_IC_UP,"GoUp;",false,$fCanUp,false,0);
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ 
+ $CanCopy=CanCopySelection;
+
+ CreateItemDefChecked("Copy",DB_IC_COPY,"Copy;",false,$CanCopy,false,0);
+ CreateItemDefChecked("Cut",DB_IC_CUT,"Cut;",false,$CanCopy,false,0);
+ 
+ $ClipBoardFiles=LoadFilesFromClipBoard;
+ $l=ArrayStringLength($ClipBoardFiles);
+ if ($l>0) 
+ {
+   $CanPaste=CanPasteInSelection;
+   CreateItemDefChecked("Paste",DB_IC_PASTE,"Paste;",false,$CanPaste,false,0);
+ };
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ CreateItemDefChecked("Select all",DB_IC_SELECTALL,"SelectAll;",false,true,false,0);
+}
+
+
+<View>[-1]
+{
+ <->[]{}
+ DeleteNoFirst;
+
+ CreateItemDefChecked("Show/Hide Filter",DB_IC_FILTER,"ShowHideFilter();",false,true,false,0);
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ 
+ $explorer=ExplorerType;
+ if ($explorer=true) 
+ {
+  CreateItemDefChecked("Hide explorer panel",DB_IC_INFO_PANEL,"CancelExplorerMode;",false,true,false,0);
+ }; else 
+ {
+   CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"GoToExplorerMode;",false,true,false,0);
+ };
+
+ $State=ShowPrivateNow;
+ if ($State=true) 
+ {
+  CreateItemDefChecked("Public only",DB_IC_COMMON,"HidePrivate;",false,true,false,0);
+ }; else
+ {
+  CreateItemDefChecked("Display private images",DB_IC_PRIVATE,"ShowPrivate;",false,true,false,0);
+ };
+ CreateItemDefChecked("-",0,"",false,false,false,0);
+ CreateItemDefChecked("View",DB_IC_SORT,"",false,true,false,-1);
+ $View=GetView;
+ $Check=false;
+ if ($View=0) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("Thumbnails",-1,"SetThumbnailsView;",false,true,$Check,0,-1);
+ if ($View=4) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("Tile",-1,"SetTilesView;",false,true,$Check,0,-1);
+ if ($View=1) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("Icons",-1,"SetIconsView;",false,true,$Check,0,-1);
+ if ($View=3) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("List",-1,"SetListView;",false,true,$Check,0,-1);
+ if ($View=2) {$Check=true;}; else {$Check=false;};
+ CreateItemDefCheckedSubTag("Table",-1,"SetList2View;",false,true,$Check,0,-1);
+
+}
+<Tools>[-1]
+{
+  <List of keywords>[DB_IC_SEARCH]
+  {
+    GetListOfKeyWords;
+  }
+  <Show Collection Tree>[DB_IC_TREE]
+  {
+    MakeDBFileTree;
+  }
+  <Show update window>[DB_IC_BOX]
+  {
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      ShowUpdateWindow;
+  }
+  <Collection Manager>[DB_IC_ADMINTOOLS]
+  {
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      DoManager;
+  }
+  <Image editor>[DB_IC_IMEDITOR]
+  {
+    $form=NewImageEditor;
+    ShowDBForm($form);
+  }
+  <New search>[DB_IC_ADDTODB]
+  {
+    NewSearch;
+  }
+  <Groups manager>[DB_IC_GROUPS]
+  {
+    ExecuteGroupManager;
+  }
+  <Explorer>[DB_IC_EXPLORER]
+  {
+    NewExplorer;
+  }
+  <Split Collection>[DB_IC_SPLIT]
+  {
+    SplitDB;
+  }
+  <->[]{}
+  <Export images to CD>[DB_IC_CD_EXPORT]
+  {
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      DoCDExport;
+  }  
+  <CD mapping>[DB_IC_CD_MAPPING]
+  {
+    DoCDMapping;
+  }
+  <->[]{}
+  <Options>[DB_IC_OPTIONS]
+  {
+    DoOptions;
+  }
+  <>[]{scripts\MenuScripts.dbini}
+}
+<>[]{scripts\GetPhotosScript.dbini}
+<>[]{scripts\HelpScript.dbini}

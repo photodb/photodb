@@ -1,0 +1,67 @@
+﻿  @functions 
+
+  .void ApplyActionsToSelected($ID,$FILE){
+    LOAD_VARS($ID);
+    DELETE_VAR($FileName);
+    DELETE_VAR($Selected);
+    SAVE_VAR($sID,$FILE);
+    if ($FILE!="") 
+    {
+      $ar=GetStringArray;
+      $SelCount=0;      
+      for($i=0;$i<$MenuLength;$i=%$i+1)
+      {
+        LoadVariablesSelectedFileNo($i);
+        if ($Selected=true) 
+        {
+          $SelCount=%$SelCount+1;
+          AddStringItem($ar,$FileName);
+        };
+      };
+      SAVE_VAR($sID,$ar);
+      SetJPEGOptions;
+      if ($SelCount=1)
+      {
+        $FileName=GetStringItem($ar,0);
+        $fn=ExtractFileName($FileName);
+        $NewFileName=GetSaveFileName($fn,"Images (*.jpg)|*.jpg");
+        if ($NewFileName!="")
+        { 
+          $form=NewImageEditor;
+          ShowDBForm($form);
+          $FileDoneCounter=1;
+          SAVE_VAR($sID,$FileDoneCounter);
+          ImageEditorOpenFileName($form,$FileName);
+          //!!!
+          SAVE_VAR($sID,$FileDoneCounter);
+          ImageEditorRegisterCallBack($form,$sID,"CallBackProc");
+          ExecuteActions($form,$FILE,$NewFileName);
+        };
+      }; else 
+      { 
+        $folder=GetOpenDirectory("Please select directory to place for processed files","");
+        $de=DirectoryExists($folder);
+        if ($de=true)
+        {
+          SAVE_VAR($sID,$folder);
+          $FileDoneCounter=0;
+          $FileName=GetStringItem($ar,$FileDoneCounter);
+          $len=ArrayStringLength($ar);
+          $fn=ExtractFileName($FileName);
+          $NewFileName=$folder+"\"+$fn;
+          $form=NewImageEditor;
+          ShowDBForm($form);
+          ImageEditorOpenFileName($form,$FileName);
+          
+          SAVE_VAR($sID,$FileDoneCounter);
+          ImageEditorRegisterCallBack($form,$sID,"CallBackProc");
+          ExecuteActions($form,$FILE,$NewFileName);
+        };
+      };
+
+    };
+  };
+
+
+  @end
+

@@ -1,0 +1,32 @@
+﻿The Photo DataBase is shareware. This means:
+
+1. All copyrights to Photo DataBase are exclusively owned by the author - Dmitry Veresov.
+2. Anyone may use this software as Demo version and will have some limitations program (depends of program version).
+3. There is a single computer USAGE license. The user purchases ONE license to USE the Photo DataBase on ONE computer.
+
+Once registered, the user is granted a non-exclusive license to use Photo DataBase on one computer as defined by the licensing terms, for any legal purpose. The registered Photo DataBase software may not be rented or leased, but may be permanently transferred, in its entirety, if the person receiving it agrees to the terms of this license.
+
+4. The Photo DataBase unregistered trial version may be freely distributed, with exceptions noted below, provided the distribution package is not modified in any way.
+a. No person or company may distribute separate parts of the Photo DataBase, without written permission of the copyright owner.
+b. The Photo DataBase unregistered trial version may not be distributed inside any other software package without written permission of the copyright owner.
+
+c. Hacks/cracks, keys or key generators may not be included on the same distribution.
+5. To register you must buy Photo DataBase (http://photodb.illusdolphin.net/en/buy).
+6. Photo DataBase is distributed "as is". No warranty of any kind is expressed or implied. You use at your own risk. Neither the author nor the agents of the author will be liable for data loss, damages, loss of profits or any other kind of loss while using or misusing this software.
+7. There are NO additional license fees, apart from the cost of registration, associated with the creation and distribution Photo DataBase. 
+
+8. You may not use, copy, emulate, clone, rent, lease, sell, modify, decompile, disassemble, otherwise reverse engineer, or transfer the licensed program, or any subset of the licensed program, except as provided for in this agreement. Any such unauthorized use will result in immediate and automatic termination of this license and may result in criminal and/or civil prosecution.
+Photo DataBase binary code cannot be used or reverse engineered to re-create the Photo DataBase algorithms, which is proprietary, without written permission of the author.
+
+Photo DataBase activation keys may not be distributed, except as stated in item 3) above, outside the area of legal control of the person or persons who purchased the original license, without written permission of the copyright holder.
+All rights not expressly granted here are reserved by Ivan Komlev.
+9. Installing and using Photo DataBase signifies acceptance of these terms and conditions of the license.
+10. If you do not agree with the terms of this license you must remove Photo DataBase from your storage devices and cease to use the product.
+
+Thank you for using the original Photo DataBase.
+
+E-Mail : illusDolphin@gmail.com
+HomePage : http://photodb.illusdolphin.net
+
+Dmitry Veresov,
+(с) 2002-2012 Studio "Illusion Dolphin"

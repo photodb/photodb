@@ -1,0 +1,18 @@
+﻿  <Scripts>[DB_IC_SHELL]
+  {
+    <Functions list>[DB_IC_OPTIONS]
+    {
+     ShowFunctionList;
+    }
+    <Variables>[DB_IC_BOX]
+    {
+     ShowMemoryStatus;
+    }
+    <Open scripts directory>[DB_IC_DIRECTORY]
+    {
+     $script_path=GetProgramPath;
+     $script_path=ExtractFileDirectory($script_path);
+     $script_path=$script_path+"scripts\";
+     NewExplorerByPath($script_path);
+    }
+  }

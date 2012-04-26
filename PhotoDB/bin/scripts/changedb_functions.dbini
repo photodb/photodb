@@ -1,0 +1,39 @@
+﻿  @functions
+
+  .int[] GetDBsIcons(){
+   //Get list of icons
+   $DBIconList=GetDBIconList;
+   $n=ArrayStringLength($DBIconList); 
+   $Result=GetIntArray;
+   for($i=0;$i<$n;$i=%$i+1)
+   {
+    $aicon=GetStringItem($DBIconList,$i);
+    //Get ID of icon
+    $n=AddIcon($aicon);
+    //add to array
+    AddIntItem($Result,$n);
+   };
+  };
+
+  .void InsertSelectDBMenu($IconList){
+   if ($Mobile=false) {
+  
+     $DBNameList=GetDBNameList; //list of names
+     $DBFileList=GetDBFileList; //files
+     $n=ArrayStringLength($DBNameList);
+     for($i=0;$i<$n;$i=%$i+1)
+     {
+      $aCaption=GetStringItem($DBNameList,$i); 
+      $ic=GetIntItem($IconList,$i);
+      $file=GetStringItem($DBFileList,$i);
+      $file=LowerCase($file);
+      $dbname=GetCurrentDB; //current DB
+      $dbname=LowerCase($dbname); //to lower case to compare
+      if ($dbname=$file) {$b=true;}; else {$b=false;}; //if current db - bold font
+      $run=PathFormat("SelectDB($FORM,""%1"");",$file); //by click - select new db
+      CreateItemDefChecked($aCaption,$ic,$run,$b,true,false,0);
+     };
+   };
+  };
+
+  @end

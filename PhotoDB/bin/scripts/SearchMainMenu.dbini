@@ -1,0 +1,113 @@
+﻿<#>[]{scripts\changedb_functions.dbini}
+<File>[-1]
+{
+  //all icons should be created before displaying menu (Choose Collection)
+  $IconList=GetDBsIcons;
+  //
+  <Load results from file>[DB_IC_LOADFROMFILE]
+  {
+    LoadResults;
+  }
+  <Save results to file>[DB_IC_SAVETOFILE]
+  {
+    SaveResults;
+  }
+  <->[]{}
+  <Select collection>[DB_IC_ADDTODB]
+  {
+   initialization:
+     if ($Mobile=true) {InVisible;};
+   run:  
+   //Empty item to show arrow
+   <->[]{}
+   //Deleting empty item and fill menu
+   DeleteNoFirst;
+   InsertSelectDBMenu($IconList);
+  }
+  <->[]{}
+  <Exit>[DB_IC_EXIT]
+  {
+    CloseWindow;
+  }
+}
+<View>[-1]
+{
+ <->[]{}
+ DeleteNoFirst;
+ //Check value $explorer
+ LoadExplorerValue;
+ if ($explorer=true) 
+ {
+  CreateItemDefChecked("Hide explorer panel",-1,"HideExplorerPanel;",false,true,true,0);
+ }; else 
+ {
+  CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"ShowExplorerPanel;",false,true,false,0);
+ };
+}
+<Tools>[-1]
+{
+  <List of keywords>[DB_IC_SEARCH]
+  {
+    GetListOfKeyWords;
+  }
+  <Show Collection Tree>[DB_IC_TREE]
+  {   
+    MakeDBFileTree;
+  }
+  <Show update window>[DB_IC_BOX]
+  {
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      ShowUpdateWindow;
+  }
+  <Collection Manager>[DB_IC_ADMINTOOLS]
+  {
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      DoManager;
+  }
+  <Image editor>[DB_IC_IMEDITOR]
+  {  
+    $form=NewImageEditor;
+    ShowDBForm($form);
+  }
+  <New search>[DB_IC_ADDTODB]
+  {
+    NewSearch;
+  }
+  <Groups manager>[DB_IC_GROUPS]
+  {   
+    ExecuteGroupManager;
+  }
+  <Explorer>[DB_IC_EXPLORER]
+  {
+    NewExplorer;
+  }
+  <Split Collection>[DB_IC_SPLIT]
+  {
+    SplitDB;
+  }
+  <->[]{}
+  <Export images to CD>[DB_IC_CD_EXPORT]
+  {
+    initialization:
+      if ($Mobile=true) {InVisible;};
+    run:
+      DoCDExport;
+  }  
+  <CD mapping>[DB_IC_CD_MAPPING]
+  {
+    DoCDMapping;
+  }
+  <->[]{}
+  <Options>[DB_IC_OPTIONS]
+  {
+    DoOptions;
+  }
+  <>[]{scripts\MenuScripts.dbini}
+}
+//common menu
+<>[]{scripts\GetPhotosScript.dbini}
+<>[]{scripts\HelpScript.dbini}

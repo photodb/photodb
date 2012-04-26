@@ -1,0 +1,24 @@
+﻿  @functions 
+
+  .void CallBackProc($ID){
+    LOAD_VARS($ID);
+    $FileDoneCounter=%$FileDoneCounter+1;
+    SAVE_VAR($sID,$FileDoneCounter);
+    $len=ArrayStringLength($ar);
+    if ($FileDoneCounter<$len)
+    {
+      $NO_UNLOAD=true;
+      $FileName=GetStringItem($ar,$FileDoneCounter);
+      $fn=ExtractFileName($FileName);
+      $NewFileName=$folder+"\"+$fn;
+      $form=NewImageEditor;
+      ShowDBForm($form);
+      ImageEditorOpenFileName($form,$FileName);
+      //!!
+      ImageEditorRegisterCallBack($form,$sID,"CallBackProc");
+      ExecuteActions($form,$FILE,$NewFileName);
+    };
+  };
+
+  @end
+

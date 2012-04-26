@@ -1,0 +1,1 @@
+makecert -r -pe -n "CN=PhotoDatabase23" -ss PrivateCertStore -a sha1 -len 2048 PhotoDB23.cer

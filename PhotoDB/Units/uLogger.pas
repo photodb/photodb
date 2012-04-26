@@ -1,0 +1,102 @@
+unit uLogger;
+
+interface
+
+uses
+  Windows,
+  Classes,
+  SysUtils,
+  uConfiguration,
+  SyncObjs,
+  uMemory;
+
+{$DEFINE _EVENTLOG}
+
+type
+  TLogger = class(TObject)
+  private
+{$IFDEF LOG}
+    FFile: TFileStream;
+    SW: TStreamWriter;
+    FSync: TCriticalSection;
+{$ENDIF}
+  public
+    constructor Create;
+    destructor Destroy; override;
+    class function Instance: TLogger;
+    procedure Message(Value: string);
+  end;
+
+procedure EventLog(Message: string); overload;
+procedure EventLog(Ex: Exception); overload;
+
+implementation
+
+var
+  Logger: TLogger = nil;
+
+procedure EventLog(Ex: Exception);
+begin
+  EventLog(Ex.ToString);
+end;
+
+procedure EventLog(Message: string);
+begin
+{$IFDEF EVENTLOG}
+  TLogger.Instance.Message(Message);
+{$ENDIF}
+end;
+
+{ TLogger }
+
+constructor TLogger.Create;
+begin
+{$IFDEF LOG}
+  FSync := TCriticalSection.Create;
+  SW := nil;
+  try
+    FFile := TFileStream.Create(GetAppDataDirectory + '\EventLog' + FormatDateTime('yyyy-mm-dd-HH-MM-SS', Now) + '.txt', fmCreate);
+    SW := TStreamWriter.Create(FFile);
+  except
+    on e: Exception do
+      MessageBox(0, PChar(e.Message), PChar('ERROR!'), MB_OK + MB_ICONERROR);
+  end;
+{$ENDIF LOG}
+end;
+
+destructor TLogger.Destroy;
+begin        
+{$IFDEF LOG}
+  F(SW);
+  F(FFile);
+  F(FSync);
+{$ENDIF LOG}
+  inherited;
+end;
+
+class function TLogger.Instance: TLogger;
+begin
+  if Logger = nil then
+    Logger := TLogger.Create;
+
+  Result := Logger;
+end;
+
+procedure TLogger.Message(Value: string);
+begin    
+{$IFDEF LOG}
+  FSync.Enter;
+  try
+    Value := Value + #13#10;
+    SW.Write(Value);
+  finally
+    FSync.Leave;
+  end;        
+{$ENDIF LOG}
+end;
+
+initialization
+finalization
+  F(Logger);
+
+end.

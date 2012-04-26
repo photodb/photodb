@@ -1,0 +1,877 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{B450E5B6-4FF7-4E99-A327-B6E3C779AABB}</ProjectGuid>
+			<MainSource>PhotoDB.dpr</MainSource>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+			<ProjectVersion>13.4</ProjectVersion>
+			<Base>True</Base>
+			<AppType>Application</AppType>
+			<FrameworkType>VCL</FrameworkType>
+			<Platform Condition="'$(Platform)'==''">Win32</Platform>
+			<TargetedPlatforms>3</TargetedPlatforms>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+			<Base_Win64>true</Base_Win64>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+			<Base_Win32>true</Base_Win32>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win64)'!=''">
+			<Cfg_1_Win64>true</Cfg_1_Win64>
+			<CfgParent>Cfg_1</CfgParent>
+			<Cfg_1>true</Cfg_1>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+			<Cfg_1_Win32>true</Cfg_1_Win32>
+			<CfgParent>Cfg_1</CfgParent>
+			<Cfg_1>true</Cfg_1>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+			<Cfg_2_Win64>true</Cfg_2_Win64>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+			<Cfg_2_Win32>true</Cfg_2_Win32>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_RangeChecking>true</DCC_RangeChecking>
+			<Manifest_File>None</Manifest_File>
+			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
+			<VerInfo_Build>384</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2011;FileDescription=Photo DataBase;FileVersion=2.3.2.384;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2011;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v2.3;ProductVersion=2.3;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com;Home Page=http://photodb.illusdolphin.net</VerInfo_Keys>
+			<VerInfo_Locale>1033</VerInfo_Locale>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;Posix;System.Win;Data.Win;$(DCC_Namespace)</DCC_Namespace>
+			<VerInfo_MajorVer>2</VerInfo_MajorVer>
+			<VerInfo_MinorVer>3</VerInfo_MinorVer>
+			<VerInfo_Release>2</VerInfo_Release>
+			<ImageDebugInfo>true</ImageDebugInfo>
+			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+			<DCC_Optimize>false</DCC_Optimize>
+			<DCC_MapFile>3</DCC_MapFile>
+			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
+			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
+			<DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\Dmitry\;C:\Users\Public\Documents\Mustangpeak\Common Library\Source;C:\Users\Public\Documents\Mustangpeak\EasyListview\Source;D:\Dmitry\Delphi exe\Photo Database\PhotoDB\External\FastMM;D:\Dmitry\Delphi exe\Photo Database\DBIcons;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_ExeOutput>bin</DCC_ExeOutput>
+			<DCC_ImageBase>00400000</DCC_ImageBase>
+			<DCC_DependencyCheckOutputName>bin\PhotoDB.exe</DCC_DependencyCheckOutputName>
+			<DCC_Platform>x86</DCC_Platform>
+			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode;$(DCC_Define)</DCC_Define>
+			<DCC_K>false</DCC_K>
+			<DCC_F>false</DCC_F>
+			<DCC_S>false</DCC_S>
+			<DCC_N>true</DCC_N>
+			<DCC_UsePackage>vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;dclOfficeXP;EasyListviewD7;$(DCC_UsePackage)</DCC_UsePackage>
+			<DCC_E>false</DCC_E>
+			<DCC_DcuOutput>dcu</DCC_DcuOutput>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win64)'!=''">
+			<DCC_Namespace>Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<Debugger_RunParams>/IMG_WIA /StiDevice:{EEC5AD98-8080-425f-922A-DABF3DE3F69A}\0003 /StiEvent:{A28BBADE-64B6-11d2-A231-00C04FA31809}</Debugger_RunParams>
+			<DCC_Namespace>Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_DebugDCUs>true</DCC_DebugDCUs>
+			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+			<Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+			<Manifest_File>None</Manifest_File>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<Debugger_RunParams>/PACKTABLE</Debugger_RunParams>
+			<VerInfo_MinorVer>0</VerInfo_MinorVer>
+			<VerInfo_MajorVer>3</VerInfo_MajorVer>
+			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
+			<VerInfo_Release>0</VerInfo_Release>
+			<VerInfo_Build>466</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.0.0.466;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.0;ProductVersion=3.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="$(MainSource)">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<DCCReference Include="Units\uInit.pas"/>
+			<DCCReference Include="Units\uTime.pas"/>
+			<DCCReference Include="Threads\uSplashThread.pas"/>
+			<DCCReference Include="Threads\uLanguageLoadThread.pas"/>
+			<DCCReference Include="Threads\uLoadStyleThread.pas"/>
+			<DCCReference Include="Searching.pas">
+				<Form>SearchForm</Form>
+			</DCCReference>
+			<DCCReference Include="SlideShow.pas">
+				<Form>Viewer</Form>
+			</DCCReference>
+			<DCCReference Include="Options.pas">
+				<Form>OptionsForm</Form>
+			</DCCReference>
+			<DCCReference Include="replaceform.pas">
+				<Form>DBReplaceForm</Form>
+			</DCCReference>
+			<DCCReference Include="unitimhint.pas">
+				<Form>ImHint</Form>
+			</DCCReference>
+			<DCCReference Include="SlideShowFullScreen.pas">
+				<Form>FullScreenView</Form>
+			</DCCReference>
+			<DCCReference Include="uActivation.pas">
+				<Form>ActivateForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitUpdateDB.pas">
+				<Form>UpdateDBForm</Form>
+			</DCCReference>
+			<DCCReference Include="uAbout.pas">
+				<Form>AboutForm</Form>
+			</DCCReference>
+			<DCCReference Include="FormManegerUnit.pas">
+				<Form>FormManager</Form>
+			</DCCReference>
+			<DCCReference Include="ManagerDBUnit.pas">
+				<Form>ManagerDB</Form>
+			</DCCReference>
+			<DCCReference Include="CMDUnit.pas">
+				<Form>CMDForm</Form>
+			</DCCReference>
+			<DCCReference Include="ExportUnit.pas">
+				<Form>ExportForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitDBCleaning.pas">
+				<Form>DBCleaningForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitCompareProgress.pas">
+				<Form>ImportProgressForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitCompareDataBases.pas">
+				<Form>ImportDataBaseForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitEditGroupsForm.pas">
+				<Form>EditGroupsForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitNewGroupForm.pas">
+				<Form>NewGroupForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitManageGroups.pas">
+				<Form>FormManageGroups</Form>
+			</DCCReference>
+			<DCCReference Include="UnitFormChangeGroup.pas">
+				<Form>FormChangeGroup</Form>
+			</DCCReference>
+			<DCCReference Include="UnitQuickGroupInfo.pas">
+				<Form>FormQuickGroupInfo</Form>
+			</DCCReference>
+			<DCCReference Include="UnitMenuDateForm.pas">
+				<Form>FormMenuDateEdit</Form>
+			</DCCReference>
+			<DCCReference Include="UnitGroupReplace.pas">
+				<Form>FormGroupReplace</Form>
+			</DCCReference>
+			<DCCReference Include="UnitSavingTableForm.pas">
+				<Form>SavingTableForm</Form>
+			</DCCReference>
+			<DCCReference Include="FloatPanelFullScreen.pas">
+				<Form>FloatPanel</Form>
+			</DCCReference>
+			<DCCReference Include="UnitPasswordForm.pas">
+				<Form>PassWordForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitCryptImageForm.pas">
+				<Form>CryptImageForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitFileRenamerForm.pas">
+				<Form>FormFastFileRenamer</Form>
+			</DCCReference>
+			<DCCReference Include="UnitSizeResizerForm.pas">
+				<Form>FormSizeResizer</Form>
+			</DCCReference>
+			<DCCReference Include="UnitJPEGOptions.pas">
+				<Form>FormJpegOptions</Form>
+			</DCCReference>
+			<DCCReference Include="Units\dx\DX_Alpha.pas">
+				<Form>DirectShowForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitFormInternetUpdating.pas">
+				<Form>FormInternetUpdating</Form>
+			</DCCReference>
+			<DCCReference Include="UnitHelp.pas">
+				<Form>HelpPopup</Form>
+			</DCCReference>
+			<DCCReference Include="ProgressActionUnit.pas">
+				<Form>ProgressActionForm</Form>
+			</DCCReference>
+			<DCCReference Include="ImageEditor\ImEditor.pas">
+				<Form>ImageEditor</Form>
+			</DCCReference>
+			<DCCReference Include="ImageEditor\ExEffectFormUnit.pas">
+				<Form>ExEffectForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitEditorFullScreenForm.pas">
+				<Form>EditorFullScreenForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitChangeDBPath.pas">
+				<Form>FormChangeDBPath</Form>
+			</DCCReference>
+			<DCCReference Include="UnitSelectDB.pas">
+				<Form>FormSelectDB</Form>
+			</DCCReference>
+			<DCCReference Include="UnitDBOptions.pas">
+				<Form>FormDBOptions</Form>
+			</DCCReference>
+			<DCCReference Include="UnitFormCDExport.pas">
+				<Form>FormCDExport</Form>
+			</DCCReference>
+			<DCCReference Include="UnitFormCDMapper.pas">
+				<Form>FormCDMapper</Form>
+			</DCCReference>
+			<DCCReference Include="UnitFormCDMapInfo.pas">
+				<Form>FormCDMapInfo</Form>
+			</DCCReference>
+			<DCCReference Include="SelectGroupForm.pas">
+				<Form>FormSelectGroup</Form>
+			</DCCReference>
+			<DCCReference Include="UnitHistoryForm.pas">
+				<Form>FormHistory</Form>
+			</DCCReference>
+			<DCCReference Include="UnitStringPromtForm.pas">
+				<Form>FormStringPromt</Form>
+			</DCCReference>
+			<DCCReference Include="UnitEditLinkForm.pas">
+				<Form>FormEditLink</Form>
+			</DCCReference>
+			<DCCReference Include="UnitSelectFontForm.pas">
+				<Form>FormSelectFont</Form>
+			</DCCReference>
+			<DCCReference Include="UnitListOfKeyWords.pas">
+				<Form>FormListOfKeyWords</Form>
+			</DCCReference>
+			<DCCReference Include="DBTools\UnitDBTreeView.pas">
+				<Form>FormCreateDBFileTree</Form>
+			</DCCReference>
+			<DCCReference Include="Printer\PrintMainForm.pas">
+				<Form>PrintForm</Form>
+			</DCCReference>
+			<DCCReference Include="Printer\PrinterProgress.pas">
+				<Form>FormPrinterProgress</Form>
+			</DCCReference>
+			<DCCReference Include="UnitFormManagerHint.pas">
+				<Form>FormManagerHint</Form>
+			</DCCReference>
+			<DCCReference Include="Units\UnitActionsForm.pas">
+				<Form>ActionsForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitSplitExportForm.pas">
+				<Form>SplitExportForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitDebugScriptForm.pas">
+				<Form>DebugScriptForm</Form>
+			</DCCReference>
+			<DCCReference Include="UnitImportingImagesForm.pas">
+				<Form>FormImportingImages</Form>
+			</DCCReference>
+			<DCCReference Include="UnitConvertDBForm.pas">
+				<Form>FormConvertingDB</Form>
+			</DCCReference>
+			<DCCReference Include="UnitBigImagesSize.pas">
+				<Form>BigImagesSizeForm</Form>
+			</DCCReference>
+			<DCCReference Include="Threads\Loadingresults.pas"/>
+			<DCCReference Include="Threads\UnitCleanUpThread.pas"/>
+			<DCCReference Include="Threads\UnitHintCeator.pas"/>
+			<DCCReference Include="Threads\UnitCmpDB.pas"/>
+			<DCCReference Include="Threads\ExplorerThreadUnit.pas"/>
+			<DCCReference Include="Threads\UnitPackingTable.pas"/>
+			<DCCReference Include="Threads\UnitUpdateDBThread.pas"/>
+			<DCCReference Include="Threads\UnitExportThread.pas"/>
+			<DCCReference Include="Threads\UnitExplorerThumbnailCreatorThread.pas"/>
+			<DCCReference Include="Threads\UnitSaveQueryThread.pas"/>
+			<DCCReference Include="Threads\UnitRecreatingThInTable.pas"/>
+			<DCCReference Include="Threads\UnitDirectXSlideShowCreator.pas"/>
+			<DCCReference Include="Threads\UnitViewerThread.pas"/>
+			<DCCReference Include="Threads\UnitInternetUpdate.pas"/>
+			<DCCReference Include="Threads\UnitRestoreTableThread.pas"/>
+			<DCCReference Include="Threads\UnitWindowsCopyFilesThread.pas"/>
+			<DCCReference Include="Threads\UnitThreadShowBadLinks.pas"/>
+			<DCCReference Include="Threads\UnitBackUpTableInCMD.pas"/>
+			<DCCReference Include="Threads\UnitOpenQueryThread.pas"/>
+			<DCCReference Include="Threads\UnitOptimizeDublicatesThread.pas"/>
+			<DCCReference Include="Threads\ConvertDBThreadUnit.pas"/>
+			<DCCReference Include="Threads\UnitPropertyLoadImageThread.pas"/>
+			<DCCReference Include="Threads\UnitPropertyLoadGistogrammThread.pas"/>
+			<DCCReference Include="Threads\UnitRefreshDBRecordsThread.pas"/>
+			<DCCReference Include="Threads\UnitCryptingImagesThread.pas"/>
+			<DCCReference Include="Threads\UnitFileExistsThread.pas"/>
+			<DCCReference Include="Threads\UnitSlideShowUpdateInfoThread.pas"/>
+			<DCCReference Include="Threads\UnitCDExportThread.pas"/>
+			<DCCReference Include="Threads\UnitSearchBigImagesLoaderThread.pas"/>
+			<DCCReference Include="External\Formats\GraphicEx\GraphicEx.pas"/>
+			<DCCReference Include="External\Formats\GraphicEx\GraphicColor.pas"/>
+			<DCCReference Include="External\Formats\GraphicEx\GraphicCompression.pas"/>
+			<DCCReference Include="External\Formats\GraphicEx\GraphicStrings.pas"/>
+			<DCCReference Include="External\Formats\GraphicEx\MZLib.pas"/>
+			<DCCReference Include="External\Formats\DelphiDcraw\RAWImage.pas"/>
+			<DCCReference Include="External\Formats\GIFImage.pas"/>
+			<DCCReference Include="ImageEditor\ColorToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\CropToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\EffectsToolThreadUnit.pas"/>
+			<DCCReference Include="ImageEditor\EffectsToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\ExEffects.pas"/>
+			<DCCReference Include="ImageEditor\ImageHistoryUnit.pas"/>
+			<DCCReference Include="ImageEditor\RedEyeToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\ResizeToolThreadUnit.pas"/>
+			<DCCReference Include="ImageEditor\ResizeToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\RotateToolThreadUnit.pas"/>
+			<DCCReference Include="ImageEditor\RotateToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\ToolsUnit.pas"/>
+			<DCCReference Include="ImageEditor\effects\Effects.pas"/>
+			<DCCReference Include="ImageEditor\ExEffectsUnit.pas"/>
+			<DCCReference Include="ImageEditor\GBlur2.pas"/>
+			<DCCReference Include="ImageEditor\CustomSelectTool.pas"/>
+			<DCCReference Include="ImageEditor\TextToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\BrushToolUnit.pas"/>
+			<DCCReference Include="Printer\UnitGeneratorPrinterPreview.pas"/>
+			<DCCReference Include="Printer\UnitPrinterTypes.pas"/>
+			<DCCReference Include="ImageEditor\ExEffectsUnitW.pas"/>
+			<DCCReference Include="ImageEditor\effects\Scanlines.pas"/>
+			<DCCReference Include="ImageEditor\effects\ScanlinesFX.pas"/>
+			<DCCReference Include="ImageEditor\InsertImageToolUnit.pas"/>
+			<DCCReference Include="ImageEditor\OptimizeImageUnit.pas"/>
+			<DCCReference Include="ImageEditor\effects\UnitResampleFilters.pas"/>
+			<DCCReference Include="Units\uVistaFuncs.pas"/>
+			<DCCReference Include="Units\dolphin_db.pas"/>
+			<DCCReference Include="Units\UnitDBKernel.pas"/>
+			<DCCReference Include="Units\CmpUnit.pas"/>
+			<DCCReference Include="Units\DBCMenu.pas"/>
+			<DCCReference Include="Units\ExplorerTypes.pas"/>
+			<DCCReference Include="Units\UnitGroupsWork.pas"/>
+			<DCCReference Include="Units\UnitGroupsReplace.pas"/>
+			<DCCReference Include="Units\UnitBitmapImageList.pas"/>
+			<DCCReference Include="Units\GraphicCrypt.pas"/>
+			<DCCReference Include="Units\UnitCrypting.pas"/>
+			<DCCReference Include="Units\ShellContextMenu.pas"/>
+			<DCCReference Include="Units\DDraw.pas"/>
+			<DCCReference Include="Units\DXCommon.pas"/>
+			<DCCReference Include="Units\UnitLinksSupport.pas"/>
+			<DCCReference Include="Units\GDIPlusRotate.pas"/>
+			<DCCReference Include="Units\UnitGroupsTools.pas"/>
+			<DCCReference Include="Units\UnitSQLOptimizing.pas"/>
+			<DCCReference Include="Units\CommonDBSupport.pas"/>
+			<DCCReference Include="Units\UnitScripts.pas"/>
+			<DCCReference Include="Units\ReplaseIconsInScript.pas"/>
+			<DCCReference Include="Units\DBScriptFunctions.pas"/>
+			<DCCReference Include="Units\UnitScriptsFunctions.pas"/>
+			<DCCReference Include="Units\UnitUpdateDBObject.pas"/>
+			<DCCReference Include="Units\acWorkRes.pas"/>
+			<DCCReference Include="Units\UnitPropeccedFilesSupport.pas"/>
+			<DCCReference Include="Units\UnitINI.pas"/>
+			<DCCReference Include="Units\wfsU.pas"/>
+			<DCCReference Include="Units\UnitFileCheckerDB.pas"/>
+			<DCCReference Include="Units\UnitPasswordKeeper.pas"/>
+			<DCCReference Include="Units\UnitDBDeclare.pas"/>
+			<DCCReference Include="Units\UnitDBCommon.pas"/>
+			<DCCReference Include="Units\UnitDBCommonGraphics.pas"/>
+			<DCCReference Include="Units\UnitSlideShowScanDirectoryThread.pas"/>
+			<DCCReference Include="Units\UnitDBFileDialogs.pas"/>
+			<DCCReference Include="Units\UnitSendMessageWithTimeoutThread.pas"/>
+			<DCCReference Include="Units\UnitCDMappingSupport.pas"/>
+			<DCCReference Include="Units\uThreadForm.pas"/>
+			<DCCReference Include="Threads\uThreadEx.pas"/>
+			<DCCReference Include="Threads\uAssociatedIcons.pas"/>
+			<DCCReference Include="Units\uLogger.pas"/>
+			<DCCReference Include="Units\uConstants.pas"/>
+			<DCCReference Include="Units\uScript.pas"/>
+			<DCCReference Include="Units\uStringUtils.pas"/>
+			<DCCReference Include="Threads\UnitLoadDBKernelIconsThread.pas"/>
+			<DCCReference Include="Threads\UnitLoadDBSettingsThread.pas"/>
+			<DCCReference Include="Threads\UnitLoadCRCCheckThread.pas"/>
+			<DCCReference Include="Units\uFastLoad.pas"/>
+			<DCCReference Include="Units\uResources.pas"/>
+			<DCCReference Include="Threads\uExplorerThreadPool.pas"/>
+			<DCCReference Include="Units\uGOM.pas"/>
+			<DCCReference Include="Units\uListViewUtils.pas"/>
+			<DCCReference Include="External\Formats\FreeImage\FreeBitmap.pas"/>
+			<DCCReference Include="External\Formats\FreeImage\FreeImage.pas"/>
+			<DCCReference Include="External\Formats\FreeImage\FreeUtils.pas"/>
+			<DCCReference Include="Units\uDBDrawing.pas"/>
+			<DCCReference Include="Units\uList64.pas"/>
+			<DCCReference Include="Threads\uThreadLoadingManagerDB.pas"/>
+			<DCCReference Include="Units\uW7TaskBar.pas"/>
+			<DCCReference Include="Units\uDBHint.pas"/>
+			<DCCReference Include="Units\uMath.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\ASN1.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\CPU.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\CRC.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECCipher.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECData.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECFmt.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECHash.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECRandom.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\DECUtil.pas"/>
+			<DCCReference Include="External\Crypt\DECv5.2\TypInfoEx.pas"/>
+			<DCCReference Include="Units\uStrongCrypt.pas"/>
+			<DCCReference Include="Units\uMemory.pas"/>
+			<DCCReference Include="Units\uDBForm.pas"/>
+			<DCCReference Include="Units\uTranslate.pas"/>
+			<DCCReference Include="Threads\uImageConvertThread.pas"/>
+			<DCCReference Include="uWatermarkOptions.pas">
+				<Form>FrmWatermarkOptions</Form>
+			</DCCReference>
+			<DCCReference Include="Threads\uSearchThreadPool.pas"/>
+			<DCCReference Include="Threads\uMultiCPUThreadManager.pas"/>
+			<DCCReference Include="Units\uFormListView.pas"/>
+			<DCCReference Include="Threads\uDBThread.pas"/>
+			<DCCReference Include="Units\uGraphicUtils.pas"/>
+			<DCCReference Include="Threads\UnitActiveTableThread.pas"/>
+			<DCCReference Include="Units\uImageSource.pas"/>
+			<DCCReference Include="Units\uDBPopupMenuInfo.pas"/>
+			<DCCReference Include="Units\uPrivateHelper.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.Consts.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.IPTC.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.StreamHelper.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.TagIDs.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.XMPUtils.pas"/>
+			<DCCReference Include="Units\uPNGUtils.pas"/>
+			<DCCReference Include="Units\uFormUtils.pas"/>
+			<DCCReference Include="..\Installer\uShellUtils.pas"/>
+			<DCCReference Include="..\Installer\uInstallTypes.pas"/>
+			<DCCReference Include="..\Installer\uInstallScope.pas"/>
+			<DCCReference Include="Units\uDBBaseTypes.pas"/>
+			<DCCReference Include="Units\uDBUtils.pas"/>
+			<DCCReference Include="..\Installer\uAssociations.pas"/>
+			<DCCReference Include="Units\uAppUtils.pas"/>
+			<DCCReference Include="ImageEditor\uEditorTypes.pas"/>
+			<DCCReference Include="Units\uShellIntegration.pas"/>
+			<DCCReference Include="Units\uDBTypes.pas"/>
+			<DCCReference Include="Units\uActivationUtils.pas"/>
+			<DCCReference Include="Units\uDBFileTypes.pas"/>
+			<DCCReference Include="Units\uRuntime.pas"/>
+			<DCCReference Include="Units\uDBGraphicTypes.pas"/>
+			<DCCReference Include="Units\uStenography.pas"/>
+			<DCCReference Include="Units\uInternetUtils.pas"/>
+			<DCCReference Include="Units\uViewerTypes.pas"/>
+			<DCCReference Include="Units\dx\uDXUtils.pas"/>
+			<DCCReference Include="Wizards\uFrameWizardBase.pas">
+				<Form>FrameWizardBase</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Activation\uFrameFreeActivation.pas">
+				<Form>FrameFreeActivation</Form>
+			</DCCReference>
+			<DCCReference Include="Wizards\uWizards.pas"/>
+			<DCCReference Include="Activation\uFrameActivationLanding.pas">
+				<Form>FrameActivationLanding</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Activation\uInternetFreeActivationThread.pas"/>
+			<DCCReference Include="Activation\uFrameFreeManualActivation.pas">
+				<Form>FrameFreeManualActivation</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Activation\uFrameActicationSetCode.pas">
+				<Form>FrameActicationSetCode</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Activation\uFrameBuyApplication.pas">
+				<Form>FrameBuyApplication</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Units\uSettings.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.BaseUtils.pas"/>
+			<DCCReference Include="External\CCR.Exif\CCR.Exif.TiffUtils.pas"/>
+			<DCCReference Include="Units\uSearchTypes.pas"/>
+			<DCCReference Include="Units\uCryptUtils.pas"/>
+			<DCCReference Include="Units\uResourceUtils.pas"/>
+			<DCCReference Include="Units\uMobileUtils.pas"/>
+			<DCCReference Include="Convertation\uFrmConvertationLanding.pas">
+				<Form>FrmConvertationLanding</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Convertation\uFrmConvertationSettings.pas">
+				<Form>FrmConvertationSettings</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Convertation\uFrmConvertationProgress.pas">
+				<Form>FrmConvertationProgress</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="SelectDB\uFrmSelectDBLanding.pas">
+				<Form>FrmSelectDBLanding</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="SelectDB\uFrmSelectDBNewPathAndIcon.pas">
+				<Form>FrmSelectDBNewPathAndIcon</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="SelectDB\uFrmSelectDBFromList.pas">
+				<Form>FrmSelectDBFromList</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="SelectDB\uFrmSelectDBExistedFile.pas">
+				<Form>FrmSelectDBExistedFile</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="SelectDB\uFrmSelectDBCreationSummary.pas">
+				<Form>FrmSelectDBCreationSummary</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Units\uInterfaces.pas"/>
+			<DCCReference Include="Units\uDBAdapter.pas"/>
+			<DCCReference Include="Units\uCDMappingTypes.pas"/>
+			<DCCReference Include="Units\uMemoryEx.pas"/>
+			<DCCReference Include="Units\uDBShellUtils.pas"/>
+			<DCCReference Include="Units\uDBImageUtils.pas"/>
+			<DCCReference Include="uFormSteganography.pas">
+				<Form>FormSteganography</Form>
+			</DCCReference>
+			<DCCReference Include="Steganography\uFrmSteganographyLanding.pas">
+				<Form>FrmSteganographyLanding</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Steganography\uFrmCreatePNGSteno.pas">
+				<Form>FrmCreatePNGSteno</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Steganography\uFrmCreateJPEGSteno.pas">
+				<Form>FrmCreateJPEGSteno</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Threads\uStenoLoadImageThread.pas"/>
+			<DCCReference Include="ImportImages\uFrmImportImagesLanding.pas">
+				<Form>FrmImportImagesLanding</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="ImportImages\uFrmImportImagesOptions.pas">
+				<Form>FrmImportImagesOptions</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="ImportImages\uFrmImportImagesProgress.pas">
+				<Form>FrmImportImagesProgress</Form>
+				<DesignClass>TFrame</DesignClass>
+			</DCCReference>
+			<DCCReference Include="Units\uIME.pas"/>
+			<DCCReference Include="Threads\uSearchHelpAddPhotosThread.pas"/>
+			<DCCReference Include="Units\uExifUtils.pas"/>
+			<DCCReference Include="Threads\uExifPatchThread.pas"/>
+			<DCCReference Include="Units\uTiffImage.pas"/>
+			<DCCReference Include="Units\uJpegUtils.pas"/>
+			<DCCReference Include="Units\uBitmapUtils.pas"/>
+			<DCCReference Include="Units\uIconUtils.pas"/>
+			<DCCReference Include="Units\uWinThumbnails.pas"/>
+			<DCCReference Include="Units\uShellThumbnails.pas"/>
+			<DCCReference Include="Units\uMachMask.pas"/>
+			<DCCReference Include="Units\VCLFlickerReduce.pas"/>
+			<DCCReference Include="ExplorerUnit.pas">
+				<Form>ExplorerForm</Form>
+			</DCCReference>
+			<DCCReference Include="Units\uDatabaseSearch.pas"/>
+			<DCCReference Include="Units\uFaceDetection.pas"/>
+			<DCCReference Include="Threads\uFaceDetectionThread.pas"/>
+			<DCCReference Include="Units\uPeopleSupport.pas"/>
+			<DCCReference Include="uFormCreatePerson.pas">
+				<Form>FormCreatePerson</Form>
+			</DCCReference>
+			<DCCReference Include="Units\u2DUtils.pas"/>
+			<DCCReference Include="Units\uPersonDB.pas"/>
+			<DCCReference Include="Units\uDBClasses.pas"/>
+			<DCCReference Include="Units\uDateUtils.pas"/>
+			<DCCReference Include="uFormSelectPerson.pas">
+				<Form>FormFindPerson</Form>
+			</DCCReference>
+			<DCCReference Include="uFormAddImage.pas">
+				<Form>FormAddingImage</Form>
+			</DCCReference>
+			<DCCReference Include="Threads\UnitLoadPersonsThread.pas"/>
+			<DCCReference Include="Units\uExplorerGroupsProvider.pas"/>
+			<DCCReference Include="Units\uExplorerPersonsProvider.pas"/>
+			<DCCReference Include="Units\uConfiguration.pas"/>
+			<DCCReference Include="Units\uExplorerSearchProviders.pas"/>
+			<DCCReference Include="Units\uExplorerPathProvider.pas"/>
+			<DCCReference Include="Units\uVCLHelpers.pas"/>
+			<DCCReference Include="uFormPersonSuggest.pas">
+				<Form>FormPersonSuggest</Form>
+			</DCCReference>
+			<DCCReference Include="Threads\uDBCustomThread.pas"/>
+			<DCCReference Include="Units\uGUIDUtils.pas"/>
+			<DCCReference Include="Units\uErrors.pas"/>
+			<DCCReference Include="uFormEditObject.pas">
+				<Form>FormEditObject</Form>
+			</DCCReference>
+			<DCCReference Include="Units\uExplorerPortableDeviceProvider.pas"/>
+			<DCCReference Include="Units\PortableDevices\uPortableClasses.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWIAClasses.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWIAInterfaces.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWPDClasses.pas"/>
+			<DCCReference Include="Units\PortableDevices\uWPDInterfaces.pas"/>
+			<DCCReference Include="Units\PortableDevices\uPortableDeviceManager.pas"/>
+			<DCCReference Include="Units\MSXML2_TLB.pas"/>
+			<DCCReference Include="Units\PortableDevices\uPortableDeviceUtils.pas"/>
+			<DCCReference Include="Units\uPortableScriptUtils.pas"/>
+			<DCCReference Include="Units\uShellNamespaceUtils.pas"/>
+			<DCCReference Include="Units\uManagerExplorer.pas"/>
+			<DCCReference Include="Threads\uExplorerPastePIDLsThread.pas"/>
+			<DCCReference Include="uFormImportImages.pas">
+				<Form>FormImportImages</Form>
+			</DCCReference>
+			<DCCReference Include="uFormMoveFilesProgress.pas">
+				<Form>FormMoveFilesProgress</Form>
+			</DCCReference>
+			<DCCReference Include="Threads\uThreadImportPictures.pas"/>
+			<DCCReference Include="Units\uPathUtils.pas"/>
+			<DCCReference Include="Threads\uImportScanThread.pas"/>
+			<DCCReference Include="Threads\uImportSeriesPreview.pas"/>
+			<DCCReference Include="Units\uCounters.pas"/>
+			<DCCReference Include="uFormImportPicturesSettings.pas">
+				<Form>FormImportPicturesSettings</Form>
+			</DCCReference>
+			<DCCReference Include="Units\uImportPicturesUtils.pas"/>
+			<DCCReference Include="uPicturesImportPatternEdit.pas">
+				<Form>PicturesImportPatternEdit</Form>
+			</DCCReference>
+			<DCCReference Include="Units\Formats\uAnimatedJPEG.pas"/>
+			<DCCReference Include="Units\uPathProviderUtils.pas"/>
+			<DCCReference Include="Units\uBufferedFileStream.pas"/>
+			<DCCReference Include="Units\uUpdateDBTypes.pas"/>
+			<DCCReference Include="Units\uInterfaceManager.pas"/>
+			<DCCReference Include="Units\uUpTime.pas"/>
+			<DCCReference Include="Units\uGeoLocation.pas"/>
+			<DCCReference Include="Units\uImageListDelayed.pas"/>
+			<DCCReference Include="Units\uBrowserEmbedDraw.pas"/>
+			<DCCReference Include="Units\WebJS\IntfDocHostUIHandler.pas"/>
+			<DCCReference Include="Units\WebJS\uWebJSExternal.pas"/>
+			<DCCReference Include="Units\WebJS\uWebJSExternalContainer.pas"/>
+			<DCCReference Include="Units\WebJS\uWebNullContainer.pas"/>
+			<DCCReference Include="Units\WebJS\WebJS_TLB.pas"/>
+			<DCCReference Include="Units\uThemesUtils.pas"/>
+			<DCCReference Include="Units\Styles\uDateTimePickerStyleHookXP.pas"/>
+			<DCCReference Include="Units\Styles\uEditStyleHookColor.pas"/>
+			<DCCReference Include="Units\Styles\uHSLUtils.pas"/>
+			<DCCReference Include="Units\Styles\Vcl.Styles.Ext.pas"/>
+			<DCCReference Include="Units\Styles\Vcl.Styles.Utils.pas"/>
+			<DCCReference Include="Units\Styles\uMainMenuStyleHook.pas"/>
+			<DCCReference Include="PropertyForm.pas">
+				<Form>PropertiesForm</Form>
+			</DCCReference>
+			<DCCReference Include="Units\uPhotoShelf.pas"/>
+			<DCCReference Include="Units\uExplorerShelfProvider.pas"/>
+			<DCCReference Include="Units\uXMLUtils.pas"/>
+			<DCCReference Include="Units\Share\uGoogleOAuth.pas"/>
+			<DCCReference Include="Units\Share\uPhotoShareInterfaces.pas"/>
+			<DCCReference Include="Units\Share\uPicasaProvider.pas"/>
+			<DCCReference Include="Units\Share\uPicasaOAuth2.pas">
+				<Form>FormPicasaOAuth</Form>
+			</DCCReference>
+			<DCCReference Include="uFormSharePhotos.pas">
+				<Form>FormSharePhotos</Form>
+			</DCCReference>
+			<DCCReference Include="uOperationProgress.pas">
+				<Form>FormOperationProgress</Form>
+				<FormType>dfm</FormType>
+			</DCCReference>
+			<DCCReference Include="Threads\uThreadTask.pas"/>
+			<DCCReference Include="Units\Controls\uBox.pas"/>
+			<DCCReference Include="Threads\uShareImagesThread.pas"/>
+			<DCCReference Include="uShareSettings.pas">
+				<Form>FormShareSettings</Form>
+				<FormType>dfm</FormType>
+			</DCCReference>
+			<DCCReference Include="Units\Styles\uProgressBarStyleHookMarquee.pas"/>
+			<DCCReference Include="Units\uUninstallUtils.pas"/>
+			<DCCReference Include="Units\uInternetProxy.pas"/>
+			<DCCReference Include="Units\Styles\uVCLStylesOneLoadSpeedUp.pas"/>
+			<RidlCompile Include="Units\WebJS\WebJS.ridl"/>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Source>
+						<Source Name="MainSource">PhotoDB.dpr</Source>
+					</Source>
+					<Parameters>
+						<Parameters Name="RunParams">/IMG_WIA /StiDevice:{EEC5AD98-8080-425f-922A-DABF3DE3F69A}\0003 /StiEvent:{A28BBADE-64B6-11d2-A231-00C04FA31809}</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">2</VersionInfo>
+						<VersionInfo Name="MinorVer">3</VersionInfo>
+						<VersionInfo Name="Release">2</VersionInfo>
+						<VersionInfo Name="Build">382</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1033</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
+						<VersionInfoKeys Name="FileDescription">Photo DataBase</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.2.382</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName">PhotoDB</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright">Studio &quot;Illusion Dolphin&quot; © 2002-2011</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalTrademarks">Photo DataBase</VersionInfoKeys>
+						<VersionInfoKeys Name="OriginalFilename">PhotoDB.exe</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductName">Photo DataBase v2.3</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductVersion">2.3</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments">Helps you to find, protect and organize your photos</VersionInfoKeys>
+						<VersionInfoKeys Name="Home Page">http://photodb.illusdolphin.net</VersionInfoKeys>
+						<VersionInfoKeys Name="E-Mail">illusdolphin@gmail.com</VersionInfoKeys>
+						<VersionInfoKeys Name="Home Page">http://photodb.illusdolphin.net</VersionInfoKeys>
+					</VersionInfoKeys>
+					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+					</Excluded_Packages>
+				</Delphi.Personality>
+				<ModelSupport>False</ModelSupport>
+				<Platforms>
+					<Platform value="Win64">True</Platform>
+					<Platform value="Win32">True</Platform>
+				</Platforms>
+				<Deployment>
+					<DeployFile LocalName="bin\PhotoDB.rsm" Class="DebugSymbols" Configuration="Debug">
+						<Platform Name="Win32">
+							<RemoteName>PhotoDB.rsm</RemoteName>
+						</Platform>
+					</DeployFile>
+					<DeployFile LocalName="bin\PhotoDB.exe" Class="ProjectOutput" Configuration="Debug">
+						<Platform Name="Win32"/>
+					</DeployFile>
+					<DeployClass Name="ProjectOutput" Required="true">
+						<Platform Name="OSX32">
+							<Operation>1</Operation>
+						</Platform>
+						<Platform Name="Win32">
+							<Operation>0</Operation>
+						</Platform>
+					</DeployClass>
+					<DeployClass Name="DependencyPackage" Required="true">
+						<Platform Name="OSX32">
+							<Operation>1</Operation>
+							<Extensions>.dylib</Extensions>
+						</Platform>
+						<Platform Name="Win32">
+							<Operation>0</Operation>
+							<Extensions>.bpl</Extensions>
+						</Platform>
+					</DeployClass>
+					<DeployClass Name="DependencyModule">
+						<Platform Name="OSX32">
+							<Operation>1</Operation>
+							<Extensions>.dylib</Extensions>
+						</Platform>
+						<Platform Name="Win32">
+							<Operation>0</Operation>
+							<Extensions>.dll;.bpl</Extensions>
+						</Platform>
+					</DeployClass>
+					<DeployClass Name="ProjectOSXInfoPList"/>
+					<DeployClass Name="File">
+						<Platform Name="OSX32">
+							<Operation>0</Operation>
+						</Platform>
+						<Platform Name="Win32">
+							<Operation>0</Operation>
+						</Platform>
+					</DeployClass>
+					<DeployClass Name="DebugSymbols">
+						<Platform Name="OSX32">
+							<Operation>1</Operation>
+						</Platform>
+						<Platform Name="Win32">
+							<Operation>0</Operation>
+						</Platform>
+					</DeployClass>
+					<DeployClass Name="DependencyFramework">
+						<Platform Name="OSX32">
+							<Operation>1</Operation>
+							<Extensions>.framework</Extensions>
+						</Platform>
+						<Platform Name="Win32">
+							<Operation>0</Operation>
+						</Platform>
+					</DeployClass>
+					<DeployClass Name="AdditionalDebugSymbols">
+						<Platform Name="OSX32">
+							<Operation>1</Operation>
+						</Platform>
+						<Platform Name="Win32">
+							<Operation>0</Operation>
+						</Platform>
+					</DeployClass>
+					<DeployClass Name="ProjectOSXResource">
+						<Platform Name="OSX32">
+							<RemoteDir>Contents\Resources</RemoteDir>
+							<Operation>1</Operation>
+						</Platform>
+					</DeployClass>
+					<ProjectRoot Name="$(PROJECTNAME)" Platform="OSX32"/>
+					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win64"/>
+					<ProjectRoot Name="$(PROJECTNAME)" Platform="Win32"/>
+				</Deployment>
+				<ActiveXProjectInfo>
+					<version>1</version>
+				</ActiveXProjectInfo>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+		<Import Condition="Exists('$(MSBuildProjectName).deployproj')" Project="$(MSBuildProjectName).deployproj"/>
+	</Project>
