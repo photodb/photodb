@@ -2792,6 +2792,7 @@ begin
   if Info.ID = 0 then
   begin
     UpdateImageRecordFromExif(Info, False);
+
     GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
     if GraphicClass = nil then
       Exit;

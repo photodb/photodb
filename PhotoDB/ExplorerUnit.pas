@@ -1627,20 +1627,18 @@ begin
     end;
   end;
 
-  if Info.ID = 0 then
-  begin
-    if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
-      if Info.FileType = EXPLORER_ITEM_IMAGE then
-      begin
-        Infos := GetCurrentPopUpMenuInfo(Item);
-        try
-          TDBPopupMenu.Instance.SetInfo(Self, Infos);
-          TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
-        finally
-          F(Infos);
-        end;
+  if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
+    if Info.FileType = EXPLORER_ITEM_IMAGE then
+    begin
+      Infos := GetCurrentPopUpMenuInfo(Item);
+      try
+        if Info.ID = 0 then
+        TDBPopupMenu.Instance.SetInfo(Self, Infos);
+        TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
+      finally
+        F(Infos);
       end;
-  end;
+    end;
 end;
 
 procedure TExplorerForm.Rename1Click(Sender: TObject);

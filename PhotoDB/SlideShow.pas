@@ -1297,17 +1297,21 @@ begin
       TDBPopupMenu.Instance.AddDBContMenu(Self, DBItem1, Info);
     end else
     begin
-      if Settings.ReadBool('Options', 'UseUserMenuForViewer', True) then
-        if not(SlideShowNow or FullScreenNow) then
-        begin
-          InitializeInfo;
-          TDBPopupMenu.Instance.SetInfo(Self, Info);
-          TDBPopupMenu.Instance.AddUserMenu(PmMain.Items, True, N2.MenuIndex + 1);
-        end;
-
       AddToDB1.Visible := not FolderView;
       DBItem1.Visible := False;
     end;
+
+    if Settings.ReadBool('Options', 'UseUserMenuForViewer', True) then
+      if not(SlideShowNow or FullScreenNow) then
+      begin
+        if Item.ID = 0 then
+        begin
+          InitializeInfo;
+          TDBPopupMenu.Instance.SetInfo(Self, Info);
+        end;
+        TDBPopupMenu.Instance.AddUserMenu(PmMain.Items, True, N2.MenuIndex + 1);
+      end;
+
     FullScreen1.Visible := not(FullScreenNow or SlideShowNow);
     SlideShow1.Visible := not(FullScreenNow or SlideShowNow);
     begin

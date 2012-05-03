@@ -122,7 +122,7 @@
 			<Manifest_File>None</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-			<Debugger_RunParams>/PACKTABLE</Debugger_RunParams>
+			<Debugger_RunParams>/test</Debugger_RunParams>
 			<VerInfo_MinorVer>0</VerInfo_MinorVer>
 			<VerInfo_MajorVer>3</VerInfo_MajorVer>
 			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
@@ -786,12 +786,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile Configuration="Debug" LocalName="bin\PhotoDB.rsm" Class="DebugSymbols">
+					<DeployFile LocalName="bin\PhotoDB.rsm" Configuration="Debug" Class="DebugSymbols">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile Configuration="Debug" LocalName="bin\PhotoDB.exe" Class="ProjectOutput">
+					<DeployFile LocalName="bin\PhotoDB.exe" Configuration="Debug" Class="ProjectOutput">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">

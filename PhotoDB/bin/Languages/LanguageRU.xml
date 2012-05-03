@@ -941,7 +941,8 @@
     <translate name="Use button &quot;--&gt;&quot; to add new groups or button &quot;&lt;--&quot; to remove them" value="Используйте кнопку &quot;--&gt;&quot; для выбора групп или кнопку &quot;&lt;--&quot; для отмены выбранных групп" />
 	<translate name="Filter groups" value="Фильтр по группам" />
   </scope>
-  <scope name="EditLinks">
+  <scope name="EditLinks">  
+	<translate name="Add link" value="Добавить ссылку" />
 	<translate name="Edit link" value="Редактировать ссылку" />
 	<translate name="Different values" value="Различные значения" />
 	<translate name="ID" value="ID" />
@@ -950,7 +951,7 @@
 	<translate name="File" value="Файл" />
 	<translate name="Folder" value="Директория" />
 	<translate name="Text" value="Текст" />
-	<translate name="Create or edit link" value="Добавить/редактировать ссылку" />
+	<translate name="Create or edit link" value="Добавить или редактировать ссылку" />
 	<translate name="Link type" value="Тип ссылки" />
 	<translate name="Link name" value="Имя ссылки" />
 	<translate name="Link value" value="Значение ссылки" />
