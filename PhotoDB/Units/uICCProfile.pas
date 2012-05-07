@@ -30,7 +30,8 @@ type
   end;
 
 function InSignatures(Signature: cmsProfileClassSignature; dwFlags: DWORD): Boolean;
-function ApplyICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; JpegEXIF: TExifData; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
+//function ApplyICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; JpegEXIF: TExifData; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
+function ConvertBitmapToDisplayICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; SourceMem: Pointer; MemSize: Cardinal; SourceICCProfileName: string; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 function FillDisplayProfileList(List: TStrings): Boolean;
 
 implementation
@@ -40,6 +41,7 @@ var
   IntentCodes: array [0 .. 20] of cmsUInt32Number;
   InputICCProfileList, OutputICCProfileList: TList<TICCProfileInfo>;
   IsICCInitialized: Boolean = False;
+  IsICCEnabled: Boolean = False;
   FSync: TCriticalSection = nil;
 
 function InSignatures(Signature: cmsProfileClassSignature; dwFlags: DWORD): Boolean;
@@ -117,20 +119,22 @@ var
 begin
   //should be faster for multithreadng, no enter to critical section
   if IsICCInitialized then
-    Exit(True);
+    Exit(IsICCEnabled);
 
   FSync.Enter;
   try
     if IsICCInitialized then
-      Exit(True);
+      Exit(IsICCEnabled);
 
+    IsICCInitialized := True;
     lcmsHandle := LoadLibrary('lcms2.dll');
     if lcmsHandle = 0 then
     begin
-      Exit(False)
+      Exit(False);
     end else
       FreeLibrary(lcmsHandle);
 
+    IsICCEnabled := True;
     cmsSetAdaptationState(0);
 
     InputICCProfileList := TList<TICCProfileInfo>.Create;
@@ -221,6 +225,8 @@ begin
 
   for ProfileInfo in OutputICCProfileList do
     List.Add(ProfileInfo.Name);
+
+  Result := True;
 end;
 
 function ConvertBitmapToDisplayICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; SourceMem: Pointer; MemSize: Cardinal; SourceICCProfileName: string; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
@@ -236,7 +242,7 @@ begin
 
   Result := ConvertBitmapICCProfile(ThreadContext, Bitmap, SourceMem, MemSize, SourceICCProfileName, DisplayProfileName);
 end;
-
+{
 function ApplyICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; JpegEXIF: TExifData; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 var
   MSICC: TMemoryStream;
@@ -270,7 +276,7 @@ begin
       end;
     end;
   end;
-end;
+end;  }
 
 initialization
   FSync := TCriticalSection.Create;

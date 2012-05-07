@@ -101,6 +101,7 @@ function ValidPassInCryptGraphicFile(FileName, Password: string): Boolean;
 function ResetPasswordInGraphicFile(FileName, Password: string): Integer;
 function ChangePasswordInGraphicFile(FileName: string; OldPass, NewPass: string): Integer;
 function ValidCryptGraphicFile(FileName: string): Boolean;
+function ValidCryptGraphicStream(Stream: TStream): Boolean;
 function GetPasswordCRCFromCryptGraphicFile(FileName: string): Cardinal;
 
 function CryptBlobStream(DF: TField; Password: string): Boolean;
@@ -110,6 +111,7 @@ function ValidPassInCryptBlobStreamJPG(DF: TField; Password: string): Boolean;
 function ResetPasswordInCryptBlobStreamJPG(DF: TField; Password: string): Boolean;
 procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
 function DecryptFileToStream(FileName: string; Password: string; Stream: TStream): Boolean;
+function DecryptStreamToStream(Src, Dest: TStream; Password: string): Boolean;
 procedure CryptStream(S, D: TStream; Password: string; Options: Integer; FileName: string);
 function ValidPassInCryptStream(S: TStream; Password: String): Boolean;
 function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
@@ -290,26 +292,6 @@ begin
   Stream.Write(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
 end;
 
-procedure TryOpenFSForRead(var FS: TFileStream; FileName: string);
-var
-  I: Integer;
-begin
-  FS := nil;
-
-  for I := 1 to 20 do
-  begin
-    try
-      FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
-      Break;
-    except
-      if GetLastError in [ERROR_PATH_NOT_FOUND, ERROR_INVALID_DRIVE, ERROR_NOT_READY,
-                          ERROR_FILE_NOT_FOUND, ERROR_GEN_FAILURE, ERROR_INVALID_NAME] then
-        Exit;
-      Sleep(DelayReadFileOperation);
-    end;
-  end;
-end;
-
 procedure ResetFileAttributes(FileName: string; FA: Integer);
 begin
   if (FA and SysUtils.fahidden) <> 0 then
@@ -340,7 +322,7 @@ begin
   try
 
     try
-      TryOpenFSForRead(FS, FileName);
+      TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
       if FS = nil then
       begin
         Result := CRYPT_RESULT_ERROR_READING_FILE;
@@ -512,7 +494,7 @@ var
 begin
   Result := False;
 
-  TryOpenFSForRead(FS, FileName);
+  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
   if FS = nil then
     Exit;
 
@@ -531,31 +513,38 @@ begin
   end;
 end;
 
-function DecryptFileToStream(FileName: String; Password: string; Stream: TStream): Boolean;
+function DecryptStreamToStream(Src, Dest: TStream; Password: string): Boolean;
 var
-  FS: TFileStream;
   GraphicHeader: TGraphicCryptFileHeader;
 begin
   Result := False;
+  Src.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+  if GraphicHeader.ID <> PhotoDBFileHeaderID then
+    Exit;
 
-  TryOpenFSForRead(FS, FileName);
+  if not DecryptStream(Src, GraphicHeader, Password, Dest) then
+    Exit;
+
+  Dest.Seek(0, soFromBeginning);
+
+  Result := True;
+end;
+
+function DecryptFileToStream(FileName: string; Password: string; Stream: TStream): Boolean;
+var
+  FS: TFileStream;
+begin
+  Result := False;
+
+  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
   if FS = nil then
     Exit;
 
   try
-    FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
-    if GraphicHeader.ID <> PhotoDBFileHeaderID then
-      Exit;
-
-    if not DecryptStream(FS, GraphicHeader, Password, Stream) then
-      Exit;
-
-    Stream.Seek(0, soFromBeginning);
+    Result := DecryptStreamToStream(FS, Stream, Password);
   finally
     F(FS);
   end;
-
-  Result := True;
 end;
 
 function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
@@ -566,7 +555,7 @@ var
 begin
   Result := CRYPT_RESULT_UNDEFINED;
 
-  TryOpenFSForRead(FS, FileName);
+  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
   if FS = nil then
     Exit;
 
@@ -610,6 +599,7 @@ begin
   Result := CRYPT_RESULT_OK;
 end;
 
+//TODO: remove this function
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
   LoadFullRAW: Boolean = False; Page: Integer = 0): TGraphic;
 var
@@ -622,7 +612,7 @@ begin
 
   MS := TMemoryStream.Create;
   try
-    TryOpenFSForRead(FS, FileName);
+    TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
     if FS = nil then
       Exit;
 
@@ -646,7 +636,6 @@ begin
 
       if (Result is TTiffImage) then
       begin
-
         if Page = -1 then
           (Result as TTiffImage).GetPagesCount(MS)
         else
@@ -678,7 +667,7 @@ begin
   try
 
     try
-      TryOpenFSForRead(FS, FileName);
+      TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
       if FS = nil then
         Exit;
 
@@ -739,7 +728,7 @@ begin
   MS := TMemoryStream.Create;
   try
     try
-      TryOpenFSForRead(FS, FileName);
+      TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
       if FS = nil then
         Exit;
 
@@ -798,7 +787,7 @@ var
 begin
   Result := False;
 
-  TryOpenFSForRead(FS, FileName);
+  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
   if FS = nil then
     Exit;
 
@@ -825,20 +814,29 @@ begin
   end;
 end;
 
+function ValidCryptGraphicStream(Stream: TStream): Boolean;
+var
+  GraphicHeader: TGraphicCryptFileHeader;
+  Pos: Int64;
+begin
+  Pos := Stream.Position;
+  Stream.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+  Result := GraphicHeader.ID = PhotoDBFileHeaderID;
+  Stream.Seek(Pos, soFromBeginning);
+end;
+
 function ValidCryptGraphicFile(FileName: String): Boolean;
 var
   FS: TFileStream;
-  GraphicHeader: TGraphicCryptFileHeader;
 begin
   Result := False;
 
-  TryOpenFSForRead(FS, FileName);
+  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
   if FS = nil then
    Exit;
 
   try
-    FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
-    Result := GraphicHeader.ID = PhotoDBFileHeaderID;
+    ValidCryptGraphicStream(FS);
   finally
     F(FS);
   end;
@@ -853,7 +851,7 @@ var
 begin
   Result := 0;
 
-  TryOpenFSForRead(FS, FileName);
+  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
 
   if FS = nil then
     Exit;

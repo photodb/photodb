@@ -35,6 +35,7 @@ uses
   uSettings,
   uFaceDetection,
   uConstants,
+  uImageLoader,
   uPortableDeviceUtils,
   uAnimatedJPEG;
 
@@ -88,7 +89,9 @@ uses
 constructor TViewerThread.Create(Viewer: TViewerForm; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended; SID : TGUID; IsForward: Boolean; Page: Word);
 begin
   inherited Create(Viewer, False);
+  Priority := tpHigher;
   FPage := Page;
+  FTransparent := False;
   FIsNewDBInfo := False;
   FFullImage := FullImage;
   FBeginZoom := BeginZoom;
@@ -97,6 +100,7 @@ begin
   FViewer := Viewer;
   FInfo := Info.Copy;
   FIsEncrypted := False;
+  FPages := 0;
   if Viewer.FullScreenNow then
     TransparentColor := 0
   else
@@ -105,22 +109,19 @@ end;
 
 destructor TViewerThread.Destroy;
 begin
-
   inherited;
 end;
 
 procedure TViewerThread.Execute;
 var
   PNG: TPNGImage;
-  GraphicClass: TGraphicClass;
+  LoadFlags: TImageLoadFlags;
+  ImageInfo: ILoadImageInfo;
 begin
   inherited;
   FreeOnTerminate := True;
-  FPages := 0;
-  Priority := tpHigher;
   try
-    FTransparent := False;
-    if not FileExistsEx(FInfo.FileName) and not IsDevicePath(FInfo.FileName) then
+    if not IsDevicePath(FInfo.FileName) and not FileExistsEx(FInfo.FileName) then
     begin
       SetNOImageAsynch;
       Exit;
@@ -132,54 +133,25 @@ begin
       SetNOImageAsynch;
       Exit;
     end;
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
-    if GraphicClass = nil then
-    begin
-      SetNOImageAsynch;
-      Exit;
-    end;
 
-    Graphic := GraphicClass.Create;
+    Graphic := nil;
+    ImageInfo := nil;
     try
-      InitGraphic(Graphic);
-      if Graphic is TRAWImage then
-        TRAWImage(Graphic).IsPreview := not FFullImage;
 
+      LoadFlags := [ilfICCProfile, ilfEXIFRotate];
+      if FFullImage then
+        LoadFlags := LoadFlags + [ilfFullRAW];
       try
-        if not IsDevicePath(FInfo.FileName) then
+        if not LoadImageFromPath(FInfo.FileName, FPage, Password, LoadFlags, ImageInfo) then
         begin
-          if PassWord <> '' then
-          begin
-            F(Graphic);
-            Graphic := DeCryptGraphicFileEx(FInfo.FileName, PassWord, FPages, FFullImage, FPage);
-          end else
-          begin
-            if FIsEncrypted and (PassWord = '') then
-            begin
-              SetNOImageAsynch;
-              Exit;
-            end else
-            begin
-              if Graphic is TTiffImage then
-              begin
-                (Graphic as TTiffImage).Page := FPage;
-                (Graphic as TTiffImage).LoadFromFile(FInfo.FileName);
-              end
-              else
-                Graphic.LoadFromFile(FInfo.FileName);
-            end;
-          end
-        end else
-        begin
-          Graphic.LoadFromDevice(FInfo.FileName);
+          SetNOImageAsynch;
+          Exit;
         end;
-      except
-        SetNOImageAsynch;
-        Exit;
-      end;
 
-      if (Graphic.Width = 0) or (Graphic.Height = 0) then
-      begin
+        FPages := ImageInfo.ImageTotalPages;
+
+        Graphic := ImageInfo.ExtractGraphic;
+      except
         SetNOImageAsynch;
         Exit;
       end;
@@ -206,18 +178,13 @@ begin
         Bitmap := TBitmap.Create;
         try
           try
-            if PassWord = '' then
-              if Graphic is TTiffImage then
-                FPages := (Graphic as TTiffImage).Pages;
-
             if Graphic is TPNGImage then
             begin
               FTransparent := True;
               PNG := (Graphic as TPNGImage);
-              if PNG.TransparencyMode <> PtmNone then
-              begin
-                LoadPNGImage32bit(PNG, Bitmap, TransparentColor);
-              end else
+              if PNG.TransparencyMode <> ptmNone then
+                LoadPNGImage32bit(PNG, Bitmap, TransparentColor)
+              else
                 AssignGraphic(Bitmap, Graphic);
             end else
             begin
@@ -245,11 +212,13 @@ begin
           if (FInfo.ID = 0) and not IsDevicePath(FInfo.FileName) then
           begin
             if FInfo.Rotation = 0 then
-              FInfo.Rotation := GetExifRotate(FInfo.FileName);
+              FInfo.Rotation := ImageInfo.Rotation;
 
             if (Graphic is TRAWImage) then
               FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation);
           end;
+
+          ImageInfo.AppllyICCProfile(Bitmap);
 
           ApplyRotate(Bitmap, FInfo.Rotation);
           SetStaticImageAsynch;

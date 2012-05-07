@@ -3,7 +3,12 @@ unit uTiffImage;
 interface
 
 uses
-  Classes, SysUtils, Graphics, FreeImage, FreeBitmap, GraphicsBaseTypes,
+  Classes,
+  SysUtils,
+  Graphics,
+  FreeImage,
+  FreeBitmap,
+  GraphicsBaseTypes,
   uMemory;
 
 type

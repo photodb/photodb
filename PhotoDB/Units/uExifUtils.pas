@@ -868,19 +868,13 @@ begin
         OS := TMemoryStream.Create;
         try
           if (GraphicClass = Jpeg.TJPEGImage) or (GraphicClass = TAnimatedJPEG) then
-          begin
             TExifDataEx(Self).DoSaveToJPEG(MS, OS);
-          end;
 
           if (GraphicClass = TTiffImage) then
-          begin
             TExifDataEx(Self).DoSaveToTIFF(MS, OS);
-          end;
 
           if (GraphicClass = TPSDGraphic) then
-          begin
             TExifDataEx(Self).DoSaveToPSD(MS, OS);
-          end;
 
           if OS.Size > 0 then
           begin

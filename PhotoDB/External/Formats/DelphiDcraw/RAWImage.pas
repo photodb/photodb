@@ -3,9 +3,19 @@ unit RAWImage;
 interface
 
 uses
-  Windows, SysUtils, Graphics, Classes, uMemory,
-  uConstants, uFileUtils, uTime, FreeBitmap, FreeImage, GraphicsBaseTypes,
-  CCR.Exif, uBitmapUtils;
+  Windows,
+  SysUtils,
+  Graphics,
+  Classes,
+  uMemory,
+  uConstants,
+  uFileUtils,
+  uTime,
+  FreeBitmap,
+  FreeImage,
+  GraphicsBaseTypes,
+  CCR.Exif,
+  uBitmapUtils;
 
 type
   TRAWImage = class(TBitmap)

@@ -415,7 +415,8 @@ uses
   uVCLStylesOneLoadSpeedUp in 'Units\Styles\uVCLStylesOneLoadSpeedUp.pas',
   uExplorerDateStackProviders in 'Units\Providers\uExplorerDateStackProviders.pas',
   lcms2dll in 'External\lcms2dll.pas',
-  uICCProfile in 'Units\uICCProfile.pas';
+  uICCProfile in 'Units\uICCProfile.pas',
+  uImageLoader in 'Units\uImageLoader.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
