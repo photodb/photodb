@@ -10,7 +10,9 @@ uses
   SyncObjs,
   uDBThread,
   uGOM,
+  {$IFNDEF EXTERNAL}
   uRuntime,
+  {$ENDIF}
   SysUtils;
 
 type
@@ -91,7 +93,7 @@ end;
 function TThreadEx.CheckForm: Boolean;
 begin
   Result := False;
-  if not IsTerminated and not DBTerminating then
+  if not IsTerminated {$IFNDEF EXTERNAL}and not DBTerminating{$ENDIF} then
   begin
     if FThreadForm.IsActualState(FState) then
       Result := True;

@@ -338,18 +338,18 @@ uses
   uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson},
   uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
   UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas',
-  uExplorerGroupsProvider in 'Units\uExplorerGroupsProvider.pas',
-  uExplorerPersonsProvider in 'Units\uExplorerPersonsProvider.pas',
+  uExplorerGroupsProvider in 'Units\Providers\uExplorerGroupsProvider.pas',
+  uExplorerPersonsProvider in 'Units\Providers\uExplorerPersonsProvider.pas',
   uConfiguration in 'Units\uConfiguration.pas',
-  uExplorerSearchProviders in 'Units\uExplorerSearchProviders.pas',
-  uExplorerPathProvider in 'Units\uExplorerPathProvider.pas',
+  uExplorerSearchProviders in 'Units\Providers\uExplorerSearchProviders.pas',
+  uExplorerPathProvider in 'Units\Providers\uExplorerPathProvider.pas',
   uVCLHelpers in 'Units\uVCLHelpers.pas',
   uFormPersonSuggest in 'uFormPersonSuggest.pas' {FormPersonSuggest},
   uDBCustomThread in 'Threads\uDBCustomThread.pas',
   uGUIDUtils in 'Units\uGUIDUtils.pas',
   uErrors in 'Units\uErrors.pas',
   uFormEditObject in 'uFormEditObject.pas' {FormEditObject},
-  uExplorerPortableDeviceProvider in 'Units\uExplorerPortableDeviceProvider.pas',
+  uExplorerPortableDeviceProvider in 'Units\Providers\uExplorerPortableDeviceProvider.pas',
   uPortableClasses in 'Units\PortableDevices\uPortableClasses.pas',
   uWIAClasses in 'Units\PortableDevices\uWIAClasses.pas',
   uWIAInterfaces in 'Units\PortableDevices\uWIAInterfaces.pas',
@@ -397,7 +397,7 @@ uses
   uMainMenuStyleHook in 'Units\Styles\uMainMenuStyleHook.pas',
   PropertyForm in 'PropertyForm.pas' {PropertiesForm},
   uPhotoShelf in 'Units\uPhotoShelf.pas',
-  uExplorerShelfProvider in 'Units\uExplorerShelfProvider.pas',
+  uExplorerShelfProvider in 'Units\Providers\uExplorerShelfProvider.pas',
   uXMLUtils in 'Units\uXMLUtils.pas',
   uGoogleOAuth in 'Units\Share\uGoogleOAuth.pas',
   uPhotoShareInterfaces in 'Units\Share\uPhotoShareInterfaces.pas',
@@ -412,7 +412,10 @@ uses
   uProgressBarStyleHookMarquee in 'Units\Styles\uProgressBarStyleHookMarquee.pas',
   uUninstallUtils in 'Units\uUninstallUtils.pas',
   uInternetProxy in 'Units\uInternetProxy.pas',
-  uVCLStylesOneLoadSpeedUp in 'Units\Styles\uVCLStylesOneLoadSpeedUp.pas';
+  uVCLStylesOneLoadSpeedUp in 'Units\Styles\uVCLStylesOneLoadSpeedUp.pas',
+  uExplorerDateStackProviders in 'Units\Providers\uExplorerDateStackProviders.pas',
+  lcms2dll in 'External\lcms2dll.pas',
+  uICCProfile in 'Units\uICCProfile.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -420,16 +423,6 @@ uses
 
 var
   S1: string;
-
-function IsFalidDBFile: Boolean;
-begin
-  Result := True;
-end;
-
-function FileVersion: Integer;
-begin
-  Result := ReleaseNumber;
-end;
 
 procedure StopApplication;
 begin
@@ -484,10 +477,6 @@ begin
     end;
   end;
 end;
-
-exports
-  IsFalidDBFile name 'IsFalidDBFile',
-  FileVersion name 'FileVersion';
 
 begin
   CoInitFlags := COM_MODE;

@@ -138,7 +138,7 @@ constructor TFileOperationTask.Create(ASource, ADestination: TPathItem);
 begin
   FSource := ASource.Copy;
   FDestination := ADestination.Copy;
-  FIsDirectory := ASource.IsDirectoty;
+  FIsDirectory := ASource.IsDirectory;
 end;
 
 destructor TFileOperationTask.Destroy;
@@ -509,7 +509,7 @@ begin
 
                     for J := 0 to Childs.Count - 1 do
                     begin
-                      if Childs[J].IsDirectoty then
+                      if Childs[J].IsDirectory then
                       begin
                         NextLevel.Add(Childs[J].Copy);
                       end else

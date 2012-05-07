@@ -1,7 +1,7 @@
 {**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.0 beta                                                                   }
+{ Version 1.5.1 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -14,18 +14,18 @@
 { The Original Code is CCR.Exif.pas.                                                   }
 {                                                                                      }
 { The Initial Developer of the Original Code is Chris Rolliston. Portions created by   }
-{ Chris Rolliston are Copyright (C) 2009-2011 Chris Rolliston. All Rights Reserved.    }
+{ Chris Rolliston are Copyright (C) 2009-2012 Chris Rolliston. All Rights Reserved.    }
 {                                                                                      }
 {**************************************************************************************}
 
 {$I CCR.Exif.inc}
-unit CCR.Exif;        
+unit CCR.Exif;
 {
   Notes:
   - In Exif-jargon, we have 'tags' and 'IFDs' (including 'sub-IFDs'). In the jargon of
     this unit, we have 'tags' and 'sections'.
-  - The basic usage pattern is this: construct a TExifData instance; call
-    LoadFromGraphic, which has file name, TStream and TGraphic overloads; read and write
+  - The basic usage pattern is this: construct a TExifData instance; call LoadFromGraphic,
+    which has file name, TStream and TGraphic/TBitmap overloads; read and write
     the published tag properties as you so wish; and call SaveToGraphic to persist the
     changes made. Supported graphic types are JPEG, PSD and TIFF. LoadFromGraphic (which
     is a function) returns True if the source was of a supported graphic type, False
@@ -42,16 +42,20 @@ unit CCR.Exif;
     XMP data is only actually parsed when required.
   - When setting a tag property, the default behaviour is for the loaded XMP packet
     to be updated if the equivalent XMP tag already exists. This can be changed however
-    by setting the XMPWritePolocy property of TExifData.
-  - Note that that maker note rewriting is *not* supported yet in TExifData. While you
-    can make changes to the loaded maker note tags, these changes won't ever be
-    persisted.
+    by setting the XMPWritePolicy property of TExifData.
+  - Maker note rewriting is *not* supported in TExifData. While you can make changes to
+    the loaded maker note tags, these changes won't ever be persisted.
+  - When compiling in XE2, you need to set a 'VCL' global define in order for this unit
+    to use the VCL TJpegImage class - setting a 'FMX' global define will have it use the
+    FireMonkey TBitmap, and setting nothing (the default) will have a dummy TJpegImage
+    used. The dummy class will be assignable to
 }
 interface
 
 uses
-  Types, SysUtils, Classes, Graphics, Contnrs, TypInfo, JPEG, CCR.Exif.BaseUtils,
-  CCR.Exif.IPTC, CCR.Exif.StreamHelper, CCR.Exif.TagIDs, CCR.Exif.TiffUtils, CCR.Exif.XMPUtils;
+  Types, SysUtils, Classes, Contnrs, TypInfo, CCR.Exif.BaseUtils, CCR.Exif.IPTC,
+  {$IFDEF VCL}Graphics, Jpeg,{$ENDIF}{$IFDEF FMX}FMX.Types,{$ENDIF}
+  CCR.Exif.StreamHelper, CCR.Exif.TagIDs, CCR.Exif.TiffUtils, CCR.Exif.XMPUtils;
 
 const
   SmallEndian = CCR.Exif.StreamHelper.SmallEndian;
@@ -62,7 +66,7 @@ const
   xwRemove = CCR.Exif.XMPUtils.xwRemove;
 
 type
-  EInvalidJPEGHeader = CCR.Exif.BaseUtils.EInvalidJPEGHeader; //= class(EInvalidGraphic);
+  EInvalidJPEGHeader = CCR.Exif.BaseUtils.EInvalidJPEGHeader;
   ECCRExifException = CCR.Exif.BaseUtils.ECCRExifException;
   EInvalidTiffData = CCR.Exif.TiffUtils.EInvalidTiffData;
 
@@ -79,6 +83,42 @@ const
   StandardExifThumbnailHeight  = 120;
 
 type
+{$IFDEF FMX}
+  TGraphic = FMX.Types.TBitmap;
+
+  TJPEGImage = class(FMX.Types.TBitmap, IStreamPersist)
+  public
+    constructor Create; reintroduce;
+    procedure SaveToStream(Stream: TStream);
+  end;
+{$ENDIF}
+{$IF NOT Declared(TJPEGImage)}
+  {$DEFINE DummyTJpegImage}
+  TJPEGImage = class(TInterfacedPersistent, IStreamPersist)
+  strict private
+    FData: TMemoryStream;
+    FWidth, FHeight: Integer;
+    FOnChange: TNotifyEvent;
+    function GetWidth: Integer;
+    function GetHeight: Integer;
+    procedure SizeFieldsNeeded;
+  protected
+    procedure AssignTo(Dest: TPersistent); override;
+    procedure Changed; virtual;
+    function GetEmpty: Boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToStream(Stream: TStream);
+    property Empty: Boolean read GetEmpty;
+    property Width: Integer read GetWidth;
+    property Height: Integer read GetHeight;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+  end;
+{$IFEND}
+
   ENotOnlyASCIIError = class(EInvalidTiffData);
 
   TExifTag = class;
@@ -157,6 +197,9 @@ type
     function ReadFraction(Index: Integer; const Default: TExifFraction): TExifFraction;
     function ReadLongWord(Index: Integer; const Default: LongWord): LongWord;
     function ReadWord(Index: Integer; const Default: Word): Word;
+    {$IFDEF HasToString}
+    function ToString: string; override;
+    {$ENDIF}
     property AsString: string read GetAsString write SetAsString;
     property ElementAsString[Index: Integer]: string read GetElementAsString;
     property Data: Pointer read FData;
@@ -362,6 +405,9 @@ type
     constructor Create(AOwner: TCustomExifData);
     procedure Assign(Source: TPersistent); override;
     function MissingOrInvalid: Boolean;
+    {$IFDEF HasToString}
+    function ToString: string; override;
+    {$ENDIF}
     property AsString: string read GetAsString write SetAsString;
     property Owner: TCustomExifData read FOwner;
   published
@@ -443,6 +489,9 @@ type
     constructor Create(AOwner: TCustomExifData);
     procedure Assign(Source: TPersistent); override;
     function MissingOrInvalid: Boolean;
+    {$IFDEF HasToString}
+    function ToString: string; override;
+    {$ENDIF}
     property Section: TExifSection read FSection;
   published
     property X: TExifFraction read GetX write SetX stored False;
@@ -492,6 +541,9 @@ type
     constructor Create(AOwner: TCustomExifData);
     procedure Assign(Source: TPersistent); override;
     function MissingOrInvalid: Boolean;
+    {$IFDEF HasToString}
+    function ToString: string; override;
+    {$ENDIF}
     property Items[Index: Integer]: Word read GetItem write SetItem; default;
   published
     property AsString: string read GetAsString write SetAsString stored False;
@@ -532,6 +584,9 @@ type
     constructor Create(AOwner: TCustomExifData; ATagID: TExifTagID);
     procedure Assign(Source: TPersistent); overload; override;
     function MissingOrInvalid: Boolean;
+    {$IFDEF HasToString}
+    function ToString: string; override;
+    {$ENDIF}
     property Degrees: TExifFraction index 0 read GetValue;
     property Minutes: TExifFraction index 1 read GetValue;
     property Seconds: TExifFraction index 2 read GetValue;
@@ -587,6 +642,8 @@ type
       out HeaderSize: Integer): Boolean; overload; virtual; abstract;
     procedure GetIFDInfo(SourceTag: TExifTag; var ProbableEndianness: TEndianness;
       var DataOffsetsType: TExifDataOffsetsType); virtual;
+    function GetFractionValue(TagID: Integer): TExifFraction;
+    function GetTagAsString(TagID: Integer): string;
     //procedure RewriteSourceTag(Tag: TExifTag); virtual;
     //procedure WriteHeader(Stream: TStream); virtual; abstract;
     //procedure SaveToStream(Stream: TStream; const StartPos: Int64);
@@ -665,6 +722,32 @@ type
     class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
     procedure GetIFDInfo(SourceTag: TExifTag; var ProbableEndianness: TEndianness;
       var DataOffsetsType: TExifDataOffsetsType); override;
+  public
+    property ColorMode: string index ttNikonType3ColorMode read GetTagAsString;
+    property Quality: string index ttNikonType3Quality read GetTagAsString;
+    property WhiteBalance: string index ttNikonType3WhiteBalance read GetTagAsString;
+    property Sharpening: string index ttNikonType3Sharpening read GetTagAsString;
+    property FocusMode: string index ttNikonType3FocusMode read GetTagAsString;
+    property FlashSetting: string index ttNikonType3FlashSetting read GetTagAsString;
+    property AutoFlashMode: string index ttNikonType3AutoFlashMode read GetTagAsString;
+    property MiscRatio: TExifFraction index ttNikonType3MiscRatio read GetFractionValue;
+    property ISOSelection: string index ttNikonType3ISOSelection read GetTagAsString;
+    property AutoExposureBracketComp: TExifFraction index ttNikonType3AutoExposureBracketComp read GetFractionValue;
+    property SerialNumber: string index ttNikonType3SerialNumber read GetTagAsString;
+    property ImageAdjustment: string index ttNikonType3ImageAdjustment read GetTagAsString;
+    property ToneComp: string index ttNikonType3ToneComp read GetTagAsString;
+    property AuxiliaryLens: string index ttNikonType3AuxiliaryLens read GetTagAsString;
+    property DigitalZoom: TExifFraction index ttNikonType3DigitalZoom read GetFractionValue;
+    property SceneMode: string index ttNikonType3SceneMode read GetTagAsString;
+    property LightSource: string index ttNikonType3LightSource read GetTagAsString;
+    property NoiseReduction: string index ttNikonType3NoiseReduction read GetTagAsString;
+    property SceneAssist: string index ttNikonType3SceneAssist read GetTagAsString;
+    property CameraSerialNumber: string index ttNikonType3CameraSerialNumber read GetTagAsString;
+    property Saturation: string index ttNikonType3Saturation read GetTagAsString;
+    property DigitalVarProgram: string index ttNikonType3DigitalVarProg read GetTagAsString;
+    property ImageStabilization: string index ttNikonType3ImageStabilization read GetTagAsString;
+    property AFResponse: string index ttNikonType3AFResponse read GetTagAsString;
+    property CaptureVersion: string index ttNikonType3CaptureVersion read GetTagAsString;
   end;
 
   TSonyMakerNote = class(TExifMakerNote)
@@ -836,6 +919,8 @@ type
   strict protected
     FMetadataInSource: TJPEGMetadataKinds;
     FXMPSegmentPosition, FXMPPacketSizeInSource: Int64;
+    FICCSegmentPosition, FICCPacketSizeInSource: Int64;
+    FICCData: IMetadataBlock;
     property MetadataInSource: TJPEGMetadataKinds read FMetadataInSource; //set in LoadFromGraphic
   protected
     const MaxThumbnailSize = $F000;
@@ -859,6 +944,8 @@ type
     constructor Create(AOwner: TComponent = nil); overload; override; 
     destructor Destroy; override;
     function GetEnumerator: TEnumerator;
+    function HasICCProfile: Boolean;
+    function ExtractICCProfile(Stream: TStream): Boolean;
     procedure Clear(XMPPacketToo: Boolean = True);
     procedure BeginUpdate;
     procedure EndUpdate;
@@ -1003,10 +1090,17 @@ type
     procedure CheckFileIsOpen;
     property Stream: TFileStream read FStream;
   public
-    constructor Create(const AFileName: string); reintroduce; overload; 
+    constructor Create(const AFileName: string); reintroduce; overload;
     destructor Destroy; override;
-    procedure GetImage(Dest: TJPEGImage);
-    procedure GetThumbnail(Dest: TJPEGImage);
+    { the following two methods originally had params typed to TJpegImage; these
+      have been made more weakly typed for FMX compatibility }
+    {$IF CompilerVersion >= 22}
+    procedure GetImage<T: TPersistent, IStreamPersist>(Dest: T);
+    procedure GetThumbnail<T: TPersistent, IStreamPersist>(Dest: T);
+    {$ELSE}
+    procedure GetImage(const Dest: IStreamPersist);
+    procedure GetThumbnail(Dest: TPersistent);
+    {$IFEND}
     procedure OpenFile(const JPEGFileName: string);
     procedure UpdateFile;
     procedure CloseFile(SaveChanges: Boolean = False);
@@ -1034,32 +1128,37 @@ type
   public
     constructor Create(AOwner: TComponent = nil); override;
     procedure Assign(Source: TPersistent); override;
+    {$IF Declared(TGraphic)}
     procedure CreateThumbnail(Source: TGraphic;
       ThumbnailWidth: Integer = StandardExifThumbnailWidth;
       ThumbnailHeight: Integer = StandardExifThumbnailHeight);
+    procedure StandardizeThumbnail;
+    {$IFEND}
     function LoadFromGraphic(Stream: TStream): Boolean; overload; inline;
-    function LoadFromGraphic(Graphic: TGraphic): Boolean; overload;
+    function LoadFromGraphic(const Graphic: IStreamPersist): Boolean; overload;
     function LoadFromGraphic(const FileName: string): Boolean; overload;
     procedure LoadFromStream(Stream: TStream);
     procedure RemoveMakerNote;
     procedure RemovePaddingTags;
     procedure SaveToGraphic(const FileName: string); overload;
-    procedure SaveToGraphic(Graphic: TGraphic); overload;
+    procedure SaveToGraphic(const Graphic: IStreamPersist); overload;
     procedure SaveToStream(Stream: TStream);
-    procedure StandardizeThumbnail;
     property Sections[Section: TExifSectionKind]: TExtendableExifSection read GetSection; default;
+  {$IF DECLARED(TJPEGData)}
   public //deprecated methods - to be removed in a future release
     procedure LoadFromJPEG(JPEGStream: TStream); overload; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
     procedure LoadFromJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
     procedure LoadFromJPEG(const FileName: string); overload; inline; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
     procedure SaveToJPEG(const JPEGFileName: string; Dummy: Boolean = True); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
     procedure SaveToJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
+  {$IFEND}
   published
     property RemovePaddingTagsOnSave: Boolean read FRemovePaddingTagsOnSave write
       FRemovePaddingTagsOnSave default True;
     property Thumbnail;
   end;
 
+{$IFDEF VCL}
   TJPEGImageEx = class(TJPEGImage)
   public type
     TAssignOptions = set of (jaPreserveMetadata);
@@ -1088,6 +1187,7 @@ type
     property IPTCData: TIPTCData read FIPTCData;
     property XMPPacket: TXMPPacket read GetXMPPacket; //just a shortcut for ExifData.XMPPacket
   end;
+{$ENDIF}
 
 const
   stMeasurementInProgress = stMeasurementActive;
@@ -1170,6 +1270,33 @@ end;
 function DecimalSeparator: Char; inline; //avoid compiler warning about deprecated symbol
 begin
   Result := FormatSettings.DecimalSeparator;
+end;
+{$IFEND}
+
+{$IF Declared(TGraphic)}
+function IsGraphicEmpty(AGraphic: TGraphic): Boolean; inline;
+begin
+  {$IFDEF VCL}
+  Result := (AGraphic = nil) or AGraphic.Empty;
+  {$ELSE}
+  Result := (AGraphic = nil) or AGraphic.IsEmpty;
+  {$ENDIF}
+end;
+
+procedure StretchDrawGraphic(AGraphic: TGraphic; ADest: TCanvas; const ARect: TRect);
+begin
+  if IsGraphicEmpty(AGraphic) then Exit;
+  {$IFDEF VCL}
+  ADest.StretchDraw(ARect, AGraphic);
+  {$ELSE}
+  ADest.DrawBitmap(AGraphic, RectF(0, 0, AGraphic.Width, AGraphic.Height),
+    RectF(ARect.Left, ARect.Top, ARect.Right, ARect.Bottom), 1);
+  {$ENDIF}
+end;
+{$ELSE}
+function IsGraphicEmpty(const AGraphic: TJPEGImage): Boolean; inline;
+begin
+  Result := (AGraphic = nil) or AGraphic.Empty;
 end;
 {$IFEND}
 
@@ -1265,6 +1392,17 @@ begin
   end;
 end;
 
+{$IF DECLARED(TBitmap)}
+function CreateNewBitmap(const AWidth, AHeight: Integer): TBitmap;
+begin
+  {$IFDEF VCL}
+  Result := TBitmap.Create;
+  Result.SetSize(AWidth, AHeight);
+  {$ELSE}
+  Result := TBitmap.Create(AWidth, AHeight);
+  {$ENDIF}
+end;
+
 procedure CreateExifThumbnail(Source: TGraphic; Dest: TJPEGImage;
   MaxWidth: Integer = StandardExifThumbnailWidth;
   MaxHeight: Integer = StandardExifThumbnailHeight);
@@ -1274,15 +1412,15 @@ var
 begin
   with ProportionallyResizeExtents(Source.Width, Source.Height, MaxWidth, MaxHeight) do
     R := Rect(0, 0, cx, cy);
-  Bitmap := TBitmap.Create;
+  Bitmap := CreateNewBitmap(R.Right, R.Bottom);
   try
-    Bitmap.SetSize(R.Right, R.Bottom);
-    if not Source.Empty then Bitmap.Canvas.StretchDraw(R, Source);
+    StretchDrawGraphic(Source, Bitmap.Canvas, R);
     Dest.Assign(Bitmap);
   finally
     Bitmap.Free;
   end;
 end;
+{$IFEND}
 
 function DoRemoveMetaDataFromJPEG(InStream, OutStream: TStream;
   KindsToRemove: TJPEGMetadataKinds): TJPEGMetadataKinds;
@@ -1381,6 +1519,25 @@ begin
     InStream.Free;
   end;
 end;
+
+{$IFDEF FMX}
+constructor TJPEGImage.Create;
+begin
+  inherited Create(0, 0);
+end;
+
+procedure TJPEGImage.SaveToStream(Stream: TStream);
+var
+  Filter: TBitmapCodec;
+begin
+  Filter := DefaultBitmapCodecClass.Create;
+  try
+    Filter.SaveToStream(Stream, TBitmap(Self), 'jpeg');
+  finally
+    Filter.Free;
+  end;
+end;
+{$ENDIF}
 
 { segment header checking }
 
@@ -1630,6 +1787,13 @@ begin
     end;
   FAsStringCache := Value;
 end;
+
+{$IFDEF HasToString}
+function TExifTag.ToString: string;
+begin
+  Result := AsString;
+end;
+{$ENDIF}
 
 function TExifTag.GetDataSize: Integer;
 begin
@@ -2840,6 +3004,13 @@ begin
   end;
 end;
 
+{$IFDEF HasToString}
+function TCustomExifVersion.ToString: string;
+begin
+  Result := AsString;
+end;
+{$ENDIF}
+
 function TCustomExifVersion.GetValue(Index: Integer): TExifVersionElement;
 var
   RawValue: Byte;
@@ -2995,7 +3166,7 @@ procedure TCustomExifResolution.SetUnit(const Value: TExifResolutionUnit);
 begin
   Section.SetWordValue(FUnitTagID, 0, Ord(Value));
   if FSchema <> xsUnknown then
-    if Value = trNone then 
+    if Value = trNone then
       FOwner.XMPPacket.RemoveProperty(FSchema, FUnitName)
     else
       FOwner.XMPPacket.UpdateProperty(FSchema, FUnitName, Integer(Value));
@@ -3014,6 +3185,18 @@ begin
   if FSchema <> xsUnknown then
     FOwner.XMPPacket.UpdateProperty(FSchema, FYName, Value.AsString);
 end;
+
+{$IFDEF HasToString}
+function TCustomExifResolution.ToString: string;
+begin
+  if MissingOrInvalid then Exit('');
+  case Units of
+    trInch: Result := '"';
+    trCentimetre: Result := 'cm';
+  end;
+  FmtStr(Result, '%g%s x %g%1:s', [X.Quotient, Result, Y.Quotient]);
+end;
+{$ENDIF}
 
 { TImageResolution }
 
@@ -3153,6 +3336,13 @@ begin
   FOwner.XMPPacket.UpdateProperty(XMPSchema, XMPName, XMPKind, Value);
 end;
 
+{$IFDEF HasToString}
+function TISOSpeedRatings.ToString: string;
+begin
+  Result := AsString;
+end;
+{$ENDIF}
+
 procedure TISOSpeedRatings.SetCount(const Value: Integer);
 var
   Tag: TExifTag;
@@ -3273,6 +3463,13 @@ begin
   else //if we do *exactly* what the XMP spec says, the value won't be round-trippable...
     FmtStr(Result, '%s,%s,%s%s', [Degrees.AsString, Minutes.AsString, Seconds.AsString, Direction]);
 end;
+
+{$IFDEF HasToString}
+function TGPSCoordinate.ToString: string;
+begin
+  Result := AsString;
+end;
+{$ENDIF}
 
 function TGPSCoordinate.GetDirectionChar: AnsiChar;
 var
@@ -3522,6 +3719,28 @@ begin
   end;
 end;
 
+function TCustomExifData.HasICCProfile: Boolean;
+var
+  Words: PWordArray;
+begin
+  Result := (FICCData <> nil) and (FICCSegmentPosition > 0) and (FICCPacketSizeInSource > 14);
+  if Result then
+  begin
+    Words := FICCData.Data.Memory;
+    Result := CompareMem(Words, @TJPEGSegment.ICCHeader, SizeOf(TJPEGSegment.ICCHeader));
+  end;
+end;
+
+function TCustomExifData.ExtractICCProfile(Stream: TStream): Boolean;
+begin
+  Result := HasICCProfile;
+  if Result then
+  begin
+    FICCData.Data.Seek(14, soFromBeginning);
+    Stream.CopyFrom(FICCData.Data, FICCData.Data.Size - 14);
+  end;
+end;
+
 function TCustomExifData.Updating: Boolean;
 begin
   Result := (FUpdateCount > 0);
@@ -3669,7 +3888,7 @@ end;
 
 function TCustomExifData.HasThumbnail: Boolean;
 begin
-  Result := (FThumbnailOrNil <> nil) and not FThumbnailOrNil.Empty;
+  Result := not IsGraphicEmpty(FThumbnailOrNil);
 end;
 
 function TCustomExifData.LoadFromGraphic(Stream: TStream): Boolean;
@@ -3681,6 +3900,9 @@ begin
   FMetadataInSource := [];
   FXMPSegmentPosition := 0;
   FXMPPacketSizeInSource := 0;
+  FICCSegmentPosition := 0;
+  FICCPacketSizeInSource := 0;
+  FICCData := nil;
   Result := False;
   BeginUpdate;
   try
@@ -3688,8 +3910,15 @@ begin
     if HasJPEGHeader(Stream) then
     begin
       Result := True;
-      for Segment in JPEGHeader(Stream, [jmApp1]) do
-        if not (mkExif in MetadataInSource) and Segment.IsExifBlock then
+      for Segment in JPEGHeader(Stream, [jmApp1, jmICCProfile]) do
+      begin
+        if Segment.MarkerNum = jmICCProfile then
+        begin
+          FICCSegmentPosition := Segment.Offset;
+          FICCPacketSizeInSource := Segment.Data.Size;
+          FICCData := Segment;
+        end
+        else if not (mkExif in MetadataInSource) and Segment.IsExifBlock then
         begin
           Include(FMetadataInSource, mkExif);
           AddFromStream(Segment.Data);
@@ -3702,6 +3931,8 @@ begin
           FXMPPacketSizeInSource := Segment.Data.Size;
           XMPPacket.DataToLazyLoad := Segment;
         end;
+      end;
+
     end
     else if HasPSDHeader(Stream) then
     begin
@@ -3928,10 +4159,10 @@ end;
 
 procedure TCustomExifData.SetThumbnail(Value: TJPEGImage);
 begin
-  if (Value <> nil) and not Value.Empty then
-    GetThumbnail.Assign(Value)
+  if IsGraphicEmpty(Value) then
+    FreeAndNil(FThumbnailOrNil)
   else
-    FreeAndNil(FThumbnailOrNil);
+    GetThumbnail.Assign(Value);
 end;
 
 function TCustomExifData.ShutterSpeedInMSecs: Extended;
@@ -5077,14 +5308,22 @@ begin
     Result := '';
 end;
 
-procedure TExifDataPatcher.GetImage(Dest: TJPEGImage);
+{$IF CompilerVersion >= 22}
+procedure TExifDataPatcher.GetImage<T>(Dest: T);
+{$ELSE}
+procedure TExifDataPatcher.GetImage(const Dest: IStreamPersist);
+{$IFEND}
 begin
   CheckFileIsOpen;
   FStream.Position := 0;
   Dest.LoadFromStream(FStream);
 end;
 
-procedure TExifDataPatcher.GetThumbnail(Dest: TJPEGImage);
+{$IF CompilerVersion >= 22}
+procedure TExifDataPatcher.GetThumbnail<T>(Dest: T);
+{$ELSE}
+procedure TExifDataPatcher.GetThumbnail(Dest: TPersistent);
+{$IFEND}
 begin
   CheckFileIsOpen;
   Dest.Assign(Thumbnail);
@@ -5092,8 +5331,12 @@ end;
 
 procedure TExifDataPatcher.SetFileDateTime(const Value: TDateTime);
 begin
-  CheckFileIsOpen;                                        {$WARN SYMBOL_PLATFORM OFF}
+  CheckFileIsOpen;
+{$IFDEF MSWINDOWS}                                        {$WARN SYMBOL_PLATFORM OFF}
   FileSetDate(FStream.Handle, DateTimeToFileDate(Value)); {$WARN SYMBOL_PLATFORM ON}
+{$ELSE}
+  FileSetDate(FStream.FileName, DateTimeToFileDate(Value)); //!!!does this actually work?
+{$ENDIF}
 end;
 
 procedure TExifDataPatcher.OpenFile(const JPEGFileName: string);
@@ -5194,8 +5437,8 @@ begin
     end;
   end;
   FOriginalEndianness := Endianness;
-  if PreserveFileDate then                {$WARN SYMBOL_PLATFORM OFF}
-    FileSetDate(FStream.Handle, OldDate); {$WARN SYMBOL_PLATFORM ON}
+  if PreserveFileDate then
+    SetFileDateTime(OldDate);
   Modified := False;
 end;
 
@@ -5233,24 +5476,14 @@ begin
     inherited;
 end;
 
+{$IF Declared(TGraphic)}
 procedure TExifData.CreateThumbnail(Source: TGraphic;
   ThumbnailWidth, ThumbnailHeight: Integer);
 begin
-  if (Source = nil) or Source.Empty then
+  if IsGraphicEmpty(Source) then
     Thumbnail := nil
   else
     CreateExifThumbnail(Source, Thumbnail, ThumbnailWidth, ThumbnailHeight);
-end;
-
-procedure TExifData.DefineProperties(Filer: TFiler);
-begin
-  inherited;
-  Filer.DefineBinaryProperty('Data', LoadFromStream, SaveToStream, not Empty);
-end;
-
-function TExifData.GetSection(Section: TExifSectionKind): TExtendableExifSection;
-begin
-  Result := TExtendableExifSection(inherited Sections[Section]);
 end;
 
 procedure TExifData.StandardizeThumbnail;
@@ -5263,13 +5496,25 @@ begin
      (Image.Height > StandardExifThumbnailHeight) then
     CreateExifThumbnail(Image, Image);
 end;
+{$IFEND}
+
+procedure TExifData.DefineProperties(Filer: TFiler);
+begin
+  inherited;
+  Filer.DefineBinaryProperty('Data', LoadFromStream, SaveToStream, not Empty);
+end;
+
+function TExifData.GetSection(Section: TExifSectionKind): TExtendableExifSection;
+begin
+  Result := TExtendableExifSection(inherited Sections[Section]);
+end;
 
 function TExifData.LoadFromGraphic(Stream: TStream): Boolean;
 begin
   Result := inherited LoadFromGraphic(Stream);
 end;
 
-function TExifData.LoadFromGraphic(Graphic: TGraphic): Boolean;
+function TExifData.LoadFromGraphic(const Graphic: IStreamPersist): Boolean;
 var
   Stream: TMemoryStream;
 begin
@@ -5295,6 +5540,7 @@ begin
   end;
 end;
 
+{$IF DECLARED(TJPEGData)}
 procedure TExifData.LoadFromJPEG(JPEGStream: TStream);
 begin
   if HasJPEGHeader(JPEGStream) then
@@ -5322,6 +5568,7 @@ begin
     Stream.Free;
   end;
 end;
+{$IFEND}
 
 procedure TExifData.LoadFromStream(Stream: TStream);
 begin
@@ -5427,11 +5674,12 @@ begin
   DoSaveToGraphic(FileName, GetGraphicSaveMethod);
 end;
 
-procedure TExifData.SaveToGraphic(Graphic: TGraphic);
+procedure TExifData.SaveToGraphic(const Graphic: IStreamPersist);
 begin
   DoSaveToGraphic(Graphic, GetGraphicSaveMethod);
 end;
 
+{$IF DECLARED(TJPEGData)}
 procedure TExifData.SaveToJPEG(const JPEGFileName: string; Dummy: Boolean = True);
 begin
   SaveToGraphic(JPEGFileName);
@@ -5441,6 +5689,7 @@ procedure TExifData.SaveToJPEG(JPEGImage: TJPEGImage);
 begin
   SaveToGraphic(JPEGImage);
 end;
+{$IFEND}
 
 type
   TSectionSavingInfo = record
@@ -5566,9 +5815,13 @@ begin
       if ThumbnailImageStream.Size > MaxThumbnailSize then
       begin
         ThumbnailImageStream.Clear;
+        {$IF DECLARED(StandardizeThumbnail)}
         StandardizeThumbnail;
+        {$IFEND}
+        {$IFDEF VCL}
         if Thumbnail.CompressionQuality > 90 then
           Thumbnail.CompressionQuality := 90;
+        {$ENDIF}
         Thumbnail.SaveToStream(ThumbnailImageStream);
         Assert(ThumbnailImageStream.Size <= MaxThumbnailSize);
       end;
@@ -5618,6 +5871,8 @@ class function TExifData.SectionClass: TExifSectionClass;
 begin
   Result := TExtendableExifSection;
 end;
+
+{$IFDEF VCL}
 
 { TJPEGImageEx }
 
@@ -5797,6 +6052,7 @@ begin
     MemStream2.Free;
   end;
 end;
+{$ENDIF}
 
 { TExifMakerNote }
 
@@ -5865,6 +6121,24 @@ end;
 procedure TExifMakerNote.GetIFDInfo(SourceTag: TExifTag;
   var ProbableEndianness: TEndianness; var DataOffsetsType: TExifDataOffsetsType);
 begin
+end;
+
+function TExifMakerNote.GetFractionValue(TagID: Integer): TExifFraction;
+begin
+  if (TagID >= Low(TTiffTagID)) and (TagID <= Low(TTiffTagID)) then
+    Result := Tags.GetFractionValue(TTiffTagID(TagID), 0, NullFraction)
+  else
+    Result := NullFraction;
+end;
+
+function TExifMakerNote.GetTagAsString(TagID: Integer): string;
+var
+  Tag: TExifTag;
+begin
+  if (TagID >= Low(TTiffTagID)) and (TagID <= High(TTiffTagID)) and Tags.Find(TagID, Tag) then
+    Result := Tag.AsString
+  else
+    Result := '';
 end;
 
 { TUnrecognizedMakerNote }
@@ -6038,6 +6312,123 @@ begin
   else
     ProbableEndianness := SmallEndian;
 end;
+
+{$IFDEF DummyTJpegImage}
+constructor TJPEGImage.Create;
+begin
+  inherited Create;
+  FData := TMemoryStream.Create;
+end;
+
+destructor TJPEGImage.Destroy;
+begin
+  FData.Free;
+  inherited Destroy;
+end;
+
+procedure TJPEGImage.Assign(Source: TPersistent);
+var
+  SourceIntf: IStreamPersist;
+begin
+  if Source = nil then
+  begin
+    if FData.Size = 0 then Exit;
+    FData.Clear;
+    Changed;
+    Exit;
+  end;
+  if Supports(Source, IStreamPersist, SourceIntf) then
+  begin
+    FData.Clear;
+    SourceIntf.SaveToStream(FData);
+    Changed;
+    Exit;
+  end;
+  inherited;
+end;
+
+procedure TJPEGImage.AssignTo(Dest: TPersistent);
+var
+  DestIntf: IStreamPersist;
+  TempStream: TMemoryStream;
+begin
+  if Supports(Dest, IStreamPersist, DestIntf) then
+  begin
+    TempStream := TMemoryStream.Create;
+    try
+      SaveToStream(TempStream);
+      TempStream.Position := 0;
+      DestIntf.LoadFromStream(TempStream);
+    finally
+      TempStream.Free;
+    end;
+    Exit;
+  end;
+  inherited;
+end;
+
+procedure TJPEGImage.Changed;
+begin
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
+
+function TJPEGImage.GetEmpty: Boolean;
+begin
+  Result := (FData.Size = 0);
+end;
+
+function TJPEGImage.GetWidth: Integer;
+begin
+  SizeFieldsNeeded;
+  Result := FWidth;
+end;
+
+function TJPEGImage.GetHeight: Integer;
+begin
+  SizeFieldsNeeded;
+  Result := FHeight;
+end;
+
+procedure TJPEGImage.LoadFromStream(Stream: TStream);
+var
+  JpegSize: Int64;
+begin
+  JpegSize := GetJPEGDataSize(Stream);
+  if (JpegSize = 0) and (FData.Size = 0) then Exit;
+  FWidth := 0;
+  FData.Size := JpegSize;
+  Stream.ReadBuffer(FData.Memory^, JpegSize);
+  Changed;
+end;
+
+procedure TJPEGImage.SaveToStream(Stream: TStream);
+begin
+  if FData.Size <> 0 then
+  begin
+    Stream.WriteBuffer(FData.Memory^, FData.Size);
+    Exit;
+  end;
+  WriteJPEGFileHeader(Stream);
+  Stream.WriteByte(jmEndOfImage);
+end;
+
+procedure TJPEGImage.SizeFieldsNeeded;
+var
+  Header: PJPEGStartOfFrameData;
+  Segment: IFoundJPEGSegment;
+begin
+  if (FWidth <> 0) or (FData.Size = 0) then Exit;
+  FData.Position := 0;
+  for Segment in JPEGHeader(FData, TJPEGSegment.StartOfFrameMarkers) do
+    if Segment.Data.Size > SizeOf(TJPEGStartOfFrameData) then
+    begin
+      Header := Segment.Data.Memory;
+      FWidth := Header.ImageWidth;
+      FHeight := Header.ImageWidth;
+      Exit;
+    end;
+end;
+{$ENDIF}
 
 initialization
   TCustomExifData.FMakerNoteClasses := TList.Create;

@@ -11,7 +11,9 @@ uses
   uConstants,
   Messages,
   Themes,
+  {$IFNDEF EXTERNAL}
   uTranslate,
+  {$ENDIF}
   uSysUtils,
   StdCtrls,
   Winapi.MultiMon,
@@ -55,6 +57,13 @@ uses
   SysUtils,
   Controls,
   UxTheme;
+
+{$IFDEF EXTERNAL}
+function TA(S: string): string;
+begin
+  Result := S;
+end;
+{$ENDIF}
 
 procedure SetVistaTreeView(const AHandle: THandle);
 begin
@@ -195,6 +204,8 @@ begin
     end;
   end;
 end;
+
+
 
 function GetButtonCaption(DlgBtn: TMsgDlgBtn): string;
 begin
@@ -437,6 +448,7 @@ begin
     Frm := CreateMessageDialog(Msg, DlgType, Buttons);
     Frm.Caption := GetCaptions(DlgType);
 
+    {$IFNDEF EXTERNAL}
     for I := 0 to Frm.ComponentCount - 1 do
     begin
       { If the object is of type TButton, then }
@@ -450,6 +462,7 @@ begin
           Button.Caption := NS;
       end;
     end;
+    {$ENDIF}
 
     Result := DoMessageDlgPosHelpEx(Frm, HelpCtx, X, Y, HelpFileName);
   end;

@@ -1,7 +1,7 @@
 {**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.0 beta                                                                   }
+{ Version 1.5.1 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -14,7 +14,7 @@
 { The Original Code is CCR.Exif.IPTC.pas.                                              }
 {                                                                                      }
 { The Initial Developer of the Original Code is Chris Rolliston. Portions created by   }
-{ Chris Rolliston are Copyright (C) 2009-2011 Chris Rolliston. All Rights Reserved.    }
+{ Chris Rolliston are Copyright (C) 2009-2012 Chris Rolliston. All Rights Reserved.    }
 {                                                                                      }
 {**************************************************************************************}
 
@@ -35,7 +35,7 @@ unit CCR.Exif.IPTC;
 interface
 
 uses
-  Types, SysUtils, Classes, Graphics, JPEG,
+  Types, SysUtils, Classes, {$IFDEF VCL}Jpeg,{$ENDIF}
   CCR.Exif.BaseUtils, CCR.Exif.TagIDs, CCR.Exif.TiffUtils;
 
 type
@@ -135,6 +135,12 @@ type
     function AddOrUpdate(TagID: TIPTCTagID; NewDataSize: LongInt; const Buffer): TIPTCTag;
     function GetDateValue(TagID: TIPTCTagID): TDateTimeTagValue;
     procedure SetDateValue(TagID: TIPTCTagID; const Value: TDateTimeTagValue);
+    function GetDateTimeValue(DateTagID, TimeTagID: TIPTCTagID; AsUtc: Boolean = False): TDateTimeTagValue;
+    procedure SetDateTimeValue(DateTagID, TimeTagID: TIPTCTagID;
+      const Value: TDateTimeTagValue; AheadOfUtc: Boolean; UtcOffsetHrs, UtcOffsetMins: Byte); overload;
+    {$IFDEF HasTTimeZone}
+    procedure SetDateTimeValue(DateTagID, TimeTagID: TIPTCTagID; const Value: TDateTimeTagValue); overload;
+    {$ENDIF}
     function GetPriorityValue(TagID: TIPTCTagID): TIPTCPriority;
     procedure SetPriorityValue(TagID: TIPTCTagID; Value: TIPTCPriority);
     function GetRepeatableValue(TagID: TIPTCTagID): TStringDynArray; overload;
@@ -200,6 +206,12 @@ type
     procedure SetDate(PackedIndex: Integer; const Value: TDateTimeTagValue);
     function GetActionAdvised: TIPTCActionAdvised;
     procedure SetActionAdvised(Value: TIPTCActionAdvised);
+    function GetDateTimeCreated: TDateTimeTagValue;
+    function GetDateTimeSent: TDateTimeTagValue;
+    {$IFDEF HasTTimeZone}
+    procedure SetDateTimeCreatedProp(const Value: TDateTimeTagValue);
+    procedure SetDateTimeSentProp(const Value: TDateTimeTagValue);
+    {$ENDIF}
     function GetImageOrientation: TIPTCImageOrientation;
     procedure SetImageOrientation(Value: TIPTCImageOrientation);
   protected
@@ -221,16 +233,20 @@ type
     procedure AddFromStream(Stream: TStream);
     procedure Assign(Source: TPersistent); override;
     procedure Clear;
+    procedure SetDateTimeCreated(const Value: TDateTimeTagValue; AheadOfUtc: Boolean;
+      UtcOffsetHrs, UtcOffsetMins: Byte); overload;
+    procedure SetDateTimeSent(const Value: TDateTimeTagValue; AheadOfUtc: Boolean;
+      UtcOffsetHrs, UtcOffsetMins: Byte); overload;
     { Whether or not metadata was found, LoadFromGraphic returns True if the graphic format
       was recognised as one that *could* contain relevant metadata and False otherwise. }
     function LoadFromGraphic(Stream: TStream): Boolean; overload;
-    function LoadFromGraphic(Graphic: TGraphic): Boolean; overload;
+    function LoadFromGraphic(const Graphic: IStreamPersist): Boolean; overload;
     function LoadFromGraphic(const FileName: string): Boolean; overload;
     procedure LoadFromStream(Stream: TStream);
     { SaveToGraphic raises an exception if the target graphic either doesn't exist, or
       is neither a JPEG nor a PSD image. }
     procedure SaveToGraphic(const FileName: string); overload;
-    procedure SaveToGraphic(Graphic: TGraphic); overload;
+    procedure SaveToGraphic(const Graphic: IStreamPersist); overload;
     procedure SaveToStream(Stream: TStream);
     procedure SortTags;
     property LoadErrors: TMetadataLoadErrors read FLoadErrors write FLoadErrors; //!!!v. rarely set at present
@@ -242,6 +258,7 @@ type
     property ObjectDataSection: TIPTCSection index 8 read GetSection;
     property SecondDescriptorSection: TIPTCSection index 9 read GetSection;
     property Sections[ID: TIPTCSectionID]: TIPTCSection read GetSectionByID; default;
+  {$IF Declared(TJPEGImage)}
   public //deprecated methods - to be removed in a future release
     procedure LoadFromJPEG(JPEGStream: TStream); overload; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
     procedure LoadFromJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
@@ -249,6 +266,7 @@ type
     procedure SaveToJPEG(const JPEGFileName: string;
       Dummy: Boolean = True); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
     procedure SaveToJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
+  {$IFEND}
   published
     property AlwaysAssumeUTF8Encoding: Boolean read FAlwaysAssumeUTF8Encoding write FAlwaysAssumeUTF8Encoding default False;
     property Empty: Boolean read GetEmpty;
@@ -263,6 +281,8 @@ type
     property ProductID: string index itProductID read GetEnvelopeString write SetEnvelopeString stored False;
     property EnvelopePriority: TIPTCPriority read GetEnvelopePriority write SetEnvelopePriority stored False;
     property DateSent: TDateTimeTagValue index isEnvelope or itDateSent shl 8 read GetDate write SetDate;
+    property TimeSent: string index itTimeSent read GetEnvelopeString write SetEnvelopeString stored False;
+    property DateTimeSent: TDateTimeTagValue read GetDateTimeSent {$IFDEF HasTTimeZone}write SetDateTimeSentProp{$ENDIF} stored False;
     property UNOCode: string index itUNO read GetEnvelopeString write SetEnvelopeString stored False; //should have a specific format
     property ARMIdentifier: TWordTagValue index itARMIdentifier read GetEnvelopeWord write SetEnvelopeWord stored False; //!!!make an enum
     property ARMVersion: TWordTagValue index itARMVersion read GetEnvelopeWord write SetEnvelopeWord stored False; //!!!make an enum
@@ -289,6 +309,7 @@ type
     property SpecialInstructions: string index itSpecialInstructions read GetApplicationString write SetApplicationString stored False;
     property ActionAdvised: TIPTCActionAdvised read GetActionAdvised write SetActionAdvised stored False;
     property DateCreated: TDateTimeTagValue index isApplication or itDateCreated shl 8 read GetDate write SetDate stored False;
+    property DateTimeCreated: TDateTimeTagValue read GetDateTimeCreated {$IFDEF HasTTimeZone}write SetDateTimeCreatedProp{$ENDIF} stored False;
     property DigitalCreationDate: TDateTimeTagValue index isApplication or itDigitalCreationDate shl 8 read GetDate write SetDate stored False;
     property OriginatingProgram: string index itOriginatingProgram read GetApplicationString write SetApplicationString stored False;
     property ProgramVersion: string index itProgramVersion read GetApplicationString write SetApplicationString stored False;
@@ -326,7 +347,9 @@ type
 
 implementation
 
-uses Contnrs, Math, CCR.Exif.Consts, CCR.Exif.StreamHelper;
+uses
+  Contnrs, DateUtils, Math, {$IFDEF HasTTimeZone}TimeSpan,{$ENDIF}
+  CCR.Exif.Consts, CCR.Exif.StreamHelper;
 
 const
   PriorityChars: array[TIPTCPriority] of AnsiChar = (#0, '8', '7', '6', '5', '4',
@@ -613,6 +636,79 @@ begin
   DecodeDate(Value, Year, Month, Day);
   SetStringValue(TagID, Format('%.4d%.2d%.2d', [Year, Month, Day]));
 end;
+
+function TIPTCSection.GetDateTimeValue(DateTagID, TimeTagID: TIPTCTagID; AsUtc: Boolean): TDateTimeTagValue;
+var
+  OffsetHrs, OffsetMins: Integer;
+  I: Integer;
+  S: string;
+  TimePart: TDateTimeTagValue;
+  Temp: TDateTime;
+begin
+  TimePart := TDateTimeTagValue.CreateMissingOrInvalid;
+  S := GetStringValue(TimeTagID);
+  if (Length(S) = 11) and CharInSet(S[7], ['-', '+']) and TryStrToInt(Copy(S, 8, 2),
+    OffsetHrs) and TryStrToInt(Copy(S, 10, 2), OffsetMins) then
+  begin
+    for I in [1, 2, 3, 4, 5, 6, 8, 9, 10, 11] do
+      if not CharInSet(S[I], ['0'..'9']) then
+      begin
+        S := '';
+        Break;
+      end;
+    if (S <> '') then
+    begin
+      if not AsUtc then
+      begin
+        OffsetHrs := 0;
+        OffsetMins := 0;
+      end
+      else if S[7] = '+' then //i.e., if the local time is ahead of GMT
+      begin
+        OffsetHrs := -OffsetHrs;
+        OffsetMins := -OffsetMins;
+      end;
+      if TryEncodeTime(StrToInt(Copy(S, 1, 2)) + OffsetHrs, StrToInt(Copy(S, 3, 2)) +
+        OffsetMins, StrToInt(Copy(S, 5, 2)), 0, Temp) then
+        TimePart := Temp;
+    end;
+  end;
+  Result := GetDateValue(DateTagID);
+  if TimePart.MissingOrInvalid then Exit;
+  if Result.MissingOrInvalid then
+    Result := TimePart
+  else
+    Result := Result.Value + TimePart.Value;
+end;
+
+procedure TIPTCSection.SetDateTimeValue(DateTagID, TimeTagID: TIPTCTagID;
+  const Value: TDateTimeTagValue; AheadOfUtc: Boolean; UtcOffsetHrs, UtcOffsetMins: Byte);
+const
+  PlusOrMinus: array[Boolean] of string = ('-', '+');
+var
+  Year, Month, Day, Hour, Minute, Second, MilliSecond: Word;
+begin
+  if Value.MissingOrInvalid then
+  begin
+    Remove([DateTagID, TimeTagID]);
+    Exit;
+  end;
+  DecodeDateTime(Value, Year, Month, Day, Hour, Minute, Second, MilliSecond);
+  SetStringValue(DateTagID, Format('%.4d%.2d%.2d', [Year, Month, Day]));
+  SetStringValue(TimeTagID, Format('%.2d%.2d%.2d%s%.2d%.2d', [Hour, Minute, Second,
+    PlusOrMinus[AheadOfUtc], UtcOffsetHrs, UtcOffsetMins]));
+end;
+
+{$IFDEF HasTTimeZone}
+procedure TIPTCSection.SetDateTimeValue(DateTagID, TimeTagID: TIPTCTagID; const Value: TDateTimeTagValue);
+var
+  Offset: TTimeSpan;
+begin
+  Offset := TTimeZone.Local.UtcOffset;
+  SetDateTimeValue(DateTagID, TimeTagID, Value, Offset.Ticks >= 0, Abs(Offset.Hours),
+    Abs(Offset.Minutes));
+end;
+{$ENDIF}
 
 function TIPTCSection.GetEnumerator: TEnumerator;
 begin
@@ -1124,6 +1220,42 @@ begin
   Result := Sections[Lo(PackedIndex)].GetDateValue(Hi(PackedIndex));
 end;
 
+function TIPTCData.GetDateTimeCreated: TDateTimeTagValue;
+begin
+  Result := Sections[isApplication].GetDateTimeValue(itDateCreated, itTimeCreated)
+end;
+
+function TIPTCData.GetDateTimeSent: TDateTimeTagValue;
+begin
+  Result := Sections[isEnvelope].GetDateTimeValue(itDateSent, itTimeSent)
+end;
+
+procedure TIPTCData.SetDateTimeCreated(const Value: TDateTimeTagValue; AheadOfUtc: Boolean;
+  UtcOffsetHrs, UtcOffsetMins: Byte);
+begin
+  Sections[isApplication].SetDateTimeValue(itDateCreated, itTimeCreated, Value,
+    AheadOfUtc, UtcOffsetHrs, UtcOffsetMins);
+end;
+
+procedure TIPTCData.SetDateTimeSent(const Value: TDateTimeTagValue; AheadOfUtc: Boolean;
+  UtcOffsetHrs, UtcOffsetMins: Byte);
+begin
+  Sections[isEnvelope].SetDateTimeValue(itDateSent, itTimeSent, Value,
+    AheadOfUtc, UtcOffsetHrs, UtcOffsetMins);
+end;
+
+{$IFDEF HasTTimeZone}
+procedure TIPTCData.SetDateTimeCreatedProp(const Value: TDateTimeTagValue);
+begin
+  Sections[isApplication].SetDateTimeValue(itDateCreated, itTimeCreated, Value);
+end;
+
+procedure TIPTCData.SetDateTimeSentProp(const Value: TDateTimeTagValue);
+begin
+  Sections[isEnvelope].SetDateTimeValue(itDateSent, itTimeSent, Value);
+end;
+{$ENDIF}
+
 function TIPTCData.GetImageOrientation: TIPTCImageOrientation;
 var
   Tag: TIPTCTag;
@@ -1278,7 +1410,7 @@ begin
   Clear;
 end;
 
-function TIPTCData.LoadFromGraphic(Graphic: TGraphic): Boolean;
+function TIPTCData.LoadFromGraphic(const Graphic: IStreamPersist): Boolean;
 var
   Stream: TMemoryStream;
 begin
@@ -1302,27 +1434,6 @@ begin
   finally
     Stream.Free;
   end;
-end;
-
-procedure TIPTCData.LoadFromJPEG(JPEGStream: TStream);
-begin
-  if HasJPEGHeader(JPEGStream) then
-    LoadFromGraphic(JPEGStream)
-  else
-    raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
-end;
-
-procedure TIPTCData.LoadFromJPEG(JPEGImage: TJPEGImage);
-begin
-  LoadFromGraphic(JPEGImage)
-end;
-
-procedure TIPTCData.LoadFromJPEG(const FileName: string);
-begin
-  if HasJPEGHeader(FileName) then
-    LoadFromGraphic(FileName)
-  else
-    raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
 end;
 
 procedure TIPTCData.LoadFromStream(Stream: TStream);
@@ -1372,19 +1483,9 @@ begin
   DoSaveToGraphic(FileName, GetGraphicSaveMethod);
 end;
 
-procedure TIPTCData.SaveToGraphic(Graphic: TGraphic);
+procedure TIPTCData.SaveToGraphic(const Graphic: IStreamPersist);
 begin
   DoSaveToGraphic(Graphic, GetGraphicSaveMethod);
-end;
-
-procedure TIPTCData.SaveToJPEG(const JPEGFileName: string; Dummy: Boolean);
-begin
-  SaveToGraphic(JPEGFileName);
-end;
-
-procedure TIPTCData.SaveToJPEG(JPEGImage: TJPEGImage);
-begin
-  SaveToGraphic(JPEGImage);
 end;
 
 procedure TIPTCData.SaveToStream(Stream: TStream);
@@ -1527,5 +1628,38 @@ begin
         Tag.WriteString(Strings[SectID][I]);
     end;
 end;
+
+{$IF Declared(TJPEGImage)}
+procedure TIPTCData.LoadFromJPEG(JPEGStream: TStream);
+begin
+  if HasJPEGHeader(JPEGStream) then
+    LoadFromGraphic(JPEGStream)
+  else
+    raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
+end;
+
+procedure TIPTCData.LoadFromJPEG(JPEGImage: TJPEGImage);
+begin
+  LoadFromGraphic(JPEGImage)
+end;
+
+procedure TIPTCData.LoadFromJPEG(const FileName: string);
+begin
+  if HasJPEGHeader(FileName) then
+    LoadFromGraphic(FileName)
+  else
+    raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
+end;
+
+procedure TIPTCData.SaveToJPEG(const JPEGFileName: string; Dummy: Boolean);
+begin
+  SaveToGraphic(JPEGFileName);
+end;
+
+procedure TIPTCData.SaveToJPEG(JPEGImage: TJPEGImage);
+begin
+  SaveToGraphic(JPEGImage);
+end;
+{$IFEND}
 
 end.

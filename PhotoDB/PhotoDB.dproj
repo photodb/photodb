@@ -623,11 +623,11 @@
 				<Form>FormAddingImage</Form>
 			</DCCReference>
 			<DCCReference Include="Threads\UnitLoadPersonsThread.pas"/>
-			<DCCReference Include="Units\uExplorerGroupsProvider.pas"/>
-			<DCCReference Include="Units\uExplorerPersonsProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerGroupsProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerPersonsProvider.pas"/>
 			<DCCReference Include="Units\uConfiguration.pas"/>
-			<DCCReference Include="Units\uExplorerSearchProviders.pas"/>
-			<DCCReference Include="Units\uExplorerPathProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerSearchProviders.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerPathProvider.pas"/>
 			<DCCReference Include="Units\uVCLHelpers.pas"/>
 			<DCCReference Include="uFormPersonSuggest.pas">
 				<Form>FormPersonSuggest</Form>
@@ -638,7 +638,7 @@
 			<DCCReference Include="uFormEditObject.pas">
 				<Form>FormEditObject</Form>
 			</DCCReference>
-			<DCCReference Include="Units\uExplorerPortableDeviceProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerPortableDeviceProvider.pas"/>
 			<DCCReference Include="Units\PortableDevices\uPortableClasses.pas"/>
 			<DCCReference Include="Units\PortableDevices\uWIAClasses.pas"/>
 			<DCCReference Include="Units\PortableDevices\uWIAInterfaces.pas"/>
@@ -694,7 +694,7 @@
 				<Form>PropertiesForm</Form>
 			</DCCReference>
 			<DCCReference Include="Units\uPhotoShelf.pas"/>
-			<DCCReference Include="Units\uExplorerShelfProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerShelfProvider.pas"/>
 			<DCCReference Include="Units\uXMLUtils.pas"/>
 			<DCCReference Include="Units\Share\uGoogleOAuth.pas"/>
 			<DCCReference Include="Units\Share\uPhotoShareInterfaces.pas"/>
@@ -720,6 +720,9 @@
 			<DCCReference Include="Units\uUninstallUtils.pas"/>
 			<DCCReference Include="Units\uInternetProxy.pas"/>
 			<DCCReference Include="Units\Styles\uVCLStylesOneLoadSpeedUp.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerDateStackProviders.pas"/>
+			<DCCReference Include="External\lcms2dll.pas"/>
+			<DCCReference Include="Units\uICCProfile.pas"/>
 			<RidlCompile Include="Units\WebJS\WebJS.ridl"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
@@ -786,12 +789,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile LocalName="bin\PhotoDB.rsm" Configuration="Debug" Class="DebugSymbols">
+					<DeployFile LocalName="bin\PhotoDB.rsm" Class="DebugSymbols" Configuration="Debug">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile LocalName="bin\PhotoDB.exe" Configuration="Debug" Class="ProjectOutput">
+					<DeployFile LocalName="bin\PhotoDB.exe" Class="ProjectOutput" Configuration="Debug">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">

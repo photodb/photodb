@@ -5,8 +5,11 @@ interface
 uses
   Windows,
   Classes,
+  {$IFNDEF EXTERNAL}
   uTranslate,
   uAssociations,
+  uPortableDeviceManager,
+  {$ENDIF}
   uMemory,
   uGOM,
   SyncObjs,
@@ -16,8 +19,8 @@ uses
   uTime,
   SysUtils,
   uSysUtils,
-  uDBCustomThread,
-  uPortableDeviceManager;
+  uDBCustomThread
+  ;
 
 type
   TDBThread = class(TDBCustomThread)
@@ -27,7 +30,9 @@ type
     FProcedure: TThreadProcedure;
     FCallResult: Boolean;
     FOwnerForm: TDBForm;
+    {$IFNDEF EXTERNAL}
     function GetSupportedExt: string;
+    {$ENDIF}
     procedure CallMethod;
     procedure CallProcedure;
   protected
@@ -36,7 +41,9 @@ type
     function GetThreadID: string; virtual;
     function SynchronizeEx(Method: TThreadMethod): Boolean; overload; virtual;
     function SynchronizeEx(Proc: TThreadProcedure): Boolean; overload; virtual;
+    {$IFNDEF EXTERNAL}
     property SupportedExt: string read GetSupportedExt;
+    {$ENDIF}
     property OwnerForm: TDBForm read FOwnerForm;
     procedure Execute; override;
   public
@@ -50,7 +57,7 @@ implementation
 
 function TDBThread.L(TextToTranslate: string): string;
 begin
-  Result := TA(TextToTranslate, GetThreadID);
+  Result := {$IFDEF EXTERNAL}TextToTranslate{$ELSE}TA(TextToTranslate, GetThreadID){$ENDIF};
 end;
 
 procedure TDBThread.CallMethod;
@@ -81,7 +88,9 @@ end;
 destructor TDBThread.Destroy;
 begin
   GOM.RemoveObj(Self);
+  {$IFNDEF EXTERNAL}
   ThreadCleanUp(ThreadID);
+  {$ENDIF}
   inherited;
 end;
 
@@ -90,6 +99,7 @@ begin
   DisableIME;
 end;
 
+{$IFNDEF EXTERNAL}
 function TDBThread.GetSupportedExt: string;
 begin
   if FSupportedExt = '' then
@@ -97,6 +107,7 @@ begin
 
   Result := FSupportedExt;
 end;
+{$ENDIF}
 
 function TDBThread.GetThreadID: string;
 begin
@@ -105,7 +116,7 @@ end;
 
 function TDBThread.L(TextToTranslate, Scope: string): string;
 begin
-  Result := TA(TextToTranslate, Scope);
+  Result := {$IFDEF EXTERNAL}TextToTranslate{$ELSE}TA(TextToTranslate, Scope){$ENDIF};
 end;
 
 function TDBThread.SynchronizeEx(Proc: TThreadProcedure): Boolean;

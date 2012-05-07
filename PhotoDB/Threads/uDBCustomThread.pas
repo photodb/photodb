@@ -7,19 +7,25 @@ uses
   Classes,
   SyncObjs,
   uSysUtils,
+  {$IFNDEF EXTERNAL}
   uThemesUtils,
+  {$ENDIF}
   uMemory;
 
 type
   TDBCustomThread = class(TThread)
   private
     FID: TGUID;
+  {$IFNDEF EXTERNAL}
     function GetTheme: TDatabaseTheme;
+  {$ENDIF}
   public
     constructor Create(CreateSuspended: Boolean);
     destructor Destroy; override;
     property UniqID: TGuid read FID;
+  {$IFNDEF EXTERNAL}
     property Theme: TDatabaseTheme read GetTheme;
+  {$ENDIF}
   end;
 
   TTDBThreadClass = class of TDBCustomThread;
@@ -247,10 +253,12 @@ begin
   inherited;
 end;
 
+{$IFNDEF EXTERNAL}
 function TDBCustomThread.GetTheme: TDatabaseTheme;
 begin
   Result := uThemesUtils.Theme;
 end;
+{$ENDIF}
 
 initialization
 

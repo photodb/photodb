@@ -3,7 +3,8 @@ unit uExplorerPathProvider;
 interface
 
 uses
-  uPathProviders, uTranslate;
+  uPathProviders,
+  uTranslate;
 
 type
   TExplorerPathProvider = class(TPathProvider)

@@ -712,7 +712,7 @@ end;
 function JPEGHeader(const JPEGFile: string;
   const MarkersToLookFor: TJPEGMarkers): IJPEGHeaderParser;
 begin
-  Result := JPEGHeader(TFileStream.Create(JPEGFile, fmOpenRead), MarkersToLookFor,
+  Result := JPEGHeader(TFileStream.Create(JPEGFile, fmOpenRead or fmShareDenyWrite), MarkersToLookFor,
     soOwned);
 end;
 

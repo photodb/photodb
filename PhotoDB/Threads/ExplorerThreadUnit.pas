@@ -64,7 +64,8 @@ uses
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
   uExplorerPortableDeviceProvider,
-  uPhotoShelf;
+  uPhotoShelf,
+  uICCProfile;
 
 type
   TExplorerThread = class(TMultiCPUThread)

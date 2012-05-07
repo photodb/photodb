@@ -28,8 +28,9 @@ type
   end;
 
 type
-  TShelfProvider = class(TPathProvider)
+  TShelfProvider = class(TExplorerPathProvider)
   public
+    function GetTranslateID: string; override;
     function Supports(Item: TPathItem): Boolean; override;
     function Supports(Path: string): Boolean; override;
     function CreateFromPath(Path: string): TPathItem; override;
@@ -87,6 +88,11 @@ function TShelfProvider.Supports(Item: TPathItem): Boolean;
 begin
   Result := Item is TShelfItem;
   Result := Result or Supports(Item.Path);
+end;
+
+function TShelfProvider.GetTranslateID: string;
+begin
+  Result := 'PhotoShelf';
 end;
 
 function TShelfProvider.InternalFillChildList(Sender: TObject; Item: TPathItem;

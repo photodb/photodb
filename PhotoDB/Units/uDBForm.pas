@@ -9,7 +9,9 @@ uses
   Forms,
   Types,
   Classes,
+  {$IFNDEF EXTERNAL}
   uTranslate,
+  {$ENDIF}
   Graphics,
   SyncObjs,
   Messages,
@@ -91,7 +93,9 @@ end;
 
 procedure TDBForm.BeginTranslate;
 begin
+  {$IFNDEF EXTERNAL}
   TTranslateManager.Instance.BeginTranslate;
+  {$ENDIF}
 end;
 
 constructor TDBForm.Create(AOwner: TComponent);
@@ -125,7 +129,9 @@ end;
 
 procedure TDBForm.EndTranslate;
 begin
+  {$IFNDEF EXTERNAL}
   TTranslateManager.Instance.EndTranslate;
+  {$ENDIF}
 end;
 
 procedure TDBForm.FixFormPosition;
@@ -247,7 +253,7 @@ end;
 
 function TDBForm.L(StringToTranslate: string; Scope: string): string;
 begin
-  Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope)
+  Result := {$IFDEF EXTERNAL}StringToTranslate{$ELSE}TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope){$ENDIF};
 end;
 
 function TDBForm.LF(StringToTranslate: string; Args: array of const): string;
@@ -291,7 +297,7 @@ end;
 
 function TDBForm.L(StringToTranslate: string): string;
 begin
-  Result := TTranslateManager.Instance.SmartTranslate(StringToTranslate, GetFormID);
+  Result := {$IFDEF EXTERNAL}StringToTranslate{$ELSE}TTranslateManager.Instance.SmartTranslate(StringToTranslate, GetFormID){$ENDIF};
 end;
 
 var
