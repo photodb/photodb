@@ -132,7 +132,7 @@ begin
       Date := MinDateTime;
 
       PI := CurrentItems[I];
-      if PI.IsDirectoty then
+      if PI.IsDirectory then
         FNextLevel.Add(PI.Copy)
       else
       begin
