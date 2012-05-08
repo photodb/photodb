@@ -65,7 +65,7 @@ uses
   uExplorerPersonsProvider,
   uExplorerPortableDeviceProvider,
   uPhotoShelf,
-  uICCProfile;
+  uImageLoader;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -171,7 +171,7 @@ type
     procedure DoLoadBigImages(LoadOnlyDBItems: Boolean);
     procedure GetAllFiles;
     procedure DoDefaultSort;
-    procedure ExtractImage(Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
+    procedure ExtractImage(Info: TDBPopupMenuInfoRecord; EncryptedFile: Boolean; FileID: TGUID);
     procedure ExtractDirectoryPreview(FileName: string; DirectoryID: TGUID);
     procedure ExtractBigPreview(FileName: string; ID: Integer; Rotated: Integer; FileGUID: TGUID);
     procedure DoMultiProcessorTask; override;
@@ -1372,9 +1372,8 @@ begin
   F(FInfo);
   FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
   FInfo.FileSize := FileSize;
-  FInfo.Crypted := CryptedFile;
+  FInfo.Encrypted := CryptedFile;
   FInfo.Tag := EXPLORER_ITEM_FOLDER;
-  FInfo.PassTag := 0;
   if not FUpdaterInfo.IsUpdater then
   begin
     if FindInQuery(FileName) then
@@ -1384,13 +1383,12 @@ begin
       FInfo.FileName := FileName;
       if ExplorerInfo.View = LV_THUMBS then
       begin
-        if FInfo.Crypted then
+        if FInfo.Encrypted then
         begin
           JPEG := TJpegImage.Create;
           DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum')), JPEG);
           FInfo.Image := JPEG;
-          if not FInfo.Image.Empty then
-            FInfo.PassTag := 1;
+          FInfo.IsImageEncrypted := not FInfo.Image.Empty;
         end else
         begin
           FInfo.Image := TJpegImage.Create;
@@ -2423,7 +2421,7 @@ begin
         begin
           NewInfo := TExplorerFileInfo.CreateFromFile(FUpdaterInfo.FileName);
           NewInfo.FileSize := GetFileSizeByName(FUpdaterInfo.FileName);
-          NewInfo.Crypted := ValidCryptGraphicFile(FUpdaterInfo.FileName);
+          NewInfo.Encrypted := ValidCryptGraphicFile(FUpdaterInfo.FileName);
           NewInfo.SID := FUpdaterInfo.SID;
         end;
         FFiles.Add(NewInfo);
@@ -2781,58 +2779,30 @@ begin
   FSender.DoStopLoading;
 end;
 
-procedure TExplorerThread.ExtractImage(Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
+procedure TExplorerThread.ExtractImage(Info: TDBPopupMenuInfoRecord; EncryptedFile: Boolean; FileID: TGUID);
 var
   W, H: Integer;
   Graphic: TGraphic;
-  GraphicClass: TGraphicClass;
-  Password: string;
   TempBit: TBitmap;
+  ImageInfo: ILoadImageInfo;
 begin
   F(TempBitmap);
+
   if Info.ID = 0 then
   begin
-    UpdateImageRecordFromExif(Info, False);
-
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
-    if GraphicClass = nil then
-      Exit;
-
-    Graphic := GraphicClass.Create;
+    Graphic := nil;
     try
-      if CryptedFile then
+      if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo) then
       begin
-        IsBigImage := True;
-        Info.Crypted := True;
-        Password := DBKernel.FindPasswordForCryptImageFile(Info.FileName);
-        if Password <> '' then
-        begin
-          F(Graphic);
-          Graphic := DeCryptGraphicFile(Info.FileName, Password);
-          if (Graphic <> nil) and not Graphic.Empty then
-            Info.PassTag := 1;
-        end else
-        begin
-          Info.PassTag := 0;
-        end;
-      end else
-      begin
-        if Graphic is TRAWImage then
-        begin
-          TRAWImage(Graphic).HalfSizeLoad := True;
-          if not (Graphic as TRAWImage).LoadThumbnailFromFile(Info.FileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
-            Graphic.LoadFromFile(Info.FileName)
-          else if Info.ID = 0 then
-            Info.Rotation := ExifDisplayButNotRotate(Info.Rotation);
-        end else
-          Graphic.LoadFromFile(Info.FileName);
-        IsBigImage := True;
-      end;
-      if not ((Info.PassTag = 0) and Info.Crypted) and not Graphic.Empty then
-      begin
+        Graphic := ImageInfo.ExtractGraphic;
+        Info.IsImageEncrypted := EncryptedFile and (Graphic <> nil) and not Graphic.Empty;
+        IsBigImage := (Graphic <> nil) and not Graphic.Empty;
+
+        ImageInfo.UpdateImageInfo(Info, False);
+
         Info.Width := Graphic.Width;
         Info.Height := Graphic.Height;
-        TempBit := TBitmap.create;
+        TempBit := TBitmap.Create;
         try
           TempBit.PixelFormat := pf24bit;
           JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
@@ -2841,6 +2811,7 @@ begin
 
           W := TempBit.Width;
           H := TempBit.Height;
+
           //Result picture
           TempBitmap := TBitmap.Create;
           TempBitmap.PixelFormat := pf24bit;
@@ -2852,6 +2823,7 @@ begin
             TempBitmap.PixelFormat := TempBit.PixelFormat;
             DoResize(W, H, TempBit, TempBitmap);
           end;
+          ImageInfo.AppllyICCProfile(TempBitmap);
         finally
           F(TempBit);
         end;
@@ -2865,20 +2837,24 @@ begin
     end;
   end else //if ID <> 0
   begin
-    UpdateImageGeoInfo(Info);
-    if not ((Info.PassTag = 0) and Info.Crypted) and not ((Info.Image = nil) or Info.Image.Empty) then
+    if LoadImageFromPath(Info, -1, '', [ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo) then
+      ImageInfo.UpdateImageGeoInfo(Info);
+
+    if not (not Info.IsImageEncrypted and Info.Encrypted) and not ((Info.Image = nil) or Info.Image.Empty) then
     begin
       TempBitmap := TBitmap.Create;
       AssignJpeg(TempBitmap, Info.Image);
+
+      if ImageInfo <> nil then
+        ImageInfo.AppllyICCProfile(TempBitmap);
+
     end else
-    begin
       TempBitmap := nil;
       //image -> loaded icon
-    end;
   end;
   F(Info.Image);
 
-  if not ((Info.PassTag = 0) and Info.Crypted) and (TempBitmap <> nil) then
+  if not (not Info.IsImageEncrypted and Info.Encrypted) and (TempBitmap <> nil) then
     ApplyRotate(TempBitmap, Info.Rotation);
 
   if (FThreadType = THREAD_TYPE_IMAGE) or (FOwnerThreadType = THREAD_TYPE_IMAGE) then

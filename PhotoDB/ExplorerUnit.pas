@@ -2406,7 +2406,7 @@ begin
         FFilesInfo[I].Loaded := True;
         FFilesInfo[I].Links := '';
         FFilesInfo[I].Include := Value.Include;
-        FFilesInfo[I].Crypted := Value.Crypt;
+        FFilesInfo[I].Encrypted := Value.Encrypted;
         if (FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap = nil) then
         begin
           Bit := TBitmap.Create;
@@ -2456,7 +2456,7 @@ begin
           if EventID_Param_Private in Params then
             FFilesInfo[I].Access := Value.Access;
           if EventID_Param_Crypt in Params then
-            FFilesInfo[I].Crypted := Value.Crypt;
+            FFilesInfo[I].Encrypted := Value.Encrypted;
           if EventID_Param_Rating in Params then
             FFilesInfo[I].Rating := Value.Rating;
           if EventID_Param_Date in Params then
@@ -4403,7 +4403,7 @@ begin
     FSelectedInfo.Id := Info.ID;
     FSelectedInfo.Rating := Info.Rating;
     FSelectedInfo.Access := Info.Access;
-    FSelectedInfo.Encrypted := Info.Crypted;
+    FSelectedInfo.Encrypted := Info.Encrypted;
     if Info.GeoLocation <> nil then
     begin
       FSelectedInfo.GeoLocation := TGeoLocation.Create;
@@ -7537,7 +7537,7 @@ begin
         FSelectedInfo.FileType := Info.FileType;
         FileName := Info.FileName;
         FSelectedInfo.FileName := Info.FileName;
-        FSelectedInfo.Encrypted := Info.Crypted;
+        FSelectedInfo.Encrypted := Info.Encrypted;
         FSelectedInfo.Date := Info.Date;
         FSelectedInfo.Time := Info.Time;
         FileSID := Info.SID;
@@ -9087,7 +9087,7 @@ begin
 
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.ExistedFileName,
-    Info.Rating, Info.Rotation, Info.Access, Info.Crypted, Info.Include, Exists, True);
+    Info.Rating, Info.Rotation, Info.Access, Info.Encrypted, Info.Include, Exists, True);
 
   if Info.GeoLocation <> nil then
     DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1], 16, 16, 0, 0, DI_NORMAL);

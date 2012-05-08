@@ -657,7 +657,7 @@ begin
 
   JPEG := TJPEGImage.Create;
   try
-    if SearchData.Crypted then
+    if SearchData.Encrypted then
     begin
       PassWord := DBKernel.FindPasswordForCryptBlobStream(S.FieldByName('thum'));
       if PassWord <> '' then

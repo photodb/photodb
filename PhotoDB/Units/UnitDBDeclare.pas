@@ -146,7 +146,7 @@ type
     JPEGImage: TJpegImage;
     Collection: string;
     Owner: string;
-    Crypt: Boolean;
+    Encrypted: Boolean;
     Include: Boolean;
     Links: string;
     Data: TObject;
@@ -266,6 +266,7 @@ type
     function GetInnerImage: Boolean;
     function GetExistedFileName: string;
     function GetFileNameCRC: Cardinal;
+    function GetHasImage: Boolean;
   protected
     function InitNewInstance: TDBPopupMenuInfoRecord; virtual;
   public
@@ -285,7 +286,7 @@ type
     IsTime: Boolean;
     Groups: string;
     KeyWords: string;
-    Crypted: Boolean;
+    Encrypted: Boolean;
     Attr: Integer;
     InfoLoaded: Boolean;
     Include: Boolean;
@@ -296,7 +297,7 @@ type
     Data: TClonableObject;
     Image: TJpegImage;
     Tag: Integer;
-    PassTag: Integer;
+    IsImageEncrypted: Boolean;
     constructor Create;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromFile(FileName: string);
@@ -313,6 +314,7 @@ type
     //lower case
     property FileNameCRC: Cardinal read GetFileNameCRC;
     property GeoLocation: TGeoLocation read FGeoLocation;
+    property HasImage: Boolean read GetHasImage;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
@@ -391,14 +393,14 @@ begin
   Time := Item.Time;
   IsDate := Item.IsDate;
   IsTime := Item.IsTime;
-  Crypted := Item.Crypted;
+  Encrypted := Item.Encrypted;
   KeyWords := Item.KeyWords;
   InfoLoaded := Item.InfoLoaded;
   Include := Item.Include;
   Links := Item.Links;
   Selected := Item.Selected;
   Tag := Item.Tag;
-  PassTag := Item.PassTag;
+  IsImageEncrypted := Item.IsImageEncrypted;
   Width := Item.Width;
   Height := Item.Height;
   Exists := Item.Exists;
@@ -426,7 +428,7 @@ end;
 constructor TDBPopupMenuInfoRecord.Create;
 begin
   FFileNameCRC32 := 0;
-  PassTag := 0;
+  IsImageEncrypted := False;
   Tag := 0;
   ID := 0;
   FOriginalFileName := '';
@@ -441,7 +443,7 @@ begin
   Time := 0;
   IsDate := False;
   IsTime := False;
-  Crypted := False;
+  Encrypted := False;
   KeyWords := '';
   InfoLoaded := False;
   Include := False;
@@ -497,6 +499,11 @@ begin
   if FFileNameCRC32 = 0 then
     FFileNameCRC32 := StringCRC(AnsiLowerCase(FileName));
   Result := FFileNameCRC32;
+end;
+
+function TDBPopupMenuInfoRecord.GetHasImage: Boolean;
+begin
+  Result := (Image <> nil) and not Image.Empty;
 end;
 
 function TDBPopupMenuInfoRecord.GetInnerImage: Boolean;
@@ -557,11 +564,7 @@ begin
     Height := DA.Height;
 
     ThumbField := DA.Thumb;
-    if ThumbField <> nil then
-      Crypted := ValidCryptBlobStreamJPG(ThumbField)
-    else
-      Crypted := False;
-
+    Encrypted := (ThumbField <> nil) and ValidCryptBlobStreamJPG(ThumbField);
     Include := DA.Include;
     Links := DA.Links;
 

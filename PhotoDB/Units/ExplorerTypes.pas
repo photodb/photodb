@@ -190,7 +190,7 @@ type
   end;
 
 function AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
-  SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: string; Date: TDateTime; IsDate, Crypted, Include: Boolean): TExplorerFileInfo;
+  SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: string; Date: TDateTime; IsDate, Encrypted, Include: Boolean): TExplorerFileInfo;
 
 type
   TStringsHistoryW = class(TObject)
@@ -477,7 +477,7 @@ begin
   FSaveFoldersToDB := Value;
 end;
 
-function AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: String; FileType, ImageIndex: Integer; SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: String; Date: TDateTime; IsDate, Crypted, Include: Boolean): TExplorerFileInfo;
+function AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: String; FileType, ImageIndex: Integer; SID: TGUID; ID, Rating, Rotate, Access: Integer; FileSize: Int64; Comment, KeyWords, Groups: String; Date: TDateTime; IsDate, Encrypted, Include: Boolean): TExplorerFileInfo;
 var
   Info: TExplorerFileInfo;
 begin
@@ -496,7 +496,7 @@ begin
   Info.Date := Date;
   Info.IsDate := IsDate;
   Info.Groups := Groups;
-  Info.Crypted := Crypted;
+  Info.Encrypted := Encrypted;
   Info.Loaded := False;
   Info.Include := Include;
   Info.IsBigImage := False;

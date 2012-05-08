@@ -952,7 +952,7 @@ begin
     CurrentFileNumber := 0;
   FCurrentPage := 0;
   if SlideShowNow then
-    if Item.Crypted or ValidCryptGraphicFile(Item.FileName)  then
+    if Item.Encrypted or ValidCryptGraphicFile(Item.FileName)  then
       if DBKernel.FindPasswordForCryptImageFile(Item.FileName) = '' then
         Exit;
   if not SlideShowNow then
@@ -1315,9 +1315,9 @@ begin
     FullScreen1.Visible := not(FullScreenNow or SlideShowNow);
     SlideShow1.Visible := not(FullScreenNow or SlideShowNow);
     begin
-      AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Crypted and not FolderView and not IsDevicePath(Item.FileName);
+      AddToDB1.Visible := AddToDB1.Visible and not(SlideShowNow or FullScreenNow) and not Item.Encrypted and not FolderView and not IsDevicePath(Item.FileName);
       DBItem1.Visible := not(SlideShowNow or FullScreenNow) and (Item.ID <> 0)  and not IsDevicePath(Item.FileName);
-      SetasDesktopWallpaper1.Visible := not(SlideShowNow) and ImageExists and not Item.Crypted and IsWallpaper(Item.FileName) and not IsDevicePath(Item.FileName);
+      SetasDesktopWallpaper1.Visible := not(SlideShowNow) and ImageExists and not Item.Encrypted and IsWallpaper(Item.FileName) and not IsDevicePath(Item.FileName);
       Rotate1.Visible := not(SlideShowNow) and ImageExists  and not IsDevicePath(Item.FileName);
       Properties1.Visible := not(SlideShowNow or FullScreenNow);
       GoToSearchWindow1.Visible := not(SlideShowNow);
@@ -1499,7 +1499,7 @@ begin
         CurrentInfo[I].IsDate := True;
         CurrentInfo[I].IsTime := Value.IsTime;
         CurrentInfo[I].InfoLoaded := True;
-        CurrentInfo[I].Crypted := Value.Crypt;
+        CurrentInfo[I].Encrypted := Value.Encrypted;
         CurrentInfo[I].Links := '';
 
         if I = CurrentFileNumber then
@@ -1523,7 +1523,7 @@ begin
           CurrentInfo[I].IsTime := Value.IsTime;
         if EventID_Param_Crypt in Params then
         begin
-          CurrentInfo[I].Crypted := Value.Crypt;
+          CurrentInfo[I].Encrypted := Value.Encrypted;
           UpdateCrypted;
         end;
         if EventID_Param_Groups in Params then
@@ -1565,7 +1565,7 @@ begin
       for I := 0 to CurrentInfo.Count - 1 do
         if AnsiLowerCase(CurrentInfo[I].FileName) = AnsiLowerCase(Value.NewName) then
         begin
-          CurrentInfo[I].Crypted := Value.Crypt;
+          CurrentInfo[I].Encrypted := Value.Encrypted;
           UpdateCrypted;
         end;
     end;
@@ -1654,7 +1654,7 @@ begin
       begin
         InfoItem := TDBPopupMenuInfoRecord.Create;
         InfoItem.FileName := FileName;
-        InfoItem.Crypted := ValidCryptGraphicFile(FileName);
+        InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
         InfoItem.InfoLoaded := True;
         CurrentInfo.Add(InfoItem);
       end;
@@ -1740,7 +1740,7 @@ begin
   Info:= TDBPopupMenuInfo.Create;
   try
     InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
-    InfoItem.Crypted := ValidCryptGraphicFile(FileName);
+    InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
     Info.Add(InfoItem);
     Execute(nil, Info);
   finally
@@ -1759,7 +1759,7 @@ begin
     for I := 0 to Files.Count - 1 do
     begin
       InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(Files[I]);
-      InfoItem.Crypted := ValidCryptGraphicFile(Files[I]);
+      InfoItem.Encrypted := ValidCryptGraphicFile(Files[I]);
       Info.Add(InfoItem);
     end;
     Info.Position := CurrentN;
@@ -2043,7 +2043,7 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     InfoItem:= TDBPopupMenuInfoRecord.CreateFromFile(FileName);
-    InfoItem.Crypted := ValidCryptGraphicFile(FileName);
+    InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
     Info.Add(InfoItem);
     ExecuteW(Self, Info, '');
     Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',
@@ -3910,7 +3910,7 @@ end;
 procedure TViewer.UpdateCrypted;
 begin
   TbEncrypt.Enabled := StaticPath(Item.FileName) and not IsDevicePath(Item.FileName);;
-  if Item.Crypted then
+  if Item.Encrypted then
     TbEncrypt.ImageIndex := 24
   else
     TbEncrypt.ImageIndex := 23;
@@ -4147,8 +4147,8 @@ begin
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
-    Item.Crypted := ValidCryptGraphicFile(Item.FileName);
-    if not Item.Crypted then
+    Item.Encrypted := ValidCryptGraphicFile(Item.FileName);
+    if not Item.Encrypted then
       EncryptPhohos(Self, L('photo'), Info)
     else if ID_OK = MessageBoxDB(Handle, L('Do you really want to decrypt this file?'), L('Decrypt confirmation'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then

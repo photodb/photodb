@@ -119,7 +119,7 @@ var
       Table.Edit;
       if Info.Jpeg <> nil then
       begin
-        if Info.Crypt or Crypting then
+        if Info.Encrypted or Crypting then
         begin
           MS := TMemoryStream.Create;
           try

@@ -135,6 +135,10 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -267,6 +271,10 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -479,6 +487,10 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -516,6 +528,13 @@ object OptionsForm: TOptionsForm
         Width = 71
         Height = 13
         Caption = 'Detection size:'
+      end
+      object LbDisplayICCProfile: TLabel
+        Left = 8
+        Top = 345
+        Width = 88
+        Height = 13
+        Caption = 'Display ICC Profile'
       end
       object TrackBar1: TTrackBar
         Left = 3
@@ -622,10 +641,22 @@ object OptionsForm: TOptionsForm
         Caption = 'Red-cyan glasses for stereo images'
         TabOrder = 9
       end
+      object CbDisplayICCProfile: TComboBox
+        Left = 3
+        Top = 364
+        Width = 237
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 10
+      end
     end
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -882,6 +913,10 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         497
         413)
@@ -1358,6 +1393,10 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         497
         413)

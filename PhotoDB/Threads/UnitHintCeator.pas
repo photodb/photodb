@@ -39,7 +39,8 @@ uses
   uAssociations,
   uDBThread,
   uConstants,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  uImageLoader;
 
 type
   THintCeator = class(TDBThread)
@@ -106,11 +107,10 @@ end;
 
 procedure THintCeator.Execute;
 var
-  GraphicClass: TGraphicClass;
-  Crypted: Boolean;
-  FilePass: string;
+  Password: string;
   Bitmap, FB: TBitmap;
   FW, FH: Integer;
+  ImageInfo: ILoadImageInfo;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -120,59 +120,29 @@ begin
     if not IsDevicePath(FInfo.FileName) and not FInfo.FileExists then
       Exit;
 
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
-    if GraphicClass = nil then
+    Password := '';
+    if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
+    begin
+      Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+      if Password = '' then
+        Exit;
+    end;
+
+    if not CheckThreadState then
       Exit;
 
-    Graphic := GraphicClass.Create;
+    Graphic := nil;
     try
-      InitGraphic(Graphic);
-      Crypted := False;
-      FilePass := '';
-      if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
-      begin
-        Crypted := True;
-        FilePass := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
-        if FilePass = '' then
-          Exit;
-      end;
+      if not LoadImageFromPath(FInfo, -1, Password, [ilfGraphic, ilfICCProfile, ilfEXIF], ImageInfo) then
+        Exit;
+
+      Graphic := ImageInfo.ExtractGraphic;
 
       if not CheckThreadState then
         Exit;
 
       if FInfo.FileSize = 0 then
         FInfo.FileSize := GetFileSizeByName(FInfo.FileName);
-
-      if not CheckThreadState then
-        Exit;
-
-      if Crypted then
-      begin
-        F(Graphic);
-        Graphic := DeCryptGraphicFile(FInfo.FileName, FilePass);
-        if Graphic = nil then
-          Exit;
-      end else
-      begin
-        if Graphic is TRAWImage then
-            TRAWImage(Graphic).HalfSizeLoad := True;
-        if not IsDevicePath(FInfo.FileName) then
-        begin
-          if Graphic is TRAWImage then
-          begin
-            if not (Graphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThHintSize, ThHintSize) then
-              Graphic.LoadFromFile(FInfo.FileName)
-            else if FInfo.ID = 0 then
-              FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation)
-          end else
-          begin
-            if not FInfo.InnerImage then
-              Graphic.LoadFromFile(FInfo.FileName);
-
-          end;
-        end else
-          Graphic.LoadFromDevice(FInfo.FileName);
-      end;
 
       if not CheckThreadState then
         Exit;
@@ -224,6 +194,11 @@ begin
               Exit;
 
             ApplyRotate(FB, FInfo.Rotation);
+
+            if not CheckThreadState then
+              Exit;
+
+            ImageInfo.AppllyICCProfile(FB);
 
             if not CheckThreadState then
               Exit;

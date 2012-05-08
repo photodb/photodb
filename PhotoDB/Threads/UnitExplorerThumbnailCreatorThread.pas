@@ -40,7 +40,8 @@ uses
   uThemesUtils,
   uConstants,
   uShellThumbnails,
-  uAssociatedIcons;
+  uAssociatedIcons,
+  uImageLoader;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)
@@ -85,6 +86,7 @@ procedure TExplorerThumbnailCreator.Execute;
 var
   W, H: Integer;
   Password: string;
+  ImageInfo: ILoadImageInfo;
   GraphicClass: TGraphicClass;
   ShadowImage: TBitmap;
   Data: TObject;
@@ -165,10 +167,12 @@ begin
         FInfo.Image := TJPEGImage.Create;
         try
           GetInfoByFileNameA(FInfo.FileName, True, FInfo);
-          UpdateImageGeoInfo(FInfo);
 
-          if (FInfo.Image <> nil) and not FInfo.Image.Empty then
+          if FInfo.HasImage then
           begin
+            if LoadImageFromPath(FInfo, -1, Password, [ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
+              ImageInfo.UpdateImageGeoInfo(FInfo);
+
             if (FInfo.Image.Width > ThSizeExplorerPreview) or (FInfo.Image.Height > ThSizeExplorerPreview) then
             begin
               TempBit := TBitmap.Create;
@@ -183,6 +187,9 @@ begin
                   FBit.PixelFormat := pf24bit;
                   DoResize(W, H, TempBit, Fbit);
                   F(TempBit);
+                  if ImageInfo <> nil then
+                    ImageInfo.AppllyICCProfile(Fbit);
+
                   ShadowImage := TBitmap.Create;
                   try
                     DrawShadowToImage(ShadowImage, Fbit);
@@ -218,43 +225,22 @@ begin
             ApplyRotate(TempBitmap, FInfo.Rotation);
           end else
           begin
-            UpdateImageRecordFromExif(FInfo, False);
             DoProcessPath(FInfo.FileName);
-            if FolderView then
-            if not FileExistsSafe(FInfo.FileName) then
+            if FolderView and not FileExistsSafe(FInfo.FileName) then
               FInfo.FileName := ProgramDir + FInfo.FileName;
 
             if not (FileExistsSafe(FInfo.FileName) or not IsGraphicFile(FInfo.FileName)) then
               Exit;
 
-            GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FInfo.FileName));
-            if GraphicClass = nil then
-              Exit;
-
-            FGraphic := GraphicClass.Create;
+            FGraphic := nil;
             try
-              if ValidCryptGraphicFile(FInfo.FileName) then
-              begin
-                FInfo.Crypted := True;
-                Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+              if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
+                Exit;
 
-                if Password <> '' then
-                begin
-                  F(FGraphic);
-                  FGraphic := DeCryptGraphicFile(FInfo.FileName, Password)
-                end else
-                  Exit;
-              end else
-              begin
-                if FGraphic is TRAWImage then
-                begin
-                  if not(FGraphic as TRAWImage).LoadThumbnailFromFile(FInfo.FileName, ThSizeExplorerPreview, ThSizeExplorerPreview) then
-                    FGraphic.LoadFromFile(FInfo.FileName)
-                  else
-                    FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation);
-                end else
-                  FGraphic.LoadFromFile(FInfo.FileName);
-              end;
+              ImageInfo.UpdateImageGeoInfo(FInfo);
+              ImageInfo.UpdateImageInfo(FInfo, False);
+
+              FGraphic := ImageInfo.ExtractGraphic;
 
               if (FGraphic = nil) or FGraphic.Empty then
                 Exit;
@@ -271,6 +257,9 @@ begin
 
                   LoadImageX(FGraphic, TempBit, Theme.PanelColor);
                   F(FGraphic);
+
+                  ImageInfo.AppllyICCProfile(TempBit);
+
                   W := TempBit.Width;
                   H := TempBit.Height;
                   FBit.PixelFormat := TempBit.PixelFormat;
@@ -296,6 +285,7 @@ begin
               finally
                 F(FBit);
               end;
+
             finally
               F(FGraphic);
             end;
@@ -328,7 +318,7 @@ var
 begin
   Exists := 1;
   DrawAttributes(TempBitmap, ThSizeExplorerPreview, FInfo.Rating, FInfo.Rotation, FInfo.Access,
-    FInfo.FileName, FInfo.Crypted, Exists, FInfo.ID);
+    FInfo.FileName, FInfo.Encrypted, Exists, FInfo.ID);
 end;
 
 procedure TExplorerThumbnailCreator.SetImage;

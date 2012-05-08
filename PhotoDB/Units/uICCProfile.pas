@@ -126,7 +126,6 @@ begin
     if IsICCInitialized then
       Exit(IsICCEnabled);
 
-    IsICCInitialized := True;
     lcmsHandle := LoadLibrary('lcms2.dll');
     if lcmsHandle = 0 then
     begin
@@ -148,6 +147,8 @@ begin
 
     //first IntentCode is used, so it should exists
     Result := SupportedIntents > 0;
+
+    IsICCInitialized := True;
   finally
     FSync.Leave;
   end;
@@ -231,14 +232,14 @@ end;
 
 function ConvertBitmapToDisplayICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; SourceMem: Pointer; MemSize: Cardinal; SourceICCProfileName: string; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 begin
+  if DisplayProfileName = '' then
+    Exit(False);
+
   if (SourceICCProfileName = '') and (SourceMem = nil) then
     Exit(False);
 
   if not InitICCProfiles then
     Exit(False);
-
-  if DisplayProfileName = '' then
-    DisplayProfileName := DEFAULT_ICC_DISPLAY_PROFILE;
 
   Result := ConvertBitmapICCProfile(ThreadContext, Bitmap, SourceMem, MemSize, SourceICCProfileName, DisplayProfileName);
 end;

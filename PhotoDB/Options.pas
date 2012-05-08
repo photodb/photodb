@@ -67,7 +67,9 @@ uses
   Vcl.Styles.Utils,
   uBaseWinControl,
   WatermarkedEdit,
-  ShellNotify;
+  uICCProfile,
+  ShellNotify,
+  uVCLHelpers;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm)
@@ -226,6 +228,8 @@ type
     LbProxyPassword: TLabel;
     WebProxyPassword: TWatermarkedEdit;
     SnStyles: TShellNotification;
+    LbDisplayICCProfile: TLabel;
+    CbDisplayICCProfile: TComboBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -345,6 +349,7 @@ var
   I, Size: Integer;
   Reg: TBDRegistry;
   S: TStrings;
+  DisplayICCProfile,
   FCaption, EXEFile, Params, Icon: string;
   UseSubMenu: Boolean;
 begin
@@ -407,6 +412,13 @@ begin
         CbDetectionSize.ItemIndex := I;
 
     CbRedCyanStereo.Checked := Settings.ReadString('Options', 'StereoMode', '') <> '';
+
+    DisplayICCProfile := Settings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
+
+    CbDisplayICCProfile.Items.Add(L('Don''t use ICC profile'));
+    FillDisplayProfileList(CbDisplayICCProfile.Items);
+
+    CbDisplayICCProfile.Value := DisplayICCProfile;
   end;
   if NewTab = 5 then
   begin
@@ -714,6 +726,7 @@ begin
     Settings.WriteInteger('Options', 'FaceDetectionSize', Integer(CbDetectionSize.Items.Objects[CbDetectionSize.ItemIndex]));
     Settings.WriteString('Options', 'StereoMode', IIF(CbRedCyanStereo.Checked, 'RedCyan', ''));
 
+    Settings.WriteString('Options', 'DisplayICCProfileName', IIF(CbDisplayICCProfile.ItemIndex = 0, '-', CbDisplayICCProfile.Value));
   end;
 
   Settings.ClearCache;
@@ -943,6 +956,8 @@ begin
     LbProxyPassword.Caption := L('Password') + ':';
     WebProxyUserName.WatermarkText := L('User name');
     WebProxyPassword.WatermarkText := L('Password');
+
+    LbDisplayICCProfile.Caption := L('Display ICC profile');
   finally
     EndTranslate;
   end;

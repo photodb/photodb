@@ -836,7 +836,7 @@ begin
    Exit;
 
   try
-    ValidCryptGraphicStream(FS);
+    Result := ValidCryptGraphicStream(FS);
   finally
     F(FS);
   end;

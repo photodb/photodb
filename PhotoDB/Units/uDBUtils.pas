@@ -954,7 +954,7 @@ begin
       SetStrParam(Table, Next, Res.ImTh);
       SetIntParam(Table, Next, Integer(StringCRC(Res.ImTh)));
       // if crypted file not password entered
-      if Res.Crypt or (Res.Password <> '') then
+      if Res.Encrypted or (Res.Password <> '') then
       begin
         MS := TMemoryStream.Create;
         try
@@ -1269,7 +1269,7 @@ begin
   if ADBJpegCompressionQuality = 0 then
     ADBJpegCompressionQuality := DBJpegCompressionQuality;
 
-  Result.Crypt := False;
+  Result.Encrypted := False;
   Result.Password := '';
   Result.ImTh := '';
   Result.Count := 0;
@@ -1283,7 +1283,7 @@ begin
   try
     try
       LoadGraphic(FileName, G, IsEncrypted, PassWord);
-      Result.Crypt := IsEncrypted;
+      Result.Encrypted := IsEncrypted;
       Result.Password := Password;
       if G = nil then
         Exit;
@@ -1503,7 +1503,7 @@ begin
       begin
         DeCryptBlobStreamJPG(FQuery.FieldByName('thum'),
           DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum')), Info.Image);
-        Info.Crypted := True;
+        Info.Encrypted := True;
         if (Info.Image <> nil) and (not Info.Image.Empty) then
           Info.Tag := 1;
 

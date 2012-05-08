@@ -314,7 +314,7 @@ var
       Info.Groups := Groups;
       ProcessGroups(Info, ExifGroups);
 
-      if SQL_AddFileToDB(Info.FileName, Res.Crypt, Res.Jpeg, Res.ImTh, Info.KeyWords,
+      if SQL_AddFileToDB(Info.FileName, Res.Encrypted, Res.Jpeg, Res.ImTh, Info.KeyWords,
         Info.Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, Info.Include, Info.Rating,
         Info.Rotation, Info.Links, Info.Access, Info.Groups) then
       begin
@@ -777,7 +777,7 @@ begin
   EventInfo.Image := nil;
   EventInfo.Groups := Info.Groups;
   EventInfo.JPEGImage := Res.Jpeg;
-  EventInfo.Crypt := Res.Crypt;
+  EventInfo.Encrypted := Res.Encrypted;
   EventInfo.Include := Info.Include;
   DBKernel.DoIDEvent(FSender.Form, LastInseredID, [SetNewIDFileData], EventInfo);
   if Res.Jpeg <> nil then
@@ -806,7 +806,7 @@ begin
   EventInfo.Image := nil;
   EventInfo.Groups := Info.Groups;
   EventInfo.JPEGImage := Res.Jpeg;
-  EventInfo.Crypt := Res.Crypt;
+  EventInfo.Encrypted := Res.Encrypted;
   EventInfo.Include := True;
   DBKernel.DoIDEvent(FSender.Form, LastInseredID, [EventID_FileProcessed], EventInfo);
 end;

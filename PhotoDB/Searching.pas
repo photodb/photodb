@@ -1238,7 +1238,7 @@ begin
   DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
                      FBitmapImageList, Y,
                      True, Data.ID, Data.ExistedFileName, Data.Rating, Data.Rotation,
-                     Data.Access, Data.Crypted, Data.Include, Data.Exists, False, CustomInfo);
+                     Data.Access, Data.Encrypted, Data.Include, Data.Exists, False, CustomInfo);
 
 end;
 {$ENDREGION}
@@ -1983,7 +1983,7 @@ begin
     if SearchRecord.ID = ID then
     begin
       if EventID_Param_Private in params then SearchRecord.Access := Value.Access;
-      if EventID_Param_Crypt in params then SearchRecord.Crypted := Value.Crypt;
+      if EventID_Param_Crypt in params then SearchRecord.Encrypted := Value.Encrypted;
       if EventID_Param_Include in params then
       begin
         SearchRecord.Include := Value.Include;

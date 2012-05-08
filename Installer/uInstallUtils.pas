@@ -83,30 +83,8 @@ begin
 end;
 
 function IsApplicationInstalled: Boolean;
-var
-  Func: TBooleanFunction;
-  H: Thandle;
-  ProcH: Pointer;
-  FileName: string;
 begin
-  Result := False;
-  FileName := GetInstalledFileName;
-  if FileExists(FileName) then
-  begin
-    H := LoadLibrary(PChar(FileName));
-    if H <> 0 then
-    begin
-      ProcH := GetProcAddress(H, 'IsFalidDBFile');
-      if ProcH <> nil then
-      begin
-        @Func := ProcH;
-        if Func then
-          if FileExists(IncludeTrailingBackslash(ExtractFileDir(FileName)) + 'Kernel.dll') then
-            Result := True;
-      end;
-      FreeLibrary(H);
-    end;
-  end;
+  Result := FileExists(GetInstalledFileName);
 end;
 
 function GetRCDATAResourceStream(ResName : string; MS : TMemoryStream) : Boolean;

@@ -180,7 +180,7 @@ begin
   else
     Inc(Sm, 20);
   end;
-  if FInfo.Crypted then
+  if FInfo.Encrypted then
   begin
     Dec(Sm, 20);
     DoDrawIcon(Sm, Y, DB_IC_KEY);

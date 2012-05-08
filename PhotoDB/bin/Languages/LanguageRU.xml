@@ -1798,6 +1798,8 @@
 	<translate name="Proxy authorisation" value="Авторизация прокси"/>
 	<translate name="User name" value="Имя пользователя"/>
 	<translate name="Password" value="Пароль"/>
+	<translate name="Display ICC profile" value="ICC профиль для отображения"/>
+	<translate name="Don't use ICC profile" value="Не использовать ICC профиль"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>

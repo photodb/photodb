@@ -77,12 +77,14 @@ function GetExifRating(FileName: string): Integer; overload;
 function GetExifRating(ExifData: TExifData): Integer; overload;
 function GetExifRotate(FileName: string): Integer;
 function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+function UpdateImageRecordFromExifData(Info: TDBPopupMenuInfoRecord; ExifData: TExifData; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean; overload;
 function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean; overload;
 function CreateRating(Rating: Integer): TWindowsStarRating;
 function CreateOrientation(Rotation: Integer): TExifOrientation;
 function CanSaveEXIF(FileName: string): Boolean;
 function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation; RaiseException: Boolean = False): Boolean;
+function UpdateImageGeoInfoFromExif(Info: TDBPopupMenuInfoRecord; ExifData: TExifData): Boolean;
 function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
 procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
 procedure FixEXIFForJpegStream(Exif: TExifData; Stream: TStream; Width, Height: Integer);
@@ -152,6 +154,21 @@ begin
     Result := -Result;
 end;
 
+function UpdateImageGeoInfoFromExif(Info: TDBPopupMenuInfoRecord; ExifData: TExifData): Boolean;
+begin
+  Result := False;
+
+  if not Settings.Exif.ReadInfoFromExif then
+    Exit;
+
+  if not ExifData.Empty then
+  begin
+    if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
+      Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
+    Result := True;
+  end;
+end;
+
 function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
 var
   ExifData: TExifData;
@@ -168,14 +185,11 @@ begin
       ExifData := TExifData.Create;
       try
         ExifData.LoadFromFileEx(Info.FileName);
-        if not ExifData.Empty then
-        begin
-          if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
-            Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
-        end;
+        Result := UpdateImageGeoInfoFromExif(Info, ExifData);
       finally
         F(ExifData);
       end;
+
     except
       on e: Exception do
       begin
@@ -183,81 +197,105 @@ begin
         Result := False;
       end;
     end;
-    Result := True;
+
   finally
     SetErrorMode(OldMode);
+  end;
+end;
+
+function CanReadExifInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+begin
+  Result := False;
+
+  if IsDevicePath(Info.FileName) then
+    Exit;
+
+  if (Info.Rating > 0) and (Info.Rotation <> DB_IMAGE_ROTATE_0) then
+    Exit; //nothing to update
+
+  if not Settings.Exif.ReadInfoFromExif then
+    Exit;
+
+  Result := True;
+end;
+
+function UpdateImageRecordFromExifData(Info: TDBPopupMenuInfoRecord; ExifData: TExifData; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+var
+  Rating, Rotation: Integer;
+begin
+  Result := False;
+
+  if not CanReadExifInfo(Info) then
+    Exit;
+
+  if not ExifData.Empty then
+  begin
+    Result := True;
+
+    if Info.Rating <= 0 then
+    begin
+      Rating := GetExifRating(ExifData);
+      if IsDBValues then
+        Info.Rating := Rating
+      else
+        Info.Rating := - 10 * Rating;
+    end;
+
+    if Info.Rotation <= DB_IMAGE_ROTATE_0 then
+    begin
+      Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
+      if IsDBValues then
+        Info.Rotation := Rotation
+      else
+        Info.Rotation := - 10 * Rotation;
+    end;
+
+    if Info.KeyWords = '' then
+      Info.KeyWords := ExifData.Keywords;
+
+    if Info.Comment = '' then
+      Info.Comment := ExifData.Comments;
+
+    if LoadGroups then
+      Info.Groups := ExifData.XMPPacket.Groups;
+
+    if Info.Links = '' then
+      Info.Links := ExifData.XMPPacket.Links;
+
+    if Info.Access = 0 then
+    begin
+      if IsDBValues then
+        Info.Access := ExifData.XMPPacket.Access
+      else
+        Info.Access := -10 * ExifData.XMPPacket.Access;
+    end;
+
+    if Info.Include then
+      Info.Include := ExifData.XMPPacket.Include;
+
+    if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
+      Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
   end;
 end;
 
 function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 var
   ExifData: TExifData;
-  Rating, Rotation: Integer;
   OldMode: Cardinal;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     Result := False;
 
-    if (Info.Rating > 0) and (Info.Rotation <> DB_IMAGE_ROTATE_0) then
-      Exit; //nothing to update
-
-    if not Settings.Exif.ReadInfoFromExif then
-      Exit;
-
-    if IsDevicePath(Info.FileName) then
+    if not CanReadExifInfo(Info) then
       Exit;
 
     try
       ExifData := TExifData.Create;
       try
         ExifData.LoadFromFileEx(Info.FileName);
-        if not ExifData.Empty then
-        begin
-          if Info.Rating <= 0 then
-          begin
-            Rating := GetExifRating(ExifData);
-            if IsDBValues then
-              Info.Rating := Rating
-            else
-              Info.Rating := - 10 * Rating;
-          end;
 
-          if Info.Rotation <= DB_IMAGE_ROTATE_0 then
-          begin
-            Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
-            if IsDBValues then
-              Info.Rotation := Rotation
-            else
-              Info.Rotation := - 10 * Rotation;
-          end;
-
-          if Info.KeyWords = '' then
-            Info.KeyWords := ExifData.Keywords;
-
-          if Info.Comment = '' then
-            Info.Comment := ExifData.Comments;
-
-          if LoadGroups then
-            Info.Groups := ExifData.XMPPacket.Groups;
-
-          if Info.Links = '' then
-            Info.Links := ExifData.XMPPacket.Links;
-
-          if Info.Access = 0 then
-          begin
-            if IsDBValues then
-              Info.Access := ExifData.XMPPacket.Access
-            else
-              Info.Access := -10 * ExifData.XMPPacket.Access;
-          end;
-
-          if Info.Include then
-            Info.Include := ExifData.XMPPacket.Include;
-
-          if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
-            Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
-        end;
+        UpdateImageRecordFromExifData(Info, ExifData);
       finally
         F(ExifData);
       end;

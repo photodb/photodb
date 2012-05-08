@@ -138,11 +138,12 @@ begin
     ImageInfo := nil;
     try
 
-      LoadFlags := [ilfICCProfile, ilfEXIFRotate];
+      LoadFlags := [ilfGraphic, ilfICCProfile, ilfEXIF];
       if FFullImage then
         LoadFlags := LoadFlags + [ilfFullRAW];
+
       try
-        if not LoadImageFromPath(FInfo.FileName, FPage, Password, LoadFlags, ImageInfo) then
+        if not LoadImageFromPath(FInfo, FPage, Password, LoadFlags, ImageInfo) then
         begin
           SetNOImageAsynch;
           Exit;
@@ -346,7 +347,7 @@ begin
       Viewer.RealImageHeight := FRealHeight;
       Viewer.RealImageWidth := FRealWidth;
       Viewer.RealZoomInc := FRealZoomScale;
-      Viewer.Item.Crypted := FIsEncrypted;
+      Viewer.Item.Encrypted := FIsEncrypted;
       if FIsNewDBInfo then
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.ImageExists := False;
@@ -389,7 +390,7 @@ begin
       Viewer.RealImageHeight := FRealHeight;
       Viewer.RealImageWidth := FRealWidth;
       Viewer.RealZoomInc := FRealZoomScale;
-      Viewer.Item.Crypted := FIsEncrypted;
+      Viewer.Item.Encrypted := FIsEncrypted;
       if FIsNewDBInfo then
         Viewer.UpdateInfo(FSID, FInfo);
       Viewer.Item.Width := FRealWidth;
@@ -451,8 +452,8 @@ begin
     F(FInfo);
     FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     Query := GetQuery;
-    ReadOnlyQuery(Query);
     try
+      ReadOnlyQuery(Query);
       Query.Active := False;
       SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FInfo.FileName, True))
           + ' AND FFileName LIKE :FFileName');

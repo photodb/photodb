@@ -1169,11 +1169,11 @@ begin
     Exit;
   Item := Finfo[Int];
 
-  SetBoolAttr(AScript, '$Crypted', Item.Crypted);
+  SetBoolAttr(AScript, '$Crypted', Item.Encrypted);
   SetBoolAttr(AScript, '$StaticImage', StaticPath(Item.FileName));
   SetBoolAttr(AScript, '$WallPaper', IsWallpaper(Item.FileName));
   SetBoolAttr(AScript, '$Selected', Item.Selected);
-  if Item.Crypted then
+  if Item.Encrypted then
   begin
     if DBkernel.FindPasswordForCryptImageFile(Item.FileName) <> '' then
       SetNamedValue(AScript, '$CanDecrypt', 'true')

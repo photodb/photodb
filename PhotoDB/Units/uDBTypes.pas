@@ -51,7 +51,7 @@ type
     Attr: array of Integer;
     Jpeg: TJpegImage;
     OrWidth, OrHeight: Integer;
-    Crypt: Boolean;
+    Encrypted: Boolean;
     Password: string;
     Size: Integer;
     UsedFileNameSearch: Boolean;

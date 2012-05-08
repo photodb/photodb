@@ -18,10 +18,13 @@ uses
   uAssociations,
   uGraphicUtils,
   CCR.Exif.XMPUtils,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  UnitDBDeclare,
+  UnitDBKernel,
+  uSettings;
 
 type
-  TImageLoadFlag = (ilfICCProfile, ilfEXIFRotate, ilfFullRAW);
+  TImageLoadFlag = (ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfPassword);
   TImageLoadFlags = set of TImageLoadFlag;
 
   ILoadImageInfo = interface
@@ -30,6 +33,8 @@ type
     function GetImageTotalPages: Integer;
     function GetRotation: Integer;
     function AppllyICCProfile(Bitmap: TBitmap): Boolean;
+    function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+    function UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
     property ImageTotalPages: Integer read GetImageTotalPages;
     property Rotation: Integer read GetRotation;
   end;
@@ -41,22 +46,31 @@ type
     FRotation: Integer;
     FICCProfileName: string;
     FMSICC: TMemoryStream;
+    FExifData: TExifData;
   public
     constructor Create(AGraphic: TGraphic; AImageTotalPages: Integer; ARotation: Integer;
-      AICCProfileName: string; MSICC: TMemoryStream);
+      AICCProfileName: string; MSICC: TMemoryStream; AFExifData: TExifData);
     destructor Destroy; override;
     function ExtractGraphic: TGraphic;
     function GetImageTotalPages: Integer;
     function GetRotation: Integer;
     function AppllyICCProfile(Bitmap: TBitmap): Boolean;
+    function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+    function UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
   end;
 
-function LoadImageFromPath(ImageFileName: string; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
+type
+  TStreamHelper = class helper for TStream
+  public
+    function CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer): Int64;
+  end;
+
+function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
   out ImageInfo: ILoadImageInfo): Boolean;
 
 implementation
 
-function LoadImageFromPath(ImageFileName: string; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
+function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
   out ImageInfo: ILoadImageInfo): Boolean;
 var
   FS: TFileStream;
@@ -70,44 +84,59 @@ var
   MSICC: TMemoryStream;
   XMPICCProperty: TXMPProperty;
   XMPICCPrifile: string;
+  LoadOnlyExif: Boolean;
 begin
   Result := False;
   ImageInfo := nil;
   ImageTotalPages := 0;
   EXIFRotation := DB_IMAGE_ROTATE_0;
 
-  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ImageFileName));
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
   if GraphicClass = nil then
     Exit(False);
 
   MSICC := nil;
   MS := TMemoryStream.Create;
   try
-    if not IsDevicePath(ImageFileName) then
+    if (ilfGraphic in Flags) then
     begin
-      FS := TFileStream.Create(ImageFileName, fmOpenRead or fmShareDenyNone);
-      try
-        if ValidCryptGraphicStream(FS) then
-        begin
-          DecryptStreamToStream(FS, MS, Password);
-        end else
-          MS.CopyFrom(FS, FS.Size);
-      finally
-        F(FS);
-      end;
-    end else
-      ReadStreamFromDevice(ImageFileName, MS);
+      if not IsDevicePath(Info.FileName) then
+      begin
+        FS := TFileStream.Create(Info.FileName, fmOpenRead or fmShareDenyNone);
+        try
+          Info.Encrypted := ValidCryptGraphicStream(FS);
+          if Info.Encrypted then
+          begin
+            if ilfPassword in Flags then
+              Password := DBKernel.FindPasswordForCryptImageFile(Info.FileName);
 
-    if MS.Size > 0 then
+            DecryptStreamToStream(FS, MS, Password);
+          end else
+            MS.CopyFromEx(FS, FS.Size, 1024 * 1024);
+        finally
+          F(FS);
+        end;
+      end else
+        ReadStreamFromDevice(Info.FileName, MS);
+    end;
+
+    LoadOnlyExif := (ilfEXIF in Flags) and not (ilfGraphic in Flags);
+
+    if (MS.Size > 0) or LoadOnlyExif then
     begin
-      if Flags * [ilfICCProfile, ilfEXIFRotate] <> [] then
+      if Flags * [ilfICCProfile, ilfEXIF] <> [] then
       begin
         MS.Seek(0, soFromBeginning);
         ExifData := TExifData.Create(nil);
         try
-          if ExifData.LoadFromGraphic(MS) and not ExifData.Empty then
+          if LoadOnlyExif then
+            ExifData.LoadFromFileEx(Info.FileName)
+          else
+            ExifData.LoadFromGraphic(MS);
+
+          if not ExifData.Empty then
           begin
-            if (ilfEXIFRotate in Flags) and RAWImage.IsRAWSupport and IsRAWImageFile(ImageFileName) then
+            if (ilfEXIF in Flags) and RAWImage.IsRAWSupport and IsRAWImageFile(Info.FileName) then
               EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
 
             if (ilfICCProfile in Flags) then
@@ -128,40 +157,58 @@ begin
               end;
             end;
           end;
+
+          if (ilfGraphic in Flags) then
+          begin
+            Graphic := GraphicClass.Create;
+            try
+              InitGraphic(Graphic);
+              if (Graphic is TRAWImage) then
+                 TRAWImage(Graphic).IsPreview := not (ilfFullRAW in Flags);
+
+              MS.Seek(0, soFromBeginning);
+              if (Graphic is TTiffImage) then
+              begin
+                TiffImage := TTiffImage(Graphic);
+                TiffImage.LoadFromStreamEx(MS, LoadPage);
+                ImageTotalPages := TiffImage.Pages;
+              end else
+                Graphic.LoadFromStream(MS);
+
+              if not Graphic.Empty then
+              begin
+                ImageInfo := TLoadImageInfo.Create(
+                  Graphic,
+                  ImageTotalPages,
+                  EXIFRotation,
+                  XMPICCPrifile,
+                  MSICC,
+                  ExifData);
+                ExifData := nil;
+                MSICC := nil;
+                Graphic := nil;
+                Result := True;
+              end;
+            finally
+              F(Graphic);
+            end;
+          end else
+          begin
+            ImageInfo := TLoadImageInfo.Create(
+              nil,
+              ImageTotalPages,
+              EXIFRotation,
+              XMPICCPrifile,
+              MSICC,
+              ExifData);
+            ExifData := nil;
+            MSICC := nil;
+            Result := True;
+          end;
+
         finally
           F(ExifData);
         end;
-      end;
-
-      Graphic := GraphicClass.Create;
-      try
-        InitGraphic(Graphic);
-        if (Graphic is TRAWImage) then
-           TRAWImage(Graphic).IsPreview := not (ilfFullRAW in Flags);
-
-        MS.Seek(0, soFromBeginning);
-        if (Graphic is TTiffImage) then
-        begin
-          TiffImage := TTiffImage(Graphic);
-          TiffImage.LoadFromStreamEx(MS, LoadPage);
-          ImageTotalPages := TiffImage.Pages;
-        end else
-          Graphic.LoadFromStream(MS);
-
-        if not Graphic.Empty then
-        begin
-          ImageInfo := TLoadImageInfo.Create(
-            Graphic,
-            ImageTotalPages,
-            EXIFRotation,
-            XMPICCPrifile,
-            MSICC);
-          MSICC := nil;
-          Graphic := nil;
-          Result := True;
-        end;
-      finally
-        F(Graphic);
       end;
     end;
   finally
@@ -173,30 +220,41 @@ end;
 { TLoadImageInfo }
 
 function TLoadImageInfo.AppllyICCProfile(Bitmap: TBitmap): Boolean;
+
+  function DisplayProfileName: string;
+  begin
+    Result := Settings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
+    if Result = '-' then
+      Result := '';
+  end;
+
 begin
   Result := False;
   if (Bitmap <> nil) and not Bitmap.Empty and (Bitmap.PixelFormat = pf24Bit) then
   begin
     if (FMSICC <> nil) and (FMSICC.Size > 0) then
-      Result := ConvertBitmapToDisplayICCProfile(Self, Bitmap, FMSICC.Memory, FMSICC.Size, '');
+      Result := ConvertBitmapToDisplayICCProfile(Self, Bitmap, FMSICC.Memory, FMSICC.Size, '', DisplayProfileName);
 
     if not Result and (FICCProfileName <> '') then
-      Result := ConvertBitmapToDisplayICCProfile(Self, Bitmap, nil, 0, FICCProfileName);
+      Result := ConvertBitmapToDisplayICCProfile(Self, Bitmap, nil, 0, FICCProfileName, DisplayProfileName);
   end;
 end;
 
 constructor TLoadImageInfo.Create(AGraphic: TGraphic; AImageTotalPages,
-  ARotation: Integer; AICCProfileName: string; MSICC: TMemoryStream);
+  ARotation: Integer; AICCProfileName: string; MSICC: TMemoryStream;
+  AFExifData: TExifData);
 begin
   FGraphic := AGraphic;
   FImageTotalPages := AImageTotalPages;
   FRotation := ARotation;
   FICCProfileName := AICCProfileName;
   FMSICC := MSICC;
+  FExifData := AFExifData;
 end;
 
 destructor TLoadImageInfo.Destroy;
 begin
+  F(FExifData);
   F(FMSICC);
   F(FGraphic);
   inherited;
@@ -217,5 +275,48 @@ function TLoadImageInfo.GetRotation: Integer;
 begin
   Result := FRotation;
 end;
+
+function TLoadImageInfo.UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+begin
+  Result := False;
+  if FExifData <> nil then
+    Result := UpdateImageGeoInfoFromExif(Info, FExifData);
+end;
+
+function TLoadImageInfo.UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+begin
+  Result := False;
+  if FExifData <> nil then
+    Result := UpdateImageRecordFromExifData(Info, FExifData, IsDBValues, LoadGroups);
+end;
+
+{ TStreamHelper }
+
+function TStreamHelper.CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer): Int64;
+var
+  BufSize, N: Integer;
+  Buffer: PByte;
+begin
+  if Count = 0 then
+  begin
+    Source.Position := 0;
+    Count := Source.Size;
+  end;
+  Result := Count;
+  if Count > MaxBufSize then BufSize := MaxBufSize else BufSize := Count;
+  GetMem(Buffer, BufSize);
+  try
+    while Count <> 0 do
+    begin
+      if Count > BufSize then N := BufSize else N := Count;
+      Source.ReadBuffer(Buffer^, N);
+      WriteBuffer(Buffer^, N);
+      Dec(Count, N);
+    end;
+  finally
+    FreeMem(Buffer, BufSize);
+  end;
+end;
+
 
 end.
