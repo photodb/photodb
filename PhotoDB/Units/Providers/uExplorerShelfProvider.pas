@@ -45,6 +45,7 @@ constructor TShelfItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
 begin
   inherited;
+  FCanHaveChildren := False;
   FDisplayName := TA('Photo shelf', 'PhotoShelf');
   if Options and PATH_LOAD_NO_IMAGE = 0 then
     LoadImage(Options, ImageSize);

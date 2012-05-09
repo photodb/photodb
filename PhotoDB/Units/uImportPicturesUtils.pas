@@ -14,28 +14,13 @@ uses
   RAWImage,
   uAssociations,
   CCR.Exif,
+  uDateUtils,
   uStringUtils;
 
-function MonthToString(Date: TDate; Scope: string): string;
-function WeekDayToString(Date: TDate): string;
 function FormatPath(Patern: string; Date: TDate; ItemsLabel: string): string;
 function GetImageDate(PI: TPathItem): TDateTime;
 
 implementation
-
-function MonthToString(Date: TDate; Scope: string): string;
-const
-  MonthList: array[1..12] of string = ('january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december');
-begin
-  Result := TA(MonthList[MonthOf(Date)], Scope);
-end;
-
-function WeekDayToString(Date: TDate): string;
-const
-  MonthList: array[1..7] of string = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
-begin
-  Result := TA(MonthList[DayOfTheWeek(Date)], 'Date');
-end;
 
 function FormatPath(Patern: string; Date: TDate; ItemsLabel: string): string;
 var

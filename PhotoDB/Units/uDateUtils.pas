@@ -4,12 +4,36 @@ interface
 
 uses
   SysUtils,
-  DateUtils;
+  DateUtils,
+  uTranslate;
 
 function DateTimeStrEval(const DateTimeFormat: string; const DateTimeStr: string): TDateTime;
 function FormatDateTimeShortDate(Date: TDateTime): string;
+function MonthToString(Date: TDate; Scope: string): string; overload;
+function MonthToString(Month: Integer): string; overload;
+function WeekDayToString(Date: TDate): string;
 
 implementation
+
+const
+  MonthList: array[1..12] of string = ('january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december');
+
+function MonthToString(Month: Integer): string;
+begin
+  Result := TA(MonthList[Month], 'Month');
+end;
+
+function MonthToString(Date: TDate; Scope: string): string;
+begin
+  Result := TA(MonthList[MonthOf(Date)], Scope);
+end;
+
+function WeekDayToString(Date: TDate): string;
+const
+  MonthList: array[1..7] of string = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+begin
+  Result := TA(MonthList[DayOfTheWeek(Date)], 'Date');
+end;
 
 // =============================================================================
 // Evaluate a date time string into a TDateTime obeying the

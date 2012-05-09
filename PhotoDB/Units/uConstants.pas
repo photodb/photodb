@@ -434,6 +434,7 @@ const
   cImagesSearchPath = '::images://';
   cFilesSearchPath = '::files://';
   cShelfPath = 'Shelf';
+  cDatesPath = 'Date';
 
 const
   ObjectTableName = 'Objects';

@@ -266,7 +266,8 @@ var
 implementation
 
 uses
-  CommonDBSupport, uExplorerThreadPool;
+  CommonDBSupport,
+  uExplorerThreadPool;
 
 var
   ExplorerUpdateBigImageThreadsCount: Integer = 0;
@@ -1587,8 +1588,8 @@ begin
               if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
               begin
                 FE := (SearchRec.Attr and faDirectory = 0);
-                s := ExtractFileExt(SearchRec.Name);
-                s:= '|' + AnsiLowerCase(s) + '|';
+                S := ExtractFileExt(SearchRec.Name);
+                S := '|' + AnsiLowerCase(s) + '|';
                 p := Pos(s, SupportedExt);
                 EM := p <> 0;
 
@@ -1661,16 +1662,16 @@ begin
         begin
           if FFolderImagesResult.Images[Index] = nil then
             Break;
-          Fbmp := FFolderImagesResult.Images[Index];
-          W := Fbmp.Width;
-          H := Fbmp.Height;
+          FBmp := FFolderImagesResult.Images[Index];
+          W := FBmp.Width;
+          H := FBmp.Height;
           ProportionalSize(SmallImageSize, SmallImageSize, W, H);
           DrawFolderImageWithXY(TempBitmap, Rect(_x div 2 - w div 2 + x, _y div 2 - h div 2 + y, _x div 2- w div 2 + x + w, _y div 2 - h div 2 + y + h), fbmp);
           Continue;
         end;
-        if Index > count + Nbr then
+        if Index > Count + Nbr then
           Break;
-        if index > count then
+        if index > Count then
         begin
           Inc(c);
           Query.RecNo := RecNos[c];

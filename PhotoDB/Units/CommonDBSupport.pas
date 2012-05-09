@@ -3,10 +3,28 @@ unit CommonDBSupport;
 interface
 
 uses
-  Windows, ADODB, SysUtils, DB, ActiveX, Variants, Classes, ComObj,
-  UnitINI, uConstants, ReplaseIconsInScript, uScript, UnitScripts,
-  UnitDBDeclare, uLogger, uTime, SyncObjs, win32crc, UnitDBCommon, uMemory,
-  uFileUtils, uRuntime, uSysUtils;
+  Windows,
+  ADODB,
+  SysUtils,
+  DB,
+  ActiveX,
+  Classes,
+  ComObj,
+  UnitINI,
+  uConstants,
+  ReplaseIconsInScript,
+  uScript,
+  UnitScripts,
+  UnitDBDeclare,
+  uLogger,
+  uTime,
+  SyncObjs,
+  win32crc,
+  UnitDBCommon,
+  uMemory,
+  uFileUtils,
+  uRuntime,
+  uSysUtils;
 
 const
   DB_TYPE_UNKNOWN = 0;
@@ -31,36 +49,36 @@ type
 
   TADOConnections = class(TObject)
   private
-    FConnections : TList;
-    FSync : TCriticalSection;
+    FConnections: TList;
+    FSync: TCriticalSection;
     function GetCount: Integer;
     function GetValueByIndex(Index: Integer): TADODBConnection;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure RemoveAt(Index : Integer);
-    function Add : TADODBConnection;
-    property Count : Integer read GetCount;
+    procedure RemoveAt(Index: Integer);
+    function Add: TADODBConnection;
+    property Count: Integer read GetCount;
     property Items[Index: Integer]: TADODBConnection read GetValueByIndex; default;
   end;
 
   TDBParam = class(TObject)
   private
-    FName : string;
+    FName: string;
   public
-    property Name : string read FName write FName;
+    property Name: string read FName write FName;
   end;
 
   TDBStringParam = class(TDBParam)
-    Value : string;
+    Value: string;
   end;
 
   TDBIntegerParam = class(TDBParam)
-    Value : Integer;
+    Value: Integer;
   end;
 
   TDBDateTimeParam = class(TDBParam)
-    Value : TDateTime;
+    Value: TDateTime;
   end;
 
 type
@@ -75,12 +93,12 @@ type
     FData: TObject;
     procedure SetData(const Value: TObject);
   public
-    function AddDateTimeParam(Name : string; Value : TDateTime) : TDBDateTimeParam;
-    function AddIntParam(Name : string; Value : Integer) : TDBIntegerParam;
-    function AddStringParam(Name : string; Value : string) : TDBStringParam;
+    function AddDateTimeParam(Name: string; Value: TDateTime) : TDBDateTimeParam;
+    function AddIntParam(Name: string; Value: Integer) : TDBIntegerParam;
+    function AddStringParam(Name: string; Value: string) : TDBStringParam;
     constructor Create;
     destructor Destroy; override;
-    procedure ApplyToDS(DS : TDataSet);
+    procedure ApplyToDS(DS: TDataSet);
     property Query: string read FQuery write FQuery;
     property QueryType: TQueryType read FQueryType write FQueryType;
     property CanBeEstimated: Boolean read FCanBeEstimated write FCanBeEstimated;
@@ -88,7 +106,7 @@ type
   end;
 
 var
-  ADOConnections : TADOConnections = nil;
+  ADOConnections: TADOConnections = nil;
   DBLoadInitialized: Boolean = False;
   FSync: TCriticalSection = nil;
   DBFConnectionString: string = 'Provider=Microsoft.Jet.OLEDB.4.0;Password="";User ID=Admin;'+
@@ -106,19 +124,19 @@ var
                             'Jet OLEDB:SFP=False';
 
   // Read Only String
-  DBViewConnectionString : string =
-  'Provider=Microsoft.Jet.OLEDB.4.0;Password="";'+
-  'User ID=Admin;Data Source=%s;'+
-  'Mode=Share Deny Write;Extended Properties="";'+
-  'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
-  'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=0;'+
-  'Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=1;'+
-  'Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";'+
-  'Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;'+
-  'Jet OLEDB:Don''t Copy Locale on Compact=False;Jet OLEDB:'+
-  'Compact Without Replica Repair=False;Jet OLEDB:SFP=False';
+  DBViewConnectionString: string =
+    'Provider=Microsoft.Jet.OLEDB.4.0;Password="";'+
+    'User ID=Admin;Data Source=%s;'+
+    'Mode=Share Deny Write;Extended Properties="";'+
+    'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
+    'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=0;'+
+    'Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=1;'+
+    'Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";'+
+    'Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;'+
+    'Jet OLEDB:Don''t Copy Locale on Compact=False;Jet OLEDB:'+
+    'Compact Without Replica Repair=False;Jet OLEDB:SFP=False';
 
-  MDBProvider : string = 'Microsoft.Jet.OLEDB.4.0';
+  MDBProvider: string = 'Microsoft.Jet.OLEDB.4.0';
 
 function GetDBType: Integer; overload;
 function GetDBType(Dbname: string): Integer; overload;
@@ -138,10 +156,10 @@ function GetQuery(IsolateThread: Boolean = False): TDataSet; overload;
 function GetQuery(TableName: string; IsolateThread: Boolean = False): TDataSet; overload;
 function GetQuery(TableName: string; TableType: Integer; IsolateThread: Boolean = False): TDataSet; overload;
 
-procedure SetSQL(SQL : TDataSet; SQLText : String);
-procedure ExecSQL(SQL : TDataSet);
+procedure SetSQL(SQL: TDataSet; SQLText: String);
+procedure ExecSQL(SQL: TDataSet);
 
-function GetBoolParam(Query : TDataSet; index : integer) : boolean;
+function GetBoolParam(Query: TDataSet; Index: integer) : boolean;
 
 procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; FT: TFieldType);
 procedure SetDateParam(Query: TDataSet; name: string; Date: TDateTime);

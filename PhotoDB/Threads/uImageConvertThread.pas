@@ -143,7 +143,7 @@ var
   TmpBitmap: TBitmap;
   ExifData: TExifData;
   W, H, Width, Height, Rotation: Integer;
-  Crypted: Boolean;
+  Encrypted: Boolean;
   MS, MD: TMemoryStream;
   FS: TFileStream;
   IsPreviewAvailalbe: Boolean;
@@ -397,8 +397,8 @@ begin
     if GraphicClass = nil then
       Exit;
 
-    Crypted := not IsDevicePath(FData.FileName) and ValidCryptGraphicFile(FData.FileName);
-    if Crypted then
+    Encrypted := not IsDevicePath(FData.FileName) and ValidCryptGraphicFile(FData.FileName);
+    if Encrypted then
     begin
       Password := DBKernel.FindPasswordForCryptImageFile(FData.FileName);
       if Password = '' then
@@ -479,7 +479,7 @@ begin
 
         MS := TMemoryStream.Create;
         try
-          if Crypted then
+          if Encrypted then
           begin
             if not DecryptFileToStream(FData.FileName, Password, MS) then
               Exit;
@@ -518,7 +518,7 @@ begin
       TRAWImage(Graphic).HalfSizeLoad := True;
 
     try
-      if Crypted then
+      if Encrypted then
       begin
         F(Graphic);
 

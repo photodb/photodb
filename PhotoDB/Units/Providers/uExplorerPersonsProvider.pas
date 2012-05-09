@@ -3,10 +3,28 @@ unit uExplorerPersonsProvider;
 interface
 
 uses
-  Windows, Graphics, uPathProviders, uPeopleSupport, uBitmapUtils, uTime,
-  uMemory, uConstants, uTranslate, uShellIcons, uExplorerMyComputerProvider,
-  uExplorerPathProvider, StrUtils, uStringUtils, SysUtils, uJpegUtils,
-  uShellIntegration, uDBForm, uDBClasses, uSysUtils, UnitDBKernel, UnitDBDeclare;
+  Windows,
+  Graphics,
+  uPathProviders,
+  uPeopleSupport,
+  uBitmapUtils,
+  uTime,
+  uMemory,
+  uConstants,
+  uTranslate,
+  uShellIcons,
+  uExplorerMyComputerProvider,
+  uExplorerPathProvider,
+  StrUtils,
+  uStringUtils,
+  SysUtils,
+  uJpegUtils,
+  uShellIntegration,
+  uDBForm,
+  uDBClasses,
+  uSysUtils,
+  UnitDBKernel,
+  UnitDBDeclare;
 
 type
   TPersonsItem = class(TPathItem)

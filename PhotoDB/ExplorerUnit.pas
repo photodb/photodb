@@ -149,7 +149,10 @@ uses
 
   uPhotoShelf,
   uThreadTask,
-  uInternetUtils
+  uInternetUtils,
+
+  VirtualTrees,
+  uPathProvideTreeView
   ;
 
 const
@@ -393,7 +396,7 @@ type
     TmrDelayedStart: TTimer;
     TmrCheckItemVisibility: TTimer;
     MiShare: TMenuItem;
-    procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
+    procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -670,7 +673,7 @@ type
     SlashHandled: Boolean;
     DefaultSort: Integer;
     DirectoryWatcher: TWachDirectoryClass;
-    FShellTreeView: TShellTreeView;
+    FShellTreeView: TPathProvideTreeView;
     FGoToLastSavedPath: Boolean;
     FW7TaskBar: ITaskbarList3;
     FHistoryPathList: TArExplorerPath;
@@ -751,7 +754,7 @@ type
     procedure ZoomOut;
     procedure LoadToolBarGrayedIcons;
     procedure LoadToolBarNormaIcons;
-    function TreeView: TShellTreeView;
+    function TreeView: TPathProvideTreeView;
     procedure CreateBackgrounds;
     procedure ShowHideFilter(Sender: TObject);
     function GetFormID: string; override;
@@ -792,6 +795,7 @@ type
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
     destructor Destroy; override;
 
+    procedure SetPathItem(PI: TPathItem);
     procedure DoStopLoading;
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
@@ -982,14 +986,10 @@ begin
     Result := L('Directory');
 end;
 
-procedure TExplorerForm.ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
+procedure TExplorerForm.PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
 begin
   if ElvMain <> nil then
-  begin
-    SetStringPath(TreeView.Path, True);
-    if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
-      FShellTreeView.Repaint;
-  end;
+    SetPathItem(PathItem);
 end;
 
 procedure VerifyPaste(Explorer: TExplorerForm);
@@ -2114,31 +2114,25 @@ var
   EI: TExplorerFileInfo;
 begin
   B := False;
-  if FIsExplorer then
-  begin
-    if TreeView.Selected <> nil then
-      TreeView.Select(TreeView.Selected.Parent);
-  end else
-  begin
-    Dir := GetCurrentPath;
 
-    PI := PathProviderManager.CreatePathItem(GetCurrentPathW.Path);
-    try
-      if (PI <> nil) and (PI.Parent <> nil) then
-      begin
-        EI := TExplorerFileInfo.CreateFromPathItem(PI.Parent);
-        try
-          SetNewPathW(ExplorerPath(EI.Path, EI.FileType), False);
-        finally
-          F(EI);
-        end;
-        B := True;
+  Dir := GetCurrentPath;
+
+  PI := PathProviderManager.CreatePathItem(GetCurrentPathW.Path);
+  try
+    if (PI <> nil) and (PI.Parent <> nil) then
+    begin
+      EI := TExplorerFileInfo.CreateFromPathItem(PI.Parent);
+      try
+        SetNewPathW(ExplorerPath(EI.Path, EI.FileType), False);
+      finally
+        F(EI);
       end;
-    finally
-      F(PI);
+      B := True;
     end;
-
+  finally
+    F(PI);
   end;
+
   if not B then
     SetNewPath('', False);
 end;
@@ -5129,36 +5123,14 @@ begin
 end;
 
 procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
-var
-  S: string;
 begin
   BeginScreenUpdate(Handle);
   try
-    if not TreeView.UseShellImages then
-    begin
-      TreeView.UseShellImages := True;
-      TreeView.ObjectTypes := [OtFolders, OtHidden];
-      TreeView.Refresh(TreeView.TopItem);
-    end;
-    FShellTreeView.Show;
+    TreeView.Show;
     PropertyPanel.Hide;
-    try
-      if GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER then
-        TreeView.Path := 'C:\';
-      if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or
-        (GetCurrentPathW.PType = EXPLORER_ITEM_COMPUTER) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
-      begin
-        S := GetCurrentPath;
-        if Length(S) = 2 then
-          S := IncludeTrailingBackslash(S);
-        TreeView.Path := S;
-      end;
-      if GetCurrentPathW.PType = EXPLORER_ITEM_NETWORK then
-        TreeView.Path := 'C:\';
-      if GetCurrentPathW.PType = EXPLORER_ITEM_WORKGROUP then
-        TreeView.Path := 'C:\';
-    except
-    end;
+
+    TreeView.SelectPathItem(PePath.PathEx);
+
     FIsExplorer := True;
     CloseButtonPanel.Show;
     MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidthExplorer', 135);
@@ -5811,38 +5783,40 @@ begin
   PasteFromClipboard;
 end;
 
-procedure TExplorerForm.PePathChange(Sender: TObject);
-var
-  P: TPathItem;
+procedure TExplorerForm.SetPathItem(PI: TPathItem);
 begin
-  P := PePath.CurrentPathEx;
-
-  if (P is TDirectoryItem) or (P is TDriveItem) or (P is TShareItem) then
-    SetStringPath(PePath.Path, False)
-  else if P is TComputerItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_COMPUTER), False)
-  else if P is THomeItem then
+  if (PI is TDirectoryItem) or (PI is TDriveItem) or (PI is TShareItem) then
+    SetStringPath(PI.Path, False)
+  else if PI is TComputerItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_COMPUTER), False)
+  else if PI is THomeItem then
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_MYCOMPUTER), False)
-  else if P is TNetworkItem then
+  else if PI is TNetworkItem then
     SetNewPathW(ExplorerPath('', EXPLORER_ITEM_NETWORK), False)
-  else if P is TWorkgroupItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_WORKGROUP), False)
-  else if P is TPersonsItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON_LIST), False)
-  else if P is TGroupsItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP_LIST), False)
-  else if P is TGroupItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_GROUP), False)
-  else if P is TPersonItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_PERSON), False)
-  else if P is TPortableDeviceItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE), False)
-  else if P is TPortableStorageItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_STORAGE), False)
-  else if P is TPortableDirectoryItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False)
-  else if P is TShelfItem then
-    SetNewPathW(ExplorerPath(P.Path, EXPLORER_ITEM_SHELF), False);
+  else if PI is TWorkgroupItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_WORKGROUP), False)
+  else if PI is TPersonsItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_PERSON_LIST), False)
+  else if PI is TGroupsItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_GROUP_LIST), False)
+  else if PI is TGroupItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_GROUP), False)
+  else if PI is TPersonItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_PERSON), False)
+  else if PI is TPortableDeviceItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_DEVICE), False)
+  else if PI is TPortableStorageItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_DEVICE_STORAGE), False)
+  else if PI is TPortableDirectoryItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False)
+  else if PI is TShelfItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_SHELF), False);
+end;
+
+
+procedure TExplorerForm.PePathChange(Sender: TObject);
+begin
+  SetPathItem(PePath.CurrentPathEx);
 end;
 
 procedure TExplorerForm.PePathContextPopup(Sender: TObject; MousePos: TPoint;
@@ -6116,7 +6090,8 @@ end;
 
 procedure TExplorerForm.PopupMenuTreeViewPopup(Sender: TObject);
 begin
-  if TreeView.SelectedFolder <> nil then
+  //TODO: xxx
+  {if TreeView.SelectedFolder <> nil then
   begin
     TempFolderName := TreeView.SelectedFolder.PathName;
     OpeninExplorer1.Visible := DirectoryExists(TempFolderName);
@@ -6128,7 +6103,7 @@ begin
     OpeninExplorer1.Visible := False;
     AddFolder2.Visible := False;
     View2.Visible := False;
-  end;
+  end; }
 end;
 
 procedure TExplorerForm.PopupMenuBackPopup(Sender: TObject);
@@ -6409,18 +6384,8 @@ begin
     UpdaterInfo := TUpdaterInfo.Create;
     TExplorerThread.Create(Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
-  if FIsExplorer then
-    if not Explorer then
-      if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or
-        (WPath.PType = EXPLORER_ITEM_COMPUTER) or (WPath.PType = EXPLORER_ITEM_SHARE) then
-        try
-          S := GetCurrentPath;
-          if Length(S) = 2 then
-            S := IncludeTrailingBackslash(S);
-          TreeView.Path := S;
-          TreeView.Select(TreeView.Selected);
-        except
-        end;
+  if FIsExplorer and not Explorer then
+      TreeView.SelectPath(GetCurrentPath);
 
   DropFileTargetMain.Unregister;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE) then
@@ -9751,19 +9716,16 @@ begin
     Application.HintHidePause := 5000;
 end;
 
-function TExplorerForm.TreeView: TShellTreeView;
+function TExplorerForm.TreeView: TPathProvideTreeView;
 begin
   if FShellTreeView = nil then
   begin
-    FShellTreeView := TShellTreeView.Create(Self);
+    FShellTreeView := TPathProvideTreeView.Create(Self);
     FShellTreeView.Parent := MainPanel;
     FShellTreeView.Align := AlClient;
-    FShellTreeView.HideSelection := False;
-    FShellTreeView.AutoRefresh := False;
-    FShellTreeView.PopupMenu := PopupMenuTreeView;
-    FShellTreeView.RightClickSelect := True;
-    FShellTreeView.ShowRoot := False;
-    FShellTreeView.OnChange := ShellTreeView1Change;
+    FShellTreeView.LoadHomeDirectory(Self);
+    //FShellTreeView.PopupMenu := PopupMenuTreeView;
+    FShellTreeView.OnSelectPathItem := PathTreeViewChange;
   end;
 
   Result := FShellTreeView;

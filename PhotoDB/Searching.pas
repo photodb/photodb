@@ -4184,7 +4184,7 @@ procedure TSearchForm.elvDateRangeItemClick(Sender: TCustomEasyListview;
   Item: TEasyItem; KeyStates: TCommonKeyStates;
   HitInfo: TEasyItemHitTestInfoSet);
 var
-  I : Integer;
+  I: Integer;
 begin
   if not Item.Selected or ((elvDateRange.Selection.Count>1) and CtrlKeyDown) then
   begin
@@ -4199,8 +4199,8 @@ end;
 
 function TSearchForm.DateRangeItemAtPos(X, Y : Integer): TEasyItem;
 var
-  R : TRect;
-  I : integer;
+  R: TRect;
+  I: integer;
 begin
   Result := nil;
   R :=  elvDateRange.Scrollbars.ViewableViewportRect;
@@ -4215,8 +4215,8 @@ end;
 procedure TSearchForm.elvDateRangeMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  Item : TEasyItem;
-  I : integer;
+  Item: TEasyItem;
+  I: integer;
 begin
   if CtrlKeyDown then
   begin

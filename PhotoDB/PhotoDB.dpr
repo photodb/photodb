@@ -416,7 +416,12 @@ uses
   uExplorerDateStackProviders in 'Units\Providers\uExplorerDateStackProviders.pas',
   lcms2dll in 'External\lcms2dll.pas',
   uICCProfile in 'Units\uICCProfile.pas',
-  uImageLoader in 'Units\uImageLoader.pas';
+  uImageLoader in 'Units\uImageLoader.pas',
+  uPathProvideTreeView in 'Units\Controls\uPathProvideTreeView.pas',
+  VirtualTrees in 'External\Controls\virtual-treeview\Source\VirtualTrees.pas',
+  VTAccessibility in 'External\Controls\virtual-treeview\Source\VTAccessibility.pas',
+  VTAccessibilityFactory in 'External\Controls\virtual-treeview\Source\VTAccessibilityFactory.pas',
+  VTHeaderPopup in 'External\Controls\virtual-treeview\Source\VTHeaderPopup.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

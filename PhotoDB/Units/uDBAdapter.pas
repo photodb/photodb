@@ -3,7 +3,10 @@ unit uDBAdapter;
 interface
 
 uses
-  DB, SysUtils, DateUtils, StrUtils;
+  DB,
+  SysUtils,
+  DateUtils,
+  StrUtils;
 
 type
   TDBAdapter = class(TObject)
