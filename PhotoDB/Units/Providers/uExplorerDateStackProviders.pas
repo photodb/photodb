@@ -14,6 +14,7 @@ uses
   uExplorerMyComputerProvider,
   uPathProviders,
   uDateUtils,
+  uSysUtils,
   DB,
   CommonDBSupport;
 
@@ -29,23 +30,56 @@ type
   end;
 
   TDateStackYearItem = class(TPathItem)
+  private
+    FCount: Integer;
+    function GetYear: Integer;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
     function GetIsDirectory: Boolean; override;
+    function GetDisplayName: string; override;
   public
+    procedure SetCount(Count: Integer);
+    procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
+    property Year: Integer read GetYear;
   end;
 
   TDateStackMonthItem = class(TPathItem)
+  private
+    FCount: Integer;
+    function GetMonth: Integer;
+    function GetYear: Integer;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
     function GetIsDirectory: Boolean; override;
+    function GetDisplayName: string; override;
   public
+    procedure SetCount(Count: Integer);
+    procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
+    property Month: Integer read GetMonth;
+    property Year: Integer read GetYear;
+  end;
+
+  TDateStackDayItem = class(TPathItem)
+  private
+    FCount: Integer;
+    function GetDay: Integer;
+  protected
+    function InternalGetParent: TPathItem; override;
+    function InternalCreateNewInstance: TPathItem; override;
+    function GetIsDirectory: Boolean; override;
+    function GetDisplayName: string; override;
+  public
+    procedure SetCount(Count: Integer);
+    procedure Assign(Item: TPathItem); override;
+    function LoadImage(Options, ImageSize: Integer): Boolean; override;
+    constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
+    property Day: Integer read GetDay;
   end;
 
 type
@@ -86,11 +120,12 @@ function TExplorerDateStackProvider.InternalFillChildList(Sender: TObject;
   PacketSize: Integer; CallBack: TLoadListCallBack): Boolean;
 var
   Cancel: Boolean;
-  Year, Month: Integer;
-  DI: TDateStackItem;
+  Count, Year, Month, Day: Integer;
+  DSI: TDateStackItem;
   YI: TDateStackYearItem;
   MI: TDateStackMonthItem;
-  FYearsDateRangeDS: TDataSet;
+  DI: TDateStackDayItem;
+  FDateRangeDS: TDataSet;
 begin
   inherited;
   Result := True;
@@ -101,31 +136,31 @@ begin
 
   if Item is THomeItem then
   begin
-    DI := TDateStackItem.CreateFromPath(cDatesPath, Options, ImageSize);
-    List.Add(DI);
+    DSI := TDateStackItem.CreateFromPath(cDatesPath, Options, ImageSize);
+    List.Add(DSI);
   end;
 
   if Item is TDateStackItem then
   begin
-    FYearsDateRangeDS := GetQuery(True);
+    FDateRangeDS := GetQuery(True);
     try
-      ForwardOnlyQuery(FYearsDateRangeDS);
-      SetSQL(FYearsDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear" FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True ) Group BY Year(DateToAdd) Order by "GroupYear" desc');
+      ForwardOnlyQuery(FDateRangeDS);
+      SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True ) Group BY Year(DateToAdd) Order by "GroupYear" desc');
 
-      FYearsDateRangeDS.Active := True;
+      FDateRangeDS.Active := True;
 
-      while not FYearsDateRangeDS.EOF do
+      while not FDateRangeDS.EOF do
       begin
-        Year := FYearsDateRangeDS.Fields[0].AsInteger;
+        Year := FDateRangeDS.Fields[0].AsInteger;
+        Count := FDateRangeDS.Fields[1].AsInteger;
 
         YI := TDateStackYearItem.CreateFromPath(cDatesPath + '\' + IntToStr(Year), Options, ImageSize);
-        YI.DisplayName := IntToStr(Year);
+        YI.SetCount(Count);
         List.Add(YI);
-
-        FYearsDateRangeDS.Next;
+        FDateRangeDS.Next;
       end;
     finally
-      FreeDS(FYearsDateRangeDS);
+      FreeDS(FDateRangeDS);
     end;
   end;
 
@@ -133,25 +168,53 @@ begin
   begin
     YI := TDateStackYearItem(Item);
 
-    FYearsDateRangeDS := GetQuery(True);
+    FDateRangeDS := GetQuery(True);
     try
-      ForwardOnlyQuery(FYearsDateRangeDS);
-      SetSQL(FYearsDateRangeDS, 'SELECT Month(DateToAdd) as "GroupMonth" FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True and Year(DateToAdd) = ' + YI.DisplayName + ') Group BY Month(DateToAdd) Order by "GroupMonth" desc');
+      ForwardOnlyQuery(FDateRangeDS);
+      SetSQL(FDateRangeDS, 'SELECT Month(DateToAdd) as "GroupMonth", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True and Year(DateToAdd) = ' + IntToStr(YI.Year) + ') Group BY Month(DateToAdd) Order by "GroupMonth" desc');
 
-      FYearsDateRangeDS.Active := True;
+      FDateRangeDS.Active := True;
 
-      while not FYearsDateRangeDS.EOF do
+      while not FDateRangeDS.EOF do
       begin
-        Month := FYearsDateRangeDS.Fields[0].AsInteger;
+        Month := FDateRangeDS.Fields[0].AsInteger;
+        Count := FDateRangeDS.Fields[1].AsInteger;
 
-        MI := TDateStackMonthItem.CreateFromPath(cDatesPath + '\' + IntToStr(Month), Options, ImageSize);
-        MI.DisplayName := Capitalize(MonthToString(Month));
+        MI := TDateStackMonthItem.CreateFromPath(cDatesPath + '\' + IntToStr(YI.Year) + '\' + IntToStr(Month), Options, ImageSize);
+        MI.SetCount(Count);
         List.Add(MI);
 
-        FYearsDateRangeDS.Next;
+        FDateRangeDS.Next;
       end;
     finally
-      FreeDS(FYearsDateRangeDS);
+      FreeDS(FDateRangeDS);
+    end;
+  end;
+
+  if Item is TDateStackMonthItem then
+  begin
+    MI := TDateStackMonthItem(Item);
+
+    FDateRangeDS := GetQuery(True);
+    try
+      ForwardOnlyQuery(FDateRangeDS);
+      SetSQL(FDateRangeDS, 'SELECT Day(DateToAdd) as "GroupDay", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True and Year(DateToAdd) = ' + IntToStr(MI.Year) + ' and Month(DateToAdd) = ' + IntToStr(MI.Month) + ') Group BY Day(DateToAdd) Order by "GroupMonth" desc');
+
+      FDateRangeDS.Active := True;
+
+      while not FDateRangeDS.EOF do
+      begin
+        Day := FDateRangeDS.Fields[0].AsInteger;
+        Count := FDateRangeDS.Fields[1].AsInteger;
+
+        DI := TDateStackDayItem.CreateFromPath(cDatesPath + '\' + IntToStr(MI.Year) + '\' + IntToStr(MI.Month) + '\' + IntToStr(Day), Options, ImageSize);
+        DI.SetCount(Count);
+        List.Add(DI);
+
+        FDateRangeDS.Next;
+      end;
+    finally
+      FreeDS(FDateRangeDS);
     end;
   end;
 
@@ -208,6 +271,12 @@ end;
 
 { TDateStackYearItem }
 
+procedure TDateStackYearItem.Assign(Item: TPathItem);
+begin
+  inherited;
+  FCount := TDateStackYearItem(Item).FCount;
+end;
+
 constructor TDateStackYearItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
 begin
@@ -216,9 +285,31 @@ begin
     LoadImage(Options, ImageSize);
 end;
 
+function TDateStackYearItem.GetDisplayName: string;
+begin
+  Result := IntToStr(Year);
+  if FCount > 0 then
+    Result := Result + ' (' + IntToStr(FCount) + ')';
+end;
+
 function TDateStackYearItem.GetIsDirectory: Boolean;
 begin
   Result := True;
+end;
+
+function TDateStackYearItem.GetYear: Integer;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := 0;
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, P + 1, Length(S) - P);
+    Result := StrToInt64Def(S, 0);
+  end;
 end;
 
 function TDateStackYearItem.InternalCreateNewInstance: TPathItem;
@@ -241,7 +332,18 @@ begin
   Result := True;
 end;
 
+procedure TDateStackYearItem.SetCount(Count: Integer);
+begin
+  FCount := Count;
+end;
+
 { TDateStackMonthItem }
+
+procedure TDateStackMonthItem.Assign(Item: TPathItem);
+begin
+  inherited;
+  FCount := TDateStackMonthItem(Item).FCount;
+end;
 
 constructor TDateStackMonthItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
@@ -251,9 +353,51 @@ begin
     LoadImage(Options, ImageSize);
 end;
 
+function TDateStackMonthItem.GetDisplayName: string;
+begin
+  Result := Capitalize(MonthToString(Month));
+  if FCount > 0 then
+    Result := Result + ' (' + IntToStr(FCount) + ')';
+end;
+
 function TDateStackMonthItem.GetIsDirectory: Boolean;
 begin
   Result := True;
+end;
+
+function TDateStackMonthItem.GetMonth: Integer;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := 0;
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, P + 1, Length(S) - P);
+    Result := StrToInt64Def(S, 0);
+  end;
+end;
+
+function TDateStackMonthItem.GetYear: Integer;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := 0;
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, 1, P - 1);
+    P := LastDelimiter('/\', S);
+    if P > 0 then
+    begin
+      S := System.Copy(S, P + 1, Length(S) - P);
+      Result := StrToInt64Def(S, 0);
+    end;
+  end;
 end;
 
 function TDateStackMonthItem.InternalCreateNewInstance: TPathItem;
@@ -262,7 +406,18 @@ begin
 end;
 
 function TDateStackMonthItem.InternalGetParent: TPathItem;
+var
+  S: string;
+  P: Integer;
 begin
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, P - 1);
+    Result := TDateStackYearItem.CreateFromPath(S, PATH_LOAD_NORMAL or PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+    Exit;
+  end;
   Result := nil;
 end;
 
@@ -274,6 +429,90 @@ begin
   FindIcon(HInstance, 'MONTHICON', ImageSize, 32, Icon);
   FImage := TPathImage.Create(Icon);
   Result := True;
+end;
+
+procedure TDateStackMonthItem.SetCount(Count: Integer);
+begin
+  FCount := Count;
+end;
+
+{ TDateStackDayItem }
+
+procedure TDateStackDayItem.Assign(Item: TPathItem);
+begin
+  inherited;
+  FCount := TDateStackDayItem(Item).FCount;
+end;
+
+constructor TDateStackDayItem.CreateFromPath(APath: string; Options,
+  ImageSize: Integer);
+begin
+  inherited;
+  if Options and PATH_LOAD_NO_IMAGE = 0 then
+    LoadImage(Options, ImageSize);
+end;
+
+function TDateStackDayItem.GetDay: Integer;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := 0;
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, P + 1, Length(S) - P);
+    Result := StrToInt64Def(S, 0);
+  end;
+end;
+
+function TDateStackDayItem.GetDisplayName: string;
+begin
+  Result := IntToStr(Day);
+  if FCount > 0 then
+    Result := Result + ' (' + IntToStr(FCount) + ')';
+end;
+
+function TDateStackDayItem.GetIsDirectory: Boolean;
+begin
+  Result := False;
+end;
+
+function TDateStackDayItem.InternalCreateNewInstance: TPathItem;
+begin
+  Result := TDateStackDayItem.Create;
+end;
+
+function TDateStackDayItem.InternalGetParent: TPathItem;
+var
+  S: string;
+  P: Integer;
+begin
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, P - 1);
+    Result := TDateStackMonthItem.CreateFromPath(S, PATH_LOAD_NORMAL or PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+    Exit;
+  end;
+  Result := nil;
+end;
+
+function TDateStackDayItem.LoadImage(Options, ImageSize: Integer): Boolean;
+var
+  Icon: TIcon;
+begin
+  F(FImage);
+  FindIcon(HInstance, 'DAYICON', ImageSize, 32, Icon);
+  FImage := TPathImage.Create(Icon);
+  Result := True;
+end;
+
+procedure TDateStackDayItem.SetCount(Count: Integer);
+begin
+  FCount := Count;
 end;
 
 initialization

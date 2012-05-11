@@ -241,7 +241,7 @@ begin
         Info.Rating := - 10 * Rating;
     end;
 
-    if Info.Rotation <= DB_IMAGE_ROTATE_0 then
+    if (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = -1) then
     begin
       Rotation := ExifOrientationToRatation(Integer(ExifData.Orientation));
       if IsDBValues then

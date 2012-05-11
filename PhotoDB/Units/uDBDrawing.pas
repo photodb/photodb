@@ -201,7 +201,7 @@ begin
   end;
 end;
 
-function GetListItemBorderColor(Data : TDataObject) : TColor;
+function GetListItemBorderColor(Data: TDataObject): TColor;
 begin
   if not Data.Include then
     Result := $00FFFF
@@ -209,9 +209,9 @@ begin
     Result := clHighlight;
 end;
 
-function RectInRect(const R1, R2 : TRect) : Boolean;
+function RectInRect(const R1, R2: TRect): Boolean;
 begin
- Result := PtInRect(R2,R1.TopLeft) or PtInRect(R2,R1.BottomRight) or PtInRect(R1,R2.TopLeft) or PtInRect(R1,R2.BottomRight);
+ Result := PtInRect(R2, R1.TopLeft) or PtInRect(R2, R1.BottomRight) or PtInRect(R1, R2.TopLeft) or PtInRect(R1, R2.BottomRight);
 end;
 
 { TIconsEx }

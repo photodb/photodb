@@ -136,7 +136,7 @@ begin
 
           if not ExifData.Empty then
           begin
-            if (ilfEXIF in Flags) and RAWImage.IsRAWSupport and IsRAWImageFile(Info.FileName) then
+            if (ilfEXIF in Flags) then
               EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
 
             if (ilfICCProfile in Flags) then
@@ -165,6 +165,14 @@ begin
               InitGraphic(Graphic);
               if (Graphic is TRAWImage) then
                  TRAWImage(Graphic).IsPreview := not (ilfFullRAW in Flags);
+
+              if (Info.ID = 0) and not IsDevicePath(Info.FileName) then
+              begin
+                Info.Rotation := -EXIFRotation;
+
+                if (Graphic is TRAWImage) and not (ilfFullRAW in Flags) then
+                  Info.Rotation := 10 * ExifDisplayButNotRotate(Info.Rotation);
+              end;
 
               MS.Seek(0, soFromBeginning);
               if (Graphic is TTiffImage) then

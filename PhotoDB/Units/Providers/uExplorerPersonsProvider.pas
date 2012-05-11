@@ -386,11 +386,15 @@ function TPersonItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Person: TPerson;
 begin
+  Result := False;
   F(FImage);
   Person := PersonManager.GetPersonByName(FPersonName);
   try
-    ReadFromPerson(Person, Options, ImageSize);
-    Result := True;
+    if not Person.Empty then
+    begin
+      ReadFromPerson(Person, Options, ImageSize);
+      Result := True;
+    end;
   finally
     F(Person);
   end;

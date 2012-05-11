@@ -7,6 +7,7 @@ uses
   Windows,
   SysUtils,
   Forms,
+  Dialogs,
   Controls,
   Graphics,
   Classes,
@@ -46,6 +47,7 @@ type
     FIsStarted: Boolean;
     FIsInitialized: Boolean;
     FIsInternalSelection: Boolean;
+    FNodesToDelete: TList<TPathItem>;
     procedure LoadBitmaps;
     procedure StartControl;
     procedure InternalSelectNode(Node: PVirtualNode);
@@ -59,6 +61,7 @@ type
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: Integer): TCustomImageList; override;
     function InitControl: Boolean;
+    procedure SelectNodeByData(Data: PData);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -98,6 +101,7 @@ begin
 
   FOnSelectPathItem := nil;
   FStartPathItem := nil;
+  FNodesToDelete := TList<TPathItem>.Create;
 
   AnimationDuration := 0;
   FIsStarted := False;
@@ -156,6 +160,7 @@ begin
   F(FStartPathItem);
   F(FImTreeImages);
   F(FImImages);
+  FreeList(FNodesToDelete);
   inherited;
 end;
 
@@ -181,14 +186,18 @@ var
   Data: PData;
 begin
   Result := inherited DoGetImageIndex(Node, Kind, Column, Ghosted, Index);
+  if Result <> nil then
+    Exit;
+
   Data := GetNodeData(Node);
+
   FImTreeImages.Clear;
-  if Data.Data.Image <> nil then
-  begin
+  Result := FImTreeImages;
+
+  if (Data.Data <> nil) and (Data.Data.Image <> nil) then
     Data.Data.Image.AddToImageList(FImTreeImages);
-    Result := FImTreeImages;
-    Index := FImTreeImages.Count - 1;
-  end;
+
+  Index := FImTreeImages.Count - 1;
 end;
 
 function TPathProvideTreeView.DoGetNodeWidth(Node: PVirtualNode;
@@ -316,6 +325,18 @@ begin
   LoadFromRes(PlusBM, 'TREE_VIEW_CLOSE', StyleServices.GetStyleFontColor(sfTreeItemTextNormal));
 end;
 
+procedure TPathProvideTreeView.SelectNodeByData(Data: PData);
+var
+  Node: PVirtualNode;
+begin
+  for Node in Nodes() do
+    if GetNodeData(Node) = Data then
+    begin
+      InternalSelectNode(Node);
+      Exit;
+    end;
+end;
+
 procedure TPathProvideTreeView.SelectPath(Path: string);
 var
   PI: TPathItem;
@@ -411,8 +432,8 @@ begin
         begin
           ChildData.Data := PathParts[I].Copy;
           ChildNode := AddChild(Node, Pointer(ChildData));
-          InternalSelectNode(ChildNode);
           ValidateNode(Node, False);
+          InternalSelectNode(ChildNode);
         end;
         Node := ChildNode;
       end;
@@ -528,6 +549,7 @@ begin
                     I: Integer;
                     ChildData: TData;
                     SearchPath: string;
+                    NodeData: PData;
                   begin
                     if GOM.IsObj(Thread.ThreadForm) then
                     begin
@@ -535,26 +557,42 @@ begin
                       if Info.Node.ChildCount > 0 then
                         SearchPath := ExcludeTrailingPathDelimiter(AnsiLowerCase(PData(GetNodeData(Info.Node.FirstChild)).Data.Path));
 
-                      for I := 0 to CurrentItems.Count - 1 do
-                      begin
-                        if SearchPath = ExcludeTrailingPathDelimiter(AnsiLowerCase(CurrentItems[I].Path)) then
+                      InterruptValidation;
+                      BeginUpdate;
+                      try
+                        for I := 0 to CurrentItems.Count - 1 do
                         begin
-                          PData(GetNodeData(Info.Node.FirstChild)).Data.Free;
-                          PData(GetNodeData(Info.Node.FirstChild)).Data := CurrentItems[I];
-                          MoveTo(Info.Node.FirstChild, Info.Node, amAddChildLast, False);
-                          TopNode := GetFirstSelected;
-                        end else
-                        begin
-                          ChildData.Data := CurrentItems[I];
-                          AddChild(Info.Node, Pointer(ChildData));
-                          ValidateNode(Info.Node, False);
-                        end;
-                      end;
 
-                      if IsFirstItem then
-                      begin
-                        IsFirstItem := False;
-                        Expanded[Node] := True;
+                          if SearchPath = ExcludeTrailingPathDelimiter(AnsiLowerCase(CurrentItems[I].Path)) then
+                          begin
+                            MoveTo(Info.Node.FirstChild, Info.Node, amAddChildLast, False);
+                            ValidateCache;
+
+                            NodeData := GetNodeData(Info.Node.LastChild);
+
+                            //node without image, shouldn't affect to GDI counter
+                            //this list will be deleted on destroy
+                            //without this line will be AV :(
+                            FNodesToDelete.Add(NodeData.Data);
+
+                            NodeData.Data := CurrentItems[I];
+
+                            TopNode := GetFirstSelected;
+                          end else
+                          begin
+                            ChildData.Data := CurrentItems[I];
+                            AddChild(Info.Node, Pointer(ChildData));
+                            ValidateNode(Info.Node, False);
+                          end;
+                        end;
+
+                        if IsFirstItem then
+                        begin
+                          IsFirstItem := False;
+                          Expanded[Node] := True;
+                        end;
+                      finally
+                        EndUpdate;
                       end;
                     end;
                   end

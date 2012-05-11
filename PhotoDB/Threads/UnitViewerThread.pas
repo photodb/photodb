@@ -210,15 +210,6 @@ begin
             Exit;
           end;
 
-          if (FInfo.ID = 0) and not IsDevicePath(FInfo.FileName) then
-          begin
-            if FInfo.Rotation = 0 then
-              FInfo.Rotation := ImageInfo.Rotation;
-
-            if (Graphic is TRAWImage) then
-              FInfo.Rotation := ExifDisplayButNotRotate(FInfo.Rotation);
-          end;
-
           ImageInfo.AppllyICCProfile(Bitmap);
 
           ApplyRotate(Bitmap, FInfo.Rotation);
