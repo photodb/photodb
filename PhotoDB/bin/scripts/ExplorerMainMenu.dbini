@@ -81,15 +81,6 @@
  CreateItemDefChecked("Show/Hide Filter",DB_IC_FILTER,"ShowHideFilter();",false,true,false,0);
  CreateItemDefChecked("-",0,"",false,false,false,0);
  
- $explorer=ExplorerType;
- if ($explorer=true) 
- {
-  CreateItemDefChecked("Hide explorer panel",DB_IC_INFO_PANEL,"CancelExplorerMode;",false,true,false,0);
- }; else 
- {
-   CreateItemDefChecked("Show explorer panel",DB_IC_EXPLORER_PANEL,"GoToExplorerMode;",false,true,false,0);
- };
-
  $State=ShowPrivateNow;
  if ($State=true) 
  {

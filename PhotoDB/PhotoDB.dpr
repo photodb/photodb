@@ -43,6 +43,11 @@ uses
   ToolWin,
   Rating,
   uFileUtils,
+  uExplorerDateStackProviders in 'Units\Providers\uExplorerDateStackProviders.pas',
+  uExplorerGroupsProvider in 'Units\Providers\uExplorerGroupsProvider.pas',
+  uExplorerPersonsProvider in 'Units\Providers\uExplorerPersonsProvider.pas',
+  uExplorerSearchProviders in 'Units\Providers\uExplorerSearchProviders.pas',
+  uExplorerPathProvider in 'Units\Providers\uExplorerPathProvider.pas',
   Searching in 'Searching.pas' {SearchForm},
   SlideShow in 'SlideShow.pas' {Viewer},
   Options in 'Options.pas' {OptionsForm},
@@ -338,11 +343,7 @@ uses
   uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson},
   uFormAddImage in 'uFormAddImage.pas' {FormAddingImage},
   UnitLoadPersonsThread in 'Threads\UnitLoadPersonsThread.pas',
-  uExplorerGroupsProvider in 'Units\Providers\uExplorerGroupsProvider.pas',
-  uExplorerPersonsProvider in 'Units\Providers\uExplorerPersonsProvider.pas',
   uConfiguration in 'Units\uConfiguration.pas',
-  uExplorerSearchProviders in 'Units\Providers\uExplorerSearchProviders.pas',
-  uExplorerPathProvider in 'Units\Providers\uExplorerPathProvider.pas',
   uVCLHelpers in 'Units\uVCLHelpers.pas',
   uFormPersonSuggest in 'uFormPersonSuggest.pas' {FormPersonSuggest},
   uDBCustomThread in 'Threads\uDBCustomThread.pas',
@@ -413,7 +414,6 @@ uses
   uUninstallUtils in 'Units\uUninstallUtils.pas',
   uInternetProxy in 'Units\uInternetProxy.pas',
   uVCLStylesOneLoadSpeedUp in 'Units\Styles\uVCLStylesOneLoadSpeedUp.pas',
-  uExplorerDateStackProviders in 'Units\Providers\uExplorerDateStackProviders.pas',
   lcms2dll in 'External\lcms2dll.pas',
   uICCProfile in 'Units\uICCProfile.pas',
   uImageLoader in 'Units\uImageLoader.pas',
@@ -421,7 +421,8 @@ uses
   VirtualTrees in 'External\Controls\virtual-treeview\Source\VirtualTrees.pas',
   VTAccessibility in 'External\Controls\virtual-treeview\Source\VTAccessibility.pas',
   VTAccessibilityFactory in 'External\Controls\virtual-treeview\Source\VTAccessibilityFactory.pas',
-  VTHeaderPopup in 'External\Controls\virtual-treeview\Source\VTHeaderPopup.pas';
+  VTHeaderPopup in 'External\Controls\virtual-treeview\Source\VTHeaderPopup.pas',
+  uFreeImageIO in 'Units\Formats\uFreeImageIO.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

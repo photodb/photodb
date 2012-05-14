@@ -133,7 +133,7 @@ begin
 
     Graphic := nil;
     try
-      if not LoadImageFromPath(FInfo, -1, Password, [ilfGraphic, ilfICCProfile, ilfEXIF], ImageInfo) then
+      if not LoadImageFromPath(FInfo, -1, Password, [ilfGraphic, ilfICCProfile, ilfEXIF], ImageInfo, ThHintSize, ThHintSize) then
         Exit;
 
       Graphic := ImageInfo.ExtractGraphic;

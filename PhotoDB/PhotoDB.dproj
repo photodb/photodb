@@ -127,8 +127,8 @@
 			<VerInfo_MajorVer>3</VerInfo_MajorVer>
 			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
 			<VerInfo_Release>0</VerInfo_Release>
-			<VerInfo_Build>477</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.0.0.477;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.0;ProductVersion=3.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Build>480</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.0.0.480;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.0;ProductVersion=3.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -139,6 +139,11 @@
 			<DCCReference Include="Threads\uSplashThread.pas"/>
 			<DCCReference Include="Threads\uLanguageLoadThread.pas"/>
 			<DCCReference Include="Threads\uLoadStyleThread.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerDateStackProviders.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerGroupsProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerPersonsProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerSearchProviders.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerPathProvider.pas"/>
 			<DCCReference Include="Searching.pas">
 				<Form>SearchForm</Form>
 			</DCCReference>
@@ -623,11 +628,7 @@
 				<Form>FormAddingImage</Form>
 			</DCCReference>
 			<DCCReference Include="Threads\UnitLoadPersonsThread.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerGroupsProvider.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerPersonsProvider.pas"/>
 			<DCCReference Include="Units\uConfiguration.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerSearchProviders.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerPathProvider.pas"/>
 			<DCCReference Include="Units\uVCLHelpers.pas"/>
 			<DCCReference Include="uFormPersonSuggest.pas">
 				<Form>FormPersonSuggest</Form>
@@ -720,7 +721,6 @@
 			<DCCReference Include="Units\uUninstallUtils.pas"/>
 			<DCCReference Include="Units\uInternetProxy.pas"/>
 			<DCCReference Include="Units\Styles\uVCLStylesOneLoadSpeedUp.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerDateStackProviders.pas"/>
 			<DCCReference Include="External\lcms2dll.pas"/>
 			<DCCReference Include="Units\uICCProfile.pas"/>
 			<DCCReference Include="Units\uImageLoader.pas"/>
@@ -729,6 +729,7 @@
 			<DCCReference Include="External\Controls\virtual-treeview\Source\VTAccessibility.pas"/>
 			<DCCReference Include="External\Controls\virtual-treeview\Source\VTAccessibilityFactory.pas"/>
 			<DCCReference Include="External\Controls\virtual-treeview\Source\VTHeaderPopup.pas"/>
+			<DCCReference Include="Units\Formats\uFreeImageIO.pas"/>
 			<RidlCompile Include="Units\WebJS\WebJS.ridl"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
@@ -742,7 +743,7 @@
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>
-		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
@@ -795,12 +796,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile Configuration="Debug" Class="DebugSymbols" LocalName="bin\PhotoDB.rsm">
+					<DeployFile LocalName="bin\PhotoDB.rsm" Class="DebugSymbols" Configuration="Debug">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile Configuration="Debug" Class="ProjectOutput" LocalName="bin\PhotoDB.exe">
+					<DeployFile LocalName="bin\PhotoDB.exe" Class="ProjectOutput" Configuration="Debug">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">
@@ -881,6 +882,6 @@
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>
 		</ProjectExtensions>
-		<Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
-		<Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+		<Import Condition="Exists('$(MSBuildProjectName).deployproj')" Project="$(MSBuildProjectName).deployproj"/>
 	</Project>

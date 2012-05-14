@@ -27,6 +27,8 @@
 unit DECCipher;
 
 {$RANGECHECKS OFF}
+{$Q-}
+{$R-}
 
 interface
 

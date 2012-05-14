@@ -3,7 +3,13 @@ unit uLanguageLoadThread;
 interface
 
 uses
-  uTranslate, Classes, ActiveX, uRuntime, uMobileUtils, uTime, uConstants;
+  uTranslate,
+  Classes,
+  ActiveX,
+  uRuntime,
+  uMobileUtils,
+  uTime,
+  uConstants;
 
 type
   TLanguageThread = class(TThread)

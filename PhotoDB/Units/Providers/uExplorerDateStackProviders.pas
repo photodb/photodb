@@ -5,6 +5,7 @@ interface
 uses
   uConstants,
   uMemory,
+  Classes,
   SysUtils,
   Graphics,
   StrUtils,
@@ -69,6 +70,8 @@ type
   private
     FCount: Integer;
     function GetDay: Integer;
+    function GetMonth: Integer;
+    function GetYear: Integer;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
@@ -80,6 +83,8 @@ type
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     property Day: Integer read GetDay;
+    property Month: Integer read GetMonth;
+    property Year: Integer read GetYear;
   end;
 
 type
@@ -97,15 +102,45 @@ implementation
 { TExplorerDateStackProvider }
 
 function TExplorerDateStackProvider.CreateFromPath(Path: string): TPathItem;
+var
+  SL: TStrings;
+  S: string;
+  I: Integer;
 begin
   Result := nil;
-  if StartsText(cDatesPath, AnsiLowerCase(Path)) then
-    Result := TDateStackItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+  S := ExcludeTrailingPathDelimiter(Path);
+
+  if StartsText(cDatesPath, AnsiLowerCase(S)) then
+  begin
+    Delete(S, 1, Length(cDatesPath));
+
+    SL := TStringList.Create;
+    try
+      SL.Delimiter := '\';
+      SL.DelimitedText := S;
+
+      for I := SL.Count - 1 downto 0 do
+        if SL[I] = '' then
+          SL.Delete(I);
+
+      if SL.Count = 0 then
+        Result := TDateStackItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+      if SL.Count = 1 then
+        Result := TDateStackYearItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+      if SL.Count = 2 then
+        Result := TDateStackMonthItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+      if SL.Count = 3 then
+        Result := TDateStackDayItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+    finally
+      F(SL);
+    end;
+
+  end;
 end;
 
 function TExplorerDateStackProvider.GetTranslateID: string;
 begin
-  Result := 'ExplorerDateProvider';
+  Result := 'CalendarProvider';
 end;
 
 function Capitalize(const S: string): string;
@@ -126,6 +161,12 @@ var
   MI: TDateStackMonthItem;
   DI: TDateStackDayItem;
   FDateRangeDS: TDataSet;
+
+  function ImagesFilter: string;
+  begin
+    Result := FormatEx('(Attr <> {0} and DateToAdd > 1900 and IsDate = True)', [Db_attr_not_exists]);
+  end;
+
 begin
   inherited;
   Result := True;
@@ -145,7 +186,7 @@ begin
     FDateRangeDS := GetQuery(True);
     try
       ForwardOnlyQuery(FDateRangeDS);
-      SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True ) Group BY Year(DateToAdd) Order by "GroupYear" desc');
+      SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + ImagesFilter + ' ) Group BY Year(DateToAdd) Order by "GroupYear" desc');
 
       FDateRangeDS.Active := True;
 
@@ -171,7 +212,7 @@ begin
     FDateRangeDS := GetQuery(True);
     try
       ForwardOnlyQuery(FDateRangeDS);
-      SetSQL(FDateRangeDS, 'SELECT Month(DateToAdd) as "GroupMonth", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True and Year(DateToAdd) = ' + IntToStr(YI.Year) + ') Group BY Month(DateToAdd) Order by "GroupMonth" desc');
+      SetSQL(FDateRangeDS, 'SELECT Month(DateToAdd) as "GroupMonth", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + ImagesFilter + ' and Year(DateToAdd) = ' + IntToStr(YI.Year) + ') Group BY Month(DateToAdd) Order by "GroupMonth" desc');
 
       FDateRangeDS.Active := True;
 
@@ -198,7 +239,7 @@ begin
     FDateRangeDS := GetQuery(True);
     try
       ForwardOnlyQuery(FDateRangeDS);
-      SetSQL(FDateRangeDS, 'SELECT Day(DateToAdd) as "GroupDay", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where DateToAdd > 1900 and IsDate = True and Year(DateToAdd) = ' + IntToStr(MI.Year) + ' and Month(DateToAdd) = ' + IntToStr(MI.Month) + ') Group BY Day(DateToAdd) Order by "GroupMonth" desc');
+      SetSQL(FDateRangeDS, 'SELECT Day(DateToAdd) as "GroupDay", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + ImagesFilter + ' and Year(DateToAdd) = ' + IntToStr(MI.Year) + ' and Month(DateToAdd) = ' + IntToStr(MI.Month) + ') Group BY Day(DateToAdd) Order by "GroupDay" desc');
 
       FDateRangeDS.Active := True;
 
@@ -414,7 +455,7 @@ begin
   P := LastDelimiter('/\', S);
   if P > 0 then
   begin
-    S := System.Copy(S, P - 1);
+    S := System.Copy(S, 1, P - 1);
     Result := TDateStackYearItem.CreateFromPath(S, PATH_LOAD_NORMAL or PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
     Exit;
   end;
@@ -467,6 +508,51 @@ begin
   end;
 end;
 
+function TDateStackDayItem.GetMonth: Integer;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := 0;
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, 1, P - 1);
+    P := LastDelimiter('/\', S);
+    if P > 0 then
+    begin
+      S := System.Copy(S, P + 1, Length(S) - P);
+      Result := StrToInt64Def(S, 0);
+    end;
+  end;
+end;
+
+function TDateStackDayItem.GetYear: Integer;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := 0;
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, 1, P - 1);
+    P := LastDelimiter('/\', S);
+    if P > 0 then
+    begin
+      S := System.Copy(S, 1, P - 1);
+      P := LastDelimiter('/\', S);
+      if P > 0 then
+      begin
+        S := System.Copy(S, P + 1, Length(S) - P);
+        Result := StrToInt64Def(S, 0);
+      end;
+    end;
+  end;
+end;
+
 function TDateStackDayItem.GetDisplayName: string;
 begin
   Result := IntToStr(Day);
@@ -493,7 +579,7 @@ begin
   P := LastDelimiter('/\', S);
   if P > 0 then
   begin
-    S := System.Copy(S, P - 1);
+    S := System.Copy(S, 1, P - 1);
     Result := TDateStackMonthItem.CreateFromPath(S, PATH_LOAD_NORMAL or PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
     Exit;
   end;

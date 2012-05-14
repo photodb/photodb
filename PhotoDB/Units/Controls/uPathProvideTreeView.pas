@@ -68,6 +68,7 @@ type
     procedure LoadHomeDirectory(Form: TThreadForm);
     procedure SelectPathItem(PathItem: TPathItem);
     procedure SelectPath(Path: string);
+    procedure Reload;
     property OnSelectPathItem: TOnSelectPathItem read FOnSelectPathItem write FOnSelectPathItem;
   end;
 
@@ -510,6 +511,17 @@ begin
       end;
     end
   );
+end;
+
+procedure TPathProvideTreeView.Reload;
+begin
+  FIsStarted := False;
+  FIsInitialized := False;
+  Clear;
+  RootNodeCount := 0;
+  FHomeItems.FreeItems;
+  FreeList(FNodesToDelete, False);
+  LoadHomeDirectory(FForm);
 end;
 
 procedure TPathProvideTreeView.DoInitChildren(Node: PVirtualNode;

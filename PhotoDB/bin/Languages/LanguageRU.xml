@@ -225,6 +225,7 @@
     <translate name="New group" value="Создать группу" />
     <translate name="Add to collection" value="Добавить в базу" />
     <translate name="Preview" value="Предпросмотр" />
+    <translate name="Explorer" value="Проводник" />
     <translate name="Tasks" value="Задачи" />
     <translate name="Open" value="Открыть" />
     <translate name="Show" value="Просмотр" />
@@ -2195,6 +2196,9 @@
   </scope>
   <scope name="PhotoShelf">
 	<translate name="Photo shelf" value="Отложенные фото"/>
+  </scope>
+  <scope name="CalendarProvider">
+	<translate name="Calendar" value="Календарь"/>
   </scope>
   <scope name="Picasa">
 	<translate name="Picasa authorisation" value="Авторизация на Picasa"/>

@@ -298,7 +298,7 @@ type
     Image: TJpegImage;
     Tag: Integer;
     IsImageEncrypted: Boolean;
-    constructor Create;
+    constructor Create; override;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromFile(FileName: string);
     procedure ReadExists;
@@ -427,6 +427,7 @@ end;
 
 constructor TDBPopupMenuInfoRecord.Create;
 begin
+  inherited;
   FFileNameCRC32 := 0;
   IsImageEncrypted := False;
   Tag := 0;

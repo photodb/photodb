@@ -3,7 +3,7 @@ object ExplorerForm: TExplorerForm
   Top = 225
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
-  ClientHeight = 690
+  ClientHeight = 716
   ClientWidth = 1008
   Color = clBtnFace
   Constraints.MinHeight = 200
@@ -25,14 +25,14 @@ object ExplorerForm: TExplorerForm
   OnShow = FormShow
   DesignSize = (
     1008
-    690)
+    716)
   PixelsPerInch = 96
   TextHeight = 13
   object SplLeftPanel: TSplitter
-    Left = 135
+    Left = 140
     Top = 48
     Width = 5
-    Height = 622
+    Height = 648
     Constraints.MaxWidth = 150
     OnCanResize = SplLeftPanelCanResize
     ExplicitLeft = 150
@@ -40,755 +40,759 @@ object ExplorerForm: TExplorerForm
     ExplicitHeight = 546
   end
   object BvSeparatorLeftPanel: TBevel
-    Left = 140
+    Left = 145
     Top = 48
     Width = 1
-    Height = 622
+    Height = 648
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
+    ExplicitLeft = 140
     ExplicitHeight = 545
   end
   object MainPanel: TPanel
     Left = 0
     Top = 48
-    Width = 135
-    Height = 622
+    Width = 140
+    Height = 648
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 0
-    object CloseButtonPanel: TPanel
+    object PcTasks: TPageControl
       Left = 0
       Top = 0
-      Width = 135
-      Height = 21
-      Align = alTop
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentColor = True
-      ParentFont = False
-      TabOrder = 0
-      Visible = False
-      OnResize = CloseButtonPanelResize
-      object BtnCloseExplorer: TButton
-        Left = 101
-        Top = 3
-        Width = 15
-        Height = 15
-        Caption = 'x'
-        TabOrder = 0
-        OnClick = BtnCloseExplorerClick
-      end
-    end
-    object PropertyPanel: TPanel
-      Left = 0
-      Top = 21
-      Width = 135
-      Height = 601
+      Width = 140
+      Height = 648
+      ActivePage = TsPreview
       Align = alClient
-      BevelOuter = bvNone
-      ParentColor = True
-      TabOrder = 1
-      OnResize = PropertyPanelResize
-      object ScrollBox1: TScrollPanel
-        Left = 0
-        Top = 0
-        Width = 135
-        Height = 572
-        HorzScrollBar.Increment = 10
-        HorzScrollBar.Visible = False
-        VertScrollBar.Smooth = True
-        VertScrollBar.Tracking = True
-        DefaultDraw = True
-        BackGroundTransparent = 0
-        OnReallign = ScrollBox1Reallign
-        BackgroundLeft = 0
-        BackgroundTop = 0
-        UpdatingPanel = False
-        Align = alClient
-        BevelOuter = bvNone
-        FullRepaint = False
-        TabOrder = 0
-        OnResize = ScrollBox1Resize
-        object TypeLabel: TLabel
-          Left = 7
-          Top = 141
-          Width = 49
-          Height = 13
-          Caption = 'TypeLabel'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-          WordWrap = True
-        end
-        object TasksLabel: TLabel
-          Tag = 1
-          Left = 8
-          Top = 340
-          Width = 33
-          Height = 13
-          Caption = 'Tasks'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object SizeLabel: TLabel
-          Left = 7
-          Top = 157
-          Width = 44
-          Height = 13
-          Caption = 'SizeLabel'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
-        object RatingLabel: TLabel
-          Left = 8
-          Top = 192
-          Width = 31
-          Height = 13
-          Caption = 'Rating'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
-        object OtherPlacesLabel: TLabel
-          Tag = 1
-          Left = 8
-          Top = 559
-          Width = 71
-          Height = 13
-          Caption = 'Other Places'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object NameLabel: TLabel
-          Tag = 1
-          Left = 7
-          Top = 148
-          Width = 62
-          Height = 13
-          Caption = 'NameLabel'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object Label1: TLabel
-          Left = 10
-          Top = 5
-          Width = 97
-          Height = 13
-          AutoSize = False
-          Caption = 'Image Preview:'
-        end
-        object ImPreview: TImage
-          Left = 10
-          Top = 24
-          Width = 118
-          Height = 118
-          ParentCustomHint = False
-          OnContextPopup = ImPreviewContextPopup
-          OnDblClick = ImPreviewDblClick
-        end
-        object IDLabel: TLabel
-          Left = 8
-          Top = 176
-          Width = 36
-          Height = 13
-          Caption = 'IDLabel'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
-        object DimensionsLabel: TLabel
-          Left = 7
-          Top = 149
-          Width = 78
-          Height = 13
-          Caption = 'DimensionsLabel'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
-        object AccessLabel: TLabel
-          Left = 8
-          Top = 208
-          Width = 58
-          Height = 13
-          Caption = 'AccessLabel'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
-        object ImageTasksLabel: TLabel
-          Tag = 1
-          Left = 8
-          Top = 227
-          Width = 73
-          Height = 13
-          Caption = 'Image Tasks'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object SlideShowLink: TWebLink
-          Left = 5
-          Top = 355
-          Width = 72
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Slide Show'
-          OnClick = SlideShowLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object ShellLink: TWebLink
-          Left = 5
-          Top = 369
-          Width = 47
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Open'
-          OnClick = Open1Click
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object RenameLink: TWebLink
-          Left = 5
-          Top = 430
-          Width = 60
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Rename'
-          OnClick = Rename1Click
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object RefreshLink: TWebLink
-          Left = 5
-          Top = 460
-          Width = 59
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Refresh'
-          OnClick = RefreshLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object PropertiesLink: TWebLink
-          Left = 5
-          Top = 445
-          Width = 70
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Properties'
-          OnClick = PropertiesLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object PrintLink: TWebLink
-          Left = 5
-          Top = 292
-          Width = 43
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Print'
-          OnClick = PrintLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object MyPicturesLink: TWebLink
-          Left = 5
-          Top = 588
-          Width = 76
-          Height = 16
-          Cursor = crHandPoint
-          OnContextPopup = MyPicturesLinkContextPopup
-          Text = 'My Pictures'
-          OnClick = MyPicturesLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object MyDocumentsLink: TWebLink
-          Left = 5
-          Top = 604
-          Width = 91
-          Height = 16
-          Cursor = crHandPoint
-          OnContextPopup = MyPicturesLinkContextPopup
-          Text = 'My Documents'
-          OnClick = MyDocumentsLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object MyComputerLink: TWebLink
-          Left = 5
-          Top = 572
-          Width = 85
-          Height = 16
-          Cursor = crHandPoint
-          OnContextPopup = MyPicturesLinkContextPopup
-          Text = 'My Computer'
-          OnClick = MyComputerLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object MoveToLink: TWebLink
-          Left = 5
-          Top = 415
-          Width = 62
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Move To'
-          OnClick = MoveToLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object ImageEditorLink: TWebLink
-          Left = 5
-          Top = 306
-          Width = 82
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Image Editor'
-          OnClick = ImageEditorLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object DesktopLink: TWebLink
-          Left = 5
-          Top = 620
-          Width = 60
-          Height = 16
-          Cursor = crHandPoint
-          OnContextPopup = MyPicturesLinkContextPopup
-          Text = 'Desktop'
-          OnClick = DesktopLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object DeleteLink: TWebLink
-          Left = 5
-          Top = 474
-          Width = 52
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Delete'
-          OnClick = Delete1Click
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object CopyToLink: TWebLink
-          Left = 5
-          Top = 398
-          Width = 61
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Copy To'
-          OnClick = CopyToLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object AddLink: TWebLink
-          Left = 5
-          Top = 505
-          Width = 75
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Add Object'
-          OnClick = AddLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object EncryptLink: TWebLink
-          Left = 5
-          Top = 238
-          Width = 58
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Encrypt'
-          OnClick = EncryptLinkClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlCreateObject: TWebLink
-          Left = 5
-          Top = 384
-          Width = 54
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Create'
-          Visible = False
-          OnClick = WlCreateObjectClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlResize: TWebLink
-          Left = 5
-          Top = 252
-          Width = 52
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Resize'
-          OnClick = Resize1Click
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlConvert: TWebLink
-          Left = 5
-          Top = 266
-          Width = 60
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Convert'
-          OnClick = Convert1Click
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlCrop: TWebLink
-          Left = 5
-          Top = 280
-          Width = 44
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Crop'
-          OnClick = WlCropClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlImportPictures: TWebLink
-          Left = 5
-          Top = 488
-          Width = 94
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Import pictures'
-          OnClick = WlImportPicturesClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlGeoLocation: TWebLink
-          Left = 5
-          Top = 320
-          Width = 93
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Display on map'
-          OnClick = WlGeoLocationClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlClear: TWebLink
-          Left = 5
-          Top = 521
-          Width = 46
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Clear'
-          OnClick = WlClearClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
-        object WlShare: TWebLink
-          Left = 5
-          Top = 537
-          Width = 49
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'Share'
-          Visible = False
-          OnClick = WlShareClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
+      MultiLine = True
+      ParentShowHint = False
+      ShowHint = False
+      TabOrder = 0
+      OnChange = PcTasksChange
+      object TsPreview: TTabSheet
+        Margins.Left = 0
+        Margins.Top = 0
+        Margins.Right = 0
+        Margins.Bottom = 0
+        Caption = 'Preview'
+        ExplicitWidth = 127
+        object PropertyPanel: TPanel
+          Left = 0
+          Top = 0
+          Width = 132
+          Height = 620
+          Align = alClient
+          BevelOuter = bvNone
+          ParentColor = True
+          TabOrder = 0
+          OnResize = PropertyPanelResize
+          ExplicitWidth = 127
+          object ScrollBox1: TScrollPanel
+            Left = 0
+            Top = 0
+            Width = 132
+            Height = 591
+            HorzScrollBar.Increment = 10
+            HorzScrollBar.Visible = False
+            VertScrollBar.Smooth = True
+            VertScrollBar.Tracking = True
+            DefaultDraw = True
+            BackGroundTransparent = 0
+            OnReallign = ScrollBox1Reallign
+            BackgroundLeft = 0
+            BackgroundTop = 0
+            UpdatingPanel = False
+            Align = alClient
+            BevelOuter = bvNone
+            FullRepaint = False
+            TabOrder = 0
+            OnResize = ScrollBox1Resize
+            ExplicitWidth = 127
+            object TypeLabel: TLabel
+              Left = 7
+              Top = 141
+              Width = 49
+              Height = 13
+              Caption = 'TypeLabel'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+              WordWrap = True
+            end
+            object TasksLabel: TLabel
+              Tag = 1
+              Left = 8
+              Top = 340
+              Width = 33
+              Height = 13
+              Caption = 'Tasks'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object SizeLabel: TLabel
+              Left = 7
+              Top = 157
+              Width = 44
+              Height = 13
+              Caption = 'SizeLabel'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+            end
+            object RatingLabel: TLabel
+              Left = 8
+              Top = 192
+              Width = 31
+              Height = 13
+              Caption = 'Rating'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+            end
+            object OtherPlacesLabel: TLabel
+              Tag = 1
+              Left = 8
+              Top = 559
+              Width = 71
+              Height = 13
+              Caption = 'Other Places'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object NameLabel: TLabel
+              Tag = 1
+              Left = 7
+              Top = 148
+              Width = 62
+              Height = 13
+              Caption = 'NameLabel'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+              ParentFont = False
+              WordWrap = True
+            end
+            object Label1: TLabel
+              Left = 10
+              Top = 5
+              Width = 97
+              Height = 13
+              AutoSize = False
+              Caption = 'Image Preview:'
+            end
+            object ImPreview: TImage
+              Left = 10
+              Top = 24
+              Width = 118
+              Height = 118
+              ParentCustomHint = False
+              OnContextPopup = ImPreviewContextPopup
+              OnDblClick = ImPreviewDblClick
+            end
+            object IDLabel: TLabel
+              Left = 8
+              Top = 176
+              Width = 36
+              Height = 13
+              Caption = 'IDLabel'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+            end
+            object DimensionsLabel: TLabel
+              Left = 7
+              Top = 149
+              Width = 78
+              Height = 13
+              Caption = 'DimensionsLabel'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+            end
+            object AccessLabel: TLabel
+              Left = 8
+              Top = 208
+              Width = 58
+              Height = 13
+              Caption = 'AccessLabel'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+            end
+            object ImageTasksLabel: TLabel
+              Tag = 1
+              Left = 8
+              Top = 227
+              Width = 73
+              Height = 13
+              Caption = 'Image Tasks'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object SlideShowLink: TWebLink
+              Left = 5
+              Top = 355
+              Width = 72
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Slide Show'
+              OnClick = SlideShowLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object ShellLink: TWebLink
+              Left = 5
+              Top = 369
+              Width = 47
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Open'
+              OnClick = Open1Click
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object RenameLink: TWebLink
+              Left = 5
+              Top = 430
+              Width = 60
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Rename'
+              OnClick = Rename1Click
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object RefreshLink: TWebLink
+              Left = 5
+              Top = 460
+              Width = 59
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Refresh'
+              OnClick = RefreshLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object PropertiesLink: TWebLink
+              Left = 5
+              Top = 445
+              Width = 70
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Properties'
+              OnClick = PropertiesLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object PrintLink: TWebLink
+              Left = 5
+              Top = 292
+              Width = 43
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Print'
+              OnClick = PrintLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object MyPicturesLink: TWebLink
+              Left = 5
+              Top = 588
+              Width = 76
+              Height = 16
+              Cursor = crHandPoint
+              OnContextPopup = MyPicturesLinkContextPopup
+              Text = 'My Pictures'
+              OnClick = MyPicturesLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = True
+              CanClick = True
+            end
+            object MyDocumentsLink: TWebLink
+              Left = 5
+              Top = 604
+              Width = 91
+              Height = 16
+              Cursor = crHandPoint
+              OnContextPopup = MyPicturesLinkContextPopup
+              Text = 'My Documents'
+              OnClick = MyDocumentsLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = True
+              CanClick = True
+            end
+            object MyComputerLink: TWebLink
+              Left = 5
+              Top = 572
+              Width = 85
+              Height = 16
+              Cursor = crHandPoint
+              OnContextPopup = MyPicturesLinkContextPopup
+              Text = 'My Computer'
+              OnClick = MyComputerLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = True
+              CanClick = True
+            end
+            object MoveToLink: TWebLink
+              Left = 5
+              Top = 415
+              Width = 62
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Move To'
+              OnClick = MoveToLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object ImageEditorLink: TWebLink
+              Left = 5
+              Top = 306
+              Width = 82
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Image Editor'
+              OnClick = ImageEditorLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object DesktopLink: TWebLink
+              Left = 5
+              Top = 620
+              Width = 60
+              Height = 16
+              Cursor = crHandPoint
+              OnContextPopup = MyPicturesLinkContextPopup
+              Text = 'Desktop'
+              OnClick = DesktopLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = True
+              CanClick = True
+            end
+            object DeleteLink: TWebLink
+              Left = 5
+              Top = 474
+              Width = 52
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Delete'
+              OnClick = Delete1Click
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object CopyToLink: TWebLink
+              Left = 5
+              Top = 398
+              Width = 61
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Copy To'
+              OnClick = CopyToLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object AddLink: TWebLink
+              Left = 5
+              Top = 505
+              Width = 75
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Add Object'
+              OnClick = AddLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object EncryptLink: TWebLink
+              Left = 5
+              Top = 238
+              Width = 58
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Encrypt'
+              OnClick = EncryptLinkClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlCreateObject: TWebLink
+              Left = 5
+              Top = 384
+              Width = 54
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Create'
+              Visible = False
+              OnClick = WlCreateObjectClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlResize: TWebLink
+              Left = 5
+              Top = 252
+              Width = 52
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Resize'
+              OnClick = Resize1Click
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlConvert: TWebLink
+              Left = 5
+              Top = 266
+              Width = 60
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Convert'
+              OnClick = Convert1Click
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlCrop: TWebLink
+              Left = 5
+              Top = 280
+              Width = 44
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Crop'
+              OnClick = WlCropClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlImportPictures: TWebLink
+              Left = 5
+              Top = 488
+              Width = 94
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Import pictures'
+              OnClick = WlImportPicturesClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlGeoLocation: TWebLink
+              Left = 5
+              Top = 320
+              Width = 93
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Display on map'
+              OnClick = WlGeoLocationClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlClear: TWebLink
+              Left = 5
+              Top = 521
+              Width = 46
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Clear'
+              OnClick = WlClearClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+            object WlShare: TWebLink
+              Left = 5
+              Top = 537
+              Width = 49
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'Share'
+              Visible = False
+              OnClick = WlShareClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+          end
+          object PnShelf: TPanel
+            Left = 0
+            Top = 591
+            Width = 132
+            Height = 29
+            Align = alBottom
+            ParentBackground = False
+            TabOrder = 1
+            Visible = False
+            ExplicitWidth = 127
+            object WlGoToShelf: TWebLink
+              Left = 5
+              Top = 6
+              Width = 82
+              Height = 16
+              Cursor = crHandPoint
+              Text = 'WlGoToShelf'
+              OnClick = WlGoToShelfClick
+              ImageIndex = 0
+              IconWidth = 16
+              IconHeight = 16
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = False
+              StretchImage = False
+              CanClick = True
+            end
+          end
         end
       end
-      object PnShelf: TPanel
-        Left = 0
-        Top = 572
-        Width = 135
-        Height = 29
-        Align = alBottom
-        ParentBackground = False
-        TabOrder = 1
-        Visible = False
-        object WlGoToShelf: TWebLink
-          Left = 5
-          Top = 6
-          Width = 82
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'WlGoToShelf'
-          OnClick = WlGoToShelfClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = False
-          CanClick = True
-        end
+      object TsExplorer: TTabSheet
+        Caption = 'Explorer'
+        ImageIndex = 1
+        ExplicitWidth = 127
       end
     end
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 670
+    Top = 696
     Width = 1008
     Height = 20
     Panels = <
@@ -1151,20 +1155,22 @@ object ExplorerForm: TExplorerForm
     end
   end
   object PnContent: TPanel
-    Left = 141
+    Left = 146
     Top = 48
-    Width = 867
-    Height = 622
+    Width = 862
+    Height = 648
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
     ParentColor = True
     TabOrder = 5
+    ExplicitLeft = 141
+    ExplicitWidth = 867
     object SplGeoLocation: TSplitter
-      Left = 512
+      Left = 507
       Top = 33
       Width = 5
-      Height = 556
+      Height = 582
       Align = alRight
       Visible = False
       OnMoved = SplGeoLocationMoved
@@ -1174,12 +1180,13 @@ object ExplorerForm: TExplorerForm
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 589
-      Width = 867
+      Top = 615
+      Width = 862
       Height = 33
       Align = alBottom
       TabOrder = 0
       Visible = False
+      ExplicitWidth = 867
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1532,7 +1539,7 @@ object ExplorerForm: TExplorerForm
     object PnInfo: TPanel
       Left = 0
       Top = 0
-      Width = 867
+      Width = 862
       Height = 33
       Align = alTop
       BevelEdges = [beBottom]
@@ -1541,11 +1548,12 @@ object ExplorerForm: TExplorerForm
       TabOrder = 1
       Visible = False
       OnResize = PnInfoResize
+      ExplicitWidth = 867
       DesignSize = (
-        867
+        862
         33)
       object SbCloseHelp: TSpeedButton
-        Left = 837
+        Left = 832
         Top = 5
         Width = 23
         Height = 22
@@ -1640,13 +1648,14 @@ object ExplorerForm: TExplorerForm
       end
     end
     object PnGeoLocation: TPanel
-      Left = 517
+      Left = 512
       Top = 33
       Width = 350
-      Height = 556
+      Height = 582
       Align = alRight
       TabOrder = 2
       Visible = False
+      ExplicitLeft = 517
       object PnGeoTop: TPanel
         Left = 1
         Top = 1
@@ -1741,7 +1750,7 @@ object ExplorerForm: TExplorerForm
       end
       object PnGeoSearch: TPanel
         Left = 1
-        Top = 520
+        Top = 546
         Width = 348
         Height = 35
         Align = alBottom

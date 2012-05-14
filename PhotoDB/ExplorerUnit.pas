@@ -121,6 +121,7 @@ uses
   uExplorerSearchProviders,
   uExplorerPortableDeviceProvider,
   uExplorerShelfProvider,
+  uExplorerDateStackProviders,
   uTranslate,
   uVCLHelpers,
   uActivationUtils,
@@ -159,6 +160,14 @@ const
   RefreshListViewInterval = 50;
 
 type
+  TPageControl = class(ComCtrls.TPageControl)
+  private
+    procedure TCMAdjustRect(var Msg: TMessage); message TCM_ADJUSTRECT;
+  protected
+    procedure ShowControl(AControl: TControl); override;
+  end;
+
+type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
     SizeImageList: TImageList;
     PmItemPopup: TPopupActionBar;
@@ -181,8 +190,6 @@ type
     New1: TMenuItem;
     Directory1: TMenuItem;
     MainPanel: TPanel;
-    CloseButtonPanel: TPanel;
-    BtnCloseExplorer: TButton;
     PropertyPanel: TPanel;
     Refresh2: TMenuItem;
     OpenInNewWindow1: TMenuItem;
@@ -396,6 +403,9 @@ type
     TmrDelayedStart: TTimer;
     TmrCheckItemVisibility: TTimer;
     MiShare: TMenuItem;
+    PcTasks: TPageControl;
+    TsPreview: TTabSheet;
+    TsExplorer: TTabSheet;
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -415,7 +425,6 @@ type
     procedure SpeedButton3Click(Sender: TObject);
     procedure Open1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
-    procedure CloseButtonPanelResize(Sender: TObject);
     procedure SplLeftPanelCanResize(Sender: TObject; var NewSize: Integer; var Accept: Boolean);
     procedure ListView1SelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -444,14 +453,12 @@ type
     procedure NewWindow1Click(Sender: TObject);
     procedure PmListPopupPopup(Sender: TObject);
     procedure CutClick(Sender: TObject);
-    procedure BtnCloseExplorerClick(Sender: TObject);
     procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure PropertyPanelResize(Sender: TObject);
     procedure ScriptExecuted(Sender: TObject);
     procedure CopyToLinkClick(Sender: TObject);
     procedure MoveToLinkClick(Sender: TObject);
     procedure PasteClick(Sender: TObject);
-    procedure ExplorerPanel1Click(Sender: TObject);
     procedure GoToSearchWindow1Click(Sender: TObject);
     procedure ImPreviewDblClick(Sender: TObject);
     procedure Options1Click(Sender: TObject);
@@ -459,7 +466,6 @@ type
     procedure SetSelected(NewSelected: TEasyItem);
     procedure PropertiesLinkClick(Sender: TObject);
     procedure SlideShowLinkClick(Sender: TObject);
-    procedure InfoPanel1Click(Sender: TObject);
     procedure ShowOnlyCommon1Click(Sender: TObject);
     procedure ShowPrivate1Click(Sender: TObject);
     procedure OpeninSearchWindow1Click(Sender: TObject);
@@ -614,6 +620,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure TbForwardMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure PcTasksChange(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -656,7 +663,6 @@ type
     FDBDragPoint: TPoint;
     UpdatingList: Boolean;
     GlobalLock: Boolean;
-    FIsExplorer: Boolean;
     LastShift: TShiftState;
     LastListViewSelCount: Integer;
     ItemsDeselected: Boolean;
@@ -710,7 +716,6 @@ type
     function GetPathByIndex(Index: Integer): string;
     function GetSelectedFiles: TArrayOfString;
     function CanPasteInSelection: Boolean;
-    function ExplorerType: Boolean;
     function ShowPrivate: Boolean;
     procedure ReallignToolInfo;
     function GetPathPartName(PP: TPathItem): string;
@@ -744,6 +749,7 @@ type
     function GetViewInfo: TExplorerViewInfo;
     procedure SetView(const Value: Integer);
     function GetItemsCount: Integer;
+    function GetIsExplorerTreeViewVisible: Boolean;
     property SecondStepHelp: string read GetSecondStepHelp;
     function GetPathDescription(Path: string; FileType: Integer): string;
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
@@ -849,6 +855,7 @@ type
     property ViewInfo: TExplorerViewInfo read GetViewInfo;
     property View: Integer read GetView write SetView;
     property ItemsCount: Integer read GetItemsCount;
+    property IsExplorerTreeViewVisible: Boolean read GetIsExplorerTreeViewVisible;
   end;
 
 implementation
@@ -992,6 +999,12 @@ begin
     SetPathItem(PathItem);
 end;
 
+procedure TExplorerForm.PcTasksChange(Sender: TObject);
+begin
+  if PcTasks.ActivePageIndex = 1 then
+    TreeView.SelectPathItem(PePath.PathEx);
+end;
+
 procedure VerifyPaste(Explorer: TExplorerForm);
 var
   CanPaste: Boolean;
@@ -1128,7 +1141,6 @@ begin
   SelfDraging := False;
   Outdrag := False;
   FDblClicked := False;
-  FIsExplorer := False;
   SetLength(FListDragItems, 0);
   FDBCanDragW := False;
   ImPreview.Picture.Bitmap := nil;
@@ -1172,8 +1184,6 @@ begin
   AddScriptObjFunction(aScript.PrivateEnviroment, 'Copy',              F_TYPE_OBJ_PROCEDURE_TOBJECT, CopyClick);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'Paste',             F_TYPE_OBJ_PROCEDURE_TOBJECT, PasteClick);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'Cut',               F_TYPE_OBJ_PROCEDURE_TOBJECT, CutClick);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoToExplorerMode',  F_TYPE_OBJ_PROCEDURE_TOBJECT, ExplorerPanel1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'CancelExplorerMode',F_TYPE_OBJ_PROCEDURE_TOBJECT, InfoPanel1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowPrivate',       F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowPrivate1Click);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'HidePrivate',       F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowOnlyCommon1Click);
 
@@ -1195,7 +1205,6 @@ begin
   AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanCopySelection',   CanCopySelection);
   AddScriptObjFunctionIsArrayStrings( aScript.PrivateEnviroment, 'GetSelectedFiles',   GetSelectedFiles);
   AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanPasteInSelection',CanPasteInSelection);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'ExplorerType',       ExplorerType);
   AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'ShowPrivateNow',     ShowPrivate);
   AddScriptObjFunctionIntegerIsString(aScript.PrivateEnviroment, 'GetPathByIndex',     GetPathByIndex);
 
@@ -1570,6 +1579,13 @@ begin
   end;
 
   if Info.FileType = EXPLORER_ITEM_SHELF then
+  begin
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+    Delete1.Visible := True;
+  end;
+
+  if Info.FileType in [EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY] then
   begin
     NewWindow1.Visible := True;
     Open1.Visible := True;
@@ -2214,6 +2230,11 @@ begin
   Result := 'Explorer';
 end;
 
+function TExplorerForm.GetIsExplorerTreeViewVisible: Boolean;
+begin
+  Result := PcTasks.ActivePageIndex = 1;
+end;
+
 function TExplorerForm.GetItemsCount: Integer;
 begin
   Result := ElvMain.Items.Count;
@@ -2251,11 +2272,6 @@ begin
   for I := 0 to ElvMain.Items.Count - 1 do
     TObject(ElvMain.Items[I].Data).Free;
   ElvMain.Items.Clear;
-end;
-
-procedure TExplorerForm.CloseButtonPanelResize(Sender: TObject);
-begin
-  BtnCloseExplorer.Left := CloseButtonPanel.Width - BtnCloseExplorer.Width - 3;
 end;
 
 procedure TExplorerForm.SplLeftPanelCanResize(Sender: TObject;
@@ -2526,6 +2542,8 @@ begin
 
   if [EventID_Param_DB_Changed, EventID_Param_Refresh_Window] * Params <> [] then
   begin
+    if IsExplorerTreeViewVisible then
+      TreeView.Reload;
     ElvMain.Selection.ClearAll;
     RefreshLinkClick(RefreshLink);
   end;
@@ -4360,23 +4378,6 @@ begin
   StatusBar1.Panels[1].Text := Text;
 end;
 
-procedure TExplorerForm.BtnCloseExplorerClick(Sender: TObject);
-begin
-  BeginScreenUpdate(Handle);
-  try
-    FIsExplorer := False;
-    ListView1SelectItem(Sender, ListView1Selected, True);
-    PropertyPanel.Show;
-    FShellTreeView.Hide;
-    CloseButtonPanel.Hide;
-    Settings.WriteInteger('Explorer', 'LeftPanelWidthExplorer', MainPanel.Width);
-    MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
-    ListView1SelectItem(Sender, ListView1Selected, False);
-  finally
-    EndScreenUpdate(Handle, False);
-  end;
-end;
-
 procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
@@ -5122,23 +5123,6 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ExplorerPanel1Click(Sender: TObject);
-begin
-  BeginScreenUpdate(Handle);
-  try
-    TreeView.Show;
-    PropertyPanel.Hide;
-
-    TreeView.SelectPathItem(PePath.PathEx);
-
-    FIsExplorer := True;
-    CloseButtonPanel.Show;
-    MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidthExplorer', 135);
-  finally
-    EndScreenUpdate(Handle, False);
-  end;
-end;
-
 procedure TExplorerForm.SetNewPath(Path: String; Explorer: Boolean);
 var
   S, S1: string;
@@ -5566,11 +5550,6 @@ begin
   Accept := (NewSize > 100) and (PnNavigation.Width - StAddress.Width - NewSize > 300);
 end;
 
-procedure TExplorerForm.InfoPanel1Click(Sender: TObject);
-begin
-  BtnCloseExplorerClick(Sender);
-end;
-
 procedure TExplorerForm.Searchfiles1Click(Sender: TObject);
 begin
   Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES);
@@ -5810,7 +5789,15 @@ begin
   else if PI is TPortableDirectoryItem then
     SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_DEVICE_DIRECTORY), False)
   else if PI is TShelfItem then
-    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_SHELF), False);
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_SHELF), False)
+  else if PI is TDateStackItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR), False)
+  else if PI is TDateStackYearItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR_YEAR), False)
+  else if PI is TDateStackMonthItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR_MONTH), False)
+  else if PI is TDateStackDayItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR_DAY), False);
 end;
 
 
@@ -6070,6 +6057,9 @@ begin
 
     MiCopyAddress.Caption := L('Copy address');
     MiEditAddress.Caption := L('Edit address');
+
+    TsPreview.Caption := L('Preview');
+    TsExplorer.Caption := L('Explorer');
   finally
     EndTranslate;
   end;
@@ -6150,6 +6140,7 @@ var
   UpdaterInfo: TUpdaterInfo;
   ThreadType: Integer;
   Info: TExplorerViewInfo;
+  PI: TPathItem;
   P: TSearchItem;
 begin
   PnInfo.Hide;
@@ -6244,6 +6235,17 @@ begin
     PePath.SetPathEx(TShelfItem, Path);
     Caption := PePath.CurrentPathEx.DisplayName;
     ThreadType := THREAD_TYPE_SHELF;
+  end;
+  if WPath.PType in [EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY] then
+  begin
+    PI := PathProviderManager.CreatePathItem(Path);
+    try
+      PePath.SetPathEx(Self, PI, False);
+      Caption := PePath.CurrentPathEx.DisplayName;
+      ThreadType := THREAD_TYPE_PATH_ITEM;
+    finally
+      F(PI);
+    end;
   end;
   if WPath.PType = EXPLORER_ITEM_GROUP then
   begin
@@ -6384,8 +6386,8 @@ begin
     UpdaterInfo := TUpdaterInfo.Create;
     TExplorerThread.Create(Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
-  if FIsExplorer and not Explorer then
-      TreeView.SelectPath(GetCurrentPath);
+  if IsExplorerTreeViewVisible and not Explorer then
+    TreeView.SelectPath(GetCurrentPath);
 
   DropFileTargetMain.Unregister;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE) then
@@ -7715,7 +7717,8 @@ begin
             (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
-            (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) then
+            (FSelectedInfo.FileType in [EXPLORER_ITEM_SHELF, EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH,
+              EXPLORER_ITEM_CALENDAR_DAY]) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -7749,6 +7752,14 @@ begin
                   FindIcon(HInstance, 'DIRECTORY', 48, 32, Ico);
                 EXPLORER_ITEM_SHELF:
                   FindIcon(HInstance, 'SHELF', 48, 32, Ico);
+                EXPLORER_ITEM_CALENDAR:
+                  FindIcon(HInstance, 'CALENDAR', 48, 32, Ico);
+                EXPLORER_ITEM_CALENDAR_YEAR:
+                  FindIcon(HInstance, 'YEARICON', 48, 32, Ico);
+                EXPLORER_ITEM_CALENDAR_MONTH:
+                  FindIcon(HInstance, 'MONTHICON', 48, 32, Ico);
+                EXPLORER_ITEM_CALENDAR_DAY:
+                  FindIcon(HInstance, 'DAYICON', 48, 32, Ico);
                 EXPLORER_ITEM_DEVICE_FILE:
                 begin
                   Ico := TIcon.Create;
@@ -8510,11 +8521,6 @@ begin
   CloseTimer.Enabled := True;
 end;
 
-function TExplorerForm.ExplorerType: Boolean;
-begin
-  Result := FIsExplorer;
-end;
-
 function TExplorerForm.ShowPrivate: Boolean;
 begin
   Result := ExplorerManager.ShowPrivate;
@@ -9023,7 +9029,8 @@ begin
           EXPLORER_ITEM_SHARE, EXPLORER_ITEM_PERSON_LIST, EXPLORER_ITEM_GROUP_LIST,
           EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_DEVICE,
           EXPLORER_ITEM_DEVICE_STORAGE, EXPLORER_ITEM_DEVICE_DIRECTORY,
-          EXPLORER_ITEM_SHELF:
+          EXPLORER_ITEM_SHELF, EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR,
+          EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY:
           SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
             FFilesInfo[Index].FileType), False);
       end;
@@ -9721,7 +9728,7 @@ begin
   if FShellTreeView = nil then
   begin
     FShellTreeView := TPathProvideTreeView.Create(Self);
-    FShellTreeView.Parent := MainPanel;
+    FShellTreeView.Parent := TsExplorer;
     FShellTreeView.Align := AlClient;
     FShellTreeView.LoadHomeDirectory(Self);
     //FShellTreeView.PopupMenu := PopupMenuTreeView;
@@ -9749,7 +9756,6 @@ begin
   UpdatingList := False;
   GlobalLock := False;
   NotSetOldPath := True;
-  FIsExplorer := False;
   FChangeHistoryOnChPath := True;
   FGoToLastSavedPath := GoToLastSavedPath;
   FSelectedItem := nil;
@@ -9890,6 +9896,21 @@ begin
   F(RefreshIDList);
   ExplorerUpdateManager.CleanUp(Self);
   inherited;
+end;
+
+{ TPageControl }
+
+procedure TPageControl.ShowControl(AControl: TControl);
+begin
+end;
+
+procedure TPageControl.TCMAdjustRect(var Msg: TMessage);
+begin
+  inherited;
+  if Msg.WParam = 0 then
+    InflateRect(PRect(Msg.LParam)^, 4, 4)
+  else
+    InflateRect(PRect(Msg.LParam)^, -4, -4);
 end;
 
 initialization

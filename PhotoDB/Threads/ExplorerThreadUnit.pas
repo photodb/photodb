@@ -37,6 +37,7 @@ uses
   uTime,
   uGOM,
   uFileUtils,
+  DateUtils,
   uConstants,
   uMemory,
   SyncObjs,
@@ -64,6 +65,7 @@ uses
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
   uExplorerPortableDeviceProvider,
+  uExplorerDateStackProviders,
   uPhotoShelf,
   uImageLoader;
 
@@ -148,6 +150,7 @@ type
     procedure SetProgressVisible;
     procedure PathProviderCallBack(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var ABreak: Boolean);
     function LoadProviderItem(Item: TPathItem; PacketSize, ImageSize: Integer): Boolean;
+    function LoadProviderItemEx(Item: TPathItem; PacketSize, ImageSize: Integer; Text: string): Boolean;
     procedure LoadMyComputerFolder;
     procedure LoadNetWorkFolder;
     procedure MakeImageWithIcon;
@@ -157,6 +160,7 @@ type
     procedure LoadPersons;
     procedure LoadDeviceItems;
     procedure LoadShelf;
+    procedure LoadPathItem;
     procedure ShowMessage_;
     procedure ExplorerBack;
     procedure UpdateFile;
@@ -181,7 +185,8 @@ type
     procedure SendInfoToExplorer(Info: TExplorerFileInfo; var LastPacketTime: Cardinal);
     procedure SendPacketToExplorer;
     procedure SearchFolder(SearchContent: Boolean);
-    procedure SearchDB;
+    procedure SearchDB; overload;
+    procedure SearchDB(DateFrom, DateTo: TDateTime); overload;
     function IsImage(SearchRec: TSearchRec): Boolean;
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
     procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TDBPopupMenuInfo);
@@ -540,6 +545,12 @@ begin
        SynchronizeEx(DoStopSearch);
        Exit;
       end;
+      if (FThreadType = THREAD_TYPE_PATH_ITEM) then
+      begin
+       LoadPathItem;
+       SynchronizeEx(DoStopSearch);
+       Exit;
+      end;
       FFolder := ExcludeTrailingBackslash(FFolder);
       if not DirectoryExists(FFolder) then
       begin
@@ -797,6 +808,11 @@ begin
 end;
 
 procedure TExplorerThread.SearchDB;
+begin
+  SearchDB(EncodeDate(1900, 1, 1), EncodeDate(2100, 1, 1));
+end;
+
+procedure TExplorerThread.SearchDB(DateFrom, DateTo: TDateTime);
 var
   DS: TDatabaseSearch;
   SQ: TSearchQuery;
@@ -810,8 +826,8 @@ begin
     SQ.RatingFrom := 0;
     SQ.RatingTo := 5;
     SQ.ShowPrivate := ExplorerInfo.ShowPrivate;
-    SQ.DateFrom := EncodeDate(1900, 1, 1);
-    SQ.DateTo := EncodeDate(2100, 1, 1);
+    SQ.DateFrom := DateFrom;
+    SQ.DateTo := DateTo;
     SQ.SortMethod := SM_RATING;
     SQ.SortDecrement := True;
     SQ.IsEstimate := False;
@@ -977,7 +993,6 @@ var
   I: Integer;
   FileName, S: string;
   FileSize: Int64;
-//  PI: TPathItem;
 begin
   FPacketImages := TBitmapImageList.Create;
   FPacketInfos := TExplorerFileInfos.Create;
@@ -997,46 +1012,26 @@ begin
           FileName := List[I];
           FileInfo := nil;
 
-        {  PI := PathProviderManager.CreatePathItem(FileName);
-          try
-            if PI is TPortableVideoItem then
+          if FileExistsSafe(FileName) then
+          begin
+            FileSize := GetFileSize(FileName);
+            S := ExtractFileExt(FileName);
+            S := '|' + AnsiLowerCase(S) + '|';
+            if Pos(S, SupportedExt) <> 0 then
             begin
-              AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_VIDEO, -1, GetGUID, 0, 0,
-                0, 0, PI.FileSize, '', '', '', 0, False, True, True);
-            end else if PI is TPortableImageItem then
+              FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0,
+                0, 0, FileSize, '', '', '', 0, False, False, True);
+            end else
             begin
-              AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_IMAGE, -1, GetGUID, 0, 0,
-                0, 0, PI.FileSize, '', '', '', 0, False, True, True);
-            end else if PI is TPortableFileItem then
-            begin
-              AddOneExplorerFileInfo(Files, FileName, EXPLORER_ITEM_DEVICE_FILE, -1, GetGUID, 0, 0,
-                0, 0, PI.FileSize, '', '', '', 0, False, True, True);
-            end else }
-            begin
-              if FileExistsSafe(FileName) then
-              begin
-                FileSize := GetFileSize(FileName);
-                S := ExtractFileExt(FileName);
-                S := '|' + AnsiLowerCase(S) + '|';
-                if Pos(S, SupportedExt) <> 0 then
-                begin
-                  FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_IMAGE, -1, GetGUID, 0, 0,
-                    0, 0, FileSize, '', '', '', 0, False, False, True);
-                end else
-                begin
-                  FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
-                    0, 0, FileSize, '', '', '', 0, False, False, True);
-                end;
-              end else if DirectoryExistsSafe(FileName) then
-              begin
-                FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
-                  0, 0, 0, '', '', '', 0, False, True, True);
-              end;
+              FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
+                0, 0, FileSize, '', '', '', 0, False, False, True);
             end;
-          {
-          finally
-            F(PI);
-          end; }
+          end else if DirectoryExistsSafe(FileName) then
+          begin
+            FileInfo := AddOneExplorerFileInfo(nil, FileName, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
+              0, 0, 0, '', '', '', 0, False, True, True);
+          end;
+
           if FileInfo <> nil then
           begin
             Files.Add(FileInfo);
@@ -1444,7 +1439,7 @@ begin
     FSender.SetInfoToItem(FInfo, GUIDParam);
 end;
 
-procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile : string; DirctoryID : TGUID);
+procedure TExplorerThread.ReplaceThumbImageToFolder(CurrentFile: string; DirctoryID: TGUID);
 var
   Found, Count, Dx, I, J, X, Y, W, H, Ps, Index: Integer;
   SearchRec: TSearchRec;
@@ -1468,8 +1463,10 @@ var
   S: string;
   P: Integer;
   Crc: Cardinal;
-  Graphic : TGraphic;
-  GraphicClass : TGraphicClass;
+
+  Info: TDBPopupMenuInfoRecord;
+  Graphic: TGraphic;
+  ImageInfo: ILoadImageInfo;
 
   function FileInFiles(FileName: String) : Boolean;
   begin
@@ -1711,64 +1708,52 @@ begin
         end else
         begin
 
-          Rotation := GetExifRotate(Files[Index]);
-
-          GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Files[Index]));
-          if GraphicClass = nil then
-            Continue;
-
-          Graphic := GraphicClass.Create;
+          Info := TDBPopupMenuInfoRecord.CreateFromFile(Files[Index]);
           try
-            if ValidCryptGraphicFile(Files[Index]) then
-            begin
-              Password := DBKernel.FindPasswordForCryptImageFile(Files[Index]);
-              if Password <> '' then
-              begin
-                F(Graphic);
-                Graphic := DeCryptGraphicFile(Files[Index], Password);
-              end;
 
-              if Graphic = nil then
-                Continue;
-            end else
-            begin
-              if Graphic is TRAWImage then
-              begin
-                TRAWImage(Graphic).HalfSizeLoad := True;
-                if not (Graphic as TRAWImage).LoadThumbnailFromFile(Files[Index], SmallImageSize * 4, SmallImageSize * 4) then
-                  Graphic.LoadFromFile(Files[Index])
-                else if FInfo.ID = 0 then
-                  Rotation := ExifDisplayButNotRotate(Rotation)
-              end else
-                Graphic.LoadFromFile(Files[Index]);
-            end;
-            _y := Round((564 - 68) * ps / 1200);
-            SmallImageSize := Round(_y / 1.05);
-            JPEGScale(Graphic, SmallImageSize, SmallImageSize);
-
-            FBmp := TBitmap.Create;
+            Graphic := nil;
             try
-              Bmp := TBitmap.Create;
-              try
-                AssignGraphic(BMP, Graphic);
-                F(Graphic);
+              if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo, SmallImageSize, SmallImageSize) then
+              begin
+                Graphic := ImageInfo.ExtractGraphic;
 
-                FBMP.PixelFormat := BMP.PixelFormat;
-                ApplyRotate(BMP, Rotation);
-                W := BMP.Width;
-                H := BMP.Height;
-                ProportionalSize(SmallImageSize, SmallImageSize, W, H);
+                if Graphic <> nil then
+                begin
+                  _y := Round((564 - 68) * ps / 1200);
+                  SmallImageSize := Round(_y / 1.05);
+                  JPEGScale(Graphic, SmallImageSize, SmallImageSize);
 
-                DoResize(W, H, BMP, FBMP);
-                DrawFolderImageWithXY(TempBitmap, Rect(_x div 2 - w div 2 + x, _y div 2 - h div 2 + y, _x div 2- w div 2 + x + w, _y div 2 - h div 2 + y + h), FBMP);
-              finally
-                F(BMP);
+                  FBmp := TBitmap.Create;
+                  try
+                    Bmp := TBitmap.Create;
+                    try
+                      AssignGraphic(BMP, Graphic);
+                      F(Graphic);
+
+                      FBMP.PixelFormat := BMP.PixelFormat;
+                      ApplyRotate(BMP, Rotation);
+                      W := BMP.Width;
+                      H := BMP.Height;
+                      ProportionalSize(SmallImageSize, SmallImageSize, W, H);
+
+                      DoResize(W, H, BMP, FBMP);
+                      ImageInfo.AppllyICCProfile(FBMP);
+                      DrawFolderImageWithXY(TempBitmap, Rect(_x div 2 - w div 2 + x, _y div 2 - h div 2 + y, _x div 2- w div 2 + x + w, _y div 2 - h div 2 + y + h), FBMP);
+                    finally
+                      F(BMP);
+                    end;
+                  finally
+                    F(FBMP);
+                  end;
+
+                end else
+                  Continue;
               end;
             finally
-              F(FBMP);
+              F(Graphic);
             end;
           finally
-            F(Graphic);
+            F(Info);
           end;
         end;
       end;
@@ -2213,19 +2198,19 @@ begin
   end;
 end;
 
-procedure TExplorerThread.LoadMyComputerFolder;
-var
-  HomeItem: THomeItem;
+function TExplorerThread.LoadProviderItemEx(Item: TPathItem; PacketSize,
+  ImageSize: Integer; Text: string): Boolean;
 begin
+  Result := False;
   HideProgress;
-  ShowInfo(L('Loading "My computer" directory') + '...', 1, 0);
+  ShowInfo(Text, 1, 0);
   SynchronizeEx(BeginUpdate);
   try
-    HomeItem := THomeItem.Create;
     try
-      LoadProviderItem(HomeItem, 1, FIcoSize);
-    finally
-      F(HomeItem);
+      Result := LoadProviderItem(Item, PacketSize, ImageSize);
+    except
+      on e: Exception do
+        EventLog(e);
     end;
   finally
     EndUpdate;
@@ -2233,24 +2218,70 @@ begin
   ShowInfo('', 1, 0);
 end;
 
+procedure TExplorerThread.LoadMyComputerFolder;
+var
+  HomeItem: THomeItem;
+begin
+  HomeItem := THomeItem.Create;
+  try
+    LoadProviderItemEx(HomeItem, 1, FIcoSize, L('Loading "My computer" directory') + '...');
+  finally
+    F(HomeItem);
+  end;
+end;
+
 procedure TExplorerThread.LoadNetWorkFolder;
 var
   NetworkItem: TNetworkItem;
 begin
-  HideProgress;
-  ShowInfo(L('Scaning network') + '...', 1, 0);
-  SynchronizeEx(BeginUpdate);
+  NetworkItem := TNetworkItem.CreateFromPath(cNetworkPath, PATH_LOAD_NO_IMAGE, 0);
   try
-    NetworkItem := TNetworkItem.CreateFromPath(cNetworkPath, PATH_LOAD_NO_IMAGE, 0);
-    try
-      LoadProviderItem(NetworkItem, 5, FIcoSize);
-    finally
-      F(NetworkItem);
+    LoadProviderItemEx(NetworkItem, 5, FIcoSize, L('Scaning network') + '...');
+  finally
+    F(NetworkItem);
+  end;
+end;
+
+procedure TExplorerThread.LoadPathItem;
+var
+  PI: TPathItem;
+  YI: TDateStackYearItem;
+  MI: TDateStackMonthItem;
+  DI: TDateStackDayItem;
+  D: TDateTime;
+begin
+  PI := PathProviderManager.CreatePathItem(ExcludeTrailingPathDelimiter(FFolder));
+  try
+    if PI <> nil then
+    begin
+      if PI is TDateStackItem then
+        LoadProviderItemEx(PI, 1, FIcoSize, L('Loading calendar') + '...');
+
+      if PI is TDateStackYearItem then
+      begin
+        LoadProviderItem(PI, 1, FIcoSize);
+        YI := TDateStackYearItem(PI);
+        SearchDB(EncodeDate(YI.Year, 1, 1), EncodeDate(YI.Year, 12, 31));
+      end;
+      if PI is TDateStackMonthItem then
+      begin
+        LoadProviderItem(PI, 1, FIcoSize);
+        MI := TDateStackMonthItem(PI);
+        D := EncodeDate(MI.Year, MI.Month, 1);
+
+        SearchDB(D, IncDay(IncMonth(D, 1), -1));
+      end;
+      if PI is TDateStackDayItem then
+      begin
+        DI := TDateStackDayItem(PI);
+        D := EncodeDate(DI.Year, DI.Month, DI.Day);
+
+        SearchDB(D, D);
+      end;
     end;
   finally
-    EndUpdate;
+    F(PI);
   end;
-  ShowInfo('', 1, 0);
 end;
 
 procedure TExplorerThread.LoadPersons;
@@ -2670,79 +2701,68 @@ end;
 
 procedure TExplorerThread.ExtractBigPreview(FileName: string; ID: Integer; Rotated: Integer; FileGUID: TGUID);
 var
-  Graphic: TGraphic;
-  GraphicClass: TGraphicClass;
-  PassWord: String;
   FBit: TBitmap;
   W, H: Integer;
+  Info: TDBPopupMenuInfoRecord;
+  Graphic: TGraphic;
+  ImageInfo: ILoadImageInfo;
 begin
   FileName := ProcessPath(FileName);
   GUIDParam := FileGUID;
+  CurrentFile := FileName;
 
   if not FileExistsSafe(FileName) then
     Exit;
 
-  CurrentFile := FileName;
-
-  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
-  if GraphicClass = nil then
-    Exit;
-
-  Graphic := GraphicClass.Create;
+  Info := TDBPopupMenuInfoRecord.CreateFromFile(CurrentFile);
   try
-    if GraphicCrypt.ValidCryptGraphicFile(FileName) then
-    begin
-      PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
-      if PassWord = '' then
-        Exit;
+    Info.ID := ID;
+    Info.Rotation := Rotated;
 
-      F(Graphic);
-      Graphic := DeCryptGraphicFile(FileName, PassWord);
-    end else
-    begin
-      if Graphic is TRAWImage then
-      begin
-        TRAWImage(Graphic).HalfSizeLoad := True;
-        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FileName, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
-          Graphic.LoadFromFile(FileName)
-        else if ID = 0 then
-          Rotated := ExifDisplayButNotRotate(Rotated);
-      end else
-      begin
-        Graphic.LoadFromFile(FileName);
-        if (ID = 0) and (Rotated = 0) then
-          Rotated := GetExifRotate(FileName);
-      end;
-    end;
-
-    FBit := TBitmap.Create;
+    Graphic := nil;
     try
-      FBit.PixelFormat := pf24bit;
-      JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+      if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
+      begin
+        Graphic := ImageInfo.ExtractGraphic;
 
-      if Min(Graphic.Height, Graphic.Width)>1 then
-        LoadImageX(Graphic, Fbit, Theme.ListViewColor);
-      F(Graphic);
-      TempBitmap := TBitmap.create;
-      TempBitmap.PixelFormat := pf24bit;
-      W := FBit.Width;
-      H := FBit.Height;
-      ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
-      TempBitmap.PixelFormat := FBit.PixelFormat;
-      TempBitmap.SetSize(W, H);
-      DoResize(W, H, FBit, TempBitmap);
+        if Graphic <> nil then
+        begin
+          FBit := TBitmap.Create;
+          try
+            FBit.PixelFormat := pf24bit;
+            JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+
+            if Min(Graphic.Height, Graphic.Width) > 1 then
+              LoadImageX(Graphic, Fbit, Theme.ListViewColor);
+            F(Graphic);
+            TempBitmap := TBitmap.Create;
+            TempBitmap.PixelFormat := pf24bit;
+            W := FBit.Width;
+            H := FBit.Height;
+            ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
+            TempBitmap.PixelFormat := FBit.PixelFormat;
+            TempBitmap.SetSize(W, H);
+            DoResize(W, H, FBit, TempBitmap);
+
+            ImageInfo.AppllyICCProfile(TempBitmap);
+          finally
+            F(FBit);
+          end;
+          ApplyRotate(TempBitmap, Rotated);
+          BooleanParam := LoadingAllBigImages;
+
+          if not SynchronizeEx(ReplaceImageInExplorerB) then
+            F(TempBitmap)
+          else
+            TempBitmap := nil;
+        end;
+      end;
     finally
-      F(FBit);
+      F(Graphic);
     end;
-    ApplyRotate(TempBitmap, Rotated);
-    BooleanParam := LoadingAllBigImages;
 
-    if not SynchronizeEx(ReplaceImageInExplorerB) then
-      F(TempBitmap)
-    else
-      TempBitmap := nil;
   finally
-    F(Graphic);
+    F(Info);
   end;
 end;
 
@@ -2793,7 +2813,7 @@ begin
   begin
     Graphic := nil;
     try
-      if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo) then
+      if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize) then
       begin
         Graphic := ImageInfo.ExtractGraphic;
         Info.IsImageEncrypted := EncryptedFile and (Graphic <> nil) and not Graphic.Empty;
@@ -2801,37 +2821,36 @@ begin
 
         ImageInfo.UpdateImageInfo(Info, False);
 
-        Info.Width := Graphic.Width;
-        Info.Height := Graphic.Height;
-        TempBit := TBitmap.Create;
-        try
-          TempBit.PixelFormat := pf24bit;
-          JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
-          LoadImageX(Graphic, TempBit, clWindow);
-          F(Graphic);
+        if Graphic <> nil then
+        begin
+          Info.Width := Graphic.Width;
+          Info.Height := Graphic.Height;
+          TempBit := TBitmap.Create;
+          try
+            TempBit.PixelFormat := pf24bit;
+            JPEGScale(Graphic, ExplorerInfo.PictureSize, ExplorerInfo.PictureSize);
+            LoadImageX(Graphic, TempBit, clWindow);
+            F(Graphic);
 
-          W := TempBit.Width;
-          H := TempBit.Height;
+            W := TempBit.Width;
+            H := TempBit.Height;
 
-          //Result picture
-          TempBitmap := TBitmap.Create;
-          TempBitmap.PixelFormat := pf24bit;
-          if Max(W, H) < ThImageSize then
-            AssignBitmap(TempBitmap, TempBit)
-          else
-          begin
-            ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
-            TempBitmap.PixelFormat := TempBit.PixelFormat;
-            DoResize(W, H, TempBit, TempBitmap);
+            //Result picture
+            TempBitmap := TBitmap.Create;
+            TempBitmap.PixelFormat := pf24bit;
+            if Max(W, H) < ThImageSize then
+              AssignBitmap(TempBitmap, TempBit)
+            else
+            begin
+              ProportionalSize(ExplorerInfo.PictureSize, ExplorerInfo.PictureSize, W, H);
+              TempBitmap.PixelFormat := TempBit.PixelFormat;
+              DoResize(W, H, TempBit, TempBitmap);
+            end;
+            ImageInfo.AppllyICCProfile(TempBitmap);
+          finally
+            F(TempBit);
           end;
-          ImageInfo.AppllyICCProfile(TempBitmap);
-        finally
-          F(TempBit);
         end;
-      end else
-      begin
-        //do nothing - icon rests
-        TempBitmap := nil;
       end;
     finally
       F(Graphic);

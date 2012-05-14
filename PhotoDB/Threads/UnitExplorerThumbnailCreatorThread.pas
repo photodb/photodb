@@ -85,9 +85,7 @@ end;
 procedure TExplorerThumbnailCreator.Execute;
 var
   W, H: Integer;
-  Password: string;
   ImageInfo: ILoadImageInfo;
-  GraphicClass: TGraphicClass;
   ShadowImage: TBitmap;
   Data: TObject;
 begin
@@ -170,7 +168,7 @@ begin
 
           if FInfo.HasImage then
           begin
-            if LoadImageFromPath(FInfo, -1, Password, [ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
+            if LoadImageFromPath(FInfo, -1, '', [ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
               ImageInfo.UpdateImageGeoInfo(FInfo);
 
             if (FInfo.Image.Width > ThSizeExplorerPreview) or (FInfo.Image.Height > ThSizeExplorerPreview) then
@@ -234,7 +232,7 @@ begin
 
             FGraphic := nil;
             try
-              if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
+              if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo, ThSizeExplorerPreview, ThSizeExplorerPreview) then
                 Exit;
 
               ImageInfo.UpdateImageGeoInfo(FInfo);

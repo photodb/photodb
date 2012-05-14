@@ -3,6 +3,7 @@ unit uImageLoader;
 interface
 
 uses
+  Math,
   uConstants,
   uMemory,
   Windows,
@@ -66,15 +67,15 @@ type
   end;
 
 function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
-  out ImageInfo: ILoadImageInfo): Boolean;
+  out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0): Boolean;
 
 implementation
 
 function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
-  out ImageInfo: ILoadImageInfo): Boolean;
+  out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0): Boolean;
 var
   FS: TFileStream;
-  MS: TMemoryStream;
+  S: TStream;
   GraphicClass: TGraphicClass;
   TiffImage: TTiffImage;
   Graphic: TGraphic;
@@ -96,7 +97,10 @@ begin
     Exit(False);
 
   MSICC := nil;
-  MS := TMemoryStream.Create;
+  if (GraphicClass = TRAWImage) and not (ilfFullRAW in Flags) then
+    S := nil
+  else
+    S := TMemoryStream.Create;
   try
     if (ilfGraphic in Flags) then
     begin
@@ -110,29 +114,44 @@ begin
             if ilfPassword in Flags then
               Password := DBKernel.FindPasswordForCryptImageFile(Info.FileName);
 
-            DecryptStreamToStream(FS, MS, Password);
+            if S = nil then
+              S := TMemoryStream.Create;
+            DecryptStreamToStream(FS, S, Password);
           end else
-            MS.CopyFromEx(FS, FS.Size, 1024 * 1024);
+          begin
+            if (GraphicClass = TRAWImage) and not (ilfFullRAW in Flags) then
+            begin
+              S := FS;
+              FS := nil;
+            end else
+              S.CopyFromEx(FS, FS.Size, 1024 * 1024);
+          end;
         finally
           F(FS);
         end;
       end else
-        ReadStreamFromDevice(Info.FileName, MS);
+      begin
+        if S = nil then
+          S := TMemoryStream.Create;
+        ReadStreamFromDevice(Info.FileName, S);
+      end;
     end;
 
     LoadOnlyExif := (ilfEXIF in Flags) and not (ilfGraphic in Flags);
 
-    if (MS.Size > 0) or LoadOnlyExif then
+    if ((S <> nil) and (S.Size > 0)) or LoadOnlyExif then
     begin
       if Flags * [ilfICCProfile, ilfEXIF] <> [] then
       begin
-        MS.Seek(0, soFromBeginning);
+        if not LoadOnlyExif then
+          S.Seek(0, soFromBeginning);
+
         ExifData := TExifData.Create(nil);
         try
           if LoadOnlyExif then
-            ExifData.LoadFromFileEx(Info.FileName)
+            ExifData.LoadFromFileEx(Info.FileName, False)
           else
-            ExifData.LoadFromGraphic(MS);
+            ExifData.LoadFromGraphic(S);
 
           if not ExifData.Empty then
           begin
@@ -164,7 +183,11 @@ begin
             try
               InitGraphic(Graphic);
               if (Graphic is TRAWImage) then
+              begin
                  TRAWImage(Graphic).IsPreview := not (ilfFullRAW in Flags);
+                 if TRAWImage(Graphic).IsPreview then
+                   TRAWImage(Graphic).PreviewSize := Max(Width, Height);
+              end;
 
               if (Info.ID = 0) and not IsDevicePath(Info.FileName) then
               begin
@@ -174,14 +197,14 @@ begin
                   Info.Rotation := 10 * ExifDisplayButNotRotate(Info.Rotation);
               end;
 
-              MS.Seek(0, soFromBeginning);
+              S.Seek(0, soFromBeginning);
               if (Graphic is TTiffImage) then
               begin
                 TiffImage := TTiffImage(Graphic);
-                TiffImage.LoadFromStreamEx(MS, LoadPage);
+                TiffImage.LoadFromStreamEx(S, LoadPage);
                 ImageTotalPages := TiffImage.Pages;
               end else
-                Graphic.LoadFromStream(MS);
+                Graphic.LoadFromStream(S);
 
               if not Graphic.Empty then
               begin
@@ -220,7 +243,7 @@ begin
       end;
     end;
   finally
-    F(MS);
+    F(S);
     F(MSICC);
   end;
 end;

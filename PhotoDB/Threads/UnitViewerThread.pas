@@ -3,6 +3,7 @@ unit UnitViewerThread;
 interface
 
 uses
+  uLogger,
   Windows,
   Classes,
   Graphics,
@@ -10,7 +11,8 @@ uses
   SysUtils,
   Forms,
   GIFImage,
-  DB, GraphicsBaseTypes,
+  DB,
+  GraphicsBaseTypes,
   CommonDBSupport,
   uTiffImage,
   ActiveX,
@@ -143,7 +145,7 @@ begin
         LoadFlags := LoadFlags + [ilfFullRAW];
 
       try
-        if not LoadImageFromPath(FInfo, FPage, Password, LoadFlags, ImageInfo) then
+        if not LoadImageFromPath(FInfo, FPage, Password, LoadFlags, ImageInfo, Screen.Width, Screen.Height) then
         begin
           SetNOImageAsynch;
           Exit;
@@ -153,8 +155,12 @@ begin
 
         Graphic := ImageInfo.ExtractGraphic;
       except
-        SetNOImageAsynch;
-        Exit;
+        on e: Exception do
+        begin
+          EventLog(e);
+          SetNOImageAsynch;
+          Exit;
+        end;
       end;
 
       if not FInfo.InfoLoaded then

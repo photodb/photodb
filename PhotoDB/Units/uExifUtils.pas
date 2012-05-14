@@ -65,7 +65,7 @@ type
 
   TExifDataHelper = class helper for TExifData
   public
-    procedure LoadFromFileEx(FileName: string);
+    function LoadFromFileEx(FileName: string; ThrowOnError: Boolean = True): Boolean;
     procedure SaveToFileEx(FileName: string);
   end;
 
@@ -857,11 +857,12 @@ end;
 
 { TExifDataHelper }
 
-procedure TExifDataHelper.LoadFromFileEx(FileName: string);
+function TExifDataHelper.LoadFromFileEx(FileName: string; ThrowOnError: Boolean = True): Boolean;
 var
   MS: TMemoryStream;
   Password: string;
 begin
+  Result := False;
   if IsDevicePath(FileName) then
     Exit;
 
@@ -871,8 +872,8 @@ begin
     MS := TMemoryStream.Create;
     try
       if DecryptGraphicFileToStream(FileName, Password, MS) then
-        LoadFromGraphic(MS)
-      else
+        Result := LoadFromGraphic(MS)
+      else if ThrowOnError then
         raise Exception.Create(FormatEx(TA('Can''t decrypt file {0}!', 'Exif'), [FileName]));
     finally
       F(MS);
@@ -880,7 +881,7 @@ begin
     Exit;
   end;
 
-  LoadFromGraphic(FileName);
+  Result := LoadFromGraphic(FileName);
 end;
 
 procedure TExifDataHelper.SaveToFileEx(FileName: string);

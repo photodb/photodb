@@ -29,6 +29,7 @@ uses
   uExplorerNetworkProviders,
   uExplorerPortableDeviceProvider,
   uExplorerShelfProvider,
+  uExplorerDateStackProviders,
   uFormListView,
   Vcl.ActnPopup;
 
@@ -888,9 +889,15 @@ begin
     FileType := EXPLORER_ITEM_DEVICE_FILE;
   end
   else if PI is TShelfItem then
-  begin
-    FileType := EXPLORER_ITEM_SHELF;
-  end;
+    FileType := EXPLORER_ITEM_SHELF
+  else if PI is TDateStackItem then
+    FileType := EXPLORER_ITEM_CALENDAR
+  else if PI is TDateStackYearItem then
+    FileType := EXPLORER_ITEM_CALENDAR_YEAR
+  else if PI is TDateStackMonthItem then
+    FileType := EXPLORER_ITEM_CALENDAR_MONTH
+  else if PI is TDateStackDayItem then
+    FileType := EXPLORER_ITEM_CALENDAR_DAY;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;

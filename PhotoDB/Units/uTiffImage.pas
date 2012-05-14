@@ -8,6 +8,7 @@ uses
   Graphics,
   FreeImage,
   FreeBitmap,
+  uFreeImageIO,
   GraphicsBaseTypes,
   uMemory;
 
@@ -34,29 +35,6 @@ type
   end;
 
 implementation
-
-function StreamFI_ReadProc(buffer: Pointer; size, count: Cardinal;
-  handle: fi_handle): Cardinal; stdcall;
-begin
-  Result := Cardinal(TStream(handle).Read(buffer^, size * count));
-end;
-
-function StreamFI_WriteProc(buffer: Pointer; size, count: Cardinal;
-  handle: fi_handle): Cardinal; stdcall;
-begin
-  Result := TStream(handle).Write(buffer^, size * count);
-end;
-
-function StreamFI_SeekProc(handle: fi_handle; offset: LongInt;
-  origin: Integer): Integer; stdcall;
-begin
-  Result := TStream(handle).Seek(offset, origin);
-end;
-
-function StreamFI_TellProc(handle: fi_handle): LongInt; stdcall;
-begin
-  Result := TStream(handle).Position;
-end;
 
 { TTiffImage }
 
@@ -126,13 +104,9 @@ begin
   if Page > -1 then
     ClearImage;
 
-  IO.read_proc := StreamFI_ReadProc;
-  IO.write_proc := StreamFI_WriteProc;
-  IO.seek_proc := StreamFI_SeekProc;
-  IO.tell_proc := StreamFI_TellProc;
-
   FPage := Page;
 
+  SetStreamFreeImageIO(IO);
   FIF := FreeImage_GetFileTypeFromHandle(@IO, Stream);
 
   M := TMemoryStream.Create;
