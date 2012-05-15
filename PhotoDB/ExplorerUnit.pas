@@ -294,7 +294,6 @@ type
     MyDocumentsLink: TWebLink;
     MyComputerLink: TWebLink;
     MoveToLink: TWebLink;
-    Label1: TLabel;
     ImageEditorLink: TWebLink;
     ImPreview: TImage;
     IDLabel: TLabel;
@@ -531,6 +530,8 @@ type
     procedure EasyListview1ItemEdited(Sender: TCustomEasyListview;
       Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
     procedure ListView1Resize(Sender: TObject);
+    procedure ListViewOnCanResize(Sender: TObject; var NewWidth, NewHeight: Integer;
+      var Resize: Boolean);
     procedure N05Click(Sender: TObject);
     procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
       ShiftState: TShiftState; var Handled: Boolean);
@@ -1121,6 +1122,7 @@ begin
   ElvMain.OnMouseWheel := ListView1MouseWheel;
   ElvMain.OnKeyAction := EasyListview2KeyAction;
   ElvMain.OnItemEdited := EasyListview1ItemEdited;
+  ElvMain.OnCanResize := ListViewOnCanResize;
   ElvMain.OnResize := ListView1Resize;
   ElvMain.OnItemImageDraw := EasyListview1ItemImageDraw;
   ElvMain.OnItemImageDrawIsCustom := EasyListview1ItemImageDrawIsCustom;
@@ -2288,6 +2290,13 @@ begin
     TmrCheckItemVisibility.Restart;
 end;
 
+procedure TExplorerForm.ListViewOnCanResize(Sender: TObject; var NewWidth,
+  NewHeight: Integer; var Resize: Boolean);
+begin
+  if ElvMain.Selection.FocusedItem <> nil then
+    ElvMain.Selection.FocusedItem.Tag := IIF(IsFocusedVisible, 1, 0);
+end;
+
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
   Params: TEventFields; Value: TEventValues);
 var
@@ -3246,6 +3255,9 @@ begin
     if (Msg.Wparam = VK_F3) then
       WedSearch.SetFocus;
 
+    if (Msg.Wparam = VK_ESCAPE) and IsExplorerTreeViewVisible and TreeView.Focused and not PnFilter.Visible then
+      TreeView.SetFilter('', True);;
+
     // filter by Ctrl+F
     if CtrlKeyDown and (Msg.Wparam = Ord('F')) then
     begin
@@ -3256,6 +3268,20 @@ begin
 
   if Msg.message = WM_MOUSEWHEEL then
   begin
+
+    if IsExplorerTreeViewVisible then
+    begin
+      GetCursorPos(P);
+      P := TreeView.ScreenToClient(P);
+      if PtInRect(TreeView.ClientRect, P) then
+      begin
+        TreeView.SetFocus;
+        SendMessage(TreeView.Handle, Msg.message, Msg.wParam, Msg.lParam);
+        Msg.message := 0;
+      end;
+    end;
+
+    //activate browser on mowse wheel
     H := GetFocus;
     if PnGeoLocation.Visible and (FWbGeoLocation <> nil) then
     begin
@@ -3524,13 +3550,19 @@ begin
             Exit;
           if ElvMain.Items = nil then
             Exit;
+
+          FOldFileName := PInfo[K].FNewFileName;
+
+          if IsExplorerTreeViewVisible then
+            TreeView.DeletePath(FOldFileName);
+
           for I := 0 to ElvMain.Items.Count - 1 do
           begin
             Index := ItemIndexToMenuIndex(I);
             if Index > FFilesInfo.Count - 1 then
               Exit;
             FileName := FFilesInfo[index].FileName;
-            FOldFileName := PInfo[K].FNewFileName;
+
             if FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER then
             begin
               FileName := IncludeTrailingBackslash(FileName);
@@ -5929,7 +5961,6 @@ begin
     WlConvert.Text := L('Convert');
     WlCrop.Text := L('Crop');
 
-    Label1.Caption := L('Preview');
     TasksLabel.Caption := L('Tasks');
     Open1.Caption := L('Open');
     Open2.Caption := L('Open');
@@ -8268,6 +8299,9 @@ begin
     ElvMain.EndUpdate(True);
   end;
 
+  if IsExplorerTreeViewVisible then
+    TreeView.SetFilter(Filter, CbFilterMatchCase.Checked);
+
   LbFilterInfo.Visible := not ResultsFound;
   ImFilterWarning.Visible := not ResultsFound;
 end;
@@ -8886,6 +8920,11 @@ begin
   ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
   LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3 - IIF(PnGeoLocation.Visible, PnGeoLocation.Width, 0);
   LoadSizes;
+  if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Tag = 1) then
+  begin
+    ElvMain.Selection.FocusedItem.MakeVisible(emvAuto);
+    ElvMain.Selection.FocusedItem.Tag := 0;
+  end;
 end;
 
 procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;

@@ -77,7 +77,6 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
-        ExplicitWidth = 127
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -88,7 +87,6 @@ object ExplorerForm: TExplorerForm
           ParentColor = True
           TabOrder = 0
           OnResize = PropertyPanelResize
-          ExplicitWidth = 127
           object ScrollBox1: TScrollPanel
             Left = 0
             Top = 0
@@ -109,10 +107,9 @@ object ExplorerForm: TExplorerForm
             FullRepaint = False
             TabOrder = 0
             OnResize = ScrollBox1Resize
-            ExplicitWidth = 127
             object TypeLabel: TLabel
               Left = 7
-              Top = 141
+              Top = 137
               Width = 49
               Height = 13
               Caption = 'TypeLabel'
@@ -140,7 +137,7 @@ object ExplorerForm: TExplorerForm
             end
             object SizeLabel: TLabel
               Left = 7
-              Top = 157
+              Top = 160
               Width = 44
               Height = 13
               Caption = 'SizeLabel'
@@ -181,7 +178,7 @@ object ExplorerForm: TExplorerForm
             object NameLabel: TLabel
               Tag = 1
               Left = 7
-              Top = 148
+              Top = 124
               Width = 62
               Height = 13
               Caption = 'NameLabel'
@@ -193,17 +190,9 @@ object ExplorerForm: TExplorerForm
               ParentFont = False
               WordWrap = True
             end
-            object Label1: TLabel
-              Left = 10
-              Top = 5
-              Width = 97
-              Height = 13
-              AutoSize = False
-              Caption = 'Image Preview:'
-            end
             object ImPreview: TImage
-              Left = 10
-              Top = 24
+              Left = 5
+              Top = 3
               Width = 118
               Height = 118
               ParentCustomHint = False
@@ -759,7 +748,6 @@ object ExplorerForm: TExplorerForm
             ParentBackground = False
             TabOrder = 1
             Visible = False
-            ExplicitWidth = 127
             object WlGoToShelf: TWebLink
               Left = 5
               Top = 6
@@ -786,7 +774,6 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitWidth = 127
       end
     end
   end
@@ -1164,8 +1151,6 @@ object ExplorerForm: TExplorerForm
     FullRepaint = False
     ParentColor = True
     TabOrder = 5
-    ExplicitLeft = 141
-    ExplicitWidth = 867
     object SplGeoLocation: TSplitter
       Left = 507
       Top = 33
@@ -1186,7 +1171,6 @@ object ExplorerForm: TExplorerForm
       Align = alBottom
       TabOrder = 0
       Visible = False
-      ExplicitWidth = 867
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1548,7 +1532,6 @@ object ExplorerForm: TExplorerForm
       TabOrder = 1
       Visible = False
       OnResize = PnInfoResize
-      ExplicitWidth = 867
       DesignSize = (
         862
         33)
@@ -1655,7 +1638,6 @@ object ExplorerForm: TExplorerForm
       Align = alRight
       TabOrder = 2
       Visible = False
-      ExplicitLeft = 517
       object PnGeoTop: TPanel
         Left = 1
         Top = 1

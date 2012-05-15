@@ -18,7 +18,9 @@ uses
   uMemory,
   uAssociations,
   uBitmapUtils,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  UnitDBDeclare,
+  uImageLoader;
 
 type
   TCallBackPrinterGeneratePreviewProc = procedure(Progress: Byte; var Terminate: Boolean) of object;
@@ -307,54 +309,37 @@ begin
   end;
 end;
 
-function LoadPicture(var Graphic: TGraphic; FileName: string): Boolean;
+function LoadPicture(var Graphic: TGraphic; FileName: string; out ImageInfo: ILoadImageInfo): Boolean;
 var
-  PassWord: string;
-  GraphicClass : TGraphicClass;
+  Info: TDBPopupMenuInfoRecord;
 begin
   Result := False;
   Graphic := nil;
+
   try
-    if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
-    begin
-      PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
-      if PassWord <> '' then
-        Graphic := DeCryptGraphicFile(FileName, PassWord);
+    Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+    try
+      if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo) then
+        Graphic := ImageInfo.ExtractGraphic;
 
-      Result := Graphic <> nil;
-    end else
-    begin
-      GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
-
-      if GraphicClass <> nil then
-      begin
-        Graphic := GraphicClass.Create;
-        if not IsDevicePath(FileName) then
-          Graphic.LoadFromFile(FileName)
-        else
-          Graphic.LoadFromDevice(FileName);
-      end else
-        Exit;
+      Result := (Graphic <> nil) and not Graphic.Empty;
+    finally
+      F(Info);
     end;
-    Result := True;
   except
     on e: Exception do
       EventLog(e.Message);
   end;
 end;
 
-procedure PrintFullSize(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure PrintFullSize(Result: TBitmap; SampleBitmap: TBitmap; Files: TStrings; FullImage: Boolean;
+  Options: TGenerateImageOptions; CallBack: TCallBackPrinterGeneratePreviewProc;
+  var Terminating: Boolean);
 var
-  Graphic : TGraphic;
-  SampleImage : TBitmap;
-  AWidth, AHeight : Integer;
+  Graphic: TGraphic;
+  SampleImage: TBitmap;
+  AWidth, AHeight: Integer;
+  ImageInfo: ILoadImageInfo;
 begin
   SampleImage := TBitmap.Create;
   try
@@ -363,13 +348,15 @@ begin
     begin
       if not Options.VirtualImage then
       begin
-        LoadPicture(Graphic, Files[0]);
+        LoadPicture(Graphic, Files[0], ImageInfo);
         try
           if Assigned(CallBack) then
             CallBack(Round(100 * (1 / 5)), Terminating);
           if Terminating then
             Exit;
           SampleImage.Assign(Graphic);
+          SampleImage.PixelFormat := pf24bit;
+          ImageInfo.AppllyICCProfile(SampleImage);
         finally
           F(Graphic);
         end;
@@ -409,20 +396,16 @@ begin
   end;
 end;
 
-procedure PrintCenterImageSize(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  ImWidth, ImHeight: Integer;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure PrintCenterImageSize(Result: TBitmap; SampleBitmap: TBitmap;
+  Files: TStrings; FullImage: Boolean; ImWidth, ImHeight: Integer;
+  Options: TGenerateImageOptions; CallBack: TCallBackPrinterGeneratePreviewProc;
+  var Terminating: Boolean);
 var
-  Graphic : TGraphic;
-  SampleImage : TBitmap;
-  Size, PrSize : TXSize;
-  AWidth, AHeight : Integer;
+  Graphic: TGraphic;
+  SampleImage: TBitmap;
+  Size, PrSize: TXSize;
+  AWidth, AHeight: Integer;
+  ImageInfo: ILoadImageInfo;
 begin
   SampleImage := TBitmap.Create;
   SampleImage.PixelFormat := pf24bit;
@@ -431,7 +414,7 @@ begin
     begin
       if not Options.VirtualImage then
       begin
-        LoadPicture(Graphic, Files[0]);
+        LoadPicture(Graphic, Files[0], ImageInfo);
         try
           if Assigned(CallBack) then
             CallBack(Round(100 * (1 / 7)), Terminating);
@@ -440,6 +423,8 @@ begin
             Exit;
 
           SampleImage.Assign(Graphic);
+          SampleImage.PixelFormat := pf24bit;
+          ImageInfo.AppllyICCProfile(SampleImage);
         finally
           F(Graphic);
         end;
@@ -497,21 +482,17 @@ begin
   end;
 end;
 
-procedure PrintImageSizeTwo(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  ImWidth, ImHeight: Integer;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure PrintImageSizeTwo(Result: TBitmap; SampleBitmap: TBitmap;
+  Files: TStrings; FullImage: Boolean; ImWidth, ImHeight: Integer;
+  Options: TGenerateImageOptions; CallBack: TCallBackPrinterGeneratePreviewProc;
+  var Terminating: Boolean);
 var
-  Graphic : TGraphic;
+  Graphic: TGraphic;
   I: Integer;
-  SampleImage : TBitmap;
-  Size, PrSize : TXSize;
-  AWidth, AHeight : Integer;
+  SampleImage: TBitmap;
+  Size, PrSize: TXSize;
+  AWidth, AHeight: Integer;
+  ImageInfo: ILoadImageInfo;
 begin
   SampleImage := TBitmap.Create;
   try
@@ -521,15 +502,16 @@ begin
       begin
         if (Files.Count = 1) and (I = 1) then
           Continue;
-        LoadPicture(Graphic, Files[I]);
+        LoadPicture(Graphic, Files[I], ImageInfo);
         try
           if Assigned(CallBack) then
             CallBack(Round(100 * ((1 + I * 7) / 14)), Terminating);
           if Terminating then
             Exit;
 
-          SampleImage.PixelFormat := pf24bit;
           SampleImage.Assign(Graphic);
+          SampleImage.PixelFormat := pf24bit;
+          ImageInfo.AppllyICCProfile(SampleImage);
         finally
           F(Graphic);
         end;
@@ -582,20 +564,15 @@ begin
   end;
 end;
 
-procedure Print35Previews(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure Print35Previews(Result: TBitmap; SampleBitmap: TBitmap;
+  Files: TStrings; FullImage: Boolean; Options: TGenerateImageOptions;
+  CallBack: TCallBackPrinterGeneratePreviewProc; var Terminating: Boolean);
 var
-  Graphic : TGraphic;
-  Pos, W, H, I, J : Integer;
-  AWidth, AHeight : Integer;
-  SampleImage,
-  SmallImage : TBitmap;
+  Graphic: TGraphic;
+  Pos, W, H, I, J: Integer;
+  AWidth, AHeight: Integer;
+  SampleImage, SmallImage: TBitmap;
+  ImageInfo: ILoadImageInfo;
 begin
   Pos := 0;
   if not FullImage then
@@ -634,7 +611,7 @@ begin
         begin
           if Files.Count < (I - 1) * 5 + J then
             Exit;
-          LoadPicture(Graphic, Files[(I - 1) * 5 + J - 1]);
+          LoadPicture(Graphic, Files[(I - 1) * 5 + J - 1], ImageInfo);
           try
             Inc(Pos);
             if Assigned(CallBack) then
@@ -642,6 +619,8 @@ begin
             if Terminating then
               Exit;
             SampleImage.Assign(Graphic);
+            SampleImage.PixelFormat := pf24Bit;
+            ImageInfo.AppllyICCProfile(SampleImage);
             F(Graphic);
             Inc(Pos);
             if Assigned(CallBack) then
@@ -675,20 +654,16 @@ begin
   end;
 end;
 
-procedure PrintA4Three10X15(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure PrintA4Three10X15(Result: TBitmap; SampleBitmap: TBitmap;
+  Files: TStrings; FullImage: Boolean; Options: TGenerateImageOptions;
+  CallBack: TCallBackPrinterGeneratePreviewProc; var Terminating: Boolean);
 var
-  Pos, TopSize, AW, AH, I, H, Ainc : Integer;
-  Graphic : TGraphic;
-  SampleImage : TBitmap;
-  AWidth, AHeight : Integer;
-  PrSize, Size : TXSize;
+  Pos, TopSize, AW, AH, I, H, Ainc: Integer;
+  Graphic: TGraphic;
+  SampleImage: TBitmap;
+  AWidth, AHeight: Integer;
+  PrSize, Size: TXSize;
+  ImageInfo: ILoadImageInfo;
 begin
   Pos := 0;
   SampleImage := TBitmap.Create;
@@ -700,7 +675,7 @@ begin
         if I >= Files.Count then
           Continue;
 
-        LoadPicture(Graphic, Files[I]);
+        LoadPicture(Graphic, Files[I], ImageInfo);
         try
           Inc(Pos);
           if Assigned(CallBack) then
@@ -708,8 +683,9 @@ begin
           if Terminating then
             Exit;
 
-          SampleImage.PixelFormat := Pf24bit;
           SampleImage.Assign(Graphic);
+          SampleImage.PixelFormat := pf24bit;
+          ImageInfo.AppllyICCProfile(SampleImage);
           Inc(Pos);
           if Assigned(CallBack) then
             CallBack(Round(100 * (Pos / (7 * Files.Count))), Terminating);
@@ -839,20 +815,16 @@ begin
   end;
 end;
 
-procedure PrintA4Four9X13(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure PrintA4Four9X13(Result: TBitmap; SampleBitmap: TBitmap;
+  Files: TStrings; FullImage: Boolean; Options: TGenerateImageOptions;
+  CallBack: TCallBackPrinterGeneratePreviewProc; var Terminating: Boolean);
 var
-  I, J : Integer;
-  Graphic : TGraphic;
-  SampleImage : TBitmap;
-  AWidth, AHeight : Integer;
-  PrSize, Size : TXSize;
+  I, J: Integer;
+  Graphic: TGraphic;
+  SampleImage: TBitmap;
+  AWidth, AHeight: Integer;
+  PrSize, Size: TXSize;
+  ImageInfo: ILoadImageInfo;
 begin
   SampleImage := TBitmap.Create;
   SampleImage.PixelFormat := pf24bit;
@@ -865,7 +837,7 @@ begin
         begin
           if J * 2 + I >= Files.Count then
             Continue;
-          LoadPicture(Graphic, Files[J * 2 + I]);
+          LoadPicture(Graphic, Files[J * 2 + I], ImageInfo);
           try
           if Assigned(CallBack) then
             CallBack(Round(100 * ((1 + (J * 2 + I) * 7) / 28)), Terminating);
@@ -873,6 +845,8 @@ begin
             Exit;
 
           SampleImage.Assign(Graphic);
+          SampleImage.PixelFormat := pf24Bit;
+          ImageInfo.AppllyICCProfile(SampleImage);
           if Assigned(CallBack) then
             CallBack(Round(100 * ((2 + (J * 2 + I) * 7) / 28)), Terminating);
           finally
@@ -929,19 +903,14 @@ begin
   end;
 end;
 
-procedure Print9Images(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure Print9Images(Result: TBitmap; SampleBitmap: TBitmap; Files: TStrings;
+  FullImage: Boolean; Options: TGenerateImageOptions;
+  CallBack: TCallBackPrinterGeneratePreviewProc; var Terminating: Boolean);
 var
-  SmallImage,
-  SampleImage : TBitmap;
-  Pos, I, J, W, H, AWidth, AHeight : Integer;
-  Graphic : TGraphic;
+  SmallImage, SampleImage: TBitmap;
+  Pos, I, J, W, H, AWidth, AHeight: Integer;
+  Graphic: TGraphic;
+  ImageInfo: ILoadImageInfo;
 begin
   Pos := 0;
   SampleImage := TBitmap.Create;
@@ -979,7 +948,7 @@ begin
         begin
           if Files.Count < (I - 1) * 3 + J then
             Exit;
-          LoadPicture(Graphic, Files[(I - 1) * 3 + J - 1]);
+          LoadPicture(Graphic, Files[(I - 1) * 3 + J - 1], ImageInfo);
           try
             Inc(Pos);
             if Assigned(CallBack) then
@@ -988,6 +957,8 @@ begin
               Exit;
 
             SampleImage.Assign(Graphic);
+            SampleImage.PixelFormat := pf24Bit;
+            ImageInfo.AppllyICCProfile(SampleImage);
             Inc(Pos);
             if Assigned(CallBack) then
               CallBack(Round(100 * (Pos / (6 * Files.Count))), Terminating);
@@ -1030,19 +1001,15 @@ begin
   end;
 end;
 
-procedure PrintFour6X4(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure PrintFour6X4(Result: TBitmap; SampleBitmap: TBitmap; Files: TStrings;
+  FullImage: Boolean; Options: TGenerateImageOptions;
+  CallBack: TCallBackPrinterGeneratePreviewProc; var Terminating: Boolean);
 var
-  Graphic : TGraphic;
-  SampleImage : TBitmap;
-  I, J, AWidth, AHeight : Integer;
-  Size, PrSize : TXSize;
+  Graphic: TGraphic;
+  SampleImage: TBitmap;
+  I, J, AWidth, AHeight: Integer;
+  Size, PrSize: TXSize;
+  ImageInfo: ILoadImageInfo;
 begin
   SampleImage := TBitmap.Create;
   SampleImage.PixelFormat := pf24bit;
@@ -1051,7 +1018,7 @@ begin
     begin
       if not Options.VirtualImage and (Files.Count > 0) then
       begin
-        LoadPicture(Graphic, Files[0]);
+        LoadPicture(Graphic, Files[0], ImageInfo);
         try
           if Assigned(CallBack) then
             CallBack(Round(100 * (1 / 7)), Terminating);
@@ -1059,6 +1026,9 @@ begin
             Exit;
 
           SampleImage.Assign(Graphic);
+          SampleImage.PixelFormat := pf24Bit;
+          ImageInfo.AppllyICCProfile(SampleImage);
+
           if Assigned(CallBack) then
             CallBack(Round(100 * (2 / 7)), Terminating);
         finally
@@ -1124,19 +1094,15 @@ begin
   end;
 end;
 
-procedure PrintSix3X4(
-  Result : TBitmap;
-  SampleBitmap : TBitmap;
-  Files : TStrings;
-  FullImage : Boolean;
-  Options: TGenerateImageOptions;
-  CallBack: TCallBackPrinterGeneratePreviewProc;
-  var Terminating : Boolean);
+procedure PrintSix3X4(Result: TBitmap; SampleBitmap: TBitmap; Files: TStrings;
+  FullImage: Boolean; Options: TGenerateImageOptions;
+  CallBack: TCallBackPrinterGeneratePreviewProc; var Terminating: Boolean);
 var
-  SampleImage : TBitmap;
-  Graphic : TGraphic;
-  I, J, AWidth, AHeight : Integer;
-  PrSize, Size : TXSize;
+  SampleImage: TBitmap;
+  Graphic: TGraphic;
+  I, J, AWidth, AHeight: Integer;
+  PrSize, Size: TXSize;
+  ImageInfo: ILoadImageInfo;
 begin
   SampleImage := TBitmap.Create;
   SampleImage.PixelFormat := Pf24bit;
@@ -1145,13 +1111,15 @@ begin
     begin
       if not Options.VirtualImage then
       begin
-        LoadPicture(Graphic, Files[0]);
+        LoadPicture(Graphic, Files[0], ImageInfo);
         try
           if Assigned(CallBack) then
             CallBack(Round(100 * (1 / 7)), Terminating);
           if Terminating then
             Exit;
           SampleImage.Assign(Graphic);
+          SampleImage.PixelFormat := pf24bit;
+          ImageInfo.AppllyICCProfile(SampleImage);
           if Assigned(CallBack) then
             CallBack(Round(100 * (2 / 7)), Terminating);
         finally

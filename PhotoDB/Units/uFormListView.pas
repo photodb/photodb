@@ -18,6 +18,7 @@ type
   protected
     function GetListView: TEasyListview; virtual;
     function IsSelectedVisible: Boolean;
+    function IsFocusedVisible: Boolean;
     procedure CreateParams(var Params: TCreateParams); override;
     { IImageSource }
     function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
@@ -52,6 +53,23 @@ begin
   Result := False;
 end;
 
+function TListViewForm.IsFocusedVisible: Boolean;
+var
+  I: Integer;
+  R: TRect;
+  Rv: TRect;
+  ElvMain : TEasyListview;
+begin
+  ElvMain := GetListView;
+  Result := False;
+  if ElvMain.Selection.FocusedItem <> nil then
+  begin
+    Rv := ElvMain.Scrollbars.ViewableViewportRect;
+    R := Rect(ElvMain.ClientRect.Left + Rv.Left, ElvMain.ClientRect.Top + Rv.Top, ElvMain.ClientRect.Right + Rv.Left,
+      ElvMain.ClientRect.Bottom + Rv.Top);
+    Result := RectInRect(R, TEasyCollectionItemX(ElvMain.Selection.FocusedItem).GetDisplayRect);
+  end;
+end;
 function TListViewForm.IsSelectedVisible: Boolean;
 var
   I: Integer;

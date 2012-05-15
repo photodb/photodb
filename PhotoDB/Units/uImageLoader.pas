@@ -191,10 +191,10 @@ begin
 
               if (Info.ID = 0) and not IsDevicePath(Info.FileName) then
               begin
-                Info.Rotation := -EXIFRotation;
+                Info.Rotation := -10 * EXIFRotation;
 
                 if (Graphic is TRAWImage) and not (ilfFullRAW in Flags) then
-                  Info.Rotation := 10 * ExifDisplayButNotRotate(Info.Rotation);
+                  Info.Rotation := ExifDisplayButNotRotate(Info.Rotation);
               end;
 
               S.Seek(0, soFromBeginning);

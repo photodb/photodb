@@ -21,6 +21,7 @@ uses
   uPathProviders,
   uGOM,
   uThreadTask,
+  uMachMask,
   {$IFDEF PHOTODB}
   uThemesUtils,
   {$ENDIF}
@@ -61,13 +62,14 @@ type
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: Integer): TCustomImageList; override;
     function InitControl: Boolean;
-    procedure SelectNodeByData(Data: PData);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure LoadHomeDirectory(Form: TThreadForm);
     procedure SelectPathItem(PathItem: TPathItem);
     procedure SelectPath(Path: string);
+    procedure DeletePath(Path: string);
+    procedure SetFilter(Filter: string; Match: Boolean);
     procedure Reload;
     property OnSelectPathItem: TOnSelectPathItem read FOnSelectPathItem write FOnSelectPathItem;
   end;
@@ -77,6 +79,74 @@ type
 implementation
 
 { TPathProvideTreeView }
+
+function FilterTree(Tree: TCustomVirtualDrawTree; Node: PVirtualNode;
+  const Filter: string; Match: Boolean): Boolean;
+var
+  Data: PData;
+  S: string;
+  HideNode: Boolean;
+begin
+  Result := False;
+  repeat
+
+    Data := Tree.GetNodeData(Node);
+    if Assigned(Data) and Assigned(Data.Data) then
+    begin
+      HideNode := True;
+      S := Data.Data.DisplayName;
+      if not Match then
+        S := AnsiLowerCase(S);
+      if (Filter = '') or IsMatchMask(S, Filter, False) then
+      begin
+        Result := True;
+        HideNode := False;
+      end;
+
+      if (Node.ChildCount > 0) and (Tree.GetFirstChild(Node) <> nil) then
+      begin
+        if FilterTree(Tree, Tree.GetFirstChild(Node), Filter, Match) then
+        begin
+          Result := True;
+          HideNode := False;
+        end;
+      end;
+      Tree.IsFiltered[Node] := HideNode;
+
+      Node := Node.NextSibling;
+    end;
+  until Node = nil;
+end;
+
+procedure TPathProvideTreeView.SetFilter(Filter: string; Match: Boolean);
+begin
+  BeginUpdate;
+  try
+    if not Match then
+      Filter := AnsiLowerCase(Filter);
+
+    FilterTree(Self, GetFirstChild(nil), Filter, Match);
+  finally
+    EndUpdate;
+  end;
+end;
+
+function FindPathInTree(Tree: TCustomVirtualDrawTree; Node: PVirtualNode; Path: string): PVirtualNode;
+var
+  Data: PData;
+begin
+  Result := nil;
+  repeat
+    if ( Node.ChildCount > 0 ) and ( Tree.GetFirstChild( Node ) <> nil ) then
+       Result := FindPathInTree( Tree, Tree.GetFirstChild( Node ), Path);
+
+    Data := Tree.GetNodeData(Node);
+    if (Data <> nil) and (Data.Data <> nil) and (AnsiLowerCase(ExcludeTrailingPathDelimiter(Data.Data.Path)) = Path) then
+      Result := Node;
+
+    Node := Node.NextSibling;
+  until Node = nil;
+end;
 
 procedure TPathProvideTreeView.AddToSelection(Node: PVirtualNode);
 var
@@ -151,6 +221,16 @@ begin
   FImTreeImages := TImageList.Create(nil);
   FImTreeImages.ColorDepth := cd32Bit;
   Images := FImImages;
+end;
+
+procedure TPathProvideTreeView.DeletePath(Path: string);
+var
+  Node: PVirtualNode;
+begin
+  Path := AnsiLowerCase(ExcludeTrailingPathDelimiter(Path));
+  Node := FindPathInTree(Self, GetFirstChild( nil ), Path);
+  if Node <> nil then
+    DeleteNode(Node);
 end;
 
 destructor TPathProvideTreeView.Destroy;
@@ -324,18 +404,6 @@ begin
 
   LoadFromRes(MinusBM, 'TREE_VIEW_OPEN', StyleServices.GetStyleFontColor(sfTreeItemTextNormal));
   LoadFromRes(PlusBM, 'TREE_VIEW_CLOSE', StyleServices.GetStyleFontColor(sfTreeItemTextNormal));
-end;
-
-procedure TPathProvideTreeView.SelectNodeByData(Data: PData);
-var
-  Node: PVirtualNode;
-begin
-  for Node in Nodes() do
-    if GetNodeData(Node) = Data then
-    begin
-      InternalSelectNode(Node);
-      Exit;
-    end;
 end;
 
 procedure TPathProvideTreeView.SelectPath(Path: string);
