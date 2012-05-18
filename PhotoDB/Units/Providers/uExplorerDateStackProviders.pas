@@ -601,8 +601,4 @@ begin
   FCount := Count;
 end;
 
-initialization
-  PathProviderManager.RegisterProvider(TExplorerDateStackProvider.Create);
-  PathProviderManager.RegisterSubProvider(TMyComputerProvider, TExplorerDateStackProvider);
-
 end.

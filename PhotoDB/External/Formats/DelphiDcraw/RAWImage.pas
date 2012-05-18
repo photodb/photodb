@@ -20,6 +20,12 @@ uses
 
 type
   TRAWImage = class(TBitmap)
+  private
+    FDisplayDibSize: Boolean;
+    FHalfSizeLoad: Boolean;
+    procedure SetIsPreview(const Value: boolean);
+    procedure LoadFromFreeImage(Image: TFreeBitmap);
+    function Flags: Integer;
   protected
     FWidth: Integer;
     FHeight: Integer;
@@ -29,12 +35,6 @@ type
     FPreviewSize: Integer;
     function GetWidth: Integer; override;
     function GetHeight: Integer; override;
-  private
-    FDisplayDibSize: Boolean;
-    FHalfSizeLoad: Boolean;
-    procedure SetIsPreview(const Value: boolean);
-    procedure LoadFromFreeImage(Image: TFreeBitmap);
-    function Flags: Integer;
   public
     constructor Create; override;
     procedure LoadFromStream(Stream: TStream); override;

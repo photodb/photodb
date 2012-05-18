@@ -7,6 +7,7 @@ uses
   Graphics,
   uConstants,
   GraphicsBaseTypes,
+  uDBGraphicTypes,
   uMemory,
   Math,
   uMath,
@@ -68,7 +69,40 @@ procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightT
 procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
 procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
 
+function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
+
 implementation
+
+function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
+var
+  I, J: integer;
+  P: PARGB;
+  LGray, LR, LG, LB: Byte;
+begin
+  for I := 0 to 255 do
+  begin
+    Result.Gray[I] := 0;
+    Result.Red[I] := 0;
+    Result.Green[I] := 0;
+    Result.Blue[I] := 0;
+  end;
+
+  for I := 0 to H - 1 do
+  begin
+    P := S[I];
+    for J := 0 to W - 1 do
+    begin
+      LR := P[J].R;
+      LG := P[J].G;
+      LB := P[J].B;
+      LGray := (LR * 77 + LG * 151 + LB * 28) shr 8;
+      Inc(Result.Gray[LGray]);
+      Inc(Result.Red[LR]);
+      Inc(Result.Green[LG]);
+      Inc(Result.Blue[LB]);
+    end;
+  end;
+end;
 
 procedure ThreadDraw(S, D: TBitmap; X, Y: Integer);
 var

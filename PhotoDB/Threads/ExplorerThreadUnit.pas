@@ -1457,7 +1457,7 @@ var
   RecCount, SmallImageSize, Deltax, Deltay, _x, _y: Integer;
   Fbs: TStream;
   FJpeg: TJpegImage;
-  Nbr, Rotation: Integer;
+  Nbr: Integer;
   C: Integer;
   FE, EM: Boolean;
   S: string;
@@ -1731,7 +1731,7 @@ begin
                       F(Graphic);
 
                       FBMP.PixelFormat := BMP.PixelFormat;
-                      ApplyRotate(BMP, Rotation);
+                      ApplyRotate(BMP, Info.Rotation);
                       W := BMP.Width;
                       H := BMP.Height;
                       ProportionalSize(SmallImageSize, SmallImageSize, W, H);

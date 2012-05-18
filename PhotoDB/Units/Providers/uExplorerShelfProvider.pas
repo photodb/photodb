@@ -135,8 +135,4 @@ begin
   Result := Result or (Pos(cFilesSearchPath, AnsiLowerCase(Path)) > 0);
 end;
 
-initialization
-  PathProviderManager.RegisterProvider(TShelfProvider.Create);
-  PathProviderManager.RegisterSubProvider(TMyComputerProvider, TShelfProvider);
-
 end.

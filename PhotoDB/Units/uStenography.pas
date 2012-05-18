@@ -201,7 +201,7 @@ begin
   Result := True;
 end;
 
-function ExtractInfoFromBitmap(Dest: TStream; Bitmap: TBitmap) : Boolean;
+function ExtractInfoFromBitmap(Dest: TStream; Bitmap: TBitmap): Boolean;
 var
   I, J, C, K, L, N, Cell: Integer;
   Size: Int64;
@@ -220,6 +220,9 @@ begin
   Cell := Bsize[1];
   Cell := Max(Cell, 0);
   Cell := Min(Cell, 24);
+  if Cell = 0 then
+    Exit(False);
+
   for I := 0 to (Bitmap.Height - 1) div Cell - 1 do
     for J := 0 to (Bitmap.Width - 1) div Cell - 1 do
     begin

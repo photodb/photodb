@@ -1586,22 +1586,27 @@ begin
   LS := Box.FindChildByTag<TLoadingSign>(CONTROL_ITEM_UPLOADING_STATE);
   WlInfo := Box.FindChildByTag<TWebLink>(CONTROL_ITEM_UPLOADING_INFO);
 
-  LS.Hide;
-  WlInfo.IconWidth := 16;
-  WlInfo.IconHeight := 16;
-  if ErrorInfo = '' then
-    WlInfo.LoadFromResource('SERIES_OK')
-  else
-  begin
-    WlInfo.LoadFromResource('SERIES_CANCEL');
-    WlInfo.Hint := ErrorInfo;
-  end;
+  if LS <> nil then
+    LS.Hide;
 
-  WlInfo.Text := '';
-  WlInfo.Show;
-  WlInfo.LoadImage;
-  WlInfo.Top := Box.ClientHeight - WlInfo.Height - 3;
-  WlInfo.Left := Box.ClientWidth - WlInfo.Width - 4;
+  if WlInfo <> nil then
+  begin
+    WlInfo.IconWidth := 16;
+    WlInfo.IconHeight := 16;
+    if ErrorInfo = '' then
+      WlInfo.LoadFromResource('SERIES_OK')
+    else
+    begin
+      WlInfo.LoadFromResource('SERIES_CANCEL');
+      WlInfo.Hint := ErrorInfo;
+    end;
+
+    WlInfo.Text := '';
+    WlInfo.Show;
+    WlInfo.LoadImage;
+    WlInfo.Top := Box.ClientHeight - WlInfo.Height - 3;
+    WlInfo.Left := Box.ClientWidth - WlInfo.Width - 4;
+  end;
 end;
 
 procedure TFormSharePhotos.StartProcessing(Data: TDBPopupMenuInfoRecord);

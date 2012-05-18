@@ -6417,7 +6417,7 @@ begin
     UpdaterInfo := TUpdaterInfo.Create;
     TExplorerThread.Create(Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
-  if IsExplorerTreeViewVisible and not Explorer then
+  if IsExplorerTreeViewVisible and not Explorer and (WPath.PType <> EXPLORER_ITEM_SEARCH) then
     TreeView.SelectPath(GetCurrentPath);
 
   DropFileTargetMain.Unregister;
@@ -6441,6 +6441,7 @@ begin
     InvalidateRect(ToolBar1.Handle, ToolBar1.ClientRect, True);
   end;
 
+  WlSaveLocation.Enabled := False;
 
   EventLog('SetPath OK');
 end;

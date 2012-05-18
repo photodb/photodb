@@ -5,20 +5,16 @@ interface
 uses
   Classes,
   Graphics,
+  UnitDBDeclare,
   uAssociations,
   uFileUtils,
-  UnitDBKernel,
   SysUtils,
   uDBThread,
-  uStrongCrypt,
-  GraphicCrypt,
   uDBForm,
   uShellIntegration,
   uConstants,
-  uGraphicUtils,
   uMemory,
-  uBitmapUtils,
-  uPortableDeviceUtils;
+  uImageLoader;
 
 type
   TErrorLoadingImageHandler = procedure(FileName: string) of object;
@@ -27,7 +23,7 @@ type
   TStenoLoadImageThread = class(TDBThread)
   private
     { Private declarations }
-    FBitmapParam: TBitmap;
+    FBitmapPreview: TBitmap;
     FFileName: string;
     FErrorHandler: TErrorLoadingImageHandler;
     FCallBack: TSetPreviewLoadingImageHandler;
@@ -37,7 +33,6 @@ type
     FColor: TColor;
   protected
     procedure Execute; override;
-    procedure AskUserForPassword;
     procedure HandleError;
     procedure UpdatePreview;
     function GetThreadID: string; override;
@@ -49,15 +44,7 @@ type
 
 implementation
 
-uses
-  UnitPasswordForm;
-
 { TStenoLoadImageThread }
-
-procedure TStenoLoadImageThread.AskUserForPassword;
-begin
-  FPassword := GetImagePasswordFromUser(FFileName);
-end;
 
 constructor TStenoLoadImageThread.Create(OwnerForm: TDBForm; FileName: string;
   Color: TColor;
@@ -65,6 +52,7 @@ constructor TStenoLoadImageThread.Create(OwnerForm: TDBForm; FileName: string;
   CallBack: TSetPreviewLoadingImageHandler);
 begin
   inherited Create(OwnerForm, False);
+  FreeOnTerminate := True;
   FFileName := FileName;
   FErrorHandler := ErrorHandler;
   FCallBack := CallBack;
@@ -74,79 +62,34 @@ end;
 
 procedure TStenoLoadImageThread.Execute;
 var
-  GraphicClass: TGraphicClass;
-  Graphic: TGraphic;
-  B32,
-  PreviewImage: TBitmap;
-  W, H: Integer;
+  ImageInfo: ILoadImageInfo;
+  Info: TDBPopupMenuInfoRecord;
 begin
-  inherited;
-  FreeOnTerminate := True;
-
   try
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FFileName));
-    if GraphicClass = nil then
-      Exit;
-
-    Graphic := nil;
+    Info := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
     try
-      if not IsDevicePath(FFileName) and ValidCryptGraphicFile(FFileName) then
-      begin
-        FPassword := DBkernel.FindPasswordForCryptImageFile(FFileName);
-        if FPassword = '' then
-          SynchronizeEx(AskUserForPassword);
-
-        if FPassword <> '' then
-        begin
-          Graphic := DeCryptGraphicFile(FFileName, FPassword);
-        end else
-        begin
-          SynchronizeEx(HandleError);
-          Exit;
-        end;
-      end else
-      begin
-        Graphic := GraphicClass.Create;
-        if not IsDevicePath(FFileName) then
-          Graphic.LoadFromFile(FFileName)
-        else
-          Graphic.LoadFromDevice(FFileName);
-      end;
-
-      if Graphic = nil then
-        Exit;
-
-      FWidth := Graphic.Width;
-      FHeight := Graphic.Height;
-      FBitmapImage := TBitmap.Create;
       try
-        AssignGraphic(FBitmapImage, Graphic);
-        F(Graphic);
-        FBitmapImage.PixelFormat := pf24bit;
-
-        PreviewImage := TBitmap.Create;
-        try
-          W := FBitmapImage.Width;
-          H := FBitmapImage.Height;
-          ProportionalSize(146, 146, W, H);
-          DoResize(W, H, FBitmapImage, PreviewImage);
-          B32 := TBitmap.Create;
+        if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword], ImageInfo, 146, 146) then
+        begin
+          FWidth := ImageInfo.GraphicWidth;
+          FHeight := ImageInfo.GraphicHeight;
+          FBitmapPreview := ImageInfo.GenerateBitmap(Info, 146, 146, pf24Bit, FColor, [ilboFreeGraphic, ilboAddShadow, ilboRotate, ilboApplyICCProfile]);
           try
-            DrawShadowToImage(B32, PreviewImage);
-            LoadBMPImage32bit(B32, PreviewImage, FColor);
-            FBitmapParam := PreviewImage;
-            SynchronizeEx(UpdatePreview);
+            FBitmapImage := ImageInfo.ExtractFullBitmap;
+            try
+              SynchronizeEx(UpdatePreview);
+            finally
+              F(FBitmapImage);
+            end;
           finally
-            F(B32);
+            F(FBitmapPreview);
           end;
-        finally
-          F(PreviewImage);
         end;
-      finally
-        F(FBitmapImage);
+      except
+        SynchronizeEx(HandleError);
       end;
     finally
-      F(Graphic);
+      F(Info);
     end;
   except
     SynchronizeEx(HandleError);
@@ -167,8 +110,8 @@ end;
 
 procedure TStenoLoadImageThread.UpdatePreview;
 begin
-  if Assigned(FCallBack) then
-    FCallBack(FWidth, FHeight, FBitmapImage, FBitmapParam, FPassword);
+  if Assigned(FCallBack) and (FBitmapImage <> nil) and (FBitmapPreview <> nil) then
+    FCallBack(FWidth, FHeight, FBitmapImage, FBitmapPreview, FPassword);
 end;
 
 end.

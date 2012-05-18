@@ -426,8 +426,4 @@ begin
   end;
 end;
 
-initialization
-  PathProviderManager.RegisterProvider(TPersonProvider.Create);
-  PathProviderManager.RegisterSubProvider(TMyComputerProvider, TPersonProvider);
-
 end.

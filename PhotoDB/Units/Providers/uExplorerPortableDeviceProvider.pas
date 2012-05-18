@@ -801,8 +801,4 @@ begin
   Result := TPortableVideoItem.Create;
 end;
 
-initialization
-  PathProviderManager.RegisterProvider(TPortableDeviceProvider.Create);
-  PathProviderManager.RegisterSubProvider(TMyComputerProvider, TPortableDeviceProvider);
-
 end.

@@ -3,7 +3,8 @@ unit uDBGraphicTypes;
 interface
 
 uses
-  Graphics, GraphicsBaseTypes;
+  Graphics,
+  GraphicsBaseTypes;
 
 type
   T255ByteArray = array [0 .. 255] of Byte;

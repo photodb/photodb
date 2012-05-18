@@ -3,7 +3,12 @@ unit uJpegUtils;
 interface
 
 uses
-  jpeg, Graphics, Math, Classes, uMemory, uBitmapUtils;
+  jpeg,
+  Graphics,
+  Math,
+  Classes,
+  uMemory,
+  uBitmapUtils;
 
 type
   TJPEGX = class(TJpegImage)

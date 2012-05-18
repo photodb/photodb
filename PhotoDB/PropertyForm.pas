@@ -2223,6 +2223,7 @@ begin
           Options.Owner := Self;
           Options.SID := SID;
           Options.OnDone := OnDoneLoadGistogrammData;
+          Options.Password := FCurrentPass;
           TPropertyLoadGistogrammThread.Create(Options);
           OnDoneLoadGistogrammData(Self);
         end;

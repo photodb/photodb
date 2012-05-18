@@ -431,8 +431,4 @@ begin
   FPath := cGroupsPath + '\' + FGroupName;
 end;
 
-initialization
-  PathProviderManager.RegisterProvider(TGroupProvider.Create);
-  PathProviderManager.RegisterSubProvider(TMyComputerProvider, TGroupProvider);
-
 end.

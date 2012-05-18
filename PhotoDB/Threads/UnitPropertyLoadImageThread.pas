@@ -8,21 +8,17 @@ uses
   Messages,
   Graphics,
   SysUtils,
-  RAWImage,
   UnitDBKernel,
-  GraphicCrypt,
-  uJpegUtils,
   uBitmapUtils,
   uDBThread,
   uMemory,
   GraphicsCool,
-  uGraphicUtils,
   uRuntime,
-  uAssociations,
   uConstants,
   uDBForm,
   uThemesUtils,
-  uExifUtils;
+  UnitDBDeclare,
+  uImageLoader;
 
 type
   TPropertyLoadImageThreadOptions = record
@@ -47,139 +43,77 @@ type
   public
     constructor Create(Options : TPropertyLoadImageThreadOptions);
     procedure SetCurrentPassword;
-    procedure GetPasswordFromUserSynch;
     procedure SetImage;
     procedure SetSizes;
   end;
 
 implementation
 
-uses PropertyForm, UnitPasswordForm;
+uses
+  PropertyForm;
 
 { TPropertyLoadImageThread }
 
 constructor TPropertyLoadImageThread.Create(Options: TPropertyLoadImageThreadOptions);
 begin
   inherited Create(Options.Owner, False);
+  FreeOnTerminate := True;
   FOptions := Options;
 end;
 
 procedure TPropertyLoadImageThread.Execute;
 var
-  Fb, Fb1, TempBitmap: TBitmap;
-  Graphic: TGraphic;
-  GraphicClass: TGraphicClass;
-  Rotation: Integer;
+  TempBitmap: TBitmap;
+  ImageInfo: ILoadImageInfo;
+  Info: TDBPopupMenuInfoRecord;
 begin
-  inherited;
-  FreeOnTerminate := True;
-  Rotation := - 10 * GetExifRotate(FOptions.FileName);
 
-  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FOptions.FileName));
-  if GraphicClass = nil then
-    Exit;
-
-  Graphic := GraphicClass.Create;
+  Info := TDBPopupMenuInfoRecord.CreateFromFile(FOptions.FileName);
   try
-    if ValidCryptGraphicFile(FOptions.FileName) then
+    if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword], ImageInfo,
+      ThSizePropertyPreview, ThSizePropertyPreview) then
     begin
-      PassWord := DBkernel.FindPasswordForCryptImageFile(FOptions.FileName);
-      if PassWord = '' then
+      IntParamW := ImageInfo.GraphicWidth;
+      IntParamH := ImageInfo.GraphicHeight;
+      Synchronize(SetSizes);
+
+      if ImageInfo.IsImageEncrypted then
       begin
-        StrParam := FOptions.FileName;
-        Synchronize(GetPasswordFromUserSynch);
-        PassWord := StrParam;
-      end;
-      if PassWord <> '' then
-      begin
-        F(Graphic);
-        Graphic := DeCryptGraphicFile(FOptions.FileName, PassWord);
-        StrParam := PassWord;
+        StrParam := ImageInfo.Password;
         Synchronize(SetCurrentPassword);
-      end else
-        Exit;
-    end else
-    begin
-      if Graphic is TRAWImage then
-      begin
-        TRAWImage(Graphic).HalfSizeLoad := True;
-        if not (Graphic as TRAWImage).LoadThumbnailFromFile(FOptions.FileName, ThSizePropertyPreview, ThSizePropertyPreview) then
-          Graphic.LoadFromFile(FOptions.FileName)
-        else
-          Rotation := ExifDisplayButNotRotate(Rotation);
+      end;
 
-      end else
-        Graphic.LoadFromFile(FOptions.FileName);
-    end;
-
-    IntParamW := Graphic.Width;
-    IntParamH := Graphic.Height;
-    Synchronize(SetSizes);
-
-    JPEGScale(Graphic, ThSizePropertyPreview, ThSizePropertyPreview);
-
-    FB := TBitmap.Create;
-    try
-      FB.PixelFormat := pf24bit;
-
-      FB1 := TBitmap.Create;
+      TempBitmap := ImageInfo.GenerateBitmap(Info, ThSizePropertyPreview, ThSizePropertyPreview, pf32bit, Theme.WindowColor,
+        [ilboFreeGraphic, ilboAddShadow, ilboRotate, ilboApplyICCProfile]);
       try
-        FB1.PixelFormat := pf24bit;
-        FB1.SetSize(ThSizePropertyPreview, ThSizePropertyPreview);
-
-        if Graphic is TRAWImage then
-          TRAWImage(Graphic).DisplayDibSize := True;
-
-        if Graphic.Width > Graphic.Height then
+        if TempBitmap <> nil then
         begin
-          FB.Width := ThSizePropertyPreview;
-          FB.Height := Round(ThSizePropertyPreview * (Graphic.Height / Graphic.Width));
-        end else
-        begin
-          FB.Width := Round(ThSizePropertyPreview * (Graphic.Width / Graphic.Height));
-          FB.Height := ThSizePropertyPreview;
-        end;
+          BitmapParam := TBitmap.Create;
+          try
+            BitmapParam.PixelFormat := pf24bit;
+            BitmapParam.SetSize(ThSizePropertyPreview + 4, ThSizePropertyPreview + 4);
 
-        TempBitmap := TBitmap.Create;
-        try
-          AssignGraphic(TempBitmap, Graphic);
-          F(Graphic);
-          FB.PixelFormat := TempBitmap.PixelFormat;
-          DoResize(FB.Width, FB.Height, TempBitmap, FB);
-          F(TempBitmap);
-          ApplyRotate(FB, Rotation);
+            FillRectNoCanvas(BitmapParam, Theme.WindowColor);
 
-          BitmapParam := FB1;
+            if TempBitmap.PixelFormat = pf24Bit then
+              DrawImageEx(BitmapParam, TempBitmap, BitmapParam.Width div 2 - TempBitmap.Width div 2,
+                BitmapParam.Height div 2 - TempBitmap.Height div 2)
+            else
+              DrawImageEx32To24(BitmapParam, TempBitmap, BitmapParam.Width div 2 - TempBitmap.Width div 2,
+                BitmapParam.Height div 2 - TempBitmap.Height div 2);
 
-          FillRectNoCanvas(FB1, Theme.WindowColor);
-
-          if FB.PixelFormat = pf24Bit then
-            DrawImageEx(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,
-              ThSizePropertyPreview div 2 - FB.Height div 2)
-          else
-            DrawImageEx32To24(FB1, FB, ThSizePropertyPreview div 2 - FB.Width div 2,
-              ThSizePropertyPreview div 2 - FB.Height div 2);
-
-          Synchronize(SetImage);
-        finally
-          F(TempBitmap);
+            Synchronize(SetImage);
+          finally
+            F(BitmapParam);
+          end;
         end;
       finally
-        F(FB1);
+        F(TempBitmap);
       end;
-    finally
-      F(FB);
     end;
   finally
-    F(Graphic);
+    F(Info);
   end;
-end;
-
-procedure TPropertyLoadImageThread.GetPasswordFromUserSynch;
-begin
-  if PropertyManager.IsPropertyForm(fOptions.Owner) then
-    if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
-       StrParam := GetImagePasswordFromUser(StrParam);
 end;
 
 procedure TPropertyLoadImageThread.SetCurrentPassword;

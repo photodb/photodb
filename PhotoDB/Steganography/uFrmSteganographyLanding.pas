@@ -146,7 +146,7 @@ var
   Password: string;
   CRC: Cardinal;
   SaveDialog: DBSaveDialog;
-  Chipper : TDECCipherClass;
+  Chipper: TDECCipherClass;
   GraphicClass: TGraphicClass;
   J: TJPEGImage;
   MS, DevMS: TMemoryStream;
