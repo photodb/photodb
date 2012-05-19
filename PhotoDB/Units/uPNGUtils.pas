@@ -8,6 +8,7 @@ uses
   Graphics,
   pngimage,
   Classes,
+  uMemory,
   uBitmapUtils;
 
 procedure LoadPNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
@@ -139,8 +140,11 @@ var
   DeltaS, DeltaD: Integer;
   AddrLineS, AddrLineD: Integer;
   AddrS, AddrD: Integer;
+  TC: TColor;
 begin
-  if Bitmap.PixelFormat <> pf24bit then
+  if PNG.Transparent then
+    Bitmap.PixelFormat := pf32bit
+  else
     Bitmap.PixelFormat := pf24bit;
 
   Bitmap.SetSize(PNG.Width, PNG.Height);
@@ -155,26 +159,60 @@ begin
     DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
-  for I := 0 to PNG.Height - 1 do
+  if not PNG.Transparent then
   begin
-    AddrS := AddrLineS;
-    AddrD := AddrLineD;
-    for J := 0 to PNG.Width - 1 do
+    for I := 0 to PNG.Height - 1 do
     begin
-      P := PByte(AddrS)^;
-      with TChunkPLTE(PNG.Chunks.ItemFromClass(TChunkPLTE)).Item[P] do
+      AddrS := AddrLineS;
+      AddrD := AddrLineD;
+      for J := 0 to PNG.Width - 1 do
       begin
-        PRGB(AddrD)^.R := PNG.GammaTable[rgbRed];
-        PRGB(AddrD)^.G := PNG.GammaTable[rgbGreen];
-        PRGB(AddrD)^.B := PNG.GammaTable[rgbBlue];
-      end;
+        P := PByte(AddrS)^;
+        with TChunkPLTE(PNG.Chunks.ItemFromClass(TChunkPLTE)).Item[P] do
+        begin
+          PRGB(AddrD)^.R := PNG.GammaTable[rgbRed];
+          PRGB(AddrD)^.G := PNG.GammaTable[rgbGreen];
+          PRGB(AddrD)^.B := PNG.GammaTable[rgbBlue];
+        end;
 
-      Inc(AddrS, 1);
-      Inc(AddrD, 3);
+        Inc(AddrS, 1);
+        Inc(AddrD, 3);
+      end;
+      Inc(AddrLineS, DeltaS);
+      Inc(AddrLineD, DeltaD);
     end;
-    Inc(AddrLineS, DeltaS);
-    Inc(AddrLineD, DeltaD);
+  end else
+  begin
+    TC := ColorToRGB(PNG.TransparentColor) and $00FFFFFF;
+
+    for I := 0 to PNG.Height - 1 do
+    begin
+      AddrS := AddrLineS;
+      AddrD := AddrLineD;
+      for J := 0 to PNG.Width - 1 do
+      begin
+        P := PByte(AddrS)^;
+        with TChunkPLTE(PNG.Chunks.ItemFromClass(TChunkPLTE)).Item[P] do
+        begin
+          PRGB32(AddrD)^.R := PNG.GammaTable[rgbRed];
+          PRGB32(AddrD)^.G := PNG.GammaTable[rgbGreen];
+          PRGB32(AddrD)^.B := PNG.GammaTable[rgbBlue];
+
+          if PRGB32(AddrD)^.R + PRGB32(AddrD)^.G shl 8 + PRGB32(AddrD)^.B shl 16 = TC then
+            PRGB32(AddrD)^.L := 0
+          else
+            PRGB32(AddrD)^.L := 255;
+        end;
+
+        Inc(AddrS, 1);
+        Inc(AddrD, 4);
+      end;
+      Inc(AddrLineS, DeltaS);
+      Inc(AddrLineD, DeltaD);
+    end;
+
   end;
+
 end;
 
 procedure LoadPNGImage8bitTransparent(PNG: TPNGImage; Bitmap: TBitmap);
@@ -309,7 +347,27 @@ var
   R, G, B: Integer;
   W1, W2: Integer;
   S, D: PRGB;
+  BPNG: TBitmap;
 begin
+  //only ARBG is supported
+  //for other formats -> use transform: PNG -> BMP -> Extract BMP24
+  case TPngImage(PNG).Header.ColorType of
+    COLOR_GRAYSCALE,
+    COLOR_GRAYSCALEALPHA,
+    COLOR_PALETTE,
+    COLOR_RGB:
+      begin
+        BPNG := TBitmap.Create;
+        try
+          AssignPNG(BPNG, PNG);
+          LoadBMPImage32bit(BPNG, Bitmap, BackGroundColor);
+        finally
+          F(BPNG);
+        end;
+        Exit;
+      end;
+  end;
+
   BackGroundColor := ColorToRGB(BackGroundColor);
   R := GetRValue(BackGroundColor);
   G := GetGValue(BackGroundColor);

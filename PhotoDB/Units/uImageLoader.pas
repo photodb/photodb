@@ -204,7 +204,8 @@ begin
 
               if (ilfICCProfile in Flags) then
               begin
-                if ExifData.ColorSpace = csUncalibrated then
+                if (ExifData.ColorSpace = csTagMissing) or (ExifData.ColorSpace = csUncalibrated)
+                  or (ExifData.ColorSpace = csICCProfile) then
                 begin
                   if ExifData.HasICCProfile then
                   begin

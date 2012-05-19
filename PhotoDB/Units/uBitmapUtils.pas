@@ -1257,6 +1257,12 @@ var
   PS : PARGB32;
   R, G, B : byte;
 begin
+  if S.PixelFormat = pf24Bit then
+  begin
+    AssignBitmap(D, S);
+    Exit;
+  end;
+
   BackGroundColor := ColorToRGB(BackGroundColor);
   R := GetRValue(BackGroundColor);
   G := GetGValue(BackGroundColor);
