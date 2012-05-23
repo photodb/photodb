@@ -26,6 +26,9 @@ initialization
   PathProviderManager.RegisterProvider(TPersonProvider.Create);
   PathProviderManager.RegisterSubProvider(TMyComputerProvider, TPersonProvider);
 
+  PathProviderManager.RegisterSubProvider(TGroupProvider, TExplorerDateStackProvider, True);
+  PathProviderManager.RegisterSubProvider(TPersonProvider, TExplorerDateStackProvider, True);
+
   PathProviderManager.RegisterProvider(TShelfProvider.Create);
   PathProviderManager.RegisterSubProvider(TMyComputerProvider, TShelfProvider);
 

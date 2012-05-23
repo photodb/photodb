@@ -186,7 +186,7 @@ type
     procedure SendPacketToExplorer;
     procedure SearchFolder(SearchContent: Boolean);
     procedure SearchDB; overload;
-    procedure SearchDB(DateFrom, DateTo: TDateTime); overload;
+    procedure SearchDB(DateFrom, DateTo: TDateTime; GroupName: string); overload;
     function IsImage(SearchRec: TSearchRec): Boolean;
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
     procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TDBPopupMenuInfo);
@@ -809,10 +809,10 @@ end;
 
 procedure TExplorerThread.SearchDB;
 begin
-  SearchDB(EncodeDate(1900, 1, 1), EncodeDate(2100, 1, 1));
+  SearchDB(EncodeDate(1900, 1, 1), EncodeDate(2100, 1, 1), '');
 end;
 
-procedure TExplorerThread.SearchDB(DateFrom, DateTo: TDateTime);
+procedure TExplorerThread.SearchDB(DateFrom, DateTo: TDateTime; GroupName: string);
 var
   DS: TDatabaseSearch;
   SQ: TSearchQuery;
@@ -822,7 +822,7 @@ begin
   try
     SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
     SQ.Query := FMask;
-    SQ.GroupName := '';
+    SQ.GroupName := GroupName;
     SQ.RatingFrom := 0;
     SQ.RatingTo := 5;
     SQ.ShowPrivate := ExplorerInfo.ShowPrivate;
@@ -2249,6 +2249,29 @@ var
   MI: TDateStackMonthItem;
   DI: TDateStackDayItem;
   D: TDateTime;
+
+  function GetGroupName(PI: TPathItem): string;
+  begin
+    Result := '';
+    while PI <> nil do
+    begin
+      if PI is TGroupItem then
+        Exit(TGroupItem(PI).GroupName);
+      PI := PI.Parent;
+    end;
+  end;
+
+  function GetSearchTerm(PI: TPathItem): string;
+  begin
+    Result := '';
+    while PI <> nil do
+    begin
+      if PI is TPersonItem then
+        Exit(':Person(' + TPersonItem(PI).PersonName + '):');
+      PI := PI.Parent;
+    end;
+  end;
+
 begin
   PI := PathProviderManager.CreatePathItem(ExcludeTrailingPathDelimiter(FFolder));
   try
@@ -2257,11 +2280,12 @@ begin
       if PI is TDateStackItem then
         LoadProviderItemEx(PI, 1, FIcoSize, L('Loading calendar') + '...');
 
+      FMask := GetSearchTerm(PI);
       if PI is TDateStackYearItem then
       begin
         LoadProviderItem(PI, 1, FIcoSize);
         YI := TDateStackYearItem(PI);
-        SearchDB(EncodeDate(YI.Year, 1, 1), EncodeDate(YI.Year, 12, 31));
+        SearchDB(EncodeDate(YI.Year, 1, 1), EncodeDate(YI.Year, 12, 31), GetGroupName(PI));
       end;
       if PI is TDateStackMonthItem then
       begin
@@ -2269,14 +2293,14 @@ begin
         MI := TDateStackMonthItem(PI);
         D := EncodeDate(MI.Year, MI.Month, 1);
 
-        SearchDB(D, IncDay(IncMonth(D, 1), -1));
+        SearchDB(D, IncDay(IncMonth(D, 1), -1), GetGroupName(PI));
       end;
       if PI is TDateStackDayItem then
       begin
         DI := TDateStackDayItem(PI);
         D := EncodeDate(DI.Year, DI.Month, DI.Day);
 
-        SearchDB(D, D);
+        SearchDB(D, D, GetGroupName(PI));
       end;
     end;
   finally

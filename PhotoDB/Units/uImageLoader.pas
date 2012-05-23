@@ -10,6 +10,7 @@ uses
   SysUtils,
   Classes,
   Graphics,
+  GraphicEx,
   uTiffImage,
   RAWImage,
   CCR.Exif,
@@ -24,13 +25,15 @@ uses
   UnitDBKernel,
   uSettings,
   uBitmapUtils,
-  uJpegUtils;
+  uJpegUtils,
+  uSysUtils,
+  uTranslate;
 
 type
-  TImageLoadFlag = (ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfPassword, ilfAskUserPassword);
+  TImageLoadFlag = (ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfHalfRawSize, ilfPassword, ilfAskUserPassword, ilfThrowError, ilfDontUpdateInfo);
   TImageLoadFlags = set of TImageLoadFlag;
 
-  TImageLoadBitmapFlag = (ilboFreeGraphic, ilboFullBitmap, ilboAddShadow, ilboRotate, ilboApplyICCProfile, ilboDrawAttributes);
+  TImageLoadBitmapFlag = (ilboFreeGraphic, ilboFullBitmap, ilboAddShadow, ilboRotate, ilboApplyICCProfile, ilboDrawAttributes, ilboQualityResize);
   TImageLoadBitmapFlags = set of TImageLoadBitmapFlag;
 
   ILoadImageInfo = interface
@@ -43,16 +46,22 @@ type
     function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
     function UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
     function GenerateBitmap(Info: TDBPopupMenuInfoRecord; Width, Height: Integer; PixelFormat: TPixelFormat; BackgroundColor: TColor; Flags: TImageLoadBitmapFlags): TBitmap;
+    function SaveWithExif(Graphic: TGraphic; FileName: string): Boolean;
+    function TryUpdateExif(MS: TMemoryStream; Graphic: TGraphic): Boolean;
     function GetGraphicWidth: Integer;
     function GetGraphicHeight: Integer;
     function GetIsImageEncrypted: Boolean;
     function GetPassword: string;
+    function GetHasExifHeader: Boolean;
+    function GetExifData: TExifData;
     property ImageTotalPages: Integer read GetImageTotalPages;
     property Rotation: Integer read GetRotation;
     property GraphicWidth: Integer read GetGraphicWidth;
     property GraphicHeight: Integer read GetGraphicHeight;
     property IsImageEncrypted: Boolean read GetIsImageEncrypted;
     property Password: string read GetPassword;
+    property HasExifHeader: Boolean read GetHasExifHeader;
+    property ExifData: TExifData read GetExifData;
   end;
 
   TLoadImageInfo = class(TInterfacedObject, ILoadImageInfo)
@@ -80,10 +89,14 @@ type
     function GetGraphicHeight: Integer;
     function GetIsImageEncrypted: Boolean;
     function GetPassword: string;
+    function GetHasExifHeader: Boolean;
+    function GetExifData: TExifData;
     function AppllyICCProfile(Bitmap: TBitmap): Boolean;
     function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
     function UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
     function GenerateBitmap(Info: TDBPopupMenuInfoRecord; Width, Height: Integer; PixelFormat: TPixelFormat; BackgroundColor: TColor; Flags: TImageLoadBitmapFlags): TBitmap;
+    function SaveWithExif(Graphic: TGraphic; FileName: string): Boolean;
+    function TryUpdateExif(MS: TMemoryStream; Graphic: TGraphic): Boolean;
   end;
 
 type
@@ -158,6 +171,9 @@ begin
                   end
                 );
 
+              if (Password = '') and (ilfThrowError in Flags) then
+                raise Exception.Create(FormatEx(TA('Can''t decrypt image "{0}"', 'Image'), [Info.FileName]));
+
               if S = nil then
                 S := TMemoryStream.Create;
               DecryptStreamToStream(FS, S, Password);
@@ -212,7 +228,7 @@ begin
                     MSICC := TMemoryStream.Create;
                     ExifData.ExtractICCProfile(MSICC);
                   end;
-                  if not Result then
+                  if MSICC = nil then
                   begin
                     XMPICCProperty := ExifData.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
                     if XMPICCProperty <> nil then
@@ -232,9 +248,11 @@ begin
                    TRAWImage(Graphic).IsPreview := not (ilfFullRAW in Flags);
                    if TRAWImage(Graphic).IsPreview then
                      TRAWImage(Graphic).PreviewSize := Max(Width, Height);
+                   if (ilfHalfRawSize in Flags) then
+                     TRAWImage(Graphic).HalfSizeLoad := True;
                 end;
 
-                if (Info.ID = 0) and not IsDevicePath(Info.FileName) then
+                if not (ilfDontUpdateInfo in flags) and (Info.ID = 0) and not IsDevicePath(Info.FileName) then
                 begin
                   Info.Rotation := -10 * EXIFRotation;
 
@@ -266,6 +284,10 @@ begin
                   MSICC := nil;
                   Graphic := nil;
                   Result := True;
+                end else
+                begin
+                  if (Graphic = nil) and (ilfThrowError in Flags) then
+                    raise Exception.Create(FormatEx(TA('Can''t load image "{0}"', 'Image'), [Info.FileName]));
                 end;
               finally
                 F(Graphic);
@@ -417,7 +439,10 @@ begin
       W := Result.Width;
       H := Result.Height;
       ProportionalSize(Width, Height, W, H);
-      DoResize(W, H, Result, B);
+      if ilboQualityResize in Flags then
+        StretchEx(W, H, sfLanczos3, 0, Result, B)
+      else
+        DoResize(W, H, Result, B);
 
       if ilboFullBitmap in Flags then
       begin
@@ -453,6 +478,11 @@ begin
   end;
 end;
 
+function TLoadImageInfo.GetExifData: TExifData;
+begin
+  Result := FExifData;
+end;
+
 function TLoadImageInfo.GetGraphicHeight: Integer;
 begin
   Result := FGraphicHeight;
@@ -461,6 +491,11 @@ end;
 function TLoadImageInfo.GetGraphicWidth: Integer;
 begin
   Result := FGraphicWidth;
+end;
+
+function TLoadImageInfo.GetHasExifHeader: Boolean;
+begin
+  Result := not FExifData.Empty;
 end;
 
 function TLoadImageInfo.GetImageTotalPages: Integer;
@@ -481,6 +516,39 @@ end;
 function TLoadImageInfo.GetRotation: Integer;
 begin
   Result := FRotation;
+end;
+
+function TLoadImageInfo.SaveWithExif(Graphic: TGraphic;
+  FileName: string): Boolean;
+begin
+  if not FExifData.Empty then
+  begin
+    FExifData.BeginUpdate;
+    try
+      FExifData.Orientation := toTopLeft;
+      FExifData.ExifImageWidth := Graphic.Width;
+      FExifData.ExifImageHeight := Graphic.Height;
+      FExifData.Thumbnail := nil;
+      Graphic.SaveToFile(FileName);
+      FExifData.SaveToGraphic(FileName);
+    finally
+      FExifData.EndUpdate;
+    end;
+  end else
+    Graphic.SaveToFile(FileName);
+
+  Result := True;
+end;
+
+function TLoadImageInfo.TryUpdateExif(MS: TMemoryStream;
+  Graphic: TGraphic): Boolean;
+begin
+  Result := False;
+  if (FExifData <> nil) and not FExifData.Empty then
+  begin
+    FixEXIFForJpegStream(FExifData, MS, Graphic.Width, Graphic.Height);
+    Result := True;
+  end;
 end;
 
 function TLoadImageInfo.UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;

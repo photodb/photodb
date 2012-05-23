@@ -33,6 +33,7 @@ function InSignatures(Signature: cmsProfileClassSignature; dwFlags: DWORD): Bool
 //function ApplyICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; JpegEXIF: TExifData; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 function ConvertBitmapToDisplayICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; SourceMem: Pointer; MemSize: Cardinal; SourceICCProfileName: string; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 function FillDisplayProfileList(List: TStrings): Boolean;
+function GetICCProfileName(ThreadContext: Pointer;  SourceMem: Pointer; MemSize: Cardinal): string;
 
 implementation
 
@@ -243,41 +244,27 @@ begin
 
   Result := ConvertBitmapICCProfile(ThreadContext, Bitmap, SourceMem, MemSize, SourceICCProfileName, DisplayProfileName);
 end;
-{
-function ApplyICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; JpegEXIF: TExifData; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
+
+function GetICCProfileName(ThreadContext: Pointer; SourceMem: Pointer; MemSize: Cardinal): string;
 var
-  MSICC: TMemoryStream;
-  XMPICCProperty: TXMPProperty;
-  XMPICCPrifile: string;
+  hProfile: cmsHPROFILE;
+  Descrip: array [0 .. 256] of Char;
 begin
-  Result := False;
-  if not JpegEXIF.Empty then
+  Result := '';
+  if not InitICCProfiles then
+    Exit;
+
+  hProfile := cmsOpenProfileFromMemTHR(ThreadContext, SourceMem, MemSize);
+
+  if hProfile <> nil then
   begin
-    if JpegEXIF.ColorSpace = csUncalibrated then
-    begin
-      if JpegEXIF.HasICCProfile then
-      begin
-        MSICC := TMemoryStream.Create;
-        try
-          if JpegEXIF.ExtractICCProfile(MSICC) then
-            Result := ConvertBitmapToDisplayICCProfile(ThreadContext, Bitmap, MSICC.Memory, MSICC.Size, '', DisplayProfileName);
-        finally
-          F(MSICC);
-        end;
-      end;
-      if not Result then
-      begin
-        XMPICCProperty := JpegEXIF.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
-        if XMPICCProperty <> nil then
-        begin
-          XMPICCPrifile := XMPICCProperty.ReadValue();
-          if XMPICCPrifile <> '' then
-            Result := ConvertBitmapToDisplayICCProfile(ThreadContext, Bitmap, nil, 0, XMPICCPrifile, DisplayProfileName);
-        end;
-      end;
-    end;
+    cmsGetProfileInfo(hProfile, cmsInfoDescription, 'EN', 'us', Descrip,  256);
+    Result := Descrip;
   end;
-end;  }
+
+  if hProfile <> nil then
+    cmsCloseProfile(hProfile);
+end;
 
 initialization
   FSync := TCriticalSection.Create;

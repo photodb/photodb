@@ -4,8 +4,18 @@ interface
 
 
 uses
-  Windows, SysUtils, Graphics, UnitDBDeclare, JPEG, DB, Classes,
-  uMemory, uConstants, uFileUtils, uRuntime, uDBClasses;
+  Windows,
+  SysUtils,
+  Graphics,
+  UnitDBDeclare,
+  JPEG,
+  DB,
+  Classes,
+  uMemory,
+  uConstants,
+  uFileUtils,
+  uRuntime,
+  uDBClasses;
 
 type
   TGroup = record

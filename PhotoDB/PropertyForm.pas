@@ -93,7 +93,8 @@ uses
   Vcl.ActnPopup,
   uMachMask,
   Vcl.PlatformDefaultStyleActnCtrls,
-  uBaseWinControl;
+  uBaseWinControl,
+  uICCProfile;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -2245,6 +2246,8 @@ var
   Links: TLinksInfo;
   SL: TStringList;
   I: Integer;
+  ICCProfileMem: TMemoryStream;
+  ICCProfile: string;
 
 const
   XMPBasicValues: array[TWindowsStarRating] of UnicodeString = ('', '1', '2', '3', '4', '5');
@@ -2350,6 +2353,21 @@ begin
             begin
               XInsert(L('Latitude'), ExifData.GPSLatitude.AsString);
               XInsert(L('Longitude'), ExifData.GPSLongitude.AsString);
+            end;
+
+            if ExifData.HasICCProfile then
+            begin
+              ICCProfileMem := TMemoryStream.Create;
+              try
+                if ExifData.ExtractICCProfile(ICCProfileMem) then
+                begin
+                  ICCProfile := GetICCProfileName(Self, ICCProfileMem.Memory, ICCProfileMem.Size);
+                  if ICCProfile <> '' then
+                    XInsert(L('ICC profile'), ICCProfile);
+                end;
+              finally
+                F(ICCProfileMem);
+              end;
             end;
 
           end;

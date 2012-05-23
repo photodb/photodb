@@ -3551,19 +3551,18 @@ begin
           if ElvMain.Items = nil then
             Exit;
 
-          FOldFileName := PInfo[K].FNewFileName;
-
           if IsExplorerTreeViewVisible then
-            TreeView.DeletePath(FOldFileName);
+            TreeView.DeletePath(PInfo[K].FNewFileName);
 
           for I := 0 to ElvMain.Items.Count - 1 do
           begin
+            FOldFileName := PInfo[K].FNewFileName;
             Index := ItemIndexToMenuIndex(I);
             if Index > FFilesInfo.Count - 1 then
               Exit;
-            FileName := FFilesInfo[index].FileName;
+            FileName := FFilesInfo[Index].FileName;
 
-            if FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER then
+            if FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER then
             begin
               FileName := IncludeTrailingBackslash(FileName);
               FOldFileName := IncludeTrailingBackslash(FOldFileName);

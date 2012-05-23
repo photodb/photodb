@@ -920,6 +920,7 @@ type
     FMetadataInSource: TJPEGMetadataKinds;
     FXMPSegmentPosition, FXMPPacketSizeInSource: Int64;
     FICCSegmentPosition, FICCPacketSizeInSource: Int64;
+    FIsPSDICCFormat: Boolean;
     FICCData: IMetadataBlock;
     property MetadataInSource: TJPEGMetadataKinds read FMetadataInSource; //set in LoadFromGraphic
   protected
@@ -3723,8 +3724,8 @@ function TCustomExifData.HasICCProfile: Boolean;
 var
   Words: PWordArray;
 begin
-  Result := (FICCData <> nil) and (FICCSegmentPosition > 0) and (FICCPacketSizeInSource > 14);
-  if Result then
+  Result := (FICCData <> nil) and (FICCPacketSizeInSource > 14);
+  if Result and not FIsPSDICCFormat then
   begin
     Words := FICCData.Data.Memory;
     Result := CompareMem(Words, @TJPEGSegment.ICCHeader, SizeOf(TJPEGSegment.ICCHeader));
@@ -3736,8 +3737,12 @@ begin
   Result := HasICCProfile;
   if Result then
   begin
-    FICCData.Data.Seek(14, soFromBeginning);
-    Stream.CopyFrom(FICCData.Data, FICCData.Data.Size - 14);
+    if not FIsPSDICCFormat then
+    begin
+      FICCData.Data.Seek(14, soFromBeginning);
+      Stream.CopyFrom(FICCData.Data, FICCData.Data.Size - 14);
+    end else
+      Stream.CopyFrom(FICCData.Data, FICCData.Data.Size);
   end;
 end;
 
@@ -3896,12 +3901,15 @@ var
   Segment: IFoundJPEGSegment;
   PSDInfo: TPSDInfo;
   ResBlock: IAdobeResBlock;
+  IsIccProfileShouldBeIgnored: Boolean;
 begin
+  IsIccProfileShouldBeIgnored := False;
   FMetadataInSource := [];
   FXMPSegmentPosition := 0;
   FXMPPacketSizeInSource := 0;
   FICCSegmentPosition := 0;
   FICCPacketSizeInSource := 0;
+  FIsPSDICCFormat := False;
   FICCData := nil;
   Result := False;
   BeginUpdate;
@@ -3948,7 +3956,19 @@ begin
           Include(FMetadataInSource, mkXMP);
           FXMPPacketSizeInSource := ResBlock.Data.Size;
           XMPPacket.DataToLazyLoad := ResBlock;
+        end else if ResBlock.HasICCData then
+        begin
+          FICCData := ResBlock;
+          FICCPacketSizeInSource := ResBlock.Data.Size;
+          FIsPSDICCFormat := True;
+        end else if ResBlock.HasICCUntaggedProfileMarker then
+        begin
+          if ResBlock.Data.Size = 1 then
+            IsIccProfileShouldBeIgnored := PByte(ResBlock.Data)^ = 1;
         end;
+
+      if IsIccProfileShouldBeIgnored then
+        FICCData := nil;
     end
     else if HasTiffHeader(Stream) then
     begin
@@ -3957,6 +3977,7 @@ begin
       if not Empty then Include(FMetadataInSource, mkExif);
       if not XMPPacket.Empty then Include(FMetadataInSource, mkXMP);
     end;
+
   finally
     FChangedWhileUpdating := False;
     EndUpdate;
@@ -5595,6 +5616,7 @@ var
   Segment: IFoundJPEGSegment;
   SOFData: PJPEGStartOfFrameData;
   Tag: TExifTag;
+  ICCStream: TStream;
 begin
   for Tag in Sections[esDetails] do
     case Tag.ID of
@@ -5613,6 +5635,14 @@ begin
         Break;
       end;
     end;
+
+  if not FIsPSDICCFormat then
+  begin
+    ICCStream := nil;
+    if (FICCData <> nil) and (FICCData.Data <> nil) then
+      ICCStream := FICCData.Data;
+  end;
+
   UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)  
 end;
 

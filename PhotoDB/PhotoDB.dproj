@@ -127,8 +127,8 @@
 			<VerInfo_MajorVer>3</VerInfo_MajorVer>
 			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
 			<VerInfo_Release>0</VerInfo_Release>
-			<VerInfo_Build>482</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.0.0.482;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.0;ProductVersion=3.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Build>485</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.0.0.485;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.0;ProductVersion=3.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -139,11 +139,6 @@
 			<DCCReference Include="Threads\uSplashThread.pas"/>
 			<DCCReference Include="Threads\uLanguageLoadThread.pas"/>
 			<DCCReference Include="Threads\uLoadStyleThread.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerDateStackProviders.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerGroupsProvider.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerPersonsProvider.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerSearchProviders.pas"/>
-			<DCCReference Include="Units\Providers\uExplorerPathProvider.pas"/>
 			<DCCReference Include="Searching.pas">
 				<Form>SearchForm</Form>
 			</DCCReference>
@@ -639,6 +634,11 @@
 			<DCCReference Include="uFormEditObject.pas">
 				<Form>FormEditObject</Form>
 			</DCCReference>
+			<DCCReference Include="Units\Providers\uExplorerDateStackProviders.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerGroupsProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerPersonsProvider.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerSearchProviders.pas"/>
+			<DCCReference Include="Units\Providers\uExplorerPathProvider.pas"/>
 			<DCCReference Include="Units\Providers\uExplorerPortableDeviceProvider.pas"/>
 			<DCCReference Include="Units\PortableDevices\uPortableClasses.pas"/>
 			<DCCReference Include="Units\PortableDevices\uWIAClasses.pas"/>
@@ -797,12 +797,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile LocalName="bin\PhotoDB.rsm" Class="DebugSymbols" Configuration="Debug">
+					<DeployFile Class="DebugSymbols" Configuration="Debug" LocalName="bin\PhotoDB.rsm">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile LocalName="bin\PhotoDB.exe" Class="ProjectOutput" Configuration="Debug">
+					<DeployFile Class="ProjectOutput" Configuration="Debug" LocalName="bin\PhotoDB.exe">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">

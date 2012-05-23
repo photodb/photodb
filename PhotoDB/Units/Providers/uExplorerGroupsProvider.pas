@@ -74,7 +74,8 @@ type
 implementation
 
 uses
-  UnitQuickGroupInfo, UnitGroupsTools;
+  UnitQuickGroupInfo,
+  UnitGroupsTools;
 
 { TGroupProvider }
 
@@ -89,12 +90,23 @@ begin
 end;
 
 function TGroupProvider.CreateFromPath(Path: string): TPathItem;
+var
+  S: string;
 begin
   Result := nil;
   if Path = cGroupsPath then
     Result := TGroupsItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
   if StartsText(cGroupsPath + '\', Path) then
+  begin
+    S := Path;
+    System.Delete(S, 1, Length(cGroupsPath) + 1);
+
+    //subitem
+    if Pos('\', S) > 0 then
+      Exit;
+
     Result := TGroupItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
+  end;
 end;
 
 function TGroupProvider.Delete(Sender: TObject; Items: TPathItemCollection; Options: TPathFeatureOptions): Boolean;
@@ -302,6 +314,15 @@ end;
 function TGroupProvider.Supports(Path: string): Boolean;
 begin
   Result := StrUtils.StartsText(cGroupsPath, Path);
+
+  if Result then
+  begin
+    System.Delete(Path, 1, Length(cGroupsPath) + 1);
+
+    //subitem
+    if Pos('\', Path) > 0 then
+      Result := False;
+  end;
 end;
 
 function TGroupProvider.SupportsFeature(Feature: string): Boolean;

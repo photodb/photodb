@@ -44,6 +44,7 @@ uses
   UnitDBCommonGraphics,
   RAWImage,
   uTiffImage,
+  uImageLoader,
   uFaceDetectionThread,
   uPortableDeviceUtils;
 
@@ -149,6 +150,8 @@ var
   IsPreviewAvailalbe: Boolean;
   FileInfo: TDBPopupMenuInfoRecord;
   FOriginalOrientation: Integer;
+  ImageInfo: ILoadImageInfo;
+  Flags: TImageLoadFlags;
 
   procedure Exchange(var A, B: TBitmap);
   var
@@ -295,7 +298,7 @@ const
                 ExifData := TExifData.Create;
                 try
                   if not IsDevicePath(FData.FileName) then
-                    ExifData.LoadFromGraphic(FData.FileName);
+                    ExifData.LoadFromFileEx(FData.FileName);
 
                   NewGraphic.SaveToFile(FileName);
                   if not ExifData.Empty and (NewGraphic is TJpegImage) or (NewGraphic is TTiffImage) then
@@ -326,7 +329,7 @@ const
             raise Exception.Create('Error code = ' + IntToStr(GetLastError));
           Exit;
         except
-          on e : Exception do
+          on e: Exception do
           begin
             if not GOM.IsObj(ThreadForm) then
                Exit;
@@ -391,6 +394,7 @@ begin
   IsPreviewAvailalbe := False;
   CoInitializeEx(nil, COM_MODE);
   try
+
     Ext := ExtractFileExt(FData.FileName);
     GraphicClass := TFileAssociations.Instance.GetGraphicClass(Ext);
 
@@ -511,144 +515,149 @@ begin
       end;
     end;
 
-    Graphic := GraphicClass.Create;
-
-    //RAW loads in hasf size for preview
-    if (Graphic is TRAWImage) and FProcessingParams.PreviewOptions.GeneratePreview then
-      TRAWImage(Graphic).HalfSizeLoad := True;
+    Graphic := nil;//GraphicClass.Create;
 
     try
-      if Encrypted then
+      Flags := [ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfPassword, ilfDontUpdateInfo];
+      //RAW loads in hasf size for preview
+      if FProcessingParams.PreviewOptions.GeneratePreview then
+        Flags := Flags + [ilfHalfRawSize];
+
+      if LoadImageFromPath(FData, -1, '', Flags, ImageInfo) then
       begin
-        F(Graphic);
+        Graphic := ImageInfo.ExtractGraphic;
 
-        Graphic := DeCryptGraphicFile(FData.FileName, Password);
-      end else if not IsDevicePath(FData.FileName) then
-        Graphic.LoadFromFile(FData.FileName)
-      else
-        Graphic.LoadFromDevice(FData.FileName);
-
-      if not CheckThread then
-        Exit;
-
-      Original := TBitmap.Create;
-      try
-        OriginalWidth := Graphic.Width;
-        OriginalHeight := Graphic.Height;
-
-        if FProcessingParams.PreviewOptions.GeneratePreview then
-          JPEGScale(Graphic, FProcessingParams.PreviewOptions.PreviewWidth,
-            FProcessingParams.PreviewOptions.PreviewHeight);
-
-        AssignGraphic(Original, Graphic);
-        F(Graphic);
-
-        if FProcessingParams.Resize then
-        begin
-          if FProcessingParams.ResizeToSize then
-          begin
-            Width := FProcessingParams.Width;
-            Height := FProcessingParams.Height;
-          end else
-          begin
-            Width := Round(FProcessingParams.PercentResize * OriginalWidth / 100);
-            Height := Round(FProcessingParams.PercentResize * OriginalHeight / 100);
-          end;
-
-          if FProcessingParams.SaveAspectRation then
-          begin
-            W := Width;
-            H := Height;
-            Width := Original.Width;
-            Height := Original.Height;
-            ProportionalSizeA(W, H, Width, Height);
-          end;
-
-          //generate small image
-          if FProcessingParams.PreviewOptions.GeneratePreview then
-            ProportionalSize(FProcessingParams.PreviewOptions.PreviewWidth,
-              FProcessingParams.PreviewOptions.PreviewHeight, Width, Height);
-
-          //resample image
-          if Original.PixelFormat = pf32Bit then
-          begin
-            TmpBitmap := TBitmap.Create;
-            try
-              TmpBitmap.PixelFormat := pf32Bit;
-              DoResize(Width, Height, Original, TmpBitmap);
-              Exchange(Original, TmpBitmap);
-            finally
-              F(TmpBitmap);
-            end;
-          end else
-          begin
-            if FProcessingParams.PreviewOptions.GeneratePreview then
-              Stretch(Width, Height, {sfBox}sfLanczos3, 0, Original)
-            else
-              Stretch(Width, Height, sfLanczos3, 0, Original);
-          end;
-        end;
+        if Graphic = nil then
+          Exit;
 
         if not CheckThread then
           Exit;
 
-        //apply rotation to image - quick process
-        if FProcessingParams.Rotate and not IsDevicePath(FData.FileName) then
-        begin
-          FixEXIFRotate;
-
-          if FProcessingParams.Rotation <> DB_IMAGE_ROTATE_UNKNOWN then
-            ApplyRotate(Original, Rotation);
-        end;
-
-        if not CheckThread then
-          Exit;
-
-        //add watermark
-        if FProcessingParams.AddWatermark then
-          DrawWatermark(Original, FProcessingParams.WatermarkOptions.BlockCountX,
-            FProcessingParams.WatermarkOptions.BlockCountY,
-            FProcessingParams.WatermarkOptions.Text, -1,
-            FProcessingParams.WatermarkOptions.Color,
-            FProcessingParams.WatermarkOptions.Transparenty,
-            FProcessingParams.WatermarkOptions.FontName,
-            AsyncDrawCallBack, AsyncPrepareBitmapCallBack, AsyncGetFontCallBack);
-
-        if not CheckThread then
-          Exit;
-
-        OriginalWidth := Original.Width;
-        OriginalHeight := Original.Height;
-
-        //save
-        NewGraphic := NewGraphicClass.Create;
+        Original := TBitmap.Create;
         try
-          if NewGraphic is TGifImage then
-          begin
-            TGifImage(NewGraphic).DitherMode := dmFloydSteinberg;
-            TGifImage(NewGraphic).ColorReduction := rmQuantize;
-          end;
-          if (NewGraphicClass <> TPngImage) and (NewGraphicClass <> TBitmap) then
-            Original.PixelFormat := pf24Bit;
+          OriginalWidth := Graphic.Width;
+          OriginalHeight := Graphic.Height;
 
-          AssignToGraphic(NewGraphic, Original);
+          if FProcessingParams.PreviewOptions.GeneratePreview then
+            JPEGScale(Graphic, FProcessingParams.PreviewOptions.PreviewWidth, FProcessingParams.PreviewOptions.PreviewHeight);
+
+          AssignGraphic(Original, Graphic);
           F(Graphic);
 
-          SetJPEGGraphicSaveOptions(ConvertImageID, NewGraphic);
-          if NewGraphic is TJPEGImage then
-            TJpegX(NewGraphic).FreeBitmap;
+          if FProcessingParams.Resize then
+          begin
+            if FProcessingParams.ResizeToSize then
+            begin
+              Width := FProcessingParams.Width;
+              Height := FProcessingParams.Height;
+            end else
+            begin
+              Width := Round(FProcessingParams.PercentResize * OriginalWidth / 100);
+              Height := Round(FProcessingParams.PercentResize * OriginalHeight / 100);
+            end;
 
-          if FProcessingParams.PreviewOptions.GeneratePreview then
-            SaveFile(MODE_PREVIEW)
-          else
-            SaveFile(MODE_CUSTOM);
+            if FProcessingParams.SaveAspectRation then
+            begin
+              W := Width;
+              H := Height;
+              Width := Original.Width;
+              Height := Original.Height;
+              ProportionalSizeA(W, H, Width, Height);
+            end;
+
+            //generate small image
+            if FProcessingParams.PreviewOptions.GeneratePreview then
+              ProportionalSize(FProcessingParams.PreviewOptions.PreviewWidth,
+                FProcessingParams.PreviewOptions.PreviewHeight, Width, Height);
+
+            //resample image
+            if Original.PixelFormat = pf32Bit then
+            begin
+              TmpBitmap := TBitmap.Create;
+              try
+                TmpBitmap.PixelFormat := pf32Bit;
+                DoResize(Width, Height, Original, TmpBitmap);
+                Exchange(Original, TmpBitmap);
+              finally
+                F(TmpBitmap);
+              end;
+            end else
+            begin
+              if FProcessingParams.PreviewOptions.GeneratePreview then
+                Stretch(Width, Height, {sfBox}sfLanczos3, 0, Original)
+              else
+                Stretch(Width, Height, sfLanczos3, 0, Original);
+            end;
+          end;
+
+          if not CheckThread then
+            Exit;
+
+          //apply rotation to image - quick process
+          if FProcessingParams.Rotate and not IsDevicePath(FData.FileName) then
+          begin
+            FixEXIFRotate;
+
+            if FProcessingParams.Rotation <> DB_IMAGE_ROTATE_UNKNOWN then
+              ApplyRotate(Original, Rotation);
+          end;
+
+          if not CheckThread then
+            Exit;
+
+          ImageInfo.AppllyICCProfile(Original);
+
+          if not CheckThread then
+            Exit;
+
+          //add watermark
+          if FProcessingParams.AddWatermark then
+            DrawWatermark(Original, FProcessingParams.WatermarkOptions.BlockCountX,
+              FProcessingParams.WatermarkOptions.BlockCountY,
+              FProcessingParams.WatermarkOptions.Text, -1,
+              FProcessingParams.WatermarkOptions.Color,
+              FProcessingParams.WatermarkOptions.Transparenty,
+              FProcessingParams.WatermarkOptions.FontName,
+              AsyncDrawCallBack, AsyncPrepareBitmapCallBack, AsyncGetFontCallBack);
+
+          if not CheckThread then
+            Exit;
+
+          OriginalWidth := Original.Width;
+          OriginalHeight := Original.Height;
+
+          //save
+          NewGraphic := NewGraphicClass.Create;
+          try
+            if NewGraphic is TGifImage then
+            begin
+              TGifImage(NewGraphic).DitherMode := dmFloydSteinberg;
+              TGifImage(NewGraphic).ColorReduction := rmQuantize;
+            end;
+            if (NewGraphicClass <> TPngImage) and (NewGraphicClass <> TBitmap) then
+              Original.PixelFormat := pf24Bit;
+
+            AssignToGraphic(NewGraphic, Original);
+            F(Graphic);
+
+            SetJPEGGraphicSaveOptions(ConvertImageID, NewGraphic);
+            if NewGraphic is TJPEGImage then
+              TJpegX(NewGraphic).FreeBitmap;
+
+            if FProcessingParams.PreviewOptions.GeneratePreview then
+              SaveFile(MODE_PREVIEW)
+            else
+              SaveFile(MODE_CUSTOM);
+
+          finally
+            F(NewGraphic);
+          end;
 
         finally
-          F(NewGraphic);
+          F(Original);
         end;
 
-      finally
-        F(Original);
+
       end;
     finally
       F(Graphic);

@@ -35,7 +35,8 @@ uses
   uPhotoShareInterfaces,
   uShellIntegration,
   uExifUtils,
-  CCR.Exif;
+  CCR.Exif,
+  uImageLoader;
 
 type
   TShareImagesThread = class;
@@ -268,22 +269,23 @@ end;
 
 procedure TShareImagesThread.ProcessImage(Data: TDBPopupMenuInfoRecord);
 var
-  Ext, Password, ContentType: string;
-  GraphicClass: TGraphicClass;
-  Enrypted, UsePreviewForRAW: Boolean;
-  Graphic, NewGraphic: TGraphic;
+  ContentType: string;
+  UsePreviewForRAW: Boolean;
+  NewGraphic: TGraphic;
   Original: TBitmap;
-  Width, Height, W, H: Integer;
+  Width, Height: Integer;
   IsJpegImageFormat,
   ResizeImage: Boolean;
   MS: TMemoryStream;
   PhotoItem: IPhotoServiceItem;
-  ExifData: TExifData;
   ItemProgress: IUploadProgress;
   Ico: TIcon;
+
+  Flags: TImageLoadFlags;
+  ImageInfo: ILoadImageInfo;
 begin
   try
-  Width := 0;
+    Width := 0;
     Height := 0;
     ResizeImage := Settings.ReadBool('Share', 'ResizeImage', True);
     if ResizeImage then
@@ -300,96 +302,17 @@ begin
     UsePreviewForRAW := Settings.ReadBool('Share', 'RAWPreview', True);
     IsJpegImageFormat := Settings.ReadInteger('Share', 'ImageFormat', 0) = 0;
 
-    Ext := ExtractFileExt(Data.FileName);
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(Ext);
+    Flags := [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword, ilfThrowError];
+    if not (UsePreviewForRAW or FIsPreview) then
+      Flags := Flags + [ilfFullRAW];
 
-    if GraphicClass = nil then
-      Exit;
-
-    Enrypted := not IsDevicePath(Data.FileName) and ValidCryptGraphicFile(Data.FileName);
-    if Enrypted then
+    if LoadImageFromPath(Data, -1, '', Flags, ImageInfo, Width, Height) then
     begin
-      Password := DBKernel.FindPasswordForCryptImageFile(Data.FileName);
-      if Password = '' then
-        raise Exception.Create(FormatEx(L('Can''t decrypt image "{0}"'), [Data.FileName]));
-    end;
-
-    Graphic := GraphicClass.Create;
-    try
-
-      //RAW loads sd preview
-      if Graphic is TRAWImage then
-        if UsePreviewForRAW or FIsPreview then
-          TRAWImage(Graphic).IsPreview := True;
-
-      ExifData := TExifData.Create(nil);
+      Original := ImageInfo.GenerateBitmap(Data, Width, Height, pf24Bit, clWhite,
+        [ilboFreeGraphic, ilboRotate, ilboApplyICCProfile, ilboQualityResize]);
       try
-
-        if Enrypted then
+        if Original <> nil then
         begin
-          F(Graphic);
-          Graphic := DeCryptGraphicFile(Data.FileName, Password);
-        end else if not IsDevicePath(Data.FileName) then
-          Graphic.LoadFromFile(Data.FileName)
-        else
-          Graphic.LoadFromDevice(Data.FileName);
-
-        if Graphic = nil then
-          raise Exception.Create(FormatEx(L('Can''t load image "{0}"'), [Data.FileName]));
-
-        if IsJpegImageFormat then
-        begin
-          //try to read exif
-          if Enrypted then
-          begin
-            MS := TMemoryStream.Create;
-            try
-              if DecryptFileToStream(Data.FileName, Password, MS) then
-              begin
-                MS.Seek(0, soFromBeginning);
-                ExifData.LoadFromStream(MS);
-              end;
-            finally
-              F(MS);
-            end;
-          end else if not IsDevicePath(Data.FileName) then
-            ExifData.LoadFromGraphic(Data.FileName) else
-          begin
-            MS := TMemoryStream.Create;
-            try
-              if ReadStreamFromDevice(Data.FileName, MS) then
-              begin
-                MS.Seek(0, soFromBeginning);
-                ExifData.LoadFromStream(MS);
-              end;
-            finally
-              F(MS);
-            end;
-          end;
-        end;
-
-        if Graphic is TRAWImage then
-        begin
-          W := TRAWImage(Graphic).GraphicWidth;
-          H := TRAWImage(Graphic).GraphicHeight;
-        end else
-        begin
-          W := Graphic.Width;
-          H := Graphic.Height;
-        end;
-        ProportionalSize(Width, Height, W, H);
-
-        if (Width > 0) and (Height > 0) then
-          JPEGScale(Graphic, W, H);
-
-        Original := TBitmap.Create;
-        try
-          AssignGraphic(Original, Graphic);
-          F(Graphic);
-
-          if (Width > 0) and (Height > 0) then
-            Stretch(W, H, sfLanczos3, 0, Original);
-
           if FIsPreview then
           begin
             SynchronizeEx(
@@ -415,8 +338,10 @@ begin
               MS := TMemoryStream.Create;
               try
                 NewGraphic.SaveToStream(MS);
-                if IsJpegImageFormat and not ExifData.Empty then
-                  FixEXIFForJpegStream(ExifData, MS, NewGraphic.Width, NewGraphic.Height);
+
+                if IsJpegImageFormat then
+                  ImageInfo.TryUpdateExif(MS, NewGraphic);
+                
                 MS.Seek(0, soFromBeginning);
 
                 if IsJpegImageFormat then
@@ -439,14 +364,10 @@ begin
             end;
           end;
 
-        finally
-          F(Original);
         end;
       finally
-        F(ExifData);
+        F(Original);
       end;
-    finally
-      F(Graphic);
     end;
   except
     on e: Exception do

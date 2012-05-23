@@ -666,7 +666,7 @@ begin
                           end;
                         end;
 
-                        if IsFirstItem then
+                        if (CurrentItems.Count > 0) and IsFirstItem then
                         begin
                           IsFirstItem := False;
                           Expanded[Node] := True;

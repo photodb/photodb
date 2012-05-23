@@ -480,6 +480,7 @@ type
 // Resampling support routines
 procedure Stretch(NewWidth, NewHeight: Cardinal; Filter: TResamplingFilter; Radius: Single; Source, Target: TBitmap); overload;
 procedure Stretch(NewWidth, NewHeight: Cardinal; Filter: TResamplingFilter; Radius: Single; Source: TBitmap); overload;
+procedure StretchEx(NewWidth, NewHeight: Cardinal; Filter: TResamplingFilter; Radius: Single; Source, Target: TBitmap);
 
 var
   FileFormatList: TFileFormatList;
@@ -1084,6 +1085,17 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure StretchEx(NewWidth, NewHeight: Cardinal; Filter: TResamplingFilter; Radius: Single; Source, Target: TBitmap);
+begin
+  if Radius = 0 then Radius := DefaultFilterRadius[Filter];
+
+  Target.PixelFormat := pf24Bit;
+  Target.SetSize(NewWidth, NewHeight);
+
+  Source.PixelFormat := pf24Bit;
+  DoStretch(FilterList[Filter], Radius, Source, Target);
+end;
 
 procedure Stretch(NewWidth, NewHeight: Cardinal; Filter: TResamplingFilter; Radius: Single; Source: TBitmap);
 

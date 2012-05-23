@@ -300,6 +300,15 @@ end;
 function TPersonProvider.Supports(Path: string): Boolean;
 begin
   Result := StrUtils.StartsText(cPersonsPath, Path);
+
+  if Result then
+  begin
+    System.Delete(Path, 1, Length(cPersonsPath) + 1);
+
+    //subitem
+    if Pos('\', Path) > 0 then
+      Result := False;
+  end;
 end;
 
 function TPersonProvider.SupportsFeature(Feature: string): Boolean;

@@ -82,7 +82,9 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   Themes,
-  uThemesUtils, uBaseWinControl;
+  uThemesUtils,
+  uBaseWinControl,
+  uImageLoader;
 
 type
   TWindowEnableState = record
@@ -226,7 +228,7 @@ type
     procedure SaveImageFile(FileName : string; AfterEnd : boolean = False);
   private
     { Private declarations }
-    EXIFSection: TExifData;
+    FImageInfo: ILoadImageInfo;
     SaveAfterEndActions: Boolean;
     SaveAfterEndActionsFileName: string;
     ForseSave: Boolean;
@@ -378,7 +380,7 @@ begin
   FIsEditImage := False;
   FEditImage := nil;
   NewActions := TStringList.Create;
-  EXIFSection := nil;
+  FImageInfo := nil;
   NewActionsCounter := -1;
   FScript := '';
   SaveAfterEndActions := False;
@@ -466,6 +468,9 @@ begin
     LoadGIFImage(Graphic as TGIFImage);
   end else
     LoadImageVariousformat(Graphic);
+
+  if FImageInfo <> nil then
+    FImageInfo.AppllyICCProfile(CurrentImage);
 end;
 
 procedure TImageEditor.OpenFile(Sender: TObject);
@@ -968,10 +973,9 @@ end;
 function TImageEditor.OpenFileName(FileName: String): Boolean;
 var
   G: TGraphic;
-  GraphicClass: TGraphicClass;
-  PassWord: string;
   Res: Integer;
 
+  Info: TDBPopupMenuInfoRecord;
 begin
   DoProcessPath(FileName, True);
   Result := False;
@@ -997,55 +1001,23 @@ begin
   try
     G := nil;
     try
-      if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
-      begin
-        PassWord := DBkernel.FindPasswordForCryptImageFile(FileName);
-        if PassWord = '' then
-          PassWord := GetImagePasswordFromUser(FileName);
-
-        if PassWord <> '' then
+      Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+      try
+        if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfPassword, ilfAskUserPassword], FImageInfo) then
         begin
-          G := DeCryptGraphicFile(FileName, PassWord, True);
           CurrentFileName := FileName;
-          F(EXIFSection);
-        end else
-          Exit;
+          FilePassWord := FImageInfo.Password;
 
-      end else
-      begin
-        if TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage then
-        begin
-          G := TRAWImage.Create;
-          // by default RAW is half-sized
-          (G as TRAWImage).IsPreview := False;
-          if not IsDevicePath(FileName) then
-            G.LoadFromFile(FileName)
-          else
-            G.LoadFromDevice(FileName);
-          CurrentFileName := FileName;
-          F(EXIFSection);
-        end else
-        begin
-          GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
-          if GraphicClass = nil then
-            Exit;
-          G := GraphicClass.Create;
-          if not IsDevicePath(FileName) then
-            G.LoadFromFile(FileName)
-          else
-            G.LoadFromDevice(FileName);
+          G := FImageInfo.ExtractGraphic;
 
-          CurrentFileName := FileName;
+          (ActionForm as TActionsForm).Reset;
+          if not G.Empty then
+            LoadProgramImageFormat(G);
         end;
+      finally
+        F(Info);
       end;
-      EXIFSection := TExifData.Create;
-      if not IsDevicePath(FileName) then
-        EXIFSection.LoadFromGraphic(FileName);
 
-      FilePassWord := PassWord;
-      (ActionForm as TActionsForm).Reset;
-      if not G.Empty then
-        LoadProgramImageFormat(G);
     finally
       F(G);
     end;
@@ -1925,7 +1897,7 @@ begin
   F(Buffer);
   F(ImageHistory);
   F(NewActions);
-  F(EXIFSection);
+
 end;
 
 procedure TImageEditor.ZoomOutLinkClick(Sender: TObject);
@@ -2354,23 +2326,11 @@ begin
               TJPEGImage(Image).Compress;
 
               try
-               if not EXIFSection.Empty then
-               begin
-                 EXIFSection.BeginUpdate;
-                 try
-                    EXIFSection.Orientation := toTopLeft;
-                    EXIFSection.ExifImageWidth := Width;
-                    EXIFSection.ExifImageHeight := Height;
-                    EXIFSection.Thumbnail := nil;
-                    Image.SaveToFile(FileName);
-                    EXIFSection.SaveToGraphic(FileName);
-                  finally
-                    EXIFSection.EndUpdate;
-                  end;
-                end else
-                begin
+                if FImageInfo <> nil then
+                  FImageInfo.SaveWithExif(Image, FileName)
+                else
                   Image.SaveToFile(FileName);
-                end;
+
                 FSaved := True;
               except
                 MessageBoxDB(Handle, PWideChar(Format(L('Can not write to file "%s". The file may be in use by another application...'), [FileName])), L('Warning'),
@@ -2757,7 +2717,7 @@ end;
 
 function TImageEditor.GetExifData: TExifData;
 begin
-  Result := EXIFSection;
+  Result := FImageInfo.ExifData;
 end;
 
 function TImageEditor.GetFileName: string;

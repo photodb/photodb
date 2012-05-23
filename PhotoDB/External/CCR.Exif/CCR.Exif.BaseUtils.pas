@@ -252,6 +252,8 @@ type
     ExifTypeID = $0422;
     IPTCTypeID = $0404;
     XMPTypeID = $0424;
+    ICCTypeID = $040F;
+    ICCUntaggedProfileMarkerTypeID = $0411;
     NewIPTCTagMarker: Byte = 28;
     class function TryReadIPTCHeader(Stream: TStream; var TagInfo: TIPTCTagInfo;
       AlwaysResetStreamPos: Boolean = False): Boolean; static;
@@ -267,6 +269,9 @@ type
     procedure SetName(const Value: AnsiString);
     function GetTotalSize: Integer;
     function GetLoadedCleanly: Boolean;
+
+    function HasICCData: Boolean;
+    function HasICCUntaggedProfileMarker: Boolean;
 
     function HasIPTCData: Boolean; deprecated {$IFDEF DepCom}'Renamed IsIPTCBlock'{$ENDIF};
     procedure LoadFromStream(Stream: TStream);
@@ -560,6 +565,8 @@ type
     function HasExifBlockID: Boolean; override;
     function HasIPTCBlockID: Boolean; override;
     function HasXMPBlockID: Boolean; override;
+    function HasICCData: Boolean;
+    function HasICCUntaggedProfileMarker: Boolean;
     { IStreamPersist}
     procedure LoadFromStream(Stream: TStream);
     procedure SaveToStream(Stream: TStream);
@@ -1385,6 +1392,16 @@ end;
 function TAdobeBlock.HasExifBlockID: Boolean;
 begin
   Result := (FTypeID = TAdobeResBlock.ExifTypeID);
+end;
+
+function TAdobeBlock.HasICCData: Boolean;
+begin
+  Result := (FTypeID = TAdobeResBlock.ICCTypeID);
+end;
+
+function TAdobeBlock.HasICCUntaggedProfileMarker: Boolean;
+begin
+  Result := (FTypeID = TAdobeResBlock.ICCUntaggedProfileMarkerTypeID);
 end;
 
 function TAdobeBlock.HasIPTCBlockID: Boolean;

@@ -9,10 +9,13 @@ uses
   SysUtils,
   Graphics,
   StrUtils,
+  UnitGroupsWork,
   uShellIcons,
   uTranslate,
   uExplorerPathProvider,
   uExplorerMyComputerProvider,
+  uExplorerGroupsProvider,
+  uExplorerPersonsProvider,
   uPathProviders,
   uDateUtils,
   uSysUtils,
@@ -103,17 +106,15 @@ implementation
 
 function TExplorerDateStackProvider.CreateFromPath(Path: string): TPathItem;
 var
-  SL: TStrings;
   S: string;
-  I: Integer;
-begin
-  Result := nil;
-  S := ExcludeTrailingPathDelimiter(Path);
+  P: Integer;
 
-  if StartsText(cDatesPath, AnsiLowerCase(S)) then
+  function CreateDateItem(S: string): TPathItem;
+  var
+    SL: TStrings;
+    I: Integer;
   begin
-    Delete(S, 1, Length(cDatesPath));
-
+    Result := nil;
     SL := TStringList.Create;
     try
       SL.Delimiter := '\';
@@ -122,7 +123,6 @@ begin
       for I := SL.Count - 1 downto 0 do
         if SL[I] = '' then
           SL.Delete(I);
-
       if SL.Count = 0 then
         Result := TDateStackItem.CreateFromPath(Path, PATH_LOAD_NO_IMAGE, 0);
       if SL.Count = 1 then
@@ -134,7 +134,32 @@ begin
     finally
       F(SL);
     end;
+  end;
 
+begin
+  Result := nil;
+  S := ExcludeTrailingPathDelimiter(Path);
+
+  if StartsText(cDatesPath, AnsiLowerCase(S)) then
+  begin
+    Delete(S, 1, Length(cDatesPath));
+    Result := CreateDateItem(S);
+  end;
+
+  if StartsText(cGroupsPath + '\', AnsiLowerCase(S)) then
+  begin
+    Delete(S, 1, Length(cGroupsPath) + 1);
+    P := Pos('\', S);
+    if P > 0 then
+      Result := CreateDateItem(Copy(S, P + 1, Length(S) - P));
+  end;
+
+  if StartsText(cPersonsPath + '\', AnsiLowerCase(S)) then
+  begin
+    Delete(S, 1, Length(cPersonsPath) + 1);
+    P := Pos('\', S);
+    if P > 0 then
+      Result := CreateDateItem(Copy(S, P + 1, Length(S) - P));
   end;
 end;
 
@@ -160,11 +185,27 @@ var
   YI: TDateStackYearItem;
   MI: TDateStackMonthItem;
   DI: TDateStackDayItem;
+  GI: TGroupItem;
+  PI: TPersonItem;
   FDateRangeDS: TDataSet;
+  Filter, SQL, Table: string;
 
   function ImagesFilter: string;
   begin
     Result := FormatEx('(Attr <> {0} and DateToAdd > 1900 and IsDate = True)', [Db_attr_not_exists]);
+  end;
+
+  function PersonsJoin: string;
+  begin
+    Result := FormatEx(' INNER JOIN {1} PM on PM.ImageID = IM.ID) INNER JOIN {0} P on P.ObjectID = PM.ObjectID', [ObjectTableName, ObjectMappingTableName]);
+  end;
+
+  function FromTable(ForPersons: Boolean): string;
+  begin
+    if not ForPersons then
+      Result := 'ImageTable'
+    else
+      Result := Format('(SELECT ImageID, DateToAdd, Attr, IsDate, ObjectName FROM ($DB$ IM %s)', [PersonsJoin]);
   end;
 
 begin
@@ -205,6 +246,65 @@ begin
     end;
   end;
 
+  if Item is TGroupItem then
+  begin
+    GI := TGroupItem(item);
+    FDateRangeDS := GetQuery(True);
+    try
+      ForwardOnlyQuery(FDateRangeDS);
+
+      Filter := ImagesFilter;
+      Filter := Filter + ' AND (Groups like "' + GroupSearchByGroupName(GI.GroupName) + '")';
+      SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + Filter + ' ) Group BY Year(DateToAdd) Order by "GroupYear" desc');
+
+      FDateRangeDS.Active := True;
+
+      while not FDateRangeDS.EOF do
+      begin
+        Year := FDateRangeDS.Fields[0].AsInteger;
+        Count := FDateRangeDS.Fields[1].AsInteger;
+
+        YI := TDateStackYearItem.CreateFromPath(ExcludeTrailingPathDelimiter(Item.Path) + '\' + IntToStr(Year), Options, ImageSize);
+        YI.SetCount(Count);
+        List.Add(YI);
+        FDateRangeDS.Next;
+      end;
+    finally
+      FreeDS(FDateRangeDS);
+    end;
+  end;
+
+  if Item is TPersonItem then
+  begin
+    PI := TPersonItem(item);
+    FDateRangeDS := GetQuery(True);
+    try
+      ForwardOnlyQuery(FDateRangeDS);
+
+      Table := FromTable(True);
+
+      Filter := ImagesFilter;
+      Filter := Filter + ' AND (trim(P.ObjectName) like ' + NormalizeDBString(NormalizeDBStringLike(PI.PersonName)) + ')';
+
+      SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ' + Table + ' where ' + Filter + ' ) Group BY Year(DateToAdd) Order by "GroupYear" desc');
+
+      FDateRangeDS.Active := True;
+
+      while not FDateRangeDS.EOF do
+      begin
+        Year := FDateRangeDS.Fields[0].AsInteger;
+        Count := FDateRangeDS.Fields[1].AsInteger;
+
+        YI := TDateStackYearItem.CreateFromPath(ExcludeTrailingPathDelimiter(Item.Path) + '\' + IntToStr(Year), Options, ImageSize);
+        YI.SetCount(Count);
+        List.Add(YI);
+        FDateRangeDS.Next;
+      end;
+    finally
+      FreeDS(FDateRangeDS);
+    end;
+  end;
+
   if Item is TDateStackYearItem then
   begin
     YI := TDateStackYearItem(Item);
@@ -212,7 +312,25 @@ begin
     FDateRangeDS := GetQuery(True);
     try
       ForwardOnlyQuery(FDateRangeDS);
-      SetSQL(FDateRangeDS, 'SELECT Month(DateToAdd) as "GroupMonth", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + ImagesFilter + ' and Year(DateToAdd) = ' + IntToStr(YI.Year) + ') Group BY Month(DateToAdd) Order by "GroupMonth" desc');
+
+      Filter := ImagesFilter;
+      if (YI.Parent is TGroupItem) then
+      begin
+        GI := TGroupItem(YI.Parent);
+        Filter := Filter + ' AND (Groups like "' + GroupSearchByGroupName(GI.GroupName) + '")';
+      end;
+
+      Table := FromTable(False);
+      if (YI.Parent is TPersonItem) then
+      begin
+        Table := FromTable(True);
+        PI := TPersonItem(YI.Parent);
+        Filter := Filter + ' AND (trim(P.ObjectName) like ' + NormalizeDBString(NormalizeDBStringLike(PI.PersonName)) + ')';
+      end;
+
+      SQL := 'SELECT Month(DateToAdd) as "GroupMonth", Count(1) as ItemCount FROM (select DateToAdd from ' + Table + ' where ' + Filter + ' and Year(DateToAdd) = ' + IntToStr(YI.Year) + ') Group BY Month(DateToAdd) Order by "GroupMonth" desc';
+
+      SetSQL(FDateRangeDS, SQL);
 
       FDateRangeDS.Active := True;
 
@@ -221,7 +339,7 @@ begin
         Month := FDateRangeDS.Fields[0].AsInteger;
         Count := FDateRangeDS.Fields[1].AsInteger;
 
-        MI := TDateStackMonthItem.CreateFromPath(cDatesPath + '\' + IntToStr(YI.Year) + '\' + IntToStr(Month), Options, ImageSize);
+        MI := TDateStackMonthItem.CreateFromPath(ExcludeTrailingPathDelimiter(Item.Path) + '\' + IntToStr(Month), Options, ImageSize);
         MI.SetCount(Count);
         List.Add(MI);
 
@@ -239,7 +357,24 @@ begin
     FDateRangeDS := GetQuery(True);
     try
       ForwardOnlyQuery(FDateRangeDS);
-      SetSQL(FDateRangeDS, 'SELECT Day(DateToAdd) as "GroupDay", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + ImagesFilter + ' and Year(DateToAdd) = ' + IntToStr(MI.Year) + ' and Month(DateToAdd) = ' + IntToStr(MI.Month) + ') Group BY Day(DateToAdd) Order by "GroupDay" desc');
+
+      Filter := ImagesFilter;
+      if (MI.Parent <> nil) and (MI.Parent.Parent is TGroupItem) then
+      begin
+        GI := TGroupItem(MI.Parent.Parent);
+        Filter := Filter + ' AND (Groups like "' + GroupSearchByGroupName(GI.GroupName) + '")';
+      end;
+
+      Table := FromTable(False);
+      if (MI.Parent <> nil) and (MI.Parent.Parent is TPersonItem) then
+      begin
+        Table := FromTable(True);
+        PI := TPersonItem(MI.Parent.Parent);
+        Filter := Filter + ' AND (trim(P.ObjectName) like ' + NormalizeDBString(NormalizeDBStringLike(PI.PersonName)) + ')';
+      end;
+
+      SQL := 'SELECT Day(DateToAdd) as "GroupDay", Count(1) as ItemCount FROM (select DateToAdd from ' + Table + ' where ' + Filter + ' and Year(DateToAdd) = ' + IntToStr(MI.Year) + ' and Month(DateToAdd) = ' + IntToStr(MI.Month) + ') Group BY Day(DateToAdd) Order by "GroupDay" desc';
+      SetSQL(FDateRangeDS, SQL);
 
       FDateRangeDS.Active := True;
 
@@ -248,7 +383,7 @@ begin
         Day := FDateRangeDS.Fields[0].AsInteger;
         Count := FDateRangeDS.Fields[1].AsInteger;
 
-        DI := TDateStackDayItem.CreateFromPath(cDatesPath + '\' + IntToStr(MI.Year) + '\' + IntToStr(MI.Month) + '\' + IntToStr(Day), Options, ImageSize);
+        DI := TDateStackDayItem.CreateFromPath(ExcludeTrailingPathDelimiter(Item.Path) + '\' + IntToStr(Day), Options, ImageSize);
         DI.SetCount(Count);
         List.Add(DI);
 
@@ -272,6 +407,24 @@ end;
 function TExplorerDateStackProvider.Supports(Path: string): Boolean;
 begin
   Result := StartsText(L(cDatesPath), AnsiLowerCase(Path));
+
+  if not Result then
+  begin
+    if StartsText(cGroupsPath + '\', AnsiLowerCase(Path))  then
+    begin
+      Delete(Path, 1, Length(cGroupsPath) + 1);
+      Result := Pos('\', Path) > 0;
+    end;
+  end;
+
+  if not Result then
+  begin
+    if StartsText(cPersonsPath + '\', AnsiLowerCase(Path))  then
+    begin
+      Delete(Path, 1, Length(cPersonsPath) + 1);
+      Result := Pos('\', Path) > 0;
+    end;
+  end;
 end;
 
 { TDateStackItem }
@@ -359,8 +512,19 @@ begin
 end;
 
 function TDateStackYearItem.InternalGetParent: TPathItem;
+var
+  S: string;
+  P: Integer;
 begin
-  Result := TDateStackItem.CreateFromPath(cDatesPath, Options, ImageSize);
+  S := ExcludeTrailingPathDelimiter(FPath);
+  P := LastDelimiter('/\', S);
+  if P > 0 then
+  begin
+    S := System.Copy(S, 1, P - 1);
+    Result := PathProviderManager.CreatePathItem(S);
+    Exit;
+  end;
+  Result := nil;
 end;
 
 function TDateStackYearItem.LoadImage(Options, ImageSize: Integer): Boolean;
