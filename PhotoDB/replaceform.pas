@@ -54,7 +54,8 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
-  RAWImage;
+  RAWImage,
+  uFormInterfaces;
 
 type
   TDBReplaceForm = class(TDBForm)
@@ -159,8 +160,7 @@ implementation
 uses
   Searching,
   ExplorerUnit,
-  UnitPasswordForm,
-  SlideShow;
+  UnitPasswordForm;
 
 {$R *.dfm}
 
@@ -778,9 +778,7 @@ end;
 
 procedure TDBReplaceForm.Image1DblClick(Sender: TObject);
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-  Viewer.ShowFile(FCurrentFileName);
+  Viewer.ShowImage(Self, FCurrentFileName);
   Viewer.Show;
 end;
 

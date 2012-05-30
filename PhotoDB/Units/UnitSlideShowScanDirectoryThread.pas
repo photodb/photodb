@@ -56,8 +56,8 @@ end;
 
 procedure TSlideShowScanDirectoryThread.SynchNotify;
 begin
-  Viewer.WaitingList := False;
-  Viewer.ExecuteW(Self, Info, BaseFileName);
+  ViewerForm.WaitingList := False;
+  ViewerForm.ExecuteW(Self, Info, BaseFileName);
 end;
 
 end.

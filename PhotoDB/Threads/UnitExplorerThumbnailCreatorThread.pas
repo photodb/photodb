@@ -41,17 +41,21 @@ uses
   uConstants,
   uShellThumbnails,
   uAssociatedIcons,
-  uImageLoader;
+  uImageLoader,
+  uExifInfo,
+  uDBGraphicTypes;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)
   private
     FFileSID: TGUID;
     TempBitmap: TBitmap;
+    FHistogrammImage: TBitmap;
     FInfo: TExplorerFileInfo;
     FOwner: TExplorerForm;
     FGraphic: TGraphic;
     FBit, TempBit: TBitmap;
+    FExifInfo: IExifInfo;
     Ico: HIcon;
     FLoadFullImage: Boolean;
   protected
@@ -75,10 +79,12 @@ uses
 constructor TExplorerThumbnailCreator.Create(Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
 begin
   inherited Create(Owner, False);
+  FHistogrammImage := nil;
+  FreeOnTerminate := True;
   FInfo := Item.Copy as TExplorerFileInfo;
   FFileSID := FileSID;
   FOwner := Owner;
-  Priority := tpLowest;
+  Priority := tpLower;
   FLoadFullImage := LoadFullImage;
 end;
 
@@ -88,9 +94,10 @@ var
   ImageInfo: ILoadImageInfo;
   ShadowImage: TBitmap;
   Data: TObject;
+  MinC, MaxC: Integer;
+  FHistogramm: TGistogrammData;
 begin
   inherited;
-  FreeOnTerminate := True;
   CoInitializeEx(nil, COINIT_APARTMENTTHREADED);
   try
     if not FLoadFullImage then
@@ -101,6 +108,8 @@ begin
         DestroyIcon(Ico);
       Exit;
     end;
+
+    FHistogramm.Loaded := False;
 
     if (FInfo.FileType = EXPLORER_ITEM_GROUP) or
        (FInfo.FileType = EXPLORER_ITEM_PERSON) or
@@ -169,7 +178,10 @@ begin
           if FInfo.HasImage then
           begin
             if LoadImageFromPath(FInfo, -1, '', [ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
+            begin
               ImageInfo.UpdateImageGeoInfo(FInfo);
+              FillExifInfo(ImageInfo.ExifData, FExifInfo);
+            end;
 
             if (FInfo.Image.Width > ThSizeExplorerPreview) or (FInfo.Image.Height > ThSizeExplorerPreview) then
             begin
@@ -177,6 +189,7 @@ begin
               try
                 TempBit.PixelFormat := pf24bit;
                 AssignJpeg(TempBit, FInfo.Image);
+
                 W := TempBit.Width;
                 H := TempBit.Height;
                 ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
@@ -187,6 +200,8 @@ begin
                   F(TempBit);
                   if ImageInfo <> nil then
                     ImageInfo.AppllyICCProfile(Fbit);
+
+                  FHistogramm := FillHistogramma(Fbit);
 
                   ShadowImage := TBitmap.Create;
                   try
@@ -208,6 +223,12 @@ begin
               try
                 TempBit.PixelFormat := pf24bit;
                 AssignJpeg(TempBit, FInfo.Image);
+
+                if ImageInfo <> nil then
+                  ImageInfo.AppllyICCProfile(TempBit);
+
+                FHistogramm := FillHistogramma(TempBit);
+
                 ShadowImage := TBitmap.Create;
                 try
                   DrawShadowToImage(ShadowImage, TempBit);
@@ -235,6 +256,7 @@ begin
               if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo, ThSizeExplorerPreview, ThSizeExplorerPreview) then
                 Exit;
 
+              FillExifInfo(ImageInfo.ExifData, FExifInfo);
               ImageInfo.UpdateImageGeoInfo(FInfo);
               ImageInfo.UpdateImageInfo(FInfo, False);
 
@@ -257,6 +279,7 @@ begin
                   F(FGraphic);
 
                   ImageInfo.AppllyICCProfile(TempBit);
+                  FHistogramm := FillHistogramma(TempBit);
 
                   W := TempBit.Width;
                   H := TempBit.Height;
@@ -289,6 +312,12 @@ begin
             end;
           end;
 
+          if FHistogramm.Loaded then
+          begin
+            FHistogrammImage := TBitmap.Create;
+            GetGistogrammBitmapWRGB(130, FHistogramm.Gray, FHistogramm.Red, FHistogramm.Green, FHistogramm.Blue, MinC, MaxC, FHistogrammImage, clGray);
+          end;
+
           SynchronizeEx(DoDrawAttributes);
           SynchronizeEx(SetInfo);
           SynchronizeEx(SetImage);
@@ -307,6 +336,7 @@ end;
 destructor TExplorerThumbnailCreator.Destroy;
 begin
   F(FInfo);
+  F(FHistogrammImage);
   inherited;
 end;
 
@@ -328,7 +358,7 @@ end;
 procedure TExplorerThumbnailCreator.SetInfo;
 begin
   if ExplorerManager.IsExplorer(FOwner) then
-    (FOwner as TExplorerForm).SetPanelInfo(FInfo, FFileSID);
+    (FOwner as TExplorerForm).SetPanelInfo(FInfo, FExifInfo, FHistogrammImage, FFileSID);
 end;
 
 procedure TExplorerThumbnailCreator.UpdatePreviewIcon;

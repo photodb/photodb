@@ -3,7 +3,10 @@ unit uViewerTypes;
 interface
 
 uses
-  uThreadForm, uImageSource, UnitDBDeclare, uDBPopupMenuInfo;
+  uThreadForm,
+  uImageSource,
+  UnitDBDeclare,
+  uDBPopupMenuInfo;
 
 type
   TViewerForm = class(TThreadForm)

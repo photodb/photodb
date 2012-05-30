@@ -65,8 +65,6 @@ end;
 procedure TPropertyLoadGistogrammThread.Execute;
 var
   Bitmap: TBitmap;
-  PRGBArr: PARGBArray;
-  I: Integer;
   Info: TDBPopupMenuInfoRecord;
   ImageInfo: ILoadImageInfo;
 begin
@@ -79,10 +77,7 @@ begin
         try
           if Bitmap <> nil then
           begin
-            SetLength(PRGBArr, Bitmap.Height);
-            for I := 0 to Bitmap.Height - 1 do
-              PRGBArr[I] := Bitmap.ScanLine[I];
-            Data := Gistogramma(Bitmap.Width, Bitmap.Height, PRGBArr);
+            Data := FillHistogramma(Bitmap);
             Synchronize(SetGistogrammData);
           end;
         finally

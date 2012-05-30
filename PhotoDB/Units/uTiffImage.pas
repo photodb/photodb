@@ -16,8 +16,8 @@ type
   TTiffImage = class(TBitmap)
   private
     { Private declarations }
-    FPage: Word;
-    FPages: Word;
+    FPage: Integer;
+    FPages: Integer;
     FImage: PFIMULTIBITMAP;
     procedure ClearImage;
     procedure LoadFromFreeImage(Bitmap: PFIBITMAP);
@@ -30,8 +30,8 @@ type
     constructor Create; override;
     destructor Destroy; override;
   published
-    property Page: Word read FPage write FPage;
-    property Pages: Word read FPages;
+    property Page: Integer read FPage write FPage;
+    property Pages: Integer read FPages;
   end;
 
 implementation
@@ -103,6 +103,9 @@ begin
 
   if Page > -1 then
     ClearImage;
+
+  if Page = -1 then
+    Page := 0;
 
   FPage := Page;
 
@@ -180,6 +183,8 @@ var
   end;
 
 begin
+  FPage := 0;
+  FPages := 1;
   MemIO := TFreeMemoryIO.Create;
   try
     if FImage = nil then

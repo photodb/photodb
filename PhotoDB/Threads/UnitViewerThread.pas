@@ -39,7 +39,8 @@ uses
   uConstants,
   uImageLoader,
   uPortableDeviceUtils,
-  uAnimatedJPEG;
+  uAnimatedJPEG,
+  uFormInterfaces;
 
 type
   TViewerThread = class(TDBThread)
@@ -84,7 +85,9 @@ type
 implementation
 
 uses
-  UnitPasswordForm, SlideShow, uFaceDetectionThread;
+  UnitPasswordForm,
+  SlideShow,
+  uFaceDetectionThread;
 
 { TViewerThread }
 
@@ -247,8 +250,8 @@ procedure TViewerThread.FinishDetectionFaces;
 begin
   SynchronizeEx(procedure
     begin
-      if Viewer <> nil then
-        Viewer.FinishDetectionFaces;
+      if ViewerForm <> nil then
+        ViewerForm.FinishDetectionFaces;
     end
   );
 end;
@@ -268,13 +271,13 @@ begin
       else
       begin
         repeat
-          if Viewer = nil then
+          if ViewerForm = nil then
             Break;
-          if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+          if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
             Break;
-          if not Viewer.ForwardThreadExists then
+          if not ViewerForm.ForwardThreadExists then
             Break;
-          if Viewer.ForwardThreadNeeds then
+          if ViewerForm.ForwardThreadNeeds then
           begin
             SynchronizeEx(GetPasswordSynch);
             Exit;
@@ -295,17 +298,17 @@ end;
 
 procedure TViewerThread.SetAnimatedImage;
 begin
-  if Viewer <> nil then
-    if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or
-      (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
+  if ViewerForm <> nil then
+    if (IsEqualGUID(ViewerForm.GetSID, FSID) and not FIsForward) or
+      (IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) and FIsForward) then
     begin
-      Viewer.RealImageHeight := FRealHeight;
-      Viewer.RealImageWidth := FRealWidth;
-      Viewer.RealZoomInc := FRealZoomScale;
+      ViewerForm.RealImageHeight := FRealHeight;
+      ViewerForm.RealImageWidth := FRealWidth;
+      ViewerForm.RealZoomInc := FRealZoomScale;
       if FIsNewDBInfo then
-        Viewer.UpdateInfo(FSID, FInfo);
-      Viewer.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
-      Viewer.SetAnimatedImage(Graphic);
+        ViewerForm.UpdateInfo(FSID, FInfo);
+      ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
+      ViewerForm.SetAnimatedImage(Graphic);
       Pointer(Graphic) := nil;
     end;
 end;
@@ -321,11 +324,11 @@ begin
     repeat
       if Viewer = nil then
         Break;
-      if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+      if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
         Break;
-      if not Viewer.ForwardThreadExists then
+      if not ViewerForm.ForwardThreadExists then
         Break;
-      if Viewer.ForwardThreadNeeds then
+      if ViewerForm.ForwardThreadNeeds then
       begin
         SynchronizeEx(SetAnimatedImage);
         Exit;
@@ -337,19 +340,19 @@ end;
 
 procedure TViewerThread.SetNOImage;
 begin
-  if Viewer <> nil then
-    if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or
-      (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
+  if ViewerForm <> nil then
+    if (IsEqualGUID(ViewerForm.GetSID, FSID) and not FIsForward) or
+      (IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) and FIsForward) then
     begin
-      Viewer.RealImageHeight := FRealHeight;
-      Viewer.RealImageWidth := FRealWidth;
-      Viewer.RealZoomInc := FRealZoomScale;
-      Viewer.Item.Encrypted := FIsEncrypted;
+      ViewerForm.RealImageHeight := FRealHeight;
+      ViewerForm.RealImageWidth := FRealWidth;
+      ViewerForm.RealZoomInc := FRealZoomScale;
+      ViewerForm.Item.Encrypted := FIsEncrypted;
       if FIsNewDBInfo then
-        Viewer.UpdateInfo(FSID, FInfo);
-      Viewer.ImageExists := False;
-      Viewer.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
-      Viewer.LoadingFailed(FInfo.FileName);
+        ViewerForm.UpdateInfo(FSID, FInfo);
+      ViewerForm.ImageExists := False;
+      ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
+      ViewerForm.LoadingFailed(FInfo.FileName);
     end;
 end;
 
@@ -364,11 +367,11 @@ begin
     repeat
       if Viewer = nil then
         Break;
-      if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+      if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
         Break;
-      if not Viewer.ForwardThreadExists then
+      if not ViewerForm.ForwardThreadExists then
         Break;
-      if Viewer.ForwardThreadNeeds then
+      if ViewerForm.ForwardThreadNeeds then
       begin
         SynchronizeEx(SetNOImage);
         Exit;
@@ -380,20 +383,20 @@ end;
 
 procedure TViewerThread.SetStaticImage;
 begin
-  if Viewer <> nil then
-    if (IsEqualGUID(Viewer.GetSID, FSID) and not FIsForward) or
-      (IsEqualGUID(Viewer.ForwardThreadSID, FSID) and FIsForward) then
+  if ViewerForm <> nil then
+    if (IsEqualGUID(ViewerForm.GetSID, FSID) and not FIsForward) or
+      (IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) and FIsForward) then
     begin
-      Viewer.RealImageHeight := FRealHeight;
-      Viewer.RealImageWidth := FRealWidth;
-      Viewer.RealZoomInc := FRealZoomScale;
-      Viewer.Item.Encrypted := FIsEncrypted;
+      ViewerForm.RealImageHeight := FRealHeight;
+      ViewerForm.RealImageWidth := FRealWidth;
+      ViewerForm.RealZoomInc := FRealZoomScale;
+      ViewerForm.Item.Encrypted := FIsEncrypted;
       if FIsNewDBInfo then
-        Viewer.UpdateInfo(FSID, FInfo);
-      Viewer.Item.Width := FRealWidth;
-      Viewer.Item.Height := FRealHeight;
-      Viewer.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
-      Viewer.SetStaticImage(Bitmap, FTransparent);
+        ViewerForm.UpdateInfo(FSID, FInfo);
+      ViewerForm.Item.Width := FRealWidth;
+      ViewerForm.Item.Height := FRealHeight;
+      ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
+      ViewerForm.SetStaticImage(Bitmap, FTransparent);
       Bitmap := nil;
     end else
       F(Bitmap);
@@ -415,13 +418,13 @@ begin
   end else
   begin
     repeat
-      if Viewer = nil then
+      if ViewerForm = nil then
         Break;
-      if not IsEqualGUID(Viewer.ForwardThreadSID, FSID) then
+      if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
         Break;
-      if not Viewer.ForwardThreadExists then
+      if not ViewerForm.ForwardThreadExists then
         Break;
-      if Viewer.ForwardThreadNeeds then
+      if ViewerForm.ForwardThreadNeeds then
       begin
         SetImage;
         Exit;
@@ -434,8 +437,8 @@ end;
 
 procedure TViewerThread.ShowLoadingSign;
 begin
-  if Viewer <> nil then
-    Viewer.UpdateFaceDetectionState;
+  if ViewerForm <> nil then
+    ViewerForm.UpdateFaceDetectionState;
 end;
 
 procedure TViewerThread.UpdateRecord;

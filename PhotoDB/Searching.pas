@@ -102,7 +102,8 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   Themes,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
   TSearchForm = class(TSearchCustomForm)
@@ -530,7 +531,7 @@ type
 implementation
 
 uses
-  UnitManageGroups, FormManegerUnit, SlideShow, Loadingresults,
+  UnitManageGroups, FormManegerUnit, Loadingresults,
   PropertyForm, Options, UnitHintCeator, uManagerExplorer, UnitUpdateDB,
   UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
   UnitGroupReplace, UnitSavingTableForm, UnitHelp,
@@ -1009,9 +1010,7 @@ begin
   begin
     MenuInfo := GetCurrenTPopupActionBarInfo(ListViewSelected);
     try
-      if Viewer = nil then
-        Application.CreateForm(TViewer, Viewer);
-      Viewer.Execute(Sender, MenuInfo);
+      Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
     finally
       F(MenuInfo);
@@ -1250,9 +1249,7 @@ var
 begin
   DBInfo := GetCurrenTPopupActionBarInfo(nil);
   try
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
-    Viewer.Execute(Sender, DBInfo);
+    Viewer.ShowImages(Sender, DBInfo);
     Viewer.Show;
   finally
     F(DBInfo);
@@ -3221,12 +3218,10 @@ var
 begin
   Info := TDBPopupMenuInfo.Create;
   try
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
     GetFileListByMask(TempFolderName, TFileAssociations.Instance.ExtensionList, Info, N, True);
     if Info.Count > 0 then
     begin
-      Viewer.Execute(Self, Info);
+      Viewer.ShowImages(Self, Info);
       Viewer.Show;
     end;
   finally

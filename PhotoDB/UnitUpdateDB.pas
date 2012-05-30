@@ -56,7 +56,8 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   DmMemo,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
   TUpdateDBForm = class(TDBForm, IDBUpdaterCallBack)
@@ -184,7 +185,6 @@ uses
   FormManegerUnit,
   UnitHistoryForm,
   uManagerExplorer,
-  SlideShow,
   UnitScripts,
   DBScriptFunctions,
   UnitUpdateDBThread;
@@ -583,16 +583,13 @@ var
   Info: TDBPopupMenuInfo;
   InfoItem: TDBPopupMenuInfoRecord;
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-
   Info := TDBPopupMenuInfo.Create;
   try
     InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(LastFileName);
     try
       InfoItem.ID := LastIDImage;
       info.Add(InfoItem);
-      Viewer.Execute(Sender, Info);
+      Viewer.ShowImages(Sender, Info);
       Viewer.Show;
     finally
       F(InfoItem);
@@ -888,9 +885,7 @@ procedure TUpdateDBForm.WebLinkOpenImageClick(Sender: TObject);
 begin
   if FCurrentFileName <> '' then
   begin
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
-    Viewer.ExecuteDirectoryWithFileOnThread(FCurrentFileName);
+    Viewer.ShowImageInDirectoryEx(FCurrentFileName);
     Viewer.Show;
   end;
 end;

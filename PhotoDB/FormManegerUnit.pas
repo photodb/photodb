@@ -52,7 +52,8 @@ uses
   EasyListView,
   uPortableClasses,
   uTranslate,
-  uSysUtils;
+  uSysUtils,
+  uFormInterfaces;
 
 type
   TFormManager = class(TDBForm)
@@ -116,7 +117,6 @@ uses
   UnitCleanUpThread,
   uManagerExplorer,
   uSearchTypes,
-  SlideShow,
   UnitFileCheckerDB,
   UnitInternetUpdate,
   uAbout,
@@ -249,10 +249,9 @@ begin
       end else
       begin
         TW.I.Start('RUN TViewer');
-        if Viewer = nil then
-          Application.CreateForm(TViewer, Viewer);
+
         TW.I.Start('ExecuteDirectoryWithFileOnThread');
-        Viewer.ExecuteDirectoryWithFileOnThread(ParamStr1);
+        Viewer.ShowImageInDirectoryEx(ParamStr1);
         TW.I.Start('ActivateApplication');
         CloseSplashWindow;
         Viewer.Show;

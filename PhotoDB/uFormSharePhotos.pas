@@ -56,7 +56,8 @@ uses
   uFileUtils,
   uGOM,
   uTime,
-  uLogger;
+  uLogger,
+  uFormInterfaces;
 
 type
   TFormSharePhotos = class(TThreadForm)
@@ -188,7 +189,6 @@ implementation
 
 uses
   FormManegerUnit,
-  SlideShow,
   uShareSettings,
   uShareImagesThread,
   DBCMenu;
@@ -1560,10 +1560,7 @@ begin
     Exit;
   end;
 
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-
-  Viewer.Execute(Self, FFiles);
+  Viewer.ShowImages(Self, FFiles);
   Viewer.Show;
 end;
 

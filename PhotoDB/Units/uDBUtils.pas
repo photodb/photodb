@@ -1581,12 +1581,9 @@ var
   P: PChar;
   PSupportedExt: PChar;
   ByDirectory: Boolean;
-
 begin
-
   if FileExists(BeginFile) then
     Folder := ExtractFileDir(BeginFile);
-
 
   ByDirectory := DirectoryExists(BeginFile);
   if ByDirectory then

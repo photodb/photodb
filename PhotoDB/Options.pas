@@ -323,7 +323,6 @@ var
 implementation
 
 uses
-  SlideShow,
   ExplorerThreadUnit,
   uManagerExplorer,
   UnitJPEGOptions,

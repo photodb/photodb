@@ -17,7 +17,8 @@ uses
   ComCtrls,
   ToolWin,
   Themes,
-  uSysUtils;
+  uSysUtils,
+  uFormInterfaces;
 
 type
   TFullScreenView = class(TForm)
@@ -56,22 +57,19 @@ var
 implementation
 
 uses
-  SlideShow,
   FloatPanelFullScreen;
 
 {$R *.dfm}
 
 procedure TFullScreenView.FormPaint(Sender: TObject);
 begin
-  if Viewer <> nil then
-    Canvas.Draw(0, 0, Viewer.DrawImage);
+  Viewer.DrawTo(Canvas, 0, 0);
 end;
 
 procedure TFullScreenView.FormKeyPress(Sender: TObject; var Key: Char);
 begin
   if Ord(Key) = VK_ESCAPE then
-    if Viewer <> nil then
-      Viewer.Exit1Click(Sender);
+    Viewer.CloseActiveView;
 end;
 
 procedure TFullScreenView.Execute(Sender: TObject);
@@ -139,14 +137,12 @@ procedure TFullScreenView.FormContextPopup(Sender: TObject;
 begin
   ShowMouse;
   MouseTimer.Enabled := False;
-  if Viewer <> nil then
-    Viewer.PmMain.Popup(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y);
+  Viewer.ShowPopup(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y);
 end;
 
 procedure TFullScreenView.FormClick(Sender: TObject);
 begin
-  if Viewer <> nil then
-    Viewer.Next_(Sender);
+  Viewer.NextImage;
 end;
 
 procedure TFullScreenView.FormMouseUp(Sender: TObject; Button: TMouseButton;
@@ -175,7 +171,7 @@ begin
   Cstate := ShowCursor(True);
   while CState < 0 do
     CState := ShowCursor(True);
-  if Viewer.FullScreenNow then
+  if Viewer.IsFullScreenNow then
     if FloatPanel <> nil then
       FloatPanel.Show;
 end;
@@ -195,43 +191,42 @@ begin
   if not Visible then
     Exit;
 
-  if Viewer.FullScreenNow and CanProcessMessage then
+  if Viewer.IsFullScreenNow and CanProcessMessage then
     if Msg.message = WM_SYSKEYDOWN then
       Msg.message := 0;
 
-  if Viewer.FullScreenNow and CanProcessMessage then
+  if Viewer.IsFullScreenNow and CanProcessMessage then
     if Msg.message = WM_KEYDOWN then
     begin
       if Msg.WParam = VK_LEFT then
-        if Viewer <> nil then
-          Viewer.Previous_(nil);
+        Viewer.PreviousImage;
+
       if Msg.WParam = VK_RIGHT then
-        if Viewer <> nil then
-          Viewer.Next_(nil);
+        Viewer.NextImage;
+
       if Msg.WParam = VK_SPACE then
-        if Viewer <> nil then
-          Viewer.Next_(nil);
+        Viewer.NextImage;
+
       if Msg.WParam = VK_ESCAPE then
-        if Viewer <> nil then
-          Viewer.Exit1Click(nil);
+        Viewer.CloseActiveView;
+
       if (Msg.WParam = VK_F4) then
         if AltKeyDown then
           Msg.WParam := 29;
 
       if (Msg.WParam = VK_RETURN) then
-        if Viewer <> nil then
-          Viewer.Exit1Click(nil);
+        Viewer.CloseActiveView;
 
       Msg.message := 0;
     end;
 
   if (Msg.message = WM_MOUSEWHEEL) and CanProcessMessage then
   begin
-    if Viewer.FullScreenNow and (Viewer <> nil) then
+    if Viewer.IsFullScreenNow then
       if NativeInt(Msg.WParam) > 0 then
-        Viewer.Previous_(Self)
+        Viewer.PreviousImage
       else
-        Viewer.Next_(Self);
+        Viewer.NextImage;
 
     Handled := True;
   end;

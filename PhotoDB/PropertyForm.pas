@@ -94,7 +94,8 @@ uses
   uMachMask,
   Vcl.PlatformDefaultStyleActnCtrls,
   uBaseWinControl,
-  uICCProfile;
+  uExifInfo,
+  uFormInterfaces;
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -325,7 +326,6 @@ type
     function GetImageID: Integer;
     function GetFileName: string;
     procedure EnableEditing(Value: Boolean);
-    procedure LoadEXIFFromFile(FileName: string; ExifData: TExifData);
     procedure SetLinkInfo(Sender: TObject; ID: string; Info: TLinkInfo; N: Integer; Action: Integer);
     procedure CloseEditLinkForm(Form: TForm; ID: string);
     procedure ReloadGroups;
@@ -388,7 +388,6 @@ implementation
 uses
   UnitQuickGroupInfo,
   uSearchTypes,
-  SlideShow,
   UnitHintCeator,
   UnitEditGroupsForm,
   UnitManageGroups,
@@ -1398,9 +1397,7 @@ end;
 
 procedure TPropertiesForm.Show1Click(Sender: TObject);
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-  Viewer.Execute(Sender, FFilesInfo);
+  Viewer.ShowImages(Sender, FFilesInfo);
   Viewer.Show;
 end;
 
@@ -1479,7 +1476,7 @@ begin
   try
     FFileDate := 0;
     try
-      LoadEXIFFromFile(FileName, ExifData);
+      ExifData.LoadFromFileEx(FileName, False);
       if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) then
       begin
         FFileDate := DateOf(ExifData.DateTimeOriginal);
@@ -2087,30 +2084,6 @@ begin
   CommentMemo.Undo;
 end;
 
-procedure TPropertiesForm.LoadEXIFFromFile(FileName: string;
-  ExifData: TExifData);
-var
-  PassWord: string;
-  MS: TMemoryStream;
-begin
-  if not ValidCryptGraphicFile(FileName) then
-    ExifData.LoadFromGraphic(FileName)
-  else begin
-    PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
-    if PassWord <> '' then
-    begin
-      MS := TMemoryStream.Create;
-      try
-        DecryptGraphicFileToStream(FileName, Password, MS);
-        MS.Seek(0, soFromBeginning);
-        ExifData.LoadFromGraphic(MS);
-      finally
-        F(MS);
-      end;
-    end;
-  end;
-end;
-
 procedure TPropertiesForm.LoadLanguage;
 begin
   Caption := L('Properties');
@@ -2238,187 +2211,8 @@ begin
 end;
 
 procedure TPropertiesForm.ReadExifData;
-var
-  ExifData: TExifData;
-  Orientation : Integer;
-  OldMode : Cardinal;
-  Groups: TGroups;
-  Links: TLinksInfo;
-  SL: TStringList;
-  I: Integer;
-  ICCProfileMem: TMemoryStream;
-  ICCProfile: string;
-
-const
-  XMPBasicValues: array[TWindowsStarRating] of UnicodeString = ('', '1', '2', '3', '4', '5');
-
-  procedure XInsert(Key, Value: string);
-  begin
-    if Value <> '' then
-      VleEXIF.InsertRow(Key + ': ', Value, True);
-  end;
-
-  procedure XInsertInt(Key: string; Value: Integer);
-  begin
-    if Value <> 0 then
-      VleEXIF.InsertRow(Key, IntToStr(Value), True);
-  end;
-
-  procedure XInsertFloat(Key: string; Value: Single);
-  begin
-    if Value <> 0 then
-      VleEXIF.InsertRow(Key, FloatToStr(Value), True);
-  end;
-
-  function FractionToString(Fraction: TExifFraction): string;
-  begin
-    if Fraction.Denominator <> 0 then
-      Result := FormatFloat('0.0' , Fraction.Numerator / Fraction.Denominator)
-    else
-      Result := Fraction.AsString;
-  end;
-
-  function ExposureFractionToString(Fraction: TExifFraction): string;
-  begin
-    if Fraction.Numerator <> 0 then
-      Result := '1/' + FormatFloat('0' , Fraction.Denominator / Fraction.Numerator)
-    else
-      Result := Fraction.AsString;
-  end;
-
 begin
-  VleEXIF.Strings.Clear;
-
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  try
-    ExifData := TExifData.Create;
-    try
-      try
-        LoadEXIFFromFile(FileName, ExifData);
-        if not ExifData.Empty or not ExifData.XMPPacket.Empty then
-        begin
-
-          if not ExifData.Empty then
-          begin
-            XInsert(L('Make'), ExifData.CameraMake);
-            XInsert(L('Model'), ExifData.CameraModel);
-            XInsert(L('Copyright'), ExifData.Copyright);
-            if ExifData.DateTimeOriginal > 0 then
-              XInsert(L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTimeOriginal));
-            XInsert(L('Description'), ExifData.ImageDescription);
-            XInsert(L('Software'), ExifData.Software);
-            Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-            case Orientation of
-              DB_IMAGE_ROTATE_0:
-                XInsert(L('Orientation'), L('Normal'));
-              DB_IMAGE_ROTATE_90:
-                XInsert(L('Orientation'), L('Right'));
-              DB_IMAGE_ROTATE_270:
-                XInsert(L('Orientation'), L('Left'));
-              DB_IMAGE_ROTATE_180:
-                XInsert(L('Orientation'), L('180 grad.'));
-            end;
-
-            XInsert(L('Exposure'), ExposureFractionToString(ExifData.ExposureTime));
-            XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
-            XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
-            XInsert(L('F number'), FractionToString(ExifData.FNumber));
-          end;
-
-          if ExifData.XMPPacket.Lens <> '' then
-            XInsert(L('Lens'), ExifData.XMPPacket.Lens);
-
-          if not ExifData.Empty then
-          begin
-            if ExifData.Flash.Fired then
-              XInsert(L('Flash'), L('On'))
-            else
-              XInsert(L('Flash'), L('Off'));
-
-            if (ExifData.ExifImageWidth.Value > 0) and (ExifData.ExifImageHeight.Value > 0) then
-            begin
-              XInsert(L('Width'), Format('%dpx.', [ExifData.ExifImageWidth.Value]));
-              XInsert(L('Height'), Format('%dpx.', [ExifData.ExifImageHeight.Value]));
-            end;
-
-            XInsert(L('Author'), ExifData.Author);
-            XInsert(L('Comments'), ExifData.Comments);
-            XInsert(L('Keywords'), ExifData.Keywords);
-            XInsert(L('Subject'), ExifData.Subject);
-            XInsert(L('Title'), ExifData.Title);
-            if ExifData.UserRating <> urUndefined then
-              XInsert(L('User Rating'), XMPBasicValues[ExifData.UserRating]);
-
-            if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
-            begin
-              XInsert(L('Latitude'), ExifData.GPSLatitude.AsString);
-              XInsert(L('Longitude'), ExifData.GPSLongitude.AsString);
-            end;
-
-            if ExifData.HasICCProfile then
-            begin
-              ICCProfileMem := TMemoryStream.Create;
-              try
-                if ExifData.ExtractICCProfile(ICCProfileMem) then
-                begin
-                  ICCProfile := GetICCProfileName(Self, ICCProfileMem.Memory, ICCProfileMem.Size);
-                  if ICCProfile <> '' then
-                    XInsert(L('ICC profile'), ICCProfile);
-                end;
-              finally
-                F(ICCProfileMem);
-              end;
-            end;
-
-          end;
-
-          if not ExifData.XMPPacket.Include then
-            XInsert(L('Base search'), L('No'));
-
-          if ExifData.XMPPacket.Groups <> '' then
-          begin
-            Groups := EncodeGroups(ExifData.XMPPacket.Groups);
-            SL := TStringList.Create;
-            try
-              for I := 0 to Length(Groups) - 1 do
-                SL.Add(Groups[I].GroupName);
-              XInsert(L('Groups'), SL.Join(', '));
-            finally
-              F(SL);
-            end;
-          end;
-
-          if ExifData.XMPPacket.Links <> '' then
-          begin
-            Links := ParseLinksInfo(ExifData.XMPPacket.Links);
-            SL := TStringList.Create;
-            try
-              for I := 0 to Length(Links) - 1 do
-                SL.Add(Links[I].LinkName);
-              XInsert(L('Links'), SL.Join(', '));
-            finally
-              F(SL);
-            end;
-          end;
-
-          if ExifData.XMPPacket.Access = Db_access_private then
-            XInsert(L('Private'), L('Yes'));
-
-        end else
-          VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
-      except
-        on e : Exception do
-        begin
-          VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
-          Eventlog(e.Message);
-        end;
-      end;
-    finally
-      F(ExifData);
-    end;
-  finally
-    SetErrorMode(OldMode);
-  end;
+  LoadExifInfo(VleExif, FileName);
 end;
 
 procedure TPropertiesForm.CreateParams(var Params: TCreateParams);
@@ -2579,9 +2373,7 @@ var
 
   procedure ViewFile(FileName: string);
   begin
-    if Viewer = nil then
-      Application.CreateForm(TViewer, Viewer);
-    Viewer.ShowFile(FileName);
+    Viewer.ShowImage(Self, FileName);
     Viewer.Show;
   end;
 
@@ -3565,7 +3357,7 @@ end;
 
 procedure TPropertiesForm.OnDoneLoadGistogrammData(Sender: TObject);
 var
-  Bitmap : TBitmap;
+  Bitmap: TBitmap;
   MinC, MaxC: Integer;
 begin
   if Sender is TPropertyLoadGistogrammThread then

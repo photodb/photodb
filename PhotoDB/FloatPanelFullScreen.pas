@@ -17,7 +17,8 @@ uses
   TLayered_bitmap,
   ExtCtrls,
   uThemesUtils,
-  uMemory;
+  uMemory,
+  uFormInterfaces;
 
 type
   TFloatPanel = class(TForm)
@@ -47,33 +48,27 @@ type
   end;
 
 var
-  FloatPanel: TFloatPanel;
+  FloatPanel: TFloatPanel = nil;
 
 implementation
-
-uses
-  SlideShowFullScreen,
-  SlideShow,
-  UnitDBKernel,
-  Dolphin_DB;
 
 {$R *.dfm}
 
 procedure TFloatPanel.TbPlayClick(Sender: TObject);
 begin
-  Viewer.MTimer1Click(Sender);
+  Viewer.TogglePause;
 end;
 
 procedure TFloatPanel.TbPrevClick(Sender: TObject);
 begin
   Viewer.Pause;
-  Viewer.PreviousImageClick(Sender);
+  Viewer.PreviousImage;
 end;
 
 procedure TFloatPanel.TbNextClick(Sender: TObject);
 begin
   Viewer.Pause;
-  Viewer.NextImageClick(Sender);
+  Viewer.NextImage;
 end;
 
 procedure TFloatPanel.TbCloseClick(Sender: TObject);
@@ -148,12 +143,12 @@ end;
 procedure TFloatPanel.FormCreate(Sender: TObject);
 begin
   RecreateImLists;
-  SetButtonsEnabled(Viewer.CurrentInfo.Count > 1);
+  SetButtonsEnabled(Viewer.ImagesCount > 1);
 end;
 
 procedure TFloatPanel.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Viewer.Exit1Click(Sender);
+  Viewer.CloseActiveView;
 end;
 
 end.

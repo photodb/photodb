@@ -17,7 +17,6 @@ uses
   StdCtrls,
   ExtCtrls,
   AppEvnts,
-  Dolphin_DB,
   DDraw,
   uGUIDUtils,
   Math,
@@ -29,7 +28,8 @@ uses
   uBitmapUtils,
   uMemoryEx,
   ComObj,
-  uVCLHelpers;
+  uVCLHelpers,
+  uFormInterfaces;
 
 type
   TForwardDirection = (fdNext, fdPrevious, fdCurrent);
@@ -125,7 +125,9 @@ implementation
 {$R *.DFM}
 
 uses
-  FloatPanelFullScreen, SlideShow, UnitDirectXSlideShowCreator;
+  FloatPanelFullScreen,
+  SlideShow,
+  UnitDirectXSlideShowCreator;
 
 // Copy Offscreen on screen (WM_PAINT, for example)
 procedure TDirectShowForm.UpdateSurface(ParentControl: TControl);
@@ -424,7 +426,7 @@ var
   FH, FW: Integer;
   FbImage: TBitmap;
 begin
-  FbImage := Viewer.FbImage;
+  FbImage := Viewer.CurrentFullImage;
 
   if FloatPanel <> nil then
     FloatPanel.Show;
@@ -516,8 +518,7 @@ procedure TDirectShowForm.FormContextPopup(Sender: TObject; MousePos: TPoint; va
 begin
   ShowMouse;
   MouseTimer.Enabled := False;
-  if Viewer <> nil then
-    Viewer.PmMain.Popup(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y);
+  Viewer.ShowPopup(ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y);
 end;
 
 procedure TDirectShowForm.FormClick(Sender: TObject);
@@ -525,7 +526,7 @@ begin
   if Viewer = nil then
     Exit;
   Viewer.Pause;
-  Viewer.NextImageClick(nil);
+  Viewer.NextImage;
 end;
 
 procedure TDirectShowForm.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -557,7 +558,7 @@ begin
   Cstate := ShowCursor(True);
   while CState < 0 do
     CState := ShowCursor(True);
-  if (Viewer <> nil) and Viewer.SlideShowNow then
+  if Viewer.IsSlideShowNow then
     if FloatPanel <> nil then
       FloatPanel.Show;
 end;
@@ -579,23 +580,23 @@ begin
   if CanProcessMessage and (Msg.message = WM_SYSKEYDOWN) then
     Msg.Message := 0;
 
-  if (Viewer <> nil) and CanProcessMessage then
+  if (CurrentViewer <> nil) and CanProcessMessage then
   begin
     if Msg.message = WM_KEYDOWN then
     begin
       if Msg.wParam = VK_LEFT then
       begin
         Viewer.Pause;
-        Viewer.PreviousImageClick(nil);
+        Viewer.PreviousImage;
       end;
       if (Msg.wParam = VK_RIGHT) or (Msg.wParam = VK_SPACE) then
       begin
         Viewer.Pause;
-        Viewer.NextImageClick(nil);
+        Viewer.NextImage;
       end;
       if Msg.wParam = VK_ESCAPE then
       begin
-        Viewer.Exit1Click(nil);
+        Viewer.CloseActiveView;
         Msg.message := 0;
       end;
     end;
@@ -604,9 +605,9 @@ begin
     begin
       Viewer.Pause;
       if NativeInt(Msg.wParam) > 0 then
-        Viewer.PreviousImageClick(nil)
+        Viewer.PreviousImage
       else
-        Viewer.NextImageClick(nil);
+        Viewer.NextImage;
     end;
   end;
 end;
@@ -617,14 +618,15 @@ begin
   if DelayTimer.Tag = 1 then
   begin
     DelayTimer.Tag := 0;
-    Inc(Viewer.CurrentFileNumber);
-    if Viewer.CurrentFileNumber >= Viewer.CurrentInfo.Count then
-      Viewer.CurrentFileNumber := 0;
+    Viewer.ImageIndex := Viewer.ImageIndex + 1;
+    if Viewer.ImageIndex >= Viewer.ImagesCount then
+      Viewer.ImageIndex := 0;
+
     NextID;
     Exit;
   end;
-  if Viewer <> nil then
-    Viewer.NextImageClick(Sender);
+
+  Viewer.NextImage;
 end;
 
 procedure TDirectShowForm.FormResize(Sender: TObject);
@@ -745,9 +747,9 @@ end;
 
 procedure TDirectShowForm.Next;
 begin
-  Inc(Viewer.CurrentFileNumber);
-  if Viewer.CurrentFileNumber >= Viewer.CurrentInfo.Count then
-    Viewer.CurrentFileNumber := 0;
+  Viewer.ImageIndex := Viewer.ImageIndex + 1;
+  if Viewer.ImageIndex >= Viewer.ImagesCount then
+    Viewer.ImageIndex := 0;
 
   if FForwardDirection <> fdNext then
   begin
@@ -764,9 +766,9 @@ end;
 
 procedure TDirectShowForm.Previous;
 begin
-  Dec(Viewer.CurrentFileNumber);
-  if Viewer.CurrentFileNumber < 0 then
-    Viewer.CurrentFileNumber := Viewer.CurrentInfo.Count - 1;
+  Viewer.ImageIndex := Viewer.ImageIndex - 1;
+  if Viewer.ImageIndex < 0 then
+    Viewer.ImageIndex := Viewer.ImagesCount - 1;
 
   if FForwardDirection <> fdPrevious then
   begin
@@ -785,18 +787,18 @@ procedure TDirectShowForm.PrepaireImage(Directon: TForwardDirection);
 var
   N: Integer;
 begin
-  N := Viewer.CurrentFileNumber;
+  N := Viewer.ImageIndex;
   if Directon = fdNext then
   begin
     Inc(N);
-    if N >= Viewer.CurrentInfo.Count then
+    if N >= Viewer.ImagesCount then
       N := 0;
   end;
   if Directon = fdPrevious then
   begin
     Dec(N);
     if N < 0 then
-      N := Viewer.CurrentInfo.Count - 1;
+      N := Viewer.ImagesCount - 1;
   end;
   if Directon = fdCurrent then
     StartLoadingThread(N, FID)
@@ -808,8 +810,8 @@ procedure TDirectShowForm.StartLoadingThread(FileIndex: Integer; ID: TGUID);
 var
   Info: TDirectXSlideShowCreatorInfo;
 begin
-  Info.FileName := Viewer.CurrentInfo[FileIndex].FileName;
-  Info.Rotate := Viewer.CurrentInfo[FileIndex].Rotation;
+  Info.FileName := Viewer.Images[FileIndex].FileName;
+  Info.Rotate := Viewer.Images[FileIndex].Rotation;
 
   if not FManager.ThreadExists(ID) then
   begin
@@ -838,3 +840,4 @@ begin
 end;
 
 end.
+

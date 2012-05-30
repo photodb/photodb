@@ -58,7 +58,8 @@ uses
   uShellNamespaceUtils,
   Vcl.ActnPopup,
   uVCLHelpers,
-  uPhotoShelf;
+  uPhotoShelf,
+  uFormInterfaces;
 
 type
   TDBPopupMenu = class
@@ -133,7 +134,6 @@ implementation
 uses
   uManagerExplorer,
   PropertyForm,
-  SlideShow,
   uSearchTypes,
   UnitEditGroupsForm,
   UnitMenuDateForm,
@@ -1553,9 +1553,7 @@ end;
 
 procedure TDBPopupMenu.ShowItemPopUpMenu_(Sender: TObject);
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-  Viewer.Execute(Sender, FInfo);
+  Viewer.ShowImages(Sender, FInfo);
   Viewer.Show;
 end;
 

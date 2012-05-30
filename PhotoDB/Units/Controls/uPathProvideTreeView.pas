@@ -22,6 +22,7 @@ uses
   uGOM,
   uThreadTask,
   uMachMask,
+  UnitBitmapImageList,
   {$IFDEF PHOTODB}
   uThemesUtils,
   {$ENDIF}
@@ -49,6 +50,7 @@ type
     FIsInitialized: Boolean;
     FIsInternalSelection: Boolean;
     FNodesToDelete: TList<TPathItem>;
+    FImageList: TBitmapImageList;
     procedure LoadBitmaps;
     procedure StartControl;
     procedure InternalSelectNode(Node: PVirtualNode);
@@ -173,6 +175,7 @@ begin
   FOnSelectPathItem := nil;
   FStartPathItem := nil;
   FNodesToDelete := TList<TPathItem>.Create;
+  FImageList := TBitmapImageList.Create;
 
   AnimationDuration := 0;
   FIsStarted := False;
@@ -242,6 +245,7 @@ begin
   F(FImTreeImages);
   F(FImImages);
   FreeList(FNodesToDelete);
+  F(FImageList);
   inherited;
 end;
 
@@ -275,8 +279,8 @@ begin
   FImTreeImages.Clear;
   Result := FImTreeImages;
 
-  if (Data.Data <> nil) and (Data.Data.Image <> nil) then
-    Data.Data.Image.AddToImageList(FImTreeImages);
+  if (Data.Data <> nil) and (Data.Data.Tag > -1) and (Data.Data.Tag < FImageList.Count) then
+    FImageList[Data.Data.Tag].AddToImageList(FImTreeImages);
 
   Index := FImTreeImages.Count - 1;
 end;
@@ -300,7 +304,10 @@ begin
   inherited;
   TreeData := GetNodeData(Node);
   if Parent = nil then
+  begin
     TreeData.Data := FHomeItems[Node.Index].Copy;
+    TreeData.Data.Tag := FImageList.AddPathImage(TreeData.Data.ExtractImage, True);
+  end;
 
   if TreeData.Data.IsDirectory and TreeData.Data.CanHaveChildren then
     Include(InitStates, ivsHasChildren);
@@ -500,6 +507,7 @@ begin
         end else
         begin
           ChildData.Data := PathParts[I].Copy;
+          ChildData.Data.Tag := FImageList.AddPathImage(ChildData.Data.ExtractImage, True);
           ChildNode := AddChild(Node, Pointer(ChildData));
           ValidateNode(Node, False);
           InternalSelectNode(ChildNode);
@@ -656,11 +664,13 @@ begin
                             FNodesToDelete.Add(NodeData.Data);
 
                             NodeData.Data := CurrentItems[I];
+                            NodeData.Data.Tag := FImageList.AddPathImage(NodeData.Data.ExtractImage, True);
 
                             TopNode := GetFirstSelected;
                           end else
                           begin
                             ChildData.Data := CurrentItems[I];
+                            ChildData.Data.Tag := FImageList.AddPathImage(ChildData.Data.ExtractImage, True);
                             AddChild(Info.Node, Pointer(ChildData));
                             ValidateNode(Info.Node, False);
                           end;

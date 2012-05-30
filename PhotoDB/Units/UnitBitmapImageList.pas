@@ -3,7 +3,15 @@ unit UnitBitmapImageList;
 interface
 
 uses
-  Windows, SysUtils, Classes, Graphics, uMemory, uBitmapUtils;
+  Windows,
+  SysUtils,
+  Classes,
+  Graphics,
+  uMemory,
+  uBitmapUtils,
+  uPathProviders,
+  Vcl.ImgList,
+  Winapi.CommCtrl;
 
 type
   TBitmapImageList = class;
@@ -27,6 +35,7 @@ type
     IsBitmap: Boolean;
     SelfReleased: Boolean;
     Ext: string;
+    procedure AddToImageList(ImageList: TCustomImageList);
     procedure UpdateIcon(Icon: TIcon; IsSelfReleased: Boolean);
     constructor Create(AOwner: TBitmapImageList);
     destructor Destroy; override;
@@ -47,8 +56,10 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function AddBitmap(Bitmap: TBitmap; CopyPointer: Boolean = True) : Integer;
-    function AddIcon(Icon: TIcon; SelfReleased: Boolean; Ext : string = '') : Integer;
+    function AddBitmap(Bitmap: TBitmap; CopyPointer: Boolean = True): Integer;
+    function AddIcon(Icon: TIcon; SelfReleased: Boolean; Ext: string = ''): Integer;
+    function AddHIcon(Icon: HIcon): Integer;
+    function AddPathImage(Image: TPathImage; FreeImage: Boolean = False): Integer;
     procedure Clear;
     procedure ClearImagesList;
     procedure ClearItems;
@@ -91,6 +102,15 @@ begin
   UsedImage(Item);
 end;
 
+function TBitmapImageList.AddHIcon(Icon: HIcon): Integer;
+var
+  Ic: TIcon;
+begin
+  Ic := TIcon.Create;
+  Ic.Handle := Icon;
+  Result := AddIcon(Ic, True, '');
+end;
+
 function TBitmapImageList.AddIcon(Icon: TIcon; SelfReleased: Boolean; Ext: string = ''): Integer;
 var
   Item: TBitmapImageListImage;
@@ -101,6 +121,28 @@ begin
   Item.Ext := Ext;
   Result := FImages.Add(Item);
   UsedImage(Item);
+end;
+
+function TBitmapImageList.AddPathImage(Image: TPathImage;
+  FreeImage: Boolean): Integer;
+begin
+  Result := -1;
+
+  if Image = nil then
+    Exit;
+
+  if Image.HIcon <> 0 then
+    Result := AddHIcon(Image.HIcon)
+  else if Image.Bitmap <> nil then
+    Result := AddBitmap(Image.Bitmap)
+  else if Image.Icon <> nil then
+    Result := AddIcon(Image.Icon, True, '');
+
+  Image.DetachImage;
+  if FreeImage then
+    F(Image);
+
+  UsedImage(Items[Result]);
 end;
 
 procedure TBitmapImageList.Clear;
@@ -310,6 +352,17 @@ begin
     FBitmap := Value as TBitmap
   else
     FIcon := Value as TIcon;
+end;
+
+procedure TBitmapImageListImage.AddToImageList(ImageList: TCustomImageList);
+begin
+  FOwner.UsedImage(Self);
+  LoadFromMemory;
+
+  if FIcon <> nil then
+    ImageList_ReplaceIcon(ImageList.Handle, -1, FIcon.Handle)
+  else if FBitmap <> nil then
+    ImageList.Add(FBitmap, nil);
 end;
 
 procedure TBitmapImageListImage.UpdateIcon(Icon: TIcon;

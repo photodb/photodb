@@ -55,6 +55,10 @@ object OptionsForm: TOptionsForm
     object TsStyle: TTabSheet
       Caption = 'Style'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         497
         413)

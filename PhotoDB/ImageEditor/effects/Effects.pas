@@ -3,8 +3,17 @@ unit Effects;
 interface
 
 uses
-  Windows, Classes, Graphics, Math, SysUtils, GraphicsBaseTypes, Scanlines,
-  uEditorTypes, uDBGraphicTypes, uMemory, uBitmapUtils;
+  Windows,
+  Classes,
+  Graphics,
+  Math,
+  SysUtils,
+  GraphicsBaseTypes,
+  Scanlines,
+  uEditorTypes,
+  uDBGraphicTypes,
+  uMemory,
+  uBitmapUtils;
 
 procedure Inverse(S, D: TBitmap; CallBack : TProgressCallBackProc = nil);
 
@@ -47,7 +56,7 @@ Procedure Colorize(S,D : TBitmap; Luma: Integer);
 Procedure AutoLevels(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 Procedure AutoColors(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
-function GistogrammRW(S : TBitmap; Rect : TRect; var CountR : int64) : T255IntArray;
+function GistogrammRW(S: TBitmap; Rect: TRect; var CountR: int64): T255IntArray;
 
 procedure Rotate90(S,D : tbitmap; CallBack : TProgressCallBackProc = nil);
 procedure Rotate270(S,D : Tbitmap; CallBack : TProgressCallBackProc = nil);
@@ -59,7 +68,7 @@ procedure FlipVertical(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
 //procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
-procedure StrRotated(x,y : integer; arect : TRect; DC:HDC; Font:HFont; Str:string; Ang:Extended; Options : Cardinal);
+procedure StrRotated(X, Y: Integer; arect: TRect; DC: HDC; Font: HFont; Str: string; Ang: Extended; Options: Cardinal);
 procedure CoolDrawTextEx(bitmap:Tbitmap; text:string; Font: HFont; coolcount:integer; coolcolor:Tcolor; aRect : TRect; aType : integer; Options : Cardinal);
 
 function GistogrammB(S : TBitmap; var Terminated : boolean; CallBack : TProgressCallBackProc = nil; X : Extended =1; Y : Extended =0) : T255IntArray;
@@ -2329,7 +2338,9 @@ var
   I, J: Integer;
   GGray, GR, GG, GB: ExtendedArray255;
   P: PARGB;
+  PArray: array of PARGB;
   R, B, G: Byte;
+  RGB: TRGB;
 
   function NormalizeGistogramm(Gisto: T255IntArray): ExtendedArray255;
   var
@@ -2395,32 +2406,35 @@ begin
     end;
   end;
 
-  Bitmap.Width := 256;
-  Bitmap.Height := Height;
-  Bitmap.Canvas.Brush.Color := clBlack;
-  Bitmap.Canvas.Rectangle(0, 0, 256, Height);
+  Bitmap.SetSize(256, Height);
+
+  SetLength(PArray, Bitmap.Height);
+  for I := 0 to Bitmap.Height - 1 do
+    PArray[I] := Bitmap.ScanLine[I];
+
+  RGB.R := 0;
+  RGB.G := 0;
+  RGB.B := 0;
+  for I := 0 to Bitmap.Height - 1 do
+    for J := 0 to Bitmap.Width - 1 do
+      PArray[I][J] := RGB;
 
   for I := 0 to 255 do
   begin
     for J := Max(0, Height - Round(Height * GR[I])) to Bitmap.Height - 1 do
-    begin
-      P := Bitmap.ScanLine[J];
-      P^[I].R := 255;
-    end;
+      PArray[J][I].R := 255;
+
     for J := Max(0, Height - Round(Height * GG[I])) to Bitmap.Height - 1 do
-    begin
-      P := Bitmap.ScanLine[J];
-      P^[I].G := 255;
-    end;
+      PArray[J][I].G := 255;
+
     for J := Max(0, Height - Round(Height * GB[I])) to Bitmap.Height - 1 do
-    begin
-      P := Bitmap.ScanLine[J];
-      P^[I].B := 255;
-    end;
+      PArray[J][I].B := 255;
+
   end;
+
   for I := 0 to Bitmap.Height - 1 do
   begin
-    P := Bitmap.ScanLine[I];
+    P := PArray[I];
     for J := 0 to Bitmap.Width - 1 do
     begin
       if (P^[J].R = 0) and (P^[J].G = 0) and (P^[J].B = 0) then
@@ -2432,12 +2446,16 @@ begin
     end;
   end;
 
-  Bitmap.Canvas.Pen.Color := $888888;
-  Bitmap.Canvas.MoveTo(MinC, 0);
-  Bitmap.Canvas.LineTo(MinC, Height);
-  Bitmap.Canvas.Pen.Color := $888888;
-  Bitmap.Canvas.MoveTo(MaxC, 0);
-  Bitmap.Canvas.LineTo(MaxC, Height);
+  RGB.R := $88;
+  RGB.G := $88;
+  RGB.B := $88;
+
+  for I := 0 to Bitmap.Height - 1 do
+    PArray[I][MinC] := RGB;
+
+  for I := 0 to Bitmap.Height - 1 do
+    PArray[I][MaxC] := RGB;
+
 end;
 
 procedure ReplaceColorInImage(S,D : TBitmap; BaseColor, NewColor : TColor; Size, Level : Integer; CallBack : TProgressCallBackProc = nil); overload;

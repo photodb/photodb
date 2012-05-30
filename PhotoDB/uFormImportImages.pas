@@ -61,7 +61,8 @@ uses
   ImgList,
   Vcl.AppEvnts,
   uBox,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 const
   TAG_LABEL           = 1;
@@ -319,7 +320,6 @@ uses
   uThreadImportPictures,
   uImportScanThread,
   uImportSeriesPreview,
-  SlideShow,
   FormManegerUnit,
   uFormImportPicturesSettings;
 
@@ -1626,9 +1626,7 @@ begin
 
     if MenuInfo.Count > 0 then
     begin
-      if Viewer = nil then
-        Application.CreateForm(TViewer, Viewer);
-      Viewer.Execute(Sender, MenuInfo);
+      Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
     end;
   finally

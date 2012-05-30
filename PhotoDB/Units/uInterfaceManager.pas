@@ -6,7 +6,8 @@ uses
   uMemory,
   SysUtils,
   Generics.Collections,
-  SyncObjs;
+  SyncObjs,
+  uFormInterfaces;
 
 type
   IList<T> = interface(IInterface)

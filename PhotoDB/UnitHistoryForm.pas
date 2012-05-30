@@ -27,7 +27,8 @@ uses
   uDBPopupMenuInfo,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  uFileUtils;
+  uFileUtils,
+  uFormInterfaces;
 
 type
   TFormHistory = class(TDBForm)
@@ -75,7 +76,6 @@ implementation
 
 uses
   uManagerExplorer,
-  SlideShow,
   UnitUpdateDBObject;
 
 {$R *.dfm}
@@ -145,8 +145,6 @@ begin
   N := InfoListBox.ItemAtPos(P, True);
   if N < 0 then
     Exit;
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
 
   InfoItem := TDBPopupMenuInfoRecord.Create;
   try
@@ -155,7 +153,7 @@ begin
     Info := TDBPopupMenuInfo.Create;
     try
       Info.Add(InfoItem);
-      Viewer.Execute(Sender, Info);
+      Viewer.ShowImages(Sender, Info);
       Viewer.Show;
     finally
       F(Info);
@@ -186,9 +184,6 @@ var
   Info: TDBPopupMenuInfo;
   InfoItem: TDBPopupMenuInfoRecord;
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-
   InfoItem := TDBPopupMenuInfoRecord.Create;
   try
     Info := TDBPopupMenuInfo.Create;
@@ -196,7 +191,7 @@ begin
       GetInfoByFileNameA(FileList[PmActions.Tag], False, InfoItem);
 
       Info.Add(InfoItem);
-      Viewer.Execute(Sender, Info);
+      Viewer.ShowImages(Sender, Info);
       Viewer.Show;
     finally
       F(Info);

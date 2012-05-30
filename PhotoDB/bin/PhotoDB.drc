@@ -2025,22 +2025,30 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Printer\PrintMainForm.dfm */
 /* D:\Dmitry\Dmitry\CaptionButtons.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitHelp.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitHistoryForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\replaceform.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitGroupReplace.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\FloatPanelFullScreen.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SlideShowFullScreen.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormSelectPerson.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitUpdateDB.dfm */
+/* D:\Dmitry\Dmitry\ratingres.res */
+/* D:\Dmitry\Dmitry\dbloading.res */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\unitimhint.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditLinkForm.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\spin.res */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uWatermarkOptions.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitSizeResizerForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormAddImage.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Units\dx\DX_Alpha.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Options.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\PropertyForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitMenuDateForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ImageEditor\ExEffectFormUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ImageEditor\TextToolRes.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditorFullScreenForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Units\UnitActionsForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ImageEditor\ImEditor.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ImageEditor\cursors.res */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uWatermarkOptions.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\FloatPanelFullScreen.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SlideShowFullScreen.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormSelectPerson.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormAddImage.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Units\dx\DX_Alpha.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Wizards\uFrameWizardBase.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Steganography\uFrmCreateJPEGSteno.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Steganography\uFrmCreatePNGSteno.dfm */
@@ -2048,15 +2056,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormSteganography.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormEditObject.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SlideShow.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitHistoryForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitUpdateDB.dfm */
-/* D:\Dmitry\Dmitry\ratingres.res */
-/* D:\Dmitry\Dmitry\dbloading.res */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\unitimhint.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditLinkForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Options.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\PropertyForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitMenuDateForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitSizeResizerForm.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\dbctrls.res */

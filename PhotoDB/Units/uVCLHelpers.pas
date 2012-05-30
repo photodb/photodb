@@ -79,6 +79,20 @@ type
     procedure SaveToCache(CacheFileName: string);
   end;
 
+  TPictureHelper = class helper for TPicture
+  public
+    procedure SetGraphicEx(Value: TGraphic);
+  end;
+
+type
+  TPictureX = class(TInterfacedPersistent, IStreamPersist)
+  private
+    FGraphic: TGraphic;
+  public
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToStream(Stream: TStream);
+  end;
+
 type
   TNotifyEventRef = reference to procedure(Sender: TObject);
   TKeyEventRef = reference to procedure(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -352,6 +366,26 @@ begin
   finally
     F(FS);
   end;
+end;
+
+{ TPictureHelper }
+
+procedure TPictureHelper.SetGraphicEx(Value: TGraphic);
+begin
+  if TPictureX(Self).FGraphic <> nil then
+    TPictureX(Self).FGraphic.Free;
+
+  TPictureX(Self).FGraphic := Value;
+end;
+
+{ TPictureX }
+
+procedure TPictureX.LoadFromStream(Stream: TStream);
+begin
+end;
+
+procedure TPictureX.SaveToStream(Stream: TStream);
+begin
 end;
 
 end.

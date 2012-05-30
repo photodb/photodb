@@ -98,10 +98,11 @@ uses
   uThemesUtils,
   Themes,
   uPhotoShelf,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
-  TViewer = class(TViewerForm, IImageSource, IFaceResultForm)
+  TViewer = class(TViewerForm, IViewerForm, IImageSource, IFaceResultForm)
     PmMain: TPopupActionBar;
     Next1: TMenuItem;
     Previous1: TMenuItem;
@@ -218,7 +219,7 @@ type
     TbConvert: TToolButton;
     TbExplore: TToolButton;
     procedure FormCreate(Sender: TObject);
-    function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
+    function LoadImage_(Sender: TObject; FFullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure Next_(Sender: TObject);
@@ -238,9 +239,8 @@ type
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer;
       params: TEventFields; Value: TEventValues);
     procedure LoadListImages(List: TstringList);
-    Procedure ShowFile(FileName: String);
-    Procedure ShowFolder(Files: Tstrings; CurrentN: Integer);
-    function ShowFolderA(FileName: string; ShowPrivate: Boolean): Boolean;
+    function ShowImage(Sender: TObject; FileName: string): Boolean;
+    procedure ShowFolder(Files: Tstrings; CurrentN: Integer);
     procedure UpdateRecord(FileNo: Integer);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure DoWaitToImage(Sender: TObject);
@@ -271,7 +271,6 @@ type
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
     procedure ReloadCurrent;
-    procedure Pause;
     procedure ImageFrameTimerTimer(Sender: TObject);
     procedure UpdateInfo(SID : TGUID; Info : TDBPopupMenuInfoRecord);
     procedure TbSlideShowClick(Sender: TObject);
@@ -282,7 +281,6 @@ type
     procedure TbRatingClick(Sender: TObject);
     procedure N51Click(Sender: TObject);
     procedure AeMainHint(Sender: TObject);
-    procedure UpdateInfoAboutFileName(FileName: string; Info: TDBPopupMenuInfoRecord);
     procedure MiShelfClick(Sender: TObject);
     procedure TimerDBWorkTimer(Sender: TObject);
     procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
@@ -395,11 +393,11 @@ type
     RealImageHeight: Integer;
     RealZoomInc: Extended;
     DrawImage: TBitmap;
-    FBImage: TBitmap;
+    FFullImage: TBitmap;
     constructor Create(AOwner: TComponent); override;
     function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
-    procedure ExecuteDirectoryWithFileOnThread(FileName: string);
-    function Execute(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
+    function ShowImageInDirectoryEx(FileName: string): Boolean;
+    function ShowImages(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
     function ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile: string): Boolean;
     procedure LoadLanguage;
     procedure LoadPopupMenuLanguage;
@@ -430,6 +428,23 @@ type
     procedure UpdateCursor;
     property DisplayRating: Integer write SetDisplayRating;
     procedure FinishDetectionFaces;
+
+    function NextImage: Boolean;
+    function PreviousImage: Boolean;
+    function TogglePause: Boolean;
+    function Pause: Boolean;
+    function CloseActiveView: Boolean;
+    function GetImagesCount: Integer;
+    function GetIsFullScreenNow: Boolean;
+    function GetIsSlideShowNow: Boolean;
+    procedure DrawTo(Canvas: TCanvas; X, Y: Integer);
+    function ShowPopup(X, Y: Integer): Boolean;
+    function CurrentFullImage: TBitmap;
+    function GetImageIndex: Integer;
+    procedure SetImageIndex(Value: Integer);
+    function GetImageByIndex(Index: Integer): TDBPopupMenuInfoRecord;
+    function ShowImageInDirectory(FileName: string; ShowPrivate: Boolean): Boolean;
+    procedure UpdateImageInfo(Info: TDBPopupMenuInfoRecord);
   published
     property ImageExists: Boolean read FImageExists write SetImageExists;
     property StaticImage: Boolean read FStaticImage write SetPropStaticImage;
@@ -445,12 +460,11 @@ type
     property Item: TDBPopupMenuInfoRecord read GetItem;
   end;
 
-var
-  Viewer: TViewer;
-
 const
   CursorZoomInNo = 130;
   CursorZoomOutNo = 131;
+
+function ViewerForm: TViewer;
 
 implementation
 
@@ -461,6 +475,11 @@ uses
   CommonDBSupport, UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,
   uFormCreatePerson, uFaceDetectionThread, uFormEditObject;
+
+function ViewerForm: TViewer;
+begin
+  Result := FormInterfaces.GetSingleFormInstance<TViewer>(IViewerForm, False);
+end;
 
 {$R *.dfm}
 
@@ -486,7 +505,7 @@ end;
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin
-  RegisterMainForm(Viewer);
+  RegisterMainForm(Self);
   FIsClosing := False;
   TLoad.Instance.StartPersonsThread;
   TW.I.Start('TViewer.FormCreate');
@@ -520,9 +539,9 @@ begin
   FullScreenNow := False;
   SlideShowNow := False;
   Drawimage := TBitmap.Create;
-  FbImage := TBitmap.Create;
+  FFullImage := TBitmap.Create;
+  FFullImage.PixelFormat := pf24bit;
   FOverlayBuffer := TBitmap.Create;
-  FbImage.PixelFormat := pf24bit;
   DrawImage.PixelFormat := pf24bit;
 
   LsDetectingFaces.Color := Theme.PanelColor;
@@ -603,7 +622,7 @@ begin
   PostMessage(Handle, FProgressMessage, 0, 0);
 end;
 
-function TViewer.LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Extended;
+function TViewer.LoadImage_(Sender: TObject; FFullImage: Boolean; BeginZoom: Extended;
   RealZoom: Boolean): Boolean;
 var
   NeedsUpdating: Boolean;
@@ -625,14 +644,14 @@ begin
 
   FSID := GetGUID;
   if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0)
-    or FullImage then
+    or FFullImage then
   begin
 
     Result := True;
     if not RealZoom then
-      TViewerThread.Create(Self, Item, FullImage, 1,         FSID, False, FCurrentPage)
+      TViewerThread.Create(Self, Item, FFullImage, 1,         FSID, False, FCurrentPage)
     else
-      TViewerThread.Create(Self, Item, FullImage, BeginZoom, FSID, False, FCurrentPage);
+      TViewerThread.Create(Self, Item, FFullImage, BeginZoom, FSID, False, FCurrentPage);
 
     ForwardThreadExists := False;
 
@@ -707,10 +726,10 @@ begin
     DrawImage.Canvas.Brush.Color := 0;
     DrawImage.Canvas.Pen.Color := 0;
     DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
-    if (FbImage.Height = 0) or (FbImage.Width = 0) then
+    if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
       Exit;
-    FW := FBImage.Width;
-    FH := FBImage.Height;
+    FW := FFullImage.Width;
+    FH := FFullImage.Height;
     ProportionalSize(Monitor.Width, Monitor.Height, FW, FH);
     if ImageExists then
     begin
@@ -731,7 +750,7 @@ begin
             Z := 1;
         end;
         if (Z < ZoomSmoothMin) then
-          StretchCool(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, FW, FH, FBImage, DrawImage)
+          StretchCool(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, FW, FH, FFullImage, DrawImage)
         else
         begin
           TempImage := TBitmap.Create;
@@ -739,7 +758,7 @@ begin
             TempImage.PixelFormat := pf24bit;
             TempImage.Width := FW;
             TempImage.Height := FH;
-            SmoothResize(Fw, Fh, FbImage, TempImage);
+            SmoothResize(Fw, Fh, FFullImage, TempImage);
             DrawImage.Canvas.Draw(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, TempImage);
           finally
             F(TempImage);
@@ -749,7 +768,7 @@ begin
       begin
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
         DrawImage.Canvas.StretchDraw(Rect(Monitor.Width div 2 - Fw div 2, Monitor.Height div 2 - Fh div 2,
-            Monitor.Width div 2 - Fw div 2 + Fw, Monitor.Height div 2 - Fh div 2 + Fh), FBImage);
+            Monitor.Width div 2 - Fw div 2 + Fw, Monitor.Height div 2 - Fh div 2 + Fh), FFullImage);
       end;
     end else
       ShowErrorText(FileName);
@@ -763,27 +782,27 @@ begin
   DrawImage.Canvas.Brush.Color := Theme.WindowColor;
   DrawImage.Canvas.Pen.Color := Theme.WindowColor;
   DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
-  if (FbImage.Height = 0) or (FbImage.Width = 0) then
+  if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
     begin
       ShowErrorText(FileName);
       Refresh;
       Exit;
     end;
-  if (FbImage.Width > ClientWidth) or (FbImage.Height > HeightW) then
+  if (FFullImage.Width > ClientWidth) or (FFullImage.Height > HeightW) then
   begin
-    if FbImage.Width / FbImage.Height < DrawImage.Width / DrawImage.Height then
+    if FFullImage.Width / FFullImage.Height < DrawImage.Width / DrawImage.Height then
     begin
       Fh := DrawImage.Height;
-      Fw := Round(Drawimage.Height * (FbImage.Width / FbImage.Height));
+      Fw := Round(Drawimage.Height * (FFullImage.Width / FFullImage.Height));
     end else
     begin
       Fw := DrawImage.Width;
-      Fh := Round(DrawImage.Width * (FbImage.Height / FbImage.Width));
+      Fh := Round(DrawImage.Width * (FFullImage.Height / FFullImage.Width));
     end;
   end else
   begin
-    Fh := FbImage.Height;
-    Fw := FbImage.Width;
+    Fh := FFullImage.Height;
+    Fw := FFullImage.Width;
   end;
   X1 := ClientWidth div 2 - Fw div 2;
   Y1 := (HeightW) div 2 - Fh div 2;
@@ -805,7 +824,7 @@ begin
         begin
           if (Zoom < ZoomSmoothMin) then
             StretchCoolW(Zx, Zy, Zw, Zh, Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
-                Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FbImage, DrawImage)
+                Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FFullImage, DrawImage)
           else
           begin
             ACopyRect := Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
@@ -820,7 +839,7 @@ begin
                 B.PixelFormat := Pf24bit;
                 B.Width := (ACopyRect.Right - ACopyRect.Left);
                 B.Height := (ACopyRect.Bottom - ACopyRect.Top);
-                B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FBImage.Canvas, ACopyRect);
+                B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FFullImage.Canvas, ACopyRect);
                 SmoothResize(Zw, Zh, B, TempImage);
               finally
                 F(B);
@@ -832,7 +851,7 @@ begin
           end;
         end else
           Interpolate(Zx, Zy, Zw, Zh, Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
-              Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FbImage, DrawImage);
+              Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FFullImage, DrawImage);
       end else
       begin
         DrawRect(X1, Y1, X2, Y2);
@@ -851,7 +870,7 @@ begin
             Z := 1;
         end;
         if (Z < ZoomSmoothMin) then
-          StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FbImage, DrawImage)
+          StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FFullImage, DrawImage)
         else
         begin
           TempImage := TBitmap.Create;
@@ -859,7 +878,7 @@ begin
             TempImage.PixelFormat := Pf24bit;
             TempImage.Width := X2 - X1;
             TempImage.Height := Y2 - Y1;
-            SmoothResize(X2 - X1, Y2 - Y1, FbImage, TempImage);
+            SmoothResize(X2 - X1, Y2 - Y1, FFullImage, TempImage);
             DrawImage.Canvas.Draw(X1, Y1, TempImage);
           finally
             F(TempImage);
@@ -876,12 +895,12 @@ begin
         DrawRect(BeginRect.Left, BeginRect.Top, BeginRect.Right, BeginRect.Bottom);
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
         DrawImage.Canvas.CopyMode := SRCCOPY;
-        DrawImage.Canvas.CopyRect(BeginRect, FbImage.Canvas, ImRect);
+        DrawImage.Canvas.CopyRect(BeginRect, FFullImage.Canvas, ImRect);
       end else
       begin
         DrawRect(X1, Y1, X2, Y2);
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-        DrawImage.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FBImage);
+        DrawImage.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FFullImage);
       end;
     end;
   end else
@@ -1014,7 +1033,7 @@ begin
   F(CurrentInfo);
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
-  F(FbImage);
+  F(FFullImage);
   F(DrawImage);
   F(AnimatedBuffer);
   F(AnimatedImage);
@@ -1046,9 +1065,8 @@ end;
 procedure TViewer.Exit1Click(Sender: TObject);
 begin
   if not FullScreenNow and not SlideShowNow then
-  begin
     Close;
-  end;
+
   if FullScreenNow then
   begin
     R(FloatPanel);
@@ -1415,7 +1433,7 @@ begin
     FHoverFace := nil;
 
     for I := 0 to FFaces.Count - 1 do
-      if PtInRect(NormalizeRect(FFaces[I].Rect), PxMultiply(P, FBImage, FFaces[I].ImageSize)) then
+      if PtInRect(NormalizeRect(FFaces[I].Rect), PxMultiply(P, FFullImage, FFaces[I].ImageSize)) then
       begin
         FHoverFace := FFaces[I];
         Break;
@@ -1447,13 +1465,13 @@ begin
         FileName := Item.FileName;
         DropFileSource1.Files.Add(FileName);
         DropFileSource1.ShowImage := FImageExists;
-        W := FbImage.Width;
-        H := FbImage.Height;
+        W := FFullImage.Width;
+        H := FFullImage.Height;
         ProportionalSize(ThImageSize, ThImageSize, W, H);
 
         DragImage := TBitmap.Create;
         try
-          DoResize(W, H, FbImage, DragImage);
+          DoResize(W, H, FFullImage, DragImage);
           CreateDragImage(DragImage, DragImageList, Font, ExtractFileName(FileName));
         finally
           F(DragImage);
@@ -1732,7 +1750,7 @@ begin
     Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), Buffer.Canvas, Rect(X, Y, X + W, Y + H));
 end;
 
-procedure TViewer.ShowFile(FileName: String);
+function TViewer.ShowImage(Sender: TObject; FileName: string): Boolean;
 var
   Info: TDBPopupMenuInfo;
   InfoItem: TDBPopupMenuInfoRecord;
@@ -1742,7 +1760,7 @@ begin
     InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
     Info.Add(InfoItem);
-    Execute(nil, Info);
+    Result := ShowImages(Sender, Info);
   finally
     F(Info);
   end;
@@ -1763,7 +1781,7 @@ begin
       Info.Add(InfoItem);
     end;
     Info.Position := CurrentN;
-    Execute(nil, Info);
+    ShowImages(Self, Info);
   finally
     F(Info);
   end;
@@ -2006,32 +2024,8 @@ begin
     end;
   end;
 end;
-
-function TViewer.ShowFolderA(FileName: string; ShowPrivate: Boolean): Boolean;
-var
-  N: Integer;
-  Info: TDBPopupMenuInfo;
-begin
-  Result := False;
-  if FileExistsSafe(FileName) or DirectoryExistsSafe(FileName) then
-  begin
-    FileName := LongFileName(FileName);
-    Info := TDBPopupMenuInfo.Create;
-    try
-      GetFileListByMask(FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
-      if Info.Count > 0 then
-      begin
-        Execute(Self, info);
-        Result := True;
-      end;
-    finally
-      F(Info);
-    end;
-  end;
-end;
-
-//TODO: remove ShowFolderA and use ExecuteDirectoryWithFileOnThread instead of
-procedure TViewer.ExecuteDirectoryWithFileOnThread(FileName: String);
+//TODO: remove ShowFolderA and use ShowImageInDirectoryEx instead of
+function TViewer.ShowImageInDirectoryEx(FileName: string): Boolean;
 var
   Info: TDBPopupMenuInfo;
   InfoItem: TDBPopupMenuInfoRecord;
@@ -2045,7 +2039,7 @@ begin
     InfoItem:= TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
     Info.Add(InfoItem);
-    ExecuteW(Self, Info, '');
+    Result := ExecuteW(Self, Info, '');
     Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',
       [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
       LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]);
@@ -2054,14 +2048,14 @@ begin
   end;
 end;
 
-function TViewer.Execute(Sender: TObject; Info: TDBPopupMenuInfo) : boolean;
+function TViewer.ShowImages(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
 begin
   NewFormState;
   WaitingList := False;
   Result := ExecuteW(Sender, Info, '');
 end;
 
-function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile : String) : boolean;
+function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile : String) : Boolean;
 var
   I: Integer;
   FOldImageExists, NotifyUser: Boolean;
@@ -2258,8 +2252,8 @@ begin
   R := Face.Rect;
   P1 := R.TopLeft;
   P2 := R.BottomRight;
-  P1 := PxMultiply(P1, Face.ImageSize, FBImage);
-  P2 := PxMultiply(P2, Face.ImageSize, FBImage);
+  P1 := PxMultiply(P1, Face.ImageSize, FFullImage);
+  P2 := PxMultiply(P2, Face.ImageSize, FFullImage);
 
   R := Rect(P1, P2);
   W := RectWidth(R);
@@ -2277,16 +2271,16 @@ begin
     FaceRect := MoveRect(FaceRect, 0, R.Top);
     R.Top := 0;
   end;
-  if R.Bottom > FBImage.Height then
-    R.Bottom := FBImage.Height;
-  if R.Right > FBImage.Width then
-    R.Right := FBImage.Width;
+  if R.Bottom > FFullImage.Height then
+    R.Bottom := FFullImage.Height;
+  if R.Right > FFullImage.Width then
+    R.Right := FFullImage.Width;
 
   BmpFace3X := TBitmap.Create;
   try
     BmpFace3X.PixelFormat := pf24Bit;
     BmpFace3X.SetSize(RectWidth(R), RectHeight(R));
-    BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FBImage.Canvas, R);
+    BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FFullImage.Canvas, R);
     //BmpFace3X contains image of person
     TmpFace := TFaceDetectionResultItem.Create;
     try
@@ -2481,7 +2475,7 @@ end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Viewer := nil;
+  FormInterfaces.RemoveSingleInstance(Self);
   if FullScreenView <> nil then
     Exit1Click(nil);
   if DirectShowForm <> nil then
@@ -2559,8 +2553,8 @@ begin
     P := Point(X, Y);
     F(FDrawFace);
     FDrawFace := TFaceDetectionResultItem.Create;
-    FDrawFace.ImageWidth := FBImage.Width;
-    FDrawFace.ImageHeight := FBImage.Height;
+    FDrawFace.ImageWidth := FFullImage.Width;
+    FDrawFace.ImageHeight := FFullImage.Height;
 
     FDrawFaceStartPoint := BufferPointToImagePoint(P);
     FDrawFace.Rect := Rect(FDrawFaceStartPoint, FDrawFaceStartPoint);
@@ -2649,19 +2643,19 @@ begin
   V2 := SbVertical.Visible;
   if not SbHorisontal.Visible and not SbVertical.Visible then
   begin
-    SbHorisontal.Visible := FbImage.Width * Zoom > ClientWidth;
+    SbHorisontal.Visible := FFullImage.Width * Zoom > ClientWidth;
     if SbHorisontal.Visible then
       Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
-    SbVertical.Visible := FbImage.Height * Zoom > HeightW - Inc_;
+    SbVertical.Visible := FFullImage.Height * Zoom > HeightW - Inc_;
   end;
   begin
     if SbVertical.Visible then
       Inc_ := SbVertical.Width
     else
       Inc_ := 0;
-    SbHorisontal.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
+    SbHorisontal.Visible := FFullImage.Width * Zoom > ClientWidth - Inc_;
     SbHorisontal.Width := ClientWidth - Inc_;
     if SbHorisontal.Visible then
       Inc_ := SbHorisontal.Height
@@ -2674,7 +2668,7 @@ begin
       Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
-    SbVertical.Visible := FbImage.Height * Zoom > HeightW - Inc_;
+    SbVertical.Visible := FFullImage.Height * Zoom > HeightW - Inc_;
     SbVertical.Height := HeightW - Inc_;
     if SbVertical.Visible then
       Inc_ := SbVertical.Width
@@ -2687,7 +2681,7 @@ begin
       Inc_ := SbVertical.Width
     else
       Inc_ := 0;
-    SbHorisontal.Visible := FbImage.Width * Zoom > ClientWidth - Inc_;
+    SbHorisontal.Visible := FFullImage.Width * Zoom > ClientWidth - Inc_;
     SbHorisontal.Width := ClientWidth - Inc_;
     if SbHorisontal.Visible then
       Inc_ := SbHorisontal.Height
@@ -2724,7 +2718,7 @@ begin
       Inc_ := SbVertical.Width
     else
       Inc_ := 0;
-    M := Round(FbImage.Width * Zoom);
+    M := Round(FFullImage.Width * Zoom);
     Ps := ClientWidth - Inc_;
     if Ps > M then
       Ps := 0;
@@ -2745,7 +2739,7 @@ begin
       Inc_ := SbHorisontal.Height
     else
       Inc_ := 0;
-    M := Round(FbImage.Height * Zoom);
+    M := Round(FFullImage.Height * Zoom);
     Ps := HeightW - Inc_;
     if Ps > M then
       Ps := 0;
@@ -2918,7 +2912,7 @@ begin
 
   ImagePoint := BufferPointToImagePoint(P);
   for I := 0 to FFaces.Count - 1 do
-    if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FBImage, FFaces[I].ImageSize)) then
+    if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FFullImage, FFaces[I].ImageSize)) then
     begin
       FHoverFace := FFaces[I];
       RefreshFaces;
@@ -2989,7 +2983,7 @@ begin
       Increment := SbVertical.width
     else
       Increment := 0;
-    FX := Max(0, Round(ClientWidth / 2 - Increment - FBImage.Width * Zoom / 2));
+    FX := Max(0, Round(ClientWidth / 2 - Increment - FFullImage.Width * Zoom / 2));
   end;
   if SbVertical.Visible then
   begin
@@ -3001,18 +2995,18 @@ begin
     else
       Increment := 0;
     FY := Max(0,
-      Round(HeightW / 2 - Increment - FBImage.Height * Zoom / 2));
+      Round(HeightW / 2 - Increment - FFullImage.Height * Zoom / 2));
   end;
   if SbVertical.Visible then
     Increment := SbVertical.width
   else
     Increment := 0;
-  FW := round(Min(ClientWidth - Increment, FBImage.Width * Zoom));
+  FW := round(Min(ClientWidth - Increment, FFullImage.Width * Zoom));
   if SbHorisontal.Visible then
     Increment := SbHorisontal.Height
   else
     Increment := 0;
-  FH := Round(Min(HeightW - Increment, FBImage.Height * Zoom));
+  FH := Round(Min(HeightW - Increment, FFullImage.Height * Zoom));
   FH := FH;
 
   Result := Rect(FX, FY, FW + FX, FH + FY);
@@ -3139,8 +3133,8 @@ var
     P1 := Face.Rect.TopLeft;
     P2 := Face.Rect.BottomRight;
 
-    P1 := PxMultiply(P1, Face.ImageSize, FBImage);
-    P2 := PxMultiply(P2, Face.ImageSize, FBImage);
+    P1 := PxMultiply(P1, Face.ImageSize, FFullImage);
+    P2 := PxMultiply(P2, Face.ImageSize, FFullImage);
 
     P1 := ImagePointToBufferPoint(P1);
     P2 := ImagePointToBufferPoint(P2);
@@ -3208,7 +3202,7 @@ begin
     RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
-    Rotate270A(FbImage);
+    Rotate270A(FFullImage);
     FFaces.RotateLeft;
     if ZoomerOn then
       FitToWindowClick(Sender);
@@ -3232,7 +3226,7 @@ begin
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
 
-    Rotate90A(FbImage);
+    Rotate90A(FFullImage);
     FFaces.RotateRight;
     if ZoomerOn then
       FitToWindowClick(Sender);
@@ -3383,7 +3377,7 @@ begin
   LoadImage_(Self, False, Zoom, False);
 end;
 
-procedure TViewer.Pause;
+function TViewer.Pause: Boolean;
 begin
   if DirectShowForm <> nil then
     DirectShowForm.Pause;
@@ -3391,6 +3385,8 @@ begin
   MTimer1.ImageIndex := DB_IC_PLAY;
   FloatPanel.TbPlay.Down := False;
   FloatPanel.TbPause.Down := True;
+
+  Result := True;
 end;
 
 procedure TViewer.SetImageExists(const Value: Boolean);
@@ -3416,8 +3412,8 @@ begin
   TransparentImage := Transparent;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
-  F(FBImage);
-  FbImage := Image;
+  F(FFullImage);
+  FFullImage := Image;
   StaticImage := True;
   ImageExists := True;
   Loading := False;
@@ -3542,10 +3538,10 @@ begin
       Height := Item.Height;
     end else
     begin
-      Width := FbImage.Width;
-      Height := FbImage.Height;
+      Width := FFullImage.Width;
+      Height := FFullImage.Height;
     end;
-    Bitmap.Assign(FbImage);
+    Bitmap.Assign(FFullImage);
   end;
 end;
 
@@ -3652,13 +3648,13 @@ begin
   if CurrentFileNumber <= CurrentInfo.Count - 1 then
     case Item.Rotation of
       DB_IMAGE_ROTATE_0:
-        FbImage.Assign(AnimatedBuffer);
+        FFullImage.Assign(AnimatedBuffer);
       DB_IMAGE_ROTATE_90:
-        Rotate90(AnimatedBuffer, FbImage);
+        Rotate90(AnimatedBuffer, FFullImage);
       DB_IMAGE_ROTATE_180:
-        Rotate180(AnimatedBuffer, FbImage);
+        Rotate180(AnimatedBuffer, FFullImage);
       DB_IMAGE_ROTATE_270:
-        Rotate270(AnimatedBuffer, FbImage)
+        Rotate270(AnimatedBuffer, FFullImage)
     end;
 
   RecreateDrawImage(Self);
@@ -4252,20 +4248,6 @@ begin
   Application.HintHidePause := 5000;
 end;
 
-procedure TViewer.UpdateInfoAboutFileName(FileName: String;
-  Info: TDBPopupMenuInfoRecord);
-var
-  I: Integer;
-begin
-  for I := 0 to CurrentInfo.Count - 1 do
-    if not CurrentInfo[I].InfoLoaded then
-      if CurrentInfo[I].FileName = FileName then
-      begin
-        CurrentInfo[I].Assign(Info);
-        Exit;
-      end;
-end;
-
 procedure TViewer.MiShelfClick(Sender: TObject);
 var
   EventInfo: TEventValues;
@@ -4300,7 +4282,7 @@ begin
         if CurrentInfo[I].Rotation <> 0 then
           if I = CurrentFileNumber then
           begin
-            ApplyRotate(FbImage, CurrentInfo[I].Rotation);
+            ApplyRotate(FFullImage, CurrentInfo[I].Rotation);
             RecreateDrawImage(Self);
           end;
       end;
@@ -4436,7 +4418,7 @@ begin
       Increment := SbVertical.Width
     else
       Increment := 0;
-    FX := Max(0, Round(GetVisibleImageWidth / 2 - Increment - FBImage.Width * Zoom / 2));
+    FX := Max(0, Round(GetVisibleImageWidth / 2 - Increment - FFullImage.Width * Zoom / 2));
   end;
   if SbVertical.Visible then
   begin
@@ -4447,18 +4429,18 @@ begin
       Increment := SbHorisontal.Height
     else
       Increment := 0;
-    FY := Max(0, Round(GetVisibleImageHeight / 2 - Increment - FBImage.Height * Zoom / 2));
+    FY := Max(0, Round(GetVisibleImageHeight / 2 - Increment - FFullImage.Height * Zoom / 2));
   end;
   if SbVertical.Visible then
     Increment := SbVertical.Width
   else
     Increment := 0;
-  FW := Round(Min(GetVisibleImageWidth - Increment, FBImage.Width * Zoom));
+  FW := Round(Min(GetVisibleImageWidth - Increment, FFullImage.Width * Zoom));
   if SbHorisontal.Visible then
     Increment := SbHorisontal.Height
   else
     Increment := 0;
-  FH := Round(Min(GetVisibleImageHeight - Increment, FBImage.Height * Zoom));
+  FH := Round(Min(GetVisibleImageHeight - Increment, FFullImage.Height * Zoom));
   FH := FH;
   Result := Rect(FX, FY, FW + FX, FH + FY);
 end;
@@ -4484,31 +4466,31 @@ begin
       Result.Y := Round((P.Y - Y1) / Zoom);
   end else
   begin
-    if (FBImage.Height = 0) or (FBImage.Width = 0) then
+    if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
       Exit;
-    if (FBImage.Width > GetVisibleImageWidth) or (FBImage.Height > GetVisibleImageHeight) then
+    if (FFullImage.Width > GetVisibleImageWidth) or (FFullImage.Height > GetVisibleImageHeight) then
     begin
-      if FBImage.Width / FBImage.Height < Buffer.Width / Buffer.Height then
+      if FFullImage.Width / FFullImage.Height < Buffer.Width / Buffer.Height then
       begin
         Fh := Buffer.Height;
-        Fw := Round(Buffer.Height * (FBImage.Width / FBImage.Height));
+        Fw := Round(Buffer.Height * (FFullImage.Width / FFullImage.Height));
       end else
       begin
         Fw := Buffer.Width;
-        Fh := Round(Buffer.Width * (FBImage.Height / FBImage.Width));
+        Fh := Round(Buffer.Width * (FFullImage.Height / FFullImage.Width));
       end;
     end else
     begin
-      Fh := FBImage.Height;
-      Fw := FBImage.Width;
+      Fh := FFullImage.Height;
+      Fw := FFullImage.Width;
     end;
     X1 := GetVisibleImageWidth div 2 - Fw div 2;
     Y1 := GetVisibleImageHeight div 2 - Fh div 2;
     Result := Point(0, 0);
     if Fw <> 0 then
-      Result.X := Round((P.X - X1) * (FBImage.Width / Fw));
+      Result.X := Round((P.X - X1) * (FFullImage.Width / Fw));
     if Fh <> 0 then
-      Result.Y := Round((P.Y - Y1) * (FBImage.Height / Fh));
+      Result.Y := Round((P.Y - Y1) * (FFullImage.Height / Fh));
   end;
 end;
 
@@ -4533,31 +4515,31 @@ begin
       Result.Y := Round((P.Y * Zoom + Y1));
   end else
   begin
-    if (FBImage.Height = 0) or (FBImage.Width = 0) then
+    if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
       Exit;
-    if (FBImage.Width > GetVisibleImageWidth) or (FBImage.Height > GetVisibleImageHeight) then
+    if (FFullImage.Width > GetVisibleImageWidth) or (FFullImage.Height > GetVisibleImageHeight) then
     begin
-      if FBImage.Width / FBImage.Height < Buffer.Width / Buffer.Height then
+      if FFullImage.Width / FFullImage.Height < Buffer.Width / Buffer.Height then
       begin
         Fh := Buffer.Height;
-        Fw := Round(Buffer.Height * (FBImage.Width / FBImage.Height));
+        Fw := Round(Buffer.Height * (FFullImage.Width / FFullImage.Height));
       end else
       begin
         Fw := Buffer.Width;
-        Fh := Round(Buffer.Width * (FBImage.Height / FBImage.Width));
+        Fh := Round(Buffer.Width * (FFullImage.Height / FFullImage.Width));
       end;
     end else
     begin
-      Fh := FBImage.Height;
-      Fw := FBImage.Width;
+      Fh := FFullImage.Height;
+      Fw := FFullImage.Width;
     end;
     X1 := GetVisibleImageWidth div 2 - Fw div 2;
     Y1 := GetVisibleImageHeight div 2 - Fh div 2;
     Result := Point(0, 0);
-    if FBImage.Width <> 0 then
-      Result.X := Round(X1 + P.X * (Fw / FBImage.Width));
-    if FBImage.Height <> 0 then
-      Result.Y := Round(Y1 + P.Y * (Fh / FBImage.Height));
+    if FFullImage.Width <> 0 then
+      Result.X := Round(X1 + P.X * (Fw / FFullImage.Width));
+    if FFullImage.Height <> 0 then
+      Result.Y := Round(Y1 + P.Y * (Fh / FFullImage.Height));
   end;
 end;
 
@@ -4579,8 +4561,114 @@ begin
     Result := FOverlayBuffer;
 end;
 
-initialization
+function TViewer.PreviousImage: Boolean;
+begin
+  PreviousImageClick(Self);
+  Result := True;
+end;
 
-  Viewer := nil;
+function TViewer.NextImage: Boolean;
+begin
+  NextImageClick(Self);
+  Result := True;
+end;
+
+function TViewer.TogglePause: Boolean;
+begin
+  MTimer1Click(Self);
+  Result := True;
+end;
+
+function TViewer.CloseActiveView: Boolean;
+begin
+  Exit1Click(Self);
+  Result := True;
+end;
+
+function TViewer.GetImagesCount: Integer;
+begin
+  Result := CurrentInfo.Count;
+end;
+
+function TViewer.GetIsFullScreenNow: Boolean;
+begin
+  Result := FullScreenNow;
+end;
+
+function TViewer.GetIsSlideShowNow: Boolean;
+begin
+  Result := SlideShowNow;
+end;
+
+procedure TViewer.DrawTo(Canvas: TCanvas; X, Y: Integer);
+begin
+  Canvas.Draw(X, Y, DrawImage);
+end;
+
+function TViewer.ShowPopup(X, Y: Integer): Boolean;
+begin
+  PmMain.Popup(X, Y);
+  Result := True;
+end;
+
+function TViewer.CurrentFullImage: TBitmap;
+begin
+  Result := FFullImage;
+end;
+
+procedure TViewer.SetImageIndex(Value: Integer);
+begin
+  CurrentFileNumber := Value;
+end;
+
+function TViewer.GetImageIndex: Integer;
+begin
+  Result := CurrentFileNumber;
+end;
+
+function TViewer.GetImageByIndex(Index: Integer): TDBPopupMenuInfoRecord;
+begin
+  Result := CurrentInfo[Index];
+end;
+
+function TViewer.ShowImageInDirectory(FileName: string;
+  ShowPrivate: Boolean): Boolean;
+var
+  N: Integer;
+  Info: TDBPopupMenuInfo;
+begin
+  Result := False;
+  if FileExistsSafe(FileName) or DirectoryExistsSafe(FileName) then
+  begin
+    FileName := LongFileName(FileName);
+    Info := TDBPopupMenuInfo.Create;
+    try
+      GetFileListByMask(FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
+      if Info.Count > 0 then
+      begin
+        ShowImages(Self, info);
+        Result := True;
+      end;
+    finally
+      F(Info);
+    end;
+  end;
+end;
+
+procedure TViewer.UpdateImageInfo(Info: TDBPopupMenuInfoRecord);
+var
+  I: Integer;
+begin
+  for I := 0 to CurrentInfo.Count - 1 do
+    if not CurrentInfo[I].InfoLoaded then
+      if CurrentInfo[I].FileName = Info.FileName then
+      begin
+        CurrentInfo[I].Assign(Info);
+        Exit;
+      end;
+end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IViewerForm, TViewer);
 
 end.

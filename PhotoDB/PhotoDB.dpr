@@ -405,7 +405,9 @@ uses
   VTAccessibilityFactory in 'External\Controls\virtual-treeview\Source\VTAccessibilityFactory.pas',
   VTHeaderPopup in 'External\Controls\virtual-treeview\Source\VTHeaderPopup.pas',
   uFreeImageIO in 'Units\Formats\uFreeImageIO.pas',
-  uExplorerProvidersInit in 'Units\Providers\uExplorerProvidersInit.pas';
+  uExplorerProvidersInit in 'Units\Providers\uExplorerProvidersInit.pas',
+  uExifInfo in 'Units\uExifInfo.pas',
+  uFormInterfaces in 'Units\uFormInterfaces.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

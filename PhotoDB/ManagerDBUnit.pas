@@ -283,7 +283,6 @@ uses
   UnitQuickGroupInfo,
   uManagerExplorer,
   Searching,
-  SlideShow,
   ExportUnit,
   UnitManageGroups,
   UnitDBCleaning,

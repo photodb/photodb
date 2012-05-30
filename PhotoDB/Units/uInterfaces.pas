@@ -3,7 +3,8 @@ unit uInterfaces;
 interface
 
 uses
-  UnitDBDeclare, uFaceDetection;
+  UnitDBDeclare,
+  uFaceDetection;
 
 type
   IDBImageSettings = interface(IInterface)

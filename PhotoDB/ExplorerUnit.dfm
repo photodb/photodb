@@ -64,7 +64,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 648
-      ActivePage = TsPreview
+      ActivePage = TbInfo
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -77,11 +77,15 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
           Width = 132
-          Height = 620
+          Height = 602
           Align = alClient
           BevelOuter = bvNone
           ParentColor = True
@@ -91,7 +95,7 @@ object ExplorerForm: TExplorerForm
             Left = 0
             Top = 0
             Width = 132
-            Height = 591
+            Height = 573
             HorzScrollBar.Increment = 10
             HorzScrollBar.Visible = False
             VertScrollBar.Smooth = True
@@ -741,7 +745,7 @@ object ExplorerForm: TExplorerForm
           end
           object PnShelf: TPanel
             Left = 0
-            Top = 591
+            Top = 573
             Width = 132
             Height = 29
             Align = alBottom
@@ -778,6 +782,120 @@ object ExplorerForm: TExplorerForm
         ExplicitTop = 0
         ExplicitWidth = 0
         ExplicitHeight = 0
+      end
+      object TbInfo: TTabSheet
+        Caption = 'Info'
+        ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
+        DesignSize = (
+          132
+          602)
+        object Label2: TLabel
+          Left = 3
+          Top = 5
+          Width = 91
+          Height = 13
+          Caption = 'Gistogramm image:'
+        end
+        object ImHIstogramm: TImage
+          Left = 1
+          Top = 24
+          Width = 128
+          Height = 105
+          Anchors = [akLeft, akTop, akRight]
+          Center = True
+          Proportional = True
+          Stretch = True
+        end
+        object ReRating: TRating
+          Left = 0
+          Top = 135
+          Width = 96
+          Height = 16
+          Cursor = crHandPoint
+          ParentColor = False
+          Color = clWhite
+          Rating = 0
+          RatingRange = 0
+          Islayered = False
+          Layered = 100
+          ImageCanRegenerate = True
+          CanSelectRange = False
+        end
+        object DteTime: TDateTimePicker
+          Left = -2
+          Top = 184
+          Width = 132
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          Date = 38544.841692523150000000
+          Time = 38544.841692523150000000
+          ShowCheckbox = True
+          Checked = False
+          Color = clBtnFace
+          DateFormat = dfLong
+          Kind = dtkTime
+          TabOrder = 1
+        end
+        object DteDate: TDateTimePicker
+          Left = -2
+          Top = 157
+          Width = 132
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelEdges = []
+          BevelInner = bvNone
+          Date = 38153.564945740740000000
+          Time = 38153.564945740740000000
+          ShowCheckbox = True
+          Checked = False
+          Color = clBtnFace
+          DateFormat = dfLong
+          TabOrder = 2
+        end
+        object WllGroups: TWebLinkList
+          Left = 1
+          Top = 211
+          Width = 129
+          Height = 42
+          HorzScrollBar.Visible = False
+          Anchors = [akLeft, akTop, akRight]
+          BevelEdges = []
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          BorderStyle = bsNone
+          ParentBackground = True
+          TabOrder = 3
+          VerticalIncrement = 5
+          HorizontalIncrement = 5
+          LineHeight = 0
+          PaddingTop = 2
+          PaddingLeft = 2
+        end
+      end
+      object TbEXIF: TTabSheet
+        Caption = 'EXIF'
+        ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
+        object VleExif: TValueListEditor
+          Left = 0
+          Top = 0
+          Width = 132
+          Height = 602
+          Align = alClient
+          DefaultColWidth = 70
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
+          TabOrder = 0
+          ColWidths = (
+            70
+            56)
+        end
       end
     end
   end

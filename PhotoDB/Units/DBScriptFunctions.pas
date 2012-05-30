@@ -37,7 +37,8 @@ uses
   uDBPopupMenuInfo,
   uSettings,
   UnitDBCommonGraphics,
-  uPhotoShelf;
+  uPhotoShelf,
+  uFormInterfaces;
 
 procedure DoActivation;
 procedure GetUpdates(IsBackground: boolean);
@@ -59,7 +60,7 @@ uses
   CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
   UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor,
   uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
-  SlideShow, UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
+  UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
   UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
   UnitFormCDMapper, UnitFormCDExport, uFormSteganography;
@@ -277,15 +278,12 @@ var
   Info: TDBPopupMenuInfo;
   InfoItem: TDBPopupMenuInfoRecord;
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-
   Info := TDBPopupMenuInfo.Create;
   try
     InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     try
       Info.Add(InfoItem.Copy);
-      Viewer.Execute(nil, Info);
+      Viewer.ShowImages(nil, Info);
       Viewer.Show;
     finally
       F(InfoItem);

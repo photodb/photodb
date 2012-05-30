@@ -101,6 +101,7 @@ uses
   uMemory,
   LoadingSign,
   uPNGUtils,
+  uDBGraphicTypes,
   uGraphicUtils,
   uDBBaseTypes,
   uDBTypes,
@@ -153,7 +154,13 @@ uses
   uInternetUtils,
 
   VirtualTrees,
-  uPathProvideTreeView
+  uPathProvideTreeView,
+  uExifInfo,
+  Vcl.Grids,
+  Vcl.ValEdit,
+  Rating,
+  WebLinkList,
+  uFormInterfaces
   ;
 
 const
@@ -405,6 +412,15 @@ type
     PcTasks: TPageControl;
     TsPreview: TTabSheet;
     TsExplorer: TTabSheet;
+    TbInfo: TTabSheet;
+    TbEXIF: TTabSheet;
+    VleExif: TValueListEditor;
+    Label2: TLabel;
+    ImHIstogramm: TImage;
+    ReRating: TRating;
+    DteTime: TDateTimePicker;
+    DteDate: TDateTimePicker;
+    WllGroups: TWebLinkList;
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -825,7 +841,7 @@ type
     procedure SetProgressPosition(Value: Integer);
     procedure SetStatusText(Text: String);
     procedure SetNewFileNameGUID(FileGUID: TGUID);
-    procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID);
+    procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; ExifInfo: IExifInfo; var Histogramm: TBitmap; FileGUID: TGUID);
     procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     procedure UpdateMenuItems(Menu: TPopupActionBar; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
@@ -865,7 +881,6 @@ uses
   UnitUpdateDB,
   ExplorerThreadUnit,
   uSearchTypes,
-  SlideShow,
   PropertyForm,
   UnitHintCeator,
   FormManegerUnit,
@@ -1338,15 +1353,14 @@ var
   Index: Integer;
 begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
+
   if (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE) or
     (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
   begin
     Index := MenuIndexToItemIndex(PmItemPopup.Tag);
     MenuInfo := GetCurrentPopUpMenuInfo(ElvMain.Items[Index]);
     try
-      Viewer.Execute(Sender, MenuInfo);
+      Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
     finally
       F(MenuInfo);
@@ -1354,7 +1368,7 @@ begin
   end;
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
   begin
-    if Viewer.ShowFolderA(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate) then
+    if Viewer.ShowImageInDirectory(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate) then
       Viewer.Show
     else
       MessageBoxDB(Handle, L('There are no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
@@ -2115,8 +2129,8 @@ begin
     begin
       ExplorerInfo.Assign(Info);
       ExplorerInfo.Loaded := Loaded;
-      if Viewer <> nil then
-        Viewer.UpdateInfoAboutFileName(Info.FileName, Info);
+      if CurrentViewer <> nil then
+        CurrentViewer.UpdateImageInfo(Info);
       Break;
     end;
   end;
@@ -4419,7 +4433,9 @@ begin
 end;
 
 procedure TExplorerForm.SetPanelInfo(Info: TDBPopupMenuInfoRecord;
-  FileGUID: TGUID);
+  ExifInfo: IExifInfo; var Histogramm: TBitmap; FileGUID: TGUID);
+var
+  Line: IExifInfoLine;
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
   begin
@@ -4436,6 +4452,18 @@ begin
       FSelectedInfo.GeoLocation.Latitude := Info.GeoLocation.Latitude;
       FSelectedInfo.GeoLocation.Longitude := Info.GeoLocation.Longitude;
     end;
+
+    TbEXIF.Visible := ExifInfo <> nil;
+    if TbEXIF.Visible then
+    begin
+      VleEXIF.Strings.Clear;
+      for Line in ExifInfo do
+        VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+    end;
+
+    ImHIstogramm.Picture.Graphic := Histogramm;
+    //ImHIstogramm.Picture.SetGraphicEx(Histogramm);
+    //Histogramm := nil;
 
     ReallignInfo;
   end;
@@ -5283,9 +5311,7 @@ begin
   begin
     MenuInfo := Self.GetCurrentPopUpMenuInfo(ListView1Selected);
     try
-      if Viewer = nil then
-        Application.CreateForm(TViewer, Viewer);
-      Viewer.Execute(Sender, MenuInfo);
+      Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
     finally
       F(MenuInfo);
@@ -5547,8 +5573,6 @@ var
   end;
 
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
   if SelCount <> 0 then
   begin
     PmItemPopup.Tag := ItemIndexToMenuIndex(ListView1Selected.index);
@@ -5559,7 +5583,7 @@ begin
     try
       if Info.Count > 0 then
       begin
-        Viewer.Execute(Self, Info);
+        Viewer.ShowImages(Self, Info);
         Viewer.Show;
       end else
         ShowNoImagesError;
@@ -5568,7 +5592,7 @@ begin
     end;
   end else
   begin
-    if Viewer.ShowFolderA(GetCurrentPath, ExplorerManager.ShowPrivate) then
+    if Viewer.ShowImageInDirectory(GetCurrentPath, ExplorerManager.ShowPrivate) then
       Viewer.Show
     else
       ShowNoImagesError;
@@ -6090,6 +6114,9 @@ begin
 
     TsPreview.Caption := L('Preview');
     TsExplorer.Caption := L('Explorer');
+
+    VleExif.TitleCaptions[0] := L('Key');
+    VleExif.TitleCaptions[1] := L('Value');
   finally
     EndTranslate;
   end;
@@ -7001,9 +7028,7 @@ begin
     begin
       if IsGraphicFile(S) then
       begin
-        if Viewer = nil then
-          Application.CreateForm(TViewer, Viewer);
-        Viewer.ShowFile(S);
+        Viewer.ShowImage(Self, S);
         Viewer.Show;
       end else
         ShellExecute(Handle, 'open', PChar(S), nil, nil, SW_NORMAL);
@@ -7152,13 +7177,13 @@ end;
 
 procedure TExplorerForm.ExportImages1Click(Sender: TObject);
 var
-  info: TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfo;
 begin
-  info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
+  Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
-    ExportImages(Self, info);
+    ExportImages(Self, Info);
   finally
-    F(info);
+    F(Info);
   end;
 end;
 
@@ -8010,15 +8035,12 @@ var
   Info: TDBPopupMenuInfo;
   N: Integer;
 begin
-  if Viewer = nil then
-    Application.CreateForm(TViewer, Viewer);
-
   Info := TDBPopupMenuInfo.Create;
   try
     GetFileListByMask(TempFolderName, TFileAssociations.Instance.ExtensionList, Info, N, True);
     if Info.Count > 0 then
     begin
-      Viewer.Execute(Self, Info);
+      Viewer.ShowImages(Self, Info);
       Viewer.Show;
     end;
   finally
@@ -9011,9 +9033,7 @@ begin
       begin
         MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
         try
-          If Viewer = nil then
-            Application.CreateForm(TViewer, Viewer);
-          Viewer.Execute(Sender, MenuInfo);
+          Viewer.ShowImages(Sender, MenuInfo);
           Viewer.Show;
           RestoreSelected;
         finally
@@ -9045,9 +9065,7 @@ begin
             begin
               MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
               try
-                if Viewer = nil then
-                  Application.CreateForm(TViewer, Viewer);
-                Viewer.Execute(Sender, MenuInfo);
+                Viewer.ShowImages(Sender, MenuInfo);
                 Viewer.Show;
                 RestoreSelected;
               finally

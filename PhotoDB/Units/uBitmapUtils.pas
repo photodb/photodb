@@ -70,8 +70,20 @@ procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
 procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
 
 function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
+function FillHistogramma(Bitmap: TBitmap): TGistogrammData;
 
 implementation
+
+function FillHistogramma(Bitmap: TBitmap): TGistogrammData;
+var
+  PRGBArr: PARGBArray;
+  I: Integer;
+begin
+  SetLength(PRGBArr, Bitmap.Height);
+  for I := 0 to Bitmap.Height - 1 do
+    PRGBArr[I] := Bitmap.ScanLine[I];
+  Result := Gistogramma(Bitmap.Width, Bitmap.Height, PRGBArr);
+end;
 
 function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
 var
@@ -102,6 +114,7 @@ begin
       Inc(Result.Blue[LB]);
     end;
   end;
+  Result.Loaded := True;
 end;
 
 procedure ThreadDraw(S, D: TBitmap; X, Y: Integer);
