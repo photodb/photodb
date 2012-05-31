@@ -3,10 +3,29 @@ unit UnitGroupReplace;
 interface
 
 uses
-  UnitGroupsWork, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, ExtCtrls, StdCtrls, Menus, UnitDBKernel, jpeg,
-  uConstants, uMemory, uDBForm, uShellIntegration, Dolphin_DB, uMemoryEx,
-  WatermarkedEdit, uRuntime, pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  StdCtrls,
+  Menus,
+  uGroupTypes,
+  UnitGroupsWork,
+  UnitDBKernel,
+  jpeg,
+  uConstants,
+  uMemory,
+  uDBForm,
+  uShellIntegration,
+  uMemoryEx,
+  WatermarkedEdit,
+  uRuntime,
+  pngimage;
 
 type
   GroupReplaceOptions = record

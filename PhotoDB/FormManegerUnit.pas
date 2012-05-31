@@ -119,12 +119,10 @@ uses
   uSearchTypes,
   UnitFileCheckerDB,
   UnitInternetUpdate,
-  uAbout,
   UnitConvertDBForm,
   UnitImportingImagesForm,
   UnitSelectDB,
   uFormImportImages,
-  uActivation,
   UnitUpdateDBObject,
   uExifPatchThread;
 

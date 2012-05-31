@@ -3,10 +3,29 @@ unit UnitCmpDB;
 interface
 
 uses
-  UnitGroupsReplace, CmpUnit, Classes, DB, dolphin_db, SysUtils, uRuntime,
-  UnitGroupsWork, UnitLinksSupport, GraphicCrypt, JPEG, CommonDBSupport,
-  UnitDBDeclare, UnitDBKernel, uDBTypes, uDBGraphicTypes, win32crc,
-  UnitDBCommonGraphics, uDBThread, uMemory, uFileUtils, uDBForm, uDBAdapter;
+  UnitGroupsReplace,
+  CmpUnit,
+  Classes,
+  DB,
+  dolphin_db,
+  SysUtils,
+  uRuntime,
+  uGroupTypes,
+  UnitLinksSupport,
+  GraphicCrypt,
+  JPEG,
+  CommonDBSupport,
+  UnitDBDeclare,
+  UnitDBKernel,
+  uDBTypes,
+  uDBGraphicTypes,
+  win32crc,
+  UnitDBCommonGraphics,
+  uDBThread,
+  uMemory,
+  uFileUtils,
+  uDBForm,
+  uDBAdapter;
 
 type
   CmpDBTh = class(TDBThread)
@@ -57,7 +76,9 @@ var
 implementation
 
 uses
-  UnitCompareProgress, UnitExportThread, UnitUpdateDBThread;
+  UnitCompareProgress,
+  UnitExportThread,
+  UnitUpdateDBThread;
 
 { UnitCmpDB }
 

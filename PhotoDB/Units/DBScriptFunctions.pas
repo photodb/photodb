@@ -57,7 +57,7 @@ implementation
 
 uses
   ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
-  CommonDBSupport, uActivation, UnitInternetUpdate, UnitManageGroups, uAbout,
+  CommonDBSupport, UnitInternetUpdate, UnitManageGroups,
   UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor,
   uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
   UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
@@ -67,7 +67,7 @@ uses
 
 procedure DoActivation;
 begin
-  ShowActivationDialog;
+  ActivationForm.Execute;
 end;
 
 procedure GetUpdates(IsBackground : Boolean);
@@ -77,7 +77,7 @@ end;
 
 procedure DoAbout;
 begin
-  ShowAbout;
+  AboutForm.Execute;
 end;
 
 function ReadScriptFile(FileName: string): string;

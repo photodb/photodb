@@ -3,10 +3,24 @@ unit UnitPackingTable;
 interface
 
 uses
-  Classes, Dolphin_DB, Windows, Sysutils, UnitGroupsWork,
-  ComObj, ActiveX, UnitDBDeclare, uDBThread;
+  Classes,
+  Dolphin_DB,
+  Windows, Sysutils,
+  UnitGroupsWork,
+  ComObj,
+  ActiveX,
+  UnitDBDeclare,
+  uDBThread,
+  uDBForm;
 
 type
+  TPackingTableThreadOptions = record
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+  end;
+
   PackingTable = class(TDBThread)
   private
     { Private declarations }
@@ -23,7 +37,8 @@ type
 
 implementation
 
-uses CommonDBSupport;
+uses
+  CommonDBSupport;
 
 procedure PackingTable.AddTextLine;
 begin

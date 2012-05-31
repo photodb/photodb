@@ -5,6 +5,7 @@ interface
 uses
   Windows,
   SysUtils,
+  uGroupTypes,
   UnitGroupsWork,
   UnitExportThread,
   Classes,

@@ -33,10 +33,11 @@ uses
   Dolphin_DB,
   uSysUtils,
   uMobileUtils,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
-  TAboutForm = class(TDBForm)
+  TAboutForm = class(TDBForm, IAboutForm)
     ImageLogo: TImage;
     ImbClose: TImButton;
     BtShowActivationForm: TButton;
@@ -46,7 +47,6 @@ type
     LnkGoToWebSite: TWebLink;
     procedure ImbCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Execute(Wait : boolean = false);
     procedure BtShowActivationFormClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure FormDblClick(Sender: TObject);
@@ -67,28 +67,13 @@ type
     function GetFormID : string; override;
   public
     { Public declarations }
+    procedure Execute;
     procedure LoadRegistrationData;
   end;
 
-procedure ShowAbout;
-
 implementation
 
-uses uActivation;
-
 {$R *.dfm}
-
-procedure ShowAbout;
-var
-  AboutForm : TAboutForm;
-begin
-  Application.CreateForm(TAboutForm, AboutForm);
-  try
-    AboutForm.Execute;
-  finally
-    R(AboutForm);
-  end;
-end;
 
 { TAboutForm }
 
@@ -97,9 +82,9 @@ begin
   Result := 'About';
 end;
 
-procedure TAboutForm.WMMouseDown(var s: TMessage);
+procedure TAboutForm.WMMouseDown(var S: TMessage);
 begin
-  Perform(WM_NCLBUTTONDOWN, HTCaption, s.lparam);
+  Perform(WM_NCLBUTTONDOWN, HTCaption, S.LParam);
 end;
 
 procedure TAboutForm.ImbCloseClick(Sender: TObject);
@@ -109,7 +94,7 @@ end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
 var
-  Logo : TPngImage;
+  Logo: TPngImage;
 begin
   LoadLanguage;
   LnkGoToWebSite.LoadImage;
@@ -162,8 +147,11 @@ end;
 
 procedure TAboutForm.BtShowActivationFormClick(Sender: TObject);
 begin
-  ShowActivationDialog;
-  LoadRegistrationData;
+  if not FolderView then
+  begin
+    ActivationForm.Execute;
+    LoadRegistrationData;
+  end;
 end;
 
 procedure TAboutForm.Button2Click(Sender: TObject);
@@ -174,7 +162,7 @@ end;
 procedure TAboutForm.FormDblClick(Sender: TObject);
 begin
   if not FolderView then
-    ShowActivationDialog;
+    ActivationForm.Execute;
 end;
 
 procedure TAboutForm.FormDestroy(Sender: TObject);
@@ -247,5 +235,8 @@ begin
  if Key = VK_ESCAPE then
    Close;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IAboutForm, TAboutForm);
 
 end.

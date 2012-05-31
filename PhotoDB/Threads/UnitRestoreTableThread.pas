@@ -3,11 +3,29 @@ unit UnitRestoreTableThread;
 interface
 
 uses
-  Windows, Classes, UnitDBKernel, Forms, UnitGroupsWork, SysUtils,
-  UnitDBDeclare, uFileUtils, uConstants, ActiveX, uRuntime,
-  uDBThread, uConfiguration;
+  Windows,
+  Classes,
+  UnitDBKernel,
+  Forms,
+  UnitGroupsWork,
+  SysUtils,
+  UnitDBDeclare,
+  uFileUtils,
+  uConstants,
+  ActiveX,
+  uRuntime,
+  uDBThread,
+  uConfiguration,
+  uDBForm;
 
 type
+  TRestoreThreadOptions = record
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+  end;
+
   ThreadRestoreTable = class(TDBThread)
   private
     { Private declarations }
@@ -16,7 +34,7 @@ type
     procedure DoExit;
   protected
     procedure Execute; override;
-    function GetThreadID : string; override;
+    function GetThreadID: string; override;
     procedure TextOut;
   public
     constructor Create(Options: TRestoreThreadOptions);

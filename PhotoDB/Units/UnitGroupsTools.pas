@@ -3,9 +3,21 @@ unit UnitGroupsTools;
 interface
 
 uses
-  Windows, DB, Forms, Classes, UnitGroupsWork, SysUtils,
-  ProgressActionUnit, uConstants, uMemory, uTranslate, uMemoryEx,
-  uShellIntegration, uRuntime;
+  Windows,
+  SysUtils,
+  Classes,
+  DB,
+  Forms,
+  CommonDBSupport,
+  uGroupTypes,
+  UnitGroupsWork,
+  ProgressActionUnit,
+  uConstants,
+  uMemory,
+  uMemoryEx,
+  uTranslate,
+  uShellIntegration,
+  uRuntime;
 
 procedure MoveGroup(GroupToMove, IntoGroup: TGroup); overload;
 procedure MoveGroup(GroupToMove, IntoGroup: string); overload;
@@ -19,7 +31,7 @@ procedure DeleteGroup(GroupToDelete: string); overload;
 implementation
 
 uses
-  UnitDBKernel, Dolphin_DB, CommonDBSupport;
+  Dolphin_DB;
 
 procedure DeleteGroup(GroupToDelete: string);
 begin
@@ -53,7 +65,7 @@ begin
           Groups := Table.FieldByName('Groups').AsString;
           if GroupWithCodeExistsInString(GroupToDelete.GroupCode, Groups) then
           begin
-            UnitGroupsWork.ReplaceGroups(SGroupToDelete, '', Groups);
+            uGroupTypes.ReplaceGroups(SGroupToDelete, '', Groups);
             Table.Edit;
             Table.FieldByName('Groups').AsString := Groups;
             Table.Post;
@@ -121,7 +133,7 @@ begin
           Groups := Table.FieldByName('Groups').AsString;
           if GroupWithCodeExistsInString(GroupToRename.GroupCode, Groups) then
           begin
-            UnitGroupsWork.ReplaceGroups(SGroupToDelete, SGroupToAdd, Groups);
+            uGroupTypes.ReplaceGroups(SGroupToDelete, SGroupToAdd, Groups);
             FQuery := GetQuery;
             try
               SetSQL(FQuery, 'UPDATE $DB$ SET Groups=:Groups where ID=' + IntToStr(Table.FieldByName('ID').AsInteger));
@@ -188,7 +200,7 @@ begin
       Groups := Table.FieldByName('Groups').AsString;
       if GroupWithCodeExistsInString(GroupToMove.GroupCode, Groups) then
       begin
-        UnitGroupsWork.ReplaceGroups(SGroupToMove, SIntoGroup, Groups);
+        uGroupTypes.ReplaceGroups(SGroupToMove, SIntoGroup, Groups);
 
         FQuery := GetQuery;
         try

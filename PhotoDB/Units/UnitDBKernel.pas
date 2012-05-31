@@ -16,6 +16,7 @@ uses
   IniFiles,
   GraphicCrypt,
   ADODB,
+  CommonDBSupport,
   uLogger,
   uActivationUtils,
   uCDMappingTypes,
@@ -57,7 +58,7 @@ const
   IconsCount = 128;
 
 type
-  TDbKernelArrayIcons = array [1..IconsCount] of THandle;
+  TDbKernelArrayIcons = array [1 .. IconsCount] of THandle;
 
 type
   TDBKernel = class(TObject)
@@ -138,8 +139,7 @@ function Icons: TDBIcons;
 implementation
 
 uses
-  UnitCrypting, 
-  CommonDBSupport,
+  UnitCrypting,
   UnitActiveTableThread, 
   UnitFileCheckerDB, 
   UnitGroupsWork,

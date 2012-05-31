@@ -3,12 +3,37 @@ unit UnitOptimizeDublicatesThread;
 interface
 
 uses
-  Classes, UnitLinksSupport, DB, SysUtils, uRuntime,
-  CommonDBSupport, CmpUnit, UnitGroupsWork, win32crc, uFileUtils,
-  UnitDBDeclare, uMemory, uConstants, uDBTypes, uDBBaseTypes,
-  uTranslate, uDBThread;
+  Classes,
+  UnitLinksSupport,
+  DB,
+  SysUtils,
+  uRuntime,
+  CommonDBSupport,
+  CmpUnit,
+  uGroupTypes,
+  UnitGroupsWork,
+  win32crc,
+  uFileUtils,
+  UnitDBDeclare,
+  uMemory,
+  uConstants,
+  uDBTypes,
+  uDBBaseTypes,
+  uTranslate,
+  uDBThread,
+  uDBForm;
+
 
 type
+  TOptimizeDuplicatesThreadOptions = record
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
+    OnProgress: TCallBackProgressEvent;
+  end;
+
   TThreadOptimizeDublicates = class(TDBThread)
   private
     { Private declarations }

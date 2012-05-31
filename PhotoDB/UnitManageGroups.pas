@@ -3,7 +3,6 @@ unit UnitManageGroups;
 interface
 
 uses
-  UnitGroupsWork,
   Windows,
   Messages,
   SysUtils,
@@ -34,6 +33,8 @@ uses
   uShellIntegration,
   uConstants,
   Dolphin_DB,
+  uGroupTypes,
+  UnitGroupsWork,
   uSettings,
   uRuntime,
   CommonDBSupport,
@@ -364,7 +365,7 @@ begin
     AkeyWords := Groups[Item.ImageIndex].GroupKeyWords;
 
     SetLength(AxGroups, 0);
-    AxGroups := UnitGroupsWork.EncodeGroups(Groups[Item.ImageIndex].RelatedGroups);
+    AxGroups := uGroupTypes.EncodeGroups(Groups[Item.ImageIndex].RelatedGroups);
     AGroups := '';
     for I := 0 to Length(AxGroups) - 1 do
     begin

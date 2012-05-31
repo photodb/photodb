@@ -3,6 +3,7 @@ unit UnitQuickGroupInfo;
 interface
 
 uses
+  uGroupTypes,
   UnitGroupsWork,
   Dolphin_DB,
   Windows,

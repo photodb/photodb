@@ -3,11 +3,37 @@ unit UnitCDExportThread;
 interface
 
 uses
-  Windows, Classes, Forms, UnitCDMappingSupport, UnitDBKernel, DB, ActiveX,
-  UnitGroupsWork, UnitDBDeclare, CommonDBSupport, win32crc, SysUtils, uLogger,
-  uFileUtils, uConstants, uShellIntegration, uDBTypes, uDBBaseTypes, uDBForm,
-  uDBThread, uMobileUtils, uMemory, uDBUtils, uCDMappingTypes, uTranslate,
-  uResourceUtils, Graphics, uVistaFuncs, uDBShellUtils, uRuntime;
+  Windows,
+  Classes,
+  Forms,
+  UnitCDMappingSupport,
+  UnitDBKernel,
+  DB,
+  ActiveX,
+  uGroupTypes,
+  UnitGroupsWork,
+  UnitDBDeclare,
+  CommonDBSupport,
+  win32crc,
+  SysUtils,
+  uLogger,
+  uFileUtils,
+  uConstants,
+  uShellIntegration,
+  uDBTypes,
+  uDBBaseTypes,
+  uDBForm,
+  uDBThread,
+  uMobileUtils,
+  uMemory,
+  uDBUtils,
+  uCDMappingTypes,
+  uTranslate,
+  uResourceUtils,
+  Graphics,
+  uVistaFuncs,
+  uDBShellUtils,
+  uRuntime;
 
 type
   TCDExportOptions = record

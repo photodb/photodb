@@ -3,9 +3,7 @@ unit DBCMenu;
 interface
 
 uses
-  UnitGroupsWork,
   Types,
-  Dolphin_DB,
   uMemoryEx,
   ShlObj,
   Math,
@@ -18,7 +16,11 @@ uses
   uCDMappingTypes,
   Graphics,
   Menus,
+  Dolphin_DB,
+  uGroupTypes,
+  UnitGroupsWork,
   UnitDBKernel,
+  CommonDBSupport,
   UnitCryptImageForm,
   GraphicCrypt,
   ProgressActionUnit,
@@ -143,7 +145,6 @@ uses
   UnitPasswordForm,
   ImEditor,
   FormManegerUnit,
-  CommonDBSupport,
   UnitSizeResizerForm;
 
 var

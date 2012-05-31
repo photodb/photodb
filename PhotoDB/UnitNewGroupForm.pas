@@ -3,11 +3,9 @@ unit UnitNewGroupForm;
 interface
 
 uses
-  UnitGroupsWork,
   Windows,
   Messages,
   SysUtils,
-  Variants,
   Classes,
   Graphics,
   Controls,
@@ -17,6 +15,8 @@ uses
   StdCtrls,
   Jpeg,
   Dolphin_DB,
+  uGroupTypes,
+  UnitGroupsWork,
   Menus,
   GraphicEx,
   Math,

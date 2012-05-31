@@ -12,7 +12,7 @@ uses
   SysUtils,
   CCR.Exif,
   uExifUtils,
-  UnitGroupsWork,
+  uGroupTypes,
   UnitLinksSupport,
   uICCProfile,
   Vcl.ValEdit,

@@ -6,9 +6,9 @@ uses
   uMemory,
   Classes,
   SysUtils,
-  UnitDBKernel,
   Forms,
   uDBThread,
+  uDBForm,
   uRuntime,
   UnitDBDeclare,
   uConstants,
@@ -18,6 +18,14 @@ uses
   uConfiguration;
 
 type
+  TBackUpTableThreadOptions = record
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
+  end;
+
   BackUpTableInCMD = class(TDBThread)
   private
     { Private declarations }

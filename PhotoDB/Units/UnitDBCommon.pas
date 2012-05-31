@@ -3,7 +3,13 @@ unit UnitDBCommon;
 interface
 
 uses
-  Windows, Classes, Forms, Math, SysUtils, Messages, uMemory;
+  Windows,
+  Classes,
+  Forms,
+  Math,
+  SysUtils,
+  Messages,
+  uMemory;
 
 function ActivateApplication(const hWND: THandle): Boolean;
 function ProgramDir: string;

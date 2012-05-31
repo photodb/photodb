@@ -35,10 +35,11 @@ uses
   uThemesUtils,
   LoadingSign,
   uVCLHelpers,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
-  TActivateForm = class(TDBForm)
+  TActivateForm = class(TDBForm, IActivationForm)
     Bevel1: TBevel;
     BtnNext: TButton;
     BtnCancel: TButton;
@@ -64,43 +65,24 @@ type
     procedure LoadLanguage;
     procedure UpdateLayout;
     procedure StepChanged(Sender: TObject);
-    procedure WMMouseDown(var Message : TMessage); message WM_LBUTTONDOWN;
+    procedure WMMouseDown(var Message: TMessage); message WM_LBUTTONDOWN;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     procedure HelpActivationNextClick(Sender: TObject);
-    procedure HelpActivationCloseClick(Sender : TObject; var CanClose : Boolean);
+    procedure HelpActivationCloseClick(Sender: TObject; var CanClose : Boolean);
   end;
-
-procedure ShowActivationDialog;
-
+                             
 implementation
 
 uses
-  UnitHelp, FormManegerUnit, uFrameActivationLanding;
+  UnitHelp,
+  FormManegerUnit,
+  uFrameActivationLanding;
 
 var
   IsActivationActive: Boolean = False;
-
-procedure ShowActivationDialog;
-var
-  ActivateForm: TActivateForm;
-begin
-  if not FolderView then
-  begin
-    if IsActivationActive then
-      Exit;
-    Application.CreateForm(TActivateForm, ActivateForm);
-    IsActivationActive := True;
-    try
-      ActivateForm.Execute;
-    finally
-      IsActivationActive := False;
-      R(ActivateForm);
-    end;
-  end;
-end;
 
 {$R *.dfm}
 
@@ -133,7 +115,15 @@ end;
 
 procedure TActivateForm.Execute;
 begin
-  ShowModal;
+  if IsActivationActive then
+    Exit;
+
+  IsActivationActive := True;
+  try
+    ShowModal;
+  finally
+    IsActivationActive := False;
+  end;
 end;
 
 procedure TActivateForm.BtnCancelClick(Sender: TObject);
@@ -230,6 +220,7 @@ end;
 procedure TActivateForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   UnRegisterMainForm(Self);
+  Action := caFree;
 end;
 
 procedure TActivateForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -248,5 +239,8 @@ function TActivateForm.GetFormID: string;
 begin
   Result := 'Activation';
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IActivationForm, TActivateForm);
 
 end.

@@ -8,6 +8,7 @@ uses
   Graphics,
   Jpeg,
   Classes,
+  uGroupTypes,
   UnitGroupsWork,
   uTranslate,
   uLogger,
@@ -53,6 +54,7 @@ uses
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
   TProgressValueHandler = procedure(Count: Integer) of object;
+  TOnDBKernelEventProcedure = procedure(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
 
 procedure CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
 procedure CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory: string);

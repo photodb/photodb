@@ -4,15 +4,15 @@ interface
 
 uses
   Classes,
+  SysUtils,
   EasyListView,
   UnitDBDeclare,
   UnitLinksSupport,
-  UnitGroupsWork,
+  uGroupTypes,
   CmpUnit,
   uList64,
   uFileUtils,
-  uMemory,
-  SysUtils;
+  uMemory;
 
 type
   TDBPopupMenuInfo = class(TObject)
@@ -189,7 +189,7 @@ begin
   try
     for I := 0 to Count - 1 do
       SL.Add(Self[I].Groups);
-    Result := UnitGroupsWork.GetCommonGroups(SL);
+    Result := uGroupTypes.GetCommonGroups(SL);
   finally
     F(SL);
   end;

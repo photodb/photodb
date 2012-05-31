@@ -3,9 +3,23 @@ unit SelectGroupForm;
 interface
 
 uses
-  Windows, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, UnitGroupsWork, uMemoryEx,
-  ImgList, UnitDBkernel, uBitmapUtils, uDBForm, uMemory,
+  Windows,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ComCtrls,
+  uMemory,
+  uMemoryEx,
+  uGroupTypes,
+  UnitGroupsWork,
+  ImgList,
+  UnitDBkernel,
+  uBitmapUtils,
+  uDBForm,
   uConstants;
 
 type

@@ -3,8 +3,16 @@ unit uScript;
 interface
 
 uses
-  Windows, SysUtils, Classes, uStringUtils, uMemory, uGOM, uRuntime,
-  uSysUtils, uDBForm, uGUIDUtils;
+  Windows,
+  SysUtils,
+  Classes,
+  uStringUtils,
+  uMemory,
+  uGOM,
+  uRuntime,
+  uSysUtils,
+  uDBForm,
+  uGUIDUtils;
 
 const
   VALUE_TYPE_ERROR         = 0;

@@ -7,6 +7,7 @@ uses
   Graphics,
   uExplorerPathProvider,
   uPathProviders,
+  uGroupTypes,
   UnitGroupsWork,
   uBitmapUtils,
   UnitDBDeclare,

@@ -41,6 +41,8 @@ uses
   uConstants,
   uMemory,
   SyncObjs,
+  uGroupTypes,
+  CommonDBSupport,
   uDBPopupMenuInfo,
   pngImage,
   uPNGUtils,
@@ -271,7 +273,6 @@ var
 implementation
 
 uses
-  CommonDBSupport,
   uExplorerThreadPool;
 
 var

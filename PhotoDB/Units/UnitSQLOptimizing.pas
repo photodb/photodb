@@ -3,7 +3,10 @@ unit UnitSQLOptimizing;
 interface
 
 uses
-  CmpUnit, UnitGroupsWork, UnitLinksSupport, uDBBaseTypes;
+  CmpUnit,
+  uGroupTypes,
+  UnitLinksSupport,
+  uDBBaseTypes;
 
 type
   TOneSQL = record

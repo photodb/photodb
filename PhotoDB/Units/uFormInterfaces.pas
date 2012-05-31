@@ -11,6 +11,7 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
   Vcl.Forms,
+  uRuntime,
   UnitDBDeclare,
   uDBPopupMenuInfo;
 
@@ -51,6 +52,16 @@ type
     property Images[Index: Integer]: TDBPopupMenuInfoRecord read GetImageByIndex;
   end;
 
+  IAboutForm = interface(IFormInterface)
+    ['{319D1068-3734-4229-9264-8922123F31C0}']
+    procedure Execute;
+  end;
+
+  IActivationForm = interface(IFormInterface)
+    ['{B2742B2F-4210-4A48-B45E-54AEAD63062F}']
+    procedure Execute;
+  end;
+
 type
   TFormInterfaces = class(TObject)
   private
@@ -63,13 +74,15 @@ type
     function GetForm<T: IInterface>(): T;
     function GetSingleForm<T: IInterface>(CreateNew: Boolean): T;
     function GetSingleFormInstance<TFormClass: TForm>(Intf: TGUID; CreateNew: Boolean): TFormClass;
-    procedure RemoveSingleInstance(TFormClass: TForm);
+    procedure RemoveSingleInstance(FormInstance: TForm);
   end;
 
 function FormInterfaces: TFormInterfaces;
 
 function Viewer: IViewerForm;
 function CurrentViewer: IViewerForm;
+function AboutForm: IAboutForm;
+function ActivationForm: IActivationForm;
 
 implementation
 
@@ -92,6 +105,16 @@ end;
 function CurrentViewer: IViewerForm;
 begin
   Result := FormInterfaces.GetSingleForm<IViewerForm>(False);
+end;
+
+function AboutForm: IAboutForm;
+begin
+  Result := FormInterfaces.GetSingleForm<IAboutForm>(True);
+end;
+
+function ActivationForm: IActivationForm;
+begin
+  Result := FormInterfaces.GetSingleForm<IActivationForm>(True);
 end;
 
 { TFormInterfaces }
@@ -159,12 +182,12 @@ begin
   FFormInterfaces.Add(Intf, FormClass);
 end;
 
-procedure TFormInterfaces.RemoveSingleInstance(TFormClass: TForm);
+procedure TFormInterfaces.RemoveSingleInstance(FormInstance: TForm);
 var
   Pair: TPair<TGUID, TForm>;
 begin
   for Pair in FFormInstances do
-    if Pair.Value = TFormClass then
+    if Pair.Value = FormInstance then
     begin
       FFormInstances.Remove(Pair.Key);
       Break;

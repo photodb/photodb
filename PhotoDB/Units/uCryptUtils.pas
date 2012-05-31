@@ -17,7 +17,8 @@ uses
   uDBForm,
   uVCLHelpers,
   uTranslate,
-  WebLink;
+  WebLink,
+  uFormInterfaces;
 
 type
   TPasswordMethodChanger = class(TObject)
@@ -65,7 +66,7 @@ end;
 
 procedure TPasswordMethodChanger.ActivationClick(Sender: TObject);
 begin
-  ShowActivationDialog;
+  ActivationForm.Execute;
 end;
 
 constructor TPasswordMethodChanger.Create(WebLink: TWebLink; PopupMenu: TPopupMenu);

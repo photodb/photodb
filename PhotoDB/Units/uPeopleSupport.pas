@@ -21,6 +21,7 @@ uses
   uDBForm,
   uPersonDB,
   UnitDBDeclare,
+  uGroupTypes,
   UnitGroupsWork,
   uSysUtils,
   uRuntime,

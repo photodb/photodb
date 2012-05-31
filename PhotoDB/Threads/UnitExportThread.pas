@@ -3,32 +3,47 @@ unit UnitExportThread;
 interface
 
 uses
-  UnitGroupsWork, Classes, DB, UnitDBKernel, SysUtils, GraphicCrypt, ActiveX,
-  UnitDBDeclare, uFileUtils, uConstants, uDBUtils, uDBForm, uMemory, uRuntime,
-  uTranslate, uDBThread;
+  Classes,
+  DB,
+  CommonDBSupport,
+  UnitDBKernel,
+  SysUtils,
+  GraphicCrypt,
+  ActiveX,
+  uGroupTypes,
+  UnitGroupsWork,
+  UnitDBDeclare,
+  uFileUtils,
+  uConstants,
+  uDBUtils,
+  uDBForm,
+  uMemory,
+  uRuntime,
+  uTranslate,
+  uDBThread;
 
 Type
   TExportOptions = record
     OwnerForm: TDBForm;
-    ExportPrivate : Boolean;
-    ExportNoFiles : Boolean;
-    ExportRatingOnly : Boolean;
-    ExportGroups : boolean;
-    ExportCrypt : boolean;
-    ExportCryptIfPassFinded : boolean;
-    FileName : String;
+    ExportPrivate: Boolean;
+    ExportNoFiles: Boolean;
+    ExportRatingOnly: Boolean;
+    ExportGroups: Boolean;
+    ExportCrypt: Boolean;
+    ExportCryptIfPassFinded: Boolean;
+    FileName: string;
   end;
 
 type
   ExportThread = class(TDBThread)
   private
     { Private declarations }
-    FOptions : TExportOptions;
-    TableOut : TDataSet;
-    TableIn : TDataSet;
-    FIntParam : Integer;
-    FStringParam : String;
-    FGroupsFounded : TGroups;
+    FOptions: TExportOptions;
+    TableOut: TDataSet;
+    TableIn: TDataSet;
+    FIntParam: Integer;
+    FStringParam: string;
+    FGroupsFounded: TGroups;
   protected
     function GetThreadID : string; override;
   public
@@ -52,7 +67,7 @@ var
 implementation
 
 uses
-  ExportUnit, CommonDBSupport;
+  ExportUnit;
 
 { ExportThread }
 

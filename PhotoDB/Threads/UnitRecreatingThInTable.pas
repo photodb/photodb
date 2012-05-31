@@ -3,12 +3,43 @@ unit UnitRecreatingThInTable;
 interface
 
 uses
-  Classes, Graphics, Jpeg, DB, CommonDBSupport, UnitDBKernel, SysUtils,
-  GraphicCrypt, GraphicsCool, UnitDBDeclare, uCDMappingTypes,
-  ActiveX, Dolphin_DB, uMemory, uDBBaseTypes, uDBTypes, uDBUtils,
-  win32crc, uDBThread, uFileUtils, uGOM, uConstants;
+  Classes,
+  Graphics,
+  Jpeg,
+  DB,
+  CommonDBSupport,
+  UnitDBKernel,
+  SysUtils,
+  GraphicCrypt,
+  GraphicsCool,
+  UnitDBDeclare,
+  uCDMappingTypes,
+  ActiveX,
+  Dolphin_DB,
+  uMemory,
+  uDBBaseTypes,
+  uDBTypes,
+  uDBUtils,
+  win32crc,
+  uDBThread,
+  uFileUtils,
+  uGOM,
+  uDBForm,
+  uConstants;
 
 type
+  TRecreatingThInTableOptions = record
+    OwnerForm: TDBForm;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
+    OnEndProcedure: TNotifyEvent;
+    FileName: string;
+    GetFilesWithoutPassProc: TGetFilesWithoutPassProc;
+    AddCryptFileToListProc: TAddCryptFileToListProc;
+    GetAvaliableCryptFileList: TGetAvaliableCryptFileList;
+    OnProgress: TCallBackProgressEvent;
+  end;
+
   RecreatingThInTable = class(TDBThread)
   private
     { Private declarations }

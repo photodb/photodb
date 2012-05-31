@@ -16,11 +16,12 @@ uses
   StdCtrls,
   DropSource,
   DropTarget,
-  Dolphin_DB,
   acDlgSelect,
   ImgList,
   Menus,
   DB,
+  CommonDBSupport,
+  uGroupTypes,
   UnitGroupsWork,
   uFileUtils,
   DragDrop,
@@ -110,7 +111,6 @@ implementation
 uses
   UnitDBKernel,
   CommCtrl,
-  CommonDBSupport,
   ProgressActionUnit;
 
 {$R *.dfm}

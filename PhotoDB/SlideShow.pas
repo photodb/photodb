@@ -2475,7 +2475,6 @@ end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  FormInterfaces.RemoveSingleInstance(Self);
   if FullScreenView <> nil then
     Exit1Click(nil);
   if DirectShowForm <> nil then

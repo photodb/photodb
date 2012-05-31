@@ -3,7 +3,10 @@ unit uCDMappingTypes;
 interface
 
 uses
-  Classes, uMemory, SysUtils, StrUtils;
+  Classes,
+  uMemory,
+  SysUtils,
+  StrUtils;
 
 const
   TCD_CLASS_TAG_NONE = 0;
@@ -43,7 +46,7 @@ type
 
   TCDIndexMappingDirectory = class
   private
-    FFiles : TList;
+    FFiles: TList;
     function GetFileByIndex(FileIndex: Integer): TCDIndexMappingDirectory;
     function GetCount: Integer;
   public
@@ -56,11 +59,11 @@ type
     FileSize: Int64;
     constructor Create;
     destructor Destroy; override;
-    function Add(Item : TCDIndexMappingDirectory) : Integer;
-    property Items[FileIndex : Integer] : TCDIndexMappingDirectory read GetFileByIndex; default;
-    property Count : Integer read GetCount;
+    function Add(Item: TCDIndexMappingDirectory): Integer;
+    property Items[FileIndex: Integer]: TCDIndexMappingDirectory read GetFileByIndex; default;
+    property Count: Integer read GetCount;
     procedure Remove(var Item : TCDIndexMappingDirectory);
-    procedure Delete(Index : Integer);
+    procedure Delete(Index: Integer);
     property Files: TList read FFiles;
   end;
 
@@ -97,7 +100,7 @@ type
     procedure UnProcessPath(var Path: string);
   end;
 
-  TCheckCDFunction = function(CDName : string) : Boolean;
+  TCheckCDFunction = function(CDName: string) : Boolean;
 
 var
   CheckCDFunction: TCheckCDFunction = nil;

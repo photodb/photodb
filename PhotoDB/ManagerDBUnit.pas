@@ -3,7 +3,6 @@ unit ManagerDBUnit;
 interface
 
 uses
-  UnitGroupsWork,
   DBCMenu,
   Dolphin_DB,
   UnitDBkernel,
@@ -46,6 +45,8 @@ uses
   uScript,
   UnitScripts,
   CmpUnit,
+  uGroupTypes,
+  UnitGroupsWork,
   UnitFormManagerHint,
   UnitConvertDBForm,
   UnitDBDeclare,

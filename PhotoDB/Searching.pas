@@ -3,7 +3,6 @@ unit Searching;
 interface
 
 uses
-  UnitGroupsWork,
   DBCMenu,
   CmpUnit,
   ToolWin,
@@ -92,6 +91,8 @@ uses
   UDBUtils,
   UDBFileTypes,
   Dolphin_DB,
+  uGroupTypes,
+  UnitGroupsWork,
   uSettings,
   uSearchTypes,
   WebLinkList,
@@ -531,12 +532,27 @@ type
 implementation
 
 uses
-  UnitManageGroups, FormManegerUnit, Loadingresults,
-  PropertyForm, Options, UnitHintCeator, uManagerExplorer, UnitUpdateDB,
-  UnitUpdateDBThread, ManagerDBUnit, UnitEditGroupsForm, UnitQuickGroupInfo,
-  UnitGroupReplace, UnitSavingTableForm, UnitHelp,
-  UnitUpdateDBObject, UnitFormSizeListViewTh, UnitBigImagesSize,
-  UnitOpenQueryThread, uSearchHelpAddPhotosThread, uDatabaseSearch;
+  UnitManageGroups,
+  FormManegerUnit,
+  Loadingresults,
+  PropertyForm,
+  Options,
+  UnitHintCeator,
+  uManagerExplorer,
+  UnitUpdateDB,
+  UnitUpdateDBThread,
+  ManagerDBUnit,
+  UnitEditGroupsForm,
+  UnitQuickGroupInfo,
+  UnitGroupReplace,
+  UnitSavingTableForm,
+  UnitHelp,
+  UnitUpdateDBObject,
+  UnitFormSizeListViewTh,
+  UnitBigImagesSize,
+  UnitOpenQueryThread,
+  uSearchHelpAddPhotosThread,
+  uDatabaseSearch;
 
 {$R *.dfm}
 

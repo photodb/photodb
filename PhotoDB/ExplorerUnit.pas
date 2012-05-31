@@ -13,6 +13,7 @@ uses
   UnitINI,
   ShellApi,
   dolphin_db,
+  uGroupTypes,
   Windows,
   Messages,
   SysUtils,
@@ -887,8 +888,6 @@ uses
   Options,
   ManagerDBUnit,
   UnitExplorerThumbnailCreatorThread,
-  uAbout,
-  uActivation,
   UnitPasswordForm,
   UnitCryptImageForm,
   UnitFileRenamerForm,
@@ -898,7 +897,6 @@ uses
   UnitHelp,
   uMachMask,
   uFormImportImages,
-  UnitGroupsWork,
   DBScriptFunctions,
   UnitStringPromtForm,
   UnitSavingTableForm,
@@ -6132,7 +6130,7 @@ end;
 
 procedure TExplorerForm.Help1Click(Sender: TObject);
 begin
-  ShowAbout;
+  AboutForm.Execute;
 end;
 
 procedure TExplorerForm.PopupMenuTreeViewPopup(Sender: TObject);
@@ -6597,7 +6595,7 @@ end;
 
 procedure TExplorerForm.Activation1Click(Sender: TObject);
 begin
-  ShowActivationDialog;
+  ActivationForm.Execute;
 end;
 
 procedure TExplorerForm.Help2Click(Sender: TObject);

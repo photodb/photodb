@@ -9,18 +9,18 @@ uses
   Menus,
   Graphics,
   JPEG,
+  SysUtils,
+  DateUtils,
+  Win32Crc,
   EasyListview,
+
   GraphicCrypt,
   uMemory,
   uFileUtils,
   uDBBaseTypes,
   uDBGraphicTypes,
-  uDBForm,
-  DateUtils,
-  SysUtils,
   uRuntime,
   uDBAdapter,
-  Win32Crc,
   uCDMappingTypes,
   uPathProviders;
 
@@ -39,75 +39,12 @@ type
     ID: Integer;
   end;
 
-  TWriteLineProcedure = procedure(Sender : TObject; Line : string; aType : integer) of object;
-  TGetFilesWithoutPassProc = function(Sender : TObject) : TList of object;
-  TAddCryptFileToListProc = procedure(Sender : TObject; Rec : TPasswordRecord)  of object;
-  TGetAvaliableCryptFileList = function(Sender : TObject) : TArInteger  of object;
+  TWriteLineProcedure = procedure(Sender: TObject; Line: string; aType: Integer) of object;
+  TGetFilesWithoutPassProc = function(Sender: TObject): TList of object;
+  TAddCryptFileToListProc = procedure(Sender: TObject; Rec: TPasswordRecord) of object;
+  TGetAvaliableCryptFileList = function(Sender: TObject): TArInteger of object;
 
-  TRecreatingThInTableOptions = record
-    OwnerForm: TDBForm;
-    WriteLineProc: TWriteLineProcedure;
-    WriteLnLineProc: TWriteLineProcedure;
-    OnEndProcedure: TNotifyEvent;
-    FileName: string;
-    GetFilesWithoutPassProc: TGetFilesWithoutPassProc;
-    AddCryptFileToListProc: TAddCryptFileToListProc;
-    GetAvaliableCryptFileList: TGetAvaliableCryptFileList;
-    OnProgress: TCallBackProgressEvent;
-  end;
 
-  TImageDBOptions = class
-  public
-    Version: Integer;
-    DBJpegCompressionQuality: Byte;
-    ThSize: Integer;
-    ThSizePanelPreview: Integer;
-    ThHintSize: Integer;
-    Description: string;
-    Name: string;
-    constructor Create;
-    function Copy: TImageDBOptions;
-  end;
-
-  TPackingTableThreadOptions = record
-    OwnerForm: TDBForm;
-    FileName: string;
-    OnEnd: TNotifyEvent;
-    WriteLineProc: TWriteLineProcedure;
-  end;
-
-  TRestoreThreadOptions = record
-    OwnerForm: TDBForm;
-    FileName: string;
-    OnEnd: TNotifyEvent;
-    WriteLineProc: TWriteLineProcedure;
-  end;
-
-  TShowBadLinksThreadOptions = record
-    OwnerForm: TDBForm;
-    FileName: string;
-    OnEnd: TNotifyEvent;
-    WriteLineProc: TWriteLineProcedure;
-    WriteLnLineProc: TWriteLineProcedure;
-    OnProgress: TCallBackProgressEvent;
-  end;
-
-  TBackUpTableThreadOptions = record
-    OwnerForm: TDBForm;
-    FileName: string;
-    OnEnd: TNotifyEvent;
-    WriteLineProc: TWriteLineProcedure;
-    WriteLnLineProc: TWriteLineProcedure;
-  end;
-
-  TOptimizeDuplicatesThreadOptions = record
-    OwnerForm: TDBForm;
-    FileName: string;
-    OnEnd: TNotifyEvent;
-    WriteLineProc: TWriteLineProcedure;
-    WriteLnLineProc: TWriteLineProcedure;
-    OnProgress: TCallBackProgressEvent;
-  end;
 
 type
   TEventField = (EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
@@ -152,8 +89,6 @@ type
     Data: TObject;
   end;
 
-  TOnDBKernelEventProcedure = procedure(Sender : TDBForm; ID : integer; params : TEventFields; Value : TEventValues) of object;
-
   ///////////////CONSTANT SECTION//////////////////////
 
 const
@@ -170,15 +105,15 @@ const
 type
   TPhotoDBFile = class
   public
-    Name : string;
-    Icon : string;
-    FileName : string;
-    FileType : integer;
+    Name: string;
+    Icon: string;
+    FileName: string;
+    FileType: Integer;
   end;
 
   TPhotoDBFiles = class
   private
-    FList : TList;
+    FList: TList;
     function GetCount: Integer;
     function GetValueByIndex(Index: Integer): TPhotoDBFile;
   public
@@ -649,25 +584,6 @@ destructor TDataObject.Destroy;
 begin
   F(Data);
   inherited;
-end;
-
-{ TImageDBOptions }
-
-function TImageDBOptions.Copy: TImageDBOptions;
-begin
-  Result := TImageDBOptions.Create;
-  Result.Version := Version;
-  Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
-  Result.ThSize := ThSize;
-  Result.ThSizePanelPreview := ThSizePanelPreview;
-  Result.ThHintSize := ThHintSize;
-  Result.Description := Description;
-  Result.Name := Name;
-end;
-
-constructor TImageDBOptions.Create;
-begin
-  Version := 0;
 end;
 
 { TGeoLocation }

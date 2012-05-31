@@ -5,15 +5,11 @@ interface
 uses
   Generics.Collections,
   Windows,
-  ExplorerTypes,
-  UnitGroupsWork,
-  UnitUpdateDB,
-  dolphin_db,
-  UnitDBKernel,
   Forms,
   DBCMenu,
   Menus,
-  DB, StdCtrls,
+  DB,
+  StdCtrls,
   Controls,
   Graphics,
   Classes,
@@ -23,13 +19,18 @@ uses
   ShellAPI,
   Messages,
   SysUtils,
-  Variants,
-  UnitPasswordForm,
   Dialogs,
   JPEG,
+  UnitPasswordForm,
   Rating,
   ComCtrls,
   AppEvnts,
+  ExplorerTypes,
+  uGroupTypes,
+  UnitGroupsWork,
+  UnitUpdateDB,
+  dolphin_db,
+  UnitDBKernel,
   Effects,
   ImgList,
   DropTarget,
@@ -79,7 +80,8 @@ uses
   uRuntime,
   uSysUtils,
   uDBUtils,
-  uDBTypes, uActivationUtils,
+  uDBTypes,
+  uActivationUtils,
   uSettings,
   uAssociations,
   uDBAdapter,
@@ -738,7 +740,7 @@ begin
       FPropertyLinks := CopyLinksInfo(ItemLinks);
 
       FreeGroups(FNowGroups);
-      FNowGroups := UnitGroupsWork.EncodeGroups(DataRecord.Groups);
+      FNowGroups := uGroupTypes.EncodeGroups(DataRecord.Groups);
       FOldGroups := CopyGroups(FNowGroups);
 
       FMenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
@@ -1965,7 +1967,7 @@ begin
     end;
 
     FreeGroups(FNowGroups);
-    FNowGroups := UnitGroupsWork.EncodeGroups(FFilesInfo.CommonGroups);
+    FNowGroups := uGroupTypes.EncodeGroups(FFilesInfo.CommonGroups);
     FOldGroups := CopyGroups(FNowGroups);
 
     ItemLinks := FFilesInfo.CommonLinks;
@@ -2741,7 +2743,7 @@ begin
       Key := AnsiLowerCase(RegGroups[I].GroupName + ' ' + RegGroups[I].GroupComment + ' ' + RegGroups[I].GroupKeyWords);
       if (RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
       begin
-        UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
+        uGroupTypes.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
         LstAvaliableGroups.Items.AddObject(RegGroups[I].GroupName, TObject(I));
       end;
     end;

@@ -16,6 +16,8 @@ interface
 {$ENDIF}
 
 uses
+  uMemory,
+  uMemoryEx,
   Windows,
   Menus,
   SysUtils,
@@ -23,7 +25,6 @@ uses
   ShellAPI,
   StrUtils,
   Dialogs,
-  uMemoryEx,
   Classes,
   Controls,
   Registry,
@@ -33,7 +34,6 @@ uses
   StdCtrls,
   uScript,
   uStringUtils,
-  uMemory,
   uGOM,
   uTime,
   uTranslate,

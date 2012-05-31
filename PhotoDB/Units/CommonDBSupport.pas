@@ -11,20 +11,20 @@ uses
   Classes,
   ComObj,
   UnitINI,
-  uConstants,
-  ReplaseIconsInScript,
-  uScript,
-  UnitScripts,
-  UnitDBDeclare,
-  uLogger,
-  uTime,
   SyncObjs,
   win32crc,
-  UnitDBCommon,
-  uMemory,
-  uFileUtils,
+  uConstants,
   uRuntime,
-  uSysUtils;
+  uMemory,
+  uLogger,
+  uTime,
+  uFileUtils,
+  uSysUtils,
+
+  ReplaseIconsInScript,
+  uScript,
+
+  UnitDBCommon;
 
 const
   DB_TYPE_UNKNOWN = 0;
@@ -36,6 +36,20 @@ const
   DB_TABLE_PERSONS         = 3;
   DB_TABLE_PERSON_MAPPING  = 4;
   DB_TABLE_SETTINGS        = 5;
+
+type
+  TImageDBOptions = class
+  public
+    Version: Integer;
+    DBJpegCompressionQuality: Byte;
+    ThSize: Integer;
+    ThSizePanelPreview: Integer;
+    ThHintSize: Integer;
+    Description: string;
+    Name: string;
+    constructor Create;
+    function Copy: TImageDBOptions;
+  end;
 
 type
   TADODBConnection = class(TObject)
@@ -199,11 +213,15 @@ function TryOpenCDS(DS: TDataSet): Boolean;
 procedure ForwardOnlyQuery(DS: TDataSet);
 procedure ReadOnlyQuery(DS: TDataSet);
 function DBReadOnly: Boolean;
+function GroupsTableFileNameW(FileName: string): string;
 
 implementation
 
-uses
-  UnitGroupsWork;
+function GroupsTableFileNameW(FileName: string): string;
+begin
+  if GetDBType(FileName) = DB_TYPE_MDB then
+    Result := FileName;
+end;
 
 procedure ForwardOnlyQuery(DS: TDataSet);
 begin
@@ -1158,6 +1176,25 @@ begin
     if Attr and FILE_ATTRIBUTE_READONLY <> 0 then
       Result := True;
   end;
+end;
+
+{ TImageDBOptions }
+
+function TImageDBOptions.Copy: TImageDBOptions;
+begin
+  Result := TImageDBOptions.Create;
+  Result.Version := Version;
+  Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
+  Result.ThSize := ThSize;
+  Result.ThSizePanelPreview := ThSizePanelPreview;
+  Result.ThHintSize := ThHintSize;
+  Result.Description := Description;
+  Result.Name := Name;
+end;
+
+constructor TImageDBOptions.Create;
+begin
+  Version := 0;
 end;
 
 initialization

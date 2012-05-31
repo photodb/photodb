@@ -3,11 +3,30 @@ unit UnitThreadShowBadLinks;
 interface
 
 uses
-  Classes, uDBBaseTypes, uDBTypes, UnitLinksSupport, DB, SysUtils,
-  CommonDBSupport, UnitDBDeclare, uDBUtils, uTranslate, uDBThread, ActiveX,
+  Classes,
+  uDBBaseTypes,
+  uDBTypes,
+  UnitLinksSupport,
+  DB, SysUtils,
+  CommonDBSupport,
+  UnitDBDeclare,
+  uDBUtils,
+  uTranslate,
+  uDBThread,
+  ActiveX,
+  uDBForm,
   uFileUtils;
 
 type
+  TShowBadLinksThreadOptions = record
+    OwnerForm: TDBForm;
+    FileName: string;
+    OnEnd: TNotifyEvent;
+    WriteLineProc: TWriteLineProcedure;
+    WriteLnLineProc: TWriteLineProcedure;
+    OnProgress: TCallBackProgressEvent;
+  end;
+
   TThreadShowBadLinks = class(TDBThread)
   private
     { Private declarations }

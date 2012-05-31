@@ -3,8 +3,17 @@ unit uDBClasses;
 interface
 
 uses
-  DB, SysUtils, Classes, jpeg, uMemory, CommonDBSupport, uStringUtils, ADODB,
-  Variants, uSysUtils, uRuntime;
+  DB,
+  SysUtils,
+  Classes,
+  jpeg,
+  uMemory,
+  CommonDBSupport,
+  uStringUtils,
+  ADODB,
+  Variants,
+  uSysUtils,
+  uRuntime;
 
 type
   TParameterAction = (paNone, paGrateThan, paGrateOrEq, paLessThan, paLessOrEq, paEquals, paNotEquals);

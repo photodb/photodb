@@ -5616,7 +5616,6 @@ var
   Segment: IFoundJPEGSegment;
   SOFData: PJPEGStartOfFrameData;
   Tag: TExifTag;
-  ICCStream: TStream;
 begin
   for Tag in Sections[esDetails] do
     case Tag.ID of
@@ -5636,14 +5635,7 @@ begin
       end;
     end;
 
-  if not FIsPSDICCFormat then
-  begin
-    ICCStream := nil;
-    if (FICCData <> nil) and (FICCData.Data <> nil) then
-      ICCStream := FICCData.Data;
-  end;
-
-  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)  
+  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)
 end;
 
 procedure TExifData.DoSaveToPSD(InStream, OutStream: TStream);

@@ -40,6 +40,7 @@ uses
   uAssociations,
   uDBThread,
   uExifUtils,
+  uGroupTypes,
   UnitGroupsWork;
 
 type

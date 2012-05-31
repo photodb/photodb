@@ -407,7 +407,8 @@ uses
   uFreeImageIO in 'Units\Formats\uFreeImageIO.pas',
   uExplorerProvidersInit in 'Units\Providers\uExplorerProvidersInit.pas',
   uExifInfo in 'Units\uExifInfo.pas',
-  uFormInterfaces in 'Units\uFormInterfaces.pas';
+  uFormInterfaces in 'Units\uFormInterfaces.pas',
+  uGroupTypes in 'Units\uGroupTypes.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

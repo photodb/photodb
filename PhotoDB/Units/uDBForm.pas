@@ -9,28 +9,29 @@ uses
   Forms,
   Types,
   Classes,
-  {$IFNDEF EXTERNAL}
-  uTranslate,
-  {$ENDIF}
   Graphics,
   SyncObjs,
   Messages,
   ActiveX,
-  uVistaFuncs,
-  uMemory,
-  uGOM,
-  uImageSource,
   SysUtils,
-  uSysUtils,
   Themes,
   DwmApi,
+  Menus,
+  MultiMon,
+  uMemory,
+  uGOM,
+  uSysUtils,
+  {$IFNDEF EXTERNAL}
+  uTranslate,
+  {$ENDIF}
+  uVistaFuncs,
+  uImageSource,
   {$IFDEF PHOTODB}
   uFastLoad,
-  Menus,
   uMainMenuStyleHook,
   uThemesUtils,
   {$ENDIF}
-  MultiMon;
+  uFormInterfaces;
 
 type
   TDBForm = class(TForm)
@@ -110,6 +111,7 @@ end;
 
 destructor TDBForm.Destroy;
 begin
+  FormInterfaces.RemoveSingleInstance(Self);
   GOM.RemoveObj(Self);
   TFormCollection.Instance.UnRegisterForm(Self);
   inherited;

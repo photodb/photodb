@@ -3,18 +3,16 @@ unit UnitEditGroupsForm;
 interface
 
 uses
-  UnitGroupsWork,
   Windows,
   Messages,
   SysUtils,
+  Math,
   Classes,
   Graphics,
   Controls,
   Forms,
   JPEG,
-  UnitDBKernel,
-  Math,
-  UnitGroupsTools,
+  pngimage,
   Dialogs,
   StdCtrls,
   ComCtrls,
@@ -23,6 +21,11 @@ uses
   AppEvnts,
   CmpUnit,
   ImgList,
+  uMemory,
+  UnitDBKernel,
+  uGroupTypes,
+  UnitGroupsWork,
+  UnitGroupsTools,
   UnitDBDeclare,
   uBitmapUtils,
   uDBForm,
@@ -30,9 +33,7 @@ uses
   uVCLHelpers,
   uGraphicUtils,
   uConstants,
-  uMemory,
   uSettings,
-  pngimage,
   WatermarkedEdit,
   uThemesUtils,
   Vcl.PlatformDefaultStyleActnCtrls,
@@ -389,7 +390,7 @@ begin
     Key := AnsiLowerCase(FRegGroups[I].GroupName + ' ' + FRegGroups[I].GroupComment + ' ' + FRegGroups[I].GroupKeyWords);
     if (FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
     begin
-      UnitGroupsWork.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
+      uGroupTypes.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
       LstAvaliableGroups.Items.AddObject(FRegGroups[I].GroupName, TObject(I));
     end;
   end;

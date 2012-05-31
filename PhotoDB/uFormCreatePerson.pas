@@ -3,6 +3,7 @@ unit uFormCreatePerson;
 interface
 
 uses
+  Types,
   Windows,
   Messages,
   SysUtils,
@@ -32,6 +33,7 @@ uses
   UnitDBKernel,
   AppEvnts,
   WebLink,
+  uGroupTypes,
   UnitGroupsWork,
   ImgList,
   uConstants,
@@ -46,7 +48,6 @@ uses
   uDBClasses,
   uPathProviders,
   uDBForm,
-  Types,
   uSettings,
   Menus,
   uExplorerPersonsProvider,
@@ -54,7 +55,8 @@ uses
   uThemesUtils,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  CommonDBSupport, uBaseWinControl;
+  CommonDBSupport,
+  uBaseWinControl;
 
 type
   TFormCreatePerson = class(TThreadForm)

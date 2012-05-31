@@ -3,7 +3,12 @@ unit UnitLinksSupport;
 interface
 
 uses
-  Windows, SysUtils, Classes, StrUtils, uTranslate, UnitDBDeclare, uSysUtils,
+  Windows,
+  SysUtils,
+  Classes,
+  StrUtils,
+  uTranslate,
+  uSysUtils,
   uConstants;
 
 const
@@ -38,12 +43,9 @@ const
    LINK_TAG_VALUE_VAR_NOT_SELECT = $0004;
 
 type
-
-   TLinksInfo = array of TLinkInfo;
-
-   TArLinksInfo = array of TLinksInfo;
-
-   TSetLinkProcedure = procedure(Sender : TObject; ID : String; Info : TLinkInfo; N : integer; Action : Integer) of object;
+  TLinksInfo = array of TLinkInfo;
+  TArLinksInfo = array of TLinksInfo;
+  TSetLinkProcedure = procedure(Sender : TObject; ID : String; Info : TLinkInfo; N : integer; Action : Integer) of object;
 
 const
    LINK_PROC_ACTION_ADD    = 0;
@@ -74,7 +76,7 @@ const
  function DeCodeExtID(S: string): string;
  function CompareTwoLinks(Link1, Link2: TLinkInfo; UseValue: Boolean = False): Boolean;
 
-function LinkType(LinkTypeN : integer) : String;
+ function LinkType(LinkTypeN : integer) : String;
 
 implementation
 
