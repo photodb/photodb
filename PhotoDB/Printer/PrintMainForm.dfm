@@ -189,7 +189,6 @@ object PrintForm: TPrintForm
       TabOrder = 2
       View = elsThumbnail
       OnDblClick = LvMainDblClick
-      ExplicitHeight = 328
     end
   end
   object BottomPanel: TPanel

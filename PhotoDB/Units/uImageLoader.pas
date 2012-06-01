@@ -27,7 +27,8 @@ uses
   uBitmapUtils,
   uJpegUtils,
   uSysUtils,
-  uTranslate;
+  uTranslate,
+  uFormInterfaces;
 
 type
   TImageLoadFlag = (ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfHalfRawSize, ilfPassword, ilfAskUserPassword, ilfThrowError, ilfDontUpdateInfo);
@@ -110,9 +111,6 @@ function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Pass
 
 implementation
 
-uses
-  UnitPasswordForm;
-
 function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
   out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0): Boolean;
 var
@@ -167,7 +165,7 @@ begin
                 TThread.Synchronize(nil,
                   procedure
                   begin
-                    Password := GetImagePasswordFromUser(Info.FileName);
+                    Password := RequestPasswordForm.ForImage(Info.FileName);
                   end
                 );
 

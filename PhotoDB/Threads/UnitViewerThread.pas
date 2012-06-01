@@ -29,9 +29,7 @@ uses
   uGraphicUtils,
   uDBUtils,
   uViewerTypes,
-  uAssociations,
   RAWImage,
-  uExifUtils,
   uJpegUtils,
   uBitmapUtils,
   uSettings,
@@ -85,7 +83,6 @@ type
 implementation
 
 uses
-  UnitPasswordForm,
   SlideShow,
   uFaceDetectionThread;
 
@@ -293,7 +290,7 @@ end;
 procedure TViewerThread.GetPasswordSynch;
 begin
   if not FViewer.FullScreenNow then
-    PassWord := GetImagePasswordFromUser(FInfo.FileName);
+    PassWord := RequestPasswordForm.ForImage(FInfo.FileName);
 end;
 
 procedure TViewerThread.SetAnimatedImage;

@@ -56,13 +56,13 @@ procedure InitEnviroment(Enviroment: TScriptEnviroment);
 implementation
 
 uses
-  ExplorerTypes, UnitPasswordForm, UnitWindowsCopyFilesThread, UnitLinksSupport,
+  ExplorerTypes, UnitWindowsCopyFilesThread, UnitLinksSupport,
   CommonDBSupport, UnitInternetUpdate, UnitManageGroups,
-  UnitUpdateDB, uSearchTypes, ManagerDBUnit, Options, ImEditor,
+  UnitUpdateDB, uSearchTypes, ManagerDBUnit, ImEditor,
   uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
   UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
-  UnitSplitExportForm, UnitJPEGOptions, UnitUpdateDBObject,
+  UnitSplitExportForm, UnitUpdateDBObject,
   UnitFormCDMapper, UnitFormCDExport, uFormSteganography;
 
 procedure DoActivation;
@@ -208,8 +208,6 @@ end;
 
 procedure DoOptions;
 begin
-  if OptionsForm = nil then
-    Application.CreateForm(TOptionsForm, OptionsForm);
   OptionsForm.Show;
 end;
 
@@ -849,6 +847,26 @@ end;
 function GetProgramPath: string;
 begin
   Result := Application.ExeName;
+end;
+
+function GetImagePasswordFromUser(FileName: string): string;
+begin
+  Result := RequestPasswordForm.ForImage(FileName);
+end;
+
+procedure SetJPEGOptions;
+begin
+  JpegOptionsForm.Execute;
+end;
+
+procedure GetPhotosFromFolder(Folder: string);
+begin
+  ImportForm.FromFolder(Folder);
+end;
+
+procedure GetPhotosFromDevice(Folder: string);
+begin
+  ImportForm.FromDevice(Folder);
 end;
 
 Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);

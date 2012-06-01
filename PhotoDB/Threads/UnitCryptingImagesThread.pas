@@ -3,10 +3,28 @@ unit UnitCryptingImagesThread;
 interface
 
 uses
-  Classes, Dolphin_DB, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitCrypting, GraphicCrypt, SysUtils, CommonDBSupport, DB, uFileUtils,
-  UnitDBDeclare, uGOM, uDBBaseTypes, uDBForm, uLogger, ActiveX, uDBThread,
-  uConstants, uErrors, uShellIntegration;
+  SysUtils,
+  Classes,
+  ActiveX,
+  Forms,
+  DB,
+  Dolphin_DB,
+  UnitDBKernel,
+  UnitPropeccedFilesSupport,
+  UnitCrypting,
+  GraphicCrypt,
+  CommonDBSupport,
+  uFileUtils,
+  UnitDBDeclare,
+  uGOM,
+  uDBBaseTypes,
+  uDBForm,
+  uLogger,
+  uDBThread,
+  uConstants,
+  uErrors,
+  uShellIntegration,
+  uFormInterfaces;
 
 type
   TCryptingImagesThread = class(TDBThread)
@@ -48,7 +66,7 @@ type
 
 implementation
 
-uses ProgressActionUnit, UnitPasswordForm;
+uses ProgressActionUnit;
 
 { TCryptingImagesThread }
 
@@ -178,12 +196,12 @@ end;
 
 procedure TCryptingImagesThread.GetPasswordFromUserFile;
 begin
-  FPassword := GetImagePasswordFromUser(StrParam);
+  FPassword := RequestPasswordForm.ForImage(StrParam);
 end;
 
 procedure TCryptingImagesThread.GetPasswordFromUserBlob;
 begin
-  FPassword := GetImagePasswordFromUserBlob(FField, StrParam);
+  FPassword := RequestPasswordForm.ForBlob(FField, StrParam);
 end;
 
 procedure TCryptingImagesThread.FindPasswordToFile;

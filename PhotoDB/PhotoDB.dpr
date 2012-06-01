@@ -408,7 +408,8 @@ uses
   uExplorerProvidersInit in 'Units\Providers\uExplorerProvidersInit.pas',
   uExifInfo in 'Units\uExifInfo.pas',
   uFormInterfaces in 'Units\uFormInterfaces.pas',
-  uGroupTypes in 'Units\uGroupTypes.pas';
+  uGroupTypes in 'Units\uGroupTypes.pas',
+  uFreeImageImage in 'Units\Formats\uFreeImageImage.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -727,7 +728,7 @@ begin
       begin
         if AnsiUpperCase(ParamStr(1)) = '/GETPHOTOS' then
           if ParamStr(2) <> '' then
-            GetPhotosFromDrive(ParamStr(2)[1]);
+            ImportForm.FromDrive(ParamStr(2)[1]);
       end;
     end else if FormManager <> nil then
       FormManager.RunInBackground;

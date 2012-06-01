@@ -469,12 +469,24 @@ function ViewerForm: TViewer;
 implementation
 
 uses
-  UnitUpdateDB, PropertyForm, SlideShowFullScreen, uFormSelectPerson,
-  uManagerExplorer, FloatPanelFullScreen, UnitSizeResizerForm, uFormAddImage,
-  DX_Alpha, UnitViewerThread, ImEditor, PrintMainForm,
-  CommonDBSupport, UnitSlideShowScanDirectoryThread,
-  UnitSlideShowUpdateInfoThread, UnitCryptImageForm, uFormSteganography,
-  uFormCreatePerson, uFaceDetectionThread, uFormEditObject;
+  UnitUpdateDB,
+  PropertyForm,
+  SlideShowFullScreen,
+  uFormSelectPerson,
+  uManagerExplorer,
+  FloatPanelFullScreen,
+  uFormAddImage,
+  DX_Alpha,
+  UnitViewerThread,
+  ImEditor,
+  PrintMainForm,
+  CommonDBSupport,
+  UnitSlideShowScanDirectoryThread,
+  UnitSlideShowUpdateInfoThread,
+  UnitCryptImageForm,
+  uFormSteganography,
+  uFormCreatePerson,
+  uFaceDetectionThread, uFormEditObject;
 
 function ViewerForm: TViewer;
 begin
@@ -3198,7 +3210,7 @@ begin
     Info.Add(Item.Copy);
     Info[0].Selected := True;
 
-    RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
+    BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
     Rotate270A(FFullImage);
@@ -3221,7 +3233,7 @@ begin
     Info.Add(Item.Copy);
     Info[0].Selected := True;
 
-    RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
+    BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
 
@@ -3276,7 +3288,7 @@ begin
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
 
-    RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
+    BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
     if ZoomerOn then
       FitToWindowClick(Sender);
 
@@ -3324,7 +3336,7 @@ begin
   try
     List.Add(Item.Copy);
     List[0].Selected := True;
-    ResizeImages(Self, List);
+    BatchProcessingForm.ResizeImages(Self, List);
   finally
     F(List);
   end;

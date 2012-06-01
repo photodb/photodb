@@ -21,7 +21,6 @@ uses
   SysUtils,
   Dialogs,
   JPEG,
-  UnitPasswordForm,
   Rating,
   ComCtrls,
   AppEvnts,
@@ -400,8 +399,7 @@ uses
   UnitNewGroupForm,
   UnitFormChangeGroup,
   SelectGroupForm,
-  UnitGroupsTools,
-  Options;
+  UnitGroupsTools;
 
 {$R *.dfm}
 
@@ -637,7 +635,7 @@ begin
               begin
                 PassWord := DBkernel.FindPasswordForCryptBlobStream(WorkQuery.FieldByName('thum'));
                 if PassWord = '' then
-                  PassWord := GetImagePasswordFromUserBlob(DA.Thumb, DA.FileName);
+                  PassWord := RequestPasswordForm.ForBlob(DA.Thumb, DA.FileName);
 
                 if PassWord = '' then
                   Exit;

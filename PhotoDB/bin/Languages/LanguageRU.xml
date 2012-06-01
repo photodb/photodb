@@ -121,6 +121,10 @@
 	<translate name="Paintshop Pro images" value="Paintshop Pro изображения" />
 	<translate name="Dr. Halo images" value="Dr. Halo изображения" />
 	<translate name="Encapsulated Postscript images" value="PostScript изображения" />
+	<translate name="JPEG 2000 Images" value="JPEG 2000 Изображения" />
+	<translate name="DirectDraw Surface graphics" value="Изображения поверхностей DirectDraw" />
+	<translate name="HDR Images" value="HDR изображения" />
+	<translate name="JPEG Network Graphic" value="JPEG Network изображения" />	
   </scope>
   <scope name="JPEG">
 	<translate name="JPEG compression" value="JPEG компрессия" />

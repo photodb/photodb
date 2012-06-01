@@ -885,18 +885,13 @@ uses
   PropertyForm,
   UnitHintCeator,
   FormManegerUnit,
-  Options,
   ManagerDBUnit,
   UnitExplorerThumbnailCreatorThread,
-  UnitPasswordForm,
   UnitCryptImageForm,
   UnitFileRenamerForm,
-  UnitSizeResizerForm,
   ImEditor,
-  UnitManageGroups,
   UnitHelp,
   uMachMask,
-  uFormImportImages,
   DBScriptFunctions,
   UnitStringPromtForm,
   UnitSavingTableForm,
@@ -5377,8 +5372,6 @@ end;
 
 procedure TExplorerForm.Options1Click(Sender: TObject);
 begin
-  if OptionsForm = nil then
-    Application.CreateForm(TOptionsForm, OptionsForm);
   OptionsForm.Show;
 end;
 
@@ -6669,7 +6662,7 @@ begin
 
     Password := DBKernel.FindPasswordForCryptImageFile(FileName);
     if (Password = '') then
-      Password := GetImagePasswordFromUser(FileName);
+      Password := RequestPasswordForm.ForImage(FileName);
     if (Password = '') then
       Exit;
 
@@ -6718,11 +6711,11 @@ begin
  if FFilesInfo[PmItemPopup.Tag].ID <> 0 then
   begin
     EventInfo.Image := nil;
-    if GetImagePasswordFromUser(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
+    if RequestPasswordForm.ForImage(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
       DBKernel.DoIDEvent(Self, FFilesInfo[PmItemPopup.Tag].ID, [EventID_Param_Image], EventInfo);
   end else
   begin
-    if GetImagePasswordFromUser(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
+    if RequestPasswordForm.ForImage(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
       RefreshItemByName(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName), False);
   end;
 end;
@@ -6738,7 +6731,7 @@ begin
     Item := ElvMain.Selection.FocusedItem;
   List := GetCurrentPopUpMenuInfo(Item);
   try
-    ResizeImages(Self, List);
+    BatchProcessingForm.ResizeImages(Self, List);
   finally
     F(List);
   end;
@@ -6772,7 +6765,7 @@ begin
     Item := ElvMain.Selection.FocusedItem;
   List := GetCurrentPopUpMenuInfo(Item);
   try
-    ConvertImages(Self, List);
+    BatchProcessingForm.ConvertImages(Self, List);
   finally
     F(List);
   end;
@@ -6808,7 +6801,7 @@ var
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
-    RotateImages(Self, Info, DB_IMAGE_ROTATE_EXIF, True);
+    BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_EXIF, True);
   finally
     F(Info);
   end;
@@ -6820,7 +6813,7 @@ var
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
-    RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
+    BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
   finally
     F(Info);
   end;
@@ -6832,7 +6825,7 @@ var
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
-    RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
+    BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
   finally
     F(Info);
   end;
@@ -6844,7 +6837,7 @@ var
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
-    RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
+    BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_180, True);
   finally
     F(Info);
   end;
@@ -7179,7 +7172,7 @@ var
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
-    ExportImages(Self, Info);
+    BatchProcessingForm.ExportImages(Self, Info);
   finally
     F(Info);
   end;
@@ -7309,7 +7302,7 @@ var
   Item: TMenuItem;
 begin
   Item := (Sender as TMenuItem);
-  GetPhotosFromDrive(Char(Item.Tag));
+  ImportForm.FromDrive(Char(Item.Tag));
 end;
 
 procedure TExplorerForm.GetPhotosFromDrive1Click(Sender: TObject);
@@ -8150,9 +8143,9 @@ begin
   if Item <> nil then
   begin
     Path := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
-    GetPhotosFromFolder(Path);
+    ImportForm.FromFolder(Path);
   end else
-    GetPhotosFromFolder(GetCurrentPath);
+   ImportForm.FromFolder(GetCurrentPath);
 end;
 
 procedure TExplorerForm.WlLearnMoreLinkClick(Sender: TObject);

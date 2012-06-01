@@ -55,7 +55,6 @@ end;
 
 function TListViewForm.IsFocusedVisible: Boolean;
 var
-  I: Integer;
   R: TRect;
   Rv: TRect;
   ElvMain : TEasyListview;

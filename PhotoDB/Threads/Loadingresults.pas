@@ -3,15 +3,52 @@ unit Loadingresults;
 interface
 
 uses
-  UnitDBKernel, dolphin_db, jpeg, ComCtrls, CommCtrl, windows,
-  Classes, Math, DB, SysUtils, Controls, Graphics, Dialogs, adodb,
-  GraphicCrypt, forms, StrUtils, win32crc, EasyListview, DateUtils,
-  UnitSearchBigImagesLoaderThread, UnitDBDeclare, UnitPasswordForm,
-  UnitDBCommonGraphics, uThreadForm, uThreadEx, uLogger, uJpegUtils,
-  CommonDBSupport, uFileUtils, uTranslate, uMemory, ActiveX, uBitmapUtils,
-  uAssociatedIcons, uDBPopupMenuInfo, uConstants, uGraphicUtils,
-  uDBBaseTypes, uDBFileTypes, uRuntime, uDBGraphicTypes, uSysUtils,
-  uTime, uDBUtils, uDatabaseSearch;
+  UnitDBKernel,
+  dolphin_db,
+  jpeg,
+  ComCtrls,
+  CommCtrl,
+  windows,
+  Classes,
+  Math,
+  DB,
+  SysUtils,
+  Controls,
+  Graphics,
+  Dialogs,
+  GraphicCrypt,
+  Forms,
+  StrUtils,
+  win32crc,
+  EasyListview,
+  DateUtils,
+  UnitSearchBigImagesLoaderThread,
+  UnitDBDeclare,
+  UnitPasswordForm,
+  UnitDBCommonGraphics,
+  uThreadForm,
+  uThreadEx,
+  uLogger,
+  uJpegUtils,
+  CommonDBSupport,
+  uFileUtils,
+  uTranslate,
+  uMemory,
+  ActiveX,
+  uBitmapUtils,
+  uAssociatedIcons,
+  uDBPopupMenuInfo,
+  uConstants,
+  uGraphicUtils,
+  uDBBaseTypes,
+  uDBFileTypes,
+  uRuntime,
+  uDBGraphicTypes,
+  uSysUtils,
+  uTime,
+  uDBUtils,
+  uDatabaseSearch,
+  uFormInterfaces;
 
 type
   SearchThread = class(TThreadEx)
@@ -135,7 +172,7 @@ end;
 
 procedure SearchThread.GetPassForFile;
 begin
-  StrParam := GetImagePasswordFromUser(StrParam);
+  StrParam := RequestPasswordForm.ForImage(StrParam);
 end;
 
 procedure SearchThread.NitifyEstimateStart;

@@ -22,7 +22,6 @@ uses
   Dialogs,
   UnitDBDeclare,
   JPEG,
-  UnitJPEGOptions,
   uJpegUtils,
   GDIPlusRotate,
   UnitPropeccedFilesSupport,

@@ -11,15 +11,21 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
   Vcl.Forms,
-  uRuntime,
-  UnitDBDeclare,
-  uDBPopupMenuInfo;
+  Data.DB,
+  uRuntime
+  {$IFDEF PHOTODB}
+  ,UnitDBDeclare,
+  uDBPopupMenuInfo
+  {$ENDIF}
+  ;
 
 type
   IFormInterface = interface
     ['{24769E47-FE80-4FF7-81CC-F8E6C8AA77EC}']
     procedure Show;
   end;
+
+  {$IFDEF PHOTODB}
 
   IViewerForm = interface(IFormInterface)
     ['{951665C9-EDA5-44BD-B833-B5543B58DF04}']
@@ -62,6 +68,41 @@ type
     procedure Execute;
   end;
 
+  IOptionsForm = interface(IFormInterface)
+    ['{5B8A57BA-3FCB-489C-A849-753BDA0D1356}']
+  end;
+
+  IRequestPasswordForm = interface(IFormInterface)
+    ['{7710EB12-321A-44B1-B72A-FD238C450ACD}']
+    function ForImage(FileName: string): string;
+    function ForImageEx(FileName: string; out AskAgain: Boolean): string;
+    function ForBlob(DF: TField; FileName: string): string;
+    function ForSteganoraphyFile(FileName: string; CRC: Cardinal) : string;
+    function ForManyFiles(FileList: TStrings; CRC: Cardinal; var Skip: Boolean): string;
+  end;
+
+  IBatchProcessingForm = interface(IFormInterface)
+    ['{DEF35564-F0E4-46DD-A323-8FC6ABF19E3D}']
+    procedure ExportImages(Owner: TForm; List: TDBPopupMenuInfo);
+    procedure ResizeImages(Owner: TForm; List: TDBPopupMenuInfo);
+    procedure ConvertImages(Owner: TForm; List: TDBPopupMenuInfo);
+    procedure RotateImages(Owner: TForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
+  end;
+
+  IJpegOptionsForm = interface(IFormInterface)
+    ['{C1F4BB58-77A8-4AF0-A9FD-196470D5AD7D}']
+    procedure Execute(Section: string = '');
+  end;
+
+  IImportForm = interface(IFormInterface)
+    ['{64D665EF-5407-410D-8B4B-E18CE9F35FC3}']
+    procedure FromDevice(DeviceName: string);
+    procedure FromDrive(DriveLetter: Char);
+    procedure FromFolder(Folder: string);
+  end;
+
+  {$ENDIF}
+
 type
   TFormInterfaces = class(TObject)
   private
@@ -71,7 +112,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure RegisterFormInterface(Intf: TGUID; FormClass: TComponentClass);
-    function GetForm<T: IInterface>(): T;
+    function CreateForm<T: IInterface>(): T;
     function GetSingleForm<T: IInterface>(CreateNew: Boolean): T;
     function GetSingleFormInstance<TFormClass: TForm>(Intf: TGUID; CreateNew: Boolean): TFormClass;
     procedure RemoveSingleInstance(FormInstance: TForm);
@@ -79,10 +120,17 @@ type
 
 function FormInterfaces: TFormInterfaces;
 
+{$IFDEF PHOTODB}
 function Viewer: IViewerForm;
 function CurrentViewer: IViewerForm;
 function AboutForm: IAboutForm;
 function ActivationForm: IActivationForm;
+function OptionsForm: IOptionsForm;
+function RequestPasswordForm: IRequestPasswordForm;
+function BatchProcessingForm: IBatchProcessingForm;
+function JpegOptionsForm: IJpegOptionsForm;
+function ImportForm: IImportForm;
+{$ENDIF}
 
 implementation
 
@@ -97,6 +145,7 @@ begin
   Result := FFormInterfaces;
 end;
 
+{$IFDEF PHOTODB}
 function Viewer: IViewerForm;
 begin
   Result := FormInterfaces.GetSingleForm<IViewerForm>(True);
@@ -117,6 +166,32 @@ begin
   Result := FormInterfaces.GetSingleForm<IActivationForm>(True);
 end;
 
+function OptionsForm: IOptionsForm;
+begin
+  Result := FormInterfaces.GetSingleForm<IOptionsForm>(True);
+end;
+
+function RequestPasswordForm: IRequestPasswordForm;
+begin
+  Result := FormInterfaces.CreateForm<IRequestPasswordForm>();
+end;
+
+function BatchProcessingForm: IBatchProcessingForm;
+begin
+  Result := FormInterfaces.CreateForm<IBatchProcessingForm>();
+end;
+
+function JpegOptionsForm: IJpegOptionsForm;
+begin
+  Result := FormInterfaces.GetSingleForm<IJpegOptionsForm>(True);
+end;
+
+function ImportForm: IImportForm;
+begin
+  Result := FormInterfaces.CreateForm<IImportForm>();
+end;
+{$ENDIF}
+
 { TFormInterfaces }
 
 constructor TFormInterfaces.Create;
@@ -132,7 +207,7 @@ begin
   inherited;
 end;
 
-function TFormInterfaces.GetForm<T>: T;
+function TFormInterfaces.CreateForm<T>: T;
 var
   G: TGUID;
 begin

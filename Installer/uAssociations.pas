@@ -20,6 +20,7 @@ uses
   GifImage,
   RAWImage,
   uAnimatedJPEG,
+  uFreeImageImage,
   {$ENDIF}
   pngimage,
   uStringUtils;
@@ -41,6 +42,7 @@ const
   TCUTGraphic = nil;
   TEPSGraphic = nil;
   TAnimatedJPEG = nil;
+  TFreeImageImage = nil;
 {$IFEND}
 
 type
@@ -587,6 +589,26 @@ begin
     AddFileExtension('.jps', 'JPEG 3D Images', 17, TAnimatedJPEG);
     AddFileExtension('.mpo', 'JPEG 3D Images', 17, TAnimatedJPEG);
 
+    AddFileExtension('.jp2', 'JPEG 2000 Images', 18, TFreeImageImage);
+    AddFileExtension('.j2k', 'JPEG 2000 Images', 18, TFreeImageImage);
+    AddFileExtension('.jpf', 'JPEG 2000 Images', 18, TFreeImageImage);
+    AddFileExtension('.jpx', 'JPEG 2000 Images', 18, TFreeImageImage);
+    AddFileExtension('.jpm', 'JPEG 2000 Images', 18, TFreeImageImage);
+    AddFileExtension('.mj2', 'JPEG 2000 Images', 18, TFreeImageImage);
+
+    AddFileExtension('.dds', 'DirectDraw Surface graphics', 19, TFreeImageImage);
+
+    AddFileExtension('.exr', 'HDR Images', 20, TFreeImageImage);
+    AddFileExtension('.hdr', 'HDR Images', 20, TFreeImageImage);
+
+    AddFileExtension('.iff', 'Amiga IFF Graphic', 20, TFreeImageImage);
+
+    AddFileExtension('.jng', 'JPEG Network Graphic', 21, TFreeImageImage);
+
+   // AddFileExtension('.xbm', 'X11 Bitmap Graphic', 22, TFreeImageImage);
+    //AddFileExtension('.xpm', 'X11 Bitmap Graphic', 22, TFreeImageImage);
+
+    //AddFileExtension('.mng', 'Multiple Network Graphic', 21, TFreeImageImage);
     //AddFileExtension('.eps', 'Encapsulated Postscript images', 18, TEPSGraphic);
   finally
     FSync.Leave;

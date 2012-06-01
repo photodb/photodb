@@ -2,8 +2,17 @@ unit UnitPasswordKeeper;
 
 interface
 
-uses Windows, Classes, UnitDBKernel, win32crc, GraphicCrypt, UnitDBDeclare,
-  SyncObjs, uDBBaseTypes, uMemory;
+uses
+  Windows,
+  Classes,
+  UnitDBKernel,
+  win32crc,
+  GraphicCrypt,
+  UnitDBDeclare,
+  SyncObjs,
+  uDBBaseTypes,
+  uMemory,
+  uFormInterfaces;
 
 type
   TPasswordKeeper = class(TObject)
@@ -28,9 +37,6 @@ type
   end;
 
 implementation
-
-uses
-  UnitPasswordForm;
 
 { TPasswordKeeper }
 
@@ -242,7 +248,7 @@ begin
     if FileList.Count > 0 then
     begin
       Skip := False;
-      Password := GetImagePasswordFromUserForManyFiles(FileList, PasswordCRC, Skip);
+      Password := RequestPasswordForm.ForManyFiles(FileList, PasswordCRC, Skip);
       if Password <> '' then
       begin
         DBKernel.AddTemporaryPasswordInSession(Password);

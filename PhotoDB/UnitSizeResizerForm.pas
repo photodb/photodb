@@ -55,13 +55,14 @@ uses
   Themes,
   uThemesUtils,
   PathEditor,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 const
   Settings_ConvertForm = 'Convert settings';
 
 type
-  TFormSizeResizer = class(TThreadForm)
+  TFormSizeResizer = class(TThreadForm, IBatchProcessingForm)
     BtOk: TButton;
     BtCancel: TButton;
     BtSaveAsDefault: TButton;
@@ -130,7 +131,7 @@ type
     FDataCount: Integer;
     FProcessingParams: TProcessingParams;
     FPreviewImage: TBitmap;
-    Fowner: TDBForm;
+    FOwner: TDBForm;
     FIgnoreInput: Boolean;
     FCreatingResize: Boolean;
     FCurrentPreviewPosition: Integer;
@@ -141,6 +142,12 @@ type
     FThreadCount: Integer;
     procedure LoadLanguage;
     procedure CheckValidForm;
+    procedure GeneratePreview;
+    procedure DefaultResize;
+    procedure DefaultConvert;
+    procedure DefaultExport;
+    procedure DoDefaultRotate(RotateValue: Integer; StartImmediately: Boolean);
+    procedure SetInfo(Owner: TDBForm; List: TDBPopupMenuInfo);
   protected
     function GetFormID: string; override;
     procedure FillProcessingParams;
@@ -151,70 +158,60 @@ type
   public
     { Public declarations }
     destructor Destroy; override;
-    procedure SetInfo(Owner: TDBForm; List: TDBPopupMenuInfo);
     procedure ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing: Boolean);
-    procedure GeneratePreview;
     procedure UpdatePreview(PreviewImage: TBitmap; FileName: string; RealWidth, RealHeight: Integer);
-    procedure DefaultResize;
-    procedure DefaultConvert;
-    procedure DefaultExport;
-    procedure DefaultRotate(RotateValue : Integer; StartImmediately : Boolean);
+
+    //IBatchProcessingForm
+    procedure ExportImages(Owner: TForm; List: TDBPopupMenuInfo);
+    procedure ResizeImages(Owner: TForm; List: TDBPopupMenuInfo);
+    procedure ConvertImages(Owner: TForm; List: TDBPopupMenuInfo);
+    procedure RotateImages(Owner: TForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
   end;
 
 const
   ConvertImageID = 'ConvertImage';
 
-procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; BeginRotate : Integer; StartImmediately : Boolean);
-
 implementation
 
 uses
-  UnitJPEGOptions, uImageConvertThread, FormManegerUnit, DBCMenu;
+  uImageConvertThread,
+  FormManegerUnit,
+  DBCMenu;
 
 {$R *.dfm}
 
-procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-var
-  FormSizeResizer: TFormSizeResizer;
+procedure TFormSizeResizer.ConvertImages(Owner: TForm; List: TDBPopupMenuInfo);
 begin
-  Application.CreateForm(TFormSizeResizer, FormSizeResizer);
-  FormSizeResizer.SetInfo(Owner, List);
-  FormSizeResizer.DefaultResize;
-  FormSizeResizer.Show;
+  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
+  SetInfo(TDBForm(Owner), List);
+  DefaultConvert;
+  Show;
 end;
 
-procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-var
-  FormSizeResizer: TFormSizeResizer;
+procedure TFormSizeResizer.ExportImages(Owner: TForm; List: TDBPopupMenuInfo);
 begin
-  Application.CreateForm(TFormSizeResizer, FormSizeResizer);
-  FormSizeResizer.SetInfo(Owner, List);
-  FormSizeResizer.DefaultConvert;
-  FormSizeResizer.Show;
+  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
+  SetInfo(TDBForm(Owner), List);
+  DefaultExport;
+  Show;
 end;
 
-procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-var
-  FormSizeResizer: TFormSizeResizer;
+procedure TFormSizeResizer.ResizeImages(Owner: TForm; List: TDBPopupMenuInfo);
 begin
-  Application.CreateForm(TFormSizeResizer, FormSizeResizer);
-  FormSizeResizer.SetInfo(Owner, List);
-  FormSizeResizer.DefaultExport;
-  FormSizeResizer.Show;
+  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
+  SetInfo(TDBForm(Owner), List);
+  DefaultResize;
+  Show;
 end;
 
-procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; BeginRotate: Integer; StartImmediately : Boolean);
-var
-  FormSizeResizer: TFormSizeResizer;
+procedure TFormSizeResizer.RotateImages(Owner: TForm; List: TDBPopupMenuInfo;
+  DefaultRotate: Integer; StartImmediately: Boolean);
 begin
-  Application.CreateForm(TFormSizeResizer, FormSizeResizer);
-  FormSizeResizer.SetInfo(Owner, List);
-  FormSizeResizer.DefaultRotate(BeginRotate, StartImmediately);
+  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
+  SetInfo(TDBForm(Owner), List);
+  DoDefaultRotate(DefaultRotate, StartImmediately);
   if not StartImmediately then
-    FormSizeResizer.Show
+    Show;
 end;
 
 procedure TFormSizeResizer.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
@@ -474,7 +471,7 @@ end;
 
 procedure TFormSizeResizer.BtJPEGOptionsClick(Sender: TObject);
 begin
-  SetJPEGOptions(ConvertImageID);
+  JpegOptionsForm.Execute(ConvertImageID);
   CheckValidForm;
 end;
 
@@ -858,7 +855,7 @@ begin
   TmrPreviewTimer(Self);
 end;
 
-procedure TFormSizeResizer.DefaultRotate(RotateValue : Integer; StartImmediately : Boolean);
+procedure TFormSizeResizer.DoDefaultRotate(RotateValue: Integer; StartImmediately : Boolean);
 var
   I : Integer;
 begin
@@ -1043,5 +1040,8 @@ begin
   if DirectoryExists(Directory) then
     PeSavePath.Path := Directory;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IBatchProcessingForm, TFormSizeResizer);
 
 end.

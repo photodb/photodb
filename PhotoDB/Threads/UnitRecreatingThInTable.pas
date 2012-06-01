@@ -25,7 +25,8 @@ uses
   uFileUtils,
   uGOM,
   uDBForm,
-  uConstants;
+  uConstants,
+  uFormInterfaces;
 
 type
   TRecreatingThInTableOptions = record
@@ -76,7 +77,7 @@ implementation
 { RecreatingThInTable }
 
 uses
-  CMDUnit, UnitPasswordForm;
+  CMDUnit;
 
 procedure RecreatingThInTable.AddCryptFileCall;
 begin
@@ -358,7 +359,7 @@ end;
 
 procedure RecreatingThInTable.GetPass;
 begin
-  FStrParam := GetImagePasswordFromUserEx(FStrParam, FBoolParam);
+  FStrParam := RequestPasswordForm.ForImageEx(FStrParam, FBoolParam);
 end;
 
 function RecreatingThInTable.GetThreadID: string;

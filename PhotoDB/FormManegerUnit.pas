@@ -122,7 +122,6 @@ uses
   UnitConvertDBForm,
   UnitImportingImagesForm,
   UnitSelectDB,
-  uFormImportImages,
   UnitUpdateDBObject,
   uExifPatchThread;
 
@@ -324,7 +323,7 @@ begin
     PDManager := CreateDeviceManagerInstance;
     PDevice := PDManager.GetDeviceByID(S);
     if PDevice <> nil then
-      GetPhotosFromDevice(PDevice.Name);
+      ImportForm.FromDevice(PDevice.Name);
   end;
 end;
 

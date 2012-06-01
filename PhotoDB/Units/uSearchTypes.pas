@@ -3,7 +3,11 @@ unit uSearchTypes;
 interface
 
 uses
-  Classes, Forms, uFormListView, uMemory, UnitDBDeclare;
+  Classes,
+  Forms,
+  uFormListView,
+  uMemory,
+  UnitDBDeclare;
 
 type
   TDateRange = record
@@ -62,13 +66,13 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function NewSearch : TSearchCustomForm;
-    procedure AddSearch(Search : TSearchCustomForm);
-    procedure RemoveSearch(Search : TSearchCustomForm);
-    function IsSearch(Search : TForm) : Boolean;
-    function SearchCount : Integer;
+    function NewSearch: TSearchCustomForm;
+    procedure AddSearch(Search: TSearchCustomForm);
+    procedure RemoveSearch(Search: TSearchCustomForm);
+    function IsSearch(Search: TForm) : Boolean;
+    function SearchCount: Integer;
     property Items[Index: Integer]: TSearchCustomForm read GetValueByIndex; default;
-    function GetAnySearch : TSearchCustomForm;
+    function GetAnySearch: TSearchCustomForm;
   end;
 
 function SearchManager: TManagerSearchs;
@@ -79,7 +83,7 @@ uses
   Searching;
 
 var
-  FSearchManager : TManagerSearchs = nil;
+  FSearchManager: TManagerSearchs = nil;
 
 function SearchManager: TManagerSearchs;
 begin

@@ -3,9 +3,24 @@ unit UnitJPEGOptions;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, UnitDBKernel, uDBForm, JPEG,
-  uSettings, pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ExtCtrls,
+  ComCtrls,
+  uDBForm,
+  JPEG,
+  uJpegUtils,
+  uMemory,
+  uSettings,
+  pngimage,
+  uFormInterfaces;
 
 type
   TDBJPEGOptions = record
@@ -14,10 +29,7 @@ type
   end;
 
 type
-  TCompresJPEGToSizeCallback = procedure(CurrentSize, CompressionRate: Integer; var Break: Boolean) of object;
-
-type
-  TFormJpegOptions = class(TDBForm)
+  TFormJpegOptions = class(TDBForm, IJpegOptionsForm)
     BtOK: TButton;
     BtCancel: TButton;
     Image1: TImage;
@@ -36,129 +48,27 @@ type
     procedure CbOptimizeToSizeClick(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FSection: string;
+    procedure SetSection(Section: string);
   protected
-    function GetFormID : string; override;
+    { Protected declarations }
+    function GetFormID: string; override;
+    procedure LoadLanguage;
   public
     { Public declarations }
-    procedure LoadLanguage;
-    procedure SetSection(Section: string);
     procedure Execute(Section: string);
   end;
 
-procedure SetJPEGOptions; overload;
-procedure SetJPEGOptions(Section: string); overload;
-procedure SetJPEGGraphicSaveOptions(Section: string; Graphic: TGraphic);
-function CompresJPEGToSize(JS: TGraphic; var ToSize: Integer; Progressive: Boolean; var CompressionRate: Integer;
-  CallBack: TCompresJPEGToSizeCallback = nil): Boolean;
-
 implementation
-
-function CompresJPEGToSize(JS: TGraphic; var ToSize : Integer; Progressive : Boolean; var CompressionRate : Integer;
-  CallBack: TCompresJPEGToSizeCallback = nil) : Boolean;
-var
-  Ms: TMemoryStream;
-  Jd: TJPEGImage;
-  Max_size, Cur_size, Cur_cr, Cur_cr_inc: Integer;
-  IsBreak: Boolean;
-begin
-  Result := False;
-  Max_size := ToSize;
-  Cur_cr := 50;
-  Cur_cr_inc := 50;
-  IsBreak := False;
-  Jd := TJpegImage.Create;
-  try
-    repeat
-      Jd.Assign(Js);
-      Jd.CompressionQuality := Cur_cr;
-      Jd.ProgressiveEncoding := Progressive;
-      Jd.Compress;
-      Ms := TMemoryStream.Create;
-      try
-        Jd.SaveToStream(Ms);
-        Cur_size := Ms.Size;
-
-        if Assigned(CallBack) then
-          CallBack(Cur_size, Cur_cr, IsBreak);
-
-        if IsBreak then
-        begin
-          CompressionRate := -1;
-          ToSize := -1;
-          Exit;
-        end;
-
-        if ((Cur_size < Max_size) and (Cur_cr_inc = 1)) or (Cur_cr = 1) then
-          Break;
-
-        Cur_cr_inc := Round(Cur_cr_inc / 2);
-        if Cur_cr_inc < 1 then
-          Cur_cr_inc := 1;
-        if Cur_size < Max_size then
-        begin
-          Cur_cr := Cur_cr + Cur_cr_inc;
-        end
-        else
-          Cur_cr := Cur_cr - Cur_cr_inc;
-        if (Cur_size < Max_size) and (Cur_cr = 99) then
-          Cur_cr_inc := 2;
-
-      finally
-        Ms.Free;
-      end;
-    until False;
-  finally
-    JD.Free;
-  end;
-
-  CompressionRate := Cur_cr;
-  ToSize := Cur_size;
-  Result := True;
-end;
-
-procedure SetJPEGGraphicSaveOptions(Section : string; Graphic : TGraphic);
-var
-  OptimizeToSize : Integer;
-  Progressive : Boolean;
-  Compression : Integer;
-begin
-  if Graphic is TJPEGImage then
-  begin
-    OptimizeToSize := Settings.ReadInteger(Section, 'JPEGOptimizeSize', 100) * 1024;
-    Progressive := Settings.ReadBool(Section, 'JPEGProgressiveMode', False);
-
-    if Settings.ReadBool(Section, 'JPEGOptimizeMode', False) then
-      CompresJPEGToSize(Graphic, OptimizeToSize, Progressive, Compression)
-    else
-      Compression := Settings.ReadInteger(Section, 'JPEGCompression', 75);
-
-   (Graphic as TJPEGImage).CompressionQuality := Compression;
-   (Graphic as TJPEGImage).ProgressiveEncoding := Progressive;
-   (Graphic as TJPEGImage).Compress;
-  end;
-end;
 
 {$R *.dfm}
 
-procedure SetJPEGOptions;
-var
-  FormJpegOptions: TFormJpegOptions;
+procedure TFormJpegOptions.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Application.CreateForm(TFormJpegOptions, FormJpegOptions);
-  FormJpegOptions.Execute('');
-  FormJpegOptions.Release;
-end;
-
-procedure SetJPEGOptions(Section: string);
-var
-  FormJpegOptions: TFormJpegOptions;
-begin
-  Application.CreateForm(TFormJpegOptions, FormJpegOptions);
-  FormJpegOptions.Execute(Section);
-  FormJpegOptions.Release;
+  Action := caFree;
 end;
 
 procedure TFormJpegOptions.FormCreate(Sender: TObject);
@@ -241,5 +151,8 @@ begin
   if Key = Char(VK_RETURN) then
     BtOKClick(Sender);
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IJpegOptionsForm, TFormJpegOptions);
 
 end.

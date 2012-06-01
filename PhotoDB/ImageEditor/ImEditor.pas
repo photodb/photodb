@@ -18,6 +18,7 @@ uses
   ComCtrls,
   ExtDlgs,
   Jpeg,
+  uJpegUtils,
   GIFImage,
   Math,
   DropSource,
@@ -28,7 +29,8 @@ uses
   ImageHistoryUnit,
   RotateToolUnit,
   ResizeToolUnit,
-  Clipbrd, uTiffImage,
+  Clipbrd,
+  uTiffImage,
   EffectsToolUnit,
   RedEyeToolUnit,
   ColorToolUnit,
@@ -55,7 +57,6 @@ uses
   uScript,
   UnitScripts,
   PngImage,
-  RAWImage,
   DragDrop,
   DragDropFile,
   uVistaFuncs,
@@ -64,7 +65,6 @@ uses
   UnitDBCommonGraphics,
   uCDMappingTypes,
   uLogger,
-  UnitJPEGOptions,
   uAssociations,
   CCR.Exif,
   uEditorTypes,
@@ -84,7 +84,8 @@ uses
   Themes,
   uThemesUtils,
   uBaseWinControl,
-  uImageLoader;
+  uImageLoader,
+  uFormInterfaces;
 
 type
   TWindowEnableState = record
@@ -2320,7 +2321,7 @@ begin
             try
               Image.Assign(CurrentImage);
               if not ForseSave then
-                SetJPEGOptions('ImageEditor');
+                JpegOptionsForm.Execute('ImageEditor');
 
               SetJPEGGraphicSaveOptions('ImageEditor', Image);
               TJPEGImage(Image).Compress;

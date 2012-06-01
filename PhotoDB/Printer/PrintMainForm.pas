@@ -48,7 +48,9 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
-  uSettings, uBaseWinControl;
+  uSettings,
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
   TPrintForm = class(TDBForm)
@@ -156,8 +158,7 @@ implementation
 
 uses
   UnitGeneratorPrinterPreview,
-  PrinterProgress,
-  UnitJPEGOptions;
+  PrinterProgress;
 
 {$R *.dfm}
 
@@ -727,7 +728,7 @@ begin
       case SavePictureDialog.GetFilterIndex of
         1:
           begin
-            SetJPEGOptions;
+            JpegOptionsForm.Execute;
             if (GetExt(FileName) <> 'JPG') and (GetExt(FileName) <> 'JPEG') then
               FileName := FileName + '.jpg';
             if FileExistsSafe(FileName) then

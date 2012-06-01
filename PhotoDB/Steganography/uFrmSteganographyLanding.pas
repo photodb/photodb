@@ -3,8 +3,18 @@ unit uFrmSteganographyLanding;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, StdCtrls, uFrameWizardBase, pngimage, uStenography, UnitDBFileDialogs,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  StdCtrls,
+  uFrameWizardBase,
+  pngimage,
+  uStenography,
+  UnitDBFileDialogs,
   GraphicCrypt,
   DECUtil,
   DECCipher,
@@ -17,7 +27,8 @@ uses
   uStrongCrypt,
   uAssociations,
   jpeg,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  uFormInterfaces;
 
 type
   TFrmSteganographyLanding = class(TFrameWizardBase)
@@ -51,7 +62,9 @@ implementation
 {$R *.dfm}
 
 uses
-  UnitPasswordForm, UnitCryptImageForm, uFrmCreateJPEGSteno, uFrmCreatePNGSteno;
+  UnitCryptImageForm,
+  uFrmCreateJPEGSteno,
+  uFrmCreatePNGSteno;
 
 procedure TFrmSteganographyLanding.Execute;
 var
@@ -161,7 +174,7 @@ var
     begin
       Password := DBkernel.FindPasswordForCryptImageFile(FileName);
       if Password = '' then
-        Password := GetImagePasswordFromUser(FileName);
+        Password := RequestPasswordForm.ForImage(FileName);
 
       if Password <> '' then
         Result := DeCryptGraphicFile(FileName, Password)
@@ -188,7 +201,7 @@ var
     begin
       if Header.IsCrypted then
       begin
-        Password := GetImagePasswordFromUserStenoraphy(Header.FileName, Header.PassCRC);
+        Password := RequestPasswordForm.ForSteganoraphyFile(Header.FileName, Header.PassCRC);
         if Password = '' then
         begin
           Result := False;
@@ -306,7 +319,7 @@ begin
         begin
           Password := DBkernel.FindPasswordForCryptImageFile(FileName);
           if Password = '' then
-            Password := GetImagePasswordFromUser(FileName);
+            Password := RequestPasswordForm.ForImage(FileName);
 
           Info := TMemoryStream.Create;
           try

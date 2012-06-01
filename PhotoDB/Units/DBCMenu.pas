@@ -22,7 +22,6 @@ uses
   UnitDBKernel,
   CommonDBSupport,
   UnitCryptImageForm,
-  GraphicCrypt,
   ProgressActionUnit,
   PrintMainForm,
   ShellContextMenu,
@@ -31,7 +30,6 @@ uses
   DBScriptFunctions,
   UnitRefreshDBRecordsThread,
   EasyListview,
-  UnitCryptingImagesThread,
   UnitINI,
   UnitDBDeclare,
   uTime,
@@ -142,10 +140,8 @@ uses
   CmpUnit,
   UnitQuickGroupInfo,
   UnitCrypting,
-  UnitPasswordForm,
   ImEditor,
-  FormManegerUnit,
-  UnitSizeResizerForm;
+  FormManegerUnit;
 
 var
   DBPopupMenu: TDBPopupMenu = nil;
@@ -846,7 +842,7 @@ begin
   EventInfo.Image := nil;
   if FileExistsSafe(FInfo[FInfo.Position].FileName) then
   begin
-    if GetImagePasswordFromUser(FInfo[FInfo.Position].FileName) <> '' then
+    if RequestPasswordForm.ForImage(FInfo[FInfo.Position].FileName) <> '' then
       DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
   end else
   begin
@@ -858,7 +854,7 @@ begin
         Exit;
       SetSQL(Query, 'SELECT * from $DB$ where ID=' + IntToStr(ID));
       Query.Open;
-      if GetImagePasswordFromUserBlob(DA.Thumb, FInfo[FInfo.Position].FileName) <> '' then
+      if RequestPasswordForm.ForBlob(DA.Thumb, FInfo[FInfo.Position].FileName) <> '' then
         DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
     finally
       F(DA);
@@ -1567,7 +1563,7 @@ end;
 
 procedure TDBPopupMenu.ConvertItemPopUpMenu_(Sender: TObject);
 begin
-  ResizeImages(FOwner, FInfo);
+  BatchProcessingForm.ResizeImages(FOwner, FInfo);
 end;
 
 procedure TDBPopupMenu.UserMenuItemPopUpMenu_(Sender: TObject);

@@ -7,7 +7,6 @@ uses
   Windows,
   Messages,
   SysUtils,
-  Variants,
   Classes,
   Graphics,
   Controls,
@@ -69,10 +68,11 @@ uses
   WatermarkedEdit,
   uICCProfile,
   ShellNotify,
-  uVCLHelpers;
+  uVCLHelpers,
+  uFormInterfaces;
 
 type
-  TOptionsForm = class(TPasswordSettingsDBForm)
+  TOptionsForm = class(TPasswordSettingsDBForm, IOptionsForm)
     CancelButton: TButton;
     OkButton: TButton;
     PmExtensionStatus: TPopupActionBar;
@@ -317,15 +317,11 @@ type
     constructor Create(AOwner: TOptionsForm);
   end;
 
-var
-  OptionsForm: TOptionsForm;
-
 implementation
 
 uses
   ExplorerThreadUnit,
   uManagerExplorer,
-  UnitJPEGOptions,
   FormManegerUnit;
 
 {$R *.dfm}
@@ -555,7 +551,7 @@ end;
 
 procedure TOptionsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Release;
+  Action := caFree;
 end;
 
 procedure TOptionsForm.FormCreate(Sender: TObject);
@@ -602,7 +598,6 @@ end;
 
 procedure TOptionsForm.FormDestroy(Sender: TObject);
 begin
-  OptionsForm := nil;
   F(FThemeList);
 end;
 
@@ -1537,7 +1532,7 @@ end;
 
 procedure TOptionsForm.WlDefaultJPEGOptionsClick(Sender: TObject);
 begin
-  SetJPEGOptions;
+  JpegOptionsForm.Execute;
 end;
 
 procedure TOptionsForm.WlGetMoreStylesClick(Sender: TObject);
@@ -1816,5 +1811,8 @@ procedure TFaceDetectionClearCacheThread.HideLoadingSign;
 begin
   FOwner.LsFaceDetectionClearCache.Hide;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IOptionsForm, TOptionsForm);
 
 end.

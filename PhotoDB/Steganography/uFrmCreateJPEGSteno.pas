@@ -23,6 +23,7 @@ uses
   DBCMenu,
   uMemory,
   jpeg,
+  uJpegUtils,
   uShellIntegration,
   GraphicCrypt,
   UnitDBKernel,
@@ -43,7 +44,8 @@ uses
   uBaseWinControl,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  Themes;
+  Themes,
+  uFormInterfaces;
 
 type
   TFrmCreateJPEGSteno = class(TFrameWizardBase)
@@ -103,8 +105,6 @@ type
 implementation
 
 uses
-  UnitJPEGOptions,
-  UnitPasswordForm,
   uStenoLoadImageThread,
   uFrmSteganographyLanding;
 
@@ -187,7 +187,7 @@ begin
         J := TJpegImage.Create;
         try
           J.Assign(FBitmapImage);
-          SetJPEGOptions('JpegSteganography');
+          JpegOptionsForm.Execute('JpegSteganography');
           SetJPEGGraphicSaveOptions('JpegSteganography', J);
           J.Compress;
 
@@ -416,7 +416,7 @@ end;
 procedure TFrmCreateJPEGSteno.WblJpegOptionsClick(Sender: TObject);
 begin
   inherited;
-  SetJPEGOptions('JpegSteganography');
+  JpegOptionsForm.Execute('JpegSteganography');
 end;
 
 end.

@@ -37,7 +37,6 @@ uses
   uLogger,
   uDBDrawing,
   uFileUtils,
-  uGraphicUtils,
   Types,
   uConstants,
   uDBPopupMenuInfo,
@@ -48,14 +47,12 @@ uses
   uListViewUtils,
   uAssociations,
   uDBAdapter,
-  MPCommonObjects,
   EasyListview,
   MPCommonUtilities,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  uThemesUtils,
   RAWImage,
-  uFormInterfaces;
+  uFormInterfaces, MPCommonObjects;
 
 type
   TDBReplaceForm = class(TDBForm)
@@ -159,8 +156,7 @@ implementation
 
 uses
   Searching,
-  ExplorerUnit,
-  UnitPasswordForm;
+  ExplorerUnit;
 
 {$R *.dfm}
 
@@ -193,7 +189,7 @@ begin
       begin
         Password := DBkernel.FindPasswordForCryptBlobStream(WDA.Thumb);
         if Password = '' then
-          Password := GetImagePasswordFromUserBlob(WDA.Thumb, WDA.FileName);
+          Password := RequestPasswordForm.ForBlob(WDA.Thumb, WDA.FileName);
 
         if Password <> '' then
         begin
@@ -333,7 +329,7 @@ begin
         begin
           Password := DBkernel.FindPasswordForCryptBlobStream(DA.Thumb);
           if Password = '' then
-            Password := GetImagePasswordFromUserBlob(DA.Thumb, DA.FileName);
+            Password := RequestPasswordForm.ForBlob(DA.Thumb, DA.FileName);
 
           if Password <> '' then
           begin
@@ -483,6 +479,7 @@ begin
   if GraphicClass = nil then
     Exit;
 
+  //TODO: ImageLoader
   G := nil;
   try
     if ValidCryptGraphicFile(FileName) then

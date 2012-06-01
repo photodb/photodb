@@ -19,7 +19,8 @@ uses
   uAssociations,
   uTranslate,
   uSettings,
-  Vcl.Samples.Spin;
+  Vcl.Samples.Spin,
+  uFormInterfaces;
 
 type
   TFormShareSettings = class(TDBForm)
@@ -58,9 +59,6 @@ type
 function ShowShareSettings: Boolean;
 
 implementation
-
-uses
-  UnitJPEGOptions;
 
 {$R *.dfm}
 
@@ -223,7 +221,7 @@ end;
 
 procedure TFormShareSettings.WlJpegSettingsClick(Sender: TObject);
 begin
-  SetJPEGOptions('ShareImages');
+  JpegOptionsForm.Execute('ShareImages');
 end;
 
 end.

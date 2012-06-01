@@ -8,6 +8,7 @@ uses
   Math,
   Classes,
   uMemory,
+  uSettings,
   uBitmapUtils;
 
 type
@@ -16,6 +17,9 @@ type
     function InnerBitmap: TBitmap;
   end;
 
+type
+  TCompresJPEGToSizeCallback = procedure(CurrentSize, CompressionRate: Integer; var Break: Boolean) of object;
+
 procedure AssignJpeg(Bitmap: TBitmap; Jpeg: TJPEGImage);
 procedure JPEGScale(Graphic: TGraphic; Width, Height: Integer);
 function CalcJpegResampledSize(Jpeg: TJpegImage; Size: Integer; CompressionRate: Byte;
@@ -23,8 +27,33 @@ function CalcJpegResampledSize(Jpeg: TJpegImage; Size: Integer; CompressionRate:
 function CalcBitmapToJPEGCompressSize(Bitmap: TBitmap; CompressionRate: Byte;
   out JpegImageResampled: TJpegImage): Int64;
 procedure FreeJpegBitmap(J: TJpegImage);
+function CompresJPEGToSize(JS: TGraphic; var ToSize: Integer; Progressive: Boolean; var CompressionRate: Integer;
+  CallBack: TCompresJPEGToSizeCallback = nil): Boolean;
+procedure SetJPEGGraphicSaveOptions(Section: string; Graphic: TGraphic);
 
 implementation
+
+procedure SetJPEGGraphicSaveOptions(Section: string; Graphic: TGraphic);
+var
+  OptimizeToSize: Integer;
+  Progressive: Boolean;
+  Compression: Integer;
+begin
+  if Graphic is TJPEGImage then
+  begin
+    OptimizeToSize := Settings.ReadInteger(Section, 'JPEGOptimizeSize', 100) * 1024;
+    Progressive := Settings.ReadBool(Section, 'JPEGProgressiveMode', False);
+
+    if Settings.ReadBool(Section, 'JPEGOptimizeMode', False) then
+      CompresJPEGToSize(Graphic, OptimizeToSize, Progressive, Compression)
+    else
+      Compression := Settings.ReadInteger(Section, 'JPEGCompression', 75);
+
+   (Graphic as TJPEGImage).CompressionQuality := Compression;
+   (Graphic as TJPEGImage).ProgressiveEncoding := Progressive;
+   (Graphic as TJPEGImage).Compress;
+  end;
+end;
 
 { TJPEGX }
 
@@ -126,6 +155,69 @@ begin
   finally
     F(Bitmap);
   end;
+end;
+
+function CompresJPEGToSize(JS: TGraphic; var ToSize: Integer; Progressive: Boolean; var CompressionRate: Integer;
+  CallBack: TCompresJPEGToSizeCallback = nil): Boolean;
+var
+  Ms: TMemoryStream;
+  Jd: TJPEGImage;
+  Max_size, Cur_size, Cur_cr, Cur_cr_inc: Integer;
+  IsBreak: Boolean;
+begin
+  Result := False;
+  Max_size := ToSize;
+  Cur_cr := 50;
+  Cur_cr_inc := 50;
+  IsBreak := False;
+  Jd := TJpegImage.Create;
+  try
+    repeat
+      Jd.Assign(Js);
+      Jd.CompressionQuality := Cur_cr;
+      Jd.ProgressiveEncoding := Progressive;
+      Jd.Compress;
+      Ms := TMemoryStream.Create;
+      try
+        Jd.SaveToStream(Ms);
+        Cur_size := Ms.Size;
+
+        if Assigned(CallBack) then
+          CallBack(Cur_size, Cur_cr, IsBreak);
+
+        if IsBreak then
+        begin
+          CompressionRate := -1;
+          ToSize := -1;
+          Exit;
+        end;
+
+        if ((Cur_size < Max_size) and (Cur_cr_inc = 1)) or (Cur_cr = 1) then
+          Break;
+
+        Cur_cr_inc := Round(Cur_cr_inc / 2);
+        if Cur_cr_inc < 1 then
+          Cur_cr_inc := 1;
+        if Cur_size < Max_size then
+        begin
+          Cur_cr := Cur_cr + Cur_cr_inc;
+        end
+        else
+          Cur_cr := Cur_cr - Cur_cr_inc;
+        if (Cur_size < Max_size) and (Cur_cr = 99) then
+          Cur_cr_inc := 2;
+
+      finally
+        F(MS);
+      end;
+    until False;
+  finally
+    F(JD);
+  end;
+
+  CompressionRate := Cur_cr;
+  ToSize := Cur_size;
+  Result := True;
 end;
 
 end.

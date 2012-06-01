@@ -74,8 +74,7 @@ type
 implementation
 
 uses
-  uFormSharePhotos,
-  UnitJPEGOptions;
+  uFormSharePhotos;
 
 { TShareImagesThread }
 

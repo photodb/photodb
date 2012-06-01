@@ -128,6 +128,9 @@ begin
         Bitmap := FreeImage_LockPage(FImage, FPage);
 
         if Bitmap = nil then
+          Bitmap := FreeImage_LoadFromMemory(FIF, FHMem);
+
+        if Bitmap = nil then
           raise Exception.Create('Can''t load tiff image!');
 
         try

@@ -59,7 +59,8 @@ uses
   uTime in '..\PhotoDB\Units\uTime.pas',
   MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
   uStillImage in 'uStillImage.pas',
-  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas';
+  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas',
+  uFormInterfaces in '..\PhotoDB\Units\uFormInterfaces.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

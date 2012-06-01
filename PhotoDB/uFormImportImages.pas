@@ -209,7 +209,7 @@ type
   end;
 
 type
-  TFormImportImages = class(TThreadForm)
+  TFormImportImages = class(TThreadForm, IImportForm)
     LbImportFrom: TLabel;
     LbImportTo: TLabel;
     PeImportFromPath: TPathEditor;
@@ -293,24 +293,25 @@ type
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
+    procedure SetPath(Path: string);
+    property ImagesCount: Integer read GetImagesCount;
+    property ImagesSize: Int64 read GetImagesSize;
+    property IsDisplayingPreviews: Boolean read FIsDisplayingPreviews write FIsDisplayingPreviews;
+    property OriginalPath: string read FOriginalPath;
   public
     { Public declarations }
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
     procedure FinishScan;
-    procedure SetPath(Path: string);
     procedure AddItems(Items: TList<TScanItem>);
     procedure AddPreviews(FPacketInfos: TList<TPathItem>; FPacketImages: TBitmapImageList);
     procedure UpdatePreview(Item: TPathItem; Bitmap: TBitmap);
-    property ImagesCount: Integer read GetImagesCount;
-    property ImagesSize: Int64 read GetImagesSize;
-    property IsDisplayingPreviews: Boolean read FIsDisplayingPreviews write FIsDisplayingPreviews;
-    property OriginalPath: string read FOriginalPath;
-  end;
 
-procedure GetPhotosFromDevice(DeviceName: string);
-procedure GetPhotosFromDrive(DriveLetter: Char);
-procedure GetPhotosFromFolder(Folder: string);
+    //IImportForm
+    procedure FromDevice(DeviceName: string);
+    procedure FromDrive(DriveLetter: Char);
+    procedure FromFolder(Folder: string);
+  end;
 
 {$R PicturesImport.res}
 
@@ -323,19 +324,20 @@ uses
   FormManegerUnit,
   uFormImportPicturesSettings;
 
-procedure GetPhotosFromDevice(DeviceName: string);
+{ TBaseSelectItem }
+
+procedure TFormImportImages.FromDevice(DeviceName: string);
 begin
-  GetPhotosFromFolder(cDevicesPath + '\' + DeviceName);
+  FromFolder(cDevicesPath + '\' + DeviceName);
 end;
 
-procedure GetPhotosFromDrive(DriveLetter: Char);
+procedure TFormImportImages.FromDrive(DriveLetter: Char);
 begin
-  GetPhotosFromFolder(DriveLetter + ':\');
+  FromFolder(DriveLetter + ':\');
 end;
 
-procedure GetPhotosFromFolder(Folder: string);
+procedure TFormImportImages.FromFolder(Folder: string);
 var
-  FormImportImages: TFormImportImages;
   Imports: TList<TFormImportImages>;
   Form: TFormImportImages;
 begin
@@ -346,18 +348,14 @@ begin
       if Form.OriginalPath = Folder then
       begin
         Form.Show;
+        Close;
         Exit;
       end;
   finally
     F(Imports);
   end;
-
-  Application.CreateForm(TFormImportImages, FormImportImages);
-  FormImportImages.SetPath(Folder);
-  FormImportImages.Show;
+  SetPath(Folder);
 end;
-
-{ TBaseSelectItem }
 
 constructor TBaseSelectItem.Create(Date: TDateTime);
 begin
@@ -1670,7 +1668,7 @@ end;
 procedure TFormImportImages.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  Release;
+  Action := caFree;
 end;
 
 procedure TFormImportImages.FormCreate(Sender: TObject);
@@ -2057,6 +2055,9 @@ begin
   FSimpleLabel := WedLabel.Text;
   WedLabelExit(Sender);
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IImportForm, TFormImportImages);
 
 end.
 

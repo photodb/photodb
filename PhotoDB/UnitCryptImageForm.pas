@@ -34,7 +34,9 @@ uses
   uDBBaseTypes,
   Vcl.ActnPopup,
   uFileUtils,
-  Vcl.PlatformDefaultStyleActnCtrls, uBaseWinControl;
+  Vcl.PlatformDefaultStyleActnCtrls,
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
   TCryptImageForm = class(TPasswordSettingsDBForm)
@@ -79,8 +81,7 @@ procedure DecryptPhotos(Owner: TDBForm; Info: TDBPopupMenuInfo);
 implementation
 
 uses
-  UnitCryptingImagesThread,
-  UnitPasswordForm;
+  UnitCryptingImagesThread;
 
 {$R *.dfm}
 
@@ -97,7 +98,7 @@ begin
   Password := DBKernel.FindPasswordForCryptImageFile(Info[Info.Position].FileName);
   if Password = '' then
     if FileExistsSafe(Info[Info.Position].FileName) then
-      Password := GetImagePasswordFromUser(Info[Info.Position].FileName);
+      Password := RequestPasswordForm.ForImage(Info[Info.Position].FileName);
 
   if Password = '' then
     Exit;

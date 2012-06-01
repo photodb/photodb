@@ -3,6 +3,7 @@ unit UnitPasswordForm;
 interface
 
 uses
+  Types,
   Windows,
   Messages,
   SysUtils,
@@ -12,14 +13,17 @@ uses
   Forms,
   Dialogs,
   StdCtrls,
+  Menus,
+  Clipbrd,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  System.UITypes,
+  DB,
   UnitDBKernel,
   FormManegerUnit,
   GraphicCrypt,
-  DB,
   uConstants,
   win32crc,
-  Menus,
-  Clipbrd,
   UnitDBDeclare,
   WatermarkedEdit,
   uDBForm,
@@ -29,10 +33,7 @@ uses
   uSettings,
   uSysUtils,
   uMemory,
-  Types,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
-  System.UITypes;
+  uFormInterfaces;
 
 type
   PasswordType = Integer;
@@ -44,7 +45,7 @@ const
   PASS_TYPE_IMAGES_CRC = 3;
 
 type
-  TPassWordForm = class(TDBForm)
+  TPassWordForm = class(TDBForm, IRequestPasswordForm)
     LbTitle: TLabel;
     BtCancel: TButton;
     BtOk: TButton;
@@ -77,6 +78,7 @@ type
     procedure InfoListBoxDrawItem(Control: TWinControl; Index: Integer;
       aRect: TRect; State: TOwnerDrawState);
     procedure FormDestroy(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FFileName: string;
@@ -86,113 +88,99 @@ type
     FCRC: Cardinal;
     FOpenedList: Boolean;
     DialogType: PasswordType;
-    Skip: Boolean;
+    FSkip: Boolean;
     PassIcon: TIcon;
   protected
     function GetFormID : string; override;
+    procedure LoadFileList(FileList: TStrings);
+    procedure ReallignControlsEx;
+    property Password: string read FPassword write FPassword;
   public
     { Public declarations }
-    procedure ReallignControlsEx;
-    procedure LoadFileList(FileList: TStrings);
-    property Password: string read FPassword write FPassword;
+    function ForImage(FileName: string): string;
+    function ForImageEx(FileName: string; out AskAgain: Boolean): string;
+    function ForBlob(DF: TField; FileName: string): string;
+    function ForSteganoraphyFile(FileName: string; CRC: Cardinal) : string;
+    function ForManyFiles(FileList: TStrings; CRC: Cardinal; var Skip: Boolean): string;
   end;
 
-function GetImagePasswordFromUser(FileName: String): String;
-function GetImagePasswordFromUserBlob(DF: TField; FileName: String): String;
-function GetImagePasswordFromUserEx(FileName: String; out AskAgain: Boolean) : String;
-function GetImagePasswordFromUserStenoraphy(FileName: string; CRC: Cardinal) : String;
-function GetImagePasswordFromUserForManyFiles(FileList: TStrings; CRC: Cardinal; var Skip: Boolean): String;
 
 implementation
 
 {$R *.dfm}
 
-function GetImagePasswordFromUserForManyFiles(FileList: TStrings; CRC: Cardinal; var Skip: Boolean): string;
-var
-  PassWordForm: TPassWordForm;
+function TPassWordForm.ForImage(FileName: string): string;
 begin
-  Application.CreateForm(TPassWordForm, PassWordForm);
-  PassWordForm.FFileName := '';
-  PassWordForm.DB := nil;
-  PassWordForm.LbTitle.Caption := TA('Enter password for group of files (press "Show files" to see list) here:', 'Password');
-  PassWordForm.FCRC := CRC;
-  PassWordForm.DialogType := PASS_TYPE_IMAGES_CRC;
-  PassWordForm.UseAsk := False;
-  PassWordForm.ReallignControlsEx;
-  PassWordForm.LoadFileList(FileList);
-  PassWordForm.Skip := Skip;
-  PassWordForm.ShowModal;
-  Skip := PassWordForm.Skip;
-  Result := PassWordForm.Password;
-  PassWordForm.Release;
+  FFileName := FileName;
+  DB := nil;
+  LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
+  UseAsk := False;
+  DialogType := PASS_TYPE_IMAGE_FILE;
+  ReallignControlsEx;
+  ShowModal;
+  Result := Password;
 end;
 
-function GetImagePasswordFromUser(FileName: string): string;
-var
-  PassWordForm: TPassWordForm;
+function TPassWordForm.ForImageEx(FileName: string;
+  out AskAgain: Boolean): string;
 begin
-  Application.CreateForm(TPassWordForm, PassWordForm);
-  PassWordForm.FFileName := FileName;
-  PassWordForm.DB := nil;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
-  PassWordForm.UseAsk := False;
-  PassWordForm.DialogType := PASS_TYPE_IMAGE_FILE;
-  PassWordForm.ReallignControlsEx;
-  PassWordForm.ShowModal;
-  Result := PassWordForm.Password;
-  PassWordForm.Release;
+  FFileName := FileName;
+  DB := nil;
+  UseAsk := True;
+  DialogType := PASS_TYPE_IMAGE_FILE;
+  ReallignControlsEx;
+  LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
+  ShowModal;
+  AskAgain := not CbDoNotAskAgain.Checked;
+  Result := Password;
 end;
 
-function GetImagePasswordFromUserEx(FileName: string; out AskAgain: Boolean): string;
-var
-  PassWordForm: TPassWordForm;
+function TPassWordForm.ForBlob(DF: TField; FileName: string): string;
 begin
-  Application.CreateForm(TPassWordForm, PassWordForm);
-  PassWordForm.FFileName := FileName;
-  PassWordForm.DB := nil;
-  PassWordForm.UseAsk := True;
-  PassWordForm.DialogType := PASS_TYPE_IMAGE_FILE;
-  PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
-  PassWordForm.ShowModal;
-  AskAgain := not PassWordForm.CbDoNotAskAgain.Checked;
-  Result := PassWordForm.Password;
-  PassWordForm.Release;
+  FFileName := '';
+  DB := DF;
+  UseAsk := False;
+  DialogType := PASS_TYPE_IMAGE_BLOB;
+  ReallignControlsEx;
+  LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
+  ShowModal;
+  Result := Password;
 end;
 
-function GetImagePasswordFromUserBlob(DF: TField; FileName: string): string;
-var
-  PassWordForm: TPassWordForm;
+function TPassWordForm.ForManyFiles(FileList: TStrings; CRC: Cardinal;
+  var Skip: Boolean): string;
 begin
-  Application.CreateForm(TPassWordForm, PassWordForm);
-  PassWordForm.FFileName := '';
-  PassWordForm.DB := DF;
-  PassWordForm.UseAsk := False;
-  PassWordForm.DialogType := PASS_TYPE_IMAGE_BLOB;
-  PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
-  PassWordForm.ShowModal;
-  Result := PassWordForm.Password;
-  PassWordForm.Release;
-  PassWordForm.Free;
+  FFileName := '';
+  DB := nil;
+  LbTitle.Caption := TA('Enter password for group of files (press "Show files" to see list) here:', 'Password');
+  FCRC := CRC;
+  DialogType := PASS_TYPE_IMAGES_CRC;
+  UseAsk := False;
+  ReallignControlsEx;
+  LoadFileList(FileList);
+  FSkip := Skip;
+  ShowModal;
+  Skip := FSkip;
+  Result := Password;
 end;
 
-function GetImagePasswordFromUserStenoraphy(FileName: string; CRC: Cardinal): string;
-var
-  PassWordForm: TPassWordForm;
+function TPassWordForm.ForSteganoraphyFile(FileName: string;
+  CRC: Cardinal): string;
 begin
-  Application.CreateForm(TPassWordForm, PassWordForm);
-  PassWordForm.FFileName := FileName;
-  PassWordForm.DB := nil;
-  PassWordForm.UseAsk := False;
-  PassWordForm.FCRC := CRC;
-  PassWordForm.DialogType := PASS_TYPE_IMAGE_STENO;
-  PassWordForm.ReallignControlsEx;
-  PassWordForm.LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
-  PassWordForm.ShowModal;
-  Result := PassWordForm.Password;
-  PassWordForm.Release;
-  PassWordForm.Free;
+  FFileName := FileName;
+  DB := nil;
+  UseAsk := False;
+  FCRC := CRC;
+  DialogType := PASS_TYPE_IMAGE_STENO;
+  ReallignControlsEx;
+  LbTitle.Caption := Format(TA('Enter password to file "%s" here:', 'Password'), [Mince(FileName, 30)]);
+  ShowModal;
+  Result := Password;
+end;
+
+procedure TPassWordForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := caFree;
 end;
 
 procedure TPassWordForm.FormCreate(Sender: TObject);
@@ -396,7 +384,7 @@ end;
 procedure TPassWordForm.Skipthisfiles1Click(Sender: TObject);
 begin
   Password := '';
-  Skip := True;
+  FSkip := True;
   Close;
 end;
 
@@ -443,5 +431,8 @@ begin
   DrawText(ListBox.Canvas.Handle, PWideChar(Text), Length(Text), ARect, DT_NOPREFIX + DT_LEFT + DT_WORDBREAK);
 
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IRequestPasswordForm, TPassWordForm);
 
 end.
