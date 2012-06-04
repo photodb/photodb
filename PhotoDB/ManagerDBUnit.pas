@@ -3,9 +3,6 @@ unit ManagerDBUnit;
 interface
 
 uses
-  DBCMenu,
-  Dolphin_DB,
-  UnitDBkernel,
   Windows,
   Messages,
   Types,
@@ -37,7 +34,6 @@ uses
   Mask,
   uMemoryEx,
   GraphicCrypt,
-  UnitStringPromtForm,
   CommonDBSupport,
   GraphicsCool,
   CommCtrl,
@@ -45,6 +41,9 @@ uses
   uScript,
   UnitScripts,
   CmpUnit,
+  DBCMenu,
+  Dolphin_DB,
+  UnitDBkernel,
   uGroupTypes,
   UnitGroupsWork,
   UnitFormManagerHint,
@@ -78,7 +77,8 @@ uses
   uThemesUtils,
   Themes,
   uConfiguration,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
   TManagerDB = class(TThreadForm)
@@ -281,14 +281,12 @@ FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeStr,FieldTypeStr,FieldTypeStr,Fi
 implementation
 
 uses
-  UnitQuickGroupInfo,
   uManagerExplorer,
   Searching,
   ExportUnit,
   UnitManageGroups,
   UnitDBCleaning,
   UnitCompareDataBases,
-  UnitEditGroupsForm,
   UnitPasswordForm,
   ProgressActionUnit,
   UnitMenuDateForm,
@@ -809,7 +807,7 @@ begin
   FileName := GetFileNameWithoutExt(FBackUpFiles[PmRestoreDB.Tag]);
   Dir := IncludeTrailingBackslash(ExtractFileDir(FBackUpFiles[PmRestoreDB.Tag]));
   NewFileName := FileName;
-  if PromtString(L('New name'), L('Please, enter a new name'), NewFileName) then
+  if StringPromtForm.Query(L('New name'), L('Please, enter a new name'), NewFileName) then
   begin
     FN1 := Dir + FileName + '.db';
     FN2 := Dir + FileName + '.mb';
@@ -1538,7 +1536,7 @@ begin
   KeyWords := ItemData.KeyWords;
   G := ItemData.Groups;
   Groups := EnCodeGroups(G);
-  DBChangeGroups(Groups, KeyWords);
+  GroupsSelectForm.Execute(Groups, KeyWords);
   if (ItemData.Groups = CodeGroups(Groups)) and (KeyWords = ItemData.KeyWords) then
     Exit;
   G := CodeGroups(Groups);
@@ -1900,7 +1898,7 @@ var
   I: Integer;
 begin
   NewDBName := LbDatabases.Items[PmRestore.Tag];
-  if PromtString(L('New name'), L('Please, enter a new name for collection'), NewDBName) then
+  if StringPromtForm.Query(L('New name'), L('Please, enter a new name for collection'), NewDBName) then
   begin
     if Length(NewDBName) = 0 then
       Exit;
@@ -2037,7 +2035,7 @@ end;
 
 procedure TManagerDB.ShowGroupQuickInfo(Sender: TObject);
 begin
-  ShowGroupInfo(StringReplace(TMenuItem(Sender).Caption, '&', '', []), False, Self);
+  GroupInfoForm.Execute(Self, StringReplace(TMenuItem(Sender).Caption, '&', '', []), False);
 end;
 
 procedure TManagerDB.ElvMainData(Sender: TObject; Item: TListItem);

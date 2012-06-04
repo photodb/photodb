@@ -12,12 +12,14 @@ uses
   Vcl.Graphics,
   Vcl.Forms,
   Data.DB,
-  uRuntime
+  uRuntime,
   {$IFDEF PHOTODB}
-  ,UnitDBDeclare,
-  uDBPopupMenuInfo
+  UnitDBDeclare,
+  uDBPopupMenuInfo,
+  uGroupTypes,
   {$ENDIF}
-  ;
+  Vcl.Imaging.Jpeg,
+  uDBForm;
 
 type
   IFormInterface = interface
@@ -83,10 +85,10 @@ type
 
   IBatchProcessingForm = interface(IFormInterface)
     ['{DEF35564-F0E4-46DD-A323-8FC6ABF19E3D}']
-    procedure ExportImages(Owner: TForm; List: TDBPopupMenuInfo);
-    procedure ResizeImages(Owner: TForm; List: TDBPopupMenuInfo);
-    procedure ConvertImages(Owner: TForm; List: TDBPopupMenuInfo);
-    procedure RotateImages(Owner: TForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
+    procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+    procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+    procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+    procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
   end;
 
   IJpegOptionsForm = interface(IFormInterface)
@@ -99,6 +101,48 @@ type
     procedure FromDevice(DeviceName: string);
     procedure FromDrive(DriveLetter: Char);
     procedure FromFolder(Folder: string);
+  end;
+
+  IStringPromtForm = interface(IFormInterface)
+    ['{190CD270-05BA-45D6-9013-079177BCC2D3}']
+    function Query(Caption, Text: String; var UserString: string): Boolean;
+  end;
+
+  IEncryptForm = interface(IFormInterface)
+    ['{FB0EA46F-E184-4E16-9F8A-0B4300ED1CFD}']
+    function QueryPasswordForFile(FileName: string): TEncryptImageOptions;
+    procedure Encrypt(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
+    procedure Decrypt(Owner: TDBForm; Info: TDBPopupMenuInfo);
+  end;
+
+  ISteganographyForm = interface(IFormInterface)
+    ['{617ABA0A-1313-4319-9F20-7C75737D49FE}']
+    procedure HideData(InitialFileName: string);
+    procedure ExtractData(InitialFileName: string);
+  end;
+
+  IShareForm = interface(IFormInterface)
+    ['{2DF99576-6806-4735-90C9-434F2248B1A9}']
+    procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
+  end;
+
+  IGroupsSelectForm = interface(IFormInterface)
+    ['{541139AB-E20A-41AA-A15A-A063A65C1328}']
+    procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True); overload;
+    procedure Execute(var Groups: string; var KeyWords: string; CanNew: Boolean = True); overload;
+  end;
+
+  IGroupCreateForm = interface(IFormInterface)
+    ['{9F17471D-49EC-42B4-95B4-D09526D4B0AE}']
+    procedure CreateGroup;
+    procedure CreateFixedGroup(GroupName, GroupCode: string);
+    procedure CreateGroupByCodeAndImage(GroupCode: string; Image: TJpegImage; out Created: Boolean; out GroupName: string);
+  end;
+
+  IGroupInfoForm = interface(IFormInterface)
+    ['{F590F498-C6BB-4FB1-8571-5B9D21A63A6B}']
+    procedure Execute(AOwner: TForm; Group: TGroup; CloseOwner: Boolean); overload;
+    procedure Execute(AOwner: TForm; Group: string; CloseOwner: Boolean); overload;
   end;
 
   {$ENDIF}
@@ -130,6 +174,14 @@ function RequestPasswordForm: IRequestPasswordForm;
 function BatchProcessingForm: IBatchProcessingForm;
 function JpegOptionsForm: IJpegOptionsForm;
 function ImportForm: IImportForm;
+function StringPromtForm: IStringPromtForm;
+function EncryptForm: IEncryptForm;
+function SteganographyForm: ISteganographyForm;
+function ShareForm: IShareForm;
+function GroupsSelectForm: IGroupsSelectForm;
+function GroupInfoForm: IGroupInfoForm;
+function GroupCreateForm: IGroupCreateForm;
+
 {$ENDIF}
 
 implementation
@@ -190,6 +242,42 @@ function ImportForm: IImportForm;
 begin
   Result := FormInterfaces.CreateForm<IImportForm>();
 end;
+
+function StringPromtForm: IStringPromtForm;
+begin
+  Result := FormInterfaces.CreateForm<IStringPromtForm>();
+end;
+
+function EncryptForm: IEncryptForm;
+begin
+  Result := FormInterfaces.CreateForm<IEncryptForm>();
+end;
+
+function SteganographyForm: ISteganographyForm;
+begin
+  Result := FormInterfaces.CreateForm<ISteganographyForm>();
+end;
+
+function ShareForm: IShareForm;
+begin
+  Result := FormInterfaces.CreateForm<IShareForm>();
+end;
+
+function GroupsSelectForm: IGroupsSelectForm;
+begin
+  Result := FormInterfaces.CreateForm<IGroupsSelectForm>();
+end;
+
+function GroupInfoForm: IGroupInfoForm;
+begin
+  Result := FormInterfaces.CreateForm<IGroupInfoForm>();
+end;
+
+function GroupCreateForm: IGroupCreateForm;
+begin
+  Result := FormInterfaces.CreateForm<IGroupCreateForm>();
+end;
+
 {$ENDIF}
 
 { TFormInterfaces }
@@ -210,9 +298,12 @@ end;
 function TFormInterfaces.CreateForm<T>: T;
 var
   G: TGUID;
+  F: TForm;
 begin
   G := GetTypeData(TypeInfo(T))^.Guid;
-  Application.CreateForm(FFormInterfaces[G], Result);
+  Application.CreateForm(FFormInterfaces[G], F);
+
+  F.GetInterface(G, Result);
 end;
 
 function TFormInterfaces.GetSingleFormInstance<TFormClass>(Intf: TGUID; CreateNew: Boolean): TFormClass;

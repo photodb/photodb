@@ -311,7 +311,6 @@ begin
     RemoveGroupFromGroups(Groups, GroupsToRemove[I]);
 end;
 
-
 function GetCommonGroups(GroupsList: TStringList): string;
 var
   I: Integer;

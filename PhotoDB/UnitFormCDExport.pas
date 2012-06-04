@@ -40,7 +40,9 @@ uses
   LoadingSign,
   pngimage,
   Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup;
+  Vcl.ActnPopup,
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
   TFormCDExport = class(TDBForm)
@@ -128,8 +130,9 @@ procedure DoCDExport;
 implementation
 
 uses
-  FormManegerUnit, UnitStringPromtForm,
-  UnitCDExportThread, uManagerExplorer;
+  FormManegerUnit,
+  UnitCDExportThread,
+  uManagerExplorer;
 
 {$R *.dfm}
 
@@ -362,7 +365,7 @@ var
   DirectoryName: string;
 begin
   DirectoryName := L('New folder');
-  if PromtString(L('Create directory'), L('Enter a name for the new directory'), DirectoryName) then
+  if StringPromtForm.Query(L('Create directory'), L('Enter a name for the new directory'), DirectoryName) then
   begin
     Mapping.CreateDirectory(DirectoryName);
     DrawCurrentDirectory(CDListView);

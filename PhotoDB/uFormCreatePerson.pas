@@ -56,7 +56,8 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   CommonDBSupport,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
   TFormCreatePerson = class(TThreadForm)
@@ -172,8 +173,6 @@ implementation
 
 uses
   UnitUpdateDBObject,
-  UnitEditGroupsForm,
-  UnitQuickGroupInfo,
   ImEditor,
   uFormPersonSuggest;
 
@@ -680,7 +679,7 @@ var
   KeyWords: string;
 begin
   CloseSuggestForm;
-  DBChangeGroups(FRelatedGroups, KeyWords, True);
+  GroupsSelectForm.Execute(FRelatedGroups, KeyWords, True);
 end;
 
 procedure TFormCreatePerson.WlPersonNameStatusClick(Sender: TObject);
@@ -767,10 +766,10 @@ begin
   WL := TWebLink(Sender);
   if WL.Tag > -1 then
   begin
-    ShowGroupInfo(WL.Text, False, nil);
+    GroupInfoForm.Execute(nil, WL.Text, False);
   end else
   begin
-    DBChangeGroups(FRelatedGroups, KeyWords);
+    GroupsSelectForm.Execute(FRelatedGroups, KeyWords);
     PostMessage(Handle, FReloadGroupsMessage, 0, 0);
   end;
 end;

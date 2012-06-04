@@ -786,10 +786,6 @@ object ExplorerForm: TExplorerForm
       object TbInfo: TTabSheet
         Caption = 'Info'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
           132
           602)

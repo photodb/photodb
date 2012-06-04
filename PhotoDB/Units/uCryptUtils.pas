@@ -38,11 +38,12 @@ type
   TPasswordSettingsDBForm = class(TDBForm)
   private
     FMethodChanger: TPasswordMethodChanger;
+  protected
+    function GetPasswordSettingsPopupMenu: TPopupMenu; virtual; abstract;
+    function GetPaswordLink: TWebLink; virtual; abstract;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetPasswordSettingsPopupMenu: TPopupMenu; virtual; abstract;
-    function GetPaswordLink: TWebLink; virtual; abstract;
   end;
 
 implementation

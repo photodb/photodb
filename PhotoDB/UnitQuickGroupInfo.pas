@@ -3,9 +3,6 @@ unit UnitQuickGroupInfo;
 interface
 
 uses
-  uGroupTypes,
-  UnitGroupsWork,
-  Dolphin_DB,
   Windows,
   Messages,
   SysUtils,
@@ -13,32 +10,33 @@ uses
   Graphics,
   Controls,
   Forms,
-  uVistaFuncs,
   ImgList,
   Menus,
   StdCtrls,
+  ExtCtrls,
   Math,
   ComCtrls,
-  jpeg,
-  ExtCtrls,
-  Dialogs,
-  uBitmapUtils,
-  uDBForm,
-  uMemory,
-  uShellIntegration,
-  uConstants,
   WebLinkList,
   WebLink,
   AppEvnts,
-  uMemoryEx,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
+  jpeg,
+  uMemory,
+  uMemoryEx,
+  uConstants,
+  uVistaFuncs,
+  uGroupTypes,
+  UnitGroupsWork,
+  uBitmapUtils,
+  uDBForm,
+  uShellIntegration,
   uThemesUtils,
-  uVCLHelpers
-  ;
+  uVCLHelpers,
+  uFormInterfaces;
 
 type
-  TFormQuickGroupInfo = class(TDBForm)
+  TFormQuickGroupInfo = class(TDBForm, IGroupInfoForm)
     GroupImage: TImage;
     GroupNameEdit: TEdit;
     CommentMemo: TMemo;
@@ -71,6 +69,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FGroup: TGroup;
@@ -79,64 +78,38 @@ type
     FNewRelatedGroups: string;
     procedure GroupClick(Sender: TObject);
     procedure FillImageList;
+    procedure LoadLanguage;
+    procedure ReloadGroups;
   protected
     function GetFormID: string; override;
   public
     { Public declarations }
-    procedure Execute(Group: TGroup; CloseOwner: Boolean; Owner_: TForm);
-    procedure LoadLanguage;
-    procedure ReloadGroups;
+    procedure Execute(AOwner: TForm; Group: TGroup; CloseOwner: Boolean); overload;
+    procedure Execute(AOwner: TForm; GroupName: string; CloseOwner: Boolean); overload;
   end;
 
-procedure ShowGroupInfo(Group: TGroup; CloseOwner: Boolean; Owner: TForm); overload;
-procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm); overload;
+{procedure ShowGroupInfo(Group: TGroup; CloseOwner: Boolean; Owner: TForm); overload;
+procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm); overload;  }
 
 implementation
 
 {$R *.dfm}
 
 uses
-  UnitDBKernel, UnitFormChangeGroup, UnitManageGroups, uManagerExplorer;
+  UnitFormChangeGroup,
+  UnitManageGroups,
+  uManagerExplorer;
 
-procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm);
+procedure TFormQuickGroupInfo.Execute(AOwner: TForm; GroupName: string;
+  CloseOwner: Boolean);
 var
-  FormQuickGroupInfo: TFormQuickGroupInfo;
   Group: TGroup;
 begin
-  Group.GroupCode := FindGroupCodeByGroupName(GrouName);
-  Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
-  try
-    FormQuickGroupInfo.Execute(Group, CloseOwner, Owner);
-  finally
-    R(FormQuickGroupInfo);
-  end;
+  Group.GroupCode := FindGroupCodeByGroupName(GroupName);
+  Execute(AOwner, Group, CloseOwner);
 end;
 
-procedure ShowGroupInfo(Group: TGroup; CloseOwner: Boolean; Owner: TForm);
-var
-  FormQuickGroupInfo: TFormQuickGroupInfo;
-begin
-  Application.CreateForm(TFormQuickGroupInfo, FormQuickGroupInfo);
-  try
-    FormQuickGroupInfo.Execute(Group, CloseOwner, Owner);
-  finally
-    R(FormQuickGroupInfo);
-  end;
-end;
-
-procedure TFormQuickGroupInfo.ApplicationEvents1Message(var Msg: tagMSG;
-  var Handled: Boolean);
-begin
-  if (Msg.message = WM_MOUSEWHEEL) then
-    WllGroups.PerformMouseWheel(Msg.wParam, Handled);
-end;
-
-procedure TFormQuickGroupInfo.BtnOkClick(Sender: TObject);
-begin
-  Close;
-end;
-
-procedure TFormQuickGroupInfo.Execute(Group: TGroup; CloseOwner: Boolean; Owner_: TForm);
+procedure TFormQuickGroupInfo.Execute(AOwner: TForm; Group: TGroup; CloseOwner: Boolean);
 const
   Otstup = 3;
   Otstupa = 2;
@@ -146,7 +119,7 @@ var
   TempSysTime: TSystemTime;
 begin
   FCloseOwner := CloseOwner;
-  FOwner := Owner_;
+  FOwner := AOwner;
   FGroup := GetGroupByGroupCode(Group.GroupCode, True);
   try
     if FGroup.GroupName = '' then
@@ -204,6 +177,24 @@ begin
   end;
 end;
 
+procedure TFormQuickGroupInfo.ApplicationEvents1Message(var Msg: tagMSG;
+  var Handled: Boolean);
+begin
+  if (Msg.message = WM_MOUSEWHEEL) then
+    WllGroups.PerformMouseWheel(Msg.wParam, Handled);
+end;
+
+procedure TFormQuickGroupInfo.BtnOkClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TFormQuickGroupInfo.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Action := caFree;
+end;
+
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);
 begin
   Loadlanguage;
@@ -243,7 +234,7 @@ end;
 
 procedure TFormQuickGroupInfo.GroupClick(Sender: TObject);
 begin
-  ShowGroupInfo(TWebLink(Sender).Text, False, nil);
+  GroupInfoForm.Execute(nil, TWebLink(Sender).Text, False);
 end;
 
 procedure TFormQuickGroupInfo.LoadLanguage;
@@ -357,5 +348,8 @@ begin
   if Key = VK_ESCAPE then
     Close;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IGroupInfoForm, TFormQuickGroupInfo);
 
 end.

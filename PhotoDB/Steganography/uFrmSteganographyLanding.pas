@@ -62,7 +62,6 @@ implementation
 {$R *.dfm}
 
 uses
-  UnitCryptImageForm,
   uFrmCreateJPEGSteno,
   uFrmCreatePNGSteno;
 

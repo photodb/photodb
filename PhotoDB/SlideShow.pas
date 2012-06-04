@@ -483,8 +483,6 @@ uses
   CommonDBSupport,
   UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread,
-  UnitCryptImageForm,
-  uFormSteganography,
   uFormCreatePerson,
   uFaceDetectionThread, uFormEditObject;
 
@@ -2442,7 +2440,7 @@ end;
 
 procedure TViewer.AddHiddenInfo1Click(Sender: TObject);
 begin
-  HideDataInImage(Item.FileName);
+  SteganographyForm.HideData(Item.FileName);
 end;
 
 procedure TViewer.AllFolder1Click(Sender: TObject);
@@ -2482,7 +2480,7 @@ end;
 
 procedure TViewer.ExtractHiddenInfo1Click(Sender: TObject);
 begin
-  ExtractDataFromImage(Item.FileName);
+  SteganographyForm.ExtractData(Item.FileName);
 end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -4156,10 +4154,10 @@ begin
     Info[0].Selected := True;
     Item.Encrypted := ValidCryptGraphicFile(Item.FileName);
     if not Item.Encrypted then
-      EncryptPhohos(Self, L('photo'), Info)
+      EncryptForm.Encrypt(Self, L('photo'), Info)
     else if ID_OK = MessageBoxDB(Handle, L('Do you really want to decrypt this file?'), L('Decrypt confirmation'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-      DecryptPhotos(Self, Info);
+      EncryptForm.Decrypt(Self, Info);
   finally
     F(Info);
   end;

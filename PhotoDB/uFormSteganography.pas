@@ -21,10 +21,11 @@ uses
   Themes,
   LoadingSign,
   uVCLHelpers,
-  uBaseWinControl;
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
-  TFormSteganography = class(TDBForm)
+  TFormSteganography = class(TDBForm, ISteganographyForm)
     LbStepInfo: TLabel;
     Bevel1: TBevel;
     BtnNext: TButton;
@@ -55,31 +56,12 @@ type
     procedure ExtractData(InitialFileName: string);
   end;
 
-procedure HideDataInImage(InitialFileName: string);
-procedure ExtractDataFromImage(InitialFileName: string);
-
 implementation
 
 uses
   uFrmSteganographyLanding;
 
 {$R *.dfm}
-
-procedure HideDataInImage(InitialFileName: string);
-var
-  FormSteganography: TFormSteganography;
-begin
-  Application.CreateForm(TFormSteganography, FormSteganography);
-  FormSteganography.HideData(InitialFileName);
-end;
-
-procedure ExtractDataFromImage(InitialFileName: string);
-var
-  FormSteganography: TFormSteganography;
-begin
-  Application.CreateForm(TFormSteganography, FormSteganography);
-  FormSteganography.ExtractData(InitialFileName);
-end;
 
 { TFrmSteganography }
 
@@ -193,5 +175,8 @@ begin
   if FWizard.WizardDone then
     Close;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ISteganographyForm, TFormSteganography);
 
 end.

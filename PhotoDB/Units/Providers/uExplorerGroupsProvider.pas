@@ -5,20 +5,21 @@ interface
 uses
   Windows,
   Graphics,
+  SysUtils,
+  StrUtils,
+  uConstants,
+  uMemory,
   uExplorerPathProvider,
   uPathProviders,
   uGroupTypes,
   UnitGroupsWork,
   uBitmapUtils,
   UnitDBDeclare,
-  uConstants,
   UnitDBKernel,
-  StrUtils,
   uShellIntegration,
-  SysUtils,
   uDBForm,
+  uFormInterfaces,
   uExplorerMyComputerProvider,
-  uMemory,
   uTranslate,
   uShellIcons,
   uStringUtils,
@@ -75,7 +76,6 @@ type
 implementation
 
 uses
-  UnitQuickGroupInfo,
   UnitGroupsTools;
 
 { TGroupProvider }
@@ -308,7 +308,7 @@ begin
   Result := False;
   if Items.Count = 0 then
     Exit;
-  ShowGroupInfo(TGroupItem(Items[0]).GroupName, False, nil);
+  GroupInfoForm.Execute(nil, TGroupItem(Items[0]).GroupName, False);
   Result := True;
 end;
 

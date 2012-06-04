@@ -41,8 +41,8 @@ uses
   uPathProviders,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  uThemesUtils
-  ;
+  uThemesUtils,
+  uFormInterfaces;
 
 type
   TFormChangeGroup = class(TDBForm)
@@ -97,7 +97,7 @@ procedure DBChangeGroup(Group: TGroup);
 implementation
 
 uses
-  UnitDBKernel, UnitQuickGroupInfo, UnitEditGroupsForm;
+  UnitDBKernel;
 
 {$R *.dfm}
 
@@ -302,10 +302,10 @@ begin
   WL := TWebLink(Sender);
   if WL.Tag > -1 then
   begin
-    ShowGroupInfo(WL.Text, False, nil);
+    GroupInfoForm.Execute(Self, WL.Text, False);
   end else
   begin
-    DBChangeGroups(FNewRelatedGroups, KeyWords, False);
+    GroupsSelectForm.Execute(FNewRelatedGroups, KeyWords, False);
     PostMessage(Handle, FReloadGroupsMessage, 0, 0);
   end;
 end;
@@ -346,7 +346,7 @@ procedure TFormChangeGroup.WllGroupsDblClick(Sender: TObject);
 var
   KeyWords: string;
 begin
-  DBChangeGroups(FNewRelatedGroups, KeyWords);
+  GroupsSelectForm.Execute(FNewRelatedGroups, KeyWords);
 end;
 
 procedure TFormChangeGroup.ImgMainClick(Sender: TObject);

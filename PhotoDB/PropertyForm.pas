@@ -387,16 +387,13 @@ var
 implementation
 
 uses
-  UnitQuickGroupInfo,
   uSearchTypes,
   UnitHintCeator,
-  UnitEditGroupsForm,
   UnitManageGroups,
   CmpUnit,
   UnitEditLinkForm,
   UnitHelp,
   uManagerExplorer,
-  UnitNewGroupForm,
   UnitFormChangeGroup,
   SelectGroupForm,
   UnitGroupsTools;
@@ -2663,7 +2660,7 @@ end;
 
 procedure TPropertiesForm.BtnNewGroupClick(Sender: TObject);
 begin
-  CreateNewGroupDialog;
+  GroupCreateForm.CreateGroup;
 end;
 
 procedure TPropertiesForm.RecreateGroupsList;
@@ -2884,7 +2881,7 @@ begin
     if (Sender as TListBox).Selected[I] then
     begin
       Group := GetGroupByGroupCode(FNowGroups[I].GroupCode, False);
-      ShowGroupInfo(Group, False, nil);
+      GroupInfoForm.Execute(nil, Group, False);
       Break;
     end;
 end;
@@ -3027,7 +3024,7 @@ end;
 
 procedure TPropertiesForm.CreateGroup1Click(Sender: TObject);
 begin
-  CreateNewGroupDialogA(FNowGroups[PopupMenuGroups.Tag].GroupName, FNowGroups[PopupMenuGroups.Tag].GroupCode);
+  GroupCreateForm.CreateFixedGroup(FNowGroups[PopupMenuGroups.Tag].GroupName, FNowGroups[PopupMenuGroups.Tag].GroupCode);
 end;
 
 procedure TPropertiesForm.ChangeGroup1Click(Sender: TObject);
@@ -3073,7 +3070,7 @@ end;
 
 procedure TPropertiesForm.QuickInfo1Click(Sender: TObject);
 begin
-  ShowGroupInfo(FNowGroups[PopupMenuGroups.Tag], False, nil);
+  GroupInfoForm.Execute(nil, FNowGroups[PopupMenuGroups.Tag], False);
 end;
 
 procedure TPropertiesForm.PopupMenuGroupsPopup(Sender: TObject);

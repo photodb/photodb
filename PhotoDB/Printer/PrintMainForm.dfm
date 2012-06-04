@@ -24,7 +24,6 @@ object PrintForm: TPrintForm
     Height = 602
     Align = alLeft
     TabOrder = 0
-    ExplicitHeight = 527
     DesignSize = (
       177
       602)
@@ -70,7 +69,6 @@ object PrintForm: TPrintForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitTop = 422
       object Label4: TLabel
         Left = 54
         Top = 57
@@ -198,7 +196,6 @@ object PrintForm: TPrintForm
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 527
     object OkButtonPanel: TPanel
       Left = 568
       Top = 1
@@ -276,7 +273,6 @@ object PrintForm: TPrintForm
         Shape.Pen.Color = clRed
         Shape.Pen.Width = 2
         Align = alClient
-        ExplicitHeight = 103
       end
     end
     object ZoomInLink: TWebLink
@@ -546,8 +542,6 @@ object PrintForm: TPrintForm
     Align = alClient
     PopupMenu = PmCopyToFile
     OnResize = FastScrollingImage1Resize
-    ExplicitWidth = 447
-    ExplicitHeight = 527
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -561,7 +555,6 @@ object PrintForm: TPrintForm
       item
         Width = 150
       end>
-    ExplicitTop = 568
   end
   object StHintText: TStaticText
     Left = 248

@@ -161,7 +161,6 @@ type
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
-    procedure Execute(FileList: TDBPopupMenuInfo);
     property ItemBlock[Index: TDBPopupMenuInfoRecord]: TBox read GetItemBlockByData;
   public
     { Public declarations }
@@ -176,14 +175,12 @@ type
     procedure EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);
     procedure ReloadAlbums;
     procedure HideAlbumCreation;
+    procedure Execute(Owner: TDBForm; FileList: TDBPopupMenuInfo);
   end;
 
 const
   CONTROL_ITEM_UPLOADING_STATE = 1;
   CONTROL_ITEM_UPLOADING_INFO = 2;
-
-procedure SharePictures(Owner: TDBForm; Info: TDBPopupMenuInfo);
-function CanShareVideo(FileName: string): Boolean;
 
 implementation
 
@@ -198,33 +195,6 @@ uses
 function AlbumCacheDirectory: string;
 begin
    Result := GetAppDataDirectory + ShareAlbumCacheDirectory
-end;
-
-function CanShareVideo(FileName: string): Boolean;
-var
-  Ext: string;
-begin
-  Ext := AnsiLowerCase(ExtractFileExt(FileName));
-  Result := False;
-  Result := Result or (Ext = '.3gp2');
-  Result := Result or (Ext = '.3gpp');
-  Result := Result or (Ext = '.3gp');
-  Result := Result or (Ext = '.3g2');
-  Result := Result or (Ext = '.avi');
-  Result := Result or (Ext = '.mov');
-  Result := Result or (Ext = '.mp4');
-  Result := Result or (Ext = '.mpeg');
-  Result := Result or (Ext = '.mpeg4');
-  Result := Result or (Ext = '.asf');
-  Result := Result or (Ext = '.wmv');
-end;
-
-procedure SharePictures(Owner: TDBForm; Info: TDBPopupMenuInfo);
-var
-  FormSharePhotos: TFormSharePhotos;
-begin
-  FormSharePhotos := TFormSharePhotos.Create(nil);
-  FormSharePhotos.Execute(Info);
 end;
 
 procedure TFormSharePhotos.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
@@ -320,7 +290,7 @@ begin
   WlChangeUser.Enabled := Value;
 end;
 
-procedure TFormSharePhotos.Execute(FileList: TDBPopupMenuInfo);
+procedure TFormSharePhotos.Execute(Owner: TDBForm; FileList: TDBPopupMenuInfo);
 var
   I: Integer;
   HasEncryptedFiles: Boolean;

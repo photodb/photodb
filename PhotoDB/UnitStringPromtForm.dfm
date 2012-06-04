@@ -16,6 +16,7 @@ object FormStringPromt: TFormStringPromt
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   DesignSize = (
     255

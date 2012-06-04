@@ -38,7 +38,8 @@ uses
   uTime,
   uLogger,
   uDBShellUtils,
-  uRuntime;
+  uRuntime,
+  uFormInterfaces;
 
 type
   TSaveQueryThread = class(TThreadEx)
@@ -75,7 +76,7 @@ type
 
 implementation
 
-uses UnitSavingTableForm, UnitStringPromtForm;
+uses UnitSavingTableForm;
 
 { TSaveQueryThread }
 
@@ -307,7 +308,7 @@ var
   S: string;
 begin
   S := SaveToDBName;
-  if PromtString(L('Collection name'), L('Please enter name for new collection') + ':', S) then
+  if StringPromtForm.Query(L('Collection name'), L('Please enter name for new collection') + ':', S) then
     if S <> '' then
       SaveToDBName := S;
 end;

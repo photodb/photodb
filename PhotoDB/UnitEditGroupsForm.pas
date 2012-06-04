@@ -38,10 +38,11 @@ uses
   uThemesUtils,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  uMachMask;
+  uMachMask,
+  uFormInterfaces;
 
 type
-  TEditGroupsForm = class(TDBForm)
+  TEditGroupsForm = class(TDBForm, IGroupsSelectForm)
     BtnCancel: TButton;
     BtnOk: TButton;
     BtnCreateGroup: TButton;
@@ -91,8 +92,7 @@ type
     procedure ComboBoxEx1_KeyPress(Sender: TObject; var Key: Char);
     procedure LstSelectedGroupsDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure SearchForGroup1Click(Sender: TObject);
     procedure CbShowAllGroupsClick(Sender: TObject);
     procedure CbRemoveKeywordsClick(Sender: TObject);
@@ -101,8 +101,7 @@ type
     procedure BtnRemoveGroupClick(Sender: TObject);
     procedure MoveToGroup1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure FormKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormDestroy(Sender: TObject);
     procedure WedGroupsFilterChange(Sender: TObject);
     procedure TmrFilterTimer(Sender: TObject);
@@ -119,24 +118,20 @@ type
     function AGetGroupByCode(GroupCode: string): Integer;
     procedure FillGroupList;
     procedure ChangedDBDataGroups(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure LoadLanguage;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
-    procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True);
-    procedure LoadLanguage;
+    procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True); overload;
+    procedure Execute(var Groups: string; var KeyWords: string; CanNew: Boolean = True); overload;
   end;
-
-procedure DBChangeGroups(var Groups : TGroups; var KeyWords : String; CanNew : Boolean = true); overload;
-procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : Boolean = true); overload;
 
 implementation
 
 uses
-  UnitNewGroupForm,
   UnitManageGroups,
   UnitFormChangeGroup,
-  UnitQuickGroupInfo,
   SelectGroupForm,
   uManagerExplorer;
 
@@ -144,34 +139,16 @@ uses
 
 { TEditGroupsForm }
 
-Procedure DBChangeGroups(var Groups : TGroups; var KeyWords : String; CanNew : Boolean = true);
+procedure TEditGroupsForm.Execute(var Groups, KeyWords: string; CanNew: Boolean);
 var
-  EditGroupsForm: TEditGroupsForm;
+  FGroups: TGroups;
 begin
-  Application.CreateForm(TEditGroupsForm, EditGroupsForm);
-  try
-    EditGroupsForm.Execute(Groups, KeyWords, CanNew);
-  finally
-    EditGroupsForm.Release;
-  end;
+  FGroups := EncodeGroups(Groups);
+  Execute(Groups, KeyWords, CanNew);
+  Groups := CodeGroups(FGroups);
 end;
 
-Procedure DBChangeGroups(var SGroups : String; var KeyWords : String; CanNew : Boolean = true);
-var
-  FEditGroupsForm: TEditGroupsForm;
-  Groups: TGroups;
-begin
-  Groups := EncodeGroups(SGroups);
-  Application.CreateForm(TEditGroupsForm, FEditGroupsForm);
-  try
-    FEditGroupsForm.Execute(Groups, KeyWords, CanNew);
-  finally
-    FEditGroupsForm.Release;
-  end;
-  SGroups := CodeGroups(Groups);
-end;
-
-procedure TEditGroupsForm.Execute(var Groups: TGroups; var KeyWords : String; CanNew : Boolean = true);
+procedure TEditGroupsForm.Execute(var Groups: TGroups; var KeyWords: String; CanNew: Boolean = True);
 var
   I: Integer;
 begin
@@ -240,7 +217,7 @@ end;
 
 procedure TEditGroupsForm.BtnCreateGroupClick(Sender: TObject);
 begin
-  CreateNewGroupDialog;
+  GroupCreateForm.CreateGroup;
 end;
 
 procedure TEditGroupsForm.BtnOkClick(Sender: TObject);
@@ -329,15 +306,15 @@ end;
 procedure TEditGroupsForm.LstSelectedGroupsContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  ItemNo : Integer;
-  i : integer;
+  ItemNo: Integer;
+  I: integer;
 begin
   ItemNo := LstSelectedGroups.ItemAtPos(MousePos, True);
- If ItemNo<>-1 then
- begin
-  if not LstSelectedGroups.Selected[ItemNo] then
+  if ItemNo<>-1 then
   begin
-   LstSelectedGroups.Selected[ItemNo] := True;
+    if not LstSelectedGroups.Selected[ItemNo] then
+    begin
+      LstSelectedGroups.Selected[ItemNo] := True;
       for I := 0 to LstSelectedGroups.Items.Count - 1 do
         if I <> ItemNo then
           LstSelectedGroups.Selected[I] := False;
@@ -370,7 +347,7 @@ end;
 
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);
 begin
-  CreateNewGroupDialogA(FGroups[PmGroup.Tag].GroupName, FGroups[PmGroup.Tag].GroupCode);
+  GroupCreateForm.CreateFixedGroup(FGroups[PmGroup.Tag].GroupName, FGroups[PmGroup.Tag].GroupCode);
 end;
 
 procedure TEditGroupsForm.FillGroupList;
@@ -459,7 +436,7 @@ begin
   begin
     CreateGroup1.Visible := False;
     MoveToGroup1.Visible := False;
-    ChangeGroup1.Visible:=True;
+    ChangeGroup1.Visible := True;
   end else
   begin
     CreateGroup1.Visible := True;
@@ -470,7 +447,7 @@ end;
 
 procedure TEditGroupsForm.QuickInfo1Click(Sender: TObject);
 begin
-  ShowGroupInfo(FSetGroups[PmGroup.Tag], False, nil);
+  GroupInfoForm.Execute(nil, FSetGroups[PmGroup.Tag], False);
 end;
 
 procedure TEditGroupsForm.Clear1Click(Sender: TObject);
@@ -494,9 +471,9 @@ begin
   for I := 0 to LstSelectedGroups.Items.Count - 1 do
   if LstSelectedGroups.Selected[I] then
     begin
-      ShowGroupInfo(FSetGroups[I], False, nil);
-    Break;
-  end;
+      GroupInfoForm.Execute(nil, FSetGroups[I], False);
+      Break;
+    end;
 end;
 
 procedure TEditGroupsForm.FormShow(Sender: TObject);
@@ -760,7 +737,8 @@ begin
 end;
 
 procedure TEditGroupsForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin;
+begin
+  Action := caFree;
 end;
 
 procedure TEditGroupsForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -768,5 +746,8 @@ begin
   if Key = VK_ESCAPE then
     Close;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IGroupsSelectForm, TEditGroupsForm);
 
 end.

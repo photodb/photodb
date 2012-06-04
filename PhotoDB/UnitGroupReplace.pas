@@ -14,18 +14,19 @@ uses
   ExtCtrls,
   StdCtrls,
   Menus,
+  jpeg,
+  pngimage,
+  uRuntime,
+  uMemory,
+  uMemoryEx,
+  uConstants,
+  WatermarkedEdit,
   uGroupTypes,
   UnitGroupsWork,
   UnitDBKernel,
-  jpeg,
-  uConstants,
-  uMemory,
   uDBForm,
   uShellIntegration,
-  uMemoryEx,
-  WatermarkedEdit,
-  uRuntime,
-  pngimage;
+  uFormInterfaces;
 
 type
   GroupReplaceOptions = record
@@ -79,10 +80,8 @@ type
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure ExecuteNoDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions;
-      FileName: string);
-    procedure ExecuteWithDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions;
-      FileName: string);
+    procedure ExecuteNoDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions; FileName: string);
+    procedure ExecuteWithDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions; FileName: string);
   end;
 
 Const
@@ -93,13 +92,11 @@ Const
   GROUP_ACTION_ADD           = 4;
 
 procedure GroupReplaceExists(Group: TGroup;
-  out Action: TGroupAction; Options : GroupReplaceOptions; FileName : String);
+  out Action: TGroupAction; Options: GroupReplaceOptions; FileName: String);
 procedure GroupReplaceNotExists(Group: TGroup;
-  out Action: TGroupAction; Options : GroupReplaceOptions; FileName : String);
+  out Action: TGroupAction; Options: GroupReplaceOptions; FileName: String);
 
 implementation
-
-uses UnitNewGroupForm;
 
 {$R *.dfm}
 
@@ -142,7 +139,7 @@ begin
   CbExistedGroups.Enabled := False;
   if RbAddWithAnotherName.Checked then
   begin
-    CreateNewGroupDialogB(FGroup.GroupCode, FGroup.GroupImage, GroupCreated, NewGroupName);
+    GroupCreateForm.CreateGroupByCodeAndImage(FGroup.GroupCode, FGroup.GroupImage, GroupCreated, NewGroupName);
     if not GroupCreated then
     begin
       RbAddWithAnotherName.Checked := False;

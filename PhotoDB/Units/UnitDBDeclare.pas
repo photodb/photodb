@@ -44,8 +44,6 @@ type
   TAddCryptFileToListProc = procedure(Sender: TObject; Rec: TPasswordRecord) of object;
   TGetAvaliableCryptFileList = function(Sender: TObject): TArInteger of object;
 
-
-
 type
   TEventField = (EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
     EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
@@ -250,6 +248,12 @@ type
     property FileNameCRC: Cardinal read GetFileNameCRC;
     property GeoLocation: TGeoLocation read FGeoLocation;
     property HasImage: Boolean read GetHasImage;
+  end;
+
+  TEncryptImageOptions = record
+    Password: string;
+    CryptFileName: Boolean;
+    SaveFileCRC: Boolean;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;

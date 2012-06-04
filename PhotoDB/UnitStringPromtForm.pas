@@ -3,11 +3,21 @@ unit UnitStringPromtForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, uDBForm, WatermarkedEdit;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  uDBForm,
+  WatermarkedEdit,
+  uFormInterfaces;
 
 type
-  TFormStringPromt = class(TDBForm)
+  TFormStringPromt = class(TDBForm, IStringPromtForm)
     EdString: TWatermarkedEdit;
     LbInfo: TLabel;
     BtnOK: TButton;
@@ -16,43 +26,42 @@ type
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOKClick(Sender: TObject);
     procedure EdStringKeyPress(Sender: TObject; var Key: Char);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
+    FOldString: string;
+    FIsOk: Boolean;
     { Private declarations }
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
-    OldStr: string;
-    Ok: Boolean;
+    function Query(Caption, Text: String; var UserString: string): Boolean;
   end;
-
-function PromtString(Caption, Text : String; var StartString : String) : Boolean;
 
 implementation
 
 {$R *.dfm}
 
-function PromtString(Caption, Text : String; var StartString : String) : Boolean;
-var
-  FormStringPromt: TFormStringPromt;
+function TFormStringPromt.Query(Caption, Text: String;
+  var UserString: string): Boolean;
 begin
-  Application.CreateForm(TFormStringPromt, FormStringPromt);
-  try
-    FormStringPromt.Caption := Caption;
-    FormStringPromt.LbInfo.Caption := Text;
-    FormStringPromt.OldStr := StartString;
-    FormStringPromt.EdString.Text := StartString;
-    FormStringPromt.ShowModal;
-    StartString := FormStringPromt.EdString.Text;
-    Result := FormStringPromt.Ok;
-  finally
-    FormStringPromt.Release;
-  end;
+  Caption := Caption;
+  LbInfo.Caption := Text;
+  FOldString := UserString;
+  EdString.Text := UserString;
+  ShowModal;
+  UserString := EdString.Text;
+  Result := FIsOk;
+end;
+
+procedure TFormStringPromt.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := caFree;
 end;
 
 procedure TFormStringPromt.FormCreate(Sender: TObject);
 begin
-  Ok := False;
+  FIsOk := False;
   BtnCancel.Caption := L('Cancel');
   BtnOK.Caption := L('Ok');
   EdString.Text := L('Enter your text here');
@@ -69,13 +78,13 @@ end;
 
 procedure TFormStringPromt.BtnCancelClick(Sender: TObject);
 begin
-  Ok := False;
+  FIsOk := False;
   Close;
 end;
 
 procedure TFormStringPromt.BtnOKClick(Sender: TObject);
 begin
-  Ok := True;
+  FIsOk := True;
   Close;
 end;
 

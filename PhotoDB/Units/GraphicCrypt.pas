@@ -28,16 +28,9 @@ uses
   uErrors,
   uGraphicUtils,
   uShellUtils;
-
 type
-  TCryptImageOptions = record
-    Password: String;
-    CryptFileName: Boolean;
-    SaveFileCRC: Boolean;
-  end;
-
   TGraphicCryptFileHeader = record
-    IDSize : Byte;
+    IDSize: Byte;
     ID: array[0..7] of AnsiChar;
     Version: Byte;
     DBVersion: Byte;

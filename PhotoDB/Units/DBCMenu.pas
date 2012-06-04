@@ -21,7 +21,6 @@ uses
   UnitGroupsWork,
   UnitDBKernel,
   CommonDBSupport,
-  UnitCryptImageForm,
   ProgressActionUnit,
   PrintMainForm,
   ShellContextMenu,
@@ -135,10 +134,8 @@ uses
   uManagerExplorer,
   PropertyForm,
   uSearchTypes,
-  UnitEditGroupsForm,
   UnitMenuDateForm,
   CmpUnit,
-  UnitQuickGroupInfo,
   UnitCrypting,
   ImEditor,
   FormManegerUnit;
@@ -522,7 +519,7 @@ end;
 
 procedure TDBPopupMenu.CryptItemPopUpMenu_(Sender: TObject);
 begin
-  EncryptPhohos(FOwner, TA('selected objects', DBMenuID), FInfo);
+  EncryptForm.Encrypt(FOwner, TA('selected objects', DBMenuID), FInfo);
 end;
 
 procedure TDBPopupMenu.DateItemPopUpMenu_(Sender: TObject);
@@ -667,7 +664,7 @@ end;
 
 procedure TDBPopupMenu.DeCryptItemPopUpMenu_(Sender: TObject);
 begin
-  DecryptPhotos(FOwner, FInfo);
+  EncryptForm.Decrypt(FOwner, FInfo);
 end;
 
 procedure TDBPopupMenu.DeleteDuplicatesItemPopUpMenu_(Sender: TObject);
@@ -1005,7 +1002,7 @@ begin
       F(KeyWordList);
     end;
     NewKeyWords := OldKeyWords;
-    DBChangeGroups(StrNewGroups, NewKeyWords);
+    GroupsSelectForm.Execute(StrNewGroups, NewKeyWords);
     VarKeyWords := VariousKeyWords(OldKeyWords, NewKeyWords);
     VarGroups := not CompareGroups(StrOldGroups, StrNewGroups);
     if not VarKeyWords and not VarGroups then
@@ -1365,7 +1362,7 @@ begin
   for I := Length(S) downto 1 do
     if S[I] = '&' then
       Delete(S, I, 1);
-  ShowGroupInfo(S, False, nil);
+  GroupInfoForm.Execute(nil, S, False);
 end;
 
 procedure TDBPopupMenu.RefreshIDItemPopUpMenu_(Sender: TObject);

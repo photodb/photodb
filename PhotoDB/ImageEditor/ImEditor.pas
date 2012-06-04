@@ -148,46 +148,23 @@ type
     TempPanel: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure OpenFile(Sender: TObject);
-    procedure LoadProgramImageFormat(Graphic: TGraphic);
     procedure FormPaint(Sender: TObject);
-    procedure ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
-    procedure LoadJPEGImage(JPEG : TJPEGImage);
-    procedure LoadBMPImage(Bitmap : TBitmap);
-    procedure LoadGIFImage(GIF : TGIFImage);
-    procedure LoadImageVariousformat(Image : TGraphic);
     procedure ScrollBarVChange(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    function GetVisibleImageHeight : Integer;
-    function BufferPointToImagePoint(P : TPoint) : Tpoint;
-    function ImagePointToBufferPoint(P : TPoint) : Tpoint;
-    function GetVisibleImageWidth : Integer;
-    function GetImageRectA: TRect;
-    function OpenFileName(FileName : String) : boolean;
     procedure CropLinkClick(Sender: TObject);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
       Point: TPoint; var Effect: Integer);
-    procedure ScrollBarHScroll(Sender: TObject; ScrollCode: TScrollCode;
-      var ScrollPos: Integer);
-    procedure ShowTools(Sender: TObject);
+    procedure ScrollBarHScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure MakeImageAndPaint;
-    procedure FormMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormDestroy(Sender: TObject);
     procedure ZoomOutLinkClick(Sender: TObject);
     procedure FitToSizeLinkClick(Sender: TObject);
     procedure RecteareImageProc(Sender: TObject);
-    procedure SetPointerToNewImage(Image: TBitmap);
-    procedure CancelPointerToNewImage(Image: TBitmap);
     procedure RotateLinkClick(Sender: TObject);
-    procedure SetTemporaryImage(Image : TBitmap);
-    procedure CancelTemporaryImage(Destroy : Boolean);
-    procedure HistoryChanged(Sender: TObject; Action : THistoryAction);
-    procedure MakeCaption;
+    procedure HistoryChanged(Sender: TObject; Action: THistoryAction);
     procedure ResizeLinkClick(Sender: TObject);
     procedure UndoLinkClick(Sender: TObject);
     procedure RedoLinkClick(Sender: TObject);
@@ -196,22 +173,18 @@ type
     procedure ColorsLinkClick(Sender: TObject);
     procedure RedEyeLinkClick(Sender: TObject);
     procedure SaveLinkClick(Sender: TObject);
-    procedure DisableHistory;
-    procedure EnableHistory;
     procedure FullSizeLinkClick(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure Search1Click(Sender: TObject);
     procedure Explorer1Click(Sender: TObject);
     procedure Properties1Click(Sender: TObject);
-    procedure FormContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure FormContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure Paste1Click(Sender: TObject);
-    procedure LoadBitmap(Bitmap : TBitmap);
+    procedure LoadBitmap(Bitmap: TBitmap);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure PmMainPopup(Sender: TObject);
     procedure FullScreen1Click(Sender: TObject);
-    function GetCurrentImage : TBitmap;
     procedure Copy1Click(Sender: TObject);
     procedure TextLinkClick(Sender: TObject);
     procedure BrushLinkClick(Sender: TObject);
@@ -219,14 +192,8 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure InsertImageLinkClick(Sender: TObject);
     procedure NewEditor1Click(Sender: TObject);
-    procedure MakePCurrentImage;
-    procedure MakeTempLayer;
-    procedure DeleteTempLayer;
     procedure Actions1Click(Sender: TObject);
-    procedure ReadActions(Actions : TStrings);
     procedure ReadNextAction(Sender: TObject);
-    procedure ReadActionsFile(FileName : string);
-    procedure SaveImageFile(FileName : string; AfterEnd : boolean = False);
   private
     { Private declarations }
     FImageInfo: ILoadImageInfo;
@@ -258,15 +225,39 @@ type
     FIsEditImageDone: Boolean;
     FEditImage: TBitmap;
     procedure SetCloseOnFailture(const Value: boolean);
-    function CheckEditingMode : Boolean;
+    function CheckEditingMode: Boolean;
     procedure LoadLanguage;
     procedure InitEditor(FileName: string);
+
+    procedure LoadProgramImageFormat(Graphic: TGraphic);
+    procedure ReAllignScrolls(IsCenter: Boolean; CenterPoint: TPoint);
+    procedure LoadJPEGImage(JPEG: TJPEGImage);
+    procedure LoadBMPImage(Bitmap: TBitmap);
+    procedure LoadGIFImage(GIF: TGIFImage);
+    procedure LoadImageVariousformat(Image: TGraphic);
+    function GetVisibleImageHeight: Integer;
+    function BufferPointToImagePoint(P: TPoint): Tpoint;
+    function ImagePointToBufferPoint(P: TPoint): Tpoint;
+    function GetVisibleImageWidth: Integer;
+    function GetImageRectA: TRect;
+    procedure ShowTools(Sender: TObject);
+    procedure MakeImageAndPaint;
+    procedure SetPointerToNewImage(Image: TBitmap);
+    procedure CancelPointerToNewImage(Image: TBitmap);
+    procedure SetTemporaryImage(Image: TBitmap);
+    procedure CancelTemporaryImage(Destroy: Boolean);
+    procedure MakeCaption;
+    procedure DisableHistory;
+    procedure EnableHistory;
+    procedure MakePCurrentImage;
+    procedure MakeTempLayer;
+    procedure DeleteTempLayer;
   protected
     procedure WndProc(var Message: TMessage); override;
     procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetFormID : string; override;
-    function GetZoom : Extended; override;
+    function GetFormID: string; override;
+    function GetZoom: Extended; override;
     function GetFileName: string; override;
     function GetExifData: TExifData; override;
   public
@@ -277,6 +268,9 @@ type
     FStatusProgress: TProgressBar;
     WindowID: TGUID;
     ToolClass: TToolsPanelClass;
+    function OpenFileName(FileName: string): Boolean;
+    procedure SaveImageFile(FileName: string; AfterEnd: Boolean = False);
+    procedure ReadActions(Actions: TStrings);
     function EditImage(Image: TBitmap): Boolean; override;
     procedure MakeImage(ResizedWindow: Boolean = False); override;
     procedure DoPaint; override;
@@ -303,8 +297,6 @@ var
   EditorsManager: TManagerEditors;
 
 const
-  IMRELEASE = not DBInDebug;
-
   CUR_UPDOWN = 140;
   CUR_LEFTRIGHT = 141;
   CUR_TOPRIGHT = 142;
@@ -315,7 +307,9 @@ const
 implementation
 
 uses
-  UnitEditorFullScreenForm, PrintMainForm, UnitActionsForm;
+  UnitEditorFullScreenForm,
+  PrintMainForm,
+  UnitActionsForm;
 
 {$R *.dfm}
 {$R cursors.res}
@@ -2711,11 +2705,6 @@ begin
   EditorFullScreenForm.Show;
 end;
 
-function TImageEditor.GetCurrentImage: TBitmap;
-begin
-  Result := CurrentImage;
-end;
-
 function TImageEditor.GetExifData: TExifData;
 begin
   Result := FImageInfo.ExifData;
@@ -3055,19 +3044,6 @@ begin
     ToolClass.ExecuteProperties(Action, ReadNextAction)
   else
     ReadNextAction(Self);
-end;
-
-procedure TImageEditor.ReadActionsFile(FileName: string);
-var
-  AActions: TStrings;
-begin
-  AActions := TStringList.Create;
-  try
-    if LoadActionsFromfileA(FileName, AActions) then
-      ReadActions(AActions);
-  finally
-    F(AActions);
-  end;
 end;
 
 procedure TImageEditor.SaveImageFile(FileName: string; AfterEnd: Boolean = False);

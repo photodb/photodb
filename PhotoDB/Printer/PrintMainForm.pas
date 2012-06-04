@@ -100,10 +100,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure DoGenerateSample;
-    procedure AddSampleImage(SampleImageType : TPrintSampleSizeOne);
     procedure ALvMainDblClick(Sender: TObject);
-    procedure SetPreviewImage(Bitmap : TBitmap; SID : String);
     procedure FullSizeLinkClick(Sender: TObject);
     procedure ZoomOutLinkClick(Sender: TObject);
     procedure ZoomInLinkClick(Sender: TObject);
@@ -113,14 +110,10 @@ type
     procedure CbPageNumberClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure TerminateTimesTimer(Sender: TObject);
-    function GetSampleType : TPrintSampleSizeOne;
     procedure PmCopyToFilePopup(Sender: TObject);
     procedure CopyToFile1Click(Sender: TObject);
-    procedure LoadLanguage;
     procedure CbUseCustomSizeClick(Sender: TObject);
     procedure ComboBox2KeyPress(Sender: TObject; var Key: Char);
-    function SizeToPixels(Pixels: TXSize): TXSize;
-    function PixelsToSize(Pixels: TXSize): TXSize;
     procedure EdWidthExit(Sender: TObject);
     procedure EdHeightExit(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
@@ -136,20 +129,23 @@ type
     Pages: Integer;
     FCurrentFormat: TPrintSampleSizeOne;
     VirtualBitmap: TBitmap;
-    function FormatToText(FormatIndex : TPrintSampleSizeOne): string;
+    function FormatToText(FormatIndex: TPrintSampleSizeOne): string;
+    procedure DoGenerateSample;
+    procedure AddSampleImage(SampleImageType: TPrintSampleSizeOne);
+    procedure SetPreviewImage(Bitmap: TBitmap; SID : String);
+    function GetSampleType : TPrintSampleSizeOne;
+    procedure LoadLanguage;
+    function SizeToPixels(Pixels: TXSize): TXSize;
+    function PixelsToSize(Pixels: TXSize): TXSize;
   protected
     { Protected declarations }
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     FStatusProgress: TProgressBar;
     procedure Execute(PrintFiles: TStrings); overload;
     procedure Execute(VirtualFile: TBitmap); overload;
   end;
-
-var
-  PrintFormExists: Boolean;
-  Printing: Boolean;
 
 function GetPrintForm(Files: TStrings): TPrintForm; overload;
 function GetPrintForm(var Picture: TBitmap): TPrintForm; overload;
@@ -162,7 +158,7 @@ uses
 
 {$R *.dfm}
 
-function GetPrintForm(Files : TStrings) : TPrintForm;
+function GetPrintForm(Files: TStrings) : TPrintForm;
 var
   Form: TCustomForm;
   Handle: THandle;
@@ -403,7 +399,6 @@ begin
 
   FastScrollingImage1.Color := Theme.WindowColor;
 
-  PrintFormExists := True;
   FFiles := TStringList.Create;
   LvMain.DoubleBuffered := True;
   VirtualBitmap := nil;
@@ -637,7 +632,6 @@ procedure TPrintForm.FormDestroy(Sender: TObject);
 begin
   F(VirtualBitmap);
   F(FFiles);
-  PrintFormExists := False;
   SaveWindowPos1.SavePosition;
 end;
 
@@ -909,8 +903,5 @@ begin
 end;
 
 initialization
-
-PrintFormExists := False;
-Printing := False;
 
 end.

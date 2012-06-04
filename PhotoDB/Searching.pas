@@ -539,10 +539,7 @@ uses
   UnitHintCeator,
   uManagerExplorer,
   UnitUpdateDB,
-  UnitUpdateDBThread,
   ManagerDBUnit,
-  UnitEditGroupsForm,
-  UnitQuickGroupInfo,
   UnitGroupReplace,
   UnitSavingTableForm,
   UnitHelp,
@@ -2333,11 +2330,11 @@ begin
   WL := TWebLink(Sender);
   if WL.Tag > -1 then
   begin
-    ShowGroupInfo(WL.Text, False, nil);
+    GroupInfoForm.Execute(nil, WL.Text, False);
   end else
   begin
     KeyWords := MemKeyWords.Text;
-    DBChangeGroups(FPropertyGroups, KeyWords);
+    GroupsSelectForm.Execute(FPropertyGroups, KeyWords);
     PostMessage(Handle, FReloadGroupsMessage, 0, 0);
     MemKeyWords.Text := KeyWords;
     MemKeyWordsChange(Sender);
@@ -2349,7 +2346,7 @@ var
   KeyWords: string;
 begin
   KeyWords := MemKeyWords.Text;
-  DBChangeGroups(FPropertyGroups, KeyWords);
+  GroupsSelectForm.Execute(FPropertyGroups, KeyWords);
   MemKeyWords.Text := KeyWords;
   ReloadGroups;
   MemKeyWordsChange(Sender);

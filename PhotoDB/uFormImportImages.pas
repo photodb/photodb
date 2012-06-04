@@ -345,7 +345,7 @@ begin
   try
     TFormCollection.Instance.GetForms<TFormImportImages>(Imports);
     for Form in Imports do
-      if Form.OriginalPath = Folder then
+      if (Form <> Self) and (Form.OriginalPath = Folder) then
       begin
         Form.Show;
         Close;
@@ -354,6 +354,7 @@ begin
   finally
     F(Imports);
   end;
+  Show;
   SetPath(Folder);
 end;
 

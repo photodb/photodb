@@ -10,9 +10,7 @@ uses
   Graphics,
   Controls,
   Forms,
-  UnitGroupsTools,
-  UnitDBkernel,
-  UnitBitmapImageList,
+  Vcl.ToolWin,
   ComCtrls,
   AppEvnts,
   jpeg,
@@ -21,29 +19,31 @@ uses
   Math,
   CommCtrl,
   ImgList,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   NoVSBListView,
+  UnitDBkernel,
+  UnitBitmapImageList,
   uBitmapUtils,
   ExplorerTypes,
   UnitDBDeclare,
   uDBDrawing,
+  uConstants,
+  uRuntime,
   uMemory,
+  uMemoryEx,
   uDBForm,
   uGraphicUtils,
-  uMemoryEx,
   uShellIntegration,
-  uConstants,
   Dolphin_DB,
   uGroupTypes,
+  CommonDBSupport,
   UnitGroupsWork,
   uSettings,
-  uRuntime,
-  CommonDBSupport,
-  ToolWin,
   uThemesUtils,
   uPathProviders,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
-  uExplorerGroupsProvider;
+  uExplorerGroupsProvider,
+  uFormInterfaces;
 
 type
   TFormManageGroups = class(TDBForm)
@@ -124,8 +124,6 @@ implementation
 
 uses
   UnitFormChangeGroup,
-  UnitNewGroupForm,
-  UnitQuickGroupInfo,
   uManagerExplorer,
   UnitSelectFontForm;
 
@@ -156,7 +154,7 @@ begin
   else begin
     if not DBReadOnly then
       if ID_OK = MessageBoxDB(Handle, L('Groups in collection aren''t found! Do you want to create new group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-        CreateNewGroupDialog;
+        GroupCreateForm.CreateGroup;
   end;
 end;
 
@@ -305,12 +303,12 @@ end;
 
 procedure TFormManageGroups.MenuActionAddGroup(Sender: TObject);
 begin
-  CreateNewGroupDialog;
+  GroupCreateForm.CreateGroup;
 end;
 
 procedure TFormManageGroups.MenuActionQuickInfoGroup(Sender: TObject);
 begin
-  ShowGroupInfo(Groups[(Sender as TmenuItem).Owner.Tag], True, Self);
+  GroupInfoForm.Execute(Self, Groups[(Sender as TmenuItem).Owner.Tag], True);
 end;
 
 procedure TFormManageGroups.MenuActionSearchForGroup(Sender: TObject);
@@ -490,7 +488,7 @@ begin
   P := ListView1.ScreenToClient(P);
   Item := ListView1.GetItemAt(P.X, P.Y);
   if Item <> nil then
-    ShowGroupInfo(Groups[Item.ImageIndex], True, Self);
+    GroupInfoForm.Execute(Self, Groups[Item.ImageIndex], True);
 end;
 
 procedure TFormManageGroups.LoadLanguage;

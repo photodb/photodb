@@ -17,7 +17,6 @@ uses
   Windows,
   Messages,
   SysUtils,
-  Variants,
   Classes,
   Graphics,
   Controls,
@@ -607,10 +606,8 @@ type
     procedure PePathGetItemIconEvent(Sender: TPathEditor; Item: TPathItem);
     procedure WlCreateObjectClick(Sender: TObject);
     procedure TbDeleteClick(Sender: TObject);
-    procedure PePathImageContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
-    procedure PePathContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure PePathImageContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    procedure PePathContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure MiCopyAddressClick(Sender: TObject);
     procedure MiEditAddressClick(Sender: TObject);
     procedure WlCropClick(Sender: TObject);
@@ -624,8 +621,7 @@ type
     procedure WlPanoramioClick(Sender: TObject);
     procedure SbDoSearchLocationClick(Sender: TObject);
     procedure WlSaveLocationClick(Sender: TObject);
-    procedure WedGeoSearchKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure WedGeoSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure SplGeoLocationMoved(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure MiShelfClick(Sender: TObject);
@@ -634,10 +630,8 @@ type
     procedure TmrDelayedStartTimer(Sender: TObject);
     procedure WlShareClick(Sender: TObject);
     procedure TmrCheckItemVisibilityTimer(Sender: TObject);
-    procedure TbBackMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure TbForwardMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure TbBackMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure TbForwardMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure PcTasksChange(Sender: TObject);
   private
     { Private declarations }
@@ -880,27 +874,23 @@ implementation
 
 uses
   UnitUpdateDB,
-  ExplorerThreadUnit,
   uSearchTypes,
   PropertyForm,
-  UnitHintCeator,
   FormManegerUnit,
   ManagerDBUnit,
-  UnitExplorerThumbnailCreatorThread,
-  UnitCryptImageForm,
   UnitFileRenamerForm,
   ImEditor,
+  UnitSavingTableForm,
+  UnitBigImagesSize,
+  uOperationProgress,
+
+  ExplorerThreadUnit,
+  UnitHintCeator,
+  UnitExplorerThumbnailCreatorThread,
   UnitHelp,
   uMachMask,
   DBScriptFunctions,
-  UnitStringPromtForm,
-  UnitSavingTableForm,
-  UnitUpdateDBObject,
-  uFormSteganography,
-  UnitBigImagesSize,
-  UnitNewGroupForm,
-  uOperationProgress,
-  uFormSharePhotos;
+  UnitUpdateDBObject;
 
 {$R *.dfm}
 
@@ -3824,7 +3814,7 @@ begin
       end;
 
     if Files.Count > 0 then
-      SharePictures(Self, Files);
+      ShareForm.Execute(Self, Files);
   finally
     F(Files);
   end;
@@ -6629,6 +6619,7 @@ begin
       ItemIDs[I] := FileList[I].ID;
       ItemSelected[I] := True;
     end;
+
   Options.Files := Copy(ItemFileNames);
   Options.IDs := Copy(ItemIDs);
   Options.Selected := Copy(ItemSelected);
@@ -6674,7 +6665,7 @@ end;
 
 procedure TExplorerForm.CryptFile1Click(Sender: TObject);
 var
-  Opt: TCryptImageOptions;
+  Opt: TEncryptImageOptions;
   Info: TDBPopupMenuInfo;
   FileName: string;
   Item: TEasyItem;
@@ -6694,7 +6685,7 @@ begin
       FileName := IIF(Index > -1, ProcessPath(FFilesInfo[Index].FileName), '');
     end;
 
-    Opt := GetPassForCryptImageFile(FileName);
+    Opt := EncryptForm.QueryPasswordForFile(FileName);
     if Opt.Password = '' then
       Exit;
 
@@ -8115,7 +8106,7 @@ end;
 
 procedure TExplorerForm.WlCreateObjectClick(Sender: TObject);
 begin
-  CreateNewGroupDialog;
+  GroupCreateForm.CreateGroup;
 end;
 
 procedure TExplorerForm.WlCropClick(Sender: TObject);
@@ -9536,7 +9527,7 @@ begin
   if SelCount = 1 then
   begin
     Index := ItemIndexToMenuIndex(ListView1Selected.Index);
-    HideDataInImage(FFilesInfo[index].FileName);
+    SteganographyForm.HideData(FFilesInfo[index].FileName);
   end;
 end;
 
@@ -9547,7 +9538,7 @@ begin
   if SelCount = 1 then
   begin
     Index := ItemIndexToMenuIndex(ListView1Selected.Index);
-    ExtractDataFromImage(FFilesInfo[Index].FileName);
+    SteganographyForm.ExtractData(FFilesInfo[Index].FileName);
   end;
 end;
 

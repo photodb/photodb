@@ -3,8 +3,15 @@ unit UnitGeneratorPrinterPreview;
 interface
 
 uses
-  Classes, Graphics, UnitPrinterTypes, Printers, PrinterProgress,
-  uTranslate, uMemory, uDBThread, uDBForm;
+  Classes,
+  Graphics,
+  UnitPrinterTypes,
+  Printers,
+  PrinterProgress,
+  uTranslate,
+  uMemory,
+  uDBThread,
+  uDBForm;
 
 type
   TOnEndGeneratePrinterPreviewEvent = procedure(Bitmap: TBitmap; SID: string) of object;
@@ -78,17 +85,17 @@ begin
   if not FDoPrint then
   begin
     SetCommentText(L('Generating preview') + '...');
-    Synchronize(ShowProgress);
+    SynchronizeEx(ShowProgress);
     FOptions.VirtualImage := FVirtualBitmaped;
     FOptions.Image := FVirtualBitmap;
     BitmapPreview := GenerateImage(True, Printer.PageWidth, Printer.PageHeight, nil, FFiles, FSampleType, FOptions,
       CallBack);
-    Synchronize(SetImage);
-    Synchronize(HideProgress);
+    SynchronizeEx(SetImage);
+    SynchronizeEx(HideProgress);
     SetCommentText('');
   end else
   begin
-    Synchronize(ShowProgressWindow);
+    SynchronizeEx(ShowProgressWindow);
     if FOptions.FreeCenterSize then
       FPrintImagePerPage := 1;
     Pages := (FFiles.Count div FPrintImagePerPage);
@@ -112,17 +119,18 @@ begin
         FOptions.VirtualImage := FVirtualBitmaped;
         FOptions.Image := FVirtualBitmap;
         BitmapPreview := GenerateImage(True, Printer.PageWidth, Printer.PageHeight, nil, Files, FSampleType, FOptions);
-        if FDestroyBitmap then
-          FOptions.Image.Free;
-        if FTerminating then
-        begin
-          BitmapPreview.Free;
-          Break;
+        try
+          if FDestroyBitmap then
+            FOptions.Image.Free;
+          if FTerminating then
+            Break;
+
+          SynchronizeEx(PrintImage);
+        finally
+          F(BitmapPreview);
         end;
-        Synchronize(PrintImage);
-        BitmapPreview.Free;
       end;
-      Synchronize(HideProgressWindow);
+      SynchronizeEx(HideProgressWindow);
     finally
       F(Files);
     end;
@@ -163,16 +171,10 @@ end;
 
 procedure TGeneratorPrinterPreview.SetImage;
 begin
-  if PrintFormExists then
-  begin
-    if Assigned(FOnEndProc) then
-      FOnEndProc(BitmapPreview, FSID)
-    else
-      F(BitmapPreview);
-  end else
-  begin
+  if Assigned(FOnEndProc) then
+    FOnEndProc(BitmapPreview, FSID)
+  else
     F(BitmapPreview);
-  end;
 end;
 
 procedure TGeneratorPrinterPreview.PrintImage;
@@ -217,29 +219,23 @@ procedure TGeneratorPrinterPreview.CallBack(Progress: Byte; var Terminate: Boole
 begin
   IntParam := Progress;
   SynchronizeEx(SetProgress);
-  Terminate := not PrintFormExists;
 end;
 
 procedure TGeneratorPrinterPreview.HideProgress;
 begin
-  if PrintFormExists then
-    (FSender as TPrintForm).FStatusProgress.Hide;
+  (FSender as TPrintForm).FStatusProgress.Hide;
 end;
 
 procedure TGeneratorPrinterPreview.ShowProgress;
 begin
-  if PrintFormExists then
-  begin
-    (FSender as TPrintForm).FStatusProgress.Position := 0;
-    (FSender as TPrintForm).FStatusProgress.Max := 100;
-    (FSender as TPrintForm).FStatusProgress.Show;
-  end;
+  (FSender as TPrintForm).FStatusProgress.Position := 0;
+  (FSender as TPrintForm).FStatusProgress.Max := 100;
+  (FSender as TPrintForm).FStatusProgress.Show;
 end;
 
 procedure TGeneratorPrinterPreview.SetProgress;
 begin
- if PrintFormExists then
- (FSender as TPrintForm).FStatusProgress.Position:=IntParam;
+  (FSender as TPrintForm).FStatusProgress.Position:=IntParam;
 end;
 
 procedure TGeneratorPrinterPreview.SetCommentText(Text: string);
@@ -250,8 +246,7 @@ end;
 
 procedure TGeneratorPrinterPreview.SetCommentTextCynch;
 begin
-  if PrintFormExists then
-    (FSender as TPrintForm).StatusBar1.Panels[1].Text := StringParam;
+  (FSender as TPrintForm).StatusBar1.Panels[1].Text := StringParam;
 end;
 
 procedure TGeneratorPrinterPreview.CallBackFull(Progress: byte;

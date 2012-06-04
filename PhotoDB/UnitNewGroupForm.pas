@@ -13,38 +13,38 @@ uses
   Dialogs,
   ExtCtrls,
   StdCtrls,
-  Jpeg,
-  Dolphin_DB,
-  uGroupTypes,
-  UnitGroupsWork,
-  Menus,
-  GraphicEx,
   Math,
   ComCtrls,
   ImgList,
+  WebLink,
+  WebLinkList,
+  AppEvnts,
+  Menus,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  WatermarkedEdit,
+  WatermarkedMemo,
+  Jpeg,
+  uRuntime,
+  uMemory,
+  uMemoryEx,
+  uConstants,
+  Dolphin_DB,
+  uGroupTypes,
+  UnitGroupsWork,
   GraphicSelectEx,
   UnitDBDeclare,
   uBitmapUtils,
-  uConstants,
   uExplorerGroupsProvider,
   uFileUtils,
-  uMemory,
   uDBForm,
-  WatermarkedEdit,
-  WatermarkedMemo,
-  uMemoryEx,
   uShellIntegration,
-  uRuntime,
-  WebLinkList,
-  WebLink,
-  AppEvnts,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
   uThemesUtils,
-  uPathProviders;
+  uPathProviders,
+  uFormInterfaces;
 
 type
-  TNewGroupForm = class(TDBForm)
+  TNewGroupForm = class(TDBForm, IGroupCreateForm)
     ImGroup: TImage;
     EdName: TWatermarkedEdit;
     MemComments: TWatermarkedMemo;
@@ -65,11 +65,9 @@ type
     ApplicationEvents1: TApplicationEvents;
     procedure ImGroupClick(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
-    procedure Execute;
-    procedure ExecuteA(GroupName, GroupCode : String);
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure ExecuteB(GroupCode: String; Image : TJpegImage; out Created : Boolean; out GroupName : String);
+
     procedure RelodDllNames;
     procedure GraphicSelect1ImageSelect(Sender: TObject; Bitmap: TBitmap);
     procedure LoadFromFile1Click(Sender: TObject);
@@ -79,71 +77,67 @@ type
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
-    FExecuteA: Boolean;
-    FExecuteW: Boolean;
+    FCreateFixedGroup: Boolean;
+    FCreateGroupWithCode: Boolean;
     FNewGroupName, FGroupCode: string;
     FCreated: Boolean;
     FNewRelatedGroups: string;
     FReloadGroupsMessage: Cardinal;
+    procedure LoadLanguage;
     procedure GroupClick(Sender: TObject);
   protected
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure LoadLanguage;
+    procedure CreateGroup;
+    procedure CreateFixedGroup(GroupName, GroupCode: string);
+    procedure CreateGroupByCodeAndImage(GroupCode: string; Image: TJpegImage; out Created: Boolean; out GroupName: string);
   end;
-
-procedure CreateNewGroupDialog;
-procedure CreateNewGroupDialogA(GroupName, GroupCode: string);
-procedure CreateNewGroupDialogB(GroupCode: string; Image: TJpegImage; out Created: Boolean; out GroupName: string);
 
 implementation
 
 uses
-  UnitDBKernel,
-  UnitEditGroupsForm,
-  UnitQuickGroupInfo;
+  UnitDBKernel;
 
 {$R *.dfm}
 
-procedure CreateNewGroupDialog;
-var
-  NewGroupForm: TNewGroupForm;
-begin
-  if not IsValidGroupsTable then
-    if DBInDebug then
-      CreateGroupsTable;
 
-  Application.CreateForm(TNewGroupForm, NewGroupForm);
-  try
-    NewGroupForm.Execute;
-  finally
-    R(NewGroupForm);
-  end;
+procedure TNewGroupForm.CreateGroup;
+begin
+  FCreateFixedGroup := False;
+  FNewRelatedGroups := '';
+  ReloadGroups;
+  ShowModal;
 end;
 
-procedure CreateNewGroupDialogA(GroupName, GroupCode: string);
-var
-  NewGroupForm: TNewGroupForm;
+
+procedure TNewGroupForm.CreateFixedGroup(GroupName, GroupCode: string);
 begin
-  Application.CreateForm(TNewGroupForm, NewGroupForm);
-  try
-    NewGroupForm.ExecuteA(GroupName,GroupCode);
-  finally
-    R(NewGroupForm);
-  end;
+  EdName.Text := GroupName;
+  EdName.ReadOnly := True;
+  FCreateFixedGroup := True;
+  FCreateGroupWithCode := False;
+  FGroupCode := GroupCode;
+  FNewRelatedGroups := '';
+  ReloadGroups;
+  ShowModal;
 end;
 
-procedure CreateNewGroupDialogB(GroupCode: string; Image: TJpegImage; out Created: Boolean; out GroupName: string);
-var
-  NewGroupForm: TNewGroupForm;
+procedure TNewGroupForm.CreateGroupByCodeAndImage(GroupCode: string;
+  Image: TJpegImage; out Created: Boolean; out GroupName: string);
 begin
-  Application.CreateForm(TNewGroupForm, NewGroupForm);
-  try
-    NewGroupForm.ExecuteB(GroupCode,Image,Created,GroupName);
-  finally
-    R(NewGroupForm);
-  end;
+  EdName.ReadOnly := False;
+  if Image <> nil then
+    ImGroup.Picture.Graphic := Image;
+
+  FCreateFixedGroup := False;
+  FCreated := False;
+  FCreateGroupWithCode := True;
+  FGroupCode := GroupCode;
+  ReloadGroups;
+  ShowModal;
+  GroupName := FNewGroupName;
+  Created := FCreated;
 end;
 
 procedure TNewGroupForm.ImGroupClick(Sender: TObject);
@@ -169,14 +163,6 @@ begin
   Close;
 end;
 
-procedure TNewGroupForm.Execute;
-begin
-  FExecuteA := False;
-  FNewRelatedGroups := '';
-  ReloadGroups;
-  ShowModal;
-end;
-
 procedure TNewGroupForm.BtnOkClick(Sender: TObject);
 var
   Group: TGroup;
@@ -190,7 +176,7 @@ begin
   end;
   Group.GroupName := EdName.Text;
   Group.GroupImage := TJpegImage.Create;
-  if not FExecuteA then
+  if not FCreateFixedGroup then
     Group.GroupCode := CreateNewGroupCode
   else
     Group.GroupCode := FGroupCode;
@@ -229,34 +215,6 @@ begin
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_GROUP_RELOAD_GROUPS');
   LoadLanguage;
   RelodDllNames;
-end;
-
-procedure TNewGroupForm.ExecuteA(GroupName, GroupCode: string);
-begin
-  EdName.Text := GroupName;
-  EdName.ReadOnly := True;
-  FExecuteA := True;
-  FExecuteW := False;
-  FGroupCode := GroupCode;
-  FNewRelatedGroups := '';
-  ReloadGroups;
-  ShowModal;
-end;
-
-procedure TNewGroupForm.ExecuteB(GroupCode: String; Image : TJpegImage; out Created : Boolean; out GroupName : String);
-begin
-  EdName.ReadOnly := False;
-  if Image <> nil then
-    ImGroup.Picture.Graphic := Image;
-
-  FExecuteA := False;
-  FCreated := False;
-  FExecuteW := True;
-  FGroupCode := GroupCode;
-  ReloadGroups;
-  ShowModal;
-  GroupName := FNewGroupName;
-  Created := FCreated;
 end;
 
 procedure TNewGroupForm.LoadLanguage;
@@ -315,9 +273,9 @@ end;
 
 procedure TNewGroupForm.WllGroupsDblClick(Sender: TObject);
 var
-  KeyWords : string;
+  KeyWords: string;
 begin
-  DBChangeGroups(FNewRelatedGroups, KeyWords);
+  GroupsSelectForm.Execute(FNewRelatedGroups, KeyWords);
 end;
 
 function TNewGroupForm.GetFormID: string;
@@ -407,16 +365,16 @@ end;
 
 procedure TNewGroupForm.GroupClick(Sender: TObject);
 var
-  KeyWords : string;
+  KeyWords: string;
   WL: TWebLink;
 begin
   WL := TWebLink(Sender);
   if WL.Tag > -1 then
   begin
-    ShowGroupInfo(WL.Text, False, nil);
+    GroupInfoForm.Execute(nil, WL.Text, False);
   end else
   begin
-    DBChangeGroups(FNewRelatedGroups, KeyWords, False);
+    GroupsSelectForm.Execute(FNewRelatedGroups, KeyWords, False);
     PostMessage(Handle, FReloadGroupsMessage, 0, 0);
   end;
 end;
@@ -458,5 +416,8 @@ begin
   end;
   WllGroups.ReallignList;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IGroupCreateForm, TNewGroupForm);
 
 end.

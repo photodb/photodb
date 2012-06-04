@@ -39,7 +39,7 @@ uses
   uFormInterfaces;
 
 type
-  TCryptImageForm = class(TPasswordSettingsDBForm)
+  TCryptImageForm = class(TPasswordSettingsDBForm, IEncryptForm)
     BtCancel: TButton;
     BtOk: TButton;
     CbSaveCRC: TCheckBox;
@@ -58,25 +58,25 @@ type
     procedure EdPasswordKeyPress(Sender: TObject; var Key: Char);
     procedure BtCancelClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
-    procedure LoadLanguage;
-  protected
-    { Protected declarations }
-    function GetFormID : string; override;
-  public
-    { Public declarations }
     FFileName: string;
     Password: string;
     SaveFileCRC: Boolean;
     CryptFileName: Boolean;
+    procedure LoadLanguage;
+  protected
+    { Protected declarations }
+    function GetFormID : string; override;
     function GetPasswordSettingsPopupMenu: TPopupMenu; override;
     function GetPaswordLink: TWebLink; override;
+  public
+    { Public declarations }
+    function QueryPasswordForFile(FileName: string): TEncryptImageOptions;
+    procedure Encrypt(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
+    procedure Decrypt(Owner: TDBForm; Info: TDBPopupMenuInfo);
   end;
-
-function GetPassForCryptImageFile(FileName : String) : TCryptImageOptions;
-procedure EncryptPhohos(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
-procedure DecryptPhotos(Owner: TDBForm; Info: TDBPopupMenuInfo);
 
 implementation
 
@@ -85,7 +85,7 @@ uses
 
 {$R *.dfm}
 
-procedure DecryptPhotos(Owner: TDBForm; Info: TDBPopupMenuInfo);
+procedure TCryptImageForm.Decrypt(Owner: TDBForm; Info: TDBPopupMenuInfo);
 var
   I: Integer;
   Options: TCryptImageThreadOptions;
@@ -94,7 +94,6 @@ var
   ItemSelected: TArBoolean;
   Password: string;
 begin
-
   Password := DBKernel.FindPasswordForCryptImageFile(Info[Info.Position].FileName);
   if Password = '' then
     if FileExistsSafe(Info[Info.Position].FileName) then
@@ -121,15 +120,17 @@ begin
   Options.Password := Password;
   Options.CryptOptions := 0;
   TCryptingImagesThread.Create(Owner, Options);
+
+  Close;
 end;
 
-procedure EncryptPhohos(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
+procedure TCryptImageForm.Encrypt(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
 var
   Options: TCryptImageThreadOptions;
-  Opt: TCryptImageOptions;
+  Opt: TEncryptImageOptions;
   I, CryptOptions: Integer;
 begin
-  Opt := GetPassForCryptImageFile(Text);
+  Opt := QueryPasswordForFile(Text);
   if Opt.SaveFileCRC then
     CryptOptions := CRYPT_OPTIONS_SAVE_CRC
   else
@@ -153,25 +154,23 @@ begin
   TCryptingImagesThread.Create(Owner, Options);
 end;
 
-function GetPassForCryptImageFile(FileName : String) : TCryptImageOptions;
-var
-  CryptImageForm: TCryptImageForm;
+function TCryptImageForm.QueryPasswordForFile(FileName: string): TEncryptImageOptions;
 begin
-  Application.CreateForm(TCryptImageForm, CryptImageForm);
-  try
-    CryptImageForm.FFileName := FileName;
-    CryptImageForm.ShowModal;
-    Result.Password := CryptImageForm.Password;
-    Result.CryptFileName := CryptImageForm.CryptFileName;
-    Result.SaveFileCRC := CryptImageForm.SaveFileCRC;
-  finally
-    CryptImageForm.Release;
-  end;
+  FFileName := FileName;
+  ShowModal;
+  Result.Password := Password;
+  Result.CryptFileName := CryptFileName;
+  Result.SaveFileCRC := SaveFileCRC;
+end;
+
+procedure TCryptImageForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := caFree;
 end;
 
 procedure TCryptImageForm.FormCreate(Sender: TObject);
 var
-  FPassIcon : HIcon;
+  FPassIcon: HIcon;
 begin
   if TActivationManager.Instance.IsDemoMode then
     SetDefaultCipherClass(TCipher_2DES);
@@ -280,5 +279,9 @@ function TCryptImageForm.GetPasswordSettingsPopupMenu: TPopupMenu;
 begin
   Result := PmCryptMethod;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IEncryptForm, TCryptImageForm);
+
 
 end.

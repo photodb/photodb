@@ -105,7 +105,6 @@ implementation
 
 uses
   UnitPasswordForm,
-  UnitCryptImageForm,
   uFrmSteganographyLanding,
   uStenoLoadImageThread;
 

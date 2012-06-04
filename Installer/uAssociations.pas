@@ -116,11 +116,12 @@ function CheckboxStateToAssociationState(CheckBoxState: TCheckBoxState): TAssoci
 function CheckboxStateToString(CheckBoxState: TCheckBoxState): string;
 function IsGraphicFile(FileName: string): Boolean;
 function IsRAWImageFile(FileName: String): Boolean;
+function CanShareVideo(FileName: string): Boolean;
 
 implementation
 
 var
-  FInstance : TFileAssociations = nil;
+  FInstance: TFileAssociations = nil;
 
 function AssociationStateToCheckboxState(AssociationState : TAssociationState; Update: Boolean) : TCheckBoxState;
 begin
@@ -882,6 +883,25 @@ end;
 function IsRAWImageFile(FileName : String) : Boolean;
 begin
   Result := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage;
+end;
+
+function CanShareVideo(FileName: string): Boolean;
+var
+  Ext: string;
+begin
+  Ext := AnsiLowerCase(ExtractFileExt(FileName));
+  Result := False;
+  Result := Result or (Ext = '.3gp2');
+  Result := Result or (Ext = '.3gpp');
+  Result := Result or (Ext = '.3gp');
+  Result := Result or (Ext = '.3g2');
+  Result := Result or (Ext = '.avi');
+  Result := Result or (Ext = '.mov');
+  Result := Result or (Ext = '.mp4');
+  Result := Result or (Ext = '.mpeg');
+  Result := Result or (Ext = '.mpeg4');
+  Result := Result or (Ext = '.asf');
+  Result := Result or (Ext = '.wmv');
 end;
 
 initialization

@@ -61,9 +61,8 @@ uses
   UnitUpdateDB, uSearchTypes, ManagerDBUnit, ImEditor,
   uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
   UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
-  UnitCryptImageForm, UnitStringPromtForm, UnitSelectDB,
-  UnitSplitExportForm, UnitUpdateDBObject,
-  UnitFormCDMapper, UnitFormCDExport, uFormSteganography;
+  UnitSelectDB, UnitSplitExportForm, UnitUpdateDBObject,
+  UnitFormCDMapper, UnitFormCDExport;
 
 procedure DoActivation;
 begin
@@ -770,7 +769,7 @@ end;
 
 function PromtUserCryptImageFile(FileName: string): string;
 begin
-  Result := GetPassForCryptImageFile(FileName).Password;
+  Result := EncryptForm.QueryPasswordForFile(FileName).Password;
 end;
 
 function CryptGraphicFile(FileName, Password: string): Integer;
@@ -781,7 +780,7 @@ end;
 function APromtString(Caption, Text, InitialString: string): string;
 begin
   Result := InitialString;
-  PromtString(Caption, Text, Result);
+  StringPromtForm.Query(Caption, Text, Result);
 end;
 
 function TestDB(DB: string): Boolean;
@@ -867,6 +866,16 @@ end;
 procedure GetPhotosFromDevice(Folder: string);
 begin
   ImportForm.FromDevice(Folder);
+end;
+
+procedure ExtractDataFromImage(FileName: string);
+begin
+  SteganographyForm.ExtractData(FileName);
+end;
+
+procedure HideDataInImage(FileName: string);
+begin
+  SteganographyForm.HideData(FileName);
 end;
 
 Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);

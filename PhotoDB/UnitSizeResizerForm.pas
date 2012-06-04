@@ -162,10 +162,10 @@ type
     procedure UpdatePreview(PreviewImage: TBitmap; FileName: string; RealWidth, RealHeight: Integer);
 
     //IBatchProcessingForm
-    procedure ExportImages(Owner: TForm; List: TDBPopupMenuInfo);
-    procedure ResizeImages(Owner: TForm; List: TDBPopupMenuInfo);
-    procedure ConvertImages(Owner: TForm; List: TDBPopupMenuInfo);
-    procedure RotateImages(Owner: TForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
+    procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+    procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+    procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+    procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
   end;
 
 const
@@ -180,35 +180,31 @@ uses
 
 {$R *.dfm}
 
-procedure TFormSizeResizer.ConvertImages(Owner: TForm; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
 begin
-  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
-  SetInfo(TDBForm(Owner), List);
+  SetInfo(Owner, List);
   DefaultConvert;
   Show;
 end;
 
-procedure TFormSizeResizer.ExportImages(Owner: TForm; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
 begin
-  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
-  SetInfo(TDBForm(Owner), List);
+  SetInfo(Owner, List);
   DefaultExport;
   Show;
 end;
 
-procedure TFormSizeResizer.ResizeImages(Owner: TForm; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
 begin
-  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
-  SetInfo(TDBForm(Owner), List);
+  SetInfo(Owner, List);
   DefaultResize;
   Show;
 end;
 
-procedure TFormSizeResizer.RotateImages(Owner: TForm; List: TDBPopupMenuInfo;
+procedure TFormSizeResizer.RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo;
   DefaultRotate: Integer; StartImmediately: Boolean);
 begin
-  Assert(Owner is TDBForm, 'Owner should be TDBForm!');
-  SetInfo(TDBForm(Owner), List);
+  SetInfo(Owner, List);
   DoDefaultRotate(DefaultRotate, StartImmediately);
   if not StartImmediately then
     Show;

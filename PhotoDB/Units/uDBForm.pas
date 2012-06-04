@@ -25,13 +25,12 @@ uses
   uTranslate,
   {$ENDIF}
   uVistaFuncs,
-  uImageSource,
   {$IFDEF PHOTODB}
   uFastLoad,
   uMainMenuStyleHook,
   uThemesUtils,
   {$ENDIF}
-  uFormInterfaces;
+  uImageSource;
 
 type
   TDBForm = class(TForm)
@@ -80,6 +79,9 @@ type
   end;
 
 implementation
+
+uses
+  uFormInterfaces;
 
 function GetGUID: TGUID;
 begin
