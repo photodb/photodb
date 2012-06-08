@@ -19,13 +19,14 @@ object FormManageGroups: TFormManageGroups
   Menu = MmMain
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object ListView1: TNoVSBListView1
+  object LvMain: TNoVSBListView1
     Left = 0
     Top = 42
     Width = 597
@@ -49,8 +50,8 @@ object FormManageGroups: TFormManageGroups
     TabOrder = 0
     ViewStyle = vsReport
     OnContextPopup = ImageContextPopup
-    OnCustomDrawItem = ListView1CustomDrawItem
-    OnDblClick = ListView1DblClick
+    OnCustomDrawItem = LvMainCustomDrawItem
+    OnDblClick = LvMainDblClick
   end
   object CoolBar1: TCoolBar
     Left = 0

@@ -203,7 +203,7 @@
   </scope>
   <scope name="Explorer">
     <translate name="Slide show" value="Просмотр" />
-    <translate name="Execute" value="Открыть" />
+    <translate name="Open" value="Открыть" />
     <translate name="Copy to" value="Скопировать в" />
     <translate name="Move to" value="Переместить в" />
     <translate name="Send to" value="Отправить в" />
@@ -234,7 +234,6 @@
     <translate name="Open" value="Открыть" />
     <translate name="Show" value="Просмотр" />
     <translate name="New Window" value="Новое окно" />
-    <translate name="Execute" value="Выполнить" />
     <translate name="Collection Item" value="Изображение в БД" />
     <translate name="Copy" value="Скопировать" />
     <translate name="Cut" value="Вырезать" />

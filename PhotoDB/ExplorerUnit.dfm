@@ -64,7 +64,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 648
-      ActivePage = TbInfo
+      ActivePage = TsPreview
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -77,10 +77,6 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -778,10 +774,6 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object TbInfo: TTabSheet
         Caption = 'Info'
@@ -789,7 +781,7 @@ object ExplorerForm: TExplorerForm
         DesignSize = (
           132
           602)
-        object Label2: TLabel
+        object LbHistogramImage: TLabel
           Left = 3
           Top = 5
           Width = 91
@@ -875,10 +867,6 @@ object ExplorerForm: TExplorerForm
       object TbEXIF: TTabSheet
         Caption = 'EXIF'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0

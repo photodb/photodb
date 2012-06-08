@@ -22,7 +22,7 @@ object ExportForm: TExportForm
   object Label1: TLabel
     Left = 8
     Top = 131
-    Width = 46
+    Width = 43
     Height = 13
     Caption = 'Record:'
     Font.Charset = DEFAULT_CHARSET

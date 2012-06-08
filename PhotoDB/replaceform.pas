@@ -292,10 +292,12 @@ var
   Bs: TStream;
   Password: string;
   FQuery: TDataSet;
-  Exists, W, H: Integer;
+  W, H: Integer;
   TempBitmap, FBit: TBitmap;
   JPEG: TJpegImage;
   DA: TDBAdapter;
+  Info: TDBPopupMenuInfoRecord;
+
 const
   ListItemPreviewSize = 100;
 
@@ -375,12 +377,15 @@ begin
             ListItemPreviewSize div 2 - JPEG.Height div 2, JPEG);
         end;
         ApplyRotate(Bit, DA.Rotation);
-        Exists := 0;
-        DrawAttributes(Bit, ListItemPreviewSize, DA.Rating,
-          DA.Rotation, DA.Access, DA.FileName, False, Exists, DA.ID);
+
+        Info := TDBPopupMenuInfoRecord.CreateFromDS(DA.DataSet);
+        try
+          DrawAttributes(Bit, ListItemPreviewSize, Info);
+        finally
+          F(Info);
+        end;
 
         Image2.Picture.Graphic := Bit;
-
       finally
         F(Bit);
       end;
@@ -641,10 +646,7 @@ var
   Data: TDBPopupMenuInfoRecord;
 begin
   Data := TDBPopupMenuInfoRecord(Item.Data);
-  DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
-                     FBitmapImageList, Y,
-                     True, Data.ID, Data.ExistedFileName, Data.Rating, Data.Rotation,
-                     Data.Access, Data.Encrypted, Data.Include, Data.Exists, False);
+  DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect, FBitmapImageList, Y, True, Data, False);
 end;
 
 procedure TDBReplaceForm.FormDestroy(Sender: TObject);

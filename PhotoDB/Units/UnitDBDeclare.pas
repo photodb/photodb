@@ -231,6 +231,7 @@ type
     Image: TJpegImage;
     Tag: Integer;
     IsImageEncrypted: Boolean;
+    HasExifHeader: Boolean;
     constructor Create; override;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromFile(FileName: string);
@@ -343,6 +344,7 @@ begin
   Width := Item.Width;
   Height := Item.Height;
   Exists := Item.Exists;
+  HasExifHeader := Item.HasExifHeader;
   if MoveImage then
   begin
     F(Image);
@@ -392,6 +394,7 @@ begin
   Data := nil;
   Image := nil;
   FGeoLocation := nil;
+  HasExifHeader := False;
 end;
 
 constructor TDBPopupMenuInfoRecord.CreateFromDS(DS: TDataSet);

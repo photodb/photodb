@@ -4,57 +4,33 @@ interface
 
 uses
   Windows,
-  uVistaFuncs,
-  CommonDBSupport,
-  Messages,
   SysUtils,
   Classes,
   Graphics,
   Controls,
   Forms,
-  Dialogs,
-  Menus,
   ExtCtrls,
-  StdCtrls,
   ComCtrls,
   JPEG,
   UnitDBDeclare,
-  uDBForm,
   ShellApi,
-  uDBBaseTypes,
   MAPI,
-  DDraw,
   Math,
   DateUtils,
-  GraphicsCool,
-  GraphicsBaseTypes,
   uLogger,
   uFileUtils,
   UnitDBFileDialogs,
-  UnitDBCommon,
   uConstants,
-  uGraphicUtils,
-  uShellIntegration,
   uTranslate,
-  uJpegUtils,
-  uBitmapUtils,
   uMemory,
-  uDBPopupMenuInfo,
-  uAppUtils,
   uRuntime,
   uSysUtils,
   uAssociations,
   uActivationUtils,
-  GraphicCrypt,
-  RAWImage,
-  UnitDBKernel;
-
-type
-  TInitializeAProc = function(S: PChar): Boolean;
+  uImageLoader;
 
 type
   THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
-  TPCharFunctionA = function(S: Pchar): PChar;
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
 
@@ -148,8 +124,6 @@ function EXIFDateToTime(DateTime: string): TDateTime;
 
 function GetActiveFormHandle: Integer;
 
-function CenterPos(W1, W2: Integer): Integer;
-
 function SizeInText(Size: Int64): string;
 function SpeedInText(Speed: Extended): string;
 
@@ -159,11 +133,6 @@ function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight:
 function TimeIntervalInString(Time: TTime): string;
 
 implementation
-
-function CenterPos(W1, W2: Integer): Integer;
-begin
-  Result := W1 div 2 - W2 div 2;
-end;
 
 function GetDBFileName(FileName, DBName: string): string;
 begin
@@ -180,68 +149,20 @@ end;
 
 function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 var
-  GC: TGraphicClass;
-  G: TGraphic;
-  IsEncrypted: Boolean;
-  PassWord: string;
-  W, H: Integer;
-  SmallBitmap: TBitmap;
+  Info: TDBPopupMenuInfoRecord;
+  ImageInfo: ILoadImageInfo;
 begin
   Result := False;
-  GC := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
-  if GC <> nil then
-  begin
-    G := GC.Create;
-    try
-      IsEncrypted := ValidCryptGraphicFile(FileName);
-
-      if G is TRAWImage then
-        TRAWImage(G).IsPreview := True;
-
-      try
-        if IsEncrypted then
-        begin
-          F(G);
-          PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
-          if FileName <> '' then
-            G := DeCryptGraphicFile(FileName, PassWord)
-          else
-            Exit;
-        end else
-          G.LoadFromFile(FileName);
-
-        if (MaxWidth > 0) and (MaxHeight > 0) then
-          JPEGScale(G, MaxWidth, MaxHeight);
-
-      except
-        on e: Exception do
-          EventLog(e);
-      end;
-      if (G <> nil) and not G.Empty then
-      begin
-        Bitmap.Assign(G);
-        Bitmap.PixelFormat := pf24bit;
-        if (MaxWidth > 0) and (MaxHeight > 0) then
-        begin
-          W := Bitmap.Width;
-          H := Bitmap.Height;
-          ProportionalSize(MaxWidth, MaxHeight, W, H);
-          if (W + H < Bitmap.Width + Bitmap.Height) then
-          begin
-            SmallBitmap := TBitmap.Create;
-            try
-              DoResize(W, H, Bitmap, SmallBitmap);
-              Exchange(SmallBitmap, Bitmap);
-              Result := True;
-            finally
-              F(SmallBitmap);
-            end;
-          end;
-        end;
-      end;
-    finally
-      F(G);
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword],
+      ImageInfo, MaxWidth, MaxHeight) then
+    begin
+      Bitmap := ImageInfo.GenerateBitmap(Info, MaxWidth, MaxHeight, pf24Bit, clBlack, [ilboFreeGraphic, ilboRotate, ilboApplyICCProfile, ilboQualityResize]);
+      Result := Bitmap <> nil;
     end;
+  finally
+    F(Info);
   end;
 end;
 

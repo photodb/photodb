@@ -4,7 +4,6 @@ interface
 
 uses
   Generics.Collections,
-  acDlgSelect,
   CommCtrl,
   ActiveX,
   ExplorerTypes,
@@ -27,7 +26,6 @@ uses
   PrintMainForm,
   uScript,
   UnitScripts,
-  Dialogs,
   ComCtrls,
   ShellCtrls,
   ImgList,
@@ -35,7 +33,6 @@ uses
   ExtCtrls,
   ToolWin,
   Buttons,
-  ImButton,
   StdCtrls,
   SaveWindowPos,
   AppEvnts,
@@ -49,10 +46,9 @@ uses
   DragDrop,
   DropTarget,
   ScPanel,
-  uGOM,
+  ImButton,
   UnitCDMappingSupport,
   StrUtils,
-  Tlayered_Bitmap,
   ShellContextMenu,
   ShlObj,
   Clipbrd,
@@ -415,7 +411,7 @@ type
     TbInfo: TTabSheet;
     TbEXIF: TTabSheet;
     VleExif: TValueListEditor;
-    Label2: TLabel;
+    LbHistogramImage: TLabel;
     ImHIstogramm: TImage;
     ReRating: TRating;
     DteTime: TDateTimePicker;
@@ -877,7 +873,6 @@ uses
   uSearchTypes,
   PropertyForm,
   FormManegerUnit,
-  ManagerDBUnit,
   UnitFileRenamerForm,
   ImEditor,
   UnitSavingTableForm,
@@ -1240,7 +1235,6 @@ begin
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
   LsMain.BringToFront;
 
-  GOM.AddObj(Self);
   if FGoToLastSavedPath then
     LoadLastPath;
   FCanPasteFromClipboard := CanCopyFromClipboard;
@@ -1842,7 +1836,6 @@ begin
   F(FStatusProgress);
   UnRegisterMainForm(Self);
   F(FFilesInfo);
-  GOM.RemoveObj(Self);
 
   FWebBorwserFactory := nil;
 end;
@@ -5367,9 +5360,7 @@ end;
 
 procedure TExplorerForm.DBManager1Click(Sender: TObject);
 begin
-  if ManagerDB = nil then
-    Application.CreateForm(TManagerDB, ManagerDB);
-  ManagerDB.Show;
+  CollectionManagerForm.Show;
 end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);
@@ -5940,7 +5931,7 @@ begin
   BeginTranslate;
   try
     SlideShowLink.Text := L('Slide show');
-    ShellLink.Text := L('Execute');
+    ShellLink.Text := L('Open');
     CopyToLink.Text := L('Copy to');
     MoveToLink.Text := L('Move to');
     RenameLink.Text := L('Rename');
@@ -5970,7 +5961,7 @@ begin
     Open2.Caption := L('Open');
     SlideShow1.Caption := L('Show');
     NewWindow1.Caption := L('New Window');
-    Shell1.Caption := L('Execute');
+    Shell1.Caption := L('Open');
     DBitem1.Caption := L('Collection Item');
     Copy1.Caption := L('Copy');
     Cut2.Caption := L('Cut');
@@ -9097,8 +9088,7 @@ begin
     Exists := 1;
 
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
-    Info.FileType = EXPLORER_ITEM_IMAGE, Info.ID, Info.ExistedFileName,
-    Info.Rating, Info.Rotation, Info.Access, Info.Encrypted, Info.Include, Exists, True);
+    Info.FileType = EXPLORER_ITEM_IMAGE, Info, True);
 
   if Info.GeoLocation <> nil then
     DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1], 16, 16, 0, 0, DI_NORMAL);

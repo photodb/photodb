@@ -3,11 +3,22 @@ unit UnitSearchBigImagesLoaderThread;
 interface
 
 uses
-  Windows, Classes, UnitDBKernel, SysUtils, Graphics, GraphicCrypt, Math,
-  RAWImage, UnitDBDeclare, uJpegUtils, uRuntime, uExifUtils,
-  uCDMappingTypes, uThreadForm, uLogger, uThreadEx, uMemory, uBitmapUtils,
-  uMultiCPUThreadManager, uDBPopupMenuInfo, uGraphicUtils, uDBBaseTypes,
-  uTranslate, uAssociations;
+  Windows,
+  Classes,
+  SysUtils,
+  Graphics,
+  UnitDBDeclare,
+  uRuntime,
+  uCDMappingTypes,
+  uThreadForm,
+  uLogger,
+  uThreadEx,
+  uMemory,
+  uMultiCPUThreadManager,
+  uDBPopupMenuInfo,
+  uDBBaseTypes,
+  uTranslate,
+  uImageLoader;
 
 type
   TSearchBigImagesLoaderThread = class(TMultiCPUThread)
@@ -55,7 +66,9 @@ var
 
 implementation
 
-uses Searching, uSearchThreadPool;
+uses
+  Searching,
+  uSearchThreadPool;
 
 constructor TSearchBigImagesLoaderThread.Create(Sender: TThreadForm; SID: TGUID; OnDone: TNotifyEvent; PictureSize: integer;
   Data : TDBPopupMenuInfo; MainThread : Boolean; Refresh: Boolean);
@@ -145,71 +158,30 @@ end;
 procedure TSearchBigImagesLoaderThread.ExtractBigImage(PictureSize: Integer;
   FileName: string; Rotation: Integer);
 var
-  FGraphicClass: TGraphicClass;
-  FGraphic: TGraphic;
-  PassWord: String;
-  FBit, TempBitmap: TBitmap;
-  W, H: Integer;
+  Info: TDBPopupMenuInfoRecord;
+  ImageInfo: ILoadImageInfo;
 begin
   FileName := ProcessPath(FileName);
 
-  FGraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
-  if FGraphicClass = nil then
-    Exit;
-
-  FGraphic := FGraphicClass.Create;
+  Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
   try
+    Info.Rotation := Rotation;
 
-    if GraphicCrypt.ValidCryptGraphicFile(FileName) then
+    if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo, PictureSize, PictureSize)  then
     begin
-      PassWord := DBKernel.FindPasswordForCryptImageFile(FileName);
-      if PassWord = '' then
-        Exit;
-
-      F(FGraphic);
-      FGraphic := DeCryptGraphicFile(FileName, PassWord);
-    end else
-    begin
-      if FGraphic is TRAWImage then
-      begin
-        if not (FGraphic as TRAWImage).LoadThumbnailFromFile(FileName, FPictureSize, FPictureSize) then
-          (FGraphic as TRAWImage).LoadFromFile(FileName)
-        else
-          Rotation := ExifDisplayButNotRotate(Rotation);
-      end else
-        FGraphic.LoadFromFile(FileName);
-
-    end;
-
-    FBit := TBitmap.Create;
-    try
-      FBit.PixelFormat := pf24bit;
-      JPEGScale(FGraphic, PictureSize, PictureSize);
-
-      if Min(FGraphic.Height, FGraphic.Width) > 1 then
-        LoadImageX(FGraphic, FBit, Theme.ListViewColor);
-
-      TempBitmap:=TBitmap.Create;
+      BitmapParam := ImageInfo.GenerateBitmap(Info, PictureSize, PictureSize, pf32Bit, Theme.ListViewColor, [ilboFreeGraphic, ilboRotate, ilboApplyICCProfile]);
       try
-        TempBitmap.PixelFormat := pf24bit;
-        W := FBit.Width;
-        H := FBit.Height;
-        ProportionalSize(PictureSize, PictureSize, W, H);
-        TempBitmap.SetSize(W, H);
-        DoResize(W, H, FBit, TempBitmap);
-        ApplyRotate(TempBitmap, Rotation);
-        BitmapParam := TempBitmap;
-        StrParam := FileName;
-        SynchronizeEx(ReplaceBigBitmap);
-        TempBitmap := BitmapParam;
+        if BitmapParam <> nil then
+        begin
+          StrParam := FileName;
+          SynchronizeEx(ReplaceBigBitmap);
+        end;
       finally
-        F(TempBitmap);
+        F(BitmapParam);
       end;
-    finally
-      F(FBit);
     end;
   finally
-    F(FGraphic);
+    F(Info);
   end;
 end;
 

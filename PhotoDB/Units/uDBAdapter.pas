@@ -76,6 +76,7 @@ type
     property LongImageID: string read GetLongImageID write SetLongImageID;
     property Links: string read GetLinks write SetLinks;
     property Attributes: Integer read GetAttributes write SetAttributes;
+    property DataSet: TDataSet read FDS;
   end;
 
 implementation

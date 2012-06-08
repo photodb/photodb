@@ -60,7 +60,7 @@ uses
   MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
   uStillImage in 'uStillImage.pas',
   uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas',
-  uFormInterfaces in '..\PhotoDB\Units\uFormInterfaces.pas';
+  uThemesUtils in '..\PhotoDB\Units\uThemesUtils.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

@@ -22,10 +22,12 @@ uses
   uBitmapUtils,
   Themes,
   uThemesUtils,
-  uDBForm, uBaseWinControl;
+  uDBForm,
+  uBaseWinControl,
+  uFormInterfaces;
 
 type
-  TFormAddingImage = class(TDBForm)
+  TFormAddingImage = class(TDBForm, ICollectionAddItemForm)
     LbMessage: TLabel;
     LsMain: TLoadingSign;
     TmrRedraw: TTimer;
@@ -151,5 +153,8 @@ procedure TFormAddingImage.TmrRedrawTimer(Sender: TObject);
 begin
   DrawForm;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ICollectionAddItemForm, TFormAddingImage);
 
 end.

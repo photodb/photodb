@@ -10,7 +10,6 @@ uses
   Graphics,
   Controls,
   Forms,
-  Dialogs,
   ExtCtrls,
   StdCtrls,
   Math,
@@ -30,6 +29,7 @@ uses
   uMemoryEx,
   uConstants,
   Dolphin_DB,
+  UnitDBKernel,
   uGroupTypes,
   UnitGroupsWork,
   GraphicSelectEx,
@@ -95,9 +95,6 @@ type
   end;
 
 implementation
-
-uses
-  UnitDBKernel;
 
 {$R *.dfm}
 

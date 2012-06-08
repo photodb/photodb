@@ -40,10 +40,10 @@ begin
 end;
 
 procedure TSearchThreadPool.CreateBigImage(Sender: TMultiCPUThread;
-  PictureSize: Integer; FileName: string; Rotation : Integer);
+  PictureSize: Integer; FileName: string; Rotation: Integer);
 var
-  Thread : TSearchBigImagesLoaderThread;
-  AvaliableThread : TSearchBigImagesLoaderThread;
+  Thread: TSearchBigImagesLoaderThread;
+  AvaliableThread: TSearchBigImagesLoaderThread;
 begin
   Lock;
   try

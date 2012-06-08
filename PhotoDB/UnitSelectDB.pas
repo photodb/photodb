@@ -67,8 +67,7 @@ uses
 
 {$R *.dfm}
 
-function DoChooseDBFile(Options: Integer = SELECT_DB_OPTION_GET_DB)
-  : TPhotoDBFile;
+function DoChooseDBFile(Options: Integer = SELECT_DB_OPTION_GET_DB): TPhotoDBFile;
 var
   FormSelectDB: TFormSelectDB;
 begin

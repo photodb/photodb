@@ -18,13 +18,13 @@ type
     FIsHovered: Boolean;
     FIsSelected: Boolean;
     procedure SetIsHovered(const Value: Boolean);
-    procedure UpdateSubControls;
     procedure SetIsSelected(const Value: Boolean);
   protected
     procedure Paint; override;
     procedure WMEraseBkgnd(var Message: TWmEraseBkgnd); message WM_ERASEBKGND;
   public
     constructor Create(AOwner: TComponent); override;
+    procedure UpdateSubControls;
     property IsHovered: Boolean read FIsHovered write SetIsHovered;
     property IsSelected: Boolean read FIsSelected write SetIsSelected;
   end;

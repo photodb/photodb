@@ -69,6 +69,7 @@ begin
     Result := RectInRect(R, TEasyCollectionItemX(ElvMain.Selection.FocusedItem).GetDisplayRect);
   end;
 end;
+
 function TListViewForm.IsSelectedVisible: Boolean;
 var
   I: Integer;

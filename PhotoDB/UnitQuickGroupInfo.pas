@@ -88,16 +88,12 @@ type
     procedure Execute(AOwner: TForm; GroupName: string; CloseOwner: Boolean); overload;
   end;
 
-{procedure ShowGroupInfo(Group: TGroup; CloseOwner: Boolean; Owner: TForm); overload;
-procedure ShowGroupInfo(GrouName: string; CloseOwner: Boolean; Owner: TForm); overload;  }
-
 implementation
 
 {$R *.dfm}
 
 uses
   UnitFormChangeGroup,
-  UnitManageGroups,
   uManagerExplorer;
 
 procedure TFormQuickGroupInfo.Execute(AOwner: TForm; GroupName: string;
@@ -212,13 +208,13 @@ end;
 procedure TFormQuickGroupInfo.Manager1Click(Sender: TObject);
 begin
   Hide;
-  if FormManageGroups <> nil then
+  if CurrentGroupsManagerForm <> nil then
   begin
     Close;
     Exit;
   end;
   Application.ProcessMessages;
-  ExecuteGroupManager;
+  GroupsManagerForm.Execute;
   Close;
 end;
 

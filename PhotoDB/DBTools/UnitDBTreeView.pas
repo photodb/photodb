@@ -15,6 +15,7 @@ uses
   ComCtrls,
   ImgList,
   DB,
+  UnitDBDeclare,
   ExtCtrls,
   JPEG,
   CommCtrl,
@@ -124,7 +125,9 @@ procedure MakeDBFileTree(DBFileName: string);
 implementation
 
 uses
-  uManagerExplorer, Searching, UnitOpenQueryThread, ProgressActionUnit;
+  uManagerExplorer,
+  UnitOpenQueryThread,
+  ProgressActionUnit;
 
 {$R *.dfm}
 
@@ -398,7 +401,8 @@ var
   B, TempBitmap, Image: TBitmap;
   P: TPoint;
   PassWord: string;
-  Exists, W, H: Integer;
+  W, H: Integer;
+  Info: TDBPopupMenuInfoRecord;
 begin
   GetCursorPos(P);
   Node := TreeView1.Selected;
@@ -424,101 +428,96 @@ begin
         B.Width := 102;
         B.Height := 102;
         FillColorEx(B, Theme.WindowColor);
-        Exists := 0;
-        DrawAttributes(B, 102, 0, 0, 0, '', False, Exists);
         ImMain.Picture.Graphic := B;
       finally
         F(B);
       end;
       Exit;
     end;
-    Label2.Caption := 'ID = ' + IntToStr(TempTable.FieldByName('ID').AsInteger);
-    if TItemData(Node.Data^).Crypted then
-    begin
-      PassWord := DBkernel.FindPasswordForCryptBlobStream(TempTable.FieldByName('thum'));
-      B := TBitmap.Create;
-      try
-        B.PixelFormat := pf24bit;
-        B.Width := 102;
-        B.Height := 102;
-        FillColorEx(B, Theme.WindowColor);
+    Info := TDBPopupMenuInfoRecord.CreateFromDS(TempTable);
+    try
+      Label2.Caption := 'ID = ' + IntToStr(Info.ID);
+      if TItemData(Node.Data^).Crypted then
+      begin
+        PassWord := DBkernel.FindPasswordForCryptBlobStream(TempTable.FieldByName('thum'));
+        B := TBitmap.Create;
+        try
+          B.PixelFormat := pf24bit;
+          B.Width := 102;
+          B.Height := 102;
+          FillColorEx(B, Theme.WindowColor);
 
-        if PassWord = '' then
-        begin
-          Ico := TIcon.Create;
-          try
-            Ico.Handle := LoadIcon(HInstance, 'SLIDE_SHOW');
-            B.Canvas.Draw(102 div 2 - Ico.Width div 2, 102 div 2 - Ico.Height div 2, Ico);
-          finally
-            F(Ico);
+          if PassWord = '' then
+          begin
+            Ico := TIcon.Create;
+            try
+              Ico.Handle := LoadIcon(HInstance, 'SLIDE_SHOW');
+              B.Canvas.Draw(102 div 2 - Ico.Width div 2, 102 div 2 - Ico.Height div 2, Ico);
+            finally
+              F(Ico);
+            end;
+          end else
+          begin
+            J := TJpegImage.Create;
+            try
+              DeCryptBlobStreamJPG(TempTable.FieldByName('thum'), PassWord, J);
+              B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
+            finally
+              F(J);
+            end;
           end;
-          Exists := 0;
-          DrawAttributes(B, 102, 0, 0, 0, TempTable.FieldByName('FFileName').AsString, True, Exists);
-        end else
-        begin
-          J := TJpegImage.Create;
+          DrawAttributes(B, 102, Info);
+          ImMain.Picture.Graphic := B;
+        finally
+          F(B);
+        end;
+      end else
+      begin
+        B := TBitmap.Create;
+        try
+          B.PixelFormat := pf24bit;
+          B.Width := 102;
+          B.Height := 102;
+          FillColorEx(B, Theme.WindowColor);
+          J := TJPEGImage.Create;
           try
-            DeCryptBlobStreamJPG(TempTable.FieldByName('thum'), PassWord, J);
-            B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
+            J.Assign(TempTable.FieldByName('Thum'));
+
+            if (J.Width > 100) or (J.Height > 100) then
+            begin
+              TempBitmap := TBitmap.Create;
+              try
+                TempBitmap.PixelFormat := Pf24bit;
+                TempBitmap.Assign(J);
+                W := J.Width;
+                H := J.Height;
+                ProportionalSize(100, 100, W, H);
+                Image := TBitmap.Create;
+                try
+                  Image.PixelFormat := pf24bit;
+                  DoResize(W, H, TempBitmap, Image);
+                  B.Canvas.Draw(50 - Image.Width div 2, 50 - Image.Height div 2, Image);
+                finally
+                  F(Image);
+                end;
+              finally
+                F(TempBitmap);
+              end;
+            end  else
+              B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
           finally
             F(J);
           end;
-          Exists := 0;
-          DrawAttributes(B, 102, TempTable.FieldByName('Rating').AsInteger, TempTable.FieldByName('Rotated').AsInteger,
-            TempTable.FieldByName('Access').AsInteger, TempTable.FieldByName('FFileName').AsString,
-            ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')), Exists);
-        end;
-        ImMain.Picture.Graphic := B;
-      finally
-        F(B);
-      end;
-    end else
-    begin
-      B := TBitmap.Create;
-      try
-        B.PixelFormat := pf24bit;
-        B.Width := 102;
-        B.Height := 102;
-        FillColorEx(B, Theme.WindowColor);
-        J := TJPEGImage.Create;
-        try
-          J.Assign(TempTable.FieldByName('Thum'));
+          ApplyRotate(B, Info.Rotation);
 
-          if (J.Width > 100) or (J.Height > 100) then
-          begin
-            TempBitmap := TBitmap.Create;
-            try
-              TempBitmap.PixelFormat := Pf24bit;
-              TempBitmap.Assign(J);
-              W := J.Width;
-              H := J.Height;
-              ProportionalSize(100, 100, W, H);
-              Image := TBitmap.Create;
-              try
-                Image.PixelFormat := pf24bit;
-                DoResize(W, H, TempBitmap, Image);
-                B.Canvas.Draw(50 - Image.Width div 2, 50 - Image.Height div 2, Image);
-              finally
-                F(Image);
-              end;
-            finally
-              F(TempBitmap);
-            end;
-          end  else
-            B.Canvas.Draw(50 - J.Width div 2, 50 - J.Height div 2, J);
+          DrawAttributes(B, 102, Info);
+          ImMain.Picture.Graphic := B;
         finally
-          F(J);
+          F(B);
         end;
-        ApplyRotate(B, TempTable.FieldByName('Rotated').AsInteger);
-
-        Exists := 0;
-        DrawAttributes(B, 102, TempTable.FieldByName('Rating').AsInteger, TempTable.FieldByName('Rotated').AsInteger,
-          TempTable.FieldByName('Access').AsInteger, TempTable.FieldByName('FFileName').AsString,
-          ValidCryptBlobStreamJPG(TempTable.FieldByName('thum')), Exists, TempTable.FieldByName('ID').AsInteger);
-        ImMain.Picture.Graphic := B;
-      finally
-        F(B);
       end;
+    finally
+      F(Info);
     end;
   end else
   begin

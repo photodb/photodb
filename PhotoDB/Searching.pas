@@ -3,8 +3,6 @@ unit Searching;
 interface
 
 uses
-  DBCMenu,
-  CmpUnit,
   ToolWin,
   ShellApi,
   Windows,
@@ -18,17 +16,19 @@ uses
   DB,
   Menus,
   ExtCtrls,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   StdCtrls,
   uGraphicUtils,
-  uMemoryEx,
   ImgList,
   ComCtrls,
   ActiveX,
   ShlObj,
   JPEG,
   ClipBrd,
-  uGUIDUtils,
   SaveWindowPos,
+  uMemoryEx,
+  uGUIDUtils,
   ExtDlgs,
   UnitDBKernel,
   Rating,
@@ -39,6 +39,8 @@ uses
   ShellCtrls,
   UnitBitmapImageList,
   GraphicCrypt,
+  DBCMenu,
+  CmpUnit,
   ShellContextMenu,
   DropSource,
   DropTarget,
@@ -67,7 +69,7 @@ uses
   uConstants,
   uTime,
   CommCtrl,
-  UFastload,
+  uFastload,
   uListViewUtils,
   uDBDrawing,
   pngimage,
@@ -88,8 +90,8 @@ uses
   uDBTypes,
   uRuntime,
   uSysUtils,
-  UDBUtils,
-  UDBFileTypes,
+  uDBUtils,
+  uDBFileTypes,
   Dolphin_DB,
   uGroupTypes,
   UnitGroupsWork,
@@ -100,8 +102,6 @@ uses
   uBitmapUtils,
   uThemesUtils,
   uVCLHelpers,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
   Themes,
   uBaseWinControl,
   uFormInterfaces;
@@ -248,51 +248,36 @@ type
     procedure DoSearchNow(Sender: TObject);
     procedure Edit1_KeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
-    procedure ListViewContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
-    procedure ListViewMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure ListViewContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    procedure ListViewMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ListViewDblClick(Sender: TObject);
     procedure SlideShow1Click(Sender: TObject);
     procedure SaveClick(Sender: TObject);
-    function GetSelectedTstrings: Tstrings;
     procedure FormDestroy(Sender: TObject);
     procedure Breakoperation(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
-    function GetAllFiles: TStrings;
-    procedure RefreshInfoByID(ID: Integer);
     procedure MemKeyWordsChange(Sender: TObject);
-    procedure ErrorQSL(sql : string);
-    procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
-    procedure ListViewMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure ListViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure CopySearchResults1Click(Sender: TObject);
     procedure HintTimerTimer(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
-    procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
     procedure SaveResults1Click(Sender: TObject);
     procedure LoadResults1Click(Sender: TObject);
     procedure ShellTreeView1Change(Sender: TObject; Node: TTreeNode);
     procedure ListViewKeyPress(Sender: TObject; var Key: Char);
-    procedure ListViewKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure ListViewMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure ListViewKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure ListViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ListViewExit(Sender: TObject);
     procedure Properties1Click(Sender: TObject);
     procedure Explorer2Click(Sender: TObject);
-    procedure SetPath(Value : String);
-    procedure SearchPanelAContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure SearchPanelAContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure RatingEditMouseDown(Sender: TObject);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure DateNotExists1Click(Sender: TObject);
     procedure IsDatePanelDblClick(Sender: TObject);
     procedure PanelValueIsDateSetsDblClick(Sender: TObject);
     procedure ComboBox1_KeyPress(Sender: TObject; var Key: Char);
-    procedure ReloadGroups;
     procedure GroupClick(Sender: TObject);
     procedure ComboBox1_DblClick(Sender: TObject);
     procedure GroupsManager1Click(Sender: TObject);
@@ -309,7 +294,6 @@ type
     procedure Comentnotsets1Click(Sender: TObject);
     procedure Datenotsets1Click(Sender: TObject);
     procedure PmCommentPopup(Sender: TObject);
-    procedure LoadLanguage;
     procedure HelpTimerTimer(Sender: TObject);
     procedure PmSetDatePopup(Sender: TObject);
     procedure PmEditGroupsPopup(Sender: TObject);
@@ -318,9 +302,7 @@ type
     procedure OpeninExplorer1Click(Sender: TObject);
     procedure AddFolder1Click(Sender: TObject);
     procedure Hide1Click(Sender: TObject);
-    procedure Splitter1CanResize(Sender: TObject; var NewSize: Integer;
-      var Accept: Boolean);
-    procedure DeleteItemByID(ID : integer);
+    procedure Splitter1CanResize(Sender: TObject; var NewSize: Integer; var Accept: Boolean);
     procedure HelpNextClick(Sender: TObject);
     procedure HelpCloseClick(Sender: TObject; var CanClose: Boolean);
     procedure FormShow(Sender: TObject);
@@ -335,9 +317,7 @@ type
     procedure Image4_Click(Sender: TObject);
     procedure Decremect1Click(Sender: TObject);
     procedure Increment1Click(Sender: TObject);
-    procedure FillImageList;
     procedure InsertSpesialQueryPopupMenuItemClick(Sender: TObject);
-    procedure DeleteSelected;
     procedure HidePanelTimerTimer(Sender: TObject);
     procedure PanelValueIsTimeSetsDblClick(Sender: TObject);
     procedure PmTimeEditPopup(Sender: TObject);
@@ -346,29 +326,19 @@ type
     procedure Timenotsets1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure ShowExplorerPage1Click(Sender: TObject);
-    procedure DoShowSelectInfo;
     procedure SelectTimerTimer(Sender: TObject);
     procedure IsTimePanelDblClick(Sender: TObject);
     procedure PmSearchOptionsPopup(Sender: TObject);
     procedure View2Click(Sender: TObject);
-    procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState;
-      Point: TPoint; var Effect: Integer);
-    procedure ReloadListMenu;
-    procedure ScriptExecuted(Sender : TObject);
-    procedure LoadExplorerValue(Sender : TObject);
-    Procedure ListViewResize(Sender : TObject);
-    function GetSelectionCount : integer;
+    procedure DropFileTarget2Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
+    procedure LoadExplorerValue(Sender: TObject);
+    procedure ListViewResize(Sender: TObject);
     procedure EasyListviewItemThumbnailDraw(
       Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
     procedure ListViewSelectItem(Sender: TObject; Item: TEasyItem; Selected: Boolean);
-    function GetListItemByID(ID : integer) : TEasyItem;
-    function ItemIndex(item : TEasyItem) : integer;
-    procedure ListViewEdited(Sender: TObject; Item: TEasyItem;
-      var S: String);
-    function GetCurrenTPopupActionBarInfo(item : TEasyItem) : TDBPopupMenuInfo;
-    function ListViewSelected : TEasyItem;
-    function ItemAtPos(X,Y : integer): TEasyItem;
+    procedure ListViewEdited(Sender: TObject; Item: TEasyItem; var S: String);
+    function GetCurrenTPopupActionBarInfo(item : TEasyItem): TDBPopupMenuInfo;
     procedure EasyListviewDblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
       ShiftState: TShiftState; var Handled: Boolean);
     procedure EasyListviewItemSelectionChanged(
@@ -381,14 +351,9 @@ type
     procedure ListviewIncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
       var CompareResult: Integer);
     procedure ShowDateOptionsLinkClick(Sender: TObject);
-    procedure LoadSizes;
-    function FileNameExistsInList(FileName: string): Boolean;
-    function ReplaceBitmapWithPath(FileName: string; Bitmap: TBitmap): Boolean;
-
     procedure ListViewMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure BigImagesTimerTimer(Sender: TObject);
-    function GetVisibleItems: TArStrings;
     procedure ComboBoxSearchGroupsSelect(Sender: TObject);
     procedure ComboBoxSearchGroupsDropDown(Sender: TObject);
     procedure SearchEditDropDown(Sender: TObject);
@@ -404,14 +369,12 @@ type
     procedure elvDateRangeItemClick(Sender: TCustomEasyListview;
       Item: TEasyItem; KeyStates: TCommonKeyStates;
       HitInfo: TEasyItemHitTestInfoSet);
-    procedure elvDateRangeMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure elvDateRangeMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure elvDateRangeResize(Sender: TObject);
     procedure dblDateDrawBackground(Sender: TObject; Buffer: TBitmap);
     procedure SearchEditChange(Sender: TObject);
     procedure TmrSearchResultsCountTimer(Sender: TObject);
-    procedure elvDateRangeItemSelectionChanged(Sender: TCustomEasyListview;
-      Item: TEasyItem);
+    procedure elvDateRangeItemSelectionChanged(Sender: TCustomEasyListview; Item: TEasyItem);
     procedure SearchEditIconClick(Sender: TObject);
     procedure TmOpenDatesRangeTimer(Sender: TObject);
   private
@@ -460,9 +423,26 @@ type
     FProgressMessage: Cardinal;
     FReloadGroupsMessage: Cardinal;
     FDateRangeDS: TDataSet;
-    function HintRealA(Info : TDBPopupMenuInfoRecord) : Boolean;
-    procedure BigSizeCallBack(Sender : TObject; SizeX, SizeY : integer);
-    function DateRangeItemAtPos(X, Y : Integer): TEasyItem;
+    procedure SetPath(Value: String);
+    procedure ReloadGroups;
+    procedure LoadLanguage;
+    procedure DeleteItemByID(ID : integer);
+    procedure FillImageList;
+    procedure DeleteSelected;
+    procedure DoShowSelectInfo;
+    procedure ReloadListMenu;
+    procedure ScriptExecuted(Sender: TObject);
+    function ListViewSelected: TEasyItem;
+    function ItemIndex(Item: TEasyItem): Integer;
+    function GetSelectionCount: Integer;
+    function ItemAtPos(X, Y: Integer): TEasyItem;
+    procedure LoadSizes;
+    function GetAllFiles: TStrings;
+    function GetSelectedTstrings: TStrings;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
+    function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
+    procedure BigSizeCallBack(Sender: TObject; SizeX, SizeY: Integer);
+    function DateRangeItemAtPos(X, Y: Integer): TEasyItem;
     function GetDateFilter : TDateRange;
     procedure AddItemInListViewByGroups(DataRecord : TDBPopupMenuInfoRecord; ReplaceBitmap : Boolean; CreateData: Boolean);
     procedure RebuildQueryList;
@@ -474,6 +454,7 @@ type
     property RegQueryRootPath: string read GetRegQueryRootPath;
     procedure EasyListViewItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
     procedure HelpThreadDBRecordsCountCallBack(Sender: TObject; RecordsInDB: Integer);
+    procedure CMMOUSELEAVE(var message: TWMNoParams); message CM_MOUSELEAVE;
   protected
     { Protected declarations }
     function TreeView: TShellTreeView;
@@ -484,14 +465,19 @@ type
     procedure DBRangeOpened(Sender: TObject; DS: TDataSet);
     procedure ClearItems;
 
-    function GetListView : TEasyListview; override;
-    function GetFormID : string; override;
-    function InternalGetImage(FileName : string; Bitmap : TBitmap; var Width: Integer; var Height: Integer) : Boolean; override;
+    function GetListView: TEasyListview; override;
+    function GetFormID: string; override;
+    function InternalGetImage(FileName: string; Bitmap : TBitmap; var Width: Integer; var Height: Integer): Boolean; override;
     function GetSearchText: string; override;
     procedure SetSearchText(Value: string); override;
     procedure SetupListView;
     procedure ApplyStyle; override;
   public
+    function FileNameExistsInList(FileName: string): Boolean;
+    function GetVisibleItems: TArStrings;
+    function ReplaceBitmapWithPath(FileName: string; Bitmap: TBitmap): Boolean;
+    procedure ErrorQSL(sql: string);
+
     procedure LoadGroupsList(LoadAllLIst: Boolean = False);
     procedure AddNewSearchListEntry;
     procedure LoadToolBarIcons;
@@ -532,14 +518,12 @@ type
 implementation
 
 uses
-  UnitManageGroups,
   FormManegerUnit,
   Loadingresults,
   PropertyForm,
   UnitHintCeator,
   uManagerExplorer,
   UnitUpdateDB,
-  ManagerDBUnit,
   UnitGroupReplace,
   UnitSavingTableForm,
   UnitHelp,
@@ -1246,10 +1230,7 @@ begin
     else
       CustomInfo := '<1%';
   end;
-  DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,
-                     FBitmapImageList, Y,
-                     True, Data.ID, Data.ExistedFileName, Data.Rating, Data.Rotation,
-                     Data.Access, Data.Encrypted, Data.Include, Data.Exists, False, CustomInfo);
+  DrawDBListViewItem(TEasyListview(Sender), ACanvas, Item, ARect,FBitmapImageList, Y, True, Data, False, CustomInfo);
 
 end;
 {$ENDREGION}
@@ -1817,21 +1798,6 @@ begin
   DoShowSelectInfo;
 end;
 
-function TSearchForm.GetListItemByID(ID: Integer): TEasyItem;
-var
-  I: Integer;
-begin
-  Result := nil;
-  for I := 0 to ElvMain.Items.Count - 1 do
-  begin
-    if ElvMain.Items[I].Tag = ID then
-    begin
-      Result := ElvMain.Items[I];
-      Break;
-    end;
-  end;
-end;
-
 function TSearchForm.GetSelectedTStrings: TStrings;
 var
   I: Integer;
@@ -1855,14 +1821,6 @@ begin
   Result := TStringList.Create;
   for I := 0 to ElvMain.Items.Count - 1 do
     Result.Add(GetSearchRecordFromItemData(ElvMain.Items[I]).FileName);
-end;
-
-procedure TSearchForm.RefreshInfoByID(ID: Integer);
-begin
-  if FCurrentSelectedID <> ID then
-    Exit;
-
-  ListViewSelectItem(nil, GetListItemByID(ID), True);
 end;
 
 procedure TSearchForm.ClearItems;
@@ -2354,7 +2312,7 @@ end;
 
 procedure TSearchForm.GroupsManager1Click(Sender: TObject);
 begin
-  ExecuteGroupManager;
+  GroupsManagerForm.Execute;
 end;
 
 procedure TSearchForm.DateExists1Click(Sender: TObject);

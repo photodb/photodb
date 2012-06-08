@@ -3,9 +3,23 @@ unit ExportUnit;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, Dolphin_db, ExtCtrls, uConstants,
-  uShellIntegration, uDBForm, WatermarkedEdit, uFileUtils;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  DmProgress,
+  Dolphin_db,
+  ExtCtrls,
+  uConstants,
+  uShellIntegration,
+  uDBForm,
+  WatermarkedEdit,
+  uFileUtils;
 
 type
   TExportForm = class(TDBForm)
@@ -26,13 +40,7 @@ type
     procedure BtnStartClick(Sender: TObject);
     procedure BtnSelectFileClick(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
-    procedure SetRecordText(Value : String);
-    procedure SetProgressMaxValue(Value : Integer);
-    procedure SetProgressPosition(Value : Integer);
-    procedure SetProgressText(Value : String);
     procedure Edit1Change(Sender: TObject);
-    procedure DoFormExit(Sender: TObject);
-    procedure Execute;
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure CbCryptedClick(Sender: TObject);
@@ -40,15 +48,22 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+    procedure LoadLanguage;
   protected
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure LoadLanguage;
+    procedure Execute;
+
+    procedure SetRecordText(Value: string);
+    procedure SetProgressMaxValue(Value: Integer);
+    procedure SetProgressPosition(Value: Integer);
+    procedure SetProgressText(Value: string);
+    procedure DoFormExit(Sender: TObject);
   end;
 
 var
-  Working : Boolean = False;
+  Working: Boolean = False;
 
 implementation
 
@@ -82,7 +97,7 @@ begin
   Options.ExportNoFiles := CbWithoutFiles.Checked;
   Options.ExportGroups := CbGroups.Checked;
   Options.ExportCrypt := CbCrypted.Checked;
-  Options.ExportCryptIfPassFinded := CbCryptedPass.Checked and CbCrypted.Enabled; ;
+  Options.ExportCryptIfPassFinded := CbCryptedPass.Checked and CbCrypted.Enabled;
   Options.FileName := EdName.text;
   CbPrivate.Enabled := False;
   CbRating.Enabled := False;

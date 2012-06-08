@@ -46,8 +46,8 @@ uses
   uFormInterfaces;
 
 type
-  TFormManageGroups = class(TDBForm)
-    ListView1: TNoVSBListView1;
+  TFormManageGroups = class(TDBForm, IGroupsManagerForm)
+    LvMain: TNoVSBListView1;
     ImlGroups: TImageList;
     MmMain: TMainMenu;
     File1: TMenuItem;
@@ -72,19 +72,17 @@ type
     ToolButton7: TToolButton;
     TbOptions: TToolButton;
     procedure FormCreate(Sender: TObject);
-    procedure ImageContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
-    Procedure ChangeGroup(Sender : TObject);
-    Procedure DeleteGroup(Sender : TObject);
+    procedure ImageContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    Procedure ChangeGroup(Sender: TObject);
+    Procedure DeleteGroup(Sender: TObject);
     Procedure MenuActionQuickInfoGroup(Sender : TObject);
-    Procedure MenuActionAddGroup(Sender : TObject);
+    Procedure MenuActionAddGroup(Sender: TObject);
     Procedure MenuActionSearchForGroup(Sender : TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure LoadGroups;
-    procedure ListView1CustomDrawItem(Sender: TCustomListView;
+    procedure LvMainCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure FormShow(Sender: TObject);
-    procedure ListView1DblClick(Sender: TObject);
+    procedure LvMainDblClick(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure Contents1Click(Sender: TObject);
     procedure ShowAll1Click(Sender: TObject);
@@ -92,17 +90,12 @@ type
     procedure TbExitClick(Sender: TObject);
     procedure TbEditClick(Sender: TObject);
     procedure TbDeleteClick(Sender: TObject);
-    procedure FormKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FSaving: Boolean;
     FBitmapImageList: TBitmapImageList;
-    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
-  protected
-    function GetFormID : string; override;
-  public
-    { Public declarations }
     Groups: TGroups;
     ImagePopupMenu: TPopupActionBar;
     MenuChangeGroup: TMenuItem;
@@ -111,14 +104,15 @@ type
     MenuQuickInfoGroup: TMenuItem;
     MenuSearchForGroup: TMenuItem;
     procedure LoadLanguage;
-    procedure Execute;
+    procedure LoadGroups;
     procedure LoadToolBarIcons;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+  protected
+    function GetFormID: string; override;
+  public
+    { Public declarations }
+    procedure Execute;
   end;
-
-var
-  FormManageGroups: TFormManageGroups;
-
-procedure ExecuteGroupManager;
 
 implementation
 
@@ -130,16 +124,6 @@ uses
 {$R *.dfm}
 
 { TFormManageGroups }
-
-procedure ExecuteGroupManager;
-begin
-  Application.CreateForm(TFormManageGroups, FormManageGroups);
-  try
-    FormManageGroups.Execute;
-  finally
-    R(FormManageGroups);
-  end;
-end;
 
 procedure TFormManageGroups.ChangeGroup(Sender: TObject);
 begin
@@ -158,11 +142,17 @@ begin
   end;
 end;
 
+procedure TFormManageGroups.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Action := caFree;
+end;
+
 procedure TFormManageGroups.FormCreate(Sender: TObject);
 begin
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   FSaving := False;
-  ListView1.DoubleBuffered := True;
+  LvMain.DoubleBuffered := True;
   Width := Min(650, Round(Screen.Width / 1.3));
   FBitmapImageList := TBitmapImageList.Create;
   MmMain.Images := DBKernel.ImageList;
@@ -243,7 +233,7 @@ var
   I: Integer;
   B: TBitmap;
 begin
-  ListView1.Items.BeginUpdate;
+  LvMain.Items.BeginUpdate;
   try
     FreeGroups(Groups);
     Groups := GetRegisterGroupList(True, not Settings.ReadBool('GroupsManager', 'ShowAllGroups', True));
@@ -259,13 +249,13 @@ begin
         F(B);
       end;
     end;
-    ListView1.Clear;
+    LvMain.Clear;
     for I := 0 to Length(Groups) - 1 do
-      with ListView1.Items.Add do
+      with LvMain.Items.Add do
         ImageIndex := I;
 
   finally
-    ListView1.Items.EndUpdate;
+    LvMain.Items.EndUpdate;
   end;
 end;
 
@@ -329,7 +319,7 @@ begin
     LoadGroups;
 end;
 
-procedure TFormManageGroups.ListView1CustomDrawItem(
+procedure TFormManageGroups.LvMainCustomDrawItem(
   Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 var
@@ -479,14 +469,14 @@ begin
   Result := 'ManageGroups';
 end;
 
-procedure TFormManageGroups.ListView1DblClick(Sender: TObject);
+procedure TFormManageGroups.LvMainDblClick(Sender: TObject);
 var
   P: TPoint;
   Item: TListItem;
 begin
   GetCursorPos(P);
-  P := ListView1.ScreenToClient(P);
-  Item := ListView1.GetItemAt(P.X, P.Y);
+  P := LvMain.ScreenToClient(P);
+  Item := LvMain.GetItemAt(P.X, P.Y);
   if Item <> nil then
     GroupInfoForm.Execute(Self, Groups[Item.ImageIndex], True);
 end;
@@ -496,7 +486,7 @@ begin
   BeginTranslate;
   try
     Caption := L('Manage groups');
-    ListView1.Columns[0].Caption := L('List of groups');
+    LvMain.Columns[0].Caption := L('List of groups');
     TbExit.Caption := L('Exit');
     TbAdd.Caption := L('Create group');
     TbEdit.Caption := L('Edit');
@@ -545,7 +535,7 @@ begin
     Fn := 'Tahoma';
   if SelectFont(Fn, NewFont) then
     Settings.WriteString('GroupsManager', 'FontName', NewFont);
-  ListView1.Refresh;
+  LvMain.Refresh;
 end;
 
 procedure TFormManageGroups.LoadToolBarIcons;
@@ -589,16 +579,16 @@ end;
 
 procedure TFormManageGroups.TbEditClick(Sender: TObject);
 begin
-  if ListView1.Selected = nil then
+  if LvMain.Selected = nil then
     Exit;
-  DBChangeGroup(Groups[ListView1.Selected.index]);
+  DBChangeGroup(Groups[LvMain.Selected.index]);
 end;
 
 procedure TFormManageGroups.TbDeleteClick(Sender: TObject);
 begin
-  if ListView1.Selected = nil then
+  if LvMain.Selected = nil then
     Exit;
-  MmMain.Tag := ListView1.Selected.index;
+  MmMain.Tag := LvMain.Selected.index;
   DeleteGroup(Sender);
 end;
 
@@ -607,5 +597,8 @@ begin
   if Key = VK_ESCAPE then
     Close;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IGroupsManagerForm, TFormManageGroups);
 
 end.

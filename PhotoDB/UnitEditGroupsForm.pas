@@ -130,7 +130,6 @@ type
 implementation
 
 uses
-  UnitManageGroups,
   UnitFormChangeGroup,
   SelectGroupForm,
   uManagerExplorer;
@@ -144,7 +143,7 @@ var
   FGroups: TGroups;
 begin
   FGroups := EncodeGroups(Groups);
-  Execute(Groups, KeyWords, CanNew);
+  Execute(FGroups, KeyWords, CanNew);
   Groups := CodeGroups(FGroups);
 end;
 
@@ -342,7 +341,7 @@ end;
 
 procedure TEditGroupsForm.GroupManeger1Click(Sender: TObject);
 begin
-  ExecuteGroupManager;
+  GroupsManagerForm.Execute;
 end;
 
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);

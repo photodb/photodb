@@ -11,23 +11,19 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
   Vcl.Forms,
+  uDBForm,
   Data.DB,
+  Vcl.Imaging.Jpeg,
   uRuntime,
-  {$IFDEF PHOTODB}
   UnitDBDeclare,
   uDBPopupMenuInfo,
-  uGroupTypes,
-  {$ENDIF}
-  Vcl.Imaging.Jpeg,
-  uDBForm;
+  uGroupTypes;
 
 type
   IFormInterface = interface
     ['{24769E47-FE80-4FF7-81CC-F8E6C8AA77EC}']
     procedure Show;
   end;
-
-  {$IFDEF PHOTODB}
 
   IViewerForm = interface(IFormInterface)
     ['{951665C9-EDA5-44BD-B833-B5543B58DF04}']
@@ -126,10 +122,9 @@ type
     procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
   end;
 
-  IGroupsSelectForm = interface(IFormInterface)
-    ['{541139AB-E20A-41AA-A15A-A063A65C1328}']
-    procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True); overload;
-    procedure Execute(var Groups: string; var KeyWords: string; CanNew: Boolean = True); overload;
+  IGroupsManagerForm =  interface(IFormInterface)
+    ['{DD99ABFD-68C0-4757-88A8-D0F4BD558653}']
+    procedure Execute;
   end;
 
   IGroupCreateForm = interface(IFormInterface)
@@ -145,7 +140,20 @@ type
     procedure Execute(AOwner: TForm; Group: string; CloseOwner: Boolean); overload;
   end;
 
-  {$ENDIF}
+  IGroupsSelectForm = interface(IFormInterface)
+    ['{541139AB-E20A-41AA-A15A-A063A65C1328}']
+    procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True); overload;
+    procedure Execute(var Groups: string; var KeyWords: string; CanNew: Boolean = True); overload;
+  end;
+
+  ICollectionManagerForm = interface(IFormInterface)
+    ['{CE0DC6A2-4445-4E72-B3EA-7155C97508A7}']
+  end;
+
+  ICollectionAddItemForm = interface(IFormInterface)
+    ['{29D8DB10-F2B2-4E1C-ABDA-BCAF9CAC5FDC}']
+    procedure Execute(Info: TDBPopupMenuInfoRecord);
+  end;
 
 type
   TFormInterfaces = class(TObject)
@@ -164,7 +172,6 @@ type
 
 function FormInterfaces: TFormInterfaces;
 
-{$IFDEF PHOTODB}
 function Viewer: IViewerForm;
 function CurrentViewer: IViewerForm;
 function AboutForm: IAboutForm;
@@ -181,8 +188,10 @@ function ShareForm: IShareForm;
 function GroupsSelectForm: IGroupsSelectForm;
 function GroupInfoForm: IGroupInfoForm;
 function GroupCreateForm: IGroupCreateForm;
-
-{$ENDIF}
+function CollectionManagerForm: ICollectionManagerForm;
+function GroupsManagerForm: IGroupsManagerForm;
+function CurrentGroupsManagerForm: IGroupsManagerForm;
+function CollectionAddItemForm: ICollectionAddItemForm;
 
 implementation
 
@@ -197,7 +206,6 @@ begin
   Result := FFormInterfaces;
 end;
 
-{$IFDEF PHOTODB}
 function Viewer: IViewerForm;
 begin
   Result := FormInterfaces.GetSingleForm<IViewerForm>(True);
@@ -278,7 +286,25 @@ begin
   Result := FormInterfaces.CreateForm<IGroupCreateForm>();
 end;
 
-{$ENDIF}
+function CollectionManagerForm: ICollectionManagerForm;
+begin
+  Result := FormInterfaces.GetSingleForm<ICollectionManagerForm>(True);
+end;
+
+function GroupsManagerForm: IGroupsManagerForm;
+begin
+  Result := FormInterfaces.GetSingleForm<IGroupsManagerForm>(True);
+end;
+
+function CurrentGroupsManagerForm: IGroupsManagerForm;
+begin
+  Result := FormInterfaces.GetSingleForm<IGroupsManagerForm>(False);
+end;
+
+function CollectionAddItemForm: ICollectionAddItemForm;
+begin
+  Result := FormInterfaces.CreateForm<ICollectionAddItemForm>();
+end;
 
 { TFormInterfaces }
 

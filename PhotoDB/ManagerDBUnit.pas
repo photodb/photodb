@@ -81,7 +81,7 @@ uses
   uFormInterfaces;
 
 type
-  TManagerDB = class(TThreadForm)
+  TManagerDB = class(TThreadForm, ICollectionManagerForm)
     Panel2: TPanel;
     PnTop: TPanel;
     PopupMenu1: TPopupActionBar;
@@ -169,42 +169,30 @@ type
     LsLoadingDB: TLoadingSign;
     procedure FormCreate(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
-    procedure ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
     procedure FormDestroy(Sender: TObject);
     procedure RbSQLSetClick(Sender: TObject);
     procedure CbWhereCombinatorChange(Sender: TObject);
     procedure CbWhereField1Change(Sender: TObject);
     procedure BtnExecSQLClick(Sender: TObject);
-    procedure CheckSQL;
     procedure CbOperatorWhere1Change(Sender: TObject);
-    procedure Lock;
-    procedure UnLock;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure GroupsManager1Click(Sender: TObject);
-    procedure ReadBackUps;
     procedure LbBackupsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure LbBackupsContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure LbBackupsContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure Delete1Click(Sender: TObject);
     procedure Refresh1Click(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
     procedure Restore1Click(Sender: TObject);
-    procedure InitializeQueryList;
     procedure ElvMainAdvancedCustomDrawSubItem(Sender: TCustomListView;
       Item: TListItem; SubItem: Integer; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
-    procedure GetData(Index: integer);
-    procedure ElvMainSelectItem(Sender: TObject; Item: TListItem;
-      Selected: Boolean);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ElvMainSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG;  var Handled: Boolean);
     procedure N51Click(Sender: TObject);
     procedure R04Click(Sender: TObject);
-    procedure ElvMainWindowProc(var Message: TMessage);
     procedure EditGroupsMenuClick(Sender: TObject);
-    procedure ElvMainMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure ElvMainMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure PackTabelLinkClick(Sender: TObject);
     procedure ExportTableLinkClick(Sender: TObject);
     procedure ImportTableLinkClick(Sender: TObject);
@@ -212,20 +200,14 @@ type
     procedure ScanforBadLinksLinkClick(Sender: TObject);
     procedure BackUpDBLinkClick(Sender: TObject);
     procedure CleaningLinkClick(Sender: TObject);
-    procedure ElvMainContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
-    procedure DeleteItemWithID(ID : integer);
-    procedure LbDatabasesDrawItem(Control: TWinControl; Index: Integer;
-      Rect: TRect; State: TOwnerDrawState);
+    procedure ElvMainContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    procedure LbDatabasesDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
     procedure BtnAddDBClick(Sender: TObject);
-    procedure RefreshDBList;
     procedure LbDatabasesContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure RenameDB1Click(Sender: TObject);
     procedure SelectDB1Click(Sender: TObject);
     procedure DeleteDB1Click(Sender: TObject);
     procedure LbDatabasesDblClick(Sender: TObject);
-    procedure DBOpened(Sender : TObject);
-    procedure DBLoadDataPacket(DataList : TList);
     procedure EditDB1Click(Sender: TObject);
     procedure RecordNumberEditChange(Sender: TObject);
     procedure DuplicatesLinkClick(Sender: TObject);
@@ -244,29 +226,35 @@ type
     GroupBitmaps: array of TBitmap;
     FormManagerHint: TFormManagerHint;
     WorkQuery: TDataSet;
-    IsLock: Boolean;
     FBackUpFiles: TStrings;
     DBCanDrag: Boolean;
     SI: integer;
     FData: TList;
     FLoadingDataThread: TThread;
-    procedure OnMove(var Msg: TWMMove); message WM_MOVE;
-    procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
-    procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
-    function GetListViewItemAt(y : integer): TListItem;
+    procedure LoadLanguage;
+    procedure ElvMainWindowProc(var Message: TMessage);
+    procedure ReadBackUps;
+    procedure InitializeQueryList;
+    procedure GetData(Index: integer);
+    procedure DeleteItemWithID(ID: Integer);
+    procedure RefreshDBList;
+    procedure CheckSQL;
+    procedure ChangedDBDataByID(Sender: TObject; ID: integer; params: TEventFields; Value: TEventValues);
+    function GetListViewItemAt(Y: Integer): TListItem;
     procedure ShowGroupQuickInfo(Sender: TObject);
+    procedure ReleaseLoadingThread;
   protected
     { protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
-    procedure ReleaseLoadingThread;
-    function GetFormID : string; override;
+    procedure OnMove(var Msg: TWMMove); message WM_MOVE;
+    procedure CMMOUSELEAVE( var Message: TWMNoParams); message CM_MOUSELEAVE;
+    procedure CMMOUSEEnter(var Message: TWMNoParams); message CM_MOUSEenter;
+    function GetFormID: string; override;
   public
     { public declarations }
-    procedure LoadLanguage;
+    procedure DBOpened(Sender: TObject);
+    procedure DBLoadDataPacket(DataList: TList);
   end;
-
-var
-  ManagerDB: TManagerDB;
 
 const FieldCount = 19;
 ChFields : array[1..FieldCount] of string = ('ID','Rating','Rotated','Access',
@@ -275,7 +263,7 @@ ChFields : array[1..FieldCount] of string = ('ID','Rating','Rotated','Access',
       FieldTypeStr  = 1;
       FieldTypeDate = 2;
       FieldTypeBool = 3;
-      ChFieldsTypes : array[1..FieldCount] of integer = (FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeInt,
+      ChFieldsTypes: array[1..FieldCount] of integer = (FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeInt,
 FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeDate,FieldTypeBool,FieldTypeBool,FieldTypeStr,FieldTypeDate,FieldTypeBool);
 
 implementation
@@ -284,7 +272,6 @@ uses
   uManagerExplorer,
   Searching,
   ExportUnit,
-  UnitManageGroups,
   UnitDBCleaning,
   UnitCompareDataBases,
   UnitPasswordForm,
@@ -300,8 +287,8 @@ uses
 
 function TManagerDB.GetListViewItemAt(Y : Integer): TListItem;
 var
-  R : TRect;
-  I, Index : Integer;
+  R: TRect;
+  I, Index: Integer;
 begin
   Result := nil;
   if ElvMain.Items.Count > 0 then
@@ -375,7 +362,6 @@ begin
 
   FBackUpFiles := TStringList.Create;
   LbBackups.DoubleBuffered := True;
-  UnLock;
   DropFileTarget1.Register(Self);
   DBCanDrag := False;
   DBkernel.RegisterChangesID(self, ChangedDBDataByID);
@@ -411,8 +397,8 @@ end;
 procedure TManagerDB.ChangedDBDataByID(Sender: TObject; ID: integer;
   Params: TEventFields; Value: TEventValues);
 var
-  I : Integer;
-  ItemData : TDBPopupMenuInfoRecord;
+  I: Integer;
+  ItemData: TDBPopupMenuInfoRecord;
 begin
   if SetNewIDFileData in Params then
   if Value.ID > 0 then
@@ -467,7 +453,7 @@ end;
 
 procedure TManagerDB.FormDestroy(Sender: TObject);
 var
-  I : Integer;
+  I: Integer;
 begin
   NewFormState;
 
@@ -516,7 +502,7 @@ end;
 
 function GetFieldTupe(FieldName : String) : Integer;
 var
-  I : integer;
+  I: Integer;
 begin
   Result := 0;
   for I := 1 to FieldCount do
@@ -567,7 +553,7 @@ end;
 
 function ValueToDBValue(FieldName, Value : String) : String;
 var
-  FieldType : integer;
+  FieldType: Integer;
 begin
   FieldType := GetFieldTupe(FieldName);
   if FieldType = FieldTypeInt then Result := IntToStr(StrToIntDef(Value,0))
@@ -622,7 +608,7 @@ begin
     if (Trim(CbWhereCombinator.Text) = '') then
       BtnExecSQL.Enabled := True
     else
-      BtnExecSQL.Enabled := (CbWhereField2.Text<>'') and (CbOperatorWhere2.Text<>'');
+      BtnExecSQL.Enabled := (CbWhereField2.Text <> '') and (CbOperatorWhere2.Text <> '');
 
   end else
     BtnExecSQL.Enabled := False;
@@ -633,24 +619,14 @@ begin
   CheckSQL;
 end;
 
-procedure TManagerDB.Lock;
-begin
-  IsLock := True;
-end;
-
-procedure TManagerDB.UnLock;
-begin
-  IsLock := False;
-end;
-
 procedure TManagerDB.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  R(ManagerDB);
+  Action := caFree;
 end;
 
 procedure TManagerDB.GroupsManager1Click(Sender: TObject);
 begin
-  ExecuteGroupManager;
+  GroupsManagerForm.Execute;
 end;
 
 procedure TManagerDB.LoadLanguage;
@@ -892,7 +868,7 @@ procedure TManagerDB.DBLoadDataPacket(DataList : TList);
 var
   I: Integer;
 begin
-  elvMain.Items.BeginUpdate;
+  ElvMain.Items.BeginUpdate;
   try
     for I := 0 to DataList.Count - 1 do
       FData.Add(DataList[I]);
@@ -907,7 +883,7 @@ begin
       LastSelectedIndex := 0;
     end;
   finally
-    elvMain.Items.EndUpdate;
+    ElvMain.Items.EndUpdate;
   end;
 end;
 
@@ -1670,7 +1646,7 @@ begin
           F(JPG);
         end;
         ApplyRotate(B, ItemData.Rotation);
-        DrawAttributes(B, ThSize, ItemData.Rating, ItemData.Rotation, ItemData.Access, DA.FileName, ValidCryptBlobStreamJPG(DA.Thumb), ItemData.Exists, ItemData.ID);
+        DrawAttributes(B, ThSize, ItemData);
         FormManagerHint.Image1.Picture.Graphic := B;
       finally
         F(B);
@@ -2065,5 +2041,8 @@ begin
     FLoadingDataThread.Terminate;
   end;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ICollectionManagerForm, TManagerDB);
 
 end.

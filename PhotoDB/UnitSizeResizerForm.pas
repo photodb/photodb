@@ -497,6 +497,7 @@ begin
   if IsDevicePath(PeSavePath.Path) then
   begin
     MessageBoxDB(Handle, L('Please, choose a valid directory!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    BtChangeDirectoryClick(Self);
     Exit;
   end;
 
@@ -504,6 +505,7 @@ begin
   if not DirectoryExistsSafe(PeSavePath.Path) then
   begin
     MessageBoxDB(Handle, L('Please, choose a valid directory!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    BtChangeDirectoryClick(Self);
     Exit;
   end;
 

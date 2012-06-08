@@ -213,6 +213,9 @@ begin
 
             if not ExifData.Empty then
             begin
+              if not (ilfDontUpdateInfo in Flags) then
+                Info.HasExifHeader := True;
+
               if (ilfEXIF in Flags) then
                 EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
 

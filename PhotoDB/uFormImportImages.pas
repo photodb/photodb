@@ -1637,12 +1637,9 @@ procedure TFormImportImages.ElvPreviewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas; ARect: TRect;
   AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
-  Exists: Integer;
   Y: Integer;
 begin
-  Exists := 1;
-  DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
-    False, 0, Item.Caption, 0, 0, 0, False, True, Exists, True);
+  DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y, False, nil, False);
 end;
 
 procedure TFormImportImages.FinishScan;

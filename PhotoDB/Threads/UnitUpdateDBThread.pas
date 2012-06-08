@@ -270,7 +270,7 @@ begin
           if FQuery.RecordCount > 0 then
             LastInseredID := FQuery.FieldByName('MaxID').AsInteger;
         except
-          on e : Exception do
+          on e: Exception do
             Eventlog('Error getting count of DB items: ' + e.Message);
         end;
       end else

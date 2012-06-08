@@ -28,8 +28,8 @@ uses
   {$IFDEF PHOTODB}
   uFastLoad,
   uMainMenuStyleHook,
-  uThemesUtils,
   {$ENDIF}
+  uThemesUtils,
   uImageSource;
 
 type
@@ -37,7 +37,7 @@ type
   private
     FWindowID: string;
     FWasPaint: Boolean;
-    function GetTheme: {$IFDEF PHOTODB}TDatabaseTheme{$ELSE}TObject{$ENDIF};
+    function GetTheme: TDatabaseTheme;
   protected
     procedure WndProc(var Message: TMessage); override;
     function GetFormID: string; virtual; abstract;
@@ -54,7 +54,7 @@ type
     procedure FixFormPosition;
     property FormID: string read GetFormID;
     property WindowID: string read FWindowID;
-    property Theme: {$IFDEF PHOTODB}TDatabaseTheme{$ELSE}TObject{$ENDIF} read GetTheme;
+    property Theme: TDatabaseTheme read GetTheme;
   end;
 
 type
@@ -80,8 +80,10 @@ type
 
 implementation
 
+{$IFDEF PHOTODB}
 uses
   uFormInterfaces;
+{$ENDIF}
 
 function GetGUID: TGUID;
 begin
@@ -113,7 +115,9 @@ end;
 
 destructor TDBForm.Destroy;
 begin
+  {$IFDEF PHOTODB}
   FormInterfaces.RemoveSingleInstance(Self);
+  {$ENDIF}
   GOM.RemoveObj(Self);
   TFormCollection.Instance.UnRegisterForm(Self);
   inherited;
@@ -250,7 +254,7 @@ begin
   end;
 end;
 
-function TDBForm.GetTheme: {$IFDEF PHOTODB}TDatabaseTheme{$ELSE}TObject{$ENDIF};
+function TDBForm.GetTheme: TDatabaseTheme;
 begin
   Result := {$IFDEF PHOTODB}uThemesUtils.Theme{$ELSE}nil{$ENDIF};
 end;

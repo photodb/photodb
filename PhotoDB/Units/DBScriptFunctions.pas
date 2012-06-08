@@ -57,8 +57,7 @@ implementation
 
 uses
   ExplorerTypes, UnitWindowsCopyFilesThread, UnitLinksSupport,
-  CommonDBSupport, UnitInternetUpdate, UnitManageGroups,
-  UnitUpdateDB, uSearchTypes, ManagerDBUnit, ImEditor,
+  CommonDBSupport, UnitInternetUpdate, UnitUpdateDB, uSearchTypes, ImEditor,
   uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
   UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitSelectDB, UnitSplitExportForm, UnitUpdateDBObject,
@@ -200,9 +199,7 @@ end;
 
 procedure DoManager;
 begin
-  if ManagerDB = nil then
-    Application.CreateForm(TManagerDB, ManagerDB);
-  ManagerDB.Show;
+  CollectionManagerForm.Show;
 end;
 
 procedure DoOptions;
@@ -876,6 +873,11 @@ end;
 procedure HideDataInImage(FileName: string);
 begin
   SteganographyForm.HideData(FileName);
+end;
+
+procedure ExecuteGroupManager;
+begin
+  GroupsManagerForm.Execute;
 end;
 
 Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);

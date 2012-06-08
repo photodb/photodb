@@ -3,35 +3,27 @@ unit UnitDBKernel;
 interface
 
 uses
-  Win32crc,
   Forms,
   Windows,
   Classes,
-  Controls,
-  Graphics,
   DB,
   SysUtils,
-  JPEG,
-  UnitDBDeclare,
+  CommCtrl,
   IniFiles,
+  uMemory,
+  UnitDBDeclare,
   GraphicCrypt,
-  ADODB,
   CommonDBSupport,
   uLogger,
-  uActivationUtils,
   uCDMappingTypes,
   uConstants,
-  CommCtrl,
   uTime,
   UnitINI,
   SyncObjs,
-  uMemory,
   uFileUtils,
   uAppUtils,
   uTranslate,
   uDBForm,
-  uVistaFuncs,
-  uShellIntegration,
   uRuntime,
   uDBBaseTypes,
   uStringUtils,
@@ -141,8 +133,7 @@ implementation
 uses
   UnitCrypting,
   UnitActiveTableThread, 
-  UnitFileCheckerDB, 
-  UnitGroupsWork,
+  UnitFileCheckerDB,
   UnitBackUpTableInCMD;
 
 var

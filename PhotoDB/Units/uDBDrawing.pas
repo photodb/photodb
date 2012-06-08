@@ -3,9 +3,17 @@ unit uDBDrawing;
 interface
 
 uses
-  Windows, SysUtils, Graphics, UnitDBDeclare, CCR.Exif, UnitDBCommon, Math,
-  Classes, GraphicsBaseTypes, uConstants, uMemory, uFileUtils, Effects,
-  uRuntime, TLayered_Bitmap, SyncObjs;
+  Windows,
+  SysUtils,
+  Classes,
+  Graphics,
+  SyncObjs,
+  uConstants,
+  uRuntime,
+  uMemory,
+  uFileUtils,
+  UnitDBDeclare,
+  TLayered_Bitmap;
 
 type
   TIconEx = class
@@ -33,21 +41,19 @@ type
     property Items[index: Integer]: TIconEx read GetValueByIndex; default;
   end;
 
-procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Rating, Rotate, Access: Integer; FileName: string;
-  Crypted: Boolean; var Exists: Integer; ID: Integer = 0);
-procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Rating, Rotate, Access: Integer;
-  FileName: string; Crypted: Boolean; var Exists: Integer; ID: Integer = 0);
+procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
+procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord);
 function GetListItemBorderColor(Data: TDataObject): TColor;
 function RectInRect(const R1, R2: TRect): Boolean;
-procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer;
-  Rating, Rotate, Access: Integer; FileName: string; Crypted: Boolean; var Exists: Integer; ID: Integer = 0);
+procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord);
 
 function Icons: TIconsEx;
 
 implementation
 
 uses
-  UnitDBKernel, uManagerExplorer, MPCommonUtilities;
+  UnitDBKernel,
+  uManagerExplorer;
 
 var
   FIcons: TIconsEx = nil;
@@ -60,31 +66,29 @@ begin
   Result := FIcons;
 end;
 
-procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Rating, Rotate, Access: Integer; FileName: string;
-  Crypted: Boolean; var Exists: Integer; ID: Integer = 0);
+procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
 var
   DeltaX: Integer;
 begin
   DeltaX := PistureSize - 100;
-  DrawAttributesExWide(Bitmap, 0, DeltaX, 0, Rating, Rotate, Access, FileName, Crypted, Exists, ID);
+  DrawAttributesExWide(Bitmap, 0, DeltaX, 0, Info);
 end;
 
-procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Rating, Rotate, Access: Integer;
-  FileName: string; Crypted: Boolean; var Exists: Integer; ID: Integer = 0);
+procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord);
 begin
-  DrawAttributesExWide(nil, HCanvas, DeltaX, DeltaY, Rating, Rotate, Access, FileName, Crypted, Exists, ID);
+  DrawAttributesExWide(nil, HCanvas, DeltaX, DeltaY, Info);
 end;
 
 procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer;
-  Rating, Rotate, Access: Integer; FileName: string; Crypted: Boolean; var Exists: Integer; ID: Integer = 0);
+  Info: TDBPopupMenuInfoRecord);
 var
   FE: Boolean;
-  ExifData: TExifData;
+  FileName: string;
 
   procedure DoDrawIconEx(HCanvas: HDC; xLeft, yTop: Integer; Index: Integer; Disabled: Boolean = False);
   var
     Icon: TIconEx;
-    bf : BLENDFUNCTION;
+    bf: BLENDFUNCTION;
     GrayIco: TLayeredBitmap;
   begin
     if Bitmap <> nil then
@@ -115,51 +119,40 @@ var
   end;
 
 begin
-  if ID = 0 then
+  if Info.ID = 0 then
     DoDrawIconEx(HCanvas, DeltaX, DeltaY, DB_IC_NEW);
 
-  if Exists = 0 then
+  FileName := Info.FileName;
+
+  if Info.Exists = 0 then
   begin
     FE := FileExistsSafe(FileName);
     if FE then
-      Exists := 1
+      Info.Exists := 1
     else
-      Exists := -1;
+      Info.Exists := -1;
   end;
-  FE := Exists <> -1;
+  FE := Info.Exists <> -1;
 
   if FolderView then
     if not FE then
     begin
-      FileName := ProgramDir + FileName;
+      FileName := Info.FileName;
       FE := FileExistsSafe(FileName);
     end;
 
-  if ExplorerManager.ShowEXIF then
+  if ExplorerManager.ShowEXIF and Info.HasExifHeader then
   begin
-    ExifData := TExifData.Create;
-    try
-      try
-        ExifData.LoadFromGraphic(FileName);
-        if not ExifData.Empty then
-        begin
-          if ID = 0 then
-            DoDrawIconEx(HCanvas, 20 + DeltaX, DeltaY, DB_IC_EXIF)
-          else
-            DoDrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  DB_IC_EXIF);
-        end;
-      except
-        //header not found, it's ok
-      end;
-    finally
-      F(ExifData);
-    end;
+    if Info.ID = 0 then
+      DoDrawIconEx(HCanvas, 20 + DeltaX, DeltaY, DB_IC_EXIF)
+    else
+      DoDrawIconEx(HCanvas, 0 + DeltaX, DeltaY,  DB_IC_EXIF);
   end;
 
-  if Crypted then
+  if Info.Encrypted then
     DoDrawIconEx(HCanvas, 20 + DeltaX, DeltaY, DB_IC_KEY);
 
-  case Rating of
+  case Info.Rating of
     -1:  DoDrawIconEx(HCanvas, 80 + DeltaX, DeltaY, DB_IC_RATING_STAR);
     1:   DoDrawIconEx(HCanvas, 80 + DeltaX, DeltaY, DB_IC_RATING_1);
     2:   DoDrawIconEx(HCanvas, 80 + DeltaX, DeltaY, DB_IC_RATING_2);
@@ -173,7 +166,7 @@ begin
     -50: DoDrawIconEx(HCanvas, 80 + DeltaX, DeltaY, DB_IC_RATING_5, True);
   end;
 
-  case Rotate of
+  case Info.Rotation of
     DB_IMAGE_ROTATE_90,
     10 * DB_IMAGE_ROTATE_90:   DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90);
     DB_IMAGE_ROTATE_180,
@@ -187,9 +180,9 @@ begin
     -10 * DB_IMAGE_ROTATE_270,
     -100 * DB_IMAGE_ROTATE_270: DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270, True);
   end;
-  if Access = db_access_private then
+  if Info.Access = db_access_private then
     DoDrawIconEx(HCanvas, 40 + DeltaX, DeltaY, DB_IC_PRIVATE);
-  if Access = - 10 * db_access_private then
+  if Info.Access = - 10 * db_access_private then
     DoDrawIconEx(HCanvas, 40 + DeltaX, DeltaY, DB_IC_PRIVATE, True);
 
   if not FE then

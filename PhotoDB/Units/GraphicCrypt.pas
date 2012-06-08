@@ -28,6 +28,7 @@ uses
   uErrors,
   uGraphicUtils,
   uShellUtils;
+
 type
   TGraphicCryptFileHeader = record
     IDSize: Byte;

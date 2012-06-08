@@ -8,13 +8,12 @@ uses
   Controls,
   Graphics,
   SysUtils,
-  EasyListview,
   CommCtrl,
-  UnitBitmapImageList,
-  uMemory,
   ComCtrls,
+  EasyListview,
   Math,
-  MPCommonUtilities,
+  uMemory,
+  UnitBitmapImageList,
   uDBDrawing,
   TLayered_Bitmap,
   uGraphicUtils,
@@ -22,6 +21,7 @@ uses
   uRuntime,
   uSettings,
   Themes,
+  UnitDBDeclare,
   uThemesUtils,
   uBitmapUtils;
 
@@ -84,36 +84,32 @@ type
   {$HINTS ON}
 
 function ItemByPointImage(EasyListview: TEasyListview; ViewportPoint: TPoint; ListView: Integer = 0): TEasyItem;
-procedure ItemRectArray(Item: TEasyItem; tmHeight : integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
+procedure ItemRectArray(Item: TEasyItem; tmHeight: integer; var RectArray: TEasyRectArrayObject; ListView : Integer = 0);
 function ItemByPointStar(EasyListview: TEasyListview; ViewportPoint: TPoint; PictureSize : Integer; Image : TGraphic): TEasyItem;
 function GetListViewHeaderHeight(ListView: TListView): Integer;
 procedure SetLVThumbnailSize(ListView: TEasyListView; ImageSize: Integer);
 procedure SetListViewColors(ListView: TEasyListView);
-procedure SetLVSelection(ListView : TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
+procedure SetLVSelection(ListView: TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
-                             ShowInfo: Boolean; ID: Integer;
-                             FileName: string; Rating: Integer;
-                             Rotate: Integer; Access: Integer;
-                             Encrypted, Include : Boolean; var Exists: Integer;
-                             CanAddImages: Boolean;
-                             CustomInfo: string = '');
+                             ShowInfo: Boolean; Info: TDBPopupMenuInfoRecord;
+                             CanAddImages: Boolean; CustomInfo: string = '');
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string); overload;
 procedure CreateDragImage(ListView: TEasyListView; DImageList: TImageList; SImageList: TBitmapImageList; Caption : string;
                           DragPoint: TPoint; var SpotX, SpotY: Integer); overload;
 procedure CreateDragImageEx(ListView: TEasyListView; DImageList: TImageList; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font: TFont; Caption : string); overload;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font: TFont; Caption: string); overload;
 procedure CreateDragImageEx(ListView: TEasyListView; DImageList: TImageList; SImageList : TBitmapImageList;
-  GradientFrom, GradientTo, SelectionColor : TColor; Font: TFont; Caption : string;
+  GradientFrom, GradientTo, SelectionColor: TColor; Font: TFont; Caption: string;
   DragPoint: TPoint; var SpotX, SpotY: Integer); overload;
-procedure EnsureSelectionInListView(EasyListview: TEasyListview; ListItem : TEasyItem;
+procedure EnsureSelectionInListView(EasyListview: TEasyListview; ListItem: TEasyItem;
   Shift: TShiftState; X, Y: Integer; var ItemSelectedByMouseDown: Boolean;
   var ItemByMouseDown: Boolean);
-procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item : TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
+procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift: TShiftState; Item: TEasyItem; ItemByMouseDown, ItemSelectedByMouseDown : Boolean);
 procedure CreateMultiselectImage(ListView: TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer; OnlyImages: Boolean = False);
-procedure FixListViewText(ACanvas: TCanvas; Item : TEasyItem; Include : Boolean);
+procedure FixListViewText(ACanvas: TCanvas; Item: TEasyItem; Include: Boolean);
 procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
 
 const
@@ -121,7 +117,9 @@ const
 
 implementation
 
-uses UnitPropeccedFilesSupport, UnitDBKernel;
+uses
+  UnitPropeccedFilesSupport,
+  UnitDBKernel;
 
 procedure FixListViewText(ACanvas: TCanvas; Item: TEasyItem; Include: Boolean);
 var
@@ -138,60 +136,16 @@ begin
 end;
 
 procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
-{var
-  ClientRect: TRect;
-  CTDY, CBDY, CTDX, CBDX, DY, DX: Integer;}
 begin
-{  ClientRect := ListView.Scrollbars.ViewableViewportRect;
-
-  DY := ClientRect.Top;
-  DX := ClientRect.Left;
-
-  //calculating Y
-  CTDY := 0;
-  CBDY := 0;
-  if Y < ClientRect.Top then
-    CTDY := ClientRect.Top - Y;
-
-  if Y + Graphic.Height > ClientRect.Bottom then
-    CBDY := ClientRect.Bottom - (Y + Graphic.Height);
-
-  if Y - DY < 0 then
-    DY := Y;
-  //
-
-  //calculating X
-  CTDX := 0;
-  CBDX := 0;
-  if X < ClientRect.Left then
-    CTDX := ClientRect.Left - X;
-
-  if X + Graphic.Width > ClientRect.Right then
-    CBDX := ClientRect.Right - (X + Graphic.Width);
-
-  if X - DX < 0 then
-    DX := X;
-  //
-
-  MPCommonUtilities.AlphaBlend(Graphic.Canvas.Handle, ACanvas.Handle,
-          Rect(CTDX, CTDY, Graphic.Width + CBDX, Graphic.Height + CBDY), Point(X - DX, Y - DY),
-          cbmPerPixelAlpha, $FF, ColorToRGB(ListView.Color));
-
-  TBitmap(Graphic).Handle;   }
-
   //this method is more compatible (xp with custom theme can work bad with MPCommonUtilities.AlphaBlend
   //ACanvas.Draw calls DrawTransparent method that calls Windows.AlphaBlend and should work good on any version of windows
   Graphic.AlphaFormat := afDefined;
   ACanvas.Draw(X, Y, Graphic, 255);
 end;
 
-
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
-                             ShowInfo: Boolean; ID: Integer;
-                             FileName: string; Rating: Integer;
-                             Rotate: Integer; Access: Integer;
-                             Encrypted, Include: Boolean; var Exists: Integer; CanAddImages: Boolean; CustomInfo: string = '');
+                             ShowInfo: Boolean; Info: TDBPopupMenuInfoRecord; CanAddImages: Boolean; CustomInfo: string = '');
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;
   RoundRadius = 5;
@@ -203,8 +157,6 @@ var
   X: Integer;
   TempBmp: TBitmap;
   TempBmpShadow: TBitmap;
-  CTD, CBD, DY: Integer;
-  ClientRect: TRect;
   RectArray: TEasyRectArrayObject;
   ColorFrom, ColorTo, ColorFromOriginal, ColorToOriginal: TColor;
   SelectionRect, R: TRect;
@@ -227,18 +179,21 @@ begin
   ColorFromOriginal := ListView.Selection.GradientColorTop;
   ColorToOriginal := ListView.Selection.GradientColorBottom;
 
-  Include := Include or (ID = 0);
-  if not Include then
+  if (Info <> nil) then
   begin
-    TEasySelectionManagerX(ListView.Selection).AGradientColorTop := $A0FFFF;
-    TEasySelectionManagerX(ListView.Selection).AGradientColorBottom := $A0FFFF;
+    Info.Include := Info.Include or (Info.ID = 0);
+    if not Info.Include then
+    begin
+      TEasySelectionManagerX(ListView.Selection).AGradientColorTop := $A0FFFF;
+      TEasySelectionManagerX(ListView.Selection).AGradientColorBottom := $A0FFFF;
+    end;
   end;
 
   try
-    if (esosHotTracking in Item.State) then
+    if (Info <> nil) and (esosHotTracking in Item.State) then
     begin
-      if (Rating = 0) and (not FolderView or (ID > 0)) and CanAddImages then
-        Rating := -1;
+      if (Info.Rating = 0) and (not FolderView or (Info.ID > 0)) and CanAddImages then
+        Info.Rating := -1;
 
       if not Item.Selected then
       begin
@@ -258,7 +213,7 @@ begin
         TEasySelectionManagerX(ListView.Selection).AGradientColorBottom := ColorTo;
       end;
     end;
-    if not Include and Item.Selected then
+    if (Info <> nil) and not Info.Include and Item.Selected then
     begin
       Item.ItemRectArray(nil, ACanvas, RectArray);
       Item.View.PaintSelectionRect(Item, nil, Item.Caption, RectArray, ACanvas, RectArray.BoundsRect, True);
@@ -300,7 +255,7 @@ begin
           TBitmap(Graphic).Handle;
         end;
       end;
-      if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) and HasMMX then
+      if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) then
       begin
         DrawLVBitmap32MMX(ListView, ACanvas, TBitmap(Graphic), X, Y);
       end else
@@ -312,18 +267,18 @@ begin
     end;
 
   finally
-    if not Include then
+    if (Info <> nil) and not Info.Include then
     begin
       TEasySelectionManagerX(ListView.Selection).AGradientColorTop := ColorFromOriginal;
       TEasySelectionManagerX(ListView.Selection).AGradientColorBottom := ColorToOriginal;
     end;
   end;
 
-  if ProcessedFilesCollection.ExistsFile(FileName) <> nil then
+  if (Info <> nil) and (ProcessedFilesCollection.ExistsFile(Info.FileName) <> nil) then
     DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.Icons[DB_IC_RELOADING + 1], 16, 16, 0, 0, DI_NORMAL);
 
-  if ShowInfo then
-    DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Rating, Rotate, Access, FileName, Encrypted, Exists, ID);
+  if ShowInfo and (Info <> nil) then
+    DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Info);
 end;
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string);

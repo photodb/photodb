@@ -38,6 +38,7 @@ uses
   uFileUtils,
   uMemory,
   uGOM,
+  CmpUnit,
   uBitmapUtils,
   uDBPopupMenuInfo,
   uConstants,
@@ -135,7 +136,6 @@ uses
   PropertyForm,
   uSearchTypes,
   UnitMenuDateForm,
-  CmpUnit,
   UnitCrypting,
   ImEditor,
   FormManegerUnit;

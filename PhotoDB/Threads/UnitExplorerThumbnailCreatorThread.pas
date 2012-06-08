@@ -341,12 +341,8 @@ begin
 end;
 
 procedure TExplorerThumbnailCreator.DoDrawAttributes;
-var
-  Exists: integer;
 begin
-  Exists := 1;
-  DrawAttributes(TempBitmap, ThSizeExplorerPreview, FInfo.Rating, FInfo.Rotation, FInfo.Access,
-    FInfo.FileName, FInfo.Encrypted, Exists, FInfo.ID);
+  DrawAttributes(TempBitmap, ThSizeExplorerPreview, FInfo);
 end;
 
 procedure TExplorerThumbnailCreator.SetImage;

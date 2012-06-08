@@ -60,7 +60,7 @@ uses
   uFormInterfaces;
 
 type
-  TFormSharePhotos = class(TThreadForm)
+  TFormSharePhotos = class(TThreadForm, IShareForm)
     ImProviderImage: TImage;
     WlUserName: TWebLink;
     WlChangeUser: TWebLink;
@@ -537,7 +537,6 @@ begin
   FCreateAlbumBox.Tag := 0;
   FCreateAlbumBox.OnResize := CreateAlbumBoxResize;
   FCreateAlbumBox.OnClick := SelectAlbumClick;
-  FCreateAlbumBox.IsSelected := True;
 
   FWlCreateAlbumName := TWebLink.Create(FCreateAlbumBox);
   FWlCreateAlbumName.Parent := FCreateAlbumBox;
@@ -549,6 +548,8 @@ begin
   FWlCreateAlbumName.IconHeight := 0;
   FWlCreateAlbumName.LoadImage;
   FWlCreateAlbumName.Top := FCreateAlbumBox.Height div 2 - FWlCreateAlbumName.Height div 2;
+
+  FCreateAlbumBox.IsSelected := True;
 
   FWlAlbumNameOk := TWebLink.Create(FCreateAlbumBox);
   FWlAlbumNameOk.Parent := FCreateAlbumBox;
@@ -1619,5 +1620,8 @@ begin
     LS.Left := WlInfo.Left - LS.Width;
   end;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IShareForm, TFormSharePhotos);
 
 end.

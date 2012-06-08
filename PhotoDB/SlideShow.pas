@@ -475,7 +475,6 @@ uses
   uFormSelectPerson,
   uManagerExplorer,
   FloatPanelFullScreen,
-  uFormAddImage,
   DX_Alpha,
   UnitViewerThread,
   ImEditor,
@@ -544,7 +543,6 @@ begin
   FImageExists := False;
   DoubleBuffered := True;
   DBCanDrag := False;
-  DropFileTarget1.Register(Self);
   SlideTimer.Interval := Math.Min(Math.Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
   FullScreenNow := False;
   SlideShowNow := False;
@@ -626,6 +624,7 @@ begin
   Screen.Cursors[CursorZoomOutNo] := CursorZoomOut;
   TW.I.Start('MakePagesLinks');
   MakePagesLinks;
+  DropFileTarget1.Register(Self);
   FCreating := False;
   TW.I.Start('RecreateImLists - END');
   FProgressMessage := RegisterWindowMessage('SLIDE_SHOW_PROGRESS');
@@ -2340,7 +2339,7 @@ begin
     if Item.ID = 0 then
     begin
       Item.Include := True;
-      AddImage(Item);
+      CollectionAddItemForm.Execute(Item);
     end;
 
     if Item.ID <> 0 then

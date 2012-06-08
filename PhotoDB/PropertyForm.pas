@@ -15,29 +15,25 @@ uses
   Classes,
   uGUIDUtils,
   ExtCtrls,
-  ActiveX,
   ShellAPI,
   Messages,
   SysUtils,
-  Dialogs,
-  JPEG,
+  Vcl.ImgList,
+  DropTarget,
+  DropSource,
+  Vcl.Grids,
+  ValEdit,
+  Vcl.Imaging.JPEG,
+  Vcl.Imaging.pngimage,
   Rating,
   ComCtrls,
   AppEvnts,
-  ExplorerTypes,
   uGroupTypes,
   UnitGroupsWork,
-  UnitUpdateDB,
   dolphin_db,
   UnitDBKernel,
   Effects,
-  ImgList,
-  DropTarget,
-  DropSource,
   SaveWindowPos,
-  Grids,
-  ValEdit,
-  TabNotBk,
   GraphicCrypt,
   DateUtils,
   ProgressActionUnit,
@@ -56,18 +52,14 @@ uses
   UnitINI,
   uLogger,
   UnitPropertyLoadGistogrammThread,
-  uVistaFuncs,
   UnitDBDeclare,
   uBitmapUtils,
   uCDMappingTypes,
   uDBDrawing,
   uFileUtils,
   DBLoading,
-  UnitDBCommon,
   uMemory,
-  UnitBitmapImageList,
   uListViewUtils,
-  uList64,
   uDBForm,
   uDBPopupMenuInfo,
   CCR.Exif,
@@ -77,7 +69,6 @@ uses
   uDBBaseTypes,
   uDBGraphicTypes,
   uRuntime,
-  uSysUtils,
   uDBUtils,
   uDBTypes,
   uActivationUtils,
@@ -85,7 +76,6 @@ uses
   uAssociations,
   uDBAdapter,
   uMemoryEx,
-  pngimage,
   uExifUtils,
   uStringUtils,
   WatermarkedEdit,
@@ -389,7 +379,6 @@ implementation
 uses
   uSearchTypes,
   UnitHintCeator,
-  UnitManageGroups,
   CmpUnit,
   UnitEditLinkForm,
   UnitHelp,
@@ -426,9 +415,9 @@ begin
     Result := FPropertys[0];
 end;
 
-function TPropertyManager.GetPropertyByID(ID : Integer): TPropertiesForm;
+function TPropertyManager.GetPropertyByID(ID: Integer): TPropertiesForm;
 var
-  I : Integer;
+  I: Integer;
 begin
   Result := nil;
   for I := 0 to FPropertys.Count - 1 do
@@ -440,9 +429,9 @@ begin
   end;
 end;
 
-function TPropertyManager.GetPropertyByFileName(FileName : string): TPropertiesForm;
+function TPropertyManager.GetPropertyByFileName(FileName: string): TPropertiesForm;
 var
-  I : Integer;
+  I: Integer;
 begin
   Result := nil;
   for I := 0 to FPropertys.Count - 1 do
@@ -507,15 +496,15 @@ begin
   begin
     if (FFilesInfo.IsVariousInclude) then
     begin
-      if (CbInclude.State <> CbGrayed) then
+      if (CbInclude.State <> cbGrayed) then
       begin
         Result := True;
         Exit;
       end;
     end else
     begin
-      if (FFilesInfo.StatInclude) and (CbInclude.State = CbUnChecked) or (not FFilesInfo.StatInclude) and
-        (CbInclude.State = CbChecked) then
+      if (FFilesInfo.StatInclude) and (CbInclude.State = cbUnchecked) or (not FFilesInfo.StatInclude) and
+        (CbInclude.State = cbChecked) then
       begin
         Result := True;
         Exit;
@@ -524,12 +513,12 @@ begin
   end;
 end;
 
-function TPropertiesForm.ReadCHLinks : Boolean;
+function TPropertiesForm.ReadCHLinks: Boolean;
 begin
   Result := not CompareLinks(FPropertyLinks, ItemLinks, True);
 end;
 
-function TPropertiesForm.ReadCHDate : Boolean;
+function TPropertiesForm.ReadCHDate: Boolean;
 begin
   Result := False;
   if (FShowInfoType = SHOW_INFO_ID) or (FShowInfoType = SHOW_INFO_FILE_NAME) then
@@ -541,9 +530,9 @@ begin
       ((FFilesInfo.StatDate <> DateEdit.DateTime) or FFilesInfo.IsVariousDate);
 end;
 
-function TPropertiesForm.ReadCHTime : Boolean;
+function TPropertiesForm.ReadCHTime: Boolean;
 var
-  VarTime : Boolean;
+  VarTime: Boolean;
 begin
   Result := False;
   if (FShowInfoType = SHOW_INFO_ID) or (FShowInfoType = SHOW_INFO_FILE_NAME) then
@@ -565,9 +554,9 @@ var
   FShadowImage: TBitmap;
   JPEG: TJpegImage;
   PassWord: string;
-  Exists, W, H: Integer;
-  DataRecord : TDBPopupMenuInfoRecord;
-  WorkQuery : TDataSet;
+  W, H: Integer;
+  DataRecord: TDBPopupMenuInfoRecord;
+  WorkQuery: TDataSet;
   DA: TDBAdapter;
 begin
   try
@@ -628,9 +617,10 @@ begin
 
             JPEG := nil;
             try
-              if ValidCryptBlobStreamJPG(DA.Thumb) then
+              DataRecord.Encrypted :=  ValidCryptBlobStreamJPG(DA.Thumb);
+              if DataRecord.Encrypted then
               begin
-                PassWord := DBkernel.FindPasswordForCryptBlobStream(WorkQuery.FieldByName('thum'));
+                PassWord := DBKernel.FindPasswordForCryptBlobStream(WorkQuery.FieldByName('thum'));
                 if PassWord = '' then
                   PassWord := RequestPasswordForm.ForBlob(DA.Thumb, DA.FileName);
 
@@ -679,9 +669,7 @@ begin
               end;
               F(FBit);
               ApplyRotate(B1, DataRecord.Rotation);
-              Exists := 0;
-              DrawAttributes(B1, 100, DataRecord.Rating, DataRecord.Rotation, DataRecord.Access, DataRecord.FileName,
-                ValidCryptBlobStreamJPG(DA.Thumb), Exists, DataRecord.ID);
+              DrawAttributes(B1, 100, DataRecord);
 
               ImMain.Picture.Bitmap := B1;
             finally
@@ -1990,7 +1978,7 @@ end;
 
 procedure TPropertiesForm.GroupsManager1Click(Sender: TObject);
 begin
-  ExecuteGroupManager;
+  GroupsManagerForm.Execute;
 end;
 
 procedure TPropertiesForm.RatingEditMouseDown(Sender: TObject);
@@ -2655,7 +2643,7 @@ end;
 
 procedure TPropertiesForm.BtnManageGroupsClick(Sender: TObject);
 begin
-  ExecuteGroupManager;
+  GroupsManagerForm.Execute;
 end;
 
 procedure TPropertiesForm.BtnNewGroupClick(Sender: TObject);
@@ -3056,7 +3044,7 @@ end;
 
 procedure TPropertiesForm.GroupManeger1Click(Sender: TObject);
 begin
-  ExecuteGroupManager;
+  GroupsManagerForm.Execute;
 end;
 
 procedure TPropertiesForm.SearchForGroup1Click(Sender: TObject);
@@ -3095,7 +3083,7 @@ end;
 
 procedure TPropertiesForm.MoveToGroup1Click(Sender: TObject);
 var
-  ToGroup : TGroup;
+  ToGroup: TGroup;
 begin
   if SelectGroup(ToGroup) then
   begin
