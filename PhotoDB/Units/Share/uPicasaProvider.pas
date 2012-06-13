@@ -15,6 +15,7 @@ uses
   JPEG,
   pngimage,
   uInternetUtils,
+  uInternetProxy,
   uGoogleOAuth,
   uPhotoShareInterfaces,
   uResources,
@@ -755,6 +756,9 @@ end;
 
 function TPicasaUserAlbum.GetPreview(Bitmap: TBitmap; HttpContainer: THTTPRequestContainer = nil): Boolean;
 begin
+  if IsProxyServerUsed(FAlbumPreviewUrl) then
+    HttpContainer := nil;
+
   Result := LoadBitmapFromUrl(FAlbumPreviewUrl, Bitmap, HttpContainer);
 end;
 

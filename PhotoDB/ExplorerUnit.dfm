@@ -64,7 +64,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 648
-      ActivePage = TsPreview
+      ActivePage = TbInfo
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -778,6 +778,7 @@ object ExplorerForm: TExplorerForm
       object TbInfo: TTabSheet
         Caption = 'Info'
         ImageIndex = 2
+        OnResize = TbInfoResize
         DesignSize = (
           132
           602)
@@ -789,17 +790,33 @@ object ExplorerForm: TExplorerForm
           Caption = 'Gistogramm image:'
         end
         object ImHIstogramm: TImage
-          Left = 1
+          Left = 5
           Top = 24
-          Width = 128
+          Width = 130
           Height = 105
           Anchors = [akLeft, akTop, akRight]
           Center = True
           Proportional = True
           Stretch = True
         end
+        object LbEditComments: TLabel
+          Tag = 2
+          Left = 3
+          Top = 336
+          Width = 54
+          Height = 13
+          Caption = 'Comments:'
+        end
+        object LbEditKeywords: TLabel
+          Tag = 2
+          Left = 3
+          Top = 258
+          Width = 53
+          Height = 13
+          Caption = 'KeyWords:'
+        end
         object ReRating: TRating
-          Left = 0
+          Left = 3
           Top = 135
           Width = 96
           Height = 16
@@ -810,13 +827,14 @@ object ExplorerForm: TExplorerForm
           RatingRange = 0
           Islayered = False
           Layered = 100
+          OnMouseDown = ReRatingMouseDown
           ImageCanRegenerate = True
           CanSelectRange = False
         end
         object DteTime: TDateTimePicker
-          Left = -2
+          Left = 5
           Top = 184
-          Width = 132
+          Width = 130
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Date = 38544.841692523150000000
@@ -827,11 +845,12 @@ object ExplorerForm: TExplorerForm
           DateFormat = dfLong
           Kind = dtkTime
           TabOrder = 1
+          OnEnter = DteTimeEnter
         end
         object DteDate: TDateTimePicker
-          Left = -2
+          Left = 5
           Top = 157
-          Width = 132
+          Width = 130
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelEdges = []
@@ -843,6 +862,7 @@ object ExplorerForm: TExplorerForm
           Color = clBtnFace
           DateFormat = dfLong
           TabOrder = 2
+          OnEnter = DteTimeEnter
         end
         object WllGroups: TWebLinkList
           Left = 1
@@ -862,6 +882,40 @@ object ExplorerForm: TExplorerForm
           LineHeight = 0
           PaddingTop = 2
           PaddingLeft = 2
+        end
+        object MemComments: TMemo
+          Tag = 1
+          Left = 3
+          Top = 355
+          Width = 167
+          Height = 50
+          Anchors = [akLeft, akTop, akRight]
+          ParentColor = True
+          ScrollBars = ssVertical
+          TabOrder = 4
+          OnEnter = MemCommentsEnter
+        end
+        object MemKeyWords: TMemo
+          Tag = 1
+          Left = 3
+          Top = 277
+          Width = 167
+          Height = 50
+          Anchors = [akLeft, akTop, akRight]
+          ParentColor = True
+          ScrollBars = ssVertical
+          TabOrder = 5
+          OnEnter = MemKeyWordsEnter
+        end
+        object BtnSaveInfo: TButton
+          Left = 62
+          Top = 411
+          Width = 73
+          Height = 24
+          Anchors = [akTop, akRight]
+          Caption = 'BtnSaveInfo'
+          TabOrder = 6
+          OnClick = BtnSaveInfoClick
         end
       end
       object TbEXIF: TTabSheet
@@ -2496,5 +2550,10 @@ object ExplorerForm: TExplorerForm
     OnTimer = TmrCheckItemVisibilityTimer
     Left = 536
     Top = 568
+  end
+  object ImGroups: TImageList
+    ColorDepth = cd32Bit
+    Left = 201
+    Top = 584
   end
 end

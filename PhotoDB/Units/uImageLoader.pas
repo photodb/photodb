@@ -10,6 +10,7 @@ uses
   SysUtils,
   Classes,
   Graphics,
+  DateUtils,
   GraphicEx,
   uTiffImage,
   RAWImage,
@@ -214,7 +215,14 @@ begin
             if not ExifData.Empty then
             begin
               if not (ilfDontUpdateInfo in Flags) then
+              begin
                 Info.HasExifHeader := True;
+                if (ExifData.DateTime > 0) and (YearOf(ExifData.DateTime) >= 1900) then
+                begin
+                  Info.Date := DateOf(ExifData.DateTime);
+                  Info.Time := TimeOf(ExifData.DateTime);
+                end;
+              end;
 
               if (ilfEXIF in Flags) then
                 EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));

@@ -180,7 +180,8 @@ begin
             if LoadImageFromPath(FInfo, -1, '', [ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
             begin
               ImageInfo.UpdateImageGeoInfo(FInfo);
-              FillExifInfo(ImageInfo.ExifData, FExifInfo);
+              if ImageInfo.ExifData <> nil then
+                FillExifInfo(ImageInfo.ExifData, FExifInfo);
             end;
 
             if (FInfo.Image.Width > ThSizeExplorerPreview) or (FInfo.Image.Height > ThSizeExplorerPreview) then

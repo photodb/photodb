@@ -137,6 +137,7 @@ uses
   SHDocVw,
   MSHTML,
   uExifUtils,
+  uExifInfo,
   uGeoLocation,
   uBrowserEmbedDraw,
 
@@ -151,7 +152,6 @@ uses
 
   VirtualTrees,
   uPathProvideTreeView,
-  uExifInfo,
   Vcl.Grids,
   Vcl.ValEdit,
   Rating,
@@ -417,6 +417,12 @@ type
     DteTime: TDateTimePicker;
     DteDate: TDateTimePicker;
     WllGroups: TWebLinkList;
+    ImGroups: TImageList;
+    LbEditComments: TLabel;
+    MemComments: TMemo;
+    LbEditKeywords: TLabel;
+    MemKeyWords: TMemo;
+    BtnSaveInfo: TButton;
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -629,6 +635,12 @@ type
     procedure TbBackMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure TbForwardMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure PcTasksChange(Sender: TObject);
+    procedure TbInfoResize(Sender: TObject);
+    procedure MemKeyWordsEnter(Sender: TObject);
+    procedure MemCommentsEnter(Sender: TObject);
+    procedure DteTimeEnter(Sender: TObject);
+    procedure BtnSaveInfoClick(Sender: TObject);
+    procedure ReRatingMouseDown(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -709,6 +721,7 @@ type
     FWebJSContainer: TWebJSExternalContainer;
     FWbGeoLocation: TWebBrowser;
     FWebBrowserJSMessage: Cardinal;
+    FEditorInfo: TDBPopupMenuInfo;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -730,7 +743,7 @@ type
     procedure ReallignInfo;
     procedure PasteFromClipboard;
     function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
-    function GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
+    function GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TDBPopupMenuInfo;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
     procedure RefreshItemByID(ID: Integer);
@@ -763,6 +776,13 @@ type
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
     procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
     procedure RestoreDragSelectedItems;
+
+    procedure InitInfoEditor;
+    procedure DisableInfoEditor;
+    procedure InitEditGroups;
+    procedure GroupClick(Sender: TObject);
+    procedure FillGroupsImageList;
+    procedure ReallignEditBoxes;
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1064,6 +1084,7 @@ var
   I: Integer;
 begin
   FGeoHTMLWindow := nil;
+  FEditorInfo := nil;
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -1836,6 +1857,7 @@ begin
   F(FStatusProgress);
   UnRegisterMainForm(Self);
   F(FFilesInfo);
+  F(FEditorInfo);
 
   FWebBorwserFactory := nil;
 end;
@@ -2181,10 +2203,11 @@ begin
   EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
-function TExplorerForm.GetCurrentPopUpMenuInfo(Item: TEasyItem): TDBPopupMenuInfo;
+function TExplorerForm.GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TDBPopupMenuInfo;
 var
   I: Integer;
   ItemIndex: Integer;
+  FileInfo: TExplorerFileInfo;
   MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
@@ -2192,18 +2215,22 @@ begin
   Result.IsPlusMenu := False;
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
-    ItemIndex := ItemIndexToMenuIndex(I);
-    if ItemIndex > FFilesInfo.Count - 1 then
-      Exit;
-
     //skip filtered items
     if not ElvMain.Items[I].Visible then
       Continue;
 
-    if (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_IMAGE) or
-       (FFilesInfo[ItemIndex].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+    if OnlySelected and not ElvMain.Items[I].Selected then
+      Continue;
+
+    ItemIndex := ItemIndexToMenuIndex(I);
+    if ItemIndex > FFilesInfo.Count - 1 then
+      Exit;
+
+    FileInfo := FFilesInfo[ItemIndex];
+
+    if (FileInfo.FileType = EXPLORER_ITEM_IMAGE) or (FileInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
-      MenuRecord := FFilesInfo[ItemIndex].Copy;
+      MenuRecord := FileInfo.Copy;
       MenuRecord.Selected := ElvMain.Items[I].Selected;
       MenuRecord.Exists := 1;
       Result.Add(MenuRecord);
@@ -2686,6 +2713,11 @@ begin
   end;
 end;
 
+procedure TExplorerForm.TbInfoResize(Sender: TObject);
+begin
+  ReRating.Left := TbInfo.Width div 2 - ReRating.Width div 2;
+end;
+
 procedure TExplorerForm.ListView1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
@@ -3028,6 +3060,12 @@ begin
             ListView1SelectItem(nil, ListView1Selected, True);
       Break;
     end;
+end;
+
+procedure TExplorerForm.ReRatingMouseDown(Sender: TObject);
+begin
+  if ReRating.Islayered then
+    ReRating.Islayered := False;
 end;
 
 function TExplorerForm.AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
@@ -7489,7 +7527,7 @@ end;
 
 procedure TExplorerForm.DoSelectItem;
 var
-  Index, I, J, X, Y, W, H: Integer;
+  Index, I, J, X, Y, W, H, FileType: Integer;
   Ico: TIcon;
   S, FileName: string;
   FileSID: TGUID;
@@ -7852,28 +7890,26 @@ begin
       FSelectedInfo._GUID := GetGUID;
 
       FSelectedInfo.Size := 0;
-      if SelCount < 1000 then
-      begin
-        for I := 0 to ElvMain.Items.Count - 1 do
-          if ElvMain.Items[I].Selected then
-          begin
-            Index := ItemIndexToMenuIndex(I);
-            if FSelectedInfo.FileType <> EXPLORER_ITEM_MYCOMPUTER then
-              FSelectedInfo.FileType := FFilesInfo[Index].FileType;
-            if FFilesInfo.Count - 1 < index then
-              Exit;
-            if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or
-               (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or
-               (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) or
-               (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
-               (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
-               (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_FILE) then
-            begin
-              FSelectedInfo.Size := FSelectedInfo.Size + FFilesInfo[Index].FileSize;
-            end;
-          end
-      end else
-        FSelectedInfo.Size := -1;
+
+      for I := 0 to ElvMain.Items.Count - 1 do
+        if ElvMain.Items[I].Selected then
+        begin
+          Index := ItemIndexToMenuIndex(I);
+
+          Info := FFilesInfo[Index];
+          FileType := Info.FileType;
+
+          if FSelectedInfo.FileType <> EXPLORER_ITEM_MYCOMPUTER then
+            FSelectedInfo.FileType := FileType;
+
+          if (FileType = EXPLORER_ITEM_IMAGE) or
+             (FileType = EXPLORER_ITEM_FILE) or
+             (FileType = EXPLORER_ITEM_EXEFILE) or
+             (FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
+             (FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
+             (FileType = EXPLORER_ITEM_DEVICE_FILE) then
+            FSelectedInfo.Size := FSelectedInfo.Size + Info.FileSize;
+        end;
 
       FSelectedInfo.FileName :=  Format(L('%d objects'), [SelCount]);
       FSelectedInfo.FileTypeW := '';
@@ -7887,6 +7923,8 @@ begin
       ReallignInfo;
     end;
   end;
+
+  InitInfoEditor;
 
   if (PnGeoLocation.Visible) then
   begin
@@ -9072,7 +9110,6 @@ procedure TExplorerForm.EasyListview1ItemThumbnailDraw(
   ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
 var
   Index, Y: Integer;
-  Exists: Integer;
   Info: TExplorerFileInfo;
 begin
   if Item.Data = nil then
@@ -9082,10 +9119,6 @@ begin
 
   Index := ItemIndexToMenuIndex(Item.Index);
   Info := FFilesInfo[Index];
-
-  Exists := Info.Exists;
-  if Exists = 0 then
-    Exists := 1;
 
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     Info.FileType = EXPLORER_ITEM_IMAGE, Info, True);
@@ -9702,6 +9735,157 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TExplorerForm.InitInfoEditor;
+begin
+  F(FEditorInfo);
+  FEditorInfo := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem, True);
+
+  if FEditorInfo.Count = 0 then
+  begin
+    DisableInfoEditor;
+    Exit;
+  end;
+
+  ReRating.Rating := FEditorInfo.StatRating;
+  if FEditorInfo.Count = 1 then
+  begin
+    ReRating.Islayered := False;
+    ReRating.Layered := 255;
+  end else
+  begin
+    ReRating.Islayered := True;
+    ReRating.Layered := 100;
+  end;
+
+  DteDate.DateTime := FEditorInfo.StatDate;
+  DteTime.Time := FEditorInfo.StatTime;
+
+  DteDate.Checked := FEditorInfo.StatIsDate and not FEditorInfo.IsVariousDate;
+  DteTime.Checked := FEditorInfo.StatIsTime and not FEditorInfo.IsVariousTime;
+
+  MemKeyWords.Text := FEditorInfo.CommonKeyWords;
+  MemComments.Text := FEditorInfo.CommonComments;
+
+  FSelectedInfo.Groups := FEditorInfo.CommonGroups;
+  InitEditGroups;
+end;
+
+procedure TExplorerForm.InitEditGroups;
+var
+  I: Integer;
+  FCurrentGroups: TGroups;
+  WL: TWebLink;
+  LblInfo: TStaticText;
+begin
+  FCurrentGroups := EncodeGroups(FSelectedInfo.Groups);
+
+  FillGroupsImageList;
+  WllGroups.Clear;
+
+  if Length(FCurrentGroups) = 0 then
+  begin
+    LblInfo := TStaticText.Create(WllGroups);
+    LblInfo.Parent := WllGroups;
+    WllGroups.AddControl(LblInfo, True);
+    LblInfo.Caption := L('There are no groups');
+  end;
+
+  if not DBReadOnly then
+  begin
+    WL := WllGroups.AddLink(True);
+    WL.Text := L('Edit groups');
+    WL.ImageList := ImGroups;
+    WL.ImageIndex := 0;
+    WL.Tag := -1;
+    WL.OnClick := GroupClick;
+  end;
+
+  for I := 0 to Length(FCurrentGroups) - 1 do
+  begin
+    WL := WllGroups.AddLink;
+    WL.Text := FCurrentGroups[I].GroupName;
+    WL.ImageList := ImGroups;
+    WL.ImageIndex := I + 1;
+    WL.Tag := I;
+    WL.OnClick := GroupClick;
+  end;
+  WllGroups.ReallignList;
+  WllGroups.AutoHeight(200);
+
+  ReallignEditBoxes;
+end;
+
+procedure TExplorerForm.ReallignEditBoxes;
+begin
+  LbEditKeywords.Top := WllGroups.BoundsRect.Bottom + 5;
+  MemKeyWords.Top := LbEditKeywords.BoundsRect.Bottom + 3;
+  LbEditComments.Top := MemKeyWords.BoundsRect.Bottom + 3;
+  MemComments.Top := LbEditComments.BoundsRect.Bottom + 3;
+  BtnSaveInfo.Top := MemComments.BoundsRect.Bottom + 5;
+end;
+
+procedure TExplorerForm.MemCommentsEnter(Sender: TObject);
+begin
+  MemComments.Height := 100;
+  MemKeyWords.Height := 50;
+  ReallignEditBoxes;
+end;
+
+procedure TExplorerForm.MemKeyWordsEnter(Sender: TObject);
+begin
+  MemComments.Height := 50;
+  MemKeyWords.Height := 100;
+
+  ReallignEditBoxes;
+end;
+
+procedure TExplorerForm.DteTimeEnter(Sender: TObject);
+begin
+  MemComments.Height := 50;
+  MemKeyWords.Height := 50;
+
+  ReallignEditBoxes;
+end;
+
+procedure TExplorerForm.FillGroupsImageList;
+begin
+
+end;
+
+procedure TExplorerForm.GroupClick(Sender: TObject);
+var
+  KeyWords, Groups: string;
+  WL: TWebLink;
+begin
+  WL := TWebLink(Sender);
+  if WL.Tag > -1 then
+  begin
+    GroupInfoForm.Execute(nil, WL.Text, False);
+  end else
+  begin
+
+    KeyWords := MemKeyWords.Text;
+    Groups := FSelectedInfo.Groups;
+    GroupsSelectForm.Execute(Groups, KeyWords);
+    FSelectedInfo.Groups := Groups;
+
+    InitEditGroups;
+
+    MemKeyWords.Text := KeyWords;
+    //MemKeyWordsChange(Sender);
+  end;
+end;
+
+procedure TExplorerForm.DisableInfoEditor;
+begin
+
+end;
+
+procedure TExplorerForm.BtnSaveInfoClick(Sender: TObject);
+begin
+  ///
 end;
 
 procedure TExplorerForm.BigSizeCallBack(Sender: TObject; SizeX,

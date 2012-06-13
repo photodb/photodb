@@ -3,7 +3,7 @@ object SearchForm: TSearchForm
   Top = 96
   ActiveControl = ShowDateOptionsLink
   Caption = 'Search'
-  ClientHeight = 715
+  ClientHeight = 782
   ClientWidth = 805
   Color = clBtnFace
   Constraints.MinHeight = 180
@@ -25,17 +25,18 @@ object SearchForm: TSearchForm
   OnShow = FormShow
   DesignSize = (
     805
-    715)
+    782)
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 180
     Top = 25
-    Height = 690
+    Height = 757
     AutoSnap = False
     MinSize = 180
     OnCanResize = Splitter1CanResize
     ExplicitLeft = 170
+    ExplicitHeight = 690
   end
   object ImageAllGroups: TImage
     Left = 182
@@ -184,7 +185,7 @@ object SearchForm: TSearchForm
     Left = 0
     Top = 25
     Width = 180
-    Height = 690
+    Height = 757
     Align = alLeft
     DoubleBuffered = True
     ParentColor = True
@@ -192,6 +193,7 @@ object SearchForm: TSearchForm
     ParentShowHint = False
     ShowHint = False
     TabOrder = 0
+    ExplicitHeight = 690
     object PropertyPanel: TPanel
       Left = 1
       Top = 385
@@ -472,11 +474,12 @@ object SearchForm: TSearchForm
       Left = 1
       Top = 737
       Width = 178
-      Height = 8
+      Height = 19
       Align = alClient
       ParentColor = True
       TabOrder = 2
       Visible = False
+      ExplicitHeight = 8
     end
     object pnDateRange: TPanel
       Left = 1

@@ -106,6 +106,7 @@ const
   {$EXTERNALSYM WINHTTP_FLAG_REFRESH}
 
 procedure ConfigureIdHttpProxy(HTTP: TIdHTTP; RequestUrl: string);
+function IsProxyServerUsed(RequestUrl: string): Boolean;
 
 implementation
 
@@ -204,35 +205,47 @@ begin
   end;
 end;
 
+function GetHostName(url: string): string;
+var
+  P: Integer;
+begin
+  P := LastDelimiter(':', url);
+  if P <= 1 then
+    Exit(url);
+
+  Result := Copy(url, 1, P - 1);
+end;
+
+function GetHostPort(url: string): Integer;
+var
+  P: Integer;
+  Port: string;
+begin
+  P := LastDelimiter(':', url);
+  if (P <= 1) and (P < Length(url)) then
+    Exit(80);
+
+  Port := Copy(url, P + 1, Length(url) - P);
+  Result := StrToIntDef(Port, 80);
+end;
+
+function IsProxyServerUsed(RequestUrl: string): Boolean;
+var
+  Res: DWORD;
+  ProxyInfo: TProxyInfo;
+begin
+  Result := False;
+  Res := GetProxyInfo(RequestUrl, ProxyInfo);
+  case Res of
+    0:
+      Result := GetHostName(ProxyInfo.ProxyURL) <> '';
+  end;
+end;
+
 procedure ConfigureIdHttpProxy(HTTP: TIdHTTP; RequestUrl: string);
 var
   Result: DWORD;
   ProxyInfo: TProxyInfo;
-
-  function GetHostName(url: string): string;
-  var
-    P: Integer;
-  begin
-    P := LastDelimiter(':', url);
-    if P <= 1 then
-      Exit(url);
-
-    Result := Copy(url, 1, P - 1);
-  end;
-
-  function GetHostPort(url: string): Integer;
-  var
-    P: Integer;
-    Port: string;
-  begin
-    P := LastDelimiter(':', url);
-    if (P <= 1) and (P < Length(url)) then
-      Exit(80);
-
-    Port := Copy(url, P + 1, Length(url) - P);
-    Result := StrToIntDef(Port, 80);
-  end;
-
 begin
   Result := GetProxyInfo(RequestUrl, ProxyInfo);
   case Result of
