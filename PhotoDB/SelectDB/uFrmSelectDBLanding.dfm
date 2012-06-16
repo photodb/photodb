@@ -23,6 +23,5 @@ inherited FrmSelectDBLanding: TFrmSelectDBLanding
       'Create Example DB')
     TabOrder = 0
     OnClick = RgModeClick
-    ExplicitHeight = 297
   end
 end

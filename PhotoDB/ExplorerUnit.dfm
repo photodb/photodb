@@ -64,7 +64,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 648
-      ActivePage = TbInfo
+      ActivePage = TsPreview
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -775,10 +775,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'Explorer'
         ImageIndex = 1
       end
-      object TbInfo: TTabSheet
+      object TsInfo: TTabSheet
         Caption = 'Info'
         ImageIndex = 2
-        OnResize = TbInfoResize
+        OnResize = TsInfoResize
         DesignSize = (
           132
           602)
@@ -918,7 +918,7 @@ object ExplorerForm: TExplorerForm
           OnClick = BtnSaveInfoClick
         end
       end
-      object TbEXIF: TTabSheet
+      object TsEXIF: TTabSheet
         Caption = 'EXIF'
         ImageIndex = 3
         object VleExif: TValueListEditor

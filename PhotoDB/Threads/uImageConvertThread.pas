@@ -325,7 +325,7 @@ const
           UpdatePreviewWindow;
 
           if (ErrorCode <> 0) and (ErrorCode <> 183) and (ErrorCode <> 6) and (ErrorCode <> 87) then
-            raise Exception.Create('Error code = ' + IntToStr(GetLastError));
+            RaiseLastOSError;
           Exit;
         except
           on e: Exception do

@@ -627,69 +627,74 @@ begin
         try
           Roots := TPathItemCollection.Create;
           try
-            ParentItem := Info.Data.Data;
-            ParentItem.Provider.FillChildList(Thread, ParentItem, Roots, PATH_LOAD_DIRECTORIES_ONLY or PATH_LOAD_FOR_IMAGE_LIST or PATH_LOAD_CHECK_CHILDREN, 16, 10,
-              procedure(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean)
-              begin
-                Thread.Synchronize(nil,
-                  procedure
-                  var
-                    I: Integer;
-                    ChildData: TData;
-                    SearchPath: string;
-                    NodeData: PData;
-                  begin
-                    if GOM.IsObj(Thread.ThreadForm) then
+            //copy item because this item could be freed on form close
+            ParentItem := Info.Data.Data.Copy;
+            try
+              ParentItem.Provider.FillChildList(Thread, ParentItem, Roots, PATH_LOAD_DIRECTORIES_ONLY or PATH_LOAD_FOR_IMAGE_LIST or PATH_LOAD_CHECK_CHILDREN, 16, 10,
+                procedure(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean)
+                begin
+                  Thread.Synchronize(nil,
+                    procedure
+                    var
+                      I: Integer;
+                      ChildData: TData;
+                      SearchPath: string;
+                      NodeData: PData;
                     begin
-                      SearchPath := '';
-                      if Info.Node.ChildCount > 0 then
-                        SearchPath := ExcludeTrailingPathDelimiter(AnsiLowerCase(PData(GetNodeData(Info.Node.FirstChild)).Data.Path));
+                      if GOM.IsObj(Thread.ThreadForm) then
+                      begin
+                        SearchPath := '';
+                        if Info.Node.ChildCount > 0 then
+                          SearchPath := ExcludeTrailingPathDelimiter(AnsiLowerCase(PData(GetNodeData(Info.Node.FirstChild)).Data.Path));
 
-                      InterruptValidation;
-                      BeginUpdate;
-                      try
-                        for I := 0 to CurrentItems.Count - 1 do
-                        begin
-
-                          if SearchPath = ExcludeTrailingPathDelimiter(AnsiLowerCase(CurrentItems[I].Path)) then
+                        InterruptValidation;
+                        BeginUpdate;
+                        try
+                          for I := 0 to CurrentItems.Count - 1 do
                           begin
-                            MoveTo(Info.Node.FirstChild, Info.Node, amAddChildLast, False);
-                            ValidateCache;
 
-                            NodeData := GetNodeData(Info.Node.LastChild);
+                            if SearchPath = ExcludeTrailingPathDelimiter(AnsiLowerCase(CurrentItems[I].Path)) then
+                            begin
+                              MoveTo(Info.Node.FirstChild, Info.Node, amAddChildLast, False);
+                              ValidateCache;
 
-                            //node without image, shouldn't affect to GDI counter
-                            //this list will be deleted on destroy
-                            //without this line will be AV :(
-                            FNodesToDelete.Add(NodeData.Data);
+                              NodeData := GetNodeData(Info.Node.LastChild);
 
-                            NodeData.Data := CurrentItems[I];
-                            NodeData.Data.Tag := FImageList.AddPathImage(NodeData.Data.ExtractImage, True);
+                              //node without image, shouldn't affect to GDI counter
+                              //this list will be deleted on destroy
+                              //without this line will be AV :(
+                              FNodesToDelete.Add(NodeData.Data);
 
-                            TopNode := GetFirstSelected;
-                          end else
-                          begin
-                            ChildData.Data := CurrentItems[I];
-                            ChildData.Data.Tag := FImageList.AddPathImage(ChildData.Data.ExtractImage, True);
-                            AddChild(Info.Node, Pointer(ChildData));
-                            ValidateNode(Info.Node, False);
+                              NodeData.Data := CurrentItems[I];
+                              NodeData.Data.Tag := FImageList.AddPathImage(NodeData.Data.ExtractImage, True);
+
+                              TopNode := GetFirstSelected;
+                            end else
+                            begin
+                              ChildData.Data := CurrentItems[I];
+                              ChildData.Data.Tag := FImageList.AddPathImage(ChildData.Data.ExtractImage, True);
+                              AddChild(Info.Node, Pointer(ChildData));
+                              ValidateNode(Info.Node, False);
+                            end;
                           end;
-                        end;
 
-                        if (CurrentItems.Count > 0) and IsFirstItem then
-                        begin
-                          IsFirstItem := False;
-                          Expanded[Node] := True;
+                          if (CurrentItems.Count > 0) and IsFirstItem then
+                          begin
+                            IsFirstItem := False;
+                            Expanded[Node] := True;
+                          end;
+                        finally
+                          EndUpdate;
                         end;
-                      finally
-                        EndUpdate;
                       end;
-                    end;
-                  end
-                );
-                CurrentItems.Clear;
-              end
-            );
+                    end
+                  );
+                  CurrentItems.Clear;
+                end
+              );
+            finally
+              F(ParentItem);
+            end;
           finally
             F(Roots);
           end;

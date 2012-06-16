@@ -408,8 +408,8 @@ type
     PcTasks: TPageControl;
     TsPreview: TTabSheet;
     TsExplorer: TTabSheet;
-    TbInfo: TTabSheet;
-    TbEXIF: TTabSheet;
+    TsInfo: TTabSheet;
+    TsEXIF: TTabSheet;
     VleExif: TValueListEditor;
     LbHistogramImage: TLabel;
     ImHIstogramm: TImage;
@@ -635,7 +635,7 @@ type
     procedure TbBackMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure TbForwardMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure PcTasksChange(Sender: TObject);
-    procedure TbInfoResize(Sender: TObject);
+    procedure TsInfoResize(Sender: TObject);
     procedure MemKeyWordsEnter(Sender: TObject);
     procedure MemCommentsEnter(Sender: TObject);
     procedure DteTimeEnter(Sender: TObject);
@@ -1083,6 +1083,12 @@ procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
+  {$IFDEF LICENCE}
+  PcTasks.Pages[2].TabVisible := False;
+  PcTasks.Pages[3].TabVisible := False;
+  MessageBoxDB(Handle, L('LICENSE!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+  {$ENDIF}
+
   FGeoHTMLWindow := nil;
   FEditorInfo := nil;
   FPopupMenuWasActiveOnMouseDown := False;
@@ -2713,9 +2719,9 @@ begin
   end;
 end;
 
-procedure TExplorerForm.TbInfoResize(Sender: TObject);
+procedure TExplorerForm.TsInfoResize(Sender: TObject);
 begin
-  ReRating.Left := TbInfo.Width div 2 - ReRating.Width div 2;
+  ReRating.Left := TsInfo.Width div 2 - ReRating.Width div 2;
 end;
 
 procedure TExplorerForm.ListView1MouseDown(Sender: TObject;
@@ -4467,8 +4473,9 @@ begin
       FSelectedInfo.GeoLocation.Longitude := Info.GeoLocation.Longitude;
     end;
 
-    TbEXIF.Visible := ExifInfo <> nil;
-    if TbEXIF.Visible then
+    {$IFNDEF LICENCE}
+    TsEXIF.Visible := ExifInfo <> nil;
+    if TsEXIF.Visible then
     begin
       VleEXIF.Strings.Clear;
       for Line in ExifInfo do
@@ -4478,6 +4485,7 @@ begin
     ImHIstogramm.Picture.Graphic := Histogramm;
     //ImHIstogramm.Picture.SetGraphicEx(Histogramm);
     //Histogramm := nil;
+    {$ENDIF}
 
     ReallignInfo;
   end;

@@ -11,6 +11,7 @@ uses
   CommCtrl,
   IniFiles,
   uMemory,
+  uShellIntegration,
   UnitDBDeclare,
   GraphicCrypt,
   CommonDBSupport,
@@ -69,6 +70,7 @@ type
     FSych: TCriticalSection;
     procedure LoadDBs;
     function GetSortGroupsByName: Boolean;
+    procedure HandleError(E: Exception);
   public
     { Public declarations }
     constructor Create;
@@ -169,31 +171,35 @@ begin
   FApplicationKey := '';
 end;
 
-function TDBKernel.CreateDBbyName(FileName: string): integer;
+function TDBKernel.CreateDBbyName(FileName: string): Integer;
 begin
   Result := 0;
   CreateDirA(ExtractFileDir(FileName));
   try
     if FileExistsSafe(FileName) then
       DeleteFile(FileName);
+
+    if FileExistsSafe(FileName) then
+    begin
+      Result := 1;
+      Exit;
+    end;
+    Result := 1;
+
+    if GetDBType(FileName) = DB_TYPE_MDB then
+    begin
+      if ADOCreateImageTable(FileName) then
+        Result := 0;
+      ADOCreateSettingsTable(FileName);
+    end;
+
   except
     on E: Exception do
     begin
+      HandleError(E);
       EventLog(':TDBKernel::CreateDBbyName() throw exception: ' + E.message);
       Exit;
     end;
-  end;
-  if FileExistsSafe(FileName) then
-  begin
-    Result := 1;
-    Exit;
-  end;
-  Result := 1;
-  if GetDBType(FileName) = DB_TYPE_MDB then
-  begin
-    if ADOCreateImageTable(FileName) then
-      Result := 0;
-    ADOCreateSettingsTable(FileName);
   end;
 end;
 
@@ -817,7 +823,7 @@ begin
       F(DBS);
     end;
   except
-    on E: Exception do
+    on e: Exception do
       EventLog(':TDBKernel::MoveDB() throw exception: ' + E.message);
   end;
   F(Reg);
@@ -1063,6 +1069,16 @@ end;
 function TDBKernel.GetSortGroupsByName: Boolean;
 begin
   Result := Settings.Readbool('Options', 'SortGroupsByName', True);
+end;
+
+procedure TDBKernel.HandleError(E: Exception);
+begin
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      MessageBoxDB(0, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    end
+  );
 end;
 
 procedure TDBKernel.LoadIcons;

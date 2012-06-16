@@ -3,9 +3,22 @@ unit uFrmSelectDBCreationSummary;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, uFrameWizardBase, StdCtrls, UnitDBDeclare, UnitDBKernel,
-  CommonDBSupport, uShellIntegration, uConstants, uDBUtils, uInterfaces;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  uFrameWizardBase,
+  StdCtrls,
+  UnitDBDeclare,
+  UnitDBKernel,
+  CommonDBSupport,
+  uShellIntegration,
+  uConstants,
+  uDBUtils,
+  uInterfaces;
 
 type
   TFrmSelectDBCreationSummary = class(TFrameWizardBase)

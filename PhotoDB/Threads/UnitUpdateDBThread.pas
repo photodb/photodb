@@ -359,7 +359,7 @@ begin
     FileNumber := 0;
     AutoAnswerSetted := False;
 
-    {$IFDEF LICENSE}
+    {$IFDEF LICENCE}
     if TActivationManager.Instance.IsDemoMode then
     begin
       if GetRecordsCount > LimitDemoRecords then

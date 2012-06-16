@@ -747,23 +747,30 @@ begin
 end;
 
 procedure CreateMSAccessDatabase(FileName: string);
+const
+  DBEngine120 = 'DAO.DBEngine.120';
 var
   DAO: Variant;
-  i: integer;
-const Engines: array[0..2] of string = ('DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
+  I: Integer;
+  const Engines: array[0..3] of string = (DBEngine120, 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
 
-  function CheckClass(OLEClassName: string): boolean;
+  function CheckClass(OLEClassName: string): Boolean;
   var
-    Res: HResult;
-    G : TGUID;
+    HR: HResult;
+    G: TGUID;
+    I: IInterface;
   begin
-    G := ProgIDToClassID(OLEClassName);
-    Res := CoCreateInstance(G, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, Res);
-    Result := Res = S_OK;
+    HR := CLSIDFromProgID(PWideChar(WideString(OLEClassName)), G);
+
+    if Failed(HR) then
+      Exit(False);
+
+    HR := CoCreateInstance(G, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, I);
+    Result := HR = S_OK;
   end;
 
 begin
-  for I := 0 to 2 do
+  for I := Low(Engines) to High(Engines) do
     if CheckClass(Engines[i]) then
       begin
         DAO := CreateOleObject(Engines[i]);
@@ -783,7 +790,10 @@ begin
     CreateMSAccessDatabase(TableName);
   except
     on E: Exception do
+    begin
       EventLog(':ADOCreateImageTable() throw exception: ' + E.message);
+      raise;
+    end;
   end;
   FQuery := GetQuery(TableName, GetDBType(TableName));
   try

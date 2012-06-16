@@ -3,9 +3,25 @@ unit uFrmSelectDBLanding;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, StdCtrls, ExtCtrls, uFrameWizardBase, uConstants, UnitDBFileDialogs,
-  uFileUtils, uShellIntegration, uDBUtils, UnitDBKernel, uMemory, UnitDBDeclare;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ExtCtrls,
+  uFrameWizardBase,
+  uConstants,
+  UnitDBFileDialogs,
+  uFileUtils,
+  uShellIntegration,
+  uDBUtils,
+  UnitDBKernel,
+  uMemory,
+  UnitDBDeclare;
 
 type
   TFrmSelectDBLanding = class(TFrameWizardBase)

@@ -41,6 +41,10 @@ uses
   uPortableClasses,
   uTranslate,
   uSysUtils,
+  {$IFDEF LICENCE}
+  UnitINI,
+  uActivationUtils,
+  {$ENDIF}
   uFormInterfaces;
 
 type
@@ -482,7 +486,7 @@ begin
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
-{$IFDEF LICENSE}
+{$IFDEF LICENCE}
 var
   FReg: TBDRegistry;
   InstallDate: TDateTime;
@@ -508,7 +512,7 @@ begin
       TW.I.Start('StartCRCCheckThread');
       TLoad.Instance.StartCRCCheckThread;
     end;
-    {$IFDEF LICENSE}
+    {$IFDEF LICENCE}
     if (FCheckCount = 30) and not FolderView then // after 4 sec.
     begin
       if TActivationManager.Instance.IsDemoMode then
@@ -519,7 +523,7 @@ begin
           InstallDate := FReg.ReadDateTime('InstallDate', 0);
           // if more than 30 days
           if (Now - InstallDate) > DemoDays then
-            ShowActivationDialog;
+            ActivationForm.Execute;
 
         finally
           F(FReg);
