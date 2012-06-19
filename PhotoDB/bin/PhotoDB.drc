@@ -2021,8 +2021,6 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\dbgrids.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitDBCleaning.dfm */
 /* D:\Dmitry\Dmitry\ratingres.res */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Printer\PrinterProgress.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Printer\PrintMainForm.dfm */
 /* D:\Dmitry\Dmitry\dbloading.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\unitimhint.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditLinkForm.dfm */
@@ -2078,6 +2076,8 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitDebugScriptForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormPersonSuggest.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormCreatePerson.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Printer\PrinterProgress.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Printer\PrintMainForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Controls\virtual-treeview\Source\VirtualTrees.res */
 /* Resources\TreeView.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFileRenamerForm.dfm */

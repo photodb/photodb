@@ -1169,7 +1169,7 @@ object PropertiesForm: TPropertiesForm
   object DragImageList: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
-    Left = 144
+    Left = 80
     Top = 496
   end
   object CopyEXIFPopupMenu: TPopupActionBar
@@ -1183,10 +1183,6 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Copy All'
       OnClick = CopyAll1Click
     end
-  end
-  object ImageList1: TImageList
-    Left = 80
-    Top = 496
   end
   object PmLinks: TPopupActionBar
     OnPopup = PmLinksPopup
@@ -1236,6 +1232,7 @@ object PropertiesForm: TPropertiesForm
     end
   end
   object RegGroupsImageList: TImageList
+    ColorDepth = cd32Bit
     Left = 112
     Top = 496
   end
@@ -1326,7 +1323,7 @@ object PropertiesForm: TPropertiesForm
     Enabled = False
     Interval = 200
     OnTimer = TmrFilterTimer
-    Left = 176
+    Left = 144
     Top = 496
   end
 end

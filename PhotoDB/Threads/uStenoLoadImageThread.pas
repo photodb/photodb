@@ -73,7 +73,7 @@ begin
         begin
           FWidth := ImageInfo.GraphicWidth;
           FHeight := ImageInfo.GraphicHeight;
-          FBitmapPreview := ImageInfo.GenerateBitmap(Info, 146, 146, pf24Bit, FColor, [ilboFreeGraphic, ilboAddShadow, ilboRotate, ilboApplyICCProfile]);
+          FBitmapPreview := ImageInfo.GenerateBitmap(Info, 146, 146, pf24Bit, FColor, [ilboFreeGraphic, ilboFullBitmap, ilboAddShadow, ilboRotate, ilboApplyICCProfile]);
           try
             FBitmapImage := ImageInfo.ExtractFullBitmap;
             try

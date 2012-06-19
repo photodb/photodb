@@ -77,8 +77,6 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
-        ExplicitTop = 42
-        ExplicitHeight = 602
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -89,7 +87,6 @@ object ExplorerForm: TExplorerForm
           ParentColor = True
           TabOrder = 0
           OnResize = PropertyPanelResize
-          ExplicitHeight = 602
           object ScrollBox1: TScrollPanel
             Left = 0
             Top = 0
@@ -110,7 +107,6 @@ object ExplorerForm: TExplorerForm
             FullRepaint = False
             TabOrder = 0
             OnResize = ScrollBox1Resize
-            ExplicitHeight = 573
             object TypeLabel: TLabel
               Left = 7
               Top = 137
@@ -752,7 +748,6 @@ object ExplorerForm: TExplorerForm
             ParentBackground = False
             TabOrder = 1
             Visible = False
-            ExplicitTop = 573
             object WlGoToShelf: TWebLink
               Left = 5
               Top = 6
@@ -779,16 +774,12 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitTop = 42
-        ExplicitHeight = 602
       end
       object TsInfo: TTabSheet
         Caption = 'Info'
         ImageIndex = 2
         TabVisible = False
         OnResize = TsInfoResize
-        ExplicitTop = 42
-        ExplicitHeight = 602
         DesignSize = (
           132
           620)
@@ -835,6 +826,7 @@ object ExplorerForm: TExplorerForm
           Color = clWhite
           Rating = 0
           RatingRange = 0
+          OnChange = ReRatingChange
           Islayered = False
           Layered = 100
           OnMouseDown = ReRatingMouseDown
@@ -855,6 +847,7 @@ object ExplorerForm: TExplorerForm
           DateFormat = dfLong
           Kind = dtkTime
           TabOrder = 1
+          OnChange = DteTimeChange
           OnEnter = DteTimeEnter
         end
         object DteDate: TDateTimePicker
@@ -872,6 +865,7 @@ object ExplorerForm: TExplorerForm
           Color = clBtnFace
           DateFormat = dfLong
           TabOrder = 2
+          OnChange = DteDateChange
           OnEnter = DteTimeEnter
         end
         object WllGroups: TWebLinkList
@@ -903,6 +897,7 @@ object ExplorerForm: TExplorerForm
           ParentColor = True
           ScrollBars = ssVertical
           TabOrder = 4
+          OnChange = MemCommentsChange
           OnEnter = MemCommentsEnter
         end
         object MemKeyWords: TMemo
@@ -915,6 +910,7 @@ object ExplorerForm: TExplorerForm
           ParentColor = True
           ScrollBars = ssVertical
           TabOrder = 5
+          OnChange = MemKeyWordsChange
           OnEnter = MemKeyWordsEnter
         end
         object BtnSaveInfo: TButton
@@ -924,6 +920,7 @@ object ExplorerForm: TExplorerForm
           Height = 24
           Anchors = [akTop, akRight]
           Caption = 'BtnSaveInfo'
+          Enabled = False
           TabOrder = 6
           OnClick = BtnSaveInfoClick
         end
@@ -932,8 +929,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitTop = 42
-        ExplicitHeight = 602
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -943,7 +938,6 @@ object ExplorerForm: TExplorerForm
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
           TabOrder = 0
-          ExplicitHeight = 602
           ColWidths = (
             70
             56)

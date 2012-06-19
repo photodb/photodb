@@ -36,12 +36,10 @@ uses
   SaveWindowPos,
   GraphicCrypt,
   DateUtils,
-  ProgressActionUnit,
   DmGradient,
   Clipbrd,
   WebLink,
   UnitLinksSupport,
-  UnitSQLOptimizing,
   Math,
   CommonDBSupport,
   UnitUpdateDBObject,
@@ -86,6 +84,7 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   uBaseWinControl,
   uExifInfo,
+  uDBInfoEditorUtils,
   uFormInterfaces;
 
 type
@@ -128,7 +127,6 @@ type
     CopyEXIFPopupMenu: TPopupActionBar;
     CopyCurrent1: TMenuItem;
     CopyAll1: TMenuItem;
-    ImageList1: TImageList;
     PmLinks: TPopupActionBar;
     PmAddLink: TPopupActionBar;
     Open1: TMenuItem;
@@ -948,410 +946,113 @@ end;
 
 procedure TPropertiesForm.BtSaveClick(Sender: TObject);
 var
-  _sqlexectext, CommonGroups, KeyWords, SGroups, SLinks: string;
-  SLinkInfo: TLinksInfo;
-  I, J, C: Integer;
+  _sqlexectext: string;
+  I: Integer;
   EventInfo: TEventValues;
-  XCount: Integer;
-  ProgressForm: TProgressActionForm;
-  List: TSQLList;
-  IDs: string;
-  FQuery: TDataSet;
   IDArray: TArInteger;
   WorkQuery: TDataSet;
   FileInfo: TDBPopupMenuInfoRecord;
-
-  function GenerateIDList : string;
-  var
-    K: Integer;
-  begin
-    Result := '0';
-    for K := 0 to FFilesInfo.Count - 1 do
-    begin
-      if FFilesInfo[K].ID = 0 then
-        Continue;
-      Result := Result + ',' + IntToStr(FFilesInfo[K].ID);
-    end;
-  end;
-
-  procedure FillDataRecordWithUserInfo(Info: TDBPopupMenuInfoRecord);
-  begin
-    if CommentMemo.Text <> '' then
-      Info.Comment := CommentMemo.Text;
-    if KeyWordsMemo.Text <> '' then
-      Info.KeyWords := KeyWordsMemo.Text;
-    if (RatingEdit.Rating  > 0) and not RatingEdit.Islayered then
-      Info.Rating := RatingEdit.Rating;
-    if Length(FNowGroups) > 0 then
-      Info.Groups := CodeGroups(FNowGroups);
-    Info.Include := CbInclude.Checked;
-    if DateEdit.Checked then
-      Info.Date := DateOf(DateEdit.DateTime);
-    if TimeEdit.Checked then
-      Info.Time := TimeOf(TimeEdit.Time);
-    Info.IsDate := DateEdit.Checked;
-    Info.IsTime := TimeEdit.Checked;
-    if Length(FPropertyLinks) > 0 then
-      Info.Links := CodeLinksInfo(FPropertyLinks);
-  end;
-
+  UserInput: TUserDBInfoInput;
 begin
-  WorkQuery := GetQuery;
-  BtSave.SetEnabledEx(False);
+  UserInput := TUserDBInfoInput.Create;
   try
-    if FShowInfoType = SHOW_INFO_IDS then
-    begin
-      XCount := 0;
-      LockImput;
 
-      ProgressForm := nil;
-      if VariousKeyWords(KeywordsMemo.Text, FFilesInfo.CommonKeyWords) then
-        Inc(XCount);
-      if not CompareGroups(FNowGroups, FOldGroups) then
-        Inc(XCount);
-      if not CommentMemo.readonly then
-        Inc(XCount);
-      if ReadCHLinks then
-        Inc(XCount);
-      if FFilesInfo.HasNonDBInfo then
-        Inc(XCount);
+    UserInput.Keywords := KeywordsMemo.Text;
+    UserInput.Groups := CodeGroups(FNowGroups);
+    UserInput.IsCommentChanged := not CommentMemo.ReadOnly;
+    UserInput.Comment := CommentMemo.Text;
+    UserInput.IsLinksChanged := ReadCHLinks;
+    UserInput.Links := CodeLinksInfo(FPropertyLinks);
+    UserInput.IsIncludeChanged := ReadCHInclude;
+    UserInput.Include := CbInclude.Checked;
+    UserInput.IsRatingChanged := not RatingEdit.IsLayered;
+    UserInput.Rating := RatingEdit.Rating;
 
-      if XCount > 0 then
+    UserInput.IsDateChanged := ReadCHDate;
+    UserInput.IsDateChecked := DateEdit.Checked;
+    UserInput.Date := DateOf(DateEdit.Date);
+
+    UserInput.IsTimeChanged := ReadCHTime;
+    UserInput.IsTimeChecked := TimeEdit.Checked;
+    UserInput.Time := TimeOf(TimeEdit.Date);
+
+    WorkQuery := GetQuery;
+    try
+      BtSave.SetEnabledEx(False);
+      if FShowInfoType = SHOW_INFO_IDS then
       begin
-        ProgressForm := GetProgressWindow;
-        ProgressForm.OperationCount := XCount;
-        ProgressForm.OperationPosition := 0;
-        ProgressForm.OneOperation := False;
-        ProgressForm.MaxPosCurrentOperation := FFilesInfo.Count;
-        ProgressForm.XPosition := 0;
-        ProgressForm.DoFormShow;
+        LockImput;
+
+        BatchUpdateDBInfo(Self, FFilesInfo, UserInput);
+
+        UnLockImput;
+        if Visible then
+        begin
+          SetLength(IDArray, FFilesInfo.Count);
+          for I := 0 to FFilesInfo.Count - 1 do
+            IDArray[I] := FFilesInfo[I].ID;
+
+          ExecuteEx(IDArray);
+        end;
+        Exit;
       end;
 
-      // [BEGIN] Include Support
-      if ReadCHInclude then
+      if FShowInfoType = SHOW_INFO_ID then
       begin
-        _sqlexectext := Format('Update $DB$ Set Include = :Include Where ID in (%s)', [GenerateIDList]);
+        _sqlexectext := 'Update $DB$';
+        _sqlexectext := _sqlexectext + ' set Comment=' + NormalizeDBString(CommentMemo.Text)
+          + ' , KeyWords=' + NormalizeDBString(KeyWordsMemo.Text)
+          + ' , Rating = ' + Inttostr(RatingEdit.Rating)
+          + ' , Owner = ' + NormalizeDBString(OwnerMemo.Text)
+          + ' , Collection = ' + NormalizeDBString(CollectionMemo.Text)
+          + ', DateToAdd = :Date, IsDate = :IsDate, Groups = ' + NormalizeDBString(CodeGroups(FNowGroups))
+          + ', Include = :Include, Links = ' + NormalizeDBString(CodeLinksInfo(FPropertyLinks))
+          + ', aTime = :aTime , IsTime = :IsTime';
+        _sqlexectext := _sqlexectext + ' Where ID=:ID';
+        WorkQuery.Active := False;
         SetSQL(WorkQuery, _sqlexectext);
-        SetBoolParam(WorkQuery, 0, CbInclude.Checked);
-        ExecSQL(WorkQuery);
-        EventInfo.Include := CbInclude.Checked;
-        for I := 0 to FFilesInfo.Count - 1 do
-          if FFilesInfo[I].ID > 0 then
-            DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Include], EventInfo);
-      end;// [END] Include Support
+        SetDateParam(WorkQuery, 'Date', DateEdit.DateTime);
+        SetBoolParam(WorkQuery, 1, DateEdit.Checked);
+        SetBoolParam(WorkQuery, 2, CbInclude.Checked);
+        SetDateParam(WorkQuery, 'aTime', TimeOf(TimeEdit.Time));
+        SetBoolParam(WorkQuery, 4, TimeEdit.Checked);
+        SetIntParam(WorkQuery, 5, ImageId); // Must be LAST PARAM!
 
-      // [BEGIN] Rating Support
-      if not RatingEdit.Islayered then
-      begin
-        _sqlexectext := Format('Update $DB$ Set Rating = :Rating Where ID in (%s)', [GenerateIDList]);
-        SetSQL(WorkQuery, _sqlexectext);
-        SetIntParam(WorkQuery, 0, RatingEdit.Rating);
-        ExecSQL(WorkQuery);
-        EventInfo.Rating := RatingEdit.Rating;
-        for I := 0 to FFilesInfo.Count - 1 do
-          if FFilesInfo[I].ID > 0 then
-            DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Rating], EventInfo);
-      end; // [END] Rating Support
-
-      // [BEGIN] KeyWords Support
-      if VariousKeyWords(KeywordsMemo.Text, FFilesInfo.CommonKeyWords) then
-      begin
-        FreeSQLList(List);
-        ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
-        ProgressForm.XPosition := 0;
-        for I := 0 to FFilesInfo.Count - 1 do
-        begin
-          if FFilesInfo[I].ID > 0 then
-          begin
-            KeyWords := FFilesInfo[I].KeyWords;
-            ReplaceWords(FFilesInfo.CommonKeyWords, KeywordsMemo.Text, KeyWords);
-            if VariousKeyWords(KeyWords, FFilesInfo[I].KeyWords) then
-              AddQuery(List, KeyWords, FFilesInfo[I].ID);
-          end;
-        end;
-        PackSQLList(List, VALUE_TYPE_KEYWORDS);
-        ProgressForm.MaxPosCurrentOperation := Length(List);
-        for I := 0 to Length(List) - 1 do
-        begin
-          IDs := '';
-          for J := 0 to Length(List[I].IDs) - 1 do
-          begin
-            if J <> 0 then
-              IDs := IDs + ',';
-            IDs := IDs + IntToStr(List[I].IDs[J]);
-          end;
-          ProgressForm.XPosition := ProgressForm.XPosition + 1;
-          { !!! } Application.ProcessMessages;
-          _sqlexectext := 'Update $DB$ Set KeyWords = ' + NormalizeDBString(List[I].Value)
-            + ' Where ID in (' + IDs + ')';
-          SetSQL(WorkQuery, _sqlexectext);
-          ExecSQL(WorkQuery);
-          EventInfo.KeyWords := List[I].Value;
-          for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(Self, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
-        end;
-      end;// [END] KeyWords Support
-
-      // [BEGIN] Groups Support
-      CommonGroups := CodeGroups(FOldGroups);
-      if not CompareGroups(FNowGroups, FOldGroups) then
-      begin
-        FreeSQLList(List);
-        ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
-        ProgressForm.XPosition := 0;
-        for I := 0 to FFilesInfo.Count - 1 do
-        begin
-          if FFilesInfo[I].ID > 0 then
-          begin
-            SGroups := FFilesInfo[I].Groups;
-            ReplaceGroups(CommonGroups, CodeGroups(FNowGroups), SGroups);
-            if not CompareGroups(SGroups, FFilesInfo[I].Groups) then
-              AddQuery(List, SGroups, FFilesInfo[I].ID);
-          end;
-        end;
-
-        PackSQLList(List, VALUE_TYPE_GROUPS);
-        ProgressForm.MaxPosCurrentOperation := Length(List);
-        for I := 0 to Length(List) - 1 do
-        begin
-          IDs := '';
-          for J := 0 to Length(List[I].IDs) - 1 do
-          begin
-            if J <> 0 then
-              IDs := IDs + ',';
-            IDs := IDs + IntToStr(List[I].IDs[J]);
-          end;
-          ProgressForm.XPosition := ProgressForm.XPosition + 1;
-          { !!! } Application.ProcessMessages;
-          _sqlexectext := 'Update $DB$ Set Groups = ' + NormalizeDBString(List[I].Value) + ' Where ID in (' + IDs + ')';
-          WorkQuery.Close;
-          SetSQL(WorkQuery, _sqlexectext);
-          ExecSQL(WorkQuery);
-          EventInfo.Groups := List[I].Value;
-          for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(Self, List[I].IDs[J], [EventID_Param_Groups], EventInfo);
-        end;
-      end; // [END] Groups Support
-
-      // [BEGIN] Links Support
-      if ReadCHLinks then
-      begin
-        FreeSQLList(List);
-        ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
-        ProgressForm.XPosition := 0;
-        for I := 0 to FFilesInfo.Count - 1 do
-        begin
-          if FFilesInfo[I].ID > 0 then
-          begin
-            SLinks := FFilesInfo[I].Links;
-            SLinkInfo := ParseLinksInfo(SLinks);
-            ReplaceLinks(ItemLinks, FPropertyLinks, SLinkInfo);
-            SLinks := CodeLinksInfo(SLinkInfo);
-            if not CompareLinks(SLinks, FFilesInfo[I].Links) then
-              AddQuery(List, SLinks, FFilesInfo[I].ID);
-          end;
-        end;
-        PackSQLList(List, VALUE_TYPE_LINKS);
-        ProgressForm.MaxPosCurrentOperation := Length(List);
-        for I := 0 to Length(List) - 1 do
-        begin
-          IDs := '';
-          for J := 0 to Length(List[I].IDs) - 1 do
-          begin
-            if J <> 0 then
-              IDs := IDs + ',';
-            IDs := IDs + IntToStr(List[I].IDs[J]);
-          end;
-          ProgressForm.XPosition := ProgressForm.XPosition + 1;
-          { !!! } Application.ProcessMessages;
-          _sqlexectext := 'Update $DB$ Set Links = ' + NormalizeDBString(List[I].Value) + ' Where ID in (' + IDs + ')';
-          SetSQL(WorkQuery, _sqlexectext);
-          ExecSQL(WorkQuery);
-        end;
-      end;
-      // [END] Links Support
-
-      // [BEGIN] Commnet Support
-      if not CommentMemo.ReadOnly and (CommentMemo.Text <> FFilesInfo.CommonComments) then
-      begin
-        ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
-        ProgressForm.XPosition := 0;
-        _sqlexectext := 'Update $DB$ Set Comment = ' + NormalizeDBString(CommentMemo.Text) + ' Where ID in (' + GenerateIDList + ')';
-        SetSQL(WorkQuery, _sqlexectext);
         ExecSQL(WorkQuery);
         EventInfo.Comment := CommentMemo.Text;
-        for I := 0 to FFilesInfo.Count - 1 do
-        begin
-          ProgressForm.XPosition := ProgressForm.XPosition + 1;
-          { !!! } Application.ProcessMessages;
-          if FFilesInfo[I].ID > 0 then
-            DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Comment], EventInfo);
-        end;
-      end;// [END] Commnet Support
-
-      // [BEGIN] Date Support
-      if ReadCHDate then
+        EventInfo.KeyWords := KeyWordsMemo.Text;
+        EventInfo.Rating := RatingEdit.Rating;
+        EventInfo.Owner := OwnerMemo.Text;
+        EventInfo.Collection := CollectionMemo.Text;
+        EventInfo.Groups := CodeGroups(FNowGroups);
+        EventInfo.Include := CbInclude.Checked;
+        EventInfo.Date := DateEdit.DateTime;
+        EventInfo.Time := TimeOf(TimeEdit.Time);
+        EventInfo.IsDate := DateEdit.Checked;
+        EventInfo.IsTime := TimeEdit.Checked;
+        EventInfo.Links := CodeLinksInfo(FPropertyLinks);
+        DBKernel.DoIDEvent(Self, ImageId, [EventID_Param_Comment,
+          EventID_Param_KeyWords, EventID_Param_Rating,
+          EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate,
+          EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include,
+          EventID_Param_Links], EventInfo);
+      end else
       begin
-        FQuery := GetQuery;
+        FSaving := False;
+
+        FileInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
         try
-          if not DateEdit.Checked then
-          begin
-            _sqlexectext := 'Update $DB$ Set IsDate = :IsDate Where ID in (' + GenerateIDList + ')';
-            WorkQuery.Active := False;
-            SetSQL(WorkQuery, _sqlexectext);
-            SetBoolParam(WorkQuery, 0, False);
-            ExecSQL(WorkQuery);
-            EventInfo.IsDate := False;
-            for I := 0 to FFilesInfo.Count - 1 do
-              if FFilesInfo[I].ID > 0 then
-                DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
-          end else
-          begin
-            _sqlexectext := Format('Update $DB$ Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (%s)', [GenerateIDList]);
-            WorkQuery.Active := False;
-            SetSQL(WorkQuery, _sqlexectext);
-            SetDateParam(WorkQuery, 'DateToAdd', DateEdit.DateTime);
-            ExecSQL(WorkQuery);
-            EventInfo.Date := DateEdit.DateTime;
-            EventInfo.IsDate := True;
-            for I := 0 to FFilesInfo.Count - 1 do
-              if FFilesInfo[I].ID > 0 then
-                DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
-          end;
+          FillDataRecordWithUserInfo(FileInfo, UserInput);
+          UpdaterDB.AddFileEx(FileInfo, True, True);
         finally
-          FreeDS(FQuery);
-        end;
-      end; // [END] Date Support
-
-      // [BEGIN] Time Support
-      if ReadCHTime then
-      begin
-        if not TimeEdit.Checked then
-        begin
-          _sqlexectext := Format('Update $DB$ Set IsTime = :IsTime Where ID in (%s)', [GenerateIDList]);
-          WorkQuery.Active := False;
-          SetSQL(WorkQuery, _sqlexectext);
-          SetBoolParam(WorkQuery, 0, False);
-          ExecSQL(WorkQuery);
-          EventInfo.IsTime := False;
-          for I := 0 to FFilesInfo.Count - 1 do
-            if FFilesInfo[I].ID > 0 then
-              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
-        end else
-        begin
-          _sqlexectext := Format('Update $DB$ Set aTime = :aTime, IsTime = True Where ID in (%s)', [GenerateIDList]);
-          WorkQuery.Active := False;
-          SetSQL(WorkQuery, _sqlexectext);
-          SetDateParam(WorkQuery, 'aTime', TimeOf(TimeEdit.Time));
-          ExecSQL(WorkQuery);
-          EventInfo.Time := TimeOf(TimeEdit.Time);
-          EventInfo.IsTime := True;
-          for I := 0 to FFilesInfo.Count - 1 do
-            if FFilesInfo[I].ID > 0 then
-              DBKernel.DoIDEvent(Self, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
-        end;
-      end;// [END] Time Support
-
-      for I := 0 to FFilesInfo.Count - 1 do
-        if FFilesInfo[I].ID = 0 then
-        begin
-          FileInfo := FFilesInfo[I].Copy;
-          try
-            FillDataRecordWithUserInfo(FileInfo);
-            UpdaterDB.AddFileEx(FileInfo, True, True);
-          finally
-            F(FileInfo);
-          end;
-        end;
-
-      if FFilesInfo.HasNonDBInfo then
-      begin
-        ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
-        ProgressForm.XPosition := 0;
-        ProgressForm.MaxPosCurrentOperation := 0;
-        for I := 0 to FFilesInfo.Count - 1 do
-          if FFilesInfo[I].ID = 0 then
-            ProgressForm.MaxPosCurrentOperation := ProgressForm.MaxPosCurrentOperation + 1;
-
-        while not ProgressForm.Closed and FFilesInfo.HasNonDBInfo do
-        begin
-          Application.ProcessMessages;
-          C := 0;
-          for I := 0 to FFilesInfo.Count - 1 do
-            if FFilesInfo[I].ID = 0 then
-              Inc(C);
-
-          if ProgressForm.XPosition <> C then
-            ProgressForm.XPosition := ProgressForm.MaxPosCurrentOperation - C;
+          F(FileInfo);
         end;
       end;
-      R(ProgressForm);
-
-      UnLockImput;
-      if Visible then
-      begin
-        SetLength(IDArray, FFilesInfo.Count);
-        for I := 0 to FFilesInfo.Count - 1 do
-          IDArray[I] := FFilesInfo[I].ID;
-
-        ExecuteEx(IDArray);
-      end;
-      Exit;
-    end;
-
-    if FShowInfoType = SHOW_INFO_ID then
-    begin
-      _sqlexectext := 'Update $DB$';
-      _sqlexectext := _sqlexectext + ' set Comment=' + NormalizeDBString(CommentMemo.Text)
-        + ' , KeyWords=' + NormalizeDBString(KeyWordsMemo.Text)
-        + ' , Rating = ' + Inttostr(RatingEdit.Rating)
-        + ' , Owner = ' + NormalizeDBString(OwnerMemo.Text)
-        + ' , Collection = ' + NormalizeDBString(CollectionMemo.Text)
-        + ', DateToAdd = :Date, IsDate = :IsDate, Groups = ' + NormalizeDBString(CodeGroups(FNowGroups))
-        + ', Include = :Include, Links = ' + NormalizeDBString(CodeLinksInfo(FPropertyLinks))
-        + ', aTime = :aTime , IsTime = :IsTime';
-      _sqlexectext := _sqlexectext + ' Where ID=:ID';
-      WorkQuery.Active := False;
-      SetSQL(WorkQuery, _sqlexectext);
-      SetDateParam(WorkQuery, 'Date', DateEdit.DateTime);
-      SetBoolParam(WorkQuery, 1, DateEdit.Checked);
-      SetBoolParam(WorkQuery, 2, CbInclude.Checked);
-      SetDateParam(WorkQuery, 'aTime', TimeOf(TimeEdit.Time));
-      SetBoolParam(WorkQuery, 4, TimeEdit.Checked);
-      SetIntParam(WorkQuery, 5, ImageId); // Must be LAST PARAM!
-
-      ExecSQL(WorkQuery);
-      EventInfo.Comment := CommentMemo.Text;
-      EventInfo.KeyWords := KeyWordsMemo.Text;
-      EventInfo.Rating := RatingEdit.Rating;
-      EventInfo.Owner := OwnerMemo.Text;
-      EventInfo.Collection := CollectionMemo.Text;
-      EventInfo.Groups := CodeGroups(FNowGroups);
-      EventInfo.Include := CbInclude.Checked;
-      EventInfo.Date := DateEdit.DateTime;
-      EventInfo.Time := TimeOf(TimeEdit.Time);
-      EventInfo.IsDate := DateEdit.Checked;
-      EventInfo.IsTime := TimeEdit.Checked;
-      EventInfo.Links := CodeLinksInfo(FPropertyLinks);
-      DBKernel.DoIDEvent(Self, ImageId, [EventID_Param_Comment,
-        EventID_Param_KeyWords, EventID_Param_Rating,
-        EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate,
-        EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include,
-        EventID_Param_Links], EventInfo);
-    end else
-    begin
-      FSaving := False;
-
-      FileInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
-      try
-        FillDataRecordWithUserInfo(FileInfo);
-        UpdaterDB.AddFileEx(FileInfo, True, True);
-      finally
-        F(FileInfo);
-      end;
+    finally
+      FreeDS(WorkQuery);
     end;
   finally
-    FreeDS(WorkQuery);
+    F(UserInput);
   end;
 end;
 
@@ -2653,55 +2354,45 @@ end;
 
 procedure TPropertiesForm.RecreateGroupsList;
 var
-  I, Size: Integer;
-  SmallB, B: TBitmap;
+  I: Integer;
+  B: TBitmap;
+
+  procedure CreateDefaultImage(B: TBitmap);
+  begin
+    B.PixelFormat := pf24bit;
+    B.SetSize(16, 16);
+    FillColorEx(B, Theme.PanelColor);
+    DrawIconEx(B.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+  end;
+
 begin
   FreeGroups(RegGroups);
   RegGroups := GetRegisterGroupList(True);
   RegGroupsImageList.Clear;
-  SmallB := TBitmap.Create;
+  B := TBitmap.Create;
   try
-    SmallB.PixelFormat := pf24bit;
-    SmallB.Width := 16;
-    SmallB.Height := 18;
-    SmallB.Canvas.Pen.Color := Theme.PanelColor;
-    SmallB.Canvas.Brush.Color := Theme.PanelColor;
-    SmallB.Canvas.Rectangle(0, 0, 16, 18);
-    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
-    RegGroupsImageList.Add(SmallB, nil);
+    CreateDefaultImage(B);
+    RegGroupsImageList.Add(B, nil);
   finally
-    F(SmallB);
+    F(B);
   end;
 
   for I := 0 to Length(RegGroups) - 1 do
   begin
-    SmallB := TBitmap.Create;
+    B := TBitmap.Create;
     try
-      SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      if RegGroups[I].GroupImage <> nil then
-        if not RegGroups[I].GroupImage.Empty then
-        begin
-          B := TBitmap.Create;
-          try
-            B.PixelFormat := pf24bit;
-            Size := Max(RegGroups[I].GroupImage.Width, RegGroups[I].GroupImage.Height);
-            B.Canvas.Brush.Color := Theme.PanelColor;
-            B.Canvas.Pen.Color := Theme.PanelColor;
-            B.Width := Size;
-            B.Height := Size;
-            B.Canvas.Rectangle(0, 0, Size, Size);
-            B.Canvas.Draw(B.Width div 2 - RegGroups[I].GroupImage.Width div 2,
-              B.Height div 2 - RegGroups[I].GroupImage.Height div 2, RegGroups[I].GroupImage);
-            DoResize(16, 16, B, SmallB);
-          finally
-            F(B);
-          end;
-          SmallB.Height := 18;
-        end;
-      RegGroupsImageList.Add(SmallB, nil);
+      if (RegGroups[I].GroupImage <> nil) and not RegGroups[I].GroupImage.Empty then
+      begin
+        B.PixelFormat := pf24bit;
+        AssignGraphic(B, RegGroups[I].GroupImage);
+        B.PixelFormat := pf24bit;
+        CenterBitmap24To32ImageList(B, 16);
+      end else
+        CreateDefaultImage(B);
+
+      RegGroupsImageList.Add(B, nil);
     finally
-      F(SmallB);
+      F(B);
     end;
   end;
   FillGroupList;
@@ -2817,9 +2508,7 @@ begin
 
     RegGroupsImageList.Draw(ACanvas, Rect.Left + 2, Rect.Top + 2, Max(0, N));
     if N = -1 then
-    begin
       DrawIconEx(ACanvas.Handle, Rect.Left + 10, Rect.Top + 8, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
-    end;
 
     IsChoosed := False;
     if Control = LstCurrentGroups then
@@ -3143,7 +2832,7 @@ end;
 
 procedure TPropertiesForm.PmClearPopup(Sender: TObject);
 begin
-  Clear1.Visible := (lstCurrentGroups.Items.Count <> 0) and not fSaving;
+  Clear1.Visible := (lstCurrentGroups.Items.Count <> 0) and not FSaving;
 end;
 
 procedure TPropertiesForm.DropFileTarget2Drop(Sender: TObject;

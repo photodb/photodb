@@ -410,7 +410,8 @@ uses
   uFormInterfaces in 'Units\uFormInterfaces.pas',
   uGroupTypes in 'Units\uGroupTypes.pas',
   uFreeImageImage in 'Units\Formats\uFreeImageImage.pas',
-  PDB.uVCLRewriters in 'Units\PDB.uVCLRewriters.pas';
+  PDB.uVCLRewriters in 'Units\PDB.uVCLRewriters.pas',
+  uDBInfoEditorUtils in 'Units\uDBInfoEditorUtils.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

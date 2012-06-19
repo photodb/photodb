@@ -6,13 +6,7 @@ uses
   Generics.Collections,
   CommCtrl,
   ActiveX,
-  ExplorerTypes,
-  DBCMenu,
-  UnitDBKernel,
-  UnitINI,
   ShellApi,
-  dolphin_db,
-  uGroupTypes,
   Windows,
   Messages,
   SysUtils,
@@ -30,10 +24,21 @@ uses
   ShellCtrls,
   ImgList,
   Menus,
+  pngimage,
   ExtCtrls,
   ToolWin,
   Buttons,
   StdCtrls,
+  Math,
+  DB,
+  uGOM,
+  ExplorerTypes,
+  DBCMenu,
+  UnitDBKernel,
+  UnitINI,
+  dolphin_db,
+  uGroupTypes,
+  UnitGroupsWork,
   SaveWindowPos,
   AppEvnts,
   WebLink,
@@ -56,8 +61,6 @@ uses
   uShellIntegration,
   ProgressActionUnit,
   GraphicsBaseTypes,
-  Math,
-  DB,
   CommonDBSupport,
   uDBCustomThread,
   EasyListview,
@@ -72,7 +75,6 @@ uses
   uVistaFuncs,
   wfsU,
   UnitDBDeclare,
-  pngimage,
   UnitDBFileDialogs,
   uFormListView,
   uIconUtils,
@@ -157,6 +159,7 @@ uses
   Vcl.ValEdit,
   Rating,
   WebLinkList,
+  uDBInfoEditorUtils,
   uFormInterfaces
   ;
 
@@ -637,6 +640,11 @@ type
     procedure DteTimeEnter(Sender: TObject);
     procedure BtnSaveInfoClick(Sender: TObject);
     procedure ReRatingMouseDown(Sender: TObject);
+    procedure ReRatingChange(Sender: TObject);
+    procedure DteDateChange(Sender: TObject);
+    procedure DteTimeChange(Sender: TObject);
+    procedure MemKeyWordsChange(Sender: TObject);
+    procedure MemCommentsChange(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -717,7 +725,8 @@ type
     FWebJSContainer: TWebJSExternalContainer;
     FWbGeoLocation: TWebBrowser;
     FWebBrowserJSMessage: Cardinal;
-    FEditorInfo: TDBPopupMenuInfo;
+    FEditorInfo: TExplorerFileInfos;
+    FReloadGroupsMessage: Cardinal;
     FActiveLeftTab: TExplorerLeftTab;
     FLeftTabs: set of TExplorerLeftTab;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
@@ -741,7 +750,7 @@ type
     procedure ReallignInfo;
     procedure PasteFromClipboard;
     function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
-    function GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TDBPopupMenuInfo;
+    function GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TExplorerFileInfos;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
     procedure RefreshItemByID(ID: Integer);
@@ -784,7 +793,6 @@ type
     procedure DisableInfoEditor;
     procedure InitEditGroups;
     procedure GroupClick(Sender: TObject);
-    procedure FillGroupsImageList;
     procedure ReallignEditBoxes;
   protected
     procedure ZoomIn;
@@ -1088,11 +1096,6 @@ procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
-  {$IFDEF LICENCE}
-  PcTasks.Pages[2].TabVisible := False;
-  PcTasks.Pages[3].TabVisible := False;
-  {$ENDIF}
-
   FGeoHTMLWindow := nil;
   FEditorInfo := nil;
   FPopupMenuWasActiveOnMouseDown := False;
@@ -1291,6 +1294,7 @@ begin
   FItemUpdateLastTime := 0;
 
   FWebBrowserJSMessage := RegisterWindowMessage('WEBBROWSER_JS_MESSAGE');
+  FReloadGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_GROUPS');
 
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
@@ -2218,14 +2222,14 @@ begin
   EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 end;
 
-function TExplorerForm.GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TDBPopupMenuInfo;
+function TExplorerForm.GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TExplorerFileInfos;
 var
   I: Integer;
   ItemIndex: Integer;
   FileInfo: TExplorerFileInfo;
   MenuRecord: TDBPopupMenuInfoRecord;
 begin
-  Result := TDBPopupMenuInfo.Create;
+  Result := TExplorerFileInfos.Create;
   Result.IsListItem := False;
   Result.IsPlusMenu := False;
   for I := 0 to ElvMain.Items.Count - 1 do
@@ -2337,6 +2341,51 @@ var
   Bit: TBitmap;
   GI: TGroupItem;
   S: string;
+
+  procedure UpdateNewInfo(Info: TExplorerFileInfos);
+  var
+    I: Integer;
+  begin
+    for I := 0 to Info.Count - 1 do
+      if AnsiLowerCase(Info[I].FileName) = Value.Name then
+      begin
+        Info[I].SID := GetGUID;
+
+        if HelpNo = 3 then
+          Help1NextClick(Self);
+
+        ReRotation := GetNeededRotation(Info[I].Rotation, Value.Rotate);
+        Info[I].ID := ID;
+        Info[I].Rating := Value.Rating;
+        Info[I].Rotation := Value.Rotate;
+        Info[I].Comment := Value.Comment;
+        Info[I].KeyWords := Value.KeyWords;
+        Info[I].Links := Value.Links;
+        Info[I].Groups := Value.Groups;
+        Info[I].IsDate := True;
+        Info[I].IsTime := Value.IsTime;
+        Info[I].Loaded := True;
+        Info[I].Links := '';
+        Info[I].Include := Value.Include;
+        Info[I].Encrypted := Value.Encrypted;
+        if (FBitmapImageList[Info[I].ImageIndex].Bitmap = nil) then
+        begin
+          Bit := TBitmap.Create;
+          Bit.PixelFormat := pf24bit;
+          Bit.Assign(Value.JPEGImage);
+          ApplyRotate(Bit, Value.Rotate);
+          FBitmapImageList[Info[I].ImageIndex].Graphic := Bit;
+        end else
+          ApplyRotate(FBitmapImageList[Info[I].ImageIndex].Bitmap, ReRotation);
+        ElvMain.Refresh;
+        if Info[I].FileName = FSelectedInfo.FileName then
+          if SelCount = 1 then
+            ListView1SelectItem(nil, ListView1Selected, True);
+
+        Break;
+      end;
+  end;
+
 begin
   if EventID_ShelfChanged in Params then
   begin
@@ -2436,44 +2485,11 @@ begin
 
   if SetNewIDFileData in Params then
   begin
-    for I := 0 to FFilesInfo.Count - 1 do
-      if AnsiLowerCase(FFilesInfo[I].FileName) = Value.Name then
-      begin
-        FFilesInfo[I].SID := GetGUID;
+    UpdateNewInfo(FFilesInfo);
 
-        if HelpNo = 3 then
-          Help1NextClick(Self);
+    if FEditorInfo <> nil then
+      UpdateNewInfo(FEditorInfo);
 
-        ReRotation := GetNeededRotation(FFilesInfo[I].Rotation, Value.Rotate);
-        FFilesInfo[I].ID := ID;
-        FFilesInfo[I].Rating := Value.Rating;
-        FFilesInfo[I].Rotation := Value.Rotate;
-        FFilesInfo[I].Comment := Value.Comment;
-        FFilesInfo[I].KeyWords := Value.KeyWords;
-        FFilesInfo[I].Links := Value.Links;
-        FFilesInfo[I].Groups := Value.Groups;
-        FFilesInfo[I].IsDate := True;
-        FFilesInfo[I].IsTime := Value.IsTime;
-        FFilesInfo[I].Loaded := True;
-        FFilesInfo[I].Links := '';
-        FFilesInfo[I].Include := Value.Include;
-        FFilesInfo[I].Encrypted := Value.Encrypted;
-        if (FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap = nil) then
-        begin
-          Bit := TBitmap.Create;
-          Bit.PixelFormat := pf24bit;
-          Bit.Assign(Value.JPEGImage);
-          ApplyRotate(Bit, Value.Rotate);
-          FBitmapImageList[FFilesInfo[I].ImageIndex].Graphic := Bit;
-        end else
-          ApplyRotate(FBitmapImageList[FFilesInfo[I].ImageIndex].Bitmap, ReRotation);
-        ElvMain.Refresh;
-        if FFilesInfo[I].FileName = FSelectedInfo.FileName then
-          if SelCount = 1 then
-            ListView1SelectItem(nil, ListView1Selected, True);
-
-        Break;
-      end;
     Exit;
   end;
 
@@ -3077,10 +3093,17 @@ begin
     end;
 end;
 
+procedure TExplorerForm.ReRatingChange(Sender: TObject);
+begin
+  BtnSaveInfo.Enabled := True;
+end;
+
 procedure TExplorerForm.ReRatingMouseDown(Sender: TObject);
 begin
   if ReRating.Islayered then
     ReRating.Islayered := False;
+
+  BtnSaveInfo.Enabled := True;
 end;
 
 function TExplorerForm.AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
@@ -3280,11 +3303,17 @@ var
   P: TPoint;
   H: THandle;
 begin
-  if not Self.Active then
-    Exit;
+  if Msg.message = FReloadGroupsMessage then
+    InitEditGroups;
 
   if Msg.message = FWebBrowserJSMessage then
     WlSaveLocationClick(Self);
+
+  if not Self.Active then
+    Exit;
+
+  if (Msg.message = WM_MOUSEWHEEL) then
+    WllGroups.PerformMouseWheel(Msg.WParam, Handled);
 
   if Msg.Message = WM_KEYDOWN then
   begin
@@ -4483,7 +4512,6 @@ begin
       FSelectedInfo.GeoLocation.Longitude := Info.GeoLocation.Longitude;
     end;
 
-    {$IFNDEF LICENCE}
     if ExifInfo <> nil then
     begin
       IsVisible := PcTasks.ActivePageIndex = Integer(eltsEXIF);
@@ -4511,7 +4539,6 @@ begin
         EndScreenUpdate(TsInfo.Handle, False);
     end;
 
-    {$ENDIF}
     ReallignInfo;
 
     ApplyTabs;
@@ -8012,7 +8039,7 @@ begin
 
   InitInfoEditor;
 
-  if not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
+  if not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) or (SelCount <> 1) then
     FLeftTabs := FLeftTabs - [eltsEXIF]
   else
   begin
@@ -9888,11 +9915,45 @@ begin
 
     FSelectedInfo.Groups := FEditorInfo.CommonGroups;
     InitEditGroups;
+
+    BtnSaveInfo.Enabled := False;
   finally
     if IsVisible then
       EndScreenUpdate(TsInfo.Handle, True);
   end;
 end;
+
+procedure CreteDefaultGroupImage(B: TBitmap);
+begin
+  B.PixelFormat := pf24bit;
+  B.SetSize(16, 16);
+  FillColorEx(B, Theme.PanelColor);
+  DrawIconEx(B.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+end;
+
+procedure CreateGroupImage(GroupName: string; var B: TBitmap);
+var
+  Group: TGroup;
+begin
+  B.PixelFormat := pf24bit;
+  Group := GetGroupByGroupName(GroupName, True);
+  try
+    if (Group.GroupImage <> nil) and not Group.GroupImage.Empty  then
+    begin
+      AssignGraphic(B, Group.GroupImage);
+      CenterBitmap24To32ImageList(B, 16);
+    end else
+      CreteDefaultGroupImage(B);
+  finally
+    FreeGroup(Group);
+  end;
+end;
+
+type
+  TGroupLoadInfo = class
+    Owner: TExplorerForm;
+    Groups: string;
+  end;
 
 procedure TExplorerForm.InitEditGroups;
 var
@@ -9900,10 +9961,20 @@ var
   FCurrentGroups: TGroups;
   WL: TWebLink;
   LblInfo: TStaticText;
+  LoadGroupInfo: TGroupLoadInfo;
+  B: TBitmap;
 begin
   FCurrentGroups := EncodeGroups(FSelectedInfo.Groups);
 
-  FillGroupsImageList;
+  ImGroups.Clear;
+  B := TBitmap.Create;
+  try
+    CreteDefaultGroupImage(B);
+    ImGroups.Add(B, nil);
+  finally
+    F(B);
+  end;
+
   WllGroups.Clear;
 
   if Length(FCurrentGroups) = 0 then
@@ -9929,10 +10000,74 @@ begin
     WL := WllGroups.AddLink;
     WL.Text := FCurrentGroups[I].GroupName;
     WL.ImageList := ImGroups;
-    WL.ImageIndex := I + 1;
+    WL.ImageIndex := -1;
     WL.Tag := I;
     WL.OnClick := GroupClick;
   end;
+
+  LoadGroupInfo := TGroupLoadInfo.Create;
+  LoadGroupInfo.Owner := Self;
+  LoadGroupInfo.Groups := FSelectedInfo.Groups;
+
+  TThreadTask.Create(Self, LoadGroupInfo,
+    procedure(Thread: TThreadTask; Data: Pointer)
+    var
+      Info: TGroupLoadInfo;
+      J: Integer;
+      B: TBitmap;
+      Groups: TGroups;
+      IsTerminated: Boolean;
+    begin
+      CoInitialize(nil);
+      try
+        Info := TGroupLoadInfo(Data);
+        try
+          Groups := EncodeGroups(Info.Groups);
+
+          for J := 0 to Length(Groups) - 1 do
+          begin
+
+            B := TBitmap.Create;
+            try
+              CreateGroupImage(Groups[J].GroupName, B);
+
+              IsTerminated := not Thread.SynchronizeTask(
+                procedure
+                var
+                  I: Integer;
+                  WL: TWebLink;
+                begin
+                  if (Info.Owner.FSelectedInfo.Groups <> Info.Groups) then
+                  begin
+                    Thread.Terminate;
+                    Exit;
+                  end;
+
+                  for I := 0 to WllGroups.ControlCount - 1 do
+                    if WllGroups.Controls[I] is TWebLink then
+                    begin
+                      WL := TWebLink(WllGroups.Controls[I]);
+                      if WL.Text = Groups[J].GroupName then
+                        WL.ImageIndex := Info.Owner.ImGroups.Add(B, nil);
+                    end;
+                end
+              );
+
+              if IsTerminated then
+                Exit;
+            finally
+              F(B);
+            end;
+          end;
+        finally
+         F(Info);
+        end;
+      finally
+        CoUninitialize;
+      end;
+    end
+  );
+
   WllGroups.ReallignList;
   WllGroups.AutoHeight(200);
 
@@ -9948,11 +10083,21 @@ begin
   BtnSaveInfo.Top := MemComments.BoundsRect.Bottom + 5;
 end;
 
+procedure TExplorerForm.MemCommentsChange(Sender: TObject);
+begin
+  BtnSaveInfo.Enabled := True;
+end;
+
 procedure TExplorerForm.MemCommentsEnter(Sender: TObject);
 begin
   MemComments.Height := 100;
   MemKeyWords.Height := 50;
   ReallignEditBoxes;
+end;
+
+procedure TExplorerForm.MemKeyWordsChange(Sender: TObject);
+begin
+  BtnSaveInfo.Enabled := True;
 end;
 
 procedure TExplorerForm.MemKeyWordsEnter(Sender: TObject);
@@ -9963,17 +10108,22 @@ begin
   ReallignEditBoxes;
 end;
 
+procedure TExplorerForm.DteDateChange(Sender: TObject);
+begin
+  BtnSaveInfo.Enabled := True;
+end;
+
+procedure TExplorerForm.DteTimeChange(Sender: TObject);
+begin
+  BtnSaveInfo.Enabled := True;
+end;
+
 procedure TExplorerForm.DteTimeEnter(Sender: TObject);
 begin
   MemComments.Height := 50;
   MemKeyWords.Height := 50;
 
   ReallignEditBoxes;
-end;
-
-procedure TExplorerForm.FillGroupsImageList;
-begin
-
 end;
 
 procedure TExplorerForm.GroupClick(Sender: TObject);
@@ -9993,10 +10143,10 @@ begin
     GroupsSelectForm.Execute(Groups, KeyWords);
     FSelectedInfo.Groups := Groups;
 
-    InitEditGroups;
+    PostMessage(Handle, FReloadGroupsMessage, 0, 0);
 
     MemKeyWords.Text := KeyWords;
-    //MemKeyWordsChange(Sender);
+    BtnSaveInfo.Enabled := True;
   end;
 end;
 
@@ -10006,8 +10156,56 @@ begin
 end;
 
 procedure TExplorerForm.BtnSaveInfoClick(Sender: TObject);
+var
+  UserInput: TUserDBInfoInput;
+
+  function ReadCHDate: Boolean;
+  begin
+    Result := DteDate.Checked and
+        ((FFilesInfo.StatDate <> DteDate.DateTime) or FFilesInfo.IsVariousDate);
+  end;
+
+  function ReadCHTime: Boolean;
+  var
+    VarTime: Boolean;
+  begin
+    VarTime := Abs(TimeOf(FFilesInfo.StatTime) - TimeOf(DteTime.Time)) > 1 / (24 * 60 * 60 * 3);
+    Result := DteTime.Checked and (VarTime or FFilesInfo.IsVariousTime);
+  end;
+
 begin
-  ///
+  UserInput := TUserDBInfoInput.Create;
+  try
+
+    UserInput.Keywords := MemKeyWords.Text;
+    UserInput.Groups := FSelectedInfo.Groups;
+    UserInput.IsCommentChanged := not MemComments.ReadOnly;
+    UserInput.Comment := MemComments.Text;
+    UserInput.IsLinksChanged := False;
+    UserInput.Links := '';
+    UserInput.IsIncludeChanged := False;
+    UserInput.Include := True;
+    UserInput.IsRatingChanged := not ReRating.IsLayered;
+    UserInput.Rating := ReRating.Rating;
+
+    UserInput.IsDateChanged := ReadCHDate;
+    UserInput.IsDateChecked := DteDate.Checked;
+    UserInput.Date := DateOf(DteDate.Date);
+
+    UserInput.IsTimeChanged := ReadCHTime;
+    UserInput.IsTimeChecked := DteTime.Checked;
+    UserInput.Time := TimeOf(DteTime.Date);
+
+    BtnSaveInfo.SetEnabledEx(False);
+    Enabled := False;
+    try
+      BatchUpdateDBInfo(Self, FEditorInfo, UserInput);
+    finally
+      Enabled := True;
+    end;
+  finally
+    F(UserInput);
+  end;
 end;
 
 procedure TExplorerForm.BigSizeCallBack(Sender: TObject; SizeX,
