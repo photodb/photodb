@@ -121,6 +121,7 @@ uses
   uExplorerDateStackProviders,
   uTranslate,
   uVCLHelpers,
+  PDB.uVCLRewriters,
   uActivationUtils,
 
   uPortableDeviceUtils,
@@ -163,12 +164,7 @@ const
   RefreshListViewInterval = 50;
 
 type
-  TPageControl = class(ComCtrls.TPageControl)
-  private
-    procedure TCMAdjustRect(var Msg: TMessage); message TCM_ADJUSTRECT;
-  protected
-    procedure ShowControl(AControl: TControl); override;
-  end;
+  TPageControl = class(TPageControlNoBorder);
 
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
@@ -412,7 +408,7 @@ type
     TsEXIF: TTabSheet;
     VleExif: TValueListEditor;
     LbHistogramImage: TLabel;
-    ImHIstogramm: TImage;
+    ImHistogramm: TImage;
     ReRating: TRating;
     DteTime: TDateTimePicker;
     DteDate: TDateTimePicker;
@@ -722,6 +718,8 @@ type
     FWbGeoLocation: TWebBrowser;
     FWebBrowserJSMessage: Cardinal;
     FEditorInfo: TDBPopupMenuInfo;
+    FActiveLeftTab: TExplorerLeftTab;
+    FLeftTabs: set of TExplorerLeftTab;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -776,6 +774,11 @@ type
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
     procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
     procedure RestoreDragSelectedItems;
+
+    procedure ShowLastActiveTab(Tab: TExplorerLeftTab);
+    procedure ShowActiveTab(Tab: TExplorerLeftTab);
+    procedure ShowTabIfWasActive(Tab: TExplorerLeftTab);
+    procedure ApplyTabs;
 
     procedure InitInfoEditor;
     procedure DisableInfoEditor;
@@ -1015,6 +1018,8 @@ end;
 
 procedure TExplorerForm.PcTasksChange(Sender: TObject);
 begin
+  FActiveLeftTab := TExplorerLeftTab(PcTasks.ActivePageIndex);
+  Settings.WriteInteger('Explorer', 'LeftPanelTabIndex', PcTasks.ActivePageIndex);
   if PcTasks.ActivePageIndex = 1 then
     TreeView.SelectPathItem(PePath.PathEx);
 end;
@@ -1086,7 +1091,6 @@ begin
   {$IFDEF LICENCE}
   PcTasks.Pages[2].TabVisible := False;
   PcTasks.Pages[3].TabVisible := False;
-  MessageBoxDB(Handle, L('LICENSE!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   {$ENDIF}
 
   FGeoHTMLWindow := nil;
@@ -1181,6 +1185,11 @@ begin
   NewFormState;
   MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
   PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 210);
+
+  FLeftTabs := [eltsPreview, eltsExplorer];
+  FActiveLeftTab := eltsPreview;
+  ShowActiveTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsPreview))));
+  ApplyTabs;
 
   Lock := False;
 
@@ -4456,6 +4465,7 @@ procedure TExplorerForm.SetPanelInfo(Info: TDBPopupMenuInfoRecord;
   ExifInfo: IExifInfo; var Histogramm: TBitmap; FileGUID: TGUID);
 var
   Line: IExifInfoLine;
+  IsVisible: Boolean;
 begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
   begin
@@ -4474,20 +4484,37 @@ begin
     end;
 
     {$IFNDEF LICENCE}
-    TsEXIF.Visible := ExifInfo <> nil;
-    if TsEXIF.Visible then
+    if ExifInfo <> nil then
     begin
-      VleEXIF.Strings.Clear;
-      for Line in ExifInfo do
-        VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+      IsVisible := PcTasks.ActivePageIndex = Integer(eltsEXIF);
+
+      BeginScreenUpdate(VleEXIF.Handle);
+      try
+        VleEXIF.Strings.Clear;
+        for Line in ExifInfo do
+          VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+      finally
+        EndScreenUpdate(VleEXIF.Handle, IsVisible);
+      end;
+
+      ShowTabIfWasActive(eltsEXIF);
+    end else
+      ShowLastActiveTab(eltsAny);
+
+    IsVisible := PcTasks.ActivePageIndex = Integer(eltsInfo);
+    if IsVisible then
+      BeginScreenUpdate(TsInfo.Handle);
+    try
+      ImHistogramm.Picture.Graphic := Histogramm;
+    finally
+      if IsVisible then
+        EndScreenUpdate(TsInfo.Handle, False);
     end;
 
-    ImHIstogramm.Picture.Graphic := Histogramm;
-    //ImHIstogramm.Picture.SetGraphicEx(Histogramm);
-    //Histogramm := nil;
     {$ENDIF}
-
     ReallignInfo;
+
+    ApplyTabs;
   end;
 end;
 
@@ -5730,6 +5757,59 @@ begin
     if ResetFilter then
       WedFilter.OnChange(Self);
   end;
+end;
+
+procedure TExplorerForm.ShowTabIfWasActive(Tab: TExplorerLeftTab);
+var
+  TabToShow: Integer;
+begin
+  TabToShow := Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0);
+  if TabToShow = Integer(Tab) then
+    ShowActiveTab(Tab);
+end;
+
+procedure TExplorerForm.ShowActiveTab(Tab: TExplorerLeftTab);
+var
+  TabToShow: TExplorerLeftTab;
+begin
+  TabToShow := Tab;
+  if not (TabToShow in FLeftTabs) then
+  begin
+    TabToShow := TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(FActiveLeftTab)));
+    if not (TabToShow in FLeftTabs) then
+      TabToShow := eltsPreview;
+  end;
+  if FActiveLeftTab <> TabToShow then
+  begin
+    FActiveLeftTab := TabToShow;
+    FLeftTabs := FLeftTabs + [FActiveLeftTab];
+  end;
+end;
+
+procedure TExplorerForm.ShowLastActiveTab(Tab: TExplorerLeftTab);
+var
+  LastActiveTab: TExplorerLeftTab;
+begin
+  LastActiveTab := TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0));
+  if (Tab = eltsAny) or (LastActiveTab = Tab) then
+    ShowActiveTab(LastActiveTab);
+end;
+
+procedure TExplorerForm.ApplyTabs;
+var
+  Tab: TExplorerLeftTab;
+begin
+  PcTasks.DisableTabChanging;
+  try
+    for Tab in [eltsPreview..eltsEXIF] do
+      if (Tab in FLeftTabs) then
+        PcTasks.ShowTab(Integer(Tab))
+      else
+        PcTasks.HideTab(Integer(Tab));
+  finally
+    PcTasks.EnableTabChanging;
+  end;
+  PcTasks.ActivePageIndex := Integer(FActiveLeftTab);
 end;
 
 procedure TExplorerForm.ShowFilter(PerformFilter: Boolean);
@@ -7871,11 +7951,9 @@ begin
               try
                 Canvas.Draw(ThSizeExplorerPreview div 2 - Pic.Width div 2,
                   ThSizeExplorerPreview div 2 - Pic.Height div 2, Pic);
-
               finally
                 F(Pic);
               end;
-
             end;
           end;
         end;
@@ -7933,6 +8011,19 @@ begin
   end;
 
   InitInfoEditor;
+
+  if not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
+    FLeftTabs := FLeftTabs - [eltsEXIF]
+  else
+  begin
+    FLeftTabs := FLeftTabs + [eltsEXIF];
+    ShowLastActiveTab(eltsEXIF);
+  end;
+
+  if not (FActiveLeftTab in FLeftTabs) then
+    ShowLastActiveTab(eltsAny);
+
+  ApplyTabs;
 
   if (PnGeoLocation.Visible) then
   begin
@@ -8890,6 +8981,7 @@ function TExplorerForm.ItemAtPos(X, Y: Integer): TEasyItem;
 var
   WindowPt: TPoint;
   Group: TEasyGroup;
+  ItemHitInfo: TEasyItemHitTestInfoSet;
 begin
   WindowPt := ElvMain.Scrollbars.MapWindowToView(Point(X, Y));
 
@@ -8898,6 +8990,14 @@ begin
   Group := ElvMain.Groups.GroupByPoint(WindowPt);
   if Assigned(Group) then
     Result := Group.ItembyPoint(WindowPt);
+
+  if Assigned(Result) then
+  begin
+    Result.HitTestAt(WindowPt, ItemHitInfo);
+
+    if not (ehtOnClickSelectBounds in ItemHitInfo) then
+      Result := nil;
+  end;
 end;
 
 procedure TExplorerForm.EasyListview2KeyAction(Sender: TCustomEasyListview; var CharCode: Word; var Shift: TShiftState;
@@ -9746,38 +9846,52 @@ begin
 end;
 
 procedure TExplorerForm.InitInfoEditor;
+var
+  IsVisible: Boolean;
 begin
-  F(FEditorInfo);
-  FEditorInfo := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem, True);
+  IsVisible := PcTasks.ActivePageIndex = Integer(eltsInfo);
 
-  if FEditorInfo.Count = 0 then
-  begin
-    DisableInfoEditor;
-    Exit;
+  if IsVisible then
+    BeginScreenUpdate(TsInfo.Handle);
+  try
+    F(FEditorInfo);
+    FEditorInfo := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem, True);
+
+    if FEditorInfo.Count = 0 then
+    begin
+      DisableInfoEditor;
+      Exit;
+    end;
+
+    FLeftTabs := FLeftTabs + [eltsInfo];
+    ShowLastActiveTab(eltsInfo);
+
+    ReRating.Rating := FEditorInfo.StatRating;
+    if FEditorInfo.Count = 1 then
+    begin
+      ReRating.Islayered := False;
+      ReRating.Layered := 255;
+    end else
+    begin
+      ReRating.Islayered := True;
+      ReRating.Layered := 100;
+    end;
+
+    DteDate.DateTime := FEditorInfo.StatDate;
+    DteTime.Time := FEditorInfo.StatTime;
+
+    DteDate.Checked := FEditorInfo.StatIsDate and not FEditorInfo.IsVariousDate;
+    DteTime.Checked := FEditorInfo.StatIsTime and not FEditorInfo.IsVariousTime;
+
+    MemKeyWords.Text := FEditorInfo.CommonKeyWords;
+    MemComments.Text := FEditorInfo.CommonComments;
+
+    FSelectedInfo.Groups := FEditorInfo.CommonGroups;
+    InitEditGroups;
+  finally
+    if IsVisible then
+      EndScreenUpdate(TsInfo.Handle, True);
   end;
-
-  ReRating.Rating := FEditorInfo.StatRating;
-  if FEditorInfo.Count = 1 then
-  begin
-    ReRating.Islayered := False;
-    ReRating.Layered := 255;
-  end else
-  begin
-    ReRating.Islayered := True;
-    ReRating.Layered := 100;
-  end;
-
-  DteDate.DateTime := FEditorInfo.StatDate;
-  DteTime.Time := FEditorInfo.StatTime;
-
-  DteDate.Checked := FEditorInfo.StatIsDate and not FEditorInfo.IsVariousDate;
-  DteTime.Checked := FEditorInfo.StatIsTime and not FEditorInfo.IsVariousTime;
-
-  MemKeyWords.Text := FEditorInfo.CommonKeyWords;
-  MemComments.Text := FEditorInfo.CommonComments;
-
-  FSelectedInfo.Groups := FEditorInfo.CommonGroups;
-  InitEditGroups;
 end;
 
 procedure TExplorerForm.InitEditGroups;
@@ -9888,7 +10002,7 @@ end;
 
 procedure TExplorerForm.DisableInfoEditor;
 begin
-
+  FLeftTabs := FLeftTabs - [eltsInfo];
 end;
 
 procedure TExplorerForm.BtnSaveInfoClick(Sender: TObject);
@@ -10117,21 +10231,6 @@ begin
   F(RefreshIDList);
   ExplorerUpdateManager.CleanUp(Self);
   inherited;
-end;
-
-{ TPageControl }
-
-procedure TPageControl.ShowControl(AControl: TControl);
-begin
-end;
-
-procedure TPageControl.TCMAdjustRect(var Msg: TMessage);
-begin
-  inherited;
-  if Msg.WParam = 0 then
-    InflateRect(PRect(Msg.LParam)^, 4, 4)
-  else
-    InflateRect(PRect(Msg.LParam)^, -4, -4);
 end;
 
 initialization

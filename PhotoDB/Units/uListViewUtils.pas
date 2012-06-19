@@ -153,7 +153,7 @@ const
 var
   Graphic: TGraphic;
   W, H: Integer;
-  ImageW, ImageH: Integer;
+  ImageW, ImageH, OriginalRating: Integer;
   X: Integer;
   TempBmp: TBitmap;
   TempBmpShadow: TBitmap;
@@ -161,6 +161,8 @@ var
   ColorFrom, ColorTo, ColorFromOriginal, ColorToOriginal: TColor;
   SelectionRect, R: TRect;
 begin
+  OriginalRating := Info.Rating;
+
   ACanvas.Font.Color := Theme.ListViewFontColor;
   Graphic := BImageList[Item.ImageIndex].Graphic;
 
@@ -279,6 +281,8 @@ begin
 
   if ShowInfo and (Info <> nil) then
     DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Info);
+
+  Info.Rating := OriginalRating;
 end;
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string);

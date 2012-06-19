@@ -59,6 +59,8 @@ type
     property CurrentPath: string read GetCurrentPath;
   end;
 
+  TExplorerLeftTab = (eltsPreview, eltsExplorer, eltsInfo, eltsEXIF, eltsAny);
+
 type
   PFileNotifyInformation = ^TFileNotifyInformation;
 

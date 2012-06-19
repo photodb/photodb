@@ -77,21 +77,24 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
+        ExplicitTop = 42
+        ExplicitHeight = 602
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
           Width = 132
-          Height = 602
+          Height = 620
           Align = alClient
           BevelOuter = bvNone
           ParentColor = True
           TabOrder = 0
           OnResize = PropertyPanelResize
+          ExplicitHeight = 602
           object ScrollBox1: TScrollPanel
             Left = 0
             Top = 0
             Width = 132
-            Height = 573
+            Height = 591
             HorzScrollBar.Increment = 10
             HorzScrollBar.Visible = False
             VertScrollBar.Smooth = True
@@ -107,6 +110,7 @@ object ExplorerForm: TExplorerForm
             FullRepaint = False
             TabOrder = 0
             OnResize = ScrollBox1Resize
+            ExplicitHeight = 573
             object TypeLabel: TLabel
               Left = 7
               Top = 137
@@ -741,13 +745,14 @@ object ExplorerForm: TExplorerForm
           end
           object PnShelf: TPanel
             Left = 0
-            Top = 573
+            Top = 591
             Width = 132
             Height = 29
             Align = alBottom
             ParentBackground = False
             TabOrder = 1
             Visible = False
+            ExplicitTop = 573
             object WlGoToShelf: TWebLink
               Left = 5
               Top = 6
@@ -774,14 +779,19 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitTop = 42
+        ExplicitHeight = 602
       end
       object TsInfo: TTabSheet
         Caption = 'Info'
         ImageIndex = 2
+        TabVisible = False
         OnResize = TsInfoResize
+        ExplicitTop = 42
+        ExplicitHeight = 602
         DesignSize = (
           132
-          602)
+          620)
         object LbHistogramImage: TLabel
           Left = 3
           Top = 5
@@ -789,7 +799,7 @@ object ExplorerForm: TExplorerForm
           Height = 13
           Caption = 'Gistogramm image:'
         end
-        object ImHIstogramm: TImage
+        object ImHistogramm: TImage
           Left = 5
           Top = 24
           Width = 130
@@ -921,15 +931,19 @@ object ExplorerForm: TExplorerForm
       object TsEXIF: TTabSheet
         Caption = 'EXIF'
         ImageIndex = 3
+        TabVisible = False
+        ExplicitTop = 42
+        ExplicitHeight = 602
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
           Width = 132
-          Height = 602
+          Height = 620
           Align = alClient
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
           TabOrder = 0
+          ExplicitHeight = 602
           ColWidths = (
             70
             56)

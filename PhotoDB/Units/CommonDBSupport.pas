@@ -747,12 +747,10 @@ begin
 end;
 
 procedure CreateMSAccessDatabase(FileName: string);
-const
-  DBEngine120 = 'DAO.DBEngine.120';
 var
   DAO: Variant;
   I: Integer;
-  const Engines: array[0..3] of string = (DBEngine120, 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
+  const Engines: array[0..3] of string = ('DAO.DBEngine.120', 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
 
   function CheckClass(OLEClassName: string): Boolean;
   var
@@ -771,9 +769,9 @@ var
 
 begin
   for I := Low(Engines) to High(Engines) do
-    if CheckClass(Engines[i]) then
+    if CheckClass(Engines[I]) then
       begin
-        DAO := CreateOleObject(Engines[i]);
+        DAO := CreateOleObject(Engines[I]);
         DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
         Exit;
       end;
@@ -1057,7 +1055,7 @@ end;
 function GetPathCRC(FileFullPath : string; IsFile: Boolean) : Integer;
 var
   Folder, ApplicationPath : string;
-  CRC : Cardinal;
+  CRC: Cardinal;
 begin
   if IsFile then
     // c:\Folder\1.EXE => c:\Folder\

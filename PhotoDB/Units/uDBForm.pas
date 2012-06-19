@@ -274,13 +274,14 @@ var
   Canvas: TCanvas;
   LDetails: TThemedElementDetails;
   pfEnabled: BOOL;
+  WindowRect: TRect;
 begin
   //when styles enabled and form is visible -> white rectangle in all client rect
   //it causes flicking on black theme if Aero is enabled
   //this is fix for form startup
-  if (Message.Msg = WM_NCPAINT) and StyleServices.Enabled and not FWasPaint then
+  if StyleServices.Enabled and not FWasPaint then
   begin
-    if (Win32MajorVersion >= 6) then
+    if (Message.Msg = WM_NCPAINT) and (Win32MajorVersion >= 6) then
     begin
       DwmIsCompositionEnabled(pfEnabled);
       if pfEnabled then
@@ -290,7 +291,9 @@ begin
           Canvas.Handle := GetWindowDC(Handle);
           LDetails.Element := teWindow;
           LDetails.Part := 0;
-          StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, Width, Height));
+          //get window size from API because VCL size not correct at this moment
+          GetWindowRect(Handle, WindowRect);
+          StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, WindowRect.Width, WindowRect.Height));
         finally
           ReleaseDC(Self.Handle, Canvas.Handle) ;
           F(Canvas);

@@ -127,6 +127,7 @@ const
   var
     Line: IExifInfoLine;
   begin
+    Value := Trim(Value);
     if Value <> '' then
     begin
       Line := TExifInfoLine.Create(Key, Value, IsExtended);

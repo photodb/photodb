@@ -409,7 +409,8 @@ uses
   uExifInfo in 'Units\uExifInfo.pas',
   uFormInterfaces in 'Units\uFormInterfaces.pas',
   uGroupTypes in 'Units\uGroupTypes.pas',
-  uFreeImageImage in 'Units\Formats\uFreeImageImage.pas';
+  uFreeImageImage in 'Units\Formats\uFreeImageImage.pas',
+  PDB.uVCLRewriters in 'Units\PDB.uVCLRewriters.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

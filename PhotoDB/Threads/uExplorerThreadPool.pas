@@ -3,20 +3,32 @@ unit uExplorerThreadPool;
 interface
 
 uses
-  Windows, Math, Classes, SysUtils, SyncObjs,
-  dolphin_db, ExplorerTypes, UnitDBDeclare, uGOM,
-  uMultiCPUThreadManager, uThreadForm, uThreadEx, uTime, uMemory,
-  uConstants, uRuntime;
+  Windows,
+  Math,
+  Classes,
+  SysUtils,
+  SyncObjs,
+  dolphin_db,
+  ExplorerTypes,
+  UnitDBDeclare,
+  uGOM,
+  uMultiCPUThreadManager,
+  uThreadForm,
+  uThreadEx,
+  uTime,
+  uMemory,
+  uConstants,
+  uRuntime;
 
 type
   TExplorerThreadPool = class(TThreadPoolCustom)
   protected
-    procedure AddNewThread(Thread : TMultiCPUThread); override;
+    procedure AddNewThread(Thread: TMultiCPUThread); override;
   public
     class function Instance: TExplorerThreadPool;
     procedure ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
-    procedure ExtractDirectoryPreview(Sender : TMultiCPUThread; DirectoryPath: string; FileID : TGUID);
-    procedure ExtractBigImage(Sender: TMultiCPUThread; FileName: string; ID, Rotated: Integer; FileID : TGUID);
+    procedure ExtractDirectoryPreview(Sender: TMultiCPUThread; DirectoryPath: string; FileID: TGUID);
+    procedure ExtractBigImage(Sender: TMultiCPUThread; FileName: string; ID, Rotated: Integer; FileID: TGUID);
   end;
 
 implementation
@@ -26,7 +38,7 @@ uses
   ExplorerUnit;
 
 var
-   ExplorerThreadPool : TExplorerThreadPool = nil;
+   ExplorerThreadPool: TExplorerThreadPool = nil;
 
 { TExplorerThreadPool }
 
