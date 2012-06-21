@@ -9,6 +9,7 @@ uses
   SysUtils,
   Graphics,
   StrUtils,
+  DateUtils,
   UnitGroupsWork,
   uShellIcons,
   uTranslate,
@@ -75,6 +76,7 @@ type
     function GetDay: Integer;
     function GetMonth: Integer;
     function GetYear: Integer;
+    function GetDate: TDateTime;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
@@ -88,6 +90,7 @@ type
     property Day: Integer read GetDay;
     property Month: Integer read GetMonth;
     property Year: Integer read GetYear;
+    property Date: TDateTime read GetDate;
   end;
 
 type
@@ -655,6 +658,11 @@ begin
   inherited;
   if Options and PATH_LOAD_NO_IMAGE = 0 then
     LoadImage(Options, ImageSize);
+end;
+
+function TDateStackDayItem.GetDate: TDateTime;
+begin
+  Result := EncodeDate(Year, Month, Day);
 end;
 
 function TDateStackDayItem.GetDay: Integer;

@@ -29,6 +29,7 @@ uses
   ComCtrls,
   AppEvnts,
   uGroupTypes,
+  uDBClasses,
   UnitGroupsWork,
   dolphin_db,
   UnitDBKernel,
@@ -911,7 +912,7 @@ begin
   CHInclude := ReadCHInclude;
   if (FShowInfoType = SHOW_INFO_IDS) then
   begin
-    CHComment := (not CommentMemo.readonly and FFilesInfo.IsVariousComments) or
+    CHComment := (not CommentMemo.ReadOnly and FFilesInfo.IsVariousComments) or
       (not FFilesInfo.IsVariousComments and (CommentMemo.Text <> FFilesInfo.CommonComments));
   end else
     CHComment := FFilesInfo.CommonComments <> CommentMemo.Text;
@@ -946,46 +947,43 @@ end;
 
 procedure TPropertiesForm.BtSaveClick(Sender: TObject);
 var
-  _sqlexectext: string;
+  UC: TUpdateCommand;
   I: Integer;
   EventInfo: TEventValues;
   IDArray: TArInteger;
-  WorkQuery: TDataSet;
   FileInfo: TDBPopupMenuInfoRecord;
   UserInput: TUserDBInfoInput;
 begin
-  UserInput := TUserDBInfoInput.Create;
+  BtSave.SetEnabledEx(False);
+  LockImput;
   try
 
-    UserInput.Keywords := KeywordsMemo.Text;
-    UserInput.Groups := CodeGroups(FNowGroups);
-    UserInput.IsCommentChanged := not CommentMemo.ReadOnly;
-    UserInput.Comment := CommentMemo.Text;
-    UserInput.IsLinksChanged := ReadCHLinks;
-    UserInput.Links := CodeLinksInfo(FPropertyLinks);
-    UserInput.IsIncludeChanged := ReadCHInclude;
-    UserInput.Include := CbInclude.Checked;
-    UserInput.IsRatingChanged := not RatingEdit.IsLayered;
-    UserInput.Rating := RatingEdit.Rating;
-
-    UserInput.IsDateChanged := ReadCHDate;
-    UserInput.IsDateChecked := DateEdit.Checked;
-    UserInput.Date := DateOf(DateEdit.Date);
-
-    UserInput.IsTimeChanged := ReadCHTime;
-    UserInput.IsTimeChecked := TimeEdit.Checked;
-    UserInput.Time := TimeOf(TimeEdit.Date);
-
-    WorkQuery := GetQuery;
+    UserInput := TUserDBInfoInput.Create;
     try
-      BtSave.SetEnabledEx(False);
+      UserInput.Keywords := KeywordsMemo.Text;
+      UserInput.Groups := CodeGroups(FNowGroups);
+      UserInput.IsCommentChanged := not CommentMemo.ReadOnly;
+      UserInput.Comment := CommentMemo.Text;
+      UserInput.IsLinksChanged := ReadCHLinks;
+      UserInput.Links := CodeLinksInfo(FPropertyLinks);
+      UserInput.IsIncludeChanged := ReadCHInclude;
+      UserInput.Include := CbInclude.Checked;
+      UserInput.IsRatingChanged := not RatingEdit.IsLayered;
+      UserInput.Rating := RatingEdit.Rating;
+
+      UserInput.IsDateChanged := ReadCHDate;
+      UserInput.IsDateChecked := DateEdit.Checked;
+      UserInput.Date := DateOf(DateEdit.Date);
+
+      UserInput.IsTimeChanged := ReadCHTime;
+      UserInput.IsTimeChecked := TimeEdit.Checked;
+      UserInput.Time := TimeOf(TimeEdit.Date);
+
       if FShowInfoType = SHOW_INFO_IDS then
       begin
-        LockImput;
 
         BatchUpdateDBInfo(Self, FFilesInfo, UserInput);
 
-        UnLockImput;
         if Visible then
         begin
           SetLength(IDArray, FFilesInfo.Count);
@@ -999,26 +997,29 @@ begin
 
       if FShowInfoType = SHOW_INFO_ID then
       begin
-        _sqlexectext := 'Update $DB$';
-        _sqlexectext := _sqlexectext + ' set Comment=' + NormalizeDBString(CommentMemo.Text)
-          + ' , KeyWords=' + NormalizeDBString(KeyWordsMemo.Text)
-          + ' , Rating = ' + Inttostr(RatingEdit.Rating)
-          + ' , Owner = ' + NormalizeDBString(OwnerMemo.Text)
-          + ' , Collection = ' + NormalizeDBString(CollectionMemo.Text)
-          + ', DateToAdd = :Date, IsDate = :IsDate, Groups = ' + NormalizeDBString(CodeGroups(FNowGroups))
-          + ', Include = :Include, Links = ' + NormalizeDBString(CodeLinksInfo(FPropertyLinks))
-          + ', aTime = :aTime , IsTime = :IsTime';
-        _sqlexectext := _sqlexectext + ' Where ID=:ID';
-        WorkQuery.Active := False;
-        SetSQL(WorkQuery, _sqlexectext);
-        SetDateParam(WorkQuery, 'Date', DateEdit.DateTime);
-        SetBoolParam(WorkQuery, 1, DateEdit.Checked);
-        SetBoolParam(WorkQuery, 2, CbInclude.Checked);
-        SetDateParam(WorkQuery, 'aTime', TimeOf(TimeEdit.Time));
-        SetBoolParam(WorkQuery, 4, TimeEdit.Checked);
-        SetIntParam(WorkQuery, 5, ImageId); // Must be LAST PARAM!
+        UC := TUpdateCommand.Create(ImageTable);
+        try
+          UC.AddParameter(TStringParameter.Create('Comment', CommentMemo.Text));
+          UC.AddParameter(TStringParameter.Create('KeyWords', KeyWordsMemo.Text));
+          UC.AddParameter(TStringParameter.Create('Groups', CodeGroups(FNowGroups)));
+          UC.AddParameter(TIntegerParameter.Create('Rating', RatingEdit.Rating));
+          UC.AddParameter(TStringParameter.Create('Owner', OwnerMemo.Text));
+          UC.AddParameter(TStringParameter.Create('Collection', CollectionMemo.Text));
+          UC.AddParameter(TStringParameter.Create('Links', CodeLinksInfo(FPropertyLinks)));
 
-        ExecSQL(WorkQuery);
+          UC.AddParameter(TDateTimeParameter.Create('Date', DateOf(DateEdit.DateTime)));
+          UC.AddParameter(TBooleanParameter.Create('IsDate', DateEdit.Checked));
+
+          UC.AddParameter(TDateTimeParameter.Create('aTime', TimeOf(TimeEdit.DateTime)));
+          UC.AddParameter(TBooleanParameter.Create('IsTime', TimeEdit.Checked));
+
+          UC.AddParameter(TBooleanParameter.Create('Include', CbInclude.Checked));
+
+          UC.AddWhereParameter(TIntegerParameter.Create('ID', ImageId));
+        finally
+          F(UC);
+        end;
+
         EventInfo.Comment := CommentMemo.Text;
         EventInfo.KeyWords := KeyWordsMemo.Text;
         EventInfo.Rating := RatingEdit.Rating;
@@ -1048,11 +1049,12 @@ begin
           F(FileInfo);
         end;
       end;
+
     finally
-      FreeDS(WorkQuery);
+      F(UserInput);
     end;
   finally
-    F(UserInput);
+    UnLockImput;
   end;
 end;
 
@@ -1568,9 +1570,8 @@ begin
     begin
       B := TBitmap.Create;
       try
-        B.Width := 100;
-        B.Height := 100;
         B.PixelFormat := pf24bit;
+        B.SetSize(100, 100);
         B.Canvas.Brush.Color := Theme.WindowColor;
         B.Canvas.Pen.Color := RGB(Round(GetRValue(ColorToRGB(Theme.WindowColor)) * 0.8),
           Round(GetGValue(ColorToRGB(Theme.WindowColor)) * 0.8), Round(GetBValue(ColorToRGB(Theme.WindowColor)) * 0.8));
@@ -1592,7 +1593,7 @@ begin
     SizeLAbel.Text := SizeInText(FFilesInfo.FilesSize);
     CollectionMemo.Readonly := True;
     CollectionMemo.Text := DBKernel.GetDataBaseName;
-    OwnerMemo.Readonly := True;
+    OwnerMemo.ReadOnly := True;
     OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
     if FFilesInfo.IsVariousInclude then

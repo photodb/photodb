@@ -1878,13 +1878,34 @@ object ExplorerForm: TExplorerForm
           CanClick = True
         end
         object WlPanoramio: TWebLink
-          Left = 110
+          Left = 218
           Top = 8
           Width = 83
           Height = 16
           Cursor = crHandPoint
           Text = 'WlPanoramio'
           OnClick = WlPanoramioClick
+          ImageIndex = 0
+          IconWidth = 16
+          IconHeight = 16
+          UseEnterColor = False
+          EnterColor = clBlack
+          EnterBould = False
+          TopIconIncrement = 0
+          UseSpecIconSize = True
+          HightliteImage = True
+          StretchImage = False
+          CanClick = True
+        end
+        object WlDeleteLocation: TWebLink
+          Left = 108
+          Top = 8
+          Width = 104
+          Height = 16
+          Cursor = crHandPoint
+          Enabled = False
+          Text = 'WlDeleteLocation'
+          OnClick = WlDeleteLocationClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16

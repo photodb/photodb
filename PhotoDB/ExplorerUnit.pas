@@ -91,6 +91,7 @@ uses
   uConstants,
   uTime,
   DateUtils,
+  uDateUtils,
   uFastLoad,
   uFileUtils,
   uDBPopupMenuInfo,
@@ -422,6 +423,7 @@ type
     LbEditKeywords: TLabel;
     MemKeyWords: TMemo;
     BtnSaveInfo: TButton;
+    WlDeleteLocation: TWebLink;
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -645,6 +647,7 @@ type
     procedure DteTimeChange(Sender: TObject);
     procedure MemKeyWordsChange(Sender: TObject);
     procedure MemCommentsChange(Sender: TObject);
+    procedure WlDeleteLocationClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1622,7 +1625,6 @@ begin
   begin
     NewWindow1.Visible := True;
     Open1.Visible := True;
-    Delete1.Visible := True;
   end;
 
   if Info.FileType = EXPLORER_ITEM_GROUP then
@@ -3733,6 +3735,7 @@ begin
   FMapLocationLat := Lat;
   FMapLocationLng := Lng;
   WlSaveLocation.Enabled := False;
+  WlDeleteLocation.Enabled := True;
 
   if FIsMapLoaded then
   begin
@@ -3819,13 +3822,76 @@ begin
               end;
 
             if UpdatingDone then
+            begin
               WlSaveLocation.Enabled := False;
+              WlDeleteLocation.Enabled := True;
+            end;
           except
             on e: Exception do
               MessageBoxDB(Handle, FormatEx(L('An error occurred while saving location: {0}!'), [e.Message]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
           end;
         finally
           F(GeoLocation);
+        end;
+      finally
+        F(Progress);
+      end;
+    end else
+      MessageBoxDB(Handle, Format(L('Geo location can''t be saved to this file type!'), []), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+  finally
+    Enabled := True;
+  end;
+end;
+
+procedure TExplorerForm.WlDeleteLocationClick(Sender: TObject);
+var
+  I, Index: Integer;
+  Progress: TOperationProgress;
+  UpdatingDone: Boolean;
+  EI: TExplorerFileInfo;
+begin
+  Enabled := False;
+  try
+    if CanSaveGeoLocation then
+    begin
+      Progress := TOperationProgress.Create(Self);
+      try
+
+        Progress.Text := L('Updating of location');
+
+        try
+          UpdatingDone := True;
+
+          Progress.Max := SelCount;
+          Progress.Position := 0;
+
+          if SelCount > 1 then
+            Progress.Show;
+
+          for I := 0 to ElvMain.Items.Count - 1 do
+            if ElvMain.Items[I].Selected then
+            begin
+              Index := ItemIndexToMenuIndex(I);
+              EI := FFilesInfo[Index];
+              if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
+              begin
+                if not DeleteFileGeoInfo(EI.FileName, True) then
+                  UpdatingDone := False;
+
+                Progress.Position := Progress.Position + 1;
+                if Progress.Closed then
+                  Break;
+              end;
+            end;
+
+          if UpdatingDone then
+          begin
+            WlSaveLocation.Enabled := True;
+            WlDeleteLocation.Enabled := False;
+          end;
+        except
+          on e: Exception do
+            MessageBoxDB(Handle, FormatEx(L('An error occurred while saving location: {0}!'), [e.Message]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         end;
       finally
         F(Progress);
@@ -4048,6 +4114,7 @@ end;
 
 procedure TExplorerForm.ClearMap;
 begin
+  WlDeleteLocation.Enabled := False;
   if FIsMapLoaded then
   begin
     if FGeoHTMLWindow <> nil then
@@ -4070,13 +4137,17 @@ begin
     FMapLocationLng := 0;
 
     WlSaveLocation.LoadFromResource('MAP_MARKER_ADD');
+    WlDeleteLocation.LoadFromResource('MAP_MARKER_DELETE');
     WlPanoramio.LoadFromResource('PANORAMIO');
 
     WedGeoSearch.WatermarkText := L('Search location by address');
     WlPanoramio.Text := L('Show Panoramio');
     WlSaveLocation.Text := L('Save location');
+    WlDeleteLocation.Text := L('Delete location');
     WlSaveLocation.LoadImage;
-    WlPanoramio.Left := WlSaveLocation.Left + WlSaveLocation.Width + 10;
+    WlDeleteLocation.LoadImage;
+    WlDeleteLocation.Left := WlSaveLocation.Left + WlSaveLocation.Width + 10;
+    WlPanoramio.Left := WlDeleteLocation.Left + WlDeleteLocation.Width + 10;
 
     LoadSpeedButtonFromResourcePNG(SbDoSearchLocation, 'SEARCH');
 
@@ -4894,7 +4965,9 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) and (SelCount = 1)) then
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY)) and (SelCount = 1)) then
     begin
       ShellLink.Visible := True;
       ShellLink.Top := NewTop + H;
@@ -5076,7 +5149,9 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF))
+          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or
+          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY))
 		  and (SelCount = 0)) or
       ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
@@ -5094,7 +5169,9 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
+        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or
+        (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
     begin
       OtherPlacesLabel.Show;
       MyPicturesLink.Show;
@@ -7653,10 +7730,11 @@ var
   Pic: TPNGImage;
   Bit32: TBitmap;
   TempBitmap: TBitmap;
-  IsDirectory: Boolean;
+  IsDirectory, IsSelectionHasGeoLocation: Boolean;
   Info: TExplorerFileInfo;
   PI: TPathItem;
 begin
+  IsSelectionHasGeoLocation := False;
   ClearGeoLocation;
   if Rdown then
     FDBCanDrag := False;
@@ -7691,7 +7769,10 @@ begin
         FSelectedInfo.Time := Info.Time;
         FileSID := Info.SID;
         if Info.GeoLocation <> nil then
+        begin
+          IsSelectionHasGeoLocation := True;
           FSelectedInfo.GeoLocation := Info.GeoLocation.Copy;
+        end;
 
         if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
            (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
@@ -7757,6 +7838,28 @@ begin
       begin
         FSelectedInfo.FileName := L('Photo shelf');
         FSelectedInfo.FileTypeW := L('List of shelfed photos and other objects');
+      end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR) then
+      begin
+        FSelectedInfo.FileName := L('Calendar');
+        FSelectedInfo.FileTypeW := L('Your photos grouped by date');
+      end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH)
+         or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY) then
+      begin
+        PI := PathProviderManager.CreatePathItem(FSelectedInfo.FileName);
+        try
+          if PI is TDateStackYearItem then
+            FSelectedInfo.FileName := FormatEx(L('Photos per {0}'), [TDateStackYearItem(PI).Year]);
+
+          if PI is TDateStackMonthItem then
+            FSelectedInfo.FileName := FormatEx(L('Photos per {1}, {0}'), [TDateStackMonthItem(PI).Year, MonthToString(TDateStackMonthItem(PI).Month)]);
+
+          if PI is TDateStackDayItem then
+            FSelectedInfo.FileName := FormatEx(L('Photos per {2} {1}, {0}'), [TDateStackDayItem(PI).Year, MonthToString(TDateStackDayItem(PI).Date, 'Date'), TDateStackDayItem(PI).Day]);
+        finally
+          F(PI);
+        end;
       end;
 
       FSelectedInfo._GUID := FileSID;
@@ -8015,6 +8118,9 @@ begin
           if FSelectedInfo.FileType <> EXPLORER_ITEM_MYCOMPUTER then
             FSelectedInfo.FileType := FileType;
 
+          if Info.GeoLocation <> nil then
+            IsSelectionHasGeoLocation := True;
+
           if (FileType = EXPLORER_ITEM_IMAGE) or
              (FileType = EXPLORER_ITEM_FILE) or
              (FileType = EXPLORER_ITEM_EXEFILE) or
@@ -8061,6 +8167,9 @@ begin
 
     if (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) or (FSelectedInfo.GeoLocation = nil) then
       ClearMap;
+
+    if IsSelectionHasGeoLocation then
+      WlDeleteLocation.Enabled := True;
   end;
 end;
 

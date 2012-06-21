@@ -212,6 +212,11 @@
     <translate name="Photo shelf ({0} items)" value="Отложенные фото - {0}" />
     <translate name="Photo shelf" value="Отложенные фото" />
     <translate name="List of shelfed photos and other objects" value="Список отложенных фото и других объектов" />
+    <translate name="Calendar" value="Календарь" />
+	<translate name="Your photos grouped by date" value="Ваши фотографии, сгруппированные по дате" />	
+    <translate name="Photos per {0}" value="Фотографии за {0} год" />
+    <translate name="Photos per {1}, {0}" value="Фотографии за {1} {0} года" />
+    <translate name="Photos per {2} {1}, {0}" value="Фотографии за {2} {1} {0} года" />
     <translate name="Rename" value="Переименовать" />
     <translate name="Properties" value="Свойства" />
     <translate name="Delete" value="Удалить" />
@@ -264,6 +269,7 @@
     <translate name="Show Panoramio" value="Показать Panoramio" />
     <translate name="Hide Panoramio" value="Скрыть Panoramio" />
     <translate name="Save location" value="Сохранить точку" />
+    <translate name="Delete location" value="Удалить метку" />
     <translate name="Zoom in" value="Увеличить" />
     <translate name="Yes" value="Да" />
     <translate name="No" value="Нет" />

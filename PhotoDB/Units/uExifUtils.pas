@@ -84,6 +84,7 @@ function CreateRating(Rating: Integer): TWindowsStarRating;
 function CreateOrientation(Rotation: Integer): TExifOrientation;
 function CanSaveEXIF(FileName: string): Boolean;
 function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation; RaiseException: Boolean = False): Boolean;
+function DeleteFileGeoInfo(FileName: string; RaiseException: Boolean = False): Boolean;
 function UpdateImageGeoInfoFromExif(Info: TDBPopupMenuInfoRecord; ExifData: TExifData): Boolean;
 function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
 procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
@@ -676,6 +677,43 @@ begin
       end;
     except
       Result := 0;
+    end;
+  finally
+    SetErrorMode(OldMode);
+  end;
+end;
+
+function DeleteFileGeoInfo(FileName: string; RaiseException: Boolean = False): Boolean;
+var
+  ExifData: TExifData;
+  OldMode: Cardinal;
+begin
+  Result := False;
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    try
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromFileEx(FileName);
+
+        if not ExifData.Empty then
+        begin
+          ExifData.GPSLongitude.Assign(0, 0, 0, lnMissingOrInvalid);
+
+          ExifData.SaveToFileEx(FileName);
+          Result := True;
+        end;
+      finally
+        F(ExifData);
+      end;
+    except
+      on e: Exception do
+      begin
+        EventLog(e);
+        if RaiseException then
+          raise;
+        Result := False;
+      end;
     end;
   finally
     SetErrorMode(OldMode);

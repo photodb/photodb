@@ -244,7 +244,9 @@ begin
       SL := TStringList.Create;
       try
         for I := 0 to Length(Groups) - 1 do
-          SL.Add(Groups[I].GroupName);
+          if Groups[I].GroupName <> '' then
+            SL.Add(Groups[I].GroupName);
+
         XInsert(L('Groups'), SL.Join(', '));
       finally
         F(SL);
@@ -257,7 +259,9 @@ begin
       SL := TStringList.Create;
       try
         for I := 0 to Length(Links) - 1 do
-          SL.Add(Links[I].LinkName);
+          if Links[I].LinkName <> '' then
+            SL.Add(Links[I].LinkName);
+
         XInsert(L('Links'), SL.Join(', '));
       finally
         F(SL);
