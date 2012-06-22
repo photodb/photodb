@@ -166,6 +166,18 @@ var
   Sql: string;
   FQuery: TDataSet;
   M: TMemoryStream;
+
+  procedure HandleError(Error: string);
+  begin
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        MessageBoxDB(GetActiveFormHandle, Error, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        EventLog(Error);
+      end
+    );
+  end;
+
 begin
   Result := False;
   if Settings.ReadBool('Options', 'DontAddSmallImages', True) then
@@ -210,7 +222,7 @@ begin
               Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
           end;
         except
-          on e : Exception do
+          on e: Exception do
             Eventlog('Reading EXIF failed: ' + e.Message);
         end;
       finally
@@ -271,13 +283,13 @@ begin
             LastInseredID := FQuery.FieldByName('MaxID').AsInteger;
         except
           on e: Exception do
-            Eventlog('Error getting count of DB items: ' + e.Message);
+            HandleError('Error getting count of DB items: ' + e.Message);
         end;
       end else
         Inc(LastInseredID);
     except
       on e: Exception do
-        Eventlog('Error adding file to DB: ' + e.Message);
+        HandleError('Error adding file to DB: ' + e.Message);
     end;
   finally
     FreeDS(FQuery);

@@ -6316,9 +6316,16 @@ begin
 
     TsPreview.Caption := L('Preview');
     TsExplorer.Caption := L('Explorer');
+    TsInfo.Caption := L('Info');
+    TsEXIF.Caption := L('EXIF');
 
     VleExif.TitleCaptions[0] := L('Key');
     VleExif.TitleCaptions[1] := L('Value');
+
+    BtnSaveInfo.Caption := L('Save');
+    LbHistogramImage.Caption := L('Histogram');
+    LbEditKeywords.Caption := L('Keywords') + ':';
+    LbEditComments.Caption := L('Comment') + ':';
   finally
     EndTranslate;
   end;
@@ -10199,9 +10206,14 @@ end;
 
 procedure TExplorerForm.MemCommentsEnter(Sender: TObject);
 begin
-  MemComments.Height := 100;
-  MemKeyWords.Height := 50;
-  ReallignEditBoxes;
+  BeginScreenUpdate(TsInfo.Handle);
+  try
+    MemComments.Height := 100;
+    MemKeyWords.Height := 50;
+    ReallignEditBoxes;
+  finally
+    EndScreenUpdate(TsInfo.Handle, True);
+  end;
 end;
 
 procedure TExplorerForm.MemKeyWordsChange(Sender: TObject);
@@ -10211,10 +10223,15 @@ end;
 
 procedure TExplorerForm.MemKeyWordsEnter(Sender: TObject);
 begin
-  MemComments.Height := 50;
-  MemKeyWords.Height := 100;
+  BeginScreenUpdate(TsInfo.Handle);
+  try
+    MemComments.Height := 50;
+    MemKeyWords.Height := 100;
 
-  ReallignEditBoxes;
+    ReallignEditBoxes;
+  finally
+    EndScreenUpdate(TsInfo.Handle, True);
+  end;
 end;
 
 procedure TExplorerForm.DteDateChange(Sender: TObject);
@@ -10229,10 +10246,15 @@ end;
 
 procedure TExplorerForm.DteTimeEnter(Sender: TObject);
 begin
-  MemComments.Height := 50;
-  MemKeyWords.Height := 50;
+  BeginScreenUpdate(TsInfo.Handle);
+  try
+    MemComments.Height := 50;
+    MemKeyWords.Height := 50;
 
-  ReallignEditBoxes;
+    ReallignEditBoxes;
+  finally
+    EndScreenUpdate(TsInfo.Handle, True);
+  end;
 end;
 
 procedure TExplorerForm.GroupClick(Sender: TObject);

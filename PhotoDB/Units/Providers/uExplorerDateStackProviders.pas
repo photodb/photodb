@@ -175,7 +175,7 @@ function Capitalize(const S: string): string;
 begin
   Result := S;
   if Length(Result) > 0 then
-    Result[1] := UpCase(Result[1]);
+    Result[1] := AnsiUpperCase(Result[1])[1];
 end;
 
 function TExplorerDateStackProvider.InternalFillChildList(Sender: TObject;

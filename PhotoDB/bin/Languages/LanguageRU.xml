@@ -216,7 +216,13 @@
 	<translate name="Your photos grouped by date" value="Ваши фотографии, сгруппированные по дате" />	
     <translate name="Photos per {0}" value="Фотографии за {0} год" />
     <translate name="Photos per {1}, {0}" value="Фотографии за {1} {0} года" />
-    <translate name="Photos per {2} {1}, {0}" value="Фотографии за {2} {1} {0} года" />
+    <translate name="Photos per {2} {1}, {0}" value="Фотографии за {2} {1} {0} года" />	
+    <translate name="Histogram" value="Гистограмма" />
+    <translate name="Keywords" value="Ключевые слова" />
+    <translate name="Comment" value="Коментарий" />
+    <translate name="There are no groups" value="Нет групп" />
+    <translate name="Edit groups" value="Редактировать группы" />
+    <translate name="Save" value="Сохранить" />	
     <translate name="Rename" value="Переименовать" />
     <translate name="Properties" value="Свойства" />
     <translate name="Delete" value="Удалить" />
@@ -235,6 +241,8 @@
     <translate name="Add to collection" value="Добавить в базу" />
     <translate name="Preview" value="Предпросмотр" />
     <translate name="Explorer" value="Проводник" />
+    <translate name="Info" value="Информация" />
+    <translate name="EXIF" value="EXIF" />
     <translate name="Tasks" value="Задачи" />
     <translate name="Open" value="Открыть" />
     <translate name="Show" value="Просмотр" />

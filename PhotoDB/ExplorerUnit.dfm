@@ -64,7 +64,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 648
-      ActivePage = TsPreview
+      ActivePage = TsInfo
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -788,7 +788,7 @@ object ExplorerForm: TExplorerForm
           Top = 5
           Width = 91
           Height = 13
-          Caption = 'Gistogramm image:'
+          Caption = 'Histogramm image:'
         end
         object ImHistogramm: TImage
           Left = 5
@@ -802,7 +802,7 @@ object ExplorerForm: TExplorerForm
         end
         object LbEditComments: TLabel
           Tag = 2
-          Left = 3
+          Left = 5
           Top = 336
           Width = 54
           Height = 13
@@ -810,7 +810,7 @@ object ExplorerForm: TExplorerForm
         end
         object LbEditKeywords: TLabel
           Tag = 2
-          Left = 3
+          Left = 5
           Top = 258
           Width = 53
           Height = 13
@@ -869,9 +869,9 @@ object ExplorerForm: TExplorerForm
           OnEnter = DteTimeEnter
         end
         object WllGroups: TWebLinkList
-          Left = 1
+          Left = 5
           Top = 211
-          Width = 129
+          Width = 130
           Height = 42
           HorzScrollBar.Visible = False
           Anchors = [akLeft, akTop, akRight]
@@ -889,9 +889,9 @@ object ExplorerForm: TExplorerForm
         end
         object MemComments: TMemo
           Tag = 1
-          Left = 3
+          Left = 5
           Top = 355
-          Width = 167
+          Width = 130
           Height = 50
           Anchors = [akLeft, akTop, akRight]
           ParentColor = True
@@ -902,9 +902,9 @@ object ExplorerForm: TExplorerForm
         end
         object MemKeyWords: TMemo
           Tag = 1
-          Left = 3
+          Left = 5
           Top = 277
-          Width = 167
+          Width = 130
           Height = 50
           Anchors = [akLeft, akTop, akRight]
           ParentColor = True
