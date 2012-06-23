@@ -42,6 +42,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormPaint(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FOneOperation: Boolean;
@@ -283,6 +284,12 @@ end;
 procedure TProgressActionForm.FormDestroy(Sender: TObject);
 begin
   ManagerProgresses.RemoveProgress(Self);
+end;
+
+procedure TProgressActionForm.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Closed := True;
 end;
 
 procedure TProgressActionForm.FormCloseQuery(Sender: TObject;

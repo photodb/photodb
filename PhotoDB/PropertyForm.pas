@@ -947,9 +947,7 @@ end;
 
 procedure TPropertiesForm.BtSaveClick(Sender: TObject);
 var
-  UC: TUpdateCommand;
   I: Integer;
-  EventInfo: TEventValues;
   IDArray: TArInteger;
   FileInfo: TDBPopupMenuInfoRecord;
   UserInput: TUserDBInfoInput;
@@ -997,46 +995,9 @@ begin
 
       if FShowInfoType = SHOW_INFO_ID then
       begin
-        UC := TUpdateCommand.Create(ImageTable);
-        try
-          UC.AddParameter(TStringParameter.Create('Comment', CommentMemo.Text));
-          UC.AddParameter(TStringParameter.Create('KeyWords', KeyWordsMemo.Text));
-          UC.AddParameter(TStringParameter.Create('Groups', CodeGroups(FNowGroups)));
-          UC.AddParameter(TIntegerParameter.Create('Rating', RatingEdit.Rating));
-          UC.AddParameter(TStringParameter.Create('Owner', OwnerMemo.Text));
-          UC.AddParameter(TStringParameter.Create('Collection', CollectionMemo.Text));
-          UC.AddParameter(TStringParameter.Create('Links', CodeLinksInfo(FPropertyLinks)));
 
-          UC.AddParameter(TDateTimeParameter.Create('Date', DateOf(DateEdit.DateTime)));
-          UC.AddParameter(TBooleanParameter.Create('IsDate', DateEdit.Checked));
+        UpdateDBRecordWithUserInfo(Self, FFilesInfo[0], UserInput);
 
-          UC.AddParameter(TDateTimeParameter.Create('aTime', TimeOf(TimeEdit.DateTime)));
-          UC.AddParameter(TBooleanParameter.Create('IsTime', TimeEdit.Checked));
-
-          UC.AddParameter(TBooleanParameter.Create('Include', CbInclude.Checked));
-
-          UC.AddWhereParameter(TIntegerParameter.Create('ID', ImageId));
-        finally
-          F(UC);
-        end;
-
-        EventInfo.Comment := CommentMemo.Text;
-        EventInfo.KeyWords := KeyWordsMemo.Text;
-        EventInfo.Rating := RatingEdit.Rating;
-        EventInfo.Owner := OwnerMemo.Text;
-        EventInfo.Collection := CollectionMemo.Text;
-        EventInfo.Groups := CodeGroups(FNowGroups);
-        EventInfo.Include := CbInclude.Checked;
-        EventInfo.Date := DateEdit.DateTime;
-        EventInfo.Time := TimeOf(TimeEdit.Time);
-        EventInfo.IsDate := DateEdit.Checked;
-        EventInfo.IsTime := TimeEdit.Checked;
-        EventInfo.Links := CodeLinksInfo(FPropertyLinks);
-        DBKernel.DoIDEvent(Self, ImageId, [EventID_Param_Comment,
-          EventID_Param_KeyWords, EventID_Param_Rating,
-          EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate,
-          EventID_Param_IsTime, EventID_Param_Groups, EventID_Param_Include,
-          EventID_Param_Links], EventInfo);
       end else
       begin
         FSaving := False;
@@ -1698,7 +1659,7 @@ begin
   PropertyManager.RemoveProperty(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataGroups);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  DBKernel.UnRegisterChangesIDbyID(Self,ChangedDBDataByID,ImageId);
+  DBKernel.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ImageId);
   Release;
 end;
 

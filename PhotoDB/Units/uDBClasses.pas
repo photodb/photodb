@@ -123,6 +123,8 @@ type
     property Items[Index: Integer]: TParameter read GetItemByID; default;
   end;
 
+  TFieldHelper = class;
+
   TSqlCommand = class
   private
     FParameters: FParameterCollection;
@@ -222,6 +224,12 @@ type
     function GetDBFile: string;
   public
     property DBFile: string read GetDBFile;
+  end;
+
+  TFieldHelper = class(TObject)
+  protected
+    FCommand: TSqlCommand;
+    constructor Create(Command: TSqlCommand);
   end;
 
 function DatabaseManager: TDatabaseManager;
@@ -329,14 +337,14 @@ var
     if ADOParameter <> nil then
     begin
       if Parameter is TDateTimeParameter then
-        ADOParameter.Value := TDateTimeParameter(Parameter).Value;
-      if Parameter is TIntegerParameter then
-        ADOParameter.Value := TIntegerParameter(Parameter).Value;
-      if Parameter is TStringParameter then
-        ADOParameter.Value := TStringParameter(Parameter).Value;
-      if Parameter is TBooleanParameter then
-        ADOParameter.Value := TBooleanParameter(Parameter).Value;
-      if Parameter is TJpegParameter then
+        ADOParameter.Value := TDateTimeParameter(Parameter).Value
+      else if Parameter is TIntegerParameter then
+        ADOParameter.Value := TIntegerParameter(Parameter).Value
+      else if Parameter is TStringParameter then
+        ADOParameter.Value := TStringParameter(Parameter).Value
+      else if Parameter is TBooleanParameter then
+        ADOParameter.Value := TBooleanParameter(Parameter).Value
+      else if Parameter is TJpegParameter then
       begin
         TJpegParameter(Parameter).Image.Compress;
         ADOParameter.Assign(TJpegParameter(Parameter).Image);
@@ -759,6 +767,12 @@ begin
   Result := FList[Index];
 end;
 
+{ TFieldHelper }
+
+constructor TFieldHelper.Create(Command: TSqlCommand);
+begin
+  FCommand := Command;
+end;
 
 initialization
 

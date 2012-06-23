@@ -39,6 +39,7 @@ uses
   dolphin_db,
   uGroupTypes,
   UnitGroupsWork,
+  UnitLinksSupport,
   SaveWindowPos,
   AppEvnts,
   WebLink,
@@ -424,6 +425,7 @@ type
     MemKeyWords: TMemo;
     BtnSaveInfo: TButton;
     WlDeleteLocation: TWebLink;
+    MiDisplayOnMap: TMenuItem;
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -648,6 +650,7 @@ type
     procedure MemKeyWordsChange(Sender: TObject);
     procedure MemCommentsChange(Sender: TObject);
     procedure WlDeleteLocationClick(Sender: TObject);
+    procedure MiDisplayOnMapClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -732,6 +735,7 @@ type
     FReloadGroupsMessage: Cardinal;
     FActiveLeftTab: TExplorerLeftTab;
     FLeftTabs: set of TExplorerLeftTab;
+    FPngNoHIstogram: TPNGImage;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: String; Explorer: Boolean);
     procedure Reload;
@@ -1101,6 +1105,7 @@ var
 begin
   FGeoHTMLWindow := nil;
   FEditorInfo := nil;
+  FPngNoHIstogram := nil;
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -1439,6 +1444,7 @@ begin
   Shell1.Visible := False;
   MiShelf.Visible := False;
   MiShare.Visible := False;
+  MiDisplayOnMap.Visible := False;
   MakeFolderViewer2.Visible := False;
   MapCD1.Visible := False;
 
@@ -1474,6 +1480,17 @@ begin
   if Info.FileType = EXPLORER_ITEM_IMAGE then
   begin
     MiShare.Visible := not FolderView;
+
+    if CanSaveGeoLocation then
+    begin
+      if (FSelectedInfo.GeoLocation <> nil)  then
+        MiDisplayOnMap.Caption := L('Display on map')
+      else
+        MiDisplayOnMap.Caption := L('Set map location');
+      MiDisplayOnMap.Visible := True;
+    end else
+      MiDisplayOnMap.Visible := False;
+
     MiShelf.Visible := True;
     DBitem1.Visible := True;
     StenoGraphia1.Visible := True;
@@ -1847,6 +1864,7 @@ begin
   ClearGeoLocation;
   F(FWebJSContainer);
   F(FWbGeoLocation);
+  F(FPngNoHIstogram);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
 
@@ -2748,7 +2766,15 @@ end;
 
 procedure TExplorerForm.TsInfoResize(Sender: TObject);
 begin
-  ReRating.Left := TsInfo.Width div 2 - ReRating.Width div 2;
+  BeginScreenUpdate(TsInfo.Handle);
+  try
+    ReRating.Left := TsInfo.Width div 2 - ReRating.Width div 2;
+    WllGroups.ReallignList;
+    WllGroups.AutoHeight(200);
+    ReallignEditBoxes;
+  finally
+    EndScreenUpdate(TsInfo.Handle, False);
+  end;
 end;
 
 procedure TExplorerForm.ListView1MouseDown(Sender: TObject;
@@ -4395,6 +4421,11 @@ begin
   Clipboard.AsText := FCurrentPath;
 end;
 
+procedure TExplorerForm.MiDisplayOnMapClick(Sender: TObject);
+begin
+  WlGeoLocationClick(Sender);
+end;
+
 procedure TExplorerForm.MiEditAddressClick(Sender: TObject);
 begin
   PePath.Edit;
@@ -4585,15 +4616,13 @@ begin
 
     if ExifInfo <> nil then
     begin
-      IsVisible := PcTasks.ActivePageIndex = Integer(eltsEXIF);
-
       BeginScreenUpdate(VleEXIF.Handle);
       try
         VleEXIF.Strings.Clear;
         for Line in ExifInfo do
           VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
       finally
-        EndScreenUpdate(VleEXIF.Handle, IsVisible);
+        EndScreenUpdate(VleEXIF.Handle, {PcTasks.ActivePageIndex = Integer(eltsEXIF)}False);
       end;
 
       ShowTabIfWasActive(eltsEXIF);
@@ -10006,6 +10035,17 @@ begin
       Exit;
     end;
 
+    if FEditorInfo.Count > 1 then
+    begin
+      if FPngNoHIstogram = nil then
+        FPngNoHIstogram := GetNoHistogramImage;
+
+      ImHistogramm.Picture.Graphic := FPngNoHIstogram;
+
+      ImHistogramm.Stretch := False;
+    end else
+      ImHistogramm.Stretch := True;
+
     FLeftTabs := FLeftTabs + [eltsInfo];
     ShowLastActiveTab(eltsInfo);
 
@@ -10035,7 +10075,7 @@ begin
     BtnSaveInfo.Enabled := False;
   finally
     if IsVisible then
-      EndScreenUpdate(TsInfo.Handle, True);
+      EndScreenUpdate(TsInfo.Handle, False);
   end;
 end;
 
@@ -10212,7 +10252,7 @@ begin
     MemKeyWords.Height := 50;
     ReallignEditBoxes;
   finally
-    EndScreenUpdate(TsInfo.Handle, True);
+    EndScreenUpdate(TsInfo.Handle, False);
   end;
 end;
 
@@ -10230,7 +10270,7 @@ begin
 
     ReallignEditBoxes;
   finally
-    EndScreenUpdate(TsInfo.Handle, True);
+    EndScreenUpdate(TsInfo.Handle, False);
   end;
 end;
 
@@ -10253,7 +10293,7 @@ begin
 
     ReallignEditBoxes;
   finally
-    EndScreenUpdate(TsInfo.Handle, True);
+    EndScreenUpdate(TsInfo.Handle, False);
   end;
 end;
 
@@ -10313,9 +10353,9 @@ begin
     UserInput.IsCommentChanged := not MemComments.ReadOnly;
     UserInput.Comment := MemComments.Text;
     UserInput.IsLinksChanged := False;
-    UserInput.Links := '';
+    UserInput.Links := CodeLinksInfo(FEditorInfo.CommonLinks);
     UserInput.IsIncludeChanged := False;
-    UserInput.Include := True;
+    UserInput.Include := FEditorInfo.StatInclude;
     UserInput.IsRatingChanged := not ReRating.IsLayered;
     UserInput.Rating := ReRating.Rating;
 
@@ -10330,7 +10370,10 @@ begin
     BtnSaveInfo.SetEnabledEx(False);
     Enabled := False;
     try
-      BatchUpdateDBInfo(Self, FEditorInfo, UserInput);
+      if FEditorInfo.Count > 1 then
+        BatchUpdateDBInfo(Self, FEditorInfo, UserInput)
+      else if FEditorInfo.Count = 1 then
+        UpdateDBRecordWithUserInfo(Self, FEditorInfo[0], UserInput);
     finally
       Enabled := True;
     end;
@@ -10493,6 +10536,7 @@ begin
 
   MiShelf.ImageIndex := DB_IC_SHELF;
   MiShare.ImageIndex := DB_IC_PHOTO_SHARE;
+  MiDisplayOnMap.ImageIndex := DB_IC_MAP_MARKER;
   View2.ImageIndex := DB_IC_SLIDE_SHOW;
 
   Sortby1.ImageIndex := DB_IC_SORT;

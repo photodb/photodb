@@ -280,6 +280,9 @@ begin
                   F(FGraphic);
 
                   ImageInfo.AppllyICCProfile(TempBit);
+                  if not (TempBit.PixelFormat in [pf24Bit, pf32Bit]) then
+                    TempBit.PixelFormat := pf24Bit;
+
                   FHistogramm := FillHistogramma(TempBit);
 
                   W := TempBit.Width;

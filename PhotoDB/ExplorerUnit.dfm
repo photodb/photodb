@@ -2108,6 +2108,10 @@ object ExplorerForm: TExplorerForm
       Caption = 'Share'
       OnClick = WlShareClick
     end
+    object MiDisplayOnMap: TMenuItem
+      Caption = 'Display on map'
+      OnClick = MiDisplayOnMapClick
+    end
     object N12: TMenuItem
       Caption = '-'
     end

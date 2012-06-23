@@ -768,17 +768,14 @@ begin
       try
         ExifData.LoadFromFileEx(FileName);
 
-        if not ExifData.Empty then
-        begin
-          DoubleToCoordinates(GeoInfo.Latitude, D, M, S);
-          ExifData.GPSLatitude.Assign(D, M, S, GetLatDirection(GeoInfo.Latitude));
+        DoubleToCoordinates(GeoInfo.Latitude, D, M, S);
+        ExifData.GPSLatitude.Assign(D, M, S, GetLatDirection(GeoInfo.Latitude));
 
-          DoubleToCoordinates(GeoInfo.Longitude, D, M, S);
-          ExifData.GPSLongitude.Assign(D, M, S, GetLngDirection(GeoInfo.Longitude));
+        DoubleToCoordinates(GeoInfo.Longitude, D, M, S);
+        ExifData.GPSLongitude.Assign(D, M, S, GetLngDirection(GeoInfo.Longitude));
 
-          ExifData.SaveToFileEx(FileName);
-          Result := True;
-        end;
+        ExifData.SaveToFileEx(FileName);
+        Result := True;
       finally
         F(ExifData);
       end;

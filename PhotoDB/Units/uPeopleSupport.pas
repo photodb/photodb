@@ -28,7 +28,9 @@ uses
   uConstants,
   uLogger,
   uBitmapUtils,
-  CmpUnit;
+  CmpUnit,
+  uTranslate,
+  uShellIntegration;
 
 const
   PERSON_TYPE = 1;
@@ -214,6 +216,17 @@ procedure UnReigisterPersonManager;
 begin
   if FManager <> nil then
     FManager.Unregister;
+end;
+
+procedure InternalHandleError(Ex: Exception);
+begin
+  EventLog(Ex);
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      MessageBoxDB(0, Ex.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    end
+  );
 end;
 
 { TPerson }
@@ -414,7 +427,11 @@ begin
         MarkLatestPerson(PersonArea.PersonID);
         Result := True;
       except
-        Exit;
+        on E: Exception do
+        begin
+          InternalHandleError(E);
+          Exit;
+        end;
       end;
     finally
       F(IC);
@@ -442,7 +459,11 @@ begin
 
       Result := True;
     except
-      Exit;
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
     end;
   finally
     F(UC);
@@ -491,7 +512,11 @@ begin
       end;
 
     except
-      Exit;
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
     end;
 
     Result := Person.ID;
@@ -519,7 +544,11 @@ begin
         FSync.Leave;
       end;
     except
-      Exit;
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
     end;
 
     Result := True;
@@ -636,7 +665,11 @@ begin
       SC.Execute;
       Result.ReadFromDS(SC.DS);
     except
-      Exit;
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
     end;
   finally
     F(SC);
@@ -658,7 +691,11 @@ begin
       if SC.RecordCount > 0 then
         Result.ReadFromDS(SC.DS);
     except
-      Exit;
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
     end;
   finally
     F(SC);
@@ -680,7 +717,11 @@ begin
       if SC.RecordCount > 0 then
         Result.ReadFromDS(SC.DS);
     except
-      Exit;
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
     end;
   finally
     F(SC);
@@ -700,7 +741,11 @@ begin
       SC.Execute;
       Result.ReadFromDS(SC.DS);
     except
-      Exit;
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
     end;
   finally
     F(SC);

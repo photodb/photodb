@@ -29,6 +29,7 @@ function GetPrinterPatternImage: TJpegImage;
 function GetBigPatternImage: TJpegImage;
 function GetFilmStripImage: TPNGImage;
 function GetPathSeparatorImage: TBitmap;
+function GetNoHistogramImage: TPNGImage;
 
 {$R MAIN.res}
 {$R Logo.res}
@@ -44,6 +45,7 @@ function GetPathSeparatorImage: TBitmap;
 {$R BigPattern.res}
 {$R Film_Strip.res}
 {$R PathSeparator.res}
+{$R NoHistogram.res}
 
 //Icons
 {$R icons.res}
@@ -167,6 +169,11 @@ end;
 function GetPathSeparatorImage: TBitmap;
 begin
   Result := TResourceUtils.LoadGraphicFromRES<TBitmap>('PATH_SEPARATOR');
+end;
+
+function GetNoHistogramImage: TPNGImage;
+begin
+  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('NO_HISTOGRAM');
 end;
 
 end.

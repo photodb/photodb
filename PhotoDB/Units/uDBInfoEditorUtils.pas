@@ -7,6 +7,7 @@ uses
   VCL.Forms,
   System.DateUtils,
   Data.DB,
+  uConstants,
   uMemory,
   uMemoryEx,
   uDBPopupMenuInfo,
@@ -18,6 +19,7 @@ uses
   UnitLinksSupport,
   UnitSQLOptimizing,
   ProgressActionUnit,
+  uDBClasses,
   UnitDBKernel,
   UnitUpdateDBObject;
 
@@ -29,12 +31,6 @@ type
     Comment: string;
     IsCommentChanged: Boolean;
 
-    Links: string;
-    IsLinksChanged: Boolean;
-
-    Include: Boolean;
-    IsIncludeChanged: Boolean;
-
     Rating: Integer;
     IsRatingChanged: Boolean;
 
@@ -45,10 +41,17 @@ type
     Time: TTime;
     IsTimeChecked: Boolean;
     IsTimeChanged: Boolean;
+
+    Links: string;
+    IsLinksChanged: Boolean;
+
+    Include: Boolean;
+    IsIncludeChanged: Boolean;
   end;
 
 procedure BatchUpdateDBInfo(Owner: TDBForm; FFilesInfo: TDBPopupMenuInfo; UserInput: TUserDBInfoInput);
 procedure FillDataRecordWithUserInfo(Info: TDBPopupMenuInfoRecord; UserInput: TUserDBInfoInput);
+procedure UpdateDBRecordWithUserInfo(Owner: TDBForm; Info: TDBPopupMenuInfoRecord; UserInput: TUserDBInfoInput);
 
 implementation
 
@@ -82,6 +85,7 @@ var
   EventInfo: TEventValues;
   WorkQuery: TDataSet;
   FileInfo: TDBPopupMenuInfoRecord;
+  UC: TUpdateCommand;
 
   function GenerateIDList : string;
   var
@@ -128,10 +132,16 @@ begin
       // [BEGIN] Include Support
       if UserInput.IsIncludeChanged then
       begin
-        SQL := Format('Update $DB$ Set Include = :Include Where ID in (%s)', [GenerateIDList]);
-        SetSQL(WorkQuery, SQL);
-        SetBoolParam(WorkQuery, 0, UserInput.Include);
-        ExecSQL(WorkQuery);
+        UC := TUpdateCommand.Create(ImageTable);
+        try
+          UC.AddParameter(TBooleanParameter.Create('Include', UserInput.Include));
+          UC.AddWhereParameter(TCustomConditionParameter.Create(Format('[ID] in (%s)', [GenerateIDList])));
+
+          UC.Execute;
+        finally
+          F(UC);
+        end;
+
         EventInfo.Include := UserInput.Include;
         for I := 0 to FFilesInfo.Count - 1 do
           if FFilesInfo[I].ID > 0 then
@@ -383,6 +393,49 @@ begin
     end;
   finally
     FreeDS(WorkQuery);
+  end;
+end;
+
+procedure UpdateDBRecordWithUserInfo(Owner: TDBForm; Info: TDBPopupMenuInfoRecord; UserInput: TUserDBInfoInput);
+var
+  UC: TUpdateCommand;
+  EventInfo: TEventValues;
+  Params: TEventFields;
+begin
+  UC := TUpdateCommand.Create(ImageTable);
+  try
+    UC.AddParameter(TStringParameter.Create('Comment', UserInput.Comment));
+    UC.AddParameter(TStringParameter.Create('KeyWords', UserInput.Keywords));
+    UC.AddParameter(TStringParameter.Create('Groups', UserInput.Groups));
+    UC.AddParameter(TIntegerParameter.Create('Rating', UserInput.Rating));
+    UC.AddParameter(TDateTimeParameter.Create('DateToAdd', DateOf(UserInput.Date)));
+    UC.AddParameter(TBooleanParameter.Create('IsDate', UserInput.IsDateChecked));
+    UC.AddParameter(TDateTimeParameter.Create('aTime', UserInput.Time));
+    UC.AddParameter(TBooleanParameter.Create('IsTime', UserInput.IsTimeChecked));
+    UC.AddParameter(TStringParameter.Create('Links', UserInput.Links));
+    UC.AddParameter(TBooleanParameter.Create('Include', UserInput.Include));
+
+    UC.AddWhereParameter(TIntegerParameter.Create('ID', Info.Id));
+    UC.Execute;
+
+    EventInfo.Comment := UserInput.Comment;
+    EventInfo.KeyWords := UserInput.Keywords;
+    EventInfo.Rating := UserInput.Rating;
+    EventInfo.Groups := UserInput.Groups;
+    EventInfo.Date := DateOf(UserInput.Date);
+    EventInfo.IsDate := UserInput.IsDateChecked;
+    EventInfo.Time := TimeOf(UserInput.Time);
+    EventInfo.IsTime := UserInput.IsTimeChecked;
+    EventInfo.Links := UserInput.Links;
+    EventInfo.Include := UserInput.Include;
+
+    Params := [EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Rating,
+      EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime, EventID_Param_Groups,
+      EventID_Param_Include, EventID_Param_Links];
+
+    DBKernel.DoIDEvent(Owner, Info.Id, Params, EventInfo);
+  finally
+    F(UC);
   end;
 end;
 

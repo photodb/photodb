@@ -245,11 +245,11 @@ begin
   S := HardwareString;
   CalcStringCRC32(S, N);
   //N := N xor $6357A303; // v2.3
-  N := N xor $6357A304; // v3.0
+  N := N xor $6357A304; // v3.0,3.1
   S := IntToHex(N, 8);
   CalcStringCRC32(S, N);
   //N := N xor $162C90CA; // v2.3
-  N := N xor $162C90CB; // v3.0
+  N := N xor $162C90CB; // v3.0,3.1
   Code := S + Inttohex(N, 8);
   Result := Code;
 end;

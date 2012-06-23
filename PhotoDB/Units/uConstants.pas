@@ -48,9 +48,9 @@ const
 
   //Information
   PhotoDBFileName = 'PhotoDB.exe';
-  ProductName = 'Photo DataBase 3.0';
-  StartMenuProgramsPath = 'Photo DB v3.0';
-  ProductMajorVersionVersion = '3.0';
+  ProductName = 'Photo DataBase 3.1';
+  StartMenuProgramsPath = 'Photo DB v3.1';
+  ProductMajorVersionVersion = '3.1';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;
