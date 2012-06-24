@@ -47,6 +47,7 @@ type
   protected
     function GetCurrentPath: string; virtual; abstract;
   public
+    procedure SetPathItem(PI: TPathItem);  virtual; abstract;
     procedure SetNewPathW(WPath: TExplorerPath; Explorer: Boolean); virtual; abstract;
     procedure SetStringPath(Path: String; ChangeTreeView: Boolean); virtual; abstract;
     procedure SetPath(NewPath: string); virtual; abstract;

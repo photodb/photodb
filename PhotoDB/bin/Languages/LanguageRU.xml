@@ -264,7 +264,6 @@
     <translate name="Select all" value="Выделить всё" />
     <translate name="Go to search window" value="Перейти в окно поиска" />
     <translate name="Exit" value="Выйти" />
-    <translate name="Open in explorer" value="Открыть в проводнике" />
     <translate name="Address" value="Адрес" />
     <translate name="Encrypt file" value="Зашифровать файл" />
     <translate name="Decrypt file" value="Расшифровать файл" />

@@ -89,7 +89,6 @@ type
     FFastDirectoryLoading: Boolean;
     FFiles: TExplorerFileInfos;
     BooleanResult: Boolean;
-    IntParam: Integer;
     BooleanParam: Boolean;
     StringParam: string;
     GUIDParam: TGUID;
@@ -2492,7 +2491,7 @@ begin
         if ExplorerInfo.ShowThumbNailsForImages then
           ReplaceImageItemImage(FFiles[0].FileName, FFiles[0].FileSize, GUIDParam);
 
-        IntParam := FUpdaterInfo.ID;
+        StrParam := FUpdaterInfo.FileName;
         SynchronizeEx(EndUpdateID);
 
         if ExplorerInfo.ShowThumbNailsForImages and not FUpdaterInfo.DisableLoadingOfBigImage then
@@ -2603,7 +2602,7 @@ end;
 procedure TExplorerThread.EndUpdateID;
 begin
   if not IsTerminated then
-    FSender.RemoveUpdateID(IntParam, FCID);
+    FSender.RemoveUpdateID(StrParam, FCID);
 end;
 
 procedure TExplorerThread.GetVisibleFiles;

@@ -636,7 +636,6 @@ begin
     Settings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
     Settings.WriteBool('Options', 'ShowOtherPlaces', CbExplorerShowPlaces.Checked);
 
-    ExplorerManager.ShowEXIF := CbExplorerShowEXIF.Checked;
     ExplorerManager.ShowQuickLinks := CbExplorerShowPlaces.Checked;
     WritePlaces;
   end;
@@ -724,6 +723,8 @@ begin
   end;
 
   Settings.ClearCache;
+  TFormCollection.Instance.ApplySettings;
+
   Close;
 end;
 

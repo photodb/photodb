@@ -64,7 +64,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 648
-      ActivePage = TsInfo
+      ActivePage = TsPreview
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -2285,21 +2285,16 @@ object ExplorerForm: TExplorerForm
     Left = 769
     Top = 112
   end
-  object PopupMenuTreeView: TPopupActionBar
-    OnPopup = PopupMenuTreeViewPopup
+  object PmTreeView: TPopupActionBar
     Left = 361
     Top = 192
-    object OpeninExplorer1: TMenuItem
-      Caption = 'Open in Explorer'
-      OnClick = OpeninExplorer1Click
+    object MiTreeViewOpenInNewWindow: TMenuItem
+      Caption = 'Open in new window'
+      OnClick = MiTreeViewOpenInNewWindowClick
     end
-    object AddFolder2: TMenuItem
-      Caption = 'Add Folder'
-      OnClick = AddFolder2Click
-    end
-    object View2: TMenuItem
-      Caption = 'View'
-      OnClick = View2Click
+    object MiTreeViewRefresh: TMenuItem
+      Caption = 'Refresh'
+      OnClick = MiTreeViewRefreshClick
     end
   end
   object ToolBarNormalImageList: TImageList

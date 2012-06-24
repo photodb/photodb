@@ -43,6 +43,7 @@ type
     function GetFormID: string; virtual; abstract;
     procedure DoCreate; override;
     procedure ApplyStyle; virtual;
+    procedure ApplySettings; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -73,6 +74,7 @@ type
       var Height: Integer): Boolean;
     function GetFormByBounds<T: TDBForm>(BoundsRect: TRect): TDBForm;
     function GetForm(WindowID: string): TDBForm;
+    procedure ApplySettings;
     procedure GetForms<T: TDBForm>(Forms: TList<T>);
     function Count: Integer;
     property Forms[Index: Integer]: TDBForm read GetFormByIndex; default;
@@ -91,6 +93,11 @@ begin
 end;
 
 { TDBForm }
+
+procedure TDBForm.ApplySettings;
+begin
+  //Calls after applying new settings and after form create
+end;
 
 procedure TDBForm.ApplyStyle;
 begin
@@ -132,6 +139,7 @@ begin
   if ClassName <> 'TFormManager' then
     TLoad.Instance.RequaredStyle;
   ApplyStyle;
+  ApplySettings;
   {$ENDIF}
 end;
 
@@ -315,6 +323,14 @@ var
   FInstance: TFormCollection = nil;
 
 { TFormManager }
+
+procedure TFormCollection.ApplySettings;
+var
+  I: Integer;
+begin
+  for I := 0 to FForms.Count - 1 do
+    FForms[I].ApplySettings;
+end;
 
 function TFormCollection.Count: Integer;
 begin

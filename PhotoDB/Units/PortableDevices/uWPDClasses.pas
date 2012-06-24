@@ -281,10 +281,10 @@ begin
               begin
 
                 Key.pid := 3;
-                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(Key, 2));
+                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(Key, 3));
 
                 Key.pid := 4;
-                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(key, 3));
+                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(key, 1));
 
                 Key.pid := 5;
                 ErrorCheck(ClientInformation.SetUnsignedIntegerValue(key, 0)); //build number

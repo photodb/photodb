@@ -213,9 +213,8 @@ type
     StatusBar1: TStatusBar;
     GoToSearchWindow1: TMenuItem;
     OpeninSearchWindow1: TMenuItem;
-    PopupMenuTreeView: TPopupActionBar;
-    OpeninExplorer1: TMenuItem;
-    AddFolder2: TMenuItem;
+    PmTreeView: TPopupActionBar;
+    MiTreeViewOpenInNewWindow: TMenuItem;
     ToolBarNormalImageList: TImageList;
     PopupMenuBack: TPopupActionBar;
     PopupMenuForward: TPopupActionBar;
@@ -261,7 +260,7 @@ type
     Cancel1: TMenuItem;
     SelectTimer: TTimer;
     N17: TMenuItem;
-    View2: TMenuItem;
+    MiTreeViewRefresh: TMenuItem;
     ScriptMainMenu: TMainMenu;
     CloseTimer: TTimer;
     N19: TMenuItem;
@@ -426,7 +425,6 @@ type
     BtnSaveInfo: TButton;
     WlDeleteLocation: TWebLink;
     MiDisplayOnMap: TMenuItem;
-    procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -490,9 +488,7 @@ type
     procedure ShowPrivate1Click(Sender: TObject);
     procedure OpeninSearchWindow1Click(Sender: TObject);
     procedure Help1Click(Sender: TObject);
-    procedure PopupMenuTreeViewPopup(Sender: TObject);
-    procedure OpeninExplorer1Click(Sender: TObject);
-    procedure AddFolder2Click(Sender: TObject);
+    procedure MiTreeViewOpenInNewWindowClick(Sender: TObject);
     procedure AddLinkClick(Sender: TObject);
     procedure ScrollBox1Resize(Sender: TObject);
     procedure RefreshLinkClick(Sender: TObject);
@@ -540,7 +536,6 @@ type
     procedure Copywithfolder1Click(Sender: TObject);
     procedure Copy4Click(Sender: TObject);
     procedure SelectTimerTimer(Sender: TObject);
-    procedure View2Click(Sender: TObject);
     procedure CloseWindow(Sender: TObject);
     procedure CloseTimerTimer(Sender: TObject);
     procedure FileName1Click(Sender: TObject);
@@ -556,8 +551,7 @@ type
     procedure N05Click(Sender: TObject);
     procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
       ShiftState: TShiftState; var Handled: Boolean);
-    procedure EasyListview1ItemThumbnailDraw(
-        Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
+    procedure EasyListview1ItemThumbnailDraw(Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
         ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
     procedure EasyListview1ItemSelectionChanged(Sender: TCustomEasyListview; Item: TEasyItem);
     procedure ScrollBox1Reallign(Sender: TObject);
@@ -651,20 +645,20 @@ type
     procedure MemCommentsChange(Sender: TObject);
     procedure WlDeleteLocationClick(Sender: TObject);
     procedure MiDisplayOnMapClick(Sender: TObject);
+    procedure MiTreeViewRefreshClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
     FSearchMode: Integer;
     NewFileName: string;
     NewFileNameGUID: TGUID;
-    TempFolderName: string;
     FormLoadEnd: Boolean;
     FPictureSize: Integer;
     ListView: Integer;
     ElvMain: TEasyListView;
     AScript: TScript;
     MainMenuScript: string;
-    RefreshIDList: TList;
+    RefreshIDList: TStrings;
     Rdown: Boolean;
     Outdrag: Boolean;
     Fpopupdown: Boolean;
@@ -736,12 +730,13 @@ type
     FActiveLeftTab: TExplorerLeftTab;
     FLeftTabs: set of TExplorerLeftTab;
     FPngNoHIstogram: TPNGImage;
+    FShowAttributes: Boolean;
+    FShowEXIFAttributes: Boolean;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
-    procedure SetNewPath(Path: String; Explorer: Boolean);
+    procedure SetNewPath(Path: string; Explorer: Boolean);
     procedure Reload;
     function GetCurrentPathW: TExplorerPath;
-    function FileNameToID(FileName: string): Integer;
-    function UpdatingNow(ID: Integer): Boolean;
+    function UpdatingNow(FileName: string): Boolean;
     function CanUp: Boolean;
     function SelCount: Integer;
     function SelectedIndex: Integer;
@@ -801,7 +796,11 @@ type
     procedure InitEditGroups;
     procedure GroupClick(Sender: TObject);
     procedure ReallignEditBoxes;
-  protected
+
+    procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
+    procedure PathTreeViewGetPopupMenu(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; const P: TPoint;
+      var AskParent: Boolean; var PopupMenu: TPopupMenu);
+  protected      
     procedure ZoomIn;
     procedure ZoomOut;
     procedure LoadToolBarGrayedIcons;
@@ -842,12 +841,13 @@ type
     //END - JS callbacks
 
     procedure ApplyStyle; override;
+    procedure ApplySettings; override;
     function CanShareSelectedObjects: Boolean;
   public
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
     destructor Destroy; override;
 
-    procedure SetPathItem(PI: TPathItem);
+    procedure SetPathItem(PI: TPathItem); override;
     procedure DoStopLoading;
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
@@ -858,8 +858,8 @@ type
 
     procedure GetCurrentImage(W, H: Integer; out Image: TGraphic); override;
     function GetVisibleItems: TStrings;
-    procedure RemoveUpdateID(ID: Integer; CID: TGUID);
-    procedure AddUpdateID(ID: Integer);
+    procedure RemoveUpdateID(FileName: string; CID: TGUID);
+    procedure AddUpdateID(FileName: string);
     procedure DoBack;
     procedure SetNewPathW(WPath: TExplorerPath; Explorer: Boolean); override;
     procedure SetStringPath(Path: String; ChangeTreeView: Boolean); override;
@@ -872,6 +872,7 @@ type
     procedure SetNewFileNameGUID(FileGUID: TGUID);
     procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; ExifInfo: IExifInfo; var Histogramm: TBitmap; FileGUID: TGUID);
     procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
+    procedure ClearHistogram;
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     procedure UpdateMenuItems(Menu: TPopupActionBar; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
@@ -1031,6 +1032,18 @@ begin
     SetPathItem(PathItem);
 end;
 
+procedure TExplorerForm.PathTreeViewGetPopupMenu(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; const P: TPoint;
+  var AskParent: Boolean; var PopupMenu: TPopupMenu);
+begin
+  if Node <> nil then
+  begin
+    PopupMenu := PmTreeView;
+    MiTreeViewOpenInNewWindow.Visible := True;
+    MiTreeViewRefresh.Visible := True;
+  end;
+end;
+
 procedure TExplorerForm.PcTasksChange(Sender: TObject);
 begin
   FActiveLeftTab := TExplorerLeftTab(PcTasks.ActivePageIndex);
@@ -1169,7 +1182,7 @@ begin
   ElvMain.Groups.Add;
   ElvMain.Groups[0].Visible := True;
 
-  RefreshIDList := TList.Create;
+  RefreshIDList := TStringList.Create;
 
   SetLength(UserLinks, 0);
   SetLength(FPlaces, 0);
@@ -2320,6 +2333,16 @@ begin
     FSelectedInfo.GeoLocation.Free;
     FSelectedInfo.GeoLocation := nil;
   end;
+end;
+
+procedure TExplorerForm.ClearHistogram;
+begin
+  if FPngNoHIstogram = nil then
+    FPngNoHIstogram := GetNoHistogramImage;
+
+  ImHistogramm.Picture.Graphic := FPngNoHIstogram;
+
+  ImHistogramm.Stretch := False;
 end;
 
 procedure TExplorerForm.ClearList;
@@ -3543,6 +3566,12 @@ begin
     end;
 end;
 
+procedure TExplorerForm.ApplySettings;
+begin
+  FShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  FShowEXIFAttributes := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
+end;
+
 procedure TExplorerForm.ApplyStyle;
 begin
   inherited;
@@ -3677,10 +3706,9 @@ begin
         end;
       FILE_ACTION_MODIFIED:
         begin
-          I := FileNameToID(PInfo[K].FNewFileName);
-          if not UpdatingNow(I) then
+          if not UpdatingNow(PInfo[K].FNewFileName) then
           begin
-            AddUpdateID(I);
+            AddUpdateID(PInfo[K].FNewFileName);
             RefreshItemByName(PInfo[K].FNewFileName, True);
           end;
           Continue;
@@ -6247,9 +6275,9 @@ begin
     SelectAll1.Caption := L('Select all');
     GoToSearchWindow1.Caption := L('Go to search window');
     Exit2.Caption := L('Exit');
-    OpeninExplorer1.Caption := L('Open in explorer');
-    OpeninExplorer1.Caption := L('Open in explorer');
-    AddFolder2.Caption := L('Add folder');
+
+    MiTreeViewOpenInNewWindow.Caption := L('Open in new window');
+    MiTreeViewRefresh.Caption := L('Refresh');
 
     StAddress.Caption := L('Address') + ':';
     CryptFile1.Caption := L('Encrypt file');
@@ -6283,7 +6311,6 @@ begin
     Cancel1.Caption := L('Cancel');
 
     MiShare.Caption := L('Share');
-    View2.Caption := L('Slide show');
 
     Sortby1.Caption := L('Sort by');
 
@@ -6373,24 +6400,6 @@ begin
   AboutForm.Execute;
 end;
 
-procedure TExplorerForm.PopupMenuTreeViewPopup(Sender: TObject);
-begin
-  //TODO: xxx
-  {if TreeView.SelectedFolder <> nil then
-  begin
-    TempFolderName := TreeView.SelectedFolder.PathName;
-    OpeninExplorer1.Visible := DirectoryExists(TempFolderName);
-    AddFolder2.Visible := OpeninExplorer1.Visible and not FolderView;
-    View2.Visible := OpeninExplorer1.Visible;
-  end else
-  begin
-    TempFolderName := '';
-    OpeninExplorer1.Visible := False;
-    AddFolder2.Visible := False;
-    View2.Visible := False;
-  end; }
-end;
-
 procedure TExplorerForm.PopupMenuBackPopup(Sender: TObject);
 begin
   if TPopupMenu(Sender).Tag = 0 then
@@ -6403,19 +6412,19 @@ begin
     TLoadPathList.Create(Self, FHistory.GetForwardHistory, TPopupActionBar(Sender));
 end;
 
-procedure TExplorerForm.OpeninExplorer1Click(Sender: TObject);
+procedure TExplorerForm.MiTreeViewOpenInNewWindowClick(Sender: TObject);
+var
+  Explorer: TCustomExplorerForm;
 begin
-  with ExplorerManager.NewExplorer(False) do
-  begin
-    SetPath(Self.TempFolderName);
-    Show;
-    SetFocus;
-  end;
+  Explorer := ExplorerManager.NewExplorer(False);
+  Explorer.SetPathItem(TreeView.PopupItem);
+  Explorer.Show;
+  Explorer.SetFocus;
 end;
 
-procedure TExplorerForm.AddFolder2Click(Sender: TObject);
+procedure TExplorerForm.MiTreeViewRefreshClick(Sender: TObject);
 begin
-  UpdaterDB.AddDirectory(TempFolderName);
+  TreeView.RefreshPathItem(TreeView.PopupItem);
 end;
 
 procedure TExplorerForm.AddLinkClick(Sender: TObject);
@@ -8312,24 +8321,6 @@ begin
   NewFileNameGUID := FileGUID;
 end;
 
-procedure TExplorerForm.View2Click(Sender: TObject);
-var
-  Info: TDBPopupMenuInfo;
-  N: Integer;
-begin
-  Info := TDBPopupMenuInfo.Create;
-  try
-    GetFileListByMask(TempFolderName, TFileAssociations.Instance.ExtensionList, Info, N, True);
-    if Info.Count > 0 then
-    begin
-      Viewer.ShowImages(Self, Info);
-      Viewer.Show;
-    end;
-  finally
-    F(Info);
-  end;
-end;
-
 procedure TExplorerForm.SbCloseGeoLocationClick(Sender: TObject);
 begin
   PnGeoLocation.Hide;
@@ -8619,35 +8610,23 @@ begin
   end;
 end;
 
-procedure TExplorerForm.AddUpdateID(ID: Integer);
+procedure TExplorerForm.AddUpdateID(FileName: string);
 begin
-  RefreshIDList.Add(Pointer(ID));
+  RefreshIDList.Add(AnsiLowerCase(FileName));
 end;
 
-procedure TExplorerForm.RemoveUpdateID(ID: Integer; CID: TGUID);
-begin
-  RefreshIDList.Remove(Pointer(ID));
-end;
-
-function TExplorerForm.FileNameToID(FileName: string): Integer;
+procedure TExplorerForm.RemoveUpdateID(FileName: string; CID: TGUID);
 var
-  I: Integer;
+  Index: Integer;
 begin
-  Result := -1;
-  FileName := AnsiLowerCase(FileName);
-  for I := 0 to FFilesInfo.Count - 1 do
-  begin
-    if AnsiLowerCase(FFilesInfo[I].FileName) = FileName then
-    begin
-      Result := FFilesInfo[I].ID;
-      Exit;
-    end;
-  end;
+  Index := RefreshIDList.IndexOf(AnsiLowerCase(FileName));
+  if Index <> -1 then
+    RefreshIDList.Delete(Index);
 end;
 
-function TExplorerForm.UpdatingNow(ID: Integer): Boolean;
+function TExplorerForm.UpdatingNow(FileName: string): Boolean;
 begin
-  Result := RefreshIDList.IndexOf(Pointer(ID)) > -1;
+  Result := RefreshIDList.IndexOf(FileName) > -1;
 end;
 
 procedure TExplorerForm.ScriptExecuted(Sender: TObject);
@@ -9391,6 +9370,7 @@ procedure TExplorerForm.EasyListview1ItemThumbnailDraw(
 var
   Index, Y: Integer;
   Info: TExplorerFileInfo;
+  Options: TDrawAttributesOptions;
 begin
   if Item.Data = nil then
     Exit;
@@ -9400,14 +9380,21 @@ begin
   Index := ItemIndexToMenuIndex(Item.Index);
   Info := FFilesInfo[Index];
 
+  Options := [];
+  if FShowEXIFAttributes then
+    Options := Options + [daoEXIF];
+
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
-    Info.FileType = EXPLORER_ITEM_IMAGE, Info, True);
+    (Info.FileType = EXPLORER_ITEM_IMAGE) and FShowAttributes, Info, True, '', Options);
 
-  if Info.GeoLocation <> nil then
-    DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1], 16, 16, 0, 0, DI_NORMAL);
+  if FShowAttributes then
+  begin
+    if Info.GeoLocation <> nil then
+      DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1], 16, 16, 0, 0, DI_NORMAL);
 
-  if PhotoShelf.PathInShelf(Info.FileName) > -1 then
-    DrawIconEx(ACanvas.Handle, ARect.Right - 20, ARect.Bottom, UnitDBKernel.Icons[DB_IC_SHELF + 1], 16, 16, 0, 0, DI_NORMAL);
+    if PhotoShelf.PathInShelf(Info.FileName) > -1 then
+      DrawIconEx(ACanvas.Handle, ARect.Right - 20, ARect.Bottom, UnitDBKernel.Icons[DB_IC_SHELF + 1], 16, 16, 0, 0, DI_NORMAL);
+  end;
 end;
 
 procedure TExplorerForm.EasyListview1ItemSelectionChanged(
@@ -10036,14 +10023,8 @@ begin
     end;
 
     if FEditorInfo.Count > 1 then
-    begin
-      if FPngNoHIstogram = nil then
-        FPngNoHIstogram := GetNoHistogramImage;
-
-      ImHistogramm.Picture.Graphic := FPngNoHIstogram;
-
-      ImHistogramm.Stretch := False;
-    end else
+      ClearHistogram
+    else
       ImHistogramm.Stretch := True;
 
     FLeftTabs := FLeftTabs + [eltsInfo];
@@ -10438,7 +10419,7 @@ begin
     FShellTreeView.Parent := TsExplorer;
     FShellTreeView.Align := AlClient;
     FShellTreeView.LoadHomeDirectory(Self);
-    //FShellTreeView.PopupMenu := PopupMenuTreeView;
+    FShellTreeView.OnGetPopupMenu := PathTreeViewGetPopupMenu;
     FShellTreeView.OnSelectPathItem := PathTreeViewChange;
   end;
 
@@ -10507,9 +10488,10 @@ begin
   GoToSearchWindow1.ImageIndex := DB_IC_ADDTODB;
   OpeninSearchWindow1.ImageIndex := DB_IC_ADDTODB;
 
-  PopupMenuTreeView.Images := DBKernel.ImageList;
-  OpeninExplorer1.ImageIndex := DB_IC_EXPLORER;
-  AddFolder2.ImageIndex := DB_IC_ADD_FOLDER;
+  PmTreeView.Images := DBKernel.ImageList;
+
+  MiTreeViewOpenInNewWindow.ImageIndex := DB_IC_EXPLORER;
+  MiTreeViewRefresh.ImageIndex := DB_IC_REFRESH_THUM;
 
   CryptFile1.ImageIndex := DB_IC_CRYPTIMAGE;
   ResetPassword1.ImageIndex := DB_IC_DECRYPTIMAGE;
@@ -10537,7 +10519,6 @@ begin
   MiShelf.ImageIndex := DB_IC_SHELF;
   MiShare.ImageIndex := DB_IC_PHOTO_SHARE;
   MiDisplayOnMap.ImageIndex := DB_IC_MAP_MARKER;
-  View2.ImageIndex := DB_IC_SLIDE_SHOW;
 
   Sortby1.ImageIndex := DB_IC_SORT;
   SetFilter1.ImageIndex := DB_IC_FILTER;

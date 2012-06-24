@@ -29,7 +29,6 @@ type
     function NewExplorer(GoToLastSavedPath: Boolean): TCustomExplorerForm;
     procedure FreeExplorer(Explorer: TCustomExplorerForm);
     procedure AddExplorer(Explorer: TCustomExplorerForm);
-    procedure LoadEXIF;
     procedure RemoveExplorer(Explorer: TCustomExplorerForm);
     function GetExplorersTexts: TStrings;
     function IsExplorer(Explorer: TCustomExplorerForm): Boolean;
@@ -38,7 +37,6 @@ type
     function GetExplorerBySID(SID: string): TCustomExplorerForm;
     property ShowPrivate: Boolean read FShowPrivate write FShowPrivate;
     function IsExplorerForm(Explorer: TForm): Boolean;
-    property ShowEXIF: Boolean read FShowEXIF write FShowEXIF;
     property ShowQuickLinks: Boolean read FShowQuickLinks write SetShowQuickLinks;
     property Items[Index: Integer]: TCustomExplorerForm read GetExplorerByIndex; default;
   end;
@@ -61,11 +59,6 @@ begin
 end;
 
 { TManagerExplorer }
-
-procedure TManagerExplorer.LoadEXIF;
-begin
-  FShowEXIF := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
-end;
 
 procedure TManagerExplorer.AddExplorer(Explorer: TCustomExplorerForm);
 begin

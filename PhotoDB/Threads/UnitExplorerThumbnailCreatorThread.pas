@@ -165,48 +165,144 @@ begin
 
     if FInfo.FileType = EXPLORER_ITEM_IMAGE then
     begin
-      TempBitmap := TBitmap.Create;
       try
-        TempBitmap.PixelFormat := pf32Bit;
-        TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
-        FillTransparentColor(TempBitmap, Theme.PanelColor);
-
-        FInfo.Image := TJPEGImage.Create;
+        TempBitmap := TBitmap.Create;
         try
-          GetInfoByFileNameA(FInfo.FileName, True, FInfo);
+          TempBitmap.PixelFormat := pf32Bit;
+          TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
+          FillTransparentColor(TempBitmap, Theme.PanelColor);
 
-          if FInfo.HasImage then
-          begin
-            if LoadImageFromPath(FInfo, -1, '', [ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
+          FInfo.Image := TJPEGImage.Create;
+          try
+            GetInfoByFileNameA(FInfo.FileName, True, FInfo);
+
+            if FInfo.HasImage then
             begin
-              ImageInfo.UpdateImageGeoInfo(FInfo);
-              if ImageInfo.ExifData <> nil then
-                FillExifInfo(ImageInfo.ExifData, FExifInfo);
-            end;
+              if LoadImageFromPath(FInfo, -1, '', [ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo) then
+              begin
+                ImageInfo.UpdateImageGeoInfo(FInfo);
+                if ImageInfo.ExifData <> nil then
+                  FillExifInfo(ImageInfo.ExifData, FExifInfo);
+              end;
 
-            if (FInfo.Image.Width > ThSizeExplorerPreview) or (FInfo.Image.Height > ThSizeExplorerPreview) then
-            begin
-              TempBit := TBitmap.Create;
-              try
-                TempBit.PixelFormat := pf24bit;
-                AssignJpeg(TempBit, FInfo.Image);
-
-                W := TempBit.Width;
-                H := TempBit.Height;
-                ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
-                FBit := TBitmap.Create;
+              if (FInfo.Image.Width > ThSizeExplorerPreview) or (FInfo.Image.Height > ThSizeExplorerPreview) then
+              begin
+                TempBit := TBitmap.Create;
                 try
-                  FBit.PixelFormat := pf24bit;
-                  DoResize(W, H, TempBit, Fbit);
-                  F(TempBit);
-                  if ImageInfo <> nil then
-                    ImageInfo.AppllyICCProfile(Fbit);
+                  TempBit.PixelFormat := pf24bit;
+                  AssignJpeg(TempBit, FInfo.Image);
 
-                  FHistogramm := FillHistogramma(Fbit);
+                  W := TempBit.Width;
+                  H := TempBit.Height;
+                  ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
+                  FBit := TBitmap.Create;
+                  try
+                    FBit.PixelFormat := pf24bit;
+                    DoResize(W, H, TempBit, Fbit);
+                    F(TempBit);
+                    if ImageInfo <> nil then
+                      ImageInfo.AppllyICCProfile(Fbit);
+
+                    FHistogramm := FillHistogramma(Fbit);
+
+                    ShadowImage := TBitmap.Create;
+                    try
+                      DrawShadowToImage(ShadowImage, Fbit);
+                      DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
+                        TempBitmap.Height div 2 - ShadowImage.Height div 2);
+                    finally
+                      F(ShadowImage);
+                    end;
+                  finally
+                    F(FBit);
+                  end;
+                finally
+                  F(TempBit);
+                end;
+              end else
+              begin
+                TempBit := TBitmap.Create;
+                try
+                  TempBit.PixelFormat := pf24bit;
+                  AssignJpeg(TempBit, FInfo.Image);
+
+                  if ImageInfo <> nil then
+                    ImageInfo.AppllyICCProfile(TempBit);
+
+                  FHistogramm := FillHistogramma(TempBit);
 
                   ShadowImage := TBitmap.Create;
                   try
-                    DrawShadowToImage(ShadowImage, Fbit);
+                    DrawShadowToImage(ShadowImage, TempBit);
+                    DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
+                      TempBitmap.Height div 2 - ShadowImage.Height div 2);
+                  finally
+                    F(ShadowImage);
+                  end;
+                finally
+                  F(TempBit);
+                end;
+              end;
+              ApplyRotate(TempBitmap, FInfo.Rotation);
+            end else
+            begin
+              DoProcessPath(FInfo.FileName);
+              if FolderView and not FileExistsSafe(FInfo.FileName) then
+                FInfo.FileName := ProgramDir + FInfo.FileName;
+
+              if not (FileExistsSafe(FInfo.FileName) or not IsGraphicFile(FInfo.FileName)) then
+                Exit;
+
+              FGraphic := nil;
+              try
+                if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo, ThSizeExplorerPreview, ThSizeExplorerPreview) then
+                  Exit;
+
+                FillExifInfo(ImageInfo.ExifData, FExifInfo);
+                ImageInfo.UpdateImageGeoInfo(FInfo);
+                ImageInfo.UpdateImageInfo(FInfo, False);
+
+                FGraphic := ImageInfo.ExtractGraphic;
+
+                if (FGraphic = nil) or FGraphic.Empty then
+                  Exit;
+
+                FBit := TBitmap.Create;
+                try
+                  FBit.PixelFormat := pf24bit;
+                  FInfo.Height := FGraphic.Height;
+                  FInfo.Width := FGraphic.Width;
+                  JPEGScale(FGraphic, ThSizeExplorerPreview, ThSizeExplorerPreview);
+
+                  TempBit := TBitmap.Create;
+                  try
+
+                    LoadImageX(FGraphic, TempBit, Theme.PanelColor);
+                    F(FGraphic);
+
+                    ImageInfo.AppllyICCProfile(TempBit);
+                    if not (TempBit.PixelFormat in [pf24Bit, pf32Bit]) then
+                      TempBit.PixelFormat := pf24Bit;
+
+                    FHistogramm := FillHistogramma(TempBit);
+
+                    W := TempBit.Width;
+                    H := TempBit.Height;
+                    FBit.PixelFormat := TempBit.PixelFormat;
+                    if Max(W,H) < ThSizeExplorerPreview then
+                      AssignBitmap(FBit, TempBit)
+                    else begin
+                      ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
+                      DoResize(W, H, TempBit, FBit);
+                    end;
+                    ApplyRotate(FBit, FInfo.Rotation);
+                  finally
+                    F(TempBit);
+                  end;
+
+                  ShadowImage := TBitmap.Create;
+                  try
+                    DrawShadowToImage(ShadowImage, FBit);
                     DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
                       TempBitmap.Height div 2 - ShadowImage.Height div 2);
                   finally
@@ -215,121 +311,36 @@ begin
                 finally
                   F(FBit);
                 end;
+
               finally
-                F(TempBit);
+                F(FGraphic);
               end;
-            end else
+            end;
+
+            if FHistogramm.Loaded then
             begin
-              TempBit := TBitmap.Create;
-              try
-                TempBit.PixelFormat := pf24bit;
-                AssignJpeg(TempBit, FInfo.Image);
-
-                if ImageInfo <> nil then
-                  ImageInfo.AppllyICCProfile(TempBit);
-
-                FHistogramm := FillHistogramma(TempBit);
-
-                ShadowImage := TBitmap.Create;
-                try
-                  DrawShadowToImage(ShadowImage, TempBit);
-                  DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
-                    TempBitmap.Height div 2 - ShadowImage.Height div 2);
-                finally
-                  F(ShadowImage);
-                end;
-              finally
-                F(TempBit);
-              end;
+              FHistogrammImage := TBitmap.Create;
+              GetGistogrammBitmapWRGB(130, FHistogramm.Gray, FHistogramm.Red, FHistogramm.Green, FHistogramm.Blue, MinC, MaxC, FHistogrammImage, clGray);
             end;
-            ApplyRotate(TempBitmap, FInfo.Rotation);
-          end else
-          begin
-            DoProcessPath(FInfo.FileName);
-            if FolderView and not FileExistsSafe(FInfo.FileName) then
-              FInfo.FileName := ProgramDir + FInfo.FileName;
 
-            if not (FileExistsSafe(FInfo.FileName) or not IsGraphicFile(FInfo.FileName)) then
-              Exit;
-
-            FGraphic := nil;
-            try
-              if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo, ThSizeExplorerPreview, ThSizeExplorerPreview) then
-                Exit;
-
-              FillExifInfo(ImageInfo.ExifData, FExifInfo);
-              ImageInfo.UpdateImageGeoInfo(FInfo);
-              ImageInfo.UpdateImageInfo(FInfo, False);
-
-              FGraphic := ImageInfo.ExtractGraphic;
-
-              if (FGraphic = nil) or FGraphic.Empty then
-                Exit;
-
-              FBit := TBitmap.Create;
-              try
-                FBit.PixelFormat := pf24bit;
-                FInfo.Height := FGraphic.Height;
-                FInfo.Width := FGraphic.Width;
-                JPEGScale(FGraphic, ThSizeExplorerPreview, ThSizeExplorerPreview);
-
-                TempBit := TBitmap.Create;
-                try
-
-                  LoadImageX(FGraphic, TempBit, Theme.PanelColor);
-                  F(FGraphic);
-
-                  ImageInfo.AppllyICCProfile(TempBit);
-                  if not (TempBit.PixelFormat in [pf24Bit, pf32Bit]) then
-                    TempBit.PixelFormat := pf24Bit;
-
-                  FHistogramm := FillHistogramma(TempBit);
-
-                  W := TempBit.Width;
-                  H := TempBit.Height;
-                  FBit.PixelFormat := TempBit.PixelFormat;
-                  if Max(W,H) < ThSizeExplorerPreview then
-                    AssignBitmap(FBit, TempBit)
-                  else begin
-                    ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
-                    DoResize(W, H, TempBit, FBit);
-                  end;
-                  ApplyRotate(FBit, FInfo.Rotation);
-                finally
-                  F(TempBit);
-                end;
-
-                ShadowImage := TBitmap.Create;
-                try
-                  DrawShadowToImage(ShadowImage, FBit);
-                  DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
-                    TempBitmap.Height div 2 - ShadowImage.Height div 2);
-                finally
-                  F(ShadowImage);
-                end;
-              finally
-                F(FBit);
-              end;
-
-            finally
-              F(FGraphic);
-            end;
+            SynchronizeEx(DoDrawAttributes);
+            SynchronizeEx(SetInfo);
+            SynchronizeEx(SetImage);
+          finally
+            F(FInfo.Image);
           end;
-
-          if FHistogramm.Loaded then
-          begin
-            FHistogrammImage := TBitmap.Create;
-            GetGistogrammBitmapWRGB(130, FHistogramm.Gray, FHistogramm.Red, FHistogramm.Green, FHistogramm.Blue, MinC, MaxC, FHistogrammImage, clGray);
-          end;
-
-          SynchronizeEx(DoDrawAttributes);
-          SynchronizeEx(SetInfo);
-          SynchronizeEx(SetImage);
         finally
-          F(FInfo.Image);
+          F(TempBitmap);
         end;
+        Exit;
       finally
-        F(TempBitmap);
+        if not FHistogramm.Loaded then
+          SynchronizeEx(
+            procedure
+            begin
+              (FOwner as TExplorerForm).ClearHistogram;
+            end
+          );
       end;
     end;
   finally

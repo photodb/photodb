@@ -93,7 +93,7 @@ procedure SetLVSelection(ListView: TEasyListView; Multiselect: Boolean; MouseBut
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
                              ShowInfo: Boolean; Info: TDBPopupMenuInfoRecord;
-                             CanAddImages: Boolean; CustomInfo: string = '');
+                             CanAddImages: Boolean; CustomInfo: string = ''; Options: TDrawAttributesOptions = []);
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string); overload;
 procedure CreateDragImage(ListView: TEasyListView; DImageList: TImageList; SImageList: TBitmapImageList; Caption : string;
@@ -145,7 +145,8 @@ end;
 
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
-                             ShowInfo: Boolean; Info: TDBPopupMenuInfoRecord; CanAddImages: Boolean; CustomInfo: string = '');
+                             ShowInfo: Boolean; Info: TDBPopupMenuInfoRecord; CanAddImages: Boolean; CustomInfo: string = '';
+                             Options: TDrawAttributesOptions = []);
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;
   RoundRadius = 5;
@@ -280,7 +281,7 @@ begin
     DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.Icons[DB_IC_RELOADING + 1], 16, 16, 0, 0, DI_NORMAL);
 
   if ShowInfo and (Info <> nil) then
-    DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Info);
+    DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Info, Options);
 
   Info.Rating := OriginalRating;
 end;

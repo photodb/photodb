@@ -41,11 +41,14 @@ type
     property Items[index: Integer]: TIconEx read GetValueByIndex; default;
   end;
 
+  TDrawAttributesOption = (daoEXIF);
+  TDrawAttributesOptions = set of TDrawAttributesOption;
+
 procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
-procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord);
+procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
+procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
 function GetListItemBorderColor(Data: TDataObject): TColor;
 function RectInRect(const R1, R2: TRect): Boolean;
-procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord);
 
 function Icons: TIconsEx;
 
@@ -74,13 +77,12 @@ begin
   DrawAttributesExWide(Bitmap, 0, DeltaX, 0, Info);
 end;
 
-procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord);
+procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
 begin
-  DrawAttributesExWide(nil, HCanvas, DeltaX, DeltaY, Info);
+  DrawAttributesExWide(nil, HCanvas, DeltaX, DeltaY, Info, Options);
 end;
 
-procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer;
-  Info: TDBPopupMenuInfoRecord);
+procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
 var
   FE: Boolean;
   FileName: string;
@@ -141,7 +143,7 @@ begin
       FE := FileExistsSafe(FileName);
     end;
 
-  if ExplorerManager.ShowEXIF and Info.HasExifHeader then
+  if (daoEXIF in Options) and Info.HasExifHeader then
   begin
     if Info.ID = 0 then
       DoDrawIconEx(HCanvas, 20 + DeltaX, DeltaY, DB_IC_EXIF)

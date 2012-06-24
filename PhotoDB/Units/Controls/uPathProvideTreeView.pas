@@ -11,6 +11,7 @@ uses
   Controls,
   Graphics,
   Classes,
+  Messages,
   VirtualTrees,
   Themes,
   Vcl.ImgList,
@@ -27,7 +28,8 @@ uses
   uThemesUtils,
   {$ENDIF}
   uExplorerNetworkProviders,
-  uExplorerMyComputerProvider;
+  uExplorerMyComputerProvider,
+  uVCLHelpers;
 
 type
   PData = ^TData;
@@ -51,10 +53,13 @@ type
     FIsInternalSelection: Boolean;
     FNodesToDelete: TList<TPathItem>;
     FImageList: TBitmapImageList;
+    FBlockMouseMove: Boolean;
+    FPopupItem: TPathItem;
     procedure LoadBitmaps;
     procedure StartControl;
     procedure InternalSelectNode(Node: PVirtualNode);
   protected
+    procedure WndProc(var Message: TMessage); override;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     procedure DoInitNode(Parent, Node: PVirtualNode; var InitStates: TVirtualNodeInitStates); override;
     function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
@@ -64,6 +69,7 @@ type
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: Integer): TCustomImageList; override;
     function InitControl: Boolean;
+    procedure DoPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -73,7 +79,10 @@ type
     procedure DeletePath(Path: string);
     procedure SetFilter(Filter: string; Match: Boolean);
     procedure Reload;
+    procedure RefreshPathItem(PathItem: TPathItem);
     property OnSelectPathItem: TOnSelectPathItem read FOnSelectPathItem write FOnSelectPathItem;
+    property OnGetPopupMenu;
+    property PopupItem: TPathItem read FPopupItem;
   end;
 
 {$R TreeView.res}
@@ -172,6 +181,7 @@ constructor TPathProvideTreeView.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+  FPopupItem := nil;
   FOnSelectPathItem := nil;
   FStartPathItem := nil;
   FNodesToDelete := TList<TPathItem>.Create;
@@ -246,6 +256,7 @@ begin
   F(FImImages);
   FreeList(FNodesToDelete);
   F(FImageList);
+  F(FPopupItem);
   inherited;
 end;
 
@@ -346,6 +357,23 @@ begin
       DrawTextW(Canvas.Handle, PWideChar(S), Length(S), R, DT_TOP or DT_LEFT or DT_VCENTER or DT_SINGLELINE);
     end;
 
+  end;
+end;
+
+procedure TPathProvideTreeView.DoPopupMenu(Node: PVirtualNode;
+  Column: TColumnIndex; Position: TPoint);
+var
+  Data: PData;
+begin
+  FBlockMouseMove := True;
+  try
+    Data := GetNodeData(Node);
+    F(FPopupItem);
+    if Data <> nil then
+      FPopupItem := Data.Data.Copy;
+    inherited;
+  finally
+    FBlockMouseMove := False;
   end;
 end;
 
@@ -532,6 +560,23 @@ begin
   end;
 end;
 
+procedure TPathProvideTreeView.WndProc(var Message: TMessage);
+begin
+  if FBlockMouseMove then
+  begin
+    //popup hover fix
+    if (Message.Msg = WM_ENABLE)
+      or (Message.Msg = WM_SETFOCUS)
+      or (Message.Msg = WM_KILLFOCUS)
+      or (Message.Msg = WM_MOUSEMOVE)
+      or (Message.Msg = WM_RBUTTONDOWN)
+      or (Message.Msg = WM_RBUTTONUP)
+      or (Message.Msg = WM_MOUSELEAVE) then
+      Message.Msg := 0;
+  end;
+  inherited;
+end;
+
 procedure TPathProvideTreeView.LoadHomeDirectory(Form: TThreadForm);
 begin
   if not InitControl then
@@ -587,6 +632,19 @@ begin
       end;
     end
   );
+end;
+
+procedure TPathProvideTreeView.RefreshPathItem(PathItem: TPathItem);
+var
+  Node: PVirtualNode;
+begin
+  Node := FindPathInTree(Self, GetFirstChild( nil ), AnsiLowerCase(PathItem.Path));
+  if Node <> nil then
+  begin
+    DeleteChildren(Node, True);
+    ReinitNode(Node, False);
+    Expanded[Node] := True;
+  end;
 end;
 
 procedure TPathProvideTreeView.Reload;

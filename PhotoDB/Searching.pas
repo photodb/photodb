@@ -567,7 +567,6 @@ begin
   SearchEdit.ShowDropDownMenu := False;
   TbStopOperation.Enabled := False;
 
-  ExplorerManager.LoadEXIF;
   WindowID := GetGUID;
   TW.I.Start('S -> TScript');
 
