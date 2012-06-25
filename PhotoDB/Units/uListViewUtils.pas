@@ -162,7 +162,7 @@ var
   ColorFrom, ColorTo, ColorFromOriginal, ColorToOriginal: TColor;
   SelectionRect, R: TRect;
 begin
-  OriginalRating := Info.Rating;
+  OriginalRating := 0;
 
   ACanvas.Font.Color := Theme.ListViewFontColor;
   Graphic := BImageList[Item.ImageIndex].Graphic;
@@ -184,6 +184,7 @@ begin
 
   if (Info <> nil) then
   begin
+    OriginalRating := Info.Rating;
     Info.Include := Info.Include or (Info.ID = 0);
     if not Info.Include then
     begin
@@ -283,7 +284,8 @@ begin
   if ShowInfo and (Info <> nil) then
     DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Info, Options);
 
-  Info.Rating := OriginalRating;
+  if (Info <> nil) then
+    Info.Rating := OriginalRating;
 end;
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string);

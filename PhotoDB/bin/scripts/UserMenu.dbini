@@ -5,7 +5,10 @@ initialization:
   $c=0;
   $list=GetRegKeyListing("Menu");
   $len=ArrayStringLength($list);
-
+  $ItemName=ReadRegString("","UserMenuName");
+  if($ItemName=""){
+    $ItemName=L("User menu");
+  };
   for ($i=0;$i<$len;$i=SumInt($i,1)) {
     $i_s=IntToStr($i);
     $x="Menu\."+$i_s;

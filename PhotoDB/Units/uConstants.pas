@@ -47,6 +47,8 @@ const
   BringeComSlass = BridgeName + '.' + BridgeClassName;
 
   //Information
+  MajorVersion = 3;
+  MinorVersion = 1;
   PhotoDBFileName = 'PhotoDB.exe';
   ProductName = 'Photo DataBase 3.1';
   StartMenuProgramsPath = 'Photo DB v3.1';

@@ -9,7 +9,9 @@ uses
   pngimage,
   Classes,
   uMemory,
-  uBitmapUtils;
+  uBitmapUtils,
+  uICCProfile,
+  ZLib;
 
 procedure LoadPNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 procedure LoadPNGImageWOTransparent(PNG: TPNGImage; Bitmap: TBitmap);
@@ -21,8 +23,84 @@ procedure LoadPNGImagePalette(PNG: TPNGImage; Bitmap: TBitmap);
 
 procedure SavePNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 procedure AssignPNG(Dest: TBitmap; Src: TPngImage);
+procedure ApplyPNGIccProfile(PngImage: TPngImage; DisplayProfileName: string);
 
 implementation
+
+procedure ApplyPNGIccProfile(PngImage: TPngImage; DisplayProfileName: string);
+var
+  I, J :Integer;
+  MSICC, D: TMemoryStream;
+  DS: TDecompressionStream;
+  PngChunk: TChunk;
+  P: PAnsiChar;
+begin
+  {
+     4.2.2.4. iCCP Embedded ICC profile
+     If the iCCP chunk is present, the image samples conform to the color space represented by the embedded ICC profile
+     as defined by the International Color Consortium [ICC]. The color space of the ICC profile must be an RGB color space
+     for color images (PNG color types 2, 3, and 6), or a monochrome grayscale color space for grayscale images (PNG color types 0 and 4).
+
+     The iCCP chunk contains:
+
+     Profile name:       1-79 bytes (character string)
+     Null separator:     1 byte
+     Compression method: 1 byte
+     Compressed profile: n bytes
+
+     The format is like the zTXt chunk. (see the zTXt chunk specification).
+     The profile name can be any convenient name for referring to the profile.
+     It is case-sensitive and subject to the same restrictions as the keyword in a text chunk:
+     it must contain only printable Latin-1 [ISO/IEC-8859-1] characters (33-126 and 161-255) and spaces (32),
+     but no leading, trailing, or consecutive spaces. The only value presently defined for the compression method byte is 0,
+     meaning zlib datastream with deflate compression (see Deflate/Inflate Compression). Decompression of the remainder of the chunk yields the ICC profile.
+  }
+  if not (PngImage.Header.ColorType in [COLOR_RGB, COLOR_RGBALPHA]) then
+    //other types are not supported by little CMS
+    Exit;
+
+  for I := 0 to PngImage.Chunks.Count - 1 do
+  begin
+    PngChunk := PngImage.Chunks.Item[I];
+    if (PngChunk.Name = 'iCCP') then
+    begin
+      P := PngChunk.Data;
+      for J := 0 to PngChunk.DataSize - 2 do
+      begin
+        if (P[J] = #0) and (P[J + 1] = #0) then
+        begin
+          D := TMemoryStream.Create;
+          try
+            D.Write(Pointer(NativeInt(PngChunk.Data) + J + 2)^, Integer(PngChunk.DataSize) - J - 3);
+            D.Seek(0, soFromBeginning);
+            DS := TDecompressionStream.Create(D);
+            try
+              MSICC := TMemoryStream.Create;
+              try
+                try
+                  MSICC.CopyFrom(DS, DS.Size);
+
+                  ConvertPngToDisplayICCProfile(PngImage, PngImage, MSICC.Memory, MSICC.Size, DisplayProfileName);
+                except
+                  //ignore errors -> invalid or unsupported ICC profile
+                  Exit;
+                end;
+              finally
+                F(MSICC);
+              end;
+            finally
+              F(DS);
+            end;
+          finally
+            F(D);
+          end;
+          Break;
+        end;
+      end;
+      Break;
+    end;
+  end;
+end;
 
 procedure AssignPNG(Dest: TBitmap; Src: TPngImage);
 begin

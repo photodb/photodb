@@ -3,14 +3,15 @@ unit uImageLoader;
 interface
 
 uses
+  SysUtils,
+  Windows,
+  Classes,
+  DateUtils,
+  Graphics,
+  Vcl.Imaging.PngImage,
   Math,
   uConstants,
   uMemory,
-  Windows,
-  SysUtils,
-  Classes,
-  Graphics,
-  DateUtils,
   GraphicEx,
   uTiffImage,
   RAWImage,
@@ -29,7 +30,8 @@ uses
   uJpegUtils,
   uSysUtils,
   uTranslate,
-  uFormInterfaces;
+  uFormInterfaces,
+  uPNGUtils;
 
 type
   TImageLoadFlag = (ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfHalfRawSize, ilfPassword, ilfAskUserPassword, ilfThrowError, ilfDontUpdateInfo);
@@ -112,6 +114,13 @@ function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Pass
 
 implementation
 
+function DisplayProfileName: string;
+begin
+  Result := Settings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
+  if Result = '-' then
+    Result := '';
+end;
+
 function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
   out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0): Boolean;
 var
@@ -119,9 +128,10 @@ var
   S: TStream;
   GraphicClass: TGraphicClass;
   TiffImage: TTiffImage;
+  PngImage: TPngImage;
   Graphic: TGraphic;
   EXIFRotation,
-  ImageTotalPages: Integer;
+  ImageTotalPages, I, J: Integer;
   ExifData: TExifData;
   MSICC: TMemoryStream;
   XMPICCProperty: TXMPProperty;
@@ -280,6 +290,11 @@ begin
 
                 if not Graphic.Empty then
                 begin
+
+                  //load ICC profile from PNG image
+                  if (Graphic is TPngImage) and (ilfICCProfile in Flags) and (MSICC = nil) then
+                    ApplyPNGIccProfile(TPngImage(Graphic), DisplayProfileName);
+
                   ImageInfo := TLoadImageInfo.Create(
                     Graphic,
                     ImageTotalPages,
@@ -334,14 +349,6 @@ end;
 { TLoadImageInfo }
 
 function TLoadImageInfo.AppllyICCProfile(Bitmap: TBitmap): Boolean;
-
-  function DisplayProfileName: string;
-  begin
-    Result := Settings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
-    if Result = '-' then
-      Result := '';
-  end;
-
 begin
   Result := False;
   if (Bitmap <> nil) and not Bitmap.Empty and (Bitmap.PixelFormat = pf24Bit) then

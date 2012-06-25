@@ -20,7 +20,7 @@ function aStrToInt(s: string): integer;
 function GetDirListing(Dir: String; Mask: string): TArrayOfString;
 function SpilitWords(s: string): TArrayOfString;
 function SpilitWordsW(s: string; SplitChar: Char): TArrayOfString;
-function aIntToStr(int: integer): string;
+function aIntToStr(Value: integer): string;
 procedure Default(const aScript: TScript);
 procedure InVisible(const aScript: TScript);
 procedure Disabled(const aScript: TScript);
@@ -348,9 +348,9 @@ begin
   end;
 end;
 
-function aIntToStr(int : integer) : string;
+function aIntToStr(Value: integer) : string;
 begin
-  Result:=IntToStr(int);
+  Result:=IntToStr(Value);
 end;
 
 procedure default(const AScript: TScript);

@@ -53,6 +53,7 @@ end;
 
 procedure TPageControlNoBorder.ShowControl(AControl: TControl);
 begin
+ //do nothing - it preventing from flicking
 end;
 
 procedure TPageControlNoBorder.ShowTab(TabIndex: Integer);

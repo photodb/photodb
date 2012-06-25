@@ -149,11 +149,18 @@ begin
   Result := nil;
   repeat
     if ( Node.ChildCount > 0 ) and ( Tree.GetFirstChild( Node ) <> nil ) then
+    begin
        Result := FindPathInTree( Tree, Tree.GetFirstChild( Node ), Path);
+       if Result <> nil then
+         Exit;
+    end;
 
     Data := Tree.GetNodeData(Node);
     if (Data <> nil) and (Data.Data <> nil) and (AnsiLowerCase(ExcludeTrailingPathDelimiter(Data.Data.Path)) = Path) then
+    begin
       Result := Node;
+      Exit;
+    end;
 
     Node := Node.NextSibling;
   until Node = nil;
@@ -638,7 +645,7 @@ procedure TPathProvideTreeView.RefreshPathItem(PathItem: TPathItem);
 var
   Node: PVirtualNode;
 begin
-  Node := FindPathInTree(Self, GetFirstChild( nil ), AnsiLowerCase(PathItem.Path));
+  Node := FindPathInTree(Self, GetFirstChild( nil ), AnsiLowerCase(ExcludeTrailingPathDelimiter(PathItem.Path)));
   if Node <> nil then
   begin
     DeleteChildren(Node, True);

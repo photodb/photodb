@@ -646,6 +646,7 @@ type
     procedure WlDeleteLocationClick(Sender: TObject);
     procedure MiDisplayOnMapClick(Sender: TObject);
     procedure MiTreeViewRefreshClick(Sender: TObject);
+    procedure TsInfoShow(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -791,7 +792,7 @@ type
     procedure ShowTabIfWasActive(Tab: TExplorerLeftTab);
     procedure ApplyTabs;
 
-    procedure InitInfoEditor;
+    procedure InitInfoEditor(InitTab: Boolean);
     procedure DisableInfoEditor;
     procedure InitEditGroups;
     procedure GroupClick(Sender: TObject);
@@ -2797,6 +2798,15 @@ begin
     ReallignEditBoxes;
   finally
     EndScreenUpdate(TsInfo.Handle, False);
+  end;
+end;
+
+procedure TExplorerForm.TsInfoShow(Sender: TObject);
+begin
+  if TsInfo.Tag = 1 then
+  begin
+    InitInfoEditor(False);   
+    TsInfo.Tag := 0;
   end;
 end;
 
@@ -8188,7 +8198,7 @@ begin
     end;
   end;
 
-  InitInfoEditor;
+  InitInfoEditor(True);
 
   if not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) or (SelCount <> 1) then
     FLeftTabs := FLeftTabs - [eltsEXIF]
@@ -10004,58 +10014,65 @@ begin
   end;
 end;
 
-procedure TExplorerForm.InitInfoEditor;
-var
-  IsVisible: Boolean;
+//InitTab: update edit info
+procedure TExplorerForm.InitInfoEditor(InitTab: Boolean);
 begin
-  IsVisible := PcTasks.ActivePageIndex = Integer(eltsInfo);
-
-  if IsVisible then
+  if TsInfo.Visible then
     BeginScreenUpdate(TsInfo.Handle);
   try
-    F(FEditorInfo);
-    FEditorInfo := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem, True);
-
-    if FEditorInfo.Count = 0 then
+    if InitTab then
     begin
-      DisableInfoEditor;
-      Exit;
-    end;
+      F(FEditorInfo);
+      FEditorInfo := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem, True);
 
-    if FEditorInfo.Count > 1 then
-      ClearHistogram
-    else
-      ImHistogramm.Stretch := True;
+      if FEditorInfo.Count = 0 then
+      begin
+        DisableInfoEditor;
+        Exit;
+      end; 
+    end;
 
     FLeftTabs := FLeftTabs + [eltsInfo];
     ShowLastActiveTab(eltsInfo);
 
-    ReRating.Rating := FEditorInfo.StatRating;
-    if FEditorInfo.Count = 1 then
-    begin
-      ReRating.Islayered := False;
-      ReRating.Layered := 255;
+    //if tab invisible but some child control request Handle -> issue: create handle and this tab is displayed on screen
+    //sp update controls when tab is showing
+    if TsInfo.HandleAllocated then
+    begin     
+      if FEditorInfo.Count > 1 then
+        ClearHistogram
+      else
+        ImHistogramm.Stretch := True;
+        
+      ReRating.Rating := FEditorInfo.StatRating;
+      if FEditorInfo.Count = 1 then
+      begin
+        ReRating.Islayered := False;
+        ReRating.Layered := 255;
+      end else
+      begin
+        ReRating.Islayered := True;
+        ReRating.Layered := 100;
+      end;
+
+      DteDate.DateTime := FEditorInfo.StatDate;
+      DteTime.Time := FEditorInfo.StatTime;
+
+      DteDate.Checked := FEditorInfo.StatIsDate and not FEditorInfo.IsVariousDate;
+      DteTime.Checked := FEditorInfo.StatIsTime and not FEditorInfo.IsVariousTime;
+
+      MemKeyWords.Text := FEditorInfo.CommonKeyWords;
+      MemComments.Text := FEditorInfo.CommonComments;
+
+      FSelectedInfo.Groups := FEditorInfo.CommonGroups;
+      InitEditGroups;
+
+      BtnSaveInfo.Enabled := False;
     end else
-    begin
-      ReRating.Islayered := True;
-      ReRating.Layered := 100;
-    end;
-
-    DteDate.DateTime := FEditorInfo.StatDate;
-    DteTime.Time := FEditorInfo.StatTime;
-
-    DteDate.Checked := FEditorInfo.StatIsDate and not FEditorInfo.IsVariousDate;
-    DteTime.Checked := FEditorInfo.StatIsTime and not FEditorInfo.IsVariousTime;
-
-    MemKeyWords.Text := FEditorInfo.CommonKeyWords;
-    MemComments.Text := FEditorInfo.CommonComments;
-
-    FSelectedInfo.Groups := FEditorInfo.CommonGroups;
-    InitEditGroups;
-
-    BtnSaveInfo.Enabled := False;
+      TsInfo.Tag := 1;
+    
   finally
-    if IsVisible then
+    if TsInfo.Visible then
       EndScreenUpdate(TsInfo.Handle, False);
   end;
 end;
@@ -10137,7 +10154,7 @@ begin
     WL := WllGroups.AddLink;
     WL.Text := FCurrentGroups[I].GroupName;
     WL.ImageList := ImGroups;
-    WL.ImageIndex := -1;
+    WL.ImageIndex := 0;
     WL.Tag := I;
     WL.OnClick := GroupClick;
   end;

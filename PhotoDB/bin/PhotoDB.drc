@@ -353,166 +353,166 @@
 #define Data_DBConsts_SInvalidCalcType 64893
 #define Data_DBConsts_SFieldReadOnly 64894
 #define Data_DBConsts_SNoIndexForFields 64895
-#define CCR_Exif_Consts_SInvalidXMPPacket 64896
-#define CCR_Exif_Consts_SSubPropertiesMustBeNamed 64897
-#define CCR_Exif_Consts_SSubPropertiesNotSupported 64898
-#define CCR_Exif_Consts_SCannotWriteSingleValueToStructureProperty 64899
-#define CCR_Exif_Consts_SPreferredPrefixMustBeSet 64900
-#define Xml_XMLConst_SDuplicateRegistration 64901
-#define Xml_XMLConst_SNoMatchingDOMVendor 64902
-#define Xml_XMLConst_SDOMNotSupported 64903
-#define Xml_XMLConst_SNodeExpected 64904
-#define Xml_XMLConst_SMSDOMNotInstalled 64905
+#define GIFImage_sEmptyColorMap 64896
+#define GIFImage_sEmptyImage 64897
+#define GIFImage_sInvalidReduction 64898
+#define GIFImage_sGIFImageFile 64899
+#define GIFImage_sProgressLoading 64900
+#define GIFImage_sProgressSaving 64901
+#define GIFImage_sProgressConverting 64902
+#define GIFImage_sProgressRendering 64903
+#define GIFImage_sProgressCopying 64904
+#define GIFImage_sProgressOptimizing 64905
 #define Data_DBConsts_SInvalidFieldSize 64906
 #define Data_DBConsts_SInvalidFieldKind 64907
 #define Data_DBConsts_SUnknownFieldType 64908
 #define Data_DBConsts_SFieldNameMissing 64909
 #define Data_DBConsts_SDuplicateFieldName 64910
 #define Data_DBConsts_SFieldNotFound 64911
-#define GIFImage_sGIFImageFile 64912
-#define GIFImage_sProgressLoading 64913
-#define GIFImage_sProgressSaving 64914
-#define GIFImage_sProgressConverting 64915
-#define GIFImage_sProgressRendering 64916
-#define GIFImage_sProgressCopying 64917
-#define GIFImage_sProgressOptimizing 64918
-#define CCR_Exif_Consts_SStreamIsReadOnly 64919
-#define CCR_Exif_Consts_SUnsupportedGraphicFormat 64920
-#define CCR_Exif_Consts_SInvalidJPEGHeader 64921
-#define CCR_Exif_Consts_SInvalidPSDHeader 64922
-#define CCR_Exif_Consts_SInvalidTiffData 64923
-#define CCR_Exif_Consts_STagAlreadyExists 64924
-#define CCR_Exif_Consts_SIllegalEditOfExifData 64925
-#define CCR_Exif_Consts_STagCanContainOnlyASCII 64926
-#define CCR_Exif_Consts_SInvalidMakerNoteFormat 64927
-#define GIFImage_sUnsupportedClass 64928
-#define GIFImage_sInvalidData 64929
-#define GIFImage_sBadHeight 64930
-#define GIFImage_sBadWidth 64931
-#define GIFImage_sFailedPaste 64932
-#define GIFImage_sScreenSizeExceeded 64933
-#define GIFImage_sNoColorTable 64934
-#define GIFImage_sBadPixelCoordinates 64935
-#define GIFImage_sInvalidPixelFormat 64936
-#define GIFImage_sBadDimension 64937
-#define GIFImage_sNoDIB 64938
-#define GIFImage_sInvalidStream 64939
-#define GIFImage_sInvalidColor 64940
-#define GIFImage_sEmptyColorMap 64941
-#define GIFImage_sEmptyImage 64942
-#define GIFImage_sInvalidReduction 64943
-#define GIFImage_sOutOfData 64944
-#define GIFImage_sTooManyColors 64945
-#define GIFImage_sBadColorIndex 64946
-#define GIFImage_sBadVersion 64947
-#define GIFImage_sBadSignature 64948
-#define GIFImage_sScreenBadColorSize 64949
-#define GIFImage_sImageBadColorSize 64950
-#define GIFImage_sUnknownExtension 64951
-#define GIFImage_sBadExtensionLabel 64952
-#define GIFImage_sOutOfMemDIB 64953
-#define GIFImage_sDecodeTooFewBits 64954
-#define GIFImage_sDecodeCircular 64955
-#define GIFImage_sBadTrailer 64956
-#define GIFImage_sBadExtensionInstance 64957
-#define GIFImage_sBadBlockSize 64958
-#define GIFImage_sBadBlock 64959
-#define GraphicStrings_gesHalo 64960
-#define GraphicStrings_gesPaintShopPro 64961
-#define GraphicStrings_gesInvalidImage 64962
-#define GraphicStrings_gesInvalidColorFormat 64963
-#define GraphicStrings_gesStreamReadError 64964
-#define GraphicStrings_gesIndexedNotSupported 64965
-#define GraphicStrings_gesConversionUnsupported 64966
-#define GraphicStrings_gesInvalidSampleDepth 64967
-#define GraphicStrings_gesInvalidPixelDepth 64968
-#define GraphicStrings_gesInvalidSubSampling 64969
-#define GraphicStrings_gesVerticalSubSamplingError 64970
-#define GraphicStrings_gesPreparing 64971
-#define GraphicStrings_gesLoadingData 64972
-#define GraphicStrings_gesUpsampling 64973
-#define GraphicStrings_gesTransfering 64974
-#define GraphicStrings_gesLZ77Error 64975
-#define GraphicStrings_gesEnhancedMetaFiles 64976
-#define GraphicStrings_gesTruevision 64977
-#define GraphicStrings_gesSGI 64978
-#define GraphicStrings_gesSGITrueColor 64979
-#define GraphicStrings_gesZSoft 64980
-#define GraphicStrings_gesZSoftWord 64981
-#define GraphicStrings_gesAliasWaveFront 64982
-#define GraphicStrings_gesSGITrueColorAlpha 64983
-#define GraphicStrings_gesSGIMono 64984
-#define GraphicStrings_gesPhotoshop 64985
-#define GraphicStrings_gesPortable 64986
-#define GraphicStrings_gesPortablePixel 64987
-#define GraphicStrings_gesPortableGray 64988
-#define GraphicStrings_gesPortableMono 64989
-#define GraphicStrings_gesAutoDesk 64990
-#define GraphicStrings_gesKodakPhotoCD 64991
-#define MZLib_SEmptyDistanceTree 64992
-#define MZLib_SInvalidBlockType 64993
-#define MZLib_SInvalidStoredBlockLengths 64994
-#define MZLib_STooManyLDSymbols 64995
-#define MZLib_SInvalidBitLengthRepeat 64996
-#define MZLib_SIncorrectDataCheck 64997
-#define MZLib_SUnknownCompression 64998
-#define MZLib_SInvalidWindowSize 64999
-#define MZLib_SIncorrectHeaderCheck 65000
-#define MZLib_SNeedDictionary 65001
-#define GraphicStrings_gesRegistration 65002
-#define GraphicStrings_gesBitmaps 65003
-#define GraphicStrings_gesRLEBitmaps 65004
-#define GraphicStrings_gesDIBs 65005
-#define GraphicStrings_gesIcons 65006
-#define GraphicStrings_gesMetaFiles 65007
-#define Vcl_ComStrs_sFailSetCalMinMaxRange 65008
-#define Vcl_ComStrs_sFailsetCalSelRange 65009
-#define MZLib_SNeedDict 65010
-#define MZLib_SStreamEnd 65011
-#define MZLib_SFileError 65012
-#define MZLib_SStreamError 65013
-#define MZLib_SDataError 65014
-#define MZLib_SInsufficientMemory 65015
-#define MZLib_SBufferError 65016
-#define MZLib_SIncompatibleVersion 65017
-#define MZLib_SInvalidDistanceCode 65018
-#define MZLib_SInvalidLengthCode 65019
-#define MZLib_SOversubscribedDBLTree 65020
-#define MZLib_SIncompleteDBLTree 65021
-#define MZLib_SOversubscribedLLTree 65022
-#define MZLib_SIncompleteLLTree 65023
-#define Vcl_ComStrs_sTabFailSet 65024
-#define Vcl_ComStrs_sTabFailSetObject 65025
-#define Vcl_ComStrs_sTabMustBeMultiLine 65026
-#define Vcl_ComStrs_sInvalidIndex 65027
-#define Vcl_ComStrs_sInsertError 65028
-#define Vcl_ComStrs_sInvalidOwner 65029
-#define Vcl_ComStrs_sRichEditInsertError 65030
-#define Vcl_ComStrs_sRichEditLoadFail 65031
-#define Vcl_ComStrs_sRichEditSaveFail 65032
-#define Vcl_ComStrs_sPageIndexError 65033
-#define Vcl_ComStrs_sInvalidComCtl32 65034
-#define Vcl_ComStrs_sDateTimeMax 65035
-#define Vcl_ComStrs_sDateTimeMin 65036
-#define Vcl_ComStrs_sNeedAllowNone 65037
-#define Vcl_ComStrs_sFailSetCalDateTime 65038
-#define Vcl_ComStrs_sFailSetCalMaxSelRange 65039
-#define Vcl_Imaging_JConsts_sJPEGError 65040
-#define Vcl_Imaging_JConsts_sJPEGImageFile 65041
-#define System_Win_ComConst_SOleError 65042
-#define System_Win_ComConst_SNoMethod 65043
-#define System_Win_ComConst_SVarNotObject 65044
-#define System_Win_ComConst_STooManyParams 65045
-#define System_Win_ComConst_SDCOMNotInstalled 65046
-#define Vcl_OleConst_SCannotActivate 65047
-#define Vcl_OleConst_SNoWindowHandle 65048
-#define Vcl_OleConst_SInvalidLicense 65049
-#define Vcl_OleConst_SNotLicensed 65050
-#define Vcl_OleConst_sNoRunningObject 65051
-#define Vcl_ComStrs_sTabFailClear 65052
-#define Vcl_ComStrs_sTabFailDelete 65053
-#define Vcl_ComStrs_sTabFailRetrieve 65054
-#define Vcl_ComStrs_sTabFailGetObject 65055
+#define GIFImage_sBadExtensionInstance 64912
+#define GIFImage_sBadBlockSize 64913
+#define GIFImage_sBadBlock 64914
+#define GIFImage_sUnsupportedClass 64915
+#define GIFImage_sInvalidData 64916
+#define GIFImage_sBadHeight 64917
+#define GIFImage_sBadWidth 64918
+#define GIFImage_sFailedPaste 64919
+#define GIFImage_sScreenSizeExceeded 64920
+#define GIFImage_sNoColorTable 64921
+#define GIFImage_sBadPixelCoordinates 64922
+#define GIFImage_sInvalidPixelFormat 64923
+#define GIFImage_sBadDimension 64924
+#define GIFImage_sNoDIB 64925
+#define GIFImage_sInvalidStream 64926
+#define GIFImage_sInvalidColor 64927
+#define GraphicStrings_gesUpsampling 64928
+#define GraphicStrings_gesTransfering 64929
+#define GraphicStrings_gesLZ77Error 64930
+#define GIFImage_sOutOfData 64931
+#define GIFImage_sTooManyColors 64932
+#define GIFImage_sBadColorIndex 64933
+#define GIFImage_sBadVersion 64934
+#define GIFImage_sBadSignature 64935
+#define GIFImage_sScreenBadColorSize 64936
+#define GIFImage_sImageBadColorSize 64937
+#define GIFImage_sUnknownExtension 64938
+#define GIFImage_sBadExtensionLabel 64939
+#define GIFImage_sOutOfMemDIB 64940
+#define GIFImage_sDecodeTooFewBits 64941
+#define GIFImage_sDecodeCircular 64942
+#define GIFImage_sBadTrailer 64943
+#define GraphicStrings_gesPortableMono 64944
+#define GraphicStrings_gesAutoDesk 64945
+#define GraphicStrings_gesKodakPhotoCD 64946
+#define GraphicStrings_gesHalo 64947
+#define GraphicStrings_gesPaintShopPro 64948
+#define GraphicStrings_gesInvalidImage 64949
+#define GraphicStrings_gesInvalidColorFormat 64950
+#define GraphicStrings_gesStreamReadError 64951
+#define GraphicStrings_gesIndexedNotSupported 64952
+#define GraphicStrings_gesConversionUnsupported 64953
+#define GraphicStrings_gesInvalidSampleDepth 64954
+#define GraphicStrings_gesInvalidPixelDepth 64955
+#define GraphicStrings_gesInvalidSubSampling 64956
+#define GraphicStrings_gesVerticalSubSamplingError 64957
+#define GraphicStrings_gesPreparing 64958
+#define GraphicStrings_gesLoadingData 64959
+#define GraphicStrings_gesDIBs 64960
+#define GraphicStrings_gesIcons 64961
+#define GraphicStrings_gesMetaFiles 64962
+#define GraphicStrings_gesEnhancedMetaFiles 64963
+#define GraphicStrings_gesTruevision 64964
+#define GraphicStrings_gesSGI 64965
+#define GraphicStrings_gesSGITrueColor 64966
+#define GraphicStrings_gesZSoft 64967
+#define GraphicStrings_gesZSoftWord 64968
+#define GraphicStrings_gesAliasWaveFront 64969
+#define GraphicStrings_gesSGITrueColorAlpha 64970
+#define GraphicStrings_gesSGIMono 64971
+#define GraphicStrings_gesPhotoshop 64972
+#define GraphicStrings_gesPortable 64973
+#define GraphicStrings_gesPortablePixel 64974
+#define GraphicStrings_gesPortableGray 64975
+#define MZLib_SIncompleteDBLTree 64976
+#define MZLib_SOversubscribedLLTree 64977
+#define MZLib_SIncompleteLLTree 64978
+#define MZLib_SEmptyDistanceTree 64979
+#define MZLib_SInvalidBlockType 64980
+#define MZLib_SInvalidStoredBlockLengths 64981
+#define MZLib_STooManyLDSymbols 64982
+#define MZLib_SInvalidBitLengthRepeat 64983
+#define MZLib_SIncorrectDataCheck 64984
+#define MZLib_SUnknownCompression 64985
+#define MZLib_SInvalidWindowSize 64986
+#define MZLib_SIncorrectHeaderCheck 64987
+#define MZLib_SNeedDictionary 64988
+#define GraphicStrings_gesRegistration 64989
+#define GraphicStrings_gesBitmaps 64990
+#define GraphicStrings_gesRLEBitmaps 64991
+#define Vcl_ComStrs_sNeedAllowNone 64992
+#define Vcl_ComStrs_sFailSetCalDateTime 64993
+#define Vcl_ComStrs_sFailSetCalMaxSelRange 64994
+#define Vcl_ComStrs_sFailSetCalMinMaxRange 64995
+#define Vcl_ComStrs_sFailsetCalSelRange 64996
+#define MZLib_SNeedDict 64997
+#define MZLib_SStreamEnd 64998
+#define MZLib_SFileError 64999
+#define MZLib_SStreamError 65000
+#define MZLib_SDataError 65001
+#define MZLib_SInsufficientMemory 65002
+#define MZLib_SBufferError 65003
+#define MZLib_SIncompatibleVersion 65004
+#define MZLib_SInvalidDistanceCode 65005
+#define MZLib_SInvalidLengthCode 65006
+#define MZLib_SOversubscribedDBLTree 65007
+#define Vcl_ComStrs_sTabFailDelete 65008
+#define Vcl_ComStrs_sTabFailRetrieve 65009
+#define Vcl_ComStrs_sTabFailGetObject 65010
+#define Vcl_ComStrs_sTabFailSet 65011
+#define Vcl_ComStrs_sTabFailSetObject 65012
+#define Vcl_ComStrs_sTabMustBeMultiLine 65013
+#define Vcl_ComStrs_sInvalidIndex 65014
+#define Vcl_ComStrs_sInsertError 65015
+#define Vcl_ComStrs_sInvalidOwner 65016
+#define Vcl_ComStrs_sRichEditInsertError 65017
+#define Vcl_ComStrs_sRichEditLoadFail 65018
+#define Vcl_ComStrs_sRichEditSaveFail 65019
+#define Vcl_ComStrs_sPageIndexError 65020
+#define Vcl_ComStrs_sInvalidComCtl32 65021
+#define Vcl_ComStrs_sDateTimeMax 65022
+#define Vcl_ComStrs_sDateTimeMin 65023
+#define CCR_Exif_Consts_STagCanContainOnlyASCII 65024
+#define CCR_Exif_Consts_SInvalidMakerNoteFormat 65025
+#define CCR_Exif_Consts_SInvalidXMPPacket 65026
+#define CCR_Exif_Consts_SSubPropertiesMustBeNamed 65027
+#define CCR_Exif_Consts_SSubPropertiesNotSupported 65028
+#define CCR_Exif_Consts_SCannotWriteSingleValueToStructureProperty 65029
+#define CCR_Exif_Consts_SPreferredPrefixMustBeSet 65030
+#define Vcl_Imaging_JConsts_sChangeJPGSize 65031
+#define Vcl_Imaging_JConsts_sJPEGError 65032
+#define Vcl_Imaging_JConsts_sJPEGImageFile 65033
+#define Vcl_OleConst_SCannotActivate 65034
+#define Vcl_OleConst_SNoWindowHandle 65035
+#define Vcl_OleConst_SInvalidLicense 65036
+#define Vcl_OleConst_SNotLicensed 65037
+#define Vcl_OleConst_sNoRunningObject 65038
+#define Vcl_ComStrs_sTabFailClear 65039
+#define Xml_XMLConst_SNoMatchingDOMVendor 65040
+#define Xml_XMLConst_SDOMNotSupported 65041
+#define Xml_XMLConst_SNodeExpected 65042
+#define Xml_XMLConst_SMSDOMNotInstalled 65043
+#define System_Win_ComConst_SOleError 65044
+#define System_Win_ComConst_SNoMethod 65045
+#define System_Win_ComConst_SVarNotObject 65046
+#define System_Win_ComConst_STooManyParams 65047
+#define System_Win_ComConst_SDCOMNotInstalled 65048
+#define CCR_Exif_Consts_SStreamIsReadOnly 65049
+#define CCR_Exif_Consts_SUnsupportedGraphicFormat 65050
+#define CCR_Exif_Consts_SInvalidJPEGHeader 65051
+#define CCR_Exif_Consts_SInvalidPSDHeader 65052
+#define CCR_Exif_Consts_SInvalidTiffData 65053
+#define CCR_Exif_Consts_STagAlreadyExists 65054
+#define CCR_Exif_Consts_SIllegalEditOfExifData 65055
 #define Vcl_Imaging_pnglang_EPNGSizeExceedsText 65056
 #define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 65057
 #define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 65058
@@ -528,7 +528,7 @@
 #define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 65068
 #define Vcl_Imaging_pnglang_EInvalidNewSize 65069
 #define Vcl_Imaging_pnglang_EInvalidSpec 65070
-#define Vcl_Imaging_JConsts_sChangeJPGSize 65071
+#define Xml_XMLConst_SDuplicateRegistration 65071
 #define Vcl_Consts_SNameMenuHighlight 65072
 #define Vcl_Consts_SNameMenuText 65073
 #define Vcl_Consts_SNameNone 65074
@@ -1340,22 +1340,9 @@ BEGIN
 	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
 	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
 	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
-	CCR_Exif_Consts_SInvalidXMPPacket,	L"XMP packet is not valid"
-	CCR_Exif_Consts_SSubPropertiesMustBeNamed,	L"Sub-properties must be named"
-	CCR_Exif_Consts_SSubPropertiesNotSupported,	L"Property type does not support sub-properties"
-	CCR_Exif_Consts_SCannotWriteSingleValueToStructureProperty,	L"Cannot assign a single value to a structure property"
-	CCR_Exif_Consts_SPreferredPrefixMustBeSet,	L"The schema's PreferredPrefix property must be set before a new item can be added"
-	Xml_XMLConst_SDuplicateRegistration,	L"\"%s\" DOMImplementation already registered"
-	Xml_XMLConst_SNoMatchingDOMVendor,	L"No matching DOM Vendor: \"%s\""
-	Xml_XMLConst_SDOMNotSupported,	L"Property or Method \"%s\" is not supported by DOM Vendor \"%s\""
-	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
-	Xml_XMLConst_SMSDOMNotInstalled,	L"Microsoft MSXML is not installed"
-	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
-	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
-	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
-	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
-	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
-	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
+	GIFImage_sEmptyColorMap,	L"Color table is empty"
+	GIFImage_sEmptyImage,	L"Image is empty"
+	GIFImage_sInvalidReduction,	L"Invalid reduction method"
 	GIFImage_sGIFImageFile,	L"GIF Image"
 	GIFImage_sProgressLoading,	L"Loading..."
 	GIFImage_sProgressSaving,	L"Saving..."
@@ -1363,15 +1350,15 @@ BEGIN
 	GIFImage_sProgressRendering,	L"Rendering..."
 	GIFImage_sProgressCopying,	L"Copying..."
 	GIFImage_sProgressOptimizing,	L"Optimizing..."
-	CCR_Exif_Consts_SStreamIsReadOnly,	L"Stream is read-only"
-	CCR_Exif_Consts_SUnsupportedGraphicFormat,	L"Unsupported graphic format"
-	CCR_Exif_Consts_SInvalidJPEGHeader,	L"JPEG header is not valid"
-	CCR_Exif_Consts_SInvalidPSDHeader,	L"Photoshop (PSD) file header is not valid"
-	CCR_Exif_Consts_SInvalidTiffData,	L"Invalid TIFF data"
-	CCR_Exif_Consts_STagAlreadyExists,	L"Tag with ID of \"%d\" already exists in section"
-	CCR_Exif_Consts_SIllegalEditOfExifData,	L"Illegal attempt to edit the Exif data in such a way that it would change the file structure"
-	CCR_Exif_Consts_STagCanContainOnlyASCII,	L"Tag may contain only ASCII string data"
-	CCR_Exif_Consts_SInvalidMakerNoteFormat,	L"Invalid MakerNote format"
+	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
+	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
+	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
+	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
+	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
+	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
+	GIFImage_sBadExtensionInstance,	L"Internal error: Extension Instance does not match Extension Label"
+	GIFImage_sBadBlockSize,	L"Unsupported Application Extension block size"
+	GIFImage_sBadBlock,	L"Unknown GIF block type"
 	GIFImage_sUnsupportedClass,	L"Object type not supported for operation"
 	GIFImage_sInvalidData,	L"Invalid GIF data"
 	GIFImage_sBadHeight,	L"Image height too small for contained frames"
@@ -1385,9 +1372,9 @@ BEGIN
 	GIFImage_sNoDIB,	L"Image has no DIB"
 	GIFImage_sInvalidStream,	L"Invalid stream operation"
 	GIFImage_sInvalidColor,	L"Color not in color table"
-	GIFImage_sEmptyColorMap,	L"Color table is empty"
-	GIFImage_sEmptyImage,	L"Image is empty"
-	GIFImage_sInvalidReduction,	L"Invalid reduction method"
+	GraphicStrings_gesUpsampling,	L"Upsampling..."
+	GraphicStrings_gesTransfering,	L"Transfering..."
+	GraphicStrings_gesLZ77Error,	L"LZ77 decompression error."
 	GIFImage_sOutOfData,	L"Premature end of data"
 	GIFImage_sTooManyColors,	L"Color table overflow"
 	GIFImage_sBadColorIndex,	L"Invalid color index"
@@ -1401,9 +1388,9 @@ BEGIN
 	GIFImage_sDecodeTooFewBits,	L"Decoder bit buffer under-run"
 	GIFImage_sDecodeCircular,	L"Circular decoder table entry"
 	GIFImage_sBadTrailer,	L"Invalid Image trailer"
-	GIFImage_sBadExtensionInstance,	L"Internal error: Extension Instance does not match Extension Label"
-	GIFImage_sBadBlockSize,	L"Unsupported Application Extension block size"
-	GIFImage_sBadBlock,	L"Unknown GIF block type"
+	GraphicStrings_gesPortableMono,	L"Portable bitmap images"
+	GraphicStrings_gesAutoDesk,	L"Autodesk images"
+	GraphicStrings_gesKodakPhotoCD,	L"Kodak Photo-CD images"
 	GraphicStrings_gesHalo,	L"Dr. Halo images"
 	GraphicStrings_gesPaintShopPro,	L"Paintshop Pro images"
 	GraphicStrings_gesInvalidImage,	L"Cannot load image. Invalid or unexpected %s image format."
@@ -1417,9 +1404,9 @@ BEGIN
 	GraphicStrings_gesVerticalSubSamplingError,	L"Vertical subsampling value must be <= horizontal subsampling value."
 	GraphicStrings_gesPreparing,	L"Preparing..."
 	GraphicStrings_gesLoadingData,	L"Loading data..."
-	GraphicStrings_gesUpsampling,	L"Upsampling..."
-	GraphicStrings_gesTransfering,	L"Transfering..."
-	GraphicStrings_gesLZ77Error,	L"LZ77 decompression error."
+	GraphicStrings_gesDIBs,	L"Device independant Windows bitmaps"
+	GraphicStrings_gesIcons,	L"Windows icons"
+	GraphicStrings_gesMetaFiles,	L"Windows metafiles"
 	GraphicStrings_gesEnhancedMetaFiles,	L"Windows enhanced meta files"
 	GraphicStrings_gesTruevision,	L"Truevision images"
 	GraphicStrings_gesSGI,	L"SGI images"
@@ -1433,9 +1420,9 @@ BEGIN
 	GraphicStrings_gesPortable,	L"Portable map images"
 	GraphicStrings_gesPortablePixel,	L"Portable pixel map images"
 	GraphicStrings_gesPortableGray,	L"Portable gray map images"
-	GraphicStrings_gesPortableMono,	L"Portable bitmap images"
-	GraphicStrings_gesAutoDesk,	L"Autodesk images"
-	GraphicStrings_gesKodakPhotoCD,	L"Kodak Photo-CD images"
+	MZLib_SIncompleteDBLTree,	L"incomplete dynamic bit lengths tree"
+	MZLib_SOversubscribedLLTree,	L"oversubscribed literal/length tree"
+	MZLib_SIncompleteLLTree,	L"incomplete literal/length tree"
 	MZLib_SEmptyDistanceTree,	L"empty distance tree with lengths"
 	MZLib_SInvalidBlockType,	L"invalid block type"
 	MZLib_SInvalidStoredBlockLengths,	L"invalid stored block lengths"
@@ -1449,9 +1436,9 @@ BEGIN
 	GraphicStrings_gesRegistration,	L"Attempt to register %s twice."
 	GraphicStrings_gesBitmaps,	L"Windows bitmaps"
 	GraphicStrings_gesRLEBitmaps,	L"Run length encoded Windows bitmaps"
-	GraphicStrings_gesDIBs,	L"Device independant Windows bitmaps"
-	GraphicStrings_gesIcons,	L"Windows icons"
-	GraphicStrings_gesMetaFiles,	L"Windows metafiles"
+	Vcl_ComStrs_sNeedAllowNone,	L"You must be in ShowCheckbox mode to set to this date"
+	Vcl_ComStrs_sFailSetCalDateTime,	L"Failed to set calendar date or time"
+	Vcl_ComStrs_sFailSetCalMaxSelRange,	L"Failed to set maximum selection range"
 	Vcl_ComStrs_sFailSetCalMinMaxRange,	L"Failed to set calendar min/max range"
 	Vcl_ComStrs_sFailsetCalSelRange,	L"Failed to set calendar selected range"
 	MZLib_SNeedDict,	L"need dictionary"
@@ -1465,9 +1452,9 @@ BEGIN
 	MZLib_SInvalidDistanceCode,	L"invalid distance code"
 	MZLib_SInvalidLengthCode,	L"invalid literal/length code"
 	MZLib_SOversubscribedDBLTree,	L"oversubscribed dynamic bit lengths tree"
-	MZLib_SIncompleteDBLTree,	L"incomplete dynamic bit lengths tree"
-	MZLib_SOversubscribedLLTree,	L"oversubscribed literal/length tree"
-	MZLib_SIncompleteLLTree,	L"incomplete literal/length tree"
+	Vcl_ComStrs_sTabFailDelete,	L"Failed to delete tab at index %d"
+	Vcl_ComStrs_sTabFailRetrieve,	L"Failed to retrieve tab at index %d"
+	Vcl_ComStrs_sTabFailGetObject,	L"Failed to get object at index %d"
 	Vcl_ComStrs_sTabFailSet,	L"Failed to set tab \"%s\" at index %d"
 	Vcl_ComStrs_sTabFailSetObject,	L"Failed to set object at index %d"
 	Vcl_ComStrs_sTabMustBeMultiLine,	L"MultiLine must be True when TabPosition is tpLeft or tpRight"
@@ -1481,25 +1468,38 @@ BEGIN
 	Vcl_ComStrs_sInvalidComCtl32,	L"This control requires version 4.70 or greater of COMCTL32.DLL"
 	Vcl_ComStrs_sDateTimeMax,	L"Date exceeds maximum of %s"
 	Vcl_ComStrs_sDateTimeMin,	L"Date is less than minimum of %s"
-	Vcl_ComStrs_sNeedAllowNone,	L"You must be in ShowCheckbox mode to set to this date"
-	Vcl_ComStrs_sFailSetCalDateTime,	L"Failed to set calendar date or time"
-	Vcl_ComStrs_sFailSetCalMaxSelRange,	L"Failed to set maximum selection range"
+	CCR_Exif_Consts_STagCanContainOnlyASCII,	L"Tag may contain only ASCII string data"
+	CCR_Exif_Consts_SInvalidMakerNoteFormat,	L"Invalid MakerNote format"
+	CCR_Exif_Consts_SInvalidXMPPacket,	L"XMP packet is not valid"
+	CCR_Exif_Consts_SSubPropertiesMustBeNamed,	L"Sub-properties must be named"
+	CCR_Exif_Consts_SSubPropertiesNotSupported,	L"Property type does not support sub-properties"
+	CCR_Exif_Consts_SCannotWriteSingleValueToStructureProperty,	L"Cannot assign a single value to a structure property"
+	CCR_Exif_Consts_SPreferredPrefixMustBeSet,	L"The schema's PreferredPrefix property must be set before a new item can be added"
+	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
 	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
 	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
-	System_Win_ComConst_SOleError,	L"OLE error %.8x"
-	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
-	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
-	System_Win_ComConst_STooManyParams,	L"Dispatch methods do not support more than 64 parameters"
-	System_Win_ComConst_SDCOMNotInstalled,	L"DCOM not installed"
 	Vcl_OleConst_SCannotActivate,	L"OLE control activation failed"
 	Vcl_OleConst_SNoWindowHandle,	L"Could not obtain OLE control window handle"
 	Vcl_OleConst_SInvalidLicense,	L"License information for %s is invalid"
 	Vcl_OleConst_SNotLicensed,	L"License information for %s not found. You cannot use this control in design mode"
 	Vcl_OleConst_sNoRunningObject,	L"Unable to retrieve a pointer to a running object registered with OLE for %s/%s"
 	Vcl_ComStrs_sTabFailClear,	L"Failed to clear tab control"
-	Vcl_ComStrs_sTabFailDelete,	L"Failed to delete tab at index %d"
-	Vcl_ComStrs_sTabFailRetrieve,	L"Failed to retrieve tab at index %d"
-	Vcl_ComStrs_sTabFailGetObject,	L"Failed to get object at index %d"
+	Xml_XMLConst_SNoMatchingDOMVendor,	L"No matching DOM Vendor: \"%s\""
+	Xml_XMLConst_SDOMNotSupported,	L"Property or Method \"%s\" is not supported by DOM Vendor \"%s\""
+	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
+	Xml_XMLConst_SMSDOMNotInstalled,	L"Microsoft MSXML is not installed"
+	System_Win_ComConst_SOleError,	L"OLE error %.8x"
+	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
+	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
+	System_Win_ComConst_STooManyParams,	L"Dispatch methods do not support more than 64 parameters"
+	System_Win_ComConst_SDCOMNotInstalled,	L"DCOM not installed"
+	CCR_Exif_Consts_SStreamIsReadOnly,	L"Stream is read-only"
+	CCR_Exif_Consts_SUnsupportedGraphicFormat,	L"Unsupported graphic format"
+	CCR_Exif_Consts_SInvalidJPEGHeader,	L"JPEG header is not valid"
+	CCR_Exif_Consts_SInvalidPSDHeader,	L"Photoshop (PSD) file header is not valid"
+	CCR_Exif_Consts_SInvalidTiffData,	L"Invalid TIFF data"
+	CCR_Exif_Consts_STagAlreadyExists,	L"Tag with ID of \"%d\" already exists in section"
+	CCR_Exif_Consts_SIllegalEditOfExifData,	L"Illegal attempt to edit the Exif data in such a way that it would change the file structure"
 	Vcl_Imaging_pnglang_EPNGSizeExceedsText,	L"This \"Portable Network Graphics\" image is not supported because either its width or height exceeds the maximum size of 65535 pixels."
 	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
 	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
@@ -1515,7 +1515,7 @@ BEGIN
 	Vcl_Imaging_pnglang_EPNGHeaderNotPresentText,	L"This operation is not valid because the current image contains no valid header."
 	Vcl_Imaging_pnglang_EInvalidNewSize,	L"The new size provided for image resizing is invalid."
 	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
-	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
+	Xml_XMLConst_SDuplicateRegistration,	L"\"%s\" DOMImplementation already registered"
 	Vcl_Consts_SNameMenuHighlight,	L"Menu Highlight"
 	Vcl_Consts_SNameMenuText,	L"Menu Text"
 	Vcl_Consts_SNameNone,	L"None"

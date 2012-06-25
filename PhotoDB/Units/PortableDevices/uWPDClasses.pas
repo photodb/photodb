@@ -17,6 +17,7 @@ uses
   Vcl.Graphics,
   uGraphicUtils,
   System.SyncObjs,
+  uConstants,
   uBitmapUtils,
   Math,
   GIFImage;
@@ -281,10 +282,10 @@ begin
               begin
 
                 Key.pid := 3;
-                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(Key, 3));
+                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(Key, MajorVersion));
 
                 Key.pid := 4;
-                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(key, 1));
+                ErrorCheck(ClientInformation.SetUnsignedIntegerValue(key, MinorVersion));
 
                 Key.pid := 5;
                 ErrorCheck(ClientInformation.SetUnsignedIntegerValue(key, 0)); //build number

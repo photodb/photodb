@@ -780,6 +780,7 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 2
         TabVisible = False
         OnResize = TsInfoResize
+        OnShow = TsInfoShow
         DesignSize = (
           132
           620)

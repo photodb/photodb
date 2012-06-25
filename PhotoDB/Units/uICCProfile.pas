@@ -10,6 +10,7 @@ uses
   Windows,
   SysUtils,
   Graphics,
+  PngImage,
   CCR.Exif.XMPUtils,
   CCR.Exif,
   lcms2dll;
@@ -30,8 +31,8 @@ type
   end;
 
 function InSignatures(Signature: cmsProfileClassSignature; dwFlags: DWORD): Boolean;
-//function ApplyICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; JpegEXIF: TExifData; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 function ConvertBitmapToDisplayICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; SourceMem: Pointer; MemSize: Cardinal; SourceICCProfileName: string; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
+function ConvertPngToDisplayICCProfile(ThreadContext: Pointer; Png: TPngImage; SourceMem: Pointer; MemSize: Cardinal; DestinationICCProfileFile: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 function FillDisplayProfileList(List: TStrings): Boolean;
 function GetICCProfileName(ThreadContext: Pointer;  SourceMem: Pointer; MemSize: Cardinal): string;
 
@@ -210,6 +211,60 @@ begin
       for I := 0 to PicH - 1 do
       begin
         Line := Bitmap.Scanline[I];
+        cmsDoTransform(xform, Line, Line, PicW);
+      end;
+      cmsDeleteTransform(xform);
+      Result := True;
+    end;
+  end
+end;
+
+function ConvertPngToDisplayICCProfile(ThreadContext: Pointer; Png: TPngImage; SourceMem: Pointer; MemSize: Cardinal; DestinationICCProfileFile: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
+var
+  hSrc, hDest: cmsHPROFILE;
+  xform: cmsHTRANSFORM;
+  I, PicW, PicH: Integer;
+  Intent: Integer;
+  dwFlags: DWORD;
+  Line: Pointer;
+begin
+  Result := False;
+  if not InitICCProfiles then
+    Exit;
+
+  if (SourceMem = nil) then
+    Exit;
+
+  DestinationICCProfileFile := GetICCDisplayProfileFileName(DestinationICCProfileFile);
+
+  dwFlags := cmsFLAGS_BLACKPOINTCOMPENSATION;
+
+  Intent := IntentCodes[0];
+
+  if (SourceMem <> nil) and (DestinationICCProfileFile <> '') then
+  begin
+    hSrc := cmsOpenProfileFromMemTHR(ThreadContext, SourceMem, MemSize);
+
+    hDest := cmsOpenProfileFromFileTHR(ThreadContext, PAnsiChar(AnsiString(DestinationICCProfileFile)), 'r');
+
+    xform := nil;
+    if (hSrc <> nil) and (hDest <> nil) then
+      xform := cmsCreateTransformTHR(ThreadContext, hSrc, TYPE_BGR_8, hDest, TYPE_BGR_8, Intent, dwFlags);
+
+    if hSrc <> nil then
+      cmsCloseProfile(hSrc);
+
+    if hDest <> nil then
+      cmsCloseProfile(hDest);
+
+    if (xform <> nil) then
+    begin
+
+      PicW := Png.Width;
+      PicH := Png.Height;
+      for I := 0 to PicH - 1 do
+      begin
+        Line := Png.Scanline[I];
         cmsDoTransform(xform, Line, Line, PicW);
       end;
       cmsDeleteTransform(xform);

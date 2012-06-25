@@ -3,7 +3,7 @@ object FrmMain: TFrmMain
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  Caption = 'PhotoDB 3.0 Setup'
+  Caption = 'PhotoDB x.x Setup'
   ClientHeight = 379
   ClientWidth = 624
   Color = clWhite
@@ -33,7 +33,7 @@ object FrmMain: TFrmMain
     Width = 178
     Height = 139
     AutoSize = False
-    Caption = 'Welcome to the Photo Database 3.0'
+    Caption = 'Welcome to the Photo Database x.x'
     WordWrap = True
   end
   object Bevel1: TBevel

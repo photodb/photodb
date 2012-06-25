@@ -165,13 +165,13 @@ begin
   BeginTranslate;
   try
 {$IFDEF INSTALL}
-    S := L('PhotoDB 3.0 Setup');
+    S := L('PhotoDB 3.1 Setup');
     if IsApplicationInstalled then
       S := S + ' (' + L('Update') + ' ' + ReleaseToString(InstallVersion) + ')';
     Caption := S;
 {$ENDIF}
 {$IFDEF UNINSTALL}
-    Caption := L('PhotoDB 3.0 Uninstall');
+    Caption := L('PhotoDB 3.1 Uninstall');
 {$ENDIF}
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
@@ -183,7 +183,7 @@ begin
 {$IFDEF UNINSTALL}
     BtnInstall.Caption := L('Uninstall');
 {$ENDIF}
-    LbWelcome.Caption := L('Welcome to the Photo Database 3.0');
+    LbWelcome.Caption := L('Welcome to the Photo Database 3.1');
   finally
     EndTranslate;
   end;
