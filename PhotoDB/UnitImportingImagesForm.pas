@@ -134,7 +134,7 @@ begin
     BtnPrev.Caption := L('Previous');
     BtnNext.Caption := L('Next');
     BtnPause.Caption := L('Pause');
-    BtnFinish.Caption := L('Finish');
+    BtnFinish.Caption := L('Start');
   finally
     EndTranslate;
   end;

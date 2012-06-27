@@ -3,9 +3,23 @@ unit uFrmImportImagesOptions;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, uFrameWizardBase, StdCtrls, UnitDBFileDialogs, uFileUtils,
-  uShellIntegration, uConstants, UnitDBKernel, uMemory, uSettings,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  uFrameWizardBase,
+  StdCtrls,
+  UnitDBFileDialogs,
+  uFileUtils,
+  uShellIntegration,
+  uConstants,
+  UnitDBKernel,
+  uMemory,
+  uSettings,
   WatermarkedEdit;
 
 type
@@ -78,7 +92,7 @@ begin
   CbDefaultAction.Items.Add(L('Add all'));
   CbDefaultAction.Items.Add(L('Skip all'));
   CbDefaultAction.Items.Add(L('Replace all'));
-  CbDefaultAction.ItemIndex := 0;
+  CbDefaultAction.ItemIndex := 1;
   Label9.Caption := L('If duplicates are found') + ':';
   EdDBPath.WatermarkText := L('New collection path');
 end;

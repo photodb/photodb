@@ -1655,6 +1655,7 @@
 	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
 	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
 	<translate name="Finish" value="Финиш"/>
+	<translate name="Start" value="Старт"/>
 	<translate name="Pause" value="Пауза"/>
 	<translate name="Resume" value="Запустить"/>
 	<translate name="Width" value="Ширина"/>
