@@ -176,10 +176,10 @@ var
             FStrParam := FStrParam + ' *';
           SynchronizeEx(TextOutEx);
           Table.FieldByName('StrTh').AsString := Info.ImTh;
-          CRC := StringCRC(Info.ImTh);
-          if Integer(CRC) <> Table.FieldByName('StrThCrc').AsInteger then
-            Table.FieldByName('StrThCrc').AsInteger := Integer(CRC);
         end;
+        CRC := StringCRC(Info.ImTh);
+        if Integer(CRC) <> Table.FieldByName('StrThCrc').AsInteger then
+          Table.FieldByName('StrThCrc').AsInteger := Integer(CRC);
       end;
       Info.Jpeg.Free;
       FStrParam := Format(L('Updating item %s from %s [%s]'), [IntToStr(Table.RecNo), IntToStr(TableRecordCount),

@@ -1,8 +1,8 @@
 program PhotoDB;
 
-{$DESCRIPTION 'Photo DB v2.3'}
+{$DESCRIPTION 'Photo DB v3.1'}
 
-{ Reduce EXE size by disabling as much of RTTI as possible (delphi 2009/2010) }
+{ Reduce EXE size by disabling as much of RTTI as possible (delphi 2009+) }
 {$IF CompilerVersion >= 21.0}
   {$WEAKLINKRTTI ON}
   {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}

@@ -83,7 +83,7 @@ type
   protected
     function GetValue: Variant; override;
   public
-    constructor Create(Name: string; Value: string; Action: TParameterAction = paEquals);
+    constructor Create(Name: string; Value: string = ''; Action: TParameterAction = paEquals);
   end;
 
   TBooleanParameter = class(TParameter)
@@ -535,7 +535,7 @@ end;
 
 { TStringParameter }
 
-constructor TStringParameter.Create(Name, Value: string; Action: TParameterAction = paEquals);
+constructor TStringParameter.Create(Name: string; Value: string = ''; Action: TParameterAction = paEquals);
 begin
   inherited Create(Name, Action);
   FValue := Value;

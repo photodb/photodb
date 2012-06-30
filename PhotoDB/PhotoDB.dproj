@@ -73,7 +73,6 @@
 			<ImageDebugInfo>true</ImageDebugInfo>
 			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
 			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-			<DCC_Optimize>false</DCC_Optimize>
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
@@ -125,10 +124,10 @@
 			<Debugger_RunParams>/test</Debugger_RunParams>
 			<VerInfo_MinorVer>1</VerInfo_MinorVer>
 			<VerInfo_MajorVer>3</VerInfo_MajorVer>
-			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
+			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
 			<VerInfo_Release>0</VerInfo_Release>
-			<VerInfo_Build>499</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.1.0.499;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.1;ProductVersion=3.1;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Build>500</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.1.0.500;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.1;ProductVersion=3.1;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -750,7 +749,7 @@
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>
-		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
@@ -803,12 +802,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile LocalName="bin\PhotoDB.rsm" Configuration="Debug" Class="DebugSymbols">
+					<DeployFile Configuration="Debug" LocalName="bin\PhotoDB.rsm" Class="DebugSymbols">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile LocalName="bin\PhotoDB.exe" Configuration="Debug" Class="ProjectOutput">
+					<DeployFile Configuration="Debug" LocalName="bin\PhotoDB.exe" Class="ProjectOutput">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">
@@ -889,6 +888,6 @@
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>
 		</ProjectExtensions>
-		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
-		<Import Condition="Exists('$(MSBuildProjectName).deployproj')" Project="$(MSBuildProjectName).deployproj"/>
+		<Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+		<Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
 	</Project>

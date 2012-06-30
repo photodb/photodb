@@ -16,6 +16,7 @@ uses
   uGraphicUtils,
   RAWImage;
 
+//TODO: remove this function
 function LoadGraphic(FileName: string; var G: TGraphic; var IsEnCrypted: Boolean; var Password: string): Boolean;
 function ExtractFilePreview(FileName: string; Width, Height: Integer; var Bitmap: TBitmap): Boolean;
 

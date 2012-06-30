@@ -33,7 +33,9 @@ uses
   uConfiguration,
   uStringUtils,
   GIFImage,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  uShellIntegration,
+  uTranslate;
 
 const
   FACE_DETECTION_OK           = 0;
@@ -47,6 +49,7 @@ type
   private
     ImageData: TFaceDetectionData;
     FFaces: TFaceDetectionResult;
+    procedure ProcessError(E: Exception);
   protected
     procedure Execute; override;
     procedure UpdateFaceList;
@@ -245,13 +248,24 @@ begin
         end;
       except
         on e: Exception do
-          EventLog(e);
+          ProcessError(e);
       end;
     end;
 
   finally
     CoUninitialize;
   end;
+end;
+
+procedure TFaceDetectionThread.ProcessError(E: Exception);
+begin
+  EventLog(E);
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      MessageBoxDB(0, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    end
+  );
 end;
 
 procedure TFaceDetectionThread.UpdateFaceList;

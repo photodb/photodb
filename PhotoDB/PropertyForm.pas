@@ -564,6 +564,7 @@ begin
       SetFocus;
       Exit;
     end;
+    TsGeneral.HandleNeeded;
     GistogrammData.Loading := False;
     R(EditLinkForm);
     PcMain.Pages[2].TabVisible := True;
@@ -1113,6 +1114,7 @@ begin
   if not IsGraphicFile(FileName) or not FileExistsSafe(FileName) then
     Exit;
 
+  TsGeneral.HandleNeeded;
   GistogrammData.Loading := False;
   PcMain.Pages[2].TabVisible := True;
   PcMain.Pages[3].TabVisible := True;
@@ -1420,6 +1422,7 @@ begin
     Exit;
   end;
 
+  TsGeneral.HandleNeeded;
   FInfo := TDBPopupMenuInfo.Create;
   try
     WorkQuery := GetQuery;

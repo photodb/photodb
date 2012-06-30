@@ -3742,7 +3742,10 @@ begin
       FICCData.Data.Seek(14, soFromBeginning);
       Stream.CopyFrom(FICCData.Data, FICCData.Data.Size - 14);
     end else
+    begin
+      FICCData.Data.Seek(0, soFromBeginning);
       Stream.CopyFrom(FICCData.Data, FICCData.Data.Size);
+    end;
   end;
 end;
 

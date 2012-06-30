@@ -82,6 +82,7 @@ function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean; overlo
 function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean; overload;
 function CreateRating(Rating: Integer): TWindowsStarRating;
 function CreateOrientation(Rotation: Integer): TExifOrientation;
+function IsTheSameOrientation(Or1, Or2: TExifOrientation): Boolean;
 function CanSaveEXIF(FileName: string): Boolean;
 function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation; RaiseException: Boolean = False): Boolean;
 function DeleteFileGeoInfo(FileName: string; RaiseException: Boolean = False): Boolean;
@@ -466,7 +467,7 @@ begin
 
         if [EventID_Param_Rotate, SetNewIDFileData] * Info.Params <> [] then
         begin
-          if ExifData.Orientation <> CreateOrientation(Info.Value.Rotate) then
+          if not IsTheSameOrientation(ExifData.Orientation, CreateOrientation(Info.Value.Rotate)) then
           begin
             ExifData.Orientation := CreateOrientation(Info.Value.Rotate);
             Changed := True;
@@ -546,6 +547,16 @@ begin
   finally
     SetErrorMode(OldMode);
   end;
+end;
+
+function IsTheSameOrientation(Or1, Or2: TExifOrientation): Boolean;
+begin
+  if Or1 = toUndefined then
+   Or1 := toTopLeft;
+  if Or2 = toUndefined then
+   Or2 := toTopLeft;
+
+   Result := Or1 = Or2;
 end;
 
 function CreateOrientation(Rotation: Integer): TExifOrientation;

@@ -286,7 +286,7 @@ Set the default options for FastMM here.
 
 {Define this to enable backward compatibility for the memory manager sharing
  mechanism used by Delphi 2006 and 2007, as well as older FastMM versions.}
-{$define EnableBackwardCompatibleMMSharing}
+{.$define EnableBackwardCompatibleMMSharing}
 
 {-----------------------Security Options------------------------}
 

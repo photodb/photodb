@@ -741,6 +741,7 @@ var
   EventInfo: TEventValues;
 begin
   try
+    EventInfo.Name := NameParam;
     EventInfo.NewName := NameParam;
     EventInfo.ID := IDParam;
     DBKernel.DoIDEvent(FSender.Form, IDParam, [EventID_Param_Name, EventID_CancelAddingImage], EventInfo);

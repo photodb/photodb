@@ -65,8 +65,7 @@ procedure RenameFolderWithDB(CallBack: TDBKernelCallBack;
 function RenameFileWithDB(CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 function GetImageIDW(FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
-function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
-  OnlyImTh: Boolean = False): TImageDBRecordAArray;
+function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False): TImageDBRecordAArray;
 function GetImageIDTh(ImageTh: string): TImageDBRecordA;
 function GetIdByFileName(FileName: string): Integer;
 function GetFileNameById(ID: Integer): string;
@@ -1163,7 +1162,7 @@ begin
   for I := 0 to L - 1 do
     ThImS[I] := GetImageIDW(Images[I].FileName, UseFileNameScanning, True);
   FQuery := GetQuery;
-  FQuery.Active := False;
+
   Sql := '';
   if GetDBType = DB_TYPE_MDB then
   begin
@@ -1171,9 +1170,9 @@ begin
     for I := 1 to L do
     begin
       if I = 1 then
-        Sql := Sql + Format(' (StrThCrc = :strcrc%d) ', [I])
+        Sql := Sql + Format(' (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I])
       else
-        Sql := Sql + Format(' or (StrThCrc = :strcrc%d) ', [I]);
+        Sql := Sql + Format(' or (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I]);
     end;
     FromDB := FromDB + Sql + ')';
   end

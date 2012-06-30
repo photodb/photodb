@@ -6,6 +6,7 @@ uses
   SysUtils,
   Windows,
   Classes,
+  Generics.Collections,
   DB,
   Graphics,
   jpeg,
@@ -79,7 +80,7 @@ type
 
   TPersonCollection = class(TObject)
   private
-    FList: TList;
+    FList: TList<TPerson>;
     FFreeCollectionItems: Boolean;
     function GetCount: Integer;
     function GetPersonByIndex(Index: Integer): TPerson;
@@ -386,8 +387,8 @@ begin
         begin
           SC := TSelectCommand.Create(ImageTable);
           try
-            SC.AddParameter(TStringParameter.Create('Groups', ''));
-            SC.AddParameter(TStringParameter.Create('Keywords', ''));
+            SC.AddParameter(TStringParameter.Create('Groups'));
+            SC.AddParameter(TStringParameter.Create('Keywords'));
             SC.AddWhereParameter(TIntegerParameter.Create('ID', PersonArea.ImageID));
             if SC.Execute > 0 then
             begin
@@ -785,36 +786,36 @@ end;
 procedure TPersonManager.MarkLatestPerson(PersonID: Integer);
 var
   I, Count, MaxCount, ItemCount, ID: Integer;
-  List: TList;
+  List: TList<Integer>;
   Key: string;
 begin
   Key := FormatEx('FaceDetection\{0}', [ExtractFileName(dbname)]);
 
-  List := TList.Create;
+  List := TList<Integer>.Create;
   try
     Count := Settings.ReadInteger(Key, 'LatestCount', 0);
     for I := 1 to Count do
     begin
       ID := Settings.ReadInteger(Key + '\LatestPersons', 'Person' + IntToStr(I), 0);
       if ID > 0 then
-        List.Add(Pointer(ID));
+        List.Add(ID);
     end;
 
     for I := 0 to List.Count - 1 do
-      if Integer(List[I]) = PersonID then
+      if List[I] = PersonID then
       begin
         List.Delete(I);
         Break;
       end;
 
-    List.Insert(0, Pointer(PersonID));
+    List.Insert(0, PersonID);
 
     MaxCount := Settings.ReadInteger(Key, 'LatestMaxCount', 10);
 
     ItemCount := Min(List.Count, MaxCount);
     Settings.WriteInteger(Key, 'LatestCount', ItemCount);
     for I := 0 to ItemCount - 1 do
-      Settings.WriteInteger(Key + '\LatestPersons', 'Person' + IntToStr(I + 1), Integer(List[I]));
+      Settings.WriteInteger(Key + '\LatestPersons', 'Person' + IntToStr(I + 1), List[I]);
   finally
     F(List);
   end;
@@ -972,7 +973,7 @@ end;
 procedure TPersonCollection.Add(Person: TPerson);
 begin
   if FFreeCollectionItems then
-    FList.Add(Person.Clone)
+    FList.Add(TPerson(Person.Clone))
   else
     FList.Add(Person);
 end;
@@ -988,13 +989,13 @@ end;
 constructor TPersonCollection.Create(FreeCollectionItems: Boolean = True);
 begin
   FFreeCollectionItems := FreeCollectionItems;
-  FList := TList.Create;
+  FList := TList<TPerson>.Create;
 end;
 
 procedure TPersonCollection.DeleteAt(I: Integer);
 begin
   if FFreeCollectionItems then
-    TObject(FList[I]).Free;
+    FList[I].Free;
 
   FList.Delete(I);
 end;

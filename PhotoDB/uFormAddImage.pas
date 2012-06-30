@@ -32,8 +32,9 @@ type
     LsMain: TLoadingSign;
     TmrRedraw: TTimer;
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure TmrRedrawTimer(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
   private
     FInfo: TDBPopupMenuInfoRecord;
     FLoadingState: Extended;
@@ -47,24 +48,10 @@ type
     procedure Execute(Info: TDBPopupMenuInfoRecord);
   end;
 
-procedure AddImage(Info: TDBPopupMenuInfoRecord);
-
 implementation
 
 uses
   UnitUpdateDBObject;
-
-procedure AddImage(Info: TDBPopupMenuInfoRecord);
-var
-  FormAddingImage: TFormAddingImage;
-begin
-  Application.CreateForm(TFormAddingImage, FormAddingImage);
-  try
-    FormAddingImage.Execute(Info);
-  finally
-    R(FormAddingImage);
-  end;
-end;
 
 {$R *.dfm}
 
@@ -79,6 +66,7 @@ begin
     begin
       FInfo.ID := Value.ID;
       Close;
+      Exit;
     end;
 
   end;
@@ -134,14 +122,22 @@ begin
   ShowModal;
 end;
 
+procedure TFormAddingImage.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  TmrRedraw.Enabled := False;
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  Action := caFree;
+end;
+
 procedure TFormAddingImage.FormCreate(Sender: TObject);
 begin
+  FInfo := nil;
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TFormAddingImage.FormDestroy(Sender: TObject);
 begin
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+//
 end;
 
 function TFormAddingImage.GetFormID: string;

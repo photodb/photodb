@@ -1079,6 +1079,7 @@ begin
       MessageBoxDB(0, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
     end
   );
+  EventLog(E);
 end;
 
 procedure TDBKernel.LoadIcons;

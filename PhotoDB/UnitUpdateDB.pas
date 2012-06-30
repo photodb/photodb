@@ -419,9 +419,8 @@ begin
   WebLinkOpenFolder.Enabled := False;
   WebLinkOpenFolder.RefreshBuffer;
   WebLinkOpenFolder.Repaint;
-  FCurrentImage.Free;
   FCurrentFileName := '';
-  FCurrentImage := nil;
+  F(FCurrentImage);
   ProgressBar.Position := 0;
   ProgressBar.Text := L('Done');
   Repaint;
@@ -639,6 +638,7 @@ end;
 procedure TUpdateDBForm.UpdaterOnDone(Sender: TObject);
 begin
   HideImage(False);
+  FSpeedCounter.Reset;
   FFullSize := 0;
   ProgressBar.Position := 0;
   ProgressBar.Text := L('Done');
@@ -812,7 +812,7 @@ var
   TextTop, TextLeft, TextWidth, TextHeight: Integer;
   Text: string;
 begin
-  if FCurrentImage = nil then
+  if (FCurrentImage = nil) and Visible then
   begin
 
     Bitmap := TBitmap.Create;

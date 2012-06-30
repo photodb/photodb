@@ -292,7 +292,7 @@ const
   Result_Delete_File                =  7;
 
   DemoDays = 30;
-  LimitDemoRecords = 1000;
+  LimitDemoRecords = 10000;
 
 //////////////////////////////////
 ///

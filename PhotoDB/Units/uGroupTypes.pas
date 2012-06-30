@@ -13,7 +13,7 @@ type
     GroupName: string;
     GroupCode: string;
     GroupImage: TJpegImage;
-    GroupDate: TdateTime;
+    GroupDate: TDateTime;
     GroupComment: string;
     GroupFaces: string;
     GroupAccess: Integer;

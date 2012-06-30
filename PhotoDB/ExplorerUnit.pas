@@ -3373,7 +3373,7 @@ begin
   if not Self.Active then
     Exit;
 
-  if (Msg.message = WM_MOUSEWHEEL) then
+  if (Msg.message = WM_MOUSEWHEEL) and TsInfo.Visible then
     WllGroups.PerformMouseWheel(Msg.WParam, Handled);
 
   if Msg.Message = WM_KEYDOWN then

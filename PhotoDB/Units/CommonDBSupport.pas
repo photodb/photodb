@@ -885,7 +885,7 @@ end;
 function ADOInitialize(dbname: String; ForseNewConnection: Boolean = False) : TADOConnection;
 var
   I: Integer;
-  DBConnection : TADODBConnection;
+  DBConnection: TADODBConnection;
 begin
   dbname := AnsiLowerCase(dbname);
   if not ForseNewConnection then
@@ -906,9 +906,8 @@ begin
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname, ForseNewConnection);
   DBConnection.ADOConnection.LoginPrompt := False;
   DBConnection.ADOConnection.Provider := MDBProvider;
-  DBConnection.ADOConnection.ConnectOptions := coAsyncConnect;
   if ForseNewConnection then
-    DBConnection.ADOConnection.IsolationLevel := ilReadUncommitted;
+    DBConnection.ADOConnection.IsolationLevel := ilReadCommitted;
 
   Result := DBConnection.ADOConnection;
 end;

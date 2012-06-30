@@ -2351,15 +2351,13 @@ begin
           PersonManager.AddPersonForPhoto(Self, PA);
           RI.Data := PA.Clone;
 
-          RefreshFaces;
         finally
           F(PA);
         end;
       end else
-      begin
         PersonManager.ChangePerson(PA, P.ID);
-        RefreshFaces;
-      end;
+
+      RefreshFaces;
     end;
   end;
 end;
