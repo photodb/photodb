@@ -33,9 +33,7 @@ function FindGroupNameByGroupCode(GroupCode: string): string;
 function GetGroupByGroupName(GroupName: string; LoadImage: Boolean): TGroup; overload;
 function GetGroupByGroupCode(GroupCode: string; LoadImage: Boolean): TGroup; overload;
 function UpdateGroup(Group: TGroup): Boolean;
-
-function GetRegisterGroupListW(FileName: string; LoadImages: Boolean; SortByName: Boolean;
-  UseInclude: Boolean = False): TGroups;
+function GetRegisterGroupListW(FileName: string; LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
 function GroupWithCodeExists(GroupCode: string): Boolean;
 function IsValidGroupsTableW(FileName: string; NoCheck: Boolean = False): Boolean;
 function GetGroupByGroupNameW(GroupName: string; LoadImage: Boolean; FileName: string): TGroup;

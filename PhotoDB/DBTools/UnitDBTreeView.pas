@@ -290,8 +290,8 @@ var
 begin
   WorkTable := GetQuery;
   TempTable := GetQuery;
-  SetSQL(WorkTable, 'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
-  SetSQL(TempTable, 'Select ID, FFileName, Access, Thum,Rotated,Rating,FFileName from $DB$');
+  SetSQL(WorkTable, 'Select ID, Name, Access, Thum,Rotated,Rating,Keywords,Groups,FFileName,FileSize,Attr,Comment,DateToAdd,aTime,IsDate,IsTime,StrTh,Width,Height,Include,Links from $DB$');
+  SetSQL(TempTable, 'Select ID, Name, Access, Thum,Rotated,Rating,Keywords,Groups,FFileName,FileSize,Attr,Comment,DateToAdd,aTime,IsDate,IsTime,StrTh,Width,Height,Include,Links from $DB$');
   TOpenQueryThread.Create(Self, WorkTable, DBOpened);
   OpenProgress := GetProgressWindow;
   OpenProgress.OneOperation := True;

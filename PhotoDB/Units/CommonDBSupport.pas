@@ -612,7 +612,7 @@ begin
   Result.ThHintSize := 400;
 end;
 
-function GetImageSettingsFromTable(TableName : string) : TImageDBOptions;
+function GetImageSettingsFromTable(TableName: string): TImageDBOptions;
 var
   SQL: string;
   FQuery: TDataSet;
@@ -655,7 +655,7 @@ begin
   end;
 end;
 
-function ADOCreateSettingsTable(TableName : string) : boolean;
+function ADOCreateSettingsTable(TableName: string): Boolean;
 var
   SQL: string;
   FQuery: TDataSet;
@@ -718,7 +718,7 @@ begin
   end;
 end;
 
-function BDECreateGroupsTable(TableName : string) : boolean;
+function BDECreateGroupsTable(TableName: string): Boolean;
 var
   SQL: string;
   FQuery: TDataSet;
@@ -778,7 +778,7 @@ begin
   raise Exception.Create('DAO engine could not be initialized');
 end;
 
-function ADOCreateImageTable(TableName : string) : boolean;
+function ADOCreateImageTable(TableName: string) : boolean;
 var
   SQL: string;
   FQuery: TDataSet;
@@ -855,7 +855,7 @@ begin
   end;
 end;
 
-procedure RemoveADORef(ADOConnection : TADOConnection);
+procedure RemoveADORef(ADOConnection: TADOConnection);
 var
   I, J, Count: Integer;
 begin
@@ -882,12 +882,14 @@ begin
   end;
 end;
 
-function ADOInitialize(dbname: String; ForseNewConnection: Boolean = False) : TADOConnection;
+function ADOInitialize(dbname: String; ForseNewConnection: Boolean = False): TADOConnection;
 var
   I: Integer;
   DBConnection: TADODBConnection;
+  ThreadId: THandle;
 begin
   dbname := AnsiLowerCase(dbname);
+  ThreadId := GetCurrentThreadId;
   if not ForseNewConnection then
     for I := 0 to ADOConnections.Count - 1 do
     begin
@@ -902,6 +904,7 @@ begin
   DBConnection.FileName := AnsiLowerCase(dbname);
   DBConnection.RefCount := 1;
   DBConnection.Isolated := ForseNewConnection;
+  DBConnection.ThreadID := ThreadId;
   DBConnection.ADOConnection := TADOConnection.Create(nil);
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname, ForseNewConnection);
   DBConnection.ADOConnection.LoginPrompt := False;
@@ -912,7 +915,7 @@ begin
   Result := DBConnection.ADOConnection;
 end;
 
-procedure FreeDS(var DS : TDataSet);
+procedure FreeDS(var DS: TDataSet);
 var
   Connection: TADOConnection;
 begin
