@@ -1422,7 +1422,6 @@ begin
     Exit;
   end;
 
-  TsGeneral.HandleNeeded;
   FInfo := TDBPopupMenuInfo.Create;
   try
     WorkQuery := GetQuery;
@@ -1510,6 +1509,7 @@ begin
     if FFilesInfo[I].ID = 0 then
        FFilesInfo[I].Include := True;
 
+  TsGeneral.HandleNeeded;
   GistogrammData.Loading := False;
   R(EditLinkForm);
   ResetBold;
