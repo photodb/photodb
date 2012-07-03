@@ -47,6 +47,7 @@ type
 
   TPersonManager = class(TObject)
   private
+    FIsInitialized: Boolean;
     FPeoples: TPersonCollection;
     FSync: TCriticalSection;
     function GetAllPersons: TPersonCollection;
@@ -474,6 +475,7 @@ end;
 constructor TPersonManager.Create;
 begin
   FPeoples := nil;
+  FIsInitialized := False;
   FSync := TCriticalSection.Create;
   RegisterManager;
 end;
@@ -657,6 +659,7 @@ function TPersonManager.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection
 var
   SC: TSelectCommand;
 begin
+  InitDB;
   Result := TPersonAreaCollection.Create;
   SC := TSelectCommand.Create(ObjectMappingTableName);
   try
@@ -733,6 +736,7 @@ function TPersonManager.GetPersonsOnImage(ImageID: Integer): TPersonCollection;
 var
   SC: TSelectCommand;
 begin
+  InitDB;
   Result := TPersonCollection.Create;
   SC := TSelectCommand.Create(ObjectTableName);
   try
@@ -755,10 +759,19 @@ end;
 
 procedure TPersonManager.InitDB;
 begin
-  if not CheckObjectTables(DatabaseManager.DBFile) then
-  begin
-    ADOCreateObjectsTable(DatabaseManager.DBFile);
-    ADOCreateObjectMappingTable(DatabaseManager.DBFile);
+  FSync.Enter;
+  try
+    if FIsInitialized then
+      Exit;
+
+    FIsInitialized := True;
+    if not CheckObjectTables(DatabaseManager.DBFile) then
+    begin
+      ADOCreateObjectsTable(DatabaseManager.DBFile);
+      ADOCreateObjectMappingTable(DatabaseManager.DBFile);
+    end;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -907,6 +920,7 @@ procedure TPersonManager.ChangedDBDataByID(Sender: TObject; ID: Integer;
 begin
   if EventID_Param_DB_Changed in Params then
   begin
+    FIsInitialized := False;
     FSync.Enter;
     try
       F(FPeoples);

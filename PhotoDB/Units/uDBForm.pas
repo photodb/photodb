@@ -44,6 +44,7 @@ type
     procedure DoCreate; override;
     procedure ApplyStyle; virtual;
     procedure ApplySettings; virtual;
+    procedure CustomFormAfterDisplay; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -118,6 +119,11 @@ begin
   GOM.AddObj(Self);
   {$IFDEF PHOTODB}
   {$ENDIF}
+end;
+
+procedure TDBForm.CustomFormAfterDisplay;
+begin
+ //
 end;
 
 destructor TDBForm.Destroy;
@@ -303,9 +309,10 @@ begin
           GetWindowRect(Handle, WindowRect);
           StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, WindowRect.Width, WindowRect.Height));
         finally
-          ReleaseDC(Self.Handle, Canvas.Handle) ;
+          ReleaseDC(Self.Handle, Canvas.Handle);
           F(Canvas);
         end;
+        CustomFormAfterDisplay;
       end;
     end;
   end;

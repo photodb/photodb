@@ -6,6 +6,7 @@ object ActionsForm: TActionsForm
   ClientHeight = 229
   ClientWidth = 281
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -25,7 +26,9 @@ object ActionsForm: TActionsForm
     Height = 164
     Style = lbOwnerDrawFixed
     Align = alClient
+    DoubleBuffered = True
     ItemHeight = 22
+    ParentDoubleBuffered = False
     TabOrder = 0
     OnDrawItem = ActionListDrawItem
   end

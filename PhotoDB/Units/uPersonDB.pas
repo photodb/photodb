@@ -3,7 +3,13 @@ unit uPersonDB;
 interface
 
 uses
-  SysUtils, Classes, DB, CommonDBSupport, uLogger, uMemory, ADODB;
+  System.SysUtils,
+  System.Classes,
+  Data.DB,
+  Data.Win.ADODB,
+  uMemory,
+  uLogger,
+  CommonDBSupport;
 
 function CheckObjectTables(TableName: string): Boolean;
 function ADOCreateObjectMappingTable(TableName: string): Boolean;

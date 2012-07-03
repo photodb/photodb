@@ -75,6 +75,7 @@ type
     procedure FillImageList;
     procedure WllGroupsDblClick(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FCreateFixedGroup: Boolean;
@@ -205,6 +206,11 @@ begin
   end;
   FreeGroup(Group);
   Close;
+end;
+
+procedure TNewGroupForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := caFree;
 end;
 
 procedure TNewGroupForm.FormCreate(Sender: TObject);

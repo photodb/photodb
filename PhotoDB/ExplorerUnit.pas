@@ -10368,10 +10368,10 @@ begin
     BtnSaveInfo.SetEnabledEx(False);
     Enabled := False;
     try
-      if FEditorInfo.Count > 1 then
-        BatchUpdateDBInfo(Self, FEditorInfo, UserInput)
-      else if FEditorInfo.Count = 1 then
-        UpdateDBRecordWithUserInfo(Self, FEditorInfo[0], UserInput);
+      if (FEditorInfo.Count = 1) and (FEditorInfo[0].ID > 0) then
+        UpdateDBRecordWithUserInfo(Self, FEditorInfo[0], UserInput)
+      else
+        BatchUpdateDBInfo(Self, FEditorInfo, UserInput);
     finally
       Enabled := True;
     end;

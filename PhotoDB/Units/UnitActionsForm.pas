@@ -24,7 +24,8 @@ uses
   uFileUtils,
   uDBFileTypes,
   uThemesUtils,
-  uConstants, uBaseWinControl;
+  uConstants,
+  uBaseWinControl;
 
 type
   TActionObject = class(TObject)
@@ -55,7 +56,8 @@ type
     Cursor: Integer;
   protected
     { Protected declarations }
-    function GetFormID : string; override;
+    function GetFormID: string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     procedure LoadLanguage;
@@ -71,13 +73,14 @@ var
 implementation
 
 uses
-  UnitDBKernel, ImEditor, EffectsToolUnit;
+  UnitDBKernel,
+  ImEditor,
+  EffectsToolUnit;
 
 {$R *.dfm}
 
 procedure TActionsForm.FormCreate(Sender: TObject);
 begin
-  ActionList.DoubleBuffered := True;
   LoadLanguage;
   SaveToFileLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SAVETOFILE + 1]);
   LoadFromFileLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_LOADFROMFILE + 1]);
@@ -95,6 +98,12 @@ end;
 procedure TActionsForm.CloseLinkClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TActionsForm.CustomFormAfterDisplay;
+begin
+  inherited;
+  ActionList.Refresh;
 end;
 
 procedure TActionsForm.LoadLanguage;
@@ -118,15 +127,10 @@ var
   ActionObject : TActionObject;
 begin
   if (Atype = [THA_Undo]) then
-  begin
     Dec(Cursor);
-    ActionList.Repaint;
-  end;
+
   if (Atype = [THA_Redo]) then
-  begin
     Inc(Cursor);
-    ActionList.Repaint;
-  end;
 
   if (Atype = [THA_Add]) then
   begin
@@ -210,6 +214,7 @@ begin
     Actions.Add(ActionObject);
     ActionList.Items.Add(StrAction);
   end;
+  ActionList.Refresh;
 end;
 
 procedure TActionsForm.SetParentForm(Parent: TDBForm);
@@ -257,10 +262,8 @@ begin
     ActionList.Canvas.Font.Color := Theme.ListFontSelectedColor
   else
     ActionList.Canvas.Font.Color := Theme.ListFontColor;
-  //ActionList.Canvas.Rectangle(Rect.Left, Rect.Top, Rect.Left + 20, Rect.Top + 20);
 
   ActionsImageList.Draw(ActionList.Canvas, Rect.Left + 2, Rect.Top + 2, TActionObject(Actions[index]).ImageIndex);
-  //ActionList.Canvas.Font.Color := Theme.ListFontColor;
   ActionList.Canvas.TextOut(Rect.Left + 25, Rect.Top + 2, ActionList.Items[index]);
 end;
 

@@ -49,7 +49,6 @@ type
     CommentLabel: TLabel;
     DateLabel: TLabel;
     AccessLabel: TLabel;
-    Label1: TLabel;
     SearchForGroup1: TMenuItem;
     KeyWordsMemo: TMemo;
     CbAddKeywords: TCheckBox;
@@ -238,7 +237,6 @@ begin
   BeginTranslate;
   try
     Caption:= L('Group info');
-    Label1.Caption := L('Group');
     DateLabel.Caption := L('Date created');
     AccessLabel.Caption := L('Attributes');
     BtnOk.Caption := L('Ok');

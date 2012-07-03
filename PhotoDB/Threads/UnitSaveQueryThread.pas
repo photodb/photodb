@@ -272,7 +272,15 @@ begin
     end;
   except
     on e: Exception do
-      EventLog(e);
+    begin
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          MessageBoxDB(GetActiveFormHandle, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+          EventLog(e);
+        end
+      );
+    end;
   end;
 end;
 

@@ -97,4 +97,7 @@ begin
   end;
 end;
 
+initialization
+  FormInterfaces.RegisterFormInterface(IStringPromtForm, TFormStringPromt);
+
 end.

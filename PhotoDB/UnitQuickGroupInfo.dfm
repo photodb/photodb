@@ -135,20 +135,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     ParentFont = False
     Transparent = True
   end
-  object Label1: TLabel
-    Tag = 12012
-    Left = 64
-    Top = 8
-    Width = 52
-    Height = 23
-    Caption = 'Group'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -19
-    Font.Name = 'Tahoma'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-  end
   object KeyWordsLabel: TLabel
     Tag = 2
     Left = 5
@@ -177,7 +163,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   object GroupNameEdit: TEdit
     Tag = 1
     Left = 60
-    Top = 28
+    Top = 14
     Width = 207
     Height = 30
     Anchors = [akLeft, akTop, akRight]

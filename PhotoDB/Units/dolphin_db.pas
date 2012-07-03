@@ -153,7 +153,7 @@ var
   ImageInfo: ILoadImageInfo;
 begin
   Result := False;
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
   try
     if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword],
       ImageInfo, MaxWidth, MaxHeight) then
