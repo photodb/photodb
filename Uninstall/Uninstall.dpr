@@ -54,7 +54,8 @@ uses
   uSettings in '..\PhotoDB\Units\uSettings.pas',
   uUpTime in '..\PhotoDB\Units\uUpTime.pas',
   uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas',
-  uUninstallCurrentUser in 'uUninstallCurrentUser.pas';
+  uUninstallCurrentUser in 'uUninstallCurrentUser.pas',
+  uThemesUtils in '..\PhotoDB\Units\uThemesUtils.pas';
 
 {$R *.res}
 {$R Commands.res}

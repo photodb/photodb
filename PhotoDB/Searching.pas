@@ -4250,7 +4250,7 @@ begin
       Result.DateTo := EncodeDateTime(elvDateRange.Selection.First.OwnerGroup.Tag + 1, 1, 1, 0, 0, 0, 0);
   end else if elvDateRange.Selection.Count = 0 then
   begin
-    Result.DateFrom := EncodeDateTime(1990, 1, 1, 0, 0, 0, 0);
+    Result.DateFrom := EncodeDateTime(1900, 1, 1, 0, 0, 0, 0);
     Result.DateTo := Trunc(Now);
   end;
 end;
