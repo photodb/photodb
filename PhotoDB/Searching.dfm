@@ -193,7 +193,6 @@ object SearchForm: TSearchForm
     ParentShowHint = False
     ShowHint = False
     TabOrder = 0
-    ExplicitHeight = 690
     object PropertyPanel: TPanel
       Left = 1
       Top = 385
@@ -479,7 +478,6 @@ object SearchForm: TSearchForm
       ParentColor = True
       TabOrder = 2
       Visible = False
-      ExplicitHeight = 8
     end
     object pnDateRange: TPanel
       Left = 1

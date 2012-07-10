@@ -350,7 +350,7 @@ begin
       Yyyy := StrToIntDef(Copy(DateTime, 1, 4), 0);
       Mm := StrToIntDef(Copy(DateTime, 6, 2), 0);
       Dd := StrToIntDef(Copy(DateTime, 9, 2), 0);
-      if (Yyyy > 1990) and (Yyyy < 2050) then
+      if (Yyyy > 1900) and (Yyyy < 2050) then
         if (Mm >= 1) and (Mm <= 12) then
           if (Dd >= 1) and (Dd <= 31) then
             Result := EncodeDate(Yyyy, Mm, Dd);
