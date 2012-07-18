@@ -7,8 +7,6 @@ uses
   Windows,
   SysUtils,
   TypInfo,
-  CPU,
-  CRC,
   DECUtil,
   DECFmt,
   DECHash,

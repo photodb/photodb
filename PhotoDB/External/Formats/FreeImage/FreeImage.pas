@@ -98,7 +98,7 @@ type
 {$ENDIF}
 
 const
-  FIDLL = {$IFDEF MSWINDOWS}'FreeImage.dll';{$ENDIF}
+  FIDLL = {$IFDEF MSWINDOWS}{$ifdef cpux64}'FreeImage64.dll';{$endif}{$ifndef cpux64}'FreeImage.dll';{$endif}{$ENDIF}
           {$IFDEF LINUX}'libfreeimage.so';{$ENDIF}
 
 const
@@ -1762,6 +1762,22 @@ var
   FSync: TCriticalSection = nil;
 
 procedure FreeImageInit;
+
+{$ifdef cpux64}
+  function GetProcAddress(hModule: HMODULE; lpProcName: string): FARPROC;
+  var
+    P: Integer;
+  begin
+    if lpProcName[1] = '_' then
+      Delete(lpProcName, 1, 1);
+    P := Pos('@', lpProcName);
+    if (P > 0) then
+      Delete(lpProcName, P, Length(lpProcName) - P + 1);
+    Result := Windows.GetProcAddress(hModule, PChar(lpProcName));
+  end;
+{$endif}
+
+
 begin
   if FIDLLHandle = 0 then
   begin
@@ -2000,7 +2016,8 @@ begin
       FreeImage_AllocateEx := GetProcAddress(FIDLLHandle, '_FreeImage_AllocateEx@36');
       FreeImage_AllocateExT := GetProcAddress(FIDLLHandle, '_FreeImage_AllocateExT@40');
       FreeImage_MultigridPoissonSolver := GetProcAddress(FIDLLHandle, '_FreeImage_MultigridPoissonSolver@8');
-      FreeImage_Initialise(True);
+      if Assigned(FreeImage_Initialise) then
+        FreeImage_Initialise(True);
     finally
       FSync.Leave;
     end;

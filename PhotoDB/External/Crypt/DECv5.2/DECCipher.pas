@@ -507,6 +507,7 @@ var
   StreamBufferSize: Integer = 8192;
 
 implementation
+{$OVERFLOWCHECKS OFF}
 
 uses TypInfo, DECData;
 

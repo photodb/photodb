@@ -552,7 +552,7 @@ begin
           color.b := Round(rgb.b);
 {$IFDEF USE_SCANLINE}
         DestPixel^ := color;
-        inc(integer(DestPixel), DestDelta);
+        inc(NativeInt(DestPixel), DestDelta);
 {$ELSE}
         Dst.Canvas.Pixels[k, i] := RGB2Color(color);
 {$ENDIF}

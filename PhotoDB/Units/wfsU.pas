@@ -273,7 +273,7 @@ begin
         if PFileNotifyInformation(Ptr).NextEntryOffset = 0 then
           NoMoreFilesFound := True
         else
-          Inc(Cardinal(Ptr), PFileNotifyInformation(Ptr).NextEntryOffset);
+          Inc(NativeUInt(Ptr), PFileNotifyInformation(Ptr).NextEntryOffset);
 
         FileSkipped := True;
       end;
@@ -316,7 +316,7 @@ begin
     if PFileNotifyInformation(Ptr).NextEntryOffset = 0 then
       Break
     else
-      Inc(Cardinal(Ptr), PFileNotifyInformation(Ptr).NextEntryOffset);
+      Inc(NativeUInt(Ptr), PFileNotifyInformation(Ptr).NextEntryOffset);
   until Terminated;
 
   Synchronize(DoCallBack);

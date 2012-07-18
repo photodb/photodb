@@ -28,6 +28,7 @@ unit DECHash;
 
 {$WARNINGS OFF}
 {$RANGECHECKS OFF}
+{$OVERFLOWCHECKS OFF}
 
 interface
 
@@ -37,31 +38,34 @@ uses SysUtils, Classes, DECUtil, DECFmt;
                                           
 type
 {all Hash Classes}
-  THash_MD2             = class;  {$DEFINE THash_MD2_asm}
-  THash_MD4             = class;  {$DEFINE THash_MD4_asm}
-  THash_MD5             = class;  {$DEFINE THash_MD5_asm}
-  THash_RipeMD128       = class;  {$DEFINE THash_RipeMD128_asm}
-  THash_RipeMD160       = class;  {$DEFINE THash_RipeMD160_asm}
-  THash_RipeMD256       = class;  {$DEFINE THash_RipeMD256_asm}
-  THash_RipeMD320       = class;  {$DEFINE THash_RipeMD320_asm}
-  THash_SHA             = class;  {$DEFINE THash_SHA_asm}
+  THash_MD2             = class;  {$ifndef cpux64}{$DEFINE THash_MD2_asm}{$endif}
+  THash_MD4             = class;  {$ifndef cpux64}{$DEFINE THash_MD4_asm}{$endif}
+  THash_MD5             = class;  {$ifndef cpux64}{$DEFINE THash_MD5_asm}{$endif}
+  THash_RipeMD128       = class;  {$ifndef cpux64}{$DEFINE THash_RipeMD128_asm}{$endif}
+  THash_RipeMD160       = class;  {$ifndef cpux64}{$DEFINE THash_RipeMD160_asm}{$endif}
+  THash_RipeMD256       = class;  {$ifndef cpux64}{$DEFINE THash_RipeMD256_asm}{$endif}
+  THash_RipeMD320       = class;  {$ifndef cpux64}{$DEFINE THash_RipeMD320_asm}{$endif}
+
+
+  THash_SHA             = class;  {$ifndef cpux64}{$DEFINE THash_SHA_asm}{$endif}
+
   THash_SHA1            = class;
-  THash_SHA256          = class;  {$DEFINE THash_SHA256_asm}
-  THash_SHA384          = class;  {$DEFINE THash_SHA384_asm}
+  THash_SHA256          = class;  {$ifndef cpux64}{$DEFINE THash_SHA256_asm}{$endif}
+  THash_SHA384          = class;  {$ifndef cpux64}{$DEFINE THash_SHA384_asm}{$endif}
   THash_SHA512          = class;
-  THash_Haval128        = class;  {$DEFINE THashBaseHaval_asm}
+  THash_Haval128        = class;  {$ifndef cpux64}{$DEFINE THashBaseHaval_asm}{$endif}
   THash_Haval160        = class;  // Haval 160, 3 Rounds
   THash_Haval192        = class;  // Haval 192, 4 Rounds
   THash_Haval224        = class;  // Haval 224, 4 Rounds
   THash_Haval256        = class;  // Haval 256, 5 Rounds
-  THash_Tiger           = class;  {$DEFINE THash_Tiger_asm}
-  THash_Panama          = class;  {$DEFINE THash_Panama_asm}
-  THash_Whirlpool       = class;  {$DEFINE THashBaseWhirlpool_asm}
+  THash_Tiger           = class;  {$ifndef cpux64}{$DEFINE THash_Tiger_asm}{$endif}
+  THash_Panama          = class;  {$ifndef cpux64}{$DEFINE THash_Panama_asm}{$endif}
+  THash_Whirlpool       = class;  {$ifndef cpux64}{$DEFINE THashBaseWhirlpool_asm}{$endif}
   THash_Whirlpool1      = class;
-  THash_Square          = class;  {$DEFINE THash_Square_asm}
-  THash_Snefru128       = class;  {$DEFINE THash_Snefru128_asm}
-  THash_Snefru256       = class;  {$DEFINE THash_Snefru256_asm}
-  THash_Sapphire        = class;  {$DEFINE THash_Sapphire_asm}
+  THash_Square          = class;  {$ifndef cpux64}{$DEFINE THash_Square_asm}{$endif}
+  THash_Snefru128       = class;  {$ifndef cpux64}{$DEFINE THash_Snefru128_asm}{$endif}
+  THash_Snefru256       = class;  {$ifndef cpux64}{$DEFINE THash_Snefru256_asm}{$endif}
+  THash_Sapphire        = class;  {$ifndef cpux64}{$DEFINE THash_Sapphire_asm}{$endif}
 
   TDECHashClass = class of TDECHash;
 
@@ -485,6 +489,40 @@ end;
 procedure Increment8(var Value; Add: LongWord);
 // Value := Value + 8 * Add
 // Value: array[0..7] of LongWord
+{$ifdef cpux64}
+var
+  ECX: Integer;
+begin
+  ECX := Add;
+  Add := Add * 8;
+  ECX := ECX SHR 25;
+  PLongWord(NativeUInt(Addr(Value)) +  0)^ := PLongWord(NativeUInt(Addr(Value)) +  0)^ + Add;
+  PLongWord(NativeUInt(Addr(Value)) +  4)^ := PLongWord(NativeUInt(Addr(Value)) +  4)^ + ECX;
+  PLongWord(NativeUInt(Addr(Value)) +  8)^ := 0;
+  PLongWord(NativeUInt(Addr(Value)) + 12)^ := 0;
+  PLongWord(NativeUInt(Addr(Value)) + 16)^ := 0;
+  PLongWord(NativeUInt(Addr(Value)) + 20)^ := 0;
+  PLongWord(NativeUInt(Addr(Value)) + 24)^ := 0;
+  PLongWord(NativeUInt(Addr(Value)) + 28)^ := 0;
+end;
+{asm
+    PUSH RCX
+    MOV  ECX,Add
+    LEA  Add,[ECX * 8]
+    SHR  ECX,25
+    ADD  [RAX].DWord[ 0],Add
+    ADC  [RAX].DWord[ 4],ECX
+    ADC  [RAX].DWord[ 8],0
+    ADC  [RAX].DWord[12],0
+    ADC  [RAX].DWord[16],0
+    ADC  [RAX].DWord[20],0
+    ADC  [RAX].DWord[24],0
+    ADC  [RAX].DWord[28],0
+    POP  RCX
+    JC   HashingOverflowError
+end;}
+{$endif}
+{$ifndef cpux64}
 asm
     MOV  ECX,EDX
     LEA  EDX,[EDX * 8]
@@ -499,6 +537,7 @@ asm
     ADC  [EAX].DWord[28],0
     JC   HashingOverflowError
 end;
+{$endif}
 
 procedure TDECHash.Calc(const Data; DataSize: Integer);
 var

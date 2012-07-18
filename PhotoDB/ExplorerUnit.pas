@@ -725,9 +725,9 @@ type
     FWebBorwserFactory: IElementBehaviorFactory;
     FWebJSContainer: TWebJSExternalContainer;
     FWbGeoLocation: TWebBrowser;
-    FWebBrowserJSMessage: Cardinal;
+    FWebBrowserJSMessage: UINT;
     FEditorInfo: TExplorerFileInfos;
-    FReloadGroupsMessage: Cardinal;
+    FReloadGroupsMessage: UINT;
     FActiveLeftTab: TExplorerLeftTab;
     FLeftTabs: set of TExplorerLeftTab;
     FPngNoHIstogram: TPNGImage;

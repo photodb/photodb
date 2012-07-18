@@ -123,7 +123,17 @@ var
   ADOConnections: TADOConnections = nil;
   DBLoadInitialized: Boolean = False;
   FSync: TCriticalSection = nil;
-  DBFConnectionString: string = 'Provider=Microsoft.Jet.OLEDB.4.0;Password="";User ID=Admin;'+
+
+const
+  {$ifdef cpux64}
+  MDBProvider = 'Microsoft.ACE.OLEDB.12.0';
+  {$endif}
+  {$ifndef cpux64}
+  MDBProvider = 'Microsoft.Jet.OLEDB.4.0';
+  {$endif}
+
+var
+  DBFConnectionString: string = 'Provider=' + MDBProvider + ';Password="";User ID=Admin;'+
                             'Data Source=%s;Mode=%MODE%;Extended Properties="";'+
                             'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
                             'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;'+
@@ -139,7 +149,7 @@ var
 
   // Read Only String
   DBViewConnectionString: string =
-    'Provider=Microsoft.Jet.OLEDB.4.0;Password="";'+
+    'Provider=' + MDBProvider + ';Password="";'+
     'User ID=Admin;Data Source=%s;'+
     'Mode=Share Deny Write;Extended Properties="";'+
     'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
@@ -149,8 +159,6 @@ var
     'Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;'+
     'Jet OLEDB:Don''t Copy Locale on Compact=False;Jet OLEDB:'+
     'Compact Without Replica Repair=False;Jet OLEDB:SFP=False';
-
-  MDBProvider: string = 'Microsoft.Jet.OLEDB.4.0';
 
 function GetDBType: Integer; overload;
 function GetDBType(Dbname: string): Integer; overload;

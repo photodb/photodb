@@ -32,7 +32,7 @@ unit DECUtil;
 
 interface
 
-uses Windows, SysUtils, Classes, CRC;
+uses Windows, SysUtils, Classes, win32crc;
 
 type
 {$IFNDEF UNICODE}
@@ -113,7 +113,7 @@ procedure RandomSeed; overload;
 function RandomSystemTime: Cardinal;
 
 // reverse Byte order from Buffer
-procedure SwapBytes(var Buffer; BufferSize: Integer);
+//procedure SwapBytes(var Buffer; BufferSize: Integer);
 function SwapLong(Value: LongWord): LongWord;
 procedure SwapLongBuffer(const Source; var Dest; Count: Integer);
 function SwapInt64(const Value: Int64): Int64;
@@ -131,6 +131,7 @@ var
   DoRandomSeed: procedure(const Buffer; Size: Integer); register = nil;
 
 implementation
+{$OVERFLOWCHECKS OFF}
 
 resourcestring
   sClassNotRegistered = 'Class %s is not registered';
@@ -188,15 +189,14 @@ begin
   end;
 end;
 
-function DECClassByIdentity(Identity: LongWord; ClassType: TClass): TDECClass;
-
-  function DoFind(Identity: LongWord; ClassType: TDECClass): Boolean;
-  begin
-    Result := ClassType.Identity = Identity;
-  end;
-
+function DoFindDECClassByIdentity(Identity: PLongWord; ClassType: TDECClass): Boolean;
 begin
-  Result := DECEnumClasses(@DoFind, Pointer(Identity), ClassType);
+  Result := ClassType.Identity = Identity^;
+end;
+
+function DECClassByIdentity(Identity: LongWord; ClassType: TClass): TDECClass;
+begin
+  Result := DECEnumClasses(@DoFindDECClassByIdentity, @Identity, ClassType);
   if Result = nil then
     raise EDECException.CreateFmt(sClassNotRegistered, [IntToHEX(Identity, 8)]);
 end;
@@ -239,11 +239,13 @@ begin
   if Assigned(Callback) and IsObject(FClasses, TList) then
     for I := 0 to FClasses.Count -1 do
       if ((Include = nil) or     TClass(FClasses[I]).InheritsFrom(Include)) and
-         ((Exclude = nil) or not TClass(FClasses[I]).InheritsFrom(Exclude)) and
-          Callback(UserData, FClasses[I]) then
+         ((Exclude = nil) or not TClass(FClasses[I]).InheritsFrom(Exclude)) then
       begin
-        Result := FClasses[I];
-        Break;
+        if Callback(UserData, FClasses[I]) then
+        begin
+          Result := FClasses[I];
+          Break;
+        end;
       end;
 end;
 
@@ -254,10 +256,11 @@ end;
 
 class function TDECObject.Identity: LongWord;
 var
-  Signature: String;
+  Signature: string;
 begin
   Signature := StringOfChar(#$5A, 256 - Length(Classname)) + UpperCase(ClassName);
-  Result := CRC32(IdentityBase, Signature[1], Length(Signature) * SizeOf(Signature[1]));
+
+  CalcBufferCRC32(Signature[1], Length(Signature) * SizeOf(Signature[1]), Result, not IdentityBase);
 end;
 
 class procedure TDECObject.Register;
@@ -272,7 +275,7 @@ begin
     ID := Identity;
     for I := 0 to FClasses.Count-1 do
       if FClasses[I] = Self then Found := True else
-        if ID = TDECClass(FClasses[I]).Identity then 
+        if ID = TDECClass(FClasses[I]).Identity then
           raise EDECException.CreateFmt(sWrongIdentity, [TDECClass(FClasses[I]).ClassName, ClassName]);
     if not Found then FClasses.Add(Self);
   end;
@@ -282,6 +285,11 @@ end;
 // that is safer for any access to invalid Pointers of any released Object
 // WE WANT SECURITY !!!
 procedure TDECObject.FreeInstance;
+{$ifdef cpux64}
+begin
+  inherited;
+{$endif}
+{$ifndef cpux64}
 asm
       PUSH    EBX
       PUSH    EDI
@@ -297,6 +305,7 @@ asm
       CALL    System.@FreeMem
       POP     EDI
       POP     EBX
+{$endif}
 end;
 
 function IsObject(AObject: Pointer; AClass: TClass): Boolean;
@@ -320,13 +329,24 @@ function IsObject(AObject: Pointer; AClass: TClass): Boolean;
 begin
   Result := False;
   if AObject <> nil then
-  try
-    Result := IsClass(AObject, AClass);
-  except
-  end;
+    {$ifdef cpux64}
+    Result := True;
+    {$endif}
+    {$ifndef cpux64}
+    try
+      Result := IsClass(AObject, AClass);
+    except
+    end;
+    {$endif}
 end;
 
 function MemCompare(P1, P2: Pointer; Size: Integer): Integer;
+{$ifdef cpux64}
+begin
+  raise Exception.Create('Not implemented!');
+end;
+{$endif}
+{$ifndef cpux64}
 asm //equal to StrLComp(P1, P2, Size), but always Size Bytes are checked
        PUSH    ESI
        PUSH    EDI
@@ -341,8 +361,31 @@ asm //equal to StrLComp(P1, P2, Size), but always Size Bytes are checked
 @@1:   POP     EDI
        POP     ESI
 end;
+{$endif}
+
 
 procedure XORBuffers(const Source1, Source2; Size: Integer; var Dest);
+{$ifdef cpux64}
+register;
+type
+  PNativeInt = ^NativeInt;
+var
+  I: Integer;
+begin
+  I := 0;
+  while I < Size do
+  begin
+    PNativeInt(NativeInt(Addr(Dest)) + I)^ := PNativeInt(NativeInt(Addr(Source1)) + I)^ xor PNativeInt(NativeInt(Addr(Source2)) + I)^;
+    I := I + 8;
+  end;
+  while I < Size do
+  begin
+    PByte(NativeInt(Addr(Dest)) + I)^ := PByte(NativeInt(Addr(Source1)) + I)^ xor PByte(NativeInt(Addr(Source2)) + I)^;
+    I := I + 1;
+  end;
+end;
+{$endif}
+{$ifndef cpux64}
 asm // Dest^ =  Source1^ xor Source2^ , Size bytes
        AND   ECX,ECX
        JZ    @@5
@@ -365,8 +408,9 @@ asm // Dest^ =  Source1^ xor Source2^ , Size bytes
        JMP   @@1
 @@4:   POP   EDI
        POP   ESI
-@@5:                           
+@@5:
 end;
+{$endif}
 
 // wipe
 const
@@ -435,6 +479,12 @@ begin
 end;
 
 function IsFilledWith(var Buffer; Size: Integer; Value: Char): Boolean;
+{$ifdef cpux64}
+begin
+  raise ENotImplemented.Create('Error Message');
+end;
+{$endif}
+{$ifndef cpux64}
 asm // check if Buffer is filled with Size of bytes with Value
        TEST   EAX,EAX
        JZ     @@1
@@ -447,6 +497,7 @@ asm // check if Buffer is filled with Size of bytes with Value
        POP    EDI
 @@1:
 end;
+{$endif}
 
 procedure FoldBuf(var Dest; DestSize: Integer; const Source; SourceSize: Integer);
 var
@@ -483,6 +534,12 @@ var
   FRndSeed: Cardinal = 0;
 
 function DoRndBuffer(Seed: Cardinal; var Buffer; Size: Integer): Cardinal;
+{$ifdef cpux64}
+begin
+  raise ENotImplemented.Create('Error Message');
+end;
+{$endif}
+{$ifndef cpux64}
 // same as Borlands Random
 asm
       AND     EDX,EDX
@@ -501,36 +558,29 @@ asm
       POP     EBX
 @@2:
 end;
+{$endif}
 
 function RandomSystemTime: Cardinal;
 // create Seed from Systemtime and PerformanceCounter
 var
-  SysTime: record
-             Year: Word;
-             Month: Word;
-             DayOfWeek: Word;
-             Day: Word;
-             Hour: Word;
-             Minute: Word;
-             Second: Word;
-             MilliSeconds: Word;
-             Reserved: array [0..7] of Byte;
-           end;
+  SysTime: TSystemTime;
   Counter: record
              Lo,Hi: Integer;
            end;
+  PerfCounter: Int64 absolute Counter;
+{$ifndef cpux64}
 asm
          LEA    EAX,SysTime
          PUSH   EAX
          CALL   GetSystemTime
-         MOVZX  EAX,Word Ptr SysTime.Hour
+         MOVZX  EAX,Word Ptr SysTime.wHour
          IMUL   EAX,60
-         ADD    AX,SysTime.Minute
+         ADD    AX,SysTime.wMinute
          IMUL   EAX,60
-         MOVZX  ECX,Word Ptr SysTime.Second
+         MOVZX  ECX,Word Ptr SysTime.wSecond
          ADD    EAX,ECX
          IMUL   EAX,1000
-         MOV    CX,SysTime.MilliSeconds
+         MOV    CX,SysTime.wMilliSeconds
          ADD    EAX,ECX
          PUSH   EAX
          LEA    EAX,Counter
@@ -540,6 +590,16 @@ asm
          ADD    EAX,Counter.Hi
          ADC    EAX,Counter.Lo
 end;
+{$endif}
+{$ifdef cpux64}
+begin
+  GetSystemTime(SysTime);
+  Result := ((SysTime.wHour * 60 + SysTime.wMinute) * 60 + SysTime.wSecond) * 1000 + SysTime.wMilliSeconds;
+  QueryPerformanceCounter(PerfCounter);
+  Result := Result + Cardinal(Counter.Hi);
+  Result := Result + Cardinal(Counter.Lo);
+end;
+{$endif}
 
 function RandomBinary(Size: Integer): Binary;
 begin
@@ -577,7 +637,7 @@ begin
   RandomSeed('', -1);
 end;
 
-procedure SwapBytes(var Buffer; BufferSize: Integer);
+{procedure SwapBytes(var Buffer; BufferSize: Integer);
 asm
        CMP    EDX,1
        JLE    @@3
@@ -596,7 +656,7 @@ asm
        JNZ    @@1
 @@2:   POP    EBX
 @@3:
-end;
+end;   }
 
 function SwapLong(Value: LongWord): LongWord;
 {$IFDEF UseASM}
@@ -716,13 +776,14 @@ begin
 end;
 {$ENDIF}
 
-{reverse the bit order from a integer}
-function SwapBits(Value, Bits: LongWord): LongWord;
 {$IFDEF UseASM}
   {$IFDEF 486GE}
     {$DEFINE SwapBits_asm}
   {$ENDIF}
 {$ENDIF}
+
+{reverse the bit order from a integer}
+function SwapBits(Value, Bits: LongWord): LongWord; {$IFNDEF SwapBits_asm} register; {$ENDIF}
 {$IFDEF SwapBits_asm}
 asm
        BSWAP  EAX
@@ -752,6 +813,39 @@ asm
 @@1:
 end;
 {$ELSE}
+var
+  ECX: LongWord;
+begin
+  Value := (Value SHL 24) OR (Value AND $FF00 SHL 8) OR (Value AND $FF0000 SHR 8) OR (Value SHR 24);
+  ECX := Value;
+  Value := Value AND $0AAAAAAAA;
+  Value := Value SHR 1;
+  ECX := ECX AND $055555555;
+  ECX := ECX SHL 1;
+  Value := Value OR ECX;
+  ECX := Value;
+  Value := Value AND $0CCCCCCCC;
+  Value := Value SHR 2;
+  ECX := ECX AND $033333333;
+  ECX := ECX SHL 2;
+  Value := Value OR ECX;
+  ECX := Value;
+  Value := Value AND $0F0F0F0F0;
+  Value := Value SHR 4;
+  ECX := ECX AND $00F0F0F0F;
+  ECX := ECX SHL 4;
+  Value := Value OR ECX;
+
+  Bits := Bits AND $01F;
+  if Bits = 0 then
+    Exit(Value);
+
+  ECX := 32;
+  ECX := ECX - Bits;       //SUB    ECX,EDX
+  Value := Value SHR ECX;  //SHR    EAX,CL
+
+  Result := Value;
+end;
 {$ENDIF}
 
 {$IFDEF VER_D3H}
@@ -775,5 +869,6 @@ finalization
 {$IFDEF VER_D3H}
   RemoveModuleUnloadProc(ModuleUnload);
 {$ENDIF}
-  FreeAndNil(FClasses);
+  if FClasses <> nil then
+    FreeAndNil(FClasses);
 end.

@@ -8,7 +8,7 @@
 			<Base>True</Base>
 			<AppType>Application</AppType>
 			<FrameworkType>VCL</FrameworkType>
-			<Platform Condition="'$(Platform)'==''">Win32</Platform>
+			<Platform Condition="'$(Platform)'==''">Win64</Platform>
 			<TargetedPlatforms>3</TargetedPlatforms>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -126,8 +126,8 @@
 			<VerInfo_MajorVer>3</VerInfo_MajorVer>
 			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
 			<VerInfo_Release>0</VerInfo_Release>
-			<VerInfo_Build>505</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.1.0.505;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.1;ProductVersion=3.1;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Build>506</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.1.0.506;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.1;ProductVersion=3.1;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -438,16 +438,12 @@
 			<DCCReference Include="Units\uW7TaskBar.pas"/>
 			<DCCReference Include="Units\uDBHint.pas"/>
 			<DCCReference Include="Units\uMath.pas"/>
-			<DCCReference Include="External\Crypt\DECv5.2\ASN1.pas"/>
-			<DCCReference Include="External\Crypt\DECv5.2\CPU.pas"/>
-			<DCCReference Include="External\Crypt\DECv5.2\CRC.pas"/>
 			<DCCReference Include="External\Crypt\DECv5.2\DECCipher.pas"/>
 			<DCCReference Include="External\Crypt\DECv5.2\DECData.pas"/>
 			<DCCReference Include="External\Crypt\DECv5.2\DECFmt.pas"/>
 			<DCCReference Include="External\Crypt\DECv5.2\DECHash.pas"/>
 			<DCCReference Include="External\Crypt\DECv5.2\DECRandom.pas"/>
 			<DCCReference Include="External\Crypt\DECv5.2\DECUtil.pas"/>
-			<DCCReference Include="External\Crypt\DECv5.2\TypInfoEx.pas"/>
 			<DCCReference Include="Units\uStrongCrypt.pas"/>
 			<DCCReference Include="Units\uMemory.pas"/>
 			<DCCReference Include="Units\uDBForm.pas"/>
@@ -802,12 +798,12 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<Deployment>
-					<DeployFile Configuration="Debug" LocalName="bin\PhotoDB.rsm" Class="DebugSymbols">
+					<DeployFile LocalName="bin\PhotoDB.rsm" Configuration="Debug" Class="DebugSymbols">
 						<Platform Name="Win32">
 							<RemoteName>PhotoDB.rsm</RemoteName>
 						</Platform>
 					</DeployFile>
-					<DeployFile Configuration="Debug" LocalName="bin\PhotoDB.exe" Class="ProjectOutput">
+					<DeployFile LocalName="bin\PhotoDB.exe" Configuration="Debug" Class="ProjectOutput">
 						<Platform Name="Win32"/>
 					</DeployFile>
 					<DeployClass Name="ProjectOutput" Required="true">

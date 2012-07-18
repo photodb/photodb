@@ -909,7 +909,7 @@ begin
   for I := 0 to SbAlbums.ControlCount - 1 do
   begin
     Box := TBox(SbAlbums.Controls[I]);
-    if Box.Tag = Integer(Album) then
+    if Box.Tag = NativeInt(Album) then
     begin
       //replace TLoadingSign to TImage
       LS := Box.FindChildByType<TLoadingSign>();
@@ -1205,7 +1205,7 @@ begin
       Box.ParentBackground := False;
       Box.OnMouseEnter := OnBoxMouseEnter;
       Box.OnMouseLeave := OnBoxMouseLeave;
-      Box.Tag := Integer(FAlbums[I]);
+      Box.Tag := NativeInt(FAlbums[I]);
       Box.OnClick := SelectAlbumClick;
       Box.OnDblClick := ShowAlbumClick;
       Box.PopupMenu := PmAlbumOptions;

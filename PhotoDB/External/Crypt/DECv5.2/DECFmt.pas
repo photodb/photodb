@@ -49,7 +49,7 @@ type
   TFormat_HEXL    = class;    // HEXadecimal in Lowercase
   TFormat_MIME32  = class;    // MIME like format for Base 32
   TFormat_MIME64  = class;    // MIME Base 64 format
-  TFormat_PGP     = class;    // PGP's MIME Base 64 with PGP's Checksums
+  //TFormat_PGP     = class;    // PGP's MIME Base 64 with PGP's Checksums
   TFormat_UU      = class;    // Unix UU Base 64
   TFormat_XX      = class;    // Unix XX base 64
   TFormat_ESCAPE  = class;    // Escaped Strings
@@ -107,12 +107,12 @@ type
     class function CharTable: PAnsiChar; override;
   end;
 
-  TFormat_PGP = class(TFormat_MIME64)
+  {TFormat_PGP = class(TFormat_MIME64)
   protected
     class function DoExtractCRC(const Value; var Size: Integer): LongWord;
     class function DoEncode(const Value; Size: Integer): Binary; override;
     class function DoDecode(const Value; Size: Integer): Binary; override;
-  end;
+  end; }
 
   TFormat_UU = class(TDECFormat) // UU Encode = fmtUU
   protected
@@ -151,7 +151,8 @@ var
 
 implementation
 
-uses CRC;
+//TODO: X64 fix
+//uses CRC;
 
 resourcestring
   sStringFormatExists  = 'String format "%d" does not exist.';
@@ -225,7 +226,8 @@ end;
 
 function TableFind(Value: AnsiChar; Table: PAnsiChar; Len: Integer): Integer; assembler;
 asm // Utility for TStringFormat_XXXXX
-      PUSH  EDI
+//TODO: X64 fix
+{      PUSH  EDI
       MOV   EDI,EDX
       REPNE SCASB
       MOV   EAX,0
@@ -233,7 +235,7 @@ asm // Utility for TStringFormat_XXXXX
       MOV   EAX,EDI
       SUB   EAX,EDX
 @@1:  DEC   EAX
-      POP   EDI
+      POP   EDI }
 end;
 
 class function TFormat_HEX.DoEncode(const Value; Size: Integer): Binary;
@@ -322,18 +324,20 @@ end;
 
 class function TFormat_HEX.CharTable: PAnsiChar; assembler;
 asm
-      MOV  EAX,OFFSET @@1
+//TODO: X64 fix
+(*     MOV  EAX,OFFSET @@1
       RET
 @@1:  DB   '0123456789ABCDEF'     // Table must be >= 18 Chars
-      DB   'X$ abcdefhHx()[]{},;:-_/\*+"''',9,10,13,0
+      DB   'X$ abcdefhHx()[]{},;:-_/\*+"''',9,10,13,0   *)
 end;
 
 class function TFormat_HEXL.CharTable: PAnsiChar;
 asm
-      MOV  EAX,OFFSET @@1
+//TODO: X64 fix
+(*      MOV  EAX,OFFSET @@1
       RET
 @@1:  DB   '0123456789abcdef'     // Table must be >= 18 Chars
-      DB   'X$ ABCDEFhHx()[]{},;:-_/\*+"''',9,10,13,0
+      DB   'X$ ABCDEFhHx()[]{},;:-_/\*+"''',9,10,13,0   *)
 end;
 
 class function TFormat_MIME32.DoEncode(const Value; Size: Integer): Binary;
@@ -389,10 +393,11 @@ end;
 
 class function TFormat_MIME32.CharTable: PAnsiChar;
 asm
-      MOV  EAX,OFFSET @@1
+//TODO: X64 fix
+(*      MOV  EAX,OFFSET @@1
       RET  // must be >= 32 Chars
 @@1:  DB  'abcdefghijklnpqrstuwxyz123456789'
-      DB  ' =$()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars
+      DB  ' =$()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars  *)
 end;
 
 class function TFormat_MIME64.DoEncode(const Value; Size: Integer): Binary;
@@ -496,12 +501,13 @@ end;
 
 class function TFormat_MIME64.CharTable: PAnsiChar; assembler;
 asm
-      MOV  EAX,OFFSET @@1
+//TODO: X64 fix
+(*      MOV  EAX,OFFSET @@1
       RET  // must be >= 65 Chars
 @@1:  DB  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
-      DB  ' $()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars
+      DB  ' $()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars     *)
 end;
-
+{
 class function TFormat_PGP.DoExtractCRC(const Value; var Size: Integer): LongWord;
 var
   L: PAnsiChar;
@@ -554,7 +560,7 @@ begin
     if CRC <> CRCCalc(CRC_24, PAnsiChar(Result)^, Length(Result)) then
       raise EDECException.CreateFmt(sInvalidStringFormat, [DECClassname(Self)]);
   end;
-end;
+end;  }
 
 class function TFormat_UU.DoEncode(const Value; Size: Integer): Binary;
 var
@@ -675,18 +681,20 @@ end;
 
 class function TFormat_UU.CharTable: PAnsiChar;
 asm
-      MOV  EAX,OFFSET @@1
+//TODO: X64 fix
+(*      MOV  EAX,OFFSET @@1
       RET  // must be >= 64 Chars
 @@1:  DB   '`!"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_'
-      DB   ' ',9,10,13,0
+      DB   ' ',9,10,13,0  *)
 end;
 
 class function TFormat_XX.CharTable: PAnsiChar;
 asm
-      MOV  EAX,OFFSET @@1
+//TODO: X64 fix
+(*      MOV  EAX,OFFSET @@1
       RET
 @@1:  DB   '+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-      DB   ' "()[]''',9,10,13,0
+      DB   ' "()[]''',9,10,13,0    *)
 end;
 
 const

@@ -367,7 +367,7 @@ begin
     Directory := IncludeTrailingBackslash(Directory);
     Result.Directory := '';
     for I := 1 to 4 do
-      F(Result.Images[I]);
+      Result.Images[I] := nil;
 
     for I := 0 to Length(FImages)-1 do
     begin

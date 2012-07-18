@@ -331,7 +331,7 @@ var
 
   procedure LoadDBContent;
   var
-    I : Integer;
+    I: Integer;
   begin
     ShowInfo(L('Query in collection...'), 1, 0);
 

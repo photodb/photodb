@@ -625,7 +625,7 @@ var
 begin
   Result := '';
   if not IsVariable(ValueName) and (ValueName <> '') and (ValueName[1]='"') and (ValueName[Length(ValueName)]='"') then
-    Result:=AnsiDequotedStr(ValueName, '"')
+    Result := AnsiDequotedStr(ValueName, '"')
   else
   begin
     Value := aScript.NamedValues.GetByNameAndType(ValueName, VALUE_TYPE_STRING);
@@ -644,7 +644,7 @@ begin
   if Str = '' then
     Exit;
 
-  P := PChar(Integer(Addr(Str[1])));
+  P := PChar(NativeInt(Addr(Str[1])));
   Inc(P, Index - 2);
   for I := Index to Length(Str) do
   begin
@@ -668,7 +668,7 @@ var
   C: Char;
 begin
   Result := 0;
-  P := PChar(Integer(Addr(Str[1])));
+  P := PChar(NativeInt(Addr(Str[1])));
   Inc(P, Index - 2);
   for I := Index to Length(Str) - 1 do
   begin
@@ -702,8 +702,8 @@ var
     APS: PChar;
     APSub: PChar;
   begin
-    Integer(APS) := Integer(PS);
-    Integer(APSub) := Integer(PSup);
+    NativeUInt(APS) := NativeUInt(PS);
+    NativeUInt(APSub) := NativeUInt(PSup);
     for K := 1 to LS do
     begin
       if APS^ <> APSub^ then
@@ -1428,7 +1428,7 @@ begin
                   ImageList, OnClick);
                 CopyVar(AScript, TempScript, '$Result', NVar);
               finally
-                TempScript.Free;
+                F(TempScript);
               end;
             end;
 
@@ -2153,7 +2153,8 @@ procedure LoadMenuFromScript(MenuItem : TMenuItem; ImageList : TCustomImageList;
 var
   Text, Icon, Command, InitScript, RunScript, IncludeFile: string;
   I: Integer;
-  Apos, Cb, Ce, Ib, Ie, Tb, Te, P, L, Scc: Integer;
+  Apos, Cb, Ce, Ib, Ie, Tb, Te, Scc: Integer;
+  P, L: NativeInt;
   NewItem, TempItem: TMenuItemW;
   ARun: Boolean;
   VirtualItem: TMenuItemW;
@@ -2163,13 +2164,13 @@ var
   PInit, PRun: PChar;
 
 const
-  ItitStringCommand = 'initialization:';
+  InitStringCommand = 'initialization:';
   RunStringCommand = 'run:';
 
-  function IsInit(PCommand, L : Integer) : Boolean;
+  function IsInit(PCommand, L: NativeInt) : Boolean;
   var
-    J, P : Integer;
-    C : Char;
+    J, P: NativeInt;
+    C: Char;
   begin
     Result := True;
     for J := 0 to LInitString div 2 - 1 do
@@ -2178,7 +2179,7 @@ const
       if P > L then
         Exit;
       C := PChar(P)^;
-      if ItitStringCommand[J + 1] <> C then
+      if InitStringCommand[J + 1] <> C then
       begin
         Result := False;
         Exit;
@@ -2186,10 +2187,10 @@ const
     end;
   end;
 
-  function IsRun(PCommand, L : Integer) : Boolean;
+  function IsRun(PCommand, L: NativeInt): Boolean;
   var
-    J, P : Integer;
-    C : Char;
+    J, P: NativeInt;
+    C: Char;
   begin
     Result := True;
     for J := 0 to LRun div 2 - 1 do
@@ -2218,7 +2219,7 @@ begin
       ImageList.Delete(ImageList.Count - 1);
       ImagesCount := 0;
     end;
-  LInitString := Length(ItitStringCommand) * SizeOf(Char);
+  LInitString := Length(InitStringCommand) * SizeOf(Char);
   LRun := Length(RunStringCommand) * SizeOf(Char);
   if Script = '' then
     Exit;
@@ -2264,8 +2265,8 @@ begin
             PRun := PChar(Addr(RunScript[1]));
 
             Scc := 0;
-            P := Integer(Addr(Command[1]));
-            L := Integer(Addr(Command[Length(Command)]));
+            P := NativeInt(Addr(Command[1]));
+            L := NativeInt(Addr(Command[Length(Command)]));
             if Length(Command) > 0 then
             begin
               repeat

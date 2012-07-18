@@ -124,24 +124,24 @@ procedure SavePNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 var
   I, J: Integer;
   DeltaS, DeltaSA, DeltaD: Integer;
-  AddrLineS, AddrLineSA, AddrLineD: Integer;
-  AddrS, AddrSA, AddrD: Integer;
+  AddrLineS, AddrLineSA, AddrLineD: NativeInt;
+  AddrS, AddrSA, AddrD: NativeInt;
 begin
   PNG.Chunks.Free;
   PNG.Canvas.Free;
   PNG.CreateBlank(COLOR_RGBALPHA, 8, Bitmap.Width, Bitmap.Height);
 
-  AddrLineS := Integer(PNG.ScanLine[0]);
-  AddrLineSA := Integer(PNG.AlphaScanline[0]);
-  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  AddrLineS := NativeInt(PNG.ScanLine[0]);
+  AddrLineSA := NativeInt(PNG.AlphaScanline[0]);
+  AddrLineD := NativeInt(Bitmap.ScanLine[0]);
   DeltaS := 0;
   DeltaSA := 0;
   DeltaD := 0;
   if PNG.Height > 1 then
   begin
-    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
-    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+    DeltaS := NativeInt(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := NativeInt(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
   for I := 0 to PNG.Height - 1 do
@@ -168,25 +168,25 @@ procedure LoadPNGImageTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 var
   I, J: Integer;
   DeltaS, DeltaSA, DeltaD: Integer;
-  AddrLineS, AddrLineSA, AddrLineD: Integer;
-  AddrS, AddrSA, AddrD: Integer;
+  AddrLineS, AddrLineSA, AddrLineD: NativeInt;
+  AddrS, AddrSA, AddrD: NativeInt;
 begin
   if Bitmap.PixelFormat <> pf32bit then
     Bitmap.PixelFormat := pf32bit;
 
   Bitmap.SetSize(PNG.Width, PNG.Height);
 
-  AddrLineS := Integer(PNG.ScanLine[0]);
-  AddrLineSA := Integer(PNG.AlphaScanline[0]);
-  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  AddrLineS := NativeInt(PNG.ScanLine[0]);
+  AddrLineSA := NativeInt(PNG.AlphaScanline[0]);
+  AddrLineD := NativeInt(Bitmap.ScanLine[0]);
   DeltaS := 0;
   DeltaSA := 0;
   DeltaD := 0;
   if PNG.Height > 1 then
   begin
-    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
-    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+    DeltaS := NativeInt(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := NativeInt(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
   for I := 0 to PNG.Height - 1 do
@@ -216,8 +216,8 @@ procedure LoadPNGImagePalette(PNG: TPNGImage; Bitmap: TBitmap);
 var
   I, J, P: Integer;
   DeltaS, DeltaD: Integer;
-  AddrLineS, AddrLineD: Integer;
-  AddrS, AddrD: Integer;
+  AddrLineS, AddrLineD: NativeInt;
+  AddrS, AddrD: NativeInt;
   TC: TColor;
 begin
   if PNG.Transparent then
@@ -227,14 +227,14 @@ begin
 
   Bitmap.SetSize(PNG.Width, PNG.Height);
 
-  AddrLineS := Integer(PNG.ScanLine[0]);
-  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  AddrLineS := NativeInt(PNG.ScanLine[0]);
+  AddrLineD := NativeInt(Bitmap.ScanLine[0]);
   DeltaS := 0;
   DeltaD := 0;
   if PNG.Height > 1 then
   begin
-    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+    DeltaS := NativeInt(PNG.ScanLine[1]) - AddrLineS;
+    DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
   if not PNG.Transparent then
@@ -297,25 +297,25 @@ procedure LoadPNGImage8bitTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 var
   I, J: Integer;
   DeltaS, DeltaSA, DeltaD: Integer;
-  AddrLineS, AddrLineSA, AddrLineD: Integer;
-  AddrS, AddrSA, AddrD: Integer;
+  AddrLineS, AddrLineSA, AddrLineD: NativeInt;
+  AddrS, AddrSA, AddrD: NativeInt;
 begin
   if Bitmap.PixelFormat <> pf32bit then
     Bitmap.PixelFormat := pf32bit;
 
   Bitmap.SetSize(PNG.Width, PNG.Height);
 
-  AddrLineS := Integer(PNG.ScanLine[0]);
-  AddrLineSA := Integer(PNG.AlphaScanline[0]);
-  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  AddrLineS := NativeInt(PNG.ScanLine[0]);
+  AddrLineSA := NativeInt(PNG.AlphaScanline[0]);
+  AddrLineD := NativeInt(Bitmap.ScanLine[0]);
   DeltaS := 0;
   DeltaSA := 0;
   DeltaD := 0;
   if PNG.Height > 1 then
   begin
-    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
-    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+    DeltaS := NativeInt(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := NativeInt(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
   for I := 0 to PNG.Height - 1 do
@@ -344,22 +344,22 @@ procedure LoadPNGImage8BitWOTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 var
   I, J: Integer;
   DeltaS, DeltaD: Integer;
-  AddrLineS, AddrLineD: Integer;
-  AddrS, AddrD: Integer;
+  AddrLineS, AddrLineD: NativeInt;
+  AddrS, AddrD: NativeInt;
 begin
   if Bitmap.PixelFormat <> pf24bit then
     Bitmap.PixelFormat := pf24bit;
 
   Bitmap.SetSize(PNG.Width, PNG.Height);
 
-  AddrLineS := Integer(PNG.ScanLine[0]);
-  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  AddrLineS := NativeInt(PNG.ScanLine[0]);
+  AddrLineD := NativeInt(Bitmap.ScanLine[0]);
   DeltaS := 0;
   DeltaD := 0;
   if PNG.Height > 1 then
   begin
-    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+    DeltaS := NativeInt(PNG.ScanLine[1]) - AddrLineS;
+    DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
   for I := 0 to PNG.Height - 1 do
@@ -383,22 +383,22 @@ procedure LoadPNGImageWOTransparent(PNG: TPNGImage; Bitmap: TBitmap);
 var
   I, J: Integer;
   DeltaS, DeltaD: Integer;
-  AddrLineS, AddrLineD: Integer;
-  AddrS, AddrD: Integer;
+  AddrLineS, AddrLineD: NativeInt;
+  AddrS, AddrD: NativeInt;
 begin
   if Bitmap.PixelFormat <> pf24bit then
     Bitmap.PixelFormat := pf24bit;
 
   Bitmap.SetSize(PNG.Width, PNG.Height);
 
-  AddrLineS := Integer(PNG.ScanLine[0]);
-  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  AddrLineS := NativeInt(PNG.ScanLine[0]);
+  AddrLineD := NativeInt(Bitmap.ScanLine[0]);
   DeltaS := 0;
   DeltaD := 0;
   if PNG.Height > 1 then
   begin
-    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+    DeltaS := NativeInt(PNG.ScanLine[1]) - AddrLineS;
+    DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
   for I := 0 to PNG.Height - 1 do
@@ -420,8 +420,8 @@ procedure LoadPNGImage32bit(PNG: TPNGImage; Bitmap: TBitmap; BackGroundColor: TC
 var
   I, J: Integer;
   DeltaS, DeltaSA, DeltaD: Integer;
-  AddrLineS, AddrLineD, AddrLineSA: Integer;
-  AddrS, AddrD, AddrSA: Integer;
+  AddrLineS, AddrLineD, AddrLineSA: NativeInt;
+  AddrS, AddrD, AddrSA: NativeInt;
   R, G, B: Integer;
   W1, W2: Integer;
   S, D: PRGB;
@@ -455,18 +455,18 @@ begin
 
   Bitmap.SetSize(PNG.Width, PNG.Height);
 
-  AddrLineS := Integer(PNG.ScanLine[0]);
-  AddrLineSA := Integer(PNG.AlphaScanline[0]);
-  AddrLineD := Integer(Bitmap.ScanLine[0]);
+  AddrLineS := NativeInt(PNG.ScanLine[0]);
+  AddrLineSA := NativeInt(PNG.AlphaScanline[0]);
+  AddrLineD := NativeInt(Bitmap.ScanLine[0]);
 
   DeltaS := 0;
   DeltaSA := 0;
   DeltaD := 0;
   if PNG.Height > 1 then
   begin
-    DeltaS := Integer(PNG.ScanLine[1]) - AddrLineS;
-    DeltaSA := Integer(PNG.AlphaScanline[1]) - AddrLineSA;
-    DeltaD := Integer(Bitmap.ScanLine[1])- AddrLineD;
+    DeltaS := NativeInt(PNG.ScanLine[1]) - AddrLineS;
+    DeltaSA := NativeInt(PNG.AlphaScanline[1]) - AddrLineSA;
+    DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
   for I := 0 to PNG.Height - 1 do

@@ -1047,7 +1047,7 @@ begin
         with ContributorList[I] do
         begin
           DestPixel^ := ApplyContributors(N, ContributorList[I].Contributors);
-          Inc(Integer(DestPixel), DestDelta);
+          Inc(NativeInt(DestPixel), DestDelta);
         end;
       Inc(SourceLine);
       Inc(DestLine);
@@ -3855,6 +3855,8 @@ begin
             while Size > 0 do
             begin
               Value := 0;
+			  //TODO: X64 fix
+              {$ifndef cpux64}
               for J := 0 to 1 do
               asm
                 MOV AL, [Value]
@@ -3877,6 +3879,7 @@ begin
 
                 MOV [Value], AL
               end;
+              {$endif}
               Line^ := Value;
               Inc(Line);
               Dec(Size);

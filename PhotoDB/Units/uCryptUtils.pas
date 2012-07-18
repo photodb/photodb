@@ -43,6 +43,7 @@ type
     function GetPaswordLink: TWebLink; virtual; abstract;
   public
     constructor Create(AOwner: TComponent); override;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -51,10 +52,15 @@ implementation
 uses
   uActivation;
 
-constructor TPasswordSettingsDBForm.Create(AOwner: TComponent);
+procedure TPasswordSettingsDBForm.AfterConstruction;
 begin
   inherited;
   FMethodChanger := TPasswordMethodChanger.Create(GetPaswordLink, GetPasswordSettingsPopupMenu);
+end;
+
+constructor TPasswordSettingsDBForm.Create(AOwner: TComponent);
+begin
+  inherited;
 end;
 
 destructor TPasswordSettingsDBForm.Destroy;
@@ -77,56 +83,55 @@ begin
   FillChiperList;
 end;
 
+function GetChipperName(Chiper : TDECCipher) : string;
+var
+  ChipperName : string;
+begin
+  ChipperName := StringReplace(Chiper.ClassType.ClassName, 'TCipher_', '', [rfReplaceAll]);
+  Result := ChipperName + ' - ' + IntToStr(Chiper.Context.KeySize * Chiper.Context.BlockSize );
+end;
+
+function DoEnumClasses(Data: Pointer; ClassType: TDECClass): Boolean;
+var
+  MenuItem: TMenuItem;
+  Chiper: TDECCipher;
+  ChiperLength: Integer;
+  ChiperAvaliable: Boolean;
+  Owner: TPasswordMethodChanger;
+begin
+  Result := False;
+  Owner := TPasswordMethodChanger(Data);
+  MenuItem := TMenuItem.Create(Owner.FPopupMenu);
+  if ClassType.InheritsFrom(TDECCipher) then
+  begin
+    Chiper := CipherByIdentity(ClassType.Identity).Create;
+    try
+      ChiperLength := Chiper.Context.KeySize * Chiper.Context.BlockSize;
+      ChiperAvaliable := not ((ChiperLength > 128) and TActivationManager.Instance.IsDemoMode);
+      if ChiperLength > 16 then
+      begin
+        MenuItem.Caption := GetChipperName(Chiper);
+        MenuItem.Tag := Integer(Chiper.Identity);
+        MenuItem.OnClick := Owner.OnChiperSelected;
+        if not ChiperAvaliable then
+          MenuItem.Enabled := False;
+
+        Owner.FPopupMenu.Items.Add(MenuItem);
+      end;
+      if (ChiperAvaliable and (not Owner.FIsChiperSelected or (Integer(ClassType.Identity) = Owner.FSelectedChiper))) then
+      begin
+        MenuItem.Click;
+        Owner.FIsChiperSelected := True;
+      end;
+    finally
+      F(Chiper);
+    end;
+  end;
+end;
+
 procedure TPasswordMethodChanger.FillChiperList;
 var
   MenuItem: TMenuItem;
-
-  function GetChipperName(Chiper : TDECCipher) : string;
-  var
-    ChipperName : string;
-  begin
-    ChipperName := StringReplace(Chiper.ClassType.ClassName, 'TCipher_', '', [rfReplaceAll]);
-    Result := ChipperName + ' - ' + IntToStr(Chiper.Context.KeySize * Chiper.Context.BlockSize );
-  end;
-
-  function DoEnumClasses(Data: Pointer; ClassType: TDECClass): Boolean;
-  var
-    MenuItem: TMenuItem;
-    Chiper: TDECCipher;
-    ChiperLength: Integer;
-    ChiperAvaliable: Boolean;
-    Owner: TPasswordMethodChanger;
-  begin
-    Result := False;
-    Owner := TPasswordMethodChanger(Data);
-    MenuItem := TMenuItem.Create(Owner.FPopupMenu);
-    if ClassType.InheritsFrom(TDECCipher) then
-    begin
-      Chiper := CipherByIdentity(ClassType.Identity).Create;
-      try
-        ChiperLength := Chiper.Context.KeySize * Chiper.Context.BlockSize;
-        ChiperAvaliable := not ((ChiperLength > 128) and TActivationManager.Instance.IsDemoMode);
-        if ChiperLength > 16 then
-        begin
-          MenuItem.Caption := GetChipperName(Chiper);
-          MenuItem.Tag := Integer(Chiper.Identity);
-          MenuItem.OnClick := Owner.OnChiperSelected;
-          if not ChiperAvaliable then
-            MenuItem.Enabled := False;
-
-          Owner.FPopupMenu.Items.Add(MenuItem);
-        end;
-        if (ChiperAvaliable and (not Owner.FIsChiperSelected or (Integer(ClassType.Identity) = Owner.FSelectedChiper))) then
-        begin
-          MenuItem.Click;
-          Owner.FIsChiperSelected := True;
-        end;
-      finally
-        F(Chiper);
-      end;
-    end;
-  end;
-
 begin
   FWebLink.PopupMenu := FPopupMenu;
   FWebLink.OnClick := WblMethodClick;

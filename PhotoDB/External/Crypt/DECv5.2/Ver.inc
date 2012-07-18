@@ -26,8 +26,10 @@
 
 {.$A+,B-,E-,F-,G+,H+,I-,J+,K-,N+,P+,Q-,R-,S-,T-,V+,W-,X+,Y-,G+}
 
-{$DEFINE 486GE}         // Assembler Core only for >= 486 CPU
-{$DEFINE UseASM}        // use Assembler optimated core
+{$ifndef cpux64}
+  {$DEFINE 486GE}         // Assembler Core only for >= 486 CPU
+  {$DEFINE UseASM}        // use Assembler optimated core
+{$endif}
 
 {$IFDEF VER80}  { Delphi 1.0     }
   {$DEFINE VER_D1}

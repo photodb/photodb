@@ -2010,9 +2010,9 @@ begin
   // Get pointer to TBitmapFileHeader
   BitmapFileHeader := Stream.Memory;
   // Get pointer to TBitmapInfo
-  DIBHeader := Pointer(Longint(BitmapFileHeader) + sizeof(TBitmapFileHeader));
+  DIBHeader := Pointer(NativeInt(BitmapFileHeader) + sizeof(TBitmapFileHeader));
   // Get pointer to pixel data
-  DIBBits := Pointer(Longint(DIBHeader) + HeaderSize);
+  DIBBits := Pointer(NativeInt(DIBHeader) + HeaderSize);
   // Initialize file header
   FillChar(BitmapFileHeader^, sizeof(TBitmapFileHeader), 0);
   with BitmapFileHeader^ do
@@ -2568,7 +2568,8 @@ var
     SysInfo: TSystemInfo;
   begin
     GetSystemInfo(SysInfo);
-    asm
+	  //TODO: X64 fix
+    {asm
           MOV   EDX, Colors
           MOV   ECX, Count
           DEC   ECX
@@ -2597,7 +2598,7 @@ var
           JNS   @@2
           POP   EBX
       @@END:
-    end;
+    end;}
   end;
 {$ENDIF}
 begin
@@ -2638,7 +2639,7 @@ begin
 
       // Finally zero any unused entried
       if (SrcColors < 256) then
-        FillChar(pointer(LongInt(@FDIBInfo^.bmiColors)+SizeOf(TRGBQuad)*SrcColors)^,
+        FillChar(pointer(NativeInt(@FDIBInfo^.bmiColors)+SizeOf(TRGBQuad)*SrcColors)^,
           256 - SrcColors, 0);
       FDIBInfo^.bmiHeader.biClrUsed := 256;
       FDIBInfo^.bmiHeader.biClrImportant := SrcColors;
@@ -3460,15 +3461,15 @@ begin
 
   FDivisor := 1;
   FDirection2 := 2 * Direction;
-  ErrorR0 := PErrors(longInt(ErrorsR0)+2*sizeof(TErrorTerm));
-  ErrorG0 := PErrors(longInt(ErrorsG0)+2*sizeof(TErrorTerm));
-  ErrorB0 := PErrors(longInt(ErrorsB0)+2*sizeof(TErrorTerm));
-  ErrorR1 := PErrors(longInt(ErrorsR1)+2*sizeof(TErrorTerm));
-  ErrorG1 := PErrors(longInt(ErrorsG1)+2*sizeof(TErrorTerm));
-  ErrorB1 := PErrors(longInt(ErrorsB1)+2*sizeof(TErrorTerm));
-  ErrorR2 := PErrors(longInt(ErrorsR2)+2*sizeof(TErrorTerm));
-  ErrorG2 := PErrors(longInt(ErrorsG2)+2*sizeof(TErrorTerm));
-  ErrorB2 := PErrors(longInt(ErrorsB2)+2*sizeof(TErrorTerm));
+  ErrorR0 := PErrors(NativeInt(ErrorsR0)+2*sizeof(TErrorTerm));
+  ErrorG0 := PErrors(NativeInt(ErrorsG0)+2*sizeof(TErrorTerm));
+  ErrorB0 := PErrors(NativeInt(ErrorsB0)+2*sizeof(TErrorTerm));
+  ErrorR1 := PErrors(NativeInt(ErrorsR1)+2*sizeof(TErrorTerm));
+  ErrorG1 := PErrors(NativeInt(ErrorsG1)+2*sizeof(TErrorTerm));
+  ErrorB1 := PErrors(NativeInt(ErrorsB1)+2*sizeof(TErrorTerm));
+  ErrorR2 := PErrors(NativeInt(ErrorsR2)+2*sizeof(TErrorTerm));
+  ErrorG2 := PErrors(NativeInt(ErrorsG2)+2*sizeof(TErrorTerm));
+  ErrorB2 := PErrors(NativeInt(ErrorsB2)+2*sizeof(TErrorTerm));
 end;
 
 destructor T5by3Ditherer.Destroy;
@@ -3590,16 +3591,16 @@ begin
   if (Direction = 1) then
   begin
     // ErrorsR0[1] gives compiler error, so we
-    // use PErrors(longInt(ErrorsR0)+sizeof(TErrorTerm)) instead...
-    ErrorR0 := PErrors(longInt(ErrorsR0)+2*sizeof(TErrorTerm));
-    ErrorG0 := PErrors(longInt(ErrorsG0)+2*sizeof(TErrorTerm));
-    ErrorB0 := PErrors(longInt(ErrorsB0)+2*sizeof(TErrorTerm));
-    ErrorR1 := PErrors(longInt(ErrorsR1)+2*sizeof(TErrorTerm));
-    ErrorG1 := PErrors(longInt(ErrorsG1)+2*sizeof(TErrorTerm));
-    ErrorB1 := PErrors(longInt(ErrorsB1)+2*sizeof(TErrorTerm));
-    ErrorR2 := PErrors(longInt(ErrorsR2)+2*sizeof(TErrorTerm));
-    ErrorG2 := PErrors(longInt(ErrorsG2)+2*sizeof(TErrorTerm));
-    ErrorB2 := PErrors(longInt(ErrorsB2)+2*sizeof(TErrorTerm));
+    // use PErrors(NativeInt(ErrorsR0)+sizeof(TErrorTerm)) instead...
+    ErrorR0 := PErrors(NativeInt(ErrorsR0)+2*sizeof(TErrorTerm));
+    ErrorG0 := PErrors(NativeInt(ErrorsG0)+2*sizeof(TErrorTerm));
+    ErrorB0 := PErrors(NativeInt(ErrorsB0)+2*sizeof(TErrorTerm));
+    ErrorR1 := PErrors(NativeInt(ErrorsR1)+2*sizeof(TErrorTerm));
+    ErrorG1 := PErrors(NativeInt(ErrorsG1)+2*sizeof(TErrorTerm));
+    ErrorB1 := PErrors(NativeInt(ErrorsB1)+2*sizeof(TErrorTerm));
+    ErrorR2 := PErrors(NativeInt(ErrorsR2)+2*sizeof(TErrorTerm));
+    ErrorG2 := PErrors(NativeInt(ErrorsG2)+2*sizeof(TErrorTerm));
+    ErrorB2 := PErrors(NativeInt(ErrorsB2)+2*sizeof(TErrorTerm));
   end else
   begin
     ErrorR0 := @ErrorsR0[Width+1];
@@ -3788,18 +3789,18 @@ begin
   FDirection2 := 2 * Direction;
   FDirection3 := 3 * Direction;
 
-  ErrorR0 := PErrors(longInt(ErrorsR0)+3*sizeof(TErrorTerm));
-  ErrorG0 := PErrors(longInt(ErrorsG0)+3*sizeof(TErrorTerm));
-  ErrorB0 := PErrors(longInt(ErrorsB0)+3*sizeof(TErrorTerm));
-  ErrorR1 := PErrors(longInt(ErrorsR1)+3*sizeof(TErrorTerm));
-  ErrorG1 := PErrors(longInt(ErrorsG1)+3*sizeof(TErrorTerm));
-  ErrorB1 := PErrors(longInt(ErrorsB1)+3*sizeof(TErrorTerm));
-  ErrorR2 := PErrors(longInt(ErrorsR2)+3*sizeof(TErrorTerm));
-  ErrorG2 := PErrors(longInt(ErrorsG2)+3*sizeof(TErrorTerm));
-  ErrorB2 := PErrors(longInt(ErrorsB2)+3*sizeof(TErrorTerm));
-  ErrorR3 := PErrors(longInt(ErrorsR3)+3*sizeof(TErrorTerm));
-  ErrorG3 := PErrors(longInt(ErrorsG3)+3*sizeof(TErrorTerm));
-  ErrorB3 := PErrors(longInt(ErrorsB3)+3*sizeof(TErrorTerm));
+  ErrorR0 := PErrors(NativeInt(ErrorsR0)+3*sizeof(TErrorTerm));
+  ErrorG0 := PErrors(NativeInt(ErrorsG0)+3*sizeof(TErrorTerm));
+  ErrorB0 := PErrors(NativeInt(ErrorsB0)+3*sizeof(TErrorTerm));
+  ErrorR1 := PErrors(NativeInt(ErrorsR1)+3*sizeof(TErrorTerm));
+  ErrorG1 := PErrors(NativeInt(ErrorsG1)+3*sizeof(TErrorTerm));
+  ErrorB1 := PErrors(NativeInt(ErrorsB1)+3*sizeof(TErrorTerm));
+  ErrorR2 := PErrors(NativeInt(ErrorsR2)+3*sizeof(TErrorTerm));
+  ErrorG2 := PErrors(NativeInt(ErrorsG2)+3*sizeof(TErrorTerm));
+  ErrorB2 := PErrors(NativeInt(ErrorsB2)+3*sizeof(TErrorTerm));
+  ErrorR3 := PErrors(NativeInt(ErrorsR3)+3*sizeof(TErrorTerm));
+  ErrorG3 := PErrors(NativeInt(ErrorsG3)+3*sizeof(TErrorTerm));
+  ErrorB3 := PErrors(NativeInt(ErrorsB3)+3*sizeof(TErrorTerm));
 end;
 
 destructor TSteveArcheDitherer.Destroy;
@@ -3969,19 +3970,19 @@ begin
   if (Direction = 1) then
   begin
     // ErrorsR0[1] gives compiler error, so we
-    // use PErrors(longInt(ErrorsR0)+sizeof(TErrorTerm)) instead...
-    ErrorR0 := PErrors(longInt(ErrorsR0)+3*sizeof(TErrorTerm));
-    ErrorG0 := PErrors(longInt(ErrorsG0)+3*sizeof(TErrorTerm));
-    ErrorB0 := PErrors(longInt(ErrorsB0)+3*sizeof(TErrorTerm));
-    ErrorR1 := PErrors(longInt(ErrorsR1)+3*sizeof(TErrorTerm));
-    ErrorG1 := PErrors(longInt(ErrorsG1)+3*sizeof(TErrorTerm));
-    ErrorB1 := PErrors(longInt(ErrorsB1)+3*sizeof(TErrorTerm));
-    ErrorR2 := PErrors(longInt(ErrorsR2)+3*sizeof(TErrorTerm));
-    ErrorG2 := PErrors(longInt(ErrorsG2)+3*sizeof(TErrorTerm));
-    ErrorB2 := PErrors(longInt(ErrorsB2)+3*sizeof(TErrorTerm));
-    ErrorR3 := PErrors(longInt(ErrorsR3)+3*sizeof(TErrorTerm));
-    ErrorG3 := PErrors(longInt(ErrorsG3)+3*sizeof(TErrorTerm));
-    ErrorB3 := PErrors(longInt(ErrorsB3)+3*sizeof(TErrorTerm));
+    // use PErrors(NativeInt(ErrorsR0)+sizeof(TErrorTerm)) instead...
+    ErrorR0 := PErrors(NativeInt(ErrorsR0)+3*sizeof(TErrorTerm));
+    ErrorG0 := PErrors(NativeInt(ErrorsG0)+3*sizeof(TErrorTerm));
+    ErrorB0 := PErrors(NativeInt(ErrorsB0)+3*sizeof(TErrorTerm));
+    ErrorR1 := PErrors(NativeInt(ErrorsR1)+3*sizeof(TErrorTerm));
+    ErrorG1 := PErrors(NativeInt(ErrorsG1)+3*sizeof(TErrorTerm));
+    ErrorB1 := PErrors(NativeInt(ErrorsB1)+3*sizeof(TErrorTerm));
+    ErrorR2 := PErrors(NativeInt(ErrorsR2)+3*sizeof(TErrorTerm));
+    ErrorG2 := PErrors(NativeInt(ErrorsG2)+3*sizeof(TErrorTerm));
+    ErrorB2 := PErrors(NativeInt(ErrorsB2)+3*sizeof(TErrorTerm));
+    ErrorR3 := PErrors(NativeInt(ErrorsR3)+3*sizeof(TErrorTerm));
+    ErrorG3 := PErrors(NativeInt(ErrorsG3)+3*sizeof(TErrorTerm));
+    ErrorB3 := PErrors(NativeInt(ErrorsB3)+3*sizeof(TErrorTerm));
   end else
   begin
     ErrorR0 := @ErrorsR0[Width+2];
@@ -4023,12 +4024,12 @@ begin
   FillChar(ErrorsB1^, sizeof(TErrorTerm)*(Width+4), 0);
 
   FDirection2 := 2 * Direction;
-  ErrorR0 := PErrors(longInt(ErrorsR0)+2*sizeof(TErrorTerm));
-  ErrorG0 := PErrors(longInt(ErrorsG0)+2*sizeof(TErrorTerm));
-  ErrorB0 := PErrors(longInt(ErrorsB0)+2*sizeof(TErrorTerm));
-  ErrorR1 := PErrors(longInt(ErrorsR1)+2*sizeof(TErrorTerm));
-  ErrorG1 := PErrors(longInt(ErrorsG1)+2*sizeof(TErrorTerm));
-  ErrorB1 := PErrors(longInt(ErrorsB1)+2*sizeof(TErrorTerm));
+  ErrorR0 := PErrors(NativeInt(ErrorsR0)+2*sizeof(TErrorTerm));
+  ErrorG0 := PErrors(NativeInt(ErrorsG0)+2*sizeof(TErrorTerm));
+  ErrorB0 := PErrors(NativeInt(ErrorsB0)+2*sizeof(TErrorTerm));
+  ErrorR1 := PErrors(NativeInt(ErrorsR1)+2*sizeof(TErrorTerm));
+  ErrorG1 := PErrors(NativeInt(ErrorsG1)+2*sizeof(TErrorTerm));
+  ErrorB1 := PErrors(NativeInt(ErrorsB1)+2*sizeof(TErrorTerm));
 end;
 
 destructor TBurkesDitherer.Destroy;
@@ -4832,8 +4833,8 @@ begin
       begin
         SrcScanline := DIBSource.ScanLine[Row];
         DstScanline := DIBResult.ScanLine[Row];
-        Src := pointer(longInt(SrcScanLine) + Ditherer.Column*sizeof(TRGBTriple));
-        Dst := pointer(longInt(DstScanLine) + Ditherer.Column);
+        Src := pointer(NativeInt(SrcScanLine) + Ditherer.Column*sizeof(TRGBTriple));
+        Dst := pointer(NativeInt(DstScanLine) + Ditherer.Column);
 
         while (Ditherer.Column < Ditherer.Width) and (Ditherer.Column >= 0) do
         begin
@@ -6020,7 +6021,7 @@ var
 
       oldcode := incode;
 
-      if (longInt(Source) > longInt(@stack)) then
+      if (NativeUInt(Source) > NativeUInt(@stack)) then
       begin
         Dec(Source);
         Result := Source^;
@@ -6032,7 +6033,7 @@ var
 
   function readLZW: integer;
   begin
-    if (longInt(Source) > longInt(@stack)) then
+    if (NativeUInt(Source) > NativeUInt(@stack)) then
     begin
       Dec(Source);
       Result := Source^;
@@ -7997,7 +7998,7 @@ function TGIFSubImage.GetPixel(x, y: integer): BYTE;
 begin
   if (x < 0) or (x > Width-1) then
     Error(sBadPixelCoordinates);
-  Result := BYTE(PAnsiChar(longInt(Scanline[y]) + x)^);
+  Result := BYTE(PAnsiChar(NativeInt(Scanline[y]) + x)^);
 end;
 
 function TGIFSubImage.GetScanline(y: integer): pointer;
@@ -8005,7 +8006,7 @@ begin
   if (y < 0) or (y > Height-1) then
     Error(sBadPixelCoordinates);
   NeedImage;
-  Result := pointer(longInt(FData) + y * Width);
+  Result := pointer(NativeInt(FData) + y * Width);
 end;
 
 procedure TGIFSubImage.Prepare;

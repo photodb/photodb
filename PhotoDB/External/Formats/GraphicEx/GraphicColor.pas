@@ -495,7 +495,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -515,7 +520,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -560,7 +570,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -580,7 +595,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -640,7 +660,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -660,7 +685,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -705,7 +735,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -725,7 +760,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -831,7 +871,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -851,7 +896,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -896,7 +946,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -916,7 +971,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -976,7 +1036,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -996,7 +1061,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -1041,7 +1111,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -1061,7 +1136,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -1172,7 +1252,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1228,7 +1313,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end
             end;
@@ -1305,7 +1395,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1361,7 +1456,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1469,7 +1569,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1525,7 +1630,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end
             end;
@@ -1601,7 +1711,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1657,7 +1772,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1731,7 +1851,12 @@ begin
                   Inc(K8, Increment);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1758,7 +1883,12 @@ begin
                   Inc(K8, Increment);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1809,7 +1939,12 @@ begin
                   Inc(K16, Increment);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1836,7 +1971,12 @@ begin
                   Inc(K16, Increment);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1910,7 +2050,12 @@ begin
                   Inc(K8, Increment);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1937,7 +2082,12 @@ begin
                   Inc(K8, Increment);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -1988,7 +2138,12 @@ begin
                   Inc(K16, Increment);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -2015,7 +2170,12 @@ begin
                   Inc(K16, Increment);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -2060,7 +2220,12 @@ begin
                 Target8^ := Source8^;
                 Inc(Source8, 1 + AlphaSkip);
               end;
+              {$ifdef cpux64}
+              BitRun := BitRun shr 1 or BitRun shl 7;
+              {$endif}
+              {$ifndef cpux64}
               asm ROR BYTE PTR [BitRun], 1 end;
+              {$endif}
               Dec(Count);
               Inc(Target8);
             end;
@@ -2076,7 +2241,12 @@ begin
                 Target16^ := MulDiv16(Source8^, 65535, 255);
                 Inc(Source8, 1 + AlphaSkip);
               end;
+              {$ifdef cpux64}
+              BitRun := BitRun shr 1 or BitRun shl 7;
+              {$endif}
+              {$ifndef cpux64}
               asm ROR BYTE PTR [BitRun], 1 end;
+              {$endif}
               Dec(Count);
               Inc(Target16);
             end;
@@ -2098,7 +2268,12 @@ begin
                 Target8^ := Convert16(Source16^);
                 Inc(Source16, 1 + AlphaSkip);
               end;
+              {$ifdef cpux64}
+              BitRun := BitRun shr 1 or BitRun shl 7;
+              {$endif}
+              {$ifndef cpux64}
               asm ROR BYTE PTR [BitRun], 1 end;
+              {$endif}
               Dec(Count);
               Inc(Target8);
             end;
@@ -2117,7 +2292,12 @@ begin
                   Target16^ := Swap(Source16^);
                   Inc(Source16, 1 + AlphaSkip);
                 end;
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
                 Inc(Target16);
               end;
@@ -2131,7 +2311,12 @@ begin
                   Target16^ := Source16^;
                   Inc(Source16, 1 + AlphaSkip);
                 end;
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
                 Inc(Target16);
               end;
@@ -2197,17 +2382,30 @@ begin
           SourceShift := 8;
           Inc(SourceRun);
         end;
+
+        {$ifdef cpux64}
+        SourceMask := SourceMask shr SourceBPS or BitRun shl (8 - SourceBPS);
+        {$endif}
+        {$ifndef cpux64}
         asm
           MOV CL, [SourceBPS]
           ROR BYTE PTR [SourceMask], CL // roll source bit mask with source bit count
         end;
+        {$endif}
       end;
 
+      {$ifdef cpux64}
+      BitRun := BitRun shr 1 or BitRun shl 7;
+      TargetMask := TargetMask shr TargetBPS or TargetMask shl (8 - TargetBPS);
+      {$endif}
+      {$ifndef cpux64}
       asm
         ROR BYTE PTR [BitRun], 1      // adjust test bit mask
         MOV CL, [TargetBPS]
         ROR BYTE PTR [TargetMask], CL // roll target mask with target bit count
       end;
+      {$endif}
+
       if TargetShift = 0 then TargetShift := 8 - TargetBPS
                          else Dec(TargetShift, TargetBPS);
       Inc(Done);
@@ -2243,7 +2441,12 @@ begin
         TargetRun^ := Swap(SourceRun^);
         Inc(SourceRun);
       end;
+      {$ifdef cpux64}
+      BitRun := BitRun shr 1 or BitRun shl 7;
+      {$endif}
+      {$ifndef cpux64}
       asm ROR BYTE PTR [BitRun], 1 end;
+      {$endif}
       Dec(Count);
       Inc(TargetRun);
     end;
@@ -2259,7 +2462,12 @@ begin
           TargetRun^ := SourceRun^;
           Inc(SourceRun);
         end;
+        {$ifdef cpux64}
+        BitRun := BitRun shr 1 or BitRun shl 7;
+        {$endif}
+        {$ifndef cpux64}
         asm ROR BYTE PTR [BitRun], 1 end;
+        {$endif}
         Dec(Count);
         Inc(TargetRun);
       end;
@@ -2302,11 +2510,19 @@ begin
       Inc(SourceRun16);
     end;
 
+
+    {$ifdef cpux64}
+    BitRun := BitRun shr 1 or BitRun shl 7;
+    TargetMask := TargetMask shr TargetBPS or TargetMask shl (8 - TargetBPS);
+    {$endif}
+    {$ifndef cpux64}
     asm
       ROR BYTE PTR [BitRun], 1      // adjust test bit mask
       MOV CL, [TargetBPS]
       ROR BYTE PTR [TargetMask], CL // roll target mask with target bit count
     end;
+    {$endif}
+
     if TargetShift = 0 then TargetShift := 8 - TargetBPS
                        else Dec(TargetShift, TargetBPS);
     Dec(Count);
@@ -2354,15 +2570,24 @@ begin
         SourceShift := 8;
         Inc(SourceRun8);
       end;
+
+      {$ifdef cpux64}
+      SourceMask := SourceMask shr SourceBPS or BitRun shl (SourceMask - SourceBPS);
+      {$endif}
+      {$ifndef cpux64}
       asm
         MOV CL, [SourceBPS]
         ROR BYTE PTR [SourceMask], CL // roll source bit mask with source bit count
       end;
+      {$endif}
     end;
 
-    asm
-      ROR BYTE PTR [BitRun], 1      // adjust test bit mask
-    end;
+    {$ifdef cpux64}
+    BitRun := BitRun shr 1 or BitRun shl 7;
+    {$endif}
+    {$ifndef cpux64}
+    asm ROR BYTE PTR [BitRun], 1 end;
+    {$endif}
 
     Dec(Count);
     // advance target pointer every (8 div target bit count)
@@ -2467,7 +2692,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -2487,7 +2717,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -2532,7 +2767,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -2552,7 +2792,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -2612,7 +2857,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -2632,7 +2882,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -2677,7 +2932,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -2697,7 +2957,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -2802,7 +3067,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -2822,7 +3092,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -2867,7 +3142,12 @@ begin
                     Inc(SourceR8, SourceIncrement);
                     Inc(SourceA8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -2887,7 +3167,12 @@ begin
                     Inc(SourceG8, SourceIncrement);
                     Inc(SourceR8, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -2947,7 +3232,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA8);
                 end;
@@ -2967,7 +3257,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PByte(TargetRun8), TargetIncrement);
                 end;
@@ -3012,7 +3307,12 @@ begin
                     Inc(SourceR16, SourceIncrement);
                     Inc(SourceA16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(TargetRunA16);
                 end;
@@ -3032,7 +3332,12 @@ begin
                     Inc(SourceG16, SourceIncrement);
                     Inc(SourceR16, SourceIncrement);
                   end;
+                  {$ifdef cpux64}
+                  BitRun := BitRun shr 1 or BitRun shl 7;
+                  {$endif}
+                  {$ifndef cpux64}
                   asm ROR BYTE PTR [BitRun], 1 end;
+                  {$endif}
                   Dec(Count);
                   Inc(PWord(TargetRun16), TargetIncrement);
                 end;
@@ -3109,8 +3414,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
-
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3140,7 +3449,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3190,7 +3504,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3223,7 +3542,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3298,8 +3622,12 @@ begin
                   Inc(Target8);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
-
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3329,7 +3657,12 @@ begin
                   Inc(Target16);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3379,7 +3712,12 @@ begin
                   Inc(Target8);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3412,7 +3750,12 @@ begin
                   Inc(Target16);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3487,8 +3830,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
-
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3518,7 +3865,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3568,7 +3920,12 @@ begin
                   Inc(Target8, 1 + AlphaSkip);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3601,7 +3958,12 @@ begin
                   Inc(Target16, 1 + AlphaSkip);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3676,8 +4038,12 @@ begin
                   Inc(Target8);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
-
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3707,7 +4073,12 @@ begin
                   Inc(Target16);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3757,7 +4128,12 @@ begin
                   Inc(Target8);
                 end
                 else Inc(Target8, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;
@@ -3790,7 +4166,12 @@ begin
                   Inc(Target16);
                 end
                 else Inc(Target16, 3 + AlphaSkip);
+                {$ifdef cpux64}
+                BitRun := BitRun shr 1 or BitRun shl 7;
+                {$endif}
+                {$ifndef cpux64}
                 asm ROR BYTE PTR [BitRun], 1 end;
+                {$endif}
                 Dec(Count);
               end;
             end;

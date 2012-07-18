@@ -136,7 +136,7 @@ begin
     WM_CREATE:
       begin
         ContextMenu2 := IContextMenu2(PCreateStruct(LParam).LpCreateParams);
-        SetWindowLong(Wnd, GWL_USERDATA, Longint(ContextMenu2));
+        SetWindowLong(Wnd, GWL_USERDATA, NativeInt(ContextMenu2));
         Result := DefWindowProc(Wnd, Msg, WParam, LParam);
       end;
     WM_INITMENUPOPUP:

@@ -207,16 +207,12 @@ uses
   uW7TaskBar in 'Units\uW7TaskBar.pas',
   uDBHint in 'Units\uDBHint.pas',
   uMath in 'Units\uMath.pas',
-  ASN1 in 'External\Crypt\DECv5.2\ASN1.pas',
-  CPU in 'External\Crypt\DECv5.2\CPU.pas',
-  CRC in 'External\Crypt\DECv5.2\CRC.pas',
   DECCipher in 'External\Crypt\DECv5.2\DECCipher.pas',
   DECData in 'External\Crypt\DECv5.2\DECData.pas',
   DECFmt in 'External\Crypt\DECv5.2\DECFmt.pas',
   DECHash in 'External\Crypt\DECv5.2\DECHash.pas',
   DECRandom in 'External\Crypt\DECv5.2\DECRandom.pas',
   DECUtil in 'External\Crypt\DECv5.2\DECUtil.pas',
-  TypInfoEx in 'External\Crypt\DECv5.2\TypInfoEx.pas',
   uStrongCrypt in 'Units\uStrongCrypt.pas',
   uMemory in 'Units\uMemory.pas',
   uDBForm in 'Units\uDBForm.pas',
@@ -451,7 +447,7 @@ begin
       GetMem(Buf, cd.cbData);
       try
         P := PByte(Buf);
-        Integer(P) := Integer(P) + SizeOf(TMsgHdr);
+        NativeInt(P) := NativeInt(P) + SizeOf(TMsgHdr);
 
         StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
         cd.lpData := Buf;

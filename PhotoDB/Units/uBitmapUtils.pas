@@ -87,7 +87,7 @@ end;
 
 function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
 var
-  I, J: integer;
+  I, J: Integer;
   P: PARGB;
   LGray, LR, LG, LB: Byte;
 begin
@@ -466,7 +466,7 @@ var
   P1: PARGB;
   Sh, Sw: Extended;
   Xp: array of PARGB;
-  Y : Integer;
+  Y: Integer;
   XAr: array of Integer;
 begin
   D.SetSize(100, 100);
@@ -720,7 +720,7 @@ var
   X, Y, Xi1, Yi1, Xi2, Yi2, Xx, Yy, Lw1: Integer;
   Bufw, Bufh, Outw, Outh: Integer;
   Sumr, Sumb, Sumg, Suml, Pixcnt: Dword;
-  AdrIn, AdrOut, AdrLine0, DeltaLine, DeltaLine2: Integer;
+  AdrIn, AdrOut, AdrLine0, DeltaLine, DeltaLine2: NativeInt;
 begin
 {$R-}
   if not ((S.PixelFormat = pf32Bit) and (D.PixelFormat = pf32Bit)) then
@@ -733,10 +733,10 @@ begin
   bufh := D.Height;
   outw := S.Width;
   outh := S.Height;
-  adrLine0 := Integer(D.ScanLine[0]);
+  adrLine0 := NativeInt(D.ScanLine[0]);
   deltaLine := 0;
   if D.Height > 1 then
-    deltaLine := Integer(D.ScanLine[1]) - adrLine0;
+    deltaLine := NativeInt(D.ScanLine[1]) - adrLine0;
   yi2 := 0;
 
   if S.PixelFormat = pf32Bit then
@@ -744,7 +744,7 @@ begin
 
     for y := 0 to outh-1 do
     begin
-      adrOut := DWORD(S.ScanLine[y]);
+      adrOut := NativeInt(S.ScanLine[y]);
       yi1 := yi2 {+ 1};
       yi2 := ((y+1) * bufh) div outh - 1;
       if yi2 > bufh-1 then yi2 := bufh;
@@ -788,7 +788,7 @@ begin
   begin
     for y := 0 to outh-1 do
     begin
-      adrOut := DWORD(S.ScanLine[y]);
+      adrOut := NativeInt(S.ScanLine[y]);
       yi1 := yi2 {+ 1};
       yi2 := ((y+1) * bufh) div outh - 1;
       if yi2 > bufh-1 then yi2 := bufh;
@@ -1062,7 +1062,7 @@ var
   I, J,
   XD, YD,
   DH, DW,
-  SH, SW : Integer;
+  SH, SW: Integer;
   W1, W: Byte;
   pD: PARGB;
   pS: PARGB32;
@@ -1098,7 +1098,7 @@ var
   I, J,
   XD, YD,
   DH, DW,
-  SH, SW : Integer;
+  SH, SW: Integer;
   W1, W: Byte;
   pD, pS: PARGB32;
 begin
@@ -1346,7 +1346,7 @@ end;
 procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
 var
   W1, W2, I, J: Integer;
-  PS, PD : PARGB;
+  PS, PD: PARGB;
 begin
   W1 := Transparent;
   W2 := 255 - W1;
@@ -1486,7 +1486,7 @@ var
   PS32: PARGB32;
   PDA: array of PARGB32;
   SH, SW: Integer;
-  AddrLineD, DeltaD, AddrD: Integer;
+  AddrLineD, DeltaD, AddrD: NativeInt;
   PD: PRGB32;
   W, W1: Byte;
 
@@ -1510,10 +1510,10 @@ begin
   Dest32.SetSize(SW + 4, SH + 4);
   SetLength(PDA, Dest32.Height);
 
-  AddrLineD := Integer(Dest32.ScanLine[0]);
+  AddrLineD := NativeInt(Dest32.ScanLine[0]);
   DeltaD := 0;
   if Dest32.Height > 1 then
-    DeltaD := Integer(Dest32.ScanLine[1])- AddrLineD;
+    DeltaD := NativeInt(Dest32.ScanLine[1])- AddrLineD;
 
   //buffer scanlines
   for I := 0 to Dest32.Height - 1 do
@@ -1698,7 +1698,7 @@ begin
     DstLine32 := PARGB32(DstLine);
     DstGap := 0;
     if D.Height > 1 then
-      DstGap  := Integer(D.ScanLine[1]) - Integer(DstLine);
+      DstGap  := NativeInt(D.ScanLine[1]) - NativeInt(DstLine);
     Mx := MulDiv(S.Width, $10000, D.Width);
     My := MulDiv(S.Height, $10000, D.Height);
     yP  := 0;
@@ -1751,7 +1751,7 @@ begin
           Inc(xP, Mx);
         end; {for}
         Inc(yP, My);
-        DstLine32 := PARGB32(Integer(DstLine32) + DstGap);
+        DstLine32 := PARGB32(NativeInt(DstLine32) + DstGap);
         if y mod 50 = 0 then
         if Assigned(CallBack) then CallBack(Round(100* Y / D.Height), Terminating);
         if Terminating then Break;
@@ -1798,7 +1798,7 @@ begin
           Inc(xP, Mx);
         end; {for}
         Inc(yP, My);
-        DstLine := pRGBArray(Integer(DstLine) + DstGap);
+        DstLine := pRGBArray(NativeInt(DstLine) + DstGap);
         if y mod 50=0 then
         If Assigned(CallBack) then CallBack(Round(100*y/D.Height),Terminating);
         if Terminating then Break;
@@ -1815,8 +1815,8 @@ var
   Sh, Sw: Extended;
   Xp: array of PARGB;
   Terminating: Boolean;
-  YMin, YMax : Integer;
-  XWA : array of Integer;
+  YMin, YMax: Integer;
+  XWA: array of Integer;
 begin
   if Width = 0 then
     Exit;
@@ -1953,13 +1953,13 @@ var
   IRed, IGrn, IBlu, IRatio: Longword;
   P, C1, C2, C3, C4, C5: TRGB24;
   Pt, Pt1: PRGB24;
-  ISrc, IDst, S1: Integer;
+  ISrc, IDst, S1: NativeInt;
   I, J, R, G, B, TmpY: Integer;
 
-  RowDest, RowSource, RowSourceStart: Integer;
+  RowDest, RowSource, RowSourceStart: NativeInt;
   W, H: Integer;
   Dxmin, Dymin: Integer;
-  Ny1, Ny2, Ny3: Integer;
+  Ny1, Ny2, Ny3: NativeInt;
   Dx, Dy: Integer;
   LutX, LutY: array of Integer;
   Src, Dest: TBitmap;
@@ -2015,8 +2015,8 @@ begin
 
   Dec(W);
   Dec(H);
-  RowDest := Integer(Dest.Scanline[0]);
-  RowSourceStart := Integer(Src.Scanline[0]);
+  RowDest := NativeInt(Dest.Scanline[0]);
+  RowSourceStart := NativeInt(Src.Scanline[0]);
   RowSource := RowSourceStart;
   for Y := 0 to H do
   begin
@@ -2058,11 +2058,11 @@ begin
     Exit;
 
   // Sharpening...
-  S1 := Integer(Dest.ScanLine[0]);
+  S1 := NativeInt(Dest.ScanLine[0]);
   IDst := 0;
   if Dest.Height > 1 then
-    IDst := Integer(Dest.ScanLine[1]) - S1;
-  Ny1 := Integer(S1);
+    IDst := NativeInt(Dest.ScanLine[1]) - S1;
+  Ny1 := S1;
   Ny2 := Ny1 + IDst;
   Ny3 := Ny2 + IDst;
   for Y := 1 to Dest.Height - 2 do
