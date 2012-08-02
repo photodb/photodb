@@ -202,8 +202,7 @@ begin
     Dest.Assign(TRAWImage(Src))
   else if Src is TBitmap then
     AssignBitmap(Dest, TBitmap(Src))
-  else if (Src is TPngImage) and ((TPngImage(Src).Header.BitDepth = 8) or
-    (TPngImage(Src).Header.BitDepth = 16)) then
+  else if Src is TPngImage then
   begin
     AssignPNG(Dest, TPngImage(Src));
   end else

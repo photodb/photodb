@@ -514,7 +514,7 @@ begin
       end;
     end;
 
-    Graphic := nil;//GraphicClass.Create;
+    Graphic := nil;
 
     try
       Flags := [ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfPassword, ilfDontUpdateInfo];

@@ -214,12 +214,15 @@ end;
 
 procedure LoadPNGImagePalette(PNG: TPNGImage; Bitmap: TBitmap);
 var
-  I, J, P: Integer;
+  I, J: Integer;
+  P: Byte;
   DeltaS, DeltaD: Integer;
   AddrLineS, AddrLineD: NativeInt;
   AddrS, AddrD: NativeInt;
-  TC: TColor;
   Chunk: TChunkPLTE;
+  TRNS: TChunktRNS;
+  BitDepth, BitDepthD8,
+  Rotater, ColorMask: Byte;
 begin
   if PNG.Transparent then
     Bitmap.PixelFormat := pf32bit
@@ -238,6 +241,18 @@ begin
     DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
+  BitDepth := PNG.Header.BitDepth; //1,2,4,8 only, 16 not supported by PNG specification
+
+  //{2,16 bits for each pixel is not supported by windows bitmap} -> see PNG implementation
+  if BitDepth = 2 then
+    BitDepth := 4;
+  if BitDepth = 16 then
+    BitDepth := 8;
+
+
+  BitDepthD8 := 8 - BitDepth;
+  ColorMask := (255 shl BitDepthD8) and 255;
+
   Chunk := TChunkPLTE(PNG.Chunks.ItemFromClass(TChunkPLTE));
   if not PNG.Transparent then
   begin
@@ -245,9 +260,13 @@ begin
     begin
       AddrS := AddrLineS;
       AddrD := AddrLineD;
+      Rotater := 0;
       for J := 0 to PNG.Width - 1 do
       begin
-        P := PByte(AddrS)^;
+        Rotater := J * BitDepth mod 8;
+
+        P := ((PByte(AddrS + (J * BitDepth) div 8)^ shl Rotater) and ColorMask) shr BitDepthD8;
+
         with Chunk.Item[P] do
         begin
           PRGB(AddrD)^.R := PNG.GammaTable[rgbRed];
@@ -255,7 +274,6 @@ begin
           PRGB(AddrD)^.B := PNG.GammaTable[rgbBlue];
         end;
 
-        Inc(AddrS, 1);
         Inc(AddrD, 3);
       end;
       Inc(AddrLineS, DeltaS);
@@ -263,28 +281,26 @@ begin
     end;
   end else
   begin
-    TC := ColorToRGB(PNG.TransparentColor) and $00FFFFFF;
-
+    TRNS := PNG.Chunks.ItemFromClass(TChunktRNS) as TChunktRNS;
     for I := 0 to PNG.Height - 1 do
     begin
       AddrS := AddrLineS;
       AddrD := AddrLineD;
+      Rotater := 0;
       for J := 0 to PNG.Width - 1 do
       begin
-        P := PByte(AddrS)^;
+        Rotater := J * BitDepth mod 8;
+
+        P := ((PByte(AddrS + (J * BitDepth) div 8)^ shl Rotater) and ColorMask) shr BitDepthD8;
+
         with Chunk.Item[P] do
         begin
           PRGB32(AddrD)^.R := PNG.GammaTable[rgbRed];
           PRGB32(AddrD)^.G := PNG.GammaTable[rgbGreen];
           PRGB32(AddrD)^.B := PNG.GammaTable[rgbBlue];
-
-          if PRGB32(AddrD)^.R + PRGB32(AddrD)^.G shl 8 + PRGB32(AddrD)^.B shl 16 = TC then
-            PRGB32(AddrD)^.L := 0
-          else
-            PRGB32(AddrD)^.L := 255;
+          PRGB32(AddrD)^.L := TRNS.PaletteValues[P];
         end;
 
-        Inc(AddrS, 1);
         Inc(AddrD, 4);
       end;
       Inc(AddrLineS, DeltaS);
@@ -346,6 +362,8 @@ var
   DeltaS, DeltaD: Integer;
   AddrLineS, AddrLineD: NativeInt;
   AddrS, AddrD: NativeInt;
+  BitDepth, BitDepthD8, BitDepthD9, ColorMask, P, Rotater, Multilpyer: Byte;
+
 begin
   if Bitmap.PixelFormat <> pf24bit then
     Bitmap.PixelFormat := pf24bit;
@@ -362,16 +380,40 @@ begin
     DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
+  BitDepth := PNG.Header.BitDepth; //1,2,4,8 only, 16 not supported by PNG specification
+
+  //{2,16 bits for each pixel is not supported by windows bitmap} -> see PNG implementation
+  if BitDepth = 2 then
+    BitDepth := 4;
+  if BitDepth = 16 then
+    BitDepth := 8;
+
+  BitDepthD8 := 8 - BitDepth;
+  BitDepthD9 := 9 - BitDepth;
+  ColorMask := (255 shl BitDepthD8) and 255;
+
+  case BitDepth of
+    1: Multilpyer := 255;
+    2: Multilpyer := 85;
+    4: Multilpyer := 17;
+    8: Multilpyer := 1;
+  end;
+
   for I := 0 to PNG.Height - 1 do
   begin
     AddrS := AddrLineS;
     AddrD := AddrLineD;
+    Rotater := 0;
     for J := 0 to PNG.Width - 1 do
     begin
-      PRGB(AddrD)^.R := PByte(AddrS)^;
-      PRGB(AddrD)^.G := PByte(AddrS)^;
-      PRGB(AddrD)^.B := PByte(AddrS)^;
-      Inc(AddrS, 1);
+      Rotater := J * BitDepth mod 8;
+
+      P := ((PByte(AddrS + (J * BitDepth) div 8)^ shl Rotater) and ColorMask) shr BitDepthD8;
+
+      PRGB(AddrD)^.R := P * Multilpyer;
+      PRGB(AddrD)^.G := P * Multilpyer;
+      PRGB(AddrD)^.B := P * Multilpyer;
+
       Inc(AddrD, 3);
     end;
     Inc(AddrLineS, DeltaS);

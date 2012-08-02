@@ -70,25 +70,68 @@ procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
 procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
 
 function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
+function Gistogramma32(W, H: Integer; S: PARGB32Array): TGistogrammData;
 function FillHistogramma(Bitmap: TBitmap): TGistogrammData;
 
 implementation
 
 function FillHistogramma(Bitmap: TBitmap): TGistogrammData;
 var
-  PRGBArr: PARGBArray;
+  PRGBArr: PARGBArray;  
+  PRGB32Arr: PARGB32Array;
   I: Integer;
 begin
-  SetLength(PRGBArr, Bitmap.Height);
-  for I := 0 to Bitmap.Height - 1 do
-    PRGBArr[I] := Bitmap.ScanLine[I];
-  Result := Gistogramma(Bitmap.Width, Bitmap.Height, PRGBArr);
+  if Bitmap.PixelFormat = pf24Bit then
+  begin
+    SetLength(PRGBArr, Bitmap.Height);
+    for I := 0 to Bitmap.Height - 1 do
+      PRGBArr[I] := Bitmap.ScanLine[I];
+    Result := Gistogramma(Bitmap.Width, Bitmap.Height, PRGBArr);
+  end else if Bitmap.PixelFormat = pf32Bit then
+  begin
+    SetLength(PRGB32Arr, Bitmap.Height);
+    for I := 0 to Bitmap.Height - 1 do
+      PRGB32Arr[I] := Bitmap.ScanLine[I];
+    Result := Gistogramma32(Bitmap.Width, Bitmap.Height, PRGB32Arr);
+  end;
 end;
 
 function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
 var
   I, J: Integer;
   P: PARGB;
+  LGray, LR, LG, LB: Byte;
+begin
+  for I := 0 to 255 do
+  begin
+    Result.Gray[I] := 0;
+    Result.Red[I] := 0;
+    Result.Green[I] := 0;
+    Result.Blue[I] := 0;
+  end;
+
+  for I := 0 to H - 1 do
+  begin
+    P := S[I];
+    for J := 0 to W - 1 do
+    begin
+      LR := P[J].R;
+      LG := P[J].G;
+      LB := P[J].B;
+      LGray := (LR * 77 + LG * 151 + LB * 28) shr 8;
+      Inc(Result.Gray[LGray]);
+      Inc(Result.Red[LR]);
+      Inc(Result.Green[LG]);
+      Inc(Result.Blue[LB]);
+    end;
+  end;
+  Result.Loaded := True;
+end;
+
+function Gistogramma32(W, H: Integer; S: PARGB32Array): TGistogrammData;
+var
+  I, J: Integer;
+  P: PARGB32;
   LGray, LR, LG, LB: Byte;
 begin
   for I := 0 to 255 do
