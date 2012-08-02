@@ -231,7 +231,8 @@ end;
 procedure TDirectShowForm.TransformAlpha(Buffer: IDirectDrawSurface4; Alpha: Integer);
 var
   Dd: TDDSurfaceDesc2;
-  C, C1, M, N, A, Msa, X1: Integer;
+  M, N, A, Msa, X1: Integer;
+  C, C1: NativeInt;
   bb: ^TByteArray;
 begin
   {$R-}
@@ -254,8 +255,8 @@ begin
       A := Alpha shr 3; // Множитель прозрачности первого источника.
       Msa := $1F - A; // Множитель прозрачности второго источника.
       repeat
-        C := Integer((@(TransSrc1^[M]))^); // Пиксель первого источника.
-        C1 := Integer((@(TransSrc2^[M]))^); // Пиксель второго источника.
+        C := NativeInt((@(TransSrc1^[M]))^); // Пиксель первого источника.
+        C1 := NativeInt((@(TransSrc2^[M]))^); // Пиксель второго источника.
         // Результирующий пиксель
         C := (((Msa * ((C shr Rbm) and $1F) + A * ((C1 shr Rbm) and $1F)) shr 5) shl Rbm) or
           (((Msa * ((C shr Gbm) and $1F) + A * ((C1 shr Gbm) and $1F)) shr 5) shl Gbm) or
@@ -270,8 +271,8 @@ begin
     begin A := Alpha; // Множитель прозрачности первого источника.
       Msa := $FF - A; // Множитель прозрачности второго источника.
       repeat
-        C := Integer((@(TransSrc1^[M]))^); // Пиксель первого источника.
-        C1 := Integer((@(TransSrc2^[M]))^); // Пиксель второго источника.
+        C := NativeInt((@(TransSrc1^[M]))^); // Пиксель первого источника.
+        C1 := NativeInt((@(TransSrc2^[M]))^); // Пиксель второго источника.
         // Результирующий пиксель
         C := (((Msa * ((C shr Rbm) and $FF) + A * ((C1 shr Rbm) and $FF)) shr 8) shl Rbm) or
           (((Msa * ((C shr Gbm) and $FF) + A * ((C1 shr Gbm) and $FF)) shr 8) shl Gbm) or

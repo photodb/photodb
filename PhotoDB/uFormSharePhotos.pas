@@ -729,7 +729,7 @@ begin
       Setlength(Menus, 1);
       Menus[0] := TMenuItem.Create(nil);
       Menus[0].Caption := L('Delete item from list');
-      Menus[0].Tag := Integer(Sb);
+      Menus[0].Tag := NativeInt(Sb);
       Menus[0].ImageIndex := DB_IC_DELETE_INFO;
       Menus[0].OnClick := DeleteItemFromList;
 

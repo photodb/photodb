@@ -1885,7 +1885,7 @@ begin
                               else Break;
     until (RunLength = G3_EOL) or (FPackedSize = 0);
     AdjustEOL;
-  until (FPackedSize = 0) or (integer(FTarget) - integer(Dest) >= UnpackedSize);
+  until (FPackedSize = 0) or (NativeInt(FTarget) - NativeInt(Dest) >= UnpackedSize);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

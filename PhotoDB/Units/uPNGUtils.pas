@@ -219,6 +219,7 @@ var
   AddrLineS, AddrLineD: NativeInt;
   AddrS, AddrD: NativeInt;
   TC: TColor;
+  Chunk: TChunkPLTE;
 begin
   if PNG.Transparent then
     Bitmap.PixelFormat := pf32bit
@@ -237,6 +238,7 @@ begin
     DeltaD := NativeInt(Bitmap.ScanLine[1])- AddrLineD;
   end;
 
+  Chunk := TChunkPLTE(PNG.Chunks.ItemFromClass(TChunkPLTE));
   if not PNG.Transparent then
   begin
     for I := 0 to PNG.Height - 1 do
@@ -246,7 +248,7 @@ begin
       for J := 0 to PNG.Width - 1 do
       begin
         P := PByte(AddrS)^;
-        with TChunkPLTE(PNG.Chunks.ItemFromClass(TChunkPLTE)).Item[P] do
+        with Chunk.Item[P] do
         begin
           PRGB(AddrD)^.R := PNG.GammaTable[rgbRed];
           PRGB(AddrD)^.G := PNG.GammaTable[rgbGreen];
@@ -270,7 +272,7 @@ begin
       for J := 0 to PNG.Width - 1 do
       begin
         P := PByte(AddrS)^;
-        with TChunkPLTE(PNG.Chunks.ItemFromClass(TChunkPLTE)).Item[P] do
+        with Chunk.Item[P] do
         begin
           PRGB32(AddrD)^.R := PNG.GammaTable[rgbRed];
           PRGB32(AddrD)^.G := PNG.GammaTable[rgbGreen];
@@ -288,9 +290,7 @@ begin
       Inc(AddrLineS, DeltaS);
       Inc(AddrLineD, DeltaD);
     end;
-
   end;
-
 end;
 
 procedure LoadPNGImage8bitTransparent(PNG: TPNGImage; Bitmap: TBitmap);

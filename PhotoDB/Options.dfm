@@ -1549,6 +1549,11 @@ object OptionsForm: TOptionsForm
         end
       end
     end
+    object TbPrograms: TTabSheet
+      Caption = 'Programs'
+      ImageIndex = 7
+      TabVisible = False
+    end
   end
   object PmExtensionStatus: TPopupActionBar
     Left = 232

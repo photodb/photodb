@@ -705,8 +705,8 @@ begin
     tt^ := st[0]^;
     inc(tt); inc(st[0]); //first row unchanged
   end;
-  sr[1] := PByte(integer(sr[0]) - BytesPerScanline);
-  sr[2] := PByte(integer(sr[1]) - BytesPerScanline);
+  sr[1] := PByte(NativeInt(sr[0]) - BytesPerScanline);
+  sr[2] := PByte(NativeInt(sr[1]) - BytesPerScanline);
   for i := 1 to bmh do
   begin
     if i mod 50=0 then
@@ -714,11 +714,11 @@ begin
     if Terminating then Break;
     Dec(tr, BytesPerScanline);
     tt := pRGBTriple(tr);
-    st[0] := pRGBTriple(integer(sr[0]) + 3); //top
+    st[0] := pRGBTriple(NativeInt(sr[0]) + 3); //top
     st[1] := pRGBTriple(sr[1]); //left
-    st[2] := pRGBTriple(integer(sr[1]) + 3); //center
-    st[3] := pRGBTriple(integer(sr[1]) + 6); //right
-    st[4] := pRGBTriple(integer(sr[2]) + 3); //bottom
+    st[2] := pRGBTriple(NativeInt(sr[1]) + 3); //center
+    st[3] := pRGBTriple(NativeInt(sr[1]) + 6); //right
+    st[4] := pRGBTriple(NativeInt(sr[2]) + 3); //bottom
     tt^ := st[1]^; //1st col unchanged
     for j := 1 to bmw do
     begin

@@ -264,12 +264,15 @@ begin
 end;
 
 class procedure TDECObject.Register;
-var
+{var
   I: Integer;
   Found: Boolean;
-  ID: LongWord;
+  ID: LongWord;   }
 begin
-  if IsObject(FClasses, TList) then
+  if FClasses.IndexOf(Self) = -1 then
+    FClasses.Add(Self);
+
+  {if IsObject(FClasses, TList) then
   begin
     Found := False;
     ID := Identity;
@@ -278,7 +281,7 @@ begin
         if ID = TDECClass(FClasses[I]).Identity then
           raise EDECException.CreateFmt(sWrongIdentity, [TDECClass(FClasses[I]).ClassName, ClassName]);
     if not Found then FClasses.Add(Self);
-  end;
+  end;}
 end;
 
 // override FreeInstance to fillout allocated Object with Zeros

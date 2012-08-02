@@ -162,7 +162,9 @@ uses
   Rating,
   WebLinkList,
   uDBInfoEditorUtils,
-  uFormInterfaces
+  uFormInterfaces,
+
+  uMediaEncryption
   ;
 
 const
@@ -7190,7 +7192,7 @@ begin
       if SelCount = 1 then
         if ListView1Selected <> nil then
         begin
-          index := ItemIndexToMenuIndex(ListView1Selected.Index);
+          Index := ItemIndexToMenuIndex(ListView1Selected.Index);
           if (GetExt(FFilesInfo[index].FileName) = 'EXE') then
           begin
             FDBCanDragW := False;
@@ -7199,8 +7201,8 @@ begin
             with Si do
             begin
               Cb := SizeOf(Si);
-              DwFlags := Startf_UseShowWindow;
-              WShowWindow := 4;
+              DwFlags := STARTF_USESHOWWINDOW;
+              WShowWindow := SW_SHOW;
             end;
             Params := '';
             for I := 0 to DropInfo.Count - 1 do
@@ -9325,9 +9327,12 @@ begin
       begin
         if GetExt(FFilesInfo[Index].FileName) <> 'LNK' then
         begin
-          ShellDir := ExtractFileDir(FFilesInfo[Index].FileName);
-          ShellExecute(Handle, 'open', PWideChar(FFilesInfo[Index].FileName), nil,
-            PWideChar(ShellDir), SW_NORMAL);
+          if not ShellPlayEncryptedMediaFile(FFilesInfo[Index].FileName) then
+          begin
+            ShellDir := ExtractFileDir(FFilesInfo[Index].FileName);
+            ShellExecute(Handle, 'open', PWideChar(FFilesInfo[Index].FileName), nil,
+              PWideChar(ShellDir), SW_NORMAL);
+          end;
           RestoreSelected;
           Exit;
         end else
@@ -9353,8 +9358,12 @@ begin
               end;
               Exit;
             end;
-            ShellDir := ExtractFileDir(LinkPath);
-            ShellExecute(Handle, 'open', PWideChar(LinkPath), nil, PWideChar(ShellDir), SW_NORMAL);
+
+            if not ShellPlayEncryptedMediaFile(LinkPath) then
+            begin
+              ShellDir := ExtractFileDir(LinkPath);
+              ShellExecute(Handle, 'open', PWideChar(LinkPath), nil, PWideChar(ShellDir), SW_NORMAL);
+            end;
             RestoreSelected;
             Exit;
           end;

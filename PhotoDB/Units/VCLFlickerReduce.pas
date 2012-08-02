@@ -161,7 +161,7 @@ begin
       Data.RealProc := Proc;
       Data.Code2 := Int64(Proc^);
       TXRedirCode(Proc^).Jump := $E9;
-      TXRedirCode(Proc^).Offset := Integer(NewProc) - Integer(Proc) - (SizeOf(Data.Code));
+      TXRedirCode(Proc^).Offset := NativeInt(NewProc) - NativeInt(Proc) - (SizeOf(Data.Code));
       VirtualProtect(Proc, SizeOf(Data.Code) + 1, OldProtect, @OldProtect);
     end;
   end;

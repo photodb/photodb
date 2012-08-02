@@ -286,17 +286,6 @@ begin
   Stream.Write(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
 end;
 
-procedure ResetFileAttributes(FileName: string; FA: Integer);
-begin
-  if (FA and SysUtils.fahidden) <> 0 then
-    FA := FA - SysUtils.fahidden;
-  if (FA and SysUtils.faReadOnly) <> 0 then
-    FA := FA - SysUtils.faReadOnly;
-  if (FA and SysUtils.faSysFile) <> 0 then
-    FA := FA - SysUtils.faSysFile;
-  FileSetAttr(FileName, FA);
-end;
-
 procedure CryptStream(S, D: TStream; Password: string; Options: Integer; FileName: string);
 var
   Seed: Binary;

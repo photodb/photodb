@@ -501,11 +501,11 @@ begin
     SourceLine := Work.ScanLine[0];
     Delta := 0;
     if Work.Height > 1 then
-      Delta := integer(Work.ScanLine[1]) - integer(SourceLine);
+      Delta := NativeInt(Work.ScanLine[1]) - NativeInt(SourceLine);
     DestLine := Dst.ScanLine[0];
     DestDelta := 0;
     if Dst.Height > 1 then
-      DestDelta := integer(Dst.ScanLine[1]) - integer(DestLine);
+      DestDelta := NativeInt(Dst.ScanLine[1]) - NativeInt(DestLine);
 {$ENDIF}
     for k := 0 to DstWidth-1 do
     begin
@@ -521,7 +521,7 @@ begin
         for j := 0 to contrib^[i].n-1 do
         begin
 {$IFDEF USE_SCANLINE}
-          color := PColorRGB(integer(SourceLine)+contrib^[i].p^[j].pixel*Delta)^;
+          color := PColorRGB(NativeInt(SourceLine)+contrib^[i].p^[j].pixel*Delta)^;
 {$ELSE}
           color := Color2RGB(Work.Canvas.Pixels[k, contrib^[i].p^[j].pixel]);
 {$ENDIF}

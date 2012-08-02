@@ -99,7 +99,7 @@ begin
     while True do
     begin
       P := GetParamStr(P, Result);
-      if (Index = 0) or (Result = '') then Break;
+      if (Index <= 0) or (Result = '') then Break;
       Dec(Index);
     end;
   end;

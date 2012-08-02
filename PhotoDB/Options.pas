@@ -230,6 +230,7 @@ type
     SnStyles: TShellNotification;
     LbDisplayICCProfile: TLabel;
     CbDisplayICCProfile: TComboBox;
+    TbPrograms: TTabSheet;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);

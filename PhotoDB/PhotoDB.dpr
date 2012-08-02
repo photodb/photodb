@@ -407,7 +407,8 @@ uses
   uGroupTypes in 'Units\uGroupTypes.pas',
   uFreeImageImage in 'Units\Formats\uFreeImageImage.pas',
   PDB.uVCLRewriters in 'Units\PDB.uVCLRewriters.pas',
-  uDBInfoEditorUtils in 'Units\uDBInfoEditorUtils.pas';
+  uDBInfoEditorUtils in 'Units\uDBInfoEditorUtils.pas',
+  uMediaEncryption in 'Units\uMediaEncryption.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

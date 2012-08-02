@@ -1034,11 +1034,11 @@ begin
     SourceLine := Work.ScanLine[0];
     Delta := 0;
     if Work.Height > 1 then
-      Delta := Integer(Work.ScanLine[1]) - Integer(SourceLine);
+      Delta := NativeInt(Work.ScanLine[1]) - NativeInt(SourceLine);
     DestLine := Target.ScanLine[0];
     DestDelta := 0;
     if Target.Height > 1 then
-      DestDelta := Integer(Target.ScanLine[1]) - Integer(DestLine);
+      DestDelta := NativeInt(Target.ScanLine[1]) - NativeInt(DestLine);
     for K := 0 to TargetWidth - 1 do
     begin
       DestPixel := Pointer(DestLine);
@@ -4869,7 +4869,7 @@ begin
       for I := 0 to LogPalette.palNumEntries - 1 do
       begin
         // load next 512 bytes buffer if necessary
-        if (Integer(Run) - Integer(@Buffer)) > 506 then
+        if (NativeInt(Run) - NativeInt(@Buffer)) > 506 then
         begin
           ReadBuffer(Buffer, SizeOf(Buffer));
           Run := @Buffer;
@@ -7485,7 +7485,7 @@ begin
     // this decode call will advance Source and Target accordingly
     FDecoder.Decode(FCurrentSource,
                     LocalBuffer,
-                    FIDATSize - (Integer(FCurrentSource) - Integer(FRawBuffer)),
+                    FIDATSize - (NativeInt(FCurrentSource) - NativeInt(FRawBuffer)),
                     PendingOutput);
 
     if FDecoder.ZLibResult = Z_STREAM_END then
@@ -7497,7 +7497,7 @@ begin
 
     if FDecoder.ZLibResult <> Z_OK then GraphicExError(gesCompression, ['PNG']);
 
-    PendingOutput := BytesPerRow - (Integer(LocalBuffer) - Integer(RowBuffer));
+    PendingOutput := BytesPerRow - (NativeInt(LocalBuffer) - NativeInt(RowBuffer));
   until PendingOutput = 0;
 end;
 

@@ -1164,7 +1164,7 @@ var
   SI: TBaseSelectItem;
 begin
   SI := TBaseSelectItem(TWebLink(Sender).Parent.Tag);
-  FMenuOptions.Tag := Integer(SI);
+  FMenuOptions.Tag := NativeInt(SI);
 
   GetCursorPos(P);
   FMenuOptions.Popup(P.X, P.Y);

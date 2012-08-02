@@ -2559,47 +2559,26 @@ procedure TDIBWriter.CreateDIB;
 {$IFDEF PIXELFORMAT_TOO_SLOW}
 var
   SrcColors		: WORD;
-//  ScreenDC		: HDC;
 
-  // From Delphi 3.02 graphics.pas
-  // There is a bug in the ByteSwapColors from Delphi 3.0!
+  // From graphics.pas
   procedure ByteSwapColors(var Colors; Count: Integer);
-  var   // convert RGB to BGR and vice-versa.  TRGBQuad <-> TPaletteEntry
-    SysInfo: TSystemInfo;
+  var
+    C: PDWORD;
+    Color: DWORD;
+    I: Integer;
   begin
-    GetSystemInfo(SysInfo);
-	  //TODO: X64 fix
-    {asm
-          MOV   EDX, Colors
-          MOV   ECX, Count
-          DEC   ECX
-          JS    @@END
-          LEA   EAX, SysInfo
-          CMP   [EAX].TSystemInfo.wProcessorLevel, 3
-          JE    @@386
-    @@1:  MOV   EAX, [EDX+ECX*4]
-          BSWAP EAX
-          SHR   EAX,8
-          MOV   [EDX+ECX*4],EAX
-          DEC   ECX
-          JNS   @@1
-          JMP   @@END
-    @@386:
-          PUSH  EBX
-    @@2:  XOR   EBX,EBX
-          MOV   EAX, [EDX+ECX*4]
-          MOV   BH, AL
-          MOV   BL, AH
-          SHR   EAX,16
-          SHL   EBX,8
-          MOV   BL, AL
-          MOV   [EDX+ECX*4],EBX
-          DEC   ECX
-          JNS   @@2
-          POP   EBX
-      @@END:
-    end;}
+    C := @Colors;
+    I := 0;
+    while I < Count do
+    begin
+      Color := C^;
+      C^ := (Byte(Color shr 16) or (Word(Color) shr 8) shl 8) or
+        (Byte(Word(Color)) shl 16);
+      Inc(I);
+      Inc(C);
+    end;
   end;
+
 {$ENDIF}
 begin
 {$ifdef PIXELFORMAT_TOO_SLOW}
@@ -8923,7 +8902,7 @@ begin
     Newheight := CropBottom - CropTop + 1;
     NewSize := NewWidth * NewHeight;
     GetMem(NewData, NewSize);
-    pSource := PByte(integer(FData) + CropTop * Width + CropLeft);
+    pSource := PByte(NativeInt(FData) + CropTop * Width + CropLeft);
     pDest := NewData;
     for i := 0 to NewHeight-1 do
     begin
@@ -9040,8 +9019,8 @@ begin
 
   for Y := MergeRect.Top - Top to MergeRect.Bottom - Top-1 do
   begin
-    pSource := PAnsiChar(integer(Previous.Scanline[PreviousY]) + MergeRect.Left - Previous.Left);
-    pDest := PAnsiChar(integer(Scanline[Y]) + MergeRect.Left - Left);
+    pSource := PAnsiChar(NativeInt(Previous.Scanline[PreviousY]) + MergeRect.Left - Previous.Left);
+    pDest := PAnsiChar(NativeInt(Scanline[Y]) + MergeRect.Left - Left);
 
     for X := MergeRect.Left to MergeRect.Right-1 do
     begin
@@ -10529,7 +10508,7 @@ begin
               begin
                 // Calculate number of mS used in prefetch and display
                 try
-                  DelayUsed := integer(NewDelayStart-DelayStart)-OldDelay;
+                  DelayUsed := NativeInt(NewDelayStart - DelayStart) - OldDelay;
                   // Prevent feedback oscillations caused by over/undercompensation.
                   DelayUsed := DelayUsed DIV 2;
                   // Convert delay value to mS and...

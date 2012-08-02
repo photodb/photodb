@@ -65,7 +65,7 @@ begin
     FScanLine0 := Bitmap.ScanLine[0];
     FScanLineIncrement := 0;
     if Bitmap.Height > 0 then
-      FScanLineIncrement := integer(Bitmap.Scanline[1]) -integer(FScanLine0);
+      FScanLineIncrement := NativeInt(Bitmap.Scanline[1]) - NativeInt(FScanLine0);
     FMaxRow := Bitmap.Height;
   end;
 end;

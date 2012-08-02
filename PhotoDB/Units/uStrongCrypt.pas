@@ -12,39 +12,39 @@ uses
   DECHash,
   DECCipher,
   DECRandom,
-  Consts;
+  Vcl.Consts;
 
 type
   TSeed = array[1..16] of AnsiChar;
   TFileNameUnicode = array[0..254] of WideChar;
 
-procedure CryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
+procedure CryptStreamV2(Source, Dest: TStream; Password: string; Seed: Binary;
                         ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;
-                        AHash: TDECHashClass = nil);
-procedure DeCryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
-                        DataSize : Int64;
+                        AHash: TDECHashClass = nil; Size: Int64 = 0);
+procedure DeCryptStreamV2(Source, Dest: TStream; Password: string; Seed: Binary;
+                        DataSize: Int64;
                         ACipher: TDECCipherClass; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
 procedure StrongCryptInit;
-function ConvertSeed(Seed : Binary) : TSeed;
-function SeedToBinary(Seed : TSeed) : Binary;
+function ConvertSeed(Seed: Binary): TSeed;
+function SeedToBinary(Seed: TSeed): Binary;
 
 implementation
 
 var
-  StrongCryptInitFinished : Boolean = False;
+  StrongCryptInitFinished: Boolean = False;
 
-function ConvertSeed(Seed : Binary) : TSeed;
+function ConvertSeed(Seed: Binary) : TSeed;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to Length(Seed) - 1 do
     Result[I + 1] := Seed[I + 1];
 end;
 
-function SeedToBinary(Seed : TSeed) : Binary;
+function SeedToBinary(Seed: TSeed): Binary;
 var
-  I : Integer;
+  I: Integer;
 begin
   SetLength(Result, 16);
   for I := 0 to 16 - 1 do
@@ -90,12 +90,12 @@ begin
   StrongCryptInitFinished := True;
 end;
 
-procedure CryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
+procedure CryptStreamV2(Source, Dest: TStream; Password: string; Seed: Binary;
                         ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;
-                        AHash: TDECHashClass = nil);
+                        AHash: TDECHashClass = nil; Size: Int64 = 0);
 var
-  APassword : AnsiString;
-  Bytes : TBytes;
+  APassword: AnsiString;
+  Bytes: TBytes;
 begin
   ACipher := ValidCipher(ACipher);
   AHash := ValidHash(AHash);
@@ -104,23 +104,26 @@ begin
   SetLength(APassword, Length(Bytes));
   Move(Bytes[0], APassword[1], Length(Bytes));
 
+  if Size = 0 then
+    Size := Source.Size;
+
   with ACipher.Create do
   try
     Mode := CmCTSx;
     Init(AHash.KDFx(APassword, Seed, Context.KeySize));
-    EncodeStream(Source, Dest, Source.Size);
+    EncodeStream(Source, Dest, Size);
   finally
     Free;
   end;
 end;
 
-procedure DeCryptStreamV2(Source, Dest : TStream; Password : string; Seed: Binary;
-                        DataSize : Int64;
+procedure DeCryptStreamV2(Source, Dest: TStream; Password: string; Seed: Binary;
+                        DataSize: Int64;
                         ACipher: TDECCipherClass; AMode: TCipherMode = cmCTSx;
                         AHash: TDECHashClass = nil);
 var
-  APassword : AnsiString;
-  Bytes : TBytes;
+  APassword: AnsiString;
+  Bytes: TBytes;
 begin
   ACipher := ValidCipher(ACipher);
   AHash := ValidHash(AHash);
