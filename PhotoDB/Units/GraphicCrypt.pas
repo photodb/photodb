@@ -20,6 +20,7 @@ uses
   RAWImage,
   uConstants,
   uStrongCrypt,
+  uTransparentEncryption,
   DECUtil,
   DECCipher,
   GIFImage,
@@ -27,63 +28,12 @@ uses
   uMemoryUtils,
   uErrors,
   uGraphicUtils,
-  uShellUtils;
-
-type
-  TGraphicCryptFileHeader = record
-    IDSize: Byte;
-    ID: array[0..7] of AnsiChar;
-    Version: Byte;
-    DBVersion: Byte;
-  end;
-
-  TMagicByte = array [0 .. 3] of Byte;
-  TFileNameAnsi = array[0..254] of AnsiChar;
-  TByteArray = array of Byte;
-
-  TGraphicCryptFileHeaderV1 = record
-    Version: Byte;
-    Magic: Cardinal;
-    FileSize: Cardinal;
-    PassCRC: Cardinal;
-    CRCFileExists: Boolean;
-    CRCFile: Cardinal;
-    TypeExtract: Byte;
-    CryptFileName: Boolean;
-    FileNameLength : Byte;
-    CFileName: TFileNameAnsi;
-    TypeFileNameExtract: Byte;
-    FileNameCRC: Cardinal;
-    Displacement: Cardinal;
-  end;
-
-  TGraphicCryptFileHeaderV2 = record
-    Version: Byte;
-    Seed: TSeed;
-    FileSize: Int64;
-    PassCRC: Cardinal;
-    Algorith: Cardinal;
-    CRCFileExists: Boolean;
-    CRCFile: Cardinal;
-    TypeExtract: Byte;
-    CryptFileName: Boolean;
-    FileNameLength: Byte;
-    CFileName: TFileNameUnicode;
-    TypeFileNameExtract: Byte;
-    FileNameCRC: Cardinal;
-    Displacement: Cardinal;
-    Reserved: Cardinal;
-    Reserved2: Cardinal;
-  end;
-
-  TDBInfoInGraphicFile = record
-    FileNameSize: Cardinal;
-  end;
+  uShellUtils,
+  CommonDBSupport;
 
 const
   CRYPT_OPTIONS_NORMAL = 0;
   CRYPT_OPTIONS_SAVE_CRC = 1;
-  PhotoDBFileHeaderID = '.PHDBCRT';
 
 function CryptGraphicFileV2(FileName: string; Password: string; Options: Integer): Integer;
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
@@ -111,8 +61,6 @@ function ValidPassInCryptStream(S: TStream; Password: String): Boolean;
 function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
 
 implementation
-
-uses CommonDBSupport, Dolphin_DB;
 
 procedure FatalSaveStream(S: TStream; OriginalFileName: string);
 var
@@ -251,11 +199,11 @@ begin
   Stream.Write(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
 end;*)
 
-procedure WriteCryptHeaderV2(Stream: TStream; Src: TStream; FileName: string; Password: string; Options: Integer;
+{procedure WriteCryptHeaderV2(Stream: TStream; Src: TStream; FileName: string; Password: string; Options: Integer;
   var Seed: Binary);
 var
   FileCRC: Cardinal;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
 begin
   FillChar(GraphicHeaderV2, SizeOf(GraphicHeaderV2), #0);
@@ -272,7 +220,7 @@ begin
   GraphicHeader.ID := PhotoDBFileHeaderID;
   GraphicHeader.Version := 2;
   GraphicHeader.DBVersion := 0;
-  Stream.Write(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+  Stream.Write(GraphicHeader, SizeOf(TEncryptedFileHeader));
   GraphicHeaderV2.Version := 1;
   GraphicHeaderV2.Algorith := ValidCipher(nil).Identity;
   GraphicHeaderV2.FileSize := Src.Size;
@@ -284,14 +232,14 @@ begin
   CalcStringCRC32(AnsiLowerCase(FileName), GraphicHeaderV2.FileNameCRC);
   GraphicHeaderV2.Displacement := 0;
   Stream.Write(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
-end;
+end; }
 
 procedure CryptStream(S, D: TStream; Password: string; Options: Integer; FileName: string);
 var
-  Seed: Binary;
+  Chipper: TDECCipherClass;
 begin
-  WriteCryptHeaderV2(D, S, FileName, Password, Options, Seed);
-  CryptStreamV2(S, D, Password, Seed);
+  Chipper := ValidCipher(nil);
+  EncryptStreamEx(S, D, Password, FileName, Chipper, nil);
 end;
 
 function CryptGraphicFileV2W(FileName: string; Password: string; Options: Integer): Integer;
@@ -299,7 +247,7 @@ var
   FS: TFileStream;
   MS: TMemoryStream;
   FA: Integer;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
 begin
   MS := TMemoryStream.Create;
   try
@@ -358,18 +306,22 @@ begin
   Result := CRYPT_RESULT_OK;
 end;
 
-procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest : TMemoryStream);
+procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
 var
   MS: TMemoryStream;
-  Seed: Binary;
+//  Seed: Binary;
+  ACipher: TDECCipherClass;
 begin
   MS := TMemoryStream.Create;
   try
     Image.SaveToStream(MS);
     MS.Seek(0, soFromBeginning);
 
-    WriteCryptHeaderV2(Dest, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
-    CryptStreamV2(MS, Dest, Password, Seed);
+    ACipher := ValidCipher(nil);
+    EncryptStreamEx(MS, Dest, Password, '', ACipher, nil);
+
+    //WriteCryptHeaderV2(Dest, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
+    //CryptStreamV2(MS, Dest, Password, Seed);
   finally
     F(MS);
   end;
@@ -389,7 +341,7 @@ begin
   Result := DeCryptGraphicFileEx(FileName, Password, Pages, LoadFullRAW, Page);
 end;
 
-function DecryptStream(Stream: TStream; GraphicHeader: TGraphicCryptFileHeader;
+function DecryptStream(Stream: TStream; GraphicHeader: TEncryptedFileHeader;
   Password: string; MS: TStream): Boolean;
 var
   AnsiPassword: AnsiString;
@@ -399,10 +351,11 @@ var
   X: TByteArray;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
+  GraphicHeaderEx1: TEncryptFileHeaderExV1;
   Chipper: TDECCipherClass;
 begin
   Result := False;
-  if GraphicHeader.Version = 1 then
+  if GraphicHeader.Version = ENCRYPT_FILE_VERSION_BASIC then
   begin
     AnsiPassword := AnsiString(Password);
     Stream.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
@@ -433,7 +386,7 @@ begin
       for I := 0 to 1023 do
         XCos[I] := Round(255 * Cos(TMagicByte(GraphicHeaderV1.Magic)[I mod 4] + I));
 
-      for I := 0 to length(x) - 1 do
+      for I := 0 to length(X) - 1 do
         X[I] := X[I] xor (TMagicByte(GraphicHeaderV1.Magic)[I mod 4] xor Byte
             (AnsiPassword[I mod LPass + 1])) xor XCos[I mod 1024];
       {$IFDEF CKRANGE}
@@ -452,7 +405,7 @@ begin
     MS.Write(Pointer(X)^, Length(X));
 
     Result := True;
-  end else if GraphicHeader.Version = 2 then
+  end else if GraphicHeader.Version = ENCRYPT_FILE_VERSION_STRONG then
   begin
     StrongCryptInit;
 
@@ -467,13 +420,28 @@ begin
     Chipper := CipherByIdentity(GraphicHeaderV2.Algorith);
     DeCryptStreamV2(Stream, MS, Password, SeedToBinary(GraphicHeaderV2.Seed), GraphicHeaderV2.FileSize, Chipper);
     Result := True;
+  end else if GraphicHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
+  begin
+    StrongCryptInit;
+
+    Stream.Read(GraphicHeaderEx1, SizeOf(TEncryptFileHeaderExV1));
+    CalcStringCRC32(Password, CRC);
+    if GraphicHeaderEx1.PassCRC <> CRC then
+      Exit;
+
+    if GraphicHeaderEx1.Displacement > 0 then
+      Stream.Seek(GraphicHeaderEx1.Displacement, soCurrent);
+
+    Chipper := CipherByIdentity(GraphicHeaderEx1.Algorith);
+    DeCryptStreamV2(Stream, MS, Password, SeedToBinary(GraphicHeaderEx1.Seed), GraphicHeaderEx1.FileSize, Chipper);
+    Result := True;
   end;
 end;
 
 function DecryptGraphicFileToStream(FileName, Password: string; S: TStream): Boolean;
 var
   FS: TFileStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
 begin
   Result := False;
 
@@ -482,7 +450,7 @@ begin
     Exit;
 
   try
-    FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
     if GraphicHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
@@ -498,10 +466,10 @@ end;
 
 function DecryptStreamToStream(Src, Dest: TStream; Password: string): Boolean;
 var
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
 begin
   Result := False;
-  Src.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+  Src.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
   if GraphicHeader.ID <> PhotoDBFileHeaderID then
     Exit;
 
@@ -532,9 +500,10 @@ end;
 
 function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
 var
-  Seed: Binary;
+//  Seed: Binary;
   FS: TFileStream;
   MS: TMemoryStream;
+  ACipher: TDECCipherClass;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
 
@@ -549,8 +518,12 @@ begin
 
       MS := TMemoryStream.Create;
       try
-        WriteCryptHeaderV2(MS, Stream, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
-        CryptStreamV2(Stream, MS, Password, Seed);
+        ACipher := ValidCipher(nil);
+
+        EncryptStreamEx(Stream, MS, Password, '', ACipher, nil);
+
+        //WriteCryptHeaderV2(MS, Stream, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
+        //CryptStreamV2(Stream, MS, Password, Seed);
         try
           FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
           try
@@ -588,7 +561,7 @@ function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Wor
 var
   FS: TFileStream;
   MS: TMemoryStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   GraphicClass : TGraphicClass;
 begin
   Result := nil;
@@ -600,7 +573,7 @@ begin
       Exit;
 
     try
-      FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+      FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
       if GraphicHeader.ID <> PhotoDBFileHeaderID then
         Exit;
 
@@ -641,7 +614,7 @@ function ResetPasswordInGraphicFile(FileName, Password: String): Integer;
 var
   FS: TFileStream;
   MS: TMemoryStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   FA: Integer;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
@@ -655,7 +628,7 @@ begin
         Exit;
 
       try
-        FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+        FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
         if GraphicHeader.ID <> PhotoDBFileHeaderID then
           Exit;
 
@@ -702,9 +675,10 @@ function ChangePasswordInGraphicFile(FileName: String; OldPass, NewPass: String)
 var
   FS: TFileStream;
   MS: TMemoryStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   FA: Cardinal;
-  Seed: Binary;
+//  Seed: Binary;
+  ACipher: TDECCipherClass;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
 
@@ -716,7 +690,7 @@ begin
         Exit;
 
       try
-        FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+        FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
         if GraphicHeader.ID <> PhotoDBFileHeaderID then
           Exit;
 
@@ -737,8 +711,11 @@ begin
       FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
       try
         try
-          WriteCryptHeaderV2(FS, MS, FileName, NewPass, CRYPT_OPTIONS_SAVE_CRC, Seed);
-          CryptStreamV2(MS, FS, NewPass, Seed);
+          ACipher := ValidCipher(nil);
+          EncryptStreamEx(MS, FS, NewPass, '', ACipher, nil);
+
+          //WriteCryptHeaderV2(FS, MS, FileName, NewPass, CRYPT_OPTIONS_SAVE_CRC, Seed);
+          //CryptStreamV2(MS, FS, NewPass, Seed);
         except
           //if any error in this block - user can lost original data, so we had to save it in any case
           FatalSaveStream(MS, FileName);
@@ -764,9 +741,10 @@ function ValidPassInCryptGraphicFile(FileName, Password: String): Boolean;
 var
   FS: TFileStream;
   CRC: Cardinal;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
+  GraphicHeaderEx1: TEncryptFileHeaderExV1;
 begin
   Result := False;
 
@@ -775,22 +753,29 @@ begin
     Exit;
 
   try
-    FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
     if GraphicHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
-    if GraphicHeader.Version = 1 then
+    if GraphicHeader.Version = ENCRYPT_FILE_VERSION_BASIC then
     begin
       FS.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
       CalcAnsiStringCRC32(AnsiString(Password), CRC);
       Result := GraphicHeaderV1.PassCRC = CRC;
     end;
 
-    if GraphicHeader.Version = 2 then
+    if GraphicHeader.Version = ENCRYPT_FILE_VERSION_STRONG then
     begin
       FS.Read(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
       CalcStringCRC32(Password, CRC);
       Result := GraphicHeaderV2.PassCRC = CRC;
+    end;
+
+    if GraphicHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
+    begin
+      FS.Read(GraphicHeaderEx1, SizeOf(GraphicHeaderEx1));
+      CalcStringCRC32(Password, CRC);
+      Result := GraphicHeaderEx1.PassCRC = CRC;
     end;
   finally
     F(FS);
@@ -799,11 +784,11 @@ end;
 
 function ValidCryptGraphicStream(Stream: TStream): Boolean;
 var
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   Pos: Int64;
 begin
   Pos := Stream.Position;
-  Stream.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+  Stream.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
   Result := GraphicHeader.ID = PhotoDBFileHeaderID;
   Stream.Seek(Pos, soFromBeginning);
 end;
@@ -828,7 +813,7 @@ end;
 function GetPasswordCRCFromCryptGraphicFile(FileName: String): Cardinal;
 var
   FS: TFileStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
 begin
@@ -840,7 +825,7 @@ begin
     Exit;
 
   try
-    FS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
     if GraphicHeader.ID = PhotoDBFileHeaderID then
     begin
       if GraphicHeader.Version = 1 then
@@ -863,8 +848,9 @@ function CryptBlobStream(DF: TField; Password: String): Boolean;
 var
   FBS: TStream;
   MS: TMemoryStream;
-  GraphicHeader: TGraphicCryptFileHeader;
-  Seed : Binary;
+  GraphicHeader: TEncryptedFileHeader;
+//  Seed: Binary;
+  ACipher: TDECCipherClass;
 begin
   Result := False;
   MS := TMemoryStream.Create;
@@ -883,8 +869,11 @@ begin
 
     FBS := TADOBlobStream.Create(TBlobField(DF), bmWrite);
     try
-      WriteCryptHeaderV2(FBS, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
-      CryptStreamV2(MS, FBS, Password, Seed);
+      ACipher := ValidCipher(nil);
+      EncryptStreamEx(MS, FBS, Password, '', ACipher, nil);
+
+      //WriteCryptHeaderV2(FBS, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
+      //CryptStreamV2(MS, FBS, Password, Seed);
     finally
       F(FBS);
     end;
@@ -898,7 +887,7 @@ function DeCryptBlobStreamJPG(DF: TField; Password: string; JPEG: TJpegImage) : 
 var
   FBS: TStream;
   MS: TMemoryStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
 begin
   Result := False;
 
@@ -908,7 +897,7 @@ begin
     FBS := GetBlobStream(DF, BmRead);
     try
       FBS.Seek(0, SoFromBeginning);
-      FBS.read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+      FBS.read(GraphicHeader, SizeOf(TEncryptedFileHeader));
       if GraphicHeader.ID <> PhotoDBFileHeaderID then
         Exit;
 
@@ -929,12 +918,12 @@ end;
 function ValidCryptBlobStreamJPG(DF: TField): Boolean;
 var
   FBS: TStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
 begin
   FBS := GetBlobStream(DF, bmRead);
   try
     FBS.Seek(0, soFromBeginning);
-    FBS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    FBS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
     Result := GraphicHeader.ID = PhotoDBFileHeaderID;
   finally
     F(FBS);
@@ -944,14 +933,14 @@ end;
 function ValidPassInCryptStream(S: TStream; Password: String): Boolean;
 var
   CRC: Cardinal;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
 begin
   Result := False;
 
   S.Seek(0, soFromBeginning);
-  S.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+  S.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
   if GraphicHeader.ID <> PhotoDBFileHeaderID then
     Exit;
 
@@ -986,14 +975,14 @@ function ResetPasswordInCryptBlobStreamJPG(DF: TField; Password: String): Boolea
 var
   FBS: TStream;
   MS : TMemoryStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
 begin
   Result := False;
   MS := TMemoryStream.Create;
   try
     FBS := GetBlobStream(DF, bmRead);
     try
-      FBS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+      FBS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
       if GraphicHeader.ID <> PhotoDBFileHeaderID then
         Exit;
 

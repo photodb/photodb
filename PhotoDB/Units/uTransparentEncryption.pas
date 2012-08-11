@@ -9,39 +9,18 @@ uses
   StrUtils,
   SyncObjs,
   Math,
+  win32Crc,
   uConstants,
   uErrors,
   uMemory,
-  win32Crc,
+  uSysUtils,
   uFileUtils,
   uStrongCrypt,
   DECUtil,
   DECHash,
   DECCipher;
 
-const
-  PhotoDBEncryptFileExHeaderID = '.PDBECRTEX';
-  Encrypt32kBlockSize = 32 * 1024;
-
 type
-  TEncryptFileHeaderEx = record
-    ID: array[0..9] of AnsiChar;
-    Version: Byte;
-    DBBuild: Integer;
-  end;
-
-  TEncryptFileHeaderExV1 = record
-    Version: Byte;
-    Seed: TSeed;
-    FileSize: Int64;
-    PassCRC: Cardinal;
-    Algorith: Cardinal;
-    BlockSize32k: Byte;
-    Displacement: Cardinal;
-    Reserved: Cardinal;
-    Reserved2: Cardinal;
-  end;
-
   TMemoryBlock = class
     Memory: Pointer;
     Size: Integer;
@@ -78,21 +57,31 @@ type
     property Blocks[Index: Int64]: TMemoryBlock read GetBlockByIndex;
   end;
 
+procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
+  BlockSize32k: Byte; Password: string; var Seed: Binary; ACipher: TDECCipherClass);
+
+procedure EncryptStreamEx(S, D: TStream; Password: string; FileName: string;
+                         ACipher: TDECCipherClass; Progress: TEncryptProgress = nil);
+
 function DecryptFileExToStream(FileName, Password: string; S: TStream): Boolean;
-function EncryptFileEx(FileName: string; Password: string): Integer;
+function EncryptFileEx(FileName: string; Password: string;
+                       ACipher: TDECCipherClass = nil; Progress: TEncryptProgress = nil): Integer;
+function DecryptStreamEx(S: TStream; EncryptHeader: TEncryptedFileHeader; Password: string; D: TStream; Progress: TEncryptProgress = nil): Boolean;
+
 function ValidEnryptFileEx(FileName: String): Boolean;
 
 implementation
 
-procedure WriteEnryptHeaderV1(Stream: TStream; Src: TStream; BlockSize32k: Byte; Password: string; var Seed: Binary);
+procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
+  BlockSize32k: Byte; Password: string; var Seed: Binary; ACipher: TDECCipherClass);
 var
-  EncryptHeader: TEncryptFileHeaderEx;
+  EncryptHeader: TEncryptedFileHeader;
   EncryptHeaderV1: TEncryptFileHeaderExV1;
 begin
   FillChar(EncryptHeader, SizeOf(EncryptHeader), #0);
-  EncryptHeader.ID := PhotoDBEncryptFileExHeaderID;
-  EncryptHeader.Version := 1;
-  EncryptHeader.DBBuild := 0;
+  EncryptHeader.ID := PhotoDBFileHeaderID;
+  EncryptHeader.Version := ENCRYPT_FILE_VERSION_TRANSPARENT;
+  EncryptHeader.DBVersion := ReleaseNumber;
   Stream.Write(EncryptHeader, SizeOf(EncryptHeader));
 
   FillChar(EncryptHeaderV1, SizeOf(EncryptHeaderV1), #0);
@@ -100,22 +89,25 @@ begin
   Seed := RandomBinary(16);
   EncryptHeaderV1.Seed := ConvertSeed(Seed);
   EncryptHeaderV1.Version := 1;
-  EncryptHeaderV1.Algorith := ValidCipher(nil).Identity;
+  EncryptHeaderV1.Algorith := ACipher.Identity;
   EncryptHeaderV1.BlockSize32k := BlockSize32k;
   EncryptHeaderV1.FileSize := Src.Size;
+  EncryptHeaderV1.ProgramVersion := GetExeVersion(ParamStr(0));
   CalcStringCRC32(Password, EncryptHeaderV1.PassCRC);
   EncryptHeaderV1.Displacement := 0;
   Stream.Write(EncryptHeaderV1, SizeOf(EncryptHeaderV1));
 end;
 
-procedure EnryptStream(S, D: TStream; Password: string; FileName: string);
+procedure EncryptStreamEx(S, D: TStream; Password: string; FileName: string;
+                         ACipher: TDECCipherClass; Progress: TEncryptProgress = nil);
 var
   Seed: Binary;
   BlockSize32k: Byte;
   Size, SizeToEncrypt: Int64;
 begin
   BlockSize32k := 1;
-  WriteEnryptHeaderV1(D, S, BlockSize32k, Password, Seed);
+  ACipher := ValidCipher(ACipher);
+  WriteEnryptHeaderV3(D, S, BlockSize32k, Password, Seed, ACipher);
 
   Size := S.Size;
   while S.Position < Size do
@@ -125,14 +117,17 @@ begin
       SizeToEncrypt := Size - S.Position;
 
     CryptStreamV2(S, D, Password, Seed, nil, cmCTSx, nil, SizeToEncrypt);
+    if Assigned(Progress) then
+      Progress(FileName, Size, S.Position);
   end;
 end;
 
-function EncryptFileEx(FileName: string; Password: string): Integer;
+function EncryptFileEx(FileName: string; Password: string;
+  ACipher: TDECCipherClass = nil; Progress: TEncryptProgress = nil): Integer;
 var
   SFS, DFS: TFileStream;
   FA: Integer;
-  EncryptHeader: TEncryptFileHeaderEx;
+  EncryptHeader: TEncryptedFileHeader;
 begin
   StrongCryptInit;
 
@@ -146,7 +141,7 @@ begin
 
     try
       SFS.Read(EncryptHeader, SizeOf(EncryptHeader));
-      if EncryptHeader.ID = PhotoDBEncryptFileExHeaderID then
+      if EncryptHeader.ID = PhotoDBFileHeaderID then
       begin
         Result := CRYPT_RESULT_ALREADY_CRYPT;
         Exit;
@@ -157,7 +152,7 @@ begin
       try
         DFS := TFileStream.Create(FileName + '.tmp', FmOpenWrite or FmCreate);
         try
-          EnryptStream(SFS, DFS, Password, FileName);
+          EncryptStreamEx(SFS, DFS, Password, FileName, ACipher, Progress);
         finally
           F(DFS);
         end;
@@ -182,35 +177,57 @@ begin
   Result := CRYPT_RESULT_OK;
 end;
 
-function DecryptStream(Stream: TStream; EncryptHeader: TEncryptFileHeaderEx; Password: string; MS: TStream): Boolean;
+function DecryptStreamEx(S: TStream; EncryptHeader: TEncryptedFileHeader; Password: string; D: TStream; Progress: TEncryptProgress = nil): Boolean;
 var
   CRC: Cardinal;
   EncryptHeaderV1: TEncryptFileHeaderExV1;
   Chipper: TDECCipherClass;
+  BlockSize32k: Byte;
+  Size, SizeToEncrypt: Int64;
+
 begin
   Result := False;
-  if EncryptHeader.Version = 1 then
+  if EncryptHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
   begin
     StrongCryptInit;
 
-    Stream.Read(EncryptHeaderV1, SizeOf(TEncryptFileHeaderExV1));
+    S.Read(EncryptHeaderV1, SizeOf(TEncryptFileHeaderExV1));
     CalcStringCRC32(Password, CRC);
     if EncryptHeaderV1.PassCRC <> CRC then
       Exit;
 
     if EncryptHeaderV1.Displacement > 0 then
-      Stream.Seek(EncryptHeaderV1.Displacement, soCurrent);
+      S.Seek(EncryptHeaderV1.Displacement, soCurrent);
 
     Chipper := CipherByIdentity(EncryptHeaderV1.Algorith);
-    DeCryptStreamV2(Stream, MS, Password, SeedToBinary(EncryptHeaderV1.Seed), EncryptHeaderV1.FileSize, Chipper);
-    Result := True;
+    if Chipper <> nil then
+    begin
+
+      BlockSize32k := EncryptHeaderV1.BlockSize32k;
+
+      Size := S.Size;
+      while S.Position < Size do
+      begin
+        SizeToEncrypt := BlockSize32k * Encrypt32kBlockSize;
+        if S.Position + SizeToEncrypt >= Size then
+          SizeToEncrypt := Size - S.Position;
+
+        DeCryptStreamV2(S, D, Password, EncryptHeaderV1.Seed, SizeToEncrypt, Chipper, cmCTSx, nil);
+        if Assigned(Progress) then
+          Progress('', Size, S.Position);
+
+      end;
+
+      //DeCryptStreamV2(Stream, MS, Password, SeedToBinary(EncryptHeaderV1.Seed), EncryptHeaderV1.FileSize, Chipper);
+      Result := True;
+    end;
   end;
 end;
 
 function DecryptFileExToStream(FileName, Password: string; S: TStream): Boolean;
 var
   FS: TFileStream;
-  EncryptHeader: TEncryptFileHeaderEx;
+  EncryptHeader: TEncryptedFileHeader;
 begin
   Result := False;
 
@@ -220,10 +237,10 @@ begin
 
   try
     FS.Read(EncryptHeader, SizeOf(EncryptHeader));
-    if EncryptHeader.ID <> PhotoDBEncryptFileExHeaderID then
+    if EncryptHeader.ID <> PhotoDBFileHeaderID then
       Exit;
 
-    if not DecryptStream(FS, EncryptHeader, Password, S) then
+    if not DecryptStreamEx(FS, EncryptHeader, Password, S) then
       Exit;
 
     S.Seek(0, soFromBeginning);
@@ -235,12 +252,12 @@ end;
 
 function ValidEncryptFileExStream(Stream: TStream): Boolean;
 var
-  EncryptHeader: TEncryptFileHeaderEx;
+  EncryptHeader: TEncryptedFileHeader;
   Pos: Int64;
 begin
   Pos := Stream.Position;
   Stream.Read(EncryptHeader, SizeOf(EncryptHeader));
-  Result := EncryptHeader.ID = PhotoDBEncryptFileExHeaderID;
+  Result := EncryptHeader.ID = PhotoDBFileHeaderID;
   Stream.Seek(Pos, soFromBeginning);
 end;
 
@@ -268,7 +285,7 @@ end;
 
 function TEncryptedFile.CanDecryptWithPassword(Password: string): Boolean;
 var
-  EncryptHeader: TEncryptFileHeaderEx;
+  EncryptHeader: TEncryptedFileHeader;
   EncryptHeaderV1: TEncryptFileHeaderExV1;
   Position: Int64;
   CRC: Cardinal;
@@ -289,9 +306,9 @@ begin
 
   FileRead(FHandle, EncryptHeader, SizeOf(EncryptHeader));
 
-  if EncryptHeader.ID = PhotoDBEncryptFileExHeaderID then
+  if EncryptHeader.ID = PhotoDBFileHeaderID then
   begin
-    if EncryptHeader.Version = 1 then
+    if EncryptHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
     begin
       StrongCryptInit;
 

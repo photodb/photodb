@@ -3,9 +3,21 @@ unit UnitCrypting;
 interface
 
 uses
-  dolphin_db, GraphicCrypt, DB, Windows, SysUtils,
-  UnitDBKernel, Classes, Win32Crc, UnitDBDeclare, uFileUtils,
-  uDBForm, uMemory, uDBAdapter, uErrors;
+  Windows,
+  SysUtils,
+  DB,
+  Classes,
+  Win32Crc,
+  UnitDBDeclare,
+  UnitDBKernel,
+  uFileUtils,
+  uDBForm,
+  uMemory,
+  uDBAdapter,
+  dolphin_db,
+  uStrongCrypt,
+  GraphicCrypt,
+  uErrors;
 
 function CryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
   DoEvent: Boolean = True): Integer;
@@ -32,7 +44,7 @@ begin
     Query := GetQuery;
     DA := TDBAdapter.Create(Query);
     try
-      SetSQL(Query,'Select thum from $DB$ where ID = '+IntToStr(ID));
+      SetSQL(Query,'Select thum from $DB$ where ID = ' + IntToStr(ID));
       Query.Open;
       JPEG := TJPEGImage.Create;
       try
@@ -166,7 +178,7 @@ var
   I, Lpass: Integer;
   CRC: Cardinal;
   TempStream, MS: TMemoryStream;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
 begin
   Result := TStringList.Create;
@@ -174,7 +186,7 @@ begin
   try
     MS.WriteBuffer(Pointer(S)^, Length(S));
     MS.Seek(0, SoFromBeginning);
-    MS.Read(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    MS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
     if GraphicHeader.ID <> '.PHDBCRT' then
       Exit;
 
@@ -217,7 +229,7 @@ var
   MS: TMemoryStream;
   X: array of Byte;
   I, LPass: Integer;
-  GraphicHeader: TGraphicCryptFileHeader;
+  GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
 begin
   Result := '';
@@ -254,7 +266,7 @@ begin
     GraphicHeader.ID := '.PHDBCRT';
     GraphicHeader.Version := 1;
     GraphicHeader.DBVersion := 0;
-    MS.write(GraphicHeader, SizeOf(TGraphicCryptFileHeader));
+    MS.write(GraphicHeader, SizeOf(TEncryptedFileHeader));
     GraphicHeaderV1.Version := 1;
     GraphicHeaderV1.FileSize := Length(X);
     CalcStringCRC32(Pass, GraphicHeaderV1.PassCRC);

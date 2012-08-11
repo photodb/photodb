@@ -170,20 +170,19 @@ begin
     end;
 end;
 
+function DECClassesDoAdd(List: TStrings; ClassType: TClass): Boolean; register;
+begin
+  Result := False;
+  List.AddObject(ClassType.ClassName, Pointer(ClassType));
+end;
+
 procedure DECClasses(List: TStrings; Include: TClass = nil; Exclude: TClass = nil);
-
-  function DoAdd(List: TStrings; ClassType: TClass): Boolean;
-  begin
-    Result := False;
-    List.AddObject(ClassType.ClassName, Pointer(ClassType));
-  end;
-
 begin
   if IsObject(List, TStrings) then
   try
     List.BeginUpdate;
     List.Clear;
-    DECEnumClasses(@DoAdd, List, Include, Exclude);
+    DECEnumClasses(@DECClassesDoAdd, List, Include, Exclude);
   finally
     List.EndUpdate;
   end;

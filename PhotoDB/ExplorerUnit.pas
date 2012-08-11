@@ -5740,7 +5740,7 @@ begin
     if Item = nil then
       Exit;
     Index := ItemIndexToMenuIndex(Item.Index);
-    PmItemPopup.Tag := index;
+    PmItemPopup.Tag := Index;
     if Index > FFilesInfo.Count - 1 then
       Exit;
     if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) or
@@ -6977,7 +6977,7 @@ procedure TExplorerForm.EnterPassword1Click(Sender: TObject);
 var
   EventInfo : TEventValues;
 begin
- if FFilesInfo[PmItemPopup.Tag].ID <> 0 then
+  if FFilesInfo[PmItemPopup.Tag].ID <> 0 then
   begin
     EventInfo.Image := nil;
     if RequestPasswordForm.ForImage(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then

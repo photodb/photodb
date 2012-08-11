@@ -12,11 +12,85 @@ uses
   DECHash,
   DECCipher,
   DECRandom,
-  Vcl.Consts;
+  Vcl.Consts,
+  uSysUtils;
+
+const
+  PhotoDBFileHeaderID        = '.PHDBCRT';
+
+  ENCRYPT_FILE_VERSION_BASIC       = 1;
+  ENCRYPT_FILE_VERSION_STRONG      = 2;
+  ENCRYPT_FILE_VERSION_TRANSPARENT = 3;
 
 type
   TSeed = array[1..16] of AnsiChar;
   TFileNameUnicode = array[0..254] of WideChar;
+
+type
+  TEncryptedFileHeader = record
+    IDSize: Byte;
+    ID: array[0..7] of AnsiChar;
+    Version: Byte;
+    DBVersion: Byte;
+  end;
+
+  TMagicByte = array [0 .. 3] of Byte;
+  TFileNameAnsi = array[0..254] of AnsiChar;
+  TByteArray = array of Byte;
+
+  TGraphicCryptFileHeaderV1 = record
+    Version: Byte;
+    Magic: Cardinal;
+    FileSize: Cardinal;
+    PassCRC: Cardinal;
+    CRCFileExists: Boolean;
+    CRCFile: Cardinal;
+    TypeExtract: Byte;
+    CryptFileName: Boolean;
+    FileNameLength : Byte;
+    CFileName: TFileNameAnsi;
+    TypeFileNameExtract: Byte;
+    FileNameCRC: Cardinal;
+    Displacement: Cardinal;
+  end;
+
+  TGraphicCryptFileHeaderV2 = record
+    Version: Byte;
+    Seed: TSeed;
+    FileSize: Int64;
+    PassCRC: Cardinal;
+    Algorith: Cardinal;
+    CRCFileExists: Boolean;
+    CRCFile: Cardinal;
+    TypeExtract: Byte;
+    CryptFileName: Boolean;
+    FileNameLength: Byte;
+    CFileName: TFileNameUnicode;
+    TypeFileNameExtract: Byte;
+    FileNameCRC: Cardinal;
+    Displacement: Cardinal;
+    Reserved: Cardinal;
+    Reserved2: Cardinal;
+  end;
+
+const
+  Encrypt32kBlockSize = 32 * 1024;
+
+type
+  TEncryptProgress = procedure(FileName: string; BytesTotal, BytesDone: Int64) of object;
+
+  TEncryptFileHeaderExV1 = record
+    Version: Byte;
+    Seed: TSeed;
+    FileSize: Int64;
+    PassCRC: Cardinal;
+    Algorith: Cardinal;
+    BlockSize32k: Byte;
+    Displacement: Cardinal;
+    ProgramVersion: TRelease;
+    Reserved: Cardinal;
+    Reserved2: Cardinal;
+  end;
 
 procedure CryptStreamV2(Source, Dest: TStream; Password: string; Seed: Binary;
                         ACipher: TDECCipherClass = nil; AMode: TCipherMode = cmCTSx;
@@ -143,7 +217,7 @@ begin
 end;
 
 initialization
-  SetDefaultCipherClass(TCipher_Blowfish);
+  SetDefaultCipherClass(TCipher_Twofish);
   SetDefaultHashClass(THash_SHA1);
 
 end.

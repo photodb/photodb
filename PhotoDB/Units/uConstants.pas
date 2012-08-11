@@ -87,7 +87,7 @@ const
   cMaxShareFilesLimit = 100;
   cMaxShareFileSize = 100 * 1024 * 1024;
 
-  ReleaseNumber = 12;
+  ReleaseNumber = 14;
 
 const
   RetryTryCountOnWrite = 10;

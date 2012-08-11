@@ -408,7 +408,8 @@ uses
   uFreeImageImage in 'Units\Formats\uFreeImageImage.pas',
   PDB.uVCLRewriters in 'Units\PDB.uVCLRewriters.pas',
   uDBInfoEditorUtils in 'Units\uDBInfoEditorUtils.pas',
-  uMediaEncryption in 'Units\uMediaEncryption.pas';
+  uMediaEncryption in 'Units\uMediaEncryption.pas',
+  uTransparentEncryption in 'Units\uTransparentEncryption.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

@@ -1515,7 +1515,7 @@ begin
   Assert(Size = Context.BlockSize);
 
   D := FUser;
-  P := Pointer(PAnsiChar(FUser) + SizeOf(Blowfish_Data) + SizeOf(Blowfish_Key) - SizeOf(Integer));
+  P := Pointer(PAnsiChar(FUser) + SizeOf(Blowfish_Data) + SizeOf(Blowfish_Key) - SizeOf(LongWord));
   A := SwapLong(PLongArray(Source)[0]) xor P[0];
   B := SwapLong(PLongArray(Source)[1]);
   for I := 0 to 7 do
