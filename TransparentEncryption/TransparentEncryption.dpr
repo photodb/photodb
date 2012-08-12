@@ -36,8 +36,6 @@ uses
 
 {$R *.res}
 
-{$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED}
-
 begin
   DefaultDll := InstParamStr;
   DllProc := @HandleEvents;

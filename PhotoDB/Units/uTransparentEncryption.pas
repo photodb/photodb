@@ -49,7 +49,7 @@ type
   public
     constructor Create(Handle: THandle);
     destructor Destroy; override;
-    function CanDecryptWithPassword(Password: string): Boolean;
+    function CanDecryptWithPasswordRequest(FileName: string): Boolean;
     procedure ReadBlock(const Block; BlockPosition: Int64; BlockSize: Int64);
     function GetBlock(BlockPosition: Int64; BlockSize: Int64): Pointer;
     procedure FreeBlock(Block: Pointer);
@@ -62,7 +62,7 @@ procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
 
 procedure EncryptStreamEx(S, D: TStream; Password: string; FileName: string;
                          ACipher: TDECCipherClass; Progress: TEncryptProgress = nil);
-function EncryptFileEx(FileName: string; Password: string;
+function TransparentEncryptFileEx(FileName: string; Password: string;
                        ACipher: TDECCipherClass = nil; Progress: TEncryptProgress = nil): Integer;
 function DecryptStreamEx(S, D: TStream; Password: string; Seed: Binary; FileSize: Int64; AChipper: TDECCipherClass; BlockSize32k: Byte; Progress: TEncryptProgress = nil): Boolean;
 
@@ -126,7 +126,7 @@ begin
   end;
 end;
 
-function EncryptFileEx(FileName: string; Password: string;
+function TransparentEncryptFileEx(FileName: string; Password: string;
   ACipher: TDECCipherClass = nil; Progress: TEncryptProgress = nil): Integer;
 var
   SFS, DFS: TFileStream;
@@ -234,16 +234,91 @@ end;
 
 { TEncryptedFile }
 
-function TEncryptedFile.CanDecryptWithPassword(Password: string): Boolean;
+type
+  PMsgHdr = ^TMsgHdr;
+  TMsgHdr = packed record
+    MsgSize : Integer;
+    Data : PChar;
+  end;
+
+function TEncryptedFile.CanDecryptWithPasswordRequest(FileName: string): Boolean;
 var
   EncryptHeader: TEncryptedFileHeader;
   EncryptHeaderV1: TEncryptFileHeaderExV1;
   Position: Int64;
   CRC: Cardinal;
+  hFileMapping: THandle;
+  Password,
+  SharedFileName,
+  MessageToSent: string;
+  CD: TCopyDataStruct;
+  Buf: Pointer;
+  P: PByte;
+  WinHandle: HWND;
+  m_pViewOfFile: Pointer;
 begin
   Result := False;
 
   if FHandle = 0 then
+    Exit;
+
+  Password := '';
+  //request password from Photo Dtabase host
+
+  SharedFileName := 'FILE_HANDLE_' + IntToStr(FHandle);
+  //1024 bytes maximum in pasword
+  hFileMapping := CreateFileMapping(
+       INVALID_HANDLE_VALUE, // system paging file
+       nil, // security attributes
+       PAGE_READWRITE, // protection
+       0, // high-order DWORD of size
+       1024, // low-order DWORD of size
+       PChar(SharedFileName)); // name
+
+  if (hFileMapping <> 0) then
+  begin
+
+    WinHandle := FindWindow(nil, PChar(DB_ID));
+    if WinHandle <> 0 then
+    begin
+      MessageToSent := '::PASS:' + SharedFileName + ':' + FileName;
+
+      cd.dwData := WM_COPYDATA_ID;
+      cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
+      GetMem(Buf, cd.cbData);
+      try
+        P := PByte(Buf);
+        NativeInt(P) := NativeInt(P) + SizeOf(TMsgHdr);
+
+        StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
+        cd.lpData := Buf;
+
+        if SendMessage(WinHandle, WM_COPYDATA, 0, NativeInt(@cd)) = 0 then
+        begin
+           ///// Creating a view of the file in the Processes address space
+           m_pViewOfFile := MapViewOfFile(
+             hFileMapping, // handle to file-mapping object
+             FILE_MAP_ALL_ACCESS, // desired access
+             0,
+             0,
+             0);
+
+           if m_pViewOfFile <> nil then
+           begin
+             Password := string(PChar(m_pViewOfFile));
+             UnmapViewOfFile(m_pViewOfFile);
+           end;
+        end;
+
+      finally
+        FreeMem(Buf);
+      end;
+    end;
+
+    CloseHandle(hFileMapping);
+  end;
+
+  if Password = '' then
     Exit;
 
   Position := FileSeek(FHandle, 0, FILE_CURRENT);
@@ -310,17 +385,15 @@ procedure TEncryptedFile.DecodeDataBlock(const Source; var Dest; DataSize: Integ
 var
   APassword: AnsiString;
   Bytes: TBytes;
-  ACipher: TDECCipherClass;
   AHash: TDECHashClass;
 begin
-  ACipher := ValidCipher(nil);
   AHash := ValidHash(nil);
 
   Bytes := TEncoding.UTF8.GetBytes(FPassword);
   SetLength(APassword, Length(Bytes));
   Move(Bytes[0], APassword[1], Length(Bytes));
 
-  with ACipher.Create do
+  with FChipper.Create do
   try
     Mode := CmCTSx;
     Init(AHash.KDFx(APassword, FSalt, Context.KeySize));

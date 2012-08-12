@@ -35,7 +35,7 @@ const
   CRYPT_OPTIONS_NORMAL = 0;
   CRYPT_OPTIONS_SAVE_CRC = 1;
 
-function CryptGraphicFileV2(FileName: string; Password: string; Options: Integer): Integer;
+function CryptGraphicFileV3(FileName: string; Password: string; Options: Integer): Integer;
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
   LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function DeCryptGraphicFile(FileName: string; Password: string;
@@ -56,7 +56,7 @@ function ResetPasswordInCryptBlobStreamJPG(DF: TField; Password: string): Boolea
 procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
 function DecryptFileToStream(FileName: string; Password: string; Stream: TStream): Boolean;
 function DecryptStreamToStream(Src, Dest: TStream; Password: string): Boolean;
-procedure CryptStream(S, D: TStream; Password: string; Options: Integer; FileName: string);
+procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string);
 function ValidPassInCryptStream(S: TStream; Password: String): Boolean;
 function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
 
@@ -234,7 +234,7 @@ begin
   Stream.Write(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
 end; }
 
-procedure CryptStream(S, D: TStream; Password: string; Options: Integer; FileName: string);
+procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string);
 var
   Chipper: TDECCipherClass;
 begin
@@ -242,7 +242,7 @@ begin
   EncryptStreamEx(S, D, Password, FileName, Chipper, nil);
 end;
 
-function CryptGraphicFileV2W(FileName: string; Password: string; Options: Integer): Integer;
+function CryptGraphicFileV3W(FileName: string; Password: string; Options: Integer): Integer;
 var
   FS: TFileStream;
   MS: TMemoryStream;
@@ -286,7 +286,7 @@ begin
       FS := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
       try
         try
-          CryptStream(MS, FS, Password, Options, FileName);
+          EnryptStreamV3(MS, FS, Password, Options, FileName);
         except
           //if any error in this block - user can lost original data, so we had to save it in any case
           FatalSaveStream(MS, FileName);
@@ -318,18 +318,19 @@ begin
 
     ACipher := ValidCipher(nil);
     EncryptStreamEx(MS, Dest, Password, '', ACipher, nil);
-
-    //WriteCryptHeaderV2(Dest, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
-    //CryptStreamV2(MS, Dest, Password, Seed);
   finally
     F(MS);
   end;
 end;
 
-function CryptGraphicFileV2(FileName: string; Password: string;
-  Options: Integer): Integer;
+function CryptGraphicFileV3(FileName: string; Password: string; Options: Integer): Integer;
 begin
-  Result := CryptGraphicFileV2W(FileName, Password, Options);
+  if IsGraphicFile(FileName) then
+    //using memory
+    Result := CryptGraphicFileV3W(FileName, Password, Options)
+  else
+    //using temporary file
+    Result := TransparentEncryptFileEx(FileName, Password);
 end;
 
 function DeCryptGraphicFile(FileName: string; Password: String;

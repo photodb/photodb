@@ -8,12 +8,15 @@ uses
   SysUtils,
   Classes,
   Forms,
+  Themes,
   AppEvnts,
+  StrUtils,
   uAppUtils,
   UnitDBKernel,
   CommonDBSupport,
   UnitDBDeclare,
   UnitDBCommon,
+  Win32crc,
   uLogger,
   uConstants,
   uFileUtils,
@@ -23,7 +26,6 @@ uses
   uFastLoad,
   uMemory,
   uMultiCPUThreadManager,
-  Win32crc,
   uShellIntegration,
   uRuntime,
   Dolphin_DB,
@@ -36,7 +38,6 @@ uses
   uDBCustomThread,
   uPortableDeviceManager,
   uUpTime,
-  Themes,
   EasyListView,
   uPortableClasses,
   uTranslate,
@@ -70,6 +71,7 @@ type
     procedure RegisterMainForm(Value: TForm);
     procedure UnRegisterMainForm(Value: TForm);
     procedure ProcessCommandLine(CommandLine: string);
+    function ProcessPasswordRequest(S: string): Boolean;
   protected
     function GetFormID: string; override;
     procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
@@ -315,6 +317,49 @@ begin
     PDevice := PDManager.GetDeviceByID(S);
     if PDevice <> nil then
       ImportForm.FromDevice(PDevice.Name);
+  end;
+end;
+
+function TFormManager.ProcessPasswordRequest(S: string): Boolean;
+const
+  PasswordRequestID = '::PASS:';
+var
+  P: Integer;
+  SharedFileName,
+  Password: string;
+  SharedMemHandle: THandle;
+  SharedMemory: Pointer;
+begin
+  Result := False;
+  //password request from transparent encryption dll
+  //format:
+  //::PASS:SHARED_MEMORY_ID:FileName
+  if StartsText(PasswordRequestID, S) then
+  begin
+    Result := True;
+
+    Delete(S, 1, Length(PasswordRequestID));
+    P := Pos(':', S);
+    if P > 1 then
+    begin
+      SharedFileName := Copy(S, 1, P - 1);
+      Delete(S, 1, P);
+
+      SharedMemHandle := OpenFileMapping(FILE_MAP_WRITE, False, PChar(SharedFileName));
+      if SharedMemHandle <> 0 then
+      begin
+        SharedMemory := MapViewOfFile(SharedMemHandle, FILE_MAP_WRITE, 0, 0, 0);
+        if SharedMemory <> nil then
+        begin
+          Password := DBKernel.FindPasswordForCryptImageFile(S);
+
+          CopyMemory(SharedMemory, PChar(Password), SizeOf(Char) * (Length(Password) + 1));
+
+          UnmapViewOfFile(SharedMemory);
+        end;
+        CloseHandle(SharedMemHandle);
+      end;
+    end;
   end;
 end;
 
@@ -689,12 +734,14 @@ begin
     Data := PByte(Msg.CopyDataStruct.LpData) + SizeOf(TMsgHdr);
     SetString(S, PWideChar(Data), (Msg.CopyDataStruct.CbData - SizeOf(TMsgHdr) - 1) div SizeOf(WideChar));
 
+    if ProcessPasswordRequest(S) then
+      Exit;
+
     ProcessCommandLine(S);
     if Screen.ActiveCustomForm <> nil then
       ActivateBackgroundApplication(Screen.ActiveCustomForm.Handle);
   end else
     Dispatch(Msg);
-
 end;
 
 procedure TFormManager.WMDeviceChange(var Msg: TMessage);

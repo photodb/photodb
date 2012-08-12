@@ -771,7 +771,7 @@ end;
 
 function CryptGraphicFile(FileName, Password: string): Integer;
 begin
-  Result := CryptGraphicFileV2(FileName, Password, 0);
+  Result := CryptGraphicFileV3(FileName, Password, 0);
 end;
 
 function APromtString(Caption, Text, InitialString: string): string;

@@ -32,13 +32,11 @@ uses
 
   uHook in 'uHook.pas',
   uAPIHook in 'uAPIHook.pas',
-  uTransparentEncryption in 'uTransparentEncryption.pas',
+  uTransparentEncryption in '..\PhotoDB\Units\uTransparentEncryption.pas',
   uTransparentEncryptor in 'uTransparentEncryptor.pas',
   uWinAPIRedirections in 'uWinAPIRedirections.pas';
 
 {$R *.res}
-
-{$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED}
 
 begin
   DefaultDll := InstParamStr;

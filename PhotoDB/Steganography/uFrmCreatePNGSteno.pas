@@ -252,7 +252,7 @@ begin
           begin
             Bitmap.SaveToFile(SavePictureDialog.FileName);
             if FImagePassword <> '' then
-              CryptGraphicFileV2(SavePictureDialog.FileName, FImagePassword, CRYPT_OPTIONS_NORMAL);
+              CryptGraphicFileV3(SavePictureDialog.FileName, FImagePassword, CRYPT_OPTIONS_NORMAL);
             IsStepComplete := True;
             Changed;
           end else
@@ -262,7 +262,7 @@ begin
               PNG.Assign(Bitmap);
               PNG.SaveToFile(SavePictureDialog.FileName);
               if FImagePassword <> '' then
-                CryptGraphicFileV2(SavePictureDialog.FileName, FImagePassword, CRYPT_OPTIONS_NORMAL);
+                CryptGraphicFileV3(SavePictureDialog.FileName, FImagePassword, CRYPT_OPTIONS_NORMAL);
               IsStepComplete := True;
               Changed;
             finally

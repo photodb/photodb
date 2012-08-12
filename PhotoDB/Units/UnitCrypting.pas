@@ -7,9 +7,11 @@ uses
   SysUtils,
   DB,
   Classes,
+  JPEG,
   Win32Crc,
   UnitDBDeclare,
   UnitDBKernel,
+  CommonDBSupport,
   uFileUtils,
   uDBForm,
   uMemory,
@@ -19,7 +21,7 @@ uses
   GraphicCrypt,
   uErrors;
 
-function CryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
+function EncryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
   DoEvent: Boolean = True): Integer;
 function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string): Integer;
 function CryptTStrings(TS: TStrings; Pass: string): string;
@@ -27,9 +29,6 @@ function DeCryptTStrings(S: string; Pass: string): TStrings;
 function CryptDBRecordByID(ID: Integer; Password: string): Integer;
 
 implementation
-
-uses
-  JPEG, CommonDBSupport;
 
 function CryptDBRecordByID(ID : integer; Password : String) : integer;
 var
@@ -103,7 +102,7 @@ begin
   end;
 end;
 
-function CryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
+function EncryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
   DoEvent: Boolean = True): Integer;
 var
   Info: TEventValues;
@@ -119,7 +118,7 @@ begin
 
   if FileExistsSafe(FileName) then
   begin
-    ErrorCode := CryptGraphicFileV2(FileName, Password, Options);
+    ErrorCode := CryptGraphicFileV3(FileName, Password, Options);
     if ErrorCode <> CRYPT_RESULT_OK then
     begin
       Result := ErrorCode;

@@ -2237,7 +2237,7 @@ procedure TExplorerForm.EncryptLinkClick(Sender: TObject);
 begin
   PmItemPopup.Tag := -1;
 
-  if TControl(Sender).Tag = ACTION_CRYPT_IMAGES then
+  if TControl(Sender).Tag = ACTION_ENCRYPT_IMAGES then
     CryptFile1Click(Sender)
   else
     ResetPassword1Click(Sender);
@@ -4817,7 +4817,7 @@ var
     begin
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
       EncryptLink.Text := L('Encrypt');
-      EncryptLink.Tag := ACTION_CRYPT_IMAGES;
+      EncryptLink.Tag := ACTION_ENCRYPT_IMAGES;
     end else
     begin
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
@@ -6908,7 +6908,7 @@ begin
   Options.Files := Copy(ItemFileNames);
   Options.IDs := Copy(ItemIDs);
   Options.Selected := Copy(ItemSelected);
-  Options.Action := IIF(IsEncrypt, ACTION_CRYPT_IMAGES, ACTION_DECRYPT_IMAGES);
+  Options.Action := IIF(IsEncrypt, ACTION_ENCRYPT_IMAGES, ACTION_DECRYPT_IMAGES);
   Options.Password := Password;
   Options.EncryptOptions := CRYPT_OPTIONS_NORMAL;
 
@@ -6955,9 +6955,36 @@ var
   FileName: string;
   Item: TEasyItem;
   Index: Integer;
+
+  I: Integer;
+  ItemIndex: Integer;
+  FileInfo: TExplorerFileInfo;
+  MenuRecord: TDBPopupMenuInfoRecord;
 begin
-  Info := GetCurrentPopupMenuInfo(nil);
+  Info := TExplorerFileInfos.Create;
   try
+    //fill list of files
+    for I := 0 to ElvMain.Items.Count - 1 do
+    begin
+      //skip filtered items
+      if not ElvMain.Items[I].Visible then
+        Continue;
+
+      ItemIndex := ItemIndexToMenuIndex(I);
+      if ItemIndex > FFilesInfo.Count - 1 then
+        Exit;
+
+      FileInfo := FFilesInfo[ItemIndex];
+
+      if (FileInfo.FileType = EXPLORER_ITEM_IMAGE) or CanBeTransparentEncryptedFile(FileInfo.FileName) then
+      begin
+        MenuRecord := FileInfo.Copy;
+        MenuRecord.Selected := ElvMain.Items[I].Selected;
+        MenuRecord.Exists := 1;
+        Info.Add(MenuRecord);
+      end;
+    end;
+
     if PmItemPopup.Tag <> -1 then
       FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
     else

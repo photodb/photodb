@@ -273,7 +273,7 @@ const
                   MD.Seek(0, soFromBeginning);
                   FixJpegStreamEXIF(MD, FData.Width, FData.Height);
                   MD.Seek(0, soFromBeginning);
-                  CryptStream(MD, FS, Password, CRYPT_OPTIONS_SAVE_CRC, FileName);
+                  EnryptStreamV3(MD, FS, Password, CRYPT_OPTIONS_SAVE_CRC, FileName);
                 finally
                   F(FS);
                 end;
@@ -312,7 +312,7 @@ const
                   F(ExifData);
                 end;
                 if Password <> '' then
-                  CryptGraphicFileV2(FileName, Password, CRYPT_OPTIONS_SAVE_CRC);
+                  CryptGraphicFileV3(FileName, Password, CRYPT_OPTIONS_SAVE_CRC);
 
               end;
 

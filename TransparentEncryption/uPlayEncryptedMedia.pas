@@ -53,11 +53,11 @@ var
   hRemoteThread : Cardinal;
 begin
   // Открываем существующий объект процесса
-  Hdl := OpenProcess(PROCESS_ALL_ACCESS, False, TargetId);
+  Hdl := OpenProcess(PROCESS_ALL_ACCESS or PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION, False, TargetId);
   // Выделяем память под структуру, которая передается нашей функции, под параметры, которые передаются функции
   ParamAddr := VirtualAllocEx(Hdl, nil, Length(DllName) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
   // Пишем саму структуру
-  WriteProcessMemory(Hdl,  ParamAddr, PWideChar(DllName), Length(DllName) * 2 + 2, BytesWrite);
+  WriteProcessMemory(Hdl, ParamAddr, PWideChar(DllName), Length(DllName) * 2 + 2, BytesWrite);
   pThreadStart := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), PAnsiChar('LoadLibraryW'));
   // Запускаем удаленный поток
   hThread  := CreateRemoteThread(Hdl, nil, 0, pThreadStart, ParamAddr, 0, hRemoteThread);
@@ -72,8 +72,9 @@ var
   hThread: Cardinal;
 begin
   // Устанавливаем отладочные привилегии для выбранного процесса, т.к. без данных
-  // привилегий код внедрения работать не будет
-  ChangePrivilege('SeDebugPrivilege', True);
+  // привилегий код внедрения работать не будет???
+  //TODO: check in dicumentation and in user-mode processes
+  //ChangePrivilege('SeDebugPrivilege', True);
 
   ZeroMemory(@si, SizeOf(si));
   SI.cb := SizeOf(si);

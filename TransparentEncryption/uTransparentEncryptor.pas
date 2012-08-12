@@ -140,7 +140,7 @@ begin
 
     MS := TEncryptedFile.Create(hFile);
     try
-      if MS.CanDecryptWithPassword('123') then
+      if MS.CanDecryptWithPasswordRequest(FileName) then
       begin
         FData.Add(hFile, MS);
         MS := nil;

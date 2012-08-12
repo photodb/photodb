@@ -94,7 +94,7 @@ procedure TCryptingImagesThread.DoDBkernelEvent;
 var
   EventInfo: TEventValues;
 begin
-  if FOptions.Action = ACTION_CRYPT_IMAGES then
+  if FOptions.Action = ACTION_ENCRYPT_IMAGES then
     EventInfo.Encrypted := CryptResult = CRYPT_RESULT_OK
   else
     EventInfo.Encrypted := CryptResult <> CRYPT_RESULT_OK;
@@ -151,11 +151,11 @@ begin
           end;
           Inc(C);
           SetProgressPosition(C);
-          if FOptions.Action = ACTION_CRYPT_IMAGES then
+          if FOptions.Action = ACTION_ENCRYPT_IMAGES then
           begin
-            // Crypting images
+            // Encrypting images
             try
-              CryptResult := CryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
+              CryptResult := EncryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
                 FOptions.EncryptOptions, False);
 
               if CryptResult <> CRYPT_RESULT_OK then
@@ -166,7 +166,7 @@ begin
             end;
           end else
           begin
-            // DEcrypting images
+            // Decrypting images
             FE := FileExistsSafe(FOptions.Files[I]);
             // GetPassword
             StrParam := FOptions.Files[I];

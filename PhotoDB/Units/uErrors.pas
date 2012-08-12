@@ -2,11 +2,13 @@ unit uErrors;
 
 interface
 
-{$IFDEF PHOTODB}
 uses
-  uSysUtils,
-  uTranslate;
+  SysUtils,
+  uSysUtils
+{$IFDEF PHOTODB}
+  ,uTranslate
 {$ENDIF}
+  ;
 
 const
   CRYPT_RESULT_UNDEFINED            = 0;
@@ -22,15 +24,16 @@ const
   CRYPT_RESULT_ERROR_WRITING_FILE   = 10;
   CRYPT_RESULT_FAILED_GENERAL_ERROR = 11;
 
-{$IFDEF PHOTODB}
 function DBErrorToString(ErrorCode: Integer): string;
-{$ENDIF}
 
 implementation
 
-{$IFDEF PHOTODB}
 function DBErrorToString(ErrorCode: Integer): string;
 begin
+  {$IFnDEF PHOTODB}
+  Result := 'Error code is ' + IntToStr(ErrorCode);
+  {$ENDIF}
+  {$IFDEF PHOTODB}
   case ErrorCode of
     CRYPT_RESULT_UNDEFINED:
       Result := TA('Result is undefined!', 'Errors');
@@ -57,7 +60,7 @@ begin
     else
       Result := FormatEx(TA('Error code is: {0}' , 'Errors'), [ErrorCode]);
   end;
+  {$ENDIF}
 end;
-{$ENDIF}
 
 end.

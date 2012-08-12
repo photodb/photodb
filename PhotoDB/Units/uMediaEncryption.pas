@@ -8,7 +8,11 @@ uses
   Classes,
   Registry,
   uMemory,
-  uAppUtils;
+  uAppUtils,
+  uStrongCrypt,
+  uTransparentEncryption,
+  uFormInterfaces,
+  UnitDBKernel;
 
 type
   TMachineType = (mtUnknown, mt32Bit, mt64Bit, mtOther);
@@ -23,13 +27,24 @@ var
   Handler,
   CommandLine,
   Executable,
-  TransparentDecryptor: string;
+  TransparentDecryptor, Password: string;
   ExecutableType: TMachineType;
   Reg: TRegistry;
   Si: TStartupInfo;
   P: TProcessInformation;
 begin
   Result := False;
+
+  if ValidEnryptFileEx(FileName) then
+  begin
+    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+
+    if (Password = '') then
+      Password := RequestPasswordForm.ForImage(FileName);
+    if Password = '' then
+      //play started but user don't know password - it's OK
+      Exit(True);
+  end;
 
   Reg := TRegistry.Create(KEY_READ);
   try

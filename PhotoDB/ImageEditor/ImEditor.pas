@@ -2446,7 +2446,7 @@ begin
 
       end;
       if FilePassWord <> '' then
-        GraphicCrypt.CryptGraphicFileV2(FileName, FilePassWord, 0);
+        CryptGraphicFileV3(FileName, FilePassWord, 0);
     end;
   finally
     F(SavePictureDialog);

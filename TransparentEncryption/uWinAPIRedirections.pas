@@ -6,6 +6,7 @@ uses
   Windows,
   SysUtils,
   uAPIHook,
+  uStrongCrypt,
   uTransparentEncryption,
   uTransparentEncryptor;
 
@@ -144,7 +145,7 @@ begin
       Attributes := lpFileInformation;
       Int64Rec(FileSize).Lo := Attributes.nFileSizeLow;
       Int64Rec(FileSize).Hi := Attributes.nFileSizeHigh;
-      FileSize := FileSize - SizeOf(TEncryptFileHeaderEx) - SizeOf(TEncryptFileHeaderExV1);
+      FileSize := FileSize - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
       Attributes.nFileSizeLow := Int64Rec(FileSize).Lo;
       Attributes.nFileSizeHigh := Int64Rec(FileSize).Hi;
     end;
@@ -165,7 +166,7 @@ begin
       Attributes := lpFileInformation;
       Int64Rec(FileSize).Lo := Attributes.nFileSizeLow;
       Int64Rec(FileSize).Hi := Attributes.nFileSizeHigh;
-      FileSize := FileSize - SizeOf(TEncryptFileHeaderEx) - SizeOf(TEncryptFileHeaderExV1);
+      FileSize := FileSize - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
       Attributes.nFileSizeLow := Int64Rec(FileSize).Lo;
       Attributes.nFileSizeHigh := Int64Rec(FileSize).Hi;
     end;
@@ -183,7 +184,7 @@ begin
   begin
     Int64Rec(FileSize).Lo := lpFindFileData.nFileSizeLow;
     Int64Rec(FileSize).Hi := lpFindFileData.nFileSizeHigh;
-    FileSize := FileSize - SizeOf(TEncryptFileHeaderEx) - SizeOf(TEncryptFileHeaderExV1);
+    FileSize := FileSize - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
     lpFindFileData.nFileSizeLow := Int64Rec(FileSize).Lo;
     lpFindFileData.nFileSizeHigh := Int64Rec(FileSize).Hi;
   end;
@@ -199,7 +200,7 @@ begin
   begin
     Int64Rec(FileSize).Lo := lpFindFileData.nFileSizeLow;
     Int64Rec(FileSize).Hi := lpFindFileData.nFileSizeHigh;
-    FileSize := FileSize - SizeOf(TEncryptFileHeaderEx) - SizeOf(TEncryptFileHeaderExV1);
+    FileSize := FileSize - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
     lpFindFileData.nFileSizeLow := Int64Rec(FileSize).Lo;
     lpFindFileData.nFileSizeHigh := Int64Rec(FileSize).Hi;
   end;
@@ -209,14 +210,14 @@ function GetFileSizeHookProc(hFile: THandle; lpFileSizeHigh: Pointer): DWORD; st
 begin
   Result := GetFileSizeNextHook(hFile, lpFileSizeHigh);
   if IsEncryptedHandle(hFile) then
-    Result := Result - SizeOf(TEncryptFileHeaderEx) - SizeOf(TEncryptFileHeaderExV1);
+    Result := Result - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
 end;
 
 function GetFileSizeExHookProc(hFile: THandle; var lpFileSize: Int64): BOOL; stdcall;
 begin
   Result := GetFileSizeExNextHook(hFile, lpFileSize);
   if IsEncryptedHandle(hFile) then
-    lpFileSize := lpFileSize - SizeOf(TEncryptFileHeaderEx) - SizeOf(TEncryptFileHeaderExV1);
+    lpFileSize := lpFileSize - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
 end;
 
 function CreateFileMappingAHookProc(hFile: THandle; lpFileMappingAttributes: PSecurityAttributes;
@@ -540,7 +541,7 @@ end;
 function ReadFileExHookProc(hFile: THandle; lpBuffer: Pointer; nNumberOfBytesToRead: DWORD; lpOverlapped: POverlapped; lpCompletionRoutine: TPROverlappedCompletionRoutine): BOOL; stdcall;
 begin
  if MessageBox(0, 'Функция: ReadFileEx', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
-    result := ReadFileExNextHook( hFile,lpBuffer,nNumberOfBytesToRead,lpOverlapped,lpCompletionRoutine)
+    result := ReadFileExNextHook(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine)
   else
     result := FALSE;
 end;

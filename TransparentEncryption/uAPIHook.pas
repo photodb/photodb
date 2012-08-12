@@ -107,7 +107,6 @@ var
   TheadID: DWORD;
   InitData: TInjectDllData;
 begin
-  messageBox(0, PChar('x'), PChar('x'), 0);
   Result := False;
   InitData.pLoadLibrary := GetProcAddress(LoadLibrary('kernel32.dll'), 'LoadLibraryA');
 

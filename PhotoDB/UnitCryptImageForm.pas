@@ -143,7 +143,7 @@ begin
 
   Options.Password := Opt.Password;
   Options.EncryptOptions := EncryptOptions;
-  Options.Action := ACTION_CRYPT_IMAGES;
+  Options.Action := ACTION_ENCRYPT_IMAGES;
   TCryptingImagesThread.Create(Owner, Options);
 end;
 
