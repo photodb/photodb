@@ -156,7 +156,7 @@ begin
             // Crypting images
             try
               CryptResult := CryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
-                FOptions.CryptOptions, False);
+                FOptions.EncryptOptions, False);
 
               if CryptResult <> CRYPT_RESULT_OK then
                 ShowError(DBErrorToString(CryptResult));

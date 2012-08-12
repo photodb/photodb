@@ -309,7 +309,6 @@ end;
 procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
 var
   MS: TMemoryStream;
-//  Seed: Binary;
   ACipher: TDECCipherClass;
 begin
   MS := TMemoryStream.Create;
@@ -433,7 +432,8 @@ begin
       Stream.Seek(GraphicHeaderEx1.Displacement, soCurrent);
 
     Chipper := CipherByIdentity(GraphicHeaderEx1.Algorith);
-    DeCryptStreamV2(Stream, MS, Password, SeedToBinary(GraphicHeaderEx1.Seed), GraphicHeaderEx1.FileSize, Chipper);
+
+    DecryptStreamEx(Stream, MS, Password, SeedToBinary(GraphicHeaderEx1.Seed), GraphicHeaderEx1.FileSize, Chipper, GraphicHeaderEx1.BlockSize32k);
     Result := True;
   end;
 end;

@@ -4,7 +4,7 @@ object CryptImageForm: TCryptImageForm
   BorderIcons = [biSystemMenu, biMaximize]
   BorderStyle = bsToolWindow
   Caption = 'CryptImageForm'
-  ClientHeight = 202
+  ClientHeight = 189
   ClientWidth = 324
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object CryptImageForm: TCryptImageForm
   OnKeyPress = FormKeyPress
   DesignSize = (
     324
-    202)
+    189)
   PixelsPerInch = 96
   TextHeight = 13
   object LbPassword: TLabel
@@ -38,54 +38,44 @@ object CryptImageForm: TCryptImageForm
     Caption = 'ReEnter password for image here:'
   end
   object BtCancel: TButton
-    Left = 165
-    Top = 174
+    Left = 164
+    Top = 159
     Width = 75
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Cancel'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = BtCancelClick
   end
   object BtOk: TButton
     Left = 245
-    Top = 174
+    Top = 159
     Width = 75
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Ok'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = BtOkClick
-  end
-  object CbSaveCRC: TCheckBox
-    Left = 8
-    Top = 120
-    Width = 310
-    Height = 17
-    Anchors = [akLeft, akTop, akRight]
-    Caption = 'Save CRC for file'
-    Enabled = False
-    TabOrder = 3
   end
   object CbSavePasswordForSession: TCheckBox
     Left = 8
-    Top = 136
+    Top = 120
     Width = 310
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Save Password for all session'
     Checked = True
     State = cbChecked
-    TabOrder = 4
+    TabOrder = 3
   end
   object CbSavePasswordPermanent: TCheckBox
     Left = 8
-    Top = 152
+    Top = 136
     Width = 310
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Save Password for in settings (NOT recommend)'
-    TabOrder = 5
+    TabOrder = 4
   end
   object EdPassword: TWatermarkedEdit
     Left = 8
@@ -133,7 +123,7 @@ object CryptImageForm: TCryptImageForm
   end
   object WblMethod: TWebLink
     Left = 8
-    Top = 178
+    Top = 168
     Width = 84
     Height = 16
     Cursor = crHandPoint
@@ -151,7 +141,7 @@ object CryptImageForm: TCryptImageForm
     CanClick = True
   end
   object PmCryptMethod: TPopupActionBar
-    Left = 104
-    Top = 168
+    Left = 272
+    Top = 8
   end
 end

@@ -62,15 +62,19 @@ procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
 
 procedure EncryptStreamEx(S, D: TStream; Password: string; FileName: string;
                          ACipher: TDECCipherClass; Progress: TEncryptProgress = nil);
-
-function DecryptFileExToStream(FileName, Password: string; S: TStream): Boolean;
 function EncryptFileEx(FileName: string; Password: string;
                        ACipher: TDECCipherClass = nil; Progress: TEncryptProgress = nil): Integer;
-function DecryptStreamEx(S: TStream; EncryptHeader: TEncryptedFileHeader; Password: string; D: TStream; Progress: TEncryptProgress = nil): Boolean;
+function DecryptStreamEx(S, D: TStream; Password: string; Seed: Binary; FileSize: Int64; AChipper: TDECCipherClass; BlockSize32k: Byte; Progress: TEncryptProgress = nil): Boolean;
 
 function ValidEnryptFileEx(FileName: String): Boolean;
+function CanBeTransparentEncryptedFile(FileName: string): Boolean;
 
 implementation
+
+function CanBeTransparentEncryptedFile(FileName: string): Boolean;
+begin
+  Result := True;
+end;
 
 procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
   BlockSize32k: Byte; Password: string; var Seed: Binary; ACipher: TDECCipherClass);
@@ -177,77 +181,24 @@ begin
   Result := CRYPT_RESULT_OK;
 end;
 
-function DecryptStreamEx(S: TStream; EncryptHeader: TEncryptedFileHeader; Password: string; D: TStream; Progress: TEncryptProgress = nil): Boolean;
+function DecryptStreamEx(S, D: TStream; Password: string; Seed: Binary; FileSize: Int64; AChipper: TDECCipherClass; BlockSize32k: Byte; Progress: TEncryptProgress = nil): Boolean;
 var
-  CRC: Cardinal;
-  EncryptHeaderV1: TEncryptFileHeaderExV1;
-  Chipper: TDECCipherClass;
-  BlockSize32k: Byte;
-  Size, SizeToEncrypt: Int64;
-
+  StartPos, SizeToEncrypt: Int64;
 begin
-  Result := False;
-  if EncryptHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
+  StartPos := S.Position;
+
+  while S.Position - StartPos < FileSize do
   begin
-    StrongCryptInit;
+    SizeToEncrypt := BlockSize32k * Encrypt32kBlockSize;
+    if S.Position + SizeToEncrypt - StartPos >= FileSize then
+      SizeToEncrypt := FileSize - (S.Position - StartPos);
 
-    S.Read(EncryptHeaderV1, SizeOf(TEncryptFileHeaderExV1));
-    CalcStringCRC32(Password, CRC);
-    if EncryptHeaderV1.PassCRC <> CRC then
-      Exit;
-
-    if EncryptHeaderV1.Displacement > 0 then
-      S.Seek(EncryptHeaderV1.Displacement, soCurrent);
-
-    Chipper := CipherByIdentity(EncryptHeaderV1.Algorith);
-    if Chipper <> nil then
-    begin
-
-      BlockSize32k := EncryptHeaderV1.BlockSize32k;
-
-      Size := S.Size;
-      while S.Position < Size do
-      begin
-        SizeToEncrypt := BlockSize32k * Encrypt32kBlockSize;
-        if S.Position + SizeToEncrypt >= Size then
-          SizeToEncrypt := Size - S.Position;
-
-        DeCryptStreamV2(S, D, Password, EncryptHeaderV1.Seed, SizeToEncrypt, Chipper, cmCTSx, nil);
-        if Assigned(Progress) then
-          Progress('', Size, S.Position);
-
-      end;
-
-      //DeCryptStreamV2(Stream, MS, Password, SeedToBinary(EncryptHeaderV1.Seed), EncryptHeaderV1.FileSize, Chipper);
-      Result := True;
-    end;
+    DeCryptStreamV2(S, D, Password, Seed, SizeToEncrypt, AChipper, cmCTSx, nil);
+    if Assigned(Progress) then
+      Progress('', FileSize, S.Position - StartPos);
   end;
-end;
 
-function DecryptFileExToStream(FileName, Password: string; S: TStream): Boolean;
-var
-  FS: TFileStream;
-  EncryptHeader: TEncryptedFileHeader;
-begin
-  Result := False;
-
-  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
-  if FS = nil then
-    Exit;
-
-  try
-    FS.Read(EncryptHeader, SizeOf(EncryptHeader));
-    if EncryptHeader.ID <> PhotoDBFileHeaderID then
-      Exit;
-
-    if not DecryptStreamEx(FS, EncryptHeader, Password, S) then
-      Exit;
-
-    S.Seek(0, soFromBeginning);
-    Result := True;
-  finally
-    F(FS);
-  end;
+  Result := True;
 end;
 
 function ValidEncryptFileExStream(Stream: TStream): Boolean;
@@ -434,6 +385,7 @@ begin
       Exit(B);
     end;
   end;
+
   MemorySize := 0;
   for I := 0 to FFileBlocks.Count - 1  do
     MemorySize := MemorySize + TMemoryBlock(FFileBlocks[I]).Size;

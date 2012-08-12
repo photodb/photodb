@@ -175,7 +175,6 @@
     <translate name="Enter password for selected objects" value="Введите пароль для выбранных объектов" />
     <translate name="Confirm password" value="Подтвердите пароль" />
     <translate name="Encrypt objects" value="Зашифровать объекты" />
-    <translate name="Save CRC" value="Сохранять контрольную сумму" />
     <translate name="Enter your password here" value="Введите пароль здесь" />
     <translate name="Show password" value="Показывать пароль" />
     <translate name="Enter password to open file &quot;%s&quot; here:" value="Введите пароль для открытия файла '%s' сюда:" />

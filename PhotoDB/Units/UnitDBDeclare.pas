@@ -173,7 +173,7 @@ type
     IDs: TArInteger;
     Selected: TArBoolean;
     Password: string;
-    CryptOptions: Integer;
+    EncryptOptions: Integer;
     Action: Integer;
   end;
 
@@ -254,7 +254,6 @@ type
   TEncryptImageOptions = record
     Password: string;
     CryptFileName: Boolean;
-    SaveFileCRC: Boolean;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;

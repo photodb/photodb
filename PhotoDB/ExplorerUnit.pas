@@ -164,6 +164,7 @@ uses
   uDBInfoEditorUtils,
   uFormInterfaces,
 
+  uTransparentEncryption,
   uMediaEncryption
   ;
 
@@ -4810,6 +4811,23 @@ var
       end;
   end;
 
+  procedure AddEncryptMenu;
+  begin
+    if not FSelectedInfo.Encrypted then
+    begin
+      EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
+      EncryptLink.Text := L('Encrypt');
+      EncryptLink.Tag := ACTION_CRYPT_IMAGES;
+    end else
+    begin
+      EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
+      EncryptLink.Text := L('Decrypt');
+      EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
+    end;
+    EncryptLink.Visible := True;
+    EncryptLink.Top := NewTop + H;
+    NewTop := EncryptLink.BoundsRect.Bottom;
+  end;
 begin
   ScrollBox1.UpdatingPanel := True;
   IsReallignInfo := True;
@@ -4934,22 +4952,8 @@ begin
       NewTop := ImageTasksLabel.BoundsRect.Bottom;
 
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
-      begin
-        if not FSelectedInfo.Encrypted then
-        begin
-          EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
-          EncryptLink.Text := L('Encrypt');
-          EncryptLink.Tag := ACTION_CRYPT_IMAGES;
-        end else
-        begin
-          EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
-          EncryptLink.Text := L('Decrypt');
-          EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
-        end;
-        EncryptLink.Visible := True;
-        EncryptLink.Top := NewTop + H;
-        NewTop := EncryptLink.BoundsRect.Bottom;
-      end else
+        AddEncryptMenu
+      else
         EncryptLink.Visible := False;
 
       WlResize.Visible := True;
@@ -5043,6 +5047,9 @@ begin
       NewTop := ShellLink.BoundsRect.Bottom;
     end else
       ShellLink.Visible := False;
+
+    if CanBeTransparentEncryptedFile(FSelectedInfo.FileName) then
+      AddEncryptMenu;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
     begin
@@ -6874,7 +6881,7 @@ begin
   DoHomeContactWithAuthor;
 end;
 
-procedure EncryptFiles(Owner: TListViewForm; FileList: TDBPopupMenuInfo; Password: string; IsEncrypt: Boolean; SaveCRC: Boolean);
+procedure EncryptFiles(Owner: TListViewForm; FileList: TDBPopupMenuInfo; Password: string; IsEncrypt: Boolean);
 var
   I: Integer;
   Options: TCryptImageThreadOptions;
@@ -6903,7 +6910,7 @@ begin
   Options.Selected := Copy(ItemSelected);
   Options.Action := IIF(IsEncrypt, ACTION_CRYPT_IMAGES, ACTION_DECRYPT_IMAGES);
   Options.Password := Password;
-  Options.CryptOptions := IIF(SaveCRC, CRYPT_OPTIONS_SAVE_CRC, CRYPT_OPTIONS_NORMAL);
+  Options.EncryptOptions := CRYPT_OPTIONS_NORMAL;
 
   TCryptingImagesThread.Create(Owner, Options);
 end;
@@ -6935,7 +6942,7 @@ begin
     if (Password = '') then
       Exit;
 
-    EncryptFiles(Self, Info, Password, False, False);
+    EncryptFiles(Self, Info, Password, False);
   finally
     F(Info);
   end;
@@ -6967,7 +6974,7 @@ begin
     if Opt.Password = '' then
       Exit;
 
-    EncryptFiles(Self, Info, Opt.Password, True, Opt.SaveFileCRC);
+    EncryptFiles(Self, Info, Opt.Password, True);
   finally
     F(Info);
   end;

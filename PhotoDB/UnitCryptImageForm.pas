@@ -39,7 +39,6 @@ type
   TCryptImageForm = class(TPasswordSettingsDBForm, IEncryptForm)
     BtCancel: TButton;
     BtOk: TButton;
-    CbSaveCRC: TCheckBox;
     CbSavePasswordForSession: TCheckBox;
     CbSavePasswordPermanent: TCheckBox;
     LbPassword: TLabel;
@@ -60,7 +59,6 @@ type
     { Private declarations }
     FFileName: string;
     Password: string;
-    SaveFileCRC: Boolean;
     CryptFileName: Boolean;
     procedure LoadLanguage;
   protected
@@ -115,7 +113,7 @@ begin
   Options.Selected := Copy(ItemSelected);
   Options.Action := ACTION_DECRYPT_IMAGES;
   Options.Password := Password;
-  Options.CryptOptions := 0;
+  Options.EncryptOptions := 0;
   TCryptingImagesThread.Create(Owner, Options);
 
   Close;
@@ -125,13 +123,11 @@ procedure TCryptImageForm.Encrypt(Owner: TDBForm; Text: string; Info: TDBPopupMe
 var
   Options: TCryptImageThreadOptions;
   Opt: TEncryptImageOptions;
-  I, CryptOptions: Integer;
+  I, EncryptOptions: Integer;
 begin
   Opt := QueryPasswordForFile(Text);
-  if Opt.SaveFileCRC then
-    CryptOptions := CRYPT_OPTIONS_SAVE_CRC
-  else
-    CryptOptions := CRYPT_OPTIONS_NORMAL;
+  EncryptOptions := CRYPT_OPTIONS_NORMAL;
+
   if Opt.Password = '' then
     Exit;
 
@@ -146,7 +142,7 @@ begin
   end;
 
   Options.Password := Opt.Password;
-  Options.CryptOptions := CryptOptions;
+  Options.EncryptOptions := EncryptOptions;
   Options.Action := ACTION_CRYPT_IMAGES;
   TCryptingImagesThread.Create(Owner, Options);
 end;
@@ -157,7 +153,6 @@ begin
   ShowModal;
   Result.Password := Password;
   Result.CryptFileName := CryptFileName;
-  Result.SaveFileCRC := SaveFileCRC;
 end;
 
 procedure TCryptImageForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -174,7 +169,6 @@ begin
 
   CbSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
   CbSavePasswordPermanent.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
-  SaveFileCRC := False;
   CryptFileName := False;
   Password := '';
   LoadLanguage;
@@ -198,8 +192,7 @@ begin
     Exit;
   end;
 
-  Password:= EdPassword.Text;
-  SaveFileCRC := CbSaveCRC.Checked;
+  Password := EdPassword.Text;
   if CbSavePasswordForSession.Checked then
     DBKernel.AddTemporaryPasswordInSession(Password);
   if CbSavePasswordPermanent.Checked then
@@ -247,7 +240,6 @@ begin
     Caption := L('Encrypt objects');
     BtCancel.Caption := L('Cancel');
     BtOk.Caption := L('Ok');
-    CbSaveCRC.Caption := L('Save CRC');
     CbSavePasswordForSession.Caption := L('Save password for session');
     CbSavePasswordPermanent.Caption := L('Save password in settings');
     CbShowPassword.Caption := L('Show password');

@@ -61,6 +61,7 @@ uses
   UnitGroupsWork,
   uDatabaseSearch,
   uPathProviders,
+  uTransparentEncryption,
   uExplorerMyComputerProvider,
   uExplorerNetworkProviders,
   uExplorerSearchProviders,
@@ -1375,7 +1376,7 @@ begin
     if FindInQuery(FileName) then
     begin
 
-      FInfo.ReadFromDS(fQuery);
+      FInfo.ReadFromDS(FQuery);
       FInfo.FileName := FileName;
       if ExplorerInfo.View = LV_THUMBS then
       begin
@@ -1972,12 +1973,12 @@ begin
           if FE and not EM and ExplorerInfo.ShowSimpleFiles then
           begin
             if FolderView then
-              if AnsiLowerCase(ExtractFileExt(SearchRec.name)) = '.ldb' then
+              if AnsiLowerCase(ExtractFileExt(SearchRec.Name)) = '.ldb' then
                 Exit;
 
             Result := True;
             AddOneExplorerFileInfo(FFiles, Directory + SearchRec.name, EXPLORER_ITEM_FILE, -1, GetGUID, 0, 0,
-              0, 0, SearchRec.Size, '', '', '', 0, False, True, True);
+              0, 0, SearchRec.Size, '', '', '', 0, False, False, True);
             Exit;
           end;
       if ExplorerInfo.ShowImageFiles then
@@ -1992,7 +1993,7 @@ begin
       begin
         Result := True;
         AddOneExplorerFileInfo(FFiles, Directory + SearchRec.name, EXPLORER_ITEM_FOLDER, -1, GetGUID, 0, 0,
-          0, 0, 0, '', '', '', 0, False, True, True);
+          0, 0, 0, '', '', '', 0, False, False, True);
         Exit;
       end;
     end;
