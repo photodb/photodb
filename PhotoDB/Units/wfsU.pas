@@ -3,9 +3,21 @@ unit wfsU;
 interface
 
 uses
-  Classes, SysUtils, Windows, Dolphin_DB, Forms, GraphicsBaseTypes, uLogger,
-  uGOM, ExplorerTypes, uMemory, SyncObjs, uTime, uThreadEx, uDBThread,
-  uThreadForm;
+  Classes,
+  SysUtils,
+  Windows,
+  Dolphin_DB,
+  SyncObjs,
+  GraphicsBaseTypes,
+  ExplorerTypes,
+  uLogger,
+  uGOM,
+  uMemory,
+  uTime,
+  uThreadEx,
+  uDBThread,
+  uThreadForm,
+  uLockedFileNotifications;
 
 type
   WFSError = class(Exception);
@@ -268,7 +280,7 @@ begin
       FileSkipped := False;
       NoMoreFilesFound := False;
 
-      if TLockFiles.Instance.IsFileLocked(FName + FileName) then
+      {if TLockFiles.Instance.IsFileLocked(FName + FileName) then
       begin
         if PFileNotifyInformation(Ptr).NextEntryOffset = 0 then
           NoMoreFilesFound := True
@@ -276,7 +288,8 @@ begin
           Inc(NativeUInt(Ptr), PFileNotifyInformation(Ptr).NextEntryOffset);
 
         FileSkipped := True;
-      end;
+      end;}
+
       if NoMoreFilesFound then
         Break
       else if FileSkipped then

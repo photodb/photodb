@@ -16,6 +16,7 @@ uses
   uSysUtils,
   uFileUtils,
   uStrongCrypt,
+  uLockedFileNotifications,
   DECUtil,
   DECHash,
   DECCipher;
@@ -60,10 +61,10 @@ type
 procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
   BlockSize32k: Byte; Password: string; var Seed: Binary; ACipher: TDECCipherClass);
 
-procedure EncryptStreamEx(S, D: TStream; Password: string; FileName: string;
-                         ACipher: TDECCipherClass; Progress: TEncryptProgress = nil);
+procedure EncryptStreamEx(S, D: TStream; Password: string;
+                         ACipher: TDECCipherClass; Progress: TSimpleEncryptProgress = nil);
 function TransparentEncryptFileEx(FileName: string; Password: string;
-                       ACipher: TDECCipherClass = nil; Progress: TEncryptProgress = nil): Integer;
+                       ACipher: TDECCipherClass = nil; Progress: TFileProgress = nil): Integer;
 function DecryptStreamEx(S, D: TStream; Password: string; Seed: Binary; FileSize: Int64; AChipper: TDECCipherClass; BlockSize32k: Byte; Progress: TEncryptProgress = nil): Boolean;
 
 function ValidEnryptFileEx(FileName: String): Boolean;
@@ -102,8 +103,8 @@ begin
   Stream.Write(EncryptHeaderV1, SizeOf(EncryptHeaderV1));
 end;
 
-procedure EncryptStreamEx(S, D: TStream; Password: string; FileName: string;
-                         ACipher: TDECCipherClass; Progress: TEncryptProgress = nil);
+procedure EncryptStreamEx(S, D: TStream; Password: string;
+                         ACipher: TDECCipherClass; Progress: TSimpleEncryptProgress = nil);
 var
   Seed: Binary;
   BlockSize32k: Byte;
@@ -122,16 +123,18 @@ begin
 
     CryptStreamV2(S, D, Password, Seed, nil, cmCTSx, nil, SizeToEncrypt);
     if Assigned(Progress) then
-      Progress(FileName, Size, S.Position);
+      Progress(Size, S.Position);
   end;
 end;
 
 function TransparentEncryptFileEx(FileName: string; Password: string;
-  ACipher: TDECCipherClass = nil; Progress: TEncryptProgress = nil): Integer;
+  ACipher: TDECCipherClass = nil; Progress: TFileProgress = nil): Integer;
 var
   SFS, DFS: TFileStream;
   FA: Integer;
+  FileSize: Int64;
   EncryptHeader: TEncryptedFileHeader;
+  TmpFileName, TmpErasedFile: string;
 begin
   StrongCryptInit;
 
@@ -144,6 +147,8 @@ begin
     end;
 
     try
+      FileSize := SFS.Size;
+
       SFS.Read(EncryptHeader, SizeOf(EncryptHeader));
       if EncryptHeader.ID = PhotoDBFileHeaderID then
       begin
@@ -151,12 +156,21 @@ begin
         Exit;
       end;
 
+      TmpFileName := FileName + '.tmp';
+      TmpErasedFile := FileName + '.erased';
+
       SFS.Seek(0, SoFromBeginning);
 
       try
-        DFS := TFileStream.Create(FileName + '.tmp', FmOpenWrite or FmCreate);
+        DFS := TFileStream.Create(TmpFileName, FmOpenWrite or FmCreate);
         try
-          EncryptStreamEx(SFS, DFS, Password, FileName, ACipher, Progress);
+          EncryptStreamEx(SFS, DFS, Password, ACipher,
+            procedure(BytesTotal, BytesDone: Int64)
+            begin
+              if Assigned(Progress) then     //erase is second part of operation
+                Progress(FileName, FileSize, BytesDone div 2);
+            end
+          );
         finally
           F(DFS);
         end;
@@ -177,6 +191,27 @@ begin
   FA := FileGetAttr(FileName);
   ResetFileAttributes(FileName, FA);
 
+  TLockFiles.Instance.AddLockedFile(FileName, 10000);
+  TLockFiles.Instance.AddLockedFile(TmpErasedFile, 10000);
+  try
+    if RenameFile(FileName, TmpErasedFile) then
+      if RenameFile(TmpFileName, FileName) then
+      begin
+        WipeFile(TmpErasedFile, 1,
+          procedure(FileName: string; BytesTotal, BytesDone: Int64)
+          begin
+            if Assigned(Progress) then     //erase is second part of operation
+              Progress(FileName, FileSize, FileSize div 2 + BytesDone div 2);
+          end
+        );
+        TLockFiles.Instance.RemoveLockedFile(TmpErasedFile);
+        DeleteFile(TmpErasedFile);
+      end;
+  finally
+    TLockFiles.Instance.RemoveLockedFile(FileName);
+    TLockFiles.Instance.RemoveLockedFile(TmpErasedFile);
+  end;
+
   FileSetAttr(FileName, FA);
   Result := CRYPT_RESULT_OK;
 end;
@@ -195,7 +230,7 @@ begin
 
     DeCryptStreamV2(S, D, Password, Seed, SizeToEncrypt, AChipper, cmCTSx, nil);
     if Assigned(Progress) then
-      Progress('', FileSize, S.Position - StartPos);
+      Progress(FileSize, S.Position - StartPos);
   end;
 
   Result := True;

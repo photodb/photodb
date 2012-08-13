@@ -35,7 +35,7 @@ const
   CRYPT_OPTIONS_NORMAL = 0;
   CRYPT_OPTIONS_SAVE_CRC = 1;
 
-function CryptGraphicFileV3(FileName: string; Password: string; Options: Integer): Integer;
+function CryptGraphicFileV3(FileName: string; Password: string; Options: Integer; Progress: TFileProgress = nil): Integer;
 function DeCryptGraphicFileEx(FileName: string; Password: string; var Pages: Word;
   LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function DeCryptGraphicFile(FileName: string; Password: string;
@@ -56,7 +56,7 @@ function ResetPasswordInCryptBlobStreamJPG(DF: TField; Password: string): Boolea
 procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
 function DecryptFileToStream(FileName: string; Password: string; Stream: TStream): Boolean;
 function DecryptStreamToStream(Src, Dest: TStream; Password: string): Boolean;
-procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string);
+procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string; Progress: TFileProgress = nil);
 function ValidPassInCryptStream(S: TStream; Password: String): Boolean;
 function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
 
@@ -234,15 +234,21 @@ begin
   Stream.Write(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
 end; }
 
-procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string);
+procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string; Progress: TFileProgress = nil);
 var
   Chipper: TDECCipherClass;
 begin
   Chipper := ValidCipher(nil);
-  EncryptStreamEx(S, D, Password, FileName, Chipper, nil);
+  EncryptStreamEx(S, D, Password, Chipper,
+    procedure(BytesTotal, BytesDone: Int64)
+    begin
+      if Assigned(Progress) then
+        Progress(FileName, BytesTotal, BytesDone)
+    end
+  );
 end;
 
-function CryptGraphicFileV3W(FileName: string; Password: string; Options: Integer): Integer;
+function CryptGraphicFileV3W(FileName: string; Password: string; Options: Integer; Progress: TFileProgress = nil): Integer;
 var
   FS: TFileStream;
   MS: TMemoryStream;
@@ -317,20 +323,20 @@ begin
     MS.Seek(0, soFromBeginning);
 
     ACipher := ValidCipher(nil);
-    EncryptStreamEx(MS, Dest, Password, '', ACipher, nil);
+    EncryptStreamEx(MS, Dest, Password, ACipher, nil);
   finally
     F(MS);
   end;
 end;
 
-function CryptGraphicFileV3(FileName: string; Password: string; Options: Integer): Integer;
+function CryptGraphicFileV3(FileName: string; Password: string; Options: Integer; Progress: TFileProgress = nil): Integer;
 begin
   if IsGraphicFile(FileName) then
     //using memory
-    Result := CryptGraphicFileV3W(FileName, Password, Options)
+    Result := CryptGraphicFileV3W(FileName, Password, Options, Progress)
   else
     //using temporary file
-    Result := TransparentEncryptFileEx(FileName, Password);
+    Result := TransparentEncryptFileEx(FileName, Password, nil, Progress);
 end;
 
 function DeCryptGraphicFile(FileName: string; Password: String;
@@ -501,7 +507,6 @@ end;
 
 function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
 var
-//  Seed: Binary;
   FS: TFileStream;
   MS: TMemoryStream;
   ACipher: TDECCipherClass;
@@ -521,10 +526,7 @@ begin
       try
         ACipher := ValidCipher(nil);
 
-        EncryptStreamEx(Stream, MS, Password, '', ACipher, nil);
-
-        //WriteCryptHeaderV2(MS, Stream, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
-        //CryptStreamV2(Stream, MS, Password, Seed);
+        EncryptStreamEx(Stream, MS, Password, ACipher, nil);
         try
           FS := TFileStream.Create(FileName, fmOpenWrite or fmCreate);
           try
@@ -713,7 +715,7 @@ begin
       try
         try
           ACipher := ValidCipher(nil);
-          EncryptStreamEx(MS, FS, NewPass, '', ACipher, nil);
+          EncryptStreamEx(MS, FS, NewPass, ACipher, nil);
 
           //WriteCryptHeaderV2(FS, MS, FileName, NewPass, CRYPT_OPTIONS_SAVE_CRC, Seed);
           //CryptStreamV2(MS, FS, NewPass, Seed);
@@ -850,7 +852,6 @@ var
   FBS: TStream;
   MS: TMemoryStream;
   GraphicHeader: TEncryptedFileHeader;
-//  Seed: Binary;
   ACipher: TDECCipherClass;
 begin
   Result := False;
@@ -871,10 +872,7 @@ begin
     FBS := TADOBlobStream.Create(TBlobField(DF), bmWrite);
     try
       ACipher := ValidCipher(nil);
-      EncryptStreamEx(MS, FBS, Password, '', ACipher, nil);
-
-      //WriteCryptHeaderV2(FBS, MS, '', Password, CRYPT_OPTIONS_NORMAL, Seed);
-      //CryptStreamV2(MS, FBS, Password, Seed);
+      EncryptStreamEx(MS, FBS, Password, ACipher, nil);
     finally
       F(FBS);
     end;

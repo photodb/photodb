@@ -75,6 +75,7 @@ uses
   UnitCryptingImagesThread,
   uVistaFuncs,
   wfsU,
+  uLockedFileNotifications,
   UnitDBDeclare,
   UnitDBFileDialogs,
   uFormListView,
@@ -3663,7 +3664,27 @@ begin
     Exit;
   if not IsActualState(SID) then
     Exit;
+
   for K := 0 to Length(PInfo) - 1 do
+  begin
+    case PInfo[K].FAction of
+      FILE_ACTION_ADDED,
+      FILE_ACTION_REMOVED:
+       if TLockFiles.Instance.IsFileLocked(PInfo[K].FNewFileName) then
+         PInfo[K].FAction := 0;
+      FILE_ACTION_RENAMED_NEW_NAME:
+       if TLockFiles.Instance.IsFileLocked(PInfo[K].FNewFileName) then
+       begin
+         if not TLockFiles.Instance.IsFileLocked(PInfo[K].FOldFileName) then
+         begin
+           //remove old file from view
+           PInfo[K].FAction := FILE_ACTION_REMOVED;
+           PInfo[K].FNewFileName := PInfo[K].FOldFileName;
+         end else
+           PInfo[K].FAction := 0;
+       end;
+    end;
+
     case PInfo[K].FAction of
       FILE_ACTION_ADDED:
         begin
@@ -3767,6 +3788,7 @@ begin
           end;
         end;
     end;
+  end;
 end;
 
 procedure TExplorerForm.WlGeoLocationClick(Sender: TObject);

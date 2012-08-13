@@ -1,10 +1,19 @@
 unit GDIPlusRotate;
+
 {$ALIGN ON}
 {$MINENUMSIZE 4}
 
 interface
 
-uses Windows, Classes, SysUtils, UTime, ActiveX, uFileUtils, uTranslate, ExplorerTypes;
+uses
+  Windows,
+  Classes,
+  SysUtils,
+  UTime,
+  ActiveX,
+  uFileUtils,
+  uTranslate,
+  uLockedFileNotifications;
 
 type
 {$EXTERNALSYM EncoderValue}

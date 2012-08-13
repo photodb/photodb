@@ -22,7 +22,7 @@ uses
   uErrors;
 
 function EncryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
-  DoEvent: Boolean = True): Integer;
+  DoEvent: Boolean = True; Progress: TFileProgress = nil): Integer;
 function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string): Integer;
 function CryptTStrings(TS: TStrings; Pass: string): string;
 function DeCryptTStrings(S: string; Pass: string): TStrings;
@@ -103,7 +103,7 @@ begin
 end;
 
 function EncryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
-  DoEvent: Boolean = True): Integer;
+  DoEvent: Boolean = True; Progress: TFileProgress = nil): Integer;
 var
   Info: TEventValues;
   ErrorCode: Integer;
@@ -118,7 +118,7 @@ begin
 
   if FileExistsSafe(FileName) then
   begin
-    ErrorCode := CryptGraphicFileV3(FileName, Password, Options);
+    ErrorCode := CryptGraphicFileV3(FileName, Password, Options, Progress);
     if ErrorCode <> CRYPT_RESULT_OK then
     begin
       Result := ErrorCode;

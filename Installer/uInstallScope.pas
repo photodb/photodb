@@ -284,6 +284,10 @@ begin
   Files.Add(TFileObject.Create('ssleay32.dll',                    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('lcms2.dll',                       '%PROGRAM%', ''));
 
+  Files.Add(TFileObject.Create('TransparentEncryption.dll',       '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('TransparentEncryption64.dll',     '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('PlayEncryptedMedia.exe',          '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('PlayEncryptedMedia64.exe',        '%PROGRAM%', ''));
   {$IFDEF DBDEBUG}
   Files.Add(TFileObject.Create('FastMM_FullDebugMode.dll', '%PROGRAM%', ''));
   {$ENDIF}

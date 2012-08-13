@@ -3,6 +3,7 @@ unit UnitCryptingImagesThread;
 interface
 
 uses
+  Windows,
   SysUtils,
   Classes,
   ActiveX,
@@ -43,8 +44,10 @@ type
     Position: Integer;
     CryptResult: Integer;
     FSender: TDBForm;
+    FLastProgressTime: Cardinal;
     procedure ShowError(ErrorText: string);
     procedure ShowErrorSync;
+    procedure OnFileProgress(FileName: string; BytesTotal, BytesDone: Int64);
   public
     constructor Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
   protected
@@ -77,6 +80,7 @@ begin
   inherited Create(Sender, False);
   FSender := Sender;
   Table := nil;
+  FLastProgressTime := 0;
   FOptions := Options;
   for I := 0 to Length(Options.Files) - 1 do
     if Options.Selected[I] then
@@ -156,7 +160,7 @@ begin
             // Encrypting images
             try
               CryptResult := EncryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
-                FOptions.EncryptOptions, False);
+                FOptions.EncryptOptions, False, OnFileProgress);
 
               if CryptResult <> CRYPT_RESULT_OK then
                 ShowError(DBErrorToString(CryptResult));
@@ -269,11 +273,31 @@ begin
   begin
     CanClosedByUser := True;
     OneOperation := False;
-    OperationCount := 1;
+    OperationCount := Count;
     OperationPosition := 1;
-    MaxPosCurrentOperation := Count;
+    MaxPosCurrentOperation := 0;
     XPosition := 0;
     Show;
+  end;
+end;
+
+procedure TCryptingImagesThread.OnFileProgress(FileName: string; BytesTotal,
+  BytesDone: Int64);
+begin
+  if GetTickCount - FLastProgressTime > 100 then
+  begin
+    FLastProgressTime := GetTickCount;
+
+    Synchronize(
+      procedure
+      begin
+        if not GOM.IsObj(ProgressWindow) then
+          Exit;
+
+        (ProgressWindow as TProgressActionForm).MaxPosCurrentOperation := BytesTotal;
+        (ProgressWindow as TProgressActionForm).XPosition := BytesDone;
+      end
+    );
   end;
 end;
 
@@ -293,7 +317,7 @@ begin
   if not GOM.IsObj(ProgressWindow) then
     Exit;
 
-  (ProgressWindow as TProgressActionForm).XPosition := IntParam;
+  (ProgressWindow as TProgressActionForm).OperationPosition := IntParam;
 end;
 
 procedure TCryptingImagesThread.ShowError(ErrorText: string);
