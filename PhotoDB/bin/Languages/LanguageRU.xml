@@ -52,7 +52,7 @@
     <translate name="Object is already decrypted!" value="Объект уже расшифрован!" />
     <translate name="Error reading from file!" value="Ошибка чтения файла!" />
     <translate name="Error writing to file!" value="Ошибка записи в файл!" />
-    <translate name="Executing" value="Выполнение" />
+    <translate name="Unsupported version of file!" value="Неподдерживаемая версия файла" />
     <translate name="Executing" value="Выполнение" />
   </scope>
   <scope name="InstallLanguage">

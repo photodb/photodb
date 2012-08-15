@@ -410,7 +410,9 @@ uses
   uDBInfoEditorUtils in 'Units\uDBInfoEditorUtils.pas',
   uMediaEncryption in 'Units\uMediaEncryption.pas',
   uTransparentEncryption in 'Units\uTransparentEncryption.pas',
-  uLockedFileNotifications in 'Units\uLockedFileNotifications.pas';
+  uLockedFileNotifications in 'Units\uLockedFileNotifications.pas',
+  uExplorerFolderImages in 'Units\uExplorerFolderImages.pas',
+  uMediaPlayers in 'Units\uMediaPlayers.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

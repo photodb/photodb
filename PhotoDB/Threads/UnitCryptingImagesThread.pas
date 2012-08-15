@@ -177,7 +177,7 @@ begin
             IntParam := FOptions.IDs[I];
             GetPassword;
             // DEcrypting images
-            CryptResult := ResetPasswordImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FPassword);
+            CryptResult := ResetPasswordImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FPassword, OnFileProgress);
 
             if CryptResult <> CRYPT_RESULT_OK then
               ShowError(DBErrorToString(CryptResult));

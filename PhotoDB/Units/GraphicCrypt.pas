@@ -42,12 +42,11 @@ function DeCryptGraphicFile(FileName: string; Password: string;
   LoadFullRAW: Boolean = false; Page: Integer = 0): TGraphic;
 function DecryptGraphicFileToStream(FileName, Password: string; S: TStream): Boolean;
 function ValidPassInCryptGraphicFile(FileName, Password: string): Boolean;
-function ResetPasswordInGraphicFile(FileName, Password: string): Integer;
+function ResetPasswordInGraphicFile(FileName, Password: string; Progress: TFileProgress = nil): Integer;
 function ChangePasswordInGraphicFile(FileName: string; OldPass, NewPass: string): Integer;
 function ValidCryptGraphicFile(FileName: string): Boolean;
 function ValidCryptGraphicStream(Stream: TStream): Boolean;
 function GetPasswordCRCFromCryptGraphicFile(FileName: string): Cardinal;
-
 function CryptBlobStream(DF: TField; Password: string): Boolean;
 function DeCryptBlobStreamJPG(DF: TField; Password: string; JPEG: TJpegImage): Boolean;
 function ValidCryptBlobStreamJPG(DF: TField): Boolean;
@@ -58,7 +57,7 @@ function DecryptFileToStream(FileName: string; Password: string; Stream: TStream
 function DecryptStreamToStream(Src, Dest: TStream; Password: string): Boolean;
 procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string; Progress: TFileProgress = nil);
 function ValidPassInCryptStream(S: TStream; Password: String): Boolean;
-function SaveNewStreamForEncryptedFile(FileName: String; Password: string; Stream: TStream): Integer;
+function SaveNewStreamForEncryptedFile(FileName: string; Password: string; Stream: TStream): Integer;
 
 implementation
 
@@ -613,7 +612,7 @@ begin
   end;
 end;
 
-function ResetPasswordInGraphicFile(FileName, Password: String): Integer;
+function ResetPasswordInGraphicFile(FileName, Password: string; Progress: TFileProgress = nil): Integer;
 var
   FS: TFileStream;
   MS: TMemoryStream;
@@ -634,6 +633,13 @@ begin
         FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
         if GraphicHeader.ID <> PhotoDBFileHeaderID then
           Exit;
+
+        if GraphicHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
+        begin
+          F(FS);
+          Result := TransparentDecryptFileEx(FileName, Password, Progress);
+          Exit;
+        end;
 
         if not DecryptStream(FS, GraphicHeader, Password, MS) then
           Exit;
@@ -813,12 +819,13 @@ begin
   end;
 end;
 
-function GetPasswordCRCFromCryptGraphicFile(FileName: String): Cardinal;
+function GetPasswordCRCFromCryptGraphicFile(FileName: string): Cardinal;
 var
   FS: TFileStream;
   GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
+  GraphicHeaderExV1: TEncryptFileHeaderExV1;
 begin
   Result := 0;
 
@@ -831,15 +838,20 @@ begin
     FS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
     if GraphicHeader.ID = PhotoDBFileHeaderID then
     begin
-      if GraphicHeader.Version = 1 then
+      if GraphicHeader.Version = ENCRYPT_FILE_VERSION_BASIC then
       begin
-        FS.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
+        FS.Read(GraphicHeaderV1, SizeOf(GraphicHeaderV1));
         Result := GraphicHeaderV1.PassCRC;
       end;
-      if GraphicHeader.Version = 2 then
+      if GraphicHeader.Version = ENCRYPT_FILE_VERSION_STRONG then
       begin
-        FS.Read(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
+        FS.Read(GraphicHeaderV2, SizeOf(GraphicHeaderV2));
         Result := GraphicHeaderV2.PassCRC;
+      end;
+      if GraphicHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
+      begin
+        FS.Read(GraphicHeaderExV1, SizeOf(GraphicHeaderExV1));
+        Result := GraphicHeaderExV1.PassCRC;
       end;
     end;
   finally
@@ -896,7 +908,7 @@ begin
     FBS := GetBlobStream(DF, BmRead);
     try
       FBS.Seek(0, SoFromBeginning);
-      FBS.read(GraphicHeader, SizeOf(TEncryptedFileHeader));
+      FBS.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
       if GraphicHeader.ID <> PhotoDBFileHeaderID then
         Exit;
 

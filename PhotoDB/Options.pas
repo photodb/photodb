@@ -69,7 +69,9 @@ uses
   uICCProfile,
   ShellNotify,
   uVCLHelpers,
-  uFormInterfaces;
+  uExplorerFolderImages,
+  uFormInterfaces,
+  uMediaPlayers;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm, IOptionsForm)
@@ -231,6 +233,19 @@ type
     LbDisplayICCProfile: TLabel;
     CbDisplayICCProfile: TComboBox;
     TbPrograms: TTabSheet;
+    CblExtensions: TCheckListBox;
+    StaticText1: TStaticText;
+    RbVlcPlayerInternal: TRadioButton;
+    StaticText2: TStaticText;
+    RbVlcPlayer: TRadioButton;
+    RbKmpPlayer: TRadioButton;
+    RbMediaPlayerClassic: TRadioButton;
+    RbOtherProgram: TRadioButton;
+    Edit1: TEdit;
+    Button1: TButton;
+    Label1: TLabel;
+    WlAddLink: TWebLink;
+    WebLink1: TWebLink;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -293,7 +308,7 @@ type
   private
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
-    FLoadedPages: array [0..6] of Boolean;
+    FLoadedPages: array [0..7] of Boolean;
     FPlaces: TPlaceFolderArray;
     ReloadData: Boolean;
     procedure LoadStylesList;
@@ -321,7 +336,6 @@ type
 implementation
 
 uses
-  ExplorerThreadUnit,
   uManagerExplorer,
   FormManegerUnit;
 
@@ -526,6 +540,14 @@ begin
     LvUserMenuItemsSelectItem(Self, nil, False);
   end;
 
+  if NewTab = 7 then
+  begin
+    RbVlcPlayer.Enabled := IsVlcPlayerInstalled;
+    RbKmpPlayer.Enabled := IsKmpPlayerInstalled;
+    RbMediaPlayerClassic.Enabled := IsMediaPlayerClassicInstalled;
+    RbVlcPlayerInternal.Enabled := IsVlcPlayerInternalInstalled;
+  end;
+
 end;
 
 procedure TOptionsForm.FormShow(Sender: TObject);
@@ -569,7 +591,7 @@ begin
   ReloadData := False;
   SaveWindowPos1.Key := GetRegRootKey + 'Options';
   SaveWindowPos1.SetPosition;
-  for I := 0 to 5 do
+  for I := 0 to 7 do
     FLoadedPages[I] := False;
   LoadLanguage;
   FThemeList := TStringList.Create;
@@ -1350,7 +1372,7 @@ end;
 
 procedure TOptionsForm.BtnClearThumbnailCacheClick(Sender: TObject);
 begin
-  AExplorerFolders.Clear;
+  ExplorerFolders.Clear;
 end;
 
 procedure TOptionsForm.CreateParams(var Params: TCreateParams);

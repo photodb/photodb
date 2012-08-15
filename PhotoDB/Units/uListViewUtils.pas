@@ -194,7 +194,7 @@ begin
   end;
 
   try
-    if (Info <> nil) and (esosHotTracking in Item.State) then
+    if (Info <> nil) and (esosHotTracking in Item.State) and not (daoNonImage in Options) then
     begin
       if (Info.Rating = 0) and (not FolderView or (Info.ID > 0)) and CanAddImages then
         Info.Rating := -1;

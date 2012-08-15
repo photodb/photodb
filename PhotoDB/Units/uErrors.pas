@@ -19,10 +19,12 @@ const
   CRYPT_RESULT_PASS_INCORRECT       = 5;
   CRYPT_RESULT_PASS_DIFFERENT       = 6;
   CRYPT_RESULT_ALREADY_CRYPT        = 7;
-  CRYPT_RESULT_ALREADY_DECRYPT      = 8;
+  CRYPT_RESULT_ALREADY_DECRYPTED    = 8;
   CRYPT_RESULT_ERROR_READING_FILE   = 9;
   CRYPT_RESULT_ERROR_WRITING_FILE   = 10;
   CRYPT_RESULT_FAILED_GENERAL_ERROR = 11;
+  CRYPT_RESULT_UNSUPORTED_VERSION   = 12;
+
 
 function DBErrorToString(ErrorCode: Integer): string;
 
@@ -51,12 +53,14 @@ begin
       Result := TA('Passwords are different!', 'Errors');
     CRYPT_RESULT_ALREADY_CRYPT:
       Result := TA('Object is already encrypted!', 'Errors');
-    CRYPT_RESULT_ALREADY_DECRYPT:
+    CRYPT_RESULT_ALREADY_DECRYPTED:
       Result := TA('Object is already decrypted!', 'Errors');
     CRYPT_RESULT_ERROR_READING_FILE:
       Result := TA('Error reading from file!', 'Errors');
     CRYPT_RESULT_ERROR_WRITING_FILE:
       Result := TA('Error writing to file!', 'Errors');
+    CRYPT_RESULT_UNSUPORTED_VERSION:
+      Result := TA('Unsupported version of file!', 'Errors');
     else
       Result := FormatEx(TA('Error code is: {0}' , 'Errors'), [ErrorCode]);
   end;

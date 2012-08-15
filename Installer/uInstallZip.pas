@@ -18,7 +18,7 @@ function AddStreamToStream(Stream: TStream; StreamToAdd: TStream; FileName: stri
 function ExtractStreamFromStorage(Src: TStream; Dest: TStream; FileName: string;
   CallBack: TExtractFileCallBack): Boolean;
 function ExtractFileFromStorage(Src: TStream; FileName: string; CallBack: TExtractFileCallBack): Boolean;
-function AddDirectoryToStream(Src: TStream; DirectoryName: string): Boolean;
+function AddDirectoryToStream(Src: TStream; DirectoryName: string; Recursive: Boolean = False): Boolean;
 function ExtractDirectoryFromStorage(Src: TStream; DirectoryPath: string; CallBack: TExtractFileCallBack): Boolean;
 procedure FillFileList(Src: TStream; FileList: TStrings; out OriginalFilesSize: Int64);
 function ReadFileContent(Src: TStream; FileName: string): string;
@@ -36,7 +36,7 @@ begin
     raise Exception.Create('FileName is too long!');
 
   Header.FileNameLength := Length(FileName);
-  for I := 0 to MaxFileNameLength do
+  for I := 0 to Min(MaxFileNameLength, Length(FileName) - 1) do
     Header.FileName[I] := FileName[I + 1];
 end;
 
@@ -171,31 +171,50 @@ begin
   end;
 end;
 
-function AddDirectoryToStream(Src: TStream; DirectoryName: string): Boolean;
+procedure FillDirectoryListing(DirectoryName: string; Files: TStrings; var TotalSize: Int64; Recursive: Boolean = False);
+var
+  Found: Integer;
+  SearchRec: TSearchRec;
+  Attr: Integer;
+begin
+  DirectoryName := IncludeTrailingBackslash(DirectoryName);
+
+  Attr :=  FaAnyFile - faHidden;
+  if not Recursive then
+    Attr := Attr - faDirectory;
+
+  Found := FindFirst(DirectoryName + '*.*', Attr, SearchRec);
+  while Found = 0 do
+  begin
+    if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+    begin
+      if SearchRec.Attr and faDirectory = 0 then
+      begin
+        Files.Add(DirectoryName + SearchRec.Name);
+        Inc(TotalSize, SearchRec.Size);
+      end else
+        FillDirectoryListing(DirectoryName + SearchRec.Name, Files, TotalSize, Recursive);
+    end;
+
+    Found := SysUtils.FindNext(SearchRec);
+  end;
+  FindClose(SearchRec);
+end;
+
+function AddDirectoryToStream(Src: TStream; DirectoryName: string; Recursive: Boolean = False): Boolean;
 var
   Files: TStrings;
-  I, Found: Integer;
-  SearchRec: TSearchRec;
+  I: Integer;
   EntryHeader: TZipEntryHeader;
   TotalSize: Int64;
 begin
   Result := True;
-  Files := TStringList.Create;
   TotalSize := 0;
-  DirectoryName := IncludeTrailingBackslash(DirectoryName);
+  Files := TStringList.Create;
   try
-    Found := FindFirst(DirectoryName + '*.*', FaAnyFile - faDirectory - faHidden, SearchRec);
-    while Found = 0 do
-    begin
-      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
-      begin
-        Files.Add(DirectoryName + SearchRec.Name);
-        Inc(TotalSize, SearchRec.Size);
-      end;
+    DirectoryName := IncludeTrailingBackslash(DirectoryName);
 
-      Found := SysUtils.FindNext(SearchRec);
-    end;
-    FindClose(SearchRec);
+    FillDirectoryListing(DirectoryName, Files, TotalSize, Recursive);
 
     FillChar(EntryHeader, SizeOf(EntryHeader), #0);
     FillFileName(EntryHeader, ExcludeTrailingBackslash(DirectoryName));

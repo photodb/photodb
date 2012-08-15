@@ -10,6 +10,7 @@ uses
   uGraphicUtils,
   uShellIntegration,
   UnitDBKernel,
+  uExplorerFolderImages,
   ExplorerUnit,
   Windows,
   Classes,
@@ -169,6 +170,7 @@ type
     procedure UpdateFolder;
     procedure ReplaceImageInExplorerB;
     procedure MakeIconForFile;
+    procedure CheckIsFileEncrypted;
     function ShowFileIfHidden(FileName: string): Boolean;
     procedure UpdateSimpleFile;
     procedure DoUpdaterHelpProc;
@@ -266,9 +268,6 @@ type
   TIconType = (itSmall, itLarge);
 
 function ExplorerUpdateManager: TExplorerUpdateManager;
-
-var
-  AExplorerFolders: TExplorerFolders = nil;
 
 implementation
 
@@ -761,6 +760,7 @@ begin
                 ShowInfo(InfoPosition);
                 CurrentFile := FFiles[I].FileName;
                 MakeIconForFile;
+                CheckIsFileEncrypted;
               end;
             end;
 
@@ -1306,7 +1306,7 @@ begin
   TW.I.Start('EndUpdate CheckFolder');
   if FLastFolderCheck <> FFolder then
   begin
-    AExplorerFolders.CheckFolder(FFolder);
+    ExplorerFolders.CheckFolder(FFolder);
     FLastFolderCheck := FFolder;
   end;
 end;
@@ -1501,7 +1501,7 @@ begin
   FFolderImages.Directory := CurrentFile;
   FFolderImagesResult.Directory := '';
   if FThreadType <> THREAD_TYPE_FOLDER_UPDATE then
-    FFolderImagesResult := AExplorerFolders.GetFolderImages(CurrentFile, SmallImageSize, SmallImageSize);
+    FFolderImagesResult := ExplorerFolders.GetFolderImages(CurrentFile, SmallImageSize, SmallImageSize);
   FFastDirectoryLoading := False;
   if FFolderImagesResult.Directory <> '' then
     FFastDirectoryLoading := True
@@ -1768,7 +1768,7 @@ begin
         FFolderImages.FileNames[I] := FilesInFolder[I];
       for I := 1 to 4 do
         FFolderImages.FileDates[I] := FilesDatesInFolder[I];
-      AExplorerFolders.SaveFolderImages(FFolderImages, SmallImageSize, SmallImageSize);
+      ExplorerFolders.SaveFolderImages(FFolderImages, SmallImageSize, SmallImageSize);
     end;
 
     GUIDParam := DirctoryID;
@@ -2566,12 +2566,27 @@ begin
   end;
 end;
 
+procedure TExplorerThread.CheckIsFileEncrypted;
+begin
+  if CanBeTransparentEncryptedFile(CurrentFile) then
+  begin
+    if ValidEnryptFileEx(CurrentFile) then
+      SynchronizeEx(
+        procedure
+        begin
+          FSender.SetFileIsEncrypted(GUIDParam, True);
+        end
+      );
+  end;
+end;
+
 procedure TExplorerThread.UpdateSimpleFile;
 begin
   StringParam := Fmask;
   CurrentFile := FFolder;
   GUIDParam := FUpdaterInfo.SID;
   MakeIconForFile;
+  CheckIsFileEncrypted;
 end;
 
 procedure TExplorerThread.DoUpdaterHelpProc;
@@ -3186,14 +3201,10 @@ begin
 end;
 
 initialization
-
-  AExplorerFolders := TExplorerFolders.Create;
   FFolderPictureLock := TCriticalSection.Create;
 
 finalization
-
   F(FFolderPictureLock);
-  F(AExplorerFolders);
   F(FullFolderPicture);
   F(ExplorerUpdateManagerInstance);
 

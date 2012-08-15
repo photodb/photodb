@@ -1552,7 +1552,150 @@ object OptionsForm: TOptionsForm
     object TbPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 7
-      TabVisible = False
+      DesignSize = (
+        497
+        413)
+      object Label1: TLabel
+        Left = 259
+        Top = 162
+        Width = 74
+        Height = 13
+        Caption = 'Executable file:'
+      end
+      object CblExtensions: TCheckListBox
+        Left = 3
+        Top = 34
+        Width = 250
+        Height = 351
+        AllowGrayed = True
+        Anchors = [akLeft, akTop, akBottom]
+        ItemHeight = 13
+        TabOrder = 0
+        OnContextPopup = CbExtensionListContextPopup
+      end
+      object StaticText1: TStaticText
+        Left = 3
+        Top = 11
+        Width = 60
+        Height = 17
+        Caption = 'Extensions:'
+        TabOrder = 1
+      end
+      object RbVlcPlayerInternal: TRadioButton
+        Left = 259
+        Top = 34
+        Width = 235
+        Height = 17
+        Caption = 'RbVlcPlayer (internal)'
+        Checked = True
+        TabOrder = 2
+        TabStop = True
+      end
+      object StaticText2: TStaticText
+        Left = 259
+        Top = 11
+        Width = 69
+        Height = 17
+        Caption = 'Use program:'
+        TabOrder = 3
+      end
+      object RbVlcPlayer: TRadioButton
+        Left = 259
+        Top = 57
+        Width = 235
+        Height = 17
+        Caption = 'RbVlcPlayer'
+        TabOrder = 4
+      end
+      object RbKmpPlayer: TRadioButton
+        Left = 259
+        Top = 80
+        Width = 235
+        Height = 17
+        Caption = 'RbKmpPlayer'
+        TabOrder = 5
+      end
+      object RbMediaPlayerClassic: TRadioButton
+        Left = 259
+        Top = 103
+        Width = 235
+        Height = 17
+        Caption = 'RbMediaPlayerClassic'
+        TabOrder = 6
+      end
+      object RbOtherProgram: TRadioButton
+        Left = 259
+        Top = 126
+        Width = 235
+        Height = 17
+        Caption = 'RbOtherProgram*'
+        TabOrder = 7
+      end
+      object Edit1: TEdit
+        Left = 259
+        Top = 181
+        Width = 214
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        Enabled = False
+        TabOrder = 8
+        OnKeyPress = EdUserMenuItemCaptionKeyPress
+      end
+      object Button1: TButton
+        Left = 479
+        Top = 181
+        Width = 15
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = '...'
+        Enabled = False
+        TabOrder = 9
+        OnClick = BtnUserMenuChooseExecutableClick
+      end
+      object WlAddLink: TWebLink
+        Left = 3
+        Top = 391
+        Width = 40
+        Height = 16
+        Cursor = crHandPoint
+        Anchors = [akLeft, akBottom]
+        Color = clBtnFace
+        ParentColor = False
+        Text = 'Add'
+        ImageIndex = 0
+        IconWidth = 16
+        IconHeight = 16
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        UseSpecIconSize = True
+        HightliteImage = False
+        StretchImage = True
+        CanClick = True
+      end
+      object WebLink1: TWebLink
+        Left = 49
+        Top = 391
+        Width = 60
+        Height = 16
+        Cursor = crHandPoint
+        Anchors = [akLeft, akBottom]
+        Color = clBtnFace
+        ParentColor = False
+        Text = 'Remove'
+        ImageIndex = 0
+        IconWidth = 16
+        IconHeight = 16
+        UseEnterColor = False
+        EnterColor = clBlack
+        EnterBould = False
+        TopIconIncrement = 0
+        UseSpecIconSize = True
+        HightliteImage = False
+        StretchImage = True
+        CanClick = True
+      end
     end
   end
   object PmExtensionStatus: TPopupActionBar

@@ -23,14 +23,14 @@ uses
 
 function EncryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
   DoEvent: Boolean = True; Progress: TFileProgress = nil): Integer;
-function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string): Integer;
+function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string; Progress: TFileProgress = nil): Integer;
 function CryptTStrings(TS: TStrings; Pass: string): string;
 function DeCryptTStrings(S: string; Pass: string): TStrings;
 function CryptDBRecordByID(ID: Integer; Password: string): Integer;
 
 implementation
 
-function CryptDBRecordByID(ID : integer; Password : String) : integer;
+function CryptDBRecordByID(ID: Integer; Password: string): Integer;
 var
   Query: TDataSet;
   JPEG: TJPEGImage;
@@ -68,7 +68,7 @@ begin
   end;
 end;
 
-function ResetPasswordDBRecordByID(ID : integer; Password : String) : integer;
+function ResetPasswordDBRecordByID(ID: integer; Password: String): Integer;
 var
   Query: TDataSet;
   JPEG: TJPEGImage;
@@ -149,26 +149,24 @@ begin
     Result := CRYPT_RESULT_OK;
 end;
 
-function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string): Integer;
+function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string; Progress: TFileProgress = nil): Integer;
 begin
-  Result := CRYPT_RESULT_OK;
-  if not ValidCryptGraphicFile(FileName) and FileExistsSafe(FileName) then
+  if not FileExistsSafe(FileName) then
+    Exit(CRYPT_RESULT_ERROR_READING_FILE);
+
+  if not ValidCryptGraphicFile(FileName) then
   begin
-    Result := CRYPT_RESULT_ALREADY_DECRYPT;
+    Result := CRYPT_RESULT_ALREADY_DECRYPTED;
     Exit;
   end;
 
-  if FileExistsSafe(FileName) then
-  begin
-    Result := ResetPasswordInGraphicFile(FileName, Password);
-    if Result <> CRYPT_RESULT_OK then
-      Exit;
-  end;
+  Result := ResetPasswordInGraphicFile(FileName, Password, Progress);
+  if Result <> CRYPT_RESULT_OK then
+    Exit;
 
   if ID <> 0 then
     if ResetPasswordDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
       Result := CRYPT_RESULT_FAILED_CRYPT_DB;
-
 end;
 
 function DeCryptTStrings(S: string; Pass: string): TStrings;

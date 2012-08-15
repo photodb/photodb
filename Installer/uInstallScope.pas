@@ -79,7 +79,10 @@ type
   end;
 
   TDirectoryObject = class(TDiskObject)
-
+  private
+    FIsRecursive: Boolean;
+  public
+    property IsRecursive: Boolean read FIsRecursive write FIsRecursive;
   end;
 
   //COLLESTIONS
@@ -259,6 +262,9 @@ constructor TPhotoDBInstall_V23.Create;
 var
   PhotoDBFile: TDiskObject;
   PhotoDBBridge: TDiskObject;
+  {$IFDEF VLC_PLAYER}
+  DirectoryObj: TDirectoryObject;
+  {$ENDIF}
 begin
   inherited;
 
@@ -297,6 +303,12 @@ begin
   Files.Add(TDirectoryObject.Create('Images',      '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('PlugInsEx',   '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Styles',      '%PROGRAM%', ''));
+
+  {$IFDEF VLC_PLAYER}
+  DirectoryObj := TDirectoryObject.Create('VlcPlayer',    '%PROGRAM%', '');
+  DirectoryObj.IsRecursive := True;
+  Files.Add(DirectoryObj);
+  {$ENDIF}
 end;
 
 { TFileActions }

@@ -17,9 +17,6 @@ uses
   Themes,
   ComObj,
   Registry,
-  PrintMainForm,
-  uScript,
-  UnitScripts,
   ComCtrls,
   ShellCtrls,
   ImgList,
@@ -32,7 +29,11 @@ uses
   Math,
   DB,
   uGOM,
+  PrintMainForm,
+  uScript,
+  UnitScripts,
   ExplorerTypes,
+  uExplorerFolderImages,
   DBCMenu,
   UnitDBKernel,
   UnitINI,
@@ -891,7 +892,8 @@ type
     procedure Select(Item: TEasyItem; GUID: TGUID);
     procedure ShowHelp(Text, Link: string);
     function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: Boolean; Big: Boolean = False): Boolean;
-    function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include: Boolean) : Boolean;
+    function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include: Boolean): Boolean;
+    function SetFileIsEncrypted(FileGUID: TGUID; IsEncrypted: Boolean): Boolean;
     function AddItemW(Caption : string; FileGUID: TGUID) : TEasyItem;
     function AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1): TEasyItem;
     procedure SetOldPath(Path: string); override;
@@ -3154,6 +3156,28 @@ begin
         if FFilesInfo[I].FileName = FSelectedInfo.FileName then
           if SelCount = 1 then
             ListView1SelectItem(nil, ListView1Selected, True);
+      Break;
+    end;
+end;
+
+function TExplorerForm.SetFileIsEncrypted(FileGUID: TGUID;
+  IsEncrypted: Boolean): Boolean;
+var
+  I, Index: Integer;
+  Item: TEasyItem;
+begin
+  Result := False;
+  for I := 0 to FFilesInfo.Count - 1 do
+    if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
+    begin
+      Index := MenuIndexToItemIndex(I);
+      if index > ElvMain.Items.Count - 1 then
+        Exit;
+
+      Item := ElvMain.Items[Index];
+
+      FFilesInfo[I].Encrypted := IsEncrypted;
+      AddItemToUpdate(Item);
       Break;
     end;
 end;
@@ -6943,9 +6967,36 @@ var
   FileName, Password: string;
   Item: TEasyItem;
   Index: Integer;
+
+  I: Integer;
+  ItemIndex: Integer;
+  FileInfo: TExplorerFileInfo;
+  MenuRecord: TDBPopupMenuInfoRecord;
 begin
-  Info := GetCurrentPopupMenuInfo(nil);
+  Info := TExplorerFileInfos.Create;
   try
+    //fill list of files
+    for I := 0 to ElvMain.Items.Count - 1 do
+    begin
+      //skip filtered items
+      if not ElvMain.Items[I].Visible then
+        Continue;
+
+      ItemIndex := ItemIndexToMenuIndex(I);
+      if ItemIndex > FFilesInfo.Count - 1 then
+        Exit;
+
+      FileInfo := FFilesInfo[ItemIndex];
+
+      if (FileInfo.FileType = EXPLORER_ITEM_IMAGE) or CanBeTransparentEncryptedFile(FileInfo.FileName) then
+      begin
+        MenuRecord := FileInfo.Copy;
+        MenuRecord.Selected := ElvMain.Items[I].Selected;
+        MenuRecord.Exists := 1;
+        Info.Add(MenuRecord);
+      end;
+    end;
+
     if PmItemPopup.Tag <> -1 then
       FileName := ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)
     else
@@ -8016,7 +8067,7 @@ begin
             FFolderImagesResult.Directory := '';
             for I := 1 to 4 do
               FFolderImagesResult.Images[I] := nil;
-            FFolderImagesResult := AExplorerFolders.GetFolderImages(FileName, 40, 40);
+            FFolderImagesResult := ExplorerFolders.GetFolderImages(FileName, 40, 40);
             try
               if FFolderImagesResult.Directory = '' then
               begin
@@ -9459,8 +9510,11 @@ begin
   if FShowEXIFAttributes then
     Options := Options + [daoEXIF];
 
+  if (Info.FileType <> EXPLORER_ITEM_IMAGE) then
+    Options := Options + [daoNonImage];
+
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
-    (Info.FileType = EXPLORER_ITEM_IMAGE) and FShowAttributes, Info, True, '', Options);
+    FShowAttributes, Info, True, '', Options);
 
   if FShowAttributes then
   begin

@@ -1,6 +1,7 @@
 REM  d:
 REM  cd "D:\Dmitry\Delphi exe\Photo Database"
 
+SET PLAYER=VLC_PLAYER
 SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\9.0
 SET PROGS=C:\Users\Public\Documents
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
@@ -50,7 +51,7 @@ cd Bridge
 cd ..
 
 cd Installer
-"%DCC32%" %NS% InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% InstallMaker -D"EXTERNAL;%PLAYER%" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 
@@ -60,8 +61,6 @@ cd TransparentEncryption
 "%DCC32%" %NS% PlayEncryptedMedia -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 "%DCC64%" %NS% PlayEncryptedMedia64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
-
-pause
 
 cd PhotoDB
 
@@ -92,7 +91,7 @@ cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
 "%BRCC32%" SETUP_ZIP.rc
-"%DCC32%" %NS% Install -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% Install -D"INSTALL;%PLAYER%" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 InstallMaker /setup Install.exe
 "%BRCC32%" Install_Package.rc

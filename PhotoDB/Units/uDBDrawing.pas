@@ -41,7 +41,7 @@ type
     property Items[index: Integer]: TIconEx read GetValueByIndex; default;
   end;
 
-  TDrawAttributesOption = (daoEXIF);
+  TDrawAttributesOption = (daoEXIF, daoNonImage);
   TDrawAttributesOptions = set of TDrawAttributesOption;
 
 procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
@@ -121,7 +121,7 @@ var
   end;
 
 begin
-  if Info.ID = 0 then
+  if (Info.ID = 0) and not (daoNonImage in Options) then
     DoDrawIconEx(HCanvas, DeltaX, DeltaY, DB_IC_NEW);
 
   FileName := Info.FileName;

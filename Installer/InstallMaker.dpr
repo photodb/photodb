@@ -19,12 +19,12 @@ uses
 {$R ..\PhotoDB\Resources\PhotoDBInstall.res}
 
 var
-  FileName : string;
-  FS : TFileStream;
-  I : Integer;
-  DiskObject : TDiskObject;
+  FileName: string;
+  FS: TFileStream;
+  I: Integer;
+  DiskObject: TDiskObject;
 
-  procedure AddFile(FileRelativePath : string);
+  procedure AddFile(FileRelativePath: string);
   var
     FileName : string;
   begin
@@ -32,12 +32,12 @@ var
     AddFileToStream(FS, FileName);
   end;
 
-  procedure AddDirectory(DirectoryRelativePath : string);
+  procedure AddDirectory(DirectoryRelativePath: string; Recursive: Boolean = False);
   var
     DirectoryName : string;
   begin
     DirectoryName := IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + DirectoryRelativePath;
-    AddDirectoryToStream(FS, DirectoryName);
+    AddDirectoryToStream(FS, DirectoryName, Recursive);
   end;
 
   procedure PackZip(S, D: string);
@@ -94,7 +94,7 @@ begin
         if DiskObject is TFileObject then
           AddFile('..\PhotoDB\bin\' + DiskObject.Name);
         if DiskObject is TDirectoryObject then
-          AddDirectory('..\PhotoDB\bin\' + DiskObject.Name);
+          AddDirectory('..\PhotoDB\bin\' + DiskObject.Name, TDirectoryObject(DiskObject).IsRecursive);
       end;
       AddStringToStream(FS, ReleaseToString(GetExeVersion(IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + '..\PhotoDB\bin\PhotoDB.exe')), 'VERSION.INFO');
     finally
