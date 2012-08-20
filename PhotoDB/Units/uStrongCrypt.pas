@@ -218,7 +218,7 @@ begin
 end;
 
 initialization
-  SetDefaultCipherClass(TCipher_Twofish);
+  SetDefaultCipherClass(TCipher_Blowfish);
   SetDefaultHashClass(THash_SHA1);
 
 end.

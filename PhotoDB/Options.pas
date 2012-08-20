@@ -233,7 +233,7 @@ type
     LbDisplayICCProfile: TLabel;
     CbDisplayICCProfile: TComboBox;
     TbPrograms: TTabSheet;
-    CblExtensions: TCheckListBox;
+    CblExtensions: TListBox;
     StaticText1: TStaticText;
     RbVlcPlayerInternal: TRadioButton;
     StaticText2: TStaticText;
@@ -246,6 +246,7 @@ type
     Label1: TLabel;
     WlAddLink: TWebLink;
     WebLink1: TWebLink;
+    ImlMediaPlayers: TImageList;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -305,6 +306,8 @@ type
     procedure WlGetMoreStylesClick(Sender: TObject);
     procedure BtnShowThemesFolderClick(Sender: TObject);
     procedure SnStylesFileCreate(Sender: TObject; Path: string);
+    procedure CblExtensionsDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
   private
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
@@ -312,6 +315,7 @@ type
     FPlaces: TPlaceFolderArray;
     ReloadData: Boolean;
     procedure LoadStylesList;
+    procedure LoadMediaAssociations;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -546,6 +550,7 @@ begin
     RbKmpPlayer.Enabled := IsKmpPlayerInstalled;
     RbMediaPlayerClassic.Enabled := IsMediaPlayerClassicInstalled;
     RbVlcPlayerInternal.Enabled := IsVlcPlayerInternalInstalled;
+    LoadMediaAssociations;
   end;
 
 end;
@@ -978,6 +983,40 @@ begin
     LbDisplayICCProfile.Caption := L('Display ICC profile');
   finally
     EndTranslate;
+  end;
+end;
+
+procedure TOptionsForm.LoadMediaAssociations;
+var
+  I: Integer;
+  Associations: TStrings;
+  Ico: HIcon;
+  Icon: TIcon;
+  Player: string;
+begin
+  Associations := Settings.ReadKeys(cMediaAssociationsData);
+  try
+    for I := 0 to Associations.Count - 1 do
+    begin
+      Player := Settings.ReadString(cMediaAssociationsData + '\' + Associations[I], '');
+      if Player <> '' then
+      begin
+        if Player = cMediaPlayerDefaultId then
+          Player := GetVlcPlayerInternalPath;
+
+        Ico := ExtractSmallIconByPath(Player);
+        Icon := TIcon.Create;
+        try
+          Icon.Handle := Ico;
+          ImlMediaPlayers.AddIcon(Icon);
+          CblExtensions.Items.Add(Associations[I]);
+        finally
+          F(Icon);
+        end;
+      end;
+    end;
+  finally
+    F(Associations);
   end;
 end;
 
@@ -1619,6 +1658,32 @@ begin
     CblPlacesDisplayIn.Checked[3] := FPlaces[Item.Index].OtherFolder;
     CblPlacesDisplayIn.Enabled := True;
     BtnChoosePlaceIcon.Enabled := True;
+  end;
+end;
+
+procedure TOptionsForm.CblExtensionsDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+  LB: TListBox;
+  TextHeight: Integer;
+begin
+  if Index > -1 then
+  begin
+    LB := TListBox(Control);
+    LB.Canvas.FillRect(Rect);
+
+    LB := TListBox(Control);
+    ImlMediaPlayers.Draw(LB.Canvas, Rect.Left + 2, Rect.Top + LB.ItemHeight div 2 - ImlMediaPlayers.Height div 2,
+      Index);
+
+    if odSelected in State then
+      LB.Canvas.Font.Color := Theme.ListFontSelectedColor
+    else
+      LB.Canvas.Font.Color := Theme.ListFontColor;
+
+    TextHeight := LB.Canvas.TextHeight(LB.Items[index]);
+
+    LB.Canvas.TextOut(Rect.Left + ImlMediaPlayers.Width + 2 * 2, Rect.Top + LB.ItemHeight div 2 - TextHeight div 2, LB.Items[index]);
   end;
 end;
 

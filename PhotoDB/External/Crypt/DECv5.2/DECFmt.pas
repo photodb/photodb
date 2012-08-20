@@ -226,8 +226,8 @@ end;
 
 function TableFind(Value: AnsiChar; Table: PAnsiChar; Len: Integer): Integer; assembler;
 asm // Utility for TStringFormat_XXXXX
-//TODO: X64 fix
-{      PUSH  EDI
+{$IFNDEF cpux64}
+      PUSH  EDI
       MOV   EDI,EDX
       REPNE SCASB
       MOV   EAX,0
@@ -235,7 +235,8 @@ asm // Utility for TStringFormat_XXXXX
       MOV   EAX,EDI
       SUB   EAX,EDX
 @@1:  DEC   EAX
-      POP   EDI }
+      POP   EDI
+{$ENDIF}
 end;
 
 class function TFormat_HEX.DoEncode(const Value; Size: Integer): Binary;
@@ -324,20 +325,22 @@ end;
 
 class function TFormat_HEX.CharTable: PAnsiChar; assembler;
 asm
-//TODO: X64 fix
-(*     MOV  EAX,OFFSET @@1
+{$IFNDEF cpux64}
+      MOV  EAX,OFFSET @@1
       RET
 @@1:  DB   '0123456789ABCDEF'     // Table must be >= 18 Chars
-      DB   'X$ abcdefhHx()[]{},;:-_/\*+"''',9,10,13,0   *)
+      DB   'X$ abcdefhHx()[]{},;:-_/\*+"''',9,10,13,0
+{$ENDIF}
 end;
 
 class function TFormat_HEXL.CharTable: PAnsiChar;
 asm
-//TODO: X64 fix
-(*      MOV  EAX,OFFSET @@1
+{$IFNDEF cpux64}
+      MOV  EAX,OFFSET @@1
       RET
 @@1:  DB   '0123456789abcdef'     // Table must be >= 18 Chars
-      DB   'X$ ABCDEFhHx()[]{},;:-_/\*+"''',9,10,13,0   *)
+      DB   'X$ ABCDEFhHx()[]{},;:-_/\*+"''',9,10,13,0
+{$ENDIF}
 end;
 
 class function TFormat_MIME32.DoEncode(const Value; Size: Integer): Binary;
@@ -393,11 +396,12 @@ end;
 
 class function TFormat_MIME32.CharTable: PAnsiChar;
 asm
-//TODO: X64 fix
-(*      MOV  EAX,OFFSET @@1
+{$IFNDEF cpux64}
+      MOV  EAX,OFFSET @@1
       RET  // must be >= 32 Chars
 @@1:  DB  'abcdefghijklnpqrstuwxyz123456789'
-      DB  ' =$()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars  *)
+      DB  ' =$()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars
+{$ENDIF}
 end;
 
 class function TFormat_MIME64.DoEncode(const Value; Size: Integer): Binary;
@@ -501,11 +505,12 @@ end;
 
 class function TFormat_MIME64.CharTable: PAnsiChar; assembler;
 asm
-//TODO: X64 fix
-(*      MOV  EAX,OFFSET @@1
+{$IFNDEF cpux64}
+      MOV  EAX,OFFSET @@1
       RET  // must be >= 65 Chars
 @@1:  DB  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
-      DB  ' $()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars     *)
+      DB  ' $()[]{},;:-_\*"''',9,10,13,0  // special and skipped chars
+{$ENDIF}
 end;
 {
 class function TFormat_PGP.DoExtractCRC(const Value; var Size: Integer): LongWord;
@@ -681,20 +686,22 @@ end;
 
 class function TFormat_UU.CharTable: PAnsiChar;
 asm
-//TODO: X64 fix
-(*      MOV  EAX,OFFSET @@1
+{$IFNDEF cpux64}
+      MOV  EAX,OFFSET @@1
       RET  // must be >= 64 Chars
 @@1:  DB   '`!"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_'
-      DB   ' ',9,10,13,0  *)
+      DB   ' ',9,10,13,0
+{$ENDIF}
 end;
 
 class function TFormat_XX.CharTable: PAnsiChar;
 asm
-//TODO: X64 fix
-(*      MOV  EAX,OFFSET @@1
+{$IFNDEF cpux64}
+      MOV  EAX,OFFSET @@1
       RET
 @@1:  DB   '+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-      DB   ' "()[]''',9,10,13,0    *)
+      DB   ' "()[]''',9,10,13,0
+{$ENDIF}
 end;
 
 const

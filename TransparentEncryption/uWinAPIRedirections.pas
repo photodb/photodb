@@ -273,17 +273,21 @@ begin
     result := 0;
 end;
 
-function _lreadHookProc(hFile: HFILE; lpBuffer: Pointer; uBytes: UINT): HFILE; stdcall;
+function _lreadHookProc(hFile: HFILE; lpBuffer: Pointer; uBytes: UINT): UINT; stdcall;
+var
+  dwCurrentFilePosition: Int64;
 begin
- if MessageBox(0, 'Функция: _lread', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
-    result := _lreadNextHook( hFile,lpBuffer,uBytes)
-  else
-    result := 0;
+  dwCurrentFilePosition := FileSeek(hFile, 0, FILE_CURRENT);
+
+  result := _lreadNextHook( hFile,lpBuffer,uBytes);
+
+  //WMPlayer
+  ReplaceBufferContent(hFile, lpBuffer, dwCurrentFilePosition, uBytes, result);
 end;
 
 function _lcreatHookProc(const lpPathName: LPCSTR; iAttribute: Integer): HFILE; stdcall;
 begin
- if MessageBox(0, 'Функция: _lread', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
+ if MessageBox(0, 'Функция: _lcreat', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
     result := _lcreatNextHook(lpPathName, iAttribute)
   else
     result := 0;
@@ -292,18 +296,26 @@ end;
 function GetModuleName(hModule: HMODULE): string;
 var
   szFileName: array[0..MAX_PATH] of Char;
+  ModuleFileLength: Integer;
 begin
   FillChar(szFileName, SizeOf(szFileName), #0);
-  GetModuleFileName(hModule, szFileName, MAX_PATH);
-  Result := szFileName;
+  ModuleFileLength := GetModuleFileName(hModule, szFileName, MAX_PATH);
+  if ModuleFileLength > 0 then
+    Result := szFileName
+  else
+    Result := '';
 end;
 
 function IsSystemDll(dllName: string): Boolean;
 begin
    Result := True;
 
-{ dllName := AnsiLowerCase(ExtractFileName(dllName));
+{  dllName := AnsiLowerCase(ExtractFileName(dllName));
 
+  if dllName = 'evr.dll' then Exit(True);
+  if dllName = 'nvd3dum.dll' then Exit(True);
+  if dllName = 'powrprof.dll' then Exit(True);
+  if dllName = 'cryptsp.dll' then Exit(True);
   if dllName = 'kernel32.dll' then Exit(True);
   if dllName = 'comctl32.dll' then Exit(True);
   if dllName = 'shell32.dll' then Exit(True);
@@ -315,8 +327,8 @@ begin
   if dllName = 'ntdll.dll' then Exit(True);
   if dllName = 'comctl32.dll' then Exit(True);
   if dllName = 'ole32.dll' then Exit(True);
-
-  Result := False;        }
+                                                }
+  Result := False;
 end;
 
 var
@@ -325,7 +337,7 @@ var
 procedure ProcessDllLoad(Module: HModule; lpLibFileName: string);
 begin
   if (Module > 0) and not IsSystemDll(lpLibFileName) then
-    HookPEModule(Module, True);
+    HookPEModule(Module, False);
 end;
 
 function LoadLibraryExAHookProc(lpLibFileName: PAnsiChar; hFile: THandle; dwFlags: DWORD): HMODULE; stdcall;

@@ -410,7 +410,7 @@ asm // Dest^ =  Source1^ xor Source2^ , Size bytes
        JMP   @@1
 @@4:   POP   EDI
        POP   ESI
-@@5:
+@@5:                           
 end;
 {$endif}
 
@@ -786,7 +786,7 @@ end;
 
 {reverse the bit order from a integer}
 function SwapBits(Value, Bits: LongWord): LongWord; {$IFNDEF SwapBits_asm} register; {$ENDIF}
-{$IFDEF SwapBits_asm}
+{$IFNDEF cpux64}
 asm
        BSWAP  EAX
        MOV    ECX,EAX

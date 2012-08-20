@@ -18,7 +18,6 @@ library TransparentEncryption;
 
 uses
   Winapi.Windows,
-
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   DECCipher in '..\PhotoDB\External\Crypt\DECv5.2\DECCipher.pas',
   DECUtil in '..\PhotoDB\External\Crypt\DECv5.2\DECUtil.pas',
@@ -29,14 +28,17 @@ uses
   DECRandom in '..\PhotoDB\External\Crypt\DECv5.2\DECRandom.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uErrors in '..\PhotoDB\Units\uErrors.pas',
-
   uHook in 'uHook.pas',
   uAPIHook in 'uAPIHook.pas',
   uTransparentEncryption in '..\PhotoDB\Units\uTransparentEncryption.pas',
   uTransparentEncryptor in 'uTransparentEncryptor.pas',
-  uWinAPIRedirections in 'uWinAPIRedirections.pas';
+  uWinAPIRedirections in 'uWinAPIRedirections.pas',
+  uLockedFileNotifications in '..\PhotoDB\Units\uLockedFileNotifications.pas';
 
 {$R *.res}
+
+exports
+  LoadHook;
 
 begin
   DefaultDll := InstParamStr;

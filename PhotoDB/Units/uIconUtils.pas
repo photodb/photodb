@@ -29,6 +29,8 @@ var
   Ico1, Ico2: HIcon;
 begin
   I := Pos(',', IconPath);
+  if I = 0 then
+    I := Length(IconPath) + 1;
   Path := Copy(IconPath, 1, I - 1);
   Icon := Copy(IconPath, I + 1, Length(IconPath) - I);
   IconIndex := StrToIntDef(Icon, 0);

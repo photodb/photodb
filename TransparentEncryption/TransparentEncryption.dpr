@@ -32,9 +32,13 @@ uses
   uAPIHook in 'uAPIHook.pas',
   uTransparentEncryptor in 'uTransparentEncryptor.pas',
   uWinAPIRedirections in 'uWinAPIRedirections.pas',
-  uTransparentEncryption in '..\PhotoDB\Units\uTransparentEncryption.pas';
+  uTransparentEncryption in '..\PhotoDB\Units\uTransparentEncryption.pas',
+  uLockedFileNotifications in '..\PhotoDB\Units\uLockedFileNotifications.pas';
 
 {$R *.res}
+
+exports
+  LoadHook name 'LoadHook';
 
 begin
   DefaultDll := InstParamStr;

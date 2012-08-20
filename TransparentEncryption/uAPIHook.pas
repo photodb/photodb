@@ -168,7 +168,6 @@ var
   begin
     Result := 0;
 
-    //OldAddress := FunctionAddress(TargetAddress);
     OldAddress := GetActualAddr(TargetAddress);
 
     //check the header and see if there is one, if there isn't then exit hook routine
@@ -202,7 +201,6 @@ var
 
       while ImportCode^ <> nil do
       begin
-        //Address := FunctionAddress(ImportCode^);
         Address := GetActualAddr(ImportCode^);
         //checks address and writes our one!
         If Address = OldAddress then
@@ -211,11 +209,9 @@ var
           begin
             if WriteProcessMemory(GetCurrentProcess, ImportCode, @NewAddress, SizeOf(Pointer), BytesWritten) then
             begin
+              VirtualProtect(ImportCode, SizeOf(Pointer), OldProtect, @OldProtect);
               Inc(Result);
-            end else
-              raise Exception.Create('Error Message');
-
-            VirtualProtect(ImportCode, SizeOf(Pointer), OldProtect, @OldProtect);
+            end;
           end;
         end;
 
@@ -229,6 +225,7 @@ var
   end;
 
 begin
+  Result := 0;
   if PEModule > 0 then
     Result := HookModule(Pointer(PEModule), TargetAddress, NewAddress, OldAddress);
 end;

@@ -48,7 +48,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 505
     Height = 441
-    ActivePage = TsStyle
+    ActivePage = TbPrograms
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
@@ -1562,16 +1562,17 @@ object OptionsForm: TOptionsForm
         Height = 13
         Caption = 'Executable file:'
       end
-      object CblExtensions: TCheckListBox
+      object CblExtensions: TListBox
         Left = 3
         Top = 34
         Width = 250
         Height = 351
-        AllowGrayed = True
+        Style = lbOwnerDrawFixed
         Anchors = [akLeft, akTop, akBottom]
-        ItemHeight = 13
+        ItemHeight = 18
         TabOrder = 0
         OnContextPopup = CbExtensionListContextPopup
+        OnDrawItem = CblExtensionsDrawItem
       end
       object StaticText1: TStaticText
         Left = 3
@@ -1781,7 +1782,7 @@ object OptionsForm: TOptionsForm
   end
   object PlacesImageList: TImageList
     ColorDepth = cd32Bit
-    Left = 44
+    Left = 52
     Top = 440
   end
   object SaveWindowPos1: TSaveWindowPos
@@ -1806,7 +1807,12 @@ object OptionsForm: TOptionsForm
     WatchEvents = [neFileCreate, neFileDelete]
     OnFileCreate = SnStylesFileCreate
     OnFileDelete = SnStylesFileCreate
-    Left = 328
+    Left = 320
+    Top = 440
+  end
+  object ImlMediaPlayers: TImageList
+    ColorDepth = cd32Bit
+    Left = 360
     Top = 440
   end
 end

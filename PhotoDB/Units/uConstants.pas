@@ -31,6 +31,8 @@ const
   RegRoot: string = 'Software\Photo DataBase\';
   cDatabasesSubKey = 'DBS';
   cUserData = 'UserData\';
+  cMediaAssociationsData = 'MediaAssociations';
+  cMediaPlayerDefaultId = ':internal';
   TempFolderMask = '|NDX|MB|DB|NET|';
   DelayReadFileOperation = 200;
   DelayExecuteSQLOperation = 200;

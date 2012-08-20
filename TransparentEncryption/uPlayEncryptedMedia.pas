@@ -23,45 +23,109 @@ begin
   StartMedia(LibPath, PlayerPath, Media);
 end;
 
-function ChangePrivilege(szPrivilege: PChar; FEnable: Boolean): Boolean;
-var
-  NewState: TTokenPrivileges;
-  luid: TLargeInteger;
-  hToken: THandle;
-  ReturnLength: DWord;
-begin
-  OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, hToken);
-  LookupPrivilegeValue(nil, szPrivilege, luid);
-  NewState.PrivilegeCount := 1;
-  NewState.Privileges[0].Luid := luid;
-  if (fEnable) then
-    NewState.Privileges[0].Attributes := SE_PRIVILEGE_ENABLED
-  else
-    NewState.Privileges[0].Attributes := 0;
+type
+  TLoadLibrary = function(lpLibFileName: PWideChar): HMODULE; stdcall;
+  TGetProcAddress = function (hModule: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall;
+  TStartProcAddr = procedure; stdcall;
+  TExitThread = procedure (dwExitCode: DWORD); stdcall;
+  TMessageBox = function(hWnd: HWND; lpText, lpCaption: PWideChar; uType: UINT): Integer; stdcall;
 
-  Result := AdjustTokenPrivileges(hToken, False, NewState, SizeOf(NewState), nil, ReturnLength);
-  CloseHandle(hToken);
+  TInjectLibParameters = record
+    LibraryName: PChar;
+    StartProcName: LPCSTR;
+    StartProcAddr: TStartProcAddr;
+    LoadLibraryWAddr: TLoadLibrary;
+    LibraryModule: HModule;
+    GetProcAddressAddr: TGetProcAddress;
+    ExitThreadProc: TExitThread;
+    ErrorProcedureText: PChar;
+    ErrorLibraryText: PChar;
+    MessageBoxProc: TMessageBox;
+  end;
+  PInjectLibParameters = ^TInjectLibParameters;
+
+  TCallProcedure = procedure(InjectParameters: PInjectLibParameters); stdcall;
+
+procedure ExternalThreadProcedure(InjectParameters: PInjectLibParameters); stdcall;
+begin
+  InjectParameters.LibraryModule := InjectParameters.LoadLibraryWAddr(InjectParameters.LibraryName);
+  if InjectParameters.LibraryModule = 0 then
+    InjectParameters.MessageBoxProc(0, InjectParameters.ErrorLibraryText, nil, MB_OK or MB_ICONWARNING);
+
+  InjectParameters.StartProcAddr := InjectParameters.GetProcAddressAddr(InjectParameters.LibraryModule, InjectParameters.StartProcName);
+
+  if @InjectParameters.StartProcAddr <> nil then
+    InjectParameters.StartProcAddr()
+  else
+    InjectParameters.MessageBoxProc(0, InjectParameters.ErrorProcedureText, nil, MB_OK or MB_ICONERROR);
+
+  InjectParameters.ExitThreadProc(0);
+end;
+procedure ExternalThreadProcedureEnd;
+begin
+//just markef of ExternalThreadProcedure end
 end;
 
 function InjectDll(TargetId: Cardinal; DllName: string): Cardinal;
 var
   BytesWrite    : NativeUInt;
   ParamAddr     : Pointer;
-  pThreadStart  : Pointer;
+ // pThreadStart  : Pointer;
   Hdl           : NativeUInt;
   hThread       : Cardinal;
   hRemoteThread : Cardinal;
+  InjectParams  : TInjectLibParameters;
+
+  InjectCodeStart  : NativeUInt;
+  InjectCodeLength : Integer;
+  InjectCode       : PByteArray;
+
+  function CreateExternalPChar(Text: string): Pointer;
+  var
+    BytesWrite: NativeUInt;
+  begin
+    Result := VirtualAllocEx(Hdl, nil, Length(Text) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(Hdl, Result, PChar(Text), Length(Text) * 2 + 2, BytesWrite);
+  end;
+
+  function CreateExternalPAnsiChar(Text: AnsiString): Pointer;
+  var
+    BytesWrite: NativeUInt;
+  begin
+    Result := VirtualAllocEx(Hdl, nil, Length(Text) + 1, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(Hdl, Result, PAnsiChar(Text), Length(Text) + 1, BytesWrite);
+  end;
+
 begin
-  // Открываем существующий объект процесса
   Hdl := OpenProcess(PROCESS_ALL_ACCESS or PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION, False, TargetId);
-  // Выделяем память под структуру, которая передается нашей функции, под параметры, которые передаются функции
-  ParamAddr := VirtualAllocEx(Hdl, nil, Length(DllName) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-  // Пишем саму структуру
+
+{  ParamAddr := VirtualAllocEx(Hdl, nil, Length(DllName) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
   WriteProcessMemory(Hdl, ParamAddr, PWideChar(DllName), Length(DllName) * 2 + 2, BytesWrite);
   pThreadStart := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), PAnsiChar('LoadLibraryW'));
-  // Запускаем удаленный поток
-  hThread  := CreateRemoteThread(Hdl, nil, 0, pThreadStart, ParamAddr, 0, hRemoteThread);
-  // Ждем пока удаленный поток отработает...
+  hThread  := CreateRemoteThread(Hdl, nil, 0, pThreadStart, ParamAddr, 0, hRemoteThread);   }
+
+  ZeroMemory(@InjectParams, SizeOf(InjectParams));
+  InjectParams.ErrorLibraryText := CreateExternalPChar('Invalid hook library!'); //TODO: localize
+  InjectParams.ErrorProcedureText := CreateExternalPChar('Invalid hook procedure!'); //TODO: localize
+
+  InjectParams.LibraryName := CreateExternalPChar(DllName);
+  InjectParams.StartProcName := CreateExternalPAnsiChar('LoadHook');
+
+  InjectParams.LoadLibraryWAddr := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), PAnsiChar('LoadLibraryW'));
+  InjectParams.GetProcAddressAddr := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), PAnsiChar('GetProcAddress'));
+  InjectParams.ExitThreadProc := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), PAnsiChar('ExitThread'));
+  InjectParams.MessageBoxProc := GetProcAddress(GetModuleHandle('USER32.DLL'), PAnsiChar('MessageBoxW'));
+
+  ParamAddr := VirtualAllocEx(Hdl, nil, SizeOf(TInjectLibParameters), MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+  WriteProcessMemory(Hdl, ParamAddr, @InjectParams, SizeOf(TInjectLibParameters), BytesWrite);
+
+  InjectCodeStart := NativeUInt(Addr(ExternalThreadProcedure));
+  InjectCodeLength := NativeUInt(Addr(ExternalThreadProcedureEnd)) - InjectCodeStart;
+  InjectCode := VirtualAllocEx(Hdl, nil, InjectCodeLength, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+  WriteProcessMemory(Hdl, InjectCode, Pointer(InjectCodeStart), InjectCodeLength, BytesWrite);
+
+  hThread  := CreateRemoteThread(Hdl, nil, 0, InjectCode, ParamAddr, 0, hRemoteThread);
+
   Result := hThread;
 end;
 
@@ -92,7 +156,9 @@ begin
     Closehandle(hThread);
 
     ResumeThread(pi.hThread);
-    //WaitForSingleObject(pi.hProcess, INFINITE);
+    {$IFDEF DEBUG}
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    {$ENDIF}
 
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);

@@ -438,6 +438,11 @@ begin
     CloseHandle(hFileMapping);
   end;
 
+  {$IFDEF TESTPASS}
+  if Password = '' then
+    Password := '12';
+  {$ENDIF}
+
   if Password = '' then
     Exit;
 

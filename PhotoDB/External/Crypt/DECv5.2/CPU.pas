@@ -161,8 +161,8 @@ begin
   try // except Block needed, RDTSC can be a privilege Instruction !! but should never
     if Delay <= 0 then Delay := 10;
     D := PerfCounter;              // API QueryPerformanceCounter() based on a virtual 1.19318 MHz CPU
-	//TODO: X64 fix
-    {asm
+	{$IFNDEF cpux64}
+    asm
        PUSHAD
        DW     0310Fh               // RDTSC, read Time Stamp Counter into C
        MOV    C.DWord[0],EAX       // RDTSC is an CPU Clock based value
@@ -181,7 +181,8 @@ begin
        MOV    C.DWord[0],EAX
        MOV    C.DWord[4],EDX
        POPAD
-    end;}
+    end;
+	{$ENDIF}
     D := PerfCounter - D;          
     Result := C * PerfFreq / D;
   except

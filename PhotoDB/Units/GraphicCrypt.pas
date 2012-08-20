@@ -423,8 +423,11 @@ begin
       Stream.Seek(GraphicHeaderV2.Displacement, soCurrent);
 
     Chipper := CipherByIdentity(GraphicHeaderV2.Algorith);
-    DeCryptStreamV2(Stream, MS, Password, SeedToBinary(GraphicHeaderV2.Seed), GraphicHeaderV2.FileSize, Chipper);
-    Result := True;
+    if Chipper <> nil then
+    begin
+      DeCryptStreamV2(Stream, MS, Password, SeedToBinary(GraphicHeaderV2.Seed), GraphicHeaderV2.FileSize, Chipper);
+      Result := True;
+    end;
   end else if GraphicHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
   begin
     StrongCryptInit;
@@ -438,9 +441,11 @@ begin
       Stream.Seek(GraphicHeaderEx1.Displacement, soCurrent);
 
     Chipper := CipherByIdentity(GraphicHeaderEx1.Algorith);
-
-    DecryptStreamEx(Stream, MS, Password, SeedToBinary(GraphicHeaderEx1.Seed), GraphicHeaderEx1.FileSize, Chipper, GraphicHeaderEx1.BlockSize32k);
-    Result := True;
+    if Chipper <> nil then
+    begin
+      DecryptStreamEx(Stream, MS, Password, SeedToBinary(GraphicHeaderEx1.Seed), GraphicHeaderEx1.FileSize, Chipper, GraphicHeaderEx1.BlockSize32k);
+      Result := True;
+    end;
   end;
 end;
 

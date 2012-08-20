@@ -85,6 +85,7 @@
 			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<DCC_Define>TESTPASS;$(DCC_Define)</DCC_Define>
 			<Manifest_File>None</Manifest_File>
 			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<VerInfo_Locale>1033</VerInfo_Locale>
@@ -116,6 +117,7 @@
 			<DCCReference Include="uTransparentEncryptor.pas"/>
 			<DCCReference Include="uWinAPIRedirections.pas"/>
 			<DCCReference Include="..\PhotoDB\Units\uTransparentEncryption.pas"/>
+			<DCCReference Include="..\PhotoDB\Units\uLockedFileNotifications.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

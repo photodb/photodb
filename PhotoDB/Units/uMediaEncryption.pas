@@ -7,29 +7,71 @@ uses
   SysUtils,
   Classes,
   Registry,
+  uConstants,
   uMemory,
   uAppUtils,
   uStrongCrypt,
   uTransparentEncryption,
   uFormInterfaces,
+  uSettings,
+  uMediaPlayers,
   UnitDBKernel;
 
 type
   TMachineType = (mtUnknown, mt32Bit, mt64Bit, mtOther);
 
-function ShellPlayEncryptedMediaFile(FileName: string): Boolean;
+function ShellPlayEncryptedMediaFile(const FileName: string): Boolean;
 function GetLibMachineType(const AFileName: string): TMachineType;
+function GetFileBindings(FileName: string): string;
+function GetShellPlayerForFile(FileName: string): string;
 
 implementation
 
-function ShellPlayEncryptedMediaFile(FileName: string): Boolean;
+function GetShellPlayerForFile(FileName: string): string;
 var
-  Handler,
-  CommandLine,
-  Executable,
-  TransparentDecryptor, Password: string;
-  ExecutableType: TMachineType;
   Reg: TRegistry;
+  Handler,
+  CommandLine: string;
+begin
+  Result := '';
+
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := HKEY_CLASSES_ROOT;
+    if Reg.OpenKey(ExtractFileExt(FileName), False) then
+    begin
+      Handler := Reg.ReadString('');
+      if Handler <> '' then
+      begin
+        if Reg.OpenKey('\' + Handler + '\shell\open\command', False) then
+        begin
+          CommandLine := Reg.ReadString('');
+          if CommandLine <> '' then
+            Result := ParamStrEx(CommandLine, -1);
+        end;
+      end;
+    end;
+  finally
+    F(Reg);
+  end;
+end;
+
+function GetFileBindings(FileName: string): string;
+var
+  Extension: string;
+begin
+  Extension := ExtractFileExt(FileName);
+  Result := Settings.ReadString(cMediaAssociationsData + '\' + Extension, '');
+  if Result = cMediaPlayerDefaultId then
+    Result := GetVlcPlayerInternalPath;
+end;
+
+function ShellPlayEncryptedMediaFile(const FileName: string): Boolean;
+var
+  Executable,
+  TransparentDecryptor,
+  Password: string;
+  ExecutableType: TMachineType;
   Si: TStartupInfo;
   P: TProcessInformation;
 begin
@@ -46,49 +88,32 @@ begin
       Exit(True);
   end;
 
-  Reg := TRegistry.Create(KEY_READ);
-  try
-    Reg.RootKey := HKEY_CLASSES_ROOT;
-    if Reg.OpenKey(ExtractFileExt(FileName), False) then
+  Executable := GetFileBindings(FileName);
+  if Executable = '' then
+    Executable := GetShellPlayerForFile(FileName);
+
+  if Executable <> '' then
+  begin
+    ExecutableType := GetLibMachineType(Executable);
+    if ExecutableType in [mt32Bit, mt64Bit] then
     begin
-      Handler := Reg.ReadString('');
-      if Handler <> '' then
+      TransparentDecryptor := ExtractFilePath(ParamStr(0)) + 'PlayEncryptedMedia';
+      if ExecutableType = mt64Bit  then
+        TransparentDecryptor := TransparentDecryptor + '64';
+
+      TransparentDecryptor := TransparentDecryptor + '.exe';
+
+      FillChar(Si, SizeOf(Si), 0);
+      with Si do
       begin
-        if Reg.OpenKey('\' + Handler + '\shell\open\command', False) then
-        begin
-          CommandLine := Reg.ReadString('');
-          if CommandLine <> '' then
-          begin
-            Executable := ParamStrEx(CommandLine, -1);
-            if Executable <> '' then
-            begin
-              ExecutableType := GetLibMachineType(Executable);
-              if ExecutableType in [mt32Bit, mt64Bit] then
-              begin
-                TransparentDecryptor := ExtractFilePath(ParamStr(0)) + 'PlayEncryptedMedia';
-                if ExecutableType = mt64Bit  then
-                  TransparentDecryptor := TransparentDecryptor + '64';
-
-                TransparentDecryptor := TransparentDecryptor + '.exe';
-
-                FillChar(Si, SizeOf(Si), 0);
-                with Si do
-                begin
-                  Cb := SizeOf(Si);
-                  DwFlags := STARTF_USESHOWWINDOW;
-                  WShowWindow := SW_SHOW;
-                end;
-                if CreateProcess(PChar(TransparentDecryptor), PWideChar('"' + TransparentDecryptor + '" "' + Executable + '" "' + FileName + '"'), nil, nil, False,
-                  CREATE_DEFAULT_ERROR_MODE, nil, nil, Si, P) then
-                  Result := True;
-              end;
-            end;
-          end;
-        end;
+        Cb := SizeOf(Si);
+        DwFlags := STARTF_USESHOWWINDOW;
+        WShowWindow := SW_SHOW;
       end;
+      if CreateProcess(PChar(TransparentDecryptor), PWideChar('"' + TransparentDecryptor + '" "' + Executable + '" "' + FileName + '"'), nil, nil, False,
+        CREATE_DEFAULT_ERROR_MODE, nil, nil, Si, P) then
+        Result := True;
     end;
-  finally
-    F(Reg);
   end;
 end;
 

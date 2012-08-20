@@ -239,7 +239,7 @@ begin
     begin
       lpNumberOfBytesRead := MS.Size - dwCurrentFilePosition - 1;
       FileSeek(hFile, MS.Size - 1, FILE_BEGIN);
-    end;  }
+    end;}
 
     MS.ReadBlock(Buffer, dwCurrentFilePosition, lpNumberOfBytesRead);
   finally

@@ -7,21 +7,18 @@ uses
   uWinAPIRedirections,
   uTransparentEncryptor;
 
-procedure HandleEvents(reason: integer); register;
+procedure HandleEvents(Reason: Integer); register;
 function InstParamStr: string;
+procedure LoadHook; stdcall;
 
 implementation
 
-procedure HandleEvents(reason: integer); register;
+procedure HandleEvents(Reason: Integer); register;
 begin
-  case reason of
+  case Reason of
     DLL_PROCESS_ATTACH:
       begin
-        {$IFDEF DEBUG}
-        MessageBox(0, PChar('x'), PChar('x'), 0);
-        {$ENDIF}
-        StartLib;
-        HookPEModule(GetModuleHandle(nil));
+        //bad place to do something :(
       end;
 
     DLL_PROCESS_DETACH:
@@ -29,6 +26,15 @@ begin
         StopLib;
       end;
   end;
+end;
+
+procedure LoadHook; stdcall;
+begin
+  {$IFDEF DEBUG}
+  MessageBox(0, PChar('LoadHook'), PChar('LoadHook'), MB_OK or MB_ICONINFORMATION);
+  {$ENDIF}
+  StartLib;
+  HookPEModule(GetModuleHandle(nil));
 end;
 
 function InstParamStr: string;
