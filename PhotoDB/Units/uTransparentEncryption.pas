@@ -34,7 +34,6 @@ type
     FHandle: THandle;
     FFileBlocks: TList;
     FMemoryBlocks: TList;
-    FSize: Int64;
     FBlockSize: Int64;
     FMemorySize: Int64;
     FMemoryLimit: Int64;
@@ -69,6 +68,7 @@ function DecryptStreamEx(S, D: TStream; Password: string; Seed: Binary; FileSize
                          AChipper: TDECCipherClass; BlockSize32k: Byte; Progress: TSimpleEncryptProgress = nil): Boolean;
 
 function ValidEnryptFileEx(FileName: String): Boolean;
+function ValidEncryptFileExHandle(FileHandle: THandle): Boolean;
 function CanBeTransparentEncryptedFile(FileName: string): Boolean;
 function TransparentDecryptFileEx(FileName: string; Password: string;
                                   Progress: TFileProgress = nil): Integer;
@@ -332,24 +332,59 @@ begin
   Stream.Seek(Pos, soFromBeginning);
 end;
 
+function ValidEncryptFileExHandle(FileHandle: THandle): Boolean;
+var
+  EncryptHeader: TEncryptedFileHeader;
+  Pos: Int64;
+begin
+  Result := False;
+  if FileHandle = 0 then
+    Exit;
+
+  Pos := FileSeek(FileHandle, 0, FILE_CURRENT);
+  if FileRead(FileHandle, EncryptHeader, SizeOf(EncryptHeader)) = SizeOf(EncryptHeader) then
+  begin
+    Result := EncryptHeader.ID = PhotoDBFileHeaderID;
+    FileSeek(FileHandle, Pos, FILE_BEGIN);
+  end;
+end;
+
+procedure TryOpenHandleForRead(var hFile: THandle; FileName: string; DelayReadFileOperation: Integer);
+var
+  I: Integer;
+begin
+  hFile := 0;
+
+  for I := 1 to 20 do
+  begin
+
+    hFile := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_WRITE or FILE_SHARE_READ, nil, OPEN_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL, 0);
+
+    if hFile = 0 then
+    begin
+      if GetLastError in [0, ERROR_PATH_NOT_FOUND, ERROR_INVALID_DRIVE, ERROR_NOT_READY,
+                          ERROR_FILE_NOT_FOUND, ERROR_GEN_FAILURE, ERROR_INVALID_NAME] then
+        Exit;
+      Sleep(DelayReadFileOperation);
+    end;
+  end;
+end;
+
 function ValidEnryptFileEx(FileName: String): Boolean;
 var
-  FS: TFileStream;
+  hFile: THandle;
 begin
   Result := False;
 
   if StartsStr('\\.', FileName) then
     Exit;
 
-  TryOpenFSForRead(FS, FileName, DelayReadFileOperation);
-  if FS = nil then
+  TryOpenHandleForRead(hFile, FileName, DelayReadFileOperation);
+  if hFile = 0 then
     Exit;
 
-  try
-    Result := ValidEncryptFileExStream(FS);
-  finally
-    F(FS);
-  end;
+  Result := ValidEncryptFileExHandle(hFile);
 end;
 
 { TEncryptedFile }
@@ -448,8 +483,6 @@ begin
 
   Position := FileSeek(FHandle, 0, FILE_CURRENT);
 
-  FSize := FileSeek(FHandle, 0, FILE_END);
-
   FileSeek(FHandle, 0, FILE_BEGIN);
 
   FillChar(EncryptHeader, SizeOf(EncryptHeader), #0);
@@ -503,7 +536,6 @@ begin
   FContentSize := 0;
   FMemorySize := 0;
   FMemoryLimit := 10 * 1024 * 1024;
-  FHeaderSize := 0;
 end;
 
 procedure TEncryptedFile.DecodeDataBlock(const Source; var Dest; DataSize: Integer);

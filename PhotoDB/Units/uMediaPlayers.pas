@@ -10,12 +10,12 @@ uses
 
 function GetVlcPlayerInternalPath: string;
 function IsVlcPlayerInternalInstalled: Boolean;
-function IsVlcPlayerInstalled: Boolean;
 function GetVlcPlayerPath: string;
-function IsKmpPlayerInstalled: Boolean;
+function IsVlcPlayerInstalled: Boolean;
 function GetKMPlayerPath: string;
-function IsMediaPlayerClassicInstalled: Boolean;
+function IsKmpPlayerInstalled: Boolean;
 function GetMediaPlayerClassicPath: string;
+function IsMediaPlayerClassicInstalled: Boolean;
 
 implementation
 
@@ -29,7 +29,7 @@ var
   InternalVlcPath: string;
 begin
   Result := '';
-  InternalVlcPath := ExtractFilePath(ParamStr(1)) + 'VlcPlayer\vlc.exe';
+  InternalVlcPath := ExtractFilePath(ParamStr(0)) + 'VlcPlayer\vlc.exe';
   if FileExists(InternalVlcPath) then
     Result := InternalVlcPath;
 end;

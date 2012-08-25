@@ -1722,8 +1722,9 @@
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>
 	<translate name="Add" value="Добавить"/>	
 	<translate name="User menu" value="Меню"/>	
-	<translate name="Security" value="Безопасность"/>	
-	<translate name="Global" value="Глобальные"/>	
+	<translate name="Security" value="Безопасность"/>
+	<translate name="Global" value="Общие"/>	
+	<translate name="Programs" value="Программы"/>	
 	<translate name="Don't use this extension" value="Не использовать это расширение"/>
 	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
 	<translate name="Add menu item" value="Использовать пункт в меню"/>	
@@ -1746,6 +1747,7 @@
 	<translate name="Slide show delay: %d ms." value="Дополнительная задержка для Слайд-Шоу: %d мс."/>
 	<translate name="Number of steps for slide show: %d" value="Количество шагов для Слайд-Шоу: %d"/>
 	<translate name="Programs (*.exe)|*.exe|All Files (*.*)|*.*'" value="Программы (*.exe)|*.exe|Все файлы (*.*)|*.*'"/>
+	<translate name="All Files (*.*)|*.*'" value="Все файлы (*.*)|*.*'"/>
 	<translate name="Automatically save passwords for the current session" value="Автоматически сохранять пароли для текущей сессии"/>
 	<translate name="Automatically save passwords in the settings (NOT RECOMMENDED)" value="Автоматически сохранять пароли в настройках (НЕ РЕКОМЕНДУЕТСЯ)"/>
 	<translate name="Clear current passwords in session" value="Очистить текущие пароли в сессии"/>
@@ -1820,6 +1822,18 @@
 	<translate name="Password" value="Пароль"/>
 	<translate name="Display ICC profile" value="ICC профиль для отображения"/>
 	<translate name="Don't use ICC profile" value="Не использовать ICC профиль"/>
+	<translate name="Use program" value="Открывать в программе"/>
+	<translate name="Executable file" value="Исполняемый файл (программа)"/>
+	<translate name="VLC player (internal)" value="VLC плеер (встроенный)"/>
+	<translate name="KMPlayer" value="KMPlayer"/>
+	<translate name="Media Player Classic" value="Media Player Classic"/>
+	<translate name="Other programm" value="Другая программа"/>
+	<translate name="Save changes" value="Сохранить изменения"/>
+	<translate name="Do you really want to delete mapping for extension &quot;{0}&quot;?" value="Вы действительно хотите удалить ассоциации для расширения: &quot;{0}&quot;?"/>
+	<translate name="Select file" value="Выбрать файл"/>
+	<translate name="Select extension" value="Выбрать расширение"/>
+	<translate name="Enter extension" value="Введите расширение"/>
+	<translate name="Please enter extension (for example - .avi)" value="Пожалуйста, введите расширение (например - .avi)"/>
   </scope>
   <scope name="Help">
 	<translate name="Help" value="Помощь"/>

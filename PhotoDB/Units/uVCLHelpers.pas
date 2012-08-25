@@ -93,6 +93,13 @@ type
     procedure SaveToStream(Stream: TStream);
   end;
 
+  TListBoxHelper = class helper for TListBox
+  private
+    function GetSelectedIndex: Integer;
+  public
+    property SelectedIndex: Integer read GetSelectedIndex;
+  end;
+
 type
   TNotifyEventRef = reference to procedure(Sender: TObject);
   TKeyEventRef = reference to procedure(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -386,6 +393,23 @@ end;
 
 procedure TPictureX.SaveToStream(Stream: TStream);
 begin
+end;
+
+{ TListBoxHelper }
+
+function TListBoxHelper.GetSelectedIndex: Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to Self.Items.Count - 1 do
+  begin
+    if Self.Selected[I] then
+    begin
+      Result := I;
+      Break;
+    end;
+  end;
 end;
 
 end.

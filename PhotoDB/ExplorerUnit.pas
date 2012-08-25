@@ -2259,7 +2259,7 @@ procedure TExplorerForm.Open1Click(Sender: TObject);
 var
   Handled: Boolean;
 begin
-  EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
+  EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [ssShift], Handled);
 end;
 
 function TExplorerForm.GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TExplorerFileInfos;
@@ -5080,6 +5080,7 @@ begin
     if (((((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
               (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
               (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE))) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
+              (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
@@ -9406,30 +9407,37 @@ begin
       Index := ItemIndexToMenuIndex(index);
       if Index > FFilesInfo.Count - 1 then
         Exit;
+
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
       begin
         Dir := IncludeTrailingBackslash(FFilesInfo[Index].FileName);
         SetNewPath(Dir, False);
         Exit;
       end;
+
       if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
       begin
         SetNewPath(FFilesInfo[Index].FileName, False);
         Exit;
       end;
+
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) or
         (FFilesInfo[Index].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
       begin
-        MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
-        try
-          Viewer.ShowImages(Sender, MenuInfo);
-          Viewer.Show;
-          RestoreSelected;
-        finally
-          F(MenuInfo);
+        if not (ssShift in ShiftState) or not ShellPlayEncryptedMediaFile(FFilesInfo[Index].FileName) then
+        begin
+          MenuInfo := GetCurrentPopUpMenuInfo(ListView1Selected);
+          try
+            Viewer.ShowImages(Sender, MenuInfo);
+            Viewer.Show;
+            RestoreSelected;
+          finally
+            F(MenuInfo);
+          end;
         end;
         Exit;
       end;
+
       if FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE then
       begin
         if GetExt(FFilesInfo[Index].FileName) <> 'LNK' then

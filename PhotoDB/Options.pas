@@ -3,75 +3,75 @@ unit Options;
 interface
 
 uses
-  Registry,
+  System.Generics.Collections,
   Windows,
   Messages,
+  Math,
   SysUtils,
   Classes,
   Graphics,
   Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ComCtrls,
-  TabNotBk,
-  DmProgress,
-  ExtCtrls,
-  CheckLst,
-  Menus,
+  Registry,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.TabNotBk,
+  WebLink,
+  Vcl.ImgList,
+  Vcl.ExtCtrls,
+  Vcl.CheckLst,
+  Vcl.Menus,
   ShellCtrls,
-  Dolphin_DB,
-  ImgList,
-  Math,
-  Mask,
-  uFileUtils,
-  uSysUtils,
-  acDlgSelect,
-  UnitDBKernel,
-  SaveWindowPos,
-  UnitINI,
-  uVistaFuncs,
-  UnitDBDeclare,
-  UnitDBFileDialogs,
-  uAssociatedIcons,
-  uLogger,
-  uConstants,
-  uShellIntegration,
-  UnitDBCommon,
-  UnitDBCommonGraphics,
+  Vcl.AppEvnts,
+  Vcl.Samples.Spin,
+  IOUtils,
+  Winapi.ShellApi,
+  Vcl.ActnPopup,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.Themes,
+  Vcl.Styles,
+  Vcl.Styles.Ext,
+  Vcl.Styles.Utils,
+
   uTranslate,
   uShellUtils,
   uDBForm,
   uRuntime,
   uMemory,
   uSettings,
-  WebLink,
   uAssociations,
-  AppEvnts,
-  Spin,
   uCryptUtils,
   uIconUtils,
-  LoadingSign,
+  uLogger,
+  uConstants,
+  uFileUtils,
+  uSysUtils,
   uDBThread,
-  Winapi.ShellApi,
-  IOUtils,
   uBitmapUtils,
   uThemesUtils,
-  Vcl.ActnPopup,
   uConfiguration,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.Themes,
-  Vcl.Styles,
-  Vcl.Styles.Ext,
-  Vcl.Styles.Utils,
   uBaseWinControl,
-  WatermarkedEdit,
   uICCProfile,
-  ShellNotify,
-  uVCLHelpers,
   uExplorerFolderImages,
   uFormInterfaces,
-  uMediaPlayers;
+  uAssociatedIcons,
+  uMediaPlayers,
+  uVCLHelpers,
+
+  Dolphin_DB,
+  acDlgSelect,
+  UnitDBKernel,
+  SaveWindowPos,
+  UnitINI,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  uShellIntegration,
+  UnitDBCommon,
+  UnitDBCommonGraphics,
+  LoadingSign,
+  WatermarkedEdit,
+  ShellNotify;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm, IOptionsForm)
@@ -202,7 +202,7 @@ type
     SedMinHeight: TSpinEdit;
     SedMinWidth: TSpinEdit;
     Bevel3: TBevel;
-    GroupBox1: TGroupBox;
+    GbEXIF: TGroupBox;
     CbReadInfoFromExif: TCheckBox;
     CbSaveInfoToExif: TCheckBox;
     CbUpdateExifInfoInBackground: TCheckBox;
@@ -232,21 +232,25 @@ type
     SnStyles: TShellNotification;
     LbDisplayICCProfile: TLabel;
     CbDisplayICCProfile: TComboBox;
-    TbPrograms: TTabSheet;
+    TsPrograms: TTabSheet;
     CblExtensions: TListBox;
-    StaticText1: TStaticText;
+    StPlayerExtensions: TStaticText;
     RbVlcPlayerInternal: TRadioButton;
-    StaticText2: TStaticText;
+    StUseProgram: TStaticText;
     RbVlcPlayer: TRadioButton;
-    RbKmpPlayer: TRadioButton;
+    RbKmPlayer: TRadioButton;
     RbMediaPlayerClassic: TRadioButton;
     RbOtherProgram: TRadioButton;
-    Edit1: TEdit;
-    Button1: TButton;
-    Label1: TLabel;
-    WlAddLink: TWebLink;
-    WebLink1: TWebLink;
+    EdPlayerExecutable: TEdit;
+    BtnSelectPlayerExecutable: TButton;
+    LbExtensionExecutable: TLabel;
+    WlAddPlayerExtension: TWebLink;
+    WlRemovePlayerExtension: TWebLink;
     ImlMediaPlayers: TImageList;
+    WlSavePlayerChanges: TWebLink;
+    PmSelectExtensionMethod: TPopupActionBar;
+    MiSelectFile: TMenuItem;
+    MiSelectextension: TMenuItem;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -308,18 +312,31 @@ type
     procedure SnStylesFileCreate(Sender: TObject; Path: string);
     procedure CblExtensionsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
+    procedure CblExtensionsClick(Sender: TObject);
+    procedure RbVlcPlayerInternalClick(Sender: TObject);
+    procedure BtnSelectPlayerExecutableClick(Sender: TObject);
+    procedure EdPlayerExecutableChange(Sender: TObject);
+    procedure WlSavePlayerChangesClick(Sender: TObject);
+    procedure WlRemovePlayerExtensionClick(Sender: TObject);
+    procedure WlAddPlayerExtensionClick(Sender: TObject);
+    procedure MiSelectFileClick(Sender: TObject);
+    procedure MiSelectextensionClick(Sender: TObject);
   private
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
     FLoadedPages: array [0..7] of Boolean;
     FPlaces: TPlaceFolderArray;
     ReloadData: Boolean;
+    FReadingPlayerChanges: Boolean;
+    FPlayerExtensions: TDictionary<string, string>;
     procedure LoadStylesList;
     procedure LoadMediaAssociations;
+    procedure SaveMediaAssociations;
+    procedure AddMediaAssociation(Extension, Player: string);
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     procedure LoadLanguage;
@@ -547,12 +564,11 @@ begin
   if NewTab = 7 then
   begin
     RbVlcPlayer.Enabled := IsVlcPlayerInstalled;
-    RbKmpPlayer.Enabled := IsKmpPlayerInstalled;
+    RbKmPlayer.Enabled := IsKmpPlayerInstalled;
     RbMediaPlayerClassic.Enabled := IsMediaPlayerClassicInstalled;
     RbVlcPlayerInternal.Enabled := IsVlcPlayerInternalInstalled;
     LoadMediaAssociations;
   end;
-
 end;
 
 procedure TOptionsForm.FormShow(Sender: TObject);
@@ -593,6 +609,9 @@ begin
     PcMain.ActivePageIndex := 2;
   end;
 
+  FReadingPlayerChanges := True;
+  FPlayerExtensions := TDictionary<string, string>.Create;
+
   ReloadData := False;
   SaveWindowPos1.Key := GetRegRootKey + 'Options';
   SaveWindowPos1.SetPosition;
@@ -622,11 +641,17 @@ begin
   WlDefaultJPEGOptions.Font.Color := Theme.PanelFontColor;
 
   WblMethod.LoadFromResource('PASSWORD');
+
+  WlAddPlayerExtension.LoadFromResource('GROUP_ADD_SMALL');
+  WlRemovePlayerExtension.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
+  WlSavePlayerChanges.LoadFromResource('CMD_OK');
+
 end;
 
 procedure TOptionsForm.FormDestroy(Sender: TObject);
 begin
   F(FThemeList);
+  F(FPlayerExtensions);
 end;
 
 procedure TOptionsForm.OkButtonClick(Sender: TObject);
@@ -636,13 +661,15 @@ var
   S: TStrings;
   EventInfo: TEventValues;
 begin
+  Settings.ClearCache;
+
   if ReloadData then
   begin
     if MessageBoxDB(Handle, L('Refresh data in windows?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
       DBKernel.DoIDEvent(Self, 0, [EventID_Param_Refresh_Window], EventInfo);
 
   end;
-  // Case TabbedNotebook1.PageIndex of
+  // case TabbedNotebook1.PageIndex of
   // 0:
   if FLoadedPages[1] then
   begin
@@ -750,7 +777,11 @@ begin
     Settings.WriteString('Options', 'DisplayICCProfileName', IIF(CbDisplayICCProfile.ItemIndex = 0, '-', CbDisplayICCProfile.Value));
   end;
 
-  Settings.ClearCache;
+  if FLoadedPages[7] then
+  begin
+    SaveMediaAssociations;
+  end;
+
   TFormCollection.Instance.ApplySettings;
 
   Close;
@@ -855,6 +886,7 @@ begin
     TsUserMenu.Caption := L('User menu');
     TsSecurity.Caption := L('Security');
     TsGlobal.Caption := L('Global');
+    TsPrograms.Caption := L('Programs');
     GbBackup.Caption := L('Backups');
     Dontusethisextension1.Caption := L('Don''t use this extension');
     Usethisprogramasdefault1.Caption := L('Use PhotoDB as default association');
@@ -981,8 +1013,54 @@ begin
     WebProxyPassword.WatermarkText := L('Password');
 
     LbDisplayICCProfile.Caption := L('Display ICC profile');
+
+    WlAddPlayerExtension.Text := L('Add');
+    WlRemovePlayerExtension.Text := L('Remove');
+    WlAddPlayerExtension.LoadImage;
+    WlRemovePlayerExtension.LoadImage;
+    WlRemovePlayerExtension.Left := WlAddPlayerExtension.Left + WlAddPlayerExtension.Width + 5;
+
+    StPlayerExtensions.Caption := L('Extensions') + ':';
+    StUseProgram.Caption := L('Use program') + ':';
+
+    RbVlcPlayerInternal.Caption := L('VLC player (internal)');
+    RbVlcPlayer.Caption := L('VLC player');
+    RbKmPlayer.Caption := L('KMPlayer');
+    RbMediaPlayerClassic.Caption := L('Media Player Classic');
+    RbOtherProgram.Caption := L('Other programm') + ':';
+
+    LbExtensionExecutable.Caption := L('Executable file') + ':';
+    WlSavePlayerChanges.Text := L('Save changes');
+
+    MiSelectFile.Caption := L('Select file');
+    MiSelectextension.Caption := L('Select extension');
   finally
     EndTranslate;
+  end;
+end;
+
+procedure TOptionsForm.AddMediaAssociation(Extension, Player: string);
+var
+  Ico: HIcon;
+  Icon: TIcon;
+begin
+  Extension := AnsiUpperCase(Extension);
+  if not FPlayerExtensions.ContainsKey(Extension) then
+  begin
+    FPlayerExtensions.Add(Extension, Player);;
+
+    Ico := ExtractSmallIconByPath(Player);
+    if Ico = 0 then
+      Ico := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
+    Icon := TIcon.Create;
+    try
+      Icon.Handle := Ico;
+      ImlMediaPlayers.AddIcon(Icon);
+      CblExtensions.Items.Add(Extension);
+
+    finally
+      F(Icon);
+    end;
   end;
 end;
 
@@ -990,8 +1068,7 @@ procedure TOptionsForm.LoadMediaAssociations;
 var
   I: Integer;
   Associations: TStrings;
-  Ico: HIcon;
-  Icon: TIcon;
+  Extension,
   Player: string;
 begin
   Associations := Settings.ReadKeys(cMediaAssociationsData);
@@ -1004,19 +1081,30 @@ begin
         if Player = cMediaPlayerDefaultId then
           Player := GetVlcPlayerInternalPath;
 
-        Ico := ExtractSmallIconByPath(Player);
-        Icon := TIcon.Create;
-        try
-          Icon.Handle := Ico;
-          ImlMediaPlayers.AddIcon(Icon);
-          CblExtensions.Items.Add(Associations[I]);
-        finally
-          F(Icon);
-        end;
+        Extension := AnsiUpperCase(Associations[I]);
+        AddMediaAssociation(Extension, Player);
       end;
     end;
   finally
     F(Associations);
+  end;
+
+  WlRemovePlayerExtension.Enabled := CblExtensions.Items.Count > 0;
+  if WlRemovePlayerExtension.Enabled then
+  begin
+    CblExtensions.ItemIndex := 0;
+    CblExtensionsClick(Self);
+  end;
+end;
+
+procedure TOptionsForm.SaveMediaAssociations;
+var
+  Pair: TPair<string, string>;
+begin
+  Settings.DeleteKey(cMediaAssociationsData);
+  for Pair in FPlayerExtensions do
+  begin
+    Settings.WriteString(cMediaAssociationsData + '\' + Pair.Key, '', Pair.Value);
   end;
 end;
 
@@ -1299,27 +1387,74 @@ begin
   end;
 end;
 
+procedure TOptionsForm.MiSelectextensionClick(Sender: TObject);
+var
+  Extension: string;
+begin
+  Extension := '';
+  StringPromtForm.Query(L('Enter extension'), L('Please enter extension (for example - .avi)'), Extension);
+  if Extension <> '' then
+  begin
+    if Pos('.', Extension) = 0 then
+      Extension := '.' + Extension;
+
+    AddMediaAssociation(Extension, GetVlcPlayerInternalPath);
+    CblExtensions.Selected[CblExtensions.Items.Count - 1] := True;
+    CblExtensionsClick(Sender);
+  end;
+end;
+
+procedure TOptionsForm.MiSelectFileClick(Sender: TObject);
+var
+  OpenDialog: DBOpenDialog;
+begin
+  OpenDialog := DBOpenDialog.Create;
+  try
+    OpenDialog.Filter := L('All Files (*.*)|*.*');
+    OpenDialog.FilterIndex := 0;
+    if OpenDialog.Execute then
+    begin
+      AddMediaAssociation(ExtractFileExt(OpenDialog.FileName), GetVlcPlayerInternalPath);
+      CblExtensions.Selected[CblExtensions.Items.Count - 1] := True;
+      CblExtensionsClick(Sender);
+    end;
+  finally
+    F(OpenDialog);
+  end;
+end;
+
 procedure TOptionsForm.BtnSaveUserMenuItemClick(Sender: TObject);
 var
+  Ic: HIcon;
   Ico: TIcon;
 begin
   if LvUserMenuItems.Selected = nil then
     Exit;
 
-  FUserMenu[LvUserMenuItems.Selected.index].Caption := EdUserMenuItemCaption.Text;
-  FUserMenu[LvUserMenuItems.Selected.index].Icon := EdUserMenuItemIcon.Text;
-  FUserMenu[LvUserMenuItems.Selected.index].EXEFile := EdUserMenuItemExecutable.Text;
-  FUserMenu[LvUserMenuItems.Selected.index].Params := EdUserMenuItemParams.Text;
-  FUserMenu[LvUserMenuItems.Selected.index].UseSubMenu := CbUserMenuItemIsSubmenu.Checked;
+  FUserMenu[LvUserMenuItems.Selected.Index].Caption := EdUserMenuItemCaption.Text;
+  FUserMenu[LvUserMenuItems.Selected.Index].Icon := EdUserMenuItemIcon.Text;
+  FUserMenu[LvUserMenuItems.Selected.Index].EXEFile := EdUserMenuItemExecutable.Text;
+  FUserMenu[LvUserMenuItems.Selected.Index].Params := EdUserMenuItemParams.Text;
+  FUserMenu[LvUserMenuItems.Selected.Index].UseSubMenu := CbUserMenuItemIsSubmenu.Checked;
   LvUserMenuItems.Selected.Caption := EdUserMenuItemCaption.Text;
 
   Ico := TIcon.Create;
   try
-    Ico.Handle := ExtractSmallIconByPath(EdUserMenuItemIcon.Text);
-    ImageList1.ReplaceIcon(LvUserMenuItems.Selected.index, Ico);
+    Ic := ExtractSmallIconByPath(EdUserMenuItemIcon.Text);
+    if Ic = 0 then
+      Ic := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
+
+    Ico.Handle := Ic;
+    ImageList1.ReplaceIcon(LvUserMenuItems.Selected.Index, Ico);
   finally
     F(Ico);
   end;
+end;
+
+procedure TOptionsForm.EdPlayerExecutableChange(Sender: TObject);
+begin
+  if not FReadingPlayerChanges then
+    WlSavePlayerChanges.Visible := True;
 end;
 
 procedure TOptionsForm.EdUserMenuItemCaptionKeyPress(Sender: TObject; var Key: Char);
@@ -1463,14 +1598,14 @@ begin
       Settings.WriteString('Style', 'FileName', FThemeList[I]);
       if MessageBoxDB(Handle, L('Restart of application is required for applying new style! Restart application now?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
       begin
-        ShellExecuteInfo.cbSize:= SizeOf(TShellExecuteInfo);
-        ShellExecuteInfo.fMask:= SEE_MASK_FLAG_DDEWAIT or SEE_MASK_FLAG_NO_UI or SEE_MASK_NOCLOSEPROCESS;
-        ShellExecuteInfo.Wnd:= 0;
-        ShellExecuteInfo.lpVerb:= 'open';
-        ShellExecuteInfo.lpFile:= PChar('"' + Application.ExeName + '"');
-        ShellExecuteInfo.lpParameters:= PChar('/NoPrevVersion');
-        ShellExecuteInfo.lpDirectory:= PChar(ExtractFileDir(Application.ExeName));
-        ShellExecuteInfo.nShow:= SW_SHOWNORMAL;
+        ShellExecuteInfo.cbSize := SizeOf(TShellExecuteInfo);
+        ShellExecuteInfo.fMask := SEE_MASK_FLAG_DDEWAIT or SEE_MASK_FLAG_NO_UI or SEE_MASK_NOCLOSEPROCESS;
+        ShellExecuteInfo.Wnd := 0;
+        ShellExecuteInfo.lpVerb := 'open';
+        ShellExecuteInfo.lpFile := PChar('"' + Application.ExeName + '"');
+        ShellExecuteInfo.lpParameters := PChar('/NoPrevVersion');
+        ShellExecuteInfo.lpDirectory := PChar(ExtractFileDir(Application.ExeName));
+        ShellExecuteInfo.nShow := SW_SHOWNORMAL;
         if ShellExecuteEx(@ShellExecuteInfo) then
         begin
           Close;
@@ -1519,6 +1654,24 @@ begin
       (NewPlace);
     PlacesListView.Selected.Caption := GetFileNameWithoutExt(NewPlace);
   end;
+end;
+
+procedure TOptionsForm.RbVlcPlayerInternalClick(Sender: TObject);
+begin
+  EdPlayerExecutable.Enabled := RbOtherProgram.Checked;
+  BtnSelectPlayerExecutable.Enabled := RbOtherProgram.Checked;
+
+  if RbVlcPlayerInternal.Checked then
+    EdPlayerExecutable.Text := GetVlcPlayerInternalPath;
+
+  if RbVlcPlayer.Checked then
+    EdPlayerExecutable.Text := GetVlcPlayerPath;
+
+  if RbKmPlayer.Checked then
+    EdPlayerExecutable.Text := GetKMPlayerPath;
+
+  if RbMediaPlayerClassic.Checked then
+    EdPlayerExecutable.Text := GetMediaPlayerClassicPath;
 end;
 
 procedure TOptionsForm.ReadPlaces;
@@ -1593,6 +1746,16 @@ begin
   end;
 end;
 
+procedure TOptionsForm.WlAddPlayerExtensionClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := WlAddPlayerExtension.ClientRect.TopLeft;
+  P := WlAddPlayerExtension.ClientToScreen(P);
+  P.Y := P.Y + WlAddPlayerExtension.Height;
+  PmSelectExtensionMethod.Popup(P.X, P.Y);
+end;
+
 procedure TOptionsForm.WlDefaultJPEGOptionsClick(Sender: TObject);
 begin
   JpegOptionsForm.Execute;
@@ -1601,6 +1764,56 @@ end;
 procedure TOptionsForm.WlGetMoreStylesClick(Sender: TObject);
 begin
   ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + SITE_ACTION_STYLES), nil, nil, SW_NORMAL);
+end;
+
+procedure TOptionsForm.WlRemovePlayerExtensionClick(Sender: TObject);
+var
+  Extension: string;
+begin
+  if CblExtensions.SelectedIndex > -1 then
+  begin
+    Extension := CblExtensions.Items[CblExtensions.SelectedIndex];
+    if MessageBoxDB(Handle, FormatEx(L('Do you really want to delete mapping for extension "{0}"?'), [Extension]), L('Question'), TD_BUTTON_YESNO, TD_ICON_QUESTION) = ID_YES then
+    begin
+      CblExtensions.Items.Delete(CblExtensions.SelectedIndex);
+      FPlayerExtensions.Remove(Extension);
+
+      WlRemovePlayerExtension.Enabled := CblExtensions.Items.Count > 0;
+      if WlRemovePlayerExtension.Enabled then
+      begin
+        if CblExtensions.ItemIndex = -1 then
+          CblExtensions.Selected[CblExtensions.Items.Count - 1] := True;
+
+        CblExtensionsClick(Sender);
+      end;
+    end;
+  end;
+end;
+
+procedure TOptionsForm.WlSavePlayerChangesClick(Sender: TObject);
+var
+  Ico: HIcon;
+  Icon: TIcon;
+begin
+  if CblExtensions.SelectedIndex > -1 then
+  begin
+    FPlayerExtensions[CblExtensions.Items[CblExtensions.SelectedIndex]] := EdPlayerExecutable.Text;
+
+    Ico := ExtractSmallIconByPath(EdPlayerExecutable.Text);
+    if Ico = 0 then
+      Ico := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
+
+    Icon := TIcon.Create;
+    try
+      Icon.Handle := Ico;
+      ImlMediaPlayers.ReplaceIcon(CblExtensions.SelectedIndex, Icon);
+      CblExtensions.Refresh;
+    finally
+      F(Icon);
+    end;
+
+    WlSavePlayerChanges.Visible := False;
+  end;
 end;
 
 procedure TOptionsForm.WritePlaces;
@@ -1661,6 +1874,38 @@ begin
   end;
 end;
 
+procedure TOptionsForm.CblExtensionsClick(Sender: TObject);
+var
+  SelectedIndex: Integer;
+  Player: string;
+begin
+  SelectedIndex := CblExtensions.SelectedIndex;
+
+  WlSavePlayerChanges.Visible := False;
+  if SelectedIndex > -1 then
+  begin
+    Player := FPlayerExtensions[CblExtensions.Items[SelectedIndex]];
+
+    FReadingPlayerChanges := True;
+    try
+      EdPlayerExecutable.Text := Player;
+
+      if AnsiLowerCase(Player) = AnsiLowerCase(GetVlcPlayerInternalPath) then
+        RbVlcPlayerInternal.Checked := True
+      else if AnsiLowerCase(Player) = AnsiLowerCase(GetVlcPlayerPath) then
+        RbVlcPlayer.Checked := True
+      else if AnsiLowerCase(Player) = AnsiLowerCase(GetKMPlayerPath) then
+        RbKmPlayer.Checked := True
+      else if AnsiLowerCase(Player) = AnsiLowerCase(GetMediaPlayerClassicPath) then
+        RbMediaPlayerClassic.Checked := True
+      else
+        RbOtherProgram.Checked := True;
+    finally
+      FReadingPlayerChanges := False;
+    end;
+  end;
+end;
+
 procedure TOptionsForm.CblExtensionsDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
@@ -1705,6 +1950,7 @@ procedure TOptionsForm.BtnChoosePlaceIconClick(Sender: TObject);
 var
   FileName: string;
   IconIndex: Integer;
+  Ic: HIcon;
   S, Icon: string;
   I, index: Integer;
   Ico: TIcon;
@@ -1722,7 +1968,11 @@ begin
     FPlaces[index].Icon := FileName + ',' + IntToStr(IconIndex);
   Ico := TIcon.Create;
   try
-    Ico.Handle := ExtractSmallIconByPath(FPlaces[index].Icon);
+    Ic := ExtractSmallIconByPath(FPlaces[index].Icon);
+    if Ic = 0 then
+      Ic := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
+    Ico.Handle := Ic;
+
     PlacesImageList.ReplaceIcon(index, Ico);
   finally
     F(Ico);
@@ -1863,6 +2113,26 @@ begin
   Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Please select folder'), UseSimpleSelectFolderDialog);
   if DirectoryExists(Dir) then
     EdExplorerStartupLocation.Text := IncludeTrailingBackslash(Dir);
+end;
+
+procedure TOptionsForm.BtnSelectPlayerExecutableClick(Sender: TObject);
+var
+  OpenDialog: DBOpenDialog;
+begin
+
+  OpenDialog := DBOpenDialog.Create;
+  try
+    if FileExistsSafe(EdPlayerExecutable.Text) then
+      OpenDialog.SetFileName(EdPlayerExecutable.Text);
+
+    OpenDialog.Filter := L('Programs (*.exe)|*.exe|All Files (*.*)|*.*');
+    OpenDialog.FilterIndex := 1;
+    if OpenDialog.Execute then
+      EdPlayerExecutable.Text := OpenDialog.FileName;
+
+  finally
+    F(OpenDialog);
+  end;
 end;
 
 procedure TOptionsForm.CbExplorerStartupLocationClick(Sender: TObject);

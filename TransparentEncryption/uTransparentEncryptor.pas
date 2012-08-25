@@ -130,11 +130,11 @@ procedure InitEncryptedFile(FileName: string; hFile: THandle);
 var
   MS: TEncryptedFile;
 begin
+  if hFile = Windows.INVALID_HANDLE_VALUE then
+    Exit;
+
   SyncObj.Enter;
   try
-    if hFile = Windows.INVALID_HANDLE_VALUE then
-      Exit;
-
     if FData.ContainsKey(hFile) then
       Exit;
 
@@ -169,7 +169,10 @@ begin
     if not FData.ContainsKey(hFile) then
       Exit;
 
-    dwCurrentFilePosition := FileSeek(hFile, 0, FILE_CURRENT);
+    Int64Rec(dwCurrentFilePosition).Lo := Result;
+    Int64Rec(dwCurrentFilePosition).Hi := 0;
+    if lpDistanceToMoveHigh <> nil then
+      Int64Rec(dwCurrentFilePosition).Hi := PLongInt(lpDistanceToMoveHigh)^;
 
     MS := FData[hFile];
 
@@ -202,7 +205,7 @@ begin
     if not FData.ContainsKey(hFile) then
       Exit;
 
-    dwCurrentFilePosition := FileSeek(hFile, 0, FILE_CURRENT);
+    dwCurrentFilePosition :=  lpNewFilePointer^;
 
     MS := FData[hFile];
 
@@ -210,7 +213,7 @@ begin
     begin
       dwCurrentFilePosition := MS.Size - 1;
 
-      SetFilePointerEx(hFile, dwCurrentFilePosition, lpNewFilePointer, FILE_BEGIN);
+      Result := SetFilePointerEx(hFile, dwCurrentFilePosition, lpNewFilePointer, FILE_BEGIN);
     end;
 
   finally
@@ -221,7 +224,7 @@ end;
 procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD);
 var
   MS: TEncryptedFile;
-  //Size: NativeInt;
+  Size: NativeInt;
 begin
   if SyncObj = nil then
     Exit;
@@ -234,12 +237,12 @@ begin
     MS := FData[hFile];
 
     //TODO: fix file size to avoid this
-    {Size := MS.Size;
+    Size := MS.Size;
     if dwCurrentFilePosition + lpNumberOfBytesRead > MS.Size then
     begin
       lpNumberOfBytesRead := MS.Size - dwCurrentFilePosition - 1;
       FileSeek(hFile, MS.Size - 1, FILE_BEGIN);
-    end;}
+    end;
 
     MS.ReadBlock(Buffer, dwCurrentFilePosition, lpNumberOfBytesRead);
   finally

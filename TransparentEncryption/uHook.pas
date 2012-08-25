@@ -45,5 +45,4 @@ begin
     SetString(Result, Path, GetModuleFileName(HInstance, Path, SizeOf(Path)))
 end;
 
-
 end.

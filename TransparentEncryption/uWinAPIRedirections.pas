@@ -10,6 +10,19 @@ uses
   uTransparentEncryption,
   uTransparentEncryptor;
 
+type
+  NTStatus = Cardinal;
+
+PUnicodeString = ^TUnicodeString;
+  TUnicodeString = packed record
+    Length: Word;
+    MaximumLength: Word;
+    Buffer: PWideChar;
+end;
+
+const
+  NTDLL = 'ntdll.dll';
+
 procedure HookPEModule(Module: HModule; Recursive: Boolean = True);
 function CreateFileWHookProc(lpFileName: PWideChar; dwDesiredAccess, dwShareMode: DWORD;
                                          lpSecurityAttributes: PSecurityAttributes; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
@@ -61,9 +74,9 @@ var
   ReadFileNextHook           : function (hFile: THandle; var Buffer; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped): BOOL; stdcall;
   ReadFileExNextHook         : function (hFile: THandle; lpBuffer: Pointer; nNumberOfBytesToRead: DWORD; lpOverlapped: POverlapped; lpCompletionRoutine: TPROverlappedCompletionRoutine): BOOL; stdcall;
 
-  _lreadNextHook             : function(hFile: HFILE; lpBuffer: Pointer; uBytes: UINT): UINT; stdcall;
-  _lopenNextHook             : function (const lpPathName: LPCSTR; iReadWrite: Integer): HFILE; stdcall;
-  _lcreatNextHook            : function (const lpPathName: LPCSTR; iAttribute: Integer): HFILE; stdcall;
+  _lReadNextHook             : function(hFile: HFILE; lpBuffer: Pointer; uBytes: UINT): UINT; stdcall;
+  _lOpenNextHook             : function (const lpPathName: LPCSTR; iReadWrite: Integer): HFILE; stdcall;
+  _lCreatNextHook            : function (const lpPathName: LPCSTR; iAttribute: Integer): HFILE; stdcall;
 
   CreateFileMappingANextHook : function(hFile: THandle; lpFileMappingAttributes: PSecurityAttributes;
                                         flProtect, dwMaximumSizeHigh, dwMaximumSizeLow: DWORD; lpName: PAnsiChar): THandle; stdcall;
@@ -93,14 +106,23 @@ var
                                           lpTargetHandle: PHandle; dwDesiredAccess: DWORD;
                                           bInheritHandle: BOOL; dwOptions: DWORD): BOOL; stdcall;
 
+  LdrLoadDllNextHook         :  function (szcwPath: PWideChar;
+                                          pdwLdrErr: dword;
+                                          pUniModuleName: PUnicodeString;
+                                          pResultInstance: PHandle): NTSTATUS; stdcall;
+
 
 function GetFileSizeEx(hFile: THandle; var lpFileSize: Int64): BOOL; stdcall; external 'kernel32.dll';
 
+function LdrLoadDll(szcwPath: PWideChar;
+                    pdwLdrErr: dword;
+                    pUniModuleName: PUnicodeString;
+                    pResultInstance: PHandle): NTSTATUS;
+                       stdcall; external 'ntdll.dll';
 var
   DefaultDll: string;
 
 implementation
-
 
 //hooks file opening
 function CreateProcessACallbackProc(appName, cmdLine: pchar; processAttr, threadAttr: PSecurityAttributes; inheritHandles: bool; creationFlags: dword; environment: pointer; currentDir: pchar; const startupInfo: TStartupInfo; var processInfo: TProcessInformation) : bool; stdcall;
@@ -268,7 +290,7 @@ end;
 function  _lopenHookProc(const lpPathName: LPCSTR; iReadWrite: Integer): HFILE; stdcall;
 begin
  if MessageBox(0, 'Функция: _lopen', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
-    result := _lopenNextHook( lpPathName,iReadWrite)
+    result := _lOpenNextHook( lpPathName,iReadWrite)
   else
     result := 0;
 end;
@@ -279,9 +301,8 @@ var
 begin
   dwCurrentFilePosition := FileSeek(hFile, 0, FILE_CURRENT);
 
-  result := _lreadNextHook( hFile,lpBuffer,uBytes);
+  result := _lreadNextHook(hFile, lpBuffer, uBytes);
 
-  //WMPlayer
   ReplaceBufferContent(hFile, lpBuffer, dwCurrentFilePosition, uBytes, result);
 end;
 
@@ -300,39 +321,14 @@ var
 begin
   FillChar(szFileName, SizeOf(szFileName), #0);
   ModuleFileLength := GetModuleFileName(hModule, szFileName, MAX_PATH);
-  if ModuleFileLength > 0 then
-    Result := szFileName
-  else
-    Result := '';
+  SetString(Result, szFileName, ModuleFileLength);
 end;
 
 function IsSystemDll(dllName: string): Boolean;
 begin
-   Result := True;
-
-{  dllName := AnsiLowerCase(ExtractFileName(dllName));
-
-  if dllName = 'evr.dll' then Exit(True);
-  if dllName = 'nvd3dum.dll' then Exit(True);
-  if dllName = 'powrprof.dll' then Exit(True);
-  if dllName = 'cryptsp.dll' then Exit(True);
-  if dllName = 'kernel32.dll' then Exit(True);
-  if dllName = 'comctl32.dll' then Exit(True);
-  if dllName = 'shell32.dll' then Exit(True);
-  if dllName = 'winmm.dll' then Exit(True);
-  if dllName = 'psapi.dll' then Exit(True);
-  if dllName = 'uxtheme.dll' then Exit(True);
-  if dllName = 'user32.dll' then Exit(True);
-  if dllName = 'dwmapi.dll' then Exit(True);
-  if dllName = 'ntdll.dll' then Exit(True);
-  if dllName = 'comctl32.dll' then Exit(True);
-  if dllName = 'ole32.dll' then Exit(True);
-                                                }
+  //disable hook by dll name, currenltly can inject to any dll
   Result := False;
 end;
-
-var
-  WasHook: Boolean = false;
 
 procedure ProcessDllLoad(Module: HModule; lpLibFileName: string);
 begin
@@ -343,31 +339,40 @@ end;
 function LoadLibraryExAHookProc(lpLibFileName: PAnsiChar; hFile: THandle; dwFlags: DWORD): HMODULE; stdcall;
 begin
   Result := LoadLibraryExANextHook(lpLibFileName, hFile, dwFlags);
-  ProcessDllLoad(Result, string(AnsiString(lpLibFileName)));
 end;
 
 function LoadLibraryExWHookProc(lpLibFileName: PWideChar; hFile: THandle; dwFlags: DWORD): HMODULE; stdcall;
 begin
   Result := LoadLibraryExWNextHook(lpLibFileName, hFile, dwFlags);
-  ProcessDllLoad(Result, lpLibFileName);
 end;
 
 function LoadLibraryWHookProc(lpLibFileName: PWideChar): HMODULE; stdcall;
 begin
   Result := LoadLibraryWNextHook(lpLibFileName);
-  ProcessDllLoad(Result, lpLibFileName);
 end;
 
 function LoadLibraryAHookProc(lpLibFileName: PAnsiChar): HMODULE; stdcall;
 begin
   Result := LoadLibraryANextHook(lpLibFileName);
-  ProcessDllLoad(Result, string(AnsiString(lpLibFileName)));
+end;
+
+function LdrLoadDllHookProc(szcwPath: PWideChar;
+                    pdwLdrErr: DWORD;
+                    pUniModuleName: PUnicodeString;
+                    pResultInstance: PHandle): NTSTATUS;
+                       stdcall;
+begin
+  Result := LdrLoadDllNextHook(szcwPath, pdwLdrErr, pUniModuleName, pResultInstance);
+  if pResultInstance^ > 0 then
+    ProcessDllLoad(pResultInstance^, pUniModuleName.Buffer);
 end;
 
 procedure HookPEModule(Module: HModule; Recursive: Boolean = True);
 begin
   HookCode(Module, Recursive,   @CreateProcessA,     @CreateProcessACallbackProc, @CreateProcessANextHook);
   HookCode(Module, Recursive,   @CreateProcessW,     @CreateProcessWCallbackProc, @CreateProcessWNextHook);
+
+  hookCode(Module, Recursive,   @LdrLoadDll,         @LdrLoadDllHookProc, @LdrLoadDllNextHook);
 
   hookCode(Module, Recursive,   @LoadLibraryA,       @LoadLibraryAHookProc, @LoadLibraryANextHook);
   hookCode(Module, Recursive,   @LoadLibraryW,       @LoadLibraryWHookProc, @LoadLibraryWNextHook);
@@ -513,9 +518,9 @@ function CreateFileAHookProc(lpFileName: PAnsiChar; dwDesiredAccess, dwShareMode
                                          lpSecurityAttributes: PSecurityAttributes; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
                                          hTemplateFile: THandle): THandle; stdcall;
 begin
-  Result := CreateFileANextHook( lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
+  Result := CreateFileANextHook(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
 
-  if ValidEnryptFileEx(string(AnsiString(lpFileName))) then
+  if ValidEncryptFileExHandle(Result) then
     InitEncryptedFile(string(AnsiString(lpFileName)), Result);
 end;
 
@@ -525,7 +530,7 @@ function CreateFileWHookProc(lpFileName: PWideChar; dwDesiredAccess, dwShareMode
 begin
   Result := CreateFileWNextHook( lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
 
-  if ValidEnryptFileEx(lpFileName) then
+  if ValidEncryptFileExHandle(Result) then
     InitEncryptedFile(lpFileName, Result);
 end;
 
@@ -545,17 +550,17 @@ var
 begin
   dwCurrentFilePosition := FileSeek(hFile, 0, FILE_CURRENT);
 
-  Result := ReadFileNextHook( hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped );
+  Result := ReadFileNextHook( hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
   ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead);
 end;
 
 function ReadFileExHookProc(hFile: THandle; lpBuffer: Pointer; nNumberOfBytesToRead: DWORD; lpOverlapped: POverlapped; lpCompletionRoutine: TPROverlappedCompletionRoutine): BOOL; stdcall;
 begin
- if MessageBox(0, 'Функция: ReadFileEx', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
-    result := ReadFileExNextHook(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine)
+  if MessageBox(0, 'Функция: ReadFileEx', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
+    Result := ReadFileExNextHook(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine)
   else
-    result := FALSE;
+    Result := FALSE;
 end;
 
 function CloseHandleHookProc(hObject: THandle): BOOL; stdcall;
