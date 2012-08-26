@@ -14,7 +14,7 @@ uses
   uActivationUtils,
   uSettings,
   uMemory,
-  uDBForm,
+  uThreadForm,
   uVCLHelpers,
   uTranslate,
   WebLink,
@@ -35,7 +35,7 @@ type
     constructor Create(WebLink: TWebLink; PopupMenu: TPopupMenu);
   end;
 
-  TPasswordSettingsDBForm = class(TDBForm)
+  TPasswordSettingsDBForm = class(TThreadForm)
   private
     FMethodChanger: TPasswordMethodChanger;
   protected

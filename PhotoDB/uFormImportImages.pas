@@ -839,21 +839,6 @@ begin
   UpdateModel;
 end;
 
-{function TSelectDateCollection.FindChildByTag<T>(Parent: TWinControl; Tag: NativeInt): T;
-var
-  I: Integer;
-begin
-  Result := default(T);
-  for I := 0 to Parent.ControlCount - 1 do
-  begin
-    if Parent.Controls[I].Tag = Tag then
-    begin
-      Result := Parent.Controls[I] as T;
-      Exit;
-    end;
-  end;
-end;  }
-
 function TSelectDateCollection.FindMenuItemByImageIndex(Parent: TPopupActionBar;
   Index: NativeInt): TMenuItem;
 var

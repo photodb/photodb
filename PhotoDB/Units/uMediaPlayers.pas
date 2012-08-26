@@ -3,35 +3,39 @@ unit uMediaPlayers;
 interface
 
 uses
-  Windows,
-  Registry,
-  SysUtils,
-  uMemory;
+  Winapi.Windows,
+  System.Win.Registry,
+  System.SysUtils,
+  Winapi.ShlObj,
+  uMemory,
+  uShellUtils;
 
-function GetVlcPlayerInternalPath: string;
-function IsVlcPlayerInternalInstalled: Boolean;
+function GetPlayerInternalPath: string;
+function IsPlayerInternalInstalled: Boolean;
 function GetVlcPlayerPath: string;
 function IsVlcPlayerInstalled: Boolean;
 function GetKMPlayerPath: string;
 function IsKmpPlayerInstalled: Boolean;
 function GetMediaPlayerClassicPath: string;
 function IsMediaPlayerClassicInstalled: Boolean;
+function GetWindowsMediaPlayerPath: string;
+function IsWindowsMediaPlayerInstalled: Boolean;
 
 implementation
 
-function IsVlcPlayerInternalInstalled: Boolean;
+function IsPlayerInternalInstalled: Boolean;
 begin
-  Result := GetVlcPlayerInternalPath <> '';
+  Result := GetPlayerInternalPath <> '';
 end;
 
-function GetVlcPlayerInternalPath: string;
+function GetPlayerInternalPath: string;
 var
-  InternalVlcPath: string;
+  InternalMediaPlayerPath: string;
 begin
   Result := '';
-  InternalVlcPath := ExtractFilePath(ParamStr(0)) + 'VlcPlayer\vlc.exe';
-  if FileExists(InternalVlcPath) then
-    Result := InternalVlcPath;
+  InternalMediaPlayerPath := ExtractFilePath(ParamStr(0)) + 'MediaPlayer\mpc-hc.exe';
+  if FileExists(InternalMediaPlayerPath) then
+    Result := InternalMediaPlayerPath;
 end;
 
 function IsVlcPlayerInstalled: Boolean;
@@ -80,16 +84,46 @@ end;
 function GetMediaPlayerClassicPath: string;
 const
   MPC_PATHS : array[0..1] of string =
-              ('C:\Program Files\Essentials Codec Pack\MPC\mpc-hc.exe',
-               'C:\Program Files (x86)\Essentials Codec Pack\MPC\mpc-hc.exe');
+              ('%PROGRAM%\Essentials Codec Pack\MPC\mpc-hc.exe',
+               '%PROGRAM_86%\Essentials Codec Pack\MPC\mpc-hc.exe');
 
 var
+  FileName: string;
   I: Integer;
 begin
   Result := '';
   for I := Low(MPC_PATHS) to High(MPC_PATHS) do
-    if FileExists(MPC_PATHS[I]) then
-      Result := MPC_PATHS[I];
+  begin
+    FileName := StringReplace(MPC_PATHS[I], '%PROGRAM%',    GetSystemPath(CSIDL_PROGRAM_FILES), []);
+    FileName := StringReplace(FileName, '%PROGRAM_86%', GetSystemPath(CSIDL_PROGRAM_FILESX86), []);
+    if FileExists(FileName) then
+      Result := FileName;
+  end;
+end;
+
+function IsWindowsMediaPlayerInstalled: Boolean;
+begin
+  Result := GetWindowsMediaPlayerPath <> '';
+end;
+
+function GetWindowsMediaPlayerPath: string;
+const
+  WMP_PATHS : array[0..1] of string =
+              ('%PROGRAM%\Windows Media Player\wmplayer.exe',
+               '%PROGRAM_86%\Windows Media Player\wmplayer.exe');
+
+var
+  FileName: string;
+  I: Integer;
+begin
+  Result := '';
+  for I := Low(WMP_PATHS) to High(WMP_PATHS) do
+  begin
+    FileName := StringReplace(WMP_PATHS[I], '%PROGRAM%',    GetSystemPath(CSIDL_PROGRAM_FILES), []);
+    FileName := StringReplace(FileName, '%PROGRAM_86%', GetSystemPath(CSIDL_PROGRAM_FILESX86), []);
+    if FileExists(FileName) then
+      Result := FileName;
+  end;
 end;
 
 end.

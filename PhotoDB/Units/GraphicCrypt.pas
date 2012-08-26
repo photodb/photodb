@@ -691,7 +691,6 @@ var
   MS: TMemoryStream;
   GraphicHeader: TEncryptedFileHeader;
   FA: Cardinal;
-//  Seed: Binary;
   ACipher: TDECCipherClass;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
@@ -727,9 +726,6 @@ begin
         try
           ACipher := ValidCipher(nil);
           EncryptStreamEx(MS, FS, NewPass, ACipher, nil);
-
-          //WriteCryptHeaderV2(FS, MS, FileName, NewPass, CRYPT_OPTIONS_SAVE_CRC, Seed);
-          //CryptStreamV2(MS, FS, NewPass, Seed);
         except
           //if any error in this block - user can lost original data, so we had to save it in any case
           FatalSaveStream(MS, FileName);

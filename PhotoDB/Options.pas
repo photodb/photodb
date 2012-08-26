@@ -58,6 +58,7 @@ uses
   uAssociatedIcons,
   uMediaPlayers,
   uVCLHelpers,
+  uThreadTask,
 
   Dolphin_DB,
   acDlgSelect,
@@ -235,7 +236,7 @@ type
     TsPrograms: TTabSheet;
     CblExtensions: TListBox;
     StPlayerExtensions: TStaticText;
-    RbVlcPlayerInternal: TRadioButton;
+    RbPlayerInternal: TRadioButton;
     StUseProgram: TStaticText;
     RbVlcPlayer: TRadioButton;
     RbKmPlayer: TRadioButton;
@@ -251,6 +252,7 @@ type
     PmSelectExtensionMethod: TPopupActionBar;
     MiSelectFile: TMenuItem;
     MiSelectextension: TMenuItem;
+    RbWindowsMediaPlayer: TRadioButton;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -313,7 +315,7 @@ type
     procedure CblExtensionsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure CblExtensionsClick(Sender: TObject);
-    procedure RbVlcPlayerInternalClick(Sender: TObject);
+    procedure RbPlayerInternalClick(Sender: TObject);
     procedure BtnSelectPlayerExecutableClick(Sender: TObject);
     procedure EdPlayerExecutableChange(Sender: TObject);
     procedure WlSavePlayerChangesClick(Sender: TObject);
@@ -332,7 +334,7 @@ type
     procedure LoadStylesList;
     procedure LoadMediaAssociations;
     procedure SaveMediaAssociations;
-    procedure AddMediaAssociation(Extension, Player: string);
+    procedure AddMediaAssociation(Extension, Player: string; LoadImage: Boolean);
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -566,7 +568,8 @@ begin
     RbVlcPlayer.Enabled := IsVlcPlayerInstalled;
     RbKmPlayer.Enabled := IsKmpPlayerInstalled;
     RbMediaPlayerClassic.Enabled := IsMediaPlayerClassicInstalled;
-    RbVlcPlayerInternal.Enabled := IsVlcPlayerInternalInstalled;
+    RbPlayerInternal.Enabled := IsPlayerInternalInstalled;
+    RbWindowsMediaPlayer.Enabled := IsWindowsMediaPlayerInstalled;
     LoadMediaAssociations;
   end;
 end;
@@ -1023,10 +1026,11 @@ begin
     StPlayerExtensions.Caption := L('Extensions') + ':';
     StUseProgram.Caption := L('Use program') + ':';
 
-    RbVlcPlayerInternal.Caption := L('VLC player (internal)');
+    RbPlayerInternal.Caption := L('Internal video player');
     RbVlcPlayer.Caption := L('VLC player');
     RbKmPlayer.Caption := L('KMPlayer');
     RbMediaPlayerClassic.Caption := L('Media Player Classic');
+    RbWindowsMediaPlayer.Caption := L('Windows Media Player');
     RbOtherProgram.Caption := L('Other programm') + ':';
 
     LbExtensionExecutable.Caption := L('Executable file') + ':';
@@ -1039,7 +1043,7 @@ begin
   end;
 end;
 
-procedure TOptionsForm.AddMediaAssociation(Extension, Player: string);
+procedure TOptionsForm.AddMediaAssociation(Extension, Player: string; LoadImage: Boolean);
 var
   Ico: HIcon;
   Icon: TIcon;
@@ -1049,7 +1053,10 @@ begin
   begin
     FPlayerExtensions.Add(Extension, Player);;
 
-    Ico := ExtractSmallIconByPath(Player);
+    Ico := 0;
+    if LoadImage then
+      Ico := ExtractSmallIconByPath(Player);
+
     if Ico = 0 then
       Ico := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
     Icon := TIcon.Create;
@@ -1057,7 +1064,6 @@ begin
       Icon.Handle := Ico;
       ImlMediaPlayers.AddIcon(Icon);
       CblExtensions.Items.Add(Extension);
-
     finally
       F(Icon);
     end;
@@ -1079,10 +1085,10 @@ begin
       if Player <> '' then
       begin
         if Player = cMediaPlayerDefaultId then
-          Player := GetVlcPlayerInternalPath;
+          Player := GetPlayerInternalPath;
 
         Extension := AnsiUpperCase(Associations[I]);
-        AddMediaAssociation(Extension, Player);
+        AddMediaAssociation(Extension, Player, False);
       end;
     end;
   finally
@@ -1094,6 +1100,53 @@ begin
   begin
     CblExtensions.ItemIndex := 0;
     CblExtensionsClick(Self);
+
+    TThreadTask.Create(Self, Pointer(nil),
+      procedure(Thread: TThreadTask; Data: Pointer)
+      var
+        Extension, Player: string;
+        Index: Integer;
+        Icon: HIcon;
+        Ico: TIcon;
+      begin
+        Index := -1;
+        while True do
+        begin
+          Inc(Index);
+          Extension := '';
+          Thread.SynchronizeTask(
+            procedure
+            begin
+              if Index < TOptionsForm(Thread.ThreadForm).CblExtensions.Items.Count then
+              begin
+                Extension := TOptionsForm(Thread.ThreadForm).CblExtensions.Items[Index];
+                Player := TOptionsForm(Thread.ThreadForm).FPlayerExtensions[Extension];
+              end;
+            end
+          );
+          if Extension = '' then
+            Exit;
+
+          Icon := ExtractSmallIconByPath(Player);
+          if Icon > 0 then
+          begin
+            Ico := TIcon.Create;
+            try
+              Ico.Handle := Icon;
+              Thread.SynchronizeTask(
+                procedure
+                begin
+                  ImlMediaPlayers.ReplaceIcon(Index, Ico);
+                  CblExtensions.Refresh;
+                end
+              );
+            finally
+              F(Ico);
+            end;
+          end;
+        end;
+      end
+    );
   end;
 end;
 
@@ -1398,7 +1451,7 @@ begin
     if Pos('.', Extension) = 0 then
       Extension := '.' + Extension;
 
-    AddMediaAssociation(Extension, GetVlcPlayerInternalPath);
+    AddMediaAssociation(Extension, GetPlayerInternalPath, True);
     CblExtensions.Selected[CblExtensions.Items.Count - 1] := True;
     CblExtensionsClick(Sender);
   end;
@@ -1414,7 +1467,7 @@ begin
     OpenDialog.FilterIndex := 0;
     if OpenDialog.Execute then
     begin
-      AddMediaAssociation(ExtractFileExt(OpenDialog.FileName), GetVlcPlayerInternalPath);
+      AddMediaAssociation(ExtractFileExt(OpenDialog.FileName), GetPlayerInternalPath, True);
       CblExtensions.Selected[CblExtensions.Items.Count - 1] := True;
       CblExtensionsClick(Sender);
     end;
@@ -1452,9 +1505,19 @@ begin
 end;
 
 procedure TOptionsForm.EdPlayerExecutableChange(Sender: TObject);
+var
+  Index: Integer;
+  Extension: string;
 begin
   if not FReadingPlayerChanges then
-    WlSavePlayerChanges.Visible := True;
+  begin
+    Index := CblExtensions.SelectedIndex;
+    if Index > -1 then
+    begin
+      Extension := CblExtensions.Items[Index];
+      WlSavePlayerChanges.Visible := EdPlayerExecutable.Text <> FPlayerExtensions[Extension];
+    end;
+  end;
 end;
 
 procedure TOptionsForm.EdUserMenuItemCaptionKeyPress(Sender: TObject; var Key: Char);
@@ -1656,13 +1719,13 @@ begin
   end;
 end;
 
-procedure TOptionsForm.RbVlcPlayerInternalClick(Sender: TObject);
+procedure TOptionsForm.RbPlayerInternalClick(Sender: TObject);
 begin
   EdPlayerExecutable.Enabled := RbOtherProgram.Checked;
   BtnSelectPlayerExecutable.Enabled := RbOtherProgram.Checked;
 
-  if RbVlcPlayerInternal.Checked then
-    EdPlayerExecutable.Text := GetVlcPlayerInternalPath;
+  if RbPlayerInternal.Checked then
+    EdPlayerExecutable.Text := GetPlayerInternalPath;
 
   if RbVlcPlayer.Checked then
     EdPlayerExecutable.Text := GetVlcPlayerPath;
@@ -1672,6 +1735,9 @@ begin
 
   if RbMediaPlayerClassic.Checked then
     EdPlayerExecutable.Text := GetMediaPlayerClassicPath;
+
+  if RbWindowsMediaPlayer.Checked then
+    EdPlayerExecutable.Text := GetWindowsMediaPlayerPath;
 end;
 
 procedure TOptionsForm.ReadPlaces;
@@ -1890,14 +1956,16 @@ begin
     try
       EdPlayerExecutable.Text := Player;
 
-      if AnsiLowerCase(Player) = AnsiLowerCase(GetVlcPlayerInternalPath) then
-        RbVlcPlayerInternal.Checked := True
+      if AnsiLowerCase(Player) = AnsiLowerCase(GetPlayerInternalPath) then
+        RbPlayerInternal.Checked := True
       else if AnsiLowerCase(Player) = AnsiLowerCase(GetVlcPlayerPath) then
         RbVlcPlayer.Checked := True
       else if AnsiLowerCase(Player) = AnsiLowerCase(GetKMPlayerPath) then
         RbKmPlayer.Checked := True
       else if AnsiLowerCase(Player) = AnsiLowerCase(GetMediaPlayerClassicPath) then
         RbMediaPlayerClassic.Checked := True
+      else if AnsiLowerCase(Player) = AnsiLowerCase(GetWindowsMediaPlayerPath) then
+        RbWindowsMediaPlayer.Checked := True
       else
         RbOtherProgram.Checked := True;
     finally

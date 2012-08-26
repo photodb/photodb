@@ -12,7 +12,7 @@ uses
   uTransparentEncryption;
 
 type
-  TSetFilePointerNextHook   = function (hFile: THandle; lDistanceToMove: Longint;
+  TSetFilePointerNextHook   = function (hFile: THandle; lDistanceToMove: DWORD;
                                         lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD): DWORD; stdcall;
   TSetFilePointerExNextHook = function (hFile: THandle; liDistanceToMove: TLargeInteger;
                                         const lpNewFilePointer: PLargeInteger; dwMoveMethod: DWORD): BOOL; stdcall;
@@ -20,7 +20,7 @@ type
 procedure CloseFileHandle(Handle: THandle);
 procedure InitEncryptedFile(FileName: string; hFile: THandle);
 procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD);
-function FixFileSize(hFile: THandle; lDistanceToMove: Longint; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
+function FixFileSize(hFile: THandle; lDistanceToMove: DWORD; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
 function FixFileSizeEx(hFile: THandle; liDistanceToMove: TLargeInteger; const lpNewFilePointer: PLargeInteger; dwMoveMethod: DWORD; SeekExProc: TSetFilePointerExNextHook): BOOL;
 procedure StartLib;
 procedure StopLib;
@@ -28,6 +28,9 @@ procedure AddFileMapping(FileHandle, MappingHandle: THandle);
 function IsInternalFileMapping(MappingHandle: THandle): Boolean;
 function GetInternalFileMapping(hFileMappingObject: THandle; dwFileOffsetHigh, dwFileOffsetLow: DWORD; dwNumberOfBytesToMap: SIZE_T): Pointer;
 function IsEncryptedHandle(FileHandle: THandle): Boolean;
+
+var
+  IsHookStarted: Boolean;
 
 implementation
 
@@ -153,9 +156,8 @@ begin
   end;
 end;
 
-function FixFileSize(hFile: THandle; lDistanceToMove: Longint; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
+function FixFileSize(hFile: THandle; lDistanceToMove: DWORD; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
 var
-  dwCurrentFilePosition: Int64;
   MS: TEncryptedFile;
 begin
   Result := SeekProc(hFile, lDistanceToMove, lpDistanceToMoveHigh, dwMoveMethod);
@@ -169,20 +171,12 @@ begin
     if not FData.ContainsKey(hFile) then
       Exit;
 
-    Int64Rec(dwCurrentFilePosition).Lo := Result;
-    Int64Rec(dwCurrentFilePosition).Hi := 0;
-    if lpDistanceToMoveHigh <> nil then
-      Int64Rec(dwCurrentFilePosition).Hi := PLongInt(lpDistanceToMoveHigh)^;
-
-    MS := FData[hFile];
-
-    if dwCurrentFilePosition > MS.Size then
+    if dwMoveMethod = FILE_END then
     begin
-      dwCurrentFilePosition := MS.Size - 1;
-
-      Result := SetFilePointer(hFile, Int64Rec(dwCurrentFilePosition).Lo, @Int64Rec(dwCurrentFilePosition).Hi, FILE_BEGIN);
-
-      PWord(lpDistanceToMoveHigh)^ := Int64Rec(dwCurrentFilePosition).Hi;
+      MS := FData[hFile];
+      PDWORD(lpDistanceToMoveHigh)^ := 0;
+      lDistanceToMove := MS.HeaderSize;
+      Result := SeekProc(hFile, lDistanceToMove, lpDistanceToMoveHigh, FILE_END);
     end;
 
   finally
@@ -192,7 +186,6 @@ end;
 
 function FixFileSizeEx(hFile: THandle; liDistanceToMove: TLargeInteger; const lpNewFilePointer: PLargeInteger; dwMoveMethod: DWORD; SeekExProc: TSetFilePointerExNextHook): BOOL;
 var
-  dwCurrentFilePosition: Int64;
   MS: TEncryptedFile;
 begin
   Result := SeekExProc(hFile, liDistanceToMove, lpNewFilePointer, dwMoveMethod);
@@ -205,15 +198,11 @@ begin
     if not FData.ContainsKey(hFile) then
       Exit;
 
-    dwCurrentFilePosition :=  lpNewFilePointer^;
-
-    MS := FData[hFile];
-
-    if dwCurrentFilePosition > MS.Size then
+    if dwMoveMethod = FILE_END then
     begin
-      dwCurrentFilePosition := MS.Size - 1;
-
-      Result := SetFilePointerEx(hFile, dwCurrentFilePosition, lpNewFilePointer, FILE_BEGIN);
+      MS := FData[hFile];
+      liDistanceToMove := MS.HeaderSize;
+      Result := SeekExProc(hFile, liDistanceToMove, lpNewFilePointer, FILE_END);
     end;
 
   finally
@@ -240,8 +229,8 @@ begin
     Size := MS.Size;
     if dwCurrentFilePosition + lpNumberOfBytesRead > MS.Size then
     begin
-      lpNumberOfBytesRead := MS.Size - dwCurrentFilePosition - 1;
-      FileSeek(hFile, MS.Size - 1, FILE_BEGIN);
+      //lpNumberOfBytesRead := MS.Size - dwCurrentFilePosition;
+      //FileSeek(hFile, MS.HeaderSize, FILE_END);
     end;
 
     MS.ReadBlock(Buffer, dwCurrentFilePosition, lpNumberOfBytesRead);
@@ -255,12 +244,19 @@ begin
   SyncObj := TCriticalSection.Create;
   FData := TDictionary<Integer, TEncryptedFile>.Create;
   FFileMappings := TDictionary<Integer, Integer>.Create;
+  IsHookStarted := True;
 end;
 
 procedure StopLib;
+var
+  Pair: TPair<Integer, TEncryptedFile>;
 begin
+  IsHookStarted := False;
   F(SyncObj);
   F(FFileMappings);
+  for Pair in FData do
+    Pair.Value.Free;
+  F(FData);
 end;
 
 end.

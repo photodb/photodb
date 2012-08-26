@@ -37,7 +37,7 @@ type
     FBlockSize: Int64;
     FMemorySize: Int64;
     FMemoryLimit: Int64;
-    FHeaderSize: Int64;
+    FHeaderSize: Integer;
     FContentSize: Int64;
     FSalt: Binary;
     FChipper: TDECCipherClass;
@@ -55,6 +55,7 @@ type
     procedure FreeBlock(Block: Pointer);
     property Size: Int64 read GetSize;
     property Blocks[Index: Int64]: TMemoryBlock read GetBlockByIndex;
+    property HeaderSize: Integer read FHeaderSize;
   end;
 
 procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
@@ -130,25 +131,89 @@ begin
   end;
 end;
 
+procedure DoCodeStreamEx(Source,Dest: TStream; Size: Int64; BlockSize: Integer; const Proc: TDECCipherCodeEvent; const Progress: IDECProgress; Buffer: Binary);
+var
+  BufferSize,Bytes: Integer;
+  Min,Max,Pos: Int64;
+begin
+  Pos := Source.Position;
+  if Size < 0 then Size := Source.Size - Pos;
+  Min := Pos;
+  Max := Pos + Size;
+  if Size > 0 then
+  try
+    if StreamBufferSize <= 0 then StreamBufferSize := 8192;
+
+    BufferSize := StreamBufferSize mod BlockSize;
+    if BufferSize = 0 then BufferSize := StreamBufferSize
+      else BufferSize := StreamBufferSize + BlockSize - BufferSize;
+
+
+    if Size > BufferSize then SetLength(Buffer, BufferSize)
+      else SetLength(Buffer, Size);
+
+    while Size > 0 do
+    begin
+      if Assigned(Progress) then Progress.Process(Min, Max, Pos);
+      Bytes := BufferSize;
+      if Bytes > Size then
+        Bytes := Size;
+      Source.ReadBuffer(Buffer[1], Bytes);
+      Proc(Buffer[1], Buffer[1], Bytes);
+      Dest.WriteBuffer(Buffer[1], Bytes);
+      Dec(Size, Bytes);
+      Inc(Pos, Bytes);
+    end;
+  finally
+
+    if Assigned(Progress) then Progress.Process(Min, Max, Max);
+  end;
+end;
+
 function DecryptStreamEx(S, D: TStream; Password: string;
                          Seed: Binary; FileSize: Int64;
                          AChipper: TDECCipherClass; BlockSize32k: Byte; Progress: TSimpleEncryptProgress = nil): Boolean;
 var
   StartPos, SizeToEncrypt: Int64;
+  APassword: AnsiString;
+  Bytes: TBytes;
+  AHash: TDECHashClass;
+  Key, Buffer: Binary;
 begin
   StartPos := S.Position;
+  AChipper := ValidCipher(AChipper);
+  AHash := ValidHash(nil);
 
-  while S.Position - StartPos < FileSize do
-  begin
-    SizeToEncrypt := BlockSize32k * Encrypt32kBlockSize;
-    if S.Position + SizeToEncrypt - StartPos >= FileSize then
-      SizeToEncrypt := FileSize - (S.Position - StartPos);
+  Bytes := TEncoding.UTF8.GetBytes(Password);
+  SetLength(APassword, Length(Bytes));
+  Move(Bytes[0], APassword[1], Length(Bytes));
 
-    DeCryptStreamV2(S, D, Password, Seed, SizeToEncrypt, AChipper, cmCTSx, nil);
-    if Assigned(Progress) then
-      Progress(FileSize, S.Position - StartPos);
+  SetLength(Buffer, BlockSize32k * Encrypt32kBlockSize);
+  try
+    with AChipper.Create do
+    try
+      Mode := CmCTSx;
+      Key := AHash.KDFx(APassword, Seed, Context.KeySize);
+
+      while S.Position - StartPos < FileSize do
+      begin
+        SizeToEncrypt := BlockSize32k * Encrypt32kBlockSize;
+        if S.Position + SizeToEncrypt - StartPos >= FileSize then
+          SizeToEncrypt := FileSize - (S.Position - StartPos);
+
+        Init(Key);
+
+        DoCodeStreamEx(S, D, SizeToEncrypt, Context.BlockSize, Decode, nil, Buffer);
+
+        if Assigned(Progress) then
+          Progress(FileSize, S.Position - StartPos);
+      end;
+    finally
+      Free;
+    end;
+  finally
+    ProtectBinary(Buffer);
   end;
-
   Result := True;
 end;
 
@@ -358,7 +423,7 @@ begin
   for I := 1 to 20 do
   begin
 
-    hFile := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_WRITE or FILE_SHARE_READ, nil, OPEN_ALWAYS,
+    hFile := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_WRITE or FILE_SHARE_READ, nil, OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL, 0);
 
     if hFile = 0 then
@@ -481,7 +546,7 @@ begin
   if Password = '' then
     Exit;
 
-  Position := FileSeek(FHandle, 0, FILE_CURRENT);
+  Position := FileSeek(FHandle, Int64(0), FILE_CURRENT);
 
   FileSeek(FHandle, 0, FILE_BEGIN);
 
@@ -503,7 +568,7 @@ begin
 
       FBlockSize := EncryptHeaderV1.BlockSize32k * Encrypt32kBlockSize;
       FHeaderSize := SizeOf(EncryptHeader) + SizeOf(EncryptHeaderV1);
-      FHeaderSize := FHeaderSize + EncryptHeaderV1.Displacement;
+      FHeaderSize := FHeaderSize + Integer(EncryptHeaderV1.Displacement);
 
       FChipper := CipherByIdentity(EncryptHeaderV1.Algorith);
       FContentSize := EncryptHeaderV1.FileSize;
@@ -637,7 +702,7 @@ begin
   if BlockSize <= 0 then
     Exit;
 
-  CurrentPosition := FileSeek(FHandle, 0, FILE_CURRENT);
+  CurrentPosition := FileSeek(FHandle, Int64(0), FILE_CURRENT);
 
   FileSeek(FHandle, BlockStart + FHeaderSize, FILE_BEGIN);
 

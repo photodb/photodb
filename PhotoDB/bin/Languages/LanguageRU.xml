@@ -1824,9 +1824,10 @@
 	<translate name="Don't use ICC profile" value="Не использовать ICC профиль"/>
 	<translate name="Use program" value="Открывать в программе"/>
 	<translate name="Executable file" value="Исполняемый файл (программа)"/>
-	<translate name="VLC player (internal)" value="VLC плеер (встроенный)"/>
+	<translate name="Internal video player" value="Встроенный видео плеер"/>
 	<translate name="KMPlayer" value="KMPlayer"/>
 	<translate name="Media Player Classic" value="Media Player Classic"/>
+	<translate name="Windows Media Player" value="Windows Media Player"/>	
 	<translate name="Other programm" value="Другая программа"/>
 	<translate name="Save changes" value="Сохранить изменения"/>
 	<translate name="Do you really want to delete mapping for extension &quot;{0}&quot;?" value="Вы действительно хотите удалить ассоциации для расширения: &quot;{0}&quot;?"/>

@@ -37,6 +37,7 @@ type
 function RegInstallApplication(FileName: string; CallBack : TRegistryInstallCallBack): Boolean;
 function IsNewVersion: Boolean;
 function DeleteRegistryEntries: Boolean;
+function GetSystemPath(PathType: Integer): string;
 function InstalledDirectory: string;
 function InstalledFileName: string;
 function GetProgramFilesPath: string;
@@ -466,7 +467,7 @@ begin
   F(FReg);
 end;
 
-function GetSystemPath(PathType : Integer) : string;
+function GetSystemPath(PathType: Integer): string;
 var
   P: array[0..MAX_PATH] of char;
   SystemDir: string;

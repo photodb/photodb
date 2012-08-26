@@ -3,8 +3,9 @@ unit uWinAPIRedirections;
 interface
 
 uses
-  Windows,
-  SysUtils,
+  WinApi.Windows,
+  System.SysUtils,
+  System.StrUtils,
   uAPIHook,
   uStrongCrypt,
   uTransparentEncryption,
@@ -299,9 +300,9 @@ function _lreadHookProc(hFile: HFILE; lpBuffer: Pointer; uBytes: UINT): UINT; st
 var
   dwCurrentFilePosition: Int64;
 begin
-  dwCurrentFilePosition := FileSeek(hFile, 0, FILE_CURRENT);
+  dwCurrentFilePosition := FileSeek(hFile, Int64(0), FILE_CURRENT);
 
-  result := _lreadNextHook(hFile, lpBuffer, uBytes);
+  result := _lReadNextHook(hFile, lpBuffer, uBytes);
 
   ReplaceBufferContent(hFile, lpBuffer, dwCurrentFilePosition, uBytes, result);
 end;
@@ -309,7 +310,7 @@ end;
 function _lcreatHookProc(const lpPathName: LPCSTR; iAttribute: Integer): HFILE; stdcall;
 begin
  if MessageBox(0, 'Функция: _lcreat', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
-    result := _lcreatNextHook(lpPathName, iAttribute)
+    result := _lCreatNextHook(lpPathName, iAttribute)
   else
     result := 0;
 end;
@@ -333,7 +334,7 @@ end;
 procedure ProcessDllLoad(Module: HModule; lpLibFileName: string);
 begin
   if (Module > 0) and not IsSystemDll(lpLibFileName) then
-    HookPEModule(Module, False);
+    HookPEModule(Module, True);
 end;
 
 function LoadLibraryExAHookProc(lpLibFileName: PAnsiChar; hFile: THandle; dwFlags: DWORD): HMODULE; stdcall;
@@ -503,15 +504,18 @@ end;
 function GetProcAddressHookProc(hModule: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall;
 begin
   Result := GetProcAddressNextHook(hModule, lpProcName);
-  FixProcAddress(hModule, lpProcName, Result);
+
+  if IsHookStarted then
+    FixProcAddress(hModule, lpProcName, Result);
 end;
 
 function OpenFileAHookProc(const lpFileName: LPCSTR; var lpReOpenBuff: TOFStruct; uStyle: UINT): HFILE; stdcall;
 begin
   Result := OpenFileNextHook(lpFileName, lpReOpenBuff, uStyle);
 
-  if ValidEnryptFileEx(string(AnsiString(lpFileName))) then
-    InitEncryptedFile(string(AnsiString(lpFileName)), Result);
+  if IsHookStarted then
+    if ValidEnryptFileEx(string(AnsiString(lpFileName))) then
+      InitEncryptedFile(string(AnsiString(lpFileName)), Result);
 end;
 
 function CreateFileAHookProc(lpFileName: PAnsiChar; dwDesiredAccess, dwShareMode: DWORD;
@@ -520,8 +524,25 @@ function CreateFileAHookProc(lpFileName: PAnsiChar; dwDesiredAccess, dwShareMode
 begin
   Result := CreateFileANextHook(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
 
-  if ValidEncryptFileExHandle(Result) then
-    InitEncryptedFile(string(AnsiString(lpFileName)), Result);
+  if IsHookStarted then
+    if ValidEncryptFileExHandle(Result) then
+      InitEncryptedFile(string(AnsiString(lpFileName)), Result);
+end;
+
+function IsSystemPipe(ItemPath: string): Boolean;
+begin
+  ItemPath := AnsiLowerCase(ItemPath);
+  //Reserved system aliases
+  // \pipe\lsarpc, \pipe\samr, \pipe\netlogon (\pipe\lsass aliases)
+  // \pipe\wkssvc, \pipe\srvsvc, \pipe\browser (\pipe\ntsvcs aliases)
+  Result := (Pos('\pipe\lsarpc', ItemPath) > 0)
+            or (Pos('\pipe\samr', ItemPath) > 0)
+            or (Pos('\pipe\netlogon', ItemPath) > 0)
+            or (Pos('\pipe\lsass', ItemPath) > 0)
+            or (Pos('\pipe\wkssvc', ItemPath) > 0)
+            or (Pos('\pipe\srvsvc', ItemPath) > 0)
+            or (Pos('\pipe\browser', ItemPath) > 0)
+            or (Pos('\pipe\ntsvcs', ItemPath) > 0);
 end;
 
 function CreateFileWHookProc(lpFileName: PWideChar; dwDesiredAccess, dwShareMode: DWORD;
@@ -530,8 +551,15 @@ function CreateFileWHookProc(lpFileName: PWideChar; dwDesiredAccess, dwShareMode
 begin
   Result := CreateFileWNextHook( lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
 
-  if ValidEncryptFileExHandle(Result) then
-    InitEncryptedFile(lpFileName, Result);
+  if IsHookStarted then
+  begin
+
+    if not StartsStr('\\.', lpFileName) and not IsSystemPipe(lpFileName) then
+    begin
+      if ValidEncryptFileExHandle(Result) then
+        InitEncryptedFile(lpFileName, Result);
+    end;
+  end;
 end;
 
 function SetFilePointerHookProc(hFile: THandle; lDistanceToMove: Longint; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD): DWORD; stdcall;
@@ -548,9 +576,9 @@ function ReadFileHookProc(hFile: THandle; var Buffer; nNumberOfBytesToRead: DWOR
 var
   dwCurrentFilePosition: Int64;
 begin
-  dwCurrentFilePosition := FileSeek(hFile, 0, FILE_CURRENT);
+  dwCurrentFilePosition := FileSeek(hFile, Int64(0), FILE_CURRENT);
 
-  Result := ReadFileNextHook( hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+  Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
   ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead);
 end;

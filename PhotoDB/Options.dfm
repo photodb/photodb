@@ -1560,7 +1560,7 @@ object OptionsForm: TOptionsForm
         413)
       object LbExtensionExecutable: TLabel
         Left = 259
-        Top = 162
+        Top = 186
         Width = 74
         Height = 13
         Caption = 'Executable file:'
@@ -1585,7 +1585,7 @@ object OptionsForm: TOptionsForm
         Caption = 'Extensions:'
         TabOrder = 1
       end
-      object RbVlcPlayerInternal: TRadioButton
+      object RbPlayerInternal: TRadioButton
         Left = 259
         Top = 34
         Width = 276
@@ -1595,7 +1595,7 @@ object OptionsForm: TOptionsForm
         Checked = True
         TabOrder = 2
         TabStop = True
-        OnClick = RbVlcPlayerInternalClick
+        OnClick = RbPlayerInternalClick
       end
       object StUseProgram: TStaticText
         Left = 259
@@ -1613,7 +1613,7 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'RbVlcPlayer'
         TabOrder = 4
-        OnClick = RbVlcPlayerInternalClick
+        OnClick = RbPlayerInternalClick
       end
       object RbKmPlayer: TRadioButton
         Left = 259
@@ -1623,7 +1623,7 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'RbKmPlayer'
         TabOrder = 5
-        OnClick = RbVlcPlayerInternalClick
+        OnClick = RbPlayerInternalClick
       end
       object RbMediaPlayerClassic: TRadioButton
         Left = 259
@@ -1633,32 +1633,31 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'RbMediaPlayerClassic'
         TabOrder = 6
-        OnClick = RbVlcPlayerInternalClick
+        OnClick = RbPlayerInternalClick
       end
       object RbOtherProgram: TRadioButton
         Left = 259
-        Top = 126
+        Top = 149
         Width = 276
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'RbOtherProgram*'
         TabOrder = 7
-        OnClick = RbVlcPlayerInternalClick
+        OnClick = RbPlayerInternalClick
       end
       object EdPlayerExecutable: TEdit
         Left = 259
-        Top = 181
+        Top = 205
         Width = 249
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         Enabled = False
         TabOrder = 8
         OnChange = EdPlayerExecutableChange
-        OnKeyPress = EdUserMenuItemCaptionKeyPress
       end
       object BtnSelectPlayerExecutable: TButton
         Left = 514
-        Top = 181
+        Top = 205
         Width = 23
         Height = 21
         Anchors = [akTop, akRight]
@@ -1715,7 +1714,7 @@ object OptionsForm: TOptionsForm
       end
       object WlSavePlayerChanges: TWebLink
         Left = 259
-        Top = 208
+        Top = 232
         Width = 88
         Height = 16
         Cursor = crHandPoint
@@ -1736,6 +1735,16 @@ object OptionsForm: TOptionsForm
         HightliteImage = False
         StretchImage = True
         CanClick = True
+      end
+      object RbWindowsMediaPlayer: TRadioButton
+        Left = 259
+        Top = 126
+        Width = 276
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'RbWindowsMediaPlayer'
+        TabOrder = 13
+        OnClick = RbPlayerInternalClick
       end
     end
   end

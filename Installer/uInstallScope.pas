@@ -305,7 +305,7 @@ begin
   Files.Add(TDirectoryObject.Create('Styles',      '%PROGRAM%', ''));
 
   {$IFDEF VLC_PLAYER}
-  DirectoryObj := TDirectoryObject.Create('VlcPlayer',    '%PROGRAM%', '');
+  DirectoryObj := TDirectoryObject.Create('MediaPlayer',    '%PROGRAM%', '');
   DirectoryObj.IsRecursive := True;
   Files.Add(DirectoryObj);
   {$ENDIF}

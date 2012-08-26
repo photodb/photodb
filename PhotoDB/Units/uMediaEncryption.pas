@@ -63,7 +63,7 @@ begin
   Extension := ExtractFileExt(FileName);
   Result := Settings.ReadString(cMediaAssociationsData + '\' + Extension, '');
   if Result = cMediaPlayerDefaultId then
-    Result := GetVlcPlayerInternalPath;
+    Result := GetPlayerInternalPath;
 end;
 
 function ShellPlayEncryptedMediaFile(const FileName: string): Boolean;
