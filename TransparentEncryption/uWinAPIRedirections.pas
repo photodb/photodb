@@ -14,8 +14,10 @@ uses
 type
   NTStatus = Cardinal;
 
+PWSTR          = ^WCHAR;
+
 PUnicodeString = ^TUnicodeString;
-  TUnicodeString = packed record
+  TUnicodeString = record
     Length: Word;
     MaximumLength: Word;
     Buffer: PWideChar;
@@ -108,7 +110,7 @@ var
                                           bInheritHandle: BOOL; dwOptions: DWORD): BOOL; stdcall;
 
   LdrLoadDllNextHook         :  function (szcwPath: PWideChar;
-                                          pdwLdrErr: dword;
+                                          pdwLdrErr: PULONG;
                                           pUniModuleName: PUnicodeString;
                                           pResultInstance: PHandle): NTSTATUS; stdcall;
 
@@ -116,7 +118,7 @@ var
 function GetFileSizeEx(hFile: THandle; var lpFileSize: Int64): BOOL; stdcall; external 'kernel32.dll';
 
 function LdrLoadDll(szcwPath: PWideChar;
-                    pdwLdrErr: dword;
+                    pdwLdrErr: PULONG;
                     pUniModuleName: PUnicodeString;
                     pResultInstance: PHandle): NTSTATUS;
                        stdcall; external 'ntdll.dll';
@@ -158,11 +160,13 @@ function GetFileAttributesExAHookProc(lpFileName: PAnsiChar; fInfoLevelId: TGetF
 var
   Attributes: ^WIN32_FILE_ATTRIBUTE_DATA;
   FileSize: Int64;
+  LastError: DWORD;
 begin
   Result := GetFileAttributesExANextHook(lpFileName, fInfoLevelId, lpFileInformation);
 
   if fInfoLevelId = GetFileExInfoStandard then
   begin
+    LastError := GetLastError;
     if ValidEnryptFileEx(string(AnsiString(lpFileName))) then
     begin
       Attributes := lpFileInformation;
@@ -172,6 +176,7 @@ begin
       Attributes.nFileSizeLow := Int64Rec(FileSize).Lo;
       Attributes.nFileSizeHigh := Int64Rec(FileSize).Hi;
     end;
+    SetLastError(LastError);
   end else
      MessageBox(0, 'Функция: GetFileAttributesExW', 'not GetFileExInfoStandard', MB_OK or MB_ICONWARNING);
 end;
@@ -180,10 +185,12 @@ function GetFileAttributesExWHookProc(lpFileName: PWideChar; fInfoLevelId: TGetF
 var
   Attributes: ^WIN32_FILE_ATTRIBUTE_DATA;
   FileSize: Int64;
+  LastError: DWORD;
 begin
   Result := GetFileAttributesExWNextHook(lpFileName, fInfoLevelId, lpFileInformation);
   if fInfoLevelId = GetFileExInfoStandard then
   begin
+    LastError := GetLastError;
     if ValidEnryptFileEx(lpFileName) then
     begin
       Attributes := lpFileInformation;
@@ -193,6 +200,7 @@ begin
       Attributes.nFileSizeLow := Int64Rec(FileSize).Lo;
       Attributes.nFileSizeHigh := Int64Rec(FileSize).Hi;
     end;
+    SetLastError(LastError);
   end else
      MessageBox(0, 'Функция: GetFileAttributesExW', 'not GetFileExInfoStandard', MB_OK or MB_ICONWARNING);
 end;
@@ -200,8 +208,10 @@ end;
 function FindFirstFileAHookProc(lpFileName: PAnsiChar; var lpFindFileData: TWIN32FindDataA): THandle; stdcall;
 var
   FileSize: Int64;
+  LastError: DWORD;
 begin
   Result := FindFirstFileANextHook(lpFileName, lpFindFileData);
+  LastError := GetLastError;
 
   if ValidEnryptFileEx(string(AnsiString(lpFileName))) then
   begin
@@ -211,13 +221,17 @@ begin
     lpFindFileData.nFileSizeLow := Int64Rec(FileSize).Lo;
     lpFindFileData.nFileSizeHigh := Int64Rec(FileSize).Hi;
   end;
+
+  SetLastError(LastError);
 end;
 
 function FindFirstFileWHookProc(lpFileName: PWideChar; var lpFindFileData: TWIN32FindDataW): THandle; stdcall;
 var
   FileSize: Int64;
+  LastError: DWORD;
 begin
   Result := FindFirstFileWNextHook(lpFileName, lpFindFileData);
+  LastError := GetLastError;
 
   if ValidEnryptFileEx(lpFileName) then
   begin
@@ -227,6 +241,8 @@ begin
     lpFindFileData.nFileSizeLow := Int64Rec(FileSize).Lo;
     lpFindFileData.nFileSizeHigh := Int64Rec(FileSize).Hi;
   end;
+
+  SetLastError(LastError);
 end;
 
 function GetFileSizeHookProc(hFile: THandle; lpFileSizeHigh: Pointer): DWORD; stdcall;
@@ -334,7 +350,7 @@ end;
 procedure ProcessDllLoad(Module: HModule; lpLibFileName: string);
 begin
   if (Module > 0) and not IsSystemDll(lpLibFileName) then
-    HookPEModule(Module, True);
+    HookPEModule(Module, False);
 end;
 
 function LoadLibraryExAHookProc(lpLibFileName: PAnsiChar; hFile: THandle; dwFlags: DWORD): HMODULE; stdcall;
@@ -358,13 +374,12 @@ begin
 end;
 
 function LdrLoadDllHookProc(szcwPath: PWideChar;
-                    pdwLdrErr: DWORD;
+                    pdwLdrErr: PULONG;
                     pUniModuleName: PUnicodeString;
-                    pResultInstance: PHandle): NTSTATUS;
-                       stdcall;
+                    pResultInstance: PHandle): NTSTATUS; stdcall;
 begin
   Result := LdrLoadDllNextHook(szcwPath, pdwLdrErr, pUniModuleName, pResultInstance);
-  if pResultInstance^ > 0 then
+  if (pResultInstance <> nil) and (pResultInstance^ > 0) then
     ProcessDllLoad(pResultInstance^, pUniModuleName.Buffer);
 end;
 
@@ -518,17 +533,6 @@ begin
       InitEncryptedFile(string(AnsiString(lpFileName)), Result);
 end;
 
-function CreateFileAHookProc(lpFileName: PAnsiChar; dwDesiredAccess, dwShareMode: DWORD;
-                                         lpSecurityAttributes: PSecurityAttributes; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
-                                         hTemplateFile: THandle): THandle; stdcall;
-begin
-  Result := CreateFileANextHook(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
-
-  if IsHookStarted then
-    if ValidEncryptFileExHandle(Result) then
-      InitEncryptedFile(string(AnsiString(lpFileName)), Result);
-end;
-
 function IsSystemPipe(ItemPath: string): Boolean;
 begin
   ItemPath := AnsiLowerCase(ItemPath);
@@ -545,11 +549,35 @@ begin
             or (Pos('\pipe\ntsvcs', ItemPath) > 0);
 end;
 
+function CreateFileAHookProc(lpFileName: PAnsiChar; dwDesiredAccess, dwShareMode: DWORD;
+                                         lpSecurityAttributes: PSecurityAttributes; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
+                                         hTemplateFile: THandle): THandle; stdcall;
+var
+  LastError: DWORD;
+begin
+  Result := CreateFileANextHook(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
+  LastError := GetLastError;
+
+  if IsHookStarted then
+  begin
+    if not StartsStr('\\.', lpFileName) and not IsSystemPipe(lpFileName) then
+    begin
+      if ValidEncryptFileExHandle(Result) then
+        InitEncryptedFile(string(AnsiString(lpFileName)), Result);
+    end;
+  end;
+
+  SetLastError(LastError);
+end;
+
 function CreateFileWHookProc(lpFileName: PWideChar; dwDesiredAccess, dwShareMode: DWORD;
                                          lpSecurityAttributes: PSecurityAttributes; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
                                          hTemplateFile: THandle): THandle; stdcall;
+var
+  LastError: DWORD;
 begin
   Result := CreateFileWNextHook( lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
+  LastError := GetLastError;
 
   if IsHookStarted then
   begin
@@ -560,6 +588,8 @@ begin
         InitEncryptedFile(lpFileName, Result);
     end;
   end;
+
+  SetLastError(LastError);
 end;
 
 function SetFilePointerHookProc(hFile: THandle; lDistanceToMove: Longint; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD): DWORD; stdcall;
@@ -575,12 +605,17 @@ end;
 function ReadFileHookProc(hFile: THandle; var Buffer; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped): BOOL; stdcall;
 var
   dwCurrentFilePosition: Int64;
+  LastError: DWORD;
 begin
+  LastError := GetLastError;
   dwCurrentFilePosition := FileSeek(hFile, Int64(0), FILE_CURRENT);
+  SetLastError(LastError);
 
   Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
+  LastError := GetLastError;
   ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead);
+  SetLastError(LastError);
 end;
 
 function ReadFileExHookProc(hFile: THandle; lpBuffer: Pointer; nNumberOfBytesToRead: DWORD; lpOverlapped: POverlapped; lpCompletionRoutine: TPROverlappedCompletionRoutine): BOOL; stdcall;
@@ -592,9 +627,13 @@ begin
 end;
 
 function CloseHandleHookProc(hObject: THandle): BOOL; stdcall;
+var
+  LastError: Cardinal;
 begin
   Result := CloseHandleNextHook(hObject);
+  LastError := GetLastError;
   CloseFileHandle(hObject);
+  SetLastError(LastError);
 end;
 
 end.

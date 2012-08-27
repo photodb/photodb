@@ -159,8 +159,10 @@ end;
 function FixFileSize(hFile: THandle; lDistanceToMove: DWORD; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
 var
   MS: TEncryptedFile;
+  LastError: Cardinal;
 begin
   Result := SeekProc(hFile, lDistanceToMove, lpDistanceToMoveHigh, dwMoveMethod);
+  LastError := GetLastError;
 
   if SyncObj = nil then
     Exit;
@@ -182,13 +184,17 @@ begin
   finally
     SyncObj.Leave;
   end;
+
+  SetLastError(LastError);
 end;
 
 function FixFileSizeEx(hFile: THandle; liDistanceToMove: TLargeInteger; const lpNewFilePointer: PLargeInteger; dwMoveMethod: DWORD; SeekExProc: TSetFilePointerExNextHook): BOOL;
 var
   MS: TEncryptedFile;
+  LastError: Cardinal;
 begin
   Result := SeekExProc(hFile, liDistanceToMove, lpNewFilePointer, dwMoveMethod);
+  LastError := GetLastError;
 
   if SyncObj = nil then
     Exit;
@@ -208,6 +214,8 @@ begin
   finally
     SyncObj.Leave;
   end;
+
+  SetLastError(LastError);
 end;
 
 procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD);

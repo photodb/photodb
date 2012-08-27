@@ -17,6 +17,8 @@ library TransparentEncryption;
   using PChar or ShortString parameters. }
 
 uses
+  FastMM4 in '..\PhotoDB\External\FastMM\FastMM4.pas',
+  FastMM4Messages in '..\PhotoDB\External\FastMM\FastMM4Messages.pas',
   Winapi.Windows,
   uMemory in '..\PhotoDB\Units\uMemory.pas',
   DECCipher in '..\PhotoDB\External\Crypt\DECv5.2\DECCipher.pas',

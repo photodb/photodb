@@ -70,7 +70,6 @@ function InjectDll(TargetId: Cardinal; DllName: string): Cardinal;
 var
   BytesWrite    : NativeUInt;
   ParamAddr     : Pointer;
- // pThreadStart  : Pointer;
   Hdl           : NativeUInt;
   hThread       : Cardinal;
   hRemoteThread : Cardinal;
@@ -98,12 +97,6 @@ var
 
 begin
   Hdl := OpenProcess(PROCESS_ALL_ACCESS or PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION, False, TargetId);
-
-{  ParamAddr := VirtualAllocEx(Hdl, nil, Length(DllName) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-  WriteProcessMemory(Hdl, ParamAddr, PWideChar(DllName), Length(DllName) * 2 + 2, BytesWrite);
-  pThreadStart := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), PAnsiChar('LoadLibraryW'));
-  hThread  := CreateRemoteThread(Hdl, nil, 0, pThreadStart, ParamAddr, 0, hRemoteThread);   }
-
   ZeroMemory(@InjectParams, SizeOf(InjectParams));
   InjectParams.ErrorLibraryText := CreateExternalPChar('Invalid hook library!'); //TODO: localize
   InjectParams.ErrorProcedureText := CreateExternalPChar('Invalid hook procedure!'); //TODO: localize
@@ -124,7 +117,7 @@ begin
   InjectCode := VirtualAllocEx(Hdl, nil, InjectCodeLength, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
   WriteProcessMemory(Hdl, InjectCode, Pointer(InjectCodeStart), InjectCodeLength, BytesWrite);
 
-  hThread  := CreateRemoteThread(Hdl, nil, 0, InjectCode, ParamAddr, 0, hRemoteThread);
+  hThread  := CreateRemoteThread(Hdl, nil, 0, InjectCode, ParamAddr, CREATE_SUSPENDED, hRemoteThread);
 
   Result := hThread;
 end;

@@ -14,12 +14,6 @@ type
   end;
 
   //record for Code patching!!!
-  TImportFunction = packed record
-    JumpInstruction: Word;
-    AddressOfPointerToFunction: ^Pointer;
-  end;
-
-  //record for Code patching!!!
   TImageImportEntry = record
     Characteristics: dword;
     TimeDateStamp: dword;
@@ -33,13 +27,6 @@ type
 type
   TNativeUInt = {$if CompilerVersion < 23}Cardinal{$else}NativeUInt{$ifend};
 
-  PJump = ^TJump;
-  TJump = packed record
-    OpCode: Byte;
-    Distance: integer;
-  end;
-
-function FunctionAddress(Code: Pointer): Pointer;
 function InjectDllToTarget(DllName: string; TargetProcessID: DWORD; Code: Pointer; CodeSize: NativeUInt): Boolean;
 procedure InjectedProc(Parameter: Pointer); stdcall;
 function HookCode(PEModule: HModule; Recursive: Boolean; TargetAddress, NewAddress: Pointer; var OldAddress: Pointer): Integer;
@@ -61,26 +48,6 @@ begin
     {$ifdef Win64}Result := PPointer(TNativeUInt(Proc) + J.Addr + 6{Instruction Size})^{$endif}
   else
     Result := Proc;
-end;
-
-procedure FastcodeAddressPatch(const ASource, ADestination: Pointer);
-const
-  Size = SizeOf(TJump);
-var
-  NewJump: PJump;
-  OldProtect: Cardinal;
-  P: Pointer;
-begin
-  P := GetActualAddr(ASource);
-  if VirtualProtect(P, Size, PAGE_EXECUTE_READWRITE, OldProtect) then
-  begin
-    NewJump := PJump(P);
-    NewJump.OpCode := $E9;
-    NewJump.Distance := TNativeUInt(ADestination) - TNativeUInt(P) - Size;
-
-    FlushInstructionCache(GetCurrentProcess, P, SizeOf(TJump));
-    VirtualProtect(P, Size, OldProtect, @OldProtect);
-  end;
 end;
 
 procedure InjectedProcASM(pLoadLibrary: pointer; lib_name: pointer);
@@ -142,15 +109,6 @@ begin
   CloseHandle(hProcess);
 end;
 
-function FunctionAddress(Code: Pointer): Pointer;
-begin
-  Result := Code;
-  If TImportFunction(Code^).JumpInstruction = 9727 then Result := TImportFunction(Code^).AddressOfPointerToFunction^;
-end;
-
-//This code was contributed by Aphex ;)
-//to be completely honest im not 100% sure how it works, but for the next
-//source code release - ill look into it!
 function HookCode(PEModule: HModule; Recursive: Boolean; TargetAddress, NewAddress: Pointer; var OldAddress: Pointer): Integer;
 var
   HookedModules: string;
@@ -192,24 +150,27 @@ var
           //Writes the redirection of API
           HookedModules := HookedModules + LowerCase(Module);
           ModuleHandle := GetModuleHandle(PWideChar(Module));
-          if ModuleHandle > 0 then
+          if (ModuleHandle > 0) and (ImageDosHeader <> Pointer(ModuleHandle)) then
             HookModule(Pointer(ModuleHandle), TargetAddress, NewAddress, OldAddress);
         end;
 
       //Sets the Address of the Table?
       ImportCode := Pointer(NativeUInt(ImageDosHeader) + ImageImportEntry.LookupTable);
 
-      while ImportCode^ <> nil do
+                                      //TODO: remove magic constant
+      while (ImportCode^ <> nil) and (NativeUInt(ImportCode^) > 4) do
       begin
         Address := GetActualAddr(ImportCode^);
         //checks address and writes our one!
-        If Address = OldAddress then
+        if Address = OldAddress then
         begin
           if VirtualProtect(ImportCode, SizeOf(Pointer), PAGE_EXECUTE_READWRITE, OldProtect) then
           begin
             if WriteProcessMemory(GetCurrentProcess, ImportCode, @NewAddress, SizeOf(Pointer), BytesWritten) then
             begin
+              //x64_test CloseHandle(FileCreate('d:\dbg\' + IntToStr(NativeUInt(ImportCode))));
               VirtualProtect(ImportCode, SizeOf(Pointer), OldProtect, @OldProtect);
+              FlushInstructionCache(GetCurrentProcess, ImportCode, SizeOf(Pointer));
               Inc(Result);
             end;
           end;
@@ -230,7 +191,7 @@ begin
     Result := HookModule(Pointer(PEModule), TargetAddress, NewAddress, OldAddress);
 end;
 
-function UnhookCode(PEModule: HModule; Recursive: Boolean; NewAddress, OldAddress: Pointer): integer;
+function UnhookCode(PEModule: HModule; Recursive: Boolean; NewAddress, OldAddress: Pointer): Integer;
 begin
   Result := HookCode(PEModule, Recursive, NewAddress, OldAddress, NewAddress);
 end;

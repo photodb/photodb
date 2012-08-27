@@ -133,8 +133,8 @@ end;
 
 procedure DoCodeStreamEx(Source,Dest: TStream; Size: Int64; BlockSize: Integer; const Proc: TDECCipherCodeEvent; const Progress: IDECProgress; Buffer: Binary);
 var
-  BufferSize,Bytes: Integer;
-  Min,Max,Pos: Int64;
+  BufferSize, Bytes: Integer;
+  Min, Max, Pos: Int64;
 begin
   Pos := Source.Position;
   if Size < 0 then Size := Source.Size - Pos;
@@ -147,7 +147,6 @@ begin
     BufferSize := StreamBufferSize mod BlockSize;
     if BufferSize = 0 then BufferSize := StreamBufferSize
       else BufferSize := StreamBufferSize + BlockSize - BufferSize;
-
 
     if Size > BufferSize then SetLength(Buffer, BufferSize)
       else SetLength(Buffer, Size);
@@ -408,10 +407,9 @@ begin
 
   Pos := FileSeek(FileHandle, 0, FILE_CURRENT);
   if FileRead(FileHandle, EncryptHeader, SizeOf(EncryptHeader)) = SizeOf(EncryptHeader) then
-  begin
     Result := EncryptHeader.ID = PhotoDBFileHeaderID;
-    FileSeek(FileHandle, Pos, FILE_BEGIN);
-  end;
+
+  FileSeek(FileHandle, Pos, FILE_BEGIN);
 end;
 
 procedure TryOpenHandleForRead(var hFile: THandle; FileName: string; DelayReadFileOperation: Integer);
@@ -450,6 +448,8 @@ begin
     Exit;
 
   Result := ValidEncryptFileExHandle(hFile);
+
+  CloseHandle(hFile);
 end;
 
 { TEncryptedFile }
