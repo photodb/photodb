@@ -742,7 +742,7 @@ end;
 
 function GetAllDrives: TArrayOfString;
 var
-  I : integer;
+  I: integer;
   OldMode: Cardinal;
 begin
   SetLength(Result, 0);
@@ -789,8 +789,8 @@ end;
 function GetCDVolumeLabel(CDName: AnsiChar) : String;
 var
   VolumeName,
-  FileSystemName : array [0..MAX_PATH-1] of Char;
-  VolumeSerialNo : DWord;
+  FileSystemName: array [0..MAX_PATH-1] of Char;
+  VolumeSerialNo: DWord;
   MaxComponentLength,FileSystemFlags: Cardinal;
   OldMode: Cardinal;
 begin

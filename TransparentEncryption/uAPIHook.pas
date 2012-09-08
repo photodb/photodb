@@ -4,7 +4,8 @@ interface
 
 uses
   Windows,
-  SysUtils;
+  SysUtils,
+  Classes;
 
 type
   //record for injecting
@@ -126,7 +127,8 @@ var
   begin
     Result := 0;
 
-    OldAddress := GetActualAddr(TargetAddress);
+    if OldAddress = nil then
+      OldAddress := GetActualAddr(TargetAddress);
 
     //check the header and see if there is one, if there isn't then exit hook routine
     If ImageDosHeader.e_magic <> IMAGE_DOS_SIGNATURE then Exit;

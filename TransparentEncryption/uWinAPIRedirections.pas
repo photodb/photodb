@@ -385,6 +385,7 @@ end;
 
 procedure HookPEModule(Module: HModule; Recursive: Boolean = True);
 begin
+
   HookCode(Module, Recursive,   @CreateProcessA,     @CreateProcessACallbackProc, @CreateProcessANextHook);
   HookCode(Module, Recursive,   @CreateProcessW,     @CreateProcessWCallbackProc, @CreateProcessWNextHook);
 
@@ -635,5 +636,59 @@ begin
   CloseFileHandle(hObject);
   SetLastError(LastError);
 end;
+
+initialization
+  CreateProcessANextHook     := nil;
+  CreateProcessWNextHook     := nil;
+
+  SetFilePointerNextHook     := nil;
+
+  SetFilePointerExNextHook   := nil;
+
+  OpenFileNextHook           := nil;
+
+  CreateFileANextHook        := nil;
+  CreateFileWNextHook        := nil;
+  CloseHandleNextHook        := nil;
+
+  LoadLibraryANextHook       := nil;
+  LoadLibraryWNextHook       := nil;
+
+  LoadLibraryExANextHook     := nil;
+  LoadLibraryExWNextHook     := nil;
+
+  GetProcAddressNextHook     := nil;
+
+
+  ReadFileNextHook           := nil;
+  ReadFileExNextHook         := nil;
+
+  _lReadNextHook             := nil;
+  _lOpenNextHook             := nil;
+  _lCreatNextHook            := nil;
+
+  CreateFileMappingANextHook := nil;
+
+  CreateFileMappingWNextHook := nil;
+
+  MapViewOfFileNextHook      := nil;
+
+  MapViewOfFileExNextHook    := nil;
+
+  UnmapViewOfFileNextHook    := nil;
+
+  GetFileSizeNextHook        := nil;
+  GetFileSizeExNextHook      := nil;
+
+  FindFirstFileANextHook     := nil;
+  FindFirstFileWNextHook     := nil;
+
+
+  GetFileAttributesExANextHook:= nil;
+  GetFileAttributesExWNextHook:= nil;
+
+
+  DuplicateHandleNextHook    := nil;
+  LdrLoadDllNextHook         := nil;
 
 end.

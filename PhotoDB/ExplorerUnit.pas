@@ -4541,10 +4541,13 @@ begin
         end;
       end;
 
-      if PhotoShelf.PathInShelf(FSelectedInfo.FileName) = -1 then
-        PhotoShelf.AddItems(Self, FileList)
-      else
-        PhotoShelf.DeleteItems(Self, FileList)
+      if FileList.Count > 0 then
+      begin
+        if PhotoShelf.PathInShelf(FileList[0]) = -1 then
+          PhotoShelf.AddItems(Self, FileList)
+        else
+          PhotoShelf.DeleteItems(Self, FileList);
+      end;
     finally
       F(FileList);
     end;

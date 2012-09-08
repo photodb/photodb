@@ -118,6 +118,7 @@ begin
   WriteProcessMemory(Hdl, InjectCode, Pointer(InjectCodeStart), InjectCodeLength, BytesWrite);
 
   hThread  := CreateRemoteThread(Hdl, nil, 0, InjectCode, ParamAddr, CREATE_SUSPENDED, hRemoteThread);
+  CloseHandle(Hdl);
 
   Result := hThread;
 end;
@@ -138,7 +139,7 @@ begin
   SI.dwFlags := STARTF_USESHOWWINDOW;
   SI.wShowWindow := SW_SHOW;
 
-  CreateProcess(PChar(Player), PChar('"' + Player + '" "' + Media + '"'), nil, nil, False, CREATE_SUSPENDED, nil, nil, SI, PI);
+  CreateProcess(PChar(Player), PChar('"' + Player + '" "' + Media + '"'), nil, nil, False, 0{CREATE_SUSPENDED}, nil, nil, SI, PI);
 
   if pi.dwProcessId > 0 then
   begin
