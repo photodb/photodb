@@ -1145,8 +1145,9 @@ begin
   begin
     if RAWImage.IsRAWSupport and IsRAWImageFile(FileName) then
     begin
-      RAWExif := ReadRAWExif(FileName);
+      RAWExif := TRAWExif.Create;
       try
+        RAWExif.LoadFromFile(FileName);
         if RAWExif.IsEXIF then
         begin
           //FDateTimeInFileExists := True;

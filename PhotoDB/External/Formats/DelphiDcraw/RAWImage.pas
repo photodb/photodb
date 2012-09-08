@@ -66,9 +66,12 @@ type
     function GetCount: Integer;
     function GetValueByIndex(Index: Integer): TRAWExifRecord;
     function GetTimeStamp: TDateTime;
+    procedure LoadFromFreeImage(Image: TFreeWinBitmap);
   public
     constructor Create;
     destructor Destroy; override;
+    procedure LoadFromFile(FileName: string);
+    procedure LoadFromStream(Stream: TStream);
     function Add(Description, Key, Value: string): TRAWExifRecord;
     function IsEXIF: Boolean;
     property TimeStamp: TDateTime read GetTimeStamp;
@@ -76,15 +79,13 @@ type
     property Items[Index: Integer]: TRAWExifRecord read GetValueByIndex; default;
   end;
 
-  function ReadRAWExif(FileName: String): TRAWExif;
-
 var
   IsRAWSupport: Boolean = True;
 
 implementation
 
 uses
-  Dolphin_DB, UnitDBCommon;
+  Dolphin_DB;
 
 { TRAWImage }
 
@@ -119,55 +120,6 @@ begin
     end;
   finally
     RawBitmap.FindCloseMetadata(FindMetaData);
-  end;
-end;
-
-function ReadRAWExif(FileName: String): TRAWExif;
-var
-  RawBitmap: TFreeWinBitmap;
-  FindMetaData: PFIMETADATA;
-  I: Integer;
-  TagData: PFITAG;
-
-  procedure AddTag;
-  var
-    Description, Value, Key: PAnsiChar;
-  begin
-    Description := FreeImage_GetTagDescription(TagData);
-    Key := FreeImage_GetTagKey(TagData);
-    if (Key <> 'Artist') and (Description <> 'Image title') then
-    begin
-      Value := FreeImage_TagToString(I, TagData);
-      if Description <> nil then
-        Result.Add(string(Description), string(Key), string(Value))
-      else
-        Result.Add(string(Key), string(Key), string(Value));
-    end;
-  end;
-begin
-  Result := TRAWExif.Create;
-
-  TagData := nil;
-  RawBitmap := TFreeWinBitmap.Create;
-  try
-    RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
-    for I := FIMD_NODATA to FIMD_EXIF_RAW do
-    begin
-      FindMetaData := FreeImage_FindFirstMetadata(I, RawBitmap.Dib, TagData);
-      try
-        if FindMetaData <> nil then
-        begin
-          AddTag;
-
-          while FreeImage_FindNextMetadata(FindMetaData, TagData) do
-            AddTag;
-        end;
-      finally
-        RawBitmap.FindCloseMetadata(FindMetaData);
-      end;
-    end;
-  finally
-    F(RawBitmap);
   end;
 end;
 
@@ -353,7 +305,7 @@ end;
 
 { TRAWExif }
 
-function TRAWExif.Add(Description, Key, Value: string) : TRAWExifRecord;
+function TRAWExif.Add(Description, Key, Value: string): TRAWExifRecord;
 begin
   Result := TRAWExifRecord.Create;
   Result.Description := Description;
@@ -376,7 +328,7 @@ end;
 
 function TRAWExif.GetCount: Integer;
 begin
-  Result := FExifList.Count;
+  Result:= FExifList.Count;
 end;
 
 function TRAWExif.GetTimeStamp: TDateTime;
@@ -397,6 +349,75 @@ end;
 function TRAWExif.IsEXIF: Boolean;
 begin
   Result := Count > 0;
+end;
+
+procedure TRAWExif.LoadFromFile(FileName: string);
+var
+  RawBitmap: TFreeWinBitmap;
+begin
+  RawBitmap := TFreeWinBitmap.Create;
+  try
+    RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
+    LoadFromFreeImage(RawBitmap);
+  finally
+    F(RawBitmap);
+  end;
+end;
+
+procedure TRAWExif.LoadFromStream(Stream: TStream);
+var
+  RawBitmap: TFreeWinBitmap;
+  IO: FreeImageIO;
+begin
+  RawBitmap := TFreeWinBitmap.Create;
+  try
+    SetStreamFreeImageIO(IO);
+    RawBitmap.LoadFromHandle(@IO, Stream, FIF_LOAD_NOPIXELS);
+    LoadFromFreeImage(RawBitmap);
+  finally
+    F(RawBitmap);
+  end;
+end;
+
+procedure TRAWExif.LoadFromFreeImage(Image: TFreeWinBitmap);
+var
+  TagData: PFITAG;
+  I: Integer;
+  FindMetaData: PFIMETADATA;
+
+  procedure AddTag;
+  var
+    Description, Value, Key: PAnsiChar;
+  begin
+    Description := FreeImage_GetTagDescription(TagData);
+    Key := FreeImage_GetTagKey(TagData);
+    if (Key <> 'Artist') and (Description <> 'Image title') then
+    begin
+      Value := FreeImage_TagToString(I, TagData);
+      if Description <> nil then
+        Add(string(Description), string(Key), string(Value))
+      else
+        Add(string(Key), string(Key), string(Value));
+    end;
+  end;
+
+begin
+  TagData := nil;
+  for I := FIMD_NODATA to FIMD_EXIF_RAW do
+  begin
+    FindMetaData := FreeImage_FindFirstMetadata(I, Image.Dib, TagData);
+    try
+      if FindMetaData <> nil then
+      begin
+        AddTag;
+
+        while FreeImage_FindNextMetadata(FindMetaData, TagData) do
+          AddTag;
+      end;
+    finally
+      Image.FindCloseMetadata(FindMetaData);
+    end;
+  end;
 end;
 
 initialization

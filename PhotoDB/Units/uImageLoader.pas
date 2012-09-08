@@ -58,6 +58,7 @@ type
     function GetPassword: string;
     function GetHasExifHeader: Boolean;
     function GetExifData: TExifData;
+    function GetRawExif: TRAWExif;
     property ImageTotalPages: Integer read GetImageTotalPages;
     property Rotation: Integer read GetRotation;
     property GraphicWidth: Integer read GetGraphicWidth;
@@ -66,6 +67,7 @@ type
     property Password: string read GetPassword;
     property HasExifHeader: Boolean read GetHasExifHeader;
     property ExifData: TExifData read GetExifData;
+    property RawExif: TRAWExif read GetRawExif;
   end;
 
   TLoadImageInfo = class(TInterfacedObject, ILoadImageInfo)
@@ -79,11 +81,12 @@ type
     FPassword: string;
     FMSICC: TMemoryStream;
     FExifData: TExifData;
+    FRawExif: TRAWExif;
     FGraphicWidth: Integer;
     FGraphicHeight: Integer;
   public
     constructor Create(AGraphic: TGraphic; AImageTotalPages: Integer; ARotation: Integer;
-      AICCProfileName: string; MSICC: TMemoryStream; AFExifData: TExifData; AIsImageEncrypted: Boolean; APassword: string);
+      AICCProfileName: string; MSICC: TMemoryStream; AExifData: TExifData; ARawExif: TRAWExif; AIsImageEncrypted: Boolean; APassword: string);
     destructor Destroy; override;
     function ExtractGraphic: TGraphic;
     function ExtractFullBitmap: TBitmap;
@@ -95,6 +98,7 @@ type
     function GetPassword: string;
     function GetHasExifHeader: Boolean;
     function GetExifData: TExifData;
+    function GetRawExif: TRAWExif;
     function AppllyICCProfile(Bitmap: TBitmap): Boolean;
     function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
     function UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
@@ -133,6 +137,7 @@ var
   EXIFRotation,
   ImageTotalPages, I, J: Integer;
   ExifData: TExifData;
+  RawExif: TRAWExif;
   MSICC: TMemoryStream;
   XMPICCProperty: TXMPProperty;
   XMPICCPrifile: string;
@@ -142,6 +147,7 @@ var
 begin
   Result := False;
   ImageInfo := nil;
+  RawExif := nil;
   ImageTotalPages := 0;
   EXIFRotation := DB_IMAGE_ROTATE_0;
   IsImageEncrypted := False;
@@ -216,11 +222,21 @@ begin
             S.Seek(0, soFromBeginning);
 
           ExifData := TExifData.Create(nil);
+          if IsRAWImageFile(Info.FileName) then
+            RawExif := TRAWExif.Create;
+
           try
             if LoadOnlyExif then
-              ExifData.LoadFromFileEx(Info.FileName, False)
-            else
+            begin
+              ExifData.LoadFromFileEx(Info.FileName, False);
+              if RawExif <> nil then
+                RawExif.LoadFromFile(Info.FileName);
+            end else
+            begin
               ExifData.LoadFromGraphic(S);
+              if RawExif <> nil then
+                RawExif.LoadFromStream(S);
+            end;
 
             if not ExifData.Empty then
             begin
@@ -302,6 +318,7 @@ begin
                     XMPICCPrifile,
                     MSICC,
                     ExifData,
+                    RawExif,
                     IsImageEncrypted,
                     Password);
                   ExifData := nil;
@@ -325,6 +342,7 @@ begin
                 XMPICCPrifile,
                 MSICC,
                 ExifData,
+                RawExif,
                 IsImageEncrypted,
                 Password);
               ExifData := nil;
@@ -363,7 +381,7 @@ end;
 
 constructor TLoadImageInfo.Create(AGraphic: TGraphic; AImageTotalPages,
   ARotation: Integer; AICCProfileName: string; MSICC: TMemoryStream;
-  AFExifData: TExifData; AIsImageEncrypted: Boolean; APassword: string);
+  AExifData: TExifData; ARawExif: TRAWExif; AIsImageEncrypted: Boolean; APassword: string);
 begin
   FGraphic := AGraphic;
   FFullBitmap := nil;
@@ -371,7 +389,8 @@ begin
   FRotation := ARotation;
   FICCProfileName := AICCProfileName;
   FMSICC := MSICC;
-  FExifData := AFExifData;
+  FExifData := AExifData;
+  FRawExif := ARawExif;
   FGraphicWidth := 0;
   FGraphicHeight := 0;
   FIsImageEncrypted := AIsImageEncrypted;
@@ -527,6 +546,11 @@ end;
 function TLoadImageInfo.GetPassword: string;
 begin
   Result := FPassword;
+end;
+
+function TLoadImageInfo.GetRawExif: TRAWExif;
+begin
+  Result := FRawExif;
 end;
 
 function TLoadImageInfo.GetRotation: Integer;
