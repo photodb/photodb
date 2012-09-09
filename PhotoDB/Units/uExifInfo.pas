@@ -12,7 +12,7 @@ uses
   Classes,
   SysUtils,
   CCR.Exif,
-  RawImage,
+  uRawExif,
   uExifUtils,
   uImageLoader,
   uGroupTypes,
@@ -69,8 +69,6 @@ implementation
 procedure LoadExifInfo(VleEXIF: TValueListEditor; FileName: string);
 var
   OldMode: Cardinal;
-//  ExifData: TExifData;
-//  ExifInfo: IExifInfo;
   ExifInfo: IExifInfo;
   Line: IExifInfoLine;
   Info: TDBPopupMenuInfoRecord;
@@ -86,40 +84,26 @@ begin
 
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    {ExifData := TExifData.Create;
     try
+      Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
       try
-        ExifData.LoadFromFileEx(FileName);
-
-        if FillExifInfo(ExifData, nil, ExifInfo) then
+        if LoadImageFromPath(Info, -1, '', [ilfICCProfile, ilfEXIF, ilfPassword, ilfDontUpdateInfo], ImageInfo) then
         begin
-          for Line in ExifInfo do
-            VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+          if FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, ExifInfo) then
+          begin
+            for Line in ExifInfo do
+              VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+          end;
         end;
-
-      except
-        on e: Exception do
-        begin
-          VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
-          Eventlog(e.Message);
-        end;
+      finally
+        F(Info);
       end;
-    finally
-      F(ExifData);
-    end;}
-
-    Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
-    try
-      if LoadImageFromPath(Info, -1, '', [ilfICCProfile, ilfEXIF, ilfPassword, ilfDontUpdateInfo], ImageInfo) then
+    except
+      on e: Exception do
       begin
-        if FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, ExifInfo) then
-        begin
-          for Line in ExifInfo do
-            VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
-        end;
+        VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
+        Eventlog(e.Message);
       end;
-    finally
-      F(Info);
     end;
   finally
     SetErrorMode(OldMode);
@@ -142,6 +126,7 @@ const
   function L(S: string): string;
   begin
     Result := TA(S, 'PropertiesForm');
+    Result := TA(Result, 'EXIF');
   end;
 
   procedure XInsert(Key, Value: string; IsExtended: Boolean = False);
@@ -292,18 +277,15 @@ begin
     if ExifData.XMPPacket.Access = Db_access_private then
       XInsert(L('Private'), L('Yes'));
 
-
   end else
   begin
     if (RawExif <> nil) and (RawExif.Count > 0) then
     begin
       for I := 0 to RawExif.Count - 1 do
-        XInsert(L(RawExif[I].Key), RawExif[I].Value);
+        XInsert(L(RawExif[I].Description), RawExif[I].Value);
     end else
       XInsert(L('Info:'), L('Exif header not found.'));
   end;
-
-
 end;
 
 { TExifInfoLine }

@@ -15,13 +15,14 @@ uses
   GraphicEx,
   uTiffImage,
   RAWImage,
+  uRawExif,
   CCR.Exif,
+  CCR.Exif.XMPUtils,
   uExifUtils,
   uICCProfile,
   GraphicCrypt,
   uAssociations,
   uGraphicUtils,
-  CCR.Exif.XMPUtils,
   uPortableDeviceUtils,
   UnitDBDeclare,
   UnitDBKernel,
@@ -405,6 +406,7 @@ end;
 destructor TLoadImageInfo.Destroy;
 begin
   F(FExifData);
+  F(FRawExif);
   F(FMSICC);
   F(FGraphic);
   F(FFullBitmap);

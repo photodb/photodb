@@ -257,10 +257,10 @@
 #define IdResourceStrings_RSStackESOCKTNOSUPPORT 64797
 #define IdResourceStrings_RSStackEOPNOTSUPP 64798
 #define IdResourceStrings_RSStackEPFNOSUPPORT 64799
-#define Vcl_Shell_ShellConsts_SShellNoDetails 64800
-#define Vcl_Shell_ShellConsts_SCallLoadDetails 64801
-#define Vcl_Shell_ShellConsts_SRenamedFailedError 64802
-#define uShellIntegration_SNotSupported 64803
+#define DECCipher_sInvalidMessageLength 64800
+#define DECCipher_sKeyMaterialToLarge 64801
+#define DECCipher_sIVMaterialToLarge 64802
+#define DECCipher_sCipherNoDefault 64803
 #define IdResourceStrings_RSFailedTimeZoneInfo 64804
 #define IdResourceStrings_RSWinsockCallError 64805
 #define IdResourceStrings_RSWinsockLoadError 64806
@@ -273,38 +273,38 @@
 #define IdResourceStrings_RSStackError 64813
 #define IdResourceStrings_RSStackEINTR 64814
 #define IdResourceStrings_RSStackEBADF 64815
-#define DECCipher_sCipherNoDefault 64816
-#define DropSource_sDropSourceBusy 64817
-#define DropSource_sDropSourceAsyncFailed 64818
-#define DropSource_sDropSourceAsyncBusy 64819
-#define DropTarget_sTargetAsyncBusy 64820
-#define DropTarget_sRichEditWarning 64821
-#define DragDrop_sImplementationRequired 64822
-#define DragDrop_sFormatNameReadOnly 64823
-#define DragDrop_sNoCopyStgMedium 64824
-#define DragDrop_sBadConstructor 64825
-#define DragDropPIDL_sBadDesktop 64826
-#define DragDropPIDL_sBadFilename 64827
-#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64828
-#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64829
-#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64830
-#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64831
-#define Data_Win_ADOConst_SConnectionRequired 64832
-#define Data_Win_ADOConst_SCantRequery 64833
-#define Data_Win_ADOConst_SNoFilterOptions 64834
-#define Data_Win_ADOConst_SRecordsetNotOpen 64835
-#define Data_Win_ADOConst_sNameAttr 64836
-#define Data_Win_ADOConst_sValueAttr 64837
-#define DECUtil_sClassNotRegistered 64838
-#define DECUtil_sWrongIdentity 64839
-#define DECHash_sHashingOverflowError 64840
-#define DECHash_sHashNotInitialized 64841
-#define DECHash_sHashNoDefault 64842
-#define DECCipher_sAlreadyPadded 64843
-#define DECCipher_sInvalidState 64844
-#define DECCipher_sInvalidMessageLength 64845
-#define DECCipher_sKeyMaterialToLarge 64846
-#define DECCipher_sIVMaterialToLarge 64847
+#define Data_Win_ADOConst_SADOCreateError 64816
+#define Data_Win_ADOConst_SEventsNotSupported 64817
+#define Data_Win_ADOConst_SUsupportedFieldType 64818
+#define Data_Win_ADOConst_SConnectionRequired 64819
+#define Data_Win_ADOConst_SCantRequery 64820
+#define Data_Win_ADOConst_SNoFilterOptions 64821
+#define Data_Win_ADOConst_SRecordsetNotOpen 64822
+#define Data_Win_ADOConst_sNameAttr 64823
+#define Data_Win_ADOConst_sValueAttr 64824
+#define DECUtil_sClassNotRegistered 64825
+#define DECUtil_sWrongIdentity 64826
+#define DECHash_sHashingOverflowError 64827
+#define DECHash_sHashNotInitialized 64828
+#define DECHash_sHashNoDefault 64829
+#define DECCipher_sAlreadyPadded 64830
+#define DECCipher_sInvalidState 64831
+#define DragDrop_sBadConstructor 64832
+#define DragDropPIDL_sBadDesktop 64833
+#define DragDropPIDL_sBadFilename 64834
+#define Vcl_Shell_ShellConsts_SShellDefaultNameStr 64835
+#define Vcl_Shell_ShellConsts_SShellDefaultSizeStr 64836
+#define Vcl_Shell_ShellConsts_SShellDefaultTypeStr 64837
+#define Vcl_Shell_ShellConsts_SShellDefaultModifiedStr 64838
+#define Vcl_Shell_ShellConsts_SShellNoDetails 64839
+#define Vcl_Shell_ShellConsts_SCallLoadDetails 64840
+#define Vcl_Shell_ShellConsts_SRenamedFailedError 64841
+#define uShellIntegration_SNotSupported 64842
+#define Data_Win_ADOConst_SMissingConnection 64843
+#define Data_Win_ADOConst_SNoDetailFilter 64844
+#define Data_Win_ADOConst_SBookmarksRequired 64845
+#define Data_Win_ADOConst_SMissingCommandText 64846
+#define Data_Win_ADOConst_SNoResultSet 64847
 #define Data_DBConsts_SProviderExecuteNotSupported 64848
 #define Data_DBConsts_SDataSetUnidirectional 64849
 #define Data_DBConsts_SUnassignedVar 64850
@@ -313,14 +313,14 @@
 #define Data_DBConsts_SInvalidBcdValue 64853
 #define Data_DBConsts_SCouldNotParseTimeStamp 64854
 #define Data_DBConsts_SInvalidSqlTimeStamp 64855
-#define Data_Win_ADOConst_SMissingConnection 64856
-#define Data_Win_ADOConst_SNoDetailFilter 64857
-#define Data_Win_ADOConst_SBookmarksRequired 64858
-#define Data_Win_ADOConst_SMissingCommandText 64859
-#define Data_Win_ADOConst_SNoResultSet 64860
-#define Data_Win_ADOConst_SADOCreateError 64861
-#define Data_Win_ADOConst_SEventsNotSupported 64862
-#define Data_Win_ADOConst_SUsupportedFieldType 64863
+#define DropSource_sDropSourceBusy 64856
+#define DropSource_sDropSourceAsyncFailed 64857
+#define DropSource_sDropSourceAsyncBusy 64858
+#define DropTarget_sTargetAsyncBusy 64859
+#define DropTarget_sRichEditWarning 64860
+#define DragDrop_sImplementationRequired 64861
+#define DragDrop_sFormatNameReadOnly 64862
+#define DragDrop_sNoCopyStgMedium 64863
 #define Data_DBConsts_SIndexNotFound 64864
 #define Data_DBConsts_SDBDuplicateName 64865
 #define Data_DBConsts_SCircularDataLink 64866
@@ -1244,10 +1244,10 @@ BEGIN
 	IdResourceStrings_RSStackESOCKTNOSUPPORT,	L"Socket type not supported."
 	IdResourceStrings_RSStackEOPNOTSUPP,	L"Operation not supported on socket."
 	IdResourceStrings_RSStackEPFNOSUPPORT,	L"Protocol family not supported."
-	Vcl_Shell_ShellConsts_SShellNoDetails,	L"Unable to retrieve folder details for \"%s\". Error code $%x"
-	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
-	Vcl_Shell_ShellConsts_SRenamedFailedError,	L"Rename to %s failed"
-	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
+	DECCipher_sInvalidMessageLength,	L"Message length for %s must be a multiple of %d bytes"
+	DECCipher_sKeyMaterialToLarge,	L"Keymaterial is too large for use (Security Issue)"
+	DECCipher_sIVMaterialToLarge,	L"Initvector is too large for use (Security Issue)"
+	DECCipher_sCipherNoDefault,	L"No default cipher has been registered"
 	IdResourceStrings_RSFailedTimeZoneInfo,	L"Failed attempting to retrieve time zone information."
 	IdResourceStrings_RSWinsockCallError,	L"Error on call to Winsock2 library function %s"
 	IdResourceStrings_RSWinsockLoadError,	L"Error on loading Winsock2 library (%s)"
@@ -1260,22 +1260,9 @@ BEGIN
 	IdResourceStrings_RSStackError,	L"Socket Error # %d\r\n%s"
 	IdResourceStrings_RSStackEINTR,	L"Interrupted system call."
 	IdResourceStrings_RSStackEBADF,	L"Bad file number."
-	DECCipher_sCipherNoDefault,	L"No default cipher has been registered"
-	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
-	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
-	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
-	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
-	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
-	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
-	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
-	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
-	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
-	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
-	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
-	Vcl_Shell_ShellConsts_SShellDefaultNameStr,	L"Name"
-	Vcl_Shell_ShellConsts_SShellDefaultSizeStr,	L"Size"
-	Vcl_Shell_ShellConsts_SShellDefaultTypeStr,	L"Type"
-	Vcl_Shell_ShellConsts_SShellDefaultModifiedStr,	L"Modified"
+	Data_Win_ADOConst_SADOCreateError,	L"Error creating object.  Please verify that the Microsoft Data Access Components 2.1 (or later) have been properly installed"
+	Data_Win_ADOConst_SEventsNotSupported,	L"Events are not supported with server side TableDirect cursors"
+	Data_Win_ADOConst_SUsupportedFieldType,	L"Unsupported field type (%s) in field %s"
 	Data_Win_ADOConst_SConnectionRequired,	L"A connection component is required for async ExecuteOptions"
 	Data_Win_ADOConst_SCantRequery,	L"Cannot perform a requery after connection has changed"
 	Data_Win_ADOConst_SNoFilterOptions,	L"FilterOptions are not supported"
@@ -1289,9 +1276,22 @@ BEGIN
 	DECHash_sHashNoDefault,	L"No default hash are registered"
 	DECCipher_sAlreadyPadded,	L"Cipher has already been padded, cannot process message"
 	DECCipher_sInvalidState,	L"Cipher is not in valid state for this action"
-	DECCipher_sInvalidMessageLength,	L"Message length for %s must be a multiple of %d bytes"
-	DECCipher_sKeyMaterialToLarge,	L"Keymaterial is too large for use (Security Issue)"
-	DECCipher_sIVMaterialToLarge,	L"Initvector is too large for use (Security Issue)"
+	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
+	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
+	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
+	Vcl_Shell_ShellConsts_SShellDefaultNameStr,	L"Name"
+	Vcl_Shell_ShellConsts_SShellDefaultSizeStr,	L"Size"
+	Vcl_Shell_ShellConsts_SShellDefaultTypeStr,	L"Type"
+	Vcl_Shell_ShellConsts_SShellDefaultModifiedStr,	L"Modified"
+	Vcl_Shell_ShellConsts_SShellNoDetails,	L"Unable to retrieve folder details for \"%s\". Error code $%x"
+	Vcl_Shell_ShellConsts_SCallLoadDetails,	L"%s: Missing call to LoadColumnDetails"
+	Vcl_Shell_ShellConsts_SRenamedFailedError,	L"Rename to %s failed"
+	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
+	Data_Win_ADOConst_SMissingConnection,	L"Missing Connection or ConnectionString"
+	Data_Win_ADOConst_SNoDetailFilter,	L"Filter property cannot be used for detail tables"
+	Data_Win_ADOConst_SBookmarksRequired,	L"Dataset does not support bookmarks, which are required for multi-record data controls"
+	Data_Win_ADOConst_SMissingCommandText,	L"Missing %s property"
+	Data_Win_ADOConst_SNoResultSet,	L"CommandText does not return a result set"
 	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
 	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
 	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
@@ -1300,14 +1300,14 @@ BEGIN
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
 	Data_DBConsts_SCouldNotParseTimeStamp,	L"Could not parse SQL TimeStamp string"
 	Data_DBConsts_SInvalidSqlTimeStamp,	L"Invalid SQL date/time values"
-	Data_Win_ADOConst_SMissingConnection,	L"Missing Connection or ConnectionString"
-	Data_Win_ADOConst_SNoDetailFilter,	L"Filter property cannot be used for detail tables"
-	Data_Win_ADOConst_SBookmarksRequired,	L"Dataset does not support bookmarks, which are required for multi-record data controls"
-	Data_Win_ADOConst_SMissingCommandText,	L"Missing %s property"
-	Data_Win_ADOConst_SNoResultSet,	L"CommandText does not return a result set"
-	Data_Win_ADOConst_SADOCreateError,	L"Error creating object.  Please verify that the Microsoft Data Access Components 2.1 (or later) have been properly installed"
-	Data_Win_ADOConst_SEventsNotSupported,	L"Events are not supported with server side TableDirect cursors"
-	Data_Win_ADOConst_SUsupportedFieldType,	L"Unsupported field type (%s) in field %s"
+	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
+	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
+	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
+	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
+	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
+	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
+	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
+	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
 	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
 	Data_DBConsts_SDBDuplicateName,	L"Duplicate name '%s' in %s"
 	Data_DBConsts_SCircularDataLink,	L"Circular datalinks are not allowed"

@@ -11,7 +11,7 @@ uses
   uPathProviders,
   uExplorerFSProviders,
   uExplorerPortableDeviceProvider,
-  RAWImage,
+  uRawExif,
   uAssociations,
   CCR.Exif,
   uDateUtils,

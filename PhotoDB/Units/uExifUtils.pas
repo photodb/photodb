@@ -6,26 +6,172 @@ uses
   uErrors,
   Windows,
   uConstants,
-  CCR.Exif,
-  uMemory,
   Classes,
-  UnitDBDeclare,
-  uSettings,
-  uAssociations,
   Jpeg,
+  DateUtils,
   GraphicEx,
   Graphics,
   SysUtils,
+  CCR.Exif,
   CCR.Exif.XMPUtils,
+  uMemory,
   uTiffImage,
   RAWImage,
   uAnimatedJPEG,
+  uSettings,
+  uAssociations,
   uLogger,
   uPortableDeviceUtils,
   GraphicCrypt,
   UnitDBKernel,
+  UnitDBDeclare,
   uSysUtils,
   uTranslate;
+
+const
+  TAG_IMAGE_WIDTH					        = $0100;
+  TAG_IMAGE_HEIGHT				        = $0101;
+  TAG_BITS_PER_SAMPLE				      = $0102;
+  TAG_COMPRESSION						      = $0103;
+  TAG_PHOTOMETRIC_INTERPRETATION	= $0106;
+  TAG_ORIENTATION						      = $0112;
+  TAG_SAMPLES_PER_PIXEL			      = $0115;
+  TAG_PLANAR_CONFIGURATION		    = $011C;
+  TAG_YCBCR_SUBSAMPLING				    = $0212;
+  TAG_YCBCR_POSITIONING				    = $0213;
+  TAG_X_RESOLUTION						    = $011A;
+  TAG_Y_RESOLUTION						    = $011B;
+  TAG_RESOLUTION_UNIT					    = $0128;
+
+// Tag relating to image data characteristics
+
+  TAG_COLOR_SPACE                 =	$A001;
+
+// Tags relating to image configuration
+
+  TAG_COMPONENTS_CONFIGURATION	=	$9101;
+  TAG_COMPRESSED_BITS_PER_PIXEL	=	$9102;
+  TAG_PIXEL_X_DIMENSION			    =	$A002;
+  TAG_PIXEL_Y_DIMENSION		    	=	$A003;
+
+
+// Tags relating to picture-taking conditions
+
+  TAG_EXPOSURE_TIME						    = $829A;
+  TAG_FNUMBER									    = $829D;
+  TAG_EXPOSURE_PROGRAM				    = $8822;
+  TAG_SPECTRAL_SENSITIVITY		    = $8824;
+  TAG_ISO_SPEED_RATINGS 			    = $8827;
+  TAG_OECF										    = $8828;
+  TAG_SHUTTER_SPEED_VALUE 		    = $9201;
+  TAG_APERTURE_VALUE 					    = $9202;
+  TAG_BRIGHTNESS_VALUE				    = $9203;
+  TAG_EXPOSURE_BIAS_VALUE 		    = $9204;
+  TAG_MAX_APERTURE_VALUE 			    = $9205;
+  TAG_SUBJECT_DISTANCE				    = $9206;
+  TAG_METERING_MODE						    = $9207;
+  TAG_LIGHT_SOURCE						    = $9208;
+  TAG_FLASH										    = $9209;
+  TAG_FOCAL_LENGTH						    = $920A;
+  TAG_SUBJECT_AREA						    = $9214;
+  TAG_FLASH_ENERGY						    = $A20B;
+  TAG_SPATIAL_FREQ_RESPONSE 		  = $A20C;
+  TAG_FOCAL_PLANE_X_RES				    = $A20E;
+  TAG_FOCAL_PLANE_Y_RES				    = $A20F;
+  TAG_FOCAL_PLANE_UNIT				    = $A210;
+  TAG_SUBJECT_LOCATION 				    = $A214;
+  TAG_EXPOSURE_INDEX					    = $A215;
+  TAG_SENSING_METHOD					    = $A217;
+  TAG_FILE_SOURCE							    = $A300;
+  TAG_SCENE_TYPE							    = $A301;
+  TAG_CFA_PATTERN							    = $A302;
+  TAG_CUSTOM_RENDERED					    = $A401;
+  TAG_EXPOSURE_MODE						    = $A402;
+  TAG_WHITE_BALANCE						    = $A403;
+  TAG_DIGITAL_ZOOM_RATIO			    = $A404;
+  TAG_FOCAL_LENGTH_IN_35MM_FILM	  = $A405;
+  TAG_SCENE_CAPTURE_TYPE			    = $A406;
+  TAG_GAIN_CONTROL			          = $A407;
+  TAG_CONTRAST					          = $A408;
+  TAG_SATURATION				          = $A409;
+  TAG_SHARPNESS					          = $A40A;
+  TAG_DEVICE_SETTING_DESCRIPTION	= $A40B;
+  TAG_SUBJECT_DISTANCE_RANGE		  = $A40C;
+
+// Tags relating to user information
+
+  TAG_MARKER_NOTE	    = $927C;
+  TAG_USER_COMMENT  	= $9286;
+
+// LibTIF compression modes
+
+  TAG_COMPRESSION_NONE            = 1;	{ dump mode }
+  TAG_COMPRESSION_CCITTRLE        = 2;	{ CCITT modified Huffman RLE }
+  TAG_COMPRESSION_CCITTFAX3	      = 3;	{ CCITT Group 3 fax encoding }
+  TAG_COMPRESSION_CCITT_T4        = 3;       { CCITT T.4 (TIFF 6 name) }
+  TAG_COMPRESSION_CCITTFAX4	      = 4;	{ CCITT Group 4 fax encoding }
+  TAG_COMPRESSION_CCITT_T6        = 4;       { CCITT T.6 (TIFF 6 name) }
+  TAG_COMPRESSION_LZW             = 5;       { Lempel-Ziv  & Welch }
+  TAG_COMPRESSION_OJPEG           = 6;	{ !6.0 JPEG }
+  TAG_COMPRESSION_JPEG            = 7;	{ %JPEG DCT compression }
+  TAG_COMPRESSION_NEXT            = 32766;	{ NeXT 2-bit RLE }
+  TAG_COMPRESSION_CCITTRLEW       = 32771;	{ #1 w/ word alignment }
+  TAG_COMPRESSION_PACKBITS        = 32773;	{ Macintosh RLE }
+  TAG_COMPRESSION_THUNDERSCAN     = 32809;	{ ThunderScan RLE }
+{ codes 32895-32898 are reserved for ANSI IT8 TIFF/IT <dkelly@apago.com) }
+  TAG_COMPRESSION_IT8CTPAD        = 32895;   { IT8 CT w/padding }
+  TAG_COMPRESSION_IT8LW           = 32896;   { IT8 Linework RLE }
+  TAG_COMPRESSION_IT8MP           = 32897;   { IT8 Monochrome picture }
+  TAG_COMPRESSION_IT8BL           = 32898;   { IT8 Binary line art }
+{ compression codes 32908-32911 are reserved for Pixar }
+  TAG_COMPRESSION_PIXARFILM       = 32908;   { Pixar companded 10bit LZW }
+  TAG_COMPRESSION_PIXARLOG        = 32909;   { Pixar companded 11bit ZIP }
+  TAG_COMPRESSION_DEFLATE         = 32946;	{ Deflate compression }
+  TAG_COMPRESSION_ADOBE_DEFLATE   = 8;       { Deflate compression,
+						   as recognized by Adobe }
+{ compression code 32947 is reserved for Oceana Matrix <dev@oceana.com> }
+  TAG_COMPRESSION_DCS             = 32947;   { Kodak DCS encoding }
+  TAG_COMPRESSION_JBIG          	= 34661;	{ ISO JBIG }
+  TAG_COMPRESSION_SGILOG          = 34676;	{ SGI Log Luminance RLE }
+  TAG_COMPRESSION_SGILOG24        = 34677;	{ SGI Log 24-bit packed }
+  TAG_COMPRESSION_JP2000          = 34712;   { Leadtools JPEG2000 }
+  TAG_COMPRESSION_LZMA            = 34925;	{ LZMA2 }
+
+// ----------------------------------------------------------
+// GPS Attribute Information
+// ----------------------------------------------------------
+
+  TAG_GPS_VERSION_ID         = $0000;
+  TAG_GPS_LATITUDE_REF       = $0001;
+  TAG_GPS_LATITUDE           = $0002;
+  TAG_GPS_LONGITUDE_REF		   = $0003;
+  TAG_GPS_LONGITUDE          = $0004;
+  TAG_GPS_ALTITUDE_REF		   = $0005;
+  TAG_GPS_ALTITUDE           = $0006;
+  TAG_GPS_TIME_STAMP         = $0007;
+  TAG_GPS_SATELLITES         = $0008;
+  TAG_GPS_STATUS             = $0009;
+  TAG_GPS_MEASURE_MODE		   = $000A;
+  TAG_GPS_DOP                = $000B;
+  TAG_GPS_SPEED_REF          = $000C;
+  TAG_GPS_SPEED              = $000D;
+  TAG_GPS_TRACK_REF          = $000E;
+  TAG_GPS_TRACK              = $000F;
+  TAG_GPS_IMG_DIRECTION_REF  = $0010;
+  TAG_GPS_IMG_DIRECTION      = $0011;
+  TAG_GPS_MAP_DATUM          = $0012;
+  TAG_GPS_DEST_LATITUDE_REF  = $0013;
+  TAG_GPS_DEST_LATITUDE		   = $0014;
+  TAG_GPS_DEST_LONGITUDE_REF = $0015;
+  TAG_GPS_DEST_LONGITUDE     = $0016;
+  TAG_GPS_DEST_BEARING_REF   = $0017;
+  TAG_GPS_DEST_BEARING       = $0018;
+  TAG_GPS_DEST_DISTANCE_REF	 = $0019;
+  TAG_GPS_DEST_DISTANCE		   = $001A;
+  TAG_GPS_PROCESSING_METHOD	 = $001B;
+  TAG_GPS_AREA_INFORMATION   = $001C;
+  TAG_GPS_DATE_STAMP         = $001D;
+  TAG_GPS_DIFFERENTIAL       = $001E;
 
 type
   TExifPatchInfo = class
@@ -90,6 +236,8 @@ function UpdateImageGeoInfoFromExif(Info: TDBPopupMenuInfoRecord; ExifData: TExi
 function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
 procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
 procedure FixEXIFForJpegStream(Exif: TExifData; Stream: TStream; Width, Height: Integer);
+function EXIFDateToDate(DateTime: string): TDateTime;
+function EXIFDateToTime(DateTime: string): TDateTime;
 
 implementation
 
@@ -984,6 +1132,50 @@ begin
   SaveToGraphic(FileName);
   if FD > 0 then
     FileSetDate(FileName, FD);
+end;
+
+function EXIFDateToDate(DateTime: string): TDateTime;
+var
+  Yyyy, Mm, Dd: Word;
+  D: string;
+  DT: TDateTime;
+begin
+  Result := 0;
+  if TryStrToDate(DateTime, DT) then
+  begin
+    Result := DateOf(DT);
+  end else
+  begin
+    D := Copy(DateTime, 1, 10);
+    TryStrToDate(D, Result);
+    if Result = 0 then
+    begin
+      Yyyy := StrToIntDef(Copy(DateTime, 1, 4), 0);
+      Mm := StrToIntDef(Copy(DateTime, 6, 2), 0);
+      Dd := StrToIntDef(Copy(DateTime, 9, 2), 0);
+      if (Yyyy > 1990) and (Yyyy < 2050) then
+        if (Mm >= 1) and (Mm <= 12) then
+          if (Dd >= 1) and (Dd <= 31) then
+            Result := EncodeDate(Yyyy, Mm, Dd);
+    end;
+  end;
+end;
+
+function EXIFDateToTime(DateTime: string): TDateTime;
+var
+  T: string;
+  DT: TDateTime;
+begin
+  Result := 0;
+  if TryStrToTime(DateTime, DT) then
+  begin
+    Result := TimeOf(DT);
+  end else
+  begin
+    T := Copy(DateTime, 12, 8);
+    TryStrToTime(T, Result);
+    Result := TimeOf(Result);
+  end;
 end;
 
 end.

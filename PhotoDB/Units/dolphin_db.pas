@@ -119,9 +119,6 @@ function GetDBFileName(FileName, DBName: string): string;
 
 function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
 
-function EXIFDateToDate(DateTime: string): TDateTime;
-function EXIFDateToTime(DateTime: string): TDateTime;
-
 function GetActiveFormHandle: Integer;
 
 function SizeInText(Size: Int64): string;
@@ -329,51 +326,6 @@ begin
     Exit;
   end;
   Result := AnsiCompareStr(Text1, Text2);
-end;
-
-function EXIFDateToDate(DateTime: string): TDateTime;
-var
-  Yyyy, Mm, Dd: Word;
-  D: string;
-  DT: TDateTime;
-begin
-  Result := 0;
-  if TryStrToDate(DateTime, DT) then
-  begin
-    Result := DateOf(DT);
-  end else
-  begin
-    D := Copy(DateTime, 1, 10);
-    TryStrToDate(D, Result);
-    if Result = 0 then
-    begin
-      Yyyy := StrToIntDef(Copy(DateTime, 1, 4), 0);
-      Mm := StrToIntDef(Copy(DateTime, 6, 2), 0);
-      Dd := StrToIntDef(Copy(DateTime, 9, 2), 0);
-      if (Yyyy > 1990) and (Yyyy < 2050) then
-        if (Mm >= 1) and (Mm <= 12) then
-          if (Dd >= 1) and (Dd <= 31) then
-            Result := EncodeDate(Yyyy, Mm, Dd);
-    end;
-  end;
-end;
-
-function EXIFDateToTime(DateTime: string): TDateTime;
-var
-  // yyyy,mm,dd : Word;
-  T: string;
-  DT: TDateTime;
-begin
-  Result := 0;
-  if TryStrToTime(DateTime, DT) then
-  begin
-    Result := TimeOf(DT);
-  end else
-  begin
-    T := Copy(DateTime, 12, 8);
-    TryStrToTime(T, Result);
-    Result := TimeOf(Result);
-  end;
 end;
 
 function GetActiveFormHandle: Integer;
