@@ -7,12 +7,16 @@ uses
   uConstants,
   uMemory,
   uStringUtils,
+  UnitDBDeclare,
   Windows,
   Classes,
   SysUtils,
   CCR.Exif,
+  uRawExif,
   uExifUtils,
+  uImageLoader,
   uGroupTypes,
+  uAssociations,
   UnitLinksSupport,
   uICCProfile,
   Vcl.ValEdit,
@@ -58,16 +62,17 @@ type
   end;
 
 procedure LoadExifInfo(VleEXIF: TValueListEditor; FileName: string);
-function FillExifInfo(ExifData: TExifData; out Info: IExifInfo): Boolean;
+function FillExifInfo(ExifData: TExifData; RawExif: TRawExif; out Info: IExifInfo): Boolean;
 
 implementation
 
 procedure LoadExifInfo(VleEXIF: TValueListEditor; FileName: string);
 var
   OldMode: Cardinal;
-  ExifData: TExifData;
-  Info: IExifInfo;
+  ExifInfo: IExifInfo;
   Line: IExifInfoLine;
+  Info: TDBPopupMenuInfoRecord;
+  ImageInfo: ILoadImageInfo;
 
   function L(S: string): string;
   begin
@@ -79,33 +84,33 @@ begin
 
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    ExifData := TExifData.Create;
     try
+      Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
       try
-        ExifData.LoadFromFileEx(FileName);
-
-        if FillExifInfo(ExifData, Info) then
+        if LoadImageFromPath(Info, -1, '', [ilfICCProfile, ilfEXIF, ilfPassword, ilfDontUpdateInfo], ImageInfo) then
         begin
-          for Line in Info do
-            VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+          if FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, ExifInfo) then
+          begin
+            for Line in ExifInfo do
+              VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+          end;
         end;
-
-      except
-        on e : Exception do
-        begin
-          VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
-          Eventlog(e.Message);
-        end;
+      finally
+        F(Info);
       end;
-    finally
-      F(ExifData);
+    except
+      on e: Exception do
+      begin
+        VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
+        Eventlog(e.Message);
+      end;
     end;
   finally
     SetErrorMode(OldMode);
   end;
 end;
 
-function FillExifInfo(ExifData: TExifData; out Info: IExifInfo): Boolean;
+function FillExifInfo(ExifData: TExifData; RawExif: TRAWExif; out Info: IExifInfo): Boolean;
 var
   Orientation: Integer;
   Groups: TGroups;
@@ -121,6 +126,7 @@ const
   function L(S: string): string;
   begin
     Result := TA(S, 'PropertiesForm');
+    Result := TA(Result, 'EXIF');
   end;
 
   procedure XInsert(Key, Value: string; IsExtended: Boolean = False);
@@ -272,9 +278,14 @@ begin
       XInsert(L('Private'), L('Yes'));
 
   end else
-    XInsert(L('Info:'), L('Exif header not found.'));
-
-
+  begin
+    if (RawExif <> nil) and (RawExif.Count > 0) then
+    begin
+      for I := 0 to RawExif.Count - 1 do
+        XInsert(L(RawExif[I].Description), RawExif[I].Value);
+    end else
+      XInsert(L('Info:'), L('Exif header not found.'));
+  end;
 end;
 
 { TExifInfoLine }

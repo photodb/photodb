@@ -408,10 +408,12 @@ uses
   uFreeImageImage in 'Units\Formats\uFreeImageImage.pas',
   PDB.uVCLRewriters in 'Units\PDB.uVCLRewriters.pas',
   uDBInfoEditorUtils in 'Units\uDBInfoEditorUtils.pas',
+  uRawExif in 'Units\uRawExif.pas',
   uMediaEncryption in 'Units\uMediaEncryption.pas',
   uTransparentEncryption in 'Units\uTransparentEncryption.pas',
   uLockedFileNotifications in 'Units\uLockedFileNotifications.pas',
   uExplorerFolderImages in 'Units\uExplorerFolderImages.pas',
+  uFIRational in 'Units\uFIRational.pas',
   uMediaPlayers in 'Units\uMediaPlayers.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}

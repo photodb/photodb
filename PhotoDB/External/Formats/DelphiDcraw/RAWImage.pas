@@ -49,42 +49,10 @@ type
     property PreviewSize: Integer read FPreviewSize write FPreviewSize;
   end;
 
-  TRAWExifRecord = class(TObject)
-  private
-    FDescription : string;
-    FKey: string;
-    FValue: string;
-  public
-    property Key: string read FKey write FKey;
-    property Value: string read FValue write FValue;
-    property Description: string read FDescription write FDescription;
-  end;
-
-  TRAWExif = class(TObject)
-  private
-    FExifList: TList;
-    function GetCount: Integer;
-    function GetValueByIndex(Index: Integer): TRAWExifRecord;
-    function GetTimeStamp: TDateTime;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function Add(Description, Key, Value: string): TRAWExifRecord;
-    function IsEXIF: Boolean;
-    property TimeStamp: TDateTime read GetTimeStamp;
-    property Count: Integer read GetCount;
-    property Items[Index: Integer]: TRAWExifRecord read GetValueByIndex; default;
-  end;
-
-  function ReadRAWExif(FileName: String): TRAWExif;
-
 var
   IsRAWSupport: Boolean = True;
 
 implementation
-
-uses
-  Dolphin_DB, UnitDBCommon;
 
 { TRAWImage }
 
@@ -119,55 +87,6 @@ begin
     end;
   finally
     RawBitmap.FindCloseMetadata(FindMetaData);
-  end;
-end;
-
-function ReadRAWExif(FileName: String): TRAWExif;
-var
-  RawBitmap: TFreeWinBitmap;
-  FindMetaData: PFIMETADATA;
-  I: Integer;
-  TagData: PFITAG;
-
-  procedure AddTag;
-  var
-    Description, Value, Key: PAnsiChar;
-  begin
-    Description := FreeImage_GetTagDescription(TagData);
-    Key := FreeImage_GetTagKey(TagData);
-    if (Key <> 'Artist') and (Description <> 'Image title') then
-    begin
-      Value := FreeImage_TagToString(I, TagData);
-      if Description <> nil then
-        Result.Add(string(Description), string(Key), string(Value))
-      else
-        Result.Add(string(Key), string(Key), string(Value));
-    end;
-  end;
-begin
-  Result := TRAWExif.Create;
-
-  TagData := nil;
-  RawBitmap := TFreeWinBitmap.Create;
-  try
-    RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
-    for I := FIMD_NODATA to FIMD_EXIF_RAW do
-    begin
-      FindMetaData := FreeImage_FindFirstMetadata(I, RawBitmap.Dib, TagData);
-      try
-        if FindMetaData <> nil then
-        begin
-          AddTag;
-
-          while FreeImage_FindNextMetadata(FindMetaData, TagData) do
-            AddTag;
-        end;
-      finally
-        RawBitmap.FindCloseMetadata(FindMetaData);
-      end;
-    end;
-  finally
-    F(RawBitmap);
   end;
 end;
 
@@ -349,54 +268,6 @@ end;
 procedure TRAWImage.SetIsPreview(const Value: boolean);
 begin
   FIsPreview := Value;
-end;
-
-{ TRAWExif }
-
-function TRAWExif.Add(Description, Key, Value: string) : TRAWExifRecord;
-begin
-  Result := TRAWExifRecord.Create;
-  Result.Description := Description;
-  Result.Key := Key;
-  Result.Value := Value;
-  FExifList.Add(Result);
-end;
-
-constructor TRAWExif.Create;
-begin
-  FreeImageInit;
-  FExifList := TList.Create;
-end;
-
-destructor TRAWExif.Destroy;
-begin
-  FreeList(FExifList);
-  inherited;
-end;
-
-function TRAWExif.GetCount: Integer;
-begin
-  Result := FExifList.Count;
-end;
-
-function TRAWExif.GetTimeStamp: TDateTime;
-var
-  I : Integer;
-begin
-  Result := 0;
-  for I := 0 to Count - 1 do
-    if Self[I].Key = 'DateTime' then
-        Result := EXIFDateToDate(Self[I].Value) + EXIFDateToTime(Self[I].Value);
-end;
-
-function TRAWExif.GetValueByIndex(Index: Integer): TRAWExifRecord;
-begin
-  Result := FExifList[Index];
-end;
-
-function TRAWExif.IsEXIF: Boolean;
-begin
-  Result := Count > 0;
 end;
 
 initialization

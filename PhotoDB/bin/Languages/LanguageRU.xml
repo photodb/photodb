@@ -2285,4 +2285,124 @@
 	<translate name="Can't decrypt image &quot;{0}&quot;" value="Не удаётся расшифровать изображение &quot;{0}&quot;"/>
 	<translate name="Can't load image &quot;{0}&quot;" value="Не удаётся загрузить изображение &quot;{0}&quot;"/>
   </scope>
+  <scope name="EXIF">
+	<translate name="top, left side" value="Нормальная"/>
+	<translate name="top, right side" value="Отражено по горизонтали"/>
+	<translate name="bottom, right side" value="Повёрнуто на 180°"/>
+	<translate name="bottom, left side" value="Отражено по вертикали"/>
+	<translate name="left side, top" value="Повёрнуто на 90° против часовой стрелки и отражено по вертикали"/>
+	<translate name="right side, top" value="Повёрнуто на 90° по часовой стрелке"/>
+	<translate name="right side, bottom" value="Повёрнуто на 90° по часовой стрелке и отражено по вертикали"/>
+	<translate name="left side, bottom" value="Повёрнуто на 90° против часовой стрелки"/>
+	<translate name="Undefined" value="Не определено"/>
+	<translate name="Unknown" value="Неизвестно"/>
+	<translate name="bit/pixel" value="бит/пиксель"/>
+	<translate name="bits/pixel" value="бит/пиксель"/>
+	<translate name="(No unit)" value="Нет данных"/>
+	<translate name="inches" value="дюймы"/>
+	<translate name="cm" value="см"/>
+	<translate name="sec" value="сек"/>
+	<translate name="1/{0} sec" value="1/{0} сек"/>
+	<translate name="F{0:0.#}" value="F{0:0.#}"/>
+	<translate name="{0:0.#} mm" value="{0:0.#} мм"/>
+	<translate name="{0} mm" value="{0} мм"/>
+	<translate name="Flash did not fire" value="Вспышка не срабатывала"/>
+	<translate name="Flash fired" value="Сработала вспышка"/>
+	<translate name="Strobe return light not detected" value="Стробирующий свет не обнаружен"/>
+	<translate name="Strobe return light detected" value="Стробирующий свет обнаружен"/>
+	<translate name="Flash fired, compulsory flash mode" value="Сработала вспышка, обязательный режим вспышки"/>
+	<translate name="Flash fired, compulsory flash mode, return light not detected" value="Сработала вспышка, обязательный режим вспышки, возвратный свет не обнаружен"/>
+	<translate name="Flash fired, compulsory flash mode, return light detected" value="Сработала вспышка, обязательный режим вспышки, возвратный свет обнаружен"/>
+	<translate name="Flash did not fire, compulsory flash mode" value="Вспышка не срабатывала, обязательный режим вспышки"/>
+	<translate name="Flash did not fire, auto mode" value="Вспышка не срабатывала, автоматический режим"/>
+	<translate name="Flash fired, auto mode" value="Сработала вспышка, автоматический режим"/>
+	<translate name="Flash fired, auto mode, return light not detected" value="Сработала вспышка, автоматический режим, возвратный света не обнаружен"/>
+	<translate name="Flash fired, auto mode, return light detected" value="Сработала вспышка, автоматический режим, возвратный света обнаружен"/>
+	<translate name="No flash function" value="Нет функции вспышки"/>
+	<translate name="Flash fired, red-eye reduction mode" value="Сработала вспышка, режим уменьшения эффекта красных глаз"/>
+	<translate name="Flash fired, red-eye reduction mode, return light not detected" value="Сработала вспышка, режим уменьшения эффекта красных глаз, возвратный света не обнаружен"/>
+	<translate name="Flash fired, red-eye reduction mode, return light detected" value="Сработала вспышка, режим уменьшения эффекта красных глаз, возвратный света обнаружен"/>
+	<translate name="Flash fired, compulsory flash mode, red-eye reduction mode" value="Сработала вспышка, обязательный режим вспышки, режим уменьшения эффекта красных глаз"/>
+	<translate name="Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected" value="Сработала вспышка, обязательный режим вспышки, режим уменьшения эффекта красных глаз, возвратный свет не обнаружен"/>
+	<translate name="Flash fired, compulsory flash mode, red-eye reduction mode, return light detected" value="Сработала вспышка, обязательный режим вспышки, режим уменьшения эффекта красных глаз, возвратный свет обнаружен"/>
+	<translate name="Flash fired, auto mode, red-eye reduction mode" value="Сработала вспышка, автоматический режим, режим уменьшения эффекта красных глаз"/>
+	<translate name="Flash fired, auto mode, return light not detected, red-eye reduction mode" value="Сработала вспышка, автоматический режим, режим уменьшения эффекта красных глаз, возвратный не свет обнаружен"/>
+	<translate name="Flash fired, auto mode, return light detected, red-eye reduction mode" value="работала вспышка, автоматический режим, режим уменьшения эффекта красных глаз, возвратный свет обнаружен"/>
+	<translate name="Unknown ({0})" value="Неизвестный режим ({0})"/>
+	<translate name="Infinity" value="Бесконечность"/>
+	<translate name="Distance unknown" value="Неизвестная дистанция"/>
+	<translate name="{0:###} meters" value="{0:###} метров"/>
+	<translate name="Average" value="Среднее"/>
+	<translate name="Center weighted average" value="Центрально-взвешенное"/>
+	<translate name="Spot" value="Точечное"/>
+	<translate name="Multi-spot" value="Несколько точек"/>
+	<translate name="Multi-segment" value="Несколько сегментов"/>
+	<translate name="Partial" value="Частичное"/>
+	<translate name="(Other)" value="Другое"/>
+	<translate name="Daylight" value="Дневной свет"/>
+	<translate name="Fluorescent" value="Флуоресцентный свет"/>
+	<translate name="Tungsten (incandescent light)" value="Лампа накаливания"/>
+	<translate name="Flash" value="Вспышка"/>
+	<translate name="Fine weather" value="Хорошая погода"/>
+	<translate name="Cloudy weather" value="Пасмурная погода"/>
+	<translate name="Shade" value="Тень"/>
+	<translate name="Daylight fluorescent (D 5700 - 7100K)" value="Флуоресцентный дневной свет (D 5700 - 7100K)"/>
+	<translate name="Day white fluorescent (N 4600 - 5400K)" value="Флуоресцентный белый (N 4600 - 5400)"/>
+	<translate name="Cool white fluorescent (W 3900 - 4500K)" value="Холодный белый флуоресцентный (W 3900 - 4500K)"/>
+	<translate name="White fluorescent (WW 3200 - 3700K)" value="Белый флуоресцентный (WW 3200 - 3700K)"/>
+	<translate name="Standard light A" value="Стандартный свет A"/>
+	<translate name="Standard light B" value="Стандартный свет B"/>
+	<translate name="Standard light C" value="Стандартный свет C"/>
+	<translate name="ISO studio tungsten" value="Студийная лампа накаливания"/>
+	<translate name="Manual control" value="Ручной режим"/>
+	<translate name="Program normal" value="Нормальная программа"/>
+	<translate name="Aperture priority" value="Приоритет диафрагмы"/>
+	<translate name="Shutter priority" value="Приоритет выдержки"/>
+	<translate name="Program creative (slow program)" value="Творческая программа (медленная программа)"/>
+	<translate name="Program action (high-speed program)" value="Программа действий (высокоскоростная программа)"/>
+	<translate name="Portrait mode" value="Портретный режим"/>
+	<translate name="Landscape mode" value="Ландшафтный режим"/>
+	<translate name="Unknown program ({0})" value="Неизвестная программа ({0})"/>
+	<translate name="Auto exposure" value="Автоматическая экспозиция"/>
+	<translate name="Manual exposure" value="Ручная установка экспозиции"/>
+	<translate name="Auto bracket" value="Автобрекетинг"/>
+	<translate name="Unknown mode ({0})" value="Неизвестный режим ({0})"/>
+	<translate name="Auto white balance" value="Автоматический баланс белого"/>
+	<translate name="Manual white balance" value="Ручной баланс белого"/>
+	<translate name="Standard" value="Стандарт"/>
+	<translate name="Landscape" value="Пейзаж"/>
+	<translate name="Portrait" value="Портрет"/>
+	<translate name="Night scene" value="Нояная сцена"/>
+	<translate name="Normal" value="Норма"/>
+	<translate name="Soft" value="Магрий"/>
+	<translate name="Hard" value="Сильный"/>
+	<translate name="Low saturation" value="Низкая насыщенность"/>
+	<translate name="High saturation" value="Высокая насыщенность"/>
+	<translate name="Macro" value="Макро"/>
+	<translate name="Close view" value="Близкий вид"/>
+	<translate name="Distant view" value="Удаленный вид"/>
+	<translate name="Orientation of image" value="Ориентация"/>
+	<translate name="Unit of X and Y resolution" value="Единица X и Y разрешения"/>
+	<translate name="Color space information" value="Цветовое пространство"/>
+	<translate name="Contrast" value="Контраст"/>
+	<translate name="Saturation" value="Насыщенность"/>
+	<translate name="Sharpness" value="Чёткость"/>
+	<translate name="White balance" value="Баланс белого"/>
+	<translate name="Image resolution in width direction" value="Разрешение по X"/>
+	<translate name="Image resolution in height direction" value="Разрешение по Y"/>
+	<translate name="Meaning of each component" value="Значение каждого компонента"/>
+	<translate name="Image compression mode" value="Режим сжатия"/>
+	<translate name="Exposure bias" value="Компенсация экспозиции"/>
+	<translate name="Exposure mode" value="Режим экспозиции"/>
+	<translate name="Exposure program" value="Программа экспозиции"/>
+	<translate name="Exposure time" value="Выдержка"/>
+	<translate name="F number" value="Диафрагма"/>
+	<translate name="Lens focal length" value="Фокусное расстояние"/>
+	<translate name="Focal length in 35 mm film" value="Фокусное расстояние для 35 мм пленки"/>
+	<translate name="ISO speed rating" value="Светочувствительность ISO"/>
+	<translate name="Light source" value="Источник света"/>
+	<translate name="Maximum lens aperture" value="Максимальная диафрагма объектива"/>
+	<translate name="Scene capture type" value="Тип сцены при съемке"/>
+	<translate name="Metering mode" value="Режим измерения"/>
+  </scope>
 </language>

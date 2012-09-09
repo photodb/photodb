@@ -11,7 +11,7 @@ uses
   uPathProviders,
   uExplorerFSProviders,
   uExplorerPortableDeviceProvider,
-  RAWImage,
+  uRawExif,
   uAssociations,
   CCR.Exif,
   uDateUtils,
@@ -68,8 +68,9 @@ begin
     begin
       if IsRAWImageFile(PI.Path) then
       begin
-        RAWExif := ReadRAWExif(PI.Path);
+        RAWExif := TRAWExif.Create;
         try
+          RAWExif.LoadFromFile(PI.Path);
           if RAWExif.IsEXIF then
             Result := DateOf(RAWExif.TimeStamp);
         finally
