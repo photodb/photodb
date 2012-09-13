@@ -126,8 +126,8 @@
 			<VerInfo_MajorVer>3</VerInfo_MajorVer>
 			<DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
 			<VerInfo_Release>0</VerInfo_Release>
-			<VerInfo_Build>517</VerInfo_Build>
-			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.1.0.517;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.1;ProductVersion=3.1;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+			<VerInfo_Build>521</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2012;FileDescription=Photo DataBase;FileVersion=3.1.0.521;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2012;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v3.1;ProductVersion=3.1;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -732,10 +732,12 @@
 			<DCCReference Include="Units\Formats\uFreeImageImage.pas"/>
 			<DCCReference Include="Units\PDB.uVCLRewriters.pas"/>
 			<DCCReference Include="Units\uDBInfoEditorUtils.pas"/>
+			<DCCReference Include="Units\uRawExif.pas"/>
 			<DCCReference Include="Units\uMediaEncryption.pas"/>
 			<DCCReference Include="Units\uTransparentEncryption.pas"/>
 			<DCCReference Include="Units\uLockedFileNotifications.pas"/>
 			<DCCReference Include="Units\uExplorerFolderImages.pas"/>
+			<DCCReference Include="Units\uFIRational.pas"/>
 			<DCCReference Include="Units\uMediaPlayers.pas"/>
 			<RidlCompile Include="Units\WebJS\WebJS.ridl"/>
 			<BuildConfiguration Include="Debug">

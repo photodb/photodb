@@ -779,9 +779,14 @@ begin
   for I := Low(Engines) to High(Engines) do
     if CheckClass(Engines[I]) then
       begin
-        DAO := CreateOleObject(Engines[I]);
-        DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
-        Exit;
+        try
+          DAO := CreateOleObject(Engines[I]);
+          DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
+          Exit;
+        except
+          on E: Exception do
+            EventLog('DAO engine could not be initialized. Engine: ' + Engines[I] + ', ERROR: ' + E.message);
+        end;
       end;
   raise Exception.Create('DAO engine could not be initialized');
 end;
