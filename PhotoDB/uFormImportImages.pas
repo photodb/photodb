@@ -386,6 +386,7 @@ end;
 constructor TSelectDateItem.Create(Date: TDateTime);
 begin
   inherited Create(Date);
+  FItemsSize := 0;
   FItems := TList<TPathItem>.Create;
 end;
 

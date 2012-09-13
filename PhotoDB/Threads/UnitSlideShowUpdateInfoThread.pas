@@ -3,8 +3,18 @@ unit UnitSlideShowUpdateInfoThread;
 interface
 
 uses
-  Classes, SysUtils, DB, CommonDBSupport, Dolphin_DB, uThreadForm, uThreadEx,
-  ActiveX, UnitDBDeclare, uMemory, uExifUtils, uConstants;
+  Classes,
+  SysUtils,
+  DB,
+  CommonDBSupport,
+  Dolphin_DB,
+  uThreadForm,
+  uThreadEx,
+  ActiveX,
+  UnitDBDeclare,
+  uMemory,
+  uExifUtils,
+  uConstants;
 
 type
   TSlideShowUpdateInfoThread = class(TThreadEx)

@@ -3,9 +3,20 @@ unit UnitRefreshDBRecordsThread;
 interface
 
 uses
-  Classes, uDBPopupMenuInfo, UnitDBKernel, Forms, UnitPropeccedFilesSupport,
-  UnitDBDeclare, SysUtils, uLogger, uMemory, uDBUtils, ActiveX, uDBForm,
-  uDBThread, uConstants;
+  Classes,
+  uDBPopupMenuInfo,
+  UnitDBKernel,
+  Forms,
+  UnitPropeccedFilesSupport,
+  UnitDBDeclare,
+  SysUtils,
+  uLogger,
+  uMemory,
+  uDBUtils,
+  ActiveX,
+  uDBForm,
+  uDBThread,
+  uConstants;
 
 type
   TRefreshIDRecordThreadOptions = record

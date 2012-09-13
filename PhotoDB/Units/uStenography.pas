@@ -3,8 +3,18 @@ unit uStenography;
 interface
 
 uses
-  Math, Classes, SysUtils, Windows, Graphics, Win32crc, GraphicsBaseTypes,
-  uMemory, uStrongCrypt, DECUtil, DECCipher, Jpeg;
+  Math,
+  Classes,
+  SysUtils,
+  Windows,
+  Graphics,
+  Jpeg,
+  Win32crc,
+  GraphicsBaseTypes,
+  uMemory,
+  uStrongCrypt,
+  DECUtil,
+  DECCipher;
 
 const
   MaxSizeWidthHeight = 32768;
