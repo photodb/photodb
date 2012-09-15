@@ -20,6 +20,8 @@ uses
   uTime,
   uFileUtils,
   uSysUtils,
+  uShellIntegration,
+  uTranslate,
 
   ReplaseIconsInScript,
   uScript,
@@ -337,19 +339,19 @@ begin
     (Query as TADOQuery).Parameters[index].Value := Bool;
 end;
 
-procedure SetDateParam(Query : TDataSet; Name : string; Date : TDateTime);
+procedure SetDateParam(Query: TDataSet; Name: string; Date: TDateTime);
 begin
   if (Query is TADOQuery) then
     (Query as TADOQuery).Parameters.FindParam(name).Value := Date;
 end;
 
-procedure SetIntParam(Query : TDataSet; Index : integer; Value : integer);
+procedure SetIntParam(Query: TDataSet; Index: Integer; Value: integer);
 begin
   if (Query is TADOQuery) then
     (Query as TADOQuery).Parameters[Index].Value := Value;
 end;
 
-procedure SetStrParam(Query : TDataSet; Index : integer; Value : String);
+procedure SetStrParam(Query: TDataSet; Index: Integer; Value : string);
 begin
   if (Query is TADOQuery) then
     (Query as TADOQuery).Parameters[Index].Value := Value;
@@ -406,7 +408,7 @@ begin
   end;
 end;
 
-function ActiveSQL(SQL : TDataSet; Active : boolean) : boolean;
+function ActiveSQL(SQL : TDataSet; Active: Boolean): Boolean;
 begin
   try
     if (SQL is TADOQuery) then
@@ -422,7 +424,7 @@ begin
   Result := SQL <> nil;
 end;
 
-function ActiveTable(Table : TDataSet; Active : boolean) : boolean;
+function ActiveTable(Table : TDataSet; Active: Boolean): Boolean;
 begin
   try
     if (Table is TADODataSet) then
@@ -756,8 +758,11 @@ end;
 
 procedure CreateMSAccessDatabase(FileName: string);
 var
-  DAO: Variant;
-  I: Integer;
+  DAO,
+  WS: Variant;
+  I,
+  Code: Integer;
+  ErrorString: string;
   const Engines: array[0..3] of string = ('DAO.DBEngine.120', 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
 
   function CheckClass(OLEClassName: string): Boolean;
@@ -776,16 +781,29 @@ var
   end;
 
 begin
+  Code := 0;
   for I := Low(Engines) to High(Engines) do
     if CheckClass(Engines[I]) then
       begin
         try
           DAO := CreateOleObject(Engines[I]);
-          DAO.Workspaces[0].CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
+          Code := 1;
+          WS := DAO.Workspaces[0];
+          Code := 2;
+          WS.CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
           Exit;
         except
           on E: Exception do
-            EventLog('DAO engine could not be initialized. Engine: ' + Engines[I] + ', ERROR: ' + E.message);
+          begin
+            ErrorString := 'Error creating database! Engine: ' + Engines[I] + ', ERROR: ' + E.message + ', file: ' + FileName + ', code = ' + IntToStr(Code);
+            EventLog(ErrorString);
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                MessageBoxDB(0, ErrorString, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+              end
+            );
+          end;
         end;
       end;
   raise Exception.Create('DAO engine could not be initialized');
@@ -962,7 +980,7 @@ begin
   ADODBConnection := CreateOleObject('ADODB.Connection');
   ADODBConnection.CursorLocation := 3; // User client
   ADODBConnection.ConnectionString := ConnectionString;
-  Result          := 0;
+  Result := 0;
   try
     ADODBConnection.Open;
   except

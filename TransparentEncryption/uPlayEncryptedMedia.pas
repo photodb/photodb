@@ -84,7 +84,8 @@ var
     BytesWrite: NativeUInt;
   begin
     Result := VirtualAllocEx(Hdl, nil, Length(Text) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    WriteProcessMemory(Hdl, Result, PChar(Text), Length(Text) * 2 + 2, BytesWrite);
+    if not WriteProcessMemory(Hdl, Result, PChar(Text), Length(Text) * 2 + 2, BytesWrite) then
+      MessageBox(0, PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), 0);
   end;
 
   function CreateExternalPAnsiChar(Text: AnsiString): Pointer;
@@ -92,11 +93,16 @@ var
     BytesWrite: NativeUInt;
   begin
     Result := VirtualAllocEx(Hdl, nil, Length(Text) + 1, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    WriteProcessMemory(Hdl, Result, PAnsiChar(Text), Length(Text) + 1, BytesWrite);
+    if not WriteProcessMemory(Hdl, Result, PAnsiChar(Text), Length(Text) + 1, BytesWrite) then
+      MessageBox(0, PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), 0);
   end;
 
 begin
-  Hdl := OpenProcess(PROCESS_ALL_ACCESS or PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION, False, TargetId);
+  Hdl := OpenProcess(PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION or PROCESS_VM_WRITE, False, TargetId);
+
+  if (Hdl = 0)  then
+    MessageBox(0, PChar('Can''t open remote process!'), PChar('Can''t open remote process!'), 0);
+
   ZeroMemory(@InjectParams, SizeOf(InjectParams));
   InjectParams.ErrorLibraryText := CreateExternalPChar('Invalid hook library!'); //TODO: localize
   InjectParams.ErrorProcedureText := CreateExternalPChar('Invalid hook procedure!'); //TODO: localize
@@ -117,7 +123,20 @@ begin
   InjectCode := VirtualAllocEx(Hdl, nil, InjectCodeLength, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
   WriteProcessMemory(Hdl, InjectCode, Pointer(InjectCodeStart), InjectCodeLength, BytesWrite);
 
-  hThread  := CreateRemoteThread(Hdl, nil, 0, InjectCode, ParamAddr, CREATE_SUSPENDED, hRemoteThread);
+  if InjectCode = nil then
+    MessageBox(0, PChar('InjectCode is null'), PChar('InjectCode is null'), 0);
+  if ParamAddr = nil then
+    MessageBox(0, PChar('ParamAddr is null'), PChar('ParamAddr is null'), 0);
+
+  hThread  := CreateRemoteThread(Hdl, nil, 0,
+    InjectCode,
+    ParamAddr,
+    CREATE_SUSPENDED,
+    hRemoteThread);
+
+  if hThread = 0 then
+    MessageBox(0, PChar('Can''t create remote thread!'), PChar('Can''t create remote thread!'), 0);
+
   CloseHandle(Hdl);
 
   Result := hThread;
@@ -129,17 +148,12 @@ var
   PI: TProcessInformation;
   hThread: Cardinal;
 begin
-  // Устанавливаем отладочные привилегии для выбранного процесса, т.к. без данных
-  // привилегий код внедрения работать не будет???
-  //TODO: check in dicumentation and in user-mode processes
-  //ChangePrivilege('SeDebugPrivilege', True);
-
   ZeroMemory(@si, SizeOf(si));
   SI.cb := SizeOf(si);
   SI.dwFlags := STARTF_USESHOWWINDOW;
   SI.wShowWindow := SW_SHOW;
 
-  CreateProcess(PChar(Player), PChar('"' + Player + '" "' + Media + '"'), nil, nil, False, 0{CREATE_SUSPENDED}, nil, nil, SI, PI);
+  CreateProcess(PChar(Player), PChar('"' + Player + '" "' + Media + '"'), nil, nil, True, 0, nil, PChar(ExtractFileDir(Player)), SI, PI);
 
   if pi.dwProcessId > 0 then
   begin

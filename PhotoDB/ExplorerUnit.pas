@@ -215,7 +215,7 @@ type
     Cut2: TMenuItem;
     N7: TMenuItem;
     N8: TMenuItem;
-    StatusBar1: TStatusBar;
+    StatusBarMain: TStatusBar;
     GoToSearchWindow1: TMenuItem;
     OpeninSearchWindow1: TMenuItem;
     PmTreeView: TPopupActionBar;
@@ -327,7 +327,7 @@ type
     AddHiddenInfo1: TMenuItem;
     ExtractHiddenInfo1: TMenuItem;
     CoolBarTop: TCoolBar;
-    ToolBar1: TToolBar;
+    ToolBarMain: TToolBar;
     TbBack: TToolButton;
     TbForward: TToolButton;
     TbUp: TToolButton;
@@ -392,7 +392,7 @@ type
     PnInfo: TPanel;
     WlLearnMoreLink: TWebLink;
     SbCloseHelp: TSpeedButton;
-    PnGeoLocation: TPanel;
+    PnRight: TPanel;
     SplGeoLocation: TSplitter;
     PnGeoTop: TPanel;
     SbCloseGeoLocation: TSpeedButton;
@@ -430,6 +430,23 @@ type
     BtnSaveInfo: TButton;
     WlDeleteLocation: TWebLink;
     MiDisplayOnMap: TMenuItem;
+    CoolBarBottom: TCoolBar;
+    ToolBarBottom: TToolBar;
+    TbbPlay: TToolButton;
+    PcRightPreview: TPageControl;
+    TsGeoLocation: TTabSheet;
+    TsMediaPreview: TTabSheet;
+    TsDetailedSearch: TTabSheet;
+    TbbEncrypt: TToolButton;
+    TbbResize: TToolButton;
+    TbbCrop: TToolButton;
+    TbbPrint: TToolButton;
+    TbbEditor: TToolButton;
+    TbbGeo: TToolButton;
+    TbbRename: TToolButton;
+    TbbProperties: TToolButton;
+    TbbShare: TToolButton;
+    ImlBottomToolBar: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -587,7 +604,7 @@ type
     procedure TbStopClick(Sender: TObject);
     procedure PopupMenuZoomDropDownPopup(Sender: TObject);
     procedure MapCD1Click(Sender: TObject);
-    procedure ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure ToolBarMainMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure AsEXIF1Click(Sender: TObject);
     procedure PePathChange(Sender: TObject);
     procedure PePathUpdateItem(Sender: TObject; PathPart: TPathItem);
@@ -1206,7 +1223,7 @@ begin
 
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   RegisterMainForm(Self);
-  FStatusProgress := CreateProgressBar(StatusBar1, 0);
+  FStatusProgress := CreateProgressBar(StatusBarMain, 0);
   FStatusProgress.Visible := False;
   FHistory.OnHistoryChange := HistoryChanged;
   TbBack.Enabled := False;
@@ -1287,8 +1304,8 @@ begin
   TW.I.Start('LoadLanguage');
   LoadLanguage;
   TW.I.Start('LoadToolBarGrayedIcons - end');
-  ToolBar1.Images := ToolBarNormalImageList;
-  ToolBar1.DisabledImages := ToolBarDisabledImageList;
+  ToolBarMain.Images := ToolBarNormalImageList;
+  ToolBarMain.DisabledImages := ToolBarDisabledImageList;
 
   PePath.Width := PnNavigation.Width - (StAddress.Left + StAddress.Width + 5);
 
@@ -3444,7 +3461,7 @@ begin
 
     //activate browser on mowse wheel
     H := GetFocus;
-    if PnGeoLocation.Visible and (FWbGeoLocation <> nil) then
+    if TsGeoLocation.Visible and (FWbGeoLocation <> nil) then
     begin
       GetCursorPos(P);
       P := FWbGeoLocation.ScreenToClient(P);
@@ -3483,7 +3500,7 @@ begin
       begin
         WindowsMenuTickCount := GetTickCount;
 
-        if PnGeoLocation.Visible then
+        if PnRight.Visible then
           Windows.SetFocus(ElvMain.Handle);
       end;
 
@@ -3886,7 +3903,7 @@ end;
 
 procedure TExplorerForm.SplGeoLocationMoved(Sender: TObject);
 begin
-  Settings.WriteInteger('Explorer', 'GeoLocationWidth', PnGeoLocation.Width);
+  Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 end;
 
 procedure TExplorerForm.WlSaveLocationClick(Sender: TObject);
@@ -4264,8 +4281,8 @@ begin
 
     LoadSpeedButtonFromResourcePNG(SbDoSearchLocation, 'SEARCH');
 
-    FWbGeoLocation := TWebBrowser.Create(PnGeoLocation);
-    TWinControl(FWbGeoLocation).Parent := PnGeoLocation;
+    FWbGeoLocation := TWebBrowser.Create(TsGeoLocation);
+    TWinControl(FWbGeoLocation).Parent := TsGeoLocation;
     FWbGeoLocation.Tag := 1;
     FWbGeoLocation.Align := alClient;
     FWbGeoLocation.Silent := True;
@@ -4308,11 +4325,11 @@ begin
       end;
       FGeoHTMLWindow := (FWbGeoLocation.Document as IHTMLDocument2).parentWindow;
     end;
-    PnGeoLocation.Width := Settings.ReadInteger('Explorer', 'GeoLocationWidth', PnGeoLocation.Width);
+    PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
   end;
-  PnGeoLocation.Show;
+  PnRight.Show;
   SplGeoLocation.Show;
-  SplGeoLocation.Left := PnGeoLocation.Left;
+  SplGeoLocation.Left := PnRight.Left;
 end;
 
 procedure TExplorerForm.StateChanged(OldState: TGUID);
@@ -4670,7 +4687,7 @@ end;
 
 procedure TExplorerForm.SetStatusText(Text: string);
 begin
-  StatusBar1.Panels[1].Text := Text;
+  StatusBarMain.Panels[1].Text := Text;
 end;
 
 procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
@@ -6420,8 +6437,8 @@ begin
     TbZoomIn.Hint := L('Zoom in');
     TbSearch.Hint := L('Go to search window');
     TbOptions.Hint := L('Options');
-    ToolBar1.ShowCaptions := True;
-    ToolBar1.AutoSize := True;
+    ToolBarMain.ShowCaptions := True;
+    ToolBarMain.AutoSize := True;
 
     PePath.LoadingText := L('Loading...');
 
@@ -6780,7 +6797,7 @@ begin
   if TStyleManager.IsCustomStyleActive then
   begin
     InvalidateRect(PePath.Handle, PePath.ClientRect, True);
-    InvalidateRect(ToolBar1.Handle, ToolBar1.ClientRect, True);
+    InvalidateRect(ToolBarMain.Handle, ToolBarMain.ClientRect, True);
   end;
 
   WlSaveLocation.Enabled := False;
@@ -8326,7 +8343,7 @@ begin
 
   ApplyTabs;
 
-  if (PnGeoLocation.Visible) then
+  if (TsGeoLocation.Visible) then
   begin
     if (FSelectedInfo.GeoLocation <> nil) then
       WlGeoLocationClick(Self)
@@ -8446,7 +8463,7 @@ end;
 
 procedure TExplorerForm.SbCloseGeoLocationClick(Sender: TObject);
 begin
-  PnGeoLocation.Hide;
+  TsGeoLocation.Hide;
   SplGeoLocation.Hide;
   Windows.SetFocus(ElvMain.Handle);
 end;
@@ -9333,7 +9350,7 @@ procedure TExplorerForm.ListView1Resize(Sender: TObject);
 begin
   ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
   ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
-  LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3 - IIF(PnGeoLocation.Visible, PnGeoLocation.Width, 0);
+  LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3 - IIF(PnRight.Visible, PnRight.Width, 0);
   LoadSizes;
   if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Tag = 1) then
   begin
@@ -9762,7 +9779,7 @@ var
   APoint: TPoint;
 begin
   APoint := Point(ToolButtonView.Left, ToolButtonView.Top + ToolButtonView.Height);
-  APoint := ToolBar1.ClientToScreen(APoint);
+  APoint := ToolBarMain.ClientToScreen(APoint);
   PmListViewType.DoPopupEx(APoint.X, APoint.Y);
 end;
 
@@ -10095,14 +10112,14 @@ begin
   PePath.CanBreakLoading := False;
   LsMain.Hide;
   HideProgress;
-  StatusBar1.Panels[1].Text := L('Loading canceled...');
+  StatusBarMain.Panels[1].Text := L('Loading canceled...');
 end;
 
 procedure TExplorerForm.DoStopLoading;
 begin
   PePath.CanBreakLoading := False;
   FStatusProgress.Visible := False;
-  StatusBar1.Panels[1].Text := '';
+  StatusBarMain.Panels[1].Text := '';
 end;
 
 procedure TExplorerForm.LoadSizes;
@@ -10552,7 +10569,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ToolBar1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+procedure TExplorerForm.ToolBarMainMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 begin
   if Application.HintHidePause < 5000 then
     Application.HintHidePause := 5000;

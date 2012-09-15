@@ -4,7 +4,7 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'FrmWatermarkOptions'
-  ClientHeight = 318
+  ClientHeight = 321
   ClientWidth = 304
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
   OnKeyDown = FormKeyDown
   DesignSize = (
     304
-    318)
+    321)
   PixelsPerInch = 96
   TextHeight = 13
   object LbBlocksX: TLabel
@@ -110,23 +110,25 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
   end
   object BtnOk: TButton
     Left = 224
-    Top = 287
+    Top = 290
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnOk'
     TabOrder = 7
     OnClick = BtnOkClick
+    ExplicitTop = 287
   end
   object BtnCancel: TButton
     Left = 143
-    Top = 287
+    Top = 290
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'BtnCancel'
     TabOrder = 6
     OnClick = BtnCancelClick
+    ExplicitTop = 287
   end
   object EdWatermarkText: TWatermarkedEdit
     Left = 8

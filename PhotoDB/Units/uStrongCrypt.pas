@@ -131,6 +131,9 @@ begin
   if StrongCryptInitFinished then
     Exit;
 
+  SetDefaultCipherClass(TCipher_Blowfish);
+  SetDefaultHashClass(THash_SHA1);
+
   TCipher_Blowfish.Register;
   TCipher_Twofish.Register;
   TCipher_IDEA.Register;
@@ -216,9 +219,5 @@ begin
     Free;
   end;
 end;
-
-initialization
-  SetDefaultCipherClass(TCipher_Blowfish);
-  SetDefaultHashClass(THash_SHA1);
 
 end.
