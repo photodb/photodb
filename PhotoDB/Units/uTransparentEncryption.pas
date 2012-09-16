@@ -454,13 +454,6 @@ end;
 
 { TEncryptedFile }
 
-type
-  PMsgHdr = ^TMsgHdr;
-  TMsgHdr = packed record
-    MsgSize : Integer;
-    Data : PChar;
-  end;
-
 function TEncryptedFile.CanDecryptWithPasswordRequest(FileName: string): Boolean;
 var
   EncryptHeader: TEncryptedFileHeader;
@@ -504,11 +497,10 @@ begin
       MessageToSent := '::PASS:' + SharedFileName + ':' + FileName;
 
       cd.dwData := WM_COPYDATA_ID;
-      cd.cbData := SizeOf(TMsgHdr) + ((Length(MessageToSent) + 1) * SizeOf(Char));
+      cd.cbData := ((Length(MessageToSent) + 1) * SizeOf(Char));
       GetMem(Buf, cd.cbData);
       try
         P := PByte(Buf);
-        NativeInt(P) := NativeInt(P) + SizeOf(TMsgHdr);
 
         StrPLCopy(PChar(P), MessageToSent, Length(MessageToSent));
         cd.lpData := Buf;
@@ -746,6 +738,9 @@ var
   MemoryToCopy, MemoryCopied, C: Integer;
   StartBlockPosition: Integer;
 begin
+  if BlockSize = 0 then
+    Exit;
+
   StartBlock := BlockPosition div FBlockSize;
   BlockEnd := Ceil((BlockPosition + BlockSize) / FBlockSize);
 

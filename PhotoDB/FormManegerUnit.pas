@@ -731,8 +731,8 @@ var
 begin
   if Msg.CopyDataStruct.DwData = WM_COPYDATA_ID then
   begin
-    Data := PByte(Msg.CopyDataStruct.LpData) + SizeOf(TMsgHdr);
-    SetString(S, PWideChar(Data), (Msg.CopyDataStruct.CbData - SizeOf(TMsgHdr) - 1) div SizeOf(WideChar));
+    Data := PByte(Msg.CopyDataStruct.LpData);
+    SetString(S, PWideChar(Data), Msg.CopyDataStruct.CbData div SizeOf(WideChar));
 
     if ProcessPasswordRequest(S) then
       Exit;

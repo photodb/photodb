@@ -31,7 +31,7 @@ end;
 procedure LoadHook; stdcall;
 begin
   {$IFDEF DEBUG}
-  //MessageBox(0, PChar('LoadHook'), PChar('LoadHook'), MB_OK or MB_ICONINFORMATION);
+  MessageBox(0, PChar('LoadHook'), PChar('LoadHook'), MB_OK or MB_ICONINFORMATION);
   {$ENDIF}
   StartLib;
   HookPEModule(GetModuleHandle(nil));

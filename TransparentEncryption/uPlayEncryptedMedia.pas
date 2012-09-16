@@ -148,29 +148,42 @@ var
   SI: TStartupInfo;
   PI: TProcessInformation;
   hThread: Cardinal;
+  StartupFlags: Cardinal;
+  IsXP: Boolean;
 begin
   ZeroMemory(@si, SizeOf(si));
   SI.cb := SizeOf(si);
   SI.dwFlags := STARTF_USESHOWWINDOW;
   SI.wShowWindow := SW_SHOW;
 
-  CreateProcess(PChar(Player), PChar('"' + Player + '" "' + Media + '"'), nil, nil, True, 0, nil, PChar(ExtractFileDir(Player)), SI, PI);
+  StartupFlags := 0;
+
+  IsXP := TOSVersion.Major < 6;
+
+  if not IsXP then
+    //fails on XP
+    //Small delay between CreateProcess and CreateRemoteThread is required - actual for XP
+    //hope it will work on XP!
+    StartupFlags := CREATE_SUSPENDED;
+
+  CreateProcess(PChar(Player), PChar('"' + Player + '" "' + Media + '"'), nil, nil, True, StartupFlags, nil, PChar(ExtractFileDir(Player)), SI, PI);
 
   if pi.dwProcessId > 0 then
   begin
-    hThread := InjectDll(pi.dwProcessId, HookDll);
+    hThread := InjectDll(PI.dwProcessId, HookDll);
 
     ResumeThread(hThread);
-    WaitForSingleObject(hThread, INFINITE);
-    Closehandle(hThread);
 
-    ResumeThread(pi.hThread);
+    WaitForSingleObject(hThread, INFINITE);
+    CloseHandle(hThread);
+
+    ResumeThread(PI.hThread);
     {$IFDEF DEBUG}
-    WaitForSingleObject(pi.hProcess, INFINITE);
+    WaitForSingleObject(PI.hProcess, INFINITE);
     {$ENDIF}
 
-    CloseHandle(pi.hThread);
-    CloseHandle(pi.hProcess);
+    CloseHandle(PI.hThread);
+    CloseHandle(PI.hProcess);
   end;
 end;
 

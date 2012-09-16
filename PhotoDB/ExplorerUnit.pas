@@ -447,6 +447,8 @@ type
     TbbProperties: TToolButton;
     TbbShare: TToolButton;
     ImlBottomToolBar: TImageList;
+    TbbConvert: TToolButton;
+    ToolButton1: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -1306,6 +1308,8 @@ begin
   TW.I.Start('LoadToolBarGrayedIcons - end');
   ToolBarMain.Images := ToolBarNormalImageList;
   ToolBarMain.DisabledImages := ToolBarDisabledImageList;
+
+  ToolBarBottom.DisabledImages := DBKernel.DisabledImageList;
 
   PePath.Width := PnNavigation.Width - (StAddress.Left + StAddress.Width + 5);
 
@@ -4862,7 +4866,7 @@ var
     else if FPlaces[Index].MyDocuments and (Path = AnsiLowerCase(GetPersonalFolder)) then
       Result := True
     else if FPlaces[Index].MyPictures and (Path = AnsiLowerCase(MyPicturesPath)) then
-        Result := True;
+      Result := True;
 
     if not Result then
       if FPlaces[Index].OtherFolder then
@@ -4883,17 +4887,23 @@ var
     begin
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
       EncryptLink.Text := L('Encrypt');
+      TbbEncrypt.Caption := L('Encrypt');
+      TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
       EncryptLink.Tag := ACTION_ENCRYPT_IMAGES;
     end else
     begin
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
       EncryptLink.Text := L('Decrypt');
+      TbbEncrypt.Caption := L('Decrypt');
+      TbbEncrypt.ImageIndex := DB_IC_DECRYPTIMAGE;
       EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
     end;
+    TbbEncrypt.Enabled := True;
     EncryptLink.Visible := True;
     EncryptLink.Top := NewTop + H;
     NewTop := EncryptLink.BoundsRect.Bottom;
   end;
+
 begin
   ScrollBox1.UpdatingPanel := True;
   IsReallignInfo := True;
@@ -5020,38 +5030,53 @@ begin
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
         AddEncryptMenu
       else
+      begin
         EncryptLink.Visible := False;
+        TbbEncrypt.Enabled := False;
+      end;
 
+      TbbResize.Enabled := True;
       WlResize.Visible := True;
       WlResize.Top := NewTop + H;
       NewTop := WlResize.BoundsRect.Bottom;
 
+      TbbConvert.Enabled := True;
       WlConvert.Visible := True;
       WlConvert.Top := NewTop + H;
       NewTop := WlConvert.BoundsRect.Bottom;
 
+      TbbCrop.Enabled := True;
       WlCrop.Visible := True;
       WlCrop.Top := NewTop + H;
       NewTop := WlCrop.BoundsRect.Bottom;
 
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
       begin
+        TbbPrint.Enabled := True;
         PrintLink.Visible := True;
         PrintLink.Top := NewTop + H;
         NewTop := PrintLink.BoundsRect.Bottom;
       end else
+      begin
+        TbbPrint.Enabled := False;
         PrintLink.Visible := False;
+      end;
 
       if ((FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE)) and (SelCount = 1) then
       begin
+        TbbEditor.Enabled := True;
         ImageEditorLink.Visible := True;
         ImageEditorLink.Top := NewTop + H;
         NewTop := ImageEditorLink.BoundsRect.Bottom;
       end else
+      begin
+        TbbEditor.Enabled := False;
         ImageEditorLink.Visible := False;
+      end;
 
       if CanSaveGeoLocation then
       begin
+        TbbGeo.Enabled := True;
         if (FSelectedInfo.GeoLocation <> nil)  then
           WlGeoLocation.Text := L('Display on map')
         else
@@ -5060,15 +5085,22 @@ begin
         WlGeoLocation.Top := NewTop + H;
         NewTop := WlGeoLocation.BoundsRect.Bottom;
       end else
+      begin
+        TbbGeo.Enabled := False;
         WlGeoLocation.Visible := False;
+      end;
 
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and not FolderView then
       begin
+        TbbShare.Enabled := True;
         WlShare.Visible := True;
         WlShare.Top := NewTop + H;
         NewTop := WlShare.BoundsRect.Bottom;
       end else
+      begin
+        TbbShare.Enabled := False;
         WlShare.Visible := False;
+      end;
 
     end else
     begin
@@ -5081,6 +5113,15 @@ begin
       ImageEditorLink.Visible := False;
       WlGeoLocation.Visible := False;
       WlShare.Visible := False;
+
+      TbbResize.Enabled := False;
+      TbbEncrypt.Enabled := False;
+      TbbConvert.Enabled := False;
+      TbbCrop.Enabled := False;
+      TbbPrint.Enabled := False;
+      TbbEditor.Enabled := False;
+      TbbGeo.Enabled := False;
+      TbbShare.Enabled := False;
     end;
 
     NewTop := NewTop + H * 4;
@@ -5091,11 +5132,15 @@ begin
       (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
+      TbbPlay.Enabled := True;
       SlideShowLink.Visible := True;
       SlideShowLink.Top := NewTop + H;
       NewTop := SlideShowLink.BoundsRect.Bottom;
     end else
+    begin
+      TbbPlay.Enabled := False;
       SlideShowLink.Visible := False;
+    end;
 
     if (((((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
               (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
@@ -5115,7 +5160,7 @@ begin
     end else
       ShellLink.Visible := False;
 
-    if CanBeTransparentEncryptedFile(FSelectedInfo.FileName) then
+    if CanBeTransparentEncryptedFile(FSelectedInfo.FileName) and (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) then
       AddEncryptMenu;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
@@ -5155,11 +5200,15 @@ begin
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) and
       (SelCount <> 0) then
     begin
+      TbbRename.Enabled := True;
       RenameLink.Visible := True;
       RenameLink.Top := NewTop + H;
       NewTop := RenameLink.BoundsRect.Bottom;
     end else
+    begin
+      TbbRename.Enabled := False;
       RenameLink.Visible := False;
+    end;
 
     if (((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -5181,11 +5230,15 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE)) and
         (SelCount > 1)) then
     begin
+      TbbProperties.Enabled := True;
       PropertiesLink.Visible := True;
       PropertiesLink.Top := NewTop + H;
       NewTop := PropertiesLink.BoundsRect.Bottom;
     end else
+    begin
+      TbbProperties.Enabled := False;
       PropertiesLink.Visible := False;
+    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -5219,11 +5272,15 @@ begin
     begin
       if CanShareSelectedObjects then
       begin
+        TbbShare.Enabled := True;
         WlShare.Visible := True;
         WlShare.Top := NewTop + H;
         NewTop := WlShare.BoundsRect.Bottom;
       end else
+      begin
+        TbbShare.Enabled := False;
         WlShare.Visible := False;
+      end;
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
@@ -6468,6 +6525,19 @@ begin
     LbHistogramImage.Caption := L('Histogram');
     LbEditKeywords.Caption := L('Keywords') + ':';
     LbEditComments.Caption := L('Comment') + ':';
+
+    TbbPlay.Caption := L('Open');
+    TbbEncrypt.Caption := L('Encrypt');
+    TbbResize.Caption := L('Resize');
+    TbbConvert.Caption := L('Convert');
+    TbbCrop.Caption := L('Crop');
+    TbbPrint.Caption := L('Print');
+    TbbEditor.Caption := L('Image editor');
+    TbbGeo.Caption := L('Display on map');
+    TbbRename.Caption := L('Rename');
+    TbbProperties.Caption := L('Properties');
+    TbbShare.Caption := L('Share');
+
   finally
     EndTranslate;
   end;
@@ -10038,7 +10108,6 @@ begin
   AddIcon('EXPLORER_SEARCH');
   AddIcon('EXPLORER_OPTIONS');
   AddIcon('EXPLORER_BREAK');
-
 end;
 
 procedure TExplorerForm.LoadToolBarGrayedIcons;
@@ -10620,6 +10689,20 @@ begin
   PmItemPopup.Images := DBKernel.ImageList;
   PmListPopup.Images := DBKernel.ImageList;
   PmLinkOptions.Images := DBKernel.ImageList;
+  ToolBarBottom.Images := DBKernel.ImageList;
+
+  TbbPlay.ImageIndex := DB_IC_SLIDE_SHOW;
+  TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
+  TbbResize.ImageIndex := DB_IC_RESIZE;
+  TbbConvert.ImageIndex := DB_IC_CONVERT;
+  TbbCrop.ImageIndex := DB_IC_CROP;
+  TbbPrint.ImageIndex := DB_IC_PRINTER;
+  TbbEditor.ImageIndex := DB_IC_IMEDITOR;
+  TbbGeo.ImageIndex := DB_IC_MAP_MARKER;
+  TbbRename.ImageIndex := DB_IC_RENAME;
+  TbbProperties.ImageIndex := DB_IC_PROPERTIES;
+  TbbShare.ImageIndex := DB_IC_PHOTO_SHARE;
+
   Shell1.ImageIndex := DB_IC_SHELL;
   SlideShow1.ImageIndex := DB_IC_SLIDE_SHOW;
   DBitem1.ImageIndex := DB_IC_NOTES;

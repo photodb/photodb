@@ -27,11 +27,6 @@ type
   TBuffer = array of Char;
 
 type
-  PMsgHdr = ^TMsgHdr;
-  TMsgHdr = packed record
-    MsgSize : Integer;
-    Data : PChar;
-  end;
 
   TProgressCallBackInfo = record
     MaxValue : Int64;

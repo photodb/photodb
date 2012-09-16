@@ -42,12 +42,21 @@ type
     Addr: Cardinal;
   end;
 var J: PAbsoluteIndirectJmp;
+    P: PPointer;
 begin
   J := PAbsoluteIndirectJmp(Proc);
   if (J.OpCode = $25FF) then
-    {$ifdef Win32}Result := PPointer(J.Addr)^{$endif}
-    {$ifdef Win64}Result := PPointer(TNativeUInt(Proc) + J.Addr + 6{Instruction Size})^{$endif}
-  else
+  begin
+    {$ifdef Win32}
+    P := PPointer(J.Addr);
+    {$endif}
+    {$ifdef Win64}
+    P := PPointer(TNativeUInt(Proc) + J.Addr + 6{Instruction Size});
+    {$endif}
+    if IsBadReadPtr(P, SizeOf(NativeUInt)) then
+      Exit(nil);
+    Result := P^;
+  end else
     Result := Proc;
 end;
 
@@ -163,8 +172,10 @@ var
       while (ImportCode^ <> nil) and (NativeUInt(ImportCode^) > 4) do
       begin
         Address := ImportCode^;
+
         if Address <> OldAddress then
-          Address := GetActualAddr(ImportCode^);
+          Address := GetActualAddr(Address);
+
         //checks address and writes our one!
         if Address = OldAddress then
         begin

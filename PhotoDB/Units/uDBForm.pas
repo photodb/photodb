@@ -45,6 +45,7 @@ type
     procedure ApplyStyle; virtual;
     procedure ApplySettings; virtual;
     procedure CustomFormAfterDisplay; virtual;
+    procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -281,6 +282,14 @@ end;
 function TDBForm.LF(StringToTranslate: string; Args: array of const): string;
 begin
   Result := FormatEx(L(StringToTranslate), args);
+end;
+
+procedure TDBForm.WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo);
+begin
+  inherited;
+
+  //TODO:
+  //Message.Result := 0;                 {Tell windows you have changed minmaxinfo}
 end;
 
 procedure TDBForm.WndProc(var Message: TMessage);

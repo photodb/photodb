@@ -377,10 +377,18 @@ function LdrLoadDllHookProc(szcwPath: PWideChar;
                     pdwLdrErr: PULONG;
                     pUniModuleName: PUnicodeString;
                     pResultInstance: PHandle): NTSTATUS; stdcall;
+var
+  LastError: DWORD;
 begin
   Result := LdrLoadDllNextHook(szcwPath, pdwLdrErr, pUniModuleName, pResultInstance);
   if (pResultInstance <> nil) and (pResultInstance^ > 0) then
+  begin
+    LastError := GetLastError;
+
     ProcessDllLoad(pResultInstance^, pUniModuleName.Buffer);
+
+    SetLastError(LastError);
+  end;
 end;
 
 procedure HookPEModule(Module: HModule; Recursive: Boolean = True);
@@ -561,7 +569,7 @@ begin
 
   if IsHookStarted then
   begin
-    if not StartsStr('\\.', lpFileName) and not IsSystemPipe(lpFileName) then
+    if not StartsStr('\\.', string(AnsiString(lpFileName))) and not IsSystemPipe(string(AnsiString(lpFileName))) then
     begin
       if ValidEncryptFileExHandle(Result) then
         InitEncryptedFile(string(AnsiString(lpFileName)), Result);
@@ -582,7 +590,6 @@ begin
 
   if IsHookStarted then
   begin
-
     if not StartsStr('\\.', lpFileName) and not IsSystemPipe(lpFileName) then
     begin
       if ValidEncryptFileExHandle(Result) then
@@ -616,6 +623,7 @@ begin
 
   LastError := GetLastError;
   ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead);
+
   SetLastError(LastError);
 end;
 
