@@ -162,7 +162,9 @@ var
                                       //TODO: remove magic constant
       while (ImportCode^ <> nil) and (NativeUInt(ImportCode^) > 4) do
       begin
-        Address := GetActualAddr(ImportCode^);
+        Address := ImportCode^;
+        if Address <> OldAddress then
+          Address := GetActualAddr(ImportCode^);
         //checks address and writes our one!
         if Address = OldAddress then
         begin

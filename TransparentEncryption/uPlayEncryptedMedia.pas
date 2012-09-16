@@ -98,7 +98,8 @@ var
   end;
 
 begin
-  Hdl := OpenProcess(PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION or PROCESS_VM_WRITE, False, TargetId);
+  //A handle to the process in which the thread is to be created. The handle must have the PROCESS_CREATE_THREAD, PROCESS_QUERY_INFORMATION, PROCESS_VM_OPERATION, PROCESS_VM_WRITE, and PROCESS_VM_READ access rights, and may fail without these rights on certain platforms.
+  Hdl := OpenProcess(PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION or PROCESS_VM_WRITE or PROCESS_VM_READ or PROCESS_QUERY_INFORMATION, False, TargetId);
 
   if (Hdl = 0)  then
     MessageBox(0, PChar('Can''t open remote process!'), PChar('Can''t open remote process!'), 0);
