@@ -8,6 +8,7 @@ uses
   System.SysUtils,
   Winapi.ShlObj,
   uMemory,
+  uAppUtils,
   uShellUtils;
 
 function GetPlayerInternalPath: string;
@@ -20,8 +21,38 @@ function GetMediaPlayerClassicPath: string;
 function IsMediaPlayerClassicInstalled: Boolean;
 function GetWindowsMediaPlayerPath: string;
 function IsWindowsMediaPlayerInstalled: Boolean;
+function GetShellPlayerForFile(FileName: string): string;
 
 implementation
+
+function GetShellPlayerForFile(FileName: string): string;
+var
+  Reg: TRegistry;
+  Handler,
+  CommandLine: string;
+begin
+  Result := '';
+
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := HKEY_CLASSES_ROOT;
+    if Reg.OpenKey(ExtractFileExt(FileName), False) then
+    begin
+      Handler := Reg.ReadString('');
+      if Handler <> '' then
+      begin
+        if Reg.OpenKey('\' + Handler + '\shell\open\command', False) then
+        begin
+          CommandLine := Reg.ReadString('');
+          if CommandLine <> '' then
+            Result := ParamStrEx(CommandLine, -1);
+        end;
+      end;
+    end;
+  finally
+    F(Reg);
+  end;
+end;
 
 function IsPlayerInternalInstalled: Boolean;
 begin

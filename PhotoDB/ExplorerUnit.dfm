@@ -1,9 +1,9 @@
 object ExplorerForm: TExplorerForm
-  Left = 137
-  Top = 225
+  Left = 221
+  Top = 233
   VertScrollBar.Visible = False
   Caption = 'DB Explorer'
-  ClientHeight = 716
+  ClientHeight = 721
   ClientWidth = 1008
   Color = clBtnFace
   Constraints.MinHeight = 200
@@ -16,7 +16,7 @@ object ExplorerForm: TExplorerForm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
-  Position = poScreenCenter
+  Position = poDesigned
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -25,14 +25,14 @@ object ExplorerForm: TExplorerForm
   OnShow = FormShow
   DesignSize = (
     1008
-    716)
+    721)
   PixelsPerInch = 96
   TextHeight = 13
   object SplLeftPanel: TSplitter
     Left = 140
     Top = 48
     Width = 5
-    Height = 629
+    Height = 634
     Constraints.MaxWidth = 150
     OnCanResize = SplLeftPanelCanResize
     ExplicitLeft = 150
@@ -43,7 +43,7 @@ object ExplorerForm: TExplorerForm
     Left = 145
     Top = 48
     Width = 1
-    Height = 629
+    Height = 634
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
@@ -54,7 +54,7 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 48
     Width = 140
-    Height = 629
+    Height = 634
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
@@ -63,8 +63,8 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 0
       Width = 140
-      Height = 600
-      ActivePage = TsPreview
+      Height = 605
+      ActivePage = TsDetailedSearch
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -81,7 +81,7 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 572
+          Height = 577
           Align = alClient
           BevelOuter = bvNone
           ParentColor = True
@@ -91,7 +91,7 @@ object ExplorerForm: TExplorerForm
             Left = 0
             Top = 0
             Width = 132
-            Height = 572
+            Height = 577
             HorzScrollBar.Increment = 10
             HorzScrollBar.Visible = False
             VertScrollBar.Smooth = True
@@ -751,10 +751,9 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitHeight = 568
         DesignSize = (
           132
-          572)
+          577)
         object LbHistogramImage: TLabel
           Left = 3
           Top = 5
@@ -905,7 +904,7 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 572
+          Height = 577
           Align = alClient
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
@@ -923,7 +922,7 @@ object ExplorerForm: TExplorerForm
     end
     object PnShelf: TPanel
       Left = 0
-      Top = 600
+      Top = 605
       Width = 140
       Height = 29
       Align = alBottom
@@ -954,7 +953,7 @@ object ExplorerForm: TExplorerForm
   end
   object StatusBarMain: TStatusBar
     Left = 0
-    Top = 696
+    Top = 701
     Width = 1008
     Height = 20
     Panels = <
@@ -1321,7 +1320,7 @@ object ExplorerForm: TExplorerForm
     Left = 146
     Top = 48
     Width = 862
-    Height = 629
+    Height = 634
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
@@ -1331,7 +1330,7 @@ object ExplorerForm: TExplorerForm
       Left = 507
       Top = 33
       Width = 5
-      Height = 563
+      Height = 568
       Align = alRight
       Visible = False
       OnMoved = SplGeoLocationMoved
@@ -1341,7 +1340,7 @@ object ExplorerForm: TExplorerForm
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 596
+      Top = 601
       Width = 862
       Height = 33
       Align = alBottom
@@ -1810,23 +1809,141 @@ object ExplorerForm: TExplorerForm
       Left = 512
       Top = 33
       Width = 350
-      Height = 563
+      Height = 568
       Align = alRight
       TabOrder = 2
       Visible = False
+      DesignSize = (
+        350
+        568)
+      object SbCloseRightPanel: TSpeedButton
+        Left = 325
+        Top = 1
+        Width = 20
+        Height = 20
+        Anchors = [akTop, akRight]
+        Flat = True
+        Glyph.Data = {
+          36030000424D3603000000000000360000002800000010000000100000000100
+          1800000000000003000000000000000000000000000000000000FFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F3DEDFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFF1E1CE2FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          4744EF4E4BF23F3DEDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2321E4312F
+          E81E1CE2FFFFFFFFFFFFFFFFFF4F4CF45754F66361F85754F63F3DEDFFFFFFFF
+          FFFFFFFFFFFFFFFF2B29E64240EE4B49F6312FE81E1CE2FFFFFFFFFFFF5754F6
+          5B59F66361F8706DFD5754F64240EEFFFFFFFFFFFF3533EB4744EF6666FF4B49
+          F62F2CE72321E4FFFFFFFFFFFFFFFFFF5754F65B59F66361F87371FF5B59F642
+          40EE3C39EC4F4CF46666FF4F4CF43533EB2B29E6FFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFF5B59F65B59F66361F87371FF7371FF706DFD6D6BFF5654F73F3DED312F
+          E8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5B59F65B59F67875FF58
+          55FF5855FF7371FF4744EF3C39ECFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFF5B59F67D7BFF5D5AFF5855FF7371FF4744EFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8706DFD807DFF7D
+          7BFF7D7BFF7875FF5B59F64744EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFF6D6BFA7875FF8581FF7371FF6361F8605DF86D6BFA7875FF605DF84744
+          EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7371FF7D7BFF8986FF7D7BFF6D6BFA63
+          61F8605DF8605DF86D6BFA7D7BFF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF
+          7875FF807DFF807DFF7371FF6D6BFAFFFFFFFFFFFF605DF8605DF86D6BFA7D7B
+          FF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF7875FF7875FF706DFDFFFFFFFF
+          FFFFFFFFFFFFFFFF605DF86361F86D6BFA4F4CF44E4BF2FFFFFFFFFFFFFFFFFF
+          FFFFFF7875FF7875FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF605DF85B59
+          F65754F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8FFFFFFFFFFFFFFFFFF}
+        OnClick = SbCloseRightPanelClick
+      end
       object PcRightPreview: TPageControl
         Left = 1
         Top = 1
         Width = 348
-        Height = 561
-        ActivePage = TsGeoLocation
+        Height = 566
+        ActivePage = TsMediaPreview
         Align = alClient
         TabOrder = 0
+        OnChange = PcRightPreviewChange
+        object TsMediaPreview: TTabSheet
+          Caption = 'TsMediaPreview'
+          ImageIndex = 1
+          OnResize = TsMediaPreviewResize
+          DesignSize = (
+            340
+            538)
+          object ToolBarPreview: TToolBar
+            Left = 0
+            Top = 515
+            Width = 219
+            Height = 22
+            Align = alNone
+            Anchors = [akLeft, akBottom]
+            AutoSize = True
+            ButtonWidth = 30
+            TabOrder = 0
+            Transparent = True
+            Wrapable = False
+            object TbPreviewPrevious: TToolButton
+              Left = 0
+              Top = 0
+              Caption = 'TbPreviewPrevious'
+              ImageIndex = 3
+            end
+            object TbPreviewNext: TToolButton
+              Left = 30
+              Top = 0
+              ImageIndex = 3
+            end
+            object TbPreviewNavigationSeparator: TToolButton
+              Left = 60
+              Top = 0
+              Width = 8
+              Caption = 'TbPreviewNavigationSeparator'
+              ImageIndex = 3
+              Style = tbsSeparator
+            end
+            object TbPreviewZoomIn: TToolButton
+              Left = 68
+              Top = 0
+              Caption = 'TbPreviewZoomIn'
+              ImageIndex = 1
+            end
+            object TbPreviewZoomOut: TToolButton
+              Left = 98
+              Top = 0
+              ImageIndex = 0
+            end
+            object ToolButton2: TToolButton
+              Left = 128
+              Top = 0
+              Width = 8
+              Caption = 'ToolButton2'
+              ImageIndex = 3
+              Style = tbsSeparator
+            end
+            object TbPreviewPage: TToolButton
+              Left = 136
+              Top = 0
+              ImageIndex = 3
+              Style = tbsDropDown
+            end
+            object TbPreviewZoomSeparator: TToolButton
+              Left = 181
+              Top = 0
+              Width = 8
+              Caption = 'TbPreviewZoomSeparator'
+              ImageIndex = 2
+              Style = tbsSeparator
+            end
+            object TbPreviewOpen: TToolButton
+              Left = 189
+              Top = 0
+              ImageIndex = 2
+            end
+          end
+        end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
           object PnGeoSearch: TPanel
             Left = 0
-            Top = 498
+            Top = 503
             Width = 340
             Height = 35
             Align = alBottom
@@ -1865,46 +1982,6 @@ object ExplorerForm: TExplorerForm
             ParentBackground = False
             TabOrder = 1
             OnResize = PnInfoResize
-            DesignSize = (
-              340
-              33)
-            object SbCloseGeoLocation: TSpeedButton
-              Left = 313
-              Top = 5
-              Width = 23
-              Height = 22
-              Anchors = [akTop, akRight]
-              Flat = True
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                1800000000000003000000000000000000000000000000000000FFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F3DEDFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFF1E1CE2FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                4744EF4E4BF23F3DEDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2321E4312F
-                E81E1CE2FFFFFFFFFFFFFFFFFF4F4CF45754F66361F85754F63F3DEDFFFFFFFF
-                FFFFFFFFFFFFFFFF2B29E64240EE4B49F6312FE81E1CE2FFFFFFFFFFFF5754F6
-                5B59F66361F8706DFD5754F64240EEFFFFFFFFFFFF3533EB4744EF6666FF4B49
-                F62F2CE72321E4FFFFFFFFFFFFFFFFFF5754F65B59F66361F87371FF5B59F642
-                40EE3C39EC4F4CF46666FF4F4CF43533EB2B29E6FFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFF5B59F65B59F66361F87371FF7371FF706DFD6D6BFF5654F73F3DED312F
-                E8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5B59F65B59F67875FF58
-                55FF5855FF7371FF4744EF3C39ECFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFF5B59F67D7BFF5D5AFF5855FF7371FF4744EFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8706DFD807DFF7D
-                7BFF7D7BFF7875FF5B59F64744EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFF6D6BFA7875FF8581FF7371FF6361F8605DF86D6BFA7875FF605DF84744
-                EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7371FF7D7BFF8986FF7D7BFF6D6BFA63
-                61F8605DF8605DF86D6BFA7D7BFF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF
-                7875FF807DFF807DFF7371FF6D6BFAFFFFFFFFFFFF605DF8605DF86D6BFA7D7B
-                FF605DF84744EFFFFFFFFFFFFFFFFFFF7875FF7875FF7875FF706DFDFFFFFFFF
-                FFFFFFFFFFFFFFFF605DF86361F86D6BFA4F4CF44E4BF2FFFFFFFFFFFFFFFFFF
-                FFFFFF7875FF7875FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF605DF85B59
-                F65754F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFF6361F8FFFFFFFFFFFFFFFFFF}
-              OnClick = SbCloseGeoLocationClick
-              ExplicitLeft = 25
-            end
             object WlSaveLocation: TWebLink
               Left = 5
               Top = 8
@@ -1969,20 +2046,15 @@ object ExplorerForm: TExplorerForm
             end
           end
         end
-        object TsMediaPreview: TTabSheet
-          Caption = 'TsMediaPreview'
-          ImageIndex = 1
-        end
       end
     end
   end
   object CoolBarBottom: TCoolBar
     Left = 0
-    Top = 677
+    Top = 682
     Width = 1008
     Height = 19
     Align = alBottom
-    AutoSize = True
     BandBorderStyle = bsNone
     BandMaximize = bmNone
     Bands = <
@@ -1994,8 +2066,6 @@ object ExplorerForm: TExplorerForm
         Width = 1006
       end>
     EdgeBorders = []
-    ExplicitLeft = -1
-    ExplicitTop = 702
     object ToolBarBottom: TToolBar
       Left = 11
       Top = 0
@@ -2069,27 +2139,26 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 3
         OnClick = WlCropClick
       end
-      object TbbPrint: TToolButton
-        Left = 435
-        Top = 0
-        AutoSize = True
-        Caption = 'TbbPrint'
-        ImageIndex = 4
-        OnClick = PrintLinkClick
-      end
       object TbbEditor: TToolButton
-        Left = 491
+        Left = 435
         Top = 0
         AutoSize = True
         Caption = 'TbbEditor'
         ImageIndex = 5
         OnClick = ImageEditorLinkClick
       end
-      object ToolButton1: TToolButton
+      object TbbPrint: TToolButton
+        Left = 497
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbPrint'
+        ImageIndex = 4
+        OnClick = PrintLinkClick
+      end
+      object TbBottomFileActionsSeparator: TToolButton
         Left = 553
         Top = 0
         Width = 8
-        Caption = 'ToolButton1'
         ImageIndex = 9
         Style = tbsSeparator
       end

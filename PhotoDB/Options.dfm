@@ -48,13 +48,17 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 548
     Height = 441
-    ActivePage = TsStyle
+    ActivePage = TsPrograms
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
     object TsStyle: TTabSheet
       Caption = 'Style'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -135,6 +139,10 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -266,6 +274,10 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -478,6 +490,10 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -640,6 +656,10 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -896,6 +916,10 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -1372,6 +1396,10 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -1555,12 +1583,16 @@ object OptionsForm: TOptionsForm
     object TsPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 7
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         540
         413)
       object LbExtensionExecutable: TLabel
         Left = 259
-        Top = 186
+        Top = 194
         Width = 74
         Height = 13
         Caption = 'Executable file:'
@@ -1587,7 +1619,7 @@ object OptionsForm: TOptionsForm
       end
       object RbPlayerInternal: TRadioButton
         Left = 259
-        Top = 34
+        Top = 57
         Width = 276
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -1607,7 +1639,7 @@ object OptionsForm: TOptionsForm
       end
       object RbVlcPlayer: TRadioButton
         Left = 259
-        Top = 57
+        Top = 80
         Width = 276
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -1617,7 +1649,7 @@ object OptionsForm: TOptionsForm
       end
       object RbKmPlayer: TRadioButton
         Left = 259
-        Top = 80
+        Top = 103
         Width = 276
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -1627,7 +1659,7 @@ object OptionsForm: TOptionsForm
       end
       object RbMediaPlayerClassic: TRadioButton
         Left = 259
-        Top = 103
+        Top = 126
         Width = 276
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -1637,7 +1669,7 @@ object OptionsForm: TOptionsForm
       end
       object RbOtherProgram: TRadioButton
         Left = 259
-        Top = 149
+        Top = 172
         Width = 276
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -1647,7 +1679,7 @@ object OptionsForm: TOptionsForm
       end
       object EdPlayerExecutable: TEdit
         Left = 259
-        Top = 205
+        Top = 213
         Width = 249
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -1657,7 +1689,7 @@ object OptionsForm: TOptionsForm
       end
       object BtnSelectPlayerExecutable: TButton
         Left = 514
-        Top = 205
+        Top = 213
         Width = 23
         Height = 21
         Anchors = [akTop, akRight]
@@ -1714,7 +1746,7 @@ object OptionsForm: TOptionsForm
       end
       object WlSavePlayerChanges: TWebLink
         Left = 259
-        Top = 232
+        Top = 240
         Width = 88
         Height = 16
         Cursor = crHandPoint
@@ -1738,12 +1770,22 @@ object OptionsForm: TOptionsForm
       end
       object RbWindowsMediaPlayer: TRadioButton
         Left = 259
-        Top = 126
+        Top = 149
         Width = 276
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'RbWindowsMediaPlayer'
         TabOrder = 13
+        OnClick = RbPlayerInternalClick
+      end
+      object RbDefaultrogram: TRadioButton
+        Left = 259
+        Top = 34
+        Width = 276
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'RbDefaultrogram'
+        TabOrder = 14
         OnClick = RbPlayerInternalClick
       end
     end

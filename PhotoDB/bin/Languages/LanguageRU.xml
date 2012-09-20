@@ -268,7 +268,8 @@
     <translate name="Decrypt file" value="Расшифровать файл" />
     <translate name="Encrypt" value="Зашифровать" />
     <translate name="Decrypt" value="Расшифровать" />
-    <translate name="Enter password" value="Ввести пароль" />	
+    <translate name="Enter password" value="Ввести пароль" />
+    <translate name="Map" value="Карта" />
     <translate name="Display on map" value="Показать на карте" />
     <translate name="Set map location" value="Пометить на карте" />
     <translate name="Search location by address" value="Искать по адресу" />
@@ -1824,6 +1825,7 @@
 	<translate name="Don't use ICC profile" value="Не использовать ICC профиль"/>
 	<translate name="Use program" value="Открывать в программе"/>
 	<translate name="Executable file" value="Исполняемый файл (программа)"/>
+	<translate name="Default program" value="Программа по умолчанию"/>
 	<translate name="Internal video player" value="Встроенный видео плеер"/>
 	<translate name="KMPlayer" value="KMPlayer"/>
 	<translate name="Media Player Classic" value="Media Player Classic"/>

@@ -167,7 +167,8 @@ uses
   uFormInterfaces,
 
   uTransparentEncryption,
-  uMediaEncryption
+  uMediaEncryption,
+  uImageViewer
   ;
 
 const
@@ -395,7 +396,6 @@ type
     PnRight: TPanel;
     SplGeoLocation: TSplitter;
     PnGeoTop: TPanel;
-    SbCloseGeoLocation: TSpeedButton;
     WlGeoLocation: TWebLink;
     WlSaveLocation: TWebLink;
     WlPanoramio: TWebLink;
@@ -448,7 +448,18 @@ type
     TbbShare: TToolButton;
     ImlBottomToolBar: TImageList;
     TbbConvert: TToolButton;
-    ToolButton1: TToolButton;
+    TbBottomFileActionsSeparator: TToolButton;
+    SbCloseRightPanel: TSpeedButton;
+    ToolBarPreview: TToolBar;
+    TbPreviewPrevious: TToolButton;
+    TbPreviewNext: TToolButton;
+    TbPreviewNavigationSeparator: TToolButton;
+    TbPreviewZoomIn: TToolButton;
+    TbPreviewZoomOut: TToolButton;
+    ToolButton2: TToolButton;
+    TbPreviewPage: TToolButton;
+    TbPreviewZoomSeparator: TToolButton;
+    TbPreviewOpen: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -638,7 +649,7 @@ type
     procedure WlLearnMoreLinkClick(Sender: TObject);
     procedure PnInfoResize(Sender: TObject);
     procedure SbCloseHelpClick(Sender: TObject);
-    procedure SbCloseGeoLocationClick(Sender: TObject);
+    procedure SbCloseRightPanelClick(Sender: TObject);
     procedure WlGeoLocationClick(Sender: TObject);
     procedure WbGeoLocationExit(Sender: TObject);
     procedure WlPanoramioClick(Sender: TObject);
@@ -671,6 +682,8 @@ type
     procedure MiDisplayOnMapClick(Sender: TObject);
     procedure MiTreeViewRefreshClick(Sender: TObject);
     procedure TsInfoShow(Sender: TObject);
+    procedure PcRightPreviewChange(Sender: TObject);
+    procedure TsMediaPreviewResize(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -752,11 +765,17 @@ type
     FWebBrowserJSMessage: UINT;
     FEditorInfo: TExplorerFileInfos;
     FReloadGroupsMessage: UINT;
+
     FActiveLeftTab: TExplorerLeftTab;
     FLeftTabs: set of TExplorerLeftTab;
+
+    FActiveRightTab: TExplorerRightTab;
+    FRightTabs: set of TExplorerRightTab;
+
     FPngNoHIstogram: TPNGImage;
     FShowAttributes: Boolean;
     FShowEXIFAttributes: Boolean;
+    FImageViewer: TImageViewer;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
     procedure Reload;
@@ -811,10 +830,13 @@ type
     procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
     procedure RestoreDragSelectedItems;
 
-    procedure ShowLastActiveTab(Tab: TExplorerLeftTab);
-    procedure ShowActiveTab(Tab: TExplorerLeftTab);
-    procedure ShowTabIfWasActive(Tab: TExplorerLeftTab);
-    procedure ApplyTabs;
+    procedure ShowLastActiveLeftTab(Tab: TExplorerLeftTab);
+    procedure ShowActiveLeftTab(Tab: TExplorerLeftTab);
+    procedure ShowLeftTabIfWasActive(Tab: TExplorerLeftTab);
+    procedure ApplyLeftTabs;
+
+    procedure ShowActiveRightTab(Tab: TExplorerRightTab);
+    procedure ApplyRightTabs;
 
     procedure InitInfoEditor(InitTab: Boolean);
     procedure DisableInfoEditor;
@@ -825,6 +847,8 @@ type
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure PathTreeViewGetPopupMenu(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; const P: TPoint;
       var AskParent: Boolean; var PopupMenu: TPopupMenu);
+
+    procedure CreatePreview;
   protected      
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1070,6 +1094,14 @@ begin
   end;
 end;
 
+procedure TExplorerForm.PcRightPreviewChange(Sender: TObject);
+begin
+  FActiveRightTab := TExplorerRightTab(PcRightPreview.ActivePageIndex);
+  Settings.WriteInteger('Explorer', 'RightPanelTabIndex', PcRightPreview.ActivePageIndex);
+  if PcRightPreview.ActivePageIndex = 0 then
+    CreatePreview;
+end;
+
 procedure TExplorerForm.PcTasksChange(Sender: TObject);
 begin
   FActiveLeftTab := TExplorerLeftTab(PcTasks.ActivePageIndex);
@@ -1138,6 +1170,17 @@ begin
   end;
 end;
 
+procedure TExplorerForm.CreatePreview;
+begin
+  if FImageViewer = nil then
+  begin
+    FImageViewer := TImageViewer.Create;
+    FImageViewer.AttachTo(TsMediaPreview, 2, 2);
+    FImageViewer.SetImageSource(Self);
+    TsMediaPreviewResize(Self);
+  end;
+end;
+
 procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
@@ -1145,6 +1188,7 @@ begin
   FGeoHTMLWindow := nil;
   FEditorInfo := nil;
   FPngNoHIstogram := nil;
+  FImageViewer := nil;
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -1238,8 +1282,13 @@ begin
 
   FLeftTabs := [eltsPreview, eltsExplorer];
   FActiveLeftTab := eltsPreview;
-  ShowActiveTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsPreview))));
-  ApplyTabs;
+  ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsPreview))));
+  ApplyLeftTabs;
+
+  FRightTabs := [ertsPreview, ertsMap];
+  FActiveRightTab := ertsPreview;
+  ShowActiveRightTab(TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(ertsPreview))));
+  ApplyRightTabs;
 
   Lock := False;
 
@@ -2837,6 +2886,18 @@ begin
   end;
 end;
 
+procedure TExplorerForm.TsMediaPreviewResize(Sender: TObject);
+begin
+  if FImageViewer <> nil then
+  begin
+    FImageViewer.ResizeTo(TsMediaPreview.Width - FImageViewer.GetLeft * 2,
+                          TsMediaPreview.Height - FImageViewer.GetTop * 2 - ToolBarPreview.Height);
+
+    ToolBarPreview.Left := TsMediaPreview.Width div 2 - ToolBarPreview.Width div 2;
+    ToolBarPreview.Top := TsMediaPreview.Height - ToolBarPreview.Height;
+  end;
+end;
+
 procedure TExplorerForm.ListView1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
@@ -4263,6 +4324,7 @@ var
   MapHTML, S: string;
   Lt, Ln: Double;
   Zoom: Integer;
+  R: TRect;
 begin
   if FGeoHTMLWindow = nil then
   begin
@@ -4331,6 +4393,16 @@ begin
     end;
     PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
   end;
+
+  PcRightPreview.HandleNeeded;
+  PcRightPreview.Perform(TCM_GETITEMRECT, 0, LPARAM(@R));
+  SbCloseRightPanel.Width := R.Height;
+  SbCloseRightPanel.Height := R.Height;
+
+  SbCloseRightPanel.Parent := PcRightPreview;
+  SbCloseRightPanel.Top := 1;
+  SbCloseRightPanel.Left := PcRightPreview.Width - SbCloseRightPanel.Width - 2;
+
   PnRight.Show;
   SplGeoLocation.Show;
   SplGeoLocation.Left := PnRight.Left;
@@ -4736,9 +4808,9 @@ begin
         EndScreenUpdate(VleEXIF.Handle, {PcTasks.ActivePageIndex = Integer(eltsEXIF)}False);
       end;
 
-      ShowTabIfWasActive(eltsEXIF);
+      ShowLeftTabIfWasActive(eltsEXIF);
     end else
-      ShowLastActiveTab(eltsAny);
+      ShowLastActiveLeftTab(eltsAny);
 
     IsVisible := PcTasks.ActivePageIndex = Integer(eltsInfo);
     if IsVisible then
@@ -4752,7 +4824,7 @@ begin
 
     ReallignInfo;
 
-    ApplyTabs;
+    ApplyLeftTabs;
   end;
 end;
 
@@ -5076,12 +5148,14 @@ begin
 
       if CanSaveGeoLocation then
       begin
-        TbbGeo.Enabled := True;
         if (FSelectedInfo.GeoLocation <> nil)  then
           WlGeoLocation.Text := L('Display on map')
         else
           WlGeoLocation.Text := L('Set map location');
         WlGeoLocation.Visible := True;
+        TbbGeo.Enabled := True;
+        TbbGeo.Caption := WlGeoLocation.Text;
+
         WlGeoLocation.Top := NewTop + H;
         NewTop := WlGeoLocation.BoundsRect.Bottom;
       end else
@@ -6063,16 +6137,16 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ShowTabIfWasActive(Tab: TExplorerLeftTab);
+procedure TExplorerForm.ShowLeftTabIfWasActive(Tab: TExplorerLeftTab);
 var
   TabToShow: Integer;
 begin
   TabToShow := Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0);
   if TabToShow = Integer(Tab) then
-    ShowActiveTab(Tab);
+    ShowActiveLeftTab(Tab);
 end;
 
-procedure TExplorerForm.ShowActiveTab(Tab: TExplorerLeftTab);
+procedure TExplorerForm.ShowActiveLeftTab(Tab: TExplorerLeftTab);
 var
   TabToShow: TExplorerLeftTab;
 begin
@@ -6090,16 +6164,34 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ShowLastActiveTab(Tab: TExplorerLeftTab);
+procedure TExplorerForm.ShowActiveRightTab(Tab: TExplorerRightTab);
+var
+  TabToShow: TExplorerRightTab;
+begin
+  TabToShow := Tab;
+  if not (TabToShow in FRightTabs) then
+  begin
+    TabToShow := TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(FActiveLeftTab)));
+    if not (TabToShow in FRightTabs) then
+      TabToShow := ertsPreview;
+  end;
+  if FActiveRightTab <> TabToShow then
+  begin
+    FActiveRightTab := TabToShow;
+    FRightTabs := FRightTabs + [FActiveRightTab];
+  end;
+end;
+
+procedure TExplorerForm.ShowLastActiveLeftTab(Tab: TExplorerLeftTab);
 var
   LastActiveTab: TExplorerLeftTab;
 begin
   LastActiveTab := TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0));
   if (Tab = eltsAny) or (LastActiveTab = Tab) then
-    ShowActiveTab(LastActiveTab);
+    ShowActiveLeftTab(LastActiveTab);
 end;
 
-procedure TExplorerForm.ApplyTabs;
+procedure TExplorerForm.ApplyLeftTabs;
 var
   Tab: TExplorerLeftTab;
 begin
@@ -6114,6 +6206,23 @@ begin
     PcTasks.EnableTabChanging;
   end;
   PcTasks.ActivePageIndex := Integer(FActiveLeftTab);
+end;
+
+procedure TExplorerForm.ApplyRightTabs;
+var
+  Tab: TExplorerRightTab;
+begin
+  PcRightPreview.DisableTabChanging;
+  try
+    for Tab in [ertsPreview..ertsMap] do
+      if (Tab in FRightTabs) then
+        PcRightPreview.ShowTab(Integer(Tab))
+      else
+        PcRightPreview.HideTab(Integer(Tab));
+  finally
+    PcRightPreview.EnableTabChanging;
+  end;
+  PcRightPreview.ActivePageIndex := Integer(FActiveRightTab);
 end;
 
 procedure TExplorerForm.ShowFilter(PerformFilter: Boolean);
@@ -6517,6 +6626,7 @@ begin
     TsExplorer.Caption := L('Explorer');
     TsInfo.Caption := L('Info');
     TsEXIF.Caption := L('EXIF');
+    TsDetailedSearch.Caption := L('Search');
 
     VleExif.TitleCaptions[0] := L('Key');
     VleExif.TitleCaptions[1] := L('Value');
@@ -6538,6 +6648,8 @@ begin
     TbbProperties.Caption := L('Properties');
     TbbShare.Caption := L('Share');
 
+    TsGeoLocation.Caption := L('Map');
+    TsMediaPreview.Caption := L('Preview');
   finally
     EndTranslate;
   end;
@@ -8405,13 +8517,22 @@ begin
   else
   begin
     FLeftTabs := FLeftTabs + [eltsEXIF];
-    ShowLastActiveTab(eltsEXIF);
+    ShowLastActiveLeftTab(eltsEXIF);
   end;
 
   if not (FActiveLeftTab in FLeftTabs) then
-    ShowLastActiveTab(eltsAny);
+    ShowLastActiveLeftTab(eltsAny);
 
-  ApplyTabs;
+  ApplyLeftTabs;
+
+  if FActiveRightTab = ertsPreview then
+  begin
+    if TsPreview.Visible then
+      CreatePreview;
+    
+    if FImageViewer <> nil then
+      FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
+  end;
 
   if (TsGeoLocation.Visible) then
   begin
@@ -8531,9 +8652,9 @@ begin
   NewFileNameGUID := FileGUID;
 end;
 
-procedure TExplorerForm.SbCloseGeoLocationClick(Sender: TObject);
+procedure TExplorerForm.SbCloseRightPanelClick(Sender: TObject);
 begin
-  TsGeoLocation.Hide;
+  PnRight.Hide;
   SplGeoLocation.Hide;
   Windows.SetFocus(ElvMain.Handle);
 end;
@@ -10249,7 +10370,7 @@ begin
     end;
 
     FLeftTabs := FLeftTabs + [eltsInfo];
-    ShowLastActiveTab(eltsInfo);
+    ShowLastActiveLeftTab(eltsInfo);
 
     //if tab invisible but some child control request Handle -> issue: create handle and this tab is displayed on screen
     //sp update controls when tab is showing
@@ -10690,6 +10811,7 @@ begin
   PmListPopup.Images := DBKernel.ImageList;
   PmLinkOptions.Images := DBKernel.ImageList;
   ToolBarBottom.Images := DBKernel.ImageList;
+  ToolBarPreview.Images := DBKernel.ImageList;
 
   TbbPlay.ImageIndex := DB_IC_SLIDE_SHOW;
   TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
@@ -10702,6 +10824,12 @@ begin
   TbbRename.ImageIndex := DB_IC_RENAME;
   TbbProperties.ImageIndex := DB_IC_PROPERTIES;
   TbbShare.ImageIndex := DB_IC_PHOTO_SHARE;
+
+  TbPreviewPrevious.ImageIndex := DB_IC_PREVIOUS;
+  TbPreviewNext.ImageIndex := DB_IC_NEXT;
+  TbPreviewZoomOut.ImageIndex := DB_IC_ZOOMOUT;
+  TbPreviewZoomIN.ImageIndex := DB_IC_ZOOMIN;
+  TbPreviewOpen.ImageIndex := DB_IC_SLIDE_SHOW;
 
   Shell1.ImageIndex := DB_IC_SHELL;
   SlideShow1.ImageIndex := DB_IC_SLIDE_SHOW;
@@ -10827,6 +10955,7 @@ end;
 
 destructor TExplorerForm.Destroy;
 begin
+  F(FImageViewer);
   F(FHistory);
   F(FFilesInfo);
   F(RefreshIDList);

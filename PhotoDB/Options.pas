@@ -253,6 +253,7 @@ type
     MiSelectFile: TMenuItem;
     MiSelectextension: TMenuItem;
     RbWindowsMediaPlayer: TRadioButton;
+    RbDefaultrogram: TRadioButton;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -570,6 +571,7 @@ begin
     RbMediaPlayerClassic.Enabled := IsMediaPlayerClassicInstalled;
     RbPlayerInternal.Enabled := IsPlayerInternalInstalled;
     RbWindowsMediaPlayer.Enabled := IsWindowsMediaPlayerInstalled;
+    RbDefaultrogram.Enabled := True;
     LoadMediaAssociations;
   end;
 end;
@@ -1026,6 +1028,7 @@ begin
     StPlayerExtensions.Caption := L('Extensions') + ':';
     StUseProgram.Caption := L('Use program') + ':';
 
+    RbDefaultrogram.Caption := L('Default program');
     RbPlayerInternal.Caption := L('Internal video player');
     RbVlcPlayer.Caption := L('VLC player');
     RbKmPlayer.Caption := L('KMPlayer');
@@ -1442,7 +1445,8 @@ end;
 
 procedure TOptionsForm.MiSelectextensionClick(Sender: TObject);
 var
-  Extension: string;
+  Extension,
+  Player: string;
 begin
   Extension := '';
   StringPromtForm.Query(L('Enter extension'), L('Please enter extension (for example - .avi)'), Extension);
@@ -1450,6 +1454,10 @@ begin
   begin
     if Pos('.', Extension) = 0 then
       Extension := '.' + Extension;
+
+    Player := GetShellPlayerForFile(Extension);
+    if IsVideoFile(Extension) or (Player = '') then
+      Player := GetPlayerInternalPath;
 
     AddMediaAssociation(Extension, GetPlayerInternalPath, True);
     CblExtensions.Selected[CblExtensions.Items.Count - 1] := True;
@@ -1460,6 +1468,7 @@ end;
 procedure TOptionsForm.MiSelectFileClick(Sender: TObject);
 var
   OpenDialog: DBOpenDialog;
+  Player: string;
 begin
   OpenDialog := DBOpenDialog.Create;
   try
@@ -1467,7 +1476,12 @@ begin
     OpenDialog.FilterIndex := 0;
     if OpenDialog.Execute then
     begin
-      AddMediaAssociation(ExtractFileExt(OpenDialog.FileName), GetPlayerInternalPath, True);
+
+      Player := GetShellPlayerForFile(OpenDialog.FileName);
+      if IsVideoFile(OpenDialog.FileName) or (Player = '') then
+        Player := GetPlayerInternalPath;
+
+      AddMediaAssociation(ExtractFileExt(OpenDialog.FileName), Player, True);
       CblExtensions.Selected[CblExtensions.Items.Count - 1] := True;
       CblExtensionsClick(Sender);
     end;
@@ -1724,6 +1738,9 @@ begin
   EdPlayerExecutable.Enabled := RbOtherProgram.Checked;
   BtnSelectPlayerExecutable.Enabled := RbOtherProgram.Checked;
 
+  if RbDefaultrogram.Checked then
+    EdPlayerExecutable.Text := '';
+
   if RbPlayerInternal.Checked then
     EdPlayerExecutable.Text := GetPlayerInternalPath;
 
@@ -1943,14 +1960,18 @@ end;
 procedure TOptionsForm.CblExtensionsClick(Sender: TObject);
 var
   SelectedIndex: Integer;
-  Player: string;
+  Extension, Player: string;
 begin
   SelectedIndex := CblExtensions.SelectedIndex;
 
   WlSavePlayerChanges.Visible := False;
   if SelectedIndex > -1 then
   begin
-    Player := FPlayerExtensions[CblExtensions.Items[SelectedIndex]];
+    Extension := CblExtensions.Items[SelectedIndex];
+
+    RbDefaultrogram.Enabled := GetShellPlayerForFile(Extension) <> '';
+
+    Player := FPlayerExtensions[Extension];
 
     FReadingPlayerChanges := True;
     try
@@ -1966,6 +1987,8 @@ begin
         RbMediaPlayerClassic.Checked := True
       else if AnsiLowerCase(Player) = AnsiLowerCase(GetWindowsMediaPlayerPath) then
         RbWindowsMediaPlayer.Checked := True
+      else if Player = '' then
+        RbDefaultrogram.Checked := True
       else
         RbOtherProgram.Checked := True;
     finally

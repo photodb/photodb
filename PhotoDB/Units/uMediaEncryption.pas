@@ -9,7 +9,6 @@ uses
   Registry,
   uConstants,
   uMemory,
-  uAppUtils,
   uStrongCrypt,
   uTransparentEncryption,
   uFormInterfaces,
@@ -23,38 +22,8 @@ type
 function ShellPlayEncryptedMediaFile(const FileName: string): Boolean;
 function GetLibMachineType(const AFileName: string): TMachineType;
 function GetFileBindings(FileName: string): string;
-function GetShellPlayerForFile(FileName: string): string;
 
 implementation
-
-function GetShellPlayerForFile(FileName: string): string;
-var
-  Reg: TRegistry;
-  Handler,
-  CommandLine: string;
-begin
-  Result := '';
-
-  Reg := TRegistry.Create(KEY_READ);
-  try
-    Reg.RootKey := HKEY_CLASSES_ROOT;
-    if Reg.OpenKey(ExtractFileExt(FileName), False) then
-    begin
-      Handler := Reg.ReadString('');
-      if Handler <> '' then
-      begin
-        if Reg.OpenKey('\' + Handler + '\shell\open\command', False) then
-        begin
-          CommandLine := Reg.ReadString('');
-          if CommandLine <> '' then
-            Result := ParamStrEx(CommandLine, -1);
-        end;
-      end;
-    end;
-  finally
-    F(Reg);
-  end;
-end;
 
 function GetFileBindings(FileName: string): string;
 var

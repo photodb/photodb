@@ -328,7 +328,7 @@ type
     FCurrentlyLoadedFile: String;
     FPlay: boolean;
     LockEventRotateFileList: TStrings;
-    LastZValue: Extended;
+    LastZoomValue: Extended;
     FCreating: Boolean;
     FW7TaskBar: ITaskbarList3;
     FProgressMessage: Cardinal;
@@ -527,7 +527,7 @@ begin
   FCurrentPage := 0;
   FPageCount := 1;
   WaitingList := False;
-  LastZValue := 1;
+  LastZoomValue := 1;
   FDrawFace := nil;
   LockEventRotateFileList := TStringList.Create;
   RatingPopupMenu.Images := DBKernel.ImageList;
@@ -930,13 +930,13 @@ begin
     if WaitingList then
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',
         [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
-        LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count])
+        LastZoomValue * 100, CurrentFileNumber + 1, CurrentInfo.Count])
     else
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
         [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight, Z * 100,
         CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
   end;
-  LastZValue := Z;
+  LastZoomValue := Z;
   BeginScreenUpdate(Handle);
   try
     RefreshFaces;
@@ -950,8 +950,8 @@ begin
   TW.I.Start('TViewer.FormResize');
   if FCreating or FIsClosing then
     Exit;
-  DrawImage.Width := ClientWidth;
-  DrawImage.Height := HeightW;
+  DrawImage.SetSize(ClientWidth, HeightW);
+
   if not FIsWaiting then
     ReAllignScrolls(False, Point(0, 0));
   TbrActions.Left := ClientWidth div 2 - TbrActions.Width div 2;
@@ -2033,6 +2033,7 @@ begin
     end;
   end;
 end;
+
 //TODO: remove ShowFolderA and use ShowImageInDirectoryEx instead of
 function TViewer.ShowImageInDirectoryEx(FileName: string): Boolean;
 var
@@ -2051,7 +2052,7 @@ begin
     Result := ExecuteW(Self, Info, '');
     Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',
       [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
-      LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]);
+      LastZoomValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]);
   finally
     F(Info);
   end;
@@ -2165,7 +2166,7 @@ begin
     begin
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
         [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
-        LastZValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
+        LastZoomValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
       DisplayRating := Item.Rating;
       FImageExists := FOldImageExists;
       TbRotateCW.Enabled := TbRotateCCW.Enabled;
