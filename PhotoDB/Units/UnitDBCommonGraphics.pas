@@ -27,9 +27,6 @@ type
   TDrawTextAsyncProcedure = procedure(Bitmap: TBitmap; Rct: TRect; Text: string) of object;
   TGetAsyncCanvasFontProcedure = function(Bitmap: TBitmap): TLogFont of object;
 
-const
-  PSDTransparent = True;
-
 type
   TCompareArray = array [0 .. 99, 0 .. 99, 0 .. 2] of Integer;
 

@@ -140,7 +140,7 @@ begin
     ImageInfo := nil;
     try
 
-      LoadFlags := [ilfGraphic, ilfICCProfile, ilfEXIF];
+      LoadFlags := [ilfGraphic, ilfICCProfile, ilfEXIF, ilfUseCache];
       if FFullImage then
         LoadFlags := LoadFlags + [ilfFullRAW];
 

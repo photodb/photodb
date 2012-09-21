@@ -9,7 +9,6 @@ uses
   Graphics,
   UnitDBDeclare,
   uDBThread,
-  uThreadForm,
   uFaceDetection,
   uMemory,
   xmldom,
@@ -77,8 +76,8 @@ type
   public
     Image: TGraphic;
     Data: TDBPopupMenuInfoRecord;
-    Caller: TThreadForm;
-    constructor Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TThreadForm);
+    Caller: TObject;
+    constructor Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
     destructor Destroy; override;
     property ID: Integer read GetID;
     property FileName: string read GetFileName;
@@ -95,7 +94,7 @@ type
     function ExtractData: TFaceDetectionData;
     function GetDetectionMethod: string;
   public
-    procedure RequestFaceDetection(Caller: TThreadForm; var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
+    procedure RequestFaceDetection(Caller: TObject; var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
     function GetFaceDataFromCache(CacheFileName: string; Faces: TFaceDetectionResult): Integer;
     function RotateCacheData(ImageFileName: string; Rotate: Integer): Boolean;
     function RotateDBData(ID: Integer; Rotate: Integer): Boolean;
@@ -269,9 +268,12 @@ begin
 end;
 
 procedure TFaceDetectionThread.UpdateFaceList;
+var
+  FaceResult: IFaceResultForm;
 begin
   if GOM.IsObj(ImageData.Caller) and Supports(ImageData.Caller, IFaceResultForm) then
-    (ImageData.Caller as IFaceResultForm).UpdateFaces(ImageData.FileName, FFaces);
+     if ImageData.Caller.GetInterface(IFaceResultForm, FaceResult) then
+       FaceResult.UpdateFaces(ImageData.FileName, FFaces);
 end;
 
 { TFaceDetectionData }
@@ -347,7 +349,7 @@ begin
     Result := FACE_DETECTION_OK;
 end;
 
-procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TThreadForm;
+procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TObject;
   var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
 var
   I: Integer;
@@ -448,7 +450,7 @@ end;
 
 { TFaceDetectionData }
 
-constructor TFaceDetectionData.Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TThreadForm);
+constructor TFaceDetectionData.Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
 begin
   Image := AImage;
   Data := AData.Copy;

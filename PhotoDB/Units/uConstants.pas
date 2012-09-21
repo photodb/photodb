@@ -422,6 +422,9 @@ const
   EXIF_BASE_INCLUDE = 'photodb_include';
 
 const
+  PSDTransparent = True;
+
+const
   MIN_PACKET_TIME = 500;
 
 const

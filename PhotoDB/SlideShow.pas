@@ -219,7 +219,7 @@ type
     TbConvert: TToolButton;
     TbExplore: TToolButton;
     procedure FormCreate(Sender: TObject);
-    function LoadImage_(Sender: TObject; FFullImage: Boolean; BeginZoom: Extended; RealZoom: Boolean): Boolean;
+    function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Double; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure Next_(Sender: TObject);
@@ -401,7 +401,7 @@ type
     function ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile: string): Boolean;
     procedure LoadLanguage;
     procedure LoadPopupMenuLanguage;
-    procedure ReAllignScrolls(IsCenter: Boolean; CenterPoint: TPoint);
+    procedure ReAllignScrolls(IsCenter: Boolean);
     function HeightW: Integer;
     function GetImageRectA: TRect;
     procedure RecreateImLists;
@@ -483,7 +483,8 @@ uses
   UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread,
   uFormCreatePerson,
-  uFaceDetectionThread, uFormEditObject;
+  uFaceDetectionThread,
+  uFormEditObject;
 
 function ViewerForm: TViewer;
 begin
@@ -631,10 +632,12 @@ begin
   PostMessage(Handle, FProgressMessage, 0, 0);
 end;
 
-function TViewer.LoadImage_(Sender: TObject; FFullImage: Boolean; BeginZoom: Extended;
+function TViewer.LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Double;
   RealZoom: Boolean): Boolean;
 var
   NeedsUpdating: Boolean;
+  Bitmap: TBitmap;
+  Width, Height: Integer;
 begin
   Result := False;
 
@@ -643,8 +646,7 @@ begin
   else
     NeedsUpdating := False;
 
-  Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1,
-    CurrentInfo.Count]);
+  Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1, CurrentInfo.Count]);
 
   DisplayRating := Item.Rating;
   TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
@@ -652,17 +654,29 @@ begin
   UpdateCrypted;
 
   FSID := GetGUID;
-  if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0)
-    or FFullImage then
+  if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0) or FullImage then
   begin
 
-    Result := True;
-    if not RealZoom then
-      TViewerThread.Create(Self, Item, FFullImage, 1,         FSID, False, FCurrentPage)
-    else
-      TViewerThread.Create(Self, Item, FFullImage, BeginZoom, FSID, False, FCurrentPage);
+    //try fast load image
+    Bitmap := TBitmap.Create;
+    try
+      if TFormCollection.Instance.GetImage(nil, Item.FileName, Bitmap, Width, Height) then
+      begin
+        F(FFullImage);
+        FFullImage := Bitmap;
+        Bitmap := nil;
+        RealImageWidth := Width;
+        RealImageHeight := Height;
+        if FValidImages > 0 then
+          RecreateDrawImage(Self);
+      end;
+    finally
+      F(Bitmap);
+    end;
 
+    Result := True;
     ForwardThreadExists := False;
+    TViewerThread.Create(Self, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
 
     if NeedsUpdating then
     begin
@@ -689,7 +703,7 @@ var
   Fh, Fw: Integer;
   Zx, Zy, Zw, Zh, X1, X2, Y1, Y2: Integer;
   ImRect, BeginRect: TRect;
-  Z: Real;
+  Z, AZoom: Real;
   FileName: string;
   TempImage, B: TBitmap;
   ACopyRect: TRect;
@@ -730,8 +744,7 @@ begin
   FileName := FCurrentlyLoadedFile;
   if FullScreenNow then
   begin
-    DrawImage.Width := Monitor.Width;
-    DrawImage.Height := Monitor.Height;
+    DrawImage.SetSize(Monitor.Width, Monitor.Height);
     DrawImage.Canvas.Brush.Color := 0;
     DrawImage.Canvas.Pen.Color := 0;
     DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
@@ -765,8 +778,7 @@ begin
           TempImage := TBitmap.Create;
           try
             TempImage.PixelFormat := pf24bit;
-            TempImage.Width := FW;
-            TempImage.Height := FH;
+            TempImage.SetSize(FW, FH);
             SmoothResize(Fw, Fh, FFullImage, TempImage);
             DrawImage.Canvas.Draw(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, TempImage);
           finally
@@ -786,42 +798,50 @@ begin
       FullScreenView.Canvas.Draw(0, 0, DrawImage);
     Exit;
   end;
-  DrawImage.Width := Clientwidth;
-  DrawImage.Height := HeightW;
+
+  DrawImage.SetSize(Clientwidth, HeightW);
   DrawImage.Canvas.Brush.Color := Theme.WindowColor;
   DrawImage.Canvas.Pen.Color := Theme.WindowColor;
   DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
+
   if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
-    begin
-      ShowErrorText(FileName);
-      Refresh;
-      Exit;
-    end;
-  if (FFullImage.Width > ClientWidth) or (FFullImage.Height > HeightW) then
   begin
-    if FFullImage.Width / FFullImage.Height < DrawImage.Width / DrawImage.Height then
+    ShowErrorText(FileName);
+    Refresh;
+    Exit;
+  end;
+
+  if (RealImageWidth > ClientWidth) or (RealImageHeight > HeightW) then
+  begin
+    if RealImageWidth / RealImageHeight < DrawImage.Width / DrawImage.Height then
     begin
-      Fh := DrawImage.Height;
-      Fw := Round(Drawimage.Height * (FFullImage.Width / FFullImage.Height));
+      FH := DrawImage.Height;
+      FW := Round(DrawImage.Height * (RealImageWidth / RealImageHeight));
     end else
     begin
-      Fw := DrawImage.Width;
-      Fh := Round(DrawImage.Width * (FFullImage.Height / FFullImage.Width));
+      FW := DrawImage.Width;
+      FH := Round(DrawImage.Width * (RealImageHeight / RealImageWidth));
     end;
   end else
   begin
-    Fh := FFullImage.Height;
-    Fw := FFullImage.Width;
+    FH := RealImageHeight;
+    FW := RealImageWidth;
   end;
+
   X1 := ClientWidth div 2 - Fw div 2;
   Y1 := (HeightW) div 2 - Fh div 2;
   X2 := X1 + Fw;
   Y2 := Y1 + Fh;
   ImRect := GetImageRectA;
-  Zx := ImRect.Left;
-  Zy := ImRect.Top;
-  Zw := ImRect.Right - ImRect.Left;
-  Zh := ImRect.Bottom - ImRect.Top;
+  ZX := ImRect.Left;
+  ZY := ImRect.Top;
+  ZW := ImRect.Right - ImRect.Left;
+  ZH := ImRect.Bottom - ImRect.Top;
+
+  AZoom := Zoom;
+  if FFullImage.Width < RealImageWidth then
+    AZoom := Zoom * RealImageWidth / FFullImage.Width;
+
   if ImageExists or Loading then
   begin
     if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
@@ -829,54 +849,53 @@ begin
       if ZoomerOn and not FIsWaiting then
       begin
         DrawRect(ImRect.Left, ImRect.Top, ImRect.Right, ImRect.Bottom);
-        if Zoom <= 1 then
+        if AZoom <= 1 then
         begin
-          if (Zoom < ZoomSmoothMin) then
-            StretchCoolW(Zx, Zy, Zw, Zh, Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
-                Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FFullImage, DrawImage)
+          if (AZoom < ZoomSmoothMin) then
+            StretchCoolW(ZX, ZY, ZW, ZH, Rect(Round(SbHorisontal.Position / AZoom), Round(SbVertical.Position / AZoom),
+                Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom)), FFullImage, DrawImage)
           else
           begin
-            ACopyRect := Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
-              Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom));
+            ACopyRect := Rect(Round(SbHorisontal.Position / AZoom), Round(SbVertical.Position / AZoom),
+              Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom));
             TempImage := TBitmap.Create;
             try
               TempImage.PixelFormat := Pf24bit;
-              TempImage.Width := Zw;
-              TempImage.Height := Zh;
+              TempImage.SetSize(ZW, ZH);
               B := TBitmap.Create;
               try
                 B.PixelFormat := Pf24bit;
                 B.Width := (ACopyRect.Right - ACopyRect.Left);
                 B.Height := (ACopyRect.Bottom - ACopyRect.Top);
                 B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FFullImage.Canvas, ACopyRect);
-                SmoothResize(Zw, Zh, B, TempImage);
+                SmoothResize(ZW, ZH, B, TempImage);
               finally
                 F(B);
               end;
-              DrawImage.Canvas.Draw(Zx, Zy, TempImage);
+              DrawImage.Canvas.Draw(ZX, ZY, TempImage);
             finally
               F(TempImage);
             end;
           end;
         end else
-          Interpolate(Zx, Zy, Zw, Zh, Rect(Round(SbHorisontal.Position / Zoom), Round(SbVertical.Position / Zoom),
-              Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom)), FFullImage, DrawImage);
+          Interpolate(ZX, ZY, ZW, ZH, Rect(Round(SbHorisontal.Position / AZoom), Round(SbVertical.Position / AZoom),
+              Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom)), FFullImage, DrawImage);
       end else
       begin
         DrawRect(X1, Y1, X2, Y2);
         if ZoomerOn then
-          Z := RealZoomInc * Zoom
+          Z := RealZoomInc * AZoom
         else
         begin
           if RealImageWidth * RealImageHeight <> 0 then
           begin
             if (Item.Rotation = DB_IMAGE_ROTATE_90) or
               (Item.Rotation = DB_IMAGE_ROTATE_270) then
-              Z := Min(Fw / RealImageHeight, Fh / RealImageWidth)
+              Z := AZoom * Min(FW / RealImageHeight, FH / RealImageWidth)
             else
-              Z := Min(Fw / RealImageWidth, Fh / RealImageHeight);
+              Z := AZoom * Min(FW / RealImageWidth, FH / RealImageHeight);
           end else
-            Z := 1;
+            Z := AZoom;
         end;
         if (Z < ZoomSmoothMin) then
           StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FFullImage, DrawImage)
@@ -884,9 +903,8 @@ begin
         begin
           TempImage := TBitmap.Create;
           try
-            TempImage.PixelFormat := Pf24bit;
-            TempImage.Width := X2 - X1;
-            TempImage.Height := Y2 - Y1;
+            TempImage.PixelFormat := pf24bit;
+            TempImage.SetSize(X2 - X1, Y2 - Y1);
             SmoothResize(X2 - X1, Y2 - Y1, FFullImage, TempImage);
             DrawImage.Canvas.Draw(X1, Y1, TempImage);
           finally
@@ -898,8 +916,8 @@ begin
     begin
       if ZoomerOn and not FIsWaiting then
       begin
-        ImRect := Rect(Round(SbHorisontal.Position / Zoom), Round((SbVertical.Position) / Zoom),
-          Round((SbHorisontal.Position + Zw) / Zoom), Round((SbVertical.Position + Zh) / Zoom));
+        ImRect := Rect(Round(SbHorisontal.Position / AZoom), Round((SbVertical.Position) / AZoom),
+          Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom));
         BeginRect := GetImageRectA;
         DrawRect(BeginRect.Left, BeginRect.Top, BeginRect.Right, BeginRect.Bottom);
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
@@ -953,7 +971,7 @@ begin
   DrawImage.SetSize(ClientWidth, HeightW);
 
   if not FIsWaiting then
-    ReAllignScrolls(False, Point(0, 0));
+    ReAllignScrolls(False);
   TbrActions.Left := ClientWidth div 2 - TbrActions.Width div 2;
   BottomImage.Top := ClientHeight - TbrActions.Height;
   BottomImage.Width := ClientWidth;
@@ -2630,7 +2648,7 @@ begin
   RecreateDrawImage(Sender);
 end;
 
-procedure TViewer.ReAllignScrolls(IsCenter: Boolean; CenterPoint: TPoint);
+procedure TViewer.ReAllignScrolls(IsCenter: Boolean);
 var
   Inc_: Integer;
   Pos, M, Ps: Integer;
@@ -3238,7 +3256,7 @@ begin
     if ZoomerOn then
       FitToWindowClick(Sender);
 
-    ReAllignScrolls(True, Point(0, 0));
+    ReAllignScrolls(True);
     RecreateDrawImage(Self);
   finally
     F(Info);
@@ -3288,7 +3306,7 @@ begin
     if ZoomerOn then
       FitToWindowClick(Sender);
 
-    ReAllignScrolls(True, Point(0, 0));
+    ReAllignScrolls(True);
     RecreateDrawImage(Self);
   finally
     F(Info);
@@ -3439,7 +3457,7 @@ begin
   TbZoomIn.Down := False;
   EndWaitToImage(Self);
 
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   ValidImages := 1;
   F(FOverlayBuffer);
   FFaces.Clear;
@@ -3486,7 +3504,7 @@ begin
   TbZoomOut.Down := False;
   TbZoomIn.Down := False;
   EndWaitToImage(Self);
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   SlideNO := -1;
   ZoomerOn := False;
   ValidImages := 0;
@@ -3857,7 +3875,7 @@ begin
   TbZoomOut.Down := False;
   TbZoomIn.Down := False;
   EndWaitToImage(Self);
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   ImageExists := False;
   ValidImages := 0;
   ForwardThreadExists := False;

@@ -168,6 +168,7 @@ uses
 
   uTransparentEncryption,
   uMediaEncryption,
+  uIImageViewer,
   uImageViewer
   ;
 
@@ -775,7 +776,7 @@ type
     FPngNoHIstogram: TPNGImage;
     FShowAttributes: Boolean;
     FShowEXIFAttributes: Boolean;
-    FImageViewer: TImageViewer;
+    FImageViewer: IImageViewer;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
     procedure Reload;
@@ -1175,8 +1176,7 @@ begin
   if FImageViewer = nil then
   begin
     FImageViewer := TImageViewer.Create;
-    FImageViewer.AttachTo(TsMediaPreview, 2, 2);
-    FImageViewer.SetImageSource(Self);
+    FImageViewer.AttachTo(Self, TsMediaPreview, 2, 2);
     TsMediaPreviewResize(Self);
   end;
 end;
@@ -2890,8 +2890,8 @@ procedure TExplorerForm.TsMediaPreviewResize(Sender: TObject);
 begin
   if FImageViewer <> nil then
   begin
-    FImageViewer.ResizeTo(TsMediaPreview.Width - FImageViewer.GetLeft * 2,
-                          TsMediaPreview.Height - FImageViewer.GetTop * 2 - ToolBarPreview.Height);
+    FImageViewer.ResizeTo(TsMediaPreview.Width - FImageViewer.Left * 2,
+                          TsMediaPreview.Height - FImageViewer.Top * 2 - ToolBarPreview.Height);
 
     ToolBarPreview.Left := TsMediaPreview.Width div 2 - ToolBarPreview.Width div 2;
     ToolBarPreview.Top := TsMediaPreview.Height - ToolBarPreview.Height;
@@ -6285,6 +6285,7 @@ begin
           end;
           Bitmap.Assign(B);
           Result := True;
+          Break;
         end;
       end;
     end;
@@ -8527,7 +8528,7 @@ begin
 
   if FActiveRightTab = ertsPreview then
   begin
-    if TsPreview.Visible then
+    if TsMediaPreview.Visible then
       CreatePreview;
     
     if FImageViewer <> nil then
@@ -10955,7 +10956,7 @@ end;
 
 destructor TExplorerForm.Destroy;
 begin
-  F(FImageViewer);
+  FImageViewer := nil;
   F(FHistory);
   F(FFilesInfo);
   F(RefreshIDList);

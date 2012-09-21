@@ -3,20 +3,27 @@ unit uImageViewer;
 interface
 
 uses
-  Controls,
-  Messages,
-  SysUtils,
-  Graphics,
+  System.SysUtils,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Controls,
+  Vcl.Graphics,
   UnitDBDeclare,
   uMemory,
+  uSysUtils,
   uIImageViewer,
   uDBPopupMenuInfo,
   uImageViewerControl,
+  uFaceDetection,
+  uImageViewerThread,
+  uThreadForm,
+  uGUIDUtils,
   uImageSource;
 
 type
   TImageViewer = class(TInterfacedObject, IImageViewer)
   private
+    FOwnerForm: TThreadForm;
     FTop: Integer;
     FLeft: Integer;
     FWidth: Integer;
@@ -27,32 +34,38 @@ type
     FCurrentFile: string;
     FFiles: TDBPopupMenuInfo;
     FIsWaiting: Boolean;
+    FActiveThreadId: TGUID;
     procedure Resize;
     procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord);
   public
     constructor Create;
     destructor Destroy; override;
-    procedure AttachTo(Control: TWinControl; X, Y: Integer);
-    procedure SetImageSource(Source: IImageSource);
+    procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure ResizeTo(Width, Height: Integer);
+    procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
+    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer);
     function GetWidth: Integer;
     function GetHeight: Integer;
     function GetTop: Integer;
     function GetLeft: Integer;
+    function GetActiveThreadId: TGUID;
   end;
 
 implementation
 
 { TImageViewer }
 
-procedure TImageViewer.AttachTo(Control: TWinControl; X, Y: Integer);
+procedure TImageViewer.AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
 begin
   if Control = nil then
     raise EArgumentNilException.Create('Control is null!');
   FOwner := Control;
   FTop := Y;
   FLeft := X;
+
+  FOwnerForm := OwnerForm;
+  FOwnerForm.GetInterface(IImageSource, FImageSource);
 
   FImageControl := TImageViewerControl.Create(Control);
   FImageControl.Top := Y;
@@ -68,11 +81,17 @@ begin
   FImageSource := nil;
   FCurrentFile := '';
   FIsWaiting := False;
+  FActiveThreadId := GetEmptyGUID;
 end;
 
 destructor TImageViewer.Destroy;
 begin
   F(FFiles);
+end;
+
+function TImageViewer.GetActiveThreadId: TGUID;
+begin
+  Result := FActiveThreadId;
 end;
 
 function TImageViewer.GetHeight: Integer;
@@ -99,8 +118,10 @@ procedure TImageViewer.LoadFile(FileInfo: TDBPopupMenuInfoRecord);
 var
   Width, Height: Integer;
   Bitmap: TBitmap;
+  DisplaySize: TSize;
 begin
-  //
+  FActiveThreadId := GetGUID;
+
   if FImageSource <> nil then
   begin
     Width := 0;
@@ -109,12 +130,18 @@ begin
     try
       if FImageSource.GetImage(FileInfo.FileName, Bitmap, Width, Height) then
       begin
-        FImageControl.FastLoadImage(Bitmap);
+        FImageControl.LoadStaticImage(Bitmap, Width, Height);
+        Bitmap := nil;
       end;
     finally
       F(Bitmap);
     end;
   end;
+
+  DisplaySize.cx := FWidth;
+  DisplaySize.cy := FHeight;
+
+  TImageViewerThread.Create(FOwnerForm, Self, FActiveThreadId, FileInfo, DisplaySize, True, -1);
 end;
 
 procedure TImageViewer.LoadFiles(FileList: TDBPopupMenuInfo);
@@ -131,7 +158,7 @@ end;
 
 procedure TImageViewer.Resize;
 begin
-  //
+  //TODO:
 end;
 
 procedure TImageViewer.ResizeTo(Width, Height: Integer);
@@ -144,9 +171,15 @@ begin
   Resize;
 end;
 
-procedure TImageViewer.SetImageSource(Source: IImageSource);
+procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer);
 begin
-  FImageSource := Source;
+  FImageControl.LoadStaticImage(Image, RealWidth, RealHeight);
+end;
+
+procedure TImageViewer.UpdateFaces(FileName: string;
+  Faces: TFaceDetectionResult);
+begin
+  //TODO:
 end;
 
 end.

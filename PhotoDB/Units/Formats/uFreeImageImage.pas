@@ -71,9 +71,8 @@ begin
   RawBitmap := TFreeWinBitmap.Create;
   try
     SetStreamFreeImageIO(IO);
-    RawBitmap.LoadFromHandle(@IO, Stream, Flags);
-
-    LoadFromFreeImage(RawBitmap);
+    if RawBitmap.LoadFromHandle(@IO, Stream, Flags) then
+      LoadFromFreeImage(RawBitmap);
   finally
     F(RawBitmap);
   end;

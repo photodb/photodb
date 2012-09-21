@@ -34,6 +34,7 @@ object ExplorerForm: TExplorerForm
     Width = 5
     Height = 634
     Constraints.MaxWidth = 150
+    ResizeStyle = rsUpdate
     OnCanResize = SplLeftPanelCanResize
     ExplicitLeft = 150
     ExplicitTop = 47
@@ -77,6 +78,10 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -744,6 +749,10 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
       end
       object TsInfo: TTabSheet
         Caption = 'Info'
@@ -751,6 +760,10 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           132
           577)
@@ -900,6 +913,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -1332,6 +1349,7 @@ object ExplorerForm: TExplorerForm
       Width = 5
       Height = 568
       Align = alRight
+      ResizeStyle = rsUpdate
       Visible = False
       OnMoved = SplGeoLocationMoved
       ExplicitLeft = 572
@@ -1941,6 +1959,10 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 503

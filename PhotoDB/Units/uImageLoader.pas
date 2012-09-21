@@ -35,7 +35,7 @@ uses
   uPNGUtils;
 
 type
-  TImageLoadFlag = (ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfHalfRawSize, ilfPassword, ilfAskUserPassword, ilfThrowError, ilfDontUpdateInfo);
+  TImageLoadFlag = (ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfHalfRawSize, ilfPassword, ilfAskUserPassword, ilfThrowError, ilfDontUpdateInfo, ilfUseCache);
   TImageLoadFlags = set of TImageLoadFlag;
 
   TImageLoadBitmapFlag = (ilboFreeGraphic, ilboFullBitmap, ilboAddShadow, ilboRotate, ilboApplyICCProfile, ilboDrawAttributes, ilboQualityResize);
