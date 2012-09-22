@@ -41,6 +41,10 @@ type
   TImageLoadBitmapFlag = (ilboFreeGraphic, ilboFullBitmap, ilboAddShadow, ilboRotate, ilboApplyICCProfile, ilboDrawAttributes, ilboQualityResize);
   TImageLoadBitmapFlags = set of TImageLoadBitmapFlag;
 
+  TLoadImageProgressState = (lipsReading);
+
+  TLoadImageProgress = procedure(ProgressState: TLoadImageProgressState; BytesTotal, BytesComplete: Int64; var Break: Boolean) of object;
+
   ILoadImageInfo = interface
     ['{8FA3C77A-70D6-4873-9F50-DA1F450A5FF9}']
     function ExtractGraphic: TGraphic;
@@ -111,11 +115,11 @@ type
 type
   TStreamHelper = class helper for TStream
   public
-    function CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer): Int64;
+    function CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer; Progress: TLoadImageProgress): Int64;
   end;
 
 function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
-  out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0): Boolean;
+  out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0; Progress: TLoadImageProgress = nil): Boolean;
 
 implementation
 
@@ -127,7 +131,7 @@ begin
 end;
 
 function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
-  out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0): Boolean;
+  out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0; Progress: TLoadImageProgress = nil): Boolean;
 var
   FS: TFileStream;
   S: TStream;
@@ -200,7 +204,7 @@ begin
                 S := FS;
                 FS := nil;
               end else
-                S.CopyFromEx(FS, FS.Size, 1024 * 1024);
+                S.CopyFromEx(FS, FS.Size, 1024 * 1024, Progress);
             end;
           finally
             F(FS);
@@ -292,12 +296,7 @@ begin
                 end;
 
                 if not (ilfDontUpdateInfo in flags) and (Info.ID = 0) and not IsDevicePath(Info.FileName) then
-                begin
-                  Info.Rotation := -10 * EXIFRotation;
-
-                  if (Graphic is TRAWImage) and not (ilfFullRAW in Flags) then
-                    Info.Rotation := ExifDisplayButNotRotate(Info.Rotation);
-                end;
+                  Info.Rotation := EXIFRotation or DB_IMAGE_ROTATE_NO_DB;
 
                 S.Seek(0, soFromBeginning);
                 if (Graphic is TTiffImage) then
@@ -612,16 +611,18 @@ end;
 
 { TStreamHelper }
 
-function TStreamHelper.CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer): Int64;
+function TStreamHelper.CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer; Progress: TLoadImageProgress): Int64;
 var
   BufSize, N: Integer;
   Buffer: PByte;
+  IsBreak: Boolean;
 begin
   if Count = 0 then
   begin
     Source.Position := 0;
     Count := Source.Size;
   end;
+  IsBreak := False;
   Result := Count;
   if Count > MaxBufSize then BufSize := MaxBufSize else BufSize := Count;
   GetMem(Buffer, BufSize);
@@ -632,6 +633,12 @@ begin
       Source.ReadBuffer(Buffer^, N);
       WriteBuffer(Buffer^, N);
       Dec(Count, N);
+
+      if Assigned(Progress) then
+        Progress(lipsReading, Count, Size, IsBreak);
+
+      if IsBreak then
+        Break;
     end;
   finally
     FreeMem(Buffer, BufSize);

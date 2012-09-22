@@ -177,7 +177,7 @@ begin
       XInsert(L('Description'), ExifData.ImageDescription);
       XInsert(L('Software'), ExifData.Software);
       Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-      case Orientation of
+      case Orientation and DB_IMAGE_ROTATE_MASK of
         DB_IMAGE_ROTATE_0:
           XInsert(L('Orientation'), L('Normal'));
         DB_IMAGE_ROTATE_90:

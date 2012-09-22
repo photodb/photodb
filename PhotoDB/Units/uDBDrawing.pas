@@ -84,7 +84,7 @@ end;
 
 procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
 var
-  FE: Boolean;
+  FE, RotationNotInDB: Boolean;
   FileName: string;
 
   procedure DoDrawIconEx(HCanvas: HDC; xLeft, yTop: Integer; Index: Integer; Disabled: Boolean = False);
@@ -168,20 +168,17 @@ begin
     -50: DoDrawIconEx(HCanvas, 80 + DeltaX, DeltaY, DB_IC_RATING_5, True);
   end;
 
-  case Info.Rotation of
-    DB_IMAGE_ROTATE_90,
-    10 * DB_IMAGE_ROTATE_90:   DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90);
-    DB_IMAGE_ROTATE_180,
-    10 * DB_IMAGE_ROTATE_180:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180);
-    DB_IMAGE_ROTATE_270,
-    10 * DB_IMAGE_ROTATE_270:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270);
-    -10 * DB_IMAGE_ROTATE_90,
-    -100 * DB_IMAGE_ROTATE_90:  DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90, True);
-    -10 * DB_IMAGE_ROTATE_180,
-    -100 * DB_IMAGE_ROTATE_180: DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180, True);
-    -10 * DB_IMAGE_ROTATE_270,
-    -100 * DB_IMAGE_ROTATE_270: DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270, True);
+  RotationNotInDB := (Info.ID = 0) and (Info.Rotation and DB_IMAGE_ROTATE_NO_DB > 0);
+
+  case Info.Rotation and DB_IMAGE_ROTATE_MASK of
+    DB_IMAGE_ROTATE_90:
+      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90, RotationNotInDB);
+    DB_IMAGE_ROTATE_180:
+      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180, RotationNotInDB);
+    DB_IMAGE_ROTATE_270:
+      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270, RotationNotInDB);
   end;
+
   if Info.Access = db_access_private then
     DoDrawIconEx(HCanvas, 40 + DeltaX, DeltaY, DB_IC_PRIVATE);
   if Info.Access = - 10 * db_access_private then

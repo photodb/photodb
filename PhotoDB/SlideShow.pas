@@ -324,6 +324,7 @@ type
     FForwardThreadSID: TGUID;
     FForwardThreadNeeds: Boolean;
     FForwardThreadFileName: string;
+    FForwardThreadReady: Boolean;
     FTransparentImage: Boolean;
     FCurrentlyLoadedFile: String;
     FPlay: boolean;
@@ -454,6 +455,7 @@ type
     property ForwardThreadSID: TGUID read FForwardThreadSID write SetForwardThreadSID;
     property ForwardThreadNeeds: Boolean read FForwardThreadNeeds write SetForwardThreadNeeds;
     property ForwardThreadFileName: string read FForwardThreadFileName write SetForwardThreadFileName;
+    property ForwardThreadReady: Boolean read FForwardThreadReady write FForwardThreadReady;
     property TransparentImage: Boolean read FTransparentImage write SetTransparentImage;
     property CurrentlyLoadedFile: string read FCurrentlyLoadedFile write SetCurrentlyLoadedFile;
     property Play: Boolean read FPlay write SetPlay;
@@ -653,11 +655,9 @@ begin
   TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
   UpdateCrypted;
 
-  FSID := GetGUID;
-  if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0) or FullImage then
+  //try fast load image
+  if not FForwardThreadReady then
   begin
-
-    //try fast load image
     Bitmap := TBitmap.Create;
     try
       if TFormCollection.Instance.GetImage(nil, Item.FileName, Bitmap, Width, Height) then
@@ -665,15 +665,22 @@ begin
         F(FFullImage);
         FFullImage := Bitmap;
         Bitmap := nil;
+
         RealImageWidth := Width;
         RealImageHeight := Height;
-        if FValidImages > 0 then
-          RecreateDrawImage(Self);
+
+        RecreateDrawImage(Self);
       end;
     finally
       F(Bitmap);
     end;
+  end;
 
+  FSID := GetGUID;
+  ViewerManager.UpdateViewerState(FSID, FForwardThreadSID);
+
+  if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0) or FullImage then
+  begin
     Result := True;
     ForwardThreadExists := False;
     TViewerThread.Create(Self, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
@@ -691,6 +698,7 @@ begin
   end else
     ForwardThreadNeeds := True;
 
+  LsLoading.RecteateImage;
   SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
   InvalidateRect(Handle, ClientRect, False);
   DoWaitToImage(Sender);
@@ -707,6 +715,7 @@ var
   FileName: string;
   TempImage, B: TBitmap;
   ACopyRect: TRect;
+  ImageEffectiveWidth, ImageEffectiveHeight: Integer;
 
   procedure DrawRect(X1, Y1, X2, Y2: Integer);
   begin
@@ -763,8 +772,7 @@ begin
         begin
           if RealImageWidth * RealImageHeight <> 0 then
           begin
-            if (Item.Rotation = DB_IMAGE_ROTATE_90) or
-              (Item.Rotation = DB_IMAGE_ROTATE_270) then
+            if IsRotatedImageProportions(Item.Rotation) then
               Z := Min(FW / RealImageHeight, FH / RealImageWidth)
             else
               Z := Min(FW / RealImageWidth, FH / RealImageHeight);
@@ -811,21 +819,31 @@ begin
     Exit;
   end;
 
-  if (RealImageWidth > ClientWidth) or (RealImageHeight > HeightW) then
+  if IsRotatedImageProportions(Item.Rotation) then
   begin
-    if RealImageWidth / RealImageHeight < DrawImage.Width / DrawImage.Height then
+    ImageEffectiveWidth := RealImageHeight;
+    ImageEffectiveHeight := RealImageWidth;
+  end else
+  begin
+    ImageEffectiveWidth := RealImageWidth;
+    ImageEffectiveHeight := RealImageHeight;
+  end;
+
+  if (ImageEffectiveWidth > ClientWidth) or (ImageEffectiveHeight > HeightW) then
+  begin
+    if ImageEffectiveWidth / ImageEffectiveHeight < DrawImage.Width / DrawImage.Height then
     begin
       FH := DrawImage.Height;
-      FW := Round(DrawImage.Height * (RealImageWidth / RealImageHeight));
+      FW := Round(DrawImage.Height * (ImageEffectiveWidth / ImageEffectiveHeight));
     end else
     begin
       FW := DrawImage.Width;
-      FH := Round(DrawImage.Width * (RealImageHeight / RealImageWidth));
+      FH := Round(DrawImage.Width * (ImageEffectiveHeight / ImageEffectiveWidth));
     end;
   end else
   begin
-    FH := RealImageHeight;
-    FW := RealImageWidth;
+    FH := ImageEffectiveHeight;
+    FW := ImageEffectiveWidth;
   end;
 
   X1 := ClientWidth div 2 - Fw div 2;
@@ -840,7 +858,7 @@ begin
 
   AZoom := Zoom;
   if FFullImage.Width < RealImageWidth then
-    AZoom := Zoom * RealImageWidth / FFullImage.Width;
+    AZoom := Zoom * ImageEffectiveWidth / FFullImage.Width;
 
   if ImageExists or Loading then
   begin
@@ -889,8 +907,7 @@ begin
         begin
           if RealImageWidth * RealImageHeight <> 0 then
           begin
-            if (Item.Rotation = DB_IMAGE_ROTATE_90) or
-              (Item.Rotation = DB_IMAGE_ROTATE_270) then
+            if IsRotatedImageProportions(Item.Rotation) then
               Z := AZoom * Min(FW / RealImageHeight, FH / RealImageWidth)
             else
               Z := AZoom * Min(FW / RealImageWidth, FH / RealImageHeight);
@@ -939,11 +956,10 @@ begin
       Z := RealZoomInc * Zoom
     else
     begin
-      if (Item.Rotation = DB_IMAGE_ROTATE_90) or
-        (Item.Rotation = DB_IMAGE_ROTATE_270) then
-        Z := Min(Fw / RealImageHeight, Fh / RealImageWidth)
+      if IsRotatedImageProportions(Item.Rotation) then
+        Z := Min(FW / RealImageHeight, FH / RealImageWidth)
       else
-        Z := Min(Fw / RealImageWidth, Fh / RealImageHeight);
+        Z := Min(FW / RealImageWidth, FH / RealImageHeight);
     end;
     if WaitingList then
       Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d] - ' + L('Loading list of images') + '...',
@@ -955,11 +971,15 @@ begin
         CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
   end;
   LastZoomValue := Z;
-  BeginScreenUpdate(Handle);
-  try
-    RefreshFaces;
-  finally
-    EndScreenUpdate(Handle, True);
+
+  if not (csLoading in ComponentState) and not Loading then
+  begin
+    BeginScreenUpdate(Handle);
+    try
+      RefreshFaces;
+    finally
+      EndScreenUpdate(Handle, True);
+    end;
   end;
 end;
 
@@ -985,7 +1005,7 @@ begin
   TbrActions.Refresh;
   TbrActions.Realign;
   CheckFaceIndicatorVisibility;
-  Repaint;
+
   TW.I.Start('TViewer.FormResize - end');
 end;
 
@@ -1053,6 +1073,10 @@ procedure TViewer.FormDestroy(Sender: TObject);
 begin
   UnRegisterMainForm(Self);
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+
+  FSID := GetGUID;
+  FForwardThreadSID := GetGUID;
+  ViewerManager.UpdateViewerState(FSID, FForwardThreadSID);
 
   F(FDrawFace);
   F(FFaces);
@@ -3054,13 +3078,13 @@ var
 const
   Names: array [0 .. 1, 0 .. IconsCount] of string = (
     ('Z_NEXT_NORM', 'Z_PREVIOUS_NORM', 'Z_BESTSIZE_NORM',
-    'Z_FULLSIZE_NORM', 'Z_FULLSCREEN_NORM', 'Z_ZOOMIN_NORM', 'Z_ZOOMOUT_NORM', 'Z_FULLSCREEN', 'Z_LEFT_NORM',
+    'Z_FULLSIZE_NORM', 'Z_FULLSCREEN_NORM', 'Z_ZOOMOUT_NORM', 'Z_ZOOMIN_NORM', 'Z_FULLSCREEN', 'Z_LEFT_NORM',
     'Z_RIGHT_NORM', 'Z_INFO_NORM', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1', 'TRATING_2',
     'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE',
     'EXPLORER', 'RESIZE'),
 
     ('Z_NEXT_HOT', 'Z_PREVIOUS_HOT',  'Z_BESTSIZE_HOT',
-    'Z_FULLSIZE_HOT', 'Z_FULLSCREEN_HOT', 'Z_ZOOMIN_HOT', 'Z_ZOOMOUT_HOT', 'Z_FULLSCREEN', 'Z_LEFT_HOT',
+    'Z_FULLSIZE_HOT', 'Z_FULLSCREEN_HOT', 'Z_ZOOMOUT_HOT', 'Z_ZOOMIN_HOT', 'Z_FULLSCREEN', 'Z_LEFT_HOT',
     'Z_RIGHT_HOT', 'Z_INFO_HOT', 'IMEDITOR', 'PRINTER', 'DELETE_INFO', 'RATING_STAR', 'TRATING_1', 'TRATING_2',
     'TRATING_3', 'TRATING_4', 'TRATING_5', 'Z_DB_NORM', 'Z_DB_WORK', 'Z_PAGES', 'KEY', 'DECRYPTFILE',
     'EXPLORER', 'RESIZE')
@@ -3093,7 +3117,7 @@ begin
         ImageList_ReplaceIcon(Imlists[I].Handle, -1, Icons[I, J]);
         if I = 0 then
         begin
-          if J in [0, 1, 8, 9, 12, 14, 22, 23] then
+          if J in [0, 1, 2, 3, 4, 5, 6, 8, 9, 12, 14, 22, 23] then
           begin
             B.Canvas.Rectangle(0, 0, 16, 16);
             DrawIconEx(B.Canvas.Handle, 0, 0, Icons[I, J], 16, 16, 0, 0, DI_NORMAL);
@@ -3437,6 +3461,7 @@ begin
   TransparentImage := Transparent;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
+  FForwardThreadReady := False;
   F(FFullImage);
   FFullImage := Image;
   StaticImage := True;
@@ -3485,6 +3510,7 @@ begin
   AnimatedImage := Image;
   FCurrentlyLoadedFile := Item.FileName;
   ForwardThreadExists := False;
+  FForwardThreadReady := False;
   StaticImage := False;
   ImageExists := True;
   Loading := False;
@@ -3671,7 +3697,7 @@ begin
   end;
 
   if CurrentFileNumber <= CurrentInfo.Count - 1 then
-    case Item.Rotation of
+    case Item.Rotation and DB_IMAGE_ROTATE_MASK of
       DB_IMAGE_ROTATE_0:
         FFullImage.Assign(AnimatedBuffer);
       DB_IMAGE_ROTATE_90:
@@ -3880,6 +3906,7 @@ begin
   ValidImages := 0;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
+  FForwardThreadReady := False;
 
   FFaces.Clear;
   FFaceDetectionComplete := True;
@@ -3900,6 +3927,8 @@ var
   N: Integer;
 begin
   ForwardThreadSID := GetGUID;
+  ViewerManager.UpdateViewerState(FSID, FForwardThreadSID);
+
   if CurrentInfo.Count > 1 then
   begin
     N := CurrentFileNumber;
@@ -4697,3 +4726,4 @@ initialization
   FormInterfaces.RegisterFormInterface(IViewerForm, TViewer);
 
 end.
+

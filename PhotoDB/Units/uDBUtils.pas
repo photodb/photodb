@@ -107,20 +107,8 @@ function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 var
   ROT: array [0 .. 3, 0 .. 3] of Integer;
 begin
-  if OldRotation >= 10 then
-  begin
-    Result := NewRotation;
-    Exit;
-  end;
-
-  if (OldRotation >= - 50) and (OldRotation < 0) then
-    OldRotation := - OldRotation div 10;
-
-  if OldRotation < 0 then
-  begin
-    Result := NewRotation;
-    Exit;
-  end;
+  OldRotation := OldRotation and DB_IMAGE_ROTATE_MASK;
+  NewRotation := NewRotation and DB_IMAGE_ROTATE_MASK;
 
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_0;
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_90;
@@ -149,20 +137,8 @@ function SumRotation(OldRotation, NewRotation: Integer): Integer;
 var
   ROT: array [0 .. 3, 0 .. 3] of Integer;
 begin
-  if OldRotation >= 10 then
-  begin
-    Result := NewRotation;
-    Exit;
-  end;
-
-  if (OldRotation >= - 50) and (OldRotation < 0) then
-    OldRotation := - OldRotation div 10;
-
-  if OldRotation < 0 then
-  begin
-    Result := NewRotation;
-    Exit;
-  end;
+  OldRotation := OldRotation and DB_IMAGE_ROTATE_MASK;
+  NewRotation := NewRotation and DB_IMAGE_ROTATE_MASK;
 
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_0] := DB_IMAGE_ROTATE_0;
   ROT[DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_90] := DB_IMAGE_ROTATE_90;

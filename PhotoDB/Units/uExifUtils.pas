@@ -218,7 +218,6 @@ type
   TExifDataEx = class(TExifData);
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;
-function ExifDisplayButNotRotate(Orientation: Integer): Integer;
 function GetExifRating(FileName: string): Integer; overload;
 function GetExifRating(ExifData: TExifData): Integer; overload;
 function GetExifRotate(FileName: string): Integer;
@@ -718,17 +717,6 @@ begin
     DB_IMAGE_ROTATE_270:
       Result := toRightBottom;
   end;
-end;
-
-function ExifDisplayButNotRotate(Orientation: Integer): Integer;
-begin
-  Result := Orientation;
-  if Result < 0 then
-  begin
-    if Result > -100 then
-      Result := Result * 10;
-  end else
-    Result := Result * 10;
 end;
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;

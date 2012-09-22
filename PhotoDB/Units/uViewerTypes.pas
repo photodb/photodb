@@ -3,6 +3,9 @@ unit uViewerTypes;
 interface
 
 uses
+  SyncObjs,
+  ActiveX,
+  uMemory,
   uThreadForm,
   uImageSource,
   UnitDBDeclare,
@@ -22,9 +25,15 @@ type
   end;
 
   TViewerManager = class(TObject)
+  private
+    FSync: TCriticalSection;
+    FSID: TGUID;
+    FForwardThreadSID: TGUID;
   public
-    procedure DisplayFile(FileName: string);
-    procedure DisplayInfo(Info: TDBPopupMenuInfo);
+    constructor Create;
+    destructor Destroy; override;
+    procedure UpdateViewerState(SID, ForwardThreadSID: TGUID);
+    function ValidateState(State: TGUID): Boolean;
   end;
 
 function ViewerManager: TViewerManager;
@@ -51,14 +60,40 @@ end;
 
 { TViewerManager }
 
-procedure TViewerManager.DisplayFile(FileName: string);
+constructor TViewerManager.Create;
 begin
-  //
+  FSync := TCriticalSection.Create;
 end;
 
-procedure TViewerManager.DisplayInfo(Info: TDBPopupMenuInfo);
+destructor TViewerManager.Destroy;
 begin
-  //
+  F(FSync);
+  inherited;
 end;
+
+procedure TViewerManager.UpdateViewerState(SID, ForwardThreadSID: TGUID);
+begin
+  FSync.Enter;
+  try
+    FSID := SID;
+    FForwardThreadSID := ForwardThreadSID;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TViewerManager.ValidateState(State: TGUID): Boolean;
+begin
+  FSync.Enter;
+  try
+    Result := IsEqualGUID(FSID, State) or IsEqualGUID(State, FForwardThreadSID);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+initialization
+finalization
+  F(FViewerManager);
 
 end.

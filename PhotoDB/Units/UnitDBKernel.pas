@@ -1109,7 +1109,7 @@ begin
   FDisabledImageList.Height := 16;
   FDisabledImageList.ColorDepth := cd32Bit;
 
-  if not FImageList.LoadFromCache('Im' + IntToStr(IconsCount)) or not FDisabledImageList.LoadFromCache('ImGray' + IntToStr(IconsCount)) then
+  if not FImageList.LoadFromCache('Images' + IntToStr(IconsCount)) or not FDisabledImageList.LoadFromCache('ImGray' + IntToStr(IconsCount)) then
   begin
     Icons[1] := LoadIcon(HInstance,'SHELL');
     Icons[2] := LoadIcon(HInstance,'SLIDE_SHOW');
@@ -1256,7 +1256,7 @@ begin
       end;
     end;
 
-    FImageList.SaveToCache('Im' + IntToStr(IconsCount));
+    FImageList.SaveToCache('Images' + IntToStr(IconsCount));
     FDisabledImageList.SaveToCache('ImGray' + IntToStr(IconsCount));
   end;
 end;

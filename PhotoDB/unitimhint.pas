@@ -122,6 +122,7 @@ uses
 procedure DrawHintInfo(Bitmap: TBitmap; Width, Height: Integer; FInfo: TDBPopupMenuInfoRecord);
 var
   Sm, Y: Integer;
+  RotationNotInDB: Boolean;
 
   procedure DoDrawIcon(X, Y: Integer; ImageIndex: Integer; Grayscale: Boolean = False);
   begin
@@ -142,25 +143,15 @@ begin
     DoDrawIcon(Sm, Y, DB_IC_PRIVATE);
   end;
   Dec(Sm, 20);
-  case FInfo.Rotation of
-    10 * DB_IMAGE_ROTATE_90,
+
+  RotationNotInDB := (FInfo.ID = 0) and (FInfo.Rotation and DB_IMAGE_ROTATE_NO_DB > 0);
+  case FInfo.Rotation and DB_IMAGE_ROTATE_MASK of
     DB_IMAGE_ROTATE_90:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_90);
-    10 * DB_IMAGE_ROTATE_180,
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_90, RotationNotInDB);
     DB_IMAGE_ROTATE_180:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_180);
-    10 * DB_IMAGE_ROTATE_270,
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_180, RotationNotInDB);
     DB_IMAGE_ROTATE_270:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_270);
-    -10 * DB_IMAGE_ROTATE_90,
-    -100 * DB_IMAGE_ROTATE_90:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_90, True);
-    -10 * DB_IMAGE_ROTATE_180,
-    -100 * DB_IMAGE_ROTATE_180:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_180, True);
-    -10 * DB_IMAGE_ROTATE_270,
-    -100 * DB_IMAGE_ROTATE_270:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_270, True);
+      DoDrawIcon(Sm, Y, DB_IC_ROTETED_270, RotationNotInDB);
     else
       Inc(Sm, 20);
   end;
@@ -765,7 +756,7 @@ begin
   ImageBuffer.Canvas.Brush.Color := Theme.PanelColor;
   ImageBuffer.Canvas.Rectangle(0, 0, ImageBuffer.Width, ImageBuffer.Height);
 
-  case CurrentInfo.Rotation of
+  case CurrentInfo.Rotation and DB_IMAGE_ROTATE_MASK of
     DB_IMAGE_ROTATE_0:
       StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
     DB_IMAGE_ROTATE_90:

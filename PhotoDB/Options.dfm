@@ -48,17 +48,13 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 548
     Height = 441
-    ActivePage = TsPrograms
+    ActivePage = TsStyle
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
     object TsStyle: TTabSheet
       Caption = 'Style'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -139,10 +135,6 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -274,10 +266,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -490,10 +478,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -656,10 +640,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -916,10 +896,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -1396,10 +1372,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -1583,16 +1555,12 @@ object OptionsForm: TOptionsForm
     object TsPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
       object LbExtensionExecutable: TLabel
         Left = 259
-        Top = 194
+        Top = 195
         Width = 74
         Height = 13
         Caption = 'Executable file:'
@@ -1679,7 +1647,7 @@ object OptionsForm: TOptionsForm
       end
       object EdPlayerExecutable: TEdit
         Left = 259
-        Top = 213
+        Top = 214
         Width = 249
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -1689,7 +1657,7 @@ object OptionsForm: TOptionsForm
       end
       object BtnSelectPlayerExecutable: TButton
         Left = 514
-        Top = 213
+        Top = 214
         Width = 23
         Height = 21
         Anchors = [akTop, akRight]
@@ -1746,7 +1714,7 @@ object OptionsForm: TOptionsForm
       end
       object WlSavePlayerChanges: TWebLink
         Left = 259
-        Top = 240
+        Top = 241
         Width = 88
         Height = 16
         Cursor = crHandPoint

@@ -27,7 +27,8 @@ uses
   uSysUtils,
   uAssociations,
   uActivationUtils,
-  uImageLoader;
+  uImageLoader,
+  uUpTIme;
 
 type
   THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
@@ -226,7 +227,7 @@ procedure DoBuyApplication;
 var
   BuyUrl: string;
 begin
-  BuyUrl := ResolveLanguageString(BuyPageURL) + '?v=' + ProductVersion + '&ac=' + TActivationManager.Instance.ApplicationCode;
+  BuyUrl := ResolveLanguageString(BuyPageURL) + '?v=' + ProductVersion + '&ac=' + TActivationManager.Instance.ApplicationCode + '&ut=' + IntToStr(GetCurrentUpTime);
   ShellExecute(GetActiveWindow, 'open', PWideChar(BuyUrl), nil, nil, SW_NORMAL);
 end;
 

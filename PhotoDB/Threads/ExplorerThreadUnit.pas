@@ -2788,7 +2788,7 @@ begin
           finally
             F(FBit);
           end;
-          ApplyRotate(TempBitmap, Rotated);
+          ApplyRotate(TempBitmap, Info.Rotation);
           BooleanParam := LoadingAllBigImages;
 
           if not SynchronizeEx(ReplaceImageInExplorerB) then

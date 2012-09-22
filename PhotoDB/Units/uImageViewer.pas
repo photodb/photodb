@@ -35,6 +35,7 @@ type
     FFiles: TDBPopupMenuInfo;
     FIsWaiting: Boolean;
     FActiveThreadId: TGUID;
+    FItem: TDBPopupMenuInfoRecord;
     procedure Resize;
     procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord);
   public
@@ -44,12 +45,16 @@ type
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure ResizeTo(Width, Height: Integer);
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
-    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer);
+    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure ZoomOut;
+    procedure ZoomIn;
     function GetWidth: Integer;
     function GetHeight: Integer;
     function GetTop: Integer;
     function GetLeft: Integer;
     function GetActiveThreadId: TGUID;
+    function GetItem: TDBPopupMenuInfoRecord;
+    function GetDisplayBitmap: TBitmap;
   end;
 
 implementation
@@ -82,10 +87,12 @@ begin
   FCurrentFile := '';
   FIsWaiting := False;
   FActiveThreadId := GetEmptyGUID;
+  FItem := TDBPopupMenuInfoRecord.Create;
 end;
 
 destructor TImageViewer.Destroy;
 begin
+  F(FItem);
   F(FFiles);
 end;
 
@@ -94,9 +101,19 @@ begin
   Result := FActiveThreadId;
 end;
 
+function TImageViewer.GetDisplayBitmap: TBitmap;
+begin
+  Result := FImageControl.FullImage;
+end;
+
 function TImageViewer.GetHeight: Integer;
 begin
   Result := FHeight;
+end;
+
+function TImageViewer.GetItem: TDBPopupMenuInfoRecord;
+begin
+  Result := FItem;
 end;
 
 function TImageViewer.GetLeft: Integer;
@@ -130,13 +147,16 @@ begin
     try
       if FImageSource.GetImage(FileInfo.FileName, Bitmap, Width, Height) then
       begin
-        FImageControl.LoadStaticImage(Bitmap, Width, Height);
+        FImageControl.LoadStaticImage(FileInfo, Bitmap, Width, Height, 1);
         Bitmap := nil;
       end;
     finally
       F(Bitmap);
     end;
   end;
+
+  F(FItem);
+  FItem := FileInfo.Copy;
 
   DisplaySize.cx := FWidth;
   DisplaySize.cy := FHeight;
@@ -171,15 +191,25 @@ begin
   Resize;
 end;
 
-procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer);
+procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
 begin
-  FImageControl.LoadStaticImage(Image, RealWidth, RealHeight);
+  FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, ImageScale);
 end;
 
 procedure TImageViewer.UpdateFaces(FileName: string;
   Faces: TFaceDetectionResult);
 begin
   //TODO:
+end;
+
+procedure TImageViewer.ZoomIn;
+begin
+  FImageControl.ZoomIn;
+end;
+
+procedure TImageViewer.ZoomOut;
+begin
+  FImageControl.ZoomOut;
 end;
 
 end.

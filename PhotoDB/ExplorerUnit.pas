@@ -395,7 +395,7 @@ type
     WlLearnMoreLink: TWebLink;
     SbCloseHelp: TSpeedButton;
     PnRight: TPanel;
-    SplGeoLocation: TSplitter;
+    SplRightPanel: TSplitter;
     PnGeoTop: TPanel;
     WlGeoLocation: TWebLink;
     WlSaveLocation: TWebLink;
@@ -461,6 +461,7 @@ type
     TbPreviewPage: TToolButton;
     TbPreviewZoomSeparator: TToolButton;
     TbPreviewOpen: TToolButton;
+    TbPreview: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -657,7 +658,7 @@ type
     procedure SbDoSearchLocationClick(Sender: TObject);
     procedure WlSaveLocationClick(Sender: TObject);
     procedure WedGeoSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure SplGeoLocationMoved(Sender: TObject);
+    procedure SplRightPanelMoved(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure MiShelfClick(Sender: TObject);
     procedure WlGoToShelfClick(Sender: TObject);
@@ -685,6 +686,10 @@ type
     procedure TsInfoShow(Sender: TObject);
     procedure PcRightPreviewChange(Sender: TObject);
     procedure TsMediaPreviewResize(Sender: TObject);
+    procedure TbPreviewPreviousClick(Sender: TObject);
+    procedure TbPreviewZoomInClick(Sender: TObject);
+    procedure TbPreviewZoomOutClick(Sender: TObject);
+    procedure TbPreviewClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -836,6 +841,7 @@ type
     procedure ShowLeftTabIfWasActive(Tab: TExplorerLeftTab);
     procedure ApplyLeftTabs;
 
+    procedure ShowLastActiveRightTab(Tab: TExplorerRightTab);
     procedure ShowActiveRightTab(Tab: TExplorerRightTab);
     procedure ApplyRightTabs;
 
@@ -893,6 +899,9 @@ type
     procedure ApplyStyle; override;
     procedure ApplySettings; override;
     function CanShareSelectedObjects: Boolean;
+
+    procedure ShowRightPanel(Mode: TExplorerRightTab);
+    procedure HideRightPanel;
   public
     constructor Create(AOwner: TComponent; GoToLastSavedPath: Boolean); overload;
     destructor Destroy; override;
@@ -1099,8 +1108,11 @@ procedure TExplorerForm.PcRightPreviewChange(Sender: TObject);
 begin
   FActiveRightTab := TExplorerRightTab(PcRightPreview.ActivePageIndex);
   Settings.WriteInteger('Explorer', 'RightPanelTabIndex', PcRightPreview.ActivePageIndex);
-  if PcRightPreview.ActivePageIndex = 0 then
+  if PcRightPreview.ActivePageIndex = Integer(ertsPreview) then
     CreatePreview;
+
+  if PcRightPreview.ActivePageIndex = Integer(ertsMap) then
+    WlGeoLocationClick(Sender);
 end;
 
 procedure TExplorerForm.PcTasksChange(Sender: TObject);
@@ -1212,6 +1224,7 @@ begin
   ElvMain := TEasyListView.Create(Self);
   ElvMain.Parent := PnContent;
   ElvMain.Align := alClient;
+  ElvMain.Constraints.MinWidth := 100;
   ElvMain.ShowThemedBorder := False;
 
   MouseDowned := False;
@@ -1289,6 +1302,9 @@ begin
   FActiveRightTab := ertsPreview;
   ShowActiveRightTab(TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(ertsPreview))));
   ApplyRightTabs;
+
+  if Settings.ReadBool('Explorer', 'RightPanelVisible', True) then
+    ShowRightPanel(ertsPreview);
 
   Lock := False;
 
@@ -2462,7 +2478,7 @@ var
   GI: TGroupItem;
   S: string;
 
-  procedure UpdateNewInfo(Info: TExplorerFileInfos);
+  procedure UpdateNewInfo(Info: TExplorerFileInfos; UpdateImage: Boolean);
   var
     I: Integer;
   begin
@@ -2488,19 +2504,23 @@ var
         Info[I].Links := '';
         Info[I].Include := Value.Include;
         Info[I].Encrypted := Value.Encrypted;
-        if (FBitmapImageList[Info[I].ImageIndex].Bitmap = nil) then
+
+        if UpdateImage then
         begin
-          Bit := TBitmap.Create;
-          Bit.PixelFormat := pf24bit;
-          Bit.Assign(Value.JPEGImage);
-          ApplyRotate(Bit, Value.Rotate);
-          FBitmapImageList[Info[I].ImageIndex].Graphic := Bit;
-        end else
-          ApplyRotate(FBitmapImageList[Info[I].ImageIndex].Bitmap, ReRotation);
-        ElvMain.Refresh;
-        if Info[I].FileName = FSelectedInfo.FileName then
-          if SelCount = 1 then
-            ListView1SelectItem(nil, ListView1Selected, True);
+          if (FBitmapImageList[Info[I].ImageIndex].Bitmap = nil) then
+          begin
+            Bit := TBitmap.Create;
+            Bit.PixelFormat := pf24bit;
+            Bit.Assign(Value.JPEGImage);
+            ApplyRotate(Bit, Value.Rotate);
+            FBitmapImageList[Info[I].ImageIndex].Graphic := Bit;
+          end else
+            ApplyRotate(FBitmapImageList[Info[I].ImageIndex].Bitmap, ReRotation);
+          ElvMain.Refresh;
+          if Info[I].FileName = FSelectedInfo.FileName then
+            if SelCount = 1 then
+              ListView1SelectItem(nil, ListView1Selected, True);
+        end;
 
         Break;
       end;
@@ -2605,10 +2625,10 @@ begin
 
   if SetNewIDFileData in Params then
   begin
-    UpdateNewInfo(FFilesInfo);
+    UpdateNewInfo(FFilesInfo, True);
 
     if FEditorInfo <> nil then
-      UpdateNewInfo(FEditorInfo);
+      UpdateNewInfo(FEditorInfo, False);
 
     Exit;
   end;
@@ -2862,6 +2882,39 @@ begin
       Explorer.Show;
     end;
   end;
+end;
+
+procedure TExplorerForm.TbPreviewClick(Sender: TObject);
+begin
+  TbPreview.Tag := -TbPreview.Tag;
+  TbPreview.Down := TbPreview.Tag < 0;
+
+  if TbPreview.Down then
+    ShowRightPanel(ertsPreview)
+  else
+    HideRightPanel;
+
+  Settings.WriteBool('Explorer', 'RightPanelVisible', TbPreview.Down)
+end;
+
+procedure TExplorerForm.TbPreviewPreviousClick(Sender: TObject);
+begin
+  if ElvMain.Selection.Count > 0 then
+  begin
+
+  end;
+end;
+
+procedure TExplorerForm.TbPreviewZoomInClick(Sender: TObject);
+begin
+  if FImageViewer <> nil then
+    FImageViewer.ZoomIn;
+end;
+
+procedure TExplorerForm.TbPreviewZoomOutClick(Sender: TObject);
+begin
+  if FImageViewer <> nil then
+    FImageViewer.ZoomOut;
 end;
 
 procedure TExplorerForm.TsInfoResize(Sender: TObject);
@@ -3966,7 +4019,7 @@ begin
   WlPanoramio.Text := IIF(FIsPanaramio, L('Hide Panoramio'), L('Show Panoramio'));
 end;
 
-procedure TExplorerForm.SplGeoLocationMoved(Sender: TObject);
+procedure TExplorerForm.SplRightPanelMoved(Sender: TObject);
 begin
   Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 end;
@@ -4324,7 +4377,6 @@ var
   MapHTML, S: string;
   Lt, Ln: Double;
   Zoom: Integer;
-  R: TRect;
 begin
   if FGeoHTMLWindow = nil then
   begin
@@ -4391,21 +4443,9 @@ begin
       end;
       FGeoHTMLWindow := (FWbGeoLocation.Document as IHTMLDocument2).parentWindow;
     end;
-    PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
   end;
 
-  PcRightPreview.HandleNeeded;
-  PcRightPreview.Perform(TCM_GETITEMRECT, 0, LPARAM(@R));
-  SbCloseRightPanel.Width := R.Height;
-  SbCloseRightPanel.Height := R.Height;
-
-  SbCloseRightPanel.Parent := PcRightPreview;
-  SbCloseRightPanel.Top := 1;
-  SbCloseRightPanel.Left := PcRightPreview.Width - SbCloseRightPanel.Width - 2;
-
-  PnRight.Show;
-  SplGeoLocation.Show;
-  SplGeoLocation.Left := PnRight.Left;
+  ShowRightPanel(ertsMap);
 end;
 
 procedure TExplorerForm.StateChanged(OldState: TGUID);
@@ -4724,6 +4764,42 @@ begin
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+end;
+
+procedure TExplorerForm.ShowRightPanel(Mode: TExplorerRightTab);
+var
+  R: TRect;
+begin
+  PcRightPreview.HandleNeeded;
+  PcRightPreview.Perform(TCM_GETITEMRECT, 0, LPARAM(@R));
+  SbCloseRightPanel.Width := R.Height;
+  SbCloseRightPanel.Height := R.Height;
+
+  SbCloseRightPanel.Parent := PcRightPreview;
+  SbCloseRightPanel.Top := 1;
+  SbCloseRightPanel.Left := PcRightPreview.Width - SbCloseRightPanel.Width - 2;
+
+  PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
+
+  ShowActiveRightTab(Mode);
+  ApplyRightTabs;
+
+  TbPreview.Tag := -1;
+  TbPreview.Down := True;
+
+  PnRight.Show;
+  SplRightPanel.Show;
+  SplRightPanel.Left := PnRight.Left;
+end;
+
+procedure TExplorerForm.HideRightPanel;
+begin
+  TbPreview.Tag := 1;
+  TbPreview.Down := False;
+
+  PnRight.Hide;
+  SplRightPanel.Hide;
+  Windows.SetFocus(ElvMain.Handle);
 end;
 
 procedure TExplorerForm.ShowIndeterminateProgress;
@@ -6137,6 +6213,7 @@ begin
   end;
 end;
 
+
 procedure TExplorerForm.ShowLeftTabIfWasActive(Tab: TExplorerLeftTab);
 var
   TabToShow: Integer;
@@ -6189,6 +6266,15 @@ begin
   LastActiveTab := TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0));
   if (Tab = eltsAny) or (LastActiveTab = Tab) then
     ShowActiveLeftTab(LastActiveTab);
+end;
+
+procedure TExplorerForm.ShowLastActiveRightTab(Tab: TExplorerRightTab);
+var
+  LastActiveTab: TExplorerRightTab;
+begin
+  LastActiveTab := TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', 0));
+  if (Tab = ertsAny) or (LastActiveTab = Tab) then
+    ShowActiveRightTab(LastActiveTab);
 end;
 
 procedure TExplorerForm.ApplyLeftTabs;
@@ -6265,19 +6351,30 @@ var
   B: TBitmap;
 begin
   Result := False;
+  B := nil;
   FileName := AnsiLowerCase(FileName);
   for I := 0 to ElvMain.Items.Count - 1 do
   begin
     if ElvMain.Items[I].ImageIndex <> -1 then
     begin
       Index := ItemIndexToMenuIndex(I);
+
       if AnsiLowerCase(FFilesInfo[Index].FileName) = FileName then
       begin
-        if FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
+
+        if FImageViewer <> nil then
         begin
+          if (AnsiLowerCase(FImageViewer.Item.FileName) = FileName) and not FImageViewer.DisplayBitmap.Empty then
+            B := FImageViewer.DisplayBitmap;
+        end;
+
+        if (B = nil) and FBitmapImageList[ElvMain.Items[I].ImageIndex].IsBitmap then
           B := FBitmapImageList[ElvMain.Items[I].ImageIndex].Bitmap;
-          Width := FFilesInfo[Index].Width;
-          Height := FFilesInfo[Index].Height;
+
+        Width := FFilesInfo[Index].Width;
+        Height := FFilesInfo[Index].Height;
+        if B <> nil then
+        begin
           if (Width = 0) or (Height = 0) then
           begin
             Width := B.Width;
@@ -6285,8 +6382,8 @@ begin
           end;
           Bitmap.Assign(B);
           Result := True;
-          Break;
         end;
+        Break;
       end;
     end;
   end;
@@ -8655,9 +8752,7 @@ end;
 
 procedure TExplorerForm.SbCloseRightPanelClick(Sender: TObject);
 begin
-  PnRight.Hide;
-  SplGeoLocation.Hide;
-  Windows.SetFocus(ElvMain.Handle);
+  HideRightPanel;
 end;
 
 procedure TExplorerForm.SbCloseHelpClick(Sender: TObject);
@@ -10195,7 +10290,7 @@ procedure TExplorerForm.LoadToolBarNormaIcons;
 var
   UseSmallIcons: Boolean;
 
-  procedure AddIcon(Name: String);
+  procedure AddIcon(Name: string);
   var
     Icon: HIcon;
   begin
@@ -10229,14 +10324,14 @@ begin
   AddIcon('EXPLORER_ZOOM_IN');
   AddIcon('EXPLORER_SEARCH');
   AddIcon('EXPLORER_OPTIONS');
-  AddIcon('EXPLORER_BREAK');
+  AddIcon('EXPLORER_PREVIEW');
 end;
 
 procedure TExplorerForm.LoadToolBarGrayedIcons;
 var
   UseSmallIcons: Boolean;
 
-  procedure AddIcon(Name: String);
+  procedure AddIcon(Name: string);
   var
     Icon: HIcon;
   begin
@@ -10270,8 +10365,7 @@ begin
   AddIcon('EXPLORER_ZOOM_IN_GRAY');
   AddIcon('EXPLORER_SEARCH_GRAY');
   AddIcon('EXPLORER_OPTIONS_GRAY');
-  AddIcon('EXPLORER_BREAK_GRAY');
-
+  AddIcon('EXPLORER_PREVIEW_GRAY');
 end;
 
 procedure TExplorerForm.TbBackMouseDown(Sender: TObject; Button: TMouseButton;
@@ -10829,7 +10923,7 @@ begin
   TbPreviewPrevious.ImageIndex := DB_IC_PREVIOUS;
   TbPreviewNext.ImageIndex := DB_IC_NEXT;
   TbPreviewZoomOut.ImageIndex := DB_IC_ZOOMOUT;
-  TbPreviewZoomIN.ImageIndex := DB_IC_ZOOMIN;
+  TbPreviewZoomIn.ImageIndex := DB_IC_ZOOMIN;
   TbPreviewOpen.ImageIndex := DB_IC_SLIDE_SHOW;
 
   Shell1.ImageIndex := DB_IC_SHELL;

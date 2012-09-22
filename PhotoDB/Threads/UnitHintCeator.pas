@@ -178,7 +178,7 @@ begin
             AssignGraphic(Bitmap, Graphic);
 
           if not CheckThreadState then
-            exit;
+            Exit;
 
           F(Graphic);
           FW := Bitmap.Width;

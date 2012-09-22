@@ -229,7 +229,7 @@ begin
       ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
       ViewerForm.SetStaticImage(Bitmap, FTransparent);}
 
-      FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight);
+      FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FRealZoomScale);
 
       FBitmap := nil;
     end else

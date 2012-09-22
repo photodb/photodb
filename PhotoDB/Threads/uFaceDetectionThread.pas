@@ -397,7 +397,7 @@ begin
           try
             if Faces.LoadFromFile(FileName) and (Faces.Count > 0) then
             begin
-              case Rotate of
+              case Rotate and DB_IMAGE_ROTATE_MASK of
                 DB_IMAGE_ROTATE_270:
                   Faces.RotateLeft;
                 DB_IMAGE_ROTATE_90:
@@ -430,7 +430,7 @@ var
 begin
   PersonAreas := PersonManager.GetAreasOnImage(ID);
   try
-    case Rotate of
+    case Rotate and DB_IMAGE_ROTATE_MASK of
       DB_IMAGE_ROTATE_270:
         PersonAreas.RotateLeft;
       DB_IMAGE_ROTATE_90:

@@ -165,7 +165,7 @@ begin
 
           W := Image.Width;
           H := Image.Height;
-          case FInfo.Rotate of
+          case FInfo.Rotate and DB_IMAGE_ROTATE_MASK of
             DB_IMAGE_ROTATE_0:
             begin
               ProportionalSize(FMonWidth, FMonHeight, W, H);

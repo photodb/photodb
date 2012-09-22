@@ -200,6 +200,7 @@ begin
     SetStrParam(FQuery, 1, AnsiLowerCase(Path));
     SetIntParam(FQuery, 2, GetFileSize(Path));
 
+
     //if date isn't defined yet
     if not ((YearOf(Date) > 1900) and IsTime and IsDate) then
     begin
@@ -218,7 +219,7 @@ begin
             IsDate := True;
             IsTime := True;
             //if rotation no==isn't set
-            if Rotated = DB_IMAGE_ROTATE_0 then
+            if (Rotated and DB_IMAGE_ROTATE_MASK = DB_IMAGE_ROTATE_0) and (Rotated <> DB_IMAGE_ROTATE_FIXED) then
               Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
           end;
         except
@@ -229,6 +230,8 @@ begin
         F(ExifData);
       end;
     end;
+    Rotated := Rotated and DB_IMAGE_ROTATE_MASK;
+
     SetBoolParam(FQuery, 16, True);
     if YearOf(Date) < 1900 then
     begin
@@ -318,10 +321,6 @@ var
       ExifGroups := '';
       Info.Groups := '';
       UpdateImageRecordFromExif(Info, True, True);
-
-      //do not rotate preview, just dusplay
-      if IsRAWImageFile(Info.FileName) then
-        Info.Rotation := Info.Rotation * 10;
 
       ExifGroups := Info.Groups;
       Info.Groups := Groups;

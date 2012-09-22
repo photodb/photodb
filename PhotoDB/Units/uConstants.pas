@@ -282,6 +282,9 @@ const
   DB_IMAGE_ROTATE_180     = 2;
   DB_IMAGE_ROTATE_270     = 3;
   DB_IMAGE_ROTATE_EXIF    = 4;
+  DB_IMAGE_ROTATE_NO_DB   = 8;
+  DB_IMAGE_ROTATE_MASK    = 7;
+  DB_IMAGE_ROTATE_FIXED   = 16; //do not update rotation from EXIF during DB update process
 
   Result_Invalid                    = -1;
   Result_Add                        =  0;
@@ -461,6 +464,13 @@ const
   DBT_DevTyp_Volume        = $0002;
   DBT_DEVNODES_CHANGED     = $0007;
 
+function IsRotatedImageProportions(Rotation: Integer): Boolean;
+
 implementation
+
+function IsRotatedImageProportions(Rotation: Integer): Boolean;
+begin
+  Result := (Rotation and DB_IMAGE_ROTATE_MASK) in [DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_270];
+end;
 
 end.

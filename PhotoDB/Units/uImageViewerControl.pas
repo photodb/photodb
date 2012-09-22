@@ -39,6 +39,8 @@ type
     FRealImageHeight: Integer;
     FHorizontalScrollBar: TScrollBar;
     FVerticalScrollBar: TScrollBar;
+    FItem: TDBPopupMenuInfoRecord;
+    FImageScale: Double;
     function Buffer: TBitmap;
     procedure RecreateImage;
     function GetIsFastDrawing: Boolean;
@@ -55,15 +57,15 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure LoadStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer);
+    procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure ZoomOut;
+    procedure ZoomIn;
     property IsFastDrawing: Boolean read GetIsFastDrawing;
     property Item: TDBPopupMenuInfoRecord read GetItem;
+    property FullImage: TBitmap read FFullImage;
   end;
 
 implementation
-
-const
-  RealZoomInc = 1;
 
 { TImageViewerControl }
 
@@ -83,17 +85,16 @@ begin
   TControlCanvas(FCanvas).Control := Self;
 
   ControlStyle := ControlStyle + [csOpaque, csPaintBlackOpaqueOnGlass];
-  //DoubleBuffered := True;
 
   FHorizontalScrollBar := TScrollBar.Create(Self);
   FHorizontalScrollBar.Visible := False;
-  FHorizontalScrollBar.Parent := nil;
+  FHorizontalScrollBar.Parent := Self;
   FHorizontalScrollBar.Kind := sbHorizontal;
   FHorizontalScrollBar.OnScroll := OnScrollChanged;
 
   FVerticalScrollBar := TScrollBar.Create(Self);
   FVerticalScrollBar.Visible := False;
-  FVerticalScrollBar.Parent := nil;
+  FVerticalScrollBar.Parent := Self;
   FVerticalScrollBar.Kind := sbVertical;
   FVerticalScrollBar.OnScroll := OnScrollChanged;
 
@@ -114,6 +115,9 @@ begin
   FImageExists := False;
   FRealImageWidth := 0;
   FRealImageHeight := 0;
+  FImageScale := 1;
+
+  FItem := TDBPopupMenuInfoRecord.Create;
 end;
 
 destructor TImageViewerControl.Destroy;
@@ -122,6 +126,7 @@ begin
   F(FOverlayBuffer);
   F(FFullImage);
   F(FCanvas);
+  F(FItem);
   inherited;
 end;
 
@@ -130,8 +135,13 @@ begin
   Message.Result := 1;
 end;
 
-procedure TImageViewerControl.LoadStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer);
+procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
 begin
+  F(FItem);
+  FItem := Item.Copy;
+
+  FImageScale := ImageScale;
+
   //FTransparentImage := Transparent;
   F(FFullImage);
   FFullImage := Image;
@@ -206,8 +216,7 @@ end;
 
 function TImageViewerControl.GetItem: TDBPopupMenuInfoRecord;
 begin
-  //TODO:
-  Result := nil;
+  Result := FItem;
 end;
 
 function TImageViewerControl.HeightW: Integer;
@@ -230,6 +239,104 @@ begin
   BitBlt(Message.DC, 0, 0, Buffer.Width, Buffer.Height, Buffer.Canvas.Handle, 0, 0, SRCCOPY);
 end;
 
+procedure TImageViewerControl.ZoomIn;
+var
+  Z: Real;
+begin
+  //TbRealSize.Down := False;
+  //TbFitToWindow.Down := False;
+ // Cursor := CursorZoomInNo;
+  if not FZoomerOn and (FImageScale > 1) then
+  begin
+    FZoomerOn := True;
+    if (FRealImageWidth < ClientWidth) and (FRealImageHeight < HeightW) then
+      Z := 1
+    else
+      Z := Max(FRealImageWidth / ClientWidth, FRealImageHeight / (HeightW));
+    Z := 1 / Z;
+    Z := Min(Z * (1 / 0.8), 16);
+    {
+    TbFitToWindow.Enabled := False;
+    TbRealSize.Enabled := False;
+    TbSlideShow.Enabled := False;
+    TbZoomOut.Enabled := False;
+    TbZoomIn.Enabled := False;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False;  }
+
+    //LoadImage_(Sender, True, Z, True);
+
+    {TbrActions.Refresh;
+    TbrActions.Realign;    }
+  end else
+  begin
+    if FZoomerOn then
+    begin
+      Z := FZoom;
+    end else
+    begin
+      if (FRealImageWidth < ClientWidth) and (FRealImageHeight < HeightW) then
+        Z := 1
+      else
+        Z := Max(FRealImageWidth / ClientWidth, FRealImageHeight / (HeightW));
+      Z := 1 / Z;
+    end;
+
+    FZoomerOn := True;
+    FZoom := Min(Z * (1 / 0.8), 16);
+    ReAlignScrolls(False);
+    RecreateImage;
+  end;
+end;
+
+procedure TImageViewerControl.ZoomOut;
+var
+  Z: Real;
+begin
+  //TbRealSize.Down := False;
+  //TbFitToWindow.Down := False;
+  //Cursor := CursorZoomOutNo;
+  if not FZoomerOn and (FImageScale > 1) then
+  begin
+    FZoomerOn := True;
+    if (FRealImageWidth < ClientWidth) and (FRealImageHeight < HeightW) then
+      Z := 1
+    else
+      Z := Max(FRealImageWidth / ClientWidth, FRealImageHeight / (HeightW));
+    Z := 1 / Z;
+    Z := Max(Z * 0.8, 0.01);
+    {TbFitToWindow.Enabled := False;
+    TbRealSize.Enabled := False;
+    TbSlideShow.Enabled := False;
+    TbZoomOut.Enabled := False;
+    TbZoomIn.Enabled := False;
+    TbRotateCCW.Enabled := False;
+    TbRotateCW.Enabled := False; }
+
+    //TODO: LoadImage_(Sender, True, Z, True);
+
+    //TbrActions.Refresh;
+    //TbrActions.Realign;
+  end else
+  begin
+    if FZoomerOn then
+    begin
+      Z := FZoom;
+    end else
+    begin
+      if (FRealImageWidth < ClientWidth) and (FRealImageHeight < HeightW) then
+        Z := 1
+      else
+        Z := Max(FRealImageWidth / ClientWidth, FRealImageHeight / (HeightW));
+      Z := 1 / Z;
+    end;
+    FZoomerOn := True;
+    FZoom := Max(Z * 0.8, 0.05);
+    ReAlignScrolls(False);
+    RecreateImage;
+  end;
+end;
+
 procedure TImageViewerControl.RecreateImage;
 var
   Fh, Fw: Integer;
@@ -239,6 +346,8 @@ var
   Z, Zoom: Double;
   TempImage, B: TBitmap;
   ACopyRect: TRect;
+  ImageEffectiveWidth,
+  ImageEffectiveHeight: Integer;
 
   procedure DrawRect(X1, Y1, X2, Y2: Integer);
   begin
@@ -280,21 +389,31 @@ begin
       Exit;
     end;
 
-  if (FRealImageWidth > ClientWidth) or (FRealImageHeight > HeightW) then
+  if IsRotatedImageProportions(Item.Rotation) then
   begin
-    if FRealImageWidth / FRealImageHeight < FDrawImage.Width / FDrawImage.Height then
+    ImageEffectiveWidth := FRealImageHeight;
+    ImageEffectiveHeight := FRealImageWidth;
+  end else
+  begin
+    ImageEffectiveWidth := FRealImageWidth;
+    ImageEffectiveHeight := FRealImageHeight;
+  end;
+
+  if (ImageEffectiveWidth > ClientWidth) or (ImageEffectiveHeight > HeightW) then
+  begin
+    if ImageEffectiveWidth / ImageEffectiveHeight < FDrawImage.Width / FDrawImage.Height then
     begin
       FH := FDrawImage.Height;
-      FW := Round(FDrawImage.Height * (FRealImageWidth / FRealImageHeight));
+      FW := Round(FDrawImage.Height * (ImageEffectiveWidth / ImageEffectiveHeight));
     end else
     begin
       FW := FDrawImage.Width;
-      FH := Round(FDrawImage.Width * (FRealImageHeight / FRealImageWidth));
+      FH := Round(FDrawImage.Width * (ImageEffectiveHeight / ImageEffectiveWidth));
     end;
   end else
   begin
-    FH := FRealImageHeight;
-    FW := FRealImageWidth;
+    FH := ImageEffectiveHeight;
+    FW := ImageEffectiveWidth;
   end;
 
   X1 := ClientWidth div 2 - FW div 2;
@@ -309,7 +428,7 @@ begin
 
   Zoom := FZoom;
   if FFullImage.Width < FRealImageWidth then
-    Zoom := FZoom * FRealImageWidth / FFullImage.Width;
+    Zoom := FZoom * ImageEffectiveWidth / FFullImage.Width;
 
   if FImageExists or FLoading then
   begin
@@ -353,13 +472,12 @@ begin
       begin
         DrawRect(X1, Y1, X2, Y2);
         if FZoomerOn then
-          Z := RealZoomInc * Zoom
+          Z := FImageScale * Zoom
         else
         begin
           if FRealImageWidth * FRealImageHeight <> 0 then
           begin
-            if {(Item.Rotation = DB_IMAGE_ROTATE_90) or
-              (Item.Rotation = DB_IMAGE_ROTATE_270)}False then
+            if IsRotatedImageProportions(Item.Rotation) then
               Z := Zoom * Min(FW / FRealImageHeight, FH / FRealImageWidth)
             else
               Z := Zoom * Min(FW / FRealImageWidth, FH / FRealImageHeight);
@@ -494,12 +612,6 @@ begin
     FVerticalScrollBar.Position := 50;
   end;
 
-  {Panel1.Width := FVerticalScrollBar.Width;
-  Panel1.Height := FHorizontalScrollBar.Height;
-  Panel1.Left := ClientWidth - Panel1.Width;
-  Panel1.Top := HeightW - Panel1.Height;
-  Panel1.Visible := FHorizontalScrollBar.Visible and FVerticalScrollBar.Visible;}
-
   if FHorizontalScrollBar.Visible then
   begin
     if FVerticalScrollBar.Visible then
@@ -567,7 +679,6 @@ begin
 
   RecreateImage;
   //CheckFaceIndicatorVisibility;
-  Repaint;
 end;
 
 end.

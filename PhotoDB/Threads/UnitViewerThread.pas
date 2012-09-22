@@ -61,6 +61,7 @@ type
     FPage: Word;
     FPages: Word;
     TransparentColor: TColor;
+    procedure OnLoadImageProgress(ProgressState: TLoadImageProgressState; BytesTotal, BytesComplete: Int64; var Break: Boolean);
   protected
     procedure Execute; override;
     procedure GetPassword;
@@ -119,9 +120,11 @@ var
   PNG: TPNGImage;
   LoadFlags: TImageLoadFlags;
   ImageInfo: ILoadImageInfo;
+  CanDetectFaces: Boolean;
 begin
   inherited;
   FreeOnTerminate := True;
+  CanDetectFaces := False;
   try
     if not IsDevicePath(FInfo.FileName) and not FileExistsEx(FInfo.FileName) then
     begin
@@ -145,7 +148,7 @@ begin
         LoadFlags := LoadFlags + [ilfFullRAW];
 
       try
-        if not LoadImageFromPath(FInfo, FPage, Password, LoadFlags, ImageInfo, Screen.Width, Screen.Height) then
+        if not LoadImageFromPath(FInfo, FPage, Password, LoadFlags, ImageInfo, Screen.Width, Screen.Height, OnLoadImageProgress) then
         begin
           SetNOImageAsynch;
           Exit;
@@ -163,6 +166,8 @@ begin
         end;
       end;
 
+      if not ViewerManager.ValidateState(FSID) then Exit;
+
       if not FInfo.InfoLoaded then
         UpdateRecord;
 
@@ -176,6 +181,8 @@ begin
         FRealZoomScale := FRealWidth / Graphic.Width;
       if Graphic is TRAWImage then
         FRealZoomScale := TRAWImage(Graphic).Width / TRAWImage(Graphic).GraphicWidth;
+
+      if not ViewerManager.ValidateState(FSID) then Exit;
 
       if IsAnimatedGraphic(Graphic) then
       begin
@@ -216,16 +223,25 @@ begin
             Exit;
           end;
 
+          if not ViewerManager.ValidateState(FSID) then Exit;
+
           ImageInfo.AppllyICCProfile(Bitmap);
 
-          ApplyRotate(Bitmap, FInfo.Rotation);
+          if not ViewerManager.ValidateState(FSID) then Exit;
+
+          if not ((ilfFullRAW in LoadFlags) and (Graphic is TRAWImage)) then
+            ApplyRotate(Bitmap, FInfo.Rotation);
+
+          CanDetectFaces := ViewerManager.ValidateState(FSID);
+          if not CanDetectFaces then Exit;
+
           SetStaticImageAsynch;
         finally
           F(Bitmap);
         end;
       end;
     finally
-      if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
+      if CanDetectFaces and Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
       begin
         if CanDetectFacesOnImage(FInfo.FileName, Graphic) then
         begin
@@ -235,6 +251,7 @@ begin
           FinishDetectionFaces;
       end else
         FinishDetectionFaces;
+
       F(Graphic);
     end;
 
@@ -291,6 +308,14 @@ procedure TViewerThread.GetPasswordSynch;
 begin
   if not FViewer.FullScreenNow then
     PassWord := RequestPasswordForm.ForImage(FInfo.FileName);
+end;
+
+procedure TViewerThread.OnLoadImageProgress(
+  ProgressState: TLoadImageProgressState; BytesTotal, BytesComplete: Int64;
+  var Break: Boolean);
+begin
+  if not ViewerManager.ValidateState(FSID) then
+    Break := True;
 end;
 
 procedure TViewerThread.SetAnimatedImage;
@@ -417,6 +442,9 @@ begin
     repeat
       if ViewerForm = nil then
         Break;
+
+      ViewerForm.ForwardThreadReady := True;
+
       if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
         Break;
       if not ViewerForm.ForwardThreadExists then

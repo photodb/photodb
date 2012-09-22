@@ -165,9 +165,9 @@ var
     Rotation := FProcessingParams.Rotation;
     if FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF then
     begin
-      if (FData.ID > 0) and (FData.Rotation > 0) then
+      if (FData.ID > 0) and (FData.Rotation and DB_IMAGE_ROTATE_MASK > 0) then
       begin
-        Rotation := FData.Rotation;
+        Rotation := FData.Rotation and DB_IMAGE_ROTATE_MASK;
       end else
       begin
         ExifData := TExifData.Create;
@@ -175,6 +175,7 @@ var
           ExifData.LoadFromGraphic(FData.FileName);
           Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
 
+          //TODO: recheck
           if GraphicClass = TRAWImage then
             Rotation := DB_IMAGE_ROTATE_0;
         except
@@ -183,7 +184,9 @@ var
         end;
         F(ExifData);
       end;
-    end;
+    end else
+      Rotation := SumRotation(FData.Rotation, Rotation);
+
   end;
 
   procedure FixJpegFileEXIF(FileName: string; Width, Height: Integer);
@@ -280,7 +283,7 @@ const
 
             MODE_GDI_PLUS:
               begin
-                case Rotation of
+                case Rotation and DB_IMAGE_ROTATE_MASK of
                   DB_IMAGE_ROTATE_270:
                     RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate270, FileName);
                   DB_IMAGE_ROTATE_90:
@@ -443,7 +446,7 @@ begin
           else
             Rotation := SumRotation(FData.Rotation, FProcessingParams.Rotation);
 
-          if Rotation <> FData.Rotation then
+          if Rotation <> (FData.Rotation and DB_IMAGE_ROTATE_MASK) then
           begin
             SetRotate(FData.ID, Rotation);
             FIntParam := Rotation;
@@ -456,7 +459,7 @@ begin
 
           FileInfo := FData.Copy;
           try
-            FileInfo.Rotation := Rotation;
+            FileInfo.Rotation := Rotation or DB_IMAGE_ROTATE_FIXED;
             FileInfo.Include := True;
             FDataParam := FileInfo;
             Synchronize(AddInfoToCollection);
@@ -488,7 +491,7 @@ begin
 
             MD := TMemoryStream.Create;
             try
-              case Rotation of
+              case Rotation and DB_IMAGE_ROTATE_MASK of
                 DB_IMAGE_ROTATE_270:
                   RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate270);
                 DB_IMAGE_ROTATE_90:

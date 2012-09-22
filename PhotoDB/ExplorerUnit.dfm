@@ -65,7 +65,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 605
-      ActivePage = TsDetailedSearch
+      ActivePage = TsEXIF
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -78,10 +78,6 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -749,10 +745,6 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object TsInfo: TTabSheet
         Caption = 'Info'
@@ -760,10 +752,6 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
           132
           577)
@@ -913,10 +901,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -924,7 +908,7 @@ object ExplorerForm: TExplorerForm
           Height = 577
           Align = alClient
           DefaultColWidth = 70
-          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking]
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
           TabOrder = 0
           ColWidths = (
             70
@@ -1005,7 +989,7 @@ object ExplorerForm: TExplorerForm
       Width = 1006
       Height = 21
       ButtonHeight = 19
-      ButtonWidth = 48
+      ButtonWidth = 13
       Color = clInactiveCaption
       EdgeInner = esNone
       EdgeOuter = esNone
@@ -1105,8 +1089,16 @@ object ExplorerForm: TExplorerForm
         Style = tbsDropDown
         OnClick = ToolButtonViewClick
       end
-      object ToolButton11: TToolButton
+      object TbPreview: TToolButton
+        Tag = 1
         Left = 183
+        Top = 0
+        AutoSize = True
+        ImageIndex = 12
+        OnClick = TbPreviewClick
+      end
+      object ToolButton11: TToolButton
+        Left = 195
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -1114,14 +1106,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbZoomOut: TToolButton
-        Left = 191
+        Left = 203
         Top = 0
         AutoSize = True
         ImageIndex = 8
         OnClick = TbZoomOutClick
       end
       object TbZoomIn: TToolButton
-        Left = 203
+        Left = 215
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
@@ -1130,7 +1122,7 @@ object ExplorerForm: TExplorerForm
         OnClick = TbZoomInClick
       end
       object ToolButton20: TToolButton
-        Left = 236
+        Left = 248
         Top = 0
         Width = 8
         Caption = 'ToolButton20'
@@ -1138,14 +1130,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbSearch: TToolButton
-        Left = 244
+        Left = 256
         Top = 0
         AutoSize = True
         ImageIndex = 10
         OnClick = GoToSearchWindow1Click
       end
       object ToolButton16: TToolButton
-        Left = 256
+        Left = 268
         Top = 0
         Width = 8
         Caption = 'ToolButton16'
@@ -1153,7 +1145,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbOptions: TToolButton
-        Left = 264
+        Left = 276
         Top = 0
         AutoSize = True
         Caption = 'Options'
@@ -1343,7 +1335,7 @@ object ExplorerForm: TExplorerForm
     FullRepaint = False
     ParentColor = True
     TabOrder = 5
-    object SplGeoLocation: TSplitter
+    object SplRightPanel: TSplitter
       Left = 507
       Top = 33
       Width = 5
@@ -1351,7 +1343,7 @@ object ExplorerForm: TExplorerForm
       Align = alRight
       ResizeStyle = rsUpdate
       Visible = False
-      OnMoved = SplGeoLocationMoved
+      OnMoved = SplRightPanelMoved
       ExplicitLeft = 572
       ExplicitTop = 27
       ExplicitHeight = 564
@@ -1829,6 +1821,7 @@ object ExplorerForm: TExplorerForm
       Width = 350
       Height = 568
       Align = alRight
+      Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
       DesignSize = (
@@ -1903,6 +1896,7 @@ object ExplorerForm: TExplorerForm
               Top = 0
               Caption = 'TbPreviewPrevious'
               ImageIndex = 3
+              OnClick = TbPreviewPreviousClick
             end
             object TbPreviewNext: TToolButton
               Left = 30
@@ -1917,16 +1911,18 @@ object ExplorerForm: TExplorerForm
               ImageIndex = 3
               Style = tbsSeparator
             end
-            object TbPreviewZoomIn: TToolButton
+            object TbPreviewZoomOut: TToolButton
               Left = 68
+              Top = 0
+              ImageIndex = 0
+              OnClick = TbPreviewZoomOutClick
+            end
+            object TbPreviewZoomIn: TToolButton
+              Left = 98
               Top = 0
               Caption = 'TbPreviewZoomIn'
               ImageIndex = 1
-            end
-            object TbPreviewZoomOut: TToolButton
-              Left = 98
-              Top = 0
-              ImageIndex = 0
+              OnClick = TbPreviewZoomInClick
             end
             object ToolButton2: TToolButton
               Left = 128
@@ -1954,15 +1950,12 @@ object ExplorerForm: TExplorerForm
               Left = 189
               Top = 0
               ImageIndex = 2
+              OnClick = SlideShowLinkClick
             end
           end
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 503
