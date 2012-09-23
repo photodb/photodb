@@ -690,6 +690,7 @@ type
     procedure TbPreviewZoomInClick(Sender: TObject);
     procedure TbPreviewZoomOutClick(Sender: TObject);
     procedure TbPreviewClick(Sender: TObject);
+    procedure TbPreviewNextClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1109,7 +1110,11 @@ begin
   FActiveRightTab := TExplorerRightTab(PcRightPreview.ActivePageIndex);
   Settings.WriteInteger('Explorer', 'RightPanelTabIndex', PcRightPreview.ActivePageIndex);
   if PcRightPreview.ActivePageIndex = Integer(ertsPreview) then
+  begin
     CreatePreview;
+    if FImageViewer <> nil then
+      FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
+  end;
 
   if PcRightPreview.ActivePageIndex = Integer(ertsMap) then
     WlGeoLocationClick(Sender);
@@ -2897,11 +2902,71 @@ begin
   Settings.WriteBool('Explorer', 'RightPanelVisible', TbPreview.Down)
 end;
 
-procedure TExplorerForm.TbPreviewPreviousClick(Sender: TObject);
+procedure TExplorerForm.TbPreviewNextClick(Sender: TObject);
+var
+  ItemIndex: Integer;
 begin
-  if ElvMain.Selection.Count > 0 then
+  if ElvMain.Selection.Count > 1 then
   begin
+    if FImageViewer <> nil then
+      FImageViewer.LoadNextFile;
+  end;
+  if ElvMain.Selection.Count = 1 then
+  begin
+    ItemIndex := ElvMain.Items.IndexOf(ElvMain.Selection.First);
+    Inc(ItemIndex);
+    if ItemIndex > ElvMain.Items.Count - 1 then
+      ItemIndex := 0;
 
+    ElvMain.Selection.ClearAll;
+    ElvMain.Items[ItemIndex].Selected := True;
+    ElvMain.Selection.First.MakeVisible(emvMiddle);
+
+  end;
+  if (ElvMain.Selection.Count = 0) and (ElvMain.Items.Count > 0) then
+  begin
+    ElvMain.Items[0].Selected := True;
+    ElvMain.Selection.First.MakeVisible(emvMiddle);
+  end;
+
+  if TStyleManager.IsCustomStyleActive then
+  begin
+    ShowScrollBar(ElvMain.Handle, SB_VERT, False);
+    ShowScrollBar(ElvMain.Handle, SB_VERT, True);
+  end;
+end;
+
+procedure TExplorerForm.TbPreviewPreviousClick(Sender: TObject);
+var
+  ItemIndex: Integer;
+begin
+  if ElvMain.Selection.Count > 1 then
+  begin
+    if FImageViewer <> nil then
+      FImageViewer.LoadPreviousFile;
+  end;
+  if ElvMain.Selection.Count = 1 then
+  begin
+    ItemIndex := ElvMain.Items.IndexOf(ElvMain.Selection.First);
+    Dec(ItemIndex);
+    if ItemIndex < 0 then
+      ItemIndex := ElvMain.Items.Count - 1;
+
+    ElvMain.Selection.ClearAll;
+    ElvMain.Items[ItemIndex].Selected := True;
+    ElvMain.Selection.First.MakeVisible(emvMiddle);
+
+  end;
+  if (ElvMain.Selection.Count = 0) and (ElvMain.Items.Count > 0) then
+  begin
+    ElvMain.Items[ElvMain.Items.Count - 1].Selected := True;
+    ElvMain.Selection.First.MakeVisible(emvMiddle);
+  end;
+
+  if TStyleManager.IsCustomStyleActive then
+  begin
+    ShowScrollBar(ElvMain.Handle, SB_VERT, False);
+    ShowScrollBar(ElvMain.Handle, SB_VERT, True);
   end;
 end;
 
@@ -3528,10 +3593,16 @@ var
   H: THandle;
 begin
   if Msg.message = FReloadGroupsMessage then
+  begin
+    Handled := True;
     InitEditGroups;
+  end;
 
   if Msg.message = FWebBrowserJSMessage then
+  begin
+    Handled := True;
     WlSaveLocationClick(Self);
+  end;
 
   if not Self.Active then
     Exit;
@@ -4061,7 +4132,10 @@ begin
                 if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
                 begin
                   if not UpdateFileGeoInfo(EI.FileName, GeoLocation, True) then
-                    UpdatingDone := False;
+                    UpdatingDone := False
+                  else if FCurrentTypePath in [EXPLORER_ITEM_SHELF, EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
+                                               EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY] then
+                    RefreshItemByID(EI.ID);
 
                   Progress.Position := Progress.Position + 1;
                   if Progress.Closed then
@@ -8627,7 +8701,7 @@ begin
   begin
     if TsMediaPreview.Visible then
       CreatePreview;
-    
+
     if FImageViewer <> nil then
       FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
   end;
@@ -10830,7 +10904,9 @@ begin
     ElvMain.Groups.Rebuild(True);
 
     if SelectedVisible then
+    begin
       ElvMain.Selection.First.MakeVisible(EmvTop);
+    end;
   finally
     ElvMain.EndUpdate;
   end;

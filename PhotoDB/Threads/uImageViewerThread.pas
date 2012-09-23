@@ -45,8 +45,10 @@ type
     //TODO; remove
     FTransparentColor: TColor;
 
+    FGraphic: TGraphic;
     FBitmap: TBitmap;
     procedure SetStaticImage;
+    procedure SetAnimatedImageAsynch;
   protected
     procedure Execute; override;
   public
@@ -90,150 +92,167 @@ var
   Password: string;
   LoadFlags: TImageLoadFlags;
   ImageInfo: ILoadImageInfo;
-  Graphic: TGraphic;
   PNG: TPNGImage;
 begin
   FreeOnTerminate := True;
 
-  Password := '';
-  FTotalPages := 1;
-  FRealZoomScale := 0;
-  FIsTransparent := False;
-
-  if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
-  begin
-    Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
-    if Password = '' then
-    begin
-      //TODO:
-      Exit;
-    end;
-  end;
-
-
-  Graphic := nil;
-  ImageInfo := nil;
   try
 
-    LoadFlags := [ilfGraphic, ilfICCProfile, ilfPassword, ilfEXIF, ilfUseCache];
+    Password := '';
+    FTotalPages := 1;
+    FRealZoomScale := 0;
+    FIsTransparent := False;
 
-    try
-      if not LoadImageFromPath(FInfo, FPageNumber, Password, LoadFlags, ImageInfo, FDisplaySize.cx, FDisplaySize.cy) then
+    if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
+    begin
+      Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+      if Password = '' then
       begin
-        //TODO: SetNOImageAsynch;
-        Exit;
-      end;
-
-      FTotalPages := ImageInfo.ImageTotalPages;
-
-      Graphic := ImageInfo.ExtractGraphic;
-    except
-      on e: Exception do
-      begin
-        EventLog(e);
-        //TODO: SetNOImageAsynch;
+        //TODO:
         Exit;
       end;
     end;
 
-    FRealWidth := Graphic.Width;
-    FRealHeight := Graphic.Height;
-    if FIsPreview then
-      JPEGScale(Graphic, FDisplaySize.cx, FDisplaySize.cy);
 
+    FGraphic := nil;
+    ImageInfo := nil;
+    try
 
-    FRealZoomScale := 1;
-    if Graphic.Width <> 0 then
-      FRealZoomScale := FRealWidth / Graphic.Width;
-    if Graphic is TRAWImage then
-      FRealZoomScale := TRAWImage(Graphic).Width / TRAWImage(Graphic).GraphicWidth;
+      LoadFlags := [ilfGraphic, ilfICCProfile, ilfPassword, ilfEXIF, ilfUseCache];
 
-    if IsAnimatedGraphic(Graphic) then
-    begin
-      //TODO: SetAnimatedImageAsynch;
-    end else
-    begin
-      FBitmap := TBitmap.Create;
       try
-        try
-          if Graphic is TPNGImage then
-          begin
-            FIsTransparent := True;
-            PNG := (Graphic as TPNGImage);
-            if PNG.TransparencyMode <> ptmNone then
-              LoadPNGImage32bit(PNG, FBitmap, FTransparentColor)
-            else
-              AssignGraphic(FBitmap, Graphic);
-          end else
-          begin
-            if (Graphic is TBitmap) then
-            begin
-              if PSDTransparent then
-              begin
-                if (Graphic as TBitmap).PixelFormat = pf32bit then
-                begin
-                  FIsTransparent := True;
-                  LoadBMPImage32bit(Graphic as TBitmap, FBitmap, FTransparentColor);
-                end else
-                  AssignGraphic(FBitmap, Graphic);
-              end else
-                AssignGraphic(FBitmap, Graphic);
-            end else
-              AssignGraphic(FBitmap, Graphic);
-          end;
-          FBitmap.PixelFormat := pf24bit;
-        except
+        if not LoadImageFromPath(FInfo, FPageNumber, Password, LoadFlags, ImageInfo, FDisplaySize.cx, FDisplaySize.cy) then
+        begin
           //TODO: SetNOImageAsynch;
           Exit;
         end;
 
-        ImageInfo.AppllyICCProfile(FBitmap);
+        FTotalPages := ImageInfo.ImageTotalPages;
 
-        ApplyRotate(FBitmap, FInfo.Rotation);
-
-        if not SynchronizeEx(SetStaticImage) then
-          F(FBitmap);
-
-      finally
-        F(FBitmap);
+        FGraphic := ImageInfo.ExtractGraphic;
+      except
+        on e: Exception do
+        begin
+          EventLog(e);
+          //TODO: SetNOImageAsynch;
+          Exit;
+        end;
       end;
-    end;
-  finally
-    //TODO:
-    {if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
-    begin
-      if CanDetectFacesOnImage(FInfo.FileName, Graphic) then
+
+      FRealWidth := FGraphic.Width;
+      FRealHeight := FGraphic.Height;
+      if FIsPreview then
+        JPEGScale(FGraphic, FDisplaySize.cx, FDisplaySize.cy);
+
+      FRealZoomScale := 1;
+      if FGraphic.Width <> 0 then
+        FRealZoomScale := FRealWidth / FGraphic.Width;
+      if FGraphic is TRAWImage then
+        FRealZoomScale := TRAWImage(FGraphic).Width / TRAWImage(FGraphic).GraphicWidth;
+
+      if IsAnimatedGraphic(FGraphic) then
       begin
-        SynchronizeEx(ShowLoadingSign);
-        FaceDetectionDataManager.RequestFaceDetection(FOwnerControl, Graphic, FInfo);
+        SynchronizeEx(SetAnimatedImageAsynch);
       end else
-        FinishDetectionFaces;
-    end else
-      FinishDetectionFaces;}
-    F(Graphic);
+      begin
+        FBitmap := TBitmap.Create;
+        try
+          try
+            if FGraphic is TPNGImage then
+            begin
+              FIsTransparent := True;
+              PNG := (FGraphic as TPNGImage);
+              if PNG.TransparencyMode <> ptmNone then
+                LoadPNGImage32bit(PNG, FBitmap, FTransparentColor)
+              else
+                AssignGraphic(FBitmap, FGraphic);
+            end else
+            begin
+              if (FGraphic is TBitmap) then
+              begin
+                if PSDTransparent then
+                begin
+                  if (FGraphic as TBitmap).PixelFormat = pf32bit then
+                  begin
+                    FIsTransparent := True;
+                    LoadBMPImage32bit(FGraphic as TBitmap, FBitmap, FTransparentColor);
+                  end else
+                    AssignGraphic(FBitmap, FGraphic);
+                end else
+                  AssignGraphic(FBitmap, FGraphic);
+              end else
+                AssignGraphic(FBitmap, FGraphic);
+            end;
+            FBitmap.PixelFormat := pf24bit;
+          except
+            //TODO: SetNOImageAsynch;
+            Exit;
+          end;
+
+          ImageInfo.AppllyICCProfile(FBitmap);
+
+          ApplyRotate(FBitmap, FInfo.Rotation);
+
+          if not SynchronizeEx(SetStaticImage) then
+            F(FBitmap);
+
+        finally
+          F(FBitmap);
+        end;
+      end;
+    finally
+      //TODO:
+      {if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
+      begin
+        if CanDetectFacesOnImage(FInfo.FileName, Graphic) then
+        begin
+          SynchronizeEx(ShowLoadingSign);
+          FaceDetectionDataManager.RequestFaceDetection(FOwnerControl, Graphic, FInfo);
+        end else
+          FinishDetectionFaces;
+      end else
+        FinishDetectionFaces;}
+      F(FGraphic);
+    end;
+  except
+    on Ex: Exception do
+      EventLog(Ex);
+  end;
+end;
+
+procedure TImageViewerThread.SetAnimatedImageAsynch;
+begin
+  if IsEqualGUID(FOwnerControl.ActiveThreadId, FThreadId) then
+  begin
+    {ViewerForm.RealImageHeight := FRealHeight;
+    ViewerForm.RealImageWidth := FRealWidth;
+    ViewerForm.RealZoomInc := FRealZoomScale;
+    if FIsNewDBInfo then
+      ViewerForm.UpdateInfo(FSID, FInfo);
+    ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
+    ViewerForm.SetAnimatedImage(Graphic);   }
+    FOwnerControl.SetAnimatedImage(FGraphic, FRealWidth, FRealHeight, FRealZoomScale);
+    Pointer(FGraphic) := nil;
   end;
 end;
 
 procedure TImageViewerThread.SetStaticImage;
 begin
   if IsEqualGUID(FOwnerControl.ActiveThreadId, FThreadId) then
-    begin
-      {ViewerForm.RealImageHeight := FRealHeight;
-      ViewerForm.RealImageWidth := FRealWidth;
-      ViewerForm.RealZoomInc := FRealZoomScale;
-      ViewerForm.Item.Encrypted := FIsEncrypted;
-      if FIsNewDBInfo then
-        ViewerForm.UpdateInfo(FSID, FInfo);
-      ViewerForm.Item.Width := FRealWidth;
-      ViewerForm.Item.Height := FRealHeight;
-      ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
-      ViewerForm.SetStaticImage(Bitmap, FTransparent);}
+  begin
+    {ViewerForm.Item.Encrypted := FIsEncrypted;
+    if FIsNewDBInfo then
+      ViewerForm.UpdateInfo(FSID, FInfo);
+    ViewerForm.Item.Width := FRealWidth;
+    ViewerForm.Item.Height := FRealHeight;
+    ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
+    ViewerForm.SetStaticImage(Bitmap, FTransparent);}
 
-      FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FRealZoomScale);
+    FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FRealZoomScale);
 
-      FBitmap := nil;
-    end else
-      F(FBitmap);
+    FBitmap := nil;
+  end else
+    F(FBitmap);
 end;
 
 end.

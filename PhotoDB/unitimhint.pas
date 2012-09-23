@@ -45,6 +45,7 @@ uses
   uDBPopupMenuInfo,
   uFormUtils,
   uAnimatedJPEG,
+  uAnimationHelper,
   Themes,
   uThemesUtils,
   uRuntime;
@@ -76,12 +77,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
-    function GetNextImageNO : integer;
-    function GetNextImageNOX(NO: Integer): integer;
-    function GetPreviousImageNO: integer;
-    function GetPreviousImageNOX(NO: Integer): integer;
     procedure ImageFrameTimerTimer(Sender: TObject);
-    function GetFirstImageNO: integer;
     procedure FormDeactivate(Sender: TObject);
   private
     { Private declarations }
@@ -261,7 +257,7 @@ begin
     CurrentInfo := Info.Copy;
 
     IsAnimated := IsAnimatedGraphic(G);
-    InverseHW := not (Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_180);
+    InverseHW := not (Info.Rotation and DB_IMAGE_ROTATE_MASK in [DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_180]);
     if not (InverseHW and IsAnimated) then
     begin
       DisplayWidth := G.Width;
@@ -570,212 +566,33 @@ begin
   end;
 end;
 
-function TImHint.GetNextImageNO: Integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if AnimatedImage is TGIFImage then
-  begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := SlideNO;
-    Inc(Result);
-    if Result >= Im.Images.Count then
-      Result := 0;
-
-    if Im.Images[Result].Empty then
-      Result := GetNextImageNOX(Result);
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-     Result := IIF(SlideNO = 1, 0, 1);
-  end;
-end;
-
-function TImHint.GetNextImageNOX(NO: Integer): Integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if AnimatedImage is TGIFImage then
-  begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := NO;
-    Inc(Result);
-    if Result >= Im.Images.Count then
-      Result := 0;
-
-    if Im.Images[Result].Empty then
-      Result := GetNextImageNOX(Result);
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-     Result := IIF(NO = 1, 0, 1);
-  end;
-end;
-
-function TImHint.GetPreviousImageNO: integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if AnimatedImage is TGIFImage then
-  begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := SlideNO;
-    Dec(Result);
-    if Result < 0 then
-      Result := Im.Images.Count - 1;
-
-    if Im.Images[Result].Empty then
-      Result := GetPreviousImageNOX(Result);
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-     Result := IIF(SlideNO = 1, 0, 1);
-  end;
-end;
-
-function TImHint.GetPreviousImageNOX(NO: Integer): integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if AnimatedImage is TGIFImage then
-  begin
-    Im := (AnimatedImage as TGIFImage);
-    Result := NO;
-    Dec(Result);
-    if Result < 0 then
-      Result := Im.Images.Count - 1;
-
-    if Im.Images[Result].Empty then
-      Result := GetPreviousImageNOX(Result);
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-    Result := IIF(NO = 1, 0, 1);
-  end;
-end;
-
-function TImHint.GetFirstImageNO: integer;
-var
-  I: Integer;
-begin
-  Result := -1;
-  if AnimatedImage is TGIFImage then
-  begin
-    for I := 0 to (AnimatedImage as TGIFImage).Images.Count - 1 do
-      if not(AnimatedImage as TGIFImage).Images[I].Empty then
-      begin
-        Result := I;
-        Break;
-      end;
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-    Result := 0;
-  end;
-end;
-
 procedure TImHint.ImageFrameTimerTimer(Sender: TObject);
-var
-  C, PreviousNumber: Integer;
-  R, Bounds_: TRect;
-  Im: TGifImage;
-  DisposalMethod: TDisposalMethod;
-  Del, Delta: Integer;
-  TimerEnabled: Boolean;
-  Gsi: TGIFSubImage;
-  TickCountStart: Cardinal;
 begin
-  TickCountStart := GetTickCount;
-  Del := 100;
-  TimerEnabled := False;
-
   if FClosed then
     Exit;
 
-  if SlideNO = -1 then
-    SlideNO := GetFirstImageNO
-  else
-    SlideNO := GetNextImageNO;
-
-  if AnimatedImage is TGIFImage then
-  begin
-    Im := AnimatedImage as TGIFImage;
-    R := Im.Images[SlideNO].BoundsRect;
-    AnimatedBuffer.Canvas.Brush.Color := Theme.PanelColor;
-    AnimatedBuffer.Canvas.Pen.Color := Theme.PanelColor;
-    TimerEnabled := False;
-    PreviousNumber := GetPreviousImageNO;
-    if (Im.Animate) and (Im.Images.Count > 1) then
+  AnimatedImage.ProcessNextFrame(AnimatedBuffer, SlideNo, Theme.PanelColor, ImageFrameTimer,
+    procedure
     begin
-      Gsi := Im.Images[SlideNO];
-      if Gsi.Empty then
-        Exit;
-      if Im.Images[PreviousNumber].Empty then
-        DisposalMethod := DmNone
-      else begin
-        if Im.Images[PreviousNumber].GraphicControlExtension <> nil then
-          DisposalMethod := Im.Images[PreviousNumber].GraphicControlExtension.Disposal
-        else
-          DisposalMethod := DmNone;
+      ImageBuffer.Canvas.Pen.Color := Theme.PanelColor;
+      ImageBuffer.Canvas.Brush.Color := Theme.PanelColor;
+      ImageBuffer.Canvas.Rectangle(0, 0, ImageBuffer.Width, ImageBuffer.Height);
+
+      case CurrentInfo.Rotation and DB_IMAGE_ROTATE_MASK of
+        DB_IMAGE_ROTATE_0:
+          StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
+        DB_IMAGE_ROTATE_90:
+          StretchCoolEx90(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
+        DB_IMAGE_ROTATE_180:
+          StretchCoolEx180(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
+        DB_IMAGE_ROTATE_270:
+          StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
       end;
 
-      if Im.Images[SlideNO].GraphicControlExtension <> nil then
-        Del := Im.Images[SlideNO].GraphicControlExtension.Delay * 10;
-      if Del = 10 then
-        Del := 100;
-      if Del = 0 then
-        Del := 100;
-      TimerEnabled := True;
-    end else
-      DisposalMethod := DmNone;
-    if SlideNO = 0 then
-      DisposalMethod := DmBackground
-    else if (DisposalMethod = DmBackground) then
-    begin
-      Bounds_ := Im.Images[PreviousNumber].BoundsRect;
-      AnimatedBuffer.Canvas.Pen.Color := Theme.PanelColor;
-      AnimatedBuffer.Canvas.Brush.Color := Theme.PanelColor;
-      AnimatedBuffer.Canvas.Rectangle(Bounds_);
-    end;
-    if DisposalMethod = DmPrevious then
-    begin
-      C := SlideNO;
-      Dec(C);
-      if C < 0 then
-        C := Im.Images.Count - 1;
-      Im.Images[C].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
-    end;
-    Im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-    TimerEnabled := True;
-    AnimatedBuffer.Assign(TAnimatedJPEG(AnimatedImage).Images[SlideNO]);
-    Del := Animation3DDelay;
-  end;
-
-  ImageBuffer.Canvas.Pen.Color := Theme.PanelColor;
-  ImageBuffer.Canvas.Brush.Color := Theme.PanelColor;
-  ImageBuffer.Canvas.Rectangle(0, 0, ImageBuffer.Width, ImageBuffer.Height);
-
-  case CurrentInfo.Rotation and DB_IMAGE_ROTATE_MASK of
-    DB_IMAGE_ROTATE_0:
-      StretchCoolEx0(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
-    DB_IMAGE_ROTATE_90:
-      StretchCoolEx90(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
-    DB_IMAGE_ROTATE_180:
-      StretchCoolEx180(0, 0, ImageBuffer.Width, ImageBuffer.Height, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
-    DB_IMAGE_ROTATE_270:
-      StretchCoolEx270(0, 0, ImageBuffer.Height, ImageBuffer.Width, AnimatedBuffer, ImageBuffer, Theme.PanelColor);
-  end;
-
-  DrawHintInfo(ImageBuffer, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
-  CreateFormImage;
-  ImageFrameTimer.Enabled := False;
-  Delta := Integer(GetTickCount - TickCountStart);
-  ImageFrameTimer.Interval := Max(Del div 2, Del - Delta);
-  if not TimerEnabled then
-    ImageFrameTimer.Enabled := False
-  else
-    ImageFrameTimer.Enabled := True;
+      DrawHintInfo(ImageBuffer, ImageBuffer.Width, ImageBuffer.Height, CurrentInfo);
+      CreateFormImage;
+    end
+  );
 end;
 
 function TImHint.GetFormID: string;

@@ -3,16 +3,17 @@ unit uExplorerSearchProviders;
 interface
 
 uses
-  SysUtils,
+  System.SysUtils,
+  System.Classes,
+  System.StrUtils,
+  Vcl.Graphics,
   uMemory,
-  Classes,
-  uPathProviders, uConstants,
-  StrUtils,
+  uPathProviders,
+  uConstants,
   uStringUtils,
   uFileUtils,
   uTranslate,
   uExplorerMyComputerProvider,
-  Graphics,
   uShellIcons,
   uExplorerFSProviders,
   uExplorerNetworkProviders;

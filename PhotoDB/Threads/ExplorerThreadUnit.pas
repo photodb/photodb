@@ -873,6 +873,7 @@ begin
       Info.FileType := EXPLORER_ITEM_IMAGE;
       Info.SID := GetGUID;
       Info.ImageIndex := -1;
+      UpdateImageGeoInfo(Info);
       FPacketInfos.Add(Info);
       FDataList.Add(Info);
 

@@ -14,8 +14,11 @@ type
   IImageViewer = interface(IFaceResultForm)
     procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
+    procedure LoadPreviousFile;
+    procedure LoadNextFile;
     procedure ResizeTo(Width, Height: Integer);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
     function GetWidth: Integer;
@@ -37,3 +40,4 @@ type
 implementation
 
 end.
+

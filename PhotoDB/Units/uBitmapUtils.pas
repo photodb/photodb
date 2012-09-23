@@ -557,17 +557,20 @@ begin
   end;
 end;
 
-
 procedure StretchCool(X, Y, Width, Height: Integer; S, D: TBitmap);
 var
-  i,j,k,p,Sheight1:integer;
-  P1: Pargb;
-  Col, R, G, B: Integer;
+  R, G, B: Integer;
+  I, J, K, P, Sheight1, Col: Integer;
+  P1, PS: PARGB;
+
+  RGBS, RGBD: PRGB;
+
   Sh, Sw: Extended;
   Xp: array of PARGB;
-  S_h, S_w: Integer;
+  S_H, S_W: Integer;
   XAW : array of Integer;
-  YMin, YMax : Integer;
+  YMin, YMax: Integer;
+  XAWJ, XAWJ1: Integer;
 begin
   S.PixelFormat := pf24bit;
   D.PixelFormat := pf24bit;
@@ -581,41 +584,51 @@ begin
   SetLength(Xp, S.Height);
   for I := 0 to Sheight1 do
     Xp[I] := S.ScanLine[I];
-  S_w := S.Width - 1;
-  S_h := S.Height - 1;
+  S_W := S.Width - 1;
+  S_H := S.Height - 1;
   SetLength(XAW, Width + 1);
   for I := 0 to Width do
-    XAW[I] := Round(Sw * I);
+    XAW[I] := Min(S_W, Round(Sw * I));
 
   for I := Max(0, Y) to Height + Y - 1 do
   begin
     P1 := D.ScanLine[I];
     YMin := Max(0, Round(Sh * (I - Y)));
     YMax := Min(S_h, Round(Sh * (I - Y + 1 )) - 1);
+
+    RGBD := @P1[X];
     for J := 0 to Width - 1 do
     begin
-      Col := 0;
       R := 0;
       G := 0;
       B := 0;
+      XAWJ := XAW[J];
+      XAWJ1 := XAW[J + 1] - 1;
+
+      Col := (YMax - YMin + 1) * (XAWJ1 - XAWJ + 1);
+
       for K := YMin to YMax do
       begin
-        for P := XAW[J] to XAW[J + 1] - 1 do
+        PS := XP[K];
+        RGBS := @PS[XAWJ];
+
+        for P := XAWJ to XAWJ1 do
         begin
-          if P > S_W then
-            Break;
-          Inc(Col);
-          Inc(R, Xp[K, P].R);
-          Inc(G, Xp[K, P].G);
-          Inc(B, Xp[K, P].B);
+          Inc(R, RGBS^.R);
+          Inc(G, RGBS^.G);
+          Inc(B, RGBS^.B);
+
+          Inc(RGBS);
         end;
       end;
+
       if (Col <> 0) and (J + X > 0) then
       begin
-        P1[J + X].R := R div Col;
-        P1[J + X].G := G div Col;
-        P1[J + X].B := B div Col;
+        RGBD^.R := R div Col;
+        RGBD^.G := G div Col;
+        RGBD^.B := B div Col;
       end;
+      Inc(RGBD);
     end;
   end;
 end;
@@ -879,11 +892,16 @@ var
   SH, SW: Extended;
   YMin, YMax: Integer;
   XAW: array of Integer;
+  XAWJ, XAWJ1: Integer;
+  PS: PARGB;
+  RGBS: PRGB;
+  PS32: PARGB32;
+  RGB32S: PRGB32;
 begin
   if Width + Height = 0 then
     Exit;
 
-  if S.PixelFormat = Pf32bit then
+  if S.PixelFormat = pf32bit then
     D.PixelFormat := pf32bit
   else
   begin
@@ -915,18 +933,23 @@ begin
       YMax := MinI32(SHI - 1, Ceil(SH * (I + 1)) - 1);
       for J := 0 to Width - 1 do
       begin
-        Count := 0;
         R := 0;
         G := 0;
         B := 0;
+        XAWJ := XAW[J];
+        XAWJ1 := MinI32(SWI - 1, XAW[J + 1] - 1);
+        Count := (YMax - YMin + 1) * (XAWJ1 - XAWJ + 1);
         for K := YMin to YMax do
         begin
-          for F := XAW[J] to MinI32(SWI - 1, XAW[J + 1] - 1) do
+          PS := XP[K];
+          RGBS := @PS[XAWJ];
+          for F := XAWJ to XAWJ1 do
           begin
-            Inc(Count);
-            Inc(R, XP[K, F].R);
-            Inc(G, XP[K, F].G);
-            Inc(B, XP[K, F].B);
+            Inc(R, RGBS^.R);
+            Inc(G, RGBS^.G);
+            Inc(B, RGBS^.B);
+
+            Inc(RGBS);
           end;
         end;
         if Count <> 0 then
@@ -950,20 +973,25 @@ begin
       YMax := MinI32(SHI - 1, Ceil(SH * (I + 1)) - 1);
       for J := 0 to Width - 1 do
       begin
-        Count := 0;
         R := 0;
         G := 0;
         B := 0;
         L := 0;
+        XAWJ := XAW[J];
+        XAWJ1 := MinI32(SWI - 1, XAW[J + 1] - 1);
+        Count := (YMax - YMin + 1) * (XAWJ1 - XAWJ + 1);
         for K := YMin to YMax do
         begin
-          for F := XAW[J] to MinI32(SWI - 1, XAW[J + 1] - 1) do
+          PS32 := XP32[K];
+          RGB32S := @PS32[XAWJ];
+          for F := XAWJ to XAWJ1 do
           begin
-            Inc(Count);
-            Inc(R, XP32[K, F].R);
-            Inc(G, XP32[K, F].G);
-            Inc(B, XP32[K, F].B);
-            Inc(L, XP32[K, F].L);
+            Inc(R, RGB32S^.R);
+            Inc(G, RGB32S^.G);
+            Inc(B, RGB32S^.B);
+            Inc(L, RGB32S^.L);
+
+            Inc(RGB32S);
           end;
         end;
         if Count <> 0 then

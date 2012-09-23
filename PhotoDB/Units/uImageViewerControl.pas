@@ -11,12 +11,19 @@ uses
   Vcl.Controls,
   Vcl.Forms,
   Vcl.StdCtrls,
+  Vcl.ExtCtrls,
   GraphicsCool,
   UnitDBDeclare,
+  GIFImage,
+  Effects,
   uMemory,
   uConstants,
+  uSysUtils,
   uGraphicUtils,
   uBitmapUtils,
+  uAnimatedJPEG,
+  uAnimationHelper,
+  uImageZoomHelper,
   uThemesUtils,
   uTranslate,
   uBaseWinControl;
@@ -30,6 +37,8 @@ type
     FDrawImage: TBitmap;
     FOverlayBuffer: TBitmap;
     FFullImage: TBitmap;
+    FAnimatedImage: TGraphic;
+    FAnimatedBuffer: TBitmap;
     FTransparentImage: Boolean;
     FIsWaiting: Boolean;
     FLoading: Boolean;
@@ -41,6 +50,8 @@ type
     FVerticalScrollBar: TScrollBar;
     FItem: TDBPopupMenuInfoRecord;
     FImageScale: Double;
+    FImageFrameTimer: TTimer;
+    FFrameNumber: Integer;
     function Buffer: TBitmap;
     procedure RecreateImage;
     function GetIsFastDrawing: Boolean;
@@ -50,14 +61,17 @@ type
     function GetImageRectA: TRect;
     function HeightW: Integer;
     procedure OnScrollChanged(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
+    procedure FImageFrameTimerOnTimer(Sender: TObject);
   protected
     procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMPrintClient(var Message: TWMPrintClient); message WM_PRINTCLIENT;
     procedure Resize; override;
+    procedure NextFrame;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
     property IsFastDrawing: Boolean read GetIsFastDrawing;
@@ -107,6 +121,13 @@ begin
   FFullImage := TBitmap.Create;
   FFullImage.PixelFormat := pf24bit;
 
+  FAnimatedBuffer := TBitmap.Create;
+  FAnimatedBuffer.PixelFormat := pf24bit;
+
+  FImageFrameTimer := TTimer.Create(Self);
+  FImageFrameTimer.Enabled := False;
+  FImageFrameTimer.OnTimer := FImageFrameTimerOnTimer;
+
   FIsWaiting := False;
   FZoomerOn := False;
   FZoom := 1;
@@ -116,12 +137,16 @@ begin
   FRealImageWidth := 0;
   FRealImageHeight := 0;
   FImageScale := 1;
+  FAnimatedImage := nil;
+  FFrameNumber := -1;
 
   FItem := TDBPopupMenuInfoRecord.Create;
 end;
 
 destructor TImageViewerControl.Destroy;
 begin
+  F(FAnimatedImage);
+  F(FAnimatedBuffer);
   F(FDrawImage);
   F(FOverlayBuffer);
   F(FFullImage);
@@ -133,6 +158,65 @@ end;
 procedure TImageViewerControl.Erased(var Message: TWMEraseBkgnd);
 begin
   Message.Result := 1;
+end;
+
+procedure TImageViewerControl.FImageFrameTimerOnTimer(Sender: TObject);
+begin
+  NextFrame;
+end;
+
+procedure TImageViewerControl.LoadAnimatedImage(Item: TDBPopupMenuInfoRecord;
+  Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
+begin
+  F(FItem);
+  FItem := Item.Copy;
+
+  F(FAnimatedImage);
+  FAnimatedImage := Image;
+  {FCurrentlyLoadedFile := Item.FileName;
+  ForwardThreadExists := False;
+  FForwardThreadReady := False; }
+  FIsStaticImage := False;
+  FImageExists := True;
+  FLoading := False;
+
+  if not FZoomerOn then
+    Cursor := CrDefault;
+
+  {TbFitToWindow.Enabled := True;
+  TbRealSize.Enabled := True;
+  TbSlideShow.Enabled := True;
+  TbZoomOut.Enabled := True;
+  TbZoomIn.Enabled := True;    }
+
+  //TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
+  //TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
+
+  {TbRealSize.Down := False;
+  TbFitToWindow.Down := False;
+  TbZoomOut.Down := False;
+  TbZoomIn.Down := False;}
+
+  //EndWaitToImage(Self);
+
+  ReAlignScrolls(False);
+  FFrameNumber := -1;
+  FZoomerOn := False;
+  FTransparentImage := FAnimatedImage.IsTransparentAnimation;
+
+  FAnimatedBuffer.Width := FAnimatedImage.Width;
+  FAnimatedBuffer.Height := FAnimatedImage.Height;
+
+  FAnimatedBuffer.Canvas.Brush.Color := Theme.WindowColor;
+  FAnimatedBuffer.Canvas.Pen.Color := Theme.WindowColor;
+
+  FAnimatedBuffer.Canvas.Rectangle(0, 0, FAnimatedBuffer.Width, FAnimatedBuffer.Height);
+  FImageFrameTimer.Interval := 1;
+  FImageFrameTimer.Enabled := True;
+
+  {FFaces.Clear;
+  FFaceDetectionComplete := True;
+  UpdateFaceDetectionState;   }
 end;
 
 procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
@@ -166,47 +250,37 @@ begin
   RecreateImage;
 end;
 
-function TImageViewerControl.GetImageRectA: TRect;
-var
-  Increment: Integer;
-  FX, FY, FH, FW: Integer;
+procedure TImageViewerControl.NextFrame;
 begin
-  if FHorizontalScrollBar.Visible then
-  begin
-    FX := 0;
-  end else
-  begin
-    if FVerticalScrollBar.Visible then
-      Increment := FVerticalScrollBar.width
-    else
-      Increment := 0;
-    FX := Max(0, Round(ClientWidth / 2 - Increment - FFullImage.Width * FZoom / 2));
-  end;
-  if FVerticalScrollBar.Visible then
-  begin
-    FY := 0;
-  end else
-  begin
-    if FHorizontalScrollBar.Visible then
-      Increment := FHorizontalScrollBar.Height
-    else
-      Increment := 0;
-    FY := Max(0,
-      Round(HeightW / 2 - Increment - FFullImage.Height * FZoom / 2));
-  end;
-  if FVerticalScrollBar.Visible then
-    Increment := FVerticalScrollBar.width
-  else
-    Increment := 0;
-  FW := Round(Min(ClientWidth - Increment, FFullImage.Width * FZoom));
-  if FHorizontalScrollBar.Visible then
-    Increment := FHorizontalScrollBar.Height
-  else
-    Increment := 0;
-  FH := Round(Min(HeightW - Increment, FFullImage.Height * FZoom));
-  FH := FH;
+  if not (FImageExists and not FIsStaticImage) then
+    Exit;
 
-  Result := Rect(FX, FY, FW + FX, FH + FY);
+  FAnimatedImage.ProcessNextFrame(FAnimatedBuffer, FFrameNumber, Theme.WindowColor, FImageFrameTimer,
+    procedure
+    begin
+      case Item.Rotation and DB_IMAGE_ROTATE_MASK of
+        DB_IMAGE_ROTATE_0:
+          FFullImage.Assign(FAnimatedBuffer);
+        DB_IMAGE_ROTATE_90:
+          Rotate90(FAnimatedBuffer, FFullImage);
+        DB_IMAGE_ROTATE_180:
+          Rotate180(FAnimatedBuffer, FFullImage);
+        DB_IMAGE_ROTATE_270:
+          Rotate270(FAnimatedBuffer, FFullImage)
+      end;
+
+      RecreateImage;
+    end
+  );
+
+end;
+
+function TImageViewerControl.GetImageRectA: TRect;
+begin
+  Result := TImageZoomHelper.GetImageVisibleRect(FHorizontalScrollBar, FVerticalScrollBar,
+      TSize.Create(FFullImage.Width, FFullImage.Height),
+      TSize.Create(ClientWidth, HeightW),
+      FZoom);
 end;
 
 function TImageViewerControl.GetIsFastDrawing: Boolean;
@@ -448,7 +522,7 @@ begin
               Round((FHorizontalScrollBar.Position + ZW) / Zoom), Round((FVerticalScrollBar.Position + ZH) / Zoom));
             TempImage := TBitmap.Create;
             try
-              TempImage.PixelFormat := Pf24bit;
+              TempImage.PixelFormat := pf24bit;
               TempImage.SetSize(ZW, ZH);
               B := TBitmap.Create;
               try
@@ -503,8 +577,6 @@ begin
     begin
       if FZoomerOn and not FIsWaiting then
       begin
-        ImRect := Rect(Round(FHorizontalScrollBar.Position / Zoom), Round((FVerticalScrollBar.Position) / Zoom),
-          Round((FHorizontalScrollBar.Position + ZW) / Zoom), Round((FVerticalScrollBar.Position + ZH) / Zoom));
         BeginRect := GetImageRectA;
         DrawRect(BeginRect.Left, BeginRect.Top, BeginRect.Right, BeginRect.Bottom);
         SetStretchBltMode(FDrawImage.Canvas.Handle, STRETCH_HALFTONE);
@@ -529,135 +601,12 @@ begin
 end;
 
 procedure TImageViewerControl.ReAlignScrolls(IsCenter: Boolean);
-var
-  Inc_: Integer;
-  Pos, M, Ps: Integer;
-  V1, V2: Boolean;
 begin
-  //Panel1.Visible := False;
-  if not FZoomerOn then
-  begin
-    FHorizontalScrollBar.Position := 0;
-    FHorizontalScrollBar.Visible := False;
-    FVerticalScrollBar.Position := 0;
-    FVerticalScrollBar.Visible := False;
-    Exit;
-  end;
-  V1 := FHorizontalScrollBar.Visible;
-  V2 := FVerticalScrollBar.Visible;
-  if not FHorizontalScrollBar.Visible and not FVerticalScrollBar.Visible then
-  begin
-    FHorizontalScrollBar.Visible := FFullImage.Width * FZoom > ClientWidth;
-    if FHorizontalScrollBar.Visible then
-      Inc_ := FHorizontalScrollBar.Height
-    else
-      Inc_ := 0;
-    FVerticalScrollBar.Visible := FFullImage.Height * FZoom > HeightW - Inc_;
-  end;
-  begin
-    if FVerticalScrollBar.Visible then
-      Inc_ := FVerticalScrollBar.Width
-    else
-      Inc_ := 0;
-    FHorizontalScrollBar.Visible := FFullImage.Width * FZoom > ClientWidth - Inc_;
-    FHorizontalScrollBar.Width := ClientWidth - Inc_;
-    if FHorizontalScrollBar.Visible then
-      Inc_ := FHorizontalScrollBar.Height
-    else
-      Inc_ := 0;
-    FHorizontalScrollBar.Top := HeightW - Inc_;
-  end;
-  begin
-    if FHorizontalScrollBar.Visible then
-      Inc_ := FHorizontalScrollBar.Height
-    else
-      Inc_ := 0;
-    FVerticalScrollBar.Visible := FFullImage.Height * FZoom > HeightW - Inc_;
-    FVerticalScrollBar.Height := HeightW - Inc_;
-    if FVerticalScrollBar.Visible then
-      Inc_ := FVerticalScrollBar.Width
-    else
-      Inc_ := 0;
-    FVerticalScrollBar.Left := ClientWidth - Inc_;
-  end;
-  begin
-    if FVerticalScrollBar.Visible then
-      Inc_ := FVerticalScrollBar.Width
-    else
-      Inc_ := 0;
-    FHorizontalScrollBar.Visible := FFullImage.Width * FZoom > ClientWidth - Inc_;
-    FHorizontalScrollBar.Width := ClientWidth - Inc_;
-    if FHorizontalScrollBar.Visible then
-      Inc_ := FHorizontalScrollBar.Height
-    else
-      Inc_ := 0;
-    FHorizontalScrollBar.Top := HeightW - Inc_;
-  end;
-  if not FHorizontalScrollBar.Visible then
-    FHorizontalScrollBar.Position := 0;
-  if not FVerticalScrollBar.Visible then
-    FVerticalScrollBar.Position := 0;
-  if FHorizontalScrollBar.Visible and not V1 then
-  begin
-    FHorizontalScrollBar.PageSize := 0;
-    FHorizontalScrollBar.Position := 0;
-    FHorizontalScrollBar.Max := 100;
-    FHorizontalScrollBar.Position := 50;
-  end;
-  if FVerticalScrollBar.Visible and not V2 then
-  begin
-    FVerticalScrollBar.PageSize := 0;
-    FVerticalScrollBar.Position := 0;
-    FVerticalScrollBar.Max := 100;
-    FVerticalScrollBar.Position := 50;
-  end;
-
-  if FHorizontalScrollBar.Visible then
-  begin
-    if FVerticalScrollBar.Visible then
-      Inc_ := FVerticalScrollBar.Width
-    else
-      Inc_ := 0;
-    M := Round(FFullImage.Width * FZoom);
-    Ps := ClientWidth - Inc_;
-    if Ps > M then
-      Ps := 0;
-    if (FHorizontalScrollBar.Max <> FHorizontalScrollBar.PageSize) then
-      Pos := Round(FHorizontalScrollBar.Position * ((M - Ps) / (FHorizontalScrollBar.Max - FHorizontalScrollBar.PageSize)))
-    else
-      Pos := FHorizontalScrollBar.Position;
-    if M < FHorizontalScrollBar.PageSize then
-      FHorizontalScrollBar.PageSize := Ps;
-    FHorizontalScrollBar.Max := M;
-    FHorizontalScrollBar.PageSize := Ps;
-    FHorizontalScrollBar.LargeChange := Ps div 10;
-    FHorizontalScrollBar.Position := Min(FHorizontalScrollBar.Max, Pos);
-  end;
-  if FVerticalScrollBar.Visible then
-  begin
-    if FHorizontalScrollBar.Visible then
-      Inc_ := FHorizontalScrollBar.Height
-    else
-      Inc_ := 0;
-    M := Round(FFullImage.Height * FZoom);
-    Ps := HeightW - Inc_;
-    if Ps > M then
-      Ps := 0;
-    if FVerticalScrollBar.Max <> FVerticalScrollBar.PageSize then
-      Pos := Round(FVerticalScrollBar.Position * ((M - Ps) / (FVerticalScrollBar.Max - FVerticalScrollBar.PageSize)))
-    else
-      Pos := FVerticalScrollBar.Position;
-    if M < FVerticalScrollBar.PageSize then
-      FVerticalScrollBar.PageSize := Ps;
-    FVerticalScrollBar.Max := M;
-    FVerticalScrollBar.PageSize := Ps;
-    FVerticalScrollBar.LargeChange := Ps div 10;
-    FVerticalScrollBar.Position := Min(FVerticalScrollBar.Max, Pos);
-  end;
-  if FHorizontalScrollBar.Position > FHorizontalScrollBar.Max - FHorizontalScrollBar.PageSize then
-    FHorizontalScrollBar.Position := FHorizontalScrollBar.Max - FHorizontalScrollBar.PageSize;
-  if FVerticalScrollBar.Position > FVerticalScrollBar.Max - FVerticalScrollBar.PageSize then
-    FVerticalScrollBar.Position := FVerticalScrollBar.Max - FVerticalScrollBar.PageSize;
+  TImageZoomHelper.ReAlignScrolls(IsCenter,
+    FHorizontalScrollBar, FVerticalScrollBar, nil,
+    TSize.Create(FFullImage.Width, FFullImage.Height),
+    TSize.Create(ClientWidth, HeightW),
+    FZoom, FZoomerOn);
 end;
 
 procedure TImageViewerControl.RefreshFaces;

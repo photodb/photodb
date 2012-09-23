@@ -85,7 +85,8 @@ uses
   uThemesUtils,
   uBaseWinControl,
   uImageLoader,
-  uFormInterfaces;
+  uFormInterfaces,
+  uImageZoomHelper;
 
 type
   TWindowEnableState = record
@@ -230,7 +231,7 @@ type
     procedure InitEditor(FileName: string);
 
     procedure LoadProgramImageFormat(Graphic: TGraphic);
-    procedure ReAllignScrolls(IsCenter: Boolean; CenterPoint: TPoint);
+    procedure ReAllignScrolls(IsCenter: Boolean);
     procedure LoadJPEGImage(JPEG: TJPEGImage);
     procedure LoadBMPImage(Bitmap: TBitmap);
     procedure LoadGIFImage(GIF: TGIFImage);
@@ -733,7 +734,7 @@ begin
 
   ToolsPanel.Left := ClientWidth - ToolsPanel.Width;
   ToolsPanel.Height := ClientHeight - ButtomPanel.Height - StatusBar1.Height;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeImage(True);
   if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
     Repaint
@@ -744,146 +745,21 @@ begin
   StatusBar1.Width := ClientWidth;
 end;
 
-procedure TImageEditor.ReAllignScrolls(IsCenter : Boolean; CenterPoint : TPoint);
-var
-  Inc_: Integer;
-  Pos, M, Ps: Integer;
-  V1, V2: Boolean;
+procedure TImageEditor.ReAllignScrolls(IsCenter: Boolean);
 begin
   if Tool = ToolBrush then
     (ToolClass as TBrushToolClass).NewCursor;
 
   LockedImage := True;
-  if not ZoomerOn then
-  begin
-    ScrollBarH.Width := 1;
-    ScrollBarH.Position := 0;
-    ScrollBarH.Visible := False;
-    ScrollBarV.Position := 0;
-    ScrollBarV.Visible := False;
-    NullPanel.Visible := False;
+  try
+    TImageZoomHelper.ReAlignScrolls(IsCenter, ScrollBarH, ScrollBarV, NullPanel,
+      TSize.Create(CurrentImage.Width, CurrentImage.Height),
+      TSize.Create(GetVisibleImageWidth, ClientHeight - StatusBar1.Height),
+      Zoom, ZoomerOn);
+  finally
+    ToolsPanel.Realign;
     LockedImage := False;
-    Exit;
   end;
-
-  V1 := ScrollBarH.Visible;
-  V2 := ScrollBarV.Visible;
-  if not ScrollBarH.Visible and not ScrollBarV.Visible then
-  begin
-    ScrollBarH.Visible := CurrentImage.Width * Zoom > GetVisibleImageWidth;
-    if ScrollBarH.Visible then
-      Inc_ := ScrollBarH.Height
-    else
-      Inc_ := 0;
-    ScrollBarV.Visible := CurrentImage.Height * Zoom > GetVisibleImageHeight - Inc_;
-  end;
-
-  begin
-    if ScrollBarV.Visible then
-      Inc_ := ScrollBarV.Width
-    else
-      Inc_ := 0;
-    ScrollBarH.Visible := CurrentImage.Width * Zoom > GetVisibleImageWidth - Inc_;
-    ScrollBarH.Width := GetVisibleImageWidth - Inc_;
-    if ScrollBarH.Visible then
-      Inc_ := ScrollBarH.Height
-    else
-      Inc_ := 0;
-    ScrollBarH.Top := ClientHeight - Inc_ - StatusBar1.Height;
-  end;
-  begin
-    if ScrollBarH.Visible then
-      Inc_ := ScrollBarH.Height
-    else
-      Inc_ := 0;
-    ScrollBarV.Visible := CurrentImage.Height * Zoom > GetVisibleImageHeight - Inc_;
-    ScrollBarV.Height := GetVisibleImageHeight - Inc_;
-    ScrollBarV.Left := GetVisibleImageWidth - ScrollBarV.Width;
-  end;
-  begin
-    if ScrollBarV.Visible then
-      Inc_ := ScrollBarV.Width
-    else
-      Inc_ := 0;
-    ScrollBarH.Visible := CurrentImage.Width * Zoom > GetVisibleImageWidth - Inc_;
-    ScrollBarH.Width := GetVisibleImageWidth - Inc_;
-    if ScrollBarH.Visible then
-      Inc_ := ScrollBarH.Height
-    else
-      Inc_ := 0;
-    ScrollBarH.Top := ClientHeight - Inc_ - StatusBar1.Height;
-  end;
-  if not ScrollBarH.Visible then
-    ScrollBarH.Position := 0;
-  if not ScrollBarV.Visible then
-    ScrollBarV.Position := 0;
-  if ScrollBarH.Visible and not V1 then
-  begin
-    ScrollBarH.PageSize := 0;
-    ScrollBarH.Position := 0;
-    ScrollBarH.Max := 100;
-    ScrollBarH.Position := 50;
-  end;
-  if ScrollBarV.Visible and not V2 then
-  begin
-    ScrollBarV.PageSize := 0;
-    ScrollBarV.Position := 0;
-    ScrollBarV.Max := 100;
-    ScrollBarV.Position := 50;
-  end;
-  if ScrollBarH.Visible then
-  begin
-    if ScrollBarV.Visible then
-      Inc_ := ScrollBarV.Width
-    else
-      Inc_ := 0;
-    M := Round(CurrentImage.Width * Zoom);
-    Ps := Buffer.Width - Inc_;
-    if Ps > M then
-      Ps := 0;
-    if (ScrollBarH.Max <> ScrollBarH.PageSize) then
-      Pos := Round(ScrollBarH.Position * ((M - Ps) / (ScrollBarH.Max - ScrollBarH.PageSize)))
-    else
-      Pos := ScrollBarH.Position;
-    if M < ScrollBarH.PageSize then
-      ScrollBarH.PageSize := Ps;
-    ScrollBarH.Max := M;
-    ScrollBarH.PageSize := Ps;
-    ScrollBarH.LargeChange := Ps div 10;
-    ScrollBarH.Position := Math.Min(ScrollBarH.Max, Pos);
-  end;
-  if ScrollBarV.Visible then
-  begin
-    if ScrollBarH.Visible then
-      Inc_ := ScrollBarH.Height
-    else
-      Inc_ := 0;
-    M := Round(CurrentImage.Height * Zoom);
-    Ps := GetVisibleImageHeight - Inc_;
-    if Ps > M then
-      Ps := 0;
-    if ScrollBarV.Max <> ScrollBarV.PageSize then
-      Pos := Round(ScrollBarV.Position * ((M - Ps) / (ScrollBarV.Max - ScrollBarV.PageSize)))
-    else
-      Pos := ScrollBarV.Position;
-    if M < ScrollBarV.PageSize then
-      ScrollBarV.PageSize := Ps;
-    ScrollBarV.Max := M;
-    ScrollBarV.PageSize := Ps;
-    ScrollBarV.LargeChange := Ps div 10;
-    ScrollBarV.Position := Math.Min(ScrollBarV.Max, Pos);
-  end;
-  if ScrollBarH.Position > ScrollBarH.Max - ScrollBarH.PageSize then
-    ScrollBarH.Position := ScrollBarH.Max - ScrollBarH.PageSize;
-  if ScrollBarV.Position > ScrollBarV.Max - ScrollBarV.PageSize then
-    ScrollBarV.Position := ScrollBarV.Max - ScrollBarV.PageSize;
-  NullPanel.Visible := ScrollBarH.Visible and ScrollBarV.Visible;
-  NullPanel.Width := ScrollBarV.Width;
-  NullPanel.Height := ScrollBarH.Height;
-  NullPanel.Top := ScrollBarH.Top;
-  NullPanel.Left := ScrollBarV.Left;
-  ToolsPanel.Realign;
-  LockedImage := False;
 end;
 
 function TImageEditor.GetVisibleImageHeight: Integer;
@@ -897,44 +773,11 @@ begin
 end;
 
 function TImageEditor.GetImageRectA: TRect;
-var
-  Increment: Integer;
-  FX, FY, FH, FW: Integer;
 begin
-  if ScrollBarH.Visible then
-  begin
-    FX := 0;
-  end else
-  begin
-    if ScrollBarV.Visible then
-      Increment := ScrollBarV.Width
-    else
-      Increment := 0;
-    FX := Max(0, Round(GetVisibleImageWidth / 2 - Increment - CurrentImage.Width * Zoom / 2));
-  end;
-  if ScrollBarV.Visible then
-  begin
-    FY := 0;
-  end else
-  begin
-    if ScrollBarH.Visible then
-      Increment := ScrollBarH.Height
-    else
-      Increment := 0;
-    FY := Max(0, Round(GetVisibleImageHeight / 2 - Increment - CurrentImage.Height * Zoom / 2));
-  end;
-  if ScrollBarV.Visible then
-    Increment := ScrollBarV.Width
-  else
-    Increment := 0;
-  FW := Round(Min(GetVisibleImageWidth - Increment, CurrentImage.Width * Zoom));
-  if ScrollBarH.Visible then
-    Increment := ScrollBarH.Height
-  else
-    Increment := 0;
-  FH := Round(Min(GetVisibleImageHeight - Increment, CurrentImage.Height * Zoom));
-  FH := FH;
-  Result := Rect(FX, FY, FW + FX, FH + FY);
+  Result := TImageZoomHelper.GetImageVisibleRect(ScrollBarH, ScrollBarV,
+      TSize.Create(CurrentImage.Width, CurrentImage.Height),
+      TSize.Create(GetVisibleImageWidth, GetVisibleImageHeight),
+      Zoom);
 end;
 
 procedure TImageEditor.CropLinkClick(Sender: TObject);
@@ -1894,7 +1737,7 @@ begin
   Zoom := Zoom / 1.2;
   if Zoom < 0.01 then
     Zoom := 0.01;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeImageAndPaint;
   MakeCaption;
 end;
@@ -1903,7 +1746,7 @@ procedure TImageEditor.FitToSizeLinkClick(Sender: TObject);
 begin
   ZoomerOn := False;
   MakeImageAndPaint;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeImageAndPaint;
   MakeCaption;
 end;
@@ -1911,7 +1754,7 @@ end;
 procedure TImageEditor.RecteareImageProc(Sender: TObject);
 begin
   MakeImageAndPaint;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeCaption;
 end;
 
@@ -1924,7 +1767,7 @@ begin
   end;
   CurrentImage := Image;
   MakePCurrentImage;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeImageAndPaint;
   MakeCaption;
 end;
@@ -1962,7 +1805,7 @@ begin
   CurrentImage := Temp;
   Temp := nil;
   MakePCurrentImage;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeImageAndPaint;
   MakeCaption;
 end;
@@ -1988,7 +1831,7 @@ begin
   MakePCurrentImage;
   if Visible then
   begin
-    ReAllignScrolls(False, Point(0, 0));
+    ReAllignScrolls(False);
     MakeImageAndPaint;
     MakeCaption;
   end;
@@ -2145,7 +1988,7 @@ begin
   Zoom := Zoom * 1.2;
   if Zoom > 16 then
     Zoom := 16;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeImageAndPaint;
   MakeCaption;
 end;
@@ -2484,7 +2327,7 @@ begin
     ZoomerOn := True;
   end;
   Zoom := 1;
-  ReAllignScrolls(False, Point(0, 0));
+  ReAllignScrolls(False);
   MakeImageAndPaint;
   MakeCaption;
 end;

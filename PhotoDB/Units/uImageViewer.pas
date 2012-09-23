@@ -43,9 +43,12 @@ type
     destructor Destroy; override;
     procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
+    procedure LoadPreviousFile;
+    procedure LoadNextFile;
     procedure ResizeTo(Width, Height: Integer);
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
     function GetWidth: Integer;
@@ -176,6 +179,20 @@ begin
     LoadFile(FFiles[Position]);
 end;
 
+procedure TImageViewer.LoadNextFile;
+begin
+  FFiles.NextSelected;
+  if FFiles.Position > -1 then
+    LoadFile(FFiles[FFiles.Position]);
+end;
+
+procedure TImageViewer.LoadPreviousFile;
+begin
+  FFiles.PrevSelected;
+  if FFiles.Position > -1 then
+    LoadFile(FFiles[FFiles.Position]);
+end;
+
 procedure TImageViewer.Resize;
 begin
   //TODO:
@@ -189,6 +206,12 @@ begin
   FImageControl.Height := Height;
   
   Resize;
+end;
+
+procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth,
+  RealHeight: Integer; ImageScale: Double);
+begin
+  FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, ImageScale);
 end;
 
 procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);

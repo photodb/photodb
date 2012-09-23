@@ -96,6 +96,8 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   uThemesUtils,
+  uAnimationHelper,
+  uImageZoomHelper,
   Themes,
   uPhotoShelf,
   uBaseWinControl,
@@ -319,14 +321,14 @@ type
     SlideNO: Integer;
     AnimatedBuffer: TBitmap;
     FOverlayBuffer: TBitmap;
-    FValidImages: Integer;
+//    FValidImages: Integer;
     FForwardThreadExists: Boolean;
     FForwardThreadSID: TGUID;
     FForwardThreadNeeds: Boolean;
     FForwardThreadFileName: string;
     FForwardThreadReady: Boolean;
     FTransparentImage: Boolean;
-    FCurrentlyLoadedFile: String;
+    FCurrentlyLoadedFile: string;
     FPlay: boolean;
     LockEventRotateFileList: TStrings;
     LastZoomValue: Extended;
@@ -347,13 +349,12 @@ type
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
-    procedure SetValidImages(const Value: Integer);
     procedure SetForwardThreadExists(const Value: Boolean);
     procedure SetForwardThreadSID(const Value: TGUID);
     procedure SetForwardThreadNeeds(const Value: Boolean);
     procedure SetForwardThreadFileName(const Value: string);
     procedure SetTransparentImage(const Value: Boolean);
-    procedure SetCurrentlyLoadedFile(const Value: String);
+    procedure SetCurrentlyLoadedFile(const Value: string);
     procedure SetPlay(const Value: boolean);
     procedure OnPageSelecterClick(Sender: TObject);
     procedure SelectPreviousPerson(Sender: TObject);
@@ -409,13 +410,7 @@ type
     function GetSID : TGUID;
     procedure SetStaticImage(Image: TBitmap; Transparent: Boolean);
     procedure SetAnimatedImage(Image: TGraphic);
-    procedure NextSlide;
-    function GetFirstImageNO: Integer;
-    function GetNextImageNO: Integer;
-    function GetPreviousImageNOX(NO: Integer): Integer;
-    function GetNextImageNOX(NO: Integer): Integer;
     procedure LoadingFailed(FileName: string);
-    function GetPreviousImageNO: Integer;
     procedure PrepareNextImage;
     procedure SetFullImageState(State: Boolean; BeginZoom: Extended; Pages, Page: Integer);
     procedure DoUpdateRecordWithDataSet(FileName: string; DS: TDataSet);
@@ -450,7 +445,6 @@ type
     property ImageExists: Boolean read FImageExists write SetImageExists;
     property StaticImage: Boolean read FStaticImage write SetPropStaticImage;
     property Loading: Boolean read FLoading write SetLoading;
-    property ValidImages: Integer read FValidImages write SetValidImages;
     property ForwardThreadExists: Boolean read FForwardThreadExists write SetForwardThreadExists;
     property ForwardThreadSID: TGUID read FForwardThreadSID write SetForwardThreadSID;
     property ForwardThreadNeeds: Boolean read FForwardThreadNeeds write SetForwardThreadNeeds;
@@ -710,11 +704,10 @@ procedure TViewer.RecreateDrawImage(Sender: TObject);
 var
   Fh, Fw: Integer;
   Zx, Zy, Zw, Zh, X1, X2, Y1, Y2: Integer;
-  ImRect, BeginRect: TRect;
+  ImRect, BeginRect, ImageRect: TRect;
   Z, AZoom: Real;
   FileName: string;
   TempImage, B: TBitmap;
-  ACopyRect: TRect;
   ImageEffectiveWidth, ImageEffectiveHeight: Integer;
 
   procedure DrawRect(X1, Y1, X2, Y2: Integer);
@@ -807,7 +800,7 @@ begin
     Exit;
   end;
 
-  DrawImage.SetSize(Clientwidth, HeightW);
+  DrawImage.SetSize(ClientWidth, HeightW);
   DrawImage.Canvas.Brush.Color := Theme.WindowColor;
   DrawImage.Canvas.Pen.Color := Theme.WindowColor;
   DrawImage.Canvas.Rectangle(0, 0, DrawImage.Width, DrawImage.Height);
@@ -860,6 +853,9 @@ begin
   if FFullImage.Width < RealImageWidth then
     AZoom := Zoom * ImageEffectiveWidth / FFullImage.Width;
 
+  ImageRect := Rect(Round(SbHorisontal.Position / AZoom), Round(SbVertical.Position / AZoom),
+                Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom));
+
   if ImageExists or Loading then
   begin
     if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
@@ -870,12 +866,9 @@ begin
         if AZoom <= 1 then
         begin
           if (AZoom < ZoomSmoothMin) then
-            StretchCoolW(ZX, ZY, ZW, ZH, Rect(Round(SbHorisontal.Position / AZoom), Round(SbVertical.Position / AZoom),
-                Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom)), FFullImage, DrawImage)
+            StretchCoolW(ZX, ZY, ZW, ZH, ImageRect, FFullImage, DrawImage)
           else
           begin
-            ACopyRect := Rect(Round(SbHorisontal.Position / AZoom), Round(SbVertical.Position / AZoom),
-              Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom));
             TempImage := TBitmap.Create;
             try
               TempImage.PixelFormat := Pf24bit;
@@ -883,9 +876,9 @@ begin
               B := TBitmap.Create;
               try
                 B.PixelFormat := Pf24bit;
-                B.Width := (ACopyRect.Right - ACopyRect.Left);
-                B.Height := (ACopyRect.Bottom - ACopyRect.Top);
-                B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FFullImage.Canvas, ACopyRect);
+                B.Width := (ImageRect.Right - ImageRect.Left);
+                B.Height := (ImageRect.Bottom - ImageRect.Top);
+                B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FFullImage.Canvas, ImageRect);
                 SmoothResize(ZW, ZH, B, TempImage);
               finally
                 F(B);
@@ -896,8 +889,7 @@ begin
             end;
           end;
         end else
-          Interpolate(ZX, ZY, ZW, ZH, Rect(Round(SbHorisontal.Position / AZoom), Round(SbVertical.Position / AZoom),
-              Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom)), FFullImage, DrawImage);
+          Interpolate(ZX, ZY, ZW, ZH, ImageRect, FFullImage, DrawImage);
       end else
       begin
         DrawRect(X1, Y1, X2, Y2);
@@ -933,13 +925,11 @@ begin
     begin
       if ZoomerOn and not FIsWaiting then
       begin
-        ImRect := Rect(Round(SbHorisontal.Position / AZoom), Round((SbVertical.Position) / AZoom),
-          Round((SbHorisontal.Position + ZW) / AZoom), Round((SbVertical.Position + ZH) / AZoom));
         BeginRect := GetImageRectA;
         DrawRect(BeginRect.Left, BeginRect.Top, BeginRect.Right, BeginRect.Bottom);
         SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
         DrawImage.Canvas.CopyMode := SRCCOPY;
-        DrawImage.Canvas.CopyRect(BeginRect, FFullImage.Canvas, ImRect);
+        DrawImage.Canvas.CopyRect(BeginRect, FFullImage.Canvas, ImageRect);
       end else
       begin
         DrawRect(X1, Y1, X2, Y2);
@@ -2673,140 +2663,12 @@ begin
 end;
 
 procedure TViewer.ReAllignScrolls(IsCenter: Boolean);
-var
-  Inc_: Integer;
-  Pos, M, Ps: Integer;
-  V1, V2: Boolean;
-
 begin
-  Panel1.Visible := False;
-  if not ZoomerOn then
-  begin
-    SbHorisontal.Position := 0;
-    SbHorisontal.Visible := False;
-    SbVertical.Position := 0;
-    SbVertical.Visible := False;
-    Exit;
-  end;
-  V1 := SbHorisontal.Visible;
-  V2 := SbVertical.Visible;
-  if not SbHorisontal.Visible and not SbVertical.Visible then
-  begin
-    SbHorisontal.Visible := FFullImage.Width * Zoom > ClientWidth;
-    if SbHorisontal.Visible then
-      Inc_ := SbHorisontal.Height
-    else
-      Inc_ := 0;
-    SbVertical.Visible := FFullImage.Height * Zoom > HeightW - Inc_;
-  end;
-  begin
-    if SbVertical.Visible then
-      Inc_ := SbVertical.Width
-    else
-      Inc_ := 0;
-    SbHorisontal.Visible := FFullImage.Width * Zoom > ClientWidth - Inc_;
-    SbHorisontal.Width := ClientWidth - Inc_;
-    if SbHorisontal.Visible then
-      Inc_ := SbHorisontal.Height
-    else
-      Inc_ := 0;
-    SbHorisontal.Top := HeightW - Inc_;
-  end;
-  begin
-    if SbHorisontal.Visible then
-      Inc_ := SbHorisontal.Height
-    else
-      Inc_ := 0;
-    SbVertical.Visible := FFullImage.Height * Zoom > HeightW - Inc_;
-    SbVertical.Height := HeightW - Inc_;
-    if SbVertical.Visible then
-      Inc_ := SbVertical.Width
-    else
-      Inc_ := 0;
-    SbVertical.Left := ClientWidth - Inc_;
-  end;
-  begin
-    if SbVertical.Visible then
-      Inc_ := SbVertical.Width
-    else
-      Inc_ := 0;
-    SbHorisontal.Visible := FFullImage.Width * Zoom > ClientWidth - Inc_;
-    SbHorisontal.Width := ClientWidth - Inc_;
-    if SbHorisontal.Visible then
-      Inc_ := SbHorisontal.Height
-    else
-      Inc_ := 0;
-    SbHorisontal.Top := HeightW - Inc_;
-  end;
-  if not SbHorisontal.Visible then
-    SbHorisontal.Position := 0;
-  if not SbVertical.Visible then
-    SbVertical.Position := 0;
-  if SbHorisontal.Visible and not V1 then
-  begin
-    SbHorisontal.PageSize := 0;
-    SbHorisontal.Position := 0;
-    SbHorisontal.Max := 100;
-    SbHorisontal.Position := 50;
-  end;
-  if SbVertical.Visible and not V2 then
-  begin
-    SbVertical.PageSize := 0;
-    SbVertical.Position := 0;
-    SbVertical.Max := 100;
-    SbVertical.Position := 50;
-  end;
-  Panel1.Width := SbVertical.Width;
-  Panel1.Height := SbHorisontal.Height;
-  Panel1.Left := ClientWidth - Panel1.Width;
-  Panel1.Top := HeightW - Panel1.Height;
-  Panel1.Visible := SbHorisontal.Visible and SbVertical.Visible;
-  if SbHorisontal.Visible then
-  begin
-    if SbVertical.Visible then
-      Inc_ := SbVertical.Width
-    else
-      Inc_ := 0;
-    M := Round(FFullImage.Width * Zoom);
-    Ps := ClientWidth - Inc_;
-    if Ps > M then
-      Ps := 0;
-    if (SbHorisontal.Max <> SbHorisontal.PageSize) then
-      Pos := Round(SbHorisontal.Position * ((M - Ps) / (SbHorisontal.Max - SbHorisontal.PageSize)))
-    else
-      Pos := SbHorisontal.Position;
-    if M < SbHorisontal.PageSize then
-      SbHorisontal.PageSize := Ps;
-    SbHorisontal.Max := M;
-    SbHorisontal.PageSize := Ps;
-    SbHorisontal.LargeChange := Ps div 10;
-    SbHorisontal.Position := Math.Min(SbHorisontal.Max, Pos);
-  end;
-  if SbVertical.Visible then
-  begin
-    if SbHorisontal.Visible then
-      Inc_ := SbHorisontal.Height
-    else
-      Inc_ := 0;
-    M := Round(FFullImage.Height * Zoom);
-    Ps := HeightW - Inc_;
-    if Ps > M then
-      Ps := 0;
-    if SbVertical.Max <> SbVertical.PageSize then
-      Pos := Round(SbVertical.Position * ((M - Ps) / (SbVertical.Max - SbVertical.PageSize)))
-    else
-      Pos := SbVertical.Position;
-    if M < SbVertical.PageSize then
-      SbVertical.PageSize := Ps;
-    SbVertical.Max := M;
-    SbVertical.PageSize := Ps;
-    SbVertical.LargeChange := Ps div 10;
-    SbVertical.Position := Math.Min(SbVertical.Max, Pos);
-  end;
-  if SbHorisontal.Position > SbHorisontal.Max - SbHorisontal.PageSize then
-    SbHorisontal.Position := SbHorisontal.Max - SbHorisontal.PageSize;
-  if SbVertical.Position > SbVertical.Max - SbVertical.PageSize then
-    SbVertical.Position := SbVertical.Max - SbVertical.PageSize;
+  TImageZoomHelper.ReAlignScrolls(IsCenter,
+    SbHorisontal, SbVertical, Panel1,
+    TSize.Create(FFullImage.Width, FFullImage.Height),
+    TSize.Create(ClientWidth, HeightW),
+    Zoom, ZoomerOn);
 end;
 
 procedure TViewer.RealSizeClick(Sender: TObject);
@@ -3019,46 +2881,11 @@ begin
 end;
 
 function TViewer.GetImageRectA: TRect;
-var
-  Increment: Integer;
-  FX, FY, FH, FW: Integer;
 begin
-  if SbHorisontal.Visible then
-  begin
-    FX := 0;
-  end else
-  begin
-    if SbVertical.Visible then
-      Increment := SbVertical.width
-    else
-      Increment := 0;
-    FX := Max(0, Round(ClientWidth / 2 - Increment - FFullImage.Width * Zoom / 2));
-  end;
-  if SbVertical.Visible then
-  begin
-    FY := 0;
-  end else
-  begin
-    if SbHorisontal.Visible then
-      Increment := SbHorisontal.Height
-    else
-      Increment := 0;
-    FY := Max(0,
-      Round(HeightW / 2 - Increment - FFullImage.Height * Zoom / 2));
-  end;
-  if SbVertical.Visible then
-    Increment := SbVertical.width
-  else
-    Increment := 0;
-  FW := round(Min(ClientWidth - Increment, FFullImage.Width * Zoom));
-  if SbHorisontal.Visible then
-    Increment := SbHorisontal.Height
-  else
-    Increment := 0;
-  FH := Round(Min(HeightW - Increment, FFullImage.Height * Zoom));
-  FH := FH;
-
-  Result := Rect(FX, FY, FW + FX, FH + FY);
+  Result := TImageZoomHelper.GetImageVisibleRect(SbHorisontal, SbVertical,
+      TSize.Create(FFullImage.Width, FFullImage.Height),
+      TSize.Create(ClientWidth, HeightW),
+      Zoom);
 end;
 
 function TViewer.GetItem: TDBPopupMenuInfoRecord;
@@ -3483,7 +3310,6 @@ begin
   EndWaitToImage(Self);
 
   ReAllignScrolls(False);
-  ValidImages := 1;
   F(FOverlayBuffer);
   FFaces.Clear;
   FFaceDetectionComplete := False;
@@ -3502,9 +3328,6 @@ begin
 end;
 
 procedure TViewer.SetAnimatedImage(Image: TGraphic);
-var
-  I: Integer;
-  Gif: TGifImage;
 begin
   F(AnimatedImage);
   AnimatedImage := Image;
@@ -3533,24 +3356,8 @@ begin
   ReAllignScrolls(False);
   SlideNO := -1;
   ZoomerOn := False;
-  ValidImages := 0;
-  TransparentImage := False;
 
-  if AnimatedImage is TGIFImage then
-  begin
-    Gif := (AnimatedImage as TGIFImage);
-    for I := 0 to Gif.Images.Count - 1 do
-    begin
-      if not Gif.Images[I].Empty then
-        ValidImages := ValidImages + 1;
-      if Gif.Images[I].Transparent then
-        TransparentImage := True;
-    end;
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-    TransparentImage := False;
-    ValidImages := TAnimatedJPEG(AnimatedImage).Count;
-  end;
+  TransparentImage := AnimatedImage.IsTransparentAnimation;
 
   AnimatedBuffer.Width := AnimatedImage.Width;
   AnimatedBuffer.Height := AnimatedImage.Height;
@@ -3574,7 +3381,27 @@ end;
 
 procedure TViewer.ImageFrameTimerTimer(Sender: TObject);
 begin
-  NextSlide;
+  if not (ImageExists and not StaticImage) then
+    Exit;
+
+  AnimatedImage.ProcessNextFrame(AnimatedBuffer, SlideNO, Theme.WindowColor, ImageFrameTimer,
+    procedure
+    begin
+      if CurrentFileNumber <= CurrentInfo.Count - 1 then
+        case Item.Rotation and DB_IMAGE_ROTATE_MASK of
+          DB_IMAGE_ROTATE_0:
+            FFullImage.Assign(AnimatedBuffer);
+          DB_IMAGE_ROTATE_90:
+            Rotate90(AnimatedBuffer, FFullImage);
+          DB_IMAGE_ROTATE_180:
+            Rotate180(AnimatedBuffer, FFullImage);
+          DB_IMAGE_ROTATE_270:
+            Rotate270(AnimatedBuffer, FFullImage)
+        end;
+
+      RecreateDrawImage(Self);
+    end
+  );
 end;
 
 function TViewer.GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
@@ -3596,267 +3423,9 @@ begin
   end;
 end;
 
-procedure TViewer.NextSlide;
-var
-  C, PreviousNumber: Integer;
-  R, Bounds_: TRect;
-  Im: TGifImage;
-  DisposalMethod: TDisposalMethod;
-  Del: Integer;
-  TimerEnabled: Boolean;
-  Gsi: TGIFSubImage;
-begin
-  TimerEnabled := False;
-  Del := 1;
-  if not (ImageExists and not StaticImage) then
-    Exit;
-  if SlideNO = -1 then
-  begin
-    SlideNO := GetFirstImageNO;
-  end else
-  begin
-    SlideNO := GetNextImageNO;
-  end;
-
-  if FullScreenNow then
-  begin
-    AnimatedBuffer.Canvas.Brush.Color := 0;
-    AnimatedBuffer.Canvas.Pen.Color := 0;
-  end else
-  begin
-    AnimatedBuffer.Canvas.Brush.Color := Theme.WindowColor;
-    AnimatedBuffer.Canvas.Pen.Color := Theme.WindowColor;
-  end;
-
-  if (AnimatedImage is TGIFImage) then
-  begin
-    Im := (AnimatedImage as TGIFImage);
-    R := Im.Images[SlideNO].BoundsRect;
-    TimerEnabled := False;
-    PreviousNumber := GetPreviousImageNO;
-    DisposalMethod := DmNone;
-    if Im.Animate then
-      if Im.Images.Count > 1 then
-      begin
-        Gsi := Im.Images[SlideNO];
-        if Gsi.Empty then
-          Exit;
-        if Im.Images[PreviousNumber].Empty then
-          DisposalMethod := DmNone
-        else
-        begin
-          if Im.Images[PreviousNumber].GraphicControlExtension <> nil then
-            DisposalMethod := Im.Images[PreviousNumber].GraphicControlExtension.Disposal
-          else
-            DisposalMethod := DmNone;
-        end;
-        Del := 100;
-        if Im.Images[SlideNO].GraphicControlExtension <> nil then
-          Del := Im.Images[SlideNO].GraphicControlExtension.Delay * 10;
-        if Del = 10 then
-          Del := 100;
-        if Del = 0 then
-          Del := 100;
-        TimerEnabled := True;
-      end
-      else
-        DisposalMethod := DmNone;
-    if SlideNO = 0 then
-      DisposalMethod := DmBackground;
-    if (DisposalMethod = DmBackground) then
-    begin
-      Bounds_ := Im.Images[PreviousNumber].BoundsRect;
-      if FullScreenNow then
-      begin
-        AnimatedBuffer.Canvas.Pen.Color := 0;
-        AnimatedBuffer.Canvas.Brush.Color := 0;
-      end else
-      begin
-        AnimatedBuffer.Canvas.Pen.Color := Theme.WindowColor;
-        AnimatedBuffer.Canvas.Brush.Color := Theme.WindowColor;
-      end;
-
-      AnimatedBuffer.Canvas.Rectangle(Bounds_);
-    end;
-
-    if DisposalMethod = DmPrevious then
-    begin
-      C := SlideNO;
-      Dec(C);
-      if C < 0 then
-        C := Im.Images.Count - 1;
-      Im.Images[C].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
-    end;
-    Im.Images[SlideNO].StretchDraw(AnimatedBuffer.Canvas, R, Im.Images[SlideNO].Transparent, False);
-
-  end else if AnimatedImage is TAnimatedJPEG then
-  begin
-    AnimatedBuffer.Assign(TAnimatedJPEG(AnimatedImage).Images[SlideNO]);
-    Del := Animation3DDelay;
-    TimerEnabled := True;
-  end;
-
-  if CurrentFileNumber <= CurrentInfo.Count - 1 then
-    case Item.Rotation and DB_IMAGE_ROTATE_MASK of
-      DB_IMAGE_ROTATE_0:
-        FFullImage.Assign(AnimatedBuffer);
-      DB_IMAGE_ROTATE_90:
-        Rotate90(AnimatedBuffer, FFullImage);
-      DB_IMAGE_ROTATE_180:
-        Rotate180(AnimatedBuffer, FFullImage);
-      DB_IMAGE_ROTATE_270:
-        Rotate270(AnimatedBuffer, FFullImage)
-    end;
-
-  RecreateDrawImage(Self);
-  ImageFrameTimer.Enabled := False;
-  ImageFrameTimer.Interval := Del;
-  if not TimerEnabled then
-    ImageFrameTimer.Enabled := False
-  else
-    ImageFrameTimer.Enabled := True;
-  if ValidImages = 1 then
-    ImageFrameTimer.Enabled := False;
-end;
-
-procedure TViewer.SetValidImages(const Value: Integer);
-begin
-  FValidImages := Value;
-end;
-
-function TViewer.GetFirstImageNO: Integer;
-var
-  I: Integer;
-begin
-  Result := 0;
-  if ValidImages = 0 then
-    Result := 0
-  else
-  begin
-    if (AnimatedImage is TGIFImage) then
-    begin
-      for I := 0 to (AnimatedImage as TGIFImage).Images.Count - 1 do
-        if not(AnimatedImage as TGIFImage).Images[I].Empty then
-        begin
-          Result := I;
-          Break;
-        end;
-    end else if (AnimatedImage is TAnimatedJPEG) then
-    begin
-      Result := 0;
-    end;
-  end;
-end;
-
 function TViewer.GetFormID: string;
 begin
   Result := 'Viewer';
-end;
-
-function TViewer.GetNextImageNO: Integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if ValidImages = 0 then
-    Result := 0
-  else
-  begin
-    if (AnimatedImage is TGIFImage) then
-    begin
-      Im := (AnimatedImage as TGIFImage);
-      Result := SlideNO;
-      Inc(Result);
-      if Result >= Im.Images.Count then
-        Result := 0;
-
-      if Im.Images[Result].Empty then
-        Result := GetNextImageNOX(Result);
-    end else if (AnimatedImage is TAnimatedJPEG) then
-    begin
-      //onle 2 slides
-      Result := IIF(SlideNO = 1, 0, 1);
-    end;
-  end;
-end;
-
-function TViewer.GetPreviousImageNO: Integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if ValidImages = 0 then
-    Result := 0
-  else
-  begin
-    if (AnimatedImage is TGIFImage) then
-    begin
-      Im := (AnimatedImage as TGIFImage);
-      Result := SlideNO;
-      Dec(Result);
-      if Result < 0 then
-        Result := Im.Images.Count - 1;
-
-      if Im.Images[Result].Empty then
-        Result := GetPreviousImageNOX(Result);
-    end else if (AnimatedImage is TAnimatedJPEG) then
-    begin
-      Result := IIF(SlideNO = 1, 0, 1);
-    end;
-
-  end;
-end;
-
-function TViewer.GetNextImageNOX(NO: Integer): Integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if ValidImages = 0 then
-    Result := 0
-  else
-  begin
-    if (AnimatedImage is TGIFImage) then
-    begin
-      Im := (AnimatedImage as TGIFImage);
-      Result := NO;
-      Inc(Result);
-      if Result >= Im.Images.Count then
-        Result := 0;
-
-      if Im.Images[Result].Empty then
-        Result := GetNextImageNOX(Result);
-    end else if (AnimatedImage is TAnimatedJPEG) then
-    begin
-      Result := IIF(NO = 1, 0, 1);
-    end;
-  end;
-end;
-
-function TViewer.GetPreviousImageNOX(NO: Integer): Integer;
-var
-  Im: TGIFImage;
-begin
-  Result := 0;
-  if ValidImages = 0 then
-    Result := 0
-  else
-  begin
-    if (AnimatedImage is TGIFImage) then
-    begin
-      Im := (AnimatedImage as TGIFImage);
-      Result := NO;
-      Dec(Result);
-      if Result < 0 then
-        Result := Im.Images.Count - 1;
-
-      if Im.Images[Result].Empty then
-        Result := GetPreviousImageNOX(Result);
-    end else if (AnimatedImage is TAnimatedJPEG) then
-    begin
-      Result := IIF(NO = 1, 0, 1);
-    end;
-  end;
 end;
 
 procedure TViewer.SetForwardThreadExists(const Value: Boolean);
@@ -3903,7 +3472,6 @@ begin
   EndWaitToImage(Self);
   ReAllignScrolls(False);
   ImageExists := False;
-  ValidImages := 0;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
   FForwardThreadReady := False;

@@ -418,7 +418,9 @@ uses
   uImageViewer in 'Units\uImageViewer.pas',
   uIImageViewer in 'Units\Interfaces\uIImageViewer.pas',
   uImageViewerControl in 'Units\uImageViewerControl.pas',
-  uImageViewerThread in 'Threads\uImageViewerThread.pas';
+  uImageViewerThread in 'Threads\uImageViewerThread.pas',
+  uAnimationHelper in 'Units\uAnimationHelper.pas',
+  uImageZoomHelper in 'Units\uImageZoomHelper.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

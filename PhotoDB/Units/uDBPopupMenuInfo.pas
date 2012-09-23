@@ -59,6 +59,8 @@ type
     procedure ClearList;
     procedure Exchange(Index1, Index2: Integer);
     procedure Delete(Index: Integer);
+    procedure NextSelected;
+    procedure PrevSelected;
     function Extract(Index: Integer): TDBPopupMenuInfoRecord;
     property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex write SetValueByIndex; default;
     property IsListItem: Boolean read FIsListItem write FIsListItem;
@@ -90,7 +92,6 @@ type
   end;
 
 implementation
-
 
 { TDBPopupMenuInfo }
 
@@ -453,9 +454,15 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetValueByIndex(index: Integer): TDBPopupMenuInfoRecord;
+function TDBPopupMenuInfo.GetValueByIndex(Index: Integer): TDBPopupMenuInfoRecord;
 begin
-  Result := FData[index];
+  if Index < 0 then
+    raise EInvalidOperation.Create('Index is out of range - index should be 0 or grater!');
+
+  if Index > Count - 1 then
+    raise EInvalidOperation.Create('Index is out of range!');
+
+  Result := FData[Index];
 end;
 
 procedure TDBPopupMenuInfo.SetPosition(const Value: Integer);
@@ -465,6 +472,44 @@ begin
   for I := 0 to Count - 1 do
     Self[I].IsCurrent := False;
   Self[Value].IsCurrent := True;
+end;
+
+procedure TDBPopupMenuInfo.NextSelected;
+var
+  I: Integer;
+begin
+  for I := Position + 1 to Count - 1 do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
+
+  for I := 0 to Position do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
+end;
+
+procedure TDBPopupMenuInfo.PrevSelected;
+var
+  I: Integer;
+begin
+  for I := Position - 1 downto 0 do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
+
+  for I := Count - 1 downto Position do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
 end;
 
 procedure TDBPopupMenuInfo.SetValueByIndex(index: Integer;

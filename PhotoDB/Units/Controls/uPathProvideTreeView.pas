@@ -731,12 +731,16 @@ begin
                               FNodesToDelete.Add(NodeData.Data);
 
                               NodeData.Data := CurrentItems[I];
+                              //image is required
+                              NodeData.Data.Image;
                               NodeData.Data.Tag := FImageList.AddPathImage(NodeData.Data.ExtractImage, True);
 
                               TopNode := GetFirstSelected;
                             end else
                             begin
                               ChildData.Data := CurrentItems[I];
+                              //image is required
+                              ChildData.Data.Image;
                               ChildData.Data.Tag := FImageList.AddPathImage(ChildData.Data.ExtractImage, True);
                               AddChild(Info.Node, Pointer(ChildData));
                               ValidateNode(Info.Node, False);

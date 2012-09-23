@@ -65,7 +65,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 605
-      ActivePage = TsEXIF
+      ActivePage = TsInfo
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -1902,6 +1902,7 @@ object ExplorerForm: TExplorerForm
               Left = 30
               Top = 0
               ImageIndex = 3
+              OnClick = TbPreviewNextClick
             end
             object TbPreviewNavigationSeparator: TToolButton
               Left = 60
