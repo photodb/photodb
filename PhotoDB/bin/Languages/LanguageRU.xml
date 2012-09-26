@@ -409,7 +409,6 @@
     <translate name="Edit address" value="Редактировать адрес" />
     <translate name="Learn more about creating and using persons" value="Узнать больше про создание и использование персон" />
     <translate name="Key" value="Ключ" />
-    <translate name="Value" value="Значение" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />
