@@ -577,7 +577,12 @@ begin
               TmpBitmap := TBitmap.Create;
               try
                 TmpBitmap.PixelFormat := pf32Bit;
+                try
                 DoResize(Width, Height, Original, TmpBitmap);
+                except
+                  on e: exception do
+                    eventlog(e.Message);
+                end;
                 Exchange(Original, TmpBitmap);
               finally
                 F(TmpBitmap);

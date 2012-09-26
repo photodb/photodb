@@ -1456,7 +1456,7 @@ object SearchForm: TSearchForm
     Left = 233
     Top = 184
   end
-  object ScriptLisTPopupActionBar: TPopupActionBar
+  object ScriptListPopupActionBar: TPopupActionBar
     Left = 592
     Top = 48
   end

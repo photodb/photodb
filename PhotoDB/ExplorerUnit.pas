@@ -169,7 +169,9 @@ uses
   uTransparentEncryption,
   uMediaEncryption,
   uIImageViewer,
-  uImageViewer
+  uImageViewer,
+  uPeopleSupport,
+  uFormSelectPerson
   ;
 
 const
@@ -177,6 +179,14 @@ const
 
 type
   TPageControl = class(TPageControlNoBorder);
+
+type
+  TExtendedSearchParams = class
+    DateFrom: TDateTime;
+    DateTo: TDateTime;
+    RatingFrom: Byte;
+    RatingTo: Byte;
+  end;
 
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
@@ -462,6 +472,37 @@ type
     TbPreviewZoomSeparator: TToolButton;
     TbPreviewOpen: TToolButton;
     TbPreview: TToolButton;
+    PnExtendedSearch: TPanel;
+    SbExtendedSearchMode: TSpeedButton;
+    SbExtendedSearchStart: TSpeedButton;
+    PnExtendedSearchEditPlace: TPanel;
+    ExExtendedSearchText: TWatermarkedEdit;
+    WlSearchRatingFrom: TWebLink;
+    WlSearchRatingTo: TWebLink;
+    WllExtendedSearchPersons: TWebLinkList;
+    WllExtendedSearchGroups: TWebLinkList;
+    WlExtendedSearchDateFrom: TWebLink;
+    WlExtendedSearchDateTo: TWebLink;
+    WlExtendedSearchSortBy: TWebLink;
+    WlExtendedSearchSortDescending: TWebLink;
+    WlExtendedSearchOptions: TWebLink;
+    BtnSearch: TButton;
+    WlSearchRatingFromValue: TWebLink;
+    WlSearchRatingToValue: TWebLink;
+    ImExtendedSearchGroups: TImageList;
+    BvRating: TBevel;
+    BvPersons: TBevel;
+    BvGroups: TBevel;
+    PnSelectDatePopup: TPanel;
+    McDateSelectPopup: TMonthCalendar;
+    BtnSelectDatePopup: TButton;
+    BtnSelectDatePopupReset: TButton;
+    RtPopupRating: TRating;
+    PmSelectPerson: TPopupActionBar;
+    MiPreviousSelections: TMenuItem;
+    MiPreviousSelectionsSeparator: TMenuItem;
+    MiOtherPersons: TMenuItem;
+    ImFacePopup: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -691,6 +732,15 @@ type
     procedure TbPreviewZoomOutClick(Sender: TObject);
     procedure TbPreviewClick(Sender: TObject);
     procedure TbPreviewNextClick(Sender: TObject);
+    procedure WedSearchEnter(Sender: TObject);
+    procedure TsDetailedSearchResize(Sender: TObject);
+    procedure WlExtendedSearchDateFromClick(Sender: TObject);
+    procedure BtnSelectDatePopupClick(Sender: TObject);
+    procedure WlSearchRatingFromClick(Sender: TObject);
+    procedure WlSearchRatingToClick(Sender: TObject);
+    procedure RtPopupRatingRating(Sender: TObject; Rating: Integer);
+    procedure PmSelectPersonPopup(Sender: TObject);
+    procedure MiOtherPersonsClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -772,6 +822,7 @@ type
     FWebBrowserJSMessage: UINT;
     FEditorInfo: TExplorerFileInfos;
     FReloadGroupsMessage: UINT;
+    FReloadESGroupsMessage: UINT;
 
     FActiveLeftTab: TExplorerLeftTab;
     FLeftTabs: set of TExplorerLeftTab;
@@ -783,6 +834,9 @@ type
     FShowAttributes: Boolean;
     FShowEXIFAttributes: Boolean;
     FImageViewer: IImageViewer;
+
+    FExtendedSearchParams: TExtendedSearchParams;
+
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
     procedure Reload;
@@ -857,7 +911,16 @@ type
       var AskParent: Boolean; var PopupMenu: TPopupMenu);
 
     procedure CreatePreview;
-  protected      
+
+    procedure ExtendedSearchInit;
+    procedure ExtendedSearchRealign;
+    procedure ExtendedSearchInitPersons;
+    procedure ExtendedSearchInitGroups;
+    procedure ExtendedSearchGroupClick(Sender: TObject);
+    procedure SelectPersonClick(Sender: TObject);
+    procedure AddWideSearchPerson(P: TPerson);
+    procedure WlExtendedSearchAddPersonClick(Sender: TObject);
+  protected
     procedure ZoomIn;
     procedure ZoomOut;
     procedure LoadToolBarGrayedIcons;
@@ -1206,6 +1269,7 @@ begin
   FEditorInfo := nil;
   FPngNoHIstogram := nil;
   FImageViewer := nil;
+  FExtendedSearchParams := nil;
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -1397,10 +1461,10 @@ begin
     LoadLastPath;
   FCanPasteFromClipboard := CanCopyFromClipboard;
 
-  for I := 0 to ComponentCount - 1 do
-    if Components[I] is TWebLink then
-      if Components[I] <> WlLearnMoreLink then
-        (Components[I] as TWebLink).GetBackGround := BackGround;
+  for I := 0 to ScrollBox1.ComponentCount - 1 do
+    if ScrollBox1.Components[I] is TWebLink then
+      if ScrollBox1.Components[I] <> WlLearnMoreLink then
+        (ScrollBox1.Components[I] as TWebLink).GetBackGround := BackGround;
 
   for I := 0 to Length(UserLinks) - 1 do
     UserLinks[I].GetBackGround := BackGround;
@@ -1414,6 +1478,7 @@ begin
 
   FWebBrowserJSMessage := RegisterWindowMessage('WEBBROWSER_JS_MESSAGE');
   FReloadGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_GROUPS');
+  FReloadESGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_GROUPS');
 
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
@@ -1976,6 +2041,7 @@ begin
   F(FWebJSContainer);
   F(FWbGeoLocation);
   F(FPngNoHIstogram);
+  F(FExtendedSearchParams);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
 
@@ -3598,6 +3664,21 @@ begin
     InitEditGroups;
   end;
 
+  if Msg.message = WM_LBUTTONDOWN then
+  begin
+    if not PnSelectDatePopup.HasHandle(Msg.hwnd) then
+      PnSelectDatePopup.Hide;
+
+    if RtPopupRating.Handle <> Msg.hwnd then
+      RtPopupRating.Hide;
+  end;
+
+  if Msg.message = FReloadESGroupsMessage then
+  begin
+    Handled := True;
+    ExtendedSearchInitGroups;
+  end;
+
   if Msg.message = FWebBrowserJSMessage then
   begin
     Handled := True;
@@ -3609,6 +3690,12 @@ begin
 
   if (Msg.message = WM_MOUSEWHEEL) and TsInfo.Visible then
     WllGroups.PerformMouseWheel(Msg.WParam, Handled);
+
+  if (Msg.message = WM_MOUSEWHEEL) and TsDetailedSearch.Visible then
+  begin
+    WllExtendedSearchPersons.PerformMouseWheel(Msg.WParam, Handled);
+    WllExtendedSearchGroups.PerformMouseWheel(Msg.WParam, Handled);
+  end;
 
   if Msg.Message = WM_KEYDOWN then
   begin
@@ -3832,6 +3919,10 @@ begin
     PnSearchEditPlace.ParentBackground := False;
     WedSearch.Color := Theme.PanelColor;
     WedSearch.Font.Color := Theme.PanelFontColor;
+
+    ExExtendedSearchText.Color := Theme.PanelColor;
+    ExExtendedSearchText.Font.Color := Theme.PanelFontColor;
+
     BvSeparatorAddress.Hide;
   end;
   LsMain.Color := Theme.ListViewColor;
@@ -6357,7 +6448,7 @@ var
 begin
   PcTasks.DisableTabChanging;
   try
-    for Tab in [eltsPreview..eltsEXIF] do
+    for Tab in [eltsPreview..eltsSearch] do
       if (Tab in FLeftTabs) then
         PcTasks.ShowTab(Integer(Tab))
       else
@@ -8875,6 +8966,14 @@ begin
   end;
 end;
 
+procedure TExplorerForm.WedSearchEnter(Sender: TObject);
+begin
+  FLeftTabs := FLeftTabs + [eltsSearch];
+  ShowActiveLeftTab(eltsSearch);
+  ApplyLeftTabs;
+  ExtendedSearchInit;
+end;
+
 procedure TExplorerForm.WedSearchKeyPress(Sender: TObject; var Key: Char);
 begin
   if Ord(Key) = VK_RETURN then
@@ -10734,6 +10833,491 @@ begin
   ReallignEditBoxes;
 end;
 
+procedure TExplorerForm.ExtendedSearchGroupClick(Sender: TObject);
+var
+  Link: TWebLink;
+  Groups, KeyWords: string;
+begin
+  Link := TWebLink(Sender);
+  if Link.Tag = -1 then
+  begin
+    Groups := WllExtendedSearchGroups.TagEx;
+    KeyWords := '';
+
+    GroupsSelectForm.Execute(Groups, KeyWords);
+
+    WllExtendedSearchGroups.TagEx := Groups;
+
+    PostMessage(Handle, FReloadESGroupsMessage, 0, 0);
+  end else
+  begin
+
+  end;
+end;
+
+procedure TExplorerForm.ExtendedSearchInit;
+begin
+  if FExtendedSearchParams = nil then
+  begin
+    FExtendedSearchParams := TExtendedSearchParams.Create;
+    FExtendedSearchParams.DateFrom := MinDateTime;
+    FExtendedSearchParams.DateTo := MinDateTime;
+    FExtendedSearchParams.RatingFrom := 0;
+    FExtendedSearchParams.RatingTo := 5;
+
+    LoadSpeedButtonFromResourcePNG(SbExtendedSearchStart, 'SEARCH');
+
+    WlExtendedSearchDateFrom.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
+    WlExtendedSearchDateTo.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
+
+    WlExtendedSearchOptions.LoadFromResource('SERIES_SETTINGS');
+
+    WlExtendedSearchSortDescending.LoadFromResource('SORD_DESCENDING');
+
+    BtnSearch.Images := DBKernel.ImageList;
+    BtnSearch.ImageIndex := DB_IC_SEARCH;
+
+    WlSearchRatingFromValue.LoadFromResource('TRATING_DEL');
+    WlSearchRatingToValue.LoadFromResource('TRATING_5');
+
+    WlSearchRatingFrom.Text := L('Rating from');
+    WlSearchRatingTo.Text := L('Rating to');
+    BtnSearch.Caption := L('Search');
+    BtnSelectDatePopup.Caption := L('Ok');
+    BtnSelectDatePopupReset.Caption := L('Reset');
+
+    ExtendedSearchInitGroups;
+    ExtendedSearchInitPersons;
+
+    ExtendedSearchRealign;
+  end;
+end;
+
+procedure TExplorerForm.ExtendedSearchInitGroups;
+var
+  WL,
+  WlExtendedSearchAddGroup: TWebLink;
+  ESGroups: TGroups;
+  I: Integer;
+  LoadGroupInfo: TGroupLoadInfo;
+  B: TBitmap;
+begin
+
+  ImExtendedSearchGroups.Clear;
+  B := TBitmap.Create;
+  try
+    CreteDefaultGroupImage(B);
+    ImExtendedSearchGroups.Add(B, nil);
+  finally
+    F(B);
+  end;
+
+  WllExtendedSearchGroups.Clear;
+
+  WlExtendedSearchAddGroup := WllExtendedSearchGroups.AddLink(True);
+  WlExtendedSearchAddGroup.IconWidth := 16;
+  WlExtendedSearchAddGroup.IconHeight := 16;
+  WlExtendedSearchAddGroup.Text := L('Photos with groups');
+  WlExtendedSearchAddGroup.LoadFromResource('GROUP_ADD_SMALL');
+  WlExtendedSearchAddGroup.OnClick := ExtendedSearchGroupClick;
+  WlExtendedSearchAddGroup.Tag := -1;
+
+  ESGroups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+
+  for I := 0 to Length(ESGroups) - 1 do
+  begin
+    WL := WllExtendedSearchGroups.AddLink;
+    WL.Text := ESGroups[I].GroupName;
+    WL.ImageList := ImExtendedSearchGroups;
+    WL.ImageIndex := 0;
+    WL.Tag := I;
+    WL.OnClick := ExtendedSearchGroupClick;
+  end;
+
+  LoadGroupInfo := TGroupLoadInfo.Create;
+  LoadGroupInfo.Owner := Self;
+  LoadGroupInfo.Groups := WllExtendedSearchGroups.TagEx;
+
+  TThreadTask.Create(Self, LoadGroupInfo,
+    procedure(Thread: TThreadTask; Data: Pointer)
+    var
+      Info: TGroupLoadInfo;
+      J: Integer;
+      B: TBitmap;
+      Groups: TGroups;
+      IsTerminated: Boolean;
+    begin
+      CoInitialize(nil);
+      try
+        Info := TGroupLoadInfo(Data);
+        try
+          Groups := EncodeGroups(Info.Groups);
+
+          for J := 0 to Length(Groups) - 1 do
+          begin
+
+            B := TBitmap.Create;
+            try
+              CreateGroupImage(Groups[J].GroupName, B);
+
+              IsTerminated := not Thread.SynchronizeTask(
+                procedure
+                var
+                  I: Integer;
+                  WL: TWebLink;
+                begin
+                  if (Info.Owner.WllExtendedSearchGroups.TagEx <> Info.Groups) then
+                  begin
+                    Thread.Terminate;
+                    Exit;
+                  end;
+
+                  for I := 0 to WllExtendedSearchGroups.ControlCount - 1 do
+                    if WllExtendedSearchGroups.Controls[I] is TWebLink then
+                    begin
+                      WL := TWebLink(WllExtendedSearchGroups.Controls[I]);
+                      if WL.Text = Groups[J].GroupName then
+                      begin
+                        WL.ImageIndex := Info.Owner.ImExtendedSearchGroups.Add(B, nil);
+                        Exit;
+                      end;
+                    end;
+                end
+              );
+
+              if IsTerminated then
+                Exit;
+            finally
+              F(B);
+            end;
+          end;
+        finally
+         F(Info);
+        end;
+      finally
+        CoUninitialize;
+      end;
+    end
+  );
+
+  WllExtendedSearchGroups.ReallignList;
+  WllExtendedSearchGroups.AutoHeight(300);
+
+  ExtendedSearchRealign;
+end;
+
+procedure TExplorerForm.ExtendedSearchInitPersons;
+var
+  WlExtendedSearchAddPerson: TWebLink;
+begin
+  WllExtendedSearchPersons.Clear;
+
+  WlExtendedSearchAddPerson := WllExtendedSearchPersons.AddLink(True);
+  WlExtendedSearchAddPerson.IconWidth := 16;
+  WlExtendedSearchAddPerson.IconHeight := 16;
+  WlExtendedSearchAddPerson.Text := L('Persons on photo');
+  WlExtendedSearchAddPerson.LoadFromResource('GROUP_ADD_SMALL');
+  WlExtendedSearchAddPerson.OnClick := WlExtendedSearchAddPersonClick;
+  WlExtendedSearchAddPerson.PopupMenu := PmSelectPerson;
+end;
+
+procedure TExplorerForm.WlExtendedSearchAddPersonClick(Sender: TObject);
+var
+  P: TPoint;
+  R: TRect;
+begin
+  R := TWebLink(Sender).BoundsRect;
+  P := Point(R.Left, R.Bottom);
+  P := TWebLink(Sender).ClientToScreen(P);
+  PmSelectPerson.Popup(P.X, P.Y);
+end;
+
+procedure TExplorerForm.WlExtendedSearchDateFromClick(Sender: TObject);
+
+  function EffectiveDate(Date: TDateTime): TDateTime;
+  begin
+    if Date = MinDateTime then
+      Exit(Now);
+
+    Result := Date;
+  end;
+
+begin
+  PnSelectDatePopup.Show;
+  PnSelectDatePopup.Top := TWinControl(Sender).FormBounds.Bottom + 2;
+  PnSelectDatePopup.Left := TWinControl(Sender).FormBounds.Left;
+  PnSelectDatePopup.Tag := NativeInt(Sender);
+  if Sender = WlExtendedSearchDateFrom then
+    McDateSelectPopup.Date := EffectiveDate(FExtendedSearchParams.DateFrom);
+  if Sender = WlExtendedSearchDateTo then
+    McDateSelectPopup.Date := EffectiveDate(FExtendedSearchParams.DateTo);
+end;
+
+procedure TExplorerForm.AddWideSearchPerson(P: TPerson);
+var
+  WlPerson: TWebLink;
+  B: TBitmap;
+begin
+  PersonManager.MarkLatestPerson(P.ID);
+
+  WlPerson := WllExtendedSearchPersons.AddLink(False);
+  WlPerson.IconWidth := 16;
+  WlPerson.IconHeight := 16;
+  WlPerson.Text := P.Name;
+  B := P.CreatePreview(16, 16);
+  try
+    WlPerson.LoadBitmap(B);
+  finally
+    F(B);
+  end;
+  WlPerson.Tag := NativeInt(P.Clone);
+
+  WllExtendedSearchPersons.ReallignList;
+  WllExtendedSearchPersons.AutoHeight(300);
+
+  ExtendedSearchRealign;
+end;
+
+procedure TExplorerForm.PmSelectPersonPopup(Sender: TObject);
+var
+  I, J, LatestPersonsIndex: Integer;
+  SelectedPersons: TPersonCollection;
+  LatestPersons: Boolean;
+  MI: TMenuItem;
+  WlPrson: TWebLink;
+  P: TPerson;
+begin
+
+  ImFacePopup.Clear;
+  ImageList_AddIcon(ImFacePopup.Handle, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
+  ImageList_AddIcon(ImFacePopup.Handle, UnitDBKernel.Icons[DB_IC_PEOPLE + 1]);
+
+
+  SelectedPersons := TPersonCollection.Create;
+  try
+    //remove last persons
+    LatestPersons := False;
+    LatestPersonsIndex := 0;
+    for I := PmSelectPerson.Items.Count - 1 downto 0 do
+    begin
+      if PmSelectPerson.Items[I] = MiPreviousSelections then
+      begin
+        LatestPersons := False;
+        LatestPersonsIndex := I;
+      end;
+
+      if LatestPersons then
+        PmSelectPerson.Items.Remove(PmSelectPerson.Items[I]);
+
+      if PmSelectPerson.Items[I] = MiPreviousSelectionsSeparator then
+        LatestPersons := True;
+    end;
+
+    //add current persons
+    PersonManager.FillLatestSelections(SelectedPersons);
+
+    for J := 0 to WllExtendedSearchPersons.ControlCount - 1 do
+    begin
+      if WllExtendedSearchPersons.Controls[J] is TWebLink then
+      begin
+        WlPrson := TWebLink(WllExtendedSearchPersons.Controls[J]);
+        if (WlPrson.Tag <> 0) then
+        begin
+          P := TPerson(WlPrson.Tag);
+          for I := 0 to SelectedPersons.Count - 1 do
+          begin
+            if SelectedPersons[I].ID = P.ID then
+            begin
+              SelectedPersons.DeleteAt(I);
+              Break;
+            end;
+          end;
+        end;
+      end;
+    end;
+
+    for I := 0 to SelectedPersons.Count - 1 do
+    begin
+      MI := TMenuItem.Create(PmSelectPerson);
+      MI.Tag := SelectedPersons[I].ID;
+      MI.Caption := SelectedPersons[I].Name;
+      MI.OnClick := SelectPersonClick;
+      MI.ImageIndex := ImFacePopup.Add(SelectedPersons[I].CreatePreview(16, 16), nil);
+      PmSelectPerson.Items.Insert(LatestPersonsIndex + 1, MI);
+      Inc(LatestPersonsIndex);
+    end;
+
+    if SelectedPersons.Count = 0 then
+    begin
+      MiPreviousSelections.Visible := False;
+      MiPreviousSelectionsSeparator.Visible := False;
+    end else
+    begin
+      MiPreviousSelections.Visible := True;
+      MiPreviousSelectionsSeparator.Visible := True;
+    end;
+  finally
+    F(SelectedPersons);
+  end;
+end;
+
+procedure TExplorerForm.SelectPersonClick(Sender: TObject);
+var
+  P: TPerson;
+  PersonID: Integer;
+begin
+  P := TPerson.Create;
+  try
+    PersonID := TMenuItem(Sender).Tag;
+    PersonManager.FindPerson(PersonID, P);
+
+    AddWideSearchPerson(P);
+  finally
+    F(P);
+  end;
+end;
+
+procedure TExplorerForm.MiOtherPersonsClick(Sender: TObject);
+var
+  FormFindPerson: TFormFindPerson;
+  P: TPerson;
+  Result: Integer;
+begin
+  Application.CreateForm(TFormFindPerson, FormFindPerson);
+  try
+    P := nil;
+    try
+      Result := FormFindPerson.Execute(nil, P);
+      if (P <> nil) and (Result = SELECT_PERSON_OK) then
+        AddWideSearchPerson(P);
+    finally
+      F(P);
+    end;
+  finally
+    F(FormFindPerson);
+  end;
+end;
+
+procedure TExplorerForm.ExtendedSearchRealign;
+
+  function DateToString(Date: TDateTime): string;
+  begin
+    if Date = MinDateTime then
+      Exit(L('Any'));
+
+    Result := DateToStr(Date);
+  end;
+
+begin
+  if FExtendedSearchParams = nil then
+    Exit;
+
+  WlExtendedSearchDateFrom.Text := L('Date from') + ': ' + DateToString(FExtendedSearchParams.DateFrom);
+  WlExtendedSearchDateTo.Text := L('Date to') + ': ' + DateToString(FExtendedSearchParams.DateTo);
+  WlExtendedSearchSortBy.Text := L('Sort by');
+
+  WlSearchRatingFromValue.Left := WlSearchRatingFrom.AfterRight(7);
+  WlSearchRatingToValue.Left := WlSearchRatingTo.AfterRight(5);
+
+  WlSearchRatingFrom.Top := ExExtendedSearchText.AfterTop(10);
+  WlSearchRatingFromValue.Top := ExExtendedSearchText.AfterTop(12);
+  WlSearchRatingTo.Top := WlSearchRatingFrom.AfterTop(5);
+  WlSearchRatingToValue.TOp := WlSearchRatingFrom.AfterTop(7);
+  BvRating.Top := WlSearchRatingToValue.AfterTop(2);
+
+  WllExtendedSearchPersons.ReallignList;
+  WllExtendedSearchPersons.AutoHeight(300);
+  WllExtendedSearchPersons.Top := BvRating.AfterTop(5);
+
+  BvPersons.Top := WllExtendedSearchPersons.AfterTop(5);
+
+  WllExtendedSearchGroups.ReallignList;
+  WllExtendedSearchGroups.AutoHeight(300);
+  WllExtendedSearchGroups.Top := BvPersons.AfterTop(5);
+
+  BvGroups.Top := WllExtendedSearchGroups.AfterTop(5);
+
+  WlExtendedSearchDateFrom.Top := BvGroups.AfterTop(5);
+  WlExtendedSearchDateTo.Top := WlExtendedSearchDateFrom.AfterTop(3);
+  WlExtendedSearchSortDescending.Top := WlExtendedSearchDateTo.AfterTop(7);
+  WlExtendedSearchSortBy.Top := WlExtendedSearchDateTo.AfterTop(7);
+
+  WlExtendedSearchOptions.Top := WlExtendedSearchSortBy.AfterTop(7);
+  BtnSearch.Top := WlExtendedSearchSortBy.AfterTop(7);
+end;
+
+procedure TExplorerForm.TsDetailedSearchResize(Sender: TObject);
+begin
+  WllExtendedSearchGroups.ReallignList;
+  WllExtendedSearchGroups.AutoHeight(300);
+  ExtendedSearchRealign;
+end;
+
+procedure TExplorerForm.BtnSelectDatePopupClick(Sender: TObject);
+var
+  Caller: TControl;
+
+  function SelectedDate: TDateTime;
+  begin
+    if Sender = BtnSelectDatePopupReset then
+      Exit(MinDateTime);
+
+    Result := McDateSelectPopup.Date;
+  end;
+
+begin
+  Caller := TControl(PnSelectDatePopup.Tag);
+  PnSelectDatePopup.Hide;
+  if Caller = WlExtendedSearchDateFrom then
+    FExtendedSearchParams.DateFrom := SelectedDate;
+  if Caller = WlExtendedSearchDateTo then
+    FExtendedSearchParams.DateTo := SelectedDate;
+
+  ExtendedSearchRealign;
+end;
+
+procedure TExplorerForm.WlSearchRatingFromClick(Sender: TObject);
+begin
+  RtPopupRating.Tag := 0;
+  RtPopupRating.Left := WlSearchRatingFromValue.FormBounds.Left;
+  RtPopupRating.Top := WlSearchRatingFromValue.FormBounds.Top;
+  RtPopupRating.Rating := FExtendedSearchParams.RatingFrom;
+  RtPopupRating.Show;
+  RtPopupRating.Tag := NativeInt(WlSearchRatingFromValue);
+end;
+
+procedure TExplorerForm.WlSearchRatingToClick(Sender: TObject);
+begin
+  RtPopupRating.Tag := 0;
+  RtPopupRating.Left := WlSearchRatingToValue.FormBounds.Left;
+  RtPopupRating.Top := WlSearchRatingToValue.FormBounds.Top;
+  RtPopupRating.Rating := FExtendedSearchParams.RatingTo;
+  RtPopupRating.Show;
+  RtPopupRating.Tag := NativeInt(WlSearchRatingToValue);
+end;
+
+const
+  RATING_ICONS: array[0..5] of string = ('TRATING_DEL', 'TRATING_1', 'TRATING_2',
+                  'TRATING_3', 'TRATING_4', 'TRATING_5');
+
+procedure TExplorerForm.RtPopupRatingRating(Sender: TObject; Rating: Integer);
+var
+  Control: TControl;
+begin
+  Control := TControl(RtPopupRating.Tag);
+  if Control = WlSearchRatingFromValue then
+  begin
+    FExtendedSearchParams.RatingFrom := Rating;
+    WlSearchRatingFromValue.LoadFromResource(RATING_ICONS[Rating]);
+  end;
+  if Control = WlSearchRatingToValue then
+  begin
+    FExtendedSearchParams.RatingTo := Rating;
+    WlSearchRatingToValue.LoadFromResource(RATING_ICONS[Rating]);
+  end;
+  RtPopupRating.Hide;
+end;
+
 procedure TExplorerForm.ReallignEditBoxes;
 begin
   LbEditKeywords.Top := WllGroups.BoundsRect.Bottom + 5;
@@ -10886,8 +11470,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.BigSizeCallBack(Sender: TObject; SizeX,
-  SizeY: integer);
+procedure TExplorerForm.BigSizeCallBack(Sender: TObject; SizeX, SizeY: integer);
 var
   SelectedVisible: Boolean;
 begin

@@ -504,7 +504,7 @@ procedure StretchA(Width, Height: Integer; S, D: TBitmap);
 var
   I, J: Integer;
   P1: PARGB;
-  Sh, Sw: Extended;
+  Sh, Sw: Single;
   Xp: array of PARGB;
   Y: Integer;
   XAr: array of Integer;
@@ -635,16 +635,23 @@ end;
 
 procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; S, D: TBitmap);
 var
-  Z1, Z2: single;
-  K: Single;
-  I, J, SW: Integer;
+  Z1, Z2: Integer;
+  K: Integer;
+  I, J, SW, JMax, JMin: Integer;
   Dw, Dh, Xo, Yo: Integer;
-  Y1r: Extended;
+  Y1r: Integer;
   XS, XD: array of PARGB;
   XS32, XD32: array of PARGB32;
-  Dx, Dy, Dxjx1r: Extended;
-  XAW : array of Integer;
-  XAWD : array of Extended;
+  Dx, Dy: Single;
+  XAW: array of Integer;
+  XAWD: array of Integer;
+  Dxjx1r, DyI: Integer;
+
+  PD, PS, PS1: PARGB;
+  RGBD: PRGB;
+
+  PD32, PS32, PS132: PARGB32;
+  RGBD32: PRGB32;
 begin
   if not ((S.PixelFormat = pf32bit) and (D.PixelFormat = pf32bit)) then
   begin
@@ -678,12 +685,20 @@ begin
       XD32[I] := D.Scanline[I];
   end;
 
+  JMax :=  Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1);
+  JMin := 0;
+  if X < 0 then
+    JMin := -X;
+
   SetLength(XAW, Width + 1);
   SetLength(XAWD, Width + 1);
-  for I := 0 to Width do
+  for I := Width downto 0 do
   begin
     XAW[I] := FastTrunc(I / Dx);
-    XAWD[I] := I / Dx - XAW[I];
+    XAWD[I] := FastTrunc(1024 * (I / Dx - XAW[I]));
+
+    if XAW[I] + Rect.Left > SW then
+      JMax := I - 1;
   end;
 
   if (S.PixelFormat = pf24Bit) then
@@ -691,36 +706,41 @@ begin
     for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
     begin
       Yo := FastTrunc(I / Dy) + Rect.Top;
-      Y1r := FastTrunc(I / Dy) * Dy;
       if Yo > S.Height then
         Break;
       if I + Y < 0 then
         Continue;
 
-      for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
+      PD := Xd[I + Y];
+      PS := XS[Yo];
+      PS1 := XS[Yo + 1];
+      RGBD := @PD[JMin + X];
+
+      Y1r := FastTrunc(I / Dy);
+      DyI := FastTrunc(1024 * I / Dy);
+
+      for J := JMin to JMax do
       begin
         Xo := XAW[J] + Rect.Left;
-        if Xo > SW then
-          Continue;
-        if J + X < 0 then
-          Continue;
-
         Dxjx1r := XAWD[J];
 
-        Z1 := (Xs[Yo, Xo + 1].R - Xs[Yo, Xo].R) * Dxjx1r + Xs[Yo, Xo].R;
-        Z2 := (Xs[Yo + 1, Xo + 1].R - Xs[Yo + 1, Xo].R) * Dxjx1r + Xs[Yo + 1, Xo].R;
-        k := (z2 - Z1) / Dy;
-        Xd[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
+        Z1 := ((PS[Xo + 1].R - PS[Xo].R) * Dxjx1r) div 1024 + PS[Xo].R;
+        Z2 := ((PS1[Xo + 1].R - PS1[Xo].R) * Dxjx1r) div 1024 + PS1[Xo].R;
 
-        Z1 := (Xs[Yo, Xo + 1].G - Xs[Yo, Xo].G)* Dxjx1r + Xs[Yo, Xo].G;
-        Z2 := (Xs[Yo + 1, Xo + 1].G - Xs[Yo + 1, Xo].G) * Dxjx1r + Xs[Yo + 1, Xo].G;
-        K := (Z2 - Z1) / Dy;
-        Xd[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
+        K := (z2 - Z1);
+        RGBD^.R := (DyI * K div 1024 + Z1 - Y1r * K);
 
-        Z1 := (Xs[Yo, Xo + 1].B - Xs[Yo, Xo].B) * Dxjx1r + Xs[Yo, Xo].B;
-        Z2 := (Xs[Yo + 1, Xo + 1].B - Xs[Yo + 1, Xo].B)  * Dxjx1r + Xs[Yo + 1, Xo].B;
-        K := (Z2 - Z1) / Dy;
-        Xd[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
+        Z1 := ((PS[Xo + 1].G - PS[Xo].G) * Dxjx1r) div 1024 + PS[Xo].G;
+        Z2 := ((PS1[Xo + 1].G - PS1[Xo].G) * Dxjx1r) div 1024 + PS1[Xo].G;
+        K := (Z2 - Z1);
+        RGBD^.G := (DyI * K div 1024 + Z1 - Y1r * K);
+
+        Z1 := ((PS[Xo + 1].B - PS[Xo].B) * Dxjx1r) div 1024 + PS[Xo].B;
+        Z2 := ((PS1[Xo + 1].B - PS1[Xo].B)  * Dxjx1r) div 1024 + PS1[Xo].B;
+        K := (Z2 - Z1);
+        RGBD^.B := (DyI * K div 1024 + Z1 - Y1r * K);
+
+        Inc(RGBD);
       end;
     end;
   end else
@@ -728,41 +748,45 @@ begin
     for I := 0 to Min(Round((Rect.Bottom - Rect.Top - 1) * DY) - 1, DH - 1) do
     begin
       Yo := FastTrunc(I / Dy) + Rect.Top;
-      Y1r := FastTrunc(I / Dy) * Dy;
       if Yo > S.Height then
         Break;
       if I + Y < 0 then
         Continue;
 
-      for J := 0 to Min(Round((Rect.Right - Rect.Left - 1) * DX) - 1, DW - 1) do
+      PD32 := Xd32[I + Y];
+      PS32 := XS32[Yo];
+      PS132 := XS32[Yo + 1];
+      RGBD32 := @PD32[JMin + X];
+
+      Y1r := FastTrunc(I / Dy);
+      DyI := FastTrunc(1024 * I / Dy);
+
+      for J := JMin to JMax do
       begin
         Xo := XAW[J] + Rect.Left;
-        if Xo > SW then
-          Continue;
-        if J + X < 0 then
-          Continue;
-
         Dxjx1r := XAWD[J];
 
-        Z1 := (XS32[Yo, Xo + 1].R - XS32[Yo, Xo].R) * Dxjx1r + XS32[Yo, Xo].R;
-        Z2 := (XS32[Yo + 1, Xo + 1].R - XS32[Yo + 1, Xo].R) * Dxjx1r + XS32[Yo + 1, Xo].R;
-        k := (z2 - Z1) / Dy;
-        XD32[I + Y, J + X].R := Round(I * K + Z1 - Y1r * K);
+        Z1 := ((PS32[Xo + 1].R - PS32[Xo].R) * Dxjx1r) div 1024 + PS32[Xo].R;
+        Z2 := ((PS132[Xo + 1].R - PS132[Xo].R) * Dxjx1r) div 1024 + PS132[Xo].R;
+        K := (Z2 - Z1);
+        RGBD32^.R := (DyI * K div 1024 + Z1 - Y1r * K);
 
-        Z1 := (XS32[Yo, Xo + 1].G - XS32[Yo, Xo].G)* Dxjx1r + XS32[Yo, Xo].G;
-        Z2 := (XS32[Yo + 1, Xo + 1].G - XS32[Yo + 1, Xo].G) * Dxjx1r + XS32[Yo + 1, Xo].G;
-        K := (Z2 - Z1) / Dy;
-        XD32[I + Y, J + X].G := Round(I * K + Z1 - Y1r * K);
+        Z1 := ((PS32[Xo + 1].G - PS32[Xo].G)* Dxjx1r) div 1024 + PS32[Xo].G;
+        Z2 := ((PS132[Xo + 1].G - PS132[Xo].G) * Dxjx1r) div 1024 + PS132[Xo].G;
+        K := (Z2 - Z1);
+        RGBD32^.G := (DyI * K div 1024 + Z1 - Y1r * K) and 255;
 
-        Z1 := (XS32[Yo, Xo + 1].B - XS32[Yo, Xo].B) * Dxjx1r + XS32[Yo, Xo].B;
-        Z2 := (XS32[Yo + 1, Xo + 1].B - XS32[Yo + 1, Xo].B)  * Dxjx1r + XS32[Yo + 1, Xo].B;
-        K := (Z2 - Z1) / Dy;
-        XD32[I + Y, J + X].B := Round(I * K + Z1 - Y1r * K);
+        Z1 := ((PS32[Xo + 1].B - PS32[Xo].B) * Dxjx1r) div 1024 + PS32[Xo].B;
+        Z2 := ((PS132[Xo + 1].B - PS132[Xo].B)  * Dxjx1r) div 1024 + PS132[Xo].B;
+        K := (Z2 - Z1);
+        RGBD32^.B := (DyI * K div 1024 + Z1 - Y1r * K) and 255;
 
-        Z1 := (XS32[Yo, Xo + 1].L - XS32[Yo, Xo].L) * Dxjx1r + XS32[Yo, Xo].L;
-        Z2 := (XS32[Yo + 1, Xo + 1].L - XS32[Yo + 1, Xo].L)  * Dxjx1r + XS32[Yo + 1, Xo].L;
-        K := (Z2 - Z1) / Dy;
-        XD32[I + Y, J + X].L := Round(I * K + Z1 - Y1r * K);
+        Z1 := ((PS32[Xo + 1].L - PS32[Xo].L) * Dxjx1r) div 1024 + PS32[Xo].L;
+        Z2 := ((PS132[Xo + 1].L - PS132[Xo].L)  * Dxjx1r) div 1024 + PS132[Xo].L;
+        K := (Z2 - Z1);
+        RGBD32^.L := (DyI * K div 1024 + Z1 - Y1r * K) and 255;
+
+        Inc(RGBD32);
       end;
     end;
   end;
@@ -1947,9 +1971,9 @@ var
   K: Single;
   I, J: Integer;
   H, Dw, Dh, Xo, Yo: Integer;
-  X1r, Y1r: Extended;
+  X1r, Y1r: Single;
   Xs, Xd: array of PARGB;
-  Dx, Dy: Extended;
+  Dx, Dy: Single;
   Terminating: Boolean;
 begin
   Terminating := False;

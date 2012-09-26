@@ -7,6 +7,7 @@ uses
   System.Classes,
   Winapi.Windows,
   Winapi.Messages,
+  Winapi.Dwmapi,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
@@ -64,7 +65,7 @@ type
     procedure FImageFrameTimerOnTimer(Sender: TObject);
   protected
     procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
-    procedure WMPrintClient(var Message: TWMPrintClient); message WM_PRINTCLIENT;
+    function DrawElement(DC: HDC): Boolean; override;
     procedure Resize; override;
     procedure NextFrame;
   public
@@ -153,6 +154,11 @@ begin
   F(FCanvas);
   F(FItem);
   inherited;
+end;
+
+function TImageViewerControl.DrawElement(DC: HDC): Boolean;
+begin
+  Result := BitBlt(DC, 0, 0, Buffer.Width, Buffer.Height, Buffer.Canvas.Handle, 0, 0, SRCCOPY);
 end;
 
 procedure TImageViewerControl.Erased(var Message: TWMEraseBkgnd);
@@ -304,13 +310,6 @@ begin
   if ScrollPos > (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize then
     ScrollPos := (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize;
   RecreateImage;
-end;
-
-
-procedure TImageViewerControl.WMPrintClient(var Message: TWMPrintClient);
-begin
-  inherited;
-  BitBlt(Message.DC, 0, 0, Buffer.Width, Buffer.Height, Buffer.Canvas.Handle, 0, 0, SRCCOPY);
 end;
 
 procedure TImageViewerControl.ZoomIn;

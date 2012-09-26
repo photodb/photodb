@@ -410,6 +410,15 @@
     <translate name="Learn more about creating and using persons" value="Узнать больше про создание и использование персон" />
     <translate name="Key" value="Ключ" />
     <translate name="Value" value="Значение" />
+    <translate name="Rating from" value="Рейтинг от" />
+    <translate name="Rating to" value="Рейтинг до" />
+    <translate name="Date from" value="Дата от" />
+    <translate name="Date to" value="Дата до" />
+    <translate name="Photos with groups" value="Фото с группами" />
+    <translate name="Persons on photo" value="Люди на фото" />
+    <translate name="Search" value="Поиск" />
+    <translate name="Any" value="Любая" />
+    <translate name="Reset" value="Сброс" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

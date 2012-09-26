@@ -70,7 +70,14 @@ type
   public
     function FindChildByTag<T: TControl>(Tag: NativeInt): T;
     function FindChildByType<T: TControl>: T;
+    function HasHandle(Handle: THandle): Boolean;
     property BoundsRectScreen: TRect read GetBoundsRectScreen;
+  end;
+
+  TControlHelper = class helper for TControl
+    function AfterTop(Padding: Integer): Integer;
+    function AfterRight(Padding: Integer): Integer;
+    function FormBounds: TRect;
   end;
 
   TCustomImageListHelper = class helper for TCustomImageList
@@ -317,6 +324,25 @@ begin
   Result := Rect(P1, P2);
 end;
 
+function TWinControlHelper.HasHandle(Handle: THandle): Boolean;
+var
+  Control: TControl;
+  I: Integer;
+begin
+  if Self.Handle = Handle then
+    Exit(True);
+
+  for I := 0 to ControlCount - 1 do
+  begin
+    Control := Controls[I];
+    if Control is TWinControl then
+      if TWinControl(Control).HasHandle(Handle) then
+        Exit(True);
+  end;
+
+  Exit(False);
+end;
+
 procedure TButtonHelper.SetEnabledEx(Value: Boolean);
 begin
   Enabled := Value;
@@ -410,6 +436,36 @@ begin
       Break;
     end;
   end;
+end;
+
+{ TControlHelper }
+
+function TControlHelper.AfterRight(Padding: Integer): Integer;
+begin
+  Result := Left + Width + Padding;
+end;
+
+function TControlHelper.AfterTop(Padding: Integer): Integer;
+begin
+  Result := Top + Height + Padding;
+end;
+
+
+function TControlHelper.FormBounds: TRect;
+var
+  Control: TControl;
+  X, Y: Integer;
+begin
+  Control := Self;
+  X := 0;
+  Y := 0;
+  while (Control <> nil) and not (Control is TForm) do
+  begin
+    Inc(X, Control.Left);
+    Inc(Y, Control.Top);
+    Control := Control.Parent;
+  end;
+  Result := Rect(X, Y, X + Width, Y + Height);
 end;
 
 end.

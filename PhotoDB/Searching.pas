@@ -196,7 +196,7 @@ type
     SelectTimer: TTimer;
     View2: TMenuItem;
     DropFileTarget2: TDropFileTarget;
-    ScriptLisTPopupActionBar: TPopupActionBar;
+    ScriptListPopupActionBar: TPopupActionBar;
     ScriptMainMenu: TMainMenu;
     RatingPopupMenu1: TPopupActionBar;
     N00: TMenuItem;

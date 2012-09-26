@@ -123,7 +123,7 @@ end;
 
 procedure TFormFindPerson.CloseForm;
 begin
-  if (LvPersons.Selected <> nil) and (FInfo.ID = 0) then
+  if (LvPersons.Selected <> nil) and (FInfo <> nil) and (FInfo.ID = 0) then
   begin
     EnableControls(False);
     FInfo.Include := True;
@@ -213,7 +213,12 @@ end;
 function TFormFindPerson.Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
 begin
   FFormResult := SELECT_PERSON_CANCEL;
-  FInfo := Info.Copy;
+
+  if Info <> nil then
+    FInfo := Info.Copy
+  else
+    WlCreatePerson.Hide;
+
   ShowModal;
   if LvPersons.Selected <> nil then
     Person := TPerson(LvPersons.Selected.Data);

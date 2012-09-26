@@ -51,7 +51,6 @@ type
     FPeoples: TPersonCollection;
     FSync: TCriticalSection;
     function GetAllPersons: TPersonCollection;
-    procedure MarkLatestPerson(PersonID: Integer);
   public
     procedure InitDB;
     procedure LoadPersonList(Persons: TPersonCollection);
@@ -70,6 +69,7 @@ type
     function RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
     function ChangePerson(PersonArea: TPersonArea; ToPersonID: Integer): Boolean;
     procedure FillLatestSelections(Persons: TPersonCollection);
+    procedure MarkLatestPerson(PersonID: Integer);
     constructor Create;
     destructor Destroy; override;
     procedure RegisterManager;
