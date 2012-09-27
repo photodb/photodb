@@ -1,7 +1,7 @@
 {**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.1 beta                                                                   }
+{ Version 1.5.2 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -127,7 +127,6 @@ type
     MissingOrInvalidValue: TDateTime = -700000;
   strict private
     FValue: TDateTime;
-    function GetAsString: string;
   public
     constructor CreateFromString(const AString: string);
     class function CreateMissingOrInvalid: TDateTimeTagValue; static;
@@ -139,7 +138,8 @@ type
     class operator LessThanOrEqual(const A, B: TDateTimeTagValue): Boolean;
     class operator GreaterThan(const A, B: TDateTimeTagValue): Boolean;
     class operator GreaterThanOrEqual(const A, B: TDateTimeTagValue): Boolean;
-    property AsString: string read GetAsString;
+    function ToString: string;
+    property AsString: string read ToString;
     function MissingOrInvalid: Boolean; inline;
     property Value: TDateTime read FValue;
   end;
@@ -148,7 +148,6 @@ type
   strict private
     FValue: LongInt;
     FMissingOrInvalid: Boolean;
-    function GetAsString: string;
   public
     constructor CreateFromString(const AString: string);
     class function CreateMissingOrInvalid: TLongIntTagValue; static;
@@ -162,7 +161,8 @@ type
     class operator GreaterThan(const A, B: TLongIntTagValue): Boolean;
     class operator GreaterThanOrEqual(const A, B: TLongIntTagValue): Boolean;
     class operator Negative(const Source: TLongIntTagValue): TLongIntTagValue;
-    property AsString: string read GetAsString;
+    function ToString: string;
+    property AsString: string read ToString;
     property MissingOrInvalid: Boolean read FMissingOrInvalid;
     property Value: LongInt read FValue;
   end;
@@ -171,7 +171,6 @@ type
   strict private
     FValue: LongWord;
     FMissingOrInvalid: Boolean;
-    function GetAsString: string;
   public
     constructor CreateFromString(const AString: string);
     class function CreateMissingOrInvalid: TLongWordTagValue; static;
@@ -185,7 +184,8 @@ type
     class operator LessThanOrEqual(const A, B: TLongWordTagValue): Boolean;
     class operator GreaterThan(const A, B: TLongWordTagValue): Boolean;
     class operator GreaterThanOrEqual(const A, B: TLongWordTagValue): Boolean;
-    property AsString: string read GetAsString;
+    function ToString: string;
+    property AsString: string read ToString;
     property MissingOrInvalid: Boolean read FMissingOrInvalid;
     property Value: LongWord read FValue;
   end;
@@ -194,7 +194,6 @@ type
   strict private
     FValue: Word;
     FMissingOrInvalid: Boolean;
-    function GetAsString: string;
   public
     constructor CreateFromString(const AString: string);
     class function CreateMissingOrInvalid: TWordTagValue; static;
@@ -211,7 +210,8 @@ type
     class operator LessThanOrEqual(const A, B: TWordTagValue): Boolean;
     class operator GreaterThan(const A, B: TWordTagValue): Boolean;
     class operator GreaterThanOrEqual(const A, B: TWordTagValue): Boolean;
-    property AsString: string read GetAsString;
+    function ToString: string;
+    property AsString: string read ToString;
     property MissingOrInvalid: Boolean read FMissingOrInvalid;
     property Value: Word read FValue;
   end;
@@ -229,6 +229,8 @@ type
   TGraphicSaveMethod = procedure (InStream, OutStream: TStream) of object;
   TGetGraphicSaveMethod = procedure (InStream: TStream; var AMethod: TGraphicSaveMethod) of object;
 
+procedure DoSaveToGraphic(GraphicStream: TStream;
+  const DetectTypeFunc: TGetGraphicSaveMethod); overload;
 procedure DoSaveToGraphic(const FileName: string;
   const DetectTypeFunc: TGetGraphicSaveMethod); overload;
 procedure DoSaveToGraphic(const Graphic: IStreamPersist; //!!!changed from TGraphic
@@ -282,8 +284,6 @@ type
     property Name: AnsiString read GetName write SetName;
     property TotalSize: Integer read GetTotalSize;
   end;
-
-  IAdobeBlock = IAdobeResBlock deprecated {$IFDEF DepCom}'Renamed IAdobeResBlock'{$ENDIF};
 
   IAdobeResBlockEnumerator = interface
     function GetCurrent: IAdobeResBlock;
@@ -493,10 +493,7 @@ type
   end;
 
 const
-  AllJPEGMarkers = TJPEGSegment.AllMarkers deprecated;
   AnyJPEGMarker = TJPEGSegment.AnyMarker;
-  StartOfFrameMarkers  = TJPEGSegment.StartOfFrameMarkers deprecated;
-  MarkersWithNoData = TJPEGSegment.MarkersWithNoData deprecated;
 {
 var
   Segment: IFoundJPEGSegment;
@@ -926,7 +923,7 @@ begin
   Result := (Value < FirstValidDateTime);
 end;
 
-function TDateTimeTagValue.GetAsString: string;
+function TDateTimeTagValue.ToString: string;
 begin
   if MissingOrInvalid then
     Result := ''
@@ -995,7 +992,7 @@ begin
   Result.FValue := 0;
 end;
 
-function TLongIntTagValue.GetAsString: string;
+function TLongIntTagValue.ToString: string;
 begin
   if FMissingOrInvalid then
     Result := ''
@@ -1085,7 +1082,7 @@ begin
   Result := (A.Value = B.Value) and (A.MissingOrInvalid = B.MissingOrInvalid);
 end;
 
-function TLongWordTagValue.GetAsString: string;
+function TLongWordTagValue.ToString: string;
 begin
   if FMissingOrInvalid then
     Result := ''
@@ -1167,7 +1164,7 @@ begin
   Result := (A.Value = B.Value) and (A.MissingOrInvalid = B.MissingOrInvalid);
 end;
 
-function TWordTagValue.GetAsString: string;
+function TWordTagValue.ToString: string;
 begin
   if FMissingOrInvalid then
     Result := ''

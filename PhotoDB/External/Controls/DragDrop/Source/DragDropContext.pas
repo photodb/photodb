@@ -99,7 +99,7 @@ type
       uFlags: UINT): HResult; stdcall;
     function InvokeCommand(var lpici: TCMInvokeCommandInfo): HResult; stdcall;
 
-    {$IFDEF VER230}
+    {$IFDEF VER23_PLUS}
       function GetCommandString(idCmd: UINT_PTR; uFlags: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult; stdcall;
     {$ELSE}
       function GetCommandString(idCmd, uType: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult; stdcall;
@@ -108,14 +108,14 @@ type
 
 
     { IContextMenu2 }
-    {$IFDEF VER230}
+    {$IFDEF VER23_PLUS}
       function HandleMenuMsg(uMsg: UINT; WParam: WPARAM; LParam: LPARAM): HResult; stdcall;
     {$ELSE}
       function HandleMenuMsg(uMsg: UINT; WParam, LParam: Integer): HResult; stdcall;
     {$ENDIF}
 
     { IContextMenu3 }
-    {$IFDEF VER230}
+    {$IFDEF VER23_PLUS}
       function HandleMenuMsg2(uMsg: UINT; wParam: WPARAM; lParam: LPARAM; var lpResult: LRESULT): HResult; stdcall;
     {$ELSE}
       function HandleMenuMsg2(uMsg: UINT; wParam, lParam: Integer;  var lpResult: Integer): HResult; stdcall;
@@ -214,7 +214,7 @@ begin
   inherited Destroy;
 end;
 
-{$IFDEF VER230}
+{$IFDEF VER23_PLUS}
 function TDropContextMenu.GetCommandString(idCmd: UINT_PTR; uFlags: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult;
 {$ELSE}
 function TDropContextMenu.GetCommandString(idCmd, uType: UINT; pwReserved: PUINT; pszName: LPSTR; cchMax: UINT): HResult;
@@ -223,7 +223,7 @@ var
   ItemIndex: integer;
   MenuItem: TMenuItem;
   sAnsi: AnsiString;
-  {$IFDEF VER230}
+  {$IFDEF VER23_PLUS}
   uType : UINT absolute uFlags;
   {$ENDIF}
 begin
@@ -541,13 +541,13 @@ begin
     NextMenuID-FMenuOffset);
 end;
 
-{$IFDEF VER230}
+{$IFDEF VER23_PLUS}
 function TDropContextMenu.HandleMenuMsg(uMsg: UINT; WParam: WPARAM; LParam: LPARAM): HResult;
 {$ELSE}
 function TDropContextMenu.HandleMenuMsg(uMsg: UINT; WParam, LParam: Integer): HResult;
 {$ENDIF}
 var
-  {$IFDEF VER230}
+  {$IFDEF VER23_PLUS}
   lpResult : NativeInt;
   {$ELSE}
   lpResult : Integer;
@@ -559,7 +559,7 @@ begin
   Result := HandleMenuMsg2(uMsg, WParam, LParam, lpResult);
 end;
 
-{$IFDEF VER230}
+{$IFDEF VER23_PLUS}
 function TDropContextMenu.HandleMenuMsg2(uMsg: UINT; wParam: WPARAM; lParam: LPARAM; var lpResult: LRESULT): HResult;
 {$ELSE}
 function TDropContextMenu.HandleMenuMsg2(uMsg: UINT; wParam, lParam: Integer; var lpResult: Integer): HResult;

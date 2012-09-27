@@ -31,6 +31,7 @@ uses
 
 implementation
 
+//local files should be copied from Delphi sources
 {$I StyleUtils.inc}
 {$I StyleAPI.inc}
 
@@ -65,7 +66,7 @@ begin
   Se.ResetStyleColors;
   Se.ResetStyleFonts;
 
-  Result := LResult
+  Result := LResult;
 end;
 
 initialization

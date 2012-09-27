@@ -1,7 +1,7 @@
 {**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.1 beta                                                                   }
+{ Version 1.5.2 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -45,10 +45,8 @@ unit CCR.Exif;
     by setting the XMPWritePolicy property of TExifData.
   - Maker note rewriting is *not* supported in TExifData. While you can make changes to
     the loaded maker note tags, these changes won't ever be persisted.
-  - When compiling in XE2, you need to set a 'VCL' global define in order for this unit
-    to use the VCL TJpegImage class - setting a 'FMX' global define will have it use the
-    FireMonkey TBitmap, and setting nothing (the default) will have a dummy TJpegImage
-    used. The dummy class will be assignable to
+  - When compiling in XE2+, you need to set a 'FMX' global define for this unit to work
+    properly in a FireMonkey application.
 }
 interface
 
@@ -90,6 +88,7 @@ type
   public
     constructor Create; reintroduce;
     procedure SaveToStream(Stream: TStream);
+    property Empty: Boolean read IsEmpty;
   end;
 {$ENDIF}
 {$IF NOT Declared(TJPEGImage)}
@@ -297,7 +296,7 @@ type
     procedure Remove(const IDs: array of TExifTagID); overload;
     function RemovePaddingTag: Boolean; //returns True if contained a padding tag
     function SetByteValue(TagID: TExifTagID; Index: Integer; Value: Byte): TExifTag;
-    procedure SetDateTimeValue(MainID, SubSecsID: TExifTagID; const Value: TDateTimeTagValue);
+    procedure SetDateTimeValue(MainID, SubSecsID: TExifTagID; const DateTime: TDateTimeTagValue);
     procedure SetFractionValue(TagID: TExifTagID; Index: Integer; const Value: TExifFraction);
     function SetLongWordValue(TagID: TExifTagID; Index: Integer; Value: LongWord): TExifTag;
     procedure SetSignedFractionValue(TagID: TExifTagID; Index: Integer;
@@ -515,7 +514,7 @@ type
 
   TThumbnailResolution = class(TCustomExifResolution)
   protected
-    procedure GetTagInfo(var Section: TExifSectionKind; 
+    procedure GetTagInfo(var Section: TExifSectionKind;
       var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
       var XName, YName, UnitName: UnicodeString); override;
   end;
@@ -555,7 +554,7 @@ type
 
   TGPSLatitudeRef = (ltMissingOrInvalid, ltNorth, ltSouth);
   TGPSLongitudeRef = (lnMissingOrInvalid, lnWest, lnEast);
-  TGPSAltitudeRef = (alTagMissing, alAboveSeaLevel, alBelowSeaLevel);
+  TGPSAltitudeRef = (alTagMissing = -1, alAboveSeaLevel, alBelowSeaLevel); //!!!corrected v1.5.2
   TGPSStatus = (stMissingOrInvalid, stMeasurementActive, stMeasurementVoid);
   TGPSMeasureMode = (mmUnknown, mm2D, mm3D);
   TGPSSpeedRef = (srMissingOrInvalid, srKilometresPerHour, srMilesPerHour, srKnots); //Exif spec makes KM/h the default value
@@ -663,7 +662,7 @@ type
   end;
 
   THeaderlessMakerNote = class(TExifMakerNote) //special type tried as a last resort; also serves as a
-  protected                                    //nominal base class for two of the concrete implementations
+  protected                                    //nominal base class for a few of the concrete implementations
     class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
   end;
 
@@ -672,6 +671,17 @@ type
     class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
     procedure GetIFDInfo(SourceTag: TExifTag; var ProbableEndianness: TEndianness;
       var DataOffsetsType: TExifDataOffsetsType); override;
+  end;
+
+  TCasioMakerNote = class(THeaderlessMakerNote)
+  protected
+    class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
+  end;
+
+  TCasio2MakerNote = class(TExifMakerNote)
+  protected
+    const Header: array[0..5] of AnsiChar = 'QVC';
+    class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
   end;
 
   TKodakMakerNote = class(TExifMakerNote) //!!!work in very early progress
@@ -690,6 +700,11 @@ type
     procedure GetIFDInfo(SourceTag: TExifTag; var Endianness: TEndianness;
       var DataOffsetsType: TExifDataOffsetsType); override;
   end experimental;
+
+  TKonicaMinoltaMakerNote = class(THeaderlessMakerNote)
+  protected
+    class function FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean; override;
+  end;
 
   TPanasonicMakerNote = class(TExifMakerNote)
   protected
@@ -990,7 +1005,9 @@ type
     property UserRating: TWindowsStarRating read GetUserRating write SetUserRating stored False;
     { sub dir tags }
     property ApertureValue: TExifFraction index ttApertureValue read GetDetailsFraction write SetDetailsFraction stored False;
+    property BodySerialNumber: string index ttBodySerialNumber read GetDetailsString write SetDetailsString stored False;
     property BrightnessValue: TExifSignedFraction index ttBrightnessValue read GetDetailsSFraction write SetDetailsSFraction stored False;
+    property CameraOwnerName: string index ttCameraOwnerName read GetDetailsString write SetDetailsString stored False;
     property ColorSpace: TExifColorSpace read GetColorSpace write SetColorSpace stored False;
     property Contrast: TExifContrast read GetContrast write SetContrast stored False;
     property CompressedBitsPerPixel: TExifFraction index ttCompressedBitsPerPixel read GetDetailsFraction write SetDetailsFraction stored False;
@@ -1015,6 +1032,9 @@ type
     property GainControl: TExifGainControl read GetGainControl write SetGainControl stored False;
     property ImageUniqueID: string index ttImageUniqueID read GetDetailsString write SetDetailsString stored False;
     property ISOSpeedRatings: TISOSpeedRatings read FISOSpeedRatings write SetISOSpeedRatings;
+    property LensMake: string index ttLensMake read GetDetailsString write SetDetailsString stored False;
+    property LensModel: string index ttLensModel read GetDetailsString write SetDetailsString stored False;
+    property LensSerialNumber: string index ttLensSerialNumber read GetDetailsString write SetDetailsString stored False;
     property LightSource: TExifLightSource read GetLightSource write SetLightSource stored False;
     property MaxApertureValue: TExifFraction index ttMaxApertureValue read GetDetailsFraction write SetDetailsFraction stored False;
     property MeteringMode: TExifMeteringMode read GetMeteringMode write SetMeteringMode stored False;
@@ -1096,8 +1116,8 @@ type
     { the following two methods originally had params typed to TJpegImage; these
       have been made more weakly typed for FMX compatibility }
     {$IF CompilerVersion >= 22}
-    procedure GetImage<T: TPersistent, IStreamPersist>(Dest: T);
-    procedure GetThumbnail<T: TPersistent, IStreamPersist>(Dest: T);
+    procedure GetImage<T: TPersistent, IStreamPersist>(const Dest: T);
+    procedure GetThumbnail<T: TPersistent, IStreamPersist>(const Dest: T);
     {$ELSE}
     procedure GetImage(const Dest: IStreamPersist);
     procedure GetThumbnail(Dest: TPersistent);
@@ -1143,16 +1163,9 @@ type
     procedure RemovePaddingTags;
     procedure SaveToGraphic(const FileName: string); overload;
     procedure SaveToGraphic(const Graphic: IStreamPersist); overload;
+    procedure SaveToGraphic(const InMemoryGraphic: TCustomMemoryStream); overload;
     procedure SaveToStream(Stream: TStream);
     property Sections[Section: TExifSectionKind]: TExtendableExifSection read GetSection; default;
-  {$IF DECLARED(TJPEGData)}
-  public //deprecated methods - to be removed in a future release
-    procedure LoadFromJPEG(JPEGStream: TStream); overload; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
-    procedure LoadFromJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
-    procedure LoadFromJPEG(const FileName: string); overload; inline; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
-    procedure SaveToJPEG(const JPEGFileName: string; Dummy: Boolean = True); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
-    procedure SaveToJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
-  {$IFEND}
   published
     property RemovePaddingTagsOnSave: Boolean read FRemovePaddingTagsOnSave write
       FRemovePaddingTagsOnSave default True;
@@ -1203,9 +1216,6 @@ function ContainsOnlyASCII(const S: RawByteString): Boolean; overload;
 function DateTimeToExifString(const DateTime: TDateTime): string;
 function TryExifStringToDateTime(const S: string; var DateTime: TDateTime): Boolean; overload;
 
-function HasExifHeader(Stream: TStream;
-  MovePosOnSuccess: Boolean = False): Boolean; deprecated; //use Segment.HasExifHeader
-
 function ProportionallyResizeExtents(const Width, Height: Integer;
   const MaxWidth, MaxHeight: Integer): TSize;
 
@@ -1220,6 +1230,8 @@ function RemoveMetadataFromJPEG(JPEGImage: TJPEGImage;
 implementation
 
 uses
+  {$IFDEF POSIX}Posix.Unistd,{$ENDIF} //to quell braindead H2443 compiler hint (to make it worse, the XE3 impl involves upteen function calls - one more isn't going to make a significant difference!)
+  {$IFDEF BrokenFMXJpegExport}System.Diagnostics, System.IOUtils,{$ENDIF}
   SysConst, RTLConsts, Math, DateUtils, StrUtils, CCR.Exif.Consts;
 
 type
@@ -1290,8 +1302,10 @@ begin
   {$IFDEF VCL}
   ADest.StretchDraw(ARect, AGraphic);
   {$ELSE}
+  ADest.BeginScene;
   ADest.DrawBitmap(AGraphic, RectF(0, 0, AGraphic.Width, AGraphic.Height),
     RectF(ARect.Left, ARect.Top, ARect.Right, ARect.Bottom), 1);
+  ADest.EndScene;
   {$ENDIF}
 end;
 {$ELSE}
@@ -1528,16 +1542,38 @@ begin
 end;
 
 procedure TJPEGImage.SaveToStream(Stream: TStream);
+{$IF DEFINED(VER230)}
 var
-  Filter: TBitmapCodec;
+  Codec: TBitmapCodec;
 begin
-  Filter := DefaultBitmapCodecClass.Create;
+  Codec := DefaultBitmapCodecClass.Create;
   try
-    Filter.SaveToStream(Stream, TBitmap(Self), 'jpeg');
+    Codec.SaveToStream(Stream, TBitmap(Self), 'jpeg');
   finally
-    Filter.Free;
+    Codec.Free;
   end;
 end;
+{$ELSEIF DEFINED(BrokenFMXJpegExport)} //QC108621
+var
+  FileStream: TFileStream;
+  TempFN: string;
+begin
+  FileStream := nil;
+  TempFN := IncludeTrailingPathDelimiter(TPath.GetTempPath) + IntToStr(TStopwatch.GetTimeStamp) + '.jpg';
+  try
+    TBitmapCodecManager.SaveToFile(TempFN, Self);
+    FileStream := TFileStream.Create(TempFN, fmOpenRead or fmShareDenyWrite);
+    Stream.CopyFrom(FileStream, 0);
+  finally
+    FileStream.Free;
+    DeleteFile(TempFN);
+  end;
+end;
+{$ELSE}
+begin
+  TBitmapCodecManager.SaveToStream(Stream, Self, 'jpg');
+end;
+{$IFEND}
 {$ENDIF}
 
 { segment header checking }
@@ -2453,7 +2489,7 @@ begin
 end;
 
 procedure TExifSection.SetDateTimeValue(MainID, SubSecsID: TExifTagID;
-  const Value: TDateTimeTagValue);
+  const DateTime: TDateTimeTagValue);
 var
   SubSecsTag: TExifTag;
 begin
@@ -2461,22 +2497,22 @@ begin
     SubSecsTag := nil
   else
     if not Owner[esDetails].Find(SubSecsID, SubSecsTag) then
-      if not Value.MissingOrInvalid and Owner.AlwaysWritePreciseTimes then
+      if not DateTime.MissingOrInvalid and Owner.AlwaysWritePreciseTimes then
         SubSecsTag := Owner[esDetails].Add(SubSecsID, tdAscii, 4)
       else
         SubSecsTag := nil;
-  if Value.MissingOrInvalid then
+  if DateTime.MissingOrInvalid then
   begin
     Remove(MainID);
     FreeAndNil(SubSecsTag);
   end
   else
   begin
-    if Value <> LastSetDateTimeValue then
+    if DateTime <> LastSetDateTimeValue then
     begin
-      LastSetDateTimeValue := Value;
-      LastSetDateTimeMainStr := DateTimeToExifString(Value);
-      LastSetDateTimeSubSecStr := GetExifSubSecsString(Value);
+      LastSetDateTimeValue := DateTime.Value;
+      LastSetDateTimeMainStr := DateTimeToExifString(DateTime.Value);
+      LastSetDateTimeSubSecStr := GetExifSubSecsString(DateTime.Value);
     end;
     SetStringValue(MainID, LastSetDateTimeMainStr);
     if SubSecsTag <> nil then
@@ -4334,6 +4370,13 @@ begin
   Result := FSections[esDetails].GetStringValue(TagID)
 end;
 
+{$IFNDEF CANINLINE}
+function GetQuotient(const Fraction: TExifFraction): Extended;
+begin
+  Result := Fraction.Quotient;
+end;
+{$ENDIF}
+
 function TCustomExifData.GetFocalLengthIn35mmFilm: TWordTagValue;
 var
   CCDWidth, CCDHeight, ResUnit, FinalValue: Extended;
@@ -4352,14 +4395,23 @@ begin
     trCentimetre: ResUnit := 10.0;
   else Exit;
   end;
+  {$IFDEF CANINLINE}
   CCDWidth := FocalPlaneResolution.X.Quotient;
   CCDHeight := FocalPlaneResolution.Y.Quotient;
+  {$ELSE} //crappy D2006 compiler!
+  CCDWidth := GetQuotient(FocalPlaneResolution.X);
+  CCDHeight := GetQuotient(FocalPlaneResolution.Y);
+  {$ENDIF}
   if (CCDWidth = 0) or (CCDHeight = 0) then Exit;
   CCDWidth := ExifWidth * ResUnit / CCDWidth;
   CCDHeight := ExifHeight * ResUnit / CCDHeight;
   if Diag35mm = 0 then
     Diag35mm := Sqrt(Sqr(24) + Sqr(36));
+  {$IFDEF CANINLINE}
   FinalValue := FocalLengthFrac.Quotient * Diag35mm / Sqrt(Sqr(CCDWidth) + Sqr(CCDHeight));
+  {$ELSE} //crappy D2006 compiler!
+  FinalValue := GetQuotient(FocalLengthFrac) * Diag35mm / Sqrt(Sqr(CCDWidth) + Sqr(CCDHeight));
+  {$ENDIF}
   if InRange(FinalValue, 0, High(Word)) then
     Result := Trunc(FinalValue);
 end;
@@ -4466,8 +4518,8 @@ begin
   end;
   if DatePart = 0 then
   begin
-    DatePart := DateTime;
-    if DatePart = 0 then DatePart := DateTimeOriginal;
+    DatePart := DateTime.Value;
+    if DatePart = 0 then DatePart := DateTimeOriginal.Value;
     DatePart := DateOf(DatePart);
   end;
   if DatePart >= 0 then
@@ -4712,13 +4764,25 @@ begin
 end;
 
 function TCustomExifData.GetUserRating: TWindowsStarRating;
+const
+  MinRating = Ord(Low(TWindowsStarRating));
+  MaxRating = Ord(High(TWindowsStarRating));
+var
+  I: Integer;
 begin
   if FSections[esGeneral].TryGetWordValue(ttWindowsRating, 0, Result) then
     if not EnsureEnumsInRange then
       Exit
     else
       case Ord(Result) of
-        Ord(Low(TWindowsStarRating))..Ord(High(TWindowsStarRating)): Exit;
+        MinRating..MaxRating: Exit;
+      end
+  else
+    if TryStrToInt(XMPPacket[xsXMPBasic].Properties['Rating'].ReadValue, I) then
+      if not EnsureEnumsInRange or InRange(I, MinRating, MaxRating) then
+      begin
+        Result := TWindowsStarRating(I);
+        Exit;
       end;
   Result := urUndefined;
 end;
@@ -4738,9 +4802,11 @@ end;
 { TCustomExifData - tag setters }
 
 procedure TCustomExifData.SetAuthor(const Value: UnicodeString);
-var              //While it always writes both XMP properties, Windows Explorer always
-  Tag: TExifTag; //set its own unicode Exif tag and clears the 'standard' ASCII one;
-begin            //we'll be a bit more intelligent though.
+{ While Windows Explorer always writes both XMP properties, it always sets its own Unicode
+  Exif tag and clears the 'standard' ASCII one; we'll be a bit more intelligent though. }
+var
+  Tag: TExifTag;
+begin
   XMPPacket.UpdateSeqProperty(xsDublinCore, 'creator', Value);
   XMPPacket.UpdateProperty(xsTIFF, 'Artist', Value);
   if Length(Value) = 0 then
@@ -4750,16 +4816,22 @@ begin            //we'll be a bit more intelligent though.
     Exit;
   end;
   if not ContainsOnlyASCII(Value) then
-    FSections[esGeneral].Remove(ttArtist)
+    if EnforceASCII then
+      FSections[esGeneral].Remove(ttArtist)
+    else                                                   //This 'else' clause suggested by
+      FSections[esGeneral].SetStringValue(ttArtist, Value) //Thomas Mueller (*), and implemented in v1.5.2.
   else
     if FSections[esGeneral].Find(ttArtist, Tag) then
     begin
       Tag.UpdateData(tdAscii, Length(Value), TiffString(Value)[1]);
       if not FSections[esGeneral].Find(ttWindowsAuthor, Tag) then
         Exit;
-    end;
+    end
+    else                                                    //Ditto for this 'else' clause.
+      FSections[esGeneral].SetStringValue(ttArtist, Value);
   FSections[esGeneral].SetWindowsStringValue(ttWindowsAuthor, Value);
 end;
+//(*) http://delphihaven.wordpress.com/2012/01/16/xe2-update-for-my-image-metadata-readingwriting-library-ccr-exif/comment-page-1/#comment-4998
 
 procedure TCustomExifData.SetColorSpace(Value: TExifColorSpace);
 begin
@@ -5333,7 +5405,7 @@ begin
 end;
 
 {$IF CompilerVersion >= 22}
-procedure TExifDataPatcher.GetImage<T>(Dest: T);
+procedure TExifDataPatcher.GetImage<T>(const Dest: T);
 {$ELSE}
 procedure TExifDataPatcher.GetImage(const Dest: IStreamPersist);
 {$IFEND}
@@ -5344,7 +5416,7 @@ begin
 end;
 
 {$IF CompilerVersion >= 22}
-procedure TExifDataPatcher.GetThumbnail<T>(Dest: T);
+procedure TExifDataPatcher.GetThumbnail<T>(const Dest: T);
 {$ELSE}
 procedure TExifDataPatcher.GetThumbnail(Dest: TPersistent);
 {$IFEND}
@@ -5359,7 +5431,7 @@ begin
 {$IFDEF MSWINDOWS}                                        {$WARN SYMBOL_PLATFORM OFF}
   FileSetDate(FStream.Handle, DateTimeToFileDate(Value)); {$WARN SYMBOL_PLATFORM ON}
 {$ELSE}
-  FileSetDate(FStream.FileName, DateTimeToFileDate(Value)); //!!!does this actually work?
+  FileSetDate(FStream.FileName, DateTimeToFileDate(Value)); //does actually work on OS X at least
 {$ENDIF}
 end;
 
@@ -5367,7 +5439,7 @@ procedure TExifDataPatcher.OpenFile(const JPEGFileName: string);
 begin
   CloseFile;
   if JPEGFileName = '' then Exit;
-  FStream := TFileStream.Create(JPEGFileName, fmOpenReadWrite);
+  FStream := TFileStream.Create(JPEGFileName, fmOpenReadWrite or fmShareDenyWrite);
   if not HasJPEGHeader(FStream) then
   begin
     FreeAndNil(FStream);
@@ -5389,7 +5461,7 @@ end;
 procedure TExifDataPatcher.UpdateFile;
 var
   DataOffsetFix: Int64;
-  OldDate: Integer;
+  OldDate, WrittenLen: Integer;
   Section: TExifSection;
   SectionEndianness: TEndianness;
   Tag: TExifTag;
@@ -5429,12 +5501,13 @@ begin
     try
       XMPStream.WriteBuffer(TJPEGSegment.XMPHeader, SizeOf(TJPEGSegment.XMPHeader));
       XMPPacket.SaveToStream(XMPStream);
-      if XMPStream.Size <= FXMPPacketSizeInSource then
+      WrittenLen := XMPStream.Size;
+      if WrittenLen <= FXMPPacketSizeInSource then
       begin
         Assert(mkXMP in MetadataInSource);
         XMPStream.Size := FXMPPacketSizeInSource;
-        FillChar(PAnsiChar(XMPStream.Memory)[XMPStream.Size],
-          FXMPPacketSizeInSource - XMPStream.Size, $20);
+        FillChar(PAnsiChar(XMPStream.Memory)[WrittenLen], //!!!was a no-op until fixed v1.5.2
+          FXMPPacketSizeInSource - WrittenLen, $20);
       end
       else
       begin
@@ -5448,7 +5521,7 @@ begin
           FXMPSegmentPosition := Stream.Position;
           Include(FMetadataInSource, mkXMP);
         end;
-        FXMPPacketSizeInSource := XMPStream.Size;
+        FXMPPacketSizeInSource := WrittenLen;
         SetLength(BytesToRewrite, Stream.Size - Stream.Position);
         Stream.ReadBuffer(BytesToRewrite[0], Length(BytesToRewrite));
       end;
@@ -5564,36 +5637,6 @@ begin
   end;
 end;
 
-{$IF DECLARED(TJPEGData)}
-procedure TExifData.LoadFromJPEG(JPEGStream: TStream);
-begin
-  if HasJPEGHeader(JPEGStream) then
-    LoadFromGraphic(JPEGStream)
-  else
-    raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
-end;
-
-procedure TExifData.LoadFromJPEG(JPEGImage: TJPEGImage);
-begin
-  LoadFromGraphic(JPEGImage)
-end;
-
-procedure TExifData.LoadFromJPEG(const FileName: string);
-var
-  Stream: TFileStream;
-begin
-  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-  try
-    if HasJPEGHeader(Stream) then
-      inherited LoadFromGraphic(Stream)
-    else
-      raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
-  finally
-    Stream.Free;
-  end;
-end;
-{$IFEND}
-
 procedure TExifData.LoadFromStream(Stream: TStream);
 begin
   Clear(False);
@@ -5637,8 +5680,7 @@ begin
         Break;
       end;
     end;
-
-  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)
+  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)  
 end;
 
 procedure TExifData.DoSaveToPSD(InStream, OutStream: TStream);
@@ -5704,17 +5746,11 @@ begin
   DoSaveToGraphic(Graphic, GetGraphicSaveMethod);
 end;
 
-{$IF DECLARED(TJPEGData)}
-procedure TExifData.SaveToJPEG(const JPEGFileName: string; Dummy: Boolean = True);
+procedure TExifData.SaveToGraphic(const InMemoryGraphic: TCustomMemoryStream);
 begin
-  SaveToGraphic(JPEGFileName);
+  InMemoryGraphic.Position := 0;
+  DoSaveToGraphic(InMemoryGraphic, GetGraphicSaveMethod);
 end;
-
-procedure TExifData.SaveToJPEG(JPEGImage: TJPEGImage);
-begin
-  SaveToGraphic(JPEGImage);
-end;
-{$IFEND}
 
 type
   TSectionSavingInfo = record
@@ -6195,6 +6231,24 @@ begin
   ProbableEndianness := SmallEndian;
 end;
 
+
+{ TCasioMakerNote }
+
+class function TCasioMakerNote.FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean;
+begin
+  HeaderSize := 0;
+  Result := (SourceTag.Section.Owner.CameraMake = 'CASIO');
+end;
+
+{ TCasio2MakerNote }
+
+class function TCasio2MakerNote.FormatIsOK(SourceTag: TExifTag; out HeaderSize: Integer): Boolean;
+begin
+  HeaderSize := SizeOf(Header);
+  Result := (SourceTag.ElementCount > HeaderSize) and
+    CompareMem(SourceTag.Data, @Header, HeaderSize);
+end;
+
 { TKodakMakerNote }
 
 class function TKodakMakerNote.FormatIsOK(SourceTag: TExifTag;
@@ -6249,6 +6303,15 @@ begin
   TagSpecs[3] := TTagSpec.Create(tdWord); //width
   TagSpecs[4] := TTagSpec.Create(tdWord); //height
   TagSpecs[5] := TTagSpec.Create(tdWord); //year
+end;
+
+{ TKonicaMinoltaMakerNote }
+
+class function TKonicaMinoltaMakerNote.FormatIsOK(SourceTag: TExifTag;
+  out HeaderSize: Integer): Boolean;
+begin
+  HeaderSize := 0;
+  Result := (SourceTag.Section.Owner.CameraMake = 'KONICA MINOLTA');
 end;
 
 { TPanasonicMakerNote }
@@ -6457,6 +6520,8 @@ end;
 
 initialization
   TCustomExifData.FMakerNoteClasses := TList.Create;
+  TCustomExifData.FMakerNoteClasses.Add(TCasioMakerNote);
+  TCustomExifData.FMakerNoteClasses.Add(TKonicaMinoltaMakerNote);
   TCustomExifData.FMakerNoteClasses.Add(TNikonType2MakerNote);
   TCustomExifData.FMakerNoteClasses.Add(TCanonMakerNote);
   TCustomExifData.FMakerNoteClasses.Add(TPentaxMakerNote);
@@ -6465,6 +6530,7 @@ initialization
   TCustomExifData.FMakerNoteClasses.Add(TNikonType1MakerNote);
   TCustomExifData.FMakerNoteClasses.Add(TNikonType3MakerNote);
   TCustomExifData.FMakerNoteClasses.Add(TPanasonicMakerNote);
+  TCustomExifData.FMakerNoteClasses.Add(TCasio2MakerNote);
 finalization
   TCustomExifData.FMakerNoteClasses.Free;
 end.

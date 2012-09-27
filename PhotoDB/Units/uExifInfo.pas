@@ -192,10 +192,14 @@ begin
       XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
       XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
       XInsert(L('F number'), FractionToString(ExifData.FNumber));
+
     end;
 
     if ExifData.XMPPacket.Lens <> '' then
-      XInsert(L('Lens'), ExifData.XMPPacket.Lens);
+      XInsert(L('Lens'), ExifData.XMPPacket.Lens)
+    else if not ExifData.Empty and (ExifData.LensModel <> '') then
+      XInsert(L('Lens'), ExifData.LensModel);
+
 
     if not ExifData.Empty then
     begin

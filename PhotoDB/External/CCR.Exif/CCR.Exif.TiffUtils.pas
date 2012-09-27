@@ -1,7 +1,7 @@
 {**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.1 beta                                                                   }
+{ Version 1.5.2 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -62,9 +62,6 @@ type
 
   TTiffTagInfoDynArray = array of TTiffTagInfo;
 
-  TTiffDirectoryLoadError = TMetadataLoadError deprecated;   //symbol only added in first trunk version of 1.5.0 beta anyhow
-  TTiffDirectoryLoadErrors = TMetadataLoadErrors deprecated; //ditto
-
   TiffString = type AnsiString;
 
   TTiffLongWordFraction = packed record
@@ -72,8 +69,8 @@ type
     constructor Create(const AQuotient: Currency); overload;
     constructor CreateFromString(const AString: string);
     function AsString: string;
-    function MissingOrInvalid: Boolean; {$IFDEF CanInline}inline;{$ENDIF}
-    function Quotient: Extended; {$IFDEF CanInline}inline;{$ENDIF}
+    function MissingOrInvalid: Boolean;
+    function Quotient: Extended;
     case Integer of
       0: (Numerator, Denominator: LongWord);
       1: (PackedValue: Int64);
@@ -84,8 +81,8 @@ type
     constructor Create(const AQuotient: Currency); overload;
     constructor CreateFromString(const AString: string);
     function AsString: string;
-    function MissingOrInvalid: Boolean; {$IFDEF CanInline}inline;{$ENDIF}
-    function Quotient: Extended; {$IFDEF CanInline}inline;{$ENDIF}
+    function MissingOrInvalid: Boolean;
+    function Quotient: Extended;
     case Integer of
       0: (Numerator, Denominator: LongInt);
       1: (PackedValue: Int64);

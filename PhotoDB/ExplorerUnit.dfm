@@ -65,7 +65,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 605
-      ActivePage = TsDetailedSearch
+      ActivePage = TsPreview
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -2520,7 +2520,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.619589537040000000
+      Date = 41177.936714745370000000
       TabOrder = 0
     end
     object BtnSelectDatePopup: TButton

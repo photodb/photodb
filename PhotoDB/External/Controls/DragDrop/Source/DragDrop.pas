@@ -2486,7 +2486,7 @@ const
     ('CF_TEXT', 'CF_BITMAP', 'CF_METAFILEPICT', 'CF_SYLK', 'CF_DIF', 'CF_TIFF',
     'CF_OEMTEXT', 'CF_DIB', 'CF_PALETTE', 'CF_PENDATA', 'CF_RIFF', 'CF_WAVE',
     'CF_UNICODETEXT', 'CF_ENHMETAFILE', 'CF_HDROP', 'CF_LOCALE'
-    {$IFDEF VER230},'CF_DIBV5' {$ENDIF}
+    {$IFDEF VER23_PLUS},'CF_DIBV5' {$ENDIF}
     );
 
 
@@ -2496,7 +2496,7 @@ const
 begin
   case Value of
     CF_TEXT..CF_MAX-1: Result := sClipNames[Value];
-    {$IFNDEF VER230}
+    {$IFNDEF VER23_PLUS}
     17: Result := 'CF_DIBV5';
     {$ENDIF}
     18: Result := 'CF_MAX_XP';

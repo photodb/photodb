@@ -2,7 +2,7 @@
 {                                                       }
 {            Delphi Visual Component Library            }
 {                                                       }
-{ Copyright(c) 2010-2011 Embarcadero Technologies, Inc. }
+{ Copyright(c) 2010-2012 Embarcadero Technologies, Inc. }
 {                                                       }
 {*******************************************************}
 
@@ -85,7 +85,9 @@ type
     ktcToolBarGradientBase,
     ktcToolBarGradientEnd,
     ktcGenericBackground,
-    ktcHintGradientEnd
+    ktcHintGradientEnd,
+    ktcFocusEffect,
+    ktsAlternatingRowBackground
   );
 
   TSeStyleColors = class(TPersistent)
@@ -209,7 +211,13 @@ type
     ktfTreeItemTextHot,
     ktfTreeItemTextSelected,
     ktfTreeItemTextFocused,
-    ktfTreeItemTextDisabled
+    ktfTreeItemTextDisabled,
+    // FMBox object fonts (for FireMonkey controls)
+    ktFMBoxTextNormal,
+    ktFMBoxTextPressed,
+    ktFMBoxTextHot,
+    ktFMBoxTextFocused,
+    ktFMBoxTextDisabled
   );
 
   TSeStyleFonts = class(TPersistent)
@@ -250,7 +258,19 @@ type
     skTranparent,
     skRoundMask,
     skNoMask,
-    skMaskOnly
+    skMaskOnly,
+    skFMXButton,
+    skFMXSpeedButton,
+    skFMXPanel,
+    skFMXEdit,
+    skFMXLabel,
+    skFMXProgressBar,
+    skFMXTrackBar,
+    skFMXTabImage,
+    skFMXListBox,
+    skFMXActiveLabel,
+    skFMXGlyphButton,
+    skFMXSwitch
   );
 
   TSeState = (
@@ -279,13 +299,14 @@ type
 
   TSeRollKind = (rkLeft, rkTop, rkRight, rkBottom);
 
-  TSeFilterSign = array [0..4] of ansichar;
+  TSeFilterSign = array [0..12] of ansichar;
 
 { TSeStyleFilter }
 
   TSeStyleFilter = class(TPersistent)
   private
     FStyleSource: TSeStyleSource;
+    FSign: TseFilterSign;
     procedure SetStyleSource(const Value: TSeStyleSource);
   protected
     procedure ReadStyleSource(Stream: TStream); virtual;
@@ -312,6 +333,9 @@ type
     FAuthor: string;
     FAuthorEMail: string;
     FDisplayNames: TStrings;
+    FMobilePlatform: Boolean;
+    FRetinaDisplay: Boolean;
+    FDescription: string;
     { Objects and images }
     FObjects: TList;
     FBitmaps: TSeBitmapList;
@@ -367,6 +391,9 @@ type
     property Author: string read FAuthor write FAuthor;
     property AuthorEMail: string read FAuthorEMail write FAuthorEMail;
     property AuthorURL: string read FAuthorURL write FAuthorURL;
+    property MobilePlatform: Boolean read FMobilePlatform write FMobilePlatform;
+    property RetinaDisplay: Boolean read FRetinaDisplay write FRetinaDisplay;
+    property Description: String read FDescription write FDescription;
   end;
 
 { TSeStyleObject class }
@@ -430,8 +457,17 @@ type
     FTextMarginRightStretch: boolean;
     FLoaded: boolean;
     FTextShiftSysIton: boolean;
+    FFixPosition: boolean;
+    FCornerRadius: integer;
+    FFocusEffect: Boolean;
+    FParams: String;
+    FLocked: Boolean;
+
     procedure ReadData(Stream: TStream);
     procedure WriteData(Stream: TStream);
+
+    procedure ReadLocked(Reader: TReader);
+    procedure WriteLocked(Writer: TWriter);
 
     function GetCount: integer;
     function GetObject(index: integer): TSeStyleObject;
@@ -450,6 +486,7 @@ type
     procedure SetMarginRight(const Value: integer);
     procedure SetMarginTop(const Value: integer);
     procedure SetBiDiMode(const Value: TBiDiMode);
+    procedure SetCornerRadius(const Value: integer);
   protected
     FColor: TColor;
     FFont: TFont;
@@ -511,6 +548,7 @@ type
     property SysButtons: TSeWindowButtons read FSysButtons write SetSysButtons;
     property RighTSext: string read FRighTSext write FRighTSext;
     property Visible: boolean read FVisible write FVisible;
+    property Locked: Boolean read FLocked write FLocked;
   published
     property Align: TSeAlign read FAlign write FAlign;
     property Color: TColor read FColor write FColor;
@@ -544,6 +582,14 @@ type
     property TextMarginRightStretch: boolean read FTextMarginRightStretch write FTextMarginRightStretch;
     { Specifies the top text margin }
     property TextMarginTop: integer read FTextMarginTop write FTextMarginTop;
+    { Fix position in parent object}
+    property FixPosition: boolean read FFixPosition write FFixPosition;
+    { Corner radius for FireMonkey controls}
+    property CornerRadius: integer read FCornerRadius write SetCornerRadius;
+    { Enable / disable focus glow effect for FireMonkey controls}
+    property FocusEffect: Boolean read FFocusEffect write FFocusEffect;
+    { For custom parameters}
+    property Params: String read FParams write FParams;
   end;
 
   TSeStyleObjectClass = class of TSeStyleObject;
@@ -843,7 +889,8 @@ type
 { Registration }
 
 const
-  StyleFileSign: array [0..12] of ansichar = 'VCL_STYLE 1.0';
+  StyleFileSign_1_0: array [0..12] of ansichar = 'VCL_STYLE 1.0';
+  StyleFileSign: array [0..12] of ansichar = 'VCL_STYLE 2.0';
 
 var
   RegObjects: TList; { registered class }
@@ -2221,7 +2268,9 @@ const
     'ToolBarGradientBase',
     'ToolBarGradientEnd',
     'GenericBackground',
-    'HintGradientEnd'
+    'HintGradientEnd',
+    'FocusEffect',
+    'AlternatingRowBackground'
   );
 
   StyleFontNames: array [TSeStyleFont] of string = (
@@ -2313,8 +2362,13 @@ const
     'TreeItemTextHot',
     'TreeItemTextSelected',
     'TreeItemTextFocused',
-    'TreeItemTextDisabled'
-  );
+    'TreeItemTextDisabled',
+    'FMBoxTextNormal',
+    'FMBoxTextPressed',
+    'FMBoxTextHot',
+    'FMBoxTextFocused',
+    'FMBoxTextDisabled'
+    );
 
 
 procedure SetFont(AFont: TFont; const AFontName: string; AFontSize: Integer;
@@ -2479,6 +2533,9 @@ type
     function WindowGetButtonRect(const ASubclass: TSeWindowSubclass;
       AWindow: TSeWindowInfo; AButton: TSeWindowButtonClass;
       const AObject: TSeStyleElementObject = ktoDefault): TRect; virtual;
+    function WindowGetFixPosition(const ASubclass: TSeWindowSubclass;
+       AButton: TSeWindowButtonClass;
+      const AObject: TSeStyleElementObject = ktoDefault): Boolean; virtual;
     procedure WindowDraw(const ASubclass: TSeWindowSubclass; Canvas: TCanvas;
       AWindow: TSeWindowInfo; const AObject: TSeStyleElementObject = ktoDefault); virtual;
     procedure WindowDrawClient(const ASubclass: TSeWindowSubclass; Canvas: TCanvas;
@@ -2926,6 +2983,9 @@ type
     function WindowGetButtonRect(const ASubclass: TSeWindowSubclass;
       AWindow: TSeWindowInfo; AButton: TSeWindowButtonClass;
       const AObject: TSeStyleElementObject = ktoDefault): TRect; override;
+    function WindowGetFixPosition(const ASubclass: TSeWindowSubclass;
+      AButton: TSeWindowButtonClass;
+      const AObject: TSeStyleElementObject = ktoDefault): Boolean; override;
     procedure WindowDrawButton(const ASubclass: TSeWindowSubclass; Canvas: TCanvas;
       AButton: TSeWindowButtonInfo;
       const AObject: TSeStyleElementObject = ktoDefault); override;
@@ -3261,6 +3321,9 @@ begin
   FAuthor := '';
   FAuthorEMail := '';
   FAuthorURL := '';
+  FMobilePlatform := False;
+  FRetinaDisplay := False;
+  FDescription := '';
 
   FObjects := TList.Create;
   FBitmaps := TSeBitmapList.Create;
@@ -3327,6 +3390,10 @@ begin
     FAuthor := TSeStyleSource(Source).FAuthor;
     FAuthorEMail := TSeStyleSource(Source).FAuthorEMail;
     FAuthorURL := TSeStyleSource(Source).FAuthorURL;
+    FMobilePlatform := TSeStyleSource(Source).FMobilePlatform;
+    FRetinaDisplay := TSeStyleSource(Source).FRetinaDisplay;
+    FDescription := TSeStyleSource(Source).FDescription;
+
     FDisplayNames.Assign(TSeStyleSource(Source).FDisplayNames);
     { Copy Images }
     FBitmaps.Capacity := TSeStyleSource(Source).Bitmaps.Count;
@@ -3771,11 +3838,10 @@ end;
 procedure TSeStyleFilter.ReadStyle(Stream: TStream);
 var
   DStream: TDecompressionStream;
-  S: array [0..12] of AnsiChar;
 begin
   { Read Filter Sign }
-  Stream.Read(S, SizeOf(S));
-  if S = StyleFileSign then
+  Stream.Read(FSign, SizeOf(FSign));
+  if (FSign = StyleFileSign) or (FSign = StyleFileSign_1_0) then
   begin
     DStream := TDecompressionStream.Create(Stream);
     try
@@ -3820,6 +3886,18 @@ begin
     FAuthor := ReadString(Stream);
     FAuthorEMail := ReadString(Stream);
     FAuthorURL := ReadString(Stream);
+    if FSign = StyleFileSign then
+    begin
+      Stream.ReadBuffer(FMobilePlatform, SizeOf(FMobilePlatform));
+      Stream.ReadBuffer(FRetinaDisplay, SizeOf(FRetinaDisplay));
+      FDescription := ReadString(Stream);
+    end
+    else
+    begin
+      FMobilePlatform := False;
+      FRetinaDisplay := False;
+      FDescription := '';
+    end;
     {load display names}
     Stream.Read(MemSize, SizeOf(MemSize));
     if MemSize <> 0 then
@@ -3886,6 +3964,9 @@ begin
     WriteString(Stream, FAuthor);
     WriteString(Stream, FAuthorEMail);
     WriteString(Stream, FAuthorURL);
+    Stream.WriteBuffer(FMobilePlatform, SizeOf(FMobilePlatform));
+    Stream.WriteBuffer(FRetinaDisplay, SizeOf(FRetinaDisplay));
+    WriteString(Stream, FDescription);
     {save display names}
     MemStream := TMemoryStream.Create;
     FDisplayNames.SaveToStream(MemStream);
@@ -4124,6 +4205,7 @@ begin
   inherited Create(AOwner);
   FEnabled := True;
   FVisible := True;
+  FFixPosition := False;
   FColor := clWhite;
   FFont := TFont.Create;
   with FFont do
@@ -4133,6 +4215,10 @@ begin
   end;
   FTextAlign := taLeft;
   FMasked := True;
+  FCornerRadius := 0;
+  FFocusEffect := False;
+  FParams := '';
+  FLocked := True;
 end;
 
 destructor TSeStyleObject.Destroy;
@@ -4185,6 +4271,10 @@ begin
     FMarginTop := TSeStyleObject(Source).FMarginTop;
     FMarginRight := TSeStyleObject(Source).FMarginRight;
     FMarginBottom := TSeStyleObject(Source).FMarginBottom;
+
+    FFixPosition := TSeStyleObject(Source).FFixPosition;
+    FParams := TSeStyleObject(Source).FParams;
+    FLocked := TSeStyleObject(Source).FLocked;
 
     { Copy Objects }
     for i := 0 to TSeStyleObject(Source).Count - 1 do
@@ -4859,6 +4949,17 @@ procedure TSeStyleObject.DefineProperties(Filer: TFiler);
 begin
   inherited;
   Filer.DefineBinaryProperty('Objects', ReadData, WriteData, True);
+  Filer.DefineProperty('Locked', ReadLocked, WriteLocked, True);
+end;
+
+procedure TSeStyleObject.ReadLocked(Reader: TReader);
+begin
+  FLocked := Reader.ReadBoolean;
+end;
+
+procedure TSeStyleObject.WriteLocked(Writer: TWriter);
+begin
+  Writer.WriteBoolean(FLocked);
 end;
 
 const NewObjectFormatFlag = $F0000;
@@ -5065,6 +5166,11 @@ end;
 procedure TSeStyleObject.SetMarginTop(const Value: integer);
 begin
   FMarginTop := Value;
+end;
+
+procedure TSeStyleObject.SetCornerRadius(const Value: integer);
+begin
+  if Value >= 0 then Self.FCornerRadius := Value;
 end;
 
 { TSeActiveObject =========================================================}
@@ -7194,9 +7300,14 @@ end;
 { TSeColorList ================================================================}
 
 constructor TSeStyleColors.Create;
+var
+  i: TSeStyleColor;
 begin
   inherited Create;
   FStyle := AStyle;
+  // initialize colors
+  for i := Low(FColorList) to High(FColorList) do
+    FColorList[i] := clBlack;
 end;
 
 procedure TSeStyleColors.Assign(Source: TPersistent);
@@ -7393,6 +7504,7 @@ begin
   begin
     FFontList[i] := TFont.Create;
     FFontList[i].Name := 'Tahoma';
+    FFontList[i].Color := clBlack;
   end;
 end;
 
@@ -7993,6 +8105,14 @@ begin
       end;
   end;
 end;
+
+function TseCustomStyle.WindowGetFixPosition(const ASubclass: TSeWindowSubclass;
+   AButton: TSeWindowButtonClass;
+   const AObject: TSeStyleElementObject = ktoDefault): Boolean;
+begin
+  Result := False;
+end;
+
 
 procedure TseCustomStyle.WindowDraw(const ASubclass: TSeWindowSubclass; Canvas: TCanvas;
   AWindow: TSeWindowInfo; const AObject: TSeStyleElementObject = ktoDefault);
@@ -9813,7 +9933,7 @@ begin
   Result := False;
 
   Stream.Read(Sign, SizeOf(Sign));
-  if Sign = StyleFileSign then Result := True;
+  if (Sign = StyleFileSign) or (Sign = StyleFileSign_1_0) then Result := True;
 end;
 
 function TSeStyle.LoadFromStream(Stream: TStream): boolean;
@@ -10070,6 +10190,47 @@ begin
   end
   else
     Result := 0;
+end;
+
+function TSeStyle.WindowGetFixPosition(const ASubclass: TSeWindowSubclass;
+  AButton: TSeWindowButtonClass;
+    const AObject: TSeStyleElementObject = ktoDefault): Boolean;
+var
+  StyleObject: TSeStyleObject;
+begin
+  Result := False;
+  StyleObject := nil;
+  if AObject <> ktoDefault then
+    StyleObject := FStyleSource.GetObjectByName(AObject);
+
+  if StyleObject = nil then
+    case ASubclass of
+      kwscStandard: StyleObject := FObjects[soFormSysButton];
+      kwscDialog: StyleObject := FObjects[soFormSysButton];
+      kwscBorder: StyleObject := FObjects[soFormSysButton];
+      kwscNoBorder: StyleObject := FObjects[soFormSysButton];
+      kwscToolWindow: StyleObject := FObjects[soSmallSysButton];
+    else
+      StyleObject := nil;
+    end;
+
+  if StyleObject = nil then Exit;
+
+  case AButton of
+    kwbClose: StyleObject := StyleObject.FindObjectByAction(sbaClose);
+    kwbHelp: StyleObject := StyleObject.FindObjectByAction(sbaHelp);
+    kwbMin: StyleObject := StyleObject.FindObjectByAction(sbaMinimize);
+    kwbMax: StyleObject := StyleObject.FindObjectByAction(sbaMaximize);
+    kwbMinRestore: StyleObject := StyleObject.FindObjectByAction(sbaRestore);
+    kwbMaxRestore: StyleObject := StyleObject.FindObjectByAction(sbaRestore);
+    kwbRoll: StyleObject := StyleObject.FindObjectByAction(sbaRollUp);
+    kwbRollRestore: StyleObject := StyleObject.FindObjectByAction(sbaRollDown);
+    kwbTray: StyleObject := StyleObject.FindObjectByAction(sbaTray);
+    kwbSysMenu: StyleObject := StyleObject.FindObjectByAction(sbaSysMenu);
+  end;
+
+  if StyleObject <> nil then
+    Result := StyleObject.FixPosition;
 end;
 
 function TSeStyle.WindowGetButtonRect(const ASubclass: TSeWindowSubclass;
@@ -11020,36 +11181,6 @@ begin
     StyleObject.BoundsRect := R;
     StyleObject.SafeDraw(Canvas, NullRect);
     StyleObject.BoundsRect := SaveR;
-
-    { Draw Glyph }
-    if ASubclass = kbscSpinUp then
-    begin
-      R := Rect;
-      if DrawState = kbdsPressed then
-        OffsetRect(R, 1, 1);
-      DrawFrameControlGlyph(Canvas, R, DFC_SCROLL, DFCS_SCROLLUP, SysColors[clBtnText]);
-    end;
-    if ASubclass = kbscSpinDown then
-    begin
-      R := Rect;
-      if DrawState = kbdsPressed then
-        OffsetRect(R, 1, 1);
-      DrawFrameControlGlyph(Canvas, R, DFC_SCROLL, DFCS_SCROLLDOWN, SysColors[clBtnText]);
-    end;
-    if ASubclass = kbscSpinLeft then
-    begin
-      R := Rect;
-      if DrawState = kbdsPressed then
-        OffsetRect(R, 1, 1);
-      DrawFrameControlGlyph(Canvas, R, DFC_SCROLL, DFCS_SCROLLLEFT, SysColors[clBtnText]);
-    end;
-    if ASubclass = kbscSpinRight then
-    begin
-      R := Rect;
-      if DrawState = kbdsPressed then
-        OffsetRect(R, 1, 1);
-      DrawFrameControlGlyph(Canvas, R, DFC_SCROLL, DFCS_SCROLLRIGHT, SysColors[clBtnText]);
-    end;
   end;
 end;
 

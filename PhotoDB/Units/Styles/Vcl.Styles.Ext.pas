@@ -204,8 +204,8 @@ uses
  System.Sysutils;
 
 {$IFDEF USE_VCL_STYLESAPI}
-{$I 'C:\Program Files (x86)\Embarcadero\RAD Studio\9.0\source\vcl\StyleUtils.inc'}
-{$I 'C:\Program Files (x86)\Embarcadero\RAD Studio\9.0\source\vcl\StyleAPI.inc'}
+{$I 'C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\source\vcl\StyleUtils.inc'}
+{$I 'C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\source\vcl\StyleAPI.inc'}
 {$ENDIF}
 
 
@@ -838,12 +838,12 @@ end;
 
 initialization
 {$IFDEF USE_VCL_STYLESAPI}
- InitStyleAPI;
+// InitStyleAPI;
 {$ENDIF}
 
 finalization
 {$IFDEF USE_VCL_STYLESAPI}
- FinalizeStyleAPI;
+// FinalizeStyleAPI;
 {$ENDIF}
 
 

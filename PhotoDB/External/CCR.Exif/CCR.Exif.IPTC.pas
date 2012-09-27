@@ -1,7 +1,7 @@
 {**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.1 beta                                                                   }
+{ Version 1.5.2 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -35,13 +35,32 @@ unit CCR.Exif.IPTC;
 interface
 
 uses
-  Types, SysUtils, Classes, {$IFDEF VCL}Jpeg,{$ENDIF}
+  Types, SysUtils, Classes, {$IFDEF HasGenerics}Generics.Collections,{$ENDIF}{$IFDEF VCL}Jpeg,{$ENDIF}
   CCR.Exif.BaseUtils, CCR.Exif.TagIDs, CCR.Exif.TiffUtils;
 
 type
   EInvalidIPTCData = class(ECCRExifException);
 
-  TStringDynArray = Types.TStringDynArray;
+{$IFDEF HasGenerics}
+  TIPTCRepeatablePair = TPair<string, string>;
+
+  TIPTCRepeatablePairs = TArray<TIPTCRepeatablePair>;
+{$ELSE}
+  TIPTCRepeatablePair = record
+    Key, Value: string;
+  end;
+
+  TIPTCRepeatablePairs = array of TIPTCRepeatablePair;
+{$ENDIF}
+
+  TIPTCStringArray = type Types.TStringDynArray; //using 'type' means the helper defined below will only apply to it
+
+  {$IFDEF XE3+}
+  TIPTCStringArrayHelper = record helper for TIPTCStringArray
+    class function CreateFromStrings(const Strings: TStrings): TIPTCStringArray; static;
+    function Join(const Separator: string): string;
+  end;
+  {$ENDIF}
 
   TIPTCData = class;
   TIPTCSection = class;
@@ -143,12 +162,14 @@ type
     {$ENDIF}
     function GetPriorityValue(TagID: TIPTCTagID): TIPTCPriority;
     procedure SetPriorityValue(TagID: TIPTCTagID; Value: TIPTCPriority);
-    function GetRepeatableValue(TagID: TIPTCTagID): TStringDynArray; overload;
+    function GetRepeatableValue(TagID: TIPTCTagID): TIPTCStringArray; overload;
     procedure GetRepeatableValue(TagID: TIPTCTagID; Dest: TStrings; ClearDestFirst: Boolean = True); overload;
     procedure SetRepeatableValue(TagID: TIPTCTagID; const Value: array of string); overload;
     procedure SetRepeatableValue(TagID: TIPTCTagID; Value: TStrings); overload;
     procedure GetRepeatablePairs(KeyID, ValueID: TIPTCTagID; Dest: TStrings; ClearDestFirst: Boolean = True); overload;
     procedure SetRepeatablePairs(KeyID, ValueID: TIPTCTagID; Pairs: TStrings); overload;
+    function GetRepeatablePairs(KeyID, ValueID: TIPTCTagID): TIPTCRepeatablePairs; overload;
+    procedure SetRepeatablePairs(KeyID, ValueID: TIPTCTagID; const Pairs: TIPTCRepeatablePairs); overload;
     function GetStringValue(TagID: TIPTCTagID): string;
     procedure SetStringValue(TagID: TIPTCTagID; const Value: string);
     function GetWordValue(TagID: TIPTCTagID): TWordTagValue;
@@ -196,8 +217,10 @@ type
     procedure SetApplicationWord(TagID: Integer; const Value: TWordTagValue);
     function GetApplicationString(TagID: Integer): string;
     procedure SetApplicationString(TagID: Integer; const Value: string);
-    function GetApplicationStrings(TagID: Integer): TStringDynArray;
-    procedure SetApplicationStrings(TagID: Integer; const Value: TStringDynArray);
+    function GetApplicationStrings(TagID: Integer): TIPTCStringArray;
+    procedure SetApplicationStrings(TagID: Integer; const Value: TIPTCStringArray);
+    function GetApplicationPairs(PackedTagIDs: Integer): TIPTCRepeatablePairs;
+    procedure SetApplicationPairs(PackedTagIDs: Integer; const NewPairs: TIPTCRepeatablePairs);
     function GetUrgency: TIPTCPriority;
     procedure SetUrgency(Value: TIPTCPriority);
     function GetEnvelopePriority: TIPTCPriority;
@@ -258,15 +281,6 @@ type
     property ObjectDataSection: TIPTCSection index 8 read GetSection;
     property SecondDescriptorSection: TIPTCSection index 9 read GetSection;
     property Sections[ID: TIPTCSectionID]: TIPTCSection read GetSectionByID; default;
-  {$IF Declared(TJPEGImage)}
-  public //deprecated methods - to be removed in a future release
-    procedure LoadFromJPEG(JPEGStream: TStream); overload; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
-    procedure LoadFromJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
-    procedure LoadFromJPEG(const FileName: string); overload; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
-    procedure SaveToJPEG(const JPEGFileName: string;
-      Dummy: Boolean = True); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
-    procedure SaveToJPEG(JPEGImage: TJPEGImage); overload; inline; deprecated {$IFDEF DepCom}'Use SaveToGraphic'{$ENDIF};
-  {$IFEND}
   published
     property AlwaysAssumeUTF8Encoding: Boolean read FAlwaysAssumeUTF8Encoding write FAlwaysAssumeUTF8Encoding default False;
     property Empty: Boolean read GetEmpty;
@@ -293,17 +307,18 @@ type
     property ObjectName: string index itObjectName read GetApplicationString write SetApplicationString stored False;
     property EditStatus: string index itEditStatus read GetApplicationString write SetApplicationString stored False;
     property Urgency: TIPTCPriority read GetUrgency write SetUrgency stored False;
-    property SubjectRefs: TStringDynArray index itSubjectRef read GetApplicationStrings write SetApplicationStrings stored False;
+    property SubjectRefs: TIPTCStringArray index itSubjectRef read GetApplicationStrings write SetApplicationStrings stored False;
     property CategoryCode: string index itCategory read GetApplicationString write SetApplicationString stored False; //should be a 3 character code
-    property SupplementaryCategories: TStringDynArray index itSupplementaryCategory read GetApplicationStrings write SetApplicationStrings stored False;
+    property SupplementaryCategories: TIPTCStringArray index itSupplementaryCategory read GetApplicationStrings write SetApplicationStrings stored False;
     property FixtureIdentifier: string index itFixtureIdentifier read GetApplicationString write SetApplicationString stored False;
-    property Keywords: TStringDynArray index itKeyword read GetApplicationStrings write SetApplicationStrings stored False;
+    property Keywords: TIPTCStringArray index itKeyword read GetApplicationStrings write SetApplicationStrings stored False;
     procedure GetKeywords(Dest: TStrings); overload;
     procedure SetKeywords(NewWords: TStrings); overload;
-    property ContentLocationCodes: TStringDynArray index itContentLocationCode read GetApplicationStrings write SetApplicationStrings stored False;
-    property ContentLocationNames: TStringDynArray index itContentLocationName read GetApplicationStrings write SetApplicationStrings stored False;
-    procedure GetContentLocationValues(Strings: TStrings); //Code=Name
+    property ContentLocationCodes: TIPTCStringArray index itContentLocationCode read GetApplicationStrings write SetApplicationStrings stored False;
+    property ContentLocationNames: TIPTCStringArray index itContentLocationName read GetApplicationStrings write SetApplicationStrings stored False;
+    procedure GetContentLocationValues(Strings: TStrings; ClearDestFirst: Boolean = True); //Code=Name
     procedure SetContentLocationValues(Strings: TStrings);
+    property ContentLocations: TIPTCRepeatablePairs index itContentLocationCode or itContentLocationName shl 8 read GetApplicationPairs write SetApplicationPairs;
     property ReleaseDate: TDateTimeTagValue index isApplication or itReleaseDate shl 8 read GetDate write SetDate stored False;
     property ExpirationDate: TDateTimeTagValue index isApplication or itExpirationDate shl 8 read GetDate write SetDate stored False;
     property SpecialInstructions: string index itSpecialInstructions read GetApplicationString write SetApplicationString stored False;
@@ -314,10 +329,13 @@ type
     property OriginatingProgram: string index itOriginatingProgram read GetApplicationString write SetApplicationString stored False;
     property ProgramVersion: string index itProgramVersion read GetApplicationString write SetApplicationString stored False;
     property ObjectCycleCode: string index itObjectCycle read GetApplicationString write SetApplicationString stored False; //!!!enum
-    property Bylines: TStringDynArray index itByline read GetApplicationStrings write SetApplicationStrings stored False;
-    property BylineTitles: TStringDynArray index itBylineTitle read GetApplicationStrings write SetApplicationStrings stored False;
-    procedure GetBylineValues(Strings: TStrings); //Name=Title
-    procedure SetBylineValues(Strings: TStrings);
+    property Bylines: TIPTCStringArray index itByline read GetApplicationStrings write SetApplicationStrings stored False;
+    property BylineTitles: TIPTCStringArray index itBylineTitle read GetApplicationStrings write SetApplicationStrings stored False;
+    procedure GetBylineValues(Strings: TStrings); inline; deprecated {$IFDEF DepCom}'Use GetBylineDetails instead'{$ENDIF};
+    procedure SetBylineValues(Strings: TStrings); inline; deprecated {$IFDEF DepCom}'Use SetBylineDetails instead'{$ENDIF};
+    procedure GetBylineDetails(Strings: TStrings; ClearDestFirst: Boolean = True); //Name=Title
+    procedure SetBylineDetails(Strings: TStrings);
+    property BylineDetails: TIPTCRepeatablePairs index itByline or itBylineTitle shl 8 read GetApplicationPairs write SetApplicationPairs;
     property City: string index itCity read GetApplicationString write SetApplicationString stored False; //!!!enum
     property SubLocation: string index itSubLocation read GetApplicationString write SetApplicationString stored False; //!!!enum
     property ProvinceOrState: string index itProvinceOrState read GetApplicationString write SetApplicationString stored False; //!!!enum
@@ -328,9 +346,9 @@ type
     property Credit: string index itCredit read GetApplicationString write SetApplicationString stored False;
     property Source: string index itSource read GetApplicationString write SetApplicationString stored False;
     property CopyrightNotice: string index itCopyrightNotice read GetApplicationString write SetApplicationString stored False;
-    property Contacts: TStringDynArray index itContact read GetApplicationStrings write SetApplicationStrings stored False;
+    property Contacts: TIPTCStringArray index itContact read GetApplicationStrings write SetApplicationStrings stored False;
     property CaptionOrAbstract: string index itCaptionOrAbstract read GetApplicationString write SetApplicationString stored False;
-    property WritersOrEditors: TStringDynArray index itWriterOrEditor read GetApplicationStrings write SetApplicationStrings stored False;
+    property WritersOrEditors: TIPTCStringArray index itWriterOrEditor read GetApplicationStrings write SetApplicationStrings stored False;
     property ImageTypeCode: string index itImageType read GetApplicationString write SetApplicationString stored False;
     property ImageOrientation: TIPTCImageOrientation read GetImageOrientation write SetImageOrientation stored False;
     property LanguageIdentifier: string index itLanguageIdentifier read GetApplicationString write SetApplicationString stored False;
@@ -374,6 +392,37 @@ begin
         end;
     end;
 end;
+
+{ TIPTCStringArrayHelper }
+
+{$IF DECLARED(TIPTCStringArrayHelper)}
+class function TIPTCStringArrayHelper.CreateFromStrings(const Strings: TStrings): TIPTCStringArray;
+var
+  I: Integer;
+begin
+  SetLength(Result, Strings.Count);
+  for I := Strings.Count - 1 downto 0 do
+    Result[I] := Strings[I];
+end;
+
+function TIPTCStringArrayHelper.Join(const Separator: string): string;
+var
+  TotalLen: Integer;
+  S: string;
+  SeekPtr: PChar;
+begin
+  TotalLen := High(Self) * Length(Separator);
+  for S in Self do
+    Inc(TotalLen, Length(S));
+  SetLength(Result, TotalLen);
+  SeekPtr := Pointer(Result);
+  for S in Self do
+  begin
+    MoveChars(Pointer(S)^, SeekPtr^, Length(S));
+    Inc(SeekPtr, Length(S) + Length(Separator));
+  end;
+end;
+{$IFEND}
 
 { TIPTCTag }
 
@@ -776,7 +825,7 @@ begin
   Result := ipTagMissing;
 end;
 
-function TIPTCSection.GetRepeatableValue(TagID: TIPTCTagID): TStringDynArray;
+function TIPTCSection.GetRepeatableValue(TagID: TIPTCTagID): TIPTCStringArray;
 var
   Count: Integer;
   Tag: TIPTCTag;
@@ -811,7 +860,7 @@ end;
 procedure TIPTCSection.GetRepeatablePairs(KeyID, ValueID: TIPTCTagID; Dest: TStrings;
   ClearDestFirst: Boolean = True);
 var
-  Keys, Values: TStringDynArray;
+  Keys, Values: TIPTCStringArray;
   I: Integer;
 begin
   Dest.BeginUpdate;
@@ -827,6 +876,25 @@ begin
       Dest.Add(Keys[I] + Dest.NameValueSeparator + Values[I]);
   finally
     Dest.EndUpdate;
+  end;
+end;
+
+function TIPTCSection.GetRepeatablePairs(KeyID, ValueID: TIPTCTagID): TIPTCRepeatablePairs;
+var
+  Keys, Values: TIPTCStringArray;
+  I: Integer;
+begin
+  Keys := GetRepeatableValue(KeyID);
+  Values := GetRepeatableValue(ValueID);
+  if Length(Values) > Length(Keys) then
+    SetLength(Keys, Length(Values))
+  else
+    SetLength(Values, Length(Keys));
+  SetLength(Result, Length(Keys));
+  for I := 0 to High(Result) do
+  begin
+    Result[I].Key := Keys[I];
+    Result[I].Value := Values[I];
   end;
 end;
 
@@ -862,7 +930,7 @@ end;
 
 procedure TIPTCSection.SetRepeatableValue(TagID: TIPTCTagID; Value: TStrings);
 var
-  DynArray: TStringDynArray;
+  DynArray: TIPTCStringArray;
   I: Integer;
 begin
   SetLength(DynArray, Value.Count);
@@ -874,7 +942,7 @@ end;
 procedure TIPTCSection.SetRepeatablePairs(KeyID, ValueID: TIPTCTagID; Pairs: TStrings);
 var
   I, DestIndex: Integer;
-  S: string;
+  Key, Value: string;
 begin
   DestIndex := Remove([KeyID, ValueID]);
   if DestIndex < 0 then
@@ -889,19 +957,42 @@ begin
   end;
   for I := 0 to Pairs.Count - 1 do
   begin
-    S := Pairs.Names[I];
-    if S <> '' then
+    Key := Pairs.Names[I];
+    Value := Pairs.ValueFromIndex[I];
+    if (Key <> '') or (Value <> '') then
     begin
-      Insert(DestIndex, KeyID).AsString := S;
+      Insert(DestIndex, KeyID).AsString := Key;
       Inc(DestIndex);
-    end;
-    S := Pairs.ValueFromIndex[I];
-    if S <> '' then
-    begin
-      Insert(DestIndex, ValueID).AsString := S;
+      Insert(DestIndex, ValueID).AsString := Value;
       Inc(DestIndex);
     end;
   end;
+end;
+
+procedure TIPTCSection.SetRepeatablePairs(KeyID, ValueID: TIPTCTagID; const Pairs: TIPTCRepeatablePairs);
+var
+  I, DestIndex: Integer;
+  Pair: TIPTCRepeatablePair;
+begin
+  DestIndex := Remove([KeyID, ValueID]);
+  if DestIndex < 0 then
+  begin
+    DestIndex := 0;
+    for I := Count - 1 downto 0 do
+      if KeyID > GetTag(I).ID then
+      begin
+        DestIndex := I + 1;
+        Break;
+      end;
+  end;
+  for Pair in Pairs do
+    if (Pair.Key <> '') or (Pair.Value <> '') then
+    begin
+      Insert(DestIndex, KeyID).AsString := Pair.Key;
+      Inc(DestIndex);
+      Insert(DestIndex, ValueID).AsString := Pair.Value;
+      Inc(DestIndex);
+    end;
 end;
 
 function TIPTCSection.GetTag(Index: Integer): TIPTCTag;
@@ -1200,19 +1291,24 @@ begin
     ApplicationSection.SetStringValue(itActionAdvised, Format('%.2d', [Ord(Value)]));
 end;
 
+procedure TIPTCData.GetBylineDetails(Strings: TStrings; ClearDestFirst: Boolean = True);
+begin
+  ApplicationSection.GetRepeatablePairs(itByline, itBylineTitle, Strings, ClearDestFirst);
+end;
+
 procedure TIPTCData.GetBylineValues(Strings: TStrings);
 begin
-  ApplicationSection.GetRepeatablePairs(itByline, itBylineTitle, Strings);
+  GetBylineDetails(Strings);
 end;
 
 procedure TIPTCData.GetPSCreatorValues(Strings: TStrings);
 begin
-  GetBylineValues(Strings);
+  GetBylineDetails(Strings);
 end;
 
-procedure TIPTCData.GetContentLocationValues(Strings: TStrings);
+procedure TIPTCData.GetContentLocationValues(Strings: TStrings; ClearDestFirst: Boolean = True);
 begin
-  ApplicationSection.GetRepeatablePairs(itContentLocationCode, itContentLocationName, Strings);
+  ApplicationSection.GetRepeatablePairs(itContentLocationCode, itContentLocationName, Strings, ClearDestFirst);
 end;
 
 function TIPTCData.GetDate(PackedIndex: Integer): TDateTimeTagValue;
@@ -1274,12 +1370,17 @@ begin
     ApplicationSection.AddOrUpdate(itImageOrientation, 1, Value);
 end;
 
+function TIPTCData.GetApplicationPairs(PackedTagIDs: Integer): TIPTCRepeatablePairs;
+begin
+  Result := ApplicationSection.GetRepeatablePairs(Lo(PackedTagIDs), Hi(PackedTagIDs));
+end;
+
 function TIPTCData.GetApplicationString(TagID: Integer): string;
 begin
   Result := ApplicationSection.GetStringValue(TagID)
 end;
 
-function TIPTCData.GetApplicationStrings(TagID: Integer): TStringDynArray;
+function TIPTCData.GetApplicationStrings(TagID: Integer): TIPTCStringArray;
 begin
   Result := ApplicationSection.GetRepeatableValue(TagID);
 end;
@@ -1537,14 +1638,19 @@ begin
     FSections[SectID].Sort;
 end;
 
-procedure TIPTCData.SetBylineValues(Strings: TStrings);
+procedure TIPTCData.SetBylineDetails(Strings: TStrings);
 begin
   ApplicationSection.SetRepeatablePairs(itByline, itBylineTitle, Strings);
 end;
 
+procedure TIPTCData.SetBylineValues(Strings: TStrings);
+begin
+  SetBylineDetails(Strings);
+end;
+
 procedure TIPTCData.SetPSCreatorValues(Strings: TStrings);
 begin
-  SetBylineValues(Strings);
+  SetBylineDetails(Strings);
 end;
 
 procedure TIPTCData.SetContentLocationValues(Strings: TStrings);
@@ -1557,12 +1663,18 @@ begin
   FSections[Lo(PackedIndex)].SetDateValue(Hi(PackedIndex), Value)
 end;
 
+procedure TIPTCData.SetApplicationPairs(PackedTagIDs: Integer;
+  const NewPairs: TIPTCRepeatablePairs);
+begin
+  ApplicationSection.SetRepeatablePairs(Lo(PackedTagIDs), Hi(PackedTagIDs), NewPairs);
+end;
+
 procedure TIPTCData.SetApplicationString(TagID: Integer; const Value: string);
 begin
   ApplicationSection.SetStringValue(TagID, Value);
 end;
 
-procedure TIPTCData.SetApplicationStrings(TagID: Integer; const Value: TStringDynArray);
+procedure TIPTCData.SetApplicationStrings(TagID: Integer; const Value: TIPTCStringArray);
 begin
   ApplicationSection.SetRepeatableValue(TagID, Value);
 end;
@@ -1606,7 +1718,7 @@ var
   I: Integer;
   SectID: TIPTCSectionID;
   Tag: TIPTCTag;
-  Strings: array[TIPTCSectionID] of TStringDynArray;
+  Strings: array[TIPTCSectionID] of TIPTCStringArray;
 begin
   if Value = UTF8Encoded then Exit;
   for SectID := Low(SectID) to High(SectID) do
@@ -1628,38 +1740,5 @@ begin
         Tag.WriteString(Strings[SectID][I]);
     end;
 end;
-
-{$IF Declared(TJPEGImage)}
-procedure TIPTCData.LoadFromJPEG(JPEGStream: TStream);
-begin
-  if HasJPEGHeader(JPEGStream) then
-    LoadFromGraphic(JPEGStream)
-  else
-    raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
-end;
-
-procedure TIPTCData.LoadFromJPEG(JPEGImage: TJPEGImage);
-begin
-  LoadFromGraphic(JPEGImage)
-end;
-
-procedure TIPTCData.LoadFromJPEG(const FileName: string);
-begin
-  if HasJPEGHeader(FileName) then
-    LoadFromGraphic(FileName)
-  else
-    raise EInvalidJPEGHeader.CreateRes(@SInvalidJPEGHeader);
-end;
-
-procedure TIPTCData.SaveToJPEG(const JPEGFileName: string; Dummy: Boolean);
-begin
-  SaveToGraphic(JPEGFileName);
-end;
-
-procedure TIPTCData.SaveToJPEG(JPEGImage: TJPEGImage);
-begin
-  SaveToGraphic(JPEGImage);
-end;
-{$IFEND}
 
 end.

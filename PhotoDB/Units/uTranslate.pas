@@ -143,6 +143,9 @@ begin
     end;
   end;
 
+  if LanguageCode = '' then
+    LanguageCode := 'en';
+
   LanguagePath := ExtractFilePath(ParamStr(0)) + Format('Languages\%s%s.xml', [LanguageFileMask, LanguageCode]);
   try
     TW.I.Start(' TLanguage.Create - START');
@@ -369,8 +372,8 @@ end;
 constructor TLanguage.Create(FileName: string; Flags: Integer = 0);
 begin
   Init;
-  FTranslate.load(FileName);
-  LoadTranslationList;
+  if FTranslate.load(FileName) then
+    LoadTranslationList;
 end;
 
 constructor TLanguage.CreateFromXML(XML: string);

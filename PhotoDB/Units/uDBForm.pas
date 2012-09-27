@@ -33,6 +33,13 @@ uses
   uImageSource;
 
 type
+  TFormStyleHookEx = class(TFormStyleHook)
+  private
+    function GetBorderSize: TRect;
+    procedure WMNCCalcSize(var Message: TWMNCCalcSize); message WM_NCCALCSIZE;
+  end;
+
+type
   TDBForm = class(TForm)
   private
     FWindowID: string;
@@ -45,10 +52,11 @@ type
     procedure ApplyStyle; virtual;
     procedure ApplySettings; virtual;
     procedure CustomFormAfterDisplay; virtual;
-    procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    class constructor Create;
+    class destructor Destroy;
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate: string; Scope: string): string; overload;
     function LF(StringToTranslate: string; Args: array of const): string;
@@ -122,6 +130,17 @@ begin
   {$ENDIF}
 end;
 
+class constructor TDBForm.Create;
+begin
+  if Assigned(TStyleManager.Engine) then
+  begin
+    TStyleManager.Engine.UnRegisterStyleHook(TCustomForm, TFormStyleHook);
+    TStyleManager.Engine.UnRegisterStyleHook(TForm, TFormStyleHook);
+    TStyleManager.Engine.RegisterStyleHook(TCustomForm, TFormStyleHookEx);
+    TStyleManager.Engine.RegisterStyleHook(TForm, TFormStyleHookEx);
+  end;
+end;
+
 procedure TDBForm.CustomFormAfterDisplay;
 begin
  //
@@ -135,6 +154,17 @@ begin
   GOM.RemoveObj(Self);
   TFormCollection.Instance.UnRegisterForm(Self);
   inherited;
+end;
+
+class destructor TDBForm.Destroy;
+begin
+  if Assigned(TStyleManager.Engine) then
+  begin
+    TStyleManager.Engine.UnRegisterStyleHook(TCustomForm, TFormStyleHookEx);
+    TStyleManager.Engine.UnRegisterStyleHook(TForm, TFormStyleHookEx);
+    TStyleManager.Engine.RegisterStyleHook(TCustomForm, TFormStyleHook);
+    TStyleManager.Engine.RegisterStyleHook(TForm, TFormStyleHook);
+  end;
 end;
 
 procedure TDBForm.DoCreate;
@@ -284,19 +314,10 @@ begin
   Result := FormatEx(L(StringToTranslate), args);
 end;
 
-procedure TDBForm.WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo);
-begin
-  inherited;
-
-  //TODO:
-  //Message.Result := 0;                 {Tell windows you have changed minmaxinfo}
-end;
-
 procedure TDBForm.WndProc(var Message: TMessage);
 var
   Canvas: TCanvas;
   LDetails: TThemedElementDetails;
-  pfEnabled: BOOL;
   WindowRect: TRect;
 begin
   //when styles enabled and form is visible -> white rectangle in all client rect
@@ -306,8 +327,7 @@ begin
   begin
     if (Message.Msg = WM_NCPAINT) and (Win32MajorVersion >= 6) then
     begin
-      DwmIsCompositionEnabled(pfEnabled);
-      if pfEnabled then
+      if DwmCompositionEnabled then
       begin
         Canvas := TCanvas.Create;
         try
@@ -450,6 +470,78 @@ end;
 procedure TFormCollection.UnRegisterForm(Form: TDBForm);
 begin
   FForms.Remove(Form);
+end;
+
+{ TFormStyleHookEx }
+
+function TFormStyleHookEx.GetBorderSize: TRect;
+var
+  Size: TSize;
+  Details: TThemedElementDetails;
+  Detail: TThemedWindow;
+begin
+  Result := Rect(0, 0, 0, 0);
+  if Form.BorderStyle = bsNone then Exit;
+
+  if not StyleServices.Available then Exit;
+  {caption height}
+  if (Form.BorderStyle <> bsToolWindow) and
+     (Form.BorderStyle <> bsSizeToolWin) then
+    Detail := twCaptionActive
+  else
+    Detail := twSmallCaptionActive;
+  Details := StyleServices.GetElementDetails(Detail);
+  StyleServices.GetElementSize(0, Details, esActual, Size);
+  Result.Top := Size.cy;
+  {left border width}
+  if (Form.BorderStyle <> bsToolWindow) and
+     (Form.BorderStyle <> bsSizeToolWin) then
+    Detail := twFrameLeftActive
+  else
+    Detail := twSmallFrameLeftActive;
+  Details := StyleServices.GetElementDetails(Detail);
+  StyleServices.GetElementSize(0, Details, esActual, Size);
+  Result.Left := Size.cx;
+  {right border width}
+  if (Form.BorderStyle <> bsToolWindow) and
+     (Form.BorderStyle <> bsSizeToolWin) then
+    Detail := twFrameRightActive
+  else
+    Detail := twSmallFrameRightActive;
+  Details := StyleServices.GetElementDetails(Detail);
+  StyleServices.GetElementSize(0, Details, esActual, Size);
+  Result.Right := Size.cx;
+  {bottom border height}
+  if (Form.BorderStyle <> bsToolWindow) and
+     (Form.BorderStyle <> bsSizeToolWin) then
+    Detail := twFrameBottomActive
+  else
+    Detail := twSmallFrameBottomActive;
+  Details := StyleServices.GetElementDetails(Detail);
+  StyleServices.GetElementSize(0, Details, esActual, Size);
+  Result.Bottom := Size.cy;
+end;
+
+procedure TFormStyleHookEx.WMNCCalcSize(var Message: TWMNCCalcSize);
+var
+  Params: PNCCalcSizeParams;
+  R: TRect;
+begin
+  inherited;
+
+  if DwmCompositionEnabled and (Form.WindowState = wsMaximized) then
+  begin
+    R := GetBorderSize;
+
+    Params := Message.CalcSize_Params;
+    with Params^.rgrc[0] do
+    begin
+      Inc(Left, R.Left);
+      Inc(Top, 0);
+      Dec(Right, R.Right);
+      Dec(Bottom, R.Bottom);
+    end;
+  end;
 end;
 
 initialization

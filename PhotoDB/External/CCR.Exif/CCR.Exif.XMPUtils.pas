@@ -1,7 +1,7 @@
 ﻿{**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.1 beta                                                                   }
+{ Version 1.5.2 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -40,7 +40,7 @@ unit CCR.Exif.XMPUtils;
 interface
 
 uses
-  Types, SysUtils, Classes, Graphics, xmldom, CCR.Exif.BaseUtils, CCR.Exif.TiffUtils, SyncObjs;
+  Types, SysUtils, Classes, xmldom, CCR.Exif.BaseUtils, CCR.Exif.TiffUtils, System.SyncObjs;
 
 type
   EInvalidXMPPacket = class(Exception);
@@ -176,10 +176,6 @@ type
     property SubPropertyCount: Integer read GetSubPropertyCount write SetSubPropertyCount;
   end;
 
-  TXMPSchemaKind = TXMPNamespace deprecated {$IFDEF DepCom}'Renamed TXMPNamespace'{$ENDIF};
-  TXMPKnownSchemaKind = TXMPKnownNamespace deprecated {$IFDEF DepCom}'Renamed TXMPKnownNamespace'{$ENDIF};
-  TXMPKnownSchemaKinds = set of TXMPKnownNamespace deprecated {$IFDEF DepCom}'Use set of TXMPKnownNamespace'{$ENDIF};
-
   TXMPSchema = class(TInterfacedPersistent, IXMPPropertyCollection)
   strict private
     FLoadingProperty: Boolean;
@@ -195,10 +191,6 @@ type
     function GetOwner: TPersistent; override;
     function GetProperty(Index: Integer): TXMPProperty;
     function GetPropertyCount: Integer;
-  public //deprecated - to be removed in a later release
-    function Kind: TXMPNamespace; deprecated {$IFDEF DepCom}'Use NamespaceInfo.Kind'{$ENDIF};
-    function PreferredPrefix: UnicodeString; deprecated {$IFDEF DepCom}'Use NamespaceInfo.Prefix'{$ENDIF};
-    function URI: UnicodeString; deprecated {$IFDEF DepCom}'Use NamespaceInfo.URI'{$ENDIF};
   public
     constructor Create(AOwner: TXMPPacket; const AURI: UnicodeString);
     destructor Destroy; override;
@@ -311,8 +303,6 @@ type
     property Schemas[Kind: TXMPKnownNamespace]: TXMPSchema read FindOrAddSchema; default;
     property Schemas[Index: Integer]: TXMPSchema read GetSchema; default;
     property Schemas[const URI: UnicodeString]: TXMPSchema read FindOrAddSchema; default;
-  public //deprecated methods - to be removed in a future release
-    function LoadFromJPEG(const JPEGFileName: string): Boolean; inline; deprecated {$IFDEF DepCom}'Use LoadFromGraphic'{$ENDIF};
   published
     property Empty: Boolean read GetEmpty;
     property RawXML: UTF8String read GetRawXML write SetRawXML;
@@ -326,12 +316,11 @@ const
 
 function DateTimeToXMPString(const Value: TDateTime; ApplyLocalBias: Boolean = True): UnicodeString;
 function EscapeXML(const Source: UnicodeString): UnicodeString;
-function HasXMPSegmentHeader(Stream: TStream): Boolean; deprecated {$IFDEF DepCom}'Use Segment.HasXMPHeader'{$ENDIF};
 
 implementation
 
 uses
-  {$IFNDEF HasTTimeZone}Windows,{$ENDIF} Math, RTLConsts, Contnrs, DateUtils, StrUtils,
+  {$IFDEF HasTTimeZone}TimeSpan{$ELSE}Windows{$ENDIF}, Math, RTLConsts, Contnrs, DateUtils, StrUtils,
   CCR.Exif.Consts, CCR.Exif.TagIDs, CCR.Exif.StreamHelper;
 
 var
@@ -852,7 +841,16 @@ begin
       xpBagArray, xpSeqArray: FName := '';
       xpAltArray:
         if SourceAsElem <> nil then
-          FName := SourceAsElem.getAttribute(XMLLangAttrName)
+        begin
+          FName := SourceAsElem.getAttribute(XMLLangAttrName);
+          if FName = '' then //fix for ADOM
+            for I := SourceAsElem.attributes.length - 1 downto 0 do
+              if SourceAsElem.attributes[I].nodeName = XMLLangAttrName then
+              begin
+                FName := SourceAsElem.attributes[I].nodeValue;
+                Break;
+              end;
+        end
         else
           FName := '';
     else UseSourceNodeNameAndNamespace;
@@ -881,8 +879,15 @@ begin
       if FKind = xpStructure then
         DoAdd := True
       else if ChildNode.nodeName = RDF.ListNodeName then
-        DoAdd := (FKind <> xpAltArray) or
-          (ChildNode.attributes.getNamedItem(XMLLangAttrName) <> nil);
+        if (FKind <> xpAltArray) or (ChildNode.attributes.getNamedItem(XMLLangAttrName) <> nil) then
+          DoAdd := True
+        else //fix for ADOM added v1.5.2
+          for I := ChildNode.attributes.length - 1 downto 0 do
+            if ChildNode.attributes[I].nodeName = XMLLangAttrName then
+            begin
+              DoAdd := True;
+              Break;
+            end;
     end;
     if DoAdd then
       FSubProperties.Add(TXMPProperty.Create(Schema, Self, ChildNode));
@@ -1136,7 +1141,12 @@ var
   Strings: TUnicodeStringList;
 begin
   case Kind of
-    xpSimple: FValue := NewValue;
+    xpSimple:
+      if NewValue <> FValue then
+      begin
+        FValue := NewValue;
+        Changed;
+      end;
     xpStructure: raise EInvalidXMPOperation.CreateRes(@SCannotWriteSingleValueToStructureProperty);
     xpAltArray: SubProperties[DefaultLangIdent].WriteValue(NewValue);
   else
@@ -1298,21 +1308,6 @@ begin
         Break;
       end;
   end;
-end;
-
-function TXMPSchema.Kind: TXMPNamespace;
-begin
-  Result := FNamespaceInfo.Kind;
-end;
-
-function TXMPSchema.PreferredPrefix: UnicodeString;
-begin
-  Result := FNamespaceInfo.Prefix;
-end;
-
-function TXMPSchema.URI: UnicodeString;
-begin
-  Result := FNamespaceInfo.URI;
 end;
 
 { TXMPPacket }
@@ -1600,11 +1595,6 @@ begin
   end;
 end;
 
-function TXMPPacket.LoadFromJPEG(const JPEGFileName: string): Boolean;
-begin
-  Result := LoadFromGraphic(JPEGFileName);
-end;
-
 procedure TXMPPacket.LoadFromStream(Stream: TStream);
 begin
   if not TryLoadFromStream(Stream) then LoadError(Stream);
@@ -1718,6 +1708,8 @@ const
   DescNodeEnd: UTF8String =
     #9#9'</rdf:Description>'#10;
 var
+  DataPtr: PAnsiChar;
+  DataSize: Integer;
   Schema: TXMPSchema;
 begin
   if FRawXMLCache <> '' then
@@ -1728,13 +1720,18 @@ begin
     Exit;
   end;
   if FDataToLazyLoad <> nil then
-    with FDataToLazyLoad.Data do
+  begin
+    DataPtr := FDataToLazyLoad.Data.Memory;
+    DataSize := FDataToLazyLoad.Data.Size;
+    if (DataSize >= SizeOf(TJPEGSegment.XMPHeader)) and
+       CompareMem(DataPtr, @TJPEGSegment.XMPHeader, SizeOf(TJPEGSegment.XMPHeader)) then
     begin
-      Position := 0;
-      TryReadHeader(TJPEGSegment.XMPHeader, SizeOf(TJPEGSegment.XMPHeader));
-      Stream.WriteBuffer(Memory^, Size - Position);
-      Exit;
+      Inc(DataPtr, SizeOf(TJPEGSegment.XMPHeader));
+      Dec(DataSize, SizeOf(TJPEGSegment.XMPHeader));
     end;
+    Stream.WriteBuffer(DataPtr^, DataSize);
+    Exit;
+  end;
   Stream.WriteUTF8Chars(PacketStart);
   for Schema in Self do
   begin

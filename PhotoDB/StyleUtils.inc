@@ -2,7 +2,7 @@
 {                                                       }
 {            Delphi Visual Component Library            }
 {                                                       }
-{ Copyright(c) 2010-2011 Embarcadero Technologies, Inc. }
+{ Copyright(c) 2010-2012 Embarcadero Technologies, Inc. }
 {                                                       }
 {*******************************************************}
 
@@ -429,7 +429,7 @@ begin
           VertBuf.Canvas.Pixels[(VertBuf.Width - j), i] := HorzPixel;
       end;
 
-    VertBuf.Transparent := true;
+    VertBuf.Transparent := True;
     VertBuf.Draw(Canvas, Bounds.Left, Bounds.Top);
   finally
     SelectObject(HorzBuf.Canvas.Handle, SaveFont);
@@ -520,7 +520,7 @@ begin
         B.Canvas.Pixels[i, j] := TColor(seTransparent);
     end;
 
-  B.Transparent := true;
+  B.Transparent := True;
   B.Draw(Canvas, ARect.Left, ARect.Top);
 
   B.Free;
@@ -837,9 +837,9 @@ begin
   OffsetRect(SrcR, DstRect.Left, DstRect.Top);
 
   if IsRectEmpty(DstClip) then
-    IsClip := false
+    IsClip := False
   else
-    IsClip := true;
+    IsClip := True;
 
   Cx := DstRect.Width div W;
   if DstRect.Width mod W <> 0 then Inc(Cx);
@@ -995,11 +995,11 @@ var
   P: TseColor;
   Pt: TPoint;
 begin
-  FMasked := false;
-  FMaskedBorder := false;
-  FMaskedAngles := false;
+  FMasked := False;
+  FMaskedBorder := False;
+  FMaskedAngles := False;
 
-  if (Margin.Left = 0) and (Margin.Top = 0) and (Margin.Right = 0) and (Margin.Right = 0) then
+  if not ((Margin.Left <> 0) and (Margin.Top <> 0) and (Margin.Right <> 0) and (Margin.Right <> 0)) then
   begin
     for i := Left to Right - 1 do
       for j := Top to Bottom - 1 do
@@ -1007,14 +1007,11 @@ begin
         if (FImage.Scanline[FImage.Height - 1] <> nil) and (i >= 0) and (j >= 0) and (i < FImage.Width) and (j < FImage.Height) then
         begin
           P := (PseColor(FImage.Scanline[j]) + i)^;
-          if P = seTransparent then
+          if (P = seTransparent) or (TseColorRec(P).A < $FF) then
           begin
-            FMasked := true;
-            Exit;
-          end;
-          if TseColorRec(P).A < $FF then
-          begin
-            FMasked := true;
+            FMaskedBorder := True;
+            FMaskedAngles := True;
+            FMasked := True;
             Exit;
           end;
         end;
@@ -1024,40 +1021,36 @@ begin
   begin
     for i := Left to Right - 1 do
       for j := Top to Bottom - 1 do
+      if (FImage.Scanline[FImage.Height - 1] <> nil) and (i >= 0) and (j >= 0) and (i < FImage.Width) and (j < FImage.Height) then
       begin
-        if (FImage.Scanline[FImage.Height - 1] <> nil) and (i >= 0) and (j >= 0) and (i < FImage.Width) and (j < FImage.Height) then
-          P := (PseColor(FImage.Scanline[j]) + i)^
-        else
-          Continue;
-
-        if P <> seNone then
+        P := (PseColor(FImage.Scanline[j]) + i)^;
+        if (P = seTransparent) or (TseColorRec(P).A < $FF) then
         begin
-          if (P = seTransparent) or (TseColorRec(P).A < $FF) then
-          begin
-            Pt := Point(i - Left, j - Top);
-            { Check angles }
-            if PtInRect(TRect.Create(0, 0, Margin.Left, Margin.Top), Pt) then
-              FMaskedAngles := true;
-            if PtInRect(TRect.Create(Right - Margin.Right, 0, Right, Margin.Top), Pt) then
-              FMaskedAngles := true;
-            if PtInRect(TRect.Create(Right - Margin.Right, Bottom - Margin.Bottom, Right, Bottom), Pt) then
-              FMaskedAngles := true;
-            if PtInRect(TRect.Create(0, Bottom - Margin.Bottom, Margin.Left, Bottom), Pt) then
-              FMaskedAngles := true;
+          Pt := Point(i, j);
 
-            { Check borders }
-            if PtInRect(TRect.Create(Margin.Left, 0, Right - Margin.Right, Margin.Top), Pt) then
-              FMaskedBorder := true;
-            if PtInRect(TRect.Create(Margin.Left, Bottom - Margin.Bottom, Right - Margin.Right, Bottom), Pt) then
-              FMaskedBorder := true;
-            if PtInRect(TRect.Create(0, Margin.Top, Margin.Left, Bottom - Margin.Bottom), Pt) then
-              FMaskedBorder := true;
-            if PtInRect(TRect.Create(Right - Margin.Right, Margin.Top, Right, Bottom - Margin.Bottom), Pt) then
-              FMaskedBorder := true;
+          { Check angles }
+          if PtInRect(TRect.Create(Left, Top, Left + Margin.Left, Top + Margin.Top), Pt) then
+            FMaskedAngles := True;
+          if PtInRect(TRect.Create(Right - Margin.Right, Top, Right, Top + Margin.Top), Pt) then
+             FMaskedAngles := True;
+          if PtInRect(TRect.Create(Right - Margin.Right, Bottom - Margin.Bottom, Right, Bottom), Pt) then
+            FMaskedAngles := True;
+          if PtInRect(TRect.Create(Left, Bottom - Margin.Bottom, Left + Margin.Left, Bottom), Pt) then
+            FMaskedAngles := True;
 
-            if PtInRect(TRect.Create(Margin.Left, Margin.Top, Right - Margin.Right, Bottom - Margin.Bottom), Pt) then
-              FMasked := true;
-          end;
+          { Check borders }
+          if PtInRect(TRect.Create(Left + Margin.Left, Top, Right - Margin.Right, Top + Margin.Top), Pt) then
+            FMaskedBorder := True;
+          if PtInRect(TRect.Create(Left + Margin.Left, Bottom - Margin.Bottom, Right - Margin.Right, Bottom), Pt) then
+            FMaskedBorder := True;
+          if PtInRect(TRect.Create(Left, Top + Margin.Top, Left + Margin.Left, Bottom - Margin.Bottom), Pt) then
+            FMaskedBorder := True;
+          if PtInRect(TRect.Create(Right - Margin.Right, Top + Margin.Top, Right, Bottom - Margin.Bottom), Pt) then
+            FMaskedBorder := True;
+
+          {Check client}
+          if PtInRect(TRect.Create(Left + Margin.Left, Top + Margin.Top, Right - Margin.Right, Bottom - Margin.Bottom), Pt) then
+             FMasked := True;
         end;
       end;
   end;

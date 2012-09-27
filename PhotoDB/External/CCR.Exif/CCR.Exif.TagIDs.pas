@@ -1,7 +1,7 @@
 {**************************************************************************************}
 {                                                                                      }
 { CCR Exif - Delphi class library for reading and writing image metadata               }
-{ Version 1.5.1 beta                                                                   }
+{ Version 1.5.2 beta                                                                   }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
 { (the "License"); you may not use this file except in compliance with the License.    }
@@ -116,6 +116,12 @@ const
   ttDeviceSettingDescription  = $A40B;
   ttSubjectDistanceRange      = $A40C;
   ttImageUniqueID             = $A420;
+  ttCameraOwnerName           = $A430;
+  ttBodySerialNumber          = $A431;
+  ttLensSpecification         = $A432;
+  ttLensMake                  = $A433;
+  ttLensModel                 = $A434;
+  ttLensSerialNumber          = $A435;
 
   { MakerNote tag data offset relative to where it originally was; tag defined by MS }
   ttOffsetSchema              = $EA1D;
@@ -167,11 +173,9 @@ const
   ttCompression               = $0103; //value should be 6 for JPEG (1 = uncompressed TIFF
   ttPhotometricInterp         = $0106; //1=b/w, 2 = RGB, 6 = YCbCr; shouldn't be used for a JPEG thumbnail
   ttStripOffsets              = $0111; //for when thumbnail is a TIFF
-  ttStripOffset = ttStripOffsets deprecated;
   ttSamplesPerPixel           = $0115; //shouldn't be used for a JPEG thumbnail
   ttRowsPerStrip              = $0116; //shouldn't be used for a JPEG thumbnail
   ttStripByteCounts           = $0117; //for when thumbnail is a TIFF
-  ttStripByteCount = ttStripByteCounts deprecated;
   ttPlanarConfiguration       = $011C; //shouldn't be used for a JPEG thumbnail
   ttTileOffsets               = $0144; //shouldn't be used for a JPEG thumbnail
   ttTileByteCounts            = $0145; //shouldn't be used for a JPEG thumbnail
