@@ -3,10 +3,11 @@ unit ImEditor;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
+  System.Types,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Variants,
   Classes,
   Graphics,
   Controls,

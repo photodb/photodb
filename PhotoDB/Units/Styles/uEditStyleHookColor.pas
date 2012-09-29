@@ -3,17 +3,17 @@ unit uEditStyleHookColor;
 interface
 
 uses
-  UITypes,
-  Windows,
+  System.UITypes,
+  System.SysUtils,
+  Winapi.Windows,
+  Winapi.Messages,
   VCL.StdCtrls,
   Vcl.ExtCtrls,
-  SysUtils,
-  Graphics,
-  Controls,
-  Themes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Themes,
   WatermarkedEdit,
-  DmMemo,
-  Messages;
+  DmMemo;
 
 type
   TEditStyleHookColor = class(TEditStyleHook)

@@ -3,11 +3,12 @@ unit uSearchTypes;
 interface
 
 uses
-  Classes,
-  Forms,
+  System.Types,
+  System.Classes,
+  Vcl.Forms,
   uFormListView,
   uMemory,
-  UnitDBDeclare;
+  uSearchQuery;
 
 type
   TDateRange = record
@@ -159,7 +160,7 @@ begin
     Tmp := Self[I];
     if (Tmp.RatingFrom = RatingFrom) and (Tmp.RatingTo = RatingTo)
        and (Tmp.DateFrom = DateFrom) and (Tmp.DateTo = DateTo)
-       and (Tmp.GroupName = GroupName) and (Tmp.Query = Query)
+       {and (Tmp.GroupName = GroupName)} and (Tmp.Query = Query)
        and (Tmp.SortMethod = SortMethod) and (Tmp.SortDecrement = SortDecrement) then
     begin
       //Move to first record
@@ -174,7 +175,7 @@ begin
   Result.RatingTo := RatingTo;
   Result.DateFrom := DateFrom;
   Result.DateTo := DateTo;
-  Result.GroupName := GroupName;
+ // Result.GroupName := GroupName;
   Result.Query := Query;
   Result.SortMethod := SortMethod;
   Result.SortDecrement := SortDecrement;

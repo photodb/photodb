@@ -3,6 +3,7 @@ unit UnitManageGroups;
 interface
 
 uses
+  System.UITypes,
   Windows,
   Messages,
   SysUtils,

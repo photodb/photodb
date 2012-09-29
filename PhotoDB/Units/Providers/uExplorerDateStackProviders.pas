@@ -3,15 +3,19 @@ unit uExplorerDateStackProviders;
 interface
 
 uses
+  System.Classes,
+  System.SysUtils,
+  System.StrUtils,
+  System.DateUtils,
+  Vcl.Graphics,
+  Data.DB,
+
+  CommonDBSupport,
+  UnitGroupsWork,
+
+  uShellIcons,
   uConstants,
   uMemory,
-  Classes,
-  SysUtils,
-  Graphics,
-  StrUtils,
-  DateUtils,
-  UnitGroupsWork,
-  uShellIcons,
   uTranslate,
   uExplorerPathProvider,
   uExplorerMyComputerProvider,
@@ -19,9 +23,7 @@ uses
   uExplorerPersonsProvider,
   uPathProviders,
   uDateUtils,
-  uSysUtils,
-  DB,
-  CommonDBSupport;
+  uSysUtils;
 
 type
   TDateStackItem = class(TPathItem)

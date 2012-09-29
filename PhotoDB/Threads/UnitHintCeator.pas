@@ -3,6 +3,7 @@ unit UnitHintCeator;
 interface
 
 uses
+  System.Types,
   Windows,
   Messages,
   SysUtils,

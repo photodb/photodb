@@ -3,11 +3,12 @@ unit Effects;
 interface
 
 uses
-  Windows,
-  Classes,
-  Graphics,
-  Math,
-  SysUtils,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  System.Math,
+  Winapi.Windows,
+  Vcl.Graphics,
   GraphicsBaseTypes,
   Scanlines,
   uEditorTypes,

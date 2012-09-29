@@ -323,8 +323,11 @@ begin
   TreeData := GetNodeData(Node);
   if Parent = nil then
   begin
-    TreeData.Data := FHomeItems[Node.Index].Copy;
-    TreeData.Data.Tag := FImageList.AddPathImage(TreeData.Data.ExtractImage, True);
+    if Node.Index < FHomeItems.Count then
+    begin
+      TreeData.Data := FHomeItems[Node.Index].Copy;
+      TreeData.Data.Tag := FImageList.AddPathImage(TreeData.Data.ExtractImage, True);
+    end;
   end;
 
   if TreeData.Data.IsDirectory and TreeData.Data.CanHaveChildren then

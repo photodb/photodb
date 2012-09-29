@@ -3,25 +3,28 @@ unit uListViewUtils;
 interface
 
 uses
-  Windows,
-  Classes,
-  Controls,
-  Graphics,
-  SysUtils,
-  CommCtrl,
-  ComCtrls,
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  System.Math,
+  Winapi.Windows,
+  Winapi.CommCtrl,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.ComCtrls,
+  Vcl.Themes,
+
+  UnitDBDeclare,
   EasyListview,
-  Math,
-  uMemory,
   UnitBitmapImageList,
-  uDBDrawing,
   TLayered_Bitmap,
+
+  uMemory,
+  uDBDrawing,
   uGraphicUtils,
   uConstants,
   uRuntime,
   uSettings,
-  Themes,
-  UnitDBDeclare,
   uThemesUtils,
   uBitmapUtils;
 

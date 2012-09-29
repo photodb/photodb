@@ -1715,11 +1715,13 @@ procedure TCCITTDecoder.MakeStates;
     while BitLen > 0 do
     begin
       // determine next state according to the bit string
-	  //TODO: X64 fix
-      {asm
+	    //TODO: X64 fix
+      {$ifndef cpux64}
+      asm
         SHL [Bits], 1
         SETC [Bit]
-      end;}
+      end;
+      {$endif}
       NewState := Target[State].NewState[Bit];
       // Is it a not yet assigned state?
       if NewState = 0 then
@@ -1836,7 +1838,8 @@ begin
 
   // swap all bits here, in order to avoid frequent tests in the main loop
   //TODO: X64 fix
- { if FSwapBits then
+  {$ifndef cpux64}
+  if FSwapBits then
   asm
          PUSH EBX
          LEA EBX, ReverseTable
@@ -1851,7 +1854,8 @@ begin
          DEC ECX
          JNZ @@1
          POP EBX
-  end;  }
+  end;
+  {$endif}
 
   // setup initial states
   // a row always starts with a (possibly zero-length) white run
@@ -1924,7 +1928,8 @@ begin
 
   // swap all bits here, in order to avoid frequent tests in the main loop
   //TODO: X64 fix
-  {if FSwapBits then
+  {$ifndef cpux64}
+  if FSwapBits then
   asm
          PUSH EBX
          LEA EBX, ReverseTable
@@ -1939,8 +1944,8 @@ begin
          DEC ECX
          JNZ @@1
          POP EBX
-  end;}
-
+  end;
+  {$endif}
   // setup initial states
   // a row always starts with a (possibly zero-length) white run
   FIsWhite := True;

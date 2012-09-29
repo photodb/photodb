@@ -3,20 +3,22 @@ unit CropToolUnit;
 interface
 
 uses
-  Windows,
-  ToolsUnit,
+  System.Types,
+  System.Classes,
+  System.Math,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.Menus,
   WebLink,
-  Classes,
-  Controls,
-  Graphics,
-  StdCtrls,
   GraphicsCool,
-  Math, SysUtils,
   ImageHistoryUnit,
   uSettings,
   GraphicsBaseTypes,
   UnitDBKernel,
-  Menus,
+  ToolsUnit,
   uMemory;
 
 type
@@ -440,8 +442,8 @@ begin
     FFirstPoint := Point1;
     FSecondPoint := Point2;
 
-    P.X := Math.Min(Image.Width, Math.Max(0, SecondPoint.X));
-    P.Y := Math.Min(Image.Height, Math.Max(0, FirstPoint.Y + H));
+    P.X := System.Math.Min(Image.Width, System.Math.Max(0, SecondPoint.X));
+    P.Y := System.Math.Min(Image.Height, System.Math.Max(0, FirstPoint.Y + H));
 
     if KeepProportions then
     begin
@@ -541,8 +543,8 @@ begin
     Point2.Y := Min(Max(FirstPoint.Y, SecondPoint.Y), Image.Height);
     FFirstPoint := Point1;
     FSecondPoint := Point2;
-    P.X := Math.Min(Image.Width, Math.Max(0, FirstPoint.X + W));
-    P.Y := Math.Min(Image.Height, Math.Max(0, SecondPoint.Y));
+    P.X := System.Math.Min(Image.Width, System.Math.Max(0, FirstPoint.X + W));
+    P.Y := System.Math.Min(Image.Height, System.Math.Max(0, SecondPoint.Y));
 
     if KeepProportions then
     begin

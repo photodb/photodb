@@ -25,8 +25,8 @@ interface
 
 {$DEFINE USE_VCL_STYLESAPI}
 
-
-Uses
+uses
+  System.Types,
   Vcl.Themes,
   Vcl.Styles,
   Vcl.Forms,

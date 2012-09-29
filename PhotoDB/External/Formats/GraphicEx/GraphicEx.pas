@@ -64,8 +64,14 @@ interface
 {$I GraphicConfiguration.inc}
 
 uses
-  Windows, Classes, ExtCtrls, Graphics, SysUtils, //JPEG,
-  GraphicCompression, GraphicStrings, GraphicColor;
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.Graphics,
+  GraphicCompression,
+  GraphicStrings,
+  GraphicColor;
 
 type
   TCardinalArray = array of Cardinal;
@@ -3855,7 +3861,7 @@ begin
             while Size > 0 do
             begin
               Value := 0;
-			  //TODO: X64 fix
+			        //TODO: X64 fix
               {$ifndef cpux64}
               for J := 0 to 1 do
               asm
@@ -4420,7 +4426,7 @@ begin
   if (Ch = #13) and (CurrentChar = #10) then GetChar;
 
   // delete comments
-  I := Pos('#', Result);
+  I := Pos('#', string(AnsiString(Result)));
   if I > 0 then Delete(Result, I, MaxInt);
 end;
 
@@ -4453,7 +4459,7 @@ begin
       with Stream do
       begin
         Buffer := ReadLine;
-        case StrToInt(Buffer[2]) of
+        case StrToInt(string(Buffer[2])) of
           1: // PBM ASCII format (black & white)
             begin
               PixelFormat := pf1Bit;
@@ -4635,7 +4641,7 @@ begin
 
     if Buffer[1] = 'P' then
     begin
-      case StrToInt(Buffer[2]) of
+      case StrToInt(string(Buffer[2])) of
         1: // PBM ASCII format (black & white)
           begin
             Width := GetNumber;
@@ -5358,8 +5364,8 @@ begin
     begin
       ReadBuffer(Header, SizeOf(Header));
       Result := (Swap(Word(Header.Revision)) = $FFFE) and
-                ((LowerCase(Header.Chan) = 'rgb') or
-                 (LowerCase(Header.Chan) = 'xyz'));
+                ((LowerCase(string(Header.Chan)) = 'rgb') or
+                 (LowerCase(string(Header.Chan)) = 'xyz'));
     end;
     Position := LastPosition;
   end;
@@ -5518,16 +5524,16 @@ begin
     BitsPerSample := Header.Chan_bits;
     BitsPerPixel := SamplesPerPixel * BitsPerSample;
 
-    if LowerCase(Header.Chan) = 'rgb' then
+    if LowerCase(string(Header.Chan)) = 'rgb' then
     begin
       if Header.num_matte > 0 then ColorScheme := csRGBA
                               else ColorScheme := csRGB;
     end
     else
-      if LowerCase(Header.Chan) = 'xyz' then Exit;
+      if LowerCase(string(Header.Chan)) = 'xyz' then Exit;
 
     try
-      FileGamma := StrToFloat(Header.Gamma);
+      FileGamma := StrToFloat(string(Header.Gamma));
     except
     end;
 
@@ -5618,7 +5624,7 @@ begin
     if Result then
     begin
       ReadBuffer(Header, SizeOf(Header));
-      Result := (UpperCase(Header.Signature) = '8BPS') and
+      Result := (UpperCase(string(Header.Signature)) = '8BPS') and
                 (Swap(Header.Version) = 1);
     end;
     Position := LastPosition;

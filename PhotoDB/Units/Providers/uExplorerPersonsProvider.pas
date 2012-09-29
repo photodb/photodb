@@ -3,8 +3,10 @@ unit uExplorerPersonsProvider;
 interface
 
 uses
-  Windows,
-  Graphics,
+  System.SysUtils,
+  System.StrUtils,
+  Winapi.Windows,
+  Vcl.Graphics,
   uPathProviders,
   uPeopleSupport,
   uBitmapUtils,
@@ -15,9 +17,7 @@ uses
   uShellIcons,
   uExplorerMyComputerProvider,
   uExplorerPathProvider,
-  StrUtils,
   uStringUtils,
-  SysUtils,
   uJpegUtils,
   uShellIntegration,
   uDBForm,
@@ -299,7 +299,7 @@ end;
 
 function TPersonProvider.Supports(Path: string): Boolean;
 begin
-  Result := StrUtils.StartsText(cPersonsPath, Path);
+  Result := StartsText(cPersonsPath, Path);
 
   if Result then
   begin

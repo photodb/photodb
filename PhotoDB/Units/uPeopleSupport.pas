@@ -3,33 +3,36 @@ unit uPeopleSupport;
 interface
 
 uses
-  SysUtils,
-  Windows,
-  Classes,
   Generics.Collections,
-  DB,
-  Graphics,
-  jpeg,
+  System.SysUtils,
+  System.Classes,
+  System.SyncObjs,
+  System.Math,
+  Winapi.Windows,
+  Data.DB,
+  Vcl.Graphics,
+  Vcl.Imaging.jpeg,
+
+  UnitDBKernel,
+  UnitGroupsWork,
+  UnitDBDeclare,
+  CmpUnit,
+
   uMemory,
-  SyncObjs,
+  uStringUtils,
   uDBClasses,
   uGUIDUtils,
   uFaceDetection,
   uSettings,
-  Math,
   uFastLoad,
-  UnitDBKernel,
   uDBForm,
   uPersonDB,
-  UnitDBDeclare,
   uGroupTypes,
-  UnitGroupsWork,
   uSysUtils,
   uRuntime,
   uConstants,
   uLogger,
   uBitmapUtils,
-  CmpUnit,
   uTranslate,
   uShellIntegration;
 
@@ -64,6 +67,7 @@ type
     function DeletePerson(PersonName: string): Boolean; overload;
     function UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
     function GetPersonsOnImage(ImageID: Integer): TPersonCollection;
+    function GetPersonsByNames(Persons: TStringList): TPersonCollection;
     function GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
     function AddPersonForPhoto(Sender: TDBForm; PersonArea: TPersonArea): Boolean;
     function RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
@@ -720,6 +724,33 @@ begin
       SC.Execute;
       if SC.RecordCount > 0 then
         Result.ReadFromDS(SC.DS);
+    except
+      on E: Exception do
+      begin
+        InternalHandleError(E);
+        Exit;
+      end;
+    end;
+  finally
+    F(SC);
+  end;
+end;
+
+function TPersonManager.GetPersonsByNames(
+  Persons: TStringList): TPersonCollection;
+var
+  SC: TSelectCommand;
+begin
+  InitDB;
+  Result := TPersonCollection.Create;
+  SC := TSelectCommand.Create(ObjectTableName);
+  try
+    SC.AddParameter(TAllParameter.Create);
+    SC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('trim(ObjectName) in ({0})', [Persons.Join(',')])));
+    SC.AddWhereParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
+    try
+      SC.Execute;
+      Result.ReadFromDS(SC.DS);
     except
       on E: Exception do
       begin

@@ -3,11 +3,12 @@ unit uThreadForm;
 interface
 
 uses
-  Classes,
-  Forms,
-  SyncObjs,
+  System.Types,
+  System.Classes,
+  System.SyncObjs,
+  Vcl.Forms,
+  Vcl.Graphics,
   uDBForm,
-  Graphics,
   uSysUtils,
   uMemory,
   uGUIDUtils;

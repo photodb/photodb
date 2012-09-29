@@ -3,14 +3,15 @@ unit FormManegerUnit;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Forms,
-  Themes,
-  AppEvnts,
-  StrUtils,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  System.StrUtils,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Forms,
+  Vcl.Themes,
+  Vcl.AppEvnts,
   uAppUtils,
   UnitDBKernel,
   CommonDBSupport,

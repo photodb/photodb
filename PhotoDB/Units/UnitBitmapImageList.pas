@@ -3,15 +3,16 @@ unit UnitBitmapImageList;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  Graphics,
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  Winapi.Windows,
+  Winapi.CommCtrl,
+  Vcl.Graphics,
+  Vcl.ImgList,
   uMemory,
   uBitmapUtils,
-  uPathProviders,
-  Vcl.ImgList,
-  Winapi.CommCtrl;
+  uPathProviders;
 
 type
   TBitmapImageList = class;

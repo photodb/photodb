@@ -4,16 +4,17 @@ interface
 
 uses
   Generics.Collections,
-  Windows,
-  Classes,
-  SysUtils,
+  System.StrUtils,
+  System.Classes,
+  System.SysUtils,
+  Winapi.Windows,
   uMemory,
-  uSysUtils,
-  StrUtils;
+  uSysUtils;
 
 type
   TStringsHelper = class helper for TStrings
     function Join(JoinString: string): string;
+    procedure AddRange(Range: TArray<string>);
   end;
 
 type
@@ -440,6 +441,14 @@ begin
 end;
 
 { TStringsHelper }
+
+procedure TStringsHelper.AddRange(Range: TArray<string>);
+var
+  S: string;
+begin
+  for S in Range do
+    Add(S);
+end;
 
 function TStringsHelper.Join(JoinString: string): string;
 begin

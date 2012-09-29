@@ -3,8 +3,21 @@ unit uMultiCPUThreadManager;
 interface
 
 uses
-  Windows, Math, SysUtils, Forms, uTime, uGOM, uLogger, uGUIDUtils,
-  uThreadEx, uThreadForm, Classes, SyncObjs, uMemory, uSysUtils;
+  System.Types,
+  System.Math,
+  System.Classes,
+  System.SyncObjs,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.Forms,
+  uMemory,
+  uTime,
+  uGOM,
+  uLogger,
+  uGUIDUtils,
+  uThreadEx,
+  uThreadForm,
+  uSysUtils;
 
 type
   TMultiCPUThread = class(TThreadEx)

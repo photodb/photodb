@@ -3,6 +3,8 @@ unit Searching;
 interface
 
 uses
+  System.Types,
+  System.UITypes,
   ToolWin,
   ShellApi,
   Windows,
@@ -102,6 +104,8 @@ uses
   uBitmapUtils,
   uThemesUtils,
   uVCLHelpers,
+
+  uSearchQuery,
   Themes,
   uBaseWinControl,
   uFormInterfaces;
@@ -832,9 +836,7 @@ begin
   WideSearch.Query := SearchEdit.Text;
   ItemEx := ComboBoxSearchGroups.ItemsEx.ComboItems[ComboBoxSearchGroups.ItemIndex];
   if ItemEx.Data = nil then
-    WideSearch.GroupName := ItemEx.Caption
-  else
-    WideSearch.GroupName := '';
+    WideSearch.Groups.Add(ItemEx.Caption);
 
   WideSearch.RatingFrom := Min(RtgQueryRating.Rating, RtgQueryRating.RatingRange);
   WideSearch.RatingTo := Max(RtgQueryRating.Rating, RtgQueryRating.RatingRange);

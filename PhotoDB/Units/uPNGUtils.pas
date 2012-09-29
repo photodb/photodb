@@ -260,7 +260,6 @@ begin
     begin
       AddrS := AddrLineS;
       AddrD := AddrLineD;
-      Rotater := 0;
       for J := 0 to PNG.Width - 1 do
       begin
         Rotater := J * BitDepth mod 8;
@@ -286,7 +285,6 @@ begin
     begin
       AddrS := AddrLineS;
       AddrD := AddrLineD;
-      Rotater := 0;
       for J := 0 to PNG.Width - 1 do
       begin
         Rotater := J * BitDepth mod 8;
@@ -362,7 +360,7 @@ var
   DeltaS, DeltaD: Integer;
   AddrLineS, AddrLineD: NativeInt;
   AddrS, AddrD: NativeInt;
-  BitDepth, BitDepthD8, BitDepthD9, ColorMask, P, Rotater, Multilpyer: Byte;
+  BitDepth, BitDepthD8, ColorMask, P, Rotater, Multilpyer: Byte;
 
 begin
   if Bitmap.PixelFormat <> pf24bit then
@@ -389,9 +387,9 @@ begin
     BitDepth := 8;
 
   BitDepthD8 := 8 - BitDepth;
-  BitDepthD9 := 9 - BitDepth;
   ColorMask := (255 shl BitDepthD8) and 255;
 
+  Multilpyer := 1;
   case BitDepth of
     1: Multilpyer := 255;
     2: Multilpyer := 85;
@@ -403,7 +401,6 @@ begin
   begin
     AddrS := AddrLineS;
     AddrD := AddrLineD;
-    Rotater := 0;
     for J := 0 to PNG.Width - 1 do
     begin
       Rotater := J * BitDepth mod 8;

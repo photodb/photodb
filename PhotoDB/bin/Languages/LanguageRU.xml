@@ -419,6 +419,10 @@
     <translate name="Search" value="Поиск" />
     <translate name="Any" value="Любая" />
     <translate name="Reset" value="Сброс" />
+    <translate name="Previous selections" value="Предыдущие выборы" />
+    <translate name="Other person" value="Другая персона" />
+    <translate name="and" value="и" />
+    <translate name="or" value="или" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

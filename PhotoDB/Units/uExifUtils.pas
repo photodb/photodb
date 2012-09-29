@@ -3,28 +3,32 @@ unit uExifUtils;
 interface
 
 uses
-  uErrors,
-  Windows,
-  uConstants,
-  Classes,
-  Jpeg,
-  DateUtils,
-  GraphicEx,
-  Graphics,
-  SysUtils,
+  System.Classes,
+  System.DateUtils,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Imaging.Jpeg,
+
   CCR.Exif,
+  CCR.Exif.TiffUtils,
   CCR.Exif.XMPUtils,
+
+  GraphicEx,
+  RAWImage,
+  GraphicCrypt,
+  UnitDBKernel,
+  UnitDBDeclare,
+
   uMemory,
   uTiffImage,
-  RAWImage,
+  uErrors,
+  uConstants,
   uAnimatedJPEG,
   uSettings,
   uAssociations,
   uLogger,
   uPortableDeviceUtils,
-  GraphicCrypt,
-  UnitDBKernel,
-  UnitDBDeclare,
   uSysUtils,
   uTranslate;
 
@@ -286,7 +290,7 @@ var
   GraphicClass: TGraphicClass;
 begin
   GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
-  if (GraphicClass = Jpeg.TJPEGImage)
+  if (GraphicClass = Vcl.Imaging.Jpeg.TJPEGImage)
     or (GraphicClass = TAnimatedJPEG)
     or (GraphicClass = TTiffImage)
     or (GraphicClass = GraphicEx.TPSDGraphic)
@@ -321,7 +325,7 @@ end;
 function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
 var
   ExifData: TExifData;
-  OldMode : Cardinal;
+  OldMode: Cardinal;
 begin
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
@@ -333,8 +337,8 @@ begin
     try
       ExifData := TExifData.Create;
       try
-        ExifData.LoadFromFileEx(Info.FileName);
-        Result := UpdateImageGeoInfoFromExif(Info, ExifData);
+        if ExifData.LoadFromFileEx(Info.FileName, False) then
+          Result := UpdateImageGeoInfoFromExif(Info, ExifData);
       finally
         F(ExifData);
       end;
@@ -1088,7 +1092,7 @@ begin
 
         OS := TMemoryStream.Create;
         try
-          if (GraphicClass = Jpeg.TJPEGImage) or (GraphicClass = TAnimatedJPEG) then
+          if (GraphicClass = Vcl.Imaging.Jpeg.TJPEGImage) or (GraphicClass = TAnimatedJPEG) then
             TExifDataEx(Self).DoSaveToJPEG(MS, OS);
 
           if (GraphicClass = TTiffImage) then

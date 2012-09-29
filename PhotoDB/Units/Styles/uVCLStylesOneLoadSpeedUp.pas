@@ -3,10 +3,16 @@ unit uVCLStylesOneLoadSpeedUp;
 interface
 
 uses
-  Winapi.Windows,
+  System.Generics.Collections,
+  System.ZLib,
+  System.Types,
   System.UITypes,
   System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
   Winapi.UxTheme,
+  Winapi.Messages,
+  Winapi.CommCtrl,
   Vcl.StdCtrls,
   Vcl.ComCtrls,
   Vcl.Mask,
@@ -18,16 +24,11 @@ uses
   Vcl.ButtonGroup,
   Vcl.ExtCtrls,
   Vcl.Consts,
-  Winapi.Messages,
-  System.Classes,
-  Winapi.CommCtrl,
-  System.Generics.Collections,
-  System.ZLib,
   Vcl.Graphics,
   Vcl.Forms,
   Vcl.Themes,
   Vcl.Styles,
-  Controls;
+  Vcl.Controls;
 
 implementation
 

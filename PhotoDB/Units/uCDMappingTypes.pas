@@ -3,10 +3,11 @@ unit uCDMappingTypes;
 interface
 
 uses
-  Classes,
-  uMemory,
-  SysUtils,
-  StrUtils;
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  System.StrUtils,
+  uMemory;
 
 const
   TCD_CLASS_TAG_NONE = 0;

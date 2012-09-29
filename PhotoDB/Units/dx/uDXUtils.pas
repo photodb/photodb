@@ -3,8 +3,18 @@ unit uDXUtils;
 interface
 
 uses
-  Windows, Graphics, Classes, Forms, SyncObjs, DDraw, uDBForm, uDBThread,
-  uMemory, uMemoryEx, SysUtils;
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  System.SyncObjs,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Forms,
+  DDraw,
+  uDBForm,
+  uDBThread,
+  uMemory,
+  uMemoryEx;
 
 type
   TByteArr = array [0 .. 0] of Byte;
@@ -199,7 +209,7 @@ begin
     //ДОЛЖНЫ освободить device context поверхности!
     Buffer.ReleaseDC (DC);
   end;
-  Result := Classes.Rect(0,0,Bitmap.Width,Bitmap.Height);
+  Result := System.Classes.Rect(0, 0, Bitmap.Width, Bitmap.Height);
 end;
 
 { TDirectXSlideShowCreatorManager }

@@ -3,9 +3,10 @@ unit uLockedFileNotifications;
 interface
 
 uses
-  Classes,
-  SyncObjs,
-  SysUtils,
+  System.Types,
+  System.Classes,
+  System.SyncObjs,
+  System.SysUtils,
   uMemory;
 
 type

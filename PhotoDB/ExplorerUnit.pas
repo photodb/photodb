@@ -4,31 +4,43 @@ interface
 
 uses
   Generics.Collections,
-  CommCtrl,
-  ActiveX,
-  ShellApi,
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Themes,
-  ComObj,
-  Registry,
-  ComCtrls,
-  ShellCtrls,
-  ImgList,
-  Menus,
-  pngimage,
-  ExtCtrls,
-  ToolWin,
-  Buttons,
-  StdCtrls,
-  Math,
-  DB,
-  uGOM,
+  System.Types,
+  System.Math,
+  System.SysUtils,
+  System.SyncObjs,
+  System.DateUtils,
+  System.Classes,
+  System.StrUtils,
+  System.Win.ComObj,
+  System.Win.Registry,
+  Winapi.CommCtrl,
+  Winapi.ActiveX,
+  Winapi.ShellApi,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShlObj,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Themes,
+  Vcl.ComCtrls,
+  Vcl.Shell.ShellCtrls,
+  Vcl.ImgList,
+  Vcl.Menus,
+  Vcl.Imaging.pngimage,
+  Vcl.ExtCtrls,
+  Vcl.ToolWin,
+  Vcl.Buttons,
+  Vcl.StdCtrls,
+  Vcl.Clipbrd,
+  Vcl.AppEvnts,
+  Vcl.OleCtrls,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Vcl.Grids,
+  Vcl.ValEdit,
+  Data.DB,
+
   PrintMainForm,
   uScript,
   UnitScripts,
@@ -42,7 +54,6 @@ uses
   UnitGroupsWork,
   UnitLinksSupport,
   SaveWindowPos,
-  AppEvnts,
   WebLink,
   UnitBitmapImageList,
   Network,
@@ -55,10 +66,7 @@ uses
   ScPanel,
   ImButton,
   UnitCDMappingSupport,
-  StrUtils,
   ShellContextMenu,
-  ShlObj,
-  Clipbrd,
   GraphicsCool,
   uShellIntegration,
   ProgressActionUnit,
@@ -75,6 +83,7 @@ uses
   uPrivateHelper,
   UnitCryptingImagesThread,
   uVistaFuncs,
+  uGOM,
   wfsU,
   uLockedFileNotifications,
   UnitDBDeclare,
@@ -86,14 +95,12 @@ uses
   uDBThread,
   UnitDBCommon,
   uCDMappingTypes,
-  System.SyncObjs,
   uResources,
   uListViewUtils,
   uAssociatedIcons,
   uLogger,
   uConstants,
   uTime,
-  DateUtils,
   uDateUtils,
   uFastLoad,
   uFileUtils,
@@ -138,7 +145,6 @@ uses
   uPortableDeviceManager,
   uPortableClasses,
 
-  Vcl.OleCtrls,
   uWebJSExternalContainer,
   WebJS_TLB,
   SHDocVw,
@@ -148,8 +154,6 @@ uses
   uGeoLocation,
   uBrowserEmbedDraw,
 
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
   uThemesUtils,
   uBaseWinControl,
 
@@ -159,8 +163,6 @@ uses
 
   VirtualTrees,
   uPathProvideTreeView,
-  Vcl.Grids,
-  Vcl.ValEdit,
   Rating,
   WebLinkList,
   uDBInfoEditorUtils,
@@ -179,14 +181,6 @@ const
 
 type
   TPageControl = class(TPageControlNoBorder);
-
-type
-  TExtendedSearchParams = class
-    DateFrom: TDateTime;
-    DateTo: TDateTime;
-    RatingFrom: Byte;
-    RatingTo: Byte;
-  end;
 
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
@@ -476,7 +470,7 @@ type
     SbExtendedSearchMode: TSpeedButton;
     SbExtendedSearchStart: TSpeedButton;
     PnExtendedSearchEditPlace: TPanel;
-    ExExtendedSearchText: TWatermarkedEdit;
+    EdExtendedSearchText: TWatermarkedEdit;
     WlSearchRatingFrom: TWebLink;
     WlSearchRatingTo: TWebLink;
     WllExtendedSearchPersons: TWebLinkList;
@@ -503,6 +497,7 @@ type
     MiPreviousSelectionsSeparator: TMenuItem;
     MiOtherPersons: TMenuItem;
     ImFacePopup: TImageList;
+    ImExtendedSearchPersons: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -823,6 +818,7 @@ type
     FEditorInfo: TExplorerFileInfos;
     FReloadGroupsMessage: UINT;
     FReloadESGroupsMessage: UINT;
+    FReloadRSPersonsMessage: UINT;
 
     FActiveLeftTab: TExplorerLeftTab;
     FLeftTabs: set of TExplorerLeftTab;
@@ -835,7 +831,8 @@ type
     FShowEXIFAttributes: Boolean;
     FImageViewer: IImageViewer;
 
-    FExtendedSearchParams: TExtendedSearchParams;
+    FExtendedSearchParams: TDatabaseSearchParameters;
+    FExtendedSearchPersons: TList<TPerson>;
 
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
@@ -917,9 +914,12 @@ type
     procedure ExtendedSearchInitPersons;
     procedure ExtendedSearchInitGroups;
     procedure ExtendedSearchGroupClick(Sender: TObject);
+    procedure ExtendedSearchGroupModeClick(Sender: TObject);
     procedure SelectPersonClick(Sender: TObject);
     procedure AddWideSearchPerson(P: TPerson);
     procedure WlExtendedSearchAddPersonClick(Sender: TObject);
+    procedure ExtendedSearchPersonClick(Sender: TObject);
+    procedure ExtendedSearchPersonModeClick(Sender: TObject);
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1270,6 +1270,7 @@ begin
   FPngNoHIstogram := nil;
   FImageViewer := nil;
   FExtendedSearchParams := nil;
+  FExtendedSearchPersons := nil;
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -1479,6 +1480,7 @@ begin
   FWebBrowserJSMessage := RegisterWindowMessage('WEBBROWSER_JS_MESSAGE');
   FReloadGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_GROUPS');
   FReloadESGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_GROUPS');
+  FReloadRSPersonsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_PERSONS');
 
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
@@ -2042,6 +2044,7 @@ begin
   F(FWbGeoLocation);
   F(FPngNoHIstogram);
   F(FExtendedSearchParams);
+  F(FExtendedSearchPersons);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
 
@@ -3679,6 +3682,12 @@ begin
     ExtendedSearchInitGroups;
   end;
 
+  if Msg.message = FReloadRSPersonsMessage then
+  begin
+    Handled := True;
+    ExtendedSearchInitPersons;
+  end;
+
   if Msg.message = FWebBrowserJSMessage then
   begin
     Handled := True;
@@ -3764,7 +3773,7 @@ begin
       GetCursorPos(P);
       P := ElvMain.ScreenToClient(P);
       if PtInRect(ElvMain.ClientRect, P) then
-        Windows.SetFocus(ElvMain.Handle);
+        Winapi.Windows.SetFocus(ElvMain.Handle);
     end;
   end;
 
@@ -3777,7 +3786,7 @@ begin
         WindowsMenuTickCount := GetTickCount;
 
         if PnRight.Visible then
-          Windows.SetFocus(ElvMain.Handle);
+          Winapi.Windows.SetFocus(ElvMain.Handle);
       end;
 
     if (Msg.message = WM_MOUSEMOVE) and (ebcsDragSelecting in ElvMain.States) then
@@ -3920,8 +3929,8 @@ begin
     WedSearch.Color := Theme.PanelColor;
     WedSearch.Font.Color := Theme.PanelFontColor;
 
-    ExExtendedSearchText.Color := Theme.PanelColor;
-    ExExtendedSearchText.Font.Color := Theme.PanelFontColor;
+    EdExtendedSearchText.Color := Theme.PanelColor;
+    EdExtendedSearchText.Font.Color := Theme.PanelFontColor;
 
     BvSeparatorAddress.Hide;
   end;
@@ -4629,7 +4638,7 @@ end;
 
 procedure TExplorerForm.WbGeoLocationExit(Sender: TObject);
 begin
-  Windows.SetFocus(Handle);
+  Winapi.Windows.SetFocus(Handle);
   ActiveControl := nil;
   ElvMain.SetFocus;
 end;
@@ -4964,7 +4973,7 @@ begin
 
   PnRight.Hide;
   SplRightPanel.Hide;
-  Windows.SetFocus(ElvMain.Handle);
+  Winapi.Windows.SetFocus(ElvMain.Handle);
 end;
 
 procedure TExplorerForm.ShowIndeterminateProgress;
@@ -6294,15 +6303,21 @@ begin
   if SearchMode = EXPLORER_SEARCH_DATABASE then
   begin
     LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_DATABASE');
+    LoadSpeedButtonFromResourcePNG(SbExtendedSearchMode, 'S_DATABASE');
     WedSearch.WatermarkText := L('Search in collection');
+    EdExtendedSearchText.WatermarkText := L('Search in collection');
   end else if SearchMode = EXPLORER_SEARCH_FILES then
   begin
     LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_FILES');
+    LoadSpeedButtonFromResourcePNG(SbExtendedSearchMode, 'S_FILES');
     WedSearch.WatermarkText := L('Search in directory');
+    EdExtendedSearchText.WatermarkText := L('Search in directory');
   end else
   begin
     LoadSpeedButtonFromResourcePNG(SbSearchMode, 'S_IMAGES');
+    LoadSpeedButtonFromResourcePNG(SbExtendedSearchMode, 'S_IMAGES');
     WedSearch.WatermarkText := L('Search in directory (with EXIF)');
+    EdExtendedSearchText.WatermarkText := L('Search in directory (with EXIF)');
   end;
   TW.I.Start('LoadSearchMode - END');
 end;
@@ -6356,9 +6371,11 @@ end;
 procedure TExplorerForm.SbSearchModeClick(Sender: TObject);
 var
   P: TPoint;
+  Control: TControl;
 begin
-  P := Point(0, SbSearchMode.Height);
-  P := SbSearchMode.ClientToScreen(P);
+  Control := TControl(Sender);
+  P := Point(0, Control.Height);
+  P := Control.ClientToScreen(P);
   PmSearchMode.DoPopupEx(P.X, P.Y);
 end;
 
@@ -8927,40 +8944,63 @@ end;
 
 procedure TExplorerForm.SbDoSearchClick(Sender: TObject);
 var
+  I: Integer;
   S, Path: string;
+  IsExtendedSearch: Boolean;
+  Groups: TGroups;
 begin
+  IsExtendedSearch := (Sender = EdExtendedSearchText) or (Sender = SbExtendedSearchStart) or (Sender = BtnSearch) and (FSearchMode = EXPLORER_SEARCH_DATABASE);
+
   S := AnsiLowerCase(WedSearch.Text);
   try
-    if (FSearchMode = EXPLORER_SEARCH_FILES) or (FSearchMode = EXPLORER_SEARCH_IMAGES) then
+    if not IsExtendedSearch then
     begin
-      if (FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST) or (FCurrentTypePath = EXPLORER_ITEM_PERSON)
-        or (FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST) or (FCurrentTypePath = EXPLORER_ITEM_GROUP)
-        or (FCurrentTypePath = EXPLORER_ITEM_NETWORK) or (FCurrentTypePath = EXPLORER_ITEM_WORKGROUP)
-        or (FCurrentTypePath = EXPLORER_ITEM_SHELF) then
+      if (FSearchMode = EXPLORER_SEARCH_FILES) or (FSearchMode = EXPLORER_SEARCH_IMAGES) then
       begin
-        ShowFilter(False);
-        WedFilter.Text := WedSearch.Text;
+        if (FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST) or (FCurrentTypePath = EXPLORER_ITEM_PERSON)
+          or (FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST) or (FCurrentTypePath = EXPLORER_ITEM_GROUP)
+          or (FCurrentTypePath = EXPLORER_ITEM_NETWORK) or (FCurrentTypePath = EXPLORER_ITEM_WORKGROUP)
+          or (FCurrentTypePath = EXPLORER_ITEM_SHELF) then
+        begin
+          ShowFilter(False);
+          WedFilter.Text := WedSearch.Text;
+          Exit;
+        end;
+      end;
+
+      Path := ExtractPathExPath(FCurrentPath);
+
+      if S = '' then
+      begin
+        SetNewPath(Path, True);
         Exit;
       end;
-    end;
 
-    Path := ExtractPathExPath(FCurrentPath);
+      if IsShortDrive(Path) then
+        Path := Path + '\';
+      if FSearchMode = EXPLORER_SEARCH_FILES then
+        SetNewPath(Path + cFilesSearchPath + S, False)
+      else if FSearchMode = EXPLORER_SEARCH_IMAGES then
+        SetNewPath(Path + cImagesSearchPath + S, False)
+      else
+        SetNewPath(cDBSearchPath + S, False);
 
-    if S = '' then
+
+    end else //if IsExtendedSearch then
     begin
-      SetNewPath(Path, True);
-      Exit;
-    end;
+      FExtendedSearchParams.Text := EdExtendedSearchText.Text;
 
-    if IsShortDrive(Path) then
-      Path := Path + '\';
-    if FSearchMode = EXPLORER_SEARCH_FILES then
-      SetNewPath(Path + cFilesSearchPath + S, False)
-    else if FSearchMode = EXPLORER_SEARCH_IMAGES then
-      SetNewPath(Path + cImagesSearchPath + S, False)
-    else
-      SetNewPath(cDBSearchPath + S, False);
+      FExtendedSearchParams.Groups.Clear;
+      Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+      for I := 0 to Length(Groups) - 1 do
+        FExtendedSearchParams.Groups.Add(Groups[I].GroupName);
 
+      FExtendedSearchParams.Persons.Clear;
+      for I := 0 to FExtendedSearchPersons.Count - 1 do
+        FExtendedSearchParams.Persons.Add(FExtendedSearchPersons[I].Name);
+
+      SetNewPath(cDBSearchPath + FExtendedSearchParams.ToString, False);
+    end;//if IsExtendedSearch then
   finally
     ElvMain.SetFocus;
   end;
@@ -10855,15 +10895,23 @@ begin
   end;
 end;
 
+procedure TExplorerForm.ExtendedSearchGroupModeClick(Sender: TObject);
+begin
+  FExtendedSearchParams.GroupsAnd := not FExtendedSearchParams.GroupsAnd;
+  PostMessage(Handle, FReloadESGroupsMessage, 0, 0);
+end;
+
 procedure TExplorerForm.ExtendedSearchInit;
 begin
   if FExtendedSearchParams = nil then
   begin
-    FExtendedSearchParams := TExtendedSearchParams.Create;
+    FExtendedSearchParams := TDatabaseSearchParameters.Create;
     FExtendedSearchParams.DateFrom := MinDateTime;
     FExtendedSearchParams.DateTo := MinDateTime;
     FExtendedSearchParams.RatingFrom := 0;
     FExtendedSearchParams.RatingTo := 5;
+
+    FExtendedSearchPersons := TList<TPerson>.Create;
 
     LoadSpeedButtonFromResourcePNG(SbExtendedSearchStart, 'SEARCH');
 
@@ -10885,6 +10933,8 @@ begin
     BtnSearch.Caption := L('Search');
     BtnSelectDatePopup.Caption := L('Ok');
     BtnSelectDatePopupReset.Caption := L('Reset');
+    MiPreviousSelections.Caption := L('Previous selections') + ':';
+    MiOtherPersons.Caption := L('Other person');
 
     ExtendedSearchInitGroups;
     ExtendedSearchInitPersons;
@@ -10902,123 +10952,188 @@ var
   LoadGroupInfo: TGroupLoadInfo;
   B: TBitmap;
 begin
-
-  ImExtendedSearchGroups.Clear;
-  B := TBitmap.Create;
+  BeginScreenUpdate(WllExtendedSearchGroups.Handle);
   try
-    CreteDefaultGroupImage(B);
-    ImExtendedSearchGroups.Add(B, nil);
-  finally
-    F(B);
-  end;
 
-  WllExtendedSearchGroups.Clear;
+    ImExtendedSearchGroups.Clear;
+    B := TBitmap.Create;
+    try
+      CreteDefaultGroupImage(B);
+      ImExtendedSearchGroups.Add(B, nil);
+    finally
+      F(B);
+    end;
 
-  WlExtendedSearchAddGroup := WllExtendedSearchGroups.AddLink(True);
-  WlExtendedSearchAddGroup.IconWidth := 16;
-  WlExtendedSearchAddGroup.IconHeight := 16;
-  WlExtendedSearchAddGroup.Text := L('Photos with groups');
-  WlExtendedSearchAddGroup.LoadFromResource('GROUP_ADD_SMALL');
-  WlExtendedSearchAddGroup.OnClick := ExtendedSearchGroupClick;
-  WlExtendedSearchAddGroup.Tag := -1;
+    WllExtendedSearchGroups.Clear;
 
-  ESGroups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+    WlExtendedSearchAddGroup := WllExtendedSearchGroups.AddLink(True);
+    WlExtendedSearchAddGroup.IconWidth := 16;
+    WlExtendedSearchAddGroup.IconHeight := 16;
+    WlExtendedSearchAddGroup.Text := L('Photos with groups');
+    WlExtendedSearchAddGroup.LoadFromResource('GROUP_ADD_SMALL');
+    WlExtendedSearchAddGroup.OnClick := ExtendedSearchGroupClick;
+    WlExtendedSearchAddGroup.Tag := -1;
 
-  for I := 0 to Length(ESGroups) - 1 do
-  begin
-    WL := WllExtendedSearchGroups.AddLink;
-    WL.Text := ESGroups[I].GroupName;
-    WL.ImageList := ImExtendedSearchGroups;
-    WL.ImageIndex := 0;
-    WL.Tag := I;
-    WL.OnClick := ExtendedSearchGroupClick;
-  end;
+    ESGroups := EncodeGroups(WllExtendedSearchGroups.TagEx);
 
-  LoadGroupInfo := TGroupLoadInfo.Create;
-  LoadGroupInfo.Owner := Self;
-  LoadGroupInfo.Groups := WllExtendedSearchGroups.TagEx;
-
-  TThreadTask.Create(Self, LoadGroupInfo,
-    procedure(Thread: TThreadTask; Data: Pointer)
-    var
-      Info: TGroupLoadInfo;
-      J: Integer;
-      B: TBitmap;
-      Groups: TGroups;
-      IsTerminated: Boolean;
+    for I := 0 to Length(ESGroups) - 1 do
     begin
-      CoInitialize(nil);
-      try
-        Info := TGroupLoadInfo(Data);
+      WL := WllExtendedSearchGroups.AddLink;
+      WL.Text := ESGroups[I].GroupName;
+      WL.ImageList := ImExtendedSearchGroups;
+      WL.ImageIndex := 0;
+      WL.Tag := I;
+      WL.OnClick := ExtendedSearchGroupClick;
+
+      if I < Length(ESGroups) - 1 then
+      begin
+        WL := WllExtendedSearchGroups.AddLink;
+        WL.Text := IIF(FExtendedSearchParams.GroupsAnd, L('and'), L('or'));
+        WL.IconWidth := 0;
+        WL.IconHeight := 16;
+        WL.OnClick := ExtendedSearchGroupModeClick;
+      end;
+    end;
+
+    LoadGroupInfo := TGroupLoadInfo.Create;
+    LoadGroupInfo.Owner := Self;
+    LoadGroupInfo.Groups := WllExtendedSearchGroups.TagEx;
+
+    TThreadTask.Create(Self, LoadGroupInfo,
+      procedure(Thread: TThreadTask; Data: Pointer)
+      var
+        Info: TGroupLoadInfo;
+        J: Integer;
+        B: TBitmap;
+        Groups: TGroups;
+        IsTerminated: Boolean;
+      begin
+        CoInitialize(nil);
         try
-          Groups := EncodeGroups(Info.Groups);
+          Info := TGroupLoadInfo(Data);
+          try
+            Groups := EncodeGroups(Info.Groups);
 
-          for J := 0 to Length(Groups) - 1 do
-          begin
+            for J := 0 to Length(Groups) - 1 do
+            begin
 
-            B := TBitmap.Create;
-            try
-              CreateGroupImage(Groups[J].GroupName, B);
+              B := TBitmap.Create;
+              try
+                CreateGroupImage(Groups[J].GroupName, B);
 
-              IsTerminated := not Thread.SynchronizeTask(
-                procedure
-                var
-                  I: Integer;
-                  WL: TWebLink;
-                begin
-                  if (Info.Owner.WllExtendedSearchGroups.TagEx <> Info.Groups) then
+                IsTerminated := not Thread.SynchronizeTask(
+                  procedure
+                  var
+                    I: Integer;
+                    WL: TWebLink;
                   begin
-                    Thread.Terminate;
-                    Exit;
-                  end;
-
-                  for I := 0 to WllExtendedSearchGroups.ControlCount - 1 do
-                    if WllExtendedSearchGroups.Controls[I] is TWebLink then
+                    if (Info.Owner.WllExtendedSearchGroups.TagEx <> Info.Groups) then
                     begin
-                      WL := TWebLink(WllExtendedSearchGroups.Controls[I]);
-                      if WL.Text = Groups[J].GroupName then
-                      begin
-                        WL.ImageIndex := Info.Owner.ImExtendedSearchGroups.Add(B, nil);
-                        Exit;
-                      end;
+                      Thread.Terminate;
+                      Exit;
                     end;
-                end
-              );
 
-              if IsTerminated then
-                Exit;
-            finally
-              F(B);
+                    for I := 0 to WllExtendedSearchGroups.ControlCount - 1 do
+                      if WllExtendedSearchGroups.Controls[I] is TWebLink then
+                      begin
+                        WL := TWebLink(WllExtendedSearchGroups.Controls[I]);
+                        if WL.Text = Groups[J].GroupName then
+                        begin
+                          WL.ImageIndex := Info.Owner.ImExtendedSearchGroups.Add(B, nil);
+                          Exit;
+                        end;
+                      end;
+                  end
+                );
+
+                if IsTerminated then
+                  Exit;
+              finally
+                F(B);
+              end;
             end;
+          finally
+           F(Info);
           end;
         finally
-         F(Info);
+          CoUninitialize;
         end;
-      finally
-        CoUninitialize;
-      end;
-    end
-  );
+      end
+    );
 
-  WllExtendedSearchGroups.ReallignList;
-  WllExtendedSearchGroups.AutoHeight(300);
+    WllExtendedSearchGroups.ReallignList;
+    WllExtendedSearchGroups.AutoHeight(300);
 
+  finally
+    EndScreenUpdate(WllExtendedSearchGroups.Handle, True);
+  end;
   ExtendedSearchRealign;
 end;
 
 procedure TExplorerForm.ExtendedSearchInitPersons;
 var
-  WlExtendedSearchAddPerson: TWebLink;
+  I: Integer;
+  B: TBitmap;
+  WL, WlExtendedSearchAddPerson: TWebLink;
 begin
-  WllExtendedSearchPersons.Clear;
+  BeginScreenUpdate(WllExtendedSearchPersons.Handle);
+  try
 
-  WlExtendedSearchAddPerson := WllExtendedSearchPersons.AddLink(True);
-  WlExtendedSearchAddPerson.IconWidth := 16;
-  WlExtendedSearchAddPerson.IconHeight := 16;
-  WlExtendedSearchAddPerson.Text := L('Persons on photo');
-  WlExtendedSearchAddPerson.LoadFromResource('GROUP_ADD_SMALL');
-  WlExtendedSearchAddPerson.OnClick := WlExtendedSearchAddPersonClick;
-  WlExtendedSearchAddPerson.PopupMenu := PmSelectPerson;
+    ImExtendedSearchPersons.Clear;
+    B := TBitmap.Create;
+    try
+      CreteDefaultGroupImage(B);
+      ImExtendedSearchPersons.Add(B, nil);
+    finally
+      F(B);
+    end;
+
+    WllExtendedSearchPersons.Clear;
+
+    WlExtendedSearchAddPerson := WllExtendedSearchPersons.AddLink(True);
+    WlExtendedSearchAddPerson.IconWidth := 16;
+    WlExtendedSearchAddPerson.IconHeight := 16;
+    WlExtendedSearchAddPerson.Text := L('Persons on photo');
+    WlExtendedSearchAddPerson.LoadFromResource('GROUP_ADD_SMALL');
+    WlExtendedSearchAddPerson.OnClick := WlExtendedSearchAddPersonClick;
+    WlExtendedSearchAddPerson.PopupMenu := PmSelectPerson;
+
+    for I := 0 to FExtendedSearchPersons.Count - 1 do
+    begin
+      WL := WllExtendedSearchPersons.AddLink;
+      WL.Text := FExtendedSearchPersons[I].Name;
+      WL.ImageList := ImExtendedSearchPersons;
+      WL.ImageIndex := ImExtendedSearchPersons.Add(FExtendedSearchPersons[I].CreatePreview(16, 16), nil);
+      WL.Tag := I;
+      WL.OnClick := ExtendedSearchPersonClick;
+
+      if I < FExtendedSearchPersons.Count - 1 then
+      begin
+        WL := WllExtendedSearchPersons.AddLink;
+        WL.Text := IIF(FExtendedSearchParams.PersonsAnd, L('and'), L('or'));
+        WL.IconWidth := 0;
+        WL.IconHeight := 16;
+        WL.OnClick := ExtendedSearchPersonModeClick;
+      end;
+    end;
+
+    WllExtendedSearchPersons.ReallignList;
+    WllExtendedSearchPersons.AutoHeight(300);
+  finally
+    EndScreenUpdate(WllExtendedSearchPersons.Handle, True);
+  end;
+  ExtendedSearchRealign;
+end;
+
+procedure TExplorerForm.ExtendedSearchPersonClick(Sender: TObject);
+begin
+  //TODO:
+end;
+
+procedure TExplorerForm.ExtendedSearchPersonModeClick(Sender: TObject);
+begin
+  FExtendedSearchParams.PersonsAnd := not FExtendedSearchParams.PersonsAnd;
+  PostMessage(Handle, FReloadRSPersonsMessage, 0, 0);
 end;
 
 procedure TExplorerForm.WlExtendedSearchAddPersonClick(Sender: TObject);
@@ -11054,28 +11169,11 @@ begin
 end;
 
 procedure TExplorerForm.AddWideSearchPerson(P: TPerson);
-var
-  WlPerson: TWebLink;
-  B: TBitmap;
 begin
   PersonManager.MarkLatestPerson(P.ID);
-
-  WlPerson := WllExtendedSearchPersons.AddLink(False);
-  WlPerson.IconWidth := 16;
-  WlPerson.IconHeight := 16;
-  WlPerson.Text := P.Name;
-  B := P.CreatePreview(16, 16);
-  try
-    WlPerson.LoadBitmap(B);
-  finally
-    F(B);
-  end;
-  WlPerson.Tag := NativeInt(P.Clone);
-
-  WllExtendedSearchPersons.ReallignList;
-  WllExtendedSearchPersons.AutoHeight(300);
-
-  ExtendedSearchRealign;
+  FExtendedSearchPersons.Add(P);
+  P.CreatePreview(16, 16);
+  PostMessage(Handle, FReloadRSPersonsMessage, 0, 0);
 end;
 
 procedure TExplorerForm.PmSelectPersonPopup(Sender: TObject);
@@ -11084,8 +11182,6 @@ var
   SelectedPersons: TPersonCollection;
   LatestPersons: Boolean;
   MI: TMenuItem;
-  WlPrson: TWebLink;
-  P: TPerson;
 begin
 
   ImFacePopup.Clear;
@@ -11116,22 +11212,14 @@ begin
     //add current persons
     PersonManager.FillLatestSelections(SelectedPersons);
 
-    for J := 0 to WllExtendedSearchPersons.ControlCount - 1 do
+    for J := 0 to FExtendedSearchPersons.Count - 1 do
     begin
-      if WllExtendedSearchPersons.Controls[J] is TWebLink then
+      for I := 0 to SelectedPersons.Count - 1 do
       begin
-        WlPrson := TWebLink(WllExtendedSearchPersons.Controls[J]);
-        if (WlPrson.Tag <> 0) then
+        if SelectedPersons[I].ID = FExtendedSearchPersons[J].ID then
         begin
-          P := TPerson(WlPrson.Tag);
-          for I := 0 to SelectedPersons.Count - 1 do
-          begin
-            if SelectedPersons[I].ID = P.ID then
-            begin
-              SelectedPersons.DeleteAt(I);
-              Break;
-            end;
-          end;
+          SelectedPersons.DeleteAt(I);
+          Break;
         end;
       end;
     end;
@@ -11172,6 +11260,7 @@ begin
     PersonManager.FindPerson(PersonID, P);
 
     AddWideSearchPerson(P);
+    P := nil;
   finally
     F(P);
   end;
@@ -11189,7 +11278,10 @@ begin
     try
       Result := FormFindPerson.Execute(nil, P);
       if (P <> nil) and (Result = SELECT_PERSON_OK) then
+      begin
         AddWideSearchPerson(P);
+        P := nil;
+      end;
     finally
       F(P);
     end;
@@ -11219,8 +11311,8 @@ begin
   WlSearchRatingFromValue.Left := WlSearchRatingFrom.AfterRight(7);
   WlSearchRatingToValue.Left := WlSearchRatingTo.AfterRight(5);
 
-  WlSearchRatingFrom.Top := ExExtendedSearchText.AfterTop(10);
-  WlSearchRatingFromValue.Top := ExExtendedSearchText.AfterTop(12);
+  WlSearchRatingFrom.Top := EdExtendedSearchText.AfterTop(10);
+  WlSearchRatingFromValue.Top := EdExtendedSearchText.AfterTop(12);
   WlSearchRatingTo.Top := WlSearchRatingFrom.AfterTop(5);
   WlSearchRatingToValue.TOp := WlSearchRatingFrom.AfterTop(7);
   BvRating.Top := WlSearchRatingToValue.AfterTop(2);
@@ -11296,11 +11388,10 @@ begin
   RtPopupRating.Tag := NativeInt(WlSearchRatingToValue);
 end;
 
+procedure TExplorerForm.RtPopupRatingRating(Sender: TObject; Rating: Integer);
 const
   RATING_ICONS: array[0..5] of string = ('TRATING_DEL', 'TRATING_1', 'TRATING_2',
                   'TRATING_3', 'TRATING_4', 'TRATING_5');
-
-procedure TExplorerForm.RtPopupRatingRating(Sender: TObject; Rating: Integer);
 var
   Control: TControl;
 begin

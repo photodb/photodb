@@ -3,20 +3,20 @@ unit SlideShow;
 interface
 
 uses
-  Shellapi,
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ExtCtrls,
-  Menus,
-  Buttons,
-  SaveWindowPos,
-  DB,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Shellapi,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.Menus,
+  Vcl.Buttons,
+  Data.DB,
   ComObj,
   ShlObj,
   AppEvnts,
@@ -30,6 +30,7 @@ uses
   math,
   ToolWin,
   ComCtrls,
+  SaveWindowPos,
   Tlayered_Bitmap,
   GraphicCrypt,
   FormManegerUnit,
@@ -1304,10 +1305,10 @@ begin
       begin
         if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
           FileList.Add(Directory + '\' + SearchRec.Name);
-        Found := SysUtils.FindNext(SearchRec);
+        Found := FindNext(SearchRec);
       end;
     finally
-      FindClose(SearchRec);
+      System.SysUtils.FindClose(SearchRec);
     end;
 
     MiDetectionMethod.Clear;

@@ -4,22 +4,27 @@ interface
 
 uses
   Generics.Collections,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.ValEdit,
+
+  CCR.Exif,
+  CCR.Exif.BaseUtils,
+  CCR.Exif.XMPUtils,
+
+  UnitDBDeclare,
+  UnitLinksSupport,
+
   uConstants,
   uMemory,
   uStringUtils,
-  UnitDBDeclare,
-  Windows,
-  Classes,
-  SysUtils,
-  CCR.Exif,
   uRawExif,
   uExifUtils,
   uImageLoader,
   uGroupTypes,
   uAssociations,
-  UnitLinksSupport,
   uICCProfile,
-  Vcl.ValEdit,
   uTranslate,
   uLogger;
 

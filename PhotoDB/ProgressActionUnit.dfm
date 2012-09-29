@@ -124,6 +124,8 @@ object ProgressActionForm: TProgressActionForm
     Top = 72
     Width = 297
     Height = 18
+    Position = 0
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
@@ -142,6 +144,8 @@ object ProgressActionForm: TProgressActionForm
     Top = 112
     Width = 297
     Height = 18
+    Position = 0
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808

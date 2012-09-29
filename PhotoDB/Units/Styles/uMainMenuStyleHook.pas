@@ -3,13 +3,15 @@ unit uMainMenuStyleHook;
 interface
 
 uses
-  Windows,
-  Graphics,
-  Classes,
-  Controls,
-  VCL.ComCtrls,
-  Menus,
-  Themes;
+  System.Types,
+  System.UITypes,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.ComCtrls,
+  Vcl.Menus,
+  Vcl.Themes;
 
 type
   TMainMenuStyleHook = class(TObject)
@@ -48,7 +50,7 @@ begin
     ACanvas.Brush.Color := StyleServices.GetStyleColor(scListView);
     ACanvas.Pen.Color := StyleServices.GetStyleColor(scListView);
   end;
-  SetBkMode(ACanvas.Handle, Windows.OPAQUE);
+  SetBkMode(ACanvas.Handle, OPAQUE);
   ACanvas.Rectangle(ARect);
 
   if MI.Caption = '-' then

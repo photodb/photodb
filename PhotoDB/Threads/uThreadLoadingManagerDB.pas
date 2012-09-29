@@ -3,8 +3,17 @@ unit uThreadLoadingManagerDB;
 interface
 
 uses
-  Classes, DB, Forms, CommonDBSupport, ADODB, dolphin_db,
-  UnitDBDeclare, uThreadEx, uThreadForm, uMemory;
+  Classes,
+  Forms,
+  DB,
+  ADODB,
+  ActiveX,
+  CommonDBSupport,
+  dolphin_db,
+  UnitDBDeclare,
+  uThreadEx,
+  uThreadForm,
+  uMemory;
 
 type
   TThreadLoadingManagerDB = class(TThreadEx)
@@ -57,42 +66,47 @@ var
 
 begin
   inherited;
-  FDataList := TList.Create;
-  try              
-    FQuery := GetQuery(True);
+  CoInitialize(nil);
+  try
+    FDataList := TList.Create;
     try
-      ForwardOnlyQuery(FQuery);
-      SqlText := 'SELECT ID FROM $DB$ ORDER BY ID';
-      SetSQL(FQuery, SqlText);
-      FQuery.Open;
+      FQuery := GetQuery(True);
+      try
+        ForwardOnlyQuery(FQuery);
+        SqlText := 'SELECT ID FROM $DB$ ORDER BY ID';
+        SetSQL(FQuery, SqlText);
+        FQuery.Open;
 
-      FQuery.First;
-      while not FQuery.Eof do
-      begin
-        if Terminated then
-          Break;
-        ItemData := TDBPopupMenuInfoRecord.Create;
-        ItemData.ID := FQuery.Fields[0].AsInteger;
-        ItemData.InfoLoaded := False;
-        FDataList.Add(ItemData);
-
-        if FDataList.Count = 500 then
+        FQuery.First;
+        while not FQuery.Eof do
         begin
-          FillPacket;
-          FDataList.Clear;
-        end;
+          if Terminated then
+            Break;
+          ItemData := TDBPopupMenuInfoRecord.Create;
+          ItemData.ID := FQuery.Fields[0].AsInteger;
+          ItemData.InfoLoaded := False;
+          FDataList.Add(ItemData);
 
-        FQuery.Next;
-      end;
+          if FDataList.Count = 500 then
+          begin
+            FillPacket;
+            FDataList.Clear;
+          end;
+
+          FQuery.Next;
+        end;
             
-      FillPacket;
-      FDataList.Clear;
+        FillPacket;
+        FDataList.Clear;
+      finally
+        FreeDS(FQuery);
+      end;
     finally
-      FreeDS(FQuery);
+      F(FDataList);
+      Synchronize(DoOnEnd);
     end;
   finally
-    F(FDataList);
-    Synchronize(DoOnEnd);
+    CoUninitialize;
   end;
 end;
 

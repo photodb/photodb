@@ -3,7 +3,13 @@ unit UnitPropeccedFilesSupport;
 interface
 
 uses
-  Windows, Classes, win32crc, SysUtils, SyncObjs, uMemory;
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  Winapi.Windows,
+  win32crc,
+  uMemory;
 
 type
   TCollectionItem = class

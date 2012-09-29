@@ -8,10 +8,12 @@ uses
   System.StrUtils,
   Vcl.Graphics,
   uMemory,
+  uSysUtils,
   uPathProviders,
   uConstants,
   uStringUtils,
   uFileUtils,
+  uDateUtils,
   uTranslate,
   uExplorerMyComputerProvider,
   uShellIcons,
@@ -62,6 +64,44 @@ type
     function Supports(Item: TPathItem): Boolean; override;
     function Supports(Path: string): Boolean; override;
     function CreateFromPath(Path: string): TPathItem; override;
+  end;
+
+type
+  TDatabaseSortMode = (dsmID, dsmName, dsmRating, dsmDate, dsmFileSize, dsmImageSize, dsmComparing);
+
+  TDatabaseSortModeHelper = record helper for TDatabaseSortMode
+    function ToString: string;
+    class function FromString(S: string): TDatabaseSortMode; static;
+  end;
+
+  TDatabaseSearchParameters = class(TObject)
+  private
+    FGroups: TStringList;
+    FPersons: TStringList;
+    FGroupsAnd: Boolean;
+    FPersonsAnd: Boolean;
+    procedure Init;
+  public
+    DateFrom: TDateTime;
+    DateTo: TDateTime;
+    RatingFrom: Byte;
+    RatingTo: Byte;
+    SortMode: TDatabaseSortMode;
+    SortDescending: Boolean;
+    Text: string;
+    ShowPrivate: Boolean;
+    ShowHidden: Boolean;
+
+    constructor Create; overload;
+    constructor Create(AText: string; ADateFrom, ADateTo: TDateTime; ARatingFrom, ARatingTo: Byte;
+      ASortMode: TDatabaseSortMode; ASortDescending: Boolean); overload;
+    destructor Destroy; override;
+    function ToString: string; override;
+    procedure Parse(S: string);
+    property Groups: TStringList read FGroups;
+    property Persons: TStringList read FPersons;
+    property GroupsAnd: Boolean read FGroupsAnd write FGroupsAnd;
+    property PersonsAnd: Boolean read FPersonsAnd write FPersonsAnd;
   end;
 
 implementation
@@ -189,6 +229,174 @@ begin
   end;
   if Options and PATH_LOAD_NO_IMAGE = 0 then
     LoadImage(Options, ImageSize);
+end;
+
+{ TDatabaseSearchParameters }
+
+constructor TDatabaseSearchParameters.Create;
+begin
+  Init;
+end;
+
+constructor TDatabaseSearchParameters.Create(AText: string; ADateFrom, ADateTo: TDateTime;
+  ARatingFrom, ARatingTo: Byte; ASortMode: TDatabaseSortMode;
+  ASortDescending: Boolean);
+begin
+  Init;
+  Text := AText;
+  DateFrom := ADateFrom;
+  DateTo := ADateTo;
+  RatingFrom := ARatingFrom;
+  RatingTo := ARatingTo;
+  SortMode := ASortMode;
+  SortDescending := ASortDescending;
+end;
+
+destructor TDatabaseSearchParameters.Destroy;
+begin
+  F(FGroups);
+  F(FPersons);
+  inherited;
+end;
+
+procedure TDatabaseSearchParameters.Init;
+begin
+  FGroups := TStringList.Create;
+  FPersons := TStringList.Create;
+  Text := '';
+  DateFrom := EncodeDate(1900, 1, 1);
+  DateTo := EncodeDate(2100, 1, 1);
+  RatingFrom := 0;
+  RatingTo := 5;
+  SortMode := dsmRating;
+  SortDescending := True;
+  ShowPrivate := False;
+  ShowHidden := False;
+  FGroupsAnd := False;
+  FPersonsAnd := False;
+end;
+
+procedure TDatabaseSearchParameters.Parse(S: string);
+var
+  I: Integer;
+  Parameters, Parameter: TArray<string>;
+  Key, Value: string;
+begin
+  Parameters := S.Split([';']);
+  if Length(Parameters) > 0 then
+  begin
+    Text := Parameters[0];
+    for I := 1 to Length(Parameters) - 1 do
+    begin
+      Parameter := Parameters[I].Split(['=']);
+      if Length(Parameter) = 2 then
+      begin
+        Key := Parameter[0];
+        Value := Parameter[1];
+        if Key = 'RatingFrom' then
+          RatingFrom := StrToIntDef(Value, 0)
+        else if Key = 'RatingTo' then
+          RatingTo := StrToIntDef(Value, 0)
+        else if Key = 'DateFrom' then
+          DateFrom := DateTimeStrEval('yyyy.mm.dd', Value)
+        else if Key = 'DateTo' then
+          DateTo := DateTimeStrEval('yyyy.mm.dd', Value)
+        else if Key = 'SortBy' then
+          SortMode := TDatabaseSortMode.FromString(Value)
+        else if Key = 'Groups' then
+        begin
+          Groups.Clear;
+          Groups.AddRange(Value.Split([',']));
+        end else if Key = 'GroupsMode' then
+          GroupsAnd := Value = 'and'
+        else if Key = 'Persons' then
+        begin
+          Persons.Clear;
+          Persons.AddRange(Value.Split([',']));
+        end else if Key = 'PersonsMode' then
+          PersonsAnd := Value = 'and';
+      end;
+    end;
+  end;
+end;
+
+function TDatabaseSearchParameters.ToString: string;
+var
+  Items: TStringList;
+begin
+  Items := TStringList.Create;
+  try
+    Items.Add(Text.Replace(';', ' '));
+    if RatingFrom > 0 then
+    Items.Add('RatingFrom=' + IntToStr(RatingFrom));
+    if RatingTo < 5 then
+      Items.Add('RatingTo=' + IntToStr(RatingTo));
+    if DateFrom <> MinDateTime then
+      Items.Add('DateFrom=' + FormatDateTime('yyyy.mm.dd', DateFrom));
+    if DateTo <> MinDateTime then
+      Items.Add('DateTo=' + FormatDateTime('yyyy.mm.dd', DateTo));
+    if SortMode <> dsmRating then
+      Items.Add('SortBy=' + SortMode.ToString);
+    if SortDescending then
+      Items.Add('SortDesc=1');
+    if Groups.Count > 0 then
+    begin
+      Items.Add('Groups=' + Groups.Join(','));
+      Items.Add('GroupsMode=' + IIF(GroupsAnd, 'and', 'or'));
+    end;
+    if Persons.Count > 0 then
+    begin
+      Items.Add('Persons=' + Persons.Join(','));
+      Items.Add('PersonsMode=' + IIF(PersonsAnd, 'and', 'or'));
+    end;
+
+    Result := Items.Join(';');
+  finally
+    F(Items);
+  end;
+end;
+
+{ TDatabaseSortModeHelper }
+
+class function TDatabaseSortModeHelper.FromString(S: string): TDatabaseSortMode;
+begin
+  Exit(dsmID);
+
+  if S = 'ID' then
+    Exit(dsmID);
+  if S = 'Name' then
+    Exit(dsmID);
+  if S = 'Rating' then
+    Exit(dsmRating);
+  if S = 'Date' then
+    Exit(dsmDate);
+  if S = 'FileSize' then
+    Exit(dsmFileSize);
+  if S = 'ImageSize' then
+    Exit(dsmImageSize);
+  if S = 'Comparing' then
+    Exit(dsmComparing);
+end;
+
+function TDatabaseSortModeHelper.ToString: string;
+begin
+  Result := '';
+  case Self of
+    dsmID:
+      Exit('ID');
+    dsmName:
+      Exit('Name');
+    dsmRating:
+      Exit('Rating');
+    dsmDate:
+      Exit('Date');
+    dsmFileSize:
+      Exit('FileSize');
+    dsmImageSize:
+      Exit('ImageSize');
+    dsmComparing:
+      Exit('Comparing');
+  end;
 end;
 
 initialization

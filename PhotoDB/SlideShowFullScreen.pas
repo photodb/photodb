@@ -3,6 +3,7 @@ unit SlideShowFullScreen;
 interface
 
 uses
+  System.Types,
   Windows,
   Messages,
   SysUtils,

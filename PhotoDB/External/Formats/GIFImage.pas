@@ -359,11 +359,12 @@ interface
 //
 ////////////////////////////////////////////////////////////////////////////////
 uses
-  sysutils,
-  Windows,
-  Graphics,
-  uBufferedFileStream,
-  Classes;
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Graphics,
+  uBufferedFileStream;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -8326,7 +8327,7 @@ var
     Mask := TBitmap.Create;
     try
 //      Mask.Handle := hMask;  // 2003.08.04
-      Mask.Handle := Windows.CopyImage(hMask, IMAGE_BITMAP, 0, 0, LR_COPYRETURNORG);  // 2003.08.04
+      Mask.Handle := Winapi.Windows.CopyImage(hMask, IMAGE_BITMAP, 0, 0, LR_COPYRETURNORG);  // 2003.08.04
       AddMask(Mask);
     finally
 //      Mask.ReleaseHandle;  // 2003.08.04

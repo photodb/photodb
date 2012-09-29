@@ -3,6 +3,7 @@ unit ProgressActionUnit;
 interface
 
 uses
+  System.Types,
   Windows,
   Messages,
   SysUtils,

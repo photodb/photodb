@@ -4,36 +4,35 @@ interface
 
 uses
   System.Generics.Collections,
-  Windows,
-  Messages,
-  Math,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Registry,
+  System.Math,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  System.IOUtils,
+  System.Win.Registry,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShellApi,
+  Vcl.Graphics,
+  Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.ComCtrls,
   Vcl.TabNotBk,
-  WebLink,
   Vcl.ImgList,
   Vcl.ExtCtrls,
   Vcl.CheckLst,
   Vcl.Menus,
-  ShellCtrls,
+  Vcl.Shell.ShellCtrls,
   Vcl.AppEvnts,
   Vcl.Samples.Spin,
-  IOUtils,
-  Winapi.ShellApi,
   Vcl.ActnPopup,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.Themes,
   Vcl.Styles,
   Vcl.Styles.Ext,
-  Vcl.Styles.Utils,
-
+  WebLink,
   uTranslate,
   uShellUtils,
   uDBForm,
@@ -1248,7 +1247,7 @@ begin
           FBitmap.Canvas.Brush.Color := Theme.PanelColor;
           Text := L('Standard windows theme (preview isn''t available)');
           R := ImStylePreview.ClientRect;
-          SetBkMode(FBitmap.Canvas.Handle, Windows.TRANSPARENT);
+          SetBkMode(FBitmap.Canvas.Handle, TRANSPARENT);
           DrawText(FBitmap.Canvas.Handle, Text, Length(Text), R, DT_CENTER or DT_VCENTER );
           ImStylePreview.Picture.Graphic := FBitmap;
         finally

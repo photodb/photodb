@@ -3,11 +3,12 @@ unit wfsU;
 interface
 
 uses
-  Classes,
-  SysUtils,
-  Windows,
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  Winapi.Windows,
   Dolphin_DB,
-  SyncObjs,
   GraphicsBaseTypes,
   ExplorerTypes,
   uLogger,
@@ -443,7 +444,7 @@ procedure TIoCompletionManager.GetQueuedCompletionStatus(
   CompletionPort: THandle; var lpNumberOfBytesTransferred: DWORD;
   var lpCompletionKey: NativeUInt; var lpOverlapped: POverlapped);
 begin
-  Windows.GetQueuedCompletionStatus(CompletionPort,
+  Winapi.Windows.GetQueuedCompletionStatus(CompletionPort,
     lpNumberOfBytesTransferred,
     lpCompletionKey, lpOverlapped, INFINITE);
 end;

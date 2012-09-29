@@ -3,9 +3,10 @@ unit uFormUtils;
 interface
 
 uses
-  Windows,
-  Graphics,
-  Classes;
+  System.Types,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Graphics;
 
 procedure RenderForm(FormHandle: THandle; Bitmap32: TBitmap; Transparenty: Byte; UpdateFormStyle: Boolean = True); overload;
 

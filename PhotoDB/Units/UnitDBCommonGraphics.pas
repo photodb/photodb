@@ -3,22 +3,25 @@ unit UnitDBCommonGraphics;
 interface
 
 uses
-  Windows,
-  Classes,
-  Controls,
-  StdCtrls,
-  Graphics,
-  uMemory,
-  uDBGraphicTypes,
-  SysUtils,
-  uGraphicUtils,
+  System.UITypes,
+  System.Classes,
+  System.SysUtils,
+  System.Math,
+  Winapi.Windows,
+  Vcl.Controls,
+  Vcl.StdCtrls,
+  Vcl.Graphics,
+
   DmProgress,
   uBitmapUtils,
   UnitDBDeclare,
-  uTranslate,
   GraphicsBaseTypes,
   Effects,
-  Math,
+
+  uMemory,
+  uDBGraphicTypes,
+  uGraphicUtils,
+  uTranslate,
   uIconUtils,
   uThemesUtils;
 

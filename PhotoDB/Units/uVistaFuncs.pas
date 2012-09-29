@@ -3,21 +3,22 @@ unit uVistaFuncs;
 interface
 
 uses
-  Classes,
-  Forms,
-  Windows,
-  Dialogs,
-  Graphics,
+  System.Types,
+  System.Classes,
+  System.HelpIntfs,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.MultiMon,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.Dialogs,
+  Vcl.Graphics,
+  Vcl.Themes,
   uConstants,
-  Messages,
-  Themes,
   {$IFNDEF EXTERNAL}
   uTranslate,
   {$ENDIF}
-  uSysUtils,
-  StdCtrls,
-  Winapi.MultiMon,
-  System.HelpIntfs;
+  uSysUtils;
 
 type
   TChangeWindowMessageFilter = function(msg: Cardinal; action: Word): BOOL; stdcall;

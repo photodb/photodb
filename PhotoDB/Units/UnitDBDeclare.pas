@@ -147,26 +147,6 @@ type
     destructor Destroy; override;
   end;
 
-  TSearchQuery = class(TObject)
-  private
-    FPictureSize: Integer;
-  public
-    Query: string;
-    GroupName: string;
-    RatingFrom: Integer;
-    RatingTo: Integer;
-    ShowPrivate: Boolean;
-    DateFrom: TDateTime;
-    DateTo: TDateTime;
-    SortMethod: Integer;
-    SortDecrement: Boolean;
-    IsEstimate: Boolean;
-    ShowAllImages: Boolean;
-    function EqualsTo(AQuery: TSearchQuery): Boolean;
-    constructor Create(PictureSize: Integer = 0);
-    property PictureSize: Integer read FPictureSize;
-  end;
-
 type
   TCryptImageThreadOptions = record
     Files: TArStrings;
@@ -296,21 +276,6 @@ end;
 function TPhotoDBFiles.GetValueByIndex(Index: Integer): TPhotoDBFile;
 begin
   Result := FList[Index];
-end;
-
-{ TSearchQuery }
-
-constructor TSearchQuery.Create(PictureSize: Integer);
-begin
-  FPictureSize := PictureSize;
-end;
-
-function TSearchQuery.EqualsTo(AQuery: TSearchQuery): Boolean;
-begin
-  Result := (AQuery.RatingFrom = RatingFrom) and (AQuery.RatingTo = RatingTo)
-       and (AQuery.DateFrom = DateFrom) and (AQuery.DateTo = DateTo)
-       and (AQuery.GroupName = GroupName) and (AQuery.Query = Query)
-       and (AQuery.SortMethod = SortMethod) and (AQuery.SortDecrement = SortDecrement);
 end;
 
 { TDBPopupMenuInfoRecord }

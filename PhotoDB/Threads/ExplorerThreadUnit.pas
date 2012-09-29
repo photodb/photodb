@@ -4,32 +4,42 @@ interface
 
 uses
   Generics.Collections,
-  Jpeg,
-  DB,
+  System.Math,
+  System.Classes,
+  System.SysUtils,
+  System.DateUtils,
+  System.SyncObjs,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Imaging.Jpeg,
+  Vcl.Imaging.pngImage,
+  Data.DB,
+
+  CCR.Exif,
+
   ExplorerTypes,
   uGraphicUtils,
   uShellIntegration,
   UnitDBKernel,
-  uExplorerFolderImages,
   ExplorerUnit,
-  Windows,
-  Classes,
-  SysUtils,
-  Graphics,
+  UnitGroupsWork,
   Network,
   GraphicCrypt,
-  Math,
-  Controls,
-  ActiveX,
   Win32crc,
   RAWImage,
   UnitDBDeclare,
-  uGUIDUtils,
   EasyListview,
   GraphicsCool,
+  UnitDBCommon,
+  CommonDBSupport,
+  UnitBitmapImageList,
+
+  uExplorerFolderImages,
+  uGUIDUtils,
   uResources,
   uBitmapUtils,
-  UnitDBCommon,
   uCDMappingTypes,
   uExifUtils,
   uThreadEx,
@@ -38,18 +48,14 @@ uses
   uTime,
   uGOM,
   uFileUtils,
-  DateUtils,
   uConstants,
   uMemory,
-  SyncObjs,
   uGroupTypes,
-  CommonDBSupport,
+  uSearchQuery,
   uDBPopupMenuInfo,
-  pngImage,
   uPNGUtils,
   uMultiCPUThreadManager,
   uPrivateHelper,
-  UnitBitmapImageList,
   uSysUtils,
   uRuntime,
   uDBUtils,
@@ -58,8 +64,6 @@ uses
   uShellIcons,
   uShellThumbnails,
   uMachMask,
-  CCR.Exif,
-  UnitGroupsWork,
   uDatabaseSearch,
   uPathProviders,
   uTransparentEncryption,
@@ -191,6 +195,7 @@ type
     procedure SearchFolder(SearchContent: Boolean);
     procedure SearchDB; overload;
     procedure SearchDB(DateFrom, DateTo: TDateTime; GroupName: string); overload;
+    procedure SearchDB(Parameters: TDatabaseSearchParameters); overload;
     function IsImage(SearchRec: TSearchRec): Boolean;
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
     procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TDBPopupMenuInfo);
@@ -620,10 +625,10 @@ begin
 
               ProcessSearchRecord(FFiles, FFolder, SearchRec);
             finally
-              Found := SysUtils.FindNext(SearchRec);
+              Found := System.SysUtils.FindNext(SearchRec);
             end;
           end;
-          FindClose(SearchRec);
+          System.SysUtils.FindClose(SearchRec);
 
           FPacketImages := TBitmapImageList.Create;
           FPacketInfos := TExplorerFileInfos.Create;
@@ -809,8 +814,16 @@ begin
 end;
 
 procedure TExplorerThread.SearchDB;
+var
+  Parameters: TDatabaseSearchParameters;
 begin
-  SearchDB(EncodeDate(1900, 1, 1), EncodeDate(2100, 1, 1), '');
+  Parameters := TDatabaseSearchParameters.Create;
+  try
+    Parameters.Parse(FMask);
+    SearchDB(Parameters);
+  finally
+    F(Parameters);
+  end;
 end;
 
 procedure TExplorerThread.SearchDB(DateFrom, DateTo: TDateTime; GroupName: string);
@@ -823,7 +836,7 @@ begin
   try
     SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
     SQ.Query := FMask;
-    SQ.GroupName := GroupName;
+    SQ.Groups.Add(GroupName);
     SQ.RatingFrom := 0;
     SQ.RatingTo := 5;
     SQ.ShowPrivate := ExplorerInfo.ShowPrivate;
@@ -833,6 +846,73 @@ begin
     SQ.SortDecrement := True;
     SQ.IsEstimate := False;
     SQ.ShowAllImages := True;
+    DS := TDatabaseSearch.Create(Self, SQ);
+    try
+      DS.OnPacketReady := OnDatabasePacketReady;
+      DS.ExecuteSearch;
+    finally
+      F(DS);
+    end;
+  finally
+    HideProgress;
+    ShowInfo('');
+    SynchronizeEx(DoStopSearch);
+    SynchronizeEx(HideLoadingSign);
+  end;
+end;
+
+procedure TExplorerThread.SearchDB(Parameters: TDatabaseSearchParameters);
+var
+  DS: TDatabaseSearch;
+  SQ: TSearchQuery;
+
+  function GetSortMode: Integer;
+  begin
+    Result := SM_RATING;
+    case Parameters.SortMode of
+      dsmID:
+        Exit(SM_ID);
+      dsmName:
+        Exit(SM_TITLE);
+      dsmRating:
+        Exit(SM_RATING);
+      dsmDate:
+        Exit(SM_DATE_TIME);
+      dsmFileSize:
+        Exit(SM_FILE_SIZE);
+      dsmImageSize:
+        Exit(SM_SIZE);
+      dsmComparing:
+        Exit(SM_COMPARING);
+    end;
+  end;
+
+begin
+  SynchronizeEx(ShowLoadingSign);
+  SynchronizeEx(ShowIndeterminateProgress);
+  try
+    SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
+    SQ.Query := Parameters.Text;
+
+    SQ.Groups.AddStrings(Parameters.Groups);
+    SQ.GroupsAnd := Parameters.GroupsAnd;
+
+    SQ.Persons.AddStrings(Parameters.Persons);
+    SQ.PersonsAnd := Parameters.PersonsAnd;
+
+    SQ.RatingFrom := Parameters.RatingFrom;
+    SQ.RatingTo := Parameters.RatingTo;
+
+    SQ.DateFrom := Parameters.DateFrom;
+    SQ.DateTo := Parameters.DateTo;
+
+    SQ.SortMethod := GetSortMode;
+    SQ.SortDecrement := Parameters.SortDescending;
+
+    SQ.IsEstimate := False;
+
+    SQ.ShowPrivate := Parameters.ShowPrivate;
+    SQ.ShowAllImages := Parameters.ShowHidden;
     DS := TDatabaseSearch.Create(Self, SQ);
     try
       DS.OnPacketReady := OnDatabasePacketReady;
@@ -1167,12 +1247,12 @@ var
                 end;
 
               finally
-                Found := SysUtils.FindNext(SearchRec);
+                Found := System.SysUtils.FindNext(SearchRec);
               end;
             end;
 
             ShowInfo(CurrentDirectory);
-            FindClose(SearchRec);
+            System.SysUtils.FindClose(SearchRec);
 
             SendPacket;
           end;
@@ -1610,9 +1690,9 @@ begin
                     end;
                 end;
               end;
-              Found := SysUtils.FindNext(SearchRec);
+              Found := System.SysUtils.FindNext(SearchRec);
             end;
-            FindClose(SearchRec);
+            System.SysUtils.FindClose(SearchRec);
           end;
           if Count + Nbr = 0 then
           begin

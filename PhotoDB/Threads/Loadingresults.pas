@@ -5,7 +5,7 @@ interface
 uses
   UnitDBKernel,
   dolphin_db,
-  jpeg,
+  Vcl.Imaging.jpeg,
   ComCtrls,
   CommCtrl,
   windows,
@@ -29,6 +29,7 @@ uses
   uThreadForm,
   uThreadEx,
   uLogger,
+  uSearchQuery,
   uJpegUtils,
   CommonDBSupport,
   uFileUtils,

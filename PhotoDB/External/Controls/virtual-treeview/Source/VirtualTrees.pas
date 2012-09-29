@@ -72,6 +72,8 @@ interface
 {$HPPEMIT '#include <ShlObj.hpp>'}
 
 uses
+  System.Types,
+  System.UITypes,
   Windows,
   {$ifndef COMPILER_10_UP}
     MSAAIntf, // MSAA support for Delphi up to 2005

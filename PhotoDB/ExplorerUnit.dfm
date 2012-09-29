@@ -65,7 +65,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 605
-      ActivePage = TsPreview
+      ActivePage = TsDetailedSearch
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -994,7 +994,7 @@ object ExplorerForm: TExplorerForm
             DesignSize = (
               78
               21)
-            object ExExtendedSearchText: TWatermarkedEdit
+            object EdExtendedSearchText: TWatermarkedEdit
               Left = 2
               Top = 4
               Width = 73
@@ -1011,7 +1011,7 @@ object ExplorerForm: TExplorerForm
           end
         end
         object WlSearchRatingFrom: TWebLink
-          Left = 3
+          Left = 7
           Top = 31
           Width = 105
           Height = 16
@@ -1031,7 +1031,7 @@ object ExplorerForm: TExplorerForm
           CanClick = True
         end
         object WlSearchRatingTo: TWebLink
-          Left = 3
+          Left = 7
           Top = 53
           Width = 93
           Height = 16
@@ -1127,7 +1127,7 @@ object ExplorerForm: TExplorerForm
           CanClick = True
         end
         object WlExtendedSearchSortBy: TWebLink
-          Left = 23
+          Left = 25
           Top = 238
           Width = 128
           Height = 13
@@ -1190,6 +1190,7 @@ object ExplorerForm: TExplorerForm
           Caption = 'BtnSearch'
           ImageMargins.Left = 3
           TabOrder = 10
+          OnClick = SbDoSearchClick
         end
         object WlSearchRatingFromValue: TWebLink
           Left = 114
@@ -2520,7 +2521,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.936714745370000000
+      Date = 41177.652984120370000000
       TabOrder = 0
     end
     object BtnSelectDatePopup: TButton
@@ -3196,8 +3197,8 @@ object ExplorerForm: TExplorerForm
   end
   object ImExtendedSearchGroups: TImageList
     ColorDepth = cd32Bit
-    Left = 280
-    Top = 548
+    Left = 288
+    Top = 452
   end
   object PmSelectPerson: TPopupActionBar
     Images = ImFacePopup
@@ -3222,5 +3223,10 @@ object ExplorerForm: TExplorerForm
     BkColor = 15790320
     Left = 280
     Top = 144
+  end
+  object ImExtendedSearchPersons: TImageList
+    ColorDepth = cd32Bit
+    Left = 288
+    Top = 500
   end
 end

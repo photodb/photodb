@@ -135,17 +135,17 @@ end;
 
 function TDBAdapter.GetInclude: Boolean;
 begin
-  Result := FDS.FieldByName('Include').AsBoolean;
+  Result := FDS.FieldByName('Include').Value;
 end;
 
 function TDBAdapter.GetIsDate: Boolean;
 begin
-  Result := FDS.FieldByName('IsDate').AsBoolean;
+  Result := FDS.FieldByName('IsDate').Value;
 end;
 
 function TDBAdapter.GetIsTime: Boolean;
 begin
-  Result := FDS.FieldByName('IsTime').AsBoolean;
+  Result := FDS.FieldByName('IsTime').Value;
 end;
 
 function TDBAdapter.GetKeyWords: string;

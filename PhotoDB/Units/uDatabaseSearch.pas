@@ -3,37 +3,41 @@ unit uDatabaseSearch;
 interface
 
 uses
-  Windows,
-  Classes,
-  SysUtils,
-  DB,
-  StrUtils,
-  Math,
+  System.Classes,
+  System.SysUtils,
+  System.StrUtils,
+  System.Math,
+  System.DateUtils,
+  Winapi.Windows,
+  Data.DB,
+  Vcl.Graphics,
+  Vcl.Imaging.Jpeg,
+
   CommonDBSupport,
-  uDBBaseTypes,
-  uConstants,
-  uDBUtils,
   UnitGroupsWork,
   UnitDBDeclare,
-  uMemory,
-  uDBFileTypes,
-  Graphics,
-  uTranslate,
-  jpeg,
-  uJpegUtils,
   GraphicCrypt,
   UnitDBKernel,
+  UnitDBCommonGraphics,
+
+  uMemory,
+  uConstants,
+  uDBBaseTypes,
+  uDBUtils,
+  uDBFileTypes,
+  uStringUtils,
+  uTranslate,
+  uJpegUtils,
   uGraphicUtils,
   uBitmapUtils,
-  DateUtils,
   uDBPopupMenuInfo,
   uAssociatedIcons,
   uThreadEx,
-  UnitDBCommonGraphics,
   uDBGraphicTypes,
   uPeopleSupport,
   uPortableDeviceUtils,
   uAssociations,
+  uSearchQuery,
   uSysUtils;
 
 const
@@ -76,7 +80,7 @@ type
     function CreateQuery: TDBQueryParams;
     procedure ApplyFilter(Params: TDBQueryParams; Attr: Integer);
     procedure AddWideSearchOptions(Params: TDBQueryParams);
-    procedure AddOptions(SqlParams: TDBQueryParams);
+    function AddSorting(SqlParams: TDBQueryParams): string;
     procedure LoadImages;
     procedure LoadTextQuery(QueryParams: TDBQueryParams);
     procedure DoScanSimilarFiles(QueryParams: TDBQueryParams);
@@ -126,7 +130,10 @@ var
   ScanParams: TScanFileParams;
   ImThs: TArStrings;
   IthIds: TArInteger;
-  PersonsJoin, TempString: string;
+  PersonIDsSum: Integer;
+  PersonsJoin, TempString, HavingSQL, PersonIdsConcat: string;
+  Persons: TPersonCollection;
+  PersonNames: TStringList;
 const
   AllocImThBy = 5;
 
@@ -134,6 +141,46 @@ const
   begin
     Inc(Fields_names_count);
     Fields_names[Fields_names_count] := FieldName;
+  end;
+
+  //First({0})
+  function AllFields(Expr: string = '{0}'): string;
+  var
+    I: Integer;
+    FieldList: TStringList;
+  begin
+
+    FieldList := TStringList.Create;
+    try
+      FieldList.Add('Access');
+      FieldList.Add('Attr');
+      FieldList.Add('Comment');
+      FieldList.Add('DateToAdd');
+      FieldList.Add('FFileName');
+      FieldList.Add('FileSize');
+      FieldList.Add('Groups');
+      FieldList.Add('Height');
+      FieldList.Add('ID');
+      FieldList.Add('Include');
+      FieldList.Add('IsDate');
+      FieldList.Add('IsTime');
+      FieldList.Add('Keywords');
+      FieldList.Add('Links');
+      FieldList.Add('StrTh');
+      FieldList.Add('Name');
+      FieldList.Add('Rating');
+      FieldList.Add('Rotated');
+      FieldList.Add('thum');
+      FieldList.Add('aTime');
+      FieldList.Add('Width');
+
+      for I := 0 to FieldList.Count - 1 do
+        FieldList[I] := FormatEx(Expr, [FieldList[I]]);
+
+      Result := FieldList.Join(',');
+    finally
+     F(FieldList);
+    end;
   end;
 
   function FIELDS: string;
@@ -321,7 +368,7 @@ begin
       for J := 1 to N do
       begin
         SQLText := 'SELECT ID FROM $DB$ WHERE ';
-        M := Math.Min(Left, Math.Min(L, AllocImThBy));
+        M := Min(Left, Min(L, AllocImThBy));
         FSpecQuery.Active := False;
         for I := 1 to M do
         begin
@@ -367,178 +414,223 @@ begin
   if not Systemquery then
   begin
     Result.QueryType := QT_TEXT;
-    for I := 1 to Length(Sqltext) do
+
+    Sqltext := Sqltext.Replace('*', '%').Replace('?', '_');
+
+    if FSearchParams.Persons.Count > 0 then
     begin
-      if Sqltext[I] = '*' then
-        Sqltext[I] := '%';
-      if Sqltext[I] = '?' then
-        Sqltext[I] := '_';
-    end;
+      PersonsJoin := FormatEx(' INNER JOIN {1} PM on PM.ImageID = IM.ID) INNER JOIN {0} P on P.ObjectID = PM.ObjectID', [ObjectTableName, ObjectMappingTableName]);
+      Result.Query := Format('SELECT %s FROM ($DB$ IM %s', [AllFields('First(IM.{0}) as [{0}]'), PersonsJoin]);
+    end else
+      Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
+
+    if Sqltext[Length(Sqltext)] <> '$' then
     begin
-      if Sqltext[Length(Sqltext)] <> '$' then
-      begin
-        Fields_names_count := 0;
-        Stemp := '';
-        A := 0;
-        B := 0;
-        Sqltext := StringReplace(Sqltext, '"', '', [rfReplaceAll]);
-        Sqltext := StringReplace(Sqltext, '%', '', [rfReplaceAll]);
-        Sqltext := StringReplace(Sqltext, '''', '', [rfReplaceAll]);
-        A := Pos('[+', Sqltext);
-        if A > 0 then
-          B := PosEx(']', Sqltext, A);
-        if B > 0 then
-          Stemp := AnsiUpperCase(Copy(Sqltext, A + 2, B - A - 2));
-        for I := Length(Stemp) downto 1 do
-          if not CharInSet(Stemp[I], ['C', 'K', 'F', 'G', 'L']) then
-            Delete(Stemp, I, 1);
+      Fields_names_count := 0;
+      Stemp := '';
+      A := 0;
+      B := 0;
+      Sqltext := StringReplace(Sqltext, '"', '', [rfReplaceAll]);
+      Sqltext := StringReplace(Sqltext, '%', '', [rfReplaceAll]);
+      Sqltext := StringReplace(Sqltext, '''', '', [rfReplaceAll]);
+      A := Pos('[+', Sqltext);
+      if A > 0 then
+        B := PosEx(']', Sqltext, A);
+      if B > 0 then
+        Stemp := AnsiUpperCase(Copy(Sqltext, A + 2, B - A - 2));
+      for I := Length(Stemp) downto 1 do
+        if not CharInSet(Stemp[I], ['C', 'K', 'F', 'G', 'L']) then
+          Delete(Stemp, I, 1);
 
-        for J := 1 to Length(Stemp) do
-          for I := 1 to Length(Stemp) - 1 do
-            if Byte(Stemp[I]) < Byte(Stemp[I + 1]) then
-            begin
-              C := Byte(Stemp[I]);
-              Stemp[I] := Stemp[I + 1];
-              Stemp[I + 1] := Char(C);
-            end;
-        for I := Length(Stemp) - 1 downto 1 do
-          if Stemp[I + 1] = Stemp[I] then
-            Delete(Stemp, I + 1, 1);
-
-        for I := 1 to Math.Min(5, Length(Stemp)) do
-        begin
-          case Byte(AnsiUpperCase(Stemp)[I]) of
-            Byte('C'):
-              AddField('Comment');
-            Byte('K'):
-              AddField('KeyWords');
-            Byte('F'):
-              AddField('FFileName');
-            Byte('G'):
-              AddField('Groups');
-            Byte('L'):
-              AddField('Links');
-          end;
-        end;
-        if Fields_names_count > 0 then
-          Delete(Sqltext, A, B - A + 1);
-
-        if Fields_names_count < 1 then
-        begin
-          Fields_names[1] := 'FFileName';
-          Fields_names[2] := 'Comment';
-          Fields_names[3] := 'KeyWords';
-          Fields_names_count := 3;
-        end;
-        Sqlwords := TStringList.Create;
-        Sqlrwords := TStringList.Create;
-        try
-          Sqltext := ' ' + Sqltext + ' ';
-          for I := Length(Sqltext) downto 2 do
-            if (Sqltext[I] = ' ') and (Sqltext[I - 1] = ' ') then
-              Delete(Sqltext, I, 1);
-          for I := 1 to Length(Sqltext) do
+      for J := 1 to Length(Stemp) do
+        for I := 1 to Length(Stemp) - 1 do
+          if Byte(Stemp[I]) < Byte(Stemp[I + 1]) then
           begin
-            if (Sqltext[I] = ' ') or (I = 1) then
-              for J := I + 1 to Length(Sqltext) do
-                if (Sqltext[J] = ' ') or (J = Length(Sqltext)) then
+            C := Byte(Stemp[I]);
+            Stemp[I] := Stemp[I + 1];
+            Stemp[I + 1] := Char(C);
+          end;
+      for I := Length(Stemp) - 1 downto 1 do
+        if Stemp[I + 1] = Stemp[I] then
+          Delete(Stemp, I + 1, 1);
+
+      for I := 1 to Min(5, Length(Stemp)) do
+      begin
+        case Byte(AnsiUpperCase(Stemp)[I]) of
+          Byte('C'):
+            AddField('Comment');
+          Byte('K'):
+            AddField('KeyWords');
+          Byte('F'):
+            AddField('FFileName');
+          Byte('G'):
+            AddField('Groups');
+          Byte('L'):
+            AddField('Links');
+        end;
+      end;
+      if Fields_names_count > 0 then
+        Delete(Sqltext, A, B - A + 1);
+
+      if Fields_names_count < 1 then
+      begin
+        Fields_names[1] := 'FFileName';
+        Fields_names[2] := 'Comment';
+        Fields_names[3] := 'KeyWords';
+        Fields_names_count := 3;
+      end;
+      Sqlwords := TStringList.Create;
+      Sqlrwords := TStringList.Create;
+      try
+        Sqltext := ' ' + Sqltext + ' ';
+        for I := Length(Sqltext) downto 2 do
+          if (Sqltext[I] = ' ') and (Sqltext[I - 1] = ' ') then
+            Delete(Sqltext, I, 1);
+        for I := 1 to Length(Sqltext) do
+        begin
+          if (Sqltext[I] = ' ') or (I = 1) then
+            for J := I + 1 to Length(Sqltext) do
+              if (Sqltext[J] = ' ') or (J = Length(Sqltext)) then
+              begin
+                if I = 1 then
+                  Stemp := Copy(Sqltext, I + 1, J - I - 1)
+                else
+                  Stemp := Copy(Sqltext, I + 1, J - I - 1);
+                if Length(Stemp) > 0 then
                 begin
-                  if I = 1 then
-                    Stemp := Copy(Sqltext, I + 1, J - I - 1)
-                  else
-                    Stemp := Copy(Sqltext, I + 1, J - I - 1);
-                  if Length(Stemp) > 0 then
-                  begin
-                    if Stemp[1] = '-' then
-                      Sqlrwords.Add(Stemp)
-                    else
-                      Sqlwords.Add(Stemp);
-                  end
+                  if Stemp[1] = '-' then
+                    Sqlrwords.Add(Stemp)
                   else
                     Sqlwords.Add(Stemp);
-                  Break;
-                end;
-          end;
-          if Sqlwords.Count = 0 then
-            Sqlwords.Add('%');
+                end
+                else
+                  Sqlwords.Add(Stemp);
+                Break;
+              end;
+        end;
+        if Sqlwords.Count = 0 then
+          Sqlwords.Add('%');
 
+        Sqltext := '(';
+        for I := 1 to Fields_names_count do
+        begin
+
+          if (I <> 1) then
+            Sqltext := Sqltext + ') or (';
+          for J := 1 to Sqlwords.Count do
+          begin
+            Sqltext := Sqltext + Fields_names[I] + ' like "%' + Sqlwords[J - 1] + '%"';
+            if (J <> Sqlwords.Count) then
+              Sqltext := Sqltext + ' and ';
+          end;
+        end;
+        Sqltext := Sqltext + ')';
+
+        //Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
+        Result.Query := Result.Query + Format(' where %s and (%s)',
+          [Format(' ((Rating >= %d) AND (Rating <= %d)) ', [FSearchParams.RatingFrom, FSearchParams.RatingTo]),
+          Sqltext]);
+
+        if FSearchParams.Groups.Count > 0 then
+          Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.GroupsWhere]);
+
+        if FSearchParams.Persons.Count > 0 then
+          Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.PersonsWhereOr]);
+
+        if Sqlrwords.Count > 0 then
+        begin
+          Result.Query := Result.Query + ' AND not (';
           Sqltext := '(';
           for I := 1 to Fields_names_count do
           begin
-
             if (I <> 1) then
               Sqltext := Sqltext + ') or (';
-            for J := 1 to Sqlwords.Count do
+            for J := 1 to Sqlrwords.Count do
             begin
-              Sqltext := Sqltext + Fields_names[I] + ' like "%' + Sqlwords[J - 1] + '%"';
-              if (J <> Sqlwords.Count) then
-                Sqltext := Sqltext + ' and ';
+              Stemp := Sqlrwords[J - 1];
+              Delete(Stemp, 1, 1);
+              Sqltext := Sqltext + '' + Fields_names[I] + ' like "%' + Stemp + '%"';
+              if (J <> Sqlrwords.Count) then
+                Sqltext := Sqltext + ' or ';
             end;
           end;
           Sqltext := Sqltext + ')';
-
-          Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
-          Result.Query := Result.Query + Format(' where %s and (%s)',
-            [Format(' ((Rating >= %d) AND (Rating <= %d)) ', [FSearchParams.RatingFrom, FSearchParams.RatingTo]),
-            Sqltext]);
-
-          if FSearchParams.GroupName <> '' then
-            Result.Query := Result.Query + ' AND (Groups like "' + GroupSearchByGroupName(FSearchParams.GroupName) + '")';
-
-          if Sqlrwords.Count > 0 then
-          begin
-            Result.Query := Result.Query + ' AND not (';
-            Sqltext := '(';
-            for I := 1 to Fields_names_count do
-            begin
-              if (I <> 1) then
-                Sqltext := Sqltext + ') or (';
-              for J := 1 to Sqlrwords.Count do
-              begin
-                Stemp := Sqlrwords[J - 1];
-                Delete(Stemp, 1, 1);
-                Sqltext := Sqltext + '' + Fields_names[I] + ' like "%' + Stemp + '%"';
-                if (J <> Sqlrwords.Count) then
-                  Sqltext := Sqltext + ' or ';
-              end;
-            end;
-            Sqltext := Sqltext + ')';
-            Result.Query := Result.Query + Sqltext + ')';
-          end;
-
-        finally
-          F(Sqlwords);
-          F(Sqlrwords);
+          Result.Query := Result.Query + Sqltext + ')';
         end;
-      end else
-      begin
-        Sqltext := '(';
-        S := FSearchParams.Query;
-        for I := Length(S) downto 1 do
-          if not CharInSet(S[I], Cifri) and (S[I] <> '$') then
-            Delete(S, I, 1);
-        if Length(S) < 2 then
-          Exit;
-        N := 1;
-        for I := 1 to Length(S) do
-          if S[I] = '$' then
-          begin
-            S1 := Copy(S, N, I - N);
-            N := I + 1;
-            Sqltext := Sqltext + ' (ID=' + S1 + ') OR';
-          end;
-        Sqltext := Sqltext + ' (ID=0))';
-        Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
-        Result.Query := Result.Query + ' where (' + Sqltext + ')';
 
-        if FSearchParams.GroupName <> '' then
-          Result.Query := Result.Query + ' AND (Groups like "' + GroupSearchByGroupName(FSearchParams.GroupName) + '")';
+      finally
+        F(Sqlwords);
+        F(Sqlrwords);
       end;
-      ApplyFilter(Result, Db_attr_norm);
+    end else
+    begin
+      Sqltext := '(';
+      S := FSearchParams.Query;
+      for I := Length(S) downto 1 do
+        if not CharInSet(S[I], Cifri) and (S[I] <> '$') then
+          Delete(S, I, 1);
+      if Length(S) < 2 then
+        Exit;
+      N := 1;
+      for I := 1 to Length(S) do
+        if S[I] = '$' then
+        begin
+          S1 := Copy(S, N, I - N);
+          N := I + 1;
+          Sqltext := Sqltext + ' (ID=' + S1 + ') OR';
+        end;
+      Sqltext := Sqltext + ' (ID=0))';
+      //Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
+      Result.Query := Result.Query + ' where (' + Sqltext + ')';
+
+      if FSearchParams.Groups.Count > 0 then
+        Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.GroupsWhere]);
+      if FSearchParams.Persons.Count > 0 then
+        Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.PersonsWhereOr]);
+    end;
+    ApplyFilter(Result, Db_attr_norm);
+
+    if not FSearchParams.ShowAllImages then
+      Result.Query := Result.Query + ' and (Include = TRUE) ';
+  end;
+
+  if (Result.QueryType = QT_TEXT) and (FSearchParams.Persons.Count > 0) then
+  begin
+    PersonNames := TStringList.Create;
+    try
+      for I := 0 to FSearchParams.Persons.Count - 1 do
+        PersonNames.Add(NormalizeDBString(NormalizeDBStringLike(FSearchParams.Persons[I])));
+
+      Persons := PersonManager.GetPersonsByNames(PersonNames);
+      try
+        PersonIDsSum := 0;
+        for I := 0 to Persons.Count - 1 do
+        begin
+          PersonIDsSum := PersonIDsSum + Persons[I].ID;
+          PersonIdsConcat := PersonIdsConcat + IntToStr(Persons[I].ID);
+
+          if I < Persons.Count - 1 then
+            PersonIdsConcat := PersonIdsConcat + ',';
+        end;
+
+        HavingSQL := '';
+        if FSearchParams.PersonsAnd then
+          HavingSQL := FormatEx('having (SUM(P.ObjectID) = {0}  and Count(*) = {1} and SUM(P.CreateDate) = (select SUM(CreateDate) from Objects O where O.ObjectID in ({2})))',
+            [PersonIDsSum, FSearchParams.Persons.Count, PersonIdsConcat]);
+
+        Result.Query := FormatEx('SELECT * FROM ({0} Group by IM.ID {1})', [Result.Query, HavingSQL]);
+      finally
+        F(Persons);
+      end;
+    finally
+      F(PersonNames);
     end;
   end;
 
-  AddOptions(Result);
+  Result.Query :=  Result.Query + AddSorting(Result);
+
+  if (Result.QueryType = QT_TEXT) and FSearchParams.IsEstimate then
+    Result.Query := FormatEx('SELECT COUNT(*) FROM ({0})', [Result.Query]);
 end;
 
 procedure TDatabaseSearch.ApplyFilter(Params: TDBQueryParams; Attr: Integer);
@@ -580,17 +672,12 @@ begin
   Params.Query := Params.Query + Result;
 end;
 
-procedure TDatabaseSearch.AddOptions(SqlParams : TDBQueryParams);
+function TDatabaseSearch.AddSorting(SqlParams: TDBQueryParams): string;
 var
-  SortDirection : string;
+  SortDirection: string;
 
 begin
-  case SqlParams.QueryType of
-    QT_TEXT:
-    if not FSearchParams.ShowAllImages then
-      SqlParams.Query := SqlParams.Query + ' and (Include = TRUE) ';
-  end;
-
+  Result := '';
   if not FSearchParams.IsEstimate then
   begin
     SortDirection := '';
@@ -598,13 +685,13 @@ begin
       SortDirection := ' DESC';
 
     case FSearchParams.SortMethod of
-      SM_TITLE:      SqlParams.Query := SqlParams.Query + ' ORDER BY Name'      + SortDirection;
-      SM_DATE_TIME:  SqlParams.Query := SqlParams.Query + ' ORDER BY DateToAdd' + SortDirection + ', aTime' + SortDirection;
-      SM_RATING:     SqlParams.Query := SqlParams.Query + ' ORDER BY Rating'    + SortDirection + ', DateToAdd desc, aTime desc';
-      SM_FILE_SIZE:  SqlParams.Query := SqlParams.Query + ' ORDER BY FileSize'  + SortDirection;
-      SM_SIZE:       SqlParams.Query := SqlParams.Query + ' ORDER BY Width'     + SortDirection;
+      SM_TITLE:      Result := ' ORDER BY Name'      + SortDirection;
+      SM_DATE_TIME:  Result := ' ORDER BY DateToAdd' + SortDirection + ', aTime' + SortDirection;
+      SM_RATING:     Result := ' ORDER BY Rating'    + SortDirection + ', DateToAdd desc, aTime desc';
+      SM_FILE_SIZE:  Result := ' ORDER BY FileSize'  + SortDirection;
+      SM_SIZE:       Result := ' ORDER BY Width'     + SortDirection;
     else
-                     SqlParams.Query := SqlParams.Query + ' ORDER BY ID'        + SortDirection;
+                     Result := ' ORDER BY ID'        + SortDirection;
     end;
   end;
 end;
@@ -700,8 +787,8 @@ begin
     if not FSearchParams.IsEstimate then
       ForwardOnlyQuery(FWorkQuery);
 
-    QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '''', ' ', [rfReplaceAll]);
-    QueryParams.Query := SysUtils.StringReplace(QueryParams.Query, '\', ' ', [rfReplaceAll]);
+    QueryParams.Query := QueryParams.Query.Replace('''', ' ');
+    QueryParams.Query := QueryParams.Query.Replace('\', ' ');
     QueryParams.ApplyToDS(FWorkQuery);
 
     try
@@ -818,8 +905,10 @@ begin
           TempSql := 'Select {FIELDS} from $DB$ Where ';
           TempSql := TempSql + Format(' (Rating >= %d) and (Rating <= %d) ', [FSearchParams.RatingFrom,
             FSearchParams.RatingTo]);
-          if FSearchParams.GroupName <> '' then
-            TempSql := TempSql + ' AND (Groups like "' + GroupSearchByGroupName(FSearchParams.GroupName) + '")';
+
+          if FSearchParams.Groups.Count > 0 then
+            TempSql := TempSql + FormatEx(' AND ({0})', [FSearchParams.GroupsWhere]);
+
           TempSql := TempSql + ' AND ((DateToAdd > :MinDate) and (DateToAdd<:MaxDate))';
 
           FQuery := GetQuery(True);

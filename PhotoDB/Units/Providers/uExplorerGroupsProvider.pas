@@ -3,19 +3,21 @@ unit uExplorerGroupsProvider;
 interface
 
 uses
-  Windows,
-  Graphics,
-  SysUtils,
-  StrUtils,
+  System.SysUtils,
+  System.StrUtils,
+  Winapi.Windows,
+  Vcl.Graphics,
+
+  UnitGroupsWork,
+  uBitmapUtils,
+  UnitDBDeclare,
+  UnitDBKernel,
+
   uConstants,
   uMemory,
   uExplorerPathProvider,
   uPathProviders,
   uGroupTypes,
-  UnitGroupsWork,
-  uBitmapUtils,
-  UnitDBDeclare,
-  UnitDBKernel,
   uShellIntegration,
   uDBForm,
   uFormInterfaces,
@@ -314,7 +316,7 @@ end;
 
 function TGroupProvider.Supports(Path: string): Boolean;
 begin
-  Result := StrUtils.StartsText(cGroupsPath, Path);
+  Result := StartsText(cGroupsPath, Path);
 
   if Result then
   begin

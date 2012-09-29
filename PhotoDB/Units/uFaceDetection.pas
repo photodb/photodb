@@ -3,8 +3,18 @@ unit uFaceDetection;
 interface
 
 uses
-  Windows, SysUtils, Classes, uMemory, Graphics, SyncObjs, u2DUtils,
-  UnitDBDeclare, uSettings;
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  System.SyncObjs,
+  Winapi.Windows,
+  Vcl.Graphics,
+
+  UnitDBDeclare,
+
+  uMemory,
+  u2DUtils,
+  uSettings;
 
 type
   CvSize = record
@@ -777,7 +787,7 @@ end;
 
 function TFaceDetectionResultItem.GetRect: TRect;
 begin
-  Result := Classes.Rect(X, Y, X + Width, Y + Height);
+  Result := System.Classes.Rect(X, Y, X + Width, Y + Height);
 end;
 
 procedure TFaceDetectionResultItem.SetData(const Value: TClonableObject);

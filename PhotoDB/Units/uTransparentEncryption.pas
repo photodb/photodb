@@ -3,12 +3,13 @@ unit uTransparentEncryption;
 interface
 
 uses
-  Classes,
-  Windows,
-  SysUtils,
-  StrUtils,
-  SyncObjs,
-  Math,
+  System.Types,
+  System.SysUtils,
+  System.StrUtils,
+  System.SyncObjs,
+  System.Math,
+  System.Classes,
+  Winapi.Windows,
   win32Crc,
   uConstants,
   uErrors,
@@ -293,7 +294,7 @@ begin
           end
         );
         TLockFiles.Instance.RemoveLockedFile(TmpErasedFile);
-        DeleteFile(TmpErasedFile);
+        System.SysUtils.DeleteFile(TmpErasedFile);
       end;
   finally
     TLockFiles.Instance.RemoveLockedFile(FileName);
@@ -374,7 +375,7 @@ begin
       if RenameFile(TmpFileName, FileName) then
       begin
         TLockFiles.Instance.RemoveLockedFile(TmpErasedFile);
-        DeleteFile(TmpErasedFile);
+        System.SysUtils.DeleteFile(TmpErasedFile);
       end;
   finally
     TLockFiles.Instance.RemoveLockedFile(FileName);
@@ -726,7 +727,7 @@ end;
 
 function TEncryptedFile.GetSize: Int64;
 begin
-  Int64Rec(Result).Lo := Windows.GetFileSize(FHandle, @Int64Rec(Result).Hi);
+  Int64Rec(Result).Lo := Winapi.Windows.GetFileSize(FHandle, @Int64Rec(Result).Hi);
   Result := Result - FHeaderSize;
 end;
 
