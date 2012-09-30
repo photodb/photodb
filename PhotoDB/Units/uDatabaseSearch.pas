@@ -46,7 +46,7 @@ const
   SM_DATE_TIME  = 2;
   SM_RATING     = 3;
   SM_FILE_SIZE  = 4;
-  SM_SIZE       = 5;
+  SM_IMAGE_SIZE = 5;
   SM_COMPARING  = 6;
 
 type
@@ -685,13 +685,13 @@ begin
       SortDirection := ' DESC';
 
     case FSearchParams.SortMethod of
-      SM_TITLE:      Result := ' ORDER BY Name'      + SortDirection;
-      SM_DATE_TIME:  Result := ' ORDER BY DateToAdd' + SortDirection + ', aTime' + SortDirection;
-      SM_RATING:     Result := ' ORDER BY Rating'    + SortDirection + ', DateToAdd desc, aTime desc';
-      SM_FILE_SIZE:  Result := ' ORDER BY FileSize'  + SortDirection;
-      SM_SIZE:       Result := ' ORDER BY Width'     + SortDirection;
+      SM_TITLE:      Result := ' ORDER BY Name'           + SortDirection;
+      SM_DATE_TIME:  Result := ' ORDER BY DateToAdd'      + SortDirection + ', aTime' + SortDirection;
+      SM_RATING:     Result := ' ORDER BY Rating'         + SortDirection + ', DateToAdd desc, aTime desc';
+      SM_FILE_SIZE:  Result := ' ORDER BY FileSize'       + SortDirection;
+      SM_IMAGE_SIZE: Result := ' ORDER BY (Width*Height)' + SortDirection + ', Rating, DateToAdd desc, aTime desc' + SortDirection;
     else
-                     Result := ' ORDER BY ID'        + SortDirection;
+                     Result := ' ORDER BY ID'             + SortDirection;
     end;
   end;
 end;

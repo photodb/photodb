@@ -349,7 +349,6 @@ type
     TbZoomOut: TToolButton;
     TbZoomIn: TToolButton;
     TbSearch: TToolButton;
-    ToolButton16: TToolButton;
     TbOptions: TToolButton;
     ToolButton20: TToolButton;
     PopupMenuZoomDropDown: TPopupActionBar;
@@ -498,6 +497,25 @@ type
     MiOtherPersons: TMenuItem;
     ImFacePopup: TImageList;
     ImExtendedSearchPersons: TImageList;
+    PmESSorting: TPopupActionBar;
+    MiSortByID: TMenuItem;
+    MiSortByName: TMenuItem;
+    MiSortByDate: TMenuItem;
+    MiSortByRating: TMenuItem;
+    MiSortByFileSize: TMenuItem;
+    MiSortByImageSize: TMenuItem;
+    PmESPerson: TPopupActionBar;
+    MiESPersonFindPictures: TMenuItem;
+    N4: TMenuItem;
+    MiESPersonRemoveFromList: TMenuItem;
+    N9: TMenuItem;
+    MiESPersonProperties: TMenuItem;
+    PmESGroup: TPopupActionBar;
+    MiESGroupFindPictures: TMenuItem;
+    MenuItem2: TMenuItem;
+    MiESGroupRemove: TMenuItem;
+    MenuItem4: TMenuItem;
+    MiESGroupProperties: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -736,6 +754,15 @@ type
     procedure RtPopupRatingRating(Sender: TObject; Rating: Integer);
     procedure PmSelectPersonPopup(Sender: TObject);
     procedure MiOtherPersonsClick(Sender: TObject);
+    procedure WlExtendedSearchSortDescendingClick(Sender: TObject);
+    procedure WlExtendedSearchSortByClick(Sender: TObject);
+    procedure MiSortByImageSizeClick(Sender: TObject);
+    procedure MiESPersonRemoveFromListClick(Sender: TObject);
+    procedure MiESPersonFindPicturesClick(Sender: TObject);
+    procedure MiESPersonPropertiesClick(Sender: TObject);
+    procedure MiESGroupFindPicturesClick(Sender: TObject);
+    procedure MiESGroupRemoveClick(Sender: TObject);
+    procedure MiESGroupPropertiesClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -2044,7 +2071,7 @@ begin
   F(FWbGeoLocation);
   F(FPngNoHIstogram);
   F(FExtendedSearchParams);
-  F(FExtendedSearchPersons);
+  FreeList(FExtendedSearchPersons);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
 
@@ -3661,10 +3688,31 @@ var
   P: TPoint;
   H: THandle;
 begin
-  if Msg.message = FReloadGroupsMessage then
+  if Msg.hwnd = Handle then
   begin
-    Handled := True;
-    InitEditGroups;
+    if Msg.message = FReloadGroupsMessage then
+    begin
+      Handled := True;
+      InitEditGroups;
+    end;
+
+    if Msg.message = FReloadESGroupsMessage then
+    begin
+      Handled := True;
+      ExtendedSearchInitGroups;
+    end;
+
+    if Msg.message = FReloadRSPersonsMessage then
+    begin
+      Handled := True;
+      ExtendedSearchInitPersons;
+    end;
+
+    if Msg.message = FWebBrowserJSMessage then
+    begin
+      Handled := True;
+      WlSaveLocationClick(Self);
+    end;
   end;
 
   if Msg.message = WM_LBUTTONDOWN then
@@ -3674,24 +3722,6 @@ begin
 
     if RtPopupRating.Handle <> Msg.hwnd then
       RtPopupRating.Hide;
-  end;
-
-  if Msg.message = FReloadESGroupsMessage then
-  begin
-    Handled := True;
-    ExtendedSearchInitGroups;
-  end;
-
-  if Msg.message = FReloadRSPersonsMessage then
-  begin
-    Handled := True;
-    ExtendedSearchInitPersons;
-  end;
-
-  if Msg.message = FWebBrowserJSMessage then
-  begin
-    Handled := True;
-    WlSaveLocationClick(Self);
   end;
 
   if not Self.Active then
@@ -4859,6 +4889,13 @@ begin
       F(FileList);
     end;
   end;
+end;
+
+procedure TExplorerForm.MiSortByImageSizeClick(Sender: TObject);
+begin
+  FExtendedSearchParams.SortMode := TDatabaseSortMode(TControl(Sender).Tag);
+
+  ExtendedSearchRealign;
 end;
 
 procedure TExplorerForm.LockItems;
@@ -10891,7 +10928,8 @@ begin
     PostMessage(Handle, FReloadESGroupsMessage, 0, 0);
   end else
   begin
-
+    PmESGroup.Tag := Link.Tag;
+    PmESGroup.Popup(Link.ScreenBelow.X, Link.ScreenBelow.Y);
   end;
 end;
 
@@ -10905,6 +10943,38 @@ procedure TExplorerForm.ExtendedSearchInit;
 begin
   if FExtendedSearchParams = nil then
   begin
+    PmESPerson.Images := DBKernel.ImageList;
+    PmESGroup.Images := DBKernel.ImageList;
+
+    MiESPersonFindPictures.Caption := L('Find pictures');
+    MiESPersonRemoveFromList.Caption := L('Remove from list');
+    MiESPersonProperties.Caption := L('Properties');
+
+    MiESPersonFindPictures.ImageIndex := DB_IC_SEARCH;
+    MiESPersonRemoveFromList.ImageIndex := DB_IC_DELETE_INFO;
+    MiESPersonProperties.ImageIndex := DB_IC_PROPERTIES;
+
+    MiESGroupFindPictures.Caption := L('Find pictures');
+    MiESGroupRemove.Caption := L('Remove from list');
+    MiESGroupProperties.Caption := L('Properties');
+
+    MiESGroupFindPictures.ImageIndex := DB_IC_SEARCH;
+    MiESGroupRemove.ImageIndex := DB_IC_DELETE_INFO;
+    MiESGroupProperties.ImageIndex := DB_IC_PROPERTIES;
+
+    MiSortByID.Caption := L('Sort by ID');
+    MiSortByID.Tag := NativeInt(dsmID);
+    MiSortByName.Caption := L('Sort by name');
+    MiSortByName.Tag := NativeInt(dsmName);
+    MiSortByDate.Caption := L('Sort by date');
+    MiSortByDate.Tag := NativeInt(dsmDate);
+    MiSortByRating.Caption := L('Sort by rating');
+    MiSortByRating.Tag := NativeInt(dsmRating);
+    MiSortByFileSize.Caption := L('Sort by file size');
+    MiSortByFileSize.Tag := NativeInt(dsmFileSize);
+    MiSortByImageSize.Caption := L('Sort by image size');
+    MiSortByImageSize.Tag := NativeInt(dsmImageSize);
+
     FExtendedSearchParams := TDatabaseSearchParameters.Create;
     FExtendedSearchParams.DateFrom := MinDateTime;
     FExtendedSearchParams.DateTo := MinDateTime;
@@ -10920,7 +10990,7 @@ begin
 
     WlExtendedSearchOptions.LoadFromResource('SERIES_SETTINGS');
 
-    WlExtendedSearchSortDescending.LoadFromResource('SORD_DESCENDING');
+    WlExtendedSearchSortDescending.LoadFromResource('SORT_DESCENDING');
 
     BtnSearch.Images := DBKernel.ImageList;
     BtnSearch.ImageIndex := DB_IC_SEARCH;
@@ -11126,8 +11196,15 @@ begin
 end;
 
 procedure TExplorerForm.ExtendedSearchPersonClick(Sender: TObject);
+var
+  P: TPoint;
+  Control: TWInControl;
 begin
-  //TODO:
+  Control := TWInControl(Sender);
+  P := Point(Control.Left, Control.BoundsRect.Bottom);
+  P := Control.Parent.ClientToScreen(P);
+  PmESPerson.Tag := Control.Tag;
+  PmESPerson.Popup(P.X, P.Y);
 end;
 
 procedure TExplorerForm.ExtendedSearchPersonModeClick(Sender: TObject);
@@ -11168,6 +11245,24 @@ begin
     McDateSelectPopup.Date := EffectiveDate(FExtendedSearchParams.DateTo);
 end;
 
+procedure TExplorerForm.WlExtendedSearchSortByClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := Point(WlExtendedSearchSortBy.Left, WlExtendedSearchSortBy.BoundsRect.Bottom);
+  P := WlExtendedSearchSortBy.Parent.ClientToScreen(P);
+  PmESSorting.Popup(P.X, P.Y);
+end;
+
+procedure TExplorerForm.WlExtendedSearchSortDescendingClick(Sender: TObject);
+begin
+  FExtendedSearchParams.SortDescending := not FExtendedSearchParams.SortDescending;
+  if FExtendedSearchParams.SortDescending then
+    WlExtendedSearchSortDescending.LoadFromResource('SORT_DESCENDING')
+  else
+    WlExtendedSearchSortDescending.LoadFromResource('SORT_ASCENDING');
+end;
+
 procedure TExplorerForm.AddWideSearchPerson(P: TPerson);
 begin
   PersonManager.MarkLatestPerson(P.ID);
@@ -11187,7 +11282,6 @@ begin
   ImFacePopup.Clear;
   ImageList_AddIcon(ImFacePopup.Handle, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
   ImageList_AddIcon(ImFacePopup.Handle, UnitDBKernel.Icons[DB_IC_PEOPLE + 1]);
-
 
   SelectedPersons := TPersonCollection.Create;
   try
@@ -11290,6 +11384,134 @@ begin
   end;
 end;
 
+procedure TExplorerForm.MiESGroupFindPicturesClick(Sender: TObject);
+var
+  Group: TGroup;
+  Groups: TGroups;
+begin
+  Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+
+  if PmESGroup.Tag < 0 then
+    Exit;
+
+  if PmESGroup.Tag > Length(Groups) - 1 then
+    Exit;
+
+  Group := Groups[PmESGroup.Tag];
+  SetNewPathW(ExplorerPath(cGroupsPath + '\' + Group.GroupName, EXPLORER_ITEM_GROUP), False);
+end;
+
+procedure TExplorerForm.MiESGroupPropertiesClick(Sender: TObject);
+var
+  Group: TGroup;
+  Groups: TGroups;
+  P: TPathItem;
+  PL: TPathItemCollection;
+begin
+
+  Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+
+  if PmESGroup.Tag < 0 then
+    Exit;
+
+  if PmESGroup.Tag > Length(Groups) - 1 then
+    Exit;
+
+  Group := Groups[PmESGroup.Tag];
+  P := PathProviderManager.CreatePathItem(cGroupsPath + '\' + Group.GroupName);
+  try
+    if P <> nil then
+      if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
+      begin
+        PL := TPathItemCollection.Create;
+        try
+          PL.Add(P);
+          P.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_PROPERTIES, nil);
+        finally
+          F(PL);
+        end;
+      end;
+  finally
+    F(P);
+  end;
+end;
+
+procedure TExplorerForm.MiESGroupRemoveClick(Sender: TObject);
+var
+  Group: TGroup;
+  Groups: TGroups;
+begin
+  Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+
+  if PmESGroup.Tag < 0 then
+    Exit;
+
+  if PmESGroup.Tag > Length(Groups) - 1 then
+    Exit;
+
+  Group := Groups[PmESGroup.Tag];
+  RemoveGroupFromGroups(Groups, Group);
+  WllExtendedSearchGroups.TagEx := CodeGroups(Groups);
+  ExtendedSearchInitGroups;
+end;
+
+procedure TExplorerForm.MiESPersonFindPicturesClick(Sender: TObject);
+var
+  Person: TPerson;
+begin
+  if PmESPerson.Tag < 0 then
+    Exit;
+
+  if PmESPerson.Tag > FExtendedSearchPersons.Count - 1 then
+    Exit;
+
+  Person := FExtendedSearchPersons[PmESPerson.Tag];
+  SetNewPathW(ExplorerPath(cPersonsPath + '\' + Person.Name, EXPLORER_ITEM_PERSON), False);
+end;
+
+procedure TExplorerForm.MiESPersonPropertiesClick(Sender: TObject);
+var
+  Person: TPerson;
+  P: TPathItem;
+  PL: TPathItemCollection;
+begin
+  if PmESPerson.Tag < 0 then
+    Exit;
+
+  if PmESPerson.Tag > FExtendedSearchPersons.Count - 1 then
+    Exit;
+
+  Person := FExtendedSearchPersons[PmESPerson.Tag];
+  P := PathProviderManager.CreatePathItem(cPersonsPath + '\' + Person.Name);
+  try
+    if P <> nil then
+      if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
+      begin
+        PL := TPathItemCollection.Create;
+        try
+          PL.Add(P);
+          P.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_PROPERTIES, nil);
+        finally
+          F(PL);
+        end;
+      end;
+  finally
+    F(P);
+  end;
+end;
+
+procedure TExplorerForm.MiESPersonRemoveFromListClick(Sender: TObject);
+begin
+  if PmESPerson.Tag < 0 then
+    Exit;
+
+  if PmESPerson.Tag > FExtendedSearchPersons.Count - 1 then
+    Exit;
+
+  FExtendedSearchPersons.Delete(PmESPerson.Tag);
+  ExtendedSearchInitPersons;
+end;
+
 procedure TExplorerForm.ExtendedSearchRealign;
 
   function DateToString(Date: TDateTime): string;
@@ -11306,7 +11528,21 @@ begin
 
   WlExtendedSearchDateFrom.Text := L('Date from') + ': ' + DateToString(FExtendedSearchParams.DateFrom);
   WlExtendedSearchDateTo.Text := L('Date to') + ': ' + DateToString(FExtendedSearchParams.DateTo);
-  WlExtendedSearchSortBy.Text := L('Sort by');
+
+  case FExtendedSearchParams.SortMode of
+    dsmID:
+     WlExtendedSearchSortBy.Text := L('Sort by ID');
+    dsmName:
+     WlExtendedSearchSortBy.Text := L('Sort by name');
+    dsmRating:
+     WlExtendedSearchSortBy.Text := L('Sort by rating');
+    dsmDate:
+     WlExtendedSearchSortBy.Text := L('Sort by date');
+    dsmFileSize:
+     WlExtendedSearchSortBy.Text := L('Sort by file size');
+    dsmImageSize:
+     WlExtendedSearchSortBy.Text := L('Sort by image size');
+  end;
 
   WlSearchRatingFromValue.Left := WlSearchRatingFrom.AfterRight(7);
   WlSearchRatingToValue.Left := WlSearchRatingTo.AfterRight(5);

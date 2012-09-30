@@ -211,11 +211,21 @@ end;
 procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth,
   RealHeight: Integer; ImageScale: Double);
 begin
+  if FFiles.Position < 0 then
+    Exit;
+  if FFiles.Position > FFiles.Count - 1 then
+    Exit;
+
   FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, ImageScale);
 end;
 
 procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
 begin
+  if FFiles.Position < 0 then
+    Exit;
+  if FFiles.Position > FFiles.Count - 1 then
+    Exit;
+
   FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, ImageScale);
 end;
 

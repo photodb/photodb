@@ -881,7 +881,7 @@ var
       dsmFileSize:
         Exit(SM_FILE_SIZE);
       dsmImageSize:
-        Exit(SM_SIZE);
+        Exit(SM_IMAGE_SIZE);
       dsmComparing:
         Exit(SM_COMPARING);
     end;

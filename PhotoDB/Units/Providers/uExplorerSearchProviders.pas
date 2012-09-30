@@ -303,6 +303,8 @@ begin
           DateTo := DateTimeStrEval('yyyy.mm.dd', Value)
         else if Key = 'SortBy' then
           SortMode := TDatabaseSortMode.FromString(Value)
+        else if Key = 'SortAsc' then
+          SortDescending := not (Value = '1') or (Value = 'true')
         else if Key = 'Groups' then
         begin
           Groups.Clear;
@@ -337,8 +339,8 @@ begin
       Items.Add('DateTo=' + FormatDateTime('yyyy.mm.dd', DateTo));
     if SortMode <> dsmRating then
       Items.Add('SortBy=' + SortMode.ToString);
-    if SortDescending then
-      Items.Add('SortDesc=1');
+    if not SortDescending then
+      Items.Add('SortAsc=1');
     if Groups.Count > 0 then
     begin
       Items.Add('Groups=' + Groups.Join(','));
@@ -360,12 +362,10 @@ end;
 
 class function TDatabaseSortModeHelper.FromString(S: string): TDatabaseSortMode;
 begin
-  Exit(dsmID);
-
   if S = 'ID' then
     Exit(dsmID);
   if S = 'Name' then
-    Exit(dsmID);
+    Exit(dsmName);
   if S = 'Rating' then
     Exit(dsmRating);
   if S = 'Date' then
@@ -376,6 +376,8 @@ begin
     Exit(dsmImageSize);
   if S = 'Comparing' then
     Exit(dsmComparing);
+
+  Exit(dsmRating);
 end;
 
 function TDatabaseSortModeHelper.ToString: string;

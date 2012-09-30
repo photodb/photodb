@@ -423,6 +423,14 @@
     <translate name="Other person" value="Другая персона" />
     <translate name="and" value="и" />
     <translate name="or" value="или" />
+    <translate name="Sort by ID" value="Сортировать по ID" />
+    <translate name="Sort by name" value="Сортировать по имени" />
+    <translate name="Sort by date" value="Сортировать по дате" />
+    <translate name="Sort by rating" value="Сортировать по оценке" />
+    <translate name="Sort by file size" value="Сортировать по размеру файла" />
+    <translate name="Sort by image size" value="Сортировать по размеру изображения" />
+    <translate name="Find pictures" value="Найти фотографии" />
+    <translate name="Remove from list" value="Удалить из списка" />	
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

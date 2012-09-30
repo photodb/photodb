@@ -78,6 +78,7 @@ type
     function AfterTop(Padding: Integer): Integer;
     function AfterRight(Padding: Integer): Integer;
     function FormBounds: TRect;
+    function ScreenBelow: TPoint;
   end;
 
   TCustomImageListHelper = class helper for TCustomImageList
@@ -450,7 +451,6 @@ begin
   Result := Top + Height + Padding;
 end;
 
-
 function TControlHelper.FormBounds: TRect;
 var
   Control: TControl;
@@ -466,6 +466,12 @@ begin
     Control := Control.Parent;
   end;
   Result := Rect(X, Y, X + Width, Y + Height);
+end;
+
+function TControlHelper.ScreenBelow: TPoint;
+begin
+  Result := Point(Left, BoundsRect.Bottom);
+  Result := Parent.ClientToScreen(Result);
 end;
 
 end.

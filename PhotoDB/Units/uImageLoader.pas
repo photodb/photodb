@@ -3,29 +3,33 @@ unit uImageLoader;
 interface
 
 uses
-  SysUtils,
-  Windows,
-  Classes,
-  DateUtils,
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.DateUtils,
+  System.Math,
+  Winapi.Windows,
+  Vcl.Graphics,
   Vcl.Imaging.PngImage,
-  Math,
-  uConstants,
-  uMemory,
-  GraphicEx,
-  uTiffImage,
-  RAWImage,
-  uRawExif,
+
   CCR.Exif,
   CCR.Exif.XMPUtils,
+
+  GraphicEx,
+  GraphicCrypt,
+  RAWImage,
+  UnitDBDeclare,
+  UnitDBKernel,
+
+  uTiffImage,
+  uConstants,
+  uMemory,
+  uLogger,
+  uRawExif,
   uExifUtils,
   uICCProfile,
-  GraphicCrypt,
   uAssociations,
   uGraphicUtils,
   uPortableDeviceUtils,
-  UnitDBDeclare,
-  UnitDBKernel,
   uSettings,
   uBitmapUtils,
   uJpegUtils,
@@ -605,8 +609,13 @@ end;
 function TLoadImageInfo.UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 begin
   Result := False;
-  if FExifData <> nil then
-    Result := UpdateImageRecordFromExifData(Info, FExifData, IsDBValues, LoadGroups);
+  try
+    if FExifData <> nil then
+      Result := UpdateImageRecordFromExifData(Info, FExifData, IsDBValues, LoadGroups);
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
 end;
 
 { TStreamHelper }

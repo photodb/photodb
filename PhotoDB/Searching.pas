@@ -3842,7 +3842,7 @@ begin
               SIs[I].ValueInt := Data.FileSize;
               SIs[I].ValueStr := ExtractFileName(Data.FileName);
              end;
-          SM_SIZE: begin
+          SM_IMAGE_SIZE: begin
               SIs[I].ValueStr := ExtractFileName(Data.FileName);
               SIs[I].ValueInt := Data.Width * Data.Height;
              end;
@@ -3859,7 +3859,7 @@ begin
       case SortMethod of
         SM_TITLE: aType := 4;
         SM_DATE_TIME: aType := 2;
-        SM_ID, SM_RATING, SM_FILE_SIZE, SM_SIZE, SM_COMPARING: aType := 1;
+        SM_ID, SM_RATING, SM_FILE_SIZE, SM_IMAGE_SIZE, SM_COMPARING: aType := 1;
       end;
 
       QuickSort(SIs, L, aType, not SortDecrement);
@@ -4006,7 +4006,7 @@ begin
     SM_DATE_TIME : SortbyDate1Click(Self);
     SM_RATING    : SortbyRating1Click(Self);
     SM_FILE_SIZE : SortbyFileSize1Click(Self);
-    SM_SIZE      : SortbySize1Click(Self);
+    SM_IMAGE_SIZE: SortbySize1Click(Self);
     else
      SortbyDate1Click(Self);
   end;

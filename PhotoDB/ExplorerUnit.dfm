@@ -1132,7 +1132,9 @@ object ExplorerForm: TExplorerForm
           Width = 128
           Height = 13
           Cursor = crHandPoint
+          PopupMenu = PmESSorting
           Text = 'WlExtendedSearchSortBy'
+          OnClick = WlExtendedSearchSortByClick
           ImageIndex = 0
           IconWidth = 0
           IconHeight = 0
@@ -1151,6 +1153,7 @@ object ExplorerForm: TExplorerForm
           Width = 21
           Height = 16
           Cursor = crHandPoint
+          OnClick = WlExtendedSearchSortDescendingClick
           ImageIndex = 0
           IconWidth = 16
           IconHeight = 16
@@ -1300,7 +1303,7 @@ object ExplorerForm: TExplorerForm
       Width = 1006
       Height = 21
       ButtonHeight = 19
-      ButtonWidth = 13
+      ButtonWidth = 12
       Color = clInactiveCaption
       EdgeInner = esNone
       EdgeOuter = esNone
@@ -1408,8 +1411,15 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 12
         OnClick = TbPreviewClick
       end
-      object ToolButton11: TToolButton
+      object TbSearch: TToolButton
         Left = 195
+        Top = 0
+        AutoSize = True
+        ImageIndex = 10
+        OnClick = GoToSearchWindow1Click
+      end
+      object ToolButton11: TToolButton
+        Left = 207
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -1417,14 +1427,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbZoomOut: TToolButton
-        Left = 203
+        Left = 215
         Top = 0
         AutoSize = True
         ImageIndex = 8
         OnClick = TbZoomOutClick
       end
       object TbZoomIn: TToolButton
-        Left = 215
+        Left = 227
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
@@ -1433,30 +1443,15 @@ object ExplorerForm: TExplorerForm
         OnClick = TbZoomInClick
       end
       object ToolButton20: TToolButton
-        Left = 248
+        Left = 260
         Top = 0
         Width = 8
         Caption = 'ToolButton20'
         ImageIndex = 13
         Style = tbsSeparator
       end
-      object TbSearch: TToolButton
-        Left = 256
-        Top = 0
-        AutoSize = True
-        ImageIndex = 10
-        OnClick = GoToSearchWindow1Click
-      end
-      object ToolButton16: TToolButton
-        Left = 268
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton16'
-        ImageIndex = 8
-        Style = tbsSeparator
-      end
       object TbOptions: TToolButton
-        Left = 276
+        Left = 268
         Top = 0
         AutoSize = True
         Caption = 'Options'
@@ -2521,7 +2516,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.652984120370000000
+      Date = 41177.520265706020000000
       TabOrder = 0
     end
     object BtnSelectDatePopup: TButton
@@ -3228,5 +3223,95 @@ object ExplorerForm: TExplorerForm
     ColorDepth = cd32Bit
     Left = 288
     Top = 500
+  end
+  object PmESSorting: TPopupActionBar
+    Left = 449
+    Top = 152
+    object MiSortByID: TMenuItem
+      Caption = 'Sort by ID'
+      Checked = True
+      GroupIndex = 2
+      RadioItem = True
+      OnClick = MiSortByImageSizeClick
+    end
+    object MiSortByName: TMenuItem
+      Tag = 1
+      Caption = 'Sort by Name'
+      GroupIndex = 2
+      RadioItem = True
+      OnClick = MiSortByImageSizeClick
+    end
+    object MiSortByDate: TMenuItem
+      Tag = 2
+      Caption = 'Sort by Date'
+      GroupIndex = 2
+      RadioItem = True
+      OnClick = MiSortByImageSizeClick
+    end
+    object MiSortByRating: TMenuItem
+      Tag = 3
+      Caption = 'Sort by Rating'
+      GroupIndex = 2
+      RadioItem = True
+      OnClick = MiSortByImageSizeClick
+    end
+    object MiSortByFileSize: TMenuItem
+      Tag = 4
+      Caption = 'Sort by FileSize'
+      GroupIndex = 2
+      RadioItem = True
+      OnClick = MiSortByImageSizeClick
+    end
+    object MiSortByImageSize: TMenuItem
+      Tag = 5
+      Caption = 'Sort by Image Size'
+      GroupIndex = 2
+      RadioItem = True
+      OnClick = MiSortByImageSizeClick
+    end
+  end
+  object PmESPerson: TPopupActionBar
+    Left = 449
+    Top = 216
+    object MiESPersonFindPictures: TMenuItem
+      Caption = 'Find pictures'
+      OnClick = MiESPersonFindPicturesClick
+    end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object MiESPersonRemoveFromList: TMenuItem
+      Caption = 'Remove from list'
+      OnClick = MiESPersonRemoveFromListClick
+    end
+    object N9: TMenuItem
+      Caption = '-'
+    end
+    object MiESPersonProperties: TMenuItem
+      Caption = 'Properties'
+      OnClick = MiESPersonPropertiesClick
+    end
+  end
+  object PmESGroup: TPopupActionBar
+    Left = 449
+    Top = 280
+    object MiESGroupFindPictures: TMenuItem
+      Caption = 'Find pictures'
+      OnClick = MiESGroupFindPicturesClick
+    end
+    object MenuItem2: TMenuItem
+      Caption = '-'
+    end
+    object MiESGroupRemove: TMenuItem
+      Caption = 'Remove from list'
+      OnClick = MiESGroupRemoveClick
+    end
+    object MenuItem4: TMenuItem
+      Caption = '-'
+    end
+    object MiESGroupProperties: TMenuItem
+      Caption = 'Properties'
+      OnClick = MiESGroupPropertiesClick
+    end
   end
 end
