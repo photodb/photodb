@@ -421,7 +421,8 @@ uses
   uImageViewerThread in 'Threads\uImageViewerThread.pas',
   uAnimationHelper in 'Units\uAnimationHelper.pas',
   uImageZoomHelper in 'Units\uImageZoomHelper.pas',
-  uSearchQuery in 'Units\uSearchQuery.pas';
+  uSearchQuery in 'Units\uSearchQuery.pas',
+  uMonthCalendar in 'Units\Controls\uMonthCalendar.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

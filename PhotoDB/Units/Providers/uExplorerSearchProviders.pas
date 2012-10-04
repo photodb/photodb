@@ -25,12 +25,14 @@ type
   private
     FSearchPath: string;
     FSearchTerm: string;
+    function GetSearchDisplayText: string;
   public
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     property SearchPath: string read FSearchPath;
     property SearchTerm: string read FSearchTerm;
+    property SearchDisplayText: string read GetSearchDisplayText;
   end;
 
   TDBSearchItem = class(TSearchItem)
@@ -138,7 +140,7 @@ constructor TDBSearchItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
 begin
   inherited;
-  FDisplayName := Format(TA('Search in collection for: "%s"', 'Path'), [SearchTerm]) + '...';
+  FDisplayName := Format(TA('Search in collection for: %s', 'Path'), [SearchDisplayText]) + '...';
 end;
 
 function TDBSearchItem.InternalCreateNewInstance: TPathItem;
@@ -157,7 +159,7 @@ constructor TFileSearchItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
 begin
   inherited;
-  FDisplayName := Format(TA('Search files for: "%s"', 'Path'), [SearchTerm]) + '...';
+  FDisplayName := Format(TA('Search files for: %s', 'Path'), [SearchDisplayText]) + '...';
 end;
 
 function TFileSearchItem.InternalCreateNewInstance: TPathItem;
@@ -183,7 +185,7 @@ constructor TImageSearchItem.CreateFromPath(APath: string; Options,
   ImageSize: Integer);
 begin
   inherited;
-  FDisplayName := Format(TA('Search files (with EXIF) for: "%s"', 'Path'), [SearchTerm]) + '...';
+  FDisplayName := Format(TA('Search files (with EXIF) for: %s', 'Path'), [SearchDisplayText]) + '...';
 end;
 
 function TImageSearchItem.InternalCreateNewInstance: TPathItem;
@@ -229,6 +231,99 @@ begin
   end;
   if Options and PATH_LOAD_NO_IMAGE = 0 then
     LoadImage(Options, ImageSize);
+end;
+
+function TSearchItem.GetSearchDisplayText: string;
+var
+  Parameters: TDatabaseSearchParameters;
+  ResultList: TStringList;
+  SortMode, SortDirection: string;
+begin
+  Parameters := TDatabaseSearchParameters.Create;
+  ResultList := TStringList.Create;
+  try
+    Parameters.Parse(SearchTerm);
+    Result := '';
+
+    if Trim(Parameters.Text) <> '' then
+      Result := '"' + Parameters.Text + '"';
+
+    if (Parameters.RatingFrom = 0) and (Parameters.RatingTo = 5) then
+    begin
+      //any rating, skip
+    end else if (Parameters.RatingFrom > 0) and (Parameters.RatingTo < 5) then
+    begin
+      //rating between
+      ResultList.Add(FormatEx('rating between {0} and {1}', [Parameters.RatingFrom, Parameters.RatingTo]));
+    end else if (Parameters.RatingFrom > 0) then
+    begin
+      ResultList.Add(FormatEx('rating more than {0}', [Parameters.RatingFrom]));
+    end else if (Parameters.RatingTo < 5) then
+    begin
+      ResultList.Add(FormatEx('rating less than {0}', [Parameters.RatingTo]));
+    end;
+
+    if (Parameters.DateFrom <= EncodeDate(1900, 1, 1)) and (Parameters.DateTo >= EncodeDate(2100, 1, 1)) then
+    begin
+      //any rating, skip
+    end else if (Parameters.DateFrom > EncodeDate(1900, 1, 1)) and (Parameters.DateTo < EncodeDate(2100, 1, 1)) then
+    begin
+      //rating between
+      ResultList.Add(FormatEx('date between {0} and {1}', [FormatDateTimeShortDate(Parameters.DateFrom), FormatDateTimeShortDate(Parameters.DateTo)]));
+    end else if (Parameters.DateFrom > EncodeDate(1900, 1, 1)) then
+    begin
+      ResultList.Add(FormatEx('date more than {0}', [FormatDateTimeShortDate(Parameters.DateFrom)]));
+    end else if (Parameters.DateTo < EncodeDate(2100, 1, 1)) then
+    begin
+      ResultList.Add(FormatEx('date less than {0}', [FormatDateTimeShortDate(Parameters.DateTo)]));
+    end;
+
+    if Trim(Parameters.Persons.Text) <> '' then
+      ResultList.Add(FormatEx('{0} on photo', [Parameters.Persons.Join(IIF(Parameters.PersonsAnd, ' ' + 'and' + ' ', ' ' + 'or' + ' '))]));
+
+    if Trim(Parameters.Groups.Text) <> '' then
+      ResultList.Add(FormatEx('with groups: {0}', [Parameters.Groups.Join(IIF(Parameters.GroupsAnd, ' ' + 'and' + ' ', ' ' + 'or' + ' '))]));
+
+    if (Parameters.SortMode = dsmRating) and Parameters.SortDescending then
+    begin
+      //default sorting
+    end else
+    begin
+      case Parameters.SortMode of
+        dsmID:
+          SortDirection := 'ID';
+        dsmName:
+          SortDirection := 'name';
+        dsmRating:
+          SortDirection := 'rating';
+        dsmDate:
+          SortDirection := 'Date';
+        dsmFileSize:
+          SortDirection := 'file size';
+        dsmImageSize:
+          SortDirection := 'image size';
+        dsmComparing:
+          SortDirection := 'comparing';
+      end;
+
+      if not Parameters.SortDescending then
+        SortMode := FormatEx('{0}, ascending', [SortDirection])
+      else
+        SortMode := FormatEx('{0}, descending', [SortDirection]);
+
+      ResultList.Add(SortMode);
+    end;
+
+    if ResultList.Count > 0 then
+      Result := ResultList.Join(', ');
+
+    if Result = '' then
+      Result := 'Any photo';
+
+  finally
+    F(ResultList);
+    F(Parameters);
+  end;
 end;
 
 { TDatabaseSearchParameters }
@@ -316,7 +411,11 @@ begin
           Persons.Clear;
           Persons.AddRange(Value.Split([',']));
         end else if Key = 'PersonsMode' then
-          PersonsAnd := Value = 'and';
+          PersonsAnd := Value = 'and'
+        else if Key = 'Private' then
+          ShowPrivate := not (Value = '1') or (Value = 'true')
+        else if Key = 'Hidden' then
+          ShowHidden := not (Value = '1') or (Value = 'true');
       end;
     end;
   end;
@@ -328,6 +427,7 @@ var
 begin
   Items := TStringList.Create;
   try
+
     Items.Add(Text.Replace(';', ' '));
     if RatingFrom > 0 then
     Items.Add('RatingFrom=' + IntToStr(RatingFrom));
@@ -351,6 +451,11 @@ begin
       Items.Add('Persons=' + Persons.Join(','));
       Items.Add('PersonsMode=' + IIF(PersonsAnd, 'and', 'or'));
     end;
+
+    if ShowPrivate then
+      Items.Add('Private=1');
+    if ShowHidden then
+      Items.Add('Hidden=1');
 
     Result := Items.Join(';');
   finally

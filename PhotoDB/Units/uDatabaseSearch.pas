@@ -526,15 +526,14 @@ begin
         end;
         Sqltext := Sqltext + ')';
 
-        //Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
         Result.Query := Result.Query + Format(' where %s and (%s)',
           [Format(' ((Rating >= %d) AND (Rating <= %d)) ', [FSearchParams.RatingFrom, FSearchParams.RatingTo]),
           Sqltext]);
 
-        if FSearchParams.Groups.Count > 0 then
+        if FSearchParams.GroupsWhere <> '' then
           Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.GroupsWhere]);
 
-        if FSearchParams.Persons.Count > 0 then
+        if FSearchParams.PersonsWhereOr <> '' then
           Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.PersonsWhereOr]);
 
         if Sqlrwords.Count > 0 then
@@ -580,12 +579,13 @@ begin
           Sqltext := Sqltext + ' (ID=' + S1 + ') OR';
         end;
       Sqltext := Sqltext + ' (ID=0))';
-      //Result.Query := Format('SELECT %s FROM $DB$ ', [FIELDS]);
+
       Result.Query := Result.Query + ' where (' + Sqltext + ')';
 
-      if FSearchParams.Groups.Count > 0 then
+      if FSearchParams.GroupsWhere <> '' then
         Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.GroupsWhere]);
-      if FSearchParams.Persons.Count > 0 then
+
+      if FSearchParams.PersonsWhereOr <> '' then
         Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.PersonsWhereOr]);
     end;
     ApplyFilter(Result, Db_attr_norm);
@@ -796,7 +796,7 @@ begin
       if not FOwner.Terminated then
         FWorkQuery.Open;
     except
-      on e : Exception do
+      on e: Exception do
       begin
         if Assigned(OnError) then
           OnError(Self, e.Message + #13 + TA('Query failed to execute!'));

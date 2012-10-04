@@ -430,7 +430,10 @@
     <translate name="Sort by file size" value="Сортировать по размеру файла" />
     <translate name="Sort by image size" value="Сортировать по размеру изображения" />
     <translate name="Find pictures" value="Найти фотографии" />
-    <translate name="Remove from list" value="Удалить из списка" />	
+    <translate name="Remove from list" value="Удалить из списка" />
+    <translate name="Open directory" value="Открыть директорию" />
+    <translate name="Show hidden images" value="Показывать скрытые изображения" />
+    <translate name="Show private images" value="Показывать личные изображения" />
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />
@@ -2134,9 +2137,9 @@
 	<translate name="Groups" value="Группы"/>
 	<translate name="Persons" value="Персоны"/>
 	<translate name="My computer" value="Мой компьютер"/>
-    <translate name="Search in collection for: &quot;%s&quot;" value="Искать в базе: &quot;%s&quot;" />
-    <translate name="Search files for: &quot;%s&quot;" value="Искать файлы: &quot;%s&quot;" />
-    <translate name="Search files (with EXIF) for: &quot;%s&quot;" value="Искать файлы (учитывая EXIF): &quot;%s&quot;" />
+    <translate name="Search in collection for: %s" value="Искать в базе: %s" />
+    <translate name="Search files for: %s" value="Искать файлы: %s" />
+    <translate name="Search files (with EXIF) for: %s" value="Искать файлы (учитывая EXIF): %s" />
   </scope>
   <scope name="EditObject">
 	<translate name="Edit text" value="Редактировать текст"/>

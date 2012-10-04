@@ -173,7 +173,8 @@ uses
   uIImageViewer,
   uImageViewer,
   uPeopleSupport,
-  uFormSelectPerson
+  uFormSelectPerson,
+  uMonthCalendar
   ;
 
 const
@@ -181,6 +182,7 @@ const
 
 type
   TPageControl = class(TPageControlNoBorder);
+  TMonthCalendar = class(TMonthCalendarEx);
 
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
@@ -498,12 +500,12 @@ type
     ImFacePopup: TImageList;
     ImExtendedSearchPersons: TImageList;
     PmESSorting: TPopupActionBar;
-    MiSortByID: TMenuItem;
-    MiSortByName: TMenuItem;
-    MiSortByDate: TMenuItem;
-    MiSortByRating: TMenuItem;
-    MiSortByFileSize: TMenuItem;
-    MiSortByImageSize: TMenuItem;
+    MiESSortByID: TMenuItem;
+    MiESSortByName: TMenuItem;
+    MiESSortByDate: TMenuItem;
+    MiESSortByRating: TMenuItem;
+    MiESSortByFileSize: TMenuItem;
+    MiESSortByImageSize: TMenuItem;
     PmESPerson: TPopupActionBar;
     MiESPersonFindPictures: TMenuItem;
     N4: TMenuItem;
@@ -516,6 +518,10 @@ type
     MiESGroupRemove: TMenuItem;
     MenuItem4: TMenuItem;
     MiESGroupProperties: TMenuItem;
+    TbbOpenDirectory: TToolButton;
+    PmESOptions: TPopupActionBar;
+    MiESShowHidden: TMenuItem;
+    MiESShowPrivate: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -568,7 +574,6 @@ type
     procedure CopyToLinkClick(Sender: TObject);
     procedure MoveToLinkClick(Sender: TObject);
     procedure PasteClick(Sender: TObject);
-    procedure GoToSearchWindow1Click(Sender: TObject);
     procedure ImPreviewDblClick(Sender: TObject);
     procedure Options1Click(Sender: TObject);
     procedure DBManager1Click(Sender: TObject);
@@ -756,13 +761,24 @@ type
     procedure MiOtherPersonsClick(Sender: TObject);
     procedure WlExtendedSearchSortDescendingClick(Sender: TObject);
     procedure WlExtendedSearchSortByClick(Sender: TObject);
-    procedure MiSortByImageSizeClick(Sender: TObject);
+    procedure MiESSortByImageSizeClick(Sender: TObject);
     procedure MiESPersonRemoveFromListClick(Sender: TObject);
     procedure MiESPersonFindPicturesClick(Sender: TObject);
     procedure MiESPersonPropertiesClick(Sender: TObject);
     procedure MiESGroupFindPicturesClick(Sender: TObject);
     procedure MiESGroupRemoveClick(Sender: TObject);
     procedure MiESGroupPropertiesClick(Sender: TObject);
+    procedure TbSearchClick(Sender: TObject);
+    procedure McDateSelectPopupKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure TbbOpenDirectoryClick(Sender: TObject);
+    procedure PmESSortingPopup(Sender: TObject);
+    procedure WlExtendedSearchOptionsClick(Sender: TObject);
+    procedure WlExtendedSearchOptionsContextPopup(Sender: TObject;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure MiESShowHiddenClick(Sender: TObject);
+    procedure MiESShowPrivateClick(Sender: TObject);
+    procedure PmESOptionsPopup(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -947,6 +963,7 @@ type
     procedure WlExtendedSearchAddPersonClick(Sender: TObject);
     procedure ExtendedSearchPersonClick(Sender: TObject);
     procedure ExtendedSearchPersonModeClick(Sender: TObject);
+    procedure ExtendedSearchShow;
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1214,8 +1231,10 @@ procedure TExplorerForm.PcTasksChange(Sender: TObject);
 begin
   FActiveLeftTab := TExplorerLeftTab(PcTasks.ActivePageIndex);
   Settings.WriteInteger('Explorer', 'LeftPanelTabIndex', PcTasks.ActivePageIndex);
-  if PcTasks.ActivePageIndex = 1 then
+  if PcTasks.ActivePageIndex = Integer(eltsExplorer) then
     TreeView.SelectPathItem(PePath.PathEx);
+  if PcTasks.ActivePageIndex = Integer(eltsSearch) then
+    ExtendedSearchInit;
 end;
 
 procedure VerifyPaste(Explorer: TExplorerForm);
@@ -1390,7 +1409,12 @@ begin
   MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
   PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 210);
 
+  TbSearch.Down := Settings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
+  TbSearch.Tag := IIF(TbSearch.Down, -1, 1);
   FLeftTabs := [eltsPreview, eltsExplorer];
+  if TbSearch.Down then
+    FLeftTabs := FLeftTabs + [eltsSearch];
+
   FActiveLeftTab := eltsPreview;
   ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsPreview))));
   ApplyLeftTabs;
@@ -1512,6 +1536,7 @@ begin
   TLoad.Instance.RequaredDBSettings;
   FPictureSize := ThImageSize;
   LoadSizes;
+
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;
@@ -2995,7 +3020,7 @@ begin
   else
     HideRightPanel;
 
-  Settings.WriteBool('Explorer', 'RightPanelVisible', TbPreview.Down)
+  Settings.WriteBool('Explorer', 'RightPanelVisible', TbPreview.Down);
 end;
 
 procedure TExplorerForm.TbPreviewNextClick(Sender: TObject);
@@ -4465,6 +4490,13 @@ begin
   end;
 end;
 
+procedure TExplorerForm.McDateSelectPopupKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    BtnSelectDatePopupClick(Sender);
+end;
+
 procedure TExplorerForm.ZoomPan(Lat, Lng: Double; Zoom: SYSINT);
 begin
   if FIsMapLoaded then
@@ -4891,7 +4923,17 @@ begin
   end;
 end;
 
-procedure TExplorerForm.MiSortByImageSizeClick(Sender: TObject);
+procedure TExplorerForm.MiESShowHiddenClick(Sender: TObject);
+begin
+  FExtendedSearchParams.ShowHidden := not FExtendedSearchParams.ShowHidden;
+end;
+
+procedure TExplorerForm.MiESShowPrivateClick(Sender: TObject);
+begin
+  FExtendedSearchParams.ShowPrivate := not FExtendedSearchParams.ShowPrivate;
+end;
+
+procedure TExplorerForm.MiESSortByImageSizeClick(Sender: TObject);
 begin
   FExtendedSearchParams.SortMode := TDatabaseSortMode(TControl(Sender).Tag);
 
@@ -5521,6 +5563,17 @@ begin
     end else
       ShellLink.Visible := False;
 
+    if (SelCount = 1)
+      and (GetCurrentPathW.PType in [EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
+          EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY])
+      and (FSelectedInfo.FileType in [EXPLORER_ITEM_EXEFILE, EXPLORER_ITEM_FILE,
+          EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE, EXPLORER_ITEM_IMAGE,
+          EXPLORER_ITEM_DEVICE_IMAGE, EXPLORER_ITEM_DEVICE_DIRECTORY, EXPLORER_ITEM_DEVICE_VIDEO,
+          EXPLORER_ITEM_DEVICE_FILE]) then
+      TbbOpenDirectory.Enabled := True
+    else
+      TbbOpenDirectory.Enabled := False;
+
     if CanBeTransparentEncryptedFile(FSelectedInfo.FileName) and (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) then
       AddEncryptMenu;
 
@@ -6006,15 +6059,6 @@ begin
   finally
     SetErrorMode(OldMode);
   end;
-end;
-
-procedure TExplorerForm.GoToSearchWindow1Click(Sender: TObject);
-var
-  NewSearch: TSearchCustomForm;
-begin
-  NewSearch := SearchManager.GetAnySearch;
-  NewSearch.Show;
-  NewSearch.SetFocus;
 end;
 
 procedure TExplorerForm.ImPreviewDblClick(Sender: TObject);
@@ -6510,6 +6554,9 @@ begin
   finally
     PcTasks.EnableTabChanging;
   end;
+  if FActiveLeftTab = eltsSearch then
+    ExtendedSearchInit;
+
   PcTasks.ActivePageIndex := Integer(FActiveLeftTab);
 end;
 
@@ -6964,6 +7011,7 @@ begin
     TbbRename.Caption := L('Rename');
     TbbProperties.Caption := L('Properties');
     TbbShare.Caption := L('Share');
+    TbbOpenDirectory.Caption := L('Open directory');
 
     TsGeoLocation.Caption := L('Map');
     TsMediaPreview.Caption := L('Preview');
@@ -7275,8 +7323,13 @@ begin
     UpdaterInfo := TUpdaterInfo.Create;
     TExplorerThread.Create(Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
-  if IsExplorerTreeViewVisible and not Explorer and (WPath.PType <> EXPLORER_ITEM_SEARCH) then
-    TreeView.SelectPath(GetCurrentPath);
+  if IsExplorerTreeViewVisible and not Explorer then
+  begin
+    if (WPath.PType <> EXPLORER_ITEM_SEARCH) then
+      TreeView.SelectPath(GetCurrentPath)
+    else
+      TreeView; //just start tree
+  end;
 
   DropFileTargetMain.Unregister;
   if (WPath.PType = EXPLORER_ITEM_FOLDER) or (WPath.PType = EXPLORER_ITEM_DRIVE) or (WPath.PType = EXPLORER_ITEM_SHARE) then
@@ -9045,10 +9098,7 @@ end;
 
 procedure TExplorerForm.WedSearchEnter(Sender: TObject);
 begin
-  FLeftTabs := FLeftTabs + [eltsSearch];
-  ShowActiveLeftTab(eltsSearch);
-  ApplyLeftTabs;
-  ExtendedSearchInit;
+  ExtendedSearchShow;
 end;
 
 procedure TExplorerForm.WedSearchKeyPress(Sender: TObject; var Key: Char);
@@ -10634,9 +10684,64 @@ begin
   end;
 end;
 
+procedure TExplorerForm.TbbOpenDirectoryClick(Sender: TObject);
+var
+  Item: TEasyItem;
+  FilePath, Directory: string;
+  P: TPathItem;
+  FI: TExplorerFileInfo;
+begin
+  Item := ListView1Selected;
+  if Item <> nil then
+  begin
+    FilePath := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
+    Directory := ExtractFileDir(FilePath);
+
+    P := PathProviderManager.CreatePathItem(Directory);
+    try
+      if P = nil then
+        Exit;
+
+      FI := TExplorerFileInfo.CreateFromPathItem(P);
+      try
+        SetOldPath(FilePath);
+        SetNewPathW(ExplorerPath(FI.FileName, FI.FileType), False);
+      finally
+        F(FI);
+      end;
+    finally
+      F(P);
+    end;
+  end;
+end;
+
 procedure TExplorerForm.TbDeleteClick(Sender: TObject);
 begin
   DeleteFiles(True);
+end;
+
+procedure TExplorerForm.TbSearchClick(Sender: TObject);
+begin
+  if Sender = TbSearch then
+  begin
+    TbSearch.Tag := -TbSearch.Tag;
+    TbSearch.Down := TbSearch.Tag < 0;
+  end;
+
+  if TbSearch.Down then
+  begin
+    FLeftTabs := FLeftTabs + [eltsSearch];
+    ShowActiveLeftTab(eltsSearch);
+    ExtendedSearchInit;
+  end else
+  begin
+    FLeftTabs := FLeftTabs - [eltsSearch];
+    if not (FActiveLeftTab in FLeftTabs) then
+      ShowLastActiveLeftTab(eltsAny);
+  end;
+  ApplyLeftTabs;
+
+  Settings.WriteBool('Explorer', 'LeftPanelSearchVisible', TbSearch.Down);
 end;
 
 procedure TExplorerForm.TbStopClick(Sender: TObject);
@@ -10962,24 +11067,29 @@ begin
     MiESGroupRemove.ImageIndex := DB_IC_DELETE_INFO;
     MiESGroupProperties.ImageIndex := DB_IC_PROPERTIES;
 
-    MiSortByID.Caption := L('Sort by ID');
-    MiSortByID.Tag := NativeInt(dsmID);
-    MiSortByName.Caption := L('Sort by name');
-    MiSortByName.Tag := NativeInt(dsmName);
-    MiSortByDate.Caption := L('Sort by date');
-    MiSortByDate.Tag := NativeInt(dsmDate);
-    MiSortByRating.Caption := L('Sort by rating');
-    MiSortByRating.Tag := NativeInt(dsmRating);
-    MiSortByFileSize.Caption := L('Sort by file size');
-    MiSortByFileSize.Tag := NativeInt(dsmFileSize);
-    MiSortByImageSize.Caption := L('Sort by image size');
-    MiSortByImageSize.Tag := NativeInt(dsmImageSize);
+    MiESSortByID.Caption := L('Sort by ID');
+    MiESSortByID.Tag := NativeInt(dsmID);
+    MiESSortByName.Caption := L('Sort by name');
+    MiESSortByName.Tag := NativeInt(dsmName);
+    MiESSortByDate.Caption := L('Sort by date');
+    MiESSortByDate.Tag := NativeInt(dsmDate);
+    MiESSortByRating.Caption := L('Sort by rating');
+    MiESSortByRating.Tag := NativeInt(dsmRating);
+    MiESSortByFileSize.Caption := L('Sort by file size');
+    MiESSortByFileSize.Tag := NativeInt(dsmFileSize);
+    MiESSortByImageSize.Caption := L('Sort by image size');
+    MiESSortByImageSize.Tag := NativeInt(dsmImageSize);
+
+    MiESShowHidden.Caption := L('Show hidden images');
+    MiESShowPrivate.Caption := L('Show private images');
 
     FExtendedSearchParams := TDatabaseSearchParameters.Create;
     FExtendedSearchParams.DateFrom := MinDateTime;
     FExtendedSearchParams.DateTo := MinDateTime;
     FExtendedSearchParams.RatingFrom := 0;
     FExtendedSearchParams.RatingTo := 5;
+    FExtendedSearchParams.ShowPrivate := False;
+    FExtendedSearchParams.ShowHidden := False;
 
     FExtendedSearchPersons := TList<TPerson>.Create;
 
@@ -10999,7 +11109,9 @@ begin
     WlSearchRatingToValue.LoadFromResource('TRATING_5');
 
     WlSearchRatingFrom.Text := L('Rating from');
+    WlSearchRatingFrom.RefreshBuffer(True);
     WlSearchRatingTo.Text := L('Rating to');
+    WlSearchRatingTo.RefreshBuffer(True);
     BtnSearch.Caption := L('Search');
     BtnSelectDatePopup.Caption := L('Ok');
     BtnSelectDatePopupReset.Caption := L('Reset');
@@ -11243,6 +11355,25 @@ begin
     McDateSelectPopup.Date := EffectiveDate(FExtendedSearchParams.DateFrom);
   if Sender = WlExtendedSearchDateTo then
     McDateSelectPopup.Date := EffectiveDate(FExtendedSearchParams.DateTo);
+end;
+
+procedure TExplorerForm.WlExtendedSearchOptionsClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := Point(WlExtendedSearchOptions.Left, WlExtendedSearchOptions.BoundsRect.Bottom);
+  P := WlExtendedSearchOptions.Parent.ClientToScreen(P);
+  PmESOptions.Popup(P.X, P.Y);
+end;
+
+procedure TExplorerForm.WlExtendedSearchOptionsContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if FExtendedSearchParams <> nil then
+  begin
+    MiESShowHidden.Checked := FExtendedSearchParams.ShowHidden;
+    MiESShowPrivate.Checked := FExtendedSearchParams.ShowPrivate;
+  end;
 end;
 
 procedure TExplorerForm.WlExtendedSearchSortByClick(Sender: TObject);
@@ -11570,8 +11701,31 @@ begin
   WlExtendedSearchSortDescending.Top := WlExtendedSearchDateTo.AfterTop(7);
   WlExtendedSearchSortBy.Top := WlExtendedSearchDateTo.AfterTop(7);
 
-  WlExtendedSearchOptions.Top := WlExtendedSearchSortBy.AfterTop(7);
   BtnSearch.Top := WlExtendedSearchSortBy.AfterTop(7);
+  WlExtendedSearchOptions.Top := BtnSearch.BoundsRect.Bottom - WlExtendedSearchOptions.Height;
+end;
+
+procedure TExplorerForm.PmESOptionsPopup(Sender: TObject);
+begin
+  MiESShowHidden.Checked := FExtendedSearchParams.ShowHidden;
+  MiESShowPrivate.Checked := FExtendedSearchParams.ShowPrivate;
+end;
+
+procedure TExplorerForm.PmESSortingPopup(Sender: TObject);
+begin
+  MiESSortByID.Checked := FExtendedSearchParams.SortMode = dsmID;
+  MiESSortByName.Checked := FExtendedSearchParams.SortMode = dsmName;
+  MiESSortByDate.Checked := FExtendedSearchParams.SortMode = dsmDate;
+  MiESSortByRating.Checked := FExtendedSearchParams.SortMode = dsmRating;
+  MiESSortByFileSize.Checked := FExtendedSearchParams.SortMode = dsmFileSize;
+  MiESSortByImageSize.Checked := FExtendedSearchParams.SortMode = dsmImageSize;
+end;
+
+procedure TExplorerForm.ExtendedSearchShow;
+begin
+  TbSearch.Down := True;
+  TbSearch.Tag := -1;
+  TbSearchClick(Self);
 end;
 
 procedure TExplorerForm.TsDetailedSearchResize(Sender: TObject);
@@ -11905,6 +12059,7 @@ begin
   TbbRename.ImageIndex := DB_IC_RENAME;
   TbbProperties.ImageIndex := DB_IC_PROPERTIES;
   TbbShare.ImageIndex := DB_IC_PHOTO_SHARE;
+  TbbOpenDirectory.ImageIndex := DB_IC_DIRECTORY;
 
   TbPreviewPrevious.ImageIndex := DB_IC_PREVIOUS;
   TbPreviewNext.ImageIndex := DB_IC_NEXT;

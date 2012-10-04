@@ -3,23 +3,27 @@ unit ExplorerTypes;
 interface
 
 uses
-  SysUtils,
-  Windows,
-  Graphics,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShellApi,
+  Vcl.Graphics,
   UnitDBDeclare,
-  Messages,
-  Classes,
-  JPEG, SyncObjs,
+  Vcl.Menus,
+  Vcl.ActnPopup,
+  Vcl.Imaging.JPEG,
+
+  PathEditor,
+
   uBitmapUtils,
   uFileUtils,
   uMemory,
   uDBPopupMenuInfo,
   uThreadEx,
-  Menus,
   uThreadForm,
-  ShellApi,
   uConstants,
-  PathEditor,
   uSysUtils,
   uGUIDUtils,
   uPathProviders,
@@ -30,8 +34,7 @@ uses
   uExplorerPortableDeviceProvider,
   uExplorerShelfProvider,
   uExplorerDateStackProviders,
-  uFormListView,
-  Vcl.ActnPopup;
+  uFormListView;
 
 type
   TExplorerPath = record
