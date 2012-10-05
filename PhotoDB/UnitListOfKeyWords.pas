@@ -3,32 +3,35 @@ unit UnitListOfKeyWords;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  DB,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Vcl.Menus,
+  Vcl.ExtCtrls,
+  Vcl.ClipBrd,
+  Data.DB,
+
   Dolphin_DB,
   ProgressActionUnit,
-  uVistaFuncs,
   CmpUnit,
-  ExtCtrls,
-  ClipBrd,
-  Menus,
   UnitDBkernel,
   CommonDBSupport,
+
   uMemory,
   uDBForm,
+  uVistaFuncs,
   uShellIntegration,
   uConstants,
   uMemoryEx,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
+  uManagerExplorer,
   uRuntime;
 
 type
@@ -73,7 +76,7 @@ procedure GetListOfKeyWords;
 implementation
 
 uses
-  uSearchTypes, UnitOpenQueryThread;
+  UnitOpenQueryThread;
 
 {$R *.dfm}
 
@@ -314,7 +317,11 @@ end;
 
 procedure TFormListOfKeyWords.Search1Click(Sender: TObject);
 begin
-  SearchManager.NewSearch.StartSearch(':KeyWord(' + LstKeywords.Items[PmKeywords.Tag] + '):');
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cDBSearchPath + ':KeyWord(' + LstKeywords.Items[PmKeywords.Tag] + '):');
+    Show;
+  end;
 end;
 
 procedure TFormListOfKeyWords.DBOpened(Sender : TObject; DS : TDataSet);

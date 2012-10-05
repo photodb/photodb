@@ -379,7 +379,6 @@ var
 implementation
 
 uses
-  uSearchTypes,
   UnitHintCeator,
   CmpUnit,
   UnitEditLinkForm,
@@ -1076,23 +1075,10 @@ end;
 
 procedure TPropertiesForm.Searchforit1Click(Sender: TObject);
 var
-  PR : TImageDBRecordA;
+  PR: TImageDBRecordA;
 begin
-  if FShowInfoType = SHOW_INFO_ID then
+  if FShowInfoType = SHOW_INFO_FILE_NAME then
   begin
-    if FileExistsSafe(FileName) then
-    begin
-      SearchManager.NewSearch.StartSearch(IntToStr(ImageId) + '$');
-    end else
-    begin
-      Pr := GetImageIDW(FileName, True);
-      if Pr.Count <> 0 then
-        Execute(Pr.Ids[0])
-      else
-        MessageBoxDB(Handle, L('Unable to find this image!'), L('Warning'), TD_BUTTON_OK, TD_ICON_ERROR);
-    end;
-  end
-  else begin
     Pr := GetImageIDW(FileName, True);
     if Pr.Count <> 0 then
       Execute(Pr.Ids[0])
@@ -1344,8 +1330,9 @@ end;
 
 procedure TPropertiesForm.PmItemPopup(Sender: TObject);
 var
-  FE : Boolean;
+  FE: Boolean;
 begin
+  SearchForIt1.Visible := FShowInfoType = SHOW_INFO_FILE_NAME ;
   FE := FileExistsSafe(FileName);
   Shell1.Visible := FE;
   if FShowInfoType <> SHOW_INFO_IDS then

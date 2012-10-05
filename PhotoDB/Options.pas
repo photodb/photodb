@@ -173,10 +173,6 @@ type
     LbAddHeight: TLabel;
     LbAddWidth: TLabel;
     CbDontAddSmallFiles: TCheckBox;
-    EdExplorerStartupLocation: TEdit;
-    BtnSelectExplorerStartupFolder: TButton;
-    CbExplorerStartupLocation: TCheckBox;
-    CbStartUpExplorer: TCheckBox;
     CbCheckLinksOnUpdate: TCheckBox;
     CbSmallToolBars: TCheckBox;
     CblEditorVirtuaCursor: TCheckBox;
@@ -295,9 +291,6 @@ type
     procedure Rename1Click(Sender: TObject);
     procedure PlacesListViewEdited(Sender: TObject; Item: TListItem; var S: String);
     procedure Default1Click(Sender: TObject);
-    procedure CbStartUpExplorerClick(Sender: TObject);
-    procedure BtnSelectExplorerStartupFolderClick(Sender: TObject);
-    procedure CbExplorerStartupLocationClick(Sender: TObject);
     procedure CbDontAddSmallFilesClick(Sender: TObject);
     procedure PcMainChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -472,16 +465,6 @@ begin
     CbListViewHotSelect.Checked := Settings.Readbool('Options', 'UseHotSelect', True);
     CblEditorVirtuaCursor.Checked := Settings.ReadBool('Editor', 'VirtualCursor', False);
     CbCheckLinksOnUpdate.Checked := Settings.ReadBool('Options', 'CheckUpdateLinks', False);
-
-    CbStartUpExplorer.Checked := Settings.ReadBool('Options', 'RunExplorerAtStartUp', True);
-    CbExplorerStartupLocation.Checked := Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False);
-    EdExplorerStartupLocation.Text := Settings.ReadString('Options', 'SpecialStartUpFolder');
-
-    if not DirectoryExists(EdExplorerStartupLocation.Text) then
-      EdExplorerStartupLocation.Text := uShellUtils.GetMyPicturesPath;
-
-    CbExplorerStartupLocation.Enabled := CbStartUpExplorer.Checked;
-    EdExplorerStartupLocation.Enabled := CbExplorerStartupLocation.Checked and CbExplorerStartupLocation.Enabled;
 
     CbDontAddSmallFiles.Checked := Settings.ReadBool('Options', 'DontAddSmallImages', True);
     SedMinWidth.Value := Settings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64);
@@ -753,10 +736,6 @@ begin
     Settings.WriteBool('Editor', 'VirtualCursor', CblEditorVirtuaCursor.Checked);
     Settings.WriteBool('Options', 'CheckUpdateLinks', CbCheckLinksOnUpdate.Checked);
 
-    Settings.WriteBool('Options', 'RunExplorerAtStartUp', CbStartUpExplorer.Checked);
-    Settings.WriteBool('Options', 'UseSpecialStartUpFolder', CbExplorerStartupLocation.Checked);
-    Settings.WriteString('Options', 'SpecialStartUpFolder', EdExplorerStartupLocation.Text);
-
     Settings.WriteBool('Options', 'DontAddSmallImages', CbDontAddSmallFiles.Checked);
     Settings.WriteInteger('Options', 'DontAddSmallImagesWidth', SedMinWidth.Value);
     Settings.WriteInteger('Options', 'DontAddSmallImagesHeight', SedMinHeight.Value);
@@ -970,8 +949,6 @@ begin
     CblEditorVirtuaCursor.Caption := L('Virtual cursor to the Editor');
     Default1.Caption := L('Default');
     CbCheckLinksOnUpdate.Caption := L('Check changes of files and update links (may slow down program)');
-    CbStartUpExplorer.Caption := L('Start Explorer at startup');
-    CbExplorerStartupLocation.Caption := L('Use folder');
     CbDontAddSmallFiles.Caption := L('Do not add files to collection if size less than') + ':';
     LbAddWidth.Caption := L('Width');
     LbAddHeight.Caption := L('Height');
@@ -2190,21 +2167,6 @@ begin
     CbExtensionList.State[I] := AssociationStateToCheckboxState(TFileAssociations.Instance.GetCurrentAssociationState(TFileAssociation(CbExtensionList.Items.Objects[I]).Extension), True);
 end;
 
-procedure TOptionsForm.CbStartUpExplorerClick(Sender: TObject);
-begin
-  CbExplorerStartupLocation.Enabled := CbStartUpExplorer.Checked;
-  EdExplorerStartupLocation.Enabled := CbExplorerStartupLocation.Checked;
-end;
-
-procedure TOptionsForm.BtnSelectExplorerStartupFolderClick(Sender: TObject);
-var
-  Dir: string;
-begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Please select folder'), UseSimpleSelectFolderDialog);
-  if DirectoryExists(Dir) then
-    EdExplorerStartupLocation.Text := IncludeTrailingBackslash(Dir);
-end;
-
 procedure TOptionsForm.BtnSelectPlayerExecutableClick(Sender: TObject);
 var
   OpenDialog: DBOpenDialog;
@@ -2223,12 +2185,6 @@ begin
   finally
     F(OpenDialog);
   end;
-end;
-
-procedure TOptionsForm.CbExplorerStartupLocationClick(Sender: TObject);
-begin
-  EdExplorerStartupLocation.Enabled := CbExplorerStartupLocation.Checked;
-  BtnSelectExplorerStartupFolder.Enabled := CbExplorerStartupLocation.Checked;
 end;
 
 procedure TOptionsForm.CbDontAddSmallFilesClick(Sender: TObject);

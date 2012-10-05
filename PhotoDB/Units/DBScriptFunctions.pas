@@ -3,24 +3,29 @@ unit DBScriptFunctions;
 interface
 
 uses
-  Windows,
+  System.Math,
+  System.Classes,
+  System.SysUtils,
+  System.Win.Registry,
+  Winapi.Windows,
+  Vcl.Forms,
+  Vcl.Graphics,
+  Data.DB,
+
   Dolphin_DB,
   UnitScripts,
   ReplaseIconsInScript,
   acDlgSelect,
-  Forms,
-  Classes,
-  SysUtils,
-  Registry,
   GraphicCrypt,
-  uMemory,
-  Graphics,
-  DB,
+
   UnitINI,
   UnitDBDeclare,
   UnitDBFileDialogs,
+  UnitDBCommonGraphics,
+
+  uConstants,
+  uMemory,
   uTranslate,
-  Math,
   uScript,
   uCDMappingTypes,
   uFileUtils,
@@ -36,7 +41,6 @@ uses
   uSysUtils,
   uDBPopupMenuInfo,
   uSettings,
-  UnitDBCommonGraphics,
   uPhotoShelf,
   uFormInterfaces;
 
@@ -57,7 +61,7 @@ implementation
 
 uses
   ExplorerTypes, UnitWindowsCopyFilesThread, UnitLinksSupport,
-  CommonDBSupport, UnitInternetUpdate, UnitUpdateDB, uSearchTypes, ImEditor,
+  CommonDBSupport, UnitInternetUpdate, UnitUpdateDB, ImEditor,
   uManagerExplorer, uFormImportImages, UnitListOfKeyWords, UnitDBTreeView,
   UnitHelp, FormManegerUnit, ProgressActionUnit, UnitDBKernel,
   UnitSelectDB, UnitSplitExportForm, UnitUpdateDBObject,
@@ -181,19 +185,10 @@ end;
 
 function ShowKeyWord(KeyWord: string): string;
 begin
-  with SearchManager.NewSearch do
+  with ExplorerManager.NewExplorer(False) do
   begin
-    StartSearch(':KeyWord(' + KeyWord + '):');
-    Result := GUIDToString(WindowID);
-  end;
-end;
-
-function OpenSearch(StringSearch: string): string;
-begin
-  with SearchManager.NewSearch do
-  begin
-    StartSearch(StringSearch);
-    Result := GUIDToString(WindowID);
+    SetPath(cDBSearchPath + ':KeyWord(' + KeyWord + '):');
+    Show;
   end;
 end;
 
@@ -214,16 +209,6 @@ begin
     // Show;
     Result := GUIDToString(WindowID);
     CloseOnFailture := False;
-  end;
-end;
-
-function NewSearch: string;
-begin
-  with SearchManager.NewSearch do
-  begin
-    Show;
-    SetFocus;
-    Result := GUIDToString(WindowID);
   end;
 end;
 
@@ -470,92 +455,6 @@ begin
   end;
 end;
 
-function GetSearchByCID(CID : string) : TSearchCustomForm;
-var
-  I: Integer;
-begin
-  Result := nil;
-  if SearchManager <> nil then
-  begin
-    for I := 0 to SearchManager.SearchCount - 1 do
-    begin
-      if CID = GUIDToString(SearchManager[I].WindowID) then
-      begin
-        Result := SearchManager[I];
-        Break;
-      end;
-    end;
-  end;
-end;
-
-function GetSearchTextByCID(CID: string): string;
-var
-  I: Integer;
-begin
-  Result := '';
-  if SearchManager <> nil then
-  begin
-    SetLength(Result, SearchManager.SearchCount);
-    for I := 0 to SearchManager.SearchCount - 1 do
-    begin
-      if CID = GUIDToString(SearchManager[I].WindowID) then
-      begin
-        Result := SearchManager[I].SearchText;
-        Break;
-      end;
-    end;
-  end;
-end;
-
-Procedure SetSearchText(CID, Text : string);
-var
-  I: Integer;
-begin
-  if SearchManager <> nil then
-  begin
-    for I := 0 to SearchManager.SearchCount - 1 do
-    begin
-      if CID = GUIDToString(SearchManager[I].WindowID) then
-      begin
-        SearchManager[I].SearchText := Text;
-        Break;
-      end;
-    end;
-  end;
-end;
-
-Procedure DoSearch(CID : string);
-var
-  I: Integer;
-begin
-  if SearchManager <> nil then
-  begin
-    for I := 0 to SearchManager.SearchCount - 1 do
-    begin
-      if CID = GUIDToString(SearchManager[I].WindowID) then
-      begin
-        SearchManager[I].StartSearch;
-        Break;
-      end;
-    end;
-  end;
-end;
-
-function GetSearchs: TArrayOfString;
-var
-  I: Integer;
-begin
-  SetLength(Result, 0);
-  if SearchManager <> nil then
-  begin
-    SetLength(Result, SearchManager.SearchCount);
-    for I := 0 to SearchManager.SearchCount - 1 do
-    begin
-      Result[I] := GUIDToString(SearchManager[I].WindowID);
-    end;
-  end;
-end;
-
 function GetProgressByCID(CID: string): TProgressActionForm;
 var
   I: Integer;
@@ -615,8 +514,6 @@ begin
   if GetImageEditorByCID(CID) <> nil then
     GetImageEditorByCID(CID).Close;
 
-  if GetSearchByCID(CID) <> nil then
-    GetSearchByCID(CID).Close;
   if GetExplorerByCID(CID) <> nil then
     GetExplorerByCID(CID).Close;
 
@@ -634,8 +531,6 @@ procedure ShowDBForm(CID : string);
 begin
   if GetImageEditorByCID(CID) <> nil then
     GetImageEditorByCID(CID).Show;
-  if GetSearchByCID(CID) <> nil then
-    GetSearchByCID(CID).Show;
   if GetExplorerByCID(CID) <> nil then
     GetExplorerByCID(CID).Show;
   if GetProgressByCID(CID) <> nil then
@@ -707,61 +602,6 @@ begin
   DBFile := DoChooseDBFile();
   if DBKernel.TestDB(DBFile.FileName) then
     DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
-end;
-
-function Compare2Images(File1, File2 : string; raz : integer) : integer;
-var
-  G1, G2 : TGraphic;
-  pass1, pass2 : string;
-  r : integer;
-  CompResult : TImageCompareResult;
-begin
-  Result := 0;
-  if not FileExistsSafe(File1) then
-    Exit;
-  if not FileExistsSafe(File2) then
-    Exit;
-  G1 := nil;
-  G2 := nil;
-  if ValidCryptGraphicFile(File1) then
-  begin
-    Pass1 := DBKernel.FindPasswordForCryptImageFile(File1);
-    if Pass1 = '' then
-      Exit;
-  end;
-  if ValidCryptGraphicFile(File2) then
-  begin
-    Pass2 := DBKernel.FindPasswordForCryptImageFile(File2);
-    if Pass2 = '' then
-      Exit;
-  end;
-  try
-    if Pass1 = '' then
-    begin
-      G1 := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(File1)).Create;
-      G1.LoadFromFile(File1);
-    end  else
-      G1 := GraphicCrypt.DeCryptGraphicFile(File1, Pass1);
-  except
-    F(G1);
-    Exit;
-  end;
-  try
-    if Pass2 = '' then
-    begin
-      G2 := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(File2)).Create;
-      G2.LoadFromFile(File2);
-    end else
-      G2 := GraphicCrypt.DeCryptGraphicFile(File2, Pass2);
-  except
-    F(G1);
-    F(G2);
-    Exit;
-  end;
-  CompResult := CompareImages(G1, G2, R, True, False, Raz);
-  Result := Max(CompResult.ByGistogramm, CompResult.ByPixels);
-  F(G1);
-  F(G2);
 end;
 
 function PromtUserCryptImageFile(FileName: string): string;
@@ -899,8 +739,6 @@ begin
  AddScriptFunction(Enviroment,'GetImagesMask',F_TYPE_FUNCTION_IS_STRING,@GetImagesMask);
  AddScriptFunction(Enviroment,'SetFileNameByID',F_TYPE_PROCEDURE_INTEGER_STRING,@SetFileNameByID);
 
- AddScriptFunction(Enviroment,'Compare2Images',F_TYPE_FUNCTION_STRING_STRING_INTEGER_IS_INTEGER,@Compare2Images);
-
  AddScriptFunction(Enviroment,'PromtString',F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING,@aPromtString);
 
  AddScriptFunction(Enviroment,'GetCurrentDB',F_TYPE_FUNCTION_IS_STRING,@GetCurrentDB);
@@ -914,7 +752,6 @@ begin
  AddScriptFunction(Enviroment,'LowerCase',F_TYPE_FUNCTION_STRING_IS_STRING,@aAnsiLowerCase);
 
  AddScriptFunction(Enviroment,'ShowKeyWord',F_TYPE_FUNCTION_STRING_IS_STRING,@ShowKeyWord);
- AddScriptFunction(Enviroment,'OpenSearch',F_TYPE_FUNCTION_STRING_IS_STRING,@OpenSearch);
  AddScriptFunction(Enviroment,'GetRegKeyListing',F_TYPE_FUNCTION_STRING_IS_ARRAYSTRING,@GetRegKeyListing);
 
  AddScriptFunction(Enviroment,'ReadRegString',F_TYPE_FUNCTION_STRING_STRING_IS_STRING,@ReadRegString);
@@ -957,7 +794,6 @@ begin
 
  AddScriptFunction(Enviroment,'AddFileToShelf',F_TYPE_PROCEDURE_STRING,@AddFileToShelf);
 
- AddScriptFunction(Enviroment,'NewSearch',F_TYPE_FUNCTION_IS_STRING,@NewSearch);
  AddScriptFunction(Enviroment,'NewExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@NewExplorerByPath);
  AddScriptFunction(Enviroment,'NewExplorer',F_TYPE_FUNCTION_IS_STRING,@NewExplorer);
  AddScriptFunction(Enviroment,'GetPhotosFromFolder',F_TYPE_PROCEDURE_STRING,@GetPhotosFromFolder);
@@ -988,12 +824,6 @@ begin
  AddScriptFunction(Enviroment,'GetDBIconList',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetDBIcoList);
 
  //forms
-
- AddScriptFunction(Enviroment,'GetSearchs',F_TYPE_FUNCTION_IS_ARRAYSTRING,@GetSearchs);
- AddScriptFunction(Enviroment,'DoSearch',F_TYPE_PROCEDURE_STRING,@DoSearch);
- AddScriptFunction(Enviroment,'SetSearchText',F_TYPE_PROCEDURE_STRING_STRING,@SetSearchText);
- AddScriptFunction(Enviroment,'GetSearchTextByCID',F_TYPE_FUNCTION_STRING_IS_STRING,@GetSearchTextByCID);
-
  AddScriptFunction(Enviroment,'GetExplorerPath',F_TYPE_FUNCTION_STRING_IS_STRING,@GetExplorerPath);
  AddScriptFunction(Enviroment,'GetExplorersByPath',F_TYPE_FUNCTION_STRING_STRING_IS_ARRAYSTRING,@GetExplorersByPath);
  AddScriptFunction(Enviroment,'GetExplorerByPath',F_TYPE_FUNCTION_STRING_IS_STRING,@GetExplorerByPath);

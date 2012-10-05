@@ -35,6 +35,8 @@ uses
   uThemesUtils,
   uImageSource;
 
+{$R-}
+
 type
   TDBForm = class;
 
@@ -657,7 +659,11 @@ begin
   FForms.Add(Form);
 
   if IsWindowsVista then
+  begin
+    Form.Updating;
     SetVistaFonts(Form);
+    Form.Updated;
+  end;
 end;
 
 procedure TFormCollection.UnRegisterForm(Form: TDBForm);

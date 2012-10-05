@@ -24,40 +24,6 @@ run:
  ShowItemPopUpMenu; 
 }
 
-<Compare>[DB_IC_SLIDE_SHOW]
-{
-initialization:
- $skd=ShiftKeyDown;
- if ($skd=false) {InVisible;};
- if ($IsFile=false) {InVisible;};
- if ($SelectionCount!=2) {InVisible;};
-run:
- 
- $SelCount=0;
- if ($Visible=true) {
-  for($i=0;$i<$MenuLength;$i=%$i+1)
-  {
-   LoadVariablesSelectedFileNo($i);
-   if ($Selected=true) 
-   {
-    $SelCount=%$SelCount+1;
-    if ($SelCount=1) {$f2=$FileName;};
-    if ($SelCount=2) {$f1=$FileName;};
-   };
-  };
- };
- 
- $cp=Compare2Images($f1,$f2,60);
- $s=IntToStr($cp);
- $user=GetCurrentUser;
- $nl=Char(13);
- $text=T("Dear {2}!{1}The degree of similarity of these 2 images is - {3}%!{1}Good luck!");
- $s=Format($text,$nl,$user,$s);
- $p=%$MB_OK+$MB_ICONINFORMATION;
- $caption=T("Analyzer");
- MessageBox($s,$caption,$p);
-}
-
 <Apply actions>[DB_IC_APPLY_ACTION]
 {
 initialization:
@@ -317,16 +283,6 @@ initialization:
   if ($IsRecord=false) {InVisible;};
 run:
   RefreshIDItemPopUpMenu;
-}
-
-<Scan image>[DB_IC_SEARCH]
-{
-initialization:
-  $shift=ShiftKeyDown;
-  if ($shift=true) {InVisible;};
-  if ($FileExists=false) {InVisible;};
-run: 
-  ScanImageItemPopUpMenu;
 }
 
 <Print>[DB_IC_PRINTER]

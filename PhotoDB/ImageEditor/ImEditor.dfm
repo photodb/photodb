@@ -2930,10 +2930,6 @@ object ImageEditor: TImageEditor
       Caption = 'New Editor'
       OnClick = NewEditor1Click
     end
-    object Search1: TMenuItem
-      Caption = 'Search'
-      OnClick = Search1Click
-    end
     object Explorer1: TMenuItem
       Caption = 'Explorer'
       OnClick = Explorer1Click

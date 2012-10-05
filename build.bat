@@ -13,8 +13,6 @@ cd photodb/resources
 "%BRCC32%" logo.rc
 "%BRCC32%" slideshow_load.rc
 "%BRCC32%" ExplorerBackground.rc
-"%BRCC32%" SearchBackground.rc
-"%BRCC32%" DateRange.rc
 "%BRCC32%" Manifest.rc
 "%BRCC32%" ImagePanelBackground.rc
 "%BRCC32%" Loading.rc

@@ -55,10 +55,6 @@ object OptionsForm: TOptionsForm
     object TsStyle: TTabSheet
       Caption = 'Style'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -108,7 +104,7 @@ object OptionsForm: TOptionsForm
       object WlGetMoreStyles: TWebLink
         Left = 450
         Top = 397
-        Width = 87
+        Width = 82
         Height = 13
         Cursor = crHandPoint
         Anchors = [akRight, akBottom]
@@ -139,10 +135,6 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -274,10 +266,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -490,10 +478,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -656,10 +640,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -916,10 +896,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -1396,74 +1372,31 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
       object LbAddHeight: TLabel
         Left = 173
-        Top = 274
+        Top = 196
         Width = 31
         Height = 13
         Caption = 'Height'
       end
       object LbAddWidth: TLabel
         Left = 58
-        Top = 274
+        Top = 196
         Width = 28
         Height = 13
         Caption = 'Width'
       end
       object CbDontAddSmallFiles: TCheckBox
         Left = 11
-        Top = 248
+        Top = 170
         Width = 501
         Height = 17
         Caption = 'No add to BD files less then'
-        TabOrder = 7
-        OnClick = CbDontAddSmallFilesClick
-      end
-      object EdExplorerStartupLocation: TEdit
-        Left = 11
-        Top = 214
-        Width = 503
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 9
-        Text = 'C:\'
-      end
-      object BtnSelectExplorerStartupFolder: TButton
-        Left = 520
-        Top = 214
-        Width = 17
-        Height = 21
-        Anchors = [akTop, akRight]
-        Caption = '...'
-        TabOrder = 10
-        OnClick = BtnSelectExplorerStartupFolderClick
-      end
-      object CbExplorerStartupLocation: TCheckBox
-        Left = 11
-        Top = 191
-        Width = 522
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Use Special Folder'
-        TabOrder = 8
-        OnClick = CbExplorerStartupLocationClick
-      end
-      object CbStartUpExplorer: TCheckBox
-        Left = 11
-        Top = 168
-        Width = 522
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Start Explorer At startup'
         TabOrder = 6
-        OnClick = CbStartUpExplorerClick
+        OnClick = CbDontAddSmallFilesClick
       end
       object CbCheckLinksOnUpdate: TCheckBox
         Left = 11
@@ -1522,32 +1455,32 @@ object OptionsForm: TOptionsForm
       end
       object SedMinHeight: TSpinEdit
         Left = 126
-        Top = 271
+        Top = 193
         Width = 41
         Height = 22
         MaxValue = 10000
         MinValue = 1
-        TabOrder = 12
+        TabOrder = 8
         Value = 64
       end
       object SedMinWidth: TSpinEdit
         Left = 11
-        Top = 271
+        Top = 193
         Width = 41
         Height = 22
         MaxValue = 10000
         MinValue = 1
-        TabOrder = 11
+        TabOrder = 7
         Value = 64
       end
       object GbEXIF: TGroupBox
         Left = 11
-        Top = 307
+        Top = 229
         Width = 522
         Height = 86
         Anchors = [akLeft, akTop, akRight]
         Caption = 'EXIF'
-        TabOrder = 13
+        TabOrder = 9
         DesignSize = (
           522
           86)
@@ -1583,10 +1516,6 @@ object OptionsForm: TOptionsForm
     object TsPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)

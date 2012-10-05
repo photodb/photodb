@@ -26,6 +26,7 @@ type
     FSearchPath: string;
     FSearchTerm: string;
     function GetSearchDisplayText: string;
+    function L(StringToTranslate: string): string;
   public
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
@@ -194,6 +195,11 @@ begin
 end;
 
 { TSearchItem }
+
+function TSearchItem.L(StringToTranslate: string): string;
+begin
+  Result := TA(StringToTranslate, 'Path');
+end;
 
 function TSearchItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var

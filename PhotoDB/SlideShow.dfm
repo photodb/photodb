@@ -88,7 +88,7 @@ object Viewer: TViewer
     object WlFaceCount: TWebLink
       Left = 25
       Top = 4
-      Width = 46
+      Width = 41
       Height = 13
       Cursor = crHandPoint
       PopupMenu = PmFaces
@@ -359,10 +359,6 @@ object Viewer: TViewer
     end
     object N3: TMenuItem
       Caption = '-'
-    end
-    object GoToSearchWindow1: TMenuItem
-      Caption = 'Go To Search Window'
-      OnClick = GoToSearchWindow1Click
     end
     object Explorer1: TMenuItem
       Caption = 'Explorer'

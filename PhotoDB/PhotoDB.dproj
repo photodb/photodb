@@ -139,9 +139,6 @@
         <DCCReference Include="Threads\uSplashThread.pas"/>
         <DCCReference Include="Threads\uLanguageLoadThread.pas"/>
         <DCCReference Include="Threads\uLoadStyleThread.pas"/>
-        <DCCReference Include="Searching.pas">
-            <Form>SearchForm</Form>
-        </DCCReference>
         <DCCReference Include="SlideShow.pas">
             <Form>Viewer</Form>
         </DCCReference>
@@ -316,7 +313,6 @@
         <DCCReference Include="UnitBigImagesSize.pas">
             <Form>BigImagesSizeForm</Form>
         </DCCReference>
-        <DCCReference Include="Threads\Loadingresults.pas"/>
         <DCCReference Include="Threads\UnitCleanUpThread.pas"/>
         <DCCReference Include="Threads\UnitHintCeator.pas"/>
         <DCCReference Include="Threads\UnitCmpDB.pas"/>
@@ -344,7 +340,6 @@
         <DCCReference Include="Threads\UnitFileExistsThread.pas"/>
         <DCCReference Include="Threads\UnitSlideShowUpdateInfoThread.pas"/>
         <DCCReference Include="Threads\UnitCDExportThread.pas"/>
-        <DCCReference Include="Threads\UnitSearchBigImagesLoaderThread.pas"/>
         <DCCReference Include="External\Formats\GraphicEx\GraphicEx.pas"/>
         <DCCReference Include="External\Formats\GraphicEx\GraphicColor.pas"/>
         <DCCReference Include="External\Formats\GraphicEx\GraphicCompression.pas"/>
@@ -453,7 +448,6 @@
         <DCCReference Include="uWatermarkOptions.pas">
             <Form>FrmWatermarkOptions</Form>
         </DCCReference>
-        <DCCReference Include="Threads\uSearchThreadPool.pas"/>
         <DCCReference Include="Threads\uMultiCPUThreadManager.pas"/>
         <DCCReference Include="Units\uFormListView.pas"/>
         <DCCReference Include="Threads\uDBThread.pas"/>
@@ -516,7 +510,6 @@
         <DCCReference Include="Units\uSettings.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.BaseUtils.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.TiffUtils.pas"/>
-        <DCCReference Include="Units\uSearchTypes.pas"/>
         <DCCReference Include="Units\uCryptUtils.pas"/>
         <DCCReference Include="Units\uResourceUtils.pas"/>
         <DCCReference Include="Units\uMobileUtils.pas"/>
@@ -587,7 +580,6 @@
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Units\uIME.pas"/>
-        <DCCReference Include="Threads\uSearchHelpAddPhotosThread.pas"/>
         <DCCReference Include="Units\uExifUtils.pas"/>
         <DCCReference Include="Threads\uExifPatchThread.pas"/>
         <DCCReference Include="Units\uTiffImage.pas"/>

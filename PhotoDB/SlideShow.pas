@@ -37,7 +37,6 @@ uses
   UnitUpdateDBThread,
   DBCMenu,
   dolphin_db,
-  uSearchTypes,
   ShellContextMenu,
   DropSource,
   DropTarget,
@@ -122,7 +121,6 @@ type
     AddToDB1: TMenuItem;
     Onlythisfile1: TMenuItem;
     AllFolder1: TMenuItem;
-    GoToSearchWindow1: TMenuItem;
     Explorer1: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
     SetasDesktopWallpaper1: TMenuItem;
@@ -250,7 +248,6 @@ type
     procedure EndWaitToImage(Sender: TObject);
     procedure Onlythisfile1Click(Sender: TObject);
     procedure AllFolder1Click(Sender: TObject);
-    procedure GoToSearchWindow1Click(Sender: TObject);
     procedure Explorer1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Copy1Click(Sender: TObject);
@@ -587,7 +584,6 @@ begin
   Copy1.ImageIndex := DB_IC_COPY;
   Onlythisfile1.ImageIndex := DB_IC_ADD_SINGLE_FILE;
   AllFolder1.ImageIndex := DB_IC_ADD_FOLDER;
-  GoToSearchWindow1.ImageIndex := DB_IC_ADDTODB;
   Explorer1.ImageIndex := DB_IC_FOLDER;
   SetasDesktopWallpaper1.ImageIndex := DB_IC_WALLPAPER;
   Properties1.ImageIndex := DB_IC_PROPERTIES;
@@ -1380,7 +1376,6 @@ begin
       SetasDesktopWallpaper1.Visible := not(SlideShowNow) and ImageExists and not Item.Encrypted and IsWallpaper(Item.FileName) and not IsDevicePath(Item.FileName);
       Rotate1.Visible := not(SlideShowNow) and ImageExists  and not IsDevicePath(Item.FileName);
       Properties1.Visible := not(SlideShowNow or FullScreenNow);
-      GoToSearchWindow1.Visible := not(SlideShowNow);
       Explorer1.Visible := not(SlideShowNow);
       Resize1.Visible := not(SlideShowNow or FullScreenNow) and ImageExists;
       Print1.Visible := not(SlideShowNow) and ImageExists;
@@ -1754,7 +1749,6 @@ begin
     FullScreen1.Caption := L('Full screen');
     DBItem1.Caption := L('Collection item');
     AddToDB1.Caption := L('Add to collection');
-    GoToSearchWindow1.Caption := L('Search photos');
     Explorer1.Caption := L('Explorer');
     Exit1.Caption := L('Exit');
     Onlythisfile1.Caption := L('Only this file');
@@ -2484,17 +2478,6 @@ begin
   inherited;
   TW.I.Start('RecreateImLists');
   RecreateImLists;
-end;
-
-procedure TViewer.GoToSearchWindow1Click(Sender: TObject);
-var
-  NewSearch: TSearchCustomForm;
-begin
-  if FullScreenNow then
-    Exit1Click(Self);
-  NewSearch := SearchManager.GetAnySearch;
-  NewSearch.Show;
-  NewSearch.SetFocus;
 end;
 
 procedure TViewer.Explorer1Click(Sender: TObject);

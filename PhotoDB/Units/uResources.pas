@@ -36,8 +36,6 @@ function GetNoHistogramImage: TPNGImage;
 {$R Slideshow_Load.res}
 {$R Directory_Large.res}
 {$R ExplorerBackground.res}
-{$R SearchBackground.res}
-{$R DateRange.res}
 {$R Manifest.res}
 {$R Loading.res}
 {$R Activation.res}
@@ -53,7 +51,6 @@ function GetNoHistogramImage: TPNGImage;
 {$R ZoomRc.res}
 {$R editor.res}
 {$R explorer.res}
-{$R search.res}
 {$R cmd_icons.res}
 {$R updater.res}
 

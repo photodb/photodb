@@ -1,2 +1,0 @@
-﻿$Rating=$Rating;
-if ($SearchString="exit") {$SearchString=$InvalidQuery; CloseApp;};

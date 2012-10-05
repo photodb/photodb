@@ -72,7 +72,6 @@ uses
   uShellIntegration,
   uRuntime,
   uSysUtils,
-  uSearchTypes,
   uFileUtils,
   uDBUtils,
   uDBTypes,
@@ -128,7 +127,6 @@ type
     PmMain: TPopupActionBar;
     Exit1: TMenuItem;
     OpenFile1: TMenuItem;
-    Search1: TMenuItem;
     Explorer1: TMenuItem;
     N1: TMenuItem;
     N2: TMenuItem;
@@ -178,7 +176,6 @@ type
     procedure FullSizeLinkClick(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
-    procedure Search1Click(Sender: TObject);
     procedure Explorer1Click(Sender: TObject);
     procedure Properties1Click(Sender: TObject);
     procedure FormContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -438,7 +435,6 @@ begin
   RegisterMainForm(Self);
   PmMain.Images := DBKernel.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;
-  Search1.ImageIndex := DB_IC_ADDTODB;
   Explorer1.ImageIndex := DB_IC_EXPLORER;
   Properties1.ImageIndex := DB_IC_PROPERTIES;
   ZoomOut1.ImageIndex := DB_IC_ZOOMIN;
@@ -2350,15 +2346,6 @@ begin
   Close;
 end;
 
-procedure TImageEditor.Search1Click(Sender: TObject);
-begin
-  with SearchManager.GetAnySearch do
-  begin
-    Show;
-    SetFocus;
-  end;
-end;
-
 procedure TImageEditor.Explorer1Click(Sender: TObject);
 begin
   with ExplorerManager.NewExplorer(False) do
@@ -2390,7 +2377,6 @@ begin
     EffectsLink.Text := L('Effects');
     ColorsLink.Text := L('Colors');
     RedEyeLink.Text := L('Red eye');
-    Search1.Caption := L('Search');
     Explorer1.Caption := L('Explorer');
     Properties1.Caption := L('Properties');
     Exit1.Caption := L('Exit');

@@ -98,7 +98,10 @@ type
   end;
 
 type
-  TQueryType = (QT_TEXT, QT_W_SCAN_FILE);
+  TQueryType = (
+    QT_TEXT
+    //QT_W_SCAN_FILE //unsupported :(
+  );
 
   TDBQueryParams = class(TObject)
   private

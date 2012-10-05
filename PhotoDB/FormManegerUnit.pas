@@ -12,12 +12,16 @@ uses
   Vcl.Forms,
   Vcl.Themes,
   Vcl.AppEvnts,
-  uAppUtils,
+
   UnitDBKernel,
   CommonDBSupport,
+  EasyListView,
   UnitDBDeclare,
   UnitDBCommon,
   Win32crc,
+  Dolphin_DB,
+
+  uAppUtils,
   uLogger,
   uConstants,
   uFileUtils,
@@ -29,9 +33,8 @@ uses
   uMultiCPUThreadManager,
   uShellIntegration,
   uRuntime,
-  Dolphin_DB,
   uDBBaseTypes,
-  UDBFileTypes,
+  uDBFileTypes,
   uDBUtils,
   uDBPopupMenuInfo,
   uSettings,
@@ -39,7 +42,6 @@ uses
   uDBCustomThread,
   uPortableDeviceManager,
   uUpTime,
-  EasyListView,
   uPortableClasses,
   uTranslate,
   uSysUtils,
@@ -111,7 +113,6 @@ implementation
 uses
   UnitCleanUpThread,
   uManagerExplorer,
-  uSearchTypes,
   UnitInternetUpdate,
   UnitConvertDBForm,
   UnitImportingImagesForm,
@@ -172,7 +173,6 @@ procedure TFormManager.ProcessCommandLine(CommandLine: string);
 var
   Directory, S: string;
   ParamStr1, ParamStr2: string;
-  NewSearch: TSearchCustomForm;
   IDList: TArInteger;
   FileList: TArStrings;
   I: Integer;
@@ -206,86 +206,41 @@ begin
   if AnsiUpperCase(ParamStr1) <> '/EXPLORER' then
   begin
     TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
-    if IsFile(ParamStr1) then
+    if IsFile(ParamStr1) and IsGraphicFile(ParamStr1) then
     begin
-      if not IsGraphicFile(ParamStr1) then
-      begin
-        NewSearch := SearchManager.NewSearch;
-        if FileExistsSafe(ParamStr1) then
-        begin
-          if GetExt(ParamStr1) = 'IDS' then
-          begin
-            S := LoadIDsFromfile(ParamStr1);
-            NewSearch.SearchText := Copy(S, 1, 1000);
-            NewSearch.StartSearch;
-          end;
-          if GetExt(ParamStr1) = 'ITH' then
-          begin
-            S := LoadIDsFromfile(ParamStr1);
-            NewSearch.SearchText := ':HashFile(' + ParamStr1 + '):';
-            NewSearch.StartSearch;
-          end;
-          if GetExt(ParamStr1) = 'DBL' then
-          begin
-            LoadDblFromfile(ParamStr1, IDList, FileList);
-            S := '';
-            for I := 1 to Length(IDList) do
-              S := S + IntToStr(IDList[I - 1]) + '$';
-            NewSearch.SearchText := Copy(S, 1, 500);
-            NewSearch.StartSearch;
-          end;
-        end;
-        CloseSplashWindow;
-        NewSearch.Show;
-      end else
-      begin
-        TW.I.Start('RUN TViewer');
-
-        TW.I.Start('ExecuteDirectoryWithFileOnThread');
-        Viewer.ShowImageInDirectoryEx(ParamStr1);
-        TW.I.Start('ActivateApplication');
-        CloseSplashWindow;
-        Viewer.Show;
-      end;
+      TW.I.Start('RUN TViewer');
+      TW.I.Start('ExecuteDirectoryWithFileOnThread');
+      Viewer.ShowImageInDirectoryEx(ParamStr1);
+      TW.I.Start('ActivateApplication');
+      CloseSplashWindow;
+      Viewer.Show;
     end else
     begin
+
       // Default Form
-      if Settings.ReadBool('Options', 'RunExplorerAtStartUp', True) then
+      TW.I.Start('RUN NewExplorer');
+      with ExplorerManager.NewExplorer(False) do
       begin
-        TW.I.Start('RUN NewExplorer');
-        with ExplorerManager.NewExplorer(False) do
+
+        if not GetParamStrDBBoolEx(CommandLine, '/import') then
+          LoadLastPath
+        else
         begin
+          S := GetParamStrDBValueV2(CommandLine, '/devId');
+          if S = '' then
+            S := GetParamStrDBValueV2(CommandLine, '/StiDevice');
 
-          if not GetParamStrDBBoolEx(CommandLine, '/import') then
-          begin
-            if Settings.ReadBool('Options', 'UseSpecialStartUpFolder', False) then
-              SetPath(Settings.ReadString('Options', 'SpecialStartUpFolder'))
-            else
-              LoadLastPath;
-          end else
-          begin
-            S := GetParamStrDBValueV2(CommandLine, '/devId');
-            if S = '' then
-              S := GetParamStrDBValueV2(CommandLine, '/StiDevice');
-
-            PDManager := CreateDeviceManagerInstance;
-            PDevice := PDManager.GetDeviceByID(S);
-            if PDevice <> nil then
-              SetPath(cDevicesPath + '\' + PDevice.Name)
-            else
-              LoadLastPath;
-          end;
-          CloseSplashWindow;
-          Show;
+          PDManager := CreateDeviceManagerInstance;
+          PDevice := PDManager.GetDeviceByID(S);
+          if PDevice <> nil then
+            SetPath(cDevicesPath + '\' + PDevice.Name)
+          else
+            LoadLastPath;
         end;
-      end else
-      begin
-        TW.I.Start('SearchManager.NewSearch');
-        NewSearch := SearchManager.NewSearch;
-        Application.Restore;
         CloseSplashWindow;
-        NewSearch.Show;
+        Show;
       end;
+
     end;
   end else
   begin
@@ -299,8 +254,7 @@ begin
       end;
     end else
     begin
-      Application.Restore;
-      with SearchManager.NewSearch do
+      with ExplorerManager.NewExplorer(True) do
       begin
         CloseSplashWindow;
         Show;

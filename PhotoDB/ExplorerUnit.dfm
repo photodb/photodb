@@ -1013,7 +1013,7 @@ object ExplorerForm: TExplorerForm
         object WlSearchRatingFrom: TWebLink
           Left = 7
           Top = 31
-          Width = 105
+          Width = 100
           Height = 16
           Cursor = crHandPoint
           Text = 'WlSearchRatingFrom'
@@ -1033,7 +1033,7 @@ object ExplorerForm: TExplorerForm
         object WlSearchRatingTo: TWebLink
           Left = 7
           Top = 53
-          Width = 93
+          Width = 88
           Height = 16
           Cursor = crHandPoint
           Text = 'WlSearchRatingTo'
@@ -1129,7 +1129,7 @@ object ExplorerForm: TExplorerForm
         object WlExtendedSearchSortBy: TWebLink
           Left = 25
           Top = 238
-          Width = 128
+          Width = 123
           Height = 13
           Cursor = crHandPoint
           PopupMenu = PmESSorting
@@ -1406,20 +1406,20 @@ object ExplorerForm: TExplorerForm
         Style = tbsDropDown
         OnClick = ToolButtonViewClick
       end
-      object TbPreview: TToolButton
-        Tag = 1
-        Left = 183
-        Top = 0
-        AutoSize = True
-        ImageIndex = 12
-        OnClick = TbPreviewClick
-      end
       object TbSearch: TToolButton
-        Left = 195
+        Left = 183
         Top = 0
         AutoSize = True
         ImageIndex = 10
         OnClick = TbSearchClick
+      end
+      object TbPreview: TToolButton
+        Tag = 1
+        Left = 195
+        Top = 0
+        AutoSize = True
+        ImageIndex = 12
+        OnClick = TbPreviewClick
       end
       object ToolButton11: TToolButton
         Left = 207
@@ -2227,6 +2227,7 @@ object ExplorerForm: TExplorerForm
               Left = 68
               Top = 0
               ImageIndex = 0
+              Visible = False
               OnClick = TbPreviewZoomOutClick
             end
             object TbPreviewZoomIn: TToolButton
@@ -2234,6 +2235,7 @@ object ExplorerForm: TExplorerForm
               Top = 0
               Caption = 'TbPreviewZoomIn'
               ImageIndex = 1
+              Visible = False
               OnClick = TbPreviewZoomInClick
             end
             object ToolButton2: TToolButton
@@ -2243,12 +2245,14 @@ object ExplorerForm: TExplorerForm
               Caption = 'ToolButton2'
               ImageIndex = 3
               Style = tbsSeparator
+              Visible = False
             end
             object TbPreviewPage: TToolButton
               Left = 136
               Top = 0
               ImageIndex = 3
               Style = tbsDropDown
+              Visible = False
             end
             object TbPreviewZoomSeparator: TToolButton
               Left = 181
@@ -2526,7 +2530,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.031688900460000000
+      Date = 41177.929427500000000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2811,10 +2815,6 @@ object ExplorerForm: TExplorerForm
       Caption = 'Show Updater'
       OnClick = ShowUpdater1Click
     end
-    object OpeninSearchWindow1: TMenuItem
-      Caption = 'Open in Search Window'
-      OnClick = OpeninSearchWindow1Click
-    end
     object Refresh2: TMenuItem
       Caption = 'Refresh'
       OnClick = Refresh2Click
@@ -2869,9 +2869,6 @@ object ExplorerForm: TExplorerForm
     end
     object N2: TMenuItem
       Caption = '-'
-    end
-    object GoToSearchWindow1: TMenuItem
-      Caption = 'Go To Search Window'
     end
     object Exit2: TMenuItem
       Caption = 'Exit'
@@ -2932,7 +2929,7 @@ object ExplorerForm: TExplorerForm
     Interval = 100
     OnTimer = DragTimerTimer
     Left = 536
-    Top = 356
+    Top = 348
   end
   object ToolBarDisabledImageList: TImageList
     ColorDepth = cd32Bit
@@ -2978,7 +2975,7 @@ object ExplorerForm: TExplorerForm
     Interval = 2000
     OnTimer = HelpTimerTimer
     Left = 536
-    Top = 456
+    Top = 440
   end
   object PmLinkOptions: TPopupActionBar
     Left = 360
@@ -3026,7 +3023,7 @@ object ExplorerForm: TExplorerForm
     Interval = 1
     OnTimer = CloseTimerTimer
     Left = 536
-    Top = 408
+    Top = 392
   end
   object RatingPopupMenu: TPopupActionBar
     Left = 361
@@ -3181,14 +3178,14 @@ object ExplorerForm: TExplorerForm
     Enabled = False
     OnTimer = TmrDelayedStartTimer
     Left = 536
-    Top = 512
+    Top = 488
   end
   object TmrCheckItemVisibility: TTimer
     Enabled = False
     Interval = 250
     OnTimer = TmrCheckItemVisibilityTimer
     Left = 536
-    Top = 568
+    Top = 536
   end
   object ImGroups: TImageList
     ColorDepth = cd32Bit
@@ -3337,5 +3334,11 @@ object ExplorerForm: TExplorerForm
       Caption = 'Show private images'
       OnClick = MiESShowPrivateClick
     end
+  end
+  object TmrSearchResultsCount: TTimer
+    Enabled = False
+    OnTimer = TmrSearchResultsCountTimer
+    Left = 537
+    Top = 586
   end
 end

@@ -83,7 +83,6 @@ type
     function AddSorting(SqlParams: TDBQueryParams): string;
     procedure LoadImages;
     procedure LoadTextQuery(QueryParams: TDBQueryParams);
-    procedure DoScanSimilarFiles(QueryParams: TDBQueryParams);
   protected
     FData: TDBPopupMenuInfo;
     FQData: TDBPopupMenuInfo;
@@ -229,53 +228,6 @@ begin
         ApplyFilter(Result, Db_attr_norm);
       end;
 
-      if AnsiLowerCase(Copy(Sysaction, 1, 9)) = AnsiLowerCase('ScanImage') then
-      begin
-        ScanParams := TScanFileParams.Create;
-        Result.Data := ScanParams;
-
-        ScanParams.ScanRotation := False;
-        Result.QueryType := QT_W_SCAN_FILE;
-        Result.CanBeEstimated := False;
-        S := Copy(Sysaction, 11, Length(Sysaction) - 11);
-        if PosEx(':', S, 3) = -1 then
-        begin
-          ScanParams.ScanPercent := 50;
-          ScanParams.ScanFileName := S;
-        end else
-        begin
-          Stemp := Copy(S, 1, PosEx(':', S, 3) - 1);
-          ScanParams.ScanFileName := Stemp;
-          Stemp := Copy(S, PosEx(':', S, 3) + 1, Length(S) - PosEx(':', S, 3));
-          ScanParams.ScanPercent := Min(100, Max(0.0000000001, StrToFloatDef(Stemp, 50)));
-        end;
-
-        SystemQuery := True;
-      end;
-
-      if AnsiLowerCase(Copy(Sysaction, 1, 10)) = AnsiLowerCase('ScanImageW') then
-      begin
-        ScanParams := TScanFileParams.Create;
-        Result.Data := ScanParams;
-
-        ScanParams.ScanRotation := True;
-        Result.QueryType := QT_W_SCAN_FILE;
-        Result.CanBeEstimated := False;
-        S := Copy(Sysaction, 12, Length(Sysaction) - 12);
-        if PosEx(':', S, 3) = -1 then
-        begin
-          ScanParams.ScanPercent := 50;
-          ScanParams.ScanFileName := S;
-        end else
-        begin
-          Stemp := Copy(S, 1, PosEx(':', S, 3) - 1);
-          ScanParams.ScanFileName := Stemp;
-          Stemp := Copy(S, PosEx(':', S, 3) + 1, Length(S) - PosEx(':', S, 3));
-          ScanParams.ScanPercent := Min(100, Max(0.0000000001, StrToFloatDef(Stemp, 50)));
-        end;
-        SystemQuery := True;
-      end;
-
       if AnsiLowerCase(Copy(Sysaction, 1, 7)) = AnsiLowerCase('KeyWord') then
       begin
         SystemQuery := True;
@@ -345,71 +297,6 @@ begin
           Result.Query := Result.Query + ' and (Access<>' + Inttostr(Db_access_private) + ')';
       end;
     end;
-
-  if AnsiLowerCase(Copy(Sysaction, 1, 8)) = AnsiLowerCase('HashFile') then
-  begin
-    Result.QueryType := QT_TEXT;
-    Systemquery := True;
-    TempString := Copy(Sysaction, 10, Length(Sysaction) - 10);
-    ImThs := LoadImThsFromfileA(TempString);
-    FSpecQuery := GetQuery;
-    try
-      SetLength(IthIds, 0);
-      // AllocImThBy
-      //SetMaxValue(Length(ImThs) div AllocImThBy);
-
-      L := Length(ImThs);
-      N := Trunc(L / AllocImThBy);
-      if L / AllocImThBy - N > 0 then
-        Inc(N);
-      Left := L;
-      C := 0;
-      SetLength(IthIds, 0);
-      for J := 1 to N do
-      begin
-        SQLText := 'SELECT ID FROM $DB$ WHERE ';
-        M := Min(Left, Min(L, AllocImThBy));
-        FSpecQuery.Active := False;
-        for I := 1 to M do
-        begin
-          Dec(Left);
-          Inc(C);
-          SQLText := SQLText + ' (StrTh=:S' + Inttostr(C) + ') ';
-          if I <> M then
-            SQLText := SQLText + 'or';
-        end;
-        SetSQL(FSpecQuery, SQLText);
-        for I := 1 to M do
-          SetStrParam(FSpecQuery, I - 1, ImThs[I - 1 + AllocImThBy * (J - 1)]);
-        FSpecQuery.Active := True;
-        FSpecQuery.First;
-        for I := 1 to FSpecQuery.RecordCount do
-        begin
-          SetLength(IthIds, Length(IthIds) + 1);
-          IthIds[Length(IthIds) - 1] := FSpecQuery.FieldByName('ID').AsInteger;
-          FSpecQuery.Next;
-        end;
-        //SetProgress(J - 1);
-      end;
-    finally
-      FreeDS(FSpecQuery);
-    end;
-    First := True;
-    Result.Query := Format('SELECT %s FROM $DB$ Where (', [FIELDS]);
-    for I := 0 to Length(IthIds) - 1 do
-    begin
-      if First then
-      begin
-        Result.Query := Result.Query + ' (ID=' + IntToStr(IthIds[I]) + ') ';
-        First := False;
-      end else
-        Result.Query := Result.Query + ' OR (ID=' + IntToStr(IthIds[I]) + ') ';
-    end;
-    if Length(IthIds) = 0 then
-      Result.Query := Result.Query + '(ID=0) ';
-    Result.Query := Result.Query + ' ) ';
-    ApplyFilter(Result, Db_attr_norm);
-  end;
 
   if not Systemquery then
   begin
@@ -713,9 +600,6 @@ begin
     if QueryParams.QueryType = QT_TEXT then
       LoadTextQuery(QueryParams);
 
-    if QueryParams.QueryType = QT_W_SCAN_FILE then
-      DoScanSimilarFiles(QueryParams);
-
   finally
     F(QueryParams);
   end;
@@ -839,177 +723,6 @@ begin
 
   finally
     FreeDS(FWorkQuery);
-  end;
-end;
-
-procedure TDatabaseSearch.DoScanSimilarFiles(QueryParams: TDBQueryParams);
-var
-  GC: TGraphicClass;
-  G: TGraphic;
-  TempSql,
-  PassWord: string;
-  TempBitmap,
-  SBitmap: TBitmap;
-  FQuery: TDataSet;
-  JPEG: TJpegImage;
-  EstimateRecordsCOunt: Integer;
-  CmpResult: TImageCompareResult;
-  Rot: Integer;
-  ScanParams: TScanFileParams;
-  Item: TDBPopupMenuInfoRecord;
-  CompareInfo: TCompareImageInfo;
-begin
-  ScanParams := TScanFileParams(QueryParams.Data);
-  if not FSearchParams.IsEstimate then
-  begin
-
-    G := nil;
-    try
-      if GraphicCrypt.ValidCryptGraphicFile(ScanParams.ScanFileName) then
-      begin
-        PassWord := DBKernel.FindPasswordForCryptImageFile(ScanParams.ScanFileName);
-        if (PassWord = '') and Assigned(FOnGetFilePassword) then
-          PassWord := FOnGetFilePassword(Self, ScanParams.ScanFileName);
-
-        if PassWord = '' then
-          Exit;
-
-        G := DeCryptGraphicFile(ScanParams.ScanFileName, PassWord);
-      end else
-      begin
-        GC := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(ScanParams.ScanFileName));
-        if GC <> nil then
-        begin
-          G := GC.Create;
-          if not IsDevicePath(ScanParams.ScanFileName) then
-            G.LoadFromFile(ScanParams.ScanFileName)
-          else
-            G.LoadFromDevice(ScanParams.ScanFileName);
-        end;
-      end;
-
-      if G = nil then
-        Exit;
-
-      //resampling image to DB size
-      JPEGScale(G, 100, 100); //100x100 is the best size!
-      TempBitmap := TBitmap.Create;
-      try
-        TempBitmap.PixelFormat := pf24bit;
-        AssignGraphic(TempBitmap, G);
-        SBitmap := TBitmap.Create;
-        try
-          SBitmap.PixelFormat := pf24bit;
-          DoResize(100, 100, TempBitmap, SBitmap); //100x100 is the best size!
-
-          TempSql := 'Select {FIELDS} from $DB$ Where ';
-          TempSql := TempSql + Format(' (Rating >= %d) and (Rating <= %d) ', [FSearchParams.RatingFrom,
-            FSearchParams.RatingTo]);
-
-          if FSearchParams.Groups.Count > 0 then
-            TempSql := TempSql + FormatEx(' AND ({0})', [FSearchParams.GroupsWhere]);
-
-          TempSql := TempSql + ' AND ((DateToAdd > :MinDate) and (DateToAdd<:MaxDate))';
-
-          FQuery := GetQuery(True);
-          try
-            SetSQL(FQuery, StringReplace(TempSql, '{FIELDS}', 'COUNT(*)', []));
-            SetDateParam(FQuery, 'MinDate', DateOf(FSearchParams.DateFrom));
-            SetDateParam(FQuery, 'MaxDate', DateOf(FSearchParams.DateTo));
-            FQuery.Open;
-            EstimateRecordsCOunt := FQuery.Fields[0].AsInteger;
-          finally
-            FreeDS(FQuery);
-          end;
-          FQuery := GetQuery(True);
-          try
-            SetSQL(FQuery, StringReplace(TempSql, '{FIELDS}', '*', []) + ' ORDER BY ID DESC');
-            SetDateParam(FQuery, 'MinDate', DateOf(FSearchParams.DateFrom));
-            SetDateParam(FQuery, 'MaxDate', DateOf(FSearchParams.DateTo));
-            FQuery.Open;
-
-            CompareInfo := TCompareImageInfo.Create(SBitmap,  not ScanParams.ScanRotation, ScanParams.ScanRotation);
-            try
-              if not FQuery.Eof then
-                FQuery.First;
-
-              while not FQuery.Eof do
-              begin
-                //TW.I.Start('COMPARE NEXT ITEM');
-                if FQuery.RecNo mod 10 = 0 then
-                begin
-                  //TW.I.Start('COMPARE PROGRESS START');
-
-                  if Assigned(OnProgress) then
-                    OnProgress(Self, 100 * (FQuery.RecNo / EstimateRecordsCount));
-
-                  if (FData.Count > 0) then
-                  begin
-                    FOnPacketReady(Self, FData);
-                    FData.Clear;
-                  end;
-                  //TW.I.Start('COMPARE PROGRESS END');
-                end;
-
-                if FOwner.Terminated then
-                  Break;
-
-                //TW.I.Start('COMPARE LOAD IMAGE');
-                JPEG := nil;
-                try
-                  if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
-                  begin
-                    PassWord := DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum'));
-                    if PassWord = '' then
-                    begin
-                      FQuery.Next;
-                      Continue;
-                    end;
-                    GraphicCrypt.DeCryptBlobStreamJPG(FQuery.FieldByName('thum'), PassWord, JPEG);
-                  end else
-                  begin
-                    JPEG := TJPEGImage.Create;
-                    JPEG.Assign(FQuery.FieldByName('thum'));
-                  end;
-
-                  //TW.I.Start('COMPARE LOAD IMAGE END');
-                  if JPEG <> nil then
-                  begin
-                    //TW.I.Start('COMPARE COMPARE START');
-                    CmpResult := CompareImagesEx(JPEG, CompareInfo, Rot, ScanParams.ScanRotation, not ScanParams.ScanRotation, 60);
-                    //TW.I.Start('COMPARE COMPARE END');
-                    if (CmpResult.ByGistogramm > ScanParams.ScanPercent) or (CmpResult.ByPixels > ScanParams.ScanPercent) then
-                    begin
-                      Item := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
-                      Item.ID := FQuery.FieldByName('ID').AsInteger;
-                      Item.Data := TSearchDataExtension.Create;
-                      TSearchDataExtension(Item.Data).CompareResult := CmpResult;
-                      FQData.Add(Item);
-                      AddItem(FQuery);
-                    end;
-                  end;
-                  //TW.I.Start('COMPARE ITEM END');
-                finally
-                  F(JPEG);
-                end;
-                FQuery.Next;
-              end;
-              FData.Clear;
-            finally
-              F(CompareInfo);
-            end;
-          finally
-            FreeDS(FQuery);
-          end;
-        finally
-          F(SBitmap);
-        end;
-      finally
-        F(TempBitmap);
-      end;
-    finally
-      F(G);
-    end;
   end;
 end;
 

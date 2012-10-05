@@ -270,7 +270,6 @@ implementation
 
 uses
   uManagerExplorer,
-  Searching,
   ExportUnit,
   UnitDBCleaning,
   UnitCompareDataBases,

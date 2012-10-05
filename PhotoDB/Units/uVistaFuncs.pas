@@ -104,7 +104,7 @@ begin
   end;
 end;
 
-procedure SetVistaContentFonts(const AFont: TFont; Increment : integer = 2);
+procedure SetVistaContentFonts(const AFont: TFont; Increment: Integer = 2);
 begin
   if (IsWindowsVista or not CheckOSVerForFonts)
     and not SameText(AFont.Name, VistaContentFont)

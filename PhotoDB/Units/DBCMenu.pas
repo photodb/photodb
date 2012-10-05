@@ -80,12 +80,10 @@ type
     destructor Destroy; override;
     procedure ShowItemPopUpMenu_(Sender: TObject);
     procedure ShellExecutePopUpMenu_(Sender: TObject);
-    procedure SearchFolderPopUpMenu_(Sender: TObject);
     procedure DeleteLItemPopUpMenu_(Sender: TObject);
     procedure DeleteItemPopUpMenu_(Sender: TObject);
     procedure RefreshThumItemPopUpMenu_(Sender: TObject);
     procedure PropertyItemPopUpMenu_(Sender: TObject);
-    procedure ScanImageItemPopUpMenu_(Sender: TObject);
     procedure SetRatingItemPopUpMenu_(Sender: TObject);
     procedure SetRotateItemPopUpMenu_(Sender: TObject);
     procedure PrivateItemPopUpMenu_(Sender: TObject);
@@ -134,7 +132,6 @@ implementation
 uses
   uManagerExplorer,
   PropertyForm,
-  uSearchTypes,
   UnitMenuDateForm,
   UnitCrypting,
   ImEditor,
@@ -480,12 +477,10 @@ begin
   AScript.Description := 'ID Menu';
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SearchFolderPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SearchFolderPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteLItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteLItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'RefreshThumItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshThumItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'PropertyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PropertyItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ScanImageItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ScanImageItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetRatingItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRatingItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'SetRotateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRotateItemPopUpMenu_);
   AddScriptObjFunction(aScript.PrivateEnviroment, 'PrivateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrivateItemPopUpMenu_);
@@ -1395,11 +1390,6 @@ begin
   end;
 end;
 
-procedure TDBPopupMenu.ScanImageItemPopUpMenu_(Sender: TObject);
-begin
-  SearchManager.NewSearch.StartSearchSimilar(Finfo[Finfo.Position].FileName);
-end;
-
 procedure TDBPopupMenu.ScriptExecuted(Sender: TObject);
 var
   C: Integer;
@@ -1407,12 +1397,6 @@ begin
   LoadItemVariables(AScript, Sender as TMenuItemW);
   if Trim((Sender as TMenuItemW).Script) <> '' then
     ExecuteScript(Sender as TMenuItemW, AScript, '', C, nil);
-end;
-
-procedure TDBPopupMenu.SearchFolderPopUpMenu_(Sender: TObject);
-begin
-  SearchManager.NewSearch.StartSearchDirectory(ExtractFilePath(Finfo[Finfo.Position].FileName),
-    Finfo[Finfo.Position].ID);
 end;
 
 procedure TDBPopupMenu.ShelfItemPopUpMenu_(Sender: TObject);
@@ -1542,7 +1526,11 @@ end;
 
 procedure TDBPopupMenu.ShowDuplicatesItemPopUpMenu_(Sender: TObject);
 begin
-  SearchManager.NewSearch.StartSearch(':Similar(' + IntToStr(FInfo[Finfo.Position].ID) + '):');
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cDBSearchPath + ':Similar(' + IntToStr(FInfo[Finfo.Position].ID) + '):');
+    Show;
+  end;
 end;
 
 procedure TDBPopupMenu.ShowItemPopUpMenu_(Sender: TObject);

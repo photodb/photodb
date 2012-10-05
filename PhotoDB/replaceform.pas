@@ -155,7 +155,6 @@ type
 implementation
 
 uses
-  Searching,
   ExplorerUnit;
 
 {$R *.dfm}

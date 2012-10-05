@@ -224,8 +224,6 @@ type
     N7: TMenuItem;
     N8: TMenuItem;
     StatusBarMain: TStatusBar;
-    GoToSearchWindow1: TMenuItem;
-    OpeninSearchWindow1: TMenuItem;
     PmTreeView: TPopupActionBar;
     MiTreeViewOpenInNewWindow: TMenuItem;
     ToolBarNormalImageList: TImageList;
@@ -522,6 +520,7 @@ type
     PmESOptions: TPopupActionBar;
     MiESShowHidden: TMenuItem;
     MiESShowPrivate: TMenuItem;
+    TmrSearchResultsCount: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -582,7 +581,6 @@ type
     procedure SlideShowLinkClick(Sender: TObject);
     procedure ShowOnlyCommon1Click(Sender: TObject);
     procedure ShowPrivate1Click(Sender: TObject);
-    procedure OpeninSearchWindow1Click(Sender: TObject);
     procedure Help1Click(Sender: TObject);
     procedure MiTreeViewOpenInNewWindowClick(Sender: TObject);
     procedure AddLinkClick(Sender: TObject);
@@ -779,6 +777,7 @@ type
     procedure MiESShowHiddenClick(Sender: TObject);
     procedure MiESShowPrivateClick(Sender: TObject);
     procedure PmESOptionsPopup(Sender: TObject);
+    procedure TmrSearchResultsCountTimer(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -954,6 +953,7 @@ type
 
     procedure ExtendedSearchInit;
     procedure ExtendedSearchRealign;
+    procedure ExtendedSearchCheckEnabled;
     procedure ExtendedSearchInitPersons;
     procedure ExtendedSearchInitGroups;
     procedure ExtendedSearchGroupClick(Sender: TObject);
@@ -1077,7 +1077,6 @@ implementation
 
 uses
   UnitUpdateDB,
-  uSearchTypes,
   PropertyForm,
   FormManegerUnit,
   UnitFileRenamerForm,
@@ -1311,6 +1310,7 @@ procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
+  FSearchMode := -1;
   FGeoHTMLWindow := nil;
   FEditorInfo := nil;
   FPngNoHIstogram := nil;
@@ -4992,14 +4992,12 @@ begin
   Paste1.Visible := False;
   Addfolder1.Visible := False;
   MakeNew1.Visible := False;
-  OpeninSearchWindow1.Visible := False;
 
   if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
   begin
     Paste1.Visible := True;
     Addfolder1.Visible := True;
     MakeNew1.Visible := True;
-    OpeninSearchWindow1.Visible := True;
   end;
 
   if (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_STORAGE) or (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
@@ -6380,6 +6378,9 @@ end;
 
 procedure TExplorerForm.LoadSearchMode(SearchMode: Integer);
 begin
+  if FSearchMode = SearchMode then
+    Exit;
+
   TW.I.Start('LoadSearchMode');
   FSearchMode := SearchMode;
   if SearchMode = EXPLORER_SEARCH_DATABASE then
@@ -6401,6 +6402,10 @@ begin
     WedSearch.WatermarkText := L('Search in directory (with EXIF)');
     EdExtendedSearchText.WatermarkText := L('Search in directory (with EXIF)');
   end;
+
+  if FExtendedSearchParams <> nil then
+    ExtendedSearchCheckEnabled;
+
   TW.I.Start('LoadSearchMode - END');
 end;
 
@@ -6825,11 +6830,6 @@ begin
   ExplorerManager.ShowPrivate := True;
 end;
 
-procedure TExplorerForm.OpeninSearchWindow1Click(Sender: TObject);
-begin
-  SearchManager.NewSearch.StartSearchDirectory(GetCurrentPath);
-end;
-
 procedure TExplorerForm.LoadLanguage;
 begin
   BeginTranslate;
@@ -6887,10 +6887,8 @@ begin
     TextFile2.Caption := L('Text file');
 
     ShowUpdater1.Caption := L('Show update window');
-    OpeninSearchWindow1.Caption := L('Open in search window');
     Refresh2.Caption := L('Refresh');
     SelectAll1.Caption := L('Select all');
-    GoToSearchWindow1.Caption := L('Go to search window');
     Exit2.Caption := L('Exit');
 
     MiTreeViewOpenInNewWindow.Caption := L('Open in new window');
@@ -7236,15 +7234,15 @@ begin
       if P is TImageSearchItem then
       begin
         ThreadType := THREAD_TYPE_SEARCH_IMAGES;
-        FSearchMode := EXPLORER_SEARCH_IMAGES;
+        LoadSearchMode(EXPLORER_SEARCH_IMAGES);
       end else if P is TFileSearchItem then
       begin
         ThreadType := THREAD_TYPE_SEARCH_FOLDER;
-        FSearchMode := EXPLORER_SEARCH_FILES;
+        LoadSearchMode(EXPLORER_SEARCH_FILES);
       end else if P is TDBSearchItem then
       begin
         ThreadType := THREAD_TYPE_SEARCH_DB;
-        FSearchMode := EXPLORER_SEARCH_DATABASE;
+        LoadSearchMode(EXPLORER_SEARCH_DATABASE);
       end;
 
       TW.I.Start(' -> DirectoryWatcher.StopWatch');
@@ -9037,14 +9035,16 @@ procedure TExplorerForm.SbDoSearchClick(Sender: TObject);
 var
   I: Integer;
   S, Path: string;
-  IsExtendedSearch: Boolean;
+  IsExtendedPanelSearch,
+  IsExtendedDBSearch: Boolean;
   Groups: TGroups;
 begin
-  IsExtendedSearch := (Sender = EdExtendedSearchText) or (Sender = SbExtendedSearchStart) or (Sender = BtnSearch) and (FSearchMode = EXPLORER_SEARCH_DATABASE);
+  IsExtendedPanelSearch := (Sender = EdExtendedSearchText) or (Sender = SbExtendedSearchStart) or (Sender = BtnSearch);
+  IsExtendedDBSearch := IsExtendedPanelSearch and (FSearchMode = EXPLORER_SEARCH_DATABASE);
 
-  S := AnsiLowerCase(WedSearch.Text);
+  S := AnsiLowerCase(IIF(IsExtendedPanelSearch, EdExtendedSearchText.Text, WedSearch.Text));
   try
-    if not IsExtendedSearch then
+    if not IsExtendedDBSearch then
     begin
       if (FSearchMode = EXPLORER_SEARCH_FILES) or (FSearchMode = EXPLORER_SEARCH_IMAGES) then
       begin
@@ -10352,6 +10352,11 @@ begin
   TmrDelayedStart.Enabled := False;
 end;
 
+procedure TExplorerForm.TmrSearchResultsCountTimer(Sender: TObject);
+begin
+//
+end;
+
 procedure TExplorerForm.Grid1Click(Sender: TObject);
 begin
   View := LV_GRID;
@@ -11110,9 +11115,7 @@ begin
     WlSearchRatingToValue.LoadFromResource('TRATING_5');
 
     WlSearchRatingFrom.Text := L('Rating from');
-    WlSearchRatingFrom.RefreshBuffer(True);
     WlSearchRatingTo.Text := L('Rating to');
-    WlSearchRatingTo.RefreshBuffer(True);
     BtnSearch.Caption := L('Search');
     BtnSelectDatePopup.Caption := L('Ok');
     BtnSelectDatePopupReset.Caption := L('Reset');
@@ -11122,6 +11125,7 @@ begin
     ExtendedSearchInitGroups;
     ExtendedSearchInitPersons;
 
+    ExtendedSearchCheckEnabled;
     ExtendedSearchRealign;
   end;
 end;
@@ -11644,6 +11648,25 @@ begin
   ExtendedSearchInitPersons;
 end;
 
+procedure TExplorerForm.ExtendedSearchCheckEnabled;
+var
+  IsOptionsEnabled: Boolean;
+begin
+  IsOptionsEnabled := FSearchMode = EXPLORER_SEARCH_DATABASE;
+
+  WlSearchRatingFrom.Enabled := IsOptionsEnabled;
+  WlSearchRatingTo.Enabled := IsOptionsEnabled;
+  WlSearchRatingFromValue.Enabled := IsOptionsEnabled;
+  WlSearchRatingToValue.Enabled := IsOptionsEnabled;
+  WlExtendedSearchDateFrom.Enabled := IsOptionsEnabled;
+  WlExtendedSearchDateTo.Enabled := IsOptionsEnabled;
+  WlExtendedSearchSortBy.Enabled := IsOptionsEnabled;
+  WllExtendedSearchPersons.Enabled := IsOptionsEnabled;
+  WllExtendedSearchGroups.Enabled := IsOptionsEnabled;
+  WlExtendedSearchSortDescending.Enabled := IsOptionsEnabled;
+  WlExtendedSearchOptions.Enabled := IsOptionsEnabled;
+end;
+
 procedure TExplorerForm.ExtendedSearchRealign;
 
   function DateToString(Date: TDateTime): string;
@@ -11676,6 +11699,8 @@ begin
      WlExtendedSearchSortBy.Text := L('Sort by image size');
   end;
 
+  WlSearchRatingFrom.RefreshBuffer(True);
+  WlSearchRatingTo.RefreshBuffer(True);
   WlSearchRatingFromValue.Left := WlSearchRatingFrom.AfterRight(7);
   WlSearchRatingToValue.Left := WlSearchRatingTo.AfterRight(5);
 
@@ -12097,8 +12122,6 @@ begin
   OpenInNewWindow1.ImageIndex := DB_IC_FOLDER;
   OpeninNewWindow2.ImageIndex := DB_IC_FOLDER;
   NewWindow1.ImageIndex := DB_IC_FOLDER;
-  GoToSearchWindow1.ImageIndex := DB_IC_ADDTODB;
-  OpeninSearchWindow1.ImageIndex := DB_IC_ADDTODB;
 
   PmTreeView.Images := DBKernel.ImageList;
 

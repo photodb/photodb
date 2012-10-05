@@ -134,10 +134,6 @@
     $form=NewImageEditor;
     ShowDBForm($form);
   }
-  <New search>[DB_IC_ADDTODB]
-  {
-    NewSearch;
-  }
   <Groups manager>[DB_IC_GROUPS]
   {
     ExecuteGroupManager;

@@ -5,11 +5,11 @@ interface
 uses
   Generics.Collections,
   System.Classes,
-  SyncObjs,
+  System.SysUtils,
+  System.SyncObjs,
   Vcl.Forms,
   uSettings,
   uMemory,
-  SysUtils,
   ExplorerTypes;
 
 type
