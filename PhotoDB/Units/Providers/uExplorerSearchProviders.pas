@@ -254,13 +254,13 @@ begin
     end else if (Parameters.RatingFrom > 0) and (Parameters.RatingTo < 5) then
     begin
       //rating between
-      ResultList.Add(FormatEx('rating between {0} and {1}', [Parameters.RatingFrom, Parameters.RatingTo]));
+      ResultList.Add(FormatEx(L('rating between {0} and {1}'), [Parameters.RatingFrom, Parameters.RatingTo]));
     end else if (Parameters.RatingFrom > 0) then
     begin
-      ResultList.Add(FormatEx('rating more than {0}', [Parameters.RatingFrom]));
+      ResultList.Add(FormatEx(L('rating more than {0}'), [Parameters.RatingFrom]));
     end else if (Parameters.RatingTo < 5) then
     begin
-      ResultList.Add(FormatEx('rating less than {0}', [Parameters.RatingTo]));
+      ResultList.Add(FormatEx(L('rating less than {0}'), [Parameters.RatingTo]));
     end;
 
     if (Parameters.DateFrom <= EncodeDate(1900, 1, 1)) and (Parameters.DateTo >= EncodeDate(2100, 1, 1)) then
@@ -269,20 +269,36 @@ begin
     end else if (Parameters.DateFrom > EncodeDate(1900, 1, 1)) and (Parameters.DateTo < EncodeDate(2100, 1, 1)) then
     begin
       //rating between
-      ResultList.Add(FormatEx('date between {0} and {1}', [FormatDateTimeShortDate(Parameters.DateFrom), FormatDateTimeShortDate(Parameters.DateTo)]));
+      ResultList.Add(FormatEx(L('date between {0} and {1}'), [FormatDateTimeShortDate(Parameters.DateFrom), FormatDateTimeShortDate(Parameters.DateTo)]));
     end else if (Parameters.DateFrom > EncodeDate(1900, 1, 1)) then
     begin
-      ResultList.Add(FormatEx('date more than {0}', [FormatDateTimeShortDate(Parameters.DateFrom)]));
+      ResultList.Add(FormatEx(L('date more than {0}'), [FormatDateTimeShortDate(Parameters.DateFrom)]));
     end else if (Parameters.DateTo < EncodeDate(2100, 1, 1)) then
     begin
-      ResultList.Add(FormatEx('date less than {0}', [FormatDateTimeShortDate(Parameters.DateTo)]));
+      ResultList.Add(FormatEx(L('date less than {0}'), [FormatDateTimeShortDate(Parameters.DateTo)]));
     end;
 
     if Trim(Parameters.Persons.Text) <> '' then
-      ResultList.Add(FormatEx('{0} on photo', [Parameters.Persons.Join(IIF(Parameters.PersonsAnd, ' ' + 'and' + ' ', ' ' + 'or' + ' '))]));
+      ResultList.Add(FormatEx(L('{0} on photo'), [Parameters.Persons.Join(IIF(Parameters.PersonsAnd, ' ' + L('and') + ' ', ' ' + L('or') + ' '))]));
 
     if Trim(Parameters.Groups.Text) <> '' then
-      ResultList.Add(FormatEx('with groups: {0}', [Parameters.Groups.Join(IIF(Parameters.GroupsAnd, ' ' + 'and' + ' ', ' ' + 'or' + ' '))]));
+      ResultList.Add(FormatEx(L('with groups: {0}'), [Parameters.Groups.Join(IIF(Parameters.GroupsAnd, ' ' + L('and') + ' ', ' ' + L('or') + ' '))]));
+
+    if ResultList.Count > 0 then
+      Result := ResultList.Join(', ');
+
+    if Result = '' then
+      Result := L('any photo');
+
+    if Parameters.ShowPrivate or Parameters.ShowHidden then
+    begin
+      ResultList.Clear;
+      if Parameters.ShowHidden then
+        ResultList.Add(L('hidden'));
+      if Parameters.ShowPrivate then
+        ResultList.Add(L('private'));
+      Result := Result + FormatEx(L(', including {0}'), [ResultList.Join(L(' ' + L('and') + ' '))]) ;
+    end;
 
     if (Parameters.SortMode = dsmRating) and Parameters.SortDescending then
     begin
@@ -297,7 +313,7 @@ begin
         dsmRating:
           SortDirection := 'rating';
         dsmDate:
-          SortDirection := 'Date';
+          SortDirection := 'date';
         dsmFileSize:
           SortDirection := 'file size';
         dsmImageSize:
@@ -306,19 +322,15 @@ begin
           SortDirection := 'comparing';
       end;
 
+      SortDirection := L(SortDirection);
+
       if not Parameters.SortDescending then
-        SortMode := FormatEx('{0}, ascending', [SortDirection])
+        SortMode := FormatEx(L(', sort by {0}, ascending'), [SortDirection])
       else
-        SortMode := FormatEx('{0}, descending', [SortDirection]);
+        SortMode := FormatEx(L(', sort by {0}, descending'), [SortDirection]);
 
-      ResultList.Add(SortMode);
+      Result := Result + SortMode;
     end;
-
-    if ResultList.Count > 0 then
-      Result := ResultList.Join(', ');
-
-    if Result = '' then
-      Result := 'Any photo';
 
   finally
     F(ResultList);
@@ -413,9 +425,9 @@ begin
         end else if Key = 'PersonsMode' then
           PersonsAnd := Value = 'and'
         else if Key = 'Private' then
-          ShowPrivate := not (Value = '1') or (Value = 'true')
+          ShowPrivate := (Value = '1') or (Value = 'true')
         else if Key = 'Hidden' then
-          ShowHidden := not (Value = '1') or (Value = 'true');
+          ShowHidden := (Value = '1') or (Value = 'true');
       end;
     end;
   end;

@@ -2140,6 +2140,29 @@
     <translate name="Search in collection for: %s" value="Искать в базе: %s" />
     <translate name="Search files for: %s" value="Искать файлы: %s" />
     <translate name="Search files (with EXIF) for: %s" value="Искать файлы (учитывая EXIF): %s" />
+	<translate name="rating between {0} and {1}" value="рейтинг между {0} и {1}"/>
+	<translate name="rating more than {0}" value="рейтинг более {0}"/>
+	<translate name="rating less than {0}" value="рейтинг менее {0}"/>
+	<translate name="date between {0} and {1}" value="дата между {0} и {1}"/>
+	<translate name="date more than {0}" value="дата более {0}"/>
+	<translate name="date less than {0}" value="дата менее {0}"/>
+	<translate name="{0} on photo" value="{0} на фото"/>
+	<translate name="with groups: {0}" value="с группами {0}"/>
+	<translate name="and" value="и"/>
+	<translate name="or" value="или"/>
+	<translate name="ID" value="ID"/>
+	<translate name="name" value="имени"/>
+	<translate name="rating" value="рейтингу"/>
+	<translate name="date" value="дате"/>
+	<translate name="file size" value="размеру файла"/>
+	<translate name="image size" value="размеру изображения"/>
+	<translate name=", sort by {0}, ascending" value=", сортировать по {0}, по возрастанию"/>
+	<translate name=", sort by {0}, descending" value=", сортировать по {0}, по убыванию"/>
+	<translate name="any photo" value="любое фото"/>
+	<translate name="hidden" value="скрытые"/>
+	<translate name="private" value="личные"/>
+	<translate name=", including {0}" value=", включая {0}"/>
+	
   </scope>
   <scope name="EditObject">
 	<translate name="Edit text" value="Редактировать текст"/>
