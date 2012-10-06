@@ -3,7 +3,10 @@ unit uDBTypes;
 interface
 
 uses
-  Jpeg, Forms, Classes, UnitDBDeclare, uDBBaseTypes;
+  System.Classes,
+  Vcl.Imaging.Jpeg,
+  UnitDBDeclare,
+  uDBBaseTypes;
 
 type
   TSelectedInfo = record

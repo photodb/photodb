@@ -3,41 +3,45 @@ unit UnitEditLinkForm;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ExtCtrls,
-  StdCtrls,
-  UnitLinksSupport,
-  ExtDlgs,
-  acDlgSelect,
-  DropSource,
-  DropTarget,
-  uDBUtils,
-  ComCtrls,
-  ImgList,
-  UnitDBKernel,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.CommCtrl,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.ExtDlgs,
+  Vcl.ComCtrls,
+  Vcl.ImgList,
+  Vcl.Imaging.pngimage,
+
   DragDrop,
   DragDropFile,
-  uVistaFuncs,
-  ComboBoxExDB,
-  UnitDBFileDialogs,
-  uDBForm,
+  DropSource,
+  DropTarget,
+
   WatermarkedMemo,
   WatermarkedEdit,
-  uShellIntegration,
+  ComboBoxExDB,
+
+  UnitLinksSupport,
+  acDlgSelect,
+  UnitDBKernel,
+  UnitDBFileDialogs,
   Dolphin_db,
+
+  uDBUtils,
+  uVistaFuncs,
+  uDBForm,
+  uShellIntegration,
   uConstants,
   uAssociations,
   uMemory,
-  uThemesUtils,
-  CommCtrl,
-  pngimage;
+  uThemesUtils;
 
 type
   TFormEditLink = class(TDBForm)
@@ -75,6 +79,7 @@ type
     FAdd: Boolean;
   protected
     function GetFormID : string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     procedure Execute(Add: Boolean; var Info: TLinksInfo; Proc: TSetLinkProcedure; OnClose: TRemoteCloseFormProc);
@@ -366,6 +371,15 @@ procedure TFormEditLink.CbLinkTypeKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = '[') or (Key = ']') or (Key = '{') or (Key = '}') then
     Key := '_';
+end;
+
+procedure TFormEditLink.CustomFormAfterDisplay;
+begin
+  inherited;
+  if EdName <> nil then
+    EdName.Refresh;
+  if EdValue <> nil then
+  EdValue.Refresh;
 end;
 
 procedure TFormEditLink.EdValueKeyPress(Sender: TObject; var Key: Char);

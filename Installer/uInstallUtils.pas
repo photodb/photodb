@@ -5,24 +5,26 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  Messages,
-  Registry,
-  ShlObj,
-  ComObj,
-  ActiveX,
+  System.SysUtils,
+  System.Classes,
+  System.Win.Registry,
+  System.Win.ComObj,
+  Winapi.Messages,
+  Winapi.Windows,
+  Winapi.ShlObj,
+  Winapi.ActiveX,
+  Vcl.Forms,
+
+  VRSIShortCuts,
+  UnitINI,
+
   uConstants,
   uMemory,
   uInstallTypes,
   uInstallScope,
-  VRSIShortCuts,
-  Forms,
   IniFiles,
   uTranslate,
   uLogger,
-  UnitINI,
   uShellUtils,
   uUserUtils,
   uAppUtils;
@@ -128,7 +130,7 @@ begin
     VRSIShortCut.Description := Description;
 
     if FileExists(ShortcutPath) then
-      if not DeleteFile(ShortcutPath) then
+      if not System.SysUtils.DeleteFile(ShortcutPath) then
         Exit;
 
     VRSIShortCut.Save(ShortcutPath);

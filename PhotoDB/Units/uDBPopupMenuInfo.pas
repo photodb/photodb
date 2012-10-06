@@ -3,13 +3,15 @@ unit uDBPopupMenuInfo;
 interface
 
 uses
-  Classes,
-  SysUtils,
+  System.Classes,
+  System.SysUtils,
+
   EasyListView,
   UnitDBDeclare,
   UnitLinksSupport,
-  uGroupTypes,
   CmpUnit,
+
+  uGroupTypes,
   uList64,
   uFileUtils,
   uMemory;

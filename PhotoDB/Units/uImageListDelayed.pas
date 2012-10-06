@@ -3,7 +3,7 @@ unit uImageListDelayed;
 interface
 
 uses
-  ImgList;
+  Vcl.ImgList;
 
 type
   TDelayedImageList = class(TCustomImageList)

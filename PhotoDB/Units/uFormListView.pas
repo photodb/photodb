@@ -3,11 +3,13 @@ unit uFormListView;
 interface
 
 uses
-  Windows,
-  Graphics,
-  Classes,
-  Controls,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Controls,
+
   EasyListview,
+
   uThreadForm,
   uDBDrawing,
   uListViewUtils,

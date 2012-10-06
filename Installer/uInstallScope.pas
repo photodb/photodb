@@ -6,7 +6,7 @@ interface
 
 uses
   Generics.Collections,
-  Classes,
+  System.Classes,
   uMemory,
 {$IFNDEF EXTERNAL}
   uTranslate,

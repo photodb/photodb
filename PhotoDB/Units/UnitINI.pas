@@ -3,16 +3,16 @@ unit UnitINI;
 interface
 
 uses
-  Windows,
-  Registry,
-  IniFiles,
-  Classes,
-  SysUtils,
+  System.SyncObjs,
+  System.Classes,
+  System.SysUtils,
+  System.Win.Registry,
+  System.IniFiles,
+  Winapi.Windows,
   uLogger,
   uConstants,
   uMemory,
-  uRuntime,
-  SyncObjs;
+  uRuntime;
 
 type
   TMyRegistryINIFile = class(TIniFile)
@@ -105,7 +105,7 @@ begin
     if ASection = REGISTRY_ALL_USERS then
       (Registry as TRegistry).RootKey := HKEY_INSTALL;
     if ASection = REGISTRY_CLASSES then
-      (Registry as TRegistry).RootKey := Windows.HKEY_CLASSES_ROOT;
+      (Registry as TRegistry).RootKey := HKEY_CLASSES_ROOT;
     if ASection = REGISTRY_CURRENT_USER then
       (Registry as TRegistry).RootKey := HKEY_USER_WORK;
   end;

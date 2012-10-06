@@ -3,13 +3,16 @@ unit uEditorTypes;
 interface
 
 uses
-  Windows,
-  Classes,
-  Graphics,
-  Math,
-  uDBForm,
+  System.Classes,
+  System.Math,
+  Winapi.Windows,
+  Vcl.Graphics,
+
   CCR.Exif,
-  GraphicsBaseTypes;
+
+  GraphicsBaseTypes,
+
+  uDBForm;
 
 type
   TSetPointerToNewImage = procedure(Image: TBitmap) of object;

@@ -4,24 +4,33 @@ interface
 
 uses
   System.Types,
-  Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
+  System.Classes,
+  System.Math,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  Vcl.ComCtrls,
+  Vcl.ExtDlgs,
+  Vcl.Clipbrd,
+  Vcl.Menus,
+  Vcl.Buttons,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Vcl.Themes,
+  Vcl.Samples.Spin,
+  Vcl.Imaging.Jpeg,
+
+  CCR.Exif,
+
   WebLink,
-  StdCtrls,
-  ExtCtrls,
-  ComCtrls,
-  ExtDlgs,
-  Jpeg,
-  uJpegUtils,
   GIFImage,
-  Math,
   DropSource,
   DropTarget,
   ToolsUnit,
@@ -30,44 +39,41 @@ uses
   ImageHistoryUnit,
   RotateToolUnit,
   ResizeToolUnit,
-  Clipbrd,
-  uTiffImage,
   EffectsToolUnit,
   RedEyeToolUnit,
   ColorToolUnit,
-  Spin,
-  Menus,
-  uGUIDUtils,
   CustomSelectTool,
   TextToolUnit,
   BrushToolUnit,
   InsertImageToolUnit,
   GraphicsBaseTypes,
-  uMemory,
   GraphicCrypt,
   Dolphin_DB,
   UnitPasswordForm,
-  uManagerExplorer,
   FormManegerUnit,
   UnitDBKernel,
   PropertyForm,
-  Buttons,
   UnitCrypting,
   GraphicEx,
   GraphicsCool,
-  uScript,
   UnitScripts,
   PngImage,
   DragDrop,
   DragDropFile,
-  uVistaFuncs,
   UnitDBDeclare,
   UnitDBFileDialogs,
   UnitDBCommonGraphics,
+
+  uTiffImage,
+  uJpegUtils,
+  uGUIDUtils,
+  uMemory,
+  uManagerExplorer,
+  uScript,
+  uVistaFuncs,
   uCDMappingTypes,
   uLogger,
   uAssociations,
-  CCR.Exif,
   uEditorTypes,
   uShellIntegration,
   uRuntime,
@@ -79,9 +85,6 @@ uses
   uConstants,
   uSettings,
   uPortableDeviceUtils,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
-  Themes,
   uThemesUtils,
   uBaseWinControl,
   uImageLoader,
@@ -723,8 +726,8 @@ procedure TImageEditor.FormResize(Sender: TObject);
 var
   I: Integer;
 begin
-  Buffer.Width := Math.Max(1, GetVisibleImageWidth);
-  Buffer.Height := Math.Max(1, GetVisibleImageHeight);
+  Buffer.Width := Max(1, GetVisibleImageWidth);
+  Buffer.Height := Max(1, GetVisibleImageHeight);
   SetLength(PBuffer, Buffer.Height);
   for I := 0 to Buffer.Height - 1 do
     PBuffer[I] := Buffer.ScanLine[I];
@@ -1053,22 +1056,22 @@ begin
         CropClass := (ToolClass as TCropToolPanelClass);
         ImagePoint := BufferPointToImagePoint(Point(X, Y - ButtomPanel.Height));
 
-        P.X := Math.Min(CurrentImage.Width, Math.Max(0, ImagePoint.X));
-        P.Y := Math.Min(CurrentImage.Height, Math.Max(0, ImagePoint.Y));
+        P.X := Min(CurrentImage.Width, Max(0, ImagePoint.X));
+        P.Y := Min(CurrentImage.Height, Max(0, ImagePoint.Y));
         if (ImagePoint.X <> P.X) or (ImagePoint.Y <> P.Y) then
         begin
           Cursor := CrDefault;
           Exit;
         end;
 
-        ImagePoint.X := Math.Min(CurrentImage.Width, Math.Max(0, ImagePoint.X));
-        ImagePoint.Y := Math.Min(CurrentImage.Height, Math.Max(0, ImagePoint.Y));
+        ImagePoint.X := Min(CurrentImage.Width, Max(0, ImagePoint.X));
+        ImagePoint.Y := Min(CurrentImage.Height, Max(0, ImagePoint.Y));
 
         De := Max(1, Round(5 / GetZoom));
-        TopLeftPoint.X := Math.Min(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
-        RightBottomPoint.X := Math.Max(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
-        TopLeftPoint.Y := Math.Min(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
-        RightBottomPoint.Y := Math.Max(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
+        TopLeftPoint.X := Min(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
+        RightBottomPoint.X := Max(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
+        TopLeftPoint.Y := Min(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
+        RightBottomPoint.Y := Max(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
         InImage := PtInRect(Rect(TopLeftPoint.X - De, TopLeftPoint.Y - De, RightBottomPoint.X + De,
             RightBottomPoint.Y + De), ImagePoint);
         CropClass.XTop := (Abs(ImagePoint.Y - TopLeftPoint.Y) <= De) and InImage;
@@ -1095,10 +1098,10 @@ begin
         CustomSelectToolClass := (ToolClass as TCustomSelectToolClass);
         ImagePoint := BufferPointToImagePoint(Point(X, Y - ButtomPanel.Height));
         De := Round(5 / GetZoom);
-        TopLeftPoint.X := Math.Min(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
-        RightBottomPoint.X := Math.Max(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
-        TopLeftPoint.Y := Math.Min(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
-        RightBottomPoint.Y := Math.Max(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
+        TopLeftPoint.X := Min(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
+        RightBottomPoint.X := Max(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
+        TopLeftPoint.Y := Min(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
+        RightBottomPoint.Y := Max(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
 
         InImage := PtInRect(Rect(TopLeftPoint.X - De, TopLeftPoint.Y - De, RightBottomPoint.X + De,
             RightBottomPoint.Y + De), ImagePoint);
@@ -1165,8 +1168,8 @@ begin
         if CropClass.MakingRect then
         begin
           ImagePoint := BufferPointToImagePoint(Point(X, Y - ButtomPanel.Height));
-          P.X := Math.Min(CurrentImage.Width, Math.Max(0, ImagePoint.X));
-          P.Y := Math.Min(CurrentImage.Height, Math.Max(0, ImagePoint.Y));
+          P.X := Min(CurrentImage.Width, Max(0, ImagePoint.X));
+          P.Y := Min(CurrentImage.Height, Max(0, ImagePoint.Y));
           if CropClass.KeepProportions then
           begin
             W := -(CropClass.FirstPoint.X - P.X);
@@ -1221,12 +1224,12 @@ begin
         end else
         begin
           ImagePoint := BufferPointToImagePoint(Point(X, Y - ButtomPanel.Height));
-          ImagePoint.X := Math.Min(CurrentImage.Width, Math.Max(0, ImagePoint.X));
-          ImagePoint.Y := Math.Min(CurrentImage.Height, Math.Max(0, ImagePoint.Y));
+          ImagePoint.X := Min(CurrentImage.Width, Max(0, ImagePoint.X));
+          ImagePoint.Y := Min(CurrentImage.Height, Max(0, ImagePoint.Y));
 
           P := BufferPointToImagePoint(Point(X, Y - ButtomPanel.Height));
-          P.X := Math.Min(CurrentImage.Width, Math.Max(1, P.X));
-          P.Y := Math.Min(CurrentImage.Height, Math.Max(1, P.Y));
+          P.X := Min(CurrentImage.Width, Max(1, P.X));
+          P.Y := Min(CurrentImage.Height, Max(1, P.Y));
           if CropClass.KeepProportions then
           begin
             W := -(CropClass.FirstPoint.X - P.X);
@@ -1268,11 +1271,11 @@ begin
               begin
                 W := ImagePoint.X - CropClass.BeginDragPoint.X;
                 H := ImagePoint.Y - CropClass.BeginDragPoint.Y;
-                W := Math.Max(W, Math.Max(-CropClass.BeginFirstPoint.X, -CropClass.BeginSecondPoint.X));
-                H := Math.Max(H, Math.Max(-CropClass.BeginFirstPoint.Y, -CropClass.BeginSecondPoint.Y));
-                W := Math.Min(W, CurrentImage.Width - Math.Max(CropClass.BeginFirstPoint.X,
+                W := Max(W, Max(-CropClass.BeginFirstPoint.X, -CropClass.BeginSecondPoint.X));
+                H := Max(H, Max(-CropClass.BeginFirstPoint.Y, -CropClass.BeginSecondPoint.Y));
+                W := Min(W, CurrentImage.Width - Max(CropClass.BeginFirstPoint.X,
                     CropClass.BeginSecondPoint.X));
-                H := Math.Min(H, CurrentImage.Height - Math.Max(CropClass.BeginFirstPoint.Y,
+                H := Min(H, CurrentImage.Height - Max(CropClass.BeginFirstPoint.Y,
                     CropClass.BeginSecondPoint.Y));
                 CropClass.FirstPoint := Point(CropClass.BeginFirstPoint.X + W, CropClass.BeginFirstPoint.Y + H);
                 CropClass.SecondPoint := Point(CropClass.BeginSecondPoint.X + W, CropClass.BeginSecondPoint.Y + H);
@@ -1318,10 +1321,10 @@ begin
                 else
                   Prop := 1;
 
-                P1 := Point(Math.Min(CropClass.FirstPoint.X, CropClass.SecondPoint.X),
-                  Math.Min(CropClass.FirstPoint.Y, CropClass.SecondPoint.Y));
-                P2 := Point(Math.Max(CropClass.FirstPoint.X, CropClass.SecondPoint.X),
-                  Math.Max(CropClass.FirstPoint.Y, CropClass.SecondPoint.Y));
+                P1 := Point(Min(CropClass.FirstPoint.X, CropClass.SecondPoint.X),
+                  Min(CropClass.FirstPoint.Y, CropClass.SecondPoint.Y));
+                P2 := Point(Max(CropClass.FirstPoint.X, CropClass.SecondPoint.X),
+                  Max(CropClass.FirstPoint.Y, CropClass.SecondPoint.Y));
 
                 if CropClass.XLeft and not CropClass.XTop and not CropClass.XRight then
                 begin
@@ -1421,17 +1424,17 @@ begin
           end else
           begin
             ImagePoint := BufferPointToImagePoint(Point(X, Y - ButtomPanel.Height));
-            P.X := Math.Min(CurrentImage.Width, Math.Max(0, ImagePoint.X));
-            P.Y := Math.Min(CurrentImage.Height, Math.Max(0, ImagePoint.Y));
+            P.X := Min(CurrentImage.Width, Max(0, ImagePoint.X));
+            P.Y := Min(CurrentImage.Height, Max(0, ImagePoint.Y));
             if (ImagePoint.X <> P.X) or (ImagePoint.Y <> P.Y) then
             begin
               Cursor := CrDefault;
               Exit;
             end;
-            TopLeftPoint.X := Math.Min(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
-            RightBottomPoint.X := Math.Max(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
-            TopLeftPoint.Y := Math.Min(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
-            RightBottomPoint.Y := Math.Max(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
+            TopLeftPoint.X := Min(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
+            RightBottomPoint.X := Max(CropClass.SecondPoint.X, CropClass.FirstPoint.X);
+            TopLeftPoint.Y := Min(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
+            RightBottomPoint.Y := Max(CropClass.SecondPoint.Y, CropClass.FirstPoint.Y);
             InImage := PtInRect(Rect(TopLeftPoint.X - De, TopLeftPoint.Y - De, RightBottomPoint.X + De,
                 RightBottomPoint.Y + De), ImagePoint);
             CropClass.XTop := (Abs(ImagePoint.Y - TopLeftPoint.Y) <= De) and InImage;
@@ -1523,10 +1526,10 @@ begin
             end;
           end else
           begin
-            TopLeftPoint.X := Math.Min(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
-            RightBottomPoint.X := Math.Max(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
-            TopLeftPoint.Y := Math.Min(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
-            RightBottomPoint.Y := Math.Max(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
+            TopLeftPoint.X := Min(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
+            RightBottomPoint.X := Max(CustomSelectToolClass.SecondPoint.X, CustomSelectToolClass.FirstPoint.X);
+            TopLeftPoint.Y := Min(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
+            RightBottomPoint.Y := Max(CustomSelectToolClass.SecondPoint.Y, CustomSelectToolClass.FirstPoint.Y);
 
             InImage := PtInRect(Rect(TopLeftPoint.X - De, TopLeftPoint.Y - De, RightBottomPoint.X + De,
                 RightBottomPoint.Y + De), ImagePoint);
@@ -1634,8 +1637,8 @@ begin
         if CropClass.MakingRect then
         begin
           P := BufferPointToImagePoint(Point(X, Y - ButtomPanel.Height));
-          P.X := Math.Min(CurrentImage.Width, Math.Max(0, P.X));
-          P.Y := Math.Min(CurrentImage.Height, Math.Max(0, P.Y));
+          P.X := Min(CurrentImage.Width, Max(0, P.X));
+          P.Y := Min(CurrentImage.Height, Max(0, P.Y));
 
           if CropClass.KeepProportions then
           begin

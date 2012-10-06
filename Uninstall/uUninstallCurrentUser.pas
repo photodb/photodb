@@ -5,9 +5,9 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows,
+  System.SysUtils,
+  Winapi.Windows,
   uActions,
-  SysUtils,
   uAssociations,
   uInstallScope,
   uConstants,

@@ -4,7 +4,7 @@ interface
 
 uses
   MSXML2_TLB,
-  ActiveX;
+  Winapi.ActiveX;
 
 function CreateXMLDocument: IXMLDOMDocument;
 

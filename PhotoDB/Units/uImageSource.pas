@@ -3,7 +3,7 @@ unit uImageSource;
 interface
 
 uses
-  Graphics;
+  Vcl.Graphics;
 
 type
   IImageSource = interface(IInterface)

@@ -3,37 +3,39 @@ unit EffectsToolUnit;
 interface
 
 uses
-  Windows,
+  System.Math,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Dialogs,
+  Vcl.Forms,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  Vcl.ComCtrls,
+  Vcl.Themes,
+  Vcl.ImgList,
+
   ToolsUnit,
   WebLink,
-  Classes,
-  Controls,
-  Graphics,
-  StdCtrls,
   GraphicsCool,
-  Math,
-  SysUtils,
   ImageHistoryUnit,
-  ExtCtrls,
-  Types,
-  ComCtrls,
   Effects,
   ExEffects,
-  Dialogs,
-  Forms,
   GraphicsBaseTypes,
-  uMemoryEx,
   ExEffectsUnitW,
   OptimizeImageUnit,
   UnitDBKernel,
-  uListViewUtils,
   MPCommonUtilities,
+  EasyListView,
+
+  uListViewUtils,
   uEditorTypes,
   uMemory,
   uTranslate,
-  Themes,
-  EasyListView,
-  ImgList;
+  uMemoryEx;
 
 type
   TEffectsManager = class(TObject)
@@ -101,7 +103,10 @@ implementation
 { TEffectsToolPanelClass }
 
 uses
-  EffectsToolThreadUnit, ImEditor, ExEffectsUnit, ExEffectFormUnit;
+  EffectsToolThreadUnit,
+  ImEditor,
+  ExEffectsUnit,
+  ExEffectFormUnit;
 
 procedure TEffectsToolPanelClass.ClosePanel;
 begin
@@ -161,6 +166,7 @@ begin
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.LoadFromResource('DOIT');
   MakeItLink.Anchors := [akLeft, akBottom];
+  MakeItLink.RefreshBuffer(True);
 
   CloseLink := TWebLink.Create(nil);
   CloseLink.Parent := AOwner as TWinControl;
@@ -171,6 +177,7 @@ begin
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.LoadFromResource('CANCELACTION');
   CloseLink.Anchors := [akLeft, akBottom];
+  CloseLink.RefreshBuffer(True);
 end;
 
 destructor TEffectsToolPanelClass.Destroy;

@@ -50,7 +50,6 @@ uses
   UnitDBKernel,
   UnitINI,
   dolphin_db,
-  uGroupTypes,
   UnitGroupsWork,
   UnitLinksSupport,
   SaveWindowPos,
@@ -68,23 +67,28 @@ uses
   UnitCDMappingSupport,
   ShellContextMenu,
   GraphicsCool,
-  uShellIntegration,
   ProgressActionUnit,
   GraphicsBaseTypes,
   CommonDBSupport,
-  uDBCustomThread,
   EasyListview,
   MPCommonUtilities,
   MPCommonObjects,
-  uShellUtils,
-  uGUIDUtils,
   UnitRefreshDBRecordsThread,
   UnitPropeccedFilesSupport,
-  uPrivateHelper,
   UnitCryptingImagesThread,
+  wfsU,
+  LoadingSign,
+  PathEditor,
+  WatermarkedEdit,
+
+  uShellIntegration,
+  uDBCustomThread,
+  uGroupTypes,
+  uShellUtils,
+  uGUIDUtils,
+  uPrivateHelper,
   uVistaFuncs,
   uGOM,
-  wfsU,
   uLockedFileNotifications,
   UnitDBDeclare,
   UnitDBFileDialogs,
@@ -108,7 +112,6 @@ uses
   uDBDrawing,
   uW7TaskBar,
   uMemory,
-  LoadingSign,
   uPNGUtils,
   uDBGraphicTypes,
   uGraphicUtils,
@@ -120,8 +123,6 @@ uses
   uPathUtils,
   uSettings,
   uAssociations,
-  PathEditor,
-  WatermarkedEdit,
   uPathProviders,
   uExplorerMyComputerProvider,
   uExplorerFSProviders,
@@ -420,18 +421,7 @@ type
     TsInfo: TTabSheet;
     TsEXIF: TTabSheet;
     VleExif: TValueListEditor;
-    LbHistogramImage: TLabel;
-    ImHistogramm: TImage;
-    ReRating: TRating;
-    DteTime: TDateTimePicker;
-    DteDate: TDateTimePicker;
-    WllGroups: TWebLinkList;
     ImGroups: TImageList;
-    LbEditComments: TLabel;
-    MemComments: TMemo;
-    LbEditKeywords: TLabel;
-    MemKeyWords: TMemo;
-    BtnSaveInfo: TButton;
     WlDeleteLocation: TWebLink;
     MiDisplayOnMap: TMenuItem;
     CoolBarBottom: TCoolBar;
@@ -521,6 +511,18 @@ type
     MiESShowHidden: TMenuItem;
     MiESShowPrivate: TMenuItem;
     TmrSearchResultsCount: TTimer;
+    PnInfoContainer: TPanel;
+    BtnSaveInfo: TButton;
+    MemComments: TMemo;
+    LbEditComments: TLabel;
+    MemKeyWords: TMemo;
+    LbEditKeywords: TLabel;
+    WllGroups: TWebLinkList;
+    DteTime: TDateTimePicker;
+    DteDate: TDateTimePicker;
+    ReRating: TRating;
+    ImHistogramm: TImage;
+    LbHistogramImage: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -1408,6 +1410,7 @@ begin
   NewFormState;
   MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
   PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 210);
+  VleExif.ColWidths[0] := Settings.ReadInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
 
   TbSearch.Down := Settings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
   TbSearch.Tag := IIF(TbSearch.Down, -1, 1);
@@ -2122,6 +2125,7 @@ begin
   DropFileTargetMain.Unregister;
   DBKernel.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
+  Settings.WriteInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
   Settings.WriteInteger('Explorer', 'LeftPanelWidth', MainPanel.Width);
   Settings.WriteString('Explorer', 'Path', GetCurrentPathW.Path);
   Settings.WriteInteger('Explorer', 'PathType', GetCurrentPathW.PType);
@@ -9936,14 +9940,19 @@ end;
 
 procedure TExplorerForm.ListView1Resize(Sender: TObject);
 begin
-  ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
-  ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
-  LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3 - IIF(PnRight.Visible, PnRight.Width, 0);
-  LoadSizes;
-  if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Tag = 1) then
-  begin
-    ElvMain.Selection.FocusedItem.MakeVisible(emvAuto);
-    ElvMain.Selection.FocusedItem.Tag := 0;
+  BeginScreenUpdate(ElvMain.Handle);
+  try
+    ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
+    ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
+    LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3 - IIF(PnRight.Visible, PnRight.Width, 0);
+    LoadSizes;
+    if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Tag = 1) then
+    begin
+      ElvMain.Selection.FocusedItem.MakeVisible(emvAuto);
+      ElvMain.Selection.FocusedItem.Tag := 0;
+    end;
+  finally
+    EndScreenUpdate(ElvMain.Handle, False);
   end;
 end;
 

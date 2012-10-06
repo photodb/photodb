@@ -3,26 +3,26 @@ unit uAssociations;
 interface
 
 uses
-  Windows,
-  Classes,
-  Graphics,
-  StdCtrls,
-  uMemory,
-  SysUtils,
-  Registry,
-  uTranslate,
-  StrUtils,
-  SyncObjs,
-  jpeg,
+  System.Classes,
+  System.SysUtils,
+  System.StrUtils,
+  System.SyncObjs,
+  System.Win.Registry,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.Imaging.pngimage,
+  Vcl.Imaging.jpeg,
   {$IFDEF PHOTODB}
   GraphicEx,
-  uTiffImage,
   GifImage,
   RAWImage,
+  uTiffImage,
   uAnimatedJPEG,
   uFreeImageImage,
   {$ENDIF}
-  pngimage,
+  uMemory,
+  uTranslate,
   uStringUtils;
 
 {$IF DEFINED(UNINSTALL) OR DEFINED(INSTALL)}
@@ -200,7 +200,7 @@ var
 begin
   Reg := TRegistry.Create;
   try
-    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
     Reg.OpenKey(ASSOCIATION_PATH + Ext, True);
     ExtensionHandler := Reg.ReadString('');
     PreviousHandler := Reg.ReadString(ASSOCIATION_PREVIOUS);
@@ -254,11 +254,11 @@ begin
   begin
     Reg := TRegistry.Create;
     try
-      Reg.RootKey := Windows.HKEY_CURRENT_USER;
+      Reg.RootKey := HKEY_CURRENT_USER;
       Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.RootKey := HKEY_LOCAL_MACHINE;
       Reg.DeleteKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + Ext);
-      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.RootKey := HKEY_LOCAL_MACHINE;
       Reg.DeleteKey(ASSOCIATION_PATH + EXT_ASSOCIATION_PREFIX + Ext);
     finally
       F(Reg);
@@ -311,7 +311,7 @@ begin
 
   Reg := TRegistry.Create;
   try
-    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
     //The HKEY_CLASSES_ROOT subtree is a view formed by merging:
     // HKEY_CURRENT_USER\Software\Classes
     // and HKEY_LOCAL_MACHINE\Software\Classes
@@ -688,7 +688,7 @@ var
 begin
   Reg := TRegistry.Create(KEY_READ);
   try
-    Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    Reg.RootKey := HKEY_CLASSES_ROOT;
 
     Reg.OpenKey(Extension, False);
     AssociationHandler := Reg.ReadString('');

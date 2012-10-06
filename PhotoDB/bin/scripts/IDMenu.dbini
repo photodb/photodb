@@ -366,15 +366,6 @@ run:
   ShelfItemPopUpMenu;
 }
 
-<Show folder>[DB_IC_SEARCH]
-{
-initialization:
-  if ($IsRecord=false) {InVisible;};
-  if ($NoDBInfoNeeded=true) {InVisible;};
-run:
-  SearchFolderPopUpMenu;
-}
-
 <Properties>[DB_IC_PROPERTIES]
 {
   PropertyItemPopUpMenu;

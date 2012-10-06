@@ -4,8 +4,8 @@ interface
 
 uses
   uMemory,
-  Themes,
-  Graphics;
+  Vcl.Themes,
+  Vcl.Graphics;
 
 type
   TDatabaseTheme = class(TObject)

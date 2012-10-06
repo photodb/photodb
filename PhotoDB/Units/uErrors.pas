@@ -3,7 +3,7 @@ unit uErrors;
 interface
 
 uses
-  SysUtils,
+  System.SysUtils,
   uSysUtils
 {$IFDEF PHOTODB}
   ,uTranslate

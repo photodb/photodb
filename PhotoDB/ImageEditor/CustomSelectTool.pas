@@ -3,21 +3,23 @@ unit CustomSelectTool;
 interface
 
 uses
-  Windows,
+  System.Math,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+
   ToolsUnit,
   WebLink,
-  Classes,
-  Controls,
-  Graphics,
-  StdCtrls,
   GraphicsCool,
-  Math,
-  SysUtils,
   ImageHistoryUnit,
   Effects,
-  ComCtrls,
   GraphicsBaseTypes,
   UnitDBKernel,
+
   uMemory;
 
 type
@@ -160,6 +162,7 @@ begin
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.LoadFromResource('SAVETOFILE');
+  SaveSettingsLink.RefreshBuffer(True);
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := AOwner as TWinControl;
@@ -170,6 +173,7 @@ begin
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.LoadFromResource('DOIT');
+  MakeItLink.RefreshBuffer(True);
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := AOwner as TWinControl;
@@ -180,6 +184,7 @@ begin
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.LoadFromResource('CANCELACTION');
+  CloseLink.RefreshBuffer(True);
 end;
 
 destructor TCustomSelectToolClass.Destroy;

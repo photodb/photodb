@@ -3,17 +3,19 @@ unit UnitStringPromtForm;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  uDBForm,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+
   WatermarkedEdit,
+
+  uDBForm,
   uFormInterfaces;
 
 type
@@ -33,6 +35,7 @@ type
     { Private declarations }
   protected
     function GetFormID: string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     function Query(Caption, Text: String; var UserString: string): Boolean;
@@ -86,6 +89,13 @@ procedure TFormStringPromt.BtnOKClick(Sender: TObject);
 begin
   FIsOk := True;
   Close;
+end;
+
+procedure TFormStringPromt.CustomFormAfterDisplay;
+begin
+  inherited;
+  if EdString <> nil then
+    EdString.Refresh;
 end;
 
 procedure TFormStringPromt.EdStringKeyPress(Sender: TObject; var Key: Char);

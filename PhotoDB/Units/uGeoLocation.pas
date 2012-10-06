@@ -3,11 +3,11 @@ unit uGeoLocation;
 interface
 
 uses
-  ActiveX,
-  Variants,
+  System.Variants,
+  Winapi.ActiveX,
+  Vcl.OleCtrls,
   SHDocVw,
-  MSHTML,
-  Vcl.OleCtrls;
+  MSHTML;
 
 const
   GoogleMapHTMLStr: string =

@@ -3,8 +3,8 @@ unit uInstallFrame;
 interface
 
 uses
-  Classes,
-  Forms,
+  System.Classes,
+  Vcl.Forms,
   uTranslate,
   uAssociations;
 

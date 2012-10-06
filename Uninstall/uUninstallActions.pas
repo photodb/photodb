@@ -5,21 +5,22 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
+  System.Classes,
+  System.SysUtils,
+  System.StrUtils,
+  System.Win.Registry,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShellAPI,
+
   uMemory,
-  Windows,
-  Classes,
   uActions,
   uInstallScope,
-  SysUtils,
   uInstallUtils,
-  Messages,
   uRuntime,
   uFileUtils,
-  StrUtils,
   uConstants,
   uTranslate,
-  ShellAPI,
-  Registry,
   uActivationUtils,
   uUserUtils,
   uSysUtils,
@@ -115,7 +116,7 @@ begin
     DiskObject := CurrentInstall.Files[I];
     Destination := IncludeTrailingBackslash(ResolveInstallPath(DiskObject.FinalDestination)) + DiskObject.Name;
     if DiskObject is TFileObject then
-      DeleteFile(Destination);
+      System.SysUtils.DeleteFile(Destination);
     if DiskObject is TDirectoryObject then
       DeleteDirectoryWithFiles(Destination);
 
@@ -150,7 +151,7 @@ var
 
   procedure DeleteShortCut(FileName: string);
   begin
-    DeleteFile(FileName);
+    System.SysUtils.DeleteFile(FileName);
     FileName := ExtractFileDir(FileName);
     RemoveDir(FileName);
   end;
@@ -213,7 +214,7 @@ begin
   Terminated := False;
   FReg := TRegistry.Create;
   try
-    FReg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    FReg.RootKey := HKEY_CLASSES_ROOT;
     FReg.DeleteKey('\.photodb');
     FReg.DeleteKey('\PhotoDB.PhotodbFile\');
     FReg.DeleteKey('\.ids');
@@ -247,7 +248,7 @@ begin
   Callback(Self, 3 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
   FReg := TRegistry.Create;
   try
-    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    FReg.RootKey := HKEY_LOCAL_MACHINE;
     FReg.DeleteKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Photo DataBase');
   except
   end;
@@ -255,7 +256,7 @@ begin
   Callback(Self, 4 * DeleteRegistryPoints, CalculateTotalPoints, Terminated);
   FReg := TRegistry.Create;
   try
-    FReg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+    FReg.RootKey := HKEY_LOCAL_MACHINE;
     FReg.DeleteKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\Handlers\PhotoDBGetPhotosHandler');
     FReg.DeleteKey('\SOFTWARE\Classes\PhotoDB.AutoPlayHandler');
     FReg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers\EventHandlers\ShowPicturesOnArrival', True);

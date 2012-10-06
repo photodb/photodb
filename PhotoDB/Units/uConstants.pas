@@ -3,7 +3,7 @@ unit uConstants;
 interface
 
 uses
-  Windows;
+  Winapi.Windows;
 
 const
   //Runtime options
@@ -12,8 +12,8 @@ const
 
   //envoirements
   TempFolder = '\Temp\';
-  HKEY_INSTALL = Windows.HKEY_LOCAL_MACHINE;
-  HKEY_USER_WORK = Windows.HKEY_CURRENT_USER;
+  HKEY_INSTALL = HKEY_LOCAL_MACHINE;
+  HKEY_USER_WORK = HKEY_CURRENT_USER;
   PlugInImagesFolder = 'PlugInsEx\';
   OldPlugInImagesFolder = 'PlugIns\';
   ThemesDirectory = 'Themes\';
@@ -52,9 +52,9 @@ const
   MajorVersion = 3;
   MinorVersion = 1;
   PhotoDBFileName = 'PhotoDB.exe';
-  ProductName = 'Photo DataBase 3.1';
-  StartMenuProgramsPath = 'Photo DB v3.1';
-  ProductMajorVersionVersion = '3.1';
+  ProductName = 'Photo DataBase 4.0';
+  StartMenuProgramsPath = 'Photo DB v4.0';
+  ProductMajorVersionVersion = '4.0';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;

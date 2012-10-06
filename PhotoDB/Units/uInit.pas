@@ -3,9 +3,9 @@ unit uInit;
 interface
 
 uses
-  Windows,
-  uRuntime,
-  SysUtils;
+  System.SysUtils,
+  Winapi.Windows,
+  uRuntime;
 
 implementation
 

@@ -3,11 +3,28 @@ unit BrushToolUnit;
 interface
 
 uses
-  Windows, ToolsUnit, WebLink, Classes, Controls, Graphics,
-  Math, Forms, ComCtrls, StdCtrls, SysUtils,
-  Dialogs, GraphicsCool, GraphicsBaseTypes, uSettings,
-  ExtCtrls, uEditorTypes, uMemory, UnitDBKernel,
-  System.UITypes;
+  System.UITypes,
+  System.SysUtils,
+  System.Classes,
+  System.Math,
+  Winapi.Windows,
+  Vcl.Forms,
+  Vcl.ComCtrls,
+  Vcl.StdCtrls,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+
+  ToolsUnit,
+  WebLink,
+  GraphicsCool,
+  GraphicsBaseTypes,
+  UnitDBKernel,
+
+  uSettings,
+  uEditorTypes,
+  uMemory;
 
 type
   TBrushToolClass = class(TToolsPanelClass)
@@ -185,6 +202,7 @@ begin
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.LoadFromResource('SAVETOFILE');
+  SaveSettingsLink.RefreshBuffer(True);
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := AOwner as TWinControl;
@@ -195,6 +213,7 @@ begin
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.LoadFromResource('DOIT');
+  MakeItLink.RefreshBuffer(True);
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := AOwner as TWinControl;
@@ -205,6 +224,7 @@ begin
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.LoadFromResource('CANCELACTION');
+  CloseLink.RefreshBuffer(True);
 end;
 
 destructor TBrushToolClass.Destroy;

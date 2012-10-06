@@ -4,24 +4,26 @@ interface
 
 uses
   System.SysUtils,
-  VCL.Forms,
   System.DateUtils,
+  Vcl.Forms,
   Data.DB,
+
+  UnitDBDeclare,
+  CommonDBSupport,
+  CmpUnit,
+  UnitLinksSupport,
+  UnitSQLOptimizing,
+  ProgressActionUnit,
+  UnitDBKernel,
+  UnitUpdateDBObject,
+
   uConstants,
   uMemory,
   uMemoryEx,
   uDBPopupMenuInfo,
-  UnitDBDeclare,
   uDBForm,
-  CommonDBSupport,
-  CmpUnit,
   uGroupTypes,
-  UnitLinksSupport,
-  UnitSQLOptimizing,
-  ProgressActionUnit,
-  uDBClasses,
-  UnitDBKernel,
-  UnitUpdateDBObject;
+  uDBClasses;
 
 type
   TUserDBInfoInput = class

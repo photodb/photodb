@@ -3,29 +3,31 @@ unit RotateToolUnit;
 interface
 
 uses
-  Windows,
+  System.UITypes,
+  System.Classes,
+  System.Math,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.Samples.Spin,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+
   ToolsUnit,
   WebLink,
-  Classes,
-  Controls,
-  Graphics,
-  StdCtrls,
   GraphicsCool,
-  Math,
-  SysUtils,
   ImageHistoryUnit,
-  ExtCtrls,
   Effects,
   Angle,
-  Spin,
-  Dialogs,
   GraphicsBaseTypes,
+  UnitDBKernel,
+
   uConstants,
   uEditorTypes,
-  UnitDBKernel,
   uMemory,
-  uExifUtils,
-  System.UITypes;
+  uExifUtils;
 
 type
   TRotateToolPanelClass = class(TToolsPanelClass)
@@ -69,7 +71,9 @@ implementation
 
 { TCropToolPanelClass }
 
-uses RotateToolThreadUnit, ImEditor;
+uses
+  RotateToolThreadUnit,
+  ImEditor;
 
 procedure TRotateToolPanelClass.AngleChanged(Sender: TObject);
 begin
@@ -185,6 +189,7 @@ begin
   MakeItLink.Color := clBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.LoadFromResource('DOIT');
+  MakeItLink.RefreshBuffer(True);
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Top := MakeItLink.Top + MakeItLink.Height + 5;
@@ -195,6 +200,7 @@ begin
   CloseLink.Color := clBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.LoadFromResource('CANCELACTION');
+  CloseLink.RefreshBuffer(True);
 end;
 
 destructor TRotateToolPanelClass.Destroy;

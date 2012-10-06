@@ -5,20 +5,23 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ZLib,
-  pngimage,
-  ExtCtrls,
-  uDBForm,
-  StdCtrls,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  System.ZLib,
+  System.Win.Registry,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.Imaging.pngimage,
+
   WatermarkedEdit,
+
+  uDBForm,
   uInstallTypes,
   uInstallUtils,
   uMemory,
@@ -26,7 +29,6 @@ uses
   uRuntime,
   uVistaFuncs,
   uInstallScope,
-  Registry,
   uShellUtils,
   uSteps,
   uSysUtils,
@@ -165,13 +167,13 @@ begin
   BeginTranslate;
   try
 {$IFDEF INSTALL}
-    S := L('PhotoDB 3.1 Setup');
+    S := L('PhotoDB 4.0 Setup');
     if IsApplicationInstalled then
       S := S + ' (' + L('Update') + ' ' + ReleaseToString(InstallVersion) + ')';
     Caption := S;
 {$ENDIF}
 {$IFDEF UNINSTALL}
-    Caption := L('PhotoDB 3.1 Uninstall');
+    Caption := L('PhotoDB 4.0 Uninstall');
 {$ENDIF}
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
@@ -183,7 +185,7 @@ begin
 {$IFDEF UNINSTALL}
     BtnInstall.Caption := L('Uninstall');
 {$ENDIF}
-    LbWelcome.Caption := L('Welcome to the Photo Database 3.1');
+    LbWelcome.Caption := L('Welcome to the Photo Database 4.0');
   finally
     EndTranslate;
   end;

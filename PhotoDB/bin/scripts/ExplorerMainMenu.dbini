@@ -138,10 +138,6 @@
   {
     ExecuteGroupManager;
   }
-  <Explorer>[DB_IC_EXPLORER]
-  {
-    NewExplorer;
-  }
   <Split Collection>[DB_IC_SPLIT]
   {
     SplitDB;

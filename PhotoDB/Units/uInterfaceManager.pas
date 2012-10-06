@@ -3,10 +3,10 @@ unit uInterfaceManager;
 interface
 
 uses
-  uMemory,
-  SysUtils,
   Generics.Collections,
-  SyncObjs,
+  System.SysUtils,
+  System.SyncObjs,
+  uMemory,
   uFormInterfaces;
 
 type

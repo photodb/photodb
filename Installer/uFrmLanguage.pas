@@ -3,28 +3,28 @@ unit uFrmLanguage;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  System.StrUtils,
+  System.Win.Registry,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.Imaging.pngimage,
   uDBForm,
   uInstallUtils,
   uMemory,
   uConstants,
   uInstallTypes,
-  StrUtils,
   uTranslate,
   uLogger,
-  pngimage,
   uInstallZip,
   uSysUtils,
   uLangUtils,
-  Registry,
   uInstallRuntime,
   uRuntime;
 
@@ -200,7 +200,7 @@ begin
     PngBitmap := TBitmap.Create;
     try
       PngBitmap.PixelFormat := pf24bit;
-      Language.Image.Draw(Bitmap.Canvas, Classes.Rect(2, 2, 2 + Language.Image.Width, 2 + Language.Image.Height));
+      Language.Image.Draw(Bitmap.Canvas, System.Classes.Rect(2, 2, 2 + Language.Image.Width, 2 + Language.Image.Height));
     finally
       F(PngBitmap);
     end;
@@ -248,7 +248,7 @@ begin
   begin
     Reg := TRegistry.Create(KEY_READ);
     try
-      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.RootKey := HKEY_LOCAL_MACHINE;
       Reg.OpenKey(RegRoot, False);
       CurentLanguage := Reg.ReadString('Language');
     finally

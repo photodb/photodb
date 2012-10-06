@@ -13,10 +13,12 @@ uses
   Vcl.Forms,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
+
   GraphicsCool,
   UnitDBDeclare,
   GIFImage,
   Effects,
+
   uMemory,
   uConstants,
   uSysUtils,
@@ -71,8 +73,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
-    procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
+    procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
     property IsFastDrawing: Boolean read GetIsFastDrawing;
@@ -172,13 +174,19 @@ begin
 end;
 
 procedure TImageViewerControl.LoadAnimatedImage(Item: TDBPopupMenuInfoRecord;
-  Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
+  Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
 begin
   F(FItem);
   FItem := Item.Copy;
 
   F(FAnimatedImage);
   FAnimatedImage := Image;
+
+  FRealImageWidth := RealWidth;
+  FRealImageHeight := RealHeight;
+  if Item.ID = 0 then
+    Item.Rotation := Rotation;
+
   {FCurrentlyLoadedFile := Item.FileName;
   ForwardThreadExists := False;
   FForwardThreadReady := False; }
@@ -225,7 +233,7 @@ begin
   UpdateFaceDetectionState;   }
 end;
 
-procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
+procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
 begin
   F(FItem);
   FItem := Item.Copy;
@@ -238,6 +246,8 @@ begin
 
   FRealImageWidth := RealWidth;
   FRealImageHeight := RealHeight;
+  if FItem.ID = 0 then
+    FItem.Rotation := Rotation;
 
   FIsStaticImage := True;
   FImageExists := True;

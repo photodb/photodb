@@ -5,12 +5,12 @@ unit uInstallZip;
 interface
 
 uses
-  Zlib,
+  System.Math,
+  System.Zlib,
+  System.Classes,
+  System.SysUtils,
   uInstallTypes,
-  uMemory,
-  Classes,
-  SysUtils,
-  Math;
+  uMemory;
 
 function AddStringToStream(Stream: TStream; S: string; FileName: string): Boolean;
 function AddFileToStream(Stream: TStream; FileName: string): Boolean;
@@ -196,9 +196,9 @@ begin
         FillDirectoryListing(DirectoryName + SearchRec.Name, Files, TotalSize, Recursive);
     end;
 
-    Found := SysUtils.FindNext(SearchRec);
+    Found := System.SysUtils.FindNext(SearchRec);
   end;
-  FindClose(SearchRec);
+  System.SysUtils.FindClose(SearchRec);
 end;
 
 function AddDirectoryToStream(Src: TStream; DirectoryName: string; Recursive: Boolean = False): Boolean;

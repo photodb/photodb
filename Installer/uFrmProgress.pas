@@ -3,22 +3,25 @@ unit uFrmProgress;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  pngimage,
-  ExtCtrls,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.AppEvnts,
+  Vcl.Imaging.pngimage,
+
+  GraphicsBaseTypes,
+
   uFormUtils,
-  uMemory, GraphicsBaseTypes,
+  uMemory,
   uInstallUtils,
   uDBForm,
-  uInstallScope,
-  AppEvnts;
+  uInstallScope;
 
 type
   TFrmProgress = class(TDBForm)
@@ -37,7 +40,7 @@ type
     procedure WMMouseDown(var s : Tmessage); message WM_LBUTTONDOWN;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     property Progress : Byte read FProgress write SetProgress;
@@ -149,7 +152,7 @@ procedure TFrmProgress.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption := L('PhotoDB 3.0 Setup');
+    Caption := L('Photo Database 4.0 Setup');
   finally
     EndTranslate;
   end;

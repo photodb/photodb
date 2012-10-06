@@ -3,15 +3,17 @@ unit uDBClasses;
 interface
 
 uses
-  DB,
-  SysUtils,
-  Classes,
-  jpeg,
-  uMemory,
+  System.SysUtils,
+  System.Classes,
+  System.Variants,
+  Vcl.Imaging.jpeg,
+  Data.DB,
+  Data.Win.ADODB,
+
   CommonDBSupport,
+
+  uMemory,
   uStringUtils,
-  ADODB,
-  Variants,
   uSysUtils,
   uRuntime;
 
@@ -327,7 +329,7 @@ procedure TSqlCommand.UpdateParameters;
 var
   I: Integer;
   Parameter: TParameter;
-  ADOParameter: ADODB.TParameter;
+  ADOParameter: Data.Win.ADODB.TParameter;
 
   procedure UpdateParameter;
   begin

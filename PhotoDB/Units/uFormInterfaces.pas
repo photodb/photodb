@@ -3,7 +3,6 @@ unit uFormInterfaces;
 interface
 
 uses
-  uMemory,
   Generics.Collections,
   System.SysUtils,
   System.Classes,
@@ -11,11 +10,14 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
   Vcl.Forms,
-  uDBForm,
-  Data.DB,
   Vcl.Imaging.Jpeg,
-  uRuntime,
+  Data.DB,
+
   UnitDBDeclare,
+
+  uMemory,
+  uDBForm,
+  uRuntime,
   uDBPopupMenuInfo,
   uGroupTypes;
 

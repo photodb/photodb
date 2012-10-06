@@ -76,7 +76,7 @@ begin
 
   Application.Initialize;
 
-  If ID_YES = TaskDialogEx(0, TA('Do you really want to delete Photo Database 3.0?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO,
+  If ID_YES = TaskDialogEx(0, TA('Do you really want to delete Photo Database 4.0?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO,
     TD_ICON_WARNING, False) then
   begin
     Application.MainFormOnTaskbar := True;

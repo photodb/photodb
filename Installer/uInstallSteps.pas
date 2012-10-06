@@ -3,9 +3,9 @@ unit uInstallSteps;
 interface
 
 uses
-  Classes,
+  System.Classes,
+  Vcl.Controls,
   uMemory,
-  Controls,
   uSteps;
 
 type

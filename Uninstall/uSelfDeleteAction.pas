@@ -3,9 +3,9 @@ unit uSelfDeleteAction;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
   uMemory,
   uActions,
   uShellUtils,

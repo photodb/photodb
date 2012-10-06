@@ -3,8 +3,19 @@ unit uDBShellUtils;
 interface
 
 uses
-  Windows, acWorkRes, Graphics, uResourceUtils, UnitDBFileDialogs,
-  uTranslate, uFileUtils, uShellUtils, uMemory, Forms, uShellIntegration;
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Forms,
+
+  acWorkRes,
+  UnitDBFileDialogs,
+
+  uResourceUtils,
+  uTranslate,
+  uFileUtils,
+  uShellUtils,
+  uMemory,
+  uShellIntegration;
 
 function GetIconForFile(Ico: TIcon; out IcoTempName: string; out Language: Integer): Boolean;
 

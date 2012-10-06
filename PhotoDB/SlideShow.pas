@@ -319,7 +319,6 @@ type
     SlideNO: Integer;
     AnimatedBuffer: TBitmap;
     FOverlayBuffer: TBitmap;
-//    FValidImages: Integer;
     FForwardThreadExists: Boolean;
     FForwardThreadSID: TGUID;
     FForwardThreadNeeds: Boolean;
@@ -344,6 +343,7 @@ type
     FPersonMouseMoveLock: Boolean;
     FIsSelectingFace: Boolean;
     FIsClosing: Boolean;
+    FIsImageLoading: Boolean;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
@@ -522,6 +522,7 @@ begin
   FCurrentPage := 0;
   FPageCount := 1;
   WaitingList := False;
+  FIsImageLoading := False;
   LastZoomValue := 1;
   FDrawFace := nil;
   LockEventRotateFileList := TStringList.Create;
@@ -633,68 +634,72 @@ var
   Width, Height: Integer;
 begin
   Result := False;
+  FIsImageLoading := True;
+  try
+    if (not Item.InfoLoaded) and (Item.ID = 0) then
+      NeedsUpdating := True
+    else
+      NeedsUpdating := False;
 
-  if (not Item.InfoLoaded) and (Item.ID = 0) then
-    NeedsUpdating := True
-  else
-    NeedsUpdating := False;
+    Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1, CurrentInfo.Count]);
 
-  Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1, CurrentInfo.Count]);
+    DisplayRating := Item.Rating;
+    TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
+    TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
+    UpdateCrypted;
 
-  DisplayRating := Item.Rating;
-  TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
-  TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
-  UpdateCrypted;
-
-  //try fast load image
-  if not FForwardThreadReady then
-  begin
-    Bitmap := TBitmap.Create;
-    try
-      if TFormCollection.Instance.GetImage(nil, Item.FileName, Bitmap, Width, Height) then
-      begin
-        F(FFullImage);
-        FFullImage := Bitmap;
-        Bitmap := nil;
-
-        RealImageWidth := Width;
-        RealImageHeight := Height;
-
-        RecreateDrawImage(Self);
-      end;
-    finally
-      F(Bitmap);
-    end;
-  end;
-
-  FSID := GetGUID;
-  ViewerManager.UpdateViewerState(FSID, FForwardThreadSID);
-
-  if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0) or FullImage then
-  begin
-    Result := True;
-    ForwardThreadExists := False;
-    TViewerThread.Create(Self, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
-
-    if NeedsUpdating then
+    //try fast load image
+    if not FForwardThreadReady then
     begin
-      DisplayRating := Item.Rating;
-      TimerDBWork.Enabled := True;
-      TbRotateCCW.Enabled := False;
-      TbRotateCW.Enabled := False;
-      UpdateCrypted;
-      TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
+      Bitmap := TBitmap.Create;
+      try
+        if TFormCollection.Instance.GetImage(nil, Item.FileName, Bitmap, Width, Height) then
+        begin
+          F(FFullImage);
+          FFullImage := Bitmap;
+          Bitmap := nil;
+
+          RealImageWidth := Width;
+          RealImageHeight := Height;
+
+          RecreateDrawImage(Self);
+        end;
+      finally
+        F(Bitmap);
+      end;
     end;
 
-  end else
-    ForwardThreadNeeds := True;
+    FSID := GetGUID;
+    ViewerManager.UpdateViewerState(FSID, FForwardThreadSID);
 
-  LsLoading.RecteateImage;
-  SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
-  InvalidateRect(Handle, ClientRect, False);
-  DoWaitToImage(Sender);
+    if not ForwardThreadExists or (ForwardThreadFileName <> Item.FileName) or (CurrentInfo.Count = 0) or FullImage then
+    begin
+      Result := True;
+      ForwardThreadExists := False;
+      TViewerThread.Create(Self, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
 
-  TW.I.Start('LoadImage_ - end');
+      if NeedsUpdating then
+      begin
+        DisplayRating := Item.Rating;
+        TimerDBWork.Enabled := True;
+        TbRotateCCW.Enabled := False;
+        TbRotateCW.Enabled := False;
+        UpdateCrypted;
+        TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
+      end;
+
+    end else
+      ForwardThreadNeeds := True;
+
+    LsLoading.RecteateImage;
+    SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
+    InvalidateRect(Handle, ClientRect, False);
+    DoWaitToImage(Sender);
+
+    TW.I.Start('LoadImage_ - end');
+  finally
+    FIsImageLoading := False;
+  end;
 end;
 
 procedure TViewer.RecreateDrawImage(Sender: TObject);
@@ -3391,6 +3396,9 @@ end;
 function TViewer.GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 begin
   Result := False;
+  if FIsImageLoading then
+    Exit;
+
   if AnsiLowerCase(FileName) = AnsiLowerCase(Item.FileName) then
   begin
     Result := True;

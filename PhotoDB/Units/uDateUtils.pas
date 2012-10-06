@@ -3,8 +3,8 @@ unit uDateUtils;
 interface
 
 uses
-  SysUtils,
-  DateUtils,
+  System.SysUtils,
+  System.DateUtils,
   uTranslate;
 
 function DateTimeStrEval(const DateTimeFormat: string; const DateTimeStr: string): TDateTime;

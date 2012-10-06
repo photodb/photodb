@@ -3,17 +3,19 @@ unit ToolsUnit;
 interface
 
 uses
-  ExtCtrls,
-  Classes,
-  Graphics,
+  System.Classes,
+  System.StrUtils,
+  System.SysUtils,
+  Vcl.ExtCtrls,
+  Vcl.Graphics,
+  Vcl.ComCtrls,
+  Vcl.Forms,
+  Vcl.Menus,
+  Vcl.Controls,
+
   ImageHistoryUnit,
-  ComCtrls,
-  Menus,
-  Controls,
   GraphicsBaseTypes,
-  Forms,
-  StrUtils,
-  SysUtils,
+
   uDBForm,
   uEditorTypes,
   uTranslate,

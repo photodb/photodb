@@ -36,6 +36,7 @@ type
   protected
     { Protected declarations }
     function GetFormID: string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
   end;
@@ -59,6 +60,13 @@ begin
     Close;
     ModalResult := mrOk;
   end;
+end;
+
+procedure TPicturesImportPatternEdit.CustomFormAfterDisplay;
+begin
+  inherited;
+  if WmPatterns <> nil then
+    WmPatterns.Refresh;
 end;
 
 procedure TPicturesImportPatternEdit.FormCreate(Sender: TObject);

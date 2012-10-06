@@ -194,10 +194,21 @@ begin
       end;
 
       XInsert(L('Exposure'), ExposureFractionToString(ExifData.ExposureTime));
+      if not ExifData.ExposureBiasValue.MissingOrInvalid and (ExifData.ExposureBiasValue.Numerator <> 0) then
+        XInsert(L('Exposure bias'), ExifData.ExposureBiasValue.AsString);
+
       XInsert(L('ISO'), ExifData.ISOSpeedRatings.AsString);
       XInsert(L('Focal length'), FractionToString(ExifData.FocalLength));
       XInsert(L('F number'), FractionToString(ExifData.FNumber));
 
+      //TODO: ?
+      {ExifData.ApertureValue
+      ExifData.BrightnessValue
+      ExifData.Contrast
+      ExifData.Saturation
+      ExifData.Sharpness
+      ExifData.MeteringMode
+      ExifData.SubjectDistance }
     end;
 
     if ExifData.XMPPacket.Lens <> '' then

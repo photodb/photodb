@@ -3,29 +3,31 @@ unit UnitPasswordForm;
 interface
 
 uses
-  Types,
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  Menus,
-  Clipbrd,
+  System.UITypes,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.Menus,
+  Vcl.Clipbrd,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  System.UITypes,
   DB,
+
   UnitDBKernel,
   FormManegerUnit,
   GraphicCrypt,
-  uConstants,
-  win32crc,
   UnitDBDeclare,
   WatermarkedEdit,
+  win32crc,
+
+  uConstants,
   uDBForm,
   uTranslate,
   uFileUtils,
@@ -95,6 +97,7 @@ type
     procedure LoadFileList(FileList: TStrings);
     procedure ReallignControlsEx;
     property Password: string read FPassword write FPassword;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     function ForImage(FileName: string): string;
@@ -342,6 +345,13 @@ end;
 procedure TPassWordForm.CopyText1Click(Sender: TObject);
 begin
   TextToClipboard(InfoListBox.Items.Text);
+end;
+
+procedure TPassWordForm.CustomFormAfterDisplay;
+begin
+  inherited;
+  if EdPassword <> nil then
+    EdPassword.Refresh;
 end;
 
 procedure TPassWordForm.LoadFileList(FileList: TStrings);

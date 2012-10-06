@@ -3,19 +3,21 @@ unit ResizeToolUnit;
 interface
 
 uses
-  Windows,
+  System.Classes,
+  System.Math,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+
   ToolsUnit,
   WebLink,
-  Classes,
-  Controls,
-  Graphics,
-  StdCtrls,
   GraphicsCool,
-  Math,
-  SysUtils,
   ImageHistoryUnit,
-  ExtCtrls,
   UnitResampleFilters,
+
   uDBBaseTypes,
   uSettings,
   uBitmapUtils,
@@ -75,7 +77,9 @@ const
 
 implementation
 
-uses ImEditor, ResizeToolThreadUnit;
+uses
+  ImEditor,
+  ResizeToolThreadUnit;
 
 { TResizeToolPanelClass }
 
@@ -280,13 +284,13 @@ begin
   RadioButtonPercent.Parent := AOwner as TWinControl;
   RadioButtonPercent.OnClick := ChangeSize;
 
- ComboBoxPercent := TComboBox.Create(nil);
- ComboBoxPercent.Top:=RadioButtonPercent.Top+RadioButtonPercent.Height+5;
- ComboBoxPercent.Left:=Left;
- ComboBoxPercent.Width:=170;
- ComboBoxPercent.Parent:=AOwner as TWinControl;
- ComboBoxPercent.OnChange:=ChangeSize;
- ComboBoxPercent.OnSelect:=ComboBoxPercentSelect;
+  ComboBoxPercent := TComboBox.Create(nil);
+  ComboBoxPercent.Top := RadioButtonPercent.Top + RadioButtonPercent.Height + 5;
+  ComboBoxPercent.Left := Left;
+  ComboBoxPercent.Width := 170;
+  ComboBoxPercent.Parent := AOwner as TWinControl;
+  ComboBoxPercent.OnChange := ChangeSize;
+  ComboBoxPercent.OnSelect := ComboBoxPercentSelect;
   for I := 1 to PercentCount do
     ComboBoxPercent.Items.Add(IntToStr(Percents[I]) + '%');
 
@@ -321,6 +325,7 @@ begin
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.LoadFromResource('SAVETOFILE');
+  SaveSettingsLink.RefreshBuffer(True);
 
   MakeItLink := TWebLink.Create(nil);
   MakeItLink.Parent := AOwner as TWinControl;
@@ -331,6 +336,7 @@ begin
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.LoadFromResource('DOIT');
+  MakeItLink.RefreshBuffer(True);
 
   CloseLink := TWebLink.Create(nil);
   CloseLink.Parent := AOwner as TWinControl;
@@ -341,6 +347,7 @@ begin
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.LoadFromResource('CANCELACTION');
+  CloseLink.RefreshBuffer(True);
 
   ComboBoxPercent.Text := IntToStr(Settings.ReadInteger('Editor', 'PercentValue', 100)) + '%';
   WidthEdit.Text := IntToStr(Settings.ReadInteger('Editor', 'CustomWidth', 100));

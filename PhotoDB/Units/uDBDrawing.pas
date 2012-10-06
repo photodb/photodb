@@ -3,17 +3,19 @@ unit uDBDrawing;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  Graphics,
-  SyncObjs,
+  System.SysUtils,
+  System.Classes,
+  System.SyncObjs,
+  Winapi.Windows,
+  Vcl.Graphics,
+
+  UnitDBDeclare,
+  TLayered_Bitmap,
+
   uConstants,
   uRuntime,
   uMemory,
-  uFileUtils,
-  UnitDBDeclare,
-  TLayered_Bitmap;
+  uFileUtils;
 
 type
   TIconEx = class
@@ -113,7 +115,7 @@ var
         bf.BlendFlags := 0;
         bf.AlphaFormat := AC_SRC_ALPHA;
         bf.SourceConstantAlpha := $FF;
-        Windows.AlphaBlend(HCanvas, xLeft, yTop, GrayIco.Width, GrayIco.Height,
+        AlphaBlend(HCanvas, xLeft, yTop, GrayIco.Width, GrayIco.Height,
           GrayIco.Canvas.Handle, 0, 0, GrayIco.Width, GrayIco.Height, bf);
 
       end;

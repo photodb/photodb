@@ -3,7 +3,7 @@ unit uActions;
 interface
 
 uses
-  Classes,
+  System.Classes,
   uMemory;
 
 type

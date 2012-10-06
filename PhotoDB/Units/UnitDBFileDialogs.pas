@@ -5,26 +5,24 @@ unit UnitDBFileDialogs;
 interface
 
 uses
-  Windows,
+  Generics.Collections,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  Winapi.ShlObj,
+  Vcl.Dialogs,
+  Vcl.ExtDlgs,
   {$IFDEF PHOTODB}
   UnitDBCommon,
   uAppUtils,
-  {$ENDIF}
-  Classes,
-  uMemory,
-  uSysUtils,
-  uVistaFuncs,
-  Dialogs,
-  ExtDlgs,
-  acDlgSelect,
-  SysUtils,
-  ActiveX,
-  uConstants,
-  Generics.Collections,
-  {$IFDEF PHOTODB}
   uPortableDeviceManager,
   {$ENDIF}
-  Winapi.ShlObj;
+  acDlgSelect,
+  uConstants,
+  uMemory,
+  uSysUtils,
+  uVistaFuncs;
 
 type
   DBSaveDialog = class(TObject)
@@ -121,7 +119,7 @@ var
 begin
   Result := '';
   try
-    I := Windows.GetEnvironmentVariable(PWideChar(VarName), nil, 0);
+    I := GetEnvironmentVariable(PWideChar(VarName), nil, 0);
     if I > 0 then
     begin
       SetLength(Result, I);
@@ -276,7 +274,7 @@ begin
   if CanUseVistaDlg then
   begin
     TFileSaveDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    TFileSaveDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileSaveDialog(Dialog).FileName := ExtractFileName(FileName);
   end else
   begin
     TSaveDialog(Dialog).FileName := FileName;
@@ -423,7 +421,7 @@ begin
   if CanUseVistaDlg then
   begin
     TFileOpenDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    TFileOpenDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileOpenDialog(Dialog).FileName := ExtractFileName(FileName);
   end else
   begin
     TOpenDialog(Dialog).FileName := FileName;
@@ -536,7 +534,7 @@ begin
   if CanUseVistaDlg then
   begin
     TFileOpenDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    TFileOpenDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileOpenDialog(Dialog).FileName := ExtractFileName(FileName);
   end else
   begin
     TOpenPictureDialog(Dialog).FileName := FileName;
@@ -649,7 +647,7 @@ begin
   if CanUseVistaDlg then
   begin
     TFileSaveDialog(Dialog).DefaultFolder := ExtractFileDir(FileName);
-    TFileSaveDialog(Dialog).FileName := SysUtils.ExtractFileName(FileName);
+    TFileSaveDialog(Dialog).FileName := ExtractFileName(FileName);
   end else
   begin
     TSavePictureDialog(Dialog).FileName := FileName;
@@ -694,7 +692,7 @@ begin
       end;
   end else
   begin
-    ExtDlgs.TSavePictureDialog(Dialog).Filter := Value;
+    TSavePictureDialog(Dialog).Filter := Value;
   end;
 end;
 

@@ -3,9 +3,21 @@ unit uFrLicense;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, StdCtrls, uInstallFrame, uInstallUtils, uTranslate, uInstallZip,
-  uMemory, uConstants;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  uInstallFrame,
+  uInstallUtils,
+  uTranslate,
+  uInstallZip,
+  uMemory,
+  uConstants;
 
 type
   TFrLicense = class(TInstallFrame)

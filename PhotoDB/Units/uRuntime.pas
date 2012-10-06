@@ -3,7 +3,7 @@ unit uRuntime;
 interface
 
 uses
-  Windows,
+  Winapi.Windows,
   uConstants;
 
 const
@@ -41,8 +41,7 @@ var
 
 implementation
 
-
-function GettingProcNum: Integer; // Win95 or later and NT3.1 or later
+function GettingProcNum: Integer;
 var
   Struc: _SYSTEM_INFO;
 begin
@@ -51,7 +50,6 @@ begin
 end;
 
 initialization
-
   ProcessorCount := GettingProcNum;
 
 end.

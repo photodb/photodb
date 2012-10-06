@@ -3,22 +3,24 @@ unit UnitActionsForm;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ExtCtrls,
-  StdCtrls,
+  System.SysUtils,
+  System.Variants,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.ImgList,
+
   WebLink,
-  ImgList,
   ImageHistoryUnit,
   UnitDBDeclare,
   UnitDBFileDialogs,
+
   uDBForm,
   uMemory,
   uFileUtils,
@@ -103,7 +105,8 @@ end;
 procedure TActionsForm.CustomFormAfterDisplay;
 begin
   inherited;
-  ActionList.Refresh;
+  if ActionList <> nil then
+    ActionList.Refresh;
 end;
 
 procedure TActionsForm.LoadLanguage;

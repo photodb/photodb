@@ -65,7 +65,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 605
-      ActivePage = TsDetailedSearch
+      ActivePage = TsInfo
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -78,6 +78,10 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -745,6 +749,10 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
       end
       object TsInfo: TTabSheet
         Caption = 'Info'
@@ -752,155 +760,169 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        DesignSize = (
-          132
-          577)
-        object LbHistogramImage: TLabel
-          Left = 3
-          Top = 5
-          Width = 91
-          Height = 13
-          Caption = 'Histogramm image:'
-        end
-        object ImHistogramm: TImage
-          Left = 5
-          Top = 24
-          Width = 130
-          Height = 105
-          Anchors = [akLeft, akTop, akRight]
-          Center = True
-          Proportional = True
-          Stretch = True
-        end
-        object LbEditComments: TLabel
-          Tag = 2
-          Left = 5
-          Top = 336
-          Width = 54
-          Height = 13
-          Caption = 'Comments:'
-        end
-        object LbEditKeywords: TLabel
-          Tag = 2
-          Left = 5
-          Top = 258
-          Width = 53
-          Height = 13
-          Caption = 'KeyWords:'
-        end
-        object ReRating: TRating
-          Left = 3
-          Top = 135
-          Width = 96
-          Height = 16
-          Cursor = crHandPoint
-          ParentColor = False
-          Color = clWhite
-          Rating = 0
-          RatingRange = 0
-          OnChange = ReRatingChange
-          Islayered = False
-          Layered = 100
-          OnMouseDown = ReRatingMouseDown
-          ImageCanRegenerate = True
-          CanSelectRange = False
-        end
-        object DteTime: TDateTimePicker
-          Left = 5
-          Top = 184
-          Width = 130
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          Date = 38544.841692523150000000
-          Time = 38544.841692523150000000
-          ShowCheckbox = True
-          Checked = False
-          Color = clBtnFace
-          DateFormat = dfLong
-          Kind = dtkTime
-          TabOrder = 1
-          OnChange = DteTimeChange
-          OnEnter = DteTimeEnter
-        end
-        object DteDate: TDateTimePicker
-          Left = 5
-          Top = 157
-          Width = 130
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          BevelEdges = []
-          BevelInner = bvNone
-          Date = 38153.564945740740000000
-          Time = 38153.564945740740000000
-          ShowCheckbox = True
-          Checked = False
-          Color = clBtnFace
-          DateFormat = dfLong
-          TabOrder = 2
-          OnChange = DteDateChange
-          OnEnter = DteTimeEnter
-        end
-        object WllGroups: TWebLinkList
-          Left = 5
-          Top = 211
-          Width = 130
-          Height = 42
-          HorzScrollBar.Visible = False
-          Anchors = [akLeft, akTop, akRight]
-          BevelEdges = []
-          BevelInner = bvNone
+        object PnInfoContainer: TPanel
+          Left = 0
+          Top = 0
+          Width = 132
+          Height = 577
+          Align = alClient
           BevelOuter = bvNone
-          BorderStyle = bsNone
-          ParentBackground = True
-          TabOrder = 3
-          VerticalIncrement = 5
-          HorizontalIncrement = 5
-          LineHeight = 0
-          PaddingTop = 2
-          PaddingLeft = 2
-        end
-        object MemComments: TMemo
-          Tag = 1
-          Left = 5
-          Top = 355
-          Width = 130
-          Height = 50
-          Anchors = [akLeft, akTop, akRight]
-          ParentColor = True
-          ScrollBars = ssVertical
-          TabOrder = 4
-          OnChange = MemCommentsChange
-          OnEnter = MemCommentsEnter
-        end
-        object MemKeyWords: TMemo
-          Tag = 1
-          Left = 5
-          Top = 277
-          Width = 130
-          Height = 50
-          Anchors = [akLeft, akTop, akRight]
-          ParentColor = True
-          ScrollBars = ssVertical
-          TabOrder = 5
-          OnChange = MemKeyWordsChange
-          OnEnter = MemKeyWordsEnter
-        end
-        object BtnSaveInfo: TButton
-          Left = 62
-          Top = 411
-          Width = 73
-          Height = 24
-          Anchors = [akTop, akRight]
-          Caption = 'BtnSaveInfo'
-          Enabled = False
-          TabOrder = 6
-          OnClick = BtnSaveInfoClick
+          ParentBackground = False
+          TabOrder = 0
+          DesignSize = (
+            132
+            577)
+          object LbEditComments: TLabel
+            Tag = 2
+            Left = 5
+            Top = 336
+            Width = 54
+            Height = 13
+            Caption = 'Comments:'
+          end
+          object LbEditKeywords: TLabel
+            Tag = 2
+            Left = 5
+            Top = 258
+            Width = 53
+            Height = 13
+            Caption = 'KeyWords:'
+          end
+          object ImHistogramm: TImage
+            Left = 2
+            Top = 24
+            Width = 130
+            Height = 105
+            Anchors = [akLeft, akTop, akRight]
+            Center = True
+            Proportional = True
+            Stretch = True
+          end
+          object LbHistogramImage: TLabel
+            Left = 3
+            Top = 5
+            Width = 91
+            Height = 13
+            Caption = 'Histogramm image:'
+          end
+          object BtnSaveInfo: TButton
+            Left = 59
+            Top = 411
+            Width = 73
+            Height = 24
+            Anchors = [akTop, akRight]
+            Caption = 'BtnSaveInfo'
+            Enabled = False
+            TabOrder = 0
+            OnClick = BtnSaveInfoClick
+          end
+          object MemComments: TMemo
+            Tag = 1
+            Left = 2
+            Top = 355
+            Width = 130
+            Height = 50
+            Anchors = [akLeft, akTop, akRight]
+            ParentColor = True
+            ScrollBars = ssVertical
+            TabOrder = 1
+            OnChange = MemCommentsChange
+            OnEnter = MemCommentsEnter
+          end
+          object MemKeyWords: TMemo
+            Tag = 1
+            Left = 2
+            Top = 277
+            Width = 130
+            Height = 50
+            Anchors = [akLeft, akTop, akRight]
+            ParentColor = True
+            ScrollBars = ssVertical
+            TabOrder = 2
+            OnChange = MemKeyWordsChange
+            OnEnter = MemKeyWordsEnter
+          end
+          object WllGroups: TWebLinkList
+            Left = 2
+            Top = 211
+            Width = 130
+            Height = 42
+            HorzScrollBar.Visible = False
+            Anchors = [akLeft, akTop, akRight]
+            BevelEdges = []
+            BevelInner = bvNone
+            BevelOuter = bvNone
+            BorderStyle = bsNone
+            ParentBackground = True
+            TabOrder = 3
+            VerticalIncrement = 5
+            HorizontalIncrement = 5
+            LineHeight = 0
+            PaddingTop = 2
+            PaddingLeft = 2
+          end
+          object DteTime: TDateTimePicker
+            Left = 2
+            Top = 184
+            Width = 130
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            Date = 38544.841692523150000000
+            Time = 38544.841692523150000000
+            ShowCheckbox = True
+            Checked = False
+            Color = clBtnFace
+            DateFormat = dfLong
+            Kind = dtkTime
+            TabOrder = 4
+            OnChange = DteTimeChange
+            OnEnter = DteTimeEnter
+          end
+          object DteDate: TDateTimePicker
+            Left = 2
+            Top = 157
+            Width = 130
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            BevelEdges = []
+            BevelInner = bvNone
+            Date = 38153.564945740740000000
+            Time = 38153.564945740740000000
+            ShowCheckbox = True
+            Checked = False
+            Color = clBtnFace
+            DateFormat = dfLong
+            TabOrder = 5
+            OnChange = DteDateChange
+            OnEnter = DteTimeEnter
+          end
+          object ReRating: TRating
+            Left = 3
+            Top = 135
+            Width = 96
+            Height = 16
+            Cursor = crHandPoint
+            ParentColor = False
+            Color = clWhite
+            Rating = 0
+            RatingRange = 0
+            OnChange = ReRatingChange
+            Islayered = False
+            Layered = 100
+            OnMouseDown = ReRatingMouseDown
+            ImageCanRegenerate = True
+            CanSelectRange = False
+          end
         end
       end
       object TsEXIF: TTabSheet
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -920,6 +942,10 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           132
           577)
@@ -2272,6 +2298,10 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 503
@@ -2530,7 +2560,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.929427500000000000
+      Date = 41177.952832303240000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

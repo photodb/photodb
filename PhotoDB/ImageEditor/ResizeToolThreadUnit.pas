@@ -3,13 +3,15 @@ unit ResizeToolThreadUnit;
 interface
 
 uses
-  Windows,
-  Classes,
-  uBitmapUtils,
+  Winapi.Windows,
+  System.Classes,
+  Vcl.Graphics,
+
   EffectsToolUnit,
-  Graphics,
   GraphicsBaseTypes,
   UnitResampleFilters,
+
+  uBitmapUtils,
   uEditorTypes,
   uMemory,
   uDBThread;
@@ -40,7 +42,9 @@ type
 
 implementation
 
-uses ResizeToolUnit, ImEditor;
+uses
+  ResizeToolUnit,
+  ImEditor;
 
 { TResizeToolThread }
 

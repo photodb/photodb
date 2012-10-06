@@ -3,15 +3,17 @@ unit uActivationUtils;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  uRuntime,
-  Classes,
-  Registry,
-  uMemory,
+  System.SysUtils,
+  System.Classes,
+  System.SyncObjs,
+  System.Win.Registry,
+  Winapi.Windows,
+
   win32crc,
+
+  uRuntime,
+  uMemory,
   uConstants,
-  SyncObjs,
   uTranslate,
   uSysUtils;
 
@@ -245,11 +247,11 @@ begin
   S := HardwareString;
   CalcStringCRC32(S, N);
   //N := N xor $6357A303; // v2.3
-  N := N xor $6357A304; // v3.0,3.1
+  N := N xor $6357A304; // v3.0,3.1,4.0
   S := IntToHex(N, 8);
   CalcStringCRC32(S, N);
   //N := N xor $162C90CA; // v2.3
-  N := N xor $162C90CB; // v3.0,3.1
+  N := N xor $162C90CB; // v3.0,3.1,4.0
   Code := S + Inttohex(N, 8);
   Result := Code;
 end;
@@ -305,9 +307,9 @@ begin
   Reg := TRegistry.Create;
 
   if RegisterForAllUsers then
-    Reg.RootKey := Windows.HKEY_LOCAL_MACHINE
+    Reg.RootKey := HKEY_LOCAL_MACHINE
   else
-    Reg.RootKey := Windows.HKEY_CURRENT_USER;
+    Reg.RootKey := HKEY_CURRENT_USER;
   try
     if Reg.OpenKey(RegistrationRoot, True) then
     begin

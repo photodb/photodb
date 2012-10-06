@@ -3,10 +3,10 @@ unit uBufferedFileStream;
 interface
 
 uses
-  Windows,
-  Math,
-  SysUtils,
-  Classes;
+  System.Math,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows;
 
 type
   IStreamErrorHandler = interface
@@ -244,7 +244,7 @@ end;
 procedure TBaseCachedFileStream.SetSize(const NewSize: Int64);
 begin
   Seek(NewSize, soBeginning);
-  if not Windows.SetEndOfFile(FHandle) then
+  if not SetEndOfFile(FHandle) then
   begin
     RaiseSystemErrorFmt('SetEndOfFile for %s.', [FFileName]);
   end;
@@ -252,7 +252,7 @@ end;
 
 function TBaseCachedFileStream.FileRead(var Buffer; Count: Longword): Integer;
 begin
-  if Windows.ReadFile(FHandle, Buffer, Count, Longword(Result), nil) then
+  if WInapi.Windows.ReadFile(FHandle, Buffer, Count, Longword(Result), nil) then
   begin
     FLastError := 0;
   end else
@@ -265,7 +265,7 @@ end;
 function TBaseCachedFileStream.FileWrite(const Buffer; Count: Longword)
   : Integer;
 begin
-  if Windows.WriteFile(FHandle, Buffer, Count, Longword(Result), nil) then
+  if Winapi.Windows.WriteFile(FHandle, Buffer, Count, Longword(Result), nil) then
   begin
     FLastError := 0;
   end
@@ -322,10 +322,9 @@ begin
   SetViewWindow(0, inherited GetFileSize);
 end;
 
-function TReadOnlyCachedFileStream.CreateHandle(FlagsAndAttributes
-  : DWORD): THandle;
+function TReadOnlyCachedFileStream.CreateHandle(FlagsAndAttributes: DWORD): THandle;
 begin
-  Result := Windows.CreateFile(PChar(FFileName), GENERIC_READ, FILE_SHARE_READ,
+  Result := CreateFile(PChar(FFileName), GENERIC_READ, FILE_SHARE_READ,
     nil, OPEN_EXISTING, FlagsAndAttributes, 0);
   if Result = INVALID_HANDLE_VALUE then
   begin
@@ -354,8 +353,7 @@ begin
   Result := FViewLength;
 end;
 
-procedure TReadOnlyCachedFileStream.SetViewWindow(const ViewStart,
-  ViewLength: Int64);
+procedure TReadOnlyCachedFileStream.SetViewWindow(const ViewStart, ViewLength: Int64);
 begin
   if ViewStart < 0 then
     raise ENotImplemented.Create('ViewStart < 0');
@@ -450,7 +448,7 @@ end;
 function TWriteCachedFileStream.CreateHandle(FlagsAndAttributes: DWORD)
   : THandle;
 begin
-  Result := Windows.CreateFile(PChar(FFileName), GENERIC_READ or GENERIC_WRITE,
+  Result := CreateFile(PChar(FFileName), GENERIC_READ or GENERIC_WRITE,
     0, nil, CREATE_ALWAYS, FlagsAndAttributes, 0);
   if Result = INVALID_HANDLE_VALUE then
   begin

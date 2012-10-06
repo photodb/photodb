@@ -1,6 +1,6 @@
 program PhotoDB;
 
-{$DESCRIPTION 'Photo DB v3.1'}
+{$DESCRIPTION 'Photo DB v4.0'}
 
 { Reduce EXE size by disabling as much of RTTI as possible (delphi 2009+) }
 {$IF CompilerVersion >= 21.0}

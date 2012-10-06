@@ -7,29 +7,32 @@ uses
   Messages,
   SysUtils,
   Classes,
-  Graphics,
-  Controls,
-  Forms,
-  StdCtrls,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.Menus,
   Vcl.ActnPopup,
   Vcl.PlatformDefaultStyleActnCtrls,
-  GraphicCrypt,
-  uConstants,
-  WebLink,
-  Menus,
-  uMemory,
-  uStrongCrypt,
+
   DECUtil,
   DECCipher,
+
+  GraphicCrypt,
+  WebLink,
   WatermarkedEdit,
-  uDBForm,
   UnitDBKernel,
+  UnitDBDeclare,
+
+  uConstants,
+  uMemory,
+  uStrongCrypt,
+  uDBForm,
   uShellIntegration,
   uSettings,
   uActivationUtils,
   uCryptUtils,
   uDBPopupMenuInfo,
-  UnitDBDeclare,
   uDBBaseTypes,
   uFileUtils,
   uBaseWinControl,
@@ -66,6 +69,7 @@ type
     function GetFormID : string; override;
     function GetPasswordSettingsPopupMenu: TPopupMenu; override;
     function GetPaswordLink: TWebLink; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     function QueryPasswordForFile(FileName: string): TEncryptImageOptions;
@@ -213,6 +217,15 @@ begin
     EdPasswordConfirm.Show;
     LbPasswordConfirm.Show;
   end;
+end;
+
+procedure TCryptImageForm.CustomFormAfterDisplay;
+begin
+  inherited;
+  if EdPassword <> nil then
+    EdPassword.Refresh;
+  if EdPasswordConfirm <> nil then
+    EdPasswordConfirm.Refresh;
 end;
 
 procedure TCryptImageForm.EdPasswordKeyPress(Sender: TObject; var Key: Char);

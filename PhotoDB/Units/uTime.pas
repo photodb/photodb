@@ -3,10 +3,10 @@ unit uTime;
 interface
 
 uses
-  Classes,
-  Windows,
-  SysUtils,
-  SyncObjs,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  Winapi.Windows,
   uMemory;
 
 {$DEFINE _STARTUP}

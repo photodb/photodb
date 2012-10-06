@@ -3,9 +3,9 @@ unit uExplorerFolderImages;
 interface
 
 uses
-  SysUtils,
-  SyncObjs,
-  Graphics,
+  System.SysUtils,
+  System.SyncObjs,
+  Vcl.Graphics,
   uMemory,
   uFileUtils,
   uBitmapUtils;

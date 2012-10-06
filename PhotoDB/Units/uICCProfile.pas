@@ -3,16 +3,19 @@ unit uICCProfile;
 interface
 
 uses
-  uMemory,
-  Classes,
-  SyncObjs,
+  System.Classes,
+  System.SyncObjs,
+  System.SysUtils,
   Generics.Collections,
-  Windows,
-  SysUtils,
-  Graphics,
-  PngImage,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Imaging.PngImage,
+
   CCR.Exif.XMPUtils,
   CCR.Exif,
+
+  uMemory,
+
   lcms2dll;
 
 const
@@ -111,7 +114,7 @@ begin
     end;
     Found := FindNext(SearchRec);
   end;
-  FindClose(SearchRec);
+  System.SysUtils.FindClose(SearchRec);
 end;
 
 function InitICCProfiles: Boolean;

@@ -231,7 +231,7 @@ begin
       ViewerForm.UpdateInfo(FSID, FInfo);
     ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
     ViewerForm.SetAnimatedImage(Graphic);   }
-    FOwnerControl.SetAnimatedImage(FGraphic, FRealWidth, FRealHeight, FRealZoomScale);
+    FOwnerControl.SetAnimatedImage(FGraphic, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale);
     Pointer(FGraphic) := nil;
   end;
 end;
@@ -248,7 +248,7 @@ begin
     ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
     ViewerForm.SetStaticImage(Bitmap, FTransparent);}
 
-    FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FRealZoomScale);
+    FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale);
 
     FBitmap := nil;
   end else

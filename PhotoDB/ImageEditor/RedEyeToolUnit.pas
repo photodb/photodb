@@ -3,23 +3,25 @@ unit RedEyeToolUnit;
 interface
 
 uses
-  Windows,
+  System.Classes,
+  System.Math,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.ComCtrls,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.Dialogs,
+
   ToolsUnit,
   WebLink,
-  Classes,
-  Controls,
-  Graphics,
-  StdCtrls,
   GraphicsCool,
-  Math,
-  SysUtils,
   ImageHistoryUnit,
   Effects,
-  ComCtrls,
   GraphicsBaseTypes,
   CustomSelectTool,
-  Dialogs,
   UnitDBKernel,
+
   uDBGraphicTypes,
   uMemory,
   uSettings;
@@ -208,7 +210,7 @@ begin
       begin
         GR := (Xdp[J, I].R * 77 + Xdp[J, I].G * 151 + Xdp[J, I].B * 28) shr 8;
         Rn := Xx[GR];
-        Cn := Math.Max(Xdp[J, I].R - Max(Xdp[J, I].G, Xdp[J, I].B), 0);
+        Cn := Max(Xdp[J, I].R - Max(Xdp[J, I].G, Xdp[J, I].B), 0);
         Cn := Min(255, Round(Cn * Rn / 255));
         if Xdp[J, I].R - Max(Xdp[J, I].G, Xdp[J, I].B) > C then
           if Xdp[J, I].R / (Xdp[J, I].R + Xdp[J, I].G + Xdp[J, I].B) > 0.40 then

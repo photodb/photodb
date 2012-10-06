@@ -3,16 +3,19 @@ unit uBrowserEmbedDraw;
 interface
 
 uses
-  uMemory,
-  Windows,
-  Graphics,
-  OleCtrls,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  Vcl.Graphics,
+  Vcl.OleCtrls,
+
   SHDocVw,
-  ActiveX,
+  MSHTML,
+
   ExplorerTypes,
+
   uConstants,
-  uBitmapUtils,
-  MSHTML;
+  uMemory,
+  uBitmapUtils;
 
 type
   _HTML_PAINT_XFORM = packed record

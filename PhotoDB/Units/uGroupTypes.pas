@@ -3,7 +3,7 @@ unit uGroupTypes;
 interface
 
 uses
-  Classes,
+  System.Classes,
   Vcl.Imaging.Jpeg,
   uConstants;
 

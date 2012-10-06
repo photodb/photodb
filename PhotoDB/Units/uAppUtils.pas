@@ -3,11 +3,7 @@ unit uAppUtils;
 interface
 
 uses
-  Windows
-  {$IFNDEF ONECPU}
-  , SyncObjs
-  {$ENDIF}
-  ;
+  Winapi.Windows;
 
 //uses specification:
 // /key /value

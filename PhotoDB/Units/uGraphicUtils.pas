@@ -3,23 +3,25 @@ unit uGraphicUtils;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  Graphics,
-  Jpeg,
-  Math,
+  System.Math,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Imaging.Jpeg,
+  Vcl.Forms,
+  Vcl.Imaging.pngimage,
+
+  RAWImage,
+  GIFImage,
+  GraphicsBaseTypes,
+
   uConstants,
   uMemory,
   uBitmapUtils,
-  Forms,
-  Messages,
   uJpegUtils,
-  RAWImage,
-  pngimage,
   uPngUtils,
-  GIFImage,
-  GraphicsBaseTypes,
   uAnimatedJPEG,
   uSettings;
 
@@ -71,7 +73,7 @@ begin
   SendMessage(Hwnd, WM_SETREDRAW, 1, 0);
   RedrawWindow(Hwnd, nil, 0, { DW_FRAME + } RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_NOINTERNALPAINT);
   if (Erase) then
-    Windows.InvalidateRect(Hwnd, nil, True);
+    InvalidateRect(Hwnd, nil, True);
 end;
 
 function ColorDiv2(Color1, COlor2: TColor): TColor;

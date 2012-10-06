@@ -3,9 +3,12 @@ unit uImportPicturesUtils;
 interface
 
 uses
-  DateUtils,
+  System.DateUtils,
+  System.SysUtils,
+
+  CCR.Exif,
+
   uSysUtils,
-  SysUtils,
   uMemory,
   uTranslate,
   uPathProviders,
@@ -13,7 +16,6 @@ uses
   uExplorerPortableDeviceProvider,
   uRawExif,
   uAssociations,
-  CCR.Exif,
   uDateUtils,
   uStringUtils;
 

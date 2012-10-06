@@ -328,7 +328,9 @@ begin
       ViewerForm.RealImageWidth := FRealWidth;
       ViewerForm.RealZoomInc := FRealZoomScale;
       if FIsNewDBInfo then
-        ViewerForm.UpdateInfo(FSID, FInfo);
+        ViewerForm.UpdateInfo(FSID, FInfo)
+      else if ViewerForm.Item.ID = 0 then
+        ViewerForm.Item.Rotation := FInfo.Rotation;
       ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
       ViewerForm.SetAnimatedImage(Graphic);
       Pointer(Graphic) := nil;
@@ -344,7 +346,7 @@ begin
   end else
   begin
     repeat
-      if Viewer = nil then
+      if ViewerForm = nil then
         Break;
       if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
         Break;
@@ -372,6 +374,7 @@ begin
       ViewerForm.Item.Encrypted := FIsEncrypted;
       if FIsNewDBInfo then
         ViewerForm.UpdateInfo(FSID, FInfo);
+      ViewerForm.Item.Rotation := DB_IMAGE_ROTATE_0;
       ViewerForm.ImageExists := False;
       ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
       ViewerForm.LoadingFailed(FInfo.FileName);
@@ -387,7 +390,7 @@ begin
   end else
   begin
     repeat
-      if Viewer = nil then
+      if ViewerForm = nil then
         Break;
       if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
         Break;
@@ -414,7 +417,10 @@ begin
       ViewerForm.RealZoomInc := FRealZoomScale;
       ViewerForm.Item.Encrypted := FIsEncrypted;
       if FIsNewDBInfo then
-        ViewerForm.UpdateInfo(FSID, FInfo);
+        ViewerForm.UpdateInfo(FSID, FInfo)
+      else if ViewerForm.Item.ID = 0 then
+        ViewerForm.Item.Rotation := FInfo.Rotation;
+           
       ViewerForm.Item.Width := FRealWidth;
       ViewerForm.Item.Height := FRealHeight;
       ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
@@ -474,8 +480,6 @@ begin
   CoInitializeEx(nil, COM_MODE);
   try
     FileName := FInfo.FileName;
-    F(FInfo);
-    FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
     Query := GetQuery;
     try
       ReadOnlyQuery(Query);
@@ -485,7 +489,9 @@ begin
       SetStrParam(Query, 0, AnsiLowerCase(FInfo.FileName));
       Query.Active := True;
       if Query.RecordCount <> 0 then
-      begin
+      begin      
+        F(FInfo);
+        FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
         FInfo.ReadFromDS(Query);
         FIsNewDBInfo := True;
       end;

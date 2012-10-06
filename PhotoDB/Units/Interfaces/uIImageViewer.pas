@@ -3,9 +3,11 @@ unit uIImageViewer;
 interface
 
 uses
-  Controls,
-  Graphics,
+  Vcl.Controls,
+  Vcl.Graphics,
+
   UnitDBDeclare,
+
   uInterfaces,
   uDBPopupMenuInfo,
   uThreadForm;
@@ -17,8 +19,8 @@ type
     procedure LoadPreviousFile;
     procedure LoadNextFile;
     procedure ResizeTo(Width, Height: Integer);
-    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
-    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
     function GetWidth: Integer;

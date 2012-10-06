@@ -3,8 +3,10 @@ unit uInstallThread;
 interface
 
 uses
-  Windows,
-  Classes,
+  System.Classes,
+  System.SysUtils,
+  Winapi.Windows,
+  Winapi.ActiveX,
   uInstallTypes,
   uDBForm,
   uMemory,
@@ -12,8 +14,6 @@ uses
   uInstallUtils,
   uInstallScope,
   uActions,
-  ActiveX,
-  SysUtils,
   uIME;
 
 type

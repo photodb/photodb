@@ -5,10 +5,28 @@ unit uFrAdvancedOptions;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, CheckLst, uInstallFrame, UnitDBFileDialogs, Registry,
-  uShellUtils, uInstallScope, uInstallUtils, uAssociations, uMemory, Menus,
-  AppEvnts;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  System.Win.Registry,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.CheckLst,
+  Vcl.Menus,
+  Vcl.AppEvnts,
+
+  UnitDBFileDialogs,
+
+  uInstallFrame,
+  uShellUtils,
+  uInstallScope,
+  uInstallUtils,
+  uAssociations,
+  uMemory;
 
 type
   TFrAdvancedOptions = class(TInstallFrame)

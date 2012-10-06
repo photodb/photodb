@@ -117,7 +117,6 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     Caption = 'BtnOk'
     TabOrder = 7
     OnClick = BtnOkClick
-    ExplicitTop = 287
   end
   object BtnCancel: TButton
     Left = 143
@@ -128,7 +127,6 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     Caption = 'BtnCancel'
     TabOrder = 6
     OnClick = BtnCancelClick
-    ExplicitTop = 287
   end
   object EdWatermarkText: TWatermarkedEdit
     Left = 8

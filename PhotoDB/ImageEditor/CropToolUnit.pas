@@ -12,13 +12,15 @@ uses
   Vcl.Graphics,
   Vcl.StdCtrls,
   Vcl.Menus,
+
   WebLink,
   GraphicsCool,
   ImageHistoryUnit,
-  uSettings,
   GraphicsBaseTypes,
   UnitDBKernel,
   ToolsUnit,
+
+  uSettings,
   uMemory;
 
 type
@@ -262,6 +264,7 @@ begin
   SaveSettingsLink.Color := ClBtnface;
   SaveSettingsLink.OnClick := DoSaveSettings;
   SaveSettingsLink.LoadFromResource('SAVETOFILE');
+  SaveSettingsLink.RefreshBuffer(True);
 
   MakeItLink := TWebLink.Create(Self);
   MakeItLink.Parent := Self;
@@ -272,6 +275,7 @@ begin
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.LoadFromResource('DOIT');
+  MakeItLink.RefreshBuffer(True);
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := Self;
@@ -282,6 +286,7 @@ begin
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.LoadFromResource('CANCELACTION');
+  CloseLink.RefreshBuffer(True);
 
   ComboBoxProp.ItemIndex := Settings.ReadInteger('Editor', 'Crop_Tool_PropSelect', 0);
   EditPrWidth.Text := IntToStr(Settings.ReadInteger('Editor', 'Crop_Tool_Prop_W', 15));

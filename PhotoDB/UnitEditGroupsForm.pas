@@ -122,6 +122,7 @@ type
     procedure LoadLanguage;
   protected
     function GetFormID: string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True); overload;
@@ -348,6 +349,13 @@ end;
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);
 begin
   GroupCreateForm.CreateFixedGroup(FGroups[PmGroup.Tag].GroupName, FGroups[PmGroup.Tag].GroupCode);
+end;
+
+procedure TEditGroupsForm.CustomFormAfterDisplay;
+begin
+  inherited;
+  if WedGroupsFilter <> nil then
+    WedGroupsFilter.Refresh;
 end;
 
 procedure TEditGroupsForm.FillGroupList;

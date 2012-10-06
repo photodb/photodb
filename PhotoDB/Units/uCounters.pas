@@ -3,11 +3,11 @@ unit uCounters;
 interface
 
 uses
-  Windows,
   Generics.Collections,
-  DateUtils,
-  SysUtils,
-  Math,
+  System.DateUtils,
+  System.SysUtils,
+  System.Math,
+  Winapi.Windows,
   uMemory;
 
 type

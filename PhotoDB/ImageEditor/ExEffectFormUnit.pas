@@ -3,10 +3,31 @@ unit ExEffectFormUnit;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Buttons, ExEffects,
-  ToolsUnit, ScrollingImage, Math,  Dolphin_DB, uGOM, AppEvnts,
-  uMemory, uDBForm, uSysUtils, uEditorTypes;
+  System.SysUtils,
+  System.Math,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.AppEvnts,
+  Vcl.ExtCtrls,
+  Vcl.Buttons,
+
+  ExEffects,
+  ToolsUnit,
+  ScrollingImage,
+  Dolphin_DB,
+
+  uGOM,
+  uMemory,
+  uDBForm,
+  uSysUtils,
+  uEditorTypes;
 
 type
   TExEffectForm = class(TDBForm)
@@ -64,7 +85,9 @@ implementation
 
 {$R *.dfm}
 
-uses EffectsToolUnit, ImEditor;
+uses
+  EffectsToolUnit,
+  ImEditor;
 
 { TExEffectForm }
 

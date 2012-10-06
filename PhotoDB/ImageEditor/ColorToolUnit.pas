@@ -3,22 +3,24 @@ unit ColorToolUnit;
 interface
 
 uses
-  Windows,
+  System.Math,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  Vcl.ComCtrls,
+
   ToolsUnit,
   WebLink,
-  Classes,
-  Controls,
-  Graphics,
-  StdCtrls,
   GraphicsCool,
-  Math,
-  SysUtils,
   ImageHistoryUnit,
-  ExtCtrls,
-  ComCtrls,
   Effects,
   UnitDBKernel,
-  UDBGraphicTypes,
+
+  uDBGraphicTypes,
   uMemory;
 
 type
@@ -182,6 +184,7 @@ begin
   MakeItLink.Color := ClBtnface;
   MakeItLink.OnClick := DoMakeImage;
   MakeItLink.LoadFromResource('DOIT');
+  MakeItLink.RefreshBuffer(True);
 
   CloseLink := TWebLink.Create(Self);
   CloseLink.Parent := AOwner as TWinControl;
@@ -192,6 +195,7 @@ begin
   CloseLink.Color := ClBtnface;
   CloseLink.OnClick := ClosePanelEvent;
   CloseLink.LoadFromResource('CANCELACTION');
+  CloseLink.RefreshBuffer(True);
   Loading := False;
 
   RefreshInfo;
@@ -200,7 +204,7 @@ end;
 
 procedure TColorToolPanelClass.Init;
 var
-  I : Integer;
+  I: Integer;
 begin
   NewImage := TBitmap.Create;
   NewImage.Assign(Image);

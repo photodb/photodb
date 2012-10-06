@@ -5,22 +5,24 @@ unit uInstallActions;
 interface
 
 uses
-  Windows,
-  Classes,
+  System.Classes,
+  System.StrUtils,
+  System.SysUtils,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShellApi,
+  Winapi.ShlObj,
+
+  VRSIShortCuts,
+
   uMemory,
   uInstallTypes,
   uInstallUtils,
   uConstants,
   uInstallScope,
-  VRSIShortCuts,
-  Messages,
-  ShellApi,
   uRuntime,
-  ShlObj,
-  SysUtils,
   uSysUtils,
   uTranslate,
-  StrUtils,
   uInstallZip,
   uAssociations,
   uShellUtils,

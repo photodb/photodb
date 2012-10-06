@@ -3,7 +3,7 @@ unit uIME;
 interface
 
 uses
-  Windows;
+  Winapi.Windows;
 
 type
   TpImmDisableIME = function(idThread: DWORD): BOOL; stdcall;

@@ -1,215 +1,215 @@
-﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-		<PropertyGroup>
-			<ProjectGuid>{4C03476C-1E9C-42ED-95A6-2DF61B89636A}</ProjectGuid>
-			<ProjectVersion>13.4</ProjectVersion>
-			<MainSource>Install.dpr</MainSource>
-			<Config Condition="'$(Config)'==''">Debug</Config>
-			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-			<Base>True</Base>
-			<AppType>Application</AppType>
-			<FrameworkType>VCL</FrameworkType>
-			<Platform Condition="'$(Platform)'==''">Win32</Platform>
-			<TargetedPlatforms>1</TargetedPlatforms>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
-			<Base_Win64>true</Base_Win64>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
-			<Base_Win32>true</Base_Win32>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
-			<Cfg_1>true</Cfg_1>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
-			<Cfg_2>true</Cfg_2>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
-			<Cfg_2_Win32>true</Cfg_2_Win32>
-			<CfgParent>Cfg_2</CfgParent>
-			<Cfg_2>true</Cfg_2>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Base)'!=''">
-			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Posix;$(DCC_Namespace)</DCC_Namespace>
-			<VerInfo_Locale>1049</VerInfo_Locale>
-			<DCC_DebugDCUs>true</DCC_DebugDCUs>
-			<DCC_DcuOutput>..\PhotoDB\dcu\</DCC_DcuOutput>
-			<DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-			<DCC_Define>DBDEBUG,INSTALL;$(DCC_Define)</DCC_Define>
-			<DCC_DependencyCheckOutputName>Install.exe</DCC_DependencyCheckOutputName>
-			<DCC_ImageBase>00400000</DCC_ImageBase>
-			<DCC_Platform>x86</DCC_Platform>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Base_Win64)'!=''">
-			<Icon_MainIcon>Install_Icon.ico</Icon_MainIcon>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Base_Win32)'!=''">
-			<Icon_MainIcon>Install_Icon.ico</Icon_MainIcon>
-			<Debugger_RunParams>/commands &quot;c:\1.txt&quot;</Debugger_RunParams>
-			<DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1033</VerInfo_Locale>
-			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_1)'!=''">
-			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
-			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
-			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-			<DCC_DebugInformation>false</DCC_DebugInformation>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_2)'!=''">
-			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-			<Debugger_RunParams>/commands &quot;d:\1.txt&quot;</Debugger_RunParams>
-			<Manifest_File>None</Manifest_File>
-			<Icon_MainIcon>Install_Ico.ico</Icon_MainIcon>
-			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1033</VerInfo_Locale>
-		</PropertyGroup>
-		<ItemGroup>
-			<DelphiCompile Include="$(MainSource)">
-				<MainSource>MainSource</MainSource>
-			</DelphiCompile>
-			<DCCReference Include="uFrmMain.pas">
-				<Form>FrmMain</Form>
-			</DCCReference>
-			<DCCReference Include="uInstallUtils.pas"/>
-			<DCCReference Include="uFrmLanguage.pas">
-				<Form>FormLanguage</Form>
-			</DCCReference>
-			<DCCReference Include="uInstallTypes.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
-			<DCCReference Include="uFrmProgress.pas">
-				<Form>FrmProgress</Form>
-			</DCCReference>
-			<DCCReference Include="uInstallFrame.pas">
-				<Form>InstallFrame</Form>
-				<DesignClass>TFrame</DesignClass>
-			</DCCReference>
-			<DCCReference Include="uFrLicense.pas">
-				<Form>FrmLicence</Form>
-				<DesignClass>TFrame</DesignClass>
-			</DCCReference>
-			<DCCReference Include="uFrAdvancedOptions.pas">
-				<Form>FrmAdvancedOptions</Form>
-				<DesignClass>TFrame</DesignClass>
-			</DCCReference>
-			<DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
-			<DCCReference Include="uInstallThread.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
-			<DCCReference Include="uInstallActions.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uVistaFuncs.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\UnitDBFileDialogs.pas"/>
-			<DCCReference Include="uInstallScope.pas"/>
-			<DCCReference Include="uUninstallTypes.pas"/>
-			<DCCReference Include="uUninstall.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uLogger.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\UnitINI.pas"/>
-			<DCCReference Include="uShellUtils.pas"/>
-			<DCCReference Include="uInstallZip.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
-			<DCCReference Include="uAssociations.pas"/>
-			<DCCReference Include="uInstallSteps.pas"/>
-			<DCCReference Include="uSteps.pas"/>
-			<DCCReference Include="uActions.pas"/>
-			<DCCReference Include="uAssociationActions.pas"/>
-			<DCCReference Include="uUpdatingWindowsActions.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uRuntime.pas"/>
-			<DCCReference Include="uInstallProcess.pas"/>
-			<DCCReference Include="uSetupDatabaseActions.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uStringUtils.pas"/>
-			<DCCReference Include="uLangUtils.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uImageSource.pas"/>
-			<DCCReference Include="uUserUtils.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uIME.pas"/>
-			<DCCReference Include="uIsAdmin.pas"/>
-			<DCCReference Include="uInstallRuntime.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uConfiguration.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uTime.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\MSXML2_TLB.pas"/>
-			<DCCReference Include="uStillImage.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uXMLUtils.pas"/>
-			<DCCReference Include="..\PhotoDB\Units\uThemesUtils.pas"/>
-			<BuildConfiguration Include="Debug">
-				<Key>Cfg_2</Key>
-				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
-			<BuildConfiguration Include="Base">
-				<Key>Base</Key>
-			</BuildConfiguration>
-			<BuildConfiguration Include="Release">
-				<Key>Cfg_1</Key>
-				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
-		</ItemGroup>
-		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
-		<ProjectExtensions>
-			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
-			<Borland.ProjectType/>
-			<BorlandProject>
-				<Delphi.Personality>
-					<Source>
-						<Source Name="MainSource">Install.dpr</Source>
-					</Source>
-					<Parameters>
-						<Parameters Name="RunParams">/commands &quot;c:\1.txt&quot;</Parameters>
-					</Parameters>
-					<VersionInfo>
-						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
-						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
-						<VersionInfo Name="MajorVer">1</VersionInfo>
-						<VersionInfo Name="MinorVer">0</VersionInfo>
-						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">0</VersionInfo>
-						<VersionInfo Name="Debug">False</VersionInfo>
-						<VersionInfo Name="PreRelease">False</VersionInfo>
-						<VersionInfo Name="Special">False</VersionInfo>
-						<VersionInfo Name="Private">False</VersionInfo>
-						<VersionInfo Name="DLL">False</VersionInfo>
-						<VersionInfo Name="Locale">1049</VersionInfo>
-						<VersionInfo Name="CodePage">1251</VersionInfo>
-					</VersionInfo>
-					<VersionInfoKeys>
-						<VersionInfoKeys Name="CompanyName"/>
-						<VersionInfoKeys Name="FileDescription"/>
-						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
-						<VersionInfoKeys Name="InternalName"/>
-						<VersionInfoKeys Name="LegalCopyright"/>
-						<VersionInfoKeys Name="LegalTrademarks"/>
-						<VersionInfoKeys Name="OriginalFilename"/>
-						<VersionInfoKeys Name="ProductName"/>
-						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
-						<VersionInfoKeys Name="Comments"/>
-					</VersionInfoKeys>
-					<Excluded_Packages>
-						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-						<Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-					</Excluded_Packages>
-				</Delphi.Personality>
-				<Platforms>
-					<Platform value="Win64">False</Platform>
-					<Platform value="Win32">True</Platform>
-				</Platforms>
-			</BorlandProject>
-			<ProjectFileVersion>12</ProjectFileVersion>
-		</ProjectExtensions>
-		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
-	</Project>
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{4C03476C-1E9C-42ED-95A6-2DF61B89636A}</ProjectGuid>
+        <ProjectVersion>14.3</ProjectVersion>
+        <MainSource>Install.dpr</MainSource>
+        <Config Condition="'$(Config)'==''">Debug</Config>
+        <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+        <Base>True</Base>
+        <AppType>Application</AppType>
+        <FrameworkType>VCL</FrameworkType>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <TargetedPlatforms>1</TargetedPlatforms>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Posix;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_Locale>1049</VerInfo_Locale>
+        <DCC_DebugDCUs>true</DCC_DebugDCUs>
+        <DCC_DcuOutput>..\PhotoDB\dcu\</DCC_DcuOutput>
+        <DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_Define>DBDEBUG,INSTALL;$(DCC_Define)</DCC_Define>
+        <DCC_DependencyCheckOutputName>Install.exe</DCC_DependencyCheckOutputName>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_Platform>x86</DCC_Platform>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <Icon_MainIcon>Install_Icon.ico</Icon_MainIcon>
+        <Debugger_RunParams>/commands &quot;c:\1.txt&quot;</Debugger_RunParams>
+        <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <Icon_MainIcon>Install_Icon.ico</Icon_MainIcon>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+        <DCC_DebugInformation>false</DCC_DebugInformation>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <Debugger_RunParams>/commands &quot;d:\1.txt&quot;</Debugger_RunParams>
+        <Manifest_File>None</Manifest_File>
+        <Icon_MainIcon>Install_Ico.ico</Icon_MainIcon>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <ItemGroup>
+        <DelphiCompile Include="$(MainSource)">
+            <MainSource>MainSource</MainSource>
+        </DelphiCompile>
+        <DCCReference Include="uFrmMain.pas">
+            <Form>FrmMain</Form>
+        </DCCReference>
+        <DCCReference Include="uInstallUtils.pas"/>
+        <DCCReference Include="uFrmLanguage.pas">
+            <Form>FormLanguage</Form>
+        </DCCReference>
+        <DCCReference Include="uInstallTypes.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
+        <DCCReference Include="uFrmProgress.pas">
+            <Form>FrmProgress</Form>
+        </DCCReference>
+        <DCCReference Include="uInstallFrame.pas">
+            <Form>InstallFrame</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="uFrLicense.pas">
+            <Form>FrmLicence</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="uFrAdvancedOptions.pas">
+            <Form>FrmAdvancedOptions</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="..\PhotoDB\Units\uFormUtils.pas"/>
+        <DCCReference Include="uInstallThread.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
+        <DCCReference Include="uInstallActions.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uVistaFuncs.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\UnitDBFileDialogs.pas"/>
+        <DCCReference Include="uInstallScope.pas"/>
+        <DCCReference Include="uUninstallTypes.pas"/>
+        <DCCReference Include="uUninstall.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uLogger.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\UnitINI.pas"/>
+        <DCCReference Include="uShellUtils.pas"/>
+        <DCCReference Include="uInstallZip.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uDBBaseTypes.pas"/>
+        <DCCReference Include="uAssociations.pas"/>
+        <DCCReference Include="uInstallSteps.pas"/>
+        <DCCReference Include="uSteps.pas"/>
+        <DCCReference Include="uActions.pas"/>
+        <DCCReference Include="uAssociationActions.pas"/>
+        <DCCReference Include="uUpdatingWindowsActions.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uRuntime.pas"/>
+        <DCCReference Include="uInstallProcess.pas"/>
+        <DCCReference Include="uSetupDatabaseActions.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uStringUtils.pas"/>
+        <DCCReference Include="uLangUtils.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uImageSource.pas"/>
+        <DCCReference Include="uUserUtils.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uIME.pas"/>
+        <DCCReference Include="uIsAdmin.pas"/>
+        <DCCReference Include="uInstallRuntime.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uConfiguration.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uTime.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\MSXML2_TLB.pas"/>
+        <DCCReference Include="uStillImage.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uXMLUtils.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uThemesUtils.pas"/>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+    <ProjectExtensions>
+        <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Delphi.Personality>
+                <Source>
+                    <Source Name="MainSource">Install.dpr</Source>
+                </Source>
+                <Parameters>
+                    <Parameters Name="RunParams">/commands &quot;c:\1.txt&quot;</Parameters>
+                </Parameters>
+                <VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+                    <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+                    <VersionInfo Name="MajorVer">1</VersionInfo>
+                    <VersionInfo Name="MinorVer">0</VersionInfo>
+                    <VersionInfo Name="Release">0</VersionInfo>
+                    <VersionInfo Name="Build">0</VersionInfo>
+                    <VersionInfo Name="Debug">False</VersionInfo>
+                    <VersionInfo Name="PreRelease">False</VersionInfo>
+                    <VersionInfo Name="Special">False</VersionInfo>
+                    <VersionInfo Name="Private">False</VersionInfo>
+                    <VersionInfo Name="DLL">False</VersionInfo>
+                    <VersionInfo Name="Locale">1049</VersionInfo>
+                    <VersionInfo Name="CodePage">1251</VersionInfo>
+                </VersionInfo>
+                <VersionInfoKeys>
+                    <VersionInfoKeys Name="CompanyName"/>
+                    <VersionInfoKeys Name="FileDescription"/>
+                    <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="InternalName"/>
+                    <VersionInfoKeys Name="LegalCopyright"/>
+                    <VersionInfoKeys Name="LegalTrademarks"/>
+                    <VersionInfoKeys Name="OriginalFilename"/>
+                    <VersionInfoKeys Name="ProductName"/>
+                    <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="Comments"/>
+                </VersionInfoKeys>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
+            </Delphi.Personality>
+            <Platforms>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">False</Platform>
+            </Platforms>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+</Project>

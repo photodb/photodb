@@ -3,13 +3,13 @@ unit uUserUtils;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.ShellApi,
   uMemory,
   uAppUtils,
-  uSysUtils,
-  ShellApi;
+  uSysUtils;
 
 function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string; IsCurrentUserAdmin: Boolean): THandle;
 function RunAsUser(ExeName, ParameterString, WorkDirectory: string; Wait: Boolean): THandle;
@@ -30,7 +30,7 @@ function GetTempFileName: TFileName;
 var
   TempFileName: array [0..MAX_PATH-1] of char;
 begin
-  if Windows.GetTempFileName(PChar(GetTempDirectory), '~', 0, TempFileName) = 0 then
+  if Winapi.Windows.GetTempFileName(PChar(GetTempDirectory), '~', 0, TempFileName) = 0 then
     raise Exception.Create(SysErrorMessage(GetLastError));
   Result := TempFileName;
 end;

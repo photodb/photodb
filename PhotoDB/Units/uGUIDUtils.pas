@@ -3,7 +3,7 @@ unit uGUIDUtils;
 interface
 
 uses
-  ActiveX;
+  WInapi.ActiveX;
 
 function GetGUID: TGUID;
 

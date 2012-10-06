@@ -3,53 +3,56 @@ unit uDBUtils;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Graphics,
-  Jpeg,
-  Classes,
-  uGroupTypes,
+  System.SysUtils,
+  System.Classes,
+  System.DateUtils,
+  System.Math,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Forms,
+  Vcl.Imaging.Jpeg,
+  Data.DB,
+
+  CCR.Exif,
+
   UnitGroupsWork,
-  uTranslate,
-  uLogger,
   UnitDBKernel,
-  uSysUtils,
-  DB,
-  uConstants,
   CommonDBSupport,
+  UnitDBDeclare,
+  win32crc,
+  GraphicCrypt,
+  UnitLinksSupport,
+  ProgressActionUnit,
+  GraphicsCool,
+  RAWImage,
+  GraphicsBaseTypes,
+  UnitDBCommonGraphics,
+
+  uGraphicUtils,
+  uSettings,
   uDBTypes,
   uDBPopupMenuInfo,
-  UnitDBDeclare,
-  DateUtils,
-  win32crc,
+  uConstants,
+  uGroupTypes,
+  uTranslate,
+  uLogger,
+  uSysUtils,
+  uBitmapUtils,
   uPrivateHelper,
   uRuntime,
   uShellIntegration,
   uVistaFuncs,
   uFileUtils,
-  GraphicCrypt,
   uDBBaseTypes,
   uMemory,
-  UnitLinksSupport,
-  uGraphicUtils,
-  uSettings,
-  Math,
-  CCR.Exif,
-  ProgressActionUnit,
   uJpegUtils,
-  uBitmapUtils,
-  Forms,
-  uDBForm,
-  uDBGraphicTypes,
-  GraphicsCool,
   uAssociations,
   uDBImageUtils,
-  RAWImage,
-  GraphicsBaseTypes,
-  uDBAdapter,
   uCDMappingTypes,
-  uExifUtils,
-  UnitDBCommonGraphics;
+  uDBForm,
+  uDBGraphicTypes,
+  uDBAdapter,
+  uExifUtils;
 
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -276,9 +279,9 @@ begin
       end else
         GetValidMDBFilesInFolder(Dir + SearchRec.name, False, Res);
     end;
-    Found := SysUtils.FindNext(SearchRec);
+    Found := System.SysUtils.FindNext(SearchRec);
   end;
-  FindClose(SearchRec);
+  System.SysUtils.FindClose(SearchRec);
 end;
 
 function RenameFileWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
@@ -1618,9 +1621,9 @@ begin
               N := C - 1;
             List.Add(AnsiLowerCase(Folder + SearchRec.name));
           end;
-          Found := SysUtils.FindNext(SearchRec);
+          Found := System.SysUtils.FindNext(SearchRec);
         end;
-        FindClose(SearchRec);
+        System.SysUtils.FindClose(SearchRec);
 
         Info.Clear;
         FQuery.First;

@@ -3,7 +3,7 @@ unit uDBGraphicTypes;
 interface
 
 uses
-  Graphics,
+  Vcl.Graphics,
   GraphicsBaseTypes;
 
 type

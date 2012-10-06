@@ -47,8 +47,8 @@ type
     procedure LoadNextFile;
     procedure ResizeTo(Width, Height: Integer);
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
-    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
-    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; ImageScale: Double);
+    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
     function GetWidth: Integer;
@@ -150,7 +150,7 @@ begin
     try
       if FImageSource.GetImage(FileInfo.FileName, Bitmap, Width, Height) then
       begin
-        FImageControl.LoadStaticImage(FileInfo, Bitmap, Width, Height, 1);
+        FImageControl.LoadStaticImage(FileInfo, Bitmap, Width, Height, FileInfo.Rotation, 1);
         Bitmap := nil;
       end;
     finally
@@ -209,24 +209,24 @@ begin
 end;
 
 procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth,
-  RealHeight: Integer; ImageScale: Double);
+  RealHeight: Integer; Rotation: Integer; ImageScale: Double);
 begin
   if FFiles.Position < 0 then
     Exit;
   if FFiles.Position > FFiles.Count - 1 then
     Exit;
 
-  FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, ImageScale);
+  FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
 end;
 
-procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; ImageScale: Double);
+procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
 begin
   if FFiles.Position < 0 then
     Exit;
   if FFiles.Position > FFiles.Count - 1 then
     Exit;
 
-  FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, ImageScale);
+  FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
 end;
 
 procedure TImageViewer.UpdateFaces(FileName: string;

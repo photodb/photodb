@@ -3,8 +3,8 @@ unit uFIRational;
 interface
 
 uses
-  Windows,
-  SysUtils,
+  System.SysUtils,
+  Winapi.Windows,
   FreeImage;
 
 type

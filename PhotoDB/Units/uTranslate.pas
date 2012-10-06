@@ -5,20 +5,22 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows,
-  Classes,
-  SysUtils,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  System.Win.Registry,
+  System.Win.ComObj,
+  Winapi.Windows,
+  Winapi.ActiveX,
+
+  MSXML2_TLB,
+
   uLogger,
   uMemory,
   uConstants,
-  SyncObjs,
-  Registry,
   uRuntime,
   uTime,
-  ComObj,
-  MSXML2_TLB,
-  uXMLUtils,
-  ActiveX;
+  uXMLUtils;
 
 type
   TTranslate = class(TObject)
@@ -135,7 +137,7 @@ begin
   begin
     Reg := TRegistry.Create(KEY_READ);
     try
-      Reg.RootKey := Windows.HKEY_LOCAL_MACHINE;
+      Reg.RootKey := HKEY_LOCAL_MACHINE;
       Reg.OpenKey(RegRoot, False);
       LanguageCode := Reg.ReadString('Language');
     finally

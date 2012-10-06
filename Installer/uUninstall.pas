@@ -5,18 +5,19 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
-  Windows, Dialogs,
-  Classes,
+  System.Classes,
+  System.StrUtils,
+  System.SysUtils,
+  System.Win.Registry,
+  Winapi.Windows,
+  Vcl.Dialogs,
   uActions,
   uInstallTypes,
   uMemory,
-  Registry,
   uConstants,
-  SysUtils,
   uUninstallTypes,
   uFileUtils,
-  uShellUtils,
-  StrUtils;
+  uShellUtils;
 
 const
   InstallPoints_UninstallShortcuts = 16 * 1024;
@@ -109,9 +110,9 @@ begin
         DelDir(RemovePath, RemoveMask);
       end;
     end else if not Shortcut.Directory then
-      SysUtils.DeleteFile(Path)
+      System.SysUtils.DeleteFile(Path)
     else
-      SysUtils.RemoveDir(Path);
+      System.SysUtils.RemoveDir(Path);
 
     Inc(FCurrent, InstallPoints_UninstallShortcuts);
     Callback(Self, FCurrent, FTotal, Terminate);
@@ -162,6 +163,11 @@ begin
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_3_0 + '\' + ProgramShortCutFile_3_0, False);
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_3_0 + '\' + HelpShortCutFile_3_0, False);
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_3_0, True);
+
+  AddUninstallShortcut('Desktop', ProgramShortCutFile_3_1, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_3_1 + '\' + ProgramShortCutFile_3_1, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_3_1 + '\' + HelpShortCutFile_3_1, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_3_1, True);
 end;
 
 end.

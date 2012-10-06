@@ -66,6 +66,7 @@ type
     procedure LoadLanguage;
   protected
     function GetFormID : string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     procedure Execute;
@@ -277,6 +278,13 @@ end;
 procedure TFormListOfKeyWords.Copy1Click(Sender: TObject);
 begin
   ClipBoard.AsText := LstKeywords.Items[PmKeywords.Tag];
+end;
+
+procedure TFormListOfKeyWords.CustomFormAfterDisplay;
+begin
+  inherited;
+  if LstKeywords <> nil then
+    LstKeywords.Refresh;
 end;
 
 procedure TFormListOfKeyWords.LoadLanguage;

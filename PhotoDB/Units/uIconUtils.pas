@@ -3,7 +3,10 @@ unit uIconUtils;
 interface
 
 uses
-  Windows, Graphics, ShellApi, SysUtils;
+  System.SysUtils,
+  Winapi.Windows,
+  Winapi.ShellApi,
+  Vcl.Graphics;
 
 function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 function ImageSizeToIconSize16_32_48(ImageSize: Integer): Integer;

@@ -3,15 +3,17 @@ unit uBitmapUtils;
 interface
 
 uses
-  Windows,
-  Graphics,
-  uConstants,
+  System.Math,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Graphics,
+
   GraphicsBaseTypes,
+
   uDBGraphicTypes,
   uMemory,
-  Math,
-  uMath,
-  Classes;
+  uConstants,
+  uMath;
 
 const
   // Image processiong options
@@ -658,10 +660,10 @@ begin
     S.PixelFormat := pf24bit;
     D.PixelFormat := pf24bit;
   end;
-  D.SetSize(Math.Max(D.Width, X + Width), Math.Max(D.Height, Y + Height));
+  D.SetSize(Max(D.Width, X + Width), Max(D.Height, Y + Height));
   SW := S.Width;
-  DW := Math.Min(D.Width - X, X + Width);
-  DH := Math.Min(D.Height - y, Y + Height);
+  DW := Min(D.Width - X, X + Width);
+  DH := Min(D.Height - y, Y + Height);
   DX := Width / (Rect.Right - Rect.Left - 1);
   DY := Height / (Rect.Bottom - Rect.Top - 1);
   if (Dx < 1) and (Dy < 1) then
@@ -1490,7 +1492,7 @@ begin
     BitRound.Canvas.Rectangle(0, 0, Dest.Width, Dest.Height);
     BitRound.Canvas.Brush.Color := clBlack;
     BitRound.Canvas.Pen.Color := BorderColor;
-    Windows.RoundRect(BitRound.Canvas.Handle, Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, RoundRect, RoundRect);
+    Winapi.Windows.RoundRect(BitRound.Canvas.Handle, Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, RoundRect, RoundRect);
 
     if Dest.PixelFormat = pf32Bit then
     begin
@@ -1979,10 +1981,10 @@ begin
   Terminating := False;
   S.PixelFormat := pf24bit;
   D.PixelFormat := pf24bit;
-  D.Width := Math.Max(D.Width, X + Width);
-  D.Height := Math.Max(D.Height, Y + Height);
-  Dw := Math.Min(D.Width - X, X + Width);
-  Dh := Math.Min(D.Height - Y, Y + Height);
+  D.Width := Max(D.Width, X + Width);
+  D.Height := Max(D.Height, Y + Height);
+  Dw := Min(D.Width - X, X + Width);
+  Dh := Min(D.Height - Y, Y + Height);
   Dx := (Width) / (Rect.Right - Rect.Left - 1);
   Dy := (Height) / (Rect.Bottom - Rect.Top - 1);
   if (Dx < 1) or (Dy < 1) then

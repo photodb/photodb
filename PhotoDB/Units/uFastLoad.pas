@@ -3,12 +3,12 @@ unit uFastLoad;
 interface
 
 uses
-  Windows,
-  SysUtils,
+  System.SysUtils,
+  Winapi.Windows,
+  Vcl.Forms,
   uDBCustomThread,
   uTime,
   uMemory,
-  Forms,
   uSysUtils;
 
 type
