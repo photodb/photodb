@@ -8,6 +8,7 @@ uses
   Winapi.Windows,
   Winapi.Messages,
   Winapi.CommCtrl,
+  Winapi.ActiveX,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
@@ -17,6 +18,7 @@ uses
   Vcl.ComCtrls,
   Vcl.ImgList,
 
+  Dmitry.Utils.System,
   Dmitry.Controls.Base,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.LoadingSign,
@@ -25,15 +27,17 @@ uses
   UnitDBDeclare,
   UnitDBKernel,
 
-  uDBForm,
+  uConstants,
+  uThreadForm,
+  uThreadTask,
   uPeopleSupport,
   uBitmapUtils,
   uMemory,
   uMachMask,
-  uGraphicUtils;
+  uGraphicUtils, Dmitry.Controls.SaveWindowPos;
 
 type
-  TFormFindPerson = class(TDBForm)
+  TFormFindPerson = class(TThreadForm)
     WedPersonFilter: TWatermarkedEdit;
     LbFindPerson: TLabel;
     ImSearch: TImage;
@@ -42,8 +46,9 @@ type
     LvPersons: TListView;
     TmrSearch: TTimer;
     ImlPersons: TImageList;
-    LsAdding: TLoadingSign;
+    LsMain: TLoadingSign;
     WlCreatePerson: TWebLink;
+    SaveWindowPos1: TSaveWindowPos;
     procedure BtnCancelClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
@@ -60,17 +65,19 @@ type
     procedure WlCreatePersonClick(Sender: TObject);
   private
     { Private declarations }
-    FPersons: TPersonCollection;
     WndMethod: TWndMethod;
     FInfo: TDBPopupMenuInfoRecord;
     FFormResult: Integer;
+    FPersons: TPersonCollection;
     function GetIndex(aNMHdr: pNMHdr): Integer;
     procedure CheckMsg(var aMsg: TMessage);
     procedure LoadList;
+    procedure AddItem(P: TPerson);
     procedure LoadLanguage;
     procedure EnableControls(IsEnabled: Boolean);
   protected
     function GetFormID: string; override;
+    procedure CustomFormAfterDisplay; override;
     procedure CloseForm;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
   public
@@ -147,6 +154,7 @@ end;
 
 procedure TFormFindPerson.CloseForm;
 begin
+  LsMain.Hide;
   if (LvPersons.Selected <> nil) and (FInfo <> nil) and (FInfo.ID = 0) then
   begin
     EnableControls(False);
@@ -157,6 +165,12 @@ begin
 
   FFormResult := SELECT_PERSON_OK;
   Close;
+end;
+
+procedure TFormFindPerson.CustomFormAfterDisplay;
+begin
+  inherited;
+  WedPersonFilter.Refresh;
 end;
 
 procedure TFormFindPerson.BtnOkClick(Sender: TObject);
@@ -231,7 +245,7 @@ begin
   BtnCancel.Enabled := IsEnabled;
   LvPersons.Enabled := IsEnabled;
   WedPersonFilter.Enabled := IsEnabled;
-  LsAdding.Visible := not IsEnabled;
+  LsMain.Visible := not IsEnabled;
 end;
 
 function TFormFindPerson.Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
@@ -245,7 +259,7 @@ begin
 
   ShowModal;
   if LvPersons.Selected <> nil then
-    Person := TPerson(LvPersons.Selected.Data);
+    Person := TPerson(TPerson(LvPersons.Selected.Data).Clone);
 
   Result := FFormResult;
 end;
@@ -258,6 +272,7 @@ end;
 procedure TFormFindPerson.FormCreate(Sender: TObject);
 begin
   FInfo := nil;
+  FPersons := TPersonCollection.Create(False);
   FFormResult := SELECT_PERSON_CANCEL;
   WndMethod := LvPersons.WindowProc;
   LvPersons.WindowProc := CheckMsg;
@@ -266,11 +281,16 @@ begin
   LoadLanguage;
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   PersonManager.InitDB;
+  SaveWindowPos1.Key := RegRoot + 'SelectPerson';
+  SaveWindowPos1.SetPosition(True);
 end;
 
 procedure TFormFindPerson.FormDestroy(Sender: TObject);
 begin
+  SaveWindowPos1.SavePosition;
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  FPersons.FreeItems;
+  F(FPersons);
   F(FInfo);
 end;
 
@@ -299,52 +319,87 @@ begin
 end;
 
 procedure TFormFindPerson.LoadList;
-var
-  W, H, I: Integer;
-  P: TPerson;
-  B, B32, SmallB, LB: TBitmap;
 begin
   LvPersons.Clear;
   ImlPersons.Clear;
+  NewFormState;
+  LsMain.Show;
+  LvPersons.ControlStyle := LvPersons.ControlStyle + [csOpaque];
 
-  FPersons := PersonManager.AllPersons;
-  for I := 0 to FPersons.Count - 1 do
-  begin
-    P := FPersons[I];
-    B := TBitmap.Create;
-    try
-      B.Assign(P.Image);
-      W := B.Width;
-      H := B.Height;
-      SmallB := TBitmap.Create;
+  TThreadTask.Create(Self, Pointer(nil),
+    procedure(Thread: TThreadTask; Data: Pointer)
+    var
+      W, H: Integer;
+      B, B32, SmallB, LB: TBitmap;
+    begin
+
+      CoInitialize(nil);
       try
-        ProportionalSize(ImlPersons.Width - 4, ImlPersons.Height - 4, W, H);
-        DoResize(W, H, B, SmallB);
-        B32 := TBitmap.Create;
-        try
-          B32.PixelFormat := pf32Bit;
-          DrawShadowToImage(B32, SmallB);
+        PersonManager.LoadTopPersons(procedure(P: TPerson; var StopOperation: Boolean)
+          begin
+            B := TBitmap.Create;
+            try
+              B.Assign(P.Image);
+              W := B.Width;
+              H := B.Height;
+              SmallB := TBitmap.Create;
+              try
+                ProportionalSize(ImlPersons.Width - 4, ImlPersons.Height - 4, W, H);
+                DoResize(W, H, B, SmallB);
+                B32 := TBitmap.Create;
+                try
+                  B32.PixelFormat := pf32Bit;
+                  DrawShadowToImage(B32, SmallB);
 
-          LB := TBitmap.Create;
-          try
-            LB.PixelFormat := pf32bit;
-            LB.SetSize(ImlPersons.Width, ImlPersons.Height);
-            FillTransparentColor(LB, Theme.ListViewColor, 0);
-            DrawImageEx32To32(LB, B32, ImlPersons.Width div 2 - B32.Width div 2, ImlPersons.Height div 2 - B32.Height div 2);
-            ImlPersons.Add(LB, nil);
-          finally
-            F(LB);
-          end;
-        finally
-          F(B32);
-        end;
+                  LB := TBitmap.Create;
+                  try
+                    LB.PixelFormat := pf32bit;
+                    LB.SetSize(ImlPersons.Width, ImlPersons.Height);
+                    FillTransparentColor(LB, Theme.ListViewColor, 0);
+                    DrawImageEx32To32(LB, B32, ImlPersons.Width div 2 - B32.Width div 2, ImlPersons.Height div 2 - B32.Height div 2);
+
+                    if not Thread.SynchronizeTask(
+                      procedure
+                      begin
+                        FPersons.Add(P);
+                        ImlPersons.Add(LB, nil);
+                        LvPersons.Items.BeginUpdate;
+                        try
+                          AddItem(P);
+                        finally
+                          LvPersons.Items.EndUpdate;
+                        end;
+                      end
+                    ) then
+                      F(P);
+
+                  finally
+                    F(LB);
+                  end;
+                finally
+                  F(B32);
+                end;
+              finally
+                F(SmallB);
+              end;
+            finally
+              F(B);
+            end;
+          end
+        );
       finally
-        F(SmallB);
+        CoUninitialize;
       end;
-    finally
-      F(B);
-    end;
-  end;
+      Thread.SynchronizeTask(
+        procedure
+        begin
+          LsMain.Hide;
+          LvPersons.ControlStyle := LvPersons.ControlStyle - [csOpaque];
+        end
+      );
+
+    end
+  );
 end;
 
 procedure TFormFindPerson.LvPersonsDblClick(Sender: TObject);
@@ -361,10 +416,6 @@ end;
 procedure TFormFindPerson.TmrSearchTimer(Sender: TObject);
 var
   I: Integer;
-  SearchTerm, Key: string;
-  LI: TListItem;
-  Visible: Boolean;
-  P: TPerson;
 begin
   TmrSearch.Enabled := False;
   BtnOk.Enabled := False;
@@ -375,30 +426,41 @@ begin
   try
     LvPersons.Clear;
 
-    SearchTerm := AnsiLowerCase(WedPersonFilter.Text);
-    if Pos('*', SearchTerm) = 0 then
-      SearchTerm := '*' + SearchTerm + '*';
-
     for I := 0 to FPersons.Count - 1 do
-    begin
-      P := FPersons[I];
-      Key :=  AnsiLowerCase(P.Name + ' ' + P.Comment);
-      Visible := IsMatchMask(Key, SearchTerm);
-
-      if Visible then
-      begin
-        LI := LvPersons.Items.Add;
-        LI.Caption := P.Name;
-        LI.ImageIndex := I;
-        LI.SubItems.Add(P.Name + #13 + P.Comment);
-        LI.Data := Pointer(P);
-      end;
-    end;
+      AddItem(FPersons[I]);
 
   finally
     LvPersons.Items.EndUpdate;
     if Sender <> Self then
       EndScreenUpdate(Handle, True);
+  end;
+end;
+
+procedure TFormFindPerson.AddItem(P: TPerson);
+var
+  LI: TListItem;
+  SearchTerm, Key, Description: string;
+  Visible: Boolean;
+begin
+  SearchTerm := AnsiLowerCase(WedPersonFilter.Text);
+  if Pos('*', SearchTerm) = 0 then
+    SearchTerm := '*' + SearchTerm + '*';
+
+  Key :=  AnsiLowerCase(P.Name + ' ' + P.Comment);
+  Visible := IsMatchMask(Key, SearchTerm);
+
+  if Visible then
+  begin
+    LI := LvPersons.Items.Add;
+    LI.Caption := P.Name;
+    LI.ImageIndex := FPersons.IndexOf(P);
+    Description := P.Name;
+    if Trim(P.Comment) <> '' then
+      Description := Description + #13 + P.Comment;
+    Description := Description + #13 + FormatEx(L('Photos: {0}'), [P.Count]);
+
+    LI.SubItems.Add(Description);
+    LI.Data := Pointer(P);
   end;
 end;
 

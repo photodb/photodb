@@ -216,6 +216,7 @@ type
     function GetSQL: string; override;
   public
     function Execute: Integer; override;
+    function ExecuteSql(Sql: string; ForwardOnly: Boolean): Integer;
     constructor Create(TableName: string; Async: Boolean = False);
     destructor Destroy; override;
     property TopRecords: Integer read FTopRecords write FTopRecords;
@@ -686,6 +687,19 @@ begin
   Result := FQuery.RecordCount;
   if Result > 0 then
     FQuery.First;
+end;
+
+function TSelectCommand.ExecuteSql(Sql: string; ForwardOnly: Boolean): Integer;
+begin
+  SetSQL(FQuery, Sql);
+  if ForwardOnly then
+  begin
+    ReadOnlyQuery(FQuery);
+    ForwardOnlyQuery(FQuery);
+  end;
+  UpdateParameters;
+  FQuery.Open;
+  Result := IIF(FQuery.Eof, 0, 1);
 end;
 
 function TSelectCommand.GetSQL: string;

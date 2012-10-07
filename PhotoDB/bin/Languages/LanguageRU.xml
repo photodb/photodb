@@ -2016,7 +2016,8 @@
 	<translate name="Name" value="Имя"/>
 	<translate name="Find person" value="Найти персону"/>
 	<translate name="Filter persons" value="Фильтр по персонам"/>
-	<translate name="Close window and create new person" value="Закрыть окно и создать новую персону"/>	
+	<translate name="Close window and create new person" value="Закрыть окно и создать новую персону"/>
+	<translate name="Photos: {0}" value="Фотографий: {0}"/>
   </scope>
   <scope name="FormPersonSuggest">
 	<translate name="Select other person" value="Выбрать другую персону"/>

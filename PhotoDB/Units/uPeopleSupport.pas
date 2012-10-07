@@ -49,6 +49,8 @@ type
 
   TPersonAreaCollection = class;
 
+  TPersonFoundCallBack = reference to procedure(P: TPerson; var StopOperation: Boolean);
+
   TPersonManager = class(TObject)
   private
     FIsInitialized: Boolean;
@@ -58,6 +60,7 @@ type
   public
     procedure InitDB;
     procedure LoadPersonList(Persons: TPersonCollection);
+    procedure LoadTopPersons(CallBack: TPersonFoundCallBack);
     function FindPerson(PersonID: Integer; Person: TPerson): Boolean; overload;
     function FindPerson(PersonName: string; Person: TPerson): Boolean; overload;
     function GetPerson(PersonID: Integer): TPerson;
@@ -93,9 +96,11 @@ type
   public
     function GetPersonByName(PersonName: string): TPerson;
     function GetPersonByID(ID: Integer): TPerson;
+    function IndexOf(Person: TPerson): Integer;
     constructor Create(FreeCollectionItems: Boolean = True);
     destructor Destroy; override;
     procedure Clear;
+    procedure FreeItems;
     procedure Add(Person: TPerson);
     procedure ReadFromDS(DS: TDataSet);
     procedure DeleteAt(I: Integer);
@@ -124,6 +129,7 @@ type
     FUniqID: string;
     FPreview: TBitmap;
     FPreviewSize: TSize;
+    FCount: Integer;
     procedure SetImage(const Value: TJpegImage);
     procedure SetID(const Value: Integer);
   public
@@ -150,6 +156,7 @@ type
     property CreateDate: TDateTime read FCreateDate;
     property UniqID: string read FUniqID write FUniqID;
     property Empty: Boolean read FEmpty;
+    property Count: Integer read FCount;
   end;
 
   TPersonArea = class(TClonableObject)
@@ -242,7 +249,6 @@ procedure TPerson.Assign(Source: TPerson);
 begin
   FID := Source.ID;
   FName := Source.Name;
-  F(FImage);
   Image := Source.Image;
   FGroups := Source.Groups;
   FBirthDay := Source.BirthDay;
@@ -277,6 +283,7 @@ begin
   FPreview := nil;
   FPreviewSize.cx := 0;
   FPreviewSize.cy := 0;
+  FCount := 0;
 end;
 
 function TPerson.CreatePreview(Width, Height: Integer): TBitmap;
@@ -326,6 +333,9 @@ begin
   FComment := DS.FieldByName('ObjectComment').AsString;
   FCreateDate := DS.FieldByName('CreateDate').AsDateTime;
   FUniqID := Trim(DS.FieldByName('ObjectUniqID').AsString);
+  if DS.Fields.FindField('ObjectsCount') <> nil then
+    FCount := DS.FieldByName('ObjectsCount').AsInteger;
+
   F(FImage);
   FImage := TJpegImage.Create;
   FImage.Assign(DS.FieldByName('Image'));
@@ -828,6 +838,51 @@ begin
   end;
 end;
 
+procedure TPersonManager.LoadTopPersons(CallBack: TPersonFoundCallBack);
+var
+  SC: TSelectCommand;
+  SQL: string;
+  P: TPerson;
+  StopOperation: Boolean;
+begin
+  try
+    SC := TSelectCommand.Create(ObjectTableName);
+    try
+
+      SQL := 'SELECT * FROM ( ' +
+              'SELECT First(O.[ObjectID]) as [ObjectID], First(O.[ObjectName]) as [ObjectName], First(O.[RelatedGroups]) as [RelatedGroups], First(O.[BirthDate]) as [BirthDate], ' +
+              ' First(O.[Phone]) as [Phone], First(O.[Address]) as [Address], First(O.[Company]) as [Company], First(O.[JobTitle]) as [JobTitle], First(O.[IMNumber]) as [IMNumber], ' +
+              ' First(O.[Email]) as [Email], First(O.[Sex]) as [Sex], First([O.ObjectComment]) as [ObjectComment], First(O.[CreateDate]) as [CreateDate], First(O.ObjectUniqID) as ObjectUniqID, First(O.Image) as [Image], ' +
+              ' Count(1) AS ObjectsCount FROM Objects O ' +
+              'INNER JOIN ObjectMapping OM on O.ObjectID = OM.ObjectID ' +
+              'GROUP BY O.[ObjectID] ' +
+            ') ORDER BY [ObjectsCount] DESC ';
+
+      if SC.ExecuteSQL(SQL, True) > 0 then
+      begin
+        StopOperation := False;
+        while not SC.DS.Eof do
+        begin
+          P := TPerson.Create;
+          P.ReadFromDS(SC.DS);
+
+          CallBack(P, StopOperation);
+          if StopOperation then
+            Break;
+
+          SC.DS.Next;
+        end;
+      end;
+    finally
+      F(SC);
+    end;
+  except
+    //if database doesn't have any tables could be exception - ignore it
+    on e: Exception do
+      EventLog(e);
+  end;
+end;
+
 procedure TPersonManager.MarkLatestPerson(PersonID: Integer);
 var
   I, Count, MaxCount, ItemCount, ID: Integer;
@@ -1055,6 +1110,11 @@ begin
   inherited;
 end;
 
+procedure TPersonCollection.FreeItems;
+begin
+  FreeList(FList, False);
+end;
+
 function TPersonCollection.GetCount: Integer;
 begin
   Result := FList.Count;
@@ -1076,6 +1136,11 @@ begin
       Result := Items[I];
       Exit;
     end;
+end;
+
+function TPersonCollection.IndexOf(Person: TPerson): Integer;
+begin
+  Result := FList.IndexOf(Person);
 end;
 
 function TPersonCollection.GetPersonByID(ID: Integer): TPerson;

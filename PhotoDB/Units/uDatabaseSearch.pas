@@ -316,7 +316,6 @@ begin
     begin
       Fields_names_count := 0;
       Stemp := '';
-      A := 0;
       B := 0;
       Sqltext := StringReplace(Sqltext, '"', '', [rfReplaceAll]);
       Sqltext := StringReplace(Sqltext, '%', '', [rfReplaceAll]);

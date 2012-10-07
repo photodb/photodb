@@ -5,6 +5,7 @@ object FormFindPerson: TFormFindPerson
   ClientHeight = 379
   ClientWidth = 530
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -134,7 +135,7 @@ object FormFindPerson: TFormFindPerson
     OnDblClick = LvPersonsDblClick
     OnSelectItem = LvPersonsSelectItem
   end
-  object LsAdding: TLoadingSign
+  object LsMain: TLoadingSign
     Left = 336
     Top = 348
     Width = 24
@@ -142,6 +143,7 @@ object FormFindPerson: TFormFindPerson
     Visible = False
     Active = True
     FillPercent = 50
+    Anchors = [akRight, akBottom]
     SignColor = clBlack
     MaxTransparencity = 255
   end
@@ -215,6 +217,13 @@ object FormFindPerson: TFormFindPerson
     Height = 100
     Width = 100
     Left = 80
+    Top = 296
+  end
+  object SaveWindowPos1: TSaveWindowPos
+    SetOnlyPosition = False
+    RootKey = HKEY_CURRENT_USER
+    Key = 'Software\Positions\Noname'
+    Left = 152
     Top = 296
   end
 end

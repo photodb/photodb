@@ -11495,10 +11495,11 @@ begin
   P := TPerson.Create;
   try
     PersonID := TMenuItem(Sender).Tag;
-    PersonManager.FindPerson(PersonID, P);
-
-    AddWideSearchPerson(P);
-    P := nil;
+    if PersonManager.FindPerson(PersonID, P) then
+    begin
+      AddWideSearchPerson(P);
+      P := nil;
+    end;
   finally
     F(P);
   end;
