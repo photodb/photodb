@@ -13,12 +13,14 @@ uses
   Dialogs,
   StdCtrls,
   DmMemo,
-  ImButton,
   ExtCtrls,
   Menus,
   clipbrd,
   Dolphin_DB,
-  GraphicsBaseTypes,
+
+  Dmitry.Controls.ImButton,
+  Dmitry.Graphics.Types,
+
   uMemory,
   uTranslate,
   Types;

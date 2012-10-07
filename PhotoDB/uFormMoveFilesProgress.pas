@@ -3,6 +3,7 @@ unit uFormMoveFilesProgress;
 interface
 
 uses
+  Generics.Collections,
   Winapi.Windows,
   Winapi.Messages,
   System.SysUtils,
@@ -14,16 +15,17 @@ uses
   Vcl.Dialogs,
   Vcl.ComCtrls,
   Vcl.StdCtrls,
-  LoadingSign,
   Vcl.ExtCtrls,
-  Generics.Collections,
+  Vcl.AppEvnts,
+  Vcl.Themes,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.LoadingSign,
+
   uDBForm,
   uMemory,
   uW7TaskBar,
-  uVistaFuncs,
-  Vcl.AppEvnts,
-  Themes,
-  uBaseWinControl;
+  uVistaFuncs;
 
 type
   TProgressOption = class(TObject)

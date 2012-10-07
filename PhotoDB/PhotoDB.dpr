@@ -15,16 +15,18 @@ uses
   uSplashThread in 'Threads\uSplashThread.pas',
   uLanguageLoadThread in 'Threads\uLanguageLoadThread.pas',
   uLoadStyleThread in 'Threads\uLoadStyleThread.pas',
-  ComObj,
-  ADODB,
-  Windows,
-  SysUtils,
-  Classes,
-  Controls,
-  Forms,
-  Dialogs,
-  ComCtrls,
-  uFileUtils,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  System.Win.ComObj,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ComCtrls,
+  Vcl.Themes,
+  Vcl.Styles,
+  Data.Win.ADODB,
+  Dmitry.Utils.Files,
   SlideShow in 'SlideShow.pas' {Viewer},
   Options in 'Options.pas' {OptionsForm},
   replaceform in 'replaceform.pas' {DBReplaceForm},
@@ -359,8 +361,6 @@ uses
   uWebJSExternalContainer in 'Units\WebJS\uWebJSExternalContainer.pas',
   uWebNullContainer in 'Units\WebJS\uWebNullContainer.pas',
   WebJS_TLB in 'Units\WebJS\WebJS_TLB.pas',
-  Vcl.Themes,
-  Vcl.Styles,
   uThemesUtils in 'Units\uThemesUtils.pas',
   uDateTimePickerStyleHookXP in 'Units\Styles\uDateTimePickerStyleHookXP.pas',
   uEditStyleHookColor in 'Units\Styles\uEditStyleHookColor.pas',
@@ -742,7 +742,7 @@ begin
 
     if GetParamStrDBBool('/Execute') then
     begin
-      ExecuteScriptFile(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Execute'), '"'));
+      ExecuteScriptFile(AnsiDequotedStr(GetParamStrDBValue('/Execute'), '"'));
     end;
 
     if GetParamStrDBBool('/AddPass') then
@@ -750,7 +750,7 @@ begin
       DBKernel.GetPasswordsFromParams;
     end;
 
-    s1 := SysUtils.AnsiDequotedStr(GetParamStrDBValue('/Add'), '"');
+    s1 := AnsiDequotedStr(GetParamStrDBValue('/Add'), '"');
 
     if (s1 <> '') and FileExistsEx(s1) then
     begin
@@ -766,12 +766,12 @@ begin
 
     if GetParamStrDBBool('/SQLExec') then
     begin
-      ExecuteQuery(SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExec'), '"'));
+      ExecuteQuery(AnsiDequotedStr(GetParamStrDBValue('/SQLExec'), '"'));
     end;
 
     if GetParamStrDBBool('/SQLExecFile') then
     begin
-      s1 := SysUtils.AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'), '"');
+      s1 := AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'), '"');
       s1 := ReadTextFileInString(s1);
       ExecuteQuery(s1);
     end;

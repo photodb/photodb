@@ -16,10 +16,11 @@ uses
   Vcl.Dialogs,
   Vcl.ExtCtrls,
 
+  Dmitry.Graphics.Types,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.WebLink,
+
   ToolsUnit,
-  WebLink,
-  GraphicsCool,
-  GraphicsBaseTypes,
   UnitDBKernel,
 
   uSettings,

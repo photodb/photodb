@@ -3,8 +3,18 @@ unit UnitCompareProgress;
 interface
 
 uses
-  Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, uDBForm;
+  Dolphin_DB,
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  uDBForm,
+  Dmitry.Controls.DmProgress;
 
 type
   TImportProgressForm = class(TDBForm)

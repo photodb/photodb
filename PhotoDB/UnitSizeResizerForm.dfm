@@ -116,6 +116,8 @@ object FormSizeResizer: TFormSizeResizer
     Height = 18
     Visible = False
     Anchors = [akLeft, akRight, akBottom]
+    Position = 0
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808

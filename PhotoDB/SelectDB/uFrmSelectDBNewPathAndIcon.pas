@@ -3,24 +3,26 @@ unit uFrmSelectDBNewPathAndIcon;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+
+  Dmitry.Utils.Files,
+  Dmitry.Controls.WatermarkedEdit,
+
   uFrameWizardBase,
-  StdCtrls,
-  ExtCtrls,
   uMemory,
   UnitDBDeclare,
   uShellIntegration,
   UnitDBCommonGraphics,
   uConstants,
   UnitDBFileDialogs,
-  uFileUtils,
-  WatermarkedEdit,
   uIconUtils;
 
 type
@@ -85,7 +87,7 @@ begin
         FileName := FileName + '.photodb';
 
       FA := FileGetAttr(FileName);
-      if FileExistsSafe(FileName) and ((FA and SysUtils.faReadOnly) <> 0) then
+      if FileExistsSafe(FileName) and ((FA and faReadOnly) <> 0) then
       begin
         MessageBoxDB(Handle, TFormSelectDB(Manager.Owner).LReadOnly, L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         Exit;

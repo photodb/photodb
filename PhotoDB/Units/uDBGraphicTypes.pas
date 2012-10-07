@@ -4,7 +4,7 @@ interface
 
 uses
   Vcl.Graphics,
-  GraphicsBaseTypes;
+  Dmitry.Graphics.Types;
 
 type
   T255ByteArray = array [0 .. 255] of Byte;

@@ -8,19 +8,22 @@ uses
   System.StrUtils,
   System.SysUtils,
   System.Classes,
+  System.Math,
   Winapi.Windows,
   Vcl.Graphics,
-  uPathProviders,
+
+  Dmitry.Utils.System,
+  Dmitry.Utils.ShellIcons,
+  Dmitry.Graphics.LayeredBitmap,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+
   uMemory,
-  uSysUtils,
   uExplorerPathProvider,
-  uExplorerMyComputerProvider,
   uConstants,
-  uShellIcons,
   uTranslate,
   uBitmapUtils,
   uPortableClasses,
-  System.Math,
   uPortableDeviceManager,
   uAssociatedIcons,
   uPortableDeviceUtils,
@@ -29,7 +32,6 @@ uses
   uShellIntegration,
   uAssociations,
   uIconUtils,
-  TLayered_Bitmap,
   uShellNamespaceUtils;
 
 type

@@ -16,7 +16,7 @@ uses
   Math,
   Forms,
   uMemory,
-  uFileUtils,
+  Dmitry.Utils.Files,
   ComObj,
   DragDropPIDL;
 

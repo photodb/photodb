@@ -3,26 +3,29 @@ unit UnitFormInternetUpdating;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ExtCtrls,
-  WebLink,
-  ComCtrls,
-  uSettings,
-  ShellAPI,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShellAPI,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  Vcl.ComCtrls,
+
+  Dmitry.Utils.System,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+
   Dolphin_DB,
+
+  uSettings,
   uTranslate,
   uDBForm,
-  uInternetUtils,
-  uSysUtils, 
-  uBaseWinControl;
+  uInternetUtils;
 
 type
   TFormInternetUpdating = class(TDBForm)

@@ -15,7 +15,7 @@ uses
   UnitCrypting,
   GraphicCrypt,
   CommonDBSupport,
-  uFileUtils,
+  Dmitry.Utils.Files,
   UnitDBDeclare,
   uGOM,
   uDBBaseTypes,

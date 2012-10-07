@@ -15,7 +15,7 @@ uses
   Vcl.Samples.Spin,
   Vcl.ExtCtrls,
 
-  WatermarkedEdit,
+  Dmitry.Controls.WatermarkedEdit,
 
   uDBForm,
   uSettings;

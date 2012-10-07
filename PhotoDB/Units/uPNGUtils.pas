@@ -3,11 +3,11 @@ unit uPNGUtils;
 interface
 
 uses
-  Windows,
-  GraphicsBaseTypes,
-  Graphics,
-  pngimage,
-  Classes,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Imaging.pngimage,
+  Dmitry.Graphics.Types,
   uMemory,
   uBitmapUtils,
   uICCProfile,

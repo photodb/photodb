@@ -12,15 +12,19 @@ uses
   Forms,
   ExtCtrls,
   StdCtrls,
-  ImButton,
   Dialogs,
   jpeg,
   uConstants,
   uResources,
   pngimage,
   ComCtrls,
-  WebLink,
-  LoadingSign,
+
+  Dmitry.Utils.System,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.LoadingSign,
+  Dmitry.Controls.ImButton,
+
   uMemory,
   uTranslate,
   uRuntime,
@@ -31,9 +35,7 @@ uses
   uInternetUtils,
   ShellApi,
   Dolphin_DB,
-  uSysUtils,
   uMobileUtils,
-  uBaseWinControl,
   uFormInterfaces;
 
 type

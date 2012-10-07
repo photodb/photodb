@@ -14,22 +14,23 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
 
-  GraphicsCool,
+  Dmitry.Utils.System,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.Base,
+
   UnitDBDeclare,
   GIFImage,
   Effects,
 
   uMemory,
   uConstants,
-  uSysUtils,
   uGraphicUtils,
   uBitmapUtils,
   uAnimatedJPEG,
   uAnimationHelper,
   uImageZoomHelper,
   uThemesUtils,
-  uTranslate,
-  uBaseWinControl;
+  uTranslate;
 
 type
   TImageViewerControl = class(TBaseWinControl)

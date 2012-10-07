@@ -16,18 +16,19 @@ uses
   Vcl.StdCtrls,
   Vcl.ImgList,
 
-  WebLink,
+  Dmitry.Utils.Files,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+
   ImageHistoryUnit,
   UnitDBDeclare,
   UnitDBFileDialogs,
 
   uDBForm,
   uMemory,
-  uFileUtils,
   uDBFileTypes,
   uThemesUtils,
-  uConstants,
-  uBaseWinControl;
+  uConstants;
 
 type
   TActionObject = class(TObject)

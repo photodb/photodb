@@ -4,31 +4,34 @@ interface
 
 uses
   Generics.Collections,
-  Windows,
-  SysUtils,
-  Forms,
-  Dialogs,
-  Controls,
-  Graphics,
-  Classes,
-  Messages,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.Controls,
+  Vcl.Graphics,
   VirtualTrees,
-  Themes,
+  Vcl.Themes,
   Vcl.ImgList,
-  ActiveX,
   uMemory,
+
+  Dmitry.Graphics.Types,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+  Dmitry.PathProviders.Network,
+
+  UnitBitmapImageList,
+
   uThreadForm,
-  GraphicsBaseTypes,
-  uPathProviders,
   uGOM,
   uThreadTask,
   uMachMask,
-  UnitBitmapImageList,
   {$IFDEF PHOTODB}
   uThemesUtils,
   {$ENDIF}
-  uExplorerNetworkProviders,
-  uExplorerMyComputerProvider,
   uVCLHelpers;
 
 type

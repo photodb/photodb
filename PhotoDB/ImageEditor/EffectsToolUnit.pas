@@ -18,13 +18,14 @@ uses
   Vcl.Themes,
   Vcl.ImgList,
 
+  Dmitry.Graphics.Types,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.WebLink,
+
   ToolsUnit,
-  WebLink,
-  GraphicsCool,
   ImageHistoryUnit,
   Effects,
   ExEffects,
-  GraphicsBaseTypes,
   ExEffectsUnitW,
   OptimizeImageUnit,
   UnitDBKernel,

@@ -8,8 +8,8 @@ uses
   System.Classes,
   System.SysUtils,
   Winapi.Windows,
-  uMemory,
-  uSysUtils;
+  Dmitry.Utils.System,
+  uMemory;
 
 type
   TStringsHelper = class helper for TStrings

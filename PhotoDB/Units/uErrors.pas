@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils,
-  uSysUtils
+  Dmitry.Utils.System
 {$IFDEF PHOTODB}
   ,uTranslate
 {$ENDIF}

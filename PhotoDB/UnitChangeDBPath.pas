@@ -3,11 +3,34 @@ unit UnitChangeDBPath;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Dolphin_DB, StdCtrls, DmProgress, DB, win32crc,
-  UnitDBFileDialogs, UnitOpenQueryThread, CommonDBSupport, uConstants,
-  UnitDBkernel, UnitDBDeclare, uFileUtils, uDBForm, uMemory,
-  uShellIntegration, pngimage;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  ExtCtrls,
+  StdCtrls,
+  pngimage,
+  DB,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+  Dmitry.Controls.DmProgress,
+
+  Dolphin_DB,
+  UnitDBFileDialogs,
+  UnitOpenQueryThread,
+  CommonDBSupport,
+  UnitDBkernel,
+  UnitDBDeclare,
+
+  uDBForm,
+  uConstants,
+  uMemory,
+  uShellIntegration;
 
 type
   TFormChangeDBPath = class(TDBForm)

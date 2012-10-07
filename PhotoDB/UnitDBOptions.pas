@@ -3,11 +3,34 @@ unit UnitDBOptions;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Dolphin_DB, StdCtrls, CommonDBSupport, WebLink, uMemoryEx,
-  UnitDBDeclare, UnitDBFileDialogs, uConstants, ExtCtrls, UnitDBCommonGraphics,
-  UnitDBKernel, uShellIntegration, uDBForm, uMemory, uFileUtils, uRuntime,
-  uBaseWinControl;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+
+  Dmitry.Utils.Files,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+
+  Dolphin_DB,
+  CommonDBSupport,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
+  UnitDBCommonGraphics,
+  UnitDBKernel,
+
+  uMemoryEx,
+  uConstants,
+  uShellIntegration,
+  uDBForm,
+  uMemory,
+  uRuntime;
 
 type
   TFormDBOptions = class(TDBForm)
@@ -199,9 +222,9 @@ begin
   try
     Options.Name := EdName.Text;
     Options.Description := EdDescriotion.Text;
-    Options.ThSizePanelPreview := SysUtils.StrToIntDef(ComboBox1.Text,
+    Options.ThSizePanelPreview := StrToIntDef(ComboBox1.Text,
       Options.ThSizePanelPreview);
-    Options.ThHintSize := SysUtils.StrToIntDef(ComboBox2.Text,
+    Options.ThHintSize := StrToIntDef(ComboBox2.Text,
       Options.ThHintSize);
     if Options.ThSizePanelPreview < 50 then
       Options.ThSizePanelPreview := 50;
@@ -247,7 +270,7 @@ begin
     begin
       FileName := OpenDialog.FileName;
       FA := FileGetAttr(FileName);
-      if (FA and SysUtils.faReadOnly) <> 0 then
+      if (FA and faReadOnly) <> 0 then
       begin
         MessageBoxDB(Handle, L('Database file marked as "Read only"! Please, reset this attribute and try again!'),
           L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);

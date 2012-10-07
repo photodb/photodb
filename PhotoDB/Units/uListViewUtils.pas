@@ -14,10 +14,11 @@ uses
   Vcl.ComCtrls,
   Vcl.Themes,
 
+  Dmitry.Graphics.LayeredBitmap,
+
   UnitDBDeclare,
   EasyListview,
   UnitBitmapImageList,
-  TLayered_Bitmap,
 
   uMemory,
   uDBDrawing,

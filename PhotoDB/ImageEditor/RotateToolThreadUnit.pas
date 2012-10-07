@@ -9,7 +9,7 @@ uses
   EffectsToolUnit,
   Graphics,
   RotateToolUnit,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   ScanlinesFX,
   uEditorTypes,
   uMemory,

@@ -18,7 +18,7 @@ uses
   ComCtrls,
   ToolWin,
   Themes,
-  uSysUtils,
+  Dmitry.Utils.System,
   uFormInterfaces;
 
 type

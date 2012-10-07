@@ -3,24 +3,27 @@ unit uFrameFreeManualActivation;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  uFrameWizardBase,
-  StdCtrls,
-  WebLink,
-  ExtCtrls,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.Clipbrd,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+
   Dolphin_DB,
+
+  uFrameWizardBase,
   uConstants,
   uActivationUtils,
-  Clipbrd,
-  uMemory,
-  uBaseWinControl;
+  uMemory;
 
 type
   TFrameFreeManualActivation = class(TFrameWizardBase)

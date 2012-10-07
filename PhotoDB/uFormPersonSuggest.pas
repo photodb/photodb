@@ -3,9 +3,22 @@ unit uFormPersonSuggest;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, uExplorerPathProvider, uPathProviders, WebLink,
-  uExplorerPersonsProvider, uDBForm, StdCtrls, ExtCtrls;
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+
+  Dmitry.PathProviders,
+  Dmitry.Controls.WebLink,
+
+  uExplorerPathProvider,
+  uExplorerPersonsProvider,
+  uDBForm;
 
 type
   TFormPersonSuggest = class(TDBForm)

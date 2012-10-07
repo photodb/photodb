@@ -3,21 +3,24 @@ unit uCryptUtils;
 interface
 
 uses
-  Windows,
-  Classes,
-  SysUtils,
+  Winapi.Windows,
+  System.Classes,
+  System.SysUtils,
+  Vcl.Menus,
+
   DECUtil,
   DECCipher,
+
+  Dmitry.Controls.WebLink,
+
   uStrongCrypt,
   uStringUtils,
-  Menus,
   uActivationUtils,
   uSettings,
   uMemory,
   uThreadForm,
   uVCLHelpers,
   uTranslate,
-  WebLink,
   uFormInterfaces;
 
 type

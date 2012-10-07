@@ -9,7 +9,7 @@ uses
   System.Math,
   Winapi.Windows,
   Vcl.Graphics,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   Scanlines,
   uEditorTypes,
   uDBGraphicTypes,

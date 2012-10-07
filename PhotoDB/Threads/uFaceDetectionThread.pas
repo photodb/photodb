@@ -3,20 +3,22 @@ unit uFaceDetectionThread;
 interface
 
 uses
-  Windows,
   Generics.Collections,
+  Windows,
   Classes,
   Graphics,
   UnitDBDeclare,
-  uDBThread,
-  uFaceDetection,
-  uMemory,
   xmldom,
   ActiveX,
   SysUtils,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
+  uMemory,
+  uDBThread,
+  uFaceDetection,
   uLogger,
-  win32crc,
-  uFileUtils,
   uConstants,
   SyncObjs,
   uRuntime,

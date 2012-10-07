@@ -3,9 +3,9 @@ unit GBlur2;
 interface
 
 uses
-  Windows,
-  Graphics,
-  GraphicsBaseTypes,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Dmitry.Graphics.Types,
   uEditorTypes;
 
 type
@@ -18,7 +18,7 @@ type
   end;
 
 type
-  TRGBArray = array [0 .. 32677] of Windows.TRGBTriple; // bitmap element (API windows)
+  TRGBArray = array [0 .. 32677] of Winapi.Windows.TRGBTriple; // bitmap element (API windows)
   PRGBArray = ^TRGBArray; // type pointer to 3 bytes array
 
   TArPRGBArray = array of PRGBArray;

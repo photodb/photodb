@@ -9,13 +9,14 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
 
+  Dmitry.Utils.Files,
+  Dmitry.Graphics.LayeredBitmap,
+
   UnitDBDeclare,
-  TLayered_Bitmap,
 
   uConstants,
   uRuntime,
-  uMemory,
-  uFileUtils;
+  uMemory;
 
 type
   TIconEx = class

@@ -22,7 +22,7 @@ uses
   Vcl.AppEvnts,
   DDraw,
   uGUIDUtils,
-  uSysUtils,
+  Dmitry.Utils.System,
   uDBForm,
   uDXUtils,
   uMemory,

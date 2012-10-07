@@ -3,10 +3,34 @@ unit UnitScriptsFunctions;
 interface
 
 uses
-  Windows, SysUtils, uScript, UnitScripts, Classes, ShlObj, ShellAPI, Dialogs,
-  Graphics, Controls, Registry, ExtDlgs, acDlgSelect, Dolphin_DB, uFileUtils,
-  UnitDBFileDialogs, Forms, uConstants, uLogger, uShellIntegration,
-  uTime, uMemory, uTranslate, uRuntime, ReplaseIconsInScript;
+  Winapi.Windows,
+  Winapi.ShlObj,
+  Winapi.ShellAPI,
+  System.SysUtils,
+  System.Classes,
+  System.Win.Registry,
+  Vcl.Dialogs,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.ExtDlgs,
+
+  Dmitry.Utils.Files,
+  Dmitry.Utils.Dialogs,
+
+  UnitScripts,
+  Dolphin_DB,
+  UnitDBFileDialogs,
+
+  uScript,
+  uConstants,
+  uLogger,
+  uShellIntegration,
+  uTime,
+  uMemory,
+  uTranslate,
+  uRuntime,
+  ReplaseIconsInScript;
 
 function GetOpenFileName(InitFile, Filter: string): string;
 function GetSaveFileName(InitFile, Filter: string): string;
@@ -310,7 +334,7 @@ begin
             SetLength(Result, Length(Result) + 1);
             Result[Length(Result) - 1] := Dir + SearchRec.name;
           end;
-        Found := Sysutils.FindNext(SearchRec);
+        Found := System.SysUtils.FindNext(SearchRec);
       end;
     finally
       FindClose(SearchRec);
@@ -404,7 +428,7 @@ end;
 
 procedure CopyFileSynch(S,D: string);
 begin
-  Windows.CopyFile(PChar(S),PChar(D),true);
+  Winapi.Windows.CopyFile(PChar(S),PChar(D),true);
 end;
 
 procedure CopyFile(aFile: string);
@@ -806,7 +830,7 @@ end;
 
 function MrsGetFileType(StrFilename: string): string;
 begin
-  Result := uFileUtils.MrsGetFileType(StrFilename);
+  Result := MrsGetFileType(StrFilename);
 end;
 
 function GetDriveName(Drive: string; DefString: string): string;

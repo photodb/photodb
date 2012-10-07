@@ -13,7 +13,7 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
 
-  WatermarkedEdit,
+  Dmitry.Controls.WatermarkedEdit,
 
   uDBForm,
   uFormInterfaces;

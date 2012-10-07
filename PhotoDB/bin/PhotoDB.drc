@@ -2002,8 +2002,9 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Buttons.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\ExtDlgs.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ProgressActionUnit.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormInternetUpdating.dfm */
+/* D:\Dmitry\Dmitry\Ratingres.res */
 /* D:\Dmitry\Dmitry\CaptionButtons.res */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormInternetUpdating.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitHelp.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
@@ -2019,8 +2020,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectDB\uFrmSelectDBFromList.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectDB\uFrmSelectDBLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitSelectDB.dfm */
-/* D:\Dmitry\Dmitry\Ratingres.res */
-/* D:\Dmitry\Dmitry\DBLOADING.RES */
+/* D:\Dmitry\Dmitry\Dmitry.Controls.DBLOADING.RES */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditLinkForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormChangeGroup.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectGroupForm.dfm */

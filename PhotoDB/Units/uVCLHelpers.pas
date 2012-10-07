@@ -19,7 +19,9 @@ uses
   uRuntime,
   StdCtrls,
   ImgList,
-  uFileUtils,
+
+  Dmitry.Utils.Files,
+
   uSettings,
   uConfiguration;
 

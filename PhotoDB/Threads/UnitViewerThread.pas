@@ -12,14 +12,17 @@ uses
   Forms,
   GIFImage,
   DB,
-  GraphicsBaseTypes,
+
+  Dmitry.Utils.Files,
+  Dmitry.Graphics.Types,
+
   CommonDBSupport,
   uTiffImage,
   ActiveX,
   UnitDBCommonGraphics,
   UnitDBCommon,
-  uFileUtils,
   JPEG,
+
   uMemory,
   UnitDBDeclare,
   pngimage,

@@ -7,9 +7,11 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
   Vcl.ExtCtrls,
+
+  Dmitry.Utils.System,
+
   GIFImage,
   uConstants,
-  uSysUtils,
   uAnimatedJPEG;
 
 type

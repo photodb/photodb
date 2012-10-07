@@ -11,16 +11,19 @@ uses
   Controls,
   Forms,
   Dialogs,
-  uFrameWizardBase,
   StdCtrls,
+
+  Dmitry.Utils.Files,
+  Dmitry.Controls.WatermarkedEdit,
+
   UnitDBFileDialogs,
-  uFileUtils,
+  UnitDBKernel,
+
+  uFrameWizardBase,
   uShellIntegration,
   uConstants,
-  UnitDBKernel,
   uMemory,
-  uSettings,
-  WatermarkedEdit;
+  uSettings;
 
 type
   TFrmImportImagesOptions = class(TFrameWizardBase)

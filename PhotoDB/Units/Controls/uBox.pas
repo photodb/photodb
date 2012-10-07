@@ -3,14 +3,14 @@ unit uBox;
 interface
 
 uses
-  Windows,
-  Graphics,
-  Messages,
-  Classes,
-  Controls,
-  ExtCtrls,
-  Themes,
-  WebLink;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.ExtCtrls,
+  Vcl.Themes,
+  Dmitry.Controls.WebLink;
 
 type
   TBox = class(TPanel)

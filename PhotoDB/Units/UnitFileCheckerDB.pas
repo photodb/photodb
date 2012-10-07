@@ -3,7 +3,11 @@ unit UnitFileCheckerDB;
 interface
 
 uses
-  Windows, SysUtils, UFIleUtils, UnitINI, uMemory;
+  Winapi.Windows,
+  System.SysUtils,
+  Dmitry.Utils.Files,
+  UnitINI,
+  uMemory;
 
 type
   FileCheckedDB = class(TObject)

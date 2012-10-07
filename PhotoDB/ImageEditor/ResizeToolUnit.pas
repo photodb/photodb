@@ -12,9 +12,10 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
 
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.WebLink,
+
   ToolsUnit,
-  WebLink,
-  GraphicsCool,
   ImageHistoryUnit,
   UnitResampleFilters,
 

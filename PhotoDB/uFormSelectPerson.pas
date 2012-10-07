@@ -3,10 +3,34 @@ unit uFormSelectPerson;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, WatermarkedEdit, ComCtrls, ImgList, uDBForm,
-  uPeopleSupport, uBitmapUtils, uMemory, uMachMask, uGraphicUtils, CommCtrl,
-  UnitDBDeclare, UnitDBKernel, LoadingSign, WebLink, uBaseWinControl;
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.CommCtrl,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.ImgList,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WatermarkedEdit,
+  Dmitry.Controls.LoadingSign,
+  Dmitry.Controls.WebLink,
+
+  UnitDBDeclare,
+  UnitDBKernel,
+
+  uDBForm,
+  uPeopleSupport,
+  uBitmapUtils,
+  uMemory,
+  uMachMask,
+  uGraphicUtils;
 
 type
   TFormFindPerson = class(TDBForm)

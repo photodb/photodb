@@ -18,11 +18,13 @@ uses
   GraphicCrypt,
   DECUtil,
   DECCipher,
-  win32crc,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
   UnitDBKernel,
   uShellIntegration,
   uConstants,
-  uFileUtils,
   uMemory,
   uStrongCrypt,
   uAssociations,

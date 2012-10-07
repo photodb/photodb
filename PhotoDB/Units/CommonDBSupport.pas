@@ -12,14 +12,16 @@ uses
   ComObj,
   UnitINI,
   SyncObjs,
-  win32crc,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+
   uConstants,
   uRuntime,
   uMemory,
   uLogger,
   uTime,
-  uFileUtils,
-  uSysUtils,
   uShellIntegration,
   uTranslate,
 

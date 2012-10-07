@@ -7,18 +7,20 @@ uses
   System.Classes,
   System.StrUtils,
   Vcl.Graphics,
+
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+  Dmitry.Utils.ShellIcons,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+  Dmitry.PathProviders.FileSystem,
+  Dmitry.PathProviders.Network,
+
   uMemory,
-  uSysUtils,
-  uPathProviders,
   uConstants,
   uStringUtils,
-  uFileUtils,
   uDateUtils,
-  uTranslate,
-  uExplorerMyComputerProvider,
-  uShellIcons,
-  uExplorerFSProviders,
-  uExplorerNetworkProviders;
+  uTranslate;
 
 type
   TSearchItem = class(TPathItem)

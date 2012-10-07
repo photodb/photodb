@@ -8,9 +8,12 @@ uses
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
+
+  Dmitry.Utils.System,
+
   UnitDBDeclare,
+
   uMemory,
-  uSysUtils,
   uIImageViewer,
   uDBPopupMenuInfo,
   uImageViewerControl,

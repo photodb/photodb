@@ -8,7 +8,7 @@ uses
   System.SysUtils,
   System.SyncObjs,
   Winapi.Windows,
-  win32crc,
+  Dmitry.CRC32,
   uMemory;
 
 type

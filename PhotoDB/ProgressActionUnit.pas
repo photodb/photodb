@@ -4,29 +4,31 @@ interface
 
 uses
   System.Types,
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ExtCtrls,
-  StdCtrls,
-  DmProgress,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.AppEvnts,
+  Vcl.Themes,
+  Vcl.Imaging.pngimage,
+
+  Dmitry.Utils.System,
+  Dmitry.Controls.DmProgress,
+
   Dolphin_DB,
-  AppEvnts,
   uGUIDUtils,
   uConstants,
   uVistaFuncs,
   uGOM,
   uMemory,
   uShellIntegration,
-  uSysUtils,
-  uDBForm,
-  pngimage,
-  Themes;
+  uDBForm;
 
 type
   TProgressActionForm = class(TDBForm)

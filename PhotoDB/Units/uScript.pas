@@ -3,14 +3,14 @@ unit uScript;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Dmitry.Utils.System,
   uStringUtils,
   uMemory,
   uGOM,
   uRuntime,
-  uSysUtils,
   uDBForm,
   uGUIDUtils;
 

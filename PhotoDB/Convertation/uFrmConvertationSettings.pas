@@ -3,32 +3,34 @@ unit uFrmConvertationSettings;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  uFrameWizardBase,
-  jpeg,
-  ExtCtrls,
-  StdCtrls,
-  uMemory,
-  Menus,
-  UnitDBDeclare,
-  uJpegUtils,
+  WInapi.Windows,
+  System.SysUtils,
+  System.Math,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.Menus,
+  Vcl.Imaging.jpeg,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+
   Dolphin_DB,
-  uBItmapUtils,
   UnitDBFileDialogs,
   CommonDBSupport,
+  UnitDBDeclare,
+
+  uFrameWizardBase,
+  uMemory,
+  uJpegUtils,
+  uBItmapUtils,
   uResources,
-  WebLink,
-  Math,
   uConstants,
-  uInterfaces,
-  uBaseWinControl;
+  uInterfaces;
 
 type
   TFrmConvertationSettings = class(TFrameWizardBase)

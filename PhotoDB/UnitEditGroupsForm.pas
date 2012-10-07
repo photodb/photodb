@@ -23,13 +23,17 @@ uses
   Vcl.ActnPopup,
   Vcl.Imaging.JPEG,
   Vcl.Imaging.pngimage,
-  CmpUnit,
+
+  Dmitry.Controls.WatermarkedEdit,
+
   UnitDBKernel,
-  uMemory,
-  uGroupTypes,
+  CmpUnit,
   UnitGroupsWork,
   UnitGroupsTools,
   UnitDBDeclare,
+
+  uMemory,
+  uGroupTypes,
   uBitmapUtils,
   uDBForm,
   uShellIntegration,
@@ -37,7 +41,6 @@ uses
   uGraphicUtils,
   uConstants,
   uSettings,
-  WatermarkedEdit,
   uThemesUtils,
   uMachMask,
   uFormInterfaces;

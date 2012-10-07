@@ -6,7 +6,7 @@ uses
   Effects,
   StdCtrls,
   Graphics,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   Forms,
   StrUtils,
   SysUtils,

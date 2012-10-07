@@ -5,23 +5,25 @@ interface
 uses
   Windows,
   Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  Vcl.Themes,
+  Vcl.Imaging.pngimage,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.LoadingSign,
+
   uDBForm,
-  StdCtrls,
-  ExtCtrls,
   uWizards,
   uMemory,
   uMemoryEx,
-  pngimage,
-  Themes,
-  LoadingSign,
   uVCLHelpers,
-  uBaseWinControl,
   uFormInterfaces;
 
 type

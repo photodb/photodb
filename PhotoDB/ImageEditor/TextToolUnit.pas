@@ -19,7 +19,7 @@ uses
 
   Effects,
   CustomSelectTool,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   UnitDBKernel,
 
   uDBGraphicTypes,

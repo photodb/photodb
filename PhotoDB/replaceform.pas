@@ -36,7 +36,9 @@ uses
   uBitmapUtils,
   uLogger,
   uDBDrawing,
-  uFileUtils,
+
+  Dmitry.Utils.Files,
+
   Types,
   uConstants,
   uDBPopupMenuInfo,

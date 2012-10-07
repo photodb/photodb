@@ -8,6 +8,10 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
 
+  Dmitry.Utils.ShellIcons,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+
   UnitGroupsWork,
   uBitmapUtils,
   UnitDBDeclare,
@@ -16,14 +20,11 @@ uses
   uConstants,
   uMemory,
   uExplorerPathProvider,
-  uPathProviders,
   uGroupTypes,
   uShellIntegration,
   uDBForm,
   uFormInterfaces,
-  uExplorerMyComputerProvider,
   uTranslate,
-  uShellIcons,
   uStringUtils,
   uJpegUtils;
 

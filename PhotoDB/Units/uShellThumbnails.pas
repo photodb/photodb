@@ -3,15 +3,17 @@ unit uShellThumbnails;
 interface
 
 uses
-  Windows,
-  Classes,
-  Graphics,
+  Winapi.Windows,
+  System.Classes,
+  System.SyncObjs,
+  Vcl.Graphics,
+  Vcl.Imaging.pngimage,
+
+  Dmitry.Graphics.Utils,
+
   uMemory,
   uWinThumbnails,
-  pngimage,
-  SyncObjs,
   uPngUtils,
-  GraphicsCool,
   uResources,
   uBitmapUtils;
 

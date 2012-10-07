@@ -19,11 +19,13 @@ uses
   UnitDBKernel,
   uDBTypes,
   uDBGraphicTypes,
-  win32crc,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
   UnitDBCommonGraphics,
   uDBThread,
   uMemory,
-  uFileUtils,
   uDBForm,
   uDBAdapter;
 

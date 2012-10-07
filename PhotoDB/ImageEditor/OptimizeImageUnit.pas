@@ -6,7 +6,7 @@ uses
   Windows,
   Graphics,
   GBlur2,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   ScanlinesFX,
   uEditorTypes,
   uMemory;

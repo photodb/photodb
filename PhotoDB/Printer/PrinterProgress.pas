@@ -3,9 +3,21 @@ unit PrinterProgress;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
-  Forms, Dolphin_DB, Dialogs, StdCtrls, ExtCtrls, DmProgress,
-  uDBForm, uMemory, uShellIntegration;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dolphin_DB,
+  Dialogs,
+  StdCtrls,
+  ExtCtrls,
+  Dmitry.Controls.DmProgress,
+  uDBForm,
+  uMemory,
+  uShellIntegration;
 
 type
   TFormPrinterProgress = class(TDBForm)

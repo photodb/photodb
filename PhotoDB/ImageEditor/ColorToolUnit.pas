@@ -13,9 +13,10 @@ uses
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
 
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.WebLink,
+
   ToolsUnit,
-  WebLink,
-  GraphicsCool,
   ImageHistoryUnit,
   Effects,
   UnitDBKernel,

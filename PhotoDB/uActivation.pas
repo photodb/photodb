@@ -16,9 +16,11 @@ uses
   Vcl.Imaging.jpeg,
   Vcl.Imaging.pngimage,
 
+  Dmitry.Controls.Base,
+  Dmitry.Controls.LoadingSign,
+
   UnitINI,
   dolphin_db,
-  LoadingSign,
 
   uVistaFuncs,
   uActivationUtils,
@@ -34,7 +36,6 @@ uses
   uMemoryEx,
   uThemesUtils,
   uVCLHelpers,
-  uBaseWinControl,
   uFormInterfaces;
 
 type

@@ -8,7 +8,7 @@ uses
   Effects,
   EffectsToolUnit,
   Graphics,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   Forms,
   uConstants,
   uLogger,

@@ -21,10 +21,10 @@ uses
   Controls,
   ShellApi,
   ShlObj,
-  uFileUtils,
+  Dmitry.CRC32,
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
   uRuntime,
-  win32crc,
-  uSysUtils,
   Messages;
 
 const

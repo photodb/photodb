@@ -3,10 +3,31 @@ unit UnitCompareDataBases;
 interface
 
 uses
-  CmpUnit, Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, StdCtrls, CheckLst, DB, CommonDBSupport, ExtCtrls,
-  uConstants, UnitDBKernel, uShellIntegration, uSysUtils, uDBForm, uRuntime,
-  WatermarkedEdit;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.CheckLst,
+  Vcl.ExtCtrls,
+  Data.DB,
+
+  Dmitry.Utils.System,
+  Dmitry.Controls.WatermarkedEdit,
+
+  CmpUnit,
+  Dolphin_DB,
+  CommonDBSupport,
+  UnitDBKernel,
+
+  uConstants,
+  uShellIntegration,
+  uDBForm,
+  uRuntime;
 
 type
   TImportDataBaseForm = class(TDBForm)

@@ -13,6 +13,8 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.Jpeg,
 
+  Dmitry.Utils.System,
+
   CommonDBSupport,
   UnitGroupsWork,
   UnitDBDeclare,
@@ -37,8 +39,7 @@ uses
   uPeopleSupport,
   uPortableDeviceUtils,
   uAssociations,
-  uSearchQuery,
-  uSysUtils;
+  uSearchQuery;
 
 const
   SM_ID         = 0;

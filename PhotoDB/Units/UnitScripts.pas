@@ -39,9 +39,9 @@ uses
   uTranslate,
   uRuntime,
   uActivationUtils,
-  uSysUtils,
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
   uGUIDUtils,
-  uFileUtils,
   uPortableDeviceUtils,
   uPortableScriptUtils,
   uVCLHelpers;

@@ -33,7 +33,7 @@ uses
   uSettings,
   uBitmapUtils,
   uJpegUtils,
-  uSysUtils,
+  Dmitry.Utils.System,
   uTranslate,
   uFormInterfaces,
   uPNGUtils;

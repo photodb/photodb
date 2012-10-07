@@ -3,21 +3,23 @@ unit UnitPropertyLoadImageThread;
 interface
 
 uses
-  Windows,
-  Classes,
-  Messages,
-  Graphics,
-  SysUtils,
+  Winapi.Windows,
+  System.Classes,
+  System.SysUtils,
+  Vcl.Graphics,
+
+  Dmitry.Graphics.Utils,
+
   UnitDBKernel,
+  UnitDBDeclare,
+
   uBitmapUtils,
   uDBThread,
   uMemory,
-  GraphicsCool,
   uRuntime,
   uConstants,
   uDBForm,
   uThemesUtils,
-  UnitDBDeclare,
   uImageLoader;
 
 type

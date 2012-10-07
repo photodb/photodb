@@ -21,17 +21,28 @@ uses
   ShlObj,
   AppEvnts,
   ImgList,
-  UnitDBKernel,
   jpeg,
-  Win32crc,
   CommCtrl,
-  uMemoryEx,
   StdCtrls,
-  math,
+  System.Math,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+  Dmitry.Graphics.LayeredBitmap,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.SaveWindowPos,
+  Dmitry.Controls.LoadingSign,
+  Dmitry.Controls.WebLink,
+  Dmitry.PathProviders,
+
+  CCR.Exif,
+
+  UnitDBKernel,
+  uMemoryEx,
   ToolWin,
   ComCtrls,
-  SaveWindowPos,
-  Tlayered_Bitmap,
   GraphicCrypt,
   FormManegerUnit,
   UnitUpdateDBThread,
@@ -41,9 +52,7 @@ uses
   DropSource,
   DropTarget,
   GIFImage,
-  uFileUtils,
   Effects,
-  GraphicsCool,
   UnitUpdateDBObject,
   DragDropFile,
   DragDrop,
@@ -70,24 +79,19 @@ uses
   uDBPopupMenuInfo,
   uGraphicUtils,
   uShellIntegration,
-  uSysUtils,
   uDBUtils,
   uRuntime,
-  CCR.Exif,
   uDBBaseTypes,
   uViewerTypes,
   uSettings,
   uAssociations,
-  LoadingSign,
   uExifUtils,
   uInterfaces,
-  WebLink,
   uPeopleSupport,
   u2DUtils,
   uVCLHelpers,
   uAnimatedJPEG,
   ExplorerTypes,
-  uPathProviders,
   uPathProviderUtils,
   uPortableClasses,
   uPortableDeviceUtils,
@@ -100,7 +104,6 @@ uses
   uImageZoomHelper,
   Themes,
   uPhotoShelf,
-  uBaseWinControl,
   uFormInterfaces;
 
 type
@@ -539,7 +542,7 @@ begin
   FImageExists := False;
   DoubleBuffered := True;
   DBCanDrag := False;
-  SlideTimer.Interval := Math.Min(Math.Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
+  SlideTimer.Interval := Min(Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
   FullScreenNow := False;
   SlideShowNow := False;
   Drawimage := TBitmap.Create;

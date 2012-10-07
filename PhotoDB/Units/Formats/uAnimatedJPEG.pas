@@ -4,18 +4,20 @@ interface
 
 uses
   Generics.Collections,
-  Windows,
-  SysUtils,
-  uSysUtils,
+  System.SysUtils,
+  System.Classes,
+  System.Math,
+  System.StrUtils,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Imaging.jpeg,
+
+  Dmitry.Utils.System,
+
   uMemory,
-  Classes,
-  Graphics,
-  Math,
   uBitmapUtils,
   uJpegUtils,
-  StrUtils,
-  GraphicsBaseTypes,
-  jpeg;
+  Dmitry.Graphics.Types;
 
 type
   TAnimatedJPEG = class(TBitmap)
@@ -219,8 +221,8 @@ begin
     B.PixelFormat := pf24Bit;
     FImages[0].PixelFormat := pf24Bit;
     FImages[1].PixelFormat := pf24Bit;
-    W := Math.Min(FImages[0].Width, FImages[1].Width);
-    H := Math.Min(FImages[0].Height, FImages[1].Height);
+    W := Min(FImages[0].Width, FImages[1].Width);
+    H := Min(FImages[0].Height, FImages[1].Height);
     B.SetSize(W, H);
 
     for I := 0 to H - 1 do

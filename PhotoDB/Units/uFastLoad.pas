@@ -6,10 +6,12 @@ uses
   System.SysUtils,
   Winapi.Windows,
   Vcl.Forms,
+
+  Dmitry.Utils.System,
+
   uDBCustomThread,
   uTime,
-  uMemory,
-  uSysUtils;
+  uMemory;
 
 type
   TLoad = class(TObject)

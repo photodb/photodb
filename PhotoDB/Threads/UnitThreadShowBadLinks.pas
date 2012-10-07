@@ -16,7 +16,8 @@ uses
   uDBThread,
   ActiveX,
   uDBForm,
-  uFileUtils;
+
+  Dmitry.Utils.Files;
 
 type
   TShowBadLinksThreadOptions = record

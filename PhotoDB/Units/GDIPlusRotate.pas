@@ -9,9 +9,11 @@ uses
   Windows,
   Classes,
   SysUtils,
-  UTime,
   ActiveX,
-  uFileUtils,
+
+  Dmitry.Utils.Files,
+
+  uTime,
   uTranslate,
   uLockedFileNotifications;
 
@@ -340,7 +342,7 @@ begin
   end else
   begin
     if FileExists(OtherFile) then
-      uFileUtils.SilentDeleteFile(0, PWideChar(OtherFile), True, True);
+      SilentDeleteFile(0, PWideChar(OtherFile), True, True);
     FileNameTemp := OtherFile;
     try
       if Ok <> GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP) then

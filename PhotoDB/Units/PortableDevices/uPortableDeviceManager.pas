@@ -3,11 +3,11 @@ unit uPortableDeviceManager;
 interface
 
 uses
+  System.SysUtils,
+  Dmitry.Utils.System,
   uPortableClasses,
   uWIAClasses,
-  uSysUtils,
   uAppUtils,
-  System.SysUtils,
   uWPDClasses;
 
 function CreateDeviceManagerInstance: IPManager;

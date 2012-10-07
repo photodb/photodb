@@ -5,7 +5,10 @@ unit GraphicCrypt;
 interface
 
 uses
-  win32crc,
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+  Dmitry.Memory,
+
   Windows,
   SysUtils,
   Classes,
@@ -13,7 +16,6 @@ uses
   ADODB,
   JPEG,
   PngImage,
-  uFileUtils,
   uAssociations,
   uTiffImage,
   GraphicEx,
@@ -25,7 +27,6 @@ uses
   DECCipher,
   GIFImage,
   DB,
-  uMemoryUtils,
   uErrors,
   uGraphicUtils,
   uShellUtils,

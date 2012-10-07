@@ -13,7 +13,7 @@ uses
   DECCipher,
   DECRandom,
   Vcl.Consts,
-  uSysUtils;
+  Dmitry.Utils.System;
 
 const
   PhotoDBFileHeaderID        = '.PHDBCRT';

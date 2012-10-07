@@ -18,22 +18,23 @@ uses
   Vcl.Clipbrd,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  DB,
+  Data.DB,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+  Dmitry.Controls.WatermarkedEdit,
 
   UnitDBKernel,
   FormManegerUnit,
   GraphicCrypt,
   UnitDBDeclare,
-  WatermarkedEdit,
-  win32crc,
 
   uConstants,
   uDBForm,
   uTranslate,
-  uFileUtils,
   uShellIntegration,
   uSettings,
-  uSysUtils,
   uMemory,
   uFormInterfaces;
 

@@ -248,6 +248,8 @@ object UpdateDBForm: TUpdateDBForm
     Width = 385
     Height = 18
     Visible = False
+    Position = 0
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16744688

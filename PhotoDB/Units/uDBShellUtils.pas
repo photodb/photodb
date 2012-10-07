@@ -7,12 +7,13 @@ uses
   Vcl.Graphics,
   Vcl.Forms,
 
+  Dmitry.Utils.Files,
+
   acWorkRes,
   UnitDBFileDialogs,
 
   uResourceUtils,
   uTranslate,
-  uFileUtils,
   uShellUtils,
   uMemory,
   uShellIntegration;

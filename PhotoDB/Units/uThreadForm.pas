@@ -8,8 +8,8 @@ uses
   System.SyncObjs,
   Vcl.Forms,
   Vcl.Graphics,
+  Dmitry.Utils.System,
   uDBForm,
-  uSysUtils,
   uMemory,
   uGUIDUtils;
 

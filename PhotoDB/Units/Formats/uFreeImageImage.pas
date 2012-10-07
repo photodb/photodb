@@ -9,12 +9,12 @@ uses
   Classes,
   uMemory,
   uConstants,
-  uFileUtils,
+  Dmitry.Utils.Files,
+  Dmitry.Graphics.Types,
   uTime,
   FreeBitmap,
   FreeImage,
   uFreeImageIO,
-  GraphicsBaseTypes,
   CCR.Exif,
   uBitmapUtils;
 

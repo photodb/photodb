@@ -14,10 +14,12 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
+
+  Dmitry.Controls.WatermarkedMemo,
+
   uDBForm,
   uSettings,
-  uConstants,
-  WatermarkedMemo;
+  uConstants;
 
 type
   TPicturesImportPatternEdit = class(TDBForm)

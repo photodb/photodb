@@ -6,6 +6,8 @@ uses
   System.Classes,
   System.SysUtils,
 
+  Dmitry.Utils.Files,
+
   EasyListView,
   UnitDBDeclare,
   UnitLinksSupport,
@@ -13,7 +15,6 @@ uses
 
   uGroupTypes,
   uList64,
-  uFileUtils,
   uMemory;
 
 type

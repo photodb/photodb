@@ -7,22 +7,24 @@ uses
   System.StrUtils,
   Winapi.Windows,
   Vcl.Graphics,
-  uPathProviders,
+
+  Dmitry.Utils.ShellIcons,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+
   uPeopleSupport,
   uBitmapUtils,
   uTime,
   uMemory,
   uConstants,
   uTranslate,
-  uShellIcons,
-  uExplorerMyComputerProvider,
   uExplorerPathProvider,
   uStringUtils,
   uJpegUtils,
   uShellIntegration,
   uDBForm,
   uDBClasses,
-  uSysUtils,
+  Dmitry.Utils.System,
   UnitDBKernel,
   UnitDBDeclare;
 

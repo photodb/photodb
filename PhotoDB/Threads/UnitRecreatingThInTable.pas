@@ -6,23 +6,26 @@ uses
   Classes,
   Graphics,
   Jpeg,
-  DB,
-  CommonDBSupport,
-  UnitDBKernel,
+  Data.DB,
   SysUtils,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+  Dmitry.Graphics.Utils,
+
   GraphicCrypt,
-  GraphicsCool,
   UnitDBDeclare,
-  uCDMappingTypes,
   ActiveX,
   Dolphin_DB,
+  CommonDBSupport,
+  UnitDBKernel,
+
   uMemory,
+  uCDMappingTypes,
   uDBBaseTypes,
   uDBTypes,
   uDBUtils,
-  win32crc,
   uDBThread,
-  uFileUtils,
   uGOM,
   uDBForm,
   uConstants,
@@ -70,7 +73,7 @@ type
   end;
 
 var
-  RecreatingThInTableTerminating : Boolean;
+  RecreatingThInTableTerminating: Boolean;
 
 implementation
 

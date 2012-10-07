@@ -13,7 +13,7 @@ uses
   uGOM,
   uDBForm,
   uDBThread,
-  uSysUtils,
+  Dmitry.Utils.System,
   uUpTime;
 
 type

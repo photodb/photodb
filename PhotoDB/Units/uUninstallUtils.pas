@@ -3,15 +3,17 @@ unit uUninstallUtils;
 interface
 
 uses
+  System.Classes,
+  System.SysUtils,
+  System.Win.Registry,
   Winapi.Windows,
+
+  Dmitry.Utils.Files,
+
   uAppUtils,
-  SysUtils,
   uMemory,
-  Classes,
   uConstants,
-  uFileUtils,
-  uConfiguration,
-  Registry;
+  uConfiguration;
 
 procedure CleanUpUserSettings;
 
@@ -44,7 +46,7 @@ begin
             if Reg.OpenKey(DBKeyName, False) then
             begin
               FileName := Reg.ReadString('FileName');
-              DeleteFile(FileName);
+              System.SysUtils.DeleteFile(FileName);
             end;
           end;
         finally

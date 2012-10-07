@@ -8,7 +8,7 @@ uses
   Graphics,
   SysUtils,
   uResourceUtils,
-  uFileUtils,
+  Dmitry.Utils.Files,
   uMemory,
   Registry,
   uGUIDUtils,
@@ -17,7 +17,7 @@ uses
   acWorkRes,
   uTime,
   Classes,
-  uSysUtils,
+  Dmitry.Utils.System,
   uResources;
 
 const

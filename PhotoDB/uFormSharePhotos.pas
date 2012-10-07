@@ -3,30 +3,41 @@ unit uFormSharePhotos;
 interface
 
 uses
-  uRuntime,
-  uConstants,
   Generics.Collections,
-  Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
+  System.DateUtils,
+  Winapi.Windows,
+  Winapi.Messages,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
-  uBaseWinControl,
-  WebLink,
   Vcl.Imaging.pngimage,
   Vcl.ExtCtrls,
   Vcl.StdCtrls,
   Vcl.ComCtrls,
-  WatermarkedEdit,
+  Vcl.Menus,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Vcl.AppEvnts,
+
+  Dmitry.Utils.Files,
+  Dmitry.Utils.System,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.WatermarkedEdit,
+  Dmitry.Controls.LoadingSign,
+  Dmitry.Controls.SaveWindowPos,
+
   ShellApi,
-  LoadingSign,
   Dolphin_DB,
+  GraphicCrypt,
+
+  uRuntime,
+  uConstants,
   uMemory,
   uMemoryEx,
-  uSysUtils,
   uDBForm,
   uThreadEx,
   uThreadTask,
@@ -39,21 +50,13 @@ uses
   uBitmapUtils,
   UnitDBDeclare,
   uDBPopupMenuInfo,
-  Vcl.AppEvnts,
   uAssociations,
   uShellIntegration,
-  DateUtils,
   uDateUtils,
-  SaveWindowPos,
-  Vcl.Menus,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
   uSettings,
   uDBBaseTypes,
   ShellContextMenu,
   uConfiguration,
-  GraphicCrypt,
-  uFileUtils,
   uGOM,
   uTime,
   uLogger,
@@ -1327,7 +1330,7 @@ begin
                 B.SaveToFile(CacheFileName);
               end else
                 //delete private cover
-                DeleteFile(CacheFileName);
+                System.SysUtils.DeleteFile(CacheFileName);
 
             end;
           finally

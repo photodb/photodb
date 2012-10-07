@@ -11,18 +11,19 @@ uses
   JPEG,
   SysUtils,
   DateUtils,
-  Win32Crc,
   EasyListview,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+  Dmitry.PathProviders,
 
   GraphicCrypt,
   uMemory,
-  uFileUtils,
   uDBBaseTypes,
   uDBGraphicTypes,
   uRuntime,
   uDBAdapter,
-  uCDMappingTypes,
-  uPathProviders;
+  uCDMappingTypes;
 
 const
   BufferSize = 100*3*4*4096;

@@ -6,7 +6,7 @@ uses
   Windows,
   Classes,
   SyncObjs,
-  uSysUtils,
+  Dmitry.Utils.System,
   {$IFNDEF EXTERNAL}
   uThemesUtils,
   {$ENDIF}

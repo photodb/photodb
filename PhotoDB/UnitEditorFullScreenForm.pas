@@ -21,7 +21,7 @@ uses
   Themes,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  uSysUtils;
+  Dmitry.Utils.System;
 
 type
   TEditorFullScreenForm = class(TDBForm)

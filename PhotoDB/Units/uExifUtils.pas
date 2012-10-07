@@ -10,6 +10,8 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.Jpeg,
 
+  Dmitry.Utils.System,
+
   CCR.Exif,
   CCR.Exif.TiffUtils,
   CCR.Exif.XMPUtils,
@@ -29,7 +31,6 @@ uses
   uAssociations,
   uLogger,
   uPortableDeviceUtils,
-  uSysUtils,
   uTranslate;
 
 const

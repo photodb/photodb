@@ -3,9 +3,26 @@ unit UnitDBCleaning;
 interface
 
 uses
-  Dolphin_DB, Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, SaveWindowPos, uConstants, UnitDBKernel,
-  uDBForm, uSettings, uRuntime;
+  Windows,
+  Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+
+  Dmitry.Controls.DmProgress,
+  Dmitry.Controls.SaveWindowPos,
+
+  Dolphin_DB,
+  UnitDBKernel,
+
+  uConstants,
+  uDBForm,
+  uSettings,
+  uRuntime;
 
 type
   TDBCleaningForm = class(TDBForm)

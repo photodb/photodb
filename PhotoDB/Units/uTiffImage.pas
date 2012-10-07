@@ -9,7 +9,7 @@ uses
   FreeImage,
   FreeBitmap,
   uFreeImageIO,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   uMemory;
 
 type

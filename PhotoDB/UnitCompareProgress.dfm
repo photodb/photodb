@@ -99,6 +99,7 @@ object ImportProgressForm: TImportProgressForm
     Height = 18
     Anchors = [akLeft, akRight, akBottom]
     Position = 57
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
@@ -139,6 +140,7 @@ object ImportProgressForm: TImportProgressForm
     Height = 18
     Anchors = [akLeft, akTop, akRight]
     Position = 34
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808
@@ -159,6 +161,7 @@ object ImportProgressForm: TImportProgressForm
     Height = 18
     Anchors = [akLeft, akTop, akRight]
     Position = 56
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808

@@ -6,7 +6,9 @@ uses
   Windows,
   Classes,
   UnitDBKernel,
-  win32crc,
+
+  Dmitry.CRC32,
+
   GraphicCrypt,
   UnitDBDeclare,
   SyncObjs,

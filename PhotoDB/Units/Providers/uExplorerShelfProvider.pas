@@ -3,18 +3,20 @@ unit uExplorerShelfProvider;
 interface
 
 uses
+  System.SysUtils,
+  System.StrUtils,
+  Vcl.Graphics,
+
+  Dmitry.Utils.ShellIcons,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+
   uConstants,
   uMemory,
   uTranslate,
-  Graphics,
-  SysUtils,
-  StrUtils,
   uIconUtils,
-  uShellIcons,
   uPhotoShelf,
-  uExplorerPathProvider,
-  uExplorerMyComputerProvider,
-  uPathProviders;
+  uExplorerPathProvider;
 
 type
   TShelfItem = class(TPathItem)

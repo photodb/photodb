@@ -10,9 +10,11 @@ uses
   Winapi.CommCtrl,
   Vcl.Graphics,
   Vcl.ImgList,
+
+  Dmitry.PathProviders,
+
   uMemory,
-  uBitmapUtils,
-  uPathProviders;
+  uBitmapUtils;
 
 type
   TBitmapImageList = class;

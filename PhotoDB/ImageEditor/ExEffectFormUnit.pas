@@ -18,6 +18,8 @@ uses
   Vcl.ExtCtrls,
   Vcl.Buttons,
 
+  Dmitry.Utils.System,
+
   ExEffects,
   ToolsUnit,
   ScrollingImage,
@@ -26,7 +28,6 @@ uses
   uGOM,
   uMemory,
   uDBForm,
-  uSysUtils,
   uEditorTypes;
 
 type

@@ -3,10 +3,37 @@ unit UnitCleanUpThread;
 interface
 
 uses
-  UnitDBKernel, Windows, Messages, CommCtrl, Dialogs, Classes, DBGrids, DB,
-  SysUtils,ComCtrls, Graphics, jpeg, UnitINI, DateUtils, uFileUtils, uExifUtils,
-  CommonDBSupport, win32crc, uCDMappingTypes, uLogger, uConstants, ActiveX,
-  CCR.Exif, uMemory, uRuntime, uDBUtils, uDBThread, uSettings, UnitDBDeclare;
+  UnitDBKernel,
+  Windows,
+  Messages,
+  CommCtrl,
+  Dialogs,
+  Classes,
+  DBGrids,
+  DB,
+  SysUtils,
+  ComCtrls,
+  Graphics,
+  jpeg,
+  UnitINI,
+  DateUtils,
+  uExifUtils,
+  CommonDBSupport,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
+  uCDMappingTypes,
+  uLogger,
+  uConstants,
+  ActiveX,
+  CCR.Exif,
+  uMemory,
+  uRuntime,
+  uDBUtils,
+  uDBThread,
+  uSettings,
+  UnitDBDeclare;
 
 type
   CleanUpThread = class(TDBThread)

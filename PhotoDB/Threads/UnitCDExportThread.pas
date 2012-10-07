@@ -14,10 +14,12 @@ uses
   UnitGroupsWork,
   UnitDBDeclare,
   CommonDBSupport,
-  win32crc,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
   SysUtils,
   uLogger,
-  uFileUtils,
   uConstants,
   uShellIntegration,
   uDBTypes,

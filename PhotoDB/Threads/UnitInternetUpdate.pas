@@ -3,27 +3,29 @@ unit UnitInternetUpdate;
 interface
 
 uses
-  Classes,
-  Registry,
-  Windows,
-  SysUtils,
+  System.Classes,
+  System.Win.Registry,
+  System.SysUtils,
+  System.DateUtils,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  Vcl.Forms,
+
+  xmldom,
   UnitDBKernel,
-  Forms,
+  Dolphin_DB,
+
   uVistaFuncs,
   uLogger,
   uConstants,
   uShellIntegration,
   uGOM,
-  DateUtils,
   uTranslate,
   uInternetUtils,
-  xmldom,
   uDBForm,
-  ActiveX,
-  Dolphin_DB,
   uActivationUtils,
   uSettings,
-  uSysUtils,
+  Dmitry.Utils.System,
   uDBThread,
   uUpTime;
 
@@ -40,9 +42,9 @@ type
     function GetThreadID: string; override;
     procedure Execute; override;
     procedure ShowUpdates;
-    procedure Inform(Info : String);
+    procedure Inform(Info: string);
     procedure InformSynch;
-    procedure ParceReply(Reply : string);
+    procedure ParceReply(Reply: string);
     procedure NotifySync;
   public
    constructor Create(Owner: TDBForm; IsBackground: Boolean; NotifyHandler: TUpdateNotifyHandler);

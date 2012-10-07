@@ -23,6 +23,8 @@ object DBCleaningForm: TDBCleaningForm
     Top = 8
     Width = 209
     Height = 18
+    Position = 0
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808

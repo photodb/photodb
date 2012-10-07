@@ -29,6 +29,8 @@ object SavingTableForm: TSavingTableForm
     Top = 21
     Width = 265
     Height = 18
+    Position = 0
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808

@@ -481,7 +481,7 @@ object AboutForm: TAboutForm
   object LnkGoToWebSite: TWebLink
     Left = 505
     Top = 403
-    Width = 102
+    Width = 97
     Height = 13
     Cursor = crHandPoint
     DisableStyles = True

@@ -20,7 +20,9 @@ uses
   GraphicEx,
   UnitDBCommon,
   uMemory,
-  uFileUtils,
+
+  Dmitry.Utils.Files,
+
   uGOM,
   uDBForm,
   UnitDBDeclare,

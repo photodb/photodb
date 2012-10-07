@@ -13,9 +13,10 @@ uses
   Vcl.Forms,
   Vcl.Imaging.pngimage,
 
+  Dmitry.Graphics.Types,
+
   RAWImage,
   GIFImage,
-  GraphicsBaseTypes,
 
   uConstants,
   uMemory,

@@ -4,19 +4,22 @@ interface
 
 uses
   Generics.Collections,
+  System.SysUtils,
+  System.Classes,
+  Winapi.ActiveX,
+  Vcl.Graphics,
+
+  Dmitry.Utils.ShellIcons,
+  Dmitry.PathProviders,
+
+  UnitBitmapImageList,
+
+  uThreadForm,
   uThreadEx,
   uMemory,
-  SysUtils,
-  Graphics,
-  uThreadForm,
-  UnitBitmapImageList,
-  uPathProviders,
   uIconUtils,
-  uShellIcons,
   uDBImageUtils,
-  uPortableDeviceUtils,
-  ActiveX,
-  System.Classes;
+  uPortableDeviceUtils;
 
 type
   TImportSeriesPreview = class(TThreadEx)

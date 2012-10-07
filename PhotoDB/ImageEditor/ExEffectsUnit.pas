@@ -11,7 +11,7 @@ uses
   ComCtrls,
   GBlur2,
   Classes,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   SysUtils,
   ExtCtrls,
   Controls,

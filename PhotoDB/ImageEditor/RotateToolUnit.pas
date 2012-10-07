@@ -15,13 +15,14 @@ uses
   Vcl.Dialogs,
   Vcl.ExtCtrls,
 
+  Dmitry.Graphics.Types,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.Angle,
+  Dmitry.Controls.WebLink,
+
   ToolsUnit,
-  WebLink,
-  GraphicsCool,
   ImageHistoryUnit,
   Effects,
-  Angle,
-  GraphicsBaseTypes,
   UnitDBKernel,
 
   uConstants,

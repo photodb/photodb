@@ -13,7 +13,7 @@ uses
   uLogger,
   UnitDBKernel,
   GraphicCrypt,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   ActiveX,
   uMemory,
   uAssociations,

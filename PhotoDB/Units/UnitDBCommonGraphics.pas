@@ -12,10 +12,11 @@ uses
   Vcl.StdCtrls,
   Vcl.Graphics,
 
-  DmProgress,
+  Dmitry.Controls.DmProgress,
+  Dmitry.Graphics.Types,
+
   uBitmapUtils,
   UnitDBDeclare,
-  GraphicsBaseTypes,
   Effects,
 
   uMemory,

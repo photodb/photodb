@@ -3,28 +3,31 @@ unit uFrmSelectDBExistedFile;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  uRuntime,
-  WebLink,
-  StdCtrls,
-  ExtCtrls,
-  uFrameWizardBase,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+
+  Dmitry.Utils.Files,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.WatermarkedEdit,
+
   UnitDBKernel,
-  uShellIntegration,
   UnitDBCommonGraphics,
-  uMemory,
   UnitDBDeclare,
-  uIconUtils,
   UnitDBFileDialogs,
-  uFileUtils,
-  uConstants,
-  WatermarkedEdit,
-  uBaseWinControl;
+
+  uRuntime,
+  uFrameWizardBase,
+  uShellIntegration,
+  uMemory,
+  uIconUtils,
+  uConstants;
 
 type
   TFrmSelectDBExistedFile = class(TFrameWizardBase)
@@ -201,7 +204,7 @@ begin
       FileName := OpenDialog.FileName;
 
       FA := FileGetAttr(FileName);
-      if (FA and SysUtils.faReadOnly) <> 0 then
+      if (FA and faReadOnly) <> 0 then
       begin
         MessageBoxDB(Handle, TFormSelectDB(Manager.Owner).LReadOnly, L('Warning'), TD_BUTTON_OK,
           TD_ICON_WARNING);

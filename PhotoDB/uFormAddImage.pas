@@ -3,27 +3,29 @@ unit uFormAddImage;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  LoadingSign,
-  StdCtrls,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.Themes,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.LoadingSign,
+
   UnitDBDeclare,
+  UnitDBKernel,
+
   uMemory,
   uMemoryEx,
-  UnitDBKernel,
   uFormUtils,
-  ExtCtrls,
   uBitmapUtils,
-  Themes,
   uThemesUtils,
   uDBForm,
-  uBaseWinControl,
   uFormInterfaces;
 
 type

@@ -3,8 +3,18 @@ unit uExifPatchThread;
 interface
 
 uses
-  Classes, uMemory, UnitDBDeclare, uDBThread, uExifUtils, SyncObjs, ActiveX,
-  uDBUtils, uFileUtils, uConstants;
+  Classes,
+
+  Dmitry.Utils.Files,
+
+  uMemory,
+  UnitDBDeclare,
+  uDBThread,
+  uExifUtils,
+  SyncObjs,
+  ActiveX,
+  uDBUtils,
+  uConstants;
 
 type
   TExifPatchThread = class(TDBThread)

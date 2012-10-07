@@ -7,13 +7,15 @@ uses
   UnitLinksSupport,
   DB,
   SysUtils,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
   uRuntime,
   CommonDBSupport,
   CmpUnit,
   uGroupTypes,
   UnitGroupsWork,
-  win32crc,
-  uFileUtils,
   UnitDBDeclare,
   uMemory,
   uConstants,

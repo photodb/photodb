@@ -6,7 +6,7 @@ uses
   uConstants,
   uRuntime,
   uMemory,
-  uSysUtils,
+  Dmitry.Utils.System,
   uTranslate,
   Winapi.Windows,
   System.SysUtils,

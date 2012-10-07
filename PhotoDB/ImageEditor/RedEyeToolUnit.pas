@@ -13,12 +13,13 @@ uses
   Vcl.StdCtrls,
   Vcl.Dialogs,
 
+  Dmitry.Graphics.Types,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.WebLink,
+
   ToolsUnit,
-  WebLink,
-  GraphicsCool,
   ImageHistoryUnit,
   Effects,
-  GraphicsBaseTypes,
   CustomSelectTool,
   UnitDBKernel,
 

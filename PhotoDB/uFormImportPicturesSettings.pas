@@ -13,12 +13,15 @@ uses
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.StdCtrls,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+
   uVCLHelpers,
   uDBForm,
   uConstants,
   uSettings,
-  uMemoryEx,
-  WebLink, uBaseWinControl;
+  uMemoryEx;
 
 type
   TFormImportPicturesSettings = class(TDBForm)

@@ -10,7 +10,7 @@ uses
 
   CCR.Exif,
 
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
 
   uDBForm;
 

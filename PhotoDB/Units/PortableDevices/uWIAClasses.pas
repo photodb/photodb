@@ -12,7 +12,7 @@ uses
   uWIAInterfaces,
   Winapi.ActiveX,
   System.SysUtils,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   System.Win.ComObj,
   uBitmapUtils,
   System.SyncObjs;

@@ -10,14 +10,14 @@ uses
   System.SysUtils,
   Winapi.Windows,
   Vcl.Forms,
+  Dmitry.Utils.System,
   uMemory,
   uTime,
   uGOM,
   uLogger,
   uGUIDUtils,
   uThreadEx,
-  uThreadForm,
-  uSysUtils;
+  uThreadForm;
 
 type
   TMultiCPUThread = class(TThreadEx)

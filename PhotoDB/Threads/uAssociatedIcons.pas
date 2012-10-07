@@ -3,21 +3,24 @@ unit uAssociatedIcons;
 interface
 
 uses
-  Windows,
-  Classes,
-  SysUtils,
-  Graphics,
-  ComObj,
-  ActiveX,
-  ShlObj,
-  CommCtrl,
-  ShellAPI,
-  Forms,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  Winapi.ShlObj,
+  Winapi.CommCtrl,
+  Winapi.ShellAPI,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  System.Win.ComObj,
+  System.Win.Registry,
+  Vcl.Graphics,
+  Vcl.Forms,
+
+  Dmitry.Utils.ShellIcons,
+
   UnitDBKernel,
-  SyncObjs,
-  Registry,
-  uMemory,
-  uShellIcons;
+
+  uMemory;
 
 type
   TAssociatedIcons = record
@@ -79,7 +82,7 @@ begin
 
   Reg := TRegistry.Create(KEY_READ);
   try
-    Reg.RootKey := Windows.HKEY_CLASSES_ROOT;
+    Reg.RootKey := HKEY_CLASSES_ROOT;
     if not Reg.OpenKey('\' + Ext, False) then
       Exit;
     S := Reg.ReadString('');

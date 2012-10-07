@@ -44,6 +44,8 @@ object CMDForm: TCMDForm
     Width = 100
     Height = 18
     Visible = False
+    Position = 0
+    MinValue = 0
     MaxValue = 100
     Font.Charset = DEFAULT_CHARSET
     Font.Color = 16711808

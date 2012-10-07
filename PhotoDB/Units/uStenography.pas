@@ -9,8 +9,10 @@ uses
   Windows,
   Graphics,
   Jpeg,
-  Win32crc,
-  GraphicsBaseTypes,
+
+  Dmitry.CRC32,
+  Dmitry.Graphics.Types,
+
   uMemory,
   uStrongCrypt,
   DECUtil,

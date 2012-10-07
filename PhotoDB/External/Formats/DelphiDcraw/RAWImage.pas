@@ -3,19 +3,23 @@ unit RAWImage;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Graphics,
-  Classes,
-  uMemory,
-  uConstants,
-  uFileUtils,
-  uTime,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+
+  CCR.Exif,
+
+  Dmitry.Utils.Files,
+  Dmitry.Graphics.Types,
+
   FreeBitmap,
   FreeImage,
+
+  uMemory,
+  uConstants,
+  uTime,
   uFreeImageIO,
-  GraphicsBaseTypes,
-  CCR.Exif,
   uBitmapUtils;
 
 type

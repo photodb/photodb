@@ -41,6 +41,26 @@ uses
   Vcl.ValEdit,
   Data.DB,
 
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+  Dmitry.Utils.ShellIcons,
+  Dmitry.Utils.Network,
+  Dmitry.Graphics.Utils,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+  Dmitry.PathProviders.FileSystem,
+  Dmitry.PathProviders.Network,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.SaveWindowPos,
+  Dmitry.Controls.Rating,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.WebLinkList,
+  Dmitry.Controls.LoadingSign,
+  Dmitry.Controls.PathEditor,
+  Dmitry.Controls.WatermarkedEdit,
+  Dmitry.Controls.ScrollPanel,
+  Dmitry.Controls.ImButton,
+
   PrintMainForm,
   uScript,
   UnitScripts,
@@ -52,23 +72,17 @@ uses
   dolphin_db,
   UnitGroupsWork,
   UnitLinksSupport,
-  SaveWindowPos,
-  WebLink,
   UnitBitmapImageList,
-  Network,
   GraphicCrypt,
   UnitCrypting,
   DropSource,
   DragDropFile,
   DragDrop,
   DropTarget,
-  ScPanel,
-  ImButton,
   UnitCDMappingSupport,
   ShellContextMenu,
-  GraphicsCool,
   ProgressActionUnit,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   CommonDBSupport,
   EasyListview,
   MPCommonUtilities,
@@ -77,9 +91,6 @@ uses
   UnitPropeccedFilesSupport,
   UnitCryptingImagesThread,
   wfsU,
-  LoadingSign,
-  PathEditor,
-  WatermarkedEdit,
 
   uShellIntegration,
   uDBCustomThread,
@@ -95,7 +106,6 @@ uses
   uFormListView,
   uIconUtils,
   uBitmapUtils,
-  uShellIcons,
   uDBThread,
   UnitDBCommon,
   uCDMappingTypes,
@@ -107,7 +117,6 @@ uses
   uTime,
   uDateUtils,
   uFastLoad,
-  uFileUtils,
   uDBPopupMenuInfo,
   uDBDrawing,
   uW7TaskBar,
@@ -117,16 +126,11 @@ uses
   uGraphicUtils,
   uDBBaseTypes,
   uDBTypes,
-  uSysUtils,
   uRuntime,
   uDBUtils,
   uPathUtils,
   uSettings,
   uAssociations,
-  uPathProviders,
-  uExplorerMyComputerProvider,
-  uExplorerFSProviders,
-  uExplorerNetworkProviders,
   uExplorerPersonsProvider,
   uExplorerGroupsProvider,
   uExplorerSearchProviders,
@@ -156,16 +160,12 @@ uses
   uBrowserEmbedDraw,
 
   uThemesUtils,
-  uBaseWinControl,
-
   uPhotoShelf,
   uThreadTask,
   uInternetUtils,
 
   VirtualTrees,
   uPathProvideTreeView,
-  Rating,
-  WebLinkList,
   uDBInfoEditorUtils,
   uFormInterfaces,
 
@@ -175,8 +175,7 @@ uses
   uImageViewer,
   uPeopleSupport,
   uFormSelectPerson,
-  uMonthCalendar
-  ;
+  uMonthCalendar;
 
 const
   RefreshListViewInterval = 50;
@@ -2037,7 +2036,7 @@ begin
       end;
 
     if Files.Count > 0 then
-      uFileUtils.DeleteFiles(Handle, Files, ToRecycle);
+      Dmitry.Utils.Files.DeleteFiles(Handle, Files, ToRecycle);
 
     if PL.Count > 0 then
       PL[0].Provider.ExecuteFeature(Self, PL, PATH_FEATURE_DELETE, nil);

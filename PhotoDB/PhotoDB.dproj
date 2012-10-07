@@ -695,14 +695,12 @@
         </DCCReference>
         <DCCReference Include="uOperationProgress.pas">
             <Form>FormOperationProgress</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Threads\uThreadTask.pas"/>
         <DCCReference Include="Units\Controls\uBox.pas"/>
         <DCCReference Include="Threads\uShareImagesThread.pas"/>
         <DCCReference Include="uShareSettings.pas">
             <Form>FormShareSettings</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Units\Styles\uProgressBarStyleHookMarquee.pas"/>
         <DCCReference Include="Units\uUninstallUtils.pas"/>

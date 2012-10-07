@@ -3,12 +3,14 @@ unit uResourceUtils;
 interface
 
 uses
-  Windows,
-  Classes,
-  Graphics,
+  Winapi.Windows,
+  System.Classes,
+  Vcl.Graphics,
+
+  Dmitry.Utils.Files,
+
   acWorkRes,
   uTranslate,
-  uFileUtils,
   uConstants,
   uMemory,
   uTime;

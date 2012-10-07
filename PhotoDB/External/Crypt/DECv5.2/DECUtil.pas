@@ -32,7 +32,11 @@ unit DECUtil;
 
 interface
 
-uses Windows, SysUtils, Classes, win32crc;
+uses
+  Windows,
+  SysUtils,
+  Classes,
+  Dmitry.CRC32;
 
 type
 {$IFNDEF UNICODE}

@@ -21,9 +21,11 @@ uses
   Vcl.Graphics,
   Vcl.Themes,
   Vcl.Menus,
+
+  Dmitry.Utils.System,
+
   uMemory,
   uGOM,
-  uSysUtils,
   {$IFNDEF EXTERNAL}
   uTranslate,
   {$ENDIF}

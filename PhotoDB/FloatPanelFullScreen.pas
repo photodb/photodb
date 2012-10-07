@@ -14,7 +14,9 @@ uses
   ComCtrls,
   ToolWin,
   ImgList,
-  TLayered_bitmap,
+
+  Dmitry.Graphics.LayeredBitmap,
+
   ExtCtrls,
   uThemesUtils,
   uMemory,

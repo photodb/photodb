@@ -3,7 +3,7 @@ unit uExplorerPathProvider;
 interface
 
 uses
-  uPathProviders,
+  Dmitry.PathProviders,
   uTranslate;
 
 type

@@ -13,18 +13,19 @@ uses
   Vcl.Themes,
   Vcl.AppEvnts,
 
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
   UnitDBKernel,
   CommonDBSupport,
   EasyListView,
   UnitDBDeclare,
   UnitDBCommon,
-  Win32crc,
   Dolphin_DB,
 
   uAppUtils,
   uLogger,
   uConstants,
-  uFileUtils,
   uTime,
   uSplashThread,
   uDBForm,
@@ -44,7 +45,7 @@ uses
   uUpTime,
   uPortableClasses,
   uTranslate,
-  uSysUtils,
+  Dmitry.Utils.System,
   {$IFDEF LICENCE}
   UnitINI,
   uActivationUtils,
@@ -173,9 +174,6 @@ procedure TFormManager.ProcessCommandLine(CommandLine: string);
 var
   Directory, S: string;
   ParamStr1, ParamStr2: string;
-  IDList: TArInteger;
-  FileList: TArStrings;
-  I: Integer;
   PDManager: IPManager;
   PDevice: IPDevice;
 

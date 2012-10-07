@@ -8,11 +8,13 @@ uses
   DB,
   Classes,
   JPEG,
-  Win32Crc,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
   UnitDBDeclare,
   UnitDBKernel,
   CommonDBSupport,
-  uFileUtils,
   uDBForm,
   uMemory,
   uDBAdapter,

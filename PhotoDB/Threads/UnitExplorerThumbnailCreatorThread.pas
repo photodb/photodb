@@ -30,12 +30,15 @@ uses
   uExifUtils,
   uRuntime,
   uDBUtils,
-  uFileUtils,
+
+  Dmitry.Utils.Files,
+  Dmitry.Utils.ShellIcons,
+
+  CCR.Exif,
+
   uAssociations,
   uDBThread,
-  CCR.Exif,
   uBitmapUtils,
-  uShellIcons,
   ExplorerTypes,
   uThemesUtils,
   uConstants,

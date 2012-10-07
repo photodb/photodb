@@ -14,7 +14,10 @@ uses
   uMemory,
   UnitDBKernel,
   uRuntime,
-  uFileUtils,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
   uDBPopupMenuInfo,
   uConstants,
   uAppUtils,
@@ -30,8 +33,7 @@ uses
   uUpdateDBTypes,
   uInterfaceManager,
   StrUtils,
-  UnitINI,
-  win32crc;
+  UnitINI;
 
 type
   TUpdaterDB = class(TObject)

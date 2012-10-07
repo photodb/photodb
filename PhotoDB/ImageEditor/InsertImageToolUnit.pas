@@ -15,13 +15,13 @@ uses
   Vcl.ExtDlgs,
   Vcl.Clipbrd,
 
-  ToolsUnit,
-  WebLink,
+  Dmitry.Graphics.Types,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.WebLink,
 
-  GraphicsCool,
+  ToolsUnit,
   ImageHistoryUnit,
   Effects,
-  GraphicsBaseTypes,
   CustomSelectTool,
   UnitDBFileDialogs,
   UnitDBCommonGraphics,

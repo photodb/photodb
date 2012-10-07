@@ -6,8 +6,10 @@ uses
   System.SysUtils,
   System.SyncObjs,
   Vcl.Graphics,
+
+  Dmitry.Utils.Files,
+
   uMemory,
-  uFileUtils,
   uBitmapUtils;
 
 type

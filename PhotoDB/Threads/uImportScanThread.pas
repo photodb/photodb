@@ -5,18 +5,22 @@ interface
 uses
   Generics.Collections,
   System.Classes,
-  uPathProviders,
-  uMemory,
-  SysUtils,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.DateUtils,
+
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.FileSystem,
+
   CCR.Exif,
+
   RAWImage,
-  DateUtils,
+
   uThreadForm,
-  uExplorerFSProviders,
+  uMemory,
   uExplorerPortableDeviceProvider,
   uAssociations,
   uImportPicturesUtils,
-  ActiveX,
   uLogger,
   uThreadEx;
 

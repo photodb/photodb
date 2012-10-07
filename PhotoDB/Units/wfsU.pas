@@ -9,7 +9,7 @@ uses
   System.SyncObjs,
   Winapi.Windows,
   Dolphin_DB,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   ExplorerTypes,
   uLogger,
   uGOM,

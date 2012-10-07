@@ -6,9 +6,11 @@ uses
   Classes,
   Graphics,
   UnitDBDeclare,
-  uAssociations,
-  uFileUtils,
   SysUtils,
+  uAssociations,
+
+  Dmitry.Utils.Files,
+
   uDBThread,
   uDBForm,
   uShellIntegration,

@@ -14,7 +14,7 @@ uses
   Vcl.Controls,
 
   ImageHistoryUnit,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
 
   uDBForm,
   uEditorTypes,

@@ -3,8 +3,19 @@ unit uPrivateHelper;
 interface
 
 uses
-  Classes, SyncObjs, SysUtils, DB, uConstants, CommonDBSupport, uMemory, uGOM,
-  win32crc, ActiveX, uDBThread;
+  Classes,
+  SyncObjs,
+  SysUtils,
+  DB,
+  uConstants,
+  CommonDBSupport,
+  uMemory,
+  uGOM,
+
+  Dmitry.CRC32,
+
+  ActiveX,
+  uDBThread;
 
 type
   TPrivateHelper = class(TObject)

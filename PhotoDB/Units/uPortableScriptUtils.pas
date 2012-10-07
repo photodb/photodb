@@ -3,14 +3,16 @@ unit uPortableScriptUtils;
 interface
 
 uses
-  uMemory,
-  uConstants,
   Generics.Collections,
   Vcl.Controls,
+
+  Dmitry.PathProviders,
+
+  uMemory,
+  uConstants,
   uScript,
   uPortableClasses,
   uPortableDeviceManager,
-  uPathProviders,
   uExplorerPortableDeviceProvider;
 
 function GetPortableDevices: TArrayOfString;

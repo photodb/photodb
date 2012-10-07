@@ -11,7 +11,7 @@ uses
   uConstants,
   EncdDecd,
   uDBBaseTypes,
-  uSysUtils,
+  Dmitry.Utils.System,
   JPEG,
   pngimage,
   uInternetProxy,

@@ -13,10 +13,11 @@ uses
   Vcl.StdCtrls,
   Vcl.Menus,
 
-  WebLink,
-  GraphicsCool,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.WebLink,
+
   ImageHistoryUnit,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   UnitDBKernel,
   ToolsUnit,
 

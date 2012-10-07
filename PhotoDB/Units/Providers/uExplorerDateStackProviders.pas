@@ -10,20 +10,21 @@ uses
   Vcl.Graphics,
   Data.DB,
 
+  Dmitry.Utils.System,
+  Dmitry.Utils.ShellIcons,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+
   CommonDBSupport,
   UnitGroupsWork,
 
-  uShellIcons,
   uConstants,
   uMemory,
   uTranslate,
   uExplorerPathProvider,
-  uExplorerMyComputerProvider,
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
-  uPathProviders,
-  uDateUtils,
-  uSysUtils;
+  uDateUtils;
 
 type
   TDateStackItem = class(TPathItem)

@@ -11,15 +11,17 @@ uses
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.Samples.Spin,
+
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+
   uMemoryEx,
   uDBForm,
-  Vcl.StdCtrls,
-  uBaseWinControl,
-  WebLink,
   uAssociations,
   uTranslate,
   uSettings,
-  Vcl.Samples.Spin,
   uFormInterfaces;
 
 type

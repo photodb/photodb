@@ -10,12 +10,14 @@ uses
   System.Math,
   System.Classes,
   Winapi.Windows,
-  win32Crc,
+
+  Dmitry.CRC32,
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+
   uConstants,
   uErrors,
   uMemory,
-  uSysUtils,
-  uFileUtils,
   uStrongCrypt,
   uLockedFileNotifications,
   DECUtil,

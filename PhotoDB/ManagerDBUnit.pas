@@ -5,40 +5,49 @@ interface
 uses
   Windows,
   Messages,
-  Types,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Math,
-  uVistaFuncs,
-  ExtCtrls,
-  AppEvnts,
-  ImgList,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  System.Math,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.ExtCtrls,
+  Vcl.AppEvnts,
+  Vcl.ImgList,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   DropTarget,
   DragDropFile,
   DragDrop,
   DropSource,
   Menus,
-  SaveWindowPos,
   DB,
   ComCtrls,
-  WebLink,
   StdCtrls,
   Dialogs,
   Grids,
   DBGrids,
   jpeg,
-  Rating,
   Mask,
   uMemoryEx,
   GraphicCrypt,
   CommonDBSupport,
-  GraphicsCool,
+
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+  Dmitry.Graphics.Utils,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.SaveWindowPos,
+  Dmitry.Controls.Rating,
+  Dmitry.Controls.DBLoading,
+  Dmitry.Controls.LoadingSign,
+
   CommCtrl,
   DateUtils,
   uScript,
+  uVistaFuncs,
   UnitScripts,
   CmpUnit,
   DBCMenu,
@@ -53,18 +62,15 @@ uses
   uBitmapUtils,
   uCDMappingTypes,
   uConstants,
-  uFileUtils,
   uDBDrawing,
   adodb,
-  DBLoading,
-  LoadingSign,
+  Themes,
   uDBForm,
   uMemory,
   uDBPopupMenuInfo,
   uGOM,
   uShellIntegration,
   uGraphicUtils,
-  uSysUtils,
   uDBUtils,
   uRuntime,
   uSettings,
@@ -72,12 +78,8 @@ uses
   uDBAdapter,
   uIconUtils,
   uVCLHelpers,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
   uThemesUtils,
-  Themes,
   uConfiguration,
-  uBaseWinControl,
   uFormInterfaces;
 
 type
@@ -1353,8 +1355,8 @@ begin
                   Bit.PixelFormat := Pf24bit;
                   Bit.Width := 16;
                   Bit.Height := 16;
-                  Bit.Canvas.Brush.Color := Graphics.ClMenu;
-                  Bit.Canvas.Pen.Color := Graphics.ClMenu;
+                  Bit.Canvas.Brush.Color := clMenu;
+                  Bit.Canvas.Pen.Color := clMenu;
                   Bit.Canvas.Rectangle(0, 0, 16, 16);
                   W := B.Width;
                   H := B.Height;
@@ -1396,8 +1398,8 @@ begin
           Bit.PixelFormat := Pf24bit;
           Bit.Width := 16;
           Bit.Height := 16;
-          Bit.Canvas.Brush.Color := Graphics.ClMenu;
-          Bit.Canvas.Pen.Color := Graphics.ClMenu;
+          Bit.Canvas.Brush.Color := clMenu;
+          Bit.Canvas.Pen.Color := clMenu;
           Bit.Canvas.Rectangle(0, 0, 16, 16);
           DrawIconEx(Bit.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
           ImageListPopupGroups.Add(Bit, nil);

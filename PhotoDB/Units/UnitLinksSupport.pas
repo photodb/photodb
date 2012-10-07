@@ -3,12 +3,12 @@ unit UnitLinksSupport;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  StrUtils,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  System.StrUtils,
+  Dmitry.Utils.System,
   uTranslate,
-  uSysUtils,
   uConstants;
 
 const

@@ -14,11 +14,11 @@ uses
   Vcl.Dialogs,
   Vcl.Graphics,
   Vcl.Themes,
-  uConstants,
+  Dmitry.Utils.System,
   {$IFNDEF EXTERNAL}
   uTranslate,
   {$ENDIF}
-  uSysUtils;
+  uConstants;
 
 type
   TChangeWindowMessageFilter = function(msg: Cardinal; action: Word): BOOL; stdcall;

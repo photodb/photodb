@@ -5,6 +5,7 @@ interface
 uses
   Windows,
   Classes,
+  Dmitry.Utils.System,
   {$IFNDEF EXTERNAL}
   uTranslate,
   uAssociations,
@@ -18,7 +19,6 @@ uses
   uIME,
   uTime,
   SysUtils,
-  uSysUtils,
   uDBCustomThread
   ;
 

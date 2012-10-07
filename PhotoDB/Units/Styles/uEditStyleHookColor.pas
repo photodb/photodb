@@ -12,7 +12,7 @@ uses
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Themes,
-  WatermarkedEdit,
+  Dmitry.Controls.WatermarkedEdit,
   DmMemo;
 
 type

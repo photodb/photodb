@@ -11,7 +11,7 @@ uses
   GBlur2,
   uDBThread,
   Classes,
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
   SysUtils,
   ExtCtrls,
   Controls,

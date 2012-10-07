@@ -2,7 +2,13 @@ unit UnitResampleFilters;
 
 interface
 
-uses Math, Windows, Graphics, SysUtils, GraphicsBaseTypes, uMath,
+uses
+  Math,
+  Windows,
+  Graphics,
+  SysUtils,
+  Dmitry.Graphics.Types,
+  uMath,
   uEditorTypes;
 
   // Sample filters for use with Stretch()
@@ -581,3 +587,4 @@ end;
 
 
 end.
+

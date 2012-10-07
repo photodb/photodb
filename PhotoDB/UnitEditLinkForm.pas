@@ -24,12 +24,12 @@ uses
   DropSource,
   DropTarget,
 
-  WatermarkedMemo,
-  WatermarkedEdit,
-  ComboBoxExDB,
+  Dmitry.Utils.Dialogs,
+  Dmitry.Controls.WatermarkedMemo,
+  Dmitry.Controls.WatermarkedEdit,
+  Dmitry.Controls.ComboBoxExDB,
 
   UnitLinksSupport,
-  acDlgSelect,
   UnitDBKernel,
   UnitDBFileDialogs,
   Dolphin_db,

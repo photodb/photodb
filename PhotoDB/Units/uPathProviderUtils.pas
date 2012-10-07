@@ -3,8 +3,8 @@ unit uPathProviderUtils;
 interface
 
 uses
-  uMemory,
-  uPathProviders;
+  Dmitry.PathProviders,
+  uMemory;
 
 function ExecuteProviderFeature(Sender: TObject; FileName, Feature: string): Boolean;
 

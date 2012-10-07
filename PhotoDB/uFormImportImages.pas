@@ -4,64 +4,67 @@ interface
 
 uses
   Generics.Collections,
-  uConstants,
   Winapi.Windows,
   Winapi.Messages,
+  Winapi.CommCtrl,
   System.SysUtils,
   System.Variants,
   System.Classes,
+  System.Math,
+  System.DateUtils,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
-  WebLink,
   Vcl.ComCtrls,
   Vcl.StdCtrls,
-  WatermarkedEdit,
-  PathEditor,
+  Vcl.ExtCtrls,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Vcl.Menus,
+  Vcl.AppEvnts,
+  Vcl.Themes,
+  Vcl.ImgList,
+
+  Dmitry.Utils.System,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.WatermarkedEdit,
+  Dmitry.Controls.PathEditor,
+  Dmitry.Controls.LoadingSign,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.FileSystem,
+  Dmitry.PathProviders.MyComputer,
+
+  Dolphin_db,
+  MPCommonUtilities,
+  MPCommonObjects,
+  EasyListview,
   UnitDBFileDialogs,
+  UnitDBDeclare,
+  UnitBitmapImageList,
+
+  uConstants,
   uMemory,
   uMemoryEx,
   uShellUtils,
-  DateUtils,
   uRuntime,
   uResources,
   uSettings,
   uDBForm,
   uThreadForm,
-  uPathProviders,
   uGraphicUtils,
-  LoadingSign,
-  uSysUtils,
   uTranslate,
-  Dolphin_db,
-  Vcl.ExtCtrls,
-  MPCommonObjects,
-  EasyListview,
   uVCLHelpers,
   uListViewUtils,
-  MPCommonUtilities,
   uDBPopupMenuInfo,
-  UnitDBDeclare,
   uAssociations,
-  UnitBitmapImageList,
-  uExplorerFSProviders,
-  uExplorerMyComputerProvider,
   uStringUtils,
   uDateUtils,
-  Menus,
-  Math,
   uPathUtils,
   uList64,
-  Winapi.CommCtrl,
   uImportPicturesUtils,
-  Themes,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
-  ImgList,
-  Vcl.AppEvnts,
   uBox,
-  uBaseWinControl,
   uFormInterfaces;
 
 const
@@ -958,7 +961,7 @@ begin
       Sb := DisplayItems[SI];
 
       LnkLabel := Sb.FindChildByTag<TWebLink>(TAG_LABEL);
-      TextSize := Math.Min(Math.Max(LnkLabel.Width - LnkLabel.Left - 5, 175 - 18), 450);
+      TextSize := Min(Max(LnkLabel.Width - LnkLabel.Left - 5, 175 - 18), 450);
       Sb.Width := TextSize + 18;
       Sb.Left := Left - FContainer.HorzScrollBar.Position;
       Left := Left + Sb.Width + 5;
@@ -1286,7 +1289,7 @@ begin
         WlLabel.Text := SI.ItemLabel;
       WlLabel.LoadImage;
 
-      Sb.Width := Math.Min(Math.Max(WlLabel.Width - WlLabel.Left - 5, 175 - 18), 450) + 18;
+      Sb.Width := Min(Max(WlLabel.Width - WlLabel.Left - 5, 175 - 18), 450) + 18;
 
       WlDate := Sb.FindChildByTag<TWebLink>(TAG_DATE);
 
@@ -1373,7 +1376,7 @@ begin
     WedLabel.Hide;
   end else
   begin
-    WedLabel.Width := Math.Max(150, WlLabel.Width);
+    WedLabel.Width := Max(150, WlLabel.Width);
     WlSetLabel.Left := WedLabel.Left + WedLabel.Width + 5;
     WlSetLabel.LoadImage;
     X := WlSetLabel.Left + WlSetLabel.Width + 10;

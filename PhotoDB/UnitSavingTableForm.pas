@@ -3,8 +3,22 @@ unit UnitSavingTableForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DmProgress, DB, uDBBaseTypes, UnitDBDeclare,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Data.DB,
+
+  Dmitry.Controls.DmProgress,
+
+  UnitDBDeclare,
+
+  uDBBaseTypes,
   uThreadForm;
 
 type

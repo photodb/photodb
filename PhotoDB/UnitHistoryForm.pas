@@ -16,6 +16,11 @@ uses
   StdCtrls,
   uDBUtils,
   Menus,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+
+  Dmitry.Utils.Files,
+
   UnitDBKernel,
   uGraphicUtils,
   UnitDBCommonGraphics,
@@ -25,9 +30,6 @@ uses
   uDBForm,
   uConstants,
   uDBPopupMenuInfo,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
-  uFileUtils,
   uFormInterfaces;
 
 type

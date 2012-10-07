@@ -3,8 +3,9 @@ unit uExplorerProvidersInit;
 interface
 
 uses
-  uPathProviders,
-  uExplorerMyComputerProvider,
+  Dmitry.PathProviders,
+  Dmitry.PathProviders.MyComputer,
+
   uExplorerPortableDeviceProvider,
   uExplorerDateStackProviders,
   uExplorerGroupsProvider,

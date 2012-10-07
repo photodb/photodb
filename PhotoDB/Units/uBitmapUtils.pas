@@ -8,7 +8,7 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
 
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
 
   uDBGraphicTypes,
   uMemory,

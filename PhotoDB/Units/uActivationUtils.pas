@@ -9,13 +9,13 @@ uses
   System.Win.Registry,
   Winapi.Windows,
 
-  win32crc,
+  Dmitry.Utils.System,
+  Dmitry.CRC32,
 
   uRuntime,
   uMemory,
   uConstants,
-  uTranslate,
-  uSysUtils;
+  uTranslate;
 
 const
   RegistrationUserName: string = 'UserName';

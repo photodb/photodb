@@ -33,7 +33,9 @@ uses
   UnitDBCommon,
   uBitmapUtils,
   uDBDrawing,
-  uFileUtils,
+
+  Dmitry.Utils.Files,
+
   uDBPopupMenuInfo,
   uMemory,
   uDBForm,

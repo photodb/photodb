@@ -15,15 +15,19 @@ uses
   Vcl.ActnPopup,
   Vcl.PlatformDefaultStyleActnCtrls,
 
+  Dmitry.Utils.Files,
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.WatermarkedEdit,
+
   DECUtil,
   DECCipher,
 
   GraphicCrypt,
-  WebLink,
-  WatermarkedEdit,
   UnitDBKernel,
   UnitDBDeclare,
 
+  uFormInterfaces,
   uConstants,
   uMemory,
   uStrongCrypt,
@@ -33,10 +37,7 @@ uses
   uActivationUtils,
   uCryptUtils,
   uDBPopupMenuInfo,
-  uDBBaseTypes,
-  uFileUtils,
-  uBaseWinControl,
-  uFormInterfaces;
+  uDBBaseTypes;
 
 type
   TCryptImageForm = class(TPasswordSettingsDBForm, IEncryptForm)

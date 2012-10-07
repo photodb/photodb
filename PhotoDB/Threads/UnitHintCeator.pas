@@ -26,7 +26,9 @@ uses
   uJpegUtils,
   GraphicCrypt,
   uGOM,
-  uFileUtils,
+
+  Dmitry.Utils.Files,
+
   uDBForm,
   uExifUtils,
   uMemory,

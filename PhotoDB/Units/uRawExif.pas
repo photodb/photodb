@@ -9,10 +9,10 @@ uses
   SysUtils,
   FreeImage, 
   FreeBitmap,
-  uFreeImageIO, 
+  uFreeImageIO,
   uMemory,
   uExifUtils,
-  uSysUtils,
+  Dmitry.Utils.System,
   uFIRational,
   uTranslate,
   GraphicCrypt;

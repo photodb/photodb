@@ -3,8 +3,8 @@ unit uConfiguration;
 interface
 
 uses
-  uSysUtils,
-  uFileUtils,
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
   uConstants;
 
 function GetAppDataDirectory: string;
