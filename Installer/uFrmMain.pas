@@ -19,7 +19,8 @@ uses
   Vcl.StdCtrls,
   Vcl.Imaging.pngimage,
 
-  WatermarkedEdit,
+  Dmitry.Utils.System,
+  Dmitry.Controls.WatermarkedEdit,
 
   uDBForm,
   uInstallTypes,
@@ -31,7 +32,6 @@ uses
   uInstallScope,
   uShellUtils,
   uSteps,
-  uSysUtils,
   uDBBaseTypes,
 {$IFDEF INSTALL}
   uInstallSteps,

@@ -15,7 +15,8 @@ uses
   Winapi.ActiveX,
   Vcl.Forms,
 
-  VRSIShortCuts,
+  Dmitry.Utils.ShortCut,
+
   UnitINI,
 
   uConstants,
@@ -117,9 +118,9 @@ end;
 
 procedure CreateShortcut(SourceFileName, ShortcutPath: string; Description: string);
 var
-  VRSIShortCut: TVRSIShortCut;
+  VRSIShortCut: Dmitry.Utils.ShortCut.TShortCut;
 begin
-  VRSIShortCut := TVRSIShortCut.Create;
+  VRSIShortCut := Dmitry.Utils.ShortCut.TShortCut.Create;
   try
     if not DirectoryExists(ExtractFileDir(ShortcutPath)) then
       CreateDir(ExtractFileDir(ShortcutPath));

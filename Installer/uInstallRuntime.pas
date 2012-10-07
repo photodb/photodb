@@ -3,8 +3,7 @@ unit uInstallRuntime;
 interface
 
 uses
-  uDBBaseTypes,
-  uSysUtils;
+  Dmitry.Utils.System;
 
 var
   InstallVersion: TRelease;

@@ -15,6 +15,9 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.Imaging.pngimage,
+
+  Dmitry.Utils.System,
+
   uDBForm,
   uInstallUtils,
   uMemory,
@@ -23,7 +26,6 @@ uses
   uTranslate,
   uLogger,
   uInstallZip,
-  uSysUtils,
   uLangUtils,
   uInstallRuntime,
   uRuntime;

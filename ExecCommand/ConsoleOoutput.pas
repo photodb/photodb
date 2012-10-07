@@ -3,7 +3,10 @@
 interface
 
 uses
-  Controls, Windows, SysUtils, Forms;
+  Winapi.Windows,
+  System.SysUtils,
+  Vcl.Controls,
+  Vcl.Forms;
 
 function GetDosOutput(const CommandLine, Directory: string): string;
 

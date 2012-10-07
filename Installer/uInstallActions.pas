@@ -13,7 +13,8 @@ uses
   Winapi.ShellApi,
   Winapi.ShlObj,
 
-  VRSIShortCuts,
+  Dmitry.Utils.ShortCut,
+  Dmitry.Utils.System,
 
   uMemory,
   uInstallTypes,
@@ -21,7 +22,6 @@ uses
   uConstants,
   uInstallScope,
   uRuntime,
-  uSysUtils,
   uTranslate,
   uInstallZip,
   uAssociations,

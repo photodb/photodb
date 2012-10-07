@@ -11,12 +11,12 @@ uses
   System.Win.Registry,
   Winapi.Windows,
   Vcl.Dialogs,
+  Dmitry.Utils.Files,
   uActions,
   uInstallTypes,
   uMemory,
   uConstants,
   uUninstallTypes,
-  uFileUtils,
   uShellUtils;
 
 const

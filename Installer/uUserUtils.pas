@@ -7,9 +7,9 @@ uses
   System.Classes,
   Winapi.Windows,
   Winapi.ShellApi,
+  Dmitry.Utils.System,
   uMemory,
-  uAppUtils,
-  uSysUtils;
+  uAppUtils;
 
 function RunAsAdmin(hWnd: HWND; FileName: string; Parameters: string; IsCurrentUserAdmin: Boolean): THandle;
 function RunAsUser(ExeName, ParameterString, WorkDirectory: string; Wait: Boolean): THandle;

@@ -15,7 +15,7 @@ uses
   Vcl.AppEvnts,
   Vcl.Imaging.pngimage,
 
-  GraphicsBaseTypes,
+  Dmitry.Graphics.Types,
 
   uFormUtils,
   uMemory,
