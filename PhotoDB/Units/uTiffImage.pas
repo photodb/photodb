@@ -8,8 +8,8 @@ uses
   Graphics,
   FreeImage,
   FreeBitmap,
-  uFreeImageIO,
   Dmitry.Graphics.Types,
+  uFreeImageIO,
   uMemory;
 
 type

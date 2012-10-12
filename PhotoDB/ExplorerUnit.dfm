@@ -32,7 +32,7 @@ object ExplorerForm: TExplorerForm
     Left = 140
     Top = 48
     Width = 5
-    Height = 634
+    Height = 652
     Constraints.MaxWidth = 150
     ResizeStyle = rsUpdate
     OnCanResize = SplLeftPanelCanResize
@@ -44,7 +44,7 @@ object ExplorerForm: TExplorerForm
     Left = 145
     Top = 48
     Width = 1
-    Height = 634
+    Height = 652
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
@@ -55,7 +55,7 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 48
     Width = 140
-    Height = 634
+    Height = 652
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
@@ -64,8 +64,8 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 0
       Width = 140
-      Height = 605
-      ActivePage = TsInfo
+      Height = 623
+      ActivePage = TsDetailedSearch
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -82,7 +82,7 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 577
+          Height = 595
           Align = alClient
           BevelOuter = bvNone
           ParentColor = True
@@ -92,7 +92,7 @@ object ExplorerForm: TExplorerForm
             Left = 0
             Top = 0
             Width = 132
-            Height = 577
+            Height = 595
             HorzScrollBar.Increment = 10
             HorzScrollBar.Visible = False
             VertScrollBar.Smooth = True
@@ -745,6 +745,37 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        object PnResetFilter: TPanel
+          Left = 0
+          Top = 574
+          Width = 132
+          Height = 21
+          Align = alBottom
+          ParentBackground = False
+          TabOrder = 0
+          Visible = False
+          OnResize = PnResetFilterResize
+          object WlResetFilter: TWebLink
+            Left = 31
+            Top = 4
+            Width = 64
+            Height = 13
+            Cursor = crHandPoint
+            Text = 'WlResetFilter'
+            OnClick = WlResetFilterClick
+            ImageIndex = 0
+            IconWidth = 0
+            IconHeight = 0
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+        end
       end
       object TsInfo: TTabSheet
         Caption = 'Info'
@@ -756,14 +787,14 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 577
+          Height = 595
           Align = alClient
           BevelOuter = bvNone
           ParentBackground = False
           TabOrder = 0
           DesignSize = (
             132
-            577)
+            595)
           object LbEditComments: TLabel
             Tag = 2
             Left = 5
@@ -915,7 +946,7 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 577
+          Height = 595
           Align = alClient
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
@@ -930,327 +961,341 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        DesignSize = (
-          132
-          577)
-        object BvRating: TBevel
-          Left = 3
-          Top = 75
-          Width = 126
-          Height = 2
-          Anchors = [akLeft, akTop, akRight]
-          Shape = bsBottomLine
-        end
-        object BvPersons: TBevel
-          Left = 4
-          Top = 130
-          Width = 126
-          Height = 2
-          Anchors = [akLeft, akTop, akRight]
-          Shape = bsBottomLine
-        end
-        object BvGroups: TBevel
-          Left = 4
-          Top = 185
-          Width = 126
-          Height = 2
-          Anchors = [akLeft, akTop, akRight]
-          Shape = bsBottomLine
-        end
-        object PnExtendedSearch: TPanel
-          Left = 3
-          Top = 3
+        object PnESContainer: TPanel
+          Left = 0
+          Top = 0
           Width = 132
-          Height = 25
-          Anchors = [akLeft, akTop, akRight]
-          BevelInner = bvLowered
-          BevelOuter = bvSpace
+          Height = 595
+          Align = alClient
+          BevelOuter = bvNone
+          Ctl3D = True
+          ParentBackground = False
+          ParentCtl3D = False
           TabOrder = 0
-          object SbExtendedSearchMode: TSpeedButton
-            Left = 2
-            Top = 2
-            Width = 30
-            Height = 21
-            Align = alLeft
-            Constraints.MaxWidth = 30
-            Constraints.MinWidth = 30
-            Flat = True
-            PopupMenu = PmSearchMode
-            OnClick = SbSearchModeClick
-            ExplicitLeft = 699
-            ExplicitTop = 1
-            ExplicitHeight = 24
+          DesignSize = (
+            132
+            595)
+          object BvRating: TBevel
+            Left = 3
+            Top = 75
+            Width = 126
+            Height = 2
+            Anchors = [akLeft, akTop, akRight]
+            Shape = bsBottomLine
           end
-          object SbExtendedSearchStart: TSpeedButton
-            Left = 110
-            Top = 2
-            Width = 20
-            Height = 21
-            Align = alRight
-            Flat = True
-            OnClick = SbDoSearchClick
-            ExplicitLeft = 160
-            ExplicitTop = 1
-            ExplicitHeight = 23
+          object BvPersons: TBevel
+            Left = 4
+            Top = 130
+            Width = 126
+            Height = 2
+            Anchors = [akLeft, akTop, akRight]
+            Shape = bsBottomLine
           end
-          object PnExtendedSearchEditPlace: TPanel
-            Left = 32
-            Top = 2
-            Width = 78
-            Height = 21
-            Align = alClient
-            BevelOuter = bvNone
+          object BvGroups: TBevel
+            Left = 4
+            Top = 185
+            Width = 126
+            Height = 2
+            Anchors = [akLeft, akTop, akRight]
+            Shape = bsBottomLine
+          end
+          object PnExtendedSearch: TPanel
+            Left = 0
+            Top = 3
+            Width = 132
+            Height = 25
+            Anchors = [akLeft, akTop, akRight]
+            BevelInner = bvLowered
+            BevelOuter = bvSpace
+            ParentBackground = False
             TabOrder = 0
-            DesignSize = (
-              78
-              21)
-            object EdExtendedSearchText: TWatermarkedEdit
+            object SbExtendedSearchMode: TSpeedButton
               Left = 2
-              Top = 4
-              Width = 73
-              Height = 17
-              Anchors = [akLeft, akTop, akRight]
-              BevelEdges = []
-              BevelInner = bvNone
+              Top = 2
+              Width = 30
+              Height = 21
+              Align = alLeft
+              Constraints.MaxWidth = 30
+              Constraints.MinWidth = 30
+              Flat = True
+              PopupMenu = PmSearchMode
+              OnClick = SbSearchModeClick
+              ExplicitLeft = 699
+              ExplicitTop = 1
+              ExplicitHeight = 24
+            end
+            object SbExtendedSearchStart: TSpeedButton
+              Left = 110
+              Top = 2
+              Width = 20
+              Height = 21
+              Align = alRight
+              Flat = True
+              OnClick = SbDoSearchClick
+              ExplicitLeft = 160
+              ExplicitTop = 1
+              ExplicitHeight = 23
+            end
+            object PnExtendedSearchEditPlace: TPanel
+              Left = 32
+              Top = 2
+              Width = 78
+              Height = 21
+              Align = alClient
               BevelOuter = bvNone
-              BorderStyle = bsNone
+              ParentBackground = False
               TabOrder = 0
-              OnKeyPress = WedSearchKeyPress
-              WatermarkText = 'Search in directory'
+              DesignSize = (
+                78
+                21)
+              object EdExtendedSearchText: TWatermarkedEdit
+                Left = 2
+                Top = 4
+                Width = 73
+                Height = 17
+                Anchors = [akLeft, akTop, akRight]
+                BevelEdges = []
+                BevelInner = bvNone
+                BevelOuter = bvNone
+                BorderStyle = bsNone
+                TabOrder = 0
+                OnKeyPress = WedSearchKeyPress
+                WatermarkText = 'Search in directory'
+              end
             end
           end
-        end
-        object WlSearchRatingFrom: TWebLink
-          Left = 7
-          Top = 31
-          Width = 100
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'WlSearchRatingFrom'
-          OnClick = WlSearchRatingFromClick
-          ImageIndex = 0
-          IconWidth = 0
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object WlSearchRatingTo: TWebLink
-          Left = 7
-          Top = 53
-          Width = 88
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'WlSearchRatingTo'
-          OnClick = WlSearchRatingToClick
-          ImageIndex = 0
-          IconWidth = 0
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object WllExtendedSearchPersons: TWebLinkList
-          Left = 5
-          Top = 83
-          Width = 130
-          Height = 41
-          Anchors = [akLeft, akTop, akRight]
-          BevelEdges = []
-          BevelInner = bvNone
-          BevelOuter = bvNone
-          BorderStyle = bsNone
-          ParentBackground = True
-          TabOrder = 3
-          VerticalIncrement = 5
-          HorizontalIncrement = 5
-          LineHeight = 0
-          PaddingTop = 0
-          PaddingLeft = 0
-        end
-        object WllExtendedSearchGroups: TWebLinkList
-          Left = 5
-          Top = 138
-          Width = 130
-          Height = 41
-          Anchors = [akLeft, akTop, akRight]
-          BevelEdges = []
-          BevelInner = bvNone
-          BevelOuter = bvNone
-          BorderStyle = bsNone
-          ParentBackground = True
-          TabOrder = 4
-          VerticalIncrement = 5
-          HorizontalIncrement = 5
-          LineHeight = 0
-          PaddingTop = 0
-          PaddingLeft = 0
-        end
-        object WlExtendedSearchDateFrom: TWebLink
-          Left = 5
-          Top = 193
-          Width = 159
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'WlExtendedSearchDateFrom'
-          OnClick = WlExtendedSearchDateFromClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object WlExtendedSearchDateTo: TWebLink
-          Left = 5
-          Top = 215
-          Width = 147
-          Height = 16
-          Cursor = crHandPoint
-          Text = 'WlExtendedSearchDateTo'
-          OnClick = WlExtendedSearchDateFromClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object WlExtendedSearchSortBy: TWebLink
-          Left = 25
-          Top = 238
-          Width = 123
-          Height = 13
-          Cursor = crHandPoint
-          PopupMenu = PmESSorting
-          Text = 'WlExtendedSearchSortBy'
-          OnClick = WlExtendedSearchSortByClick
-          ImageIndex = 0
-          IconWidth = 0
-          IconHeight = 0
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object WlExtendedSearchSortDescending: TWebLink
-          Left = 5
-          Top = 237
-          Width = 21
-          Height = 16
-          Cursor = crHandPoint
-          OnClick = WlExtendedSearchSortDescendingClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object WlExtendedSearchOptions: TWebLink
-          Left = 3
-          Top = 259
-          Width = 21
-          Height = 16
-          Cursor = crHandPoint
-          OnContextPopup = WlExtendedSearchOptionsContextPopup
-          PopupMenu = PmESOptions
-          OnClick = WlExtendedSearchOptionsClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object BtnSearch: TButton
-          Left = 48
-          Top = 257
-          Width = 87
-          Height = 24
-          Anchors = [akTop, akRight]
-          Caption = 'BtnSearch'
-          ImageMargins.Left = 3
-          TabOrder = 10
-          OnClick = SbDoSearchClick
-        end
-        object WlSearchRatingFromValue: TWebLink
-          Left = 114
-          Top = 31
-          Width = 21
-          Height = 16
-          Cursor = crHandPoint
-          OnClick = WlSearchRatingFromClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
-        end
-        object WlSearchRatingToValue: TWebLink
-          Left = 102
-          Top = 53
-          Width = 21
-          Height = 16
-          Cursor = crHandPoint
-          OnClick = WlSearchRatingToClick
-          ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
-          UseEnterColor = False
-          EnterColor = clBlack
-          EnterBould = False
-          TopIconIncrement = 0
-          UseSpecIconSize = True
-          HightliteImage = False
-          StretchImage = True
-          CanClick = True
+          object WlSearchRatingFrom: TWebLink
+            Left = 7
+            Top = 31
+            Width = 100
+            Height = 16
+            Cursor = crHandPoint
+            Text = 'WlSearchRatingFrom'
+            OnClick = WlSearchRatingFromClick
+            ImageIndex = 0
+            IconWidth = 0
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WlSearchRatingFromValue: TWebLink
+            Left = 111
+            Top = 31
+            Width = 21
+            Height = 16
+            Cursor = crHandPoint
+            OnClick = WlSearchRatingFromClick
+            ImageIndex = 0
+            IconWidth = 16
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WlSearchRatingToValue: TWebLink
+            Left = 102
+            Top = 53
+            Width = 21
+            Height = 16
+            Cursor = crHandPoint
+            OnClick = WlSearchRatingToClick
+            ImageIndex = 0
+            IconWidth = 16
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WlSearchRatingTo: TWebLink
+            Left = 7
+            Top = 53
+            Width = 88
+            Height = 16
+            Cursor = crHandPoint
+            Text = 'WlSearchRatingTo'
+            OnClick = WlSearchRatingToClick
+            ImageIndex = 0
+            IconWidth = 0
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WllExtendedSearchPersons: TWebLinkList
+            Left = 2
+            Top = 83
+            Width = 130
+            Height = 41
+            Anchors = [akLeft, akTop, akRight]
+            BevelEdges = []
+            BevelInner = bvNone
+            BevelOuter = bvNone
+            BorderStyle = bsNone
+            ParentBackground = True
+            TabOrder = 5
+            VerticalIncrement = 5
+            HorizontalIncrement = 5
+            LineHeight = 0
+            PaddingTop = 0
+            PaddingLeft = 0
+          end
+          object WllExtendedSearchGroups: TWebLinkList
+            Left = 2
+            Top = 138
+            Width = 130
+            Height = 41
+            Anchors = [akLeft, akTop, akRight]
+            BevelEdges = []
+            BevelInner = bvNone
+            BevelOuter = bvNone
+            BorderStyle = bsNone
+            ParentBackground = True
+            TabOrder = 6
+            VerticalIncrement = 5
+            HorizontalIncrement = 5
+            LineHeight = 0
+            PaddingTop = 0
+            PaddingLeft = 0
+          end
+          object WlExtendedSearchDateFrom: TWebLink
+            Left = 3
+            Top = 193
+            Width = 159
+            Height = 16
+            Cursor = crHandPoint
+            Text = 'WlExtendedSearchDateFrom'
+            OnClick = WlExtendedSearchDateFromClick
+            ImageIndex = 0
+            IconWidth = 16
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WlExtendedSearchDateTo: TWebLink
+            Left = 3
+            Top = 215
+            Width = 147
+            Height = 16
+            Cursor = crHandPoint
+            Text = 'WlExtendedSearchDateTo'
+            OnClick = WlExtendedSearchDateFromClick
+            ImageIndex = 0
+            IconWidth = 16
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WlExtendedSearchSortDescending: TWebLink
+            Left = 5
+            Top = 237
+            Width = 21
+            Height = 16
+            Cursor = crHandPoint
+            OnClick = WlExtendedSearchSortDescendingClick
+            ImageIndex = 0
+            IconWidth = 16
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WlExtendedSearchSortBy: TWebLink
+            Left = 31
+            Top = 238
+            Width = 123
+            Height = 13
+            Cursor = crHandPoint
+            PopupMenu = PmESSorting
+            Text = 'WlExtendedSearchSortBy'
+            OnClick = WlExtendedSearchSortByClick
+            ImageIndex = 0
+            IconWidth = 0
+            IconHeight = 0
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object WlExtendedSearchOptions: TWebLink
+            Left = 3
+            Top = 259
+            Width = 21
+            Height = 16
+            Cursor = crHandPoint
+            OnContextPopup = WlExtendedSearchOptionsContextPopup
+            PopupMenu = PmESOptions
+            OnClick = WlExtendedSearchOptionsClick
+            ImageIndex = 0
+            IconWidth = 16
+            IconHeight = 16
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = False
+            StretchImage = True
+            CanClick = True
+          end
+          object BtnSearch: TButton
+            Left = 45
+            Top = 257
+            Width = 87
+            Height = 24
+            Anchors = [akTop, akRight]
+            Caption = 'BtnSearch'
+            ImageMargins.Left = 3
+            TabOrder = 12
+            OnClick = SbDoSearchClick
+          end
         end
       end
     end
     object PnShelf: TPanel
       Left = 0
-      Top = 605
+      Top = 623
       Width = 140
       Height = 29
       Align = alBottom
@@ -1278,20 +1323,6 @@ object ExplorerForm: TExplorerForm
         CanClick = True
       end
     end
-  end
-  object StatusBarMain: TStatusBar
-    Left = 0
-    Top = 701
-    Width = 1008
-    Height = 20
-    Panels = <
-      item
-        Width = 200
-      end
-      item
-        Width = 500
-      end>
-    Visible = False
   end
   object CoolBarTop: TCoolBar
     Left = 0
@@ -1495,7 +1526,7 @@ object ExplorerForm: TExplorerForm
     AutoSize = True
     BevelEdges = [beBottom]
     ParentColor = True
-    TabOrder = 4
+    TabOrder = 3
     object BvSeparatorAddress: TBevel
       Left = 817
       Top = 1
@@ -1650,17 +1681,17 @@ object ExplorerForm: TExplorerForm
     Left = 146
     Top = 48
     Width = 862
-    Height = 634
+    Height = 652
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
     ParentColor = True
-    TabOrder = 5
+    TabOrder = 4
     object SplRightPanel: TSplitter
       Left = 507
       Top = 33
       Width = 5
-      Height = 568
+      Height = 586
       Align = alRight
       ResizeStyle = rsUpdate
       Visible = False
@@ -1671,7 +1702,7 @@ object ExplorerForm: TExplorerForm
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 601
+      Top = 619
       Width = 862
       Height = 33
       Align = alBottom
@@ -2140,14 +2171,14 @@ object ExplorerForm: TExplorerForm
       Left = 512
       Top = 33
       Width = 350
-      Height = 568
+      Height = 586
       Align = alRight
       Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
       DesignSize = (
         350
-        568)
+        586)
       object SbCloseRightPanel: TSpeedButton
         Left = 325
         Top = 1
@@ -2188,7 +2219,7 @@ object ExplorerForm: TExplorerForm
         Left = 1
         Top = 1
         Width = 348
-        Height = 566
+        Height = 584
         ActivePage = TsMediaPreview
         Align = alClient
         TabOrder = 0
@@ -2199,10 +2230,10 @@ object ExplorerForm: TExplorerForm
           OnResize = TsMediaPreviewResize
           DesignSize = (
             340
-            538)
+            556)
           object ToolBarPreview: TToolBar
             Left = 0
-            Top = 515
+            Top = 533
             Width = 219
             Height = 22
             Align = alNone
@@ -2271,6 +2302,7 @@ object ExplorerForm: TExplorerForm
               Caption = 'TbPreviewZoomSeparator'
               ImageIndex = 2
               Style = tbsSeparator
+              Visible = False
             end
             object TbPreviewOpen: TToolButton
               Left = 189
@@ -2284,7 +2316,7 @@ object ExplorerForm: TExplorerForm
           Caption = 'TsGeoLocation'
           object PnGeoSearch: TPanel
             Left = 0
-            Top = 503
+            Top = 521
             Width = 340
             Height = 35
             Align = alBottom
@@ -2389,12 +2421,36 @@ object ExplorerForm: TExplorerForm
         end
       end
     end
+    object PnListView: TPanel
+      Left = 0
+      Top = 33
+      Width = 507
+      Height = 586
+      Align = alClient
+      BevelOuter = bvNone
+      ParentBackground = False
+      TabOrder = 3
+      object StatusBarMain: TStatusBar
+        Left = 0
+        Top = 566
+        Width = 507
+        Height = 20
+        Panels = <
+          item
+            Width = 200
+          end
+          item
+            Width = 500
+          end>
+        Visible = False
+      end
+    end
   end
   object CoolBarBottom: TCoolBar
     Left = 0
-    Top = 682
+    Top = 700
     Width = 1008
-    Height = 19
+    Height = 21
     Align = alBottom
     BandBorderStyle = bsNone
     BandMaximize = bmNone
@@ -2406,24 +2462,23 @@ object ExplorerForm: TExplorerForm
         MinHeight = 19
         Width = 1006
       end>
-    EdgeBorders = []
+    EdgeBorders = [ebBottom]
     object ToolBarBottom: TToolBar
       Left = 11
       Top = 0
       Width = 997
       Height = 19
-      AutoSize = True
       ButtonHeight = 19
       ButtonWidth = 100
       Color = clBtnFace
       EdgeInner = esNone
-      EdgeOuter = esNone
       List = True
       ParentColor = False
       ParentShowHint = False
       ShowCaptions = True
       ShowHint = True
       TabOrder = 0
+      Wrapable = False
       object TbbPlay: TToolButton
         Left = 0
         Top = 0
@@ -2533,14 +2588,14 @@ object ExplorerForm: TExplorerForm
     Top = 365
     Width = 174
     Height = 204
-    TabOrder = 7
+    TabOrder = 6
     Visible = False
     object McDateSelectPopup: TMonthCalendar
       Left = 6
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.976600312500000000
+      Date = 41177.038763379630000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3026,7 +3081,7 @@ object ExplorerForm: TExplorerForm
   end
   object ScriptMainMenu: TMainMenu
     Left = 537
-    Top = 104
+    Top = 96
   end
   object CloseTimer: TTimer
     Enabled = False
@@ -3350,5 +3405,11 @@ object ExplorerForm: TExplorerForm
     OnTimer = TmrSearchResultsCountTimer
     Left = 537
     Top = 586
+  end
+  object TmHideStatusBar: TTimer
+    Enabled = False
+    OnTimer = TmHideStatusBarTimer
+    Left = 536
+    Top = 152
   end
 end

@@ -41,6 +41,7 @@ type
     FItem: TDBPopupMenuInfoRecord;
     procedure Resize;
     procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord);
+    procedure LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
   public
     constructor Create;
     destructor Destroy; override;
@@ -81,6 +82,7 @@ begin
   FImageControl := TImageViewerControl.Create(Control);
   FImageControl.Top := Y;
   FImageControl.Left := X;
+  FImageControl.OnImageRequest := LoadImage;
   FImageControl.Parent := Control;
 
   inherited;
@@ -164,10 +166,7 @@ begin
   F(FItem);
   FItem := FileInfo.Copy;
 
-  DisplaySize.cx := FWidth;
-  DisplaySize.cy := FHeight;
-
-  TImageViewerThread.Create(FOwnerForm, Self, FActiveThreadId, FileInfo, DisplaySize, True, -1);
+  LoadImage(Self, FileInfo, FWidth, FHeight);
 end;
 
 procedure TImageViewer.LoadFiles(FileList: TDBPopupMenuInfo);
@@ -180,6 +179,15 @@ begin
   Position := FFiles.Position;
   if Position > -1 then
     LoadFile(FFiles[Position]);
+end;
+
+procedure TImageViewer.LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
+var
+  DisplaySize: TSize;
+begin
+  DisplaySize.cx := Width;
+  DisplaySize.cy := Height;
+  TImageViewerThread.Create(FOwnerForm, Self, FActiveThreadId, Item, DisplaySize, True, -1);
 end;
 
 procedure TImageViewer.LoadNextFile;
@@ -211,8 +219,7 @@ begin
   Resize;
 end;
 
-procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth,
-  RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
 begin
   if FFiles.Position < 0 then
     Exit;
@@ -232,8 +239,7 @@ begin
   FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
 end;
 
-procedure TImageViewer.UpdateFaces(FileName: string;
-  Faces: TFaceDetectionResult);
+procedure TImageViewer.UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
 begin
   //TODO:
 end;

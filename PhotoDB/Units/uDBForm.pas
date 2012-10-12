@@ -2815,7 +2815,7 @@ end;
 procedure TFormStyleHookEx.WMNCCalcSize(var Message: TWMNCCalcSize);
 var
   Params: PNCCalcSizeParams;
-  R, MenuRect: TRect;
+  R, MenuRect, ExRect: TRect;
   MenuHeight: Integer;
 begin
   if not IsStyleBorder then
@@ -2843,10 +2843,7 @@ begin
     if TMainMenuBarStyleHook(FMainMenuBarHook) <> nil then
     begin
       MenuHeight := FMainMenuBarHook.GetMenuHeight(FWidth - R.Left - R.Right);
-      MenuRect := Rect(R.Left, R.Top, FWidth - R.Right, R.Top + MenuHeight);   
-      //hack of Aero Maximize
-      if (Form.WindowState = wsMaximized) and DwmCompositionEnabled then 
-        MenuRect.Left := MenuRect.Left + R.Left;
+      MenuRect := Rect(R.Left, R.Top, FWidth - R.Right, R.Top + MenuHeight);
       FMainMenuBarHook.BoundsRect := MenuRect;
     end
     else
@@ -2857,15 +2854,17 @@ begin
       Inc(Left, R.Left);
       Inc(Top, R.Top + MenuHeight);
       Dec(Right, R.Right);
-      Dec(Bottom, R.Bottom);   
+      Dec(Bottom, R.Bottom);
               
       //hack of Aero Maximize
-      if (Form.WindowState = wsMaximized) and DwmCompositionEnabled then 
-      begin      
-        Inc(Left, R.Left);        
-        Dec(Right, R.Right);
-        Dec(Bottom, R.Bottom); 
-      end; 
+      if (Form.WindowState = wsMaximized) and DwmCompositionEnabled then
+      begin
+        DwmGetWindowAttribute(Handle, DWMWA_EXTENDED_FRAME_BOUNDS, @ExRect, sizeOf(ExRect));
+
+        Inc(Left, -R.Left - ExRect.Top);
+        Dec(Right, -R.Right - ExRect.TOp);
+        Dec(Bottom, -R.Bottom - ExRect.TOp);
+      end;
     end;
     
     Handled := True;
@@ -3263,12 +3262,6 @@ begin
   end;
   DrawRect := Rect(0, R.Top, R.Left, FHeight - R.Bottom);   
   
-  //hack of Aero Maximize
-  if (Form.WindowState = wsMaximized) and DwmCompositionEnabled then
-  begin
-    DrawRect.Left := DrawRect.Left + R.Left;    
-    DrawRect.Right := DrawRect.Right + R.Left;  
-  end;
   Details := StyleServices.GetElementDetails(Detail);
 
   if DrawRect.Bottom - DrawRect.Top > 0 then
@@ -3291,12 +3284,6 @@ begin
       Detail := twSmallFrameRightInActive
   end;
   DrawRect := Rect(FWidth - R.Right, R.Top, FWidth, FHeight - R.Bottom);   
-  //hack of Aero Maximize
-  if (Form.WindowState = wsMaximized) and DwmCompositionEnabled then
-  begin
-    DrawRect.Left := DrawRect.Left - R.Right;    
-    DrawRect.Right := DrawRect.Right - R.Right;  
-  end;
   Details := StyleServices.GetElementDetails(Detail);
 
   if DrawRect.Bottom - DrawRect.Top > 0 then
@@ -3321,16 +3308,6 @@ begin
 
   DrawRect := Rect(0, FHeight - R.Bottom, FWidth, FHeight);
 
-  //hack of Aero Maximize
-  if (Form.WindowState = wsMaximized) and DwmCompositionEnabled then
-  begin
-    DrawRect.Top := DrawRect.Top - R.Bottom;    
-    DrawRect.Bottom := DrawRect.Top + R.Bottom;  
-    Details := StyleServices.GetElementDetails(Detail);   
-    StyleServices.DrawElement(Canvas.Handle, Details, DrawRect);   
-    DrawRect.Top := DrawRect.Top + R.Bottom;    
-    DrawRect.Bottom := DrawRect.Top + R.Bottom;  
-  end;
   Details := StyleServices.GetElementDetails(Detail);
 
   if DrawRect.Bottom - DrawRect.Top > 0 then
@@ -3411,6 +3388,10 @@ begin
        R := GetBorderSize;
        FHeight := R.Top + R.Bottom;
      end;
+
+    //hack of Aero Maximize
+    if DwmCompositionEnabled then
+      Exit;
 
     if Form.BorderStyle <> bsNone then
     begin

@@ -13,6 +13,7 @@ uses
   Vcl.Forms,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
+  Vcl.AppEvnts,
 
   Dmitry.Utils.System,
   Dmitry.Graphics.Utils,
@@ -33,29 +34,40 @@ uses
   uTranslate;
 
 type
+  TRequireImageHandler = procedure(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer) of object;
+
+type
   TImageViewerControl = class(TBaseWinControl)
   private
-    FZoomerOn: Boolean;
-    FZoom: Real;
+    FHorizontalScrollBar: TScrollBar;
+    FVerticalScrollBar: TScrollBar;
+    FApplicationEvents: TApplicationEvents;
+    FItem: TDBPopupMenuInfoRecord;
+    FOnImageRequest: TRequireImageHandler;
+    FImageFrameTimer: TTimer;
+    FFrameNumber: Integer;
+
     FCanvas: TCanvas;
     FDrawImage: TBitmap;
     FOverlayBuffer: TBitmap;
     FFullImage: TBitmap;
     FAnimatedImage: TGraphic;
     FAnimatedBuffer: TBitmap;
-    FTransparentImage: Boolean;
+
     FIsWaiting: Boolean;
     FLoading: Boolean;
     FImageExists: Boolean;
     FIsStaticImage: Boolean;
+    FTransparentImage: Boolean;
+
     FRealImageWidth: Integer;
     FRealImageHeight: Integer;
-    FHorizontalScrollBar: TScrollBar;
-    FVerticalScrollBar: TScrollBar;
-    FItem: TDBPopupMenuInfoRecord;
+
+    FZoomerOn: Boolean;
+    FZoom: Real;
     FImageScale: Double;
-    FImageFrameTimer: TTimer;
-    FFrameNumber: Integer;
+    FLoadImageSize: TSize;
+
     function Buffer: TBitmap;
     procedure RecreateImage;
     function GetIsFastDrawing: Boolean;
@@ -66,8 +78,9 @@ type
     function HeightW: Integer;
     procedure OnScrollChanged(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure FImageFrameTimerOnTimer(Sender: TObject);
+    procedure OnApplicationMessage(var Msg: TMsg; var Handled: Boolean);
   protected
-    procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
+    procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;  
     function DrawElement(DC: HDC): Boolean; override;
     procedure Resize; override;
     procedure NextFrame;
@@ -81,6 +94,7 @@ type
     property IsFastDrawing: Boolean read GetIsFastDrawing;
     property Item: TDBPopupMenuInfoRecord read GetItem;
     property FullImage: TBitmap read FFullImage;
+    property OnImageRequest: TRequireImageHandler read FOnImageRequest write FOnImageRequest;
   end;
 
 implementation
@@ -132,6 +146,9 @@ begin
   FImageFrameTimer.Enabled := False;
   FImageFrameTimer.OnTimer := FImageFrameTimerOnTimer;
 
+  FApplicationEvents := TApplicationEvents.Create(Self);
+  FApplicationEvents.OnMessage := OnApplicationMessage;
+
   FIsWaiting := False;
   FZoomerOn := False;
   FZoom := 1;
@@ -143,6 +160,8 @@ begin
   FImageScale := 1;
   FAnimatedImage := nil;
   FFrameNumber := -1;
+  FLoadImageSize.cx := 0;
+  FLoadImageSize.cy := 0;
 
   FItem := TDBPopupMenuInfoRecord.Create;
 end;
@@ -182,6 +201,8 @@ begin
 
   F(FAnimatedImage);
   FAnimatedImage := Image;
+  FLoadImageSize.cx := FAnimatedImage.Width;
+  FLoadImageSize.cy := FAnimatedImage.Height;
 
   FRealImageWidth := RealWidth;
   FRealImageHeight := RealHeight;
@@ -195,8 +216,9 @@ begin
   FImageExists := True;
   FLoading := False;
 
+
   if not FZoomerOn then
-    Cursor := CrDefault;
+    Cursor := crDefault;
 
   {TbFitToWindow.Enabled := True;
   TbRealSize.Enabled := True;
@@ -244,6 +266,8 @@ begin
   //FTransparentImage := Transparent;
   F(FFullImage);
   FFullImage := Image;
+  FLoadImageSize.cx := FFullImage.Width;
+  FLoadImageSize.cy := FFullImage.Height;
 
   FRealImageWidth := RealWidth;
   FRealImageHeight := RealHeight;
@@ -315,6 +339,27 @@ begin
   Result := ClientHeight;
 end;
 
+procedure TImageViewerControl.OnApplicationMessage(var Msg: TMsg;
+  var Handled: Boolean);
+var
+  R: TRect;
+begin
+  if Msg.message = WM_MOUSEWHEEL then
+  begin
+    {R.TopLeft := ClientToScreen(BoundsRect.TopLeft);
+    R.BottomRight := ClientToScreen(BoundsRect.BottomRight);
+
+    if PtInRect(R, Msg.pt) then
+    begin
+      Handled := True;
+      if NativeInt(Msg.wParam) > 0 then
+        ZoomOut
+      else
+        ZoomIn;
+    end; }
+  end;
+end;
+
 procedure TImageViewerControl.OnScrollChanged(Sender: TObject;
   ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
@@ -349,6 +394,9 @@ begin
     TbRotateCW.Enabled := False;  }
 
     //LoadImage_(Sender, True, Z, True);
+    FLoadImageSize.cx := FRealImageWidth;
+    FLoadImageSize.cy := FRealImageHeight;
+    FOnImageRequest(Self, Item, FLoadImageSize.cx, FLoadImageSize.cy);
 
     {TbrActions.Refresh;
     TbrActions.Realign;    }
@@ -398,6 +446,10 @@ begin
     TbRotateCW.Enabled := False; }
 
     //TODO: LoadImage_(Sender, True, Z, True);
+
+    FLoadImageSize.cx := FRealImageWidth;
+    FLoadImageSize.cy := FRealImageHeight;
+    FOnImageRequest(Self, Item, FLoadImageSize.cx, FLoadImageSize.cy);
 
     //TbrActions.Refresh;
     //TbrActions.Realign;
@@ -625,10 +677,20 @@ begin
 end;
 
 procedure TImageViewerControl.Resize;
+var
+  Size: TSize;
 begin
   inherited;
 
-  FDrawImage.SetSize(ClientWidth, HeightW);
+  Size.cx := ClientWidth;
+  Size.cy := HeightW;
+  FDrawImage.SetSize(Size.cx, Size.cy);
+  if (Size.cx > FLoadImageSize.cx) or (Size.cy > FLoadImageSize.cy) then
+  begin
+    FLoadImageSize.cx := Screen.DesktopWidth;
+    FLoadImageSize.cy := Screen.DesktopHeight;
+    FOnImageRequest(Self, Item, Screen.DesktopWidth, Screen.DesktopHeight);
+  end;
 
   if not FIsWaiting then
     ReAlignScrolls(False);

@@ -5,17 +5,17 @@ interface
 uses
   uMemory,
   System.Classes,
+  System.StrUtils,
+  System.Win.ComObj,
   Winapi.Windows,
   Winapi.ActiveX,
-  System.Win.ComObj,
-  ShlObj,
+  Winapi.ShlObj,
+  Winapi.ShellAPI,
+  Vcl.Controls,
   Dmitry.Utils.System,
-  ShellAPI,
   uConstants,
   uPortableDeviceManager,
   uPortableDeviceUtils,
-  StrUtils,
-  Controls,
   DragDropPIDL,
   ShellContextMenu;
 

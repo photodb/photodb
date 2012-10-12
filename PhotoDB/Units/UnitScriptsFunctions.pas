@@ -21,6 +21,7 @@ uses
   UnitScripts,
   Dolphin_DB,
   UnitDBFileDialogs,
+  ReplaseIconsInScript,
 
   uScript,
   uConstants,
@@ -29,8 +30,7 @@ uses
   uTime,
   uMemory,
   uTranslate,
-  uRuntime,
-  ReplaseIconsInScript;
+  uRuntime;
 
 function GetOpenFileName(InitFile, Filter: string): string;
 function GetSaveFileName(InitFile, Filter: string): string;

@@ -3,21 +3,22 @@ unit UnitDBDeclare;
 interface
 
 uses
-  DB,
-  Windows,
-  Classes,
-  Menus,
-  Graphics,
-  JPEG,
-  SysUtils,
-  DateUtils,
+  Winapi.Windows,
+  System.Classes,
+  System.SysUtils,
+  System.DateUtils,
+  Vcl.Menus,
+  Vcl.Graphics,
+  Vcl.Imaging.JPEG,
+  Data.DB,
+
   EasyListview,
+  GraphicCrypt,
 
   Dmitry.CRC32,
   Dmitry.Utils.Files,
   Dmitry.PathProviders,
 
-  GraphicCrypt,
   uMemory,
   uDBBaseTypes,
   uDBGraphicTypes,

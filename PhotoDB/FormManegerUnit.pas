@@ -14,6 +14,7 @@ uses
   Vcl.AppEvnts,
 
   Dmitry.CRC32,
+  Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
   UnitDBKernel,
@@ -45,7 +46,6 @@ uses
   uUpTime,
   uPortableClasses,
   uTranslate,
-  Dmitry.Utils.System,
   {$IFDEF LICENCE}
   UnitINI,
   uActivationUtils,

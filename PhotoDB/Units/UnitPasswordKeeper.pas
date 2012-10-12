@@ -3,15 +3,16 @@ unit UnitPasswordKeeper;
 interface
 
 uses
-  Windows,
-  Classes,
-  UnitDBKernel,
+  Winapi.Windows,
+  System.Classes,
+  System.SyncObjs,
 
   Dmitry.CRC32,
 
   GraphicCrypt,
   UnitDBDeclare,
-  SyncObjs,
+  UnitDBKernel,
+
   uDBBaseTypes,
   uMemory,
   uFormInterfaces;

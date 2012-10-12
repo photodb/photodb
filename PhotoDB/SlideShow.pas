@@ -6,9 +6,13 @@ uses
   System.Types,
   System.SysUtils,
   System.Classes,
+  System.Math,
+  System.Win.ComObj,
   Winapi.Shellapi,
   Winapi.Windows,
   Winapi.Messages,
+  Winapi.ShlObj,
+  Winapi.CommCtrl,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
@@ -16,15 +20,15 @@ uses
   Vcl.ExtCtrls,
   Vcl.Menus,
   Vcl.Buttons,
+  Vcl.AppEvnts,
+  Vcl.ImgList,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.Themes,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Vcl.Imaging.jpeg,
   Data.DB,
-  ComObj,
-  ShlObj,
-  AppEvnts,
-  ImgList,
-  jpeg,
-  CommCtrl,
-  StdCtrls,
-  System.Math,
 
   Dmitry.CRC32,
   Dmitry.Utils.System,
@@ -39,26 +43,29 @@ uses
 
   CCR.Exif,
 
-  UnitDBKernel,
-  uMemoryEx,
+  DropSource,
+  DropTarget,
+  DragDropFile,
+  DragDrop,
+
   ToolWin,
-  ComCtrls,
+  UnitDBKernel,
   GraphicCrypt,
   FormManegerUnit,
   UnitUpdateDBThread,
   DBCMenu,
   dolphin_db,
   ShellContextMenu,
-  DropSource,
-  DropTarget,
   GIFImage,
   Effects,
   UnitUpdateDBObject,
-  DragDropFile,
-  DragDrop,
-  uVistaFuncs,
   UnitDBDeclare,
   UnitFileExistsThread,
+  UnitBitmapImageList,
+  ExplorerTypes,
+
+  uMemoryEx,
+  uVistaFuncs,
   uBitmapUtils,
   uGUIDUtils,
   uCDMappingTypes,
@@ -71,7 +78,6 @@ uses
   uResources,
   uW7TaskBar,
   uMemory,
-  UnitBitmapImageList,
   uFaceDetection,
   uListViewUtils,
   uFormListView,
@@ -91,18 +97,14 @@ uses
   u2DUtils,
   uVCLHelpers,
   uAnimatedJPEG,
-  ExplorerTypes,
   uPathProviderUtils,
   uPortableClasses,
   uPortableDeviceUtils,
   uPortableDeviceManager,
   uShellNamespaceUtils,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
   uThemesUtils,
   uAnimationHelper,
   uImageZoomHelper,
-  Themes,
   uPhotoShelf,
   uFormInterfaces;
 
@@ -392,9 +394,11 @@ type
     FOldPoint: TPoint;
     WaitGrayScale: Integer;
     FSID: TGUID;
+
     RealImageWidth: Integer;
     RealImageHeight: Integer;
     RealZoomInc: Extended;
+
     DrawImage: TBitmap;
     FFullImage: TBitmap;
     constructor Create(AOwner: TComponent); override;
@@ -639,10 +643,7 @@ begin
   Result := False;
   FIsImageLoading := True;
   try
-    if (not Item.InfoLoaded) and (Item.ID = 0) then
-      NeedsUpdating := True
-    else
-      NeedsUpdating := False;
+    NeedsUpdating := (not Item.InfoLoaded) and (Item.ID = 0);
 
     Caption := Format(L('View') + ' - %s   [%d/%d]', [ExtractFileName(Item.FileName), CurrentFileNumber + 1, CurrentInfo.Count]);
 
@@ -3504,7 +3505,7 @@ begin
   end;
 end;
 
-procedure TViewer.SetFullImageState(State: Boolean; BeginZoom : Extended; Pages, Page : integer);
+procedure TViewer.SetFullImageState(State: Boolean; BeginZoom: Extended; Pages, Page: integer);
 begin
   FPageCount := Pages;
   FCurrentPage := Page;

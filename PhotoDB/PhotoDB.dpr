@@ -298,7 +298,6 @@ uses
   uWinThumbnails in 'Units\uWinThumbnails.pas',
   uShellThumbnails in 'Units\uShellThumbnails.pas',
   uMachMask in 'Units\uMachMask.pas',
-  VCLFlickerReduce in 'Units\VCLFlickerReduce.pas',
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
   uDatabaseSearch in 'Units\uDatabaseSearch.pas',
   uFaceDetection in 'Units\uFaceDetection.pas',

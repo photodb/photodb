@@ -55,10 +55,6 @@ object OptionsForm: TOptionsForm
     object TsStyle: TTabSheet
       Caption = 'Style'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -1396,30 +1392,26 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
       object LbAddHeight: TLabel
-        Left = 173
-        Top = 196
+        Left = 177
+        Top = 228
         Width = 31
         Height = 13
         Caption = 'Height'
       end
       object LbAddWidth: TLabel
-        Left = 58
-        Top = 196
+        Left = 62
+        Top = 228
         Width = 28
         Height = 13
         Caption = 'Width'
       end
       object CbDontAddSmallFiles: TCheckBox
         Left = 11
-        Top = 170
+        Top = 193
         Width = 501
         Height = 17
         Caption = 'No add to BD files less then'
@@ -1428,7 +1420,7 @@ object OptionsForm: TOptionsForm
       end
       object CbCheckLinksOnUpdate: TCheckBox
         Left = 11
-        Top = 126
+        Top = 149
         Width = 522
         Height = 38
         Anchors = [akLeft, akTop, akRight]
@@ -1482,8 +1474,8 @@ object OptionsForm: TOptionsForm
         TabOrder = 1
       end
       object SedMinHeight: TSpinEdit
-        Left = 126
-        Top = 193
+        Left = 130
+        Top = 225
         Width = 41
         Height = 22
         MaxValue = 10000
@@ -1493,7 +1485,7 @@ object OptionsForm: TOptionsForm
       end
       object SedMinWidth: TSpinEdit
         Left = 11
-        Top = 193
+        Top = 225
         Width = 41
         Height = 22
         MaxValue = 10000
@@ -1503,7 +1495,7 @@ object OptionsForm: TOptionsForm
       end
       object GbEXIF: TGroupBox
         Left = 11
-        Top = 229
+        Top = 269
         Width = 522
         Height = 86
         Anchors = [akLeft, akTop, akRight]
@@ -1539,6 +1531,15 @@ object OptionsForm: TOptionsForm
           Caption = 'CbUpdateExifInfoInBackground'
           TabOrder = 2
         end
+      end
+      object CbShowStatusBar: TCheckBox
+        Left = 11
+        Top = 126
+        Width = 522
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'CbShowStatusBar'
+        TabOrder = 10
       end
     end
     object TsPrograms: TTabSheet

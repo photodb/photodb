@@ -251,6 +251,7 @@ type
     MiSelectextension: TMenuItem;
     RbWindowsMediaPlayer: TRadioButton;
     RbDefaultrogram: TRadioButton;
+    CbShowStatusBar: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -477,6 +478,8 @@ begin
     CbReadInfoFromExif.Checked := Settings.Exif.ReadInfoFromExif;
     CbSaveInfoToExif.Checked := Settings.Exif.SaveInfoToExif;
     CbUpdateExifInfoInBackground.Checked := Settings.Exif.UpdateExifInfoInBackground;
+
+    CbShowStatusBar.Checked :=  Settings.ReadBool('Options', 'ShowStatusBar', False);
   end;
 
   if NewTab = 4 then
@@ -745,6 +748,8 @@ begin
     Settings.Exif.ReadInfoFromExif := CbReadInfoFromExif.Checked;
     Settings.Exif.SaveInfoToExif := CbSaveInfoToExif.Checked;
     Settings.Exif.UpdateExifInfoInBackground := CbUpdateExifInfoInBackground.Checked;
+
+    Settings.WriteBool('Options', 'ShowStatusBar', CbShowStatusBar.Checked);
   end;
   // 2 :
   if FLoadedPages[3] then
@@ -930,6 +935,7 @@ begin
     CbListViewHotSelect.Caption := L('Use the selection by hover on the list');
     WlDefaultJPEGOptions.Text := L('Change default JPEG Options');
     CbSortGroups.Caption := L('Sort groups');
+    CbShowStatusBar.Caption := L('Show status bar');
     BlBackupInterval.Caption := L('Create backup every') + ':';
     Label30.Caption := L('days');
     CblPlacesDisplayIn.Clear;

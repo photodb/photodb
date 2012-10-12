@@ -223,7 +223,6 @@ type
     Cut2: TMenuItem;
     N7: TMenuItem;
     N8: TMenuItem;
-    StatusBarMain: TStatusBar;
     PmTreeView: TPopupActionBar;
     MiTreeViewOpenInNewWindow: TMenuItem;
     ToolBarNormalImageList: TImageList;
@@ -454,26 +453,7 @@ type
     TbPreviewZoomSeparator: TToolButton;
     TbPreviewOpen: TToolButton;
     TbPreview: TToolButton;
-    PnExtendedSearch: TPanel;
-    SbExtendedSearchMode: TSpeedButton;
-    SbExtendedSearchStart: TSpeedButton;
-    PnExtendedSearchEditPlace: TPanel;
-    EdExtendedSearchText: TWatermarkedEdit;
-    WlSearchRatingFrom: TWebLink;
-    WlSearchRatingTo: TWebLink;
-    WllExtendedSearchPersons: TWebLinkList;
-    WllExtendedSearchGroups: TWebLinkList;
-    WlExtendedSearchDateFrom: TWebLink;
-    WlExtendedSearchDateTo: TWebLink;
-    WlExtendedSearchSortBy: TWebLink;
-    WlExtendedSearchSortDescending: TWebLink;
-    WlExtendedSearchOptions: TWebLink;
-    BtnSearch: TButton;
-    WlSearchRatingFromValue: TWebLink;
-    WlSearchRatingToValue: TWebLink;
     ImExtendedSearchGroups: TImageList;
-    BvRating: TBevel;
-    BvPersons: TBevel;
     BvGroups: TBevel;
     PnSelectDatePopup: TPanel;
     McDateSelectPopup: TMonthCalendar;
@@ -522,6 +502,31 @@ type
     ReRating: TRating;
     ImHistogramm: TImage;
     LbHistogramImage: TLabel;
+    PnESContainer: TPanel;
+    PnExtendedSearch: TPanel;
+    SbExtendedSearchMode: TSpeedButton;
+    SbExtendedSearchStart: TSpeedButton;
+    PnExtendedSearchEditPlace: TPanel;
+    EdExtendedSearchText: TWatermarkedEdit;
+    WlSearchRatingFrom: TWebLink;
+    WlSearchRatingFromValue: TWebLink;
+    WlSearchRatingToValue: TWebLink;
+    WlSearchRatingTo: TWebLink;
+    WllExtendedSearchPersons: TWebLinkList;
+    BvRating: TBevel;
+    BvPersons: TBevel;
+    WllExtendedSearchGroups: TWebLinkList;
+    WlExtendedSearchDateFrom: TWebLink;
+    WlExtendedSearchDateTo: TWebLink;
+    WlExtendedSearchSortDescending: TWebLink;
+    WlExtendedSearchSortBy: TWebLink;
+    WlExtendedSearchOptions: TWebLink;
+    BtnSearch: TButton;
+    PnListView: TPanel;
+    StatusBarMain: TStatusBar;
+    TmHideStatusBar: TTimer;
+    PnResetFilter: TPanel;
+    WlResetFilter: TWebLink;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -779,6 +784,9 @@ type
     procedure MiESShowPrivateClick(Sender: TObject);
     procedure PmESOptionsPopup(Sender: TObject);
     procedure TmrSearchResultsCountTimer(Sender: TObject);
+    procedure TmHideStatusBarTimer(Sender: TObject);
+    procedure WlResetFilterClick(Sender: TObject);
+    procedure PnResetFilterResize(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -876,6 +884,7 @@ type
 
     FExtendedSearchParams: TDatabaseSearchParameters;
     FExtendedSearchPersons: TList<TPerson>;
+    FShowStatusBar: Boolean;
 
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
@@ -1339,7 +1348,7 @@ begin
   FItemUpdateTimer.OnTimer := ItemUpdateTimer;
 
   ElvMain := TEasyListView.Create(Self);
-  ElvMain.Parent := PnContent;
+  ElvMain.Parent := PnListView;
   ElvMain.Align := alClient;
   ElvMain.Constraints.MinWidth := 100;
   ElvMain.ShowThemedBorder := False;
@@ -1397,6 +1406,7 @@ begin
   DropFileTargetFake.Register(Self);
   DropFileTargetMain.Register(ElvMain);
 
+  FShowStatusBar := Settings.Readbool('Options', 'ShowStatusBar', False);
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   RegisterMainForm(Self);
   FStatusProgress := CreateProgressBar(StatusBarMain, 0);
@@ -4248,6 +4258,11 @@ begin
   WlPanoramio.Text := IIF(FIsPanaramio, L('Hide Panoramio'), L('Show Panoramio'));
 end;
 
+procedure TExplorerForm.WlResetFilterClick(Sender: TObject);
+begin
+  HideFilter(True);
+end;
+
 procedure TExplorerForm.SplRightPanelMoved(Sender: TObject);
 begin
   Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
@@ -5013,8 +5028,11 @@ end;
 
 procedure TExplorerForm.ShowProgress;
 begin
-  FStatusProgress.Style := pbstNormal;
-  FStatusProgress.Show;
+  if FShowStatusBar then
+  begin
+    FStatusProgress.Style := pbstNormal;
+    FStatusProgress.Show;
+  end;
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
@@ -5058,8 +5076,11 @@ end;
 
 procedure TExplorerForm.ShowIndeterminateProgress;
 begin
-  FStatusProgress.Style := pbstMarquee;
-  FStatusProgress.Show;
+  if FShowStatusBar then
+  begin
+    FStatusProgress.Style := pbstMarquee;
+    FStatusProgress.Show;
+  end;
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
@@ -5073,6 +5094,7 @@ end;
 procedure TExplorerForm.HideProgress;
 begin
   FStatusProgress.Hide;
+  StatusBarMain.Hide;
 
   if FW7TaskBar <> nil then
     FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
@@ -5093,7 +5115,11 @@ end;
 
 procedure TExplorerForm.SetStatusText(Text: string);
 begin
-  StatusBarMain.Panels[1].Text := Text;
+  if FShowStatusBar then
+  begin
+    StatusBarMain.Panels[1].Text := Text;
+    StatusBarMain.Visible := True;
+  end;
 end;
 
 procedure TExplorerForm.SetPanelImage(Image: TBitmap; FileGUID: TGUID);
@@ -6458,6 +6484,12 @@ begin
   WlLearnMoreLink.Left := PnInfo.Width div 2 - WlLearnMoreLink.Width div 2;
 end;
 
+procedure TExplorerForm.PnResetFilterResize(Sender: TObject);
+begin
+  WlResetFilter.RefreshBuffer(True);
+  WlResetFilter.Left := PnResetFilter.Width div 2 - WlResetFilter.Width div 2;
+end;
+
 procedure TExplorerForm.SbSearchModeClick(Sender: TObject);
 var
   P: TPoint;
@@ -6480,9 +6512,11 @@ begin
   begin
     ElvMain.SetFocus;
     PnFilter.Hide;
-    if ResetFilter then
-      WedFilter.OnChange(Self);
-  end;
+  end else
+    PnResetFilter.Hide;
+
+  if ResetFilter then
+    WedFilter.OnChange(Self);
 end;
 
 
@@ -6984,6 +7018,7 @@ begin
     CbFilterMatchCase.Caption := L('Match case');
     LbFilter.Caption := L('Filter') + ':';
     LbFilterInfo.Caption := L('Sorry, but phrase not found!');
+    WlResetFilter.Text := L('Reset filter');
 
     MiCopyAddress.Caption := L('Copy address');
     MiEditAddress.Caption := L('Edit address');
@@ -9330,6 +9365,8 @@ begin
 
   LbFilterInfo.Visible := not ResultsFound;
   ImFilterWarning.Visible := not ResultsFound;
+
+  PnResetFilter.Visible := (WedFilter.Text <> '') and PnFilter.Visible;
 end;
 
 procedure TExplorerForm.WedFilterKeyPress(Sender: TObject; var Key: Char);
@@ -10328,6 +10365,12 @@ begin
   View := LV_TILE;
 end;
 
+procedure TExplorerForm.TmHideStatusBarTimer(Sender: TObject);
+begin
+  TmHideStatusBar.Enabled := False;
+  StatusBarMain.Hide;
+end;
+
 procedure TExplorerForm.TmrCheckItemVisibilityTimer(Sender: TObject);
 var
   FI: TEasyItem;
@@ -10774,6 +10817,7 @@ begin
   PePath.CanBreakLoading := False;
   FStatusProgress.Visible := False;
   StatusBarMain.Panels[1].Text := '';
+  StatusBarMain.Hide;
 end;
 
 procedure TExplorerForm.LoadSizes;
@@ -11598,6 +11642,7 @@ begin
   RemoveGroupFromGroups(Groups, Group);
   WllExtendedSearchGroups.TagEx := CodeGroups(Groups);
   ExtendedSearchInitGroups;
+  PnESContainer.Refresh;
 end;
 
 procedure TExplorerForm.MiESPersonFindPicturesClick(Sender: TObject);
@@ -11646,6 +11691,8 @@ begin
 end;
 
 procedure TExplorerForm.MiESPersonRemoveFromListClick(Sender: TObject);
+var
+  Person: TPerson;
 begin
   if PmESPerson.Tag < 0 then
     Exit;
@@ -11653,8 +11700,12 @@ begin
   if PmESPerson.Tag > FExtendedSearchPersons.Count - 1 then
     Exit;
 
+  Person := FExtendedSearchPersons[PmESPerson.Tag];
   FExtendedSearchPersons.Delete(PmESPerson.Tag);
+  F(Person);
+
   ExtendedSearchInitPersons;
+  PnESContainer.Refresh;
 end;
 
 procedure TExplorerForm.ExtendedSearchCheckEnabled;
