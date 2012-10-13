@@ -596,6 +596,7 @@ begin
         DBKernel.SetDataBase(s1);
       end;
 
+      RegisterVideoFiles;
       StopApplication;
     end;
 

@@ -143,7 +143,6 @@ procedure TImageViewer.LoadFile(FileInfo: TDBPopupMenuInfoRecord);
 var
   Width, Height: Integer;
   Bitmap: TBitmap;
-  DisplaySize: TSize;
 begin
   FActiveThreadId := GetGUID;
 

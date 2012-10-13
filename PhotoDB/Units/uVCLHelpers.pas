@@ -3,25 +3,26 @@ unit uVCLHelpers;
 interface
 
 uses
-  uMemory,
-  uConstants,
-  uLogger,
-  SysUtils,
-  ExtCtrls,
-  Windows,
-  Classes,
-  Forms,
-  Controls,
-  Graphics,
-  Menus,
-  Themes,
+  System.Types,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Vcl.ExtCtrls,
+  Vcl.Forms,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.Menus,
+  Vcl.Themes,
   Vcl.ActnPopup,
-  uRuntime,
-  StdCtrls,
-  ImgList,
+  Vcl.StdCtrls,
+  Vcl.ImgList,
 
   Dmitry.Utils.Files,
 
+  uRuntime,
+  uMemory,
+  uConstants,
+  uLogger,
   uSettings,
   uConfiguration;
 

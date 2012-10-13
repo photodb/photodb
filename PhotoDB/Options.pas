@@ -73,6 +73,7 @@ uses
   uMediaPlayers,
   uVCLHelpers,
   uThreadTask,
+  uTransparentEncryption,
   uShellIntegration;
 
 type
@@ -773,6 +774,7 @@ begin
   if FLoadedPages[7] then
   begin
     SaveMediaAssociations;
+    EncryptionOptions.Refresh;
   end;
 
   TFormCollection.Instance.ApplySettings;

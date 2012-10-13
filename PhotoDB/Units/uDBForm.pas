@@ -2815,8 +2815,9 @@ end;
 procedure TFormStyleHookEx.WMNCCalcSize(var Message: TWMNCCalcSize);
 var
   Params: PNCCalcSizeParams;
-  R, MenuRect, ExRect: TRect;
+  R, MenuRect: TRect;
   MenuHeight: Integer;
+  BorderSize: Integer;
 begin
   if not IsStyleBorder then
   begin
@@ -2859,11 +2860,10 @@ begin
       //hack of Aero Maximize
       if (Form.WindowState = wsMaximized) and DwmCompositionEnabled then
       begin
-        DwmGetWindowAttribute(Handle, DWMWA_EXTENDED_FRAME_BOUNDS, @ExRect, sizeOf(ExRect));
-
-        Inc(Left, -R.Left - ExRect.Top);
-        Dec(Right, -R.Right - ExRect.TOp);
-        Dec(Bottom, -R.Bottom - ExRect.TOp);
+        BorderSize := GetSystemMetrics(SM_CXSIZEFRAME);
+        Inc(Left, -R.Left + BorderSize);
+        Dec(Right, -R.Right + BorderSize);
+        Dec(Bottom, -R.Bottom + BorderSize);
       end;
     end;
     
@@ -3361,6 +3361,8 @@ var
   R: TRect;
   Details: TThemedElementDetails;
   Detail: TThemedWindow;
+  RWindow, RTheme: HRGN;
+  BorderSize: Integer;
 begin
   Result := 0;
   if not StyleServices.Available then
@@ -3374,6 +3376,18 @@ begin
     Detail := twSmallCaptionActive;
   Details := StyleServices.GetElementDetails(Detail);
   StyleServices.GetElementRegion(Details, R, Result);
+
+  //hack of Aero Maximize
+  if DwmCompositionEnabled and (Form.BorderStyle = bsSizeable) then
+  begin
+    RTheme := Result;
+    BorderSize := GetSystemMetrics(SM_CXSIZEFRAME);
+    RWindow := CreateRectRgn(0, 0, Form.Monitor.WorkareaRect.Width + BorderSize, Form.Monitor.WorkareaRect.Height + BorderSize);
+    Result := CreateRectRgn(0, 0, 0, 0);
+    CombineRgn(Result, RTheme, RWindow, RGN_AND);
+    DeleteObject(RTheme);
+    DeleteObject(RWindow);
+  end;
 end;
 
 procedure TFormStyleHookEx.ChangeSize;
@@ -3388,10 +3402,6 @@ begin
        R := GetBorderSize;
        FHeight := R.Top + R.Bottom;
      end;
-
-    //hack of Aero Maximize
-    if DwmCompositionEnabled and (Form.BorderStyle = bsSizeable) then
-      Exit;
 
     if Form.BorderStyle <> bsNone then
     begin

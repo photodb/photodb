@@ -78,6 +78,10 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Preview'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -745,6 +749,10 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 574
@@ -783,6 +791,10 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -942,6 +954,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -2597,7 +2613,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.805819837970000000
+      Date = 41177.964785636580000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

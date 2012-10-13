@@ -464,6 +464,9 @@ const
   DBT_DevTyp_Volume        = $0002;
   DBT_DEVNODES_CHANGED     = $0007;
 
+const
+  cVideoFileExtensions = '.mov,.avi,.mkv,.mp4,.mpg,.mpe,.mpeg,.m2v,.wmv';
+
 function IsRotatedImageProportions(Rotation: Integer): Boolean;
 
 implementation

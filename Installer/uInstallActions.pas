@@ -16,6 +16,8 @@ uses
   Dmitry.Utils.ShortCut,
   Dmitry.Utils.System,
 
+  UnitINI,
+
   uMemory,
   uInstallTypes,
   uInstallUtils,
@@ -27,7 +29,9 @@ uses
   uAssociations,
   uShellUtils,
   uActions,
+  uLogger,
   uUserUtils,
+  uMediaPlayers,
   uStillImage;
 
 const

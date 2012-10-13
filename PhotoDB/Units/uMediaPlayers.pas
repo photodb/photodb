@@ -3,12 +3,15 @@ unit uMediaPlayers;
 interface
 
 uses
+  Generics.Collections,
   Winapi.Windows,
   System.Win.Registry,
   System.SysUtils,
   Winapi.ShlObj,
   uMemory,
   uAppUtils,
+  uSettings,
+  uConstants,
   uShellUtils;
 
 function GetPlayerInternalPath: string;
@@ -22,6 +25,8 @@ function IsMediaPlayerClassicInstalled: Boolean;
 function GetWindowsMediaPlayerPath: string;
 function IsWindowsMediaPlayerInstalled: Boolean;
 function GetShellPlayerForFile(FileName: string): string;
+
+procedure RegisterVideoFiles;
 
 implementation
 
@@ -155,6 +160,18 @@ begin
     if FileExists(FileName) then
       Result := FileName;
   end;
+end;
+
+procedure RegisterVideoFiles;
+var
+  Ext, Player: string;
+  VideoFileExtensions: TArray<string>;
+begin
+  Player := GetPlayerInternalPath;
+  VideoFileExtensions := uConstants.cVideoFileExtensions.ToUpper.Split([',']);
+
+  for Ext in VideoFileExtensions do
+    Settings.WriteString(cMediaAssociationsData + '\' + Ext, '', Player);
 end;
 
 end.

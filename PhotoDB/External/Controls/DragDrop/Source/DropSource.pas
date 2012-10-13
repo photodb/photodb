@@ -23,6 +23,7 @@ unit DropSource;
 interface
 
 uses
+  System.Types,
   DragDrop,
   DragDropFormats,
   ActiveX,

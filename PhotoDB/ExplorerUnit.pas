@@ -1404,6 +1404,10 @@ begin
   SetLength(FPlaces, 0);
   DragFilesPopup := TStringList.Create;
 
+  //month popup looks very strange in XP
+  if TOSVersion.Major < 6 then
+    McDateSelectPopup.DisableStyles;
+
   SelfDraging := False;
   Outdrag := False;
   FDblClicked := False;
@@ -1752,8 +1756,7 @@ begin
     ImageEditor2.Visible := True;
     CryptFile1.Visible := not ValidCryptGraphicFile(Info.FileName);
     ResetPassword1.Visible := not CryptFile1.Visible;
-    EnterPassword1.Visible := not CryptFile1.Visible and
-      (DBKernel.FindPasswordForCryptImageFile(info.FileName) = '');
+    EnterPassword1.Visible := not CryptFile1.Visible and (DBKernel.FindPasswordForCryptImageFile(info.FileName) = '');
 
     Convert1.Visible := not EnterPassword1.Visible;
     Resize1.Visible := not EnterPassword1.Visible;
@@ -1787,6 +1790,13 @@ begin
     Cut2.Visible := True;
     Copy1.Visible := True;
     Shell1.Visible := True;
+
+    if CanBeTransparentEncryptedFile(Info.FileName) then
+    begin
+      CryptFile1.Visible := not ValidCryptGraphicFile(Info.FileName);
+      ResetPassword1.Visible := not CryptFile1.Visible;
+      EnterPassword1.Visible := not CryptFile1.Visible and (DBKernel.FindPasswordForCryptImageFile(info.FileName) = '');
+    end;
   end;
 
   if Info.FileType = EXPLORER_ITEM_NETWORK then
@@ -5604,7 +5614,7 @@ begin
     else
       TbbOpenDirectory.Enabled := False;
 
-    if CanBeTransparentEncryptedFile(FSelectedInfo.FileName) and (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) then
+    if CanBeTransparentEncryptedFile(FSelectedInfo.FileName) and (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) then
       AddEncryptMenu;
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then

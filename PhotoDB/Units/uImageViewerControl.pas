@@ -341,8 +341,8 @@ end;
 
 procedure TImageViewerControl.OnApplicationMessage(var Msg: TMsg;
   var Handled: Boolean);
-var
-  R: TRect;
+//var
+//  R: TRect;
 begin
   if Msg.message = WM_MOUSEWHEEL then
   begin

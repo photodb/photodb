@@ -17,7 +17,9 @@ type
   private
     FDateSelectTime: Cardinal;
     procedure CNNotify(var Message: TWMNotifyMC); message CN_NOTIFY;
+  protected
     procedure DblClick; override;
+  public
     procedure DisableStyles;
   end;
 

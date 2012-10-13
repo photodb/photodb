@@ -20,6 +20,7 @@ uses
 {$ifndef VER17_PLUS}
   Graphics,
 {$endif}
+  System.Types,
   Classes,
   Controls,
   Windows,

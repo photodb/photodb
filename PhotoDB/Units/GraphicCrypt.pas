@@ -292,7 +292,7 @@ begin
       FS := TFileStream.Create(FileName, FmOpenWrite or FmCreate);
       try
         try
-          EnryptStreamV3(MS, FS, Password, Options, FileName);
+          EnryptStreamV3(MS, FS, Password, Options, FileName, Progress);
         except
           //if any error in this block - user can lost original data, so we had to save it in any case
           FatalSaveStream(MS, FileName);

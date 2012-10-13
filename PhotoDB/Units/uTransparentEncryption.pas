@@ -15,14 +15,18 @@ uses
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
+  DECUtil,
+  DECHash,
+  DECCipher,
+
   uConstants,
   uErrors,
   uMemory,
   uStrongCrypt,
-  uLockedFileNotifications,
-  DECUtil,
-  DECHash,
-  DECCipher;
+  {$IFDEF PHOTODB}
+  uSettings,
+  {$ENDIF}
+  uLockedFileNotifications;
 
 type
   TMemoryBlock = class
@@ -61,6 +65,17 @@ type
     property HeaderSize: Integer read FHeaderSize;
   end;
 
+  TEncryptionOptions = class(TObject)
+  private
+    FSync: TCriticalSection;
+    FFileExtensionList: string;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function CanBeTransparentEncryptedFile(FileName: string): Boolean;
+    procedure Refresh;
+  end;
+
 procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
   BlockSize32k: Byte; Password: string; var Seed: Binary; ACipher: TDECCipherClass);
 
@@ -77,11 +92,24 @@ function CanBeTransparentEncryptedFile(FileName: string): Boolean;
 function TransparentDecryptFileEx(FileName: string; Password: string;
                                   Progress: TFileProgress = nil): Integer;
 
+function EncryptionOptions: TEncryptionOptions;
+
 implementation
+
+var
+  FEncryptionOptions: TEncryptionOptions = nil;
+
+function EncryptionOptions: TEncryptionOptions;
+begin
+  if FEncryptionOptions = nil then
+    FEncryptionOptions := TEncryptionOptions.Create;
+
+  Result := FEncryptionOptions;
+end;
 
 function CanBeTransparentEncryptedFile(FileName: string): Boolean;
 begin
-  Result := True;
+  Result := EncryptionOptions.CanBeTransparentEncryptedFile(FileName);
 end;
 
 procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
@@ -433,7 +461,8 @@ begin
                           ERROR_FILE_NOT_FOUND, ERROR_GEN_FAILURE, ERROR_INVALID_NAME] then
         Exit;
       Sleep(DelayReadFileOperation);
-    end;
+    end else
+      Break;
   end;
 end;
 
@@ -779,5 +808,60 @@ begin
     FillChar(D^, MemoryToCopy, #0);
   end;
 end;
+
+{ TEncryptionOptions }
+
+function TEncryptionOptions.CanBeTransparentEncryptedFile(
+  FileName: string): Boolean;
+var
+  Ext: string;
+begin
+  Ext := AnsiUpperCase(ExtractFileExt(FileName));
+
+  FSync.Enter;
+  try
+    Result := FFileExtensionList.IndexOf(Ext) > 0;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+constructor TEncryptionOptions.Create;
+begin
+  FSync := TCriticalSection.Create;
+  Refresh;
+end;
+
+destructor TEncryptionOptions.Destroy;
+begin
+  F(FSync);
+  inherited;
+end;
+
+procedure TEncryptionOptions.Refresh;
+var
+  Associations: TStrings;
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    FFileExtensionList := '';
+    {$IFDEF PHOTODB}
+    Associations := Settings.ReadKeys(cMediaAssociationsData);
+    try
+      for I := 0 to Associations.Count - 1 do
+        FFileExtensionList := FFileExtensionList + ':' + AnsiUpperCase(Associations[I]);
+    finally
+      F(Associations);
+    end;
+    {$ENDIF}
+  finally
+    FSync.Leave;
+  end;
+end;
+
+initialization
+finalization
+  F(FEncryptionOptions);
 
 end.
