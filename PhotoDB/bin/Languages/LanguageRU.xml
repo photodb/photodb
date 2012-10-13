@@ -431,7 +431,7 @@
     <translate name="Sort by image size" value="Сортировать по размеру изображения" />
     <translate name="Find pictures" value="Найти фотографии" />
     <translate name="Remove from list" value="Удалить из списка" />
-    <translate name="Open directory" value="Открыть директорию" />
+    <translate name="Open directory" value="Открыть папку" />
     <translate name="Show hidden images" value="Показывать скрытые изображения" />
     <translate name="Show private images" value="Показывать личные изображения" />
   </scope>
@@ -1712,9 +1712,10 @@
 	<translate name="&quot;Next&quot; by click" value="&quot;Следующий&quot; при клике"/>
 	<translate name="Use the selection by hover on the list" value="Использовать выделение при наведении в списках"/>
 	<translate name="Sort groups" value="Сортировать группы"/>
-	<translate name="Show status bar" value="Показывать статус бар"/>	
+	<translate name="Show status bar" value="Показывать статус бар"/>
+	<translate name="Smooth scrolling" value="Плавная прокрутка"/>	
     <translate name="Backups" value="Резервные копии" />
-	<translate name="Create backup every" value="Создавать резервную копию каждые"/>	
+	<translate name="Create backup every" value="Создавать резервную копию каждые"/>
 	<translate name="days" value="дней"/>
 	<translate name="My documents" value="Мои документы"/>
 	<translate name="My computer" value="Мой компьютер"/>

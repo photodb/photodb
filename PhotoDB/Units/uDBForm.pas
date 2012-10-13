@@ -3390,7 +3390,7 @@ begin
      end;
 
     //hack of Aero Maximize
-    if DwmCompositionEnabled then
+    if DwmCompositionEnabled and (Form.BorderStyle = bsSizeable) then
       Exit;
 
     if Form.BorderStyle <> bsNone then

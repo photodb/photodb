@@ -135,10 +135,6 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -270,10 +266,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -486,10 +478,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -652,10 +640,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -912,10 +896,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)
@@ -1397,21 +1377,21 @@ object OptionsForm: TOptionsForm
         413)
       object LbAddHeight: TLabel
         Left = 177
-        Top = 228
+        Top = 251
         Width = 31
         Height = 13
         Caption = 'Height'
       end
       object LbAddWidth: TLabel
         Left = 62
-        Top = 228
+        Top = 251
         Width = 28
         Height = 13
         Caption = 'Width'
       end
       object CbDontAddSmallFiles: TCheckBox
         Left = 11
-        Top = 193
+        Top = 216
         Width = 501
         Height = 17
         Caption = 'No add to BD files less then'
@@ -1420,7 +1400,7 @@ object OptionsForm: TOptionsForm
       end
       object CbCheckLinksOnUpdate: TCheckBox
         Left = 11
-        Top = 149
+        Top = 172
         Width = 522
         Height = 38
         Anchors = [akLeft, akTop, akRight]
@@ -1475,7 +1455,7 @@ object OptionsForm: TOptionsForm
       end
       object SedMinHeight: TSpinEdit
         Left = 130
-        Top = 225
+        Top = 248
         Width = 41
         Height = 22
         MaxValue = 10000
@@ -1485,7 +1465,7 @@ object OptionsForm: TOptionsForm
       end
       object SedMinWidth: TSpinEdit
         Left = 11
-        Top = 225
+        Top = 248
         Width = 41
         Height = 22
         MaxValue = 10000
@@ -1495,7 +1475,7 @@ object OptionsForm: TOptionsForm
       end
       object GbEXIF: TGroupBox
         Left = 11
-        Top = 269
+        Top = 292
         Width = 522
         Height = 86
         Anchors = [akLeft, akTop, akRight]
@@ -1541,14 +1521,19 @@ object OptionsForm: TOptionsForm
         Caption = 'CbShowStatusBar'
         TabOrder = 10
       end
+      object CbSmoothScrolling: TCheckBox
+        Left = 11
+        Top = 149
+        Width = 522
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'CbSmoothScrolling'
+        TabOrder = 11
+      end
     end
     object TsPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         540
         413)

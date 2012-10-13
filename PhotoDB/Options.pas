@@ -252,6 +252,7 @@ type
     RbWindowsMediaPlayer: TRadioButton;
     RbDefaultrogram: TRadioButton;
     CbShowStatusBar: TCheckBox;
+    CbSmoothScrolling: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -480,6 +481,7 @@ begin
     CbUpdateExifInfoInBackground.Checked := Settings.Exif.UpdateExifInfoInBackground;
 
     CbShowStatusBar.Checked :=  Settings.ReadBool('Options', 'ShowStatusBar', False);
+    CbSmoothScrolling.Checked :=  Settings.ReadBool('Options', 'SmoothScrolling', True);
   end;
 
   if NewTab = 4 then
@@ -750,6 +752,7 @@ begin
     Settings.Exif.UpdateExifInfoInBackground := CbUpdateExifInfoInBackground.Checked;
 
     Settings.WriteBool('Options', 'ShowStatusBar', CbShowStatusBar.Checked);
+    Settings.WriteBool('Options', 'SmoothScrolling', CbSmoothScrolling.Checked);
   end;
   // 2 :
   if FLoadedPages[3] then
@@ -936,6 +939,7 @@ begin
     WlDefaultJPEGOptions.Text := L('Change default JPEG Options');
     CbSortGroups.Caption := L('Sort groups');
     CbShowStatusBar.Caption := L('Show status bar');
+    CbSmoothScrolling.Caption := L('Smooth scrolling');
     BlBackupInterval.Caption := L('Create backup every') + ':';
     Label30.Caption := L('days');
     CblPlacesDisplayIn.Clear;

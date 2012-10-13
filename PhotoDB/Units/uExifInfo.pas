@@ -26,6 +26,7 @@ uses
   uAssociations,
   uICCProfile,
   uTranslate,
+  uEXIFDisplayControl,
   uLogger;
 
 type
@@ -85,33 +86,38 @@ var
   end;
 
 begin
-  VleEXIF.Strings.Clear;
-
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  VleEXIF.Strings.BeginUpdate;
   try
+    VleEXIF.Strings.Clear;
+
+    OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
     try
-      Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
       try
-        if LoadImageFromPath(Info, -1, '', [ilfICCProfile, ilfEXIF, ilfPassword, ilfDontUpdateInfo], ImageInfo) then
-        begin
-          if FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, ExifInfo) then
+        Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+        try
+          if LoadImageFromPath(Info, -1, '', [ilfICCProfile, ilfEXIF, ilfPassword, ilfDontUpdateInfo], ImageInfo) then
           begin
-            for Line in ExifInfo do
-              VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+            if FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, ExifInfo) then
+            begin
+              for Line in ExifInfo do
+                VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+            end;
           end;
+        finally
+          F(Info);
         end;
-      finally
-        F(Info);
+      except
+        on e: Exception do
+        begin
+          VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
+          Eventlog(e.Message);
+        end;
       end;
-    except
-      on e: Exception do
-      begin
-        VleEXIF.InsertRow(L('Info:'), L('Exif header not found.'), True);
-        Eventlog(e.Message);
-      end;
+    finally
+      SetErrorMode(OldMode);
     end;
   finally
-    SetErrorMode(OldMode);
+    VleEXIF.Strings.EndUpdate;
   end;
 end;
 
@@ -304,7 +310,7 @@ begin
       for I := 0 to RawExif.Count - 1 do
         XInsert(L(RawExif[I].Description), RawExif[I].Value);
     end else
-      XInsert(L('Info:'), L('Exif header not found.'));
+      XInsert(L('Info'), L('Exif header not found.'));
   end;
 end;
 

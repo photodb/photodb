@@ -951,6 +951,7 @@ object ExplorerForm: TExplorerForm
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
           TabOrder = 0
+          OnDrawCell = VleExifDrawCell
           ColWidths = (
             70
             56)
@@ -1123,7 +1124,7 @@ object ExplorerForm: TExplorerForm
             CanClick = True
           end
           object WlSearchRatingTo: TWebLink
-            Left = 7
+            Left = 8
             Top = 53
             Width = 88
             Height = 16
@@ -1238,7 +1239,7 @@ object ExplorerForm: TExplorerForm
             CanClick = True
           end
           object WlExtendedSearchSortBy: TWebLink
-            Left = 31
+            Left = 26
             Top = 238
             Width = 123
             Height = 13
@@ -2463,6 +2464,7 @@ object ExplorerForm: TExplorerForm
         Width = 1006
       end>
     EdgeBorders = [ebBottom]
+    OnResize = CoolBarBottomResize
     object ToolBarBottom: TToolBar
       Left = 11
       Top = 0
@@ -2595,7 +2597,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.038763379630000000
+      Date = 41177.805819837970000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

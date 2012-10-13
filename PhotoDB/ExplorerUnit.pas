@@ -175,6 +175,7 @@ uses
   uImageViewer,
   uPeopleSupport,
   uFormSelectPerson,
+  uEXIFDisplayControl,
   uMonthCalendar;
 
 const
@@ -183,6 +184,7 @@ const
 type
   TPageControl = class(TPageControlNoBorder);
   TMonthCalendar = class(TMonthCalendarEx);
+  TValueListEditor = class(TEXIFDisplayControl);
 
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
@@ -787,6 +789,9 @@ type
     procedure TmHideStatusBarTimer(Sender: TObject);
     procedure WlResetFilterClick(Sender: TObject);
     procedure PnResetFilterResize(Sender: TObject);
+    procedure CoolBarBottomResize(Sender: TObject);
+    procedure VleExifDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect;
+      State: TGridDrawState);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1390,6 +1395,8 @@ begin
   ElvMain.Header.Columns.Add;
   ElvMain.Groups.Add;
   ElvMain.Groups[0].Visible := True;
+
+  ElvMain.Scrollbars.SmoothScrolling := Settings.Readbool('Options', 'SmoothScrolling', True);
 
   RefreshIDList := TStringList.Create;
 
@@ -3062,12 +3069,8 @@ begin
     ElvMain.Items[0].Selected := True;
     ElvMain.Selection.First.MakeVisible(emvMiddle);
   end;
-
-  if TStyleManager.IsCustomStyleActive then
-  begin
-    ShowScrollBar(ElvMain.Handle, SB_VERT, False);
-    ShowScrollBar(ElvMain.Handle, SB_VERT, True);
-  end;
+  ElvMain.SetFocus;
+  ElvMain.Scrollbars.Update;
 end;
 
 procedure TExplorerForm.TbPreviewPreviousClick(Sender: TObject);
@@ -3097,11 +3100,8 @@ begin
     ElvMain.Selection.First.MakeVisible(emvMiddle);
   end;
 
-  if TStyleManager.IsCustomStyleActive then
-  begin
-    ShowScrollBar(ElvMain.Handle, SB_VERT, False);
-    ShowScrollBar(ElvMain.Handle, SB_VERT, True);
-  end;
+  ElvMain.Scrollbars.Update;
+  ElvMain.SetFocus;
 end;
 
 procedure TExplorerForm.TbPreviewZoomInClick(Sender: TObject);
@@ -5160,6 +5160,8 @@ begin
         VleEXIF.Strings.Clear;
         for Line in ExifInfo do
           VleEXIF.InsertRow(Line.Name + ': ', Line.Value, True);
+
+        TEXIFDisplayControl(VleEXIF).UpdateRowsHeight;
       finally
         EndScreenUpdate(VleEXIF.Handle, {PcTasks.ActivePageIndex = Integer(eltsEXIF)}False);
       end;
@@ -7757,6 +7759,44 @@ begin
   end;
 end;
 
+procedure TExplorerForm.CoolBarBottomResize(Sender: TObject);
+var
+  I, TotalWidth, WidthDiff: Integer;
+  ToolButtonsToHide: TList<TToolButton>;
+begin
+  //Bottom toolbar width customization
+  TotalWidth := 0;
+  for I := 0 to ToolBarBottom.ButtonCount - 1 do
+  begin
+    Inc(TotalWidth, ToolBarBottom.Buttons[I].Width);
+  end;
+
+  ToolButtonsToHide := TList<TToolButton>.Create;
+  try
+    ToolButtonsToHide.Add(TbbOpenDirectory);
+    ToolButtonsToHide.Add(TbbConvert);
+    ToolButtonsToHide.Add(TbbCrop);
+    ToolButtonsToHide.Add(TbbRename);
+    ToolButtonsToHide.Add(TbbEditor);
+    ToolButtonsToHide.Add(TbbPrint);
+    ToolButtonsToHide.Add(TbbShare);
+    ToolButtonsToHide.Add(TbbGeo);
+
+    WidthDiff := ToolBarBottom.Width - TotalWidth;
+    for I := 0 to ToolButtonsToHide.Count - 1 do
+    begin
+      if WidthDiff < 0 then
+        ToolButtonsToHide[I].Visible := False
+      else
+        ToolButtonsToHide[I].Visible := True;
+
+      Inc(WidthDiff, ToolButtonsToHide[I].Width);
+    end;
+  finally
+    F(ToolButtonsToHide);
+  end;
+end;
+
 procedure TExplorerForm.Stretch1Click(Sender: TObject);
 var
   FileName: string;
@@ -8455,6 +8495,39 @@ begin
   GetCursorPos(P);
   PmLinkOptions.Tag := Integer(Sender);
   PmLinkOptions.DoPopupEx(P.X, P.Y);
+end;
+
+procedure TExplorerForm.VleExifDrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+var
+  S: string;
+  DrawRect: TRect;
+  SG: TValueListEditor;
+begin
+  if ARow = 0 then
+    Exit;
+
+  SG := (Sender as TValueListEditor);
+  S:= SG.Cells[ ACol, ARow ];
+  if Length(S) > 0 then
+  begin
+    DrawRect := Rect;
+    DrawText(SG.Canvas.Handle,
+              PChar(S), Length(S), DrawRect,
+              DT_WORDBREAK or DT_LEFT or DT_NOPREFIX or DT_CALCRECT );
+
+    if (DrawRect.Bottom - DrawRect.top) > SG.RowHeights[ARow] then
+      SG.RowHeights[ARow] := (DrawRect.Bottom - DrawRect.Top)
+    else
+      DrawRect.Right := Rect.Right;
+
+    SG.Canvas.Fillrect( Rect );
+
+    DrawText(SG.Canvas.Handle,
+              PChar(S), Length(S), DrawRect,
+              DT_WORDBREAK or DT_PLOTTER or DT_NOPREFIX or DT_VCENTER);
+
+  end;
 end;
 
 procedure TExplorerForm.Copy4Click(Sender: TObject);
@@ -9978,11 +10051,15 @@ procedure TExplorerForm.ListView1Resize(Sender: TObject);
 begin
   BeginScreenUpdate(ElvMain.Handle);
   try
+    //no changes
+    if ebcsUpdateScrollBars in ElvMain.States then
+      Exit;
+	  
     ElvMain.BackGround.OffsetX := ElvMain.Width - ElvMain.BackGround.Image.Width;
     ElvMain.BackGround.OffsetY := ElvMain.Height - ElvMain.BackGround.Image.Height;
     LsMain.Left := ClientWidth - LsMain.Width - GetSystemMetrics(SM_CYHSCROLL) - 3 - IIF(PnRight.Visible, PnRight.Width, 0);
     LoadSizes;
-    if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Tag = 1) then
+    if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Tag = 1) and not ElvMain.Scrollbars.IsAnimation then
     begin
       ElvMain.Selection.FocusedItem.MakeVisible(emvAuto);
       ElvMain.Selection.FocusedItem.Tag := 0;
@@ -10378,6 +10455,8 @@ var
   RV, R, NR: TRect;
 begin
   TmrCheckItemVisibility.Enabled := False;
+  if ElvMain.Scrollbars.IsAnimation then
+    Exit;
   if ElvMain.Height > ElvMain.CellSizes.Thumbnail.Height then
   begin
     FI := ElvMain.Selection.FocusedItem;

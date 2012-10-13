@@ -91,7 +91,11 @@ uses
   uMachMask,
   uExifInfo,
   uDBInfoEditorUtils,
+  uEXIFDisplayControl,
   uFormInterfaces;
+
+type
+  TValueListEditor = class(TEXIFDisplayControl);
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
@@ -1857,6 +1861,7 @@ end;
 procedure TPropertiesForm.ReadExifData;
 begin
   LoadExifInfo(VleExif, FileName);
+  TEXIFDisplayControl(VleExif).UpdateRowsHeight;
 end;
 
 procedure TPropertiesForm.CreateParams(var Params: TCreateParams);

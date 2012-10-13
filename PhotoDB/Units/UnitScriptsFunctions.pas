@@ -830,7 +830,7 @@ end;
 
 function MrsGetFileType(StrFilename: string): string;
 begin
-  Result := MrsGetFileType(StrFilename);
+  Result := Dmitry.Utils.Files.MrsGetFileType(StrFilename);
 end;
 
 function GetDriveName(Drive: string; DefString: string): string;
