@@ -68,6 +68,7 @@ type
     FImageScale: Double;
     FLoadImageSize: TSize;
 
+    FText: string;
     function Buffer: TBitmap;
     procedure RecreateImage;
     function GetIsFastDrawing: Boolean;
@@ -91,6 +92,7 @@ type
     procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
+    procedure SetText(Text: string);
     property IsFastDrawing: Boolean read GetIsFastDrawing;
     property Item: TDBPopupMenuInfoRecord read GetItem;
     property FullImage: TBitmap read FFullImage;
@@ -162,6 +164,7 @@ begin
   FFrameNumber := -1;
   FLoadImageSize.cx := 0;
   FLoadImageSize.cy := 0;
+  FText := '';
 
   FItem := TDBPopupMenuInfoRecord.Create;
 end;
@@ -196,6 +199,7 @@ end;
 procedure TImageViewerControl.LoadAnimatedImage(Item: TDBPopupMenuInfoRecord;
   Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
 begin
+  FText := '';
   F(FItem);
   FItem := Item.Copy;
 
@@ -258,6 +262,7 @@ end;
 
 procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
 begin
+  FText := '';
   F(FItem);
   FItem := Item.Copy;
 
@@ -495,6 +500,17 @@ var
     end;
   end;
 
+  procedure ShowInfoText(InfoText, InfoTextLine2: string);
+  begin
+    FDrawImage.Canvas.Font.Color := Theme.WindowTextColor;
+
+    FDrawImage.Canvas.TextOut(FDrawImage.Width div 2 - FDrawImage.Canvas.TextWidth(InfoText) div 2,
+      FDrawImage.Height div 2 - FDrawImage.Canvas.Textheight(InfoText) div 2, InfoText);
+
+    FDrawImage.Canvas.TextOut(FDrawImage.Width div 2 - FDrawImage.Canvas.TextWidth(InfoTextLine2) div 2,
+      FDrawImage.Height div 2 - FDrawImage.Canvas.TextHeight(InfoTextLine2) div 2 + FDrawImage.Canvas.TextHeight(InfoTextLine2) + 4, InfoTextLine2);
+  end;
+
   procedure ShowErrorText(FileName: string);
   var
     MessageText: string;
@@ -502,14 +518,7 @@ var
     if FileName <> '' then
     begin
       MessageText := TA('Can''t display file') + ':';
-
-      FDrawImage.Canvas.Font.Color := Theme.WindowTextColor;
-
-      FDrawImage.Canvas.TextOut(FDrawImage.Width div 2 - FDrawImage.Canvas.TextWidth(MessageText) div 2,
-        FDrawImage.Height div 2 - FDrawImage.Canvas.Textheight(MessageText) div 2, MessageText);
-
-      FDrawImage.Canvas.TextOut(FDrawImage.Width div 2 - FDrawImage.Canvas.TextWidth(FileName) div 2,
-        FDrawImage.Height div 2 - FDrawImage.Canvas.TextHeight(FileName) div 2 + FDrawImage.Canvas.TextHeight(FileName) + 4, FileName);
+      ShowInfoText(MessageText, FileName);
     end;
   end;
 
@@ -518,12 +527,19 @@ begin
 
   DrawBackground(FDrawImage.Canvas);
 
+  if FText <> '' then
+  begin
+    ShowInfoText(FText, '');
+    Refresh;
+    Exit;
+  end;
+
   if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
-    begin
-      ShowErrorText(FileName);
-      Refresh;
-      Exit;
-    end;
+  begin
+    ShowErrorText(FileName);
+    Refresh;
+    Exit;
+  end;
 
   if IsRotatedImageProportions(Item.Rotation) then
   begin
@@ -700,6 +716,12 @@ begin
 
   RecreateImage;
   //CheckFaceIndicatorVisibility;
+end;
+
+procedure TImageViewerControl.SetText(Text: string);
+begin
+  FText := Text;
+  RecreateImage;
 end;
 
 end.

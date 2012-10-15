@@ -65,7 +65,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 623
-      ActivePage = TsDetailedSearch
+      ActivePage = TsInfo
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -2597,7 +2597,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.435544409720000000
+      Date = 41177.948433078700000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3413,5 +3413,27 @@ object ExplorerForm: TExplorerForm
     OnTimer = TmHideStatusBarTimer
     Left = 536
     Top = 152
+  end
+  object PmInfoGroup: TPopupActionBar
+    Left = 449
+    Top = 336
+    object MiInfoGroupFind: TMenuItem
+      Caption = 'Find pictures'
+      OnClick = MiInfoGroupFindClick
+    end
+    object MiInfoGroupSplitter1: TMenuItem
+      Caption = '-'
+    end
+    object MiInfoGroupRemove: TMenuItem
+      Caption = 'Remove from list'
+      OnClick = MiInfoGroupRemoveClick
+    end
+    object MiInfoGroupSplitter2: TMenuItem
+      Caption = '-'
+    end
+    object MiInfoGroupProperties: TMenuItem
+      Caption = 'Properties'
+      OnClick = MiInfoGroupPropertiesClick
+    end
   end
 end

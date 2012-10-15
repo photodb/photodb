@@ -2590,7 +2590,7 @@ begin
         DeleteWords(KeyWords, GroupKeyWords);
         KeyWordsMemo.Text := KeyWords;
       end;
-      // удаляем группу изтекущих
+      // remove from current groups
       RemoveGroupFromGroups(FNowGroups, FNowGroups[I]);
       LstCurrentGroups.Items.Delete(I);
     end;

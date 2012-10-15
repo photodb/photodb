@@ -434,6 +434,8 @@
     <translate name="Open directory" value="Открыть папку" />
     <translate name="Show hidden images" value="Показывать скрытые изображения" />
     <translate name="Show private images" value="Показывать личные изображения" />
+    <translate name="Select a file to preview" value="Выберите файл для предпросмотра" />
+    <translate name="File is encrypted" value="Файл зашифован" />	
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />

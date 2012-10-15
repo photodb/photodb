@@ -79,6 +79,7 @@ uses
   DragDropFile,
   DragDrop,
   DropTarget,
+  CmpUnit,
   UnitCDMappingSupport,
   ShellContextMenu,
   ProgressActionUnit,
@@ -529,6 +530,12 @@ type
     TmHideStatusBar: TTimer;
     PnResetFilter: TPanel;
     WlResetFilter: TWebLink;
+    PmInfoGroup: TPopupActionBar;
+    MiInfoGroupFind: TMenuItem;
+    MiInfoGroupSplitter1: TMenuItem;
+    MiInfoGroupRemove: TMenuItem;
+    MiInfoGroupSplitter2: TMenuItem;
+    MiInfoGroupProperties: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -792,6 +799,9 @@ type
     procedure CoolBarBottomResize(Sender: TObject);
     procedure VleExifDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect;
       State: TGridDrawState);
+    procedure MiInfoGroupPropertiesClick(Sender: TObject);
+    procedure MiInfoGroupFindClick(Sender: TObject);
+    procedure MiInfoGroupRemoveClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1246,7 +1256,12 @@ begin
   FActiveLeftTab := TExplorerLeftTab(PcTasks.ActivePageIndex);
   Settings.WriteInteger('Explorer', 'LeftPanelTabIndex', PcTasks.ActivePageIndex);
   if PcTasks.ActivePageIndex = Integer(eltsExplorer) then
-    TreeView.SelectPathItem(PePath.PathEx);
+  begin
+    if GetCurrentPathW.PType <> EXPLORER_ITEM_SEARCH then
+      TreeView.SelectPathItem(PePath.PathEx)
+    else
+      TreeView; //just start tree without any selection
+  end;
   if PcTasks.ActivePageIndex = Integer(eltsSearch) then
     ExtendedSearchInit;
   if PcTasks.ActivePageIndex = Integer(eltsEXIF) then
@@ -4970,6 +4985,48 @@ begin
   ExtendedSearchRealign;
 end;
 
+procedure TExplorerForm.MiInfoGroupFindClick(Sender: TObject);
+var
+  WL: TWebLink;
+begin
+  WL := TWebLink(PmInfoGroup.Tag);
+
+  SetNewPathW(ExplorerPath(cGroupsPath + '\' + WL.Text, EXPLORER_ITEM_GROUP), False);
+end;
+
+procedure TExplorerForm.MiInfoGroupPropertiesClick(Sender: TObject);
+var
+  WL: TWebLink;
+begin
+  WL := TWebLink(PmInfoGroup.Tag);
+
+  GroupInfoForm.Execute(nil, WL.Text, False);
+end;
+
+procedure TExplorerForm.MiInfoGroupRemoveClick(Sender: TObject);
+var
+  WL: TWebLink;
+  KeyWords: string;
+  Group: TGroup;
+  Groups: TGroups;
+begin
+  WL := TWebLink(PmInfoGroup.Tag);
+
+  KeyWords := MemKeyWords.Text;
+  Groups := EncodeGroups(FSelectedInfo.Groups);
+
+  Group := GetGroupByGroupName(WL.Text, False);
+
+  RemoveGroupFromGroups(Groups, Group);
+  DeleteWords(KeyWords, Group.GroupKeyWords);
+
+  FSelectedInfo.Groups := CodeGroups(Groups);
+  MemKeyWords.Text := KeyWords;
+  InitEditGroups;
+
+  BtnSaveInfo.Enabled := True;
+end;
+
 procedure TExplorerForm.LockItems;
 begin
   GlobalLock := True;
@@ -7066,6 +7123,10 @@ begin
 
     TsGeoLocation.Caption := L('Map');
     TsMediaPreview.Caption := L('Preview');
+
+    MiInfoGroupFind.Caption := L('Find pictures');
+    MiInfoGroupRemove.Caption := L('Remove from list');
+    MiInfoGroupProperties.Caption := L('Properties');
   finally
     EndTranslate;
   end;
@@ -7142,6 +7203,7 @@ begin
 
   FDBCanDragW := False;
   FDBCanDrag := False;
+
   TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
   OldDir := GetCurrentPath;
   Path := WPath.Path;
@@ -9023,7 +9085,12 @@ begin
       CreatePreview;
 
     if FImageViewer <> nil then
-      FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
+    begin
+      if (SelCount = 0) or not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
+        FImageViewer.SetText(L('Select a file to preview'))
+      else
+        FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
+    end;
   end;
 
   if (TsGeoLocation.Visible) then
@@ -12047,14 +12114,18 @@ procedure TExplorerForm.GroupClick(Sender: TObject);
 var
   KeyWords, Groups: string;
   WL: TWebLink;
+  P: TPoint;
 begin
   WL := TWebLink(Sender);
   if WL.Tag > -1 then
   begin
-    GroupInfoForm.Execute(nil, WL.Text, False);
+    P := Point(Wl.Left, Wl.BoundsRect.Bottom);
+    P := Wl.Parent.ClientToScreen(P);
+
+    PmInfoGroup.Tag := NativeInt(WL);
+    PmInfoGroup.Popup(P.X, P.Y);
   end else
   begin
-
     KeyWords := MemKeyWords.Text;
     Groups := FSelectedInfo.Groups;
     GroupsSelectForm.Execute(Groups, KeyWords);
@@ -12224,6 +12295,7 @@ begin
   PmLinkOptions.Images := DBKernel.ImageList;
   ToolBarBottom.Images := DBKernel.ImageList;
   ToolBarPreview.Images := DBKernel.ImageList;
+  PmInfoGroup.Images := DBKernel.ImageList;
 
   TbbPlay.ImageIndex := DB_IC_SLIDE_SHOW;
   TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
@@ -12333,6 +12405,10 @@ begin
   ExtractHiddenInfo1.ImageIndex := DB_IC_DESTENO;
 
   MapCD1.ImageIndex := DB_IC_CD_MAPPING;
+
+  MiInfoGroupFind.ImageIndex := DB_IC_SEARCH;
+  MiInfoGroupRemove.ImageIndex := DB_IC_DELETE_INFO;
+  MiInfoGroupProperties.ImageIndex := DB_IC_PROPERTIES;
 
   if not IsWindows8 then
     TLoad.Instance.RequaredDBKernelIcons;

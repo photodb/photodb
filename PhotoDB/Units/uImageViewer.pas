@@ -12,6 +12,7 @@ uses
   Dmitry.Utils.System,
 
   UnitDBDeclare,
+  UnitDBKernel,
 
   uMemory,
   uIImageViewer,
@@ -21,6 +22,7 @@ uses
   uImageViewerThread,
   uThreadForm,
   uGUIDUtils,
+  uTranslate,
   uImageSource;
 
 type
@@ -49,6 +51,7 @@ type
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
+    procedure SetText(Text: string);
     procedure ResizeTo(Width, Height: Integer);
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
@@ -143,8 +146,17 @@ procedure TImageViewer.LoadFile(FileInfo: TDBPopupMenuInfoRecord);
 var
   Width, Height: Integer;
   Bitmap: TBitmap;
-begin
+begin        
   FActiveThreadId := GetGUID;
+  
+  if FileInfo.Encrypted then
+  begin
+    if DBKernel.FindPasswordForCryptImageFile(FileInfo.FileName) = '' then
+    begin
+      SetText(TA('File is encrypted', 'Explorer'));
+      Exit;
+    end;
+  end;
 
   if FImageSource <> nil then
   begin
@@ -236,6 +248,12 @@ begin
     Exit;
 
   FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
+end;
+
+procedure TImageViewer.SetText(Text: string);
+begin          
+  FActiveThreadId := GetGUID;
+  FImageControl.SetText(Text);
 end;
 
 procedure TImageViewer.UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
