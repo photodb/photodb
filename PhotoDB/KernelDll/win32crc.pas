@@ -2,7 +2,7 @@ unit win32crc;
 
 interface
 
-uses Classes, Windows, SysUtils;
+uses Windows;
 
 const  
   Table: array[0..255] of DWORD =
@@ -169,24 +169,51 @@ end;
 procedure CalcFileCRC32(FromName: string; var CRCvalue: DWORD;
   var TotalBytes: TInteger8;
   var error: Word);
-var  
-  Stream: TMemoryStream;
-begin  
-  error := 0;  
-  CRCValue := $FFFFFFFF;  
-  Stream := TMemoryStream.Create;  
-  try  
-    try  
-      Stream.LoadFromFile(FromName);  
-      if Stream.Size > 0 then CalcCRC32(Stream.Memory, Stream.Size, CRCvalue)  
-      except  
-        on E: EReadError do  
-          error := 1  
-    end;  
-    CRCvalue := not CRCvalue  
-  finally  
-    Stream.Free  
-  end;  
-end;  
+var
+  //Stream: TMemoryStream;
+  FFilehandle, FFileMap: THandle;
+  FMappingPtr: Pointer;
+  FileSize: Integer;
+begin
+  Error := 1;
+  CRCValue := $FFFFFFFF;
+
+  FFilehandle := CreateFile(PChar(FromName),
+      GENERIC_READ,
+      FILE_SHARE_READ OR FILE_SHARE_WRITE,
+      nil,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL,
+      0);
+  if (FFilehandle <> INVALID_HANDLE_VALUE) then
+  begin
+    FileSize := GetFileSize(FFilehandle, nil);
+
+    FFileMap := CreateFileMapping(FFileHandle, // handle to file to map
+      nil, // optional security attributes
+      PAGE_READONLY, // protection for mapping object
+      0, // high-order 32 bits of object size
+      FileSize, // low-order 32 bits of object size
+      nil); //
+    if (FFileMap <> 0) then
+    begin
+      FMappingPtr := MapViewOfFile(FFileMap,
+        FILE_MAP_READ,
+        0,
+        0,
+        FileSize);
+      if Assigned(FMappingPtr) then
+      begin
+        CalcCRC32(FMappingPtr, FileSize, CRCvalue);
+        CRCvalue := not CRCvalue;
+        Error := 0;
+        UnmapViewOfFile(FMappingPtr);
+      end;
+      CloseHandle(FFileMap);
+    end;
+    CloseHandle(FFilehandle);
+  end;
+end;
+
 
 end.

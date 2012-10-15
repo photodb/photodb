@@ -31,7 +31,6 @@ uses
   uActions,
   uLogger,
   uUserUtils,
-  uMediaPlayers,
   uStillImage;
 
 const

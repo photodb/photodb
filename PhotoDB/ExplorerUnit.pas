@@ -1249,6 +1249,8 @@ begin
     TreeView.SelectPathItem(PePath.PathEx);
   if PcTasks.ActivePageIndex = Integer(eltsSearch) then
     ExtendedSearchInit;
+  if PcTasks.ActivePageIndex = Integer(eltsEXIF) then
+    VleExif.UpdateRowsHeight;
 end;
 
 procedure VerifyPaste(Explorer: TExplorerForm);

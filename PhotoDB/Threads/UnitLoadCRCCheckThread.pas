@@ -3,8 +3,18 @@ unit UnitLoadCRCCheckThread;
 interface
 
 uses
-  Windows, Classes, Dolphin_DB, uDBThread, UnitDBCommon, uLogger,
-  uShellIntegration, uSplashThread, uRuntime, uConstants;
+  Windows,
+  Classes,
+
+  Dolphin_DB,
+  UnitDBCommon,
+
+  uDBThread,
+  uLogger,
+  uShellIntegration,
+  uSplashThread,
+  uRuntime,
+  uConstants;
 
 type
   TLoadCRCCheckThread = class(TDBThread)

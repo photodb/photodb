@@ -19,10 +19,7 @@ type
 
 function GetFolderPicture: TPNGImage;
 function GetLogoPicture: TPNGImage;
-function GetSlideShowLoadPicture: TPNGImage;
 function GetExplorerBackground: TPNGImage;
-function GetSearchBackground: TPNGImage;
-function GetDateRangeImage: TPNGImage;
 function GetLoadingImage: TPNGImage;
 function GetActivationImage: TPNGImage;
 function GetPrinterPatternImage: TJpegImage;
@@ -33,7 +30,6 @@ function GetNoHistogramImage: TPNGImage;
 
 {$R MAIN.res}
 {$R Logo.res}
-{$R Slideshow_Load.res}
 {$R Directory_Large.res}
 {$R ExplorerBackground.res}
 {$R Manifest.res}
@@ -113,24 +109,9 @@ begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('DIRECTORY_LARGE');
 end;
 
-function GetSlideShowLoadPicture: TPNGImage;
-begin
-  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('SLIDESHOW_LOAD');
-end;
-
 function GetExplorerBackground: TPNGImage;
 begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('EXPLORERBACKGROUND');
-end;
-
-function GetSearchBackground: TPNGImage;
-begin
-  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('SEARCHBACKGROUND');
-end;
-
-function GetDateRangeImage: TPNGImage;
-begin
-  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('DATERANGE');
 end;
 
 function GetLoadingImage: TPNGImage;

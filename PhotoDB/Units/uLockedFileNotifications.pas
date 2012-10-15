@@ -32,7 +32,7 @@ type
 implementation
 
 var
-  LockedFiles : TLockFiles = nil;
+  LockedFiles: TLockFiles = nil;
 
 { TLockFiles }
 

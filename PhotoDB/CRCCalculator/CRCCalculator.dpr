@@ -3,10 +3,9 @@ program CRCCalculator;
 {$APPTYPE CONSOLE}
 
 uses
-  Vcl.Forms,
   System.SysUtils,
   System.Classes,
-  Dmitry.CRC32;
+  win32crc in '..\KernelDll\win32crc.pas';
 
 var
   CRCValue: Cardinal;
