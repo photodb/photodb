@@ -24,6 +24,9 @@ type
     procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure ZoomOut;
     procedure ZoomIn;
+
+    procedure FinishDetectionFaces;
+
     function GetWidth: Integer;
     function GetHeight: Integer;
     function GetTop: Integer;

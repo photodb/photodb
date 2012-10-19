@@ -4,28 +4,30 @@ interface
 
 uses
   Generics.Collections,
-  Windows,
-  Classes,
-  Graphics,
-  UnitDBDeclare,
-  xmldom,
-  ActiveX,
-  SysUtils,
+  System.Math,
+  System.Classes,
+  System.SyncObjs,
+  System.SysUtils,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  Vcl.Graphics,
+  Xml.Xmldom,
 
   Dmitry.CRC32,
   Dmitry.Utils.Files,
+
+  GIFImage,
+  UnitDBDeclare,
 
   uMemory,
   uDBThread,
   uFaceDetection,
   uLogger,
   uConstants,
-  SyncObjs,
   uRuntime,
   uGraphicUtils,
   uGOM,
   uInterfaces,
-  Math,
   uBitmapUtils,
   uSettings,
   uDateUtils,
@@ -33,7 +35,6 @@ uses
   u2DUtils,
   uConfiguration,
   uStringUtils,
-  GIFImage,
   uPortableDeviceUtils,
   uShellIntegration,
   uTranslate;
@@ -79,6 +80,7 @@ type
     Image: TGraphic;
     Data: TDBPopupMenuInfoRecord;
     Caller: TObject;
+    IColler: IFaceResultForm;
     constructor Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
     destructor Destroy; override;
     property ID: Integer read GetID;
@@ -418,12 +420,11 @@ begin
           end;
         end;
       end;
-      Found := SysUtils.FindNext(SearchRec);
+      Found := System.SysUtils.FindNext(SearchRec);
     end;
   finally
-    FindClose(SearchRec);
+    System.SysUtils.FindClose(SearchRec);
   end;
-
 end;
 
 function TFaceDetectionDataManager.RotateDBData(ID, Rotate: Integer): Boolean;
@@ -678,13 +679,12 @@ begin
     FA.Page := PA.Page;
     FA.Data := DBInfo.Extract(I);
     Add(FA);
-
   end;
 end;
 
 procedure TDBFaceDetectionResult.RemoveCache;
 begin
-  DeleteFile(PersistanceFileName);
+  System.SysUtils.DeleteFile(PersistanceFileName);
 end;
 
 procedure TDBFaceDetectionResult.RemoveFaceResult(FR: TFaceDetectionResultItem);

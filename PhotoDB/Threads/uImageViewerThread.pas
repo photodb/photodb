@@ -52,6 +52,7 @@ type
     FBitmap: TBitmap;
     procedure SetStaticImage;
     procedure SetAnimatedImageAsynch;
+    procedure FinishDetectionFaces;
   protected
     procedure Execute; override;
   public
@@ -205,17 +206,16 @@ begin
           end;
         end;
       finally
-        //TODO:
-        {if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
+        if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
         begin
-          if CanDetectFacesOnImage(FInfo.FileName, Graphic) then
+          if CanDetectFacesOnImage(FInfo.FileName, FGraphic) then
           begin
-            SynchronizeEx(ShowLoadingSign);
-            FaceDetectionDataManager.RequestFaceDetection(FOwnerControl, Graphic, FInfo);
+            //SynchronizeEx(ShowLoadingSign);
+            FaceDetectionDataManager.RequestFaceDetection(FOwnerControl.GetObject, FGraphic, FInfo);
           end else
             FinishDetectionFaces;
         end else
-          FinishDetectionFaces;}
+          FinishDetectionFaces;
         F(FGraphic);
       end;
     except
@@ -225,6 +225,16 @@ begin
   finally
     CoUninitialize;
   end;
+end;
+
+procedure TImageViewerThread.FinishDetectionFaces;
+begin
+  SynchronizeEx(procedure
+    begin
+      if FOwnerControl <> nil then
+        FOwnerControl.FinishDetectionFaces;
+    end
+  );
 end;
 
 procedure TImageViewerThread.SetAnimatedImageAsynch;

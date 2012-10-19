@@ -322,6 +322,9 @@ var
 
 function FaceDetectionManager: TFaceDetectionManager;
 
+function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
+function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
+
 implementation
 
 var
@@ -802,6 +805,28 @@ begin
   Y := Value.Top;
   Width := Value.Right - Value.Left;
   Height := Value.Bottom - Value.Top;
+end;
+
+//functions
+
+function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
+begin
+  Result := R;
+  if (OriginalSize.cx <> 0) and (OriginalSize.cy <> 0) then
+  begin
+    Result.X := Round(R.X * Image.Width / OriginalSize.cx);
+    Result.Y := Round(R.Y * Image.Height / OriginalSize.cy);
+  end;
+end;
+
+function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
+begin
+  Result := R;
+  if (Image.Width <> 0) and (Image.Height <> 0) then
+  begin
+    Result.X := Round(R.X * OriginalSize.cx / Image.Width);
+    Result.Y := Round(R.Y * OriginalSize.cy / Image.Height);
+  end;
 end;
 
 initialization

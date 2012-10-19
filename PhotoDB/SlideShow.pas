@@ -205,7 +205,7 @@ type
     MiDetectionMethod: TMenuItem;
     PmFace: TPopupActionBar;
     MiClearFaceZone: TMenuItem;
-    MiClearFaceZoneSeparatpr: TMenuItem;
+    MiClearFaceZoneSeparator: TMenuItem;
     MiCurrentPerson: TMenuItem;
     MiCurrentPersonSeparator: TMenuItem;
     MiPreviousSelections: TMenuItem;
@@ -240,10 +240,8 @@ type
     procedure FormPaint(Sender: TObject);
     procedure PmMainPopup(Sender: TObject);
     procedure MTimer1Click(Sender: TObject);
-    procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure ChangedDBDataByID(Sender: TObject; ID: Integer;
-      params: TEventFields; Value: TEventValues);
+    procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure LoadListImages(List: TstringList);
     function ShowImage(Sender: TObject; FileName: string): Boolean;
     procedure ShowFolder(Files: Tstrings; CurrentN: Integer);
@@ -378,7 +376,7 @@ type
     function GetVisibleImageWidth: Integer;
     function GetVisibleImageHeight: Integer;
     function BufferPointToImagePoint(P: TPoint): TPoint;
-    function ImagePointToBufferPoint(P: TPoint): Tpoint;
+    function ImagePointToBufferPoint(P: TPoint): TPoint;
     function Buffer: TBitmap;
   public
     { Public declarations }
@@ -446,6 +444,8 @@ type
     function GetImageByIndex(Index: Integer): TDBPopupMenuInfoRecord;
     function ShowImageInDirectory(FileName: string; ShowPrivate: Boolean): Boolean;
     procedure UpdateImageInfo(Info: TDBPopupMenuInfoRecord);
+
+    function GetObject: TObject;
   published
     property ImageExists: Boolean read FImageExists write SetImageExists;
     property StaticImage: Boolean read FStaticImage write SetPropStaticImage;
@@ -493,26 +493,6 @@ begin
 end;
 
 {$R *.dfm}
-
-function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
-begin
-  Result := R;
-  if (OriginalSize.cx <> 0) and (OriginalSize.cy <> 0) then
-  begin
-    Result.X := Round(R.X * Image.Width / OriginalSize.cx);
-    Result.Y := Round(R.Y * Image.Height / OriginalSize.cy);
-  end;
-end;
-
-function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
-begin
-  Result := R;
-  if (Image.Width <> 0) and (Image.Height <> 0) then
-  begin
-    Result.X := Round(R.X * OriginalSize.cx / Image.Width);
-    Result.Y := Round(R.Y * OriginalSize.cy / Image.Height);
-  end;
-end;
 
 procedure TViewer.FormCreate(Sender: TObject);
 begin
@@ -2884,6 +2864,11 @@ end;
 function TViewer.GetItem: TDBPopupMenuInfoRecord;
 begin
   Result := CurrentInfo[CurrentFileNumber];
+end;
+
+function TViewer.GetObject: TObject;
+begin
+  Result := Self;
 end;
 
 procedure TViewer.RecreateImLists;

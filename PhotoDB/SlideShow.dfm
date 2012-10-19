@@ -623,7 +623,7 @@ object Viewer: TViewer
       ImageIndex = 0
       OnClick = MiClearFaceZoneClick
     end
-    object MiClearFaceZoneSeparatpr: TMenuItem
+    object MiClearFaceZoneSeparator: TMenuItem
       Caption = '-'
     end
     object MiCurrentPerson: TMenuItem

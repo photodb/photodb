@@ -1353,12 +1353,9 @@ end;
 procedure TDBPopupMenu.QuickGroupInfoPopUpMenu_(Sender: TObject);
 var
   S: string;
-  I: Integer;
 begin
-  S := (Sender as TMenuItem).Caption;
-  for I := Length(S) downto 1 do
-    if S[I] = '&' then
-      Delete(S, I, 1);
+  S := (Sender as TMenuItem).Caption.Replace('&', '');
+
   GroupInfoForm.Execute(nil, S, False);
 end;
 
@@ -1448,8 +1445,7 @@ var
 begin
   if CheckDBReadOnly then
     Exit;
-  Str := (Sender as Tmenuitem).Caption;
-  System.Delete(Str, 1, 1);
+  Str := (Sender as TMenuItem).Caption.Replace('&', '');
   NewRating := StrToInt(Str);
   FQuery := GetQuery;
   try

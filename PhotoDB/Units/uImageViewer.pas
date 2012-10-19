@@ -15,6 +15,7 @@ uses
   UnitDBKernel,
 
   uMemory,
+  uGOM,
   uIImageViewer,
   uDBPopupMenuInfo,
   uImageViewerControl,
@@ -23,10 +24,11 @@ uses
   uThreadForm,
   uGUIDUtils,
   uTranslate,
+  uInterfaces,
   uImageSource;
 
 type
-  TImageViewer = class(TInterfacedObject, IImageViewer)
+  TImageViewer = class(TInterfacedObject, IImageViewer, IFaceResultForm)
   private
     FOwnerForm: TThreadForm;
     FTop: Integer;
@@ -47,13 +49,21 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+
+    //IObjectSource Implementation
+    function GetObject: TObject;
+    //IObjectSource END
+
+    procedure RefreshFaceDetestionState;
+    procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
+    procedure FinishDetectionFaces;
+
     procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
     procedure SetText(Text: string);
     procedure ResizeTo(Width, Height: Integer);
-    procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure ZoomOut;
@@ -93,6 +103,7 @@ end;
 
 constructor TImageViewer.Create;
 begin
+  GOM.AddObj(Self);
   FFiles := nil;
   FImageSource := nil;
   FCurrentFile := '';
@@ -103,8 +114,14 @@ end;
 
 destructor TImageViewer.Destroy;
 begin
+  GOM.RemoveObj(Self);
   F(FItem);
   F(FFiles);
+end;
+
+procedure TImageViewer.FinishDetectionFaces;
+begin
+  FImageControl.FinishDetectingFaces;
 end;
 
 function TImageViewer.GetActiveThreadId: TGUID;
@@ -131,6 +148,15 @@ function TImageViewer.GetLeft: Integer;
 begin
   Result := FLeft;
 end;
+
+{$REGION IObjectSource}
+
+function TImageViewer.GetObject: TObject;
+begin
+  Result := Self;
+end;
+
+{$ENDREGION}
 
 function TImageViewer.GetTop: Integer;
 begin
@@ -256,9 +282,14 @@ begin
   FImageControl.SetText(Text);
 end;
 
+procedure TImageViewer.RefreshFaceDetestionState;
+begin
+
+end;
+
 procedure TImageViewer.UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
 begin
-  //TODO:
+  FImageControl.UpdateFaces(FileName, Faces);
 end;
 
 procedure TImageViewer.ZoomIn;
