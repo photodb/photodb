@@ -214,10 +214,10 @@ type
     MiOtherPersons: TMenuItem;
     MiFindPhotosSeparator: TMenuItem;
     MiFindPhotos: TMenuItem;
-    N9: TMenuItem;
+    MiRefreshFacesSeparator: TMenuItem;
     MiRefreshFaces: TMenuItem;
     MiDrawFace: TMenuItem;
-    N10: TMenuItem;
+    MiDrawFaceSeparator: TMenuItem;
     ImFacePopup: TImageList;
     PmObject: TPopupActionBar;
     N12: TMenuItem;
@@ -1761,8 +1761,7 @@ begin
   end;
 end;
 
-procedure TViewer.LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer;
-  Bitmap: TBitmap);
+procedure TViewer.LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer; Bitmap: TBitmap);
 begin
   if FCreating then
     Exit;

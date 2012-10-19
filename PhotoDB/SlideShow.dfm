@@ -595,14 +595,14 @@ object Viewer: TViewer
       Caption = 'Draw face'
       OnClick = MiDrawFaceClick
     end
-    object N10: TMenuItem
+    object MiDrawFaceSeparator: TMenuItem
       Caption = '-'
     end
     object MiRefreshFaces: TMenuItem
       Caption = 'Refresh Faces'
       OnClick = MiRefreshFacesClick
     end
-    object N9: TMenuItem
+    object MiRefreshFacesSeparator: TMenuItem
       Caption = '-'
     end
     object MiDetectionMethod: TMenuItem

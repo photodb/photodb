@@ -5,6 +5,10 @@ interface
 uses
   Vcl.Controls,
   Vcl.Graphics,
+  Vcl.ComCtrls,
+
+  Dmitry.Controls.LoadingSign,
+  Dmitry.Controls.WebLink,
 
   UnitDBDeclare,
 
@@ -25,6 +29,7 @@ type
     procedure ZoomOut;
     procedure ZoomIn;
 
+    procedure SetFaceDetectionControls(AWlFaceCount: TWebLink; ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
     procedure FinishDetectionFaces;
 
     function GetWidth: Integer;

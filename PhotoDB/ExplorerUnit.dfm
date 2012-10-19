@@ -2233,7 +2233,7 @@ object ExplorerForm: TExplorerForm
             340
             556)
           object ToolBarPreview: TToolBar
-            Left = 0
+            Left = 150
             Top = 533
             Width = 219
             Height = 22
@@ -2311,6 +2311,61 @@ object ExplorerForm: TExplorerForm
               ImageIndex = 2
               OnClick = SlideShowLinkClick
             end
+          end
+          object WlFaceCount: TWebLink
+            Left = 24
+            Top = 538
+            Width = 41
+            Height = 13
+            Cursor = crHandPoint
+            Anchors = [akLeft, akBottom]
+            Text = 'Faces: 2'
+            Visible = False
+            ImageIndex = -1
+            IconWidth = 0
+            IconHeight = 0
+            UseEnterColor = False
+            EnterColor = clBlack
+            EnterBould = False
+            TopIconIncrement = 0
+            UseSpecIconSize = True
+            HightliteImage = True
+            StretchImage = True
+            CanClick = True
+          end
+          object LsDetectingFaces: TLoadingSign
+            Left = 3
+            Top = 536
+            Width = 18
+            Height = 18
+            Visible = False
+            Active = True
+            FillPercent = 60
+            Color = clBtnFace
+            ParentColor = False
+            Anchors = [akLeft, akBottom]
+            SignColor = clBlack
+            MaxTransparencity = 255
+          end
+          object WlPersonsPreview: TWebLinkList
+            Left = 0
+            Top = 0
+            Width = 340
+            Height = 33
+            HorzScrollBar.Visible = False
+            Align = alTop
+            BevelEdges = []
+            BevelInner = bvNone
+            BevelOuter = bvNone
+            BorderStyle = bsNone
+            ParentBackground = True
+            TabOrder = 3
+            Visible = False
+            VerticalIncrement = 5
+            HorizontalIncrement = 5
+            LineHeight = 0
+            PaddingTop = 2
+            PaddingLeft = 2
           end
         end
         object TsGeoLocation: TTabSheet
@@ -2597,7 +2652,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.948433078700000000
+      Date = 41177.919334131950000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

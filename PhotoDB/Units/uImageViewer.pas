@@ -8,8 +8,11 @@ uses
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
+  Vcl.ComCtrls,
 
   Dmitry.Utils.System,
+  Dmitry.Controls.LoadingSign,
+  Dmitry.Controls.WebLink,
 
   UnitDBDeclare,
   UnitDBKernel,
@@ -57,6 +60,7 @@ type
     procedure RefreshFaceDetestionState;
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
     procedure FinishDetectionFaces;
+    procedure SetFaceDetectionControls(AWlFaceCount: TWebLink; ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
 
     procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
@@ -203,6 +207,7 @@ begin
   F(FItem);
   FItem := FileInfo.Copy;
 
+  FImageControl.StartLoadingImage;
   LoadImage(Self, FileInfo, FWidth, FHeight);
 end;
 
@@ -264,6 +269,12 @@ begin
     Exit;
 
   FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
+end;
+
+procedure TImageViewer.SetFaceDetectionControls(AWlFaceCount: TWebLink;
+  ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
+begin
+  FImageControl.SetFaceDetectionControls(AWlFaceCount, ALsDetectingFaces, ATbrActions);
 end;
 
 procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);

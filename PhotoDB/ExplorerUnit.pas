@@ -45,6 +45,7 @@ uses
   Dmitry.Utils.Files,
   Dmitry.Utils.ShellIcons,
   Dmitry.Utils.Network,
+  Dmitry.Graphics.Types,
   Dmitry.Graphics.Utils,
   Dmitry.PathProviders,
   Dmitry.PathProviders.MyComputer,
@@ -83,7 +84,6 @@ uses
   UnitCDMappingSupport,
   ShellContextMenu,
   ProgressActionUnit,
-  Dmitry.Graphics.Types,
   CommonDBSupport,
   EasyListview,
   MPCommonUtilities,
@@ -150,6 +150,7 @@ uses
   uPathProviderUtils,
   uPortableDeviceManager,
   uPortableClasses,
+  uFaceDetection,
 
   uWebJSExternalContainer,
   WebJS_TLB,
@@ -536,6 +537,9 @@ type
     MiInfoGroupRemove: TMenuItem;
     MiInfoGroupSplitter2: TMenuItem;
     MiInfoGroupProperties: TMenuItem;
+    WlFaceCount: TWebLink;
+    LsDetectingFaces: TLoadingSign;
+    WlPersonsPreview: TWebLinkList;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -1334,7 +1338,12 @@ begin
   begin
     FImageViewer := TImageViewer.Create;
     FImageViewer.AttachTo(Self, TsMediaPreview, 2, 2);
+    FImageViewer.SetFaceDetectionControls(WlFaceCount, LsDetectingFaces, ToolBarPreview);
     TsMediaPreviewResize(Self);
+
+    WlFaceCount.ImageList := DBkernel.ImageList;
+    WlFaceCount.Visible := FaceDetectionManager.IsActive;
+    LsDetectingFaces.Visible := FaceDetectionManager.IsActive;
   end;
 end;
 
@@ -3174,6 +3183,9 @@ begin
 
     ToolBarPreview.Left := TsMediaPreview.Width div 2 - ToolBarPreview.Width div 2;
     ToolBarPreview.Top := TsMediaPreview.Height - ToolBarPreview.Height;
+
+    LsDetectingFaces.Top := ToolBarPreview.Top;
+    WlFaceCount.Top := ToolBarPreview.Top + LsDetectingFaces.Height div 2 - WlFaceCount.Height div 2;
   end;
 end;
 
