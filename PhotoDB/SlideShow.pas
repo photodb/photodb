@@ -2260,6 +2260,7 @@ begin
     PersonManager.RemovePersonFromPhoto(Item.ID, FA);
   end;
   FFaces.RemoveFaceResult(FR);
+  FHoverFace := nil;
   UpdateFaceDetectionState;
   RefreshFaces;
 end;
@@ -3289,6 +3290,7 @@ begin
   ReAllignScrolls(False);
   F(FOverlayBuffer);
   FFaces.Clear;
+  FHoverFace := nil;
   FFaceDetectionComplete := False;
   UpdateFaceDetectionState;
   FOverlayBuffer := TBitmap.Create;
@@ -3352,6 +3354,7 @@ begin
   ImageFrameTimer.Enabled := True;
 
   FFaces.Clear;
+  FHoverFace := nil;
   FFaceDetectionComplete := True;
   UpdateFaceDetectionState;
 end;
@@ -3457,6 +3460,7 @@ begin
   FForwardThreadReady := False;
 
   FFaces.Clear;
+  FHoverFace := nil;
   FFaceDetectionComplete := True;
   UpdateFaceDetectionState;
 

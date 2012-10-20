@@ -117,7 +117,7 @@ type
     FIsEditMode: Boolean;
     FFormPersonSuggest: TDBForm;
     procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
-    function DoEditPerson(PersonID: Integer): Boolean;
+    function DoEditPerson(PersonID: Integer; NewAvatar: TBitmap): Boolean;
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
     procedure LoadLanguage;
@@ -169,7 +169,7 @@ type
   end;
 
 procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
-function EditPerson(PersonID: Integer): Boolean;
+function EditPerson(PersonID: Integer; NewAvatar: TBitmap = nil): Boolean;
 
 implementation
 
@@ -193,13 +193,13 @@ begin
   end;
 end;
 
-function EditPerson(PersonID: Integer): Boolean;
+function EditPerson(PersonID: Integer; NewAvatar: TBitmap = nil): Boolean;
 var
   FormCreatePerson: TFormCreatePerson;
 begin
   Application.CreateForm(TFormCreatePerson, FormCreatePerson);
   try
-    Result := FormCreatePerson.DoEditPerson(PersonID);
+    Result := FormCreatePerson.DoEditPerson(PersonID, NewAvatar);
   finally
     R(FormCreatePerson);
   end;
@@ -409,7 +409,7 @@ begin
   end;
 end;
 
-function TFormCreatePerson.DoEditPerson(PersonID: Integer): Boolean;
+function TFormCreatePerson.DoEditPerson(PersonID: Integer; NewAvatar: TBitmap): Boolean;
 begin
   Result := False;
   FPerson := TPerson.Create;
@@ -426,7 +426,13 @@ begin
     FIsImageChanged := False;
     FIsEditMode := True;
 
-    FPicture.Assign(Person.Image);
+    if NewAvatar <> nil then
+    begin
+      FPicture.Assign(NewAvatar);
+      FIsImageChanged := True;
+    end else
+      FPicture.Assign(Person.Image);
+
     RecreateImage;
     ReloadGroups;
     Caption := LF('Edit person: {0}', [FPerson.Name]);

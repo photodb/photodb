@@ -151,6 +151,7 @@ var
   XMPICCProperty: TXMPProperty;
   XMPICCPrifile: string;
   IsImageEncrypted: Boolean;
+  LoadToMemory,
   LoadOnlyExif: Boolean;
   OldMode: Cardinal;
 begin
@@ -169,7 +170,12 @@ begin
       Exit(False);
 
     MSICC := nil;
-    if (GraphicClass = TRAWImage) and not (ilfFullRAW in Flags) then
+
+    LoadToMemory := not ((GraphicClass = TRAWImage) and not (ilfFullRAW in Flags));
+    if (GraphicClass = TPSDGraphic) then
+      LoadToMemory := False;
+
+    if not LoadToMemory then
       S := nil
     else
       S := TMemoryStream.Create;
@@ -203,7 +209,7 @@ begin
               DecryptStreamToStream(FS, S, Password);
             end else
             begin
-              if (GraphicClass = TRAWImage) and not (ilfFullRAW in Flags) then
+              if not LoadToMemory then
               begin
                 S := FS;
                 FS := nil;

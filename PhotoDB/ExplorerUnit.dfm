@@ -2233,7 +2233,7 @@ object ExplorerForm: TExplorerForm
             340
             556)
           object ToolBarPreview: TToolBar
-            Left = 150
+            Left = 130
             Top = 533
             Width = 219
             Height = 22
@@ -2347,25 +2347,24 @@ object ExplorerForm: TExplorerForm
             SignColor = clBlack
             MaxTransparencity = 255
           end
-          object WlPersonsPreview: TWebLinkList
-            Left = 0
-            Top = 0
+          object WllPersonsPreview: TWebLinkList
+            Left = 5
+            Top = 494
             Width = 340
             Height = 33
             HorzScrollBar.Visible = False
-            Align = alTop
             BevelEdges = []
             BevelInner = bvNone
             BevelOuter = bvNone
             BorderStyle = bsNone
             ParentBackground = True
             TabOrder = 3
-            Visible = False
             VerticalIncrement = 5
             HorizontalIncrement = 5
             LineHeight = 0
             PaddingTop = 2
             PaddingLeft = 2
+            HorCenter = True
           end
         end
         object TsGeoLocation: TTabSheet
@@ -2652,7 +2651,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.919334131950000000
+      Date = 41177.009034120370000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3489,6 +3488,28 @@ object ExplorerForm: TExplorerForm
     object MiInfoGroupProperties: TMenuItem
       Caption = 'Properties'
       OnClick = MiInfoGroupPropertiesClick
+    end
+  end
+  object PmPreviewPersonItem: TPopupActionBar
+    Left = 449
+    Top = 392
+    object MiPreviewPersonFind: TMenuItem
+      Caption = 'Find pictures'
+      OnClick = MiPreviewPersonFindClick
+    end
+    object MenuItem3: TMenuItem
+      Caption = '-'
+    end
+    object MiPreviewPersonUpdateAvatar: TMenuItem
+      Caption = 'Update avatar'
+      OnClick = MiPreviewPersonUpdateAvatarClick
+    end
+    object MenuItem6: TMenuItem
+      Caption = '-'
+    end
+    object MiPreviewPersonProperties: TMenuItem
+      Caption = 'Properties'
+      OnClick = MiPreviewPersonPropertiesClick
     end
   end
 end

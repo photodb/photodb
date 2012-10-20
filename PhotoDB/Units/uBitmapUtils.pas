@@ -43,6 +43,7 @@ procedure Interpolate(X, Y, Width, Height: Integer; Rect: TRect; S, D: TBitmap);
 procedure LoadBMPImage32bit(S: TBitmap; D: TBitmap; BackGroundColor: TColor);
 procedure SelectedColor(Image: TBitmap; Color: TColor);
 procedure FillColorEx(Bitmap: TBitmap; Color: TColor);
+procedure MixWithColor(Bitmap: TBitmap; MixTransparencity: Byte; Color: TColor; ExceptRect: TRect);
 procedure DrawImageEx(Dest, Src: TBitmap; X, Y: Integer);
 procedure DrawImageExRect(Dest, Src: TBitmap; SX, SY, SW, SH: Integer; DX, DY: Integer);
 procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
@@ -1147,6 +1148,39 @@ begin
       pD[XD].G := pS[J].G;
       pD[XD].B := pS[J].B;
       pD[XD].L := pS[J].L;
+    end;
+  end;
+end;
+
+procedure MixWithColor(Bitmap: TBitmap; MixTransparencity: Byte; Color: TColor; ExceptRect: TRect);
+var
+  I, J,
+  BW, BH: Integer;
+  P: PARGB;
+  W, W1: Byte;
+  R, G, B: Byte;
+begin
+  BW := Bitmap.Width;
+  BH := Bitmap.Height;
+
+  Color := ColorToRGB(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+
+  W := MixTransparencity;
+  W1 := 255 - MixTransparencity;
+  for I := 0 to BH - 1 do
+  begin
+    P := Bitmap.ScanLine[I];
+    for J := 0 to BW - 1 do
+    begin
+      if not PtInRect(ExceptRect, Point(J, I)) then
+      begin
+        P[J].R := (P[J].R * W1 + R * W + $7F) div $FF;
+        P[J].G := (P[J].G * W1 + G * W + $7F) div $FF;
+        P[J].B := (P[J].B * W1 + B * W + $7F) div $FF;
+      end;
     end;
   end;
 end;

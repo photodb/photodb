@@ -247,6 +247,7 @@ type
     FSize: Int64;
     FDateModified: TDateTime;
     FPersistanceFileName: string;
+    FTagEx: string;
     function GetItem(Index: Integer): TFaceDetectionResultItem;
     function GetCount: Integer;
   public
@@ -266,6 +267,7 @@ type
     property Size: Int64 read FSize write FSize;
     property DateModified: TDateTime read FDateModified write FDateModified;
     property PersistanceFileName: string read FPersistanceFileName write FPersistanceFileName;
+    property TagEx: string read FTagEx write FTagEx;
   end;
 
   TCascadeData = class
@@ -329,13 +331,19 @@ implementation
 
 var
   FManager: TFaceDetectionManager = nil;
+  GlobalSync: TCriticalSection = nil;
 
 function FaceDetectionManager: TFaceDetectionManager;
 begin
-  if FManager = nil then
-    FManager := TFaceDetectionManager.Create;
+  GlobalSync.Enter;
+  try
+    if FManager = nil then
+      FManager := TFaceDetectionManager.Create;
 
-  Result := FManager;
+    Result := FManager;
+  finally
+    GlobalSync.Leave;
+  end;
 end;
 
 procedure InitCVLib;
@@ -830,8 +838,10 @@ begin
 end;
 
 initialization
+  GlobalSync := TCriticalSection.Create;
 
 finalization
   F(FManager);
+  F(GlobalSync);
 
 end.

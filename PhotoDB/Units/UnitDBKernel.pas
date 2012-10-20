@@ -53,6 +53,8 @@ type
 
 const
   IconsCount = 128;
+const
+  IconsVersion = '1_0';
 
 type
   TDbKernelArrayIcons = array [1 .. IconsCount] of THandle;
@@ -1112,7 +1114,7 @@ begin
   FDisabledImageList.Height := 16;
   FDisabledImageList.ColorDepth := cd32Bit;
 
-  if not FImageList.LoadFromCache('Images' + IntToStr(IconsCount)) or not FDisabledImageList.LoadFromCache('ImGray' + IntToStr(IconsCount)) then
+  if not FImageList.LoadFromCache('Images' + IconsVersion) or not FDisabledImageList.LoadFromCache('ImGray' + IconsVersion) then
   begin
     Icons[1] := LoadIcon(HInstance,'SHELL');
     Icons[2] := LoadIcon(HInstance,'SLIDE_SHOW');
@@ -1136,8 +1138,8 @@ begin
     Icons[20] := LoadIcon(HInstance,'TRATING_3');
     Icons[21] := LoadIcon(HInstance,'TRATING_4');
     Icons[22] := LoadIcon(HInstance,'TRATING_5');
-    Icons[23] := LoadIcon(HInstance,'NEXT');
-    Icons[24] := LoadIcon(HInstance,'PREVIOUS');
+    Icons[23] := LoadIcon(HInstance,'Z_NEXT_NORM'); //NEXT //TODO: delete icon 'NEXT'
+    Icons[24] := LoadIcon(HInstance,'Z_PREVIOUS_NORM'); //PREVIOUS //TODO: delete icon 'PREVIOUS'
     Icons[25] := LoadIcon(HInstance,'TH_NEW');
     Icons[26] := LoadIcon(HInstance,'ROTATE_0');
     Icons[27] := LoadIcon(HInstance,'ROTATE_90');
@@ -1259,8 +1261,8 @@ begin
       end;
     end;
 
-    FImageList.SaveToCache('Images' + IntToStr(IconsCount));
-    FDisabledImageList.SaveToCache('ImGray' + IntToStr(IconsCount));
+    FImageList.SaveToCache('Images' + IconsVersion);
+    FDisabledImageList.SaveToCache('ImGray' + IconsVersion);
   end;
 end;
 

@@ -82,6 +82,7 @@ type
     function AfterRight(Padding: Integer): Integer;
     function FormBounds: TRect;
     function ScreenBelow: TPoint;
+    function OwnerForm: TForm;
   end;
 
   TCustomImageListHelper = class helper for TCustomImageList
@@ -469,6 +470,17 @@ begin
     Control := Control.Parent;
   end;
   Result := Rect(X, Y, X + Width, Y + Height);
+end;
+
+function TControlHelper.OwnerForm: TForm;
+var
+  Owner: TComponent;
+begin
+  Owner := Self.Owner;
+  while (Owner.Owner <> nil) and not (Owner is TForm) do
+    Owner := Owner.Owner;
+
+  Result := Owner as TForm;
 end;
 
 function TControlHelper.ScreenBelow: TPoint;

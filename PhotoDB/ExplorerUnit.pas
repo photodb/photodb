@@ -4,6 +4,7 @@ interface
 
 uses
   Generics.Collections,
+  Generics.Defaults,
   System.Types,
   System.Math,
   System.SysUtils,
@@ -539,7 +540,13 @@ type
     MiInfoGroupProperties: TMenuItem;
     WlFaceCount: TWebLink;
     LsDetectingFaces: TLoadingSign;
-    WlPersonsPreview: TWebLinkList;
+    WllPersonsPreview: TWebLinkList;
+    PmPreviewPersonItem: TPopupActionBar;
+    MiPreviewPersonFind: TMenuItem;
+    MenuItem3: TMenuItem;
+    MiPreviewPersonUpdateAvatar: TMenuItem;
+    MenuItem6: TMenuItem;
+    MiPreviewPersonProperties: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -806,6 +813,9 @@ type
     procedure MiInfoGroupPropertiesClick(Sender: TObject);
     procedure MiInfoGroupFindClick(Sender: TObject);
     procedure MiInfoGroupRemoveClick(Sender: TObject);
+    procedure MiPreviewPersonFindClick(Sender: TObject);
+    procedure MiPreviewPersonPropertiesClick(Sender: TObject);
+    procedure MiPreviewPersonUpdateAvatarClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -979,6 +989,11 @@ type
       var AskParent: Boolean; var PopupMenu: TPopupMenu);
 
     procedure CreatePreview;
+    procedure OnPersonsFoundOnPreview(Sender: TObject; FileName: string; Items: TFaceDetectionResult);
+    procedure OnPreviewPersonMouseEnter(Sender: TObject);
+    procedure OnPreviewPersonMouseLeave(Sender: TObject);
+    procedure OnPreviewPersonClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure OnBeginLoadingPreviewImage(Sender: TObject);
 
     procedure ExtendedSearchInit;
     procedure ExtendedSearchRealign;
@@ -1339,6 +1354,11 @@ begin
     FImageViewer := TImageViewer.Create;
     FImageViewer.AttachTo(Self, TsMediaPreview, 2, 2);
     FImageViewer.SetFaceDetectionControls(WlFaceCount, LsDetectingFaces, ToolBarPreview);
+    FImageViewer.OnBeginLoadingImage := OnBeginLoadingPreviewImage;
+    FImageViewer.OnRequestNextImage := TbPreviewNextClick;
+    FImageViewer.OnRequestPreviousImage := TbPreviewPreviousClick;
+    FImageViewer.OnDblClick := SlideShowLinkClick;
+    FImageViewer.OnPersonsFoundOnImage := OnPersonsFoundOnPreview;
     TsMediaPreviewResize(Self);
 
     WlFaceCount.ImageList := DBkernel.ImageList;
@@ -2523,6 +2543,179 @@ begin
   end;
 end;
 
+procedure TExplorerForm.OnBeginLoadingPreviewImage(Sender: TObject);
+var
+  I: Integer;
+begin
+  for I := 0 to WllPersonsPreview.ControlCount - 1 do
+    if WllPersonsPreview.Controls[I] is TWebLink then
+      TWebLink(WllPersonsPreview.Controls[I]).Enabled := False;
+end;
+
+procedure TExplorerForm.OnPersonsFoundOnPreview(Sender: TObject; FileName: string;
+  Items: TFaceDetectionResult);
+const
+  PersonImageSize = 24;
+var
+  Data: TFaceDetectionResult;
+  C, J: Integer;
+begin
+  C := 0;
+
+  if Items <> nil then
+  begin
+    for J := 0 to Items.Count - 1 do
+      if Items[J].Data <> nil then
+        if TPersonArea(Items[J].Data).PersonID > 0 then
+          Inc(C);
+  end;
+
+  //at least one person on photo
+  if C > 0 then
+  begin
+    Data := TFaceDetectionResult.Create;
+    Data.Assign(Items);
+    Data.TagEx := FileName;
+    TThreadTask.Create(Self, Data,
+      procedure(Thread: TThreadTask; Data: Pointer)
+      var
+        I, J: Integer;
+        FData: TFaceDetectionResult;
+        PA: TPersonArea;
+        P: TPerson;
+        Persons: TList<TPerson>;
+        NewPerson: Boolean;
+      begin
+        Persons:= TList<TPerson>.Create;
+        FData := Data;
+        try
+          for I := 0 to FData.Count - 1 do
+          begin
+            if FData[I].Data = nil then
+              Continue;
+
+            PA := TPersonArea(FData[I].Data);
+            if PA.PersonID > 0 then
+            begin
+              NewPerson := True;
+              for J := 0 to Persons.Count - 1 do
+                if Persons[J].ID = PA.PersonID then
+                  NewPerson := False;
+
+              if not NewPerson then
+                Continue;
+
+              P := PersonManager.GetPerson(PA.PersonID);
+              if P <> nil then
+              begin
+                Persons.Add(P);
+                P.CreatePreview(PersonImageSize, PersonImageSize);
+              end;
+            end;
+          end;
+          Persons.Sort(TComparer<TPerson>.Construct(
+             function (const L, R: TPerson): Integer
+             begin
+               Result := AnsiCompareStr(L.Name, R.Name);
+             end
+          ));
+          Thread.SynchronizeTask(
+            procedure
+            var
+              I: Integer;
+              Wl: TWebLink;
+              LblInfo: TStaticText;
+            begin
+              if AnsiLowerCase(FData.TagEx) <> AnsiLowerCase(FImageViewer.CurentFile) then
+                Exit;
+
+              BeginScreenUpdate(TsMediaPreview.Handle);
+              try
+                WllPersonsPreview.Clear;
+                LblInfo := TStaticText.Create(WllGroups);
+                LblInfo.Parent := WllPersonsPreview;
+                WllPersonsPreview.AddControl(LblInfo, True);
+                LblInfo.Caption := L('Persons on photo:');
+
+                for I := 0 to Persons.Count - 1 do
+                begin
+                  Wl := WllPersonsPreview.AddLink;
+                  Wl.Text := Persons[I].Name;
+                  Wl.Font.Style := [fsBold];
+                  Wl.IconWidth := PersonImageSize;
+                  Wl.IconHeight := PersonImageSize;
+                  Wl.LoadBitmap(Persons[I].CreatePreview(PersonImageSize, PersonImageSize));
+                  Wl.Tag := Persons[I].ID;
+                  Wl.OnMouseEnter := OnPreviewPersonMouseEnter;
+                  Wl.OnMouseLeave := OnPreviewPersonMouseLeave;
+                  Wl.OnMouseUp := OnPreviewPersonClick;
+                end;
+                TsMediaPreviewResize(Self);
+                WllPersonsPreview.Visible := True;
+              finally
+                EndScreenUpdate(TsMediaPreview.Handle, False);
+              end;
+            end
+          );
+
+        finally
+          F(FData);
+          FreeList(Persons);
+        end;
+      end
+    );
+  end else
+  begin
+    BeginScreenUpdate(TsMediaPreview.Handle);
+    try
+      WllPersonsPreview.Clear;
+      WllPersonsPreview.Visible := False;
+      TsMediaPreviewResize(Self);
+    finally
+      EndScreenUpdate(TsMediaPreview.Handle, False);
+    end;
+  end;
+end;
+
+procedure TExplorerForm.OnPreviewPersonClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Wl: TWebLink;
+  P: TPoint;
+begin
+  PmPreviewPersonItem.Images := DBKernel.ImageList;
+  MiPreviewPersonFind.Caption := L('Find pictures');
+  MiPreviewPersonUpdateAvatar.Caption := L('Update avatar');
+  MiPreviewPersonProperties.Caption := L('Properties');
+
+  MiPreviewPersonFind.ImageIndex := DB_IC_SEARCH;
+  MiPreviewPersonUpdateAvatar.ImageIndex := DB_IC_IMEDITOR;
+  MiPreviewPersonProperties.ImageIndex := DB_IC_PROPERTIES;
+
+  Wl := TWebLink(Sender);
+  PmPreviewPersonItem.Tag := NativeInt(Sender);
+
+  P := Point(Wl.Left, Wl.BoundsRect.Bottom);
+  P := Wl.Parent.ClientToScreen(P);
+  PmPreviewPersonItem.DoPopupEx(P.X, P.Y);
+
+  if FImageViewer <> nil then
+    FImageViewer.ResetPersonSelection;
+end;
+
+procedure TExplorerForm.OnPreviewPersonMouseEnter(Sender: TObject);
+begin
+  if FImageViewer <> nil then
+    FImageViewer.SelectPerson(TWebLink(Sender).Tag);
+end;
+
+procedure TExplorerForm.OnPreviewPersonMouseLeave(Sender: TObject);
+begin
+  if BlockClosingOfWindows then
+    Exit;
+  if FImageViewer <> nil then
+    FImageViewer.ResetPersonSelection;
+end;
+
 procedure TExplorerForm.Open1Click(Sender: TObject);
 var
   Handled: Boolean;
@@ -2815,8 +3008,7 @@ begin
     Exit;
   end;
 
-  ImParams := [EventID_Param_Crypt, EventID_Param_Image,
-    EventID_Param_Delete, EventID_Param_Critical];
+  ImParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
   if ImParams * params<> [] then
   begin
     if ID > 0 then
@@ -3097,12 +3289,14 @@ begin
 
     ElvMain.Selection.ClearAll;
     ElvMain.Items[ItemIndex].Selected := True;
+    ElvMain.Items[ItemIndex].Focused := True;
     ElvMain.Selection.First.MakeVisible(emvMiddle);
 
   end;
   if (ElvMain.Selection.Count = 0) and (ElvMain.Items.Count > 0) then
   begin
     ElvMain.Items[0].Selected := True;
+    ElvMain.Items[0].Focused := True;
     ElvMain.Selection.First.MakeVisible(emvMiddle);
   end;
   ElvMain.SetFocus;
@@ -3127,12 +3321,14 @@ begin
 
     ElvMain.Selection.ClearAll;
     ElvMain.Items[ItemIndex].Selected := True;
+    ElvMain.Items[ItemIndex].Focused := True;
     ElvMain.Selection.First.MakeVisible(emvMiddle);
 
   end;
   if (ElvMain.Selection.Count = 0) and (ElvMain.Items.Count > 0) then
   begin
     ElvMain.Items[ElvMain.Items.Count - 1].Selected := True;
+    ElvMain.Items[ElvMain.Items.Count - 1].Focused := True;
     ElvMain.Selection.First.MakeVisible(emvMiddle);
   end;
 
@@ -3178,12 +3374,17 @@ procedure TExplorerForm.TsMediaPreviewResize(Sender: TObject);
 begin
   if FImageViewer <> nil then
   begin
+    WllPersonsPreview.Width := TsMediaPreview.Width - 5 - WllPersonsPreview.Left;
+    WllPersonsPreview.ReallignList;
+    WllPersonsPreview.AutoHeight(300);
+
     FImageViewer.ResizeTo(TsMediaPreview.Width - FImageViewer.Left * 2,
-                          TsMediaPreview.Height - FImageViewer.Top * 2 - ToolBarPreview.Height);
+                          TsMediaPreview.Height - FImageViewer.Top * 2 - ToolBarPreview.Height - 10 - WllPersonsPreview.Height);
 
     ToolBarPreview.Left := TsMediaPreview.Width div 2 - ToolBarPreview.Width div 2;
-    ToolBarPreview.Top := TsMediaPreview.Height - ToolBarPreview.Height;
+    ToolBarPreview.Top := TsMediaPreview.Height - ToolBarPreview.Height - 1 {BORDER};
 
+    WllPersonsPreview.Top := TsMediaPreview.Height - WllPersonsPreview.Height - ToolBarPreview.Height  - 1 - 5;
     LsDetectingFaces.Top := ToolBarPreview.Top;
     WlFaceCount.Top := ToolBarPreview.Top + LsDetectingFaces.Height div 2 - WlFaceCount.Height div 2;
   end;
@@ -9099,8 +9300,10 @@ begin
     if FImageViewer <> nil then
     begin
       if (SelCount = 0) or not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
-        FImageViewer.SetText(L('Select a file to preview'))
-      else
+      begin
+        FImageViewer.SetText(L('Select a file to preview'));
+        OnPersonsFoundOnPreview(Self, '', nil);
+      end else
         FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
     end;
   end;
@@ -11740,6 +11943,53 @@ begin
     end;
   finally
     F(FormFindPerson);
+  end;
+end;
+
+procedure TExplorerForm.MiPreviewPersonFindClick(Sender: TObject);
+var
+  Wl: TWebLink;
+begin
+  Wl := TWebLink(PmPreviewPersonItem.Tag);
+
+  SetNewPathW(ExplorerPath(cPersonsPath + '\' + Wl.Text, EXPLORER_ITEM_PERSON), False);
+end;
+
+procedure TExplorerForm.MiPreviewPersonPropertiesClick(Sender: TObject);
+var
+  P: TPathItem;
+  PL: TPathItemCollection;
+  Wl: TWebLink;
+begin
+  Wl := TWebLink(PmPreviewPersonItem.Tag);
+
+  P := PathProviderManager.CreatePathItem(cPersonsPath + '\' + Wl.Text);
+  try
+    if P <> nil then
+      if P.Provider.SupportsFeature(PATH_FEATURE_PROPERTIES) then
+      begin
+        PL := TPathItemCollection.Create;
+        try
+          PL.Add(P);
+          P.Provider.ExecuteFeature(Self, PL, PATH_FEATURE_PROPERTIES, nil);
+        finally
+          F(PL);
+        end;
+      end;
+  finally
+    F(P);
+  end;
+end;
+
+procedure TExplorerForm.MiPreviewPersonUpdateAvatarClick(Sender: TObject);
+var
+  Wl: TWebLink;
+begin
+  Wl := TWebLink(PmPreviewPersonItem.Tag);
+  if FImageViewer <> nil then
+  begin
+    FImageViewer.UpdateAvatar(Wl.Tag);
+    DoSelectItem;
   end;
 end;
 

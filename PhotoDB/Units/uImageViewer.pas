@@ -3,6 +3,7 @@ unit uImageViewer;
 interface
 
 uses
+  System.Classes,
   System.SysUtils,
   Winapi.Windows,
   Winapi.Messages,
@@ -46,6 +47,8 @@ type
     FIsWaiting: Boolean;
     FActiveThreadId: TGUID;
     FItem: TDBPopupMenuInfoRecord;
+    FOnBeginLoadingImage: TNotifyEvent;
+    FOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
     procedure Resize;
     procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord);
     procedure LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
@@ -61,6 +64,10 @@ type
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
     procedure FinishDetectionFaces;
     procedure SetFaceDetectionControls(AWlFaceCount: TWebLink; ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
+    procedure SelectPerson(PersonID: Integer);
+    procedure ResetPersonSelection;
+
+    procedure UpdateAvatar(PersonID: Integer);
 
     procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
@@ -79,6 +86,18 @@ type
     function GetActiveThreadId: TGUID;
     function GetItem: TDBPopupMenuInfoRecord;
     function GetDisplayBitmap: TBitmap;
+    function GetCurentFile: string;
+
+    procedure SetOnBeginLoadingImage(Event: TNotifyEvent);
+    function GetOnBeginLoadingImage: TNotifyEvent;
+    procedure SetOnRequestNextImage(Event: TNotifyEvent);
+    function GetOnRequestNextImage: TNotifyEvent;
+    procedure SetOnRequestPreviousImage(Event: TNotifyEvent);
+    function GetOnRequestPreviousImage: TNotifyEvent;
+    procedure SetOnDblClick(Event: TNotifyEvent);
+    function GetOnDblClick: TNotifyEvent;
+    procedure SetOnPersonsFoundOnImage(Event: TPersonsFoundOnImageEvent);
+    function GetOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
   end;
 
 implementation
@@ -114,6 +133,9 @@ begin
   FIsWaiting := False;
   FActiveThreadId := GetEmptyGUID;
   FItem := TDBPopupMenuInfoRecord.Create;
+
+  FOnBeginLoadingImage := nil;
+  FOnPersonsFoundOnImage := nil;
 end;
 
 destructor TImageViewer.Destroy;
@@ -131,6 +153,11 @@ end;
 function TImageViewer.GetActiveThreadId: TGUID;
 begin
   Result := FActiveThreadId;
+end;
+
+function TImageViewer.GetCurentFile: string;
+begin
+  Result := FItem.FileName;
 end;
 
 function TImageViewer.GetDisplayBitmap: TBitmap;
@@ -160,6 +187,31 @@ begin
   Result := Self;
 end;
 
+function TImageViewer.GetOnBeginLoadingImage: TNotifyEvent;
+begin
+  Result := FOnBeginLoadingImage;
+end;
+
+function TImageViewer.GetOnDblClick: TNotifyEvent;
+begin
+  Result := FImageControl.OnDblClick;
+end;
+
+function TImageViewer.GetOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
+begin
+  Result := FOnPersonsFoundOnImage;
+end;
+
+function TImageViewer.GetOnRequestNextImage: TNotifyEvent;
+begin
+  Result := FImageControl.OnRequestNextImage;
+end;
+
+function TImageViewer.GetOnRequestPreviousImage: TNotifyEvent;
+begin
+  Result := FImageControl.OnRequestPreviousImage;
+end;
+
 {$ENDREGION}
 
 function TImageViewer.GetTop: Integer;
@@ -178,7 +230,10 @@ var
   Bitmap: TBitmap;
 begin        
   FActiveThreadId := GetGUID;
-  
+
+  if Assigned(FOnBeginLoadingImage) then
+    FOnBeginLoadingImage(Self);
+
   if FileInfo.Encrypted then
   begin
     if DBKernel.FindPasswordForCryptImageFile(FileInfo.FileName) = '' then
@@ -246,6 +301,11 @@ begin
     LoadFile(FFiles[FFiles.Position]);
 end;
 
+procedure TImageViewer.ResetPersonSelection;
+begin
+  FImageControl.HightliteReset;
+end;
+
 procedure TImageViewer.Resize;
 begin
   //TODO:
@@ -259,6 +319,11 @@ begin
   FImageControl.Height := Height;
   
   Resize;
+end;
+
+procedure TImageViewer.SelectPerson(PersonID: Integer);
+begin
+  FImageControl.HightlitePerson(PersonID);
 end;
 
 procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
@@ -275,6 +340,31 @@ procedure TImageViewer.SetFaceDetectionControls(AWlFaceCount: TWebLink;
   ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
 begin
   FImageControl.SetFaceDetectionControls(AWlFaceCount, ALsDetectingFaces, ATbrActions);
+end;
+
+procedure TImageViewer.SetOnBeginLoadingImage(Event: TNotifyEvent);
+begin
+  FOnBeginLoadingImage := Event;
+end;
+
+procedure TImageViewer.SetOnDblClick(Event: TNotifyEvent);
+begin
+  FImageControl.OnDblClick := Event;
+end;
+
+procedure TImageViewer.SetOnPersonsFoundOnImage(Event: TPersonsFoundOnImageEvent);
+begin
+  FOnPersonsFoundOnImage := Event;
+end;
+
+procedure TImageViewer.SetOnRequestNextImage(Event: TNotifyEvent);
+begin
+  FImageControl.OnRequestNextImage := Event;
+end;
+
+procedure TImageViewer.SetOnRequestPreviousImage(Event: TNotifyEvent);
+begin
+  FImageControl.OnRequestPreviousImage := Event;
 end;
 
 procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
@@ -298,9 +388,19 @@ begin
 
 end;
 
+procedure TImageViewer.UpdateAvatar(PersonID: Integer);
+begin
+  FImageControl.UpdateAvatar(PersonID);
+end;
+
 procedure TImageViewer.UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
 begin
+  if AnsiLowerCase(FItem.FileName) <> AnsiLowerCase(FileName) then
+    Exit;
+
   FImageControl.UpdateFaces(FileName, Faces);
+  if Assigned(FOnPersonsFoundOnImage) then
+    FOnPersonsFoundOnImage(Self, FileName, Faces);
 end;
 
 procedure TImageViewer.ZoomIn;
